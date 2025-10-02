@@ -44,6 +44,7 @@
 
 #define __glibcxx_want_mdspan
 #define __glibcxx_want_aligned_accessor
+#define __glibcxx_want_submdspan
 #include <bits/version.h>
 
 #ifdef __glibcxx_mdspan
@@ -334,6 +335,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			size_t __end = _Extents::rank()) noexcept
       { return __exts._M_exts._M_dynamic_extents(__begin, __end); }
   }
+
+#if __glibcxx_submdspan
+  template<typename _OffsetType, typename _ExtentType, typename _StrideType>
+    struct strided_slice {
+      static_assert(__is_standard_integer<_OffsetType>::value
+	|| __detail::__integral_constant_like<_OffsetType>);
+      static_assert(__is_standard_integer<_ExtentType>::value
+	|| __detail::__integral_constant_like<_ExtentType>);
+      static_assert(__is_standard_integer<_StrideType>::value
+	|| __detail::__integral_constant_like<_StrideType>);
+
+      using offset_type = _OffsetType;
+      using extent_type = _ExtentType;
+      using stride_type = _StrideType;
+
+      [[no_unique_address]] offset_type offset{};
+      [[no_unique_address]] extent_type extent{};
+      [[no_unique_address]] stride_type stride{};
+    };
+#endif
 
   template<typename _IndexType, size_t... _Extents>
     class extents

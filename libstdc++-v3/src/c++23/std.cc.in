@@ -1872,8 +1872,9 @@ export namespace std
 #if __glibcxx_padded_layouts
   using std::layout_left_padded;
   using std::layout_right_padded;
+  using strided_slice;
 #endif
-  // FIXME strided_slice, submdspan_mapping_result, full_extent_t, full_extent,
+  // FIXME submdspan_mapping_result, full_extent_t, full_extent,
   // submdspan_extents, mdsubspan
 }
 #endif

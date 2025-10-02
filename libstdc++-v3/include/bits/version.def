@@ -1076,6 +1076,15 @@ ftms = {
 };
 
 ftms = {
+  name = submdspan;
+  no_stdname = true; // TODO: change once complete
+  values = {
+    v = 1;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = ssize;
   values = {
     v = 201902;
