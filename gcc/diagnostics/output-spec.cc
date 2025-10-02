@@ -650,12 +650,12 @@ html_scheme_handler::maybe_handle_kv (const context &ctxt,
   if (key == "show-state-diagrams")
     return parse_bool_value (ctxt, key, value,
 			     m_html_gen_opts.m_show_state_diagrams);
-  if (key == "show-state-diagrams-dot-src")
+  if (key == "show-graph-dot-src")
     return parse_bool_value (ctxt, key, value,
-			     m_html_gen_opts.m_show_state_diagrams_dot_src);
-  if (key == "show-state-diagrams-sarif")
+			     m_html_gen_opts.m_show_graph_dot_src);
+  if (key == "show-graph-sarif")
     return parse_bool_value (ctxt, key, value,
-			     m_html_gen_opts.m_show_state_diagrams_sarif);
+			     m_html_gen_opts.m_show_graph_sarif);
   return result::unrecognized;
 }
 
@@ -666,8 +666,8 @@ html_scheme_handler::get_keys (auto_vec<const char *> &out) const
   out.safe_push ("file");
   out.safe_push ("javascript");
   out.safe_push ("show-state-diagrams");
-  out.safe_push ("show-state-diagrams-dot-src");
-  out.safe_push ("show-state-diagrams-sarif");
+  out.safe_push ("show-graph-dot-src");
+  out.safe_push ("show-graph-sarif");
 }
 
 } // namespace output_spec

@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_JSON_H
 #define GCC_JSON_H
 
+#include "label-text.h"
+
 /* Implementation of JSON, a lightweight data-interchange format.
 
    See http://www.json.org/
@@ -116,6 +118,41 @@ struct token
 
 } // namespace json::pointer
 
+/* Typesafe way to work with properties in JSON objects.  */
+
+template <typename Traits>
+struct property
+{
+  explicit property (const char *key)
+  : m_key (label_text::borrow (key))
+  {}
+
+  explicit property (const char *key_prefix, const char *key)
+  : m_key (label_text::take (concat (key_prefix, key, nullptr)))
+  {}
+
+  label_text m_key;
+};
+
+using string_property = property<string>;
+using integer_property = property<integer_number>;
+using bool_property = property<literal>;
+using json_property = property<value>;
+using array_of_string_property = property<array>;
+
+template <typename EnumType>
+struct enum_traits
+{
+  typedef EnumType enum_t;
+
+  static enum_t get_unknown_value ();
+  static bool maybe_get_value_from_string (const char *, enum_t &out);
+  static const char *get_string_for_value (enum_t value);
+};
+
+template <typename EnumType>
+using enum_property = property<enum_traits<EnumType>>;
+
 /* Base class of JSON value.  */
 
 class value
@@ -130,6 +167,8 @@ class value
   void DEBUG_FUNCTION dump () const;
 
   virtual object *dyn_cast_object () { return nullptr; }
+  virtual array *dyn_cast_array () { return nullptr; }
+  virtual integer_number *dyn_cast_integer_number () { return nullptr; }
   virtual string *dyn_cast_string () { return nullptr; }
 
   static int compare (const json::value &val_a, const json::value &val_b);
@@ -183,6 +222,19 @@ class object : public value
   /* Set to literal true/false.  */
   void set_bool (const char *key, bool v);
 
+  /* Typesafe access to properties by name (such as from a schema).  */
+  void set_string (const string_property &property, const char *utf8_value);
+  void set_integer (const integer_property &property, long value);
+  void set_bool (const bool_property &property, bool value);
+  void set_array_of_string (const array_of_string_property &property,
+			    std::unique_ptr<json::array> value);
+  template <typename EnumType>
+  bool maybe_get_enum (const enum_property<EnumType> &property,
+		       EnumType &out) const;
+  template <typename EnumType>
+  void set_enum (const enum_property<EnumType> &property,
+		 EnumType value);
+
   static int compare (const json::object &obj_a, const json::object &obj_b);
 
   size_t get_num_keys () const { return m_keys.length (); }
@@ -209,6 +261,8 @@ class array : public value
   enum kind get_kind () const final override { return JSON_ARRAY; }
   void print (pretty_printer *pp, bool formatted) const final override;
   std::unique_ptr<value> clone () const final override;
+
+  array *dyn_cast_array () final override { return this; }
 
   void append (value *v);
   void append_string (const char *utf8_value);
@@ -269,6 +323,8 @@ class integer_number : public value
   void print (pretty_printer *pp, bool formatted) const final override;
   std::unique_ptr<value> clone () const final override;
 
+  integer_number *dyn_cast_integer_number () final override { return this; }
+
   long get () const { return m_value; }
 
  private:
@@ -316,6 +372,32 @@ class literal : public value
  private:
   enum kind m_kind;
 };
+
+
+template <typename EnumType>
+inline bool
+object::maybe_get_enum (const enum_property<EnumType> &property,
+			EnumType &out) const
+{
+  if (value *jv = get (property.m_key.get ()))
+    if (string *jstr = jv->dyn_cast_string ())
+      {
+	if (enum_traits<EnumType>::maybe_get_value_from_string
+	    (jstr->get_string (), out))
+	  return true;
+      }
+  return false;
+}
+
+template <typename EnumType>
+inline void
+object::set_enum (const enum_property<EnumType> &property,
+		  EnumType value)
+{
+  const char *str
+    = json::enum_traits<EnumType>::get_string_for_value (value);
+  set_string (property.m_key.get (), str);
+}
 
 } // namespace json
 

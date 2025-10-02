@@ -210,9 +210,8 @@ report_diag_with_graphs (location_t loc)
       g->set_description (desc);
       auto a = std::make_unique<diagnostic_node> (*g, "a");
       auto b = std::make_unique<diagnostic_node> (*g, "b");
-#define KEY_PREFIX "/placeholder-prefix/"
-      b->set_attr (KEY_PREFIX, "color", "red");
-#undef KEY_PREFIX
+      const json::string_property color ("/placeholder-prefix/color");
+      b->set_property (color, "red");
       auto c = std::make_unique<diagnostic_node> (*g, "c");
       c->set_label ("I am a node label");
 

@@ -2735,7 +2735,7 @@ malloc_state_machine::transition_ptr_sval_non_null (region_model *model,
   smap->set_state (model, new_ptr_sval, m_free.m_nonnull, nullptr, ext_state);
 }
 
-static enum diagnostics::state_graphs::node_dynalloc_state
+static enum custom_sarif_properties::state_graphs::node::dynalloc_state
 get_dynalloc_state_for_state (enum resource_state rs)
 {
   switch (rs)
@@ -2746,17 +2746,17 @@ get_dynalloc_state_for_state (enum resource_state rs)
     case RS_NULL:
     case RS_NON_HEAP:
     case RS_STOP:
-      return diagnostics::state_graphs::node_dynalloc_state::unknown;
+      return state_node_properties::dynalloc_state::unknown;
 
     case RS_ASSUMED_NON_NULL:
-      return diagnostics::state_graphs::node_dynalloc_state::nonnull;
+      return state_node_properties::dynalloc_state::nonnull;
 
     case RS_UNCHECKED:
-      return diagnostics::state_graphs::node_dynalloc_state::unchecked;
+      return state_node_properties::dynalloc_state::unchecked;
     case RS_NONNULL:
-      return diagnostics::state_graphs::node_dynalloc_state::nonnull;
+      return state_node_properties::dynalloc_state::nonnull;
     case RS_FREED:
-      return diagnostics::state_graphs::node_dynalloc_state::freed;
+      return state_node_properties::dynalloc_state::freed;
     }
 }
 
@@ -2768,24 +2768,23 @@ add_state_to_state_graph (analyzer_state_graph &out_state_graph,
 {
   if (const region *reg = sval.maybe_get_region ())
     {
-      auto reg_node = out_state_graph.get_or_create_state_node (*reg);
+      auto &reg_node = out_state_graph.get_or_create_state_node (*reg);
       auto alloc_state = as_a_allocation_state (state);
       gcc_assert (alloc_state);
 
-      reg_node.set_dynalloc_state
-	(get_dynalloc_state_for_state (alloc_state->m_rs));
+      reg_node.set_property (state_node_properties::dynalloc_state,
+			     get_dynalloc_state_for_state (alloc_state->m_rs));
+
       if (alloc_state->m_deallocators)
 	{
 	  pretty_printer pp;
 	  alloc_state->m_deallocators->dump_to_pp (&pp);
-	  reg_node.m_node.set_attr (STATE_NODE_PREFIX,
-				    "expected-deallocators",
-				    pp_formatted_text (&pp));
+	  reg_node.set_property (state_node_properties::expected_deallocators,
+				 pp_formatted_text (&pp));
 	}
       if (alloc_state->m_deallocator)
-	reg_node.m_node.set_attr (STATE_NODE_PREFIX,
-				  "deallocator",
-				  alloc_state->m_deallocator->m_name);
+	reg_node.set_property (state_node_properties::deallocator,
+			       alloc_state->m_deallocator->m_name);
     }
 }
 
