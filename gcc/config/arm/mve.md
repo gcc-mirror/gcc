@@ -3965,14 +3965,14 @@
 
 (define_insn "get_fpscr_nzcvqc"
  [(set (match_operand:SI 0 "register_operand" "=r")
-   (unspec_volatile:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR_NZCVQC))]
+   (unspec:SI [(reg:SI VFPCC_REGNUM)] UNSPEC_GET_FPSCR_NZCVQC))]
  "TARGET_HAVE_MVE"
  "vmrs\\t%0, FPSCR_nzcvqc"
  [(set_attr "type" "mve_move")])
 
 (define_insn "set_fpscr_nzcvqc"
  [(set (reg:SI VFPCC_REGNUM)
-   (unspec_volatile:SI [(match_operand:SI 0 "register_operand" "r")]
+   (unspec:SI [(match_operand:SI 0 "register_operand" "r")]
     VUNSPEC_SET_FPSCR_NZCVQC))]
  "TARGET_HAVE_MVE"
  "vmsr\\tFPSCR_nzcvqc, %0"
@@ -3988,8 +3988,9 @@
 		      (match_operand:V4SI 2 "s_register_operand" "w")]
 	 VxCIQ))
    (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(const_int 0)]
-	 VxCIQ))
+	(unspec:SI [(match_dup 1)
+		    (match_dup 2)]
+	 <VxCIQ_carry>))
   ]
   "TARGET_HAVE_MVE"
   "<mve_insn>.i32\t%q0, %q1, %q2"
@@ -4009,8 +4010,11 @@
 		      (match_operand:V4BI 4 "vpr_register_operand" "Up")]
 	 VxCIQ_M))
    (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(const_int 0)]
-	 VxCIQ_M))
+    (unspec:SI [(match_dup 1)
+		(match_dup 2)
+		(match_dup 3)
+		(match_dup 4)]
+	 <VxCIQ_M_carry>))
   ]
   "TARGET_HAVE_MVE"
   "vpst\;<mve_insn>t.i32\t%q0, %q2, %q3"
@@ -4025,11 +4029,14 @@
 (define_insn "@mve_<mve_insn>q_<supf>v4si"
   [(set (match_operand:V4SI 0 "s_register_operand" "=w")
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "w")
-		       (match_operand:V4SI 2 "s_register_operand" "w")]
+		      (match_operand:V4SI 2 "s_register_operand" "w")
+		      (reg:SI VFPCC_REGNUM)]
 	 VxCQ))
    (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(reg:SI VFPCC_REGNUM)]
-	 VxCQ))
+    (unspec:SI [(match_dup 1)
+		(match_dup 2)
+		(reg:SI VFPCC_REGNUM)]
+	 <VxCQ_carry>))
   ]
   "TARGET_HAVE_MVE"
   "<mve_insn>.i32\t%q0, %q1, %q2"
@@ -4047,11 +4054,16 @@
 	(unspec:V4SI [(match_operand:V4SI 1 "s_register_operand" "0")
 		      (match_operand:V4SI 2 "s_register_operand" "w")
 		      (match_operand:V4SI 3 "s_register_operand" "w")
-		      (match_operand:V4BI 4 "vpr_register_operand" "Up")]
+		      (match_operand:V4BI 4 "vpr_register_operand" "Up")
+		      (reg:SI VFPCC_REGNUM)]
 	 VxCQ_M))
    (set (reg:SI VFPCC_REGNUM)
-	(unspec:SI [(reg:SI VFPCC_REGNUM)]
-	 VxCQ_M))
+    (unspec:SI [(match_dup 1)
+		(match_dup 2)
+		(match_dup 3)
+		(match_dup 4)
+		(reg:SI VFPCC_REGNUM)]
+	 <VxCQ_M_carry>))
   ]
   "TARGET_HAVE_MVE"
   "vpst\;<mve_insn>t.i32\t%q0, %q2, %q3"
