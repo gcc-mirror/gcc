@@ -7177,6 +7177,15 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   tree vectype_out = SLP_TREE_VECTYPE (slp_for_stmt_info);
   VECT_REDUC_INFO_VECTYPE (reduc_info) = vectype_out;
 
+  /* We do not handle mask reductions correctly in the epilogue.  */
+  if (VECTOR_BOOLEAN_TYPE_P (vectype_out))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "mask reduction not supported.\n");
+      return false;
+    }
+
   gimple_match_op op;
   if (!gimple_extract_op (stmt_info->stmt, &op))
     gcc_unreachable ();
@@ -7187,8 +7196,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
     return false;
 
   /* Do not try to vectorize bit-precision reductions.  */
-  if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
-      && !type_has_mode_precision_p (op.type)
+  if (!type_has_mode_precision_p (op.type)
       && op.code != BIT_AND_EXPR
       && op.code != BIT_IOR_EXPR
       && op.code != BIT_XOR_EXPR)
