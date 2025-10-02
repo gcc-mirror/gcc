@@ -765,6 +765,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __format::_Spec<char> _M_spec;
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<stacktrace_entry> = true;
+#endif
+
   template<typename _Allocator>
     class formatter<basic_stacktrace<_Allocator>>
     {
@@ -789,6 +795,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __format::__write(__fc.out(), __os.view());
 	}
     };
+
+#if __glibcxx_print >= 202406L
+  template<typename _Allocator>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<basic_stacktrace<_Allocator>> = true;
+#endif
 
   namespace pmr
   {

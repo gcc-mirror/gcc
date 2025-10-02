@@ -169,6 +169,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       __format::__formatter_int<_CharT> _M_f;
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<_GLIBCXX_STD_C::_Bit_reference> = true;
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __glibcxx_format_ranges

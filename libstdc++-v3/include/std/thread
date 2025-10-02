@@ -384,6 +384,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       __format::_Spec<_CharT> _M_spec;
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<thread::id> = true;
+#endif
+
 #endif // __cpp_lib_formatters
 
   /// @} group threads

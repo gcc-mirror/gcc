@@ -5872,6 +5872,14 @@ namespace __format
 	{ return this->_M_format_elems(__p.first, __p.second, __fc); }
     };
 
+#if __glibcxx_print >= 202406L
+  template<typename _Fp, typename _Sp>
+    constexpr bool enable_nonlocking_formatter_optimization<pair<_Fp, _Sp>>
+    // TODO this should have remove_cvref_t.
+      = enable_nonlocking_formatter_optimization<_Fp>
+        && enable_nonlocking_formatter_optimization<_Sp>;
+#endif
+
   template<__format::__char _CharT, formattable<_CharT>... _Tps>
     struct formatter<tuple<_Tps...>, _CharT>
       : __format::__tuple_formatter<_CharT, remove_cvref_t<_Tps>...>
@@ -5889,6 +5897,13 @@ namespace __format
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{ return this->_M_format(__t, index_sequence_for<_Tps...>(), __fc); }
     };
+
+#if __glibcxx_print >= 202406L
+  template<typename... _Tps>
+    // TODO this should have remove_cvref_t.
+    constexpr bool enable_nonlocking_formatter_optimization<tuple<_Tps...>>
+      = (enable_nonlocking_formatter_optimization<_Tps> && ...);
+#endif
 
   // [format.range.formatter], class template range_formatter
   template<typename _Tp, __format::__char _CharT>
@@ -6184,6 +6199,13 @@ namespace __format
 			  range_formatter<_Vt, _CharT>>;
       _Formatter_under _M_under;
     };
+
+#if __glibcxx_print >= 202406L
+  template<ranges::input_range _Rg>
+    requires (format_kind<_Rg> != range_format::disabled)
+    constexpr bool enable_nonlocking_formatter_optimization<_Rg> = false;
+#endif
+
 #endif // C++23 formatting ranges
 #undef _GLIBCXX_WIDEN
 

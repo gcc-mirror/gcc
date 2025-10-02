@@ -105,6 +105,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // Standard uses formatter<ref_view<_Container>, _CharT>.
       range_formatter<_Tp, _CharT> _M_f;
     };
+
+#if __glibcxx_print >= 202406L
+  template<typename _Tp, typename _Container>
+    constexpr bool
+    // TODO should be false
+    enable_nonlocking_formatter_optimization<stack<_Tp, _Container>> = true;
+#endif
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __glibcxx_format_ranges

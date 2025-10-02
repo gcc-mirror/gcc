@@ -112,6 +112,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       range_formatter<_Tp, _CharT> _M_f;
     };
 
+#if __glibcxx_print >= 202406L
+  template<typename _Tp, typename _Container>
+    constexpr bool
+    // TODO should be false
+    enable_nonlocking_formatter_optimization<queue<_Tp, _Container>> = true;
+#endif
+
   template<__format::__char _CharT, typename _Tp,
 	   formattable<_CharT> _Container, typename _Compare>
     struct formatter<priority_queue<_Tp, _Container, _Compare>, _CharT>
@@ -145,6 +152,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // 3881. Incorrect formatting of container adapters backed by std::string
       range_formatter<_Tp, _CharT> _M_f;
     };
+
+#if __glibcxx_print >= 202406L
+  template<typename _Tp, typename _Container, typename _Comparator>
+    constexpr bool
+    // TODO should be false
+    enable_nonlocking_formatter_optimization<
+      priority_queue<_Tp, _Container, _Comparator>> = true;
+#endif
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

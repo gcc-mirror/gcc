@@ -341,6 +341,40 @@ void test_padding()
   VERIFY( check_elems(resv) );
 }
 
+struct Custom {};
+
+template<typename CharT>
+struct std::formatter<Custom, CharT>
+{
+  constexpr std::basic_format_parse_context<CharT>::iterator
+  parse(const std::basic_format_parse_context<CharT>& pc)
+  { return pc.begin();  }
+
+  template<typename Out>
+  typename std::basic_format_context<Out, CharT>::iterator
+  format(Custom, const std::basic_format_context<Out, CharT>& fc) const
+  { return fc.out(); }
+};
+
+template<template<typename...> typename Tuple>
+void test_nonblocking()
+{
+  static_assert(std::enable_nonlocking_formatter_optimization<
+		  Tuple<int, float>>);
+  // TODO missing remove_cv_ref
+  static_assert(!std::enable_nonlocking_formatter_optimization<
+		  Tuple<const int, const float>>);
+  static_assert(!std::enable_nonlocking_formatter_optimization<
+		  Tuple<int&, float&>>);
+
+  static_assert(!std::enable_nonlocking_formatter_optimization<
+		  Tuple<Custom, float>>);
+  static_assert(!std::enable_nonlocking_formatter_optimization<
+		  Tuple<const Custom, const float>>);
+  static_assert(!std::enable_nonlocking_formatter_optimization<
+		  Tuple<Custom&, float&>>);
+}
+
 int main()
 {
   test_format_string();
@@ -348,4 +382,7 @@ int main()
   test_outputs<wchar_t>();
   test_nested();
   test_padding();
+
+  test_nonblocking<std::pair>();
+  test_nonblocking<std::tuple>();
 }

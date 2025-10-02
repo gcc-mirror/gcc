@@ -4,6 +4,7 @@
 #include <format>
 #include <testsuite_hooks.h>
 #include <vector>
+#include <span>
 
 #define WIDEN_(C, S) ::std::__format::_Widen<C>(S, L##S)
 #define WIDEN(S) WIDEN_(CharT, S)
@@ -145,7 +146,7 @@ struct MyFlatMap : std::flat_map<int, int>
 
 template<typename CharT>
 struct std::formatter<MyFlatMap, CharT>
-  // This cannot apply format BitVector const&, because formatted type would
+  // We cannot format MyFlatMap const&, because formatted type would
   // be std::pair<int const&, int const&>, and formatter for
   // pair<int const&, int> cannot format it.
   : std::range_formatter<MyFlatMap::reference>
@@ -161,10 +162,21 @@ void test_const_ref_type_mismatch()
 template<typename T, typename CharT>
 using VectorFormatter = std::formatter<std::vector<T>, CharT>;
 
+template<template<typename> typename Range>
+void test_nonblocking()
+{
+  static_assert(!std::enable_nonlocking_formatter_optimization<
+		  Range<int>>);
+}
+
 int main()
 {
   test_outputs<std::range_formatter>();
   test_outputs<VectorFormatter>();
   test_nested();
   test_const_ref_type_mismatch();
+
+  test_nonblocking<std::span>();
+  test_nonblocking<std::vector>();
+  test_nonblocking<MyVector>();
 }

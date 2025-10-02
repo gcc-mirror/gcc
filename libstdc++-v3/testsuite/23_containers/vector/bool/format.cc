@@ -7,6 +7,7 @@
 
 static_assert(!std::formattable<std::vector<bool>::reference, int>);
 static_assert(!std::formattable<std::vector<bool>::reference, char32_t>);
+static_assert(std::enable_nonlocking_formatter_optimization<std::vector<bool>::reference>);
 
 template<typename... Args>
 bool

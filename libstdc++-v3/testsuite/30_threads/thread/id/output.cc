@@ -81,7 +81,6 @@ void
 test02()
 {
 #if __cpp_lib_formatters >= 202302
-
   static_assert( std::is_default_constructible_v<std::formatter<std::thread::id, char>> );
 
   std::thread t1([]{});
@@ -154,6 +153,10 @@ test02()
 # error "Feature-test macro for formatters has wrong value in <thread>"
 #endif
 }
+
+#if __cplusplus >= 202302L
+static_assert(std::enable_nonlocking_formatter_optimization<std::thread::id>);
+#endif
 
 int main()
 {

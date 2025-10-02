@@ -2234,6 +2234,13 @@ namespace __format
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<typename _Rep, typename _Period>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::duration<_Rep, _Period>>
+      = enable_nonlocking_formatter_optimization<_Rep>;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::day, _CharT>
     {
@@ -2269,6 +2276,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::day> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::month, _CharT>
@@ -2308,6 +2321,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::month> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::year, _CharT>
     {
@@ -2343,6 +2362,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::year> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::weekday, _CharT>
@@ -2382,6 +2407,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::weekday> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::weekday_indexed, _CharT>
     {
@@ -2420,6 +2451,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::weekday_indexed> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::weekday_last, _CharT>
     {
@@ -2457,6 +2494,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::weekday_last> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::month_day, _CharT>
@@ -2497,6 +2540,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::month_day> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::month_day_last, _CharT>
     {
@@ -2534,6 +2583,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::month_day_last> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::month_weekday, _CharT>
@@ -2574,6 +2629,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::month_weekday> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::month_weekday_last, _CharT>
     {
@@ -2613,6 +2674,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::month_weekday_last> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::year_month, _CharT>
     {
@@ -2650,6 +2717,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::year_month> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::year_month_day, _CharT>
@@ -2692,6 +2765,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::year_month_day> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::year_month_day_last, _CharT>
@@ -2739,6 +2818,12 @@ namespace __format
 
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::year_month_day_last> = true;
+#endif
 
   template<__format::__char _CharT>
     struct formatter<chrono::year_month_weekday, _CharT>
@@ -2795,6 +2880,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::year_month_weekday> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::year_month_weekday_last, _CharT>
     {
@@ -2846,6 +2937,12 @@ namespace __format
       __format::__formatter_chrono<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::year_month_weekday_last> = true;
+#endif
+
   template<typename _Rep, typename _Period, __format::__char _CharT>
     struct formatter<chrono::hh_mm_ss<chrono::duration<_Rep, _Period>>, _CharT>
     {
@@ -2890,6 +2987,13 @@ namespace __format
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::hh_mm_ss<_Duration>>
+        = true;
+#endif
+
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
   template<__format::__char _CharT>
     struct formatter<chrono::sys_info, _CharT>
@@ -2908,6 +3012,12 @@ namespace __format
       __format::__formatter_chrono_info<_CharT> _M_f;
     };
 
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::sys_info> = true;
+#endif
+
   template<__format::__char _CharT>
     struct formatter<chrono::local_info, _CharT>
     {
@@ -2924,6 +3034,12 @@ namespace __format
     private:
       __format::__formatter_chrono_info<_CharT> _M_f;
     };
+
+#if __glibcxx_print >= 202406L
+  template<>
+    inline constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::local_info> = true;
+#endif
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -2961,6 +3077,13 @@ namespace __format
 
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::sys_time<_Duration>>
+       = true;
+#endif
 
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::utc_time<_Duration>, _CharT>
@@ -3006,6 +3129,13 @@ namespace __format
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::utc_time<_Duration>>
+       = true;
+#endif
+
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::tai_time<_Duration>, _CharT>
     {
@@ -3040,6 +3170,13 @@ namespace __format
 
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::tai_time<_Duration>>
+       = true;
+#endif
 
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::gps_time<_Duration>, _CharT>
@@ -3076,6 +3213,13 @@ namespace __format
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::gps_time<_Duration>>
+       = true;
+#endif
+
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::file_time<_Duration>, _CharT>
     {
@@ -3111,6 +3255,13 @@ namespace __format
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
      };
 
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::file_time<_Duration>>
+        = true;
+#endif
+
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::local_time<_Duration>, _CharT>
     {
@@ -3144,6 +3295,13 @@ namespace __format
 
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
+
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<chrono::local_time<_Duration>>
+        = true;
+#endif
 
   template<typename _Duration, __format::__char _CharT>
     struct formatter<chrono::__detail::__local_time_fmt<_Duration>, _CharT>
@@ -3205,6 +3363,13 @@ namespace __format
       __format::__formatter_duration<_CharT> _M_f{__defSpec};
     };
 
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<
+       chrono::__detail::__local_time_fmt<_Duration>> = true;
+#endif
+
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
   template<typename _Duration, typename _TimeZonePtr, __format::__char _CharT>
     struct formatter<chrono::zoned_time<_Duration, _TimeZonePtr>, _CharT>
@@ -3224,6 +3389,13 @@ namespace __format
 	  return _Base::format(__lf, __fc);
 	}
     };
+
+#if __glibcxx_print >= 202406L
+   template<typename _Duration>
+     constexpr bool
+     enable_nonlocking_formatter_optimization<
+        chrono::zoned_time<_Duration, const chrono::time_zone*>> = true;
+#endif
 #endif
 
 namespace chrono
