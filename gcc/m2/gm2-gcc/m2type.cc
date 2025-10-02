@@ -2213,7 +2213,7 @@ gm2_build_enumerator (location_t location, tree name, tree value)
    enumvalues, list.  It returns a copy of the value.  */
 
 tree
-m2type_BuildEnumerator (location_t location, char *name, tree value,
+m2type_BuildEnumerator (location_t location, const char *name, tree value,
                         tree *enumvalues)
 {
   tree id = get_identifier (name);

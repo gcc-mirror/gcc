@@ -490,21 +490,21 @@ PROCEDURE ShiftLeftByteBit (VAR dest: ARRAY OF BYTE; src: ARRAY OF BYTE;
                             highbit: CARDINAL;
                             byteshift, bitshift: CARDINAL) ;
 VAR
-   top, bot, mid : BYTESET ;
-   i, h, from, to: CARDINAL ;
+   top, bot, mid       : BYTESET ;
+   i, h, fromIdx, toIdx: CARDINAL ;
 BEGIN
    (* Copy the bytes into dest at the mostly correct position
       (modulo byte position).  *)
-   to := 0 ;
-   from := 0 ;
-   WHILE to < byteshift DO
-      dest[to] := BYTE (0) ;
-      INC (to)
+   toIdx := 0 ;
+   fromIdx := 0 ;
+   WHILE toIdx < byteshift DO
+      dest[toIdx] := BYTE (0) ;
+      INC (toIdx)
    END ;
-   WHILE to <= HIGH (dest) DO
-      dest[to] := src[from] ;
-      INC (to) ;
-      INC (from)
+   WHILE toIdx <= HIGH (dest) DO
+      dest[toIdx] := src[fromIdx] ;
+      INC (toIdx) ;
+      INC (fromIdx)
    END ;
    (* And adjust by bit shifting.  *)
    IF bitshift > 0
@@ -567,12 +567,12 @@ PROCEDURE ShiftRightByteBit (VAR dest: ARRAY OF BYTE; src: ARRAY OF BYTE;
                              highbit: CARDINAL;
                              byteshift, bitshift: CARDINAL) ;
 VAR
-   top, bot, mid : BYTESET ;
-   i, h, to, from: CARDINAL ;
+   top, bot, mid       : BYTESET ;
+   i, h, toIdx, fromIdx: CARDINAL ;
 BEGIN
    (* Copy the bytes.  *)
-   to := 0 ;
-   from := byteshift ;
+   toIdx := 0 ;
+   fromIdx := byteshift ;
    IF EnableDebugging
    THEN
       printf ("HIGH (dest) = %d\n", HIGH (dest))
@@ -580,15 +580,15 @@ BEGIN
    IF byteshift <= HIGH (dest)
    THEN
       h := HIGH (dest) - byteshift ;
-      WHILE to <= h DO
-         dest[to] := src[from] ;
-         INC (to) ;
-         INC (from)
+      WHILE toIdx <= h DO
+         dest[toIdx] := src[fromIdx] ;
+         INC (toIdx) ;
+         INC (fromIdx)
       END
    END ;
-   WHILE to <= HIGH (dest) DO
-      dest[to] := BYTE (0) ;
-      INC (to)
+   WHILE toIdx <= HIGH (dest) DO
+      dest[toIdx] := BYTE (0) ;
+      INC (toIdx)
    END ;
    (* And bit shift the remainder.  *)
    IF EnableDebugging
@@ -691,7 +691,7 @@ VAR
    next  : BOOLEAN ;
    mask,
    unused,
-   set   : BYTESET ;
+   setb  : BYTESET ;
 BEGIN
    IF EnableDebugging
    THEN
@@ -704,14 +704,14 @@ BEGIN
       bytes.  *)
    i := 0 ;
    WHILE i < high DO
-      set := dest[i] ;
-      next := MSB IN set ;
-      set := SHIFT (set, 1) ;  (* Shift left.  *)
+      setb := dest[i] ;
+      next := MSB IN setb ;
+      setb := SHIFT (setb, 1) ;  (* Shift left.  *)
       IF carry
       THEN
-         INCL (set, 0)   (* Set bit 0.  *)
+         INCL (setb, 0)   (* Set bit 0.  *)
       END ;
-      dest[i] := set ;
+      dest[i] := setb ;
       carry := next ;
       IF EnableDebugging
       THEN
@@ -722,27 +722,27 @@ BEGIN
    END ;
    (* Last byte special case as there may be some unused bits which must be
       preserved.  *)
-   set := dest[high] ;
+   setb := dest[high] ;
    unused := BYTESET {} ;  (* Will contain all top unused bits of dest[high].  *)
    mask := - BYTESET {} ;
    topbit := (highbit+1) MOD TBITSIZE (BYTE) ;
    WHILE topbit # 0 DO
       EXCL (mask, topbit) ;
-      IF topbit IN set
+      IF topbit IN setb
       THEN
-         EXCL (set, topbit) ;
+         EXCL (setb, topbit) ;
          INCL (unused, topbit)
       END ;
       topbit := (topbit+1) MOD TBITSIZE (BYTE)
    END ;
-   set := SHIFT (set, 1) ;  (* Left shift.  *)
+   setb := SHIFT (setb, 1) ;  (* Left shift.  *)
    IF carry
    THEN
-      INCL (set, 0)   (* Set bit 0.  *)
+      INCL (setb, 0)   (* Set bit 0.  *)
    END ;
-   set := set * mask ;  (* Remove all unused bits.  *)
-   set := set + unused ;  (* Restore original unused bits.  *)
-   dest[high] := set ;
+   setb := setb * mask ;  (* Remove all unused bits.  *)
+   setb := setb + unused ;  (* Restore original unused bits.  *)
+   dest[high] := setb ;
    IF EnableDebugging
    THEN
       printf ("ArithShiftLeft shifted byte dest[%d]\n", high);
@@ -785,32 +785,32 @@ VAR
    next  : BOOLEAN ;
    mask,
    unused,
-   set   : BYTESET ;
+   setb  : BYTESET ;
 BEGIN
    high := HIGH (dest) ;
    (* Clear any unused bits in the highest byte, but save them into unused.  *)
-   set := dest[high] ;
+   setb := dest[high] ;
    unused := BYTESET {} ;
    topbit := (highbit+1) MOD TBITSIZE (BYTE) ;
    mask := - BYTESET {} ;
    WHILE topbit # 0 DO
       EXCL (mask, topbit) ;
-      IF topbit IN set
+      IF topbit IN setb
       THEN
-         EXCL (set, topbit) ;
+         EXCL (setb, topbit) ;
          INCL (unused, topbit)
       END ;
       topbit := (topbit+1) MOD TBITSIZE (BYTE)
    END ;
    (* Start at the top and work down to byte 0.  *)
-   set := set * mask ;  (* Ignore unused bits.  *)
-   next := 0 IN set ;   (* Next carry.  *)
-   set := SHIFT (set, -1) ;   (* Shift right by 1 bit.  *)
+   setb := setb * mask ;  (* Ignore unused bits.  *)
+   next := 0 IN setb ;   (* Next carry.  *)
+   setb := SHIFT (setb, -1) ;   (* Shift right by 1 bit.  *)
    IF carry
    THEN
-      INCL (set, highbit MOD TBITSIZE (BYTE))
+      INCL (setb, highbit MOD TBITSIZE (BYTE))
    END ;
-   dest[high] := set + unused ;  (* First byte is a special case as we
+   dest[high] := setb + unused ;  (* First byte is a special case as we
                                     have to preserve the unused bits.  *)
    (* Now we ripple through the remaining bytes, propagating local
       carry between bytes.  *)
@@ -818,14 +818,14 @@ BEGIN
    WHILE i > 0 DO
       prev := next ;
       DEC (i) ;
-      set := dest[i] ;
-      next := 0 IN set ;
-      set := SHIFT (set, -1) ;
+      setb := dest[i] ;
+      next := 0 IN setb ;
+      setb := SHIFT (setb, -1) ;
       IF prev
       THEN
-         INCL (set, MSB)
+         INCL (setb, MSB)
       END ;
-      dest[i] := set
+      dest[i] := setb
    END
 END ArithShiftRightBit ;
 
@@ -914,7 +914,7 @@ VAR
    high,
    highplus1,
    highbitplus1,
-   from, to    : CARDINAL ;
+   fromIdx, toIdx: CARDINAL ;
 BEGIN
    IF EnableDebugging
    THEN
@@ -925,21 +925,21 @@ BEGIN
    (* Copy the contents rotating on byte granularity, then
       arithmetically shift the remaining number of bits.  *)
    high := HIGH (dest) ;
-   from := 0 ;
+   fromIdx := 0 ;
    highplus1 := high + 1 ;
    highbitplus1 := highbit + 1 ;
-   to := RotateCount DIV TBITSIZE (BYTE) ;  (* Byte level granularity.  *)
+   toIdx := RotateCount DIV TBITSIZE (BYTE) ;  (* Byte level granularity.  *)
    REPEAT
-      dest[to] := src[from] ;
+      dest[toIdx] := src[fromIdx] ;
       IF EnableDebugging
       THEN
          printf ("RotateLeft after partial byte movement: dest[%d] := src[%d]\n",
-                 to, from);
+                 toIdx, fromIdx);
          DumpSet (dest, highbit)
       END ;
-      from := (from + 1) MOD highplus1 ;
-      to := (to + 1) MOD highplus1 ;
-   UNTIL from = 0 ;
+      fromIdx := (fromIdx + 1) MOD highplus1 ;
+      toIdx := (toIdx + 1) MOD highplus1 ;
+   UNTIL fromIdx = 0 ;
 
    IF EnableDebugging
    THEN

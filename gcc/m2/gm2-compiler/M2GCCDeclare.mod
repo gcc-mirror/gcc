@@ -4447,19 +4447,6 @@ END PrintString ;
 
 
 (*
-   PrintKnown -
-*)
-
-PROCEDURE PrintKnown (sym: CARDINAL) ;
-BEGIN
-   IF GccKnowsAbout (sym)
-   THEN
-      printf0 ("[gcc]")
-   END
-END PrintKnown ;
-
-
-(*
    PrintVerboseFromList - prints the, i, th element in the list, l.
 *)
 

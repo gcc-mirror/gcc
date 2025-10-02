@@ -173,7 +173,7 @@ PROCEDURE BuildPointerType (totype: tree) : tree ;
                       It returns a copy of the value.  --fixme-- why do this?
 *)
 
-PROCEDURE BuildEnumerator (location: location_t; name: CharStar; value: tree;
+PROCEDURE BuildEnumerator (location: location_t; name: ConstCharStar; value: tree;
                            VAR enumvalues: tree) : tree ;
 
 
