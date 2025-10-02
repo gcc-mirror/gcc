@@ -3022,3 +3022,20 @@
 ;; Define iterators for VCMLA operations as MUL
 (define_int_iterator VCMUL_OP [UNSPEC_VCMUL
 			       UNSPEC_VCMUL_CONJ])
+
+(define_int_attr VxCIQ_carry   [(VADCIQ_U "VADCIQ_U_carry")
+				(VADCIQ_S "VADCIQ_S_carry")
+				(VSBCIQ_U "VSBCIQ_U_carry")
+				(VSBCIQ_S "VSBCIQ_S_carry")])
+(define_int_attr VxCIQ_M_carry [(VADCIQ_M_U "VADCIQ_M_U_carry")
+				(VADCIQ_M_S "VADCIQ_M_S_carry")
+				(VSBCIQ_M_U "VSBCIQ_M_U_carry")
+				(VSBCIQ_M_S "VSBCIQ_M_S_carry")])
+(define_int_attr VxCQ_carry [(VADCQ_U "VADCQ_U_carry")
+			     (VADCQ_S "VADCQ_S_carry")
+			     (VSBCQ_U "VSBCQ_U_carry")
+			     (VSBCQ_S "VSBCQ_S_carry")])
+(define_int_attr VxCQ_M_carry [(VADCQ_M_U "VADCQ_M_U_carry")
+			       (VADCQ_M_S "VADCQ_M_S_carry")
+			       (VSBCQ_M_U "VSBCQ_M_U_carry")
+			       (VSBCQ_M_S "VSBCQ_M_S_carry")])
