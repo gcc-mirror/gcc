@@ -220,6 +220,7 @@ void
 PointerVisitor::visit (AST::ErrorPropagationExpr &expr)
 {
   visit_outer_attrs (expr);
+  reseat (expr.get_propagating_expr_ptr ());
 }
 
 void

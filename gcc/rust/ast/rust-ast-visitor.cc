@@ -248,6 +248,7 @@ void
 DefaultASTVisitor::visit (AST::ErrorPropagationExpr &expr)
 {
   visit_outer_attrs (expr);
+  visit (expr.get_propagating_expr ());
 }
 
 void
