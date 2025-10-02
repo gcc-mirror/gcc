@@ -735,7 +735,8 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 
       if (TREE_CODE (t) == FUNCTION_DECL)
 	{
-	  fld_worklist_push (DECL_ARGUMENTS (t), fld);
+	  for (tree arg = DECL_ARGUMENTS (t); arg; arg = DECL_CHAIN (arg))
+	    fld_worklist_push (arg, fld);
 	  fld_worklist_push (DECL_RESULT (t), fld);
 	}
       else if (TREE_CODE (t) == FIELD_DECL)
@@ -750,9 +751,6 @@ find_decls_types_r (tree *tp, int *ws, void *data)
 	  && DECL_HAS_VALUE_EXPR_P (t))
 	fld_worklist_push (DECL_VALUE_EXPR (t), fld);
 
-      if (TREE_CODE (t) != FIELD_DECL
-	  && TREE_CODE (t) != TYPE_DECL)
-	fld_worklist_push (TREE_CHAIN (t), fld);
       *ws = 0;
     }
   else if (TYPE_P (t))

@@ -7381,6 +7381,7 @@ extern tree build_explicit_specifier		(tree, tsubst_flags_t);
 extern bool use_eh_spec_block			(tree);
 extern void do_push_parm_decls			(tree, tree, tree *);
 extern tree do_aggregate_paren_init		(tree, tree);
+extern void maybe_mark_function_versioned	(tree);
 
 /* in decl2.cc */
 extern void record_mangling			(tree, bool);
@@ -7745,7 +7746,7 @@ extern void module_add_import_initializers ();
 /* Where the namespace-scope decl was originally declared.  */
 extern void set_originating_module (tree, bool friend_p = false);
 extern tree get_originating_module_decl (tree) ATTRIBUTE_PURE;
-extern int get_originating_module (tree, bool for_mangle = false) ATTRIBUTE_PURE;
+extern int get_originating_module (tree, bool global_m1 = false) ATTRIBUTE_PURE;
 extern unsigned get_importing_module (tree, bool = false) ATTRIBUTE_PURE;
 extern void check_module_decl_linkage (tree);
 
@@ -7835,6 +7836,7 @@ extern tree make_constrained_auto		(tree, tree);
 extern tree make_constrained_decltype_auto	(tree, tree);
 extern tree make_template_placeholder		(tree);
 extern tree make_cast_auto			(void);
+extern tree make_auto_pack			(void);
 extern bool template_placeholder_p		(tree);
 extern bool ctad_template_p			(tree);
 extern bool unparenthesized_id_or_class_member_access_p (tree);

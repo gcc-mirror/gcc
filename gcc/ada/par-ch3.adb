@@ -1092,7 +1092,7 @@ package body Ch3 is
          return Error;
 
       else
-         Type_Node := P_Qualified_Simple_Name_Resync;
+         Type_Node := P_Subtype_Name_Resync;
 
          --  Check for a subtype mark attribute. The only valid possibilities
          --  are 'CLASS and 'BASE. Anything else is a definite error. We may
@@ -1704,7 +1704,7 @@ package body Ch3 is
                No_List;
                Decl_Node :=
                  New_Node (N_Exception_Renaming_Declaration, Ident_Sloc);
-               Set_Name (Decl_Node, P_Qualified_Simple_Name_Resync);
+               Set_Name (Decl_Node, P_Exception_Name);
                No_Constraint;
             else
                Decl_Node := New_Node (N_Exception_Declaration, Prev_Token_Ptr);
@@ -2054,7 +2054,7 @@ package body Ch3 is
          Set_Interface_List (Typedef_Node, New_List);
 
          loop
-            Append (P_Qualified_Simple_Name, Interface_List (Typedef_Node));
+            Append (P_Subtype_Name, Interface_List (Typedef_Node));
             exit when Token /= Tok_And;
             Scan; -- past AND
          end loop;
@@ -4177,7 +4177,7 @@ package body Ch3 is
 
          Set_Abstract_Present   (Typedef_Node);
          Set_Interface_Present  (Typedef_Node);
-         Set_Subtype_Indication (Typedef_Node, P_Qualified_Simple_Name);
+         Set_Subtype_Indication (Typedef_Node, P_Subtype_Name);
 
          Set_Record_Extension_Part (Typedef_Node,
            New_Node (N_Record_Definition, Token_Ptr));
@@ -4188,8 +4188,7 @@ package body Ch3 is
             Scan; -- past AND
 
             loop
-               Append (P_Qualified_Simple_Name,
-                       Interface_List (Typedef_Node));
+               Append (P_Subtype_Name, Interface_List (Typedef_Node));
                exit when Token /= Tok_And;
                Scan; -- past AND
             end loop;

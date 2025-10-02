@@ -37,6 +37,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/digraphs.h"
 #include "diagnostics/state-graphs.h"
 #include "diagnostics/logical-locations.h"
+#include "diagnostics/dumping.h"
 #include "diagnostics/changes.h"
 #include "libgdiagnostics.h"
 #include "libgdiagnostics-private.h"
@@ -476,6 +477,12 @@ public:
   key_from_ptr (const diagnostic_logical_location *ptr)
   {
     return key::from_ptr (ptr);
+  }
+
+  void dump (FILE *outfile, int indent) const final override
+  {
+    diagnostics::dumping::emit_heading
+      (outfile, indent, "impl_logical_location_manager");
   }
 
   const char *get_short_name (key k) const final override
@@ -2474,9 +2481,11 @@ struct spec_context : public diagnostics::output_spec::context
 {
 public:
   spec_context (const char *option_name,
+		const char *unparsed_spec,
 		diagnostic_manager &affected_mgr,
 		diagnostic_manager &control_mgr)
-  : context (option_name, affected_mgr.get_line_table ()),
+  : context (option_name, unparsed_spec, nullptr,
+	     affected_mgr.get_line_table ()),
     m_control_mgr (control_mgr)
   {}
 
@@ -2512,8 +2521,8 @@ diagnostic_manager_add_sink_from_spec (diagnostic_manager *affected_mgr,
   FAIL_IF_NULL (spec);
   FAIL_IF_NULL (control_mgr);
 
-  spec_context ctxt (option_name, *affected_mgr, *control_mgr);
-  auto inner_sink = ctxt.parse_and_make_sink (spec, affected_mgr->get_dc ());
+  spec_context ctxt (option_name, spec, *affected_mgr, *control_mgr);
+  auto inner_sink = ctxt.parse_and_make_sink (affected_mgr->get_dc ());
   if (!inner_sink)
     return -1;
   affected_mgr->get_dc ().add_sink (std::move (inner_sink));

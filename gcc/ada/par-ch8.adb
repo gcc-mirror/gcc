@@ -128,7 +128,7 @@ package body Ch8 is
 
       loop
          Use_Node := New_Node (N_Use_Package_Clause, Use_Sloc);
-         Set_Name (Use_Node, P_Qualified_Simple_Name);
+         Set_Name (Use_Node, P_Package_Name);
 
          --  Locally chain each name's use-package node
 

@@ -1,3 +1,18 @@
+2025-09-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/t-softfp: Don't use softfp_wrap for bitint functions.
+	(softfp_cflags): New parameter that is passed to the building of bitint
+	functions.
+
+2025-09-25  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/sync-libfuncs.c (atomic_store_8): Fix asm.
+
+2025-09-19  Jim Lin  <jim@andestech.com>
+
+	* config/riscv/save-restore.S: Only save/restore the registers
+	which are really used for ILP32E/LP64.
+
 2025-08-21  Dimitar Dimitrov  <dimitar@dinux.eu>
 
 	* config/pru/libgcc-eabi.ver: Add __pruabi_softmpyi and

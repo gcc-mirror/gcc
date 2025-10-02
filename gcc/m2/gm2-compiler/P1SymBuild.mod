@@ -914,7 +914,7 @@ BEGIN
          EndBuildForward.  *)
       PutDeclared (tokno, ProcSym)
    ELSE
-      MetaError1 ('expecting a procedure name and symbol {%1Ea} has been declared as a {%1d}', ProcSym) ;
+      MetaError1 ('expecting a procedure name and symbol {%1Ea} has been declared as a {%1dv}', ProcSym) ;
       PushT (ProcSym) ;
       RETURN
    END ;

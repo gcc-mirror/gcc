@@ -72,10 +72,20 @@ package System.Put_Images with Pure is
    type Byte_String is array (Positive range <>) of Byte with Alignment => 1;
    type Thin_Pointer is access all Byte with Storage_Size => 0;
    type Fat_Pointer is access all Byte_String with Storage_Size => 0;
+   type Ext_Access_Pointer is access all Byte_String with Storage_Size => 0;
+
    procedure Put_Image_Thin_Pointer (S : in out Sink'Class; X : Thin_Pointer);
+   --  Print "(access)" followed by "null", or the address of the designated
+   --  object as an unsigned hexadecimal integer.
+
    procedure Put_Image_Fat_Pointer (S : in out Sink'Class; X : Fat_Pointer);
-   --  Print "null", or the address of the designated object as an unsigned
-   --  hexadecimal integer.
+   --  Print "(access)" followed by "null", or the address of the designated
+   --  object as an unsigned hexadecimal integer.
+
+   procedure Put_Image_Extended_Access_Pointer
+     (S : in out Sink'Class; X : Ext_Access_Pointer);
+   --  Print "(extended access)" followed by "null", or the address of the
+   --  designated object as an unsigned hexadecimal integer.
 
    procedure Put_Image_Access_Subp (S : in out Sink'Class; X : Thin_Pointer);
    --  For access-to-subprogram types

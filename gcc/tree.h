@@ -5960,7 +5960,7 @@ tree_code_for_canonical_type_merging (enum tree_code code)
   return code;
 }
 
-/* Return ture if get_alias_set care about TYPE_CANONICAL of given type.
+/* Return true if get_alias_set care about TYPE_CANONICAL of given type.
    We don't define the types for pointers, arrays and vectors.  The reason is
    that pointers are handled specially: ptr_type_node accesses conflict with
    accesses to all other pointers.  This is done by alias.cc.
@@ -7101,16 +7101,24 @@ extern unsigned fndecl_dealloc_argno (tree);
    object or pointer.  Otherwise return null.  */
 extern tree get_attr_nonstring_decl (tree, tree * = NULL);
 
-extern int get_target_clone_attr_len (tree);
-
 /* Returns the version string for a decl with target_version attribute.
    Returns an invalid string_slice if no attribute is present.  */
 extern string_slice get_target_version (const tree);
 /* Returns a vector of the version strings from a target_clones attribute on
-   a decl.  Can also record the number of default versions found.  */
-extern auto_vec<string_slice> get_clone_versions (const tree, int * = NULL);
+   a decl.  Can also record the number of default versions found.
+   Use bool to control whether or not the results should
+   be filtered with TARGET_CHECK_TARGET_CLONE_VERSION.  */
+extern auto_vec<string_slice> get_clone_versions
+  (const tree,int * = NULL, bool = true);
 /* Returns a vector of the version strings from a target_clones attribute
-   directly.  */
-extern auto_vec<string_slice> get_clone_attr_versions (const tree, int *);
+   directly.  Additionally takes a bool to control whether or not the results
+   should be filtered with TARGET_CHECK_TARGET_CLONE_VERSION.  */
+extern auto_vec<string_slice> get_clone_attr_versions
+  (const tree, int *, bool = true);
+
+/* Checks if two decls define any overlapping versions.  */
+extern bool disjoint_version_decls (tree, tree);
+/* Checks if two overlapping decls are not mergeable.  */
+extern bool diagnose_versioned_decls (tree, tree);
 
 #endif  /* GCC_TREE_H  */

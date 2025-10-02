@@ -3064,7 +3064,7 @@ can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   if (riscv_v_ext_vls_mode_p (vector_mode)
-      && multiple_p (TARGET_MIN_VLEN * TARGET_MAX_LMUL,
+      && multiple_p ((TARGET_MIN_VLEN * TARGET_MAX_LMUL) / BITS_PER_UNIT,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
   return false;
@@ -3353,7 +3353,7 @@ expand_vec_perm (rtx target, rtx op0, rtx op1, rtx sel)
   emit_vlmax_masked_gather_mu_insn (tmp_target, op1, tmp, mask);
 
   if (overlap)
-    emit_move_insn (tmp_target, target);
+    emit_move_insn (target, tmp_target);
 }
 
 /* Implement TARGET_VECTORIZE_VEC_PERM_CONST for RVV.  */
@@ -3742,8 +3742,8 @@ shuffle_compress_patterns (struct expand_vec_perm_d *d)
   return true;
 }
 
-/* Recognize patterns like [4 5 6 7 12 13 14 15] where either the lower
-   or the higher parts of both vectors are combined into one.  */
+/* Recognize patterns like [4 5 6 7 12 13 14 15] where a consecutive part of a
+   vector is combined into another.  */
 
 static bool
 shuffle_slide_patterns (struct expand_vec_perm_d *d)
@@ -3755,6 +3755,7 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
     return false;
 
   int vlen = vec_len.to_constant ();
+  int len = 0;
   if (vlen < 4)
     return false;
 
@@ -3763,8 +3764,7 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
 
   /* For a slideup OP0 can stay, for a slidedown OP1 can.
      The former requires that the first element of the permutation
-     is the first element of OP0, the latter that the last permutation
-     element is the last element of OP1.  */
+     is the first element of OP0.  */
   bool slideup = false;
   bool slidedown = false;
 
@@ -3776,13 +3776,10 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
   if (known_eq (d->perm[vlen - 1], 2 * vlen - 1))
     slidedown = true;
 
-  if (slideup && slidedown)
-    return false;
-
   if (!slideup && !slidedown)
     return false;
 
-  /* Check for a monotonic sequence with one pivot.  */
+  /* Check for a monotonic sequence with one or two pivots.  */
   int pivot = -1;
   for (int i = 0; i < vlen; i++)
     {
@@ -3790,21 +3787,37 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
 	pivot = i;
       if (i > 0 && i != pivot
 	  && maybe_ne (d->perm[i], d->perm[i - 1] + 1))
-	return false;
+	{
+	  if (pivot == -1 || len != 0)
+	    return false;
+	  /* A second pivot would indicate the vector length.  */
+	  len = i;
+	}
     }
 
   if (pivot == -1)
     return false;
+
+  /* In case we have both the permutation starting at OP0's first element and
+     ending at OP1's last element we may have a slidedown from the
+     beginning.  */
+  if (slideup && slidedown)
+    {
+      /* The first pivot must be OP1's element in the PIVOT position.  */
+      if (maybe_ne (d->perm[pivot], vlen + pivot))
+	return false;
+
+      slideup = false;
+    }
 
   /* For a slideup OP1's part (to be slid up) must be a low part,
      i.e. starting with its first element.  */
   if (slideup && maybe_ne (d->perm[pivot], vlen))
       return false;
 
-  /* For a slidedown OP0's part (to be slid down) must be a high part,
-     i.e. ending with its last element.  */
-  if (slidedown && maybe_ne (d->perm[pivot - 1], vlen - 1))
-    return false;
+  /* The second pivot in a slideup must be following OP0's position.  */
+  if (slideup && len && maybe_ne (d->perm[len], len))
+      return false;
 
   /* Success!  */
   if (d->testing_p)
@@ -3813,22 +3826,23 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
   /* PIVOT is the start of the lower/higher part of OP1 or OP2.
      For a slideup it indicates how many elements of OP1 to
      skip/slide over.  For a slidedown it indicates how long
-     OP1's high part is, while VLEN - PIVOT is the amount to slide.  */
-  int slide_cnt = slideup ? pivot : vlen - pivot;
+     OP1's high part is, while the first element is the amount to slide.  */
   insn_code icode;
+  int slide_cnt = slideup ? pivot : d->perm[0].to_constant();
   if (slideup)
     {
-      /* No need for a vector length because we slide up until the
-	 end of OP1 anyway.  */
       rtx ops[] = {d->target, d->op0, d->op1, gen_int_mode (slide_cnt, Pmode)};
       icode = code_for_pred_slide (UNSPEC_VSLIDEUP, vmode);
-      emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
+      /* If we didn't set a vector length we slide up until the end of OP1.  */
+      if (len)
+	emit_nonvlmax_insn (icode, BINARY_OP_TUMA, ops,
+			    gen_int_mode (len, Pmode));
+      else
+	emit_vlmax_insn (icode, SLIDEUP_OP_MERGE, ops);
     }
   else
     {
-      /* Here we need a length because we slide to the beginning of OP1
-	 leaving the remaining elements undisturbed.  */
-      int len = pivot;
+      len = pivot;
       rtx ops[] = {d->target, d->op1, d->op0,
 		   gen_int_mode (slide_cnt, Pmode)};
       icode = code_for_pred_slide (UNSPEC_VSLIDEDOWN, vmode);

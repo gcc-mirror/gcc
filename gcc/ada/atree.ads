@@ -651,6 +651,20 @@ package Atree is
    --  similarly for the other two cases. This can return something other
    --  than N only if N is an Entity.
 
+   function Node_To_Fetch_From_If_Set
+     (N : Node_Or_Entity_Id; Field : Node_Or_Entity_Field)
+     return Node_Or_Entity_Id is
+      (case Field_Descriptors (Field).Type_Only is
+         when No_Type_Only => N,
+         when Base_Type_Only => Base_Type_If_Set (N),
+         when Impl_Base_Type_Only => Implementation_Base_Type_If_Set (N),
+         when Root_Type_Only => Root_Type_If_Set (N));
+   --  This is a more permissive version of Node_To_Fetch_From, which
+   --  returns the same value, except it returns Empty in cases where
+   --  Node_To_Fetch_From would crash because relevant fields are not yet
+   --  set. This is used in Treepr, to allow it to print half-baked nodes
+   --  without crashing.
+
    -----------------------------
    -- Private Part Subpackage --
    -----------------------------

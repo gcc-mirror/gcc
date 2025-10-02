@@ -128,6 +128,20 @@ is
       Raise_Error;
    end Add_With_Ovflo_Check;
 
+   --------------------------
+   -- Add_With_Ovflo_Check --
+   --------------------------
+
+   function Add_With_Ovflo_Check (X, Y : Double_Uns) return Double_Uns is
+      R : constant Double_Uns := X + Y;
+   begin
+      if R < X then
+         Raise_Error;
+      end if;
+
+      return R;
+   end Add_With_Ovflo_Check;
+
    -------------------
    -- Double_Divide --
    -------------------
@@ -334,6 +348,49 @@ is
             return To_Neg_Int (T2);
          end if;
       end if;
+   end Multiply_With_Ovflo_Check;
+
+   -------------------------------
+   -- Multiply_With_Ovflo_Check --
+   -------------------------------
+
+   function Multiply_With_Ovflo_Check (X, Y : Double_Uns) return Double_Uns is
+      Xhi : constant Single_Uns := Hi (X);
+      Xlo : constant Single_Uns := Lo (X);
+
+      Yhi : constant Single_Uns := Hi (Y);
+      Ylo : constant Single_Uns := Lo (Y);
+
+      T1, T2 : Double_Uns;
+
+   begin
+      if Xhi /= 0 then
+         if Yhi /= 0 then
+            Raise_Error;
+         else
+            T2 := Xhi * Ylo;
+         end if;
+
+      elsif Yhi /= 0 then
+         T2 := Xlo * Yhi;
+
+      else -- Yhi = Xhi = 0
+         T2 := 0;
+      end if;
+
+      --  Here we have T2 set to the contribution to the upper half of the
+      --  result from the upper halves of the input values.
+
+      T1 := Xlo * Ylo;
+      T2 := T2 + Hi (T1);
+
+      if Hi (T2) /= 0 then
+         Raise_Error;
+      end if;
+
+      T2 := Lo (T2) & Lo (T1);
+
+      return T2;
    end Multiply_With_Ovflo_Check;
 
    -----------------
@@ -653,6 +710,20 @@ is
       end if;
 
       Raise_Error;
+   end Subtract_With_Ovflo_Check;
+
+   -------------------------------
+   -- Subtract_With_Ovflo_Check --
+   -------------------------------
+
+   function Subtract_With_Ovflo_Check (X, Y : Double_Uns) return Double_Uns is
+      R : constant Double_Uns := X - Y;
+   begin
+      if R > X then
+         Raise_Error;
+      end if;
+
+      return R;
    end Subtract_With_Ovflo_Check;
 
    ----------------

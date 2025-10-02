@@ -1086,6 +1086,10 @@ Wmultiple-inheritance
 C++ ObjC++ Var(warn_multiple_inheritance) Warning
 Warn on direct multiple inheritance.
 
+Wmultiple-parameter-fwd-decl-lists
+C ObjC Var(warn_multiple_parameter_fwd_decl_lists) Warning EnabledBy(Wextra)
+Warn for multiple lists of forward declarations of function parameters.
+
 Wmultistatement-macros
 C ObjC C++ ObjC++ Var(warn_multistatement_macros) Warning LangEnabledBy(C ObjC C++ ObjC++,Wall)
 Warn about unsafe macros expanding to multiple statements used as a body of a clause such as if, else, while, switch, or for.

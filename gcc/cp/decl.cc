@@ -1212,7 +1212,7 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
       if (types_match
 	  && !DECL_EXTERN_C_P (newdecl)
 	  && !DECL_EXTERN_C_P (olddecl)
-	  && targetm.target_option.function_versions (newdecl, olddecl))
+	  && disjoint_version_decls (newdecl, olddecl))
 	{
 	  if (record_versions)
 	    maybe_version_functions (newdecl, olddecl);
@@ -1268,11 +1268,18 @@ decls_match (tree newdecl, tree olddecl, bool record_versions /* = true */)
 
 /* Mark DECL as versioned if it isn't already.  */
 
-static void
+void
 maybe_mark_function_versioned (tree decl)
 {
   if (!DECL_FUNCTION_VERSIONED (decl))
     {
+      /* We need to insert function version now to make sure the correct
+	 pre-mangled assembler name is recorded.  */
+      cgraph_node *node = cgraph_node::get_create (decl);
+
+      if (!node->function_version ())
+	node->insert_new_function_version ();
+
       DECL_FUNCTION_VERSIONED (decl) = 1;
       /* If DECL_ASSEMBLER_NAME has already been set, re-mangle
 	 to include the version marker.  */
@@ -1288,7 +1295,7 @@ maybe_mark_function_versioned (tree decl)
 bool
 maybe_version_functions (tree newdecl, tree olddecl)
 {
-  if (!targetm.target_option.function_versions (newdecl, olddecl))
+  if (!disjoint_version_decls (newdecl, olddecl))
     return false;
 
   maybe_mark_function_versioned (olddecl);
@@ -2100,6 +2107,10 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
       /* Leave it to update_binding to merge or report error.  */
       return NULL_TREE;
     }
+  /* Check if the two decls are non-mergeable versioned decls.  */
+  else if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	   && diagnose_versioned_decls (olddecl, newdecl))
+    return error_mark_node;
   else
     {
       const char *errmsg = redeclaration_error_message (newdecl, olddecl);
@@ -12183,8 +12194,11 @@ grokvardecl (tree type,
       if (DECL_EXTERNAL (decl) || TREE_STATIC (decl))
 	{
 	  CP_DECL_THREAD_LOCAL_P (decl) = true;
+	  // NB: Set a tentative TLS model to avoid tls_model attribute
+	  // warnings due to lack of thread storage duration.  It will
+	  // be updated by cplus_decl_attributes later.
 	  if (!processing_template_decl)
-	    set_decl_tls_model (decl, decl_default_tls_model (decl));
+	    set_decl_tls_model (decl, TLS_MODEL_REAL);
 	}
       if (declspecs->gnu_thread_keyword_p)
 	SET_DECL_GNU_TLS_P (decl);

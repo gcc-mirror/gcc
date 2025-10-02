@@ -203,8 +203,8 @@ trace1_init()
   if( first_time )
     {
     first_time = false;
-    trace_handle = gg_define_variable(INT, "trace_handle", vs_static);
-    trace_indent = gg_define_variable(INT, "trace_indent", vs_static);
+    trace_handle = gg_define_variable(INT, "_trace_handle", vs_static);
+    trace_indent = gg_define_variable(INT, "_trace_indent", vs_static);
 
     bTRACE1 = getenv("GCOBOL_TRACE") ? getenv("GCOBOL_TRACE") :gv_trace_switch;
 
@@ -1227,7 +1227,7 @@ initialize_variable_internal( cbl_refer_t refer,
     return;
     }
 
-  if( is_register_field( parsed_var) )
+  if( parsed_var->attr & register_e )
     {
     return;
     }
@@ -16374,10 +16374,6 @@ actually_create_the_static_field( cbl_field_t *new_var,
 static void
 psa_global(cbl_field_t *new_var)
   {
-  char *mname = cobol_name_mangler(new_var->name);
-  char ach[2*sizeof(cbl_name_t)];
-  sprintf(ach, "__gg__%s", mname);
-  free(mname);
 
   if( strcmp(new_var->name, "_VERY_TRUE") == 0 )
     {
@@ -16390,10 +16386,20 @@ psa_global(cbl_field_t *new_var)
     return;
     }
 
-  // global variables already have a cblc_field_t defined in constants.cc
+  // global variables already have a cblc_field_t defined in constants.cc.
 
-  strcpy(ach, "__gg__");
-  strcat(ach, new_var->name);
+  // Finding their name is done by converting to lowercase, dashes become
+  // underscores, and "__ggsr__" is prepended.  "filler" gets ignored.
+
+  // To feed GDB-COBOL's requirements, we tack on this variable's index and
+  // this program's index number:
+
+  char ach[2*sizeof(cbl_name_t)];
+
+  snprintf( ach,
+            sizeof(ach),
+            "__ggsr__%s",
+            new_var->name);
   for(size_t i=0; i<strlen(ach); i++)
     {
     ach[i] = _tolower(ach[i]);
@@ -16401,16 +16407,6 @@ psa_global(cbl_field_t *new_var)
       {
       ach[i] = '_';
       }
-    }
-
-  if( strcmp(new_var->name, "RETURN-CODE") == 0 )
-    {
-    strcpy(ach, "__gg__return_code");
-    }
-
-  if( strcmp(new_var->name, "UPSI-0") == 0 )
-    {
-    strcpy(ach, "__gg__upsi");
     }
 
   new_var->var_decl_node = gg_declare_variable(cblc_field_type_node, ach, NULL, vs_external_reference);
@@ -16857,7 +16853,7 @@ parser_symbol_add(struct cbl_field_t *new_var )
     {
     cbl_field_type_t incoming_type = new_var->type;
 
-    if( is_register_field(new_var) )
+    if( new_var->attr & register_e )
       {
       psa_global(new_var);
       goto done;

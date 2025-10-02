@@ -250,6 +250,7 @@ package body Impunit is
     ("g-busorg", F),  -- GNAT.Bubble_Sort_G
     ("g-byorma", F),  -- GNAT.Byte_Order_Mark
     ("g-bytswa", F),  -- GNAT.Byte_Swapping
+    ("g-c_time", F),  -- GNAT.C_Time
     ("g-calend", F),  -- GNAT.Calendar
     ("g-catiio", F),  -- GNAT.Calendar.Time_IO
     ("g-casuti", F),  -- GNAT.Case_Util

@@ -636,6 +636,46 @@ package body Switch.C is
                      Generate_Processed_File := True;
                      Ptr := Ptr + 1;
 
+                     if Ptr <= Max
+                       and then Switch_Chars (Ptr) in 'b' | 'c' | 'e'
+                     then
+                        case Switch_Chars (Ptr) is
+                           when 'b' =>
+                              Opt.Blank_Deleted_Lines         := True;
+                              Opt.Comment_Deleted_Lines       := False;
+                              Opt.Empty_Comment_Deleted_Lines := False;
+
+                           when 'c' =>
+                              Opt.Blank_Deleted_Lines         := False;
+                              Opt.Comment_Deleted_Lines       := True;
+                              Opt.Empty_Comment_Deleted_Lines := False;
+
+                           when 'e' =>
+                              Opt.Blank_Deleted_Lines         := False;
+                              Opt.Comment_Deleted_Lines       := False;
+                              Opt.Empty_Comment_Deleted_Lines := True;
+
+                           when others =>
+                              raise Program_Error;
+                        end case;
+
+                        Ptr := Ptr + 1;
+
+                     --  Default to emitting blank lines for deleted lines
+                     --  when generating a preprocessor output file. This is
+                     --  despite the fact that when the file isn't being
+                     --  generated, we emit empty comment lines for the
+                     --  internally generated output (to avoid conflicts
+                     --  with style switches -gnatyu and -gnatyM), but is
+                     --  done for compatibility with the behavior of -gnateG
+                     --  prior to adding support for empty comment lines.
+
+                     else
+                        Opt.Blank_Deleted_Lines         := True;
+                        Opt.Comment_Deleted_Lines       := False;
+                        Opt.Empty_Comment_Deleted_Lines := False;
+                     end if;
+
                   --  -gnateH (set reverse Bit_Order threshold to 64)
 
                   when 'H' =>

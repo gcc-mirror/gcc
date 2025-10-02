@@ -137,4 +137,8 @@ extern const char *hook_constcharptr_int_const_tree_const_tree_null (int, const_
 
 extern opt_machine_mode hook_optmode_mode_uhwi_none (machine_mode,
 						     unsigned HOST_WIDE_INT);
+
+extern bool hook_stringslice_locationtptr_true (string_slice, location_t *);
+extern bool hook_stringslice_stringslice_unreachable (string_slice, string_slice);
+
 #endif

@@ -607,6 +607,16 @@ namespace __gnu_test
     T& operator[](std::ptrdiff_t n) const
     { return *(*this + n); }
 
+#if __cplusplus >= 201103L
+    // Ensure that the iterator's difference_type is always used.
+    template<typename D> void operator+=(D) = delete;
+    template<typename D> void operator-=(D) = delete;
+    template<typename D> void operator[](D) const = delete;
+    template<typename D>
+      typename std::enable_if<std::is_integral<D>::value>::type
+      operator-(D) const = delete;
+#endif
+
     _GLIBCXX14_CONSTEXPR
     bool operator<(const random_access_iterator_wrapper<T>& in) const
     {
@@ -644,6 +654,14 @@ namespace __gnu_test
     random_access_iterator_wrapper<T>
     operator+(std::ptrdiff_t n, random_access_iterator_wrapper<T> it)
     { return it += n; }
+
+#if __cplusplus >= 201103L
+    // Ensure that the iterator's difference_type is always used.
+    template<typename T, typename D>
+      void operator+(random_access_iterator_wrapper<T>, D) = delete;
+    template<typename T, typename D>
+      void operator+(D, random_access_iterator_wrapper<T>) = delete;
+#endif
 
 
   /**

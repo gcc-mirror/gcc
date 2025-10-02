@@ -479,9 +479,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // deduction guides
   namespace __detail
   {
+    // _GLIBCXX_RESOLVE_LIB_DEFECTS
+    // 4351. integral-constant-like needs more remove_cvref_t
     template<typename _Tp>
-      concept __integral_constant_like = is_integral_v<decltype(_Tp::value)>
-	&& !is_same_v<bool, remove_const_t<decltype(_Tp::value)>>
+      concept __integral_constant_like =
+	is_integral_v<remove_cvref_t<decltype(_Tp::value)>>
+	&& !is_same_v<bool, remove_cvref_t<decltype(_Tp::value)>>
 	&& convertible_to<_Tp, decltype(_Tp::value)>
 	&& equality_comparable_with<_Tp, decltype(_Tp::value)>
 	&& bool_constant<_Tp() == _Tp::value>::value

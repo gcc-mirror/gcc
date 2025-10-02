@@ -908,7 +908,8 @@ sorted_array_from_bitmap_set (bitmap_set_t set)
 /* Subtract all expressions contained in ORIG from DEST.  */
 
 static bitmap_set_t
-bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig)
+bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig,
+				 bool copy_values = false)
 {
   bitmap_set_t result = bitmap_set_new ();
   bitmap_iterator bi;
@@ -917,12 +918,15 @@ bitmap_set_subtract_expressions (bitmap_set_t dest, bitmap_set_t orig)
   bitmap_and_compl (&result->expressions, &dest->expressions,
 		    &orig->expressions);
 
-  FOR_EACH_EXPR_ID_IN_SET (result, i, bi)
-    {
-      pre_expr expr = expression_for_id (i);
-      unsigned int value_id = get_expr_value_id (expr);
-      bitmap_set_bit (&result->values, value_id);
-    }
+  if (copy_values)
+    bitmap_copy (&result->values, &dest->values);
+  else
+    FOR_EACH_EXPR_ID_IN_SET (result, i, bi)
+      {
+	pre_expr expr = expression_for_id (i);
+	unsigned int value_id = get_expr_value_id (expr);
+	bitmap_set_bit (&result->values, value_id);
+      }
 
   return result;
 }
@@ -2045,8 +2049,12 @@ prune_clobbered_mems (bitmap_set_t set, basic_block block, bool clean_traps)
      the bitmap_find_leader way to see if there's still an expression
      for it.  For some ratio of to be removed values and number of
      values/expressions in the set this might be faster than rebuilding
-     the value-set.  */
-  if (any_removed)
+     the value-set.
+     Note when there's a MAX solution on one edge (clean_traps) do not
+     prune values as we need to consider the resulting expression set MAX
+     as well.  This avoids a later growing ANTIC_IN value-set during
+     iteration, when the explicitly represented expression set grows. */
+  if (any_removed && !clean_traps)
     {
       bitmap_clear (&set->values);
       FOR_EACH_EXPR_ID_IN_SET (set, i, bi)
@@ -2192,8 +2200,13 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
      invalid if translated from ANTIC_OUT to ANTIC_IN.  */
   prune_clobbered_mems (ANTIC_OUT, block, any_max_on_edge);
 
-  /* Generate ANTIC_OUT - TMP_GEN.  */
-  S = bitmap_set_subtract_expressions (ANTIC_OUT, TMP_GEN (block));
+  /* Generate ANTIC_OUT - TMP_GEN.  Note when there's a MAX solution
+     on one edge do not prune values as we need to consider the resulting
+     expression set MAX as well.  This avoids a later growing ANTIC_IN
+     value-set during iteration, when the explicitly represented
+     expression set grows.  */
+  S = bitmap_set_subtract_expressions (ANTIC_OUT, TMP_GEN (block),
+				       any_max_on_edge);
 
   /* Start ANTIC_IN with EXP_GEN - TMP_GEN.  */
   ANTIC_IN (block) = bitmap_set_subtract_expressions (EXP_GEN (block),
@@ -2207,9 +2220,6 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
   /* clean (ANTIC_IN (block)) is defered to after the iteration converged
      because it can cause non-convergence, see for example PR81181.  */
 
-  /* Intersect ANTIC_IN with the old ANTIC_IN.  This is required until
-     we properly represent the maximum expression set, thus not prune
-     values without expressions during the iteration.  */
   if (was_visited
       && bitmap_and_into (&ANTIC_IN (block)->values, &old->values))
     {

@@ -41,6 +41,8 @@ tmp1=$TMPDIR/$tool-testing.$$a
 tmp2=$TMPDIR/$tool-testing.$$b
 now_s=$TMPDIR/$tool-testing.$$d
 before_s=$TMPDIR/$tool-testing.$$e
+now_u=$TMPDIR/$tool-uniq.$$d
+before_u=$TMPDIR/$tool-uniq.$$e
 lst1=$TMPDIR/$tool-lst1.$$
 lst2=$TMPDIR/$tool-lst2.$$
 lst3=$TMPDIR/$tool-lst3.$$
@@ -48,7 +50,7 @@ lst4=$TMPDIR/$tool-lst4.$$
 lst5=$TMPDIR/$tool-lst5.$$
 sum1=$TMPDIR/$tool-sum1.$$
 sum2=$TMPDIR/$tool-sum2.$$
-tmps="$tmp1 $tmp2 $now_s $before_s $lst1 $lst2 $lst3 $lst4 $lst5 $sum1 $sum2"
+tmps="$tmp1 $tmp2 $now_s $before_s $now_u $before_u $lst1 $lst2 $lst3 $lst4 $lst5 $sum1 $sum2"
 
 [ "$1" = "-strict" ] && strict=$1 && shift
 [ "$1" = "-?" ] && usage
@@ -123,6 +125,36 @@ fi
 
 sort -t ':' $skip1 "$now" > "$now_s"
 sort -t ':' $skip1 "$before" > "$before_s"
+
+# Report non-unique test names and print the diff between the two
+# lists if they are different.
+#
+# If the results include several configurations (schedule of
+# variations), we report duplicates several times with different
+# target/tool prefixes because at this stage we do not know if the
+# target and/or tool prefix was inserted.
+# If we used the input files (so generally several times the same
+# results in one section per target), we would incorreclty detect
+# duplicates (as many as targets)
+grep -E '^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|UNSUPPORTED|UNTESTED|ERROR):' "$now_s"    | uniq -cd > "$now_u"
+grep -E '^(PASS|XPASS|FAIL|XFAIL|UNRESOLVED|UNSUPPORTED|UNTESTED|ERROR):' "$before_s" | uniq -cd > "$before_u"
+
+same_uniq=" now"
+cmp -s "$before_u" "$now_u" && same_uniq=""
+
+if [ -s "$now_u" ]; then
+    echo "Non-unique test names$same_uniq: (Eeek!)"
+    cat "$now_u"
+    echo
+    exit_status=1
+fi
+
+if [ -s "$before_u" -a "x$same_uniq" != "x" ]; then
+    echo "Changes to non-unique test names:"
+    diff -u "$before_u" "$now_u" | grep -E '^[-\\+] '
+    echo
+    exit_status=1
+fi
 
 grep '^FAIL:' "$now_s" | sed 's/^[^:]*:[ 	]//' >$tmp1
 grep '^PASS' "$before_s" | sed 's/^[^:]*:[ 	]//' | comm -12 $tmp1 - >$tmp2

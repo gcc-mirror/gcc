@@ -42,7 +42,6 @@
 #include <bits/ranges_base.h> // borrowed_iterator_t, __detail::__container_compatible_range
 #include <bits/ranges_util.h> // subrange
 #include <bits/ranges_uninitialized.h>
-#include <bits/refwrap.h>
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_algo.h> // rotate
@@ -824,6 +823,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 						      __detail::__synth3way);
       }
 
+      // [inplace.vector.special], specialized algorithms
       constexpr friend void
       swap(inplace_vector& __x, inplace_vector& __y)
       noexcept(is_nothrow_swappable_v<_Tp> && is_nothrow_move_constructible_v<_Tp>)
@@ -908,13 +908,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
     };
 
-  // [inplace.vector.special], specialized algorithms
-  template<typename _Tp, size_t _Nm>
-    constexpr void
-    swap(inplace_vector<_Tp, _Nm>& __x, inplace_vector<_Tp, _Nm>& __y)
-    noexcept(noexcept(__x.swap(__y)))
-    { __x.swap(__y); }
-
   // specialization for zero capacity, that is required to be trivally copyable
   // and empty regardless of _Tp.
   template<typename _Tp>
@@ -993,6 +986,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__il.size() != 0)
 	  __throw_bad_alloc();
+	return *this;
       }
 
       template<__any_input_iterator _InputIterator>
@@ -1343,7 +1337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __osz = __cont.size();
       const auto __end = __cont.end();
       auto __removed = std::__remove_if(__cont.begin(), __end,
-					__ops::__pred_iter(std::ref(__pred)));
+					std::move(__pred));
       if (__removed != __end)
 	{
 	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
@@ -1357,20 +1351,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, size_t _Nm, typename _Up = _Tp>
     constexpr  size_t
     erase(inplace_vector<_Tp, _Nm>& __cont, const _Up& __value)
-    {
-      using namespace __gnu_cxx;
-      const auto __osz = __cont.size();
-      const auto __end = __cont.end();
-      auto __removed = std::__remove_if(__cont.begin(), __end,
-					__ops::__iter_equals_val(__value));
-      if (__removed != __end)
-	{
-	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
-		       __cont.end());
-	  return __osz - __cont.size();
-	}
-      return 0;
-    }
+    { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace

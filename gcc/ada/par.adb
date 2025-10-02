@@ -829,8 +829,15 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
       function P_Expression                           return Node_Id;
       function P_Expression_Or_Range_Attribute        return Node_Id;
       function P_Name                                 return Node_Id;
-      function P_Qualified_Simple_Name                return Node_Id;
-      function P_Qualified_Simple_Name_Resync         return Node_Id;
+      function P_Exception_Name                       return Node_Id;
+      function P_Label_Name                           return Node_Id;
+      function P_Loop_Name                            return Node_Id;
+      function P_Generic_Unit_Name                    return Node_Id;
+      function P_Library_Unit_Name                    return Node_Id;
+      function P_Package_Name                         return Node_Id;
+      function P_Parent_Unit_Name                     return Node_Id;
+      function P_Subtype_Name                         return Node_Id;
+      function P_Subtype_Name_Resync                  return Node_Id;
       function P_Simple_Expression                    return Node_Id;
       function P_Simple_Expression_Or_Range_Attribute return Node_Id;
 

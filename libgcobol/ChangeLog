@@ -1,3 +1,9 @@
+2025-09-05  Robert Dubner  <rdubner@symas.com>
+
+	* common-defs.h (enum cbl_field_attr_t): Define register_e.
+	* constants.cc (struct cblc_field_t): Define special registers with
+	"__ggsr__" prefix.
+
 2025-08-20  Robert Dubner  <rdubner@symas.com>
 
 	* libgcobol.cc (format_for_display_internal): Handle NumericDisplay

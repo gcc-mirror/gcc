@@ -4104,15 +4104,18 @@ print_z_candidate (location_t loc, const char *msgstr,
     inform (cloc, "%s%#qD (rewritten)", msg, fn);
   else
     inform (cloc, "%s%#qD", msg, fn);
+
+  auto_diagnostic_nesting_level sentinel;
+
   if (fn != candidate->fn)
     {
       cloc = location_of (candidate->fn);
       inform (cloc, "inherited here");
     }
+
   /* Give the user some information about why this candidate failed.  */
   if (candidate->reason != NULL)
     {
-      auto_diagnostic_nesting_level sentinel;
       struct rejection_reason *r = candidate->reason;
 
       switch (r->code)
@@ -4172,10 +4175,7 @@ print_z_candidate (location_t loc, const char *msgstr,
 		  "class type is invalid");
 	  break;
 	case rr_constraint_failure:
-	  {
-	    auto_diagnostic_nesting_level sentinel;
-	    diagnose_constraints (cloc, fn, NULL_TREE);
-	  }
+	  diagnose_constraints (cloc, fn, NULL_TREE);
 	  break;
 	case rr_inherited_ctor:
 	  inform (cloc, "an inherited constructor is not a candidate for "
@@ -4255,7 +4255,11 @@ print_z_candidates (location_t loc, struct z_candidate *candidates,
 
   int num_candidates = 0;
   for (auto iter = candidates; iter; iter = iter->next)
-    ++num_candidates;
+    {
+      if (only_viable_p.is_true () && iter->viable != 1)
+	break;
+      ++num_candidates;
+    }
 
   inform_n (loc,
 	    num_candidates, "there is %i candidate", "there are %i candidates",
@@ -6925,6 +6929,16 @@ add_candidates (tree fns, tree first_arg, const vec<tree, va_gc> *args,
 	      }
 	  if (found)
 	    continue;
+	}
+
+      /* Do not resolve any non-default function.  Only the default version
+	 is resolvable (for the target_version attribute semantics.)  */
+      if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	  && TREE_CODE (fn) == FUNCTION_DECL
+	  && !is_function_default_version (fn))
+	{
+	  add_ignored_candidate (candidates, fn);
+	  continue;
 	}
 
       if (TREE_CODE (fn) == TEMPLATE_DECL)

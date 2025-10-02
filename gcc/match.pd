@@ -2045,6 +2045,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (abs (negate @0))
  (abs @0))
 
+/* fabs(x + 0.0) -> fabs(x), safe even with signed zeros when -fno-trapping-math.
+   With non-default exception handling denormal + 0.0 might trap.
+   Otherwise !HONOR_SNANS would be sufficient here.  */
+(for op (plus minus)
+ (simplify
+  (abs (op @0 real_zerop@1))
+  (if (!flag_trapping_math)
+   (abs @0))))
+
 (simplify
  (absu (negate @0))
  (absu @0))
@@ -3360,6 +3369,32 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     }
     (if (wi::eq_p (sum, wi::uhwi (0, precision))))))))
 
+(if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
+ (match (unsigned_integer_narrow_clip @0)
+  /* SAT_U_TRUNC<NT>(MAX (0, X)) =
+	     (UT)X & ~(NT)(-1) ? (-X) >> TYPE_PRECISION(X) - 1 : X
+
+     The gimple representation uses X > ~(NT)(-1) instead of
+     using & so match on gt instead of bit_and.  */
+  (convert (cond^ (gt (nop_convert? @0) INTEGER_CST@1)
+	 (rshift:s (nop_convert? (negate (nop_convert? @0))) INTEGER_CST@2)
+	 @0))
+  (if (! TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (with
+    {
+     unsigned itype_precision = TYPE_PRECISION (TREE_TYPE (@0));
+     unsigned otype_precision = TYPE_PRECISION (type);
+     wide_int trunc_max = wi::mask (otype_precision, false, itype_precision);
+     wide_int int_cst_1 = wi::to_wide (@1, itype_precision);
+     wide_int int_cst_2 = wi::to_wide (@2, itype_precision);
+     wide_int shift_amount = wi::uhwi (itype_precision - 1,
+				  itype_precision); // AKA itype_bits - 1
+     int cmp = 0;
+     cmp = wi::cmp (int_cst_2, shift_amount, TYPE_SIGN (TREE_TYPE (@0)));
+    }
+    (if (otype_precision < itype_precision && wi::eq_p (trunc_max,
+    int_cst_1) && (cmp >= 0)))))))
+
 /* Saturation truncate for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (match (unsigned_integer_sat_trunc @0)
@@ -3595,8 +3630,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  return (T)x;
       }
       while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
-   (convert (min (widen_mult:c@3 (convert@4 (convert @0))
-				 (convert@5 (convert @1)))
+   (convert (min (widen_mult:c@3 (convert@4 @0)
+				 (convert@5 @1))
 		   INTEGER_CST@2))
    (if (types_match (type, @0, @1))
     (with
@@ -3660,6 +3695,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       bool c2_is_type_precision_p = c2 == prec;
      }
      (if (widen_prec > prec && c2_is_type_precision_p && c4_is_max_p)))))
+  (for mult_op (mult widen_mult)
+   (match (unsigned_integer_sat_mul @0 @1)
+    /* SAT_U_MUL (X, Y) = {
+	 WT x = (WT)a * (WT)b;
+	 NT hi = x >> (sizeof(NT) * 8);
+         NT lo = (NT)x;
+         return lo | -!!hi;
+       } while WT is uint128_t, uint64_t, uint32_t, uint16_t,
+         and T is uint64_t, uint32_t, uint16_t, uint8_t.  */
+    (convert1?
+     (bit_ior
+      (convert?
+       (negate
+	(convert (ne (convert2? (rshift @3 INTEGER_CST@2)) integer_zerop))))
+      (convert (mult_op:c@3 (convert@4 @0) (convert@5 @1)))))
+    (if (types_match (type, @0, @1))
+     (with
+      {
+       unsigned prec = TYPE_PRECISION (type);
+       unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+       unsigned cvt4_prec = TYPE_PRECISION (TREE_TYPE (@4));
+       unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
+
+       bool widen_mult_p = mult_op == WIDEN_MULT_EXPR && cvt4_prec == cvt5_prec
+	 && widen_prec == cvt5_prec * 2;
+       bool mult_p = mult_op == MULT_EXPR && cvt4_prec == cvt5_prec
+	 && cvt4_prec == widen_prec && widen_prec > prec;
+       bool c2_is_type_precision_p = tree_to_uhwi (@2) == prec;
+      }
+      (if (c2_is_type_precision_p && (mult_p || widen_mult_p)))))))
 )
 
 /* The boundary condition for case 10: IMM = 1:
@@ -11050,6 +11115,7 @@ and,
 			 ? gimple_assign_rhs1 (SSA_NAME_DEF_STMT (@0)) : @0);
 	    tree elt = ctor_single_nonzero_element (ctor); }
       (if (elt
+	   && types_match (type, TREE_TYPE (elt))
 	   && !HONOR_SNANS (type)
 	   && !HONOR_SIGNED_ZEROS (type))
 	{ elt; }))))

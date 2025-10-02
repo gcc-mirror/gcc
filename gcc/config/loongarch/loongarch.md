@@ -1619,13 +1619,13 @@
     operands[2] = GEN_INT (len);
     operands[4] = GEN_INT (lo);
 
-    if (lo)
-      {
-	rtx tmp = gen_reg_rtx (<MODE>mode);
-	emit_move_insn (tmp, gen_rtx_ASHIFTRT(<MODE>mode, operands[3],
-					      GEN_INT (lo)));
-	operands[3] = tmp;
-      }
+    /* Use a new pseudo register even if lo == 0 or we'll wreck havoc
+       when operands[0] is same as operands[3].  See PR 121906.  */
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+    rtx val = lo ? gen_rtx_ASHIFTRT (<MODE>mode, operands[3], GEN_INT (lo))
+		 : operands[3];
+    emit_move_insn (tmp, val);
+    operands[3] = tmp;
   })
 
 ;; We always avoid the shift operation in bstrins_<mode>_for_ior_mask
@@ -4193,17 +4193,18 @@
   [(set_attr "type" "unknown")
    (set_attr "mode" "<MODE>")])
 
-(define_int_iterator FCLASS_MASK [68 136 952])
+(define_int_iterator FCLASS_MASK [68 136 952 3])
 (define_int_attr fclass_optab
   [(68	"isinf")
    (136	"isnormal")
-   (952	"isfinite")])
+   (952	"isfinite")
+   (3	"isnan")])
 
 (define_expand "<FCLASS_MASK:fclass_optab><ANYF:mode>2"
   [(match_operand:SI   0 "register_operand" "=r")
    (match_operand:ANYF 1 "register_operand" " f")
    (const_int FCLASS_MASK)]
-  "TARGET_HARD_FLOAT"
+  "TARGET_HARD_FLOAT && (<FCLASS_MASK> != 3 || flag_signaling_nans)"
   {
     rtx ft0 = gen_reg_rtx (SImode);
     rtx t0 = gen_reg_rtx (word_mode);

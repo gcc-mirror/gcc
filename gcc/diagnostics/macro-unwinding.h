@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace diagnostics {
 
+struct diagnostic_info;
+
 extern void virt_loc_aware_text_finalizer (text_sink &,
 					   const diagnostic_info *);
 

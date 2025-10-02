@@ -1,0 +1,82 @@
+/* List of supported core and tune info for RISC-V.
+   Copyright (C) 2025 Free Software Foundation, Inc.
+
+   This file is part of GCC.
+
+   GCC is free software; you can redistribute it and/or modify it
+   under the terms of the GNU General Public License as published by
+   the Free Software Foundation; either version 3, or (at your option)
+   any later version.
+
+   GCC is distributed in the hope that it will be useful, but
+   WITHOUT ANY WARRANTY; without even the implied warranty of
+   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+   General Public License for more details.
+
+   You should have received a copy of the GNU General Public License
+   along with GCC; see the file COPYING3.  If not see
+   <http://www.gnu.org/licenses/>.  */
+
+/* This is a list of RISC-V Profiles defination.
+
+   Before using #include to read this file, define a macro:
+
+      RISCV_PROFILE(PROFILE_NAME, ARCH)
+
+   The PROFILE_NAME is the name of the profile, represented as a string.
+   The ARCH is the default arch of the core, represented as a string.  */
+
+#ifndef RISCV_PROFILE
+#define RISCV_PROFILE(PROFILE_NAME, ARCH)
+#endif
+
+/* RVI20U only contains the base extension 'i' as mandatory extension.  */
+RISCV_PROFILE("rvi20u64",      "rv64i")
+RISCV_PROFILE("rvi20u32",      "rv32i")
+
+/* RVA20U contains the 'i,m,a,f,d,c,zicsr,zicntr,ziccif,ziccrse,ziccamoa,
+   zicclsm,za128rs' as mandatory extensions.  */
+RISCV_PROFILE("rva20u64",     "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+			     "_zicclsm_za128rs")
+
+/* RVA22U contains the 'i,m,a,f,d,c,zicsr,zihintpause,zba,zbb,zbs,zicntr,
+   zihpm,ziccif,ziccrse,ziccamoa, zicclsm,zic64b,za64rs,zicbom,zicbop,zicboz,
+   zfhmin,zkt' as mandatory extensions.  */
+RISCV_PROFILE("rva22u64",     "rv64imafdc_zicsr_zicntr_ziccif_ziccrse_ziccamoa"
+			     "_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs_zicbom_zicbop"
+			     "_zicboz_zfhmin_zkt")
+
+/* RVA23 contains all mandatory base ISA for RVA22U64 and the new extension
+   'v,zihintntl,zvfhmin,zvbb,zvkt,zicond,zimop,zcmop,zfa,zawrs' as mandatory
+   extensions.  */
+RISCV_PROFILE("rva23u64",     "rv64imafdcbv_zicsr_zicntr_zihpm_ziccif_ziccrse"
+			     "_ziccamoa_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs"
+				 "_zicbom_zicbop_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl"
+				 "_zicond_zimop_zcmop_zcb_zfa_zawrs_supm")
+
+/* RVA23S contains all mandatory base ISA for RVA23U64 and the privileged
+   extensions as mandatory extensions.  */
+RISCV_PROFILE("rva23s64",     "rv64imafdcbv_zicsr_zicntr_zihpm_ziccif_ziccrse"
+			     "_ziccamoa_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs"
+				 "_zicbom_zicbop_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl"
+				 "_zicond_zimop_zcmop_zcb_zfa_zawrs_svbare_svade_ssccptr"
+				 "_sstvecd_sstvala_sscounterenw_svpbmt_svinval_svnapot_sstc"
+				 "_sscofpmf_ssnpm_ssu64xl_sha_supm")
+
+/* RVB23 contains all mandatory base ISA for RVA22U64 and the new extension
+   'zihintntl,zicond,zimop,zcmop,zfa,zawrs' as mandatory extensions.  */
+RISCV_PROFILE("rvb23u64",     "rv64imafdcb_zicsr_zicntr_zihpm_ziccif_ziccrse"
+			     "_ziccamoa_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs"
+				 "_zicbom_zicbop_zicboz_zfhmin_zkt_zihintntl_zicond_zimop"
+				 "_zcmop_zcb")
+
+/* RVB23S contains all mandatory base ISA for RVB23U64 and the privileged
+   extensions as mandatory extensions.  */
+RISCV_PROFILE("rvb23s64",     "rv64imafdcb_zicsr_zicntr_zihpm_ziccif_ziccrse"
+			     "_ziccamoa_zicclsm_zic64b_za64rs_zihintpause_zba_zbb_zbs"
+				 "_zicbom_zicbop_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt"
+				 "_zihintntl_zicond_zimop_zcmop_zcb_zfa_zawrs_svbare_svade"
+				 "_ssccptr_sstvecd_sstvala_sscounterenw_svpbmt_svinval_svnapot"
+				 "_sstc_sscofpmf_ssu64xl_supm")
+
+#undef RISCV_PROFILE

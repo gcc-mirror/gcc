@@ -439,7 +439,7 @@ extern ctf_dtdef_ref ctf_add_function (ctf_container_ref, uint32_t,
 				       const char *, const ctf_funcinfo_t *,
 				       dw_die_ref, bool, int);
 extern ctf_dtdef_ref ctf_add_sou (ctf_container_ref, uint32_t, const char *,
-				  uint32_t, size_t, dw_die_ref);
+				  uint32_t, unsigned HOST_WIDE_INT, dw_die_ref);
 
 extern int ctf_add_enumerator (ctf_container_ref, ctf_dtdef_ref, const char *,
 			       HOST_WIDE_INT, dw_die_ref);

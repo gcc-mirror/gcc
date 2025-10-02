@@ -37,6 +37,7 @@ def test_sarif_output_with_fixes(sarif):
 
     assert len(results[0]['fixes']) == 1
     fix = results[0]['fixes'][0]
+    assert fix['description']['text'] == "Replace 'colour' with 'color'"
     assert len(fix['artifactChanges']) == 1
     change = fix['artifactChanges'][0]
     assert change['artifactLocation']['uri'].endswith('test-fix-it-hint.c')

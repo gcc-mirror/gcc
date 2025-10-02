@@ -27,29 +27,84 @@ along with GCC; see the file COPYING3.  If not see
 namespace diagnostics {
 namespace output_spec {
 
+class context;
+
+/* An abstract base class for schemes, and for client-specific keys.  */
+
+class key_handler
+{
+public:
+  enum class result
+  {
+    ok,
+    unrecognized,
+    malformed_value
+  };
+
+  /* Attempt to decode KEY and VALUE, storing the decoded value.  */
+  virtual enum result
+  maybe_handle_kv (const context &ctxt,
+		   const std::string &key,
+		   const std::string &value) = 0;
+
+  virtual void
+  get_keys (auto_vec<const char *> &out) const = 0;
+
+  enum result
+  parse_bool_value (const context &ctxt,
+		    const std::string &key,
+		    const std::string &value,
+		    bool &out) const;
+
+  template <typename EnumType, size_t NumValues>
+  enum result
+  parse_enum_value (const context &ctxt,
+		    const std::string &key,
+		    const std::string &value,
+		    const std::array<std::pair<const char *, EnumType>,
+				     NumValues> &value_names,
+		    EnumType &out) const;
+};
+
+/* Abstract subclass for handling particular schemes and their keys.  */
+
+class scheme_handler : public key_handler
+{
+public:
+  scheme_handler (std::string scheme_name)
+    : m_scheme_name (std::move (scheme_name))
+  {}
+  virtual ~scheme_handler () {}
+
+  const std::string &get_scheme_name () const { return m_scheme_name; }
+
+  virtual std::unique_ptr<sink>
+  make_sink (const context &ctxt,
+	     diagnostics::context &dc) = 0;
+
+private:
+  const std::string m_scheme_name;
+};
+
 /* An abstract base class for handling the DSL of -fdiagnostics-add-output=
    and -fdiagnostics-set-output=.  */
 
 class context
 {
- public:
+public:
   std::unique_ptr<sink>
-  parse_and_make_sink (const char *,
-		       diagnostics::context &dc);
+  parse_and_make_sink (diagnostics::context &dc);
 
   void
   report_error (const char *gmsgid, ...) const
     ATTRIBUTE_GCC_DIAG(2,3);
 
   void
-  report_unknown_key (const char *unparsed_arg,
-		      const std::string &key,
-		      const std::string &scheme_name,
-		      auto_vec<const char *> &known_keys) const;
+  report_unknown_key (const std::string &key,
+		      const scheme_handler &scheme) const;
 
   void
-  report_missing_key (const char *unparsed_arg,
-		      const std::string &key,
+  report_missing_key (const std::string &key,
 		      const std::string &scheme_name,
 		      const char *metavar) const;
 
@@ -58,6 +113,9 @@ class context
 
   const char *
   get_option_name () const { return m_option_name; }
+
+  const char *
+  get_unparsed_spec () const { return m_unparsed_spec;  }
 
   line_maps *
   get_affected_location_mgr () const { return m_affected_location_mgr; }
@@ -70,15 +128,32 @@ class context
   virtual const char *
   get_base_filename () const = 0;
 
+  bool
+  handle_kv (const std::string &key,
+	     const std::string &value,
+	     scheme_handler &scheme) const;
+
 protected:
   context (const char *option_name,
+	   const char *unparsed_spec,
+	   key_handler *client_keys,
 	   line_maps *affected_location_mgr)
   : m_option_name (option_name),
+    m_unparsed_spec (unparsed_spec),
+    m_client_keys (client_keys),
     m_affected_location_mgr (affected_location_mgr)
   {
   }
 
+  // e.g. "-fdiagnostics-add-output="
   const char *m_option_name;
+
+  // e.g. "scheme:foo=bar,key=value"
+  const char *m_unparsed_spec;
+
+  // Optional borrowed ptr to client-specific keys
+  key_handler *m_client_keys;
+
   line_maps *m_affected_location_mgr;
 };
 
@@ -87,12 +162,17 @@ protected:
 struct dc_spec_context : public output_spec::context
 {
 public:
-  dc_spec_context (diagnostics::context &dc,
+  dc_spec_context (const char *option_name,
+		   const char *unparsed_spec,
+		   key_handler *client_keys,
 		   line_maps *affected_location_mgr,
+		   diagnostics::context &dc,
 		   line_maps *control_location_mgr,
-		   location_t loc,
-		   const char *option_name)
-  : context (option_name, affected_location_mgr),
+		   location_t loc)
+    : context (option_name,
+	       unparsed_spec,
+	       client_keys,
+	       affected_location_mgr),
     m_dc (dc),
     m_control_location_mgr (control_location_mgr),
     m_loc (loc)

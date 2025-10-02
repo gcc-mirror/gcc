@@ -58,7 +58,7 @@ void test01()
 {
   typedef std::allocator_traits<Alloc<int>> traits_type;
   traits_type::allocator_type a;
-  traits_type::const_void_pointer v;
+  traits_type::const_void_pointer v = nullptr;
   traits_type::pointer p = traits_type::allocate(a, 1, v);
   traits_type::deallocate(a, p, 1);
 }

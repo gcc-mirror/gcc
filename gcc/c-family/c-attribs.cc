@@ -249,12 +249,28 @@ static const struct attribute_spec::exclusions attr_target_clones_exclusions[] =
   ATTR_EXCL ("always_inline", true, true, true),
   ATTR_EXCL ("target", TARGET_HAS_FMV_TARGET_ATTRIBUTE,
 	     TARGET_HAS_FMV_TARGET_ATTRIBUTE, TARGET_HAS_FMV_TARGET_ATTRIBUTE),
-  ATTR_EXCL ("target_version", true, true, true),
+  ATTR_EXCL ("omp declare simd", true, true, true),
+  ATTR_EXCL ("simd", true, true, true),
   ATTR_EXCL (NULL, false, false, false),
 };
 
 static const struct attribute_spec::exclusions attr_target_version_exclusions[] =
 {
+  ATTR_EXCL ("omp declare simd", true, true, true),
+  ATTR_EXCL ("simd", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_omp_declare_simd_exclusions[] =
+{
+  ATTR_EXCL ("target_version", true, true, true),
+  ATTR_EXCL ("target_clones", true, true, true),
+  ATTR_EXCL (NULL, false, false, false),
+};
+
+static const struct attribute_spec::exclusions attr_simd_exclusions[] =
+{
+  ATTR_EXCL ("target_version", true, true, true),
   ATTR_EXCL ("target_clones", true, true, true),
   ATTR_EXCL (NULL, false, false, false),
 };
@@ -543,7 +559,7 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      attr_target_exclusions },
   { "target_version",         1, 1, true, false, false, false,
 			      handle_target_version_attribute,
-			      attr_target_version_exclusions },
+			      attr_target_version_exclusions},
   { "target_clones",          1, -1, true, false, false, false,
 			      handle_target_clones_attribute,
 			      attr_target_clones_exclusions },
@@ -570,7 +586,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
   { "returns_nonnull",        0, 0, false, true, true, false,
 			      handle_returns_nonnull_attribute, NULL },
   { "omp declare simd",       0, -1, true,  false, false, false,
-			      handle_omp_declare_simd_attribute, NULL },
+			      handle_omp_declare_simd_attribute,
+			      attr_omp_declare_simd_exclusions },
   { "omp declare variant base", 0, -1, true,  false, false, false,
 			      handle_omp_declare_variant_attribute, NULL },
   { "omp declare variant variant", 0, -1, true,  false, false, false,
@@ -579,7 +596,7 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      false, false,
 			      handle_omp_declare_variant_attribute, NULL },
   { "simd",		      0, 1, true,  false, false, false,
-			      handle_simd_attribute, NULL },
+			      handle_simd_attribute, attr_simd_exclusions },
   { "omp declare target",     0, -1, true, false, false, false,
 			      handle_omp_declare_target_attribute, NULL },
   { "omp declare target link", 0, 0, true, false, false, false,
@@ -6282,12 +6299,25 @@ handle_target_clones_attribute (tree *node, tree name, tree ARG_UNUSED (args),
 	    }
 	}
 
-      auto_vec<string_slice> versions = get_clone_attr_versions (args, NULL);
+      int num_defaults = 0;
+      auto_vec<string_slice> versions = get_clone_attr_versions
+					  (args,
+					   &num_defaults,
+					   false);
 
-      if (versions.length () == 1)
+      for (auto v : versions)
+	targetm.check_target_clone_version
+	  (v, &DECL_SOURCE_LOCATION (*node));
+
+      /* Lone target_clones version is always ignored for target attr semantics.
+	 Only ignore under target_version semantics if it is a default
+	 version.  */
+      if (versions.length () == 1
+	  && (TARGET_HAS_FMV_TARGET_ATTRIBUTE || num_defaults == 1))
 	{
-	  warning (OPT_Wattributes,
-		   "single %<target_clones%> attribute is ignored");
+	  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+	    warning (OPT_Wattributes,
+		     "single %<target_clones%> attribute is ignored");
 	  *no_add_attrs = true;
 	}
       else

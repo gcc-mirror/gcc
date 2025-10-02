@@ -1372,32 +1372,27 @@ need_locks="$enable_libtool_lock"
 # _LT_CMD_OLD_ARCHIVE
 # -------------------
 m4_defun([_LT_CMD_OLD_ARCHIVE],
-[plugin_option=
-plugin_names="liblto_plugin.so liblto_plugin-0.dll cyglto_plugin-0.dll"
-for plugin in $plugin_names; do
-  plugin_so=`${CC} ${CFLAGS} --print-prog-name $plugin`
-  if test x$plugin_so = x$plugin; then
-    plugin_so=`${CC} ${CFLAGS} --print-file-name $plugin`
-  fi
-  if test x$plugin_so != x$plugin; then
-    plugin_option="--plugin $plugin_so"
-    break
-  fi
-done
-
+[
+# Try CLANG_PLUGIN_FILE first since GCC_PLUGIN_OPTION may return the
+# wrong plugin_option with clang.
+CLANG_PLUGIN_FILE(plugin_file)
+if test -n "$plugin_file"; then
+  plugin_option="--plugin $plugin_file"
+else
+  GCC_PLUGIN_OPTION(plugin_option)
+fi
 AC_CHECK_TOOL(AR, ar, false)
 test -z "$AR" && AR=ar
 if test -n "$plugin_option"; then
-  if $AR --help 2>&1 | grep -q "\--plugin"; then
-    touch conftest.c
-    $AR $plugin_option rc conftest.a conftest.c
-    if test "$?" != 0; then
-      AC_MSG_WARN([Failed: $AR $plugin_option rc])
-    else
+  case "$AR" in
+  *"$plugin_option"*)
+    ;;
+  *)
+    if $AR --help 2>&1 | grep -q "\--plugin"; then
       AR="$AR $plugin_option"
     fi
-    rm -f conftest.*
-  fi
+    ;;
+  esac
 fi
 test -z "$AR_FLAGS" && AR_FLAGS=cru
 _LT_DECL([], [AR], [1], [The archiver])
@@ -1410,9 +1405,15 @@ _LT_DECL([], [STRIP], [1], [A symbol stripping program])
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 test -z "$RANLIB" && RANLIB=:
 if test -n "$plugin_option" && test "$RANLIB" != ":"; then
-  if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
-    RANLIB="$RANLIB $plugin_option"
-  fi
+  case "$RANLIB" in
+  *"$plugin_option"*)
+    ;;
+  *)
+    if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
+      RANLIB="$RANLIB $plugin_option"
+    fi
+    ;;
+  esac
 fi
 _LT_DECL([], [RANLIB], [1],
     [Commands used to install an old-style archive])

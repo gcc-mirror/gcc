@@ -1,23 +1,24 @@
 // C++20 P1766R1 - Mitigating minor modules maladies
-// { dg-do run }
+// FIXME mark as run once we no longer xfail below.
+// { dg-module-do compile }
 // { dg-additional-options "-fmodules-ts" }
 
 import M;
 
 int
-foo (int i = 42)
+foo (int i = 42)			// { dg-bogus "default argument given for parameter 1 of 'int foo\\\(int\\\)'" "PR99000" { xfail *-*-* } }
 {
   return i;
 }
 
-template <typename T, typename U = int>
+template <typename T, typename U = int>	// { dg-bogus "redefinition of default argument for 'class U'" "PR99000" { xfail *-*-* } }
 int
 bar ()
 {
   return sizeof (U);
 }
 
-template <typename T, int N = 42>
+template <typename T, int N = 42>	// { dg-bogus "redefinition of default argument for 'int N'" "PR99000" { xfail *-*-* } }
 int
 baz ()
 {

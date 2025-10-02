@@ -42,7 +42,7 @@ test01()
   std::ranges::advance(iter, -2);
   VERIFY( iter == r.begin() );
 
-  std::ranges::advance(iter, r.begin() + 1);
+  std::ranges::advance(iter, std::ranges::next(r.begin()));
   VERIFY( iter != r.begin() );
   VERIFY( iter != r.end() );
   std::ranges::advance(iter, r.begin());

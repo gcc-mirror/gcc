@@ -57,7 +57,6 @@ test01()
       decltype(bind_back(std::declval<const F&>(), std::declval<const int&>(), std::declval<const float&>()))
       >);
 
-
   // Reference wrappers should be handled:
   static_assert(!std::is_same_v<
       decltype(bind_back(std::declval<F>(), std::declval<int&>())),
@@ -197,6 +196,21 @@ testCallArgs(Args... args)
   VERIFY( q.as_const && q.as_lvalue );
   q = cg(std::move(ci));
   VERIFY( q.as_const && ! q.as_lvalue );
+
+  struct S
+  {
+    int operator()(long, long, Args...) const { return 1; }
+    int operator()(int, void*, Args...) const { return 2; }
+  };
+
+  S s;
+  // literal zero can be converted to any pointer, so (int, void*)
+  // is best candidate
+  VERIFY( s(0, 0, args...) == 2 );
+  // both arguments are bound to int&&, and no longer can be
+  // converted to pointer, (long, long) is only candidate
+  VERIFY( bind_back(s)(0, 0, args...) == 1 );
+  VERIFY( bind_back(s, args...)(0, 0) == 1 );
 }
 
 void
@@ -252,22 +266,22 @@ test03()
   static_assert(is_invocable_r_v<void*, const G4&&>);
 }
 
-constexpr int f(int i, int j, int k) { return i + 2*(j + k); }
+constexpr int f(int i, int j, int k) { return i + 2*j + 3*k; }
 
 constexpr bool
 test04()
 {
   auto g = bind_back(f);
-  VERIFY( g(1, 2, 3) == 1 + 2*(2 + 3) );
+  VERIFY( g(1, 2, 3) == 1 + 2*2 + 3*3 );
   auto g1 = bind_back(f, 1);
-  VERIFY( g1(2, 3) == 2 + 2*(3 + 1) );
-  VERIFY( bind_back(g, 1)(2, 3) == 2 + 2*(3 + 1) );
+  VERIFY( g1(2, 3) == 3*1 + 2 + 3*2);
+  VERIFY( bind_back(g, 1)(2, 3) == 3*1 + 2 + 2*3 );
   auto g2 = bind_back(f, 1, 2);
-  VERIFY( g2(3) == 3 + 2*(1 + 2) );
-  VERIFY( bind_back(g1, 2)(3) == 3 + 2*(2 + 1) );
+  VERIFY( g2(3) == 3 + 2*1 + 3*2);
+  VERIFY( bind_back(g1, 2)(3) == 3*1 + 2*2 + 3  );
   auto g3 = bind_back(f, 1, 2, 3);
-  VERIFY( g3() == 1 + 2*(2 + 3) );
-  VERIFY( bind_back(g2, 3)() == 3 + 2*(1 + 2) );
+  VERIFY( g3() == 1 + 2*2 + 3*3 );
+  VERIFY( bind_back(g2, 3)() == 3*1 + 1*2 + 2*3);
   return true;
 }
 

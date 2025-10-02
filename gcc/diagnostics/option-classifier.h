@@ -20,10 +20,14 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_OPTION_CLASSIFIER_H
 #define GCC_DIAGNOSTICS_OPTION_CLASSIFIER_H
 
+#include "diagnostics/option-id.h"
+#include "diagnostics/kinds.h"
+
 namespace diagnostics {
 
 /*  Forward declarations.  */
 class context;
+struct diagnostic_info;
 
 /* A stack of sets of classifications: each entry in the stack is
    a mapping from option index to diagnostic severity that can be changed

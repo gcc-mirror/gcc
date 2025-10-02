@@ -73,12 +73,15 @@ softfp_bid_list += bitintpow10 \
 					floatti$(m) floatunti$(m))
 endif
 
+softfp_bitint_func_list :=  \
+  $(foreach m,sf df,$(softfp_floatbitint_funcs)) \
+  $(bitint_extras)
+
 softfp_func_list := \
   $(foreach m,$(softfp_float_modes), \
               $(softfp_float_funcs) \
               $(foreach i,$(softfp_int_modes), \
                           $(softfp_floatint_funcs))) \
-  $(foreach m,sf df,$(softfp_floatbitint_funcs)) \
   $(foreach e,$(softfp_extensions),extend$(e)2) \
   $(foreach t,$(softfp_truncations),trunc$(t)2) \
   $(softfp_extras)
@@ -93,7 +96,8 @@ softfp_func_list := $(filter-out floatdidf floatdisf fixunsdfsi fixunssfsi \
 endif
 
 ifeq ($(softfp_compat),y)
-softfp_file_list := $(addsuffix .c,$(softfp_func_list))
+softfp_file_list := $(addsuffix .c,$(softfp_func_list)) \
+		    $(addsuffix .c,$(softfp_bitint_func_list))
 
 ifeq ($(enable_shared),yes)
 softfp_map_dep := libgcc.map.in
@@ -124,6 +128,8 @@ else
 softfp_file_list := \
   $(addsuffix .c,$(addprefix $(srcdir)/soft-fp/,$(softfp_func_list)))
 endif
+softfp_file_list += \
+  $(addsuffix .c,$(addprefix $(srcdir)/soft-fp/,$(softfp_bitint_func_list)))
 endif
 softfp_bid_file_list := \
   $(addsuffix .c,$(addprefix $(srcdir)/soft-fp/,$(softfp_bid_list)))
@@ -137,7 +143,7 @@ soft-fp-objects-base = $(basename $(notdir $(softfp_file_list)))
 soft-fp-objects = $(addsuffix $(objext), $(soft-fp-objects-base)) \
   $(addsuffix _s$(objext), $(soft-fp-objects-base))
 
-$(soft-fp-objects) : INTERNAL_CFLAGS += -Wno-missing-prototypes -Wno-type-limits
+$(soft-fp-objects) : INTERNAL_CFLAGS += -Wno-missing-prototypes -Wno-type-limits $(softfp_cflags)
 
 LIB2ADD += $(softfp_file_list)
 LIB2ADD_ST += $(softfp_bid_file_list)

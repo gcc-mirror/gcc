@@ -1,7 +1,12 @@
 /* { dg-do link } */
 /* { dg-require-effective-target sync_int_128_runtime } */
 /* { dg-options "-mcx16" { target { x86_64-*-* i?86-*-* } } } */
-/* { dg-final { simulate-thread } } */
+/* { dg-options "-mlsx -mscq" { target { loongarch64-*-* } } } */
+
+/* xfail on loongarch64 until the new GDB versions with
+   https://sourceware.org/pipermail/gdb-patches/2025-August/220034.html
+   is widely used by distros.  */
+/* { dg-final { simulate-thread { xfail loongarch64-*-* } } } */
 
 #include <stdio.h>
 #include "simulate-thread.h"

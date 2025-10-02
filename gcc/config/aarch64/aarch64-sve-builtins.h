@@ -57,9 +57,10 @@
    function_shape describes how that instruction has been presented at
    the language level.
 
-   The static list of functions uses function_group to describe a group
-   of related functions.  The function_builder class is responsible for
-   expanding this static description into a list of individual functions
+   The static arrays of function_group_info (function_groups,
+   neon_sve_function_groups, sme_function_groups) use function_group to describe
+   a group of related functions.  The function_builder class is responsible for
+   expanding these static description into a list of individual functions
    and registering the associated built-in functions.  function_instance
    describes one of these individual functions in terms of the properties
    described above.

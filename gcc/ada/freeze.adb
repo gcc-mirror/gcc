@@ -4245,7 +4245,7 @@ package body Freeze is
          <<Skip_Packed>>
 
          --  A Ghost type cannot have a component of protected or task type
-         --  (SPARK RM 6.9(21)).
+         --  (SPARK RM 6.9(22)).
 
          if Is_Ghost_Entity (Arr) and then Is_Concurrent_Type (Ctyp) then
             Error_Msg_N
@@ -4685,7 +4685,9 @@ package body Freeze is
 
          --  Declaring too big an array in disabled ghost code is OK
 
-         if Is_Array_Type (Typ) and then not Is_Ignored_Ghost_Entity (E) then
+         if Is_Array_Type (Typ)
+           and then not Is_Ignored_Ghost_Entity_In_Codegen (E)
+         then
             Check_Large_Modular_Array (Typ);
          end if;
       end Freeze_Object_Declaration;
@@ -5180,7 +5182,7 @@ package body Freeze is
               and then Convention (Desig) /= Convention_Protected
             then
                Set_Is_Frozen (Desig);
-               Create_Extra_Formals (Desig);
+               Create_Extra_Formals (Desig, Related_Nod => Rec);
             end if;
          end Check_Itype;
 
@@ -6788,6 +6790,27 @@ package body Freeze is
 
       Set_Is_Frozen (E);
 
+      --  Freeze profile of anonymous access-to-subprogram type
+
+      if Do_Freeze_Profile
+        and then Ekind (E) = E_Anonymous_Access_Subprogram_Type
+      then
+         declare
+            Skip_Because_In_Generic : constant Boolean :=
+              In_Generic_Scope (E) or else
+                (Is_Itype (E)
+                  and then Nkind (Parent (Associated_Node_For_Itype (E)))
+                    = N_Generic_Subprogram_Declaration);
+         begin
+            if not Skip_Because_In_Generic then
+               if not Freeze_Profile (Designated_Type (E)) then
+                  goto Leave;
+               end if;
+               Freeze_Subprogram (Designated_Type (E));
+            end if;
+         end;
+      end if;
+
       --  Case of entity being frozen is other than a type
 
       if not Is_Type (E) then
@@ -7149,31 +7172,30 @@ package body Freeze is
                         Next_Index (Indx);
                      end loop;
 
-                     --  What we are looking for here is the situation where
-                     --  the RM_Size given would be exactly right if there was
-                     --  a pragma Pack, resulting in the component size being
-                     --  the RM_Size of the component type.
+                     --  In Implicit_Packing mode, if the specified RM_Size
+                     --  would be big enough if there were a pragma Pack,
+                     --  then set the component size as if there were Pack,
+                     --  and Freeze_Array_Type will do the rest.
 
-                     if RM_Size (E) = Num_Elmts * Rsiz then
+                     if Implicit_Packing
+                       and then RM_Size (E) >= Num_Elmts * Rsiz
+                     then
+                        Set_Component_Size (Btyp, Rsiz);
 
-                        --  For implicit packing mode, just set the component
-                        --  size and Freeze_Array_Type will do the rest.
+                     --  Otherwise, if pragma Pack would result in exactly the
+                     --  right size, give an error message suggesting packing,
+                     --  except that if the specified Size is zero, there is no
+                     --  need for pragma Pack. Note that size zero is not
+                     --  considered Addressable.
 
-                        if Implicit_Packing then
-                           Set_Component_Size (Btyp, Rsiz);
-
-                        --  Otherwise give an error message, except that if the
-                        --  specified Size is zero, there is no need for pragma
-                        --  Pack. Note that size zero is not considered
-                        --  Addressable.
-
-                        elsif RM_Size (E) /= Uint_0 then
-                           Error_Msg_NE
-                             ("size given for& too small", SZ, E);
-                           Error_Msg_N -- CODEFIX
-                             ("\use explicit pragma Pack or use pragma "
-                              & "Implicit_Packing", SZ);
-                        end if;
+                     elsif RM_Size (E) = Num_Elmts * Rsiz
+                       and then RM_Size (E) /= Uint_0
+                     then
+                        Error_Msg_NE
+                          ("size given for& too small", SZ, E);
+                        Error_Msg_N -- CODEFIX
+                          ("\use explicit pragma Pack or use pragma "
+                           & "Implicit_Packing", SZ);
                      end if;
                   end if;
                end;
@@ -7749,7 +7771,14 @@ package body Freeze is
 
             --  Check restriction for standard storage pool
 
-            if No (Associated_Storage_Pool (E)) then
+            --  Skip this check when Etype (T) is unknown, since attribute
+            --  Associated_Storage_Pool is only available in the root type
+            --  of E, and in such case it cannot not be computed (thus
+            --  causing spurious errors).
+
+            if Present (Etype (E))
+              and then No (Associated_Storage_Pool (E))
+            then
                Check_Restriction (No_Standard_Storage_Pools, E);
             end if;
 
@@ -8786,7 +8815,7 @@ package body Freeze is
               and then Nkind (Parent (N)) = N_Function_Call
               and then not Has_Foreign_Convention (Nam)
             then
-               Create_Extra_Formals (Nam);
+               Create_Extra_Formals (Nam, Related_Nod => N);
             end if;
 
          when others =>
@@ -11024,7 +11053,10 @@ package body Freeze is
       E   : Entity_Id;
       N   : Node_Id) return Boolean
    is
-      Decl : constant Node_Id := Original_Node (Unit_Declaration_Node (E));
+      Decl : constant Node_Id :=
+        (if Ekind (E) = E_Subprogram_Type and then No (Parent (E))
+          then Empty
+          else Original_Node (Unit_Declaration_Node (E)));
 
       function Is_Dispatching_Call_Or_Tagged_Result_Or_Aggregate
         (N : Node_Id) return Traverse_Result;

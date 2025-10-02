@@ -723,6 +723,12 @@ The option @samp{-Wall} will turn on this flag with
 @samp{-Wuninit-variable-checking=known}.
 The @samp{-Wuninit-variable-checking=all} will increase compile time.
 
+@item -fwideset
+turn on access to the runtime support library module @samp{M2WIDESET}.
+By default this option is on.
+Wideset provision can be disabled by @samp{-fno-wideset}
+and no reference will be made to the run time @samp{M2WIDESET} library.
+
 @c the following warning options are complete but need to be
 @c regression tested against all other front ends
 @c to ensure the options do not conflict.

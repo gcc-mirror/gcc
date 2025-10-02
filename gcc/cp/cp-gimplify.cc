@@ -2166,13 +2166,16 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
 	 returns the function with the highest target priority, that is,
 	 the version that will checked for dispatching first.  If this
 	 version is inlinable, a direct call to this version can be made
-	 otherwise the call should go through the dispatcher.  */
+	 otherwise the call should go through the dispatcher.
+	 This is done at multiple_target.cc for target_version semantics.  */
       {
 	tree fn = cp_get_callee_fndecl_nofold (stmt);
-	if (fn && DECL_FUNCTION_VERSIONED (fn)
+	if (TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	    && fn
+	    && DECL_FUNCTION_VERSIONED (fn)
 	    && (current_function_decl == NULL
-		|| !targetm.target_option.can_inline_p (current_function_decl,
-							fn)))
+		|| !targetm.target_option.can_inline_p
+		      (current_function_decl, fn)))
 	  if (tree dis = get_function_version_dispatcher (fn))
 	    {
 	      mark_versions_used (dis);

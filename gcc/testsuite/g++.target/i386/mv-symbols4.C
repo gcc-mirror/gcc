@@ -38,13 +38,13 @@ int bar()
 /* { dg-final { scan-assembler-times "\n_Z3foov\.arch_slm:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3foov\.sse4.2:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3foov\.resolver:\n" 1 } } */
-/* { dg-final { scan-assembler-times "\n\tcall\t_Z7_Z3foovv\n" 1 } } */
-/* { dg-final { scan-assembler-times "\n\t\.type\t_Z7_Z3foovv, @gnu_indirect_function\n" 1 } } */
-/* { dg-final { scan-assembler-times "\n\t\.set\t_Z7_Z3foovv,_Z3foov\.resolver\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\tcall\t_Z3foov.ifunc\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\t\.type\t_Z3foov.ifunc, @gnu_indirect_function\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\t\.set\t_Z3foov.ifunc,_Z3foov\.resolver\n" 1 } } */
 
 /* { dg-final { scan-assembler-times "\n_Z3fooi:\n" 1 } } */
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.arch_slm:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.sse4.2:\n" 0 } } */
 /* { dg-final { scan-assembler-times "\n_Z3fooi\.resolver:\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\t\.type\t_Z7_Z3fooii, @gnu_indirect_function\n" 0 } } */
-/* { dg-final { scan-assembler-times "\n\t\.set\t_Z7_Z3fooii,_Z3fooi\.resolver\n" 0 } } */
+/* { dg-final { scan-assembler-times "\n\t\.type\t_Z3fooi.ifunc, @gnu_indirect_function\n" 0 } } */
+/* { dg-final { scan-assembler-times "\n\t\.set\t_Z3fooi.ifunc,_Z3fooi\.resolver\n" 0 } } */

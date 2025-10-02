@@ -1532,7 +1532,12 @@ compute_trg_info (int trg)
 	  int tf = prob[trg], cf = prob[i];
 
 	  /* In CFGs with low probability edges TF can possibly be zero.  */
-	  sp->src_prob = (tf ? GCOV_COMPUTE_SCALE (cf, tf) : 0);
+	  sp->src_prob = (tf ?
+			  profile_count::from_gcov_type (cf)
+			    .probability_in
+			      (profile_count::from_gcov_type (tf))
+				.to_reg_br_prob_base ()
+			  : 0);
 	  sp->is_valid = (sp->src_prob >= min_spec_prob);
 	}
 

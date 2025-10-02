@@ -18,8 +18,8 @@
 ;; <http://www.gnu.org/licenses/>.
 
 (define_insn "mve_mov<mode>"
-  [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w   , w,   r,Ux,w")
-	(match_operand:MVE_types 1 "general_operand"      " w,r,w,DnDm,UxUi,r,w, Ul"))]
+  [(set (match_operand:MVE_types 0 "nonimmediate_operand" "=w,w,r,w   ,w, r,Ux,w")
+	(match_operand:MVE_types 1 "general_operand"      " w,r,w,DnDm,Ux,r,w, UlUi"))]
   "TARGET_HAVE_MVE || TARGET_HAVE_MVE_FLOAT"
 {
   switch (which_alternative)
@@ -56,7 +56,7 @@
 	  }
       }
 
-    case 4:  /* [w,UxUi].  */
+    case 4:  /* [w,Ux].  */
       if (<MODE>mode == V2DFmode || <MODE>mode == V2DImode
 	  || <MODE>mode == TImode)
 	return "vldrw.u32\t%q0, %E1";
@@ -73,7 +73,7 @@
       else
 	return "vstr<V_sz_elem1>.<V_sz_elem>\t%q1, %E0";
 
-    case 7:  /* [w,Ul].  */
+    case 7:  /* [w,UlUi].  */
 	return output_move_neon (operands);
 
     default:
@@ -91,8 +91,8 @@
 						   (symbol_ref "CODE_FOR_nothing")])
    (set_attr "type" "mve_move,mve_move,mve_move,mve_move,mve_load,multiple,mve_store,mve_load")
    (set_attr "length" "4,8,8,4,4,8,4,8")
-   (set_attr "thumb2_pool_range" "*,*,*,*,1018,*,*,*")
-   (set_attr "neg_pool_range" "*,*,*,*,996,*,*,*")])
+   (set_attr "thumb2_pool_range" "*,*,*,*,*,*,*,1016")
+   (set_attr "thumb2_neg_pool_range" "*,*,*,*,*,*,*,996")])
 
 ;;
 ;; [vdupq_n_u, vdupq_n_s, vdupq_n_f]

@@ -221,7 +221,7 @@ package body Ch9 is
                Set_Interface_List (Task_Node, New_List);
 
                loop
-                  Append (P_Qualified_Simple_Name, Interface_List (Task_Node));
+                  Append (P_Subtype_Name, Interface_List (Task_Node));
                   exit when Token /= Tok_And;
                   Scan; --  past AND
                end loop;
@@ -557,8 +557,7 @@ package body Ch9 is
             Set_Interface_List (Protected_Node, New_List);
 
             loop
-               Append (P_Qualified_Simple_Name,
-                 Interface_List (Protected_Node));
+               Append (P_Subtype_Name, Interface_List (Protected_Node));
 
                exit when Token /= Tok_And;
                Scan; --  past AND

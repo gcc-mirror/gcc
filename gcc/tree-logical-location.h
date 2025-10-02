@@ -34,6 +34,8 @@ public:
   using key = diagnostics::logical_locations::key;
   using kind = diagnostics::logical_locations::kind;
 
+  void dump (FILE *out, int indent) const final override;
+
   const char *get_short_name (key) const final override;
   const char *get_name_with_scope (key) const final override;
   const char *get_internal_name (key) const final override;

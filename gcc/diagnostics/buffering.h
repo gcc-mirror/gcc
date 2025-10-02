@@ -21,7 +21,7 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_BUFFERING_H
 #define GCC_DIAGNOSTICS_BUFFERING_H
 
-#include "diagnostic.h"
+#include "diagnostics/counters.h"
 
 namespace diagnostics {
 

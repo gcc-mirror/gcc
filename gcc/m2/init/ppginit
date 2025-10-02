@@ -25,6 +25,7 @@ RTExceptions
 M2EXCEPTION
 M2RTS
 SysExceptions
+M2Diagnostic
 StrLib
 errno
 termios
@@ -45,6 +46,7 @@ UnixArgs
 FIO
 SFIO
 StrCase
+StringConvert
 bnflex
 Lists
 Args

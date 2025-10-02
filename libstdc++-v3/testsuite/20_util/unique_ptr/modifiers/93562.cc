@@ -76,11 +76,32 @@ test03()
   VERIFY(p2.get_deleter().id == -1);
 }
 
+namespace B
+{
+  struct Deleter
+  {
+    Deleter& operator=(const Deleter&) = delete;
+
+    void operator()(int* p) const noexcept { delete[] p; }
+
+    // found by ADL
+    friend void swap(Deleter& lhs, Deleter& rhs) noexcept
+    { std::swap(lhs.id, rhs.id); }
+
+    int id;
+  };
+
+  static_assert(!std::is_move_assignable<Deleter>::value, "not assignable");
+#if __cplusplus >= 201703L
+  static_assert(std::is_swappable_v<Deleter>, "but swappable");
+#endif
+} // namespace B
+
 void
 test04()
 {
-  std::unique_ptr<int[], A::Deleter> p1(new int[1]{1}, { -1 });
-  std::unique_ptr<int[], A::Deleter> p2(new int[2]{2, 2}, { -2 });
+  std::unique_ptr<int[], B::Deleter> p1(new int[1]{1}, { -1 });
+  std::unique_ptr<int[], B::Deleter> p2(new int[2]{2, 2}, { -2 });
   int* const pi1 = p1.get();
   int* const pi2 = p2.get();
   // This type must swappable even though the deleter is not move-assignable:

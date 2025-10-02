@@ -4528,7 +4528,7 @@ gcn_expand_cmp_swap (tree exp, rtx target)
 
 static rtx
 gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
-		      machine_mode /*mode */ , int ignore,
+		      machine_mode mode, int ignore,
 		      struct gcn_builtin_description *)
 {
   tree fndecl = TREE_OPERAND (CALL_EXPR_FN (exp), 0);
@@ -4620,6 +4620,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4631,6 +4633,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  SFmode,
@@ -4642,6 +4646,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4653,6 +4659,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -4664,6 +4672,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4675,6 +4685,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -4686,6 +4698,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg1 = force_reg (V64SFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					   V64SFmode,
@@ -4701,6 +4715,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg1 = force_reg (V64DFmode,
 			      expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					   V64DFmode,
@@ -4716,6 +4732,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4727,6 +4745,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64SFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64SFmode,
@@ -4738,6 +4758,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -4749,6 +4771,8 @@ gcn_expand_builtin_1 (tree exp, rtx target, rtx /*subtarget */ ,
       {
 	if (ignore)
 	  return target;
+	if (!REG_P (target))
+	  target = gen_reg_rtx (mode);
 	rtx arg = force_reg (V64DFmode,
 			     expand_expr (CALL_EXPR_ARG (exp, 0), NULL_RTX,
 					  V64DFmode,
@@ -5344,26 +5368,18 @@ gcn_preferred_vector_alignment (const_tree type)
 
 static bool
 gcn_vectorize_support_vector_misalignment (machine_mode ARG_UNUSED (mode),
-					   const_tree type, int misalignment,
+					   const_tree ARG_UNUSED (type),
+					   int ARG_UNUSED (misalignment),
 					   bool is_packed,
-					   bool is_gather_scatter)
+					   bool ARG_UNUSED (is_gather_scatter))
 {
-  if (is_gather_scatter)
-    return true;
-
-  if (is_packed)
-    return false;
-
-  /* If the misalignment is unknown, we should be able to handle the access
-     so long as it is not to a member of a packed data structure.  */
-  if (misalignment == -1)
-    return true;
-
-  /* Return true if the misalignment is a multiple of the natural alignment
-     of the vector's element type.  This is probably always going to be
-     true in practice, since we've already established that this isn't a
-     packed access.  */
-  return misalignment % TYPE_ALIGN_UNIT (type) == 0;
+  /* All Flat and Global load instructions support arbitrary alignment, so
+     the types and such are irrelevant (Buffer instructions are not used).  */
+ 
+  /* Disallow packed accesses because expand attempts to take scalar subregs of
+     vector registers, which is nonsense.
+     Testcase: gfortran.dg/recursive_alloc_comp_4.f08   */
+  return !is_packed;
 }
 
 /* Implement TARGET_VECTORIZE_VECTOR_ALIGNMENT_REACHABLE.
@@ -6762,10 +6778,6 @@ gcn_hsa_declare_function_name (FILE *file, const char *name,
       if (avgpr < MAX_NORMAL_AVGPR_COUNT)
 	avgpr = MAX_NORMAL_AVGPR_COUNT;
     }
-
-  /* SIMD32 devices count double in wavefront64 mode.  */
-  if (TARGET_WAVE64_COMPAT)
-    vgpr *= 2;
 
   /* Round up to the allocation block size.  */
   int vgpr_block_size = TARGET_VGPR_GRANULARITY;

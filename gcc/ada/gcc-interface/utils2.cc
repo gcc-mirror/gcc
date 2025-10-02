@@ -1041,9 +1041,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	}
 
       /* If a class-wide type may be involved, force use of the RHS type.  */
-      if ((TREE_CODE (right_type) == RECORD_TYPE
-	   || TREE_CODE (right_type) == UNION_TYPE)
-	  && TYPE_ALIGN_OK (right_type))
+      if (type_is_tagged_or_cw_equivalent (right_type))
 	operation_type = right_type;
 
       /* If we are copying between padded objects with compatible types, use
@@ -1118,7 +1116,7 @@ build_binary_op (enum tree_code op_code, tree result_type,
 			     == TREE_CODE (operand_type (result))
 			     && TYPE_MODE (restype)
 				== TYPE_MODE (operand_type (result))))
-			   || TYPE_ALIGN_OK (restype))))
+			   || type_is_tagged_or_cw_equivalent (restype))))
 	    result = TREE_OPERAND (result, 0);
 
 	  else if (TREE_CODE (result) == VIEW_CONVERT_EXPR)
@@ -1293,6 +1291,14 @@ build_binary_op (enum tree_code op_code, tree result_type,
 	    {
 	      gcc_assert (TYPE_MAIN_VARIANT (left_base_type)
 			  == TYPE_MAIN_VARIANT (right_base_type));
+	      best_type = left_base_type;
+	    }
+
+	  else if (TYPE_IS_EXTENDED_POINTER_P (left_base_type)
+	           && TYPE_IS_EXTENDED_POINTER_P (right_base_type))
+	    {
+	      gcc_assert (TYPE_MAIN_VARIANT (left_base_type)
+	                  == TYPE_MAIN_VARIANT (right_base_type));
 	      best_type = left_base_type;
 	    }
 
@@ -1737,7 +1743,7 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 
 	/* If we want to refer to an unconstrained array, use the appropriate
 	   expression.  But this will never survive down to the back-end.  */
-	if (TYPE_IS_FAT_POINTER_P (type))
+	if (TYPE_IS_FAT_POINTER_P (type) || TYPE_IS_EXTENDED_POINTER_P (type))
 	  {
 	    result = build1 (UNCONSTRAINED_ARRAY_REF,
 			     TYPE_UNCONSTRAINED_ARRAY (type), operand);
@@ -1756,7 +1762,9 @@ build_unary_op (enum tree_code op_code, tree result_type, tree operand)
 	    TREE_READONLY (result) = TYPE_READONLY (TREE_TYPE (type));
 	  }
 
-	if (!TYPE_IS_FAT_POINTER_P (type) && TYPE_VOLATILE (TREE_TYPE (type)))
+	if (!TYPE_IS_FAT_POINTER_P (type)
+	    && !TYPE_IS_EXTENDED_POINTER_P (type)
+	    && TYPE_VOLATILE (TREE_TYPE (type)))
 	  {
 	    TREE_SIDE_EFFECTS (result) = 1;
 	    if (INDIRECT_REF_P (result))
@@ -2609,7 +2617,8 @@ build_allocator (tree type, tree init, tree result_type, Entity_Id gnat_proc,
   /* If RESULT_TYPE is a fat or thin pointer, set SIZE to be the sum of the
      sizes of the object and its template.  Allocate the whole thing and
      fill in the parts that are known.  */
-  else if (TYPE_IS_FAT_OR_THIN_POINTER_P (result_type))
+  else if (TYPE_IS_FAT_OR_THIN_POINTER_P (result_type)
+	   || TYPE_IS_EXTENDED_POINTER_P (result_type))
     {
       tree storage_type
 	= build_unc_object_type_from_ptr (result_type, type,
@@ -3055,7 +3064,8 @@ gnat_save_expr (tree exp)
      This may be more efficient, but will also allow us to more easily find
      the match for the PLACEHOLDER_EXPR.  */
   if (code == COMPONENT_REF
-      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
+      && (TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0)))
+	  || TYPE_IS_EXTENDED_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0)))))
     return build3 (code, type, gnat_save_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), NULL_TREE);
 
@@ -3124,7 +3134,8 @@ gnat_protect_expr (tree exp)
      This may be more efficient, but will also allow us to more easily find
      the match for the PLACEHOLDER_EXPR.  */
   if (code == COMPONENT_REF
-      && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0))))
+      && (TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0)))
+	  || TYPE_IS_EXTENDED_POINTER_P (TREE_TYPE (TREE_OPERAND (exp, 0)))))
     return build3 (code, type, gnat_protect_expr (TREE_OPERAND (exp, 0)),
 		   TREE_OPERAND (exp, 1), NULL_TREE);
 
@@ -3132,6 +3143,7 @@ gnat_protect_expr (tree exp)
      for a CALL_EXPR as large objects are returned via invisible reference
      in most ABIs so the temporary will directly be filled by the callee.  */
   if (TYPE_IS_FAT_POINTER_P (type)
+      || TYPE_IS_EXTENDED_POINTER_P (type)
       || !AGGREGATE_TYPE_P (type)
       || code == CALL_EXPR)
     return save_expr (exp);
@@ -3168,7 +3180,8 @@ gnat_stabilize_reference_1 (tree e, void *data)
 	 fat pointer.  This may be more efficient, but will also allow
 	 us to more easily find the match for the PLACEHOLDER_EXPR.  */
       if (code == COMPONENT_REF
-	  && TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (e, 0))))
+	  && (TYPE_IS_FAT_POINTER_P (TREE_TYPE (TREE_OPERAND (e, 0)))
+	      || TYPE_IS_EXTENDED_POINTER_P (TREE_TYPE (TREE_OPERAND (e, 0)))))
 	result
 	  = build3 (code, type,
 		    gnat_stabilize_reference_1 (TREE_OPERAND (e, 0), data),

@@ -6495,8 +6495,7 @@ loongarch_print_operand (FILE *file, rtx op, int letter)
       break;
 
     case 't':
-      if (GET_MODE (op) != TImode
-	  || (op != CONST0_RTX (TImode) && code != REG))
+      if (!reg_or_0_operand (op, TImode))
 	{
 	  output_operand_lossage ("invalid use of '%%%c'", letter);
 	  break;
@@ -11203,6 +11202,69 @@ loongarch_compute_pressure_classes (reg_class *classes)
   return i;
 }
 
+/* Implement TARGET_CAN_INLINE_P.  Determine whether inlining the function
+   CALLER into the function CALLEE is safe.  Inlining should be rejected if
+   there is no always_inline attribute and the target options differ except
+   for differences in ISA extensions or performance tuning options like the
+   code model, TLS dialect, etc.  */
+
+static bool
+loongarch_can_inline_p (tree caller, tree callee)
+{
+  tree callee_tree = DECL_FUNCTION_SPECIFIC_TARGET (callee);
+  tree caller_tree = DECL_FUNCTION_SPECIFIC_TARGET (caller);
+
+  if (!callee_tree)
+    callee_tree = target_option_default_node;
+
+  if (!caller_tree)
+    caller_tree = target_option_default_node;
+
+  /* If both caller and callee have attributes, assume that if the
+     pointer is different, the two functions have different target
+     options since build_target_option_node uses a hash table for the
+     options.  */
+  if (callee_tree == caller_tree)
+    return true;
+
+  struct cl_target_option *callee_opts = TREE_TARGET_OPTION (callee_tree);
+  struct cl_target_option *caller_opts = TREE_TARGET_OPTION (caller_tree);
+
+  /* Callee and caller should have the same target options.  */
+  int callee_target_flags = callee_opts->x_target_flags;
+  int caller_target_flags = caller_opts->x_target_flags;
+
+  if (callee_target_flags != caller_target_flags)
+    return false;
+
+  /* If callee enables the isa extension that the caller does not enable,
+     inlining is disabled.  */
+  if (~caller_opts->x_la_isa_evolution
+      & callee_opts->x_la_isa_evolution)
+    return false;
+
+  /* If simd extensions are enabled for the callee but not for the caller,
+     inlining is disabled.  */
+  if ((caller_opts->x_la_opt_simd == ISA_EXT_NONE
+       && callee_opts->x_la_opt_simd != ISA_EXT_NONE)
+      || (caller_opts->x_la_opt_simd == ISA_EXT_SIMD_LSX
+	  && callee_opts->x_la_opt_simd == ISA_EXT_SIMD_LASX))
+    return false;
+
+  bool always_inline
+    = lookup_attribute ("always_inline", DECL_ATTRIBUTES (callee));
+
+  /* If the architectural features match up and the callee is always_inline
+     then the other attributes don't matter.  */
+  if (always_inline)
+    return true;
+
+  if (caller_opts->x_la_opt_cmodel != callee_opts->x_la_opt_cmodel)
+    return false;
+
+  return true;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -11482,6 +11544,9 @@ loongarch_compute_pressure_classes (reg_class *classes)
 
 #undef TARGET_COMPUTE_PRESSURE_CLASSES
 #define TARGET_COMPUTE_PRESSURE_CLASSES loongarch_compute_pressure_classes
+
+#undef TARGET_CAN_INLINE_P
+#define TARGET_CAN_INLINE_P loongarch_can_inline_p
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

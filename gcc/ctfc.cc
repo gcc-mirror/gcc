@@ -798,7 +798,7 @@ ctf_add_function (ctf_container_ref ctfc, uint32_t flag, const char * name,
 
 ctf_dtdef_ref
 ctf_add_sou (ctf_container_ref ctfc, uint32_t flag, const char * name,
-	     uint32_t kind, size_t size, dw_die_ref die)
+	     uint32_t kind, unsigned HOST_WIDE_INT size, dw_die_ref die)
 {
   ctf_dtdef_ref dtd;
 

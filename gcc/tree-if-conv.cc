@@ -3444,7 +3444,7 @@ version_loop_for_if_conversion (class loop *loop, vec<gimple *> *preds)
     }
 
   initialize_original_copy_tables ();
-  /* At this point we invalidate porfile confistency until IFN_LOOP_VECTORIZED
+  /* At this point we invalidate profile consistency until IFN_LOOP_VECTORIZED
      is re-merged in the vectorizer.  */
   new_loop = loop_version (loop, cond, &cond_bb,
 			   profile_probability::always (),

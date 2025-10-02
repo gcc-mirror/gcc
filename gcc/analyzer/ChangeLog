@@ -1,3 +1,7 @@
+2025-09-15  Alexandre Oliva  <oliva@adacore.com>
+
+	* kf.cc (register_known_functions): Add __get_errno_ptr.
+
 2025-08-29  David Malcolm  <dmalcolm@redhat.com>
 
 	* pending-diagnostic.cc: Include "diagnostics/logging.h".

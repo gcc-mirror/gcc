@@ -160,13 +160,23 @@ package Sem_Ch6 is
    --  True when this is a check against a formal access-to-subprogram type,
    --  indicating that mapping of types is needed.
 
-   procedure Create_Extra_Formals (E : Entity_Id);
+   procedure Create_Extra_Formals
+     (E           : Entity_Id;
+      Related_Nod : Node_Id := Empty);
    --  For each parameter of a subprogram or entry that requires an additional
    --  formal (such as for access parameters and indefinite discriminated
    --  parameters), creates the appropriate formal and attach it to its
    --  associated parameter. Each extra formal will also be appended to
    --  the end of Subp's parameter list (with each subsequent extra formal
    --  being attached to the preceding extra formal).
+   --
+   --  Related_Nod is the node motivating the frontend call to create the
+   --  extra formals; it is not passed when the node causing the call is E
+   --  (for example, as part of freezing E). Related_Nod provides the context
+   --  where the extra formals are created, and it is used to determine if
+   --  the creation of the extra formals can be deferred when the underlying
+   --  type of some formal (or its return type) is not available, and thus
+   --  improve the support for AI05-0151-1/08.
 
    function Extra_Formals_Match_OK
      (E     : Entity_Id;
@@ -432,12 +442,15 @@ package Sem_Ch6 is
       --  been registered to defer the addition of its extra formals.
 
       function Is_Unsupported_Extra_Formals_Entity
-        (Id : Entity_Id) return Boolean;
+        (Id          : Entity_Id;
+         Related_Nod : Node_Id := Empty) return Boolean;
       --  Id is a subprogram, subprogram type, or entry. Return True if Id is
       --  unsupported for deferring the addition of its extra formals; that is,
       --  it is defined in a compilation unit that is a package body or a
       --  subprogram body, and the underlying type of some of its parameters
-      --  or result type is not available.
+      --  or result type is not available. Related_Nod is the node where this
+      --  check is performed (it is generally a subprogram call); if it is not
+      --  available then the location of entity Id is used as its related node.
       --
       --  The context for this case is an unsupported case of AI05-0151-1/08
       --  that allows incomplete tagged types as parameter and result types.

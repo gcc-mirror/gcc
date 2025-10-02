@@ -773,11 +773,19 @@ package Rtsfind is
      RE_Scaled_Divide64,                 -- System.Arith_64
      RE_Subtract_With_Ovflo_Check64,     -- System.Arith_64
 
+     RE_Uns_Add_With_Ovflo_Check64,      -- System.Arith_64
+     RE_Uns_Multiply_With_Ovflo_Check64, -- System.Arith_64
+     RE_Uns_Subtract_With_Ovflo_Check64, -- System.Arith_64
+
      RE_Add_With_Ovflo_Check128,         -- System.Arith_128
      RE_Double_Divide128,                -- System.Arith_128
      RE_Multiply_With_Ovflo_Check128,    -- System.Arith_128
      RE_Subtract_With_Ovflo_Check128,    -- System.Arith_128
      RE_Scaled_Divide128,                -- System.Arith_128
+
+     RE_Uns_Add_With_Ovflo_Check128,      -- System.Arith_128
+     RE_Uns_Multiply_With_Ovflo_Check128, -- System.Arith_128
+     RE_Uns_Subtract_With_Ovflo_Check128, -- System.Arith_128
 
      RE_Assert_Failure,                  -- System.Assertions
      RE_Raise_Assert_Failure,            -- System.Assertions
@@ -1652,6 +1660,7 @@ package Rtsfind is
      RE_Put_Image_Long_Long_Long_Unsigned, -- System.Put_Images
      RE_Put_Image_Thin_Pointer,          -- System.Put_Images
      RE_Put_Image_Fat_Pointer,           -- System.Put_Images
+     RE_Put_Image_Extended_Access_Pointer, -- System.Put_Images
      RE_Put_Image_Access_Subp,           -- System.Put_Images
      RE_Put_Image_Access_Prot_Subp,      -- System.Put_Images
      RE_Put_Image_String,                -- System.Put_Images
@@ -2421,11 +2430,19 @@ package Rtsfind is
      RE_Scaled_Divide64                  => System_Arith_64,
      RE_Subtract_With_Ovflo_Check64      => System_Arith_64,
 
+     RE_Uns_Add_With_Ovflo_Check64       => System_Arith_64,
+     RE_Uns_Multiply_With_Ovflo_Check64  => System_Arith_64,
+     RE_Uns_Subtract_With_Ovflo_Check64  => System_Arith_64,
+
      RE_Add_With_Ovflo_Check128          => System_Arith_128,
      RE_Double_Divide128                 => System_Arith_128,
      RE_Multiply_With_Ovflo_Check128     => System_Arith_128,
      RE_Subtract_With_Ovflo_Check128     => System_Arith_128,
      RE_Scaled_Divide128                 => System_Arith_128,
+
+     RE_Uns_Add_With_Ovflo_Check128      => System_Arith_128,
+     RE_Uns_Multiply_With_Ovflo_Check128 => System_Arith_128,
+     RE_Uns_Subtract_With_Ovflo_Check128 => System_Arith_128,
 
      RE_Assert_Failure                   => System_Assertions,
      RE_Raise_Assert_Failure             => System_Assertions,
@@ -3425,6 +3442,7 @@ package Rtsfind is
      RE_Put_Image_Long_Long_Long_Unsigned => System_Put_Images,
      RE_Put_Image_Thin_Pointer           => System_Put_Images,
      RE_Put_Image_Fat_Pointer            => System_Put_Images,
+     RE_Put_Image_Extended_Access_Pointer => System_Put_Images,
      RE_Put_Image_Access_Subp            => System_Put_Images,
      RE_Put_Image_Access_Prot_Subp       => System_Put_Images,
      RE_Put_Image_String                 => System_Put_Images,

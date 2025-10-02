@@ -1,8 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-fno-sanitize=null -fsanitize=alignment -O2" } */
-/* Check that when optimizing if we know the alignment is right
-   and we are not doing -fsanitize=null instrumentation we don't
-   instrument the alignment check.  */
+/* __builtin_assume_aligned should be instrumented too. UBSAN alignment
+   should not depend on it.  */
 
 __attribute__((noinline, noclone)) int
 foo (char *p)
@@ -12,4 +11,4 @@ foo (char *p)
   return *q;
 }
 
-/* { dg-final { scan-assembler-not "__ubsan_handle" } } */
+/* { dg-final { scan-assembler "__ubsan_handle" } } */

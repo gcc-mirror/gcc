@@ -7922,6 +7922,8 @@ gfc_trans_deallocate (gfc_code *code)
       gfc_expr *expr = gfc_copy_expr (al->expr);
       bool is_coarray = false, is_coarray_array = false;
       int caf_mode = 0;
+      gfc_ref * ref;
+      gfc_actual_arglist * param_list;
 
       gcc_assert (expr->expr_type == EXPR_VARIABLE);
 
@@ -7937,9 +7939,18 @@ gfc_trans_deallocate (gfc_code *code)
 
       /* Deallocate PDT components that are parameterized.  */
       tmp = NULL;
+      param_list = expr->param_list;
+      if (!param_list && expr->symtree->n.sym->param_list)
+	param_list = expr->symtree->n.sym->param_list;
+      for (ref = expr->ref; ref; ref = ref->next)
+	if (ref->type ==  REF_COMPONENT
+	    && ref->u.c.component->ts.type == BT_DERIVED
+	    && ref->u.c.component->ts.u.derived->attr.pdt_type
+	    && ref->u.c.component->param_list)
+	  param_list = ref->u.c.component->param_list;
       if (expr->ts.type == BT_DERIVED
-	  && expr->ts.u.derived->attr.pdt_type
-	  && expr->symtree->n.sym->param_list)
+	  && ((expr->ts.u.derived->attr.pdt_type && param_list)
+	      || expr->ts.u.derived->attr.pdt_comp))
 	tmp = gfc_deallocate_pdt_comp (expr->ts.u.derived, se.expr, expr->rank);
       else if (expr->ts.type == BT_CLASS
 	       && CLASS_DATA (expr)->ts.u.derived->attr.pdt_type

@@ -207,6 +207,7 @@ rtl_opt_pass * make_pass_avlprop (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vector_permconst (gcc::context *ctxt);
+rtl_opt_pass * make_pass_bclr_lowest_set_bit (gcc::context *ctxt);
 
 
 /* Routines implemented in riscv-string.c.  */
@@ -839,6 +840,8 @@ extern bool
 riscv_option_valid_version_attribute_p (tree, tree, tree, int);
 extern bool
 riscv_process_target_version_attr (tree, location_t *);
+extern bool
+riscv_process_target_version_str (string_slice, location_t *);
 extern void
 riscv_override_options_internal (struct gcc_options *);
 extern void riscv_option_override (void);

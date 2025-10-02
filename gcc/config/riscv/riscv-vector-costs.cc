@@ -632,7 +632,7 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
       int estimated_lmul = estimated_vf * GET_MODE_BITSIZE (mode).to_constant ()
 			   / TARGET_MIN_VLEN;
       if (estimated_lmul > RVV_M8)
-	return regno_alignment;
+	return RVV_M8;
       else
 	return estimated_lmul;
     }

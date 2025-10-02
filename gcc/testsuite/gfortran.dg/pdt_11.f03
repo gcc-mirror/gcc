@@ -47,6 +47,7 @@ program test
      write(*,*) 'o_fdef FAIL'
      STOP 2
   end if
+  deallocate (o_fdef)
 end program test
 
 

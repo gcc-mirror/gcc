@@ -1,3 +1,16 @@
+2025-09-23  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/121986
+	* include/rich-location.h (fixit_hint::deletion_p): New accessor.
+	(fixit_hint::replacement_p): New accessor.
+
+2025-09-18  David Malcolm  <dmalcolm@redhat.com>
+
+	* include/line-map.h (enum location_aspect): Convert to...
+	(enum class location_aspect): ...this.
+	* line-map.cc: Update for conversion of location_aspect to enum
+	class.
+
 2025-09-01  Jakub Jelinek  <jakub@redhat.com>
 
 	* macro.cc: Implement C2Y N3457 - The __COUNTER__ predefined macro.

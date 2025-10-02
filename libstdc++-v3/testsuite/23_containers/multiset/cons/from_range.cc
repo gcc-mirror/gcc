@@ -48,7 +48,7 @@ constexpr bool is_equal(std::less<T>, std::less<U>)
 { return true; }
 
 constexpr bool is_equal(StateCmp lhs, StateCmp rhs)
-{ return lhs.state = rhs.state; }
+{ return lhs.state == rhs.state; }
 
 template<typename Range, typename Alloc, typename Cmp>
 constexpr void
@@ -82,12 +82,12 @@ do_test(Alloc alloc, Cmp cmp)
   std::set<V, Cmp, Alloc> s4(std::from_range, Range(a, a+4), cmp);
   VERIFY( eq(s4, {a, 4}) );
   VERIFY( s4.get_allocator() == Alloc() );
-  VERIFY( is_equal(s4.key_comp(), Cmp()) );
+  VERIFY( is_equal(s4.key_comp(), cmp) );
 
   std::set<V, Cmp, Alloc> s9(std::from_range, Range(a, a+9), alloc);
   VERIFY( eq(s9, {a, 9}) );
   VERIFY( s9.get_allocator() == alloc );
-  VERIFY( is_equal(s9.key_comp(), cmp) );
+  VERIFY( is_equal(s9.key_comp(), Cmp()) );
 
   std::set<V, Cmp, Alloc> sr(std::from_range, Range(a, a+14), cmp, alloc);
   VERIFY( eq(sr, {a, 9}) );

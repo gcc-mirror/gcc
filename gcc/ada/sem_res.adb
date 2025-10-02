@@ -5273,7 +5273,7 @@ package body Sem_Res is
             end if;
 
             --  The actual parameter of a Ghost subprogram whose formal is of
-            --  mode IN OUT or OUT must be a Ghost variable (SPARK RM 6.9(12)).
+            --  mode IN OUT or OUT must be a Ghost variable (SPARK RM 6.9(15)).
 
             if Comes_From_Source (Nam)
               and then Is_Ghost_Entity (Nam)
@@ -6954,7 +6954,7 @@ package body Sem_Res is
                   --  checkable, the case of calling an immediately containing
                   --  subprogram is easy to catch.
 
-                  if not Is_Ignored_Ghost_Entity (Nam) then
+                  if not Is_Ignored_Ghost_Entity_In_Codegen (Nam) then
                      Check_Restriction (No_Recursion, N);
                   end if;
 
@@ -7092,7 +7092,7 @@ package body Sem_Res is
         and then Ekind (Nam) in E_Function | E_Subprogram_Type
         and then Requires_Transient_Scope (Etype (Nam))
         and then not Is_Intrinsic_Subprogram (Nam)
-        and then not Is_Ignored_Ghost_Entity (Nam)
+        and then not Is_Ignored_Ghost_Entity_In_Codegen (Nam)
         and then not Is_Build_In_Place_Function (Nam)
         and then not Is_Inlinable_Expression_Function (Nam)
         and then not (Is_Inlined (Nam)

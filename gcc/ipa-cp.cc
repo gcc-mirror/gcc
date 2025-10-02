@@ -3289,14 +3289,17 @@ ipa_get_indirect_edge_target (struct cgraph_edge *ie,
 }
 
 /* Calculate devirtualization time bonus for NODE, assuming we know information
-   about arguments stored in AVALS.  */
+   about arguments stored in AVALS.
 
-static int
+   FIXME: This function will also consider devirtualization of calls that are
+   known to be dead in the clone.  */
+
+static sreal
 devirtualization_time_bonus (struct cgraph_node *node,
 			     ipa_auto_call_arg_values *avals)
 {
   struct cgraph_edge *ie;
-  int res = 0;
+  sreal res = 0;
 
   for (ie = node->indirect_calls; ie; ie = ie->next_callee)
     {
@@ -3314,7 +3317,7 @@ devirtualization_time_bonus (struct cgraph_node *node,
 	continue;
 
       /* Only bare minimum benefit for clearly un-inlineable targets.  */
-      res += 1;
+      int savings = 1;
       callee = cgraph_node::get (target);
       if (!callee || !callee->definition)
 	continue;
@@ -3331,12 +3334,13 @@ devirtualization_time_bonus (struct cgraph_node *node,
       int max_inline_insns_auto
 	= opt_for_fn (callee->decl, param_max_inline_insns_auto);
       if (size <= max_inline_insns_auto / 4)
-	res += 31 / ((int)speculative + 1);
+	savings += 31 / ((int)speculative + 1);
       else if (size <= max_inline_insns_auto / 2)
-	res += 15 / ((int)speculative + 1);
+	savings += 15 / ((int)speculative + 1);
       else if (size <= max_inline_insns_auto
 	       || DECL_DECLARED_INLINE_P (callee->decl))
-	res += 7 / ((int)speculative + 1);
+	savings += 7 / ((int)speculative + 1);
+      res = res + ie->combined_sreal_frequency () * (sreal) savings;
     }
 
   return res;
@@ -3624,8 +3628,8 @@ estimate_local_effects (struct cgraph_node *node)
   ipa_auto_call_arg_values avals;
   always_const = gather_context_independent_values (info, &avals, true,
 						    &removable_params_cost);
-  int devirt_bonus = devirtualization_time_bonus (node, &avals);
-  if (always_const || devirt_bonus
+  sreal devirt_bonus = devirtualization_time_bonus (node, &avals);
+  if (always_const || devirt_bonus > 0
       || (removable_params_cost && clone_for_param_removal_p (node)))
     {
       struct caller_statistics stats;
@@ -4555,7 +4559,8 @@ gather_count_of_non_rec_edges (cgraph_node *node, void *data)
   gather_other_count_struct *desc = (gather_other_count_struct *) data;
   for (cgraph_edge *cs = node->callers; cs; cs = cs->next_caller)
     if (cs->caller != desc->orig && cs->caller->clone_of != desc->orig)
-      desc->other_count += cs->count.ipa ();
+      if (cs->count.ipa ().initialized_p ())
+	desc->other_count += cs->count.ipa ();
   return false;
 }
 
@@ -4696,7 +4701,14 @@ update_counts_for_self_gen_clones (cgraph_node *orig_node,
 	  if (den > 0)
 	    for (cgraph_edge *e = cs; e; e = get_next_cgraph_edge_clone (e))
 	      if (e->callee->ultimate_alias_target () == orig_node
-		  && processed_edges.contains (e))
+		  && processed_edges.contains (e)
+		  /* If count is not IPA, this adjustment makes verifier
+		     unhappy, since we expect bb->count to match e->count.
+		     We may add a flag to mark edge conts that has been
+		     modified by IPA code, but so far it does not seem
+		     to be worth the effort.  With local counts the profile
+		     will not propagate at IPA level.  */
+		  && e->count.ipa_p ())
 		e->count /= den;
 	}
     }

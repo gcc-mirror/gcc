@@ -222,7 +222,7 @@ GCN_DEVICE(gfx1030, GFX1030, 0x36, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -233,7 +233,7 @@ GCN_DEVICE(gfx1031, GFX1031, 0x37, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -244,7 +244,7 @@ GCN_DEVICE(gfx1032, GFX1032, 0x38, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -255,7 +255,7 @@ GCN_DEVICE(gfx1033, GFX1033, 0x39, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -266,7 +266,7 @@ GCN_DEVICE(gfx1034, GFX1034, 0x3e, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -277,7 +277,7 @@ GCN_DEVICE(gfx1035, GFX1035, 0x3d, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -288,7 +288,7 @@ GCN_DEVICE(gfx1036, GFX1036, 0x45, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ GFX10_3_GENERIC
@@ -299,7 +299,7 @@ GCN_DEVICE(gfx10-3-generic, GFX10_3_GENERIC, 0x053, ISA_RDNA2,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 512, /* 512 SIMD32 = 256 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 1,
 	   /* Architecture Family */ GFX10,
 	   /* Generic Name */ NONE
@@ -312,7 +312,7 @@ GCN_DEVICE(gfx1100, GFX1100, 0x41, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536, /* 1536 SIMD32 = 768 wavefrontsize64.  */
+	   /* Max ISA VGPRs */ 768,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -323,7 +323,7 @@ GCN_DEVICE(gfx1101, GFX1101, 0x46, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 768,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -334,7 +334,7 @@ GCN_DEVICE(gfx1102, GFX1102, 0x47, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -345,7 +345,7 @@ GCN_DEVICE(gfx1103, GFX1103, 0x44, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -356,7 +356,7 @@ GCN_DEVICE(gfx1150, GFX1150, 0x43, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -367,7 +367,7 @@ GCN_DEVICE(gfx1151, GFX1151, 0x4a, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 768,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -378,7 +378,7 @@ GCN_DEVICE(gfx1152, GFX1152, 0x55, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -389,7 +389,7 @@ GCN_DEVICE(gfx1153, GFX1153, 0x58, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ GFX11_GENERIC
@@ -400,7 +400,7 @@ GCN_DEVICE(gfx11-generic, GFX11_GENERIC, 0x054, ISA_RDNA3,
 	   /* SRAM_ECC default */ HSACO_ATTR_UNSUPPORTED,
 	   /* WAVE64 mode */ HSACO_ATTR_ON,
 	   /* CU mode */ HSACO_ATTR_ON,
-	   /* Max ISA VGPRs */ 1536,
+	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 1,
 	   /* Architecture Family */ GFX11,
 	   /* Generic Name */ NONE

@@ -51,6 +51,14 @@
 #include "oacc-int.h"
 #include <assert.h>
 
+/* Create hash-table for declare target's indirect clause on the host;
+   see build-target-indirect-htab.h for details.  */
+#define USE_HASHTAB_LOOKUP_FOR_INDIRECT
+#ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
+static void* create_target_indirect_map (size_t *, size_t,
+					 uint64_t *, uint64_t *);
+#endif
+
 /* These probably won't be in elf.h for a while.  */
 #ifndef R_AMDGPU_NONE
 #define R_AMDGPU_NONE		0
@@ -3688,37 +3696,28 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 			     (void*) ind_funcs_table_addr,
 			     sizeof (ind_funcs_table));
 
-      /* Build host->target address map for indirect functions.  */
-      uint64_t ind_fn_map[ind_func_count * 2 + 1];
-      for (unsigned i = 0; i < ind_func_count; i++)
-	{
-	  ind_fn_map[i * 2] = host_ind_fn_table[i];
-	  ind_fn_map[i * 2 + 1] = ind_funcs_table[i];
-	  GCN_DEBUG ("Indirect function %d: %lx->%lx\n",
-		     i, host_ind_fn_table[i], ind_funcs_table[i]);
-	}
-      ind_fn_map[ind_func_count * 2] = 0;
+      /* For newer binaries, the hash table for 'indirect' is created on the
+	 host. Older binaries don't have GOMP_INDIRECT_ADDR_HMAP on the
+	 device side - and have to create the table themselves using
+	 GOMP_INDIRECT_ADDR_MAP.  */
 
-      /* Write the map onto the target.  */
-      void *map_target_addr
-	= GOMP_OFFLOAD_alloc (agent->device_id, sizeof (ind_fn_map));
-      GCN_DEBUG ("Allocated indirect map at %p\n", map_target_addr);
-
-      GOMP_OFFLOAD_host2dev (agent->device_id, map_target_addr,
-			     (void*) ind_fn_map,
-			     sizeof (ind_fn_map));
-
-      /* Write address of the map onto the target.  */
       hsa_executable_symbol_t symbol;
-
+      bool host_init_htab = true;
+      #ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
       status
 	= hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
-						XSTRING (GOMP_INDIRECT_ADDR_MAP),
+						XSTRING (GOMP_INDIRECT_ADDR_HMAP),
 						agent->id, 0, &symbol);
+      if (status != HSA_STATUS_SUCCESS)
+      #endif
+	{
+	  host_init_htab = false;
+	  status = hsa_fns.hsa_executable_get_symbol_fn (agent->executable, NULL,
+		     XSTRING (GOMP_INDIRECT_ADDR_MAP), agent->id, 0, &symbol);
+	}
       if (status != HSA_STATUS_SUCCESS)
 	hsa_fatal ("Could not find GOMP_INDIRECT_ADDR_MAP in code object",
 		   status);
-
       uint64_t varptr;
       uint32_t varsize;
 
@@ -3734,9 +3733,51 @@ GOMP_OFFLOAD_load_image (int ord, unsigned version, const void *target_data,
 	hsa_fatal ("Could not extract a variable size from its symbol",
 		   status);
 
-      GCN_DEBUG ("Found GOMP_INDIRECT_ADDR_MAP at %lx with size %d\n",
-		 varptr, varsize);
+      GCN_DEBUG ("Found GOMP_INDIRECT_ADDR_%sMAP at %lx with size %d\n",
+		 host_init_htab ? "H" : "", varptr, varsize);
 
+      void *map_target_addr;
+      if (!host_init_htab)
+	{
+	  /* Build host->target address map for indirect functions.  */
+	  uint64_t ind_fn_map[ind_func_count * 2 + 1];
+	  for (unsigned i = 0; i < ind_func_count; i++)
+	    {
+	      ind_fn_map[i * 2] = host_ind_fn_table[i];
+	      ind_fn_map[i * 2 + 1] = ind_funcs_table[i];
+	      GCN_DEBUG ("Indirect function %d: %lx->%lx\n",
+			 i, host_ind_fn_table[i], ind_funcs_table[i]);
+	    }
+	  ind_fn_map[ind_func_count * 2] = 0;
+	  /* Write the map onto the target.  */
+	  map_target_addr = GOMP_OFFLOAD_alloc (agent->device_id,
+						sizeof (ind_fn_map));
+	  GOMP_OFFLOAD_host2dev (agent->device_id, map_target_addr,
+				 (void*) ind_fn_map, sizeof (ind_fn_map));
+	}
+      #ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
+      else
+	{
+	  /* FIXME: Handle multi-kernel load and unload, cf. PR 114690.  */
+	  size_t host_map_size;
+	  void *host_map;
+	  host_map = create_target_indirect_map (&host_map_size, ind_func_count,
+						 host_ind_fn_table,
+						 ind_funcs_table);
+	  for (unsigned i = 0; i < ind_func_count; i++)
+	      GCN_DEBUG ("Indirect function %d: %lx->%lx\n",
+			 i, host_ind_fn_table[i], ind_funcs_table[i]);
+	  /* Write the map onto the target.  */
+	  map_target_addr = GOMP_OFFLOAD_alloc (agent->device_id,
+						host_map_size);
+	  GOMP_OFFLOAD_host2dev (agent->device_id, map_target_addr,
+				 host_map, host_map_size);
+	}
+      #endif
+
+      GCN_DEBUG ("Allocated indirect map at %p\n", map_target_addr);
+
+      /* Write address of the map onto the target.  */
       GOMP_OFFLOAD_host2dev (agent->device_id, (void *) varptr,
 			     &map_target_addr,
 			     sizeof (map_target_addr));
@@ -5246,5 +5287,9 @@ GOMP_OFFLOAD_openacc_destroy_thread_data (void *data)
 {
   free (data);
 }
+
+#ifdef USE_HASHTAB_LOOKUP_FOR_INDIRECT
+  #include "build-target-indirect-htab.h"
+#endif
 
 /* }}} */

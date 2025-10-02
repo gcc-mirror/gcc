@@ -127,7 +127,7 @@ build_all (function_builder &b, const function_group_info &group)
   static CONSTEXPR const DEF##_def VAR##_obj; \
   namespace shapes { const function_shape *const VAR = &VAR##_obj; }
 
-#define BASE_NAME_MAX_LEN 17
+#define BASE_NAME_MAX_LEN 20
 
 /* Base class for build.  */
 struct build_base : public function_shape

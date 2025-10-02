@@ -20,6 +20,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_DIAGNOSTICS_SOURCE_PRINTING_OPTIONS_H
 #define GCC_DIAGNOSTICS_SOURCE_PRINTING_OPTIONS_H
 
+#include "rich-location.h"
+
 namespace diagnostics {
 
 /* A bundle of options relating to printing the user's source code

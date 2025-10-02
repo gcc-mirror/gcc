@@ -79,7 +79,7 @@ get_source_text_between (diagnostics::file_cache &, location_t, location_t);
 extern expanded_location
 expand_location_to_spelling_point (location_t,
 				   enum location_aspect aspect
-				     = LOCATION_ASPECT_CARET);
+				     = location_aspect::caret);
 extern location_t expansion_point_location_if_in_system_header (location_t);
 extern location_t expansion_point_location (location_t);
 

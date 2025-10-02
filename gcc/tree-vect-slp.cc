@@ -64,8 +64,6 @@ static bool vect_transform_slp_perm_load_1 (vec_info *, slp_tree,
 static int vectorizable_slp_permutation_1 (vec_info *, gimple_stmt_iterator *,
 					   slp_tree, lane_permutation_t &,
 					   vec<slp_tree> &, bool);
-static bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
-					  slp_tree, stmt_vector_for_cost *);
 static void vect_print_slp_tree (dump_flags_t, dump_location_t, slp_tree);
 static bool vect_slp_can_convert_to_external (const vec<stmt_vec_info> &);
 
@@ -114,7 +112,6 @@ _slp_tree::_slp_tree ()
   SLP_TREE_SCALAR_STMTS (this) = vNULL;
   SLP_TREE_SCALAR_OPS (this) = vNULL;
   SLP_TREE_VEC_DEFS (this) = vNULL;
-  SLP_TREE_NUMBER_OF_VEC_STMTS (this) = 0;
   SLP_TREE_CHILDREN (this) = vNULL;
   SLP_TREE_LOAD_PERMUTATION (this) = vNULL;
   SLP_TREE_LANE_PERMUTATION (this) = vNULL;
@@ -2832,7 +2829,7 @@ out:
 
       /* See which SLP operand a reduction chain continues on.  We want
 	 to chain even PHIs but not backedges.  */
-      if (VECTORIZABLE_CYCLE_DEF (oprnd_info->first_dt)
+      if (STMT_VINFO_REDUC_DEF (oprnd_info->def_stmts[0])
 	  || STMT_VINFO_REDUC_IDX (oprnd_info->def_stmts[0]) != -1)
 	{
 	  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_nested_cycle)
@@ -8044,17 +8041,6 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 				    slp_instance node_instance,
 				    stmt_vector_for_cost *cost_vec)
 {
-  /* Calculate the number of vector statements to be created for the scalar
-     stmts in this node.  It is the number of scalar elements in one scalar
-     iteration (DR_GROUP_SIZE) multiplied by VF divided by the number of
-     elements in a vector.  For single-defuse-cycle, lane-reducing op, and
-     PHI statement that starts reduction comprised of only lane-reducing ops,
-     the number is more than effective vector statements actually required.  */
-  if (SLP_TREE_VECTYPE (node))
-    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = vect_get_num_copies (vinfo, node);
-  else
-    SLP_TREE_NUMBER_OF_VEC_STMTS (node) = 0;
-
   /* Handle purely internal nodes.  */
   if (SLP_TREE_PERMUTE_P (node))
     {
@@ -8072,6 +8058,7 @@ vect_slp_analyze_node_operations_1 (vec_info *vinfo, slp_tree node,
 					       false, cost_vec))
 	    return false;
 	}
+      SLP_TREE_TYPE (node) = permute_info_type;
       return true;
     }
 
@@ -8221,7 +8208,7 @@ vect_scalar_ops_slice_hash::equal (const value_type &s1,
    by NODE.  */
 
 static void
-vect_prologue_cost_for_slp (slp_tree node,
+vect_prologue_cost_for_slp (vec_info *vinfo, slp_tree node,
 			    stmt_vector_for_cost *cost_vec)
 {
   /* There's a special case of an existing vector, that costs nothing.  */
@@ -8235,14 +8222,15 @@ vect_prologue_cost_for_slp (slp_tree node,
   unsigned group_size = SLP_TREE_SCALAR_OPS (node).length ();
   unsigned HOST_WIDE_INT const_nunits;
   unsigned nelt_limit;
+  unsigned nvectors = vect_get_num_copies (vinfo, node);
   auto ops = &SLP_TREE_SCALAR_OPS (node);
-  auto_vec<unsigned int> starts (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
+  auto_vec<unsigned int> starts (nvectors);
   if (TYPE_VECTOR_SUBPARTS (vectype).is_constant (&const_nunits)
       && ! multiple_p (const_nunits, group_size))
     {
       nelt_limit = const_nunits;
       hash_set<vect_scalar_ops_slice_hash> vector_ops;
-      for (unsigned int i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); ++i)
+      for (unsigned int i = 0; i < nvectors; ++i)
 	if (!vector_ops.add ({ ops, i * nelt_limit, nelt_limit }))
 	  starts.quick_push (i * nelt_limit);
     }
@@ -8396,10 +8384,8 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 	      continue;
 	    }
 
-	  SLP_TREE_NUMBER_OF_VEC_STMTS (child)
-		= vect_get_num_copies (vinfo, child);
 	  /* And cost them.  */
-	  vect_prologue_cost_for_slp (child, cost_vec);
+	  vect_prologue_cost_for_slp (vinfo, child, cost_vec);
 	}
 
   /* If this node or any of its children can't be vectorized, try pruning
@@ -8701,8 +8687,9 @@ vectorizable_bb_reduc_epilogue (slp_instance instance,
 
   /* Since we replace all stmts of a possibly longer scalar reduction
      chain account for the extra scalar stmts for that.  */
-  record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
-		    instance->root_stmts[0], 0, vect_body);
+  if (!instance->remain_defs.is_empty ())
+    record_stmt_cost (cost_vec, instance->remain_defs.length (), scalar_stmt,
+		      instance->root_stmts[0], 0, vect_body);
   return true;
 }
 
@@ -10337,7 +10324,7 @@ vect_create_constant_vectors (vec_info *vinfo, slp_tree op_node)
   /* We always want SLP_TREE_VECTYPE (op_node) here correctly set.  */
   vector_type = SLP_TREE_VECTYPE (op_node);
 
-  unsigned int number_of_vectors = SLP_TREE_NUMBER_OF_VEC_STMTS (op_node);
+  unsigned int number_of_vectors = vect_get_num_copies (vinfo, op_node);
   SLP_TREE_VEC_DEFS (op_node).create (number_of_vectors);
   auto_vec<tree> voprnds (number_of_vectors);
 
@@ -10562,7 +10549,7 @@ vect_get_slp_vect_def (slp_tree slp_node, unsigned i)
 void
 vect_get_slp_defs (slp_tree slp_node, vec<tree> *vec_defs)
 {
-  vec_defs->create (SLP_TREE_NUMBER_OF_VEC_STMTS (slp_node));
+  vec_defs->create (SLP_TREE_VEC_DEFS (slp_node).length ());
   vec_defs->splice (SLP_TREE_VEC_DEFS (slp_node));
 }
 
@@ -10616,7 +10603,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
 
   mode = TYPE_MODE (vectype);
   poly_uint64 nunits = TYPE_VECTOR_SUBPARTS (vectype);
-  unsigned int nstmts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+  unsigned int nstmts = vect_get_num_copies (vinfo, node);
 
   /* Initialize the vect stmts of NODE to properly insert the generated
      stmts later.  */
@@ -10816,7 +10803,7 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
   if (n_loads)
     {
       if (repeating_p)
-	*n_loads = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+	*n_loads = nstmts;
       else
 	{
 	  /* Enforced above when !repeating_p.  */
@@ -11065,7 +11052,8 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       unsigned vec_idx = (SLP_TREE_LANE_PERMUTATION (node)[0].second
 			  / SLP_TREE_LANES (node));
       unsigned vec_num = SLP_TREE_LANES (child) / SLP_TREE_LANES (node);
-      for (unsigned i = 0; i < SLP_TREE_NUMBER_OF_VEC_STMTS (node); ++i)
+      unsigned nvectors = vect_get_num_copies (vinfo, node);
+      for (unsigned i = 0; i < nvectors; ++i)
 	{
 	  tree def = SLP_TREE_VEC_DEFS (child)[i * vec_num  + vec_idx];
 	  node->push_vec_def (def);
@@ -11358,7 +11346,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
      [ { 0, 2 }, { 0, 3 } ]
    Where currently only a subset is supported by code generating below.  */
 
-static bool
+bool
 vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 			      slp_tree node, stmt_vector_for_cost *cost_vec)
 {
@@ -11370,7 +11358,7 @@ vectorizable_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
   if (nperms < 0)
     return false;
 
-  if (!gsi)
+  if (!gsi && nperms != 0)
     record_stmt_cost (cost_vec, nperms, vec_perm, node, vectype, 0, vect_body);
 
   return true;
@@ -11406,14 +11394,11 @@ vect_schedule_slp_node (vec_info *vinfo,
       return;
     }
 
-  gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
-
   stmt_vec_info stmt_info = SLP_TREE_REPRESENTATIVE (node);
 
-  gcc_assert (!SLP_TREE_VECTYPE (node)
-	      || SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0);
-  if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) != 0)
-    SLP_TREE_VEC_DEFS (node).create (SLP_TREE_NUMBER_OF_VEC_STMTS (node));
+  gcc_assert (SLP_TREE_VEC_DEFS (node).is_empty ());
+  if (SLP_TREE_VECTYPE (node))
+    SLP_TREE_VEC_DEFS (node).create (vect_get_num_copies (vinfo, node));
 
   if (!SLP_TREE_PERMUTE_P (node) && STMT_VINFO_DATA_REF (stmt_info))
     {
@@ -11595,37 +11580,20 @@ vect_schedule_slp_node (vec_info *vinfo,
 	}
     }
 
-  /* Handle purely internal nodes.  */
-  if (SLP_TREE_PERMUTE_P (node))
+  if (dump_enabled_p ())
     {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "------>vectorizing SLP permutation node\n");
-      /* ???  the transform kind was stored to STMT_VINFO_TYPE which might
-	 be shared with different SLP nodes (but usually it's the same
-	 operation apart from the case the stmt is only there for denoting
-	 the actual scalar lane defs ...).  So do not call vect_transform_stmt
-	 but open-code it here (partly).  */
-      bool done = vectorizable_slp_permutation (vinfo, &si, node, NULL);
-      gcc_assert (done);
-      stmt_vec_info slp_stmt_info;
-      unsigned int i;
-      FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), i, slp_stmt_info)
-	if (slp_stmt_info && STMT_VINFO_LIVE_P (slp_stmt_info))
-	  {
-	    done = vectorizable_live_operation (vinfo, slp_stmt_info, node,
-						instance, i, true, NULL);
-	    gcc_assert (done);
-	  }
-    }
-  else
-    {
-      if (dump_enabled_p ())
+      if (stmt_info)
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "------>vectorizing SLP node starting from: %G",
 			 stmt_info->stmt);
-      vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
+      else
+	{
+	  dump_printf_loc (MSG_NOTE, vect_location,
+			   "------>vectorizing SLP node:\n");
+	  vect_print_slp_tree (MSG_NOTE, vect_location, node);
+	}
     }
+  vect_transform_stmt (vinfo, stmt_info, &si, node, instance);
 }
 
 /* Replace scalar calls from SLP node NODE with setting of their lhs to zero.
@@ -11692,7 +11660,7 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 
   if (instance->kind == slp_inst_kind_ctor)
     {
-      if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) == 1)
+      if (SLP_TREE_VEC_DEFS (node).length () == 1)
 	{
 	  tree vect_lhs = SLP_TREE_VEC_DEFS (node)[0];
 	  tree root_lhs = gimple_get_lhs (instance->root_stmts[0]->stmt);
@@ -11702,13 +11670,13 @@ vectorize_slp_instance_root_stmt (vec_info *vinfo, slp_tree node, slp_instance i
 			       vect_lhs);
 	  rstmt = gimple_build_assign (root_lhs, vect_lhs);
 	}
-      else if (SLP_TREE_NUMBER_OF_VEC_STMTS (node) > 1)
+      else
 	{
-	  int nelts = SLP_TREE_NUMBER_OF_VEC_STMTS (node);
+	  gcc_assert (SLP_TREE_VEC_DEFS (node).length () > 1);
 	  tree child_def;
 	  int j;
 	  vec<constructor_elt, va_gc> *v;
-	  vec_alloc (v, nelts);
+	  vec_alloc (v, SLP_TREE_VEC_DEFS (node).length ());
 
 	  /* A CTOR can handle V16HI composition from VNx8HI so we
 	     do not need to convert vector elements if the types

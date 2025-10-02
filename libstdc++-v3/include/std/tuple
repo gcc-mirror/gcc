@@ -2681,54 +2681,53 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return tuple<_Elements&&...>(std::forward<_Elements>(__args)...); }
 
   /// @cond undocumented
-  template<size_t, typename, typename, size_t>
-    struct __make_tuple_impl;
+  template<typename _Tuple, typename _Idx_tuple>
+    struct __do_make_tuple;
 
-  template<size_t _Idx, typename _Tuple, typename... _Tp, size_t _Nm>
-    struct __make_tuple_impl<_Idx, tuple<_Tp...>, _Tuple, _Nm>
-    : __make_tuple_impl<_Idx + 1,
-			tuple<_Tp..., __tuple_element_t<_Idx, _Tuple>>,
-			_Tuple, _Nm>
-    { };
-
-  template<size_t _Nm, typename _Tuple, typename... _Tp>
-    struct __make_tuple_impl<_Nm, tuple<_Tp...>, _Tuple, _Nm>
+  template<typename _Tuple, size_t... _Idx>
+    struct __do_make_tuple<_Tuple, _Index_tuple<_Idx...>>
     {
-      typedef tuple<_Tp...> __type;
+      using __type = tuple<__tuple_element_t<_Idx, _Tuple>...>;
     };
 
-  template<typename _Tuple>
-    struct __do_make_tuple
-    : __make_tuple_impl<0, tuple<>, _Tuple, tuple_size<_Tuple>::value>
-    { };
-
   // Returns the std::tuple equivalent of a tuple-like type.
-  template<typename _Tuple>
+  template<typename _Tuple,
+	   typename _Tup = __remove_cvref_t<_Tuple>,
+	   typename _Indices = _Build_index_tuple<tuple_size<_Tup>::value>>
     struct __make_tuple
-    : public __do_make_tuple<__remove_cvref_t<_Tuple>>
+    : __do_make_tuple<_Tup, typename _Indices::__type>
     { };
 
-  // Combines several std::tuple's into a single one.
+  // Combines several std::tuple types into a single one.
   template<typename...>
     struct __combine_tuples;
 
   template<>
     struct __combine_tuples<>
     {
-      typedef tuple<> __type;
+      using __type = tuple<>;
     };
 
   template<typename... _Ts>
     struct __combine_tuples<tuple<_Ts...>>
     {
-      typedef tuple<_Ts...> __type;
+      using __type = tuple<_Ts...>;
     };
 
-  template<typename... _T1s, typename... _T2s, typename... _Rem>
-    struct __combine_tuples<tuple<_T1s...>, tuple<_T2s...>, _Rem...>
+  template<typename... _T1s, typename... _T2s>
+    struct __combine_tuples<tuple<_T1s...>, tuple<_T2s...>>
     {
-      typedef typename __combine_tuples<tuple<_T1s..., _T2s...>,
-					_Rem...>::__type __type;
+      using __type = tuple<_T1s..., _T2s...>;
+    };
+
+  template<typename... _T1s, typename... _T2s, typename... _T3s,
+	   typename... _Rem>
+    struct __combine_tuples<tuple<_T1s...>, tuple<_T2s...>, tuple<_T3s...>,
+			    _Rem...>
+    {
+      using _First = tuple<_T1s..., _T2s..., _T3s...>;
+      using _Second = typename __combine_tuples<_Rem...>::__type;
+      using __type = typename __combine_tuples<_First, _Second>::__type;
     };
 
   // Computes the result type of tuple_cat given a set of tuple-like types.

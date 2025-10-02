@@ -1608,8 +1608,12 @@ Alphabetical List of All Switches
 
 .. index:: -gnateG  (gcc)
 
-:switch:`-gnateG`
-  Save result of preprocessing in a text file.
+:switch:`-gnateG[bce]`
+  Save result of preprocessing in a text file. An optional character (b, c,
+  or e) can be appended to indicate that filtered lines are to be replaced by
+  blank lines, comment lines that include the filtered line, or empty comment
+  lines ("--!"), respectively. The default is to replace filtered lines with
+  blank lines.
 
 
 .. index:: -gnateH  (gcc)
@@ -1933,13 +1937,13 @@ Alphabetical List of All Switches
   Ignore representation clauses. When this switch is used,
   representation clauses are treated as comments. This is useful
   when initially porting code where you want to ignore rep clause
-  problems, and also for compiling foreign code (particularly
-  for use with ASIS). The representation clauses that are ignored
-  are: enumeration_representation_clause, record_representation_clause,
-  and attribute_definition_clause for the following attributes:
-  Address, Alignment, Bit_Order, Component_Size, Machine_Radix,
-  Object_Size, Scalar_Storage_Order, Size, Small, Stream_Size,
-  and Value_Size. Pragma Default_Scalar_Storage_Order is also ignored.
+  problems, and also for compiling foreign code. The representation
+  clauses that are ignored are: enumeration_representation_clause,
+  record_representation_clause, and attribute_definition_clause for the
+  following attributes: Address, Alignment, Bit_Order, Component_Size,
+  Machine_Radix, Object_Size, Scalar_Storage_Order, Size, Small,
+  Stream_Size, and Value_Size.
+  Pragma Default_Scalar_Storage_Order is also ignored.
   Note that this option should be used only for compiling -- the
   code is likely to malfunction at run time.
 
@@ -8116,20 +8120,18 @@ We provide two options that you can use to build code with GNAT LLVM:
 
 * ``gprbuild`` can detect and use GNAT LLVM when it is installed.
 
-  ``gprbuild`` uses the first applicable compiler on the executable
-  search path, including GNAT LLVM.  An easy way to build with GNAT
-  LLVM is to make it available on the operating system's search path
-  before any other Ada compiler (such as the GCC version of GNAT). To
-  avoid accidentally using a different compiler than the one you want
-  to use, we recommend generating an explicit toolchain configuration
-  file with ``gprconfig`` and using it with ``gprbuild``; see the
-  *GPRbuild and GPR Companion Tools User's Guide* for details. You
-  can determine from the first line of the :file:`.ali` file
-  which version of GNAT built that file because it contains either
-  :code:`GNAT` or :code:`GNAT-LLVM`.
-
-  You can also explicitly select GNAT LLVM in your existing GPR project
-  file by adding :code:`for Toolchain_Name("Ada") use "GNAT_LLVM";`
+  ``gprbuild`` uses the first applicable compiler on the executable search
+  path, including GNAT LLVM. An easy way to build with GNAT LLVM is to make
+  it available on the operating system's search path before any other Ada
+  compiler (such as the GCC version of GNAT). To avoid accidentally using a
+  different compiler than the one you want to use, we recommend explicitly
+  selecting GNAT LLVM in your existing GPR project file by adding
+  :code:`for Toolchain_Name ("Ada") use "GNAT_LLVM";`. You can also
+  generate an explicit toolchain configuration file with ``gprconfig`` and
+  use it with ``gprbuild``; see the *GPRbuild and GPR Companion Tools
+  User's Guide* for details. You can determine from the first line of the
+  :file:`.ali` file which version of GNAT built that file because it
+  contains either :code:`GNAT` or :code:`GNAT-LLVM`.
 
 .. only:: PRO
 
@@ -8145,5 +8147,4 @@ GNAT.
 
 .. only:: PRO
 
-  It provides the same runtimes with the exception that light runtimes
-  are not currently included with the native compilers.
+  It provides the same runtimes.

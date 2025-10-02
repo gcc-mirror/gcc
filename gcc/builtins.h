@@ -139,6 +139,7 @@ extern rtx expand_builtin_crc_table_based (internal_fn, scalar_mode,
 extern rtx expand_builtin (tree, rtx, rtx, machine_mode, int);
 extern enum built_in_function builtin_mathfn_code (const_tree);
 extern tree fold_builtin_expect (location_t, tree, tree, tree, tree);
+extern tree fold_builtin_constant_p (tree);
 extern bool avoid_folding_inline_builtin (tree);
 extern tree fold_call_expr (location_t, tree, bool);
 extern tree fold_builtin_call_array (location_t, tree, tree, int, tree *);

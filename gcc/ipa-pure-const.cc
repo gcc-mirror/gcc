@@ -771,8 +771,7 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
       print_gimple_stmt (dump_file, stmt, 0);
     }
 
-  if (gimple_has_volatile_ops (stmt)
-      && !gimple_clobber_p (stmt))
+  if (gimple_has_volatile_ops (stmt) && !gimple_clobber_p (stmt))
     {
       local->pure_const_state = IPA_NEITHER;
       if (dump_file)
@@ -781,11 +780,10 @@ check_stmt (gimple_stmt_iterator *gsip, funct_state local, bool ipa)
 
   /* Look for loads and stores.  */
   walk_stmt_load_store_ops (stmt, local,
-			    ipa ? check_ipa_load : check_load,
-			    ipa ? check_ipa_store :  check_store);
+			    ipa ? check_ipa_load  : check_load,
+			    ipa ? check_ipa_store : check_store);
 
-  if (gimple_code (stmt) != GIMPLE_CALL
-      && stmt_could_throw_p (cfun, stmt))
+  if (gimple_code (stmt) != GIMPLE_CALL && stmt_could_throw_p (cfun, stmt))
     {
       if (cfun->can_throw_non_call_exceptions)
 	{
@@ -2310,7 +2308,7 @@ make_pass_warn_function_noreturn (gcc::context *ctxt)
   return new pass_warn_function_noreturn (ctxt);
 }
 
-/* Simple local pass for pure const discovery reusing the analysis from
+/* Simple local pass for nothrow discovery reusing the analysis from
    ipa_pure_const.   This pass is effective when executed together with
    other optimization passes in early optimization pass queue.  */
 

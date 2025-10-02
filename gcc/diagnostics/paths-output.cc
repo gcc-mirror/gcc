@@ -25,7 +25,6 @@ along with GCC; see the file COPYING3.  If not see
 #define INCLUDE_VECTOR
 #include "system.h"
 #include "coretypes.h"
-#include "diagnostic.h"
 #include "diagnostics/macro-unwinding.h"
 #include "intl.h"
 #include "diagnostics/paths.h"
@@ -456,7 +455,7 @@ struct event_range
 	  const location_t prev_loc = prev_event->get_location ();
 	  expanded_location prev_exploc
 	    = linemap_client_expand_location_to_spelling_point
-		(line_table, prev_loc, LOCATION_ASPECT_CARET);
+		(line_table, prev_loc, location_aspect::caret);
 	  /* The destination in-edge's line number has to be <= the
 	     source out-edge's line number (if any).  */
 	  if (prev_exploc.line >= m_line)
@@ -515,7 +514,8 @@ struct event_range
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
-	  (line_table, initial_event.get_location (), LOCATION_ASPECT_CARET);
+	      (line_table, initial_event.get_location (),
+	       location_aspect::caret);
 	per_source_line_info &source_line_info
 	  = get_per_source_line_info (exploc.line);
 
@@ -557,7 +557,7 @@ struct event_range
        with respect to the link-printing code.  */
     expanded_location exploc
       = linemap_client_expand_location_to_spelling_point
-      (line_table, new_ev.get_location (), LOCATION_ASPECT_CARET);
+      (line_table, new_ev.get_location (), location_aspect::caret);
     per_source_line_info &source_line_info
       = get_per_source_line_info (exploc.line);
     const event *prev_event = nullptr;
@@ -608,7 +608,7 @@ struct event_range
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
-	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
+	  (line_table, initial_loc, location_aspect::caret);
 	if (exploc.file != LOCATION_FILE (dc.m_last_location))
 	  {
 	    diagnostics::location_print_policy loc_policy (text_output);
@@ -666,7 +666,7 @@ struct event_range
       {
 	expanded_location exploc
 	  = linemap_client_expand_location_to_spelling_point
-	  (line_table, initial_loc, LOCATION_ASPECT_CARET);
+	  (line_table, initial_loc, location_aspect::caret);
 	if (exploc.file != LOCATION_FILE (dc.m_last_location))
 	  {
 	    diagnostics::location_print_policy loc_policy (dc);

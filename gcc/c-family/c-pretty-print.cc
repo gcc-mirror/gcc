@@ -36,6 +36,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "function.h"
 #include "basic-block.h"
 #include "gimple.h"
+#include "tm.h"
 
 /* The pretty-printer code is primarily designed to closely follow
    (GNU) C and C++ grammars.  That is to be contrasted with spaghetti
@@ -44,12 +45,6 @@ along with GCC; see the file COPYING3.  If not see
    much easier to add extensions and nifty pretty-printing effects that
    takes expression or declaration contexts into account.  */
 
-
-#define pp_c_maybe_whitespace(PP)            \
-   do {                                      \
-     if ((PP)->get_padding () == pp_before)  \
-       pp_c_whitespace (PP);                 \
-   } while (0)
 
 /* literal  */
 static void pp_c_char (c_pretty_printer *, int);
@@ -3052,6 +3047,76 @@ pp_c_tree_decl_identifier (c_pretty_printer *pp, tree t)
     }
 
   pp_c_identifier (pp, name);
+}
+
+/* Prints "[version: VERSION]" for a versioned function decl.
+   This will only print for targets with target_version semantics.  */
+void
+pp_c_function_target_version (c_pretty_printer *pp, tree t)
+{
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    return;
+
+  string_slice version = get_target_version (t);
+  if (!version.is_valid ())
+    return;
+
+  pp_c_whitespace (pp);
+
+  pp_c_left_bracket (pp);
+  pp_c_left_bracket (pp);
+  pp_string (pp, "target_version");
+  pp_c_left_paren (pp);
+  pp_doublequote (pp);
+  pp_string_n (pp, version.begin (), version.size ());
+  pp_doublequote (pp);
+  pp_c_right_paren (pp);
+  pp_c_right_bracket (pp);
+  pp_c_right_bracket (pp);
+
+  pp->set_padding (pp_before);
+}
+
+/* Prints "[clones: VERSION, +]" for a versioned function decl.
+   This only works for targets with target_version semantics.  */
+void
+pp_c_function_target_clones (c_pretty_printer *pp, tree t)
+{
+  /* Only print for target_version semantics.
+     This is because for target FMV semantics a target_clone always defines
+     the entire FMV set.  target_version semantics can mix target_clone and
+     target_version decls in the definition of a FMV set and so the
+     target_clone becomes a part of the identity of the declaration.  */
+  if (TARGET_HAS_FMV_TARGET_ATTRIBUTE)
+    return;
+
+  auto_vec<string_slice> versions = get_clone_versions (t, NULL, false);
+  if (versions.is_empty ())
+    return;
+
+  pp_c_whitespace (pp);
+
+  string_slice final_version = versions.pop ();
+  pp_c_left_bracket (pp);
+  pp_c_left_bracket (pp);
+  pp_string (pp, "target_clones");
+  pp_c_left_paren (pp);
+  for (string_slice version : versions)
+    {
+      pp_doublequote (pp);
+      pp_string_n (pp, version.begin (), version.size ());
+      pp_doublequote (pp);
+      pp_string (pp, ",");
+      pp_c_whitespace (pp);
+    }
+  pp_doublequote (pp);
+  pp_string_n (pp, final_version.begin (), final_version.size ());
+  pp_doublequote (pp);
+  pp_c_right_paren (pp);
+  pp_c_right_bracket (pp);
+  pp_c_right_bracket (pp);
+
+  pp->set_padding (pp_before);
 }
 
 #if CHECKING_P

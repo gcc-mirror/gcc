@@ -687,13 +687,14 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Defining_Unit_Name, Node_Id),
         Sy (Name, Node_Id, Default_Empty),
         Sy (Generic_Associations, List_Id, Default_No_List),
+        Sm (Parent_Spec, Node_Id),
         Sm (Instance_Spec, Node_Id),
         Sm (Is_Declaration_Level_Node, Flag),
         Sm (Is_Elaboration_Checks_OK_Node, Flag),
         Sm (Is_Elaboration_Warnings_OK_Node, Flag),
         Sm (Is_Known_Guaranteed_ABE, Flag),
         Sm (Is_SPARK_Mode_On_Node, Flag),
-        Sm (Parent_Spec, Node_Id)));
+        Sm (Is_Structural, Flag)));
 
    Ab (N_Subprogram_Instantiation, N_Generic_Instantiation,
        (Sy (Must_Override, Flag),
@@ -1127,6 +1128,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Identifier, Node_Id, Default_Empty),
         Sy (Expression, Node_Id, Default_Empty),
         Sy (Class_Present, Flag),
+        Sm (Aspect_Ghost_Assertion_Level, Node_Id),
         Sm (Aspect_On_Partial_View, Flag),
         Sm (Aspect_Rep_Item, Node_Id),
         Sm (Aspect_Subprograms, Elist_Id),
@@ -1137,7 +1139,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Delayed_Aspect, Flag),
         Sm (Is_Disabled, Flag),
         Sm (Is_Ignored, Flag),
-        Sm (Next_Rep_Item, Node_Id)));
+        Sm (Next_Rep_Item, Node_Id),
+        Sm (Original_Aspect, Node_Id)));
 
    Cc (N_Call_Marker, Node_Kind,
        (Sm (Is_Declaration_Level_Node, Flag),
@@ -1444,6 +1447,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Is_Ignored_Ghost_Pragma, Flag),
         Sm (Next_Pragma, Node_Id),
         Sm (Next_Rep_Item, Node_Id),
+        Sm (Original_Pragma, Node_Id),
+        Sm (Pragma_Ghost_Assertion_Level, Node_Id),
         Sm (Uneval_Old_Accept, Flag),
         Sm (Uneval_Old_Warn, Flag)));
 

@@ -10053,7 +10053,13 @@ proc check_effective_target_sync_int_128 { } {
 # This requires support for both compare-and-swap and true atomic loads.
 
 proc check_effective_target_sync_int_128_runtime { } {
-    return 0
+    if { [istarget loongarch64-*-*]
+	 && [check_effective_target_loongarch_sx_hw]
+	 && [check_effective_target_loongarch_scq_hw] } {
+	return 1
+    } else {
+	return 0
+    }
 }
 
 # Return 1 if the target supports atomic operations on "long long".
@@ -14312,6 +14318,18 @@ proc check_effective_target_loongarch_asx_hw { } {
 	  return 0;
 	}
     } "-mlasx"]
+}
+
+proc check_effective_target_loongarch_scq_hw { } {
+    return [check_runtime loongarch_scq_hw {
+	#include <larchintrin.h>
+	int main (void)
+	{
+	  if (__cpucfg (2) & (1 << 30))
+	    return 0;
+	  __builtin_trap ();
+	}
+    } ""]
 }
 
 # Check whether LoongArch binutils supports call36 relocation.

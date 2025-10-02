@@ -566,6 +566,10 @@ fexternal-blas
 Fortran Var(flag_external_blas)
 Specify that an external BLAS library should be used for matmul calls on large-size arrays.
 
+fexternal-blas64
+Fortran Var(flag_external_blas64)
+Use an external BLAS library with 64-bit indexing for matmul on large-size arrays.
+
 ff2c
 Fortran Var(flag_f2c)
 Use f2c calling convention.

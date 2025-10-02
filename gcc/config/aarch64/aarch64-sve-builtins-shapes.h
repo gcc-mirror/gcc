@@ -168,6 +168,7 @@ namespace aarch64_sve
     extern const function_shape *const luti4;
     extern const function_shape *const luti2_lane_zt;
     extern const function_shape *const luti4_lane_zt;
+    extern const function_shape *const luti4_zt;
     extern const function_shape *const mmla;
     extern const function_shape *const pattern_pred;
     extern const function_shape *const pmov_from_vector;
@@ -260,6 +261,8 @@ namespace aarch64_sve
     extern const function_shape *const write_za;
     extern const function_shape *const write_za_m;
     extern const function_shape *const write_za_slice;
+    extern const function_shape *const write_zt;
+    extern const function_shape *const write_lane_zt;
   }
 }
 

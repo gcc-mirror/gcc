@@ -54,6 +54,7 @@ with Sem_Cat;        use Sem_Cat;
 with Sem_Ch3;        use Sem_Ch3;
 with Sem_Ch6;        use Sem_Ch6;
 with Sem_Ch8;        use Sem_Ch8;
+with Sem_Ch12;       use Sem_Ch12;
 with Sem_Dim;        use Sem_Dim;
 with Sem_Disp;       use Sem_Disp;
 with Sem_Dist;       use Sem_Dist;
@@ -1262,6 +1263,55 @@ package body Sem_Ch4 is
                   else
                      No_Interpretation;
                   end if;
+
+               --  Or this may be a reference to a structural instantiation
+               --  with named associations if GNAT extensions are allowed.
+
+               elsif (Is_Generic_Subprogram (Nam_Ent)
+                       or else Ekind (Nam_Ent) = E_Generic_Package)
+                 and then All_Extensions_Allowed
+                 and then not Is_Empty_List (Parameter_Associations (N))
+               then
+                  declare
+                     Act      : Node_Id;
+                     Act_List : List_Id;
+                     Assoc    : Node_Id;
+                     Inst_Id  : Entity_Id;
+
+                  begin
+                     Act_List := New_List;
+                     Assoc := First (Parameter_Associations (N));
+                     while Present (Assoc) loop
+                        if Nkind (Assoc) = N_Parameter_Association then
+                           Act :=
+                             Make_Generic_Association (Sloc (Assoc),
+                               Selector_Name                     =>
+                                 Relocate_Node (Selector_Name (Assoc)),
+                               Explicit_Generic_Actual_Parameter =>
+                                 Relocate_Node
+                                   (Explicit_Actual_Parameter (Assoc)));
+                        else
+                           Act :=
+                             Make_Generic_Association (Sloc (Assoc),
+                               Explicit_Generic_Actual_Parameter =>
+                                 Relocate_Node (Assoc));
+                        end if;
+
+                        Append_To (Act_List, Act);
+                        Next (Assoc);
+                     end loop;
+
+                     Inst_Id :=
+                       Build_Structural_Instantiation (N, Nam_Ent, Act_List);
+                     if Present (Inst_Id) then
+                        Rewrite (N, New_Occurrence_Of (Inst_Id, Loc));
+                     else
+                        Rewrite (N,
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Explicit_Raise));
+                     end if;
+                     Analyze (N);
+                  end;
 
                else
                   No_Interpretation;
@@ -2734,6 +2784,10 @@ package body Sem_Ch4 is
       --  If the prefix of an indexed component is overloaded, the proper
       --  interpretation is selected by the index types and the context.
 
+      procedure Process_Generic_Instantiation;
+      --  The prefix in indexed component form is a generic unit. This
+      --  routine processes it and builds the implicit instantiation.
+
       ---------------------------
       -- Process_Function_Call --
       ---------------------------
@@ -3046,6 +3100,37 @@ package body Sem_Ch4 is
          end if;
       end Process_Overloaded_Indexed_Component;
 
+      -----------------------------------
+      -- Process_Generic_Instantiation --
+      -----------------------------------
+
+      procedure Process_Generic_Instantiation is
+         Act_List : List_Id;
+         Expr     : Node_Id;
+         Inst_Id  : Entity_Id;
+
+      begin
+         Act_List := New_List;
+         Expr := First (Expressions (N));
+         while Present (Expr) loop
+            Append_To (Act_List,
+              Make_Generic_Association (Sloc (Expr),
+                Explicit_Generic_Actual_Parameter =>
+                  Relocate_Node (Expr)));
+            Next (Expr);
+         end loop;
+
+         Inst_Id := Build_Structural_Instantiation (N, U_N, Act_List);
+         if Present (Inst_Id) then
+            Rewrite (N, New_Occurrence_Of (Inst_Id, Sloc (N)));
+         else
+            Rewrite (N,
+              Make_Raise_Program_Error (Sloc (N),
+                Reason => PE_Explicit_Raise));
+         end if;
+         Analyze (N);
+      end Process_Generic_Instantiation;
+
    --  Start of processing for Analyze_Indexed_Component_Form
 
    begin
@@ -3119,9 +3204,21 @@ package body Sem_Ch4 is
 
             --  A common beginner's (or C++ templates fan) error
 
-            Error_Msg_N ("generic subprogram cannot be called", N);
-            Set_Etype (N, Any_Type);
-            return;
+            if All_Extensions_Allowed
+              and then not Is_Empty_List (Expressions (N))
+            then
+               Process_Generic_Instantiation;
+            else
+               Error_Msg_N ("generic subprogram cannot be called", N);
+               Set_Etype (N, Any_Type);
+               return;
+            end if;
+
+         elsif Ekind (U_N) = E_Generic_Package
+           and then All_Extensions_Allowed
+           and then not Is_Empty_List (Expressions (N))
+         then
+            Process_Generic_Instantiation;
 
          else
             Process_Indexed_Component_Or_Slice;
@@ -5352,6 +5449,10 @@ package body Sem_Ch4 is
 
       else
          Prefix_Type := Etype (Pref);
+         if Prefix_Type = Standard_Void_Type then
+            pragma Assert (Serious_Errors_Detected > 0);
+            return;
+         end if;
       end if;
 
       if Is_Access_Type (Prefix_Type) then
@@ -6526,53 +6627,50 @@ package body Sem_Ch4 is
 
    procedure Analyze_User_Defined_Binary_Op
      (N     : Node_Id;
-      Op_Id : Entity_Id) is
+      Op_Id : Entity_Id)
+   is
+      F1 : constant Entity_Id := First_Formal (Op_Id);
+      F2 : constant Entity_Id := Next_Formal (F1);
    begin
-      declare
-         F1 : constant Entity_Id := First_Formal (Op_Id);
-         F2 : constant Entity_Id := Next_Formal (F1);
+      --  Verify that Op_Id is a visible binary function. Note that since
+      --  we know Op_Id is overloaded, potentially use visible means use
+      --  visible for sure (RM 9.4(11)). Be prepared for previous errors.
 
-      begin
-         --  Verify that Op_Id is a visible binary function. Note that since
-         --  we know Op_Id is overloaded, potentially use visible means use
-         --  visible for sure (RM 9.4(11)). Be prepared for previous errors.
+      if Ekind (Op_Id) = E_Function
+        and then Present (F2)
+        and then (Is_Immediately_Visible (Op_Id)
+                   or else Is_Potentially_Use_Visible (Op_Id))
+        and then (Has_Compatible_Type (Left_Opnd (N), Etype (F1))
+                   or else Etype (F1) = Any_Type)
+        and then (Has_Compatible_Type (Right_Opnd (N), Etype (F2))
+                   or else Etype (F2) = Any_Type)
+      then
+         Add_One_Interp (N, Op_Id, Base_Type (Etype (Op_Id)));
 
-         if Ekind (Op_Id) = E_Function
-           and then Present (F2)
-           and then (Is_Immediately_Visible (Op_Id)
-                      or else Is_Potentially_Use_Visible (Op_Id))
-           and then (Has_Compatible_Type (Left_Opnd (N), Etype (F1))
-                      or else Etype (F1) = Any_Type)
-           and then (Has_Compatible_Type (Right_Opnd (N), Etype (F2))
-                      or else Etype (F2) = Any_Type)
-         then
-            Add_One_Interp (N, Op_Id, Base_Type (Etype (Op_Id)));
+         --  If the operands are overloaded, indicate that the current
+         --  type is a viable candidate. This is redundant in most cases,
+         --  but for equality and comparison operators where the context
+         --  does not impose a type on the operands, setting the proper
+         --  type is necessary to avoid subsequent ambiguities during
+         --  resolution, when both user-defined and predefined operators
+         --  may be candidates.
 
-            --  If the operands are overloaded, indicate that the current
-            --  type is a viable candidate. This is redundant in most cases,
-            --  but for equality and comparison operators where the context
-            --  does not impose a type on the operands, setting the proper
-            --  type is necessary to avoid subsequent ambiguities during
-            --  resolution, when both user-defined and predefined operators
-            --  may be candidates.
-
-            if Is_Overloaded (Left_Opnd (N)) then
-               Set_Etype (Left_Opnd (N), Etype (F1));
-            end if;
-
-            if Is_Overloaded (Right_Opnd (N)) then
-               Set_Etype (Right_Opnd (N), Etype (F2));
-            end if;
-
-            if Debug_Flag_E then
-               Write_Str ("user defined operator ");
-               Write_Name (Chars (Op_Id));
-               Write_Str (" on node ");
-               Write_Int (Int (N));
-               Write_Eol;
-            end if;
+         if Is_Overloaded (Left_Opnd (N)) then
+            Set_Etype (Left_Opnd (N), Etype (F1));
          end if;
-      end;
+
+         if Is_Overloaded (Right_Opnd (N)) then
+            Set_Etype (Right_Opnd (N), Etype (F2));
+         end if;
+
+         if Debug_Flag_E then
+            Write_Str ("user defined operator ");
+            Write_Name (Chars (Op_Id));
+            Write_Str (" on node ");
+            Write_Int (Int (N));
+            Write_Eol;
+         end if;
+      end if;
    end Analyze_User_Defined_Binary_Op;
 
    -----------------------------------

@@ -50,13 +50,19 @@ const pass_data pass_data_crash_test =
 class pass_crash_test : public gimple_opt_pass
 {
 public:
-  pass_crash_test(gcc::context *ctxt)
-    : gimple_opt_pass(pass_data_crash_test, ctxt)
+  pass_crash_test (gcc::context *ctxt, bool nested)
+  : gimple_opt_pass (pass_data_crash_test, ctxt),
+    m_nested (nested)
   {}
 
   /* opt_pass methods: */
   bool gate (function *) final override { return true; }
   unsigned int execute (function *) final override;
+
+private:
+  /* If true, inject the crash whilst within a nested diagnostic
+     (PR diagnostics/121876).  */
+  bool m_nested;
 
 }; // class pass_test_groups
 
@@ -94,15 +100,39 @@ pass_crash_test::execute (function *fun)
 	gimple *stmt = gsi_stmt (gsi);
 	if (gcall *call = check_for_named_call (stmt, "inject_ice"))
 	  {
+	    auto_diagnostic_group d;
+	    if (m_nested)
+	      {
+		error_at (stmt->location, "placeholder");
+		global_dc->push_nesting_level ();
+	      }
+
 	    input_location = stmt->location;
 	    internal_error ("I'm sorry Dave, I'm afraid I can't do that");
+
+	    if (m_nested)
+	      {
+		global_dc->pop_nesting_level ();
+	      }
 	  }
 	if (gcall *call = check_for_named_call (stmt,
 						"inject_write_through_null"))
 	  {
+	    auto_diagnostic_group d;
+	    if (m_nested)
+	      {
+		error_at (stmt->location, "placeholder");
+		global_dc->push_nesting_level ();
+	      }
+
 	    input_location = stmt->location;
 	    int *p = NULL;
 	    *p = 42;
+
+	    if (m_nested)
+	      {
+		global_dc->pop_nesting_level ();
+	      }
 	  }
       }
 
@@ -124,7 +154,15 @@ plugin_init (struct plugin_name_args *plugin_info,
   if (!plugin_default_version_check (version, &gcc_version))
     return 1;
 
-  pass_info.pass = new pass_crash_test (g);
+  bool nested = false;
+
+  for (int i = 0; i < argc; i++)
+    {
+      if (!strcmp (argv[i].key, "nested"))
+	nested = true;
+    }
+
+  pass_info.pass = new pass_crash_test (g, nested);
   pass_info.reference_pass_name = "*warn_function_noreturn";
   pass_info.ref_pass_instance_number = 1;
   pass_info.pos_op = PASS_POS_INSERT_AFTER;

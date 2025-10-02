@@ -31,7 +31,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "version.h"
 #include "intl.h"
-#include "diagnostic.h"
 #include "diagnostics/color.h"
 #include "diagnostics/sink.h"
 #include "diagnostics/html-sink.h"
@@ -43,12 +42,23 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostics/output-spec.h"
 
 /* A namespace for handling the DSL of the arguments of
-   -fdiagnostics-add-output= and -fdiagnostics-set-output=.  */
+   -fdiagnostics-add-output= and -fdiagnostics-set-output=
+   which look like:
+     SCHEME[:KEY=VALUE(,KEY=VALUE)*]
+   We call this an output spec.  */
 
 namespace diagnostics {
 namespace output_spec {
 
+class scheme_handler;
+
 /* Decls.  */
+
+/* A class for the result of the first stage of parsing an output spec,
+   where values are represented as untyped strings.
+   The scheme might not exist.
+   The keys have not been validated against the scheme.
+   The values have not been validated against their keys.  */
 
 struct scheme_name_and_params
 {
@@ -63,139 +73,160 @@ struct scheme_name_and_params
 class output_factory
 {
 public:
-  class scheme_handler
-  {
-  public:
-    scheme_handler (std::string scheme_name)
-    : m_scheme_name (std::move (scheme_name))
-    {}
-    virtual ~scheme_handler () {}
-
-    const std::string &get_scheme_name () const { return m_scheme_name; }
-
-    virtual std::unique_ptr<sink>
-    make_sink (const context &ctxt,
-	       diagnostics::context &dc,
-	       const char *unparsed_arg,
-	       const scheme_name_and_params &parsed_arg) const = 0;
-
-  protected:
-    bool
-    parse_bool_value (const context &ctxt,
-		      const char *unparsed_arg,
-		      const std::string &key,
-		      const std::string &value,
-		      bool &out) const
-    {
-      if (value == "yes")
-	{
-	  out = true;
-	  return true;
-	}
-      else if (value == "no")
-	{
-	  out = false;
-	  return true;
-	}
-      else
-	{
-	  ctxt.report_error
-	    ("%<%s%s%>:"
-	     " unexpected value %qs for key %qs; expected %qs or %qs",
-	     ctxt.get_option_name (), unparsed_arg,
-	     value.c_str (),
-	     key.c_str (),
-	     "yes", "no");
-
-	  return false;
-	}
-    }
-    template <typename EnumType, size_t NumValues>
-    bool
-    parse_enum_value (const context &ctxt,
-		      const char *unparsed_arg,
-		      const std::string &key,
-		      const std::string &value,
-		      const std::array<std::pair<const char *, EnumType>, NumValues> &value_names,
-		      EnumType &out) const
-    {
-      for (auto &iter : value_names)
-	if (value == iter.first)
-	  {
-	    out = iter.second;
-	    return true;
-	  }
-
-      auto_vec<const char *> known_values;
-      for (auto iter : value_names)
-	known_values.safe_push (iter.first);
-      pp_markup::comma_separated_quoted_strings e (known_values);
-      ctxt.report_error
-	("%<%s%s%>:"
-	 " unexpected value %qs for key %qs; known values: %e",
-	 ctxt.get_option_name (), unparsed_arg,
-	 value.c_str (),
-	 key.c_str (),
-	 &e);
-      return false;
-    }
-
-  private:
-    const std::string m_scheme_name;
-  };
-
-  output_factory ();
+  output_factory (diagnostics::context &dc);
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
 	     diagnostics::context &dc,
-	     const char *unparsed_arg,
-	     const scheme_name_and_params &parsed_arg);
+	     const scheme_name_and_params &scheme_and_kvs);
 
-  const scheme_handler *get_scheme_handler (const std::string &scheme_name);
+  scheme_handler *get_scheme_handler (const std::string &scheme_name);
 
 private:
   std::vector<std::unique_ptr<scheme_handler>> m_scheme_handlers;
 };
 
-class text_scheme_handler : public output_factory::scheme_handler
+enum key_handler::result
+key_handler::parse_bool_value (const context &ctxt,
+			       const std::string &key,
+			       const std::string &value,
+			       bool &out) const
+{
+  if (value == "yes")
+    {
+      out = true;
+      return result::ok;
+    }
+  else if (value == "no")
+    {
+      out = false;
+      return result::ok;
+    }
+  else
+    {
+      ctxt.report_error
+	("%<%s%s%>:"
+	 " unexpected value %qs for key %qs; expected %qs or %qs",
+	 ctxt.get_option_name (), ctxt.get_unparsed_spec (),
+	 value.c_str (),
+	 key.c_str (),
+	 "yes", "no");
+      return result::malformed_value;
+    }
+}
+
+template <typename EnumType, size_t NumValues>
+key_handler::result
+key_handler::parse_enum_value (const context &ctxt,
+			       const std::string &key,
+			       const std::string &value,
+			       const std::array<std::pair<const char *,
+							  EnumType>,
+						NumValues> &value_names,
+			       EnumType &out) const
+{
+  for (auto &iter : value_names)
+    if (value == iter.first)
+      {
+	out = iter.second;
+	return result::ok;
+      }
+
+  auto_vec<const char *> known_values;
+  for (auto iter : value_names)
+    known_values.safe_push (iter.first);
+  pp_markup::comma_separated_quoted_strings e (known_values);
+  ctxt.report_error
+    ("%<%s%s%>:"
+     " unexpected value %qs for key %qs; known values: %e",
+     ctxt.get_option_name (), ctxt.get_unparsed_spec (),
+     value.c_str (),
+     key.c_str (),
+     &e);
+  return result::malformed_value;
+}
+
+class text_scheme_handler : public scheme_handler
 {
 public:
-  text_scheme_handler () : scheme_handler ("text") {}
+  text_scheme_handler (diagnostics::context &dc)
+  : scheme_handler ("text"),
+    m_show_color (pp_show_color (dc.get_reference_printer ())),
+    m_show_nesting (true),
+    m_show_locations_in_nesting (true),
+    m_show_levels (false)
+  {
+  }
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostics::context &dc,
-	     const char *unparsed_arg,
-	     const scheme_name_and_params &parsed_arg) const final override;
+	     diagnostics::context &dc) final override;
+
+  enum result
+  maybe_handle_kv (const context &ctxt,
+		   const std::string &key,
+		   const std::string &value) final override;
+
+  void
+  get_keys (auto_vec<const char *> &out) const final override;
+
+private:
+  bool m_show_color;
+  bool m_show_nesting;
+  bool m_show_locations_in_nesting;
+  bool m_show_levels;
 };
 
-class sarif_scheme_handler : public output_factory::scheme_handler
+class sarif_scheme_handler : public scheme_handler
 {
 public:
-  sarif_scheme_handler () : scheme_handler ("sarif") {}
+  sarif_scheme_handler ()
+  : scheme_handler ("sarif"),
+    m_serialization_kind (sarif_serialization_kind::json)
+  {
+  }
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostics::context &dc,
-	     const char *unparsed_arg,
-	     const scheme_name_and_params &parsed_arg) const final override;
+	     diagnostics::context &dc) final override;
+
+  enum result
+  maybe_handle_kv (const context &ctxt,
+		   const std::string &key,
+		   const std::string &value) final override;
+
+  void
+  get_keys (auto_vec<const char *> &out) const final override;
 
 private:
   static std::unique_ptr<sarif_serialization_format>
   make_sarif_serialization_object (enum sarif_serialization_kind);
+
+  label_text m_filename;
+  enum sarif_serialization_kind m_serialization_kind;
+  sarif_generation_options m_generation_opts;
 };
 
-class html_scheme_handler : public output_factory::scheme_handler
+class html_scheme_handler : public scheme_handler
 {
 public:
   html_scheme_handler () : scheme_handler ("experimental-html") {}
 
   std::unique_ptr<sink>
   make_sink (const context &ctxt,
-	     diagnostics::context &dc,
-	     const char *unparsed_arg,
-	     const scheme_name_and_params &parsed_arg) const final override;
+	     diagnostics::context &dc) final override;
+
+  enum result
+  maybe_handle_kv (const context &ctxt,
+		   const std::string &key,
+		   const std::string &value) final override;
+
+  void
+  get_keys (auto_vec<const char *> &out) const final override;
+
+private:
+  label_text m_filename;
+  html_generation_options m_html_gen_opts;
 };
 
 /* struct context.  */
@@ -210,22 +241,43 @@ context::report_error (const char *gmsgid, ...) const
 }
 
 void
-context::report_unknown_key (const char *unparsed_arg,
-			     const std::string &key,
-			     const std::string &scheme_name,
-			     auto_vec<const char *> &known_keys) const
+context::report_unknown_key (const std::string &key,
+			     const scheme_handler &scheme) const
 {
-  pp_markup::comma_separated_quoted_strings e (known_keys);
+  auto_vec<const char *> scheme_key_vec;
+  scheme.get_keys (scheme_key_vec);
+
+  pp_markup::comma_separated_quoted_strings e_scheme_keys (scheme_key_vec);
+
+  const char *scheme_name = scheme.get_scheme_name ().c_str ();
+
+  if (m_client_keys)
+    {
+      auto_vec<const char *> client_key_vec;
+      m_client_keys->get_keys (client_key_vec);
+      if (!client_key_vec.is_empty ())
+	{
+	  pp_markup::comma_separated_quoted_strings e_client_keys
+	    (client_key_vec);
+	  report_error
+	    ("%<%s%s%>:"
+	     " unknown key %qs for output scheme %qs;"
+	     " scheme keys: %e; client keys: %e",
+	     get_option_name (), get_unparsed_spec (),
+	     key.c_str (), scheme_name,
+	     &e_scheme_keys, &e_client_keys);
+	}
+    }
+
   report_error
     ("%<%s%s%>:"
-     " unknown key %qs for format %qs; known keys: %e",
-     get_option_name (), unparsed_arg,
-     key.c_str (), scheme_name.c_str (), &e);
+     " unknown key %qs for output scheme %qs; scheme keys: %e",
+     get_option_name (), get_unparsed_spec (),
+     key.c_str (), scheme_name, &e_scheme_keys);
 }
 
 void
-context::report_missing_key (const char *unparsed_arg,
-			     const std::string &key,
+context::report_missing_key (const std::string &key,
 			     const std::string &scheme_name,
 			     const char *metavar) const
 {
@@ -233,7 +285,7 @@ context::report_missing_key (const char *unparsed_arg,
     ("%<%s%s%>:"
      " missing required key %qs for format %qs;"
      " try %<%s%s:%s=%s%>",
-     get_option_name (), unparsed_arg,
+     get_option_name (), get_unparsed_spec (),
      key.c_str (), scheme_name.c_str (),
      get_option_name (), scheme_name.c_str (), key.c_str (), metavar);
 }
@@ -251,12 +303,13 @@ context::open_output_file (label_text &&filename) const
 }
 
 static std::unique_ptr<scheme_name_and_params>
-parse (const context &ctxt, const char *unparsed_arg)
+parse (const context &ctxt)
 {
   scheme_name_and_params result;
-  if (const char *const colon = strchr (unparsed_arg, ':'))
+  const char *const unparsed_spec = ctxt.get_unparsed_spec ();
+  if (const char *const colon = strchr (unparsed_spec, ':'))
     {
-      result.m_scheme_name = std::string (unparsed_arg, colon - unparsed_arg);
+      result.m_scheme_name = std::string (unparsed_spec, colon - unparsed_spec);
       /* Expect zero of more of KEY=VALUE,KEY=VALUE, etc  .*/
       const char *iter = colon + 1;
       const char *last_separator = ":";
@@ -272,7 +325,7 @@ parse (const context &ctxt, const char *unparsed_arg)
 		 " expected KEY=VALUE-style parameter for format %qs"
 		 " after %qs;"
 		 " got %qs",
-		 ctxt.get_option_name (), unparsed_arg,
+		 ctxt.get_option_name (), ctxt.get_unparsed_spec (),
 		 result.m_scheme_name.c_str (),
 		 last_separator,
 		 iter);
@@ -296,34 +349,33 @@ parse (const context &ctxt, const char *unparsed_arg)
 	}
     }
   else
-    result.m_scheme_name = unparsed_arg;
+    result.m_scheme_name = unparsed_spec;
   return std::make_unique<scheme_name_and_params> (std::move (result));
 }
 
 std::unique_ptr<sink>
-context::parse_and_make_sink (const char *unparsed_arg,
-			      diagnostics::context &dc)
+context::parse_and_make_sink (diagnostics::context &dc)
 {
-  auto parsed_arg = parse (*this, unparsed_arg);
+  auto parsed_arg = parse (*this);
   if (!parsed_arg)
     return nullptr;
 
-  output_factory factory;
-  return factory.make_sink (*this, dc, unparsed_arg, *parsed_arg);
+  output_factory factory (dc);
+  return factory.make_sink (*this, dc, *parsed_arg);
 }
 
-/* class output_factory::scheme_handler.  */
+/* class scheme_handler.  */
 
 /* class output_factory.  */
 
-output_factory::output_factory ()
+output_factory::output_factory (diagnostics::context &dc)
 {
-  m_scheme_handlers.push_back (std::make_unique<text_scheme_handler> ());
+  m_scheme_handlers.push_back (std::make_unique<text_scheme_handler> (dc));
   m_scheme_handlers.push_back (std::make_unique<sarif_scheme_handler> ());
   m_scheme_handlers.push_back (std::make_unique<html_scheme_handler> ());
 }
 
-const output_factory::scheme_handler *
+scheme_handler *
 output_factory::get_scheme_handler (const std::string &scheme_name)
 {
   for (auto &iter : m_scheme_handlers)
@@ -335,10 +387,9 @@ output_factory::get_scheme_handler (const std::string &scheme_name)
 std::unique_ptr<sink>
 output_factory::make_sink (const context &ctxt,
 			   diagnostics::context &dc,
-			   const char *unparsed_arg,
-			   const scheme_name_and_params &parsed_arg)
+			   const scheme_name_and_params &scheme_and_kvs)
 {
-  auto scheme_handler = get_scheme_handler (parsed_arg.m_scheme_name);
+  auto scheme_handler = get_scheme_handler (scheme_and_kvs.m_scheme_name);
   if (!scheme_handler)
     {
       auto_vec<const char *> strings;
@@ -347,155 +398,115 @@ output_factory::make_sink (const context &ctxt,
       pp_markup::comma_separated_quoted_strings e (strings);
       ctxt.report_error ("%<%s%s%>:"
 			 " unrecognized format %qs; known formats: %e",
-			 ctxt.get_option_name (), unparsed_arg,
-			 parsed_arg.m_scheme_name.c_str (), &e);
+			 ctxt.get_option_name (), ctxt.get_unparsed_spec (),
+			 scheme_and_kvs.m_scheme_name.c_str (), &e);
       return nullptr;
     }
 
-  return scheme_handler->make_sink (ctxt, dc, unparsed_arg, parsed_arg);
-}
-
-/* class text_scheme_handler : public output_factory::scheme_handler.  */
-
-std::unique_ptr<sink>
-text_scheme_handler::make_sink (const context &ctxt,
-				diagnostics::context &dc,
-				const char *unparsed_arg,
-				const scheme_name_and_params &parsed_arg) const
-{
-  bool show_color = pp_show_color (dc.get_reference_printer ());
-  bool show_nesting = true;
-  bool show_locations_in_nesting = true;
-  bool show_levels = false;
-  for (auto& iter : parsed_arg.m_kvs)
+  /* Parse key/value pairs.  */
+  for (auto& iter : scheme_and_kvs.m_kvs)
     {
       const std::string &key = iter.first;
       const std::string &value = iter.second;
-      if (key == "color")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value, show_color))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-nesting")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 show_nesting))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-nesting-locations")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 show_locations_in_nesting))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-nesting-levels")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value, show_levels))
-	    return nullptr;
-	  continue;
-	}
-
-      /* Key not found.  */
-      auto_vec<const char *> known_keys;
-      known_keys.safe_push ("color");
-      known_keys.safe_push ("show-nesting");
-      known_keys.safe_push ("show-nesting-locations");
-      known_keys.safe_push ("show-nesting-levels");
-      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
-			       known_keys);
-      return nullptr;
+      if (!ctxt.handle_kv (key, value, *scheme_handler))
+	return nullptr;
     }
 
+  return scheme_handler->make_sink (ctxt, dc);
+}
+
+bool
+context::handle_kv (const std::string &key,
+		    const std::string &value,
+		    scheme_handler &scheme) const
+{
+  auto result = scheme.maybe_handle_kv (*this, key, value);
+  switch (result)
+    {
+    default: gcc_unreachable ();
+    case key_handler::result::ok:
+      return true;
+    case key_handler::result::malformed_value:
+      return false;
+    case key_handler::result::unrecognized:
+      /* Key recognized by the scheme; try the client keys.  */
+      if (m_client_keys)
+	{
+	  result = m_client_keys->maybe_handle_kv (*this, key, value);
+	  switch (result)
+	    {
+	    default: gcc_unreachable ();
+	    case key_handler::result::ok:
+	      return true;
+	    case key_handler::result::malformed_value:
+	      return false;
+	    case key_handler::result::unrecognized:
+	      break;
+	    }
+	}
+      report_unknown_key (key, scheme);
+      return false;
+    }
+}
+
+/* class text_scheme_handler : public scheme_handler.  */
+
+std::unique_ptr<sink>
+text_scheme_handler::make_sink (const context &,
+				diagnostics::context &dc)
+{
   auto sink = std::make_unique<diagnostics::text_sink> (dc);
-  sink->set_show_nesting (show_nesting);
-  sink->set_show_locations_in_nesting (show_locations_in_nesting);
-  sink->set_show_nesting_levels (show_levels);
+  sink->set_show_nesting (m_show_nesting);
+  sink->set_show_locations_in_nesting (m_show_locations_in_nesting);
+  sink->set_show_nesting_levels (m_show_levels);
+  pp_show_color (sink->get_printer ()) = m_show_color;
   return sink;
 }
 
-/* class sarif_scheme_handler : public output_factory::scheme_handler.  */
+enum key_handler::result
+text_scheme_handler::maybe_handle_kv (const context &ctxt,
+				      const std::string &key,
+				      const std::string &value)
+{
+  if (key == "color")
+    return parse_bool_value (ctxt, key, value, m_show_color);
+  if (key == "show-nesting")
+    return parse_bool_value (ctxt, key, value, m_show_nesting);
+  if (key == "show-nesting-locations")
+    return parse_bool_value (ctxt, key, value,
+			     m_show_locations_in_nesting);
+  if (key == "show-nesting-levels")
+    return parse_bool_value (ctxt, key, value, m_show_levels);
+
+  return result::unrecognized;
+}
+
+void
+text_scheme_handler::get_keys (auto_vec<const char *> &out) const
+{
+  out.safe_push ("color");
+  out.safe_push ("show-nesting");
+  out.safe_push ("show-nesting-locations");
+  out.safe_push ("show-nesting-levels");
+}
+
+/* class sarif_scheme_handler : public scheme_handler.  */
 
 std::unique_ptr<sink>
-sarif_scheme_handler::make_sink (const context &ctxt,
-				 diagnostics::context &dc,
-				 const char *unparsed_arg,
-				 const scheme_name_and_params &parsed_arg) const
+sarif_scheme_handler::
+make_sink (const context &ctxt,
+	   diagnostics::context &dc)
 {
-  label_text filename;
-  enum sarif_serialization_kind serialization_kind
-    = sarif_serialization_kind::json;
-  sarif_generation_options sarif_gen_opts;
-  for (auto& iter : parsed_arg.m_kvs)
-    {
-      const std::string &key = iter.first;
-      const std::string &value = iter.second;
-      if (key == "file")
-	{
-	  filename = label_text::take (xstrdup (value.c_str ()));
-	  continue;
-	}
-      if (key == "serialization")
-	{
-	  static const std::array<std::pair<const char *, enum sarif_serialization_kind>,
-				  (size_t)sarif_serialization_kind::num_values> value_names
-	    {{{"json", sarif_serialization_kind::json}}};
-
-	  if (!parse_enum_value<enum sarif_serialization_kind>
-		 (ctxt, unparsed_arg,
-		  key, value,
-		  value_names,
-		  serialization_kind))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "version")
-	{
-	  static const std::array<std::pair<const char *, enum sarif_version>,
-				  (size_t)sarif_version::num_versions> value_names
-	    {{{"2.1", sarif_version::v2_1_0},
-	      {"2.2-prerelease", sarif_version::v2_2_prerelease_2024_08_08}}};
-
-	    if (!parse_enum_value<enum sarif_version>
-		   (ctxt, unparsed_arg,
-		    key, value,
-		    value_names,
-		    sarif_gen_opts.m_version))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "state-graphs")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 sarif_gen_opts.m_state_graph))
-	    return nullptr;
-	  continue;
-	}
-
-      /* Key not found.  */
-      auto_vec<const char *> known_keys;
-      known_keys.safe_push ("file");
-      known_keys.safe_push ("serialization");
-      known_keys.safe_push ("state-graphs");
-      known_keys.safe_push ("version");
-      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
-			       known_keys);
-      return nullptr;
-    }
-
   output_file output_file_;
-  if (filename.get ())
-    output_file_ = ctxt.open_output_file (std::move (filename));
+  if (m_filename.get ())
+    output_file_ = ctxt.open_output_file (std::move (m_filename));
   else
     // Default filename
     {
       const char *basename = ctxt.get_base_filename ();
       if (!basename)
 	{
-	  ctxt.report_missing_key (unparsed_arg,
-				   "file",
+	  ctxt.report_missing_key ("file",
 				   get_scheme_name (),
 				   "FILENAME");
 	  return nullptr;
@@ -504,19 +515,70 @@ sarif_scheme_handler::make_sink (const context &ctxt,
 	= open_sarif_output_file (dc,
 				  ctxt.get_affected_location_mgr (),
 				  basename,
-				  serialization_kind);
+				  m_serialization_kind);
     }
   if (!output_file_)
     return nullptr;
 
-  auto serialization_obj = make_sarif_serialization_object (serialization_kind);
+  auto serialization_obj
+    = make_sarif_serialization_object (m_serialization_kind);
 
   auto sink = make_sarif_sink (dc,
 			       *ctxt.get_affected_location_mgr (),
 			       std::move (serialization_obj),
-			       sarif_gen_opts,
+			       m_generation_opts,
 			       std::move (output_file_));
+
   return sink;
+}
+
+enum key_handler::result
+sarif_scheme_handler::maybe_handle_kv (const context &ctxt,
+				       const std::string &key,
+				       const std::string &value)
+{
+  if (key == "file")
+    {
+      m_filename = label_text::take (xstrdup (value.c_str ()));
+      return result::ok;
+    }
+  if (key == "serialization")
+    {
+      static const std::array<std::pair<const char *, enum sarif_serialization_kind>,
+			      (size_t)sarif_serialization_kind::num_values> value_names
+	{{{"json", sarif_serialization_kind::json}}};
+      return parse_enum_value<enum sarif_serialization_kind>
+	(ctxt,
+	 key, value,
+	 value_names,
+	 m_serialization_kind);
+    }
+  if (key == "version")
+    {
+      static const std::array<std::pair<const char *, enum sarif_version>,
+			      (size_t)sarif_version::num_versions> value_names
+	{{{"2.1", sarif_version::v2_1_0},
+	  {"2.2-prerelease", sarif_version::v2_2_prerelease_2024_08_08}}};
+      return parse_enum_value<enum sarif_version>
+	(ctxt,
+	 key, value,
+	 value_names,
+	 m_generation_opts.m_version);
+    }
+  if (key == "state-graphs")
+    return parse_bool_value (ctxt, key, value,
+			     m_generation_opts.m_state_graph);
+
+  return result::unrecognized;
+}
+
+void
+sarif_scheme_handler::get_keys (auto_vec<const char *> &out) const
+{
+  out.safe_push ("file");
+  out.safe_push ("serialization");
+  out.safe_push ("state-graphs");
+  out.safe_push ("version");
 }
 
 std::unique_ptr<sarif_serialization_format>
@@ -533,85 +595,23 @@ make_sarif_serialization_object (enum sarif_serialization_kind kind)
     }
 }
 
-/* class html_scheme_handler : public output_factory::scheme_handler.  */
+/* class html_scheme_handler : public scheme_handler.  */
 
 std::unique_ptr<sink>
-html_scheme_handler::make_sink (const context &ctxt,
-				diagnostics::context &dc,
-				const char *unparsed_arg,
-				const scheme_name_and_params &parsed_arg) const
+html_scheme_handler::
+make_sink (const context &ctxt,
+	   diagnostics::context &dc)
 {
-  label_text filename;
-  html_generation_options html_gen_opts;
-  for (auto& iter : parsed_arg.m_kvs)
-    {
-      const std::string &key = iter.first;
-      const std::string &value = iter.second;
-      if (key == "css")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 html_gen_opts.m_css))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "file")
-	{
-	  filename = label_text::take (xstrdup (value.c_str ()));
-	  continue;
-	}
-      if (key == "javascript")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 html_gen_opts.m_javascript))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-state-diagrams")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 html_gen_opts.m_show_state_diagrams))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-state-diagrams-dot-src")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 html_gen_opts.m_show_state_diagrams_dot_src))
-	    return nullptr;
-	  continue;
-	}
-      if (key == "show-state-diagrams-sarif")
-	{
-	  if (!parse_bool_value (ctxt, unparsed_arg, key, value,
-				 html_gen_opts.m_show_state_diagrams_sarif))
-	    return nullptr;
-	  continue;
-	}
-
-      /* Key not found.  */
-      auto_vec<const char *> known_keys;
-      known_keys.safe_push ("css");
-      known_keys.safe_push ("file");
-      known_keys.safe_push ("javascript");
-      known_keys.safe_push ("show-state-diagrams");
-      known_keys.safe_push ("show-state-diagram-dot-src");
-      known_keys.safe_push ("show-state-diagram-sarif");
-      ctxt.report_unknown_key (unparsed_arg, key, get_scheme_name (),
-			       known_keys);
-      return nullptr;
-    }
-
   output_file output_file_;
-  if (filename.get ())
-    output_file_ = ctxt.open_output_file (std::move (filename));
+  if (m_filename.get ())
+    output_file_ = ctxt.open_output_file (std::move (m_filename));
   else
     // Default filename
     {
       const char *basename = ctxt.get_base_filename ();
       if (!basename)
 	{
-	  ctxt.report_missing_key (unparsed_arg,
-				   "file",
+	  ctxt.report_missing_key ("file",
 				   get_scheme_name (),
 				   "FILENAME");
 	  return nullptr;
@@ -627,9 +627,47 @@ html_scheme_handler::make_sink (const context &ctxt,
 
   auto sink = make_html_sink (dc,
 			      *ctxt.get_affected_location_mgr (),
-			      html_gen_opts,
+			      m_html_gen_opts,
 			      std::move (output_file_));
   return sink;
+}
+
+enum key_handler::result
+html_scheme_handler::maybe_handle_kv (const context &ctxt,
+				      const std::string &key,
+				      const std::string &value)
+{
+  if (key == "css")
+    return parse_bool_value (ctxt, key, value, m_html_gen_opts.m_css);
+  if (key == "file")
+    {
+      m_filename = label_text::take (xstrdup (value.c_str ()));
+      return result::ok;
+    }
+  if (key == "javascript")
+    return parse_bool_value (ctxt, key, value,
+			     m_html_gen_opts.m_javascript);
+  if (key == "show-state-diagrams")
+    return parse_bool_value (ctxt, key, value,
+			     m_html_gen_opts.m_show_state_diagrams);
+  if (key == "show-state-diagrams-dot-src")
+    return parse_bool_value (ctxt, key, value,
+			     m_html_gen_opts.m_show_state_diagrams_dot_src);
+  if (key == "show-state-diagrams-sarif")
+    return parse_bool_value (ctxt, key, value,
+			     m_html_gen_opts.m_show_state_diagrams_sarif);
+  return result::unrecognized;
+}
+
+void
+html_scheme_handler::get_keys (auto_vec<const char *> &out) const
+{
+  out.safe_push ("css");
+  out.safe_push ("file");
+  out.safe_push ("javascript");
+  out.safe_push ("show-state-diagrams");
+  out.safe_push ("show-state-diagrams-dot-src");
+  out.safe_push ("show-state-diagrams-sarif");
 }
 
 } // namespace output_spec
@@ -666,15 +704,19 @@ struct parser_test
   class test_spec_context : public diagnostics::output_spec::dc_spec_context
   {
   public:
-    test_spec_context (diagnostics::context &dc,
+    test_spec_context (const char *option_name,
+		       const char *unparsed_spec,
+		       diagnostics::output_spec::key_handler *client_keys,
 		       line_maps *location_mgr,
-		       location_t loc,
-		       const char *option_name)
-    : dc_spec_context (dc,
+		       diagnostics::context &dc,
+		       location_t loc)
+    : dc_spec_context (option_name,
+		       unparsed_spec,
+		       client_keys,
 		       location_mgr,
+		       dc,
 		       location_mgr,
-		       loc,
-		       option_name)
+		       loc)
     {
     }
 
@@ -685,18 +727,30 @@ struct parser_test
     }
   };
 
-  parser_test ()
+  parser_test (const char *unparsed_spec,
+	       diagnostics::output_spec::key_handler *client_keys = nullptr)
   : m_dc (),
-    m_ctxt (m_dc, line_table, UNKNOWN_LOCATION, "-fOPTION="),
+    m_ctxt ("-fOPTION=",
+	    unparsed_spec,
+	    client_keys,
+	    line_table,
+	    m_dc,
+	    UNKNOWN_LOCATION),
     m_fmt (m_dc.get_sink (0))
   {
     pp_buffer (m_fmt.get_printer ())->m_flush_p = false;
   }
 
   std::unique_ptr<diagnostics::output_spec::scheme_name_and_params>
-  parse (const char *unparsed_arg)
+  parse ()
   {
-    return diagnostics::output_spec::parse (m_ctxt, unparsed_arg);
+    return diagnostics::output_spec::parse (m_ctxt);
+  }
+
+  std::unique_ptr<diagnostics::sink>
+  parse_and_make_sink ()
+  {
+    return m_ctxt.parse_and_make_sink (m_dc);
   }
 
   bool execution_failed_p () const
@@ -721,13 +775,10 @@ private:
 static void
 test_output_arg_parsing ()
 {
-  auto_fix_quotes fix_quotes;
-  auto_fix_progname fix_progname;
-
   /* Minimal correct example.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo");
+    parser_test pt ("foo");
+    auto result = pt.parse ();
     ASSERT_EQ (result->m_scheme_name, "foo");
     ASSERT_EQ (result->m_kvs.size (), 0);
     ASSERT_FALSE (pt.execution_failed_p ());
@@ -735,8 +786,8 @@ test_output_arg_parsing ()
 
   /* Stray trailing colon with no key/value pairs.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo:");
+    parser_test pt ("foo:");
+    auto result = pt.parse ();
     ASSERT_EQ (result, nullptr);
     ASSERT_TRUE (pt.execution_failed_p ());
     ASSERT_STREQ (pt.get_diagnostic_text (),
@@ -748,8 +799,8 @@ test_output_arg_parsing ()
 
   /* No key before '='.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo:=");
+    parser_test pt ("foo:=");
+    auto result = pt.parse ();
     ASSERT_EQ (result, nullptr);
     ASSERT_TRUE (pt.execution_failed_p ());
     ASSERT_STREQ (pt.get_diagnostic_text (),
@@ -761,8 +812,8 @@ test_output_arg_parsing ()
 
   /* No value for key.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo:key,");
+    parser_test pt ("foo:key,");
+    auto result = pt.parse ();
     ASSERT_EQ (result, nullptr);
     ASSERT_TRUE (pt.execution_failed_p ());
     ASSERT_STREQ (pt.get_diagnostic_text (),
@@ -774,8 +825,8 @@ test_output_arg_parsing ()
 
   /* Correct example, with one key/value pair.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo:key=value");
+    parser_test pt ("foo:key=value");
+    auto result = pt.parse ();
     ASSERT_EQ (result->m_scheme_name, "foo");
     ASSERT_EQ (result->m_kvs.size (), 1);
     ASSERT_EQ (result->m_kvs[0].first, "key");
@@ -785,8 +836,8 @@ test_output_arg_parsing ()
 
   /* Stray trailing comma.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo:key=value,");
+    parser_test pt ("foo:key=value,");
+    auto result = pt.parse ();
     ASSERT_EQ (result, nullptr);
     ASSERT_TRUE (pt.execution_failed_p ());
     ASSERT_STREQ (pt.get_diagnostic_text (),
@@ -798,8 +849,8 @@ test_output_arg_parsing ()
 
   /* Correct example, with two key/value pairs.  */
   {
-    parser_test pt;
-    auto result = pt.parse ("foo:color=red,shape=circle");
+    parser_test pt ("foo:color=red,shape=circle");
+    auto result = pt.parse ();
     ASSERT_EQ (result->m_scheme_name, "foo");
     ASSERT_EQ (result->m_kvs.size (), 2);
     ASSERT_EQ (result->m_kvs[0].first, "color");
@@ -810,12 +861,59 @@ test_output_arg_parsing ()
   }
 }
 
+class test_key_handler : public diagnostics::output_spec::key_handler
+{
+public:
+  test_key_handler ()
+  : m_verbose (false),
+    m_strict (false)
+  {
+  }
+
+  enum result
+  maybe_handle_kv (const diagnostics::output_spec::context &ctxt,
+		   const std::string &key,
+		   const std::string &value) final override
+  {
+    if (key == "verbose")
+      return parse_bool_value (ctxt, key, value, m_verbose);
+    if (key == "strict")
+      return parse_bool_value (ctxt, key, value, m_strict);
+    return result::unrecognized;
+  }
+
+  void
+  get_keys (auto_vec<const char *> &out_known_keys) const final override
+  {
+    out_known_keys.safe_push ("verbose");
+    out_known_keys.safe_push ("strict");
+  }
+
+  bool m_verbose;
+  bool m_strict;
+};
+
+static void
+test_client_arg_parsing ()
+{
+  test_key_handler client_keys;
+  parser_test pt ("text:verbose=yes,strict=no", &client_keys);
+  auto result = pt.parse_and_make_sink ();
+  ASSERT_TRUE (result.get ());
+  ASSERT_TRUE (client_keys.m_verbose);
+  ASSERT_FALSE (client_keys.m_strict);
+}
+
 /* Run all of the selftests within this file.  */
 
 void
 output_spec_cc_tests ()
 {
+  auto_fix_quotes fix_quotes;
+  auto_fix_progname fix_progname;
+
   test_output_arg_parsing ();
+  test_client_arg_parsing ();
 }
 
 } // namespace diagnostics::selftest

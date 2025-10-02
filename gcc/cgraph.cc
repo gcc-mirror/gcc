@@ -322,6 +322,7 @@ cgraph_node::insert_new_function_version (void)
   version_info_node = NULL;
   version_info_node = ggc_cleared_alloc<cgraph_function_version_info> ();
   version_info_node->this_node = this;
+  version_info_node->assembler_name = DECL_ASSEMBLER_NAME (this->decl);
 
   if (cgraph_fnver_htab == NULL)
     cgraph_fnver_htab = hash_table<function_version_hasher>::create_ggc (2);
@@ -332,8 +333,8 @@ cgraph_node::insert_new_function_version (void)
 }
 
 /* Remove the cgraph_function_version_info node given by DECL_V.  */
-static void
-delete_function_version (cgraph_function_version_info *decl_v)
+void
+cgraph_node::delete_function_version (cgraph_function_version_info *decl_v)
 {
   if (decl_v == NULL)
     return;
@@ -1466,13 +1467,11 @@ cgraph_edge::make_direct (cgraph_edge *edge, cgraph_node *callee)
 	  /* Compare ref not direct->callee.  Direct edge is possibly
 	     inlined or redirected.  */
 	  if (!direct->speculative_call_target_ref ()
-	       ->referred->semantically_equivalent_p (callee))
+	       ->referred->semantically_equivalent_p (callee)
+	      || found)
 	    edge = direct->resolve_speculation (direct, NULL);
 	  else
-	    {
-	      gcc_checking_assert (!found);
-	      found = direct;
-	    }
+	    found = direct;
 	}
 
       /* On successful speculation just remove the indirect edge and
@@ -3159,8 +3158,16 @@ cgraph_edge::maybe_hot_p (sreal scale)
 
   /* If reliable IPA count is available, just use it.  */
   profile_count c = count.ipa ();
-  if (c.reliable_p ())
+  if (c.reliable_p ()
+      || (c.quality () == AFDO && c.nonzero_p ()))
     return maybe_hot_count_p (NULL, c * scale);
+
+  /* In auto-FDO, count 0 may lead to hot code in case the
+     call is simply not called often enough to receive some samples.  */
+  if ((c.quality () == AFDO
+       || count.quality () == GUESSED_GLOBAL0_ADJUSTED)
+      && callee && callee->count.quality () == AFDO)
+    return maybe_hot_count_p (NULL, c.force_nonzero () * scale);
 
   /* See if we can determine hotness using caller frequency.  */
   if (caller->frequency == NODE_FREQUENCY_UNLIKELY_EXECUTED
@@ -4420,6 +4427,25 @@ cgraph_edge::sreal_frequency ()
   return count.to_sreal_scale (caller->inlined_to
 			       ? caller->inlined_to->count
 			       : caller->count);
+}
+
+/* Expected frequency of executions within the function.
+   If edge is speculative, sum all its indirect targets.  */
+
+sreal
+cgraph_edge::combined_sreal_frequency ()
+{
+  if (!speculative)
+    return sreal_frequency ();
+  cgraph_edge *e = this;
+  if (e->callee)
+    e = e->speculative_call_indirect_edge ();
+  sreal sum = e->sreal_frequency ();
+  for (e = e->first_speculative_call_target ();
+       e;
+       e = e->next_speculative_call_target ())
+    sum += e->sreal_frequency ();
+  return sum;
 }
 
 

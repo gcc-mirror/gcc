@@ -1040,6 +1040,24 @@
   "mova\tza.d[%w0, %1, vgx<vector_count>], %2"
 )
 
+;; MOVT (vector to table)
+;; Variants are also available for:
+;; [_s8], [_u16], [_s16], [_u32], [_s32], [_u64], [_s64]
+;; [_bf16], [_f16], [_f32], [_f64]
+;; void svwrite_zt[_u8](uint64_t zt0, svuint8_t zt)
+;;      __arm_streaming __arm_out ("zt0");
+;; void svwrite_lane_zt[_u8](uint64_t zt0, svuint8_t zt, uint64_t idx)
+;;      __arm_streaming __arm_out ("zt0");
+(define_insn "@aarch64_sme_write_zt<SVE_FULL:mode>"
+  [(set (reg:V8DI ZT0_REGNUM)
+	(unspec_volatile:V8DI
+	  [(match_operand:SVE_FULL 0 "register_operand" "w")
+	   (match_operand:DI       1 "const_int_operand")]
+	  UNSPEC_SME_WRITE))]
+  "TARGET_SME_LUTv2"
+  "movt\tzt0 [%1, mul vl], %0"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- Zeroing
 ;; -------------------------------------------------------------------------
@@ -2165,6 +2183,7 @@
 
 (define_c_enum "unspec" [
   UNSPEC_SME_LUTI
+  UNSPEC_SME_LUTI_ZT
 ])
 
 (define_insn "@aarch64_sme_lut<LUTI_BITS><mode>"
@@ -2192,4 +2211,19 @@
   "TARGET_STREAMING_SME2
    && !(<LUTI_BITS> == 4 && <vector_count> == 4 && <elem_bits> == 8)"
   "luti<LUTI_BITS>\t%0, zt0, %1[%2]"
+)
+
+;; LUTI4 (four registers, 8-bit)
+;; Variants are also available for: _u8
+;; svint8x4_t svluti4_zt_s8_x4 (uint64_t zt0, svuint8x2_t zn)
+;;	      __arm_streaming __arm_in ("zt0");  */
+(define_insn "aarch64_sme_lut_zt"
+  [(set (match_operand:VNx64QI 0 "aligned_register_operand" "=Uw4")
+	(unspec:VNx64QI
+	  [(reg:V8DI ZT0_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:VNx32QI 1 "register_operand" "w")]
+	  UNSPEC_SME_LUTI_ZT))]
+  "TARGET_SME_LUTv2"
+  "luti4\t%0, zt0, {%Z1 - %T1}"
 )

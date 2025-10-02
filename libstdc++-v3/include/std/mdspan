@@ -148,14 +148,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class _ExtentsStorage : public _StaticExtents<_Extents>
       {
       private:
-	using _S_base = _StaticExtents<_Extents>;
+	using _Base = _StaticExtents<_Extents>;
 
       public:
-	using _S_base::_S_rank;
-	using _S_base::_S_rank_dynamic;
-	using _S_base::_S_dynamic_index;
-	using _S_base::_S_dynamic_index_inv;
-	using _S_base::_S_static_extent;
+	using _Base::_S_rank;
+	using _Base::_S_rank_dynamic;
+	using _Base::_S_dynamic_index;
+	using _Base::_S_dynamic_index_inv;
+	using _Base::_S_static_extent;
 
 	static constexpr bool
 	_S_is_dynamic(size_t __r) noexcept
@@ -242,8 +242,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       private:
-	using _S_storage = __array_traits<_IndexType, _S_rank_dynamic>::_Type;
-	[[no_unique_address]] _S_storage _M_dyn_exts{};
+	using _Storage = __array_traits<_IndexType, _S_rank_dynamic>::_Type;
+	[[no_unique_address]] _Storage _M_dyn_exts{};
       };
 
     template<typename _OIndexType, typename _SIndexType>
@@ -259,7 +259,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Extents>
       constexpr const array<size_t, _Extents::rank()>&
       __static_extents() noexcept
-      { return _Extents::_S_storage::_S_static_extents(); }
+      { return _Extents::_Storage::_S_static_extents(); }
 
     // Pre-compute: \prod_{i = 0}^r _Extents[i], for r = 0,..., n (exclusive)
     template<array _Extents>
@@ -314,10 +314,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using rank_type = size_t;
 
       static constexpr rank_type
-      rank() noexcept { return _S_storage::_S_rank; }
+      rank() noexcept { return _Storage::_S_rank; }
 
       static constexpr rank_type
-      rank_dynamic() noexcept { return _S_storage::_S_rank_dynamic; }
+      rank_dynamic() noexcept { return _Storage::_S_rank_dynamic; }
 
       static constexpr size_t
       static_extent(rank_type __r) noexcept
@@ -326,7 +326,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if constexpr (rank() == 0)
 	  __builtin_trap();
 	else
-	  return _S_storage::_S_static_extent(__r);
+	  return _Storage::_S_static_extent(__r);
       }
 
       constexpr index_type
@@ -423,9 +423,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend span<const index_type>
       __mdspan::__dynamic_extents<extents>(const extents&, size_t, size_t);
 
-      using _S_storage = __mdspan::_ExtentsStorage<
+      using _Storage = __mdspan::_ExtentsStorage<
 	_IndexType, array<size_t, sizeof...(_Extents)>{_Extents...}>;
-      [[no_unique_address]] _S_storage _M_exts;
+      [[no_unique_address]] _Storage _M_exts;
 
       template<typename _OIndexType, size_t... _OExtents>
 	friend class extents;
@@ -597,13 +597,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __res;
       }
 
-    template<typename _Extents,
-             typename _IndexType = typename _Extents::index_type>
+    template<typename _IndexType>
       consteval _IndexType
-      __static_quotient(_IndexType __nom = __gnu_cxx::__int_traits<_IndexType>
-						    ::__max)
+      __static_quotient(std::span<const size_t> __sta_exts,
+	_IndexType __nom = __gnu_cxx::__int_traits<_IndexType>::__max)
       {
-	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
 	for (auto __factor : __sta_exts)
 	  {
 	    if (__factor != dynamic_extent)
@@ -612,6 +610,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      break;
 	  }
 	return __nom;
+      }
+
+    template<typename _Extents,
+	     typename _IndexType = typename _Extents::index_type>
+      requires __is_extents<_Extents>
+      consteval _IndexType
+      __static_quotient(_IndexType __nom
+			  = __gnu_cxx::__int_traits<_IndexType>::__max)
+      {
+	std::span<const size_t> __sta_exts = __static_extents<_Extents>();
+	return __static_quotient<_IndexType>(__sta_exts, __nom);
       }
 
     template<typename _Extents>
@@ -727,6 +736,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       required_span_size() const noexcept
       { return __mdspan::__size(_M_extents); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4314. Missing move in mdspan layout mapping::operator()
       template<__mdspan::__valid_index_type<index_type>... _Indices>
 	requires (sizeof...(_Indices) == extents_type::rank())
 	constexpr index_type
@@ -866,6 +877,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       required_span_size() const noexcept
       { return __mdspan::__size(_M_extents); }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4314. Missing move in mdspan layout mapping::operator()
       template<__mdspan::__valid_index_type<index_type>... _Indices>
 	requires (sizeof...(_Indices) == extents_type::rank())
 	constexpr index_type
@@ -1089,6 +1102,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __ret;
       }
 
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4314. Missing move in mdspan layout mapping::operator()
       template<__mdspan::__valid_index_type<index_type>... _Indices>
 	requires (sizeof...(_Indices) == extents_type::rank())
 	constexpr index_type
@@ -1152,10 +1167,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
     private:
-      using _S_strides_t = typename __array_traits<index_type,
-						   extents_type::rank()>::_Type;
+      using _Strides = typename __array_traits<index_type,
+					       extents_type::rank()>::_Type;
       [[no_unique_address]] extents_type _M_extents;
-      [[no_unique_address]] _S_strides_t _M_strides;
+      [[no_unique_address]] _Strides _M_strides;
     };
 
   template<typename _ElementType>
@@ -1208,7 +1223,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       aligned_accessor() noexcept = default;
 
       template<typename _OElementType, size_t _OByteAlignment>
-	requires (_OByteAlignment >= byte_alignment) 
+	requires (_OByteAlignment >= byte_alignment)
 	    && is_convertible_v<_OElementType(*)[], element_type(*)[]>
 	constexpr
 	aligned_accessor(aligned_accessor<_OElementType, _OByteAlignment>)

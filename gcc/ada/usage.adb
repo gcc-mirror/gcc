@@ -196,8 +196,8 @@ begin
 
    --  Line for -gnateG switch
 
-   Write_Switch_Char ("eG");
-   Write_Line ("Generate preprocessed source");
+   Write_Switch_Char ("eG[?]");
+   Write_Line ("Generate preprocessed source (?=b/c/e)");
 
    --  Line for -gnateH switch
 

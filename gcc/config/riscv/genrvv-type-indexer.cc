@@ -364,11 +364,11 @@ main (int argc, const char **argv)
 	    fprintf (fp, "  /*QUAD_EMUL_UNSIGNED*/ %s,\n",
 		     inttype (8, lmul_log2 - 1, true).c_str ());
 	    fprintf (fp, "  /*QUAD_FIX*/ %s,\n",
-		     inttype (8, lmul_log2, unsigned_p).c_str ());
+		     inttype (sew / 4, lmul_log2, unsigned_p).c_str ());
 	    fprintf (fp, "  /*QUAD_FIX_SIGNED*/ %s,\n",
-		     inttype (8, lmul_log2, false).c_str ());
+		     inttype (sew / 4, lmul_log2, false).c_str ());
 	    fprintf (fp, "  /*QUAD_FIX_UNSIGNED*/ %s,\n",
-		     inttype (8, lmul_log2, true).c_str ());
+		     inttype (sew / 4, lmul_log2, true).c_str ());
 	    fprintf (fp, "  /*OCT_TRUNC*/ %s,\n",
 		     same_ratio_eew_type (sew, lmul_log2, sew / 8, unsigned_p,
 					  false)

@@ -57,6 +57,8 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         MakeConstString, MakeConstant, MakeConstVar,
                         MakeConstStringM2nul, MakeConstStringCnul,
                         Make2Tuple, IsTuple,
+                        MakeSubrange, PutSubrange,
+                        PutSetArray, MakeSetArray,
                         RequestSym, MakePointer, PutPointer,
                         SkipType,
 			GetDType, GetSType, GetLType,
@@ -109,6 +111,7 @@ FROM SymbolTable IMPORT ModeOfAddr, GetMode, PutMode, GetSymName, IsUnknown,
                         IsFieldEnumeration,
                         IsVar, IsProcType, IsType, IsSubrange, IsExported,
                         IsConst, IsConstString, IsModule, IsDefImp,
+                        IsConstVar,
                         IsArray, IsUnbounded, IsProcedureNested,
                         IsParameterUnbounded,
                         IsPartialUnbounded, IsProcedureBuiltin,
@@ -150,7 +153,8 @@ FROM M2Batch IMPORT MakeDefinitionSource ;
 FROM M2GCCDeclare IMPORT PutToBeSolvedByQuads ;
 
 FROM FifoQueue IMPORT GetConstFromFifoQueue,
-                      PutConstructorIntoFifoQueue, GetConstructorFromFifoQueue ;
+                      PutConstructorIntoFifoQueue, GetConstructorFromFifoQueue,
+                      GetSetFromFifoQueue ;
 
 FROM M2Comp IMPORT CompilingImplementationModule,
                    CompilingProgramModule ;
@@ -280,6 +284,8 @@ FROM M2CaseList IMPORT PushCase, PopCase, AddRange, BeginCaseList, EndCaseList, 
 FROM PCSymBuild IMPORT SkipConst ;
 FROM m2builtins IMPORT GetBuiltinTypeInfoType ;
 FROM M2LangDump IMPORT IsDumpRequired ;
+FROM SymbolConversion IMPORT GccKnowsAbout ;
+FROM M2Diagnostic IMPORT Diagnostic, InitMemDiagnostic, MemIncr, MemSet ;
 
 IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO ;
 
@@ -399,6 +405,7 @@ VAR
                                       (* in order.                               *)
    NoOfQuads            : CARDINAL ;  (* Number of used quadruples.              *)
    Head                 : CARDINAL ;  (* Head of the list of quadruples.         *)
+   QuadMemDiag          : Diagnostic ;  (* Contains memory related statistics.   *)
    BreakQuad            : CARDINAL ;  (* Stop when BreakQuad is created.         *)
 
 
@@ -2063,7 +2070,9 @@ BEGIN
       ELSE
          INC (NoOfQuads) ;
          PutIndice (QuadArray, QuadNo, f) ;
-         f^.NoOfTimesReferenced := 0
+         f^.NoOfTimesReferenced := 0 ;
+         MemSet (QuadMemDiag, 1, NoOfQuads) ;
+         MemIncr (QuadMemDiag, 2, SIZE (f^))
       END
    END ;
    WITH f^ DO
@@ -3404,7 +3413,7 @@ BEGIN
    IF IsPseudoBaseProcedure (expr) OR IsPseudoBaseFunction (expr)
    THEN
       MetaErrorT1 (exprtok,
-                  'an assignment cannot assign a {%1d} {%1a}', expr)
+                  'an assignment cannot assign a {%1dv} {%1a}', expr)
    END
 END CheckCompatibleWithBecomes ;
 
@@ -3812,25 +3821,24 @@ END BuildAssignConstant ;
 
 
 (*
-   doBuildAssignment - subsiduary procedure of BuildAssignment.
-                       It builds the assignment and optionally
-                       checks the types are compatible.
+   BuildAssignmentBoolean - build the quadruples for a boolean variable or constant
+                            which will be assigned to the result of a boolean expression.
+                            For example:
+
+                            foo := a = b ;
+                            foo := a IN b ;
+
+                            The boolean result is contained in the control flow
+                            the true value will emerge from the quad path t.
+                            The false value will emerge from the quad path f.
+                            This procedure terminates both paths by backpatching
+                            and assigns TRUE or FALSE to the variable/constant.
+                            A variable maybe an L value so it will require dereferencing.
 *)
 
-PROCEDURE doBuildAssignment (becomesTokNo: CARDINAL; checkTypes, checkOverflow: BOOLEAN) ;
-VAR
-   r, w,
-   t, f,
-   Array,
-   Des, Exp      : CARDINAL ;
-   combinedtok,
-   destok, exptok: CARDINAL ;
+PROCEDURE BuildAssignmentBoolean (becomesTokNo: CARDINAL; checkOverflow: BOOLEAN;
+                                  t, f: CARDINAL; Des: CARDINAL; destok: CARDINAL) ;
 BEGIN
-   DisplayStack ;
-   IF IsBoolean (1)
-   THEN
-      PopBool (t, f) ;
-      PopTtok (Des, destok) ;
       PutVarConditional (Des, TRUE) ;  (* Des will contain the result of a boolean relop.  *)
       (* Conditional Boolean Assignment.  *)
       BackPatch (t, NextQuad) ;
@@ -3851,6 +3859,36 @@ BEGIN
          GenQuadO (destok, XIndrOp, Des, Boolean, False, checkOverflow)
       ELSE
          GenQuadO (becomesTokNo, BecomesOp, Des, NulSym, False, checkOverflow)
+      END
+END BuildAssignmentBoolean ;
+
+
+(*
+   doBuildAssignment - subsiduary procedure of BuildAssignment.
+                       It builds the assignment and optionally
+                       checks the types are compatible.
+*)
+
+PROCEDURE doBuildAssignment (becomesTokNo: CARDINAL; checkTypes, checkOverflow: BOOLEAN) ;
+VAR
+   r, w,
+   t, f,
+   Array,
+   Des, Exp      : CARDINAL ;
+   combinedtok,
+   destok, exptok: CARDINAL ;
+BEGIN
+   DisplayStack ;
+   IF IsBoolean (1)
+   THEN
+      PopBool (t, f) ;
+      PopTtok (Des, destok) ;
+      IF IsVar (Des) OR IsConstVar (Des)
+      THEN
+         BuildAssignmentBoolean (becomesTokNo, checkOverflow,
+                                 t, f, Des, destok)
+      ELSE
+         MetaErrorT1 (destok, 'expecting the designator {%1Ead} to be a constant or a variable and not a {%1dv}', Des)
       END
    ELSE
       PopTrwtok (Exp, r, exptok) ;
@@ -5795,8 +5833,8 @@ BEGIN
          WHILE i<=n DO
             IF IsVarParamAny (ProcType, i) # IsVarParamAny (CheckedProcedure, i)
             THEN
-               MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', ProcType, GetNth (ProcType, i), i) ;
-               MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2d}', call, GetNth (call, i), i)
+            MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2dv}', ProcType, GetNth (ProcType, i), i) ;
+            MetaError3 ('parameter {%3n} in {%1dD} causes a mismatch it was declared as a {%2dv}', call, GetNth (call, i), i)
             END ;
             BuildRange (InitTypesParameterCheck (tokno, CheckedProcedure, i,
                                                  GetNthParamAnyClosest (CheckedProcedure, i, GetCurrentModule ()),
@@ -7863,9 +7901,9 @@ BEGIN
          (* Error issue message and fake return stack.  *)
          IF Iso
          THEN
-            MetaErrorT0 (functok, 'the only functions permissible in a constant expression are: {%kCAP}, {%kCHR}, {%kCMPLX}, {%kFLOAT}, {%kHIGH}, {%kIM}, {%kLENGTH}, {%kMAX}, {%kMIN}, {%kODD}, {%kORD}, {%kRE}, {%kSIZE}, {%kTSIZE}, {%kTRUNC}, {%kVAL} and gcc builtins')
+            MetaErrorT0 (functok, 'the only functions permissible in a constant expression are: {%kCAP}, {%kCHR}, {%kCMPLX}, {%kFLOAT}, {%kHIGH}, {%kIM}, {%kLENGTH}, {%kMAX}, {%kMIN}, {%kODD}, {%kORD}, {%kRE}, {%kSIZE}, {%kTSIZE}, {%kTBITSIZE}, {%kTRUNC}, {%kVAL} and gcc builtins')
          ELSE
-            MetaErrorT0 (functok, 'the only functions permissible in a constant expression are: {%kCAP}, {%kCHR}, {%kFLOAT}, {%kHIGH}, {%kMAX}, {%kMIN}, {%kODD}, {%kORD}, {%kSIZE}, {%kTSIZE}, {%kTRUNC}, {%kVAL} and gcc builtins')
+            MetaErrorT0 (functok, 'the only functions permissible in a constant expression are: {%kCAP}, {%kCHR}, {%kFLOAT}, {%kHIGH}, {%kMAX}, {%kMIN}, {%kODD}, {%kORD}, {%kSIZE}, {%kTSIZE}, {%kTRUNC}, {%kTBITSIZE}, {%kVAL} and gcc builtins')
          END ;
 	 IF NoOfParam > 0
 	 THEN
@@ -8212,7 +8250,7 @@ BEGIN
             PushTFtok (ReturnVar, Address, combinedtok)
          ELSE
             MetaErrorT1 (functok,
-                         'the first parameter to ADDADR {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsd}',
+                         'the first parameter to ADDADR {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsdv}',
                          VarSym) ;
             PushTFtok (MakeConstLit (combinedtok, MakeKey('0'), Address), Address, combinedtok)
          END
@@ -8295,7 +8333,7 @@ BEGIN
             PushTFtok (ReturnVar, Address, combinedtok)
          ELSE
             MetaErrorT1 (functok,
-                         'the first parameter to {%EkSUBADR} {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsd}',
+                         'the first parameter to {%EkSUBADR} {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsdv}',
                          VarSym) ;
             PushTFtok (MakeConstLit (vartok, MakeKey('0'), Address), Address, vartok)
          END
@@ -8394,13 +8432,13 @@ BEGIN
                PushT (2) ;          (* Two parameters *)
                BuildConvertFunction (Convert, ConstExpr)
             ELSE
-               MetaError1 ('the second parameter to {%EkDIFADR} {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsd}',
+               MetaError1 ('the second parameter to {%EkDIFADR} {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsdv}',
                            OperandSym) ;
                PushTFtok (MakeConstLit (combinedtok, MakeKey ('0'), Integer), Integer, combinedtok)
             END
          ELSE
             MetaErrorT1 (vartok,
-                         'the first parameter to {%EkDIFADR} {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsd}',
+                         'the first parameter to {%EkDIFADR} {%1Ea} must be a variable of type ADDRESS or a {%EkPOINTER}, rather than a {%1Etsdv}',
                          VarSym) ;
             PushTFtok (MakeConstLit (combinedtok, MakeKey ('0'), Integer), Integer, combinedtok)
          END
@@ -8615,7 +8653,7 @@ BEGIN
    IF ConstExpr AND IsVar (Var)
    THEN
       MetaErrorT2 (optok,
-                   'the procedure function {%1Ea} is being called from within a constant expression and therefore the parameter {%2a} must be a constant, seen a {%2da}',
+                   'the procedure function {%1Ea} is being called from within a constant expression and therefore the parameter {%2a} must be a constant, seen a {%2dav}',
                    Func, Var) ;
       RETURN TRUE
    ELSE
@@ -9352,7 +9390,8 @@ BEGIN
       PopTtok (varSet, vartok) ;
       PopT (procSym) ;
       combinedtok := MakeVirtualTok (functok, functok, exptok) ;
-      IF (GetSType (varSet) # NulSym) AND IsSet (GetDType (varSet))
+      IF (GetSType (varSet) # NulSym)
+         AND (IsSet (GetDType (varSet)) OR IsGenericSystemType (GetDType (varSet)))
       THEN
          derefExp := DereferenceLValue (exptok, Exp) ;
          BuildRange (InitShiftCheck (varSet, derefExp)) ;
@@ -9427,7 +9466,8 @@ BEGIN
       MarkAsRead (r) ;
       PopTtok (varSet, vartok) ;
       PopT (procSym) ;
-      IF (GetSType (varSet) # NulSym) AND IsSet (GetDType (varSet))
+      IF (GetSType (varSet) # NulSym)
+         AND (IsSet (GetDType (varSet)) OR IsGenericSystemType (GetDType (varSet)))
       THEN
          combinedtok := MakeVirtualTok (functok, functok, exptok) ;
          derefExp := DereferenceLValue (exptok, Exp) ;
@@ -11609,7 +11649,7 @@ BEGIN
       BuildStaticArray
    ELSE
       MetaErrorT1 (arrayTok,
-                   'can only index static or dynamic arrays, {%1Ead} is not an array but a {%tad}',
+                   'can only index static or dynamic arrays, {%1Ead} is not an array but a {%tadv}',
                    Sym) ;
       BuildDesignatorError ('bad array access')
    END
@@ -11971,7 +12011,7 @@ BEGIN
          MarkAsRead (rw) ;
          BuildDesignatorPointerError (Type1, rw, combinedtok, 'bad opaque pointer dereference')
       ELSE
-         MetaError2 ('{%1Ead} is not a pointer type but a {%2d}', Sym1, Type1) ;
+         MetaError2 ('{%1Ead} is not a pointer type but a {%2dv}', Sym1, Type1) ;
          MarkAsRead (rw) ;
          BuildDesignatorPointerError (Type1, rw, combinedtok, 'bad pointer dereference')
       END
@@ -13065,7 +13105,7 @@ BEGIN
             WarnStringAt (s, OldPos) ;
             s := InitString ('combined') ;
             WarnStringAt (s, OperatorPos) ;
-            (* MetaErrorT1 (GetDeclaredMod (t), 'in binary with a {%1a}', t) *)
+            (* MetaErrorT1 (GetDeclaredMod (t), 'in binary with a {%1av}', t) *)
          END ;
          GenQuadOtok (OperatorPos, MakeOp (NewOp), value, left, right, checkOverflow,
                       OperatorPos, leftpos, rightpos)
@@ -13384,12 +13424,12 @@ BEGIN
    THEN
       MetaErrorsT1 (tokpos,
                     '{%1Ead} expected a variable, procedure, constant or expression',
-                    'and it was declared as a {%1Dd}', sym) ;
+                    'and it was declared as a {%1Ddv}', sym) ;
    ELSIF (type#NulSym) AND IsArray(type)
    THEN
       MetaErrorsT1 (tokpos,
                     '{%1EU} not expecting an array variable as an operand for either comparison or binary operation',
-                    'it was declared as a {%1Dd}', sym)
+                    'it was declared as a {%1Ddv}', sym)
    ELSIF IsConstString (sym) AND IsConstStringKnown (sym) AND (GetStringLength (tokpos, sym) > 1)
    THEN
       MetaErrorT1 (tokpos,
@@ -14014,9 +14054,12 @@ END ds ;
 
 PROCEDURE DisplayQuad (QuadNo: CARDINAL) ;
 BEGIN
+   IF QuadNo # 0
+   THEN
    DSdbEnter ;
    fprintf1 (GetDumpFile (), '%4d  ', QuadNo) ; WriteQuad(QuadNo) ; fprintf0 (GetDumpFile (), '\n') ;
    DSdbExit
+   END
 END DisplayQuad ;
 
 
@@ -14337,7 +14380,11 @@ BEGIN
       THEN
          fprintf0 (GetDumpFile (), '[') ; WriteMode (GetMode (Sym)) ; fprintf0 (GetDumpFile (), ']')
       END ;
-      fprintf1 (GetDumpFile (), '(%d)', Sym)
+      fprintf1 (GetDumpFile (), '(%d)', Sym) ;
+      IF GccKnowsAbout (Sym)
+      THEN
+         fprintf0 (GetDumpFile (), '[gcc]')
+      END
    END
 END WriteOperand ;
 
@@ -16173,6 +16220,10 @@ BEGIN
    InitList(VarientFields) ;
    VarientFieldNo := 0 ;
    NoOfQuads := 0 ;
+   QuadMemDiag
+      := InitMemDiagnostic
+            ('M2Quad:Quadruples',
+            '{0N} total quadruples {1d} consuming {2M} ram {0M} ({2P})')
 END Init ;
 
 

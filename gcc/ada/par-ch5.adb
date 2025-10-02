@@ -2042,7 +2042,7 @@ package body Ch5 is
    begin
       Goto_Node := New_Node (N_Goto_Statement, Token_Ptr);
       Scan; -- past GOTO (or TO)
-      Set_Name (Goto_Node, P_Qualified_Simple_Name_Resync);
+      Set_Name (Goto_Node, P_Label_Name);
       Append_Elmt (Goto_Node, Goto_List);
 
       if Token = Tok_When then
@@ -2393,7 +2393,7 @@ package body Ch5 is
       Scan; -- past EXIT or CONTINUE
 
       if Token = Tok_Identifier then
-         Set_Name (N, P_Qualified_Simple_Name);
+         Set_Name (N, P_Loop_Name);
       elsif Style_Check and then Nkind (N) = N_Exit_Statement then
          --  This statement has no name, so check that
          --  the innermost loop is unnamed too.

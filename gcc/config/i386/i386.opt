@@ -644,8 +644,7 @@ Target RejectNegative Joined Var(ix86_move_max) Enum(prefer_vector_width) Init(P
 Maximum number of bits that can be moved from memory to memory efficiently.
 
 mstore-max=
-Target RejectNegative Joined Var(ix86_store_max) Enum(prefer_vector_width) Init(PVW_NONE) Save
-Maximum number of bits that can be stored to memory efficiently.
+Target RejectNegative Joined Uncoumented Var(ix86_move_max) Enum(prefer_vector_width) Init(PVW_NONE) Warn(%<-mstore-max=%> is deprecated; use %<-mmove-max=%> instead)
 
 mnoreturn-no-callee-saved-registers
 Target Var(ix86_noreturn_no_callee_saved_registers)

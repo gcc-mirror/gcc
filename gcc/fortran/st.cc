@@ -86,6 +86,10 @@ gfc_free_statement (gfc_code *p)
     gfc_free_expr (p->expr1);
   if (p->expr2)
     gfc_free_expr (p->expr2);
+  if (p->expr3)
+    gfc_free_expr (p->expr3);
+  if (p->expr4)
+    gfc_free_expr (p->expr4);
 
   switch (p->op)
     {

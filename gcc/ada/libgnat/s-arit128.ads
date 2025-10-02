@@ -41,6 +41,10 @@ with Interfaces;
 package System.Arith_128
   with Pure, SPARK_Mode
 is
+   ------------
+   -- Int128 --
+   ------------
+
    subtype Int128 is Interfaces.Integer_128;
 
    function Add_With_Ovflo_Check128 (X, Y : Int128) return Int128;
@@ -80,5 +84,40 @@ is
    --  quotient and remainder from a truncating division. If Round is True,
    --  then Q is the rounded quotient. The remainder R is not affected by the
    --  setting of the Round flag.
+
+   ------------
+   -- Uns128 --
+   ------------
+
+   subtype Uns128 is Interfaces.Unsigned_128;
+
+   function Uns_Add_With_Ovflo_Check128 (X, Y : Uns128) return Uns128;
+   --  Raises Constraint_Error if sum of operands overflows 128 bits,
+   --  otherwise returns the 128-bit unsigned integer sum.
+   --
+   --  The sum of ``X`` and ``Y`` is first computed. If the result is
+   --  lower than the first operand, then an overflow occurred and the
+   --  exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
+
+   function Uns_Subtract_With_Ovflo_Check128 (X, Y : Uns128) return Uns128;
+   --  Raises Constraint_Error if difference of operands overflows 128 bits,
+   --  otherwise returns the 128-bit unsigned integer difference.
+   --
+   --  The subtraction of ``X`` and ``Y`` is first computed. If the result
+   --  is greater than the first operand, then an overflow occurred and the
+   --  exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
+
+   function Uns_Multiply_With_Ovflo_Check128 (X, Y : Uns128) return Uns128;
+   pragma Export (C, Uns_Multiply_With_Ovflo_Check128, "__gnat_uns_mulv128");
+   --  Raises Constraint_Error if product of operands overflows 128 bits,
+   --  otherwise returns the 128-bit signed integer product. The code
+   --  generator may also generate direct calls to this routine.
+   --
+   --  The multiplication is done using pencil and paper algorithm using base
+   --  2**32. The multiplication is done on unsigned values, then the correct
+   --  unsigned value is returned. Overflow check is performed by looking at
+   --  higher digits.
 
 end System.Arith_128;

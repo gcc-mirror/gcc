@@ -401,7 +401,6 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 		    enum fpmath_unit fpmath,
 		    enum prefer_vector_width pvw,
 		    enum prefer_vector_width move_max,
-		    enum prefer_vector_width store_max,
 		    bool add_nl_p, bool add_abi_p)
 {
   /* Flag options.  */
@@ -611,10 +610,6 @@ ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
   if (move_max)
     add_vector_width (move_max, "-mmove-max=");
 
-  /* Add -mstore-max= option.  */
-  if (store_max)
-    add_vector_width (store_max, "-mstore-max=");
-
   /* Any options?  */
   if (num == 0)
     return NULL;
@@ -680,8 +675,7 @@ ix86_debug_options (void)
 				   target_flags, ix86_target_flags,
 				   ix86_arch_string, ix86_tune_string,
 				   ix86_fpmath, prefer_vector_width_type,
-				   ix86_move_max, ix86_store_max,
-				   true, true);
+				   ix86_move_max, true, true);
 
   if (opts)
     {
@@ -956,8 +950,7 @@ ix86_function_specific_print (FILE *file, int indent,
 			  ptr->x_target_flags, ptr->x_ix86_target_flags,
 			  NULL, NULL, ptr->x_ix86_fpmath,
 			  ptr->x_prefer_vector_width_type,
-			  ptr->x_ix86_move_max, ptr->x_ix86_store_max,
-			  false, true);
+			  ptr->x_ix86_move_max, false, true);
 
   gcc_assert (ptr->arch < PROCESSOR_max);
   fprintf (file, "%*sarch = %d (%s)\n",
@@ -1410,8 +1403,6 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
   enum prefer_vector_width orig_pvw_set = opts_set->x_prefer_vector_width_type;
   enum prefer_vector_width orig_ix86_move_max_set
     = opts_set->x_ix86_move_max;
-  enum prefer_vector_width orig_ix86_store_max_set
-    = opts_set->x_ix86_store_max;
   int orig_tune_defaulted = ix86_tune_defaulted;
   int orig_arch_specified = ix86_arch_specified;
   char *option_strings[IX86_FUNCTION_SPECIFIC_MAX] = { NULL, NULL };
@@ -1492,7 +1483,6 @@ ix86_valid_target_attribute_tree (tree fndecl, tree args,
       opts_set->x_ix86_fpmath = orig_fpmath_set;
       opts_set->x_prefer_vector_width_type = orig_pvw_set;
       opts_set->x_ix86_move_max = orig_ix86_move_max_set;
-      opts_set->x_ix86_store_max = orig_ix86_store_max_set;
       opts->x_ix86_excess_precision = orig_ix86_excess_precision;
       opts->x_ix86_unsafe_math_optimizations
 	= orig_ix86_unsafe_math_optimizations;
@@ -2936,32 +2926,6 @@ ix86_option_override_internal (bool main_args_p,
 		opts->x_ix86_move_max = PVW_AVX256;
 	      else
 		opts->x_ix86_move_max = PVW_AVX128;
-	    }
-	}
-    }
-
-  if (opts_set->x_ix86_store_max == PVW_NONE)
-    {
-      /* Set the maximum number of bits can be stored to memory
-	 efficiently.  */
-      if (opts_set->x_prefer_vector_width_type != PVW_NONE)
-	opts->x_ix86_store_max = opts->x_prefer_vector_width_type;
-      else if (ix86_tune_features[X86_TUNE_AVX512_STORE_BY_PIECES])
-	opts->x_ix86_store_max = PVW_AVX512;
-      else if (ix86_tune_features[X86_TUNE_AVX256_STORE_BY_PIECES])
-	opts->x_ix86_store_max = PVW_AVX256;
-      else
-	{
-	  opts->x_ix86_store_max = opts->x_prefer_vector_width_type;
-	  if (opts_set->x_ix86_store_max == PVW_NONE)
-	    {
-	      if (TARGET_AVX512F_P (opts->x_ix86_isa_flags))
-		opts->x_ix86_store_max = PVW_AVX512;
-	      /* Align with vectorizer to avoid potential STLF issue.  */
-	      else if (TARGET_AVX_P (opts->x_ix86_isa_flags))
-		opts->x_ix86_store_max = PVW_AVX256;
-	      else
-		opts->x_ix86_store_max = PVW_AVX128;
 	    }
 	}
     }

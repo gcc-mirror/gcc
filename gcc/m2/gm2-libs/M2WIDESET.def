@@ -1,0 +1,210 @@
+(* M2WIDESET.def runtime support procedures for wide sets.
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2WIDESET ;
+
+(*
+    Title      : M2WIDESET
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Thu Nov 16 19:57:31 2023
+    Description: provides runtime capability for wide sets.
+*)
+
+FROM SYSTEM IMPORT BYTE ;
+
+
+(*
+   Or - dest = left | right
+        implement OR for a wide set type.
+*)
+
+PROCEDURE Or (VAR dest: ARRAY OF BYTE; left, right: ARRAY OF BYTE;
+              highbit: CARDINAL) ;
+
+
+(*
+   And - dest = left & right
+         implement AND for a wide set type.
+*)
+
+PROCEDURE And (VAR dest: ARRAY OF BYTE; left, right: ARRAY OF BYTE;
+               highbit: CARDINAL) ;
+
+
+(*
+   Not - dest = ~ operand
+         implement AND for a wide set type.
+*)
+
+PROCEDURE Not (VAR dest: ARRAY OF BYTE; expr: ARRAY OF BYTE;
+               highbit: CARDINAL) ;
+
+
+(*
+   Incl - dest |= bit
+          implement INCL for a wide set type.
+*)
+
+PROCEDURE Incl (VAR dest: ARRAY OF BYTE; bit: CARDINAL) ;
+
+
+(*
+   Excl - dest &= (~ bit)
+          implement EXCL for a wide set type.
+*)
+
+PROCEDURE Excl (VAR dest: ARRAY OF BYTE; bit: CARDINAL) ;
+
+
+(*
+   In - return bit IN expr.
+*)
+
+PROCEDURE In (VAR expr: ARRAY OF BYTE; bit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   Equal - return left = right.
+*)
+
+PROCEDURE Equal (VAR left, right: ARRAY OF BYTE; highbit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   Clear - dest = {}.
+*)
+
+PROCEDURE Clear (VAR dest: ARRAY OF BYTE; highbit: CARDINAL) ;
+
+
+(*
+   Shift - dest := SHIFT (src, ShiftCount).  This is a logical shift
+           all the new bit values will be zero.
+*)
+
+PROCEDURE Shift (VAR dest: ARRAY OF BYTE; src: ARRAY OF BYTE;
+                 highbit: CARDINAL; ShiftCount: INTEGER) ;
+
+
+(*
+   ArithShift - dest := ArithShift (dest, ShiftCount, carry).  This is an
+                arithmetic shift all the new bit values will
+                be set to carry.
+*)
+
+PROCEDURE ArithShift (VAR dest: ARRAY OF BYTE;
+                      highbit: CARDINAL; ShiftCount: INTEGER;
+                      carry: BOOLEAN) ;
+
+
+(*
+   Rotate - is a runtime procedure whose job is to implement
+            the ROTATE procedure of ISO SYSTEM.
+*)
+
+PROCEDURE Rotate (VAR dest: ARRAY OF BYTE; src: ARRAY OF BYTE;
+                  highbit: CARDINAL; RotateCount: INTEGER) ;
+
+(*
+   Less - performs the set comparison for a wide set.
+          Less returns ProperSubset (left, right, highbit).
+*)
+
+PROCEDURE Less (VAR left, right: ARRAY OF BYTE;
+                highbit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   LessEqu - performs the set comparison for a wide set.
+             LessEqu returns Equal (left, right, highbit) OR
+                             ProperSubset (left, right, highbit).
+*)
+
+PROCEDURE LessEqu (VAR left, right: ARRAY OF BYTE;
+                   highbit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   Gre - performs the set comparison for a wide set.
+         Gre returns the result of
+         ProperSuperet (left, right, highbit).
+*)
+
+PROCEDURE Gre (VAR left, right: ARRAY OF BYTE;
+               highbit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GreEqu - performs the set comparison for a wide set.
+            GreEqu returns Equal (left, right, highbit) OR
+                           ProperSuperet (left, right, highbit).
+*)
+
+PROCEDURE GreEqu (VAR left, right: ARRAY OF BYTE;
+                  highbit: CARDINAL) : BOOLEAN ;
+
+(*
+   ProperSubset - return TRUE if left is a proper subset of right.
+                  If true the left set will have at least one element
+                  less than set right.
+*)
+
+PROCEDURE ProperSubset (VAR left, right: ARRAY OF BYTE;
+                        highbit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   ProperSuperset - return TRUE if left is a proper superset of right.
+                    If true the left set will have at least one element
+                    more than set right.
+*)
+
+PROCEDURE ProperSuperset (VAR left, right: ARRAY OF BYTE;
+                          highbit: CARDINAL) : BOOLEAN ;
+
+
+(*
+   LogicalDifference - build a logical difference expression tree.
+                       dest := left and (not right).
+*)
+
+PROCEDURE LogicalDifference (VAR dest: ARRAY OF BYTE;
+                             left, right: ARRAY OF BYTE;
+                             highbit: CARDINAL) ;
+
+
+(*
+   SymmetricDifference - build a logical difference expression tree.
+                         dest := left xor right.
+*)
+
+PROCEDURE SymmetricDifference (VAR dest: ARRAY OF BYTE;
+                               left, right: ARRAY OF BYTE;
+                               highbit: CARDINAL) ;
+
+
+END M2WIDESET.

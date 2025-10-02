@@ -35,7 +35,7 @@ protected:
 
   virtual result
   do_in(state_type&, const char* from, const char*, const char*& from_next,
-	char* to, char*, char*& to_next)
+	char* to, char*, char*& to_next) const
   {
     from_next = from;
     to_next = to;

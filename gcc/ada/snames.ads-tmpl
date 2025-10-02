@@ -424,6 +424,7 @@ package Snames is
    Name_Aggregate_Individually_Assign  : constant Name_Id := N + $; -- GNAT
    Name_Allow_Integer_Address          : constant Name_Id := N + $; -- GNAT
    Name_Annotate                       : constant Name_Id := N + $; -- GNAT
+   Name_Assertion_Level                : constant Name_Id := N + $; -- GNAT
    Name_Assertion_Policy               : constant Name_Id := N + $; -- Ada 05
    Name_Assume_No_Invalid_Values       : constant Name_Id := N + $; -- GNAT
    Name_C_Pass_By_Copy                 : constant Name_Id := N + $; -- GNAT
@@ -573,7 +574,7 @@ package Snames is
    Name_Extensions_Visible             : constant Name_Id := N + $; -- GNAT
    Name_External                       : constant Name_Id := N + $; -- GNAT
    Name_Finalize_Storage_Only          : constant Name_Id := N + $; -- GNAT
-   Name_First_Controlling_Parameter    : constant Name_Id := N + $;
+   Name_First_Controlling_Parameter    : constant Name_Id := N + $; -- GNAT
    Name_Ghost                          : constant Name_Id := N + $; -- GNAT
    Name_Global                         : constant Name_Id := N + $; -- GNAT
    Name_Ident                          : constant Name_Id := N + $; -- GNAT
@@ -721,6 +722,13 @@ package Snames is
    Name_Unreferenced                   : constant Name_Id := N + $; -- GNAT
    Name_Unreferenced_Objects           : constant Name_Id := N + $; -- GNAT
    Name_Unreserve_All_Interrupts       : constant Name_Id := N + $; -- GNAT
+
+   --  Note: Unsigned_Base_Range is not in this list because its name matches
+   --  the name of the corresponding attribute. However, it is included in the
+   --  definition of the type Pragma_Id and the functions Get_Pragma_Id and
+   --  Is_Pragma_Name correctly recognize and process Unsigned_Base_Range.
+   --  Unsigned_Base_Range is a Core Extension pragma.
+
    Name_Unused                         : constant Name_Id := N + $; -- GNAT
    Name_Volatile                       : constant Name_Id := N + $;
    Name_Volatile_Components            : constant Name_Id := N + $;
@@ -1056,6 +1064,7 @@ package Snames is
    Name_Unconstrained_Array            : constant Name_Id := N + $; -- GNAT
    Name_Universal_Literal_String       : constant Name_Id := N + $; -- GNAT
    Name_Unrestricted_Access            : constant Name_Id := N + $; -- GNAT
+   Name_Unsigned_Base_Range            : constant Name_Id := N + $; -- GNAT
    Name_Update                         : constant Name_Id := N + $; -- GNAT
    Name_VADS_Size                      : constant Name_Id := N + $; -- GNAT
    Name_Val                            : constant Name_Id := N + $;
@@ -1409,6 +1418,10 @@ package Snames is
    Name_Reference_Control_Type           : constant Name_Id := N + $;
    Name_Get_Element_Access               : constant Name_Id := N + $;
 
+   --  Names used to implement Assertion_Levels
+
+   Name_uDefault_Assertion_Level          : constant Name_Id := N + $;
+
    --  Names for Ada 202x Aggregate aspect. Name_Aggregate is already
    --  present for gprbuild.
 
@@ -1595,6 +1608,7 @@ package Snames is
       Attribute_Unconstrained_Array,
       Attribute_Universal_Literal_String,
       Attribute_Unrestricted_Access,
+      Attribute_Unsigned_Base_Range,
       Attribute_Update,
       Attribute_VADS_Size,
       Attribute_Val,
@@ -1773,6 +1787,7 @@ package Snames is
       Pragma_Aggregate_Individually_Assign,
       Pragma_Allow_Integer_Address,
       Pragma_Annotate,
+      Pragma_Assertion_Level,
       Pragma_Assertion_Policy,
       Pragma_Assume_No_Invalid_Values,
       Pragma_C_Pass_By_Copy,
@@ -2027,10 +2042,11 @@ package Snames is
       Pragma_Secondary_Stack_Size,
       Pragma_Storage_Size,
       Pragma_Storage_Unit,
+      Pragma_Unsigned_Base_Range,
 
       --  The value to represent an unknown or unrecognized pragma
 
-      Unknown_Pragma);
+      Pragma_Unknown);
 
    -----------------------------------
    -- Queuing Policy ID definitions --
@@ -2151,7 +2167,7 @@ package Snames is
    --  to call this function with a name that is not the name of a check.
 
    function Get_Pragma_Id (N : Name_Id) return Pragma_Id;
-   --  Returns Id of pragma corresponding to given name. Returns Unknown_Pragma
+   --  Returns Id of pragma corresponding to given name. Returns Pragma_Unknown
    --  if N is not a name of a known (Ada defined or GNAT-specific) pragma.
    --  Note that the function also works correctly for names of pragmas that
    --  are not included in the main list of pragma Names (e.g. Name_CPU returns

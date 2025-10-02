@@ -36,8 +36,8 @@ void test01()
   tm time1;
   iss >> get_time(&time1, L"%H:%M:%S %Y");
   VERIFY( static_cast<bool>(iss) );
-  VERIFY(time1.tm_hour = 12);
-  VERIFY(time1.tm_min = 1);
+  VERIFY(time1.tm_hour == 12);
+  VERIFY(time1.tm_min == 1);
   VERIFY(time1.tm_sec == 30);
   VERIFY(time1.tm_year == 71);
 }

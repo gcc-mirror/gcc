@@ -13,5 +13,5 @@ void test1(unsigned* lock) {
 
 /* { dg-final { scan-assembler-not "\tli" } } */
 /* { dg-final { scan-assembler-times "\tamoswap...aq\t\[axt\]\[0-9\],zero," 2 } } */
-/* { dg-final { scan-assembler-not "\tsext" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler-not "\tsext" } } */
 

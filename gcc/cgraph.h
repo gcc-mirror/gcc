@@ -856,6 +856,9 @@ struct GTY((for_user)) cgraph_function_version_info {
      dispatcher. The dispatcher decl is an alias to the resolver
      function decl.  */
   tree dispatcher_resolver;
+
+  /* The assmbly name of the function set before version mangling.  */
+  tree assembler_name;
 };
 
 #define DEFCIFCODE(code, type, string)	CIF_ ## code,
@@ -904,7 +907,9 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
       used_as_abstract_origin (false),
       lowered (false), process (false), frequency (NODE_FREQUENCY_NORMAL),
       only_called_at_startup (false), only_called_at_exit (false),
-      tm_clone (false), dispatcher_function (false), calls_comdat_local (false),
+      tm_clone (false), dispatcher_function (false),
+      dispatcher_resolver_function (false), is_target_clone (false),
+      calls_comdat_local (false),
       icf_merged (false), nonfreeing_fn (false), merged_comdat (false),
       merged_extern_inline (false), parallelized_function (false),
       split_part (false), indirect_call_target (false), local (false),
@@ -1347,6 +1352,8 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
      DECL is a duplicate declaration.  */
   static void delete_function_version_by_decl (tree decl);
 
+  static void delete_function_version (cgraph_function_version_info *);
+
   /* Add the function FNDECL to the call graph.
      Unlike finalize_function, this function is intended to be used
      by middle end and allows insertion of new function at arbitrary point
@@ -1482,6 +1489,12 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
   unsigned tm_clone : 1;
   /* True if this decl is a dispatcher for function versions.  */
   unsigned dispatcher_function : 1;
+  /* True if this decl is a resolver for function versions.  */
+  unsigned dispatcher_resolver_function : 1;
+  /* True this is part of a multiversioned set and this version comes from a
+     target_clone attribute.  Or if this is a dispatched symbol or resolver
+     and the default version comes from a target_clones.  */
+  unsigned is_target_clone : 1;
   /* True if this decl calls a COMDAT-local function.  This is set up in
      compute_fn_summary and inline_call.  */
   unsigned calls_comdat_local : 1;
@@ -1991,6 +2004,10 @@ public:
 
   /* Expected frequency of executions within the function.  */
   sreal sreal_frequency ();
+
+  /* Expected frequency of executions within the function.
+     If edge is speculative, sum all its indirect targets.  */
+  sreal combined_sreal_frequency ();
 private:
   /* Unique id of the edge.  */
   int m_uid;
@@ -2644,6 +2661,8 @@ tree clone_function_name (const char *name, const char *suffix,
 tree clone_function_name (tree decl, const char *suffix,
 			  unsigned long number);
 tree clone_function_name (tree decl, const char *suffix);
+tree clone_identifier (tree decl, const char *suffix,
+		       bool filter_suffix = false);
 
 void tree_function_versioning (tree, tree, vec<ipa_replace_map *, va_gc> *,
 			       ipa_param_adjustments *,
@@ -3104,6 +3123,13 @@ symbol_table::next_function_with_gimple_body (cgraph_node *node)
 #define FOR_EACH_FUNCTION(node) \
    for ((node) = symtab->first_function (); (node); \
 	(node) = symtab->next_function ((node)))
+
+/* Walk all functions but precompute so a node can be deleted if needed.  */
+#define FOR_EACH_FUNCTION_REMOVABLE(node) \
+   cgraph_node *next; \
+   for ((node) = symtab->first_function (), \
+	next = (node) ? symtab->next_function ((node)) : NULL; (node); \
+	(node) = next, next = (node) ? symtab->next_function ((node)) : NULL)
 
 /* Return true when callgraph node is a function with Gimple body defined
    in current unit.  Functions can also be define externally or they

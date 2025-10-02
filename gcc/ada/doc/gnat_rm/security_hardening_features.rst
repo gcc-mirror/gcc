@@ -10,6 +10,8 @@ are provided by GNAT.
 The features in this chapter are currently experimental and subject to
 change.
 
+These features are supported only by the GCC back end, not by LLVM.
+
 .. Register Scrubbing:
 
 Register Scrubbing

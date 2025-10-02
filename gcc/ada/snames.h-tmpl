@@ -35,7 +35,7 @@ enum Name_Id : Int
 
 /* Define the numeric values for attributes.  */
 
-enum Attribute_Id : unsigned char
+enum Attribute_Id : Byte
 {
   Attr_ !! TEMPLATE INSERTION POINT
 };
@@ -46,7 +46,7 @@ enum Attribute_Id : unsigned char
 static inline Attribute_Id
 Get_Attribute_Id (int id)
 {
-  extern unsigned char snames__get_attribute_id (int);
+  extern Byte snames__get_attribute_id (int);
   return (Attribute_Id) snames__get_attribute_id (id);
 }
 
@@ -64,7 +64,7 @@ extern Boolean Is_Pragma_Name (Name_Id);
 
 /* Define the numeric values for the pragmas. */
 
-enum Pragma_Id : Byte
+enum Pragma_Id : Word
 {
   Pragma_ !! TEMPLATE_INSERTION_POINT
 };
@@ -75,7 +75,7 @@ enum Pragma_Id : Byte
 static inline Pragma_Id
 Get_Pragma_Id (int id)
 {
-  extern unsigned char snames__get_pragma_id (int);
+  extern Word snames__get_pragma_id (int);
   return (Pragma_Id) snames__get_pragma_id (id);
 }
 

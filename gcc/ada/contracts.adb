@@ -1131,12 +1131,12 @@ package body Contracts is
       if Comes_From_Source (Obj_Id) and then Is_Ghost_Entity (Obj_Id) then
 
          --  A Ghost object cannot be of a type that yields a synchronized
-         --  object (SPARK RM 6.9(21)).
+         --  object (SPARK RM 6.9(22)).
 
          if Yields_Synchronized_Object (Obj_Typ) then
             Error_Msg_N ("ghost object & cannot be synchronized", Obj_Id);
 
-         --  A Ghost object cannot be imported or exported (SPARK RM 6.9(7)).
+         --  A Ghost object cannot be imported or exported (SPARK RM 6.9(9)).
          --  One exception to this is the object that represents the dispatch
          --  table of a Ghost tagged type, as the symbol needs to be exported.
 
@@ -1278,7 +1278,12 @@ package body Contracts is
          while Present (Prag) loop
             Prag_Nam := Pragma_Name (Prag);
 
-            if Prag_Nam = Name_Initial_Condition then
+            --  When Assertion_Levels are used then the pacakage can have
+            --  multiple consecutive Initial_Condition pragmas.
+            --  Find the first one here and then iterate over all of them
+            --  later.
+
+            if Prag_Nam = Name_Initial_Condition and then No (Init_Cond) then
                Init_Cond := Prag;
 
             elsif Prag_Nam = Name_Initializes then
@@ -1295,9 +1300,12 @@ package body Contracts is
             Analyze_Initializes_In_Decl_Part (Init);
          end if;
 
-         if Present (Init_Cond) then
+         while Present (Init_Cond)
+           and then Pragma_Name (Init_Cond) = Name_Initial_Condition
+         loop
             Analyze_Initial_Condition_In_Decl_Part (Init_Cond);
-         end if;
+            Init_Cond := Next_Pragma (Init_Cond);
+         end loop;
       end if;
 
       --  Restore the SPARK_Mode of the enclosing context after all delayed
@@ -3274,7 +3282,7 @@ package body Contracts is
       --  The contract of an ignored Ghost subprogram does not need expansion,
       --  because the subprogram and all calls to it will be removed.
 
-      elsif Is_Ignored_Ghost_Entity (Subp_Id) then
+      elsif Is_Ignored_Ghost_Entity_In_Codegen (Subp_Id) then
          return;
 
       --  No action needed for helpers and indirect-call wrapper built to

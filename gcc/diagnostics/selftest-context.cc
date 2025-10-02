@@ -20,7 +20,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
-#include "diagnostic.h"
 #include "diagnostics/sink.h"
 #include "selftest.h"
 #include "diagnostics/selftest-context.h"

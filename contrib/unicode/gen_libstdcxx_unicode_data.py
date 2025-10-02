@@ -23,6 +23,7 @@
 # ftp://ftp.unicode.org/Public/UNIDATA/DerivedCoreProperties.txt
 # ftp://ftp.unicode.org/Public/UNIDATA/auxiliary/GraphemeBreakProperty.txt
 # ftp://ftp.unicode.org/Public/UNIDATA/emoji/emoji-data.txt
+# ftp://ftp.unicode.org/Public/UNIDATA/extracted/DerivedGeneralCategory.txt
 # Then run this script and save the output to
 # ../../libstdc++-v3/include/bits/unicode-data.h
 
@@ -148,7 +149,7 @@ escaped_general_categories = {
     "Cc", "Cf", "Cs", "Co", "Cn",
 }
 
-# Extract General_Category and detrmine if it should be escaped 
+# Extract General_Category and determine if it should be escaped
 # for all code points.
 for line in open("DerivedGeneralCategory.txt", "r"):
     # Example lines:

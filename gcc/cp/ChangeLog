@@ -1,3 +1,329 @@
+2025-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.cc (cxx_eval_constant_expression): Use revised
+	interfaces to determine if contracts are ignored and, if not,
+	whether they are evaluated.
+	* contracts.h (contract_ignored_p, contract_evaluated_p): New.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* Make-lang.in: Add c++_FDAS
+	(create_fdas_for_cc1plus): Be sure that build fails if create_gcov fails.
+
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/112632
+	* pt.cc (convert_template_argument): Also force IMPLICIT_CONV_EXPR
+	if the argument is value-dependent.
+
+2025-09-27  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122048
+	* pt.cc (tsubst_expr): Don't use a lambda current_class_ptr.
+
+2025-09-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122015
+	PR c++/122019
+	* module.cc (trees_in::install_entity): Remove incorrect
+	assertion.
+
+2025-09-24  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122019
+	* module.cc (trees_in::install_entity): Don't be affected by
+	global language linkage state.
+	(trees_in::is_matching_decl): Check mismatching language linkage
+	for variables too.
+	(module_may_redeclare): Report the correct module name for
+	partitions and implementation units.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* class.cc (resolve_address_of_overloaded_function): Updated to use
+	dijoint_versions_decls instead of common_function_version hook.
+	* decl.cc (decls_match): Refacture to use disjoint_version_decls and
+	to pass through conflicting_version argument.
+	(maybe_version_functions): Updated to use
+	disjoint_version_decls instead of common_function_version hook.
+	(duplicate_decls): Add logic to handle conflicting unmergable decls
+	and improve diagnostics for conflicting versions.
+	* decl2.cc (check_classfn): Updated to use
+	disjoint_version_decls instead of common_function_version hook.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* cxx-pretty-print.h (pp_cxx_function_target_version): New macro.
+	(pp_cxx_function_target_clones): Ditto.
+	(pp_cxx_maybe_whitespace): Ditto.
+	* error.cc (dump_function_decl): Add printing of target_clone and
+	target_version in decl diagnostics.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/118313
+	* call.cc (add_candidates): Change to not resolve non-default versions
+	in target_version semantics.
+	* class.cc (resolve_address_of_overloaded_function): Ditto.
+	* cp-gimplify.cc (cp_genericize_r): Change logic to not apply for
+	target_version semantics.
+	* decl.cc (maybe_mark_function_versioned): Remove static.
+	* cp-tree.h (maybe_mark_function_versioned): New function.
+	* decl2.cc (cplus_decl_attributes ): Change to mark and therefore
+	mangle all target_version decls in target_version semantics.
+	* typeck.cc (cp_build_function_call_vec): Add error for calling
+	unresolvable non-default node in target_version semantics.
+
+2025-09-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* decl.cc (maybe_mark_function_versioned): Change to insert function version
+	and therefore record assembler name.
+
+2025-09-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122015
+	* cp-tree.h (make_auto_pack): Declare.
+	* lambda.cc (lambda_capture_field_type): Use make_auto_pack to
+	ensure TYPE_CANONICAL is set correctly.
+	* pt.cc (make_auto_pack): New function.
+
+2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* pt.cc (any_template_parm_r) <case TEMPLATE_TYPE_PARM>:
+	Don't walk TREE_TYPE.
+
+2025-09-20  Eczbek  <eczbek.void@gmail.com>
+
+	PR c++/119048
+	* lambda.cc (compare_lambda_sig): Only skip first parameter for
+	object members.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (cxx_eval_component_reference): Clarify diagnostic.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_new_1): Clobber classes.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* constexpr.cc (get_or_insert_ctor_field): -2 means don't insert.
+	(cxx_eval_component_reference): Handle finding void_node.
+	(cxx_eval_store_expression): Don't represent initial clobber
+	unless we need to activate a union member.
+	(cxx_eval_statement_list): Don't ask for a void prvalue.
+	(cxx_eval_loop_expr): The expr is discarded-value.
+	(cxx_eval_constant_expression): A loose clobber is non-constant.
+	Handle getting void_node instead of a real result.
+	(potential_constant_expression_1): A local temp is
+	potentially-constant.
+	* init.cc (build_new_1): Don't clobber empty types or
+	in a template.
+	(build_vec_init): Fix clobber handling.
+
+2025-09-18  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_new_1): Append alloc_node to checking COND_EXPR.
+
+2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/121966
+	* call.cc (print_z_candidate): Consolidate instances of
+	auto_diagnostic_nesting_level into one, above the "inherited here"
+	message so that any such message is nested within the note,
+	and any messages emitted due to the switch on rejection_reason are
+	similarly nested within the note.
+
+2025-09-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR c++/121966
+	* call.cc (print_z_candidates): Copy the filtering logic on viable
+	candidates from the printing loop to the counting loop, so that
+	num_candidates matches the number of iterations of the latter
+	loop.
+
+2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
+
+	* mangle.cc (write_real_cst): Replace 8 spaces with Tab.
+
+2025-09-12  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121795
+	* pt.cc (unify) <case PACK_INDEX_TYPE>: New non-deduced context
+	case.
+
+2025-09-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121893
+	* name-lookup.cc (name_lookup::adl_namespace_fns): Unwrap the
+	STAT_HACK also when on_inst_path.
+
+2025-09-11  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c++/121889
+	* decl2.cc (cplus_decl_attributes): Don't upgrade TLS model if
+	TLS model isn't set yet.
+
+2025-09-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121859
+	* constraint.cc (maybe_diagnose_standard_trait): Check if expr
+	is non-null.
+
+2025-09-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* mangle.cc (write_real_cst): Mangle Intel/Motorola extended
+	80-bit formats using 20 hex digits instead of 24 or 32.
+
+2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/99682
+	PR c++/121808
+	* module.cc (class module_state): Add comment to 'parent'.
+	(module_state::check_not_purview): Rename to...
+	(module_state::check_circular_import): ...this.  Only handle
+	interface dependencies, adjust diagnostic message.
+	(module_state::read_imports): Use new function.  Pass location
+	of import as from_loc instead of the module location.
+	(module_state::do_import): Set module_p when importing the
+	primary interface for the current module.
+	(import_module): Split out check for imports in own unit.
+	Remove incorrect assertion.
+	(preprocess_module): Don't overwrite module-decl location with
+	later import.
+
+2025-09-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (this_module): New function.
+	(import_entity_module): Use it.
+	(trees_out::decl_node): Likewise.
+	(get_module): Likewise.
+	(module_state::check_not_purview): Likewise.
+	(module_state::read_imports): Likewise.
+	(module_state::read_using_directives): Likewise.
+	(module_state::read_initial): Likewise.
+	(get_import_bitmap): Likewise.
+	(module_may_redeclare): Likewise.
+	(direct_import): Likewise.
+	(declare_module): Likewise.
+	(name_pending_imports): Likewise.
+	(preprocess_module): Likewise.
+	(finish_module_processing): Likewise.
+	(late_finish_module): Likewise.
+
+2025-09-09  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121779
+	* tree.cc (build_min_non_dep_op_overload): Handle comparison
+	operator expressions rewritten from a <=> that returns a
+	non-class type.
+
+2025-09-09  Matthias Kretz  <m.kretz@gsi.de>
+
+	PR c++/121801
+	* mangle.cc (write_real_cst): Handle 16-bit real and assert
+	that reals have 16 bits or a multiple of 32 bits.
+
+2025-09-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c++/107393
+	* decl.cc (grokvardecl): Set a tentative TLS model which will be
+	updated by cplus_decl_attributes later.
+	* decl2.cc (cplus_decl_attributes): Update TLS model with the
+	default TLS access model if the default TLS access model is
+	stronger.
+	* pt.cc (tsubst_decl): Set TLS model only after processing a
+	variable.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121702
+	* module.cc (enum module_state_counts): New counter.
+	(depset::hash::add_namespace_entities): Seed using-directive
+	targets for later streaming.
+	(module_state::write_namespaces): Don't handle using-directives
+	here.
+	(module_state::read_namespaces): Likewise.
+	(module_state::write_using_directives): New function.
+	(module_state::read_using_directives): New function.
+	(module_state::write_counts): Log using-directives.
+	(module_state::read_counts): Likewise.
+	(module_state::write_begin): Stream using-directives.
+	(module_state::read_language): Read using-directives if
+	directly importing.
+	(module_state::direct_import): Update current TU import list
+	before calling read_language.
+	* name-lookup.cc (add_using_namespace): Fix lookup of previous
+	using-directives.
+	* parser.cc (cp_parser_import_declaration): Don't set
+	MK_EXPORTING when performing import_module.
+
+2025-09-06  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121705
+	PR c++/117658
+	* module.cc (depset::hash::make_dependency): Make bindings for
+	GM functions.
+	(depset::hash::add_binding_entity): Adjust comment.
+	(depset::hash::add_deduction_guides): Add log.
+	* ptree.cc (cxx_print_xnode): Handle friend functions where
+	TI_TEMPLATE is an OVERLOAD or IDENTIFIER.
+
+2025-09-05  Jakub Jelinek  <jakub@redhat.com>
+
+	* constexpr.cc (cxx_eval_cxa_builtin_fn): Add missing word separating
+	space into invalid_nargs diagnostics.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* cp-tree.h (get_originating_module): Adjust parameter names.
+	* module.cc (path_of_instantiation): Handle C++26 expansion
+	statements.
+	* name-lookup.cc (name_lookup::adl_namespace_fns): Handle
+	exported declarations attached to the same module of an
+	associated entity with the same innermost non-inline namespace,
+	and non-exported functions on the instantiation path.
+	(name_lookup::search_adl): Build mapping of namespace to modules
+	that associated entities are attached to; remove now-unneeded
+	instantiation path handling.
+
+2025-09-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121724
+	* name-lookup.cc (push_namespace): Mark inline namespace
+	contexts as purview if needed.
+
+2025-09-03  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/97740
+	* pt.cc (tsubst_expr) <case COMPONENT_REF>: Don't check access
+	when the given member is already a FIELD_DECL.
+
+2025-09-02  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.cc: Include contracts.h
+	* coroutines.cc: Likewise.
+	* cp-gimplify.cc: Likewise.
+	* decl.cc: Likewise.
+	* decl2.cc: Likewise.
+	* mangle.cc: Likewise.
+	* module.cc: Likewise.
+	* pt.cc: Likewise.
+	* search.cc: Likewise.
+	* semantics.cc: Likewise.
+	* contracts.cc (validate_contract_role, setup_default_contract_role,
+	add_contract_role, get_concrete_axiom_semantic,
+	get_default_contract_role): Make static.
+	* cp-tree.h (make_postcondition_variable, grok_contract,
+	finish_contract_condition, find_contract, set_decl_contracts,
+	get_contract_semantic, set_contract_semantic): Move to contracts.h.
+	* contracts.h (get_contract_role, add_contract_role,
+	validate_contract_role, setup_default_contract_role,
+	lookup_concrete_semantic, get_default_contract_role): Remove.
+
 2025-08-29  Sirui Mu  <msrlancern@gmail.com>
 
 	* typeck.cc (cp_build_array_ref): Handle 0[arr] earlier.

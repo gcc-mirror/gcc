@@ -2429,7 +2429,7 @@ package body Exp_Ch7 is
             --  Do not inspect an ignored Ghost package body because all
             --  code found within will not appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Defining_Entity (Decl)) then
                null;
 
             elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package then
@@ -2507,7 +2507,7 @@ package body Exp_Ch7 is
                --  Ignored Ghost types do not need any cleanup actions because
                --  they will not appear in the final tree.
 
-               if Is_Ignored_Ghost_Entity (Typ) then
+               if Is_Ignored_Ghost_Entity_In_Codegen (Typ) then
                   null;
 
                elsif Is_Tagged_Type (Typ)
@@ -2553,7 +2553,7 @@ package body Exp_Ch7 is
                --  Ignored Ghost objects do not need any cleanup actions
                --  because they will not appear in the final tree.
 
-               elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+               elsif Is_Ignored_Ghost_Entity_In_Codegen (Obj_Id) then
                   null;
 
                --  Conversely, if one of the above cases created a Master_Node,
@@ -2655,7 +2655,7 @@ package body Exp_Ch7 is
                --  Freeze nodes for ignored Ghost types do not need cleanup
                --  actions because they will never appear in the final tree.
 
-               if Is_Ignored_Ghost_Entity (Typ) then
+               if Is_Ignored_Ghost_Entity_In_Codegen (Typ) then
                   null;
 
                elsif (Is_Access_Object_Type (Typ)
@@ -2680,7 +2680,7 @@ package body Exp_Ch7 is
                --  Do not inspect an ignored Ghost package because all code
                --  found within will not appear in the final tree.
 
-               if Is_Ignored_Ghost_Entity (Pack_Id) then
+               if Is_Ignored_Ghost_Entity_In_Codegen (Pack_Id) then
                   null;
 
                elsif Ekind (Pack_Id) /= E_Generic_Package then
@@ -5281,7 +5281,7 @@ package body Exp_Ch7 is
             --  Ignored Ghost objects do not need any cleanup actions because
             --  they will not appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Obj_Id) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Obj_Id) then
                return;
             end if;
 

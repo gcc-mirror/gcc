@@ -23,7 +23,7 @@
 
 
 Usage () {
-   echo "Usage: makesystem dialectflag SYSTEM.def SYSTEM.mod { librarypath } compiler"
+   echo "Usage: makesystem [-gdb] dialectflag SYSTEM.def SYSTEM.mod { librarypath } compiler"
 }
 
 if [ $# -lt 6 ] ; then
@@ -31,6 +31,12 @@ if [ $# -lt 6 ] ; then
    exit 1
 fi
 
+if [ "$1" = "-gdb" ] ; then
+    DEBUG=$1
+    shift
+else
+    DEBUG=""
+fi
 DIALECT=$1
 SYSTEMDEF=$2
 SYSTEMMOD=$3
@@ -101,6 +107,14 @@ displayEnd () {
 MINIMAL="-fno-scaffold-main -fno-scaffold-dynamic -fno-scaffold-static -fno-m2-plugin"
 
 rm -f ${OUTPUTFILE}
+
+if [ "$DEBUG" != "" ] ; then
+    echo "entering gdb to debug cc1gm2 when using -fdump-system-exports"
+    ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
+		-c -fdump-system-exports ${SYSTEMMOD} -wrapper gdb,--args
+    exit $?
+fi
+
 ${COMPILER} ${DIALECT} ${LIBRARY} ${MINIMAL} \
 	    -S -fdump-system-exports ${SYSTEMMOD} -o /dev/null 2>&1 > /dev/null
 res=$?

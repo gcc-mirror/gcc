@@ -119,7 +119,7 @@ protected:
   { return width; }
 
   virtual int
-  do_length(const StateT&, const extern_type* from,
+  do_length(StateT&, const extern_type* from,
 	    const extern_type* end, size_t max) const
   {
     size_t len = std::min(max,

@@ -1,16 +1,19 @@
-# GCC Objective-C testsuite that uses the `dg.exp' driver.
-#   Copyright (C) 1997-2025 Free Software Foundation, Inc.
+# All these testcases compile and link two Objective-C modules..
 
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 3 of the License, or
-# (at your option) any later version.
+# Copyright (C) 2025 Free Software Foundation, Inc.
 # 
-# This program is distributed in the hope that it will be useful,
+# This file is part of GCC.
+#
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+#
+# GCC is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -24,130 +27,30 @@ if ![info exists DEFAULT_CFLAGS] then {
     set DEFAULT_CFLAGS ""
 }
 
+set extra_flags "$DEFAULT_CFLAGS -Wno-objc-root-class"
+
 # Initialize `dg'.
 dg-init
 
-# TODO: All these testcases compile and link two Objective-C modules.
-# Remove code duplication and factor the common code out.
-
-#
-# unclaimed-category-1 test
-#
-# This test is special because we must compile two different modules,
-# unclaimed-category-1a.m and unclaimed-category-1.m, then link
-# together, then run the resulting executable.
-# for all systems we point to the libobjc includes and use the -fgnu-runtime
-set add_flags "additional_flags=-I${srcdir}/../../libobjc"
-lappend add_flags "additional_flags=-fgnu-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "unclaimed-category-1a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/unclaimed-category-1.m" "unclaimed-category-1a.o" "-I${srcdir}/../../libobjc -fgnu-runtime"
-    file delete unclaimed-category-1a.o
+# Gather a list of all objective-c sources.
+set all_srcs [lsort [glob -nocomplain $srcdir/$subdir/*.m]]
+# Remove the ones ending in a.m
+set tests ""
+set pat "a\.m"
+foreach t $all_srcs {
+  if { [string match *$pat $t] } {
+    continue
+  }
+  lappend tests $t
 }
 
+# Main loop.
+dg-runtest $tests "-fgnu-runtime" $extra_flags
+
+# darwin targets can also run code with the NeXT runtime.
 if [istarget "*-*-darwin*" ] {
-set add_flags ""
-lappend add_flags "additional_flags=-fnext-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/unclaimed-category-1a.m" "unclaimed-category-1a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "unclaimed-category-1a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/unclaimed-category-1.m" "unclaimed-category-1a.o" "-fnext-runtime"
-    file delete unclaimed-category-1a.o
-}
-}
-
-#
-# load-category-1 test
-#
-# This test is similar to the one above.  We compile load-category-1.m
-# and load-category-1a.m, link them together, and execute the result.
-set add_flags "additional_flags=-I${srcdir}/../../libobjc"
-lappend add_flags "additional_flags=-fgnu-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/load-category-1a.m" "load-category-1a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "load-category-1a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/load-category-1.m" "load-category-1a.o" "-I${srcdir}/../../libobjc -fgnu-runtime"
-    file delete load-category-1a.o
-}
-
-if [istarget "*-*-darwin*" ] {
-set add_flags ""
-lappend add_flags "additional_flags=-fnext-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/load-category-1a.m" "load-category-1a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "load-category-1a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/load-category-1.m" "load-category-1a.o" "-fnext-runtime"
-    file delete load-category-1a.o
-}
-}
-
-#
-# load-category-2 test
-#
-# This test is similar to the one above.  We compile load-category-2.m
-# and load-category-2a.m, link them together, and execute the result.
-set add_flags "additional_flags=-I${srcdir}/../../libobjc"
-lappend add_flags "additional_flags=-fgnu-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/load-category-2a.m" "load-category-2a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "load-category-2a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/load-category-2.m" "load-category-2a.o" "-I${srcdir}/../../libobjc -fgnu-runtime"
-    file delete load-category-2a.o
-}
-
-if [istarget "*-*-darwin*" ] {
-set add_flags ""
-lappend add_flags "additional_flags=-fnext-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/load-category-2a.m" "load-category-2a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "load-category-2a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/load-category-2.m" "load-category-2a.o" "-fnext-runtime"
-    file delete load-category-2a.o
-}
-}
-
-#
-# load-category-3 test
-#
-# This test is similar to the one above.  We compile load-category-3.m
-# and load-category-3a.m, link them together, and execute the result.
-set add_flags "additional_flags=-I${srcdir}/../../libobjc"
-lappend add_flags "additional_flags=-fgnu-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/load-category-3a.m" "load-category-3a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "load-category-3a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/load-category-3.m" "load-category-3a.o" "-I${srcdir}/../../libobjc -fgnu-runtime"
-    file delete load-category-3a.o
-}
-
-if [istarget "*-*-darwin*" ] {
-set add_flags ""
-lappend add_flags "additional_flags=-fnext-runtime"
-lappend add_flags "additional_flags=-Wno-objc-root-class"
-set lines [objc_target_compile "$srcdir/$subdir/load-category-3a.m" "load-category-3a.o" object $add_flags ]
-if ![string match "" $lines] then {
-    fail "load-category-3a.o"
-} else {
-    dg-runtest "$srcdir/$subdir/load-category-3.m" "load-category-3a.o" "-fnext-runtime"
-    file delete load-category-3a.o
-}
+  dg-runtest $tests "-fnext-runtime" $extra_flags
 }
 
 # All done.
 dg-finish
-

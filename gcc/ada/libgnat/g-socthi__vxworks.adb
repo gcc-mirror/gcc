@@ -40,6 +40,8 @@ with GNAT.Task_Lock;
 
 with Interfaces.C; use Interfaces.C;
 
+with System.C_Time;
+
 package body GNAT.Sockets.Thin is
 
    Non_Blocking_Sockets : aliased Fd_Set;
@@ -194,7 +196,7 @@ package body GNAT.Sockets.Thin is
       declare -- unreachable if Thread_Blocking_IO is statically True
          pragma Warnings (On, "unreachable code");
          WSet : aliased Fd_Set;
-         Now  : aliased Timeval;
+         Now  : aliased System.C_Time.timeval;
       begin
          Reset_Socket_Set (WSet'Access);
          loop

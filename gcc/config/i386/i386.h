@@ -1916,13 +1916,9 @@ typedef struct ix86_args {
    MOVE_MAX_PIECES defaults to MOVE_MAX.  */
 
 #define MOVE_MAX \
-  ((TARGET_AVX512F \
-    && (ix86_move_max == PVW_AVX512 \
-	|| ix86_store_max == PVW_AVX512)) \
+  ((TARGET_AVX512F && ix86_move_max == PVW_AVX512) \
    ? 64 \
-   : ((TARGET_AVX \
-       && (ix86_move_max >= PVW_AVX256 \
-	   || ix86_store_max >= PVW_AVX256)) \
+   : ((TARGET_AVX && ix86_move_max >= PVW_AVX256) \
       ? 32 \
       : ((TARGET_SSE2 \
 	  && TARGET_SSE_UNALIGNED_LOAD_OPTIMAL \
@@ -1935,15 +1931,14 @@ typedef struct ix86_args {
    store_by_pieces of 16/32/64 bytes.  */
 #define STORE_MAX_PIECES \
   (TARGET_INTER_UNIT_MOVES_TO_VEC \
-   ? ((TARGET_AVX512F && ix86_store_max == PVW_AVX512) \
+   ? ((TARGET_AVX512F && ix86_move_max == PVW_AVX512) \
       ? 64 \
-      : ((TARGET_AVX \
-	  && ix86_store_max >= PVW_AVX256) \
+      : ((TARGET_AVX && ix86_move_max >= PVW_AVX256) \
 	  ? 32 \
 	  : ((TARGET_SSE2 \
 	      && TARGET_SSE_UNALIGNED_STORE_OPTIMAL) \
-	      ? 16 : UNITS_PER_WORD))) \
-   : UNITS_PER_WORD)
+	     ? 16 : UNITS_PER_WORD)))		     \
+      : UNITS_PER_WORD)
 
 /* If a memory-to-memory move would take MOVE_RATIO or more simple
    move-instruction pairs, we will do a cpymem or libcall instead.

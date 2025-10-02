@@ -35,6 +35,9 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetLowestType,
                         GetLocalSym, GetVarWritten,
                         GetVarient, GetVarBackEndType, GetModuleCtors,
+                        GetSetInWord, GetDType,
+                        GetNthParamAnyClosest,
+                        GetMainModule, IsUnknown,
                         NoOfVariables,
                         NoOfParamAny, GetParent, GetDimension, IsAModula2Type,
                         IsModule, IsDefImp, IsType, IsModuleWithinProcedure,
@@ -74,16 +77,20 @@ FROM SymbolTable IMPORT PushSize, PopSize, PushValue, PopValue,
                         GetProcedureBuiltin,
                         GetPriority, GetNeedSavePriority,
                         PutConstStringKnown,
+                        GetSetArray,
                         PutConst, PutConstSet, PutConstructor,
 			GetSType, GetTypeMode,
                         HasVarParameters, CopyConstString,
                         GetVarDeclFullTok,
                         NulSym ;
 
-FROM M2Batch IMPORT MakeDefinitionSource ;
+FROM m2tree IMPORT debug_tree, skip_const_decl ;
+FROM gcctypes IMPORT location_t, tree ;
+
+FROM M2Batch IMPORT MakeDefinitionSource, LookupModule ;
 
 FROM M2LexBuf IMPORT FindFileNameFromToken, TokenToLineNo, TokenToLocation,
-                     MakeVirtualTok, UnknownTokenNo, BuiltinTokenNo ;
+                     MakeVirtualTok, MakeVirtual2Tok, UnknownTokenNo, BuiltinTokenNo ;
 
 FROM M2Code IMPORT CodeBlock ;
 FROM M2Debug IMPORT Assert ;
@@ -96,7 +103,8 @@ FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT1, MetaErrorT2, MetaErrorT3,
 FROM M2Options IMPORT UnboundedByReference, PedanticCast,
                       VerboseUnbounded, Iso, Pim, DebugBuiltins, WholeProgram,
                       StrictTypeChecking, AutoInit, cflag, ScaffoldMain,
-                      ScaffoldDynamic, ScaffoldStatic, GetDebugTraceQuad ;
+                      ScaffoldDynamic, ScaffoldStatic, GetDebugTraceQuad,
+                      OptimizeSets, GetWideset ;
 
 FROM M2Printf IMPORT printf0, printf1, printf2, printf4 ;
 FROM M2Quiet IMPORT qprintf0 ;
@@ -131,6 +139,7 @@ FROM Lists IMPORT List, InitList, KillList,
                   NoOfItemsInList, GetItemFromList ;
 
 FROM M2ALU IMPORT PtrToValue,
+                  KillValue, PopInto,
                   IsValueTypeReal, IsValueTypeSet,
                   IsValueTypeConstructor, IsValueTypeArray,
                   IsValueTypeRecord, IsValueTypeComplex,
@@ -154,7 +163,7 @@ FROM M2GCCDeclare IMPORT WalkAction,
                          PromoteToString, PromoteToCString, DeclareLocalVariable,
                          CompletelyResolved,
                          PoisonSymbols, GetTypeMin, GetTypeMax,
-                         IsProcedureGccNested, DeclareParameters,
+                         IsProcedureGccNested, DeclareParameters, DeclareProcedure,
                          ConstantKnownAndUsed, PrintSym ;
 
 FROM M2Range IMPORT CodeRangeCheck, FoldRangeCheck, CodeErrorCheck, GetMinMax ;
@@ -164,10 +173,11 @@ FROM m2builtins IMPORT BuiltInAlloca,
                        GetBuiltinConst, GetBuiltinTypeInfo,
                        BuiltinExists, BuildBuiltinTree ;
 
-FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
+FROM m2expr IMPORT GetIntegerZero, GetIntegerOne, GetWordOne,
                    GetCardinalOne,
                    GetPointerZero,
                    GetCardinalZero,
+                   GetBitsetZero,
                    GetSizeOfInBits,
                    TreeOverflow,
                    FoldAndStrip,
@@ -175,6 +185,7 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    StringLength,
                    AreConstantsEqual,
                    GetCstInteger,
+                   GetRValue,
                    BuildForeachWordInSetDoIfExpr,
                    BuildIfConstInVar,
                    BuildIfVarInVar,
@@ -182,10 +193,10 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    BuildIfNotVarInVar,
                    BuildBinCheckProcedure, BuildUnaryCheckProcedure,
                    BuildBinProcedure, BuildUnaryProcedure,
-                   BuildSetProcedure, BuildUnarySetFunction,
+                   BuildSetProcedure,
 		   BuildAddCheck, BuildSubCheck, BuildMultCheck, BuildDivTruncCheck,
                    BuildDivM2Check, BuildModM2Check,
-                   BuildAdd, BuildSub, BuildMult, BuildLSL,
+                   BuildAdd, BuildSub, BuildMult, BuildLSL, BuildMask,
 		   BuildDivCeil, BuildModCeil,
                    BuildDivTrunc, BuildModTrunc, BuildDivFloor, BuildModFloor,
 		   BuildDivM2, BuildModM2,
@@ -202,10 +213,9 @@ FROM m2expr IMPORT GetIntegerZero, GetIntegerOne,
                    BuildEqualTo, BuildNotEqualTo,
                    BuildIsSuperset, BuildIsNotSuperset,
                    BuildIsSubset, BuildIsNotSubset,
+                   BuildIfInSet, BuildIfNotInSet,
                    BuildIndirect, BuildArray,
                    BuildTrunc, BuildCoerce,
-                   BuildBinaryForeachWordDo,
-                   BuildBinarySetDo,
                    BuildSetNegate,
                    BuildComponentRef,
                    BuildCap, BuildAbs, BuildIm, BuildRe, BuildCmplx,
@@ -218,10 +228,12 @@ FROM gcctypes IMPORT location_t, tree ;
 FROM m2decl IMPORT BuildStringConstant, BuildCStringConstant,
                    DeclareKnownConstant, GetBitsPerBitset,
                    BuildIntegerConstant,
-                   BuildModuleCtor, DeclareModuleCtor ;
+                   BuildModuleCtor, DeclareModuleCtor,
+                   DeclareKnownVariable ;
 
 FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunctValue,
-                        DoJump, BuildUnaryForeachWordDo, BuildGoto, BuildCall2, BuildCall3,
+                        IfBitInSetJump, IfExprJump,
+                        BuildGoto, BuildCall2, BuildCall3,
                         BuildStart, BuildEnd, BuildCallInner, BuildStartFunctionCode,
                         BuildEndFunctionCode,
                         BuildAssignmentTree, DeclareLabel,
@@ -240,6 +252,7 @@ FROM m2statement IMPORT BuildAsm, BuildProcedureCallTree, BuildParam, BuildFunct
 
 FROM m2type IMPORT ChainOnParamValue, GetPointerType, GetIntegerType, AddStatement,
                    GetCardinalType, GetWordType, GetM2ZType, GetM2RType, GetM2CType,
+                   GetBooleanFalse,
                    BuildCharConstant, AddStringToTreeList, BuildArrayStringConstructor,
                    GetArrayNoOfElements, GetTreeType, IsGccStrictTypeEquivalent ;
 
@@ -250,7 +263,8 @@ FROM m2block IMPORT RememberConstant, pushGlobalScope, popGlobalScope, finishFun
 
 FROM m2misc IMPORT DebugTree ;
 
-FROM m2convert IMPORT BuildConvert, ConvertConstantAndCheck, ToCardinal, ConvertString ;
+FROM m2convert IMPORT BuildConvert, ConvertConstantAndCheck, ToCardinal,
+                      ToBitset, ToWord, ConvertString ;
 
 FROM m2except IMPORT BuildThrow, BuildTryBegin, BuildTryEnd,
                      BuildCatchBegin, BuildCatchEnd ;
@@ -278,19 +292,24 @@ CONST
    CascadedDebugging = FALSE ;
 
 TYPE
-   DoProcedure      = PROCEDURE (CARDINAL) ;
-   DoUnaryProcedure = PROCEDURE (CARDINAL) ;
+   UnaryProcedure = PROCEDURE (CARDINAL) ;
+   ProcedureCardinal = PROCEDURE (CARDINAL) ;
+   BinaryFunction = PROCEDURE (location_t, tree, tree) : tree ;
+   UnaryFunction = PROCEDURE (location_t, tree) : tree ;
 
 VAR
    Memset, Memcpy           : CARDINAL ;
    CurrentQuadToken         : CARDINAL ;
    UnboundedLabelNo         : CARDINAL ;
-   LastLine                 : CARDINAL ;(* The Last Line number emitted with the  *)
-                                        (* generated code.                        *)
+   LastLine                 : CARDINAL ;    (* The Last Line number emitted with  *)
+                                            (* the generated code.                *)
    LastOperator             : QuadOperator ; (* The last operator processed.      *)
-   ScopeStack               : StackOfWord ; (* keeps track of the current scope       *)
-                                            (* under translation.                     *)
-   NoChange                 : BOOLEAN ;     (* has any constant been resolved?        *)
+   ScopeStack               : StackOfWord ; (* keeps track of the current scope   *)
+                                            (* under translation.                 *)
+   NoChange                 : BOOLEAN ;     (* has any constant been resolved?    *)
+   SetTemporaryNo           : CARDINAL ;    (* A unique number for creating set   *)
+                                            (* oarecord parameter names.          *)
+   BreakQuad                : CARDINAL ;    (* Allows interactive debugging.      *)
 
 
 (*
@@ -613,6 +632,7 @@ VAR
 BEGIN
    InitBuiltinSyms (BuiltinTokenNo) ;
    GetQuad(q, op, op1, op2, op3) ;
+   CheckBreak (q) ;
    IF op=StatementNoteOp
    THEN
       FoldStatementNote (op3)  (* Will change CurrentQuadToken using op3.  *)
@@ -663,12 +683,12 @@ BEGIN
    DivFloorOp         : CodeDivFloor (q, op2, op3) |
    ModFloorOp         : CodeModFloor (q, op2, op3) |
    GotoOp             : CodeGoto (op3) |
-   InclOp             : CodeIncl (op1, op3) |
-   ExclOp             : CodeExcl (op1, op3) |
-   NegateOp           : CodeNegateChecked (q, op1, op3) |
+   InclOp             : CodeIncl (q) |
+   ExclOp             : CodeExcl (q) |
+   NegateOp           : CodeNegateChecked (q) |
    LastForIteratorOp  : CodeLastForIterator (q) |
-   LogicalShiftOp     : CodeSetShift (q, op1, op2, op3) |
-   LogicalRotateOp    : CodeSetRotate (q, op1, op2, op3) |
+   LogicalShiftOp     : CodeSetShift (q) |
+   LogicalRotateOp    : CodeSetRotate (q) |
    LogicalOrOp        : CodeSetOr (q) |
    LogicalAndOp       : CodeSetAnd (q) |
    LogicalXorOp       : CodeSetSymmetricDifference (q) |
@@ -923,7 +943,7 @@ BEGIN
                END
             ELSE
                MetaErrorT1 (tok,
-                            'a constraint to the GNU ASM statement must be a constant string and not a {%1Ed}',
+                            'a constraint to the GNU ASM statement must be a constant string and not a {%1Edv}',
                             str)
             END
          END ;
@@ -966,7 +986,7 @@ BEGIN
                END
             ELSE
                MetaErrorT1 (tok,
-                            'a constraint to the GNU ASM statement must be a constant string and not a {%1Ed}',
+                            'a constraint to the GNU ASM statement must be a constant string and not a {%1Edv}',
                             str)
             END
          END ;
@@ -1112,6 +1132,20 @@ BEGIN
    sym := PopWord (ScopeStack) ;
    Assert (sym # NulSym)
 END PopScope ;
+
+
+(*
+   GetActiveScope -
+*)
+
+PROCEDURE GetActiveScope () : CARDINAL ;
+BEGIN
+   IF IsEmptyWord (ScopeStack)
+   THEN
+      InternalError ('not expecting scope stack to be empty')
+   END ;
+   RETURN PeepWord (ScopeStack, 1)
+END GetActiveScope ;
 
 
 (*
@@ -1671,9 +1705,9 @@ BEGIN
         goto tLabel
      fi
    *)
-   DoJump(location, BuildGreaterThan(location, ta, td), NIL, string(fLabel)) ;
-   DoJump(location, BuildLessThan(location, tb, tc), NIL, string(fLabel)) ;
-   BuildGoto(location, string(tLabel)) ;
+   IfExprJump (location, BuildGreaterThan (location, ta, td), string (fLabel)) ;
+   IfExprJump (location, BuildLessThan (location, tb, tc), string (fLabel)) ;
+   BuildGoto (location, string (tLabel)) ;
    IF CascadedDebugging
    THEN
       printf1('label used %s\n', tLabel) ;
@@ -1752,15 +1786,7 @@ BEGIN
          END ;
          DeclareLabel(location, string(fLabel)) ;
          INC(j)
-      END ;
-(*
-      nLabel := CreateLabelProcedureN(proc, "fin", UnboundedLabelNo, n+1) ;
-      IF CascadedDebugging
-      THEN
-         printf1('label declared %s\n', nLabel)
-      END ;
-      DeclareLabel(location, string(nLabel))
-*)
+      END
    END
 END BuildCascadedIfThenElsif ;
 
@@ -2429,7 +2455,7 @@ BEGIN
                tmp := BuildLSL (location, tmp, bits, FALSE)
             END ;
             bits := BuildAdd (location, bits, GetSizeOfInBits (Mod2Gcc (type)), FALSE) ;
-            val := BuildLogicalOrAddress (location, val, tmp, FALSE)
+            val := BuildLogicalOrAddress (location, val, tmp)
          END
       END ;
       SubQuad (n) ;
@@ -2522,7 +2548,7 @@ BEGIN
                   tmp := BuildLSL (location, tmp, bits, FALSE)
                END ;
 	       bits := BuildAdd (location, bits, GetSizeOfInBits (Mod2Gcc (type)), FALSE) ;
-               val := BuildLogicalOrAddress (location, val, tmp, FALSE)
+               val := BuildLogicalOrAddress (location, val, tmp)
             END
          END ;
          SubQuad (n) ;
@@ -2548,7 +2574,7 @@ END FoldMakeAdr ;
              procedure, op2.  The number of the parameter is op1.
 *)
 
-PROCEDURE doParam (quad: CARDINAL; paramtok: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE doParam (paramtok: CARDINAL; quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
    location: location_t ;
 BEGIN
@@ -2706,7 +2732,7 @@ BEGIN
                       parameter, procedure)
       ELSIF compatible
       THEN
-         doParam (quad, parampos, nth, procedure, parameter)
+         doParam (parampos, quad, nth, procedure, parameter)
       END
    END
 END CodeParam ;
@@ -2884,17 +2910,6 @@ BEGIN
 END CodeAddr ;
 
 
-PROCEDURE stop ; BEGIN END stop ;
-
-PROCEDURE CheckStop (q: CARDINAL) ;
-BEGIN
-   IF q=3827
-   THEN
-      stop
-   END
-END CheckStop ;
-
-
 (*
 ------------------------------------------------------------------------------
    := Operator
@@ -2906,6 +2921,7 @@ PROCEDURE FoldBecomes (p: WalkAction; bb: BasicBlock; quad: CARDINAL) ;
 BEGIN
    IF DeclaredOperandsBecomes (p, quad)
    THEN
+      CheckBreak (quad) ;
       IF (NOT IsConditionalBooleanQuad (quad)) OR IsBasicBlockFirst (bb)
       THEN
          IF TypeCheckBecomes (p, quad)
@@ -3484,9 +3500,15 @@ END checkBecomes ;
 
 PROCEDURE checkDeclare (sym: CARDINAL) ;
 BEGIN
-   IF IsTemporary (sym) AND IsVariableSSA (sym) AND (NOT GccKnowsAbout (sym))
+   IF (sym # NulSym) AND (NOT GccKnowsAbout (sym))
    THEN
-      DeclareLocalVariable (sym)
+      IF IsTemporary (sym) AND IsVariableSSA (sym)
+      THEN
+         DeclareLocalVariable (sym)
+      ELSIF IsProcedure (sym)
+      THEN
+         DeclareProcedure (sym)
+      END
    END
 END checkDeclare ;
 
@@ -3600,6 +3622,17 @@ BEGIN
       END
    END
 END CodeBecomes ;
+
+
+(*
+   getrvalue -
+*)
+
+PROCEDURE getrvalue (location: location_t;
+                     expr, type: CARDINAL; islvalue: BOOLEAN) : tree ;
+BEGIN
+   RETURN GetRValue (location, Mod2Gcc (expr), Mod2Gcc (type), islvalue)
+END getrvalue ;
 
 
 (*
@@ -3989,7 +4022,7 @@ BEGIN
    IF (righttype = NulSym) OR (NOT IsSet (SkipType (righttype)))
    THEN
       MetaErrorT1 (rightpos,
-                   'an {%kIN} expression is expecting {%1Etad} to be a {%kSET} type',
+                   'the right hand side of an {%kIN} expression is expecting {%1Ead} to be a {%kSET} type and not a {%1Etadv}',
                    right) ;
       NoChange := FALSE ;
       SubQuad (quad) ;
@@ -4000,70 +4033,257 @@ END CheckElementSetTypes ;
 
 
 (*
-   CodeBinarySet - encode a binary set arithmetic operation.
+   CodeBinarySet - encode a binary set AND arithmetic operation.
                    Set operands may be longer than a word.
 *)
 
-PROCEDURE CodeBinarySet (binop: BuildBinProcedure; doOp: DoProcedure;
+PROCEDURE CodeBinarySet (constp: ProcedureCardinal;
+                         binfunc: BinaryFunction;
+                         wideprocname: Name;
                          quad: CARDINAL) ;
 VAR
-   location        : location_t ;
-   constExpr,
-   overflowChecking: BOOLEAN ;
    op              : QuadOperator ;
-   virttoken,
-   virtexpr,
-   des,
-   left,
-   right,
+   operatorpos,
+   combinedpos,
    despos,
    leftpos,
-   rightpos,
-   operatorpos     : CARDINAL ;
+   rightpos        : CARDINAL ;
+   des, left, right: CARDINAL ;
+   overflowChecking,
+   typeChecking,
+   constExpr       : BOOLEAN ;
+   location        : location_t ;
+   settype         : CARDINAL ;
 BEGIN
-   GetQuadOtok (quad, operatorpos, op, des, left, right,
-                overflowChecking, constExpr,
-                despos, leftpos, rightpos) ;
-
+   GetQuadOTypetok (quad, operatorpos, op,
+                    des, left, right,
+                    overflowChecking, typeChecking, constExpr,
+                    despos, leftpos, rightpos) ;
    (* Firstly ensure that constant literals are declared.  *)
    DeclareConstant (rightpos, right) ;
    DeclareConstant (leftpos, left) ;
    DeclareConstructor (rightpos, quad, right) ;
    DeclareConstructor (leftpos, quad, left) ;
-
-   virttoken := MakeVirtualTok (operatorpos, despos, rightpos) ;
-   location := TokenToLocation (virttoken) ;
-   IF CheckBinaryExpressionTypes (quad, NoWalkProcedure)
+   IF IsConst (des)
    THEN
-      IF IsConst (des)
+      combinedpos := MakeVirtual2Tok (leftpos, rightpos) ;
+      IF IsValueSolved (left) AND IsValueSolved (right)
       THEN
-         virtexpr := MakeVirtualTok (operatorpos, leftpos, rightpos) ;
-         IF IsValueSolved (left) AND IsValueSolved (right)
-         THEN
-            Assert (MixTypes (FindType (right), FindType (left), virtexpr) # NulSym) ;
-            PutConst (des, FindType (right)) ;
-            PushValue (left) ;
-            PushValue (right) ;
-            doOp (virttoken) ;
-            PopValue (des) ;
-            PutConstSet (des)
-         ELSE
-            MetaErrorT0 (virtexpr, '{%E}constant expression cannot be evaluated')
-         END
+         Assert (MixTypes (FindType (left), FindType (right), combinedpos) # NulSym) ;
+         PutConst (des, FindType (right)) ;
+         PushValue (left) ;
+         PushValue (right) ;
+         constp (combinedpos) ;
+         PopValue (des) ;
+         PutConstSet (des)
       ELSE
-         checkDeclare (des) ;
-         BuildBinaryForeachWordDo (location,
-                                   Mod2Gcc (SkipType (GetType (des))),
-                                   Mod2Gcc (des), Mod2Gcc (left), Mod2Gcc (right), binop,
-                                   GetMode (des) = LeftValue,
-                                   GetMode (left) = LeftValue,
-                                   GetMode (right) = LeftValue,
-                                   IsConst (des),
-                                   IsConst (left),
-                                   IsConst (right))
+         MetaErrorT0 (combinedpos, '{%E}constant expression cannot be evaluated')
+      END
+   ELSE
+      checkDeclare (des) ;
+      settype := GetLType (des) ;
+      Assert (IsSet (settype)) ;
+      combinedpos := MakeVirtualTok (despos, leftpos, rightpos) ;
+      IF GetSetInWord (settype)
+      THEN
+         location := TokenToLocation (combinedpos) ;
+         SetNarrowBinary (location, binfunc, settype, des, left, right)
+      ELSE
+         SetWideBinary (combinedpos, wideprocname, settype, des, left, right)
       END
    END
 END CodeBinarySet ;
+
+
+(*
+   MakeTemporarySetName - returns a Name using the template _Tset%d.
+*)
+
+PROCEDURE MakeTemporarySetName () : Name ;
+VAR
+   name: Name ;
+   s   : String ;
+BEGIN
+   INC (SetTemporaryNo) ;
+   s := Sprintf1 (Mark (InitString ('_Tset%d')), SetTemporaryNo) ;
+   name := makekey (string (s)) ;
+   s := KillString (s) ;
+   RETURN name
+END MakeTemporarySetName ;
+
+
+(*
+   SetWideBinary -
+*)
+
+PROCEDURE SetWideBinary (tokenno: CARDINAL;
+                         wideprocname: Name;
+                         settype, des, left, right: CARDINAL) ;
+BEGIN
+   IF OptimizeSets
+   THEN
+      IF wideprocname = MakeKey ('And')
+      THEN
+         SetWideBinaryBuiltin (tokenno, BuildLogicalAnd, des, left, right) ;
+         RETURN
+      ELSIF wideprocname = MakeKey ('Or')
+      THEN
+         SetWideBinaryBuiltin (tokenno, BuildLogicalOr, des, left, right) ;
+         RETURN
+      END
+   END ;
+   SetWideBinaryLibrary (tokenno, wideprocname, settype, des, left, right)
+END SetWideBinary ;
+
+
+(*
+   SetWideBinaryLibrary - call wideprocname (des, left, right) passing des, left, right
+                          as an array of byte.
+*)
+
+PROCEDURE SetWideBinaryLibrary (tokenno: CARDINAL;
+                                wideprocname: Name;
+                                settype, des, left, right: CARDINAL) ;
+VAR
+   location : location_t ;
+   procedure,
+   param1,
+   param2,
+   param3   : CARDINAL ;
+   highbit,
+   array1,
+   array2,
+   array3,
+   call     : tree ;
+BEGIN
+   procedure := FromM2WIDESETImport (tokenno, wideprocname) ;
+   checkDeclare (procedure) ;
+   location := TokenToLocation (tokenno) ;
+   param1 := GetNthParamAnyClosest (procedure, 1, GetMainModule ()) ;
+   param2 := GetNthParamAnyClosest (procedure, 2, GetMainModule ()) ;
+   param3 := GetNthParamAnyClosest (procedure, 3, GetMainModule ()) ;
+   array1 := CreateSetArrayParam (location, tokenno, des, param1) ;
+   array2 := CreateSetArrayParam (location, tokenno, left, param2) ;
+   array3 := CreateSetArrayParam (location, tokenno, right, param3) ;
+   highbit := ToCardinal (location, CalcHighSetBit (location, settype)) ;
+   BuildParam (location, highbit) ;  (* Parameter 4.  *)
+   BuildParam (location, array3) ;   (* Parameter 3.  *)
+   BuildParam (location, array2) ;   (* Parameter 2.  *)
+   BuildParam (location, array1) ;   (* Parameter 1.  *)
+   call := BuildProcedureCallTree (location, Mod2Gcc (procedure), NIL) ;
+   SetLastFunction (NIL) ;
+   AddStatement (location, call)
+END SetWideBinaryLibrary ;
+
+
+(*
+   SetWideBinaryBuiltin - build an builtin wideset NOT operation.
+*)
+
+PROCEDURE SetWideBinaryBuiltin (tokenno: CARDINAL;
+                                binfunc: BinaryFunction;
+                                des, left, right: CARDINAL) ;
+VAR
+   location : location_t ;
+   byte,
+   lhs, rhs,
+   dest,
+   index,
+   high     : tree ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   high := ResolveHigh (tokenno, 1, des) ;
+   index := GetIntegerZero (location) ;
+   byte := Mod2Gcc (Byte) ;
+   REPEAT
+      rhs := BuildArray (location, byte,
+                         getrvalue (location, right, GetType (right),
+                                    GetMode (right) = LeftValue),
+                         index, GetIntegerZero (location)) ;
+      lhs := BuildArray (location, byte,
+                         getrvalue (location, left, GetType (left),
+                                    GetMode (left) = LeftValue),
+                         index, GetIntegerZero (location)) ;
+      rhs := binfunc (location, lhs, rhs) ;
+      rhs := BuildConvert (location, byte, rhs, FALSE) ;
+      dest := BuildArray (location, byte,
+                          getrvalue (location, des, GetType (des),
+                                     GetMode (des) = LeftValue),
+                          index, GetIntegerZero (location)) ;
+      BuildAssignmentStatement (location, dest, rhs) ;
+      PushIntegerTree (index) ;
+      PushCard (1) ;
+      Addn ;
+      index := PopIntegerTree ()
+   UNTIL CompareTrees (index, high) > 0
+END SetWideBinaryBuiltin ;
+
+
+(*
+   SetNarrowBinary - create tree consisting of:
+                     result := binfunc (left, right)
+                     result, left and right can be lvalues.
+*)
+
+PROCEDURE SetNarrowBinary (location: location_t; binfunc: BinaryFunction;
+                           settype, result, left, right: CARDINAL) ;
+VAR
+   isResultL,
+   isLeftL,
+   isRightL : BOOLEAN ;
+BEGIN
+   isResultL := GetMode (result) = LeftValue ;
+   isLeftL := GetMode (left) = LeftValue ;
+   isRightL := GetMode (right) = LeftValue ;
+   BuildAssignmentStatement (location,
+                             getrvalue (location, result, settype, isResultL),
+                             binfunc (location,
+                                      getrvalue (location, left, settype, isLeftL),
+                                      getrvalue (location, right, settype, isRightL)))
+END SetNarrowBinary ;
+
+
+(*
+   CreateSetArrayParam - return a gcc tree containing value contained in an unbounded
+                         array parameter.
+*)
+
+PROCEDURE CreateSetArrayParam (location: location_t; tokenno: CARDINAL;
+                               value, param: CARDINAL) : tree ;
+VAR
+   dataAddress,
+   designator,
+   oarecord   : tree ;
+   unbounded,
+   HighField,
+   scope      : CARDINAL ;
+BEGIN
+   unbounded := GetType (param) ;
+   Assert (IsUnbounded (unbounded)) ;
+   scope := GetActiveScope () ;
+   (* Declare oarecord which has a pointer and high field.  This will be passed as
+      a parameter into the runtime set procedure and appear as an ARRAY OF BYTE.  *)
+   oarecord := DeclareKnownVariable (location, KeyToCharStar (MakeTemporarySetName ()),
+                                     Mod2Gcc (unbounded),
+                                     FALSE, FALSE, TRUE, IsProcedure (scope),
+                                     Mod2Gcc (scope), NIL) ;
+   (* Designator is oarecord.address.  *)
+   designator := BuildComponentRef (location, oarecord,
+                                    Mod2Gcc (GetUnboundedAddressOffset (unbounded))) ;
+   IF GetMode (value) = LeftValue
+   THEN
+      (* Already pointing to the data.  *)
+      dataAddress := Mod2Gcc (value)
+   ELSE
+      dataAddress := BuildAddr (location, Mod2Gcc (value), FALSE)
+   END ;
+   BuildAssignmentStatement (location, designator, dataAddress) ;
+   HighField := GetUnboundedHighOffset (unbounded, 1) ;
+   designator := BuildComponentRef (location, oarecord, Mod2Gcc (HighField)) ;
+   BuildAssignmentStatement (location, designator,
+                             ResolveHigh (tokenno, 1, value)) ;
+   RETURN oarecord
+END CreateSetArrayParam ;
 
 
 (*
@@ -4367,7 +4587,7 @@ PROCEDURE FoldMult (tokenno: CARDINAL; p: WalkAction;
 BEGIN
    IF BinaryOperands (quad, op2, op3)
    THEN
-      FoldBinary(tokenno, p, BuildMult, quad, op1, op2, op3)
+      FoldBinary (tokenno, p, BuildMult, quad, op1, op2, op3)
    END
 END FoldMult ;
 
@@ -4478,11 +4698,11 @@ END CodeModM2Check ;
 
 PROCEDURE BinaryOperandRealFamily (op: CARDINAL) : BOOLEAN ;
 VAR
-   t: CARDINAL ;
+   type: CARDINAL ;
 BEGIN
-   t := SkipType(GetType(op)) ;
-   RETURN( IsComplexType(t) OR IsComplexN(t) OR
-           IsRealType(t) OR IsRealN(t) )
+   type := GetDType (op) ;
+   RETURN( IsComplexType (type) OR IsComplexN (type) OR
+           IsRealType (type) OR IsRealN (type) )
 END BinaryOperandRealFamily ;
 
 
@@ -4596,7 +4816,7 @@ PROCEDURE FoldModTrunc (tokenno: CARDINAL; p: WalkAction;
 BEGIN
    IF BinaryOperands (quad, op2, op3)
    THEN
-      FoldBinary(tokenno, p, BuildModTrunc, quad, op1, op2, op3)
+      FoldBinary (tokenno, p, BuildModTrunc, quad, op1, op2, op3)
    END
 END FoldModTrunc ;
 
@@ -4802,15 +5022,27 @@ PROCEDURE FoldTBitsize  (tokenno: CARDINAL; p: WalkAction;
 VAR
    location: location_t ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
-   TryDeclareType (type) ;
-   type := GetDType (type) ;
-   IF CompletelyResolved (type)
+   location := TokenToLocation (tokenno) ;
+   IF IsType (type) OR IsVar (type) OR IsConst (type)
    THEN
-      AddModGcc (res, BuildSystemTBitSize (location, Mod2Gcc (type))) ;
-      p (res) ;
-      NoChange := FALSE ;
-      SubQuad (quad)
+      IF GetDType (type) = NulSym
+      THEN
+         MetaErrorT1 (tokenno, 'unknown type in TBITSIZE parameter {%1Ead}', type) ;
+         NoChange := FALSE ;
+         SubQuad (quad)
+      END ;
+      type := GetDType (type)
+   END ;
+   IF type # NulSym
+   THEN
+      TryDeclareType (type) ;
+      IF CompletelyResolved (type)
+      THEN
+         AddModGcc (res, BuildSystemTBitSize (location, Mod2Gcc (type))) ;
+         p (res) ;
+         NoChange := FALSE ;
+         SubQuad (quad)
+      END
    END
 END FoldTBitsize ;
 
@@ -5130,41 +5362,41 @@ END CodeRestorePriority ;
    FoldBinarySet - attempts to fold set arithmetic it removes the quad if successful.
 *)
 
-PROCEDURE FoldBinarySet (tokenno: CARDINAL; p: WalkAction; op: DoProcedure;
+PROCEDURE FoldBinarySet (tokenno: CARDINAL; p: WalkAction; op: ProcedureCardinal;
                          quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 VAR
    location: location_t ;
 BEGIN
    (* firstly try and ensure that constants are declared *)
-   TryDeclareConstant(tokenno, op2) ;
-   TryDeclareConstant(tokenno, op3) ;
-   location := TokenToLocation(tokenno) ;
+   TryDeclareConstant (tokenno, op2) ;
+   TryDeclareConstant (tokenno, op3) ;
+   location := TokenToLocation (tokenno) ;
 
-   IF GccKnowsAbout(op2) AND GccKnowsAbout(op3)
+   IF GccKnowsAbout (op2) AND GccKnowsAbout (op3)
    THEN
       IF CheckBinaryExpressionTypes (quad, p)
       THEN
-         IF IsConst(op2) AND IsConstSet(op2) AND
-            IsConst(op3) AND IsConstSet(op3) AND
-            IsConst(op1)
+         IF IsConst (op2) AND IsConstSet (op2) AND
+            IsConst (op3) AND IsConstSet (op3) AND
+            IsConst (op1)
          THEN
-            IF IsValueSolved(op2) AND IsValueSolved(op3)
+            IF IsValueSolved (op2) AND IsValueSolved (op3)
             THEN
-               Assert(MixTypes(FindType(op3), FindType(op2), tokenno)#NulSym) ;
-               PutConst(op1, MixTypes(FindType(op3), FindType(op2), tokenno)) ;
-               PushValue(op2) ;
-               PushValue(op3) ;
-               op(tokenno) ;
-               PopValue(op1) ;
-               PushValue(op1) ;
-               PutConstSet(op1) ;
-               AddModGcc(op1,
-                         DeclareKnownConstant(location,
-                                              Mod2Gcc(GetType(op3)),
-                                              PopSetTree(tokenno))) ;
-               p(op1) ;
+               Assert (MixTypes (FindType (op3), FindType (op2), tokenno) # NulSym) ;
+               PutConst (op1, MixTypes (FindType (op3), FindType (op2), tokenno)) ;
+               PushValue (op2) ;
+               PushValue (op3) ;
+               op (tokenno) ;
+               PopValue (op1) ;
+               PushValue (op1) ;
+               PutConstSet (op1) ;
+               AddModGcc (op1,
+                          DeclareKnownConstant (location,
+						Mod2Gcc (GetType (op3)),
+						PopSetTree (tokenno))) ;
+               p (op1) ;
                NoChange := FALSE ;
-               SubQuad(quad)
+               SubQuad (quad)
             END
          END
       END
@@ -5189,7 +5421,7 @@ END FoldSetOr ;
 
 PROCEDURE CodeSetOr (quad: CARDINAL) ;
 BEGIN
-   CodeBinarySet (BuildLogicalOr, SetOr, quad)
+   CodeBinarySet (SetOr, BuildLogicalOr, MakeKey ("Or"), quad)
 END CodeSetOr ;
 
 
@@ -5200,7 +5432,7 @@ END CodeSetOr ;
 PROCEDURE FoldSetAnd (tokenno: CARDINAL; p: WalkAction;
                       quad: CARDINAL; op1, op2, op3: CARDINAL) ;
 BEGIN
-   FoldBinarySet(tokenno, p, SetAnd, quad, op1, op2, op3)
+   FoldBinarySet (tokenno, p, SetAnd, quad, op1, op2, op3)
 END FoldSetAnd ;
 
 
@@ -5210,85 +5442,175 @@ END FoldSetAnd ;
 
 PROCEDURE CodeSetAnd (quad: CARDINAL) ;
 BEGIN
-   CodeBinarySet (BuildLogicalAnd, SetAnd, quad)
+   CodeBinarySet (SetAnd, BuildLogicalAnd, MakeKey ("And"), quad)
 END CodeSetAnd ;
 
 
 (*
-   CodeBinarySetShift - encode a binary set arithmetic operation.
-                        The set maybe larger than a machine word
-                        and the value of one word may effect the
-                        values of another - ie shift and rotate.
-                        Set sizes of a word or less are evaluated
-                        with binop, whereas multiword sets are
-                        evaluated by M2RTS.
+   CalcHighSetBit - calculate the most significant bit used in a set starting from bit zero.
 *)
 
-PROCEDURE CodeBinarySetShift (binop: BuildSetProcedure;
-                              doOp : DoProcedure;
-                              var, left, right: Name;
-                              quad: CARDINAL;
-                              op1, op2, op3: CARDINAL) ;
+PROCEDURE CalcHighSetBit (location: location_t; settype: CARDINAL) : tree ;
+BEGIN
+   PushValue (GetTypeMax (SkipType (GetType (settype)))) ;
+   PushIntegerTree (BuildConvert (location, GetM2ZType (), PopIntegerTree (), FALSE)) ;
+   PushValue (GetTypeMin (SkipType (GetType (settype)))) ;
+   PushIntegerTree (BuildConvert (location, GetM2ZType (), PopIntegerTree (), FALSE)) ;
+   Sub ;
+   RETURN PopIntegerTree ()
+END CalcHighSetBit ;
+
+
+(*
+   CalcBitsInSet - returns the number of minimum number of bits used to represent a set.
+*)
+
+PROCEDURE CalcBitsInSet (location: location_t; settype: CARDINAL) : tree ;
+BEGIN
+   PushIntegerTree (BuildConvert (location, GetM2ZType (),
+                                  CalcHighSetBit (location, settype), FALSE)) ;
+   PushCard (1) ;
+   PushIntegerTree (BuildConvert (location, GetM2ZType (), PopIntegerTree (), FALSE)) ;
+   Addn ;
+   RETURN PopIntegerTree ()
+END CalcBitsInSet ;
+
+
+(*
+   SetWideSetShiftRotate - generate a call:
+                           M2WIDESET.name (dest, src, HIGHBIT (settype), count).
+*)
+
+PROCEDURE SetWideSetShiftRotate (tokenno: CARDINAL; name: Name;
+                                 settype, dest, src, count: CARDINAL) ;
 VAR
-   nBits,
-   unbounded,
-   leftproc,
-   rightproc,
-   varproc  : tree ;
+   procedure,
+   param1,
+   param2   : CARDINAL ;
+   array1,
+   array2,
+   call,
+   highbit  : tree ;
    location : location_t ;
 BEGIN
-   (* firstly ensure that constant literals are declared *)
-   DeclareConstant(CurrentQuadToken, op3) ;
-   DeclareConstant(CurrentQuadToken, op2) ;
-   DeclareConstructor(CurrentQuadToken, quad, op3) ;
-   DeclareConstructor(CurrentQuadToken, quad, op2) ;
-   location := TokenToLocation(CurrentQuadToken) ;
+   procedure := FromM2WIDESETImport (tokenno, name) ;
+   location := TokenToLocation (tokenno) ;
+   param1 := GetNthParamAnyClosest (procedure, 1, GetMainModule ()) ;
+   param2 := GetNthParamAnyClosest (procedure, 2, GetMainModule ()) ;
+   array1 := CreateSetArrayParam (location, tokenno, dest, param1) ;
+   array2 := CreateSetArrayParam (location, tokenno, src, param2) ;
+   highbit := CalcHighSetBit (location, settype) ;
+   BuildParam (location, ToCardinal (location, Mod2Gcc (count))) ;  (* Parameter 4.  *)
+   BuildParam (location, ToCardinal (location, highbit)) ;  (* Parameter 3.  *)
+   BuildParam (location, array2) ;  (* Parameter 2.  *)
+   BuildParam (location, array1) ;  (* Parameter 1.  *)
+   call := BuildProcedureCallTree (location, Mod2Gcc (procedure), NIL) ;
+   SetLastFunction (NIL) ;
+   AddStatement (location, call)
+END SetWideSetShiftRotate ;
 
-   IF IsConst(op1)
+
+(*
+   CodeNarrowSetShift -
+*)
+
+PROCEDURE CodeNarrowSetShift (tokenno: CARDINAL; settype: CARDINAL;
+                              dest, src, count: CARDINAL) ;
+VAR
+   location: location_t ;
+   nbits   : tree ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   nbits := CalcBitsInSet (location, settype) ;
+   BuildLogicalShift (location, Mod2Gcc (dest), Mod2Gcc (src), Mod2Gcc (count), nbits, FALSE)
+END CodeNarrowSetShift ;
+
+
+(*
+   CodeNarrowSetRotate -
+*)
+
+PROCEDURE CodeNarrowSetRotate (tokenno: CARDINAL; settype: CARDINAL;
+                               dest, src, count: CARDINAL) ;
+VAR
+   location: location_t ;
+   nbits   : tree ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   nbits := CalcBitsInSet (location, settype) ;
+   BuildLogicalRotate (location, Mod2Gcc (dest), Mod2Gcc (src), Mod2Gcc (count), nbits, FALSE)
+END CodeNarrowSetRotate ;
+
+
+(*
+   CodeBinarySetShiftRotate - encode a binary set arithmetic operation.
+*)
+
+PROCEDURE CodeBinarySetShiftRotate (quad: CARDINAL; isshift: BOOLEAN) ;
+VAR
+   op              : QuadOperator ;
+   combined,
+   lastpos, destpos,
+   srcpos, countpos: CARDINAL ;
+   dest, src, count: CARDINAL ;
+   overflowChecking,
+   constExpr       : BOOLEAN ;
+   settype         : CARDINAL ;
+BEGIN
+   GetQuadOtok (quad, lastpos, op, dest, src, count,
+                overflowChecking, constExpr,
+                destpos, srcpos, countpos) ;
+
+   (* Firstly ensure that constant literals are declared.  *)
+   DeclareConstant (countpos, count) ;
+   DeclareConstant (srcpos, src) ;
+   DeclareConstructor (countpos, quad, count) ;
+   DeclareConstructor (srcpos, quad, src) ;
+
+   IF IsConst (dest)
    THEN
-      IF IsValueSolved(op2) AND IsValueSolved(op3)
+      combined := MakeVirtual2Tok (srcpos, countpos) ;
+      IF IsValueSolved (src) AND IsValueSolved (count)
       THEN
-         Assert(MixTypes(FindType(op3),
-                         FindType(op2), CurrentQuadToken)#NulSym) ;
-         PutConst(op1, FindType(op3)) ;
-         PushValue(op2) ;
-         PushValue(op3) ;
-         doOp(CurrentQuadToken) ;
-         PopValue(op1) ;
-         PutConstSet(op1)
+         Assert (MixTypes (FindType (count),
+                           FindType (src), combined) # NulSym) ;
+         PutConst (dest, FindType (count)) ;
+         PushValue (src) ;
+         PushValue (count) ;
+         IF isshift
+         THEN
+            SetShift (combined)
+         ELSE
+            SetRotate (combined)
+         END ;
+         PopValue (dest) ;
+         PutConstSet (dest)
       ELSE
-         MetaErrorT0 (CurrentQuadToken, '{%E}constant expression cannot be evaluated')
+         MetaErrorT0 (combined, '{%E}constant expression cannot be evaluated')
       END
    ELSE
-      varproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, var, System)) ;
-      leftproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, left, System)) ;
-      rightproc := Mod2Gcc(FromModuleGetSym(CurrentQuadToken, right, System)) ;
-      unbounded := Mod2Gcc(GetType(GetNthParamAny (FromModuleGetSym(CurrentQuadToken,
-                                                                var, System), 1))) ;
-      PushValue(GetTypeMax(SkipType(GetType(op1)))) ;
-      PushIntegerTree(BuildConvert(location, GetM2ZType(), PopIntegerTree(), FALSE)) ;
-
-      PushValue(GetTypeMin(SkipType(GetType(op1)))) ;
-      PushIntegerTree(BuildConvert(location, GetM2ZType(), PopIntegerTree(), FALSE)) ;
-      Sub ;
-      PushCard(1) ;
-      PushIntegerTree(BuildConvert(location, GetM2ZType(), PopIntegerTree(), FALSE)) ;
-      Addn ;
-      nBits := PopIntegerTree() ;
-      BuildBinarySetDo(location,
-                       Mod2Gcc(SkipType(GetType(op1))),
-                       Mod2Gcc(op1),
-                       Mod2Gcc(op2),
-                       Mod2Gcc(op3),
-                       binop,
-                       GetMode(op1)=LeftValue,
-                       GetMode(op2)=LeftValue,
-                       GetMode(op3)=LeftValue,
-                       nBits,
-                       unbounded,
-                       varproc, leftproc, rightproc)
+      combined := MakeVirtualTok (destpos, srcpos, countpos) ;
+      settype := GetDType (dest) ;
+      Assert (IsSet (settype)) ;
+      (* Check for narrow and wide sets and call M2WIDESET if appropriate.  *)
+      IF GetSetInWord (settype)
+      THEN
+         IF isshift
+         THEN
+            CodeNarrowSetShift (combined, settype, dest, src, count)
+         ELSE
+            CodeNarrowSetRotate (combined, settype, dest, src, count)
+         END
+      ELSE
+         IF isshift
+         THEN
+            SetWideSetShiftRotate (combined, MakeKey ('Shift'), settype, dest, src, count)
+         ELSE
+            SetWideSetShiftRotate (combined, MakeKey ('Rotate'), settype, dest, src, count)
+         END
+      END
    END
-END CodeBinarySetShift ;
+END CodeBinarySetShiftRotate ;
 
 
 (*
@@ -5296,9 +5618,9 @@ END CodeBinarySetShift ;
 *)
 
 PROCEDURE FoldSetShift (tokenno: CARDINAL; p: WalkAction;
-                        quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+                        quad: CARDINAL; Dest, Src, ShiftCount: CARDINAL) ;
 BEGIN
-   FoldBinarySet(tokenno, p, SetShift, quad, op1, op2, op3)
+   FoldBinarySet (tokenno, p, SetShift, quad, Dest, Src, ShiftCount)
 END FoldSetShift ;
 
 
@@ -5306,14 +5628,9 @@ END FoldSetShift ;
    CodeSetShift - encode set arithmetic shift.
 *)
 
-PROCEDURE CodeSetShift (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeSetShift (quad: CARDINAL) ;
 BEGIN
-   CodeBinarySetShift (BuildLogicalShift,
-                       SetShift,
-                       MakeKey('ShiftVal'),
-                       MakeKey('ShiftLeft'),
-                       MakeKey('ShiftRight'),
-                       quad, op1, op2, op3)
+   CodeBinarySetShiftRotate (quad, TRUE)
 END CodeSetShift ;
 
 
@@ -5322,9 +5639,9 @@ END CodeSetShift ;
 *)
 
 PROCEDURE FoldSetRotate (tokenno: CARDINAL; p: WalkAction;
-                        quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+                         quad: CARDINAL; Dest, Src, RotateCount: CARDINAL) ;
 BEGIN
-   FoldBinarySet(tokenno, p, SetRotate, quad, op1, op2, op3)
+   FoldBinarySet (tokenno, p, SetRotate, quad, Dest, Src, RotateCount)
 END FoldSetRotate ;
 
 
@@ -5332,14 +5649,9 @@ END FoldSetRotate ;
    CodeSetRotate - encode set arithmetic rotate.
 *)
 
-PROCEDURE CodeSetRotate (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeSetRotate (quad: CARDINAL) ;
 BEGIN
-   CodeBinarySetShift (BuildLogicalRotate,
-                       SetRotate,
-                       MakeKey ('RotateVal'),
-                       MakeKey ('RotateLeft'),
-                       MakeKey ('RotateRight'),
-                       quad, op1, op2, op3)
+   CodeBinarySetShiftRotate (quad, FALSE)
 END CodeSetRotate ;
 
 
@@ -5362,7 +5674,8 @@ END FoldSetLogicalDifference ;
 
 PROCEDURE CodeSetLogicalDifference (quad: CARDINAL) ;
 BEGIN
-   CodeBinarySet (BuildLogicalDifference, SetDifference, quad)
+   CodeBinarySet (SetAnd, BuildLogicalDifference,
+                  MakeKey ("LogicalDifference"), quad)
 END CodeSetLogicalDifference ;
 
 
@@ -5379,11 +5692,13 @@ END FoldSymmetricDifference ;
 
 (*
    CodeSetSymmetricDifference - code set difference.
+                                A logical xor expression.
 *)
 
 PROCEDURE CodeSetSymmetricDifference (quad: CARDINAL) ;
 BEGIN
-   CodeBinarySet (BuildSymmetricDifference, SetSymmetricDifference, quad)
+   CodeBinarySet (SetSymmetricDifference, BuildSymmetricDifference,
+                  MakeKey ("SymmetricDifference"), quad)
 END CodeSetSymmetricDifference ;
 
 
@@ -5392,15 +5707,19 @@ END CodeSetSymmetricDifference ;
                   Set operands may be longer than a word.
 *)
 
-PROCEDURE CodeUnarySet (unop: BuildUnarySetFunction; constop: DoUnaryProcedure;
+PROCEDURE CodeUnarySet (constop: ProcedureCardinal;
+                        unfunc: UnaryFunction;
+                        tokenno: CARDINAL;
+                        wideprocname: Name;
                         quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
    location: location_t ;
+   settype : CARDINAL ;
 BEGIN
-   (* firstly ensure that constant literals are declared *)
-   DeclareConstant (CurrentQuadToken, expr) ;
-   DeclareConstructor (CurrentQuadToken, quad, expr) ;
-   location := TokenToLocation (CurrentQuadToken) ;
+   (* Firstly ensure that constant literals are declared.  *)
+   DeclareConstant (tokenno, expr) ;
+   DeclareConstructor (tokenno, quad, expr) ;
+   location := TokenToLocation (tokenno) ;
 
    IF IsConst (result)
    THEN
@@ -5409,26 +5728,160 @@ BEGIN
          Assert (FindType (expr) # NulSym) ;
          PutConst (result, FindType (expr)) ;
          PushValue (expr) ;
-         constop (CurrentQuadToken) ;
+         constop (tokenno) ;
          PopValue (result) ;
          PushValue (result) ;
          PutConstSet (result) ;
          ConstantKnownAndUsed (result,
-                               DeclareKnownConstant(location,
-                                                    Mod2Gcc (GetType (expr)),
-                                                    PopSetTree (CurrentQuadToken)))
+                               DeclareKnownConstant (location,
+                                                     Mod2Gcc (GetType (expr)),
+                                                     PopSetTree (tokenno)))
       ELSE
-         MetaErrorT0 (CurrentQuadToken,
+         MetaErrorT0 (tokenno,
                       '{%E}constant expression cannot be evaluated')
       END
    ELSE
       checkDeclare (result) ;
-      BuildUnaryForeachWordDo (location,
-                               Mod2Gcc (GetType (result)), Mod2Gcc (result), Mod2Gcc (expr), unop,
-                               GetMode(result) = LeftValue, GetMode(expr) = LeftValue,
-                               IsConst (result), IsConst (expr))
+      settype := GetLType (result) ;
+      Assert (IsSet (settype)) ;
+      IF GetSetInWord (settype)
+      THEN
+         SetNarrowUnary (location, unfunc, settype, result, expr)
+      ELSE
+         SetWideUnary (tokenno, wideprocname, settype, result, expr)
+      END
    END
 END CodeUnarySet ;
+
+
+(*
+   FromM2WIDESETImport - returns M2WIDESET.name.
+*)
+
+PROCEDURE FromM2WIDESETImport (tokenno: CARDINAL; name: Name) : CARDINAL ;
+VAR
+   sym, module: CARDINAL ;
+BEGIN
+   sym := NulSym ;
+   IF GetWideset ()
+   THEN
+      module := MakeDefinitionSource (tokenno, MakeKey ("M2WIDESET")) ;
+      sym := FromModuleGetSym (tokenno, name, module) ;
+      IF IsUnknown (sym)
+      THEN
+         MetaErrorT2 (tokenno, 'procedure function {%1Aad} is not available from {%2ad}',
+                      sym, module)
+      END
+   ELSE
+      MetaErrorT0 (tokenno, '{%0A}wideset is not available due to -fno-wideset')
+   END ;
+   RETURN sym
+END FromM2WIDESETImport ;
+
+
+(*
+   SetWideUnaryLibrary - call wideprocname (result, expr) passing result and expr
+                         as an array of byte.
+*)
+
+PROCEDURE SetWideUnaryLibrary (tokenno: CARDINAL;
+                               wideprocname: Name;
+                               settype, result, expr: CARDINAL) ;
+VAR
+   location : location_t ;
+   procedure,
+   param1,
+   param2   : CARDINAL ;
+   highbit,
+   array1,
+   array2,
+   call     : tree ;
+BEGIN
+   procedure := FromM2WIDESETImport (tokenno, wideprocname) ;
+   checkDeclare (procedure) ;
+   location := TokenToLocation (tokenno) ;
+   highbit := ToCardinal (location, CalcBitsInSet (location, settype)) ;
+   param1 := GetNthParamAnyClosest (procedure, 1, GetMainModule ()) ;
+   param2 := GetNthParamAnyClosest (procedure, 2, GetMainModule ()) ;
+   array1 := CreateSetArrayParam (location, tokenno, result, param1) ;
+   array2 := CreateSetArrayParam (location, tokenno, expr, param2) ;
+   BuildParam (location, highbit) ;   (* 3rd Parameter.  *)
+   BuildParam (location, array2) ;    (* 2nd Parameter.  *)
+   BuildParam (location, array1) ;    (* 1st Parameter.  *)
+   call := BuildProcedureCallTree (location, Mod2Gcc (procedure), NIL) ;
+   SetLastFunction (NIL) ;
+   AddStatement (location, call)
+END SetWideUnaryLibrary ;
+
+
+(*
+   SetWideUnaryBuiltinNot - build an builtin wideset NOT operation.
+*)
+
+PROCEDURE SetWideUnaryBuiltinNot (tokenno: CARDINAL; result, expr: CARDINAL) ;
+VAR
+   location : location_t ;
+   byte,
+   lhs, rhs,
+   index,
+   high     : tree ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   high := ResolveHigh (tokenno, 1, result) ;
+   index := GetIntegerZero (location) ;
+   byte := Mod2Gcc (Byte) ;
+   REPEAT
+      rhs := BuildArray (location, byte, Mod2Gcc (expr),
+                         index, GetIntegerZero (location)) ;
+      rhs := BuildSetNegate (location, rhs) ;
+      rhs := BuildConvert (location, byte, rhs, FALSE) ;
+      lhs := BuildArray (location, byte, Mod2Gcc (result),
+                         index, GetIntegerZero (location)) ;
+      BuildAssignmentStatement (location, lhs, rhs) ;
+      PushIntegerTree (index) ;
+      PushCard (1) ;
+      Addn ;
+      index := PopIntegerTree ()
+   UNTIL CompareTrees (index, high) > 0
+END SetWideUnaryBuiltinNot ;
+
+
+(*
+   SetWideUnary - either call the library wideprocname or the builtin
+                  version depending upon the optimization setting.
+*)
+
+PROCEDURE SetWideUnary (tokenno: CARDINAL;
+                        wideprocname: Name;
+                        settype, result, expr: CARDINAL) ;
+BEGIN
+   IF OptimizeSets AND (wideprocname = MakeKey ('Not'))
+   THEN
+      SetWideUnaryBuiltinNot (tokenno, result, expr)
+   ELSE
+      SetWideUnaryLibrary (tokenno, wideprocname, settype, result, expr)
+   END
+END SetWideUnary ;
+
+
+(*
+   SetNarrowUnary - create tree consisting of:
+                    result := unfunc (expr)
+                    result and expr can be lvalues.
+*)
+
+PROCEDURE SetNarrowUnary (location: location_t; unfunc: UnaryFunction;
+                          settype, result, expr: CARDINAL) ;
+VAR
+   isResultL,
+   isExprL   : BOOLEAN ;
+BEGIN
+   isResultL := GetMode (result) = LeftValue ;
+   isExprL := GetMode (expr) = LeftValue ;
+   BuildAssignmentStatement (location, getrvalue (location, result, settype, isResultL),
+                             unfunc (location,
+                                     getrvalue (location, expr, settype, isExprL)))
+END SetNarrowUnary ;
 
 
 (*
@@ -5448,7 +5901,7 @@ BEGIN
          (* fine, we can take advantage of this and fold constants *)
          PushValue (result) ;
          AddBit (tokenno, expr) ;
-         AddModGcc (result, PopSetTree(tokenno)) ;
+         AddModGcc (result, PopSetTree (tokenno)) ;
          p (result) ;
          NoChange := FALSE ;
          SubQuad (quad)
@@ -5661,8 +6114,8 @@ PROCEDURE FoldIfEqu (tokenno: CARDINAL;
                      left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
-   TryDeclareConstant(tokenno, left) ;
-   TryDeclareConstant(tokenno, right) ;
+   TryDeclareConstant (tokenno, left) ;
+   TryDeclareConstant (tokenno, right) ;
    IF IsConst (left) AND IsConst (right)
    THEN
       IF IsValueSolved (left) AND IsValueSolved (right)
@@ -5693,8 +6146,8 @@ PROCEDURE FoldIfNotEqu (tokenno: CARDINAL;
                         left, right, destQuad: CARDINAL) ;
 BEGIN
    (* Firstly ensure that constant literals are declared.  *)
-   TryDeclareConstant(tokenno, left) ;
-   TryDeclareConstant(tokenno, right) ;
+   TryDeclareConstant (tokenno, left) ;
+   TryDeclareConstant (tokenno, right) ;
    IF IsConst (left) AND IsConst (right)
    THEN
       IF IsValueSolved (left) AND IsValueSolved (right)
@@ -5723,93 +6176,256 @@ PROCEDURE GetSetLimits (set: CARDINAL; VAR low, high: CARDINAL) ;
 VAR
    type: CARDINAL ;
 BEGIN
-   type := GetType(set) ;
-   IF IsSubrange(type)
+   type := GetType (set) ;
+   IF IsSubrange (type)
    THEN
-      GetSubrange(type, high, low) ;
+      GetSubrange (type, high, low) ;
    ELSE
-      low := GetTypeMin(type) ;
-      high := GetTypeMax(type)
+      low := GetTypeMin (type) ;
+      high := GetTypeMax (type)
    END
 END GetSetLimits ;
 
 
 (*
-   GetFieldNo - returns the field number in the, set, which contains, element.
+   IsElementInRange - returns TRUE if expr references a bit in setvar
+                      which is in the range [low..high].  If expr is a
+                      variable it returns TRUE.  FALSE is returned if we
+                      know expr to be out of bounds.
 *)
 
-PROCEDURE GetFieldNo (tokenno: CARDINAL; element: CARDINAL; set: CARDINAL; VAR offset: tree) : INTEGER ;
+PROCEDURE IsElementInRange (tokenno: CARDINAL; settype, setvar, expr: CARDINAL) : BOOLEAN ;
 VAR
-   low, high, bpw, c: CARDINAL ;
-   location         : location_t ;
+   low,
+   high: CARDINAL ;
 BEGIN
-   location := TokenToLocation(tokenno) ;
-   bpw := GetBitsPerBitset() ;
-   GetSetLimits(set, low, high) ;
-
-   (* check element is legal *)
-
-   PushValue(element) ;
-   PushValue(low) ;
-   IF Less(tokenno)
+   IF IsConst (expr)
    THEN
-      (* out of range *)
-      RETURN( -1 )
-   ELSE
-      PushValue(element) ;
-      PushValue(high) ;
-      IF Gre(tokenno)
+      GetSetLimits (settype, low, high) ;
+      PushValue (expr) ;
+      PushValue (high) ;
+      IF Gre (tokenno)
       THEN
-         RETURN( -1 )
+         MetaErrorT1 (tokenno, 'bit exceeds the range of set {%1Eatd}', setvar) ;
+         RETURN FALSE
+      END ;
+      PushValue (expr) ;
+      PushValue (low) ;
+      IF Less (tokenno)
+      THEN
+         MetaErrorT1 (tokenno, 'bit underflows the range of set {%1Eatd}', setvar) ;
+         RETURN FALSE
       END
    END ;
+   RETURN TRUE
+END IsElementInRange ;
 
-   (* all legal *)
 
-   PushValue(low) ;
-   offset := PopIntegerTree() ;
-   c := 0 ;
-   PushValue(element) ;
-   PushValue(low) ;
-   PushIntegerTree(ToCardinal(location, PopIntegerTree())) ;
-   PushCard(bpw) ;
-   PushIntegerTree(ToCardinal(location, PopIntegerTree())) ;
-   Addn ;
-   WHILE GreEqu(tokenno) DO
-      INC(c) ;   (* move onto next field *)
-      PushValue(element) ;
-      PushIntegerTree(ToCardinal(location, PopIntegerTree())) ;
-      PushCard((c+1)*bpw) ;
-      PushValue(low) ;
-      PushIntegerTree(ToCardinal(location, PopIntegerTree())) ;
-      Addn ;
-      PushIntegerTree(offset) ;
-      PushIntegerTree(ToCardinal(location, PopIntegerTree())) ;
-      PushCard(bpw) ;
-      PushIntegerTree(ToCardinal(location, PopIntegerTree())) ;
-      Addn ;
-      offset := PopIntegerTree()
-   END ;
-   RETURN( VAL(INTEGER, c) )
-END GetFieldNo ;
+(*
+   SetElementToBit -
+*)
+
+PROCEDURE SetElementToBit (location: location_t; settype, expr: CARDINAL) : tree ;
+VAR
+   lowelement, highelement: CARDINAL ;
+   low                    : tree ;
+BEGIN
+   GetSetLimits (settype, lowelement, highelement) ;
+   PushValue (lowelement) ;
+   low := PopIntegerTree () ;
+   RETURN BuildSub (location, ToCardinal (location, Mod2Gcc (expr)),
+                    ToCardinal (location, low), FALSE)
+END SetElementToBit ;
+
+
+(*
+   CodeNarrowIncl - result |= (1 << expr).
+*)
+
+PROCEDURE CodeNarrowIncl (location: location_t; settype, result, expr: CARDINAL) ;
+VAR
+   bit     : tree ;
+   isLvalue: BOOLEAN ;
+BEGIN
+   bit := SetElementToBit (location, settype, expr) ;
+   isLvalue := GetMode (result) = LeftValue ;
+   BuildAssignmentStatement (location, getrvalue (location, result, settype, isLvalue),
+                             ToBitset (location, BuildLogicalOr (location,
+                                                                 getrvalue (location, result, settype, isLvalue),
+                                                                 BuildLSL (location, GetWordOne (location),
+                                                                           bit, FALSE))))
+END CodeNarrowIncl ;
+
+
+(*
+   CodeNarrowExcl - result &= (~ (1 << expr)).
+*)
+
+PROCEDURE CodeNarrowExcl (location: location_t; settype, result, expr: CARDINAL) ;
+VAR
+   bit, mask: tree ;
+   isLvalue : BOOLEAN ;
+BEGIN
+   bit := SetElementToBit (location, settype, expr) ;
+   mask := BuildSetNegate (location,
+                           BuildLSL (location, GetWordOne (location),
+                                     ToWord (location, bit), FALSE)) ;
+   isLvalue := GetMode (result) = LeftValue ;
+   BuildAssignmentStatement (location, getrvalue (location, result, settype, isLvalue),
+                             ToBitset (location, BuildLogicalAnd (location,
+                                                                  getrvalue (location, result, settype, isLvalue),
+                                                                  mask)))
+END CodeNarrowExcl ;
+
+
+(*
+   SetWideUnaryBuiltinIncl -
+*)
+
+PROCEDURE SetWideUnaryBuiltinIncl (location: location_t; dest, bitno: tree) ;
+BEGIN
+   BuildAssignmentStatement (location, dest,
+                             BuildConvert (location, Mod2Gcc (Byte),
+                                           BuildLogicalOr (location,
+                                                           dest,
+                                                           BuildLSL (location, GetWordOne (location),
+                                                                     bitno, FALSE)),
+                                           FALSE))
+END SetWideUnaryBuiltinIncl ;
+
+
+(*
+   SetWideUnaryBuiltinExcl -
+*)
+
+PROCEDURE SetWideUnaryBuiltinExcl (location: location_t; dest, bitno: tree) ;
+VAR
+   mask: tree ;
+BEGIN
+   mask := BuildSetNegate (location,
+                           BuildLSL (location, GetWordOne (location),
+                                     ToWord (location, bitno), FALSE)) ;
+   BuildAssignmentStatement (location, dest,
+                             BuildConvert (location, Mod2Gcc (Byte),
+                                           BuildLogicalAnd (location, dest, mask),
+                                           FALSE))
+END SetWideUnaryBuiltinExcl ;
+
+
+(*
+   SetWideUnaryBuiltinIncl -
+*)
+
+PROCEDURE SetWideUnaryBuiltinInclExcl (tokenno: CARDINAL;
+                                       settype, des, expr: CARDINAL;
+                                       incl: BOOLEAN) ;
+VAR
+   bitsperbyte,
+   byteno,
+   bitno,
+   dest,
+   bit     : tree ;
+   location: location_t ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   bit := ToCardinal (location, SetElementToBit (location, settype, expr)) ;
+   bitsperbyte := ToCardinal (location, GetSizeOfInBits (Mod2Gcc (Byte))) ;
+   byteno := BuildDivFloor (location, bit, bitsperbyte, FALSE) ;
+   bitno := BuildModFloor (location, bit, bitsperbyte, FALSE) ;
+   dest := BuildArray (location, Mod2Gcc (Byte),
+                       getrvalue (location, des, GetType (des),
+                                  GetMode (des) = LeftValue),
+                       byteno, GetIntegerZero (location)) ;
+   IF incl
+   THEN
+      SetWideUnaryBuiltinIncl (location, dest, bitno)
+   ELSE
+      SetWideUnaryBuiltinExcl (location, dest, bitno)
+   END
+END SetWideUnaryBuiltinInclExcl ;
+
+
+(*
+   SetWideInclExcl - generates M2WIDESET.procedurename (result, expr).
+*)
+
+PROCEDURE SetWideInclExcl (tokenno: CARDINAL; settype, result, expr: CARDINAL;
+                           procedurename: Name) ;
+BEGIN
+   IF OptimizeSets
+   THEN
+      IF procedurename = MakeKey ('Incl')
+      THEN
+         SetWideUnaryBuiltinInclExcl (tokenno, settype, result, expr, TRUE)
+      ELSIF procedurename = MakeKey ('Excl')
+      THEN
+         SetWideUnaryBuiltinInclExcl (tokenno, settype, result, expr, FALSE)
+      ELSE
+         InternalError ('expecting Incl or Excl procedure')
+      END
+   ELSE
+      SetWideInclExclLibrary (tokenno, settype, result, expr, procedurename)
+   END
+END SetWideInclExcl ;
+
+
+(*
+   SetWideInclExclLibrary -
+*)
+
+PROCEDURE SetWideInclExclLibrary (tokenno: CARDINAL; settype, result, expr: CARDINAL;
+                                  procedurename: Name) ;
+VAR
+   location : location_t ;
+   procedure,
+   setparam : CARDINAL ;
+   highbit,
+   bit,
+   setarray,
+   call     : tree ;
+BEGIN
+   procedure := FromM2WIDESETImport (tokenno, procedurename) ;
+   location := TokenToLocation (tokenno) ;
+   bit := SetElementToBit (location, settype, expr) ;
+   highbit := ToCardinal (location, CalcBitsInSet (location, settype)) ;
+   setparam := GetNthParamAnyClosest (procedure, 1, GetMainModule ()) ;
+   setarray := CreateSetArrayParam (location, tokenno, result, setparam) ;
+   BuildParam (location, highbit) ;                      (* 3rd Parameter.  *)
+   BuildParam (location, ToCardinal (location, bit)) ;   (* 2nd Parameter.  *)
+   BuildParam (location, setarray) ;                     (* 1st Parameter.  *)
+   call := BuildProcedureCallTree (location, Mod2Gcc (procedure), NIL) ;
+   SetLastFunction (NIL) ;
+   AddStatement (location, call)
+END SetWideInclExclLibrary ;
 
 
 (*
    CodeIncl - encode an InclOp:
-              result := result + (1 << expr)
+              result |= (1 << expr).
 *)
 
-PROCEDURE CodeIncl (result, expr: CARDINAL) ;
+PROCEDURE CodeIncl (quad: CARDINAL) ;
 VAR
-   low,
-   high    : CARDINAL ;
-   offset  : tree ;
-   fieldno : INTEGER ;
-   location: location_t ;
+   overflow,
+   constExpr   : BOOLEAN ;
+   op          : QuadOperator ;
+   tokenno     : CARDINAL;
+   result, expr: CARDINAL;
+   settype     : CARDINAL ;
+   nooperand   : CARDINAL ;
+   nopos       : CARDINAL ;
+   location    : location_t ;
 BEGIN
-   (* firstly ensure that constant literals are declared *)
-   DeclareConstant (CurrentQuadToken, expr) ;
-   location := TokenToLocation (CurrentQuadToken) ;
+   GetQuadOtok (quad, tokenno, op,
+                result, nooperand, expr,
+                overflow, constExpr,
+                nopos, nopos, nopos) ;
+   (* Firstly ensure that constant literals are declared *)
+   DeclareConstant (tokenno, expr) ;
+   location := TokenToLocation (tokenno) ;
+   checkDeclare (result) ;
+   settype := GetLType (result) ;
+   Assert (IsSet (settype)) ;
 
    IF IsConst (result)
    THEN
@@ -5820,27 +6436,14 @@ BEGIN
          InternalError ('should not get to here (why are we generating <incl const, var> ?)')
       END
    ELSE
-      IF IsConst (expr)
+      IF IsElementInRange (tokenno, settype, result, expr)
       THEN
-         fieldno := GetFieldNo (CurrentQuadToken, expr, GetType (result), offset) ;
-         IF fieldno >= 0
+         IF GetSetInWord (settype)
          THEN
-            PushValue (expr) ;
-            PushIntegerTree (offset) ;
-            Sub ;
-            BuildIncludeVarConst (location,
-                                  Mod2Gcc (GetType (result)),
-                                  Mod2Gcc (result),
-                                  PopIntegerTree (),
-                                  GetMode (result) = LeftValue, fieldno)
+            CodeNarrowIncl (location, settype, result, expr)
          ELSE
-            MetaErrorT1 (CurrentQuadToken, 'bit exceeded the range of set {%1Eatd}', result)
+            SetWideInclExcl (tokenno, settype, result, expr, MakeKey ("Incl"))
          END
-      ELSE
-         GetSetLimits (GetType (result), low, high) ;
-         BuildIncludeVarVar (location,
-                             Mod2Gcc (GetType(result)),
-                             Mod2Gcc (result), Mod2Gcc(expr), GetMode(result) = LeftValue, Mod2Gcc (low))
       END
    END
 END CodeIncl ;
@@ -5848,13 +6451,13 @@ END CodeIncl ;
 
 (*
    FoldExcl - check whether we can fold the InclOp.
-              op1 := op1 - (1 << op3)
+              result &= ~ (1 << expr).
 *)
 
 PROCEDURE FoldExcl (tokenno: CARDINAL; p: WalkAction;
                     quad: CARDINAL; result, expr: CARDINAL) ;
 BEGIN
-   (* firstly ensure that constant literals are declared *)
+   (* Firstly ensure that constant literals are declared *)
    TryDeclareConstant (tokenno, expr) ;
    IF IsConst (result) AND IsConst (expr)
    THEN
@@ -5873,45 +6476,49 @@ END FoldExcl ;
 
 (*
    CodeExcl - encode an ExclOp:
-              result := result - (1 << expr)
+              result &= (~ (1 << expr)).
 *)
 
-PROCEDURE CodeExcl (result, expr: CARDINAL) ;
+PROCEDURE CodeExcl (quad: CARDINAL) ;
 VAR
-   low,
-   high    : CARDINAL ;
-   offset  : tree ;
-   fieldno : INTEGER ;
-   location: location_t ;
+   overflow,
+   constExpr   : BOOLEAN ;
+   op          : QuadOperator ;
+   tokenno     : CARDINAL;
+   result, expr: CARDINAL;
+   settype     : CARDINAL ;
+   nooperand   : CARDINAL ;
+   nopos       : CARDINAL ;
+   location    : location_t ;
 BEGIN
-   (* firstly ensure that constant literals are declared *)
-   DeclareConstant (CurrentQuadToken, expr) ;
-   location := TokenToLocation(CurrentQuadToken) ;
+   GetQuadOtok (quad, tokenno, op,
+                result, nooperand, expr,
+                overflow, constExpr,
+                nopos, nopos, nopos) ;
+   (* Firstly ensure that constant literals are declared *)
+   DeclareConstant (tokenno, expr) ;
+   location := TokenToLocation (tokenno) ;
+   checkDeclare (result) ;
+   settype := GetLType (result) ;
+   Assert (IsSet (settype)) ;
 
    IF IsConst (result)
    THEN
-      InternalError ('should not get to here (if we do we should consider calling FoldInclOp)')
-   ELSE
       IF IsConst (expr)
       THEN
-         fieldno := GetFieldNo (CurrentQuadToken, expr, GetType (result), offset) ;
-         IF fieldno >= 0
-         THEN
-            PushValue (expr) ;
-            PushIntegerTree (offset) ;
-            Sub ;
-            BuildExcludeVarConst (location,
-                                  Mod2Gcc (GetType (result)),
-                                  Mod2Gcc (result), PopIntegerTree (),
-                                  GetMode (result)=LeftValue, fieldno)
-         ELSE
-            MetaErrorT1 (CurrentQuadToken, 'bit exceeded the range of set {%1Eatd}', result)
-         END
+         InternalError ('this quadruple should have been removed by FoldExcl')
       ELSE
-         GetSetLimits (GetType (result), low, high) ;
-         BuildExcludeVarVar (location,
-                             Mod2Gcc (GetType(result)),
-                             Mod2Gcc (result), Mod2Gcc(expr), GetMode(result) = LeftValue, Mod2Gcc (low))
+         InternalError ('should not get to here (why are we generating <excl const, var> ?)')
+      END
+   ELSE
+      IF IsElementInRange (tokenno, settype, result, expr)
+      THEN
+         IF GetSetInWord (settype)
+         THEN
+            CodeNarrowExcl (location, settype, result, expr)
+         ELSE
+            SetWideInclExcl (tokenno, settype, result, expr, MakeKey ("Excl"))
+         END
       END
    END
 END CodeExcl ;
@@ -5978,7 +6585,7 @@ END FoldUnary ;
    FoldUnarySet - check whether we can fold the doOp operation.
 *)
 
-PROCEDURE FoldUnarySet (tokenno: CARDINAL; p: WalkAction; doOp: DoUnaryProcedure;
+PROCEDURE FoldUnarySet (tokenno: CARDINAL; p: WalkAction; doOp: ProcedureCardinal;
                         quad: CARDINAL; result, expr: CARDINAL) ;
 VAR
    location: location_t ;
@@ -6120,18 +6727,32 @@ END FoldNegate ;
                        is required.
 *)
 
-PROCEDURE CodeNegateChecked (quad: CARDINAL; op1, op3: CARDINAL) ;
+PROCEDURE CodeNegateChecked (quad: CARDINAL) ;
+VAR
+   operatorpos,
+   resultpos,
+   nopos, exprpos,
+   result, noop,
+   expr            : CARDINAL ;
+   typeChecking,
+   constExpr,
+   overflowChecking: BOOLEAN ;
+   op              : QuadOperator ;
 BEGIN
-   IF IsConstSet (op3) OR IsSet (GetType (op3))
+   GetQuadOTypetok (quad, operatorpos, op,
+                    result, noop, expr,
+                    overflowChecking, typeChecking, constExpr,
+                    resultpos, nopos, exprpos) ;
+   IF IsConstSet (expr) OR IsSet (GetType (expr))
    THEN
-      CodeUnarySet (BuildSetNegate, SetNegate, quad, op1, op3)
-   ELSIF UnaryOperand (quad, op3)
+      CodeUnarySet (SetNegate, BuildSetNegate, operatorpos, MakeKey ('Not'), quad, result, expr)
+   ELSIF UnaryOperand (quad, expr)
    THEN
       IF MustCheckOverflow (quad)
       THEN
-         CodeUnaryCheck (BuildNegateCheck, NIL, quad, op1, op3)
+         CodeUnaryCheck (BuildNegateCheck, NIL, quad, result, expr)
       ELSE
-         CodeUnary (BuildNegate, NIL, quad, op1, op3)
+         CodeUnary (BuildNegate, NIL, quad, result, expr)
       END
    END
 END CodeNegateChecked ;
@@ -6346,6 +6967,19 @@ END BuildHighFromArray ;
 
 
 (*
+   BuildHighFromSetArray -
+*)
+
+PROCEDURE BuildHighFromSetArray (tokenno: CARDINAL; settype: CARDINAL) : tree ;
+VAR
+   location: location_t ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   RETURN BuildHighFromStaticArray (location, GetSetArray (settype))
+END BuildHighFromSetArray ;
+
+
+(*
    BuildHighFromStaticArray -
 *)
 
@@ -6414,26 +7048,29 @@ VAR
    Type    : CARDINAL ;
    location: location_t ;
 BEGIN
-   Type := SkipType(GetType(operand)) ;
-   location := TokenToLocation(tokenno) ;
+   Type := SkipType (GetType (operand)) ;
+   location := TokenToLocation (tokenno) ;
 
    IF (Type=Char) AND (dim=1)
    THEN
-      RETURN( BuildHighFromChar(operand) )
+      RETURN( BuildHighFromChar (operand) )
    ELSIF IsConstString(operand) AND (dim=1)
    THEN
-      RETURN( BuildHighFromString(operand) )
+      RETURN( BuildHighFromString (operand) )
    ELSIF IsArray(Type)
    THEN
-      RETURN( BuildHighFromArray(tokenno, dim, operand) )
-   ELSIF IsUnbounded(Type)
+      RETURN( BuildHighFromArray (tokenno, dim, operand) )
+   ELSIF IsSet (Type)
    THEN
-      RETURN( GetHighFromUnbounded(location, dim, operand) )
+      RETURN( BuildHighFromSetArray (tokenno, Type) )
+   ELSIF IsUnbounded (Type)
+   THEN
+      RETURN( GetHighFromUnbounded (location, dim, operand) )
    ELSE
       MetaErrorT1 (tokenno,
                    'base procedure HIGH expects a variable of type array or a constant string or CHAR as its parameter, rather than {%1Etad}',
                    operand) ;
-      RETURN( GetIntegerZero(location) )
+      RETURN( GetIntegerZero (location) )
    END
 END ResolveHigh ;
 
@@ -6500,11 +7137,11 @@ VAR
 BEGIN
    location := TokenToLocation (CurrentQuadToken) ;
 
-   (* firstly ensure that any constant literal is declared *)
+   (* Firstly ensure that any constant literal is declared.  *)
    DeclareConstant (CurrentQuadToken, array) ;
    IF IsConst (result)
    THEN
-      (* still have a constant which was not resolved, pass it to gcc *)
+      (* Still have a constant which was not resolved, pass it to gcc.  *)
       ConstantKnownAndUsed (result,
                             DeclareKnownConstant(location,
                                                  GetM2ZType (),
@@ -6522,7 +7159,7 @@ END CodeHigh ;
 
 (*
    CodeUnbounded - codes the creation of an unbounded parameter variable.
-                   places the address of op3 into *op1
+                   result = &array.  array can be an lvalue or rvalue.
 *)
 
 PROCEDURE CodeUnbounded (result, array: CARDINAL) ;
@@ -6535,23 +7172,31 @@ BEGIN
    DeclareConstant (CurrentQuadToken, array) ;
    IF IsConstString (array) OR (IsConst (array) AND (GetSType (array) = Char))
    THEN
-      BuildAssignmentStatement (location, Mod2Gcc (result), BuildAddr (location, PromoteToString (CurrentQuadToken, array), FALSE))
+      BuildAssignmentStatement (location, Mod2Gcc (result),
+                                BuildAddr (location, PromoteToString (CurrentQuadToken, array), FALSE))
    ELSIF IsConstructor (array)
    THEN
-      BuildAssignmentStatement (location, Mod2Gcc (result), BuildAddr (location, Mod2Gcc (array), TRUE))
+      BuildAssignmentStatement (location, Mod2Gcc (result),
+                                BuildAddr (location, Mod2Gcc (array), TRUE))
    ELSIF IsUnbounded (GetType (array))
    THEN
       IF GetMode(array) = LeftValue
       THEN
+         (* We already have the address of the array, convert it to type of result.  *)
          Addr := BuildConvert (location, Mod2Gcc (GetType (result)), Mod2Gcc (array), FALSE)
       ELSE
+         (* Access the address field from the unbounded record.  *)
          Addr := BuildComponentRef (location, Mod2Gcc (array), Mod2Gcc (GetUnboundedAddressOffset (GetType (array))))
       END ;
+      (* Store address in result.  *)
       BuildAssignmentStatement (location, Mod2Gcc (result), Addr)
-   ELSIF GetMode(array) = RightValue
+   ELSIF GetMode (array) = RightValue
    THEN
-      BuildAssignmentStatement (location, Mod2Gcc (result), BuildAddr (location, Mod2Gcc (array), FALSE))
+      (* Static array, get the address and store into result.  *)
+      BuildAssignmentStatement (location, Mod2Gcc (result),
+                                BuildAddr (location, Mod2Gcc (array), FALSE))
    ELSE
+      (* Static array which is a left value, just copy the address into result.  *)
       BuildAssignmentStatement (location, Mod2Gcc (result), Mod2Gcc (array))
    END
 END CodeUnbounded ;
@@ -6866,9 +7511,7 @@ VAR
    tl, tr  : tree ;
    location: location_t ;
 BEGIN
-   CheckStop(quad) ;
-
-   (* firstly ensure that constant literals are declared *)
+   (* Firstly ensure that constant literals are declared.  *)
    DeclareConstant(CurrentQuadToken, rhs) ;
    DeclareConstructor(CurrentQuadToken, quad, rhs) ;
    location := TokenToLocation(CurrentQuadToken) ;
@@ -6876,20 +7519,20 @@ BEGIN
    tl := LValueToGenericPtr(location, type) ;
    IF IsProcedure(rhs)
    THEN
-      tr := BuildAddr(location, Mod2Gcc(rhs), FALSE)
+      tr := BuildAddr (location, Mod2Gcc (rhs), FALSE)
    ELSE
       tr := LValueToGenericPtr(location, rhs) ;
       tr := ConvertRHS(tr, type, rhs)
    END ;
    IF IsConst(lhs)
    THEN
-      (* fine, we can take advantage of this and fold constant *)
+      (* Fine, we can take advantage of this and fold constant.  *)
       PutConst(lhs, type) ;
       tl := Mod2Gcc(SkipType(type)) ;
       ConstantKnownAndUsed (lhs,
                             BuildConvert (location, tl, Mod2Gcc (rhs), TRUE))
    ELSE
-      BuildAssignmentStatement (location, Mod2Gcc (lhs), BuildConvert (location, tl, tr, TRUE)) ;
+      BuildAssignmentStatement (location, Mod2Gcc (lhs), BuildConvert (location, tl, tr, TRUE))
    END
 END CodeConvert ;
 
@@ -7115,7 +7758,7 @@ END CreateLabelProcedureN ;
 
 PROCEDURE CreateLabelName (q: CARDINAL) : String ;
 BEGIN
-   (* prefixed by . to ensure that no Modula-2 identifiers clash *)
+   (* Prefixed by . to ensure that no Modula-2 identifiers clash *)
    RETURN( Sprintf1(Mark(InitString('.L%d')), q) )
 END CreateLabelName ;
 
@@ -7142,60 +7785,94 @@ VAR
    location: location_t ;
 BEGIN
    location := TokenToLocation(CurrentQuadToken) ;
-
-   (* we do not create labels for procedure entries *)
-   IF (op#ProcedureScopeOp) AND (op#NewLocalVarOp) AND IsReferenced(quad)
+   (* We do not create labels for procedure entries.  *)
+   IF (op # ProcedureScopeOp) AND (op # NewLocalVarOp) AND IsReferenced (quad)
    THEN
-      DeclareLabel(location, string(CreateLabelName(quad)))
+      DeclareLabel (location, string (CreateLabelName (quad)))
    END
 END CheckReferenced ;
 
 
 (*
-   CodeIfSetLess -
+   CodeIfSetCondition - code IF left cond right then destquad for set types.
 *)
 
-PROCEDURE CodeIfSetLess (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeIfSetCondition (tokenno: CARDINAL;
+                              left, right, destquad: CARDINAL;
+                              cond: BinaryFunction; procedurename: Name) ;
 VAR
-   settype   : CARDINAL ;
-   falselabel: ADDRESS ;
-   location  : location_t ;
+   settype : CARDINAL ;
+   location: location_t ;
+   expr    : tree ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsConst(op1) AND IsConst(op2)
+   location := TokenToLocation (tokenno) ;
+   IF IsConst (left) AND IsConst (right)
    THEN
       InternalError ('this should have been folded in the calling procedure')
-   ELSIF IsConst(op1)
+   ELSIF IsConst(left)
    THEN
-      settype := SkipType(GetType(op2))
+      settype := SkipType (GetType (right))
    ELSE
-      settype := SkipType(GetType(op1))
+      settype := SkipType (GetType (left))
    END ;
-   IF CompareTrees(FindSize(CurrentQuadToken, settype), FindSize(CurrentQuadToken, Word)) <= 0
+   IF GetSetInWord (settype)
    THEN
-      (* word size sets *)
-      DoJump(location,
-             BuildIsNotSuperset(location,
-                                BuildConvert(location, GetWordType(), Mod2Gcc(op1), FALSE),
-                                BuildConvert(location, GetWordType(), Mod2Gcc(op2), FALSE)),
-             NIL, string(CreateLabelName(op3)))
+      (* WORD size sets.  *)
+      expr := cond (location,
+                    BuildConvert (location, GetWordType (),
+                                  Mod2Gcc (left), FALSE),
+                    BuildConvert (location, GetWordType (),
+                                  Mod2Gcc (right), FALSE))
    ELSE
-      falselabel := string(Sprintf1(Mark(InitString('.Lset%dcomp')), quad)) ;
+      expr := CallSetWideBoolFunction (location, tokenno,
+                                       procedurename, settype, left, right)
+   END ;
+   IfExprJump (location, expr, string (CreateLabelName (destquad)))
+END CodeIfSetCondition ;
 
-      BuildForeachWordInSetDoIfExpr(location,
-                                    Mod2Gcc(settype),
-                                    Mod2Gcc(op1), Mod2Gcc(op2),
-                                    GetMode(op1)=LeftValue,
-                                    GetMode(op2)=LeftValue,
-                                    IsConst(op1), IsConst(op2),
-                                    BuildIsSuperset,
-                                    falselabel) ;
 
-      BuildGoto(location, string(CreateLabelName(op3))) ;
-      DeclareLabel(location, falselabel)
-   END
+(*
+   CodeIfSetLess - code IF left < right then destquad for set types.
+*)
+
+PROCEDURE CodeIfSetLess (tokenno: CARDINAL; left, right, destquad: CARDINAL) ;
+BEGIN
+   CodeIfSetCondition (tokenno, left, right, destquad,
+                       BuildIsSubset, MakeKey ("Less"))
 END CodeIfSetLess ;
+
+
+(*
+   CodeIfSetLessEqu - code IF left <= right then destquad for set types.
+*)
+
+PROCEDURE CodeIfSetLessEqu (tokenno: CARDINAL; left, right, destquad: CARDINAL) ;
+BEGIN
+   CodeIfSetCondition (tokenno, left, right, destquad,
+                       BuildIsSubset, MakeKey ("LessEqu"))
+END CodeIfSetLessEqu ;
+
+
+(*
+   CodeIfSetGre - code IF left > right then destquad for set types.
+*)
+
+PROCEDURE CodeIfSetGre (tokenno: CARDINAL; left, right, destquad: CARDINAL) ;
+BEGIN
+   CodeIfSetCondition (tokenno, left, right, destquad,
+                       BuildIsNotSubset, MakeKey ("Gre"))
+END CodeIfSetGre ;
+
+
+(*
+   CodeIfSetGreEqu - code IF left >= right then destquad for set types.
+*)
+
+PROCEDURE CodeIfSetGreEqu (tokenno: CARDINAL; left, right, destquad: CARDINAL) ;
+BEGIN
+   CodeIfSetCondition (tokenno, left, right, destquad,
+                       BuildIsNotSubset, MakeKey ("GreEqu"))
+END CodeIfSetGreEqu ;
 
 
 (*
@@ -7230,7 +7907,7 @@ BEGIN
    ELSIF IsConstSet(left) OR (IsVar(left) AND IsSet(SkipType(GetType(left)))) OR
          IsConstSet(right) OR (IsVar(right) AND IsSet(SkipType(GetType(right))))
    THEN
-      CodeIfSetLess(quad, left, right, dest)
+      CodeIfSetLess (combined, left, right, dest)
    ELSE
       IF IsComposite(GetType(left)) OR IsComposite(GetType(right))
       THEN
@@ -7245,8 +7922,8 @@ BEGIN
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
-         DoJump (location,
-                 BuildLessThan (location, tl, tr), NIL, string (CreateLabelName (dest)))
+         IfExprJump (location,
+                     BuildLessThan(location, tl, tr), string(CreateLabelName (dest)))
       END
    END
 END PerformCodeIfLess ;
@@ -7266,50 +7943,151 @@ END CodeIfLess ;
 
 
 (*
-   CodeIfSetGre -
+   CodeIfSetEquNarrow -
 *)
 
-PROCEDURE CodeIfSetGre (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
+PROCEDURE CodeIfSetEquNarrow (location: location_t; invertCondition: BOOLEAN;
+                              settype: CARDINAL; left, right: tree;
+                              destQuad: CARDINAL) ;
 VAR
-   settype   : CARDINAL ;
-   falselabel: ADDRESS ;
-   location  : location_t ;
+   condition,
+   mask     : tree ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsConst(op1) AND IsConst(op2)
+   (* The set type fits inside a word, so mask off any unused bits.  *)
+   mask := BuildMask (location, CalcBitsInSet (location, settype), FALSE) ;
+   left := BuildLogicalAnd (location, left, mask) ;
+   right := BuildLogicalAnd (location, right, mask) ;
+   IF invertCondition
    THEN
-      InternalError ('this should have been folded in the calling procedure')
-   ELSIF IsConst(op1)
-   THEN
-      settype := SkipType(GetType(op2))
+      condition := BuildNotEqualTo (location, left, right)
    ELSE
-      settype := SkipType(GetType(op1))
+      condition := BuildEqualTo (location, left, right)
    END ;
-   IF CompareTrees(FindSize(CurrentQuadToken, settype), FindSize(CurrentQuadToken, Word)) <= 0
+   IfExprJump (location, condition,
+               string (CreateLabelName (destQuad)))
+END CodeIfSetEquNarrow ;
+
+
+(*
+   CallSetWideBoolFunction - return a tree containing a call to
+                             M2WIDESET.widefuncname (left, right, HIGHBIT (settype)).
+*)
+
+PROCEDURE CallSetWideBoolFunction (location: location_t; tokenno: CARDINAL;
+                                   widefuncname: Name;
+                                   settype, left, right: CARDINAL) : tree ;
+VAR
+   function,
+   param1,
+   param2  : CARDINAL ;
+   highbit,
+   array1,
+   array2,
+   call    : tree ;
+BEGIN
+   function := FromM2WIDESETImport (tokenno, widefuncname) ;
+   checkDeclare (function) ;
+   location := TokenToLocation (tokenno) ;
+   param1 := GetNthParamAnyClosest (function, 1, GetMainModule ()) ;
+   param2 := GetNthParamAnyClosest (function, 2, GetMainModule ()) ;
+   array1 := CreateSetArrayParam (location, tokenno, left, param1) ;
+   array2 := CreateSetArrayParam (location, tokenno, right, param2) ;
+   highbit := ToCardinal (location, CalcHighSetBit (location, settype)) ;
+   BuildParam (location, highbit) ;  (* Parameter 3.  *)
+   BuildParam (location, array2) ;   (* Parameter 2.  *)
+   BuildParam (location, array1) ;   (* Parameter 1.  *)
+   call := BuildProcedureCallTree (location, Mod2Gcc (function),
+                                   Mod2Gcc (GetType (function))) ;
+   SetLastFunction (NIL) ;
+   RETURN call
+END CallSetWideBoolFunction ;
+
+
+(*
+   CodeIfSetEquWide - creates a statement tree:
+                      if left = right then goto destQuad.  The boolean
+                      invertCondition will check left # right.
+*)
+
+PROCEDURE CodeIfSetEquWide (location: location_t; tokenno: CARDINAL;
+                            invertCondition: BOOLEAN;
+                            settype, left, right: CARDINAL; destQuad: CARDINAL) ;
+VAR
+   call, expr, label: tree ;
+BEGIN
+   call := CallSetWideBoolFunction (location, tokenno, MakeKey ("Equal"),
+                                    settype, left, right) ;
+   label := CreateLabelName (destQuad) ;
+   IF invertCondition
    THEN
-      (* word size sets *)
-      DoJump(location,
-             BuildIsNotSubset(location,
-                              BuildConvert(location, GetWordType(), Mod2Gcc(op1), FALSE),
-                              BuildConvert(location, GetWordType(), Mod2Gcc(op2), FALSE)),
-             NIL, string(CreateLabelName(op3)))
+      expr := BuildEqualTo (location, call, GetBooleanFalse ())
    ELSE
-      falselabel := string(Sprintf1(Mark(InitString('.Lset%dcomp')), quad)) ;
+      expr := BuildNotEqualTo (location, call, GetBooleanFalse ())
+   END ;
+   IfExprJump (location, expr, string (label))
+END CodeIfSetEquWide ;
 
-      BuildForeachWordInSetDoIfExpr(location,
-                                    Mod2Gcc(settype),
-                                    Mod2Gcc(op1), Mod2Gcc(op2),
-                                    GetMode(op1)=LeftValue,
-                                    GetMode(op2)=LeftValue,
-                                    IsConst(op1), IsConst(op2),
-                                    BuildIsSubset,
-                                    falselabel) ;
 
-      BuildGoto(location, string(CreateLabelName(op3))) ;
-      DeclareLabel(location, falselabel)
+(*
+   CodeIfSetEquLower code a comparison between left and right and if true
+   jump to destQuad.  The invertCondition allows for the inverse test.
+   Note that if op1 and op2 are not both constants as this will have been
+   evaluated in CodeIfNotEqu.
+*)
+
+PROCEDURE CodeIfSetEquLower (tokenno: CARDINAL; invertCondition: BOOLEAN;
+                             left, right, destQuad: CARDINAL) ;
+VAR
+   settype : CARDINAL ;
+   location: location_t ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   IF IsConst (left) AND IsConst (right)
+   THEN
+      InternalError ('this should have been folded by CodeIfEqu or CodeIfNotEqu')
+   ELSIF IsConst (left)
+   THEN
+      settype := GetLType (right)
+   ELSE
+      settype := GetLType (left)
+   END ;
+   IF GetLType (left) # GetLType (right)
+   THEN
+      (* This test used to occur after the GetSetInWord (settype) condition.  *)
+      MetaErrorT2 (tokenno,
+                   'set comparison is only allowed between the same set type, the set types used by {%1Eatd} and {%2atd} are different',
+                   left, right)
+   END ;
+   IF GetSetInWord (settype)
+   THEN
+      (* Allow sets to be compared against { } for bitset.  *)
+      CodeIfSetEquNarrow (location, invertCondition, settype,
+                          Mod2Gcc (left), Mod2Gcc (right), destQuad)
+   ELSE
+      CodeIfSetEquWide (location, tokenno, invertCondition, settype,
+                        left, right, destQuad)
    END
-END CodeIfSetGre ;
+END CodeIfSetEquLower ;
+
+
+(*
+   CodeIfSetNotEqu - codes if op1 # op2 then goto op3
+*)
+
+PROCEDURE CodeIfSetNotEqu (tokenno: CARDINAL; left, right, destQuad: CARDINAL) ;
+BEGIN
+   CodeIfSetEquLower (tokenno, TRUE, left, right, destQuad)
+END CodeIfSetNotEqu ;
+
+
+(*
+   CodeIfSetEqu - codes if op1 = op2 then goto op3
+*)
+
+PROCEDURE CodeIfSetEqu (tokenno: CARDINAL; left, right, destQuad: CARDINAL) ;
+BEGIN
+   CodeIfSetEquLower (tokenno, FALSE, left, right, destQuad)
+END CodeIfSetEqu ;
 
 
 (*
@@ -7318,7 +8096,7 @@ END CodeIfSetGre ;
 
 PROCEDURE PerformCodeIfGre (quad: CARDINAL) ;
 VAR
-   tl, tr  : tree ;
+   tl, tr, condition          : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7342,22 +8120,23 @@ BEGIN
    ELSIF IsConstSet(left) OR (IsVar(left) AND IsSet(SkipType(GetType(left)))) OR
          IsConstSet(right) OR (IsVar(right) AND IsSet(SkipType(GetType(right))))
    THEN
-      CodeIfSetGre(quad, left, right, dest)
+      CodeIfSetGre (combined, left, right, dest)
    ELSE
-      IF IsComposite(GetType(left)) OR IsComposite(GetType(right))
+      IF IsComposite (GetType (left)) OR IsComposite (GetType (right))
       THEN
          MetaErrorT2 (combined,
                       'comparison tests between composite types not allowed {%1Eatd} and {%2atd}',
                       left, right)
       ELSE
-         ConvertBinaryOperands(location,
-                               tl, tr,
-                               ComparisonMixTypes (left, right,
-                                                   SkipType (GetType (left)),
-                                                   SkipType (GetType (right)),
-                                                   combined),
-                               left, right) ;
-         DoJump(location, BuildGreaterThan(location, tl, tr), NIL, string(CreateLabelName(dest)))
+         ConvertBinaryOperands (location,
+                                tl, tr,
+                                ComparisonMixTypes (left, right,
+                                                    SkipType (GetType (left)),
+                                                    SkipType (GetType (right)),
+                                                    combined),
+                                left, right) ;
+         condition := BuildGreaterThan (location, tl, tr) ;
+         IfExprJump (location, condition, string (CreateLabelName (dest)))
       END
    END
 END PerformCodeIfGre ;
@@ -7377,59 +8156,12 @@ END CodeIfGre ;
 
 
 (*
-   CodeIfSetLessEqu -
-*)
-
-PROCEDURE CodeIfSetLessEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   settype   : CARDINAL ;
-   falselabel: ADDRESS ;
-   location  : location_t ;
-BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsConst(op1) AND IsConst(op2)
-   THEN
-      InternalError ('this should have been folded in the calling procedure')
-   ELSIF IsConst(op1)
-   THEN
-      settype := SkipType(GetType(op2))
-   ELSE
-      settype := SkipType(GetType(op1))
-   END ;
-   IF CompareTrees(FindSize(CurrentQuadToken, settype), FindSize(CurrentQuadToken, Word)) <= 0
-   THEN
-      (* word size sets *)
-      DoJump(location,
-             BuildIsSubset(location,
-                           BuildConvert(location, GetWordType(), Mod2Gcc(op1), FALSE),
-                           BuildConvert(location, GetWordType(), Mod2Gcc(op2), FALSE)),
-             NIL, string(CreateLabelName(op3)))
-   ELSE
-      falselabel := string(Sprintf1(Mark(InitString('.Lset%dcomp')), quad)) ;
-
-      BuildForeachWordInSetDoIfExpr(location,
-                                    Mod2Gcc(settype),
-                                    Mod2Gcc(op1), Mod2Gcc(op2),
-                                    GetMode(op1)=LeftValue,
-                                    GetMode(op2)=LeftValue,
-                                    IsConst(op1), IsConst(op2),
-                                    BuildIsNotSubset,
-                                    falselabel) ;
-
-      BuildGoto(location, string(CreateLabelName(op3))) ;
-      DeclareLabel(location, falselabel)
-   END
-END CodeIfSetLessEqu ;
-
-
-(*
    PerformCodeIfLessEqu - codes the quadruple if op1 <= op2 then goto op3
 *)
 
 PROCEDURE PerformCodeIfLessEqu (quad: CARDINAL) ;
 VAR
-   tl, tr  : tree ;
+   tl, tr, condition          : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7454,7 +8186,7 @@ BEGIN
    ELSIF IsConstSet (left) OR (IsVar (left) AND IsSet (SkipType (GetType (left)))) OR
          IsConstSet (right) OR (IsVar (right) AND IsSet (SkipType (GetType (right))))
    THEN
-      CodeIfSetLessEqu (quad, left, right, dest)
+      CodeIfSetLessEqu (combined, left, right, dest)
    ELSE
       IF IsComposite (GetType (left)) OR IsComposite (GetType (right))
       THEN
@@ -7469,8 +8201,8 @@ BEGIN
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
-         DoJump (location, BuildLessThanOrEqual (location, tl, tr),
-                 NIL, string (CreateLabelName (dest)))
+         condition := BuildLessThanOrEqual (location, tl, tr) ;
+         IfExprJump (location, condition, string (CreateLabelName (dest)))
       END
    END
 END PerformCodeIfLessEqu ;
@@ -7490,59 +8222,12 @@ END CodeIfLessEqu ;
 
 
 (*
-   CodeIfSetGreEqu -
-*)
-
-PROCEDURE CodeIfSetGreEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   settype   : CARDINAL ;
-   falselabel: ADDRESS ;
-   location: location_t ;
-BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsConst(op1) AND IsConst(op2)
-   THEN
-      InternalError ('this should have been folded in the calling procedure')
-   ELSIF IsConst(op1)
-   THEN
-      settype := SkipType(GetType(op2))
-   ELSE
-      settype := SkipType(GetType(op1))
-   END ;
-   IF CompareTrees(FindSize(CurrentQuadToken, settype), FindSize(CurrentQuadToken, Word)) <= 0
-   THEN
-      (* word size sets *)
-      DoJump(location,
-             BuildIsSuperset(location,
-                             BuildConvert(location, GetWordType(), Mod2Gcc(op1), FALSE),
-                             BuildConvert(location, GetWordType(), Mod2Gcc(op2), FALSE)),
-             NIL, string(CreateLabelName(op3)))
-   ELSE
-      falselabel := string(Sprintf1(Mark(InitString('.Lset%dcomp')), quad)) ;
-
-      BuildForeachWordInSetDoIfExpr(location,
-                                    Mod2Gcc(settype),
-                                    Mod2Gcc(op1), Mod2Gcc(op2),
-                                    GetMode(op1)=LeftValue,
-                                    GetMode(op2)=LeftValue,
-                                    IsConst(op1), IsConst(op2),
-                                    BuildIsNotSuperset,
-                                    falselabel) ;
-
-      BuildGoto(location, string(CreateLabelName(op3))) ;
-      DeclareLabel(location, falselabel)
-   END
-END CodeIfSetGreEqu ;
-
-
-(*
    PerformCodeIfGreEqu - codes the quadruple if op1 >= op2 then goto op3
 *)
 
 PROCEDURE PerformCodeIfGreEqu (quad: CARDINAL) ;
 VAR
-   tl, tr: tree ;
+   tl, tr, condition          : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7567,7 +8252,7 @@ BEGIN
    ELSIF IsConstSet(left) OR (IsVar(left) AND IsSet(SkipType(GetType(left)))) OR
          IsConstSet(right) OR (IsVar(right) AND IsSet(SkipType(GetType(right))))
    THEN
-      CodeIfSetGreEqu(quad, left, right, dest)
+      CodeIfSetGreEqu (combined, left, right, dest)
    ELSE
       IF IsComposite(GetType(left)) OR IsComposite(GetType(right))
       THEN
@@ -7582,7 +8267,8 @@ BEGIN
                                                    SkipType (GetType (right)),
                                                    combined),
                                left, right) ;
-         DoJump(location, BuildGreaterThanOrEqual(location, tl, tr), NIL, string(CreateLabelName(dest)))
+         condition := BuildGreaterThanOrEqual(location, tl, tr) ;
+         IfExprJump (location, condition, string (CreateLabelName (dest)))
       END
    END
 END PerformCodeIfGreEqu ;
@@ -7599,111 +8285,6 @@ BEGIN
       PerformCodeIfGreEqu (quad)
    END
 END CodeIfGreEqu ;
-
-
-(*
-   CodeIfSetEqu - codes if op1 = op2 then goto op3
-                  Note that if op1 and op2 are not both constants
-                  since this will have been evaluated in CodeIfEqu.
-*)
-
-PROCEDURE CodeIfSetEqu (quad: CARDINAL; op1, op2, op3: CARDINAL) ;
-VAR
-   settype   : CARDINAL ;
-   falselabel: ADDRESS ;
-   location  : location_t ;
-BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsConst(op1) AND IsConst(op2)
-   THEN
-      InternalError ('this should have been folded in the calling procedure')
-   ELSIF IsConst(op1)
-   THEN
-      settype := SkipType(GetType(op2))
-   ELSE
-      settype := SkipType(GetType(op1))
-   END ;
-   IF CompareTrees(FindSize(CurrentQuadToken, settype), FindSize(CurrentQuadToken, Word)) <= 0
-   THEN
-      (* word size sets *)
-      DoJump(location,
-             BuildEqualTo(location,
-                          BuildConvert(location, GetWordType(), Mod2Gcc(op1), FALSE),
-                          BuildConvert(location, GetWordType(), Mod2Gcc(op2), FALSE)),
-             NIL, string(CreateLabelName(op3)))
-   ELSIF GetSType(op1)=GetSType(op2)
-   THEN
-      falselabel := string(Sprintf1(Mark(InitString('.Lset%dcomp')), quad)) ;
-
-      BuildForeachWordInSetDoIfExpr(location,
-                                    Mod2Gcc(settype),
-                                    Mod2Gcc(op1), Mod2Gcc(op2),
-                                    GetMode(op1)=LeftValue,
-                                    GetMode(op2)=LeftValue,
-                                    IsConst(op1), IsConst(op2),
-                                    BuildNotEqualTo,
-                                    falselabel) ;
-
-      BuildGoto(location, string(CreateLabelName(op3))) ;
-      DeclareLabel(location, falselabel)
-   ELSE
-      MetaErrorT2 (CurrentQuadToken,
-                   'set comparison is only allowed between the same set type, the set types used by {%1Eatd} and {%2atd} are different',
-                   op1, op2)
-   END
-END CodeIfSetEqu ;
-
-
-(*
-   CodeIfSetNotEqu - codes if op1 # op2 then goto op3
-                     Note that if op1 and op2 are not both constants
-                     since this will have been evaluated in CodeIfNotEqu.
-*)
-
-PROCEDURE CodeIfSetNotEqu (left, right, destQuad: CARDINAL) ;
-VAR
-   settype  : CARDINAL ;
-   truelabel: ADDRESS ;
-   location  : location_t ;
-BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   IF IsConst (left) AND IsConst (right)
-   THEN
-      InternalError ('this should have been folded in the calling procedure')
-   ELSIF IsConst (left)
-   THEN
-      settype := SkipType (GetType (right))
-   ELSE
-      settype := SkipType (GetType (left))
-   END ;
-   IF CompareTrees (FindSize (CurrentQuadToken, settype), FindSize (CurrentQuadToken, Word)) <= 0
-   THEN
-      (* word size sets *)
-      DoJump (location,
-              BuildNotEqualTo(location,
-                              BuildConvert (location, GetWordType (), Mod2Gcc (left), FALSE),
-                              BuildConvert (location, GetWordType (), Mod2Gcc (right), FALSE)),
-              NIL, string (CreateLabelName (destQuad)))
-   ELSIF GetSType (left) = GetSType (right)
-   THEN
-      truelabel := string (CreateLabelName (destQuad)) ;
-
-      BuildForeachWordInSetDoIfExpr (location,
-                                     Mod2Gcc (settype),
-                                     Mod2Gcc (left), Mod2Gcc (right),
-                                     GetMode (left) = LeftValue,
-                                     GetMode (right) = LeftValue,
-                                     IsConst (left), IsConst (right),
-                                     BuildNotEqualTo,
-                                     truelabel)
-   ELSE
-      MetaErrorT2 (CurrentQuadToken,
-                   'set comparison is only allowed between the same set type, the set types used by {%1Eatd} and {%2atd} are different',
-                   left, right)
-   END
-END CodeIfSetNotEqu ;
 
 
 (*
@@ -7730,7 +8311,7 @@ END ComparisonMixTypes ;
 
 PROCEDURE PerformCodeIfEqu (quad: CARDINAL) ;
 VAR
-   tl, tr                     : tree ;
+   tl, tr, condition          : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7770,8 +8351,8 @@ BEGIN
                                                     SkipType (GetType (right)),
                                                     combined),
                                left, right) ;
-         DoJump (location, BuildEqualTo (location, tl, tr), NIL,
-                 string (CreateLabelName (dest)))
+         condition := BuildEqualTo (location, tl, tr) ;
+         IfExprJump (location, condition, string (CreateLabelName (dest)))
       END
    END
 END PerformCodeIfEqu ;
@@ -7783,7 +8364,7 @@ END PerformCodeIfEqu ;
 
 PROCEDURE PerformCodeIfNotEqu (quad: CARDINAL) ;
 VAR
-   tl, tr                     : tree ;
+   tl, tr, condition          : tree ;
    location                   : location_t ;
    left, right, dest, combined,
    leftpos, rightpos, destpos : CARDINAL ;
@@ -7809,7 +8390,7 @@ BEGIN
    ELSIF IsConstSet (left) OR (IsVar (left) AND IsSet (SkipType (GetType (left)))) OR
          IsConstSet (right) OR (IsVar (right) AND IsSet (SkipType (GetType (right))))
    THEN
-      CodeIfSetNotEqu (left, right, dest)
+      CodeIfSetNotEqu (combined, left, right, dest)
    ELSE
       IF IsComposite (GetType (left)) OR IsComposite (GetType (right))
       THEN
@@ -7824,8 +8405,8 @@ BEGIN
                                                     SkipType (GetType (right)),
                                                     combined),
                                 left, right) ;
-         DoJump (location, BuildNotEqualTo (location, tl, tr), NIL,
-                 string (CreateLabelName (dest)))
+         condition := BuildNotEqualTo (location, tl, tr) ;
+         IfExprJump (location, condition, string (CreateLabelName (dest)))
       END
    END
 END PerformCodeIfNotEqu ;
@@ -7938,207 +8519,205 @@ END BuildIfVarInConstValue ;
    BuildIfNotVarInConstValue - if not (var in constsetvalue) then goto trueexit
 *)
 
-PROCEDURE BuildIfNotVarInConstValue (quad: CARDINAL; constsetvalue: PtrToValue; var, trueexit: CARDINAL) ;
+PROCEDURE BuildIfNotVarInConstValue (location: location_t; tokenno: CARDINAL;
+                                     quad: CARDINAL;
+                                     constsetvalue: PtrToValue;
+                                     var, trueexit: CARDINAL) ;
 VAR
-   vt, lt, ht  : tree ;
+   vt, lt, ht   : tree ;
    type,
-   low, high, n: CARDINAL ;
+   low, high, n : CARDINAL ;
    falselabel,
-   truelabel   : String ;
-   location    : location_t ;
+   truelabel    : String ;
 BEGIN
-   location := TokenToLocation(CurrentQuadToken) ;
-
-   truelabel := string(CreateLabelName(trueexit)) ;
+   truelabel := string (CreateLabelName (trueexit)) ;
    n := 1 ;
-   WHILE GetRange(constsetvalue, n, low, high) DO
-      INC(n)
+   WHILE GetRange (constsetvalue, n, low, high) DO
+      INC (n)
    END ;
    IF n=2
    THEN
-      (* actually only one set range, so we invert it *)
-      type := MixTypes3(low, high, var, CurrentQuadToken) ;
-      ConvertBinaryOperands(location, vt, lt, type, var, low) ;
-      ConvertBinaryOperands(location, ht, lt, type, high, low) ;
-      BuildIfNotInRangeGoto(location, vt, lt, ht, truelabel)
+      (* Only one set range, so we invert it *)
+      type := MixTypes3 (low, high, var, tokenno) ;
+      ConvertBinaryOperands (location, vt, lt, type, var, low) ;
+      ConvertBinaryOperands (location, ht, lt, type, high, low) ;
+      BuildIfNotInRangeGoto (location, vt, lt, ht, truelabel)
    ELSE
       n := 1 ;
-      falselabel := string(Sprintf1(Mark(InitString('.Lset%d')), quad)) ;
-      WHILE GetRange(constsetvalue, n, low, high) DO
-         type := MixTypes3(low, high, var, CurrentQuadToken) ;
-         ConvertBinaryOperands(location, vt, lt, type, var, low) ;
-         ConvertBinaryOperands(location, ht, lt, type, high, low) ;
-         BuildIfInRangeGoto(location, vt, lt, ht, falselabel) ;
-         INC(n)
+      falselabel := string (Sprintf1 (Mark (InitString ('.Lset%d')), quad)) ;
+      WHILE GetRange (constsetvalue, n, low, high) DO
+         type := MixTypes3 (low, high, var, tokenno) ;
+         ConvertBinaryOperands (location, vt, lt, type, var, low) ;
+         ConvertBinaryOperands (location, ht, lt, type, high, low) ;
+         BuildIfInRangeGoto (location, vt, lt, ht, falselabel) ;
+         INC (n)
       END ;
-      BuildGoto(location, truelabel) ;
-      DeclareLabel(location, falselabel)
+      BuildGoto (location, truelabel) ;
+      DeclareLabel (location, falselabel)
    END
 END BuildIfNotVarInConstValue ;
 
 
 (*
-   PerformCodeIfIn - code the quadruple: if op1 in op2 then goto op3
+    SetWideIfIn - if M2WIDESET.In (set, element) then goto branch end.
 *)
 
-PROCEDURE PerformCodeIfIn (quad: CARDINAL) ;
+PROCEDURE SetWideIfIn (location: location_t; tokenno: CARDINAL;
+                       invertCondition: BOOLEAN;
+                       settype, element, set: CARDINAL; branch: CARDINAL) ;
 VAR
-   low,
-   high    : CARDINAL ;
-   lowtree,
-   hightree,
-   offset  : tree ;
-   fieldno : INTEGER ;
-   location                   : location_t ;
-   left, right, dest, combined,
-   leftpos, rightpos, destpos : CARDINAL ;
-   constExpr, overflow        : BOOLEAN ;
-   op                         : QuadOperator ;
+   label    : String ;
+   bit, call,
+   expr,
+   setarray : tree ;
+   setparam,
+   procedure: CARDINAL ;
 BEGIN
-   (* Ensure that any remaining undeclared constant literal is declared.  *)
-   GetQuadOtok (quad, combined, op,
-                left, right, dest,
-                constExpr, overflow,
-                leftpos, rightpos, destpos) ;
-   location := TokenToLocation (combined) ;
-   IF IsConst(left) AND IsConst(right)
+   procedure := FromM2WIDESETImport (tokenno, MakeKey ("In")) ;
+   setparam := GetNthParamAnyClosest (procedure, 1, GetMainModule ()) ;
+   setarray := CreateSetArrayParam (location, tokenno, set, setparam) ;
+   bit := SetElementToBit (location, settype, element) ;
+   BuildParam (location, ToCardinal (location, bit)) ;
+   BuildParam (location, setarray) ;
+   call := BuildProcedureCallTree (location,
+                                   Mod2Gcc (procedure),
+                                   Mod2Gcc (GetType (procedure))) ;
+   SetLastFunction (NIL) ;
+   label := CreateLabelName (branch) ;
+   IF invertCondition
+   THEN
+      expr := BuildEqualTo (location, call, GetBooleanFalse ())
+   ELSE
+      expr := BuildNotEqualTo (location, call, GetBooleanFalse ())
+   END ;
+   IfExprJump (location, expr, string (label))
+END SetWideIfIn ;
+
+
+(*
+   CodeNarrowIfIn -
+*)
+
+PROCEDURE CodeNarrowIfIn (location: location_t;
+                          settype: CARDINAL; invertCondition: BOOLEAN;
+                          element, set: CARDINAL; branch: CARDINAL) ;
+VAR
+   label, cond,
+   bit, mask, bitset: tree ;
+BEGIN
+   bit := ToBitset (location, SetElementToBit (location, settype, element)) ;
+   mask := BuildMask (location, CalcBitsInSet (location, settype), FALSE) ;
+   (* Mask off only the bits we need.  *)
+   bitset := ToBitset (location, BuildLogicalAnd (location, Mod2Gcc (set), mask)) ;
+   IF invertCondition
+   THEN
+      cond := BuildIfNotInSet (location, bitset, bit)
+   ELSE
+      cond := BuildIfInSet (location, bitset, bit)
+   END ;
+   label := CreateLabelName (branch) ;
+   IfExprJump (location, cond, string (label))
+END CodeNarrowIfIn ;
+
+
+(*
+   CodeIfInLower - code the quadruple: if element in set then goto branch.
+                   The invertCondition can be set to TRUE to handle CodeIfNotIn.
+*)
+
+PROCEDURE CodeIfInLower (tokenno: CARDINAL; quad: CARDINAL;
+                         invertCondition: BOOLEAN;
+                         element, set, branch: CARDINAL) ;
+VAR
+   settype      : CARDINAL ;
+   location     : location_t ;
+   constsetvalue: PtrToValue ;
+BEGIN
+   location := TokenToLocation (tokenno) ;
+   (* Firstly ensure that any constant literal is declared.  *)
+   DeclareConstant (tokenno, set) ;
+   DeclareConstant (tokenno, element) ;
+   DeclareConstructor (tokenno, quad, set) ;
+   DeclareConstructor (tokenno, quad, element) ;
+   checkDeclare (set) ;
+   checkDeclare (element) ;
+   settype := GetLType (set) ;
+
+   IF IsConst (element) AND IsConst (set)
    THEN
       InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
    ELSIF CheckElementSetTypes (quad)
    THEN
-      IF IsConst(left)
+      IF IsConst (set)
       THEN
-         fieldno := GetFieldNo(combined, left, GetType(right), offset) ;
-         IF fieldno>=0
+         PushValue (set) ;
+         constsetvalue := GetValue (tokenno) ;
+         IF invertCondition
          THEN
-            PushValue(left) ;
-            PushIntegerTree(offset) ;
-            ConvertToType(GetType(left)) ;
-            Sub ;
-            BuildIfConstInVar(location,
-                              Mod2Gcc(SkipType(GetType(right))),
-                              Mod2Gcc(right), PopIntegerTree(),
-                              GetMode(right)=LeftValue, fieldno,
-                              string(CreateLabelName(dest)))
+            (* Builds a cascaded list of if statements.  *)
+            BuildIfNotVarInConstValue (location, tokenno, quad, constsetvalue, element, branch)
          ELSE
-            MetaErrorT1 (combined, 'bit exceeded the range of set {%1Eatd}', left)
+            (* Builds a very different cascaded list of if statements.  *)
+            BuildIfVarInConstValue (location, tokenno, constsetvalue, element, branch)
          END
-      ELSIF IsConst(right)
-      THEN
-         (* builds a cascaded list of if statements *)
-         PushValue(right) ;
-         BuildIfVarInConstValue(location, combined, GetValue(combined), left, dest)
       ELSE
-         GetSetLimits(SkipType(GetType(right)), low, high) ;
-
-         PushValue(low) ;
-         lowtree := PopIntegerTree() ;
-         PushValue(high) ;
-         hightree := PopIntegerTree() ;
-
-         BuildIfVarInVar(location,
-                         Mod2Gcc(SkipType(GetType(right))),
-                         Mod2Gcc(right), Mod2Gcc(left),
-                         GetMode(right)=LeftValue,
-                         lowtree, hightree,
-                         string(CreateLabelName(dest)))
+         Assert (IsVar (set)) ;
+         IF IsElementInRange (tokenno, settype, set, element)
+         THEN
+            (* Check for narrow and wide sets and call M2WIDESET if appropriate.  *)
+            IF GetSetInWord (settype)
+            THEN
+               CodeNarrowIfIn (location, settype, invertCondition, element, set, branch)
+            ELSE
+               SetWideIfIn (location, tokenno, invertCondition, settype, element, set, branch)
+            END
+         END
       END
    END
+END CodeIfInLower ;
+
+
+(*
+   PerformCodeIfIn -
+*)
+
+PROCEDURE PerformCodeIfIn (quad: CARDINAL; invert: BOOLEAN) ;
+VAR
+   op                            : QuadOperator ;
+   element, set, branch, combined,
+   elementpos, setpos, destpos   : CARDINAL ;
+   constExpr, overflow           : BOOLEAN ;
+BEGIN
+   GetQuadOtok (quad, combined, op,
+                element, set, branch,
+                overflow, constExpr,
+                elementpos, setpos, destpos) ;
+   CodeIfInLower (combined, quad, invert, element, set, branch)
 END PerformCodeIfIn ;
 
 
 (*
-   PerformCodeIfNotIn - code the quadruple: if not (op1 in op2) then goto op3
-*)
-
-PROCEDURE PerformCodeIfNotIn (quad: CARDINAL) ;
-VAR
-   low,
-   high    : CARDINAL ;
-   lowtree,
-   hightree,
-   offset  : tree ;
-   fieldno : INTEGER ;
-   location                   : location_t ;
-   left, right, dest, combined,
-   leftpos, rightpos, destpos : CARDINAL ;
-   constExpr, overflow        : BOOLEAN ;
-   op                         : QuadOperator ;
-BEGIN
-   (* Ensure that any remaining undeclared constant literal is declared.  *)
-   GetQuadOtok (quad, combined, op,
-                left, right, dest,
-                overflow, constExpr,
-                leftpos, rightpos, destpos) ;
-   location := TokenToLocation (combined) ;
-   IF IsConst(left) AND IsConst(right)
-   THEN
-      InternalError ('should not get to here (if we do we should consider calling FoldIfIn)')
-   ELSIF CheckElementSetTypes (quad)
-   THEN
-      IF IsConst(left)
-      THEN
-         fieldno := GetFieldNo(combined, left, SkipType(GetType(right)), offset) ;
-         IF fieldno>=0
-         THEN
-            PushValue(left) ;
-            PushIntegerTree(offset) ;
-            ConvertToType(GetType(left)) ;
-            Sub ;
-            BuildIfNotConstInVar(location,
-                                 Mod2Gcc(SkipType(GetType(right))),
-                                 Mod2Gcc(right), PopIntegerTree(),
-                                 GetMode(right)=LeftValue, fieldno,
-                                 string(CreateLabelName(dest)))
-         ELSE
-            MetaErrorT1 (combined, 'bit exceeded the range of set {%1Eatd}', right)
-         END
-      ELSIF IsConst(right)
-      THEN
-         (* builds a cascaded list of if statements *)
-         PushValue(right) ;
-         BuildIfNotVarInConstValue(quad, GetValue(combined), left, dest)
-      ELSE
-         GetSetLimits(SkipType(GetType(right)), low, high) ;
-
-         PushValue(low) ;
-         lowtree := PopIntegerTree() ;
-         PushValue(high) ;
-         hightree := PopIntegerTree() ;
-
-         BuildIfNotVarInVar(location,
-                            Mod2Gcc(SkipType(GetType(right))),
-                            Mod2Gcc(right), Mod2Gcc(left),
-                            GetMode(right)=LeftValue,
-                            lowtree, hightree,
-                            string(CreateLabelName(dest)))
-      END
-   END
-END PerformCodeIfNotIn ;
-
-
-(*
-   CodeIfIn - code the quadruple: if op1 in op2 then goto op3
+   CodeIfIn - code the quadruple: if element in set then goto branch.
 *)
 
 PROCEDURE CodeIfIn (quad: CARDINAL) ;
 BEGIN
    IF IsValidExpressionRelOp (quad, TRUE)
    THEN
-      PerformCodeIfIn (quad)
+      PerformCodeIfIn (quad, FALSE)
    END
 END CodeIfIn ;
 
 
 (*
-   CodeIfNotIn - code the quadruple: if not (op1 in op2) then goto op3
+   CodeIfNotIn - code the quadruple: if not (element in set) then goto branch.
 *)
 
 PROCEDURE CodeIfNotIn (quad: CARDINAL) ;
 BEGIN
    IF IsValidExpressionRelOp (quad, TRUE)
    THEN
-      PerformCodeIfNotIn (quad)
+      PerformCodeIfIn (quad, TRUE)
    END
 END CodeIfNotIn ;
 
@@ -8293,10 +8872,66 @@ BEGIN
 END InitBuiltinSyms ;
 
 
+(*
+   gdbhook - a debugger convenience hook.
+*)
+
+PROCEDURE gdbhook ;
+END gdbhook ;
+
+
+(*
+   BreakWhenQuadTranslated - to be called interactively by gdb.
+*)
+
+PROCEDURE BreakWhenQuadTranslated (quad: CARDINAL) ;
 BEGIN
+   BreakQuad := quad
+END BreakWhenQuadTranslated ;
+
+
+(*
+   CheckBreak - if quad = BreakQuad then call gdbhook.
+*)
+
+PROCEDURE CheckBreak (quad: CARDINAL) ;
+BEGIN
+   IF quad = BreakQuad
+   THEN
+      gdbhook
+   END
+END CheckBreak ;
+
+
+(*
+   Init -
+*)
+
+PROCEDURE Init ;
+BEGIN
+   (* You might want to add the option -fm2-debug-trace=quad to cc1gm2 if
+      contenplating interactively debugging cc1gm2 using the scheme below.  *)
+   BreakWhenQuadTranslated (0) ;  (* Disable the interactive quad watch.  *)
+   (* To examine when a quad is about to be converted into a gimple tree
+      run cc1gm2 from gdb and set a break point on gdbhook.
+      (gdb) break gdbhook
+      (gdb) run
+      Now below interactively call BreakWhenQuadTranslated with the quad
+      under investigation.  *)
+   gdbhook ;
+   (* Now is the time to interactively call gdb, for example:
+      (gdb) print BreakWhenQuadTranslated (1234)
+      (gdb) cont
+      and you will arrive at gdbhook when this quad is about to be translated.  *)
    Memset := NulSym ;
    Memcpy := NulSym ;
    UnboundedLabelNo := 0 ;
    CurrentQuadToken := 0 ;
+   SetTemporaryNo := 0 ;
    ScopeStack := InitStackWord ()
+END Init ;
+
+
+BEGIN
+   Init
 END M2GenGCC.

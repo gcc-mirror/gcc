@@ -9,7 +9,7 @@
 real_t s2244(struct args_t * func_args)
 {
 //    node splitting
-//    cycle with ture and anti dependency
+//    cycle with true and anti dependency
 
     initialise_arrays(__func__);
 

@@ -1,3 +1,366 @@
+2025-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122009
+	* pge-boot/Gldtoa.cc (ldtoa_ldtoa): Change int to bool for
+	parameter sign.
+
+2025-09-21  Mark Wielaard  <mark@klomp.org>
+
+	* lang.opt.urls: Regenerate.
+
+2025-09-20  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122009
+	* gm2-compiler/M2GenGCC.mod (FromM2WIDESETImport): Assign
+	sym to NulSym.
+	(CodeMakeAdr): Remove fourth parameter to BuildLogicalOrAddress.
+	(FoldMakeAdr): Ditto.
+	* gm2-compiler/M2Quads.mod (BuildAssignmentBoolean): Remove
+	unused parameter checkTypes.
+	(doBuildAssignment): Remove checkTypes parameter when calling
+	BuildAssignmentBoolean.
+	* gm2-gcc/m2expr.def (BuildLogicalOrAddress): Remove
+	needconvert parameter.
+	* gm2-gcc/m2statement.def (IfExprJump): Change label type
+	to CharStar.
+	* gm2-gcc/m2type.cc (m2type_BuildEnumerator): Remove const.
+	* gm2-gcc/m2type.h (m2type_BuildEnumerator): Ditto.
+
+2025-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121856
+	* Make-lang.in (GM2-LIBS-BOOT-DEFS): Add M2Diagnostic.def.
+	Add Selective.def.
+	(GM2-LIBS-BOOT-MODS): Add M2Diagnostic.mod.
+	(GM2-LIBS-BOOT-C): Add Selective.c.
+	(GM2-LIBS-DEFS): Add Selective.def.
+	(GM2-LIBS-MODS): Add M2Diagnostic.mod.
+	(MC-LIB-MODS): Add M2Diagnostic.mod.
+	(m2/gm2-libs-boot/Selective.o): New rule.
+	(BUILD-PGE-O): Add m2/pge-boot/GM2Diagnostic.o.
+	Add m2/pge-boot/GM2Diagnostic.o.
+	Add m2/pge-boot/GStringConvert.o.
+	Add m2/pge-boot/Gdtoa.o.
+	Add m2/pge-boot/Gldtoa.o.
+	* Make-maintainer.in (PPG-LIB-DEFS): Add M2Diagnostic.def.
+	Add StringConvert.def.
+	(PPG-LIB-MODS): Add M2Diagnostic.mod.
+	Add StringConvert.mod.
+	(PGE-DEF): Add M2Diagnostic.def.
+	(PGE-DEPS): Add GM2Diagnostic.cc.
+	Add GM2Diagnostic.h.
+	* gm2-compiler/FifoQueue.def (PutSetIntoFifoQueue): New
+	procedure.
+	(GetSetFromFifoQueue): New procedure function.
+	* gm2-compiler/FifoQueue.mod (PutSetIntoFifoQueue): New
+	procedure.
+	(GetSetFromFifoQueue): New procedure function.
+	* gm2-compiler/M2ALU.def (KillValue): New procedure.
+	(PushSetTree): Rename parameter t to value.
+	(ConstructSetConstant): Rewrite comment.
+	* gm2-compiler/M2ALU.mod: Rewrite to use the new set type
+	and introduce memory diagnostics.
+	* gm2-compiler/M2Base.mod (InitBaseProcedures): Lookup M2WIDESET.
+	* gm2-compiler/M2CaseList.mod (CheckCaseBoundsResolved): Change
+	format specifier to allow the preceeding indefinite article to
+	have a n concatenated providing the following string substitute
+	begins with a vowel.
+	(checkTypes): Ditto.
+	* gm2-compiler/M2Check.mod (checkGenericUnboundedTyped): New
+	procedure function.
+	* gm2-compiler/M2Code.mod (OptimizationAnalysis): Replace with ...
+	(ResourceAnalysis): ... this.
+	* gm2-compiler/M2Comp.mod (PopulateResource): New procedure.
+	(compile): Call PopulateResource.
+	Call M2Diagnostic.Generate.
+	* gm2-compiler/M2GCCDeclare.mod: Rewrite for new set type.
+	* gm2-compiler/M2GenGCC.mod: Rewrite implementation for
+	becomes, incl, excl, and, or, not, xor for the new set type.
+	* gm2-compiler/M2MetaError.def: Extend comment documenting
+	the v format specifier.
+	* gm2-compiler/M2MetaError.mod (errorBlock): New field vowel.
+	(initErrorBlock): Initialize field vowel.
+	Reformat comments.
+	(pop): Call checkVowel.
+	(checkVowel): New procedure.
+	(isVowel): New procedure function.
+	(symDesc): Remove indefinite article.
+	(op): Set vowel field in case clause.
+	* gm2-compiler/M2Options.def (OptimizeSets): New global.
+	(TimeReport): Ditto.
+	(MemReport): Ditto.
+	(SetMemReport): New procedure.
+	(SetTimeReport): Ditto.
+	(SetWideset): Ditto.
+	(GetWideset): New procedure function.
+	* gm2-compiler/M2Options.mod (SetOptimizing): Assign
+	OptimizeSets depending upon the optimization level.
+	(SetMemReport): New procedure.
+	(SetTimeReport): Ditto.
+	(SetWideset): Ditto.
+	(GetWideset): New procedure function.
+	(OptimizeSets): Initialize to FALSE.
+	(TimeReport): Ditto.
+	(MemReport): Ditto.
+	* gm2-compiler/M2Quads.mod (M2Diagnostic): Import.
+	(QuadsMemDiag): New global variable.
+	(NewQuad): Bump QuadsMemDiag whenever a quad is allocated.
+	(BuildAssignmentBoolean): New procedure.
+	(doBuildAssignment): Ditto.
+	Add v to the format specifier.
+	(CheckCompatibleWithBecomes): Add v to the format specifier.
+	(CheckProcTypeAndProcedure): Ditto.
+	(BuildAddAdrFunction): Ditto.
+	(BuildSubAdrFunction): Ditto.
+	(BuildDifAdrFunction): Ditto.
+	(BuildDesignatorArrayStaticDynamic): Ditto.
+	(BuildDesignatorPointer): Ditto.
+	(CheckVariableOrConstantOrProcedure): Ditto.
+	(Init): Initialize QuadsMemDiag.
+	* gm2-compiler/M2Range.mod (CodeTypeAssign): Add v to the
+	format specifier.
+	* gm2-compiler/M2Scaffold.mod (DeclareScaffoldFunctions):
+	Generate more precise warning note.
+	* gm2-compiler/M2SymInit.mod (PrintSymInit): Add record
+	field warning.
+	* gm2-compiler/M2System.mod
+	(IsPseudoSystemFunctionConstExpression): Add TBitSize.
+	* gm2-compiler/NameKey.mod: Add MemDiagnostic code
+	commented out.
+	* gm2-compiler/P1SymBuild.mod (StartBuildProcedure):
+	Add v format specifier.
+	* gm2-compiler/P2SymBuild.mod (BuildFieldRecord): Ditto.
+	* gm2-compiler/P3Build.bnf (SetType): Reformat.
+	* gm2-compiler/PathName.def (Copyright): Added.
+	* gm2-compiler/PathName.mod: Remove blank line.
+	* gm2-compiler/SymbolConversion.mod (gdbhook): New procedure.
+	(BreakWhenSymBooked): Ditto.
+	(CheckBook): Ditto.
+	(Init): Rewrite.
+	* gm2-compiler/SymbolTable.def (GetSetArray): New procedure.
+	(PutSetArray): Ditto.
+	(MakeSetArray): New procedure function.
+	(PutSetInWord): New procedure.
+	(GetSetInWord): New procedure function.
+	(IsConstVar): Ditto.
+	* gm2-compiler/SymbolTable.mod (SymSet): SetInWord new field.
+	SetArray new field.
+	Align new field.
+	(SymMemDiag): New global variable.
+	(Init): Initialize SymMemDiag.
+	(IsConstVar): New procedure function.
+	(IsVariableSSA): Replace InternalError with Return FALSE.
+	(GetNthParamOrdered): Reimplement.
+	(GetNthParamAnyClosest): Ditto.
+	(GetOuterModuleScope): Ditto.
+	(MakeSet): Ditto.
+	(PutSetArray): New procedure.
+	(GetSetArray): New procedure function.
+	(MakeSetArray): Ditto.
+	(PutSetInWord): New procedure.
+	(GetSetInWord): New procedure function.
+	* gm2-gcc/init.cc (_M2_M2Diagnostic_init): Define
+	prototype.
+	(init_FrontEndInit):Call _M2_M2Diagnostic_init.
+	* gm2-gcc/m2block.cc (m2block_GetTotalConstants): New function.
+	(m2block_GetGlobalTypes): Ditto.
+	* gm2-gcc/m2block.def (GetTotalConstants): New procedure function.
+	(GetGlobalTypes): New procedure function.
+	* gm2-gcc/m2block.h (m2block_GetTotalConstants): New function
+	prototype.
+	(m2block_GetGlobalTypes): Ditto.
+	* gm2-gcc/m2convert.cc (converting_ISO_generic): Reimplement.
+	(m2convert_ToPIMByte): New function.
+	* gm2-gcc/m2convert.def (ToLoc): New procedure function.
+	(ToPIMByte): Ditto.
+	* gm2-gcc/m2convert.h (m2convert_ToPIMByte): Ditto.
+	* gm2-gcc/m2decl.h (m2decl_RememberVariables): Ditto.
+	* gm2-gcc/m2expr.cc (m2expr_BuildLogicalShift): Reimplement.
+	(m2expr_BuildLRotate): Ditto.
+	(m2expr_BuildLRLn): Ditto.
+	(m2expr_BuildLRRn): Ditto.
+	(m2expr_BuildLogicalRotate): Ditto.
+	(buildUnboundedArrayOf): Ditto.
+	(BuildIfBitInSetLower): New function.
+	(m2expr_BuildBinarySetDo): Reimplement.
+	(m2expr_BuildIfInSet): Ditto.
+	(m2expr_BuildIfNotInSet): New function.
+	(m2expr_Build4LogicalOr): Reimplement.
+	(m2expr_BuildSetNegate): Ditto.
+	(m2expr_BuildLogicalOrAddress): Ditto.
+	(m2expr_BuildLogicalOr): Ditto.
+	(m2expr_BuildLogicalAnd): Ditto.
+	(m2expr_BuildSymmetricDifference): Ditto.
+	(m2expr_BuildLogicalDifference): Ditto.
+	(boolean_enum_to_unsigned): Ditto.
+	(m2expr_BuildIsSuperset): Ditto.
+	(m2expr_BuildIsNotSuperset): Ditto.
+	(m2expr_BuildIsSubset): Ditto.
+	(m2expr_BuildIfBitInSetJump): Ditto.
+	(m2expr_BuildIfNotConstInVar): Ditto.
+	(m2expr_BuildIfVarInVar): Ditto.
+	(m2expr_BuildIfNotVarInVar): Remove.
+	(m2expr_BuildIfConstInVar): Remove.
+	(m2expr_BuildForeachWordInSetDoIfExpr): Ditto.
+	(m2expr_BuildBinaryForeachWordDo): Ditto.
+	(m2expr_BuildIfInRangeGoto): Reimplement.
+	(m2expr_BuildIfNotInRangeGoto): Ditto.
+	(m2expr_SetAndNarrow): Ditto.
+	(m2expr_GetBitsetZero): New function.
+	(m2expr_GetRValue): Ditto.
+	* gm2-gcc/m2expr.def (GetBitsetZero): New function.
+	(BuildSetNegate): Ditto.
+	(BuildLogicalOr): Reimplement.
+	(BuildLogicalAnd): Ditto.
+	(BuildSymmetricDifference): Ditto.
+	(BuildLogicalDifference): Ditto.
+	(BuildIfInSet): New procedure function.
+	(BuildIfNotInSet): Ditto.
+	(BuildEqualTo): Reimplement.
+	(BuildNotEqualTo): Ditto.
+	(BuildBinaryForeachWordDo): Remove.
+	(BuildBinarySetDo): Ditto.
+	(GetRValue): New procedure function.
+	* gm2-gcc/m2expr.h (m2expr_BuildBinaryForeachWordDo): Remove.
+	(m2expr_BuildForeachWordInSetDoIfExpr): Ditto.
+	(m2expr_BuildIfNotVarInVar): Ditto.
+	(m2expr_BuildIfVarInVar): Ditto.
+	(m2expr_BuildIfNotConstInVar): Ditto.
+	(m2expr_BuildIfConstInVar): Ditto.
+	(m2expr_BuildLogicalDifference): Reimplement.
+	(m2expr_BuildSymmetricDifference): Ditto.
+	(m2expr_BuildLogicalAnd): Ditto.
+	(m2expr_BuildLogicalOr): Ditto.
+	(m2expr_BuildLogicalOrAddress): Ditto.
+	(m2expr_BuildSetNegate): Ditto.
+	(m2expr_GetBitsetZero): New function.
+	(m2expr_GetRValue): Ditto.
+	(m2expr_BuildIfInSet): Ditto.
+	(m2expr_BuildIfNotInSet): Ditto.
+	* gm2-gcc/m2options.h (M2Options_SetTimeReport): New function.
+	(M2Options_SetMemReport): Ditto.
+	(M2Options_SetWideset): Ditto.
+	(M2Options_GetWideset): Ditto.
+	* gm2-gcc/m2pp.cc (m2pp_shiftrotate_expr): New function.
+	(m2pp_simple_expression): Ditto.
+	* gm2-gcc/m2statement.cc (m2statement_BuildStartFunctionCode):
+	Tidyup comments.
+	(m2statement_BuildEndFunctionCode): Ditto.
+	(m2statement_BuildPushFunctionContext): Ditto.
+	(copy_array): Ditto.
+	(CopyByField_Lower): Ditto.
+	(m2statement_BuildGoto): Ditto.
+	(m2statement_DeclareLabel): Ditto.
+	(m2statement_BuildParam): Ditto.
+	(nCount): Ditto.
+	(m2statement_BuildProcedureCallTree): Ditto.
+	(m2statement_BuildBuiltinCallTree): Ditto.
+	(m2statement_BuildFunctValue): Ditto.
+	(m2statement_BuildCall2): Ditto.
+	(m2statement_BuildCall3): Ditto.
+	(m2statement_BuildFunctionCallTree): Ditto.
+	(m2statement_SetLastFunction): Ditto.
+	(m2statement_SetParamList): Ditto.
+	(m2statement_GetLastFunction): Ditto.
+	(m2statement_GetParamList): Ditto.
+	(m2statement_GetCurrentFunction): Ditto.
+	(m2statement_GetParamTree): Ditto.
+	(m2statement_BuildTryFinally): Ditto.
+	(m2statement_BuildCleanUp): Ditto.
+	(m2statement_BuildUnaryForeachWordDo): Remove.
+	(m2statement_BuildExcludeVarConst): Ditto.
+	(m2statement_BuildExcludeVarVar): Ditto.
+	(m2statement_BuildIncludeVarConst): Ditto.
+	(m2statement_BuildIncludeVarVar): Ditto.
+	(m2statement_DoJump): Remove.
+	(m2statement_IfExprJump): New function.
+	(m2statement_IfBitInSetJump): Ditto.
+	* gm2-gcc/m2statement.def (DoJump): Remove.
+	(IfExprJump): New procedure function.
+	(BuildUnaryForeachWordDo): Remove.
+	(IfBitInSetJump): New procedure function.
+	* gm2-gcc/m2statement.h (m2statement_BuildForeachWordDo): Remove.
+	(m2statement_DoJump): Ditto.
+	(m2statement_IfExprJump): New function.
+	(m2statement_IfBitInSetJump): Ditto.
+	* gm2-gcc/m2treelib.cc (m2treelib_do_jump_if_bit): Reimplement.
+	(nCount): Replace with ...
+	(m2treelib_nCount): ... this.
+	(m2treelib_DoCall): Reimplement.
+	(m2treelib_get_rvalue): Remove.
+	* gm2-gcc/m2treelib.def (get_rvalue): Remove.
+	(nCount): New procedure function.
+	* gm2-gcc/m2treelib.h (m2treelib_get_rvalue): Remove.
+	(m2treelib_nCount): New function.
+	* gm2-gcc/m2type.cc (constructor_elements): Change type to vec.
+	(m2type_BuildEndArrayType): Reformat.
+	(build_m2_type_node_by_array): Ditto.
+	(m2type_GetBooleanEnumList): New procedure function.
+	(m2type_BuildEnumerator): Add const to char *.
+	(m2type_BuildSetConstructorElement): Reimplement.
+	(m2type_BuildEndSetConstructor): Ditto.
+	(build_record_constructor): New function.
+	(m2type_BuildEndRecordConstructor): Reimplement.
+	(m2type_BuildRecordConstructorElement): Ditto.
+	(m2type_BuildStartArrayConstructor): Reimplement.
+	(m2type_BuildEndArrayConstructor): Remove blank lines.
+	* gm2-gcc/m2type.def (BuildSetConstructorElement): Reimplement.
+	(BuildEndArrayType): Reformat.
+	(GetBooleanEnumList): New function.
+	* gm2-gcc/m2type.h (m2type_BuildEnumerator): Add const to char *.
+	(m2type_BuildSetConstructorElement): Reimplement.
+	(m2type_GetBooleanEnumList): New procedure function.
+	* gm2-lang.cc (OPT_fmem_report): New option.
+	(OPT_ftime_report): Ditto.
+	(OPT_fwideset): Ditto.
+	* gm2-libs-coroutines/SYSTEM.def (ShiftVal): Remove.
+	(ShiftLeft): Ditto.
+	(ShiftRight): Ditto.
+	(RotateVal): Ditto.
+	(RotateLeft): Ditto.
+	(RotateRight): Ditto.
+	* gm2-libs-coroutines/SYSTEM.mod: Reimplement.
+	* gm2-libs-iso/SYSTEM.def (ShiftVal): Remove.
+	(ShiftLeft): Ditto.
+	(ShiftRight): Ditto.
+	(RotateVal): Ditto.
+	(RotateLeft): Ditto.
+	(RotateRight): Ditto.
+	* gm2-libs-iso/SYSTEM.mod: Reimplement.
+	* gm2-libs/SYSTEM.def (ShiftVal): Remove.
+	(ShiftLeft): Ditto.
+	(ShiftRight): Ditto.
+	(RotateVal): Ditto.
+	(RotateLeft): Ditto.
+	(RotateRight): Ditto.
+	* gm2-libs/SYSTEM.mod: Reimplement.
+	* gm2-libs/SysStorage.def (DEALLOCATE): Improve comment.
+	* gm2-libs/SysStorage.mod: Improve comment.
+	* init/ppginit (M2Diagnostic): Add.
+	(StringConvert): Add.
+	* lang.opt (fmem-report): Add access to c.opt.
+	(ftime-report): Ditto.
+	(fwideset): New option.
+	* pge-boot/main.cc (_M2_M2Diagnostic_init): New function.
+	(_M2_M2Diagnostic_fini): Ditto.
+	(_M2_StringConvert_init): Ditto.
+	(_M2_StringConvert_fini): Ditto.
+	(main): Call _M2_M2Diagnostic_init.
+	Call _M2_StringConvert_init.
+	Call _M2_M2Diagnostic_fini.
+	Call _M2_StringConvert_fini.
+	* tools-src/makeSystem: Add -gdb option.
+	* gm2-libs/M2Diagnostic.def: New file.
+	* gm2-libs/M2Diagnostic.mod: New file.
+	* gm2-libs/M2WIDESET.def: New file.
+	* gm2-libs/M2WIDESET.mod: New file.
+	* mc-boot/GM2Diagnostic.cc: New file.
+	* mc-boot/GM2Diagnostic.h: New file.
+	* pge-boot/GM2Diagnostic.cc: New file.
+	* pge-boot/GM2Diagnostic.h: New file.
+	* pge-boot/GSelective.h: New file.
+	* pge-boot/GStringConvert.cc: New file.
+
 2025-08-29  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121709

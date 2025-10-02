@@ -55,8 +55,6 @@ f4 (V4 x)
   asm volatile ("" : "+v" (a));
 }
 
-/* { dg-final { scan-assembler-times "vpalignr\[^\n\r]*\\\$8\[^\n\r]*%xmm16\[^\n\r]*%xmm16\[^\n\r]*%xmm16" 1 } } */
-
 typedef float V5 __attribute__((vector_size (16)));
 
 void
@@ -83,4 +81,4 @@ f6 (V6 x)
   asm volatile ("" : "+v" (a));
 }
 
-/* { dg-final { scan-assembler-times "vpermilpd\[^\n\r]*\\\$1\[^\n\r]*%xmm16\[^\n\r]*%xmm16" 1 } } */
+/* { dg-final { scan-assembler-times "vpermilpd\[^\n\r]*\\\$1\[^\n\r]*%xmm16\[^\n\r]*%xmm16" 2 } } */

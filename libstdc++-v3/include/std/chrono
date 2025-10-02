@@ -53,11 +53,14 @@
 #if __cpp_lib_bitops >= 201907L
 # include <bit> // __countr_zero
 #endif
-#if __cpp_lib_chrono >= 201803L && _GLIBCXX_HOSTED
+#ifdef __glibcxx_chrono_cxx20
+# include <bits/stl_algo.h>     // upper_bound
+# include <bits/range_access.h> // begin/end for arrays
+#endif
+#if __cpp_lib_chrono >= 201803L // C++20 && HOSTED && USE_CXX11_ABI
 # include <sstream>
 # include <string>
 # include <vector>
-# include <bits/stl_algo.h> // upper_bound
 # include <bits/shared_ptr.h>
 # include <bits/unique_ptr.h>
 #endif
@@ -81,7 +84,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
    */
   namespace chrono
   {
-#if __cpp_lib_chrono >= 201803L
+#ifdef __glibcxx_chrono_cxx20
     /// @addtogroup chrono
     /// @{
     struct local_t { };
@@ -3319,7 +3322,7 @@ namespace __detail
 #endif // C++20
   } // namespace chrono
 
-#if __cpp_lib_chrono >= 201803L
+#ifdef __glibcxx_chrono_cxx20
   inline namespace literals
   {
   inline namespace chrono_literals
@@ -3348,7 +3351,7 @@ namespace __detail
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 
-#if __cpp_lib_chrono >= 201803L && _GLIBCXX_HOSTED
+#if defined __glibcxx_chrono_cxx20 && _GLIBCXX_HOSTED
 # include <bits/chrono_io.h>
 #endif
 

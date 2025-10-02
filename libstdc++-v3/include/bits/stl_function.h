@@ -762,6 +762,58 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	      is_convertible<_Tp, const volatile void*>,
 	      is_convertible<_Up, const volatile void*>>;
     };
+#else // < C++14
+
+  // We need less<void> and equal_to<void> for <bits/predefined_ops.h>
+
+  template<>
+    struct equal_to<void>
+    {
+#ifdef __cpp_rvalue_references
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(_Tp&& __t, _Up&& __u) const
+	{ return __t == __u; }
+#else // C++98
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(_Tp& __t, _Up& __u) const { return __t == __u; }
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(const _Tp& __t, _Up& __u) const { return __t == __u; }
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(_Tp& __t, const _Up& __u) const { return __t == __u; }
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(const _Tp& __t, const _Up& __u) const { return __t == __u; }
+#endif
+    };
+
+  template<>
+    struct less<void>
+    {
+#ifdef __cpp_rvalue_references
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(_Tp&& __t, _Up&& __u) const
+	{ return __t < __u; }
+#else // C++98
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(_Tp& __t, _Up& __u) const { return __t < __u; }
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(const _Tp& __t, _Up& __u) const { return __t < __u; }
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(_Tp& __t, const _Up& __u) const { return __t < __u; }
+      template<typename _Tp, typename _Up>
+	bool
+	operator()(const _Tp& __t, const _Up& __u) const { return __t < __u; }
+#endif
+    };
+
 #endif // __glibcxx_transparent_operators
   /** @}  */
 

@@ -222,7 +222,8 @@ static const struct tune_params neoversen3_tunings =
    | AARCH64_EXTRA_TUNE_MATCHED_VECTOR_THROUGHPUT),	/* tune_flags.  */
   &generic_armv9a_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
-  AARCH64_LDP_STP_POLICY_ALWAYS	   /* stp_policy_model.  */
+  AARCH64_LDP_STP_POLICY_ALWAYS,   /* stp_policy_model.  */
+  nullptr	/* dispatch_constraints.  */
 };
 
 #endif /* GCC_AARCH64_H_NEOVERSEN3.  */

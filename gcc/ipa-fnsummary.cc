@@ -3543,13 +3543,26 @@ estimate_edge_devirt_benefit (struct cgraph_edge *ie,
   if (!opt_for_fn (ie->caller->decl, flag_indirect_inlining))
     return false;
 
-  target = ipa_get_indirect_edge_target (ie, avals, &speculative);
+  target = ipa_get_indirect_edge_target
+    (ie->callee ? ie->speculative_call_indirect_edge () : ie,
+     avals, &speculative);
   if (!target || speculative)
     return false;
 
-  /* Account for difference in cost between indirect and direct calls.  */
-  *size -= (eni_size_weights.indirect_call_cost - eni_size_weights.call_cost);
-  *time -= (eni_time_weights.indirect_call_cost - eni_time_weights.call_cost);
+  /* If this is speculative call, turn its cost into 0; we will account
+     the call when processing the indirect call.  */
+  if (ie->callee)
+    {
+      gcc_checking_assert (ie->speculative && *size > 0);
+      *size = 0;
+      *time = 0;
+    }
+  else
+    {
+      /* Account for difference in cost between indirect and direct calls.  */
+      *size -= (eni_size_weights.indirect_call_cost - eni_size_weights.call_cost);
+      *time -= (eni_time_weights.indirect_call_cost - eni_time_weights.call_cost);
+    }
   gcc_checking_assert (*time >= 0);
   gcc_checking_assert (*size >= 0);
 
@@ -3581,9 +3594,12 @@ estimate_edge_size_and_time (struct cgraph_edge *e, int *size, int *min_size,
   int call_time = es->call_stmt_time;
   int cur_size;
 
-  if (!e->callee && hints && e->maybe_hot_p ()
+  if ((!e->callee || e->speculative)
       && estimate_edge_devirt_benefit (e, &call_size, &call_time, avals))
-    *hints |= INLINE_HINT_indirect_call;
+    {
+      if (hints && e->maybe_hot_p ())
+	*hints |= INLINE_HINT_indirect_call;
+    }
   cur_size = call_size * ipa_fn_summary::size_scale;
   *size += cur_size;
   if (min_size)
@@ -3712,12 +3728,12 @@ estimate_calls_size_and_time (struct cgraph_node *node, int *size,
     use_table = false;
   /* Do not calculate summaries for simple wrappers; it is waste
      of memory.  */
-  else if (node->callees && node->indirect_calls
+  else if (node->callees && !node->indirect_calls
            && node->callees->inline_failed && !node->callees->next_callee)
     use_table = false;
   /* If there is an indirect edge that may be optimized, we need
      to go the slow way.  */
-  else if (avals && hints
+  else if (avals
 	   && (avals->m_known_vals.length ()
 	       || avals->m_known_contexts.length ()
 	       || avals->m_known_aggs.length ()))

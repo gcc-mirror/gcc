@@ -57,6 +57,13 @@ namespace std {
   template <class Predicate>
   _GLIBCXX14_CONSTEXPR
   binary_negate<Predicate> not2(const Predicate&);
+#ifdef __cpp_lib_not_fn
+  template <typename F> _GLIBCXX20_CONSTEXPR auto not_fn(F&&)
+  noexcept(std::is_nothrow_constructible<std::decay_t<F>, F&&>::value);
+#if __cpp_lib_not_fn >= 202306L
+  template <auto f> constexpr decltype(auto) not_fn() noexcept;
+#endif
+#endif
 
   //  lib.binders, binders:
   template <class Operation>  class binder1st;
@@ -65,6 +72,24 @@ namespace std {
   template <class Operation> class binder2nd;
   template <class Operation, class T>
   binder2nd<Operation> bind2nd(const Operation&, const T&);
+#ifdef __cpp_lib_bind_front
+  template <typename F, typename... Args>
+    _GLIBCXX20_CONSTEXPR auto bind_front(F&&, Args&&...);
+#if __cpp_lib_bind_front >= 202306L
+  template <auto f, typename... Args>
+    constexpr decltype(auto) bind_front(Args&&...)
+      noexcept(__and_v<is_nothrow_constructible<Args>...>);
+#endif
+#endif
+#ifdef __cpp_lib_bind_back
+  template <typename F, typename... Args>
+    _GLIBCXX20_CONSTEXPR auto bind_back(F&&, Args&&...);
+#if __cpp_lib_bind_back >= 202306L
+  template <auto f, typename... Args>
+    constexpr decltype(auto) bind_back(Args&&...)
+      noexcept(__and_v<is_nothrow_constructible<Args>...>);
+#endif
+#endif
 
   //  lib.function.pointer.adaptors, adaptors:
   template <class Arg, class Result> class pointer_to_unary_function;

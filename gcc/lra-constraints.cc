@@ -542,6 +542,7 @@ get_equiv (rtx x)
   rtx res;
 
   if (! REG_P (x) || (regno = REGNO (x)) < FIRST_PSEUDO_REGISTER
+      || regno >= ira_reg_equiv_len
       || ! ira_reg_equiv[regno].defined_p
       || ! ira_reg_equiv[regno].profitable_p
       || lra_get_regno_hard_regno (regno) >= 0)
@@ -4929,7 +4930,10 @@ curr_insn_transform (bool check_only_p)
       if (asm_noperands (PATTERN (curr_insn)) >= 0
 	  && ++curr_id->asm_reloads_num >= FIRST_PSEUDO_REGISTER)
 	/* Most probably there are no enough registers to satisfy asm insn: */
-	lra_asm_insn_error (curr_insn);
+	{
+	  lra_asm_insn_error (curr_insn);
+	  return change_p;
+	}
     }
   if (goal_alt_out_sp_reload_p)
     {

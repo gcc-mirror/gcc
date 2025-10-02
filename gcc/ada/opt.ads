@@ -338,7 +338,7 @@ package Opt is
    --  True if echoed commands to be written to stdout instead of stderr
 
    Comment_Deleted_Lines : Boolean := False;
-   --  GNATPREP
+   --  GNAT, GNATPREP
    --  True if source lines removed by the preprocessor should be commented
    --  in the output file.
 
@@ -508,6 +508,11 @@ package Opt is
    Elab_Order_Output : Boolean := False;
    --  GNATBIND
    --  Set to True to output chosen elaboration order
+
+   Empty_Comment_Deleted_Lines : Boolean := False;
+   --  GNAT, GNATPREP
+   --  True if source lines removed by the preprocessor are to be replaced
+   --  by empty comment lines ("--!" and no other text) in the output file.
 
    Enable_128bit_Types : Boolean := False;
    --  GNAT
@@ -755,6 +760,24 @@ package Opt is
       --  reflect the starting node of the outermost ignored Ghost region. If a
       --  nested ignored Ghost region is entered, the value must remain
       --  unchanged.
+
+      Ghost_Mode_Assertion_Level : Entity_Id := Empty;
+      --  The Assertion_Level that is applied to the current ghost region.
+      --  It is either:
+      --  * Empty - when there is no ghost region
+      --  * Assertion_Level - if the ghost aspect/pragama had an
+      --    Assertion_Levle associated with it.
+      --  * Standard_Default_Level - if the ghost aspect/pragama did not have
+      --    an Assertion_Level associated to it.
+
+      Current_Region : Node_Id := Empty;
+      --  Latest ghost region
+
+      Is_Inside_Statement_Or_Pragma : Boolean := False;
+      --  A flag to tag whether we are currently in a region that originated
+      --  from a Statement or a pragma. Inside those regions the ghost policy
+      --  in effect for implicitly defined entities is not the policy for Ghost
+      --  but instead the policy for the region (SPARK RM 6.9 (3)).
    end record;
 
    Ghost_Config : Ghost_Config_Type;
@@ -823,9 +846,9 @@ package Opt is
 
    Implicit_Packing : Boolean := False;
    --  GNAT
-   --  If set True, then a Size attribute clause on an array is allowed to
-   --  cause implicit packing instead of generating an error message. Set by
-   --  use of pragma Implicit_Packing.
+   --  If set True, then a Size attribute clause on an array or record is
+   --  allowed to cause implicit packing instead of generating an error
+   --  message. Set by use of pragma Implicit_Packing.
 
    Init_Or_Norm_Scalars : Boolean := False;
    --  GNAT, GNATBIND

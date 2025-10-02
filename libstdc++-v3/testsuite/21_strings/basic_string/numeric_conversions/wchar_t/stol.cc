@@ -88,7 +88,7 @@ test01()
     }
   VERIFY( test );
   VERIFY( l1 == 7 );
-  VERIFY( idx1 = 1 );
+  VERIFY( idx1 == 1 );
 
   try
     {

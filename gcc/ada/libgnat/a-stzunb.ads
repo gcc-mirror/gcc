@@ -39,8 +39,8 @@ with Ada.Finalization;
 package Ada.Strings.Wide_Wide_Unbounded is
    pragma Preelaborate;
 
-   type Unbounded_Wide_Wide_String is private;
-   pragma Preelaborable_Initialization (Unbounded_Wide_Wide_String);
+   type Unbounded_Wide_Wide_String is private
+   with Preelaborable_Initialization;
 
    Null_Unbounded_Wide_Wide_String : constant Unbounded_Wide_Wide_String;
 

@@ -2254,7 +2254,8 @@ package body Exp_Ch5 is
       function Replace_Target (N : Node_Id) return Traverse_Result;
       --  Replace occurrences of the target name by the proper entity: either
       --  the entity of the LHS in simple cases, or the formal of the
-      --  constructed procedure otherwise.
+      --  constructed procedure otherwise. Mark all nodes as Analyzed=False
+      --  so reanalysis will occur.
 
       --------------------
       -- Replace_Target --
@@ -2264,20 +2265,6 @@ package body Exp_Ch5 is
       begin
          if Nkind (N) = N_Target_Name then
             Rewrite (N, New_Occurrence_Of (Ent, Sloc (N)));
-
-         --  The expression will be reanalyzed when the enclosing assignment
-         --  is reanalyzed, so reset the entity, which may be a temporary
-         --  created during analysis, e.g. a loop variable for an iterated
-         --  component association. However, if entity is callable then
-         --  resolution has established its proper identity (including in
-         --  rewritten prefixed calls) so we must preserve it.
-
-         elsif Is_Entity_Name (N) then
-            if Present (Entity (N))
-              and then not Is_Overloadable (Entity (N))
-            then
-               Set_Entity (N, Empty);
-            end if;
          end if;
 
          Set_Analyzed (N, False);
@@ -4118,7 +4105,7 @@ package body Exp_Ch5 is
 
       if Compile_Time_Known_Value (Expr)
         and then Has_Predicates (Etype (Expr))
-        and then not Predicates_Ignored (Etype (Expr))
+        and then not Predicates_Ignored_In_Codegen (Etype (Expr))
         and then not Is_OK_Static_Expression (Expr)
       then
          Rewrite (N,
@@ -4203,7 +4190,7 @@ package body Exp_Ch5 is
          --  generated case statements).
 
          if Validity_Check_Default
-           and then not Predicates_Ignored (Etype (Expr))
+           and then not Predicates_Ignored_In_Codegen (Etype (Expr))
          then
             --  Recognize the simple case where Expr is an object reference
             --  and the case statement is directly preceded by an
@@ -4378,7 +4365,7 @@ package body Exp_Ch5 is
             --  predicate, and there is no Others choice, Constraint_Error
             --  must be raised (RM 4.5.7 (21/3) and 5.4 (13)).
 
-            if Predicates_Ignored (Etype (Expr)) then
+            if Predicates_Ignored_In_Codegen (Etype (Expr)) then
                declare
                   Except  : constant Node_Id :=
                               Make_Raise_Constraint_Error (Loc,

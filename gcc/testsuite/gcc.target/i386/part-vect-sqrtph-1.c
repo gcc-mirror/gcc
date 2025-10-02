@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mavx512fp16 -mavx512vl -Ofast" } */
 /* { dg-final { scan-assembler-times {(?n)vsqrtph[ \t].*%xmm[0-9]} 2 { target { ! ia32 } } } } */
-/* { dg-final { scan-assembler-times {(?n)vsqrtph[ \t].*%xmm[0-9]} 2 { target { ! ia32 } } } } */
 
 void
 foo16_sqrt (_Float16* a, _Float16* __restrict c)

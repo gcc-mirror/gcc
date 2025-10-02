@@ -1,3 +1,265 @@
+2025-10-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122080
+	* trans-array.cc (gfc_conv_array_parameter): Wrap the derivation of
+	bounds and strides for the descriptor of an optional dummy array
+	argument by a test on argument presence when it is supposed to be
+	passed to an optional argument.
+
+2025-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* decl.cc (gfc_get_pdt_instance): If the pdt_template is use
+	associated, 'module' field should be copied to this instance.
+
+2025-09-30  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102241
+	* gfortran.h: Add symbol attribute 'pdt_comp'.
+	* module.cc : Add 'pdt_comp' to 'ab_attribute' and 'attr_bits'.
+	(mio_symbol_attribute): Set 'pdt_comp'.
+	* resolve.cc (resolve_component): If a PDT component is found
+	in a non-PDT type, generate the PDT instance, if necessary, and
+	set the 'pdt_comp' attribute. Fix some whitespace issues.
+	* trans-decl.cc (gfc_get_symbol_decl, gfc_trans_deferred_vars):
+	If 'pdt_comp' set, initialize the PDT components.
+	* trans-stmt.cc (gfc_trans_deallocate): Verify that a typespec
+	parameter list is available for PDT components of ordinary
+	derived types.
+
+2025-09-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* interface.cc (check_interface0): Revert changes.
+
+2025-09-26  Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/122002
+	* decl.cc (gfc_get_pdt_instance): Initialize 'instance' to NULL
+	and set 'kind_value' to zero before calling gfc_extract_int.
+	* primary.cc (gfc_match_rvalue): Intitialize 'ctr_arglist' to
+	NULL and test for default values if gfc_get_pdt_instance
+	returns NULL.
+
+2025-09-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121939
+	* trans-types.cc (gfc_init_types): Set string flag for all
+	character types.
+
+2025-09-24  Mikael Morin  <morin-mikael@orange.fr>
+
+	PR fortran/122046
+	* symbol.cc (gfc_get_procedure_ns): Try to find the namespace
+	among the list of contained namespaces before returning the
+	value from the formal_ns field.
+
+2025-09-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87908
+	* interface.cc (check_interface0): If a vtable is found in the
+	interface list, check that it is either a subroutine or a
+	function. Let resolve.cc do any further checking.
+
+2025-09-22  Steve Kargl  <pault@gcc.gnu.org>
+
+	PR fortran/103508
+	* decl.cc (gfc_match_end): Remove only the current partial
+	rather than removing the entire sibling chain.
+
+2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/109010
+	* st.cc (gfc_free_statement): Also free components expr3 and expr4.
+
+2025-09-21  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	PR fortran/121161
+	* invoke.texi: Mention that -ffrontend-optimize is required
+	for -fexternal-blas64.
+	* options.cc (gfc_post_options): Fatal error if -fexternal-blas64
+	is specified without -ffrontend-optimize.
+	* trans-types.cc (gfc_init_kinds): Fatal error if -fexternal-blas64
+	is specified on a system which does not have 64-bit ptrdiff_t.
+
+2025-09-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/108581
+	* trans-array.cc (gfc_conv_expr_descriptor): Take the dynamic
+	string length into account when deriving the dataptr offset for
+	a deferred-length character array.
+
+2025-09-20  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* trans-decl.cc (gfc_trans_deferred_vars): If a procedure with
+	an non-allocatable, non-pointer explicit PDT result has no
+	default initializer, the parameterized components should be
+	allocated.
+
+2025-09-19  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83746
+	* trans-array.cc (structure_alloc_comps): Add the pre and post
+	blocks to 'fnblock' for all the evaluations of parameterized
+	expressions in PDT component allocatation.
+
+2025-09-18  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121948
+	* decl.cc (gfc_get_pdt_instance): Copy the contents of 'tb' and
+	not the pointer.
+	* primary.cc (gfc_match_rvalue): If there is only one actual
+	argument list, use if for the type spec parameter values. If
+	this fails try the default type specification values and use
+	the actual arguments for the component values.
+	* resolve.cc (build_init_assign): Don't initialize implicit PDT
+	function results.
+
+2025-09-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* frontend-passes.cc (optimize_namespace): Handle
+	flag_external_blas64.
+	(call_external_blas): If flag_external_blas is set, use
+	gfc_integer_4_kind as the argument kind, gfc_integer_8_kind otherwise.
+	* gfortran.h (gfc_integer_8_kind): Define.
+	* invoke.texi: Document -fexternal-blas64.
+	* lang.opt: Add -fexternal-blas64.
+	* lang.opt.urls: Regenerated.
+	* options.cc (gfc_post_options): -fexternal-blas is incompatible
+	with -fexternal-blas64.
+
+2025-09-15  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83763
+	* trans-decl.cc (gfc_trans_deferred_vars): Ensure that the
+	parameterized components of PDTs that do not have allocatable
+	components are deallocated on leaving scope.
+	* trans-expr.cc (gfc_trans_assignment_1): Do a dependency check
+	on PDT assignments. If there is a dependency between lhs and
+	rhs, deallocate the lhs parameterized components after the rhs
+	has been evaluated.
+
+2025-09-14  Yuao Ma  <c8ef@outlook.com>
+
+	* dump-parse-tree.cc (show_expr): Add support for EXPR_CONDITIONAL.
+	* expr.cc (gfc_get_conditional_expr): Add cond-expr constructor.
+	(gfc_copy_expr, free_expr0, gfc_is_constant_expr,
+	simplify_conditional, gfc_simplify_expr, gfc_check_init_expr,
+	check_restricted, gfc_traverse_expr): Add support for EXPR_CONDITIONAL.
+	* frontend-passes.cc (gfc_expr_walker): Ditto.
+	* gfortran.h (enum expr_t): Add EXPR_CONDITIONAL.
+	(gfc_get_operator_expr): Format fix.
+	(gfc_get_conditional_expr): New decl.
+	* matchexp.cc
+	(match_conditional, match_primary): Parsing for EXPR_CONDITIONAL.
+	* module.cc (mio_expr): Add support for EXPR_CONDITIONAL.
+	* resolve.cc (resolve_conditional, gfc_resolve_expr): Ditto.
+	* trans-array.cc (gfc_walk_conditional_expr, gfc_walk_subexpr): Ditto.
+	* trans-expr.cc
+	(gfc_conv_conditional_expr): Codegen for EXPR_CONDITIONAL.
+	(gfc_apply_interface_mapping_to_expr, gfc_conv_expr,
+	gfc_conv_expr_reference): Add support for EXPR_CONDITIONAL.
+
+2025-09-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121616
+	* primary.cc (gfc_variable_attr): Properly set dimension attribute
+	from a component ref.
+
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Init
+	some variables.
+
+2025-09-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/82480
+	* check.cc (error_unsupported_kind): Helper function to report an
+	unsupported kind of an argument.
+	(check_minrange4): Helper function to report if an integer variable
+	does not have a decimal range of at least four.
+	(gfc_check_fstat): Adjust checks for generalization of instrinsic
+	function FSTAT.
+	(gfc_check_fstat_sub): Likewise for subroutine FSTAT.
+	(gfc_check_stat): Likewise for functio STAT.
+	(gfc_check_stat_sub): Likewise for subroutine STAT.
+	* intrinsic.texi: Document generalized versions of intrinsics
+	STAT/LSTAT/FSTAT.
+	* iresolve.cc (gfc_resolve_stat): STAT function result shall have
+	the same kind as the VALUES argument.
+	(gfc_resolve_lstat): Likewise for LSTAT.
+	(gfc_resolve_fstat): Likewise for FSTAT.
+	(gfc_resolve_stat_sub): Resolve proper library subroutine for STAT.
+	(gfc_resolve_lstat_sub): Likewise for LSTAT.
+	* trans-decl.cc (gfc_build_intrinsic_function_decls): Declare
+	fndecls for required subroutines in runtine library.
+	* trans-intrinsic.cc (conv_intrinsic_fstat_lstat_stat_sub): Emit
+	runtime wrapper code for the library functions, taking care of
+	possible kind conversion of the optional STATUS argument of the
+	subroutine versions of the intrinsics.
+	(gfc_conv_intrinsic_subroutine): Use it.
+	* trans.h (GTY): Declare prototypes.
+
+2025-09-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84008
+	* decl.cc (insert_parameter_exprs): Correct the typespec of new
+	variable declarations, where the type is set to BT_PROCEDURE as
+	a precaution for resolution of the whole program unit.
+
+2025-09-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84119
+	* resolve.cc (reset_array_ref_to_scalar): New function using
+	chunk broken out from gfc_resolve_ref.
+	(gfc_resolve_ref): Call the new function, the first time for
+	PDT type parameters and the second time for LEN inquiry refs.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/84432
+	PR fortran/114815
+	* expr.cc (gfc_check_assign_symbol): Check that components in a
+	PDT with a default initializer have type and length parameters
+	that reduce to constant integer expressions.
+	* trans-expr.cc (gfc_trans_assignment_1): Parameterized
+	components cannot have default initializers so they must be
+	allocated after initialization.
+
+2025-09-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/83762
+	PR fortran/102457
+	* decl.cc (gfc_get_pdt_instance): Check that variable PDT parm
+	expressions are of type integer. Note that the symbol must be
+	tested since the expression often appears as BT_PROCEDURE.
+
+2025-09-03  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/121263
+	* trans-intrinsic.cc (gfc_conv_intrinsic_transfer): For an
+	unlimited polymorphic SOURCE to TRANSFER use saved descriptor
+	if possible.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/89707
+	* decl.cc (gfc_get_pdt_instance): Copy the typebound procedure
+	field from the PDT template. If the template interface has
+	kind=0, provide the new instance with an interface with a type
+	spec that points to that of the parameterized component.
+	(match_ppc_decl): When 'saved_kind_expr' this is a PDT and the
+	expression should be copied to the component kind_expr.
+	* gfortran.h: Define gfc_get_tbp.
+
+2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/87669
+	* expr.cc (gfc_spec_list_type): If no LEN components are seen,
+	unconditionally return 'SPEC_ASSUMED'. This suppresses an
+	invalid error in match.cc(gfc_match_type_is).
+
 2025-09-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/121727

@@ -562,9 +562,6 @@ OACC_2.5 {
 	acc_copyout_finalize_64_h_;
 	acc_copyout_finalize_array_h_;
 	acc_copyout_finalize_async;
-	acc_copyout_finalize_async_32_h_;
-	acc_copyout_finalize_async_64_h_;
-	acc_copyout_finalize_async_array_h_;
 	acc_create_async;
 	acc_create_async_32_h_;
 	acc_create_async_64_h_;
@@ -578,9 +575,6 @@ OACC_2.5 {
 	acc_delete_finalize_64_h_;
 	acc_delete_finalize_array_h_;
 	acc_delete_finalize_async;
-	acc_delete_finalize_async_32_h_;
-	acc_delete_finalize_async_64_h_;
-	acc_delete_finalize_async_array_h_;
 	acc_memcpy_from_device_async;
 	acc_memcpy_to_device_async;
 	acc_update_device_async;
@@ -617,6 +611,12 @@ OACC_2.6 {
 
 OACC_2.6.1 {
   global:
+	acc_copyout_finalize_async_32_h_;
+	acc_copyout_finalize_async_64_h_;
+	acc_copyout_finalize_async_array_h_;
+	acc_delete_finalize_async_32_h_;
+	acc_delete_finalize_async_64_h_;
+	acc_delete_finalize_async_array_h_;
 	acc_memcpy_device;
 	acc_memcpy_device_async;
 } OACC_2.6;

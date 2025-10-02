@@ -47,6 +47,8 @@ EXTERN tree m2convert_ToInteger (location_t location, tree expr);
 EXTERN tree m2convert_ToWord (location_t location, tree expr);
 EXTERN tree m2convert_ToBitset (location_t location, tree expr);
 EXTERN tree m2convert_ToLoc (location_t location, tree expr);
+EXTERN tree m2convert_ToPIMByte (location_t location, tree expr);
+
 EXTERN tree m2convert_GenericToType (location_t location, tree type,
                                      tree expr);
 

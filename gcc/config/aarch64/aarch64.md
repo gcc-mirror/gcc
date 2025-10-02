@@ -647,6 +647,26 @@
 ;; patterns.
 (define_attr "ldpstp" "ldp,stp,none" (const_string "none"))
 
+;; Attribute that classifies SVE instructions by their functional type.
+;; This attribute is currently only used for dispatch scheduling.
+(define_attr "sve_type"
+  "none,\
+   sve_pred_logical,sve_pred_cnt_ctrl,sve_pred_cnt_scalar,sve_pred_misc,\
+   sve_pred_vec,\
+   sve_fp_arith,sve_fp_mul,sve_fp_assoc_add,sve_fp_cmp,sve_fp_cvt,sve_fp_log,\
+   sve_fp_exp,sve_fp_div,sve_fp_sqrt,sve_fp_reduc,sve_fp_misc,\
+   sve_int_general,sve_int_shift,sve_int_mul,sve_int_dot,sve_int_cmp_set,\
+   sve_int_extend,sve_int_extract,sve_int_cvt,sve_int_div,sve_int_index,\
+   sve_int_match,sve_int_recip_est,sve_int_reduc,sve_int_accum,\
+   sve_int_pmul,sve_int_bit_perm,\
+   sve_load_pred,sve_load_1reg,sve_load_2reg,sve_load_3reg,sve_load_4reg,\
+   sve_gatherload_32,sve_gatherload_64,\
+   sve_store_pred,sve_store_1reg,sve_store_2reg,sve_store_3reg,sve_store_4reg,\
+   sve_scatterstore_32,sve_scatterstore_64,\
+   sve_ffr,\
+   sve_crypto_sha3"
+  (const_string "none"))
+
 ;; -------------------------------------------------------------------
 ;; Pipeline descriptions and scheduling
 ;; -------------------------------------------------------------------
@@ -663,6 +683,9 @@
 (include "thunderx2t99.md")
 (include "tsv110.md")
 (include "thunderx3t110.md")
+
+;; Dispatch scheduling
+(include "neoversev2.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
@@ -7701,6 +7724,38 @@
   rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
   emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
   rtx cmp = gen_rtx_fmt_ee (EQ, SImode, cc_reg, const0_rtx);
+  emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
+  DONE;
+}
+)
+
+(define_expand "isfinite<mode>2"
+ [(match_operand:SI 0 "register_operand")
+  (match_operand:GPF 1 "register_operand")]
+ "TARGET_FLOAT"
+{
+  rtx op = force_lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+  rtx tmp = gen_reg_rtx (<V_INT_EQUIV>mode);
+  emit_move_insn (tmp, GEN_INT (HOST_WIDE_INT_M1U << (<mantissa_bits> + 1)));
+  rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
+  emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
+  rtx cmp = gen_rtx_fmt_ee (LTU, SImode, cc_reg, const0_rtx);
+  emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
+  DONE;
+}
+)
+
+(define_expand "isnan<mode>2"
+ [(match_operand:SI 0 "register_operand")
+  (match_operand:GPF 1 "register_operand")]
+ "TARGET_FLOAT && flag_signaling_nans"
+{
+  rtx op = force_lowpart_subreg (<V_INT_EQUIV>mode, operands[1], <MODE>mode);
+  rtx tmp = gen_reg_rtx (<V_INT_EQUIV>mode);
+  emit_move_insn (tmp, GEN_INT (HOST_WIDE_INT_M1U << (<mantissa_bits> + 1)));
+  rtx cc_reg = gen_rtx_REG (CC_SWPmode, CC_REGNUM);
+  emit_insn (gen_cmp_swp_lsl_reg<v_int_equiv> (op, GEN_INT (1), tmp));
+  rtx cmp = gen_rtx_fmt_ee (GTU, SImode, cc_reg, const0_rtx);
   emit_insn (gen_aarch64_cstoresi (operands[0], cmp, cc_reg));
   DONE;
 }

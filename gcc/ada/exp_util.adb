@@ -638,6 +638,23 @@ package body Exp_Util is
                end if;
 
             else
+               --  For GNAT objects with indefinite nominal subtypes will have
+               --  an itype constrained by their initialization expression
+               --  (except for class-wide type). For GNATprove, those objects
+               --  will keep their nominal subtype unconstrained, while
+               --  actually those objects are constrained; see call from
+               --  Analyze_Object_Declaration to Expand_Subtype_From_Expr.
+
+               if Ekind (Ent) in E_Constant | E_Variable
+                  and then not Is_Definite_Subtype (Etype (Ent))
+                  and then not Is_Class_Wide_Type (Etype (Ent))
+                  and then No (Renamed_Object (Ent))
+               then
+                  pragma Assert
+                    (GNATprove_Mode
+                     and then Present (Expression (Parent (Ent))));
+                  return True;
+               end if;
 
                --  If the prefix is not a variable or is aliased, then
                --  definitely true; if it's a formal parameter without an
@@ -1893,12 +1910,11 @@ package body Exp_Util is
       -------------------
 
       procedure Add_DIC_Check
-        (DIC_Prag : Node_Id;
-         DIC_Expr : Node_Id;
-         Stmts    : in out List_Id)
+        (DIC_Prag : Node_Id; DIC_Expr : Node_Id; Stmts : in out List_Id)
       is
-         Loc : constant Source_Ptr := Sloc (DIC_Prag);
-         Nam : constant Name_Id    := Original_Aspect_Pragma_Name (DIC_Prag);
+         Loc  : constant Source_Ptr := Sloc (DIC_Prag);
+         Nam  : constant Name_Id := Original_Aspect_Pragma_Name (DIC_Prag);
+         Prag : Node_Id;
 
       begin
          --  The DIC pragma is ignored, nothing left to do
@@ -1908,21 +1924,25 @@ package body Exp_Util is
 
          --  Otherwise the DIC expression must be checked at run time.
          --  Generate:
-
+         --
          --    pragma Check (<Nam>, <DIC_Expr>);
 
          else
-            Append_New_To (Stmts,
-              Make_Pragma (Loc,
-                Pragma_Identifier            =>
-                  Make_Identifier (Loc, Name_Check),
+            Prag :=
+              Make_Pragma
+                (Loc,
+                 Pragma_Identifier            =>
+                   Make_Identifier (Loc, Name_Check),
+                 Pragma_Argument_Associations =>
+                   New_List
+                     (Make_Pragma_Argument_Association
+                        (Loc, Expression => Make_Identifier (Loc, Nam)),
+                      Make_Pragma_Argument_Association
+                        (Loc, Expression => DIC_Expr)));
 
-                Pragma_Argument_Associations => New_List (
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => Make_Identifier (Loc, Nam)),
+            Copy_Assertion_Policy_Attributes (Prag, DIC_Prag);
 
-                  Make_Pragma_Argument_Association (Loc,
-                    Expression => DIC_Expr))));
+            Append_New_To (Stmts, Prag);
          end if;
 
          --  Add the pragma to the list of processed pragmas
@@ -2318,6 +2338,7 @@ package body Exp_Util is
       DIC_Typ      : Entity_Id;
       Dummy_1      : Entity_Id;
       Dummy_2      : Entity_Id;
+      Prag         : Node_Id;
       Proc_Body    : Node_Id;
       Proc_Body_Id : Entity_Id;
       Proc_Decl    : Node_Id;
@@ -2464,12 +2485,23 @@ package body Exp_Util is
       if Partial_DIC then
          pragma Assert (Present (Priv_Typ));
 
-         if Has_Own_DIC (Work_Typ) then  -- If we're testing this then maybe
-            Add_Own_DIC        -- we shouldn't be calling Find_DIC_Typ above???
-              (DIC_Prag => DIC_Prag,
-               DIC_Typ  => DIC_Typ,  -- Should this just be Work_Typ???
-               Obj_Id   => Obj_Id,
-               Stmts    => Stmts);
+         if Has_Own_DIC (Work_Typ) then
+            --  If we're testing this then maybe
+
+            Prag := DIC_Prag;
+            while Present (Prag)
+              and then Nkind (Prag) = N_Pragma
+              and then Pragma_Name (Prag) = Name_Default_Initial_Condition
+              and then (Prag = DIC_Prag
+                        or else From_Same_Pragma (Prag, DIC_Prag))
+            loop
+               Add_Own_DIC    -- we shouldn't be calling Find_DIC_Typ above???
+                 (DIC_Prag => Prag,
+                  DIC_Typ  => DIC_Typ,  -- Should this just be Work_Typ???
+                  Obj_Id   => Obj_Id,
+                  Stmts    => Stmts);
+               Next_Rep_Item (Prag);
+            end loop;
          end if;
 
       --  Otherwise, the "full" DIC procedure verifies the DICs inherited from
@@ -3229,8 +3261,9 @@ package body Exp_Util is
          Ploc    : constant Source_Ptr := Sloc (Prag);
          Str_Arg : constant Node_Id    := Next (Next (First (Args)));
 
-         Assoc : List_Id;
-         Str   : String_Id;
+         Assoc      : List_Id;
+         Check_Prag : Node_Id;
+         Str        : String_Id;
 
       begin
          --  The invariant is ignored, nothing left to do
@@ -3273,10 +3306,14 @@ package body Exp_Util is
             --  Generate:
             --    pragma Check (<Nam>, <Expr>, <Str>);
 
-            Append_New_To (Checks,
+            Check_Prag :=
               Make_Pragma (Ploc,
-                Chars                        => Name_Check,
-                Pragma_Argument_Associations => Assoc));
+                 Chars                        => Name_Check,
+                 Pragma_Argument_Associations => Assoc);
+
+            Copy_Assertion_Policy_Attributes (Check_Prag, Prag);
+
+            Append_New_To (Checks, Check_Prag);
          end if;
 
          --  Output an info message when inheriting an invariant and the
@@ -6186,7 +6223,11 @@ package body Exp_Util is
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
          elsif Is_Implicit_Full_View (Utyp) then
-            Utyp := Underlying_Type (Root_Type (Btyp));
+            if Is_Derived_Type (Btyp) then
+               Utyp := Underlying_Type (Root_Type (Btyp));
+            else
+               Utyp := Underlying_Type (Root_Type (Full_View (Btyp)));
+            end if;
 
             if Is_Protected_Type (Utyp) then
                Utyp := Corresponding_Record_Type (Utyp);
@@ -10013,7 +10054,8 @@ package body Exp_Util is
    begin
       return (not Is_Tagged_Type (T) and then Is_Derived_Type (T))
                or else
-                 (Is_Private_Type (T) and then Present (Full_View (T))
+                 (Is_Private_Type (T)
+                   and then Present (Full_View (T))
                    and then not Is_Tagged_Type (Full_View (T))
                    and then Is_Derived_Type (Full_View (T))
                    and then Etype (Full_View (T)) /= T);
@@ -13478,7 +13520,7 @@ package body Exp_Util is
             --  Ignored Ghost types do not need any cleanup actions because
             --  they will not appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Typ) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Typ) then
                null;
 
             elsif Is_Tagged_Type (Typ)
@@ -13524,7 +13566,7 @@ package body Exp_Util is
             --  Ignored Ghost objects do not need any cleanup actions because
             --  they will not appear in the final tree.
 
-            elsif Is_Ignored_Ghost_Entity (Obj_Id) then
+            elsif Is_Ignored_Ghost_Entity_In_Codegen (Obj_Id) then
                null;
 
             --  Conversely, if one of the above cases created a Master_Node,
@@ -13620,7 +13662,7 @@ package body Exp_Util is
             --  Freeze nodes for ignored Ghost types do not need cleanup
             --  actions because they will never appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Typ) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Typ) then
                null;
 
             elsif ((Is_Access_Object_Type (Typ)
@@ -13643,7 +13685,7 @@ package body Exp_Util is
             --  Do not inspect an ignored Ghost package because all code found
             --  within will not appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Pack_Id) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Pack_Id) then
                null;
 
             elsif Ekind (Pack_Id) /= E_Generic_Package
@@ -13660,7 +13702,7 @@ package body Exp_Util is
             --  Do not inspect an ignored Ghost package body because all code
             --  found within will not appear in the final tree.
 
-            if Is_Ignored_Ghost_Entity (Defining_Entity (Decl)) then
+            if Is_Ignored_Ghost_Entity_In_Codegen (Defining_Entity (Decl)) then
                null;
 
             elsif Ekind (Corresponding_Spec (Decl)) /= E_Generic_Package
@@ -14895,6 +14937,37 @@ package body Exp_Util is
             when N_If_Expression =>
                exit when Node = First (Expressions (Parent_Node));
 
+            when others =>
+               exit;
+         end case;
+
+         Node        := Parent_Node;
+         Parent_Node := Parent (Node);
+      end loop;
+
+      return Parent_Node;
+   end Unconditional_Parent;
+
+   --------------------------------------
+   -- Unqualified_Unconditional_Parent --
+   --------------------------------------
+
+   function Unqualified_Unconditional_Parent (N : Node_Id) return Node_Id is
+      Node        : Node_Id := N;
+      Parent_Node : Node_Id := Parent (Node);
+
+   begin
+      loop
+         case Nkind (Parent_Node) is
+            when N_Case_Expression_Alternative =>
+               null;
+
+            when N_Case_Expression =>
+               exit when Node = Expression (Parent_Node);
+
+            when N_If_Expression =>
+               exit when Node = First (Expressions (Parent_Node));
+
             when N_Qualified_Expression =>
                null;
 
@@ -14907,7 +14980,7 @@ package body Exp_Util is
       end loop;
 
       return Parent_Node;
-   end Unconditional_Parent;
+   end Unqualified_Unconditional_Parent;
 
    -------------------------------
    -- Update_Primitives_Mapping --

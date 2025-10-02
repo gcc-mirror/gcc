@@ -1,4 +1,4 @@
-/* { dg-options "-mno-abicalls -mgpopt -G8 -mabi=32 -mips16 -mmips16e2" } */
+/* { dg-options "-mno-abicalls -mgpopt -G8 -mabi=32 isa_rev=2 -mmips16e2" } */
 /* { dg-skip-if "per-function expected output" { *-*-* } { "-flto" } { "" } } */
  
 /* ANDI is a two operand instruction.  Hence, it won't be generated if src and

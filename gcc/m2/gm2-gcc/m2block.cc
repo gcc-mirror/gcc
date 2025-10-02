@@ -115,6 +115,22 @@ typedef struct stmt_tree_s *stmt_tree_t;
 static location_t pending_location;
 static int pending_statement = false;
 
+/* GetTotalConstants returns the number of global constants.  */
+
+int
+m2block_GetTotalConstants (void)
+{
+  return m2treelib_nCount (global_binding_level->constants);
+}
+
+/* GetGlobalTypes returns the number of global types.  */
+
+int
+m2block_GetGlobalTypes (void)
+{
+  return m2treelib_nCount (global_binding_level->types);
+}
+
 /* assert_global_names asserts that the global_binding_level->names
    can be chained.  */
 

@@ -33,7 +33,6 @@ with Mutably_Tagged; use Mutably_Tagged;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;
-with Rtsfind;        use Rtsfind;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Util;       use Sem_Util;
 with Sinfo;          use Sinfo;
@@ -43,7 +42,6 @@ with Snames;         use Snames;
 with Stand;          use Stand;
 with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
-with Uintp;          use Uintp;
 
 package body Exp_Strm is
 
@@ -82,13 +80,13 @@ package body Exp_Strm is
    --  Decls and Stms are the declarations and statements for the body and
    --  The parameter Fnam is the name of the constructed function.
 
-   function Has_Stream_Standard_Rep (U_Type : Entity_Id) return Boolean;
-   --  This function is used to test the type U_Type, to determine if it has
-   --  a standard representation from a streaming point of view. Standard means
-   --  that it has a standard representation (e.g. no enumeration rep clause),
-   --  and the size of the root type is the same as the streaming size (which
-   --  is defined as value specified by a Stream_Size clause if present, or
-   --  the Esize of U_Type if not).
+   function Is_Stream_Standard_Rep
+     (U_Type : Entity_Id; S_Size : Uint) return Boolean;
+   --  This function is used to test the type U_Type, to determine whether it
+   --  would have a standard representation from a streaming point of view if
+   --  its Stream_Size attribute was set to S_Size. Standard means that it has
+   --  a standard representation (e.g. no enumeration rep clause), and the size
+   --  of the root type is the same as the stream size.
 
    function Make_Stream_Subprogram_Name
      (Loc : Source_Ptr;
@@ -436,51 +434,39 @@ package body Exp_Strm is
       Build_Array_Read_Write_Procedure (Typ, Decl, Pnam, Name_Write);
    end Build_Array_Write_Procedure;
 
-   ---------------------------------
-   -- Build_Elementary_Input_Call --
-   ---------------------------------
+   function Get_Primitives
+     (P_Type : Entity_Id; P_Size : Uint) return Primitive_Result
+   is
 
-   function Build_Elementary_Input_Call (N : Node_Id) return Node_Id is
-      Loc     : constant Source_Ptr := Sloc (N);
-      P_Type  : constant Entity_Id  := Entity (Prefix (N));
-      U_Type  : constant Entity_Id  := Underlying_Type (P_Type);
-      Rt_Type : constant Entity_Id  := Root_Type (U_Type);
-      FST     : constant Entity_Id  := First_Subtype (U_Type);
-      Strm    : constant Node_Id    := First (Expressions (N));
-      Targ    : constant Node_Id    := Next (Strm);
-      P_Size  : constant Uint       := Get_Stream_Size (FST);
-      Res     : Node_Id;
-      Lib_RE  : RE_Id;
+      function Prims (Input, Write : RE_Id) return Primitive_Result;
+      function Prims (Input, Write : RE_Id) return Primitive_Result is
+      begin
+         return (Primitives, 0, Input, Write);
+      end Prims;
 
+      function PSizes (L : Sizes) return Primitive_Result;
+      function PSizes (L : Sizes) return Primitive_Result is
+      begin
+         return (Possible_Sizes, L'Length, L);
+      end PSizes;
+
+      U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+      FST     : constant Entity_Id := First_Subtype (U_Type);
+      Rt_Type : constant Entity_Id := Root_Type (U_Type);
+
+      Rep_Is_Standard : constant Boolean :=
+        Known_RM_Size (U_Type)
+        and then Is_Stream_Standard_Rep (U_Type, P_Size);
    begin
-      --  Check first for Boolean and Character. These are enumeration types,
-      --  but we treat them specially, since they may require special handling
-      --  in the transfer protocol. However, this special handling only applies
-      --  if they have standard representation, otherwise they are treated like
-      --  any other enumeration type.
-
-      if Rt_Type = Standard_Boolean
-        and then Has_Stream_Standard_Rep (U_Type)
+      if Rt_Type = Standard_Boolean and then Rep_Is_Standard then
+         return Prims (RE_I_B, RE_W_B);
+      elsif Rt_Type = Standard_Character and then Rep_Is_Standard then
+         return Prims (RE_I_C, RE_W_C);
+      elsif Rt_Type = Standard_Wide_Character and then Rep_Is_Standard then
+         return Prims (RE_I_WC, RE_W_WC);
+      elsif Rt_Type = Standard_Wide_Wide_Character and then Rep_Is_Standard
       then
-         Lib_RE := RE_I_B;
-
-      elsif Rt_Type = Standard_Character
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_I_C;
-
-      elsif Rt_Type = Standard_Wide_Character
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_I_WC;
-
-      elsif Rt_Type = Standard_Wide_Wide_Character
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_I_WWC;
-
-      --  Floating point types
-
+         return Prims (RE_I_WWC, RE_W_WWC);
       elsif Is_Floating_Point_Type (U_Type) then
 
          --  Question: should we use P_Size or Rt_Type to distinguish between
@@ -500,23 +486,30 @@ package body Exp_Strm is
          --  To deal with these two requirements we add the special checks
          --  on equal sizes and use the root type to distinguish.
 
-         if P_Size <= Standard_Short_Float_Size
+         if P_Size = Standard_Short_Float_Size
            and then (Standard_Short_Float_Size /= Standard_Float_Size
                      or else Rt_Type = Standard_Short_Float)
          then
-            Lib_RE := RE_I_SF;
+            return Prims (RE_I_SF, RE_W_SF);
 
-         elsif P_Size <= Standard_Float_Size then
-            Lib_RE := RE_I_F;
+         elsif P_Size = Standard_Float_Size then
+            return Prims (RE_I_F, RE_W_F);
 
-         elsif P_Size <= Standard_Long_Float_Size
+         elsif P_Size = Standard_Long_Float_Size
            and then (Standard_Long_Float_Size /= Standard_Long_Long_Float_Size
-                       or else Rt_Type = Standard_Long_Float)
+                     or else Rt_Type = Standard_Long_Float)
          then
-            Lib_RE := RE_I_LF;
+            return Prims (RE_I_LF, RE_W_LF);
 
+         elsif P_Size = Standard_Long_Long_Float_Size then
+            return Prims (RE_I_LLF, RE_W_LLF);
          else
-            Lib_RE := RE_I_LLF;
+            return
+              PSizes
+                ((Standard_Short_Float_Size,
+                  Standard_Float_Size,
+                  Standard_Long_Float_Size,
+                  Standard_Long_Long_Float_Size));
          end if;
 
       --  Signed integer types. Also includes signed fixed-point types and
@@ -548,35 +541,42 @@ package body Exp_Strm is
         --  The following set of tests gets repeated many times, we should
         --  have an abstraction defined ???
 
-        and then
-          (Is_Fixed_Point_Type (U_Type)
-             or else
-           Is_Enumeration_Type (U_Type)
-             or else
-           (Is_Signed_Integer_Type (U_Type)
-              and then not Has_Biased_Representation (FST)))
+        and then (Is_Fixed_Point_Type (U_Type)
+                  or else Is_Enumeration_Type (U_Type)
+                  or else (Is_Signed_Integer_Type (U_Type)
+                           and then not Has_Biased_Representation (FST)))
 
       then
-         if P_Size <= Standard_Short_Short_Integer_Size then
-            Lib_RE := RE_I_SSI;
+         if P_Size = Standard_Short_Short_Integer_Size then
+            return Prims (RE_I_SSI, RE_W_SSI);
 
-         elsif P_Size <= Standard_Short_Integer_Size then
-            Lib_RE := RE_I_SI;
+         elsif P_Size = Standard_Short_Integer_Size then
+            return Prims (RE_I_SI, RE_W_SI);
 
          elsif P_Size = 24 then
-            Lib_RE := RE_I_I24;
+            return Prims (RE_I_I24, RE_W_I24);
 
-         elsif P_Size <= Standard_Integer_Size then
-            Lib_RE := RE_I_I;
+         elsif P_Size = Standard_Integer_Size then
+            return Prims (RE_I_I, RE_W_I);
 
-         elsif P_Size <= Standard_Long_Integer_Size then
-            Lib_RE := RE_I_LI;
+         elsif P_Size = Standard_Long_Integer_Size then
+            return Prims (RE_I_LI, RE_W_LI);
 
-         elsif P_Size <= Standard_Long_Long_Integer_Size then
-            Lib_RE := RE_I_LLI;
+         elsif P_Size = Standard_Long_Long_Integer_Size then
+            return Prims (RE_I_LLI, RE_W_LLI);
 
+         elsif P_Size = Standard_Long_Long_Long_Integer_Size then
+            return Prims (RE_I_LLLI, RE_W_LLLI);
          else
-            Lib_RE := RE_I_LLLI;
+            return
+              PSizes
+                ((Standard_Short_Short_Integer_Size,
+                  Standard_Short_Integer_Size,
+                  24,
+                  Standard_Integer_Size,
+                  Standard_Long_Integer_Size,
+                  Standard_Long_Long_Integer_Size,
+                  Standard_Long_Long_Long_Integer_Size));
          end if;
 
       --  Unsigned integer types, also includes unsigned fixed-point types
@@ -586,41 +586,74 @@ package body Exp_Strm is
       --  Also includes signed integer types that are unsigned in the sense
       --  that they do not include negative numbers. See above for details.
 
-      elsif Is_Modular_Integer_Type    (U_Type)
-        or else Is_Fixed_Point_Type    (U_Type)
-        or else Is_Enumeration_Type    (U_Type)
+      elsif Is_Modular_Integer_Type (U_Type)
+        or else Is_Fixed_Point_Type (U_Type)
+        or else Is_Enumeration_Type (U_Type)
         or else Is_Signed_Integer_Type (U_Type)
       then
-         if P_Size <= Standard_Short_Short_Integer_Size then
-            Lib_RE := RE_I_SSU;
+         if P_Size = Standard_Short_Short_Integer_Size then
+            return Prims (RE_I_SSU, RE_W_SSU);
 
-         elsif P_Size <= Standard_Short_Integer_Size then
-            Lib_RE := RE_I_SU;
+         elsif P_Size = Standard_Short_Integer_Size then
+            return Prims (RE_I_SU, RE_W_SU);
 
          elsif P_Size = 24 then
-            Lib_RE := RE_I_U24;
+            return Prims (RE_I_U24, RE_W_U24);
 
-         elsif P_Size <= Standard_Integer_Size then
-            Lib_RE := RE_I_U;
+         elsif P_Size = Standard_Integer_Size then
+            return Prims (RE_I_U, RE_W_U);
 
-         elsif P_Size <= Standard_Long_Integer_Size then
-            Lib_RE := RE_I_LU;
+         elsif P_Size = Standard_Long_Integer_Size then
+            return Prims (RE_I_LU, RE_W_LU);
 
-         elsif P_Size <= Standard_Long_Long_Integer_Size then
-            Lib_RE := RE_I_LLU;
+         elsif P_Size = Standard_Long_Long_Integer_Size then
+            return Prims (RE_I_LLU, RE_W_LLU);
+
+         elsif P_Size = Standard_Long_Long_Long_Integer_Size then
+            return Prims (RE_I_LLLU, RE_W_LLLU);
 
          else
-            Lib_RE := RE_I_LLLU;
+            return
+              PSizes
+                ((Standard_Short_Short_Integer_Size,
+                  Standard_Short_Integer_Size,
+                  24,
+                  Standard_Integer_Size,
+                  Standard_Long_Integer_Size,
+                  Standard_Long_Long_Integer_Size,
+                  Standard_Long_Long_Long_Integer_Size));
          end if;
 
       else pragma Assert (Is_Access_Type (U_Type));
          if Present (P_Size) and then P_Size > System_Address_Size then
-            Lib_RE := RE_I_AD;
+            return Prims (RE_I_AD, RE_W_AD);
          else
-            Lib_RE := RE_I_AS;
+            return Prims (RE_I_AS, RE_W_AS);
          end if;
       end if;
+   end Get_Primitives;
 
+   ---------------------------------
+   -- Build_Elementary_Input_Call --
+   ---------------------------------
+
+   function Build_Elementary_Input_Call (N : Node_Id) return Node_Id is
+      Loc     : constant Source_Ptr := Sloc (N);
+      P_Type  : constant Entity_Id  := Entity (Prefix (N));
+      U_Type  : constant Entity_Id  := Underlying_Type (P_Type);
+      FST     : constant Entity_Id  := First_Subtype (U_Type);
+      Strm    : constant Node_Id    := First (Expressions (N));
+      Targ    : constant Node_Id    := Next (Strm);
+      P_Size  : constant Uint       := Get_Stream_Size (FST);
+      Res     : Node_Id;
+
+      Prims : constant Primitive_Result := Get_Primitives (P_Type, P_Size);
+
+      Lib_RE : constant RE_Id :=
+        (case Prims.S is
+           when Primitives => Prims.Input,
+           when others => raise Program_Error);
+   begin
       --  Call the function, and do an unchecked conversion of the result
       --  to the actual type of the prefix. If the target is a discriminant,
       --  and we are in the body of the default implementation of a 'Read
@@ -679,191 +712,22 @@ package body Exp_Strm is
 
    function Build_Elementary_Write_Call (N : Node_Id) return Node_Id is
       Loc     : constant Source_Ptr := Sloc (N);
-      P_Type  : constant Entity_Id  := Entity (Prefix (N));
-      U_Type  : constant Entity_Id  := Underlying_Type (P_Type);
-      Rt_Type : constant Entity_Id  := Root_Type (U_Type);
-      FST     : constant Entity_Id  := First_Subtype (U_Type);
-      Strm    : constant Node_Id    := First (Expressions (N));
-      Item    : constant Node_Id    := Next (Strm);
-      P_Size  : Uint;
-      Lib_RE  : RE_Id;
+      P_Type  : constant Entity_Id := Entity (Prefix (N));
+      U_Type  : constant Entity_Id := Underlying_Type (P_Type);
+      FST     : constant Entity_Id := First_Subtype (U_Type);
+      Strm    : constant Node_Id := First (Expressions (N));
+      Item    : constant Node_Id := Next (Strm);
+      P_Size  : constant Uint := Get_Stream_Size (FST);
       Libent  : Entity_Id;
 
+      Prims : constant Primitive_Result := Get_Primitives (P_Type, P_Size);
+
+      Lib_RE : constant RE_Id :=
+        (case Prims.S is
+           when Primitives => Prims.Write,
+           when others => raise Program_Error);
    begin
-      --  Compute the size of the stream element. This is either the size of
-      --  the first subtype or if given the size of the Stream_Size attribute.
-
-      if Has_Stream_Size_Clause (FST) then
-         P_Size := Static_Integer (Expression (Stream_Size_Clause (FST)));
-      else
-         P_Size := Esize (FST);
-      end if;
-
-      --  Find the routine to be called
-
-      --  Check for First Boolean and Character. These are enumeration types,
-      --  but we treat them specially, since they may require special handling
-      --  in the transfer protocol. However, this special handling only applies
-      --  if they have standard representation, otherwise they are treated like
-      --  any other enumeration type.
-
-      if Rt_Type = Standard_Boolean
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_W_B;
-
-      elsif Rt_Type = Standard_Character
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_W_C;
-
-      elsif Rt_Type = Standard_Wide_Character
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_W_WC;
-
-      elsif Rt_Type = Standard_Wide_Wide_Character
-        and then Has_Stream_Standard_Rep (U_Type)
-      then
-         Lib_RE := RE_W_WWC;
-
-      --  Floating point types
-
-      elsif Is_Floating_Point_Type (U_Type) then
-
-         --  Question: should we use P_Size or Rt_Type to distinguish between
-         --  possible floating point types? If a non-standard size or a stream
-         --  size is specified, then we should certainly use the size. But if
-         --  we have two types the same (notably Short_Float_Size = Float_Size
-         --  which is close to universally true, and Long_Long_Float_Size =
-         --  Long_Float_Size, true on most targets except the x86), then we
-         --  would really rather use the root type, so that if people want to
-         --  fiddle with System.Stream_Attributes to get inter-target portable
-         --  streams, they get the size they expect. Consider in particular the
-         --  case of a stream written on an x86, with 96-bit Long_Long_Float
-         --  being read into a non-x86 target with 64 bit Long_Long_Float. A
-         --  special version of System.Stream_Attributes can deal with this
-         --  provided the proper type is always used.
-
-         --  To deal with these two requirements we add the special checks
-         --  on equal sizes and use the root type to distinguish.
-
-         if P_Size <= Standard_Short_Float_Size
-           and then (Standard_Short_Float_Size /= Standard_Float_Size
-                      or else Rt_Type = Standard_Short_Float)
-         then
-            Lib_RE := RE_W_SF;
-
-         elsif P_Size <= Standard_Float_Size then
-            Lib_RE := RE_W_F;
-
-         elsif P_Size <= Standard_Long_Float_Size
-           and then (Standard_Long_Float_Size /= Standard_Long_Long_Float_Size
-                      or else Rt_Type = Standard_Long_Float)
-         then
-            Lib_RE := RE_W_LF;
-
-         else
-            Lib_RE := RE_W_LLF;
-         end if;
-
-      --  Signed integer types. Also includes signed fixed-point types and
-      --  signed enumeration types share this circuitry.
-
-      --  Note on signed integer types. We do not consider types as signed for
-      --  this purpose if they have no negative numbers, or if they have biased
-      --  representation. The reason is that the value in either case basically
-      --  represents an unsigned value.
-
-      --  For example, consider:
-
-      --     type W is range 0 .. 2**32 - 1;
-      --     for W'Size use 32;
-
-      --  This is a signed type, but the representation is unsigned, and may
-      --  be outside the range of a 32-bit signed integer, so this must be
-      --  treated as 32-bit unsigned.
-
-      --  Similarly, the representation is also unsigned if we have:
-
-      --     type W is range -1 .. +254;
-      --     for W'Size use 8;
-
-      --  forcing a biased and unsigned representation
-
-      elsif not Is_Unsigned_Type (FST)
-        and then
-          (Is_Fixed_Point_Type (U_Type)
-             or else
-           Is_Enumeration_Type (U_Type)
-             or else
-           (Is_Signed_Integer_Type (U_Type)
-              and then not Has_Biased_Representation (FST)))
-      then
-         if P_Size <= Standard_Short_Short_Integer_Size then
-            Lib_RE := RE_W_SSI;
-
-         elsif P_Size <= Standard_Short_Integer_Size then
-            Lib_RE := RE_W_SI;
-
-         elsif P_Size = 24 then
-            Lib_RE := RE_W_I24;
-
-         elsif P_Size <= Standard_Integer_Size then
-            Lib_RE := RE_W_I;
-
-         elsif P_Size <= Standard_Long_Integer_Size then
-            Lib_RE := RE_W_LI;
-
-         elsif P_Size <= Standard_Long_Long_Integer_Size then
-            Lib_RE := RE_W_LLI;
-
-         else
-            Lib_RE := RE_W_LLLI;
-         end if;
-
-      --  Unsigned integer types, also includes unsigned fixed-point types
-      --  and unsigned enumeration types (note we know they are unsigned
-      --  because we already tested for signed above).
-
-      --  Also includes signed integer types that are unsigned in the sense
-      --  that they do not include negative numbers. See above for details.
-
-      elsif Is_Modular_Integer_Type    (U_Type)
-        or else Is_Fixed_Point_Type    (U_Type)
-        or else Is_Enumeration_Type    (U_Type)
-        or else Is_Signed_Integer_Type (U_Type)
-      then
-         if P_Size <= Standard_Short_Short_Integer_Size then
-            Lib_RE := RE_W_SSU;
-
-         elsif P_Size <= Standard_Short_Integer_Size then
-            Lib_RE := RE_W_SU;
-
-         elsif P_Size = 24 then
-            Lib_RE := RE_W_U24;
-
-         elsif P_Size <= Standard_Integer_Size then
-            Lib_RE := RE_W_U;
-
-         elsif P_Size <= Standard_Long_Integer_Size then
-            Lib_RE := RE_W_LU;
-
-         elsif P_Size <= Standard_Long_Long_Integer_Size then
-            Lib_RE := RE_W_LLU;
-
-         else
-            Lib_RE := RE_W_LLLU;
-         end if;
-
-      else pragma Assert (Is_Access_Type (U_Type));
-
-         if Present (P_Size) and then P_Size > System_Address_Size then
-            Lib_RE := RE_W_AD;
-         else
-            Lib_RE := RE_W_AS;
-         end if;
-      end if;
+      pragma Assert (Prims.S = Primitives);
 
       --  Unchecked-convert parameter to the required type (i.e. the type of
       --  the corresponding parameter, and call the appropriate routine.
@@ -871,12 +735,15 @@ package body Exp_Strm is
       Libent := RTE (Lib_RE);
 
       return
-        Make_Procedure_Call_Statement (Loc,
-          Name => New_Occurrence_Of (Libent, Loc),
-          Parameter_Associations => New_List (
-            Relocate_Node (Strm),
-            Unchecked_Convert_To (Etype (Next_Formal (First_Formal (Libent))),
-              Relocate_Node (Item))));
+        Make_Procedure_Call_Statement
+          (Loc,
+           Name                   => New_Occurrence_Of (Libent, Loc),
+           Parameter_Associations =>
+             New_List
+               (Relocate_Node (Strm),
+                Unchecked_Convert_To
+                  (Etype (Next_Formal (First_Formal (Libent))),
+                   Relocate_Node (Item))));
    end Build_Elementary_Write_Call;
 
    -----------------------------------------
@@ -1766,22 +1633,15 @@ package body Exp_Strm is
    -- Has_Stream_Standard_Rep --
    -----------------------------
 
-   function Has_Stream_Standard_Rep (U_Type : Entity_Id) return Boolean is
-      Siz : Uint;
-
+   function Is_Stream_Standard_Rep
+     (U_Type : Entity_Id; S_Size : Uint) return Boolean is
    begin
       if Has_Non_Standard_Rep (U_Type) then
          return False;
       end if;
 
-      if Has_Stream_Size_Clause (U_Type) then
-         Siz := Static_Integer (Expression (Stream_Size_Clause (U_Type)));
-      else
-         Siz := Esize (First_Subtype (U_Type));
-      end if;
-
-      return Siz = Esize (Root_Type (U_Type));
-   end Has_Stream_Standard_Rep;
+      return S_Size = Esize (Root_Type (U_Type));
+   end Is_Stream_Standard_Rep;
 
    ---------------------------------
    -- Make_Stream_Subprogram_Name --
@@ -1827,5 +1687,4 @@ package body Exp_Strm is
          return Base_Type (E);
       end if;
    end Stream_Base_Type;
-
 end Exp_Strm;

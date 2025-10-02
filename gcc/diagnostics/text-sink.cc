@@ -24,7 +24,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "coretypes.h"
 #include "version.h"
 #include "intl.h"
-#include "diagnostic.h"
 #include "diagnostics/color.h"
 #include "diagnostics/url.h"
 #include "diagnostics/metadata.h"

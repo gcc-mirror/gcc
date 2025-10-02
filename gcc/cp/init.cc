@@ -3563,9 +3563,10 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
      in start_preparsed_function.  This is most important for activating an
      array in a union (c++/121068), but should also help the optimizers.  */
   const bool do_clobber
-    = (std_placement && !*init && flag_lifetime_dse > 1
-       && (!CLASS_TYPE_P (elt_type)
-	   || type_has_non_user_provided_default_constructor (elt_type)));
+    = (std_placement && flag_lifetime_dse > 1
+       && !processing_template_decl
+       && !is_empty_type (elt_type)
+       && (!*init || CLASS_TYPE_P (elt_type)));
 
   /* In the simple case, we can stop now.  */
   pointer_type = build_pointer_type (type);
@@ -3930,6 +3931,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 					   complain);
 	  rval = build_conditional_expr (input_location, ifexp, rval,
 					 alloc_node, complain);
+	  /* If there's no offset between data_addr and alloc_node, append it
+	     to help -Wmismatched-new-delete at -O0.  */
+	  if (!cookie_size)
+	    rval = build2 (COMPOUND_EXPR, TREE_TYPE (alloc_node),
+			   rval, alloc_node);
 	}
 
       /* Perform the allocation before anything else, so that ALLOC_NODE
@@ -4918,7 +4924,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
 
       /* Any elements without explicit initializers get T{}.  */
-      empty_list = true;
+      if (!TREE_CLOBBER_P (init))
+	empty_list = true;
     }
   else if (init && TREE_CODE (init) == STRING_CST)
     {
@@ -5057,7 +5064,8 @@ build_vec_init (tree base, tree maxindex, tree init,
 	}
       else if (TREE_CODE (type) == ARRAY_TYPE)
 	{
-	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init))
+	  if (init && !BRACE_ENCLOSED_INITIALIZER_P (init)
+	      && !TREE_CLOBBER_P (init))
 	    {
 	      if ((complain & tf_error))
 		error_at (loc, "array must be initialized "

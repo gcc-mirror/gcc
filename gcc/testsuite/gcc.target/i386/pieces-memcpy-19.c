@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=sapphirerapids -mmove-max=128 -mstore-max=128" } */
+/* { dg-options "-O2 -march=sapphirerapids -mmove-max=128" } */
 
 extern char *dst, *src;
 

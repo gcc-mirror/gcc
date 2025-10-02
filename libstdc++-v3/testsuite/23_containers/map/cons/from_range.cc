@@ -61,7 +61,7 @@ constexpr bool is_equal(std::less<T>, std::less<U>)
 { return true; }
 
 constexpr bool is_equal(StateCmp lhs, StateCmp rhs)
-{ return lhs.state = rhs.state; }
+{ return lhs.state == rhs.state; }
 
 constexpr auto get0 = [](auto const& t) {
   using std::get;
@@ -103,12 +103,12 @@ do_test(Alloc alloc, Cmp cmp)
   std::map<K, V, Cmp, Alloc> m4(std::from_range, Range(a, a+4), cmp);
   VERIFY( eq(m4, {a, 4}) );
   VERIFY( m4.get_allocator() == Alloc() );
-  VERIFY( is_equal(m4.key_comp(), Cmp()) );
+  VERIFY( is_equal(m4.key_comp(), cmp) );
 
   std::map<K, V, Cmp, Alloc> m9(std::from_range, Range(a, a+9), alloc);
   VERIFY( eq(m9, {a, 9}) );
   VERIFY( m9.get_allocator() == alloc );
-  VERIFY( is_equal(m9.key_comp(), cmp) );
+  VERIFY( is_equal(m9.key_comp(), Cmp()) );
 
   std::map<K, V, Cmp, Alloc> mr(std::from_range, Range(a, a+14), cmp, alloc);
   VERIFY( eq(mr, {a, 9}) );

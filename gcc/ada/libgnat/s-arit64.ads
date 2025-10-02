@@ -41,6 +41,10 @@ with Interfaces;
 package System.Arith_64
   with Pure, SPARK_Mode
 is
+   -----------
+   -- Int64 --
+   -----------
+
    subtype Int64 is Interfaces.Integer_64;
 
    function Add_With_Ovflo_Check64 (X, Y : Int64) return Int64;
@@ -146,5 +150,42 @@ is
       Q, R    : out Int64;
       Round   : Boolean) renames Double_Divide64;
    --  Renamed procedure to preserve compatibility with earlier versions
+
+   -----------
+   -- Uns64 --
+   -----------
+
+   subtype Uns64 is Interfaces.Unsigned_64;
+
+   function Uns_Add_With_Ovflo_Check64 (X, Y : Uns64) return Uns64;
+   --  Raises Constraint_Error if sum of operands overflows 64 bits,
+   --  otherwise returns the 64 bits unsigned integer sum.
+   --
+   --  The sum of ``X`` and ``Y`` is first computed. If the result is
+   --  lower than the first operand, then an overflow occurred and the
+   --  exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
+
+   function Uns_Subtract_With_Ovflo_Check64 (X, Y : Uns64) return Uns64;
+   --  Raises Constraint_Error if difference of operands overflows 64 bits,
+   --  otherwise returns the 64-bit unsigned integer difference.
+   --
+   --  The subtraction of ``X`` and ``Y`` is first computed using wrap-around
+   --  semantics.
+   --
+   --  If the sign of the result is negative, then an overflow occurred and
+   --  the exception *Constraint_Error* is raised; otherwise the result is
+   --  correct.
+
+   function Uns_Multiply_With_Ovflo_Check64 (X, Y : Uns64) return Uns64;
+   pragma Export (C, Uns_Multiply_With_Ovflo_Check64, "__gnat_uns_mulv64");
+   --  Raises Constraint_Error if product of operands overflows 64 bits,
+   --  otherwise returns the 64-bit signed integer product. The code
+   --  generator may also generate direct calls to this routine.
+   --
+   --  The multiplication is done using pencil and paper algorithm using base
+   --  2**32. The multiplication is done on unsigned values, then the correct
+   --  unsigned value is returned. Overflow check is performed by looking at
+   --  higher digits.
 
 end System.Arith_64;

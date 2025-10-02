@@ -366,8 +366,8 @@ package body Ch6 is
                Inst_Node := New_Node (N_Procedure_Instantiation, Fproc_Sloc);
             end if;
 
-            Set_Name (Inst_Node, P_Qualified_Simple_Name);
             Set_Defining_Unit_Name (Inst_Node, Name_Node);
+            Set_Name (Inst_Node, P_Generic_Unit_Name);
             Set_Generic_Associations (Inst_Node, P_Generic_Actual_Part_Opt);
             P_Aspect_Specifications (Inst_Node, Semicolon => True);
             Pop_Scope_Stack; -- Don't need scope stack entry in this case

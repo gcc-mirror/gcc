@@ -1,0 +1,66 @@
+/* Intrinsic define macros for Andes custom 'V' Extension for GNU compiler.
+   Copyright (C) 2024-2025 Free Software Foundation, Inc.
+   Contributed by Andes.
+
+This file is part of GCC.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>. */
+
+/* Use "DEF_RVV_FUNCTION" macro to define RVV intrinsic functions.
+
+     - NAME not only describes the base_name of the functions
+       but also point to the name of the function_base class.
+
+     - SHAPE point to the function_shape class.
+
+     - PREDS describes the predication types that are supported in the
+       functions.
+
+     - OPS_INFO describes all information of return type and each
+       argument type.
+
+*/
+#ifndef DEF_RVV_FUNCTION
+#define DEF_RVV_FUNCTION(NAME, SHAPE, PREDS, OPS_INFO)
+#endif
+
+/* Andes Vector Packed FP16 Extension (XAndesVBFHCvt).  */
+#define REQUIRED_EXTENSIONS XANDESVBFHCVT_EXT
+DEF_RVV_FUNCTION (nds_vfwcvt_s, alu, none_tu_preds, bf16_to_f32_wf_v_ops)
+DEF_RVV_FUNCTION (nds_vfncvt_bf16, narrow_alu, none_tu_preds, f32_to_bf16_nf_w_ops)
+DEF_RVV_FUNCTION (nds_vfncvt_bf16_frm, narrow_alu_frm, none_tu_preds, f32_to_bf16_nf_w_ops)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS XANDESVSINTLOAD_EXT
+DEF_RVV_FUNCTION (nds_vln8, alu, full_preds, q_v_void_const_ptr_ops)
+DEF_RVV_FUNCTION (nds_vlnu8, alu, full_preds, qu_v_void_const_ptr_ops)
+#undef REQUIRED_EXTENSIONS
+
+/* Prefix name for `__riscv_nds_`.  */
+#define REQUIRED_EXTENSIONS XANDESVPACKFPH_EXT
+DEF_RVV_FUNCTION (nds_vfpmadt, alu, full_preds, f16_vvw_ops)
+DEF_RVV_FUNCTION (nds_vfpmadb, alu, full_preds, f16_vvw_ops)
+DEF_RVV_FUNCTION (nds_vfpmadt_frm, alu_frm, full_preds, f16_vvw_ops)
+DEF_RVV_FUNCTION (nds_vfpmadb_frm, alu_frm, full_preds, f16_vvw_ops)
+#undef REQUIRED_EXTENSIONS
+
+/* Andes Vector Dot Product Extension (XAndesVDot).  */
+#define REQUIRED_EXTENSIONS XANDESVDOT_EXT
+DEF_RVV_FUNCTION (nds_vd4dots, alu, full_preds, qexti_vvvv_ops)
+DEF_RVV_FUNCTION (nds_vd4dotsu, alu, full_preds, qexti_su_vvvv_ops)
+DEF_RVV_FUNCTION (nds_vd4dotu, alu, full_preds, qextu_vvvv_ops)
+#undef REQUIRED_EXTENSIONS
+
+#undef DEF_RVV_FUNCTION

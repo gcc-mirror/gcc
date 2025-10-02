@@ -101,26 +101,26 @@ test04()
 
   auto p = ranges::minmax({1,2}, counted_less{});
   VERIFY( counter == 1 );
-  VERIFY( p.min = 1 );
-  VERIFY( p.max = 2 );
+  VERIFY( p.min == 1 );
+  VERIFY( p.max == 2 );
 
   counter = 0;
   p = ranges::minmax({1,2,3}, counted_less{});
   VERIFY( counter == 3 );
-  VERIFY( p.min = 1 );
-  VERIFY( p.max = 3 );
+  VERIFY( p.min == 1 );
+  VERIFY( p.max == 3 );
 
   counter = 0;
   p = ranges::minmax({1,2,3,4,5,6,7,8,9,10}, counted_less{});
   VERIFY( counter <= 15 );
-  VERIFY( p.min = 1 );
-  VERIFY( p.max = 10 );
+  VERIFY( p.min == 1 );
+  VERIFY( p.max == 10 );
 
   counter = 0;
   p = ranges::minmax({10,9,8,7,6,5,4,3,2,1}, counted_less{});
   VERIFY( counter <= 15 );
-  VERIFY( p.min = 1 );
-  VERIFY( p.max = 10 );
+  VERIFY( p.min == 1 );
+  VERIFY( p.max == 10 );
 }
 
 void

@@ -58,12 +58,11 @@ is
    type Set is tagged private
    with Constant_Indexing => Constant_Reference,
         Default_Iterator  => Iterate,
-        Iterator_Element  => Element_Type;
+        Iterator_Element  => Element_Type,
+        Preelaborable_Initialization;
 
-   pragma Preelaborable_Initialization (Set);
-
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private
+   with Preelaborable_Initialization;
 
    Empty_Set : constant Set;
    --  The default value for set objects declared without an explicit

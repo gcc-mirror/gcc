@@ -38,10 +38,17 @@ along with GCC; see the file COPYING3.  If not see
 #include <iconv.h>
 #endif
 
+static int
+decode_utf8_char (const unsigned char *, size_t len, unsigned int *);
+
 #ifdef __MINGW32__
 
 /* Replacement for fputs() that handles ANSI escape codes on Windows NT.
    Contributed by: Liu Hao (lh_mouse at 126 dot com)
+
+   Extended by: Peter Damianov
+   Converts UTF-8 to UTF-16 if outputting to a console, so that emojis and
+   various other unicode characters don't get mojibak'd.
 
    XXX: This file is compiled into libcommon.a that will be self-contained.
 	It looks like that these functions can be put nowhere else.  */
@@ -50,11 +57,132 @@ along with GCC; see the file COPYING3.  If not see
 #define WIN32_LEAN_AND_MEAN 1
 #include <windows.h>
 
+/* Convert UTF-8 string to UTF-16.
+   Returns true if conversion was performed, false if string is pure ASCII.
+
+   If the string contains only ASCII characters, returns false
+   without allocating any memory.  Otherwise, a buffer that the caller
+   must free is allocated and the string is converted into it.  */
+static bool
+mingw_utf8_str_to_utf16_str (const char *utf8_str, size_t utf8_len, wchar_t **utf16_str,
+	       size_t *utf16_len)
+{
+  if (utf8_len == 0)
+    {
+      *utf16_str = NULL;
+      *utf16_len = 0;
+      return false;  /* No conversion needed for empty string.  */
+    }
+
+  /* First pass: scan for non-ASCII and count UTF-16 code units needed.  */
+  size_t utf16_count = 0;
+  const unsigned char *p = (const unsigned char *) utf8_str;
+  const unsigned char *end = p + utf8_len;
+  bool found_non_ascii = false;
+
+  while (p < end)
+    {
+      if (*p <= 127)
+	{
+	  /* ASCII character - count as 1 UTF-16 unit and advance.  */
+	  utf16_count++;
+	  p++;
+	}
+      else
+	{
+	  /* Non-ASCII character - decode UTF-8 sequence.  */
+	  found_non_ascii = true;
+	  unsigned int codepoint;
+	  int utf8_char_len = decode_utf8_char (p, end - p, &codepoint);
+
+	  if (utf8_char_len == 0)
+	    return false;  /* Invalid UTF-8.  */
+
+	  if (codepoint <= 0xFFFF)
+	    utf16_count += 1;  /* Single UTF-16 unit.  */
+	  else
+	    utf16_count += 2;  /* Surrogate pair.  */
+
+	  p += utf8_char_len;
+	}
+    }
+
+  /* If string is pure ASCII, no conversion needed.  */
+  if (!found_non_ascii)
+    return false;
+
+  *utf16_str = (wchar_t *) xmalloc (utf16_count * sizeof (wchar_t));
+  *utf16_len = utf16_count;
+
+  /* Second pass: convert UTF-8 to UTF-16.  */
+  wchar_t *out = *utf16_str;
+  p = (const unsigned char *) utf8_str;
+
+  while (p < end)
+    {
+      if (*p <= 127)
+	{
+	  /* ASCII character.  */
+	  *out++ = (wchar_t) *p++;
+	}
+      else
+	{
+	  /* Non-ASCII character - decode and convert.  */
+	  unsigned int codepoint;
+	  int utf8_char_len = decode_utf8_char (p, end - p, &codepoint);
+
+	  if (codepoint <= 0xFFFF)
+	    {
+	      *out++ = (wchar_t) codepoint;
+	    }
+	  else
+	    {
+	      /* Convert to UTF-16 surrogate pair.  */
+	      codepoint -= 0x10000;
+	      *out++ = (wchar_t) (0xD800 + (codepoint >> 10));
+	      *out++ = (wchar_t) (0xDC00 + (codepoint & 0x3FF));
+	    }
+
+	  p += utf8_char_len;
+	}
+    }
+
+  return true;
+}
+
+/* Check if the handle is a console.  */
+static bool
+is_console_handle (HANDLE h)
+{
+	DWORD mode;
+	return GetConsoleMode (h, &mode);
+}
+
 /* Write all bytes in [s,s+n) into the specified stream.
-   Errors are ignored.  */
+	 If outputting to a Windows console, convert UTF-8 to UTF-16 if needed.
+	 Errors are ignored.  */
 static void
 write_all (HANDLE h, const char *s, size_t n)
 {
+	/* If writing to console, try to convert from UTF-8 to UTF-16 and use
+	   WriteConsoleW.  utf8_to_utf16 will return false if the string is pure
+	   ASCII, in which case we fall back to the regular WriteFile path.  */
+	if (is_console_handle (h))
+	  {
+	    wchar_t *utf16_str;
+	    size_t utf16_len;
+
+	    if (mingw_utf8_str_to_utf16_str (s, n, &utf16_str, &utf16_len))
+	{
+	  DWORD written;
+	  WriteConsoleW (h, utf16_str, utf16_len, &written, NULL);
+	  free (utf16_str);
+	  return;
+	}
+      /* If UTF-8 conversion returned false, fall back to WriteFile.  */
+    }
+
+  /* WriteFile for regular files or when UTF-16 conversion is not needed.  */
   size_t rem = n;
   DWORD step;
 
@@ -712,8 +840,6 @@ mingw_ansi_fputs (const char *str, FILE *fp)
 
 #endif /* __MINGW32__ */
 
-static int
-decode_utf8_char (const unsigned char *, size_t len, unsigned int *);
 static void pp_quoted_string (pretty_printer *, const char *, size_t = -1);
 
 extern void

@@ -25,12 +25,11 @@ int main ()
 {
   hidden::Y y(2);
 
-  // unexported hidden::fn@inter is not visible from TPL@inter
+  // unexported hidden::fn@inter is visible from TPL@inter because it's a
+  // dependent name and so lookup is performed at each point on the
+  // instantiation context, including the point at the end of inter.
   if (TPL (y) != -2)
     return 2;
 
   return 0;
 }
-
-// ADL fails
-// { dg-regexp {[^\n]*/adl-4_a.C:14:[0-9]*: error: 'fn' was not declared in this scope\n} }

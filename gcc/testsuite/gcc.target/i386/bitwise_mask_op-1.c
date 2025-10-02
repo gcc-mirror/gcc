@@ -77,7 +77,7 @@ foo_xorb (__m512i a, __m512i b, __m512i c, __m512i d)
   return _mm512_mask_add_epi64 (c, m1 ^ m2, a, d);
 }
 
-/* { dg-final { scan-assembler-times "korw" "2" } }  */
+/* { dg-final { scan-assembler-times "kxorw" "2" } }  */
 
 __m512i
 foo_andq (__m512i a, __m512i b, __m512i c, __m512i d)

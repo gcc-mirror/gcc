@@ -37,9 +37,9 @@ struct testPartialSort
   template<typename Container, typename RandomGen>
   void operator()(Container con, RandomGen& rg)
   {
-    const int size = con.end() - con.begin();
+    const auto size = con.end() - con.begin();
     auto dist = std::uniform_int_distribution<>(0, size);
-    const int element = dist(rg);
+    const decltype(size) element = dist(rg);
 
     std::partial_sort(con.begin(), con.begin() + element, con.end());
 

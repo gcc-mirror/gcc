@@ -75,7 +75,6 @@ with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Stand;          use Stand;
 with Snames;         use Snames;
-with Tbuild;         use Tbuild;
 with Ttypes;         use Ttypes;
 with Validsw;        use Validsw;
 with Warnsw;         use Warnsw;
@@ -210,32 +209,6 @@ package body Exp_Ch3 is
       --  Return True iff the given tagged record type has at least one
       --  component that requires late initialization; this includes
       --  components of ancestor types.
-
-      type Initialization_Mode is
-        (Full_Init, Full_Init_Except_Tag, Early_Init_Only, Late_Init_Only);
-      --  The initialization routine for a tagged type is passed in a
-      --  formal parameter of this type, indicating what initialization
-      --  is to be performed. This parameter defaults to Full_Init in all
-      --  cases except when the init proc of a type extension (let's call
-      --  that type T2) calls the init proc of its parent (let's call that
-      --  type T1). In that case, one of the other 3 values will
-      --  be passed in. In all three of those cases, the Tag component has
-      --  already been initialized before the call and is therefore not to be
-      --  modified. T2's init proc will either call T1's init proc
-      --  once (with Full_Init_Except_Tag as the parameter value) or twice
-      --  (first with Early_Init_Only, then later with Late_Init_Only),
-      --  depending on the result returned by Has_Late_Init_Component (T1).
-      --  In the latter case, the first call does not initialize any
-      --  components that require late initialization and the second call
-      --  then performs that deferred initialization.
-      --  Strictly speaking, the formal parameter subtype is actually Natural
-      --  but calls will only pass in values corresponding to literals
-      --  of this enumeration type.
-
-      function Make_Mode_Literal
-        (Loc : Source_Ptr; Mode : Initialization_Mode) return Node_Id
-      is (Make_Integer_Literal (Loc, Initialization_Mode'Pos (Mode)));
-      --  Generate an integer literal for a given mode value.
 
       function Tag_Init_Condition
         (Loc : Source_Ptr;
@@ -2145,7 +2118,7 @@ package body Exp_Ch3 is
          end if;
 
          if Policy_In_Effect (Name_Assert) = Name_Check
-           and then not Predicates_Ignored (Etype (Discr))
+           and then not Predicates_Ignored_In_Codegen (Etype (Discr))
          then
             Prepend_To (Res, Make_Predicate_Check (Typ, Val));
          end if;
@@ -2481,14 +2454,10 @@ package body Exp_Ch3 is
         and then Nkind (Id_Ref) = N_Selected_Component
         and then Chars (Selector_Name (Id_Ref)) = Name_uParent
       then
-         declare
-            use Initialization_Control;
-         begin
-            Append_To (Args,
-              (if Present (Init_Control_Actual)
-               then Init_Control_Actual
-               else Make_Mode_Literal (Loc, Full_Init_Except_Tag)));
-         end;
+         Append_To (Args,
+           (if Present (Init_Control_Actual)
+            then Init_Control_Actual
+            else Make_Mode_Literal (Loc, Full_Init_Except_Tag)));
       elsif Present (Constructor_Ref) then
          Append_List_To (Args,
            New_Copy_List (Parameter_Associations (Constructor_Ref)));
@@ -3216,6 +3185,40 @@ package body Exp_Ch3 is
          if Parent_Subtype_Renaming_Discrims then
             Append_List_To (Body_Stmts, Build_Init_Call_Thru (Parameters));
 
+         elsif Present (Constructor_Name (Rec_Type)) then
+            if Present (Default_Constructor (Rec_Type)) then
+               --  The 'Make attribute reference (with no arguments) will
+               --  generate a call to the one-parameter constructor procedure.
+
+               Append_To (Body_Stmts,
+                 Make_Assignment_Statement (Loc,
+                   Name       => New_Occurrence_Of
+                     (Defining_Identifier (First (Parameters)), Loc),
+                   Expression => Make_Attribute_Reference (Loc,
+                     Prefix         => New_Occurrence_Of (Rec_Type, Loc),
+                     Attribute_Name => Name_Make)));
+            else
+               --  No constructor procedure with an appropriate profile
+               --  is available, so raise Program_Error.
+               --
+               --  We could instead do nothing here, since the absence of a
+               --  one-parameter constructor procedure should trigger other
+               --  legality checks which should statically ensure that
+               --  the init proc we are constructing here will never be
+               --  called. So a bit of "belt and suspenders" here.
+               --  If this raise statement is ever executed, that probably
+               --  means that some compile-time legality check is not
+               --  implemented, and that the program should have instead
+               --  failed to compile.
+               --  Because this raise statement should never be executed, it
+               --  seems ok to pass in a dubious Reason parameter instead of
+               --  declaring a new RT_Exception_Code value.
+
+               Append_To (Body_Stmts,
+                          Make_Raise_Program_Error (Loc,
+                            Reason => PE_Explicit_Raise));
+            end if;
+
          elsif Nkind (Type_Definition (N)) = N_Record_Definition then
             Build_Discriminant_Assignments (Body_Stmts);
 
@@ -3310,7 +3313,7 @@ package body Exp_Ch3 is
             end if;
          end if;
 
-         --  Add here the assignment to instantiate the Tag
+         --  Add here the assignment to initialize the Tag
 
          --  The assignment corresponds to the code:
 
@@ -4170,7 +4173,6 @@ package body Exp_Ch3 is
          if Present (Parent_Id) then
             declare
                Parent_Loc : constant Source_Ptr := Sloc (Parent (Parent_Id));
-               use Initialization_Control;
             begin
                --  We are building the init proc for a type extension.
                --  Call the parent type's init proc a second time, this
@@ -4558,6 +4560,8 @@ package body Exp_Ch3 is
          --     since the call is generated, there had better be a routine
          --     at the other end of the call, even if it does nothing).
 
+         --  10. The type has a specified Constructor aspect.
+
          --  Note: the reason we exclude the CPP_Class case is because in this
          --  case the initialization is performed by the C++ constructors, and
          --  the IP is built by Set_CPP_Constructors.
@@ -4573,6 +4577,7 @@ package body Exp_Ch3 is
            or else Is_Tagged_Type (Rec_Id)
            or else Is_Concurrent_Record_Type (Rec_Id)
            or else Has_Task (Rec_Id)
+           or else Present (Constructor_Name (Rec_Id))
          then
             return True;
          end if;
@@ -5878,7 +5883,7 @@ package body Exp_Ch3 is
       --  the subtype.
 
       if not No_Exception_Handlers_Set
-        and then not Predicates_Ignored (Typ)
+        and then not Predicates_Ignored_In_Codegen (Typ)
       then
          Append_To (Lst,
            Make_Case_Statement_Alternative (Loc,
@@ -6592,7 +6597,7 @@ package body Exp_Ch3 is
 
             Elmt := First_Elmt (Primitive_Operations (Typ));
             while Present (Elmt) loop
-               Create_Extra_Formals (Node (Elmt));
+               Create_Extra_Formals (Node (Elmt), Related_Nod => N);
                Next_Elmt (Elmt);
             end loop;
 
@@ -6609,7 +6614,7 @@ package body Exp_Ch3 is
                  and then Find_Dispatching_Type (E) = Typ
                  and then not Contains (Primitive_Operations (Typ), E)
                then
-                  Create_Extra_Formals (E);
+                  Create_Extra_Formals (E, Related_Nod => N);
                end if;
 
                Next_Entity (E);
@@ -10786,11 +10791,9 @@ package body Exp_Ch3 is
                        or else (Is_Record_Type (Typ)
                                  and then Is_Protected_Record_Type (Typ));
       With_Task  : constant Boolean :=
-                     not Global_No_Tasking
-                       and then
-                     (Has_Task (Typ)
-                        or else (Is_Record_Type (Typ)
-                                   and then Is_Task_Record_Type (Typ)));
+                     Has_Task (Typ)
+                       or else (Is_Record_Type (Typ)
+                                 and then Is_Task_Record_Type (Typ));
       Formals : List_Id;
 
    begin

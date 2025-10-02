@@ -581,6 +581,9 @@ struct tune_params
 
   /* Define models for the aarch64_ldp_stp_policy.  */
   enum aarch64_ldp_stp_policy ldp_policy_model, stp_policy_model;
+
+  /* Dispatch constraints for instruction scheduling.  */
+  const struct dispatch_constraint_info *dispatch_constraints;
 };
 
 /* Classifies an address.
@@ -652,6 +655,14 @@ enum aarch64_extra_tuning_flags_index
 {
 #include "aarch64-tuning-flags.def"
   AARCH64_EXTRA_TUNE_index_END
+};
+
+/* Dispatch constraints configuration for instruction scheduling.  */
+struct dispatch_constraint_info
+{
+  const int *max_slots;
+  int num_constraints;
+  vec<std::pair<int, int>> (*callback) (rtx_insn *);
 };
 
 

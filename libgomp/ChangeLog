@@ -1,3 +1,66 @@
+2025-09-18  Tobias Burnus  <tburnus@baylibre.com>
+	    Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR middle-end/121922
+	* testsuite/libgomp.c-c++-common/declare-variant-1.c: New test.
+
+2025-09-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/119857
+	PR libgomp/114445
+	* config/accel/target-indirect.c: Change to use uint128_t instead
+	of a struct as data structure and add GOMP_INDIRECT_ADDR_HMAP as
+	host-accessible variable.
+	(struct indirect_map_t): Remove.
+	(USE_HASHTAB_LOOKUP, INDIRECT_DEV_ADDR, INDIRECT_HOST_ADDR,
+	SET_INDIRECT_HOST_ADDR, SET_INDIRECT_ADDRS): Define.
+	(htab_free): Use __builtin_unreachable.
+	(htab_hash, htab_eq, GOMP_target_map_indirect_ptr,
+	build_indirect_map): Update for new representation and new
+	pointer-to-hash variable.
+	* config/gcn/team.c (gomp_gcn_enter_kernel): Only call
+	build_indirect_map when GOMP_INDIRECT_ADDR_MAP.
+	* config/nvptx/team.c (gomp_nvptx_main): Likewise.
+	* libgomp-plugin.h (GOMP_INDIRECT_ADDR_HMAP): Define.
+	* plugin/plugin-gcn.c: Conditionally include
+	build-target-indirect-htab.h.
+	(USE_HASHTAB_LOOKUP_FOR_INDIRECT): Define.
+	(create_target_indirect_map): New prototype.
+	(GOMP_OFFLOAD_load_image): Update to create the device's
+	indirect-function hash table on the host.
+	* plugin/plugin-nvptx.c: Conditionally include
+	build-target-indirect-htab.h.
+	(USE_HASHTAB_LOOKUP_FOR_INDIRECT): Define.
+	(create_target_indirect_map): New prototype.
+	(GOMP_OFFLOAD_load_image): Update to create the device's
+	indirect-function hash table on the host.
+	* plugin/build-target-indirect-htab.h: New file.
+
+2025-09-17  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.map (OACC_2.5): Move previously unimplemented
+	acc_{copyout,delete}_finalize_async_{32,64,array}_h_ to ...
+	(OACC_2.6.1): ... here.
+	* libgomp.texi (acc_copyin, acc_present_or_copyin, acc_create,
+	acc_present_or_create, acc_copyout, acc_update_device,
+	acc_update_self, acc_is_present): Use 'type(*), dimension(..)'
+	instead of 'type, dimension(:[,:]...)' for Fortran.
+	(acc_delete): Likewise; change acc_delete_async_finalize to
+	acc_delete_finalize_async.
+	* openacc.f90 (openacc_internal): Add interfaces for
+	acc_{copyout,delete}_finalize_async_{{32,64,array}_h,_l}.
+	(openacc): Add generic interfaces for
+	acc_copyout_finalize_async and acc_delete_finalize_async.
+	(acc_{copyout,delete}_finalize_async_{32,64,array}_h): New.
+	* openacc_lib.h: Add generic interfaces for
+	acc_copyout_finalize_async and acc_delete_finalize_async.
+	* testsuite/libgomp.oacc-fortran/pr92970-1.f90: New test.
+
+2025-09-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* omp.h.in: Fix up formatting of __cplusplus >= 201103L
+	guarded code from libstc++ style to GCC/libgomp style.
+
 2025-08-06  Kwok Cheung Yeung  <kcyeung@baylibre.com>
 
 	* target.c (gomp_update): Call gomp_merge_iterator_maps.  Free

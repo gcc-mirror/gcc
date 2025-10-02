@@ -580,7 +580,7 @@ BEGIN
    ELSIF ScaffoldDynamic AND (NOT cflag)
    THEN
       MetaErrorT0 (tokenno,
-                   '{%O}dynamic linking enabled but no module ctor list has been created, hint use -fuse-list=filename or -fgen-module-list=-')
+                   '{%O}dynamic module registration enabled but no module ctor list has been created, hint use -fuse-list=filename or -fgen-module-list=-')
    END ;
 
    initFunction := MakeProcedure (tokenno, MakeKey ("_M2_init")) ;

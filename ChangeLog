@@ -1,3 +1,23 @@
+2025-10-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .editorconfig: Unify the GCC and GDB/binutils root config.
+
+2025-09-23  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .editorconfig: Fix glob patterns.
+
+2025-09-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* .editorconfig: New file.
+
+2025-09-04  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* MAINTAINERS (Reviewers): Add myself for the aarch64 port.
+
+2025-09-03  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* MAINTAINERS: Add myself as an aarch64 port reviewer.
+
 2025-08-28  Yuao Ma  <c8ef@outlook.com>
 
 	* MAINTAINERS: add myself to write after approval

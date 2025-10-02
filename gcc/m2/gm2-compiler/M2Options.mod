@@ -85,6 +85,7 @@ VAR
    DumpDecl,         (* -fm2-dump=decl.  *)
    DumpGimple,       (* -fm2-dump=gimple.  *)
    DumpQuad,         (* -fq, -fm2-dump=quad dump quadruples.  *)
+   WidesetFlag,      (* -fwideset.  *)
    MFlag,
    MMFlag,
    MPFlag,
@@ -1326,12 +1327,14 @@ BEGIN
       Optimizing := TRUE ;
       OptimizeBasicBlock := TRUE ;
       OptimizeUncalledProcedures := TRUE ;
-      OptimizeCommonSubExpressions := TRUE
+      OptimizeCommonSubExpressions := TRUE ;
+      OptimizeSets := TRUE
    ELSE
       Optimizing := FALSE ;
       OptimizeBasicBlock := FALSE ;
       OptimizeUncalledProcedures := FALSE ;
-      OptimizeCommonSubExpressions := FALSE
+      OptimizeCommonSubExpressions := FALSE ;
+      OptimizeSets := FALSE
    END
 END SetOptimizing ;
 
@@ -2074,6 +2077,46 @@ BEGIN
 END GetFileOffsetBits ;
 
 
+(*
+   SetMemReport - set MemReport to value.
+*)
+
+PROCEDURE SetMemReport (value: BOOLEAN) ;
+BEGIN
+   MemReport := value
+END SetMemReport ;
+
+
+(*
+   SetTimeReport - set TimeReport to value.
+*)
+
+PROCEDURE SetTimeReport (value: BOOLEAN) ;
+BEGIN
+   TimeReport := value
+END SetTimeReport ;
+
+
+(*
+   SetWideset - set the Wideset flag to value.
+*)
+
+PROCEDURE SetWideset (value: BOOLEAN) ;
+BEGIN
+   WidesetFlag := value
+END SetWideset ;
+
+
+(*
+   GetWideset - return the Wideset flag value.
+*)
+
+PROCEDURE GetWideset () : BOOLEAN ;
+BEGIN
+   RETURN WidesetFlag
+END GetWideset ;
+
+
 BEGIN
    cflag                             := FALSE ;  (* -c.  *)
    RuntimeModuleOverride             := InitString (DefaultRuntimeModuleOverride) ;
@@ -2099,6 +2142,7 @@ BEGIN
    OptimizeBasicBlock                := FALSE ;
    OptimizeUncalledProcedures        := FALSE ;
    OptimizeCommonSubExpressions      := FALSE ;
+   OptimizeSets                      := FALSE ;
    NilChecking                       := FALSE ;
    WholeDivChecking                  := FALSE ;
    WholeValueChecking                := FALSE ;
@@ -2168,6 +2212,9 @@ BEGIN
    DumpGimple                        := FALSE ;
    M2Dump                            := NIL ;
    M2DumpFilter                      := NIL ;
+   TimeReport                        := FALSE ;
+   MemReport                         := FALSE ;
    EnableForward                     := TRUE ;
    OffTBits                          := 0 ;  (* Default to CSSIZE_T.  *)
+   WidesetFlag                       := TRUE ;
 END M2Options.

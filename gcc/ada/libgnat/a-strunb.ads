@@ -73,8 +73,8 @@ is
    subtype String_1 is String (1 .. <>) with Ghost;  --  Type used in contracts
 
    type Unbounded_String is private with
-     Default_Initial_Condition => Length (Unbounded_String) = 0;
-   pragma Preelaborable_Initialization (Unbounded_String);
+     Default_Initial_Condition => Length (Unbounded_String) = 0,
+     Preelaborable_Initialization;
 
    Null_Unbounded_String : constant Unbounded_String;
    --  Represents the null String. If an object of type Unbounded_String is not

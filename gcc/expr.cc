@@ -6533,6 +6533,31 @@ string_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
   return c_readstr (TREE_STRING_POINTER (str) + offset, mode, false);
 }
 
+/* Helper function for store_expr storing of RAW_DATA_CST.  */
+
+static rtx
+raw_data_cst_read_str (void *data, void *, HOST_WIDE_INT offset,
+		       fixed_size_mode mode)
+{
+  tree cst = (tree) data;
+
+  gcc_assert (offset >= 0);
+  if (offset >= RAW_DATA_LENGTH (cst))
+    return const0_rtx;
+
+  if ((unsigned HOST_WIDE_INT) offset + GET_MODE_SIZE (mode)
+      > (unsigned HOST_WIDE_INT) RAW_DATA_LENGTH (cst))
+    {
+      char *p = XALLOCAVEC (char, GET_MODE_SIZE (mode));
+      size_t l = RAW_DATA_LENGTH (cst) - offset;
+      memcpy (p, RAW_DATA_POINTER (cst) + offset, l);
+      memset (p + l, '\0', GET_MODE_SIZE (mode) - l);
+      return c_readstr (p, mode, false);
+    }
+
+  return c_readstr (RAW_DATA_POINTER (cst) + offset, mode, false);
+}
+
 /* Generate code for computing expression EXP,
    and storing the value into TARGET.
 
@@ -7630,7 +7655,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
     case ARRAY_TYPE:
       {
 	tree value, index;
-	unsigned HOST_WIDE_INT i;
+	unsigned HOST_WIDE_INT i, j = 0;
 	bool need_to_clear;
 	tree domain;
 	tree elttype = TREE_TYPE (type);
@@ -7692,6 +7717,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    this_node_count = (tree_to_uhwi (hi_index)
 				       - tree_to_uhwi (lo_index) + 1);
 		  }
+		else if (TREE_CODE (value) == RAW_DATA_CST)
+		  this_node_count = RAW_DATA_LENGTH (value);
 		else
 		  this_node_count = 1;
 
@@ -7734,7 +7761,11 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	    rtx xtarget = target;
 
 	    if (cleared && initializer_zerop (value))
-	      continue;
+	      {
+		if (TREE_CODE (value) == RAW_DATA_CST)
+		  j += RAW_DATA_LENGTH (value) - 1;
+		continue;
+	      }
 
 	    mode = TYPE_MODE (elttype);
 	    if (mode != BLKmode)
@@ -7749,6 +7780,8 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		rtx index_r;
 		unsigned HOST_WIDE_INT lo, hi, count;
 		tree offset;
+
+		gcc_assert (TREE_CODE (value) != RAW_DATA_CST);
 
 		/* If the range is constant and "small", unroll the loop.  */
 		if (const_bounds_p
@@ -7846,13 +7879,14 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 	      {
 		tree offset;
 
+		gcc_assert (TREE_CODE (value) != RAW_DATA_CST);
 		if (index)
 		  offset = fold_build2 (MINUS_EXPR,
 					TREE_TYPE (index),
 					index,
 					TYPE_MIN_VALUE (domain));
 		else
-		  offset = size_int (i);
+		  offset = size_int (i + j);
 
 		offset = size_binop (MULT_EXPR,
 				     fold_convert (sizetype, offset),
@@ -7869,7 +7903,7 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		  bitpos = ((tree_to_uhwi (index) - minelt)
 			    * tree_to_uhwi (TYPE_SIZE (elttype)));
 		else
-		  bitpos = (i * tree_to_uhwi (TYPE_SIZE (elttype)));
+		  bitpos = ((i + j) * tree_to_uhwi (TYPE_SIZE (elttype)));
 
 		if (MEM_P (target) && !MEM_KEEP_ALIAS_SET_P (target)
 		    && TREE_CODE (type) == ARRAY_TYPE
@@ -7878,10 +7912,50 @@ store_constructor (tree exp, rtx target, int cleared, poly_int64 size,
 		    target = copy_rtx (target);
 		    MEM_KEEP_ALIAS_SET_P (target) = 1;
 		  }
-		store_constructor_field (target, bitsize, bitpos, 0,
-					 bitregion_end, mode, value,
-					 cleared, get_alias_set (elttype),
-					 reverse);
+		if (TREE_CODE (value) != RAW_DATA_CST)
+		  store_constructor_field (target, bitsize, bitpos, 0,
+					   bitregion_end, mode, value,
+					   cleared, get_alias_set (elttype),
+					   reverse);
+		else
+		  {
+		    j += RAW_DATA_LENGTH (value) - 1;
+		    gcc_assert (known_eq (bitsize, BITS_PER_UNIT));
+		    rtx to_rtx = adjust_address (target, mode,
+						 bitpos / BITS_PER_UNIT);
+
+		    if (to_rtx == target)
+		      to_rtx = copy_rtx (to_rtx);
+
+		    if (!MEM_KEEP_ALIAS_SET_P (to_rtx)
+			&& MEM_ALIAS_SET (to_rtx) != 0)
+		      set_mem_alias_set (to_rtx, get_alias_set (elttype));
+
+		    if (can_store_by_pieces (RAW_DATA_LENGTH (value),
+					     raw_data_cst_read_str,
+					     (void *) value,
+					     MEM_ALIGN (target), false))
+		      {
+			store_by_pieces (target, RAW_DATA_LENGTH (value),
+					 raw_data_cst_read_str, (void *) value,
+					 MEM_ALIGN (target), false,
+					 RETURN_BEGIN);
+			continue;
+		      }
+
+		    elttype
+		      = build_array_type_nelts (TREE_TYPE (value),
+						RAW_DATA_LENGTH (value));
+		    tree ctor = build_constructor_single (elttype, NULL_TREE,
+							  value);
+		    ctor = tree_output_constant_def (ctor);
+		    mode = TYPE_MODE (type);
+		    store_constructor_field (target,
+					     bitsize * RAW_DATA_LENGTH (value),
+					     bitpos, 0, bitregion_end, mode,
+					     ctor, cleared,
+					     get_alias_set (elttype), reverse);
+		  }
 	      }
 	  }
 	break;
@@ -9886,6 +9960,7 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
       else if (SCALAR_INT_MODE_P (GET_MODE (op0))
 	       && optimize >= 2
 	       && SCALAR_INT_MODE_P (mode)
+	       && INTEGRAL_TYPE_P (TREE_TYPE (treeop0))
 	       && (GET_MODE_SIZE (as_a <scalar_int_mode> (mode))
 		   > GET_MODE_SIZE (as_a <scalar_int_mode> (GET_MODE (op0))))
 	       && get_range_pos_neg (treeop0,

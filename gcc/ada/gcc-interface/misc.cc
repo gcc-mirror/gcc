@@ -531,7 +531,9 @@ gnat_print_type (FILE *file, tree node, int indent)
       break;
 
     case RECORD_TYPE:
-      if (TYPE_FAT_POINTER_P (node) || TYPE_CONTAINS_TEMPLATE_P (node))
+      if (TYPE_EXTENDED_POINTER_P (node)
+	  || TYPE_FAT_POINTER_P (node)
+	  || TYPE_CONTAINS_TEMPLATE_P (node))
 	print_node (file, "unconstrained array",
 		    TYPE_UNCONSTRAINED_ARRAY (node), indent + 4);
       else
@@ -837,6 +839,8 @@ gnat_get_array_descr_info (const_tree const_type,
       if (TYPE_IMPL_PACKED_ARRAY_P (array_type)
           && TYPE_ORIGINAL_PACKED_ARRAY (array_type))
         array_type = TYPE_ORIGINAL_PACKED_ARRAY (array_type);
+      if (TREE_CODE (array_type) != ARRAY_TYPE)
+	return false;
 
       /* Shift back the address to get the address of the template.  */
       tree shift_amount

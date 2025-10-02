@@ -9,7 +9,7 @@ bar ()
 {
   V f { .b = 42 };
   constexpr auto m = &V::a;
-  return (f.*m) == 42;  // { dg-error "accessing 'V::a' member instead of initialized 'V::b' member in constant expression" }
+  return (f.*m) == 42;  // { dg-error "accessing 'V::a' member instead of active 'V::b' member in constant expression" }
 }
 
 constexpr bool

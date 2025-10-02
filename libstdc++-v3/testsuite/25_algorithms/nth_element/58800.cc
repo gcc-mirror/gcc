@@ -43,7 +43,7 @@ void test01()
 
   Container con(v.data(), v.data() + 7);
 
-  std::nth_element(con.begin(), con.begin() + 3, con.end());
+  std::nth_element(con.begin(), std::next(con.begin(), 3), con.end());
 }
 
 int main()

@@ -220,4 +220,18 @@ PROCEDURE addStmtNote (location: location_t) ;
 PROCEDURE removeStmtNote ;
 
 
+(*
+   GetTotalConstants - returns the number of global constants.
+*)
+
+PROCEDURE GetTotalConstants () : CARDINAL ;
+
+
+(*
+   GetGlobalTypes - returns the number of global types.
+*)
+
+PROCEDURE GetGlobalTypes () : CARDINAL ;
+
+
 END m2block.

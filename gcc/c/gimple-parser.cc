@@ -356,28 +356,33 @@ c_parser_parse_gimple_body (c_parser *cparser, char *gimple_pass,
 	 update stmts.  */
       if (cdil == cdil_gimple_ssa)
 	{
-	  /* Create PHI nodes, they are parsed into __PHI internal calls.  */
+	  /* Create PHI nodes, they are parsed into __PHI internal calls
+	     and update SSA operands.  */
 	  FOR_EACH_BB_FN (bb, cfun)
-	    for (gimple_stmt_iterator gsi = gsi_start_bb (bb);
-		 !gsi_end_p (gsi);)
-	      {
-		gimple *stmt = gsi_stmt (gsi);
-		if (!gimple_call_internal_p (stmt, IFN_PHI))
-		  break;
+	    {
+	      gimple_stmt_iterator gsi;
+	      for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi);)
+		{
+		  gimple *stmt = gsi_stmt (gsi);
+		  if (!gimple_call_internal_p (stmt, IFN_PHI))
+		    break;
 
-		gphi *phi = create_phi_node (gimple_call_lhs (stmt), bb);
-		for (unsigned i = 0; i < gimple_call_num_args (stmt); i += 2)
-		  {
-		    int srcidx = TREE_INT_CST_LOW (gimple_call_arg (stmt, i));
-		    edge e = find_edge (BASIC_BLOCK_FOR_FN (cfun, srcidx), bb);
-		    if (!e)
-		      c_parser_error (parser, "edge not found");
-		    else
-		      add_phi_arg (phi, gimple_call_arg (stmt, i + 1), e,
-				   UNKNOWN_LOCATION);
-		  }
-		gsi_remove (&gsi, true);
-	      }
+		  gphi *phi = create_phi_node (gimple_call_lhs (stmt), bb);
+		  for (unsigned i = 0; i < gimple_call_num_args (stmt); i += 2)
+		    {
+		      int srcidx = TREE_INT_CST_LOW (gimple_call_arg (stmt, i));
+		      edge e = find_edge (BASIC_BLOCK_FOR_FN (cfun, srcidx), bb);
+		      if (!e)
+			c_parser_error (parser, "edge not found");
+		      else
+			add_phi_arg (phi, gimple_call_arg (stmt, i + 1), e,
+				     UNKNOWN_LOCATION);
+		    }
+		  gsi_remove (&gsi, true);
+		}
+	      for (; !gsi_end_p (gsi); gsi_next (&gsi))
+		update_stmt (gsi_stmt (gsi));
+	    }
 	  /* Fill SSA name gaps, putting them on the freelist and diagnose
 	     SSA names without definition.  */
 	  for (unsigned i = 1; i < num_ssa_names; ++i)
@@ -639,7 +644,8 @@ c_parser_gimple_compound_statement (gimple_parser &parser, gimple_seq *seq)
 		    {
 		      gimple_stmt_iterator gsi
 			= gsi_start_bb (parser.current_bb);
-		      gsi_insert_seq_after (&gsi, *seq, GSI_CONTINUE_LINKING);
+		      gsi_insert_seq_after_without_update (&gsi, *seq,
+							   GSI_CONTINUE_LINKING);
 		    }
 		  *seq = NULL;
 		}
@@ -735,7 +741,8 @@ expr_stmt:
       else
 	{
 	  gimple_stmt_iterator gsi = gsi_start_bb (parser.current_bb);
-	  gsi_insert_seq_after (&gsi, *seq, GSI_CONTINUE_LINKING);
+	  gsi_insert_seq_after_without_update (&gsi, *seq,
+					       GSI_CONTINUE_LINKING);
 	}
       *seq = NULL;
     }

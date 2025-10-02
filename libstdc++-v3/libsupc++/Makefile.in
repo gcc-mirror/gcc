@@ -973,6 +973,11 @@ cp-demangle.o: cp-demangle.c
 atomicity.cc: ${atomicity_file}
 	$(LN_S) ${atomicity_file} ./atomicity.cc || true
 
+atomicity.lo: atomicity.cc
+	$(LTCOMPILE) -fwrapv -c $<
+atomicity.o: atomicity.cc
+	$(CXXCOMPILE) -fwrapv -c $<
+
 # See PR 112397
 @OS_IS_DARWIN_TRUE@new_opvnt.lo: new_opvnt.cc
 @OS_IS_DARWIN_TRUE@	$(LTCXXCOMPILE) -fno-reorder-blocks-and-partition -I. -c $<

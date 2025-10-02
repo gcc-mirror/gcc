@@ -2617,7 +2617,8 @@
 	(fma:ANYF (match_operand:ANYF 1 "register_operand")
 		  (match_operand:ANYF 2 "register_operand")
 		  (neg:ANYF (match_operand:ANYF 3 "register_operand"))))]
-  "(ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)")
+  "(ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)
+   || ISA_HAS_FUSED_MADDF")
 
 (define_insn "*fms<mode>4_msub3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -2639,6 +2640,16 @@
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 
+(define_insn "*fms<mode>4_msubf"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (match_operand:ANYF 1 "register_operand" "f")
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (neg:ANYF (match_operand:ANYF 3 "register_operand" "0"))))]
+  "ISA_HAS_FUSED_MADDF"
+  "msubf.<fmt>\t%0,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
 ;; fnma is defined in GCC as (fma (neg op1) op2 op3)
 ;; (-op1 * op2) + op3 ==> -(op1 * op2) + op3 ==> -((op1 * op2) - op3)
 ;; The mips nmsub instructions implement -((op1 * op2) - op3)
@@ -2650,8 +2661,9 @@
 	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand"))
 		  (match_operand:ANYF 2 "register_operand")
 		  (match_operand:ANYF 3 "register_operand")))]
-  "(ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)
-   && !HONOR_SIGNED_ZEROS (<MODE>mode)")
+  "((ISA_HAS_FUSED_MADD3 || ISA_HAS_FUSED_MADD4)
+   && !HONOR_SIGNED_ZEROS (<MODE>mode))
+   || ISA_HAS_FUSED_MADDF")
 
 (define_insn "*fnma<mode>4_nmsub3"
   [(set (match_operand:ANYF 0 "register_operand" "=f")
@@ -2670,6 +2682,16 @@
 		  (match_operand:ANYF 3 "register_operand" "f")))]
   "ISA_HAS_FUSED_MADD4 && !HONOR_SIGNED_ZEROS (<MODE>mode)"
   "nmsub.<fmt>\t%0,%3,%1,%2"
+  [(set_attr "type" "fmadd")
+   (set_attr "mode" "<UNITMODE>")])
+
+(define_insn "*fnma<mode>4_msubf"
+  [(set (match_operand:ANYF 0 "register_operand" "=f")
+	(fma:ANYF (neg:ANYF (match_operand:ANYF 1 "register_operand" "f"))
+		  (match_operand:ANYF 2 "register_operand" "f")
+		  (match_operand:ANYF 3 "register_operand" "0")))]
+  "ISA_HAS_FUSED_MADDF"
+  "msubf.<fmt>\t%0,%1,%2"
   [(set_attr "type" "fmadd")
    (set_attr "mode" "<UNITMODE>")])
 

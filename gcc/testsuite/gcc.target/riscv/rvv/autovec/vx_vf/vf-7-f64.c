@@ -4,5 +4,7 @@
 #include "vf_binop.h"
 
 DEF_VF_BINOP_CASE_3_WRAP (double, __builtin_fmin, min, VF_BINOP_FUNC_BODY_X128)
+DEF_VF_BINOP_CASE_3_WRAP (double, __builtin_fmax, max, VF_BINOP_FUNC_BODY_X128)
 
 /* { dg-final { scan-assembler {vfmin.vf} } } */
+/* { dg-final { scan-assembler {vfmax.vf} } } */

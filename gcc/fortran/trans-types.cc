@@ -800,6 +800,9 @@ gfc_init_kinds (void)
 
   gfc_index_integer_kind = get_int_kind_from_name (PTRDIFF_TYPE);
 
+  if (flag_external_blas64 && gfc_index_integer_kind != gfc_integer_8_kind)
+    gfc_fatal_error ("-fexternal-blas64 requires a 64-bit system");
+
   /* Pick a kind the same size as the C "int" type.  */
   gfc_c_int_kind = INT_TYPE_SIZE / 8;
 
@@ -1132,6 +1135,7 @@ gfc_init_types (void)
     {
       type = gfc_build_uint_type (gfc_character_kinds[index].bit_size);
       type = build_qualified_type (type, TYPE_UNQUALIFIED);
+      TYPE_STRING_FLAG (type) = 1;
       snprintf (name_buf, sizeof(name_buf), "character(kind=%d)",
 		gfc_character_kinds[index].kind);
       PUSH_TYPE (name_buf, type);

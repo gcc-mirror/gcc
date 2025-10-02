@@ -29,9 +29,10 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
---  This version is for darwin
+--  This version is for Darwin
 
-with System.Parameters;
+with System.C_Time;
+
 package body System.OS_Primitives is
 
    --  ??? These definitions are duplicated from System.OS_Interface
@@ -46,27 +47,13 @@ package body System.OS_Primitives is
    pragma Convention (C, struct_timezone);
    type struct_timezone_ptr is access all struct_timezone;
 
-   type time_t is range -2 ** (System.Parameters.time_t_bits - 1)
-     .. 2 ** (System.Parameters.time_t_bits - 1) - 1;
-
-   type struct_timeval is record
-      tv_sec       : time_t;
-      tv_usec      : Integer;
-   end record;
-   pragma Convention (C, struct_timeval);
-
    function gettimeofday
-     (tv : not null access struct_timeval;
+     (tv : not null access C_Time.timeval;
       tz : struct_timezone_ptr) return Integer;
    pragma Import (C, gettimeofday, "gettimeofday");
 
-   type timespec is record
-      tv_sec  : time_t;
-      tv_nsec : Long_Integer;
-   end record;
-   pragma Convention (C, timespec);
-
-   function nanosleep (rqtp, rmtp : not null access timespec) return Integer;
+   function nanosleep (rqtp, rmtp : not null access C_Time.timespec)
+                      return Integer;
    pragma Import (C, nanosleep, "nanosleep");
 
    -----------
@@ -74,7 +61,7 @@ package body System.OS_Primitives is
    -----------
 
    function Clock return Duration is
-      TV     : aliased struct_timeval;
+      TV     : aliased C_Time.timeval;
 
       Result : Integer;
       pragma Unreferenced (Result);
@@ -89,35 +76,8 @@ package body System.OS_Primitives is
       --  value is never checked.
 
       Result := gettimeofday (TV'Access, null);
-      return Duration (TV.tv_sec) + Duration (TV.tv_usec) / 10#1#E6;
+      return C_Time.To_Duration (TV);
    end Clock;
-
-   -----------------
-   -- To_Timespec --
-   -----------------
-
-   function To_Timespec (D : Duration) return timespec;
-
-   function To_Timespec (D : Duration) return timespec is
-      S : time_t;
-      F : Duration;
-
-   begin
-      S := time_t (Long_Long_Integer (D));
-      F := D - Duration (S);
-
-      --  If F has negative value due to a round-up, adjust for positive F
-      --  value.
-
-      if F < 0.0 then
-         S := S - 1;
-         F := F + 1.0;
-      end if;
-
-      return
-        timespec'(tv_sec  => S,
-                  tv_nsec => Long_Integer (Long_Long_Integer (F * 10#1#E9)));
-   end To_Timespec;
 
    -----------------
    -- Timed_Delay --
@@ -127,8 +87,8 @@ package body System.OS_Primitives is
      (Time : Duration;
       Mode : Integer)
    is
-      Request    : aliased timespec;
-      Remaind    : aliased timespec;
+      Request    : aliased C_Time.timespec;
+      Remaind    : aliased C_Time.timespec;
       Rel_Time   : Duration;
       Abs_Time   : Duration;
       Base_Time  : constant Duration := Clock;
@@ -148,7 +108,7 @@ package body System.OS_Primitives is
 
       if Rel_Time > 0.0 then
          loop
-            Request := To_Timespec (Rel_Time);
+            Request := C_Time.To_Timespec (Rel_Time);
             Result := nanosleep (Request'Access, Remaind'Access);
             Check_Time := Clock;
 

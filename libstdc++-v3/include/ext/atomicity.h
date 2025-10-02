@@ -39,6 +39,9 @@
 #if __has_include(<sys/single_threaded.h>)
 # include <sys/single_threaded.h>
 #endif
+#if __cplusplus >= 201103L
+# include <type_traits> // make_unsigned_t
+#endif
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
@@ -79,19 +82,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __atomic_add(volatile _Atomic_word*, int) _GLIBCXX_NOTHROW;
 #endif
 
+#if __cplusplus < 201103L
+  // The array bound will be ill-formed in the very unlikely case that
+  // _Atomic_word is wider than long and we need to use unsigned long long
+  // below in __exchange_and_add_single and __atomic_add_single.
+  typedef int
+    _Atomic_word_fits_in_long[sizeof(_Atomic_word) <= sizeof(long) ? 1 : -1];
+#endif
+
   inline _Atomic_word
   __attribute__((__always_inline__))
   __exchange_and_add_single(_Atomic_word* __mem, int __val)
   {
     _Atomic_word __result = *__mem;
-    *__mem += __val;
+    // Do the addition with an unsigned type so that overflow is well defined.
+#if __cplusplus >= 201103L
+    std::make_unsigned<_Atomic_word>::type __u;
+#else
+    // For most targets make_unsigned_t<_Atomic_word> is unsigned int,
+    // but 64-bit sparc uses long for _Atomic_word.
+    // Sign-extending to unsigned long works for both cases.
+    unsigned long __u;
+#endif
+    __u = __result;
+    __u += __val;
+    *__mem = __u;
     return __result;
   }
 
   inline void
   __attribute__((__always_inline__))
   __atomic_add_single(_Atomic_word* __mem, int __val)
-  { *__mem += __val; }
+  {
+#if __cplusplus >= 201103L
+    std::make_unsigned<_Atomic_word>::type __u;
+#else
+    unsigned long __u; // see above
+#endif
+    __u = *__mem;
+    __u += __val;
+    *__mem = __u;
+  }
 
   inline _Atomic_word
   __attribute__ ((__always_inline__))

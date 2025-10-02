@@ -161,6 +161,15 @@ package Einfo.Utils is
    function First_Formal (Id : E) return Entity_Id;
    function First_Formal_With_Extras (Id : E) return Entity_Id;
 
+   function Base_Type_If_Set (Id : E) return Opt_N_Entity_Id;
+   function Implementation_Base_Type_If_Set (Id : E) return Opt_N_Entity_Id;
+   function Root_Type_If_Set (Id : E) return Opt_N_Entity_Id;
+   --  Base_Type_If_Set is a more permissive version of Base_Type, which
+   --  returns the same value, except it returns Empty in cases where Base_Type
+   --  would crash because relevant fields are not yet set. Likewise for the
+   --  other two. These are used in Treepr, to allow it to print half-baked
+   --  nodes without crashing.
+
    function Float_Rep
      (N : Entity_Id) return F with Inline, Pre =>
       N in E_Void_Id
@@ -238,7 +247,7 @@ package Einfo.Utils is
    function Stream_Size_Clause (Id : E) return N with Inline;
    function Type_High_Bound (Id : E) return N with Inline;
    function Type_Low_Bound (Id : E) return N with Inline;
-   function Underlying_Type (Id : E) return Entity_Id;
+   function Underlying_Type (Id : E) return Opt_N_Entity_Id;
 
    function Scope_Depth (Id : Scope_Kind_Id) return U with Inline;
    function Scope_Depth_Set (Id : Scope_Kind_Id) return B with Inline;

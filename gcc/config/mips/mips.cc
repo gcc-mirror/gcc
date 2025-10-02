@@ -7476,6 +7476,9 @@ static void
 mips_start_function_definition (const char *name, bool mips16_p,
 				tree decl ATTRIBUTE_UNUSED)
 {
+  unsigned HOST_WIDE_INT patch_area_size = crtl->patch_area_size;
+  unsigned HOST_WIDE_INT patch_area_entry = crtl->patch_area_entry;
+
   if (mips16_p)
     fprintf (asm_out_file, "\t.set\tmips16\n");
   else
@@ -7488,6 +7491,10 @@ mips_start_function_definition (const char *name, bool mips16_p,
     fprintf (asm_out_file, "\t.set\tnomicromips\n");
 #endif
 
+  /* Emit the patching area before the entry label, if any.  */
+  if (patch_area_entry > 0)
+    default_print_patchable_function_entry (asm_out_file,
+					    patch_area_entry, true);
   if (!flag_inhibit_size_directive)
     {
       fputs ("\t.ent\t", asm_out_file);
@@ -7499,6 +7506,13 @@ mips_start_function_definition (const char *name, bool mips16_p,
 
   /* Start the definition proper.  */
   ASM_OUTPUT_FUNCTION_LABEL (asm_out_file, name, decl);
+
+  /* And the area after the label.  Record it if we haven't done so yet.  */
+  if (patch_area_size > patch_area_entry)
+    default_print_patchable_function_entry (asm_out_file,
+					    patch_area_size
+					    - patch_area_entry,
+					    patch_area_entry == 0);
 }
 
 /* End a function definition started by mips_start_function_definition.  */
@@ -20419,6 +20433,16 @@ mips_option_override (void)
   if (TARGET_MICROMIPS && TARGET_MIPS16)
     error ("unsupported combination: %s", "-mips16 -mmicromips");
 
+  /* Make -mmips16e2 imply -mips16 and forbid its coexistence with
+     -mmicromips as the ASE requires.  */
+  if (TARGET_MIPS16E2)
+  {
+    if (TARGET_MICROMIPS)
+      error ("unsupported combination: %s", "-mmips16e2 -mmicromips");
+
+    target_flags |= MASK_MIPS16;
+  }
+
   /* Prohibit Paired-Single and MSA combination.  This is software restriction
      rather than architectural.  */
   if (ISA_HAS_MSA && TARGET_PAIRED_SINGLE_FLOAT)
@@ -20670,6 +20694,15 @@ mips_option_override (void)
 	      mips_arch_info->name, TARGET_MICROMIPS ? " -mmicromips" : "",
 	      "-mcompact-branches=never");
     }
+
+  /* MIPS16* ASE is forbidden in Release 6, so -mips16 is not available
+     for MIPS R6 onwards.  */
+  if ((mips_base_compression_flags & MASK_MIPS16) && mips_isa_rev >= 6)
+    error ("MIPS16* ASE is forbidden in Release 6");
+
+  /* Make sure that the user use Release[2,5] when using -mmips16e2.  */
+  if (TARGET_MIPS16E2 && mips_isa_rev < 2)
+    error ("%<-mmips16e2%> requires Release[2,5]");
 
   /* Require explicit relocs for MIPS R6 onwards.  This enables simplification
      of the compact branch and jump support through the backend.  */
@@ -23331,6 +23364,21 @@ mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
   return false;
 }
 
+/* define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY */
+
+/* The MIPS function start is implemented in the prologue function.
+   TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY needs to be inserted
+   before or after the function name, so this function does not
+   use a public implementation. This function is implemented in
+   mips_start_function_definition. */
+
+void
+mips_print_patchable_function_entry (FILE *file ATTRIBUTE_UNUSED,
+				     unsigned HOST_WIDE_INT
+				     patch_area_size ATTRIBUTE_UNUSED,
+				     bool record_p ATTRIBUTE_UNUSED)
+{}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -23643,6 +23691,10 @@ mips_bit_clear_p (enum machine_mode mode, unsigned HOST_WIDE_INT m)
 
 #undef TARGET_DOCUMENTATION_NAME
 #define TARGET_DOCUMENTATION_NAME "MIPS"
+
+#undef TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY
+#define TARGET_ASM_PRINT_PATCHABLE_FUNCTION_ENTRY \
+mips_print_patchable_function_entry
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 

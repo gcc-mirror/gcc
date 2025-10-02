@@ -4167,7 +4167,7 @@ attr_fnspec::verify ()
     }
 }
 
-/* Return ture if TYPE1 and TYPE2 will always give the same answer
+/* Return true if TYPE1 and TYPE2 will always give the same answer
    when compared with other types using same_type_for_tbaa.  */
 
 static bool
@@ -4191,7 +4191,7 @@ types_equal_for_same_type_for_tbaa_p (tree type1, tree type2,
     return TYPE_CANONICAL (type1) == TYPE_CANONICAL (type2);
 }
 
-/* Return ture if TYPE1 and TYPE2 will always give the same answer
+/* Return true if TYPE1 and TYPE2 will always give the same answer
    when compared with other types using same_type_for_tbaa.  */
 
 bool

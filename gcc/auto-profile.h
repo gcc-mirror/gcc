@@ -39,7 +39,7 @@ extern void remove_afdo_speculative_target (cgraph_edge *);
    considered cols.  */
 extern gcov_type afdo_hot_bb_threshold;
 
-/* Return ture if COUNT is possiby hot.  */
+/* Return true if COUNT is possibly hot.  */
 extern bool maybe_hot_afdo_count_p (profile_count count);
 
 #endif /* AUTO_PROFILE_H */

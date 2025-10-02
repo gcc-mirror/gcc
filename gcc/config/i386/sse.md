@@ -302,6 +302,12 @@
    V16SF (V8SF "TARGET_AVX512VL")
    V8DF (V4DF "TARGET_AVX512VL")])
 
+(define_mode_iterator V48_AVX
+  [(V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX") V4SI
+   (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX") (V2DI "TARGET_SSE2")
+   (V16SF "TARGET_AVX512F") (V8SF "TARGET_AVX") V4SF
+   (V8DF "TARGET_AVX512F") (V4DF "TARGET_AVX") (V2DF "TARGET_SSE2")])
+
 ;; All AVX-512{F,VL} vector modes. Supposed TARGET_AVX512F baseline.
 (define_mode_iterator V48H_AVX512VL
   [V16SI (V8SI "TARGET_AVX512VL") (V4SI "TARGET_AVX512VL")
@@ -1428,6 +1434,10 @@
 (define_mode_attr DOUBLEMASKMODE
   [(HI "SI") (SI "DI")])
 
+;; Float mode suffix used for instructions like vpermilpd with integer modes.
+(define_mode_attr ssefltmodesuffix
+  [(V2DI "pd") (V4DI "pd") (V8DI "pd") (V4SI "ps") (V8SI "ps") (V16SI "ps")
+   (V2DF "pd") (V4DF "pd") (V8DF "pd") (V4SF "ps") (V8SF "ps") (V16SF "ps")])
 
 ;; Include define_subst patterns for instructions with mask
 (include "subst.md")
@@ -23655,10 +23665,6 @@
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<MODE>")])
 
-(define_mode_attr ssefltmodesuffix
-  [(V2DI "pd") (V4DI "pd") (V4SI "ps") (V8SI "ps")
-   (V2DF "pd") (V4DF "pd") (V4SF "ps") (V8SF "ps")])
-
 (define_mode_attr ssefltvecmode
   [(V2DI "V2DF") (V4DI "V4DF") (V4SI "V4SF") (V8SI "V8SF")])
 
@@ -27615,9 +27621,9 @@
 ;; being a subset of what vpermp* can do), but vpermilp* has shorter
 ;; latency as it never crosses lanes.
 (define_insn "*<sse2_avx_avx512f>_vpermilp<mode><mask_name>"
-  [(set (match_operand:VF 0 "register_operand" "=v")
-	(vec_select:VF
-	  (match_operand:VF 1 "nonimmediate_operand" "vm")
+  [(set (match_operand:V48_AVX 0 "register_operand" "=v")
+	(vec_select:V48_AVX
+	  (match_operand:V48_AVX 1 "nonimmediate_operand" "vm")
 	  (match_parallel 2 ""
 	    [(match_operand 3 "const_int_operand")])))]
   "TARGET_AVX && <mask_mode512bit_condition>
@@ -27625,7 +27631,7 @@
 {
   int mask = avx_vpermilp_parallel (operands[2], <MODE>mode) - 1;
   operands[2] = GEN_INT (mask);
-  return "vpermil<ssemodesuffix>\t{%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2}";
+  return "vpermil<ssefltmodesuffix>\t{%2, %1, %0<mask_operand4>|%0<mask_operand4>, %1, %2}";
 }
   [(set_attr "type" "sselog")
    (set_attr "prefix_extra" "1")
@@ -28141,6 +28147,21 @@
    (set_attr "length_immediate" "0,1,1,0,1,0,1")
    (set_attr "prefix" "vex,vex,vex,evex,evex,evex,evex")
    (set_attr "mode" "<sseinsnmode>")])
+
+
+(define_insn_and_split "*avx_vbroadcastf128_<mode>_perm"
+  [(set (match_operand:V_256 0 "register_operand")
+	(vec_select:V_256
+	  (vec_concat:V_256
+	    (match_operand:<ssehalfvecmode> 1 "memory_operand")
+	    (match_operand:<ssehalfvecmode> 2 "general_operand"))
+	  (match_parallel 3 "avx_vbroadcast128_operand"
+	    [(match_operand 4 "const_int_operand")])))]
+  "TARGET_AVX && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(vec_concat: V_256 (match_dup 1) (match_dup 1)))])
 
 ;; For broadcast[i|f]32x2.  Yes there is no v4sf version, only v4si.
 (define_mode_iterator VI4F_BRCST32x2

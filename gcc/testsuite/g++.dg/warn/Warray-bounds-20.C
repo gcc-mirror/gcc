@@ -39,7 +39,7 @@ void warn_derived_ctor_access_new_decl ()
                               // { dg-message "at offset 1 into object 'a' of size 20" "LP64 note" { target ilp32} .-1 }
   char *p = a;
   ++p;
-  D1 *q = new (p) D1;
+  D1 *q = new (p) D1;		// { dg-warning "-Warray-bounds" }
   sink (q);
 }
 
@@ -47,7 +47,7 @@ void warn_derived_ctor_access_new_alloc ()
 {
   char *p = (char*)operator new (sizeof (D1));    // { dg-message "at offset 1 into object of size \\d+ allocated by '\[^\n\r]*operator new\[^\n\r]*'" "note" }
   ++p;
-  D1 *q = new (p) D1;
+  D1 *q = new (p) D1;		// { dg-warning "-Warray-bounds" }
   sink (q);
 }
 

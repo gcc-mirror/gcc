@@ -1481,7 +1481,8 @@ optimize_namespace (gfc_namespace *ns)
       gfc_code_walker (&ns->code, convert_elseif, dummy_expr_callback, NULL);
       gfc_code_walker (&ns->code, cfe_code, cfe_expr_0, NULL);
       gfc_code_walker (&ns->code, optimize_code, optimize_expr, NULL);
-      if (flag_inline_matmul_limit != 0 || flag_external_blas)
+      if (flag_inline_matmul_limit != 0 || flag_external_blas
+	  || flag_external_blas64)
 	{
 	  bool found;
 	  do
@@ -1496,7 +1497,7 @@ optimize_namespace (gfc_namespace *ns)
 			   NULL);
 	}
 
-      if (flag_external_blas)
+      if (flag_external_blas || flag_external_blas64)
 	gfc_code_walker (&ns->code, call_external_blas, dummy_expr_callback,
 			 NULL);
 
@@ -4644,6 +4645,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   enum matrix_case m_case;
   bool realloc_c;
   gfc_code **next_code_point;
+  int arg_kind;
 
   /* Many of the tests for inline matmul also apply here.  */
 
@@ -4929,13 +4931,20 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
 				       transb, 1);
   actual->next = next;
 
-  c1 = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (a->expr), 1,
-			       gfc_integer_4_kind);
-  c2 = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (b->expr), 2,
-			       gfc_integer_4_kind);
+  if (flag_external_blas)
+    arg_kind = gfc_integer_4_kind;
+  else
+    {
+      gcc_assert (flag_external_blas64);
+      arg_kind = gfc_integer_8_kind;
+    }
 
+  c1 = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (a->expr), 1,
+			       arg_kind);
+  c2 = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (b->expr), 2,
+			       arg_kind);
   b1 = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (b->expr), 1,
-			       gfc_integer_4_kind);
+			       arg_kind);
 
   /* Argument M. */
   actual = next;
@@ -4975,7 +4984,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   actual = next;
   next = gfc_get_actual_arglist ();
   next->expr = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (matrix_a),
-				       1, gfc_integer_4_kind);
+				       1, arg_kind);
   actual->next = next;
 
   /* Argument B.  */
@@ -4988,7 +4997,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   actual = next;
   next = gfc_get_actual_arglist ();
   next->expr = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (matrix_b),
-				       1, gfc_integer_4_kind);
+				       1, arg_kind);
   actual->next = next;
 
   /* Argument BETA - set to zero.  */
@@ -5012,7 +5021,7 @@ call_external_blas (gfc_code **c, int *walk_subtrees ATTRIBUTE_UNUSED,
   actual = next;
   next = gfc_get_actual_arglist ();
   next->expr = get_array_inq_function (GFC_ISYM_SIZE, gfc_copy_expr (expr1),
-				       1, gfc_integer_4_kind);
+				       1, arg_kind);
   actual->next = next;
 
   return 0;
@@ -5217,6 +5226,11 @@ gfc_expr_walker (gfc_expr **e, walk_expr_fn_t exprfn, void *data)
 	  case EXPR_FUNCTION:
 	    for (a = (*e)->value.function.actual; a; a = a->next)
 	      WALK_SUBEXPR (a->expr);
+	    break;
+	  case EXPR_CONDITIONAL:
+	    WALK_SUBEXPR ((*e)->value.conditional.condition);
+	    WALK_SUBEXPR ((*e)->value.conditional.true_expr);
+	    WALK_SUBEXPR ((*e)->value.conditional.false_expr);
 	    break;
 	  case EXPR_COMPCALL:
 	  case EXPR_PPC:

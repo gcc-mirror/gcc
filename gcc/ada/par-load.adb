@@ -117,6 +117,29 @@ procedure Load is
 
    end Same_File_Name_Except_For_Case;
 
+   function Actual_Name_Collides_With_Predefined_Unit_Name
+     (Actual_File_Name : File_Name_Type) return Boolean;
+   --  Given an actual file name, determine if it is a child unit whose parent
+   --  unit is a single letter that is a, g, i, or s. Such a name could create
+   --  confusion with predefined units and thus is required to use a tilde
+   --  instead of the minus as the second character.
+
+   ----------------------------------------------------
+   -- Actual_Name_Collides_With_Predefined_Unit_Name --
+   ----------------------------------------------------
+
+   function Actual_Name_Collides_With_Predefined_Unit_Name
+     (Actual_File_Name : File_Name_Type) return Boolean
+   is
+      N1 : Character;
+   begin
+      Get_Name_String (Actual_File_Name);
+      N1 := Name_Buffer (1);
+      return Name_Len > 1
+        and then Name_Buffer (2) = '-'
+        and then (N1 = 'a' or else N1 = 'g' or else N1 = 'i' or else N1 = 's');
+   end Actual_Name_Collides_With_Predefined_Unit_Name;
+
 --  Start of processing for Load
 
 begin
@@ -163,8 +186,18 @@ begin
                          (File_Name, Unit_File_Name (Cur_Unum)))
    then
       Error_Msg_File_1 := File_Name;
-      Error_Msg
-        ("??file name does not match unit name, should be{", Sloc (Curunit));
+      if Actual_Name_Collides_With_Predefined_Unit_Name
+           (Unit_File_Name (Cur_Unum))
+      then
+         Error_Msg
+           ("??file name may conflict with predefined units, "
+            & "the expected file name for this unit is{",
+            Sloc (Curunit));
+      else
+         Error_Msg
+           ("??file name does not match unit name, should be{",
+            Sloc (Curunit));
+      end if;
    end if;
 
    --  For units other than the main unit, the expected unit name is set and

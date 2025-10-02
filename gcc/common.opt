@@ -1394,6 +1394,10 @@ fdelete-null-pointer-checks
 Common Var(flag_delete_null_pointer_checks) Init(-1) Optimization
 Delete useless null pointer checks.
 
+fdep-fusion
+Common Var(flag_dep_fusion) Optimization Init(1)
+Issue defining instructions back to back with their single uses, provided they are macro-fusible in the target microarchitecture.
+
 fdevirtualize-at-ltrans
 Common Var(flag_ltrans_devirtualize)
 Stream extra data to support more aggressive devirtualization in LTO local transformation mode.

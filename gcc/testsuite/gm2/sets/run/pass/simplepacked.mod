@@ -57,7 +57,7 @@ BEGIN
    assert (ROTATE (psettype {1}, 1) = ROTATE (psettype {1}, 1), __LINE__, "comparision between constant rotated packed sets") ;
    assert (ROTATE (psettype {1}, 1) # ROTATE (psettype {2}, 1), __LINE__, "comparision between constant rotated packed sets") ;
    assert (ROTATE (a, 1) = psettype {2}, __LINE__, "comparision between rotated variable and constant packed sets") ;
-   assert (ROTATE (a, -1) = settype {0}, __LINE__, "comparision between rotated variable and constant packed sets") ;         
+   assert (ROTATE (a, -1) = psettype {0}, __LINE__, "comparision between rotated variable and constant packed sets") ;
 END testpset ;
 
 

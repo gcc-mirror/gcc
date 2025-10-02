@@ -20,10 +20,7 @@ EXPORT QUALIFIED BITSPERLOC, LOCSPERWORD,
                  LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, COFF_T, (* @SYSTEM_DATATYPES@  *)
                  ADDADR, SUBADR, DIFADR, MAKEADR, ADR, ROTATE,
                  SHIFT, CAST, TSIZE,
-
                  (* Internal GM2 compiler functions *)
-                 ShiftVal, ShiftLeft, ShiftRight,
-                 RotateVal, RotateLeft, RotateRight,
                  THROW, TBITSIZE ;
 
 CONST
@@ -154,82 +151,5 @@ PROCEDURE TBITSIZE (<type>) : CARDINAL ;
      optimized for speed, for example a BOOLEAN could occupy a WORD.
   *)
 *)
-
-
-(* The following procedures are invoked by GNU Modula-2 to
-   shift non word set types. They are not part of ISO Modula-2
-   but are used to implement the SHIFT procedure defined above. *)
-
-(*
-   ShiftVal - is a runtime procedure whose job is to implement
-              the SHIFT procedure of ISO SYSTEM. GNU Modula-2 will
-              inline a SHIFT of a single WORD sized set and will only
-              call this routine for larger sets.
-*)
-
-PROCEDURE ShiftVal (VAR s, d: ARRAY OF BITSET;
-                    SetSizeInBits: CARDINAL;
-                    ShiftCount: INTEGER) ;
-
-
-(*
-   ShiftLeft - performs the shift left for a multi word set.
-               This procedure might be called by the back end of
-               GNU Modula-2 depending whether amount is known at
-               compile time.
-*)
-
-PROCEDURE ShiftLeft (VAR s, d: ARRAY OF BITSET;
-                     SetSizeInBits: CARDINAL;
-                     ShiftCount: CARDINAL) ;
-
-(*
-   ShiftRight - performs the shift left for a multi word set.
-                This procedure might be called by the back end of
-                GNU Modula-2 depending whether amount is known at
-                compile time.
-*)
-
-PROCEDURE ShiftRight (VAR s, d: ARRAY OF BITSET;
-                     SetSizeInBits: CARDINAL;
-                     ShiftCount: CARDINAL) ;
-
-
-(*
-   RotateVal - is a runtime procedure whose job is to implement
-               the ROTATE procedure of ISO SYSTEM. GNU Modula-2 will
-               inline a ROTATE of a single WORD (or less)
-               sized set and will only call this routine for larger
-               sets.
-*)
-
-PROCEDURE RotateVal (VAR s, d: ARRAY OF BITSET;
-                     SetSizeInBits: CARDINAL;
-                     RotateCount: INTEGER) ;
-
-
-(*
-   RotateLeft - performs the rotate left for a multi word set.
-                This procedure might be called by the back end of
-                GNU Modula-2 depending whether amount is known at
-                compile time.
-*)
-
-PROCEDURE RotateLeft (VAR s, d: ARRAY OF BITSET;
-                      SetSizeInBits: CARDINAL;
-                      RotateCount: CARDINAL) ;
-
-
-(*
-   RotateRight - performs the rotate right for a multi word set.
-                 This procedure might be called by the back end of
-                 GNU Modula-2 depending whether amount is known at
-                 compile time.
-*)
-
-PROCEDURE RotateRight (VAR s, d: ARRAY OF BITSET;
-                       SetSizeInBits: CARDINAL;
-                       RotateCount: CARDINAL) ;
-
 
 END SYSTEM.

@@ -25,15 +25,25 @@ DEFINITION MODULE FifoQueue ;
    Author     : Gaius Mulley
    Title      : FifoQueue
    Date       : Tue Dec 12 16:23:22 GMT 1989
-   Description: FifoQueue provides a mechanism to and from which CARDINAL
-                numbers can be stored and retrieved from a FIFO queue.
-   Last update: Tue Dec 12 16:24:24 GMT 1989
+   Description: FifoQueue provides a fifo mechanism to allow symbols to be
+                stored and retrieved between passes in the same order.
 *)
 
-EXPORT QUALIFIED PutEnumerationIntoFifoQueue, GetEnumerationFromFifoQueue,
-                 PutSubrangeIntoFifoQueue, GetSubrangeFromFifoQueue,
-                 PutConstIntoFifoQueue, GetConstFromFifoQueue,
-                 PutConstructorIntoFifoQueue, GetConstructorFromFifoQueue ;
+
+(*
+   PutSetIntoFifoQueue - places a set symbol
+                         into a fifo queue.
+*)
+
+PROCEDURE PutSetIntoFifoQueue (c: CARDINAL) ;
+
+
+(*
+   GetSetFromFifoQueue - retrieves a set symbol
+                         from a fifo queue.
+*)
+
+PROCEDURE GetSetFromFifoQueue (VAR c: CARDINAL) ;
 
 
 (*

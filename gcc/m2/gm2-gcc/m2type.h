@@ -183,14 +183,14 @@ EXTERN tree m2type_BuildStartEnumeration (location_t location, char *name,
                                           bool ispacked);
 EXTERN tree m2type_BuildEndEnumeration (location_t location, tree enumtype,
                                         tree enumvalues);
-EXTERN tree m2type_BuildEnumerator (location_t location, char *name,
+EXTERN tree m2type_BuildEnumerator (location_t location, const char *name,
                                     tree value, tree *enumvalues);
 EXTERN tree m2type_BuildPointerType (tree totype);
 EXTERN tree m2type_BuildConstPointerType (tree totype);
 EXTERN tree m2type_BuildSetType (location_t location, char *name, tree type,
                                  tree lowval, tree highval, bool ispacked);
 EXTERN void *m2type_BuildStartSetConstructor (tree type);
-EXTERN void m2type_BuildSetConstructorElement (void *p, tree value);
+EXTERN void m2type_BuildSetConstructorElement (location_t location, void *p, tree value);
 EXTERN tree m2type_BuildEndSetConstructor (void *p);
 EXTERN void *m2type_BuildStartRecordConstructor (tree type);
 EXTERN tree m2type_BuildEndRecordConstructor (void *p);
@@ -214,6 +214,7 @@ EXTERN bool m2type_IsAddress (tree type);
 EXTERN tree m2type_GetCardinalAddressType (void);
 EXTERN bool m2type_SameRealType (tree a, tree b);
 EXTERN bool m2type_IsGccStrictTypeEquivalent (tree left, tree right);
+EXTERN tree m2type_GetBooleanEnumList (location_t location);
 
 #undef EXTERN
 #endif /* m2type_h  */

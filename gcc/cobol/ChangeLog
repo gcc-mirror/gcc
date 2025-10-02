@@ -1,3 +1,15 @@
+2025-09-05  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (trace1_init): Prepend two internal variables with
+	underscore.
+	(initialize_variable_internal): Use new register_e attribute.
+	(psa_global): Use "__ggsr__" prefix to identify special registers
+	(parser_symbol_add): Use new register_e attribute.
+	* symbols.cc (cbl_field_attr_str): Likewise.
+	(symbol_table_init): Likewise.
+	(is_register_field): Eliminated in favor of (attr & register_e).
+	* symbols.h (is_register_field): Likewise.
+
 2025-08-20  Robert Dubner  <rdubner@symas.com>
 
 	* genutil.cc (get_binary_value): Fix a comment.

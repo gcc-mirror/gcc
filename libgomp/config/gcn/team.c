@@ -32,6 +32,10 @@
 #define LITTLEENDIAN_CPU
 #include "hsa.h"
 
+#define UNLIKELY(x) (__builtin_expect ((x), 0))
+
+extern void *GOMP_INDIRECT_ADDR_MAP;
+
 /* Defined in basic-allocator.c via config/amdgcn/allocator.c.  */
 void __gcn_lowlat_init (void *heap, size_t size);
 
@@ -57,8 +61,8 @@ gomp_gcn_enter_kernel (void)
       int numthreads = __builtin_gcn_dim_size (1);
       int teamid = __builtin_gcn_dim_pos(0);
 
-      /* Initialize indirect function support.  */
-      if (teamid == 0)
+      /* Initialize indirect function support for older libgomp.  */
+      if (UNLIKELY (GOMP_INDIRECT_ADDR_MAP != NULL && teamid == 0))
 	build_indirect_map ();
 
       /* Set up the global state.

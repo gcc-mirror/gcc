@@ -352,6 +352,30 @@ public:
   unsigned int m_bits;
 };
 
+/* LUTI4 (four registers, 8-bit)
+   Variants are also available for: _u8
+   svint8x4_t svluti4_zt_s8_x4 (uint64_t zt0, svuint8x2_t zn)
+	      __arm_streaming __arm_in ("zt0");  */
+class svluti_zt_impl : public read_zt0<function_base>
+{
+public:
+  CONSTEXPR svluti_zt_impl (unsigned int bits) : m_bits (bits) {}
+
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_READ_ZT0;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    // Remove `zt0` argument, since it is ignored.
+    e.args.ordered_remove (0);
+    return e.use_exact_insn (CODE_FOR_aarch64_sme_lut_zt);
+  }
+
+  unsigned int m_bits;
+};
+
 template<insn_code (*CODE) (machine_mode)>
 class svread_za_slice_base : public function_base
 {
@@ -467,6 +491,51 @@ public:
   }
 };
 
+/* MOVT (vector to table)
+   Variants are also available for:
+   [_s8], [_u16], [_s16], [_u32], [_s32], [_u64], [_s64]
+   [_bf16], [_f16], [_f32], [_f64]
+   void svwrite_lane_zt[_u8] (uint64_t zt0, svuint8_t zt, uint64_t idx)
+	__arm_streaming __arm_out ("zt0");  */
+class svwrite_lane_zt_impl : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_ZT0;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    // Remove `zt0` argument, since it is ignored.
+    e.args.ordered_remove (0);
+    auto mode = e.args[0]->mode;
+    return e.use_exact_insn (code_for_aarch64_sme_write_zt (mode));
+  }
+};
+
+/* MOVT (vector to table)
+   Variants are also available for:
+   [_s8], [_u16], [_s16], [_u32], [_s32], [_u64], [_s64]
+   [_bf16], [_f16], [_f32], [_f64]
+   void svwrite_zt[_u8] (uint64_t zt0, svuint8_t zt)
+	__arm_streaming __arm_out ("zt0");  */
+class svwrite_zt_impl : public function_base
+{
+public:
+  unsigned int call_properties (const function_instance &) const override
+  {
+    return CP_WRITE_ZT0;
+  }
+
+  rtx expand (function_expander &e) const override
+  {
+    // svwrite_zt (zt0, zt) == svwrite_lane_zt (zt0, zt, 0)
+    e.args.safe_push (const0_rtx);
+    return svwrite_lane_zt_impl ().expand (e);
+  }
+};
+
 using svwrite_za_tile_impl = add_call_properties<read_write_za_base,
 						 CP_READ_ZA | CP_WRITE_ZA>;
 
@@ -569,6 +638,7 @@ FUNCTION (svldr_za, svldr_za_impl, )
 FUNCTION (svldr_zt, svldr_zt_impl, )
 FUNCTION (svluti2_lane_zt, svluti_lane_zt_impl, (2))
 FUNCTION (svluti4_lane_zt, svluti_lane_zt_impl, (4))
+FUNCTION (svluti4_zt, svluti_zt_impl, (4))
 FUNCTION (svmla_za, sme_2mode_function, (UNSPEC_SME_SMLA, UNSPEC_SME_UMLA,
 					 UNSPEC_SME_FMLA))
 FUNCTION (svmla_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SMLA,
@@ -616,6 +686,8 @@ FUNCTION (svvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SVDOT,
 FUNCTION (svwrite_za, svwrite_za_impl,)
 FUNCTION (svwrite_hor_za, svwrite_za_tile_impl, (UNSPEC_SME_WRITE_HOR))
 FUNCTION (svwrite_ver_za, svwrite_za_tile_impl, (UNSPEC_SME_WRITE_VER))
+FUNCTION (svwrite_zt,      svwrite_zt_impl,)
+FUNCTION (svwrite_lane_zt, svwrite_lane_zt_impl,)
 FUNCTION (svzero_mask_za, svzero_mask_za_impl, )
 FUNCTION (svzero_za, svzero_za_impl, )
 FUNCTION (svzero_zt, svzero_zt_impl, )

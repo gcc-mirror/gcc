@@ -242,7 +242,8 @@ enum stmt_vec_info_type {
   lc_phi_info_type,
   phi_info_type,
   recurr_info_type,
-  loop_exit_ctrl_vec_info_type
+  loop_exit_ctrl_vec_info_type,
+  permute_info_type
 };
 
 /************************************************************************
@@ -288,6 +289,7 @@ struct vect_load_store_data : vect_data {
   } gs;
   tree strided_offset_vectype; // VMAT_GATHER_SCATTER_IFN, originally strided
   auto_vec<int> elsvals;
+  unsigned n_perms; // SLP_TREE_LOAD_PERMUTATION
 };
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
@@ -328,11 +330,6 @@ struct _slp_tree {
   tree vectype;
   /* Vectorized defs.  */
   vec<tree> vec_defs;
-  /* Number of vector stmts that are created to replace the group of scalar
-     stmts. It is calculated during the transformation phase as the number of
-     scalar elements in one scalar iteration (GROUP_SIZE) multiplied by VF
-     divided by vector size.  */
-  unsigned int vec_stmts_size;
 
   /* Reference count in the SLP graph.  */
   unsigned int refcnt;
@@ -442,7 +439,6 @@ public:
 #define SLP_TREE_SCALAR_OPS(S)                   (S)->ops
 #define SLP_TREE_REF_COUNT(S)                    (S)->refcnt
 #define SLP_TREE_VEC_DEFS(S)                     (S)->vec_defs
-#define SLP_TREE_NUMBER_OF_VEC_STMTS(S)          (S)->vec_stmts_size
 #define SLP_TREE_LOAD_PERMUTATION(S)             (S)->load_permutation
 #define SLP_TREE_LANE_PERMUTATION(S)             (S)->lane_permutation
 #define SLP_TREE_DEF_TYPE(S)			 (S)->def_type
@@ -1548,9 +1544,6 @@ public:
   stmt_vec_info next_element;
   /* The size of the group.  */
   unsigned int size;
-  /* For stores, number of stores from this group seen. We vectorize the last
-     one.  */
-  unsigned int store_count;
   /* For loads only, the gap from the previous load. For consecutive loads, GAP
      is 1.  */
   unsigned int gap;
@@ -1714,8 +1707,6 @@ struct gather_scatter_info {
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->next_element)
 #define DR_GROUP_SIZE(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->size)
-#define DR_GROUP_STORE_COUNT(S) \
-  (gcc_checking_assert ((S)->dr_aux.dr), (S)->store_count)
 #define DR_GROUP_GAP(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->gap)
 
@@ -2300,13 +2291,10 @@ vect_get_num_vectors (poly_uint64 nunits, tree vectype)
 }
 
 /* Return the number of vectors in the context of vectorization region VINFO,
-   needed for a group of statements, whose size is specified by lanes of NODE,
-   if NULL, it is 1.  The statements are supposed to be interleaved together
-   with no gap, and all operate on vectors of type VECTYPE, if NULL, the
-   vectype of NODE is used.  */
+   needed for a group of statements and a vector type as specified by NODE.  */
 
 inline unsigned int
-vect_get_num_copies (vec_info *vinfo, slp_tree node, tree vectype = NULL)
+vect_get_num_copies (vec_info *vinfo, slp_tree node)
 {
   poly_uint64 vf;
 
@@ -2315,25 +2303,10 @@ vect_get_num_copies (vec_info *vinfo, slp_tree node, tree vectype = NULL)
   else
     vf = 1;
 
-  if (node)
-    {
-      vf *= SLP_TREE_LANES (node);
-      if (!vectype)
-	vectype = SLP_TREE_VECTYPE (node);
-    }
+  vf *= SLP_TREE_LANES (node);
+  tree vectype = SLP_TREE_VECTYPE (node);
 
   return vect_get_num_vectors (vf, vectype);
-}
-
-/* Return the number of copies needed for loop vectorization when
-   a statement operates on vectors of type VECTYPE.  This is the
-   vectorization factor divided by the number of elements in
-   VECTYPE and is always known at compile time.  */
-
-inline unsigned int
-vect_get_num_copies (loop_vec_info loop_vinfo, tree vectype)
-{
-  return vect_get_num_copies (loop_vinfo, NULL, vectype);
 }
 
 /* Update maximum unit count *MAX_NUNITS so that it accounts for
@@ -2647,7 +2620,7 @@ extern bool vect_grouped_load_supported (tree, bool, unsigned HOST_WIDE_INT);
 extern internal_fn vect_load_lanes_supported (tree, unsigned HOST_WIDE_INT,
 					      bool, vec<int> * = nullptr);
 extern tree vect_setup_realignment (vec_info *,
-				    stmt_vec_info, gimple_stmt_iterator *,
+				    stmt_vec_info, tree, gimple_stmt_iterator *,
 				    tree *, enum dr_alignment_support, tree,
 	                            class loop **);
 extern tree vect_get_new_vect_var (tree, enum vect_var_kind, const char *);
@@ -2754,6 +2727,8 @@ extern bool vect_transform_slp_perm_load (vec_info *, slp_tree, const vec<tree> 
 					  gimple_stmt_iterator *, poly_uint64,
 					  bool, unsigned *,
 					  unsigned * = nullptr, bool = false);
+extern bool vectorizable_slp_permutation (vec_info *, gimple_stmt_iterator *,
+					  slp_tree, stmt_vector_for_cost *);
 extern bool vect_slp_analyze_operations (vec_info *);
 extern void vect_schedule_slp (vec_info *, const vec<slp_instance> &);
 extern opt_result vect_analyze_slp (vec_info *, unsigned, bool);

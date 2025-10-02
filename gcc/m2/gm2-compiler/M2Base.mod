@@ -96,7 +96,7 @@ FROM M2Options IMPORT NilChecking,
                       IndexChecking, RangeChecking,
                       ReturnChecking, CaseElseChecking, Exceptions,
 		      WholeValueChecking,
-                      DebugBuiltins,
+                      DebugBuiltins, GetWideset,
                       Iso, Pim, Pim2, Pim3 ;
 
 FROM m2type IMPORT GetIntegerType,
@@ -150,6 +150,7 @@ VAR
    Comp,
    Expr,
    Ass        : CompatibilityArray ;
+   m2wideset,
    Ord,
    OrdS, OrdL,
    Float,
@@ -222,7 +223,7 @@ BEGIN
    InitSystem ;
 
    MakeBitset ;  (* We do this after SYSTEM has been created as BITSET
-                    is dependant upon WORD.  *)
+                    is dependant upon WORD and BOOLEAN.  *)
 
    InitBaseConstants ;
    InitBaseFunctions ;
@@ -633,6 +634,14 @@ BEGIN
       MakeSize  (* SIZE is declared as a standard function in *)
                 (* ISO Modula-2 and PIM-[34] Modula-2 but not *)
                 (* PIM-2 Modula-2                             *)
+   END ;
+
+   IF GetWideset ()
+   THEN
+      (* Ensure that M2WIDESET is available if needed by M2GenGCC.mod.
+         By default -fwideset is TRUE however the user may override using
+         -fno-wideset.  *)
+      m2wideset := MakeDefinitionSource (BuiltinTokenNo, MakeKey('M2WIDESET'))
    END ;
 
    (*

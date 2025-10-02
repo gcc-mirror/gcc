@@ -4368,6 +4368,58 @@ gfc_conv_expr_op (gfc_se * se, gfc_expr * expr)
   gfc_add_block_to_block (&se->post, &lse.post);
 }
 
+static void
+gfc_conv_conditional_expr (gfc_se *se, gfc_expr *expr)
+{
+  gfc_se cond_se, true_se, false_se;
+  tree condition, true_val, false_val;
+  tree type;
+
+  gfc_init_se (&cond_se, se);
+  gfc_init_se (&true_se, se);
+  gfc_init_se (&false_se, se);
+
+  gfc_conv_expr (&cond_se, expr->value.conditional.condition);
+  gfc_add_block_to_block (&se->pre, &cond_se.pre);
+  condition = gfc_evaluate_now (cond_se.expr, &se->pre);
+
+  true_se.want_pointer = se->want_pointer;
+  gfc_conv_expr (&true_se, expr->value.conditional.true_expr);
+  true_val = true_se.expr;
+  false_se.want_pointer = se->want_pointer;
+  gfc_conv_expr (&false_se, expr->value.conditional.false_expr);
+  false_val = false_se.expr;
+
+  if (true_se.pre.head != NULL_TREE || false_se.pre.head != NULL_TREE)
+    gfc_add_expr_to_block (
+      &se->pre,
+      fold_build3_loc (input_location, COND_EXPR, void_type_node, condition,
+		       true_se.pre.head != NULL_TREE
+			 ? gfc_finish_block (&true_se.pre)
+			 : build_empty_stmt (input_location),
+		       false_se.pre.head != NULL_TREE
+			 ? gfc_finish_block (&false_se.pre)
+			 : build_empty_stmt (input_location)));
+
+  if (true_se.post.head != NULL_TREE || false_se.post.head != NULL_TREE)
+    gfc_add_expr_to_block (
+      &se->post,
+      fold_build3_loc (input_location, COND_EXPR, void_type_node, condition,
+		       true_se.post.head != NULL_TREE
+			 ? gfc_finish_block (&true_se.post)
+			 : build_empty_stmt (input_location),
+		       false_se.post.head != NULL_TREE
+			 ? gfc_finish_block (&false_se.post)
+			 : build_empty_stmt (input_location)));
+
+  type = gfc_typenode_for_spec (&expr->ts);
+  if (se->want_pointer)
+    type = build_pointer_type (type);
+
+  se->expr = fold_build3_loc (input_location, COND_EXPR, type, condition,
+			      true_val, false_val);
+}
+
 /* If a string's length is one, we convert it to a single character.  */
 
 tree
@@ -5315,6 +5367,13 @@ gfc_apply_interface_mapping_to_expr (gfc_interface_mapping * mapping,
     case EXPR_OP:
       gfc_apply_interface_mapping_to_expr (mapping, expr->value.op.op1);
       gfc_apply_interface_mapping_to_expr (mapping, expr->value.op.op2);
+      break;
+
+    case EXPR_CONDITIONAL:
+      gfc_apply_interface_mapping_to_expr (mapping,
+					   expr->value.conditional.true_expr);
+      gfc_apply_interface_mapping_to_expr (mapping,
+					   expr->value.conditional.false_expr);
       break;
 
     case EXPR_FUNCTION:
@@ -10464,6 +10523,10 @@ gfc_conv_expr (gfc_se * se, gfc_expr * expr)
       gfc_conv_expr_op (se, expr);
       break;
 
+    case EXPR_CONDITIONAL:
+      gfc_conv_conditional_expr (se, expr);
+      break;
+
     case EXPR_FUNCTION:
       gfc_conv_function_expr (se, expr);
       break;
@@ -10604,6 +10667,13 @@ gfc_conv_expr_reference (gfc_se * se, gfc_expr * expr)
 	  gfc_add_block_to_block (&se->pre, &se->post);
 	  se->expr = var;
 	}
+      return;
+    }
+
+  if (expr->expr_type == EXPR_CONDITIONAL)
+    {
+      se->want_pointer = 1;
+      gfc_conv_expr (se, expr);
       return;
     }
 
@@ -13143,26 +13213,39 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 	}
 
       /* Deallocate the lhs parameterized components if required.  */
-      if (dealloc && expr2->expr_type == EXPR_FUNCTION
-	  && !expr1->symtree->n.sym->attr.associate_var)
-	{
-	  if (expr1->ts.type == BT_DERIVED
-	      && expr1->ts.u.derived
-	      && expr1->ts.u.derived->attr.pdt_type)
-	    {
-	      tmp = gfc_deallocate_pdt_comp (expr1->ts.u.derived, lse.expr,
-					     expr1->rank);
-	      gfc_add_expr_to_block (&lse.pre, tmp);
-	    }
-	  else if (expr1->ts.type == BT_CLASS
+      if (dealloc
+	  && !expr1->symtree->n.sym->attr.associate_var
+	  && ((expr1->ts.type == BT_DERIVED
+	       && expr1->ts.u.derived
+	       && expr1->ts.u.derived->attr.pdt_type)
+	      || (expr1->ts.type == BT_CLASS
 		   && CLASS_DATA (expr1)->ts.u.derived
-		   && CLASS_DATA (expr1)->ts.u.derived->attr.pdt_type)
+		   && CLASS_DATA (expr1)->ts.u.derived->attr.pdt_type)))
+	{
+	  bool pdt_dep = gfc_check_dependency (expr1, expr2, true);
+
+	  tmp = lse.expr;
+	  if (pdt_dep)
 	    {
-	      tmp = gfc_class_data_get (lse.expr);
+	      /* Create a temporary for deallocation after assignment.  */
+	      tmp = gfc_create_var (TREE_TYPE (lse.expr), "pdt_tmp");
+	      gfc_add_modify (&lse.pre, tmp, lse.expr);
+	    }
+
+	  if (expr1->ts.type == BT_DERIVED)
+	    tmp = gfc_deallocate_pdt_comp (expr1->ts.u.derived, tmp,
+					   expr1->rank);
+	  else if (expr1->ts.type == BT_CLASS)
+	    {
+	      tmp = gfc_class_data_get (tmp);
 	      tmp = gfc_deallocate_pdt_comp (CLASS_DATA (expr1)->ts.u.derived,
 					     tmp, expr1->rank);
-	      gfc_add_expr_to_block (&lse.pre, tmp);
 	    }
+
+	  if (tmp && pdt_dep)
+	    gfc_add_expr_to_block (&rse.post, tmp);
+	  else if (tmp)
+	    gfc_add_expr_to_block (&lse.pre, tmp);
 	}
     }
 
@@ -13381,6 +13464,22 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
       gfc_cleanup_loop (&loop);
     }
 
+  /* Since parameterized components cannot have default initializers,
+     the default PDT constructor leaves them unallocated. Do the
+     allocation now.  */
+  if (init_flag && expr1->ts.type == BT_DERIVED
+      && expr1->ts.u.derived->attr.pdt_type
+      && !expr1->symtree->n.sym->attr.allocatable
+      && !expr1->symtree->n.sym->attr.dummy)
+    {
+      gfc_symbol *sym = expr1->symtree->n.sym;
+      tmp = gfc_allocate_pdt_comp (sym->ts.u.derived,
+				   sym->backend_decl,
+				   sym->as ? sym->as->rank : 0,
+					     sym->param_list);
+      gfc_add_expr_to_block (&block, tmp);
+    }
+
   return gfc_finish_block (&block);
 }
 
@@ -13444,7 +13543,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     {
       tmp = gfc_trans_zero_assign (expr1);
       if (tmp)
-        return tmp;
+	return tmp;
     }
 
   /* Special case copying one array to another.  */
@@ -13455,7 +13554,7 @@ gfc_trans_assignment (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     {
       tmp = gfc_trans_array_copy (expr1, expr2);
       if (tmp)
-        return tmp;
+	return tmp;
     }
 
   /* Special case initializing an array from a constant array constructor.  */

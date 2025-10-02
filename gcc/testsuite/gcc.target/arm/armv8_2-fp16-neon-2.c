@@ -2,6 +2,7 @@
 /* { dg-require-effective-target arm_v8_2a_fp16_neon_ok }  */
 /* { dg-options "-O2 -ffast-math" }  */
 /* { dg-add-options arm_v8_2a_fp16_neon }  */
+/* { dg-final { check-function-bodies "**" "" "" } }  */
 
 /* Test instructions generated for the FP16 vector intrinsics with
    -ffast-math */
@@ -143,7 +144,7 @@ VCMP1_TEST (vceqz)
 
 VCMP1_TEST (vcgtz)
 /* { dg-final { scan-assembler-times {vcgt\.f16\td[0-9]+, d[0-9]+, #0} 1 } }  */
-/* { dg-final { scan-assembler-times {vceq\.f16\tq[0-9]+, q[0-9]+, #0} 1 } }  */
+/* { dg-final { scan-assembler-times {vcgt\.f16\tq[0-9]+, q[0-9]+, #0} 1 } }  */
 
 VCMP1_TEST (vcgez)
 /* { dg-final { scan-assembler-times {vcge\.f16\td[0-9]+, d[0-9]+, #0} 1 } }  */
@@ -187,43 +188,35 @@ VCVT_N_TEST (vcvt, _u16_f16, uint, float)
 
 VCVT_TEST (vcvta, _s16_f16, int, float)
 /* { dg-final { scan-assembler-times {vcvta\.s16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvta\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvta\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvta, _u16_f16, uint, float)
 /* { dg-final { scan-assembler-times {vcvta\.u16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvta\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvta\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvtm, _s16_f16, int, float)
 /* { dg-final { scan-assembler-times {vcvtm\.s16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvtm\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvtm\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvtm, _u16_f16, uint, float)
 /* { dg-final { scan-assembler-times {vcvtm\.u16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvtm\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvtm\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvtn, _s16_f16, int, float)
 /* { dg-final { scan-assembler-times {vcvtn\.s16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvtn\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvtn\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvtn, _u16_f16, uint, float)
 /* { dg-final { scan-assembler-times {vcvtn\.u16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvtn\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvtn\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvtp, _s16_f16, int, float)
 /* { dg-final { scan-assembler-times {vcvtp\.s16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvtp\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvtp\.s16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 VCVT_TEST (vcvtp, _u16_f16, uint, float)
 /* { dg-final { scan-assembler-times {vcvtp\.u16\.f16\td[0-9]+, d[0-9]+} 1 } }
-   { dg-final { scan-assembler-times {vcvtp\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }
-*/
+   { dg-final { scan-assembler-times {vcvtp\.u16\.f16\tq[0-9]+, q[0-9]+} 1 } }  */
 
 UNOP_TEST (vabs)
 /* { dg-final { scan-assembler-times {vabs\.f16\td[0-9]+, d[0-9]+} 1 } }
@@ -326,14 +319,42 @@ BINOP_TEST (vminnm)
   { dg-final { scan-assembler-times {vminnm\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 1 } }  */
 
 BINOP_TEST (vmul)
-/* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 3 } }
-   { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } }  */
+/*
+** test_vmul_16x4:
+**	...
+**	vmul\.f16	d[0-9]+, d[0-9]+, d[0-9]+
+**	...
+*/
+/*
+** test_vmul_16x8:
+**	...
+**	vmul\.f16	q[0-9]+, q[0-9]+, q[0-9]+
+**	...
+*/
 BINOP_LANE_TEST (vmul, 2)
 /* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+\[2\]} 1 } }
    { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, d[0-9]+\[2\]} 1 } }  */
 BINOP_N_TEST (vmul)
-/* { dg-final { scan-assembler-times {vmul\.f16\td[0-9]+, d[0-9]+, d[0-9]+} 3 } }
-   { dg-final { scan-assembler-times {vmul\.f16\tq[0-9]+, q[0-9]+, q[0-9]+} 2 } }*/
+/*
+** test_vmul_n_16x4:
+**	...
+**	vdup\.f?16	d[0-9]+, .+
+**	...
+**	vmul\.f16	d[0-9]+, d[0-9]+, d[0-9]+
+**	...
+*/
+/*
+** test_vmul_n_16x8:
+**	...
+** (
+**	vdup\.f?16	q[0-9]+, .+
+** |
+**	vld1.16	{d[0-9]+\[\], d[0-9]+\[\]}, \[(sp|r[0-9]+)\]
+** )
+**	...
+**	vmul\.f16	q[0-9]+, q[0-9]+, q[0-9]+
+**	...
+*/
 
 float16x4_t
 test_vpadd_16x4 (float16x4_t a, float16x4_t b)

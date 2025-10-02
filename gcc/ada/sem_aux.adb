@@ -959,6 +959,7 @@ package body Sem_Aux is
 
    begin
       if Is_Type (Ent)
+        and then Present (Etype (Ent))
         and then Base_Type (Ent) /= Root_Type (Ent)
         and then not Is_Class_Wide_Type (Ent)
 

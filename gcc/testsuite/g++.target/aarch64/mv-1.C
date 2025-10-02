@@ -1,7 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-ifunc "" } */
 /* { dg-options "-O0" } */
-/* { dg-additional-options "-Wno-experimental-fmv-target" } */
 
 __attribute__((target_version("default")))
 int foo ()
@@ -37,3 +36,7 @@ int bar()
 /* { dg-final { scan-assembler-times "\n_Z3foov\._Mrng:\n" 1 } } */
 /* { dg-final { scan-assembler-times "\n_Z3foov\._MrngMflagm:\n" 1 } } */
 /* { dg-final { scan-assembler-times "\n_Z3foov\._Mflagm:\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n_Z3foov\.resolver:\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\tbl\t_Z3foov\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\t\.type\t_Z3foov, %gnu_indirect_function\n" 1 } } */
+/* { dg-final { scan-assembler-times "\n\t\.set\t_Z3foov,_Z3foov\.resolver\n" 1 } } */

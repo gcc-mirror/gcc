@@ -3,11 +3,14 @@
 
 #include "vx_binary.h"
 #include "vx_ternary.h"
+#include "vx_widen.h"
 
 #define T uint64_t
+#define NT uint32_t
 
 TEST_BINARY_VX_UNSIGNED_0(T)
 TEST_TERNARY_VX_UNSIGNED_0(T)
+TEST_WIDEN_BINARY_VX_UNSIGNED(T, NT)
 
 /* { dg-final { scan-assembler-not {vadd.vx} } } */
 /* { dg-final { scan-assembler-not {vsub.vx} } } */
@@ -24,3 +27,8 @@ TEST_TERNARY_VX_UNSIGNED_0(T)
 /* { dg-final { scan-assembler-not {vaaddu.vx} } } */
 /* { dg-final { scan-assembler-not {vmacc.vx} } } */
 /* { dg-final { scan-assembler-not {vnmsac.vx} } } */
+/* { dg-final { scan-assembler-not {vmadd.vx} } } */
+/* { dg-final { scan-assembler-not {vnmsub.vx} } } */
+/* { dg-final { scan-assembler-not {vwaddu.vx} } } */
+/* { dg-final { scan-assembler-not {vwsubu.vx} } } */
+/* { dg-final { scan-assembler-not {vwmulu.vx} } } */

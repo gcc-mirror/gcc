@@ -1354,7 +1354,37 @@ simplify_peeled_chrec (class loop *loop, tree arg, tree init_cond)
   hash_map<tree, name_expansion *> *peeled_chrec_map = NULL;
 
   ev = instantiate_parameters (loop, analyze_scalar_evolution (loop, arg));
-  if (ev == NULL_TREE || TREE_CODE (ev) != POLYNOMIAL_CHREC)
+  if (ev == NULL_TREE)
+    return chrec_dont_know;
+
+  /* Support the case where we can derive the original CHREC from the
+     peeled one if that's a converted other IV.  This can be done
+     when the original unpeeled converted IV does not overflow and
+     has the same initial value.  */
+  if (CONVERT_EXPR_P (ev)
+      && TREE_CODE (init_cond) == INTEGER_CST
+      && TREE_CODE (TREE_OPERAND (ev, 0)) == POLYNOMIAL_CHREC
+      && (TYPE_PRECISION (TREE_TYPE (ev))
+	  > TYPE_PRECISION (TREE_TYPE (TREE_OPERAND (ev, 0))))
+      && (!TYPE_UNSIGNED (TREE_TYPE (ev))
+	  || TYPE_UNSIGNED (TREE_TYPE (TREE_OPERAND (ev, 0)))))
+    {
+      left = CHREC_LEFT (TREE_OPERAND (ev, 0));
+      right = CHREC_RIGHT (TREE_OPERAND (ev, 0));
+      tree left_before = chrec_fold_minus (TREE_TYPE (TREE_OPERAND (ev, 0)),
+					   left, right);
+      if (TREE_CODE (left_before) == INTEGER_CST
+	  && wi::to_widest (init_cond) == wi::to_widest (left_before)
+	  && !scev_probably_wraps_p (NULL_TREE, left_before, right, NULL,
+				     loop, false))
+	return build_polynomial_chrec (loop->num, init_cond,
+				       chrec_convert (TREE_TYPE (ev),
+						      right, NULL,
+						      false, NULL_TREE));
+      return chrec_dont_know;
+    }
+
+  if (TREE_CODE (ev) != POLYNOMIAL_CHREC)
     return chrec_dont_know;
 
   left = CHREC_LEFT (ev);

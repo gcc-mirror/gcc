@@ -80,6 +80,11 @@ along with GCC; see the file COPYING3.  If not see
 /* For a PARM_DECL, nonzero if it was declared as an array.  */
 #define C_ARRAY_PARAMETER(NODE) DECL_LANG_FLAG_0 (NODE)
 
+/* For FUNCTION_DECLs, evaluates true if the decl is a nested
+   function that requires a non-local context.  */
+#define C_FUNC_NONLOCAL_CONTEXT(EXP)		\
+  DECL_LANG_FLAG_4 (FUNCTION_DECL_CHECK (EXP))
+
 /* For FUNCTION_DECLs, evaluates true if the decl is built-in but has
    been declared.  */
 #define C_DECL_DECLARED_BUILTIN(EXP)		\
@@ -111,7 +116,8 @@ along with GCC; see the file COPYING3.  If not see
 /* Record whether a decl was declared register.  This is strictly a
    front-end flag, whereas DECL_REGISTER is used for code generation;
    they may differ for structures with volatile fields.  */
-#define C_DECL_REGISTER(EXP) DECL_LANG_FLAG_4 (EXP)
+#define C_DECL_REGISTER(EXP) \
+  DECL_LANG_FLAG_4 (TREE_NOT_CHECK (EXP, FUNCTION_DECL))
 
 /* Record whether a decl was used in an expression anywhere except an
    unevaluated operand of sizeof / typeof / alignof.  This is only
@@ -807,7 +813,7 @@ extern bool comptypes_same_p (tree, tree);
 extern bool comptypes_equiv_p (tree, tree);
 extern int comptypes_check_different_types (tree, tree, bool *);
 extern int comptypes_check_enum_int (tree, tree, bool *);
-extern bool c_mark_addressable (tree, bool = false);
+extern bool c_mark_addressable (tree, bool = false, bool = false);
 extern void c_incomplete_type_error (location_t, const_tree, const_tree);
 extern tree c_type_promotes_to (tree);
 extern struct c_expr default_function_array_conversion (location_t,
@@ -827,6 +833,7 @@ extern tree build_array_ref (location_t, tree, tree);
 extern tree build_omp_array_section (location_t, tree, tree, tree);
 extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
+extern void mark_decl_used (tree, bool);
 extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
 extern struct c_expr c_expr_countof_expr (location_t, struct c_expr);

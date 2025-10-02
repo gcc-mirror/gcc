@@ -41,9 +41,8 @@ package System.Stack_Usage is
    subtype Stack_Address is SSE.Integer_Address;
    --  Address on the stack
 
-   function To_Stack_Address
-     (Value : System.Address) return Stack_Address
-      renames System.Storage_Elements.To_Integer;
+   function To_Stack_Address (Value : System.Address) return Stack_Address
+   renames System.Storage_Elements.To_Integer;
 
    Task_Name_Length : constant := 32;
    --  The maximum length of task name displayed.
@@ -85,7 +84,7 @@ package System.Stack_Usage is
 
    --     Bottom_Of_Stack : aliased Integer;
    --     --  Bottom_Of_Stack'Address will be used as an approximation of
-   --     --  the bottom of stack. A good practise is to avoid allocating
+   --     --  the bottom of stack. A good practice is to avoid allocating
    --     --  other local variables on this stack, as it would degrade
    --     --  the quality of this approximation.
 
@@ -227,12 +226,12 @@ package System.Stack_Usage is
    --
 
    procedure Initialize_Analyzer
-     (Analyzer         : in out Stack_Analyzer;
-      Task_Name        : String;
-      Stack_Size       : Natural;
-      Stack_Base       : System.Address;
-      Pattern_Size     : Natural;
-      Pattern          : Interfaces.Unsigned_32 := 16#DEAD_BEEF#);
+     (Analyzer     : in out Stack_Analyzer;
+      Task_Name    : String;
+      Stack_Size   : Natural;
+      Stack_Base   : System.Address;
+      Pattern_Size : Natural;
+      Pattern      : Interfaces.Unsigned_32 := 16#DEAD_BEEF#);
    --  Should be called before any use of a Stack_Analyzer, to initialize it.
    --  Max_Pattern_Size is the size of the pattern zone, might be smaller than
    --  the full stack size Stack_Size in order to take into account e.g. the
@@ -244,22 +243,16 @@ package System.Stack_Usage is
    --  When this flag is true, then stack analysis is enabled
 
    procedure Compute_Result (Analyzer : in out Stack_Analyzer);
-   --  Read the pattern zone and deduce the stack usage. It should be called
-   --  from the same frame as Fill_Stack. If Analyzer.Probe is not null, an
-   --  array of Unsigned_32 with Analyzer.Probe elements is allocated on
-   --  Compute_Result's stack frame. Probe can be used to detect  the error:
-   --  "instrumentation threshold at reading". See above. After the call
+   --  Read the pattern zone and deduce the stack usage. After the call
    --  to this procedure, the memory will look like:
    --
    --                                                             Stack growing
    --  ----------------------------------------------------------------------->
-   --  |<---------------------->|<-------------->|<--------->|<--------->|
-   --  |  Stack frames          | Array of       | used      |  Memory   |
-   --  |  to Compute_Result     | Analyzer.Probe | during    |   filled  |
-   --  |                        | elements       |  the      |    with   |
-   --  |                        |                | execution |  pattern  |
-   --  |                                                     |           |
-   --  |<---------------------------------------------------->           |
+   --  |<---------------------->|<-------------------->|<--------------->|
+   --  |  Stack frame           | Used during the      | Memory filled   |
+   --  |  to Compute_Result     | execution            | with pattern    |
+   --  |                        |                      |                 |
+   --  |<--------------------------------------------->|                 |
    --                  Stack used                                        ^
    --                                                           Pattern_Limit
 
@@ -277,8 +270,8 @@ package System.Stack_Usage is
 
 private
 
-   package Unsigned_32_Addr is
-     new System.Address_To_Access_Conversions (Interfaces.Unsigned_32);
+   package Unsigned_32_Addr is new
+     System.Address_To_Access_Conversions (Interfaces.Unsigned_32);
 
    subtype Pattern_Type is Interfaces.Unsigned_32;
    Bytes_Per_Pattern : constant := Pattern_Type'Object_Size / Storage_Unit;
@@ -320,7 +313,7 @@ private
 
    Environment_Task_Analyzer : Stack_Analyzer;
 
-   Compute_Environment_Task  : Boolean;
+   Compute_Environment_Task : Boolean;
 
    type Result_Array_Ptr is access all Result_Array_Type;
 
@@ -332,8 +325,7 @@ private
    --  Id of the next stack analyzer
 
    function Stack_Size
-     (SP_Low  : Stack_Address;
-      SP_High : Stack_Address) return Natural;
+     (SP_Low : Stack_Address; SP_High : Stack_Address) return Natural;
    pragma Inline (Stack_Size);
    --  Return the size of a portion of stack delimited by SP_High and SP_Low
    --  (), i.e. the difference between SP_High and SP_Low. The storage element

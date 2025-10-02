@@ -46,7 +46,6 @@
 #include <bits/alloc_traits.h>
 #include <bits/allocator.h>
 #include <bits/functexcept.h>
-#include <bits/functional_hash.h>
 #include <bits/std_mutex.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -199,11 +198,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       struct __mutex
       {
 #if _GLIBCXX_HAS_GTHREADS
-	mutex* _M_mtx;
+	mutex* _M_mtx = nullptr;
 
-	__mutex(void* __t)
-	  : _M_mtx(__t ? &_S_get_mutex(__t) : nullptr)
-	{ }
+	__mutex(void* __t)  // __t is the underlying sbuf, as hash seed.
+	{
+	  extern mutex& __syncbuf_get_mutex(void*);  // in src/c++20/syncbuf.cc
+	  if (__t) _M_mtx = &__syncbuf_get_mutex(__t);
+	}
 
 	void
 	swap(__mutex& __other) noexcept
@@ -219,17 +220,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	unlock()
 	{
 	  _M_mtx->unlock();
-	}
-
-	// FIXME: This should be put in the .so
-	static mutex&
-	_S_get_mutex(void* __t)
-	{
-	  const unsigned char __mask = 0xf;
-	  static mutex __m[__mask + 1];
-
-	  auto __key = _Hash_impl::hash(__t) & __mask;
-	  return __m[__key];
 	}
 #else
 	__mutex(void*) { }

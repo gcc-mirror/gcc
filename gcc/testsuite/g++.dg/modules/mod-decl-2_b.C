@@ -1,7 +1,7 @@
 // { dg-additional-options "-fmodules-ts" }
 module bob;
 
-import bob; // { dg-error "cannot import module.* in its own purview" }
+import bob; // { dg-error "import of 'bob' within its own" }
 
 // module linkage
 void Baz ()

@@ -2004,6 +2004,10 @@ export namespace std
   using std::owner_equal;
   using std::owner_hash;
 #endif
+#if __cpp_lib_start_lifetime_as
+  using std::start_lifetime_as;
+  using std::start_lifetime_as_array;
+#endif
 }
 
 // 20.4 <memory_resource>
@@ -2997,6 +3001,10 @@ export namespace std
   using std::conditional_t;
   using std::conjunction;
   using std::conjunction_v;
+#if __cpp_lib_constant_wrapper
+  using std::constant_wrapper;
+  using std::cw;
+#endif
   using std::decay;
   using std::decay_t;
   using std::disjunction;

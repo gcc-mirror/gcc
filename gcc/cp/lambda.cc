@@ -220,18 +220,23 @@ lambda_capture_field_type (tree expr, bool explicit_init_p,
 
   if (explicit_init_p)
     {
-      tree auto_node = make_auto ();
-
-      type = auto_node;
-      if (by_reference_p)
-	/* Add the reference now, so deduction doesn't lose
-	   outermost CV qualifiers of EXPR.  */
-	type = build_reference_type (type);
       if (uses_parameter_packs (expr))
-	/* Stick with 'auto' even if the type could be deduced.  */
-	TEMPLATE_TYPE_PARAMETER_PACK (auto_node) = true;
+	{
+	  /* Stick with 'auto...' even if the type could be deduced.  */
+	  type = make_auto_pack ();
+	  if (by_reference_p)
+	    type = build_reference_type (type);
+	}
       else
-	type = do_auto_deduction (type, expr, auto_node);
+	{
+	  tree auto_node = make_auto ();
+	  type = auto_node;
+	  if (by_reference_p)
+	    /* Add the reference now, so deduction doesn't lose
+	       outermost CV qualifiers of EXPR.  */
+	    type = build_reference_type (type);
+	  type = do_auto_deduction (type, expr, auto_node);
+	}
     }
   else if (!type_deducible_expression_p (expr))
     {
@@ -1742,8 +1747,8 @@ compare_lambda_sig (tree fn_a, tree fn_b)
       || fn_b == error_mark_node)
     return false;
 
-  for (tree args_a = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn_a))),
-	 args_b = TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn_b)));
+  for (tree args_a = FUNCTION_FIRST_USER_PARMTYPE (fn_a),
+	 args_b = FUNCTION_FIRST_USER_PARMTYPE (fn_b);
        args_a || args_b;
        args_a = TREE_CHAIN (args_a), args_b = TREE_CHAIN (args_b))
     {

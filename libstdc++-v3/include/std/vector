@@ -67,7 +67,6 @@
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_vector.h>
 #include <bits/stl_bvector.h>
-#include <bits/refwrap.h>
 #include <bits/range_access.h>
 
 #ifndef _GLIBCXX_EXPORT_TEMPLATE
@@ -113,8 +112,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    _GLIBCXX20_CONSTEXPR
-    inline typename vector<_Tp, _Alloc>::size_type
+    constexpr typename vector<_Tp, _Alloc>::size_type
     erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
       using namespace __gnu_cxx;
@@ -122,7 +120,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       const auto __osz = __cont.size();
       const auto __end = __ucont.end();
       auto __removed = std::__remove_if(__ucont.begin(), __end,
-					__ops::__pred_iter(std::ref(__pred)));
+					std::move(__pred));
       if (__removed != __end)
 	{
 	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
@@ -135,25 +133,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc,
 	   typename _Up _GLIBCXX26_DEF_VAL_T(_Tp)>
-    _GLIBCXX20_CONSTEXPR
-    inline typename vector<_Tp, _Alloc>::size_type
+    constexpr typename vector<_Tp, _Alloc>::size_type
     erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
-    {
-      using namespace __gnu_cxx;
-      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __ucont = __cont;
-      const auto __osz = __cont.size();
-      const auto __end = __ucont.end();
-      auto __removed = std::__remove_if(__ucont.begin(), __end,
-					__ops::__iter_equals_val(__value));
-      if (__removed != __end)
-	{
-	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
-		       __cont.end());
-	  return __osz - __cont.size();
-	}
+    { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 
-      return 0;
-    }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // __cpp_lib_erase_if

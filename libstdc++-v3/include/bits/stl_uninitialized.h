@@ -236,6 +236,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
   /**
    *  @brief Copies the range [first,last) into result.
    *  @param  __first  An input iterator.
@@ -427,6 +428,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if __cplusplus >= 201103L
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
 #if __glibcxx_raw_memory_algorithms >= 202411L // >= C++26
       if consteval {
 	return std::__do_uninit_fill(__first, __last, __x);
@@ -529,6 +531,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
+#pragma GCC diagnostic ignored "-Wclass-memaccess"
    // _GLIBCXX_RESOLVE_LIB_DEFECTS
    // DR 1339. uninitialized_fill_n should return the end of its range
   /**
@@ -1265,9 +1268,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_move(_InputIterator __first, _InputIterator __last,
 		       _ForwardIterator __result)
     {
-      return std::uninitialized_copy
-	(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
-	 _GLIBCXX_MAKE_MOVE_ITERATOR(__last), __result);
+      return std::uninitialized_copy(std::make_move_iterator(__first),
+				     std::make_move_iterator(__last),
+				     __result);
     }
 
   /**
@@ -1284,9 +1287,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_move_n(_InputIterator __first, _Size __count,
 			 _ForwardIterator __result)
     {
-      auto __res = std::__uninitialized_copy_n_pair
-	(_GLIBCXX_MAKE_MOVE_ITERATOR(__first),
-	 __count, __result);
+      auto __res
+	= std::__uninitialized_copy_n_pair(std::make_move_iterator(__first),
+					   __count, __result);
       return {__res.first.base(), __res.second};
     }
 #endif // __glibcxx_raw_memory_algorithms

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -march=sapphirerapids" } */
+/* { dg-options "-O2 -march=znver5" } */
 
 extern char *dst;
 

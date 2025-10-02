@@ -9552,9 +9552,20 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   if (!issetmem)
     srcreg = ix86_copy_addr_to_reg (XEXP (src, 0));
 
+  bool aligned_dstmem = false;
+  unsigned int nunits = issetmem ? STORE_MAX_PIECES : MOVE_MAX;
+  bool single_insn_p = count && count <= nunits;
+  if (single_insn_p)
+    {
+      /* If it can be done with a single instruction, use vector
+	 instruction and don't align destination.  */
+      alg = vector_loop;
+      noalign = true;
+      dynamic_check = -1;
+    }
+
   unroll_factor = 1;
   move_mode = word_mode;
-  int nunits;
   switch (alg)
     {
     case libcall:
@@ -9576,7 +9587,6 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
       need_zero_guard = true;
       unroll_factor = 4;
       /* Get the vector mode to move STORE_MAX_PIECES/MOVE_MAX bytes.  */
-      nunits = issetmem ? STORE_MAX_PIECES : MOVE_MAX;
       nunits /= GET_MODE_SIZE (word_mode);
       if (nunits > 1)
 	{
@@ -9629,28 +9639,32 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
     }
   gcc_assert (desired_align >= 1 && align >= 1);
 
-  /* Misaligned move sequences handle both prologue and epilogue at once.
-     Default code generation results in a smaller code for large alignments
-     and also avoids redundant job when sizes are known precisely.  */
-  misaligned_prologue_used
-    = (TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES
-       && MAX (desired_align, epilogue_size_needed) <= 32
-       && desired_align <= epilogue_size_needed
-       && ((desired_align > align && !align_bytes)
-	   || (!count && epilogue_size_needed > 1)));
-
-  /* Destination is aligned after the misaligned prologue.  */
-  bool aligned_dstmem = misaligned_prologue_used;
-
-  if (noalign && !misaligned_prologue_used)
+  if (!single_insn_p)
     {
-      /* Also use misaligned prologue if alignment isn't needed and
-	 destination isn't aligned.   Since alignment isn't needed,
-	 the destination after prologue won't be aligned.  */
-      aligned_dstmem = (GET_MODE_ALIGNMENT (move_mode)
-			<= MEM_ALIGN (dst));
-      if (!aligned_dstmem)
-	misaligned_prologue_used = true;
+      /* Misaligned move sequences handle both prologue and epilogue
+	 at once.  Default code generation results in a smaller code
+	 for large alignments and also avoids redundant job when sizes
+	 are known precisely.  */
+      misaligned_prologue_used
+	= (TARGET_MISALIGNED_MOVE_STRING_PRO_EPILOGUES
+	   && MAX (desired_align, epilogue_size_needed) <= 32
+	   && desired_align <= epilogue_size_needed
+	   && ((desired_align > align && !align_bytes)
+	       || (!count && epilogue_size_needed > 1)));
+
+      /* Destination is aligned after the misaligned prologue.  */
+      aligned_dstmem = misaligned_prologue_used;
+
+      if (noalign && !misaligned_prologue_used)
+	{
+	  /* Also use misaligned prologue if alignment isn't needed and
+	     destination isn't aligned.   Since alignment isn't needed,
+	     the destination after prologue won't be aligned.  */
+	  aligned_dstmem = (GET_MODE_ALIGNMENT (move_mode)
+			    <= MEM_ALIGN (dst));
+	  if (!aligned_dstmem)
+	    misaligned_prologue_used = true;
+	}
     }
 
   /* Do the cheap promotion to allow better CSE across the
@@ -13901,8 +13915,7 @@ ix86_expand_builtin (tree exp, rtx target, rtx subtarget,
       char *opts = ix86_target_string (bisa, bisa2, 0, 0, NULL, NULL,
 				       (enum fpmath_unit) 0,
 				       (enum prefer_vector_width) 0,
-				       PVW_NONE, PVW_NONE,
-				       false, add_abi_p);
+				       PVW_NONE, false, add_abi_p);
       if (!opts)
 	error ("%qE needs unknown isa option", fndecl);
       else
@@ -20826,7 +20839,8 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
   rtx rperm[8], vperm;
   unsigned i;
 
-  if (!TARGET_AVX || d->vmode != V8SFmode || !d->one_operand_p)
+  if (!TARGET_AVX || !d->one_operand_p
+      || (d->vmode != V8SImode && d->vmode != V8SFmode))
     return false;
 
   /* We can only permute within the 128-bit lane.  */
@@ -20856,7 +20870,15 @@ expand_vec_perm_vpermil (struct expand_vec_perm_d *d)
 
   vperm = gen_rtx_CONST_VECTOR (V8SImode, gen_rtvec_v (8, rperm));
   vperm = force_reg (V8SImode, vperm);
-  emit_insn (gen_avx_vpermilvarv8sf3 (d->target, d->op0, vperm));
+  rtx target = d->target;
+  rtx op0 = d->op0;
+  if (d->vmode == V8SImode)
+    {
+      target = lowpart_subreg (V8SFmode, target, V8SImode);
+      op0 = lowpart_subreg (V8SFmode, op0, V8SImode);
+    }
+
+  emit_insn (gen_avx_vpermilvarv8sf3 (target, op0, vperm));
 
   return true;
 }

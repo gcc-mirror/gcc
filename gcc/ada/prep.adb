@@ -1211,6 +1211,13 @@ package body Prep is
                end if;
 
                New_EOL.all;
+
+            elsif Empty_Comment_Deleted_Lines then
+               Put_Char ('-');
+               Put_Char ('-');
+               Put_Char ('!');
+
+               New_EOL.all;
             end if;
 
          else

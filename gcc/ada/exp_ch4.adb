@@ -5198,7 +5198,8 @@ package body Exp_Ch4 is
 
       if not Expansion_Delayed (N) then
          declare
-            Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+            Uncond_Par : constant Node_Id :=
+                           Unqualified_Unconditional_Parent (N);
          begin
             if Nkind (Uncond_Par) = N_Simple_Return_Statement
               or else Is_Optimizable_Declaration (Uncond_Par)
@@ -5807,7 +5808,8 @@ package body Exp_Ch4 is
 
       if not Expansion_Delayed (N) then
          declare
-            Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+            Uncond_Par : constant Node_Id :=
+                           Unqualified_Unconditional_Parent (N);
          begin
             if Nkind (Uncond_Par) = N_Simple_Return_Statement
               or else Is_Optimizable_Declaration (Uncond_Par)
@@ -7870,9 +7872,15 @@ package body Exp_Ch4 is
          end if;
       end if;
 
-      --  Arithmetic overflow checks for signed integer/fixed point types
+      --  Arithmetic overflow checks for signed integer/fixed point types,
+      --  and signed integer types with unsigned base range aspect.
 
-      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
+      if Is_Signed_Integer_Type (Typ)
+        or else Is_Fixed_Point_Type (Typ)
+        or else
+          (Is_Modular_Integer_Type (Typ)
+            and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+      then
          Apply_Arithmetic_Overflow_Check (N);
          return;
       end if;
@@ -8179,6 +8187,11 @@ package body Exp_Ch4 is
       --  Determines whether a type has a subcomponent of an unconstrained
       --  Unchecked_Union subtype. Typ is a record type.
 
+      procedure Warn_On_Abstract_Equality_For_Component
+        (Comp_Type : Entity_Id);
+      --  If Comp_Type is a record type with a user-defined abstract primitive
+      --  equality, then issue a warning that Program_Error will be raised.
+
       -------------------------
       -- Build_Equality_Call --
       -------------------------
@@ -8403,6 +8416,27 @@ package body Exp_Ch4 is
              Unconstrained_UU_In_Component_List (Optional_Component_List);
       end Has_Unconstrained_UU_Component;
 
+      ---------------------------------------------
+      -- Warn_On_Abstract_Equality_For_Component --
+      ---------------------------------------------
+
+      procedure Warn_On_Abstract_Equality_For_Component
+        (Comp_Type : Entity_Id)
+      is
+         Eq : Entity_Id;
+      begin
+         if Is_Record_Type (Underlying_Type (Comp_Type)) then
+            Eq := Get_User_Defined_Equality (Comp_Type);
+
+            if Present (Eq) and then Is_Abstract_Subprogram (Eq) then
+               Error_Msg_Warn := SPARK_Mode /= On;
+               Error_Msg_NE ("call to abstract equality function of "
+                             & "component type &<<", N, Comp_Type);
+               Error_Msg_N ("\Program_Error [<<", N);
+            end if;
+         end if;
+      end Warn_On_Abstract_Equality_For_Component;
+
       --  Local variables
 
       Typl : Entity_Id;
@@ -8470,6 +8504,16 @@ package body Exp_Ch4 is
       --  Array types
 
       elsif Is_Array_Type (Typl) then
+
+         --  If the outer type doesn't have a user-defined equality operation,
+         --  check whether its component type has an abstract equality, and
+         --  warn if so. Such a component equality function will raise
+         --  Program_Error of objects of the outer type are compared using
+         --  predefined equality.
+
+         if not Present (Get_User_Defined_Equality (Typl)) then
+            Warn_On_Abstract_Equality_For_Component (Component_Type (Typl));
+         end if;
 
          --  If we are doing full validity checking, and it is possible for the
          --  array elements to be invalid then expand out array comparisons to
@@ -8539,6 +8583,36 @@ package body Exp_Ch4 is
       --  Record Types
 
       elsif Is_Record_Type (Typl) then
+
+         --  When outer type doesn't have a user-defined equality operation,
+         --  check whether any of its components' types have an abstract
+         --  equality, and warn if so. Such component equality functions will
+         --  raise Program_Error when objects of the outer type are compared
+         --  using predefined equality.
+
+         --  ??? Note that this warning is currently only issued in cases of
+         --  top-level components of the type and not for deeper subcomponents.
+         --  Those could be handled with more work, such as by adding a flag
+         --  on record type entities, but it's not clear that it would be
+         --  worth the effort. Another limitation is that the warning check
+         --  is not done for tagged types in some cases, because equality
+         --  comparisons for those can be changed to calls at an earlier point
+         --  during analysis and resolution, and do not reach this code (but in
+         --  many cases tagged equality comparisons do reach the code below).
+
+         if not Present (Get_User_Defined_Equality (Typl)) then
+            declare
+               Comp : Entity_Id := First_Component (Typl);
+            begin
+               while Present (Comp) loop
+                  if Chars (Comp) /= Name_uParent then
+                     Warn_On_Abstract_Equality_For_Component (Etype (Comp));
+                  end if;
+
+                  Next_Component (Comp);
+               end loop;
+            end;
+         end if;
 
          --  For tagged types, use the primitive "="
 
@@ -9387,7 +9461,11 @@ package body Exp_Ch4 is
       end if;
 
       if not Backend_Overflow_Checks_On_Target
-         and then Is_Signed_Integer_Type (Typ)
+         and then
+           (Is_Signed_Integer_Type (Typ)
+              or else
+                (Is_Modular_Integer_Type (Typ)
+                   and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ))))
          and then Do_Overflow_Check (N)
       then
          --  Software overflow checking expands -expr into (0 - expr)
@@ -9811,7 +9889,11 @@ package body Exp_Ch4 is
 
       --  Non-fixed point cases, check software overflow checking required
 
-      elsif Is_Signed_Integer_Type (Etype (N)) then
+      elsif Is_Signed_Integer_Type (Etype (N))
+        or else
+          (Is_Modular_Integer_Type (Typ)
+            and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+      then
          Apply_Arithmetic_Overflow_Check (N);
       end if;
 
@@ -10375,9 +10457,15 @@ package body Exp_Ch4 is
          return;
       end if;
 
-      --  Arithmetic overflow checks for signed integer/fixed point types
+      --  Arithmetic overflow checks for signed integer/fixed point types,
+      --  and signed integer types with unsigned base range aspect.
 
-      if Is_Signed_Integer_Type (Typ) or else Is_Fixed_Point_Type (Typ) then
+      if Is_Signed_Integer_Type (Typ)
+        or else Is_Fixed_Point_Type (Typ)
+        or else
+          (Is_Modular_Integer_Type (Typ)
+            and then Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+      then
          Apply_Arithmetic_Overflow_Check (N);
       end if;
 

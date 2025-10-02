@@ -483,6 +483,10 @@
   (ior (match_operand 0 "const_int6_operand")
        (match_operand 0 "register_operand")))
 
+(define_predicate "const_int5_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 31)")))
+
 (define_predicate "const_int5s_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -16, 15)")))
@@ -603,13 +607,12 @@
 (define_predicate "ge_operator"
   (match_code "ge,geu"))
 
-;; pmode_reg_or_uimm5_operand can be used by vsll.vx/vsrl.vx/vsra.vx instructions.
-;; Since it has the same predicate with vector_length_operand which allows register
-;; or immediate (0 ~ 31), we define this predicate same as vector_length_operand here.
-;; We don't use vector_length_operand directly to predicate vsll.vx/vsrl.vx/vsra.vx
-;; since it may be confusing.
+;; pmode_reg_or_uimm5_operand can be used by vsll.vx/vsrl.vx/vsra.vx instructions
+;; It is *not* equivalent to vector_length_operand due to the vector_length_operand
+;; needing to conditionalize some behavior on XTHEADVECTOR.
 (define_special_predicate "pmode_reg_or_uimm5_operand"
-  (match_operand 0 "vector_length_operand"))
+  (ior (match_operand 0 "pmode_register_operand")
+       (match_operand 0 "const_csr_operand")))
 
 (define_special_predicate "pmode_reg_or_0_operand"
   (ior (match_operand 0 "const_0_operand")
@@ -728,3 +731,41 @@
 (define_predicate "reg_or_const_int_operand"
   (ior (match_operand 0 "const_int_operand")
        (match_operand 0 "register_operand")))
+
+;; Branch-on-bit for AndesPerf.
+(define_predicate "ads_branch_bbcs_operand"
+  (match_code "const_int")
+{
+  if (TARGET_XANDESPERF && (INTVAL (op) >= 0))
+    {
+      if (TARGET_64BIT && INTVAL (op) <= 63)
+	return true;
+      else if (INTVAL (op) <=31)
+	return true;
+      else
+	return false;
+    }
+
+  return false;
+})
+
+;; Branch on small immediate range.
+(define_predicate "ads_branch_bimm_operand"
+  (match_code "const_int")
+{
+  if (TARGET_XANDESPERF)
+    return satisfies_constraint_Ou07 (op);
+  else
+    return false;
+})
+
+(define_predicate "ads_imm_extract_operand"
+  (match_test "satisfies_constraint_ads__Bext (op)"))
+
+(define_predicate "ads_extract_size_imm_si"
+  (and (match_code "const_int")
+	   (match_test "IN_RANGE (INTVAL (op), 1, 32)")))
+
+(define_predicate "ads_extract_size_imm_di"
+  (and (match_code "const_int")
+	   (match_test "IN_RANGE (INTVAL (op), 1, 64)")))

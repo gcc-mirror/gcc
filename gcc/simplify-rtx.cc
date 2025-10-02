@@ -3699,6 +3699,19 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  /* If (C1|C2) == ~0 then (X&C1)|C2 becomes X|C2.  */
 	  if (((c1|c2) & mask) == mask)
 	    return simplify_gen_binary (IOR, mode, XEXP (op0, 0), op1);
+
+	  /* If (C1|C2) has a single bit clear, then adjust C1 so that
+	     when split it'll match a single bit clear style insn.
+
+	     This could have been done with a target dependent splitter, but
+	     then every target with single bit manipulation insns would need
+	     to implement such splitters.  */
+	  if (exact_log2 (~(c1 | c2)) >= 0)
+	    {
+	      rtx temp = gen_rtx_AND (mode, XEXP (op0, 0), GEN_INT (c1 | c2));
+	      temp = gen_rtx_IOR (mode, temp, trueop1);
+	      return temp;
+	    }
 	}
 
       /* Convert (A & B) | A to A.  */

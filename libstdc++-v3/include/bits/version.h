@@ -430,6 +430,16 @@
 #endif /* !defined(__cpp_lib_byte) && defined(__glibcxx_want_byte) */
 #undef __glibcxx_want_byte
 
+#if !defined(__cpp_lib_constant_wrapper)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_constant_wrapper 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constant_wrapper)
+#   define __cpp_lib_constant_wrapper 202506L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constant_wrapper) && defined(__glibcxx_want_constant_wrapper) */
+#undef __glibcxx_want_constant_wrapper
+
 #if !defined(__cpp_lib_has_unique_object_representations)
 # if (__cplusplus >= 201703L) && (defined(_GLIBCXX_HAVE_BUILTIN_HAS_UNIQ_OBJ_REP))
 #  define __glibcxx_has_unique_object_representations 201606L
@@ -511,7 +521,12 @@
 #undef __glibcxx_want_make_from_tuple
 
 #if !defined(__cpp_lib_not_fn)
-# if (__cplusplus >= 201703L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_not_fn 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_not_fn)
+#   define __cpp_lib_not_fn 202306L
+#  endif
+# elif (__cplusplus >= 201703L)
 #  define __glibcxx_not_fn 201603L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_not_fn)
 #   define __cpp_lib_not_fn 201603L
@@ -664,6 +679,15 @@
 # endif
 #endif /* !defined(__cpp_lib_chrono) && defined(__glibcxx_want_chrono) */
 #undef __glibcxx_want_chrono
+
+#if !defined(__cpp_lib_chrono_cxx20)
+# if (__cplusplus >= 202002L)
+#  define __glibcxx_chrono_cxx20 201800L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_cxx20)
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_chrono_cxx20) && defined(__glibcxx_want_chrono_cxx20) */
+#undef __glibcxx_want_chrono_cxx20
 
 #if !defined(__cpp_lib_execution)
 # if (__cplusplus >= 201703L) && _GLIBCXX_HOSTED
@@ -876,7 +900,12 @@
 #undef __glibcxx_want_atomic_value_initialization
 
 #if !defined(__cpp_lib_bind_front)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_bind_front 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_front)
+#   define __cpp_lib_bind_front 202306L
+#  endif
+# elif (__cplusplus >= 202002L)
 #  define __glibcxx_bind_front 201907L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_front)
 #   define __cpp_lib_bind_front 201907L
@@ -886,7 +915,12 @@
 #undef __glibcxx_want_bind_front
 
 #if !defined(__cpp_lib_bind_back)
-# if (__cplusplus >= 202100L) && (__cpp_explicit_this_parameter)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_bind_back 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_back)
+#   define __cpp_lib_bind_back 202306L
+#  endif
+# elif (__cplusplus >= 202100L) && (__cpp_explicit_this_parameter)
 #  define __glibcxx_bind_back 202202L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_bind_back)
 #   define __cpp_lib_bind_back 202202L
@@ -2059,6 +2093,16 @@
 #endif /* !defined(__cpp_lib_stacktrace) && defined(__glibcxx_want_stacktrace) */
 #undef __glibcxx_want_stacktrace
 
+#if !defined(__cpp_lib_start_lifetime_as)
+# if (__cplusplus >= 202100L)
+#  define __glibcxx_start_lifetime_as 202207L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_start_lifetime_as)
+#   define __cpp_lib_start_lifetime_as 202207L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_start_lifetime_as) && defined(__glibcxx_want_start_lifetime_as) */
+#undef __glibcxx_want_start_lifetime_as
+
 #if !defined(__cpp_lib_string_contains)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_string_contains 202011L
@@ -2352,5 +2396,15 @@
 # endif
 #endif /* !defined(__cpp_lib_constexpr_exceptions) && defined(__glibcxx_want_constexpr_exceptions) */
 #undef __glibcxx_want_constexpr_exceptions
+
+#if !defined(__cpp_lib_philox_engine)
+# if (__cplusplus >  202302L) && (__SIZEOF_INT128__)
+#  define __glibcxx_philox_engine 202406L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_philox_engine)
+#   define __cpp_lib_philox_engine 202406L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_philox_engine) && defined(__glibcxx_want_philox_engine) */
+#undef __glibcxx_want_philox_engine
 
 #undef __glibcxx_want_all

@@ -44,10 +44,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __exchange_and_add(volatile _Atomic_word* __mem, int __val) throw ()
   {
     __gnu_cxx::__scoped_lock sentry(get_atomic_mutex());
-    _Atomic_word __result;
-    __result = *__mem;
-    *__mem += __val;
-    return __result;
+    // The volatile qualification is meaningless. All changes to the memory
+    // location happen while this mutex is locked so it's not volatile at all.
+    auto __mem2 = const_cast<_Atomic_word*>(__mem);
+    return __gnu_cxx::__exchange_and_add_single(__mem2, __val);
   }
 
   void

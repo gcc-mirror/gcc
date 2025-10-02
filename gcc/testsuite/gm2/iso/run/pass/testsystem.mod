@@ -29,7 +29,7 @@ FROM FIO IMPORT Close, StdOut ;
 
 PROCEDURE FindFirstElement (start: CARDINAL; s: LargeSet) : CARDINAL ;
 BEGIN
-   WHILE NOT (start IN s) DO
+   WHILE (start < 1024) AND (NOT (start IN s)) DO
       INC(start)
    END ;
    RETURN( start )

@@ -9579,9 +9579,10 @@ It is false if we must use @command{collect2}.
 
 @deftypevr {Target Hook} bool TARGET_DTORS_FROM_CXA_ATEXIT
 This value is true if the target wants destructors to be queued to be
-run from __cxa_atexit.  If this is the case then, for each priority level,
-a new constructor will be entered that registers the destructors for that
-level with __cxa_atexit (and there will be no destructors emitted).
+run from @code{__cxa_atexit}.  If this is the case then, for each
+priority level, a new constructor will be entered that registers the
+destructors for that level with @code{__cxa_atexit} (and there will be
+no destructors emitted).
 It is false the method implied by @code{have_ctors_dtors} is used.
 @end deftypevr
 
@@ -10977,12 +10978,28 @@ changed via the optimize attribute or pragma, see
 @code{TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE}
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_OPTION_FUNCTION_VERSIONS (tree @var{decl1}, tree @var{decl2})
-This target hook returns @code{true} if @var{DECL1} and @var{DECL2} are
-versions of the same function.  @var{DECL1} and @var{DECL2} are function
-versions if and only if they have the same function signature and
-different target specific attributes, that is, they are compiled for
-different target machines.
+@deftypefn {Target Hook} bool TARGET_OPTION_SAME_FUNCTION_VERSIONS (string_slice @var{fn1}, string_slice @var{fn2})
+This target hook returns @code{true} if the target/target-version strings
+@var{fn1} and @var{fn2} imply the same function version.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A (tree @var{decl_a}, tree @var{decl_v}, tree @var{base})
+@var{decl_b} is a function declaration with a function multi-versioning
+(FMV) attribute; this attribute is either @code{target} or
+@code{target_version}, depending on @code{TARGET_HAS_FMV_TARGET_ATTRIBUTE}.
+@var{decl_a} is a function declaration that may or may not have an FMV
+attribute.
+
+Return true if we have enough information to determine that the
+requirements of @var{decl_b}'s FMV attribute are met whenever @var{decl_a}
+is executed, given that the target supports all features required by
+function declaration @var{base}.
+
+The default implementation just checks whether @var{decl_a} has the same
+FMV attribute as @var{decl_b}.  This is conservatively correct,
+but ports can do better by taking the relationships between architecture
+features into account.  For example, on AArch64, @code{sve} is present
+whenever @code{sve2} is present.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_CAN_INLINE_P (tree @var{caller}, tree @var{callee})
@@ -12287,6 +12304,15 @@ This hook is used to generate the dispatcher logic to invoke the right
 function version at run-time for a given set of function versions.
 @var{arg} points to the callgraph node of the dispatcher function whose
 body must be generated.
+@end deftypefn
+
+@deftypefn {Target Hook} bool TARGET_CHECK_TARGET_CLONE_VERSION (string_slice @var{str}, location_t *@var{loc})
+This hook is used to check if a version specified in a @code{target_clones}
+annotation is valid. @var{str} is the version to be considered.
+If @var{loc} is not @code{NULL} then emit warnings for invalid versions at
+that location.  Otherwise emit no diagnostics.
+Returns @code{true} if @var{str} is a valid version string, and @code{false}
+otherwise
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_PREDICT_DOLOOP_P (class loop *@var{loop})

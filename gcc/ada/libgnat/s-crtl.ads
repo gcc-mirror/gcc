@@ -50,6 +50,9 @@ package System.CRTL is
 
    subtype int is Integer;
 
+   type unsigned is mod 2 ** 32;
+   for unsigned'Size use 32;
+
    type long is range -(2 ** (System.Parameters.long_bits - 1))
                    .. +(2 ** (System.Parameters.long_bits - 1)) - 1;
 
@@ -231,9 +234,11 @@ package System.CRTL is
    pragma Import (C, close, "close");
 
    function read (fd : int; buffer : chars; count : size_t) return ssize_t;
-   pragma Import (C, read, "read");
+   pragma Inline (read);
+   --  Different return types on Windows and Posix, requires body
 
    function write (fd : int; buffer : chars; count : size_t) return ssize_t;
-   pragma Import (C, write, "write");
+   pragma Inline (write);
+   --  Different return types on Windows and Posix, requires body
 
 end System.CRTL;

@@ -433,6 +433,17 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 						       e, &first, &reachable);
 		    }
 		}
+
+	      /* A reference to the default node implies use of all the other
+		 versions (they get used in the function resolver made later
+		 in multiple_target.cc)  */
+	      cgraph_function_version_info *node_v = cnode->function_version ();
+	      if (node_v && is_function_default_version (node->decl))
+		for (cgraph_function_version_info *fvi = node_v->next;
+		     fvi;
+		     fvi = fvi->next)
+		  enqueue_node (fvi->this_node, &first, &reachable);
+
 	      for (e = cnode->callees; e; e = e->next_callee)
 		{
 	          symtab_node *body = e->callee->function_symbol ();

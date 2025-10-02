@@ -474,6 +474,7 @@ namespace __expected
       template<typename _Up = remove_cv_t<_Tp>>
 	requires (!is_same_v<remove_cvref_t<_Up>, expected>)
 	  && (!is_same_v<remove_cvref_t<_Up>, in_place_t>)
+	  && (!is_same_v<remove_cvref_t<_Up>, unexpect_t>)
 	  && is_constructible_v<_Tp, _Up>
 	  && (!__expected::__is_unexpected<remove_cvref_t<_Up>>)
 	  && __expected::__not_constructing_bool_from_expected<_Tp, _Up>

@@ -344,6 +344,17 @@ same_size_types (location_t location, tree t1, tree t2)
   return m2expr_CompareTrees (n1, n2) == 0;
 }
 
+/* converting_ISO_generic attempts to convert value to type and returns true
+   if successful.  This is a helper function to BuildConvert which will try
+   each generic data type in turn.
+
+   generic_type will be set to any of ISO BYTE, PIM BYTE WORD, etc.
+   If type == generic_type then specific conversion procedures
+   are applied.  A constant will be converted via const_to_ISO_type
+   whereas non constants are converted by *(type *) &value.
+
+   Remember that in ISO M2 BYTE is an ARRAY [0..0] OF LOC.  */
+
 static int
 converting_ISO_generic (location_t location, tree type, tree value,
                         tree generic_type, tree *result)
@@ -354,10 +365,16 @@ converting_ISO_generic (location_t location, tree type, tree value,
     /* We let the caller deal with this.  */
     return false;
 
-  if ((TREE_CODE (value) == INTEGER_CST) && (type == generic_type))
+  if (TREE_CODE (value) == INTEGER_CST)
+    {
+      if (type == generic_type)
     {
       *result = const_to_ISO_type (location, value, generic_type);
       return true;
+    }
+      /* We must not attempt to convert a constant by taking its
+	 address below, so we bail out here.  */
+      return false;
     }
 
   if (same_size_types (location, type, value_type))
@@ -382,8 +399,8 @@ converting_ISO_generic (location_t location, tree type, tree value,
   return false;
 }
 
-/* convert_char_to_array - convert a single char, value, into an
-   type.  The type will be array [..] of char.  The array type
+/* convert_char_to_array convert a single char value into a type.
+   The type will be array [..] of char.  The array type
    returned will have nuls appended to pad the single char to the
    correct array length.  */
 
@@ -635,6 +652,15 @@ tree
 m2convert_ToLoc (location_t location, tree expr)
 {
   return m2convert_BuildConvert (location, m2type_GetISOByteType (), expr,
+                                 false);
+}
+
+/* ToPIMByte - convert an expression expr to a PIM BYTE.  */
+
+tree
+m2convert_ToPIMByte (location_t location, tree expr)
+{
+  return m2convert_BuildConvert (location, m2type_GetByteType (), expr,
                                  false);
 }
 

@@ -3,6 +3,10 @@
 
 #include "vf_binop.h"
 
-DEF_VF_BINOP_CASE_3_WRAP (_Float16, __builtin_fminf16, min, VF_BINOP_FUNC_BODY_X128)
+DEF_VF_BINOP_CASE_3_WRAP (_Float16, __builtin_fminf16, min,
+			  VF_BINOP_FUNC_BODY_X128)
+DEF_VF_BINOP_CASE_3_WRAP (_Float16, __builtin_fmaxf16, max,
+			  VF_BINOP_FUNC_BODY_X128)
 
 /* { dg-final { scan-assembler {vfmin.vf} } } */
+/* { dg-final { scan-assembler {vfmax.vf} } } */

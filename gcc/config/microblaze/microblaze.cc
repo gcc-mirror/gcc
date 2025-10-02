@@ -1299,6 +1299,34 @@ microblaze_expand_block_move (rtx dest, rtx src, rtx length, rtx align_rtx)
   return false;
 }
 
+/* Compute memory address *aligned_mem and corresponding shift value (*shift)
+   from a QImode memory reference MEM */
+void
+microblaze_subword_address (rtx mem, rtx *aligned_mem, rtx *shift)
+{
+  /* Align the memory address to a word.  */
+  rtx addr = force_reg (Pmode, XEXP (mem, 0));
+
+  rtx addr_mask = gen_int_mode (-4, Pmode);
+
+  rtx aligned_addr = gen_reg_rtx (Pmode);
+
+  emit_move_insn (aligned_addr,  gen_rtx_AND (Pmode, addr, addr_mask));
+
+  *aligned_mem = change_address (mem, SImode, aligned_addr);
+
+  /* Calculate the shift amount.  */
+  emit_move_insn (*shift, gen_rtx_AND (SImode, addr, gen_int_mode (3, SImode)));
+
+  if (TARGET_LITTLE_ENDIAN == 0) {
+    emit_move_insn (*shift,
+		    gen_rtx_MINUS (SImode, gen_int_mode (3, SImode), *shift));
+  }
+
+  emit_move_insn (*shift, gen_rtx_ASHIFT (SImode, *shift,
+					  gen_int_mode (3, SImode)));
+}
+
 static bool
 microblaze_rtx_costs (rtx x, machine_mode mode, int outer_code ATTRIBUTE_UNUSED,
 		      int opno ATTRIBUTE_UNUSED, int *total,

@@ -397,8 +397,7 @@ guarantee that @code{TYPE_CANONICAL} will point to the canonical type,
 use @code{SET_TYPE_STRUCTURAL_EQUALITY} to make sure that the new
 type--and any type constructed based on it--requires structural
 equality. If you suspect that the canonical type system is
-miscomparing types, pass @code{--param verify-canonical-types=1} to
-the compiler or configure with @code{--enable-checking} to force the
+miscomparing types, configure with @code{--enable-checking} to force the
 compiler to verify its canonical-type comparisons against the
 structural comparisons; the compiler will then print any warnings if
 the canonical types miscompare.
@@ -1834,6 +1833,7 @@ a value from @code{enum annot_expr_kind}, the third is an @code{INTEGER_CST}.
 @tindex IFN_VEC_WIDEN_MINUS_LO
 @tindex IFN_VEC_WIDEN_MINUS_EVEN
 @tindex IFN_VEC_WIDEN_MINUS_ODD
+@tindex IFN_VEC_TRUNC_ADD_HIGH
 @tindex VEC_UNPACK_HI_EXPR
 @tindex VEC_UNPACK_LO_EXPR
 @tindex VEC_UNPACK_FLOAT_HI_EXPR
@@ -1955,6 +1955,24 @@ vector of @code{N/2} subtractions.  In the case of
 @code{IFN_VEC_WIDEN_MINUS_ODD} the odd @code{N/2} elements of the second
 vector are subtracted from the odd @code{N/2} of the first to produce the
 vector of @code{N/2} subtractions.
+
+@item IFN_VEC_TRUNC_ADD_HIGH
+This internal function performs an addition of two input vectors,
+then extracts the most significant half of each result element and
+narrows it to elements of half the original width.
+
+Concretely, it computes:
+@code{(bits(a)/2)((a + b) >> bits(a)/2)}
+
+where @code{bits(a)} is the width in bits of each input element.
+
+Its operands are vectors containing the same number of elements (@code{N})
+of the same integral type.  The result is a vector of length @code{N}, with
+elements of an integral type whose size is half that of the input element
+type.
+
+This operation currently only used for early break result compression when the
+result of a vector boolean can be represented as 0 or -1.
 
 @item VEC_UNPACK_HI_EXPR
 @itemx VEC_UNPACK_LO_EXPR

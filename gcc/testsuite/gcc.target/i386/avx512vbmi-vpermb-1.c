@@ -6,9 +6,9 @@
 /* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\[^\{\]" 3 } } */
 /* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
 /* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
-/* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\[^\{\]" 3 } } */
-/* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
-/* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%zmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
+/* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\[^\{\]" 3 } } */
+/* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\[^\{\]" 1 } } */
+/* { dg-final { scan-assembler-times "vpermb\[ \\t\]+\[^\n\]*%xmm\[0-9\]+\{%k\[1-7\]\}\{z\}" 1 } } */
 
 #include <immintrin.h>
 

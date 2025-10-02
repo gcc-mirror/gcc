@@ -1,3 +1,11 @@
+2025-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* libm2pim/Makefile.am (M2MODS): Add M2Diagnostic.mod.
+	Add M2WIDESET.mod.
+	(M2DEFS): Add M2Diagnostic.def.
+	Add M2WIDESET.def.
+	* libm2pim/Makefile.in: Regenerate.
+
 2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/121164

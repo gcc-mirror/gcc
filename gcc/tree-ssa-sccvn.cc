@@ -2622,6 +2622,12 @@ vn_nary_simplify (vn_nary_op_t nary)
 		      nary->type, nary->length);
   memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
   tree res = vn_nary_build_or_lookup_1 (&op, false, true);
+  /* Do not update *NARY with a simplified result that contains abnormals.
+     This matches what maybe_push_res_to_seq does when requesting insertion.  */
+  for (unsigned i = 0; i < op.num_ops; ++i)
+    if (TREE_CODE (op.ops[i]) == SSA_NAME
+	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op.ops[i]))
+      return res;
   if (op.code.is_tree_code ()
       && op.num_ops <= nary->length
       && (tree_code) op.code != CONSTRUCTOR)
@@ -2810,8 +2816,11 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	 possible clobber.  In this case we can ignore the clobber
 	 and return the found value.  */
       if (!gimple_has_volatile_ops (def_stmt)
-	  && is_gimple_reg_type (TREE_TYPE (lhs))
-	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
+	  && ((is_gimple_reg_type (TREE_TYPE (lhs))
+	       && types_compatible_p (TREE_TYPE (lhs), vr->type)
+	       && !storage_order_barrier_p (lhs)
+	       && !reverse_storage_order_for_component_p (lhs))
+	      || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == CONSTRUCTOR)
 	  && (ref->ref || data->orig_ref.ref)
 	  && !data->mask
 	  && data->partial_defs.is_empty ()
@@ -2820,7 +2829,19 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 			   ref->size)
 	  && multiple_p (get_object_alignment (lhs), ref->size))
 	{
+	  HOST_WIDE_INT offset2i, size2i;
+	  poly_int64 offset = ref->offset;
+	  poly_int64 maxsize = ref->max_size;
+
+	  gcc_assert (lhs_ref_ok);
+	  tree base2 = ao_ref_base (&lhs_ref);
+	  poly_int64 offset2 = lhs_ref.offset;
+	  poly_int64 size2 = lhs_ref.size;
+	  poly_int64 maxsize2 = lhs_ref.max_size;
+
 	  tree rhs = gimple_assign_rhs1 (def_stmt);
+	  if (TREE_CODE (rhs) == CONSTRUCTOR)
+	    rhs = integer_zero_node;
 	  /* ???  We may not compare to ahead values which might be from
 	     a different loop iteration but only to loop invariants.  Use
 	     CONSTANT_CLASS_P (unvalueized!) as conservative approximation.
@@ -2830,6 +2851,20 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	     value though.  */
 	  if (data->same_val
 	      && !operand_equal_p (data->same_val, rhs))
+	    ;
+	  /* When this is a (partial) must-def, leave it to handling
+	     below in case we are interested in the value.  */
+	  else if (!(*disambiguate_only > TR_TRANSLATE)
+		   && base2
+		   && known_eq (maxsize2, size2)
+		   && adjust_offsets_for_equal_base_address (base, &offset,
+							     base2, &offset2)
+		   && offset2.is_constant (&offset2i)
+		   && size2.is_constant (&size2i)
+		   && maxsize.is_constant (&maxsizei)
+		   && offset.is_constant (&offseti)
+		   && ranges_known_overlap_p (offseti, maxsizei, offset2i,
+					      size2i))
 	    ;
 	  else if (CONSTANT_CLASS_P (rhs))
 	    {
@@ -4670,12 +4705,17 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 	    = BASIC_BLOCK_FOR_FN (cfun, vno->u.values->valid_dominated_by_p[0]);
 	  vn_pval *nval = vno->u.values;
 	  vn_pval **next = &vno->u.values;
-	  bool found = false;
+	  vn_pval *ins = NULL;
+	  vn_pval *ins_at = NULL;
+	  /* Find an existing value to append to.  */
 	  for (vn_pval *val = (*slot)->u.values; val; val = val->next)
 	    {
 	      if (expressions_equal_p (val->result, nval->result))
 		{
-		  found = true;
+		  /* Limit the number of places we register a predicate
+		     as valid.  */
+		  if (val->n > 8)
+		    return *slot;
 		  for (unsigned i = 0; i < val->n; ++i)
 		    {
 		      basic_block val_bb
@@ -4689,33 +4729,45 @@ vn_nary_op_insert_into (vn_nary_op_t vno, vn_nary_op_table_type *table)
 			gcc_assert (!dominated_by_p (CDI_DOMINATORS,
 						     val_bb, vno_bb));
 		    }
-		  /* Append value.  */
-		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
-						     sizeof (vn_pval)
-						     + val->n * sizeof (int));
-		  (*next)->next = NULL;
-		  (*next)->result = val->result;
-		  (*next)->n = val->n + 1;
-		  memcpy ((*next)->valid_dominated_by_p,
+		  /* Append the location.  */
+		  ins_at = val;
+		  ins = (vn_pval *) obstack_alloc (&vn_tables_obstack,
+						   sizeof (vn_pval)
+						   + val->n * sizeof (int));
+		  ins->next = NULL;
+		  ins->result = val->result;
+		  ins->n = val->n + 1;
+		  memcpy (ins->valid_dominated_by_p,
 			  val->valid_dominated_by_p,
 			  val->n * sizeof (int));
-		  (*next)->valid_dominated_by_p[val->n] = vno_bb->index;
-		  next = &(*next)->next;
+		  ins->valid_dominated_by_p[val->n] = vno_bb->index;
 		  if (dump_file && (dump_flags & TDF_DETAILS))
 		    fprintf (dump_file, "Appending predicate to value.\n");
-		  continue;
+		  break;
 		}
-	      /* Copy other predicated values.  */
-	      *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
-						 sizeof (vn_pval)
-						 + (val->n-1) * sizeof (int));
-	      memcpy (*next, val, sizeof (vn_pval) + (val->n-1) * sizeof (int));
-	      (*next)->next = NULL;
+	    }
+	  /* Copy the rest of the value chain.  */
+	  for (vn_pval *val = (*slot)->u.values; val; val = val->next)
+	    {
+	      if (val == ins_at)
+		/* Replace the node we appended to.  */
+		*next = ins;
+	      else
+		{
+		  /* Copy other predicated values.  */
+		  *next = (vn_pval *) obstack_alloc (&vn_tables_obstack,
+						     sizeof (vn_pval)
+						     + ((val->n-1)
+							* sizeof (int)));
+		  memcpy (*next, val,
+			  sizeof (vn_pval) + (val->n-1) * sizeof (int));
+		  (*next)->next = NULL;
+		}
 	      next = &(*next)->next;
 	    }
-	  if (!found)
+	  /* Append the value if we didn't find it.  */
+	  if (!ins_at)
 	    *next = nval;
-
 	  *slot = vno;
 	  vno->next = last_inserted_nary;
 	  last_inserted_nary = vno;
@@ -4790,7 +4842,8 @@ vn_nary_op_insert_pieces_predicated (unsigned int length, enum tree_code code,
 				     tree result, unsigned int value_id,
 				     edge pred_e)
 {
-  gcc_assert (can_track_predicate_on_edge (pred_e));
+  if (flag_checking)
+    gcc_assert (can_track_predicate_on_edge (pred_e));
 
   if (dump_file && (dump_flags & TDF_DETAILS)
       /* ???  Fix dumping, but currently we only get comparisons.  */
@@ -5229,7 +5282,11 @@ dominated_by_p_w_unex (basic_block bb1, basic_block bb2, bool allow_back)
 	      }
 	    succe = e;
 	  }
-      if (succe)
+      if (succe
+	  /* Limit the number of edges we check, we should bring in
+	     context from the iteration and compute the single
+	     executable incoming edge when visiting a block.  */
+	  && EDGE_COUNT (succe->dest->preds) < 8)
 	{
 	  /* Verify the reached block is only reached through succe.
 	     If there is only one edge we can spare us the dominator

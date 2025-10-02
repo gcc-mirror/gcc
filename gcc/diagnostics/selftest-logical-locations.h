@@ -39,6 +39,8 @@ class test_manager : public manager
 public:
   ~test_manager ();
 
+  void dump (FILE *out, int indent) const final override;
+
   const char *get_short_name (key) const final override;
   const char *get_name_with_scope (key) const final override;
   const char *get_internal_name (key) const final override;

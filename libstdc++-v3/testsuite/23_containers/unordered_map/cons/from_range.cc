@@ -100,10 +100,10 @@ constexpr bool is_equal(std::equal_to<T>, std::equal_to<U>)
 { return true; }
 
 constexpr bool is_equal(StateHash lhs, StateHash rhs)
-{ return lhs.state = rhs.state; }
+{ return lhs.state == rhs.state; }
 
 constexpr bool is_equal(StateEq lhs, StateEq rhs)
-{ return lhs.state = rhs.state; }
+{ return lhs.state == rhs.state; }
 
 template<typename Range, typename Alloc, typename Hash, typename Equal>
 constexpr void

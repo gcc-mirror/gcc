@@ -2559,6 +2559,9 @@ GLIBCXX_3.4.35 {
     _ZNSt6chrono9gps_clock3nowEv;
     _ZNSt6chrono9tai_clock3nowEv;
 
+    # mutex& __syncbuf_get_mutex(void*)
+    _ZSt19__syncbuf_get_mutexPv;
+
     # __gnu_debug::_Safe_iterator_base and _Safe_sequence_base const
     _ZN11__gnu_debug19_Safe_iterator_base9_M_attachEPKNS_19_Safe_sequence_baseEb;
     _ZN11__gnu_debug19_Safe_iterator_base16_M_attach_singleEPKNS_19_Safe_sequence_baseEb;

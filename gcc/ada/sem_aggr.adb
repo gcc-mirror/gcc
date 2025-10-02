@@ -1139,7 +1139,8 @@ package body Sem_Aggr is
       if Is_Modular_Integer_Type (Index_Typ) then
          Error_Msg_N
            ("null array aggregate indexed by a modular type<<", N);
-      else
+
+      elsif Is_Enumeration_Type (Index_Typ) then
          Error_Msg_N
            ("null array aggregate indexed by an enumeration type<<", N);
       end if;
@@ -3331,6 +3332,24 @@ package body Sem_Aggr is
                      --  Not needed if others, since missing impossible.
 
                      if No (Others_N) then
+                        --  We are dealing with a gap in the indicies. However
+                        --  we should also check for an out of bounds error. If
+                        --  there exists an out of bounds error then we should
+                        --  not be suggesting that the user should add the
+                        --  missing indices but rather remove the ones that are
+                        --  out of bounds.
+
+                        Aggr_Low := Table (1).Lo;
+                        Aggr_High := Table (Nb_Discrete_Choices).Hi;
+
+                        Check_Bounds
+                          (Index_Typ_Low, Index_Typ_High, Aggr_Low, Aggr_High);
+                        Check_Bounds
+                          (Index_Base_Low,
+                           Index_Base_High,
+                           Aggr_Low,
+                           Aggr_High);
+
                         for J in 2 .. Nb_Discrete_Choices loop
                            Lo_Val := Expr_Value (Table (J).Lo);
                            Hi_Val := Table (J - 1).Highest;
@@ -3358,11 +3377,13 @@ package body Sem_Aggr is
                                  if Hi_Val + 1 = Lo_Val - 1 then
                                     Error_Msg_N
                                       ("missing index value "
-                                       & "in array aggregate!", Error_Node);
+                                       & "in array aggregate!",
+                                       Error_Node);
                                  else
                                     Error_Msg_N
                                       ("missing index values "
-                                       & "in array aggregate!", Error_Node);
+                                       & "in array aggregate!",
+                                       Error_Node);
                                  end if;
 
                                  Output_Bad_Choices
@@ -5443,8 +5464,13 @@ package body Sem_Aggr is
 
             Hi := New_Copy_Tree (Lo);
 
-            Report_Null_Array_Constraint_Error (N, Index_Typ);
-            Set_Raises_Constraint_Error (N);
+            --  On multidimiensional arrays, avoid reporting the same error
+            --  several times.
+
+            if not Raises_Constraint_Error (N) then
+               Report_Null_Array_Constraint_Error (N, Index_Typ);
+               Set_Raises_Constraint_Error (N);
+            end if;
 
          else
             --  The upper bound is the predecessor of the lower bound
@@ -5457,6 +5483,15 @@ package body Sem_Aggr is
 
          Append (Make_Range (Loc, New_Copy_Tree (Lo), Hi), Constr);
          Analyze_And_Resolve (Last (Constr), Etype (Index));
+
+         if Known_Bounds
+           and then
+             (Nkind (High_Bound (Last (Constr))) = N_Raise_Constraint_Error
+                or else
+              Nkind (Low_Bound (Last (Constr))) = N_Raise_Constraint_Error)
+         then
+            Set_Raises_Constraint_Error (N);
+         end if;
 
          Next_Index (Index);
       end loop;

@@ -151,6 +151,21 @@ package body Tbuild is
       null;
    end Discard_Node;
 
+   --------------------------
+   -- Make_Assertion_Level --
+   --------------------------
+
+   function Make_Assertion_Level
+     (Loc : Source_Ptr; Nam : Name_Id) return Entity_Id
+   is
+      Level : constant Entity_Id := Make_Defining_Identifier (Loc, Nam);
+   begin
+      Mutate_Ekind (Level, E_Assertion_Level);
+      Set_Etype (Level, Standard_Void_Type);
+      Set_Scope (Level, Standard_Standard);
+      return Level;
+   end Make_Assertion_Level;
+
    -------------------------------------------
    -- Make_Byte_Aligned_Attribute_Reference --
    -------------------------------------------

@@ -6118,13 +6118,12 @@ vect_store_lanes_supported (tree vectype, unsigned HOST_WIDE_INT count,
    Return value - the result of the loop-header phi node.  */
 
 tree
-vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info,
+vect_setup_realignment (vec_info *vinfo, stmt_vec_info stmt_info, tree vectype,
 			gimple_stmt_iterator *gsi, tree *realignment_token,
 			enum dr_alignment_support alignment_support_scheme,
 			tree init_addr,
 			class loop **at_loop)
 {
-  tree vectype = STMT_VINFO_VECTYPE (stmt_info);
   loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   dr_vec_info *dr_info = STMT_VINFO_DR_INFO (stmt_info);
   struct data_reference *dr = dr_info->dr;

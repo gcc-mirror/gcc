@@ -19,11 +19,14 @@ MODULE testbit2 ;
 
 FROM StrIO IMPORT WriteString, WriteLn ;
 
+TYPE
+   index = CARDINAL ;
+
 VAR
-   c   : CARDINAL ;
+   c   : index ;
    a, b: BITSET ;
 BEGIN
-   IF b IN b
+   IF c IN c
    THEN
       WriteString('hmm') ; WriteLn
    END

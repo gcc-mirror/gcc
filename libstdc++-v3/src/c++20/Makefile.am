@@ -36,7 +36,7 @@ else
 inst_sources =
 endif
 
-sources = tzdb.cc format.cc atomic.cc clock.cc
+sources = tzdb.cc format.cc atomic.cc clock.cc syncbuf.cc
 
 vpath % $(top_srcdir)/src/c++20
 

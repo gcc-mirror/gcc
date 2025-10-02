@@ -4,6 +4,6 @@ export module Bob; // { dg-message "declared here" }
 
 import Kevin;
 // { dg-error "failed to read" "" { target *-*-* } 0 }
-// { dg-error "cannot import module" "" { target *-*-* } 0 }
+// { dg-error "depends on itself" "" { target *-*-* } 0 }
 // { dg-prune-output "fatal error:" }
 // { dg-prune-output "compilation terminated" }

@@ -1114,7 +1114,7 @@ package body Rtsfind is
       --  Provide a clean environment for the unit
 
       Ignore_SPARK_Mode_Pragmas_In_Instance := False;
-      Install_Ghost_Region (None, Empty);
+      Install_Ghost_Region (None, Empty, Empty);
       Install_SPARK_Mode   (None, Empty);
 
       --  Otherwise we need to load the unit, First build unit name from the

@@ -148,6 +148,9 @@ class manager
 public:
   virtual ~manager () {}
 
+  virtual void dump (FILE *out, int indent) const = 0;
+  void DEBUG_FUNCTION dump () const { dump (stderr, 0); }
+
   /* vfuncs for interpreting keys.  */
 
   /* Get a string (or NULL) for K suitable for use by the SARIF logicalLocation

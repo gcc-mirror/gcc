@@ -34,8 +34,9 @@
 ** _Z8ss_floatff:
 **	fcmpe	s0, s1
 **	csinv	(w[0-9]+), wzr, wzr, pl
-**	cset	(w[0-9]+), vs
-**	csinc	w0, \1, \2, ls
+**	mov	(w[0-9]+), -129
+**	csel	(w[0-9]+), \2, wzr, vs
+**	csinc	w0, \1, \3, ls
 **	ret
 */
 SPACESHIP_FN(float);
@@ -53,8 +54,9 @@ SPACESHIP_FN_NN(float);
 ** _Z9ss_doubledd:
 **	fcmpe	d0, d1
 **	csinv	(w[0-9]+), wzr, wzr, pl
-**	cset	(w[0-9]+), vs
-**	csinc	w0, \1, \2, ls
+**	mov	(w[0-9]+), -129
+**	csel	(w[0-9]+), \2, wzr, vs
+**	csinc	w0, \1, \3, ls
 **	ret
 */
 SPACESHIP_FN(double);

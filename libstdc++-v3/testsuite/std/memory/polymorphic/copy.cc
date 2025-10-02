@@ -44,14 +44,14 @@ private:
 
 using __gnu_test::tracker_allocator;
 using Counter = __gnu_test::tracker_allocator_counter;
-using Polymorhic = std::polymorphic<Base, tracker_allocator<Base>>;
-const Polymorhic src(std::in_place_type<Derived>, 1, 2, 3);
+using Polymorphic = std::polymorphic<Base, tracker_allocator<Base>>;
+const Polymorphic src(std::in_place_type<Derived>, 1, 2, 3);
 
 constexpr void
 test_ctor()
 {
   Counter::reset();
-  Polymorhic i1(src);
+  Polymorphic i1(src);
   VERIFY( *i1 == *src );
   VERIFY( &*i1 != &*src );
   VERIFY( Counter::get_allocation_count() >= sizeof(Derived) );
@@ -60,7 +60,7 @@ test_ctor()
   VERIFY( Counter::get_destruct_count() == 0 );
 
   Counter::reset();
-  Polymorhic i2(std::allocator_arg, {}, src);
+  Polymorphic i2(std::allocator_arg, {}, src);
   VERIFY( *i2 == *src );
   VERIFY( &*i2 != &*src );
   VERIFY( Counter::get_allocation_count() >= sizeof(Derived) );
@@ -73,7 +73,7 @@ constexpr void
 test_assign()
 {
   Counter::reset();
-  Polymorhic i1(std::in_place_type<Derived>);
+  Polymorphic i1(std::in_place_type<Derived>);
   const size_t holderSize = Counter::get_allocation_count();
   VERIFY( holderSize >= sizeof(Derived) );
   Counter::reset();
@@ -101,26 +101,26 @@ test_assign()
 constexpr void
 test_valueless()
 {
-  Polymorhic e(std::in_place_type<Derived>);
+  Polymorphic e(std::in_place_type<Derived>);
   auto(std::move(e));
   VERIFY( e.valueless_after_move() );
 
   Counter::reset();
-  Polymorhic i1(e);
+  Polymorphic i1(e);
   VERIFY( i1.valueless_after_move() );
   VERIFY( Counter::get_allocation_count() == 0 );
   VERIFY( Counter::get_deallocation_count() == 0 );
   VERIFY( Counter::get_construct_count() == 0 );
   VERIFY( Counter::get_destruct_count() == 0 );
 
-  Polymorhic i2(std::allocator_arg, {}, e);
+  Polymorphic i2(std::allocator_arg, {}, e);
   VERIFY( i2.valueless_after_move() );
   VERIFY( Counter::get_allocation_count() == 0 );
   VERIFY( Counter::get_deallocation_count() == 0 );
   VERIFY( Counter::get_construct_count() == 0 );
   VERIFY( Counter::get_destruct_count() == 0 );
 
-  Polymorhic i3(src);
+  Polymorphic i3(src);
   Counter::reset();
   i3 = e;
   VERIFY( i3.valueless_after_move() );

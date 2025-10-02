@@ -1,0 +1,142 @@
+# Copyright 2025 Free Software Foundation, Inc.
+#
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# This file helps editors auto-configure whitespace settings.
+#
+# See here for more information about the format and editor support:
+#
+#   https://editorconfig.org/
+
+# This file is common to the GCC and GDB/Binutils projects.  If you
+# update one, please sync it with the other.
+
+# top-most EditorConfig file
+root = true
+
+[*]
+end_of_line = lf
+insert_final_newline = true
+tab_width = 8
+
+# EditorConfig files
+[.editorconfig]
+charset = utf-8
+trim_trailing_whitespace = true
+
+# Makefile
+[{Makefile,*.mk,*.am}*]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+# ChangeLogs
+[ChangeLog*]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+charset = utf-8
+
+# C/C++
+[*.{c,h,cc}]
+charset = utf-8
+indent_style = tab
+indent_size = 2
+trim_trailing_whitespace = true
+
+# GCC .def files.  These are generally C fragments that get included
+# one or more times
+[gcc/**.def]
+charset = utf-8
+indent_style = tab
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Texinfo files
+[*.texi]
+charset = utf-8
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Expect / TCL
+[*.{exp,tcl}]
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Python
+[*.py]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Assembler
+[*.{s,S,asm}]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+# GCC Machine description files
+[gcc/config/**.md]
+indent_style = tab
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Awk
+[*.awk]
+indent_style = tab
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Autoconf
+[*.{ac,m4}]
+indent_style = tab
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Shell scripts
+[*.sh]
+indent_style = tab
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Ada
+[*.ad[bs]]
+indent_style = space
+indent_size = 3
+trim_trailing_whitespace = true
+
+# D
+[*.d]
+indent_style = space
+indent_size = 4
+trim_trailing_whitespace = true
+
+# Go
+[*.go]
+indent_style = tab
+indent_size = 8
+trim_trailing_whitespace = true
+
+# Fortran
+[*.[Ff]90]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true
+
+# Cobol
+[*.cbl]
+indent_style = space
+indent_size = 2
+trim_trailing_whitespace = true

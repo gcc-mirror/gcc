@@ -2788,7 +2788,7 @@ for_each_path (const struct path_prefix *paths,
   const char *multi_suffix;
   const char *just_multi_suffix;
   char *path = NULL;
-  decltype (callback (nullptr)) ret;
+  decltype (callback (nullptr)) ret = nullptr;
   bool skip_multi_dir = false;
   bool skip_multi_os_dir = false;
 

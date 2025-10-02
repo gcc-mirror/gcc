@@ -1219,7 +1219,7 @@ package GNAT.Sockets is
 
    procedure Listen_Socket
      (Socket : Socket_Type;
-      Length : Natural := 15);
+      Length : Natural := SOSC.BACKLOG_MAX);
    --  To accept connections, a socket is first created with Create_Socket,
    --  a willingness to accept incoming connections and a queue Length for
    --  incoming connections are specified. Raise Socket_Error on error.

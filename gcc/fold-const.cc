@@ -25,7 +25,7 @@ along with GCC; see the file COPYING3.  If not see
   @@ This would also make life easier when this technology is used
   @@ for cross-compilers.  */
 
-/* The entry points in this file are fold, size_int_wide and size_binop.
+/* The entry points in this file are fold, size_int and size_binop.
 
    fold takes a tree as argument and returns a simplified tree.
 
@@ -16514,6 +16514,17 @@ split_address_to_core_and_offset (tree exp,
       core = get_inner_reference (TREE_OPERAND (exp, 0), &bitsize, pbitpos,
 				  poffset, &mode, &unsignedp, &reversep,
 				  &volatilep);
+      /* If we are left with MEM[a + CST] strip that and add it to the
+	 pbitpos and return a. */
+      if (TREE_CODE (core) == MEM_REF)
+	{
+	  poly_offset_int tem;
+	  tem = wi::to_poly_offset (TREE_OPERAND (core, 1));
+	  tem <<= LOG2_BITS_PER_UNIT;
+	  tem += *pbitpos;
+	  if (tem.to_shwi (pbitpos))
+	    return TREE_OPERAND (core, 0);
+	}
       core = build_fold_addr_expr_loc (loc, core);
     }
   else if (TREE_CODE (exp) == POINTER_PLUS_EXPR)

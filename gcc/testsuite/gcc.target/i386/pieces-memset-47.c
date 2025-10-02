@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -march=sapphirerapids -mstore-max=128" } */
+/* { dg-warning ".-mstore-max=. is deprecated; use .-mmove-max=. instead" "" { target *-*-* } 0 } */
 
 extern char *dst;
 

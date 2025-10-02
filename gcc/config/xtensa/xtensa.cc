@@ -41,6 +41,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "diagnostic-core.h"
 #include "cfgrtl.h"
 #include "output.h"
+#include "addresses.h"
 #include "fold-const.h"
 #include "stor-layout.h"
 #include "calls.h"

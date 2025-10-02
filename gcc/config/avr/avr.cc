@@ -6597,34 +6597,14 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 	    }
 	}
 
-      /* Comparing against 0 is easy.  */
+      /* Otherwise, compare a single byte with CP / CPC or equivalent.  */
 
-      if (val8 == 0)
+      const bool ldreg_p = test_hard_reg_class (LD_REGS, xop[0]);
+
+      if (ldreg_p && i == start)
 	{
-	  avr_asm_len (i == start
-		       ? "cp %0,__zero_reg__"
-		       : "cpc %0,__zero_reg__", xop, plen, 1);
+	  avr_asm_len ("cpi %0,%1", xop, plen, 1);
 	  continue;
-	}
-
-      /* Upper registers can compare and subtract-with-carry immediates.
-	 Notice that compare instructions do the same as respective subtract
-	 instruction; the only difference is that comparisons don't write
-	 the result back to the target register.  */
-
-      if (test_hard_reg_class (LD_REGS, xop[0]))
-	{
-	  if (i == start)
-	    {
-	      avr_asm_len ("cpi %0,%1", xop, plen, 1);
-	      continue;
-	    }
-	  else if (reg_unused_after (insn, xreg))
-	    {
-	      avr_asm_len ("sbci %0,%1", xop, plen, 1);
-	      changed[i] = true;
-	      continue;
-	    }
 	}
 
       /* When byte comparisons for an EQ or NE comparison look like
@@ -6641,7 +6621,7 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 
 	  for (int j = start; j < i && ! found; ++j)
 	    if (val8 == avr_uint8 (xval, j)
-		// Make sure that we didn't clobber x[j] above.
+		// Make sure that we didn't clobber x[j] with SBCI.
 		&& ! changed[j])
 	      {
 		rtx op[] = { xop[0], avr_byte (xreg, j) };
@@ -6651,6 +6631,37 @@ avr_out_compare (rtx_insn *insn, rtx *xop, int *plen)
 
 	  if (found)
 	    continue;
+	}
+
+      /* Upper registers can SBCI which has the same effect like CPC on
+	 SREG, but it writes back the result of the subtraction to %0.
+	 Therefore, SBCI can only replace CPC when %0 is unused after,
+	 or when the comparison is against 0x..0000.  */
+
+      if (ldreg_p && i > start)
+	{
+	  bool zero_p = true;
+
+	  for (int j = start; j <= i; ++j)
+	    zero_p &= avr_uint8 (xval, j) == 0;
+
+	  if (zero_p || reg_unused_after (insn, xreg))
+	    {
+	      avr_asm_len ("sbci %0,%1", xop, plen, 1);
+	      changed[i] = !zero_p;
+	      continue;
+	    }
+	}
+
+      /* Comparing against 0 is easy, but only invoke __zero_reg__ when
+	 nothing else has been found.  This is better for small ISRs.  */
+
+      if (val8 == 0)
+	{
+	  avr_asm_len (i == start
+		       ? "cp %0,__zero_reg__"
+		       : "cpc %0,__zero_reg__", xop, plen, 1);
+	  continue;
 	}
 
       /* Must load the value into the scratch register.  */
@@ -8533,11 +8544,17 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
   const int n_bytes0 = GET_MODE_SIZE (GET_MODE (xop[0]));
   const int n_bytes1 = GET_MODE_SIZE (GET_MODE (xop[1]));
   rtx msb1 = all_regs_rtx[n_bytes1 - 1 + REGNO (xop[1])];
+  // Prefer SBCI *,0 over SBC *,__zero_reg__.
+  const bool sbci_p = add == MINUS && n_bytes0 > n_bytes1
+    ? test_hard_reg_class (LD_REGS, avr_byte (xop[0], n_bytes1))
+    : false;
 
   const char *const s_ADD = add == PLUS ? "add %0,%1" : "sub %0,%1";
   const char *const s_ADC = add == PLUS ? "adc %0,%1" : "sbc %0,%1";
   const char *const s_DEC = add == PLUS
     ? "adc %0,__zero_reg__"  CR_TAB  "sbrc %1,7"  CR_TAB  "dec %0"
+    : sbci_p
+    ? "sbci %0,0"            CR_TAB  "sbrc %1,7"  CR_TAB  "inc %0"
     : "sbc %0,__zero_reg__"  CR_TAB  "sbrc %1,7"  CR_TAB  "inc %0";
 
   // A register that containts 8 copies of $1.msb.
@@ -8582,6 +8599,8 @@ avr_out_plus_ext (rtx_insn *insn, rtx *yop, int *plen)
 	  regs[1] = msb1;
 	  avr_asm_len (s_DEC, regs, plen, 3);
 	}
+      else if (sbci_p && regs[1] == zero_reg_rtx)
+	avr_asm_len ("sbci %0,0", regs, plen, 1);
       else
 	avr_asm_len (s_ADC, regs, plen, 1);
     }
@@ -8890,7 +8909,8 @@ avr_out_plus_1 (rtx xinsn, rtx *xop, int *plen, rtx_code code,
 	{
 	  if (started)
 	    avr_asm_len (code == PLUS
-			 ? "adc %0,__zero_reg__" : "sbc %0,__zero_reg__",
+			 ? "adc %0,__zero_reg__"
+			 : ld_reg_p ? "sbci %0,0" : "sbc %0,__zero_reg__",
 			 op, plen, 1);
 	  continue;
 	}

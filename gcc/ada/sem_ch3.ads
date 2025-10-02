@@ -165,12 +165,25 @@ package Sem_Ch3 is
    --  node or a plain N_Identifier), find the type of the subtype mark.
 
    function Find_Type_Name (N : Node_Id) return Entity_Id;
-   --  Enter the identifier in a type definition, or find the entity already
-   --  declared, in the case of the full declaration of an incomplete or
-   --  private type. If the previous declaration is tagged then the class-wide
-   --  entity is propagated to the identifier to prevent multiple incompatible
-   --  class-wide types that may be created for self-referential anonymous
-   --  access components.
+   --  N must be a type declaration. The declared view can be incomplete,
+   --  partial, or full. The behavior of this function depends on what
+   --  declaration, if there is one, N completes:
+   --
+   --  - If N is not a completion, the function enters the entity of N in the
+   --    name table and returns that entity.
+   --  - If N completes an incomplete view, the function sets the entity of N
+   --    as the full view of the incomplete view and returns the incomplete
+   --    view.
+   --  - If N completes a partial view, the function "swaps" the partial view
+   --    and the full view (see Copy_And_Swap) and returns the Entity_Id that,
+   --    on exit, points to the full view. The value that
+   --    Defining_Identifier (N) had on entry points to the partial view on
+   --    exit.
+   --
+   --  If the previous declaration is tagged then the class-wide entity is
+   --  propagated to the identifier to prevent multiple incompatible class-wide
+   --  types that may be created for self-referential anonymous access
+   --  components.
 
    function Get_Discriminant_Value
      (Discriminant       : Entity_Id;
@@ -336,5 +349,11 @@ package Sem_Ch3 is
    --  or the completion of a deferred constant declaration, mark the entity
    --  as referenced. Warnings on unused entities, if needed, go on the
    --  partial view.
+
+   procedure Unsigned_Base_Range_Type_Declaration
+     (T   : Entity_Id;
+      Def : Node_Id);
+   --  Create a new unsigned integer entity, and apply the constraint to obtain
+   --  the required first named subtype of this type.
 
 end Sem_Ch3;

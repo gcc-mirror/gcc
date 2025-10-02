@@ -8912,6 +8912,19 @@ gfc_conv_expr_descriptor (gfc_se *se, gfc_expr *expr)
 					  gfc_rank_cst[dim], stride);
 	}
 
+      /* For deferred-length character we need to take the dynamic length
+	 into account for the dataptr offset.  */
+      if (expr->ts.type == BT_CHARACTER
+	  && expr->ts.deferred
+	  && expr->ts.u.cl->backend_decl
+	  && VAR_P (expr->ts.u.cl->backend_decl))
+	{
+	  tree base_type = TREE_TYPE (base);
+	  base = fold_build2_loc (input_location, MULT_EXPR, base_type, base,
+				  fold_convert (base_type,
+						expr->ts.u.cl->backend_decl));
+	}
+
       for (n = loop.dimen; n < loop.dimen + codim; n++)
 	{
 	  from = loop.from[n];
@@ -9431,6 +9444,15 @@ gfc_conv_array_parameter (gfc_se *se, gfc_expr *expr, bool g77,
 	  else
 	    tmp = gfc_finish_block (&block);
 
+	  gfc_add_expr_to_block (&se->pre, tmp);
+	}
+      else if (pass_optional && full_array_var && sym->as && sym->as->rank != 0)
+	{
+	  /* Perform calculation of bounds and strides of optional array dummy
+	     only if the argument is present.  */
+	  tmp = build3_v (COND_EXPR, gfc_conv_expr_present (sym),
+			  gfc_finish_block (&se->pre),
+			  build_empty_stmt (input_location));
 	  gfc_add_expr_to_block (&se->pre, tmp);
 	}
     }
@@ -10903,7 +10925,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      if (c_expr)
 		{
 		  gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_add_modify (&fnblock, comp, tse.expr);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		}
 	    }
 	  else if (c->initializer && !c->attr.pdt_string && !c->attr.pdt_array
@@ -10914,7 +10938,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      gfc_expr *c_expr;
 	      c_expr = c->initializer;
 	      gfc_conv_expr_type (&tse, c_expr, TREE_TYPE (comp));
+	      gfc_add_block_to_block (&fnblock, &tse.pre);
 	      gfc_add_modify (&fnblock, comp, tse.expr);
+	      gfc_add_block_to_block (&fnblock, &tse.post);
 	    }
 
 	  if (c->attr.pdt_string)
@@ -10934,7 +10960,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  strlen = fold_build3_loc (input_location, COMPONENT_REF,
 					    TREE_TYPE (strlen),
 					    decl, strlen, NULL_TREE);
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_add_modify (&fnblock, strlen, tse.expr);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		  c->ts.u.cl->backend_decl = strlen;
 		}
 	      gfc_free_expr (e);
@@ -10981,17 +11009,21 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 		  gfc_conv_expr_type (&tse, e, gfc_array_index_type);
 		  gfc_free_expr (e);
 		  lower = tse.expr;
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_conv_descriptor_lbound_set (&fnblock, comp,
 						  gfc_rank_cst[i],
 						  lower);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		  e = gfc_copy_expr (c->as->upper[i]);
 		  gfc_insert_parameter_exprs (e, pdt_param_list);
 		  gfc_conv_expr_type (&tse, e, gfc_array_index_type);
 		  gfc_free_expr (e);
 		  upper = tse.expr;
+		  gfc_add_block_to_block (&fnblock, &tse.pre);
 		  gfc_conv_descriptor_ubound_set (&fnblock, comp,
 						  gfc_rank_cst[i],
 						  upper);
+		  gfc_add_block_to_block (&fnblock, &tse.post);
 		  gfc_conv_descriptor_stride_set (&fnblock, comp,
 						  gfc_rank_cst[i],
 						  size);
@@ -12713,6 +12745,15 @@ gfc_walk_op_expr (gfc_ss * ss, gfc_expr * expr)
   return head2;
 }
 
+static gfc_ss *
+gfc_walk_conditional_expr (gfc_ss *ss, gfc_expr *expr)
+{
+  gfc_ss *head;
+
+  head = gfc_walk_subexpr (ss, expr->value.conditional.true_expr);
+  head = gfc_walk_subexpr (head, expr->value.conditional.false_expr);
+  return head;
+}
 
 /* Reverse a SS chain.  */
 
@@ -12983,6 +13024,10 @@ gfc_walk_subexpr (gfc_ss * ss, gfc_expr * expr)
 
     case EXPR_OP:
       head = gfc_walk_op_expr (ss, expr);
+      return head;
+
+    case EXPR_CONDITIONAL:
+      head = gfc_walk_conditional_expr (ss, expr);
       return head;
 
     case EXPR_FUNCTION:

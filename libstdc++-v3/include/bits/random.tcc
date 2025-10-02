@@ -83,7 +83,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __normalize(_InputIterator __first, _InputIterator __last,
 		  _OutputIterator __result, const _Tp& __factor)
       {
-	for (; __first != __last; ++__first, ++__result)
+	for (; __first != __last; ++__first, (void) ++__result)
 	  *__result = *__first / __factor;
 	return __result;
       }
@@ -907,6 +907,129 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __is;
     }
 
+#if __glibcxx_philox_engine // >= C++26
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    _UIntType
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::
+    _S_mulhi(_UIntType __a, _UIntType __b)
+    {
+      const __uint128_t __num =
+	  static_cast<__uint128_t>(__a) * static_cast<__uint128_t>(__b);
+      return static_cast<_UIntType>((__num >> __w) & max());
+    }
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    _UIntType
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::
+    _S_mullo(_UIntType __a, _UIntType __b)
+    {
+      return static_cast<_UIntType>((__a * __b) & max());
+    }
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    void
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::_M_transition()
+    {
+      ++_M_i;
+      if (_M_i != __n)
+	return;
+
+      _M_philox();
+      if constexpr (__n == 4)
+	{
+	  __uint128_t __uh =
+	    (static_cast<__uint128_t>(_M_x[1]) << __w)
+		  | (static_cast<__uint128_t>(_M_x[0]) + 1);
+	  __uint128_t __lh =
+	    ((static_cast<__uint128_t>(_M_x[3]) << __w)
+		  | (_M_x[2]));
+	  __uint128_t __bigMask =
+	    (static_cast<__uint128_t>(1) << ((2 * __w) - 1))
+		  | ((static_cast<__uint128_t>(1) << ((2 * __w) - 1)) - 1);
+	  if ((__uh & __bigMask) == 0)
+	    {
+	      ++__lh;
+	      __uh = 0;
+	    }
+	  _M_x[0] = __uh & max();
+	  _M_x[1] = (__uh >> (__w)) & max();
+	  _M_x[2] = __lh & max();
+	  _M_x[3] = (__lh >> (__w)) & max();
+	}
+      else
+	{
+	  __uint128_t __num =
+		  (static_cast<__uint128_t>(_M_x[1]) << __w)
+		  | (static_cast<__uint128_t>(_M_x[0]) + 1);
+	  _M_x[0] = __num & max();
+	  _M_x[1] = (__num >> __w) & max();
+	}
+      _M_i = 0;
+    }
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    void
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::_M_philox()
+    {
+      array<_UIntType, __n> __outputSeq = _M_x;
+      for (size_t __j = 0; __j < __r; ++__j)
+	{
+	  array<_UIntType, __n> __intermedSeq{};
+	  if constexpr (__n == 4)
+	    {
+	      __intermedSeq[0] = __outputSeq[2];
+	      __intermedSeq[1] = __outputSeq[1];
+	      __intermedSeq[2] = __outputSeq[0];
+	      __intermedSeq[3] = __outputSeq[3];
+	    }
+	  else
+	    {
+	      __intermedSeq[0] = __outputSeq[0];
+	      __intermedSeq[1] = __outputSeq[1];
+	    }
+	  for (unsigned long __k = 0; __k < (__n/2); ++__k)
+	    {
+	      __outputSeq[2*__k]
+		= _S_mulhi(__intermedSeq[2*__k], multipliers[__k])
+		    ^ (((_M_k[__k] + (__j * round_consts[__k])) & max()))
+		    ^ __intermedSeq[2*__k+1];
+
+	      __outputSeq[(2*__k)+1]
+		= _S_mullo(__intermedSeq[2*__k], multipliers[__k]);
+	    }
+	}
+      _M_y = __outputSeq;
+    }
+
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+  template<typename _Sseq>
+    void
+    philox_engine<_UIntType, __w, __n, __r, __consts...>::seed(_Sseq& __q)
+    requires __is_seed_seq<_Sseq>
+    {
+      seed(0);
+
+      const unsigned __p = 1 + ((__w - 1) / 32);
+      uint_least32_t __tmpArr[(__n/2) * __p];
+      __q.generate(__tmpArr + 0, __tmpArr + ((__n/2) * __p));
+      for (unsigned __k = 0; __k < (__n/2); ++__k)
+	{
+	  unsigned long long __precalc = 0;
+	  for (unsigned __j = 0; __j < __p; ++__j)
+	    {
+	      unsigned long long __multiplicand = (1ull << (32 * __j));
+	      __precalc += (__tmpArr[__k * __p + __j] * __multiplicand) & max();
+	    }
+	  _M_k[__k] = __precalc;
+	}
+    }
+#endif // philox_engine
 
   template<typename _IntType, typename _CharT, typename _Traits>
     std::basic_ostream<_CharT, _Traits>&
@@ -3078,7 +3201,7 @@ namespace __detail
 		 _InputIteratorW __wbegin)
       : _M_int(), _M_den(), _M_cp(), _M_m()
       {
-	for (; __bbegin != __bend; ++__bbegin, ++__wbegin)
+	for (; __bbegin != __bend; ++__bbegin, (void) ++__wbegin)
 	  {
 	    _M_int.push_back(*__bbegin);
 	    _M_den.push_back(*__wbegin);

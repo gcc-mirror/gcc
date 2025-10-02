@@ -3,4 +3,4 @@
 
 #include "template-1.h"
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 2 "vect" } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 3 "vect" } } */

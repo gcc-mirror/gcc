@@ -1,0 +1,182 @@
+(* M2Diagnotic provides memory and time diagnosics to the user.
+
+Copyright (C) 2024 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2Diagnostic ;  (*!m2iso+gm2*)
+
+(*
+    Title      : M2Diagnotic
+    Author     : Gaius Mulley
+    System     : GNU Modula-2
+    Date       : Thu Jan  4 10:38:53 2024
+    Revision   : $Version$
+    Description: provides memory and time diagnosics to the user.
+*)
+
+FROM DynamicStrings IMPORT String ;
+
+TYPE
+   Diagnostic ;
+   DiagProc = PROCEDURE (Diagnostic) ;
+
+
+(*
+   InitTimeDiagnostic - create and return a time diagnostic.
+                        The format string can be free form and may
+                        contain {1T}, {1C} or {1P}.
+                        {1T} will contain the time and
+                        {1C} the count of the number of times the
+                        code enters the time diagnostic code region.
+                        {1P} generates the time as a percentage.
+                        {0T} is the total time for the application.
+                        {{ is rendered as a single {.
+*)
+
+PROCEDURE InitTimeDiagnostic (name, format: ARRAY OF CHAR) : Diagnostic ;
+
+
+(*
+   EnterDiagnostic - attribute all execution time from now to TimeDiag.
+*)
+
+PROCEDURE EnterDiagnostic (TimeDiag: Diagnostic) ;
+
+
+(*
+   ExitDiagnostic - stop attributing execution time to TimeDiag.
+*)
+
+PROCEDURE ExitDiagnostic (TimeDiag: Diagnostic) ;
+
+
+(*
+   InitMemDiagnostic - create and return a memory diagnostic.
+                       The format string can be free form and may
+                       contain {1M} {1d} {1x} {1P}.
+                       {1M} is replaced by the value of the first parameter
+                       with memory size units.
+                       {1d} unsigned decimal.  {1x} unsigned hexadecimal.
+                       {0M} is the global allocation (Storage.mod:ALLOCATE).
+                       {1P} is the percentage of param 1 relative
+                       to global memory.
+*)
+
+PROCEDURE InitMemDiagnostic (name, format: ARRAY OF CHAR) : Diagnostic ;
+
+
+(*
+   MemIncr - allow the appropriate parameter to be incremented.
+             All parameters are initially set to zero and are stored
+             as LONGCARD.
+*)
+
+PROCEDURE MemIncr (MemDiag: Diagnostic; paramno: CARDINAL; incr: CARDINAL) ;
+
+
+(*
+   MemDecr - allow the appropriate parameter to be decremented.
+             All parameters are initially set to zero and are stored
+             as LONGCARD.
+*)
+
+PROCEDURE MemDecr (MemDiag: Diagnostic; paramno: CARDINAL; decr: CARDINAL) ;
+
+
+(*
+   MemSet - allow the appropriate parameter to be set to value.
+            All parameters are initially set to zero.
+*)
+
+PROCEDURE MemSet (MemDiag: Diagnostic; paramno: CARDINAL; value: CARDINAL) ;
+
+
+(*
+   TotalHeapIncr - increments the total heap used.
+*)
+
+PROCEDURE TotalHeapIncr (incr: CARDINAL) ;
+
+
+(*
+   TotalHeapDecr - decrements the total heap used.
+*)
+
+PROCEDURE TotalHeapDecr (incr: CARDINAL) ;
+
+
+(*
+   SetEnable - set the enable flag in Diag to value.
+*)
+
+PROCEDURE SetEnable (Diag: Diagnostic; value: BOOLEAN) ;
+
+
+(*
+   Lookup - returns the Diagnostic containing name or NIL
+            if it does not exist.
+*)
+
+PROCEDURE Lookup (name: ARRAY OF CHAR) : Diagnostic ;
+
+
+(*
+   GetName - returns the name of Diag.
+*)
+
+PROCEDURE GetName (Diag: Diagnostic) : String ;
+
+
+(*
+   ForeachDiagDo - for diag in global diag list do
+                      dp (diag);
+                   end
+*)
+
+PROCEDURE ForeachDiagDo (dp: DiagProc) ;
+
+
+(*
+   SetDefaultConfig - force the Diag enable flag to the
+                      time or mem global default.
+*)
+
+PROCEDURE SetDefaultConfig (Diag: Diagnostic) ;
+
+
+(*
+   Configure - will turn on or off all the memory or time
+               instrumentation diagnostics and set the defaults
+               time and mem values.
+*)
+
+PROCEDURE Configure (time, mem: BOOLEAN) ;
+
+
+(*
+   Generate - return a string containing the output from
+              all the diagnostics enabled.  If hierarchical is TRUE
+              then the output is displayed in a hierarchical format
+              using the name and ':' separators to signify grouping.
+*)
+
+PROCEDURE Generate (hierarchical: BOOLEAN) : String ;
+
+
+END M2Diagnostic.

@@ -10,6 +10,13 @@ using std::function_ref;
 
 int i = 0;
 
+template<auto f, class... Args>
+  concept deductible = requires (Args&... args) 
+  { std::function_ref(std::nontype<f>, args...); };
+
+static_assert( !deductible<1> );
+static_assert( !deductible<1, int> );
+
 void f0();
 void f0n() noexcept;
 
@@ -21,6 +28,8 @@ static_assert( is_same_v<decltype(function_ref(nontype<f0>)),
 			 function_ref<void()>> );
 static_assert( is_same_v<decltype(function_ref(nontype<f0n>)),
 			 function_ref<void() noexcept>> );
+static_assert( !deductible<f0, char*> );
+static_assert( !deductible<f0n, char*> );
 
 void f1(int);
 void f1n(int) noexcept;
@@ -37,6 +46,8 @@ static_assert( is_same_v<decltype(function_ref(nontype<f1>, i)),
 			 function_ref<void()>> );
 static_assert( is_same_v<decltype(function_ref(nontype<f1n>, i)),
 			 function_ref<void() noexcept>> );
+static_assert( !deductible<f1, char*> );
+static_assert( !deductible<f1n, char*> );
 
 void f2(int*, int);
 void f2n(int*, int) noexcept;
@@ -53,6 +64,8 @@ static_assert( is_same_v<decltype(function_ref(nontype<f2>, &i)),
 			 function_ref<void(int)>> );
 static_assert( is_same_v<decltype(function_ref(nontype<f2n>, &i)),
 			 function_ref<void(int) noexcept>> );
+static_assert( !deductible<f2, char*> );
+static_assert( !deductible<f2n, char*> );
 
 struct S
 {
@@ -68,6 +81,9 @@ struct S
 
   int fcl(float) const&;
   int fcln(float) const& noexcept;
+
+  int fr(int) &&;
+  int frn(int) && noexcept;
 };
 S s{};
 const S cs{};
@@ -80,16 +96,23 @@ static_assert( is_same_v<decltype(function_ref(nontype<&S::mem>, &s)),
 			 function_ref<int&()>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::mem>, &cs)),
 			 function_ref<const int&()>> );
+static_assert( !deductible<&S::mem, int> );
 
 static_assert( is_same_v<decltype(function_ref(nontype<&S::f>, s)),
 			 function_ref<int()>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::fn>, &s)),
 			 function_ref<int() noexcept>> );
+static_assert( !deductible<&S::f, char*> );
+static_assert( !deductible<&S::fn, char*> );
+static_assert( !deductible<&S::f, const S> );
+static_assert( !deductible<&S::fn, const S> );
 
 static_assert( is_same_v<decltype(function_ref(nontype<&S::fc>, &s)),
 			 function_ref<int(int)>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::fcn>, s)),
 			 function_ref<int(int) noexcept>> );
+static_assert( !deductible<&S::fc, char*> );
+static_assert( !deductible<&S::fcn, char*> );
 
 static_assert( is_same_v<decltype(function_ref(nontype<&S::fl>, &s)),
 			 function_ref<int(int)>> );
@@ -100,4 +123,9 @@ static_assert( is_same_v<decltype(function_ref(nontype<&S::fcl>, s)),
 			 function_ref<int(float)>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::fcln>, &s)),
 			 function_ref<int(float) noexcept>> );
+
+static_assert( !deductible<&S::fr, char*> );
+static_assert( !deductible<&S::frn, char*> );
+static_assert( !deductible<&S::fr, S> );
+static_assert( !deductible<&S::frn, S> );
 

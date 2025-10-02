@@ -44,7 +44,8 @@ FROM Indexing IMPORT Index, InitIndex, KillIndex, GetIndice, PutIndice,
 
 FROM DynamicStrings IMPORT String, InitString, InitStringCharStar,
                            ConCat, ConCatChar, Mark, string, KillString,
-                           Dup, char, Length, Mult, EqualArray, Equal ;
+                           Dup, char, Length, Mult, EqualArray, Equal,
+                           RemoveWhitePostfix ;
 
 FROM SymbolTable IMPORT NulSym,
                         IsDefImp, IsModule, IsInnerModule,
@@ -88,6 +89,7 @@ TYPE
                    highplus1 : CARDINAL ;
                    len,
                    ini       : INTEGER ;
+                   vowel,
                    glyph,
                    chain,
                    root,
@@ -507,13 +509,14 @@ BEGIN
    WITH eb DO
       useError   := TRUE ;
       e          := NIL ;
-      type       := error ;  (* default to the error color.  *)
+      type       := error ;  (* Default to the error color.  *)
       out        := InitString ('') ;
       in         := input ;
       highplus1  := HIGH (sym) + 1 ;
       len        := Length (input) ;
       ini        := 0 ;
-      glyph      := FALSE ;  (* nothing to output yet.  *)
+      glyph      := FALSE ;  (* Nothing to output yet.  *)
+      vowel      := FALSE ;  (* Check for a vowel when outputing string?  *)
       quotes     := TRUE ;
       positive   := TRUE ;
       root       := FALSE ;
@@ -542,7 +545,7 @@ END push ;
 
 
 (*
-   pop - copies contents of oldblock into newblock.  It only copies the error
+   pop - copies contents of fromblock into toblock.  It only copies the error
          handle if the toblock.e is NIL.
 *)
 
@@ -550,6 +553,7 @@ PROCEDURE pop (VAR toblock, fromblock: errorBlock) ;
 VAR
    c: colorType ;
 BEGIN
+   checkVowel (toblock, fromblock) ;
    IF empty (fromblock)
    THEN
       toblock.stackPtr := fromblock.stackPtr ;
@@ -708,7 +712,7 @@ END killErrorBlock ;
                        )
                  =:
 
-   op := {'a'|'q'|'t'|'d'|'n'|'s'|'B'|'D'|'F'|'G'|'H'|'M'|'U'|'E'|'V'|'W'|'A'} then =:
+   op := {'a'|'q'|'t'|'d'|'n'|'s'|'v'|'B'|'D'|'F'|'G'|'H'|'M'|'U'|'E'|'V'|'W'|'A'} then =:
 
    then := [ ':' ebnf ] =:
 *)
@@ -970,6 +974,38 @@ PROCEDURE empty (VAR eb: errorBlock) : BOOLEAN ;
 BEGIN
    RETURN NOT eb.glyph
 END empty ;
+
+
+(*
+   checkVowel - checks to see if the from block word starts with
+                a vowel and if so adds an n to the to block output.
+*)
+
+PROCEDURE checkVowel (VAR to: errorBlock; from: errorBlock) ;
+BEGIN
+   IF from.vowel AND (NOT empty (from))
+   THEN
+      IF isVowel (char (from.out, 0))
+      THEN
+         IF Length (to.out) > 0
+         THEN
+            to.out := RemoveWhitePostfix (Mark (to.out)) ;
+            to.out := ConCat (to.out, Mark (InitString ('n '))) ;
+            from.vowel := FALSE
+         END
+      END
+   END
+END checkVowel ;
+
+
+(*
+   isVowel - returns TRUE if ch is a, e, i, o or u.
+*)
+
+PROCEDURE isVowel (ch: CHAR) : BOOLEAN ;
+BEGIN
+   RETURN (ch = 'a') OR (ch = 'e') OR (ch = 'i') OR (ch = 'o') OR (ch = 'u')
+END isVowel ;
 
 
 (*
@@ -1624,7 +1660,7 @@ BEGIN
       RETURN InitString('set')
    ELSIF IsUnknown(sym)
    THEN
-      RETURN InitString('an unknown')
+      RETURN InitString('unknown')
    ELSIF IsSubrange(sym)
    THEN
       RETURN InitString('subrange')
@@ -1676,7 +1712,7 @@ END copySym ;
 
 
 (*
-   op := {'!'|'a'|'c'|'d'|'k'|'n'|'p'|'q'|'s'|'t'|'u'|
+   op := {'!'|'a'|'c'|'d'|'k'|'n'|'p'|'q'|'s'|'t'|'u'|'v'|
           'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'K'|'M'|'N'|
           'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'} then =:
 *)
@@ -1705,6 +1741,7 @@ BEGIN
       's':  doSkipType (eb, sym, bol) |
       't':  doType (eb, sym, bol) |
       'u':  eb.quotes := FALSE |
+      'v':  eb.vowel := TRUE |
       'A':  eb.type := aborta ;
             seenAbort := TRUE |
       'B':  declaredType (eb, sym, bol) |

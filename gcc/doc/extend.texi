@@ -670,16 +670,21 @@ tester (int len; char data[len][len], int len)
 @end smallexample
 
 @cindex parameter forward declaration
-The @samp{int len} before the semicolon is a @dfn{parameter forward
-declaration}, and it serves the purpose of making the name @code{len}
-known when the declaration of @code{data} is parsed.
+The @samp{int len} before the semicolon
+is a @dfn{parameter forward declaration},
+and it serves the purpose of making the name @code{len} known
+when the declaration of @code{data} is parsed.
 
-You can write any number of such parameter forward declarations in the
-parameter list.  They can be separated by commas or semicolons, but the
-last one must end with a semicolon, which is followed by the ``real''
-parameter declarations.  Each forward declaration must match a ``real''
-declaration in parameter name and data type.  ISO C99 does not support
-parameter forward declarations.
+Lists of parameter forward declarations are terminated by semicolons,
+and parameter forward declarations are separated within such lists by commas,
+just like in the regular list of parameter declarations.
+
+You can write any number of lists of parameter forward declaration,
+but using more than one is unnecessary.
+The last semicolon is followed by the list of parameter declarations.
+Each parameter forward declaration must match
+a parameter declaration in parameter name and data type.
+ISO C99 does not support parameter forward declarations.
 
 @node Zero Length
 @subsection Arrays of Length Zero
@@ -5904,8 +5909,7 @@ accordingly to point to the start of the vector table before any functions with
 this attribute are invoked.  Usually a good place to do the initialization is
 the startup routine.  The TBR relative vector table can have at max 256 function
 entries.  The jumps to these functions are generated using a SH2A specific,
-non delayed branch instruction JSR/N @@(disp8,TBR).  You must use GAS and GLD
-from GNU binutils version 2.7 or later for this attribute to work correctly.
+non delayed branch instruction JSR/N @@(disp8,TBR).
 
 In an application, for a function being called once, this attribute
 saves at least 8 bytes of code; and if other successive calls are being
@@ -7924,9 +7928,6 @@ variable should be placed into the eight-bit data section.
 The compiler generates more efficient code for certain operations
 on data in the eight-bit data area.  Note the eight-bit data area is limited to
 256 bytes of data.
-
-You must use GAS and GLD from GNU binutils version 2.7 or later for
-this attribute to work correctly.
 
 @cindex @code{tiny_data} variable attribute, H8/300
 @cindex tiny data section on the H8/300H and H8S
@@ -10451,10 +10452,11 @@ loop or a @code{#pragma GCC ivdep}, and applies only to the loop that follows.
 @var{n} is an integer constant expression specifying the unrolling factor.
 The values of @math{0} and @math{1} block any unrolling of the loop.
 
-If the loop was vectorized the unroll factor specified will be used to seed the
-vectorizer unroll factor.  Whether the loop is unrolled or not will be
-determined by target costing.  The resulting vectorized loop may still be
-unrolled more in later passes depending on the target costing.
+If the loop is vectorized the vectorizer considers extra unrolling to honor the
+unroll factor.  After vectorizing a loop the pragma is dropped.  Whether the
+loop is unrolled or not will be determined by target costing.  The resulting
+vectorized loop may still be unrolled more in later passes depending on the
+target costing.
 
 @end table
 
@@ -16532,9 +16534,9 @@ result of the comparison is a vector of the same width and number of
 elements as the comparison operands with a signed integral element
 type.
 
-Vectors are compared element-wise producing 0 when comparison is false
-and -1 (constant of the appropriate type where all bits are set)
-otherwise. Consider the following example.
+Vectors are compared elementwise producing 0 when the comparison is false
+and -1 (a constant of the appropriate type where all bits are set)
+otherwise. Consider the following example:
 
 @smallexample
 typedef int v4si __attribute__ ((vector_size (16)));

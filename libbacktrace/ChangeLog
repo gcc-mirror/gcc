@@ -1,3 +1,7 @@
+2025-09-28  Ian Lance Taylor  <iant@golang.org>
+
+	* filetype.awk: Recognize PE bigobj objects at configure time.
+
 2025-04-10  John David Anglin  <danglin@gcc.gnu.org>
 
 	* fileline.c (hpux_get_executable_path): New.

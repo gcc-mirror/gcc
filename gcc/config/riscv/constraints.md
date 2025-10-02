@@ -334,3 +334,13 @@
 (define_address_constraint "ZD"
   "An address operand that is valid for a mips prefetch instruction"
   (match_test "riscv_prefetch_offset_address_p (op, mode)"))
+
+(define_constraint "Ou07"
+  "A 7-bit unsigned immediate."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 127)")))
+
+(define_constraint "ads_Bext"
+  "Sequence bit extract."
+  (and (match_code "const_int")
+       (match_test "(ival & (ival + 1)) == 0")))

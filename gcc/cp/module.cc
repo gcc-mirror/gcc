@@ -3633,6 +3633,7 @@ enum module_state_counts
   MSC_pendings,
   MSC_entities,
   MSC_namespaces,
+  MSC_using_directives,
   MSC_bindings,
   MSC_macros,
   MSC_inits,
@@ -3666,8 +3667,12 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   bitmap imports;	/* Transitive modules we're importing.  */
   bitmap exports;	/* Subset of that, that we're exporting.  */
 
+  /* For a named module interface A.B, parent is A and name is B.
+     For a partition M:P, parent is M and name is P.
+     For an implementation unit I, parent is I's interface and name is NULL.
+     Otherwise parent is NULL and name will be the flatname.  */
   module_state *parent;
-  tree name;		/* Name of the module.  */
+  tree name;
 
   slurping *slurp;	/* Data for loading.  */
 
@@ -3781,7 +3786,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   }
 
  public:
-  bool check_not_purview (location_t loc);
+  bool check_circular_import (location_t loc);
 
  public:
   void mangle (bool include_partition);
@@ -3853,6 +3858,10 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   void write_namespaces (elf_out *to, vec<depset *> spaces,
 			 unsigned, unsigned *crc_ptr);
   bool read_namespaces (unsigned);
+
+  unsigned write_using_directives (elf_out *to, depset::hash &,
+				   vec<depset *> spaces, unsigned *crc_ptr);
+  bool read_using_directives (unsigned);
 
   void intercluster_seed (trees_out &sec, unsigned index, depset *dep);
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
@@ -4092,6 +4101,13 @@ static unsigned lazy_hard_limit; /* Hard limit on open modules.  */
    current TU; imports start at 1.  */
 static GTY(()) vec<module_state *, va_gc> *modules;
 
+/* Get the module state for the current TU's module.  */
+
+static module_state *
+this_module() {
+  return (*modules)[0];
+}
+
 /* Hash of module state, findable by {name, parent}. */
 static GTY(()) hash_table<module_state_hash> *modules_hash;
 
@@ -4242,7 +4258,7 @@ import_entity_module (unsigned index)
 {
   if (index > ~(~0u >> 1))
     /* This is an index for an exported entity.  */
-    return (*modules)[0];
+    return this_module ();
 
   /* Do not include the current TU (not an off-by-one error).  */
   unsigned pos = 1;
@@ -8128,7 +8144,13 @@ trees_in::install_entity (tree decl)
   if (!DECL_LANG_SPECIFIC (not_tmpl)
       || !DECL_MODULE_ENTITY_P (not_tmpl))
     {
-      retrofit_lang_decl (not_tmpl);
+      /* We don't want to use retrofit_lang_decl directly so that we aren't
+	 affected by the language state when we load in.  */
+      if (!DECL_LANG_SPECIFIC (not_tmpl))
+	{
+	  maybe_add_lang_decl_raw (not_tmpl, false);
+	  SET_DECL_LANGUAGE (not_tmpl, lang_cplusplus);
+	}
       DECL_MODULE_ENTITY_P (not_tmpl) = true;
 
       /* Insert into the entity hash (it cannot already be there).  */
@@ -9389,7 +9411,7 @@ trees_out::decl_node (tree decl, walk_kind ref)
   if (streaming_p () && dump (dumper::TREE))
     {
       char const *kind = "import";
-      module_state *from = (*modules)[0];
+      module_state *from = this_module ();
       if (dep->is_import ())
 	/* Rediscover the unremapped index.  */
 	from = import_entity_module (import_entity_index (decl));
@@ -12304,7 +12326,15 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
   // FIXME: do more precise errors at point of mismatch
   const char *mismatch_msg = nullptr;
-  if (TREE_CODE (d_inner) == FUNCTION_DECL)
+
+  if (VAR_OR_FUNCTION_DECL_P (d_inner)
+      && DECL_EXTERN_C_P (d_inner) != DECL_EXTERN_C_P (e_inner))
+    {
+      mismatch_msg = G_("conflicting language linkage for imported "
+			"declaration %#qD");
+      goto mismatch;
+    }
+  else if (TREE_CODE (d_inner) == FUNCTION_DECL)
     {
       tree e_ret = fndecl_declared_return_type (existing);
       tree d_ret = fndecl_declared_return_type (decl);
@@ -12320,13 +12350,6 @@ trees_in::is_matching_decl (tree existing, tree decl, bool is_typedef)
 
       tree e_type = TREE_TYPE (e_inner);
       tree d_type = TREE_TYPE (d_inner);
-
-      if (DECL_EXTERN_C_P (d_inner) != DECL_EXTERN_C_P (e_inner))
-	{
-	  mismatch_msg = G_("conflicting language linkage for imported "
-			    "declaration %#qD");
-	  goto mismatch;
-	}
 
       for (tree e_args = TYPE_ARG_TYPES (e_type),
 	     d_args = TYPE_ARG_TYPES (d_type);
@@ -14314,6 +14337,54 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	      /* Anonymous types can't be forward-declared.  */
 	      && !IDENTIFIER_ANON_P (DECL_NAME (not_tmpl)))
 	    dep->set_flag_bit<DB_IS_PENDING_BIT> ();
+
+	  /* Namespace-scope functions can be found by ADL by template
+	     instantiations in this module.  We need to create bindings
+	     for them so that name lookup recognises they exist, if they
+	     won't be discarded.  add_binding_entity is too early to do
+	     this for GM functions, because if nobody ends up using them
+	     we'll have leftover bindings laying around, and it's tricky
+	     to delete them and any namespaces they've implicitly created
+	     deps on.  The downside is this means we don't pick up on
+	     using-decls, but by [module.global.frag] p3.6 we don't have
+	     to.  */
+	  if (ek == EK_DECL
+	      && !for_binding
+	      && !dep->is_import ()
+	      && !dep->is_tu_local ()
+	      && DECL_NAMESPACE_SCOPE_P (decl)
+	      && DECL_DECLARES_FUNCTION_P (decl)
+	      /* Compiler-generated functions won't participate in ADL.  */
+	      && !DECL_ARTIFICIAL (decl)
+	      /* A hidden friend doesn't need a binding.  */
+	      && !(DECL_LANG_SPECIFIC (not_tmpl)
+		   && DECL_UNIQUE_FRIEND_P (not_tmpl)))
+	    {
+	      /* This will only affect GM functions.  */
+	      gcc_checking_assert (!DECL_LANG_SPECIFIC (not_tmpl)
+				   || !DECL_MODULE_PURVIEW_P (not_tmpl));
+	      /* We shouldn't see any instantiations or specialisations.  */
+	      gcc_checking_assert (!DECL_LANG_SPECIFIC (decl)
+				   || !DECL_USE_TEMPLATE (decl));
+
+	      tree ns = CP_DECL_CONTEXT (decl);
+	      tree name = DECL_NAME (decl);
+	      depset *binding = find_binding (ns, name);
+	      if (!binding)
+		{
+		  binding = make_binding (ns, name);
+		  add_namespace_context (binding, ns);
+
+		  depset **slot = binding_slot (ns, name, /*insert=*/true);
+		  *slot = binding;
+		}
+
+	      binding->deps.safe_push (dep);
+	      dep->deps.safe_push (binding);
+	      dump (dumper::DEPEND)
+		&& dump ("Built ADL binding for %C:%N",
+			 TREE_CODE (decl), decl);
+	    }
 	}
 
       if (!dep->is_import ())
@@ -14488,7 +14559,10 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 
       if ((!DECL_LANG_SPECIFIC (inner) || !DECL_MODULE_PURVIEW_P (inner))
 	  && !((flags & WMB_Using) && (flags & WMB_Purview)))
-	/* Ignore entities not within the module purview.  */
+	/* Ignore entities not within the module purview.  We'll need to
+	   create bindings for any non-discarded function calls for ADL,
+	   but it's simpler to handle that at the point of use rather
+	   than trying to clear out bindings after the fact.  */
 	return false;
 
       if (!header_module_p () && data->hash->is_tu_local_entity (decl))
@@ -14640,16 +14714,21 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
   data.partitions = partitions;
   data.hash = this;
 
-  hash_table<named_decl_hash>::iterator end
-    (DECL_NAMESPACE_BINDINGS (ns)->end ());
-  for (hash_table<named_decl_hash>::iterator iter
-	 (DECL_NAMESPACE_BINDINGS (ns)->begin ()); iter != end; ++iter)
+  for (tree binding : *DECL_NAMESPACE_BINDINGS (ns))
     {
       data.binding = nullptr;
       data.met_namespace = false;
-      if (walk_module_binding (*iter, partitions, add_binding_entity, &data))
+      if (walk_module_binding (binding, partitions, add_binding_entity, &data))
 	count++;
     }
+
+  /* Seed any using-directives so that we emit the relevant namespaces.  */
+  for (tree udir : NAMESPACE_LEVEL (ns)->using_directives)
+    if (TREE_CODE (udir) == USING_DECL && DECL_MODULE_EXPORT_P (udir))
+      {
+	make_dependency (USING_DECL_DECLS (udir), depset::EK_NAMESPACE);
+	count++;
+      }
 
   if (count)
     dump () && dump ("Found %u entries", count);
@@ -14997,6 +15076,9 @@ depset::hash::add_deduction_guides (tree decl)
 
       binding->deps.safe_push (dep);
       dep->deps.safe_push (binding);
+      dump (dumper::DEPEND)
+	&& dump ("Built binding for deduction guide %C:%N",
+		 TREE_CODE (decl), decl);
     }
 }
 
@@ -15826,7 +15908,7 @@ get_module (tree name, module_state *parent, bool partition)
   if (partition)
     {
       if (!parent)
-	parent = get_primary ((*modules)[0]);
+	parent = get_primary (this_module ());
 
       if (!parent->is_partition () && !parent->flatname)
 	parent->set_flatname ();
@@ -15925,20 +16007,19 @@ recursive_lazy (unsigned snum = ~0u)
   return false;
 }
 
-/* If THIS is the current purview, issue an import error and return false.  */
+/* If THIS has an interface dependency on itself, report an error and
+   return false.  */
 
 bool
-module_state::check_not_purview (location_t from)
+module_state::check_circular_import (location_t from)
 {
-  module_state *imp = (*modules)[0];
-  if (imp && !imp->name)
-    imp = imp->parent;
-  if (imp == this)
+  if (this == this_module ())
     {
       /* Cannot import the current module.  */
       auto_diagnostic_group d;
-      error_at (from, "cannot import module in its own purview");
-      inform (loc, "module %qs declared here", get_flatname ());
+      error_at (from, "module %qs depends on itself", get_flatname ());
+      if (!header_module_p ())
+	inform (loc, "module %qs declared here", get_flatname ());
       return false;
     }
   return true;
@@ -16231,7 +16312,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	 module as this TU.  */
       if (imp && imp->is_partition () &&
 	  (!named_module_p ()
-	   || (get_primary ((*modules)[0]) != get_primary (imp))))
+	   || (get_primary (this_module ()) != get_primary (imp))))
 	imp = NULL;
 
       if (!imp)
@@ -16249,7 +16330,7 @@ module_state::read_imports (bytes_in &sec, cpp_reader *reader, line_maps *lmaps)
 	  if (sec.get_overrun ())
 	    break;
 
-	  if (!imp->check_not_purview (loc))
+	  if (!imp->check_circular_import (floc))
 	    continue;
 
 	  if (imp->loadedness == ML_NONE)
@@ -17074,14 +17155,10 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
   bytes_out sec (to);
   sec.begin ();
 
-  hash_map<tree, unsigned> ns_map;
-
   for (unsigned ix = 0; ix != num; ix++)
     {
       depset *b = spaces[ix];
       tree ns = b->get_entity ();
-
-      ns_map.put (ns, ix);
 
       /* This could be an anonymous namespace even for a named module,
 	 since we can still emit no-linkage decls.  */
@@ -17124,31 +17201,6 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	}
     }
 
-  /* Now write exported using-directives, as a sequence of 1-origin indices in
-     the spaces array (not entity indices): First the using namespace, then the
-     used namespaces.  And then a zero terminating the list.  :: is
-     represented as index -1.  */
-  auto emit_one_ns = [&](unsigned ix, tree ns) {
-    for (auto udir: NAMESPACE_LEVEL (ns)->using_directives)
-      {
-	if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
-	  continue;
-	tree ns2 = USING_DECL_DECLS (udir);
-	dump() && dump ("Writing using-directive in %N for %N",
-			ns, ns2);
-	sec.u (ix);
-	sec.u (*ns_map.get (ns2) + 1);
-      }
-  };
-  emit_one_ns (-1, global_namespace);
-  for (unsigned ix = 0; ix != num; ix++)
-    {
-      depset *b = spaces[ix];
-      tree ns = b->get_entity ();
-      emit_one_ns (ix + 1, ns);
-    }
-  sec.u (0);
-
   sec.end (to, to->name (MOD_SNAME_PFX ".nms"), crc_p);
   dump.outdent ();
 }
@@ -17166,8 +17218,6 @@ module_state::read_namespaces (unsigned num)
 
   dump () && dump ("Reading namespaces");
   dump.indent ();
-
-  tree *ns_map = XALLOCAVEC (tree, num);
 
   for (unsigned ix = 0; ix != num; ix++)
     {
@@ -17230,8 +17280,6 @@ module_state::read_namespaces (unsigned num)
 	DECL_ATTRIBUTES (inner)
 	  = tree_cons (get_identifier ("abi_tag"), tags, DECL_ATTRIBUTES (inner));
 
-      ns_map[ix] = inner;
-
       /* Install the namespace.  */
       (*entity_ary)[entity_lwm + entity_index] = inner;
       if (DECL_MODULE_IMPORT_P (inner))
@@ -17247,41 +17295,79 @@ module_state::read_namespaces (unsigned num)
 	}
     }
 
-  /* Read the exported using-directives.  */
-  while (unsigned ix = sec.u ())
+  dump.outdent ();
+  if (!sec.end (from ()))
+    return false;
+  return true;
+}
+
+unsigned
+module_state::write_using_directives (elf_out *to, depset::hash &table,
+				      vec<depset *> spaces, unsigned *crc_p)
+{
+  dump () && dump ("Writing using-directives");
+  dump.indent ();
+
+  bytes_out sec (to);
+  sec.begin ();
+
+  unsigned num = 0;
+  auto emit_one_ns = [&](depset *parent_dep)
     {
-      tree ns;
-      if (ix == (unsigned)-1)
-	ns = global_namespace;
-      else
+      tree parent = parent_dep->get_entity ();
+      for (auto udir : NAMESPACE_LEVEL (parent)->using_directives)
 	{
-	  if (--ix >= num)
-	    {
-	      sec.set_overrun ();
-	      break;
-	    }
-	  ns = ns_map [ix];
+	  if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
+	    continue;
+	  tree target = USING_DECL_DECLS (udir);
+	  depset *target_dep = table.find_dependency (target);
+	  gcc_checking_assert (target_dep);
+
+	  dump () && dump ("Writing using-directive in %N for %N",
+			   parent, target);
+	  write_namespace (sec, parent_dep);
+	  write_namespace (sec, target_dep);
+	  ++num;
 	}
-      unsigned ix2 = sec.u ();
-      if (--ix2 >= num)
-	{
-	  sec.set_overrun ();
-	  break;
-	}
-      tree ns2 = ns_map [ix2];
-      if (directness)
-	{
-	  dump() && dump ("Reading using-directive in %N for %N",
-			  ns, ns2);
-	  /* In an export import this will mark the using-directive as
-	     exported, so it will be emitted again.  */
-	  add_using_namespace (ns, ns2);
-	}
-      else
-	/* Ignore using-directives from indirect imports, we only want them
-	   from our own imports.  */
-	dump() && dump ("Ignoring using-directive in %N for %N",
-			ns, ns2);
+    };
+
+  emit_one_ns (table.find_dependency (global_namespace));
+  for (depset *parent_dep : spaces)
+    emit_one_ns (parent_dep);
+
+  sec.end (to, to->name (MOD_SNAME_PFX ".udi"), crc_p);
+  dump.outdent ();
+
+  return num;
+}
+
+bool
+module_state::read_using_directives (unsigned num)
+{
+  if (!bitmap_bit_p (this_module ()->imports, mod))
+    {
+      dump () && dump ("Ignoring using-directives because module %M "
+		       "is not visible in this TU", this);
+      return true;
+    }
+
+  bytes_in sec;
+
+  if (!sec.begin (loc, from (), MOD_SNAME_PFX ".udi"))
+    return false;
+
+  dump () && dump ("Reading using-directives");
+  dump.indent ();
+
+  for (unsigned ix = 0; ix != num; ++ix)
+    {
+      tree parent = read_namespace (sec);
+      tree target = read_namespace (sec);
+      if (sec.get_overrun ())
+	break;
+
+      dump () && dump ("Read using-directive in %N for %N", parent, target);
+      add_using_namespace (parent, target);
     }
 
   dump.outdent ();
@@ -19803,6 +19889,7 @@ module_state::write_counts (elf_out *to, unsigned counts[MSC_HWM],
       dump ("Pendings %u", counts[MSC_pendings]);
       dump ("Entities %u", counts[MSC_entities]);
       dump ("Namespaces %u", counts[MSC_namespaces]);
+      dump ("Using-directives %u", counts[MSC_using_directives]);
       dump ("Macros %u", counts[MSC_macros]);
       dump ("Initializers %u", counts[MSC_inits]);
     }
@@ -19829,6 +19916,7 @@ module_state::read_counts (unsigned counts[MSC_HWM])
       dump ("Pendings %u", counts[MSC_pendings]);
       dump ("Entities %u", counts[MSC_entities]);
       dump ("Namespaces %u", counts[MSC_namespaces]);
+      dump ("Using-directives %u", counts[MSC_using_directives]);
       dump ("Macros %u", counts[MSC_macros]);
       dump ("Initializers %u", counts[MSC_inits]);
     }
@@ -20111,7 +20199,8 @@ ool_cmp (const void *a_, const void *b_)
      qualified-names	    : binding value(s)
      MOD_SNAME_PFX.README   : human readable, strings
      MOD_SNAME_PFX.ENV      : environment strings, strings
-     MOD_SNAME_PFX.nms 	    : namespace hierarchy
+     MOD_SNAME_PFX.nms      : namespace hierarchy
+     MOD_SNAME_PFX.udi      : namespace using-directives
      MOD_SNAME_PFX.bnd      : binding table
      MOD_SNAME_PFX.spc      : specialization table
      MOD_SNAME_PFX.imp      : import table
@@ -20357,6 +20446,11 @@ module_state::write_begin (elf_out *to, cpp_reader *reader,
   if (counts[MSC_namespaces])
     write_namespaces (to, spaces, counts[MSC_namespaces], &crc);
 
+  /* Write any using-directives.  */
+  if (counts[MSC_namespaces])
+    counts[MSC_using_directives]
+      = write_using_directives (to, table, spaces, &crc);
+
   /* Write the bindings themselves.  */
   counts[MSC_bindings] = write_bindings (to, sccs, &crc);
 
@@ -20473,7 +20567,7 @@ module_state::read_initial (cpp_reader *reader)
 
   /* Determine the module's number.  */
   gcc_checking_assert (mod == MODULE_UNKNOWN);
-  gcc_checking_assert (this != (*modules)[0]);
+  gcc_checking_assert (this != this_module ());
 
   {
     /* Allocate space in the entities array now -- that array must be
@@ -20608,9 +20702,14 @@ module_state::read_language (bool outermost)
 			 counts[MSC_sec_lwm], counts[MSC_sec_hwm]))
     ok = false;
 
-  /* Read the namespace hierarchy. */
+  /* Read the namespace hierarchy.  */
   if (ok && counts[MSC_namespaces]
       && !read_namespaces (counts[MSC_namespaces]))
+    ok = false;
+
+  /* Read any using-directives.  */
+  if (ok && counts[MSC_using_directives]
+      && !read_using_directives (counts[MSC_using_directives]))
     ok = false;
 
   if (ok && !read_bindings (counts[MSC_bindings],
@@ -20819,7 +20918,7 @@ module_name (unsigned ix, bool header_ok)
 bitmap
 get_import_bitmap ()
 {
-  return (*modules)[0]->imports;
+  return this_module ()->imports;
 }
 
 /* Return the visible imports and path of instantiation for an
@@ -20833,8 +20932,9 @@ path_of_instantiation (tinst_level *tinst,  bitmap *path_map_p)
 {
   gcc_checking_assert (modules_p ());
 
-  if (!tinst)
+  if (!tinst || TREE_CODE (tinst->tldcl) == TEMPLATE_FOR_STMT)
     {
+      gcc_assert (!tinst || !tinst->next);
       /* Not inside an instantiation, just the regular case.  */
       *path_map_p = nullptr;
       return get_import_bitmap ();
@@ -21058,7 +21158,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
     // FIXME: Should we be checking this in more places on the scope chain?
     return true;
 
-  module_state *old_mod = (*modules)[0];
+  module_state *old_mod = get_primary (this_module ());
   module_state *new_mod = old_mod;
 
   tree old_origin = get_originating_module_decl (decl);
@@ -21068,7 +21168,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
   if (DECL_LANG_SPECIFIC (old_inner) && DECL_MODULE_IMPORT_P (old_inner))
     {
       unsigned index = import_entity_index (old_origin);
-      old_mod = import_entity_module (index);
+      old_mod = get_primary (import_entity_module (index));
     }
 
   bool newdecl_attached_p = module_attach_p ();
@@ -21081,7 +21181,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
       if (DECL_LANG_SPECIFIC (new_inner) && DECL_MODULE_IMPORT_P (new_inner))
 	{
 	  unsigned index = import_entity_index (new_origin);
-	  new_mod = import_entity_module (index);
+	  new_mod = get_primary (import_entity_module (index));
 	}
     }
 
@@ -21092,8 +21192,7 @@ module_may_redeclare (tree olddecl, tree newdecl)
 	/* Both are GM entities, OK.  */
 	return true;
 
-      if (new_mod == old_mod
-	  || (new_mod && get_primary (new_mod) == get_primary (old_mod)))
+      if (new_mod == old_mod)
 	/* Both attached to same named module, OK.  */
 	return true;
     }
@@ -21445,6 +21544,12 @@ module_state::do_import (cpp_reader *reader, bool outermost)
 {
   gcc_assert (global_namespace == current_scope () && loadedness == ML_NONE);
 
+  /* If this TU is a partition of the module we're importing,
+     that module is the primary module interface.  */
+  if (this_module ()->is_partition ()
+      && this == get_primary (this_module ()))
+    module_p = true;
+
   loc = linemap_module_loc (line_table, loc, get_flatname ());
 
   if (lazy_open >= lazy_limit)
@@ -21698,14 +21803,14 @@ direct_import (module_state *import, cpp_reader *reader)
     if (!import->do_import (reader, true))
       gcc_unreachable ();
 
+  this_module ()->set_import (import, import->exported_p);
+
   if (import->loadedness < ML_LANGUAGE)
     {
       if (!keyed_table)
 	keyed_table = new keyed_map_t (EXPERIMENT (1, 400));
       import->read_language (true);
     }
-
-  (*modules)[0]->set_import (import, import->exported_p);
 
   dump.pop (n);
   timevar_stop (TV_MODULE_IMPORT);
@@ -21717,7 +21822,17 @@ void
 import_module (module_state *import, location_t from_loc, bool exporting_p,
 	       tree, cpp_reader *reader)
 {
-  if (!import->check_not_purview (from_loc))
+  /* A non-partition implementation unit has no name.  */
+  if (!this_module ()->name && this_module ()->parent == import)
+    {
+      auto_diagnostic_group d;
+      error_at (from_loc, "import of %qs within its own implementation unit",
+		import->get_flatname());
+      inform (import->loc, "module declared here");
+      return;
+    }
+
+  if (!import->check_circular_import (from_loc))
     return;
 
   if (!import->is_header () && current_lang_depth ())
@@ -21739,7 +21854,7 @@ import_module (module_state *import, location_t from_loc, bool exporting_p,
       from_loc = ordinary_loc_of (line_table, from_loc);
       linemap_module_reparent (line_table, import->loc, from_loc);
     }
-  gcc_checking_assert (!import->module_p);
+
   gcc_checking_assert (import->is_direct () && import->has_location ());
 
   direct_import (import, reader);
@@ -21754,7 +21869,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
 {
   gcc_assert (global_namespace == current_scope ());
 
-  module_state *current = (*modules)[0];
+  module_state *current = this_module ();
   if (module_purview_p () || module->loadedness > ML_CONFIG)
     {
       auto_diagnostic_group d;
@@ -21770,7 +21885,7 @@ declare_module (module_state *module, location_t from_loc, bool exporting_p,
       return;
     }
 
-  gcc_checking_assert (module->module_p);
+  gcc_checking_assert (module->is_module ());
   gcc_checking_assert (module->is_direct () && module->has_location ());
 
   /* Yer a module, 'arry.  */
@@ -22142,8 +22257,9 @@ name_pending_imports (cpp_reader *reader)
       gcc_checking_assert (module->is_direct ());
       if (!module->filename && !module->visited_p)
 	{
-	  bool export_p = (module->module_p
-			   && (module->is_partition () || module->exported_p));
+	  bool export_p = (module->is_module ()
+			   && (module->is_partition ()
+			       || module->is_exported ()));
 
 	  Cody::Flags flags = Cody::Flags::None;
 	  if (flag_preprocess_only
@@ -22231,7 +22347,10 @@ preprocess_module (module_state *module, location_t from_loc,
 	linemap_module_reparent (line_table, module->loc, from_loc);
       else
 	{
-	  module->loc = from_loc;
+	  /* Don't overwrite the location if we're importing ourselves
+	     after already having seen a module-declaration.  */
+	  if (!(is_import && module->is_module ()))
+	    module->loc = from_loc;
 	  if (!module->flatname)
 	    module->set_flatname ();
 	}
@@ -22274,8 +22393,8 @@ preprocess_module (module_state *module, location_t from_loc,
 	  for (unsigned ix = 0; ix != pending_imports->length (); ix++)
 	    {
 	      auto *import = (*pending_imports)[ix];
-	      if (!(import->module_p
-		    && (import->is_partition () || import->exported_p))
+	      if (!(import->is_module ()
+		    && (import->is_partition () || import->is_exported ()))
 		  && import->loadedness == ML_NONE
 		  && (import->is_header () || !flag_preprocess_only))
 		{
@@ -22674,7 +22793,7 @@ finish_module_processing (cpp_reader *reader)
   if (header_module_p ())
     module_kind &= ~MK_EXPORTING;
 
-  if (!modules || !(*modules)[0]->name)
+  if (!modules || !this_module ()->name)
     {
       if (flag_module_only)
 	warning (0, "%<-fmodule-only%> used for non-interface");
@@ -22693,7 +22812,7 @@ finish_module_processing (cpp_reader *reader)
       /* We write to a tmpname, and then atomically rename.  */
       char *cmi_name = NULL;
       char *tmp_name = NULL;
-      module_state *state = (*modules)[0];
+      module_state *state = this_module ();
 
       unsigned n = dump.push (state);
       state->announce ("creating");
@@ -22777,7 +22896,7 @@ late_finish_module (cpp_reader *reader,  module_processing_cookie *cookie,
 {
   timevar_start (TV_MODULE_EXPORT);
 
-  module_state *state = (*modules)[0];
+  module_state *state = this_module ();
   unsigned n = dump.push (state);
   state->announce ("finishing");
 

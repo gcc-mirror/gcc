@@ -19,7 +19,7 @@ void sink (void*);
 
 void warn_new ()
 {
-  T (int32_t, 0, 0);          // { dg-warning "array subscript 0 is outside array bounds of 'int32_t \\\[0]'" }
+  T (int32_t, 0, 0);          // { dg-warning "array subscript 0 is outside array bounds" }
                               // { dg-message "object of size \\d allocated by '\[^\n\r]*operator new\[^\n\r]*'" "note" { target *-*-* } .-1 }
   T (int32_t, 1, 0);          // { dg-warning "array subscript 'int32_t {aka (long )?int}\\\[0]' is partly outside array bounds of 'unsigned char \\\[1]'" }
   T (int32_t, 2, 0);         //  { dg-warning "array subscript 'int32_t {aka (long )?int}\\\[0]' is partly outside array bounds of 'unsigned char \\\[2]'" }
@@ -45,7 +45,7 @@ void warn_array_new ()
 #undef NEW
 #define NEW(n)  new char [n]
 
-  T (int32_t, 0, 0);          // { dg-warning "array subscript 0 is outside array bounds of 'int32_t \\\[0]'" }
+  T (int32_t, 0, 0);          // { dg-warning "array subscript 0 is outside array bounds" }
                               // { dg-message "object of size \\d allocated by '\[^\n\r]*operator new\[^\n\r]*'" "note" { target *-*-* } .-1 }
   T (int32_t, 1, 0);          // { dg-warning "array subscript 'int32_t {aka (long )?int}\\\[0]' is partly outside array bounds of 'unsigned char \\\[1]'" }
   T (int32_t, 2, 0);         //  { dg-warning "array subscript 'int32_t {aka (long )?int}\\\[0]' is partly outside array bounds of 'unsigned char \\\[2]'" }
@@ -53,7 +53,7 @@ void warn_array_new ()
 
   T (int32_t, 4, 0);
 
-  T (int32_t, 0, 1);          // { dg-warning "array subscript 1 is outside array bounds of 'int32_t \\\[0]'" }
+  T (int32_t, 0, 1);          // { dg-warning "array subscript 1 is outside array bounds" }
   T (int32_t, 1, 1);          // { dg-warning "array subscript 1 is outside array bounds " }
   T (int32_t, 2, 1);          // { dg-warning "array subscript 1 is outside array bounds " }
   T (int32_t, 3, 1);          // { dg-warning "array subscript 1 is outside array bounds " }

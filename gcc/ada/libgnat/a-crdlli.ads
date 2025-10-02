@@ -46,11 +46,11 @@ generic
 package Ada.Containers.Restricted_Doubly_Linked_Lists is
    pragma Pure;
 
-   type List (Capacity : Count_Type) is tagged limited private;
-   pragma Preelaborable_Initialization (List);
+   type List (Capacity : Count_Type) is tagged limited private
+   with Preelaborable_Initialization;
 
-   type Cursor is private;
-   pragma Preelaborable_Initialization (Cursor);
+   type Cursor is private
+   with Preelaborable_Initialization;
 
    Empty_List : constant List;
    --  The default value for list objects declared without an explicit

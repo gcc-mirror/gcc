@@ -18,7 +18,7 @@ Foundation, 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA. *)
 MODULE multisetrotate4 ;
 
 FROM libc IMPORT printf, exit ;
-FROM SYSTEM IMPORT ROTATE, WORD, BITSPERLOC ;
+FROM SYSTEM IMPORT ROTATE, WORD, BITSPERLOC, TBITSIZE ;
 
 TYPE
    multi = SET OF [0..SIZE (WORD) * 2 * BITSPERLOC-1] ;
@@ -29,12 +29,21 @@ VAR
 BEGIN
    set := multi {1} ;
    bits := SIZE (multi) * BITSPERLOC ;
+   IF bits # TBITSIZE (set)
+   THEN
+      printf ("test code is invalid, set must match TBITSIZE\n");
+      exit (3)
+   END ;
    IF ROTATE (set, bits-1) # multi {0}
    THEN
+      printf ("rotate %d on a set type of %d bits failed\n",
+              bits-1, bits) ;
       exit (1)
    END ;
    IF ROTATE (set, -(bits - 1)) # multi {2}
    THEN
+      printf ("rotate %d on a set type of %d bits failed\n",
+              - (bits-1), bits) ;
       exit (2)
    END ;
    exit (0)

@@ -31,5 +31,4 @@ baz (long long *p, long long *q)
 
 /* { dg-final { scan-tree-dump-times " = \.CLZ \\\(vect" 3 "optimized" { target { { { { i?86-*-* x86_64-*-* } && avx512cd } && lzcnt } && bmi } } } } */
 /* { dg-final { scan-tree-dump-times " = \.CTZ \\\(vect" 3 "optimized" { target powerpc_vsx } } } */
-/* { dg-final { scan-tree-dump-times " = \.CTZ \\\(vect" 2 "optimized" { target s390_vx } } } */
-/* { dg-final { scan-tree-dump-times " = \.POPCOUNT \\\(vect" 1 "optimized" { target s390_vx } } } */
+/* { dg-final { scan-tree-dump-times " = \.CTZ \\\(vect" 3 "optimized" { target s390_vx } } } */

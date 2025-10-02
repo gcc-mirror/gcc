@@ -5179,10 +5179,8 @@ package body Sem_Attr is
       when Attribute_Make => declare
          Expr : Entity_Id;
       begin
-         --  Should this be assert? Parsing should fail if it hits 'Make
-         --  and all extensions aren't enabled ???
-
          if not All_Extensions_Allowed then
+            Error_Msg_GNAT_Extension ("Make attribute", Loc);
             return;
          end if;
 
@@ -7190,6 +7188,27 @@ package body Sem_Attr is
 
          Analyze_Access_Attribute;
 
+      -------------------------
+      -- Unsigned_Base_Range --
+      -------------------------
+
+      --  GNAT core extension. The prefix of 'Unsigned_Base_Range must be a
+      --  signed integer type. The static result is a boolean that indicates
+      --  whether the base range is unsigned.
+
+      when Attribute_Unsigned_Base_Range =>
+         Check_E0;
+         Check_Integer_Type;
+         Check_Not_Incomplete_Type;
+         Set_Etype (N, Standard_Boolean);
+         Set_Is_Static_Expression (N, True);
+
+         if not Core_Extensions_Allowed then
+            Error_Msg_GNAT_Extension
+              ("'Unsigned_'Base_'Range", Sloc (N),
+               Is_Core_Extension => True);
+         end if;
+
       ------------
       -- Update --
       ------------
@@ -8173,13 +8192,6 @@ package body Sem_Attr is
       --  to previous errors.
 
       if Nkind (N) /= N_Attribute_Reference then
-         return;
-
-      --  No evaluation required under strict preanalysis because locating
-      --  static expressions is not needed; this also minimizes making tree
-      --  modifications during strict preanalysis.
-
-      elsif In_Strict_Preanalysis then
          return;
       end if;
 
@@ -10481,10 +10493,10 @@ package body Sem_Attr is
                         Fold_Uint (N, Expr_Value (Expression (S)), Static);
 
                      --  If no size is specified, then we simply use the object
-                     --  size in the VADS_Size case (e.g. Natural'Size is equal
-                     --  to Integer'Size, not one less).
+                     --  size (when known) in the VADS_Size case (for example,
+                     --  Natural'Size is equal to Integer'Size, not one less).
 
-                     else
+                     elsif Known_Esize (P_TypeA) then
                         Fold_Uint (N, Esize (P_TypeA), Static);
                      end if;
                   end;
@@ -10684,6 +10696,26 @@ package body Sem_Attr is
          Static := True;
          Set_Is_Static_Expression (N, True);
       end Unconstrained_Array;
+
+      -------------------------
+      -- Unsigned_Base_Range --
+      -------------------------
+
+      when Attribute_Unsigned_Base_Range => Unsigned_Base_Range : declare
+      begin
+         Rewrite (N, New_Occurrence_Of (
+           Boolean_Literals (
+             Is_Integer_Type (P_Type)
+               and then
+                 Has_Unsigned_Base_Range_Aspect (P_Base_Type)), Loc));
+
+         --  Analyze and resolve as boolean, note that this attribute is
+         --  a static attribute in GNAT.
+
+         Analyze_And_Resolve (N, Standard_Boolean);
+         Static := True;
+         Set_Is_Static_Expression (N, True);
+      end Unsigned_Base_Range;
 
       --  Attribute Update is never static
 
@@ -12819,7 +12851,10 @@ package body Sem_Attr is
                end Proper_Op;
 
             begin
-               Resolve (Init_Value_Exp, Typ);
+               --  First try to resolve the reducer and then, if this succeeds,
+               --  resolve the initial value.  This nicely deals with confused
+               --  programmers who swap the two items.
+
                if Is_Overloaded (Reducer_Subp_Name) then
                   Outer :
                   for Retry in Boolean loop
@@ -12841,14 +12876,18 @@ package body Sem_Attr is
                then
                   Op := Reducer_Subp_Name;
 
-               elsif Proper_Op (Entity (Reducer_Subp_Name)) then
+               elsif Is_Entity_Name (Reducer_Subp_Name)
+                 and then Proper_Op (Entity (Reducer_Subp_Name))
+               then
                   Op := Entity (Reducer_Subp_Name);
                   Set_Etype (N, Typ);
                end if;
 
                if No (Op) then
-                  Error_Msg_N ("No suitable reducer subprogram found",
+                  Error_Msg_N ("no suitable reducer subprogram found",
                     Reducer_Subp_Name);
+               else
+                  Resolve (Init_Value_Exp, Typ);
                end if;
             end;
 

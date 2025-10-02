@@ -142,7 +142,7 @@ VCMP1_TEST (vceqz)
 
 VCMP1_TEST (vcgtz)
 /* { dg-final { scan-assembler-times {vcgt\.f16\td[0-9]+, d[0-9]+, #0} 1 } }  */
-/* { dg-final { scan-assembler-times {vceq\.f16\tq[0-9]+, q[0-9]+, #0} 1 } }  */
+/* { dg-final { scan-assembler-times {vcgt\.f16\tq[0-9]+, q[0-9]+, #0} 1 } }  */
 
 VCMP1_TEST (vcgez)
 /* { dg-final { scan-assembler-times {vcge\.f16\td[0-9]+, d[0-9]+, #0} 1 } }  */

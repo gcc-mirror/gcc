@@ -32,6 +32,6 @@ void f(char *out)
 /* { dg-final { scan-assembler "movhi" } } */
 /* { dg-final { scan-assembler "movls" } } */
 /* { dg-final { scan-assembler "movge" } } */
-/* { dg-final { scan-assembler "movls" } } */
+/* { dg-final { scan-assembler "movlt" } } */
 /* { dg-final { scan-assembler "movgt" } } */
 /* { dg-final { scan-assembler "movle" } } */

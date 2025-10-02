@@ -347,6 +347,133 @@ package body Sem_Util is
       Analyze (Decl);
    end Add_Global_Declaration;
 
+   ---------------------------
+   -- Add_Local_Declaration --
+   ---------------------------
+
+   procedure Add_Local_Declaration
+     (Decl : Node_Id;
+      N    : Node_Id;
+      Scop : Entity_Id)
+   is
+      function Find_Associated_Scope (N : Node_Id) return Scope_Kind_Id;
+      --  Return the scope associated with the declarative part of N
+
+      ---------------------------
+      -- Find_Associated_Scope --
+      ---------------------------
+
+      function Find_Associated_Scope (N : Node_Id) return Scope_Kind_Id is
+      begin
+         case Nkind (N) is
+            when N_Block_Statement =>
+               return Entity (Identifier (N));
+
+            when N_Compilation_Unit
+               | N_Compilation_Unit_Aux
+            =>
+               return Standard_Standard;
+
+            when N_Package_Specification
+               | N_Protected_Definition
+               | N_Task_Definition
+            =>
+               return Defining_Entity (Parent (N));
+
+            when N_Entry_Body
+               | N_Package_Body
+               | N_Protected_Body
+               | N_Task_Body
+            =>
+               return Corresponding_Spec (N);
+
+            when N_Subprogram_Body =>
+               if Acts_As_Spec (N) then
+                  return Defining_Entity (N);
+               else
+                  return Corresponding_Spec (N);
+               end if;
+
+            when others =>
+               raise Program_Error;
+         end case;
+      end Find_Associated_Scope;
+
+      --  Local variables
+
+      Nod : Node_Id;
+      Par : Node_Id;
+
+   --  Start of processing for Add_Local_Declaration
+
+   begin
+      Nod := N;
+      Par := Parent (Nod);
+
+      --  Look for the innermost enclosing construct with a declarative part
+
+      while Nkind (Par) not in N_Block_Statement
+                             | N_Compilation_Unit
+                             | N_Compilation_Unit_Aux
+                             | N_Entry_Body
+                             | N_Package_Body
+                             | N_Package_Specification
+                             | N_Protected_Body
+                             | N_Protected_Definition
+                             | N_Subprogram_Body
+                             | N_Task_Body
+                             | N_Task_Definition
+         or else (Present (Scop) and Find_Associated_Scope (Par) /= Scop)
+      loop
+         Nod := Par;
+         Par := Parent (Nod);
+      end loop;
+
+      --  Compilation units do not directly have a declarative part
+
+      if Nkind (Par) = N_Compilation_Unit then
+         Par := Aux_Decls_Node (Par);
+      end if;
+
+      --  Insert Decl before N or at the end of the declarative part
+
+      case Nkind (Par) is
+         when N_Block_Statement
+            | N_Compilation_Unit_Aux
+            | N_Entry_Body
+            | N_Package_Body
+            | N_Protected_Body
+            | N_Subprogram_Body
+            | N_Task_Body
+         =>
+            if Is_List_Member (Nod)
+              and then List_Containing (Nod) = Declarations (Par)
+            then
+               Insert_Before (Nod, Decl);
+
+            else
+               if No (Declarations (Par)) then
+                  Set_Declarations (Par, New_List);
+               end if;
+
+               Append_To (Declarations (Par), Decl);
+            end if;
+
+         when N_Package_Specification
+            | N_Protected_Definition
+            | N_Task_Definition
+         =>
+            Insert_Before (Nod, Decl);
+
+         when others =>
+            raise Program_Error;
+      end case;
+
+      Push_Scope (Find_Associated_Scope (Par));
+      Analyze (Decl);
+      Pop_Scope;
+   end Add_Local_Declaration;
+
    --------------------------------
    -- Address_Integer_Convert_OK --
    --------------------------------
@@ -2016,7 +2143,7 @@ package body Sem_Util is
       --  Elaboration entity is never a ghost object, regardless of the context
       --  in which this routine is called.
 
-      Install_Ghost_Region (None, N);
+      Install_Ghost_Region (None, N, Empty);
 
       --  Here we need the elaboration entity
 
@@ -6202,6 +6329,18 @@ package body Sem_Util is
       end if;
    end Conditional_Delay;
 
+   --------------------------------------
+   -- Copy_Assertion_Policy_Attributes --
+   --------------------------------------
+
+   procedure Copy_Assertion_Policy_Attributes (New_Prag, Old_Prag : Node_Id) is
+   begin
+      Set_Is_Checked (New_Prag, Is_Checked (Old_Prag));
+      Set_Is_Ignored (New_Prag, Is_Ignored (Old_Prag));
+      Set_Pragma_Ghost_Assertion_Level
+        (New_Prag, Pragma_Ghost_Assertion_Level (Old_Prag));
+   end Copy_Assertion_Policy_Attributes;
+
    -------------------------
    -- Copy_Component_List --
    -------------------------
@@ -6316,6 +6455,7 @@ package body Sem_Util is
       Def_Id      : Node_Id;
       Formal_Spec : Node_Id;
       Result      : Node_Id;
+      Level       : Entity_Id;
 
    begin
       --  The structure of the original tree must be replicated without any
@@ -6334,6 +6474,7 @@ package body Sem_Util is
       --  Create a new entity for the defining unit name
 
       Def_Id := Defining_Unit_Name (Result);
+      Level := Ghost_Assertion_Level (Def_Id);
 
       case Nkind (Def_Id) is
          when N_Defining_Identifier =>
@@ -6343,6 +6484,10 @@ package body Sem_Util is
               Make_Defining_Operator_Symbol (Sloc (Def_Id), Chars (Def_Id));
          when others => raise Program_Error;
       end case;
+
+      --  Copy the relevant Ghost Assertion_Level
+
+      Set_Ghost_Assertion_Level (Def_Id, Level);
 
       Set_Defining_Unit_Name (Result, Def_Id);
 
@@ -6724,6 +6869,28 @@ package body Sem_Util is
          raise Program_Error;
       end if;
    end Defining_Entity;
+
+   ---------------------------------
+   -- Defining_Entity_Of_Instance --
+   ---------------------------------
+
+   function Defining_Entity_Of_Instance (N : Node_Id) return Entity_Id is
+      pragma Assert (Nkind (N) in N_Generic_Instantiation);
+      Spec : constant Node_Id := Instance_Spec (N);
+
+   begin
+      --  Fall back to Defining_Entity in case of previous errors
+
+      if No (Spec) then
+         return Defining_Entity (N);
+      end if;
+
+      if Nkind (N) = N_Package_Instantiation then
+         return Defining_Entity (Specification (Spec));
+      else
+         return Related_Instance (Defining_Entity (Specification (Spec)));
+      end if;
+   end Defining_Entity_Of_Instance;
 
    ------------------------------
    -- Defining_Entity_Or_Empty --
@@ -7198,6 +7365,42 @@ package body Sem_Util is
    begin
       return Is_Variable (N) and then Paren_Count (N) = 0;
    end Denotes_Variable;
+
+   ----------------------
+   -- Depends_On_Level --
+   ----------------------
+
+   function Depends_On_Level
+     (Self : Entity_Id; Other : Entity_Id) return Boolean
+   is
+      Elm : Elmt_Id;
+      Dep : Entity_Id;
+   begin
+      if No (Self) then
+         return False;
+      elsif No (Other) then
+         return False;
+      end if;
+
+      pragma Assert (Ekind (Self) = E_Assertion_Level);
+      pragma Assert (Ekind (Other) = E_Assertion_Level);
+
+      if No (Parent_Levels (Self)) then
+         return False;
+      end if;
+
+      Elm := First_Elmt (Parent_Levels (Self));
+      while Present (Elm) loop
+         Dep := Node (Elm);
+         if Dep = Other or else Depends_On_Level (Dep, Other) then
+            return True;
+         end if;
+
+         Next_Elmt (Elm);
+      end loop;
+
+      return False;
+   end Depends_On_Level;
 
    -----------------------------
    -- Depends_On_Discriminant --
@@ -9642,6 +9845,35 @@ package body Sem_Util is
           and then In_Open_Scopes (Scope (Pack));
    end From_Nested_Package;
 
+   ----------------------
+   -- From_Same_Aspect --
+   ----------------------
+
+   function From_Same_Aspect (Self, Other : Node_Id) return Boolean is
+   begin
+      return
+        Present (Original_Aspect (Self))
+        and then Present (Original_Aspect (Other))
+        and then Original_Aspect (Self) = Original_Aspect (Other);
+   end From_Same_Aspect;
+
+   ----------------------
+   -- From_Same_Pragma --
+   ----------------------
+
+   function From_Same_Pragma (Self, Other : Node_Id) return Boolean is
+   begin
+      return
+        (Present (Original_Pragma (Self))
+         and then Present (Original_Pragma (Other))
+         and then Original_Pragma (Self) = Original_Pragma (Other))
+        or else (From_Aspect_Specification (Self)
+                 and then From_Aspect_Specification (Other)
+                 and then From_Same_Aspect
+                            (Corresponding_Aspect (Self),
+                             Corresponding_Aspect (Other)));
+   end From_Same_Pragma;
+
    -----------------------
    -- Gather_Components --
    -----------------------
@@ -11088,6 +11320,10 @@ package body Sem_Util is
       if Is_Entity_Name (Subp) then
          Subp_Id := Entity (Subp);
 
+         if No (Subp_Id) then
+            return Empty;
+         end if;
+
          if Ekind (Subp_Id) = E_Access_Subprogram_Type then
             Subp_Id := Directly_Designated_Type (Subp_Id);
          end if;
@@ -11215,6 +11451,46 @@ package body Sem_Util is
          end if;
       end if;
    end Get_Views;
+
+   ----------------------------------
+   -- Has_Assertion_Level_Argument --
+   ----------------------------------
+
+   function Has_Assertion_Level_Argument (N : Node_Id) return Boolean is
+      Assocs : List_Id;
+      Assoc  : Node_Id;
+      Choice : Node_Id;
+   begin
+      if Nkind (N) = N_Aspect_Specification then
+         if Nkind (Expression (N)) /= N_Aggregate then
+            return False;
+         end if;
+
+         Assocs := Component_Associations (Expression (N));
+
+         if No (Assocs) then
+            return False;
+         end if;
+
+         Assoc := First (Assocs);
+         Choice := First (Choices (Assoc));
+
+         if Nkind (Choice) = N_Identifier then
+            return Present (Get_Assertion_Level (Chars (Choice)));
+         end if;
+
+         return False;
+      else
+         pragma Assert (Nkind (N) = N_Pragma);
+         Assocs := Pragma_Argument_Associations (N);
+         Assoc := First (Assocs);
+         if Present (Assoc) and then Chars (Assoc) /= No_Name then
+            return Present (Get_Assertion_Level (Chars (Assoc)));
+         end if;
+
+         return False;
+      end if;
+   end Has_Assertion_Level_Argument;
 
    ------------------------------
    -- Has_Compatible_Alignment --
@@ -15864,14 +16140,14 @@ package body Sem_Util is
      (E1 : Entity_Id;
       E2 : Entity_Id) return Boolean
    is
-      Par : Entity_Id := E2;
+      Cursor : Entity_Id := E2;
    begin
-      while Present (Par) and then Par /= Standard_Standard loop
-         if Par = E1 then
+      while Present (Cursor) and then Cursor /= Standard_Standard loop
+         if Cursor = E1 then
             return True;
          end if;
 
-         Par := Scope (Par);
+         Cursor := Scope (Cursor);
       end loop;
 
       return False;
@@ -19964,7 +20240,12 @@ package body Sem_Util is
          elsif Is_Tagged_Type (Typ) then
             return True;
 
-         --  Case of nondiscriminated record
+         --  Case of record type with no components
+
+         elsif No (First_Component (Typ)) then
+            return False;
+
+         --  Case of record type with components
 
          else
             declare
@@ -23027,7 +23308,8 @@ package body Sem_Util is
    begin
       --  Ada 2005 or later, and formals present. The first formal must be
       --  of a type that supports prefix notation: a controlling argument,
-      --  a class-wide type, or an access to such.
+      --  a class-wide type, an access to such, or an untagged record type
+      --  (when compiling with Core_Extensions allowed).
 
       if Ada_Version >= Ada_2005
         and then Present (First_Formal (E))
@@ -23035,7 +23317,9 @@ package body Sem_Util is
         and then
           (Is_Controlling_Formal (First_Formal (E))
             or else Is_Class_Wide_Type (Etype (First_Formal (E)))
-            or else Is_Anonymous_Access_Type (Etype (First_Formal (E))))
+            or else Is_Anonymous_Access_Type (Etype (First_Formal (E)))
+            or else (Core_Extensions_Allowed
+                       and then Is_Record_Type (Etype (First_Formal (E)))))
       then
          Formal := Next_Formal (First_Formal (E));
          while Present (Formal) loop
@@ -26405,7 +26689,10 @@ package body Sem_Util is
    -- Policy_In_Effect --
    ----------------------
 
-   function Policy_In_Effect (Policy : Name_Id) return Name_Id is
+   function Policy_In_Effect
+     (Policy : Name_Id;
+      Level  : Name_Id := No_Name) return Name_Id
+   is
       function Policy_In_List (List : Node_Id) return Name_Id;
       --  Determine the mode of a policy in a N_Pragma list
 
@@ -26430,7 +26717,7 @@ package body Sem_Util is
             --  The current Check_Policy pragma matches the requested policy or
             --  appears in the single argument form (Assertion, policy_id).
 
-            if Chars (Arg1) in Name_Assertion | Policy then
+            if Chars (Arg1) in Name_Assertion | Policy | Level then
                return Chars (Arg2);
             end if;
 
@@ -26444,11 +26731,28 @@ package body Sem_Util is
 
       Kind : Name_Id;
 
+      Level_Id : Entity_Id;
+
    --  Start of processing for Policy_In_Effect
 
    begin
       if not Is_Valid_Assertion_Kind (Policy) then
          raise Program_Error;
+      end if;
+
+      if Present (Level) then
+         Level_Id := Get_Assertion_Level (Level);
+         if No (Level_Id) then
+            raise Program_Error;
+         end if;
+
+         if Level_Id = Standard_Level_Runtime then
+            return Name_Check;
+         elsif Level_Id = Standard_Level_Static
+           or else Depends_On_Level (Level_Id, Standard_Level_Static)
+         then
+            return Name_Ignore;
+         end if;
       end if;
 
       --  Inspect all policy pragmas that appear within scopes (if any)
@@ -26508,9 +26812,8 @@ package body Sem_Util is
    begin
       return
         Present (Predicate_Function (Typ))
-        and then (GNATprove_Mode
-                  or else (not Predicates_Ignored (Typ)
-                           and then not Predicate_Checks_Suppressed (Empty)));
+        and then not Predicates_Ignored_In_Codegen (Typ)
+        and then not Predicate_Checks_Suppressed (Empty);
    end Predicate_Enabled;
 
    ----------------------------------
@@ -26575,6 +26878,18 @@ package body Sem_Util is
 
       return Empty;
    end Predicate_Failure_Expression;
+
+   -----------------------------------
+   -- Predicates_Ignored_In_Codegen --
+   -----------------------------------
+
+   function Predicates_Ignored_In_Codegen (N : Node_Id) return Boolean is
+   begin
+      return
+        Predicates_Ignored (N)
+        and then not CodePeer_Mode
+        and then not GNATprove_Mode;
+   end Predicates_Ignored_In_Codegen;
 
    ----------------------------------
    -- Predicate_Tests_On_Arguments --
@@ -28013,7 +28328,7 @@ package body Sem_Util is
       --  Nothing to do for an ignored Ghost entity because the entity will be
       --  eliminated from the tree.
 
-      elsif Is_Ignored_Ghost_Entity (T) then
+      elsif Is_Ignored_Ghost_Entity_In_Codegen (T) then
          return;
 
       --  Nothing to do if entity comes from a predefined file. Library files
@@ -29300,11 +29615,7 @@ package body Sem_Util is
 
    begin
       Pref := N;
-      while Nkind (Pref) in N_Explicit_Dereference
-                          | N_Indexed_Component
-                          | N_Selected_Component
-                          | N_Slice
-      loop
+      while Has_Prefix (Pref) loop
          Pref := Prefix (Pref);
       end loop;
 

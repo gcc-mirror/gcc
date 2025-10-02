@@ -19,7 +19,7 @@ You should have received a copy of the GNU General Public License
 along with GNU Modula-2; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  *)
 
-DEFINITION MODULE FOR "C" m2expr  ;
+DEFINITION MODULE m2expr  ;
 
 FROM gcctypes IMPORT location_t, tree ;
 FROM CDataTypes IMPORT CharStar, ConstCharStar ;
@@ -90,6 +90,9 @@ PROCEDURE GetCardinalOne (location: location_t) : tree ;
 
 
 PROCEDURE GetCardinalZero (location: location_t) : tree ;
+
+
+PROCEDURE GetBitsetZero (location: location_t) : tree ;
 
 
 PROCEDURE GetSizeOfInBits (type: tree) : tree ;
@@ -365,7 +368,7 @@ PROCEDURE BuildNegateCheck (location: location_t; arg, lowest, min, max: tree) :
     BuildSetNegate - builds a set negate expression and returns the tree.
 *)
 
-PROCEDURE BuildSetNegate (location: location_t; op1: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildSetNegate (location: location_t; op1: tree) : tree ;
 
 
 (*
@@ -414,34 +417,39 @@ PROCEDURE BuildOffset (location: location_t; record: tree; field: tree; needconv
     BuildLogicalOrAddress - build a logical or expressions and return the tree.
 *)
 
-PROCEDURE BuildLogicalOrAddress (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildLogicalOrAddress (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildLogicalOr - build a logical or expressions and return the tree.
 *)
 
-PROCEDURE BuildLogicalOr (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildLogicalOr (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
     BuildLogicalAnd - build a logical and expression and return the tree.
 *)
 
-PROCEDURE BuildLogicalAnd (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildLogicalAnd (location: location_t; op1: tree; op2: tree) : tree ;
 
 
-
-PROCEDURE BuildSymmetricDifference (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildSymmetricDifference (location: location_t; op1: tree; op2: tree) : tree ;
 
 
 (*
-    BuildLogicalDifference - build a logical difference expression and
-                             return the tree.
-                             (op1 and (not op2))
+   BuildLogicalDifference - build a logical difference expression tree.
+                            Return (left and (not right)).
 *)
 
-PROCEDURE BuildLogicalDifference (location: location_t; op1: tree; op2: tree; needconvert: BOOLEAN) : tree ;
+PROCEDURE BuildLogicalDifference (location: location_t;
+                                  left, right: tree) : tree ;
+
+
+PROCEDURE BuildIfInSet (location: location_t; set, bit: tree) : tree ;
+
+
+PROCEDURE BuildIfNotInSet (location: location_t; set, bit: tree) : tree ;
 
 
 (*
@@ -473,14 +481,17 @@ PROCEDURE BuildGreaterThanOrEqual (location: location_t; op1: tree; op2: tree) :
 
 
 (*
-    BuildEqualTo - return a tree which computes =
+    BuildEqualTo - return a tree which computes (left = right).
 *)
 
-PROCEDURE BuildEqualTo (location: location_t; op1: tree; op2: tree) : tree ;
+PROCEDURE BuildEqualTo (location: location_t; left, right: tree) : tree ;
 
 
+(*
+    BuildNotEqualTo - return a tree which computes (left # right).
+*)
 
-PROCEDURE BuildNotEqualTo (location: location_t; op1: tree; op2: tree) : tree ;
+PROCEDURE BuildNotEqualTo (location: location_t; left, right: tree) : tree ;
 
 
 (*
@@ -676,37 +687,6 @@ PROCEDURE BuildCmplx (location: location_t; type: tree; real: tree; imag: tree) 
 
 
 (*
-    BuildBinaryForeachWordDo - provides the large set operators. Each word
-                               (or less) of the set can be calculated by binop.
-                               This procedure runs along each word of the
-                               large set invoking the binop.
-*)
-
-PROCEDURE BuildBinaryForeachWordDo (location: location_t;
-                                    type, op1, op2, op3: tree;
-                                    binop: BuildBinProcedure;
-                                    is_op1lvalue,
-                                    is_op2lvalue,
-                                    is_op3lvalue,
-                                    is_op1_const,
-                                    is_op2_const,
-                                    is_op3_const: BOOLEAN) ;
-
-(*
-   BuildBinarySetDo - if the size of the set is <= TSIZE(WORD) then
-                         op1 := binop(op2, op3)
-                      else
-                         call m2rtsprocedure(op1, op2, op3)
-*)
-
-PROCEDURE BuildBinarySetDo (location: location_t;
-                            settype, op1, op2, op3: tree;
-                            binop: BuildSetProcedure;
-                            is_op1lvalue, is_op2lvalue, is_op3lvalue: BOOLEAN;
-                            nBits, unbounded: tree;
-                            varproc, leftproc, rightproc: tree) ;
-
-(*
    ConstantExpressionWarning - issue a warning if the constant has overflowed.
 *)
 
@@ -743,6 +723,14 @@ PROCEDURE OverflowZType (location: location_t;
 *)
 
 PROCEDURE BuildCondIfExpression (condition, type, left, right: tree) : tree ;
+
+(*
+   GetRValue - returns the rvalue of expr.  The type is the object
+               type to be copied upon indirection.
+*)
+
+PROCEDURE GetRValue (location: location_t; expr, type: tree;
+                     islvalue: BOOLEAN) : tree ;
 
 
 (*

@@ -944,6 +944,8 @@ private:
   void set_first_clobber (clobber_info *c) { m_clobber_or_set = c; }
   void set_last_clobber (clobber_info *c) { m_last_clobber = c; }
 
+  int lookup_clobber (insn_info *) const;
+
   // The value returned by last_clobber ().
   clobber_info *m_last_clobber;
 

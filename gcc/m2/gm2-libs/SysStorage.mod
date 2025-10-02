@@ -30,6 +30,8 @@ FROM libc IMPORT malloc, free, realloc, memset, getenv, printf ;
 FROM Debug IMPORT Halt ;
 FROM SYSTEM IMPORT ADR ;
 
+IMPORT M2Diagnostic ;
+
 
 CONST
    enableDeallocation =  TRUE ;
@@ -55,7 +57,8 @@ BEGIN
       printf ("<DEBUG-CALL> %d SysStorage.ALLOCATE (0x%x, %d bytes)\n", callno, a, size) ;
       printf ("<MEM-ALLOC> %ld %d\n", a, size);
       INC (callno)
-   END
+   END ;
+   M2Diagnostic.TotalHeapIncr (size)
 END ALLOCATE ;
 
 
@@ -87,6 +90,7 @@ BEGIN
       END ;
       free (a)
    END ;
+   M2Diagnostic.TotalHeapDecr (size) ;
    a := NIL
 END DEALLOCATE ;
 
@@ -97,6 +101,11 @@ END DEALLOCATE ;
                 is called, or alternatively it should have already
                 been initialized by ALLOCATE. The allocated storage
                 is resized accordingly.
+                Note that this procedure does not adjust the
+                M2Diagnostic.TotalHeap it is expected that the caller
+                must track the reallocation differences and call
+                M2Diagnostic.TotalHeapIncr or M2Diagnostic.TotalHeapDecr
+                as appropriate.
 *)
 
 PROCEDURE REALLOCATE (VAR a: ADDRESS; size: CARDINAL) ;

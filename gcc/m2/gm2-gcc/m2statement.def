@@ -24,14 +24,14 @@ DEFINITION MODULE FOR "C" m2statement ;
 FROM gcctypes IMPORT location_t, tree ;
 FROM CDataTypes IMPORT CharStar ;
 FROM m2expr IMPORT BuildUnarySetFunction ;
+FROM SYSTEM IMPORT ADDRESS ;
 
 
 (*
-   DoJump - jump to the appropriate label depending whether
-            result of the expression is TRUE or FALSE.
+   IfExprJump - if expr then jump to the label.
 *)
 
-PROCEDURE DoJump (location: location_t; exp: tree; falselabel, truelabel: CharStar) ;
+PROCEDURE IfExprJump (location: location_t; exp: tree; label: CharStar) ;
 
 
 (*
@@ -222,19 +222,6 @@ PROCEDURE BuildAsm (location: location_t; instr: tree;
 
 
 (*
-    BuildUnaryForeachWordDo - provides the large set operators.
-                              Each word (or less) of the set can be
-                              calculated by unop.
-                              This procedure iterates over each word
-                              of the large set invoking the unop.
-*)
-
-PROCEDURE BuildUnaryForeachWordDo (location: location_t; type: tree; op1: tree; op2: tree;
-                                   unop: BuildUnarySetFunction;
-                                   is_op1lvalue, is_op2lvalue, is_op1const, is_op2const: BOOLEAN) ;
-
-
-(*
     BuildExcludeVarConst - builds the EXCL(op1, 1<<op2) operation for a small sets. Large
                            sets call this routine to exclude the bit in the particular word.
                            op2 is a constant.
@@ -324,6 +311,14 @@ PROCEDURE BuildBuiltinCallTree (func: tree) : tree ;
 *)
 
 PROCEDURE CopyByField (location: location_t; des, expr: tree) ;
+
+
+(*
+   IfBitInSetJump - if bit in set jump to label.
+*)
+
+PROCEDURE IfBitInSetJump (location: location_t; invertCondition: BOOLEAN;
+                          setvalue, bit: tree; label: ADDRESS) ;
 
 
 END m2statement.

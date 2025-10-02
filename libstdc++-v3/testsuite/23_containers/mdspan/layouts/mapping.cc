@@ -7,6 +7,15 @@
 
 constexpr size_t dyn = std::dynamic_extent;
 
+template<typename Mapping>
+  concept has_static_is_exhaustive = requires
+  {
+    { Mapping::is_exhaustive() } -> std::same_as<bool>;
+  };
+
+static_assert(has_static_is_exhaustive<std::layout_right::mapping<std::extents<int>>>);
+static_assert(!has_static_is_exhaustive<std::layout_stride::mapping<std::extents<int>>>);
+
 template<typename Layout, typename Extents>
   constexpr bool
   test_mapping_properties()
@@ -32,7 +41,7 @@ template<typename Layout, typename Extents>
 
     static_assert(M::is_always_unique() && M::is_unique());
     static_assert(M::is_always_strided() && M::is_strided());
-    if constexpr (!std::is_same_v<Layout, std::layout_stride>)
+    if constexpr (has_static_is_exhaustive<M>)
       static_assert(M::is_always_exhaustive() && M::is_exhaustive());
     return true;
   }
@@ -306,7 +315,7 @@ template<typename Layout>
   constexpr void
   test_stride_1d()
   {
-    std::layout_left::mapping<std::extents<int, 3>> m;
+    typename Layout::mapping<std::extents<int, 3>> m;
     VERIFY(m.stride(0) == 1);
   }
 
@@ -321,73 +330,104 @@ template<>
   }
 
 template<typename Layout>
-  constexpr void
-  test_stride_2d();
+struct TestStride2D;
 
 template<>
-  constexpr void
-  test_stride_2d<std::layout_left>()
+  struct TestStride2D<std::layout_left>
   {
-    std::layout_left::mapping<std::extents<int, 3, 5>> m;
-    VERIFY(m.stride(0) == 1);
-    VERIFY(m.stride(1) == 3);
-  }
+    static constexpr void
+    run()
+    {
+      std::layout_left::mapping<std::extents<int, 3, 5>> m;
+      VERIFY(m.stride(0) == 1);
+      VERIFY(m.stride(1) == 3);
+    }
+  };
 
 template<>
-  constexpr void
-  test_stride_2d<std::layout_right>()
+  struct TestStride2D<std::layout_right>
   {
-    std::layout_right::mapping<std::extents<int, 3, 5>> m;
-    VERIFY(m.stride(0) == 5);
-    VERIFY(m.stride(1) == 1);
-  }
+    static constexpr void
+    run()
+    {
+      std::layout_right::mapping<std::extents<int, 3, 5>> m;
+      VERIFY(m.stride(0) == 5);
+      VERIFY(m.stride(1) == 1);
+    }
+  };
 
 template<>
-  constexpr void
-  test_stride_2d<std::layout_stride>()
+  struct TestStride2D<std::layout_stride>
   {
-    std::array<int, 2> strides{13, 2};
-    std::layout_stride::mapping m(std::extents<int, 3, 5>{}, strides);
-    VERIFY(m.stride(0) == strides[0]);
-    VERIFY(m.stride(1) == strides[1]);
-    VERIFY(m.strides() == strides);
-  }
+    static constexpr void
+    run()
+    {
+      std::array<int, 2> strides{13, 2};
+      std::layout_stride::mapping m(std::extents<int, 3, 5>{}, strides);
+      VERIFY(m.stride(0) == strides[0]);
+      VERIFY(m.stride(1) == strides[1]);
+      VERIFY(m.strides() == strides);
+    }
+  };
 
 template<typename Layout>
   constexpr void
-  test_stride_3d();
-
-template<>
-  constexpr void
-  test_stride_3d<std::layout_left>()
+  test_stride_2d()
   {
-    std::layout_left::mapping m(std::dextents<int, 3>(3, 5, 7));
-    VERIFY(m.stride(0) == 1);
-    VERIFY(m.stride(1) == 3);
-    VERIFY(m.stride(2) == 3*5);
+    TestStride2D<Layout>::run();
   }
 
-template<>
-  constexpr void
-  test_stride_3d<std::layout_right>()
-  {
-    std::layout_right::mapping m(std::dextents<int, 3>(3, 5, 7));
-    VERIFY(m.stride(0) == 5*7);
-    VERIFY(m.stride(1) == 7);
-    VERIFY(m.stride(2) == 1);
-  }
+template<typename Layout>
+struct TestStride3D;
 
 template<>
-  constexpr void
-  test_stride_3d<std::layout_stride>()
+  struct TestStride3D<std::layout_left>
   {
-    std::dextents<int, 3> exts(3, 5, 7);
-    std::array<int, 3> strides{11, 2, 41};
-    std::layout_stride::mapping<std::dextents<int, 3>> m(exts, strides);
-    VERIFY(m.stride(0) == strides[0]);
-    VERIFY(m.stride(1) == strides[1]);
-    VERIFY(m.stride(2) == strides[2]);
-    VERIFY(m.strides() == strides);
+    static constexpr void
+    run()
+    {
+      std::layout_left::mapping m(std::dextents<int, 3>(3, 5, 7));
+      VERIFY(m.stride(0) == 1);
+      VERIFY(m.stride(1) == 3);
+      VERIFY(m.stride(2) == 3*5);
+    }
+  };
+
+
+template<>
+  struct TestStride3D<std::layout_right>
+  {
+    static constexpr void
+    run()
+    {
+      std::layout_right::mapping m(std::dextents<int, 3>(3, 5, 7));
+      VERIFY(m.stride(0) == 5*7);
+      VERIFY(m.stride(1) == 7);
+      VERIFY(m.stride(2) == 1);
+    }
+  };
+
+template<>
+  struct TestStride3D<std::layout_stride>
+  {
+    static constexpr void
+    run()
+    {
+      std::dextents<int, 3> exts(3, 5, 7);
+      std::array<int, 3> strides{11, 2, 41};
+      std::layout_stride::mapping<std::dextents<int, 3>> m(exts, strides);
+      VERIFY(m.stride(0) == strides[0]);
+      VERIFY(m.stride(1) == strides[1]);
+      VERIFY(m.stride(2) == strides[2]);
+      VERIFY(m.strides() == strides);
+    }
+  };
+
+template<typename Layout>
+  constexpr void
+  test_stride_3d()
+  {
+    TestStride3D<Layout>::run();
   }
 
 template<typename Layout>

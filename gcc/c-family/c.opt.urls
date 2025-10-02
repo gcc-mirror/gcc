@@ -595,6 +595,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wmultichar)
 Wmultiple-inheritance
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wmultiple-inheritance)
 
+Wmultiple-parameter-fwd-decl-lists
+UrlSuffix(gcc/Warning-Options.html#index-Wmultiple-parameter-fwd-decl-lists)
+
 Wmultistatement-macros
 UrlSuffix(gcc/Warning-Options.html#index-Wmultistatement-macros)
 

@@ -477,8 +477,13 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
    enabled through +faminmax.  */
 #define TARGET_FAMINMAX AARCH64_HAVE_ISA (FAMINMAX)
 
-/* Lookup table (LUTI) extension instructions are enabled through +lut.  */
+/* Lookup table (LUTI) extension instructions with 2-bit and 4-bit indices are
+   enabled through +lut.  */
 #define TARGET_LUT AARCH64_HAVE_ISA (LUT)
+
+/* Lookup table (LUTI) extension instructions with 4-bit indices and 8-bit
+   elements are enabled through +sme-lutv2.  */
+#define TARGET_SME_LUTv2 AARCH64_HAVE_ISA (SME_LUTv2)
 
 /* Prefer different predicate registers for the output of a predicated
    operation over re-using an existing input predicate.  */

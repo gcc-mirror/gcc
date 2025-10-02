@@ -43,7 +43,8 @@ FROM NameKey IMPORT Name ;
     {%1Td}    get the type of the first symbol and describe it.
     {%1Sd}    skip the type pseudonyms of the first symbol and describe it.
     {%1ua}    force no quotes after substituting the text.
-
+    {%1av}    check name for starting with a vowel and if so append n to the
+              previous word.
     {%1D}     sets the error message to where symbol 1 was declared.
               The declaration will choose the definition module, then
               implementation (or program) module.

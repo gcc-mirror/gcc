@@ -363,6 +363,9 @@ package body Exp_Put_Image is
             Lib_RE := RE_Put_Image_Access_Prot_Subp;
          elsif Is_Access_Subprogram_Type (Base_Type (U_Type)) then
             Lib_RE := RE_Put_Image_Access_Subp;
+         elsif Is_Extended_Access_Type (Base_Type (U_Type)) then
+            pragma Assert (No (P_Size));
+            Lib_RE := RE_Put_Image_Extended_Access_Pointer;
          elsif P_Size = System_Address_Size then
             Lib_RE := RE_Put_Image_Thin_Pointer;
          else

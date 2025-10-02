@@ -74,6 +74,6 @@ main (void)
 }
 
 /* { dg-final { scan-tree-dump "vect_recog_dot_prod_pattern: detected" "vect" } } */
-/* { dg-final { scan-tree-dump "vectorizing statement: \\S+ = DOT_PROD_EXPR" "vect" { target { vect_sdot_qi } } } } */
-/* { dg-final { scan-tree-dump "vectorizing statement: \\S+ = DOT_PROD_EXPR" "vect" { target { vect_udot_qi } } } } */
-/* { dg-final { scan-tree-dump "vectorizing statement: \\S+ = DOT_PROD_EXPR" "vect" { target { vect_sdot_hi } } } } */
+/* { dg-final { scan-tree-dump "vectorizing SLP node starting from: \\S+ = DOT_PROD_EXPR" "vect" { target { vect_sdot_qi } } } } */
+/* { dg-final { scan-tree-dump "vectorizing SLP node starting from: \\S+ = DOT_PROD_EXPR" "vect" { target { vect_udot_qi } } } } */
+/* { dg-final { scan-tree-dump "vectorizing SLP node starting from: \\S+ = DOT_PROD_EXPR" "vect" { target { vect_sdot_hi } } } } */

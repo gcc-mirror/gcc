@@ -51,7 +51,6 @@ EXTERN tree m2decl_BuildConstLiteralNumber (location_t location,
 					    const char *str,
                                             unsigned int base,
 					    bool issueError);
-EXTERN void m2decl_RememberVariables (tree l);
 
 EXTERN tree m2decl_BuildEndFunctionDeclaration (
     location_t location_begin, location_t location_end, const char *name,

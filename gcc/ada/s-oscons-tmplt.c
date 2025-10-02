@@ -1764,6 +1764,17 @@ CND(SIZEOF_tv_usec, "tv_usec")
 #endif
 CNS(MAX_tv_sec, "")
 }
+
+{
+  struct timespec ts;
+/*
+   --  Sizes (in bytes) of the components of struct timespec.
+   --  The tv_sec field is the same as in struct timeval.
+*/
+#define SIZEOF_tv_nsec (sizeof (ts.tv_nsec))
+CND(SIZEOF_tv_nsec, "tv_nsec");
+}
+
 /*
 
    --  Sizes of various data types
@@ -1790,6 +1801,9 @@ struct sockaddr_un {
 #endif
 #define SIZEOF_sockaddr_un (sizeof (struct sockaddr_un))
 CND(SIZEOF_sockaddr_un, "struct sockaddr_un")
+
+#define BACKLOG_MAX 15
+CND(BACKLOG_MAX, "number of outstanding connections in the socket's listen queue")
 
 #define SIZEOF_fd_set (sizeof (fd_set))
 CND(SIZEOF_fd_set, "fd_set")

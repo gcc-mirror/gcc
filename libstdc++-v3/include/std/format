@@ -56,7 +56,7 @@
 #include <bits/ranges_base.h>  // input_range, range_reference_t
 #include <bits/ranges_util.h>  // subrange
 #include <bits/ranges_algobase.h> // ranges::copy
-#include <bits/stl_iterator.h> // back_insert_iterator, counted_iterator
+#include <bits/stl_iterator.h> // counted_iterator
 #include <bits/stl_pair.h>     // __is_pair
 #include <bits/unicode.h>      // __is_scalar_value, _Utf_view, etc.
 #include <bits/utility.h>      // tuple_size_v
@@ -110,10 +110,14 @@ namespace __format
   template<typename _CharT>
     class _Sink_iter;
 
+  // Output iterator that ignores the characters
+  template<typename _CharT>
+    class _Drop_iter;
+
   // An unspecified output iterator type used in the `formattable` concept.
   template<typename _CharT>
     struct _Iter_for
-    { using type = back_insert_iterator<basic_string<_CharT>>; };
+    { using type = _Drop_iter<_CharT>; };
 
   template<typename _CharT>
     using __format_context = basic_format_context<_Sink_iter<_CharT>, _CharT>;
@@ -1436,7 +1440,7 @@ namespace __format
 	      else if constexpr (ranges::random_access_range<_Rg>)
 		{
 		  ranges::iterator_t<_Rg> __first = ranges::begin(__rg);
-		  ranges::subrange __sub(__first, __first + __w);
+		  ranges::subrange __sub(__first, ranges::next(__first, __w));
 		  return _M_format_escaped(_String(from_range, __sub), __fc);
 		}
 	      else if (__w <= __n)
@@ -3135,6 +3139,43 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 /// @cond undocumented
 namespace __format
 {
+  template<typename _CharT>
+    class _Drop_iter
+    {
+    public:
+      using iterator_category = output_iterator_tag;
+      using value_type = void;
+      using difference_type = ptrdiff_t;
+      using pointer = void;
+      using reference = void;
+
+      _Drop_iter() = default;
+      _Drop_iter(const _Drop_iter&) = default;
+      _Drop_iter& operator=(const _Drop_iter&) = default;
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Drop_iter&
+      operator=(_CharT __c)
+      { return *this;  }
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Drop_iter&
+      operator=(basic_string_view<_CharT> __s)
+      { return *this; }
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Drop_iter&
+      operator*() { return *this; }
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Drop_iter&
+      operator++() { return *this; }
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Drop_iter
+      operator++(int) { return *this; }
+    };
+
   template<typename _CharT>
     class _Sink_iter
     {
@@ -5503,42 +5544,47 @@ namespace __format
 		    const _Spec<_CharT>& __spec,
 		    _Callback&& __call)
     {
-      // This is required to implement formatting with padding,
-      // as we need to format to temporary buffer, using the same iterator.
-      static_assert(is_same_v<_Out, __format::_Sink_iter<_CharT>>);
+      if constexpr (is_same_v<_Out, _Drop_iter<_CharT>>)
+        return __fc.out();
+      else
+        {
+          // This is required to implement formatting with padding,
+          // as we need to format to temporary buffer, using the same iterator.
+          static_assert(is_same_v<_Out, _Sink_iter<_CharT>>);
 
-      const size_t __padwidth = __spec._M_get_width(__fc);
-      if (__padwidth == 0)
-	return __call(__fc);
+         const size_t __padwidth = __spec._M_get_width(__fc);
+         if (__padwidth == 0)
+	   return __call(__fc);
 
-      struct _Restore_out
-      {
-	_Restore_out(basic_format_context<_Sink_iter<_CharT>, _CharT>& __fc)
-	: _M_ctx(std::addressof(__fc)), _M_out(__fc.out())
-	{ }
+         struct _Restore_out
+         {
+	   _Restore_out(basic_format_context<_Sink_iter<_CharT>, _CharT>& __fc)
+	   : _M_ctx(std::addressof(__fc)), _M_out(__fc.out())
+	  { }
 
-	void
-	_M_disarm()
-	{ _M_ctx = nullptr; }
+	  void
+	  _M_disarm()
+	  { _M_ctx = nullptr; }
 
-	~_Restore_out()
-	{
-	  if (_M_ctx)
-	    _M_ctx->advance_to(_M_out);
-	}
+	  ~_Restore_out()
+	  {
+	    if (_M_ctx)
+	      _M_ctx->advance_to(_M_out);
+	  }
 
-      private:
-	basic_format_context<_Sink_iter<_CharT>, _CharT>* _M_ctx;
-	_Sink_iter<_CharT> _M_out;
-      };
+        private:
+	  basic_format_context<_Sink_iter<_CharT>, _CharT>* _M_ctx;
+	  _Sink_iter<_CharT> _M_out;
+        };
 
-      _Restore_out __restore(__fc);
-      _Padding_sink<_Sink_iter<_CharT>, _CharT> __sink(__fc.out(), __padwidth);
-      __fc.advance_to(__sink.out());
-      __call(__fc);
-      __fc.advance_to(__sink._M_finish(__spec._M_align, __spec._M_fill));
-      __restore._M_disarm();
-      return __fc.out();
+        _Restore_out __restore(__fc);
+        _Padding_sink<_Sink_iter<_CharT>, _CharT> __sink(__fc.out(), __padwidth);
+        __fc.advance_to(__sink.out());
+        __call(__fc);
+        __fc.advance_to(__sink._M_finish(__spec._M_align, __spec._M_fill));
+        __restore._M_disarm();
+        return __fc.out();
+      }
     }
 
   template<size_t _Pos, typename _Tp, typename _CharT>

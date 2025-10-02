@@ -741,7 +741,7 @@ cbl_field_attr_str( cbl_field_attr_t attr ) {
   case function_e: return "function";
   case quoted_e: return "quoted";
   case filler_e: return "filler";
-  case _spare_e: return "temporary";
+  case register_e: return "register";
   case intermediate_e: return "intermediate";
   case embiggened_e: return "embiggened";
   case all_alpha_e: return "all_alpha";
@@ -2153,34 +2153,34 @@ symbol_table_init(void) {
 
   // These should match the definitions in libgcobol/constants.cc
   static cbl_field_t constants[] = {
-    { 0, FldAlphanumeric, FldInvalid, space_value_e | constq, 0, 0, 0, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, space_value_e | constq | register_e, 0, 0, 0, nonarray, 0,
       "SPACE", 0, {}, {1,1,0,0, " \0\xFF"}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, space_value_e | constq , 0, 0, 0, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, space_value_e | constq | register_e, 0, 0, 0, nonarray, 0,
       "SPACES", 0, {}, {1,1,0,0, " \0\xFF"}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, low_value_e | constq, 0, 0, 0, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, low_value_e | constq | register_e, 0, 0, 0, nonarray, 0,
       "LOW_VALUES", 0, {}, {1,1,0,0, "L\0\xFF"}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, zero_value_e | constq, 0, 0, 0, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, zero_value_e | constq | register_e, 0, 0, 0, nonarray, 0,
       "ZEROS", 0, {}, {1,1,0,0, "0"}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, high_value_e | constq, 0, 0, 0, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, high_value_e | constq | register_e, 0, 0, 0, nonarray, 0,
       "HIGH_VALUES", 0, {}, {1,1,0,0, "H\0\xFF"}, NULL },
     // IBM standard: QUOTE is a double-quote unless APOST compiler option
-    { 0, FldAlphanumeric, FldInvalid, quote_value_e | constq , 0, 0, 0, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, quote_value_e | constq | register_e , 0, 0, 0, nonarray, 0,
       "QUOTES", 0, {}, {1,1,0,0, "\"\0\xFF"}, NULL },
-    { 0, FldPointer, FldPointer, constq , 0, 0, 0, nonarray, 0,
+    { 0, FldPointer, FldPointer, constq | register_e , 0, 0, 0, nonarray, 0,
       "NULLS", 0, {}, {8,8,0,0, zeroes_for_null_pointer}, NULL },
     // IBM defines TALLY
     // 01  TALLY GLOBAL PICTURE 9(5) USAGE BINARY VALUE ZERO.
-    { 0, FldNumericBin5, FldInvalid, signable_e, 0, 0, 0, nonarray, 0,
+    { 0, FldNumericBin5, FldInvalid, signable_e | register_e, 0, 0, 0, nonarray, 0,
       "_TALLY", 0, {}, {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL },
     // 01  ARGI is the current index into the argv array
-    { 0, FldNumericBin5, FldInvalid, signable_e, 0, 0, 0, nonarray, 0,
+    { 0, FldNumericBin5, FldInvalid, signable_e | register_e, 0, 0, 0, nonarray, 0,
       "_ARGI", 0, {}, {16, 16, MAX_FIXED_POINT_DIGITS, 0, NULL}, NULL },
 
     // These last two don't require actual storage; they get BOOL var_decl_node
     // in parser_symbol_add()
-    { 0, FldConditional, FldInvalid, constant_e , 0, 0, 0, nonarray, 0,
+    { 0, FldConditional, FldInvalid, constant_e | register_e , 0, 0, 0, nonarray, 0,
       "_VERY_TRUE", 0, {}, {1,1,0,0, ""}, NULL },
-    { 0, FldConditional, FldInvalid, constant_e , 0, 0, 0, nonarray, 0,
+    { 0, FldConditional, FldInvalid, constant_e | register_e , 0, 0, 0, nonarray, 0,
       "_VERY_FALSE", 0, {}, {1,1,0,0, ""}, NULL },
   };
   for( struct cbl_field_t *f = constants;
@@ -2253,29 +2253,29 @@ symbol_table_init(void) {
    **/
 
   static cbl_field_t debug_registers[] = {
-    { 0, FldGroup, FldInvalid, global_e, 0,0,1, nonarray, 0,
+    { 0, FldGroup, FldInvalid, register_e, 0,0,1, nonarray, 0,
       "DEBUG-ITEM", 0, {}, {132,132,0,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, register_e, 0,0,2, nonarray, 0,
       "DEBUG-LINE", 0, {}, {6,6,0,0, "      "}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, register_e|filler_e, 0,0,2, nonarray, 0,
       "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, global_e, 0,0,2, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, register_e, 0,0,2, nonarray, 0,
       "DEBUG-NAME", 0, {}, {30,30,0,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, register_e|filler_e, 0,0,2, nonarray, 0,
       "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-1", 0, {}, {5,5,3,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+    { 0, FldNumericDisplay, FldInvalid, signable_e | register_e | leading_e | separate_e, 0,0,2, nonarray, 0,
+      "DEBUG-SUB-1", 0, {}, {5,5,4,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, register_e|filler_e, 0,0,2, nonarray, 0,
       "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-2", 0, {}, {5,5,3,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+    { 0, FldNumericDisplay, FldInvalid, signable_e | register_e | leading_e | separate_e, 0,0,2, nonarray, 0,
+      "DEBUG-SUB-2", 0, {}, {5,5,4,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, register_e|filler_e, 0,0,2, nonarray, 0,
       "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldNumericDisplay, FldInvalid, signable_e | global_e | leading_e | separate_e, 0,0,2, nonarray, 0,
-      "DEBUG-SUB-3", 0, {}, {5,5,3,0, NULL}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, 0, 0,0,2, nonarray, 0,
+    { 0, FldNumericDisplay, FldInvalid, signable_e | register_e | leading_e | separate_e, 0,0,2, nonarray, 0,
+      "DEBUG-SUB-3", 0, {}, {5,5,4,0, NULL}, NULL },
+    { 0, FldAlphanumeric, FldInvalid, register_e|filler_e, 0,0,2, nonarray, 0,
       "FILLER", 0, {}, {1,1,0,0, " "}, NULL },
-    { 0, FldAlphanumeric, FldInvalid, signable_e | global_e, 0,0,2, nonarray, 0,
+    { 0, FldAlphanumeric, FldInvalid, signable_e | register_e, 0,0,2, nonarray, 0,
       "DEBUG-CONTENTS", 0, {}, {76,76,0,0, NULL}, NULL },
   };
 
@@ -2296,21 +2296,21 @@ symbol_table_init(void) {
   std::for_each(debug_start+1, p, parent_elem_set(debug_start - table.elems));
 
   static cbl_field_t special_registers[] = {
-    { 0, FldNumericDisplay, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_FILE_STATUS",
+    { 0, FldNumericDisplay, FldInvalid, register_e, 0, 0, 0, nonarray, 0, "_FILE_STATUS",
       0, {}, {2,2,2,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "UPSI-0",
+    { 0, FldNumericBin5, FldInvalid, register_e, 0, 0, 0, nonarray, 0, "UPSI-0",
       0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, signable_e, 0, 0, 0, nonarray, 0, "RETURN-CODE",
+    { 0, FldNumericBin5, FldInvalid, signable_e|register_e, 0, 0, 0, nonarray, 0, "RETURN-CODE",
       0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldNumericBin5, FldInvalid, 0, 0, 0, 0, nonarray, 0, "LINAGE-COUNTER",
+    { 0, FldNumericBin5, FldInvalid, register_e, 0, 0, 0, nonarray, 0, "LINAGE-COUNTER",
       0, {}, {2,2,4,0, NULL}, NULL },
-    { 0, FldLiteralA, FldInvalid, 0, 0, 0, 0, nonarray, 0, "_dev_stdin",
+    { 0, FldLiteralA, FldInvalid, register_e, 0, 0, 0, nonarray, 0, "_dev_stdin",
       0, {}, {0,0,0,0, "/dev/stdin"}, NULL },
-    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stdout",
+    { 0, FldLiteralA, FldInvalid, constq|register_e, 0, 0, 0, nonarray, 0, "_dev_stdout",
       0, {}, {0,0,0,0, "/dev/stdout"}, NULL },
-    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_stderr",
+    { 0, FldLiteralA, FldInvalid, constq|register_e, 0, 0, 0, nonarray, 0, "_dev_stderr",
       0, {}, {0,0,0,0, "/dev/stderr"}, NULL },
-    { 0, FldLiteralA, FldInvalid, constq, 0, 0, 0, nonarray, 0, "_dev_null",
+    { 0, FldLiteralA, FldInvalid, constq|register_e, 0, 0, 0, nonarray, 0, "_dev_null",
       0, {}, {0,0,0,0, "/dev/null"}, NULL },
   };
 
@@ -4711,21 +4711,6 @@ ast_file_status_between( file_status_t lower, file_status_t upper ) {
 
   return cond.both;
 }
-
-bool
-is_register_field(const cbl_field_t *field)
-  {
-  // TRUE when the field is an executable-level global variable of the type we
-  // are calling a "register", like RETURN-CODE or UPSI or the like:
-  return
-    (    field->parent == 0
-      && field->level == 0
-      && !(field->attr & intermediate_e)
-      && !(field->attr & filler_e)
-      && field->type != FldClass
-      && field->type != FldBlob
-      );
-  }
 
 bool
 has_value( cbl_field_type_t type ) {

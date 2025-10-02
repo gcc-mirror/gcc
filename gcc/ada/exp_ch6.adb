@@ -1423,13 +1423,6 @@ package body Exp_Ch6 is
       Formal : Entity_Id;
 
    begin
-      pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
-                                        | N_Function_Call
-                                        | N_Procedure_Call_Statement);
-      pragma Assert (Extra_Formals_Known (Subp_Id)
-        or else not Expander_Active
-        or else Is_Unsupported_Extra_Actuals_Call (Subp_Call, Subp_Id));
-
       --  In CodePeer_Mode, the tree for `'Elab_Spec` procedures will be
       --  malformed because GNAT does not perform the usual expansion that
       --  results in the importation of external elaboration procedure symbols.
@@ -1446,6 +1439,13 @@ package body Exp_Ch6 is
       then
          return True;
       end if;
+
+      pragma Assert (Nkind (Subp_Call) in N_Entry_Call_Statement
+                                        | N_Function_Call
+                                        | N_Procedure_Call_Statement);
+      pragma Assert (Extra_Formals_Known (Subp_Id)
+        or else not Expander_Active
+        or else Is_Unsupported_Extra_Actuals_Call (Subp_Call, Subp_Id));
 
       Formal := First_Formal_With_Extras (Subp_Id);
       Actual := First_Actual (Subp_Call);
@@ -2946,7 +2946,11 @@ package body Exp_Ch6 is
 
                  and then Predicate_Tests_On_Arguments (Subp)
                then
-                  Append_To (Post_Call,
+                  --  If Actual is a view conversion to a by-copy subtype
+                  --  that is subject to a predicate, then the predicate
+                  --  check must precede copy-back. So Prepend.
+
+                  Prepend_To (Post_Call,
                     Make_Predicate_Check (Atyp, Actual));
                end if;
             end By_Ref_Predicate_Check;
@@ -4027,7 +4031,8 @@ package body Exp_Ch6 is
 
       procedure Check_Subprogram_Variant;
       --  Emit a call to the internally generated procedure with checks for
-      --  aspect Subprogram_Variant, if present and enabled.
+      --  aspect Subprogram_Variant, if present and enabled. Multiple calls are
+      --  added when the subprogram was using Assertion_Levels.
 
       function Inherited_From_Formal (S : Entity_Id) return Entity_Id;
       --  Within an instance, a type derived from an untagged formal derived
@@ -4312,7 +4317,7 @@ package body Exp_Ch6 is
 
          --  Local variables
 
-         Variant_Prag : constant Node_Id :=
+         Variant_Prag : Node_Id :=
            Get_Pragma (Current_Scope, Pragma_Subprogram_Variant);
 
          New_Call     : Node_Id;
@@ -4320,8 +4325,10 @@ package body Exp_Ch6 is
          Variant_Proc : Entity_Id;
 
       begin
-         if Present (Variant_Prag) and then Is_Checked (Variant_Prag) then
-
+         while Present (Variant_Prag)
+           and then Is_Checked (Variant_Prag)
+           and then Pragma_Name (Variant_Prag) = Name_Subprogram_Variant
+         loop
             Pragma_Arg1 :=
               Expression (First (Pragma_Argument_Associations (Variant_Prag)));
 
@@ -4330,12 +4337,13 @@ package body Exp_Ch6 is
             --  run-time execution.
 
             if Nkind (Pragma_Arg1) = N_Aggregate then
-               pragma Assert
-                 (Chars
-                    (First
-                      (Choices
-                         (First (Component_Associations (Pragma_Arg1))))) =
-                  Name_Structural);
+               pragma
+                 Assert
+                   (Chars
+                      (First
+                         (Choices
+                            (First (Component_Associations (Pragma_Arg1)))))
+                      = Name_Structural);
                return;
             end if;
 
@@ -4345,7 +4353,8 @@ package body Exp_Ch6 is
             Variant_Proc := Entity (Pragma_Arg1);
 
             New_Call :=
-              Make_Procedure_Call_Statement (Loc,
+              Make_Procedure_Call_Statement
+                (Loc,
                  Name                   =>
                    New_Occurrence_Of (Variant_Proc, Loc),
                  Parameter_Associations =>
@@ -4353,9 +4362,13 @@ package body Exp_Ch6 is
 
             Insert_Action (Call_Node, New_Call);
 
-            pragma Assert (Etype (New_Call) /= Any_Type
-              or else Serious_Errors_Detected > 0);
-         end if;
+            pragma
+              Assert
+                (Etype (New_Call) /= Any_Type
+                   or else Serious_Errors_Detected > 0);
+
+            Variant_Prag := Next_Pragma (Variant_Prag);
+         end loop;
       end Check_Subprogram_Variant;
 
       ---------------------------
@@ -4707,7 +4720,7 @@ package body Exp_Ch6 is
       --  of init procs were added when they were built.
 
       if not Extra_Formals_Known (Subp) then
-         Create_Extra_Formals (Subp);
+         Create_Extra_Formals (Subp, Related_Nod => Call_Node);
 
          --  If the previous call to Create_Extra_Formals could not add the
          --  extra formals, then we must defer adding the extra actuals of
@@ -4776,7 +4789,7 @@ package body Exp_Ch6 is
         and then Extra_Formals_Known (Subp)
         and then Present (Extra_Formals (Subp))
       then
-         Create_Extra_Actuals (N);
+         Create_Extra_Actuals (Call_Node);
 
          --  Mark the call as an expanded build-in-place call; required
          --  to avoid adding the extra formals twice.
@@ -5219,10 +5232,10 @@ package body Exp_Ch6 is
          null;
 
       elsif not Defer_Extra_Actuals then
-         Create_Extra_Formals (Subp);
+         Create_Extra_Formals (Subp, Related_Nod => Call_Node);
 
          if Extra_Formals_Known (Subp) then
-            Create_Extra_Actuals (N);
+            Create_Extra_Actuals (Call_Node);
          end if;
       end if;
 
@@ -5238,7 +5251,7 @@ package body Exp_Ch6 is
       --  the current subprogram is called.
 
       if Is_Subprogram (Subp)
-        and then not Is_Ignored_Ghost_Entity (Subp)
+        and then not Is_Ignored_Ghost_Entity_In_Codegen (Subp)
         and then Same_Or_Aliased_Subprograms (Subp, Current_Scope)
       then
          Check_Subprogram_Variant;
@@ -5780,11 +5793,14 @@ package body Exp_Ch6 is
    is
       Par        : constant Node_Id := Parent (N);
       Uncond_Par : constant Node_Id := Unconditional_Parent (N);
+     --  Beware that a qualified expression around a function call cannot be
+     --  considered as transparent (like around an aggregate) because it may
+     --  cause a temporary to be created.
 
    begin
       --  Optimization: if the returned value is returned again, then no need
       --  to copy/readjust/finalize, we can just pass the value through (see
-      --  Expand_N_Simple_Return_Statement), and thus no attachment is needed.
+      --  Expand_Simple_Function_Return), and thus no attachment is needed.
       --  Note that simple return statements are distributed into conditional
       --  expressions, but we may be invoked before this distribution is done.
 
@@ -6231,6 +6247,14 @@ package body Exp_Ch6 is
       --  returns, since they get eliminated anyway later on. Spec_Id denotes
       --  the corresponding spec of the subprogram body.
 
+      procedure Prepend_Constructor_Procedure_Prologue
+        (Spec_Id : Entity_Id; Body_Id : Entity_Id; L : List_Id);
+      --  If N is the body of a constructor procedure (that is, a procedure
+      --  named in a Constructor aspect specification for the type of the
+      --  procedure's first parameter), then prepend and analyze the
+      --  associated initialization code for that parameter.
+      --  This has nothing to do with CPP constructors.
+
       ----------------
       -- Add_Return --
       ----------------
@@ -6303,6 +6327,304 @@ package body Exp_Ch6 is
             end if;
          end if;
       end Add_Return;
+
+      --------------------------------------------
+      -- Prepend_Constructor_Procedure_Prologue --
+      --------------------------------------------
+
+      procedure Prepend_Constructor_Procedure_Prologue
+        (Spec_Id : Entity_Id; Body_Id : Entity_Id; L : List_Id)
+      is
+
+         function First_Param_Type return Entity_Id is
+           (Implementation_Base_Type (Etype (First_Formal (Spec_Id))));
+
+         Is_Constructor_Procedure : constant Boolean :=
+           Nkind (Specification (N)) = N_Procedure_Specification
+             and then Present (First_Formal (Spec_Id))
+             and then Present (Constructor_Name (First_Param_Type))
+             and then Chars (Spec_Id) = Chars (Constructor_Name
+                                                 (First_Param_Type))
+             and then Ekind (First_Formal (Spec_Id)) = E_In_Out_Parameter
+             and then Scope (Spec_Id) = Scope (First_Param_Type);
+      begin
+         if not Is_Constructor_Procedure then
+            return; -- the usual case
+         end if;
+
+         Push_Scope (Spec_Id);
+
+         --  Initialize the first parameter.
+         --  First_Param_Type is a record type (tagged or untagged) or
+         --  a type extension. If it is a type extension, then we begin by
+         --  calling the appropriate constructor procedure for the _parent
+         --  part. In the absence of a Super aspect specification, the
+         --  "appropriate" constructor is the one that takes only a single
+         --  parameter (the object being initialized). Additional actual
+         --  parameters for the constructor call may be provided via a
+         --  Super aspect specification, in which case a different
+         --  constructor procedure will be invoked.
+         --
+         --  For each remaining component we first check to see if it
+         --  is mentioned in the Initialize aspect specification (if any) for
+         --  Body_Id. If so, then evaluate the expression given for that
+         --  component in the aspect specification and assign it to the
+         --  given component of the first parameter. If not, and if an
+         --  explicit default initial value is provided for the given component
+         --  in the type declaration, then do the same thing with that
+         --  expression instead. Otherwise perform normal default
+         --  initialization for the component - invoke the init proc for the
+         --  component's type if one exists, and otherwise do nothing.
+
+         --  We do not perform tag initialization here. That is dealt with
+         --  elsewhere. The init proc for a tagged type is
+         --  passed an extra parameter indicating whether to perform
+         --  tag initialization.
+
+         --  In the case of a type (tagged or untagged) that is not
+         --  an extension, we could just generate a single assignment,
+         --  taking the RHS from the Initialize aspect value (which is an
+         --  N_Aggregate node). But that gets complicated in the case of
+         --  an extension, so we handle all cases one component at a time.
+
+         declare
+            Initialize_Aspect : constant Node_Id :=
+              Find_Aspect (Body_Id, Aspect_Initialize);
+
+            First_Initialize_Comp_Assoc : constant Node_Id :=
+              (if Present (Initialize_Aspect)
+               then First (Component_Associations
+                             (Expression (Initialize_Aspect)))
+               else Empty);
+
+            Component : Entity_Id := First_Entity (First_Param_Type);
+            Init_List : constant List_Id := New_List;
+
+            function Init_Expression_If_Any (Component : Entity_Id)
+              return Node_Id;
+            --  If the given component is mentioned in the Initialize
+            --  aspect for the constructor procedure, then return the
+            --  initial value expression specified there.
+            --  Otherwise, if the component declaration includes an
+            --  initial value expression, then return that expression.
+            --  Otherwise, return Empty.
+
+            function Make_Init_Proc_Call (Component      : Entity_Id;
+                                          Component_Name : Node_Id)
+              return Node_Id;
+            --  Builds and returns a call to the init proc for the type of
+            --  the component in order to initialize the given component.
+            --  The init proc must exist.
+
+            function Make_Parent_Constructor_Call (Parent_Type : Entity_Id)
+              return Node_Id;
+            --  Builds and returns a call to the appropriate constructor
+            --  procedure of the parent type.
+            --  This function is called only in the case of a
+            --  Constructor procedure for a type extension.
+
+            ----------------------------
+            -- Init_Expression_If_Any --
+            ----------------------------
+
+            function Init_Expression_If_Any (Component : Entity_Id)
+              return Node_Id
+            is
+               Initialize_Comp_Assoc : Node_Id := First_Initialize_Comp_Assoc;
+               Choice : Node_Id;
+
+               --  ??? Technically, this is quadratic (linear search called
+               --  a linear number of times). When/if we see performance
+               --  problems with hundreds of components mentioned in one
+               --  Initialize aspect specification, we can revisit this.
+            begin
+               while Present (Initialize_Comp_Assoc) loop
+                  Choice := First (Choices (Initialize_Comp_Assoc));
+
+                  while Present (Choice) loop
+                     if Nkind (Choice) = N_Identifier
+                       and then Chars (Choice) = Chars (Component)
+                     then
+                        return Expression (Initialize_Comp_Assoc);
+                     end if;
+                     Next (Choice);
+                  end loop;
+
+                  Next (Initialize_Comp_Assoc);
+               end loop;
+
+               if Present (Expression (Parent (Component))) then
+                  return Expression (Parent (Component));
+               end if;
+
+               return Empty;
+            end Init_Expression_If_Any;
+
+            -------------------------
+            -- Make_Init_Proc_Call --
+            -------------------------
+
+            function Make_Init_Proc_Call (Component      : Entity_Id;
+                                          Component_Name : Node_Id)
+              return Node_Id
+            is
+               Params    : constant List_Id := New_List (Component_Name);
+               Init_Proc : constant Entity_Id :=
+                 Base_Init_Proc (Etype (Component));
+            begin
+               if Is_Tagged_Type (Etype (Component)) then
+                  Append (Make_Mode_Literal (Loc, Full_Init), Params);
+               end if;
+
+               return Init_Proc_Call : constant Node_Id :=
+                 Make_Procedure_Call_Statement (Loc,
+                   Name => New_Occurrence_Of (Init_Proc, Loc),
+                   Parameter_Associations => Params)
+               do
+                  pragma Assert (Check_Number_Of_Actuals
+                                   (Subp_Call => Init_Proc_Call,
+                                    Subp_Id   => Init_Proc));
+               end return;
+            end Make_Init_Proc_Call;
+
+            ----------------------------------
+            -- Make_Parent_Constructor_Call --
+            ----------------------------------
+
+            function Make_Parent_Constructor_Call (Parent_Type : Entity_Id)
+              return Node_Id
+            is
+               Actual_Parameters : List_Id := No_List;
+               Super_Aspect      : constant Node_Id :=
+                 Find_Aspect (Body_Id, Aspect_Super);
+
+               --  Do not confuse the Super aspect with the Super attribute.
+               --  Both are referenced here, but they are not related as
+               --  closely as some aspect/attribute homonym pairs are.
+               --  The attribute takes an object as a prefix. The aspect
+               --  can be specified for the body of a constructor procedure.
+            begin
+               if Present (Super_Aspect) then
+                  declare
+                     Super_Expr : constant Node_Id :=
+                       Expression (Super_Aspect);
+                     Expr       : Node_Id;
+                  begin
+                     if Nkind (Super_Expr) /= N_Aggregate then
+                        Expr := New_Copy_Tree (Super_Expr);
+                        Set_Paren_Count (Expr, 0);
+                        Actual_Parameters := New_List (Expr);
+                     else
+                        --  Interpret this "aggregate" as a list of
+                        --  actual parameter expressions.
+
+                        Actual_Parameters := New_List;
+                        Expr := First (Expressions (Super_Expr));
+                        while Present (Expr) loop
+                           Append (New_Copy_Tree (Expr), Actual_Parameters);
+                           Next (Expr);
+                        end loop;
+                     end if;
+                  end;
+               end if;
+
+               --  Build a prefixed-notation call
+               declare
+                  Proc_Name : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        =>
+                        Make_Attribute_Reference (Loc,
+                          Prefix         => New_Occurrence_Of
+                                              (First_Formal (Spec_Id), Loc),
+                          Attribute_Name => Name_Super),
+                      Selector_Name =>
+                        Make_Identifier (Loc,
+                          Chars (Constructor_Name (Parent_Type))));
+               begin
+                  Set_Is_Prefixed_Call (Proc_Name);
+
+                  return Make_Procedure_Call_Statement (Loc,
+                           Name                   => Proc_Name,
+                           Parameter_Associations => Actual_Parameters);
+               end;
+            end Make_Parent_Constructor_Call;
+
+         begin
+            while Present (Component) loop
+               pragma Assert (Ekind (Component) = E_Component);
+
+               if Chars (Component) = Name_uTag then
+                  null;
+
+               elsif Chars (Component) = Name_uParent then
+                  --  ??? Here is where we should be looking for a
+                  --  Super aspect specification in order to call the
+                  --  right constructor with the right parameters
+                  --  (as opposed to unconditionally calling the
+                  --  single-parameter constructor).
+                  Append_To (Init_List, Make_Parent_Constructor_Call
+                                          (Parent_Type => Etype (Component)));
+
+               else
+                  declare
+                     Maybe_Init_Exp : constant Node_Id :=
+                       Init_Expression_If_Any (Component);
+
+                     function Make_Component_Name return Node_Id is
+                       (Make_Selected_Component (Loc,
+                          Prefix        =>
+                            New_Occurrence_Of (First_Formal (Spec_Id), Loc),
+                          Selector_Name =>
+                            Make_Identifier (Loc, Chars (Component))));
+                  begin
+                     --  Handle case where initial value for this component
+                     --  is specified either in an Initialize aspect
+                     --  specification or as part of the component declaration.
+
+                     if Present (Maybe_Init_Exp) then
+                        --  ??? Should reorganize things so that
+                        --  procedure Build_Assignment in exp_ch3.adb
+                        --  (which is currently declared inside of
+                        --  Build_Record_Init_Proc) can be called from here.
+                        --  That procedure handles some corner cases
+                        --  that are not properly handled here (e.g.,
+                        --  mapping current instance references to the
+                        --  appropriate formal parameter).
+
+                        if Is_Tagged_Type (Etype (Component)) then
+                           Append_To (Init_List,
+                             Make_Tag_Assignment_From_Type (Loc,
+                               Target => Make_Component_Name,
+                               Typ => Etype (Component)));
+                        end if;
+
+                        Append_To (Init_List,
+                          Make_Assignment_Statement (Loc,
+                            Name       => Make_Component_Name,
+                            Expression => New_Copy_Tree
+                                            (Maybe_Init_Exp,
+                                             New_Scope => Body_Id)));
+
+                     --  Handle case where component's type has an init proc
+                     elsif Has_Non_Null_Base_Init_Proc (Etype (Component)) then
+                        Append_To (Init_List,
+                                   Make_Init_Proc_Call (
+                                    Component      => Component,
+                                    Component_Name => Make_Component_Name));
+                     else
+                        pragma Assert (not Is_Tagged_Type (Etype (Component)));
+                     end if;
+                  end;
+               end if;
+
+               Next_Entity (Component);
+            end loop;
+
+            Insert_List_Before_And_Analyze (First (L), Init_List);
+         end;
+
+         Pop_Scope;
+      end Prepend_Constructor_Procedure_Prologue;
 
       --  Local variables
 
@@ -6535,6 +6857,12 @@ package body Exp_Ch6 is
       then
          Detect_Infinite_Recursion (N, Spec_Id);
       end if;
+
+      --  If the subprogram is a constructor procedure then prepend
+      --  and analyze initialization code.
+
+      Prepend_Constructor_Procedure_Prologue
+        (Spec_Id => Spec_Id, Body_Id => Body_Id, L => L);
 
       --  Set to encode entity names in package body before gigi is called
 
@@ -7265,7 +7593,7 @@ package body Exp_Ch6 is
 
       elsif (not Needs_Secondary_Stack (R_Type)
               and then not Is_Secondary_Stack_Thunk (Scope_Id))
-        or else Is_Ignored_Ghost_Entity (Scope_Id)
+        or else Is_Ignored_Ghost_Entity_In_Codegen (Scope_Id)
       then
          --  Mutable records with variable-length components are not returned
          --  on the sec-stack, so we need to make sure that the back end will
@@ -10264,9 +10592,8 @@ package body Exp_Ch6 is
 
                begin
                   pragma Assert (Check_BIP_Actuals (Call_Node, Subp));
-
-                  --  Build-in-place function calls return their result by
-                  --  reference.
+                    --  Build-in-place function calls return their result by
+                    --  reference.
 
                   pragma Assert (not Is_Build_In_Place_Function (Subp)
                     or else Returns_By_Ref (Subp));
@@ -10379,7 +10706,14 @@ package body Exp_Ch6 is
 
       pragma Assert (Serious_Errors_Detected = 0);
 
-      Check_Calls (N);
+      --  Do not attempt to verify the return type in CodePeer_Mode
+      --  as CodePeer_Mode is missing some expansion code that
+      --  results in trees that would be considered malformed for
+      --  GCC but aren't for GNAT2SCIL.
+
+      if not CodePeer_Mode then
+         Check_Calls (N);
+      end if;
    end Validate_Subprogram_Calls;
 
    --------------

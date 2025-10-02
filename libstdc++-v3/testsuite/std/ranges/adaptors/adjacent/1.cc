@@ -114,6 +114,18 @@ test04()
   return true;
 }
 
+constexpr bool
+test05()
+{
+  // PR libstdc++/121956
+  int a[2]{};
+  __gnu_test::test_random_access_range r(a);
+  auto v = r | views::pairwise;
+  static_assert( std::is_same_v<ranges::range_value_t<decltype(v)>,
+				std::tuple<int, int>> );
+  return true;
+}
+
 int
 main()
 {
@@ -121,4 +133,5 @@ main()
   static_assert(test02());
   static_assert(test03());
   static_assert(test04());
+  static_assert(test05());
 }

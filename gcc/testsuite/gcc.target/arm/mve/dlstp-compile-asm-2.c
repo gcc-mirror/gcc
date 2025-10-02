@@ -326,8 +326,7 @@ void test10 (int32_t *a, int32_t *b, int32_t *c, int n)
 }
 /*
    We don't need that extra vctp in the loop, but we currently do not optimize
-   it away, however, it is not wrong to use it...
-*/
+   it away, however, it is not wrong to use it... */
 /*
 ** test10:
 **...

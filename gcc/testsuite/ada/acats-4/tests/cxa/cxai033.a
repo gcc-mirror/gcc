@@ -116,7 +116,7 @@ begin
 
    -- Give time for Reader_1 to activate.
 
-   delay Impdef.Switch_To_New_Task;
+   delay Impdef.Long_Switch_To_New_Task;
 
    if not Reader_1_Blocked then
 
@@ -145,7 +145,7 @@ begin
 
       -- Give time for Writer_1 to activate;
 
-      delay Impdef.Switch_To_New_Task;
+      delay Impdef.Long_Switch_To_New_Task;
 
       if Reader_1_Blocked then
 

@@ -249,7 +249,7 @@ public:
 
   bool check_and_optimize_stmt (bool *cleanup_eh);
   bool check_and_optimize_call (bool *zero_write);
-  bool handle_assign (tree lhs, bool *zero_write);
+  bool handle_assign (tree lhs, tree rhs, bool *zero_write);
   bool handle_store (bool *zero_write);
   void handle_pointer_plus ();
   void handle_builtin_strlen ();
@@ -3785,6 +3785,70 @@ strlen_pass::handle_alloc_call (built_in_function bcode)
   si->dont_invalidate = true;
 }
 
+/* Returns true of the last statement of the bb is a conditional
+   that checks ptr for null-ness. */
+static bool
+last_stmt_ptr_check (tree ptr, basic_block bb)
+{
+  gimple_stmt_iterator gsi = gsi_last_nondebug_bb (bb);
+  gcond *cstmt = dyn_cast <gcond *>(gsi_stmt (gsi));
+  if (!cstmt)
+    return false;
+  if (gimple_cond_code (cstmt) != EQ_EXPR && gimple_cond_code (cstmt) != NE_EXPR)
+    return false;
+  if (!integer_zerop (gimple_cond_rhs (cstmt)))
+    return false;
+  if (!operand_equal_p (gimple_cond_lhs (cstmt), ptr))
+    return false;
+  return true;
+}
+
+/* Check if doing a malloc+memset to calloc is a good idea. PTR is the
+   return value of the malloc/where the memset happens. MALLOC_BB is
+   the basic block of the malloc. MEMSET_BB is basic block of the memset.  */
+
+static bool
+allow_memset_malloc_to_calloc (tree ptr, basic_block malloc_bb,
+			       basic_block memset_bb)
+{
+  /* If the malloc and memset are in the same block, then always
+     allow the transformation. Don't need post dominator calculation. */
+  if (malloc_bb == memset_bb)
+    return true;
+
+  if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+    calculate_dominance_info (CDI_POST_DOMINATORS);
+
+  /* If the memset is always executed after the malloc, then allow
+      to optimize to calloc. */
+  if (dominated_by_p (CDI_POST_DOMINATORS, malloc_bb, memset_bb))
+    return true;
+
+  /* If the malloc bb ends in a ptr check, then we need to check if
+     either successor is post dominated by the memset bb.  */
+  if (last_stmt_ptr_check (ptr, malloc_bb))
+    {
+      if (dominated_by_p (CDI_POST_DOMINATORS, EDGE_SUCC (malloc_bb, 0)->dest, memset_bb))
+	return true;
+      if (dominated_by_p (CDI_POST_DOMINATORS, EDGE_SUCC (malloc_bb, 1)->dest, memset_bb))
+	return true;
+    }
+
+  /* At this point we want to only handle:
+     malloc();
+     ...
+     if (ptr)  goto memset_bb; */
+  if (!single_pred_p (memset_bb))
+    return false;
+
+  /* If the predecessor of the memset bb is not post dominated by malloc, then the memset is
+     conditionalized by something more than just the checking if ptr is non-null.  */
+  if (!dominated_by_p (CDI_POST_DOMINATORS, malloc_bb, single_pred_edge (memset_bb)->src))
+    return false;
+
+  return last_stmt_ptr_check (ptr, single_pred_edge (memset_bb)->src);
+}
+
 /* Handle a call to memset.
    After a call to calloc, memset(,0,) is unnecessary.
    memset(malloc(n),0,n) is calloc(n,1).
@@ -3870,6 +3934,8 @@ strlen_pass::handle_builtin_memset (bool *zero_write)
   enum built_in_function code1 = DECL_FUNCTION_CODE (callee1);
   if (code1 == BUILT_IN_CALLOC)
     /* Not touching alloc_stmt */ ;
+  else if (!allow_memset_malloc_to_calloc (ptr, gimple_bb (si1->stmt), gimple_bb (memset_stmt)))
+     return false;
   else if (code1 == BUILT_IN_MALLOC
 	   && operand_equal_p (memset_size, alloc_size, 0))
     {
@@ -3969,73 +4035,6 @@ use_in_zero_equality (tree res, bool exclusive)
     }
 
   return first_use;
-}
-
-/* Handle a call to memcmp.  We try to handle small comparisons by
-   converting them to load and compare, and replacing the call to memcmp
-   with a __builtin_memcmp_eq call where possible.
-   return true when call is transformed, return false otherwise.  */
-
-bool
-strlen_pass::handle_builtin_memcmp ()
-{
-  gcall *stmt = as_a <gcall *> (gsi_stmt (m_gsi));
-  tree res = gimple_call_lhs (stmt);
-
-  if (!res || !use_in_zero_equality (res))
-    return false;
-
-  tree arg1 = gimple_call_arg (stmt, 0);
-  tree arg2 = gimple_call_arg (stmt, 1);
-  tree len = gimple_call_arg (stmt, 2);
-  unsigned HOST_WIDE_INT leni;
-
-  if (tree_fits_uhwi_p (len)
-      && (leni = tree_to_uhwi (len)) <= GET_MODE_SIZE (word_mode)
-      && pow2p_hwi (leni))
-    {
-      leni *= CHAR_TYPE_SIZE;
-      unsigned align1 = get_pointer_alignment (arg1);
-      unsigned align2 = get_pointer_alignment (arg2);
-      unsigned align = MIN (align1, align2);
-      scalar_int_mode mode;
-      if (int_mode_for_size (leni, 1).exists (&mode)
-	  && (align >= leni || !targetm.slow_unaligned_access (mode, align)))
-	{
-	  location_t loc = gimple_location (stmt);
-	  tree type, off;
-	  type = build_nonstandard_integer_type (leni, 1);
-	  gcc_assert (known_eq (GET_MODE_BITSIZE (TYPE_MODE (type)), leni));
-	  tree ptrtype = build_pointer_type_for_mode (char_type_node,
-						      ptr_mode, true);
-	  off = build_int_cst (ptrtype, 0);
-
-	  /* Create unaligned types if needed. */
-	  tree type1 = type, type2 = type;
-	  if (TYPE_ALIGN (type1) > align1)
-	    type1 = build_aligned_type (type1, align1);
-	  if (TYPE_ALIGN (type2) > align2)
-	    type2 = build_aligned_type (type2, align2);
-
-	  arg1 = build2_loc (loc, MEM_REF, type1, arg1, off);
-	  arg2 = build2_loc (loc, MEM_REF, type2, arg2, off);
-	  tree tem1 = fold_const_aggregate_ref (arg1);
-	  if (tem1)
-	    arg1 = tem1;
-	  tree tem2 = fold_const_aggregate_ref (arg2);
-	  if (tem2)
-	    arg2 = tem2;
-	  res = fold_convert_loc (loc, TREE_TYPE (res),
-				  fold_build2_loc (loc, NE_EXPR,
-						   boolean_type_node,
-						   arg1, arg2));
-	  gimplify_and_update_call_from_tree (&m_gsi, res);
-	  return true;
-	}
-    }
-
-  gimple_call_set_fndecl (stmt, builtin_decl_explicit (BUILT_IN_MEMCMP_EQ));
-  return true;
 }
 
 /* Given strinfo IDX for ARG, sets LENRNG[] to the range of lengths
@@ -5466,7 +5465,7 @@ strlen_pass::check_and_optimize_call (bool *zero_write)
 	}
 
       if (tree lhs = gimple_call_lhs (stmt))
-	handle_assign (lhs, zero_write);
+	handle_assign (lhs, NULL_TREE, zero_write);
 
       /* Proceed to handle user-defined formatting functions.  */
     }
@@ -5526,10 +5525,6 @@ strlen_pass::check_and_optimize_call (bool *zero_write)
       break;
     case BUILT_IN_MEMSET:
       if (handle_builtin_memset (zero_write))
-	return false;
-      break;
-    case BUILT_IN_MEMCMP:
-      if (handle_builtin_memcmp ())
 	return false;
       break;
     case BUILT_IN_STRCMP:
@@ -5685,14 +5680,60 @@ strlen_pass::handle_integral_assign (bool *cleanup_eh)
 }
 
 /* Handle assignment statement at *GSI to LHS.  Set *ZERO_WRITE if
-   the assignment stores all zero bytes.  */
+   the assignment stores all zero bytes. RHS is the rhs of the
+   statement if not a call.  */
 
 bool
-strlen_pass::handle_assign (tree lhs, bool *zero_write)
+strlen_pass::handle_assign (tree lhs, tree rhs, bool *zero_write)
 {
   tree type = TREE_TYPE (lhs);
   if (TREE_CODE (type) == ARRAY_TYPE)
     type = TREE_TYPE (type);
+
+  if (rhs && TREE_CODE (rhs) == CONSTRUCTOR
+      && TREE_CODE (lhs) == MEM_REF
+      && TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
+      && integer_zerop (TREE_OPERAND (lhs, 1)))
+    {
+      /* Set to the non-constant offset added to PTR.  */
+      wide_int offrng[2];
+      gcc_assert (CONSTRUCTOR_NELTS (rhs) == 0);
+      tree ptr = TREE_OPERAND (lhs, 0);
+      tree len = TYPE_SIZE_UNIT (TREE_TYPE (lhs));
+      int idx1 = get_stridx (ptr, gsi_stmt (m_gsi), offrng, ptr_qry.rvals);
+      if (idx1 > 0)
+	{
+	  strinfo *si1 = get_strinfo (idx1);
+	  if (si1 && si1->stmt
+	      && si1->alloc && is_gimple_call (si1->alloc)
+	      && valid_builtin_call (si1->stmt)
+	      && offrng[0] == 0 && offrng[1] == 0)
+	    {
+	      gimple *malloc_stmt = si1->stmt;
+	      basic_block malloc_bb = gimple_bb (malloc_stmt);
+	      if ((DECL_FUNCTION_CODE (gimple_call_fndecl (malloc_stmt))
+		   == BUILT_IN_MALLOC)
+		  && operand_equal_p (len, gimple_call_arg (malloc_stmt, 0), 0)
+		  && allow_memset_malloc_to_calloc (ptr, malloc_bb,
+						    gsi_bb (m_gsi)))
+		{
+		  tree alloc_size = gimple_call_arg (malloc_stmt, 0);
+		  gimple_stmt_iterator gsi1 = gsi_for_stmt (malloc_stmt);
+		  tree calloc_decl = builtin_decl_implicit (BUILT_IN_CALLOC);
+		  update_gimple_call (&gsi1, calloc_decl, 2, alloc_size,
+				      build_one_cst (size_type_node));
+		  si1->nonzero_chars = build_int_cst (size_type_node, 0);
+		  si1->full_string_p = true;
+		  si1->stmt = gsi_stmt (gsi1);
+		  gimple *stmt = gsi_stmt (m_gsi);
+		  unlink_stmt_vdef (stmt);
+		  gsi_remove (&m_gsi, true);
+		  release_defs (stmt);
+		  return false;
+		}
+	    }
+	}
+    }
 
   bool is_char_store = is_char_type (type);
   if (!is_char_store && TREE_CODE (lhs) == MEM_REF)
@@ -5769,7 +5810,7 @@ strlen_pass::check_and_optimize_stmt (bool *cleanup_eh)
 	/* Handle assignment to a character.  */
 	handle_integral_assign (cleanup_eh);
       else if (TREE_CODE (lhs) != SSA_NAME && !TREE_SIDE_EFFECTS (lhs))
-	if (!handle_assign (lhs, &zero_write))
+	if (!handle_assign (lhs, gimple_assign_rhs1 (stmt), &zero_write))
 	  return false;
     }
   else if (gcond *cond = dyn_cast<gcond *> (stmt))
@@ -6013,6 +6054,7 @@ printf_strlen_execute (function *fun, bool warn_only)
   disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();
+  free_dominance_info (CDI_POST_DOMINATORS);
 
   return walker.m_cleanup_cfg ? TODO_cleanup_cfg : 0;
 }

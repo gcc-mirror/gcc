@@ -68,15 +68,18 @@ namespace ranges
 
   namespace __detail
   {
+    [[__gnu__::__always_inline__]]
     constexpr __max_size_type
     __to_unsigned_like(__max_size_type __t) noexcept
     { return __t; }
 
+    [[__gnu__::__always_inline__]]
     constexpr __max_size_type
     __to_unsigned_like(__max_diff_type __t) noexcept
     { return __max_size_type(__t); }
 
     template<integral _Tp>
+      [[__gnu__::__always_inline__]]
       constexpr auto
       __to_unsigned_like(_Tp __t) noexcept
       { return static_cast<make_unsigned_t<_Tp>>(__t); }
@@ -103,7 +106,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
@@ -118,8 +121,9 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires is_array_v<remove_reference_t<_Tp>> || __member_begin<_Tp>
 	  || __adl_begin<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_array_v<remove_reference_t<_Tp>>)
 	    {
@@ -153,7 +157,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
@@ -168,8 +172,9 @@ namespace ranges
       template<__maybe_borrowed_range _Tp>
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_end<_Tp> || __adl_end<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    {
@@ -209,7 +214,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_rbegin<_Tp>)
@@ -232,8 +237,9 @@ namespace ranges
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_rbegin<_Tp> || __adl_rbegin<_Tp> || __reversable<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const
+	operator()(_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_rbegin<_Tp>)
@@ -266,7 +272,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_rend<_Tp>)
@@ -289,8 +295,9 @@ namespace ranges
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_rend<_Tp> || __adl_rend<_Tp> || __reversable<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const
+	operator()(_Tp&& __t) const
 	noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_rend<_Tp>)
@@ -335,7 +342,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
@@ -353,8 +360,9 @@ namespace ranges
       template<typename _Tp>
 	requires is_bounded_array_v<remove_reference_t<_Tp>>
 	  || __member_size<_Tp> || __adl_size<_Tp> || __sentinel_size<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (is_bounded_array_v<remove_reference_t<_Tp>>)
 	    return extent_v<remove_reference_t<_Tp>>;
@@ -373,8 +381,9 @@ namespace ranges
       // 3403. Domain of ranges::ssize(E) doesn't match ranges::size(E)
       template<typename _Tp>
 	requires requires (_Tp& __t) { _Size{}(__t); }
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
+	operator()(_Tp&& __t) const noexcept(noexcept(_Size{}(__t)))
 	{
 	  auto __size = _Size{}(__t);
 	  using __size_type = decltype(__size);
@@ -413,7 +422,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_empty<_Tp>)
@@ -429,8 +438,9 @@ namespace ranges
       template<typename _Tp>
 	requires __member_empty<_Tp> || __size0_empty<_Tp>
 	  || __eq_iter_empty<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr bool
-	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp&>())
 	{
 	  if constexpr (__member_empty<_Tp>)
 	    return bool(__t.empty());
@@ -458,7 +468,7 @@ namespace ranges
     {
     private:
       template<typename _Tp>
-	static constexpr bool
+	static consteval bool
 	_S_noexcept()
 	{
 	  if constexpr (__member_data<_Tp>)
@@ -470,8 +480,9 @@ namespace ranges
     public:
       template<__maybe_borrowed_range _Tp>
 	requires __member_data<_Tp> || __begin_data<_Tp>
+	[[nodiscard, __gnu__::__always_inline__]]
 	constexpr auto
-	operator()[[nodiscard]](_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
+	operator()(_Tp&& __t) const noexcept(_S_noexcept<_Tp>())
 	{
 	  if constexpr (__member_data<_Tp>)
 	    return __t.data();
@@ -632,6 +643,7 @@ namespace ranges
   {
 #if __glibcxx_ranges_as_const // >= C++23
     template<input_range _Range>
+      [[__gnu__::__always_inline__]]
       constexpr auto&
       __possibly_const_range(_Range& __r) noexcept
       {
@@ -645,6 +657,7 @@ namespace ranges
 #else
     // If _To is an lvalue-reference, return const _Tp&, otherwise const _Tp&&.
     template<typename _To, typename _Tp>
+      [[__gnu__::__always_inline__]]
       constexpr decltype(auto)
       __as_const(_Tp& __t) noexcept
       {
@@ -887,7 +900,7 @@ namespace ranges
 		if constexpr (assignable_from<_It&, _Sent>)
 		  __it = std::move(__bound);
 		else if constexpr (random_access_iterator<_It>)
-		  __it += 0;
+		  __it += iter_difference_t<_It>(0);
 		return __n;
 	      }
 	    else if (__diff > 0 ? __n >= __diff : __n <= __diff)
@@ -907,7 +920,7 @@ namespace ranges
 	      {
 		// inline any possible side effects of advance(it, n)
 		if constexpr (random_access_iterator<_It>)
-		  __it += 0;
+		  __it += iter_difference_t<_It>(0);
 		return 0;
 	      }
 	  }
@@ -967,13 +980,13 @@ namespace ranges
       }
 
     template<typename _It, sized_sentinel_for<decay_t<_It>> _Sent>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr iter_difference_t<decay_t<_It>>
       operator()(_It&& __first, _Sent __last) const
       { return __last - static_cast<const decay_t<_It>&>(__first); }
 
     template<range _Range>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr range_difference_t<_Range>
       operator()(_Range&& __r) const
       {
@@ -991,7 +1004,7 @@ namespace ranges
   struct __next_fn final
   {
     template<input_or_output_iterator _It>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x) const
       {
@@ -1000,7 +1013,7 @@ namespace ranges
       }
 
     template<input_or_output_iterator _It>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n) const
       {
@@ -1009,7 +1022,7 @@ namespace ranges
       }
 
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x, _Sent __bound) const
       {
@@ -1018,7 +1031,7 @@ namespace ranges
       }
 
     template<input_or_output_iterator _It, sentinel_for<_It> _Sent>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n, _Sent __bound) const
       {
@@ -1034,7 +1047,7 @@ namespace ranges
   struct __prev_fn final
   {
     template<bidirectional_iterator _It>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x) const
       {
@@ -1043,7 +1056,7 @@ namespace ranges
       }
 
     template<bidirectional_iterator _It>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n) const
       {
@@ -1052,7 +1065,7 @@ namespace ranges
       }
 
     template<bidirectional_iterator _It>
-      [[nodiscard]]
+      [[nodiscard, __gnu__::__always_inline__]]
       constexpr _It
       operator()(_It __x, iter_difference_t<_It> __n, _It __bound) const
       {

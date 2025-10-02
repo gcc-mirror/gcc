@@ -196,6 +196,21 @@ testCallArgs(Args... args)
   VERIFY( q.as_const && q.as_lvalue );
   q = cg(std::move(ci));
   VERIFY( q.as_const && ! q.as_lvalue );
+
+  struct S
+  {
+    int operator()(Args..., long, long) const { return 1; }
+    int operator()(Args..., int, void*) const { return 2; }
+  };
+
+  S s;
+  // literal zero can be converted to any pointer, so (int, void*)
+  // is best candidate
+  VERIFY( s(args..., 0, 0) == 2 );
+  // both arguments are bound to int&&, and no longer can be
+  // converted to pointer, (long, long) is only candidate
+  VERIFY( bind_front(s)(args..., 0, 0) == 1 );
+  VERIFY( bind_front(s, args...)(0, 0) == 1 );
 }
 
 void
@@ -251,22 +266,22 @@ test03()
   static_assert(is_invocable_r_v<void*, const G4&&>);
 }
 
-int f(int i, int j, int k) { return i + j + k; }
+int f(int i, int j, int k) { return i + 2*j + 3*k; }
 
 void
 test04()
 {
   auto g = bind_front(f);
-  VERIFY( g(1, 2, 3) == 6 );
+  VERIFY( g(1, 2, 3) == 14 );
   auto g1 = bind_front(f, 1);
-  VERIFY( g1(2, 3) == 6 );
-  VERIFY( bind_front(g, 1)(2, 3) == 6 );
+  VERIFY( g1(2, 3) == 14 );
+  VERIFY( bind_front(g, 1)(2, 3) == 14 );
   auto g2 = bind_front(f, 1, 2);
-  VERIFY( g2(3) == 6 );
-  VERIFY( bind_front(g1, 2)(3) == 6 );
+  VERIFY( g2(3) == 14 );
+  VERIFY( bind_front(g1, 2)(3) == 14 );
   auto g3 = bind_front(f, 1, 2, 3);
-  VERIFY( g3() == 6 );
-  VERIFY( bind_front(g2, 3)() == 6 );
+  VERIFY( g3() == 14 );
+  VERIFY( bind_front(g2, 3)() == 14 );
 }
 
 struct CountedArg

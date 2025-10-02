@@ -54,6 +54,20 @@ PROCEDURE ToBitset (location: location_t; expr: tree) : tree ;
 
 
 (*
+   ToLoc - convert an expression, expr, to a LOC.
+*)
+
+PROCEDURE ToLoc (location: location_t; expr: tree) : tree ;
+
+
+(*
+   ToPIMByte - convert an expression expr to a PIM BYTE.
+*)
+
+PROCEDURE ToPIMByte (location: location_t; expr: tree) : tree ;
+
+
+(*
    ConvertToPtr - convert an expression to a void *.
 *)
 

@@ -120,6 +120,7 @@
 #define __glibcxx_want_shared_ptr_arrays
 #define __glibcxx_want_shared_ptr_weak_type
 #define __glibcxx_want_smart_ptr_for_overwrite
+#define __glibcxx_want_start_lifetime_as
 #define __glibcxx_want_to_address
 #define __glibcxx_want_transparent_operators
 #define __glibcxx_want_smart_ptr_owner_equality

@@ -134,7 +134,11 @@ enum gomp_interop_flag
    must be stringified).  */
 #define GOMP_ADDITIONAL_ICVS __gomp_additional_icvs
 
+/* GOMP_INDIRECT_ADDR_HMAP points to a hash table and is to be used by
+   newer libgomp, while GOMP_INDIRECT_ADDR_MAP points to a linear table
+   and exists for backward compatibility.  */
 #define GOMP_INDIRECT_ADDR_MAP __gomp_indirect_addr_map
+#define GOMP_INDIRECT_ADDR_HMAP __gomp_indirect_addr_hmap
 
 /* Miscellaneous functions.  */
 extern void *GOMP_PLUGIN_malloc (size_t) __attribute__ ((malloc));

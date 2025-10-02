@@ -37,8 +37,8 @@ unsigned int andc_pp(unsigned int *a, unsigned int *b)
 /* { dg-final { scan-assembler ":36:.\* \{\\*andsi3_\(esa\|zarch\)\}" } } */
 /* { dg-final { scan-assembler ":36:.\* \{\\*xorsi3\}" } } */
 
-/* { dg-final { scan-assembler-times "\tnr\?k\?\t" 4 } } */
-/* { dg-final { scan-assembler-times "\txr\?k\?\t" 4 } } */
+/* { dg-final { scan-assembler-times "\tng\?r\?k\?\t" 4 } } */
+/* { dg-final { scan-assembler-times "\txg\?r\?k\?\t" 4 } } */
 
 int
 main (void)

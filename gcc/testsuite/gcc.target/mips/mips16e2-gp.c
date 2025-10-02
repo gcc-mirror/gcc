@@ -1,4 +1,4 @@
-/* { dg-options "-mno-abicalls -mgpopt -G8 -mabi=32 -mips16 -mmips16e2" } */
+/* { dg-options "-mno-abicalls -mgpopt -G8 -mabi=32 isa_rev=2 -mmips16e2" } */
 /* { dg-skip-if "per-function expected output" { *-*-* } { "-flto" } { "" } } */
  
 /* Generate GP-relative ADDIU.  */

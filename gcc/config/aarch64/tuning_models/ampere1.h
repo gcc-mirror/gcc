@@ -105,7 +105,8 @@ static const struct tune_params ampere1_tunings =
    | AARCH64_EXTRA_TUNE_FULLY_PIPELINED_FMA), /* tune_flags.  */
   &ampere1_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALIGNED,   /* ldp_policy_model.  */
-  AARCH64_LDP_STP_POLICY_ALIGNED    /* stp_policy_model.  */
+  AARCH64_LDP_STP_POLICY_ALIGNED,   /* stp_policy_model.  */
+  nullptr	/* dispatch_constraints.  */
 };
 
 #endif /* GCC_AARCH64_H_AMPERE1.  */

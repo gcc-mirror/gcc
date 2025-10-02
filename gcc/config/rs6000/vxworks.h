@@ -267,6 +267,11 @@ along with GCC; see the file COPYING3.  If not see
 #undef DOT_SYMBOLS
 #define DOT_SYMBOLS 0
 
+/* Allow code model to be selected.  */
+#undef TARGET_CMODEL
+#define TARGET_CMODEL rs6000_current_cmodel
+#define SET_CMODEL(opt) rs6000_current_cmodel = opt
+
 /* For link specs, we leverage the linux configuration bits through
    LINK_OS_EXTRA_SPEC32/64 and need to cancel the default %(link_os)
    expansion in VXWORKS_LINK_SPEC.  */

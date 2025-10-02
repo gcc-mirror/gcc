@@ -3817,6 +3817,9 @@ insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
 	  copy = gfc_copy_expr (param->expr);
 	  *e = *copy;
 	  free (copy);
+	  /* Catch variables declared without a value expression.  */
+	  if (e->expr_type == EXPR_VARIABLE && e->ts.type == BT_PROCEDURE)
+	    e->ts = e->symtree->n.sym->ts;
 	}
     }
 
@@ -3854,7 +3857,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   /* The symbol for the parameter in the template f2k_namespace.  */
   gfc_symbol *param;
   /* The hoped for instance of the PDT.  */
-  gfc_symbol *instance;
+  gfc_symbol *instance = NULL;
   /* The list of parameters appearing in the PDT declaration.  */
   gfc_formal_arglist *type_param_name_list;
   /* Used to store the parameter specification list during recursive calls.  */
@@ -3952,6 +3955,16 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	    }
 	}
 
+      if (kind_expr && kind_expr->expr_type == EXPR_VARIABLE
+	  && kind_expr->ts.type != BT_INTEGER
+	  && kind_expr->symtree->n.sym->ts.type != BT_INTEGER)
+	{
+	  gfc_error ("The type parameter expression at %L must be of INTEGER "
+		     "type and not %s", &kind_expr->where,
+		     gfc_basic_typename (kind_expr->symtree->n.sym->ts.type));
+	  goto error_return;
+	}
+
       /* Store the current parameter expressions in a temporary actual
 	 arglist 'list' so that they can be substituted in the corresponding
 	 expressions in the PDT instance.  */
@@ -4024,6 +4037,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  goto error_return;
 	}
 
+      kind_value = 0;
       gfc_extract_int (kind_expr, &kind_value);
       sprintf (name + strlen (name), "_%d", kind_value);
 
@@ -4062,6 +4076,8 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
   /* Start building the new instance of the parameterized type.  */
   gfc_copy_attr (&instance->attr, &pdt->attr, &pdt->declared_at);
+  if (pdt->attr.use_assoc)
+    instance->module = pdt->module;
   instance->attr.pdt_template = 0;
   instance->attr.pdt_type = 1;
   instance->declared_at = gfc_current_locus;
@@ -4079,7 +4095,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (c1->tb)
 	{
 	  c2->tb = gfc_get_tbp ();
-	  c2->tb = c1->tb;
+	  *c2->tb = *c1->tb;
 	}
 
       /* The order of declaration of the type_specs might not be the
@@ -8973,7 +8989,7 @@ cleanup:
   /* If we are missing an END BLOCK, we created a half-ready namespace.
      Remove it from the parent namespace's sibling list.  */
 
-  while (state == COMP_BLOCK && !got_matching_end)
+  if (state == COMP_BLOCK && !got_matching_end)
     {
       parent_ns = gfc_current_ns->parent;
 

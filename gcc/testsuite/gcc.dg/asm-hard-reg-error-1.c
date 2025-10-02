@@ -1,4 +1,4 @@
-/* { dg-do compile { target aarch64*-*-* arm*-*-* i?86-*-* powerpc*-*-* riscv*-*-* s390*-*-* x86_64-*-* } } */
+/* { dg-do compile { target aarch64*-*-* arm*-*-* i?86-*-* powerpc*-*-* pru*-*-* riscv*-*-* s390*-*-* x86_64-*-* } } */
 
 #if defined (__aarch64__)
 # define GPR1_RAW "x0"
@@ -20,6 +20,11 @@
 # define GPR2 "{r5}"
 # define GPR3 "{r6}"
 # define INVALID_GPR_A "{r33}"
+#elif defined (__PRU__)
+# define GPR1_RAW "r20"
+# define GPR2 "{r21}"
+# define GPR3 "{r22}"
+# define INVALID_GPR_A "{r34}"
 #elif defined (__riscv)
 # define GPR1_RAW "t4"
 # define GPR2 "{t5}"

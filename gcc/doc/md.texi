@@ -5330,7 +5330,7 @@ The split is possible in this case if:
 @item @samp{vec_cmp@var{m}@var{n}}
 Output a vector comparison.  Operand 0 of mode @var{n} is the destination for
 predicate in operand 1 which is a signed vector comparison with operands of
-mode @var{m} in operands 2 and 3.  Predicate is computed by element-wise
+mode @var{m} in operands 2 and 3.  Predicate is computed by elementwise
 evaluation of the vector comparison with a truth value of all-ones and a false
 value of all-zeros.
 
@@ -6086,6 +6086,25 @@ Signed/Unsigned widening absolute difference.  Operands 1 and 2 are
 vectors with N signed/unsigned elements of size S@.  Find the absolute
 difference between operands 1 and 2 and widen the resulting elements.
 Put the N/2 results of size 2*S in the output vector (operand 0).
+
+@cindex @code{vec_trunc_add_high@var{m}} instruction pattern
+@item @samp{vec_trunc_add_high@var{m}}
+Signed or unsigned addition of two input integer vectors of mode @var{m}, then
+extracts the most significant half of each result element and narrows it to
+elements of half the original width.
+
+Concretely, it computes:
+@code{(bits(a)/2)((a + b) >> bits(a)/2)}
+
+where @code{bits(a)} is the width in bits of each input element.
+
+Operand 1 and 2 are of integer vector mode @var{m} containing the same number
+of signed or unsigned integral elements.  The result (operand @code{0}) is of an
+integer vector mode with the same number of elements but elements of half of the
+width of those of mode @var{m}.
+
+This operation currently only used for early break result compression when the
+result of a vector boolean can be represented as 0 or -1.
 
 @cindex @code{vec_addsub@var{m}3} instruction pattern
 @item @samp{vec_addsub@var{m}3}
@@ -8613,6 +8632,12 @@ This pattern is not allowed to @code{FAIL}.
 @item @samp{isfinite@var{m}2}
 Return 1 if operand 1 is a finite floating point number and 0
 otherwise.  @var{m} is a scalar floating point mode.  Operand 0
+has mode @code{SImode}, and operand 1 has mode @var{m}.
+
+@cindex @code{isnan@var{m}2} instruction pattern
+@item @samp{isnan@var{m}2}
+Return 1 if operand 1 is a @code{NaN} and 0 otherwise.
+@var{m} is a scalar floating point mode.  Operand 0
 has mode @code{SImode}, and operand 1 has mode @var{m}.
 
 @cindex @code{isnormal@var{m}2} instruction pattern

@@ -124,6 +124,8 @@ package body Ch12 is
             Check_Misspelling_Of (Tok_Renames);
 
             if Token = Tok_Renames then
+               Scan; -- past RENAMES
+
                if Ren_Token = Tok_Package then
                   Decl_Node := New_Node
                     (N_Generic_Package_Renaming_Declaration, Gen_Sloc);
@@ -137,10 +139,8 @@ package body Ch12 is
                     (N_Generic_Function_Renaming_Declaration, Gen_Sloc);
                end if;
 
-               Scan; -- past RENAMES
                Set_Defining_Unit_Name (Decl_Node, Def_Unit);
-               Set_Name (Decl_Node, P_Name);
-
+               Set_Name (Decl_Node, P_Generic_Unit_Name);
                P_Aspect_Specifications (Decl_Node, Semicolon => False);
                TF_Semicolon;
                return Decl_Node;
@@ -944,7 +944,7 @@ package body Ch12 is
          Set_Interface_List (Def_Node, New_List);
 
          loop
-            Append (P_Qualified_Simple_Name, Interface_List (Def_Node));
+            Append (P_Subtype_Name, Interface_List (Def_Node));
             exit when Token /= Tok_And;
             Scan; -- past AND
          end loop;
@@ -1285,7 +1285,7 @@ package body Ch12 is
       Set_Defining_Identifier (Def_Node, P_Defining_Identifier (C_Is));
       T_Is;
       T_New;
-      Set_Name (Def_Node, P_Qualified_Simple_Name);
+      Set_Name (Def_Node, P_Generic_Unit_Name);
 
       if Token = Tok_Left_Paren then
          Save_Scan_State (Scan_State); -- at the left paren

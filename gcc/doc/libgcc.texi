@@ -454,9 +454,9 @@ otherwise from signed bit-precise integer.
 
 There are two sets of basic comparison functions.
 
-@deftypefn {Runtime Function} int __cmpsf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __cmpdf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __cmptf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __cmpsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __cmpdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __cmptf2 (long double @var{a}, long double @var{b})
 These functions calculate @math{a <=> b}.  That is, if @var{a} is less
 than @var{b}, they return @minus{}1; if @var{a} is greater than @var{b}, they
 return 1; and if @var{a} and @var{b} are equal they return 0.  If
@@ -465,9 +465,9 @@ if NaN is a possibility, use one of the higher-level comparison
 functions.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __unordsf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __unorddf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __unordtf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __unordsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __unorddf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __unordtf2 (long double @var{a}, long double @var{b})
 These functions return a nonzero value if either argument is NaN, otherwise 0.
 @end deftypefn
 
@@ -489,48 +489,54 @@ NaN@.  Thus, the meaning of the return value is different for each set.
 Do not rely on this implementation; only the semantics documented
 below are guaranteed.
 
-@deftypefn {Runtime Function} int __eqsf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __eqdf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __eqtf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __eqsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __eqdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __eqtf2 (long double @var{a}, long double @var{b})
 These functions return zero if neither argument is NaN, and @var{a} and
 @var{b} are equal.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __nesf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __nedf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __netf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __nesf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __nedf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __netf2 (long double @var{a}, long double @var{b})
 These functions return a nonzero value if either argument is NaN, or
 if @var{a} and @var{b} are unequal.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __gesf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __gedf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __getf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __gesf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __gedf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __getf2 (long double @var{a}, long double @var{b})
 These functions return a value greater than or equal to zero if
 neither argument is NaN, and @var{a} is greater than or equal to
 @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __ltsf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __ltdf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __lttf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __ltsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __ltdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __lttf2 (long double @var{a}, long double @var{b})
 These functions return a value less than zero if neither argument is
 NaN, and @var{a} is strictly less than @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __lesf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __ledf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __letf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __lesf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __ledf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __letf2 (long double @var{a}, long double @var{b})
 These functions return a value less than or equal to zero if neither
 argument is NaN, and @var{a} is less than or equal to @var{b}.
 @end deftypefn
 
-@deftypefn {Runtime Function} int __gtsf2 (float @var{a}, float @var{b})
-@deftypefnx {Runtime Function} int __gtdf2 (double @var{a}, double @var{b})
-@deftypefnx {Runtime Function} int __gttf2 (long double @var{a}, long double @var{b})
+@deftypefn {Runtime Function} CMPtype __gtsf2 (float @var{a}, float @var{b})
+@deftypefnx {Runtime Function} CMPtype __gtdf2 (double @var{a}, double @var{b})
+@deftypefnx {Runtime Function} CMPtype __gttf2 (long double @var{a}, long double @var{b})
 These functions return a value greater than zero if neither argument
 is NaN, and @var{a} is strictly greater than @var{b}.
 @end deftypefn
+
+Comparison functions return a @code{CMPtype} which is a signed integer of
+target-dependent size.  Typically @code{CMPtype} will be word-sized, but
+other backends may override this with the @code{TARGET_LIBGCC_CMP_RETURN_MODE}
+hook.  Of note, AArch64 uses an single-int as the return type, and AVR uses
+a quarter-int.
 
 @subsection Other floating-point functions
 

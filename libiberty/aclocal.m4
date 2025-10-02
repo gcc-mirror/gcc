@@ -14,6 +14,7 @@
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_include([../config/acx.m4])
 m4_include([../config/cet.m4])
+m4_include([../config/clang-plugin.m4])
 m4_include([../config/enable.m4])
 m4_include([../config/gcc-plugin.m4])
 m4_include([../config/hwcaps.m4])

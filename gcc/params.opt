@@ -66,6 +66,10 @@ Enable asan stack protection.
 Common Joined UInteger Var(param_asan_use_after_return) Init(1) IntegerRange(0, 1) Param Optimization
 Enable asan detection of use-after-return bugs.
 
+-param=auto-profile-bbs=
+Common Joined UInteger Var(param_auto_profile_bbs) Init(1) IntegerRange(0, 1) Param Optimization
+Build basic block profile using auto profile
+
 -param=cycle-accurate-model=
 Common Joined UInteger Var(param_cycle_accurate_model) Init(1) IntegerRange(0, 1) Param Optimization
 Whether the scheduling description is mostly a cycle-accurate model of the target processor and is likely to be spill aggressively to fill any pipeline bubbles.
@@ -462,7 +466,7 @@ Common Joined UInteger Var(param_min_partition_size) Init(10000) Param
 Minimal size of a partition for LTO (in estimated instructions).
 
 -param=lto-partitions=
-Common Joined UInteger Var(param_lto_partitions) Init(128) IntegerRange(1, 65536) Param
+Common Joined UInteger Var(param_lto_partitions) Init(512) IntegerRange(1, 65536) Param
 Number of partitions the program should be split to.
 
 Enum
@@ -547,6 +551,10 @@ The maximum number of instructions to consider to find accurate live register in
 -param=max-dse-active-local-stores=
 Common Joined UInteger Var(param_max_dse_active_local_stores) Init(5000) Param Optimization
 Maximum number of active local stores in RTL dead store elimination.
+
+-param=max-devirt-targets=
+Common Joined UInteger Var(param_max_devirt_targets) Init(3) Param Optimization
+Maximum number of targets to devirutalize.
 
 -param=max-early-inliner-iterations=
 Common Joined UInteger Var(param_early_inliner_max_iterations) Init(1) Param Optimization

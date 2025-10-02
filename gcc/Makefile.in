@@ -1448,6 +1448,7 @@ OBJS = \
 	dce.o \
 	ddg.o \
 	debug.o \
+	dep-fusion.o \
 	df-core.o \
 	df-problems.o \
 	df-scan.o \
@@ -1907,6 +1908,9 @@ OBJS-libcommon-target = $(common_out_object_file) prefix.o \
 # This lists all host objects for the front ends.
 ALL_HOST_FRONTEND_OBJS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_OBJS))
 
+# All auto-profile files
+ALL_FDAS = $(foreach v,$(CONFIG_LANGUAGES),$($(v)_FDAS))
+
 ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
   $(OBJS-libcommon-target) main.o c-family/cppspec.o \
   $(COLLECT2_OBJS) $(EXTRA_GCC_OBJS) $(GCOV_OBJS) $(GCOV_DUMP_OBJS) \
@@ -1917,8 +1921,8 @@ ALL_HOST_BACKEND_OBJS = $(GCC_OBJS) $(OBJS) $(OBJS-libcommon) \
 # is likely the most exercised during the build
 ifeq ($(if $(wildcard ../stage_current),$(shell cat \
   ../stage_current)),stageautofeedback)
-$(ALL_HOST_BACKEND_OBJS): ALL_COMPILERFLAGS += -fauto-profile=cc1plus.fda
-$(ALL_HOST_BACKEND_OBJS): cc1plus.fda
+$(ALL_HOST_BACKEND_OBJS): ALL_COMPILERFLAGS += -fauto-profile=all.fda
+$(ALL_HOST_BACKEND_OBJS): all.fda
 endif
 
 # This lists all host object files, whether they are included in this
@@ -4742,6 +4746,9 @@ paranoia.o: $(srcdir)/../contrib/paranoia.cc $(CONFIG_H) $(SYSTEM_H) $(TREE_H)
 
 paranoia: paranoia.o real.o $(LIBIBERTY)
 	g++ -o $@ paranoia.o real.o $(LIBIBERTY)
+
+all.fda: $(ALL_FDAS)
+	$(PROFILE_MERGER) $(ALL_FDAS) --output_file all.fda -gcov_version 2
 
 # These exist for maintenance purposes.
 

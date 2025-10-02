@@ -28,7 +28,6 @@ char *ix86_target_string (HOST_WIDE_INT isa, HOST_WIDE_INT isa2,
 			  enum fpmath_unit fpmath,
 			  enum prefer_vector_width pvw,
 			  enum prefer_vector_width move_max,
-			  enum prefer_vector_width store_max,
 			  bool add_nl_p, bool add_abi_p);
 
 extern enum attr_cpu ix86_schedule;

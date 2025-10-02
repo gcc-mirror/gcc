@@ -1564,7 +1564,7 @@ DEFINE_RISCV_EXT(
   /* FULL_NAME */ "sdtrig extension",
   /* DESC */ "",
   /* URL */ ,
-  /* DEP_EXTS */ ({}),
+  /* DEP_EXTS */ ({"zicsr"}),
   /* SUPPORTED_VERSIONS */ ({{1, 0}}),
   /* FLAG_GROUP */ sd,
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
@@ -1941,7 +1941,7 @@ DEFINE_RISCV_EXT(
   /* FULL_NAME */ "ssstrict extension",
   /* DESC */ "",
   /* URL */ ,
-  /* DEP_EXTS */ ({}),
+  /* DEP_EXTS */ ({"zicsr"}),
   /* SUPPORTED_VERSIONS */ ({{1, 0}}),
   /* FLAG_GROUP */ ss,
   /* BITMASK_GROUP_ID */ BITMASK_NOT_YET_ALLOCATED,
@@ -2083,3 +2083,4 @@ DEFINE_RISCV_EXT(
 #include "riscv-ext-thead.def"
 #include "riscv-ext-ventana.def"
 #include "riscv-ext-mips.def"
+#include "riscv-ext-andes.def"

@@ -62,4 +62,17 @@ package body Ada.Strings.Wide_Wide_Unbounded.Aux is
       UP.Last := UP.Reference'Length;
    end Set_Wide_Wide_String;
 
+   procedure Set_Wide_Wide_String
+     (U      : out Unbounded_Wide_Wide_String;
+      Length : Positive;
+      Set    : not null access procedure (S : out Wide_Wide_String))
+   is
+      Old : Wide_Wide_String_Access := U.Reference;
+   begin
+      U.Last := Length;
+      U.Reference := new Wide_Wide_String (1 .. Length);
+      Set (U.Reference.all);
+      Free (Old);
+   end Set_Wide_Wide_String;
+
 end Ada.Strings.Wide_Wide_Unbounded.Aux;

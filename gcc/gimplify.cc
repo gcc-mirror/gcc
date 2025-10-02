@@ -1280,7 +1280,8 @@ build_stack_save_restore (gcall **save, gcall **restore)
 			 1, tmp_var);
 }
 
-/* Generate IFN_ASAN_MARK call that poisons shadow of a for DECL variable.  */
+/* Generate IFN_ASAN_MARK call that poisons shadow memory of the DECL
+   variable.  */
 
 static tree
 build_asan_poison_call_expr (tree decl)
@@ -7930,6 +7931,8 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       bool ok;
       size_t constraint_len;
 
+      if (error_operand_p (TREE_VALUE (link)))
+	return GS_ERROR;
       link_next = TREE_CHAIN (link);
 
       oconstraints[i]
@@ -7951,10 +7954,9 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
       /* If we can't make copies, we can only accept memory.
 	 Similarly for VLAs.  */
       tree outtype = TREE_TYPE (TREE_VALUE (link));
-      if (outtype != error_mark_node
-	  && (TREE_ADDRESSABLE (outtype)
-	      || !COMPLETE_TYPE_P (outtype)
-	      || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (outtype))))
+      if (TREE_ADDRESSABLE (outtype)
+	  || !COMPLETE_TYPE_P (outtype)
+	  || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (outtype)))
 	{
 	  if (allows_mem)
 	    allows_reg = 0;
@@ -8155,6 +8157,8 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   int input_num = 0;
   for (link = ASM_INPUTS (expr); link; ++input_num, ++i, link = link_next)
     {
+      if (error_operand_p (TREE_VALUE (link)))
+	return GS_ERROR;
       link_next = TREE_CHAIN (link);
       constraint = TREE_STRING_POINTER (TREE_VALUE (TREE_PURPOSE (link)));
       reg_info.operand = TREE_VALUE (link);
@@ -8169,10 +8173,9 @@ gimplify_asm_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 
       /* If we can't make copies, we can only accept memory.  */
       tree intype = TREE_TYPE (TREE_VALUE (link));
-      if (intype != error_mark_node
-	  && (TREE_ADDRESSABLE (intype)
-	      || !COMPLETE_TYPE_P (intype)
-	      || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (intype))))
+      if (TREE_ADDRESSABLE (intype)
+	  || !COMPLETE_TYPE_P (intype)
+	  || !tree_fits_poly_uint64_p (TYPE_SIZE_UNIT (intype)))
 	{
 	  if (allows_mem)
 	    allows_reg = 0;

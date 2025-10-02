@@ -165,7 +165,8 @@ static const struct tune_params a64fx_tunings =
   (AARCH64_EXTRA_TUNE_NONE),	/* tune_flags.  */
   &a64fx_prefetch_tune,
   AARCH64_LDP_STP_POLICY_ALWAYS,   /* ldp_policy_model.  */
-  AARCH64_LDP_STP_POLICY_ALWAYS    /* stp_policy_model.  */
+  AARCH64_LDP_STP_POLICY_ALWAYS,   /* stp_policy_model.  */
+  nullptr	/* dispatch_constraints.  */
 };
 
 #endif /* GCC_AARCH64_H_A64FX.  */

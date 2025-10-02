@@ -983,6 +983,12 @@ extern GTY(()) tree gfor_fndecl_iargc;
 extern GTY(()) tree gfor_fndecl_kill;
 extern GTY(()) tree gfor_fndecl_kill_sub;
 extern GTY(()) tree gfor_fndecl_is_contiguous0;
+extern GTY(()) tree gfor_fndecl_fstat_i4_sub;
+extern GTY(()) tree gfor_fndecl_fstat_i8_sub;
+extern GTY(()) tree gfor_fndecl_lstat_i4_sub;
+extern GTY(()) tree gfor_fndecl_lstat_i8_sub;
+extern GTY(()) tree gfor_fndecl_stat_i4_sub;
+extern GTY(()) tree gfor_fndecl_stat_i8_sub;
 
 /* Implemented in Fortran.  */
 extern GTY(()) tree gfor_fndecl_sc_kind;

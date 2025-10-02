@@ -313,6 +313,16 @@ TEST_UNIFORM_Z (mul_1op1_u32_z_tied2, svuint32_t,
 		z0 = svmul_z (p0, svdup_u32 (1), z0))
 
 /*
+** mul_1op1n_u32_z:
+**	movprfx	z0\.s, p0/z, z0\.s
+**	mov	z0\.s, p0/m, w0
+**	ret
+*/
+TEST_UNIFORM_ZX (mul_1op1n_u32_z, svuint32_t, uint32_t,
+	z0 = svmul_n_u32_z (p0, svdup_u32 (1), x0),
+	z0 = svmul_z (p0, svdup_u32 (1), x0))
+
+/*
 ** mul_3_u32_z_tied1:
 **	mov	(z[0-9]+\.s), #3
 **	movprfx	z0\.s, p0/z, z0\.s

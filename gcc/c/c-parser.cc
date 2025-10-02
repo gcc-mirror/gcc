@@ -3222,7 +3222,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       else
 	fnbody = c_parser_compound_statement (parser, &endloc);
       tree fndecl = current_function_decl;
-      if (nested)
+      if (nested && specs->declspec_il == cdil_none)
 	{
 	  tree decl = current_function_decl;
 	  /* Mark nested functions as needing static-chain initially.
@@ -3234,6 +3234,15 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  finish_function (endloc);
 	  c_pop_function_context ();
 	  add_stmt (build_stmt (DECL_SOURCE_LOCATION (decl), DECL_EXPR, decl));
+	}
+      else if (nested)
+	{
+	  if (specs->declspec_il == cdil_rtl)
+	    error ("%<__RTL%> function cannot be a nested function");
+	  else
+	    error ("%<__GIMPLE%> function cannot be a nested function");
+	  finish_function (endloc);
+	  c_pop_function_context ();
 	}
       else
 	{
@@ -27767,6 +27776,13 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
       clauses[0].type = CPP_EOF;
       return;
     }
+  if (DECL_FUNCTION_VERSIONED (fndecl))
+    {
+      error_at (DECL_SOURCE_LOCATION (fndecl),
+		"%<#pragma omp declare %s%> cannot be used with function "
+		"multi-versioning", kind);
+      return;
+    }
 
   if (parms == NULL_TREE)
     parms = DECL_ARGUMENTS (fndecl);
@@ -30173,10 +30189,12 @@ c_parser_transaction (c_parser *parser, enum rid keyword)
   if (flag_tm)
     stmt = c_finish_transaction (loc, stmt, this_in);
   else
-    error_at (loc, (keyword == RID_TRANSACTION_ATOMIC ?
-	"%<__transaction_atomic%> without transactional memory support enabled"
-	: "%<__transaction_relaxed %> "
-	"without transactional memory support enabled"));
+    error_at (loc, 
+	      keyword == RID_TRANSACTION_ATOMIC
+	      ? G_("%<__transaction_atomic%> without transactional memory "
+		   "support enabled")
+	      : G_("%<__transaction_relaxed%> without transactional memory "
+		   "support enabled"));
 
   return stmt;
 }
@@ -30240,10 +30258,12 @@ c_parser_transaction_expression (c_parser *parser, enum rid keyword)
   parser->in_transaction = old_in;
 
   if (!flag_tm)
-    error_at (loc, (keyword == RID_TRANSACTION_ATOMIC ?
-	"%<__transaction_atomic%> without transactional memory support enabled"
-	: "%<__transaction_relaxed %> "
-	"without transactional memory support enabled"));
+    error_at (loc,
+	      keyword == RID_TRANSACTION_ATOMIC
+	      ? G_("%<__transaction_atomic%> without transactional memory "
+		   "support enabled")
+	      : G_("%<__transaction_relaxed%> without transactional memory "
+		   "support enabled"));
 
   set_c_expr_source_range (&ret, loc, loc);
 

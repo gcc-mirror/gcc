@@ -138,6 +138,65 @@ gfc_get_parentheses (gfc_expr *e)
   return e2;
 }
 
+/* Match a conditional expression.  */
+
+static match
+match_conditional (gfc_expr **result)
+{
+  gfc_expr *condition, *true_expr, *false_expr;
+  locus where;
+  match m;
+
+  where = gfc_current_locus;
+
+  m = gfc_match_expr (&condition);
+  if (m != MATCH_YES)
+    {
+      gfc_error (expression_syntax);
+      return MATCH_ERROR;
+    }
+
+  m = gfc_match_char ('?');
+  if (m != MATCH_YES)
+    {
+      *result = condition;
+      return MATCH_YES;
+    }
+  else if (!gfc_notify_std (GFC_STD_F2023, "Conditional expression at %L",
+			    &where))
+    {
+      gfc_free_expr (condition);
+      return MATCH_ERROR;
+    }
+
+  gfc_gobble_whitespace ();
+  m = gfc_match_expr (&true_expr);
+  if (m != MATCH_YES)
+    {
+      gfc_free_expr (condition);
+      return m;
+    }
+
+  m = gfc_match_char (':');
+  if (m != MATCH_YES)
+    {
+      gfc_error ("Expected ':' in conditional expression at %C");
+      gfc_free_expr (condition);
+      gfc_free_expr (true_expr);
+      return MATCH_ERROR;
+    }
+
+  m = match_conditional (&false_expr);
+  if (m != MATCH_YES)
+    {
+      gfc_free_expr (condition);
+      gfc_free_expr (true_expr);
+      return m;
+    }
+
+  *result = gfc_get_conditional_expr (&where, condition, true_expr, false_expr);
+  return MATCH_YES;
+}
 
 /* Match a primary expression.  */
 
@@ -163,20 +222,20 @@ match_primary (gfc_expr **result)
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
 
-  m = gfc_match_expr (&e);
-  if (m == MATCH_NO)
-    goto syntax;
-  if (m == MATCH_ERROR)
+  m = match_conditional (&e);
+  if (m != MATCH_YES)
     return m;
 
   m = gfc_match_char (')');
   if (m == MATCH_NO)
     gfc_error ("Expected a right parenthesis in expression at %C");
 
-  /* Now we have the expression inside the parentheses, build the
-     expression pointing to it. By 7.1.7.2, any expression in
-     parentheses shall be treated as a data entity.  */
-  *result = gfc_get_parentheses (e);
+  /* Now we have the expression inside the parentheses, build the expression
+     pointing to it. By 7.1.7.2, any expression in parentheses shall be treated
+     as a data entity.
+     Note that if the expression is a conditional expression, we will omit the
+     extra parentheses.  */
+  *result = e->expr_type == EXPR_CONDITIONAL ? e : gfc_get_parentheses (e);
 
   if (m != MATCH_YES)
     {
@@ -185,10 +244,6 @@ match_primary (gfc_expr **result)
     }
 
   return MATCH_YES;
-
-syntax:
-  gfc_error (expression_syntax);
-  return MATCH_ERROR;
 }
 
 

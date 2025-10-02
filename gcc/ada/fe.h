@@ -315,6 +315,7 @@ extern Boolean Is_Null_Range 		(Node_Id, Node_Id);
 #define First_Actual			sem_util__first_actual
 #define Has_Storage_Model_Type_Aspect	sem_util__storage_model_support__has_storage_model_type_aspect
 #define Has_Designated_Storage_Model_Aspect sem_util__storage_model_support__has_designated_storage_model_aspect
+#define Is_Extended_Access_Type sem_util__is_extended_access_type
 #define Is_Expression_Function		sem_util__is_expression_function
 #define Is_Variable_Size_Record 	sem_util__is_variable_size_record
 #define Needs_Secondary_Stack		sem_util__needs_secondary_stack
@@ -327,6 +328,7 @@ extern Entity_Id Defining_Entity		(Node_Id);
 extern Node_Id First_Actual			(Node_Id);
 extern Boolean Has_Storage_Model_Type_Aspect	(Entity_Id);
 extern Boolean Has_Designated_Storage_Model_Aspect (Entity_Id);
+extern Boolean Is_Extended_Access_Type	(Entity_Id);
 extern Boolean Is_Expression_Function		(Entity_Id);
 extern Boolean Is_Variable_Size_Record 		(Entity_Id);
 extern Boolean Needs_Secondary_Stack		(Entity_Id);

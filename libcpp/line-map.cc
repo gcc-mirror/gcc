@@ -2326,7 +2326,7 @@ rich_location::get_expanded_location (unsigned int idx) const
        {
 	  m_expanded_location
 	    = linemap_client_expand_location_to_spelling_point
-		(m_line_table, get_loc (0), LOCATION_ASPECT_CARET);
+		(m_line_table, get_loc (0), location_aspect::caret);
 	  if (m_column_override)
 	    m_expanded_location.column = m_column_override;
 	  m_have_expanded_location = true;
@@ -2336,7 +2336,7 @@ rich_location::get_expanded_location (unsigned int idx) const
    }
   else
     return linemap_client_expand_location_to_spelling_point
-	     (m_line_table, get_loc (idx), LOCATION_ASPECT_CARET);
+	     (m_line_table, get_loc (idx), location_aspect::caret);
 }
 
 /* Set the column of the primary location, with 0 meaning
@@ -2611,11 +2611,11 @@ rich_location::maybe_add_fixit (location_t start,
   expanded_location exploc_start
     = linemap_client_expand_location_to_spelling_point (m_line_table,
 							start,
-							LOCATION_ASPECT_START);
+							location_aspect::start);
   expanded_location exploc_next_loc
     = linemap_client_expand_location_to_spelling_point (m_line_table,
 							next_loc,
-							LOCATION_ASPECT_START);
+							location_aspect::start);
   /* They must be within the same file...  */
   if (exploc_start.file != exploc_next_loc.file)
     {
@@ -2717,7 +2717,7 @@ fixit_hint::affects_line_p (const line_maps *set,
   expanded_location exploc_start
     = linemap_client_expand_location_to_spelling_point (set,
 							m_start,
-							LOCATION_ASPECT_START);
+							location_aspect::start);
   if (file != exploc_start.file)
     return false;
   if (line < exploc_start.line)
@@ -2725,7 +2725,7 @@ fixit_hint::affects_line_p (const line_maps *set,
   expanded_location exploc_next_loc
     = linemap_client_expand_location_to_spelling_point (set,
 							m_next_loc,
-							LOCATION_ASPECT_START);
+							location_aspect::start);
   if (file != exploc_next_loc.file)
     return false;
   if (line > exploc_next_loc.line)

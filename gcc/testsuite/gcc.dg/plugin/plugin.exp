@@ -70,12 +70,14 @@ set plugin_test_list [list \
     { poly-int-06_plugin.cc poly-int-test-1.c } \
     { poly-int-07_plugin.cc poly-int-test-1.c } \
     { crash_test_plugin.cc \
-	  crash-test-ice-stderr.c \
-	  crash-test-write-though-null-stderr.c \
-	  crash-test-ice-sarif.c \
 	  crash-test-ice-in-header-sarif-2.1.c \
 	  crash-test-ice-in-header-sarif-2.2.c \
-	  crash-test-write-though-null-sarif.c } \
+	  crash-test-ice-sarif.c \
+	  crash-test-ice-stderr.c \
+	  crash-test-nested-ice.c \
+	  crash-test-nested-write-through-null.c \
+	  crash-test-write-through-null-sarif.c \
+	  crash-test-write-through-null-stderr.c } \
     { diagnostic_group_plugin.cc \
 	  diagnostic-group-test-1.c } \
     { diagnostic_plugin_test_show_locus.cc \

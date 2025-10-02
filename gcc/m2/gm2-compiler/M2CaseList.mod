@@ -326,9 +326,9 @@ BEGIN
                ELSE
                   IF r^.high=NulSym
                   THEN
-                     MetaError1('the CASE statement variant must be defined by a constant {%1Da:is a {%1d}}', r^.low)
+                     MetaError1('the CASE statement variant must be defined by a constant {%1Da:is a {%1dv}}', r^.low)
                   ELSE
-                     MetaError1('the CASE statement variant low value in a range must be defined by a constant {%1Da:is a {%1d}}',
+                     MetaError1('the CASE statement variant low value in a range must be defined by a constant {%1Da:is a {%1dv}}',
                                 r^.low)
                   END
                END
@@ -343,7 +343,7 @@ BEGIN
                      RETURN( FALSE )
                   END
                ELSE
-                  MetaError1('the CASE statement variant high value in a range must be defined by a constant {%1Da:is a {%1d}}',
+                  MetaError1('the CASE statement variant high value in a range must be defined by a constant {%1Da:is a {%1dv}}',
                              r^.high)
                END
             END ;
@@ -1306,7 +1306,7 @@ BEGIN
       consttype := GetType (constant) ;
       IF NOT IsExpressionCompatible (consttype, type)
       THEN
-         MetaError2 ('the case statement variant tag {%1ad} must be type compatible with the constant {%2Da:is a {%2d}}',
+         MetaError2 ('the case statement variant tag {%1ad} must be type compatible with the constant {%2Da:is a {%2dv}}',
                      type, constant) ;
          RETURN FALSE
       END

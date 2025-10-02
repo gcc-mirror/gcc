@@ -41,10 +41,11 @@ PPG-DEFS         = SymbolKey.def   NameKey.def  Lists.def  bnflex.def  Output.de
 PPG-LIB-DEFS     = Args.def Assertion.def ASCII.def Debug.def \
                    DynamicStrings.def FIO.def Indexing.def IO.def \
                    NumberIO.def PushBackInput.def \
-                   M2Dependent.def \
+                   M2Dependent.def M2Diagnostic.def \
                    M2EXCEPTION.def M2RTS.def \
                    RTExceptions.def \
                    StdIO.def SFIO.def StrIO.def StrLib.def \
+                   StringConvert.def \
                    Storage.def StrCase.def SysStorage.def
 
 # Core library implementation modules used by ppg found in the gm2-libs directory.
@@ -58,6 +59,7 @@ PPG-LIB-MODS     = ASCII.mod \
                    IO.mod \
                    Indexing.mod \
                    M2Dependent.mod \
+                   M2Diagnostic.mod \
                    M2EXCEPTION.mod \
                    M2RTS.mod \
                    NumberIO.mod \
@@ -69,6 +71,7 @@ PPG-LIB-MODS     = ASCII.mod \
                    StrCase.mod \
                    StrIO.mod \
                    StrLib.mod \
+                   StringConvert.mod \
                    SysStorage.mod
 
 # Program module ppg.mod from which pge.mod is created.  ppg.mod is
@@ -96,6 +99,7 @@ PGE-DEF = ASCII.def \
    FpuIO.def \
    IO.def \
    M2Dependent.def \
+   M2Diagnostic.def \
    M2EXCEPTION.def \
    M2RTS.def \
    MemUtils.def \
@@ -169,6 +173,8 @@ PGE-DEPS = Gabort.cc \
    GLists.h \
    GM2Dependent.cc \
    GM2Dependent.h \
+   GM2Diagnostic.cc \
+   GM2Diagnostic.h \
    GM2EXCEPTION.cc \
    GM2EXCEPTION.h \
    GM2RTS.cc \

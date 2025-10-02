@@ -32,6 +32,7 @@
 #define _RANDOM_H 1
 
 #include <vector>
+#include <bits/ios_base.h>
 #include <bits/uniform_int_dist.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
@@ -1688,6 +1689,263 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     { return !(__lhs == __rhs); }
 #endif
 
+#if __glibcxx_philox_engine // >= C++26
+  /**
+   * @brief A discrete pseudorandom number generator with weak cryptographic
+   * properties
+   *
+   * This algorithm was designed to be used for highly parallel random number
+   * generation, and is capable of immensely long periods.  It provides
+   * "Crush-resistance", denoting an ability to pass the TestU01 Suite's
+   * "Big Crush" test, demonstrating significant apparent entropy.
+   *
+   * It is not intended for cryptographic use and should not be used for such,
+   * despite being based on cryptographic primitives.
+   *
+   * The typedefs `philox4x32` and `philox4x64` are provided as suitable
+   * defaults for most use cases, providing high-quality random numbers
+   * with reasonable performance.
+   *
+   * This algorithm was created by John Salmon, Mark Moraes, Ron Dror, and
+   * David Shaw as a product of D.E. Shaw Research.
+   *
+   * @tparam __w  	Word size
+   * @tparam __n  	Buffer size
+   * @tparam __r  	Rounds
+   * @tparam __consts	Multiplication and round constant pack, ordered as
+   * 			M_{0}, C_{0}, M_{1}, C_{1}, ... , M_{N/2-1}, C_{N/2-1}
+   *
+   * @headerfile random
+   * @since C++26
+   */
+  template<typename _UIntType, size_t __w, size_t __n, size_t __r,
+	   _UIntType... __consts>
+    class philox_engine
+    {
+      static_assert(__n == 2 || __n == 4,
+	      "template argument N must be either 2 or 4");
+      static_assert(sizeof...(__consts) == __n,
+	      "length of consts array must match specified N");
+      static_assert(0 < __r, "a number of rounds must be specified");
+      static_assert((0 < __w && __w <= numeric_limits<_UIntType>::digits),
+	      "specified bitlength must match input type");
+
+      template<typename _Sseq>
+	static constexpr bool __is_seed_seq = requires {
+	  typename __detail::_If_seed_seq_for<_Sseq, philox_engine, _UIntType>;
+	};
+
+      template <size_t __ind0, size_t __ind1>
+	static constexpr
+	array<_UIntType, __n / 2>
+	_S_popArray()
+	{
+	  if constexpr (__n == 4)
+	    return {__consts...[__ind0], __consts...[__ind1]};
+	  else
+	    return {__consts...[__ind0]};
+	}
+
+      public:
+	using result_type = _UIntType;
+	// public members
+	static constexpr size_t word_size = __w;
+	static constexpr size_t word_count = __n;
+	static constexpr size_t round_count = __r;
+	static constexpr array<result_type, __n / 2> multipliers
+	  = _S_popArray<0,2>();
+	static constexpr array<result_type, __n / 2> round_consts
+	  = _S_popArray<1,3>();
+
+	/// The minimum value that this engine can return
+	static constexpr result_type
+	min()
+	{ return 0; }
+
+	/// The maximum value that this engine can return
+	static constexpr result_type
+	max()
+	{
+	  return ((1ull << (__w - 1)) | ((1ull << (__w - 1)) - 1));
+	}
+	// default key value
+	static constexpr result_type default_seed = 20111115u;
+
+	// constructors
+	philox_engine()
+	: philox_engine(default_seed)
+	{ }
+
+	explicit
+	philox_engine(result_type __value)
+	: _M_x{}, _M_y{}, _M_k{}, _M_i(__n - 1)
+	{ _M_k[0] = __value & max(); }
+
+	/** @brief seed sequence constructor for %philox_engine
+	  *
+	  *  @param __q the seed sequence
+	  */
+	template<typename _Sseq> requires __is_seed_seq<_Sseq>
+	  explicit
+	  philox_engine(_Sseq& __q)
+	  {
+	    seed(__q);
+	  }
+
+	void
+	seed(result_type __value = default_seed)
+	{
+	  _M_x = {};
+	  _M_y = {};
+	  _M_k = {};
+	  _M_k[0] = __value & max();
+	  _M_i = __n - 1;
+	}
+
+	/** @brief seeds %philox_engine by seed sequence
+	  *
+	  * @param __q the seed sequence
+	  */
+	template<typename _Sseq>
+	  void
+	  seed(_Sseq& __q) requires __is_seed_seq<_Sseq>;
+
+	/** @brief sets the internal counter "cleartext"
+	  *
+	  * @param __counter std::array of len N
+	  */
+	void
+	set_counter(const array<result_type, __n>& __counter)
+	{
+	  for (size_t __j = 0; __j < __n; ++__j)
+	    _M_x[__j] = __counter[__n - 1 - __j] & max();
+	  _M_i = __n - 1;
+	}
+
+	/** @brief compares two %philox_engine objects
+	  *
+	  * @returns true if the objects will produce an identical stream,
+	  *          false otherwise
+	  */
+	friend bool
+	operator==(const philox_engine&, const philox_engine&) = default;
+
+	/** @brief outputs a single w-bit number and handles state advancement
+	  *
+	  * @returns return_type
+	  */
+	result_type
+	operator()()
+	{
+	  _M_transition();
+	  return _M_y[_M_i];
+	}
+
+	/** @brief discards __z numbers
+	  *
+	  * @param __z number of iterations to discard
+	  */
+	void
+	discard(unsigned long long __z)
+	{
+	  while (__z--)
+	    _M_transition();
+	}
+
+	/** @brief outputs the state of the generator
+	 *
+	 * @param __os An output stream.
+	 * @param __x  A %philox_engine object reference
+	 *
+	 * @returns the state of the Philox Engine in __os
+	 */
+	template<typename _CharT, typename _Traits>
+	  friend basic_ostream<_CharT, _Traits>&
+	  operator<<(basic_ostream<_CharT, _Traits>& __os,
+		     const philox_engine& __x)
+	  {
+	    const typename ios_base::fmtflags __flags = __os.flags();
+	    const _CharT __fill = __os.fill();
+	    __os.flags(ios_base::dec | ios_base::left);
+	    _CharT __space = __os.widen(' ');
+	    __os.fill(__space);
+	    for (auto& __subkey : __x._M_k)
+	      __os << __subkey << __space;
+	    for (auto& __ctr : __x._M_x)
+	      __os << __ctr << __space;
+	    __os << __x._M_i;
+	    __os.flags(__flags);
+	    __os.fill(__fill);
+	    return __os;
+	  }
+
+	/** @brief takes input to set the state of the %philox_engine object
+	  *
+	  * @param __is An input stream.
+	  * @param __x  A %philox_engine object reference
+	  *
+	  * @returns %philox_engine object is set with values from instream
+	  */
+	template <typename _CharT, typename _Traits>
+	  friend basic_istream<_CharT, _Traits>&
+	  operator>>(basic_istream<_CharT, _Traits>& __is,
+		     philox_engine& __x)
+	  {
+	    const typename ios_base::fmtflags __flags = __is.flags();
+	    __is.flags(ios_base::dec | ios_base::skipws);
+	    for (auto& __subkey : __x._M_k)
+	      __is >> __subkey;
+	    for (auto& __ctr : __x._M_x)
+	      __is >> __ctr;
+	    array<_UIntType, __n> __tmpCtr = __x._M_x;
+	    unsigned char __setIndex = 0;
+	    for (size_t __j = 0; __j < __x._M_x.size(); ++__j)
+	      {
+		if (__x._M_x[__j] > 0)
+		  {
+		    __setIndex = __j;
+		    break;
+		  }
+	      }
+	    for (size_t __j = 0; __j <= __setIndex; ++__j)
+	      {
+		if (__j != __setIndex)
+		  __x._M_x[__j] = max();
+		else
+		  --__x._M_x[__j];
+	      }
+	    __x._M_philox();
+	    __x._M_x = __tmpCtr;
+	    __is >> __x._M_i;
+	    __is.flags(__flags);
+	    return __is;
+	  }
+
+      private:
+	// private state variables
+	array<_UIntType, __n> _M_x;
+	array<_UIntType, __n / 2> _M_k;
+	array<_UIntType, __n> _M_y;
+	unsigned long long _M_i = 0;
+
+	// The high W bits of the product of __a and __b
+	static _UIntType
+	_S_mulhi(_UIntType __a, _UIntType __b); // (A*B)/2^W
+
+	// The low W bits of the product of __a and __b
+	static _UIntType
+	_S_mullo(_UIntType __a, _UIntType __b); // (A*B)%2^W
+
+	// An R-round substitution/Feistel Network hybrid for philox_engine
+	void
+	_M_philox();
+
+	// The transition function
+	void
+	_M_transition();
+    };
+#endif
+
   /**
    * The classic Minimum Standard rand0 of Lewis, Goodman, and Miller.
    */
@@ -1741,6 +1999,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   typedef shuffle_order_engine<minstd_rand0, 256> knuth_b;
 
   typedef minstd_rand0 default_random_engine;
+
+#if __glibcxx_philox_engine
+
+  /// 32-bit four-word Philox engine.
+  typedef philox_engine<
+    uint_fast32_t,
+    32, 4, 10,
+    0xCD9E8D57, 0x9E3779B9,
+    0xD2511F53, 0xBB67AE85> philox4x32;
+
+  /// 64-bit four-word Philox engine.
+  typedef philox_engine<
+    uint_fast64_t,
+    64, 4, 10,
+    0xCA5A826395121157, 0x9E3779B97F4A7C15,
+    0xD2E7470EE14C6C93, 0xBB67AE8584CAA73B> philox4x64;
+#endif
 
   /**
    * A standard interface to a platform-specific non-deterministic

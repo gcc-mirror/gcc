@@ -39,6 +39,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "intl.h"
 #include "gcc-urlifier.h"
+#include "cgraph.h"
 
 /* Table of the tables of attributes (common, language, format, machine)
    searched.  */
@@ -1085,7 +1086,27 @@ make_attribute (string_slice name, string_slice arg_name, tree chain)
   return attr;
 }
 
-/* Common functions used for target clone support.  */
+/* Default implementation of TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A.
+   Used to check very basically if DECL_B is callable from DECL_A.
+   For now this checks if the version strings are the same.  */
+
+bool
+functions_b_resolvable_from_a (tree decl_a, tree decl_b,
+			       tree base ATTRIBUTE_UNUSED)
+{
+  const char *attr_name = TARGET_HAS_FMV_TARGET_ATTRIBUTE
+			  ? "target"
+			  : "target_version";
+
+  tree attr_a = lookup_attribute (attr_name, DECL_ATTRIBUTES (decl_a));
+  tree attr_b = lookup_attribute (attr_name, DECL_ATTRIBUTES (decl_b));
+
+  gcc_assert (attr_b);
+  if (!attr_a)
+    return false;
+
+  return attribute_value_equal (attr_a, attr_b);
+}
 
 /* Comparator function to be used in qsort routine to sort attribute
    specification strings to "target".  */
@@ -1176,71 +1197,6 @@ sorted_attr_string (tree arglist)
   return ret_str;
 }
 
-
-/* This function returns true if FN1 and FN2 are versions of the same function,
-   that is, the target strings of the function decls are different.  This assumes
-   that FN1 and FN2 have the same signature.  */
-
-bool
-common_function_versions (tree fn1, tree fn2)
-{
-  tree attr1, attr2;
-  char *target1, *target2;
-  bool result;
-
-  if (TREE_CODE (fn1) != FUNCTION_DECL
-      || TREE_CODE (fn2) != FUNCTION_DECL)
-    return false;
-
-  attr1 = lookup_attribute ("target", DECL_ATTRIBUTES (fn1));
-  attr2 = lookup_attribute ("target", DECL_ATTRIBUTES (fn2));
-
-  /* At least one function decl should have the target attribute specified.  */
-  if (attr1 == NULL_TREE && attr2 == NULL_TREE)
-    return false;
-
-  /* Diagnose missing target attribute if one of the decls is already
-     multi-versioned.  */
-  if (attr1 == NULL_TREE || attr2 == NULL_TREE)
-    {
-      if (DECL_FUNCTION_VERSIONED (fn1) || DECL_FUNCTION_VERSIONED (fn2))
-	{
-	  if (attr2 != NULL_TREE)
-	    {
-	      std::swap (fn1, fn2);
-	      attr1 = attr2;
-	    }
-	  auto_diagnostic_group d;
-	  error_at (DECL_SOURCE_LOCATION (fn2),
-		    "missing %<target%> attribute for multi-versioned %qD",
-		    fn2);
-	  inform (DECL_SOURCE_LOCATION (fn1),
-		  "previous declaration of %qD", fn1);
-	  /* Prevent diagnosing of the same error multiple times.  */
-	  DECL_ATTRIBUTES (fn2)
-	    = tree_cons (get_identifier ("target"),
-			 copy_node (TREE_VALUE (attr1)),
-			 DECL_ATTRIBUTES (fn2));
-	}
-      return false;
-    }
-
-  target1 = sorted_attr_string (TREE_VALUE (attr1));
-  target2 = sorted_attr_string (TREE_VALUE (attr2));
-
-  /* The sorted target strings must be different for fn1 and fn2
-     to be versions.  */
-  if (strcmp (target1, target2) == 0)
-    result = false;
-  else
-    result = true;
-
-  XDELETEVEC (target1);
-  XDELETEVEC (target2);
-
-  return result;
-}
-
 /* Make a dispatcher declaration for the multi-versioned function DECL.
    Calls to DECL function will be replaced with calls to the dispatcher
    by the front-end.  Return the decl created.  */
@@ -1248,18 +1204,12 @@ common_function_versions (tree fn1, tree fn2)
 tree
 make_dispatcher_decl (const tree decl)
 {
-  tree func_decl;
-  char *func_name;
-  tree fn_type, func_type;
+  tree fn_type = TREE_TYPE (decl);
+  tree func_type = build_function_type (TREE_TYPE (fn_type),
+					TYPE_ARG_TYPES (fn_type));
+  tree func_decl = build_fn_decl (IDENTIFIER_POINTER (DECL_NAME (decl)),
+				  func_type);
 
-  func_name = xstrdup (IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (decl)));
-
-  fn_type = TREE_TYPE (decl);
-  func_type = build_function_type (TREE_TYPE (fn_type),
-				   TYPE_ARG_TYPES (fn_type));
-
-  func_decl = build_fn_decl (func_name, func_type);
-  XDELETEVEC (func_name);
   TREE_USED (func_decl) = 1;
   DECL_CONTEXT (func_decl) = NULL_TREE;
   DECL_INITIAL (func_decl) = error_mark_node;
@@ -1269,6 +1219,34 @@ make_dispatcher_decl (const tree decl)
   DECL_EXTERNAL (func_decl) = 1;
   /* This will be of type IFUNCs have to be externally visible.  */
   TREE_PUBLIC (func_decl) = 1;
+  TREE_NOTHROW (func_decl) = TREE_NOTHROW (decl);
+
+  /* Set the decl name to avoid graph_node re-mangling it.  */
+  SET_DECL_ASSEMBLER_NAME (func_decl, DECL_ASSEMBLER_NAME (decl));
+
+  cgraph_node *node = cgraph_node::get (decl);
+  gcc_assert (node);
+  cgraph_function_version_info *node_v = node->function_version ();
+  gcc_assert (node_v);
+
+  /* Set flags on the cgraph_node for the new decl.  */
+  cgraph_node *func_node = cgraph_node::get_create (func_decl);
+  func_node->dispatcher_function = true;
+  func_node->definition = true;
+
+  cgraph_function_version_info *func_v
+    = func_node->insert_new_function_version ();
+  func_v->next = node_v;
+  func_v->assembler_name = node_v->assembler_name;
+
+  /* If the default node is from a target_clone, mark the dispatcher as from
+     target_clone.  */
+  func_node->is_target_clone = node->is_target_clone;
+
+  /* Get the assembler name by mangling with the base assembler name.  */
+  tree id = targetm.mangle_decl_assembler_name
+    (func_decl, func_v->assembler_name);
+  symtab->change_decl_assembler_name (func_decl, id);
 
   return func_decl;
 }
@@ -1277,7 +1255,8 @@ make_dispatcher_decl (const tree decl)
    With the target attribute semantics, returns true if the function is marked
    as default with the target version.
    With the target_version attribute semantics, returns true if the function
-   is either not annotated, or annotated as default.  */
+   is either not annotated, annotated as default, or is a target_clone
+   containing the default declaration.  */
 
 bool
 is_function_default_version (const tree decl)
@@ -1294,6 +1273,13 @@ is_function_default_version (const tree decl)
     }
   else
     {
+      if (lookup_attribute ("target_clones", DECL_ATTRIBUTES (decl)))
+	{
+	  int num_defaults = 0;
+	  get_clone_versions (decl, &num_defaults);
+	  return num_defaults > 0;
+	}
+
       attr = lookup_attribute ("target_version", DECL_ATTRIBUTES (decl));
       if (!attr)
 	return true;

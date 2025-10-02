@@ -47,12 +47,15 @@ public:
 		    diagnostics::context &dc,
 		    line_maps *location_mgr,
 		    location_t loc,
-		    const char *option_name)
-  : dc_spec_context (dc,
+		    const char *option_name,
+		    const char *option_value)
+  : dc_spec_context (option_name,
+		     option_value,
+		     nullptr,
 		     location_mgr,
+		     dc,
 		     location_mgr,
-		     loc,
-		     option_name),
+		     loc),
     m_opts (opts)
   {}
 
@@ -72,17 +75,17 @@ public:
 void
 handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
 				     diagnostics::context &dc,
-				     const char *arg,
+				     const char *unparsed_spec,
 				     location_t loc)
 {
-  gcc_assert (arg);
+  gcc_assert (unparsed_spec);
   gcc_assert (line_table);
 
   const char *const option_name = "-fdiagnostics-add-output=";
   DIAGNOSTICS_LOG_SCOPE_PRINTF2 (dc.get_logger (),
-				 "handling: %s%s", option_name, arg);
-  opt_spec_context ctxt (opts, dc, line_table, loc, option_name);
-  auto sink = ctxt.parse_and_make_sink (arg, dc);
+				 "handling: %s%s", option_name, unparsed_spec);
+  opt_spec_context ctxt (opts, dc, line_table, loc, option_name, unparsed_spec);
+  auto sink = ctxt.parse_and_make_sink (dc);
   if (!sink)
     return;
 
@@ -93,17 +96,17 @@ handle_OPT_fdiagnostics_add_output_ (const gcc_options &opts,
 void
 handle_OPT_fdiagnostics_set_output_ (const gcc_options &opts,
 				     diagnostics::context &dc,
-				     const char *arg,
+				     const char *unparsed_spec,
 				     location_t loc)
 {
-  gcc_assert (arg);
+  gcc_assert (unparsed_spec);
   gcc_assert (line_table);
 
   const char *const option_name = "-fdiagnostics-set-output=";
   DIAGNOSTICS_LOG_SCOPE_PRINTF2 (dc.get_logger (),
-				 "handling: %s%s", option_name, arg);
-  opt_spec_context ctxt (opts, dc, line_table, loc, option_name);
-  auto sink = ctxt.parse_and_make_sink (arg, dc);
+				 "handling: %s%s", option_name, unparsed_spec);
+  opt_spec_context ctxt (opts, dc, line_table, loc, option_name, unparsed_spec);
+  auto sink = ctxt.parse_and_make_sink (dc);
   if (!sink)
     return;
 

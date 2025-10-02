@@ -155,6 +155,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "ipa-prop.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
+#include "tree-ssa-strlen.h"
 
 /* Possible lattice values.  */
 typedef enum
@@ -3259,29 +3260,12 @@ optimize_unreachable (gimple_stmt_iterator i)
 
   if (flag_sanitize & SANITIZE_UNREACHABLE)
     return false;
-
-  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-    {
-      stmt = gsi_stmt (gsi);
-
-      if (is_gimple_debug (stmt))
-       continue;
-
-      if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
-	{
-	  /* Verify we do not need to preserve the label.  */
-	  if (FORCED_LABEL (gimple_label_label (label_stmt)))
-	    return false;
-
-	  continue;
-	}
-
-      /* Only handle the case that __builtin_unreachable is the first statement
-	 in the block.  We rely on DCE to remove stmts without side-effects
-	 before __builtin_unreachable.  */
-      if (gsi_stmt (gsi) != gsi_stmt (i))
-        return false;
-    }
+  gsi = gsi_start_nondebug_after_labels_bb (bb);
+  /* Only handle the case that __builtin_unreachable is the first
+     statement in the block.  We rely on DCE to remove stmts
+     without side-effects before __builtin_unreachable.  */
+  if (*gsi != *i)
+    return false;
 
   ret = false;
   FOR_EACH_EDGE (e, ei, bb->preds)
@@ -4221,12 +4205,45 @@ public:
 
 }; // class pass_fold_builtins
 
+/* Optimize memcmp STMT into memcmp_eq if it is only used with
+   `== 0` or `!= 0`. */
+
+static void
+optimize_memcmp_eq (gcall *stmt)
+{
+  /* Make sure memcmp arguments are the correct type.  */
+  if (gimple_call_num_args (stmt) != 3)
+    return;
+  tree arg1 = gimple_call_arg (stmt, 0);
+  tree arg2 = gimple_call_arg (stmt, 1);
+  tree len = gimple_call_arg (stmt, 2);
+
+  if (!POINTER_TYPE_P (TREE_TYPE (arg1)))
+    return;
+  if (!POINTER_TYPE_P (TREE_TYPE (arg2)))
+    return;
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (len)))
+    return;
+  /* The return value of the memcmp has to be used
+     equality comparison to zero. */
+  tree res = gimple_call_lhs (stmt);
+
+  if (!res || !use_in_zero_equality (res))
+    return;
+
+  gimple_call_set_fndecl (stmt, builtin_decl_explicit (BUILT_IN_MEMCMP_EQ));
+  update_stmt (stmt);
+}
+
 unsigned int
 pass_fold_builtins::execute (function *fun)
 {
   bool cfg_changed = false;
   basic_block bb;
   unsigned int todoflags = 0;
+
+  /* Set last full fold prop if not already set. */
+  fun->curr_properties |= PROP_last_full_fold;
 
   FOR_EACH_BB_FN (bb, fun)
     {
@@ -4266,17 +4283,6 @@ pass_fold_builtins::execute (function *fun)
 	      tree result = NULL_TREE;
 	      switch (DECL_FUNCTION_CODE (callee))
 		{
-		case BUILT_IN_CONSTANT_P:
-		  /* Resolve __builtin_constant_p.  If it hasn't been
-		     folded to integer_one_node by now, it's fairly
-		     certain that the value simply isn't constant.  */
-		  result = integer_zero_node;
-		  break;
-
-		case BUILT_IN_ASSUME_ALIGNED:
-		  /* Remove __builtin_assume_aligned.  */
-		  result = gimple_call_arg (stmt, 0);
-		  break;
 
 		case BUILT_IN_STACK_RESTORE:
 		  result = optimize_stack_restore (i);
@@ -4284,6 +4290,10 @@ pass_fold_builtins::execute (function *fun)
 		    break;
 		  gsi_next (&i);
 		  continue;
+
+		case BUILT_IN_MEMCMP:
+		  optimize_memcmp_eq (as_a<gcall*>(stmt));
+		  break;
 
 		case BUILT_IN_UNREACHABLE:
 		  if (optimize_unreachable (i))
