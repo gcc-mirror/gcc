@@ -361,6 +361,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] extent_type extent{};
       [[no_unique_address]] stride_type stride{};
     };
+
+  template<typename _Mapping>
+    struct submdspan_mapping_result
+    {
+      [[no_unique_address]] _Mapping mapping = _Mapping();
+      size_t offset{};
+    };
 #endif
 
   template<typename _IndexType, size_t... _Extents>

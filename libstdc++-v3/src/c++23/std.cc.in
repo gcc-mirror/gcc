@@ -1875,8 +1875,9 @@ export namespace std
   using strided_slice;
   using full_extent_t;
   using full_extent;
+  using submdspan_mapping_result;
 #endif
-  // FIXME submdspan_mapping_result, submdspan_extents, mdsubspan
+  // FIXME submdspan_extents, mdsubspan
 }
 #endif
 
