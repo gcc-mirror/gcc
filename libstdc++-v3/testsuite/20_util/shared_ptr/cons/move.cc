@@ -140,6 +140,8 @@ test05()
 {
   reset_count_struct __attribute__((unused)) reset;
 
+  // The std::move here prevents copy elision, so we construct from a prvalue.
+  // { dg-prune-output "-Wpessimizing-move" }
   std::shared_ptr<A> a(std::move(std::shared_ptr<A>(new A)));
   VERIFY( a.use_count() == 1 );
   VERIFY( A::ctor_count == 1 );
