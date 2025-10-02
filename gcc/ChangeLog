@@ -1,3 +1,65 @@
+2025-10-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122106
+	* config/riscv/bitmanip.md (crc expanders): Add predicate for
+	polynomial argument.  Drop unnecessary constraints.
+
+2025-10-01  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/122066
+	* config/m68k/m68k.md (adddi3, subdi3): Strip POST_INC and PRE_DEC
+	when generating high part of the destination operand.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_calculate_branch_prob): Improve dump file.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (determine_scale): Break out from ...
+	(afdo_adjust_guessed_profile): ... here.
+	(scale_bb_profile): New function.
+	(afdo_annotate_cfg): Use it.
+	* params.opt (auto-profile-bbs): New parmaeter.
+	* doc/invoke.texi (auto-profile-bbs): Document.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (afdo_unscaled_edge_count): New function based on
+	part of ...
+	(afdo_set_bb_count): ... this function; use it here.
+	(afdo_calculate_branch_prob): Try to determine edge counts using
+	phi args and goto locuses.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* Makefile.in (ALL_FDAS): New variable.
+	(ALL_HOST_BACKEND_OBJ): Use all.fda instead of cc1plus.fda
+	(all.fda): New target
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* cfghooks.cc (merge_blocks): Choose more reliable or higher BB
+	count.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* predict.cc (unlikely_executed_stmt_p): Remove redundant check.
+	(rebuild_frequencies): Also recompute unlikely bbs when profile is
+	present or consistent.
+
+2025-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120560
+	* vr-values.cc (range_from_loop_direction): Use wi::ge_p rather
+	than wi::gt_p.
+
+2025-10-01  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122110
+	* tree-vect-loop.cc (vectorizable_reduction): Relax restriction
+	to mode-precision operations.
+
 2025-09-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* diagnostics/output-spec.cc (text_scheme_handler::make_sink): Use

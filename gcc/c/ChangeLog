@@ -1,3 +1,8 @@
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* Make-lang.in: Add c_FDAS
+	(create_fdas_for_cc1): Be sure that build fails if create_gcov fails.
+
 2025-09-30  Martin Uecker  <uecker@tugraz.at>
 
 	PR target/121933

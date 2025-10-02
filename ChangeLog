@@ -1,3 +1,7 @@
+2025-10-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .editorconfig: Unify the GCC and GDB/binutils root config.
+
 2025-09-23  Richard Earnshaw  <rearnsha@arm.com>
 
 	* .editorconfig: Fix glob patterns.

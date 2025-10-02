@@ -1,3 +1,28 @@
+2025-10-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122106
+	* gcc.target/riscv/pr122106.c: New test.
+
+2025-10-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122080
+	* gfortran.dg/ubsan/missing_optional_dummy_9.f90: New test.
+
+2025-10-01  Andreas Schwab  <schwab@linux-m68k.org>
+
+	PR target/122066
+	* gcc.c-torture/compile/pr122066.c: New test.
+
+2025-10-01  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/120560
+	* gcc.dg/pr120560.c: New.
+
+2025-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* gfortran.dg/pdt_51.f03: New test.
+
 2025-09-30  David Malcolm  <dmalcolm@redhat.com>
 
 	* lib/sarif.py: Remove import of ET.

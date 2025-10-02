@@ -1,3 +1,50 @@
+2025-10-01  François Dumont  <frs.dumont@gmail.com>
+
+	* include/std/vector (std::erase_if, std::erase): Replace _GLIBCXX20_CONSTEXPR
+	with 'constexpr' and remove implied 'inline' keyword.
+	* include/std/string (std::erase_if, std::erase): Likewise.
+
+2025-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/28_regex/basic_regex/assign/wchar_t/pstring.cc: Use
+	wcslen(cs) instead of sizeof(cs)-1.
+
+2025-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/unique_ptr/modifiers/93562.cc: Define a
+	separate deleter for array cases.
+
+2025-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/27_io/basic_filebuf/seekoff/wchar_t/9875_seekoff.cc
+	(Cvt::do_length): Fix signature to override virtual function in
+	base.
+	* testsuite/27_io/basic_filebuf/seekpos/wchar_t/9875_seekpos.cc:
+	(Cvt::do_length): Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/char/1.cc
+	(NoconvCvt::do_in): Likewise.
+	* testsuite/27_io/basic_filebuf/underflow/wchar_t/11603.cc
+	(checksumcvt::do_length): Likewise.
+
+2025-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/22_locale/time_get/get/char/3.cc: Add parentheses to
+	x == y|z expression.
+	* testsuite/22_locale/time_get/get/wchar_t/3.cc: Likewise.
+	* testsuite/28_regex/algorithms/regex_match/multiline.cc:
+	Likewise.
+
+2025-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_uninitialized.h (uninitialized_copy)
+	(uninitialized_fill, uninitialized_fill_n): Use pragmas to
+	suppress -Wclass-memaccess warnings.
+
+2025-10-01  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/memory/polymorphic/copy.cc: Fix spelling of
+	typedef.
+
 2025-09-30  François Dumont  <frs.dumont@gmail.com>
 
 	* include/std/inplace_vector:

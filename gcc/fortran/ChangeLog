@@ -1,3 +1,17 @@
+2025-10-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122080
+	* trans-array.cc (gfc_conv_array_parameter): Wrap the derivation of
+	bounds and strides for the descriptor of an optional dummy array
+	argument by a test on argument presence when it is supposed to be
+	passed to an optional argument.
+
+2025-10-01  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* decl.cc (gfc_get_pdt_instance): If the pdt_template is use
+	associated, 'module' field should be copied to this instance.
+
 2025-09-30  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/102241

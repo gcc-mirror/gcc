@@ -1,3 +1,15 @@
+2025-10-01  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* constexpr.cc (cxx_eval_constant_expression): Use revised
+	interfaces to determine if contracts are ignored and, if not,
+	whether they are evaluated.
+	* contracts.h (contract_ignored_p, contract_evaluated_p): New.
+
+2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
+
+	* Make-lang.in: Add c++_FDAS
+	(create_fdas_for_cc1plus): Be sure that build fails if create_gcov fails.
+
 2025-09-27  Jason Merrill  <jason@redhat.com>
 
 	PR c++/112632

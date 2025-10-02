@@ -1,3 +1,9 @@
+2025-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122009
+	* pge-boot/Gldtoa.cc (ldtoa_ldtoa): Change int to bool for
+	parameter sign.
+
 2025-09-21  Mark Wielaard  <mark@klomp.org>
 
 	* lang.opt.urls: Regenerate.
