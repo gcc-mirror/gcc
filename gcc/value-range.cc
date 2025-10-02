@@ -2552,22 +2552,19 @@ irange::intersect_bitmask (const irange &r)
 {
   gcc_checking_assert (!undefined_p () && !r.undefined_p ());
 
+  // If the bitmasks are the same, do nothing.
   if (m_bitmask == r.m_bitmask)
     return false;
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
   bm.intersect (r.get_bitmask ());
-  // Use ths opportunity to make sure mask always reflects the
-  // best mask we have.
-  m_bitmask = bm;
 
-  // Updating m_bitmask may still yield a semantic bitmask (as
-  // returned by get_bitmask) which is functionally equivalent to what
-  // we originally had.  In which case, there's still no change.
-  if (save == bm || save == get_bitmask ())
+  // If the new mask is the same, there is no change.
+  if (m_bitmask == bm)
     return false;
 
+  m_bitmask = bm;
   if (!set_range_from_bitmask ())
     normalize_kind ();
   if (flag_checking)
