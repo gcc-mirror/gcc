@@ -680,6 +680,12 @@ package Exp_Util is
    --  be evaluated, for example if N is the right operand of a short circuit
    --  operator.
 
+   procedure Flag_Interface_Pointer_Displacement (N : Node_Id);
+   --  If N is an N_Type_Conversion node then flag N to indicate that this
+   --  type conversion was internally added to force the displacement of the
+   --  pointer to the object (pointer named "this" in the C++ terminology)
+   --  from a dispatch table to another dispatch table.
+
    function Following_Address_Clause (D : Node_Id) return Node_Id;
    --  D is the node for an object declaration. This function searches the
    --  current declarative part to look for an address clause for the object
@@ -1370,6 +1376,7 @@ private
    pragma Inline (Duplicate_Subexpr);
    pragma Inline (Find_Controlled_Prim_Op);
    pragma Inline (Find_Prim_Op);
+   pragma Inline (Flag_Interface_Pointer_Displacement);
    pragma Inline (Force_Evaluation);
    pragma Inline (Get_Mapped_Entity);
    pragma Inline (Is_Library_Level_Tagged_Type);

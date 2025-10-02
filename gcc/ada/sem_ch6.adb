@@ -886,6 +886,8 @@ package body Sem_Ch6 is
                                       Designated_Type (Etype (Expr)))
             then
                Rewrite (Expr, Convert_To (R_Type, Relocate_Node (Expr)));
+               Flag_Interface_Pointer_Displacement (Expr);
+
                Analyze (Expr);
             end if;
 

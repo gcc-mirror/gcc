@@ -548,6 +548,7 @@ package body Exp_Ch4 is
                --     the secondary dispatch table.
 
                Rewrite (N, Convert_To (Dtyp, Relocate_Node (N)));
+               Flag_Interface_Pointer_Displacement (N);
                Analyze_And_Resolve (N, Dtyp);
 
                --  3) The 'access to the secondary dispatch table will be used

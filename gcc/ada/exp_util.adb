@@ -7127,6 +7127,17 @@ package body Exp_Util is
       end if;
    end Find_Hook_Context;
 
+   -----------------------------------------
+   -- Flag_Interface_Pointer_Displacement --
+   -----------------------------------------
+
+   procedure Flag_Interface_Pointer_Displacement (N : Node_Id) is
+   begin
+      if Nkind (N) = N_Type_Conversion then
+         Set_Is_Interface_Pointer_Displacement (N);
+      end if;
+   end Flag_Interface_Pointer_Displacement;
+
    ------------------------------
    -- Following_Address_Clause --
    ------------------------------

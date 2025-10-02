@@ -415,6 +415,10 @@ package body Exp_Intr is
 
       Rewrite (N, Convert_To (Result_Typ, Cnstr_Call));
 
+      if Is_Interface (Result_Typ) then
+         Flag_Interface_Pointer_Displacement (N);
+      end if;
+
       --  Do not generate a run-time check on the built object if tag
       --  checks are suppressed for the result type or tagged type expansion
       --  is disabled or if CodePeer_Mode.

@@ -1739,6 +1739,12 @@ package Sinfo is
    --    composed of interpolated string elements from string literals found
    --    in interpolated expressions.
 
+   --  Is_Interface_Pointer_Displacement
+   --    This flag is set in N_Type_Conversion nodes, and is used to indicate
+   --    that the type conversion was generated to displace the pointer to one
+   --    tagged object (pointer named "this" in the C++ terminology) from a
+   --    dispatch table to another dispatch table.
+
    --  Is_Known_Guaranteed_ABE
    --    Note: this flag is shared between the legacy ABE mechanism and the
    --    default ABE mechanism.
@@ -4757,6 +4763,7 @@ package Sinfo is
       --  Do_Overflow_Check
       --  Rounded_Result
       --  Tag_Propagated
+      --  Is_Interface_Pointer_Displacement
       --  plus fields for expression
 
       --  Note: if a range check is required, then the Do_Range_Check flag

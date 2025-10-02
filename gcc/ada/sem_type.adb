@@ -2685,7 +2685,12 @@ package body Sem_Type is
       end if;
 
       if Is_Concurrent_Record_Type (Target_Typ) then
-         Target_Typ := Corresponding_Concurrent_Type (Target_Typ);
+         if Is_Class_Wide_Type (Target_Typ) then
+            Target_Typ :=
+              Corresponding_Concurrent_Type (Root_Type (Target_Typ));
+         else
+            Target_Typ := Corresponding_Concurrent_Type (Target_Typ);
+         end if;
       end if;
 
       Target_Typ := Base_Type (Target_Typ);

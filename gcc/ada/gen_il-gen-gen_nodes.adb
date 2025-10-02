@@ -476,6 +476,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Do_Length_Check, Flag),
         Sm (Do_Overflow_Check, Flag),
         Sm (Float_Truncate, Flag),
+        Sm (Is_Interface_Pointer_Displacement, Flag),
         Sm (Tag_Propagated, Flag),
         Sm (Rounded_Result, Flag)));
 

@@ -3324,6 +3324,7 @@ package body Sem_Disp is
                    Subtype_Mark =>
                      New_Occurrence_Of (Etype (Control), Sloc (Call_Node)),
                    Expression => Relocate_Node (Call_Node)));
+               Flag_Interface_Pointer_Displacement (Call_Node);
                Set_Etype (Call_Node, Etype (Control));
                Set_Analyzed (Call_Node);
 

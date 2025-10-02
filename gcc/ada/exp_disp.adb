@@ -1708,6 +1708,7 @@ package body Exp_Disp is
                end if;
 
                Conversion := Convert_To (Formal_Typ, Relocate_Node (Actual));
+               Flag_Interface_Pointer_Displacement (Conversion);
                Rewrite (Actual, Conversion);
                Analyze_And_Resolve (Actual, Formal_Typ);
             end if;
@@ -1776,6 +1777,8 @@ package body Exp_Disp is
 
                Conversion := Convert_To (Formal_Typ, Actual_Dup);
                Rewrite (Actual, Conversion);
+               Flag_Interface_Pointer_Displacement (Actual);
+
                Analyze_And_Resolve (Actual, Formal_Typ);
             end if;
          end if;

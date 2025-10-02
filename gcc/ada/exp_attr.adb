@@ -2651,6 +2651,7 @@ package body Exp_Attr is
                      Rewrite (Prefix (N),
                        Convert_To (Btyp_DDT,
                          New_Copy_Tree (Prefix (N))));
+                     Flag_Interface_Pointer_Displacement (Prefix (N));
 
                      Analyze_And_Resolve (Prefix (N), Btyp_DDT);
                   end if;
@@ -2675,6 +2676,8 @@ package body Exp_Attr is
                         Rewrite (N,
                           Convert_To (Typ,
                             New_Copy_Tree (Prefix (Ref_Object))));
+                        Flag_Interface_Pointer_Displacement (N);
+
                         Analyze_And_Resolve (N, Typ);
                      end if;
                   end;
@@ -3127,6 +3130,7 @@ package body Exp_Attr is
                              Designated_Type (Etype (Parent (N)));
             begin
                Rewrite (Pref, Convert_To (Iface_Typ, Relocate_Node (Pref)));
+               Flag_Interface_Pointer_Displacement (Pref);
                Analyze_And_Resolve (Pref, Iface_Typ);
                return;
             end;
