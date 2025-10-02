@@ -337,6 +337,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   }
 
 #if __glibcxx_submdspan
+  struct full_extent_t
+  {
+    explicit full_extent_t() = default;
+  };
+
+  inline constexpr full_extent_t full_extent{};
+
   template<typename _OffsetType, typename _ExtentType, typename _StrideType>
     struct strided_slice {
       static_assert(__is_standard_integer<_OffsetType>::value
