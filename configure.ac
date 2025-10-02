@@ -24,6 +24,7 @@ m4_include(config/override.m4)
 m4_include(config/proginstall.m4)
 m4_include(config/elf.m4)
 m4_include(config/ax_cxx_compile_stdcxx.m4)
+m4_include(config/clang-plugin.m4)
 m4_include(config/gcc-plugin.m4)
 m4_include([libtool.m4])
 m4_include([ltoptions.m4])
@@ -1319,10 +1320,6 @@ case "${target}" in
     noconfigdirs="$noconfigdirs gdb tcl tk target-libgloss itcl"
     # always build newlib.
     skipdirs=`echo " ${skipdirs} " | sed -e 's/ target-newlib / /'`
-    ;;
-    # This is temporary until we can link against shared libraries
-  powerpcle-*-solaris*)
-    noconfigdirs="$noconfigdirs gdb sim tcl tk itcl"
     ;;
   powerpc-*-beos*)
     noconfigdirs="$noconfigdirs gdb"
@@ -4016,18 +4013,30 @@ AC_SUBST(GDCFLAGS)
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
 AC_SUBST(PKG_CONFIG_PATH)
 
-GCC_PLUGIN_OPTION(PLUGIN_OPTION)
+# Try CLANG_PLUGIN_FILE first since GCC_PLUGIN_OPTION may return the
+# wrong PLUGIN_OPTION with clang.
+CLANG_PLUGIN_FILE(PLUGIN_FILE)
+if test -n "$PLUGIN_FILE"; then
+  PLUGIN_OPTION="--plugin $PLUGIN_FILE"
+else
+  GCC_PLUGIN_OPTION(PLUGIN_OPTION)
+fi
 AR_PLUGIN_OPTION=
+NM_PLUGIN_OPTION=
 RANLIB_PLUGIN_OPTION=
 if test -n "$PLUGIN_OPTION"; then
   if $AR --help 2>&1 | grep -q "\--plugin"; then
     AR_PLUGIN_OPTION="$PLUGIN_OPTION"
+  fi
+  if $NM --help 2>&1 | grep -q "\--plugin"; then
+    NM_PLUGIN_OPTION="$PLUGIN_OPTION"
   fi
   if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
     RANLIB_PLUGIN_OPTION="$PLUGIN_OPTION"
   fi
 fi
 AC_SUBST(AR_PLUGIN_OPTION)
+AC_SUBST(NM_PLUGIN_OPTION)
 AC_SUBST(RANLIB_PLUGIN_OPTION)
 
 # Target tools.
@@ -4121,6 +4130,27 @@ AC_SUBST(RAW_CXX_FOR_TARGET)
 AR_FOR_TARGET=${AR_FOR_TARGET}${extra_arflags_for_target}
 RANLIB_FOR_TARGET=${RANLIB_FOR_TARGET}${extra_ranlibflags_for_target}
 NM_FOR_TARGET=${NM_FOR_TARGET}${extra_nmflags_for_target}
+
+# Try CLANG_PLUGIN_FILE_FOR_TARGET first since GCC_PLUGIN_OPTION_FOR_TARGET
+# may return the wrong PLUGIN_OPTION_FOR_TARGET with clang.
+CLANG_PLUGIN_FILE_FOR_TARGET(PLUGIN_FILE_FOR_TARGET)
+if test -n "$PLUGIN_FILE_FOR_TARGET"; then
+  PLUGIN_OPTION_FOR_TARGET="--plugin $PLUGIN_FILE_FOR_TARGET"
+else
+  GCC_PLUGIN_OPTION_FOR_TARGET(PLUGIN_OPTION_FOR_TARGET)
+fi
+if test -n "$PLUGIN_OPTION_FOR_TARGET"; then
+  AR_PLUGIN_OPTION_FOR_TARGET="$PLUGIN_OPTION_FOR_TARGET"
+  NM_PLUGIN_OPTION_FOR_TARGET="$PLUGIN_OPTION_FOR_TARGET"
+  RANLIB_PLUGIN_OPTION_FOR_TARGET="$PLUGIN_OPTION_FOR_TARGET"
+else
+  AR_PLUGIN_OPTION_FOR_TARGET=
+  NM_PLUGIN_OPTION_FOR_TARGET=
+  RANLIB_PLUGIN_OPTION_FOR_TARGET=
+fi
+AC_SUBST(AR_PLUGIN_OPTION_FOR_TARGET)
+AC_SUBST(NM_PLUGIN_OPTION_FOR_TARGET)
+AC_SUBST(RANLIB_PLUGIN_OPTION_FOR_TARGET)
 
 # When building target libraries, except in a Canadian cross, we use
 # the same toolchain as the compiler we just built.

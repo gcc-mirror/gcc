@@ -114,18 +114,6 @@ dnl to call AC_CHECK_PROG.
 AC_CHECK_TOOL(AR, ar)
 AC_CHECK_TOOL(RANLIB, ranlib, :)
 
-GCC_PLUGIN_OPTION(PLUGIN_OPTION)
-if test -n "$PLUGIN_OPTION"; then
-  if $AR --help 2>&1 | grep -q "\--plugin"; then
-    AR_PLUGIN_OPTION="$PLUGIN_OPTION"
-    AC_SUBST(AR_PLUGIN_OPTION)
-  fi
-  if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
-    RANLIB_PLUGIN_OPTION="$PLUGIN_OPTION"
-    AC_SUBST(RANLIB_PLUGIN_OPTION)
-  fi
-fi
-
 dnl When switching to automake, replace the following with AM_ENABLE_MULTILIB.
 # Add --enable-multilib to configure.
 # Default to --enable-multilib
@@ -175,6 +163,37 @@ AC_PROG_CC
 AC_USE_SYSTEM_EXTENSIONS
 AC_SYS_LARGEFILE
 AC_PROG_CPP_WERROR
+
+# Try CLANG_PLUGIN_FILE first since GCC_PLUGIN_OPTION may return the
+# wrong PLUGIN_OPTION with clang.
+CLANG_PLUGIN_FILE(PLUGIN_FILE)
+if test -n "$PLUGIN_FILE"; then
+  PLUGIN_OPTION="--plugin $PLUGIN_FILE"
+else
+  GCC_PLUGIN_OPTION(PLUGIN_OPTION)
+fi
+if test -n "$PLUGIN_OPTION"; then
+  case "$AR" in
+  *"$PLUGIN_OPTION"*)
+    ;;
+  *)
+    if $AR --help 2>&1 | grep -q "\--plugin"; then
+      AR_PLUGIN_OPTION="$PLUGIN_OPTION"
+      AC_SUBST(AR_PLUGIN_OPTION)
+    fi
+    ;;
+  esac
+  case "$RANLIB" in
+  *"$PLUGIN_OPTION"*)
+    ;;
+  *)
+    if $RANLIB --help 2>&1 | grep -q "\--plugin"; then
+      RANLIB_PLUGIN_OPTION="$PLUGIN_OPTION"
+      AC_SUBST(RANLIB_PLUGIN_OPTION)
+    fi
+    ;;
+  esac
+fi
 
 ACX_PROG_CC_WARNING_OPTS([-W -Wall -Wwrite-strings -Wc++-compat \
 			  -Wstrict-prototypes \
