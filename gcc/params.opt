@@ -68,7 +68,7 @@ Enable asan detection of use-after-return bugs.
 
 -param=auto-profile-bbs=
 Common Joined UInteger Var(param_auto_profile_bbs) Init(1) IntegerRange(0, 1) Param Optimization
-Build basic block profile using auto profile
+Build basic block profile using auto profile.
 
 -param=cycle-accurate-model=
 Common Joined UInteger Var(param_cycle_accurate_model) Init(1) IntegerRange(0, 1) Param Optimization
