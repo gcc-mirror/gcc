@@ -29,7 +29,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-logical-location.h"
 #include "diagnostics/sarif-sink.h"
 #include "diagnostics/state-graphs.h"
-#include "custom-sarif-properties/state-graphs.h"
 
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/sm.h"
@@ -243,11 +242,9 @@ checker_event::maybe_make_diagnostic_state_graph (bool debug) const
       pretty_printer pp;
       text_art::theme *theme = global_dc->get_diagram_theme ();
       text_art::dump_to_pp (*state, theme, &pp);
-      const json::string_property program_state_property
-	(custom_sarif_properties::state_graphs::graph::prefix,
-	 "analyzer/program_state/");
-      result->set_property (program_state_property,
-			    pp_formatted_text (&pp));
+      result->set_attr (STATE_GRAPH_PREFIX,
+			"analyzer/program_state/",
+			pp_formatted_text (&pp));
     }
 
   return result;

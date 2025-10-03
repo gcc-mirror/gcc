@@ -39,54 +39,37 @@ along with GCC; see the file COPYING3.  If not see
 
 namespace ana {
 
-namespace node_properties = custom_sarif_properties::state_graphs::node;
+using namespace ::diagnostics::state_graphs;
 
 static void
-set_wi_attr (diagnostics::digraphs::node &state_node,
-	     const json::string_property &property,
+set_wi_attr (state_node_ref state_node,
+	     const char *attr_name,
 	     const wide_int_ref &w,
 	     signop sgn)
 {
   pretty_printer pp;
   pp_wide_int (&pp, w, sgn);
-  state_node.set_property (property, pp_formatted_text (&pp));
+  state_node.set_attr (attr_name, pp_formatted_text (&pp));
 }
 
 static void
-set_type_attr (diagnostics::digraphs::node &state_node,
-	       const_tree type)
+set_type_attr (state_node_ref state_node, const_tree type)
 {
   gcc_assert (type);
   pretty_printer pp;
   pp_format_decoder (&pp) = default_tree_printer;
   pp_printf (&pp, "%T", type);
-  state_node.set_property (node_properties::type,
-			   pp_formatted_text (&pp));
+  state_node.set_type (pp_formatted_text (&pp));
 }
 
 static void
-set_bits_attr (diagnostics::digraphs::node & state_node,
+set_bits_attr (state_node_ref state_node,
 	       bit_range bits)
 {
   pretty_printer pp;
   bits.dump_to_pp (&pp);
-  state_node.set_property (node_properties::bits,
-			   pp_formatted_text (&pp));
+  state_node.set_attr ("bits", pp_formatted_text (&pp));
 }
-
-static void
-set_value_attrs (diagnostics::digraphs::node &state_node,
-		 const svalue &sval)
-{
-  state_node.set_property (node_properties::value,
-			   sval.to_json ());
-  pretty_printer pp;
-  pp_format_decoder (&pp) = default_tree_printer;
-  sval.dump_to_pp (&pp, true);
-  state_node.set_property (node_properties::value_str,
-			   pp_formatted_text (&pp));
-}
-
 
 // class analyzer_state_graph : public diagnostics::digraphs::digraph
 
@@ -158,34 +141,34 @@ analyzer_state_graph::analyzer_state_graph (const program_state &state,
 
       /* Ensure we have a node for the dst region.  This
 	 could lead to additional pending edges.  */
-      auto &dst_node = get_or_create_state_node (item.m_dst_reg);
-      add_edge (nullptr, item.m_src_node, dst_node);
+      auto dst_node = get_or_create_state_node (item.m_dst_reg);
+      add_edge (nullptr, item.m_src_node.m_node, dst_node.m_node);
     }
 }
 
-diagnostics::digraphs::node &
+state_node_ref
 analyzer_state_graph::get_or_create_state_node (const region &reg)
 {
   auto existing = m_region_to_state_node_map.find (&reg);
   if (existing != m_region_to_state_node_map.end ())
     return *existing->second;
 
-  auto &state_node = create_and_add_state_node (reg);
-  m_region_to_state_node_map[&reg] = &state_node;
-  return state_node;
+  auto ref = create_and_add_state_node (reg);
+  m_region_to_state_node_map[&reg] = &ref.m_node;
+  return ref;
 }
 
-diagnostics::digraphs::node &
+state_node_ref
 analyzer_state_graph::create_and_add_state_node (const region &reg)
 {
   auto node = create_state_node (reg);
 
-  diagnostics::digraphs::node &result = *node;
+  state_node_ref result = *node;
   if (auto parent_reg = reg.get_parent_region ())
     if (parent_reg->get_kind () != RK_ROOT)
       {
-	auto &parent_state_node = get_or_create_state_node (*parent_reg);
-	parent_state_node.add_child (std::move (node));
+	auto parent_state_node = get_or_create_state_node (*parent_reg);
+	parent_state_node.m_node.add_child (std::move (node));
 	return result;
       }
   add_node (std::move (node));
@@ -281,18 +264,19 @@ analyzer_state_graph::make_node_id (const region &reg)
 
 std::unique_ptr<diagnostics::digraphs::node>
 analyzer_state_graph::
-make_state_node (enum node_properties::kind kind,
+make_state_node (diagnostics::state_graphs::node_kind kind,
 		 std::string id)
 {
   auto node = std::make_unique<diagnostics::digraphs::node> (*this, std::move (id));
-  node->set_property (node_properties::kind, kind);
+  state_node_ref node_ref (*node);
+  node_ref.set_node_kind (kind);
   return node;
 }
 
 std::unique_ptr<diagnostics::digraphs::node>
 analyzer_state_graph::
 make_memspace_state_node (const region &reg,
-			  enum node_properties::kind kind)
+			  diagnostics::state_graphs::node_kind kind)
 {
   return make_state_node (kind, make_node_id (reg));
 }
@@ -312,7 +296,7 @@ analyzer_state_graph::create_state_node (const region &reg)
 	const frame_region &frame_reg
 	  = static_cast<const frame_region &> (reg);
 
-	node = make_state_node (node_properties::kind::stack_frame,
+	node = make_state_node (diagnostics::state_graphs::node_kind::stack_frame,
 				make_node_id (reg));
 	node->set_logical_loc
 	  (m_logical_loc_mgr.key_from_tree (frame_reg.get_fndecl ()));
@@ -320,59 +304,58 @@ analyzer_state_graph::create_state_node (const region &reg)
 	  pretty_printer pp;
 	  pp_format_decoder (&pp) = default_tree_printer;
 	  pp_printf (&pp, "%E", frame_reg.get_fndecl ());
-	  node->set_property (node_properties::function,
-			      pp_formatted_text (&pp));
+	  node->set_attr (STATE_NODE_PREFIX, "function",
+			  pp_formatted_text (&pp));
 	}
       }
       break;
 
     case RK_GLOBALS:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::globals);
+				       diagnostics::state_graphs::node_kind::globals);
       break;
     case RK_CODE:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::code);
+				       diagnostics::state_graphs::node_kind::code);
       break;
     case RK_FUNCTION:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::function);
+				       diagnostics::state_graphs::node_kind::function);
       // TODO
       break;
 
     case RK_STACK:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::stack);
+				       diagnostics::state_graphs::node_kind::stack);
       break;
     case RK_HEAP:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::heap_);
+				       diagnostics::state_graphs::node_kind::heap_);
       break;
     case RK_THREAD_LOCAL:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::thread_local_);
+				       diagnostics::state_graphs::node_kind::thread_local_);
       break;
     case RK_ROOT:
       gcc_unreachable ();
       break;
     case RK_SYMBOLIC:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::other);
+				       diagnostics::state_graphs::node_kind::other);
       break;
 
     case RK_DECL:
       {
-	node = make_state_node (node_properties::kind::variable,
+	node = make_state_node (diagnostics::state_graphs::node_kind::variable,
 				make_node_id (reg));
 	const decl_region &decl_reg
 	  = static_cast<const decl_region &> (reg);
-
+	state_node_ref node_ref (*node);
 	{
 	  pretty_printer pp;
 	  pp_format_decoder (&pp) = default_tree_printer;
 	  pp_printf (&pp, "%E", decl_reg.get_decl ());
-	  node->set_property (node_properties::name,
-			      pp_formatted_text (&pp));
+	  node_ref.set_name (pp_formatted_text (&pp));
 	}
 	set_type_attr (*node, TREE_TYPE (decl_reg.get_decl ()));
       }
@@ -394,14 +377,14 @@ analyzer_state_graph::create_state_node (const region &reg)
     case RK_ERRNO:
     case RK_PRIVATE:
     case RK_UNKNOWN:
-      node = make_state_node (node_properties::kind::other,
+      node = make_state_node (diagnostics::state_graphs::node_kind::other,
 				make_node_id (reg));
       break;
 
     case RK_HEAP_ALLOCATED:
     case RK_ALLOCA:
       node = make_memspace_state_node (reg,
-				       node_properties::kind::dynalloc_buffer);
+				       diagnostics::state_graphs::node_kind::dynalloc_buffer);
       set_attr_for_dynamic_extents (reg, *node);
       break;
     }
@@ -442,9 +425,9 @@ create_state_nodes_for_binding_cluster (const binding_cluster &cluster,
 	get_or_create_state_node (*reg);
     }
 
-  auto &ref = get_or_create_state_node (*cluster.get_base_region ());
+  auto ref = get_or_create_state_node (*cluster.get_base_region ());
 
-  ref.add_child (create_state_node_for_conc_bindings (conc_bindings));
+  ref.m_node.add_child (create_state_node_for_conc_bindings (conc_bindings));
 
   const region *typed_reg = cluster.get_base_region ();
   if (!typed_reg->get_type ())
@@ -472,18 +455,23 @@ create_state_nodes_for_binding_cluster (const binding_cluster &cluster,
 std::unique_ptr<diagnostics::digraphs::node>
 analyzer_state_graph::create_state_node_for_conc_bindings (const concrete_bindings_t &conc_bindings)
 {
-  auto node = make_state_node (node_properties::kind::other,
+  auto node = make_state_node (diagnostics::state_graphs::node_kind::other,
 			       make_node_id ("concrete-bindings"));
   for (auto iter : conc_bindings)
     {
       const bit_range bits = iter.first;
       const svalue *sval = iter.second;
       auto binding_state_node
-	= make_state_node (node_properties::kind::other,
+	= make_state_node (diagnostics::state_graphs::node_kind::other,
 			   make_node_id ("binding"));
       set_bits_attr (*binding_state_node, bits);
-      gcc_assert (sval);
-      set_value_attrs (*binding_state_node, *sval);
+      {
+	pretty_printer pp;
+	pp_format_decoder (&pp) = default_tree_printer;
+	sval->dump_to_pp (&pp, true);
+	binding_state_node->set_attr (STATE_NODE_PREFIX, "value",
+				      pp_formatted_text (&pp));
+      }
       node->add_child (std::move (binding_state_node));
     }
   return node;
@@ -508,28 +496,27 @@ analyzer_state_graph::get_bit_range_within_base_region (const region &reg,
 
 void
 analyzer_state_graph::
-populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
+populate_state_node_for_typed_region (state_node_ref node,
 				      const region &reg,
 				      const concrete_bindings_t &conc_bindings,
 				      bool create_all)
 {
   const_tree reg_type = reg.get_type ();
   gcc_assert (reg_type);
-  set_type_attr (state_node, reg_type);
+  set_type_attr (node, reg_type);
 
   bit_range bits (0, 0);
   if (get_bit_range_within_base_region (reg, bits))
     {
-      set_bits_attr (state_node, bits);
+      set_bits_attr (node, bits);
 
       auto search = conc_bindings.find (bits);
       if (search != conc_bindings.end ())
 	{
 	  const svalue *bound_sval = search->second;
-	  gcc_assert (bound_sval);
-	  set_value_attrs (state_node, *bound_sval);
+	  node.set_json_attr ("value", bound_sval->to_json ());
 	  if (const region *dst_reg = bound_sval->maybe_get_region ())
-	    m_pending_edges.push_back ({state_node, *dst_reg});
+	      m_pending_edges.push_back ({node, *dst_reg});
 	}
     }
 
@@ -568,10 +555,9 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 	      {
 		auto child_state_node
 		  = make_state_node
-		      (node_properties::kind::element,
+		      (diagnostics::state_graphs::node_kind::element,
 		       make_node_id (*child_reg));
-		set_wi_attr (*child_state_node,
-			     node_properties::index, idx, UNSIGNED);
+		set_wi_attr (*child_state_node, "index", idx, UNSIGNED);
 
 		// Recurse:
 		gcc_assert (element_type);
@@ -579,7 +565,7 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 						      *child_reg,
 						      conc_bindings,
 						      create_all);
-		state_node.add_child (std::move (child_state_node));
+		node.m_node.add_child (std::move (child_state_node));
 	      }
 	  }
       }
@@ -601,12 +587,11 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 		  {
 		    auto child_state_node
 		      = make_state_node
-			  (node_properties::kind::padding,
+			  (diagnostics::state_graphs::node_kind::padding,
 			   make_node_id (*child_reg));
-		    set_wi_attr (*child_state_node,
-				 node_properties::num_bits,
+		    set_wi_attr (*child_state_node, "num_bits",
 				 item.m_bit_range.m_size_in_bits, SIGNED);
-		    state_node.add_child (std::move (child_state_node));
+		    node.m_node.add_child (std::move (child_state_node));
 		  }
 	      }
 	    else
@@ -615,27 +600,27 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 		  = m_mgr.get_field_region (&reg,
 					    const_cast<tree> (item.m_field));
 		if (show_child_state_node_for_child_region_p (*child_reg,
-							      conc_bindings,
-							      create_all))
+							   conc_bindings,
+							   create_all))
 		  {
 		    auto child_state_node
 		      = make_state_node
-			  (node_properties::kind::field,
+			  (diagnostics::state_graphs::node_kind::field,
 			   make_node_id (*child_reg));
 		    {
 		      pretty_printer pp;
 		      pp_format_decoder (&pp) = default_tree_printer;
 		      pp_printf (&pp, "%D", item.m_field);
-		      child_state_node->set_property (node_properties::name,
-						      pp_formatted_text (&pp));
+		      child_state_node->set_attr (STATE_NODE_PREFIX, "name",
+						  pp_formatted_text (&pp));
 		    }
 
 		    // Recurse:
 		    populate_state_node_for_typed_region (*child_state_node,
-							  *child_reg,
-							  conc_bindings,
-							  create_all);
-		    state_node.add_child (std::move (child_state_node));
+						       *child_reg,
+						       conc_bindings,
+						       create_all);
+		    node.m_node.add_child (std::move (child_state_node));
 		  }
 	      }
 	  }
@@ -645,9 +630,8 @@ populate_state_node_for_typed_region (diagnostics::digraphs::node &state_node,
 }
 
 void
-analyzer_state_graph::
-set_attr_for_dynamic_extents (const region &reg,
-			      diagnostics::digraphs::node &state_node)
+analyzer_state_graph::set_attr_for_dynamic_extents (const region &reg,
+						    state_node_ref node_ref)
 {
   const svalue *sval = m_state.m_region_model->get_dynamic_extents (&reg);
   if (sval)
@@ -658,16 +642,15 @@ set_attr_for_dynamic_extents (const region &reg,
 	pp_wide_int (&pp, wi::to_wide (cst), UNSIGNED);
       else
 	sval->dump_to_pp (&pp, true);
-      state_node.set_property (state_node_properties::dynamic_extents,
-			       pp_formatted_text (&pp));
+      node_ref.set_attr ("dynamic-extents", pp_formatted_text (&pp));
     }
 }
 
 bool
 analyzer_state_graph::
 show_child_state_node_for_child_region_p (const region &reg,
-					  const concrete_bindings_t &conc_bindings,
-					  bool create_all)
+				       const concrete_bindings_t &conc_bindings,
+				       bool create_all)
 {
   if (create_all)
     return true;

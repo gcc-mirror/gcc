@@ -27,7 +27,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "system.h"
 #include "coretypes.h"
 
-#include "custom-sarif-properties/state-graphs.h"
 #include "diagnostics/state-graphs.h"
 #include "graphviz.h"
 #include "xml.h"
@@ -36,8 +35,6 @@ along with GCC; see the file COPYING3.  If not see
 
 using namespace diagnostics;
 using namespace diagnostics::state_graphs;
-
-namespace state_node_properties = custom_sarif_properties::state_graphs::node;
 
 static int
 get_depth (const digraphs::node &n)
@@ -50,28 +47,28 @@ get_depth (const digraphs::node &n)
 }
 
 static const char *
-get_color_for_dynalloc_state (enum state_node_properties::dynalloc_state dynalloc_st)
+get_color_for_dynalloc_state (enum node_dynalloc_state dynalloc_st)
 {
   switch (dynalloc_st)
     {
     default:
       gcc_unreachable ();
       break;
-    case state_node_properties::dynalloc_state::unknown:
-    case state_node_properties::dynalloc_state::nonnull:
+    case node_dynalloc_state::unknown:
+    case node_dynalloc_state::nonnull:
       return nullptr;
 
-    case state_node_properties::dynalloc_state::unchecked:
+    case node_dynalloc_state::unchecked:
       return "#ec7a08"; // pf-orange-400
 
-    case state_node_properties::dynalloc_state::freed:
+    case node_dynalloc_state::freed:
       return "#cc0000"; // pf-red-100
     }
 }
 
 static void
 set_color_for_dynalloc_state (dot::attr_list &attrs,
-			      enum state_node_properties::dynalloc_state state)
+			      enum node_dynalloc_state state)
 {
   if (const char *color = get_color_for_dynalloc_state (state))
     attrs.add (dot::id ("color"), dot::id (color));
@@ -109,7 +106,7 @@ public:
       = std::make_unique<dot::subgraph> (dot::id ("cluster_memory_regions"));
     for (size_t i = 0; i < input_state_graph.get_num_nodes (); ++i)
       on_input_state_node (*root_cluster,
-			   input_state_graph.get_node (i));
+			   state_node_ref (input_state_graph.get_node (i)));
     add_stmt (std::move (root_cluster));
 
     /* Now create dot edges for edges in input_stage_graph.  */
@@ -129,8 +126,7 @@ public:
 	auto e = std::make_unique<dot::edge_stmt> (src_port_id->second,
 						   dst_port_id->second);
 	set_color_for_dynalloc_state
-	  (e->m_attrs,
-	   dst_node.get_property (state_node_properties::dynalloc_state));
+	  (e->m_attrs, state_node_ref (dst_node).get_dynalloc_state ());
 
 	add_stmt (std::move (e));
       }
@@ -151,9 +147,9 @@ private:
   }
 
   dot::id
-  make_id (const diagnostics::digraphs::node &state_node, bool cluster)
+  make_id (state_node_ref state_node, bool cluster)
   {
-    std::string input_node_id = state_node.get_id ();
+    std::string input_node_id = state_node.m_node.get_id ();
     if (cluster)
       return std::string ("cluster_") + input_node_id;
     else
@@ -161,44 +157,44 @@ private:
   }
 
   bool
-  starts_node_p (const diagnostics::digraphs::node &state_node)
+  starts_node_p (state_node_ref state_node)
   {
-    switch (state_node.get_property (state_node_properties::kind))
+    switch (state_node.get_node_kind ())
       {
       default:
 	return false;
 
-      case state_node_properties::kind::stack:
+      case node_kind::stack:
 	/* We want all frames in the stack in the same table,
 	   so they are grouped.  */
-      case state_node_properties::kind::dynalloc_buffer:
-      case state_node_properties::kind::variable:
+      case node_kind::dynalloc_buffer:
+      case node_kind::variable:
 	return true;
       }
   }
 
   const char *
-  get_label_for_node (const diagnostics::digraphs::node &state_node)
+  get_label_for_node (state_node_ref state_node)
   {
-    switch (state_node.get_property (state_node_properties::kind))
+    switch (state_node.get_node_kind ())
       {
       default:
 	return nullptr;
 
-      case state_node_properties::kind::globals:
+      case node_kind::globals:
 	return _("Globals");
-      case state_node_properties::kind::code:
+      case node_kind::code:
 	return _("Code");
-      case state_node_properties::kind::stack:
+      case node_kind::stack:
 	return _("Stack");
-      case state_node_properties::kind::heap_:
+      case node_kind::heap_:
 	return _("Heap");
       }
   }
 
   void
   on_input_state_node (dot::subgraph &parent_subgraph,
-		       const diagnostics::digraphs::node &state_node)
+		       state_node_ref state_node)
   {
     dot::id sg_id = make_id (state_node, true);
 
@@ -211,7 +207,7 @@ private:
 	xp.set_attr ("cellborder", "1");
 	xp.set_attr ("cellspacing", "0");
 
-	const int max_depth = get_depth (state_node);
+	const int max_depth = get_depth (state_node.m_node);
 	const int num_columns = max_depth + 2;
 
 	dot::id id_of_dot_node = make_id (state_node, false);
@@ -237,9 +233,9 @@ private:
 	  child_subgraph->add_attr (dot::id ("label"), dot::id (label));
 
 	// recurse:
-	for (size_t i = 0; i < state_node.get_num_children (); ++i)
+	for (size_t i = 0; i < state_node.m_node.get_num_children (); ++i)
 	  on_input_state_node (*child_subgraph,
-			       state_node.get_child (i));
+			       state_node.m_node.get_child (i));
 	parent_subgraph.m_stmt_list.add_stmt (std::move (child_subgraph));
       }
   }
@@ -250,10 +246,10 @@ private:
   add_title_tr (const dot::id &id_of_dot_node,
 		xml::printer &xp,
 		int num_columns,
-		const diagnostics::digraphs::node &state_node,
+		state_node_ref state_node,
 		std::string heading,
 		enum style styl,
-		enum state_node_properties::dynalloc_state dynalloc_state)
+		enum node_dynalloc_state dynalloc_state)
   {
     xp.push_tag ("tr", true);
     xp.push_tag ("td", false);
@@ -302,49 +298,48 @@ private:
   void
   on_node_in_table (const dot::id &id_of_dot_node,
 		    xml::printer &xp,
-		    const diagnostics::digraphs::node &state_node,
+		    state_node_ref state_node,
 		    int max_depth,
 		    int depth,
 		    int num_columns)
   {
     bool recurse = true;
-    auto input_node_kind = state_node.get_property (state_node_properties::kind);
+    auto input_node_kind = state_node.get_node_kind ();
 
     switch (input_node_kind)
       {
-      case state_node_properties::kind::padding:
-      case state_node_properties::kind::other:
+      case node_kind::padding:
+      case node_kind::other:
 	return;
 
-      case state_node_properties::kind::stack:
+      case node_kind::stack:
 	add_title_tr (id_of_dot_node, xp, num_columns, state_node, "Stack",
 		      style::h1,
-		      state_node_properties::dynalloc_state::unknown);
+		      node_dynalloc_state::unknown);
 	break;
-      case state_node_properties::kind::stack_frame:
+      case node_kind::stack_frame:
 	if (auto logical_loc = state_node.get_logical_loc ())
 	  if (const char *function
 		= m_logical_loc_mgr.get_short_name (logical_loc))
 	    add_title_tr (id_of_dot_node, xp, num_columns, state_node,
 			  std::string ("Frame: ") + function,
 			  style::h2,
-			  state_node_properties::dynalloc_state::unknown);
+			  node_dynalloc_state::unknown);
 	break;
-      case state_node_properties::kind::dynalloc_buffer:
+      case node_kind::dynalloc_buffer:
 	{
-	  enum state_node_properties::dynalloc_state dynalloc_st
-	    = state_node.get_property (state_node_properties::dynalloc_state);
-	  const char *extents
-	    = state_node.get_property (state_node_properties::dynamic_extents);
-	  const char *type = state_node.get_property (state_node_properties::type);
+	  enum node_dynalloc_state dynalloc_st
+	    = state_node.get_dynalloc_state ();
+	  const char *extents = state_node.get_dynamic_extents ();
+	  const char *type = state_node.get_type ();
 	  pretty_printer pp;
 	  switch (dynalloc_st)
 	    {
 	    default:
 	      gcc_unreachable ();
 
-	    case state_node_properties::dynalloc_state::unknown:
-	    case state_node_properties::dynalloc_state::nonnull:
+	    case node_dynalloc_state::unknown:
+	    case node_dynalloc_state::nonnull:
 	      if (type)
 		{
 		if (extents)
@@ -361,7 +356,7 @@ private:
 		}
 	      break;
 
-	    case state_node_properties::dynalloc_state::unchecked:
+	    case node_dynalloc_state::unchecked:
 	      if (type)
 		{
 		  if (extents)
@@ -376,7 +371,7 @@ private:
 		}
 	      break;
 
-	    case state_node_properties::dynalloc_state::freed:
+	    case node_dynalloc_state::freed:
 	      // TODO: show deallocator
 	      // TODO: show deallocation event
 	      pp_printf (&pp, "Freed buffer");
@@ -409,10 +404,9 @@ private:
 	    {
 	    default:
 	      break;
-	    case state_node_properties::kind::variable:
+	    case node_kind::variable:
 	      {
-		const char *name
-		  = state_node.get_property (state_node_properties::name);
+		const char *name = state_node.get_name ();
 		gcc_assert (name);
 		xp.push_tag ("td", false);
 		maybe_add_dst_port (id_of_dot_node, xp, state_node);
@@ -422,10 +416,9 @@ private:
 		xp.pop_tag ("td");
 	      }
 	      break;
-	    case state_node_properties::kind::element:
+	    case node_kind::element:
 	      {
-		const char *index
-		  = state_node.get_property (state_node_properties::index);
+		const char *index = state_node.get_index ();
 		gcc_assert (index);
 		xp.push_tag ("td", false);
 		maybe_add_dst_port (id_of_dot_node, xp, state_node);
@@ -437,10 +430,9 @@ private:
 		xp.pop_tag ("td");
 	      }
 	      break;
-	    case state_node_properties::kind::field:
+	    case node_kind::field:
 	      {
-		const char *name
-		  = state_node.get_property (state_node_properties::name);
+		const char *name = state_node.get_name ();
 		gcc_assert (name);
 		xp.push_tag ("td", false);
 		maybe_add_dst_port (id_of_dot_node, xp, state_node);
@@ -453,8 +445,7 @@ private:
 	      break;
 	    }
 
-	  if (const char *type
-		= state_node.get_property (state_node_properties::type))
+	  if (const char *type = state_node.get_type ())
 	    {
 	      xp.push_tag ("td", false);
 	      xp.set_attr ("align", "right");
@@ -464,8 +455,7 @@ private:
 	      xp.pop_tag ("td");
 	    }
 
-	  if (const char *value
-		= state_node.get_property (state_node_properties::value_str))
+	  if (const char *value = state_node.get_value ())
 	    {
 	      xp.push_tag ("td", false);
 	      xp.set_attr ("align", "left");
@@ -476,16 +466,15 @@ private:
 	      xp.pop_tag ("td");
 	      recurse = false;
 	    }
-
 	  xp.pop_tag ("tr");
 	}
 	break;
       }
 
     if (recurse)
-      for (size_t i = 0; i < state_node.get_num_children (); ++i)
+      for (size_t i = 0; i < state_node.m_node.get_num_children (); ++i)
 	on_node_in_table (id_of_dot_node, xp,
-			  state_node.get_child (i),
+			  state_node.m_node.get_child (i),
 			  max_depth, depth + 1, num_columns);
   }
 
@@ -508,9 +497,9 @@ private:
   void
   maybe_add_src_port (const dot::id &id_of_dot_node,
 		      xml::printer &xp,
-		      const diagnostics::digraphs::node &state_node)
+		      state_node_ref state_node)
   {
-    auto iter = m_src_nodes.find (&state_node);
+    auto iter = m_src_nodes.find (&state_node.m_node);
     if (iter == m_src_nodes.end ())
       return;
 
@@ -518,7 +507,7 @@ private:
     dot::node_id node_id (id_of_dot_node,
 			  dot::port (src_id,
 				     dot::compass_pt::e));
-    m_src_node_to_port_id.insert ({&state_node, node_id});
+    m_src_node_to_port_id.insert ({&state_node.m_node, node_id});
     xp.set_attr ("port", src_id.m_str);
   }
 
@@ -528,9 +517,9 @@ private:
   void
   maybe_add_dst_port (const dot::id &id_of_dot_node,
 		      xml::printer &xp,
-		      const diagnostics::digraphs::node &state_node)
+		      state_node_ref state_node)
   {
-    auto iter = m_dst_nodes.find (&state_node);
+    auto iter = m_dst_nodes.find (&state_node.m_node);
     if (iter == m_dst_nodes.end ())
       return;
 
@@ -538,7 +527,7 @@ private:
     dot::node_id node_id (id_of_dot_node,
 			  dot::port (dst_id/*,
 					     dot::compass_pt::w*/));
-    m_dst_node_to_port_id.insert ({&state_node, node_id});
+    m_dst_node_to_port_id.insert ({&state_node.m_node, node_id});
     xp.set_attr ("port", dst_id.m_str);
   }
 
@@ -546,11 +535,11 @@ private:
   const logical_locations::manager &m_logical_loc_mgr;
 
   /* All nodes involved in edges (and thus will need a port).  */
-  std::set<const digraphs::node *> m_src_nodes;
-  std::set<const digraphs::node *> m_dst_nodes;
+  std::set<digraphs::node *> m_src_nodes;
+  std::set<digraphs::node *> m_dst_nodes;
 
-  std::map<const digraphs::node *, dot::node_id> m_src_node_to_port_id;
-  std::map<const digraphs::node *, dot::node_id> m_dst_node_to_port_id;
+  std::map<digraphs::node *, dot::node_id> m_src_node_to_port_id;
+  std::map<digraphs::node *, dot::node_id> m_dst_node_to_port_id;
 };
 
 std::unique_ptr<dot::graph>

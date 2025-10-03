@@ -6271,16 +6271,16 @@ These are visible by pressing ``j'' and ``k'' to single-step forward and
 backward through events.  Enabling this option will slow down
 HTML generation.
 
-@item show-graph-dot-src=@r{[}yes@r{|}no@r{]}
+@item show-state-diagrams-dot-src=@r{[}yes@r{|}no@r{]}
 This is a debugging feature and defaults to @code{no}.
-If @code{show-graph-dot-src=yes}
+If @code{show-state-diagrams-dot-src=yes}
 then if @code{show-state-diagrams=yes},
 the generated state diagrams will also show the .dot source input to
 GraphViz used for the diagram.
 
-@item show-graph-sarif=@r{[}yes@r{|}no@r{]}
+@item show-state-diagrams-sarif=@r{[}yes@r{|}no@r{]}
 This is a debugging feature and defaults to @code{no}.
-If @code{show-graph-sarif=yes}
+If @code{show-state-diagrams-sarif=yes}
 then if @code{show-state-diagrams=yes}, the generated state diagrams will
 also show a SARIF representation of the state.
 

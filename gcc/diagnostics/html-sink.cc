@@ -57,8 +57,8 @@ html_generation_options::html_generation_options ()
 : m_css (true),
   m_javascript (true),
   m_show_state_diagrams (false),
-  m_show_graph_sarif (false),
-  m_show_graph_dot_src (false)
+  m_show_state_diagrams_sarif (false),
+  m_show_state_diagrams_dot_src (false)
 {
 }
 
@@ -68,8 +68,8 @@ html_generation_options::dump (FILE *outfile, int indent) const
   DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_css);
   DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_javascript);
   DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams);
-  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_graph_sarif);
-  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_graph_dot_src);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams_sarif);
+  DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_show_state_diagrams_dot_src);
 }
 
 class html_builder;
@@ -640,7 +640,7 @@ html_builder::maybe_make_state_diagram (const paths::event &event)
      the debug version.  */
   auto state_graph
     = event.maybe_make_diagnostic_state_graph
-	(m_html_gen_opts.m_show_graph_sarif);
+	(m_html_gen_opts.m_show_state_diagrams_sarif);
   if (!state_graph)
     return nullptr;
 
@@ -652,7 +652,7 @@ html_builder::maybe_make_state_diagram (const paths::event &event)
   auto wrapper = std::make_unique<xml::element> ("div", false);
   xml::printer xp (*wrapper);
 
-  if (m_html_gen_opts.m_show_graph_sarif)
+  if (m_html_gen_opts.m_show_state_diagrams_sarif)
     {
       // For debugging, show the SARIF src inline:
       pretty_printer pp;
@@ -660,7 +660,7 @@ html_builder::maybe_make_state_diagram (const paths::event &event)
       print_pre_source (xp, pp_formatted_text (&pp));
     }
 
-  if (m_html_gen_opts.m_show_graph_dot_src)
+  if (m_html_gen_opts.m_show_state_diagrams_dot_src)
     {
       // For debugging, show the dot src inline:
       pretty_printer pp;
@@ -1278,41 +1278,21 @@ void
 html_builder::add_graph (const digraphs::digraph &dg,
 			 xml::element &parent_element)
 {
-  auto div = std::make_unique<xml::element> ("div", false);
-  div->set_attr ("class", "gcc-directed-graph");
-  xml::printer xp (*div);
-
-  if (m_html_gen_opts.m_show_graph_sarif)
-    {
-      // For debugging, show the SARIF src inline:
-      pretty_printer pp;
-      dg.make_json_sarif_graph ()->print (&pp, true);
-      print_pre_source (xp, pp_formatted_text (&pp));
-    }
-
   if (auto dot_graph = dg.make_dot_graph ())
-    {
-      if (m_html_gen_opts.m_show_graph_dot_src)
-	{
-	  // For debugging, show the dot src inline:
-	  pretty_printer pp;
-	  dot::writer w (pp);
-	  dot_graph->print (w);
-	  print_pre_source (xp, pp_formatted_text (&pp));
-	}
-
-      if (auto svg_element = dot::make_svg_from_graph (*dot_graph))
-	{
-	  if (const char *description = dg.get_description ())
-	    {
-	      xp.push_tag ("h2", true);
-	      xp.add_text (description);
-	      xp.pop_tag ("h2");
-	    }
-	  xp.append (std::move (svg_element));
-	  parent_element.add_child (std::move (div));
-	}
-    }
+    if (auto svg_element = dot::make_svg_from_graph (*dot_graph))
+      {
+	auto div = std::make_unique<xml::element> ("div", false);
+	div->set_attr ("class", "gcc-directed-graph");
+	xml::printer xp (*div);
+	if (const char *description = dg.get_description ())
+	  {
+	    xp.push_tag ("h2", true);
+	    xp.add_text (description);
+	    xp.pop_tag ("h2");
+	  }
+	xp.append (std::move (svg_element));
+	parent_element.add_child (std::move (div));
+      }
 }
 
 void
