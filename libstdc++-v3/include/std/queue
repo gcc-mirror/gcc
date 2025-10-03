@@ -113,10 +113,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __glibcxx_print >= 202406L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4398. enable_nonlocking_formatter_optimization should be disabled for container adaptors
   template<typename _Tp, typename _Container>
     constexpr bool
-    // TODO should be false
-    enable_nonlocking_formatter_optimization<queue<_Tp, _Container>> = true;
+    enable_nonlocking_formatter_optimization<queue<_Tp, _Container>> = false;
 #endif
 
   template<__format::__char _CharT, typename _Tp,
@@ -154,11 +155,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     };
 
 #if __glibcxx_print >= 202406L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4398. enable_nonlocking_formatter_optimization should be disabled for container adaptors
   template<typename _Tp, typename _Container, typename _Comparator>
     constexpr bool
-    // TODO should be false
     enable_nonlocking_formatter_optimization<
-      priority_queue<_Tp, _Container, _Comparator>> = true;
+      priority_queue<_Tp, _Container, _Comparator>> = false;
 #endif
 
 _GLIBCXX_END_NAMESPACE_VERSION

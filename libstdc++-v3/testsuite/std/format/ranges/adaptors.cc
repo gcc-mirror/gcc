@@ -122,14 +122,13 @@ test_output()
   // Formatter check if container is formattable, not container elements.
   static_assert(!std::formattable<Adaptor<int, NotFormattableCont<int>>, CharT>);
 
-  // TODO should be false
-  static_assert(std::enable_nonlocking_formatter_optimization<
+  static_assert(!std::enable_nonlocking_formatter_optimization<
 		  Adaptor<int>>);
-  static_assert(std::enable_nonlocking_formatter_optimization<
+  static_assert(!std::enable_nonlocking_formatter_optimization<
 		  Adaptor<MutFormat>>);
-  static_assert(std::enable_nonlocking_formatter_optimization<
+  static_assert(!std::enable_nonlocking_formatter_optimization<
 		  Adaptor<int, std::deque<int>>>);
-  static_assert(std::enable_nonlocking_formatter_optimization<
+  static_assert(!std::enable_nonlocking_formatter_optimization<
 		  Adaptor<int, NotFormattableCont<int>>>);
 }
 

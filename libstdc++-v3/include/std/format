@@ -5873,11 +5873,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4399. enable_nonlocking_formatter_optimization for pair and tuple needs remove_cvref_t
   template<typename _Fp, typename _Sp>
     constexpr bool enable_nonlocking_formatter_optimization<pair<_Fp, _Sp>>
-    // TODO this should have remove_cvref_t.
-      = enable_nonlocking_formatter_optimization<_Fp>
-        && enable_nonlocking_formatter_optimization<_Sp>;
+      = enable_nonlocking_formatter_optimization<remove_cvref_t<_Fp>>
+        && enable_nonlocking_formatter_optimization<remove_cvref_t<_Sp>>;
 #endif
 
   template<__format::__char _CharT, formattable<_CharT>... _Tps>
@@ -5899,10 +5900,11 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4399. enable_nonlocking_formatter_optimization for pair and tuple needs remove_cvref_t
   template<typename... _Tps>
-    // TODO this should have remove_cvref_t.
     constexpr bool enable_nonlocking_formatter_optimization<tuple<_Tps...>>
-      = (enable_nonlocking_formatter_optimization<_Tps> && ...);
+      = (enable_nonlocking_formatter_optimization<remove_cvref_t<_Tps>> && ...);
 #endif
 
   // [format.range.formatter], class template range_formatter

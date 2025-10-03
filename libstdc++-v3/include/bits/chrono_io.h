@@ -561,7 +561,7 @@ namespace __format
       __formatter_chrono(_ChronoSpec<_CharT> __spec) noexcept
       : _M_spec(__spec)
       { }
-	
+
       constexpr typename basic_format_parse_context<_CharT>::iterator
       _M_parse(basic_format_parse_context<_CharT>& __pc, _ChronoParts __parts,
 	       const _ChronoSpec<_CharT>& __def)
@@ -2235,10 +2235,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
   template<typename _Rep, typename _Period>
     constexpr bool
     enable_nonlocking_formatter_optimization<chrono::duration<_Rep, _Period>>
-      = enable_nonlocking_formatter_optimization<_Rep>;
+      = is_arithmetic_v<_Rep>;
 #endif
 
   template<__format::__char _CharT>
@@ -2988,10 +2990,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::hh_mm_ss<_Duration>>
-        = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::hh_mm_ss<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
@@ -3079,10 +3083,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::sys_time<_Duration>>
-       = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::sys_time<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -3130,10 +3136,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::utc_time<_Duration>>
-       = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::utc_time<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -3172,10 +3180,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::tai_time<_Duration>>
-       = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::tai_time<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -3214,10 +3224,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::gps_time<_Duration>>
-       = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::gps_time<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -3256,10 +3268,12 @@ namespace __format
      };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::file_time<_Duration>>
-        = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::file_time<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -3297,10 +3311,12 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<chrono::local_time<_Duration>>
-        = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<chrono::local_time<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
   template<typename _Duration, __format::__char _CharT>
@@ -3364,10 +3380,13 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<
-       chrono::__detail::__local_time_fmt<_Duration>> = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<
+      chrono::__detail::__local_time_fmt<_Duration>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 
 #if _GLIBCXX_USE_CXX11_ABI || ! _GLIBCXX_USE_DUAL_ABI
@@ -3391,10 +3410,13 @@ namespace __format
     };
 
 #if __glibcxx_print >= 202406L
-   template<typename _Duration>
-     constexpr bool
-     enable_nonlocking_formatter_optimization<
-        chrono::zoned_time<_Duration, const chrono::time_zone*>> = true;
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 4400. enable_nonlocking_formatter_optimization for durations with custom rep
+  template<typename _Duration>
+    constexpr bool
+    enable_nonlocking_formatter_optimization<
+      chrono::zoned_time<_Duration, const chrono::time_zone*>>
+      = enable_nonlocking_formatter_optimization<_Duration>;
 #endif
 #endif
 

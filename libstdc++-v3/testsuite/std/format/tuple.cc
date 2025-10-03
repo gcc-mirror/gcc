@@ -361,10 +361,9 @@ void test_nonblocking()
 {
   static_assert(std::enable_nonlocking_formatter_optimization<
 		  Tuple<int, float>>);
-  // TODO missing remove_cv_ref
-  static_assert(!std::enable_nonlocking_formatter_optimization<
+  static_assert(std::enable_nonlocking_formatter_optimization<
 		  Tuple<const int, const float>>);
-  static_assert(!std::enable_nonlocking_formatter_optimization<
+  static_assert(std::enable_nonlocking_formatter_optimization<
 		  Tuple<int&, float&>>);
 
   static_assert(!std::enable_nonlocking_formatter_optimization<
