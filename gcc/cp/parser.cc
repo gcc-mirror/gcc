@@ -28124,6 +28124,7 @@ cp_parser_class_specifier (cp_parser* parser)
   bool in_switch_statement_p;
   bool saved_in_unbraced_linkage_specification_p;
   bool saved_in_unbraced_export_declaration_p;
+  bool saved_auto_is_implicit_function_template_parm_p;
   tree old_scope = NULL_TREE;
   tree scope = NULL_TREE;
   cp_token *closing_brace;
@@ -28181,6 +28182,10 @@ cp_parser_class_specifier (cp_parser* parser)
   saved_in_unbraced_export_declaration_p
     = parser->in_unbraced_export_declaration_p;
   parser->in_unbraced_export_declaration_p = false;
+  saved_auto_is_implicit_function_template_parm_p
+    = parser->auto_is_implicit_function_template_parm_p;
+  parser->auto_is_implicit_function_template_parm_p = false;
+
   /* 'this' from an enclosing non-static member function is unavailable.  */
   tree saved_ccp = current_class_ptr;
   tree saved_ccr = current_class_ref;
@@ -28571,6 +28576,8 @@ cp_parser_class_specifier (cp_parser* parser)
     = saved_in_unbraced_linkage_specification_p;
   parser->in_unbraced_export_declaration_p
     = saved_in_unbraced_export_declaration_p;
+  parser->auto_is_implicit_function_template_parm_p
+    = saved_auto_is_implicit_function_template_parm_p;
   current_class_ptr = saved_ccp;
   current_class_ref = saved_ccr;
 
