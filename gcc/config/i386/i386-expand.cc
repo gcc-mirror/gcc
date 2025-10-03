@@ -8443,9 +8443,28 @@ setmem_epilogue_gen_val (void *op_p, void *prev_p, HOST_WIDE_INT,
 
       unsigned int op_size = GET_MODE_SIZE (op_mode);
       unsigned int size = GET_MODE_SIZE (mode);
-      unsigned int nunits = op_size / GET_MODE_SIZE (QImode);
-      machine_mode vec_mode
-	= mode_for_vector (QImode, nunits).require ();
+      unsigned int nunits;
+      machine_mode vec_mode;
+      if (op_size < size)
+	{
+	  /* If OP size is smaller than MODE size, duplicate it.  */
+	  nunits = size / GET_MODE_SIZE (QImode);
+	  vec_mode = mode_for_vector (QImode, nunits).require ();
+	  nunits = size / op_size;
+	  gcc_assert (SCALAR_INT_MODE_P (op_mode));
+	  machine_mode dup_mode
+	    = mode_for_vector (as_a <scalar_mode> (op_mode),
+			       nunits).require ();
+	  target = gen_reg_rtx (vec_mode);
+	  op = gen_vec_duplicate (dup_mode, op);
+	  rtx dup_op = gen_reg_rtx (dup_mode);
+	  emit_move_insn (dup_op, op);
+	  op = gen_rtx_SUBREG (vec_mode, dup_op, 0);
+	  emit_move_insn (target, op);
+	  return target;
+	}
+      nunits = op_size / GET_MODE_SIZE (QImode);
+      vec_mode = mode_for_vector (QImode, nunits).require ();
       target = gen_reg_rtx (vec_mode);
       op = gen_rtx_SUBREG (vec_mode, op, 0);
       emit_move_insn (target, op);
