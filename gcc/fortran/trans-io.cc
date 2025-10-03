@@ -2646,7 +2646,9 @@ gfc_trans_transfer (gfc_code * code)
 	 && ((expr->symtree->n.sym->ts.type == BT_DERIVED && expr->ts.deferred)
 	     || (expr->symtree->n.sym->assoc
 		 && expr->symtree->n.sym->assoc->variable)
-	     || gfc_expr_attr (expr).pointer))
+	     || gfc_expr_attr (expr).pointer
+	     || (expr->symtree->n.sym->attr.pointer
+		 && gfc_expr_attr (expr).target)))
 	goto scalarize;
 
       /* With array-bounds checking enabled, force scalarization in some
