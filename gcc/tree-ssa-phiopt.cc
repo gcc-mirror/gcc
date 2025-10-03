@@ -3645,6 +3645,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   gimple_stmt_iterator gsi;
   gphi *newphi;
   gassign *new_stmt;
+  bool empty_constructor = false;
 
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
@@ -3659,8 +3660,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
     return false;
 
   lhs = gimple_assign_lhs (then_assign);
-  if (!is_gimple_reg_type (TREE_TYPE (lhs))
-      || !operand_equal_p (lhs, gimple_assign_lhs (else_assign), 0))
+  if (!operand_equal_p (lhs, gimple_assign_lhs (else_assign), 0))
     return false;
 
   lhs_base = get_base_address (lhs);
@@ -3672,6 +3672,16 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   else_rhs = gimple_assign_rhs1 (else_assign);
   then_locus = gimple_location (then_assign);
   else_locus = gimple_location (else_assign);
+
+  if (!is_gimple_reg_type (TREE_TYPE (lhs)))
+    {
+      if (!operand_equal_p (then_rhs, else_rhs))
+	return false;
+      /* Currently only handle commoning of `= {}`.   */
+      if (TREE_CODE (then_rhs) != CONSTRUCTOR)
+	return false;
+      empty_constructor = true;
+    }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
@@ -3699,12 +3709,17 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   /* 2) Create a PHI node at the join block, with one argument
 	holding the old RHS, and the other holding the temporary
 	where we stored the old memory contents.  */
-  name = make_temp_ssa_name (TREE_TYPE (lhs), NULL, "cstore");
-  newphi = create_phi_node (name, join_bb);
-  add_phi_arg (newphi, then_rhs, EDGE_SUCC (then_bb, 0), then_locus);
-  add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus);
+  if (empty_constructor)
+    name = unshare_expr (then_rhs);
+  else
+    {
+      name = make_temp_ssa_name (TREE_TYPE (lhs), NULL, "cstore");
+      newphi = create_phi_node (name, join_bb);
+      add_phi_arg (newphi, then_rhs, EDGE_SUCC (then_bb, 0), then_locus);
+      add_phi_arg (newphi, else_rhs, EDGE_SUCC (else_bb, 0), else_locus);
+    }
 
-  new_stmt = gimple_build_assign (lhs, gimple_phi_result (newphi));
+  new_stmt = gimple_build_assign (lhs, name);
   /* Update the vdef for the new store statement. */
   tree newvphilhs = make_ssa_name (gimple_vop (cfun));
   tree vdef = gimple_phi_result (vphi);
@@ -3715,16 +3730,21 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   update_stmt (vphi);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf(dump_file, "to use phi:\n");
-      print_gimple_stmt (dump_file, newphi, 0,
-			 TDF_VOPS|TDF_MEMSYMS);
-      fprintf(dump_file, "\n");
+      if (!empty_constructor)
+	{
+	 fprintf(dump_file, "to use phi:\n");
+	  print_gimple_stmt (dump_file, newphi, 0,
+			     TDF_VOPS|TDF_MEMSYMS);
+          fprintf(dump_file, "\n");
+	}
+      else
+	fprintf(dump_file, "to:\n");
       print_gimple_stmt (dump_file, new_stmt, 0,
 			 TDF_VOPS|TDF_MEMSYMS);
       fprintf(dump_file, "\n\n");
     }
 
-  /* 3) Insert that PHI node.  */
+  /* 3) Insert that new store.  */
   gsi = gsi_after_labels (join_bb);
   if (gsi_end_p (gsi))
     {
