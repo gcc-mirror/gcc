@@ -4038,7 +4038,15 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	}
 
       kind_value = 0;
-      gfc_extract_int (kind_expr, &kind_value);
+      /* This can come about during the parsing of nested pdt_templates. An
+	 error arises because the KIND parameter expression has not been
+	 provided. Use the template instead of an incorrect instance.  */
+      if (gfc_extract_int (kind_expr, &kind_value))
+	{
+	  gfc_free_actual_arglist (type_param_spec_list);
+	  return MATCH_YES;
+	}
+
       sprintf (name + strlen (name), "_%d", kind_value);
 
       if (!name_seen && actual_param)
