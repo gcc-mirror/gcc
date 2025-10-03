@@ -3465,7 +3465,9 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	return plus_constant (mode, op0, trunc_int_for_mode (-offset, mode));
 
       /* Don't let a relocatable value get a negative coeff.  */
-      if (poly_int_rtx_p (op1) && GET_MODE (op0) != VOIDmode)
+      if (is_a <scalar_int_mode> (mode)
+	  && poly_int_rtx_p (op1)
+	  && GET_MODE (op0) != VOIDmode)
 	return simplify_gen_binary (PLUS, mode,
 				    op0,
 				    neg_poly_int_rtx (mode, op1));
