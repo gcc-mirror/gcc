@@ -3363,7 +3363,13 @@ void
 Module::process_file_path ()
 {
   rust_assert (kind == Module::ModuleKind::UNLOADED);
-  rust_assert (module_file.empty ());
+
+  if (!module_file.empty ())
+    {
+      rust_error_at (locus, "error handling module file for %qs",
+		     module_name.as_string ().c_str ());
+      return;
+    }
 
   // This corresponds to the path of the file 'including' the module. So the
   // file that contains the 'mod <file>;' directive
