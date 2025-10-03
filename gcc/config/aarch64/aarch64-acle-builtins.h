@@ -113,7 +113,8 @@ enum vector_type_index
 {
 #define DEF_SVE_TYPE(ACLE_NAME, ...) VECTOR_TYPE_##ACLE_NAME,
 #include "aarch64-sve-builtins.def"
-  NUM_VECTOR_TYPES
+  VECTOR_TYPE_none,
+  NUM_VECTOR_TYPES = VECTOR_TYPE_none,
 };
 
 /* Classifies the available measurement units for an address displacement.  */

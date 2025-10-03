@@ -126,7 +126,6 @@ static const char *const pred_suffixes[NUM_PREDS + 1] = {
 
 /* Static information about each mode_suffix_index.  */
 constexpr mode_suffix_info mode_suffixes[] = {
-#define VECTOR_TYPE_none NUM_VECTOR_TYPES
 #define DEF_SVE_MODE(NAME, BASE, DISPLACEMENT, UNITS)		  \
   { /* .string			 = */ "_" #NAME,		  \
     /* .base_vector_type	 = */ VECTOR_TYPE_##BASE,	  \
