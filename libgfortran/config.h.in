@@ -777,6 +777,9 @@
 /* Define to 1 if you have the `mkstemp' function. */
 #undef HAVE_MKSTEMP
 
+/* Define to 1 if you have the `mmap' function. */
+#undef HAVE_MMAP
+
 /* Define to 1 if you have the `newlocale' function. */
 #undef HAVE_NEWLOCALE
 
@@ -828,6 +831,9 @@
 /* Define to 1 if you have the `roundl' function. */
 #undef HAVE_ROUNDL
 
+/* Define if __builtin_clzl behaves as expected. */
+#undef HAVE_SANE_BUILTIN_CLZL
+
 /* Define to 1 if you have the `scalbn' function. */
 #undef HAVE_SCALBN
 
@@ -842,6 +848,9 @@
 
 /* Define to 1 if you have the `secure_getenv' function. */
 #undef HAVE_SECURE_GETENV
+
+/* Define to 1 if you have the `setenv' function. */
+#undef HAVE_SETENV
 
 /* Define to 1 if you have the `setmode' function. */
 #undef HAVE_SETMODE
@@ -944,6 +953,9 @@
 
 /* Define to 1 if you have the `symlink' function. */
 #undef HAVE_SYMLINK
+
+/* Define to 1 if you have the <sys/mman.h> header file. */
+#undef HAVE_SYS_MMAN_H
 
 /* Define to 1 if you have the <sys/random.h> header file. */
 #undef HAVE_SYS_RANDOM_H

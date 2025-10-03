@@ -2073,9 +2073,13 @@ conv_intrinsic_image_status (gfc_se *se, gfc_expr *expr)
 					    GFC_STAT_STOPPED_IMAGE));
     }
   else if (flag_coarray == GFC_FCOARRAY_LIB)
+    /* The team is optional and therefore needs to be a pointer to the opaque
+       pointer.  */
     tmp = build_call_expr_loc (input_location, gfor_fndecl_caf_image_status, 2,
 			       args[0],
-			       num_args < 2 ? null_pointer_node : args[1]);
+			       num_args < 2
+				 ? null_pointer_node
+				 : gfc_build_addr_expr (NULL_TREE, args[1]));
   else
     gcc_unreachable ();
 

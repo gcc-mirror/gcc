@@ -70,6 +70,12 @@ proc dg-compile-aux-modules { args } {
     }
 }
 
+if { [getenv GFORTRAN_NUM_IMAGES] == "" } {
+  # Some caf_shmem tests need at least 8 images.  This is also to limit the
+  # number of images on big machines preventing overload w/o any benefit.
+  setenv GFORTRAN_NUM_IMAGES 8
+}
+
 # Main loop.
 foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] {
     # If we're only testing specific files and this isn't one of them, skip it.
@@ -102,6 +108,13 @@ foreach test [lsort [glob -nocomplain $srcdir/$subdir/*.\[fF\]{,90,95,03,08} ]] 
         set gfortran_aux_module_flags "-fcoarray=lib $flags -lcaf_single"
 	dg-test $test "-fcoarray=lib $flags -lcaf_single" {}
 	cleanup-modules ""
+    }
+
+    foreach flags $option_list {
+        verbose "Testing $nshort (libcaf_shmem), $flags" 1
+        set gfortran_aux_module_flags "-fcoarray=lib $flags -lcaf_shmem"
+        dg-test $test "-fcoarray=lib $flags -lcaf_shmem" {}
+        cleanup-modules ""
     }
 }
 torture-finish
