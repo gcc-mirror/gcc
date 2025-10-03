@@ -8928,8 +8928,11 @@ convert_template_argument (tree parm,
 	orig_arg = TREE_OPERAND (orig_arg, 0);
 
       if (!uses_template_parms (t)
-	  && !(force_conv ? uses_template_parms (orig_arg)
-	       : type_dependent_expression_p (orig_arg)))
+	  && !type_dependent_expression_p (orig_arg)
+	  && !(force_conv
+	       && !(same_type_ignoring_top_level_qualifiers_p
+		    (TREE_TYPE (orig_arg), t))
+	       && value_dependent_expression_p (orig_arg)))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
