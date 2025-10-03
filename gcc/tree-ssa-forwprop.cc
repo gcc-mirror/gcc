@@ -1846,7 +1846,7 @@ simplify_builtin_memcmp (gimple_stmt_iterator *gsi_p, gcall *stmt)
   /* Replace memcmp with memcmp_eq if the above fails. */
   if (DECL_FUNCTION_CODE (gimple_call_fndecl (stmt)) == BUILT_IN_MEMCMP_EQ)
     return false;
-  if (!(cfun->curr_properties & (PROP_last_full_fold)))
+  if (!fold_before_rtl_expansion_p ())
     return false;
   gimple_call_set_fndecl (stmt, builtin_decl_explicit (BUILT_IN_MEMCMP_EQ));
   update_stmt (stmt);
@@ -2147,7 +2147,7 @@ simplify_builtin_memcpy_memset (gimple_stmt_iterator *gsi_p, gcall *stmt2)
 static bool
 optimize_stack_restore (gimple_stmt_iterator *gsi, gimple *call)
 {
-  if (!(cfun->curr_properties & PROP_last_full_fold))
+  if (!fold_before_rtl_expansion_p ())
     return false;
   tree callee;
   gimple *stmt;

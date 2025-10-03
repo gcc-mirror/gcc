@@ -38,6 +38,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "stor-layout.h"
 #include "dumpfile.h"
 #include "gimple-iterator.h"
+#include "tree-pass.h"
 #include "gimple-fold.h"
 #include "gimplify.h"
 #include "tree-into-ssa.h"
@@ -69,7 +70,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "varasm.h"
 #include "internal-fn.h"
 #include "gimple-range.h"
-#include "tree-pass.h"
 
 enum strlen_range_kind {
   /* Compute the exact constant string length.  */
@@ -5223,8 +5223,7 @@ gimple_fold_builtin_constant_p (gimple_stmt_iterator *gsi)
   /* Resolve __builtin_constant_p.  If it hasn't been
      folded to integer_one_node by now, it's fairly
      certain that the value simply isn't constant.  */
-  if (!result
-      && (cfun->curr_properties & PROP_last_full_fold))
+  if (!result && fold_before_rtl_expansion_p ())
     result = integer_zero_node;
 
   if (!result)
@@ -5239,7 +5238,7 @@ gimple_fold_builtin_constant_p (gimple_stmt_iterator *gsi)
 static bool
 gimple_fold_builtin_assume_aligned (gimple_stmt_iterator *gsi)
 {
-  if (!(cfun->curr_properties & PROP_last_full_fold))
+  if (!fold_before_rtl_expansion_p ())
     return false;
 
   gcall *call = as_a<gcall*>(gsi_stmt (*gsi));
@@ -5261,7 +5260,7 @@ static bool
 gimple_fold_builtin_stdarg (gimple_stmt_iterator *gsi, gcall *call)
 {
   /* These shouldn't be folded before pass_stdarg.  */
-  if (!(cfun->curr_properties & PROP_last_full_fold))
+  if (!fold_before_rtl_expansion_p ())
     return false;
 
   tree callee, lhs, rhs, cfun_va_list;
@@ -6014,7 +6013,7 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	case IFN_ASSUME:
 	  /* Remove .ASSUME calls during the last fold since it is no
 	     longer needed.  */
-	  if (cfun->curr_properties & PROP_last_full_fold)
+	  if (fold_before_rtl_expansion_p ())
 	    replace_call_with_value (gsi, NULL_TREE);
 	  break;
 	case IFN_BUILTIN_EXPECT:

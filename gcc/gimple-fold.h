@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_GIMPLE_FOLD_H
 #define GCC_GIMPLE_FOLD_H
 
+#include "tree-pass.h"
+
 extern tree canonicalize_constructor_val (tree, tree);
 extern tree get_symbol_constant_value (tree);
 struct c_strlen_data;
@@ -279,5 +281,14 @@ extern tree gimple_simplify (combined_fn, tree, tree, tree,
 			     gimple_seq *, tree (*)(tree));
 extern tree gimple_simplify (combined_fn, tree, tree, tree, tree,
 			     gimple_seq *, tree (*)(tree));
+
+/* Returns true if we are doing the fold before expansion to rtl.   */
+inline bool
+fold_before_rtl_expansion_p ()
+{
+  if (!cfun)
+    return false;
+  return (cfun->curr_properties & PROP_last_full_fold) != 0;
+}
 
 #endif  /* GCC_GIMPLE_FOLD_H */
