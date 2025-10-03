@@ -79,7 +79,20 @@
 #undef TCR
 #define TCR(S) TAB(CR(S))
 
-/* REGNO constants, dwarf column numbers for registers of interest.  */
+/* REGNO constants, dwarf column numbers for registers of interest.
+
+   In the REGNO definitions that follow, when there is a register
+   number argument N, the use of parens around N in the result
+   is to be avoided.  These eventually expand as a register column
+   number in a .cfi_offset directive within an "asm" statement,
+   through stringification.  Parens in the macro expansion would
+   end up in the result and yield code such as
+
+     asm(".cfi_offset (0), <offset-expr>")
+
+   The parens impair readability here, and could even cause
+   processing errors from llvm compilers that interpret the
+   directives.  */
 
 #if defined (__PPC__)
 
@@ -87,7 +100,7 @@
 #define REGNO_CTR 66
 #define REGNO_CR  70
 #define REGNO_XER 76
-#define REGNO_GR(N) (N)
+#define REGNO_GR(N) N
 
 #define REGNO_PC  67  /* ARG_POINTER_REGNUM  */
 
@@ -95,12 +108,20 @@
 
 #elif defined (ARMEL)
 
-#define REGNO_G_REG_OFFSET(N) (N)
+#define REGNO_G_REG_OFFSET(N) N
 
 #define FUNCTION "%function"
 
 #ifdef __aarch64__
-#define REGNO_PC_OFFSET  96  /* DWARF_ALT_FRAME_RETURN_COLUMN */
+
+/* For the return column, GCC has DWARF_ALT_FRAME_RETURN_COLUMN (96)
+   while libunwind, used with llvm toolchains, implements the PC (!= LR)
+   ABI column 32.  */
+#ifdef __llvm__
+#define REGNO_PC_OFFSET 32
+#else
+#define REGNO_PC_OFFSET 96 /* DWARF_ALT_FRAME_RETURN_COLUMN */
+#endif
 #else
 #define REGNO_PC_OFFSET  15  /* PC_REGNUM */
 #endif

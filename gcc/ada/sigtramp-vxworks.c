@@ -114,9 +114,17 @@ void __gnat_set_is_vxsim(int val) {
 }
 #endif
 
+/* When one is known for the compiler processing this runtime file,
+   a function attribute requesting optimization for the said function.
+   Assume __has_attribute is available for such queries, valid for at
+   least gcc and clang.  */
+#if __has_attribute(optimize)
+#define OPTIMIZE_O2  __attribute__((optimize(2)));
+#else
+#define OPTIMIZE_O2
+#endif
 void __gnat_sigtramp (int signo, void *si, void *sc,
-		      __sigtramphandler_t * handler)
-     __attribute__((optimize(2)));
+		      __sigtramphandler_t * handler) OPTIMIZE_O2;
 
 void __gnat_sigtramp (int signo, void *si, void *sc,
 		      __sigtramphandler_t * handler)

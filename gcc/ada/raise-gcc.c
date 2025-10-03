@@ -274,6 +274,12 @@ db_indent (int requests)
     fprintf (stderr, "%*s", current_indentation_level * DB_INDENT_UNIT, " ");
 }
 
+/* If ATTRIBUTE_PRINTF_2 is not available, assume a printf format
+   attribute a-la gcc such as:  */
+#ifndef ATTRIBUTE_PRINTF_2
+#define ATTRIBUTE_PRINTF_2 __attribute((format(printf, 2, 3)))
+#endif
+
 static void ATTRIBUTE_PRINTF_2
 db (int db_code, const char * msg_format, ...)
 {
