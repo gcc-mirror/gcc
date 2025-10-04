@@ -3662,11 +3662,11 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
   tree clobber_expr = NULL_TREE;
   if (do_clobber)
     {
-      tree clobber = build_clobber (elt_type, CLOBBER_OBJECT_BEGIN);
-      CONSTRUCTOR_IS_DIRECT_INIT (clobber) = true;
-      if (array_p)
+      if (array_p && TREE_CODE (cst_outer_nelts) != INTEGER_CST)
 	{
 	  /* Clobber each element rather than the array at once.  */
+	  tree clobber = build_clobber (elt_type, CLOBBER_OBJECT_BEGIN);
+	  CONSTRUCTOR_IS_DIRECT_INIT (clobber) = true;
 	  tree maxindex = cp_build_binary_op (input_location,
 					      MINUS_EXPR, outer_nelts,
 					      integer_one_node,
@@ -3677,7 +3677,25 @@ build_new_1 (vec<tree, va_gc> **placement, tree type, tree nelts,
 	}
       else
 	{
-	  tree targ = cp_build_fold_indirect_ref (data_addr);
+	  tree targ = data_addr;
+	  tree ttype = type;
+	  /* Clobber the array as a whole, except that for a one-element array
+	     just clobber the element type, to avoid problems with code like
+	     construct_at that uses new T[1] for array T to get a pointer to
+	     the array.  */
+	  if (array_p && !integer_onep (cst_outer_nelts))
+	    {
+	      tree dom
+		= compute_array_index_type (NULL_TREE,
+					    CONST_CAST_TREE (cst_outer_nelts),
+					    complain);
+	      ttype = build_cplus_array_type (type, dom);
+	      tree ptype = build_pointer_type (ttype);
+	      targ = fold_convert (ptype, targ);
+	    }
+	  targ = cp_build_fold_indirect_ref (targ);
+	  tree clobber = build_clobber (ttype, CLOBBER_OBJECT_BEGIN);
+	  CONSTRUCTOR_IS_DIRECT_INIT (clobber) = true;
 	  clobber_expr = cp_build_init_expr (targ, clobber);
 	}
     }
