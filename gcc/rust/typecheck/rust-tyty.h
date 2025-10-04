@@ -91,6 +91,7 @@ public:
 
 class TyVisitor;
 class TyConstVisitor;
+class BaseConstType;
 class BaseType : public TypeBoundsMappings
 {
 public:
@@ -225,6 +226,11 @@ public:
 
     return static_cast<T *> (this);
   }
+
+  // Helper to get BaseConstType interface for CONST types
+  // Overridden by const types that also inherit from BaseConstType
+  virtual BaseConstType *as_const_type () { return nullptr; }
+  virtual const BaseConstType *as_const_type () const { return nullptr; }
 
 protected:
   BaseType (HirId ref, HirId ty_ref, TypeKind kind, RustIdent ident,
@@ -406,7 +412,7 @@ private:
   std::string symbol;
 };
 
-class ConstType : public BaseGeneric
+class BaseConstType
 {
 public:
   static constexpr auto KIND = TypeKind::CONST;
@@ -419,23 +425,30 @@ public:
     Error
   };
 
-  ConstType (ConstKind kind, std::string symbol, TyTy::BaseType *ty, tree value,
-	     std::vector<TypeBoundPredicate> specified_bounds, location_t locus,
-	     HirId ref, HirId ty_ref,
-	     std::set<HirId> refs = std::set<HirId> ());
+  virtual ConstKind const_kind () const = 0;
 
-  void accept_vis (TyVisitor &vis) override;
-  void accept_vis (TyConstVisitor &vis) const override;
+  BaseType *get_specified_type () const { return specified_type; }
 
-  ConstKind get_const_kind () const { return const_kind; }
-  TyTy::BaseType *get_ty () const { return ty; }
-  tree get_value () const { return value; }
+  // Helper to get BaseType interface (all const types also inherit BaseType)
+  // This must be implemented by concrete classes since BaseConstType doesn't
+  // inherit from BaseType, but all concrete const types do.
+  virtual BaseType *as_base_type () = 0;
+  virtual const BaseType *as_base_type () const = 0;
 
-  void set_value (tree value);
+protected:
+  BaseConstType (BaseType *type) : specified_type (type) {}
 
-  std::string as_string () const override;
+  BaseType *specified_type;
+};
 
-  BaseType *clone () const final override;
+class ConstParamType : public BaseConstType, public BaseGeneric
+{
+public:
+  ConstParamType (std::string symbol, location_t locus, BaseType *type,
+		  HirId ref, HirId ty_ref,
+		  std::set<HirId> refs = std::set<HirId> ());
+
+  ConstKind const_kind () const override final;
 
   std::string get_symbol () const override final;
 
@@ -443,17 +456,124 @@ public:
 
   BaseType *resolve () const override final;
 
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *clone () const final override;
   std::string get_name () const override final;
 
   bool is_equal (const BaseType &other) const override;
 
-  ConstType *handle_substitions (SubstitutionArgumentMappings &mappings);
+  BaseType *handle_substitions (SubstitutionArgumentMappings &mappings);
+
+  BaseType *as_base_type () override { return static_cast<BaseType *> (this); }
+  const BaseType *as_base_type () const override
+  {
+    return static_cast<const BaseType *> (this);
+  }
+
+  BaseConstType *as_const_type () override { return this; }
+  const BaseConstType *as_const_type () const override { return this; }
 
 private:
-  ConstKind const_kind;
-  TyTy::BaseType *ty;
-  tree value;
   std::string symbol;
+};
+
+class ConstValueType : public BaseType, public BaseConstType
+{
+public:
+  static constexpr auto KIND = TypeKind::CONST;
+
+  ConstValueType (tree value, BaseType *type, HirId ref, HirId ty_ref,
+		  std::set<HirId> refs = std::set<HirId> ());
+
+  ConstKind const_kind () const override final;
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *clone () const final override;
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  tree get_value () const;
+
+  BaseType *as_base_type () override { return static_cast<BaseType *> (this); }
+  const BaseType *as_base_type () const override
+  {
+    return static_cast<const BaseType *> (this);
+  }
+
+  BaseConstType *as_const_type () override { return this; }
+  const BaseConstType *as_const_type () const override { return this; }
+
+private:
+  tree folded_val;
+};
+
+class ConstInferType : public BaseType, public BaseConstType
+{
+public:
+  static constexpr auto KIND = TypeKind::CONST;
+
+  ConstInferType (BaseType *type, HirId ref, HirId ty_ref,
+		  std::set<HirId> refs = std::set<HirId> ());
+
+  ConstKind const_kind () const override final;
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *clone () const final override;
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *as_base_type () override { return static_cast<BaseType *> (this); }
+  const BaseType *as_base_type () const override
+  {
+    return static_cast<const BaseType *> (this);
+  }
+
+  BaseConstType *as_const_type () override { return this; }
+  const BaseConstType *as_const_type () const override { return this; }
+};
+
+class ConstErrorType : public BaseType, public BaseConstType
+{
+public:
+  static constexpr auto KIND = TypeKind::CONST;
+
+  ConstErrorType (BaseType *type, HirId ref, HirId ty_ref,
+		  std::set<HirId> refs = std::set<HirId> ());
+
+  ConstKind const_kind () const override final;
+
+  void accept_vis (TyVisitor &vis) override;
+  void accept_vis (TyConstVisitor &vis) const override;
+
+  std::string as_string () const override;
+
+  BaseType *clone () const final override;
+  std::string get_name () const override final;
+
+  bool is_equal (const BaseType &other) const override;
+
+  BaseType *as_base_type () override { return static_cast<BaseType *> (this); }
+  const BaseType *as_base_type () const override
+  {
+    return static_cast<const BaseType *> (this);
+  }
+
+  BaseConstType *as_const_type () override { return this; }
+  const BaseConstType *as_const_type () const override { return this; }
 };
 
 class OpaqueType : public BaseType
@@ -1201,14 +1321,14 @@ class ArrayType : public BaseType
 public:
   static constexpr auto KIND = TypeKind::ARRAY;
 
-  ArrayType (HirId ref, location_t locus, ConstType *capacity, TyVar base,
+  ArrayType (HirId ref, location_t locus, TyVar capacity, TyVar base,
 	     std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
       element_type (base), capacity (capacity)
   {}
 
-  ArrayType (HirId ref, HirId ty_ref, location_t locus, ConstType *capacity,
+  ArrayType (HirId ref, HirId ty_ref, location_t locus, TyVar capacity,
 	     TyVar base, std::set<HirId> refs = std::set<HirId> ())
     : BaseType (ref, ty_ref, TypeKind::ARRAY,
 		{Resolver::CanonicalPath::create_empty (), locus}, refs),
@@ -1229,13 +1349,14 @@ public:
 
   BaseType *clone () const final override;
 
-  ConstType *get_capacity () const { return capacity; }
+  BaseType *get_capacity () const;
+  const TyVar &get_capacity_var () const { return capacity; }
 
   ArrayType *handle_substitions (SubstitutionArgumentMappings &mappings);
 
 private:
   TyVar element_type;
-  ConstType *capacity;
+  TyVar capacity;
 };
 
 class SliceType : public BaseType

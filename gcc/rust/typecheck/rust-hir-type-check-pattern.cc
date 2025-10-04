@@ -21,6 +21,8 @@
 #include "rust-hir-type-check-expr.h"
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
+#include "rust-tyty.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Resolver {
@@ -778,7 +780,32 @@ TypeCheckPattern::visit (HIR::SlicePattern &pattern)
 	auto &array_ty_ty = static_cast<TyTy::ArrayType &> (*parent);
 	parent_element_ty = array_ty_ty.get_element_type ();
 	auto capacity = array_ty_ty.get_capacity ();
-	tree cap = capacity->get_value ();
+
+	tree cap = error_mark_node;
+	if (capacity->get_kind () != TyTy::TypeKind::CONST)
+	  {
+	    // Error case - capacity is not a const type
+	    break;
+	  }
+
+	auto *capacity_const = capacity->as_const_type ();
+	switch (capacity_const->const_kind ())
+	  {
+	  case TyTy::BaseConstType::ConstKind::Value:
+	    {
+	      const auto &const_value
+		= *static_cast<TyTy::ConstValueType *> (capacity);
+	      cap = const_value.get_value ();
+	    }
+	    break;
+
+	  case TyTy::BaseConstType::ConstKind::Decl:
+	  case TyTy::BaseConstType::ConstKind::Infer:
+	  case TyTy::BaseConstType::ConstKind::Error:
+	    cap = error_mark_node;
+	    break;
+	  }
+
 	if (error_operand_p (cap))
 	  {
 	    rust_error_at (parent->get_locus (),

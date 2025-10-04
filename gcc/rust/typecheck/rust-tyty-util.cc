@@ -60,17 +60,14 @@ TyVar::get_implicit_infer_var (location_t locus)
 }
 
 TyVar
-TyVar::get_implicit_const_infer_var (const ConstType &const_type,
-				     location_t locus)
+TyVar::get_implicit_const_infer_var (location_t locus)
 {
   auto &mappings = Analysis::Mappings::get ();
   auto context = Resolver::TypeCheckContext::get ();
 
+  TyVar ty_infer = get_implicit_infer_var (locus);
   HirId next = mappings.get_next_hir_id ();
-  auto infer
-    = new ConstType (ConstType::ConstKind::Infer, const_type.get_symbol (),
-		     const_type.get_ty (), error_mark_node,
-		     const_type.get_specified_bounds (), locus, next, next, {});
+  auto infer = new ConstInferType (ty_infer.get_tyty (), next, next, {});
 
   context->insert_implicit_type (infer->get_ref (), infer);
   mappings.insert_location (infer->get_ref (), locus);

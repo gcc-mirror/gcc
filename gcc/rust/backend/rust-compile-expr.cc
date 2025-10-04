@@ -2010,11 +2010,25 @@ CompileExpr::array_copied_expr (location_t expr_locus,
       return error_mark_node;
     }
 
-  auto capacity_tyty = array_tyty.get_capacity ();
-  tree capacity_expr = capacity_tyty->get_value ();
-  if (!TREE_CONSTANT (capacity_expr))
+  auto capacity_ty = array_tyty.get_capacity ();
+
+  // Check if capacity is a const type
+  if (capacity_ty->get_kind () != TyTy::TypeKind::CONST)
     {
-      rust_error_at (expr_locus, "non const num copies %qT", capacity_expr);
+      rust_error_at (array_tyty.get_locus (),
+		     "array capacity is not a const type");
+      return error_mark_node;
+    }
+
+  auto *capacity_const = capacity_ty->as_const_type ();
+
+  rust_assert (capacity_const->const_kind ()
+	       == TyTy::BaseConstType::ConstKind::Value);
+  auto &capacity_value = *static_cast<TyTy::ConstValueType *> (capacity_const);
+  auto cap_tree = capacity_value.get_value ();
+  if (error_operand_p (cap_tree) || !TREE_CONSTANT (cap_tree))
+    {
+      rust_error_at (expr_locus, "non const num copies %qT", cap_tree);
       return error_mark_node;
     }
 
@@ -2067,9 +2081,9 @@ CompileExpr::array_copied_expr (location_t expr_locus,
       ctx->push_block (init_block);
 
       tree tmp;
-      tree stmts = Backend::array_initializer (fndecl, init_block, array_type,
-					       capacity_expr, translated_expr,
-					       &tmp, expr_locus);
+      tree stmts
+	= Backend::array_initializer (fndecl, init_block, array_type, cap_tree,
+				      translated_expr, &tmp, expr_locus);
       ctx->add_statement (stmts);
 
       tree block = ctx->pop_block ();

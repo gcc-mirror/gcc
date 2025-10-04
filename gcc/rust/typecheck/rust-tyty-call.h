@@ -60,9 +60,12 @@ public:
   void visit (PlaceholderType &) override { rust_unreachable (); }
   void visit (ProjectionType &) override { rust_unreachable (); }
   void visit (DynamicObjectType &) override { rust_unreachable (); }
-  void visit (ClosureType &type) override { rust_unreachable (); }
-  void visit (OpaqueType &type) override { rust_unreachable (); }
-  void visit (ConstType &type) override { rust_unreachable (); }
+  void visit (ClosureType &) override { rust_unreachable (); }
+  void visit (OpaqueType &) override { rust_unreachable (); }
+  void visit (ConstParamType &) override { rust_unreachable (); }
+  void visit (ConstValueType &) override { rust_unreachable (); }
+  void visit (ConstInferType &) override { rust_unreachable (); }
+  void visit (ConstErrorType &) override { rust_unreachable (); }
 
   // tuple-structs
   void visit (ADTType &type) override;

@@ -231,7 +231,8 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
 
 	  // remove the inference variable
 	  context.clear_type (i.infer);
-	  delete i.infer;
+	  // FIXME: Don't delete - result might point to this
+	  // delete i.infer;
 	}
     }
   return result;

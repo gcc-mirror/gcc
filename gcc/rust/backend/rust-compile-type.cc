@@ -136,13 +136,31 @@ TyTyResolveCompile::visit (const TyTy::InferType &type)
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::ParamType &)
+TyTyResolveCompile::visit (const TyTy::ParamType &type)
 {
   translated = error_mark_node;
 }
 
 void
-TyTyResolveCompile::visit (const TyTy::ConstType &)
+TyTyResolveCompile::visit (const TyTy::ConstParamType &type)
+{
+  translated = error_mark_node;
+}
+
+void
+TyTyResolveCompile::visit (const TyTy::ConstValueType &type)
+{
+  translated = error_mark_node;
+}
+
+void
+TyTyResolveCompile::visit (const TyTy::ConstInferType &type)
+{
+  translated = error_mark_node;
+}
+
+void
+TyTyResolveCompile::visit (const TyTy::ConstErrorType &type)
 {
   translated = error_mark_node;
 }
@@ -470,8 +488,22 @@ TyTyResolveCompile::visit (const TyTy::ArrayType &type)
 {
   tree element_type
     = TyTyResolveCompile::compile (ctx, type.get_element_type ());
-  TyTy::ConstType *const_capacity = type.get_capacity ();
-  tree folded_capacity_expr = const_capacity->get_value ();
+  auto const_capacity = type.get_capacity ();
+
+  // Check if capacity is a const type
+  if (const_capacity->get_kind () != TyTy::TypeKind::CONST)
+    {
+      rust_error_at (type.get_locus (), "array capacity is not a const type");
+      translated = error_mark_node;
+      return;
+    }
+
+  auto *capacity_const = const_capacity->as_const_type ();
+
+  rust_assert (capacity_const->const_kind ()
+	       == TyTy::BaseConstType::ConstKind::Value);
+  auto &capacity_value = *static_cast<TyTy::ConstValueType *> (capacity_const);
+  auto folded_capacity_expr = capacity_value.get_value ();
 
   // build_index_type takes the maximum index, which is one less than
   // the length.

@@ -268,9 +268,27 @@ SubstMapperInternal::visit (TyTy::ParamType &type)
 }
 
 void
-SubstMapperInternal::visit (TyTy::ConstType &type)
+SubstMapperInternal::visit (TyTy::ConstParamType &type)
 {
   resolved = type.handle_substitions (mappings);
+}
+
+void
+SubstMapperInternal::visit (TyTy::ConstValueType &type)
+{
+  resolved = type.clone ();
+}
+
+void
+SubstMapperInternal::visit (TyTy::ConstInferType &type)
+{
+  resolved = type.clone ();
+}
+
+void
+SubstMapperInternal::visit (TyTy::ConstErrorType &type)
+{
+  resolved = type.clone ();
 }
 
 void

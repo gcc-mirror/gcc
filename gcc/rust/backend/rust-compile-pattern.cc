@@ -27,6 +27,7 @@
 #include "rust-hir-pattern.h"
 #include "rust-system.h"
 #include "rust-tyty.h"
+#include "tree.h"
 
 namespace Rust {
 namespace Compile {
@@ -676,7 +677,18 @@ CompilePatternCheckExpr::visit (HIR::SlicePattern &pattern)
 	      // for array type scrutinee, we can simply get the capacity as a
 	      // const and calculate how many elements to skip
 	      auto array_ty = static_cast<TyTy::ArrayType *> (lookup);
-	      auto cap_tree = array_ty->get_capacity ()->get_value ();
+	      auto capacity_ty = array_ty->get_capacity ();
+
+	      rust_assert (capacity_ty->get_kind () == TyTy::TypeKind::CONST);
+	      auto *capacity_const = capacity_ty->as_const_type ();
+	      rust_assert (capacity_const->const_kind ()
+			   == TyTy::BaseConstType::ConstKind::Value);
+	      auto &capacity_value
+		= *static_cast<TyTy::ConstValueType *> (capacity_const);
+	      auto cap_tree = capacity_value.get_value ();
+
+	      rust_assert (!error_operand_p (cap_tree));
+
 	      size_t cap_wi = (size_t) wi::to_wide (cap_tree).to_uhwi ();
 	      element_index = cap_wi - items.get_upper_patterns ().size ();
 	      for (auto &pattern_member : items.get_upper_patterns ())
@@ -1164,7 +1176,18 @@ CompilePatternBindings::visit (HIR::SlicePattern &pattern)
 	  case TyTy::TypeKind::ARRAY:
 	    {
 	      auto array_ty = static_cast<TyTy::ArrayType *> (lookup);
-	      auto cap_tree = array_ty->get_capacity ()->get_value ();
+	      auto capacity_ty = array_ty->get_capacity ();
+
+	      rust_assert (capacity_ty->get_kind () == TyTy::TypeKind::CONST);
+	      auto *capacity_const = capacity_ty->as_const_type ();
+	      rust_assert (capacity_const->const_kind ()
+			   == TyTy::BaseConstType::ConstKind::Value);
+	      auto &capacity_value
+		= *static_cast<TyTy::ConstValueType *> (capacity_const);
+	      auto cap_tree = capacity_value.get_value ();
+
+	      rust_assert (!error_operand_p (cap_tree));
+
 	      size_t cap_wi = (size_t) wi::to_wide (cap_tree).to_uhwi ();
 	      element_index = cap_wi - items.get_upper_patterns ().size ();
 	      for (auto &pattern_member : items.get_upper_patterns ())

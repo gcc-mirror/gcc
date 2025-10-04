@@ -706,14 +706,14 @@ TypeCheckType::visit (HIR::ArrayType &type)
   rust_assert (ok);
   context->insert_type (type.get_size_expr ().get_mappings (), expected_ty);
 
-  TyTy::ConstType *const_type = nullptr;
+  TyTy::BaseConstType *const_type = nullptr;
   if (capacity_type->get_kind () == TyTy::TypeKind::CONST)
     {
-      const_type = static_cast<TyTy::ConstType *> (capacity_type);
+      const_type = capacity_type->as_const_type ();
 
       unify_site (type.get_size_expr ().get_mappings ().get_hirid (),
 		  TyTy::TyWithLocation (expected_ty),
-		  TyTy::TyWithLocation (const_type->get_ty (),
+		  TyTy::TyWithLocation (const_type->get_specified_type (),
 					type.get_size_expr ().get_locus ()),
 		  type.get_size_expr ().get_locus ());
     }
@@ -727,13 +727,7 @@ TypeCheckType::visit (HIR::ArrayType &type)
 		      type.get_size_expr ().get_locus ());
 
       if (result->is<TyTy::ErrorType> ())
-	{
-	  const_type
-	    = new TyTy::ConstType (TyTy::ConstType::ConstKind::Error, "",
-				   expected_ty, error_mark_node, {},
-				   type.get_size_expr ().get_locus (), size_id,
-				   size_id);
-	}
+	const_type = new TyTy::ConstErrorType (expected_ty, size_id, size_id);
       else
 	{
 	  auto ctx = Compile::Context::get ();
@@ -741,16 +735,18 @@ TypeCheckType::visit (HIR::ArrayType &type)
 	    = Compile::HIRCompileBase::query_compile_const_expr (
 	      ctx, capacity_type, type.get_size_expr ());
 
-	  const_type = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
-					    "", expected_ty, capacity_expr, {},
-					    type.get_size_expr ().get_locus (),
-					    size_id, size_id);
+	  const_type = new TyTy::ConstValueType (capacity_expr, expected_ty,
+						 size_id, size_id);
+	  context->insert_type (type.get_size_expr ().get_mappings (),
+				const_type->as_base_type ());
 	}
     }
 
   translated
     = new TyTy::ArrayType (type.get_mappings ().get_hirid (), type.get_locus (),
-			   const_type, TyTy::TyVar (element_type->get_ref ()));
+			   TyTy::TyVar (
+			     const_type->as_base_type ()->get_ty_ref ()),
+			   TyTy::TyVar (element_type->get_ref ()));
 }
 
 void

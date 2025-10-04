@@ -34,6 +34,7 @@
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-compile-base.h"
 #include "rust-tyty-util.h"
+#include "rust-tyty.h"
 #include "tree.h"
 
 namespace Rust {
@@ -668,16 +669,9 @@ TypeCheckExpr::visit (HIR::AnonConst &expr)
       return;
     }
 
-  auto locus = expr.get_locus ();
-  auto infer_ty_var = TyTy::TyVar::get_implicit_infer_var (locus);
-
-  HirId next = mappings.get_next_hir_id ();
-  infered = new TyTy::ConstType (TyTy::ConstType::ConstKind::Infer, "",
-				 infer_ty_var.get_tyty (), error_mark_node, {},
-				 locus, next, next, {});
-
-  context->insert_implicit_type (infered->get_ref (), infered);
-  mappings.insert_location (infered->get_ref (), locus);
+  TyTy::TyVar var
+    = TyTy::TyVar::get_implicit_const_infer_var (expr.get_locus ());
+  infered = var.get_tyty ();
 }
 
 void
@@ -1155,14 +1149,23 @@ TypeCheckExpr::visit (HIR::ArrayExpr &expr)
   tree capacity_value
     = Compile::HIRCompileBase::query_compile_const_expr (ctx, capacity_type,
 							 *capacity_expr);
-  HirId size_id = capacity_expr->get_mappings ().get_hirid ();
-  TyTy::ConstType *const_type
-    = new TyTy::ConstType (TyTy::ConstType::ConstKind::Value, "", expected_ty,
-			   capacity_value, {}, capacity_expr->get_locus (),
-			   size_id, size_id);
+
+  // Create ConstValueType with ref == ty_ref (both pointing to capacity_expr)
+  // ty_ref gets updated during substitution via set_ty_ref()
+  HirId capacity_expr_id = capacity_expr->get_mappings ().get_hirid ();
+  auto const_type
+    = new TyTy::ConstValueType (capacity_value, expected_ty, capacity_expr_id,
+				capacity_expr_id);
+
+  // Insert the ConstValueType at its ref
+  context->insert_type (capacity_expr->get_mappings (),
+			const_type->as_base_type ());
+
   infered
     = new TyTy::ArrayType (expr.get_mappings ().get_hirid (), expr.get_locus (),
-			   const_type, TyTy::TyVar (element_type->get_ref ()));
+			   TyTy::TyVar (
+			     const_type->as_base_type ()->get_ty_ref ()),
+			   TyTy::TyVar (element_type->get_ref ()));
 }
 
 // empty struct

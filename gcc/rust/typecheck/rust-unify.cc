@@ -119,31 +119,56 @@ UnifyRules::commit (TyTy::BaseType *base, TyTy::BaseType *other,
   b->append_reference (resolved->get_ref ());
   b->append_reference (o->get_ref ());
 
-  bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
-  bool result_is_infer_var = resolved->get_kind () == TyTy::TypeKind::INFER;
-  bool results_is_non_general_infer_var
-    = (result_is_infer_var
-       && (static_cast<TyTy::InferType *> (resolved))->get_infer_kind ()
-	    != TyTy::InferType::GENERAL);
-  if (result_resolved || results_is_non_general_infer_var)
+  if (resolved->get_kind () != TyTy::TypeKind::CONST)
     {
-      for (auto &ref : resolved->get_combined_refs ())
+      bool result_resolved = resolved->get_kind () != TyTy::TypeKind::INFER;
+      bool result_is_infer_var = resolved->get_kind () == TyTy::TypeKind::INFER;
+      bool results_is_non_general_infer_var
+	= (result_is_infer_var
+	   && (static_cast<TyTy::InferType *> (resolved))->get_infer_kind ()
+		!= TyTy::InferType::GENERAL);
+      if (result_resolved || results_is_non_general_infer_var)
 	{
-	  TyTy::BaseType *ref_tyty = nullptr;
-	  bool ok = context.lookup_type (ref, &ref_tyty);
-	  if (!ok)
-	    continue;
-
-	  // if any of the types are inference variables lets fix them
-	  if (ref_tyty->is<TyTy::InferType> ())
-	    context.insert_implicit_type (ref, resolved);
-	  else if (resolved->is<TyTy::ConstType> ()
-		   && ref_tyty->is<TyTy::ConstType> ())
+	  for (auto &ref : resolved->get_combined_refs ())
 	    {
-	      auto &const_expr = *static_cast<TyTy::ConstType *> (resolved);
-	      if (const_expr.get_const_kind ()
-		  == TyTy::ConstType::ConstKind::Value)
+	      TyTy::BaseType *ref_tyty = nullptr;
+	      bool ok = context.lookup_type (ref, &ref_tyty);
+	      if (!ok)
+		continue;
+
+	      // if any of the types are inference variables lets fix them
+	      if (ref_tyty->is<TyTy::InferType> ())
+		context.insert_implicit_type (ref, resolved);
+	    }
+	}
+    }
+  else
+    {
+      auto base_const = resolved->as_const_type ();
+      if (base_const->const_kind () == TyTy::BaseConstType::ConstKind::Value)
+	{
+	  rust_debug ("UnifyRules::commit const value, resolved_ref=%u "
+		      "resolved_ty_ref=%u combined_refs.size=%zu",
+		      resolved->get_ref (), resolved->get_ty_ref (),
+		      resolved->get_combined_refs ().size ());
+
+	  for (auto &ref : resolved->get_combined_refs ())
+	    {
+	      TyTy::BaseType *ref_tyty = nullptr;
+	      bool ok = context.lookup_type (ref, &ref_tyty);
+	      if (!ok)
+		continue;
+	      if (ref_tyty->get_kind () != TyTy::TypeKind::CONST)
+		continue;
+
+	      auto ref_base_const = ref_tyty->as_const_type ();
+	      if (ref_base_const->const_kind ()
+		    == TyTy::BaseConstType::ConstKind::Infer
+		  || ref_base_const->const_kind ()
+		       == TyTy::BaseConstType::ConstKind::Decl)
 		{
+		  rust_debug ("  committing to ref=%u kind=%d", ref,
+			      (int) ref_base_const->const_kind ());
 		  context.insert_implicit_type (ref, resolved);
 		}
 	    }
@@ -274,49 +299,35 @@ UnifyRules::go ()
 	  // set the rtype now to the new inference var
 	  ltype = i;
 	}
-      else if (ltype->is<TyTy::ConstType> () && rtype->is<TyTy::ConstType> ())
+      else if (ltype->get_kind () == TyTy::TypeKind::CONST
+	       && rtype->get_kind () == TyTy::TypeKind::CONST)
 	{
-	  const auto &lhs = *static_cast<TyTy::ConstType *> (ltype);
-	  const auto &rhs = *static_cast<TyTy::ConstType *> (rtype);
+	  const auto &lhs = *ltype->as_const_type ();
+	  const auto &rhs = *rtype->as_const_type ();
 
 	  bool both_are_decls
-	    = lhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl
-	      && rhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl;
+	    = lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl
+	      && rhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl;
 	  bool have_decls
-	    = lhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl
-	      || rhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl;
+	    = lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl
+	      || rhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl;
 
 	  if (have_decls && !both_are_decls)
 	    {
-	      if (lhs.get_const_kind () == TyTy::ConstType::ConstKind::Decl)
+	      if (lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl)
 		{
 		  TyTy::TyVar iv = TyTy::TyVar::get_implicit_const_infer_var (
-		    lhs, lhs.get_locus ());
+		    lhs.as_base_type ()->get_locus ());
 		  ltype = iv.get_tyty ();
 		}
-	      else if (rhs.get_const_kind ()
-		       == TyTy::ConstType::ConstKind::Decl)
+	      else if (rhs.const_kind ()
+		       == TyTy::BaseConstType::ConstKind::Decl)
 		{
 		  TyTy::TyVar iv = TyTy::TyVar::get_implicit_const_infer_var (
-		    rhs, rhs.get_locus ());
+		    rhs.as_base_type ()->get_locus ());
 		  rtype = iv.get_tyty ();
 		}
 	    }
-	}
-    }
-
-  if ((ltype->is<TyTy::ConstType> () || rtype->is<TyTy::ConstType> ())
-      && !(ltype->is<TyTy::ConstType> () && rtype->is<TyTy::ConstType> ()))
-    {
-      if (ltype->is<TyTy::ConstType> ())
-	{
-	  auto const_type = static_cast<TyTy::ConstType *> (ltype);
-	  ltype = const_type->get_ty ();
-	}
-      else if (rtype->is<TyTy::ConstType> ())
-	{
-	  auto const_type = static_cast<TyTy::ConstType *> (rtype);
-	  rtype = const_type->get_ty ();
 	}
     }
 
@@ -399,7 +410,7 @@ UnifyRules::go ()
       return expect_opaque (static_cast<TyTy::OpaqueType *> (ltype), rtype);
 
     case TyTy::CONST:
-      return expect_const (static_cast<TyTy::ConstType *> (ltype), rtype);
+      return expect_const (ltype->as_const_type (), rtype);
 
     case TyTy::ERROR:
       return unify_error_type_node ();
@@ -908,22 +919,33 @@ UnifyRules::expect_array (TyTy::ArrayType *ltype, TyTy::BaseType *rtype)
 	if (element_unify->get_kind () == TyTy::TypeKind::ERROR)
 	  return unify_error_type_node ();
 
+	auto ltype_cap = ltype->get_capacity ();
+	auto rtype_cap = type.get_capacity ();
+
+	// If either capacity is not a const type, return error
+	if (ltype_cap->get_kind () != TyTy::TypeKind::CONST
+	    || rtype_cap->get_kind () != TyTy::TypeKind::CONST)
+	  return unify_error_type_node ();
+
 	bool save_emit_error = emit_error;
 	emit_error = false;
 	TyTy::BaseType *capacity_unify
-	  = resolve_subtype (TyTy::TyWithLocation (ltype->get_capacity ()),
-			     TyTy::TyWithLocation (type.get_capacity ()));
+	  = resolve_subtype (TyTy::TyWithLocation (ltype_cap),
+			     TyTy::TyWithLocation (rtype_cap));
 	emit_error = save_emit_error;
 
 	if (capacity_unify->get_kind () != TyTy::TypeKind::CONST)
 	  return unify_error_type_node ();
 
-	TyTy::ConstType *capacity_type_unify
-	  = static_cast<TyTy::ConstType *> (capacity_unify);
-	return new TyTy::ArrayType (type.get_ref (), type.get_ty_ref (),
-				    type.get_ident ().locus,
-				    capacity_type_unify,
-				    TyTy::TyVar (element_unify->get_ref ()));
+	auto capacity_type_unify = capacity_unify->as_const_type ();
+	if (capacity_type_unify->const_kind ()
+	    == TyTy::BaseConstType::ConstKind::Error)
+	  return unify_error_type_node ();
+
+	return new TyTy::ArrayType (
+	  type.get_ref (), type.get_ty_ref (), type.get_ident ().locus,
+	  TyTy::TyVar (capacity_type_unify->as_base_type ()->get_ref ()),
+	  TyTy::TyVar (element_unify->get_ref ()));
       }
       break;
 
@@ -2033,67 +2055,105 @@ UnifyRules::expect_opaque (TyTy::OpaqueType *ltype, TyTy::BaseType *rtype)
 }
 
 TyTy::BaseType *
-UnifyRules::expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype)
+UnifyRules::expect_const (TyTy::BaseConstType *ltype, TyTy::BaseType *rtype)
 {
   if (rtype->get_kind () != TyTy::TypeKind::CONST)
     return unify_error_type_node ();
 
-  TyTy::ConstType &lhs = *ltype;
-  TyTy::ConstType &rhs = *static_cast<TyTy::ConstType *> (rtype);
+  auto &lhs = *ltype;
+  auto &rhs = *rtype->as_const_type ();
 
-  auto res = resolve_subtype (TyTy::TyWithLocation (lhs.get_ty ()),
-			      TyTy::TyWithLocation (rhs.get_ty ()));
+  // Handle error types early
+  if (lhs.const_kind () == TyTy::BaseConstType::ConstKind::Error
+      || rhs.const_kind () == TyTy::BaseConstType::ConstKind::Error)
+    {
+      auto lhs_base = ltype->as_base_type ();
+      return new TyTy::ConstErrorType (lhs.get_specified_type (),
+				       lhs_base->get_ref (),
+				       lhs_base->get_ty_ref (),
+				       lhs_base->get_combined_refs ());
+    }
+
+  // Try to resolve Decl types (ConstParamType)
+  TyTy::BaseConstType *resolved_lhs = &lhs;
+  TyTy::BaseConstType *resolved_rhs = &rhs;
+
+  if (lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl)
+    {
+      auto *param = static_cast<TyTy::ConstParamType *> (&lhs);
+      if (param->can_resolve ())
+	{
+	  auto *resolved = param->resolve ();
+	  if (resolved->get_kind () == TyTy::TypeKind::CONST)
+	    resolved_lhs = resolved->as_const_type ();
+	}
+    }
+
+  if (rhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl)
+    {
+      auto *param = static_cast<TyTy::ConstParamType *> (&rhs);
+      if (param->can_resolve ())
+	{
+	  auto *resolved = param->resolve ();
+	  if (resolved->get_kind () == TyTy::TypeKind::CONST)
+	    resolved_rhs = resolved->as_const_type ();
+	}
+    }
+
+  auto res = resolve_subtype (
+    TyTy::TyWithLocation (resolved_lhs->get_specified_type ()),
+    TyTy::TyWithLocation (resolved_rhs->get_specified_type ()));
   if (res->get_kind () == TyTy::TypeKind::ERROR)
     return unify_error_type_node ();
 
-  tree lv = lhs.get_value ();
-  tree rv = rhs.get_value ();
-
-  if (error_operand_p (lv) && error_operand_p (rv))
+  if (resolved_lhs->const_kind () == TyTy::BaseConstType::ConstKind::Value
+      && resolved_rhs->const_kind () == TyTy::BaseConstType::ConstKind::Value)
     {
-      // this is only allowed for some silly senarios like:
-      // gcc/testsuite/rust/compile/issue-const_generics_5.rs
-      if (lhs.get_const_kind () == rhs.get_const_kind ())
+      auto vlhs = static_cast<TyTy::ConstValueType &> (*resolved_lhs);
+      auto vrhs = static_cast<TyTy::ConstValueType &> (*resolved_rhs);
+      tree lv = vlhs.get_value ();
+      tree rv = vrhs.get_value ();
+
+      bool ok = operand_equal_p (lv, rv, 0);
+      if (!ok)
+	return unify_error_type_node ();
+      else
 	{
-	  return new TyTy::ConstType (lhs.get_const_kind (), lhs.get_symbol (),
-				      res, error_mark_node,
-				      lhs.get_specified_bounds (),
-				      lhs.get_locus (), lhs.get_ref (),
-				      lhs.get_ty_ref (),
-				      lhs.get_combined_refs ());
+	  auto lhs_base = resolved_lhs->as_base_type ();
+	  return new TyTy::ConstValueType (lv, res, lhs_base->get_ref (),
+					   lhs_base->get_ty_ref (),
+					   lhs_base->get_combined_refs ());
 	}
-
-      return unify_error_type_node ();
     }
-
-  bool equal = operand_equal_p (lv, rv, 0);
-  if (equal)
+  else if (resolved_lhs->const_kind () == TyTy::BaseConstType::ConstKind::Infer
+	   && resolved_rhs->const_kind ()
+		== TyTy::BaseConstType::ConstKind::Value)
+    return resolved_rhs->as_base_type ();
+  else if (resolved_rhs->const_kind () == TyTy::BaseConstType::ConstKind::Infer
+	   && resolved_lhs->const_kind ()
+		== TyTy::BaseConstType::ConstKind::Value)
+    return resolved_lhs->as_base_type ();
+  else if (resolved_lhs->const_kind () == TyTy::BaseConstType::ConstKind::Infer
+	   && resolved_rhs->const_kind ()
+		== TyTy::BaseConstType::ConstKind::Infer)
+    return resolved_lhs->as_base_type ();
+  else if (resolved_lhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl
+	   || resolved_rhs->const_kind ()
+		== TyTy::BaseConstType::ConstKind::Decl)
     {
-      return new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
-				  lhs.get_symbol (), res, lv,
-				  lhs.get_specified_bounds (), lhs.get_locus (),
-				  lhs.get_ref (), lhs.get_ty_ref (),
-				  lhs.get_combined_refs ());
-    }
-
-  if (lhs.get_const_kind () == TyTy::ConstType::Infer && !error_operand_p (rv))
-    {
-      lhs.set_value (rv);
-      return new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
-				  lhs.get_symbol (), res, rv,
-				  lhs.get_specified_bounds (), lhs.get_locus (),
-				  lhs.get_ref (), lhs.get_ty_ref (),
-				  lhs.get_combined_refs ());
-    }
-  else if (rhs.get_const_kind () == TyTy::ConstType::Infer
-	   && !error_operand_p (lv))
-    {
-      rhs.set_value (lv);
-      return new TyTy::ConstType (TyTy::ConstType::ConstKind::Value,
-				  rhs.get_symbol (), res, lv,
-				  rhs.get_specified_bounds (), rhs.get_locus (),
-				  rhs.get_ref (), rhs.get_ty_ref (),
-				  rhs.get_combined_refs ());
+      // If we still have unresolved Decl after trying to resolve, unify with it
+      // This allows const inference to work
+      if (resolved_lhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl
+	  && resolved_rhs->const_kind ()
+	       != TyTy::BaseConstType::ConstKind::Decl)
+	return resolved_rhs->as_base_type ();
+      else if (resolved_rhs->const_kind ()
+		 == TyTy::BaseConstType::ConstKind::Decl
+	       && resolved_lhs->const_kind ()
+		    != TyTy::BaseConstType::ConstKind::Decl)
+	return resolved_lhs->as_base_type ();
+      // Both are Decl - return lhs
+      return resolved_lhs->as_base_type ();
     }
 
   return unify_error_type_node ();

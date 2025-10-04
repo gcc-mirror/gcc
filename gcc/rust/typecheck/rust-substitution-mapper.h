@@ -61,7 +61,10 @@ public:
   void visit (TyTy::ReferenceType &) override { rust_unreachable (); }
   void visit (TyTy::PointerType &) override { rust_unreachable (); }
   void visit (TyTy::ParamType &) override { rust_unreachable (); }
-  void visit (TyTy::ConstType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstParamType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstValueType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstInferType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstErrorType &) override { rust_unreachable (); }
   void visit (TyTy::StrType &) override { rust_unreachable (); }
   void visit (TyTy::NeverType &) override { rust_unreachable (); }
   void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
@@ -93,7 +96,10 @@ public:
   void visit (TyTy::ReferenceType &type) override;
   void visit (TyTy::PointerType &type) override;
   void visit (TyTy::ParamType &type) override;
-  void visit (TyTy::ConstType &type) override;
+  void visit (TyTy::ConstParamType &type) override;
+  void visit (TyTy::ConstValueType &type) override;
+  void visit (TyTy::ConstInferType &type) override;
+  void visit (TyTy::ConstErrorType &type) override;
   void visit (TyTy::PlaceholderType &type) override;
   void visit (TyTy::ProjectionType &type) override;
   void visit (TyTy::ClosureType &type) override;
@@ -147,13 +153,16 @@ public:
   void visit (TyTy::ReferenceType &) override { rust_unreachable (); }
   void visit (TyTy::PointerType &) override { rust_unreachable (); }
   void visit (TyTy::ParamType &) override { rust_unreachable (); }
-  void visit (TyTy::ConstType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstParamType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstValueType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstInferType &) override { rust_unreachable (); }
+  void visit (TyTy::ConstErrorType &) override { rust_unreachable (); }
   void visit (TyTy::StrType &) override { rust_unreachable (); }
   void visit (TyTy::NeverType &) override { rust_unreachable (); }
   void visit (TyTy::PlaceholderType &) override { rust_unreachable (); }
   void visit (TyTy::ProjectionType &) override { rust_unreachable (); }
   void visit (TyTy::DynamicObjectType &) override { rust_unreachable (); }
-  void visit (TyTy::OpaqueType &type) override { rust_unreachable (); }
+  void visit (TyTy::OpaqueType &) override { rust_unreachable (); }
 
 private:
   SubstMapperFromExisting (TyTy::BaseType *concrete, TyTy::BaseType *receiver);
@@ -188,7 +197,10 @@ public:
   void visit (const TyTy::ReferenceType &) override {}
   void visit (const TyTy::PointerType &) override {}
   void visit (const TyTy::ParamType &) override {}
-  void visit (const TyTy::ConstType &) override {}
+  void visit (const TyTy::ConstParamType &) override {}
+  void visit (const TyTy::ConstValueType &) override {}
+  void visit (const TyTy::ConstInferType &) override {}
+  void visit (const TyTy::ConstErrorType &) override {}
   void visit (const TyTy::StrType &) override {}
   void visit (const TyTy::NeverType &) override {}
   void visit (const TyTy::PlaceholderType &) override {}

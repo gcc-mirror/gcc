@@ -43,8 +43,7 @@ public:
 
   static TyVar get_implicit_infer_var (location_t locus);
 
-  static TyVar get_implicit_const_infer_var (const TyTy::ConstType &const_type,
-					     location_t locus);
+  static TyVar get_implicit_const_infer_var (location_t locus);
 
   static TyVar subst_covariant_var (TyTy::BaseType *orig,
 				    TyTy::BaseType *subst);

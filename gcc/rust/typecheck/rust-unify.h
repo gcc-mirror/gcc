@@ -95,7 +95,8 @@ protected:
 				  TyTy::BaseType *rtype);
   TyTy::BaseType *expect_opaque (TyTy::OpaqueType *ltype,
 				 TyTy::BaseType *rtype);
-  TyTy::BaseType *expect_const (TyTy::ConstType *ltype, TyTy::BaseType *rtype);
+  TyTy::BaseType *expect_const (TyTy::BaseConstType *ltype,
+				TyTy::BaseType *rtype);
 
 private:
   UnifyRules (TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
