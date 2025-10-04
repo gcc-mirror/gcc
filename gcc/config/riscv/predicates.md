@@ -334,6 +334,13 @@
 	      && riscv_split_symbol_type (symbol_type)
 	      && symbol_type != SYMBOL_PCREL;
 
+    /* Be tight about the SUBREGs we accept.  In particular,
+       (subreg (mem)) has been discouraged for decades.  Just
+       allow (subreg (reg)) until such time as we see a strong
+       need to be more permissive.  */
+    case SUBREG:
+      return REG_P (SUBREG_REG (op));
+
     default:
       return true;
     }
