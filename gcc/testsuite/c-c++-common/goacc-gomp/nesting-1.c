@@ -1,10 +1,9 @@
-/* { dg-additional-options "--param=openacc-kernels=decompose" }
-
+/* { dg-additional-options "--param=openacc-kernels=decompose" } */
 /* { dg-additional-options "-fopt-info-omp-note" } */
-
-/* { dg-additional-options "--param=openacc-privatization=noisy" }
-   Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types):
-   { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} } */
+/* { dg-additional-options "--param=openacc-privatization=noisy" } */
+/* { dg-skip-if "PR121975" { c++26 } { "*" } { "" } } */
+/* Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types): */
+/* { dg-prune-output {note: variable 'D\.[0-9]+' declared in block isn't candidate for adjusting OpenACC privatization level: not addressable} } */
 
 
 void

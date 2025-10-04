@@ -1400,6 +1400,15 @@ split_function (basic_block return_bb, class split_point *split_point,
   if (fndecl_built_in_p (node->decl))
     set_decl_built_in_function (node->decl, NOT_BUILT_IN, 0);
 
+  /* Drop "clobber *this" attribute from first argument of the split
+     function if any.  Code before that might be initializing the
+     members.  */
+  if (tree arg = DECL_ARGUMENTS (node->decl))
+    if (lookup_attribute ("clobber *this", DECL_ATTRIBUTES (arg)))
+      DECL_ATTRIBUTES (arg)
+	= remove_attribute ("clobber *this",
+			    copy_list (DECL_ATTRIBUTES (arg)));
+
   /* If return_bb contains any clobbers that refer to SSA_NAMEs
      set in the split part, remove them.  Also reset debug stmts that
      refer to SSA_NAMEs set in the split part.  */

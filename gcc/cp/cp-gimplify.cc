@@ -200,6 +200,33 @@ genericize_if_stmt (tree *stmt_p)
 	}
     }
 
+  if (IF_STMT_VACUOUS_INIT_P (stmt))
+    {
+      gcc_checking_assert (integer_zerop (cond));
+      gcc_checking_assert (!else_ || !TREE_SIDE_EFFECTS (else_));
+      tree lab = create_artificial_label (UNKNOWN_LOCATION);
+      VACUOUS_INIT_LABEL_P (lab) = 1;
+      tree goto_expr = build_stmt (UNKNOWN_LOCATION, GOTO_EXPR, lab);
+      tree label_expr = build_stmt (UNKNOWN_LOCATION, LABEL_EXPR, lab);
+      if (TREE_CODE (then_) == STATEMENT_LIST)
+	{
+	  tree_stmt_iterator i = tsi_start (then_);
+	  tsi_link_before (&i, goto_expr, TSI_CONTINUE_LINKING);
+	  i = tsi_last (then_);
+	  tsi_link_after (&i, label_expr, TSI_CONTINUE_LINKING);
+	  stmt = then_;
+	}
+      else
+	{
+	  stmt = NULL_TREE;
+	  append_to_statement_list (goto_expr, &stmt);
+	  append_to_statement_list (then_, &stmt);
+	  append_to_statement_list (label_expr, &stmt);
+	}
+      *stmt_p = stmt;
+      return;
+    }
+
   if (!then_)
     then_ = build_empty_stmt (locus);
   if (!else_)
@@ -603,6 +630,38 @@ cp_gimplify_arg (tree *arg_p, gimple_seq *pre_p, location_t call_location,
 
 }
 
+/* Emit a decl = {CLOBBER(bob)}; stmt before DECL_EXPR or first
+   TARGET_EXPR gimplification for -flifetime-dse=2.  */
+
+static void
+maybe_emit_clobber_object_begin (tree decl, gimple_seq *pre_p)
+{
+  if (VAR_P (decl)
+      && auto_var_p (decl)
+      && TREE_TYPE (decl) != error_mark_node
+      && DECL_NONTRIVIALLY_INITIALIZED_P (decl)
+      /* Don't do it if it is fully initialized.  */
+      && DECL_INITIAL (decl) == NULL_TREE
+      && !DECL_HAS_VALUE_EXPR_P (decl)
+      && !OPAQUE_TYPE_P (TREE_TYPE (decl))
+      /* Nor going to have decl = .DEFERRED_INIT (...); added.  */
+      && (flag_auto_var_init == AUTO_INIT_UNINITIALIZED
+	  || lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl))
+	  || lookup_attribute ("indeterminate", DECL_ATTRIBUTES (decl))))
+    {
+      tree eltype = strip_array_types (TREE_TYPE (decl));
+      if (RECORD_OR_UNION_TYPE_P (eltype)
+	  && !is_empty_class (eltype))
+	{
+	  tree clobber
+	    = build_clobber (TREE_TYPE (decl), CLOBBER_OBJECT_BEGIN);
+	  gimple *g = gimple_build_assign (decl, clobber);
+	  gimple_set_location (g, DECL_SOURCE_LOCATION (decl));
+	  gimple_seq_add_stmt_without_update (pre_p, g);
+	}
+    }
+}
+
 /* Do C++-specific gimplification.  Args are as for gimplify_expr.  */
 
 int
@@ -918,6 +977,10 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	 on the rhs of an assignment, as in constexpr-aggr1.C.  */
       gcc_checking_assert (!TARGET_EXPR_ELIDING_P (*expr_p)
 			   || !TREE_ADDRESSABLE (TREE_TYPE (*expr_p)));
+      if (flag_lifetime_dse > 1
+	  && TARGET_EXPR_INITIAL (*expr_p)
+	  && VOID_TYPE_P (TREE_TYPE (TARGET_EXPR_INITIAL (*expr_p))))
+	maybe_emit_clobber_object_begin (TARGET_EXPR_SLOT (*expr_p), pre_p);
       ret = GS_UNHANDLED;
       break;
 
@@ -927,6 +990,12 @@ cp_gimplify_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	ret = GS_ERROR;
       else
 	ret = GS_OK;
+      break;
+
+    case DECL_EXPR:
+      if (flag_lifetime_dse > 1)
+	maybe_emit_clobber_object_begin (DECL_EXPR_DECL (*expr_p), pre_p);
+      ret = GS_UNHANDLED;
       break;
 
     case RETURN_EXPR:

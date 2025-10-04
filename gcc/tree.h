@@ -900,6 +900,19 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 #define UNUSED_LABEL_P(NODE) \
   (LABEL_DECL_CHECK (NODE)->base.default_def_flag)
 
+/* Label used to goto around artificial .DEFERRED_INIT code for
+   C++ -ftrivial-auto-var-init= purposes with a goto around it.
+   VACUOUS_INIT_LABEL_P flag is used on the lab LABEL_DECL in:
+   goto lab;
+   lab1:
+   v1 = .DEFERRED_INIT (...);
+   v2 = .DEFERRED_INIT (...);
+   lab2:
+   v3 = .DEFERRED_INIT (...);
+   lab:  */
+#define VACUOUS_INIT_LABEL_P(NODE) \
+  (LABEL_DECL_CHECK (NODE)->base.nothrow_flag)
+
 /* Nonzero means this expression is volatile in the C sense:
    its address should be of type `volatile WHATEVER *'.
    In other words, the declared item is volatile qualified.

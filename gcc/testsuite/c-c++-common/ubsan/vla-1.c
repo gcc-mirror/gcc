@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-fsanitize=vla-bound -Wall -Wno-unused-variable -fno-stack-clash-protection" } */
+/* { dg-options "-fsanitize=vla-bound -Wall -Wno-unused-variable -fno-stack-clash-protection -ftrivial-auto-var-init=uninitialized" } */
 
 typedef long int V;
 int x = -1;

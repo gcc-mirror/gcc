@@ -8,12 +8,12 @@
 struct shared_count {
   shared_count () { }
   shared_count (shared_count &r)
-    : pi (r.pi) { }     // { dg-warning "\\\[-Wuninitialized" }
+    : pi (r.pi) { }
   int pi;
 };
 
 // There's another (redundant) -Wuninitialized on the line below.
-struct shared_ptr {
+struct shared_ptr {		// { dg-warning "\\\[-Wuninitialized" }
   int ptr;
   shared_count refcount;
 };

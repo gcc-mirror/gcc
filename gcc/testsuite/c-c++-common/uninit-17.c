@@ -10,10 +10,10 @@ static void bar(int a, int *ptr)
   do
   {
     int b;
-    if (b < 40) {
+    if (b < 40) { /* { dg-warning "is used uninitialized" "" { target c++26 } } */
       ptr[0] = b;
     }
-    b += 1; /* { dg-warning "is used uninitialized" } */
+    b += 1; /* { dg-warning "is used uninitialized" "" { target { c || c++23_down } } } */
     ptr++;
   }
   while (--a != 0);

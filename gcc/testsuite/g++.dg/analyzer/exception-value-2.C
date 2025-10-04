@@ -1,3 +1,5 @@
+// { dg-skip-if "PR122044" { c++26 } { "*" } { "" } }
+
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 
 struct foo {};

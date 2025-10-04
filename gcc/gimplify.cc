@@ -2103,13 +2103,13 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
 /* Return true if the DECL need to be automaticly initialized by the
    compiler.  */
 static bool
-is_var_need_auto_init (tree decl)
+var_needs_auto_init_p (tree decl)
 {
   if (auto_var_p (decl)
-      && (TREE_CODE (decl) != VAR_DECL
-	  || !DECL_HARD_REGISTER (decl))
-      && (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
-      && (!lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl)))
+      && (TREE_CODE (decl) != VAR_DECL || !DECL_HARD_REGISTER (decl))
+      && flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+      && !lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl))
+      && !lookup_attribute ("indeterminate", DECL_ATTRIBUTES (decl))
       && !OPAQUE_TYPE_P (TREE_TYPE (decl))
       && !is_empty_type (TREE_TYPE (decl)))
     return true;
@@ -2222,7 +2222,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       /* When there is no explicit initializer, if the user requested,
 	 We should insert an artifical initializer for this automatic
 	 variable.  */
-      else if (is_var_need_auto_init (decl)
+      else if (var_needs_auto_init_p (decl)
 	       && !decl_had_value_expr_p)
 	{
 	  gimple_add_init_for_auto_var (decl,
@@ -2316,27 +2316,6 @@ emit_warn_switch_unreachable (gimple *stmt)
   /* Don't warn for compiler-generated gotos.  These occur
      in Duff's devices, for example.  */
     return NULL;
-  else if ((flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
-	   && ((gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
-		|| (gimple_call_builtin_p (stmt, BUILT_IN_CLEAR_PADDING)
-		    && (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)))
-		|| (is_gimple_assign (stmt)
-		    && gimple_assign_single_p (stmt)
-		    && (TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
-		    && gimple_call_internal_p (
-			 SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt)),
-			 IFN_DEFERRED_INIT))))
-  /* Don't warn for compiler-generated initializations for
-     -ftrivial-auto-var-init.
-     There are 3 cases:
-	case 1: a call to .DEFERRED_INIT;
-	case 2: a call to __builtin_clear_padding with the 2nd argument is
-		present and non-zero;
-	case 3: a gimple assign store right after the call to .DEFERRED_INIT
-		that has the LHS of .DEFERRED_INIT as the RHS as following:
-		  _1 = .DEFERRED_INIT (4, 2, &"i1"[0]);
-		  i1 = _1.  */
-    return NULL;
   else
     warning_at (gimple_location (stmt), OPT_Wswitch_unreachable,
 		"statement will never be executed");
@@ -2384,6 +2363,18 @@ warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
 	 there will be non-debug stmts too, and we'll catch those.  */
       break;
 
+    case GIMPLE_ASSIGN:
+      /* See comment below in the GIMPLE_CALL case.  */
+      if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && gimple_assign_single_p (stmt)
+	  && TREE_CODE (gimple_assign_rhs1 (stmt)) == SSA_NAME)
+	{
+	  gimple *g = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	  if (gimple_call_internal_p (g, IFN_DEFERRED_INIT))
+	    break;
+	}
+      goto do_default;
+
     case GIMPLE_LABEL:
       /* Stop till the first Label.  */
       return integer_zero_node;
@@ -2393,24 +2384,41 @@ warn_switch_unreachable_and_auto_init_r (gimple_stmt_iterator *gsi_p,
 	  *handled_ops_p = false;
 	  break;
 	}
-      if (warn_trivial_auto_var_init
-	  && flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+      /* Don't warn for compiler-generated initializations for
+	 -ftrivial-auto-var-init for -Wswitch-unreachable.  Though
+	 do warn for -Wtrivial-auto-var-init.
+	 There are 3 cases:
+	 case 1: a call to .DEFERRED_INIT;
+	 case 2: a call to __builtin_clear_padding with the 2nd argument is
+		 present and non-zero;
+	 case 3: a gimple assign store right after the call to .DEFERRED_INIT
+		 that has the LHS of .DEFERRED_INIT as the RHS as following:
+		  _1 = .DEFERRED_INIT (4, 2, &"i1"[0]);
+		  i1 = _1.
+	 case 3 is handled above in the GIMPLE_ASSIGN case.  */
+      if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
 	  && gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
 	{
-	  /* Get the variable name from the 3rd argument of call.  */
-	  tree var_name = gimple_call_arg (stmt, 2);
-	  var_name = TREE_OPERAND (TREE_OPERAND (var_name, 0), 0);
-	  const char *var_name_str = TREE_STRING_POINTER (var_name);
+	  if (warn_trivial_auto_var_init)
+	    {
+	      /* Get the variable name from the 3rd argument of call.  */
+	      tree var_name = gimple_call_arg (stmt, 2);
+	      var_name = TREE_OPERAND (TREE_OPERAND (var_name, 0), 0);
+	      const char *var_name_str = TREE_STRING_POINTER (var_name);
 
-	  warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
-		      "%qs cannot be initialized with "
-		      "%<-ftrivial-auto-var_init%>",
-		      var_name_str);
+	      warning_at (gimple_location (stmt), OPT_Wtrivial_auto_var_init,
+			  "%qs cannot be initialized with "
+			  "%<-ftrivial-auto-var_init%>", var_name_str);
+	    }
 	  break;
        }
-
+      if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && gimple_call_builtin_p (stmt, BUILT_IN_CLEAR_PADDING)
+	  && (bool) TREE_INT_CST_LOW (gimple_call_arg (stmt, 1)))
+	break;
       /* Fall through.  */
     default:
+    do_default:
       /* check the first "real" statement (not a decl/lexical scope/...), issue
 	 warning if needed.  */
       if (warn_switch_unreachable && !unreachable_issued)
@@ -2490,26 +2498,39 @@ last_stmt_in_scope (gimple *stmt)
   if (!stmt)
     return NULL;
 
+  auto last_stmt_in_seq = [] (gimple_seq s) 
+    {
+      gimple_seq_node n;
+      for (n = gimple_seq_last (s);
+	   n && (is_gimple_debug (n)
+		 || (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+		     && gimple_call_internal_p (n, IFN_DEFERRED_INIT)));
+	n = n->prev)
+      if (n == s)
+	return (gimple *) NULL;
+      return (gimple *) n;
+    };
+
   switch (gimple_code (stmt))
     {
     case GIMPLE_BIND:
       {
 	gbind *bind = as_a <gbind *> (stmt);
-	stmt = gimple_seq_last_nondebug_stmt (gimple_bind_body (bind));
+	stmt = last_stmt_in_seq (gimple_bind_body (bind));
 	return last_stmt_in_scope (stmt);
       }
 
     case GIMPLE_TRY:
       {
 	gtry *try_stmt = as_a <gtry *> (stmt);
-	stmt = gimple_seq_last_nondebug_stmt (gimple_try_eval (try_stmt));
+	stmt = last_stmt_in_seq (gimple_try_eval (try_stmt));
 	gimple *last_eval = last_stmt_in_scope (stmt);
 	if (gimple_stmt_may_fallthru (last_eval)
 	    && (last_eval == NULL
 		|| !gimple_call_internal_p (last_eval, IFN_FALLTHROUGH))
 	    && gimple_try_kind (try_stmt) == GIMPLE_TRY_FINALLY)
 	  {
-	    stmt = gimple_seq_last_nondebug_stmt (gimple_try_cleanup (try_stmt));
+	    stmt = last_stmt_in_seq (gimple_try_cleanup (try_stmt));
 	    return last_stmt_in_scope (stmt);
 	  }
 	else
@@ -2662,7 +2683,15 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	}
       else if (gimple_call_internal_p (gsi_stmt (*gsi_p), IFN_ASAN_MARK))
 	;
+      else if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	       && gimple_call_internal_p (gsi_stmt (*gsi_p),
+					  IFN_DEFERRED_INIT))
+	;
       else if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_PREDICT)
+	;
+      else if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	       && gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_GOTO
+	       && VACUOUS_INIT_LABEL_P (gimple_goto_dest (gsi_stmt (*gsi_p))))
 	;
       else if (!is_gimple_debug (gsi_stmt (*gsi_p)))
 	prev = gsi_stmt (*gsi_p);
@@ -2700,9 +2729,13 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
     {
       tree l;
       while (!gsi_end_p (gsi)
-	     && gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
-	     && (l = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi))))
-	     && !case_label_p (&gimplify_ctxp->case_labels, l))
+	     && ((gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
+		  && (l
+		      = gimple_label_label (as_a <glabel *> (gsi_stmt (gsi))))
+		  && !case_label_p (&gimplify_ctxp->case_labels, l))
+		 || (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+		     && gimple_call_internal_p (gsi_stmt (gsi),
+						IFN_DEFERRED_INIT))))
 	gsi_next_nondebug (&gsi);
       if (gsi_end_p (gsi) || gimple_code (gsi_stmt (gsi)) != GIMPLE_LABEL)
 	return false;
@@ -2715,7 +2748,10 @@ should_warn_for_implicit_fallthrough (gimple_stmt_iterator *gsi_p, tree label)
   /* Skip all immediately following labels.  */
   while (!gsi_end_p (gsi)
 	 && (gimple_code (gsi_stmt (gsi)) == GIMPLE_LABEL
-	     || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT))
+	     || gimple_code (gsi_stmt (gsi)) == GIMPLE_PREDICT
+	     || (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+		 && gimple_call_internal_p (gsi_stmt (gsi),
+					    IFN_DEFERRED_INIT))))
     gsi_next_nondebug (&gsi);
 
   /* { ... something; default:; } */
@@ -2892,7 +2928,33 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 
 	  gimple_stmt_iterator gsi2 = *gsi_p;
 	  stmt = gsi_stmt (gsi2);
-	  if (gimple_code (stmt) == GIMPLE_GOTO && !gimple_has_location (stmt))
+	  if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	      && gimple_code (stmt) == GIMPLE_GOTO
+	      && VACUOUS_INIT_LABEL_P (gimple_goto_dest (stmt)))
+	    {
+	      /* Handle for C++ artificial -ftrivial-auto-var-init=
+		 sequences.  Those look like:
+		 goto lab1;
+		 lab2:;
+		 v1 = .DEFERRED_INIT (...);
+		 v2 = .DEFERRED_INIT (...);
+		 lab3:;
+		 v3 = .DEFERRED_INIT (...);
+		 lab1:;
+		 In this case, a case/default label can be either in between
+		 the GIMPLE_GOTO and the corresponding GIMPLE_LABEL, if jumps
+		 from the switch condition to the case/default label cross
+		 vacuous initialization of some variables, or after the
+		 corresponding GIMPLE_LABEL, if those jumps don't cross
+		 any such initialization but there is an adjacent named label
+		 which crosses such initialization.  So, for the purpose of
+		 this function, just ignore the goto but until reaching the
+		 corresponding GIMPLE_LABEL allow also .DEFERRED_INIT
+		 calls.  */
+	      gsi_next (&gsi2);
+	    }
+	  else if (gimple_code (stmt) == GIMPLE_GOTO
+		   && !gimple_has_location (stmt))
 	    {
 	      /* Go on until the artificial label.  */
 	      tree goto_dest = gimple_goto_dest (stmt);
@@ -2926,6 +2988,9 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 		    }
 		}
 	      else if (gimple_call_internal_p (stmt, IFN_ASAN_MARK))
+		;
+	      else if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+		       && gimple_call_internal_p (stmt, IFN_DEFERRED_INIT))
 		;
 	      else if (!is_gimple_debug (stmt))
 		/* Anything else is not expected.  */
@@ -6754,7 +6819,8 @@ gimplify_init_constructor (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p,
       && clear_padding_type_may_have_padding_p (type)
       && ((AGGREGATE_TYPE_P (type) && !cleared && !is_empty_ctor)
 	  || !AGGREGATE_TYPE_P (type))
-      && is_var_need_auto_init (object))
+      && var_needs_auto_init_p (object)
+      && flag_auto_var_init != AUTO_INIT_CXX26)
     gimple_add_padding_init_for_auto_var (object, false, pre_p);
 
   return ret;
@@ -8461,6 +8527,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
   if (init)
     {
       gimple_seq init_pre_p = NULL;
+      bool is_vla = false;
 
       /* TARGET_EXPR temps aren't part of the enclosing block, so add it
 	 to the temps list.  Handle also variable length TARGET_EXPRs.  */
@@ -8471,6 +8538,7 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  /* FIXME: this is correct only when the size of the type does
 	     not depend on expressions evaluated in init.  */
 	  gimplify_vla_decl (temp, &init_pre_p);
+	  is_vla = true;
 	}
       else
 	{
@@ -8480,6 +8548,15 @@ gimplify_target_expr (tree *expr_p, gimple_seq *pre_p, gimple_seq *post_p)
 	  unpoison_empty_seq = gsi_end_p (unpoison_it);
 
 	  gimple_add_tmp_var (temp);
+	}
+
+      if (var_needs_auto_init_p (temp) && VOID_TYPE_P (TREE_TYPE (init)))
+	{
+	  gimple_add_init_for_auto_var (temp, flag_auto_var_init, &init_pre_p);
+	  if (flag_auto_var_init == AUTO_INIT_PATTERN
+	      && !is_gimple_reg (temp)
+	      && clear_padding_type_may_have_padding_p (TREE_TYPE (temp)))
+	    gimple_add_padding_init_for_auto_var (temp, is_vla, &init_pre_p);
 	}
 
       /* If TARGET_EXPR_INITIAL is void, then the mere evaluation of the

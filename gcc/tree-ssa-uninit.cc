@@ -641,6 +641,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
     return NULL_TREE;
 
   bool found_alloc = false;
+  bool found_clobber_deref_this = false;
 
   if (fentry_reached)
     {
@@ -662,9 +663,27 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
 	      tree fndecl = gimple_call_fndecl (def_stmt);
 	      const built_in_function fncode = DECL_FUNCTION_CODE (fndecl);
 	      if (fncode == BUILT_IN_ALLOCA
-		  || fncode  == BUILT_IN_ALLOCA_WITH_ALIGN
-		  || fncode  == BUILT_IN_MALLOC)
+		  || fncode == BUILT_IN_ALLOCA_WITH_ALIGN
+		  || fncode == BUILT_IN_MALLOC)
 		found_alloc = true;
+	      break;
+	    }
+
+	  /* The C++ FE for -flifetime-dse=2 marks this parameters
+	     of certain constructors with "clobber *this" attribute.
+	     Emit uninitialized warnings if we read from what this points
+	     to.  This is similar to access (write_only, 1) attribute,
+	     except it is a -Wuninitialized warning rather than
+	     -Wmaybe-uninitialized and doesn't talk about access
+	     attribute.  */
+	  if (SSA_NAME_IS_DEFAULT_DEF (base)
+	      && POINTER_TYPE_P (TREE_TYPE (base))
+	      && SSA_NAME_VAR (base)
+	      && TREE_CODE (SSA_NAME_VAR (base)) == PARM_DECL
+	      && lookup_attribute ("clobber *this",
+				   DECL_ATTRIBUTES (SSA_NAME_VAR (base))))
+	    {
+	      found_clobber_deref_this = true;
 	      break;
 	    }
 
@@ -702,7 +721,7 @@ maybe_warn_operand (ao_ref &ref, gimple *stmt, tree lhs, tree rhs,
   /* Do not warn if it can be initialized outside this function.
      If we did not reach function entry then we found killing
      clobbers on all paths to entry.  */
-  if (!found_alloc && fentry_reached)
+  if ((!found_alloc && !found_clobber_deref_this) && fentry_reached)
     {
       if (TREE_CODE (base) == SSA_NAME)
 	{

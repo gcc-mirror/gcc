@@ -3009,6 +3009,9 @@ cxx_eval_internal_function (const constexpr_ctx *ctx, tree t,
 					   vc_prvalue, non_constant_p,
 					   overflow_p, jump_target);
 
+    case IFN_DEFERRED_INIT:
+      return build_clobber (TREE_TYPE (t), CLOBBER_OBJECT_BEGIN);
+
     case IFN_VEC_CONVERT:
       {
 	tree arg = cxx_eval_constant_expression (ctx, CALL_EXPR_ARG (t, 0),
@@ -7498,6 +7501,13 @@ cxx_eval_store_expression (const constexpr_ctx *ctx, tree t,
   bool preeval = SCALAR_TYPE_P (type) || TREE_CODE (t) == MODIFY_EXPR;
   if (preeval && !TREE_CLOBBER_P (init))
     {
+      /* Ignore var = .DEFERRED_INIT (); for now, until PR121965 is fixed.  */
+      if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && TREE_CODE (init) == CALL_EXPR
+	  && CALL_EXPR_FN (init) == NULL_TREE
+	  && CALL_EXPR_IFN (init) == IFN_DEFERRED_INIT)
+	return void_node;
+
       /* Evaluate the value to be stored without knowing what object it will be
 	 stored in, so that any side-effects happen first.  */
       if (!SCALAR_TYPE_P (type))

@@ -1,9 +1,12 @@
 /* Test OpenACC 'kernels' construct decomposition.  */
 
+/* { dg-skip-if "PR121975" { c++26 } { "*" } { "" } } */
 /* { dg-additional-options "-fopt-info-omp-all" } */
 
 /* { dg-additional-options "--param=openacc-kernels=decompose" }
 /* { dg-additional-options "-O2" } for 'parloops'.  */
+
+/* { dg-skip-if "PR121975" { c++26 } { "*" } { "" } } */
 
 /* { dg-additional-options "--param=openacc-privatization=noisy" }
    Prune a few: uninteresting, and potentially varying depending on GCC configuration (data types):

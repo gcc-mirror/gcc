@@ -76,6 +76,7 @@ enum bad_spec_place {
 static const char *redeclaration_error_message (tree, tree);
 
 static bool decl_jump_unsafe (tree);
+static bool decl_instrument_init_bypass_p (tree);
 static void require_complete_types_for_parms (tree);
 static tree grok_reference_init (tree, tree, tree, int);
 static tree grokvardecl (tree, tree, tree, const cp_decl_specifier_seq *,
@@ -173,6 +174,25 @@ vec<tree, va_gc> *static_decls;
 /* vector of keyed classes.  */
 vec<tree, va_gc> *keyed_classes;
 
+/* Used in the direct_goto vector of named_label_use_entry for
+   addresses of the LABEL_DECLs within GOTO_EXPR or asm goto
+   for forward jumps.  */
+
+struct GTY(()) named_label_fwd_direct_goto {
+  tree *GTY((skip)) direct_goto;
+};
+
+/* Used in the direct_goto vector of named_label_use_entry for
+   addresses of the LABEL_DECLs within GOTO_EXPR or asm goto
+   for backward jumps.  */
+
+struct GTY(()) named_label_bck_direct_goto {
+  tree *GTY((skip)) direct_goto;
+  /* Number of the decl_instrument_init_bypass_p decls in bad_decls vector
+     at the time this backward goto has been seen.  */
+  unsigned n_bad_decls;
+};
+
 /* Used only for jumps to as-yet undefined labels, since jumps to
    defined labels can have their validity checked immediately.  */
 
@@ -188,7 +208,11 @@ struct GTY((chain_next ("%h.next"))) named_label_use_entry {
   tree names_in_scope;
   /* If the use is a possible destination of a computed goto, a vec of decls
      that aren't destroyed, filled in by poplevel_named_label_1.  */
-  vec<tree,va_gc> *computed_goto;
+  vec<tree, va_gc> *computed_goto;
+  /* If the use is a destination of normal goto, a vec of addresses of
+     LABEL_DECLs that might need changing for !!flag_auto_var_init
+     forward jumps across vacuous initializers.  */
+  vec<named_label_fwd_direct_goto, va_gc> *direct_goto;
   /* The location of the goto, for error reporting.  */
   location_t o_goto_locus;
   /* True if an OpenMP structured block scope has been closed since
@@ -226,20 +250,29 @@ struct GTY((for_user)) named_label_entry {
   /* A list of uses of the label, before the label is defined.  */
   named_label_use_entry *uses;
 
-  /* True if we've seen &&label.  Appalently we can't use TREE_ADDRESSABLE for
+  /* If the use is a destination of normal goto, a vec of addresses of
+     LABEL_DECLs that might need changing for !!flag_auto_var_init
+     backward jumps across vacuous initializers.  */
+  vec<named_label_bck_direct_goto, va_gc> *direct_goto;
+
+  /* True if we've seen &&label.  Apparently we can't use TREE_ADDRESSABLE for
      this, it has a more specific meaning for LABEL_DECL.  */
-  bool addressed;
+  bool addressed : 1;
 
   /* The following bits are set after the label is defined, and are
      updated as scopes are popped.  They indicate that a jump to the
      label will illegally enter a scope of the given flavor.  */
-  bool in_try_scope;
-  bool in_catch_scope;
-  bool in_omp_scope;
-  bool in_transaction_scope;
-  bool in_constexpr_if;
-  bool in_consteval_if;
-  bool in_stmt_expr;
+  bool in_try_scope : 1;
+  bool in_catch_scope : 1;
+  bool in_omp_scope : 1;
+  bool in_transaction_scope : 1;
+  bool in_constexpr_if : 1;
+  bool in_consteval_if : 1;
+  bool in_stmt_expr : 1;
+
+  /* True if bad_decls chain contains any decl_jump_unsafe decls
+     (rather than just decl_instrument_init_bypass_p).  */
+  bool has_bad_decls : 1;
 };
 
 #define named_labels cp_function_chain->x_named_labels
@@ -403,6 +436,69 @@ sort_labels (const void *a, const void *b)
   return DECL_UID (label1) > DECL_UID (label2) ? -1 : +1;
 }
 
+static void adjust_backward_goto (named_label_entry *, tree_stmt_iterator);
+static named_label_entry *lookup_label_1 (tree, bool);
+
+/* Helper of pop_labels, called through cp_walk_tree.  Adjust
+   LABEL_EXPRs of named labels, if they are targets of backwards
+   gotos jumping across vacuous initialization for
+   !!flag_auto_var_init.  */
+
+static tree
+adjust_backward_gotos (tree *tp, int *walk_subtrees, void *data)
+{
+  tree t = *tp;
+  switch (TREE_CODE (t))
+    {
+    case LABEL_EXPR:
+      /* In rare cases LABEL_EXPR can appear as the only substatement
+	 of some other statement, e.g. if body etc.  In that case, we know
+	 there can't be an older if (0) wrapper with artificial initializers
+	 before it.  Replace the LABEL_EXPR statement with a STATEMENT_LIST
+	 and insert the LABEL_EXPR into it, later on if (0) will be added
+	 before that.  */
+      if (DECL_NAME (LABEL_EXPR_LABEL (t)))
+	{
+	  named_label_entry *ent
+	    = lookup_label_1 (DECL_NAME (LABEL_EXPR_LABEL (t)), false);
+	  if (ent->direct_goto)
+	    {
+	      *tp = alloc_stmt_list ();
+	      append_to_statement_list_force (t, tp);
+	      adjust_backward_goto (ent, tsi_last (*tp));
+	    }
+	}
+      *walk_subtrees = 0;
+      break;
+    case STATEMENT_LIST:
+      {
+	tree_stmt_iterator i;
+	*walk_subtrees = 0;
+	/* In the common case, LABEL_EXPRs appear inside of a STATEMENT_LIST.
+	   In that case pass the stmt iterator to adjust_backward_goto, so
+	   that it can insert if (0) wrapper artificial initializers before
+	   it or reuse the existing ones.  */
+	for (i = tsi_start (t); !tsi_end_p (i); tsi_next (&i))
+	  if (TREE_CODE (tsi_stmt (i)) != LABEL_EXPR)
+	    cp_walk_tree (tsi_stmt_ptr (i), adjust_backward_gotos,
+			  data, (hash_set<tree> *) data);
+	  else if (DECL_NAME (LABEL_EXPR_LABEL (tsi_stmt (i))))
+	    {
+	      named_label_entry *ent
+		= lookup_label_1 (DECL_NAME (LABEL_EXPR_LABEL (tsi_stmt (i))),
+				  false);
+	      if (ent->direct_goto)
+		adjust_backward_goto (ent, i);
+	    }
+	break;
+      }
+    default:
+      if (TYPE_P (t))
+	*walk_subtrees = 0;
+    }
+  return NULL_TREE;
+}
+
 /* At the end of a function, all labels declared within the function
    go out of scope.  BLOCK is the top-level block for the
    function.  */
@@ -420,8 +516,23 @@ pop_labels (tree block)
      table implementation changes.  */
   auto_vec<tree, 32> labels (named_labels->elements ());
   hash_table<named_label_hash>::iterator end (named_labels->end ());
-  for (hash_table<named_label_hash>::iterator iter
-	 (named_labels->begin ()); iter != end; ++iter)
+
+  if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+    {
+      for (decltype (end) iter (named_labels->begin ()); iter != end; ++iter)
+	{
+	  named_label_entry *ent = *iter;
+	  if (ent->direct_goto)
+	    {
+	      hash_set<tree> pset;
+	      cp_walk_tree (&DECL_SAVED_TREE (current_function_decl),
+			    adjust_backward_gotos, &pset, &pset);
+	      break;
+	    }
+	}
+    }
+
+  for (decltype (end) iter (named_labels->begin ()); iter != end; ++iter)
     {
       named_label_entry *ent = *iter;
 
@@ -551,6 +662,11 @@ poplevel_named_label_1 (named_label_entry **slot, cp_binding_level *bl)
 						     ? DECL_CHAIN (decl)
 						     : TREE_CHAIN (decl)))
 	if (decl_jump_unsafe (decl))
+	  {
+	    vec_safe_push (ent->bad_decls, decl);
+	    ent->has_bad_decls = true;
+	  }
+	else if (decl_instrument_init_bypass_p (decl))
 	  vec_safe_push (ent->bad_decls, decl);
 
       ent->binding_level = obl;
@@ -2941,6 +3057,19 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 	{
           DECL_ATTRIBUTES (newarg)
 	    = (*targetm.merge_decl_attributes) (oldarg, newarg);
+	  if (lookup_attribute (NULL, "indeterminate",
+				DECL_ATTRIBUTES (newarg))
+	      && !lookup_attribute (NULL, "indeterminate",
+				    DECL_ATTRIBUTES (oldarg)))
+	    {
+	      auto_diagnostic_group d;
+	      error_at (DECL_SOURCE_LOCATION (newarg),
+			"%<indeterminate%> attribute not specified "
+			"for parameter %qD on the first declaration of "
+			"its function", newarg);
+	      inform (DECL_SOURCE_LOCATION (oldarg),
+		      "earlier declaration");
+	    }
           DECL_ATTRIBUTES (oldarg) = DECL_ATTRIBUTES (newarg);
 	}
 
@@ -3744,6 +3873,259 @@ decl_jump_unsafe (tree decl)
 	      || variably_modified_type_p (type, NULL_TREE)));
 }
 
+/* Returns true if decl is an automatic variable with vacuous initialization
+   except when it is [[indeterminate]] or [[gnu::uninitialized]].
+   Jumps across such initialization need to be instrumented for
+   !!flag_auto_var_init.  */
+
+static bool
+decl_instrument_init_bypass_p (tree decl)
+{
+  tree type = TREE_TYPE (decl);
+
+  return (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && type != error_mark_node
+	  && VAR_P (decl)
+	  && !TREE_STATIC (decl)
+	  && !DECL_EXTERNAL (decl)
+	  && !(DECL_NONTRIVIALLY_INITIALIZED_P (decl)
+	       || variably_modified_type_p (type, NULL_TREE))
+	  && !lookup_attribute (NULL, "indeterminate", DECL_ATTRIBUTES (decl))
+	  && !lookup_attribute ("uninitialized", DECL_ATTRIBUTES (decl))
+	  && !DECL_HAS_VALUE_EXPR_P (decl));
+}
+
+/* Build .DEFERRED_INIT call for DECL.  */
+
+static tree
+build_deferred_init_call (tree decl)
+{
+  tree decl_size_arg = TYPE_SIZE_UNIT (TREE_TYPE (decl));
+  tree init_type_arg = build_int_cst (integer_type_node,
+				      (int) flag_auto_var_init);
+  location_t loc = DECL_SOURCE_LOCATION (decl);
+  tree decl_name;
+
+  if (DECL_NAME (decl))
+    decl_name = build_string_literal (DECL_NAME (decl));
+  else
+    {
+      char decl_name_anonymous[3 + (HOST_BITS_PER_INT + 2) / 3];
+      sprintf (decl_name_anonymous, "D.%u", DECL_UID (decl));
+      decl_name = build_string_literal (decl_name_anonymous);
+    }
+
+  tree call = build_call_expr_internal_loc (loc, IFN_DEFERRED_INIT,
+					    TREE_TYPE (decl), 3,
+					    decl_size_arg, init_type_arg,
+					    decl_name);
+  tree ret = build2_loc (loc, MODIFY_EXPR, void_type_node, decl, call);
+  return build_stmt (loc, EXPR_STMT, ret);
+}
+
+/* Emit before ITER (and any labels/case labels before it) code like
+   if (0)
+     {
+       l1:
+	v4 = .DEFERRED_INIT (sizeof (v4), ?, "v4");
+	v3 = .DEFERRED_INIT (sizeof (v3), ?, "v3");
+	v2 = .DEFERRED_INIT (sizeof (v2), ?, "v2");
+	v1 = .DEFERRED_INIT (sizeof (v1), ?, "v1");
+     }
+   and return l1 label, or if it already exists, assert it has the
+   .DEFERRED_INIT calls for the right decls in the right order and
+   amend it, either by adding extra labels in between or further
+   ,DEFERRED_INIT calls before the first label and extra label before
+   that.  If CASE_LABEL is non-NULL, emit that CASE_LABEL_EXPR instead
+   of adding a label.  DECLS points to an array of NDECLS VAR_DECLs
+   which should be initialized.  */
+
+static tree
+maybe_add_deferred_init_calls (tree_stmt_iterator iter, tree case_label,
+			       tree *decls, unsigned ndecls)
+{
+  tree lab = NULL_TREE;
+  for (; !tsi_end_p (iter); tsi_prev (&iter))
+    {
+      switch (TREE_CODE (tsi_stmt (iter)))
+	{
+	case LABEL_EXPR:
+	case CASE_LABEL_EXPR:
+	case DEBUG_BEGIN_STMT:
+	  continue;
+	default:
+	  break;
+	}
+      break;
+    }
+  if (!tsi_end_p (iter)
+      && TREE_CODE (tsi_stmt (iter)) == IF_STMT
+      && IF_STMT_VACUOUS_INIT_P (tsi_stmt (iter)))
+    {
+      /* Found IF_STMT added for this or some adjacent
+	 LABEL_EXPR/CASE_LABEL_EXPR by an earlier call to this function.
+	 The decls are ordered so that we can always reuse it.  Sometimes
+	 by no modifications at all and just returning the right label
+	 which was added already before, sometimes by adding a label in
+	 between two previously added .DEFERRED_INIT calls and sometimes
+	 by adding extra statements (.DEFERRED_INIT calls and LABEL_EXPR
+	 before that) before the statements in IF_STMT body.  */
+      tree then_clause = THEN_CLAUSE (tsi_stmt (iter));
+      iter = tsi_last (then_clause);
+      bool add = false;
+      for (unsigned int i = 0; i < ndecls; ++i)
+	{
+	  tree decl = decls[i];
+	  if (!add)
+	    {
+	      /* Skip over labels/case labels after .DEFERRED_INIT for the
+		 DECL we are looking for.  */
+	      while (!tsi_end_p (iter)
+		     && (TREE_CODE (tsi_stmt (iter)) == LABEL_EXPR
+			 || (TREE_CODE (tsi_stmt (iter)) == CASE_LABEL_EXPR
+			     && !case_label)))
+		tsi_prev (&iter);
+	      if (tsi_end_p (iter))
+		{
+		  /* Reached the start, we'll need to prepend further
+		     statements.  */
+		  add = true;
+		  iter = tsi_start (then_clause);
+		}
+	      else
+		{
+		  /* Found something, assert it is .DEFERRED_INIT for
+		     DECL.  */
+		  tree t = tsi_stmt (iter);
+		  gcc_checking_assert (TREE_CODE (t) == EXPR_STMT);
+		  t = EXPR_STMT_EXPR (t);
+		  gcc_checking_assert (TREE_CODE (t) == MODIFY_EXPR
+				       && TREE_OPERAND (t, 0) == decl
+				       && (TREE_CODE (TREE_OPERAND (t, 1))
+					   == CALL_EXPR));
+		  t = TREE_OPERAND (t, 1);
+		  gcc_checking_assert (CALL_EXPR_FN (t) == NULL_TREE
+				       && (CALL_EXPR_IFN (t)
+					   == IFN_DEFERRED_INIT));
+		  tsi_prev (&iter);
+		}
+	    }
+	  if (add)
+	    {
+	      /* If reached the start in this or some earlier iteration,
+		 prepend .DEFERRED_INIT call for DECL.  */
+	      tree t = build_deferred_init_call (decl);
+	      STMT_IS_FULL_EXPR_P (t) = 1;
+	      tsi_link_before (&iter, t, TSI_CONTINUE_LINKING);
+	    }
+	}
+      if (!add)
+	{
+	  /* If .DEFERRED_INIT calls for all the decls were already there,
+	     skip over case labels and if we find a LABEL_EXPR, return
+	     its label.  */
+	  while (!tsi_end_p (iter)
+		 && !case_label
+		 && TREE_CODE (tsi_stmt (iter)) == CASE_LABEL_EXPR)
+	    tsi_prev (&iter);
+	  if (tsi_end_p (iter))
+	    {
+	      /* Only case labels were found and we are looking for normal
+		 label, we'll need to add it.  */
+	      add = true;
+	      iter = tsi_start (then_clause);
+	    }
+	  else if (!case_label
+		   && TREE_CODE (tsi_stmt (iter)) == LABEL_EXPR)
+	    /* Return existing label.  */
+	    lab = LABEL_EXPR_LABEL (tsi_stmt (iter));
+	  else
+	    {
+	      /* We'll need to add a LABEL_EXPR or move CASE_LABEL_EXPR.  */
+	      gcc_checking_assert (case_label
+				   || (TREE_CODE (tsi_stmt (iter))
+				       == EXPR_STMT));
+	      add = true;
+	      tsi_next (&iter);
+	      gcc_checking_assert (!tsi_end_p (iter));
+	    }
+	}
+      if (add)
+	{
+	  tree t;
+	  if (case_label)
+	    t = case_label;
+	  else
+	    {
+	      lab = create_artificial_label (UNKNOWN_LOCATION);
+	      t = build_stmt (UNKNOWN_LOCATION, LABEL_EXPR, lab);
+	    }
+	  tsi_link_before (&iter, t, TSI_CONTINUE_LINKING);
+	}
+    }
+  else
+    {
+      /* No IF_STMT created by this function found.  Create it all
+	 from scratch, so a LABEL_EXPR (or moved CASE_LABEL_EXPR)
+	 followed by .DEFERRED_INIT calls inside of a new if (0).  */
+      tree new_then = push_stmt_list ();
+      if (!case_label)
+	{
+	  lab = create_artificial_label (UNKNOWN_LOCATION);
+	  add_stmt (build_stmt (UNKNOWN_LOCATION, LABEL_EXPR, lab));
+	}
+      else
+	add_stmt (case_label);
+      for (unsigned int i = ndecls; i; --i)
+	add_stmt (build_deferred_init_call (decls[i - 1]));
+      new_then = pop_stmt_list (new_then);
+      tree stmt = build4 (IF_STMT, void_type_node, boolean_false_node,
+			  new_then, void_node, NULL_TREE);
+      IF_STMT_VACUOUS_INIT_P (stmt) = 1;
+      if (tsi_end_p (iter))
+	{
+	  iter = tsi_start (iter.container);
+	  tsi_link_before (&iter, stmt, TSI_SAME_STMT);
+	}
+      else
+	tsi_link_after (&iter, stmt, TSI_CONTINUE_LINKING);
+    }
+  return lab;
+}
+
+/* Adjust backward gotos to named label ENT if they jump over vacuous
+   initializers if !!flag_auto_var_init.  ITER is the location of
+   LABEL_EXPR for that named label.  */
+
+static void
+adjust_backward_goto (named_label_entry *ent, tree_stmt_iterator iter)
+{
+  auto_vec<tree, 4> decls;
+  unsigned int i, max_cnt = ent->direct_goto->last ().n_bad_decls;
+  tree decl;
+  FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, i, decl)
+    if (!decl_jump_unsafe (decl))
+      {
+	gcc_checking_assert (decl_instrument_init_bypass_p (decl));
+	decls.safe_push (decl);
+	if (decls.length () == max_cnt)
+	  break;
+      }
+  named_label_bck_direct_goto *dgoto;
+  unsigned last = 0;
+  tree lab = NULL_TREE;
+  FOR_EACH_VEC_SAFE_ELT_REVERSE (ent->direct_goto, i, dgoto)
+    {
+      if (dgoto->n_bad_decls != last)
+	{
+	  last = dgoto->n_bad_decls;
+	  lab = maybe_add_deferred_init_calls (iter, NULL_TREE,
+					       decls.address (), last);
+	}
+      *dgoto->direct_goto = lab;
+    }
+}
+
 /* A subroutine of check_previous_goto_1 and check_goto to identify a branch
    to the user.  */
 
@@ -3771,13 +4153,19 @@ identify_goto (tree decl, location_t loc, const location_t *locus,
    is OK.  DECL is the LABEL_DECL or 0; LEVEL is the binding_level for
    the jump context; NAMES are the names in scope in LEVEL at the jump
    context; LOCUS is the source position of the jump or 0.  COMPUTED
-   is a vec of decls if the jump is a computed goto.  Returns
-   true if all is well.  */
+   is a vec of decls if the jump is a computed goto.  DIRECT_GOTO is a
+   vec of pointers to LABEL_DECLs that might need adjusting if vacuous
+   initializations are crossed for !!flag_auto_var_init.  CASE_LABEL is
+   CASE_LABEL_EXPR to be moved if needed for the check_switch_goto case.
+   Returns non-zero if all is well, 2 if any vacuous initializers were
+   crossed.  */
 
-static bool
-check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
+static int
+check_previous_goto_1 (tree decl, cp_binding_level *level, tree names,
 		       bool exited_omp, const location_t *locus,
-		       vec<tree,va_gc> *computed)
+		       vec<tree, va_gc> *computed,
+		       vec<named_label_fwd_direct_goto, va_gc> *direct_goto,
+		       tree case_label)
 {
   auto_diagnostic_group d;
   cp_binding_level *b;
@@ -3785,6 +4173,8 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
   int identified = 0;
   bool saw_eh = false, saw_omp = false, saw_tm = false, saw_cxif = false;
   bool saw_ceif = false, saw_se = false;
+  auto_vec<tree> vacuous_decls;
+  bool vacuous_inits = false;
 
   if (exited_omp)
     {
@@ -3807,7 +4197,15 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	{
 	  bool problem = decl_jump_unsafe (new_decls);
 	  if (! problem)
-	    continue;
+	    {
+	      if (decl_instrument_init_bypass_p (new_decls))
+		{
+		  if (direct_goto || case_label)
+		    vacuous_decls.safe_push (new_decls);
+		  vacuous_inits = true;
+		}
+	      continue;
+	    }
 
 	  if (!identified)
 	    {
@@ -3906,7 +4304,30 @@ check_previous_goto_1 (tree decl, cp_binding_level* level, tree names,
 	  }
     }
 
-  return !identified;
+  if (!vacuous_decls.is_empty () && !seen_error ())
+    {
+      tree_stmt_iterator iter = tsi_last (cur_stmt_list);
+      if (case_label)
+	{
+	  gcc_checking_assert (tsi_stmt (iter) == case_label);
+	  tsi_delink (&iter);
+	  iter = tsi_last (cur_stmt_list);
+	}
+      tree lab = maybe_add_deferred_init_calls (iter, case_label,
+						vacuous_decls.address (),
+						vacuous_decls.length ());
+      if (lab)
+	{
+	  unsigned int i;
+	  named_label_fwd_direct_goto *dgoto;
+	  FOR_EACH_VEC_SAFE_ELT (direct_goto, i, dgoto)
+	    *dgoto->direct_goto = lab;
+	}
+    }
+
+  if (identified)
+    return 0;
+  return vacuous_inits ? 2 : 1;
 }
 
 static void
@@ -3914,24 +4335,27 @@ check_previous_goto (tree decl, struct named_label_use_entry *use)
 {
   check_previous_goto_1 (decl, use->binding_level,
 			 use->names_in_scope, use->in_omp_scope,
-			 &use->o_goto_locus, use->computed_goto);
+			 &use->o_goto_locus, use->computed_goto,
+			 use->direct_goto, NULL_TREE);
+  vec_free (use->direct_goto);
 }
 
-static bool
-check_switch_goto (cp_binding_level* level)
+static int
+check_switch_goto (cp_binding_level *level, tree case_label)
 {
   return check_previous_goto_1 (NULL_TREE, level, level->names,
-				false, NULL, nullptr);
+				false, NULL, nullptr, nullptr, case_label);
 }
 
-/* Check that a new jump to a label ENT is OK.  COMPUTED is true
-   if this is a possible target of a computed goto.  */
+/* Check that a new jump to a label ENT is OK.  DECLP is a pointer
+   to a LABEL_DECL for direct gotos and NULL for computed gotos.  */
 
 void
-check_goto_1 (named_label_entry *ent, bool computed)
+check_goto_1 (named_label_entry *ent, tree *declp)
 {
   auto_diagnostic_group d;
   tree decl = ent->label_decl;
+  bool computed = declp == NULL;
 
   /* If the label hasn't been defined yet, defer checking.  */
   if (! DECL_INITIAL (decl))
@@ -3939,8 +4363,14 @@ check_goto_1 (named_label_entry *ent, bool computed)
       /* Don't bother creating another use if the last goto had the
 	 same data, and will therefore create the same set of errors.  */
       if (ent->uses
+	  && ent->uses->binding_level == current_binding_level
 	  && ent->uses->names_in_scope == current_binding_level->names)
-	return;
+	{
+	  if (declp && flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+	    vec_safe_push (ent->uses->direct_goto,
+			   named_label_fwd_direct_goto { declp });
+	  return;
+	}
 
       named_label_use_entry *new_use
 	= ggc_alloc<named_label_use_entry> ();
@@ -3949,6 +4379,10 @@ check_goto_1 (named_label_entry *ent, bool computed)
       new_use->o_goto_locus = input_location;
       new_use->in_omp_scope = false;
       new_use->computed_goto = computed ? make_tree_vector () : nullptr;
+      new_use->direct_goto = nullptr;
+      if (declp && flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+	vec_safe_push (new_use->direct_goto,
+		       named_label_fwd_direct_goto { declp });
 
       new_use->next = ent->uses;
       ent->uses = new_use;
@@ -3959,11 +4393,12 @@ check_goto_1 (named_label_entry *ent, bool computed)
   int identified = 0;
   tree bad;
   unsigned ix;
+  unsigned n_bad_decls = 0;
 
   if (ent->in_try_scope || ent->in_catch_scope || ent->in_transaction_scope
       || ent->in_constexpr_if || ent->in_consteval_if
       || ent->in_omp_scope || ent->in_stmt_expr
-      || !vec_safe_is_empty (ent->bad_decls))
+      || ent->has_bad_decls)
     {
       enum diagnostics::kind diag_kind = diagnostics::kind::permerror;
       if (ent->in_try_scope || ent->in_catch_scope || ent->in_constexpr_if
@@ -3978,8 +4413,14 @@ check_goto_1 (named_label_entry *ent, bool computed)
   FOR_EACH_VEC_SAFE_ELT (ent->bad_decls, ix, bad)
     {
       bool problem = decl_jump_unsafe (bad);
+      if (!problem)
+	{
+	  gcc_checking_assert (decl_instrument_init_bypass_p (bad));
+	  n_bad_decls++;
+	  continue;
+	}
 
-      if (problem && DECL_ARTIFICIAL (bad))
+      if (DECL_ARTIFICIAL (bad))
 	{
 	  /* Can't skip init of __exception_info.  */
 	  if (identified == 1)
@@ -4086,16 +4527,21 @@ check_goto_1 (named_label_entry *ent, bool computed)
 	    break;
 	}
     }
+
+  if (n_bad_decls && declp)
+    vec_safe_push (ent->direct_goto,
+		   named_label_bck_direct_goto { declp, n_bad_decls });
 }
 
-/* Check that a new jump to a label DECL is OK.  Called by
+/* Check that a new jump to a label *DECLP is OK.  Called by
    finish_goto_stmt.  */
 
 void
-check_goto (tree decl)
+check_goto (tree *declp)
 {
   if (!named_labels)
     return;
+  tree decl = *declp;
   if (TREE_CODE (decl) != LABEL_DECL)
     {
       /* We don't know where a computed goto is jumping,
@@ -4106,7 +4552,7 @@ check_goto (tree decl)
 	{
 	  auto ent = *iter;
 	  if (ent->addressed)
-	    check_goto_1 (ent, true);
+	    check_goto_1 (ent, NULL);
 	}
     }
   else
@@ -4115,7 +4561,7 @@ check_goto (tree decl)
       named_label_entry **slot
 	= named_labels->find_slot_with_hash (DECL_NAME (decl), hash, NO_INSERT);
       named_label_entry *ent = *slot;
-      check_goto_1 (ent, false);
+      check_goto_1 (ent, declp);
     }
 }
 
@@ -4370,7 +4816,8 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
   if (cond && TREE_CODE (cond) == TREE_LIST)
     cond = TREE_VALUE (cond);
 
-  if (!check_switch_goto (switch_stack->level))
+  int chk_switch_goto = check_switch_goto (switch_stack->level, NULL_TREE);
+  if (!chk_switch_goto)
     return error_mark_node;
 
   type = SWITCH_STMT_TYPE (switch_stack->switch_stmt);
@@ -4381,6 +4828,9 @@ finish_case_label (location_t loc, tree low_value, tree high_value)
   high_value = case_conversion (type, high_value);
 
   r = c_add_case_label (loc, switch_stack->cases, cond, low_value, high_value);
+
+  if (r != error_mark_node && chk_switch_goto == 2)
+    check_switch_goto (switch_stack->level, r);
 
   /* After labels, make any new cleanups in the function go into their
      own new (temporary) binding contour.  */
@@ -19327,16 +19777,19 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   start_function_contracts (decl1);
 
   if (!processing_template_decl
-      && (flag_lifetime_dse > 1)
+      && flag_lifetime_dse > 1
       && DECL_CONSTRUCTOR_P (decl1)
-      && !DECL_CLONED_FUNCTION_P (decl1)
       /* Clobbering an empty base is harmful if it overlays real data.  */
       && !is_empty_class (current_class_type)
       /* We can't clobber safely for an implicitly-defined default constructor
 	 because part of the initialization might happen before we enter the
 	 constructor, via AGGR_INIT_ZERO_FIRST (c++/68006).  */
-      && !implicit_default_ctor_p (decl1))
-    finish_expr_stmt (build_clobber_this (CLOBBER_OBJECT_BEGIN));
+      && !implicit_default_ctor_p (decl1)
+      && !lookup_attribute ("clobber *this",
+			    DECL_ATTRIBUTES (current_class_ptr)))
+    DECL_ATTRIBUTES (current_class_ptr)
+      = tree_cons (get_identifier ("clobber *this"), NULL_TREE,
+		   DECL_ATTRIBUTES (current_class_ptr));
 
   if (!processing_template_decl
       && DECL_CONSTRUCTOR_P (decl1)

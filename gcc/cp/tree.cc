@@ -5591,6 +5591,23 @@ handle_maybe_unused_attribute (tree *node, tree name, tree args, int flags,
   return ret;
 }
 
+/* The C++26 [[indeterminate]] attribute.  */
+
+static tree
+handle_indeterminate_attribute (tree *node, tree name, tree, int,
+				bool *no_add_attrs)
+{
+  if (TREE_CODE (*node) != PARM_DECL
+      && (!VAR_P (*node) || is_global_var (*node)))
+    {
+      pedwarn (input_location, OPT_Wattributes,
+	       "%qE on declaration other than parameter or automatic variable",
+	       name);
+      *no_add_attrs = true;
+    }
+  return NULL_TREE;
+}
+
 /* Table of valid C++ attributes.  */
 static const attribute_spec cxx_gnu_attributes[] =
 {
@@ -5630,6 +5647,8 @@ static const attribute_spec std_attributes[] =
     handle_noreturn_attribute, attr_noreturn_exclusions },
   { "carries_dependency", 0, 0, true, false, false, false,
     handle_carries_dependency_attribute, NULL },
+  { "indeterminate", 0, 0, true, false, false, false,
+    handle_indeterminate_attribute, NULL },
   { "pre", 0, -1, false, false, false, false,
     handle_contract_attribute, NULL },
   { "post", 0, -1, false, false, false, false,

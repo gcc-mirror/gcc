@@ -13,7 +13,7 @@ int foo(int n)
      _err; 
    });
 
-   if (err == 0) return 17; 
+   if (err == 0) return 17;		/* { dg-warning "'_err' may be used uninitialized" "" { target c++26 } } */
  }
 
  return 18;

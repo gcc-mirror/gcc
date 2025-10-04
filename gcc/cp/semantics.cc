@@ -919,10 +919,12 @@ finish_goto_stmt (tree destination)
 	}
     }
 
-  check_goto (destination);
-
   add_stmt (build_predict_expr (PRED_GOTO, NOT_TAKEN));
-  return add_stmt (build_stmt (input_location, GOTO_EXPR, destination));
+
+  tree stmt = build_stmt (input_location, GOTO_EXPR, destination);
+  check_goto (&TREE_OPERAND (stmt, 0));
+
+  return add_stmt (stmt);
 }
 
 /* Returns true if T corresponds to an assignment operator expression.  */

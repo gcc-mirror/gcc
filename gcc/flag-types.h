@@ -288,7 +288,8 @@ enum vect_cost_model {
 enum auto_init_type {
   AUTO_INIT_UNINITIALIZED = 0,
   AUTO_INIT_PATTERN = 1,
-  AUTO_INIT_ZERO = 2
+  AUTO_INIT_ZERO = 2,
+  AUTO_INIT_CXX26 = 3
 };
 
 /* Initialization of padding bits with zeros.  */

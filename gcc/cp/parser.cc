@@ -31186,10 +31186,10 @@ cp_parser_asm_label_list (cp_parser* parser)
 	  if (TREE_CODE (label) == LABEL_DECL)
 	    {
 	      TREE_USED (label) = 1;
-	      check_goto (label);
 	      name = build_string (IDENTIFIER_LENGTH (identifier),
 				   IDENTIFIER_POINTER (identifier));
 	      labels = tree_cons (name, label, labels);
+	      check_goto (&TREE_VALUE (labels));
 	    }
 	}
       /* If the next token is not a `,', then the list is

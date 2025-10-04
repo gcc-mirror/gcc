@@ -3,6 +3,7 @@
 
 /* TODO The tree dump scanning has certain expectations.
    { dg-do compile { target { lp64 || llp64 } } } */
+/* { dg-skip-if "PR121975" { c++26 } { "*" } { "" } } */
 /* { dg-additional-options "-fdump-tree-omplower" } */
 
 /* { dg-additional-options -Wuninitialized } */

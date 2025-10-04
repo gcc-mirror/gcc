@@ -1,3 +1,4 @@
+/* { dg-skip-if "PR121975" { c++26 } { "*" } { "" } } */
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
 
 /* { dg-additional-options "-fchecking" }
