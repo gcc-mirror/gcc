@@ -6808,6 +6808,34 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    @2))
 )
 
+#if GIMPLE
+/* Given two integers a and b:
+   (a != b) & ((a|b) != 0) -> (a != b)
+   (a != b) | ((a|b) != 0) -> ((a|b) != 0)
+   (a == b) & ((a|b) == 0) -> ((a|b) == 0)
+   (a == b) | ((a|b) == 0) -> (a == b)
+   (a != b) & ((a|b) == 0) -> false
+   (a == b) | ((a|b) != 0) -> true  */
+(simplify
+ (bit_and:c (ne:c @0 @1) (ne (bit_ior @0 @1) integer_zerop))
+ (ne @0 @1))
+(simplify
+ (bit_ior:c (ne:c @0 @1) (ne (bit_ior @0 @1) integer_zerop))
+ (ne (bit_ior @0 @1) { integer_zero_node; }))
+(simplify
+ (bit_and:c (eq:c @0 @1) (eq (bit_ior @0 @1) integer_zerop))
+ (eq (bit_ior @0 @1) { integer_zero_node; }))
+(simplify
+ (bit_ior:c (eq:c @0 @1) (eq (bit_ior @0 @1) integer_zerop))
+ (eq @0 @1))
+(simplify
+ (bit_and:c (ne:c @0 @1) (eq (bit_ior @0 @1) integer_zerop))
+ { build_zero_cst (type); })
+(simplify
+ (bit_ior:c (eq:c @0 @1) (ne (bit_ior @0 @1) integer_zerop))
+ { build_one_cst (type); })
+#endif
+
 /* These was part of minmax phiopt.  */
 /* Optimize (a CMP b) ? minmax<a, c> : minmax<b, c>
    to minmax<min/max<a, b>, c> */
