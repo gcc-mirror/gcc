@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* Both phiopt and cselim can commonalize the stores so disable them too. */
-/* { dg-options "-O2 -fdump-tree-pre-stats -fno-ssa-phiopt -fno-tree-cselim" } */
+/* { dg-options "-O2 -fdump-tree-phiopt1-stats" } */
 
 struct Loc {
     int x[3];
@@ -35,5 +34,5 @@ int foo (int i, int j, int k, int b)
   return res;
 }
 
-/* All three loads should be eliminated.  */
-/* { dg-final { scan-tree-dump "Eliminated: 3" "pre" } } */
+/* All three stores should be commonalized.  */
+/* { dg-final { scan-tree-dump "if-then-else store replacement: 3" "phiopt1" } } */
