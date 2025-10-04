@@ -5451,7 +5451,8 @@ pass_forwprop::execute (function *fun)
 	  do
 	    {
 	      gimple *orig_stmt = stmt = gsi_stmt (gsi);
-	      bool was_noreturn = (is_gimple_call (stmt)
+	      bool was_call = is_gimple_call (stmt);
+	      bool was_noreturn = (was_call
 				   && gimple_call_noreturn_p (stmt));
 	      changed = false;
 
@@ -5465,8 +5466,10 @@ pass_forwprop::execute (function *fun)
 		  changed = true;
 		  /* There is no updating of the address
 		     taken after the last forwprop so update
-		     the addresses when a folding happened. */
-		  if (last_p)
+		     the addresses when a folding happened to a call.
+		     The va_* builtins can remove taking of the address so
+		     can the sincos->cexpi transformation.  See PR 39643 and PR 20983. */
+		  if (was_call && last_p)
 		    todoflags |= TODO_update_address_taken;
 		  stmt = gsi_stmt (gsi);
 		  /* Cleanup the CFG if we simplified a condition to
