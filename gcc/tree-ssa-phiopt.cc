@@ -3643,9 +3643,8 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   tree lhs_base, lhs, then_rhs, else_rhs, name;
   location_t then_locus, else_locus;
   gimple_stmt_iterator gsi;
-  gphi *newphi;
+  gphi *newphi = nullptr;
   gassign *new_stmt;
-  bool empty_constructor = false;
 
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
@@ -3680,7 +3679,6 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
       /* Currently only handle commoning of `= {}`.   */
       if (TREE_CODE (then_rhs) != CONSTRUCTOR)
 	return false;
-      empty_constructor = true;
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS))
@@ -3709,8 +3707,8 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   /* 2) Create a PHI node at the join block, with one argument
 	holding the old RHS, and the other holding the temporary
 	where we stored the old memory contents.  */
-  if (empty_constructor)
-    name = unshare_expr (then_rhs);
+  if (operand_equal_p (then_rhs, else_rhs))
+    name = then_rhs;
   else
     {
       name = make_temp_ssa_name (TREE_TYPE (lhs), NULL, "cstore");
@@ -3730,7 +3728,7 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
   update_stmt (vphi);
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      if (!empty_constructor)
+      if (newphi)
 	{
 	 fprintf(dump_file, "to use phi:\n");
 	  print_gimple_stmt (dump_file, newphi, 0,
