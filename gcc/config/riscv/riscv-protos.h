@@ -832,6 +832,7 @@ extern bool th_print_operand_address (FILE *, machine_mode, rtx);
 #endif
 
 extern bool strided_load_broadcast_p (void);
+extern bool riscv_prefer_agnostic_p (void);
 extern bool riscv_use_divmod_expander (void);
 void riscv_init_cumulative_args (CUMULATIVE_ARGS *, const_tree, rtx, tree, int);
 extern bool

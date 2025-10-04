@@ -1144,9 +1144,10 @@ public:
 	      dflags |= demand_flags::DEMAND_LMUL_P;
 	  }
 
-	if (!m_ta)
+	/* Demand policy for agnostic if the uarch has a preference.  */
+	if (!m_ta || riscv_prefer_agnostic_p ())
 	  dflags |= demand_flags::DEMAND_TAIL_POLICY_P;
-	if (!m_ma)
+	if (!m_ma || riscv_prefer_agnostic_p ())
 	  dflags |= demand_flags::DEMAND_MASK_POLICY_P;
       }
 

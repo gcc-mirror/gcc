@@ -317,6 +317,7 @@ struct riscv_tune_param
   const char *function_align;
   const char *jump_align;
   const char *loop_align;
+  bool prefer_agnostic;
 };
 
 
@@ -481,6 +482,7 @@ static const struct riscv_tune_param generic_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  false,					/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for rocket.  */
@@ -505,6 +507,7 @@ static const struct riscv_tune_param rocket_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  false,					/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for Sifive 7 Series.  */
@@ -529,6 +532,7 @@ static const struct riscv_tune_param sifive_7_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  false,					/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for Sifive p400 Series.  */
@@ -553,6 +557,7 @@ static const struct riscv_tune_param sifive_p400_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for Sifive p600 Series.  */
@@ -577,6 +582,7 @@ static const struct riscv_tune_param sifive_p600_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for T-HEAD c906.  */
@@ -601,6 +607,7 @@ static const struct riscv_tune_param thead_c906_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  false,					/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for xiangshan nanhu.  */
@@ -625,6 +632,7 @@ static const struct riscv_tune_param xiangshan_nanhu_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for a generic ooo profile.  */
@@ -649,6 +657,7 @@ static const struct riscv_tune_param generic_ooo_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for Tenstorrent Ascalon 8 wide.  */
@@ -673,6 +682,7 @@ static const struct riscv_tune_param tt_ascalon_d8_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for size.  */
@@ -697,6 +707,7 @@ static const struct riscv_tune_param optimize_size_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  false,					/* prefer-agnostic.  */
 };
 
 /* Costs to use when optimizing for MIPS P8700 */
@@ -720,7 +731,8 @@ static const struct riscv_tune_param mips_p8700_tune_info = {
   NULL,         /* vector cost */
   NULL,         /* function_align */
   NULL,         /* jump_align */
-  NULL,         /* loop_align */
+  NULL,		/* loop_align.  */
+  true,		/* prefer-agnostic.  */
 };
 
 static bool riscv_avoid_shrink_wrapping_separate ();
@@ -12840,6 +12852,15 @@ bool
 strided_load_broadcast_p ()
 {
   return tune_param->use_zero_stride_load;
+}
+
+/* Return TRUE if we should use the tail agnostic and mask agnostic policies for
+   vector code, false otherwise.  */
+
+bool
+riscv_prefer_agnostic_p ()
+{
+  return tune_param->prefer_agnostic;
 }
 
 /* Return TRUE if we should use the divmod expander, FALSE otherwise.  This

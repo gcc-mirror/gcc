@@ -2140,10 +2140,8 @@ get_ma (rtx ma)
 enum tail_policy
 get_prefer_tail_policy ()
 {
-  /* TODO: By default, we choose to use TAIL_ANY which allows
-     compiler pick up either agnostic or undisturbed. Maybe we
-     will have a compile option like -mprefer=agnostic to set
-     this value???.  */
+  if (riscv_prefer_agnostic_p ())
+    return TAIL_AGNOSTIC;
   return TAIL_ANY;
 }
 
@@ -2151,10 +2149,8 @@ get_prefer_tail_policy ()
 enum mask_policy
 get_prefer_mask_policy ()
 {
-  /* TODO: By default, we choose to use MASK_ANY which allows
-     compiler pick up either agnostic or undisturbed. Maybe we
-     will have a compile option like -mprefer=agnostic to set
-     this value???.  */
+  if (riscv_prefer_agnostic_p ())
+    return MASK_AGNOSTIC;
   return MASK_ANY;
 }
 
