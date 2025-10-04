@@ -2521,11 +2521,13 @@ package body Sem_Ch7 is
            and then Scope (Full_View (Id)) = Scope (Id)
            and then Ekind (Full_View (Id)) /= E_Incomplete_Type
          then
+            Full := Full_View (Id);
+
             --  If there is a use-type clause on the private type, set the full
             --  view accordingly.
 
-            Set_In_Use (Full_View (Id), In_Use (Id));
-            Full := Full_View (Id);
+            Set_In_Use (Full, In_Use (Id));
+            Set_Current_Use_Clause (Full, Current_Use_Clause (Id));
 
             if Is_Private_Base_Type (Full)
               and then Has_Private_Declaration (Full)
@@ -2893,7 +2895,12 @@ package body Sem_Ch7 is
       --  When compiling a child unit this needs to be done recursively.
 
       function Type_In_Use (T : Entity_Id) return Boolean;
-      --  Check whether type or base type appear in an active use_type clause
+      --  Check whether type T is declared in P and appears in an active
+      --  use_type clause.
+
+      function Type_Of_Primitive_In_Use_All (Id : Entity_Id) return Boolean;
+      --  Check whether the profile of primitive subprogram Id mentions a type
+      --  declared in P that appears in an active use-all-type clause.
 
       ------------------------------
       -- Preserve_Full_Attributes --
@@ -3058,10 +3065,85 @@ package body Sem_Ch7 is
       -----------------
 
       function Type_In_Use (T : Entity_Id) return Boolean is
+         BT : constant Entity_Id := Base_Type (T);
       begin
-         return Scope (Base_Type (T)) = P
-           and then (In_Use (T) or else In_Use (Base_Type (T)));
+         return Scope (BT) = P and then (In_Use (T) or else In_Use (BT));
       end Type_In_Use;
+
+      ----------------------------------
+      -- Type_Of_Primitive_In_Use_All --
+      ----------------------------------
+
+      function Type_Of_Primitive_In_Use_All (Id : Entity_Id) return Boolean is
+         function Type_In_Use_All (T : Entity_Id) return Boolean;
+         --  Check whether type T is declared in P and appears in an active
+         --  use-all-type clause.
+
+         ---------------------
+         -- Type_In_Use_All --
+         ---------------------
+
+         function Type_In_Use_All (T : Entity_Id) return Boolean is
+         begin
+            return Type_In_Use (T)
+              and then Nkind (Current_Use_Clause (T)) = N_Use_Type_Clause
+              and then All_Present (Current_Use_Clause (T));
+         end Type_In_Use_All;
+
+         --  Local variables
+
+         F : Node_Id;
+
+      --  Start of processing for Type_Of_Primitive_In_Use_All
+
+      begin
+         --  The use-all-type clauses were introduced in Ada 2005
+
+         if Ada_Version <= Ada_95 then
+            return False;
+         end if;
+
+         --  For enumeration literals, check type
+
+         if Ekind (Id) = E_Enumeration_Literal then
+            return Type_In_Use_All (Etype (Id));
+         end if;
+
+         --  For functions, check return type
+
+         if Ekind (Id) = E_Function then
+            declare
+               Typ : constant Entity_Id :=
+                       (if Ekind (Etype (Id)) = E_Anonymous_Access_Type
+                        then Designated_Type (Etype (Id))
+                        else Etype (Id));
+            begin
+               if Type_In_Use_All (Typ) then
+                  return True;
+               end if;
+            end;
+         end if;
+
+         --  For all subprograms, check formals
+
+         F := First_Formal (Id);
+         while Present (F) loop
+            declare
+               Typ : constant Entity_Id :=
+                       (if Ekind (Etype (F)) = E_Anonymous_Access_Type
+                        then Designated_Type (Etype (F))
+                        else Etype (F));
+            begin
+               if Type_In_Use_All (Typ) then
+                  return True;
+               end if;
+            end;
+
+            Next_Formal (F);
+         end loop;
+
+         return False;
+      end Type_Of_Primitive_In_Use_All;
 
    --  Start of processing for Uninstall_Declarations
 
@@ -3120,13 +3202,13 @@ package body Sem_Ch7 is
             elsif No (Etype (Id)) and then Serious_Errors_Detected /= 0 then
                null;
 
-            --  We need to avoid incorrectly marking enumeration literals as
-            --  non-visible when a visible use-all-type clause is in effect.
+            --  RM 8.4(8.1/3): Each primitive subprogram of T, including each
+            --  enumeration literal (if any), is potentially use-visible if T
+            --  is named in an active use-all-type clause.
 
-            elsif Type_In_Use (Etype (Id))
-              and then Nkind (Current_Use_Clause (Etype (Id))) =
-                         N_Use_Type_Clause
-              and then All_Present (Current_Use_Clause (Etype (Id)))
+            elsif (Ekind (Id) = E_Enumeration_Literal
+                    or else (Is_Subprogram (Id) and then Is_Primitive (Id)))
+              and then Type_Of_Primitive_In_Use_All (Id)
             then
                null;
 
