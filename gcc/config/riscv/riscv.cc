@@ -9039,8 +9039,7 @@ riscv_allocate_and_probe_stack_space (rtx temp1, HOST_WIDE_INT size)
 	 from the top of the frame, as it might be lowered before.
 	 To consider the correct SP addresses for the CFA notes, it is needed
 	 to correct them with the initial offset value.  */
-      HOST_WIDE_INT initial_cfa_offset
-	= cfun->machine->frame.total_size.to_constant () - size;
+      poly_int64 initial_cfa_offset = cfun->machine->frame.total_size - size;
 
       if (!frame_pointer_needed)
 	{
