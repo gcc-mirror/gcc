@@ -1,3 +1,10 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2025-07-31  Yury Khrustalev  <yury.khrustalev@arm.com>
 
 	* config/linux/aarch64/host-config.h (__ifunc_arg_t):

@@ -1,3 +1,11 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* libformat_parser/Makefile.in: Regenerate.
+	* libproc_macro_internal/Makefile.in: Regenerate.
+
 2025-08-05  Marc Poulhiès  <dkm@kataplop.net>
 
 	* libproc_macro_internal/ffistring.h (FFIString__new): Likewise.

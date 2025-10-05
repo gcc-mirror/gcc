@@ -1,3 +1,26 @@
+2025-10-05  Franck Behaghel  <franckbehaghel_gcc@protonmail.com>
+
+	PR ada/110314
+	* sem_ch4.adb (Analyze_Allocator): Add call to New_Copy_Tree.
+
+2025-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/112446
+	* usage.adb (Usage): Add 'z' to the list of 'g' style.
+
+2025-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118343
+	* Makefile.rtl (LLVM_BUILD): Delete.
+
+2025-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/64869
+	* sem_ch7.adb (Install_Private_Declarations): Also propagate the
+	Current_Use_Clause from partial to full view.
+	(Uninstall_Declarations): Extend implementation of RM 8.4(8.1/3)
+	subclause to all primitive subprograms.
+
 2025-09-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/117517

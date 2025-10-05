@@ -1,3 +1,17 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* asan/Makefile.in: Regenerate.
+	* configure: Regenerate.
+	* hwasan/Makefile.in: Regenerate.
+	* interception/Makefile.in: Regenerate.
+	* libbacktrace/Makefile.in: Regenerate.
+	* lsan/Makefile.in: Regenerate.
+	* sanitizer_common/Makefile.in: Regenerate.
+	* tsan/Makefile.in: Regenerate.
+	* ubsan/Makefile.in: Regenerate.
+
 2025-05-02  Florian Weimer  <fweimer@redhat.com>
 	    Tom Stellard  <tstellar@redhat.com>
 

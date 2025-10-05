@@ -1,3 +1,9 @@
+2025-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2025-09-28  Ian Lance Taylor  <iant@golang.org>
 
 	* filetype.awk: Recognize PE bigobj objects at configure time.

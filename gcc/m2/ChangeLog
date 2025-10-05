@@ -1,3 +1,20 @@
+2025-10-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122009
+	* gm2-compiler/M2GCCDeclare.mod (PrintKnown): Remove.
+	* gm2-gcc/m2type.cc (m2type_BuildEnumerator): Add const modifier.
+	* gm2-gcc/m2type.def (BuildEnumerator): Use ConstCharStar type.
+	* gm2-gcc/m2type.h (m2type_BuildEnumerator): Add const modifier.
+	* gm2-libs/M2WIDESET.mod (ShiftLeftByteBit): Rename variable to
+	as toIdx.
+	Rename variable from as fromIdx.
+	(ShiftRightByteBit): Rename variable to as toIdx.
+	Rename variable from as fromIdx.
+	(RotateLeft): Rename variable to as toIdx.
+	Rename variable from as fromIdx.
+	(ArithShiftLeftBit): Rename set to setb.
+	(ArithShiftRightBit): Rename set to setb.
+
 2025-10-01  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122009

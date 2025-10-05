@@ -1,3 +1,9 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2025-04-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* math/expq.c (C): Fix up THREEp96 constant.

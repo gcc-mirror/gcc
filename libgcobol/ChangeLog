@@ -1,3 +1,9 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2025-09-05  Robert Dubner  <rdubner@symas.com>
 
 	* common-defs.h (enum cbl_field_attr_t): Define register_e.

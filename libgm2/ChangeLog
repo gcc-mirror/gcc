@@ -1,3 +1,14 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* libm2cor/Makefile.in: Regenerate.
+	* libm2iso/Makefile.in: Regenerate.
+	* libm2log/Makefile.in: Regenerate.
+	* libm2min/Makefile.in: Regenerate.
+	* libm2pim/Makefile.in: Regenerate.
+
 2025-09-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* libm2pim/Makefile.am (M2MODS): Add M2Diagnostic.mod.

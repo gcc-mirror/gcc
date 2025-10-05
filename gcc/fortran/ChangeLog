@@ -1,3 +1,16 @@
+2025-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107968
+	* trans-io.cc (gfc_trans_transfer): Also scalarize I/O of section
+	of an array pointer.
+
+2025-10-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* decl.cc (gfc_get_pdt_instance): If gfc_extract_int is true an
+	error has occurred because the kind expr was not provided. Use
+	the template in this case and return MATCH_YES.
+
 2025-10-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/122080

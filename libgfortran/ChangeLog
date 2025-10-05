@@ -1,3 +1,9 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2025-09-02  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/87669

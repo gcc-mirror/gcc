@@ -1,3 +1,19 @@
+2025-10-02  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-decl.cc (maybe_mark_function_versioned): Add diagnostic.
+	* c-parser.cc (c_finish_omp_declare_simd): Add diagnostic.
+
+2025-10-02  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-decl.cc (maybe_mark_function_versioned): New function.
+	(merge_decls): Preserve DECL_FUNCTION_VERSIONED in merging.
+	(duplicate_decls): Add check and diagnostic for unmergable version decls.
+	(pushdecl): Add FMV target_version logic.
+	(lookup_name): Don't resolve non-default versions.
+	(start_decl): Mark and mangle versioned functions.
+	(start_function): Mark and mangle versioned functions.
+	(c_parse_final_cleanups): Add call to process_same_body_aliases.
+
 2025-10-01  Jan Hubicka  <hubicka@ucw.cz>
 
 	* Make-lang.in: Add c_FDAS

@@ -1,3 +1,125 @@
+2025-10-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122053
+	* name-lookup.cc (pushtag): Load any imported definition of type
+	before calling pushdecl.
+
+2025-10-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* name-lookup.cc (check_module_override): Remove check for
+	TREE_PUBLIC when checking mergeable entities.
+
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114457
+	* cp-tree.h: Implement C++26 P2795R5 - Erroneous behavior for
+	uninitialized reads.
+	(IF_STMT_VACUOUS_INIT_P): Define.
+	(check_goto): Change argument type from tree to tree *.
+	* call.cc (build_over_call): Add indeterminate attribute to
+	TARGET_EXPR slots for indeterminate parameters.
+	* constexpr.cc (cxx_eval_internal_function): Handle IFN_DEFERRED_INIT.
+	(cxx_eval_store_expression): Temporarily work around PR121965 bug.
+	* cp-gimplify.cc (genericize_if_stmt): Handle IF_STMT_VACUOUS_INIT_P.
+	(maybe_emit_clobber_object_begin): New function.
+	(cp_gimplify_expr): Call it for DECL_EXPRs and TARGET_EXPRs with
+	void type non-NULL TARGET_EXPR_INITIAL.
+	* decl.cc (struct named_label_fwd_direct_goto,
+	struct named_label_bck_direct_goto): New types.
+	(struct named_label_use_entry): Add direct_goto member.  Formatting
+	fix.
+	(struct named_label_entry): Add direct_goto member.  Turn bool members
+	into bool : 1.  Add has_bad_decls bitfield.
+	(adjust_backward_gotos): New function.
+	(pop_labels): For flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	call adjust_backward_gotos if needed.
+	(poplevel_named_label_1): For decl_jump_unsafe also set
+	ent->has_bad_decls, and for decl_instrument_init_bypass_p decls
+	push them into ent->bad_decls vector too.
+	(duplicate_decls): Complain if indeterminate attribute on function
+	parameter isn't present on the first function declaration.
+	(decl_instrument_init_bypass_p): New function.
+	(build_deferred_init_call): Likewise.
+	(maybe_add_deferred_init_calls): Likewise.
+	(adjust_backward_goto): Likewise.
+	(check_previous_goto_1): Add direct_goto and case_label arguments.
+	For decl_instrument_init_bypass_p decls seen if
+	direct_goto || case_label move case label if needed, call
+	maybe_add_deferred_init_calls and adjust GOTO_EXPR operands remembered
+	in direct_goto.  Change return type from bool to int, return 0 on
+	error, 1 for success with no need to adjust vacuous inits and 2 for
+	success with need to adjust those.
+	(check_previous_goto): Adjust check_previous_goto_1 call, vec_free
+	direct_goto vector.
+	(check_switch_goto): Add case_label argument, adjust
+	check_previous_goto_1 call.  Change return type from bool to int.
+	(check_goto_1): Remove computed argument, add declp argument.  Don't
+	reuse previous ent->uses if
+	ent->binding_level != current_binding_level.  Push declp into
+	direct_goto vectors if needed.
+	(check_goto): Remove decl argument, add declp argument.  Adjust
+	check_goto_1 calls.
+	(finish_case_label): Call check_switch_goto up to twice, first time
+	to detect errors and find out if second call will be needed, and
+	after c_add_case_label second time if needed.  In the first case
+	pass NULL_TREE as new argument to it, in the second case r.
+	(start_preparsed_function): Don't emit CLOBBER_OBJECT_BEGIN here
+	for -flifetime-dse=2, instead add "clobber *this" attribute to
+	current_class_ptr.
+	* parser.cc (cp_parser_asm_label_list): Call check_goto only
+	after the TREE_LIST is created and pass address of its TREE_VALUE to
+	it instead of the label.
+	* semantics.cc (finish_goto_stmt): Call check_goto only after
+	build_stmt has been called and pass it address of its first operand
+	rather than destination.
+	* tree.cc (handle_indeterminate_attribute): New function.
+	(cxx_gnu_attributes): Add entry for indeterminate attribute.
+
+2025-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122127
+	PR c++/112632
+	* pt.cc (convert_template_argument): Don't add redundant
+	IMPLICIT_CONV_EXPR.
+
+2025-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* cp-tree.h (TU_LOCAL_ENTITY_NAME): Clarify meaning.
+	* module.cc (depset::entity_kind): New enumerator, assert that
+	we have enough bits reserved.
+	(depset::disc_bits): Assert the discriminator has enough bits.
+	(depset::entity_kind_name): Add 'tu-local' case, assert we
+	have an entry for all relevant entry_kinds.
+	(name_for_tu_local_decl): New function.
+	(trees_out::tree_node): Use it.
+	(depset::hash::make_dependency): Validate EK_TU_LOCAL.
+	(depset::hash::add_binding_entity): Generate bindings for
+	internal purview functions.
+	(enum ct_bind_flags): New enum for TU-local decls.
+	(depset::hash::find_dependencies): Handle EK_TU_LOCAL entities.
+	(binding_cmp): Likewise.
+	(sort_cluster): Likewise.
+	(module_state::write_cluster): Likewise.
+	(module_state::read_cluster): Likewise.
+	* name-lookup.cc (append_imported_binding_slot): Propagate
+	internal decl list when growing binding vector.
+	(name_lookup::adl_namespace_fns): Diagnose if naming a TU-local
+	entity from a different TU.
+	(set_module_binding): Include any internal decls in binding.
+	* name-lookup.h (struct module_tree_map_traits): New type.
+	(struct tree_binding_vec): Add member 'internal_decls'.
+	(BINDING_VECTOR_INTERNAL_DECLS): New getter.
+	(MODULE_BINDING_INTERNAL_DECLS_P): New flag.
+	(set_module_binding): Add parameter.
+
+2025-10-03  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/122112
+	* parser.cc (cp_parser_parameter_declaration_clause): Don't
+	enable auto_is_implicit_function_template_parm_p when entering
+	class scope.
+
 2025-10-01  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* constexpr.cc (cxx_eval_constant_expression): Use revised

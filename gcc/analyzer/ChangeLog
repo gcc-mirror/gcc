@@ -1,3 +1,24 @@
+2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert:
+	2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc: Reimplement throughout to use
+	json::property instances found within custom_sarif_properties
+	throughout, rather than types in diagnostics::state_graphs.
+	* ana-state-to-diagnostic-state.h: Likewise.
+	* checker-event.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+
+2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* ana-state-to-diagnostic-state.cc: Reimplement throughout to use
+	json::property instances found within custom_sarif_properties
+	throughout, rather than types in diagnostics::state_graphs.
+	* ana-state-to-diagnostic-state.h: Likewise.
+	* checker-event.cc: Likewise.
+	* sm-malloc.cc: Likewise.
+
 2025-09-15  Alexandre Oliva  <oliva@adacore.com>
 
 	* kf.cc (register_known_functions): Add __get_errno_ptr.

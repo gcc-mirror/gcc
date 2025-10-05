@@ -1,3 +1,19 @@
+2025-10-05  Mark Wielaard  <mark@klomp.org>
+
+	* gcc-changelog/git_update_version.py (ignored_commits): Add
+	commit b40ef6e9dc096c8c19399e94947a1965258a6942.
+
+2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert:
+	2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.doxy (INPUT): Add gcc/custom-sarif-properties
+
+2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.doxy (INPUT): Add gcc/custom-sarif-properties
+
 2025-09-23  Jonathan Wakely  <jwakely@redhat.com>
 
 	* unicode/gen_libstdcxx_unicode_data.py: Fix comment type.

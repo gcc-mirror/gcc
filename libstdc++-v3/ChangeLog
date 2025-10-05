@@ -1,3 +1,31 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* doc/Makefile.in: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* libsupc++/Makefile.in: Regenerate.
+	* po/Makefile.in: Regenerate.
+	* python/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* src/c++11/Makefile.in: Regenerate.
+	* src/c++17/Makefile.in: Regenerate.
+	* src/c++20/Makefile.in: Regenerate.
+	* src/c++23/Makefile.in: Regenerate.
+	* src/c++26/Makefile.in: Regenerate.
+	* src/c++98/Makefile.in: Regenerate.
+	* src/experimental/Makefile.in: Regenerate.
+	* src/filesystem/Makefile.in: Regenerate.
+	* src/libbacktrace/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
+2025-10-03  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/manual/index.html: Regenerated.
+	* doc/html/manual/status.html: Regenerated.
+	* doc/xml/manual/status_cxx2020.xml: Added status table.
+
 2025-10-01  François Dumont  <frs.dumont@gmail.com>
 
 	* include/std/vector (std::erase_if, std::erase): Replace _GLIBCXX20_CONSTEXPR

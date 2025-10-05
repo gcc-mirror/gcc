@@ -1,3 +1,11 @@
+2025-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in: Regenerated.
+	* configure: Likewise.
+	* Makefile.tpl: Synced from binutils-gdb.
+	* configure.ac: Likewise.
+	* libtool.m4: Likewise.
+
 2025-10-01  Richard Earnshaw  <rearnsha@arm.com>
 
 	* .editorconfig: Unify the GCC and GDB/binutils root config.

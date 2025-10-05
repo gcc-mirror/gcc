@@ -1,3 +1,521 @@
+2025-10-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*widen_waddu_wx_<mode>): Add new
+	pattern to match vwaddu.wx.
+
+2025-10-05  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Refactor the form 1 of SAT_MUL by keyword for.
+
+2025-10-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122143
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Restrict setting
+	TODO_update_address_taken only when the statement was a call before fold_stmt.
+
+2025-10-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122153
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1): Handle
+	stores of empty constructors too.
+
+2025-10-04  Matteo Nicoli  <matteo.nicoli001@gmail.com>
+
+	PR tree-optimization/117760
+	* match.pd: Add simplifications that exploit implied values after
+	logical tests.
+
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122104
+	* tree-ssa-math-opts.cc (maybe_optimize_guarding_check): Call
+	reset_flow_sensitive_info_in_bb on bb when optimizing out the
+	guarding condition.
+
+2025-10-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/122114
+	* config/riscv/riscv.cc
+	(riscv_allocate_and_probe_stack_space): Change initial_cfa_offset
+	type.
+
+2025-10-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122147
+	* config/riscv/predicates.md (move_operand): Only allow a REG as the
+	operand of a SUBREG.
+
+2025-10-04  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR target/118945
+	* config/riscv/riscv.cc (riscv_prefer_agnostic_p): New function.
+	(riscv_tune_param): Add prefer_agnostic member.
+	(various tune info structures): Initialize prefer_agnostic.
+	* config/riscv/riscv-protos.h (riscv_prefer_agnostic_p): Add
+	prototype.
+	* config/riscv/riscv-v.cc (get_prefer_tail_policy,
+	get_prefer_mask_policy): Use riscv_prefer_agnostic_p.
+	* config/riscv/riscv-vsetvl.cc (vsetvl_info::get_demand_flags):
+	demand policy for agnostic when prefer_agnostic is true.
+
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114457
+	* flag-types.h (enum auto_init_type): Add AUTO_INIT_CXX26.
+	* tree.h (VACUOUS_INIT_LABEL_P): Define.
+	* gimplify.cc (is_var_need_auto_init): Renamed to ...
+	(var_needs_auto_init_p): ... this.  Don't return true for
+	vars with "indeterminate" attribute.  Formatting fixes.
+	(gimplify_decl_expr): Use var_needs_auto_init_p instead of
+	is_var_need_auto_init.
+	(emit_warn_switch_unreachable): Remove the flag_auto_var_init
+	special cases.
+	(warn_switch_unreachable_and_auto_init_r): Handle them here
+	by doing just returning NULL.
+	(last_stmt_in_scope): Don't skip just debug stmts to find
+	the last stmt in seq, skip for
+	flag_auto_var_init > AUTO_INIT_UNINITIALIZED also IFN_DEFERRED_INIT
+	calls.
+	(collect_fallthrough_labels): For
+	flag_auto_var_init > AUTO_INIT_UNINITIALIZED ignore
+	IFN_DEFERRED_INIT calls and GIMPLE_GOTOs to
+	VACUOUS_INIT_LABEL_P.
+	(should_warn_for_implicit_fallthrough): For
+	flag_auto_var_init > AUTO_INIT_UNINITIALIZED also skip over
+	IFN_DEFERRED_INIT calls.
+	(expand_FALLTHROUGH_r): Likewise, and handle GIMPLE_GOTOs
+	to VACUOUS_INIT_LABEL_P.
+	(gimplify_init_constructor): Use var_needs_auto_init_p instead
+	of is_var_need_auto_init and for flag_auto_var_init
+	AUTO_INIT_CXX26 don't call gimple_add_padding_init_for_auto_var.
+	(gimplify_target_expr): If var_needs_auto_init_p and init has
+	void type, call gimple_add_init_for_auto_var and for
+	AUTO_INIT_PATTERN also gimple_add_padding_init_for_auto_var.
+	* tree-ssa-uninit.cc (maybe_warn_operand): Handle loads from *this
+	at the start of the function with "clobber *this" attribute on the
+	PARM_DECL.
+	* ipa-split.cc (split_function): Remove "clobber *this" attribute
+	from the first PARM_DECL (if any).
+	* doc/invoke.texi (ftrivial-auto-var-init=): Adjust documentation.
+
+2025-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* doc/invoke.texi: Document '-Wno-external-tu-local'.
+
+2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert:
+	2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add
+	custom-sarif-properties/digraphs.o and
+	custom-sarif-properties/state-graphs.o.  Remove
+	diagnostics/state-graphs.o.
+	* configure: Regenerate.
+	* configure.ac: Add custom-sarif-properties to subdir iteration.
+	* custom-sarif-properties/digraphs.cc: New file.
+	* custom-sarif-properties/digraphs.h: New file.
+	* custom-sarif-properties/state-graphs.cc: New file.
+	* custom-sarif-properties/state-graphs.h: New file.
+	* diagnostics/diagnostics-selftests.cc
+	(run_diagnostics_selftests): Drop call of state_graphs_cc_tests.
+	* diagnostics/diagnostics-selftests.h (state_graphs_cc_tests):
+	Delete decl.
+	* diagnostics/digraphs.cc: Include
+	"custom-sarif-properties/digraphs.h".  Move include of
+	"selftest.h" to within CHECKING_P section.
+	(using digraph_object): New.
+	(namespace properties): New.
+	(diagnostics::digraphs::object::get_attr): Delete.
+	(diagnostics::digraphs::object::set_attr): Delete.
+	(diagnostics::digraphs::object::set_json_attr): Delete.
+	(digraph_object::get_property): New definitions, for various
+	property types.
+	(digraph_object::set_property): Likewise.
+	(digraph_object::maybe_get_property): New.
+	(digraph_object::get_property_as_tristate): New.
+	(digraph_object::ensure_property_bag): New.
+	(digraph::get_graph_kind): New.
+	(digraph::set_graph_kind): New.
+	Add include of "custom-sarif-properties/state-graphs.h".
+	(selftest::test_simple_graph): Rewrite to use json::property
+	instances rather than string attribute names.
+	(selftest::test_property_objects): New test.
+	(selftest::digraphs_cc_tests): Call it.
+	* diagnostics/digraphs.h: Include "tristate.h".
+	(object::get_attr): Delete.
+	(object::set_attr): Delete.
+	(object::get_property): New decls.
+	(object::set_property): New decls.
+	(object::maybe_get_property): New.
+	(object::get_property_as_tristate): New.
+	(object::set_json_attr): Delete.
+	(object::ensure_property_bag): New.
+	(graph::get_graph_kind): New.
+	(graph::set_graph_kind): New.
+	* diagnostics/html-sink.cc
+	(html_generation_options::html_generation_options): Update for
+	field renamings.
+	(html_generation_options::dump): Likewise.
+	(html_builder::maybe_make_state_diagram): Likewise.
+	(html_builder::add_graph): Show SARIF and .dot src inline, if
+	requested.
+	* diagnostics/html-sink.h
+	(html_generation_options::m_show_state_diagrams_sarif): Rename
+	to...
+	(html_generation_options::m_show_graph_sarif): ...this.
+	(html_generation_options::m_show_state_diagrams_dot_src): Rename
+	to...
+	(html_generation_options::m_show_graph_dot_src0): ...this.
+	* diagnostics/output-spec.cc
+	(html_scheme_handler::maybe_handle_kv): Rename keys.
+	(html_scheme_handler::get_keys): Likewise.
+	* diagnostics/state-graphs-to-dot.cc: : Reimplement throughout to
+	use json::property instances found within custom_sarif_properties
+	throughout, rather than types in diagnostics::state_graphs.
+	* diagnostics/state-graphs.cc: Deleted file.
+	* diagnostics/state-graphs.h: Delete almost all, except decl of
+	diagnostics::state_graphs::make_dot_graph.
+	* doc/invoke.texi: Update for changes to "experimental-html" sink
+	keys.
+	* json.cc (json::object::set_string): New.
+	(json::object::set_integer): New.
+	(json::object::set_bool): New.
+	(json::object::set_array_of_string): New.
+	* json.h: Include "label-text.h".
+	(struct json::property): New template.
+	(json::string_property): New.
+	(json::integer_property): New.
+	(json::bool_property): New.
+	(json::json_property): New.
+	(using json::array_of_string_property): New.
+	(struct json::enum_traits): New.
+	(enum_json::property): New.
+	(json::value::dyn_cast_array): New vfunc.
+	(json::value::dyn_cast_integer_number): New vfunc.
+	(json::value::set_string): New.
+	(json::value::set_integer): New.
+	(json::value::set_bool): New.
+	(json::value::set_array_of_string): New.
+	(json::value::maybe_get_enum): New.
+	(json::value::set_enum): New.
+	(json::array::dyn_cast_array): New.
+	(json::integer_number::dyn_cast_integer_number): New.
+	(object::maybe_get_enum): New.
+	(object::set_enum): New.
+
+2025-10-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/121937
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): Make
+	sure we've got a scalar_int_mode before calling neg_poly_int_rtx.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* passes.def: Remove both pass_fold_builtin.
+	Swap out pass_copy_prop for pass_forwprop with
+	full_walk = false and last=true.
+	* tree-pass.h (make_pass_fold_builtins): Remove.
+	* tree-ssa-ccp.cc (class pass_fold_builtins): Delete.
+	(pass_fold_builtins::execute): Delete.
+	(make_pass_fold_builtins): Remove.
+	* doc/passes.texi (Folding built-in functions): Remove.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* gimple-isel.cc (gimple_nop_atomic_bit_test_and_p): New decl.
+	(gimple_nop_convert): Likewise.
+	(convert_atomic_bit_not): Moved from tree-ssa-ccp.cc.
+	(optimize_atomic_bit_test_and): Likewise.
+	(optimize_atomic_op_fetch_cmp_0): Likewise.
+	(gimple_isel_builtin_call): New function.
+	(CASE_ATOMIC): Moved from tree-ssa-ccp.cc.
+	(CASE_ATOMIC_CMP0): Likewise.
+	(CASE_ATOMIC_BIT_TEST_AND): Likewise.
+	(pass_gimple_isel::execute): For calls just call gimple_isel_builtin_call.
+	* tree-ssa-ccp.cc (convert_atomic_bit_not): Move to gimple-isel.cc.
+	(gimple_nop_atomic_bit_test_and_p): Likewise.
+	(gimple_nop_convert): Likewise.
+	(optimize_atomic_bit_test_and): Likewise.
+	(optimize_atomic_op_fetch_cmp_0): Likewise.
+	(pass_fold_builtins::execute): Just call fold_stmt for internal
+	or normal bultin calls.
+	(CASE_ATOMIC): Move to gimple-isel.cc.
+	(CASE_ATOMIC_CMP0): Likewise.
+	(CASE_ATOMIC_BIT_TEST_AND): Likewise.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-ccp.cc (CASE_ATOMIC): New defined.
+	(CASE_ATOMIC_CMP0): New define.
+	(CASE_ATOMIC_BIT_TEST_AND): New defined.
+	(pass_fold_builtins::execute): Use CASE_ATOMIC, CASE_ATOMIC_CMP0,
+	and CASE_ATOMIC_BIT_TEST_AND.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* gimple-fold.cc (gimple_fold_builtin_stdarg): New function,
+	moved from tree-ssa-ccp.cc (optimize_stdarg_builtin).
+	(gimple_fold_builtin): Call gimple_fold_builtin_stdarg for
+	va_start, va_copy and va_end.
+	* tree-ssa-ccp.cc (optimize_stdarg_builtin): Remove.
+	(pass_fold_builtins::execute): Remove handling of
+	va_start, va_copy and va_end.
+	* tree-ssa-forwprop.cc (pass_forwprop::execute): Update
+	todos if fold_stmt return true if last forwprop to include
+	TODO_update_address_taken.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* tree-ssa-ccp.cc (optimize_unreachable): Move to tree-ssa-forwprop.cc
+	(pass_fold_builtins::execute): Remove handling of __builtin_unreachable.
+	* tree-ssa-forwprop.cc (optimize_unreachable): New function from
+	tree-ssa-ccp.cc. Change argument to bb. Remove check on first statement
+	being the __builtin_unreachable since it is handled already.
+	(pass_forwprop::execute): Handle first statement as being __builtin_unreachable
+	by calling optimize_unreachable.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* tree-ssa-ccp.cc (optimize_stack_restore): Move to tree-ssa-forwprop.cc.
+	(pass_fold_builtins::execute): Don't call optimize_stack_restore.
+	* tree-ssa-forwprop.cc (optimize_stack_restore): New function from
+	tree-ssa-ccp.cc. Return bool instead of value, use replace_call_with_value
+	istead of returning integer_zero_node.
+	(simplify_builtin_call): Call optimize_stack_restore.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122033
+	* tree-ssa-ccp.cc (optimize_stack_restore): Rewrite the call check.
+	Update comment in the front to new rules on calls.
+	* tree.h (fndecl_builtin_alloc_p): New function.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* gimple-fold.cc (gimple_fold_call): Remove ASSUME internal function
+	calls when PROP_last_full_fold is set.
+	* tree-ssa-ccp.cc (pass_fold_builtins::execute): Handling folding
+	of all internal functions.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-ccp.cc (optimize_stdarg_builtin): Mannually create the
+	gimple statements instead of depending on the gimplifier.
+	(pass_fold_builtins::execute): Handle updated call to optimize_stdarg_builtin.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-ccp.cc (optimize_memcmp_eq): Remove.
+	(pass_fold_builtins::execute): Remove handling of memcmp.
+	* tree-ssa-forwprop.cc (simplify_builtin_memcmp): Add folding
+	of memcmp to memcmp_eq for PROP_last_full_fold.
+
+2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add
+	custom-sarif-properties/digraphs.o and
+	custom-sarif-properties/state-graphs.o.  Remove
+	diagnostics/state-graphs.o.
+	* configure: Regenerate.
+	* configure.ac: Add custom-sarif-properties to subdir iteration.
+	* custom-sarif-properties/digraphs.cc: New file.
+	* custom-sarif-properties/digraphs.h: New file.
+	* custom-sarif-properties/state-graphs.cc: New file.
+	* custom-sarif-properties/state-graphs.h: New file.
+	* diagnostics/diagnostics-selftests.cc
+	(run_diagnostics_selftests): Drop call of state_graphs_cc_tests.
+	* diagnostics/diagnostics-selftests.h (state_graphs_cc_tests):
+	Delete decl.
+	* diagnostics/digraphs.cc: Include
+	"custom-sarif-properties/digraphs.h".  Move include of
+	"selftest.h" to within CHECKING_P section.
+	(using digraph_object): New.
+	(namespace properties): New.
+	(diagnostics::digraphs::object::get_attr): Delete.
+	(diagnostics::digraphs::object::set_attr): Delete.
+	(diagnostics::digraphs::object::set_json_attr): Delete.
+	(digraph_object::get_property): New definitions, for various
+	property types.
+	(digraph_object::set_property): Likewise.
+	(digraph_object::maybe_get_property): New.
+	(digraph_object::get_property_as_tristate): New.
+	(digraph_object::ensure_property_bag): New.
+	(digraph::get_graph_kind): New.
+	(digraph::set_graph_kind): New.
+	Add include of "custom-sarif-properties/state-graphs.h".
+	(selftest::test_simple_graph): Rewrite to use json::property
+	instances rather than string attribute names.
+	(selftest::test_property_objects): New test.
+	(selftest::digraphs_cc_tests): Call it.
+	* diagnostics/digraphs.h: Include "tristate.h".
+	(object::get_attr): Delete.
+	(object::set_attr): Delete.
+	(object::get_property): New decls.
+	(object::set_property): New decls.
+	(object::maybe_get_property): New.
+	(object::get_property_as_tristate): New.
+	(object::set_json_attr): Delete.
+	(object::ensure_property_bag): New.
+	(graph::get_graph_kind): New.
+	(graph::set_graph_kind): New.
+	* diagnostics/html-sink.cc
+	(html_generation_options::html_generation_options): Update for
+	field renamings.
+	(html_generation_options::dump): Likewise.
+	(html_builder::maybe_make_state_diagram): Likewise.
+	(html_builder::add_graph): Show SARIF and .dot src inline, if
+	requested.
+	* diagnostics/html-sink.h
+	(html_generation_options::m_show_state_diagrams_sarif): Rename
+	to...
+	(html_generation_options::m_show_graph_sarif): ...this.
+	(html_generation_options::m_show_state_diagrams_dot_src): Rename
+	to...
+	(html_generation_options::m_show_graph_dot_src0): ...this.
+	* diagnostics/output-spec.cc
+	(html_scheme_handler::maybe_handle_kv): Rename keys.
+	(html_scheme_handler::get_keys): Likewise.
+	* diagnostics/state-graphs-to-dot.cc: : Reimplement throughout to
+	use json::property instances found within custom_sarif_properties
+	throughout, rather than types in diagnostics::state_graphs.
+	* diagnostics/state-graphs.cc: Deleted file.
+	* diagnostics/state-graphs.h: Delete almost all, except decl of
+	diagnostics::state_graphs::make_dot_graph.
+	* doc/invoke.texi: Update for changes to "experimental-html" sink
+	keys.
+	* json.cc (json::object::set_string): New.
+	(json::object::set_integer): New.
+	(json::object::set_bool): New.
+	(json::object::set_array_of_string): New.
+	* json.h: Include "label-text.h".
+	(struct json::property): New template.
+	(json::string_property): New.
+	(json::integer_property): New.
+	(json::bool_property): New.
+	(json::json_property): New.
+	(using json::array_of_string_property): New.
+	(struct json::enum_traits): New.
+	(enum_json::property): New.
+	(json::value::dyn_cast_array): New vfunc.
+	(json::value::dyn_cast_integer_number): New vfunc.
+	(json::value::set_string): New.
+	(json::value::set_integer): New.
+	(json::value::set_bool): New.
+	(json::value::set_array_of_string): New.
+	(json::value::maybe_get_enum): New.
+	(json::value::set_enum): New.
+	(json::array::dyn_cast_array): New.
+	(json::integer_number::dyn_cast_integer_number): New.
+	(object::maybe_get_enum): New.
+	(object::set_enum): New.
+
+2025-10-02  Aurelien Jarno  <aurelien@aurel32.net>
+
+	PR target/121652
+	* config/riscv/riscv.md (round_pattern): special case NaN input
+	instead of saving/restoring fflags.
+
+2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/output-spec.cc: (scheme_handler::parse_bool_value):
+	Convert to...
+	(key_handler::parse_bool_value): ...this.
+	(scheme_handler::parse_enum_value): Convert to...
+	(key_handler::parse_enum_value): ...this.
+	(struct text_scheme_handler::decoded_args): Eliminate, moving
+	fields into class text_scheme_handler.
+	(text_scheme_handler::text_scheme_handler): Initialize the new
+	fields.
+	Add a "dc" param and use it to initialize m_show_color.
+	(struct sarif_scheme_handler::decoded_args): Eliminate, moving
+	fields into class sarif_scheme_handler.
+	(sarif_scheme_handler::sarif_scheme_handler): Initialize the new
+	fields.
+	(struct html_scheme_handler::decoded_args): Eliminate, moving
+	fields into class html_scheme_handler.
+	(html_scheme_handler::html_scheme_handler): Initialize the new
+	fields.
+	(context::report_unknown_key): Get keys from scheme rather than
+	passing them in.  Support client keys.
+	(context::parse_and_make_sink): Pass dc to output_factory ctor.
+	(output_factory::output_factory): Pass dc to text_scheme_handler.
+	(output_factory::get_scheme_handler): Make return non-const.
+	(output_factory::make_sink): Move key-handling here, rather than
+	in individual sinks.
+	(context::handle_kv): New.
+	(text_scheme_handler::make_sink): Eliminate key decoding.
+	(text_scheme_handler::decode_kv): Convert to...
+	(text_scheme_handler::maybe_handle_kv): ...this...
+	(text_scheme_handler::get_keys): ...and this.
+	(sarif_scheme_handler::make_sink): Eliminate key decoding.
+	(sarif_scheme_handler::decode_kv): Convert to...
+	(sarif_scheme_handler::maybe_handle_kv): ...this...
+	(sarif_scheme_handler::get_keys): ...and this.
+	(html_scheme_handler::make_sink): Eliminate key decoding.
+	(html_scheme_handler::decode_kv): Convert to...
+	(html_scheme_handler::maybe_handle_kv): ...this...
+	(html_scheme_handler::get_keys): ...and this.
+	(struct selftest::parser_test): Add "client_keys" arg, and update
+	for new param ordering.
+	(selftest::parser_test::parse_and_make_sink): New.
+	(selftest::test_output_arg_parsing): Move auto-fixes to caller.
+	(class selftest::test_key_handler): New.
+	(selftest::test_client_arg_parsing): New test.
+	(selftest::output_spec_cc_tests): Call it.
+	* diagnostics/output-spec.h (class key_handler): New.
+	(class scheme_handler): Move here from output-spec.cc.
+	(context::report_unknown_key): Simplify params.
+	(context::handle_kv): Update params.
+	(context::context): Add "client_keys" param.
+	(context::m_client_keys): New field.
+	(struct dc_spec_context): Update order of params.  Add
+	"client_keys" param.
+	* libgdiagnostics.cc (spec_context::spec_context): Pass nullptr
+	for client keys.
+	* opts-diagnostic.cc (opt_spec_context::opt_spec_context):
+	Likewise.  Update for new param ordering.
+
+2025-10-02  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Do not allow
+	mask reductions.
+
+2025-10-02  Jan Hubicka  <jh@suse.cz>
+	    H.J. Lu  <hjl.tools@gmail.com>
+
+	* cfghooks.cc (merge_blocks): Fix typo in the previous change.
+
+2025-10-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122051
+	* config/riscv/predicates.md (pmode_reg_or_uimm5_operand): Implement
+	directly rather than using vector_length_operand.
+
+2025-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+
+2025-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122079
+	* tree-ssa-pre.cc (compute_antic_aux): Re-instantiate
+	ANTIC_IN value pruning by the old solution.
+
+2025-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122079
+	* tree-ssa-pre.cc (prune_clobbered_mems): Do not prune
+	values when the maximum expression set is involved.
+
 2025-10-01  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/122106

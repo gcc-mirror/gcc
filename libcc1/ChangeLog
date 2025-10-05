@@ -1,3 +1,14 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+
+2025-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* Makefile.in: Regenerated.
+	* aclocal.m4: Likewise.
+	* configure: Likewise.
+
 2025-07-25  David Malcolm  <dmalcolm@redhat.com>
 
 	* context.cc: Update usage of "diagnostic_info" to explicitly

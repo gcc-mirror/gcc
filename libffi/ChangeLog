@@ -1,3 +1,12 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* include/Makefile.in: Regenerate.
+	* man/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2024-10-24  Yang Yujie  <yangyujie@loongson.cn>
 
 	* src/loongarch64/ffi.c: Avoid defining floats

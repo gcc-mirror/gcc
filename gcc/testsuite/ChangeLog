@@ -1,3 +1,323 @@
+2025-10-05  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vwaddu.wx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen.h: Add test helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_data.h: Add test
+	helper macros and data.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_wx_run.h: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/wx_vwaddu-run-1-u64.c: New test.
+
+2025-10-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122053
+	* g++.dg/modules/pr122053_a.C: New test.
+	* g++.dg/modules/pr122053_b.C: New test.
+
+2025-10-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/namespace-1_c.C: Adjust to expect errors.
+	* g++.dg/modules/namespace-2_b.C: Likewise.
+	* g++.dg/modules/namespace-3_a.C: Removed.
+	* g++.dg/modules/namespace-3_b.C: Removed.
+
+2025-10-05  Franck Behaghel  <franckbehaghel_gcc@protonmail.com>
+
+	* gnat.dg/allocator3.adb: New test.
+
+2025-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113536
+	* gnat.dg/reduce2.adb: New test.
+
+2025-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107968
+	* gfortran.dg/implied_do_io_9.f90: New test.
+
+2025-10-04  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122153
+	* gcc.dg/tree-ssa/pr122153-1.c: New test.
+
+2025-10-04  Matteo Nicoli  <matteo.nicoli001@gmail.com>
+
+	PR tree-optimization/117760
+	* gcc.dg/int-bwise-opt-1.c: New test.
+	* gcc.dg/int-bwise-opt-2.c: New test.
+
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122104
+	* gcc.target/i386/pr122104.c: New test.
+
+2025-10-04  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/122114
+	* gcc.target/riscv/pr122114.c: New test.
+
+2025-10-04  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122147
+	* gcc.target/riscv/pr122147.c: New test.
+
+2025-10-04  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	PR target/118945
+	* gcc.target/riscv/rvv/autovec/pr118945-1.c: New file.
+	* gcc.target/riscv/rvv/autovec/pr118945-2.c: New file.
+
+2025-10-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/use_type1.adb: New test.
+	* gnat.dg/use_type2.adb: Likewise.
+
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp2a/constexpr-new28.C: New test.
+	* g++.dg/cpp2a/constexpr-new29.C: New test.
+
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114457
+	* g++.dg/cpp1y/vla-initlist1.C: Remove dg-skip-if for powerpc.
+	Initialize i to 43 for ctor from initializer_list and expect value
+	43 instead of 42.
+	* g++.dg/cpp26/attr-indeterminate1.C: New test.
+	* g++.dg/cpp26/attr-indeterminate2.C: New test.
+	* g++.dg/cpp26/attr-indeterminate3.C: New test.
+	* g++.dg/cpp26/attr-indeterminate4.C: New test.
+	* g++.dg/cpp26/erroneous1.C: New test.
+	* g++.dg/cpp26/erroneous2.C: New test.
+	* g++.dg/cpp26/erroneous3.C: New test.
+	* g++.dg/cpp26/erroneous4.C: New test.
+	* g++.dg/opt/store-merging-1.C: Add
+	-ftrivial-auto-var-init=uninitialized to dg-options.
+	* g++.dg/uninit-pred-loop-1_b.C: Expect a warning for C++26.
+	* g++.dg/warn/Wuninitialized-13.C: Expect warning on a different
+	line.
+	* c-c++-common/ubsan/vla-1.c: Add
+	-ftrivial-auto-var-init=uninitialized to dg-options.
+	* c-c++-common/uninit-17.c: For c++26 expect warning on a different
+	line.
+	* g++.dg/warn/Warray-bounds-20.C: Expect warning on a different line.
+	* c-c++-common/analyzer/invalid-shift-1.c: Xfail for c++26 until
+	PR122044 is fixed.
+	* g++.dg/analyzer/exception-value-2.C: Skip for c++26 until PR122044
+	is fixed.
+	* c-c++-common/goacc-gomp/nesting-1.c: Skip for c++26 until PR121975
+	is fixed.
+	* c-c++-common/goacc/kernels-decompose-2.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr100400-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-3.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104061-1-4.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104132-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104133-1.c: Likewise.
+	* c-c++-common/goacc/kernels-decompose-pr104774-1.c: Likewise.
+	* c-c++-common/goacc/mdc-1.c: Likewise.
+
+2025-10-04  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122127
+	PR c++/112632
+	* g++.dg/cpp0x/lambda/lambda-template18.C: New test.
+
+2025-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* g++.dg/modules/adl-6_c.C: Adjust diagnostics.
+	* g++.dg/modules/internal-14_c.C: Likewise.
+	* g++.dg/modules/internal-15_a.C: New test.
+	* g++.dg/modules/internal-15_b.C: New test.
+
+2025-10-03  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/122112
+	* g++.dg/parse/auto-struct-param.C: New test.
+
+2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	Revert:
+	2025-10-03  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc
+	(report_diag_with_graphs): Port from set_attr to set_property.
+
+2025-10-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/121937
+	* gcc.target/riscv/pr121937.c: New test.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121762
+	* gcc.dg/tree-ssa/builtin-fprintf-1.c: Update to scan optimized.
+	* gcc.dg/tree-ssa/builtin-fprintf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-printf-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-printf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vfprintf-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vfprintf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vprintf-1.c: Likewise.
+	* gcc.dg/tree-ssa/builtin-vprintf-chk-1.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-ccp-10.c: Likewise.
+	* gcc.dg/builtin-unreachable-5.c: Likewise.
+	* gcc.dg/builtin-unreachable-6.c: Likewise.
+	* gcc.dg/builtin-unreachable-6a.c: Likewise.
+	* gcc.dg/builtin-unreachable-7.c: Likewise.
+	* gcc.dg/pr78408-2.c: Change fab1 to forwprop1 as that
+	optimization was moved there a while back.
+	* gcc.dg/tree-ssa/pr79691.c: Udpate scanning for 9
+	constant to return.
+
+2025-10-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122033
+	* gcc.dg/tree-ssa/pr122033-1.c: New test.
+	* gcc.dg/tree-ssa/pr122033-2.c: New test.
+
+2025-10-03  Richard Earnshaw  <rearnsha@arm.com>
+
+	* gcc.target/aarch64/asm-flag-1.c: Scan for lt.
+	* gcc.target/aarch64/vector-compare-5.c: Use scan-tree-dump-times.
+	* gcc.target/aarch64/simd/fold_to_highpart_5.c: Scan for sabal2
+	and uabal2.
+	* gcc.target/aarch64/sve/mixed_size_6.c: Scan for absence of
+	index with 2.
+	* gcc.target/aarch64/declare-simd-2.c: Scan for _ZGVnM4ul2v_f05
+	and_ZGVnN8ul2v_f05
+	* gcc.target/aarch64/sve/arith_1.c: Remove duplicate
+	scan-assembler patterns.
+	* gcc.target/aarch64/sve/cond_fmaxnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_5.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_5.c: Likewise
+	* gcc.target/aarch64/sve/pcs/annotate_1.c: Likewise.
+	* gcc.target/aarch64/sve/uzp1_1.c: Likewise.
+	* gcc.target/aarch64/sve/uzp2_1.c: Likewise.
+	* gcc.target/aarch64/scalar_intrinsics.c: Scan for ursra.
+	* gcc.target/aarch64/singleton_intrinsics_1.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmaxnm_3.c: Fix register modifiers in
+	scan patterns.
+	* gcc.target/aarch64/sve/cond_fmaxnm_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fminnm_7.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fmul_3.c: Likewise.
+	* gcc.target/aarch64/sve/cond_fsubr_3.c: Likewise.
+	* gcc.target/aarch64/ldp_stp_18.c: Fix typos in scan patterns.
+	* gcc.target/aarch64/sve/pcs/return_6.c: Likewise.
+	* gcc.target/aarch64/ror_2.c: Adjust constants to ensure
+	scan-assembler patterns are unique.
+	* gcc.target/aarch64/sve/struct_move_3.c: Likewise.
+	* gcc.target/aarch64/sve/struct_move_6.c: Likewise.
+	* gcc.target/aarch64/builtin_pld_pli.c: Use check-function-bodies
+	* gcc.target/aarch64/csinc-1.c: Likewise.
+	* gcc.target/aarch64/csneg-1.c: Likewise.
+	* gcc.target/aarch64/flt_mov_immediate_1.c: Likewise.
+	* gcc.target/aarch64/scalar_shift_1.c: Likewise.
+
+2025-10-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122089
+	* gfortran.dg/pdt_52.f03: New test.
+	* gfortran.dg/pdt_53.f03: New test.
+	* gfortran.dg/pdt_54.f03: New test.
+
+2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc
+	(report_diag_with_graphs): Port from set_attr to set_property.
+
+2025-10-02  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c2y-init-2.c, gcc.dg/c2y-init-3.c: New tests.
+
+2025-10-02  Aurelien Jarno  <aurelien@aurel32.net>
+
+	PR target/121652
+	* gcc.target/riscv/rvv/autovec/vls/math-nearbyint-1.c: Adjust
+	scan pattern for fewer instances of frflags/fsrflags.
+
+2025-10-02  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/start_unit_plugin.cc: Fix typo in comment.
+
+2025-10-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/122051
+	* gcc.target/riscv/pr122051.c: New test.
+
+2025-10-02  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/mv-error11.c: New test.
+	* gcc.target/aarch64/mv-error12.c: New test.
+
+2025-10-02  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/mv-and-mvc-error1.c: New test.
+	* gcc.target/aarch64/mv-and-mvc-error2.c: New test.
+	* gcc.target/aarch64/mv-and-mvc-error3.c: New test.
+	* gcc.target/aarch64/mv-error1.c: New test.
+	* gcc.target/aarch64/mv-error2.c: New test.
+	* gcc.target/aarch64/mv-error3.c: New test.
+	* gcc.target/aarch64/mv-error4.c: New test.
+	* gcc.target/aarch64/mv-error5.c: New test.
+	* gcc.target/aarch64/mv-error6.c: New test.
+	* gcc.target/aarch64/mv-error7.c: New test.
+	* gcc.target/aarch64/mv-error8.c: New test.
+	* gcc.target/aarch64/mv-error9.c: New test.
+	* gcc.target/aarch64/mv-error10.c: New test.
+	* gcc.target/aarch64/mvc-error1.c: New test.
+	* gcc.target/aarch64/mvc-error2.c: New test.
+	* gcc.target/aarch64/mvc-warning1.c: New test.
+
+2025-10-02  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/mv-1.c: New test.
+	* gcc.target/aarch64/mv-and-mvc1.c: New test.
+	* gcc.target/aarch64/mv-and-mvc2.c: New test.
+	* gcc.target/aarch64/mv-and-mvc3.c: New test.
+	* gcc.target/aarch64/mv-and-mvc4.c: New test.
+	* gcc.target/aarch64/mv-symbols1.c: New test.
+	* gcc.target/aarch64/mv-symbols10.c: New test.
+	* gcc.target/aarch64/mv-symbols11.c: New test.
+	* gcc.target/aarch64/mv-symbols12.c: New test.
+	* gcc.target/aarch64/mv-symbols13.c: New test.
+	* gcc.target/aarch64/mv-symbols14.c: New test.
+	* gcc.target/aarch64/mv-symbols2.c: New test.
+	* gcc.target/aarch64/mv-symbols3.c: New test.
+	* gcc.target/aarch64/mv-symbols4.c: New test.
+	* gcc.target/aarch64/mv-symbols5.c: New test.
+	* gcc.target/aarch64/mv-symbols6.c: New test.
+	* gcc.target/aarch64/mv-symbols7.c: New test.
+	* gcc.target/aarch64/mv-symbols8.c: New test.
+	* gcc.target/aarch64/mv-symbols9.c: New test.
+	* gcc.target/aarch64/mvc-symbols1.c: New test.
+	* gcc.target/aarch64/mvc-symbols2.c: New test.
+	* gcc.target/aarch64/mvc-symbols3.c: New test.
+	* gcc.target/aarch64/mvc-symbols4.c: New test.
+
+2025-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122079
+	* gcc.dg/torture/pr122079-2.c: New testcase.
+	* gcc.dg/torture/pr122079-3.c: Likewise.
+
+2025-10-02  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122079
+	* gcc.dg/torture/pr122079-1.c: New testcase.
+
 2025-10-01  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR target/122106

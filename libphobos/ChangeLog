@@ -1,3 +1,12 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* libdruntime/Makefile.in: Regenerate.
+	* src/Makefile.in: Regenerate.
+	* testsuite/Makefile.in: Regenerate.
+
 2025-09-07  Sam James  <sam@gentoo.org>
 
 	* configure.tgt: Add hppa[12]*-*-linux* as a supported target.

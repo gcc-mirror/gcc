@@ -1,3 +1,9 @@
+2025-10-02  H.J. Lu  <hjl.tools@gmail.com>
+
+	* aclocal.m4: Regenerated.
+	* configure: Likewise.
+	* configure.ac: Synced from binutils-gdb.
+
 2025-08-17  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/120503

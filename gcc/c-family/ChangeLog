@@ -1,3 +1,28 @@
+2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/114457
+	* c-opts.cc (c_common_post_options): For C++26 set
+	flag_auto_var_init to AUTO_INIT_CXX26 if not specified explicitly.
+	For C++ disable warn_trivial_auto_var_init.
+
+2025-10-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/117658
+	* c.opt: New flag '-Wexternal-tu-local'.
+	* c.opt.urls: Regenerate.
+
+2025-10-02  Alfie Richards  <alfie.richards@arm.com>
+
+	* c-attribs.cc (attr_target_clones_exclusions): Add simd and omp
+	exclusions.
+	(attr_target_version_exclusions): New definition with simd and omp
+	exclusions.
+	(attr_omp_declare_simd_exclusions): New definition with target_version
+	and clones exclusions.
+	(attr_simd_exclusions): Ditto.
+	(c_common_gnu_attributes): Add new target_version, simd, and omp
+	declare simd variables.
+
 2025-10-01  Alejandro Colomar  <alx@kernel.org>
 
 	* c.opt.urls: Regenerate

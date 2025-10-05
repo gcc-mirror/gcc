@@ -1,3 +1,9 @@
+2025-10-05  Sam James  <sam@gentoo.org>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+
 2025-03-06  Michal Jires  <mjires@suse.cz>
 
 	* lto-plugin.c (cleanup_handler): Keep only files in ltrans
