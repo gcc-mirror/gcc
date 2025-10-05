@@ -1,3 +1,52 @@
+2025-10-03  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-09-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	PR target/121780
+	PR target/121781
+	* config/riscv/riscv-v.cc (expand_vec_perm): Swap target and
+	tmp_target.
+
+2025-10-03  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-09-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	* config/riscv/riscv-v.cc (expand_vec_perm): Use temporary if
+	op1 and target overlap.
+
+2025-10-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/110812
+	* config/riscv/riscv-c.cc (pragma_intrinsic_flags): Remove struct.
+	(riscv_pragma_intrinsic_flags_pollute): Remove function.
+	(riscv_pragma_intrinsic_flags_restore): Remove function.
+	(riscv_pragma_intrinsic): Simplify to only call handle_pragma_vector.
+	* config/riscv/riscv-vector-builtins.cc (pragma_intrinsic_flags):
+	Move struct definition here from riscv-c.cc.
+	(riscv_pragma_intrinsic_flags_pollute): Move and adapt from
+	riscv-c.cc, add zvfbfmin, zvfhmin and vector_elen_bf_16 support.
+	(riscv_pragma_intrinsic_flags_restore): Move from riscv-c.cc.
+	(rvv_switcher::rvv_switcher): Add pollute_flags parameter to
+	control flag manipulation.
+	(rvv_switcher::~rvv_switcher): Restore flags conditionally.
+	(register_builtin_types): Use rvv_switcher without polluting flags.
+	(get_required_extensions): Remove function.
+	(check_required_extensions): Simplify to only check type validity.
+	(function_instance::function_returns_void_p): Move implementation
+	from header.
+	(function_builder::add_function): Register placeholder for LTO.
+	(init_builtins): Simplify and handle LTO case.
+	(reinit_builtins): Remove function.
+	(handle_pragma_vector): Remove extension checking.
+	* config/riscv/riscv-vector-builtins.h
+	(function_instance::function_returns_void_p): Add declaration.
+	(function_call_info::function_returns_void_p): Remove inline
+	implementation.
+
 2025-09-26  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:

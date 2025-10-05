@@ -1,3 +1,35 @@
+2025-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113536
+	* gnat.dg/reduce2.adb: New test.
+
+2025-10-03  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-09-04  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	PR target/121780
+	PR target/121781
+	* gcc.target/riscv/rvv/autovec/pr121780.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121781.c: New test.
+
+2025-10-03  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-09-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/121742
+	* gcc.target/riscv/rvv/autovec/pr121742.c: New test.
+
+2025-10-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	PR target/110812
+	* gcc.target/riscv/lto/pr110812_0.c: New test.
+	* gcc.target/riscv/lto/pr110812_1.c: New test.
+	* gcc.target/riscv/lto/riscv-lto.exp: New test driver.
+	* gcc.target/riscv/lto/riscv_vector.h: New header wrapper.
+
 2025-09-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/reduce1.adb: New test.
