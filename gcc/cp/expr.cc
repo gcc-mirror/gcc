@@ -183,7 +183,16 @@ mark_use (tree expr, bool rvalue_p, bool read_p,
 	    }
 	  tree r = mark_rvalue_use (ref, loc, reject_builtin);
 	  if (r != ref)
-	    expr = convert_from_reference (r);
+	    {
+	      if (!rvalue_p)
+		{
+		  /* Make sure we still return an lvalue.  */
+		  gcc_assert (TREE_CODE (r) == NOP_EXPR);
+		  TREE_TYPE (r) = cp_build_reference_type (TREE_TYPE (r),
+							   false);
+		}
+	      expr = convert_from_reference (r);
+	    }
 	}
       break;
 
