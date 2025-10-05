@@ -26,12 +26,6 @@ ifndef ADAC
 ADAC=$(CC)
 endif
 
-ifeq ($(LLVM_CONFIG),)
-LLVM_BUILD := $(shell $(ADAC) -v | grep ^llvm-gcc)
-else
-LLVM_BUILD := llvm-gcc
-endif
-
 # Objects needed only for tasking
 GNATRTL_TASKING_OBJS= \
   a-dispat$(objext) \
