@@ -24,13 +24,14 @@ F7_ASM_PARTS += store_expo sqrt16 sqrt_approx div
 
 F7_ASM_PARTS += D_class D_fma D_powi
 F7_ASM_PARTS += D_isnan D_isinf D_isfinite D_signbit D_copysign D_neg D_fabs
+F7_ASM_PARTS += D_cmp D_eq D_ne D_ge D_gt D_le D_lt D_unord
 
 F7_ASM_PARTS += call_dd call_ddd
 
 # Stuff that will be wrapped in f7-wraps.h (included by libf7-asm.sx)
 # and give f7_asm_D_*.o modules.
 g_ddd += add sub mul div
-g_xdd_cmp += le lt ge gt ne eq unord
+g_xdd_cmp +=
 g_dx += floatunsidf floatsidf extendsfdf2
 g_xd += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 

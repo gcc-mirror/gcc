@@ -79,77 +79,7 @@ _ENDF __divdf3
 #endif /* F7MOD_D_div_ */
 
 ;; Functions that usually live in libgcc: __<name>df2 for <name> in:
-;; le lt ge gt ne eq unord
-
-;; bool __ledf2 (double, double)  ; le
-#ifdef F7MOD_D_le_
-_DEFUN __ledf2
-    .global F7_NAME(le_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(le_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(le_impl)))
-    F7jmp   call_xdd
-_ENDF __ledf2
-#endif /* F7MOD_D_le_ */
-
-;; bool __ltdf2 (double, double)  ; lt
-#ifdef F7MOD_D_lt_
-_DEFUN __ltdf2
-    .global F7_NAME(lt_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(lt_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(lt_impl)))
-    F7jmp   call_xdd
-_ENDF __ltdf2
-#endif /* F7MOD_D_lt_ */
-
-;; bool __gedf2 (double, double)  ; ge
-#ifdef F7MOD_D_ge_
-_DEFUN __gedf2
-    .global F7_NAME(ge_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(ge_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(ge_impl)))
-    F7jmp   call_xdd
-_ENDF __gedf2
-#endif /* F7MOD_D_ge_ */
-
-;; bool __gtdf2 (double, double)  ; gt
-#ifdef F7MOD_D_gt_
-_DEFUN __gtdf2
-    .global F7_NAME(gt_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(gt_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(gt_impl)))
-    F7jmp   call_xdd
-_ENDF __gtdf2
-#endif /* F7MOD_D_gt_ */
-
-;; bool __nedf2 (double, double)  ; ne
-#ifdef F7MOD_D_ne_
-_DEFUN __nedf2
-    .global F7_NAME(ne_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(ne_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(ne_impl)))
-    F7jmp   call_xdd
-_ENDF __nedf2
-#endif /* F7MOD_D_ne_ */
-
-;; bool __eqdf2 (double, double)  ; eq
-#ifdef F7MOD_D_eq_
-_DEFUN __eqdf2
-    .global F7_NAME(eq_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(eq_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(eq_impl)))
-    F7jmp   call_xdd
-_ENDF __eqdf2
-#endif /* F7MOD_D_eq_ */
-
-;; bool __unorddf2 (double, double)  ; unord
-#ifdef F7MOD_D_unord_
-_DEFUN __unorddf2
-    .global F7_NAME(unord_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(unord_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(unord_impl)))
-    F7jmp   call_xdd
-_ENDF __unorddf2
-#endif /* F7MOD_D_unord_ */
+;; (none)
 
 ;; Functions that usually live in libgcc: __<name> for <name> in:
 ;; fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2

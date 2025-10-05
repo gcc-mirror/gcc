@@ -1727,6 +1727,184 @@ ENDF class_D
 #endif /* F7MOD_D_class_ */
 
 
+#ifdef F7MOD_D_cmp_
+
+#define A0  18
+#define A1  A0 + 1
+#define A2  A0 + 2
+#define A3  A0 + 3
+#define A4  A0 + 4
+#define A5  A0 + 5
+#define A6  A0 + 6
+#define A7  A0 + 7
+
+#define B0  10
+#define B1  B0 + 1
+#define B2  B0 + 2
+#define B3  B0 + 3
+#define B4  B0 + 4
+#define B5  B0 + 5
+#define B6  B0 + 6
+#define B7  B0 + 7
+
+#define AA5  XH
+#define AA6  ZL
+#define AA7  ZH
+
+#define BB0  A0
+#define BB1  A1
+#define BB2  A2
+#define BB3  A3
+#define BB4  A4
+#define BB5  A5
+#define BB6  A6
+#define BB7  A7
+
+;;; Helper for __<cmp>df2 and __unorddf2.
+;;; T = 1: Comparison is unordered.
+;;; T = 0: Comparison is ordered, and Z, N, C, S flags are set according
+;;; to compare (double A, double B) as if set by a signed int comparison.
+;;; Note that f(+0) = f(-0) = 0.
+;;; In any case, return R24 = 1.
+DEFUN D_cmp
+    rcall   D_cmp.map_i64
+    brts 9f
+    ;; Save A somewhere else...
+    wmov    AA6, A6
+    mov     AA5, A5
+    push    A4
+    push    A3
+    push    A2
+    push    A1
+    mov     r0,  A0
+    ;; ... so that we can use D_cmp.map_i64 on B.
+    wmov    BB6, B6
+    wmov    BB4, B4
+    wmov    BB2, B2
+    wmov    BB0, B0
+    rcall   D_cmp.map_i64
+    ;; Run the following code even when B is NaN (T=1) so as to pop the regs.
+    ;; In the non-NaN case, AA and BB can be compared like int64_t for the
+    ;; sake of comparing A and B as double.
+    CP      r0,  BB0  $  pop r0
+    cpc     r0,  BB1  $  pop r0
+    cpc     r0,  BB2  $  pop r0
+    cpc     r0,  BB3  $  pop r0
+    cpc     r0,  BB4
+    cpc     AA5, BB5
+    cpc     AA6, BB6
+    cpc     AA7, BB7
+9:  ldi     r24, 1
+    ret
+
+;;; A is NaN: Set T=1.
+;;; A is not a NaN: Set T=0, and map double A to int64_t such that
+;;; f(A) <cmp> f(B)  iff  A <cmp> B, i.e. we can treat the result
+;;; as int64_t for the matter of double comparison.
+;;; Clobbers: XL.
+D_cmp.map_i64:
+    bst     A7, 7
+    cbr     A7, 0x80
+    ;; If Inf < |A|, then we have a NaN.
+    CP      __zero_reg__, A0
+    cpc     __zero_reg__, A1
+    cpc     __zero_reg__, A2
+    cpc     __zero_reg__, A3
+    cpc     __zero_reg__, A4
+    cpc     __zero_reg__, A5
+    ldi     XL, lo8(0x7ff0)     $    cpc    XL, A6
+    ldi     XL, hi8(0x7ff0)     $    cpc    XL, A7
+    brlo .Lunord
+    brtc 9f
+    clt
+    .global __negdi2
+    XJMP    __negdi2
+.Lunord:
+    set
+9:  ret
+
+ENDF D_cmp
+#endif /* F7MOD_D_cmp_ */
+
+
+;; bool __ledf2 (double, double);
+#ifdef F7MOD_D_le_
+_DEFUN __ledf2
+    F7call  D_cmp
+    brts 0f
+    breq 1f
+    brlt 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __ledf2
+#endif /* F7MOD_D_le_ */
+
+;; bool __ltdf2 (double, double);
+#ifdef F7MOD_D_lt_
+_DEFUN __ltdf2
+    F7call  D_cmp
+    brts 0f
+    brlt 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __ltdf2
+#endif /* F7MOD_D_lt_ */
+
+;; bool __gedf2 (double, double);
+#ifdef F7MOD_D_ge_
+_DEFUN __gedf2
+    F7call  D_cmp
+    brts 0f
+    brge 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __gedf2
+#endif /* F7MOD_D_ge_ */
+
+;; bool __gtdf2 (double, double);
+#ifdef F7MOD_D_gt_
+_DEFUN __gtdf2
+    F7call  D_cmp
+    brts 0f
+    breq 0f
+    brge 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __gtdf2
+#endif /* F7MOD_D_gt_ */
+
+;; bool __nedf2 (double, double);
+#ifdef F7MOD_D_ne_
+_DEFUN __nedf2
+    F7call  D_cmp
+    brts 0f
+    brne 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __nedf2
+#endif /* F7MOD_D_ne_ */
+
+;; bool __eqdf2 (double, double);
+#ifdef F7MOD_D_eq_
+_DEFUN __eqdf2
+    F7call  D_cmp
+    brts 0f
+    breq 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __eqdf2
+#endif /* F7MOD_D_eq_ */
+
+;; bool __unorddf2 (double, double);
+#ifdef F7MOD_D_unord_
+_DEFUN __unorddf2
+    F7call  D_cmp
+    bld     r24, 0
+    ret
+_ENDF __unorddf2
+#endif /* F7MOD_D_unord_ */
+
+
 #ifdef F7MOD_call_dd_
 
 ;; Provide double wrappers for functions that operate on f7_t and get f7_t*.
