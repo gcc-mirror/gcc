@@ -292,7 +292,7 @@ typedef struct GTY(()) machine_function
 #define PREFERRED_STACK_BOUNDARY (TARGET_64BIT ? 128 : 512)
 
 /* Allocation boundary (in *bits*) for the code of a function.  */
-#define FUNCTION_BOUNDARY BITS_PER_WORD
+#define FUNCTION_BOUNDARY 32
 
 /* Alignment of field after `int : 0' in a structure.  */
 #define EMPTY_FIELD_BOUNDARY 32
