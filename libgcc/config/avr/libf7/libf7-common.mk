@@ -24,7 +24,7 @@ F7_ASM_PARTS += store_expo sqrt16 sqrt_approx div
 
 F7_ASM_PARTS += D_class D_fma D_powi
 F7_ASM_PARTS += D_isnan D_isinf D_isfinite D_signbit D_copysign D_neg D_fabs
-F7_ASM_PARTS += D_cmp D_eq D_ne D_ge D_gt D_le D_lt D_unord
+F7_ASM_PARTS += D_cmp D_eq D_ne D_ge D_gt D_le D_lt D_unord D_fminfmax
 
 F7_ASM_PARTS += call_dd call_ddd
 
@@ -35,7 +35,7 @@ g_xdd_cmp +=
 g_dx += floatunsidf floatsidf extendsfdf2
 g_xd += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 
-m_ddd += pow fmin fmax fmod hypot atan2 fdim
+m_ddd += pow fmod hypot atan2 fdim
 m_ddx += ldexp frexp
 m_dd += sqrt cbrt exp exp10 pow10 log log10 log2 sin cos tan cotan asin acos atan
 m_dd += ceil floor trunc round sinh cosh tanh
