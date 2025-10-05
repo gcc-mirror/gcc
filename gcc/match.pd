@@ -2133,9 +2133,10 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  && !HONOR_SIGNED_ZEROS (type)))
   (minus @1 @0)))
 (simplify
- (negate (pointer_diff @0 @1))
- (if (TYPE_OVERFLOW_UNDEFINED (type))
-  (pointer_diff @1 @0)))
+ (negate (nop_convert? (pointer_diff@2 @0 @1)))
+ (if (ANY_INTEGRAL_TYPE_P (type) && !TYPE_OVERFLOW_SANITIZED (type))
+  (with { tree ptrdifftype = TREE_TYPE (@2); }
+   (convert (pointer_diff:ptrdifftype @1 @0)))))
 
 /* A - B -> A + (-B) if B is easily negatable.  */
 (simplify
