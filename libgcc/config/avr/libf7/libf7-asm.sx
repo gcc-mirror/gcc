@@ -1765,10 +1765,14 @@ ENDF class_D
 ;;; T = 0: Comparison is ordered, and Z, N, C, S flags are set according
 ;;; to compare (double A, double B) as if set by a signed int comparison.
 ;;; Note that f(+0) = f(-0) = 0.
-;;; In any case, return R24 = 1.
+;;; In any case:
+;;; -  return R24 = 1.
+;;; -  return R25.0 = isNaN (A)
+;;; -  return R25.1 = isNaN (B)
 DEFUN D_cmp
     rcall   D_cmp.map_i64
-    brts 9f
+    bld     __tmp_reg__, 0
+    push    __tmp_reg__
     ;; Save A somewhere else...
     wmov    AA6, A6
     mov     AA5, A5
@@ -1794,7 +1798,14 @@ DEFUN D_cmp
     cpc     AA5, BB5
     cpc     AA6, BB6
     cpc     AA7, BB7
-9:  ldi     r24, 1
+    pop     r25
+    ;; R25.0 <=> A is NaN
+    ;; R25.1 <=> B is NaN
+    ;; T <=> comparison is unordered
+    bld     r25, 1
+    sbrc    r25, 0
+    set
+    ldi     r24, 1
     ret
 
 ;;; A is NaN: Set T=1.
@@ -1904,6 +1915,79 @@ _DEFUN __unorddf2
 _ENDF __unorddf2
 #endif /* F7MOD_D_unord_ */
 
+#ifdef F7MOD_D_fminfmax_
+_DEFUN __fmin
+DALIAS fmin
+LALIAS fminl
+    inc     __zero_reg__
+
+_LABEL __fmax
+DALIAS fmax
+LALIAS fmaxl
+    ;; Push A[].
+    push    r25
+    push    r24
+    push    r23
+    push    r22
+    push    r21
+    push    r20
+    push    r19
+    push    r18
+    ;; fmin or fmax
+    push    __zero_reg__
+    clr     __zero_reg__
+
+    XCALL   __gedf2
+
+    pop     __tmp_reg__
+    andi    r25, 0x3            ; NaNs?
+    brne .Lnan
+    ;; No NaNs involved.
+    eor     __tmp_reg__, r24    ; (f == fmin) ^ (A >= B)
+    brne 1f
+2:
+    ;; Return B since the cases are:
+    ;; fmax && A < B
+    ;; fmin && A >= B
+#ifdef __AVR_XMEGA__
+    in      XL, __SP_L__
+    in      XH, __SP_H__
+    adiw    XL, 8
+    out     __SP_L__, XL
+    out     __SP_H__, XH
+#else
+    pop r0  $  pop r0  $  pop r0  $  pop r0
+    pop r0  $  pop r0  $  pop r0  $  pop r0
+#endif
+    wmov    r24, r16
+    wmov    r22, r14
+    wmov    r20, r12
+    wmov    r18, r10
+    ret
+1:
+    ;; Return A since the cases are:
+    ;; fmax && A >= B
+    ;; fmin && A < B
+    pop     r18
+    pop     r19
+    pop     r20
+    pop     r21
+    pop     r22
+    pop     r23
+    pop     r24
+    pop     r25
+    ret
+
+.Lnan:
+    ;; There are NaNs.
+    ;; When only the 1st argument is a NaN, then return the 2nd argument
+    cpi     r25, 0x1
+    breq 2b
+    ;; When the 2nd argument is a NaN, then return the 1st argument.
+    ;; When both arguments are NaNs, then return NaN (e.g. the 1st argument).
+    rjmp 1b
+_ENDF __fmax
+#endif /* F7MOD_D_fminfmax_ */
 
 #ifdef F7MOD_call_dd_
 
