@@ -1767,7 +1767,7 @@ static tree c_parser_simple_asm_expr (c_parser *);
 static tree c_parser_gnu_attributes (c_parser *);
 static struct c_expr c_parser_initializer (c_parser *, tree);
 static struct c_expr c_parser_braced_init (c_parser *, tree, bool,
-					   struct obstack *, tree);
+					   struct obstack *, bool);
 static void c_parser_initelt (c_parser *, struct obstack *);
 static void c_parser_initval (c_parser *, struct c_expr *,
 			      struct obstack *);
@@ -6459,7 +6459,9 @@ static struct c_expr
 c_parser_initializer (c_parser *parser, tree decl)
 {
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE))
-    return c_parser_braced_init (parser, NULL_TREE, false, NULL, decl);
+    return c_parser_braced_init (parser, NULL_TREE, false, NULL,
+				 decl != error_mark_node
+				 && C_DECL_VARIABLE_SIZE (decl));
   else
     {
       struct c_expr ret;
@@ -6499,12 +6501,12 @@ location_t last_init_list_comma;
    compound literal, and NULL_TREE for other initializers and for
    nested braced lists.  NESTED_P is true for nested braced lists,
    false for the list of a compound literal or the list that is the
-   top-level initializer in a declaration.  DECL is the declaration for
-   the top-level initializer for a declaration, otherwise NULL_TREE.  */
+   top-level initializer in a declaration.  VARSIZE_P indicates
+   wether the object to be initialized has a variable size.  */
 
 static struct c_expr
 c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
-		      struct obstack *outer_obstack, tree decl)
+		      struct obstack *outer_obstack, bool varsize_p)
 {
   struct c_expr ret;
   struct obstack braced_init_obstack;
@@ -6532,7 +6534,7 @@ c_parser_braced_init (c_parser *parser, tree type, bool nested_p,
     }
   else
     {
-      if (decl && decl != error_mark_node && C_DECL_VARIABLE_SIZE (decl))
+      if (varsize_p)
 	error_at (brace_loc,
 		  "variable-sized object may not be initialized except "
 		  "with an empty initializer");
@@ -6826,7 +6828,7 @@ c_parser_initval (c_parser *parser, struct c_expr *after,
 
   if (c_parser_next_token_is (parser, CPP_OPEN_BRACE) && !after)
     init = c_parser_braced_init (parser, NULL_TREE, true,
-				 braced_init_obstack, NULL_TREE);
+				 braced_init_obstack, false);
   else
     {
       init = c_parser_expr_no_commas (parser, after);
@@ -13510,10 +13512,11 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 	       || (scspecs && scspecs->storage_class == csc_static)
 	       || constexpr_p), constexpr_p, &richloc);
   type = groktypename (type_name, &type_expr, &type_expr_const);
+  bool varsize_p = false;
   if (type != error_mark_node && C_TYPE_VARIABLE_SIZE (type))
     {
-      error_at (type_loc, "compound literal has variable size");
-      type = error_mark_node;
+      pedwarn (type_loc, OPT_Wpedantic, "compound literal has variable size");
+      varsize_p = true;
     }
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     {
@@ -13538,7 +13541,7 @@ c_parser_postfix_expression_after_paren_type (c_parser *parser,
 				     (TYPE_QUALS (type_no_array)
 				      | TYPE_QUAL_CONST));
     }
-  init = c_parser_braced_init (parser, type, false, NULL, NULL_TREE);
+  init = c_parser_braced_init (parser, type, false, NULL, varsize_p);
   if (constexpr_p)
     finish_underspecified_init (NULL_TREE, underspec_state);
   finish_init ();

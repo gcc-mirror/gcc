@@ -6536,6 +6536,10 @@ build_compound_literal (location_t loc, tree type, tree init, bool non_const,
       return error_mark_node;
     }
 
+  if ((TREE_STATIC (decl) || C_DECL_DECLARED_CONSTEXPR (decl))
+      && C_TYPE_VARIABLE_SIZE (type))
+    error_at (loc, "storage size isn%'t constant");
+
   if (TREE_STATIC (decl)
       && !verify_type_context (loc, TCTX_STATIC_STORAGE, type))
     return error_mark_node;

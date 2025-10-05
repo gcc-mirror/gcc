@@ -12734,7 +12734,9 @@ retry:
 
 	  if (constructor_max_index != NULL_TREE
 	      && (tree_int_cst_lt (constructor_max_index, constructor_index)
-		  || integer_all_onesp (constructor_max_index)))
+		  || integer_all_onesp (constructor_max_index))
+	      /* For VLA we got an error already.  */
+	      && !C_TYPE_VARIABLE_SIZE (constructor_type))
 	    {
 	      pedwarn_init (loc, 0,
 			    "excess elements in array initializer");

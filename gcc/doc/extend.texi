@@ -1131,6 +1131,14 @@ such an initializer, as shown here:
 char **foo = (char *[]) @{ "x", "y", "z" @};
 @end smallexample
 
+As a GNU extension, GCC allows compound literals with a variable size.
+In this case, only empty initialization is allowed.
+
+@smallexample
+int n = 4;
+char (*p)[n] = &(char[n])@{ @};
+@end smallexample
+
 Compound literals for scalar types and union types are also allowed.  In
 the following example the variable @code{i} is initialized to the value
 @code{2}, the result of incrementing the unnamed object created by
