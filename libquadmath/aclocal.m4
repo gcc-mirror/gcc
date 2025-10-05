@@ -1168,7 +1168,9 @@ AC_SUBST([am__untar])
 ]) # _AM_PROG_TAR
 
 m4_include([../config/acx.m4])
+m4_include([../config/clang-plugin.m4])
 m4_include([../config/depstand.m4])
+m4_include([../config/gcc-plugin.m4])
 m4_include([../config/lead-dot.m4])
 m4_include([../config/lthostflags.m4])
 m4_include([../config/multi.m4])
