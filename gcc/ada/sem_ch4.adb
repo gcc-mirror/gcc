@@ -630,7 +630,8 @@ package body Sem_Ch4 is
 
                begin
                   while Present (Discr) loop
-                     Append (Discriminant_Default_Value (Discr), Constr);
+                     Append_To (Constr,
+                       New_Copy_Tree (Discriminant_Default_Value (Discr)));
                      Next_Discriminant (Discr);
                   end loop;
 
