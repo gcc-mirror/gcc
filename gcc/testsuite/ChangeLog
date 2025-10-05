@@ -1,3 +1,11 @@
+2025-10-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2023-06-12  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/101188
+	* gcc.c-torture/execute/pr101188.c: New test
+
 2025-09-18  hongtao.liu  <hongtao.liu@intel.com>
 
 	Backported from master:
