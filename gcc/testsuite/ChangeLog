@@ -1,3 +1,16 @@
+2025-10-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113536
+	* gnat.dg/reduce2.adb: New test.
+
+2025-10-03  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-09-15  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* gcc.target/aarch64/torture/pr121772.c: New test.
+
 2025-09-23  Paul Thomas  <pault@gcc.gnu.org>
 
 	Backported from master:

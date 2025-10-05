@@ -1,3 +1,9 @@
+2025-10-05  Steve Baird  <baird@adacore.com>
+
+	PR ada/113536
+	* exp_attr.adb:	Move computation of Accum_Typ entirely into the
+	function Build_Stat.
+
 2025-07-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gcc-interface/Makefile.in (gnatlib-sjlj): Delete.
