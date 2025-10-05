@@ -1,6 +1,7 @@
 /* { dg-do compile } */
-/* -O0 does no inlining, and -O3 does it too aggressively for this test:  */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-O3" } { "" } }
+/* -O0 does no inlining, and -O3 does it too aggressively for this test: 
+   -Og does not inline either.  */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-O3" "-Og" } { "" } }
 /* The normal asm is not inlined:  */
 /* { dg-final { scan-assembler-times "w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w.w" 2 } } */
 /* But the asm inline is inlined:  */

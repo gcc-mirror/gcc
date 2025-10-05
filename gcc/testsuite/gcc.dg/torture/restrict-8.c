@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-O0" } { "" } } */
+/* -Og does not build the points-to aliasing info.  */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Og" } { "" } } */
 /* { dg-options "-fdump-tree-fre1" } */
 
 struct S { int i; void *p; int j; };
