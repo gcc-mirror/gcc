@@ -674,7 +674,7 @@ begin
    Write_Line ("        D    check declared identifiers in mixed case");
    Write_Line ("        e    check end/exit labels present");
    Write_Line ("        f    check no form feeds/vertical tabs in source");
-   Write_Line ("        g    check standard GNAT style rules, same as ydISux");
+   Write_Line ("        g    check GNAT style rules, same as ydISuxz");
    Write_Line ("        h    check no horizontal tabs in source");
    Write_Line ("        i    check if-then layout");
    Write_Line ("        I    check mode in");
