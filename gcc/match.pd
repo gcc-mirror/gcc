@@ -2429,6 +2429,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  || TYPE_PRECISION (type) > 1)
       && wi::leu_p (tree_nonzero_bits (@1), 1))))
 
+/* VCE<bool>(zero_one) ==/!= false -> zero_one ==/!= 0.
+   This is done as SRA likes to create VCE for boolean accesses
+   and it helps code gneration and uninitialized variable warnings.  */
+(for neeq (ne eq)
+ (simplify
+  (neeq (view_convert@0 zero_one_valued_p@1) integer_zerop)
+  (if (TREE_CODE (TREE_TYPE (@0)) == BOOLEAN_TYPE
+       && TYPE_PRECISION (TREE_TYPE (@0)) == 1
+       && TYPE_UNSIGNED (TREE_TYPE (@0)))
+   (neeq @1 { build_zero_cst (TREE_TYPE (@1)); } ))))
+
 /* Transform { 0 or 1 } * { 0 or 1 } into { 0 or 1 } & { 0 or 1 }.  */
 (simplify
  (mult zero_one_valued_p@0 zero_one_valued_p@1)
