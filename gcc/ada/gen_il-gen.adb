@@ -167,7 +167,7 @@ package body Gen_IL.Gen is
 
       --  Check that syntactic fields precede semantic fields. Note that this
       --  check is happening before we compute inherited fields.
-      --  Exempt Chars and Actions from this rule, for now.
+      --  Exempt Actions from this rule, for now.
 
       declare
          Semantic_Seen : Boolean := False;
@@ -180,7 +180,7 @@ package body Gen_IL.Gen is
                end if;
 
             else
-               if Fields (J).F not in Chars | Actions then
+               if Fields (J).F /= Actions then
                   Semantic_Seen := True;
                end if;
             end if;
@@ -896,7 +896,7 @@ package body Gen_IL.Gen is
             --  For example, Left_Opnd comes before Right_Opnd,
             --  which wouldn't be the case if Right_Opnd were
             --  inherited from N_Op.
-              ((T = N_Op and then F = Right_Opnd)
+              ((T = N_Op and then F in Right_Opnd | Chars)
                or else (T = N_Renaming_Declaration and then F = Name)
                or else (T = N_Generic_Renaming_Declaration and then F = Name)
                or else F in Defining_Unit_Name
@@ -1306,7 +1306,7 @@ package body Gen_IL.Gen is
                   --  for now. At least, we don't want to add any new cases of
                   --  syntactic/semantic mismatch.
 
-                  if F in Chars | Actions | Expression | Default_Expression
+                  if F in Actions | Expression | Default_Expression
                   then
                      pragma Assert (Syntactic_Seen and Semantic_Seen);
 
@@ -2675,7 +2675,7 @@ package body Gen_IL.Gen is
 
                if Is_Descendant (N_Op, T) then
                   --  Special cases for N_Op nodes: fill in the Chars and Entity
-                  --  fields even though they were not passed in.
+                  --  fields. Assert that the Chars passed in is defaulted.
 
                   declare
                      Op : constant String := Image_Sans_N (T);
@@ -2705,6 +2705,7 @@ package body Gen_IL.Gen is
                      --  "Op_", but the Name_Id constant does not.
 
                   begin
+                     Put (S, "pragma Assert (Chars = No_Name);" & LF);
                      Put (S, "Set_Chars (N, Name_" & Op_Name & ");" & LF);
                      Put (S, "Set_Entity (N, Standard_" & Op & ");" & LF);
                   end;
@@ -2990,7 +2991,7 @@ package body Gen_IL.Gen is
                      (if T in Entity_Type and then F in Node_Field then
                        " -- N" else "");
                   --  A comment to put out for fields of entities that are
-                  --  shared with nodes, such as Chars.
+                  --  shared with nodes.
 
                begin
                   while First_Bit < Type_Bit_Size_Aligned (T) loop

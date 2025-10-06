@@ -136,7 +136,7 @@ package body Sem_Ch8 is
    --  the order of their corresponding scopes on the scope stack. For
    --  example, if package P and the enclosing scope both contain entities
    --  named E, then when compiling the package body the chain for E will
-   --  hold the global entity first,  and the local one (corresponding to
+   --  hold the global entity first, and the local one (corresponding to
    --  the current inner scope) next. As a result, name resolution routines
    --  do not assume any relative ordering of the homonym chains, either
    --  for scope nesting or to order of appearance of context clauses.
@@ -207,7 +207,7 @@ package body Sem_Ch8 is
    --  a private or incomplete type declaration, or a protected type speci-
    --  fication) and re-chained when compiling the second view.
 
-   --  In the case of operators,  we do not make operators on derived types
+   --  In the case of operators, we do not make operators on derived types
    --  explicit. As a result, the notation P."+" may denote either a user-
    --  defined function with name "+", or else an implicit declaration of the
    --  operator "+" in package P. The resolution of expanded names always
@@ -1892,7 +1892,7 @@ package body Sem_Ch8 is
       Old_S := Find_Renamed_Entity (N, Selector_Name (Nam), New_S);
 
       if Old_S = Any_Id then
-         Error_Msg_N ("no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification", N);
       else
          if Is_Body then
             Check_Subtype_Conformant (New_S, Old_S, N);
@@ -2073,7 +2073,7 @@ package body Sem_Ch8 is
       end if;
 
       if Old_S = Any_Id then
-         Error_Msg_N ("no subprogram or entry matches specification",  N);
+         Error_Msg_N ("no subprogram or entry matches specification", N);
 
       else
          if Is_Body then
@@ -3848,7 +3848,7 @@ package body Sem_Ch8 is
          elsif Ekind (Old_S) /= E_Operator then
 
             --  If this a defaulted subprogram for a class-wide actual there is
-            --  no check for mode conformance,  given that the signatures don't
+            --  no check for mode conformance, given that the signatures don't
             --  match (the source mentions T but the actual mentions T'Class).
 
             if CW_Actual then
@@ -5213,7 +5213,7 @@ package body Sem_Ch8 is
          --  An entity in the current scope is not necessarily the first one
          --  on its homonym chain. Find its predecessor if any,
          --  If it is an internal entity, it will not be in the visibility
-         --  chain altogether,  and there is nothing to unchain.
+         --  chain altogether, and there is nothing to unchain.
 
          if Id /= Current_Entity (Id) then
             Prev := Current_Entity (Id);
@@ -5248,7 +5248,7 @@ package body Sem_Ch8 is
             Set_Name_Entity_Id (Chars (Id), Outer);
 
          elsif Scope (Prev) /= Scope (Id) then
-            Set_Homonym (Prev,  Outer);
+            Set_Homonym (Prev, Outer);
          end if;
 
          <<Next_Ent>>
@@ -9948,9 +9948,7 @@ package body Sem_Ch8 is
         and then Scope (S) /= Standard_Standard
         and then not Is_Child_Unit (S)
       then
-         if Nkind (E) not in N_Entity then
-            return;
-         end if;
+         pragma Assert (Nkind (E) in N_Entity);
 
          --  Copy categorization flags from Scope (S) to S, this is not done
          --  when Scope (S) is Standard_Standard since propagation is from

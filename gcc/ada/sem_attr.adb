@@ -12805,45 +12805,43 @@ package body Sem_Attr is
                        and then Scope (Op) = Standard_Standard
                        and then not Strict
                      then
-                        declare
-                           Op_Chars : constant Any_Operator_Name := Chars (Op);
-                           --  Nonassociative ops like division are unlikely
-                           --  to come up in practice, but they are legal.
-                        begin
-                           case Op_Chars is
-                              when Name_Op_Add
-                                | Name_Op_Subtract
-                                | Name_Op_Multiply
-                                | Name_Op_Divide
-                                | Name_Op_Expon
-                              =>
-                                 return Is_Numeric_Type (Typ);
+                        --  Nonassociative ops like division are unlikely to
+                        --  come up in practice, but they are legal.
 
-                              when Name_Op_Mod | Name_Op_Rem =>
-                                 return Is_Numeric_Type (Typ)
-                                   and then Is_Discrete_Type (Typ);
+                        case Any_Operator_Name'(Chars (Op)) is
+                           when Name_Op_Add
+                             | Name_Op_Subtract
+                             | Name_Op_Multiply
+                             | Name_Op_Divide
+                             | Name_Op_Expon
+                           =>
+                              return Is_Numeric_Type (Typ);
 
-                              when Name_Op_And | Name_Op_Or | Name_Op_Xor =>
-                                 --  No Boolean array operators in Standard
-                                 return Is_Boolean_Type (Typ)
-                                   or else Is_Modular_Integer_Type (Typ);
+                           when Name_Op_Mod | Name_Op_Rem =>
+                              return Is_Numeric_Type (Typ)
+                                and then Is_Discrete_Type (Typ);
 
-                              when Name_Op_Concat =>
-                                 return Is_Array_Type (Typ)
-                                   and then Number_Dimensions (Typ) = 1;
+                           when Name_Op_And | Name_Op_Or | Name_Op_Xor =>
+                              --  No Boolean array operators in Standard
+                              return Is_Boolean_Type (Typ)
+                                or else Is_Modular_Integer_Type (Typ);
 
-                              when Name_Op_Eq | Name_Op_Ne
-                                | Name_Op_Lt | Name_Op_Le
-                                | Name_Op_Gt | Name_Op_Ge
-                              =>
-                                 return Is_Boolean_Type (Typ);
+                           when Name_Op_Concat =>
+                              return Is_Array_Type (Typ)
+                                and then Number_Dimensions (Typ) = 1;
 
-                              when Name_Op_Abs | Name_Op_Not =>
-                                 --  unary ops were already handled
-                                 pragma Assert (False);
-                                 raise Program_Error;
-                           end case;
-                        end;
+                           when Name_Op_Eq | Name_Op_Ne
+                             | Name_Op_Lt | Name_Op_Le
+                             | Name_Op_Gt | Name_Op_Ge
+                           =>
+                              return Is_Boolean_Type (Typ);
+
+                           when Name_Op_Abs | Name_Op_Not =>
+                              --  unary ops were already handled
+
+                              raise Program_Error;
+                        end case;
+
                      else
                         return False;
                      end if;

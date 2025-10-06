@@ -1432,46 +1432,48 @@ package body Exp_Ch4 is
 
       --  For (a <= b) we convert to not (a > b)
 
-      if Chars (N) = Name_Op_Le then
-         Rewrite (N,
-           Make_Op_Not (Loc,
-             Right_Opnd =>
-                Make_Op_Gt (Loc,
-                 Left_Opnd  => Op1,
-                 Right_Opnd => Op2)));
-         Analyze_And_Resolve (N, Standard_Boolean);
-         return;
+      case Nkind (N) is
+         when N_Op_Le =>
+            Rewrite (N,
+              Make_Op_Not (Loc,
+                Right_Opnd =>
+                   Make_Op_Gt (Loc,
+                    Left_Opnd  => Op1,
+                    Right_Opnd => Op2)));
+            Analyze_And_Resolve (N, Standard_Boolean);
+            return;
 
-      --  For < the Boolean expression is
-      --    greater__nn (op2, op1)
+         --  For < the Boolean expression is
+         --    greater__nn (op2, op1)
 
-      elsif Chars (N) = Name_Op_Lt then
-         Func_Body := Make_Array_Comparison_Op (Typ1, N);
+         when N_Op_Lt =>
+            Func_Body := Make_Array_Comparison_Op (Typ1, N);
 
-         --  Switch operands
+            --  Switch operands
 
-         Op1 := Right_Opnd (N);
-         Op2 := Left_Opnd  (N);
+            Op1 := Right_Opnd (N);
+            Op2 := Left_Opnd  (N);
 
-      --  For (a >= b) we convert to not (a < b)
+         --  For (a >= b) we convert to not (a < b)
 
-      elsif Chars (N) = Name_Op_Ge then
-         Rewrite (N,
-           Make_Op_Not (Loc,
-             Right_Opnd =>
-               Make_Op_Lt (Loc,
-                 Left_Opnd  => Op1,
-                 Right_Opnd => Op2)));
-         Analyze_And_Resolve (N, Standard_Boolean);
-         return;
+         when N_Op_Ge =>
+            Rewrite (N,
+              Make_Op_Not (Loc,
+                Right_Opnd =>
+                  Make_Op_Lt (Loc,
+                    Left_Opnd  => Op1,
+                    Right_Opnd => Op2)));
+            Analyze_And_Resolve (N, Standard_Boolean);
+            return;
 
-      --  For > the Boolean expression is
-      --    greater__nn (op1, op2)
+         --  For > the Boolean expression is
+         --    greater__nn (op1, op2)
 
-      else
-         pragma Assert (Chars (N) = Name_Op_Gt);
-         Func_Body := Make_Array_Comparison_Op (Typ1, N);
-      end if;
+         when N_Op_Gt =>
+            Func_Body := Make_Array_Comparison_Op (Typ1, N);
+
+         when others => raise Program_Error;
+      end case;
 
       Func_Name := Defining_Unit_Name (Specification (Func_Body));
       Expr :=

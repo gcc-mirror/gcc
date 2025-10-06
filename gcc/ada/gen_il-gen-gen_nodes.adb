@@ -192,14 +192,24 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Char_Literal_Value, Unat)));
 
    Ab (N_Op, N_Has_Entity,
-       (Sm (Chars, Name_Id),
-        Sm (Do_Overflow_Check, Flag),
+       (Sm (Do_Overflow_Check, Flag),
         Sm (Has_Private_View, Flag),
         Sm (Has_Secondary_Private_View, Flag)));
 
    Ab (N_Binary_Op, N_Op,
        (Sy (Left_Opnd, Node_Id),
-        Sy (Right_Opnd, Node_Id)));
+        Sy (Right_Opnd, Node_Id),
+        Sy (Chars, Name_Id, Default_No_Name)));
+   --  N_Binary_Op and N_Unary_Op do not strictly need Chars, since the value
+   --  is fully determined by the Nkind. However, for example, Errout refers to
+   --  Chars without knowing statically whether the Nkind is in N_Op.
+   --  In any case, we don't inherit Chars from N_Op, because we want it to
+   --  come after the other syntactic fields, so that positional notation can
+   --  be used in calls to Make_Op_Add and friends.
+   --
+   --  Make_Op_Add and friends will now have a Chars parameter. Callers
+   --  should always use the default, because the Chars field is set
+   --  properly as a special case (see Gen_IL.Gen).
 
    Cc (N_Op_Add, N_Binary_Op);
 
@@ -259,7 +269,8 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Op_Shift_Right_Arithmetic, N_Op_Shift);
 
    Ab (N_Unary_Op, N_Op,
-       (Sy (Right_Opnd, Node_Id)));
+       (Sy (Right_Opnd, Node_Id),
+        Sy (Chars, Name_Id, Default_No_Name)));
 
    Cc (N_Op_Abs, N_Unary_Op);
    Cc (N_Op_Minus, N_Unary_Op);

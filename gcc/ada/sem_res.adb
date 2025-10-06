@@ -262,9 +262,8 @@ package body Sem_Res is
 
    function Operator_Kind
      (Op_Name   : Name_Id;
-      Is_Binary : Boolean) return Node_Kind;
-   --  Utility to map the name of an operator into the corresponding Node. Used
-   --  by other node rewriting procedures.
+      Is_Binary : Boolean) return N_Op;
+   --  Map the name of an operator into the corresponding Node_Kind
 
    procedure Resolve_Actuals (N : Node_Id; Nam : Entity_Id);
    --  Resolve actuals of call, and add default expressions for missing ones.
@@ -1986,7 +1985,7 @@ package body Sem_Res is
 
    function Operator_Kind
      (Op_Name   : Name_Id;
-      Is_Binary : Boolean) return Node_Kind
+      Is_Binary : Boolean) return N_Op
    is
       Kind : Node_Kind;
 
