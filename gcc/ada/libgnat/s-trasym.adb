@@ -123,4 +123,8 @@ package body System.Traceback.Symbolic is
       null;
    end Enable_Cache;
 
+   function Calling_Entity return String is
+   begin
+      return "???";
+   end Calling_Entity;
 end System.Traceback.Symbolic;

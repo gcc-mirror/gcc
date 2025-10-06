@@ -105,4 +105,7 @@ package System.Traceback.Symbolic is
    --  with default value), but backward compatibility for direct calls
    --  is supported.
 
+   function Calling_Entity return String;
+   --  Return the name of the caller of the current subprogram if it's
+   --  available. Otherwise return "???".
 end System.Traceback.Symbolic;
