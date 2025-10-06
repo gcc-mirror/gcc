@@ -6610,7 +6610,7 @@ vect_supportable_dr_alignment (vec_info *vinfo, dr_vec_info *dr_info,
         }
     } */
 
-  if (DR_IS_READ (dr))
+  if (DR_IS_READ (dr) && !is_gather_scatter)
     {
       if (can_implement_p (vec_realign_load_optab, mode)
 	  && (!targetm.vectorize.builtin_mask_for_load
