@@ -6049,8 +6049,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
                   Create:  va = vop <va, va'>
                 }  */
 
-          tree rhs;
-
           if (dump_enabled_p ())
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using vector shifts\n");
@@ -6069,7 +6067,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	      new_temp = gimple_build (&stmts, code,
 				       vectype1, new_name, new_temp);
             }
-	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
 	  /* 2.4  Extract the final scalar result.  Create:
 	     s_out3 = extract_field <v_out2, bitpos>  */
@@ -6078,12 +6075,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	    dump_printf_loc (MSG_NOTE, vect_location,
 			     "extract scalar result\n");
 
-	  rhs = build3 (BIT_FIELD_REF, scalar_type, new_temp,
-			bitsize, bitsize_zero_node);
-	  epilog_stmt = gimple_build_assign (new_scalar_dest, rhs);
-	  new_temp = make_ssa_name (new_scalar_dest, epilog_stmt);
-	  gimple_assign_set_lhs (epilog_stmt, new_temp);
-	  gsi_insert_before (&exit_gsi, epilog_stmt, GSI_SAME_STMT);
+	  new_temp = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype1),
+				   new_temp, bitsize, bitsize_zero_node);
+	  new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				   scalar_type, new_temp);
+	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 	  scalar_results.safe_push (new_temp);
         }
       else
