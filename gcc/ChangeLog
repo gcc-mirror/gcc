@@ -1,3 +1,13 @@
+2025-10-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122150
+	* config/i386/i386-expand.cc (setmem_epilogue_gen_val): Duplicate
+	OP if its size is smaller than MODE size.
+
+2025-10-05  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (FUNCTION_BOUNDARY): Set to 32.
+
 2025-10-05  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/autovec-opt.md (*widen_waddu_wx_<mode>): Add new

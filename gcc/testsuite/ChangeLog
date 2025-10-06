@@ -1,3 +1,13 @@
+2025-10-05  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122150
+	* gcc.target/i386/pr122150.c: New test.
+
+2025-10-05  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* c-c++-common/torture/asm-inline.c: Disable at -Og.
+	* gcc.dg/torture/restrict-8.c: Likewise.
+
 2025-10-05  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
