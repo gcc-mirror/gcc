@@ -230,25 +230,33 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       long
       _M_get_use_count() const noexcept
       {
+	// No memory barrier is used here so there is no synchronization
+	// with other threads.
+	auto __count = __atomic_load_n(&_M_use_count, __ATOMIC_RELAXED);
+
 	// If long is wider than _Atomic_word then we can treat _Atomic_word
 	// as unsigned, and so double its usable range. If the widths are the
 	// same then casting to unsigned and then to long is a no-op.
-	using _Up = typename make_unsigned<_Atomic_word>::type;
-
-        // No memory barrier is used here so there is no synchronization
-        // with other threads.
-	return (_Up) __atomic_load_n(&_M_use_count, __ATOMIC_RELAXED);
+	return static_cast<_Unsigned_count_type>(__count);
       }
 
     private:
       _Sp_counted_base(_Sp_counted_base const&) = delete;
       _Sp_counted_base& operator=(_Sp_counted_base const&) = delete;
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wignored-attributes"
+      // This is only to be used for arithmetic, not for atomic ops.
+      using _Unsigned_count_type = make_unsigned<_Atomic_word>::type;
+#pragma GCC diagnostic pop
+
       // Called when incrementing _M_use_count to cause a trap on overflow.
       // This should be passed the value of the counter before the increment.
       static void
       _S_chk(_Atomic_word __count)
       {
+	constexpr _Atomic_word __max_atomic_word = _Unsigned_count_type(-1)/2;
+
 	// __max is the maximum allowed value for the shared reference count.
 	// All valid reference count values need to fit into [0,LONG_MAX)
 	// because users can observe the count via shared_ptr::use_count().
@@ -266,8 +274,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// would not fit in [0,LONG_MAX) after casting to an unsigned type,
 	// which would cause use_count() to return bogus values.
 	constexpr _Atomic_word __max
-	  = sizeof(long) > sizeof(_Atomic_word)
-	      ? -1 : __gnu_cxx::__int_traits<_Atomic_word>::__max;
+	  = sizeof(long) > sizeof(_Atomic_word) ? -1 : __max_atomic_word;
 
 	if (__count == __max) [[__unlikely__]]
 	  __builtin_trap();
@@ -300,8 +307,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline long
     _Sp_counted_base<_S_single>::_M_get_use_count() const noexcept
     {
-      using _Up = typename make_unsigned<_Atomic_word>::type;
-      return (_Up) _M_use_count;
+      return static_cast<_Unsigned_count_type>(_M_use_count);
     }
 
 
