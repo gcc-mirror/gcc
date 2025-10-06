@@ -8629,6 +8629,7 @@ package body Sem_Ch12 is
                     Box_Present (Parent (Associated_Formal_Package (E))));
 
                Set_Is_Hidden (E, False);
+               Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
             end if;
 
          --  If this is a subprogram instance (in a wrapper package) the
@@ -8636,12 +8637,14 @@ package body Sem_Ch12 is
 
          elsif Is_Wrapper_Package (Instance) then
             Set_Is_Hidden (E, False);
+            Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
 
          --  If the formal package is declared with a box, or if the formal
          --  parameter is defaulted, it is visible in the body.
 
          elsif Is_Formal_Box or else Is_Visible_Formal (E) then
             Set_Is_Hidden (E, False);
+            Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
          end if;
 
          --  Check directly the type of the actual objects, including the
@@ -17302,7 +17305,7 @@ package body Sem_Ch12 is
                                  and then Renamed_Entity (Id) = Act_P;
 
                      Set_Is_Hidden (Id, True);
-                     Set_Is_Potentially_Use_Visible (Id, In_Use (Act_P));
+                     Set_Is_Potentially_Use_Visible (Id, False);
 
                      if Ekind (Id) = E_Package then
                         Restore_Nested_Formal (Id);
