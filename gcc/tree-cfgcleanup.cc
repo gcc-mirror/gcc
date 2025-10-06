@@ -392,7 +392,7 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
   location_t locus;
 
   /* BB must have a single outgoing edge.  */
-  if (single_succ_p (bb) != 1
+  if (!single_succ_p (bb)
       /* If PHI_WANTED is false, BB must not have any PHI nodes.
 	 Otherwise, BB must have PHI nodes.  */
       || gimple_seq_empty_p (phi_nodes (bb)) == phi_wanted

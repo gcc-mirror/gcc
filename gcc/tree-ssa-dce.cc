@@ -1457,6 +1457,70 @@ control_parents_preserved_p (basic_block bb)
   return true;
 }
 
+/* If basic block is empty, we can remove conditionals that controls
+   its execution.  However in some cases the empty BB can stay live
+   (such as when it was a header of empty loop).  In this case we
+   need to update its count.  Since regions of dead BBs are acyclic
+   we simply propagate counts forward from live BBs to dead ones.  */
+
+static void
+propagate_counts ()
+{
+  basic_block bb;
+  auto_vec<basic_block, 16> queue;
+  hash_map <basic_block, int> cnt;
+
+  FOR_EACH_BB_FN (bb, cfun)
+    if (!bitmap_bit_p (bb_contains_live_stmts, bb->index))
+      {
+	int n = 0;
+	for (edge e : bb->preds)
+	  if (e->src != ENTRY_BLOCK_PTR_FOR_FN (cfun)
+	      && !bitmap_bit_p (bb_contains_live_stmts, e->src->index))
+	    n++;
+	if (!n)
+	  queue.safe_push (bb);
+	cnt.put (bb, n);
+      }
+  while (!queue.is_empty ())
+    {
+      basic_block bb = queue.pop ();
+      profile_count sum = profile_count::zero ();
+
+      for (edge e : bb->preds)
+	{
+	  sum += e->count ();
+	  gcc_checking_assert (!cnt.get (e->src));
+	}
+      /* If we have partial profile and some counts of incomming edges are
+	 unknown, it is probably better to keep the existing count.
+	 We could also propagate bi-directionally.  */
+      if (sum.initialized_p () && !(sum == bb->count))
+	{
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Updating count of empty bb %i from ",
+		       bb->index);
+	      bb->count.dump (dump_file);
+	      fprintf (dump_file, " to ");
+	      sum.dump (dump_file);
+	      fprintf (dump_file, "\n");
+	    }
+	  bb->count = sum;
+	}
+      cnt.remove (bb);
+      for (edge e : bb->succs)
+	if (int *n = cnt.get (e->dest))
+	  {
+	    (*n)--;
+	    if (!*n)
+	      queue.safe_push (e->dest);
+	  }
+    }
+  /* Do not check that all blocks has been processed, since for
+     empty infinite loops this is not the case.  */
+}
+
 /* Eliminate unnecessary statements. Any instruction not marked as necessary
    contributes nothing to the program, and can be deleted.  */
 
@@ -1800,6 +1864,8 @@ eliminate_unnecessary_stmts (bool aggressive)
 		}
 	    }
 	}
+      if (bb_contains_live_stmts)
+	propagate_counts ();
     }
 
   if (bb_postorder)
