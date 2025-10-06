@@ -1989,6 +1989,59 @@ LALIAS fmaxl
 _ENDF __fmax
 #endif /* F7MOD_D_fminfmax_ */
 
+
+#ifdef F7MOD_D_sincos_
+;;; void sincos (double R18, double *R16, double *R14);
+_DEFUN __sincos
+DALIAS sincos
+LALIAS sincosl
+
+#define n_pushed    4
+#define n_frame    (2 * F7_SIZEOF)
+    do_prologue_saves n_pushed, n_frame
+    ;; Y = FramePointer + 1
+    adiw    Y,      1
+    ;; R16 = frame-arg 1
+    wmov    r16,    Y
+    ;; The double argument is in R18[].
+    XCALL   F7_NAME (set_double_impl)
+    ;; void f7_sincos (f7_t *ss, f7_t *cc, const f7_t *aa)
+    ;; Note that aa may equal ss or cc.
+    wmov    r20,    r16                 ; aa
+    wmov    r24,    r16                 ; ss = FP + 1
+    subi    r16,    lo8(-F7_SIZEOF)
+    sbci    r17,    hi8(-F7_SIZEOF)
+    wmov    r22,    r16                 ; cc = FP + 1 + F7_SIZEOF
+    XCALL   F7_NAME (sincos)
+
+    ;; double R18 = get_double (cc)
+    wmov    r24,    r16
+    XCALL   F7_NAME (get_double)
+    wmov    XL,     r14                 ; double *pcos
+    rcall   store.r18.X                 ; *pcos = R18
+
+    ;; double R18 = get_double (ss)
+    wmov    r24,    Y
+    XCALL   F7_NAME (get_double)
+    ldd     XL,     Y + n_frame + 3     ; Saved R16
+    ldd     XH,     Y + n_frame + 2     ; Saved R17
+    rcall   store.r18.X                 ; *psin = R18
+
+    do_epilogue_restores n_pushed, n_frame
+
+store.r18.X:
+    st      X+,     r18
+    st      X+,     r19
+    st      X+,     r20
+    st      X+,     r21
+    st      X+,     r22
+    st      X+,     r23
+    st      X+,     r24
+    st      X+,     r25
+    ret
+_ENDF __sincos
+#endif /* F7MOD_D_sincos_ */
+
 #ifdef F7MOD_call_dd_
 
 ;; Provide double wrappers for functions that operate on f7_t and get f7_t*.
