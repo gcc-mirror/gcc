@@ -21023,45 +21023,16 @@ dispatch_function_versions (tree dispatch_decl,
   unsigned int num_versions = fndecls->length ();
   gcc_assert (num_versions >= 2);
 
-  struct function_version_info
+  int i;
+  tree version_decl;
+  FOR_EACH_VEC_ELT_REVERSE ((*fndecls), i, version_decl)
     {
-      tree version_decl;
-      aarch64_fmv_feature_mask feature_mask;
-    } *function_versions;
-
-  function_versions = (struct function_version_info *)
-    XNEWVEC (struct function_version_info, (num_versions));
-
-  unsigned int actual_versions = 0;
-
-  for (tree version_decl : *fndecls)
-    {
-      aarch64_fmv_feature_mask feature_mask;
-      /* Get attribute string, parse it and find the right features.  */
-      feature_mask = get_feature_mask_for_version (version_decl);
-      function_versions [actual_versions].version_decl = version_decl;
-      function_versions [actual_versions].feature_mask = feature_mask;
-      actual_versions++;
+      aarch64_fmv_feature_mask feature_mask
+	= get_feature_mask_for_version (version_decl);
+      *empty_bb = add_condition_to_bb (dispatch_decl, version_decl,
+				       feature_mask, mask_var, *empty_bb);
     }
 
-  auto compare_feature_version_info = [](const void *p1, const void *p2) {
-    const function_version_info v1 = *(const function_version_info *)p1;
-    const function_version_info v2 = *(const function_version_info *)p2;
-    return - compare_feature_masks (v1.feature_mask, v2.feature_mask);
-  };
-
-  /* Sort the versions according to descending order of dispatch priority.  */
-  qsort (function_versions, actual_versions,
-	 sizeof (struct function_version_info), compare_feature_version_info);
-
-  for (unsigned int i = 0; i < actual_versions; ++i)
-    *empty_bb = add_condition_to_bb (dispatch_decl,
-				     function_versions[i].version_decl,
-				     function_versions[i].feature_mask,
-				     mask_var,
-				     *empty_bb);
-
-  free (function_versions);
   return 0;
 }
 
