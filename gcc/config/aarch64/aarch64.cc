@@ -20607,14 +20607,8 @@ static int
 compare_feature_masks (aarch64_fmv_feature_mask mask1,
 		       aarch64_fmv_feature_mask mask2)
 {
-  int pop1 = popcount_hwi (mask1);
-  int pop2 = popcount_hwi (mask2);
-  if (pop1 > pop2)
-    return 1;
-  if (pop2 > pop1)
-    return -1;
-
   auto diff_mask = mask1 ^ mask2;
+  /* If there is no difference.  */
   if (diff_mask == 0ULL)
     return 0;
   int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
