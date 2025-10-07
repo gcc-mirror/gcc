@@ -1,3 +1,36 @@
+2025-10-06  Marc Poulhiès  <poulhies@adacore.com>
+	    Éric Botcazou  <botcazou@adacore.com>
+
+	* gcc-interface/decl.cc (get_extended_unconstrained_array): Handle
+	array subtype.
+
+2025-10-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc-interface/utils.cc (convert): Also extract the _Parent field
+	to implement upcasting in the case where only the sizes match.
+
+2025-10-06  Marc Poulhiès  <poulhies@adacore.com>
+
+	* gcc-interface/trans.cc (Attribute_to_gnu)<Attr_Pool_Address>: Handle
+	extended access.
+
+2025-10-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* fmap.adb (File_Mapping, Path_Mapping): Fix instantiations.
+	(Add_To_File_Map): Use Table.Table.Append.
+
+2025-10-06  Ronan Desplanques  <desplanques@adacore.com>
+
+	* fmap.ads (Add_Forbidden_File_Name): Remove obsolete code.
+	* fmap.adb (Forbidden_Names, Add_Forbidden_File_Name,
+	Mapped_Path_Name, Reset_Tables): Remove obsolete code.
+
+2025-10-06  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst: refine
+	description of -gnatwr
+	* gnat_ugn.texi: Regenerate.
+
 2025-10-05  Franck Behaghel  <franckbehaghel_gcc@protonmail.com>
 
 	PR ada/110314

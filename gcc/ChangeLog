@@ -1,3 +1,74 @@
+2025-10-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122155
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1): Don't
+	create a phi if the 2 rhs are the same.
+
+2025-10-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	PR middle-end/122122
+	* tree-cfgcleanup.cc (tree_forwarder_block_p): Cleanup.
+	* tree-ssa-dce.cc (propagate_counts): New function.
+	(eliminate_unnecessary_stmts): Use it.
+
+2025-10-06  Jan Hubicka  <hubicka@ucw.cz>
+
+	* params.opt (-param=auto-profile-bbs=): Add missing full stop after
+	description.
+
+2025-10-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/121206
+	* value-range.cc (irange::intersect_bitmask): Always call
+	set_range_from_bitmask if the bitmask changes.
+
+2025-10-06  Sam James  <sam@gentoo.org>
+
+	PR rtl-optimization/111619
+	* doc/install.texi (Building a native compiler): Discuss STAGE1_CFLAGS.
+
+2025-10-06  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121599
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::use_cond_insn): Use add_fixed_operand if
+	fallback_arg == CONST0_RTX (mode).
+
+2025-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122131
+	* tree-vect-data-refs.cc (vect_supportable_dr_alignment): Do
+	not use re-align loads for gathers.
+
+2025-10-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122158
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Handle
+	bit-precision result.
+
+2025-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122133
+	* stmt.cc (resolve_asm_operand_names): Handle % and 2 letters followed
+	by open square.
+
+2025-10-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122142
+	* generic-match-head.cc: Include gimple-iterator.h
+	and gimple-fold.h.
+	* gimple-fold.cc (gimple_fold_builtin_constant_p): Use
+	fold_before_rtl_expansion_p.
+	(gimple_fold_builtin_assume_aligned): Likewise.
+	(gimple_fold_builtin_stdarg): Likewise.
+	(gimple_fold_call): Likewise.
+	* gimple-fold.h: Include "tree-pass.h".
+	(fold_before_rtl_expansion_p): New function.
+	* match.pd: Use fold_before_rtl_expansion_p
+	instead of `cfun->curr_properties & PROP_last_full_fold`.
+	* tree-ssa-forwprop.cc (simplify_builtin_memcmp): Likewise.
+	(optimize_stack_restore): Likewise.
+
 2025-10-05  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/122150
