@@ -1,0 +1,92 @@
+int fn [[gnu::target_version("default")]] (int)			{ return 1; }
+int fn_default (int) asm("fn.default");
+int fn [[gnu::target_version("rng")]] (int)			{ return 1; }
+int fn_rng(int) asm("fn._Mrng");
+int fn [[gnu::target_version("flagm")]] (int)			{ return 1; }
+int fn_flagm(int) asm("fn._Mflagm");
+int fn [[gnu::target_version("flagm2")]] (int)			{ return 1; }
+int fn_flagm2(int) asm("fn._Mflagm2");
+int fn [[gnu::target_version("lse")]] (int)			{ return 1; }
+int fn_lse(int) asm("fn._Mlse");
+int fn [[gnu::target_version("fp")]] (int)			{ return 1; }
+int fn_fp(int) asm("fn._Mfp");
+int fn [[gnu::target_version("simd")]] (int)			{ return 1; }
+int fn_simd(int) asm("fn._Msimd");
+int fn [[gnu::target_version("dotprod")]] (int)			{ return 1; }
+int fn_dotprod(int) asm("fn._Mdotprod");
+int fn [[gnu::target_version("sm4")]] (int)			{ return 1; }
+int fn_sm4(int) asm("fn._Msm4");
+int fn [[gnu::target_version("rdm")]] (int)			{ return 1; }
+int fn_rdm(int) asm("fn._MrdmaMrdm");
+int fn [[gnu::target_version("crc")]] (int)			{ return 1; }
+int fn_crc(int) asm("fn._Mcrc");
+int fn [[gnu::target_version("sha2")]] (int)			{ return 1; }
+int fn_sha2(int) asm("fn._Msha2");
+int fn [[gnu::target_version("sha3")]] (int)			{ return 1; }
+int fn_sha3(int) asm("fn._Msha3");
+int fn [[gnu::target_version("aes")]] (int)			{ return 1; }
+int fn_aes(int) asm("fn._Maes");
+int fn [[gnu::target_version("fp16")]] (int)			{ return 1; }
+int fn_fp16(int) asm("fn._Mfp16");
+int fn [[gnu::target_version("fp16fml")]] (int)			{ return 1; }
+int fn_fp16fml(int) asm("fn._Mfp16fml");
+/* TODO: These FMV features are not yet supported in GCC. */
+// int fn [[gnu::target_version("dit")]] (int)			{ return 1; }
+// int fn [[gnu::target_version("dpb")]] (int)			{ return 1; }
+// int fn [[gnu::target_version("dpb2")]] (int)			{ return 1; }
+int fn [[gnu::target_version("jscvt")]] (int)			{ return 1; }
+int fn_jscvt(int) asm("fn._Mjscvt");
+int fn [[gnu::target_version("fcma")]] (int)			{ return 1; }
+int fn_fcma(int) asm("fn._Mfcma");
+int fn [[gnu::target_version("rcpc")]] (int)			{ return 1; }
+int fn_rcpc(int) asm("fn._Mrcpc");
+int fn [[gnu::target_version("rcpc2")]] (int)			{ return 1; }
+int fn_rcpc2(int) asm("fn._Mrcpc2");
+int fn [[gnu::target_version("rcpc3")]] (int)			{ return 1; }
+int fn_rcpc3(int) asm("fn._Mrcpc3");
+int fn [[gnu::target_version("frintts")]] (int)			{ return 1; }
+int fn_frintts(int) asm("fn._Mfrintts");
+int fn [[gnu::target_version("i8mm")]] (int)			{ return 1; }
+int fn_i8mm(int) asm("fn._Mi8mm");
+int fn [[gnu::target_version("bf16")]] (int)			{ return 1; }
+int fn_bf16(int) asm("fn._Mbf16");
+int fn [[gnu::target_version("sve")]] (int)			{ return 1; }
+int fn_sve(int) asm("fn._Msve");
+int fn [[gnu::target_version("f32mm")]] (int)			{ return 1; }
+int fn_f32mm(int) asm("fn._Mf32mm");
+int fn [[gnu::target_version("f64mm")]] (int)			{ return 1; }
+int fn_f64mm(int) asm("fn._Mf64mm");
+int fn [[gnu::target_version("sve2")]] (int)			{ return 1; }
+int fn_sve2(int) asm("fn._Msve2");
+int fn [[gnu::target_version("sve2-aes")]] (int)		{ return 1; }
+int fn_sve2_aes(int) asm("fn._Msve2_aes");
+int fn [[gnu::target_version("sve2-bitperm")]] (int)		{ return 1; }
+int fn_sve2_bitperm(int) asm("fn._Msve2_bitperm");
+int fn [[gnu::target_version("sve2-sha3")]] (int)		{ return 1; }
+int fn_sve2_sha3(int) asm("fn._Msve2_sha3");
+int fn [[gnu::target_version("sve2-sm4")]] (int)		{ return 1; }
+int fn_sve2_sm4(int) asm("fn._Msve2_sm4");
+int fn [[gnu::target_version("sve2+sme")]] (int)		{ return 1; }
+int fn_sve2_sme(int) asm("fn._Msve2Msme");
+/* TODO: This FMV features is not yet supported in GCC. */
+// int fn [[gnu::target_version("memtag")]] (int)		{ return 1; }
+int fn [[gnu::target_version("sb")]] (int)			{ return 1; }
+int fn_sb(int) asm("fn._Msb");
+/* TODO: This FMV feature is not yet supported in GCC. */
+// int fn [[gnu::target_version("ssbs")]] (int)			{ return 1; }
+// int fn_ssbs(int) asm("fn._Mssbs");
+/* TODO: This FMV feature is not yet supported in GCC. */
+// int fn [[gnu::target_version("bti")]] (int)			{ return 1; }
+int fn [[gnu::target_version("wfxt")]] (int)			{ return 1; }
+int fn_wfxt(int) asm("fn._Mwfxt");
+int fn [[gnu::target_version("sve2+sme-f64f64")]] (int)		{ return 1; }
+int fn_sve2_sme_f64f64(int) asm("fn._Msve2Msme_f64f64");
+int fn [[gnu::target_version("sve2+sme-i16i64")]] (int)		{ return 1; }
+int fn_sve2_sme_i16i64(int) asm("fn._Msve2Msme_i16i64");
+int fn [[gnu::target_version("sve2+sme2")]] (int)		{ return 1; }
+int fn_sve2_sme2(int) asm("fn._Msve2Msme2");
+int fn [[gnu::target_version("mops")]] (int)			{ return 1; }
+int fn_mops(int) asm("fn._Mmops");
+int fn [[gnu::target_version("cssc")]] (int)			{ return 1; }
+int fn_cssc(int) asm("fn._Mcssc");
+
