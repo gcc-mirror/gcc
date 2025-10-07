@@ -2622,13 +2622,20 @@ package body Einfo.Utils is
 
    begin
       return T : Opt_N_Entity_Id := Base_Type_If_Set (Id) do
-         if Ekind (T) = E_Class_Wide_Type then
+         if No (T) then
+            null;
+         elsif Ekind (T) = E_Class_Wide_Type then
             T := Etype (T);
          else
             loop
                Etyp := Etype (T);
 
-               exit when No (Etyp) or else T = Etyp
+               if No (Etyp) then
+                  T := Empty;
+                  exit;
+               end if;
+
+               exit when T = Etyp
                  or else
                    (Is_Private_Type (T) and then Etyp = Full_View (T))
                  or else
@@ -3086,7 +3093,7 @@ package body Einfo.Utils is
 
       elsif Ekind (Id) = E_Class_Wide_Type
         and then From_Limited_With (Id)
-        and then Present (Non_Limited_View (Id))
+        and then Has_Non_Limited_View (Id)
       then
          return Underlying_Type (Non_Limited_View (Id));
 
@@ -3118,7 +3125,7 @@ package body Einfo.Utils is
          --  then we return the Underlying_Type of its nonlimited view.
 
          elsif From_Limited_With (Id)
-           and then Present (Non_Limited_View (Id))
+           and then Has_Non_Limited_View (Id)
          then
             return Underlying_Type (Non_Limited_View (Id));
 
