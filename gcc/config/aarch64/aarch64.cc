@@ -21109,6 +21109,9 @@ aarch64_generate_version_dispatcher_body (void *node_p)
 
   auto_vec<tree, 2> fn_ver_vec;
 
+  if (dump_enabled_p ())
+    dump_printf (MSG_NOTE, "Version order for %s:\n", node->dump_asm_name ());
+
   for (versn_info = node_version_info->next; versn_info;
        versn_info = versn_info->next)
     {
@@ -21120,6 +21123,9 @@ aarch64_generate_version_dispatcher_body (void *node_p)
 	 virtual.  */
       if (DECL_VINDEX (versn->decl))
 	sorry ("virtual function multiversioning not supported");
+
+      if (dump_enabled_p ())
+	dump_printf (MSG_NOTE, "%s\n", versn->dump_asm_name ());
 
       fn_ver_vec.safe_push (versn->decl);
     }
