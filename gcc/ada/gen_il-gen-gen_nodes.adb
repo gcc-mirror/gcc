@@ -526,7 +526,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Null_Exclusion_Present, Flag, Default_False),
         Sy (Access_Definition, Node_Id, Default_Empty),
         Sy (Subtype_Mark, Node_Id, Default_Empty),
-        Sy (Default_Expression, Node_Id, Default_Empty),
+        Sy (Expression, Node_Id, Default_Empty),
         Sy (Aspect_Specifications, List_Id, Default_No_List),
         Sm (More_Ids, Flag),
         Sm (Prev_Ids, Flag)));

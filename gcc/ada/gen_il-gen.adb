@@ -1306,8 +1306,7 @@ package body Gen_IL.Gen is
                   --  for now. At least, we don't want to add any new cases of
                   --  syntactic/semantic mismatch.
 
-                  if F in Actions | Expression | Default_Expression
-                  then
+                  if F in Actions | Expression then
                      pragma Assert (Syntactic_Seen and Semantic_Seen);
 
                   else

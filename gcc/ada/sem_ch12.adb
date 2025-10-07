@@ -1607,8 +1607,8 @@ package body Sem_Ch12 is
          return Result : Actual_Rec do
             case Nkind (Un_Formal) is
                when N_Formal_Object_Declaration =>
-                  if Present (Default_Expression (Un_Formal)) then
-                     Result := (Name_Exp, Default_Expression (Un_Formal));
+                  if Present (Expression (Un_Formal)) then
+                     Result := (Name_Exp, Expression (Un_Formal));
                   end if;
                when N_Formal_Type_Declaration =>
                   if Present (Default_Subtype_Mark (Un_Formal)) then
@@ -2557,7 +2557,7 @@ package body Sem_Ch12 is
                           (Defining_Identifier
                             (Assoc.Un_Formal), Sloc (N)),
                       Explicit_Generic_Actual_Parameter =>
-                        New_Copy_Tree (Default_Expression (Assoc.Un_Formal))));
+                        New_Copy_Tree (Expression (Assoc.Un_Formal))));
                end if;
             end if;
 
@@ -3361,7 +3361,7 @@ package body Sem_Ch12 is
    ---------------------------------------
 
    procedure Analyze_Formal_Object_Declaration (N : Node_Id) is
-      E  : constant Node_Id := Default_Expression (N);
+      E  : constant Node_Id := Expression (N);
       Id : constant Node_Id := Defining_Identifier (N);
 
       K                : Entity_Kind;
@@ -13239,7 +13239,7 @@ package body Sem_Ch12 is
                end if;
             end;
 
-         elsif Present (Default_Expression (Formal)) then
+         elsif Present (Expression (Formal)) then
 
             --  Use default to construct declaration
 
@@ -13257,7 +13257,7 @@ package body Sem_Ch12 is
                 Null_Exclusion_Present => Null_Exclusion_Present (Formal),
                 Object_Definition      => Def,
                 Expression             => New_Copy_Tree
-                                            (Default_Expression (Formal)));
+                                            (Expression (Formal)));
 
             Copy_Ghost_Aspect (Formal, To => Decl_Node);
             Set_Corresponding_Generic_Association

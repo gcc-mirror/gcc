@@ -1963,9 +1963,9 @@ package body Sprint is
                   Sprint_Node (Access_Definition (Node));
                end if;
 
-               if Present (Default_Expression (Node)) then
+               if Present (Expression (Node)) then
                   Write_Str (" := ");
-                  Sprint_Node (Default_Expression (Node));
+                  Sprint_Node (Expression (Node));
                end if;
 
                Write_Char (';');

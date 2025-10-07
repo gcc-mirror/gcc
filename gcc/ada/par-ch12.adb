@@ -466,7 +466,7 @@ package body Ch12 is
          end if;
 
          No_Constraint;
-         Set_Default_Expression (Decl_Node, Init_Expr_Opt);
+         Set_Expression (Decl_Node, Init_Expr_Opt);
          P_Aspect_Specifications (Decl_Node, Semicolon => True);
 
          if Ident > 1 then

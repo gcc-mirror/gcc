@@ -5505,7 +5505,7 @@ package Sinfo is
       --  Out_Present
       --  Null_Exclusion_Present
       --  Parameter_Type subtype mark or access definition
-      --  Expression (set to Empty if no default expression present)
+      --  Expression (set to Empty if no default expression)
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
       --  Default_Expression
@@ -7236,7 +7236,7 @@ package Sinfo is
       --  Null_Exclusion_Present (set to False if not present)
       --  Subtype_Mark (set to Empty if not present)
       --  Access_Definition (set to Empty if not present)
-      --  Default_Expression (set to Empty if no default expression)
+      --  Expression (set to Empty if no default expression)
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
 
