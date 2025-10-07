@@ -5533,6 +5533,53 @@ vect_recog_gcond_pattern (vec_info *vinfo,
   return pattern_stmt;
 }
 
+
+/* A helper for vect_recog_mask_conversion_pattern.  Build
+   conversion of MASK to a type suitable for masking VECTYPE.
+   Built statement gets required vectype and is appended to
+   a pattern sequence of STMT_VINFO.
+
+   Return converted mask.  */
+
+static tree
+build_mask_conversion (vec_info *vinfo,
+		       tree mask, tree vectype, stmt_vec_info stmt_vinfo)
+{
+  gimple *stmt;
+  tree masktype, tmp;
+
+  masktype = truth_type_for (vectype);
+  tmp = vect_recog_temp_ssa_var (TREE_TYPE (masktype), NULL);
+  stmt = gimple_build_assign (tmp, CONVERT_EXPR, mask);
+  append_pattern_def_seq (vinfo, stmt_vinfo,
+			  stmt, masktype, TREE_TYPE (vectype));
+
+  return tmp;
+}
+
+
+/* Return MASK if MASK is suitable for masking an operation on vectors
+   of type VECTYPE, otherwise convert it into such a form and return
+   the result.  Associate any conversion statements with STMT_INFO's
+   pattern.  */
+
+static tree
+vect_convert_mask_for_vectype (tree mask, tree vectype,
+			       stmt_vec_info stmt_info, vec_info *vinfo)
+{
+  tree mask_type = integer_type_for_mask (mask, vinfo);
+  if (mask_type)
+    {
+      tree mask_vectype = get_mask_type_for_scalar_type (vinfo, mask_type);
+      if (mask_vectype
+	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vectype),
+		       TYPE_VECTOR_SUBPARTS (mask_vectype)))
+	mask = build_mask_conversion (vinfo, mask, vectype, stmt_info);
+    }
+  return mask;
+}
+
+
 /* Function vect_recog_bool_pattern
 
    Try to find pattern like following:
@@ -5691,9 +5738,11 @@ vect_recog_bool_pattern (vec_info *vinfo,
       if (!new_vectype)
 	return NULL;
 
-      new_vectype = truth_type_for (new_vectype);
       append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt, new_vectype,
 			      TREE_TYPE (var));
+
+      lhs_var = vect_convert_mask_for_vectype (lhs_var, vectype, stmt_vinfo,
+					       vinfo);
 
       lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
       pattern_stmt
@@ -5748,29 +5797,6 @@ vect_recog_bool_pattern (vec_info *vinfo,
     }
   else
     return NULL;
-}
-
-/* A helper for vect_recog_mask_conversion_pattern.  Build
-   conversion of MASK to a type suitable for masking VECTYPE.
-   Built statement gets required vectype and is appended to
-   a pattern sequence of STMT_VINFO.
-
-   Return converted mask.  */
-
-static tree
-build_mask_conversion (vec_info *vinfo,
-		       tree mask, tree vectype, stmt_vec_info stmt_vinfo)
-{
-  gimple *stmt;
-  tree masktype, tmp;
-
-  masktype = truth_type_for (vectype);
-  tmp = vect_recog_temp_ssa_var (TREE_TYPE (masktype), NULL);
-  stmt = gimple_build_assign (tmp, CONVERT_EXPR, mask);
-  append_pattern_def_seq (vinfo, stmt_vinfo,
-			  stmt, masktype, TREE_TYPE (vectype));
-
-  return tmp;
 }
 
 
@@ -6003,27 +6029,6 @@ vect_get_load_store_mask (stmt_vec_info stmt_info)
     }
 
   gcc_unreachable ();
-}
-
-/* Return MASK if MASK is suitable for masking an operation on vectors
-   of type VECTYPE, otherwise convert it into such a form and return
-   the result.  Associate any conversion statements with STMT_INFO's
-   pattern.  */
-
-static tree
-vect_convert_mask_for_vectype (tree mask, tree vectype,
-			       stmt_vec_info stmt_info, vec_info *vinfo)
-{
-  tree mask_type = integer_type_for_mask (mask, vinfo);
-  if (mask_type)
-    {
-      tree mask_vectype = get_mask_type_for_scalar_type (vinfo, mask_type);
-      if (mask_vectype
-	  && maybe_ne (TYPE_VECTOR_SUBPARTS (vectype),
-		       TYPE_VECTOR_SUBPARTS (mask_vectype)))
-	mask = build_mask_conversion (vinfo, mask, vectype, stmt_info);
-    }
-  return mask;
 }
 
 /* Return the equivalent of:
