@@ -3414,8 +3414,11 @@ pushdecl (tree x)
 	    }
 	}
 
-      /* Check if x is part of a FMV set with b_use.  */
-      if (b_use && TREE_CODE (b_use->decl) == FUNCTION_DECL
+      /* Check if x is part of a FMV set with b_use.
+	 FMV is only supported in c for targets with target_version
+	 attributes.  */
+      if (!TARGET_HAS_FMV_TARGET_ATTRIBUTE
+	  && b_use && TREE_CODE (b_use->decl) == FUNCTION_DECL
 	  && TREE_CODE (x) == FUNCTION_DECL && DECL_FILE_SCOPE_P (b_use->decl)
 	  && DECL_FILE_SCOPE_P (x)
 	  && disjoint_version_decls (x, b_use->decl)
