@@ -10142,16 +10142,17 @@ avr_out_insv (rtx_insn *insn, rtx xop[], int *plen)
 }
 
 
-/* Output instructions to extract a bit to 8-bit register XOP[0].
-   The input XOP[1] is a register or an 8-bit MEM in the lower I/O range.
-   XOP[2] is the const_int bit position.  Return "".
+/* Output instructions to extract a bit to 8-bit register OP[0].
+   The input OP[1] is a register or an 8-bit MEM in the lower I/O range.
+   OP[2] is the const_int bit position.  Return "".
 
    PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
    PLEN == 0: Output instructions.  */
 
 const char *
-avr_out_extr (rtx_insn *insn, rtx xop[], int *plen)
+avr_out_extr (rtx_insn *insn, rtx op[], int *plen)
 {
+  rtx xop[] = { op[0], op[1], op[2] };
   rtx dest = xop[0];
   rtx src = xop[1];
   int bit = INTVAL (xop[2]);
@@ -10209,16 +10210,17 @@ avr_out_extr (rtx_insn *insn, rtx xop[], int *plen)
 }
 
 
-/* Output instructions to extract a negated bit to 8-bit register XOP[0].
-   The input XOP[1] is an 8-bit register or MEM in the lower I/O range.
-   XOP[2] is the const_int bit position.  Return "".
+/* Output instructions to extract a negated bit to 8-bit register OP[0].
+   The input OP[1] is an 8-bit register or MEM in the lower I/O range.
+   OP[2] is the const_int bit position.  Return "".
 
    PLEN != 0: Set *PLEN to the code length in words.  Don't output anything.
    PLEN == 0: Output instructions.  */
 
 const char *
-avr_out_extr_not (rtx_insn * /* insn */, rtx xop[], int *plen)
+avr_out_extr_not (rtx_insn * /* insn */, rtx op[], int *plen)
 {
+  rtx xop[] = { op[0], op[1], op[2] };
   rtx dest = xop[0];
   rtx src = xop[1];
   int bit = INTVAL (xop[2]);
