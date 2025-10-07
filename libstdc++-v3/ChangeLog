@@ -1,3 +1,9 @@
+2025-10-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122168
+	* testsuite/20_util/ratio/operations/ops_overflow_neg.cc: Add
+	dg-error for additional error seen with -Wsystem-headers.
+
 2025-10-01  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
