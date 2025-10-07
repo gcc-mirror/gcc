@@ -740,6 +740,14 @@ package body Ghost is
                then
                   return True;
 
+               --  It is always legal to use a ghost prefix. More complex
+               --  scenarios are analyzed for the selector.
+
+               elsif Nkind (Par) = N_Selected_Component
+                 and then Prefix (Par) = Prev
+               then
+                  return True;
+
                elsif Is_OK_Declaration (Par) then
                   return True;
 
