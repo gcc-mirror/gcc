@@ -7,24 +7,24 @@
 **foo:
 **.LFB[0-9]+:
 **	.cfi_startproc
-**	xorl	%edx, %edx
+**	xorl	%eax, %eax
 **.L[0-9]+:
-**	movl	%edx, %eax
-**	addl	\$256, %edx
-**	vmovdqa64	src\(%rax\), %zmm3
-**	vmovdqa64	src\+64\(%rax\), %zmm2
-**	vmovdqa64	src\+128\(%rax\), %zmm1
-**	vmovdqa64	src\+192\(%rax\), %zmm0
-**	vmovdqa64	%zmm3, dest\(%rax\)
-**	vmovdqa64	%zmm2, dest\+64\(%rax\)
-**	vmovdqa64	%zmm1, dest\+128\(%rax\)
-**	vmovdqa64	%zmm0, dest\+192\(%rax\)
-**	cmpl	\$1024, %edx
+**	movl	%eax, %edx
+**	addl	\$256, %eax
+**	vmovdqa64	src\(%rdx\), %zmm3
+**	vmovdqa64	src\+64\(%rdx\), %zmm2
+**	vmovdqa64	src\+128\(%rdx\), %zmm1
+**	vmovdqa64	src\+192\(%rdx\), %zmm0
+**	vmovdqa64	%zmm3, dest\(%rdx\)
+**	vmovdqa64	%zmm2, dest\+64\(%rdx\)
+**	vmovdqa64	%zmm1, dest\+128\(%rdx\)
+**	vmovdqa64	%zmm0, dest\+192\(%rdx\)
+**	cmpl	\$1024, %eax
 **	jb	.L[0-9]+
-**	vmovdqa	src\(%rdx\), %ymm0
-**	vmovdqa	%ymm0, dest\(%rdx\)
-**	vmovdqu	src\+31\(%rdx\), %ymm0
-**	vmovdqu	%ymm0, dest\+31\(%rdx\)
+**	vmovdqa	src\(%rax\), %ymm0
+**	vmovdqa	%ymm0, dest\(%rax\)
+**	vmovdqu	src\+31\(%rax\), %ymm0
+**	vmovdqu	%ymm0, dest\+31\(%rax\)
 **	vzeroupper
 **	ret
 **...

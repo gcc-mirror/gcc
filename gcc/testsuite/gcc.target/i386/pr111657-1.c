@@ -7,17 +7,17 @@
 **bar:
 **...
 **.L[0-9]+:
-**	movl	%edx, %eax
-**	addl	\$32, %edx
-**	movq	%gs:m\(%rax\), %r9
-**	movq	%gs:m\+8\(%rax\), %r8
-**	movq	%gs:m\+16\(%rax\), %rsi
-**	movq	%gs:m\+24\(%rax\), %rcx
-**	movq	%r9, \(%rdi,%rax\)
-**	movq	%r8, 8\(%rdi,%rax\)
-**	movq	%rsi, 16\(%rdi,%rax\)
-**	movq	%rcx, 24\(%rdi,%rax\)
-**	cmpl	\$224, %edx
+**	movl	%eax, %edx
+**	addl	\$32, %eax
+**	movq	%gs:m\(%rdx\), %r9
+**	movq	%gs:m\+8\(%rdx\), %r8
+**	movq	%gs:m\+16\(%rdx\), %rsi
+**	movq	%gs:m\+24\(%rdx\), %rcx
+**	movq	%r9, \(%rdi,%rdx\)
+**	movq	%r8, 8\(%rdi,%rdx\)
+**	movq	%rsi, 16\(%rdi,%rdx\)
+**	movq	%rcx, 24\(%rdi,%rdx\)
+**	cmpl	\$224, %eax
 **	jb	.L[0-9]+
 **...
 */

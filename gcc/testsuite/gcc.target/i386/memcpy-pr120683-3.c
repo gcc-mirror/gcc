@@ -7,24 +7,24 @@
 **foo:
 **.LFB[0-9]+:
 **	.cfi_startproc
-**	xorl	%edx, %edx
+**	xorl	%eax, %eax
 **.L[0-9]+:
-**	movl	%edx, %eax
-**	addl	\$64, %edx
-**	movdqa	src\(%rax\), %xmm3
-**	movdqa	src\+16\(%rax\), %xmm2
-**	movdqa	src\+32\(%rax\), %xmm1
-**	movdqa	src\+48\(%rax\), %xmm0
-**	movaps	%xmm3, dest\(%rax\)
-**	movaps	%xmm2, dest\+16\(%rax\)
-**	movaps	%xmm1, dest\+32\(%rax\)
-**	movaps	%xmm0, dest\+48\(%rax\)
-**	cmpl	\$256, %edx
+**	movl	%eax, %edx
+**	addl	\$64, %eax
+**	movdqa	src\(%rdx\), %xmm3
+**	movdqa	src\+16\(%rdx\), %xmm2
+**	movdqa	src\+32\(%rdx\), %xmm1
+**	movdqa	src\+48\(%rdx\), %xmm0
+**	movaps	%xmm3, dest\(%rdx\)
+**	movaps	%xmm2, dest\+16\(%rdx\)
+**	movaps	%xmm1, dest\+32\(%rdx\)
+**	movaps	%xmm0, dest\+48\(%rdx\)
+**	cmpl	\$256, %eax
 **	jb	.L[0-9]+
-**	movdqa	src\(%rdx\), %xmm0
-**	movaps	%xmm0, dest\(%rdx\)
-**	movdqu	src\+15\(%rdx\), %xmm0
-**	movups	%xmm0, dest\+15\(%rdx\)
+**	movdqa	src\(%rax\), %xmm0
+**	movaps	%xmm0, dest\(%rax\)
+**	movdqu	src\+15\(%rax\), %xmm0
+**	movups	%xmm0, dest\+15\(%rax\)
 **	ret
 **...
 */
