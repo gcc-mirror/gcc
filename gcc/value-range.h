@@ -150,6 +150,7 @@ public:
   bool operator!= (const irange_bitmask &src) const { return !(*this == src); }
   void verify_mask () const;
   void dump (FILE *) const;
+  bool range_from_mask (irange &r, tree type) const;
 
   bool member_p (const wide_int &val) const;
 
@@ -346,7 +347,8 @@ private:
   bool union_bitmask (const irange &r);
   bool set_range_from_bitmask ();
   bool snap_subranges ();
-  bool snap (const wide_int &, const wide_int &, wide_int &, wide_int &);
+  bool snap (const wide_int &, const wide_int &, wide_int &, wide_int &,
+	     bool &);
 
   bool intersect (const wide_int& lb, const wide_int& ub);
   bool union_append (const irange &r);
