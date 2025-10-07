@@ -3779,14 +3779,15 @@ shuffle_slide_patterns (struct expand_vec_perm_d *d)
   int pivot = -1;
   for (int i = 0; i < vlen; i++)
     {
+      /* The first pivot is in OP1.  */
       if (pivot == -1 && known_ge (d->perm[i], vec_len))
 	pivot = i;
       if (i > 0 && i != pivot
 	  && maybe_ne (d->perm[i], d->perm[i - 1] + 1))
 	{
-	  if (pivot == -1 || len != 0)
+	  /* A second pivot would indicate the vector length and is in OP0.  */
+	  if (known_ge (d->perm[i], vec_len) || pivot == -1 || len != 0)
 	    return false;
-	  /* A second pivot would indicate the vector length.  */
 	  len = i;
 	}
     }
