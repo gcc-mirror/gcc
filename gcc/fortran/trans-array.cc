@@ -11180,7 +11180,11 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	    comp = gfc_class_data_get (comp);
 
 	  /* Recurse in to PDT components.  */
-	  if ((c->ts.type == BT_DERIVED || c->ts.type == BT_CLASS)
+	  if (((c->ts.type == BT_DERIVED
+		&& !c->attr.allocatable && !c->attr.pointer)
+	       || (c->ts.type == BT_CLASS
+		   && !CLASS_DATA (c)->attr.allocatable
+		   && !CLASS_DATA (c)->attr.pointer))
 	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type)
 	    {
 	      tmp = gfc_check_pdt_dummy (c->ts.u.derived, comp,
