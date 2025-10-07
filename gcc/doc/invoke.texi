@@ -8375,7 +8375,10 @@ known to read the object.)  Annotating the function with attribute
 the object and avoids the warning (@pxref{Common Function Attributes}).
 
 These warnings are only possible in optimizing compilation, because otherwise
-GCC does not keep track of the state of variables.
+GCC does not keep track of the state of variables.  On the other hand,
+@option{-Wmaybe-uninitialized} is known not to warn in many situations
+(false negatives) due to optimizations taking advantage of undefinedness
+of uninitialized uses like constant propagation.
 
 These warnings are made optional because GCC may not be able to determine when
 the code is correct in spite of appearing to have an error.  Here is one
