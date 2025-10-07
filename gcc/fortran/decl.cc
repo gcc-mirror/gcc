@@ -6420,15 +6420,17 @@ verify_bind_c_sym (gfc_symbol *tmp_sym, gfc_typespec *ts,
 			 &(tmp_sym->declared_at));
     }
 
-  /* See if the symbol has been marked as private.  If it has, make sure
-     there is no binding label and warn the user if there is one.  */
+  /* See if the symbol has been marked as private.  If it has, warn if
+     there is a binding label with default binding name.  */
   if (tmp_sym->attr.access == ACCESS_PRIVATE
-      && tmp_sym->binding_label)
-      /* Use gfc_warning_now because we won't say that the symbol fails
-	 just because of this.	*/
-      gfc_warning_now (0, "Symbol %qs at %L is marked PRIVATE but has been "
-		       "given the binding label %qs", tmp_sym->name,
-		       &(tmp_sym->declared_at), tmp_sym->binding_label);
+      && tmp_sym->binding_label
+      && strcmp (tmp_sym->name, tmp_sym->binding_label) == 0
+      && (tmp_sym->attr.flavor == FL_VARIABLE
+	  || tmp_sym->attr.if_source == IFSRC_DECL))
+    gfc_warning (OPT_Wsurprising,
+		 "Symbol %qs at %L is marked PRIVATE but is accessible "
+		 "via its default binding name %qs", tmp_sym->name,
+		 &(tmp_sym->declared_at), tmp_sym->binding_label);
 
   return retval;
 }

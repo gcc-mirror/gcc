@@ -1,5 +1,5 @@
 ! { dg-do compile }
-! { dg-options "-O2 -fdump-tree-optimized" }
+! { dg-options "-O2 -Wsurprising -fdump-tree-optimized" }
 !
 ! PR fortran/47266
 !
