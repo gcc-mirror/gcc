@@ -1,3 +1,25 @@
+2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/sincos-1.c: New test.
+
+2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122177
+	* gcc.target/avr/fminfmax-1.c: New test.
+
+2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/cmpdi-1.c: New test.
+
 2025-10-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113536
