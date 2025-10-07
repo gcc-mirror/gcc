@@ -14869,7 +14869,8 @@ compare_fmv_features (const struct riscv_feature_bits &mask1,
    version.  */
 
 bool
-riscv_same_function_versions (string_slice v1, string_slice v2)
+riscv_same_function_versions (string_slice v1, const_tree, string_slice v2,
+			      const_tree)
 {
   struct riscv_feature_bits mask1, mask2;
   int prio1, prio2;

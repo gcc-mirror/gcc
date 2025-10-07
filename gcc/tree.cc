@@ -15610,7 +15610,8 @@ disjoint_version_decls (tree fn1, tree fn2)
 	      for (string_slice v1 : fn1_versions)
 		{
 		  for (string_slice v2 : fn2_versions)
-		    if (targetm.target_option.same_function_versions (v1, v2))
+		    if (targetm.target_option.same_function_versions
+			  (v1, NULL_TREE, v2, NULL_TREE))
 		      return false;
 		}
 	      return true;
@@ -15628,7 +15629,8 @@ disjoint_version_decls (tree fn1, tree fn2)
 	      if (!v2.is_valid ())
 		v2 = "default";
 	      for (string_slice v1 : fn1_versions)
-		if (targetm.target_option.same_function_versions (v1, v2))
+		if (targetm.target_option.same_function_versions
+		      (v1, NULL_TREE, v2, NULL_TREE))
 		  return false;
 	      return true;
 	    }
@@ -15647,7 +15649,8 @@ disjoint_version_decls (tree fn1, tree fn2)
 	  if (!v2.is_valid ())
 	    v2 = "default";
 
-	  if (targetm.target_option.same_function_versions (v1, v2))
+	  if (targetm.target_option.same_function_versions (v1, NULL_TREE,
+							    v2, NULL_TREE))
 	    return false;
 
 	  return true;
@@ -15695,30 +15698,32 @@ diagnose_versioned_decls (tree old_decl, tree new_decl)
      the two sets of target_clones imply the same set of versions.  */
   if (old_target_clones_attr && new_target_clones_attr)
     {
-      auto_vec<string_slice> fn1_versions = get_clone_versions (old_decl);
-      auto_vec<string_slice> fn2_versions = get_clone_versions (new_decl);
+      auto_vec<string_slice> old_versions = get_clone_versions (old_decl);
+      auto_vec<string_slice> new_versions = get_clone_versions (new_decl);
 
       bool mergeable = true;
 
-      if (fn1_versions.length () != fn2_versions.length ())
+      if (old_versions.length () != new_versions.length ())
 	mergeable = false;
 
       /* Check both inclusion directions.  */
-      for (auto fn1v : fn1_versions)
+      for (auto oldv: old_versions)
 	{
 	  bool matched = false;
-	  for (auto fn2v : fn2_versions)
-	    if (targetm.target_option.same_function_versions (fn1v, fn2v))
+	  for (auto newv: new_versions)
+	    if (targetm.target_option.same_function_versions (oldv, old_decl,
+							      newv, new_decl))
 	      matched = true;
 	  if (!matched)
 	    mergeable = false;
 	}
 
-      for (auto fn2v : fn2_versions)
+      for (auto newv: new_versions)
 	{
 	  bool matched = false;
-	  for (auto fn1v : fn1_versions)
-	    if (targetm.target_option.same_function_versions (fn1v, fn2v))
+	  for (auto oldv: old_versions)
+	    if (targetm.target_option.same_function_versions (oldv, old_decl,
+							      newv, new_decl))
 	      matched = true;
 	  if (!matched)
 	    mergeable = false;
@@ -15767,9 +15772,9 @@ diagnose_versioned_decls (tree old_decl, tree new_decl)
       return true;
     }
 
-  /* The only remaining case is two target_version annotated decls.  Must
-     be mergeable as otherwise are distinct.  */
-  return false;
+  /* The only remaining case is two target_version annotated decls.  */
+  return !targetm.target_option.same_function_versions
+	    (old_target_attr, old_decl, new_target_attr, new_decl);
 }
 
 void

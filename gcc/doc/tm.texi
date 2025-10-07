@@ -11028,9 +11028,15 @@ changed via the optimize attribute or pragma, see
 @code{TARGET_OVERRIDE_OPTIONS_AFTER_CHANGE}
 @end deftypefn
 
-@deftypefn {Target Hook} bool TARGET_OPTION_SAME_FUNCTION_VERSIONS (string_slice @var{fn1}, string_slice @var{fn2})
+@deftypefn {Target Hook} bool TARGET_OPTION_SAME_FUNCTION_VERSIONS (string_slice @var{fn1}, const_tree @var{decl1}, string_slice @var{fn2}, const_tree @var{decl2})
 This target hook returns @code{true} if the target/target-version strings
 @var{fn1} and @var{fn2} imply the same function version.
+
+If @var{decl1} and @var{decl2} are non @code{NULL} then @var{fn1} and
+@var{fn2} are from an earlier and a later declaration respectively, and the
+hook diagnoses any version string incompatibility for these decls.
+If the version strings are incompatible and the declarations can not be
+merged, then hook emits an error.
 @end deftypefn
 
 @deftypefn {Target Hook} bool TARGET_OPTION_FUNCTIONS_B_RESOLVABLE_FROM_A (tree @var{decl_a}, tree @var{decl_v}, tree @var{base})

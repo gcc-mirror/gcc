@@ -595,7 +595,10 @@ hook_stringslice_locationtptr_true (string_slice, location_t *)
 }
 
 bool
-hook_stringslice_stringslice_unreachable (string_slice, string_slice)
+hook_stringslice_consttree_stringslice_consttree_unreachable (string_slice,
+							      const_tree,
+							      string_slice,
+							      const_tree)
 {
   gcc_unreachable ();
 }

@@ -6971,14 +6971,22 @@ changed via the optimize attribute or pragma, see\n\
  void, (void),
  hook_void_void)
 
-/* This function returns true if FN1 and FN2 define the same version of a
-   function.  */
+/* This function returns true if FN1 and FN2 define the same version
+   of a function.
+   If DECL1 and DECL2 is not-null then emit a diagnostic if the versions do
+   imply the same version, but are not mergeable.  */
 DEFHOOK
 (same_function_versions,
  "This target hook returns @code{true} if the target/target-version strings\n\
-@var{fn1} and @var{fn2} imply the same function version.",
- bool, (string_slice fn1, string_slice fn2),
- hook_stringslice_stringslice_unreachable)
+@var{fn1} and @var{fn2} imply the same function version.\n\
+\n\
+If @var{decl1} and @var{decl2} are non @code{NULL} then @var{fn1} and\n\
+@var{fn2} are from an earlier and a later declaration respectively, and the\n\
+hook diagnoses any version string incompatibility for these decls.\n\
+If the version strings are incompatible and the declarations can not be\n\
+merged, then hook emits an error.",
+ bool, (string_slice fn1, const_tree decl1, string_slice fn2, const_tree decl2),
+ hook_stringslice_consttree_stringslice_consttree_unreachable)
 
 /* Checks if we can be certain that function DECL_A could resolve DECL_B.  */
 DEFHOOK

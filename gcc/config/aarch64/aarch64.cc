@@ -21670,19 +21670,22 @@ aarch64_get_function_versions_dispatcher (void *decl)
    function.  */
 
 bool
-aarch64_same_function_versions (string_slice str1, string_slice str2)
+aarch64_same_function_versions (string_slice old_str, const_tree,
+				string_slice new_str, const_tree)
 {
   enum aarch_parse_opt_result parse_res;
-  aarch64_fmv_feature_mask feature_mask1;
-  aarch64_fmv_feature_mask feature_mask2;
-  parse_res = aarch64_parse_fmv_features (str1, NULL,
-					  &feature_mask1, NULL);
-  gcc_assert (parse_res == AARCH_PARSE_OK);
-  parse_res = aarch64_parse_fmv_features (str2, NULL,
-					  &feature_mask2, NULL);
+  aarch64_fmv_feature_mask old_feature_mask;
+  aarch64_fmv_feature_mask new_feature_mask;
+
+  parse_res = aarch64_parse_fmv_features (old_str, NULL, &old_feature_mask,
+					  NULL);
   gcc_assert (parse_res == AARCH_PARSE_OK);
 
-  return feature_mask1 == feature_mask2;
+  parse_res = aarch64_parse_fmv_features (new_str, NULL, &new_feature_mask,
+					  NULL);
+  gcc_assert (parse_res == AARCH_PARSE_OK);
+
+  return old_feature_mask == new_feature_mask;
 }
 
 /* Implement TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  Use an opt-out

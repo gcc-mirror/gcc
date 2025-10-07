@@ -12165,7 +12165,8 @@ loongarch_generate_version_dispatcher_body (void *node_p)
    This assumes that FN1 and FN2 have the same signature.  */
 
 bool
-loongarch_option_same_function_versions (string_slice str1, string_slice str2)
+loongarch_option_same_function_versions (string_slice str1, const_tree,
+					 string_slice str2, const_tree)
 {
   loongarch_fmv_feature_mask feature_mask1;
   loongarch_fmv_feature_mask feature_mask2;
