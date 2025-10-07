@@ -501,6 +501,14 @@ package body Exp_Strm is
          then
             return Prims (RE_I_LF, RE_W_LF);
 
+         elsif Is_IEEE_Extended_Precision (U_Type) then
+            --  For 80-bit IEEE extended precision values, we use a special
+            --  write routine that sets the unused bytes to zero. The reason
+            --  why we don't set Stream_Size to 80 and stream only the
+            --  meaningful bits is that the user is allowed to select the XDR
+            --  implementation of streaming at bind time, and XDR does not
+            --  allow 80 bits floating point values.
+            return Prims (RE_I_LLF, RE_W_80IEEE);
          elsif P_Size = Standard_Long_Long_Float_Size then
             return Prims (RE_I_LLF, RE_W_LLF);
          else

@@ -1900,6 +1900,7 @@ package Rtsfind is
      RE_W_U24,                           -- System.Stream_Attributes
      RE_W_WC,                            -- System.Stream_Attributes
      RE_W_WWC,                           -- System.Stream_Attributes
+     RE_W_80IEEE,                        -- System.Stream_Attributes
 
      RE_Storage_Array_Input,             -- System.Strings.Stream_Ops
      RE_Storage_Array_Input_Blk_IO,      -- System.Strings.Stream_Ops
@@ -3565,6 +3566,7 @@ package Rtsfind is
      RE_W_U24                            => System_Stream_Attributes,
      RE_W_WC                             => System_Stream_Attributes,
      RE_W_WWC                            => System_Stream_Attributes,
+     RE_W_80IEEE                         => System_Stream_Attributes,
 
      RE_Storage_Array_Input              => System_Strings_Stream_Ops,
      RE_Storage_Array_Input_Blk_IO       => System_Strings_Stream_Ops,

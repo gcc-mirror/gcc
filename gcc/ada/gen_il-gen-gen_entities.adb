@@ -630,7 +630,8 @@ begin -- Gen_IL.Gen.Gen_Entities
        --  first named subtype).
 
    Ab (Float_Kind, Real_Kind,
-       (Sm (Digits_Value, Upos)));
+       (Sm (Digits_Value, Upos),
+        Sm (Is_IEEE_Extended_Precision, Flag)));
 
    Cc (E_Floating_Point_Type, Float_Kind);
        --  Floating point type, used for the anonymous base type of the

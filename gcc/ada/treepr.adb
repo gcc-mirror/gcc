@@ -338,6 +338,8 @@ package body Treepr is
             return "Is_Elaboration_Checks_OK_Id";
          when F_Is_Elaboration_Warnings_OK_Id =>
             return "Is_Elaboration_Warnings_OK_Id";
+         when F_Is_IEEE_Extended_Precision =>
+            return "Is_IEEE_Extended_Precision";
          when F_Is_RACW_Stub_Type =>
             return "Is_RACW_Stub_Type";
          when F_LSP_Subprogram =>

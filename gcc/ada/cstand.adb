@@ -298,6 +298,7 @@ package body CStand is
       Build_Float_Type
         (To, UI_To_Int (Digits_Value (From)), Float_Rep (From),
          UI_To_Int (Esize (From)), UI_To_Int (Alignment (From)));
+      Set_Is_IEEE_Extended_Precision (To, Is_IEEE_Extended_Precision (From));
    end Copy_Float_Type;
 
    ----------------------
@@ -2100,16 +2101,21 @@ package body CStand is
       Size      : Positive;
       Alignment : Natural)
    is
-      pragma Unreferenced (Precision);
-      --  See Build_Float_Type for the rationale
-
       Ent : constant Entity_Id := New_Standard_Entity (Name);
 
+      IEEE_Extended_Precision_Size : constant := 80;
    begin
       Set_Defining_Identifier (New_Node (N_Full_Type_Declaration, Stloc), Ent);
       Set_Scope (Ent, Standard_Standard);
       Build_Float_Type
         (Ent, Pos (Digs), Float_Rep, Int (Size), Nat (Alignment / 8));
+
+      --  We mostly disregard Precision, see Build_Float_Type for the
+      --  rationale. The only thing we use it for is to detect 80-bit IEEE
+      --  extended precision, in order to adjust the behavior of 'Write.
+      if Precision = IEEE_Extended_Precision_Size then
+         Set_Is_IEEE_Extended_Precision (Ent);
+      end if;
 
       Append_New_Elmt (Ent, Back_End_Float_Types);
    end Register_Float_Type;

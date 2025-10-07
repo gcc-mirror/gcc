@@ -818,6 +818,7 @@ package Gen_IL.Fields is
       Is_Volatile_Object,
       Is_Volatile_Full_Access,
       Is_Wrapper,
+      Is_IEEE_Extended_Precision,
       Itype_Printed,
       Kill_Elaboration_Checks,
       Known_To_Have_Preelab_Init,

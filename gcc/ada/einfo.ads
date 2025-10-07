@@ -3552,6 +3552,15 @@ package Einfo is
 --       a wrapper to handle inherited class-wide pre/post conditions that call
 --       overridden primitives or as a wrapper of a controlling function.
 
+--    Is_IEEE_Extended_Precision
+--       Defined in floating point types and subtypes. Indicates that the type
+--       corresponds to the 80-bit IEEE extended precision format. That format
+--       effectively uses 80 bits per value, but we set its Size to a larger
+--       value for the reasons explained in the documentation comment of
+--       Build_Float_Type. We also perform some extra work to consistently set
+--       the extra bits to zero in the 'Write implementation, which is why we
+--       need this flag.
+
 --    Itype_Printed
 --       Defined in all type and subtype entities. Set in Itypes if the Itype
 --       has been printed by Sprint. This is used to avoid printing an Itype
@@ -5529,6 +5538,7 @@ package Einfo is
    --    Digits_Value
    --    Float_Rep                            (Float_Rep_Kind)
    --    Default_Aspect_Value                 (base type only)
+   --    Is_IEEE_Extended_Precision
    --    Scalar_Range
    --    Static_Real_Or_String_Predicate
    --    Machine_Emax_Value                   (synth)

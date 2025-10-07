@@ -171,6 +171,8 @@ package System.Stream_Attributes is
    procedure W_WC   (Stream : not null access RST; Item : Wide_Character);
    procedure W_WWC  (Stream : not null access RST; Item : Wide_Wide_Character);
 
+   procedure W_80IEEE (Stream : not null access RST; Item : Long_Long_Float);
+
    function Block_IO_OK return Boolean;
    --  Indicate whether the current setting supports block IO. See
    --  System.Strings.Stream_Ops (s-ststop) for details on block IO.

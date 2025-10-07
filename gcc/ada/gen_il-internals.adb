@@ -311,6 +311,8 @@ package body Gen_IL.Internals is
             return "Is_Elaboration_Warnings_OK_Id";
          when Is_Elaboration_Warnings_OK_Node =>
             return "Is_Elaboration_Warnings_OK_Node";
+         when Is_IEEE_Extended_Precision =>
+            return "Is_IEEE_Extended_Precision";
          when Is_Known_Guaranteed_ABE =>
             return "Is_Known_Guaranteed_ABE";
          when Is_RACW_Stub_Type =>

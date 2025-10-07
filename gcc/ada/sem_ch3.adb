@@ -5944,6 +5944,8 @@ package body Sem_Ch3 is
                Set_Scalar_Range         (Id, Scalar_Range       (T));
                Set_Digits_Value         (Id, Digits_Value       (T));
                Set_Is_Constrained       (Id, Is_Constrained     (T));
+               Set_Is_IEEE_Extended_Precision
+                 (Id, Is_IEEE_Extended_Precision (T));
 
                --  If the floating point type has dimensions, these will be
                --  inherited subsequently when Analyze_Dimensions is called.
@@ -8206,10 +8208,14 @@ package body Sem_Ch3 is
 
          Set_Digits_Value (Implicit_Base, Digits_Value (Parent_Base));
          Set_Float_Rep    (Implicit_Base, Float_Rep    (Parent_Base));
+         Set_Is_IEEE_Extended_Precision
+           (Implicit_Base, Is_IEEE_Extended_Precision (Parent_Base));
 
          if No_Constraint then
             Set_Digits_Value (Derived_Type, Digits_Value (Parent_Type));
          end if;
+         Set_Is_IEEE_Extended_Precision
+           (Derived_Type, Is_IEEE_Extended_Precision (Parent_Base));
 
       elsif Is_Fixed_Point_Type (Parent_Type) then
 
