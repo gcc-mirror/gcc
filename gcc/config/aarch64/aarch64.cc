@@ -20916,25 +20916,29 @@ static aarch64_fmv_feature_datum aarch64_fmv_feature_data[] = {
 static enum aarch_parse_opt_result
 aarch64_parse_fmv_features (string_slice str, aarch64_feature_flags *isa_flags,
 			    aarch64_fmv_feature_mask *feature_mask,
+			    unsigned int *priority,
 			    std::string *invalid_extension)
 {
   if (feature_mask)
     *feature_mask = 0ULL;
+  if (priority)
+    *priority = 0;
+
+  str = str.strip ();
 
   if (str == "default")
     return AARCH_PARSE_OK;
 
-  gcc_assert (str.is_valid ());
-
-  while (str.is_valid ())
+  /* Parse the architecture part of the string.  */
+  string_slice arch_string = string_slice::tokenize (&str, ";");
+  while (arch_string.is_valid ())
     {
       string_slice ext;
 
-      ext = string_slice::tokenize (&str, "+");
+      ext = string_slice::tokenize (&arch_string, "+");
+      ext = ext.strip ();
 
-      gcc_assert (ext.is_valid ());
-
-      if (!ext.is_valid () || ext.empty ())
+      if (ext.empty ())
 	return AARCH_PARSE_MISSING_ARG;
 
       int num_features = ARRAY_SIZE (aarch64_fmv_feature_data);
@@ -20971,6 +20975,60 @@ aarch64_parse_fmv_features (string_slice str, aarch64_feature_flags *isa_flags,
 	}
     }
 
+  /* Parse any extra arguments.  */
+  unsigned int priority_res = 0;
+  while (str.is_valid ())
+    {
+      string_slice argument = string_slice::tokenize (&str, ";").strip ();
+      /* Save the whole argument for diagnostics.  */
+      string_slice arg = argument;
+      string_slice name = string_slice::tokenize (&argument, "=").strip ();
+      argument = argument.strip ();
+      if (!argument.is_valid () || argument.empty ())
+	{
+	  *invalid_extension = std::string (arg.begin (), arg.size ());
+	  return AARCH_PARSE_INVALID_FEATURE;
+	}
+
+      /* priority=N argument (only one is allowed).  */
+      if (name == "priority" && priority_res == 0)
+	{
+	  /* Priority values can only be between 1 and 255, so any greater than
+	     3 digits long are invalid.  */
+	  if (argument.size () > 3)
+	    {
+	      *invalid_extension = std::string (arg.begin (), arg.size ());
+	      return AARCH_PARSE_INVALID_FEATURE;
+	    }
+
+	  /* Parse the string value.  */
+	  for (char c : argument)
+	    {
+	      if (!ISDIGIT (c))
+		{
+		  priority_res = 0;
+		  break;
+		}
+	      priority_res = 10 * priority_res + c - '0';
+	    }
+
+	  /* Check the entire string parsed, and that the value is in range.  */
+	  if (priority_res < 1 || priority_res > 255)
+	    {
+	      *invalid_extension = std::string (arg.begin (), arg.size ());
+	      return AARCH_PARSE_INVALID_FEATURE;
+	    }
+	  if (priority)
+	    *priority = priority_res;
+	}
+      else
+	{
+	  /* Unrecognised argument.  */
+	  *invalid_extension = std::string (arg.begin (), arg.size ());
+	  return AARCH_PARSE_INVALID_FEATURE;
+	}
+    }
+
   return AARCH_PARSE_OK;
 }
 
@@ -21002,7 +21060,7 @@ aarch64_process_target_version_attr (tree args)
   auto isa_flags = aarch64_asm_isa_flags;
 
   std::string invalid_extension;
-  parse_res = aarch64_parse_fmv_features (str, &isa_flags, NULL,
+  parse_res = aarch64_parse_fmv_features (str, &isa_flags, NULL, NULL,
 					  &invalid_extension);
 
   if (parse_res == AARCH_PARSE_OK)
@@ -21091,7 +21149,7 @@ aarch64_option_valid_version_attribute_p (tree fndecl, tree, tree args, int)
    add or remove redundant feature requirements.  */
 
 static aarch64_fmv_feature_mask
-get_feature_mask_for_version (tree decl)
+get_feature_mask_for_version (tree decl, unsigned int *priority)
 {
   tree version_attr = lookup_attribute ("target_version",
 					DECL_ATTRIBUTES (decl));
@@ -21105,7 +21163,7 @@ get_feature_mask_for_version (tree decl)
   aarch64_fmv_feature_mask feature_mask;
 
   parse_res = aarch64_parse_fmv_features (version_string, NULL,
-					  &feature_mask, NULL);
+					  &feature_mask, priority, NULL);
 
   /* We should have detected any errors before getting here.  */
   gcc_assert (parse_res == AARCH_PARSE_OK);
@@ -21141,9 +21199,13 @@ compare_feature_masks (aarch64_fmv_feature_mask mask1,
 int
 aarch64_compare_version_priority (tree decl1, tree decl2)
 {
-  auto mask1 = get_feature_mask_for_version (decl1);
-  auto mask2 = get_feature_mask_for_version (decl2);
+  unsigned int priority_1 = 0;
+  unsigned int priority_2 = 0;
+  auto mask1 = get_feature_mask_for_version (decl1, &priority_1);
+  auto mask2 = get_feature_mask_for_version (decl2, &priority_2);
 
+  if (priority_1 != priority_2)
+    return priority_1 > priority_2 ? 1 : -1;
   return compare_feature_masks (mask1, mask2);
 }
 
@@ -21160,9 +21222,9 @@ aarch64_functions_b_resolvable_from_a (tree decl_a, tree decl_b, tree baseline)
   auto a_version = get_target_version (decl_a);
   auto b_version = get_target_version (decl_b);
   if (a_version.is_valid ())
-    aarch64_parse_fmv_features (a_version, &isa_a, NULL, NULL);
+    aarch64_parse_fmv_features (a_version, &isa_a, NULL, NULL, NULL);
   if (b_version.is_valid ())
-    aarch64_parse_fmv_features (b_version, &isa_b, NULL, NULL);
+    aarch64_parse_fmv_features (b_version, &isa_b, NULL, NULL, NULL);
 
   /* Are there any bits of b that arent in a.  */
   if (isa_b & (~isa_a))
@@ -21240,7 +21302,7 @@ aarch64_mangle_decl_assembler_name (tree decl, tree id)
       else if (DECL_FUNCTION_VERSIONED (decl))
 	{
 	  aarch64_fmv_feature_mask feature_mask
-	    = get_feature_mask_for_version (decl);
+	    = get_feature_mask_for_version (decl, NULL);
 
 	  if (feature_mask == 0ULL)
 	    return clone_identifier (id, "default");
@@ -21543,7 +21605,7 @@ dispatch_function_versions (tree dispatch_decl,
   FOR_EACH_VEC_ELT_REVERSE ((*fndecls), i, version_decl)
     {
       aarch64_fmv_feature_mask feature_mask
-	= get_feature_mask_for_version (version_decl);
+	= get_feature_mask_for_version (version_decl, NULL);
       *empty_bb = add_condition_to_bb (dispatch_decl, version_decl,
 				       feature_mask, mask_var, *empty_bb);
     }
@@ -21666,26 +21728,46 @@ aarch64_get_function_versions_dispatcher (void *decl)
   return dispatch_decl;
 }
 
-/* This function returns true if STR1 and STR2 are version strings for the same
-   function.  */
+/* This function returns true if OLD_STR and NEW_STR are version strings for the
+   same function.
+   Emits a diagnostic if the new version should not be merged with the old
+   version due to a prioriy value mismatch.  */
 
 bool
-aarch64_same_function_versions (string_slice old_str, const_tree,
-				string_slice new_str, const_tree)
+aarch64_same_function_versions (string_slice old_str, const_tree old_decl,
+				string_slice new_str, const_tree new_decl)
 {
   enum aarch_parse_opt_result parse_res;
   aarch64_fmv_feature_mask old_feature_mask;
   aarch64_fmv_feature_mask new_feature_mask;
+  unsigned int old_priority;
+  unsigned int new_priority;
 
   parse_res = aarch64_parse_fmv_features (old_str, NULL, &old_feature_mask,
-					  NULL);
+					  &old_priority, NULL);
   gcc_assert (parse_res == AARCH_PARSE_OK);
 
   parse_res = aarch64_parse_fmv_features (new_str, NULL, &new_feature_mask,
-					  NULL);
+					  &new_priority, NULL);
   gcc_assert (parse_res == AARCH_PARSE_OK);
 
-  return old_feature_mask == new_feature_mask;
+  if (old_feature_mask != new_feature_mask)
+    return false;
+
+  /* Accept the case where the old version had a defined priority value but the
+     new version does not, as we infer the new version inherits the same
+     priority.  */
+  if (old_decl && new_decl && old_priority != new_priority
+      && (new_priority != 0))
+    {
+      error ("%q+D has an inconsistent function multi-version priority value",
+	     new_decl);
+      inform (DECL_SOURCE_LOCATION (old_decl),
+	      "%q+D was previously declared here with priority value of %d",
+	      old_decl, old_priority);
+    }
+
+  return true;
 }
 
 /* Implement TARGET_FUNCTION_ATTRIBUTE_INLINABLE_P.  Use an opt-out
@@ -30927,6 +31009,20 @@ aarch64_merge_decl_attributes (tree olddecl, tree newdecl)
 	aarch64_check_arm_new_against_type (TREE_VALUE (new_new), newdecl);
     }
 
+  /* For target_version and target_clones, make sure we take the old version
+     as priority syntax cannot be added addetively.  */
+  tree old_target_version = lookup_attribute ("target_version", old_attrs);
+  tree new_target_version = lookup_attribute ("target_version", new_attrs);
+
+  if (old_target_version && new_target_version)
+    TREE_VALUE (new_target_version) = TREE_VALUE (old_target_version);
+
+  tree old_target_clones = lookup_attribute ("target_clones", old_attrs);
+  tree new_target_clones = lookup_attribute ("target_clones", new_attrs);
+
+  if (old_target_clones && new_target_clones)
+    TREE_VALUE (new_target_clones) = TREE_VALUE (old_target_clones);
+
   return merge_attributes (old_attrs, new_attrs);
 }
 
@@ -32942,8 +33038,8 @@ aarch64_check_target_clone_version (string_slice str, location_t *loc)
   auto isa_flags = aarch64_asm_isa_flags;
   std::string invalid_extension;
 
-  parse_res
-    = aarch64_parse_fmv_features (str, &isa_flags, NULL, &invalid_extension);
+  parse_res = aarch64_parse_fmv_features (str, &isa_flags, NULL, NULL,
+					  &invalid_extension);
 
   if (loc == NULL)
     return parse_res == AARCH_PARSE_OK;
