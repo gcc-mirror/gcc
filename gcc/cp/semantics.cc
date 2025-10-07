@@ -3327,6 +3327,13 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 
   orig_fn = fn;
 
+  if (concept_check_p (fn))
+    {
+      error_at (EXPR_LOC_OR_LOC (fn, input_location),
+		"cannot call a concept as a function");
+      return error_mark_node;
+    }
+
   if (processing_template_decl)
     {
       /* If FN is a local extern declaration (or set thereof) in a template,
@@ -3455,12 +3462,6 @@ finish_call_expr (tree fn, vec<tree, va_gc> **args, bool disallow_virtual,
 				       : LOOKUP_NORMAL),
 				      /*fn_p=*/NULL,
 				      complain);
-    }
-  else if (concept_check_p (fn))
-    {
-      error_at (EXPR_LOC_OR_LOC (fn, input_location),
-		"cannot call a concept as a function");
-      return error_mark_node;
     }
   else if (is_overloaded_fn (fn))
     {
