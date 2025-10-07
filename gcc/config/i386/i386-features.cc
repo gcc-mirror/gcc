@@ -545,7 +545,7 @@ scalar_chain::build (bitmap candidates, unsigned insn_uid, bitmap disallowed)
   return true;
 }
 
-/* Return a cost of building a vector costant
+/* Return a cost of building a vector constant
    instead of using a scalar one.  */
 
 int

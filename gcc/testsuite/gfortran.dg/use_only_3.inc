@@ -397,7 +397,7 @@ END MODULE control_flags
      REAL(DP) :: ecutw = 0.0d0
      REAL(DP) :: gcutw = 0.0d0
 
-     !   values for costant cut-off computations
+     !   values for constant cut-off computations
 
      REAL(DP) :: ecfix = 0.0d0     ! value of the constant cut-off
      REAL(DP) :: ecutz = 0.0d0     ! height of the penalty function (above ecfix)

@@ -7691,7 +7691,7 @@ trees_in::tree_node_bools (tree t)
 }
 
 
-/* Write out the lang-specifc vals of node T.  */
+/* Write out the lang-specific vals of node T.  */
 
 void
 trees_out::lang_vals (tree t)

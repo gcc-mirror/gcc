@@ -200,10 +200,10 @@ cpu_opt_ext_random=cpu/generic/opt/bits/opt_random.h
 
 # Set any OS-dependent bits.
 # Set the os_include_dir.
-# Set the error_costants_dir.
+# Set the error_constants_dir.
 # Set c_model, c_compatibility here.
 # If atomic ops and/or numeric limits are OS-specific rather than
-# CPU-specifc, set those here too.
+# CPU-specific, set those here too.
 # THIS TABLE IS SORTED.  KEEP IT THAT WAY.
 case "${host_os}" in
   aix[56789]*)

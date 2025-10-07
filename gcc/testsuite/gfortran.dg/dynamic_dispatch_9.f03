@@ -1,6 +1,6 @@
 ! { dg-do run }
 !
-! [OOP] Ensure that different specifc interfaces are
+! [OOP] Ensure that different specific interfaces are
 ! handled properly by dynamic dispatch.
 !
 ! Contributed by Salvatore Filippone <sfilippone@uniroma2.it>

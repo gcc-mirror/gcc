@@ -1137,7 +1137,7 @@ try_vectorize_loop_1 (hash_table<simduid_to_vf> *&simduid_to_vf_htab,
 		      || ifn == IFN_MASK_STORE
 		      || ifn == IFN_MASK_CALL
 		      /* Don't keep the if-converted parts when the ifn with
-			 specifc type is not supported by the backend.  */
+			 specific type is not supported by the backend.  */
 		      || (direct_internal_fn_p (ifn)
 			  && !direct_internal_fn_supported_p
 			  (call, OPTIMIZE_FOR_SPEED)))

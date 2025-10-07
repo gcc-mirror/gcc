@@ -72,7 +72,7 @@ along with GCC; see the file COPYING3.  If not see
 enum jump_func_type
 {
   IPA_JF_UNKNOWN = 0,  /* newly allocated and zeroed jump functions default */
-  IPA_JF_CONST,             /* represented by field costant */
+  IPA_JF_CONST,             /* represented by field constant */
   IPA_JF_PASS_THROUGH,	    /* represented by field pass_through */
   IPA_JF_LOAD_AGG,	    /* represented by field load_agg */
   IPA_JF_ANCESTOR	    /* represented by field ancestor */

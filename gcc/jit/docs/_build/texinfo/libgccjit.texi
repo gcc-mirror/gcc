@@ -15740,7 +15740,7 @@ The jit testsuite detects if
 @code{RUN_UNDER_VALGRIND} is present in the
 environment (with any value).  If it is present, it runs the test client
 code under valgrind@footnote{https://valgrind.org},
-specifcally, the default
+specifically, the default
 memcheck@footnote{https://valgrind.org/docs/manual/mc-manual.html}
 tool with
 --leak-check=full@footnote{https://valgrind.org/docs/manual/mc-manual.html#opt.leak-check}.
