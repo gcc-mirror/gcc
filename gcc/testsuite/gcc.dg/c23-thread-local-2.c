@@ -25,6 +25,7 @@ static thread_local int f; /* { dg-error "redefinition" } */
    rather than defaulting to size 1.  */
 thread_local int g[]; /* { dg-error "storage size" } */
 static thread_local int h[]; /* { dg-error "array size missing" } */
+/* { dg-error "storage size" "storage size" { target *-*-* } .-1 } */
 extern thread_local int i[];
 
 thread_local int j[] = { 0 };
