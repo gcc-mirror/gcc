@@ -1,3 +1,12 @@
+2025-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* pt.cc (any_template_parm_r) <case TEMPLATE_TYPE_PARM>:
+	Don't walk TREE_TYPE.
+
 2025-09-15  Matthias Kretz  <m.kretz@gsi.de>
 
 	Backported from master:

@@ -1,3 +1,19 @@
+2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122187
+	* gcc.target/avr/torture/pr122187.c: New test.
+
+2025-10-07  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-09-20  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/121981
+	* g++.dg/cpp2a/concepts-placeholder15.C: New test.
+
 2025-10-05  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
