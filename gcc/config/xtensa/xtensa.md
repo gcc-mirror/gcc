@@ -90,10 +90,6 @@
 (define_mode_iterator HQI [HI QI])
 (define_mode_attr mode_bits [(HI "16") (QI "8")])
 
-;; This mode iterator allows the SI and HI patterns to be defined from
-;; the same template.
-(define_mode_iterator SHI [SI HI])
-
 ;; This iterator and attribute allow signed/unsigned FP truncations to be
 ;; generated from one template.
 (define_code_iterator any_fix [fix unsigned_fix])
@@ -1285,30 +1281,6 @@
   }
   [(set_attr "mode" "SI")])
 
-(define_split
-  [(set (match_operand:SHI 0 "register_operand")
-	(match_operand:SHI 1 "constantpool_operand"))]
-  "!optimize_debug && reload_completed"
-  [(const_int 0)]
-{
-  if (xtensa_constantsynth (operands[0], operands[1]))
-    DONE;
-  FAIL;
-})
-
-(define_split
-  [(set (match_operand:SHI 0 "register_operand")
-	(match_operand:SHI 1 "const_int_operand"))]
-  "!optimize_debug && reload_completed
-   && !TARGET_CONST16 && TARGET_AUTO_LITPOOLS
-   && ! xtensa_simm12b (INTVAL (operands[1]))"
-  [(const_int 0)]
-{
-  if (xtensa_constantsynth (operands[0], operands[1]))
-    DONE;
-  FAIL;
-})
-
 ;; 16-bit Integer moves
 
 (define_expand "movhi"
@@ -1508,29 +1480,6 @@
   [(set_attr "type"	"fstore")
    (set_attr "mode"	"SF")
    (set_attr "length"	"3")])
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand")
-	(match_operand 1 "constantpool_operand"))]
-  "!optimize_debug && reload_completed"
-  [(const_int 0)]
-{
-  if (xtensa_constantsynth (operands[0], operands[1]))
-    DONE;
-  FAIL;
-})
-
-(define_split
-  [(set (match_operand:SF 0 "register_operand")
-	(match_operand 1 "const_double_operand"))]
-  "!optimize_debug && reload_completed
-   && !TARGET_CONST16 && TARGET_AUTO_LITPOOLS"
-  [(const_int 0)]
-{
-  if (xtensa_constantsynth (operands[0], operands[1]))
-    DONE;
-  FAIL;
-})
 
 ;; 64-bit floating point moves
 
