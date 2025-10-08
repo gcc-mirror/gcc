@@ -2,7 +2,7 @@
 /* { dg-options "-O3" } */
 int a, b, c, d;
 int main() {
-  unsigned long e = 10000000000;
+  unsigned long long e = 10000000000ULL;
   unsigned f;
   int g;
   while (a) {
