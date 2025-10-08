@@ -60,13 +60,12 @@ enum aarch64_type_qualifiers
   qualifier_modal_float = 0x2000,
 };
 
-#define ENTRY(E, M, Q, G) E,
+#define DEF_SIMD_TYPE(E, M, Q, G) E,
 enum aarch64_simd_type
 {
 #include "aarch64-simd-builtin-types.def"
   ARM_NEON_H_TYPES_LAST
 };
-#undef ENTRY
 
 struct aarch64_simd_type_info
 {

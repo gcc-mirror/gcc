@@ -254,13 +254,12 @@ struct mode_suffix_info
   units_index displacement_units;
 };
 
-#define ENTRY(E, M, Q, G) E,
+#define DEF_SIMD_TYPE(E, M, Q, G) E,
 enum aarch64_simd_type
 {
 #include "aarch64-simd-builtin-types.def"
   ARM_NEON_H_TYPES_LAST
 };
-#undef ENTRY
 
 /* Static information about a type suffix.  */
 struct type_suffix_info

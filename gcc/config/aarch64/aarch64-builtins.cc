@@ -812,13 +812,11 @@ const char *aarch64_scalar_builtin_types[] = {
 extern const aarch64_simd_type_info aarch64_simd_types[];
 extern GTY(()) aarch64_simd_type_info_trees aarch64_simd_types_trees[];
 
-#undef ENTRY
-#define ENTRY(E, M, Q, G)  \
+#define DEF_SIMD_TYPE(E, M, Q, G) \
   {E, "__" #E, #G "__" #E, E_##M##mode, qualifier_##Q},
 const struct aarch64_simd_type_info aarch64_simd_types[] = {
 #include "aarch64-simd-builtin-types.def"
 };
-#undef ENTRY
 
 struct aarch64_simd_type_info_trees
 aarch64_simd_types_trees[ARRAY_SIZE (aarch64_simd_types)];
