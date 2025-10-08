@@ -83,16 +83,17 @@ static struct generated generated_ranges[] =
   { "CJK UNIFIED IDEOGRAPH-", 0x3400, 0x4dbf, 0, 1, 0 }, /* NR2 rules */
   { "CJK UNIFIED IDEOGRAPH-", 0x4e00, 0x9fff, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x20000, 0x2a6df, 0, 1, 0 },
-  { "CJK UNIFIED IDEOGRAPH-", 0x2a700, 0x2b739, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x2a700, 0x2b73f, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2b740, 0x2b81d, 0, 1, 0 },
-  { "CJK UNIFIED IDEOGRAPH-", 0x2b820, 0x2cea1, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x2b820, 0x2cead, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2ceb0, 0x2ebe0, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x2ebf0, 0x2ee5d, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x30000, 0x3134a, 0, 1, 0 },
   { "CJK UNIFIED IDEOGRAPH-", 0x31350, 0x323af, 0, 1, 0 },
+  { "CJK UNIFIED IDEOGRAPH-", 0x323b0, 0x33479, 0, 1, 0 },
   { "EGYPTIAN HIEROGLYPH-", 0x13460, 0x143fa, 0, 2, 0 },
-  { "TANGUT IDEOGRAPH-", 0x17000, 0x187f7, 0, 3, 0 },
-  { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d08, 0, 3, 0 },
+  { "TANGUT IDEOGRAPH-", 0x17000, 0x187ff, 0, 3, 0 },
+  { "TANGUT IDEOGRAPH-", 0x18d00, 0x18d1e, 0, 3, 0 },
   { "KHITAN SMALL SCRIPT CHARACTER-", 0x18b00, 0x18cd5, 0, 4, 0 },
   { "NUSHU CHARACTER-", 0x1b170, 0x1b2fb, 0, 5, 0 },
   { "CJK COMPATIBILITY IDEOGRAPH-", 0xf900, 0xfa6d, 0, 6, 0 },
@@ -671,7 +672,7 @@ write_copyright (void)
    <http://www.gnu.org/licenses/>.\n\
 \n\
 \n\
-   Copyright (C) 1991-2024 Unicode, Inc.  All rights reserved.\n\
+   Copyright (C) 1991-2025 Unicode, Inc.  All rights reserved.\n\
    Distributed under the Terms of Use in\n\
    http://www.unicode.org/copyright.html.\n\
 \n\
@@ -717,7 +718,7 @@ write_dict (void)
 
   printf ("static const char uname2c_dict[%ld] =\n", (long) (dict_size + 1));
   for (i = 0; i < dict_size; i += 77)
-    printf ("\"%.77s\"%s\n", dict + i, i + 76 > dict_size ? ";" : "");
+    printf ("\"%.77s\"%s\n", dict + i, i + 77 >= dict_size ? ";" : "");
   puts ("");
 }
 

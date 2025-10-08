@@ -122,7 +122,7 @@ static_assert( uc::__is_extended_pictographic(U'\N{SOUTH WEST ARROW}') );
 static_assert( ! uc::__is_extended_pictographic(U'\N{SOUTH WEST ARROW}' + 1) );
 static_assert( uc::__is_extended_pictographic(U'\N{POSTBOX}') );
 static_assert( ! uc::__is_extended_pictographic(U'\U0001EFFF') );
-static_assert( uc::__is_extended_pictographic(U'\U0001F000') );
+static_assert( uc::__is_extended_pictographic(U'\U0001F004') );
 static_assert( uc::__is_extended_pictographic(U'\U0001FFFD') );
 static_assert( ! uc::__is_extended_pictographic(U'\U0001FFFE') );
 static_assert( ! uc::__is_extended_pictographic(U'\U0001FFFF') );

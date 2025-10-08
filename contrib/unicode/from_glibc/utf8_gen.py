@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 # -*- coding: utf-8 -*-
 # Copyright (C) 2014-2025 Free Software Foundation, Inc.
+# Copyright The GNU Toolchain Authors.
 # This file is part of the GNU C Library.
 #
 # The GNU C Library is free software; you can redistribute it and/or
@@ -10,7 +11,7 @@
 #
 # The GNU C Library is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
 # Lesser General Public License for more details.
 #
 # You should have received a copy of the GNU Lesser General Public
@@ -28,7 +29,6 @@ It will output UTF-8 file
 '''
 
 import argparse
-import sys
 import re
 import unicode_utils
 
@@ -200,30 +200,40 @@ def write_header_charmap(outfile):
 
 def write_header_width(outfile, unicode_version):
     '''Writes the header on top of the WIDTH section to the output file'''
-    outfile.write('% Character width according to Unicode '
-                  + '{:s}.\n'.format(unicode_version))
-    outfile.write('% - Default width is 1.\n')
+    outfile.write('% Character width according to Unicode {:s}.\n'.format(unicode_version))
+    outfile.write('% Width is determined by the following rules, in order of decreasing precedence:\n')
+    outfile.write('% - U+00AD SOFT HYPHEN has width 1, as a special case for compatibility (https://archive.is/b5Ck).\n')
+    outfile.write('% - U+115F HANGUL CHOSEONG FILLER has width 2.\n')
+    outfile.write('%   This character stands in for an intentionally omitted leading consonant\n')
+    outfile.write('%   in a Hangul syllable block; as such it must be assigned width 2 despite its lack\n')
+    outfile.write('%   of visible display to ensure that the complete block has the correct width.\n')
+    outfile.write('%   (See below for more information on Hangul syllables.)\n')
+    outfile.write('% - Combining jungseong and jongseong Hangul jamo have width 0; generated from\n')
+    outfile.write('%   "grep \'^[^;]*;[VT]\' HangulSyllableType.txt".\n')
+    outfile.write('%   One composed Hangul "syllable block" like 퓛 is made up of\n')
+    outfile.write('%   two to three individual component characters called "jamo".\n')
+    outfile.write('%   The complete block must have total width 2;\n')
+    outfile.write('%   to achieve this, we assign a width of 2 to leading "choseong" jamo,\n')
+    outfile.write('%   and of 0 to medial vowel "jungseong" and trailing "jongseong" jamo.\n')
+    outfile.write('% - Non-spacing and enclosing marks have width 0; generated from\n')
+    outfile.write('%   "grep -E \'^[^;]*;[^;]*;(Mn|Me);\' UnicodeData.txt".\n')
+    outfile.write('% - "Default_Ignorable_Code_Point"s have width 0; generated from\n')
+    outfile.write('%   "grep \'^[^;]*;\\s*Default_Ignorable_Code_Point\' DerivedCoreProperties.txt".\n')
     outfile.write('% - Double-width characters have width 2; generated from\n')
-    outfile.write('%        "grep \'^[^;]*;\\s*[WF]\' EastAsianWidth.txt"\n')
-    outfile.write('% - Non-spacing characters have width 0; '
-                  + 'generated from PropList.txt or\n')
-    outfile.write('%   "grep \'^[^;]*;[^;]*;[^;]*;[^;]*;NSM;\' '
-                  + 'UnicodeData.txt"\n')
-    outfile.write('% - Format control characters have width 0; '
-                  + 'generated from\n')
-    outfile.write("%   \"grep '^[^;]*;[^;]*;Cf;' UnicodeData.txt\"\n")
-#   Not needed covered by Cf
-#    outfile.write("% - Zero width characters have width 0; generated from\n")
-#    outfile.write("%   \"grep '^[^;]*;ZERO WIDTH ' UnicodeData.txt\"\n")
+    outfile.write('%   "grep \'^[^;]*;[WF]\' EastAsianWidth.txt".\n')
+    outfile.write('% - Default width for all other characters is 1.\n')
     outfile.write("WIDTH\n")
 
-def process_width(outfile, ulines, elines, plines):
-    '''ulines are lines from UnicodeData.txt, elines are lines from
-    EastAsianWidth.txt containing characters with width “W” or “F”,
-    plines are lines from PropList.txt which contain characters
-    with the property “Prepended_Concatenation_Mark”.
-
+def process_width(outfile, ulines, dlines, elines, klines):
+    '''ulines are lines from UnicodeData.txt.
+    elines are lines from EastAsianWidth.txt containing characters with width
+    “W” or “F”.
+    dlines are lines from DerivedCoreProperties.txt which contain
+    characters with the property “Default_Ignorable_Code_Point”.
+    klines are lines from HangulSyllableType.txt which contain characters
+    with syllable type “V” or “T”.
     '''
+    # Wide and fullwidth characters have width 1
     width_dict = {}
     for line in elines:
         fields = line.split(";")
@@ -235,14 +245,14 @@ def process_width(outfile, ulines, elines, plines):
                          int(code_points[1], 16)+1):
             width_dict[key] = 2
 
+    # Nonspacing and enclosing marks have width 0
     for line in ulines:
         fields = line.split(";")
-        if fields[4] == "NSM" or fields[2] in ("Cf", "Me", "Mn"):
+        if fields[4] == "NSM" or fields[2] in ("Me", "Mn"):
             width_dict[int(fields[0], 16)] = 0
 
-    for line in plines:
-        # Characters with the property “Prepended_Concatenation_Mark”
-        # should have the width 1:
+    # Conjoining vowel and trailing jamo have width 0
+    for line in klines:
         fields = line.split(";")
         if not '..' in fields[0]:
             code_points = (fields[0], fields[0])
@@ -250,21 +260,26 @@ def process_width(outfile, ulines, elines, plines):
             code_points = fields[0].split("..")
         for key in range(int(code_points[0], 16),
                          int(code_points[1], 16)+1):
-            del width_dict[key] # default width is 1
+            width_dict[key] = 0
 
-    # handle special cases for compatibility
-    for key in list((0x00AD,)):
-        # https://www.cs.tut.fi/~jkorpela/shy.html
-        if key in width_dict:
-            del width_dict[key] # default width is 1
-    for key in list(range(0x1160, 0x1200)):
-        # Hangul jungseong and jongseong:
-        if key in unicode_utils.UNICODE_ATTRIBUTES:
-            width_dict[key] = 0
-    for key in list(range(0xD7B0, 0xD800)):
-        # Hangul jungseong and jongseong:
-        if key in unicode_utils.UNICODE_ATTRIBUTES:
-            width_dict[key] = 0
+    # “Default_Ignorable_Code_Point”s have width 0
+    for line in dlines:
+        fields = line.split(";")
+        if not '..' in fields[0]:
+            code_points = (fields[0], fields[0])
+        else:
+            code_points = fields[0].split("..")
+        for key in range(int(code_points[0], 16),
+                         int(code_points[1], 16)+1):
+            width_dict[key] = 0 # default width is 1
+
+
+    # Special case: U+00AD SOFT HYPHEN
+    del width_dict[0x00AD]
+
+    # Special case: U+115F HANGUL CHOSEONG FILLER
+    width_dict[0x115F] = 2
+
     for key in list(range(0x3248, 0x3250)):
         # These are “A” which means we can decide whether to treat them
         # as “W” or “N” based on context:
@@ -302,7 +317,7 @@ def process_width(outfile, ulines, elines, plines):
 if __name__ == "__main__":
     PARSER = argparse.ArgumentParser(
         description='''
-        Generate a UTF-8 file from UnicodeData.txt, EastAsianWidth.txt, and PropList.txt.
+        Generate a UTF-8 file from UnicodeData.txt, DerivedCoreProperties.txt, EastAsianWidth.txt, and HangulSyllableType.txt
         ''')
     PARSER.add_argument(
         '-u', '--unicode_data_file',
@@ -312,6 +327,13 @@ if __name__ == "__main__":
         help=('The UnicodeData.txt file to read, '
               + 'default: %(default)s'))
     PARSER.add_argument(
+        '-d', '--derived_core_properties_file',
+        nargs='?',
+        type=str,
+        default='DerivedCoreProperties.txt',
+        help=('The DerivedCoreProperties.txt file to read, '
+              + 'default: %(default)s'))
+    PARSER.add_argument(
         '-e', '--east_asian_with_file',
         nargs='?',
         type=str,
@@ -319,11 +341,11 @@ if __name__ == "__main__":
         help=('The EastAsianWidth.txt file to read, '
               + 'default: %(default)s'))
     PARSER.add_argument(
-        '-p', '--prop_list_file',
+        '-k', '--hangul_syllable_type_file',
         nargs='?',
         type=str,
-        default='PropList.txt',
-        help=('The PropList.txt file to read, '
+        default='HangulSyllableType.txt',
+        help=('The HangulSyllableType.txt file to read, '
               + 'default: %(default)s'))
     PARSER.add_argument(
         '--unicode_version',
@@ -336,27 +358,35 @@ if __name__ == "__main__":
     unicode_utils.fill_attributes(ARGS.unicode_data_file)
     with open(ARGS.unicode_data_file, mode='r') as UNIDATA_FILE:
         UNICODE_DATA_LINES = UNIDATA_FILE.readlines()
-    with open(ARGS.east_asian_with_file, mode='r') as EAST_ASIAN_WIDTH_FILE:
-        EAST_ASIAN_WIDTH_LINES = []
-        for LINE in EAST_ASIAN_WIDTH_FILE:
-            # If characters from EastAsianWidth.txt which are from
-            # reserved ranges (i.e. not yet assigned code points)
+    with open(ARGS.derived_core_properties_file, mode='r') as DERIVED_CORE_PROPERTIES_FILE:
+        DERIVED_CORE_PROPERTIES_LINES = []
+        for LINE in DERIVED_CORE_PROPERTIES_FILE:
+            # If characters which are from reserved ranges
+            # (i.e. not yet assigned code points)
             # are added to the WIDTH section of the UTF-8 file, then
             # “make check” produces “Unknown Character” errors for
             # these code points because such unassigned code points
             # are not in the CHARMAP section of the UTF-8 file.
             #
-            # Therefore, we skip all reserved code points when reading
-            # the EastAsianWidth.txt file.
-            if re.match(r'.*<reserved-.+>\.\.<reserved-.+>.*', LINE):
+            # Therefore, we skip all reserved code points.
+            if re.match(r'.*<reserved-.+>', LINE):
+                continue
+            if re.match(r'^[^;]*;\s*Default_Ignorable_Code_Point', LINE):
+                DERIVED_CORE_PROPERTIES_LINES.append(LINE.strip())
+    with open(ARGS.east_asian_with_file, mode='r') as EAST_ASIAN_WIDTH_FILE:
+        EAST_ASIAN_WIDTH_LINES = []
+        for LINE in EAST_ASIAN_WIDTH_FILE:
+            if re.match(r'.*<reserved-.+>', LINE):
                 continue
             if re.match(r'^[^;]*;\s*[WF]', LINE):
                 EAST_ASIAN_WIDTH_LINES.append(LINE.strip())
-    with open(ARGS.prop_list_file, mode='r') as PROP_LIST_FILE:
-        PROP_LIST_LINES = []
-        for LINE in PROP_LIST_FILE:
-            if re.match(r'^[^;]*;[\s]*Prepended_Concatenation_Mark', LINE):
-                PROP_LIST_LINES.append(LINE.strip())
+    with open(ARGS.hangul_syllable_type_file, mode='r') as HANGUL_SYLLABLE_TYPE_FILE:
+        HANGUL_SYLLABLE_TYPE_LINES = []
+        for LINE in HANGUL_SYLLABLE_TYPE_FILE:
+            if re.match(r'.*<reserved-.+>', LINE):
+                continue
+            if re.match(r'^[^;]*;\s*[VT]', LINE):
+                HANGUL_SYLLABLE_TYPE_LINES.append(LINE.strip())
     with open('UTF-8', mode='w') as OUTFILE:
         # Processing UnicodeData.txt and write CHARMAP to UTF-8 file
         write_header_charmap(OUTFILE)
@@ -366,6 +396,7 @@ if __name__ == "__main__":
         write_header_width(OUTFILE, ARGS.unicode_version)
         process_width(OUTFILE,
                       UNICODE_DATA_LINES,
+                      DERIVED_CORE_PROPERTIES_LINES,
                       EAST_ASIAN_WIDTH_LINES,
-                      PROP_LIST_LINES)
+                      HANGUL_SYLLABLE_TYPE_LINES)
         OUTFILE.write("END WIDTH\n")
