@@ -32,6 +32,10 @@ F7_ASM_PARTS += call_dd call_ddd
 F7_ASM_PARTS += qq2D uqq2D            sq2D usq2D
 F7_ASM_PARTS +=            ha2D uha2D sa2D usa2D
 
+# Double -> fixed-point conversions
+F7_ASM_PARTS += D2qq D2uqq D2hq D2uhq
+F7_ASM_PARTS +=            D2ha D2uha D2sa D2usa
+
 # Stuff that will be wrapped in f7-wraps.h (included by libf7-asm.sx)
 # and give f7_asm_D_*.o modules.
 g_ddd += add sub mul div
