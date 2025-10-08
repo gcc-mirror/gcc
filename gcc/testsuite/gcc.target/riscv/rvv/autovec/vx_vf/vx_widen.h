@@ -50,5 +50,6 @@ test_vx_widen_binary_##NAME##_##WT##_##NT##_case_1 (WT * restrict vd,   \
   DEF_VX_WIDEN_BINARY_CASE_0_WRAP(WT, NT, -, sub) \
   DEF_VX_WIDEN_BINARY_CASE_0_WRAP(WT, NT, *, mul) \
   DEF_VX_WIDEN_BINARY_CASE_1_WRAP(WT, NT, +, add) \
+  DEF_VX_WIDEN_BINARY_CASE_1_WRAP(WT, NT, -, sub) \
 
 #endif
