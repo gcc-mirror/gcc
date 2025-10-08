@@ -477,15 +477,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	static constexpr bool
 	_S_nothrow_move()
 	{
-#if __cplusplus <= 201402L
+#if __cpp_constexpr >= 201304 // >= C++14
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
+	  if constexpr (_No_realloc)
+	    if constexpr (is_nothrow_copy_constructible<_Hash>::value)
+	      return is_nothrow_copy_constructible<_Equal>::value;
+	  return false;
+# pragma GCC diagnostic pop
+#else // In C++11 a constexpr function must be a single statement.
 	  return __and_<__bool_constant<_No_realloc>,
 			is_nothrow_copy_constructible<_Hash>,
 			is_nothrow_copy_constructible<_Equal>>::value;
-#else
-	  if constexpr (_No_realloc)
-	    if constexpr (is_nothrow_copy_constructible<_Hash>())
-	      return is_nothrow_copy_constructible<_Equal>();
-	  return false;
 #endif
 	}
 
