@@ -961,7 +961,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       find(const key_type& __x)
       { return _M_h.find(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	find(const _Kt& __x) -> decltype(_M_h._M_find_tr(__x))
@@ -972,7 +972,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       find(const key_type& __x) const
       { return _M_h.find(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	find(const _Kt& __x) const -> decltype(_M_h._M_find_tr(__x))
@@ -994,7 +994,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       count(const key_type& __x) const
       { return _M_h.count(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	count(const _Kt& __x) const -> decltype(_M_h._M_count_tr(__x))
@@ -1034,7 +1034,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x)
       { return _M_h.equal_range(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x)
@@ -1046,7 +1046,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x) const
       { return _M_h.equal_range(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x) const
@@ -2039,7 +2039,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       find(const key_type& __x)
       { return _M_h.find(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	find(const _Kt& __x) -> decltype(_M_h._M_find_tr(__x))
@@ -2050,7 +2050,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       find(const key_type& __x) const
       { return _M_h.find(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	find(const _Kt& __x) const -> decltype(_M_h._M_find_tr(__x))
@@ -2068,7 +2068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       count(const key_type& __x) const
       { return _M_h.count(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	count(const _Kt& __x) const -> decltype(_M_h._M_count_tr(__x))
@@ -2106,7 +2106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x)
       { return _M_h.equal_range(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x)
@@ -2118,7 +2118,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x) const
       { return _M_h.equal_range(__x); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x) const

@@ -38,7 +38,7 @@
 #include <bits/enable_special_members.h>
 #include <bits/stl_algobase.h> // fill_n, is_permutation
 #include <bits/stl_function.h> // __has_is_transparent_t
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
 # include <bits/node_handle.h>
 #endif
 
@@ -349,7 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using size_type = typename __hashtable_base::size_type;
       using difference_type = typename __hashtable_base::difference_type;
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       using node_type = _Node_handle<_Key, _Value, __node_alloc_type>;
       using insert_return_type = _Node_insert_return<iterator, node_type>;
 #endif
@@ -1931,7 +1931,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> const_iterator
     { return const_iterator(_M_locate(__k)); }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -1979,7 +1979,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	std::size_t __bkt = _M_bucket_index(__code);
 	return const_iterator(_M_find_node_tr(__bkt, __k, __code));
       }
-#endif
+#endif // C++20 __glibcxx_generic_unordered_lookup
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -2007,7 +2007,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return __result;
     }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -2052,7 +2052,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	return __result;
       }
-#endif
+#endif // C++20 __glibcxx_generic_unordered_lookup
 
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
@@ -2102,7 +2102,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       return { __beg, __ite };
     }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
   template<typename _Key, typename _Value, typename _Alloc,
 	   typename _ExtractKey, typename _Equal,
 	   typename _Hash, typename _RangeHash, typename _Unused,
@@ -2190,7 +2190,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	return { __beg, __ite };
       }
-#endif
+#endif // C++20 __glibcxx_generic_unordered_lookup
 
   // Find the node before the one whose key compares equal to k in the bucket
   // bkt. Return nullptr if no node is found.
@@ -2966,7 +2966,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 #pragma GCC diagnostic pop
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
   template<typename, typename, typename> class _Hash_merge_helper { };
 #endif // C++17
 

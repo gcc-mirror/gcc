@@ -561,7 +561,7 @@ namespace __debug
 	}
 #endif // C++17
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       using node_type = typename _Base::node_type;
       using insert_return_type = _Node_insert_return<iterator, node_type>;
 
@@ -632,7 +632,7 @@ namespace __debug
       find(const key_type& __key)
       { return { _Base::find(__key), this }; }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -645,7 +645,7 @@ namespace __debug
       find(const key_type& __key) const
       { return { _Base::find(__key), this }; }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -666,7 +666,7 @@ namespace __debug
 	return { { __res.first, this }, { __res.second, this } };
       }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -685,7 +685,7 @@ namespace __debug
 	return { { __res.first, this }, { __res.second, this } };
       }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -790,7 +790,7 @@ namespace __debug
 	return __next;
       }
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       node_type
       _M_extract(_Base_const_iterator __victim)
       {
@@ -1362,7 +1362,7 @@ namespace __debug
 	  _M_check_rehashed(__bucket_count);
 	}
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       using node_type = typename _Base::node_type;
 
       node_type
@@ -1428,7 +1428,7 @@ namespace __debug
       find(const key_type& __key)
       { return { _Base::find(__key), this }; }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -1441,7 +1441,7 @@ namespace __debug
       find(const key_type& __key) const
       { return { _Base::find(__key), this }; }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -1462,7 +1462,7 @@ namespace __debug
 	return { { __res.first, this }, { __res.second, this } };
       }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -1481,7 +1481,7 @@ namespace __debug
 	return { { __res.first, this }, { __res.second, this } };
       }
 
-#if __cplusplus > 201703L
+#ifdef __glibcxx_generic_unordered_lookup // C++ >= 20 && HOSTED
       template<typename _Kt,
 	       typename = std::__has_is_transparent_t<_Hash, _Kt>,
 	       typename = std::__has_is_transparent_t<_Pred, _Kt>>
@@ -1587,7 +1587,7 @@ namespace __debug
 	return __next;
       }
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
       node_type
       _M_extract(_Base_const_iterator __victim)
       {

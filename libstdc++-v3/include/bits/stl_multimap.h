@@ -891,7 +891,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       find(const key_type& __x)
       { return _M_t.find(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	find(const _Kt& __x) -> decltype(_M_t._M_find_tr(__x))
@@ -915,7 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       find(const key_type& __x) const
       { return _M_t.find(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	find(const _Kt& __x) const -> decltype(_M_t._M_find_tr(__x))
@@ -933,7 +933,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       count(const key_type& __x) const
       { return _M_t.count(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	count(const _Kt& __x) const -> decltype(_M_t._M_count_tr(__x))
@@ -976,7 +976,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       lower_bound(const key_type& __x)
       { return _M_t.lower_bound(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	lower_bound(const _Kt& __x)
@@ -1001,7 +1001,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       lower_bound(const key_type& __x) const
       { return _M_t.lower_bound(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	lower_bound(const _Kt& __x) const
@@ -1021,7 +1021,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       upper_bound(const key_type& __x)
       { return _M_t.upper_bound(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	upper_bound(const _Kt& __x)
@@ -1041,7 +1041,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       upper_bound(const key_type& __x) const
       { return _M_t.upper_bound(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	upper_bound(const _Kt& __x) const
@@ -1068,7 +1068,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x)
       { return _M_t.equal_range(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x)
@@ -1095,7 +1095,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
       equal_range(const key_type& __x) const
       { return _M_t.equal_range(__x); }
 
-#if __cplusplus > 201103L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt>
 	auto
 	equal_range(const _Kt& __x) const
@@ -1272,7 +1272,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 
 _GLIBCXX_END_NAMESPACE_CONTAINER
 
-#if __cplusplus > 201402L
+#ifdef __glibcxx_node_extract // >= C++17 && HOSTED
   // Allow std::multimap access to internals of compatible maps.
   template<typename _Key, typename _Val, typename _Cmp1, typename _Alloc,
 	   typename _Cmp2>

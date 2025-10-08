@@ -1918,7 +1918,7 @@ namespace __rb_tree
       pair<const_iterator, const_iterator>
       equal_range(const key_type& __k) const;
 
-#if __cplusplus >= 201402L
+#ifdef __glibcxx_generic_associative_lookup // C++ >= 14
       template<typename _Kt,
 	       typename _Req = __has_is_transparent_t<_Compare, _Kt>>
 	iterator
@@ -2007,7 +2007,7 @@ namespace __rb_tree
 	    ++__high;
 	  return { __low, __high };
 	}
-#endif
+#endif // __glibcxx_generic_associative_lookup
 
       // Debugging.
       bool
