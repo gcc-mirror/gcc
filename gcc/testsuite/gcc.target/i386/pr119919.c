@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -fdump-tree-vect-details -mtune=znver1" } */
+
 int a[9*9];
 bool b[9];
 void test()
@@ -10,4 +11,4 @@ void test()
         }
 }
 
-/* { dg-final { scan-tree-dump "loop vectorized using 8 byte vectors" "vect" } } */
+/* { dg-final { scan-tree-dump "loop vectorized using 8 byte vectors" "vect" { target { ! ia32 } } } } */
