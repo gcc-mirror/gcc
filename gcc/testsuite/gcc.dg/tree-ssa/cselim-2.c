@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-cselim-stats -fno-ssa-phiopt" } */
+/* { dg-options "-O2 -ftree-cselim -fdump-tree-cselim-stats -fno-ssa-phiopt" } */
 
 struct Loc {
     int x[3];
