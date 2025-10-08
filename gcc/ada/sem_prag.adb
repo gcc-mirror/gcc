@@ -16449,8 +16449,6 @@ package body Sem_Prag is
               or else not Is_Access_Type (Entity (Arg))
             then
                Error_Pragma_Arg ("pragma% requires access type", Arg1);
-            else
-               Set_Has_Pragma_Controlled (Base_Type (Entity (Arg)));
             end if;
          end Controlled;
 

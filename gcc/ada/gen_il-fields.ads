@@ -614,7 +614,6 @@ package Gen_IL.Fields is
       Has_Own_Invariants,
       Has_Partial_Visible_Refinement,
       Has_Per_Object_Constraint,
-      Has_Pragma_Controlled,
       Has_Pragma_Elaborate_Body,
       Has_Pragma_Inline,
       Has_Pragma_Inline_Always,

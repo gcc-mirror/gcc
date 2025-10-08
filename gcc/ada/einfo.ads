@@ -1889,10 +1889,6 @@ package Einfo is
 --       5. N_Range_Constraint - when the range expression uses the
 --          discriminant of the enclosing type.
 
---    Has_Pragma_Controlled [implementation base type only]
---       Defined in access type entities. It is set if a pragma Controlled
---       applies to the access type.
-
 --    Has_Pragma_Elaborate_Body
 --       Defined in all entities. Set in compilation unit entities if a
 --       pragma Elaborate_Body applies to the compilation unit.
@@ -2383,7 +2379,7 @@ package Einfo is
 --    Is_Activation_Record
 --       Applies to E_In_Parameters generated in Exp_Unst for nested
 --       subprograms, to mark the added formal that carries the activation
---       record created in the enclosing subprogram.
+--       record created in the enclosing subprogram. Used by the llvm back end.
 
 --    Is_Actual_Subtype
 --       Defined on all types, true for the generated constrained subtypes
@@ -2596,7 +2592,7 @@ package Einfo is
 
 --    Is_Discriminant_Check_Function
 --       Defined in all entities. Set only in E_Function entities for functions
---       created to do discriminant checks.
+--       created to do discriminant checks. Used by CodePeer.
 
 --    Is_Discriminal (synthesized)
 --       Applies to all entities, true for renamings of discriminants. Such
@@ -5220,7 +5216,6 @@ package Einfo is
    --    Associated_Storage_Pool               (root type only)
    --    Finalization_Collection               (root type only)
    --    Storage_Size_Variable                 (base type only)
-   --    Has_Pragma_Controlled                 (base type only)
    --    Has_Storage_Size_Clause               (base type only)
    --    Is_Access_Constant
    --    Is_Local_Anonymous_Access

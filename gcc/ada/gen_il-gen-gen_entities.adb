@@ -647,7 +647,6 @@ begin -- Gen_IL.Gen.Gen_Entities
        (Sm (Associated_Storage_Pool, Node_Id, Root_Type_Only),
         Sm (Directly_Designated_Type, Node_Id),
         Sm (Finalization_Collection, Node_Id, Root_Type_Only),
-        Sm (Has_Pragma_Controlled, Flag, Impl_Base_Type_Only),
         Sm (Has_Storage_Size_Clause, Flag, Impl_Base_Type_Only),
         Sm (Is_Access_Constant, Flag),
         Sm (Is_Local_Anonymous_Access, Flag),
