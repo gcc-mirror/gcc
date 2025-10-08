@@ -5452,8 +5452,10 @@ integer_type_for_mask (tree var, vec_info *vinfo)
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
-  stmt_vec_info def_stmt_info = vect_get_internal_def (vinfo, var);
-  if (!def_stmt_info || !vect_use_mask_type_p (def_stmt_info))
+  stmt_vec_info def_stmt_info = vinfo->lookup_def (var);
+  if (!def_stmt_info
+      || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def
+      || !vect_use_mask_type_p (def_stmt_info))
     return NULL_TREE;
 
   return build_nonstandard_integer_type (def_stmt_info->mask_precision, 1);
