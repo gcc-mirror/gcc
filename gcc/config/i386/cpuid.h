@@ -72,6 +72,10 @@
 #define bit_CLZERO	(1 << 0)
 #define bit_WBNOINVD	(1 << 9)
 
+/* Extended Features (%eax == 0x80000021) */
+/* %eax */
+#define bit_AMD_PREFETCHI (1 << 20)
+
 /* Extended Features Leaf (%eax == 7, %ecx == 0) */
 /* %ebx */
 #define bit_FSGSBASE	(1 << 0)

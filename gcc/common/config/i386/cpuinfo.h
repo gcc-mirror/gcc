@@ -312,7 +312,8 @@ get_amd_cpu (struct __processor_model *cpu_model,
       break;
     case 0x1a:
       cpu_model->__cpu_type = AMDFAM1AH;
-      if (model <= 0x77)
+      if (model <= 0x4f || (model >= 0x60 && model <= 0x77) ||
+	  (model >= 0xd0 && model <= 0xd7))
 	{
 	  cpu = "znver5";
 	  CHECK___builtin_cpu_is ("znver5");
@@ -1100,6 +1101,15 @@ get_available_features (struct __processor_model *cpu_model,
 	set_feature (FEATURE_CLZERO);
       if (ebx & bit_WBNOINVD)
 	set_feature (FEATURE_WBNOINVD);
+    }
+
+  if (ext_level >= 0x80000021)
+    {
+      __cpuid (0x80000021, eax, ebx, ecx, edx);
+      if (eax & bit_AMD_PREFETCHI)
+	{
+	  set_feature (FEATURE_PREFETCHI);
+	}
     }
 
 #undef set_feature
