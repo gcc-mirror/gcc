@@ -82,63 +82,30 @@ package body Exp_Attr is
 
    package Cached_Attribute_Ops is
 
-      Map_Size : constant := 63;
-      subtype Header_Num is Integer range 0 .. Map_Size - 1;
+      procedure Add_To_Read_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id);
+      function Get_From_Read_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id;
 
-      function Attribute_Op_Hash (Id : Entity_Id) return Header_Num is
-        (Header_Num (Id mod Map_Size));
+      procedure Add_To_Write_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id);
+      function Get_From_Write_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id;
 
-      --  Caches used to avoid building duplicate subprograms for a single
-      --  type/attribute pair (where the attribute is either Put_Image or
-      --  one of the four streaming attributes). The type used as a key in
-      --  in accessing these maps should not be the entity of a subtype.
+      procedure Add_To_Input_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id);
+      function Get_From_Input_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id;
 
-      package Read_Map is new GNAT.HTable.Simple_HTable
-        (Header_Num => Header_Num,
-         Key        => Entity_Id,
-         Element    => Entity_Id,
-         No_Element => Empty,
-         Hash       => Attribute_Op_Hash,
-         Equal      => "=");
+      procedure Add_To_Output_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id);
+      function Get_From_Output_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id;
 
-      package Write_Map is new GNAT.HTable.Simple_HTable
-        (Header_Num => Header_Num,
-         Key        => Entity_Id,
-         Element    => Entity_Id,
-         No_Element => Empty,
-         Hash       => Attribute_Op_Hash,
-         Equal      => "=");
-
-      package Input_Map is new GNAT.HTable.Simple_HTable
-        (Header_Num => Header_Num,
-         Key        => Entity_Id,
-         Element    => Entity_Id,
-         No_Element => Empty,
-         Hash       => Attribute_Op_Hash,
-         Equal      => "=");
-
-      package Output_Map is new GNAT.HTable.Simple_HTable
-        (Header_Num => Header_Num,
-         Key        => Entity_Id,
-         Element    => Entity_Id,
-         No_Element => Empty,
-         Hash       => Attribute_Op_Hash,
-         Equal      => "=");
-
-      package Put_Image_Map is new GNAT.HTable.Simple_HTable
-        (Header_Num => Header_Num,
-         Key        => Entity_Id,
-         Element    => Entity_Id,
-         No_Element => Empty,
-         Hash       => Attribute_Op_Hash,
-         Equal      => "=");
-
-      procedure Validate_Cached_Candidate
-        (Subp     : in out Entity_Id;
-         Attr_Ref : Node_Id);
-      --  If Subp is non-empty but it is not callable from the point of
-      --  Attr_Ref (perhaps because it is not visible from that point),
-      --  then Subp is set to Empty. Otherwise, do nothing.
+      procedure Add_To_Put_Image_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id);
+      function Get_From_Put_Image_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id;
 
    end Cached_Attribute_Ops;
 
@@ -290,45 +257,208 @@ package body Exp_Attr is
 
    package body Cached_Attribute_Ops is
 
-      -------------------------------
-      -- Validate_Cached_Candidate --
-      -------------------------------
+      --  Caches are used to avoid building duplicate subprograms for a single
+      --  type/attribute pair (where the attribute is either Put_Image or
+      --  one of the four streaming attributes). The type used as a key in
+      --  in accessing these maps should not be the entity of a subtype.
 
-      procedure Validate_Cached_Candidate
-        (Subp     : in out Entity_Id;
-         Attr_Ref : Node_Id) is
-      begin
-         if No (Subp) then
-            return;
-         end if;
+      Map_Size : constant := 63;
+      subtype Header_Num is Integer range 0 .. Map_Size - 1;
 
-         declare
-            Subp_Comp_Unit     : constant Node_Id :=
-              Enclosing_Comp_Unit_Node (Subp);
-            Attr_Ref_Comp_Unit : constant Node_Id :=
-              Enclosing_Comp_Unit_Node (Attr_Ref);
+      function Attribute_Op_Hash (Id : Entity_Id) return Header_Num is
+        (Header_Num (Id mod Map_Size));
 
-            --  The preceding Enclosing_Comp_Unit_Node calls are needed
-            --  (as opposed to changing Interunit_Ref_OK so that it could
-            --  be passed Subp and Attr_Ref) because the games we play
-            --  with source position info for these conjured-up routines can
-            --  confuse In_Same_Extended_Unit (which is called from in
-            --  Interunit_Ref_OK) in the case where one of these
-            --  conjured-up routines contains an attribute reference
-            --  denoting another such routine (e.g., if the Put_Image routine
-            --  for a composite type contains a Some_Component_Type'Put_Image
-            --  attribute reference). Calling Enclosing_Comp_Unit_Node first
-            --  avoids the case where In_Same_Extended_Unit gets confused.
+      function Cached_Candidate_Is_OK
+        (Subp : Entity_Id; Attr_Ref : Node_Id) return Boolean;
+      --  Return True if Subp is callable from the point of Attr_Ref
+      --  (so it is ok to rewrite Attr_Ref as a call to Subp).
 
+      generic
+      package Existing_Subps_Map is
+         procedure Add_Subp
+           (Key_Typ : Entity_Id; Element_Subp : Entity_Id);
+         --  Having created a subp to implement a particular attribute of
+         --  Key_Typ, make it available for possible reuse by remembering it.
+
+         function Get_Subp
+           (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id;
+         --  If one of the recorded candidates for Key_Typ is suitable,
+         --  (see Cached_Candidate_Is_OK for meaning of "suitable")
+         --  then return it. If not, then return Empty.
+      end Existing_Subps_Map;
+
+      package body Existing_Subps_Map is
+         package Subp_List_Table is new GNAT.HTable.Simple_HTable
+           (Header_Num => Header_Num,
+            Key        => Entity_Id,
+            Element    => Elist_Id,
+            No_Element => No_Elist,
+            Hash       => Attribute_Op_Hash,
+            Equal      => "=");
+
+         function Normalize_Map_Key (Typ : Entity_Id) return Entity_Id;
+         --   We need a single Entity_Id to represent all views and
+         --   all subtypes of a given type, just for use as a key value
+         --   for map lookups. It doesn't much matter which Entity_Id we
+         --   choose as long as we are consistent.
+
+         -----------------------
+         -- Normalize_Map_Key --
+         -----------------------
+
+         function Normalize_Map_Key (Typ : Entity_Id) return Entity_Id is
+            First_Sub : constant Entity_Id := First_Subtype (Typ);
+            I_Or_P    : constant Entity_Id
+              := Incomplete_Or_Partial_View (First_Sub);
          begin
-            if Interunit_Ref_OK (Subp_Comp_Unit, Attr_Ref_Comp_Unit)
-              and then (Is_Library_Level_Entity (Subp)
-                        or else Enclosing_Dynamic_Scope (Subp) =
-                                Enclosing_Lib_Unit_Entity (Subp))
-            then
-               return;
+            if Present (I_Or_P) then
+               return I_Or_P;
+            else
+               return First_Sub;
             end if;
-         end;
+         end Normalize_Map_Key;
+
+         --------------
+         -- Add_Subp --
+         --------------
+
+         procedure Add_Subp
+           (Key_Typ : Entity_Id; Element_Subp : Entity_Id)
+         is
+            Normalized : constant Entity_Id := Normalize_Map_Key (Key_Typ);
+            Current    : constant Elist_Id := Subp_List_Table.Get (Normalized);
+         begin
+            if Present (Current) then
+               declare
+                  Elmt              : Elmt_Id := First_Elmt (Current);
+                  Comp_Unit_Of_Subp : constant Node_Id :=
+                    Enclosing_Comp_Unit_Node (Element_Subp);
+               begin
+                  while Present (Elmt) loop
+                     pragma Assert (Comp_Unit_Of_Subp /=
+                                    Enclosing_Comp_Unit_Node (Node (Elmt)));
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+
+               Append_Elmt (Element_Subp, Current);
+            else
+               Subp_List_Table.Set (Normalized, New_Elmt_List (Element_Subp));
+            end if;
+         end Add_Subp;
+
+         --------------
+         -- Get_Subp --
+         --------------
+
+         function Get_Subp
+           (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id
+         is
+            Normalized : constant Entity_Id := Normalize_Map_Key (Key_Typ);
+            List       : constant Elist_Id :=
+              Subp_List_Table.Get (Normalized);
+            Result     : Entity_Id := Empty;
+            Elmt       : Elmt_Id;
+         begin
+            if Present (List) then
+               Elmt := First_Elmt (List);
+
+               while Present (Elmt) loop
+                  Result := Node (Elmt);
+
+                  if Cached_Candidate_Is_OK
+                    (Subp => Result, Attr_Ref => Attr_Ref)
+                  then
+                     return Result;
+                  end if;
+
+                  Next_Elmt (Elmt);
+               end loop;
+            end if;
+
+            return Empty;
+         end Get_Subp;
+
+      end Existing_Subps_Map;
+
+      --  Declare an instance for each of the 5 attributes and complete each
+      --  attribute's Add and Get subprograms by renaming.
+
+      package Read_Map is new Existing_Subps_Map;
+      procedure Add_To_Read_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id)
+        renames Read_Map.Add_Subp;
+      function Get_From_Read_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id
+        renames Read_Map.Get_Subp;
+
+      package Write_Map is new Existing_Subps_Map;
+      procedure Add_To_Write_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id)
+        renames Write_Map.Add_Subp;
+      function Get_From_Write_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id
+        renames Write_Map.Get_Subp;
+
+      package Input_Map is new Existing_Subps_Map;
+      procedure Add_To_Input_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id)
+        renames Input_Map.Add_Subp;
+      function Get_From_Input_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id
+        renames Input_Map.Get_Subp;
+
+      package Output_Map is new Existing_Subps_Map;
+      procedure Add_To_Output_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id)
+        renames Output_Map.Add_Subp;
+      function Get_From_Output_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id
+        renames Output_Map.Get_Subp;
+
+      package Put_Image_Map is new Existing_Subps_Map;
+      procedure Add_To_Put_Image_Map
+        (Key_Typ : Entity_Id; Element_Subp : Entity_Id)
+        renames Put_Image_Map.Add_Subp;
+      function Get_From_Put_Image_Map
+        (Key_Typ : Entity_Id; Attr_Ref : Node_Id) return Entity_Id
+        renames Put_Image_Map.Get_Subp;
+
+      ----------------------------
+      -- Cached_Candidate_Is_OK --
+      ----------------------------
+
+      function Cached_Candidate_Is_OK
+        (Subp : Entity_Id; Attr_Ref : Node_Id) return Boolean
+      is
+         Subp_Comp_Unit     : constant Node_Id :=
+           Enclosing_Comp_Unit_Node (Subp);
+         Attr_Ref_Comp_Unit : constant Node_Id :=
+           Enclosing_Comp_Unit_Node (Attr_Ref);
+
+         --  The preceding Enclosing_Comp_Unit_Node calls are needed
+         --  (as opposed to changing Interunit_Ref_OK so that it could
+         --  be passed Subp and Attr_Ref) because the games we play
+         --  with source position info for these conjured-up routines can
+         --  confuse In_Same_Extended_Unit (which is called from in
+         --  Interunit_Ref_OK) in the case where one of these
+         --  conjured-up routines contains an attribute reference
+         --  denoting another such routine (e.g., if the Put_Image routine
+         --  for a composite type contains a Some_Component_Type'Put_Image
+         --  attribute reference). Calling Enclosing_Comp_Unit_Node first
+         --  avoids the case where In_Same_Extended_Unit gets confused.
+
+      begin
+         if Subp_Comp_Unit = Attr_Ref_Comp_Unit then
+            return True;
+
+         elsif Interunit_Ref_OK (Subp_Comp_Unit, Attr_Ref_Comp_Unit)
+           and then (Is_Library_Level_Entity (Subp)
+                     or else Enclosing_Dynamic_Scope (Subp) =
+                             Enclosing_Lib_Unit_Entity (Subp))
+         then
+            return True;
+         end if;
 
          --  We have previously tried being more ambitious here in hopes of
          --  referencing subprograms declared in other units (as opposed
@@ -340,8 +470,8 @@ package body Exp_Attr is
          --  "_305PI"). So, after a fair amount of unsuccessful debugging,
          --   it was decided to abandon the effort.
 
-         Subp := Empty;
-      end Validate_Cached_Candidate;
+         return False;
+      end Cached_Candidate_Is_OK;
    end Cached_Attribute_Ops;
 
    -------------------------
@@ -1946,7 +2076,8 @@ package body Exp_Attr is
          Insertion_Scope : Entity_Id := Empty;
          Insertion_Point : Node_Id := Empty;
          Insert_Before   : Boolean := False;
-         Typ_Comp_Unit   : Node_Id := Enclosing_Comp_Unit_Node (Typ);
+         First_Typ       : constant Entity_Id := First_Subtype (Typ);
+         Typ_Comp_Unit   : Node_Id := Enclosing_Comp_Unit_Node (First_Typ);
       begin
          --  handle no-enclosing-comp-unit cases
          if No (Typ_Comp_Unit) then
@@ -1964,16 +2095,16 @@ package body Exp_Attr is
             --  See comment accompanying earlier call to Interunit_Ref_OK
             --  for discussion of these Enclosing_Comp_Unit_Node calls.
          then
-            --  Typ is declared in the current unit, so
-            --  we want to hoist to the same scope as Typ.
+            --  First_Typ is declared in the current unit, so
+            --  we want to hoist to the same scope as First_Typ.
 
-            Insertion_Scope := Scope (Typ);
-            Insertion_Point := Freeze_Node (Typ);
+            Insertion_Scope := Scope (First_Typ);
+            Insertion_Point := Freeze_Node (First_Typ);
          else
             --  Typ is declared in a different unit, so
             --  hoist to library level.
 
-            pragma Assert (Is_Library_Level_Entity (Typ));
+            pragma Assert (Is_Library_Level_Entity (First_Typ));
 
             while Present (Ancestor) loop
                if Is_List_Member (Ancestor) then
@@ -4789,6 +4920,10 @@ package body Exp_Attr is
                   end;
                end if;
             end if;
+
+            if not Is_Tagged_Type (U_Type) then
+               Cached_Attribute_Ops.Add_To_Input_Map (U_Type, Fname);
+            end if;
          end if;
 
          --  If we fall through, Fname is the function to be called. The result
@@ -4812,10 +4947,6 @@ package body Exp_Attr is
 
          if Nkind (Parent (N)) = N_Object_Declaration then
             Freeze_Stream_Subprogram (Fname);
-         end if;
-
-         if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Input_Map.Set (U_Type, Fname);
          end if;
       end Input;
 
@@ -5914,15 +6045,15 @@ package body Exp_Attr is
                      Attr_Ref => N);
                end;
             end if;
+
+            if not Is_Tagged_Type (U_Type) then
+               Cached_Attribute_Ops.Add_To_Output_Map (U_Type, Pname);
+            end if;
          end if;
 
          --  If we fall through, Pname is the name of the procedure to call
 
          Rewrite_Attribute_Proc_Call (Pname);
-
-         if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Output_Map.Set (U_Type, Pname);
-         end if;
       end Output;
 
       ---------
@@ -6308,9 +6439,8 @@ package body Exp_Attr is
                return;
 
             elsif Is_Array_Type (U_Type) then
-               Pname := Cached_Attribute_Ops.Put_Image_Map.Get (U_Type);
-               Cached_Attribute_Ops.Validate_Cached_Candidate
-                 (Pname, Attr_Ref => N);
+               Pname := Cached_Attribute_Ops.Get_From_Put_Image_Map
+                          (U_Type, Attr_Ref => N);
                if No (Pname) then
                   declare
                      procedure Build_And_Insert_Array_Put_Image_Proc is
@@ -6325,7 +6455,7 @@ package body Exp_Attr is
                         Attr_Ref => N);
                   end;
 
-                  Cached_Attribute_Ops.Put_Image_Map.Set (U_Type, Pname);
+                  Cached_Attribute_Ops.Add_To_Put_Image_Map (U_Type, Pname);
                end if;
 
             --  Tagged type case, use the primitive Put_Image function. Note
@@ -6362,9 +6492,8 @@ package body Exp_Attr is
                declare
                   Base_Typ : constant Entity_Id := Full_Base (U_Type);
                begin
-                  Pname := Cached_Attribute_Ops.Put_Image_Map.Get (Base_Typ);
-                  Cached_Attribute_Ops.Validate_Cached_Candidate
-                    (Pname, Attr_Ref => N);
+                  Pname := Cached_Attribute_Ops.Get_From_Put_Image_Map
+                             (Base_Typ, Attr_Ref => N);
                   if No (Pname) then
                      declare
                         procedure Build_And_Insert_Record_Put_Image_Proc is
@@ -6379,7 +6508,8 @@ package body Exp_Attr is
                            Attr_Ref => N);
                      end;
 
-                     Cached_Attribute_Ops.Put_Image_Map.Set (Base_Typ, Pname);
+                     Cached_Attribute_Ops.Add_To_Put_Image_Map
+                       (Base_Typ, Pname);
                   end if;
                end;
             end if;
@@ -6841,6 +6971,10 @@ package body Exp_Attr is
                      Attr_Ref => N);
                end;
             end if;
+
+            if not Is_Tagged_Type (U_Type) then
+               Cached_Attribute_Ops.Add_To_Read_Map (U_Type, Pname);
+            end if;
          end if;
 
          Rewrite_Attribute_Proc_Call (Pname);
@@ -6883,10 +7017,6 @@ package body Exp_Attr is
                Insert_Before (Before => N, Node => Assign_Tag);
                Analyze (Assign_Tag);
             end;
-         end if;
-
-         if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Read_Map.Set (U_Type, Pname);
          end if;
       end Read;
 
@@ -8566,15 +8696,15 @@ package body Exp_Attr is
                      Attr_Ref => N);
                end;
             end if;
+
+            if not Is_Tagged_Type (U_Type) then
+               Cached_Attribute_Ops.Add_To_Write_Map (U_Type, Pname);
+            end if;
          end if;
 
          --  If we fall through, Pname is the procedure to be called
 
          Rewrite_Attribute_Proc_Call (Pname);
-
-         if not Is_Tagged_Type (P_Type) then
-            Cached_Attribute_Ops.Write_Map.Set (U_Type, Pname);
-         end if;
       end Write;
 
       --  The following attributes are handled by the back end (except that
@@ -9184,18 +9314,19 @@ package body Exp_Attr is
          --  In particular, we do not want the entity for a subtype.
       begin
          if Nam = TSS_Stream_Read then
-            Ent := Cached_Attribute_Ops.Read_Map.Get (U_Base);
+            Ent := Cached_Attribute_Ops.Get_From_Read_Map
+                     (U_Base, Attr_Ref => Attr_Ref);
          elsif Nam = TSS_Stream_Write then
-            Ent := Cached_Attribute_Ops.Write_Map.Get (U_Base);
+            Ent := Cached_Attribute_Ops.Get_From_Write_Map
+                     (U_Base, Attr_Ref => Attr_Ref);
          elsif Nam = TSS_Stream_Input then
-            Ent := Cached_Attribute_Ops.Input_Map.Get (U_Base);
+            Ent := Cached_Attribute_Ops.Get_From_Input_Map
+                     (U_Base, Attr_Ref => Attr_Ref);
          elsif Nam = TSS_Stream_Output then
-            Ent := Cached_Attribute_Ops.Output_Map.Get (U_Base);
+            Ent := Cached_Attribute_Ops.Get_From_Output_Map
+                     (U_Base, Attr_Ref => Attr_Ref);
          end if;
       end;
-
-      Cached_Attribute_Ops.Validate_Cached_Candidate
-        (Subp => Ent, Attr_Ref => Attr_Ref);
 
       if Present (Ent) then
          return Ent;
