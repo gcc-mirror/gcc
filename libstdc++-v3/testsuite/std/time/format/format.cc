@@ -2,6 +2,7 @@
 // { dg-timeout-factor 2 }
 
 #include <chrono>
+#include <vector>
 #include <testsuite_hooks.h>
 
 void
