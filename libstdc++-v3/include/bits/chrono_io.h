@@ -463,7 +463,7 @@ namespace __format
       {
 	_M_day = __d;
 	__parts -= _ChronoParts::_Day;
-	_M_weekday_index = ((unsigned)__d + 6u) % 7u;
+	_M_weekday_index = ((unsigned)__d + 6u) / 7u;
 	__parts -= _ChronoParts::_WeekdayIndex;
 	return __parts;
       }
