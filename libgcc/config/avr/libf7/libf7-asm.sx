@@ -2209,4 +2209,116 @@ _DEFUN __powidf2
 _ENDF __powidf2
 #endif /* F7MOD_D_powi_ */
 
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixed-point -> double conversions.
+
+;;; The double exponent starts at bit 52 since the encoded mantissa has 52 bits.
+;;; Note that when X is a multiple of 16, then dex_lo(x) evaluates to 0.
+#define dex_lo(x) hlo8((x) << (52 - 32))
+#define dex_hi(x) hhi8((x) << (52 - 32))
+
+#ifdef F7MOD_usa2D_
+_DEFUN __fractusadf
+    ;; Convert USI to DF.
+    XCALL   __floatunsidf
+    ;; The MSB indicates a value of 0.
+    cpse    r25, __zero_reg__
+    ;; Divide non-zero values by 2^16 in order to adjust for FBIT = 16.
+    subi    r25, dex_hi (16)
+    ret
+_ENDF __fractusadf
+#endif /* F7MOD_usa2D_ */
+
+#ifdef F7MOD_sa2D_
+_DEFUN __fractsadf
+    ;; Convert SI to DF.
+    XCALL   __floatsidf
+    ;; The MSB indicates a value of 0.
+    tst     r25
+    breq 0f
+    ;; Divide non-zero values by 2^15 in order to adjust for FBIT = 15.
+    subi    r24, dex_lo (15)
+    sbci    r25, dex_hi (15)
+0:  ret
+_ENDF __fractsadf
+#endif /* F7MOD_sa2D_ */
+
+#ifdef F7MOD_uha2D_
+_DEFUN __fractuhadf
+    ;; Extend UHA to USA.
+    clr     r22
+    mov     r23, r24
+    mov     r24, r25
+    clr     r25
+    XJMP    __fractusadf
+_ENDF __fractuhadf
+#endif /* F7MOD_uha2D_ */
+
+#ifdef F7MOD_ha2D_
+_DEFUN __fracthadf
+    ;; Extend HA to SA.
+    clr     r22
+    mov     r23, r24
+    mov     r24, r25
+    lsl     r25
+    sbc     r25, r25
+    XJMP    __fractsadf
+_ENDF __fracthadf
+#endif /* F7MOD_ha2D_ */
+
+
+#ifdef F7MOD_usq2D_
+_DEFUN __fractusqdf
+    ;; Convert USI to DF.
+    XCALL   __floatunsidf
+    ;; The MSB indicates a value of 0.
+    cpse    r25, __zero_reg__
+    ;; Divide non-zero values by 2^32 in order to adjust for FBIT = 32.
+    subi    r25, dex_hi (32)
+    ret
+_ENDF __fractusqdf
+#endif /* F7MOD_usq2D_ */
+
+#ifdef F7MOD_sq2D_
+_DEFUN __fractsqdf
+    ;; Convert SI to DF.
+    XCALL   __floatsidf
+    ;; The MSB indicates a value of 0.
+    tst     r25
+    breq 0f
+    ;; Divide non-zero values by 2^31 in order to adjust for FBIT = 31.
+    subi    r24, dex_lo (31)
+    sbci    r25, dex_hi (31)
+0:  ret
+_ENDF __fractsqdf
+#endif /* F7MOD_sq2D_ */
+
+#ifdef F7MOD_uqq2D_
+_DEFUN __fractuqqdf
+    ;; Extend UQQ to UHQ.
+    mov     r25, r24
+    clr     r24
+_LABEL __fractuhqdf
+    ;; Extend UHQ to USQ.
+    clr     r23
+    clr     r22
+    XJMP    __fractusqdf
+_ENDF __fractuqqdf
+#endif /* F7MOD_uqq2D_ */
+
+#ifdef F7MOD_qq2D_
+_DEFUN __fractqqdf
+    ;; Extend QQ to HQ.
+    mov     r25, r24
+    clr     r24
+_LABEL __fracthqdf
+    ;; Extend HQ to SQ.
+    clr     r23
+    clr     r22
+    XJMP    __fractsqdf
+_ENDF __fractqqdf
+#endif /* F7MOD_qq2D_ */
+
+
 #endif /* !AVR_TINY */
