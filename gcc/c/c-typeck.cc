@@ -78,6 +78,9 @@ int in_countof;
 /* The level of nesting inside "typeof".  */
 int in_typeof;
 
+/* The level of nesting inside "_Generic".  */
+int in_generic;
+
 /* True when parsing OpenMP loop expressions.  */
 bool c_in_omp_for;
 
@@ -3690,7 +3693,7 @@ mark_decl_used (tree ref, bool address)
     return;
 
   /* If we may be in an unevaluated context, delay the decision.  */
-  if (in_sizeof || in_typeof || in_countof)
+  if (in_sizeof || in_typeof || in_countof || in_generic)
     return record_maybe_used_decl (ref, address);
 
   if (static_p)
@@ -3842,46 +3845,36 @@ build_external_ref (location_t loc, tree id, bool fun, tree *type)
   return ref;
 }
 
-/* Record details of decls possibly used inside sizeof or typeof.  */
-struct maybe_used_decl
-{
-  /* The decl.  */
-  tree decl;
-  /* The level seen at (in_sizeof + in_typeof + in_countof).  */
-  int level;
-  /* Seen in address-of.  */
-  bool address;
-  /* The next one at this level or above, or NULL.  */
-  struct maybe_used_decl *next;
-};
-
 static struct maybe_used_decl *maybe_used_decls;
 
-/* Record that DECL, a reference seen inside sizeof or typeof, might be used
-   if the operand of sizeof is a VLA type or the operand of typeof is a variably
-   modified type.  */
+/* Record that DECL, a reference seen inside sizeof or typeof or _Countof or
+   _Generic, might be used if the operand of sizeof is a VLA type or the
+   operand of typeof is a variably modified type or the operand of _Countof has
+   a variable number of elements or the operand of _Generic is the one selected
+   as the result.  */
 
 static void
 record_maybe_used_decl (tree decl, bool address)
 {
   struct maybe_used_decl *t = XOBNEW (&parser_obstack, struct maybe_used_decl);
   t->decl = decl;
-  t->level = in_sizeof + in_typeof + in_countof;
+  t->level = in_sizeof + in_typeof + in_countof + in_generic;
   t->address = address;
   t->next = maybe_used_decls;
   maybe_used_decls = t;
 }
 
-/* Pop the stack of decls possibly used inside sizeof or typeof.  If
-   USED is false, just discard them.  If it is true, mark them used
-   (if no longer inside sizeof or typeof) or move them to the next
-   level up (if still inside sizeof or typeof).  */
+/* Pop the stack of decls possibly used inside sizeof or typeof or _Countof or
+   _Generic.  If USED is false, just discard them.  If it is true, mark them
+   used (if no longer inside sizeof or typeof or _Countof or _Generic) or move
+   them to the next level up (if still inside sizeof or typeof or _Countof or
+   _Generic).  */
 
 void
 pop_maybe_used (bool used)
 {
   struct maybe_used_decl *p = maybe_used_decls;
-  int cur_level = in_sizeof + in_typeof + in_countof;
+  int cur_level = in_sizeof + in_typeof + in_countof + in_generic;
   while (p && p->level > cur_level)
     {
       if (used)
@@ -3895,6 +3888,35 @@ pop_maybe_used (bool used)
     }
   if (!used || cur_level == 0)
     maybe_used_decls = p;
+}
+
+/* Pop the stack of decls possibly used inside sizeof or typeof or _Countof or
+   _Generic, without acting on them, and return the pointer to the previous top
+   of the stack.  This for use at the end of a default generic association when
+   it is not yet known whether the expression is used.  If it later turns out
+   the expression is used (or treated as used before C23), restore_maybe_used
+   should be called on the return value followed by pop_maybe_used (true);
+   otherwise, the return value can be discarded.  */
+
+struct maybe_used_decl *
+save_maybe_used ()
+{
+  struct maybe_used_decl *p = maybe_used_decls, *orig = p;
+  int cur_level = in_sizeof + in_typeof + in_countof + in_generic;
+  while (p && p->level > cur_level)
+    p = p->next;
+  maybe_used_decls = p;
+  return orig;
+}
+
+/* Restore the stack of decls possibly used inside sizeof or typeof or _Countof
+   or _Generic returned by save_maybe_used.  It is required that the stack is
+   at exactly the point where it was left by save_maybe_used.  */
+
+void
+restore_maybe_used (struct maybe_used_decl *stack)
+{
+  maybe_used_decls = stack;
 }
 
 /* Return the result of sizeof applied to EXPR.  */

@@ -11183,9 +11183,12 @@ c_parser_generic_selection (c_parser *parser)
   else
     {
       c_inhibit_evaluation_warnings++;
+      in_generic++;
       selector = c_parser_expr_no_commas (parser, NULL);
       selector = default_function_array_conversion (selector_loc, selector);
       c_inhibit_evaluation_warnings--;
+      in_generic--;
+      pop_maybe_used (!flag_isoc23);
 
       if (selector.value == error_mark_node)
 	{
@@ -11214,6 +11217,7 @@ c_parser_generic_selection (c_parser *parser)
     }
 
   auto_vec<c_generic_association> associations;
+  struct maybe_used_decl *maybe_used_default = NULL;
   while (1)
     {
       struct c_generic_association assoc, *iter;
@@ -11269,11 +11273,19 @@ c_parser_generic_selection (c_parser *parser)
 
       if (!match)
 	c_inhibit_evaluation_warnings++;
+      in_generic++;
 
       assoc.expression = c_parser_expr_no_commas (parser, NULL);
 
       if (!match)
 	  c_inhibit_evaluation_warnings--;
+      in_generic--;
+      if (!match)
+	pop_maybe_used (!flag_isoc23);
+      else if (assoc.type == NULL_TREE)
+	maybe_used_default = save_maybe_used ();
+      else
+	pop_maybe_used (true);
 
       if (assoc.expression.value == error_mark_node)
 	{
@@ -11332,6 +11344,20 @@ c_parser_generic_selection (c_parser *parser)
       if (c_parser_peek_token (parser)->type != CPP_COMMA)
 	break;
       c_parser_consume_token (parser);
+    }
+
+  if (match_found >= 0 && matched_assoc.type == NULL_TREE)
+    {
+      /* Declarations referenced in the default association are used.  */
+      restore_maybe_used (maybe_used_default);
+      pop_maybe_used (true);
+    }
+  else if (maybe_used_default)
+    {
+      /* Declarations referenced in the default association are not used, but
+	 are treated as used before C23.  */
+      restore_maybe_used (maybe_used_default);
+      pop_maybe_used (!flag_isoc23);
     }
 
   unsigned int ix;

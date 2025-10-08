@@ -624,6 +624,19 @@ enum c_inline_static_type {
   csi_modifiable
 };
 
+/* Record details of decls possibly used inside sizeof or typeof.  */
+struct maybe_used_decl
+{
+  /* The decl.  */
+  tree decl;
+  /* The level seen at (in_sizeof + in_typeof + in_countof + in_generic).  */
+  int level;
+  /* Seen in address-of.  */
+  bool address;
+  /* The next one at this level or above, or NULL.  */
+  struct maybe_used_decl *next;
+};
+
 
 /* in c-parser.cc */
 struct c_tree_token_vec;
@@ -774,6 +787,7 @@ extern int in_alignof;
 extern int in_sizeof;
 extern int in_countof;
 extern int in_typeof;
+extern int in_generic;
 extern bool c_in_omp_for;
 extern bool c_omp_array_section_p;
 
@@ -833,6 +847,8 @@ extern tree build_array_ref (location_t, tree, tree);
 extern tree build_omp_array_section (location_t, tree, tree, tree);
 extern tree build_external_ref (location_t, tree, bool, tree *);
 extern void pop_maybe_used (bool);
+extern struct maybe_used_decl *save_maybe_used ();
+extern void restore_maybe_used (struct maybe_used_decl *);
 extern void mark_decl_used (tree, bool);
 extern struct c_expr c_expr_sizeof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
