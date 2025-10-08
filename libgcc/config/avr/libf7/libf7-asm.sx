@@ -2321,4 +2321,85 @@ _ENDF __fractqqdf
 #endif /* F7MOD_qq2D_ */
 
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixed-point -> double conversions.
+
+#ifdef F7MOD_D2qq_
+_DEFUN __fractdfqq
+    ;; Multiply with 2^{24+7} to get a QQ result in r25.
+    subi    r24, dex_lo (-31)
+    sbci    r25, dex_hi (-31)
+    XCALL   __fixdfsi
+    mov     r24, r25
+    ret
+_ENDF __fractdfqq
+#endif /* F7MOD_D2qq_ */
+
+#ifdef F7MOD_D2uqq_
+_DEFUN __fractdfuqq
+    ;; Multiply with 2^{24+8} to get a UQQ result in r25.
+    subi    r25, dex_hi (-32)
+    XCALL   __fixunsdfsi
+    mov     r24, r25
+    ret
+_ENDF __fractdfuqq
+#endif /* F7MOD_D2uqq_ */
+
+#ifdef F7MOD_D2ha_
+_DEFUN __fractdfha
+    ;; Multiply with 2^{16+7} to get a HA result in r25:r24
+    subi    r24, dex_lo (-23)
+    sbci    r25, dex_hi (-23)
+    XJMP    __fixdfsi
+_ENDF __fractdfha
+#endif /* F7MOD_D2ha_ */
+
+#ifdef F7MOD_D2uha_
+_DEFUN __fractdfuha
+    ;; Multiply with 2^24 to get a UHA result in r25:r24.
+    subi    r24, dex_lo (-24)
+    sbci    r25, dex_hi (-24)
+    XJMP    __fixunsdfsi
+_ENDF __fractdfuha
+#endif /* F7MOD_D2uha_ */
+
+#ifdef F7MOD_D2hq_
+_DEFUN __fractdfhq
+    ;; Multiply with 2^{16+15} to get a HQ result in r25:r24
+    ;; resp. with 2^31 to get a SQ result in r25:r22.
+_LABEL __fractdfsq
+    subi    r24, dex_lo (-31)
+    sbci    r25, dex_hi (-31)
+    XJMP    __fixdfsi
+_ENDF __fractdfhq
+#endif /* F7MOD_D2hq_ */
+
+#ifdef F7MOD_D2uhq_
+_DEFUN __fractdfuhq
+    ;; Multiply with 2^{16+16} to get a UHQ result in r25:r24
+    ;; resp. with 2^32 to get a USQ result in r25:r22.
+_LABEL  __fractdfusq
+    subi    r25, dex_hi (-32)
+    XJMP    __fixunsdfsi
+_ENDF __fractdfuhq
+#endif /* F7MOD_D2uhq_ */
+
+#ifdef F7MOD_D2sa_
+_DEFUN __fractdfsa
+    ;; Multiply with 2^15 to get a SA result in r25:r22.
+    subi    r24, dex_lo (-15)
+    sbci    r25, dex_hi (-15)
+    XJMP    __fixdfsi
+_ENDF __fractdfsa
+#endif /* F7MOD_D2sa_ */
+
+#ifdef F7MOD_D2usa_
+_DEFUN __fractdfusa
+    ;; Multiply with 2^16 to get a USA result in r25:r22.
+    subi    r25, dex_hi (-16)
+    XJMP    __fixunsdfsi
+_ENDF __fractdfusa
+#endif /* F7MOD_D2usa_ */
+
+
 #endif /* !AVR_TINY */
