@@ -3462,6 +3462,7 @@ extern hash_map<nofree_string_hash, int> *gfc_vectorized_builtins;
 
 /* Handling Parameterized Derived Types  */
 bool gfc_insert_parameter_exprs (gfc_expr *, gfc_actual_arglist *);
+void gfc_correct_parm_expr (gfc_symbol *, gfc_expr **);
 match gfc_get_pdt_instance (gfc_actual_arglist *, gfc_symbol **,
 			    gfc_actual_arglist **);
 

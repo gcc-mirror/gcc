@@ -16877,27 +16877,30 @@ resolve_component (gfc_component *c, gfc_symbol *sym)
       && gfc_find_typebound_proc (super_type, NULL, c->name, true, NULL))
     {
       gfc_error ("Component %qs of %qs at %L has the same name as an"
-                 " inherited type-bound procedure",
-                 c->name, sym->name, &c->loc);
+		 " inherited type-bound procedure",
+		 c->name, sym->name, &c->loc);
       return false;
     }
 
   if (c->ts.type == BT_CHARACTER && !c->attr.proc_pointer
       && !c->ts.deferred)
     {
+      if (sym->attr.pdt_template || c->attr.pdt_string)
+	gfc_correct_parm_expr (sym, &c->ts.u.cl->length);
+
       if (c->ts.u.cl->length == NULL
-	  || (!resolve_charlen(c->ts.u.cl))
+	  || !resolve_charlen(c->ts.u.cl)
 	  || !gfc_is_constant_expr (c->ts.u.cl->length))
 	{
 	  gfc_error ("Character length of component %qs needs to "
 		     "be a constant specification expression at %L",
 		     c->name,
 		     c->ts.u.cl->length ? &c->ts.u.cl->length->where : &c->loc);
-         return false;
-       }
+	  return false;
+	}
 
      if (c->ts.u.cl->length && c->ts.u.cl->length->ts.type != BT_INTEGER)
-       {
+	{
 	 if (!c->ts.u.cl->length->error)
 	   {
 	     gfc_error ("Character length expression of component %qs at %L "

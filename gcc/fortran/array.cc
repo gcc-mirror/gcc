@@ -566,6 +566,7 @@ match_array_element_spec (gfc_array_spec *as)
   gfc_expr **upper, **lower;
   match m;
   int rank;
+  bool is_pdt_template;
 
   rank = as->rank == -1 ? 0 : as->rank;
   lower = &as->lower[rank + as->corank - 1];
@@ -613,6 +614,13 @@ match_array_element_spec (gfc_array_spec *as)
       return AS_UNKNOWN;
     }
 
+  is_pdt_template = gfc_current_block ()
+		    && gfc_current_block ()->attr.pdt_template
+		    && gfc_current_block ()->f2k_derived;
+
+  if ((*upper)->expr_type != EXPR_CONSTANT && is_pdt_template)
+    gfc_correct_parm_expr (gfc_current_block (), upper);
+
   if (gfc_match_char (':') == MATCH_NO)
     {
       *lower = gfc_get_int_expr (gfc_default_integer_kind, NULL, 1);
@@ -644,6 +652,9 @@ match_array_element_spec (gfc_array_spec *as)
 		 gfc_basic_typename ((*upper)->ts.type));
       return AS_UNKNOWN;
     }
+
+  if ((*upper)->expr_type != EXPR_CONSTANT && is_pdt_template)
+    gfc_correct_parm_expr (gfc_current_block (), upper);
 
   return AS_EXPLICIT;
 }

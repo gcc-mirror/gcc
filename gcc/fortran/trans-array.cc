@@ -11084,17 +11084,15 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      && c->ts.u.derived && c->ts.u.derived->attr.pdt_type
 	      && !(c->attr.pointer || c->attr.allocatable))
 	    {
-	      bool is_deferred = false;
 	      gfc_actual_arglist *tail = c->param_list;
 
 	      for (; tail; tail = tail->next)
-		if (!tail->expr)
-		  is_deferred = true;
+		if (tail->expr)
+		  gfc_insert_parameter_exprs (tail->expr, pdt_param_list);
 
-	      tail = is_deferred ? pdt_param_list : c->param_list;
 	      tmp = gfc_allocate_pdt_comp (c->ts.u.derived, comp,
 					   c->as ? c->as->rank : 0,
-					   tail);
+					   c->param_list);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
 
