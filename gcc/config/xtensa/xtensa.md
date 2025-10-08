@@ -1219,22 +1219,8 @@
 	(match_operand:DI 1 "general_operand" ""))]
   ""
 {
-  if (CONSTANT_P (operands[1]))
-    {
-      /* Split in halves if 64-bit Const-to-Reg moves
-	 because of offering further optimization opportunities.  */
-      if (register_operand (operands[0], DImode))
-	{
-	  rtx ops[4] = { operands[0], operands[1] };
-	  xtensa_split_DI_reg_imm (ops);
-	  emit_move_insn (ops[0], ops[1]);
-	  emit_move_insn (ops[2], ops[3]);
-	  DONE;
-	}
-
-      if (!TARGET_CONST16)
-	operands[1] = force_const_mem (DImode, operands[1]);
-    }
+  if (!TARGET_CONST16 && CONSTANT_P (operands[1]))
+    operands[1] = force_const_mem (DImode, operands[1]);
 
   if (!register_operand (operands[0], DImode)
       && !register_operand (operands[1], DImode))
@@ -1244,8 +1230,8 @@
 })
 
 (define_insn_and_split "movdi_internal"
-  [(set (match_operand:DI 0 "nonimmed_operand" "=a,W,a,a,U")
-	(match_operand:DI 1 "move_operand" "r,i,T,U,r"))]
+  [(set (match_operand:DI 0 "nonimmed_operand" "=a,a,W,a,a,U")
+	(match_operand:DI 1 "move_operand" "r,Y,i,T,U,r"))]
   "register_operand (operands[0], DImode)
    || register_operand (operands[1], DImode)"
   "#"
@@ -1260,22 +1246,9 @@
       std::swap (operands[2], operands[3]);
     }
 }
-  [(set_attr "type"	"move,move,load,load,store")
+  [(set_attr "type"	"move,load,move,load,load,store")
    (set_attr "mode"	"DI")
-   (set_attr "length"	"6,12,6,6,6")])
-
-(define_split
-  [(set (match_operand:DI 0 "register_operand")
-	(match_operand:DI 1 "const_int_operand"))]
-  "!TARGET_CONST16
-   && ! xtensa_postreload_completed_p ()"
-  [(set (match_dup 0)
-	(match_dup 1))
-   (set (match_dup 2)
-	(match_dup 3))]
-{
-  xtensa_split_DI_reg_imm (operands);
-})
+   (set_attr "length"	"6,6,12,6,6,6")])
 
 ;; 32-bit Integer moves
 

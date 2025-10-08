@@ -2633,27 +2633,6 @@ xtensa_postreload_completed_p (void)
 }
 
 
-/* Split a DImode pair of reg (operand[0]) and const_int (operand[1]) into
-   two SImode pairs, the low-part (operands[0] and [1]) and the high-part
-   (operands[2] and [3]).  */
-
-void
-xtensa_split_DI_reg_imm (rtx *operands)
-{
-  rtx lowpart, highpart;
-
-  if (WORDS_BIG_ENDIAN)
-    split_double (operands[1], &highpart, &lowpart);
-  else
-    split_double (operands[1], &lowpart, &highpart);
-
-  operands[3] = highpart;
-  operands[2] = gen_highpart (SImode, operands[0]);
-  operands[1] = lowpart;
-  operands[0] = gen_lowpart (SImode, operands[0]);
-}
-
-
 /* Return the asm output string of bswapsi2_internal insn pattern.
    It does this by scanning backwards for the BB from the specified insn,
    and if an another bswapsi2_internal is found, it omits the instruction
@@ -5892,6 +5871,102 @@ FPreg_neg_scaled_simm12b (rtx_insn *insn)
   return false;
 }
 
+/* Split DI/SF/DFmode constant assignments into pairs of SImode ones.  This
+   is also the pre-processing for constantsynth optimization that follows
+   immediately after.
+
+   Note that all constant values and assignments are treated as SImode
+   because:
+
+     - Synthesis methods rely on SImode operations
+     - SImode assignments may be shorter
+     - More opportunity for sharing literal pool entries
+
+   This behavior would be acceptable if TARGET_CAN_CHANGE_MODE_CLASS always
+   returned true (the current and default configuration).  */
+
+static bool
+split_DI_SF_DF_const (rtx_insn *insn)
+{
+  rtx pat, dest, src, dest0, dest1, src0, src1, src0c, src1c;
+  int regno;
+
+  if (GET_CODE (pat = PATTERN (insn)) != SET
+      || ! REG_P (dest = SET_DEST (pat)) || ! GP_REG_P (regno = REGNO (dest)))
+    return false;
+
+  /* It is more efficient to assign SFmode literal constants using their
+     bit-equivalent SImode ones, thus we convert them so.  */
+  src = avoid_constant_pool_reference (SET_SRC (pat));
+  if (GET_MODE (dest) == SFmode
+      && CONST_DOUBLE_P (src) && GET_MODE (src) == SFmode)
+    {
+      long l;
+      REAL_VALUE_TO_TARGET_SINGLE (*CONST_DOUBLE_REAL_VALUE (src), l);
+      src0 = GEN_INT ((int32_t)l), dest0 = gen_rtx_REG (SImode, regno);
+      if (dump_file)
+	{
+	  fputs ("split_DI_SF_DF_const: ", dump_file);
+	  dump_value_slim (dump_file, src, 0);
+	  fprintf (dump_file,
+		   "f -> " HOST_WIDE_INT_PRINT_DEC " ("
+		   HOST_WIDE_INT_PRINT_HEX ")\n",
+		   INTVAL (src0), INTVAL (src0));
+	}
+      src0c = NULL_RTX;
+      if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS
+	  && ! xtensa_simm12b (INTVAL (src0)))
+	src0c = src0, src0 = force_const_mem (SImode, src0);
+      remove_reg_equal_equiv_notes (insn);
+      validate_change (insn, &PATTERN (insn), gen_rtx_SET (dest0, src0), 0);
+      if (src0c)
+	add_reg_note (insn, REG_EQUIV, copy_rtx (src0c));
+      return true;
+    }
+
+  /* Splitting a D[IF]mode literal constant into two with split_double()
+     results in a pair of CONST_INTs, so they are assigned in SImode
+     regardless of the original source mode.  */
+  if ((GET_MODE (dest) == DImode && CONST_INT_P (src))
+      || (GET_MODE (dest) == DFmode
+	  && CONST_DOUBLE_P (src) && GET_MODE (src) == DFmode))
+    {
+      dest0 = gen_rtx_REG (SImode, regno);
+      dest1 = gen_rtx_REG (SImode, regno + 1);
+      split_double (src, &src0, &src1);
+      if (dump_file)
+	{
+	  fputs ("split_DI_SF_DF_const: ", dump_file);
+	  dump_value_slim (dump_file, src, 0);
+	  fprintf (dump_file,
+		   " -> " HOST_WIDE_INT_PRINT_DEC " ("
+		   HOST_WIDE_INT_PRINT_HEX "), "
+		   HOST_WIDE_INT_PRINT_DEC " ("
+		   HOST_WIDE_INT_PRINT_HEX ")\n",
+		   INTVAL (src0), INTVAL (src0),
+		   INTVAL (src1), INTVAL (src1));
+	}
+      src1c = src0c = NULL_RTX;
+      if (!TARGET_CONST16 && !TARGET_AUTO_LITPOOLS)
+	{
+	  if (! xtensa_simm12b (INTVAL (src0)))
+	    src0c = src0, src0 = force_const_mem (SImode, src0);
+	  if (! xtensa_simm12b (INTVAL (src1)))
+	    src1c = src1, src1 = force_const_mem (SImode, src1);
+	}
+      remove_reg_equal_equiv_notes (insn);
+      validate_change (insn, &PATTERN (insn), gen_rtx_SET (dest0, src0), 0);
+      if (src0c)
+	add_reg_note (insn, REG_EQUIV, copy_rtx (src0c));
+      insn = emit_insn_after (gen_rtx_SET (dest1, src1), insn);
+      if (src1c)
+	add_reg_note (insn, REG_EQUIV, copy_rtx (src1c));
+      return true;
+    }
+
+  return false;
+}
+
 /* Replace the source of [SH]Imode allocation whose value does not fit
    into signed 12 bits with a reference to litpool entry.  */
 
@@ -5956,6 +6031,11 @@ do_largeconst (void)
   bool optimize_enabled = optimize && !optimize_debug;
   rtx_insn *insn;
 
+  /* Verify the legitimacy of replacing constant assignments in
+     DI/SF/DFmode with those in SImode.  */
+  gcc_assert (targetm.can_change_mode_class
+		== hook_bool_mode_mode_reg_class_t_true);
+
   for (insn = get_insns (); insn; insn = NEXT_INSN (insn))
     if (NONJUMP_INSN_P (insn))
       {
@@ -5970,6 +6050,12 @@ do_largeconst (void)
 	   fit into signed 12 bits with a reference to litpool entry.  */
 	if (replacing_required)
 	  litpool_set_src (insn);
+
+	/* Split DI/SF/DFmode constant assignments into pairs of SImode
+	   ones.  This is also the pre-processing for constantsynth opti-
+	   mization that follows immediately after.  */
+	if (replacing_required)
+	  split_DI_SF_DF_const (insn);
       }
 }
 
