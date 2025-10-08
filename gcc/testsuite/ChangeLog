@@ -1,3 +1,11 @@
+2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122187
+	* gcc.target/avr/torture/pr122187.c: New test.
+
 2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

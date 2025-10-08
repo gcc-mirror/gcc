@@ -1,3 +1,12 @@
+2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122187
+	* config/avr/avr.cc (avr_out_extr, avr_out_extr_not):
+	Make a local copy of the passed rtx[] operands.
+
 2025-10-03  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:
