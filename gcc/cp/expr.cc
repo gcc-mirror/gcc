@@ -430,3 +430,19 @@ fold_for_warn (tree x)
 
   return c_fully_fold (x, /*for_init*/false, /*maybe_constp*/NULL);
 }
+
+/* Make EXPR only execute during constant evaluation by wrapping it in a
+   statement-expression containing 'if consteval'.  */
+
+tree
+wrap_with_if_consteval (tree expr)
+{
+  tree stmtex = begin_stmt_expr ();
+  tree ifcev = begin_if_stmt ();
+  IF_STMT_CONSTEVAL_P (ifcev) = true;
+  finish_if_stmt_cond (boolean_false_node, ifcev);
+  finish_expr_stmt (expr);
+  finish_then_clause (ifcev);
+  finish_if_stmt (ifcev);
+  return finish_stmt_expr (stmtex, /*no scope*/true);
+}

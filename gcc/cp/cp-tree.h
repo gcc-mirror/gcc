@@ -7561,6 +7561,7 @@ extern tree mark_lvalue_use_nonread		(tree);
 extern tree mark_type_use			(tree);
 extern tree mark_discarded_use			(tree);
 extern void mark_exp_read			(tree);
+extern tree wrap_with_if_consteval		(tree);
 
 /* friend.cc */
 extern int is_friend				(tree, tree);

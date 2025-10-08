@@ -59,9 +59,9 @@ void test_nonthrowing ()
 
   int z = *y + 2;  /* { dg-warning "dereference of NULL 'y'" } */
   /* { dg-bogus "use of uninitialized value '\\*y'" "" { target *-*-* } .-1 } */
-  z = *x + 4; /* { dg-warning "dereference of possibly-NULL 'x'" } */
+  z = *x + 4; /* { dg-warning "dereference of NULL 'x'" } */
   /* { dg-warning "use of uninitialized value '\\*x'" "" { target *-*-* } .-1 } */
-  z = arr[0] + 4; /* { dg-warning "dereference of possibly-NULL 'arr'" } */
+  z = arr[0] + 4; /* { dg-warning "dereference of NULL 'arr'" } */
   /* { dg-warning "use of uninitialized value '\\*arr'" "" { target *-*-* } .-1 } */
 
   delete y;

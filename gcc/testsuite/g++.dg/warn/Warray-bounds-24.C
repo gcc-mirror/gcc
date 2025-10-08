@@ -34,7 +34,7 @@ void test_D1_b0a ()
 {
   {
     D1 *p = (D1*)new char[sizeof (D1)];
-    *p->b0a = __LINE__;                 // { dg-warning "-Warray-bounds" "pr99630" { xfail *-*-* } }
+    *p->b0a = __LINE__;                 // { dg-warning "-Wuninitialized" }
     sink (p);
   }
 
@@ -110,7 +110,7 @@ void test_D2_b0a ()
 {
   {
     D2 *p = (D2*)new char[sizeof (D2)];
-    *p->b0a = __LINE__;                 // { dg-warning "-Warray-bounds" "pr99630" { xfail *-*-* } }
+    *p->b0a = __LINE__;                 // { dg-warning "-Wuninitialized" }
     sink (p);
   }
 
@@ -201,7 +201,7 @@ void test_D3_b0a ()
 {
   {
     D3 *p = (D3*)new char[sizeof (D3)];
-    *p->b0a = __LINE__;                 // { dg-warning "-Warray-bounds" "pr99630" { xfail *-*-* } }
+    *p->b0a = __LINE__;                 // { dg-warning "-Wuninitialized" }
     sink (p);
   }
 

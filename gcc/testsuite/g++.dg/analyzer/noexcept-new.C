@@ -11,15 +11,15 @@ struct A
 
 void test_throwing ()
 {
-  int* x = new int;
+  int* x = new int; /* { dg-warning "dereference of possibly-NULL" } */
   int* y = new int(); /* { dg-warning "dereference of possibly-NULL" } */
-  int* arr = new int[10];
+  int* arr = new int[10]; /* { dg-warning "dereference of possibly-NULL" } */
   A *a = new A(); /* { dg-warning "dereference of possibly-NULL" } */
 
   int z = *y + 2;
-  z = *x + 4; /* { dg-warning "dereference of possibly-NULL 'x'" } */
+  z = *x + 4;
   /* { dg-warning "use of uninitialized value '\\*x'" "" { target *-*-* } .-1 } */
-  z = arr[0] + 4; /* { dg-warning "dereference of possibly-NULL 'arr'" } */
+  z = arr[0] + 4;
   /* { dg-warning "use of uninitialized value '\\*arr'" "" { target *-*-* } .-1 } */
   a->y = a->x + 3;
 
@@ -37,9 +37,9 @@ void test_nonthrowing ()
 
   int z = *y + 2; /* { dg-warning "dereference of NULL 'y'" } */
   /* { dg-bogus "use of uninitialized value '\\*y'" "" { target *-*-* } .-1 } */
-  z = *x + 4; /* { dg-warning "dereference of possibly-NULL 'x'" } */
+  z = *x + 4; /* { dg-warning "dereference of NULL 'x'" } */
   /* { dg-warning "use of uninitialized value '\\*x'" "" { target *-*-* } .-1 } */
-  z = arr[0] + 4; /* { dg-warning "dereference of possibly-NULL 'arr'" } */
+  z = arr[0] + 4; /* { dg-warning "dereference of NULL 'arr'" } */
   /* { dg-warning "use of uninitialized value '\\*arr'" "" { target *-*-* } .-1 } */
 
   delete y;

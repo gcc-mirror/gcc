@@ -34,7 +34,7 @@ void test_D1_b0i ()
 {
   {
     D1 *p = (D1*)new char[sizeof (D1)];
-    p->b0i = __LINE__;
+    p->b0i = __LINE__;		// { dg-warning -Wuninitialized }
     sink (p);
   }
 
@@ -110,7 +110,7 @@ void test_D2_b0i ()
 {
   {
     D2 *p = (D2*)new char[sizeof (D2)];
-    p->b0i = __LINE__;
+    p->b0i = __LINE__;		// { dg-warning -Wuninitialized }
     sink (p);
   }
 
@@ -201,7 +201,7 @@ void test_D3_b0i ()
 {
   {
     D3 *p = (D3*)new char[sizeof (D3)];
-    p->b0i = __LINE__;
+    p->b0i = __LINE__;		// { dg-warning -Wuninitialized }
     sink (p);
   }
 
