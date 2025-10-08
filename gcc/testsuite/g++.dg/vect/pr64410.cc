@@ -51,4 +51,4 @@ main(int argc, char** argv)
   return 0;
 }
 
-// { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } }
+// { dg-final { scan-tree-dump "pr64410.cc:46:29: optimized: loop vectorized" "vect" } }
