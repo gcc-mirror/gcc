@@ -1,3 +1,15 @@
+2025-10-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120691
+	* bid128_div.c: Run DFP_INIT_ROUNDMODE at function entrace and
+	DFP_RESTORE_ROUNDMODE at function exit.
+	* bid128_rem.c: Likewise.
+	* bid128_sqrt.c: Likewise.
+	* bid64_div.c (bid64_div): Likewise.
+	* bid64_sqrt.c (bid64_sqrt): Likewise.
+	* bid_conf.h: Include <dfp-machine.h>.
+	* dfp-machine.h: New file.
+
 2025-08-30  liuhongt  <hongtao.liu@intel.com>
 
 	Revert:

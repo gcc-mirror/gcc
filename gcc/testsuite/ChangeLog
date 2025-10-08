@@ -1,3 +1,72 @@
+2025-10-07  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/26581
+	* gcc.dg/c23-incomplete-2.c, gcc.dg/c23-incomplete-3.c,
+	gcc.dg/c23-incomplete-4.c, gcc.dg/c2y-incomplete-4.c,
+	gcc.dg/c2y-incomplete-5.c: New tests.
+	* gcc.dg/c23-thread-local-2.c, gcc.dg/c2y-incomplete-1.c: Update
+	expected errors.
+
+2025-10-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120691
+	* gcc.target/i386/pr120691.c: New test.
+
+2025-10-07  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/warn/Warray-bounds-20.C: Remove xfails, add diags.
+
+2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122187
+	* gcc.target/avr/torture/pr122187.c: New test.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* gfortran.dg/dynamic_dispatch_9.f03: Fix spelling in comment.
+	* gfortran.dg/use_only_3.inc: Likewise
+
+2025-10-07  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/121845
+	* gcc.target/riscv/rvv/autovec/pr121845.c: New test.
+
+2025-10-07  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/122124
+	* gcc.target/riscv/rvv/autovec/pr122124.c: New test.
+
+2025-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102901
+	* gfortran.dg/pdt_56.f03: Copy of pdt_13.f03 compiled with
+	-fcheck=all.
+
+2025-10-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121921
+	* gcc.dg/pr121921-1.c: New test.
+
+2025-10-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122083
+	* gcc.dg/tree-ssa/ssa-pre-19.c: Disable phiopt and cselim.
+	* g++.dg/opt/pr122083-1.C: New test.
+	* gcc.dg/tree-ssa/cselim-1.c: New test.
+	* gcc.dg/tree-ssa/cselim-2.c: New test.
+
+2025-10-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR middle-end/122122
+	* gcc.target/i386/memcpy-pr120683-2.c: Swap %edx/%rdx with
+	%eax/%rax after
+	* gcc.target/i386/memcpy-pr120683-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-6.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-7.c: Likewise.
+	* gcc.target/i386/pr111657-1.c: Likewise.
+
 2025-10-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/122155

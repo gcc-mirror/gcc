@@ -1,3 +1,11 @@
+2025-10-07  Joseph Myers  <josmyers@redhat.com>
+
+	PR c/26581
+	* c-decl.cc (c_finish_incomplete_decl): Give error for tentative
+	definition of incomplete array for C2y with internal linkage.
+	(finish_decl): Do not set DO_DEFAULT based on -pedantic.  Use
+	pedwarn_c23 for missing array sizes for internal linkage.
+
 2025-10-02  Alfie Richards  <alfie.richards@arm.com>
 
 	* c-decl.cc (maybe_mark_function_versioned): Add diagnostic.

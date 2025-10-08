@@ -1,3 +1,7 @@
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.host: Fix spelling in comment.
+
 2025-10-05  Sam James  <sam@gentoo.org>
 
 	* Makefile.in: Regenerate.

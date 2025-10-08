@@ -1,3 +1,11 @@
+2025-10-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/120691
+	* Makefile.in (DECNUMINC): Add -I$(srcdir)/config/$(cpu_type).
+	* config/i386/dfp-machine.h: New file.
+	* config/i386/32/dfp-machine.h: Likewise.
+	* config/i386/64/dfp-machine.h: Likewise.
+
 2025-09-30  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	* config/t-softfp: Don't use softfp_wrap for bitint functions.

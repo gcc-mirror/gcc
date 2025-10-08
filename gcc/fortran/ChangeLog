@@ -1,3 +1,9 @@
+2025-10-07  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/102901
+	* trans-array.cc (structure_alloc_comps): Do not use
+	gfc_check_pdt_dummy with pointer or allocatable components.
+
 2025-10-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/107968

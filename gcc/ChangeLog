@@ -1,3 +1,53 @@
+2025-10-07  Alfie Richards  <alfie.richards@arm.com>
+
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in: Add documentation for TARGET_HAS_FMV_TARGET_ATTRIBUTE.
+
+2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122187
+	* config/avr/avr.cc (avr_out_extr, avr_out_extr_not):
+	Make a local copy of the passed rtx[] operands.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/i386/i386-features.cc
+	(general_scalar_chain::vector_const_cost): Fix spelling in
+	comment.
+	* ipa-prop.h (enum jump_func_type): Likewise.
+	* tree-vectorizer.cc (try_vectorize_loop_1): Likewise.
+
+2025-10-07  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/121845
+	* config/riscv/riscv-v.cc (shuffle_series_patterns):
+	Modulo indices for VLA and punt when wrapping for VLS.
+
+2025-10-07  Raphael Moreira Zinsly  <rzinsly@ventanamicro.com>
+
+	PR target/122124
+	* config/riscv/riscv-v.cc (shuffle_slide_patterns): Check if
+	the second pivot is in OP1 and improve comments.
+
+2025-10-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121921
+	* match.pd (`-(a ptrdiff b)`): Extend for a nop_convert
+	between the neg and ptrdiff.
+
+2025-10-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122083
+	* tree-ssa-phiopt.cc (single_trailing_store_in_bb): Rename to ...
+	(trailing_store_in_bb): This and take new argument to check for
+	only store.
+	(cond_if_else_store_replacement_limited): Update to use
+	trailing_store_in_bb.
+	(cond_if_else_store_replacement): Loop until
+	cond_if_else_store_replacement_limited returns false.
+	(pass_phiopt::execute): Instead of calling cond_if_else_store_replacement_limited
+	once, also loop on it.
+
 2025-10-06  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/122155

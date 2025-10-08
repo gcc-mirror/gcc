@@ -1,3 +1,37 @@
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* configure.host: Fix spelling in comment.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/ext/ropeimpl.h (rope::_S_fetch): Initialize variable.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/sat_arith.h (mul_sat): Add parentheses around
+	operands.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/parse/parse.cc: Initialize variable.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/20_util/shared_ptr/cons/move.cc: Add comment and
+	dg-prune-output for -Wpessimizing-move warning.
+	* testsuite/experimental/memory/shared_ptr/cons/move_ctor.cc:
+	Likewise.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h (philox_engine(result_type)): Reorder
+	ctor-initializer-list to match declaration order.
+
+2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/basic_string.h (basic_string::_M_check): Cast
+	size_type arguments to size_t.
+
 2025-10-05  Sam James  <sam@gentoo.org>
 
 	* Makefile.in: Regenerate.
