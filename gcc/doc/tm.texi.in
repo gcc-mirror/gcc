@@ -56,6 +56,7 @@ through the macros defined in the @file{.h} file.
 * C++ ABI::             Controlling C++ ABI changes.
 * D Language and ABI::  Controlling D ABI changes.
 * Rust Language and ABI:: Controlling Rust ABI changes.
+* JIT Language and ABI:: JIT ABI parameters
 * Named Address Spaces:: Adding support for named address spaces
 * Misc::                Everything else.
 @end menu
