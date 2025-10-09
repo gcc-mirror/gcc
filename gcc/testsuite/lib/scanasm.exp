@@ -885,6 +885,8 @@ proc configure_check-function-bodies { config } {
 	set up_config(end) {^\}$}
     } elseif { [istarget *-*-darwin*] } {
 	set up_config(end) {^LFE[0-9]+}
+    } elseif { [istarget aarch64*-*-mingw32] } {
+	set up_config(end) {seh_endproc}
     } else {
 	set up_config(end) {^\s*\.size}
     }

@@ -31,4 +31,16 @@ along with GCC; see the file COPYING3.  If not see
 #undef  STATIC_CHAIN_REGNUM
 #define STATIC_CHAIN_REGNUM R17_REGNUM
 
+#define ASM_COMMENT_START "//"
+
+/* ASM_OUTPUT_TYPE_DIRECTIVE is not yet supported by binutils for the
+   aarch64-w64-mingw32 target.  */
+#define ASM_OUTPUT_TYPE_DIRECTIVE(STREAM, NAME, TYPE)
+
+/* Structured Exception Handling (SEH) is not yet supported by binutils
+   so adding seh_endproc as an assembly comment to mark the end of a
+   function.  */
+#define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL) \
+  fprintf (FILE, "\t" ASM_COMMENT_START "  seh_endproc\n")
+
 #endif /* GCC_AARCH64_ABI_MS_H.  */
