@@ -3297,6 +3297,28 @@ reduction_fn_for_scalar_code (code_helper code, internal_fn *reduc_fn)
       }
 }
 
+/* Set *SBOOL_FN to the corresponding function working on vector masks
+   for REDUC_FN.  Return true if that exists, false otherwise.  */
+
+static bool
+sbool_reduction_fn_for_fn (internal_fn reduc_fn, internal_fn *sbool_fn)
+{
+  switch (reduc_fn)
+    {
+    case IFN_REDUC_AND:
+      *sbool_fn = IFN_REDUC_SBOOL_AND;
+      return true;
+    case IFN_REDUC_IOR:
+      *sbool_fn = IFN_REDUC_SBOOL_IOR;
+      return true;
+    case IFN_REDUC_XOR:
+      *sbool_fn = IFN_REDUC_SBOOL_XOR;
+      return true;
+    default:
+      return false;
+    }
+}
+
 /* If there is a neutral value X such that a reduction would not be affected
    by the introduction of additional X elements, return that X, otherwise
    return null.  CODE is the code of the reduction and SCALAR_TYPE is type
@@ -4902,17 +4924,16 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
   if (!TYPE_VECTOR_SUBPARTS (vector_type).is_constant (&nunits))
     nunits = group_size;
 
+  tree vector_elt_type = TREE_TYPE (vector_type);
   number_of_places_left_in_vector = nunits;
   bool constant_p = true;
   tree_vector_builder elts (vector_type, nunits, 1);
   elts.quick_grow (nunits);
   gimple_seq ctor_seq = NULL;
   if (neutral_op
-      && !useless_type_conversion_p (TREE_TYPE (vector_type),
+      && !useless_type_conversion_p (vector_elt_type,
 				     TREE_TYPE (neutral_op)))
-    neutral_op = gimple_convert (&ctor_seq,
-				 TREE_TYPE (vector_type),
-				 neutral_op);
+    neutral_op = gimple_convert (&ctor_seq, vector_elt_type, neutral_op);
   for (j = 0; j < nunits * number_of_vectors; ++j)
     {
       tree op;
@@ -4924,11 +4945,22 @@ get_initial_defs_for_reduction (loop_vec_info loop_vinfo,
 	op = neutral_op;
       else
 	{
-	  if (!useless_type_conversion_p (TREE_TYPE (vector_type),
+	  if (!useless_type_conversion_p (vector_elt_type,
 					  TREE_TYPE (initial_values[i])))
-	    initial_values[i] = gimple_convert (&ctor_seq,
-						TREE_TYPE (vector_type),
-						initial_values[i]);
+	    {
+	      if (VECTOR_BOOLEAN_TYPE_P (vector_type))
+		initial_values[i] = gimple_build (&ctor_seq, COND_EXPR,
+						  vector_elt_type,
+						  initial_values[i],
+						  build_all_ones_cst
+						    (vector_elt_type),
+						  build_zero_cst
+						    (vector_elt_type));
+	      else
+		initial_values[i] = gimple_convert (&ctor_seq,
+						    vector_elt_type,
+						    initial_values[i]);
+	    }
 	  op = initial_values[i];
 	}
 
@@ -5549,6 +5581,22 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   /* Shouldn't be used beyond this point.  */
   exit_bb = nullptr;
 
+  /* If we are operating on a mask vector and do not support direct mask
+     reduction, work on a bool data vector instead of a mask vector.  */
+  if (VECTOR_BOOLEAN_TYPE_P (vectype)
+      && VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info)
+      && vectype != VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info))
+    {
+      gcc_assert (reduc_inputs.length () == 1);
+      vectype = VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info);
+      gimple_seq stmts = NULL;
+      reduc_inputs[0] = gimple_build (&stmts, VEC_COND_EXPR, vectype,
+				      reduc_inputs[0],
+				      build_one_cst (vectype),
+				      build_zero_cst (vectype));
+      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+    }
+
   if (VECT_REDUC_INFO_TYPE (reduc_info) == COND_REDUCTION
       && reduc_fn != IFN_LAST)
     {
@@ -5943,8 +5991,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
 	  new_temp = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype1),
 				   new_temp, bitsize, bitsize_zero_node);
-	  new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR,
-				   scalar_type, new_temp);
+	  new_temp = gimple_convert (&stmts, scalar_type, new_temp);
 	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 	  scalar_results.safe_push (new_temp);
         }
@@ -7017,15 +7064,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   tree vectype_out = SLP_TREE_VECTYPE (slp_for_stmt_info);
   VECT_REDUC_INFO_VECTYPE (reduc_info) = vectype_out;
 
-  /* We do not handle mask reductions correctly in the epilogue.  */
-  if (VECTOR_BOOLEAN_TYPE_P (vectype_out))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			 "mask reduction not supported.\n");
-      return false;
-    }
-
   gimple_match_op op;
   if (!gimple_extract_op (stmt_info->stmt, &op))
     gcc_unreachable ();
@@ -7343,6 +7381,23 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       return false;
     }
 
+  /* See if we can convert a mask vector to a corresponding bool data vector
+     to perform the epilogue reduction.  */
+  tree alt_vectype_out = NULL_TREE;
+  if (VECTOR_BOOLEAN_TYPE_P (vectype_out))
+    {
+      alt_vectype_out
+	= get_related_vectype_for_scalar_type (loop_vinfo->vector_mode,
+					       TREE_TYPE (vectype_out),
+					       TYPE_VECTOR_SUBPARTS
+						 (vectype_out));
+      if (!alt_vectype_out
+	  || maybe_ne (TYPE_VECTOR_SUBPARTS (alt_vectype_out),
+		       TYPE_VECTOR_SUBPARTS (vectype_out))
+	  || !expand_vec_cond_expr_p (alt_vectype_out, vectype_out))
+	alt_vectype_out = NULL_TREE;
+    }
+
   internal_fn reduc_fn = IFN_LAST;
   if (reduction_type == TREE_CODE_REDUCTION
       || reduction_type == FOLD_LEFT_REDUCTION
@@ -7353,9 +7408,26 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	  ? fold_left_reduction_fn (orig_code, &reduc_fn)
 	  : reduction_fn_for_scalar_code (orig_code, &reduc_fn))
 	{
-	  if (reduc_fn != IFN_LAST
-	      && !direct_internal_fn_supported_p (reduc_fn, vectype_out,
-						  OPTIMIZE_FOR_SPEED))
+	  internal_fn sbool_fn = IFN_LAST;
+	  if (reduc_fn == IFN_LAST)
+	    ;
+	  else if ((!VECTOR_BOOLEAN_TYPE_P (vectype_out)
+		    || (GET_MODE_CLASS (TYPE_MODE (vectype_out))
+			== MODE_VECTOR_BOOL))
+		   && direct_internal_fn_supported_p (reduc_fn, vectype_out,
+						      OPTIMIZE_FOR_SPEED))
+	    ;
+	  else if (VECTOR_BOOLEAN_TYPE_P (vectype_out)
+		   && sbool_reduction_fn_for_fn (reduc_fn, &sbool_fn)
+		   && direct_internal_fn_supported_p (sbool_fn, vectype_out,
+						      OPTIMIZE_FOR_SPEED))
+	    reduc_fn = sbool_fn;
+	  else if (reduction_type != FOLD_LEFT_REDUCTION
+		   && alt_vectype_out
+		   && direct_internal_fn_supported_p (reduc_fn, alt_vectype_out,
+						      OPTIMIZE_FOR_SPEED))
+	    VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info) = alt_vectype_out;
+	  else
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7371,6 +7443,19 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 			     "no reduc code for scalar code.\n");
 
 	  return false;
+	}
+      if (reduc_fn == IFN_LAST
+	  && VECTOR_BOOLEAN_TYPE_P (vectype_out))
+	{
+	  if (!alt_vectype_out)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "cannot turn mask into bool data vector for "
+				 "reduction epilogue.\n");
+	      return false;
+	    }
+	  VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info) = alt_vectype_out;
 	}
     }
   else if (reduction_type == COND_REDUCTION)

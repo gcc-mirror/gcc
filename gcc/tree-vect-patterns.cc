@@ -7157,13 +7157,14 @@ possible_vector_mask_operation_p (stmt_vec_info stmt_info)
 
 /* If STMT_INFO sets a boolean SSA_NAME, see whether we should use
    a vector mask type instead of a normal vector type.  Record the
-   result in STMT_INFO->mask_precision.  */
+   result in STMT_INFO->mask_precision.  Returns true when the
+   precision changed.  */
 
-static void
+static bool
 vect_determine_mask_precision (vec_info *vinfo, stmt_vec_info stmt_info)
 {
   if (!possible_vector_mask_operation_p (stmt_info))
-    return;
+    return false;
 
   /* If at least one boolean input uses a vector mask type,
      pick the mask type with the narrowest elements.
@@ -7245,8 +7246,11 @@ vect_determine_mask_precision (vec_info *vinfo, stmt_vec_info stmt_info)
 	  scalar_mode mode;
 	  tree vectype, mask_type;
 	  if (is_a <scalar_mode> (TYPE_MODE (op0_type), &mode)
-	      && (vectype = get_vectype_for_scalar_type (vinfo, op0_type))
-	      && (mask_type = get_mask_type_for_scalar_type (vinfo, op0_type))
+	      /* Do not allow this to set vinfo->vector_mode, this might
+		 disrupt the result for the next iteration.  */
+	      && (vectype = get_related_vectype_for_scalar_type
+						(vinfo->vector_mode, op0_type))
+	      && (mask_type = truth_type_for (vectype))
 	      && expand_vec_cmp_expr_p (vectype, mask_type, code))
 	    precision = GET_MODE_BITSIZE (mode);
 	}
@@ -7272,19 +7276,30 @@ vect_determine_mask_precision (vec_info *vinfo, stmt_vec_info stmt_info)
 	}
     }
 
-  if (dump_enabled_p ())
+  if (stmt_info->mask_precision != precision)
     {
-      if (precision == ~0U)
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "using normal nonmask vectors for %G",
-			 stmt_info->stmt);
-      else
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "using boolean precision %d for %G",
-			 precision, stmt_info->stmt);
-    }
+      if (dump_enabled_p ())
+	{
+	  if (precision == ~0U)
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "using normal nonmask vectors for %G",
+			     stmt_info->stmt);
+	  else
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "using boolean precision %d for %G",
+			     precision, stmt_info->stmt);
+	}
 
-  stmt_info->mask_precision = precision;
+      /* ???  We'd like to assert stmt_info->mask_precision == 0
+	 || stmt_info->mask_precision > precision, thus that we only
+	 decrease mask precisions throughout iteration, but the
+	 tcc_comparison handling above means for comparisons of bools
+	 we start with 8 but might increase in case the bools get mask
+	 precision on their own.  */
+      stmt_info->mask_precision = precision;
+      return true;
+    }
+  return false;
 }
 
 /* Handle vect_determine_precisions for STMT_INFO, given that we
@@ -7317,22 +7332,33 @@ vect_determine_precisions (vec_info *vinfo)
 
   DUMP_VECT_SCOPE ("vect_determine_precisions");
 
-  for (unsigned int i = 0; i < nbbs; i++)
+  /* For mask precisions we have to iterate since otherwise we do not
+     get reduction PHI precision correct.  For now do this only for
+     loop vectorization.  */
+  bool changed;
+  do
     {
-      basic_block bb = bbs[i];
-      for (auto gsi = gsi_start_phis (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+      changed = false;
+      for (unsigned int i = 0; i < nbbs; i++)
 	{
-	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
-	  if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
-	    vect_determine_mask_precision (vinfo, stmt_info);
-	}
-      for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	{
-	  stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (gsi));
-	  if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
-	    vect_determine_mask_precision (vinfo, stmt_info);
+	  basic_block bb = bbs[i];
+	  for (auto gsi = gsi_start_phis (bb);
+	       !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi.phi ());
+	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+		changed |= vect_determine_mask_precision (vinfo, stmt_info);
+	    }
+	  for (auto gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+	    {
+	      stmt_vec_info stmt_info = vinfo->lookup_stmt (gsi_stmt (gsi));
+	      if (stmt_info && STMT_VINFO_VECTORIZABLE (stmt_info))
+		changed |= vect_determine_mask_precision (vinfo, stmt_info);
+	    }
 	}
     }
+  while (changed && is_a <loop_vec_info> (vinfo));
+
   for (unsigned int i = 0; i < nbbs; i++)
     {
       basic_block bb = bbs[nbbs - i - 1];

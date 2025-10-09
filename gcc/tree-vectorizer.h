@@ -855,6 +855,10 @@ public:
   /* The vector type for performing the actual reduction operation.  */
   tree reduc_vectype;
 
+  /* The vector type we should use for the final reduction in the epilogue
+     when we reduce a mask.  */
+  tree reduc_vectype_for_mask;
+
   /* For INTEGER_INDUC_COND_REDUCTION, the initial value to be used.  */
   tree induc_cond_initial_val;
 
@@ -888,6 +892,7 @@ typedef class vect_reduc_info_s *vect_reduc_info;
 #define VECT_REDUC_INFO_INDUC_COND_INITIAL_VAL(I) ((I)->induc_cond_initial_val)
 #define VECT_REDUC_INFO_EPILOGUE_ADJUSTMENT(I) ((I)->reduc_epilogue_adjustment)
 #define VECT_REDUC_INFO_VECTYPE(I) ((I)->reduc_vectype)
+#define VECT_REDUC_INFO_VECTYPE_FOR_MASK(I) ((I)->reduc_vectype_for_mask)
 #define VECT_REDUC_INFO_FORCE_SINGLE_CYCLE(I) ((I)->force_single_cycle)
 #define VECT_REDUC_INFO_RESULT_POS(I) ((I)->reduc_result_pos)
 
