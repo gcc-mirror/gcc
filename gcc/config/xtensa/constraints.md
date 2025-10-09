@@ -126,7 +126,7 @@
 
 ;; Memory constraints.
 
-(define_memory_constraint "R"
+(define_special_memory_constraint "R"
  "Memory that can be accessed with a 4-bit unsigned offset from a register."
  (and (match_code "mem")
       (match_test "smalloffset_mem_p (op)")))
@@ -136,7 +136,7 @@
  (and (match_code "mem")
       (match_test "!TARGET_CONST16 && constantpool_mem_p (op)")))
 
-(define_memory_constraint "U"
+(define_special_memory_constraint "U"
  "Memory that is not in a literal pool."
  (and (match_code "mem")
       (match_test "! constantpool_mem_p (op)")))

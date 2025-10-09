@@ -1263,18 +1263,16 @@
   "xtensa_valid_move (SImode, operands)"
   {@ [cons: =0, 1; attrs: type, length]
      [ D,  M; move , 2] movi.n\t%0, %x1
-     [ D,  D; move , 2] mov.n\t%0, %1
-     [ D,  d; move , 2] ^
-     [ D,  R; load , 2] %v1l32i.n\t%0, %1
-     [ R,  D; store, 2] %v0s32i.n\t%1, %0
-     [ R,  d; store, 2] ^
-     [ a,  r; move , 3] mov\t%0, %1
-     [ q,  r; move , 3] movsp\t%0, %1
      [ a,  I; move , 3] movi\t%0, %x1
-     [ a,  Y; load , 3] movi\t%0, %1
      [ W,  i; move , 6] const16\t%0, %t1\;const16\t%0, %b1
+     [ a,  Y; load , 3] movi\t%0, %1
      [ a,  T; load , 3] %v1l32r\t%0, %1
+     [ q,  r; move , 3] movsp\t%0, %1
+     [ D, Dd; move , 2] mov.n\t%0, %1
+     [ a,  r; move , 3] mov\t%0, %1
+     [ D,  R; load , 2] %v1l32i.n\t%0, %1
      [ a,  U; load , 3] %v1l32i\t%0, %1
+     [ R, Dd; store, 2] %v0s32i.n\t%1, %0
      [ U,  r; store, 3] %v0s32i\t%1, %0
      [*a, *A; rsr  , 3] rsr\t%0, ACCLO
      [*A, *r; wsr  , 3] wsr\t%1, ACCLO
@@ -1310,11 +1308,11 @@
   "xtensa_valid_move (HImode, operands)"
   {@ [cons: =0, 1; attrs: type, length]
      [ D,  M; move , 2] movi.n\t%0, %x1
-     [ D,  d; move , 2] mov.n\t%0, %1
-     [ a,  r; move , 3] mov\t%0, %1
      [ a,  I; move , 3] movi\t%0, %x1
      [ a,  Y; load , 3] movi\t%0, %1
      [ a,  T; load , 3] %v1l32r\t%0, %1
+     [ D,  d; move , 2] mov.n\t%0, %1
+     [ a,  r; move , 3] mov\t%0, %1
      [ a,  U; load , 3] %v1l16ui\t%0, %1
      [ U,  r; store, 3] %v0s16i\t%1, %0
      [*a, *A; rsr  , 3] rsr\t%0, ACCLO
@@ -1339,9 +1337,9 @@
   "xtensa_valid_move (QImode, operands)"
   {@ [cons: =0, 1; attrs: type, length]
      [ D,  M; move , 2] movi.n\t%0, %x1
+     [ a,  I; move , 3] movi\t%0, %x1
      [ D,  d; move , 2] mov.n\t%0, %1
      [ a,  r; move , 3] mov\t%0, %1
-     [ a,  I; move , 3] movi\t%0, %x1
      [ a,  U; load , 3] %v1l8ui\t%0, %1
      [ U,  r; store, 3] %v0s8i\t%1, %0
      [*a, *A; rsr  , 3] rsr\t%0, ACCLO
@@ -1412,20 +1410,20 @@
     && !(FP_REG_P (xt_true_regnum (operands[0]))
 	 && (constantpool_mem_p (operands[1]) || CONSTANT_P (operands[1]))))"
   {@ [cons: =0, 1; attrs: type, length]
-     [f,  f; farith, 3] mov.s\t%0, %1
-     [f, ^U; fload , 3] %v1lsi\t%0, %1
-     [U,  f; fstore, 3] %v0ssi\t%1, %0
-     [D,  d; move  , 2] mov.n\t%0, %1
+     [W, iF; move  , 6] const16\t%0, %t1\;const16\t%0, %b1
+     [a,  Y; load  , 3] movi\t%0, %y1
      [a,  T; load  , 3] %v1l32r\t%0, %1
-     [D,  R; load  , 2] %v1l32i.n\t%0, %1
-     [R,  d; store , 2] %v0s32i.n\t%1, %0
+     [D,  d; move  , 2] mov.n\t%0, %1
      [a,  r; move  , 3] mov\t%0, %1
+     [f,  f; farith, 3] mov.s\t%0, %1
      [f,  r; farith, 3] wfr\t%0, %1
      [a,  f; farith, 3] rfr\t%0, %1
-     [a,  Y; load  , 3] movi\t%0, %y1
-     [W, iF; move  , 6] const16\t%0, %t1\;const16\t%0, %b1
+     [D,  R; load  , 2] %v1l32i.n\t%0, %1
      [a,  U; load  , 3] %v1l32i\t%0, %1
+     [f,  U; fload , 3] %v1lsi\t%0, %1
+     [R,  d; store , 2] %v0s32i.n\t%1, %0
      [U,  r; store , 3] %v0s32i\t%1, %0
+     [U,  f; fstore, 3] %v0ssi\t%1, %0
   }
   [(set_attr "mode" "SF")])
 
