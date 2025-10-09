@@ -1281,6 +1281,18 @@
   }
   [(set_attr "mode" "SI")])
 
+(define_insn "*xtensa_const16"
+  [(set (match_operand:SI 0 "register_operand" "=a")
+	(match_operator:SI 3 "xtensa_bit_join_operator"
+		[(ashift:SI (match_operand:SI 1 "register_operand" "0")
+			    (const_int 16))
+		 (match_operand:SI 2 "const_int_operand" "")]))]
+  "TARGET_CONST16 && IN_RANGE (INTVAL (operands[2]), 1, 65535)"
+  "const16\t%0, %2"
+  [(set_attr "type"	"move")
+   (set_attr "mode"	"SI")
+   (set_attr "length"	"3")])
+
 ;; 16-bit Integer moves
 
 (define_expand "movhi"
