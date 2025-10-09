@@ -1,6 +1,7 @@
 /* Plugin for testing how gracefully we degrade in the face of very
    large source files.  */
 
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "gcc-plugin.h"
 #include "system.h"

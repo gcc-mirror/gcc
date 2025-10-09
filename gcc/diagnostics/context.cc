@@ -361,6 +361,9 @@ context::finish ()
       dump (m_logger->get_stream (), m_logger->get_indent ());
     }
 
+  for (auto iter : m_sinks)
+    iter->finalize_extensions ();
+
   /* We might be handling a fatal error.
      Close any active diagnostic groups, which may trigger flushing
      sinks.  */
@@ -1860,6 +1863,20 @@ sink::dump (FILE *out, int indent) const
 {
   dumping::emit_heading (out, indent, "printer");
   m_printer->dump (out, indent + 2);
+
+  dumping::emit_heading (out, indent, "extensions");
+  if (m_extensions.empty ())
+    dumping::emit_none (out, indent + 2);
+  else
+    for (auto &ext : m_extensions)
+      ext->dump (out, indent + 2);
+}
+
+void
+sink::finalize_extensions ()
+{
+  for (auto &ext : m_extensions)
+    ext->finalize ();
 }
 
 void

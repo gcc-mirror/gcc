@@ -32,6 +32,7 @@
    to ensure that further very long lines don't start a new linemap.
    This also means that we can't use macros in the test files.  */
 
+#define INCLUDE_VECTOR
 #include "gcc-plugin.h"
 #include "config.h"
 #include "system.h"

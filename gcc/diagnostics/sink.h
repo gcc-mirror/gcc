@@ -34,6 +34,27 @@ class per_sink_buffer;
 class sink
 {
 public:
+  /* Abstract base class for adding additional functionality to a sink
+     (e.g. via a plugin).  */
+  class extension
+  {
+  public:
+    virtual ~extension () {}
+    virtual void dump (FILE *out, int indent) const = 0;
+    virtual void finalize () {}
+
+    sink &get_sink () const { return m_sink; }
+
+  protected:
+    extension (sink &sink_)
+    : m_sink (sink_)
+    {
+    }
+
+  private:
+    sink &m_sink;
+  };
+
   virtual ~sink () {}
 
   virtual text_sink *dyn_cast_text_sink () { return nullptr; }
@@ -92,6 +113,15 @@ public:
 
   logging::logger *get_logger () { return m_context.get_logger (); }
 
+  void
+  add_extension (std::unique_ptr<extension> sink_ext)
+  {
+    m_extensions.push_back (std::move (sink_ext));
+  }
+
+  void
+  finalize_extensions ();
+
 protected:
   sink (context &dc)
   : m_context (dc),
@@ -101,6 +131,9 @@ protected:
 protected:
   context &m_context;
   std::unique_ptr<pretty_printer> m_printer;
+
+private:
+  std::vector<std::unique_ptr<extension>> m_extensions;
 };
 
 extern void

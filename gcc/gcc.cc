@@ -28,6 +28,7 @@ Once it knows which kind of compilation to perform, the procedure for
 compilation is specified by a string called a "spec".  */
 
 #define INCLUDE_STRING
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #ifdef HOST_HAS_PERSONALITY_ADDR_NO_RANDOMIZE
