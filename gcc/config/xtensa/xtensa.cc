@@ -5754,11 +5754,10 @@ split_DI_SF_DF_const (rtx_insn *insn)
 /* The constant-synthesis optimization (constantsynth for short).
 
    This is an optimization that attempts to replace the assignment of a
-   large integer (and some single-precision floating-point) constant value
-   that won't fit in the immediate field of a single machine instruction
-   with a smaller integer value that does fit, and a group of subsequent
-   instructions that derive the equivalent value through some arithmetic/
-   bitwise operations.
+   large integer constant value that won't fit in the immediate field of
+   a single machine instruction with a smaller integer value that does fit,
+   and a group of subsequent instructions that derive the equivalent value
+   through some arithmetic/bitwise operations.
 
    In Xtensa ISA, when TARGET_CONST16 is not enabled, such large immediate
    assignments are typically treated as references to literal pool entries
@@ -6265,8 +6264,7 @@ do_largeconst (void)
 	/* Split DI/SF/DFmode constant assignments into pairs of SImode
 	   ones.  This is also the pre-processing for constantsynth opti-
 	   mization that follows immediately after.  */
-	if (replacing_required)
-	  split_DI_SF_DF_const (insn);
+	split_DI_SF_DF_const (insn);
 
 	/* constantsynth pass 1.
 	   Detect and record large constant assignments within a function.  */
