@@ -3437,6 +3437,7 @@ gfc_get_function_type (gfc_symbol * sym, gfc_actual_arglist *actual_args,
 	}
     }
   if (sym->backend_decl == error_mark_node && actual_args != NULL
+      && sym->ts.interface == NULL
       && sym->formal == NULL && (sym->attr.proc == PROC_EXTERNAL
 				 || sym->attr.proc == PROC_UNKNOWN))
     gfc_get_formal_from_actual_arglist (sym, actual_args);
