@@ -265,7 +265,7 @@ namespace __detail
       // A type which satisfies the C++20 bidirectional_iterator concept might
       // have input_iterator_tag as its iterator_category type, which would
       // mean we select the __advance overload which cannot move backwards.
-      // A C++20 random_access_iterator we might select the O(n) __advance
+      // For a C++20 random_access_iterator we might select the O(n) __advance
       // if it doesn't meet the Cpp17RandomAccessIterator requirements.
       // So for C++20 iterator types we can just choose to do the right thing.
       if constexpr (__detail::__promotable_iterator<_InputIterator>
