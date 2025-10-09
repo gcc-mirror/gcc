@@ -1,3 +1,12 @@
+2025-10-08  Aurelien Jarno  <aurelien@aurel32.net>
+
+	Backported from master:
+	2025-10-02  Aurelien Jarno  <aurelien@aurel32.net>
+
+	PR target/121652
+	* gcc.target/riscv/rvv/autovec/vls/math-nearbyint-1.c: Adjust
+	scan pattern for fewer instances of frflags/fsrflags.
+
 2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

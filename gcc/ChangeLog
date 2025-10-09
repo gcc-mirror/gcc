@@ -1,3 +1,12 @@
+2025-10-08  Aurelien Jarno  <aurelien@aurel32.net>
+
+	Backported from master:
+	2025-10-02  Aurelien Jarno  <aurelien@aurel32.net>
+
+	PR target/121652
+	* config/riscv/riscv.md (round_pattern): special case NaN input
+	instead of saving/restoring fflags.
+
 2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
