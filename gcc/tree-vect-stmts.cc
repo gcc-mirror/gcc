@@ -3173,8 +3173,9 @@ simple_integer_narrowing (tree vectype_out, tree vectype_in,
 /* Function vectorizable_call.
 
    Check if STMT_INFO performs a function call that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -3762,8 +3763,9 @@ vect_simd_lane_linear (tree op, class loop *loop,
 
    Check if STMT_INFO performs a function call that can be vectorized
    by calling a simd clone of the function.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -4976,8 +4978,9 @@ vect_create_half_widening_stmts (vec_info *vinfo,
 
 
 /* Check if STMT_INFO performs a conversion operation that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -5614,8 +5617,9 @@ vect_nop_conversion_p (stmt_vec_info stmt_info)
 /* Function vectorizable_assignment.
 
    Check if STMT_INFO performs an assignment (copy) that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -5794,8 +5798,9 @@ vect_supportable_shift (vec_info *vinfo, enum tree_code code, tree scalar_type)
 /* Function vectorizable_shift.
 
    Check if STMT_INFO performs a shift operation that can be vectorized.
-   If VEC_STMT is also passed, vectorize the STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -6185,8 +6190,9 @@ vectorizable_shift (vec_info *vinfo,
 
    Check if STMT_INFO performs a binary, unary or ternary operation that can
    be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -7754,8 +7760,9 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 
    Check if STMT_INFO defines a non scalar data-ref (array/pointer/structure)
    that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -9260,8 +9267,9 @@ hoist_defs_of_uses (gimple *stmt, class loop *loop, bool hoist_p)
 
    Check if STMT_INFO reads a non scalar data-ref (array/pointer/structure)
    that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt to replace it, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt to replace
+   it, and insert it at GSI.
    Return true if STMT_INFO is vectorizable in this way.  */
 
 static bool
@@ -11512,9 +11520,9 @@ vect_is_simple_cond (tree cond, vec_info *vinfo,
 /* vectorizable_condition.
 
    Check if STMT_INFO is conditional modify expression that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   stmt using VEC_COND_EXPR  to replace it, put it in VEC_STMT, and insert it
-   at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized stmt using
+   VEC_COND_EXPR to replace it, and insert it at GSI.
 
    When STMT_INFO is vectorized as a nested cycle, for_reduction is true.
 
@@ -12050,8 +12058,9 @@ vectorizable_condition (vec_info *vinfo,
 /* Helper of vectorizable_comparison.
 
    Check if STMT_INFO is comparison expression CODE that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   comparison, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized comparison, and insert
+   it at GSI.
 
    Return true if STMT_INFO is vectorizable in this way.  */
 
@@ -12255,8 +12264,9 @@ vectorizable_comparison_1 (vec_info *vinfo, tree vectype,
 /* vectorizable_comparison.
 
    Check if STMT_INFO is comparison expression that can be vectorized.
-   If VEC_STMT is also passed, vectorize STMT_INFO: create a vectorized
-   comparison, put it in VEC_STMT, and insert it at GSI.
+   If COST_VEC is passed, calculate costs but don't change anything,
+   otherwise, vectorize STMT_INFO: create a vectorized comparison, and insert
+   it at GSI.
 
    Return true if STMT_INFO is vectorizable in this way.  */
 
