@@ -288,6 +288,7 @@ struct vect_load_store_data : vect_data {
       tree decl;	// VMAT_GATHER_SCATTER_DECL
   } gs;
   tree strided_offset_vectype; // VMAT_GATHER_SCATTER_IFN, originally strided
+  /* Load/store type with larger element mode used for punning the vectype.  */
   tree ls_type; // VMAT_GATHER_SCATTER_IFN
   /* This is set to a supported offset vector type if we don't support the
      originally requested offset type, otherwise NULL.
@@ -302,6 +303,8 @@ struct vect_load_store_data : vect_data {
   /* True if the load requires a load permutation.  */
   bool slp_perm;    // SLP_TREE_LOAD_PERMUTATION
   unsigned n_perms; // SLP_TREE_LOAD_PERMUTATION
+  /* Whether the load permutation is consecutive and simple.  */
+  bool subchain_p; // VMAT_STRIDED_SLP and VMAT_GATHER_SCATTER
 };
 
 /* A computation tree of an SLP instance.  Each node corresponds to a group of
@@ -2763,6 +2766,7 @@ extern int vect_slp_child_index_for_operand (const gimple *, int op, bool);
 extern tree prepare_vec_mask (loop_vec_info, tree, tree, tree,
 			      gimple_stmt_iterator *);
 extern tree vect_get_mask_load_else (int, tree);
+extern bool vect_load_perm_consecutive_p (slp_tree, unsigned = 0);
 
 /* In tree-vect-patterns.cc.  */
 extern void

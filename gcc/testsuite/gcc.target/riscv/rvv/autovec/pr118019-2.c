@@ -47,4 +47,4 @@ x264_pixel_satd_8x4 (uint8_t *pix1, int i_pix1, uint8_t *pix2, int i_pix2)
   return (((uint16_t) sum) + ((uint32_t) sum >> 16)) >> 1;
 }
 
-/* { dg-final { scan-assembler-times "vlse64" 8 } } */
+/* { dg-final { scan-assembler-times "vlse32" 4 } } */

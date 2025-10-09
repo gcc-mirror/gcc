@@ -2056,6 +2056,27 @@ vector_vector_composition_type (tree vtype, poly_uint64 nelts, tree *ptype,
   return NULL_TREE;
 }
 
+/* Check if the load permutation of NODE only refers to a consecutive
+   subset of the group indices where GROUP_SIZE is the size of the
+   dataref's group.  We also assert that the length of the permutation
+   divides the group size and is a power of two.
+   Such load permutations can be elided in strided access schemes as
+   we can "jump over" the gap they leave.  */
+
+bool
+has_consecutive_load_permutation (slp_tree node, unsigned group_size)
+{
+  load_permutation_t perm = SLP_TREE_LOAD_PERMUTATION (node);
+  if (!perm.exists ()
+      || perm.length () <= 1
+      || !pow2p_hwi (perm.length ())
+      || group_size % perm.length ())
+    return false;
+
+  return vect_load_perm_consecutive_p (node);
+}
+
+
 /* Analyze load or store SLP_NODE of type VLS_TYPE.  Return true
    if there is a memory access type that the vectorized form can use,
    storing it in *MEMORY_ACCESS_TYPE if so.  If we decide to use gathers
@@ -2103,6 +2124,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   *ls_type = NULL_TREE;
   *slp_perm = false;
   *n_perms = -1U;
+  ls->subchain_p = false;
 
   bool perm_ok = true;
   poly_int64 vf = loop_vinfo ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
@@ -2149,10 +2171,22 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
     first_dr_info = STMT_VINFO_DR_INFO (SLP_TREE_SCALAR_STMTS (slp_node)[0]);
 
   if (STMT_VINFO_STRIDED_P (first_stmt_info))
-    /* Try to use consecutive accesses of as many elements as possible,
-       separated by the stride, until we have a complete vector.
-       Fall back to scalar accesses if that isn't possible.  */
-    *memory_access_type = VMAT_STRIDED_SLP;
+    {
+      /* Try to use consecutive accesses of as many elements as possible,
+	 separated by the stride, until we have a complete vector.
+	 Fall back to scalar accesses if that isn't possible.  */
+      *memory_access_type = VMAT_STRIDED_SLP;
+
+      /* If the load permutation is consecutive we can reduce the group to
+	 the elements the permutation accesses.  Then we release the
+	 permutation.  */
+      if (has_consecutive_load_permutation (slp_node, group_size))
+	{
+	  ls->subchain_p = true;
+	  group_size = SLP_TREE_LANES (slp_node);
+	  SLP_TREE_LOAD_PERMUTATION (slp_node).release ();
+	}
+    }
   else if (STMT_VINFO_GATHER_SCATTER_P (stmt_info))
     {
       slp_tree offset_node = SLP_TREE_CHILDREN (slp_node)[0];
@@ -2436,8 +2470,7 @@ get_load_store_type (vec_info  *vinfo, stmt_vec_info stmt_info,
   vect_memory_access_type grouped_gather_fallback = VMAT_UNINITIALIZED;
   if (loop_vinfo
       && (*memory_access_type == VMAT_ELEMENTWISE
-	  || *memory_access_type == VMAT_STRIDED_SLP)
-      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info))
+	  || *memory_access_type == VMAT_STRIDED_SLP))
     {
       gather_scatter_info gs_info;
       if (SLP_TREE_LANES (slp_node) == 1
@@ -9945,7 +9978,14 @@ vectorizable_load (vec_info *vinfo,
 
       if (grouped_load)
 	{
-	  first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+	  /* If we elided a consecutive load permutation, don't
+	     use the original first statement (which could be elided)
+	     but the one the load permutation starts with.
+	     This ensures the stride_base below is correct.  */
+	  if (!ls.subchain_p)
+	    first_stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);
+	  else
+	    first_stmt_info = SLP_TREE_SCALAR_STMTS (slp_node)[0];
 	  first_dr_info = STMT_VINFO_DR_INFO (first_stmt_info);
 	  ref_type = get_group_alias_ptr_type (first_stmt_info);
 	}
@@ -9959,7 +9999,14 @@ vectorizable_load (vec_info *vinfo,
       if (grouped_load)
 	{
 	  if (memory_access_type == VMAT_STRIDED_SLP)
-	    group_size = DR_GROUP_SIZE (first_stmt_info);
+	    {
+	      /* If we elided a consecutive load permutation, adjust
+		 the group size here.  */
+	      if (!ls.subchain_p)
+		group_size = DR_GROUP_SIZE (first_stmt_info);
+	      else
+		group_size = SLP_TREE_LANES (slp_node);
+	    }
 	  else /* VMAT_ELEMENTWISE */
 	    group_size = SLP_TREE_LANES (slp_node);
 	}

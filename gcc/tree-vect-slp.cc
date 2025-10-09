@@ -5184,6 +5184,25 @@ vllp_cmp (const void *a_, const void *b_)
     }
 }
 
+/* Return whether if the load permutation of NODE is consecutive starting
+   from index START_IDX.  */
+
+bool
+vect_load_perm_consecutive_p (slp_tree node, unsigned start_idx)
+{
+  load_permutation_t perm = SLP_TREE_LOAD_PERMUTATION (node);
+
+  if (!perm.exists () || perm.length () < start_idx)
+    return false;
+
+  unsigned int start = perm[start_idx];
+  for (unsigned int i = start_idx + 1; i < perm.length (); i++)
+    if (perm[i] != start + (unsigned int)i)
+      return false;
+
+  return true;
+}
+
 /* Process the set of LOADS that are all from the same dataref group.  */
 
 static void
@@ -5230,12 +5249,11 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	    ld_lanes_lanes = 0;
 	    break;
 	  }
-	for (unsigned i = 1; i < SLP_TREE_LANES (load); ++i)
-	  if (SLP_TREE_LOAD_PERMUTATION (load)[i] != first + i)
-	    {
-	      ld_lanes_lanes = 0;
-	      break;
-	    }
+	if (!vect_load_perm_consecutive_p (load))
+	  {
+	    ld_lanes_lanes = 0;
+	    break;
+	  }
       }
 
   /* Only a power-of-two number of lanes matches interleaving with N levels.
@@ -5272,18 +5290,12 @@ vect_lower_load_permutations (loop_vec_info loop_vinfo,
 	continue;
 
       /* Build the permute to get the original load permutation order.  */
-      bool contiguous = true;
+      bool contiguous = vect_load_perm_consecutive_p (load);
       lane_permutation_t final_perm;
       final_perm.create (SLP_TREE_LANES (load));
       for (unsigned i = 0; i < SLP_TREE_LANES (load); ++i)
-	{
-	  final_perm.quick_push
-	    (std::make_pair (0, SLP_TREE_LOAD_PERMUTATION (load)[i]));
-	  if (i != 0
-	      && (SLP_TREE_LOAD_PERMUTATION (load)[i]
-		  != SLP_TREE_LOAD_PERMUTATION (load)[i-1] + 1))
-	    contiguous = false;
-	}
+	final_perm.quick_push (
+	  std::make_pair (0, SLP_TREE_LOAD_PERMUTATION (load)[i]));
 
       /* When the load permutation accesses a contiguous unpermuted,
 	 power-of-two aligned and sized chunk leave the load alone.
@@ -7855,15 +7867,7 @@ vect_optimize_slp_pass::remove_redundant_permutations ()
       else
 	{
 	  loop_vec_info loop_vinfo = as_a<loop_vec_info> (m_vinfo);
-	  stmt_vec_info load_info;
-	  bool this_load_permuted = false;
-	  unsigned j;
-	  FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (node), j, load_info)
-	    if (SLP_TREE_LOAD_PERMUTATION (node)[j] != j)
-	      {
-		this_load_permuted = true;
-		break;
-	      }
+	  bool this_load_permuted = !vect_load_perm_consecutive_p (node);
 	  /* When this isn't a grouped access we know it's single element
 	     and contiguous.  */
 	  if (!STMT_VINFO_GROUPED_ACCESS (SLP_TREE_SCALAR_STMTS (node)[0]))
