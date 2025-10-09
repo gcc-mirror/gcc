@@ -12413,11 +12413,13 @@ grokfndecl (tree ctype,
       if (!same_type_p (TREE_TYPE (TREE_TYPE (decl)),
 			integer_type_node))
 	{
-	  tree oldtypeargs = TYPE_ARG_TYPES (TREE_TYPE (decl));
+	  tree dtype = TREE_TYPE (decl);
+	  tree oldtypeargs = TYPE_ARG_TYPES (dtype);
 	  tree newtype;
 	  error_at (declspecs->locations[ds_type_spec],
 		    "%<::main%> must return %<int%>");
-	  newtype = build_function_type (integer_type_node, oldtypeargs);
+	  newtype = build_function_type (integer_type_node, oldtypeargs,
+					 TYPE_NO_NAMED_ARGS_STDARG_P (dtype));
 	  TREE_TYPE (decl) = newtype;
 	}
       if (warn_main)
@@ -15324,7 +15326,7 @@ grokdeclarator (const cp_declarator *declarator,
 		is_xobj_member_function = false;
 	      }
 
-	    type = build_function_type (type, arg_types);
+	    type = cp_build_function_type (type, arg_types);
 
 	    tree attrs = declarator->std_attributes;
 	    if (tx_qual)
@@ -19312,7 +19314,8 @@ check_function_type (tree decl, tree current_function_parms)
 					     void_type_node,
 					     TREE_CHAIN (args));
       else
-	fntype = build_function_type (void_type_node, args);
+	fntype = build_function_type (void_type_node, args,
+				      TYPE_NO_NAMED_ARGS_STDARG_P (fntype));
       fntype = (cp_build_type_attribute_variant
 		(fntype, TYPE_ATTRIBUTES (TREE_TYPE (decl))));
       fntype = cxx_copy_lang_qualifiers (fntype, TREE_TYPE (decl));
@@ -20809,7 +20812,7 @@ static_fn_type (tree memfntype)
     return memfntype;
   gcc_assert (TREE_CODE (memfntype) == METHOD_TYPE);
   args = TYPE_ARG_TYPES (memfntype);
-  fntype = build_function_type (TREE_TYPE (memfntype), TREE_CHAIN (args));
+  fntype = cp_build_function_type (TREE_TYPE (memfntype), TREE_CHAIN (args));
   fntype = apply_memfn_quals (fntype, type_memfn_quals (memfntype));
   fntype = (cp_build_type_attribute_variant
 	    (fntype, TYPE_ATTRIBUTES (memfntype)));

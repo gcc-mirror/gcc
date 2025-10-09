@@ -233,7 +233,8 @@ change_return_type (tree new_ret, tree fntype)
 
   if (TREE_CODE (fntype) == FUNCTION_TYPE)
     {
-      newtype = build_function_type (new_ret, args);
+      newtype = build_function_type (new_ret, args,
+				     TYPE_NO_NAMED_ARGS_STDARG_P (fntype));
       newtype = apply_memfn_quals (newtype,
 				   type_memfn_quals (fntype));
     }
@@ -1698,7 +1699,8 @@ cp_reconstruct_complex_type (tree type, tree bottom)
   else if (TREE_CODE (type) == FUNCTION_TYPE)
     {
       inner = cp_reconstruct_complex_type (TREE_TYPE (type), bottom);
-      outer = build_function_type (inner, TYPE_ARG_TYPES (type));
+      outer = build_function_type (inner, TYPE_ARG_TYPES (type),
+				   TYPE_NO_NAMED_ARGS_STDARG_P (type));
       outer = apply_memfn_quals (outer, type_memfn_quals (type));
     }
   else if (TREE_CODE (type) == METHOD_TYPE)

@@ -1035,7 +1035,7 @@ merge_types (tree t1, tree t2)
 	gcc_assert (quals == type_memfn_quals (t2));
 	gcc_assert (rqual == type_memfn_rqual (t2));
 
-	tree rval = build_function_type (valtype, parms);
+	tree rval = cp_build_function_type (valtype, parms);
 	rval = apply_memfn_quals (rval, quals);
 	tree raises = merge_exception_specifiers (TYPE_RAISES_EXCEPTIONS (t1),
 						  TYPE_RAISES_EXCEPTIONS (t2));
@@ -1058,10 +1058,10 @@ merge_types (tree t1, tree t2)
 	/* If this was a member function type, get back to the
 	   original type of type member function (i.e., without
 	   the class instance variable up front.  */
-	t1 = build_function_type (TREE_TYPE (t1),
-				  TREE_CHAIN (TYPE_ARG_TYPES (t1)));
-	t2 = build_function_type (TREE_TYPE (t2),
-				  TREE_CHAIN (TYPE_ARG_TYPES (t2)));
+	t1 = cp_build_function_type (TREE_TYPE (t1),
+				     TREE_CHAIN (TYPE_ARG_TYPES (t1)));
+	t2 = cp_build_function_type (TREE_TYPE (t2),
+				     TREE_CHAIN (TYPE_ARG_TYPES (t2)));
 	t3 = merge_types (t1, t2);
 	t3 = build_method_type_directly (basetype, TREE_TYPE (t3),
 					 TYPE_ARG_TYPES (t3));
@@ -1550,8 +1550,11 @@ structural_comptypes (tree t1, tree t2, int strict)
 	return false;
       break;
 
-    case METHOD_TYPE:
     case FUNCTION_TYPE:
+      if (TYPE_NO_NAMED_ARGS_STDARG_P (t1) != TYPE_NO_NAMED_ARGS_STDARG_P (t2))
+	return false;
+      /* FALLTHRU */
+    case METHOD_TYPE:
       /* Exception specs and memfn_rquals were checked above.  */
       if (!same_type_p (TREE_TYPE (t1), TREE_TYPE (t2)))
 	return false;

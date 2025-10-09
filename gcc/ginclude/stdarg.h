@@ -44,7 +44,8 @@ typedef __builtin_va_list __gnuc_va_list;
    if this invocation was from the user program.  */
 #ifdef _STDARG_H
 
-#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#if (defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L) \
+    || __cplusplus >= 202400L
 #define va_start(...) __builtin_c23_va_start(__VA_ARGS__)
 #else
 #define va_start(v,l)	__builtin_va_start(v,l)
@@ -125,7 +126,8 @@ typedef __gnuc_va_list va_list;
 
 #endif /* not __svr4__ */
 
-#if defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L
+#if (defined __STDC_VERSION__ && __STDC_VERSION__ > 201710L) \
+    || __cplusplus >= 202400L
 #define __STDC_VERSION_STDARG_H__	202311L
 #endif
 

@@ -2654,8 +2654,7 @@ copy_default_args_to_explicit_spec (tree decl)
 					     new_spec_types);
     }
   else
-    new_type = build_function_type (TREE_TYPE (old_type),
-				    new_spec_types);
+    new_type = cp_build_function_type (TREE_TYPE (old_type), new_spec_types);
   new_type = cp_build_type_attribute_variant (new_type,
 					      TYPE_ATTRIBUTES (old_type));
   new_type = cxx_copy_lang_qualifiers (new_type, old_type);
@@ -14779,7 +14778,7 @@ rebuild_function_or_method_type (tree t, tree args, tree return_type,
   tree new_type;
   if (TREE_CODE (t) == FUNCTION_TYPE)
     {
-      new_type = build_function_type (return_type, arg_types);
+      new_type = cp_build_function_type (return_type, arg_types);
       new_type = apply_memfn_quals (new_type, type_memfn_quals (t));
     }
   else
@@ -31100,7 +31099,7 @@ build_deduction_guide (tree type, tree ctor, tree outer_args, tsubst_flags_t com
 	= copy_node (INNERMOST_TEMPLATE_PARMS (tparms));
     }
 
-  tree fntype = build_function_type (type, fparms);
+  tree fntype = cp_build_function_type (type, fparms);
   tree ded_fn = build_lang_decl_loc (loc,
 				     FUNCTION_DECL,
 				     dguide_name (type), fntype);
@@ -31532,7 +31531,8 @@ alias_ctad_tweaks (tree tmpl, tree uguides)
 	  tree fntype = TREE_TYPE (fprime);
 	  ret = lookup_template_class (TPARMS_PRIMARY_TEMPLATE (atparms), targs,
 				       in_decl, NULL_TREE, complain);
-	  fntype = build_function_type (ret, TYPE_ARG_TYPES (fntype));
+	  fntype = build_function_type (ret, TYPE_ARG_TYPES (fntype),
+					TYPE_NO_NAMED_ARGS_STDARG_P (fntype));
 	  TREE_TYPE (fprime) = fntype;
 	  if (TREE_CODE (fprime) == TEMPLATE_DECL)
 	    TREE_TYPE (DECL_TEMPLATE_RESULT (fprime)) = fntype;

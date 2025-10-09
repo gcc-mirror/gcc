@@ -2575,6 +2575,7 @@ static cp_expr cp_parser_expression
   (cp_parser *, cp_id_kind * = NULL, bool = false, bool = false, bool = false);
 static cp_expr cp_parser_constant_expression
   (cp_parser *, int = 0, bool * = NULL, bool = false);
+static cp_expr cp_parser_builtin_c23_va_start (cp_parser *);
 static cp_expr cp_parser_builtin_offsetof
   (cp_parser *);
 static cp_expr cp_parser_lambda_expression
@@ -6406,6 +6407,9 @@ cp_parser_primary_expression (cp_parser *parser,
 	      = make_location (type_location, start_loc, finish_loc);
 	    return build_x_va_arg (combined_loc, expression, type);
 	  }
+
+	case RID_C23_VA_START:
+	  return cp_parser_builtin_c23_va_start (parser);
 
 	case RID_OFFSETOF:
 	  return cp_parser_builtin_offsetof (parser);
@@ -11496,6 +11500,133 @@ cp_parser_constant_expression (cp_parser* parser,
 
   return expression;
 }
+
+/* Parse __builtin_c23_va_start.
+
+   c23-va-start-expression:
+     __builtin_c23_va_start ( assignment-expression )
+     __builtin_c23_va_start ( assignment-expression , identifier )
+     __builtin_c23_va_start ( assignment-expression , tokens[opt] )
+
+   The first form is the expected new C++26 form, the second if
+   identifier is the name of the last parameter before ... is meant
+   for backwards compatibility with C++23 and older.
+   The third form where LWG4388 requires all the preprocessing tokens
+   to be convertible to tokens and it can't contain unbalanced
+   parentheses is parsed with a warning and the tokens are just skipped.
+   This is because C++26 like C23 defines va_start macro as
+   va_start (ap, ...) and says second and later arguments to the macro
+   are discarded, yet we want to diagnose when people use something
+   which wasn't valid before C++26 and is not the single argument
+   va_start either.  */
+
+static cp_expr
+cp_parser_builtin_c23_va_start (cp_parser *parser)
+{
+  location_t start_loc = cp_lexer_peek_token (parser->lexer)->location;
+  cp_lexer_consume_token (parser->lexer);
+  /* Look for the opening `('.  */
+  matching_parens parens;
+  parens.require_open (parser);
+  location_t arg_loc = cp_lexer_peek_token (parser->lexer)->location;
+  /* Now, parse the assignment-expression.  */
+  tree expression = cp_parser_assignment_expression (parser);
+  if (!cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+    {
+      location_t cloc = cp_lexer_peek_token (parser->lexer)->location;
+      if (!cp_parser_require (parser, CPP_COMMA, RT_COMMA))
+	{
+	  cp_parser_skip_to_closing_parenthesis (parser, false, false,
+						 /*consume_paren=*/ true);
+	  return error_mark_node;
+	}
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_CLOSE_PAREN))
+	{
+	  tree name = cp_lexer_peek_token (parser->lexer)->u.value;
+	  location_t nloc = cp_lexer_peek_token (parser->lexer)->location;
+	  tree decl = lookup_name (name);
+	  tree last_parm = tree_last (DECL_ARGUMENTS (current_function_decl));
+	  if (!last_parm || decl != last_parm)
+	    warning_at (nloc, OPT_Wvarargs, "optional second parameter of "
+			"%<va_start%> not last named argument");
+	  else
+	    {
+	      /* __builtin_va_start parsing does mark the argument as used and
+		 read, for -Wunused* purposes mark it the same.  */
+	      TREE_USED (last_parm) = 1;
+	      mark_exp_read (last_parm);
+	    }
+	  cp_lexer_consume_token (parser->lexer);
+	}
+      else
+	{
+	  unsigned nesting_depth = 0;
+	  location_t sloc = cp_lexer_peek_token (parser->lexer)->location;
+	  location_t eloc = sloc;
+
+	  /* For va_start (ap,) the ) comes from stdarg.h.
+	     Use location of , in that case, otherwise without -Wsystem-headers
+	     nothing is reported.  After all, the problematic token is the
+	     comma in that case.  */
+	  if (cp_lexer_next_token_is (parser->lexer, CPP_CLOSE_PAREN))
+	    sloc = eloc = cloc;
+	  /* Not using cp_parser_skip_to_closing_parenthesis here, because
+	     the tokens in second and further arguments don't have to be
+	     fully balanced, only can't contain unbalanced parentheses.
+	     So, va_start (ap, [[[[[[[[[{{{{{{{{{}]);
+	     is valid C++ for which we want to warn,
+	     #define X id); something (
+	     va_start (ap, X);
+	     is IFNDR (not detectable unless the preprocessor special cases
+	     va_start macro).  */
+	  while (true)
+	    {
+	      cp_token *token = cp_lexer_peek_token (parser->lexer);
+	      if (token->type == CPP_CLOSE_PAREN && !nesting_depth)
+		break;
+
+	      if (token->type == CPP_EOF)
+		break;
+	      if (token->type == CPP_OPEN_PAREN)
+		++nesting_depth;
+	      else if (token->type == CPP_CLOSE_PAREN)
+		--nesting_depth;
+	      else if (token->type == CPP_PRAGMA)
+		{
+		  cp_parser_skip_to_pragma_eol (parser, token);
+		  continue;
+		}
+	      eloc = token->location;
+	      cp_lexer_consume_token (parser->lexer);
+	    }
+	  if (sloc != eloc)
+	    sloc = make_location (sloc, sloc, eloc);
+	  warning_at (sloc, OPT_Wvarargs,
+		      "%<va_start%> macro used with additional "
+		      "arguments other than identifier of the "
+		      "last named argument");
+	}
+    }
+  /* Look for the closing `)'.  */
+  location_t finish_loc = cp_lexer_peek_token (parser->lexer)->location;
+  /* Construct a location of the form:
+     __builtin_c23_va_start (ap, arg)
+     ~~~~~~~~~~~~~~~~~~~~~~~~^~~~~~~~
+     with the caret at the first argument, ranging from the start
+     of the "__builtin_c23_va_start" token to the close paren.  */
+  location_t combined_loc = make_location (arg_loc, start_loc, finish_loc);
+  parens.require_close (parser);
+  tree fndecl = builtin_decl_explicit (BUILT_IN_VA_START);
+  releasing_vec args;
+  vec_safe_push (args, expression);
+  vec_safe_push (args, integer_zero_node);
+  tree ret = finish_call_expr (fndecl, &args, false, true,
+			       tf_warning_or_error);
+  if (TREE_CODE (ret) == CALL_EXPR)
+    SET_EXPR_LOCATION (ret, combined_loc);
+  return cp_expr (ret, combined_loc);
+}	  
 
 /* Parse __builtin_offsetof.
 

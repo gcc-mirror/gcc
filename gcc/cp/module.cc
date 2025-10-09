@@ -10414,7 +10414,7 @@ trees_in::tree_node (bool is_use)
 		  if (klass)
 		    res = build_method_type_directly (klass, res, args);
 		  else
-		    res = build_function_type (res, args);
+		    res = cp_build_function_type (res, args);
 		}
 	    }
 	    break;

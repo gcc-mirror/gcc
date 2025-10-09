@@ -3726,7 +3726,11 @@ push_local_extern_decl_alias (tree decl)
 			  chain = &TREE_CHAIN (*chain);
 			}
 
-		    tree fn_type = build_function_type (TREE_TYPE (type), nargs);
+		    bool no_named_args_stdarg
+		      = TYPE_NO_NAMED_ARGS_STDARG_P (type);
+		    tree fn_type
+		      = build_function_type (TREE_TYPE (type), nargs,
+					     no_named_args_stdarg);
 
 		    fn_type = apply_memfn_quals
 		      (fn_type, type_memfn_quals (type));

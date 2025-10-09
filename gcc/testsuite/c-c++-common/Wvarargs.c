@@ -50,6 +50,6 @@ foo3 (int a, register int b, ...)	// { dg-warning "ISO C\\+\\+17 does not allow 
 {
     va_list vp;
     /* 'b' is declared with register storage, so warn.  */
-    va_start (vp, b); /* { dg-warning "undefined behavior" } */
+    va_start (vp, b); /* { dg-warning "undefined behavior" "" { target { c || c++23_down } } } */
     va_end (vp);
 }

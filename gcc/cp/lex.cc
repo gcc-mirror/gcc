@@ -243,6 +243,8 @@ init_reswords (void)
     mask |= D_CXX11;
   if (cxx_dialect < cxx20)
     mask |= D_CXX20;
+  if (cxx_dialect < cxx26)
+    mask |= D_CXX26;
   if (!flag_concepts)
     mask |= D_CXX_CONCEPTS;
   if (!flag_coroutines)

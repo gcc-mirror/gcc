@@ -7,7 +7,7 @@ extern "C" int isnan ();
 
 void foo(float a) {
   int (*xx)(...);
-  xx = isnan;
+  xx = (int (*)(...)) isnan;
   if (xx(a))
     g++;
 }
