@@ -203,7 +203,6 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Unchecked_Union, Flag, Impl_Base_Type_Only),
         Sm (Is_Underlying_Full_View, Flag),
         Sm (Is_Underlying_Record_View, Flag, Base_Type_Only),
-        Sm (Is_Unimplemented, Flag),
         Sm (Is_Uplevel_Referenced_Entity, Flag),
         Sm (Is_Visible_Formal, Flag),
         Sm (Is_Visible_Lib_Unit, Flag),

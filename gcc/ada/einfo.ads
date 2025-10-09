@@ -3467,10 +3467,6 @@ package Einfo is
 --       as its corresponding record type, but whose parent is the full view
 --       of the parent in the original type extension.
 
---    Is_Unimplemented
---       Defined in all entities. Set for any entity to which a valid pragma
---       or aspect Unimplemented applies.
-
 --    Is_Unsigned_Type
 --       Defined in all types, but can be set only for discrete and fixed-point
 --       type and subtype entities. This flag is only valid if the entity is
@@ -5023,7 +5019,6 @@ package Einfo is
    --    Is_Thunk
    --    Is_Trivial_Subprogram
    --    Is_Unchecked_Union
-   --    Is_Unimplemented
    --    Is_Visible_Formal
    --    Kill_Elaboration_Checks
    --    Low_Bound_Tested

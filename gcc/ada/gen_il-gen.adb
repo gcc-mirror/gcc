@@ -514,8 +514,7 @@ package body Gen_IL.Gen is
       --  Set of fields where the setter should set the Parent. True for
       --  syntactic fields of type Node_Id and List_Id, but with some
       --  exceptions. Expression is syntactic AND semantic, and the Parent
-      --  is needed. Default_Expression is also both, but the Parent is not
-      --  needed. Then_Actions and Else_Actions are not syntactic, but the
+      --  is needed. Then_Actions and Else_Actions are not syntactic, but the
       --  Parent is needed.
       --
       --  Computed in Check_For_Syntactic_Field_Mismatch.

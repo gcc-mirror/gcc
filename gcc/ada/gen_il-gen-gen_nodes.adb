@@ -414,7 +414,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Null_Exclusion_Present, Flag, Default_False),
         Sy (Expression, Node_Id, Default_Empty),
         Sm (For_Special_Return_Object, Flag),
-        Sm (Do_Storage_Check, Flag),
         Sm (Is_Dynamic_Coextension, Flag),
         Sm (Is_Static_Coextension, Flag),
         Sm (No_Initialization, Flag),
@@ -579,8 +578,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Assignment_OK, Flag),
         Sm (Corresponding_Generic_Association, Node_Id),
         Sm (Exception_Junk, Flag),
-        Sm (Handler_List_Entry, Node_Id),
-        Sm (Is_Subprogram_Descriptor, Flag),
         Sm (More_Ids, Flag),
         Sm (No_Initialization, Flag),
         Sm (Prev_Ids, Flag),
@@ -741,7 +738,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Activation_Chain_Entity, Node_Id),
         Sm (Acts_As_Spec, Flag),
         Sm (Corresponding_Entry_Body, Node_Id),
-        Sm (Do_Storage_Check, Flag),
         Sm (Has_Relative_Deadline_Pragma, Flag),
         Sm (Is_Entry_Barrier_Function, Flag),
         Sm (Is_Protected_Subprogram_Body, Flag),
@@ -1296,8 +1292,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Aspect_Specifications, List_Id, Default_No_List),
         Sm (Expression, Node_Id),
         Sm (More_Ids, Flag),
-        Sm (Prev_Ids, Flag),
-        Sm (Renaming_Exception, Node_Id)));
+        Sm (Prev_Ids, Flag)));
 
    Cc (N_Exception_Handler, Node_Kind,
        (Sy (Choice_Parameter, Node_Id, Default_Empty),
@@ -1437,7 +1432,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sy (Parameter_Type, Node_Id),
         Sy (Expression, Node_Id, Default_Empty),
         Sy (Aspect_Specifications, List_Id, Default_No_List),
-        Sm (Default_Expression, Node_Id),
         Sm (More_Ids, Flag),
         Sm (Prev_Ids, Flag)));
 
@@ -1542,7 +1536,6 @@ begin -- Gen_IL.Gen.Gen_Nodes
        (Sy (Discrete_Choices, List_Id),
         Sy (Component_List, Node_Id),
         Sm (Dcheck_Function, Node_Id),
-        Sm (Enclosing_Variant, Node_Id),
         Sm (Has_SP_Choice, Flag),
         Sm (Present_Expr, Uint)));
 

@@ -690,7 +690,6 @@ package Sinfo is
 
    --    Do_Discriminant_Check
    --    Do_Length_Check
-   --    Do_Storage_Check
 
    --  These flags are used in some specific cases by the front end, either
    --  during semantic analysis or during expansion, and cannot be expected
@@ -1058,13 +1057,6 @@ package Sinfo is
    --    This field is present in an N_Variant node, It references the entity
    --    for the discriminant checking function for the variant.
 
-   --  Default_Expression
-   --    This field is Empty if there is no default expression. If there is a
-   --    simple default expression (one with no side effects), then this field
-   --    simply contains a copy of the Expression field (both point to the tree
-   --    for the default expression). Default_Expression is used for
-   --    conformance checking.
-
    --  Default_Storage_Pool
    --    This field is present in N_Compilation_Unit_Aux nodes. It is set to a
    --    copy of Opt.Default_Pool at the end of the compilation unit. See
@@ -1152,14 +1144,6 @@ package Sinfo is
    --    listed above (e.g. in a return statement), an additional type
    --    conversion node is introduced to represent the required check.
 
-   --  Do_Storage_Check
-   --    This flag is set in an N_Allocator node to indicate that a storage
-   --    check is required for the allocation, or in an N_Subprogram_Body node
-   --    to indicate that a stack check is required in the subprogram prologue.
-   --    The N_Allocator case is handled by the routine that expands the call
-   --    to the runtime routine. The N_Subprogram_Body case is handled by the
-   --    backend, and all the semantics does is set the flag.
-
    --  Elaborate_Present
    --    This flag is set in the N_With_Clause node to indicate that pragma
    --    Elaborate pragma appears for the with'ed units.
@@ -1188,12 +1172,6 @@ package Sinfo is
    --    these actions. The final tree is always rewritten to eliminate the
    --    need for this field, so in the tree passed to Gigi, this field is
    --    always set to No_List.
-
-   --  Enclosing_Variant
-   --    This field is present in the N_Variant node and identifies the Node_Id
-   --    corresponding to the immediately enclosing variant when the variant is
-   --    nested, and N_Empty otherwise. Set during semantic processing of the
-   --    variant part of a record type.
 
    --  Entity
    --    Appears in all direct names (identifiers, character literals, and
@@ -1394,14 +1372,6 @@ package Sinfo is
    --    formal private type, the parent type is the generic type itself. The
    --    Generic_Parent_Type is also used in an instance to determine whether a
    --    private operation overrides an inherited one.
-
-   --  Handler_List_Entry
-   --    This field is present in N_Object_Declaration nodes. It is set only
-   --    for the Handler_Record entry generated for an exception in zero cost
-   --    exception handling mode. It references the corresponding item in the
-   --    handler list, and is used to delete this entry if the corresponding
-   --    handler is deleted during optimization. For further details on why
-   --    this is required, see Exp_Ch11.Remove_Handler_Entries.
 
    --  Has_Dereference_Action
    --    This flag is present in N_Explicit_Dereference nodes. It is set to
@@ -1885,11 +1855,6 @@ package Sinfo is
    --    the generic unit on the actual parameters done in the outermost scope
    --    where it would be legal to declare an identical named instantiation.
 
-   --  Is_Subprogram_Descriptor
-   --    Present in N_Object_Declaration, and set only for the object
-   --    declaration generated for a subprogram descriptor in fast exception
-   --    mode. See Exp_Ch11 for details of use.
-
    --  Is_Task_Allocation_Block
    --    A flag set in a Block_Statement node to indicate that it is the
    --    expansion of a task allocator, or the allocator of an object
@@ -2237,14 +2202,6 @@ package Sinfo is
    --    type clause (identifiers, expanded names, attribute references). Set
    --    to indicate that a use is redundant (and therefore need not be undone
    --    on scope exit).
-
-   --  Renaming_Exception
-   --    Present in N_Exception_Declaration node. Used to point back to the
-   --    exception renaming for an exception declared within a subprogram.
-   --    What happens is that an exception declared in a subprogram is moved
-   --    to the library level with a unique name, and the original exception
-   --    becomes a renaming. This link from the library level exception to the
-   --    renaming declaration allows registering of the proper exception name.
 
    --  Return_Statement_Entity
    --    Present in N_Simple_Return_Statement and N_Extended_Return_Statement.
@@ -3021,14 +2978,12 @@ package Sinfo is
       --  Null_Exclusion_Present
       --  Object_Definition subtype indic./array type def./access def.
       --  Expression (set to Empty if not present)
-      --  Handler_List_Entry
       --  Corresponding_Generic_Association
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
       --  No_Initialization
       --  Assignment_OK
       --  Exception_Junk
-      --  Is_Subprogram_Descriptor
       --  Has_Init_Expression
       --  Suppress_Assignment_Checks
 
@@ -3633,7 +3588,6 @@ package Sinfo is
       --  Sloc points to WHEN
       --  Discrete_Choices
       --  Component_List
-      --  Enclosing_Variant
       --  Present_Expr
       --  Dcheck_Function
       --  Has_SP_Choice
@@ -4854,7 +4808,6 @@ package Sinfo is
       --  Null_Exclusion_Present
       --  No_Initialization
       --  Is_Static_Coextension
-      --  Do_Storage_Check
       --  Is_Dynamic_Coextension
       --  plus fields for expression
 
@@ -5509,7 +5462,6 @@ package Sinfo is
       --  Expression (set to Empty if no default expression)
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
-      --  Default_Expression
 
       ---------------
       -- 6.1  Mode --
@@ -5542,7 +5494,6 @@ package Sinfo is
       --  At_End_Proc (set to Empty if no clean up procedure)
       --  Acts_As_Spec
       --  Bad_Is_Detected used only by parser
-      --  Do_Storage_Check
       --  Has_Relative_Deadline_Pragma
       --  Is_Entry_Barrier_Function
       --  Is_Protected_Subprogram_Body
@@ -6889,7 +6840,6 @@ package Sinfo is
       --  Sloc points to EXCEPTION
       --  Defining_Identifier
       --  Expression
-      --  Renaming_Exception
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
 
