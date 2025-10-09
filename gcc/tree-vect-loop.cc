@@ -5258,7 +5258,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   tree new_temp = NULL_TREE, new_name, new_scalar_dest;
   gimple *epilog_stmt = NULL;
   gimple *exit_phi;
-  tree bitsize;
   tree def;
   tree orig_name, scalar_result;
   imm_use_iterator imm_iter;
@@ -5475,7 +5474,6 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
   scalar_results.truncate (0);
   scalar_results.reserve_exact (group_size);
   new_scalar_dest = vect_create_destination_var (scalar_dest, NULL);
-  bitsize = TYPE_SIZE (scalar_type);
 
   /* True if we should implement SLP_REDUC using native reduction operations
      instead of scalar operations.  */
@@ -5897,6 +5895,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       if (reduce_with_shift && (!slp_reduc || group_size == 1))
 	{
+	  tree bitsize = TYPE_SIZE (TREE_TYPE (vectype1));
 	  int element_bitsize = tree_to_uhwi (bitsize);
 	  /* Enforced by vectorizable_reduction, which disallows SLP reductions
 	     for variable-length vectors and also requires direct target support
@@ -5965,9 +5964,10 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
             dump_printf_loc (MSG_NOTE, vect_location,
 			     "Reduce using scalar code.\n");
 
+	  tree compute_type = TREE_TYPE (vectype1);
+	  tree bitsize = TYPE_SIZE (compute_type);
 	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
 	  int element_bitsize = tree_to_uhwi (bitsize);
-	  tree compute_type = TREE_TYPE (vectype);
 	  gimple_seq stmts = NULL;
 	  FOR_EACH_VEC_ELT (reduc_inputs, i, vec_temp)
             {
