@@ -36,11 +36,14 @@ F7_ASM_PARTS +=            ha2D uha2D sa2D usa2D
 F7_ASM_PARTS += D2qq D2uqq D2hq D2uhq
 F7_ASM_PARTS +=            D2ha D2uha D2sa D2usa
 
+# Integer -> double conversions
+F7_ASM_PARTS += D_floatsidf D_floatunsidf
+
 # Stuff that will be wrapped in f7-wraps.h (included by libf7-asm.sx)
 # and give f7_asm_D_*.o modules.
 g_ddd += add sub mul div
 g_xdd_cmp +=
-g_dx += floatunsidf floatsidf extendsfdf2
+g_dx += extendsfdf2
 g_xd += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 
 m_ddd += pow fmod hypot atan2 fdim
@@ -91,7 +94,7 @@ F7F += set_eps set_1pow2
 
 # Renames for ALIASes without own module.
 F7F += min max exp10
-F7F += floatunsidf floatsidf extendsfdf2
+F7F += extendsfdf2
 F7F += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 
 # Renames for f7-const.def.
