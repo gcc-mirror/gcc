@@ -30667,7 +30667,7 @@ arm_builtin_support_vector_misalignment (machine_mode mode,
 {
   if (TARGET_NEON && !BYTES_BIG_ENDIAN && unaligned_access)
     {
-      HOST_WIDE_INT align = TYPE_ALIGN_UNIT (type);
+      HOST_WIDE_INT align = GET_MODE_UNIT_SIZE (mode);
 
       if (is_gather_scatter)
 	return true;
