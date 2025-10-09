@@ -1,3 +1,70 @@
+2025-10-08  Antoni Boucher  <bouanto@zoho.com>
+
+	* configure: Regenerate.
+
+2025-10-08  Trevor Gross  <tmgross@umich.edu>
+
+	PR target/115054
+	* config/i386/i386.cc (function_arg_ms_64,
+	function_value_ms_64): Pass and return _Float16 in vector
+	registers on Windows.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110223
+	PR tree-optimization/122128
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Add
+	compensation for mixed mask/data bitwise operations.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (integer_type_for_mask): Only
+	reject vect_external_defs.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	* doc/tm.texi.in (JIT Language and ABI): Add menu item.
+	* doc/tm.texi: Re-generate.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110223
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Fix
+	mistakes in the store-from-mask bool pattern.  Add
+	required mask conversions.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105490
+	* tree-vect-patterns.cc (build_mask_conversion): Move earlier.
+	(vect_convert_mask_for_vectype): Likewise.
+	(vect_recog_bool_pattern): Remove redundant truth type
+	construction.  Add missing possibly required mask conversion.
+
+2025-10-08  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/112466
+	* Makefile.in (tm_jit_file_list, tm_jit_include_list, TM_JIT_H,
+	JIT_TARGET_DEF, JIT_TARGET_H, JIT_TARGET_OBJS): New variables.
+	(tm_jit.h, cs-tm_jit.h, jit/jit-target-hooks-def.h,
+	s-jit-target-hooks-def-h, default-jit.o): New rules.
+	(s-tm-texi): Also check timestamp on jit-target.def.
+	(generated_files): Add TM_JIT_H and jit/jit-target-hooks-def.h.
+	(build/genhooks.o): Also depend on JIT_TARGET_DEF.
+	* config.gcc (tm_jit_file, jit_target_objs, target_has_targetjitm):
+	New variables.
+	* config/i386/t-i386 (i386-jit.o): New rule.
+	* configure: Regenerate.
+	* configure.ac (tm_jit_file_list, tm_jit_include_list,
+	jit_target_objs): Add substitutes.
+	* doc/tm.texi: Regenerate.
+	* doc/tm.texi.in (targetjitm): Document.
+	(target_has_targetjitm): Document.
+	* genhooks.cc: Include jit/jit-target.def.
+	* config/default-jit.cc: New file.
+	* config/i386/i386-jit.cc: New file.
+	* config/i386/i386-jit.h: New file.
+
 2025-10-07  Alfie Richards  <alfie.richards@arm.com>
 
 	* doc/tm.texi: Regenerate.

@@ -1,3 +1,20 @@
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* unicode/README: Add HangulSyllableType.txt file to the
+	list as newest utf8_gen.py from glibc now needs it.  Adjust
+	git commit hash and change unicode 16 version to 17.
+	* unicode/from_glibc/utf8_gen.py: Updated from glibc.
+	* unicode/DerivedCoreProperties.txt: Updated from Unicode 17.0.0.
+	* unicode/emoji-data.txt: Likewise.
+	* unicode/PropList.txt: Likewise.
+	* unicode/GraphemeBreakProperty.txt: Likewise.
+	* unicode/DerivedNormalizationProps.txt: Likewise.
+	* unicode/NameAliases.txt: Likewise.
+	* unicode/UnicodeData.txt: Likewise.
+	* unicode/EastAsianWidth.txt: Likewise.
+	* unicode/DerivedGeneralCategory.txt: Likewise.
+	* unicode/HangulSyllableType.txt: New file.
+
 2025-10-05  Mark Wielaard  <mark@klomp.org>
 
 	* gcc-changelog/git_update_version.py (ignored_commits): Add

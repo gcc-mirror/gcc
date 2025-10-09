@@ -1,3 +1,26 @@
+2025-10-08  Joseph Myers  <josmyers@redhat.com>
+
+	* c-typeck.cc (in_generic, save_maybe_used, restore_maybe_used):
+	New.
+	(mark_decl_used, record_maybe_used_decl, pop_maybe_used): Use
+	in_generic.
+	(struct maybe_used_decl): Move to c-tree.h.
+	* c-tree.h (struct maybe_used_decl): Move from c-typeck.cc.
+	(in_generic, save_maybe_used, restore_maybe_used): Declare.
+	* c-parser.cc (c_parser_generic_selection): Increment and
+	decrement in_generic.  Use pop_maybe_used, save_maybe_used and
+	restore_maybe_used.
+
+2025-10-08  Martin Uecker  <uecker@tugraz.at>
+
+	* c-parser.cc (c_parser_generic_selection): Change
+	error_at to pedwarn_c23.
+
+2025-10-08  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122180
+	* c-decl.cc (pushdecl): Add TARGET_HAS_FMV_TARGET_ATTRIBUTE check.
+
 2025-10-07  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/26581

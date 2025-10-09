@@ -1,3 +1,10 @@
+2025-10-08  Jason Merrill  <jason@redhat.com>
+
+	* init.cc (build_new_1): Also clobber for non-placement new.
+	Only loop clobber in constexpr.
+	* expr.cc (wrap_with_if_consteval): New.
+	* cp-tree.h (wrap_with_if_consteval): Declare.
+
 2025-10-07  Jason Merrill  <jason@redhat.com>
 
 	* init.cc (build_new_1): Clobber a constant-bound array as a whole.

@@ -1,3 +1,9 @@
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* c-gimplify.cc (c_gimplify_expr): Gimplify CALL_EXPR_ARG (*expr_p, 0)
+	instead of calling save_expr on it.
+
 2025-10-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/114457

@@ -1,3 +1,35 @@
+2025-10-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/49111
+	* decl.cc (verify_bind_c_sym): Modify condition for generation of
+	accessibility warning, and adjust warning message.
+
+2025-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93175
+	PR fortran/102240
+	PR fortran/102686
+	* array.cc (match_array_element_spec): For pdt templates, call
+	gfc_correct_parm_expr to elimante extraneous symbols from the
+	bound expressions.
+	* decl.cc (correct_parm_expr, gfc_correct_parm_expr): New fcns
+	that remove symbols that are not PDT parameters from the type
+	specification expressions.
+	(insert_parameter_exprs): Process function symbols as if they
+	are variables in the substitution with parameter expressions.
+	(gfc_get_pdt_instance): Make sure that the parameter list of
+	PDT components is updated as the instance is built. Move the
+	construction of pdt_strings down a bit in the function and
+	remove the tie up with pdt_arrays.
+	* gfortran.h: Add prototype for gfc_correct_parm_expr.
+	* resolve.cc (resolve_component): Skip testing for constant
+	specification expressions in pdt_template component string
+	lengths and pdt_strings.
+	* trans-array.cc (structure_alloc_comps): Remove testing for
+	deferred parameters and instead make sure that components of
+	PDT type have parameters substituted with the parameter exprs
+	of the enclosing PDT.
+
 2025-10-07  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/102901

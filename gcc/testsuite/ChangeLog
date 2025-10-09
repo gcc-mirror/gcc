@@ -1,3 +1,90 @@
+2025-10-08  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c11-generic-4.c, gcc.dg/c23-generic-5.c,
+	gcc.dg/c2y-generic-5.c: New tests.
+
+2025-10-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/49111
+	* gfortran.dg/binding_label_tests_9.f03: Adjust test.
+	* gfortran.dg/module_private_2.f90: Likewise.
+	* gfortran.dg/public_private_module_2.f90: Likewise.
+	* gfortran.dg/binding_label_tests_35.f90: New test.
+
+2025-10-08  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c11-generic-2.c: Adapt error message.
+	* gcc.dg/c2y-generic-3.c: Adapt test.
+	* gcc.dg/c2y-generic-4.c: New test.
+
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/named-universal-char-escape-1.c: Add test for
+	\N{CJK UNIFIED IDEOGRAPH-3340E}.
+
+2025-10-08  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/analyzer/new-2.C: Adjust diags.
+	* g++.dg/analyzer/noexcept-new.C: Adjust diags.
+	* g++.dg/warn/Warray-bounds-23.C: Add warnings.
+	* g++.dg/warn/Warray-bounds-24.C: Add warnings.
+	* g++.dg/cpp26/constexpr-new4a.C: New test.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110223
+	PR tree-optimization/122128
+	* gcc.dg/vect/vect-bool-2.c: New testcase.
+	* gcc.dg/vect/vect-bool-cmp-3.c: Likewise.
+	* gcc.dg/vect/vect-bool-cmp-4.c: Likewise.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR testsuite/120100
+	* g++.dg/vect/pr64410.cc: Adjust.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR target/120091
+	* gcc.target/i386/pr119919.c: Only check for vectorization
+	when !ia32.
+
+2025-10-08  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122180
+	* gcc.target/i386/pr122180.c: New test.
+
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* c-c++-common/pr122188.c: New test.
+
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121206
+	* gcc.dg/pr121987.c (main): Use unsigned long long type for e instead
+	of unsigned long and use ULL suffix on the initializer.
+
+2025-10-08  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/93175
+	PR fortran/102240
+	PR fortran/102686
+	* gfortran.dg/pdt_55.f03: New test.
+
+2025-10-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/105490
+	* gcc.dg/vect/vect-cond-14.c: New testcase.
+
+2025-10-08  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/112466
+	* jit.dg/all-non-failing-tests.h: Mention
+	test-target-info.c.
+	* jit.dg/test-target-info.c: New test.
+	* jit.dg/test-error-target-info.c: New test.
+
 2025-10-07  Joseph Myers  <josmyers@redhat.com>
 
 	PR c/26581

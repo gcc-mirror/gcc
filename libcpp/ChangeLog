@@ -1,3 +1,16 @@
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* makeucnid.cc (write_copyright): Adjust copyright year.
+	* makeuname2c.cc (generated_ranges): Adjust end points for a couple
+	of ranges based on UnicodeData.txt Last changes and add a whole new
+	CJK UNIFIED IDEOGRAPH- entry.  None of these changes are in the 4-8
+	table, but clearly it has just been forgotten.
+	(write_copyright): Adjust copyright year.
+	(write_dict): Fix up condition when to print semicolon.
+	* generated_cpp_wcwidth.h: Regenerate.
+	* ucnid.h: Regenerate.
+	* uname2c.h: Regenerate.
+
 2025-09-23  David Malcolm  <dmalcolm@redhat.com>
 
 	PR diagnostics/121986

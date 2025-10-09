@@ -1,3 +1,153 @@
+2025-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/manual/status_cxx2017.xml: Replace broken link to PSTL
+	upstream.
+	* doc/xml/manual/status_cxx2020.xml: Likewise.
+	* doc/html/manual/status.html: Regenerate.
+
+2025-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/cpu/i486/atomicity.h: Removed.
+
+2025-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122172
+	* config/cpu/cris/atomicity.h: Removed.
+
+2025-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/indirect.h (indirect::operator=(indirect&&)):
+	Move assign allocator when POCMA is true.
+	(polymorphic::operator=(polymorphic&&)): Likewise.
+	* testsuite/std/memory/indirect/copy.cc: Remove constexpr from
+	functions that use tracker_allocator. Add test_constexpr().
+	* testsuite/std/memory/indirect/copy_alloc.cc: Remove constexpr
+	from all functions and remove static_assert.
+	* testsuite/std/memory/indirect/ctor.cc: Do not use
+	scoped_allocator_adaptor during constant evaluation.
+	* testsuite/std/memory/indirect/move.cc: Remove constexpr from
+	functions that use tracker_allocator. Add test_constexpr().
+	* testsuite/std/memory/indirect/move_alloc.cc: Remove constexpr
+	from all functions and remove static_assert.
+	* testsuite/std/memory/indirect/relops.cc: Invoke lambda in
+	static_assert.
+	* testsuite/std/memory/polymorphic/copy.cc: Remove constexpr
+	from functions that use tracker_allocator. Add test_constexpr().
+	* testsuite/std/memory/polymorphic/copy_alloc.cc: Remove
+	constexpr from all functions and remove static_assert.
+	* testsuite/std/memory/polymorphic/ctor.cc: Do not use
+	scoped_allocator_adaptor during constant evaluation.
+	* testsuite/std/memory/polymorphic/ctor_poly.cc: Likewise.
+	* testsuite/std/memory/polymorphic/move.cc: Remove constexpr
+	from functions that use tracker_allocator. Add test_constexpr().
+	* testsuite/std/memory/polymorphic/move_alloc.cc: Remove
+	constexpr from all functions and remove static_assert.
+	* testsuite/util/testsuite_allocator.h (tracker_allocator):
+	Remove redundant 'inline' from friend.
+	(uneq_allocator): Make all functions constexpr.
+	(uneq_allocator::base, uneq_allocator::swap_base): Remove.
+	(uneq_allocator::~uneq_allocator): Remove.
+	(uneq_allocator::allocate, uneq_allocator::deallocate): Do not
+	use map of allocations during constant evaluation.
+	(propagating_allocator): Make all functions constexpr.
+	(propagating_allocator::base): Remove.
+	(propagating_allocator::swap_base): Simplify.
+	(ExplicitConsAlloc, CustomPointerAlloc, NullablePointer): Add
+	constexpr to all functions.
+
+2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/unicode-data.h: Regenerate.
+	* testsuite/ext/unicode/properties.cc: Test __is_extended_pictographic
+	on U+1F004 rather than U+1F000.
+
+2025-10-08  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/chrono_io.h (_ChronoData::_M_fill_day): Replace
+	'%' by '/'.
+
+2025-10-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/std/time/format/format.cc: Include <vector>.
+
+2025-10-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (submdspan_mapping_result): New class.
+	* src/c++23/std.cc.in (submdspan_mapping_result): Add.
+
+2025-10-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (full_extent_t): New class.
+	* src/c++23/std.cc.in (full_extent_t): Add.
+
+2025-10-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/bits/version.def (submdspan): New internal macro.
+	* include/bits/version.h: Regenerate.
+	* include/std/mdspan (strided_slice): New class.
+	* src/c++23/std.cc.in (strided_slice): Add.
+	* testsuite/23_containers/mdspan/submdspan/strided_slice.cc: New test.
+	* testsuite/23_containers/mdspan/submdspan/strided_slice_neg.cc: New test.
+
+2025-10-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (__mdspan::__index_type_cast): Optimize by
+	skipping a __glibcxx_assert if it's know at compile-time.
+	(std::layout_left_padded, std::layout_righ_padded): Reorder
+	is_always_strided and is_unique member functions.
+	* testsuite/23_containers/mdspan/int_like.h: Rename _M_i to
+	value.
+
+2025-10-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (_RightPaddedIndices): Traits for right
+	padded layouts.
+	(layout_right::mapping::mapping) New overload for right padded
+	layouts.
+	(layout_right_padded): Add implementation.
+	* src/c++23/std.cc.in (layout_right_padded): Add.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: Update
+	test for right padded layouts.
+	* testsuite/23_containers/mdspan/layouts/empty.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded_neg.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded_traits.h: Ditto.
+
+2025-10-08  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/bits/version.def (padded_layouts): Add new internal
+	feature testing macro.
+	* include/bits/version.h: Regenerate.
+	* include/std/mdspan (__fwd_prod): New overload.
+	(layout_left_padded): Add declaration and implementation.
+	(layout_right_padded): Add declaration only.
+	(layout_left::mapping::mapping): New overload for left
+	padded mappings.
+	(__index_type_cast): New function that performs a checked cast
+	to index_type.
+	(__is_left_padded_mapping): New concept.
+	(__is_right_padded_mapping): Ditto.
+	(__standardized_mapping): Recognize left and right padded
+	mappings.
+	(_LeftPaddedIndices): Traits for left padded details.
+	(_PaddedStorage): New class for implementing padded layouts.
+	* src/c++23/std.cc.in (layout_left_padded): Add.
+	* testsuite/23_containers/mdspan/layouts/class_mandate_neg.cc:
+	Refactor and add tests for layout_left_padded.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/empty.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded_neg.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded_traits.h: New
+	traits.
+
 2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure.host: Fix spelling in comment.

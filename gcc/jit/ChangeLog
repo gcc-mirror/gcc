@@ -1,3 +1,36 @@
+2025-10-08  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/112466
+	* Make-lang.in (JIT_OBJS): New variable.
+	* jit-playback.cc (replay): Include jit-target.h and initialize
+	target.
+	* jit-playback.h (class populate_target_info): New class.
+	* jit-recording.cc (recording::context::populate_target_info): New
+	method.
+	* jit-recording.h (recording::context::populate_target_info): New
+	method.
+	(recording::context::m_populated_target_info): New field.
+	* libgccjit.cc: Include jit-target.h.
+	(struct gcc_jit_target_info): New struct.
+	(gcc_jit_context_get_target_info, gcc_jit_target_info_release,
+	gcc_jit_target_info_cpu_supports, gcc_jit_target_info_arch,
+	gcc_jit_target_info_supports_target_dependent_type): New functions.
+	* libgccjit.h (gcc_jit_context_get_target_info,
+	gcc_jit_target_info_release, gcc_jit_target_info_cpu_supports,
+	gcc_jit_target_info_arch,
+	gcc_jit_target_info_supports_target_dependent_type):
+	New functions.
+	* libgccjit.map (LIBGCCJIT_ABI_35): New ABI tag.
+	* docs/topics/compilation.rst: Add documentation for the
+	functions gcc_jit_context_get_target_info, gcc_jit_target_info_release,
+	gcc_jit_target_info_cpu_supports, gcc_jit_target_info_arch,
+	gcc_jit_target_info_supports_target_dependent_type.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_35): New ABI tag.
+	* jit-target-def.h: New file.
+	* jit-target.cc: New file.
+	* jit-target.def: New file.
+	* jit-target.h: New file.
+
 2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* docs/_build/texinfo/libgccjit.texi: Fix spelling.
