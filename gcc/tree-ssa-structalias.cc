@@ -5105,6 +5105,29 @@ init_base_vars (void)
   process_constraint (new_constraint (lhs, rhs));
 }
 
+/* Initialize constraint builder.  */
+
+static void
+init_constraint_builder (void)
+{
+  vi_for_tree = new hash_map<tree, varinfo_t>;
+  call_stmt_vars = new hash_map<gimple *, varinfo_t>;
+  gcc_obstack_init (&fake_var_decl_obstack);
+
+  init_base_vars ();
+}
+
+/* Deallocate constraint builder globals.  */
+
+static void
+delete_constraint_builder (void)
+{
+  delete vi_for_tree;
+  delete call_stmt_vars;
+  constraint_pool.release ();
+  obstack_free (&fake_var_decl_obstack, NULL);
+}
+
 /* Initialize things necessary to perform PTA.  */
 
 static void
@@ -5117,31 +5140,22 @@ init_alias_vars (void)
 
   constraints.create (8);
   varmap.create (8);
-  vi_for_tree = new hash_map<tree, varinfo_t>;
-  call_stmt_vars = new hash_map<gimple *, varinfo_t>;
 
   memset (&stats, 0, sizeof (stats));
   shared_bitmap_table = new hash_table<shared_bitmap_hasher> (511);
-  init_base_vars ();
-
-  gcc_obstack_init (&fake_var_decl_obstack);
 
   final_solutions = new hash_map<varinfo_t, pt_solution *>;
   gcc_obstack_init (&final_solutions_obstack);
+
+  init_constraint_builder ();
 }
 
-/* Create points-to sets for the current function.  See the comments
-   at the start of the file for an algorithmic overview.  */
+/* Build constraints for intraprocedural mode.  */
 
 static void
-compute_points_to_sets (void)
+intra_build_constraints (void)
 {
   basic_block bb;
-  varinfo_t vi;
-
-  timevar_push (TV_TREE_PTA);
-
-  init_alias_vars ();
 
   intra_create_variable_infos (cfun);
 
@@ -5171,6 +5185,22 @@ compute_points_to_sets (void)
       fprintf (dump_file, "Points-to analysis\n\nConstraints:\n\n");
       dump_constraints (dump_file, 0);
     }
+}
+
+/* Create points-to sets for the current function.  See the comments
+   at the start of the file for an algorithmic overview.  */
+
+static void
+compute_points_to_sets (void)
+{
+  basic_block bb;
+  varinfo_t vi;
+
+  timevar_push (TV_TREE_PTA);
+
+  init_alias_vars ();
+
+  intra_build_constraints ();
 
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
@@ -5306,8 +5336,6 @@ delete_points_to_sets (void)
     fprintf (dump_file, "Points to sets created:%d\n",
 	     stats.points_to_sets_created);
 
-  delete vi_for_tree;
-  delete call_stmt_vars;
   bitmap_obstack_release (&pta_obstack);
   constraints.release ();
 
@@ -5315,12 +5343,11 @@ delete_points_to_sets (void)
 
   varmap.release ();
   variable_info_pool.release ();
-  constraint_pool.release ();
-
-  obstack_free (&fake_var_decl_obstack, NULL);
 
   delete final_solutions;
   obstack_free (&final_solutions_obstack, NULL);
+
+  delete_constraint_builder ();
 }
 
 struct vls_data
@@ -5745,33 +5772,14 @@ refered_from_nonlocal_var (struct varpool_node *node, void *data)
   return false;
 }
 
-/* Execute the driver for IPA PTA.  */
-static unsigned int
-ipa_pta_execute (void)
+/* Create function infos.  */
+
+static void
+ipa_create_function_infos (void)
 {
   struct cgraph_node *node;
-  varpool_node *var;
-  unsigned int from = 0;
+  unsigned int constr_count = constraints.length ();
 
-  in_ipa_mode = 1;
-
-  init_alias_vars ();
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      symtab->dump (dump_file);
-      fprintf (dump_file, "\n");
-    }
-
-  if (dump_file && (dump_flags & TDF_DETAILS))
-    {
-      fprintf (dump_file, "Generating generic constraints\n\n");
-      dump_constraints (dump_file, from);
-      fprintf (dump_file, "\n");
-      from = constraints.length ();
-    }
-
-  /* Build the constraints.  */
   FOR_EACH_DEFINED_FUNCTION (node)
     {
       varinfo_t vi;
@@ -5803,7 +5811,7 @@ ipa_pta_execute (void)
 				     alias_get_name (node->decl), false,
 				     nonlocal_p);
       if (dump_file && (dump_flags & TDF_DETAILS)
-	  && from != constraints.length ())
+	  && constr_count != constraints.length ())
 	{
 	  fprintf (dump_file,
 		   "Generating initial constraints for %s",
@@ -5813,17 +5821,25 @@ ipa_pta_execute (void)
 		     IDENTIFIER_POINTER
 		       (DECL_ASSEMBLER_NAME (node->decl)));
 	  fprintf (dump_file, "\n\n");
-	  dump_constraints (dump_file, from);
+	  dump_constraints (dump_file, constr_count);
 	  fprintf (dump_file, "\n");
 
-	  from = constraints.length ();
+	  constr_count = constraints.length ();
 	}
 
       node->call_for_symbol_thunks_and_aliases
 	(associate_varinfo_to_alias, vi, true);
     }
+}
 
-  /* Create constraints for global variables and their initializers.  */
+/* Create constraints for global variables and their initializers.  */
+
+static void
+ipa_create_global_variable_infos (void)
+{
+  varpool_node *var;
+  unsigned int constr_count = constraints.length ();
+
   FOR_EACH_VARIABLE (var)
     {
       if (var->alias && var->analyzed)
@@ -5844,14 +5860,27 @@ ipa_pta_execute (void)
     }
 
   if (dump_file && (dump_flags & TDF_DETAILS)
-      && from != constraints.length ())
+      && constr_count != constraints.length ())
     {
       fprintf (dump_file,
 	       "Generating constraints for global initializers\n\n");
-      dump_constraints (dump_file, from);
+      dump_constraints (dump_file, constr_count);
       fprintf (dump_file, "\n");
-      from = constraints.length ();
+      constr_count = constraints.length ();
     }
+}
+
+/* Build constraints for ipa mode.  */
+
+static void
+ipa_build_constraints (void)
+{
+  struct cgraph_node *node;
+
+  ipa_create_function_infos ();
+  ipa_create_global_variable_infos ();
+
+  unsigned int constr_count = constraints.length ();
 
   FOR_EACH_DEFINED_FUNCTION (node)
     {
@@ -5878,7 +5907,7 @@ ipa_pta_execute (void)
       func = DECL_STRUCT_FUNCTION (node->decl);
       gcc_assert (cfun == NULL);
 
-      /* Build constriants for the function body.  */
+      /* Build constraints for the function body.  */
       FOR_EACH_BB_FN (bb, func)
 	{
 	  for (gphi_iterator gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
@@ -5903,11 +5932,39 @@ ipa_pta_execute (void)
       if (dump_file && (dump_flags & TDF_DETAILS))
 	{
 	  fprintf (dump_file, "\n");
-	  dump_constraints (dump_file, from);
+	  dump_constraints (dump_file, constr_count);
 	  fprintf (dump_file, "\n");
-	  from = constraints.length ();
+	  constr_count = constraints.length ();
 	}
     }
+
+}
+
+
+/* Execute the driver for IPA PTA.  */
+static unsigned int
+ipa_pta_execute (void)
+{
+  struct cgraph_node *node;
+
+  in_ipa_mode = 1;
+
+  init_alias_vars ();
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      symtab->dump (dump_file);
+      fprintf (dump_file, "\n");
+    }
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    {
+      fprintf (dump_file, "Generating generic constraints\n\n");
+      dump_constraints (dump_file, 0);
+      fprintf (dump_file, "\n");
+    }
+
+  ipa_build_constraints ();
 
   /* From the constraints compute the points-to sets.  */
   solve_constraints ();
