@@ -945,6 +945,11 @@ enum reg_class
 /* CPU/ARCH option handling.  */
 #include "config/aarch64/aarch64-opts.h"
 
+/* Long double is stored in 128 bits by default.  */
+#ifndef TARGET_LONG_DOUBLE_128
+#define TARGET_LONG_DOUBLE_128 1
+#endif
+
 /* If there is no CPU defined at configure, use generic as default.  */
 #ifndef TARGET_CPU_DEFAULT
 # define TARGET_CPU_DEFAULT AARCH64_CPU_generic_armv8_a

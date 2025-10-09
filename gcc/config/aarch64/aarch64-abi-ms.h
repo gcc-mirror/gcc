@@ -43,4 +43,10 @@ along with GCC; see the file COPYING3.  If not see
 #define ASM_DECLARE_FUNCTION_SIZE(FILE, FNAME, DECL) \
   fprintf (FILE, "\t" ASM_COMMENT_START "  seh_endproc\n")
 
+/* Long double is 64 bit for Coff targets.
+   Reference:
+   https://learn.microsoft.com/en-us/cpp/c-language/type-long-double.  */
+#undef TARGET_LONG_DOUBLE_128
+#define TARGET_LONG_DOUBLE_128 0
+
 #endif /* GCC_AARCH64_ABI_MS_H.  */

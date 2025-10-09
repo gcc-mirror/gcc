@@ -29783,6 +29783,9 @@ aarch64_scalar_mode_supported_p (scalar_mode mode)
   if (DECIMAL_FLOAT_MODE_P (mode))
     return default_decimal_float_supported_p ();
 
+  if (mode == TFmode)
+    return true;
+
   return ((mode == HFmode || mode == BFmode)
 	  ? true
 	  : default_scalar_mode_supported_p (mode));
@@ -29873,7 +29876,7 @@ aarch64_bitint_type_info (int n, struct bitint_info *info)
 static machine_mode
 aarch64_c_mode_for_floating_type (enum tree_index ti)
 {
-  if (ti == TI_LONG_DOUBLE_TYPE)
+  if (TARGET_LONG_DOUBLE_128 && ti == TI_LONG_DOUBLE_TYPE)
     return TFmode;
   return default_mode_for_floating_type (ti);
 }
