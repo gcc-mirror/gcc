@@ -731,7 +731,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
-@gccoptlist{@var{object-file-name}  -fuse-ld=@var{linker}  -l@var{library}
+@gccoptlist{@var{object-file-name} -flink-libatomic  -fuse-ld=@var{linker}  -l@var{library}
 -nostartfiles  -nodefaultlibs  -nolibc  -nostdlib  -nostdlib++
 -e @var{entry}  --entry=@var{entry}
 -pie  -pthread  -r  -rdynamic
@@ -19469,6 +19469,12 @@ to the linker.
 If any of these options is used, then the linker is not run, and
 object file names should not be used as arguments.  @xref{Overall
 Options}.
+
+@opindex flink-libatomic
+@item -flink-libatomic
+Enable linking of libatomic if it's supported by target, and is enabled by
+default. The negative form @option{-fno-link-libatomic} can be used to
+explicitly disable linking of libatomic.
 
 @opindex flinker-output
 @item -flinker-output=@var{type}

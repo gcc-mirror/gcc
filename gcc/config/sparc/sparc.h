@@ -409,7 +409,9 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Because libgcc can generate references back to libc (via .umul etc.) we have
    to list libc again after the second libgcc.  */
-#define LINK_GCC_C_SEQUENCE_SPEC "%G %{!nolibc:%L} %G %{!nolibc:%L}"
+#define LINK_GCC_C_SEQUENCE_SPEC \
+  "%G %{!nolibc:" LINK_LIBATOMIC_SPEC "%L} \
+  %G %{!nolibc:" LINK_LIBATOMIC_SPEC "%L}"
 
 
 #define PTRDIFF_TYPE (TARGET_ARCH64 ? "long int" : "int")

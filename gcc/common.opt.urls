@@ -1634,6 +1634,9 @@ UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dmold)
 fuse-linker-plugin
 UrlSuffix(gcc/Optimize-Options.html#index-fuse-linker-plugin)
 
+flink-libatomic
+UrlSuffix(gcc/Link-Options.html#index-flink-libatomic)
+
 fvar-tracking
 UrlSuffix(gcc/Debugging-Options.html#index-fvar-tracking)
 

@@ -246,6 +246,7 @@ HOST_EXPORTS = \
 	GMPINC="$(HOST_GMPINC)"; export GMPINC; \
 	ISLLIBS="$(HOST_ISLLIBS)"; export ISLLIBS; \
 	ISLINC="$(HOST_ISLINC)"; export ISLINC; \
+	TARGET_CONFIGDIRS="$(TARGET_CONFIGDIRS)"; export TARGET_CONFIGDIRS; \
 	XGCC_FLAGS_FOR_TARGET="$(XGCC_FLAGS_FOR_TARGET)"; export XGCC_FLAGS_FOR_TARGET; \
 @if gcc-bootstrap
 	$(RPATH_ENVVAR)=`echo "$(TARGET_LIB_PATH)$$$(RPATH_ENVVAR)" | sed 's,::*,:,g;s,^:*,,;s,:*$$,,'`; export $(RPATH_ENVVAR); \
@@ -2098,6 +2099,11 @@ ENDFOR dependencies +]@endif gcc-bootstrap
    (if (exist? "no_gcc")
        (hash-create-handle! lang-env-deps
 	  (string-append (get "module") "-" "no_gcc") #t))
+
+   (if (exist? "no_atomic")
+       (hash-create-handle! lang-env-deps
+	  (string-append (get "module") "-" "no_atomic") #t))
+
    "" +][+ ENDFOR lang_env_dependencies +]
 
 @if gcc-bootstrap[+ FOR target_modules +][+ IF (not (lang-dep "no_gcc"))
@@ -2116,6 +2122,17 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss[+
   ENDIF +][+ IF (lang-dep "cxx") +]
 configure-target-[+module+]: maybe-all-target-libstdc++-v3[+
   ENDIF +]
+
+@if gcc-bootstrap[+ FOR target_modules +][+ IF (not (lang-dep "no_atomic"))
+  +][+ IF bootstrap +][+ FOR bootstrap_stage +]
+configure-stage[+id+]-target-[+module+]: maybe-all-stage[+id+]-target-libatomic[+
+  ENDFOR +][+ ENDIF bootstrap +][+ ENDIF +][+ ENDFOR target_modules +]
+@endif gcc-bootstrap
+
+@if gcc-no-bootstrap[+ FOR target_modules +][+ IF (not (lang-dep "no_atomic")) +]
+configure-target-[+module+]: maybe-all-target-libatomic[+
+  ENDIF +][+ ENDFOR target_modules +]
+@endif gcc-no-bootstrap
 [+ ENDFOR target_modules +]
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@

@@ -69,7 +69,7 @@
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
+  "%{static|static-pie:--start-group} %G %{!nolibc:" LINK_LIBATOMIC_SPEC "%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
 
 #undef  CC1_SPEC

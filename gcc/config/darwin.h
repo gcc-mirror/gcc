@@ -487,7 +487,7 @@ extern GTY(()) int darwin_ms_struct;
    depend on libgcc. */
 #undef  LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
- "%G %{!nolibc:%L} "
+ "%G %{!nolibc:" LINK_LIBATOMIC_SPEC "%L} "
 
 /* ld64 supports a sysroot, it just has a different name and there's no easy
    way to check for it at config time.  */

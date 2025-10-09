@@ -3418,6 +3418,26 @@ esac
 # the wrong, non-multilib-adjusted value will be used in multilibs.
 # As a side effect, we have to subst CFLAGS ourselves.
 
+# AC_PROG_CC sets CFLAGS to "-g -O2" by default (if unset), and
+# then compile conftests with default CFLAGS, leaving no place to temporarily
+# modify CFLAGS and restore them later.  However we need to pass
+# -fno-link-libatomic in CFLAGS so conftests compiled in AC_PROG_CC don't fail.
+# Assert that CFLAGS is always set by user so the default setting of CFLAGS by
+# AC_PROG_CC won't be applicable anyway.
+if test -z "${CFLAGS}"; then
+  as_fn_error $? "CFLAGS must be set." "$LINENO" 5
+fi
+
+# In order to override CFLAGS_FOR_TARGET, all of our special flags go
+# in XCFLAGS.  But we need them in CFLAGS during configury.  So put them
+# in both places for now and restore CFLAGS at the end of config.
+__libatomic_save_CFLAGS__="$CFLAGS"
+
+# Append -fno-link-libatomic to avoid automatically linking libatomic,
+# while building libatomic itself.
+XCFLAGS="$XCFLAGS -fno-link-libatomic"
+CFLAGS="$__libatomic_save_CFLAGS__ $XCFLAGS"
+
 
 
 ac_ext=c
@@ -4595,11 +4615,6 @@ fi
 
 
 
-
-# In order to override CFLAGS_FOR_TARGET, all of our special flags go
-# in XCFLAGS.  But we need them in CFLAGS during configury.  So put them
-# in both places for now and restore CFLAGS at the end of config.
-save_CFLAGS="$CFLAGS"
 
 # Find other programs we need.
 if test -n "$ac_tool_prefix"; then
@@ -11833,7 +11848,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11836 "configure"
+#line 11851 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11939,7 +11954,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11942 "configure"
+#line 11957 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12333,7 +12348,7 @@ _ACEOF
 
 # Disable fallbacks to __sync routines from libgcc.  Otherwise we'll
 # make silly decisions about what the cpu can do.
-CFLAGS="$save_CFLAGS -fno-sync-libcalls $XCFLAGS"
+CFLAGS="$__libatomic_save_CFLAGS__ -fno-sync-libcalls $XCFLAGS"
 
 # Check header files.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ANSI C header files" >&5
@@ -15354,7 +15369,7 @@ _ACEOF
 if ac_fn_c_try_link "$LINENO"; then :
   XPCFLAGS=" -pthread"
 else
-  CFLAGS="$save_CFLAGS $XCFLAGS" LIBS="-lpthread $LIBS"
+  CFLAGS="$__libatomic_save_CFLAGS__ $XCFLAGS" LIBS="-lpthread $LIBS"
      cat confdefs.h - <<_ACEOF >conftest.$ac_ext
 /* end confdefs.h.  */
 #include <pthread.h>
@@ -15377,7 +15392,7 @@ rm -f core conftest.err conftest.$ac_objext \
 fi
 rm -f core conftest.err conftest.$ac_objext \
     conftest$ac_exeext conftest.$ac_ext
-  CFLAGS="$save_CFLAGS $XPCFLAGS"
+  CFLAGS="$__libatomic_save_CFLAGS__ $XPCFLAGS $XCFLAGS"
   ;;
 esac
 
@@ -15952,7 +15967,7 @@ $as_echo "$as_me: versioning on shared library symbols is $enable_symvers" >&6;}
 
 
 # Cleanup and exit.
-CFLAGS="$save_CFLAGS"
+CFLAGS="$__libatomic_save_CFLAGS__"
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure

@@ -393,9 +393,9 @@ extern int dot_symbols;
 /* Use gnu-user.h LINK_GCC_SEQUENCE_SPEC for linux.  */
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define	LINK_GCC_C_SEQUENCE_SPEC \
-  "%{mads|myellowknife|mmvme|msim:%G %L %G;" \
+  "%{mads|myellowknife|mmvme|msim:%G" LINK_LIBATOMIC_SPEC "%L %G;" \
   "!mcall-*|mcall-linux:" GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC ";" \
-  ":%G %L %G}"
+  ":%G" LINK_LIBATOMIC_SPEC "%L %G}"
 
 #undef  TOC_SECTION_ASM_OP
 #define TOC_SECTION_ASM_OP \

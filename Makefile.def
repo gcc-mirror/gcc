@@ -650,14 +650,15 @@ dependencies = { module=all-m4; on=all-build-texinfo; };
 // on libgcc and newlib/libgloss.
 lang_env_dependencies = { module=libitm; cxx=true; };
 lang_env_dependencies = { module=libffi; cxx=true; };
-lang_env_dependencies = { module=newlib; no_c=true; };
-lang_env_dependencies = { module=libgloss; no_c=true; };
-lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; };
+lang_env_dependencies = { module=newlib; no_c=true; no_atomic=true; };
+lang_env_dependencies = { module=libgloss; no_c=true; no_atomic=true; };
+lang_env_dependencies = { module=libgcc; no_gcc=true; no_c=true; no_atomic=true; };
 // libiberty does not depend on newlib or libgloss because it must be
 // built newlib on some targets (e.g. Cygwin).  It still needs
 // a dependency on libgcc for native targets to configure.
-lang_env_dependencies = { module=libiberty; no_c=true; };
-lang_env_dependencies = { module=libgcobol; cxx=true; };
+lang_env_dependencies = { module=libiberty; no_c=true; no_atomic=true; };
+lang_env_dependencies = { module=libgcobol; cxx=true; no_atomic=true; };
+lang_env_dependencies = { module=libatomic; no_atomic=true; };
 
 dependencies = { module=configure-target-fastjar; on=configure-target-zlib; };
 dependencies = { module=all-target-fastjar; on=all-target-zlib; };

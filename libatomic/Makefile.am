@@ -69,7 +69,7 @@ libatomic_darwin_rpath += -Wl,-rpath,@loader_path
 endif
 
 libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
-	$(lt_host_flags) $(libatomic_darwin_rpath)
+	-Wc,-fno-link-libatomic $(lt_host_flags) $(libatomic_darwin_rpath)
 
 SIZES = @SIZES@
 
@@ -167,6 +167,19 @@ libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)
 # makefile fragments to avoid broken *.Ppo getting included into the Makefile
 # when it is reloaded during the build of all-multi.
 all-multi: $(libatomic_la_LIBADD)
+
+# Copy built libatomic library to $build/gcc so it's easier to locate,
+# similar to libgcc.
+#
+# FIXME: libtool --mode=install also ends up copying libatomic.la in $gcc_objdir,
+# which (somehow) ends up adding $gcc_objdir to RPATH for libraries that get
+# built after libatomic, which makes RPATH insecure. Removing libatomic.la
+# from $gcc_objdir seems to fix the issue.
+
+gcc_objdir = `pwd`/$(MULTIBUILDTOP)../../gcc/
+all-local: libatomic.la
+	$(LIBTOOL) --mode=install $(INSTALL_DATA) libatomic.la $(gcc_objdir)$(MULTISUBDIR)/
+	rm $(gcc_objdir)$(MULTISUBDIR)/libatomic.la
 
 # target overrides
 -include $(tmake_file)

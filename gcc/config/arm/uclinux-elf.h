@@ -67,8 +67,9 @@
 
 #undef LINK_GCC_C_SEQUENCE_SPEC
 #define LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
-   %{static|static-pie:--end-group}%{!static:%{!static-pie:%G %{!nolibc:%L}}}"
+  "%{static|static-pie:--start-group} %G %{!nolibc:" LINK_LIBATOMIC_SPEC "%L} \
+   %{static|static-pie:--end-group}%{!static:%{!static-pie:%G %{!nolibc:" \
+   LINK_LIBATOMIC_SPEC "%L}}}"
 
 /* Use --as-needed -lgcc_s for eh support.  */
 #ifdef HAVE_LD_AS_NEEDED

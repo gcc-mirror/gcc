@@ -109,8 +109,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 #define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
 #endif
 
+
 #define GNU_USER_TARGET_LINK_GCC_C_SEQUENCE_SPEC \
-  "%{static|static-pie:--start-group} %G %{!nolibc:%L} \
+  "%{static|static-pie:--start-group} %G %{!nolibc:" LINK_LIBATOMIC_SPEC "%L} \
    %{static|static-pie:--end-group}%{!static:%{!static-pie:%G}}"
 
 #undef LINK_GCC_C_SEQUENCE_SPEC

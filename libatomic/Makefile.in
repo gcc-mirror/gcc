@@ -432,7 +432,7 @@ libatomic_version_info = -version-info $(libtool_VERSION)
 @ENABLE_DARWIN_AT_RPATH_TRUE@	-Wc,-nodefaultrpaths \
 @ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
 libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
-	$(lt_host_flags) $(libatomic_darwin_rpath)
+	-Wc,-fno-link-libatomic $(lt_host_flags) $(libatomic_darwin_rpath)
 
 @PARTIAL_VXWORKS_FALSE@libatomic_la_SOURCES = gload.c gstore.c gcas.c \
 @PARTIAL_VXWORKS_FALSE@	gexch.c glfree.c lock.c init.c fenv.c \
@@ -474,6 +474,15 @@ libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@IFUNC_OPTIONS = -mcx16 -mcx16
 libatomic_convenience_la_SOURCES = $(libatomic_la_SOURCES)
 libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)
+
+# Copy built libatomic library to $build/gcc so it's easier to locate,
+# similar to libgcc.
+#
+# FIXME: libtool --mode=install also ends up copying libatomic.la in $gcc_objdir,
+# which (somehow) ends up adding $gcc_objdir to RPATH for libraries that get
+# built after libatomic, which makes RPATH insecure. Removing libatomic.la
+# from $gcc_objdir seems to fix the issue.
+gcc_objdir = `pwd`/$(MULTIBUILDTOP)../../gcc/
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
@@ -917,6 +926,9 @@ vpath % $(strip $(search_path))
 # makefile fragments to avoid broken *.Ppo getting included into the Makefile
 # when it is reloaded during the build of all-multi.
 all-multi: $(libatomic_la_LIBADD)
+all-local: libatomic.la
+	$(LIBTOOL) --mode=install $(INSTALL_DATA) libatomic.la $(gcc_objdir)$(MULTISUBDIR)/
+	rm $(gcc_objdir)$(MULTISUBDIR)/libatomic.la
 
 # target overrides
 -include $(tmake_file)
