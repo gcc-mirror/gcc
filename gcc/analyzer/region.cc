@@ -591,7 +591,7 @@ region::calc_initial_value_at_main (region_model_manager *mgr) const
       else
 	{
 	  /* Get the value for REG within base_reg_init.  */
-	  binding_cluster c (base_reg);
+	  binding_cluster c (*mgr->get_store_manager (), base_reg);
 	  c.bind (mgr->get_store_manager (), base_reg, base_reg_init);
 	  const svalue *sval
 	    = c.get_any_binding (mgr->get_store_manager (), this);
@@ -1713,7 +1713,7 @@ decl_region::calc_svalue_for_constructor (tree ctor,
   /* Create a binding map, applying ctor to it, using this
      decl_region as the base region when building child regions
      for offset calculations.  */
-  binding_map map;
+  binding_map map (*mgr->get_store_manager ());
   if (!map.apply_ctor_to_region (this, ctor, mgr))
     return mgr->get_or_create_unknown_svalue (get_type ());
 
@@ -1772,7 +1772,7 @@ decl_region::get_svalue_for_initializer (region_model_manager *mgr) const
       if (!tracked_p ())
 	return nullptr;
 
-      binding_cluster c (this);
+      binding_cluster c (*mgr->get_store_manager (), this);
       c.zero_fill_region (mgr->get_store_manager (), this);
       return mgr->get_or_create_compound_svalue (TREE_TYPE (m_decl),
 						 c.get_map ());

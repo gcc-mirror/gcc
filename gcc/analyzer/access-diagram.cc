@@ -1216,8 +1216,8 @@ public:
     auto_vec <const binding_key *> binding_keys;
     for (auto iter : map)
       {
-	const binding_key *key = iter.first;
-	const svalue *bound_sval = iter.second;
+	const binding_key *key = iter.m_key;
+	const svalue *bound_sval = iter.m_sval;
 	if (const concrete_binding *concrete_key
 	      = key->dyn_cast_concrete_binding ())
 	  {

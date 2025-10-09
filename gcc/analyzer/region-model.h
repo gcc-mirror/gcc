@@ -715,8 +715,8 @@ private:
 				     region_model_context *ctxt,
 				     std::unique_ptr<rejected_constraint> *out);
 
-  int poison_any_pointers_to_descendents (const region *reg,
-					  enum poison_kind pkind);
+  void poison_any_pointers_to_descendents (const region *reg,
+					   enum poison_kind pkind);
 
   void on_top_level_param (tree param,
 			   bool nonnull,

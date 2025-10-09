@@ -4495,8 +4495,8 @@ public:
       return;
     for (auto iter : *cluster)
       {
-	const binding_key *key = iter.first;
-	const svalue *sval = iter.second;
+	const binding_key *key = iter.m_key;
+	const svalue *sval = iter.m_sval;
 
 	if (const concrete_binding *concrete_key
 	    = key->dyn_cast_concrete_binding ())
@@ -4696,7 +4696,7 @@ region_model::scan_for_null_terminator_1 (const region *reg,
       logger->end_log_line ();
     }
 
-  binding_map result;
+  binding_map result (*store_mgr);
 
   while (1)
     {
@@ -5118,7 +5118,8 @@ region_model::mark_region_as_unknown (const region *reg,
   svalue_set maybe_live_values;
   m_store.mark_region_as_unknown (m_mgr->get_store_manager(), reg,
 				  uncertainty, &maybe_live_values);
-  m_store.on_maybe_live_values (maybe_live_values);
+  m_store.on_maybe_live_values (*m_mgr->get_store_manager (),
+				maybe_live_values);
 }
 
 /* Determine what is known about the condition "LHS_SVAL OP RHS_SVAL" within
@@ -6733,7 +6734,8 @@ region_model::on_top_level_param (tree param,
       const svalue *init_ptr_sval
 	= m_mgr->get_or_create_initial_value (param_reg);
       const region *pointee_reg = m_mgr->get_symbolic_region (init_ptr_sval);
-      m_store.mark_as_escaped (pointee_reg);
+      store_manager *store_mgr = m_mgr->get_store_manager ();
+      m_store.mark_as_escaped (*store_mgr, pointee_reg);
       if (nonnull)
 	{
 	  const svalue *null_ptr_sval
@@ -7085,52 +7087,39 @@ region_model::unbind_region_and_descendents (const region *reg,
     }
 }
 
-/* Implementation of BindingVisitor.
-   Update the bound svalues for regions below REG to use poisoned
-   values instead.  */
-
-struct bad_pointer_finder
-{
-  bad_pointer_finder (const region *reg, enum poison_kind pkind,
-		      region_model_manager *mgr)
-  : m_reg (reg), m_pkind (pkind), m_mgr (mgr), m_count (0)
-  {}
-
-  void on_binding (const binding_key *, const svalue *&sval)
-  {
-    if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
-      {
-	const region *ptr_dst = ptr_sval->get_pointee ();
-	/* Poison ptrs to descendents of REG, but not to REG itself,
-	   otherwise double-free detection doesn't work (since sm-state
-	   for "free" is stored on the original ptr svalue).  */
-	if (ptr_dst->descendent_of_p (m_reg)
-	    && ptr_dst != m_reg)
-	  {
-	    sval = m_mgr->get_or_create_poisoned_svalue (m_pkind,
-							 sval->get_type ());
-	    ++m_count;
-	  }
-      }
-  }
-
-  const region *m_reg;
-  enum poison_kind m_pkind;
-  region_model_manager *const m_mgr;
-  int m_count;
-};
-
 /* Find any pointers to REG or its descendents; convert them to
-   poisoned values of kind PKIND.
-   Return the number of pointers that were poisoned.  */
+   poisoned values of kind PKIND.  */
 
-int
+void
 region_model::poison_any_pointers_to_descendents (const region *reg,
-						   enum poison_kind pkind)
+						  enum poison_kind pkind)
 {
-  bad_pointer_finder bv (reg, pkind, m_mgr);
-  m_store.for_each_binding (bv);
-  return bv.m_count;
+  for (const auto &cluster_iter : m_store)
+    {
+      binding_cluster *cluster = cluster_iter.second;
+      for (auto iter = cluster->begin ();
+	   iter != cluster->end ();
+	   ++iter)
+	{
+	  auto bp = *iter;
+	  const svalue *sval = bp.m_sval;
+	  if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
+	    {
+	      const region *ptr_dst = ptr_sval->get_pointee ();
+	      /* Poison ptrs to descendents of REG, but not to REG itself,
+		 otherwise double-free detection doesn't work (since sm-state
+		 for "free" is stored on the original ptr svalue).  */
+	      if (ptr_dst->descendent_of_p (reg)
+		  && ptr_dst != reg)
+		{
+		  const svalue *new_sval
+		    = m_mgr->get_or_create_poisoned_svalue (pkind,
+							    sval->get_type ());
+		  cluster->get_map ().overwrite (iter, new_sval);
+		}
+	    }
+	}
+    }
 }
 
 /* Attempt to merge THIS with OTHER_MODEL, writing the result
@@ -7647,12 +7636,12 @@ private:
 	  /* Find keys for uninit svals.  */
 	  for (auto iter : *compound_sval)
 	    {
-	      const svalue *sval = iter.second;
+	      const svalue *sval = iter.m_sval;
 	      if (const poisoned_svalue *psval
 		  = sval->dyn_cast_poisoned_svalue ())
 		if (psval->get_poison_kind () == poison_kind::uninit)
 		  {
-		    const binding_key *key = iter.first;
+		    const binding_key *key = iter.m_key;
 		    const concrete_binding *ckey
 		      = key->dyn_cast_concrete_binding ();
 		    gcc_assert (ckey);
@@ -7699,12 +7688,12 @@ private:
 	auto_vec<const concrete_binding *> uninit_keys;
 	for (auto iter : *compound_sval)
 	  {
-	    const svalue *sval = iter.second;
+	    const svalue *sval = iter.m_sval;
 	    if (const poisoned_svalue *psval
 		= sval->dyn_cast_poisoned_svalue ())
 	      if (psval->get_poison_kind () == poison_kind::uninit)
 		{
-		  const binding_key *key = iter.first;
+		  const binding_key *key = iter.m_key;
 		  const concrete_binding *ckey
 		    = key->dyn_cast_concrete_binding ();
 		  gcc_assert (ckey);
@@ -7914,7 +7903,7 @@ contains_uninit_p (const svalue *sval)
 
 	for (auto iter : *compound_sval)
 	  {
-	    const svalue *sval = iter.second;
+	    const svalue *sval = iter.m_sval;
 	    if (const poisoned_svalue *psval
 		= sval->dyn_cast_poisoned_svalue ())
 	      if (psval->get_poison_kind () == poison_kind::uninit)
@@ -8352,8 +8341,9 @@ test_struct ()
 
   region_model_manager mgr;
   region_model model (&mgr);
-  model.set_value (c_x, int_17, nullptr);
+  /* Set fields in order y, then x.  */
   model.set_value (c_y, int_m3, nullptr);
+  model.set_value (c_x, int_17, nullptr);
 
   /* Verify get_offset for "c.x".  */
   {
@@ -8369,6 +8359,27 @@ test_struct ()
     region_offset offset = c_y_reg->get_offset (&mgr);
     ASSERT_EQ (offset.get_base_region (), model.get_lvalue (c, nullptr));
     ASSERT_EQ (offset.get_bit_offset (), INT_TYPE_SIZE);
+  }
+
+  /* Check iteration order of binding_cluster (and thus of binding_map).  */
+  {
+    std::vector<binding_map::binding_pair> vec;
+    auto cluster
+      = model.get_store ()->get_cluster (model.get_lvalue (c, nullptr));
+    for (auto iter : *cluster)
+      vec.push_back (iter);
+    ASSERT_EQ (vec.size (), 2);
+    /* we should get them back in ascending order in memory (x then y).  */
+    /* x */
+    ASSERT_EQ (vec[0].m_key->dyn_cast_concrete_binding ()->get_bit_range (),
+	       bit_range (0, INT_TYPE_SIZE));
+    ASSERT_TRUE (tree_int_cst_equal(vec[0].m_sval->maybe_get_constant (),
+				    int_17));
+    /* y */
+    ASSERT_EQ (vec[1].m_key->dyn_cast_concrete_binding ()->get_bit_range (),
+	       bit_range (INT_TYPE_SIZE, INT_TYPE_SIZE));
+    ASSERT_TRUE (tree_int_cst_equal(vec[1].m_sval->maybe_get_constant (),
+				    int_m3));
   }
 }
 

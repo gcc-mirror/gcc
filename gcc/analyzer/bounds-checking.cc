@@ -1334,11 +1334,11 @@ strip_types (const svalue *sval,
     case SK_COMPOUND:
       {
 	const compound_svalue *compound_sval = (const compound_svalue *)sval;
-	binding_map typeless_map;
+	binding_map typeless_map (*mgr.get_store_manager ());
 	for (auto iter : compound_sval->get_map ())
 	  {
-	    const binding_key *key = iter.first;
-	    const svalue *bound_sval = iter.second;
+	    const binding_key *key = iter.m_key;
+	    const svalue *bound_sval = iter.m_sval;
 	    typeless_map.put (key, strip_types (bound_sval, mgr));
 	  }
 	return mgr.get_or_create_compound_svalue (NULL_TREE, typeless_map);

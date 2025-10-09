@@ -1391,6 +1391,7 @@ namespace ana {
 class compound_svalue : public svalue
 {
 public:
+  typedef binding_map::const_iterator_t const_iterator_t;
   typedef binding_map::iterator_t iterator_t;
 
   /* A support class for uniquifying instances of compound_svalue.
@@ -1445,8 +1446,10 @@ public:
 
   const binding_map &get_map () const { return m_map; }
 
-  iterator_t begin () const { return m_map.begin (); }
-  iterator_t end () const { return m_map.end (); }
+  const_iterator_t begin () const { return m_map.begin (); }
+  const_iterator_t end () const { return m_map.end (); }
+  iterator_t begin () { return m_map.begin (); }
+  iterator_t end () { return m_map.end (); }
 
   struct key_t make_key () const
   {

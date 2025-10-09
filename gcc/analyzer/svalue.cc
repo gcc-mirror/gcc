@@ -2232,15 +2232,15 @@ compound_svalue::compound_svalue (symbol::id_t id,
 : svalue (calc_complexity (map), id, type), m_map (map)
 {
 #if CHECKING_P
-  for (iterator_t iter = begin (); iter != end (); ++iter)
+  for (auto iter : *this)
     {
       /* All keys within the underlying binding_map are required to be concrete,
 	 not symbolic.  */
-      const binding_key *key = (*iter).first;
+      const binding_key *key = iter.m_key;
       gcc_assert (key->concrete_p ());
 
       /* We don't nest compound svalues.  */
-      const svalue *sval = (*iter).second;
+      const svalue *sval = iter.m_sval;
       gcc_assert (sval->get_kind () != SK_COMPOUND);
     }
 #endif
@@ -2302,11 +2302,10 @@ add_dump_widget_children (text_art::tree_widget &w,
 void
 compound_svalue::accept (visitor *v) const
 {
-  for (binding_map::iterator_t iter = m_map.begin ();
-       iter != m_map.end (); ++iter)
+  for (auto iter : m_map)
     {
-      //(*iter).first.accept (v);
-      (*iter).second->accept (v);
+      //iter.first.accept (v);
+      iter.m_sval->accept (v);
     }
   v->visit_compound_svalue (this);
 }
@@ -2319,10 +2318,9 @@ compound_svalue::calc_complexity (const binding_map &map)
 {
   unsigned num_child_nodes = 0;
   unsigned max_child_depth = 0;
-  for (binding_map::iterator_t iter = map.begin ();
-       iter != map.end (); ++iter)
+  for (auto iter : map)
     {
-      const complexity &sval_c = (*iter).second->get_complexity ();
+      const complexity &sval_c = iter.m_sval->get_complexity ();
       num_child_nodes += sval_c.m_num_nodes;
       max_child_depth = MAX (max_child_depth, sval_c.m_max_depth);
     }
@@ -2337,10 +2335,10 @@ compound_svalue::maybe_fold_bits_within (tree type,
 					 const bit_range &bits,
 					 region_model_manager *mgr) const
 {
-  binding_map result_map;
+  binding_map result_map (*mgr->get_store_manager ());
   for (auto iter : m_map)
     {
-      const binding_key *key = iter.first;
+      const binding_key *key = iter.m_key;
       if (const concrete_binding *conc_key
 	  = key->dyn_cast_concrete_binding ())
 	{
@@ -2348,7 +2346,7 @@ compound_svalue::maybe_fold_bits_within (tree type,
 	  if (!conc_key->get_bit_range ().intersects_p (bits))
 	    continue;
 
-	  const svalue *sval = iter.second;
+	  const svalue *sval = iter.m_sval;
 	  /* Get the position of conc_key relative to BITS.  */
 	  bit_range result_location (conc_key->get_start_bit_offset ()
 				     - bits.get_start_bit_offset (),

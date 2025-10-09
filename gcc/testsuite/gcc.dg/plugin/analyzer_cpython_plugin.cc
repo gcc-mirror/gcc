@@ -1,13 +1,8 @@
 /* -fanalyzer plugin for CPython extension modules  */
 /* { dg-options "-g" } */
 
-#define INCLUDE_MEMORY
-#define INCLUDE_STRING
-#define INCLUDE_VECTOR
+#include "analyzer/common.h"
 #include "gcc-plugin.h"
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"
@@ -416,7 +411,7 @@ count_pyobj_references (const region_model *model,
 
   for (const auto &binding : retval_binding_map)
     {
-      const svalue *binding_sval = binding.second;
+      const svalue *binding_sval = binding.m_sval;
       const svalue *unwrapped_sval = binding_sval->unwrap_any_unmergeable ();
       const region *pointee = unwrapped_sval->maybe_get_region ();
 
@@ -506,7 +501,7 @@ count_all_references (const region_model *model,
       auto binding_cluster = cluster.second;
       for (const auto &binding : binding_cluster->get_map ())
 	{
-	  const svalue *binding_sval = binding.second;
+	  const svalue *binding_sval = binding.m_sval;
 
 	  const svalue *unwrapped_sval
 	      = binding_sval->unwrap_any_unmergeable ();

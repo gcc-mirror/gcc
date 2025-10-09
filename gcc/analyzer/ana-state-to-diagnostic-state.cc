@@ -86,7 +86,7 @@ analyzer_state_graph::analyzer_state_graph (const program_state &state,
   for (auto cluster_iter : *state.m_region_model->get_store ())
     for (auto binding_iter : *cluster_iter.second)
       {
-	const svalue *svalue = binding_iter.second;
+	const svalue *svalue = binding_iter.m_sval;
 	if (const region *reg = svalue->maybe_get_region ())
 	  if (svalue->get_type () && !reg->get_type ())
 	    {
@@ -417,8 +417,8 @@ create_state_nodes_for_binding_cluster (const binding_cluster &cluster,
   concrete_bindings_t conc_bindings;
   for (auto iter : cluster)
     {
-      const binding_key *key = iter.first;
-      const svalue *svalue = iter.second;
+      const binding_key *key = iter.m_key;
+      const svalue *svalue = iter.m_sval;
       if (auto conc_key = key->dyn_cast_concrete_binding ())
 	conc_bindings[conc_key->get_bit_range ()] = svalue;
       if (const region *reg = svalue->maybe_get_region ())

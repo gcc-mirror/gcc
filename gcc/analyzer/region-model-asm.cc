@@ -260,7 +260,9 @@ region_model::on_asm_stmt (const gasm *stmt, region_model_context *ctxt)
 	  || !base_reg->tracked_p ())
 	continue;
 
-      binding_cluster *cluster = m_store.get_or_create_cluster (base_reg);
+      binding_cluster *cluster
+	= m_store.get_or_create_cluster (*m_mgr->get_store_manager (),
+					 base_reg);
       cluster->on_asm (stmt, m_mgr->get_store_manager (),
 		       conjured_purge (this, ctxt));
     }

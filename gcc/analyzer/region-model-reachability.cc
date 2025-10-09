@@ -169,10 +169,10 @@ reachable_regions::handle_sval (const svalue *sval)
   if (const compound_svalue *compound_sval
       = sval->dyn_cast_compound_svalue ())
     {
-      for (compound_svalue::iterator_t iter = compound_sval->begin ();
+      for (auto iter = compound_sval->begin ();
 	   iter != compound_sval->end (); ++iter)
 	{
-	  const svalue *iter_sval = (*iter).second;
+	  const svalue *iter_sval = (*iter).m_sval;
 	  handle_sval (iter_sval);
 	}
     }
@@ -235,10 +235,10 @@ reachable_regions::handle_parm (const svalue *sval, tree param_type)
   if (const compound_svalue *compound_sval
       = sval->dyn_cast_compound_svalue ())
     {
-      for (compound_svalue::iterator_t iter = compound_sval->begin ();
+      for (auto iter = compound_sval->begin ();
 	   iter != compound_sval->end (); ++iter)
 	{
-	  const svalue *iter_sval = (*iter).second;
+	  const svalue *iter_sval = (*iter).m_sval;
 	  handle_sval (iter_sval);
 	}
     }
@@ -259,7 +259,8 @@ reachable_regions::mark_escaped_clusters (region_model_context *ctxt)
        iter != m_mutable_base_regs.end (); ++iter)
     {
       const region *base_reg = *iter;
-      m_store->mark_as_escaped (base_reg);
+      store_manager *store_mgr = m_model->get_manager ()->get_store_manager ();
+      m_store->mark_as_escaped (*store_mgr, base_reg);
 
       /* If we have a function that's escaped, potentially add
 	 it to the worklist.  */

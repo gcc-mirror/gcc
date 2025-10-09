@@ -23,9 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 #include <zlib.h>
 
 #include "cfg.h"
-#include "basic-block.h"
 #include "gcc-rich-location.h"
-#include "gimple.h"
 #include "gimple-iterator.h"
 #include "gimple-pretty-print.h"
 #include "cgraph.h"

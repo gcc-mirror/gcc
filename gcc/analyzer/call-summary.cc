@@ -422,10 +422,10 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	  = as_a <const compound_svalue *> (summary_sval);
 	region_model_manager *mgr = get_manager ();
 	store_manager *store_mgr = mgr->get_store_manager ();
-	binding_map caller_map;
+	binding_map caller_map (*store_mgr);
 	auto_vec <const binding_key *> summary_keys;
 	for (auto kv : *compound_summary_sval)
-	  summary_keys.safe_push (kv.first);
+	  summary_keys.safe_push (kv.m_key);
 	summary_keys.qsort (binding_key::cmp_ptrs);
 	for (auto key : summary_keys)
 	  {
@@ -447,8 +447,8 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 		for (auto inner_kv : *inner_compound_sval)
 		  {
 		    // These should already be mapped to the caller.
-		    const binding_key *inner_key = inner_kv.first;
-		    const svalue *inner_sval = inner_kv.second;
+		    const binding_key *inner_key = inner_kv.m_key;
+		    const svalue *inner_sval = inner_kv.m_sval;
 		    gcc_assert (inner_key->concrete_p ());
 		    const concrete_binding *concrete_key
 		      = as_a <const concrete_binding *> (inner_key);

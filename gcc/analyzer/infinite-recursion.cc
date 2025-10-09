@@ -401,7 +401,7 @@ contains_unknown_p (const svalue *sval)
   if (const compound_svalue *compound_sval
 	= sval->dyn_cast_compound_svalue ())
     for (auto iter : *compound_sval)
-      if (iter.second->get_kind () == SK_UNKNOWN)
+      if (iter.m_sval->get_kind () == SK_UNKNOWN)
 	return true;
   return false;
 }

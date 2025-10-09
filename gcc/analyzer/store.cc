@@ -618,29 +618,120 @@ simplify_for_binding (const svalue *sval)
   return sval;
 }
 
+/* class binding_map::const_iterator.  */
+
+bool
+binding_map::const_iterator::operator== (const binding_map::const_iterator &other) const
+{
+  if (m_concrete != other.m_concrete)
+    return false;
+  if (m_symbolic != other.m_symbolic)
+    return false;
+  return true;
+}
+
+binding_map::const_iterator &
+binding_map::const_iterator::operator++ ()
+{
+  if (m_concrete != m_map.m_concrete.end ())
+    ++m_concrete;
+  else
+    ++m_symbolic;
+  return *this;
+}
+
+binding_map::binding_pair
+binding_map::const_iterator::operator* ()
+{
+  if (m_concrete != m_map.m_concrete.end ())
+    {
+      const bit_range &bits = m_concrete->first;
+      const svalue *sval = m_concrete->second;
+      return binding_pair (m_map.m_store_mgr.get_concrete_binding (bits), sval);
+    }
+  else
+    {
+      gcc_assert (m_symbolic != m_map.m_symbolic.end ());
+      const region *reg = m_symbolic->m_region;
+      const svalue *sval = m_symbolic->m_sval;
+      return binding_pair (m_map.m_store_mgr.get_symbolic_binding (reg), sval);
+    }
+}
+
+/* class binding_map::iterator.  */
+
+bool
+binding_map::iterator::operator== (const binding_map::iterator &other) const
+{
+  if (m_concrete != other.m_concrete)
+    return false;
+  if (m_symbolic != other.m_symbolic)
+    return false;
+  return true;
+}
+
+binding_map::iterator &
+binding_map::iterator::operator++ ()
+{
+  if (m_concrete != m_map.m_concrete.end ())
+    ++m_concrete;
+  else
+    ++m_symbolic;
+  return *this;
+}
+
+binding_map::binding_pair
+binding_map::iterator::operator* ()
+{
+  if (m_concrete != m_map.m_concrete.end ())
+    {
+      const bit_range &bits = m_concrete->first;
+      const svalue *&sval = m_concrete->second;
+      return binding_pair (m_map.m_store_mgr.get_concrete_binding (bits), sval);
+    }
+  else
+    {
+      gcc_assert (m_symbolic != m_map.m_symbolic.end ());
+      const region *reg = m_symbolic->m_region;
+      const svalue *&sval = m_symbolic->m_sval;
+      return binding_pair (m_map.m_store_mgr.get_symbolic_binding (reg), sval);
+    }
+}
+
 /* class binding_map.  */
+
+// Construct an empty binding_map.
+
+binding_map::binding_map (store_manager &store_mgr)
+: m_store_mgr (store_mgr),
+  m_concrete (),
+  m_symbolic ()
+{
+}
 
 /* binding_map's copy ctor.  */
 
 binding_map::binding_map (const binding_map &other)
-: m_map (other.m_map)
+: m_store_mgr (other.m_store_mgr),
+  m_concrete (other.m_concrete),
+  m_symbolic (other.m_symbolic)
 {
 }
 
 /* binding_map's assignment operator.  */
 
 binding_map&
-binding_map::operator=(const binding_map &other)
+binding_map::operator= (const binding_map &other)
 {
+  gcc_assert (&m_store_mgr == &other.m_store_mgr);
+
   /* For now, assume we only ever copy to an empty cluster.  */
-  gcc_assert (m_map.elements () == 0);
-  for (map_t::iterator iter = other.m_map.begin (); iter != other.m_map.end ();
-       ++iter)
-    {
-      const binding_key *key = (*iter).first;
-      const svalue *sval = (*iter).second;
-      m_map.put (key, sval);
-    }
+  gcc_assert (m_concrete.size () == 0);
+  gcc_assert (m_symbolic.size () == 0);
+
+  m_concrete = other.m_concrete;
+  m_symbolic = other.m_symbolic;
+
   return *this;
 }
 
@@ -649,21 +740,11 @@ binding_map::operator=(const binding_map &other)
 bool
 binding_map::operator== (const binding_map &other) const
 {
-  if (m_map.elements () != other.m_map.elements ())
+  if (m_concrete != other.m_concrete)
+    return false;
+  if (m_symbolic != other.m_symbolic)
     return false;
 
-  for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
-    {
-      const binding_key *key = (*iter).first;
-      const svalue *sval = (*iter).second;
-      const svalue **other_slot
-	= const_cast <map_t &> (other.m_map).get (key);
-      if (other_slot == nullptr)
-	return false;
-      if (sval != *other_slot)
-	return false;
-    }
-  gcc_checking_assert (hash () == other.hash ());
   return true;
 }
 
@@ -673,16 +754,138 @@ hashval_t
 binding_map::hash () const
 {
   hashval_t result = 0;
-  for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
+  for (auto iter : *this)
     {
       /* Use a new hasher for each key to avoid depending on the ordering
 	 of keys when accumulating the result.  */
       inchash::hash hstate;
-      hstate.add_ptr ((*iter).first);
-      hstate.add_ptr ((*iter).second);
+      hstate.add_ptr (iter.m_key);
+      hstate.add_ptr (iter.m_sval);
       result ^= hstate.end ();
     }
   return result;
+}
+
+const svalue *
+binding_map::get (const binding_key *key) const
+{
+  if (key->symbolic_p ())
+    {
+      const ana::symbolic_binding &sym_key
+	= *static_cast <const ana::symbolic_binding *> (key);
+      const region *reg = sym_key.get_region ();
+
+      for (auto iter : m_symbolic)
+	{
+	  if (iter.m_region == reg)
+	    return iter.m_sval;
+	}
+      return nullptr;
+    }
+  else
+    {
+      const concrete_binding &conc_key
+	= *static_cast <const concrete_binding *> (key);
+      const bit_range &bits = conc_key.get_bit_range ();
+
+      concrete_bindings_t::const_iterator iter (m_concrete.find (bits));
+      if (iter != m_concrete.end ())
+	return iter->second;
+      else
+	return nullptr;
+    }
+}
+
+void
+binding_map::put (const binding_key *key, const svalue *sval)
+{
+  if (key->symbolic_p ())
+    {
+      const ana::symbolic_binding &sym_key
+	= *static_cast <const ana::symbolic_binding *> (key);
+      const region *reg = sym_key.get_region ();
+
+      m_symbolic.clear ();
+
+      m_symbolic.push_back ({reg, sval});
+    }
+  else
+    {
+      const concrete_binding &conc_key
+	= *static_cast <const concrete_binding *> (key);
+      const bit_range &bits = conc_key.get_bit_range ();
+
+      concrete_bindings_t::iterator iter (m_concrete.find (bits));
+      if (iter != m_concrete.end ())
+	(*iter).second = sval;
+      else
+	m_concrete.insert ({bits, sval});
+    }
+}
+
+void
+binding_map::overwrite (iterator_t &pos, const svalue *v)
+{
+  gcc_assert (&pos.m_map == this);
+  if (pos.m_symbolic != m_symbolic.end ())
+    (*(pos.m_symbolic)).m_sval = v;
+  else
+    {
+      gcc_assert (pos.m_concrete != m_concrete.end ());
+      (*(pos.m_concrete)).second = v;
+    }
+}
+
+void
+binding_map::remove (const binding_key *key)
+{
+  if (key->symbolic_p ())
+    m_symbolic.clear ();
+  else
+    {
+      const concrete_binding &conc_key
+	= *static_cast <const concrete_binding *> (key);
+      const bit_range &bits = conc_key.get_bit_range ();
+      m_concrete.erase (bits);
+    }
+}
+
+binding_map::const_iterator_t
+binding_map::begin () const
+{
+  return binding_map::const_iterator_t (*this,
+					m_concrete.begin (),
+					m_symbolic.begin ());
+}
+
+binding_map::const_iterator_t
+binding_map::end () const
+{
+  return binding_map::const_iterator_t (*this,
+					m_concrete.end (),
+					m_symbolic.end ());
+}
+
+binding_map::iterator_t
+binding_map::begin ()
+{
+  return binding_map::iterator_t (*this,
+				  m_concrete.begin (),
+				  m_symbolic.begin ());
+}
+
+binding_map::iterator_t
+binding_map::end ()
+{
+  return binding_map::iterator_t (*this,
+				  m_concrete.end (),
+				  m_symbolic.end ());
+}
+
+size_t
+binding_map::elements () const
+{
+  return m_concrete.size () + m_symbolic.size ();
 }
 
 /* Dump a representation of this binding_map to PP.
@@ -694,20 +897,11 @@ void
 binding_map::dump_to_pp (pretty_printer *pp, bool simple,
 			 bool multiline) const
 {
-  auto_vec <const binding_key *> binding_keys;
-  for (map_t::iterator iter = m_map.begin ();
-       iter != m_map.end (); ++iter)
+  bool first = true;
+  for (auto iter : *this)
     {
-      const binding_key *key = (*iter).first;
-      binding_keys.safe_push (key);
-    }
-  binding_keys.qsort (binding_key::cmp_ptrs);
-
-  const binding_key *key;
-  unsigned i;
-  FOR_EACH_VEC_ELT (binding_keys, i, key)
-    {
-      const svalue *value = *const_cast <map_t &> (m_map).get (key);
+      const binding_key *key = iter.m_key;
+      const svalue *value = iter.m_sval;
       if (multiline)
 	{
 	  pp_string (pp, "    key:   {");
@@ -724,7 +918,9 @@ binding_map::dump_to_pp (pretty_printer *pp, bool simple,
 	}
       else
 	{
-	  if (i > 0)
+	  if (first)
+	    first = false;
+	  else
 	    pp_string (pp, ", ");
 	  pp_string (pp, "binding key: {");
 	  key->dump_to_pp (pp, simple);
@@ -754,21 +950,10 @@ binding_map::to_json () const
 {
   auto map_obj = std::make_unique<json::object> ();
 
-  auto_vec <const binding_key *> binding_keys;
-  for (map_t::iterator iter = m_map.begin ();
-       iter != m_map.end (); ++iter)
+  for (auto iter : *this)
     {
-      const binding_key *key = (*iter).first;
-      binding_keys.safe_push (key);
-    }
-  binding_keys.qsort (binding_key::cmp_ptrs);
-
-  const binding_key *key;
-  unsigned i;
-  FOR_EACH_VEC_ELT (binding_keys, i, key)
-    {
-      const svalue *value = *const_cast <map_t &> (m_map).get (key);
-      label_text key_desc = key->get_desc ();
+      const svalue *value = iter.m_sval;
+      label_text key_desc = iter.m_key->get_desc ();
       map_obj->set (key_desc.get (), value->to_json ());
     }
 
@@ -805,20 +990,10 @@ void
 binding_map::add_to_tree_widget (text_art::tree_widget &parent_widget,
 				 const text_art::dump_widget_info &dwi) const
 {
-  auto_vec <const binding_key *> binding_keys;
-  for (map_t::iterator iter = m_map.begin ();
-       iter != m_map.end (); ++iter)
+  for (auto iter : *this)
     {
-      const binding_key *key = (*iter).first;
-      binding_keys.safe_push (key);
-    }
-  binding_keys.qsort (binding_key::cmp_ptrs);
-
-  const binding_key *key;
-  unsigned i;
-  FOR_EACH_VEC_ELT (binding_keys, i, key)
-    {
-      const svalue *sval = *const_cast <map_t &> (m_map).get (key);
+      const binding_key *key = iter.m_key;
+      const svalue *sval = iter.m_sval;
       add_binding_to_tree_widget (parent_widget, dwi,
 				  key, sval);
     }
@@ -834,15 +1009,13 @@ binding_map::cmp (const binding_map &map1, const binding_map &map2)
     return count_cmp;
 
   auto_vec <const binding_key *> keys1 (map1.elements ());
-  for (map_t::iterator iter = map1.begin ();
-       iter != map1.end (); ++iter)
-    keys1.quick_push ((*iter).first);
+  for (auto iter : map1)
+    keys1.quick_push (iter.m_key);
   keys1.qsort (binding_key::cmp_ptrs);
 
   auto_vec <const binding_key *> keys2 (map2.elements ());
-  for (map_t::iterator iter = map2.begin ();
-       iter != map2.end (); ++iter)
-    keys2.quick_push ((*iter).first);
+  for (auto iter : map2)
+    keys2.quick_push (iter.m_key);
   keys2.qsort (binding_key::cmp_ptrs);
 
   for (size_t i = 0; i < keys1.length (); i++)
@@ -1096,7 +1269,7 @@ binding_map::get_overlapping_bindings (const binding_key *key,
 {
   for (auto iter : *this)
     {
-      const binding_key *iter_key = iter.first;
+      const binding_key *iter_key = iter.m_key;
       if (const concrete_binding *ckey
 	    = key->dyn_cast_concrete_binding ())
 	{
@@ -1200,7 +1373,7 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
   auto_vec<const binding_key *> bindings;
   if (always_overlap)
     for (auto iter : *this)
-      bindings.safe_push (iter.first); /* Add all bindings.  */
+      bindings.safe_push (iter.m_key); /* Add all bindings.  */
   else
     /* Just add overlapping bindings.  */
     get_overlapping_bindings (drop_key, &bindings);
@@ -1234,7 +1407,7 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 	maybe_live_values->add (old_sval);
 
       /* Begin by removing the old binding. */
-      m_map.remove (iter_binding);
+      remove (iter_binding);
 
       /* Don't attempt to handle prefixes/suffixes for the
 	 "always_overlap" case; everything's being removed.  */
@@ -1266,7 +1439,7 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 		  = old_sval->extract_bit_range (NULL_TREE,
 						 rel_prefix,
 						 mgr->get_svalue_manager ());
-		m_map.put (prefix_key, prefix_sval);
+		put (prefix_key, prefix_sval);
 	      }
 
 	    if (iter_bits.get_next_bit_offset ()
@@ -1285,7 +1458,7 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 		  = old_sval->extract_bit_range (NULL_TREE,
 						 rel_suffix,
 						 mgr->get_svalue_manager ());
-		m_map.put (suffix_key, suffix_sval);
+		put (suffix_key, suffix_sval);
 	      }
 	  }
     }
@@ -1293,8 +1466,9 @@ binding_map::remove_overlapping_bindings (store_manager *mgr,
 
 /* class binding_cluster.  */
 
-binding_cluster::binding_cluster (const region *base_region)
-: m_base_region (base_region), m_map (),
+binding_cluster::binding_cluster (store_manager &store_mgr,
+				  const region *base_region)
+: m_base_region (base_region), m_map (store_mgr),
   m_escaped (false), m_touched (false)
 {
 }
@@ -1414,7 +1588,7 @@ binding_cluster::validate () const
   int num_concrete = 0;
   for (auto iter : m_map)
     {
-      if (iter.first->symbolic_p ())
+      if (iter.m_key->symbolic_p ())
 	num_symbolic++;
       else
 	num_concrete++;
@@ -1537,11 +1711,10 @@ binding_cluster::bind_compound_sval (store_manager *mgr,
       return;
     }
 
-  for (map_t::iterator iter = compound_sval->begin ();
-       iter != compound_sval->end (); ++iter)
+  for (auto iter : *compound_sval)
     {
-      const binding_key *iter_key = (*iter).first;
-      const svalue *iter_sval = (*iter).second;
+      const binding_key *iter_key = iter.m_key;
+      const svalue *iter_sval = iter.m_sval;
 
       if (const concrete_binding *concrete_key
 	  = iter_key->dyn_cast_concrete_binding ())
@@ -1650,7 +1823,7 @@ binding_cluster::purge_state_involving (const svalue *sval,
   auto_vec<std::pair<const binding_key *, tree> > to_make_unknown;
   for (auto iter : m_map)
     {
-      const binding_key *iter_key = iter.first;
+      const binding_key *iter_key = iter.m_key;
       if (const symbolic_binding *symbolic_key
 	    = iter_key->dyn_cast_symbolic_binding ())
 	{
@@ -1658,7 +1831,7 @@ binding_cluster::purge_state_involving (const svalue *sval,
 	  if (reg->involves_p (sval))
 	    to_remove.safe_push (iter_key);
 	}
-      const svalue *iter_sval = iter.second;
+      const svalue *iter_sval = iter.m_sval;
       if (iter_sval->involves_p (sval))
 	to_make_unknown.safe_push (std::make_pair(iter_key,
 						  iter_sval->get_type ()));
@@ -1847,8 +2020,8 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
      perhaps we should have a spatial-organized data structure for
      concrete keys, though.  */
 
-  binding_map result_map;
-  binding_map default_map;
+  binding_map result_map (*mgr);
+  binding_map default_map (*mgr);
 
   /* Set up default values in default_map.  */
   const svalue *default_sval;
@@ -1866,12 +2039,13 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
     return nullptr;
   const concrete_binding *default_key_relative_to_reg
      = mgr->get_concrete_binding (0, concrete_default_key->get_size_in_bits ());
+
   default_map.put (default_key_relative_to_reg, default_sval);
 
-  for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
+  for (auto iter : m_map)
     {
-      const binding_key *key = (*iter).first;
-      const svalue *sval = (*iter).second;
+      const binding_key *key = iter.m_key;
+      const svalue *sval = iter.m_sval;
 
       if (const concrete_binding *concrete_key
 	  = key->dyn_cast_concrete_binding ())
@@ -1957,8 +2131,8 @@ binding_cluster::maybe_get_compound_binding (store_manager *mgr,
   /* Merge any bindings from default_map into result_map.  */
   for (auto iter : default_map)
     {
-      const binding_key *key = iter.first;
-      const svalue *sval = iter.second;
+      const binding_key *key = iter.m_key;
+      const svalue *sval = iter.m_sval;
       result_map.put (key, sval);
     }
 
@@ -2051,16 +2225,14 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
   gcc_assert (cluster_b->m_base_region == out_cluster->m_base_region);
 
   hash_set<const binding_key *> keys;
-  for (map_t::iterator iter_a = cluster_a->m_map.begin ();
-       iter_a != cluster_a->m_map.end (); ++iter_a)
+  for (auto iter_a  : cluster_a->m_map)
     {
-      const binding_key *key_a = (*iter_a).first;
+      const binding_key *key_a = iter_a.m_key;
       keys.add (key_a);
     }
-  for (map_t::iterator iter_b = cluster_b->m_map.begin ();
-       iter_b != cluster_b->m_map.end (); ++iter_b)
+  for (auto iter_b : cluster_b->m_map)
     {
-      const binding_key *key_b = (*iter_b).first;
+      const binding_key *key_b = iter_b.m_key;
       keys.add (key_b);
     }
   int num_symbolic_keys = 0;
@@ -2122,7 +2294,7 @@ binding_cluster::can_merge_p (const binding_cluster *cluster_a,
       || (num_concrete_keys > 0 && num_symbolic_keys > 0))
     {
       out_cluster->m_touched = true;
-      out_cluster->m_map.empty ();
+      out_cluster->m_map.clear ();
     }
 
   /* We don't handle other kinds of overlaps yet.  */
@@ -2141,11 +2313,10 @@ binding_cluster::make_unknown_relative_to (const binding_cluster *other,
 					   store *out_store,
 					   store_manager *mgr)
 {
-  for (map_t::iterator iter = other->m_map.begin ();
-       iter != other->m_map.end (); ++iter)
+  for (auto iter : *other)
     {
-      const binding_key *iter_key = (*iter).first;
-      const svalue *iter_sval = (*iter).second;
+      const binding_key *iter_key = iter.m_key;
+      const svalue *iter_sval = iter.m_sval;
       const svalue *unknown_sval
 	= mgr->get_svalue_manager ()->get_or_create_unknown_svalue
 	  (iter_sval->get_type ());
@@ -2165,7 +2336,8 @@ binding_cluster::make_unknown_relative_to (const binding_cluster *other,
 	  if (base_reg->tracked_p ()
 	      && !base_reg->symbolic_for_unknown_ptr_p ())
 	    {
-	      binding_cluster *c = out_store->get_or_create_cluster (base_reg);
+	      binding_cluster *c
+		= out_store->get_or_create_cluster (*mgr, base_reg);
 	      c->mark_as_escaped ();
 	    }
 	}
@@ -2193,7 +2365,7 @@ binding_cluster::on_unknown_fncall (const gcall &call,
 {
   if (m_escaped)
     {
-      m_map.empty ();
+      m_map.clear ();
 
       if (!m_base_region->empty_p ())
 	{
@@ -2216,7 +2388,7 @@ binding_cluster::on_asm (const gasm *stmt,
 			 store_manager *mgr,
 			 const conjured_purge &p)
 {
-  m_map.empty ();
+  m_map.clear ();
 
   /* Bind it to a new "conjured" value using CALL.  */
   const svalue *sval
@@ -2279,10 +2451,10 @@ binding_cluster::get_representative_path_vars (const region_model *model,
 {
   sval = simplify_for_binding (sval);
 
-  for (map_t::iterator iter = m_map.begin (); iter != m_map.end (); ++iter)
+  for (auto iter : m_map)
     {
-      const binding_key *key = (*iter).first;
-      const svalue *bound_sval = (*iter).second;
+      const binding_key *key = iter.m_key;
+      const svalue *bound_sval = iter.m_sval;
       if (bound_sval == sval)
 	{
 	  if (const concrete_binding *ckey
@@ -2804,14 +2976,14 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
 	{
 	  const region *ptr_dst = ptr_sval->get_pointee ();
 	  const region *ptr_base_reg = ptr_dst->get_base_region ();
-	  mark_as_escaped (ptr_base_reg);
+	  mark_as_escaped (*mgr, ptr_base_reg);
 	}
       if (uncertainty)
 	uncertainty->on_maybe_bound_sval (rhs_sval);
     }
   else if (lhs_base_reg->tracked_p ())
     {
-      lhs_cluster = get_or_create_cluster (lhs_base_reg);
+      lhs_cluster = get_or_create_cluster (*mgr, lhs_base_reg);
       lhs_cluster->bind (mgr, lhs_reg, rhs_sval);
     }
   else
@@ -2887,7 +3059,7 @@ store::set_value (store_manager *mgr, const region *lhs_reg,
      (e.g. marking regions as escaped).
      We do this after the iteration to avoid potentially changing
      m_cluster_map whilst iterating over it.  */
-  on_maybe_live_values (maybe_live_values);
+  on_maybe_live_values (*mgr, maybe_live_values);
 }
 
 /* Determine if BASE_REG_A could be an alias of BASE_REG_B.  */
@@ -2983,14 +3155,15 @@ store::eval_alias_1 (const region *base_reg_a,
 /* Record all of the values in MAYBE_LIVE_VALUES as being possibly live.  */
 
 void
-store::on_maybe_live_values (const svalue_set &maybe_live_values)
+store::on_maybe_live_values (store_manager &mgr,
+			     const svalue_set &maybe_live_values)
 {
   for (auto sval : maybe_live_values)
     {
       if (const region_svalue *ptr_sval = sval->dyn_cast_region_svalue ())
 	{
 	  const region *base_reg = ptr_sval->get_pointee ()->get_base_region ();
-	  mark_as_escaped (base_reg);
+	  mark_as_escaped (mgr, base_reg);
 	}
     }
 }
@@ -3044,7 +3217,7 @@ store::fill_region (store_manager *mgr, const region *reg, const svalue *sval)
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
     return;
-  binding_cluster *cluster = get_or_create_cluster (base_reg);
+  binding_cluster *cluster = get_or_create_cluster (*mgr, base_reg);
   cluster->fill_region (mgr, reg, sval);
 }
 
@@ -3069,7 +3242,7 @@ store::mark_region_as_unknown (store_manager *mgr, const region *reg,
   if (base_reg->symbolic_for_unknown_ptr_p ()
       || !base_reg->tracked_p ())
     return;
-  binding_cluster *cluster = get_or_create_cluster (base_reg);
+  binding_cluster *cluster = get_or_create_cluster (*mgr, base_reg);
   cluster->mark_region_as_unknown (mgr, reg, reg, uncertainty,
 				   maybe_live_values);
 }
@@ -3127,7 +3300,8 @@ store::get_cluster (const region *base_reg)
 /* Get the cluster for BASE_REG, creating it if doesn't already exist.  */
 
 binding_cluster *
-store::get_or_create_cluster (const region *base_reg)
+store::get_or_create_cluster (store_manager &store_mgr,
+			      const region *base_reg)
 {
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
@@ -3141,7 +3315,7 @@ store::get_or_create_cluster (const region *base_reg)
   if (binding_cluster **slot = m_cluster_map.get (base_reg))
     return *slot;
 
-  binding_cluster *cluster = new binding_cluster (base_reg);
+  binding_cluster *cluster = new binding_cluster (store_mgr, base_reg);
   m_cluster_map.put (base_reg, cluster);
 
   return cluster;
@@ -3206,7 +3380,7 @@ store::can_merge_p (const store *store_a, const store *store_b,
       const binding_cluster *cluster_b = store_b->get_cluster (base_reg);
       /* At least one of cluster_a and cluster_b must be non-NULL.  */
       binding_cluster *out_cluster
-	= out_store->get_or_create_cluster (base_reg);
+	= out_store->get_or_create_cluster (*mgr, base_reg);
       if (!binding_cluster::can_merge_p (cluster_a, cluster_b,
 					 out_cluster, out_store, mgr, merger))
 	return false;
@@ -3221,7 +3395,7 @@ store::can_merge_p (const store *store_a, const store *store_b,
    isn't reachable from args of those calls.  */
 
 void
-store::mark_as_escaped (const region *base_reg)
+store::mark_as_escaped (store_manager &mgr, const region *base_reg)
 {
   gcc_assert (base_reg);
   gcc_assert (base_reg->get_base_region () == base_reg);
@@ -3230,7 +3404,7 @@ store::mark_as_escaped (const region *base_reg)
       || !base_reg->tracked_p ())
     return;
 
-  binding_cluster *cluster = get_or_create_cluster (base_reg);
+  binding_cluster *cluster = get_or_create_cluster (mgr, base_reg);
   cluster->mark_as_escaped ();
 }
 
@@ -3361,7 +3535,7 @@ store::canonicalize (store_manager *mgr)
       binding_cluster *cluster = (*iter).second;
       for (binding_cluster::iterator_t bind_iter = cluster->m_map.begin ();
 	   bind_iter != cluster->m_map.end (); ++bind_iter)
-	(*bind_iter).second->accept (&s);
+	(*bind_iter).m_sval->accept (&s);
     }
 
   /* Locate heap-allocated regions that have empty bindings that weren't
@@ -3442,12 +3616,13 @@ store::loop_replay_fixup (const store *other_store,
       for (binding_cluster::iterator_t bind_iter = cluster->m_map.begin ();
 	   bind_iter != cluster->m_map.end (); ++bind_iter)
 	{
-	  const binding_key *key = (*bind_iter).first;
-	  const svalue *sval = (*bind_iter).second;
+	  const binding_key *key = (*bind_iter).m_key;
+	  const svalue *sval = (*bind_iter).m_sval;
 	  if (sval->get_kind () == SK_WIDENING)
 	    {
 	      binding_cluster *this_cluster
-		= get_or_create_cluster (base_reg);
+		= get_or_create_cluster (*mgr->get_store_manager (),
+					 base_reg);
 	      const svalue *unknown
 		= mgr->get_or_create_unknown_svalue (sval->get_type ());
 	      this_cluster->bind_key (key, unknown);
@@ -3505,7 +3680,7 @@ store::replay_call_summary_cluster (call_summary_replay &r,
 	    && !caller_base_reg->symbolic_for_unknown_ptr_p ())
 	  {
 	    binding_cluster *caller_cluster
-	      = get_or_create_cluster (caller_base_reg);
+	      = get_or_create_cluster (*mgr, caller_base_reg);
 	    if (summary_cluster->escaped_p ())
 	      caller_cluster->mark_as_escaped ();
 	    if (summary_cluster->touched_p ())
@@ -3830,6 +4005,22 @@ test_binding_key_overlap ()
   ASSERT_DISJOINT (cb_8_23, cb_24_31);
 }
 
+static void
+test_binding_map_ops ()
+{
+  region_model_manager region_mgr;
+  store_manager store_mgr (&region_mgr);
+
+  /* Assignment of empty.  */
+  {
+    binding_map src (store_mgr);
+    binding_map dst (store_mgr);
+    dst = src;
+
+    ASSERT_EQ (src, dst);
+ }
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -3838,6 +4029,7 @@ analyzer_store_cc_tests ()
   test_bit_range_intersects_p ();
   test_bit_range_from_mask ();
   test_binding_key_overlap ();
+  test_binding_map_ops ();
 }
 
 } // namespace selftest

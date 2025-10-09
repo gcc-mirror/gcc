@@ -1,13 +1,8 @@
 /* Proof-of-concept of a -fanalyzer plugin for the Linux kernel.  */
 /* { dg-options "-g" } */
 
-#define INCLUDE_MEMORY
-#define INCLUDE_STRING
-#define INCLUDE_VECTOR
+#include "analyzer/common.h"
 #include "gcc-plugin.h"
-#include "config.h"
-#include "system.h"
-#include "coretypes.h"
 #include "tree.h"
 #include "function.h"
 #include "basic-block.h"

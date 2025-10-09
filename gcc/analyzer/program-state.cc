@@ -564,7 +564,7 @@ sm_state_map::impl_set_state (const svalue *sval,
 	    = sval->dyn_cast_compound_svalue ())
 	for (auto iter : *compound_sval)
 	  {
-	    const svalue *inner_sval = iter.second;
+	    const svalue *inner_sval = iter.m_sval;
 	    if (inner_sval->can_have_associated_state_p ())
 	      impl_set_state (inner_sval, state, origin, ext_state);
 	  }
@@ -1531,7 +1531,7 @@ program_state::can_purge_base_region_p (const extrinsic_state &ext_state,
 
   for (auto iter : *cluster)
     {
-      const svalue *sval = iter.second;
+      const svalue *sval = iter.m_sval;
       if (!can_purge_p (ext_state, sval))
 	return false;
     }

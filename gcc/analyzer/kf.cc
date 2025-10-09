@@ -857,7 +857,8 @@ public:
     const svalue *ptr_sval = cd.get_arg_svalue (0);
     const region *reg
       = model->deref_rvalue (ptr_sval, cd.get_arg_tree (0), ctxt);
-    model->get_store ()->mark_as_escaped (reg);
+    store_manager *store_mgr = model->get_manager ()->get_store_manager ();
+    model->get_store ()->mark_as_escaped (*store_mgr, reg);
     enum memory_space mem_space = reg->get_memory_space ();
     switch (mem_space)
       {
