@@ -23,6 +23,45 @@ test_ostream()
 }
 
 void
+test_format()
+{
+  using namespace std::chrono;
+  std::locale loc_fr(ISO_8859(15,fr_FR));
+
+  auto s = std::format("{:%b%%%B%t%m%n %d%%%e}", month(1)/day(3));
+  VERIFY( s == "Jan%January\t01\n 03% 3" );
+  s = std::format(loc_fr, "{:L%b%%%B%t%m%n %d%%%e}", month(1)/day(3));
+  VERIFY( s == "janv.%janvier\t01\n 03% 3");
+
+  s = std::format("{0:%m/%d} {0}", month(10)/day(13));
+  VERIFY( s == "10/13 Oct/13" );
+  s = std::format("{0:%m/%d} {0}", month(13)/day(34));
+  VERIFY( s == "13/34 13 is not a valid month/34 is not a valid day" );
+
+  std::string_view specs = "aAbBcCdDeFgGhHIjmMpqQrRSTuUVwWxXyYzZ";
+  std::string_view my_specs = "bBdehm";
+  for (char c : specs)
+  {
+    char fmt[] = { '{', ':', '%', c, '}' };
+    try
+    {
+      auto md = month(1)/day(10);
+      (void) std::vformat(std::string_view(fmt, 5), std::make_format_args(md));
+      // The call above should throw for any conversion-spec not in my_specs:
+      VERIFY(my_specs.find(c) != my_specs.npos);
+    }
+    catch (const std::format_error& e)
+    {
+      VERIFY(my_specs.find(c) == my_specs.npos);
+      std::string_view s = e.what();
+      // Libstdc++-specific message:
+      VERIFY(s.find("format argument does not contain the information "
+		    "required by the chrono-specs") != s.npos);
+    }
+  }
+}
+
+void
 test_parse()
 {
   using namespace std::chrono;
@@ -102,6 +141,6 @@ test_parse()
 int main()
 {
   test_ostream();
-  // TODO: test_format();
+  test_format();
   test_parse();
 }

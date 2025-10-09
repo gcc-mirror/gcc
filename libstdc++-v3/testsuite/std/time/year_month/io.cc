@@ -23,6 +23,45 @@ test_ostream()
 }
 
 void
+test_format()
+{
+  using namespace std::chrono;
+  std::locale loc_fr(ISO_8859(15,fr_FR));
+
+  auto s = std::format("{:%C%%%y\t%Y %b%%%B%t%m%n}", year(2019)/month(4));
+  VERIFY( s == "20%19\t2019 Apr%April\t04\n" );
+  s = std::format(loc_fr, "{:L%C%%%y\t%Y %b%%%B%t%m%n}", year(2019)/month(4));
+  VERIFY( s == "20%19\t2019 avril%avril\t04\n");
+
+  s = std::format("{0:%Y/%m} {0}", year(2018)/month(2));
+  VERIFY( s == "2018/02 2018/Feb" );
+  s = std::format("{0:%Y/%m} {0}", year(-32768)/month(15));
+  VERIFY( s == "-32768/15 -32768 is not a valid year/15 is not a valid month" );
+
+  std::string_view specs = "aAbBcCdDeFgGhHIjmMpqQrRSTuUVwWxXyYzZ";
+  std::string_view my_specs = "CbBhmyY";
+  for (char c : specs)
+  {
+    char fmt[] = { '{', ':', '%', c, '}' };
+    try
+    {
+      auto ym = year(2013)/month(1);
+      (void) std::vformat(std::string_view(fmt, 5), std::make_format_args(ym));
+      // The call above should throw for any conversion-spec not in my_specs:
+      VERIFY(my_specs.find(c) != my_specs.npos);
+    }
+    catch (const std::format_error& e)
+    {
+      VERIFY(my_specs.find(c) == my_specs.npos);
+      std::string_view s = e.what();
+      // Libstdc++-specific message:
+      VERIFY(s.find("format argument does not contain the information "
+		    "required by the chrono-specs") != s.npos);
+    }
+  }
+}
+
+void
 test_parse()
 {
   using namespace std::chrono;
@@ -73,6 +112,6 @@ test_parse()
 int main()
 {
   test_ostream();
-  // TODO: test_format();
+  test_format();
   test_parse();
 }
