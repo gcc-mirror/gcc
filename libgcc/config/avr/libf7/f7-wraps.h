@@ -135,27 +135,7 @@ _ENDF __truncdfsf2
 #endif /* F7MOD_D_truncdfsf2_ */
 
 ;; Functions that usually live in libgcc: __<name> for <name> in:
-;; floatunsidf floatsidf extendsfdf2
-
-;; double __floatunsidf (type_t)  ; floatunsidf
-#ifdef F7MOD_D_floatunsidf_
-_DEFUN __floatunsidf
-    .global F7_NAME(floatunsidf)
-    ldi     ZH,     hi8(gs(F7_NAME(floatunsidf)))
-    ldi     ZL,     lo8(gs(F7_NAME(floatunsidf)))
-    F7jmp   call_dx
-_ENDF __floatunsidf
-#endif /* F7MOD_D_floatunsidf_ */
-
-;; double __floatsidf (type_t)  ; floatsidf
-#ifdef F7MOD_D_floatsidf_
-_DEFUN __floatsidf
-    .global F7_NAME(floatsidf)
-    ldi     ZH,     hi8(gs(F7_NAME(floatsidf)))
-    ldi     ZL,     lo8(gs(F7_NAME(floatsidf)))
-    F7jmp   call_dx
-_ENDF __floatsidf
-#endif /* F7MOD_D_floatsidf_ */
+;; extendsfdf2
 
 ;; double __extendsfdf2 (type_t)  ; extendsfdf2
 #ifdef F7MOD_D_extendsfdf2_

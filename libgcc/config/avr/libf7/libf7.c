@@ -207,7 +207,6 @@ f7_t* f7_set_s32 (f7_t *cc, int32_t i32)
   cc->flags = flags;
   return cc;
 }
-ALIAS (f7_set_s32, f7_floatsidf)
 #endif // F7MOD_set_s32_
 
 
@@ -219,7 +218,6 @@ f7_t* f7_set_u32 (f7_t *cc, uint32_t u32)
   cc->expo = 31;
   return f7_normalize_asm (cc);
 }
-ALIAS (f7_set_u32, f7_floatunsidf)
 #endif // F7MOD_set_u32_
 
 

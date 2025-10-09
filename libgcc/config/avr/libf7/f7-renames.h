@@ -159,8 +159,6 @@
 #define f7_min __f7_min
 #define f7_max __f7_max
 #define f7_exp10 __f7_exp10
-#define f7_floatunsidf __f7_floatunsidf
-#define f7_floatsidf __f7_floatsidf
 #define f7_extendsfdf2 __f7_extendsfdf2
 #define f7_fixdfsi __f7_fixdfsi
 #define f7_fixdfdi __f7_fixdfdi

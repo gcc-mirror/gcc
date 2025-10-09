@@ -2201,8 +2201,9 @@ _ENDF __powidf2
 
 ;;; The double exponent starts at bit 52 since the encoded mantissa has 52 bits.
 ;;; Note that when X is a multiple of 16, then dex_lo(x) evaluates to 0.
-#define dex_lo(x) hlo8((x) << (52 - 32))
-#define dex_hi(x) hhi8((x) << (52 - 32))
+#define DEX16(x)  (x) << (52 - 48)
+#define dex_lo(x) lo8 (DEX16 (x))
+#define dex_hi(x) hi8 (DEX16 (x))
 
 #ifdef F7MOD_usa2D_
 _DEFUN __fractusadf
@@ -2386,6 +2387,85 @@ _DEFUN __fractdfusa
     XJMP    __fixunsdfsi
 _ENDF __fractdfusa
 #endif /* F7MOD_D2usa_ */
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; [u]int32_t -> double conversions.
+
+;; double __floatsidf (int32_t);
+#ifdef F7MOD_D_floatsidf_
+_DEFUN __floatsidf
+    bst     r25, 7
+    brtc    0f
+    XCALL   __negsi2
+0:  XJMP    __floatunsidf.ge0
+_ENDF __floatsidf
+#endif /* F7MOD_D_floatsidf_ */
+
+;; double __floatunsidf (uint32_t);
+#ifdef F7MOD_D_floatunsidf_
+_DEFUN __floatunsidf
+    clt
+_LABEL __floatunsidf.ge0
+    ;; Zero-extend SI at the low end.
+    clr     r18
+    clr     r19
+    wmov    r20,    r18
+    ;; Input is zero?
+    sbiw    r24,    0
+    sbci    r23,    0
+    sbci    r22,    0
+    breq 9f
+    ;; No: The double exponent of 0x80000000 is 31 plus a bias of 1023.
+    ;; Align the SI value such that the MSBit is as R25.4.
+    ;; For each << we have to subtract 1 from the exponent, and for
+    ;; each >> we have to add 1.  Since we want the MSB in R25.4 and
+    ;; not in R25.7, the initial exponent must be reduced by 3.
+    ldi     Xl,     dex_lo (31 + 1023 - 3)
+    ldi     Xh,     dex_hi (31 + 1023 - 3)
+    ;; Move the MSByte to R25.
+1:  tst     r25
+    brne 2f
+    subi    Xl,     dex_lo (8)
+    sbci    Xh,     dex_hi (8)
+    mov     r25,    r24
+    mov     r24,    r23
+    mov     r23,    r22
+    clr     r22
+    rjmp    1b
+2:  ;; Now we have R25 != 0.
+    cpi     r25,    0x20
+    brlo 3f
+    adiw    Xl,     DEX16 (1)
+    lsr     r25
+    ror     r24
+    ror     r23
+    ror     r22
+    ror     r21
+    rjmp 2b
+3:  cpi     r25,    0x10
+    brsh 4f
+    sbiw    Xl,     DEX16 (1)
+    lsl     r22
+    rol     r23
+    rol     r24
+    rol     r25
+    rjmp 3b
+4:  ;; Move the mantissa into place and clear the redundant leading 1.
+    cbr     r25,    0x10
+    mov     r20,    r21
+    mov     r21,    r22
+    mov     r22,    r23
+    mov     r23,    r24
+    mov     r24,    r25
+    ;; Insert the biased exponent.
+    or      r24,    Xl
+    mov     r25,    Xh
+    ;; Insert the sign.
+    bld     r25,    7
+9:  ret
+_ENDF __floatunsidf
+#endif /* F7MOD_D_floatunsidf_ */
 
 
 #endif /* !AVR_TINY */
