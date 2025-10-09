@@ -8464,7 +8464,7 @@ It warns about code that might break the strict aliasing rules that the
 compiler is using for optimization.  The warning does not catch all
 cases, but does attempt to catch the more common pitfalls.  It is
 included in @option{-Wall}.
-It is equivalent to @option{-Wstrict-aliasing=3}
+It is equivalent to @option{-Wstrict-aliasing=3}.
 
 @opindex Wstrict-aliasing=n
 @item -Wstrict-aliasing=n
