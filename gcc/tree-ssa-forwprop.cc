@@ -3295,17 +3295,6 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
   gimple_seq_add_stmt (&seq, call);
 
   tree prev_lhs = gimple_call_lhs (call);
-  if (fn == IFN_CLZ)
-    {
-      g = gimple_build_assign (make_ssa_name (integer_type_node),
-			       MINUS_EXPR,
-			       build_int_cst (integer_type_node,
-					      input_bits - 1),
-			       prev_lhs);
-      gimple_set_location (g, gimple_location (stmt));
-      gimple_seq_add_stmt (&seq, g);
-      prev_lhs = gimple_assign_lhs (g);
-    }
 
   if (zero_ok && zero_val == ctz_val)
     ;
@@ -3331,6 +3320,18 @@ simplify_count_zeroes (gimple_stmt_iterator *gsi)
       g = gimple_build_assign (make_ssa_name (integer_type_node),
 			       COND_EXPR, cond,
 			       build_int_cst (integer_type_node, zero_val),
+			       prev_lhs);
+      gimple_set_location (g, gimple_location (stmt));
+      gimple_seq_add_stmt (&seq, g);
+      prev_lhs = gimple_assign_lhs (g);
+    }
+
+  if (fn == IFN_CLZ)
+    {
+      g = gimple_build_assign (make_ssa_name (integer_type_node),
+			       MINUS_EXPR,
+			       build_int_cst (integer_type_node,
+					      input_bits - 1),
 			       prev_lhs);
       gimple_set_location (g, gimple_location (stmt));
       gimple_seq_add_stmt (&seq, g);
