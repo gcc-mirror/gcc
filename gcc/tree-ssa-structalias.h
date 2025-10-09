@@ -34,6 +34,15 @@ enum { nothing_id = 1, anything_id = 2, string_id = 3,
        escaped_id = 4, nonlocal_id = 5, escaped_return_id = 6,
        storedanything_id = 7, integer_id = 8 };
 
+/* In IPA mode there are varinfos for different aspects of reach
+   function designator.  One for the points-to set of the return
+   value, one for the variables that are clobbered by the function,
+   one for its uses and one for each parameter (including a single
+   glob for remaining variadic arguments).  */
+
+enum { fi_clobbers = 1, fi_uses = 2,
+       fi_static_chain = 3, fi_result = 4, fi_parm_base = 5 };
+
 /* Use 0x8000... as special unknown offset.  */
 #define UNKNOWN_OFFSET HOST_WIDE_INT_MIN
 
@@ -167,6 +176,9 @@ struct constraint_stats
   unsigned int points_to_sets_created;
 };
 
+extern bool use_field_sensitive;
+extern int in_ipa_mode;
+
 extern struct constraint_stats stats;
 
 extern bitmap_obstack pta_obstack;
@@ -198,6 +210,9 @@ varinfo_t first_vi_for_offset (varinfo_t start,
 			       unsigned HOST_WIDE_INT offset);
 varinfo_t first_or_preceding_vi_for_offset (varinfo_t start,
 					    unsigned HOST_WIDE_INT offset);
+void determine_global_memory_access (gcall *, bool *, bool *, bool *);
+bool fndecl_maybe_in_other_partition (tree);
+varinfo_t new_var_info (tree t, const char *name, bool add_id);
 void dump_constraint (FILE *file, constraint_t c);
 void dump_constraints (FILE *file, int from);
 void dump_solution_for_var (FILE *file, unsigned int var);

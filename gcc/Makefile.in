@@ -1804,6 +1804,7 @@ OBJS = \
 	tree-ssa-strlen.o \
 	tree-ssa-structalias.o \
 	pta-andersen.o \
+	gimple-ssa-pta-constraints.o \
 	tree-ssa-tail-merge.o \
 	tree-ssa-ter.o \
 	tree-ssa-threadbackward.o \
