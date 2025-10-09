@@ -69,17 +69,16 @@ test_format()
   VERIFY( s == "2024-09-01 245" );
   s = std::format("{:%Y-%m-%d %j}", 2024y/September/Sunday[5]);
   VERIFY( s == "2024-09-29 273" );
-  // see https://gcc.gnu.org/bugzilla/show_bug.cgi?id=121929
   // first weeks of next month
   s = std::format("{:%Y-%m-%d %j}", 2024y/September/Sunday[6]);
-  VERIFY( s == "2024-09-06 280" );
+  VERIFY( s == "2024-09-36 280" );
   s = std::format("{:%Y-%m-%d %j}", 2024y/September/Sunday[7]);
-  VERIFY( s == "2024-09-13 287" );
+  VERIFY( s == "2024-09-43 287" );
   // last week on previous month
   s = std::format("{:%Y-%m-%d %j}", 2024y/September/Saturday[0]);
-  VERIFY( s == "2024-09-31 244" );
+  VERIFY( s == "2024-09-00 244" );
   s = std::format("{:%Y-%m-%d %j}", 2024y/September/Sunday[0]);
-  VERIFY( s == "2024-09-25 238" );
+  VERIFY( s == "2024-09-00 238" ); // day is de-facto -6
 
   // %U: Week number for weeks starting on Sunday
   s = std::format("{:%Y-U%U}", 2023y/January/Sunday[0]);

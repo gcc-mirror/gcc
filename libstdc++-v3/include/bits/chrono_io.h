@@ -479,6 +479,7 @@ namespace __format
 	return __parts;
       }
 
+      // pre: _M_year is set
       [[__gnu__::__always_inline__]]
       _ChronoParts
       _M_fill_aux(chrono::local_days __ld, _ChronoParts __parts)
@@ -495,6 +496,7 @@ namespace __format
 	return __parts;
       }
 
+      // pre: _M_year is set
       [[__gnu__::__always_inline__]]
       _ChronoParts
       _M_fill_ldays(chrono::local_days __ld, _ChronoParts __parts)
@@ -2671,8 +2673,7 @@ namespace __format
 	  if (__parts == 0)
 	    return _M_f._M_format(__cd, __fc);
 
-	  chrono::local_days __ld(__t);
-	  __cd._M_fill_ldays(__ld, __parts);
+	  __cd._M_fill_ldays(chrono::local_days(__t), __parts);
 	  return _M_f._M_format(__cd, __fc);
 	}
 
@@ -2707,19 +2708,17 @@ namespace __format
 	format(const chrono::year_month_day_last& __t,
 	       basic_format_context<_Out, _CharT>& __fc) const
 	{
+	  using enum __format::_ChronoParts;
+
 	  __format::_ChronoData<_CharT> __cd{};
 	  auto __parts = _M_f._M_spec._M_needed;
 	  __parts = __cd._M_fill_year_month(__t, __parts);
+	  if (_M_f._M_spec._M_needs(_Day|_WeekdayIndex))
+	    __parts = __cd._M_fill_day(__t.day(), __parts);
 	  if (__parts == 0)
 	    return _M_f._M_format(__cd, __fc);
 
-	  chrono::local_days __ld(__t);
-	  __parts = __cd._M_fill_ldays(__ld, __parts);
-	  if (__parts == 0)
-	    return _M_f._M_format(__cd, __fc);
-
-	  chrono::year_month_day __ymd(__ld);
-	  __cd._M_fill_day(__ymd.day(), __parts);
+	  __cd._M_fill_ldays(chrono::local_days(__t), __parts);
 	  return _M_f._M_format(__cd, __fc);
 	}
 
@@ -2760,6 +2759,10 @@ namespace __format
 	  auto __parts = _M_f._M_spec._M_needed;
 	  __parts = __cd._M_fill_year_month(__t, __parts);
 	  __parts = __cd._M_fill_weekday(__t.weekday_indexed(), __parts);
+	  if (__t.index() == 0) [[unlikely]]
+            // n.b. day cannot be negative, so any 0th weekday uses
+	    // value-initialized (0) day of month
+            __parts -= __format::_ChronoParts::_Day;
 	  if (__parts == 0)
 	    return _M_f._M_format(__cd, __fc);
 
@@ -2768,9 +2771,9 @@ namespace __format
 	  if (__parts == 0)
 	    return _M_f._M_format(__cd, __fc);
 
-	  chrono::year_month_day __ymd(__ld);
+	  auto __dom = __ld - chrono::local_days(__t.year()/__t.month()/0);
 	  // n.b. weekday index is supplied by input, do not override it
-	  __cd._M_day = __ymd.day();
+	  __cd._M_day = chrono::day(__dom.count());
 	  return _M_f._M_format(__cd, __fc);
 	}
 
@@ -2820,8 +2823,8 @@ namespace __format
 	  if (__parts == 0)
 	    return _M_f._M_format(__cd, __fc);
 
-	  chrono::year_month_day __ymd(__ld);
-	  __cd._M_fill_day(__ymd.day(), __parts);
+	  auto __dom = __ld - chrono::local_days(__t.year()/__t.month()/0);
+	  __cd._M_fill_day(chrono::day(__dom.count()), __parts);
 	  return _M_f._M_format(__cd, __fc);
 	}
 
