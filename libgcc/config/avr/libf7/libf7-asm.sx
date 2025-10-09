@@ -618,21 +618,7 @@ DEFUN to_integer
 .Lsaturate.T:
 
 #if F7_HAVE_Inf
-    brtc .Lset_0x7fff
-    ;; -Inf  =>  return 1 + INTxx_MIN
-    mov     ZL,     Flags
-    .global __clr_8
-    XCALL   __clr_8
-    ldi     C6,     0x80
-
-    ldi     CA+0,   0x01
-
-    sbrs    Mask,   5
-    ldi     CA+4,   0x01
-
-    sbrs    Mask,   4
-    ldi     CA+6,   0x01
-    ret
+    brts .Lset_0x8000
 
 .Lset_0x7fff:
     ;; +Inf  =>  return INTxx_MAX
@@ -644,7 +630,7 @@ DEFUN to_integer
 #endif /* F7_HAVE_Inf */
 
 .Lset_0x8000:
-    ;; NaN  =>  return INTxx_MIN
+    ;; NaN  or -Inf =>  return INTxx_MIN
     .global __clr_8
     XCALL   __clr_8
     ldi     C6,     0x80
