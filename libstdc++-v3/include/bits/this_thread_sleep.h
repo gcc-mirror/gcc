@@ -36,6 +36,7 @@
 
 #if __cplusplus >= 201103L
 #include <bits/chrono.h> // std::chrono::*
+#include <ext/numeric_traits.h> // __int_traits
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
 # include <cerrno>  // errno, EINTR
@@ -59,11 +60,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
 #ifndef _GLIBCXX_NO_SLEEP
 
-#ifndef _GLIBCXX_USE_NANOSLEEP
-    void
-    __sleep_for(chrono::seconds, chrono::nanoseconds);
-#endif
-
     /// this_thread::sleep_for
     template<typename _Rep, typename _Period>
       inline void
@@ -71,18 +67,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	if (__rtime <= __rtime.zero())
 	  return;
-	auto __s = chrono::duration_cast<chrono::seconds>(__rtime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__rtime - __s);
+
+	struct timespec __ts = chrono::__to_timeout_timespec(__rtime);
 #ifdef _GLIBCXX_USE_NANOSLEEP
-	struct ::timespec __ts =
-	  {
-	    static_cast<std::time_t>(__s.count()),
-	    static_cast<long>(__ns.count())
-	  };
 	while (::nanosleep(&__ts, &__ts) == -1 && errno == EINTR)
 	  { }
 #else
-	__sleep_for(__s, __ns);
+	using chrono::seconds;
+	using chrono::nanoseconds;
+	void __sleep_for(seconds __s, nanoseconds __ns);
+	__sleep_for(seconds(__ts.tv_sec), nanoseconds(__ts.tv_nsec));
 #endif
       }
 

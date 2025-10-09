@@ -520,15 +520,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       try_lock_until(const chrono::time_point<chrono::system_clock,
 		     _Duration>& __atime)
       {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
-
+	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 	int __ret = __glibcxx_rwlock_timedwrlock(&_M_rwlock, &__ts);
 	// On self-deadlock, we just fail to acquire the lock.  Technically,
 	// the program violated the precondition.
@@ -546,15 +538,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       try_lock_until(const chrono::time_point<chrono::steady_clock,
 		   _Duration>& __atime)
       {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
-
+	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 	int __ret = pthread_rwlock_clockwrlock(&_M_rwlock, CLOCK_MONOTONIC,
 					       &__ts);
 	// On self-deadlock, we just fail to acquire the lock.  Technically,
@@ -596,14 +580,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       try_lock_shared_until(const chrono::time_point<chrono::system_clock,
 			    _Duration>& __atime)
       {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
+	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 
 	int __ret;
 	// Unlike for lock(), we are not allowed to throw an exception so if
@@ -636,15 +613,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       try_lock_shared_until(const chrono::time_point<chrono::steady_clock,
 			    _Duration>& __atime)
       {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
-
+	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 	int __ret = pthread_rwlock_clockrdlock(&_M_rwlock, CLOCK_MONOTONIC,
 					       &__ts);
 	// On self-deadlock, we just fail to acquire the lock.  Technically,

@@ -193,15 +193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __wait_until_impl(unique_lock<mutex>& __lock,
 			const chrono::time_point<steady_clock, _Dur>& __atime)
       {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
-
+	__gthread_time_t __ts = chrono::__to_timeout_gthread_time_t(__atime);
 	_M_cond.wait_until(*__lock.mutex(), CLOCK_MONOTONIC, __ts);
 
 	return (steady_clock::now() < __atime
@@ -214,15 +206,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __wait_until_impl(unique_lock<mutex>& __lock,
 			const chrono::time_point<system_clock, _Dur>& __atime)
       {
-	auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-	auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-	__gthread_time_t __ts =
-	  {
-	    static_cast<std::time_t>(__s.time_since_epoch().count()),
-	    static_cast<long>(__ns.count())
-	  };
-
+	__gthread_time_t __ts = chrono::__to_timeout_gthread_time_t(__atime);
 	_M_cond.wait_until(*__lock.mutex(), __ts);
 
 	return (system_clock::now() < __atime

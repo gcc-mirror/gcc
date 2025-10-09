@@ -1515,6 +1515,78 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   } // namespace filesystem
 #endif // C++17 && HOSTED
 
+#if defined _GLIBCXX_USE_NANOSLEEP || defined _GLIBCXX_USE_CLOCK_REALTIME \
+    || defined _GLIBCXX_HAS_GTHREADS
+namespace chrono
+{
+/// @cond undocumented
+
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
+  // Convert a chrono::duration to a relative time represented as timespec
+  // (e.g. for use with nanosleep).
+  template<typename _Rep, typename _Period>
+    [[__nodiscard__]] _GLIBCXX14_CONSTEXPR inline
+    struct ::timespec
+    __to_timeout_timespec(const duration<_Rep, _Period>& __d)
+    {
+      struct ::timespec __ts{};
+
+      if (__d < __d.zero()) // Negative timeouts don't make sense.
+	return __ts;
+
+      if constexpr (ratio_greater<_Period, ratio<1>>::value
+		      || treat_as_floating_point<_Rep>::value)
+	{
+	  // Converting from e.g. chrono::hours::max() to chrono::seconds
+	  // would evaluate LLONG_MAX * 3600 which would overflow.
+	  // Limit to chrono::seconds::max().
+	  chrono::duration<double> __fmax(chrono::seconds::max());
+	  if (__d > __fmax) [[__unlikely__]]
+	    return chrono::__to_timeout_timespec(chrono::seconds::max());
+	}
+
+      auto __s = chrono::duration_cast<chrono::seconds>(__d);
+
+      if constexpr (is_integral<time_t>::value) // POSIX.1-2001 allows floating
+	{
+	  // Also limit to time_t maximum (only relevant for 32-bit time_t).
+	  constexpr auto __tmax = numeric_limits<time_t>::max();
+	  if (__s.count() > __tmax) [[__unlikely__]]
+	    {
+	      __ts.tv_sec = __tmax;
+	      return __ts;
+	    }
+	}
+
+      auto __ns = chrono::duration_cast<chrono::nanoseconds>(__d - __s);
+
+      if constexpr (treat_as_floating_point<_Rep>::value)
+	if (__ns.count() > 999999999) [[__unlikely__]]
+	  __ns = chrono::nanoseconds(999999999);
+
+      __ts.tv_sec = static_cast<time_t>(__s.count());
+      __ts.tv_nsec = static_cast<long>(__ns.count());
+      return __ts;
+    }
+#pragma GCC diagnostic pop
+
+  // Convert a chrono::time_point to an absolute time represented as timespec.
+  // All times before the epoch get converted to the epoch, so this assumes
+  // that we only use it for clocks where that's true.
+  // It should be safe to use this for system_clock and steady_clock.
+  template<typename _Clock, typename _Dur>
+    [[__nodiscard__]] _GLIBCXX14_CONSTEXPR inline
+    struct ::timespec
+    __to_timeout_timespec(const time_point<_Clock, _Dur>& __t)
+    {
+      return chrono::__to_timeout_timespec(__t.time_since_epoch());
+    }
+
+/// @endcond
+} // namespace chrono
+#endif // USE_NANOSLEEP || USE_CLOCK_REALTIME || HAS_GTHREADS
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

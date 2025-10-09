@@ -350,14 +350,7 @@ __platform_wait_until(const __platform_wait_t* __addr,
 		      __platform_wait_t __old,
 		      const __wait_clock_t::time_point& __atime) noexcept
 {
-  auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-  auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-  struct timespec __rt =
-  {
-    static_cast<std::time_t>(__s.time_since_epoch().count()),
-    static_cast<long>(__ns.count())
-  };
+  struct timespec __rt = chrono::__to_timeout_timespec(__atime);
 
   if (syscall (SYS_futex, __addr,
 	       static_cast<int>(__futex_wait_flags::__wait_bitset_private),
@@ -378,14 +371,7 @@ bool
 __cond_wait_until(__condvar& __cv, mutex& __mx,
 		  const __wait_clock_t::time_point& __atime)
 {
-  auto __s = chrono::time_point_cast<chrono::seconds>(__atime);
-  auto __ns = chrono::duration_cast<chrono::nanoseconds>(__atime - __s);
-
-  __gthread_time_t __ts =
-  {
-    static_cast<std::time_t>(__s.time_since_epoch().count()),
-    static_cast<long>(__ns.count())
-  };
+  __gthread_time_t __ts = chrono::__to_timeout_gthread_time_t(__atime);
 
 #ifdef _GLIBCXX_USE_PTHREAD_COND_CLOCKWAIT
   if constexpr (is_same_v<chrono::steady_clock, __wait_clock_t>)

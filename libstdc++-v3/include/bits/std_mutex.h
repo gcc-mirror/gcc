@@ -39,6 +39,7 @@
 #else
 
 #include <errno.h> // EBUSY
+#include <bits/chrono.h>
 #include <bits/functexcept.h>
 #include <bits/gthr.h>
 
@@ -210,8 +211,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     __gthread_cond_t _M_cond;
 #endif
   };
-  /// @endcond
 
+namespace chrono
+{
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions"
+  // Convert a time_point to an absolute time represented as __gthread_time_t
+  // (which is typically just a typedef for struct timespec).
+  template<typename _Clock, typename _Dur>
+    [[__nodiscard__]] _GLIBCXX14_CONSTEXPR inline
+    __gthread_time_t
+    __to_timeout_gthread_time_t(const time_point<_Clock, _Dur>& __t)
+    {
+      auto __ts = chrono::__to_timeout_timespec(__t.time_since_epoch());
+      if constexpr (is_same<::timespec, __gthread_time_t>::value)
+	return __ts;
+      else if constexpr (is_convertible<::timespec, __gthread_time_t>::value)
+	return __ts;
+      else if constexpr (is_scalar<__gthread_time_t>::value) // Assume seconds:
+	return static_cast<__gthread_time_t>(__ts.tv_sec);
+      else // Assume this works and the members are in the correct order:
+	return __gthread_time_t{ __ts.tv_sec, __ts.tv_nsec };
+    }
+#pragma GCC diagnostic pop
+}
+  /// @endcond
 #endif // _GLIBCXX_HAS_GTHREADS
 
   /// Do not acquire ownership of the mutex.
