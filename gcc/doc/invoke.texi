@@ -15049,10 +15049,11 @@ int f() @{
 @end smallexample
 The practice of reading from a different union member than the one most
 recently written to (called ``type-punning'') is common.  Even with
-@option{-fstrict-aliasing}, type-punning is allowed, provided the memory
-is accessed through the union type.  So, the code above works as
-expected.  @xref{Structures unions enumerations and bit-fields
-implementation}.  However, this code might not:
+@option{-fstrict-aliasing}, type-punning is allowed in C, provided the memory
+is accessed through the union type.  In ISO C++, type-punning through a union
+type is undefined behavior, but GCC supports it as an extension. So, the code
+above works as expected.  @xref{Structures unions enumerations and
+bit-fields implementation}.  However, this code might not:
 @smallexample
 int f() @{
   union a_union t;
