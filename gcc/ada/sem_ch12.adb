@@ -599,8 +599,8 @@ package body Sem_Ch12 is
    --  whose views can change between the point of instantiation and the point
    --  of instantiation of the body. In addition, mark the generic renamings
    --  as generic actuals, so that they are not compatible with other actuals.
-   --  Recurse on an actual that is a formal package whose declaration has
-   --  a box.
+   --  For an instantiation of a formal package that is declared with a box or
+   --  contains defaulted parameters, make the corresponding actuals visible.
 
    function Component_Type_For_Private_View (T : Entity_Id) return Entity_Id;
    --  Return the component type of array type T, with the following addition:
@@ -944,6 +944,13 @@ package body Sem_Ch12 is
    --  Restore suffix 'P' to primitives of Prims_List and leave Prims_List
    --  set to No_Elist.
 
+   procedure Restore_Private_Views (Pack_Id : Entity_Id; Is_Package : Boolean);
+   --  Restore the private views of external types, and unmark the generic
+   --  renamings of actuals, so that they become compatible subtypes again.
+   --  Reset the visibility of the actuals (some of them may have been made
+   --  visible by Check_Generic_Actuals). For subprograms, Pack_Id is the
+   --  wrapper package built to hold the renamings and Is_Package is False.
+
    procedure Set_Instance_Env
      (Gen_Unit : Entity_Id;
       Act_Unit : Entity_Id);
@@ -957,6 +964,10 @@ package body Sem_Ch12 is
    procedure Set_Instance_Of (A : Entity_Id; B : Entity_Id);
    --  Associate analyzed generic parameter with corresponding instance. Used
    --  for semantic checks at instantiation time.
+
+   procedure Switch_View (T : Entity_Id);
+   --  Switch the partial and full views of a type, as well as those of its
+   --  private dependents (i.e. its subtypes and derived types).
 
    function True_Parent (N : Node_Id) return Node_Id;
    --  For a subunit, return parent of corresponding stub, else return
@@ -1079,18 +1090,6 @@ package body Sem_Ch12 is
      Table_Initial        => 32,
      Table_Increment      => 100,
      Table_Name           => "Instance_Envs");
-
-   procedure Restore_Private_Views
-     (Pack_Id    : Entity_Id;
-      Is_Package : Boolean := True);
-   --  Restore the private views of external types, and unmark the generic
-   --  renamings of actuals, so that they become compatible subtypes again.
-   --  For subprograms, Pack_Id is the package constructed to hold the
-   --  renamings.
-
-   procedure Switch_View (T : Entity_Id);
-   --  Switch the partial and full views of a type and its private
-   --  dependents (i.e. its subtypes and derived types).
 
    ------------------------------------
    -- Structures for Error Reporting --
@@ -5696,7 +5695,7 @@ package body Sem_Ch12 is
          Check_Formal_Packages (Act_Decl_Id);
 
          Restore_Hidden_Primitives (Vis_Prims_List);
-         Restore_Private_Views (Act_Decl_Id);
+         Restore_Private_Views (Act_Decl_Id, Is_Package => True);
 
          Inherit_Context (Gen_Decl, N);
 
@@ -7218,7 +7217,7 @@ package body Sem_Ch12 is
          if not Is_Intrinsic_Subprogram (Act_Decl_Id) then
             Inherit_Context (Gen_Decl, N);
 
-            Restore_Private_Views (Pack_Id, False);
+            Restore_Private_Views (Pack_Id, Is_Package => False);
 
             --  If the context requires a full instantiation, mark node for
             --  subsequent construction of the body.
@@ -8571,9 +8570,6 @@ package body Sem_Ch12 is
                Set_Is_Generic_Actual_Type (Full_View (E));
             end if;
 
-            Set_Is_Hidden (E, False);
-            Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
-
             --  We constructed the generic actual type as a subtype of the
             --  supplied type. This means that it normally would not inherit
             --  subtype specific attributes of the actual, which is wrong for
@@ -8627,22 +8623,13 @@ package body Sem_Ch12 is
                  (Renamed_Entity (E),
                   Is_Formal_Box =>
                     Box_Present (Parent (Associated_Formal_Package (E))));
-
-               Set_Is_Hidden (E, False);
-               Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
             end if;
-
-         --  If this is a subprogram instance (in a wrapper package) the
-         --  actual is fully visible.
-
-         elsif Is_Wrapper_Package (Instance) then
-            Set_Is_Hidden (E, False);
-            Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
+         end if;
 
          --  If the formal package is declared with a box, or if the formal
-         --  parameter is defaulted, it is visible in the body.
+         --  parameter is defaulted, the actual is visible in the instance.
 
-         elsif Is_Formal_Box or else Is_Visible_Formal (E) then
+         if Is_Formal_Box or else Is_Visible_Formal (E) then
             Set_Is_Hidden (E, False);
             Set_Is_Potentially_Use_Visible (E, In_Use (Instance));
          end if;
@@ -11663,8 +11650,10 @@ package body Sem_Ch12 is
                null;
 
             elsif Present (Associated_Formal_Package (E)) then
-               Check_Generic_Actuals (Renamed_Entity (E), True);
-               Set_Is_Hidden (E, False);
+               Check_Generic_Actuals
+                 (Renamed_Entity (E),
+                  Is_Formal_Box =>
+                    Box_Present (Parent (Associated_Formal_Package (E))));
 
                --  Find formal package in generic unit that corresponds to
                --  (instance of) formal package in instance.
@@ -12453,7 +12442,7 @@ package body Sem_Ch12 is
                        (Nkind (Actual_Of_Formal) = N_Package_Instantiation);
                   end if;
 
-                  Next (Actual_Of_Formal);
+                  Next_Non_Pragma (Actual_Of_Formal);
 
                   --  A formal subprogram may be overloaded, so advance in
                   --  the list of actuals to make sure we do not match two
@@ -13682,7 +13671,7 @@ package body Sem_Ch12 is
          Set_Defining_Unit_Name (Act_Body, Act_Body_Name);
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
-         Check_Generic_Actuals (Act_Decl_Id, False);
+         Check_Generic_Actuals (Act_Decl_Id, Is_Formal_Box => False);
          Check_Initialized_Types;
 
          --  Install primitives hidden at the point of the instantiation but
@@ -13930,7 +13919,7 @@ package body Sem_Ch12 is
          --  the two mechanisms swap exactly the same entities, in particular
          --  the private entities dependent on the primary private entities.
 
-         Restore_Private_Views (Act_Decl_Id);
+         Restore_Private_Views (Act_Decl_Id, Is_Package => True);
 
          --  Remove the current unit from visibility if this is an instance
          --  that is not elaborated on the fly for inlining purposes.
@@ -14177,7 +14166,7 @@ package body Sem_Ch12 is
 
          Set_Corresponding_Spec (Act_Body, Act_Decl_Id);
          Set_Has_Completion (Act_Decl_Id);
-         Check_Generic_Actuals (Pack_Id, False);
+         Check_Generic_Actuals (Pack_Id, Is_Formal_Box => False);
 
          --  Generate a reference to link the visible subprogram instance to
          --  the generic body, which for navigation purposes is the only
@@ -14248,7 +14237,7 @@ package body Sem_Ch12 is
 
          Inherit_Context (Gen_Body, Inst_Node);
 
-         Restore_Private_Views (Pack_Id, False);
+         Restore_Private_Views (Pack_Id, Is_Package => False);
 
          if Par_Installed then
             Remove_Parent (In_Body => True);
@@ -17096,10 +17085,18 @@ package body Sem_Ch12 is
       Saved : Instance_Env renames Instance_Envs.Table (Instance_Envs.Last);
 
    begin
-      if No (Current_Instantiated_Parent.Act_Id) then
-         --  Restore environment after subprogram inlining
+      --  Restore environment after subprogram inlining
 
-         Restore_Private_Views (Empty);
+      if No (Current_Instantiated_Parent.Act_Id) then
+         declare
+            M : Elmt_Id;
+         begin
+            M := First_Elmt (Exchanged_Views);
+            while Present (M) loop
+               Exchange_Declarations (Node (M));
+               Next_Elmt (M);
+            end loop;
+         end;
       end if;
 
       Current_Instantiated_Parent := Saved.Instantiated_Parent;
@@ -17118,9 +17115,7 @@ package body Sem_Ch12 is
    -- Restore_Private_Views --
    ---------------------------
 
-   procedure Restore_Private_Views
-     (Pack_Id    : Entity_Id;
-      Is_Package : Boolean := True)
+   procedure Restore_Private_Views (Pack_Id : Entity_Id; Is_Package : Boolean)
    is
       M        : Elmt_Id;
       E        : Entity_Id;
@@ -17139,6 +17134,7 @@ package body Sem_Ch12 is
       procedure Restore_Nested_Formal (Formal : Entity_Id) is
          pragma Assert (Ekind (Formal) = E_Package);
          Ent : Entity_Id;
+
       begin
          if Present (Renamed_Entity (Formal))
            and then Denotes_Formal_Package (Renamed_Entity (Formal), True)
@@ -17201,16 +17197,13 @@ package body Sem_Ch12 is
          Next_Elmt (M);
       end loop;
 
-      if No (Pack_Id) then
-         return;
-      end if;
-
       --  Make the generic formal parameters private, and make the formal types
       --  into subtypes of the actuals again.
 
       E := First_Entity (Pack_Id);
       while Present (E) loop
-         Set_Is_Hidden (E, True);
+         Set_Is_Hidden (E);
+         Set_Is_Potentially_Use_Visible (E, False);
 
          if Is_Type (E)
            and then Nkind (Parent (E)) = N_Subtype_Declaration
@@ -17234,6 +17227,7 @@ package body Sem_Ch12 is
                          (Entity (Subtype_Indication (Parent (E))))
             then
                null;
+
             else
                Set_Is_Generic_Actual_Type (E, False);
 
@@ -17278,7 +17272,7 @@ package body Sem_Ch12 is
             --  If the actual is itself a formal package for the enclosing
             --  generic, or the actual for such a formal package, it remains
             --  visible on exit from the instance, and therefore nothing needs
-            --  to be done either, except to keep it accessible.
+            --  to be done either.
 
             if Is_Package and then Renamed_Entity (E) = Pack_Id then
                exit;
@@ -17289,7 +17283,7 @@ package body Sem_Ch12 is
             elsif
               Denotes_Formal_Package (Renamed_Entity (E), True, Pack_Id)
             then
-               Set_Is_Hidden (E, False);
+               null;
 
             else
                declare
@@ -17304,7 +17298,7 @@ package body Sem_Ch12 is
                      exit when Ekind (Id) = E_Package
                                  and then Renamed_Entity (Id) = Act_P;
 
-                     Set_Is_Hidden (Id, True);
+                     Set_Is_Hidden (Id);
                      Set_Is_Potentially_Use_Visible (Id, False);
 
                      if Ekind (Id) = E_Package then
