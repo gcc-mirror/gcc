@@ -1267,8 +1267,8 @@
 (define_insn "mve_vbicq_f<mode>"
   [
    (set (match_operand:MVE_0 0 "s_register_operand" "=w")
-	(and:MVE_0 (not:MVE_0 (match_operand:MVE_0 1 "s_register_operand" "w"))
-			      (match_operand:MVE_0 2 "s_register_operand" "w")))
+	(and:MVE_0 (not:MVE_0 (match_operand:MVE_0 2 "s_register_operand" "w"))
+			      (match_operand:MVE_0 1 "s_register_operand" "w")))
   ]
   "TARGET_HAVE_MVE && TARGET_HAVE_MVE_FLOAT"
   "vbic\t%q0, %q1, %q2"
