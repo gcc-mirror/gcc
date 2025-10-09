@@ -1016,4 +1016,21 @@ package body System.Stream_Attributes is
       Ada.Streams.Write (Stream.all, From_WWC (Item));
    end W_WWC;
 
+   procedure W_80IEEE (Stream : not null access RST; Item : Long_Long_Float) is
+   begin
+      if XDR_Support then
+         XDR.W_LLF (Stream, Item);
+         return;
+      end if;
+
+      declare
+         X : S_LLF := From_LLF (Item);
+
+         N_IEEE_Extended_Precision_Bytes : constant := 10;
+      begin
+         X (N_IEEE_Extended_Precision_Bytes + 1 .. X'Last) := (others => 0);
+         Ada.Streams.Write (Stream.all, X);
+      end;
+   end W_80IEEE;
+
 end System.Stream_Attributes;
