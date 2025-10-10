@@ -1,3 +1,44 @@
+2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h (cp_build_function_type): Declare.
+	* lex.cc: Implement va_start changes from P3348R4 - C++26 should
+	refer to C23 not C17 paper.
+	(init_reswords): Set D_CXX26 in mask for C++23 and older.
+	* parser.cc (cp_parser_primary_expression): Handle RID_C23_VA_START.
+	(cp_parser_builtin_c23_va_start): New function.
+	* cp-objcp-common.cc (names_builtin_p): Likewise.
+	* decl.cc (grokfndecl, check_function_type): Pass
+	TYPE_NO_NAMED_ARGS_STDARG_P as last arg to build_function_type.
+	(grokdeclarator, static_fn_type): Use cp_build_function_type instead
+	of build_function_type.
+	* typeck.cc (merge_types): Likewise.
+	(structural_comptypes): Return false for TYPE_NO_NAMED_ARGS_STDARG_P
+	differences.
+	* lambda.cc (maybe_add_lambda_conv_op): Use cp_build_function_type
+	instead of build_function_type.
+	* tree.cc (cp_build_function_type): New function.
+	(strip_typedefs): Pass TYPE_NO_NAMED_ARGS_STDARG_P as last arg to
+	build_function_type.
+	* name-lookup.cc (push_local_extern_decl_alias): Likewise.
+	* module.cc (trees_in::tree_node): Use cp_build_function_type instead
+	of build_function_type.
+	* pt.cc (copy_default_args_to_explicit_spec,
+	rebuild_function_or_method_type, build_deduction_guide): Likewise.
+	(alias_ctad_tweaks): Pass TYPE_NO_NAMED_ARGS_STDARG_P as last arg to
+	build_function_type.
+	* decl2.cc (change_return_type, cp_reconstruct_complex_type):
+	Likewise.
+
+2025-10-09  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/116477
+	* semantics.cc (finish_call_expr): Move concept_check_p diagnostic
+	before processing_template_decl check to catch errors earlier.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Define INCLUDE_VECTOR.
+
 2025-10-08  Jason Merrill  <jason@redhat.com>
 
 	* init.cc (build_new_1): Also clobber for non-placement new.

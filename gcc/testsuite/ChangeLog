@@ -1,3 +1,167 @@
+2025-10-10  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	Revert:
+	2025-10-10  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* gcc.target/mips/mips16e2-cache.c: Use isa_rev>=2 instead of
+	-mips32r2 and remove -mips16 option.
+	* gcc.target/mips/mips16e2-cmov.c: Add isa_rev>=2 and remove
+	-mips16 option.
+	* gcc.target/mips/mips16e2-gp.c: Same as above.
+	* gcc.target/mips/mips16e2.c: Same as above.
+
+2025-10-10  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	Revert:
+	2025-09-27  YunQiang Su  <syq@gcc.gnu.org>
+
+	* gcc.target/mips/mips16e2.c: Use isa_rev=2 instead of >=2.
+	* gcc.target/mips/mips16e2-cache.c: Ditto.
+	* gcc.target/mips/mips16e2-cmov.c: Ditto.
+	* gcc.target/mips/mips16e2-gp.c: Ditto.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* gcc.target/bpf/core-btf-tag-1.c: New test.
+	* gcc.target/bpf/core-btf-tag-2.c: New test.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/btf/btf-decl-tag-1.c: New test.
+	* gcc.dg/debug/btf/btf-decl-tag-2.c: New test.
+	* gcc.dg/debug/btf/btf-decl-tag-3.c: New test.
+	* gcc.dg/debug/btf/btf-decl-tag-4.c: New test.
+	* gcc.dg/debug/btf/btf-type-tag-1.c: New test.
+	* gcc.dg/debug/btf/btf-type-tag-2.c: New test.
+	* gcc.dg/debug/btf/btf-type-tag-3.c: New test.
+	* gcc.dg/debug/btf/btf-type-tag-4.c: New test.
+	* gcc.dg/debug/btf/btf-type-tag-c2x-1.c: New test.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/ctf/ctf-decl-tag-1.c: New test.
+	* gcc.dg/debug/ctf/ctf-type-tag-1.c: New test.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-1.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-2.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-3.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-1.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-2.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-3.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-4.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-5.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-6.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-7.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-8.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-9.c: New test.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-10.c: New test.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/attr-btf-decl-tag-1.c: New test.
+	* gcc.dg/attr-btf-decl-tag-2.c: New test.
+	* gcc.dg/attr-btf-type-tag-1.c: New test.
+	* gcc.dg/attr-btf-type-tag-2.c: New test.
+	* gcc.dg/attr-btf-type-tag-3.c: New test.
+
+2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/cpp/has-builtin-4.c: Expect
+	__has_builtin (__builtin_c23_va_start) == 1 also for C++26.
+	* c-c++-common/Wvarargs.c (foo3): Don't expect undefined behavior
+	warning for C++26.
+	* g++.dg/cpp26/stdarg1.C: New test.
+	* g++.dg/cpp26/stdarg2.C: New test.
+	* g++.dg/cpp26/stdarg3.C: New test.
+	* g++.dg/cpp26/stdarg4.C: New test.
+	* g++.dg/cpp26/stdarg5.C: New test.
+	* g++.dg/cpp26/stdarg6.C: New test.
+	* g++.dg/cpp26/stdarg7.C: New test.
+	* g++.dg/cpp26/stdarg8.C: New test.
+	* g++.dg/cpp26/stdarg9.C: New test.
+	* g++.dg/opt/pr60849.C (foo): Add explicit cast.
+
+2025-10-09  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/116477
+	* g++.dg/cpp2a/concepts-pr116477.C: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122222
+	* gcc.target/avr/pr122222-sitod.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122220
+	* gcc.target/avr/pr122220.c: New test.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc: Replace INCLUDE_
+	defines with include of include "analyzer/common.h".  Update
+	for changes to binding_pair.
+	* gcc.dg/plugin/analyzer_kernel_plugin.cc: Likewise.
+	* gcc.dg/plugin/analyzer_known_fns_plugin.cc: Likewise.
+
+2025-10-09  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* gcc.dg/tree-ssa/cselim-2.c: Pass -ftree-cselim option.
+
+2025-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122206
+	* gfortran.dg/interface_abstract_6.f90: New test.
+
+2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* gcc.dg/torture/pr122188.c: New test.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_group_plugin.cc: Define INCLUDE_VECTOR.
+	* gcc.dg/plugin/diagnostic_plugin_test_show_locus.cc: Likewise.
+	* gcc.dg/plugin/location_overflow_plugin.cc: Likewise.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/constsynth_2insns.c,
+	gcc.target/xtensa/constsynth_3insns.c,
+	gcc.target/xtensa/constsynth_double.c: Remove due to outdated.
+	* gcc.target/xtensa/constsynthV2_O2_costs0.c,
+	gcc.target/xtensa/constsynthV2_O2_costs5.c,
+	gcc.target/xtensa/constsynthV2_Os.c: New.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/BGEUI-BLTUI-32k-64k.c:
+	Disable optimizations and modify to also verify RTL dump in the
+	"expand" pass.
+
+2025-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122212
+	* gcc.dg/torture/pr122212.c: New testcase.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122210
+	* gcc.target/avr/dtofx.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122210
+	* gcc.target/avr/fxtod.c: New test.
+
+2025-10-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vls-type-rvv-max-lmul.c: New test.
+	* gcc.target/riscv/rvv/vls-type-rvv-max-lmul-autovec.c: New
+	test.
+
 2025-10-08  Joseph Myers  <josmyers@redhat.com>
 
 	* gcc.dg/c11-generic-4.c, gcc.dg/c23-generic-5.c,

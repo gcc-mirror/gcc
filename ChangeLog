@@ -1,3 +1,15 @@
+2025-10-09  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.def: Add no_atomic=true for libraries that don't depend on
+	libatomic.
+	* Makefile.tpl: Export TARGET_CONFIGDIRS and create rule to
+	add dependencies for libatomic.
+	* configure.ac: Add libatomic to bootstrap_target_libs.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2025-10-02  H.J. Lu  <hjl.tools@gmail.com>
 
 	* Makefile.in: Regenerated.

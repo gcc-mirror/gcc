@@ -1,3 +1,14 @@
+2025-10-09  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* Makefile.am: Pass -fno-link-libatomic.
+	New rule all-local.
+	* configure.ac: Assert that CFLAGS is set and pass -fno-link-libatomic.
+	Use __libatomic_save_CFLAGS__ instead of save_CFLAGS.
+	* Makefile.in: Regenerate.
+	* configure: Regenerate.
+
 2025-10-05  Sam James  <sam@gentoo.org>
 
 	* Makefile.in: Regenerate.

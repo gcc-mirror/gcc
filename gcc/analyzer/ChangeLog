@@ -1,3 +1,121 @@
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* access-diagram.cc: Update for renaming of fields of binding_key.
+	* ana-state-to-diagnostic-state.cc: Likewise.
+	* bounds-checking.cc: Likewise.  Add store_manager param.
+	* call-summary.cc: Likewise.
+	* diagnostic-manager.cc: Drop includes of "basic-block.h" and
+	"gimple.h".
+	* engine.cc: Likewise.
+	* infinite-recursion.cc: Update for renaming of fields of
+	binding_key.
+	* kf.cc: Pass store_manager to mark_as_escaped.
+	* program-state.cc: Update for renaming of fields of binding_key.
+	* region-model-asm.cc: Pass store manager to
+	get_or_create_cluster.
+	* region-model-reachability.cc: Likewise.  Update for renaming of
+	fields of binding_key.
+	* region-model.cc: Likewise.
+	(struct bad_pointer_finder): Drop.
+	(region_model::poison_any_pointers_to_descendents): Implement
+	iteration directly, rather than using store::for_each_binding.
+	Drop return value.
+	(selftest::test_struct): Set field in order y then x.  Verify
+	that iteration yields bindings in order x then y.
+	* region-model.h
+	(region_model::poison_any_pointers_to_descendents): Drop return
+	value.
+	* region.cc: Pass store manager to get_or_create_cluster.
+	* store.cc (binding_map::const_iterator::operator==): New.
+	(binding_map::const_iterator::operator++): New.
+	(binding_map::const_iterator::operator*): New.
+	(binding_map::iterator::operator==): New.
+	(binding_map::iterator::operator++): New.
+	(binding_map::iterator::operator*): New.
+	(binding_map::binding_map): Reimplement.
+	(binding_map::operator=): Reimplement.
+	(binding_map::operator==): Reimplement.
+	(binding_map::hash): Reimplement.
+	(binding_map::get): Reimplement.
+	(binding_map::put): Reimplement.
+	(binding_map::overwrite): New.
+	(binding_map::remove): New.
+	(binding_map::begin): New.
+	(binding_map::end): New.
+	(binding_map::elements): New.
+	(binding_map::dump_to_pp): Reimplement.
+	(binding_map::to_json): Iterate over *this directly; drop sort.
+	(binding_map::add_to_tree_widget): Likewise.
+	(binding_map::cmp): Reimplement.
+	(binding_map::get_overlapping_bindings): Update for field
+	renamings.
+	(binding_cluster::binding_cluster): Add store_mgr param.
+	(binding_cluster::validate): Update for field renamings.
+	(binding_cluster::bind_compound_sval): Likewise.
+	(binding_cluster::purge_state_involving): Likewise.
+	(binding_cluster::maybe_get_compound_binding): Likewise.  Add
+	store_mgr param.
+	(binding_cluster::can_merge_p): Likewise.  Update for new
+	implementation.
+	(binding_cluster::make_unknown_relative_to): Likewise.
+	(binding_cluster::on_unknown_fncall): Likewise.
+	(binding_cluster::on_asm): Likewise.
+	(binding_cluster::get_representative_path_vars): Likewise.
+	(store::set_value): Likewise.
+	(store::on_maybe_live_values): Pass around store_manager.
+	(store::fill_region): Likewise.
+	(store::mark_region_as_unknown): Likewise.
+	(store::get_or_create_cluster): Likewise.
+	(store::can_merge_p): Likewise.
+	(store::mark_as_escaped): Likewise.
+	(store::canonicalize): Update for field renamings.
+	(store::loop_replay_fixup): Likewise.  Pass around store_manager.
+	(store::replay_call_summary_cluster): Likewise.
+	(selftest::test_binding_map_ops): New.
+	(selftest::analyzer_store_cc_tests): Call it.
+	* store.h (class binding_map): Reimplement.
+	(binding_map::map_t): Drop.
+	(struct binding_map::symbolic_binding): New.
+	(binding_map::concrete_bindings_t): New.
+	(binding_map::symbolic_bindings_t): New.
+	(struct binding_map::bindings_pair): New.
+	(class binding_map::const_iterator): New.
+	(class binding_map::iterator): New.
+	(binding_map::get): Reimplement.
+	(binding_map::overwrite): New decl.
+	(binding_map::remove): Reimplement.
+	(binding_map::clear): Reimplement.
+	(binding_map::put): Reimplement.
+	(binding_map::empty_p): Reimplement.
+	(binding_map::begin): Reimplement.
+	(binding_map::end): Reimplement.
+	(binding_map::elements): Reimplement.
+	(binding_map::m_map): Drop field.
+	(binding_map::m_store_mgr): New field.
+	(binding_map::m_concrete): New field.
+	(binding_map::m_symbolic): New field.
+	(BindingVisitor): Drop.
+	(binding_cluster::map_t): Drop.
+	(binding_cluster::iterator_t): Reimplement.
+	(binding_cluster::const_iterator_t): New.
+	(binding_cluster::binding_cluster): Add store_mgr param.
+	(binding_cluster::for_each_value): Reimplement.
+	(binding_cluster::empty_p): Reimplement.
+	(binding_cluster::for_each_binding): Drop.
+	(binding_cluster::begin): Split into const/non-const overloads.
+	(binding_cluster::get_map): Add non-const overload.
+	(store::get_or_create_cluster): Add store_mgr param.
+	(store::mark_as_escaped): Likewise.
+	(store::for_each_binding): Drop.
+	(store::on_maybe_live_values): Add store_mgr param.
+	* svalue.cc (compound_svalue::compound_svalue): Reimplement.
+	(compound_svalue::accept): Likewise.
+	(compound_svalue::calc_complexity): Likewise.
+	(compound_svalue::maybe_fold_bits_within): Likewise.
+	* svalue.h (compound_svalue::const_iterator_t): New.
+	(compound_svalue::begin): Split into const/non-const overloads.
+	(compound_svalue::end): Likewise.
+
 2025-10-03  David Malcolm  <dmalcolm@redhat.com>
 
 	Revert:

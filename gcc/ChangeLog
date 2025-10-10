@@ -1,3 +1,426 @@
+2025-10-10  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
+
+	Revert:
+	2025-09-27  Jie Mei  <jie.mei@oss.cipunited.com>
+
+	* config/mips/mips.cc(mips_option_override):Add conditions
+	for use of the -mmips16e2 and -mips16 option.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* doc/extend.texi (Common Function Attributes)
+	(Common Variable Attributes): Document btf_decl_tag attribute.
+	(Common Type Attributes): Document btf_type_tag attribute.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (get_btf_kind): Handle DECL_TAG and TYPE_TAG kinds.
+	(btf_calc_num_vbytes): Likewise.
+	(btf_asm_type): Likewise.
+	(output_asm_btf_vlen_bytes): Likewise.
+	(output_btf_tags): New.
+	(btf_output): Call it here.
+	(btf_add_used_type): Replace with simple wrapper around...
+	(btf_add_used_type_1): ...the implementation.  Handle
+	BTF_KIND_DECL_TAG and BTF_KIND_TYPE_TAG.
+	(btf_add_vars): Update btf_add_used_type call.
+	(btf_assign_tag_ids): New.
+	(btf_mark_type_used): Update btf_add_used_type call.
+	(btf_collect_pruned_types): Likewise.  Handle type and decl tags.
+	(btf_finish): Call btf_assign_tag_ids.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* ctfc.cc (ctf_dtu_d_union_selector): Handle CTF_K_DECL_TAG and
+	CTF_K_TYPE_TAG.
+	(ctf_add_type_tag, ctf_add_decl_tag): New.
+	(ctf_add_variable): Return the new ctf_dvdef_ref rather than zero.
+	(new_ctf_container): Initialize new members.
+	(ctfc_delete_container): Deallocate new members.
+	* ctfc.h (ctf_dvdef, ctf_dvdef_t, ctf_dvdef_ref): Move forward
+	declarations earlier in file.
+	(ctf_decl_tag_t): New typedef.
+	(ctf_dtdef): Add ctf_decl_tag_t member to dtd_u union.
+	(ctf_dtu_d_union_enum): Add new CTF_DTU_D_TAG enumerator.
+	(ctf_container): Add ctfc_tags vector and ctfc_type_tags_map hash_map
+	members.
+	(ctf_add_type_tag, ctf_add_decl_tag): New function protos.
+	(ctf_add_variable): Change prototype return type to ctf_dvdef_ref.
+	* dwarf2ctf.cc (gen_ctf_type_tags, gen_ctf_decl_tags)
+	(gen_ctf_decl_tags_for_var): New static functions.
+	(gen_ctf_pointer_type): Handle type tags.
+	(gen_ctf_sou_type): Handle decl tags.
+	(gen_ctf_function_type): Likewise.
+	(gen_ctf_variable): Likewise.
+	(gen_ctf_function): Likewise.
+	(gen_ctf_type): Handle TAG_GNU_annotation DIEs.
+
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* dwarf2out.cc (struct annotation_node, struct annotation_node_hasher)
+	(btf_tag_htab): New ancillary structures and hash table.
+	(annotation_node_hasher::hash, annotation_node_hasher::equal): New.
+	(hash_btf_tag, gen_btf_tag_dies, maybe_gen_btf_type_tag_dies)
+	(maybe_gen_btf_decl_tag_dies): New functions.
+	(modified_type_die): Add new argument to pass type attributes.
+	Handle btf_type_tag, and update recursive calls.
+	(base_type_for_mode): Add new arg for modified_type_die call.
+	(add_type_attribute): Likewise.
+	(gen_array_type_die): Call maybe_gen_btf_type_tag_dies for the type.
+	(gen_formal_parameter_die): Call maybe_gen_btf_decl_tag_dies for the
+	parameter.
+	(override_type_for_decl_p): Add new arg for modified_type_die call.
+	(force_type_die): Likewise.
+	(gen_tagged_type_die): Call maybe_gen_btf_type_tag_dies for the type.
+	(gen_decl_die): Call maybe_gen_btf_decl_tag_dies for the decl.
+	(dwarf2out_finish): Empty btf_tag_htab.
+	(dwarf2out_cc_finalize): Delete btf_tag_htab hash table.
+
+2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* ginclude/stdarg.h (va_start): Use __builtin_c23_va_start
+	also for C++26.
+	(__STDC_VERSION_STDARG_H__): Also define for C++26.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostic-global-context.cc: Define INCLUDE_VECTOR.
+	* diagnostics/buffering.cc: Likewise.
+	* diagnostics/context.cc (context::finish): Call
+	finalize_extensions on each sink.
+	(sink::dump): Dump any extensions.
+	(sink::finalize_extensions): New.
+	* diagnostics/macro-unwinding.cc: Define INCLUDE_VECTOR.
+	* diagnostics/selftest-context.cc: Likewise.
+	* diagnostics/sink.h (class sink::extension): New.
+	(sink::add_extension): New.
+	(sink::finalize_extensions): New decl.
+	(sink::m_extensions): New member.
+	* gcc.cc: Define INCLUDE_VECTOR.
+	* langhooks.cc: Likewise.
+	* opts.cc: Likewise.
+	* tree-diagnostic-client-data-hooks.cc: Likewise.
+	* tree-diagnostic.cc: Likewise.
+
+2025-10-09  Filip Kastl  <fkastl@suse.cz>
+
+	* Makefile.in: Add gimple-ssa-pta-constraints.cc.
+	* tree-ssa-structalias.cc (determine_global_memory_access):
+	External linkage, move to namespace pointer_analysis.
+	(fndecl_maybe_in_other_partition): External linkage, move to
+	namespace pointer_analysis.
+	(new_var_info): External linkage, move to namespace
+	pointer_analysis.
+	(create_variable_info_for): Move to
+	gimple-ssa-pta-constraints.cc.
+	(lookup_vi_for_tree): External linkage, move to namespace
+	pointer_analysis, move to gimple-ssa-pta-constraints.cc.
+	(type_can_have_subvars): Move to gimple-ssa-pta-constraints.cc.
+	(make_param_constraints): Move to gimple-ssa-pta-constraints.cc.
+	(get_call_vi): Move to gimple-ssa-pta-constraints.cc.
+	(lookup_call_use_vi): External linkage, move to namespace
+	pointer_analysis, move to gimple-ssa-pta-constraints.cc.
+	(lookup_call_clobber_vi): External linkage, move to namespace
+	pointer_analysis, move to gimple-ssa-pta-constraints.cc.
+	(get_call_use_vi): Move to gimple-ssa-pta-constraints.cc.
+	(get_call_clobber_vi): Move to gimple-ssa-pta-constraints.cc.
+	(get_constraint_for_1): Move to gimple-ssa-pta-constraints.cc.
+	(get_constraint_for): Move to gimple-ssa-pta-constraints.cc.
+	(get_constraint_for_rhs): Move to gimple-ssa-pta-constraints.cc.
+	(do_deref): Move to gimple-ssa-pta-constraints.cc.
+	(constraint_pool): Move to gimple-ssa-pta-constraints.cc.
+	(new_constraint): Move to gimple-ssa-pta-constraints.cc.
+	(insert_vi_for_tree): Move to gimple-ssa-pta-constraints.cc.
+	(alias_get_name): Move to gimple-ssa-pta-constraints.cc.
+	(get_vi_for_tree): Move to gimple-ssa-pta-constraints.cc.
+	(new_scalar_tmp_constraint_exp): Move to
+	gimple-ssa-pta-constraints.cc.
+	(get_constraint_for_ssa_var): Move to
+	gimple-ssa-pta-constraints.cc.
+	(process_constraint): Move to gimple-ssa-pta-constraints.cc.
+	(bitpos_of_field): Move to gimple-ssa-pta-constraints.cc.
+	(get_constraint_for_ptr_offset): Move to
+	gimple-ssa-pta-constraints.cc.
+	(get_constraint_for_component_ref): Move to
+	gimple-ssa-pta-constraints.cc.
+	(get_constraint_for_address_of): Move to
+	gimple-ssa-pta-constraints.cc.
+	(process_all_all_constraints): Move to
+	gimple-ssa-pta-constraints.cc.
+	(do_structure_copy): Move to gimple-ssa-pta-constraints.cc.
+	(make_constraints_to): Move to gimple-ssa-pta-constraints.cc.
+	(make_constraint_to): Move to gimple-ssa-pta-constraints.cc.
+	(make_constraint_from): Move to gimple-ssa-pta-constraints.cc.
+	(make_copy_constraint): Move to gimple-ssa-pta-constraints.cc.
+	(make_escape_constraint): Move to gimple-ssa-pta-constraints.cc.
+	(make_indirect_escape_constraint): Move to
+	gimple-ssa-pta-constraints.cc.
+	(make_transitive_closure_constraints): Move to
+	gimple-ssa-pta-constraints.cc.
+	(make_any_offset_constraints): Move to
+	gimple-ssa-pta-constraints.cc.
+	(struct obstack fake_var_decl_obstack): Move to
+	gimple-ssa-pta-constraints.cc.
+	(build_fake_var_decl): Move to gimple-ssa-pta-constraints.cc.
+	(make_heapvar): Move to gimple-ssa-pta-constraints.cc.
+	(make_constraint_from_restrict): Move to
+	gimple-ssa-pta-constraints.cc.
+	(make_constraint_from_global_restrict): Move to
+	gimple-ssa-pta-constraints.cc.
+	(get_function_part_constraint): Move to
+	gimple-ssa-pta-constraints.cc.
+	(handle_call_arg): Move to gimple-ssa-pta-constraints.cc.
+	(handle_rhs_call): Move to gimple-ssa-pta-constraints.cc.
+	(handle_lhs_call): Move to gimple-ssa-pta-constraints.cc.
+	(get_fi_for_callee): Move to gimple-ssa-pta-constraints.cc.
+	(find_func_aliases_for_call_arg): Move to
+	gimple-ssa-pta-constraints.cc.
+	(find_func_aliases_for_builtin_call): Move to
+	gimple-ssa-pta-constraints.cc.
+	(find_func_aliases_for_call): Move to
+	gimple-ssa-pta-constraints.cc.
+	(find_func_aliases): Move to gimple-ssa-pta-constraints.cc.
+	(process_ipa_clobber): Move to gimple-ssa-pta-constraints.cc.
+	(find_func_clobbers): Move to gimple-ssa-pta-constraints.cc.
+	(struct fieldoff): Move to gimple-ssa-pta-constraints.cc.
+	(fieldoff_compare): Move to gimple-ssa-pta-constraints.cc.
+	(sort_fieldstack): Move to gimple-ssa-pta-constraints.cc.
+	(var_can_have_subvars): Move to gimple-ssa-pta-constraints.cc.
+	(type_must_have_pointers): Move to
+	gimple-ssa-pta-constraints.cc.
+	(field_must_have_pointers): Move to
+	gimple-ssa-pta-constraints.cc.
+	(push_fields_onto_fieldstack): Move to
+	gimple-ssa-pta-constraints.cc.
+	(count_num_arguments): Move to gimple-ssa-pta-constraints.cc.
+	(create_function_info_for): Move to
+	gimple-ssa-pta-constraints.cc.
+	(check_for_overlaps): Move to gimple-ssa-pta-constraints.cc.
+	(create_variable_info_for_1): Move to
+	gimple-ssa-pta-constraints.cc.
+	(intra_create_variable_infos): Move to
+	gimple-ssa-pta-constraints.cc.
+	(init_base_vars): Move to gimple-ssa-pta-constraints.cc.
+	(init_constraint_builder): Move to
+	gimple-ssa-pta-constraints.cc.
+	(delete_constraint_builder): Move to
+	gimple-ssa-pta-constraints.cc.
+	(intra_build_constraints): Move to
+	gimple-ssa-pta-constraints.cc.
+	(delete_points_to_sets): Move to gimple-ssa-pta-constraints.cc.
+	(associate_varinfo_to_alias): Move to
+	gimple-ssa-pta-constraints.cc
+	(refered_from_nonlocal_fn): Move to
+	gimple-ssa-pta-constraints.cc
+	(refered_from_nonlocal_var): Move to
+	gimple-ssa-pta-constraints.cc
+	(ipa_create_function_infos): Move to
+	gimple-ssa-pta-constraints.cc
+	(ipa_create_global_variable_infos): Move to
+	gimple-ssa-pta-constraints.cc
+	(ipa_build_constraints): Move to gimple-ssa-pta-constraints.cc
+	* tree-ssa-structalias.h (struct constraint_stats):
+	(determine_global_memory_access): External linkage, move to
+	namespace pointer_analysis.
+	(fndecl_maybe_in_other_partition): External linkage, move to
+	namespace pointer_analysis.
+	(new_var_info): External linkage, move to namespace
+	pointer_analysis.
+	* gimple-ssa-pta-constraints.cc: New file.
+	* gimple-ssa-pta-constraints.h: New file.
+
+2025-10-09  Filip Kastl  <fkastl@suse.cz>
+
+	* tree-ssa-structalias.cc (init_constraint_builder): New
+	function.
+	(delete_constraint_builder): New function.
+	(compute_points_to_sets): Put constraint building into
+	intra_build_constraints and call it.
+	(intra_build_constraints): New function.
+	(delete_points_to_sets): Put cleanup of constraint builder
+	global vars into delete_constraint_builder and call it.
+	(ipa_pta_execute): Put constraint building into
+	ipa_build_constraints and call it.
+	(ipa_create_function_infos): New function.
+	(ipa_create_global_variable_infos): New function.
+	(ipa_build_constraints): New function.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h (xtensa_constantsynth): Remove.
+	* config/xtensa/xtensa.cc
+	(#include): Remove "context.h" and "pass_manager.h".
+	(machine_function): Remove "litpool_usage" member.
+	(xtensa_constantsynth_2insn, xtensa_constantsynth_rtx_SLLI,
+	xtensa_constantsynth_rtx_ADDSUBX, xtensa_constantsynth): Remove.
+	(constantsynth_method_lshr_m1, split_hwi_to_MOVI_ADDMI,
+	constantsynth_method_16bits, constantsynth_method_32bits,
+	constantsynth_method_square): New worker function related to
+	constant synthesis methods.
+	(constantsynth_method_info, constantsynth_methods):
+	New structure representing the list of all constant synthesis
+	methods.
+	(constantsynth_info): New structure that stores internal
+	information for "constantsynth".
+	(constantsynth_pass1, verify_synth_seq, constantsynth_pass2):
+	New functions that are the core of "constantsynth".
+	(do_largeconst): Add a call to constantsynth_pass1() to the insn
+	enumeration loop, and add a call to constantsynth_pass2() to the
+	end of this function.
+	* config/xtensa/xtensa.md (SHI): Remove.
+	(The two auxiliary define_splits for mov[sh]i_internal): Remove.
+	(The two auxiliary define_splits for movsf_internal): Remove.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa-protos.h
+	(xtensa_split_DI_reg_imm): Remove.
+	* config/xtensa/xtensa.cc (xtensa_split_DI_reg_imm): Remove.
+	(split_DI_SF_DF_const): New worker function.
+	(do_largeconst): Add a call to split_DI_SF_DF_const() to the insn
+	enumeration loop.
+	* config/xtensa/xtensa.md (movdi): Remove split code when the
+	source is constant.
+	(movdi_internal): Add a new constraint pair (a, Y) to the second
+	of the existing constraint alternatives.
+	(The auxiliary define_split for movdi_internal): Remove.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xt_full_rtx_costs):
+	New struct, derived from full_rtx_costs.
+	(FPreg_neg_scaled_simm12b_1, FPreg_neg_scaled_simm12b):
+	New worker functions.
+	(do_largeconst): Add a call to FPreg_neg_scaled_simm12b() to the
+	insn enumeration loop.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (Y):
+	Change to reference xtensa_postreload_completed_p() instead of
+	xtensa_split1_finished_p().
+	* config/xtensa/predicates.md (move_operand): Ditto.
+	* config/xtensa/t-xtensa (PASSES_EXTRA):
+	Add xtensa-passes.def as target-specific pass description.
+	* config/xtensa/xtensa-passes.def:
+	New definition file that inserts pass_xtensa_largeconst after
+	pass_postreload_cse.
+	* config/xtensa/xtensa-protos.h (xtensa_split1_finished_p): Remove.
+	(xtensa_postreload_completed_p, make_pass_xtensa_largeconst):
+	New function prototypes.
+	* config/xtensa/xtensa.cc (machine_function):
+	Add a new member "postreload_completed".
+	(xtensa_emit_move_sequence):
+	Change to reference xtensa_postreload_completed_p() instead of
+	can_create_pseudo_p().
+	(xtensa_split1_finished_p): Remove.
+	(xtensa_postreload_completed_p): New function.
+	(xtensa_legitimate_constant_p): Change to also consider
+	xtensa_postreload_completed_p().
+	(litpool_set_src_1, litpool_set_src, do_largeconst,
+	rest_of_handle_largeconst):
+	New sub-functions for pass_xtensa_largeconst.
+	(pass_data_xtensa_largeconst, pass_xtensa_largeconst):
+	New target-specific pass definition.
+	(make_pass_xtensa_largeconst):
+	New function called by the pass manager.
+	* config/xtensa/xtensa.md
+	(The auxiliary define_split for movdi_internal):
+	Change to reference xtensa_postreload_completed_p() instead of
+	xtensa_split1_finished_p().
+	(The first of three auxiliary define_splits for mov[sh]i_internal):
+	Remove.
+
+2025-10-09  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(TARGET_MD_ASM_ADJUST): New macro definition.
+	(xtensa_md_asm_adjust): New function prototype and definition, that
+	prepends all 'g'-constraints in the "constraints" vector with 'n',
+	if neither TARGET_CONST16 nor TARGET_AUTO_LITPOOLS is enabled.
+
+2025-10-09  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122212
+	* tree-ssa-forwprop.cc (simplify_count_zeroes): Apply
+	bias for CLZ after dealing with the zero special value.
+
+2025-10-09  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (vls_mode_valid_p): New argument
+	allow_up_to_lmul_8.
+	* config/riscv/riscv-v.cc (autovectorize_vector_modes): Set
+	allow_up_to_lmul_8 to false.
+	(vls_mode_valid_p): Add new argument allow_up_to_lmul_8, and use
+	it to determine whether to allow LMUL 8.
+
+2025-10-09  Prathamesh Kulkarni  <prathameshk@nvidia.com>
+	    Matthew Malcolmson  <mmalcolmson@nvidia.com>
+
+	PR driver/81358
+	* common.opt: New option -flink-libatomic.
+	* gcc.cc (LINK_LIBATOMIC_SPEC): New macro.
+	* config/alpha/linux.h (LINK_GCC_C_SEQUENCE_SPEC): Use LINK_LIBATOMIC_SPEC.
+	* config/arm/uclinux-elf.h: Likewise.
+	* config/arm/unknown-elf.h: Likewise.
+	* config/avr/avrlibc.h: Likewise.
+	* config/bfin/linux.h: Likewise.
+	* config/darwin.h: Likewise.
+	* config/gnu-user.h: Likewise.
+	* config/lm32/uclinux-elf.h: Likewise.
+	* config/rs6000/linux64.h: Likewise.
+	* config/rs6000/rtems.h: Likewise.
+	* config/sparc/sparc.h: Likewise.
+	* doc/invoke.texi: Document -flink-libatomic.
+	* configure.ac: Define TARGET_PROVIDES_LIBATOMIC.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* common.opt.urls: Regenerate.
+
+2025-10-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/aarch64/aarch64.cc (aarch64_builtin_support_vector_misalignment):
+	Remove type.
+	* config/arm/arm.cc (arm_builtin_support_vector_misalignment):
+	Ditto.
+	* config/epiphany/epiphany.cc (epiphany_support_vector_misalignment):
+	Ditto.
+	* config/gcn/gcn.cc (gcn_vectorize_support_vector_misalignment):
+	Ditto.
+	* config/loongarch/loongarch.cc (loongarch_builtin_support_vector_misalignment):
+	Ditto.
+	* config/riscv/riscv.cc (riscv_support_vector_misalignment):
+	Ditto.
+	* config/rs6000/rs6000.cc (rs6000_builtin_support_vector_misalignment):
+	Ditto.
+	* config/s390/s390.cc (s390_support_vector_misalignment):
+	Ditto.
+	* doc/tm.texi: Adjust vector misalignment docs.
+	* target.def: Ditto.
+	* targhooks.cc (default_builtin_support_vector_misalignment):
+	Remove type.
+	* targhooks.h (default_builtin_support_vector_misalignment):
+	Ditto.
+	* tree-vect-data-refs.cc (vect_can_force_dr_alignment_p):
+	Set misalignment for gather/scatter and remove type.
+	(vect_supportable_dr_alignment): Ditto.
+
+2025-10-09  Sam James  <sam@gentoo.org>
+
+	PR c++/117219
+	* doc/invoke.texi (-fstrict-aliasing): Explain that type-punning
+	through a union in C++ is supported as a GNU extension.
+
+2025-10-09  Sam James  <sam@gentoo.org>
+
+	* doc/invoke.texi: Add missing full stop.
+
+2025-10-09  Sam James  <sam@gentoo.org>
+
+	PR tree-optimization/18501
+	* doc/invoke.texi (-Wmaybe-uninitialized): Mention interaction with
+	CCP.
+
 2025-10-08  Antoni Boucher  <bouanto@zoho.com>
 
 	* configure: Regenerate.

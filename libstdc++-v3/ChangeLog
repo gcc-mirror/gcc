@@ -1,3 +1,21 @@
+2025-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h (_Hashtable::_S_nothrow_move): Use
+	diagnostic pragmas to allow constexpr if in C++14. Use value
+	member instead of operator().
+
+2025-10-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.tpl: Fix comment on #endif. Tweak
+	description of when macros are defined.
+	* include/bits/version.h: Regenerate.
+
+2025-10-09  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/year_month_day_last/io.cc: New formatting tests.
+	* testsuite/std/time/year_month_weekday/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday_last/io.cc: Likewise.
+
 2025-10-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/status_cxx2017.xml: Replace broken link to PSTL

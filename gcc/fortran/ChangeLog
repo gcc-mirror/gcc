@@ -1,3 +1,13 @@
+2025-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122206
+	* trans-types.cc (gfc_get_function_type): Do not clobber an
+	existing procedure interface.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* error.cc: Define INCLUDE_VECTOR.
+
 2025-10-08  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/49111

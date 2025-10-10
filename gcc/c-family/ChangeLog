@@ -1,3 +1,27 @@
+2025-10-09  David Faust  <david.faust@oracle.com>
+
+	* c-attribs.cc (c_common_attribute_table): Add btf_decl_tag and
+	btf_type_tag attributes.
+	(handle_btf_decl_tag_attribute): New handler for btf_decl_tag.
+	(hanlde_btf_type_tag_attribute): New handler for btf_type_tag.
+	(btf_tag_args_ok): Helper for new attribute handlers.
+
+2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-common.h (D_CXX26): Define.
+	* c-common.cc (c_common_resword): Add D_CXX26 to
+	__builtin_c23_va_start flags, mention D_CXX26 in comment.
+
+2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* c-gimplify.cc (c_gimplify_expr): Also gimplify the second operand
+	before the COND_EXPR and use in COND_EXPR result of gimplification.
+
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* c-opts.cc: Define INCLUDE_VECTOR.
+
 2025-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/122188

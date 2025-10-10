@@ -1,3 +1,7 @@
+2025-10-09  David Malcolm  <dmalcolm@redhat.com>
+
+	* context.cc: Define INCLUDE_VECTOR.
+
 2025-10-05  Sam James  <sam@gentoo.org>
 
 	* Makefile.in: Regenerate.
