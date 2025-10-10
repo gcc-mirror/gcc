@@ -1,3 +1,57 @@
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122222
+	* gcc.target/avr/pr122222-sitod.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122220
+	* gcc.target/avr/pr122220.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122210
+	* gcc.target/avr/dtofx.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122210
+	* gcc.target/avr/fxtod.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/sincos-1.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122177
+	* gcc.target/avr/fminfmax-1.c: New test.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/cmpdi-1.c: New test.
+
 2025-10-07  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:

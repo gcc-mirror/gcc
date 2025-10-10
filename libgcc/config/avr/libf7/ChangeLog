@@ -1,3 +1,86 @@
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122222
+	* libf7-asm.sx (D_floatsidf, D_floatunsidf): New modules.
+	* libf7-common.mk (F7_ASM_PARTS): Add D_floatsidf, D_floatunsidf.
+	(F7F, g_dx): Remove floatunsidf, floatsidf.
+	* libf7.c (f7_set_s32): Don't alias to f7_floatsidf.
+	(f7_set_u32): Don't alias to f7_floatunsidf.
+	* f7-renames.h: Rebuild
+	* f7-wraps.h: Rebuild.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122220
+	* libf7-asm.sx (to_integer): Return 0x80... on negative overflow.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122210
+	* libf7-common.mk (F7_ASM_PARTS): Add D2<fx> modules.
+	* libf7-asm.sx: Implement the D2<fx> modules.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122210
+	* libf7-common.mk (F7_ASM_PARTS): Add <fx>2D modules.
+	* libf7-asm.sx: Implement the <fx>2D modules.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-common.mk (F7_ASM_PARTS): Add D_sincos.
+	* libf7-asm.sx: (D_sincos): New module implements sincos / sincosl.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122177
+	* libf7-common.mk (m_ddd): Remove: fmin, fmax.
+	(F7_ASM_PARTS): Add: D_fminfmax.
+	* libf7-asm.sx (D_fmanfmax): New module.
+	* f7-wraps.h: Rebuild.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-10-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* libf7-common.mk (g_xdd_cmp): Remove le, lt, ge, gt, ne, eq, unord.
+	(F7_ASM_PARTS): Add D_cmp, D_eq, D_ne, D_ge, D_gt, D_le, D_lt, D_unord.
+	* libf7-asm.sx (D_cmp, D_eq, D_ne, D_ge, D_gt, D_le, D_lt, D_unord):
+	New modules.
+	* f7-wraps.h: Rebuild.
+
+2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-05-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/120442
+	* libf7-common.mk (LIBF_C_PARTS, m_ddd): Add fdim.
+	* libf7.h (f7_fdim): New proto.
+	* libf7.c (f7_fdim): New function.
+	* f7renames.sh (f7_fdim): Add rename.
+	* f7-wraps.h: Rebuild
+	* f7-renames.h: Rebuild
+
 2025-05-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
