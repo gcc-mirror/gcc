@@ -444,7 +444,7 @@ bpf_expand_cbranch (machine_mode mode, rtx *operands)
   if ((code == LT || code == LE || code == LTU || code == LEU))
     {
       /* Reverse the condition.  */
-      PUT_CODE (operands[0], reverse_condition (code));
+      PUT_CODE (operands[0], swap_condition (code));
 
       /* Swap the operands, and ensure that the first is a register.  */
       if (!register_operand (operands[2], mode))
