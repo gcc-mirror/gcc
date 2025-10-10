@@ -7938,6 +7938,9 @@ package Sinfo is
       --  N_Compound_Statement
       --  Actions
 
+      --  Note that N_Compound_Statement is unrelated to the Ada syntax rule
+      --  for compound_statement.
+
       --------------
       -- Contract --
       --------------

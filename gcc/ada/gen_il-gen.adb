@@ -167,7 +167,6 @@ package body Gen_IL.Gen is
 
       --  Check that syntactic fields precede semantic fields. Note that this
       --  check is happening before we compute inherited fields.
-      --  Exempt Actions from this rule, for now.
 
       declare
          Semantic_Seen : Boolean := False;
@@ -178,11 +177,8 @@ package body Gen_IL.Gen is
                   raise Illegal with
                     "syntactic fields must precede semantic ones " & Image (T);
                end if;
-
             else
-               if Fields (J).F /= Actions then
-                  Semantic_Seen := True;
-               end if;
+               Semantic_Seen := True;
             end if;
          end loop;
       end;
@@ -509,7 +505,7 @@ package body Gen_IL.Gen is
       Node_Field_Types_Used, Entity_Field_Types_Used : Type_Set;
 
       Setter_Needs_Parent : Field_Set :=
-        (Actions | Expression | Then_Actions | Else_Actions => True,
+        (Expression | Then_Actions | Else_Actions => True,
          others => False);
       --  Set of fields where the setter should set the Parent. True for
       --  syntactic fields of type Node_Id and List_Id, but with some
@@ -1300,12 +1296,13 @@ package body Gen_IL.Gen is
                      end if;
                   end loop;
 
-                  --  The following fields violate this rule. We might want to
-                  --  simplify by getting rid of these cases, but we allow them
-                  --  for now. At least, we don't want to add any new cases of
-                  --  syntactic/semantic mismatch.
+                  --  ???The following fields violate this rule. We might want
+                  --  to simplify by getting rid of these cases, but we allow
+                  --  them for now. At least, we don't want to add any new
+                  --  cases of syntactic/semantic mismatch.
+                  --  ???Just one case left.
 
-                  if F in Actions | Expression then
+                  if F in Expression then
                      pragma Assert (Syntactic_Seen and Semantic_Seen);
 
                   else

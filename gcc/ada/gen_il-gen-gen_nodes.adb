@@ -301,7 +301,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Ab (N_Short_Circuit, N_Subexpr,
        (Sy (Left_Opnd, Node_Id),
         Sy (Right_Opnd, Node_Id),
-        Sm (Actions, List_Id)));
+        Sy (Actions, List_Id, Default_No_List)));
 
    Cc (N_And_Then, N_Short_Circuit);
    Cc (N_Or_Else, N_Short_Circuit);
@@ -1161,9 +1161,9 @@ begin -- Gen_IL.Gen.Gen_Nodes
         Sm (Target, Node_Id)));
 
    Cc (N_Case_Expression_Alternative, Node_Kind,
-       (Sm (Actions, List_Id),
-        Sy (Discrete_Choices, List_Id),
+       (Sy (Discrete_Choices, List_Id),
         Sy (Expression, Node_Id, Default_Empty),
+        Sy (Actions, List_Id, Default_No_List),
         Sm (Has_SP_Choice, Flag)));
 
    Cc (N_Case_Statement_Alternative, Node_Kind,
