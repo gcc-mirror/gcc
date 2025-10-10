@@ -161,7 +161,7 @@ along with GCC; see the file COPYING3.  If not see
 static void vect_estimate_min_profitable_iters (loop_vec_info, int *, int *,
 						unsigned *);
 static stmt_vec_info vect_is_simple_reduction (loop_vec_info, stmt_vec_info,
-					       gphi **, bool *, bool);
+					       gphi **);
 
 
 /* Function vect_is_simple_iv_evolution.
@@ -341,8 +341,7 @@ vect_phi_first_order_recurrence_p (loop_vec_info loop_vinfo, class loop *loop,
    slp analyses or not.  */
 
 static void
-vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
-			      bool slp)
+vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop)
 {
   basic_block bb = loop->header;
   auto_vec<stmt_vec_info, 64> worklist;
@@ -425,19 +424,15 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 		  && STMT_VINFO_DEF_TYPE (stmt_vinfo) == vect_unknown_def_type);
 
       gphi *double_reduc;
-      bool reduc_chain;
       stmt_vec_info reduc_stmt_info
-	= vect_is_simple_reduction (loop_vinfo, stmt_vinfo, &double_reduc,
-				    &reduc_chain, slp);
+	= vect_is_simple_reduction (loop_vinfo, stmt_vinfo, &double_reduc);
       if (reduc_stmt_info && double_reduc)
         {
-	  bool inner_chain;
 	  stmt_vec_info inner_phi_info
 	      = loop_vinfo->lookup_stmt (double_reduc);
 	  /* ???  Pass down flag we're the inner loop of a double reduc.  */
 	  stmt_vec_info inner_reduc_info
-	    = vect_is_simple_reduction (loop_vinfo, inner_phi_info,
-					NULL, &inner_chain, slp);
+	    = vect_is_simple_reduction (loop_vinfo, inner_phi_info, NULL);
 	  if (inner_reduc_info)
 	    {
 	      STMT_VINFO_REDUC_DEF (stmt_vinfo) = reduc_stmt_info;
@@ -478,12 +473,7 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
 
 	      STMT_VINFO_DEF_TYPE (stmt_vinfo) = vect_reduction_def;
 	      STMT_VINFO_DEF_TYPE (reduc_stmt_info) = vect_reduction_def;
-	      /* Store the reduction cycles for possible vectorization in
-		 loop-aware SLP if it was not detected as reduction
-		 chain.  */
-	      if (! reduc_chain)
-		LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push
-		    (reduc_stmt_info);
+	      LOOP_VINFO_REDUCTIONS (loop_vinfo).safe_push (reduc_stmt_info);
 	    }
 	}
       else if (vect_phi_first_order_recurrence_p (loop_vinfo, loop, phi))
@@ -518,11 +508,11 @@ vect_analyze_scalar_cycles_1 (loop_vec_info loop_vinfo, class loop *loop,
                  a[i] = i;  */
 
 static void
-vect_analyze_scalar_cycles (loop_vec_info loop_vinfo, bool slp)
+vect_analyze_scalar_cycles (loop_vec_info loop_vinfo)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
 
-  vect_analyze_scalar_cycles_1 (loop_vinfo, loop, slp);
+  vect_analyze_scalar_cycles_1 (loop_vinfo, loop);
 
   /* When vectorizing an outer-loop, the inner-loop is executed sequentially.
      Reductions in such inner-loop therefore have different properties than
@@ -534,87 +524,7 @@ vect_analyze_scalar_cycles (loop_vec_info loop_vinfo, bool slp)
         current checks are too strict.  */
 
   if (loop->inner)
-    vect_analyze_scalar_cycles_1 (loop_vinfo, loop->inner, slp);
-}
-
-/* Transfer group and reduction information from STMT_INFO to its
-   pattern stmt.  */
-
-static void
-vect_fixup_reduc_chain (stmt_vec_info stmt_info)
-{
-  stmt_vec_info firstp = STMT_VINFO_RELATED_STMT (stmt_info);
-  stmt_vec_info stmtp;
-  gcc_assert (!REDUC_GROUP_FIRST_ELEMENT (firstp)
-	      && REDUC_GROUP_FIRST_ELEMENT (stmt_info));
-  REDUC_GROUP_SIZE (firstp) = REDUC_GROUP_SIZE (stmt_info);
-  do
-    {
-      stmtp = STMT_VINFO_RELATED_STMT (stmt_info);
-      gcc_checking_assert (STMT_VINFO_DEF_TYPE (stmtp)
-			   == STMT_VINFO_DEF_TYPE (stmt_info));
-      REDUC_GROUP_FIRST_ELEMENT (stmtp) = firstp;
-      stmt_info = REDUC_GROUP_NEXT_ELEMENT (stmt_info);
-      if (stmt_info)
-	REDUC_GROUP_NEXT_ELEMENT (stmtp)
-	  = STMT_VINFO_RELATED_STMT (stmt_info);
-    }
-  while (stmt_info);
-}
-
-/* Fixup scalar cycles that now have their stmts detected as patterns.  */
-
-static void
-vect_fixup_scalar_cycles_with_patterns (loop_vec_info loop_vinfo)
-{
-  stmt_vec_info first;
-  unsigned i;
-
-  FOR_EACH_VEC_ELT (LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo), i, first)
-    {
-      stmt_vec_info next = REDUC_GROUP_NEXT_ELEMENT (first);
-      while (next)
-	{
-	  if ((STMT_VINFO_IN_PATTERN_P (next)
-	       != STMT_VINFO_IN_PATTERN_P (first))
-	      || STMT_VINFO_REDUC_IDX (vect_stmt_to_vectorize (next)) == -1)
-	    break;
-	  next = REDUC_GROUP_NEXT_ELEMENT (next);
-	}
-      /* If all reduction chain members are well-formed patterns adjust
-	 the group to group the pattern stmts instead.  */
-      if (! next
-	  && STMT_VINFO_REDUC_IDX (vect_stmt_to_vectorize (first)) != -1)
-	{
-	  if (STMT_VINFO_IN_PATTERN_P (first))
-	    {
-	      vect_fixup_reduc_chain (first);
-	      LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo)[i]
-		= STMT_VINFO_RELATED_STMT (first);
-	    }
-	}
-      /* If not all stmt in the chain are patterns or if we failed
-	 to update STMT_VINFO_REDUC_IDX dissolve the chain and handle
-	 it as regular reduction instead.  */
-      else
-	{
-	  stmt_vec_info vinfo = first;
-	  stmt_vec_info last = NULL;
-	  while (vinfo)
-	    {
-	      next = REDUC_GROUP_NEXT_ELEMENT (vinfo);
-	      REDUC_GROUP_FIRST_ELEMENT (vinfo) = NULL;
-	      REDUC_GROUP_NEXT_ELEMENT (vinfo) = NULL;
-	      last = vinfo;
-	      vinfo = next;
-	    }
-	  STMT_VINFO_DEF_TYPE (vect_stmt_to_vectorize (first))
-	    = vect_internal_def;
-	  loop_vinfo->reductions.safe_push (vect_stmt_to_vectorize (last));
-	  LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo).unordered_remove (i);
-	  --i;
-	}
-    }
+    vect_analyze_scalar_cycles_1 (loop_vinfo, loop->inner);
 }
 
 /* Function vect_get_loop_niters.
@@ -2264,11 +2174,9 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, bool &fatal,
 
   /* Classify all cross-iteration scalar data-flow cycles.
      Cross-iteration cycles caused by virtual phis are analyzed separately.  */
-  vect_analyze_scalar_cycles (loop_vinfo, !force_single_lane);
+  vect_analyze_scalar_cycles (loop_vinfo);
 
   vect_pattern_recog (loop_vinfo);
-
-  vect_fixup_scalar_cycles_with_patterns (loop_vinfo);
 
   /* Analyze the access patterns of the data-refs in the loop (consecutive,
      complex, etc.). FORNOW: Only handle consecutive access pattern.  */
@@ -2676,10 +2584,6 @@ again:
   /* If we are applying suggested unroll factor, we don't need to
      re-try any more as we want to keep the SLP mode fixed.  */
   if (applying_suggested_uf)
-    return ok;
-
-  /* If there are reduction chains re-trying will fail anyway.  */
-  if (! LOOP_VINFO_REDUCTION_CHAINS (loop_vinfo).is_empty ())
     return ok;
 
   /* Likewise if the grouped loads or stores in the SLP cannot be handled
@@ -3756,7 +3660,7 @@ check_reduction_path (dump_user_location_t loc, loop_p loop, gphi *phi,
 
 static stmt_vec_info
 vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
-			  gphi **double_reduc, bool *reduc_chain_p, bool slp)
+			  gphi **double_reduc)
 {
   gphi *phi = as_a <gphi *> (phi_info->stmt);
   gimple *phi_use_stmt = NULL;
@@ -3768,7 +3672,6 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
   bool inner_loop_of_double_reduc = double_reduc == NULL;
   if (double_reduc)
     *double_reduc = NULL;
-  *reduc_chain_p = false;
   STMT_VINFO_REDUC_TYPE (phi_info) = TREE_CODE_REDUCTION;
 
   tree phi_name = PHI_RESULT (phi);
@@ -3918,12 +3821,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
       if (code == COND_EXPR && !nested_in_vect_loop)
 	STMT_VINFO_REDUC_TYPE (phi_info) = COND_REDUCTION;
 
-      /* Fill in STMT_VINFO_REDUC_IDX and gather stmts for an SLP
-	 reduction chain for which the additional restriction is that
-	 all operations in the chain are the same.  */
-      auto_vec<stmt_vec_info, 8> reduc_chain;
+      /* Fill in STMT_VINFO_REDUC_IDX.  */
       unsigned i;
-      bool is_slp_reduc = !nested_in_vect_loop && code != COND_EXPR;
       for (i = path.length () - 1; i >= 1; --i)
 	{
 	  gimple *stmt = USE_STMT (path[i].second);
@@ -3940,39 +3839,8 @@ vect_is_simple_reduction (loop_vec_info loop_info, stmt_vec_info phi_info,
 	      STMT_VINFO_REDUC_IDX (stmt_info)
 		= path[i].second->use - gimple_call_arg_ptr (call, 0);
 	    }
-	  bool leading_conversion = (CONVERT_EXPR_CODE_P (op.code)
-				     && (i == 1 || i == path.length () - 1));
-	  if ((op.code != code && !leading_conversion)
-	      /* We can only handle the final value in epilogue
-		 generation for reduction chains.  */
-	      || (i != 1 && !has_single_use (gimple_get_lhs (stmt))))
-	    is_slp_reduc = false;
-	  /* For reduction chains we support a trailing/leading
-	     conversions.  We do not store those in the actual chain.  */
-	  if (leading_conversion)
-	    continue;
-	  reduc_chain.safe_push (stmt_info);
 	}
-      if (slp && is_slp_reduc && reduc_chain.length () > 1)
-	{
-	  for (unsigned i = 0; i < reduc_chain.length () - 1; ++i)
-	    {
-	      REDUC_GROUP_FIRST_ELEMENT (reduc_chain[i]) = reduc_chain[0];
-	      REDUC_GROUP_NEXT_ELEMENT (reduc_chain[i]) = reduc_chain[i+1];
-	    }
-	  REDUC_GROUP_FIRST_ELEMENT (reduc_chain.last ()) = reduc_chain[0];
-	  REDUC_GROUP_NEXT_ELEMENT (reduc_chain.last ()) = NULL;
-
-	  /* Save the chain for further analysis in SLP detection.  */
-	  LOOP_VINFO_REDUCTION_CHAINS (loop_info).safe_push (reduc_chain[0]);
-	  REDUC_GROUP_SIZE (reduc_chain[0]) = reduc_chain.length ();
-
-	  *reduc_chain_p = true;
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			    "reduction: detected reduction chain\n");
-	}
-      else if (dump_enabled_p ())
+      if (dump_enabled_p ())
 	dump_printf_loc (MSG_NOTE, vect_location,
 			 "reduction: detected reduction\n");
 
@@ -5405,8 +5273,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      # b1 = phi <b2, b0>
      a2 = operation (a1)
      b2 = operation (b1)  */
-  const bool slp_reduc
-    = SLP_INSTANCE_KIND (slp_node_instance) != slp_inst_kind_reduc_chain;
+  const bool slp_reduc = !reduc_info->is_reduc_chain;
   tree induction_index = NULL_TREE;
 
   unsigned int group_size = SLP_TREE_LANES (slp_node);
@@ -6956,8 +6823,6 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   bool single_defuse_cycle = false;
   tree cr_index_scalar_type = NULL_TREE, cr_index_vector_type = NULL_TREE;
   tree cond_reduc_val = NULL_TREE;
-  const bool reduc_chain
-    = SLP_INSTANCE_KIND (slp_node_instance) == slp_inst_kind_reduc_chain;
 
   /* Make sure it was already recognized as a reduction computation.  */
   if (STMT_VINFO_DEF_TYPE (stmt_info) != vect_reduction_def
@@ -7019,6 +6884,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       double_reduc = true;
     }
 
+  const bool reduc_chain = reduc_info->is_reduc_chain;
   slp_node_instance->reduc_phis = slp_node;
   /* ???  We're leaving slp_node to point to the PHIs, we only
      need it to get at the number of vector stmts which wasn't
@@ -7030,33 +6896,28 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   /* Verify following REDUC_IDX from the latch def leads us back to the PHI
      and compute the reduction chain length.  Discover the real
-     reduction operation stmt on the way (stmt_info and slp_for_stmt_info).  */
-  tree reduc_def
-    = PHI_ARG_DEF_FROM_EDGE (reduc_def_phi, loop_latch_edge (loop));
+     reduction operation stmt on the way (slp_for_stmt_info).  */
   unsigned reduc_chain_length = 0;
-  bool only_slp_reduc_chain = true;
   stmt_info = NULL;
   slp_tree slp_for_stmt_info = NULL;
   slp_tree vdef_slp = slp_node_instance->root;
-  /* For double-reductions we start SLP analysis at the inner loop LC PHI
-     which is the def of the outer loop live stmt.  */
-  if (double_reduc)
-    vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[0];
-  while (reduc_def != PHI_RESULT (reduc_def_phi))
+  while (vdef_slp != slp_node)
     {
-      stmt_vec_info def = loop_vinfo->lookup_def (reduc_def);
-      stmt_vec_info vdef = vect_stmt_to_vectorize (def);
-      int reduc_idx = STMT_VINFO_REDUC_IDX (vdef);
-      if (STMT_VINFO_REDUC_IDX (vdef) == -1
-	  || SLP_TREE_REDUC_IDX (vdef_slp) == -1)
+      int reduc_idx = SLP_TREE_REDUC_IDX (vdef_slp);
+      if (reduc_idx == -1)
 	{
 	  if (dump_enabled_p ())
 	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
 			     "reduction chain broken by patterns.\n");
 	  return false;
 	}
-      if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
-	only_slp_reduc_chain = false;
+      stmt_vec_info vdef = SLP_TREE_REPRESENTATIVE (vdef_slp);
+      if (is_a <gphi *> (vdef->stmt))
+	{
+	  vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
+	  /* Do not count PHIs towards the chain length.  */
+	  continue;
+	}
       gimple_match_op op;
       if (!gimple_extract_op (vdef->stmt, &op))
 	{
@@ -7080,11 +6941,8 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       else
 	{
 	  /* First non-conversion stmt.  */
-	  if (!stmt_info)
-	    {
-	      stmt_info = vdef;
-	      slp_for_stmt_info = vdef_slp;
-	    }
+	  if (!slp_for_stmt_info)
+	    slp_for_stmt_info = vdef_slp;
 
 	  if (lane_reducing_op_p (op.code))
 	    {
@@ -7116,28 +6974,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	    }
 	  else if (!vectype_in)
 	    vectype_in = SLP_TREE_VECTYPE (slp_node);
-	  if (!REDUC_GROUP_FIRST_ELEMENT (vdef))
-	    {
-	      gcc_assert (reduc_idx == SLP_TREE_REDUC_IDX (vdef_slp));
-	      vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
-	    }
+	  vdef_slp = SLP_TREE_CHILDREN (vdef_slp)[reduc_idx];
 	}
-
-      reduc_def = op.ops[reduc_idx];
       reduc_chain_length++;
     }
+  stmt_info = SLP_TREE_REPRESENTATIVE (slp_for_stmt_info);
+
   /* PHIs should not participate in patterns.  */
   gcc_assert (!STMT_VINFO_RELATED_STMT (phi_info));
-
-  /* STMT_VINFO_REDUC_DEF doesn't point to the first but the last
-     element.  */
-  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
-    {
-      gcc_assert (!REDUC_GROUP_NEXT_ELEMENT (stmt_info));
-      stmt_info = REDUC_GROUP_FIRST_ELEMENT (stmt_info);
-    }
-  if (REDUC_GROUP_FIRST_ELEMENT (stmt_info))
-    gcc_assert (REDUC_GROUP_FIRST_ELEMENT (stmt_info) == stmt_info);
 
   /* 1. Is vectorizable reduction?  */
   /* Not supportable if the reduction variable is used in the loop, unless
@@ -7453,8 +7297,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 	{
 	  /* When vectorizing a reduction chain w/o SLP the reduction PHI
 	     is not directy used in stmt.  */
-	  if (!only_slp_reduc_chain
-	      && reduc_chain_length != 1)
+	  if (reduc_chain_length != 1)
 	    {
 	      if (dump_enabled_p ())
 		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -7789,22 +7632,18 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
   /* All but single defuse-cycle optimized and fold-left reductions go
      through their own vectorizable_* routines.  */
+  stmt_vec_info tem
+    = SLP_TREE_REPRESENTATIVE (SLP_INSTANCE_TREE (slp_node_instance));
   if (!single_defuse_cycle && reduction_type != FOLD_LEFT_REDUCTION)
+    STMT_VINFO_DEF_TYPE (tem) = vect_internal_def;
+  else
     {
-      stmt_vec_info tem
-	= vect_stmt_to_vectorize (STMT_VINFO_REDUC_DEF (phi_info));
-      if (REDUC_GROUP_FIRST_ELEMENT (tem))
-	{
-	  gcc_assert (!REDUC_GROUP_NEXT_ELEMENT (tem));
-	  tem = REDUC_GROUP_FIRST_ELEMENT (tem);
-	}
-      STMT_VINFO_DEF_TYPE (vect_orig_stmt (tem)) = vect_internal_def;
-      STMT_VINFO_DEF_TYPE (tem) = vect_internal_def;
+      STMT_VINFO_DEF_TYPE (tem) = vect_reduction_def;
+      if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
+						    slp_node, op.code, op.type,
+						    vectype_in);
     }
-  else if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-    vect_reduction_update_partial_vector_usage (loop_vinfo, reduc_info,
-						slp_node, op.code, op.type,
-						vectype_in);
   return true;
 }
 
@@ -8238,8 +8077,6 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
   int i;
   bool nested_cycle = false;
   int vec_num;
-  const bool reduc_chain
-    = SLP_INSTANCE_KIND (slp_node_instance) == slp_inst_kind_reduc_chain;
 
   if (nested_in_vect_loop_p (loop, stmt_info))
     {
@@ -8308,7 +8145,7 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
       vec<stmt_vec_info> &stmts = SLP_TREE_SCALAR_STMTS (slp_node);
 
       unsigned int num_phis = stmts.length ();
-      if (reduc_chain)
+      if (reduc_info->is_reduc_chain)
 	num_phis = 1;
       initial_values.reserve (num_phis);
       for (unsigned int i = 0; i < num_phis; ++i)

@@ -844,6 +844,9 @@ public:
      following land-reducing operation would be assigned to.  */
   unsigned int reduc_result_pos;
 
+  /* Whether this represents a reduction chain.  */
+  bool is_reduc_chain;
+
   /* Whether we force a single cycle PHI during reduction vectorization.  */
   bool force_single_cycle;
 
@@ -1066,10 +1069,6 @@ public:
   /* Reduction cycles detected in the loop. Used in loop-aware SLP.  */
   auto_vec<stmt_vec_info> reductions;
 
-  /* All reduction chains in the loop, represented by the first
-     stmt in the chain.  */
-  auto_vec<stmt_vec_info> reduction_chains;
-
   /* Defs that could not be analyzed such as OMP SIMD calls without
      a LHS.  */
   auto_vec<stmt_vec_info> alternate_defs;
@@ -1290,7 +1289,6 @@ public:
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
 #define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
-#define LOOP_VINFO_REDUCTION_CHAINS(L)     (L)->reduction_chains
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter
 #define LOOP_VINFO_EARLY_BREAKS(L)         (L)->early_breaks

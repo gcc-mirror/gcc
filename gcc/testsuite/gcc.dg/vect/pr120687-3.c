@@ -11,6 +11,6 @@ frd (float *p, float *lastone)
   return sum;
 }
 
-/* { dg-final { scan-tree-dump "reduction: detected reduction chain" "vect" } } */
+/* { dg-final { scan-tree-dump "Starting SLP discovery of reduction chain" "vect" } } */
 /* { dg-final { scan-tree-dump-not "SLP discovery of reduction chain failed" "vect" } } */
 /* { dg-final { scan-tree-dump "optimized: loop vectorized" "vect" } } */

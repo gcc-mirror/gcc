@@ -1022,13 +1022,11 @@ vect_reassociating_reduction_p (vec_info *vinfo,
   if (loop && nested_in_vect_loop_p (loop, stmt_info))
     return false;
 
-  if (STMT_VINFO_DEF_TYPE (stmt_info) == vect_reduction_def)
-    {
-      if (needs_fold_left_reduction_p (TREE_TYPE (gimple_assign_lhs (assign)),
-				       code))
-	return false;
-    }
-  else if (REDUC_GROUP_FIRST_ELEMENT (stmt_info) == NULL)
+  if (!vect_is_reduction (stmt_info))
+    return false;
+
+  if (needs_fold_left_reduction_p (TREE_TYPE (gimple_assign_lhs (assign)),
+				   code))
     return false;
 
   *op0_out = gimple_assign_rhs1 (assign);
