@@ -9244,7 +9244,7 @@ package body Exp_Ch7 is
 
    procedure Unnest_Loop (Loop_Stmt : Node_Id) is
 
-      procedure Fixup_Inner_Scopes (Loop_Or_Block : Node_Id);
+      procedure Fixup_Inner_Scopes (N : Node_Id);
       --  This procedure fixes the scope for 2 identified cases of incorrect
       --  scope information.
       --
@@ -9270,6 +9270,9 @@ package body Exp_Ch7 is
       --  and the loop entity. The inner block scope is not modified and this
       --  leaves the Tree in an incoherent state (i.e. the inner procedure must
       --  have its enclosing procedure in its scope ancestries).
+
+      --  The same issue exists for freeze nodes with associated TSS: the node
+      --  is moved but the TSS procedures are not correctly nested.
 
       --  2) The second case happens when an object declaration is created
       --  within a loop used to initialize the 'others' components of an
@@ -9298,40 +9301,62 @@ package body Exp_Ch7 is
       --  an actual entity set). But unfortunately this proved harder to
       --  implement ???
 
-      procedure Fixup_Inner_Scopes (Loop_Or_Block : Node_Id) is
-         Stmt              : Node_Id;
-         Loop_Or_Block_Ent : Entity_Id;
-         Ent_To_Fix        : Entity_Id;
-         Decl              : Node_Id := Empty;
+      procedure Fixup_Inner_Scopes (N : Node_Id) is
+         Stmt       : Node_Id := Empty;
+         Ent        : Entity_Id;
+         Ent_To_Fix : Entity_Id;
+         Decl       : Node_Id := Empty;
+         Elmt       : Elmt_Id := No_Elmt;
       begin
-         pragma Assert (Nkind (Loop_Or_Block) in
-           N_Loop_Statement | N_Block_Statement);
+         pragma
+           Assert
+             (Nkind (N)
+              in N_Loop_Statement | N_Block_Statement | N_Freeze_Entity);
 
-         Loop_Or_Block_Ent := Entity (Identifier (Loop_Or_Block));
-         if Nkind (Loop_Or_Block) = N_Loop_Statement then
-            Stmt := First (Statements (Loop_Or_Block));
-         else -- N_Block_Statement
-            Stmt := First
-              (Statements (Handled_Statement_Sequence (Loop_Or_Block)));
-            Decl := First (Declarations (Loop_Or_Block));
+         if Nkind (N) = N_Freeze_Entity then
+            Ent := Scope (Entity (N));
+         else
+            Ent := Entity (Identifier (N));
          end if;
+
+         case Nkind (N) is
+            when N_Loop_Statement =>
+               Stmt := First (Statements (N));
+
+            when N_Block_Statement =>
+               Stmt := First (Statements (Handled_Statement_Sequence (N)));
+               Decl := First (Declarations (N));
+
+            when N_Freeze_Entity =>
+               if Present (TSS_Elist (N)) then
+                  Elmt := First_Elmt (TSS_Elist (N));
+                  while Present (Elmt) loop
+                     Ent_To_Fix := Node (Elmt);
+                     Set_Scope (Ent_To_Fix, Ent);
+                     Next_Elmt (Elmt);
+                  end loop;
+               end if;
+
+            when others =>
+               pragma Assert (False);
+         end case;
 
          --  Fix scopes for any object declaration found in the block
          while Present (Decl) loop
             if Nkind (Decl) = N_Object_Declaration then
                Ent_To_Fix := Defining_Identifier (Decl);
-               Set_Scope (Ent_To_Fix, Loop_Or_Block_Ent);
+               Set_Scope (Ent_To_Fix, Ent);
             end if;
             Next (Decl);
          end loop;
 
          while Present (Stmt) loop
-            if Nkind (Stmt) = N_Block_Statement
-              and then Is_Abort_Block (Stmt)
+            if Nkind (Stmt) = N_Block_Statement and then Is_Abort_Block (Stmt)
             then
                Ent_To_Fix := Entity (Identifier (Stmt));
-               Set_Scope (Ent_To_Fix, Loop_Or_Block_Ent);
-            elsif Nkind (Stmt) in N_Block_Statement | N_Loop_Statement
+               Set_Scope (Ent_To_Fix, Ent);
+            elsif Nkind (Stmt)
+                  in N_Block_Statement | N_Loop_Statement | N_Freeze_Entity
             then
                Fixup_Inner_Scopes (Stmt);
             end if;

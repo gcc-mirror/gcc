@@ -220,6 +220,8 @@ package body Exp_Unst is
          else
             Lev := Lev + 1;
             S   := Enclosing_Subprogram (S);
+
+            pragma Assert (Present (S));
          end if;
       end loop;
    end Get_Level;
