@@ -527,7 +527,7 @@ namespace __unicode
 	  {
 	    // read a low surrogate, expect a high surrogate before it.
 	    uint16_t __u2 = *--_M_curr();
-	    if (__u2 < 0xD800 || __u2 > 0xDC00) [[unlikely]]
+	    if (__u2 < 0xD800 || __u2 >= 0xDC00) [[unlikely]]
 	      __c = _S_error(); // unpaired low surrogate
 	    else
 	      {

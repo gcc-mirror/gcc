@@ -94,6 +94,11 @@ test_illformed_utf16()
   compare(uc::_Utf16_view(s4), u"\uFFFD\uFFFD"sv);
   std::array s5{ s[1], s[0], s[1] };
   compare(uc::_Utf16_view(s5), u"\uFFFD\N{CLOWN FACE}"sv);
+
+  std::array<char16_t, 2> s6{ 0xDC00, 0xDC01 };
+  compare(uc::_Utf16_view(s6), u"\uFFFD\uFFFD"sv);
+  std::array<char16_t, 2> s7{ 0xD7FF, 0xDC00 };
+  compare(uc::_Utf16_view(s7), u"\uD7FF\uFFFD"sv);
 }
 
 constexpr void
