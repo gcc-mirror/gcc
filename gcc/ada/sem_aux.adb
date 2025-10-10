@@ -184,9 +184,6 @@ package body Sem_Aux is
 
       --  Normal case, search enclosing scopes
 
-      --  Note: the test for Present (S) should not be required, it defends
-      --  against an ill-formed tree.
-
       S := Scope (Ent);
       loop
          --  If we somehow got an empty value for Scope, the tree must be
