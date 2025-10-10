@@ -1,4 +1,4 @@
-/* { dg-options "-mno-abicalls -mgpopt -G8 -mabi=32 isa_rev>=2 -mmips16e2" } */
+/* { dg-options "-mno-abicalls -mgpopt -G8 -mabi=32 -mips32r2 -mips16 -mmips16e2" } */
 /* { dg-skip-if "naming registers makes this a code quality test" { *-*-* } { "-O0" } { "" } } */
 
 /* Test cache.  */
