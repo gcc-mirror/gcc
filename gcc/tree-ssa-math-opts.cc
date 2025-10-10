@@ -1631,43 +1631,7 @@ static tree
 build_and_insert_cast (gimple_stmt_iterator *gsi, location_t loc,
 		       tree type, tree val)
 {
-  tree result = make_ssa_name (type);
-  tree rhs = val;
-
-  if (TREE_CODE (val) == SSA_NAME)
-    {
-      gimple *def = SSA_NAME_DEF_STMT (val);
-
-      if (is_gimple_assign (def)
-	  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (def)))
-	{
-	  tree cast_rhs = gimple_assign_rhs1 (def);
-	  tree cast_rhs_type = TREE_TYPE (cast_rhs);
-	  tree val_type = TREE_TYPE (val);
-
-	  bool unsigned_p = TYPE_UNSIGNED (type);
-	  bool unsigned_rhs_p = TYPE_UNSIGNED (cast_rhs_type);
-	  bool unsigned_val_p = TYPE_UNSIGNED (val_type);
-
-	  unsigned rhs_prec = TYPE_PRECISION (cast_rhs_type);
-	  unsigned type_prec = TYPE_PRECISION (type);
-	  unsigned val_prec = TYPE_PRECISION (val_type);
-
-	  if (type_prec >= rhs_prec && val_prec >= rhs_prec)
-	    {
-	      /* Aka any sign extend from small to big size */
-	      if (!((val_prec > rhs_prec && !unsigned_val_p && !unsigned_rhs_p)
-		  || (type_prec > val_prec && !unsigned_p && !unsigned_val_p)))
-		rhs = cast_rhs;
-	    }
-	}
-    }
-
-  gassign *stmt = gimple_build_assign (result, NOP_EXPR, rhs);
-
-  gimple_set_location (stmt, loc);
-  gsi_insert_before (gsi, stmt, GSI_SAME_STMT);
-  return result;
+  return gimple_convert (gsi, true, GSI_SAME_STMT, loc, type, val);
 }
 
 struct pow_synth_sqrt_info
