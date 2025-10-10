@@ -880,7 +880,12 @@
 #undef __glibcxx_want_atomic_lock_free_type_aliases
 
 #if !defined(__cpp_lib_atomic_ref)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_atomic_ref 202411L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_atomic_ref)
+#   define __cpp_lib_atomic_ref 202411L
+#  endif
+# elif (__cplusplus >= 202002L)
 #  define __glibcxx_atomic_ref 201806L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_atomic_ref)
 #   define __cpp_lib_atomic_ref 201806L

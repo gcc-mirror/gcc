@@ -1589,6 +1589,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 #endif // __glibcxx_atomic_wait
 
+#if __glibcxx_atomic_ref >= 202411L
+      _GLIBCXX_ALWAYS_INLINE constexpr const _Tp*
+      address() const noexcept
+      { return _M_ptr; }
+#endif // __glibcxx_atomic_ref >= 202411L
+
     protected:
       _Tp* _M_ptr;
     };
@@ -1672,6 +1678,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__atomic_impl::notify_all(this->_M_ptr);
       }
 #endif // __glibcxx_atomic_wait
+
+#if __glibcxx_atomic_ref >= 202411L
+      _GLIBCXX_ALWAYS_INLINE constexpr _Tp*
+      address() const noexcept
+      { return this->_M_ptr; }
+#endif // __glibcxx_atomic_ref >= 202411L
     };
 
   template<typename _Tp,

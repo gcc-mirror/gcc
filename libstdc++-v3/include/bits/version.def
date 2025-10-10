@@ -790,6 +790,10 @@ ftms = {
 ftms = {
   name = atomic_ref;
   values = {
+    v = 202411;
+    cxxmin = 26;
+  };
+  values = {
     v = 201806;
     cxxmin = 20;
   };
