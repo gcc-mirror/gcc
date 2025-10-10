@@ -40,13 +40,13 @@
 __asm__ volatile					  \
   ("{tileloaddrs\t(%0,%1,1), %%tmm"#tdst		  \
      "|tileloaddrs\t%%tmm"#tdst", [%0+%1*1]}"		  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_loaddrst1_internal(tdst, base, stride)	  \
 __asm__ volatile					  \
   ("{tileloaddrst1\t(%0,%1,1), %%tmm"#tdst		  \
      "|tileloaddrst1\t%%tmm"#tdst", [%0+%1*1]}"		  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_loaddrs(tdst, base, stride)		  \
   _tile_loaddrs_internal(tdst, base, stride)
@@ -69,25 +69,25 @@ __asm__ volatile					  \
   __asm__ volatile					  \
   ("{t2rpntlvwz0rs\t(%0,%1,1), %%tmm"#tdst		  \
      "|t2rpntlvwz0rs\t%%tmm"#tdst", [%0+%1*1]}"	  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz0rst1_internal(tdst, base, stride) \
   __asm__ volatile					  \
   ("{t2rpntlvwz0rst1\t(%0,%1,1), %%tmm"#tdst		  \
      "|t2rpntlvwz0rst1\t%%tmm"#tdst", [%0+%1*1]}"	  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz1rs_internal(tdst, base, stride)	  \
   __asm__ volatile					  \
   ("{t2rpntlvwz1rs\t(%0,%1,1), %%tmm"#tdst		  \
      "|t2rpntlvwz1rs\t%%tmm"#tdst", [%0+%1*1]}"		  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz1rst1_internal(tdst, base, stride) \
   __asm__ volatile					  \
   ("{t2rpntlvwz1rst1\t(%0,%1,1), %%tmm"#tdst		  \
      "|t2rpntlvwz1rst1\t%%tmm"#tdst", [%0+%1*1]}"	  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
+   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz0rs(tdst, base, stride)		  \
   _tile_2rpntlvwz0rs_internal(tdst, base, stride)
