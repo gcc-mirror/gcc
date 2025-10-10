@@ -8382,7 +8382,8 @@ package body Freeze is
       --  and Per-Object Expressions" will suppress the insertion, and the
       --  freeze node will be dropped on the floor.
 
-      if Saved_Ghost_Config.Ghost_Mode = Ignore
+      if not CodePeer_Mode
+        and then Saved_Ghost_Config.Ghost_Mode = Ignore
         and then Ghost_Config.Ghost_Mode /= Ignore
         and then Present (Ghost_Config.Ignored_Ghost_Region)
       then

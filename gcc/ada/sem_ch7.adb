@@ -835,7 +835,8 @@ package body Sem_Ch7 is
       --  user entities, as internally generated entities might still need
       --  to be expanded (e.g. those generated for types).
 
-      if Present (Ghost_Config.Ignored_Ghost_Region)
+      if not CodePeer_Mode
+        and then Present (Ghost_Config.Ignored_Ghost_Region)
         and then Comes_From_Source (Body_Id)
       then
          Expander_Active := False;
@@ -1148,7 +1149,9 @@ package body Sem_Ch7 is
          end if;
       end if;
 
-      if Present (Ghost_Config.Ignored_Ghost_Region) then
+      if not CodePeer_Mode and then
+        Present (Ghost_Config.Ignored_Ghost_Region)
+      then
          Expander_Active := Saved_EA;
       end if;
 
