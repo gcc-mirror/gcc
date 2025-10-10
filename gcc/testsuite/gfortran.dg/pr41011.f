@@ -1,5 +1,7 @@
 ! { dg-do compile }
 ! { dg-options "-O3 -std=legacy" }
+      SUBROUTINE PR41011 (DCDX)
+      DIMENSION DCDX(*)
       CALL UVSET(NX,NY,NZ,HVAR,ZET,NP,DZ,DKM,UM,VM,UG,VG,TM,DCDX, ! { dg-warning "Rank mismatch|Invalid procedure argument" }
      *ITY,ISH,NSMT,F)
          CALL DCTDX(NX,NY,NX1,NFILT,C(MLAG),DCDX(MLAG),HELP,HELPA,

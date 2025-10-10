@@ -2295,6 +2295,30 @@ resolve_actual_arglist (gfc_actual_arglist *arg, procedure_type ptype,
 	  goto cleanup;
 	}
 
+      if (e->expr_type == EXPR_VARIABLE
+	  && e->ts.type == BT_PROCEDURE
+	  && no_formal_args
+	  && sym->attr.flavor == FL_PROCEDURE
+	  && sym->attr.if_source == IFSRC_UNKNOWN
+	  && !sym->attr.external
+	  && !sym->attr.intrinsic
+	  && !sym->attr.artificial
+	  && !sym->ts.interface)
+	{
+	  /* Emit a warning for -std=legacy and an error otherwise. */
+	  if (gfc_option.warn_std == 0)
+	    gfc_warning (0, "Procedure %qs at %L used as actual argument but "
+			 "does neither have an explicit interface nor the "
+			 "EXTERNAL attribute", sym->name, &e->where);
+	  else
+	    {
+	      gfc_error ("Procedure %qs at %L used as actual argument but "
+			 "does neither have an explicit interface nor the "
+			 "EXTERNAL attribute", sym->name, &e->where);
+	      goto cleanup;
+	    }
+	}
+
       first_actual_arg = false;
     }
 
