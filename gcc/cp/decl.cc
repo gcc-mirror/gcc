@@ -4546,7 +4546,9 @@ make_typename_type (tree context, tree name, enum tag_types tag_type,
 	   - the tag corresponds to a class-key or 'enum' so
 	     [basic.lookup.elab] applies, or
 	   - the tag corresponds to scope_type or tf_qualifying_scope is
-	     set so [basic.lookup.qual]/1 applies.
+	     set so [basic.lookup.qual]/1 applies, or
+	   - we're inside a base-specifier so [class.derived.general]/2 applies;
+	     the tag will already be class_type in that case.
 	 TODO: If we'd set/track the scope_type tag thoroughly on all
 	 TYPENAME_TYPEs that are followed by :: then we wouldn't need the
 	 tf_qualifying_scope flag.  */
