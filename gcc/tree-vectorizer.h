@@ -290,6 +290,8 @@ struct vect_load_store_data : vect_data {
   tree strided_offset_vectype; // VMAT_GATHER_SCATTER_IFN, originally strided
   tree ls_type; // VMAT_GATHER_SCATTER_IFN
   auto_vec<int> elsvals;
+  /* True if the load requires a load permutation.  */
+  bool slp_perm;    // SLP_TREE_LOAD_PERMUTATION
   unsigned n_perms; // SLP_TREE_LOAD_PERMUTATION
 };
 
