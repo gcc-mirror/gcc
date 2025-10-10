@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized -w -Wno-psabi" } */
+/* { dg-options "-O2 -fdump-tree-nrv -w -Wno-psabi" } */
 
 #define foobar(n) \
     typedef int v##n##si __attribute__ ((vector_size (4 * n))); \
@@ -25,5 +25,7 @@ foobar(16)
 foobar(32)
 foobar(64)
 
-/* Verify we don't have any vector temporaries in the IL.  */
-/* { dg-final { scan-tree-dump-not "vector" "optimized" } } */
+/* Verify we don't have any vector temporaries in the IL at least until ISEL
+   which may introduce VEC_EXTRACTs on targets which support non-constant
+   indices (see PR116421).  */
+/* { dg-final { scan-tree-dump-not "vector" "nrv" } } */
