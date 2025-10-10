@@ -129,5 +129,4 @@ int main()
 {
   test_ostream();
   test_format();
-  // TODO: test_parse();
 }

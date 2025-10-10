@@ -26,5 +26,4 @@ int main()
 {
   test_ostream();
   // TODO: test_format();
-  // TODO: test_parse();
 }
