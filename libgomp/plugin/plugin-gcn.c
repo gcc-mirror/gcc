@@ -3331,6 +3331,61 @@ gcn_exec (struct kernel_info *kernel,
 /* }}}  */
 /* {{{ Generic Plugin API  */
 
+#if 0  /* TODO: Use to enable self-mapping/USM automatically.  */
+/* FIXME: The auto-self-map feature depends on still mapping 'declare target'
+   variables, even if ignoring all other mappings. Cf. PR 115279.  */
+
+/* Return TRUE if the GPU is an APU, i.e. the GPU is integrated with the CPU
+   such that both use the same memory controller such that mapping or memory
+   migration is pointless.  If CHECK_XNACK is TRUE, it additionally requires
+   that the GPU has *no* XNACK support otherwise FALSE is returned.
+
+   In theory, enabling unified-shared memory for APUs should always work,
+   however, with AMD GPUs some APUs (e.g. MI300A) still require XNACK to be
+   enabled as it is required to handle page faults.
+
+   Thus, for unified-shared memory access, either of the following must hold:
+   * HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT is TRUE
+     This implies that all GPUs support USM access, either directly (as APU)
+     or via page migration.  For MI300A, this is only the case if
+     HSA_AMD_SYSTEM_INFO_XNACK_ENABLED is TRUE.
+   * If the GPU an APU *and* it does not support XNACK.  */
+
+static bool
+is_integrated_apu (struct agent_info *agent, bool check_xnack)
+{
+  enum {
+    HSACO_ATTR_UNSUPPORTED,
+    HSACO_ATTR_OFF,
+    HSACO_ATTR_ON,
+    HSACO_ATTR_ANY,
+    HSACO_ATTR_DEFAULT
+  };
+
+  bool is_apu;
+  uint8_t mem_prop[8];
+  hsa_status_t status;
+
+  status = hsa_fns.hsa_agent_get_info_fn (
+	     agent->id, (hsa_agent_info_t) HSA_AMD_AGENT_INFO_MEMORY_PROPERTIES,
+	     mem_prop);
+  _Static_assert (HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU < 8,
+		  "HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU < 8");
+  is_apu = (status == HSA_STATUS_SUCCESS
+	    && (mem_prop[0] & (1 << HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU)));
+
+  if (check_xnack)
+    switch(agent->device_isa)
+      {
+#define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, ...) \
+      case ELF: return is_apu && (XNACK == HSACO_ATTR_UNSUPPORTED);
+#include "../../gcc/config/gcn/gcn-devices.def"
+      default: return false;  /* Just to be save.  */
+      }
+  return is_apu;
+}
+#endif
+
 /* Return the name of the accelerator, which is "gcn".  */
 
 const char *

@@ -168,8 +168,16 @@ typedef enum hsa_amd_agent_info_s {
    * selective workarounds for hardware errata.
    * The type of this attribute is uint32_t.
    */
-  HSA_AMD_AGENT_INFO_ASIC_REVISION = 0xA012
+  HSA_AMD_AGENT_INFO_ASIC_REVISION = 0xA012,
+
+  /* Bitmask with memory properties of the agent.  */
+  HSA_AMD_AGENT_INFO_MEMORY_PROPERTIES = 0xA114
 } hsa_amd_agent_info_t;
+
+
+enum {
+  HSA_AMD_MEMORY_PROPERTY_AGENT_IS_APU = (1 << 0)
+};
 
 typedef struct hsa_amd_hdp_flush_s {
   uint32_t* HDP_MEM_FLUSH_CNTL;

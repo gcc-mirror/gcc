@@ -1246,6 +1246,24 @@ nvptx_get_current_cuda_context (void)
   return nvthd->ptx_dev->ctx;
 }
 
+#if 0  /* TODO: Use to enable self-mapping/USM automatically.  */
+/* FIXME: The auto-self-map feature depends on still mapping 'declare target'
+   variables, even if ignoring all other mappings. Cf. PR 115279.  */
+
+/* Return TRUE if the GPU is integrated with host memory, i.e. GPU and
+   host share the same memory controller.  As of Oct 2025, no such
+   Nvidia GPU seems to exist.  */
+static bool
+is_integrated_apu (struct ptx_device *ptx_dev)
+{
+  int pi;
+  CUresult r;
+  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+			 CU_DEVICE_ATTRIBUTE_INTEGRATED, ptx_dev->dev);
+  return (r == CUDA_SUCCESS && pi == 1);
+}
+#endif
+
 /* Plugin entry points.  */
 
 const char *
