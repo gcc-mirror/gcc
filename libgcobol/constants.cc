@@ -107,7 +107,8 @@ struct cblc_field_t __ggsr___2_##a = {    \
   .level          = 0 ,                 \
   .digits         = 0 ,                 \
   .rdigits        = 0 ,                 \
-  .dummy          = 0 ,                 \
+  .encoding       = iconv_CP1252_e                   \
+  .alphabet       = 0                   \
   };
 
 unsigned char __gg__data_space[1] = {' '};
@@ -122,12 +123,13 @@ struct cblc_field_t __ggsr__space = {
   .parent         = NULL,
   .occurs_lower   = 0 ,
   .occurs_upper   = 0 ,
-  .attr           = 0x284 ,
+  .attr           = quoted_e | constant_e | space_value_e ,
   .type           = FldAlphanumeric ,
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__spaces = {
@@ -141,12 +143,13 @@ struct cblc_field_t __ggsr__spaces = {
   .parent         = NULL,
   .occurs_lower   = 0 ,
   .occurs_upper   = 0 ,
-  .attr           = 0x284 ,
+  .attr           = quoted_e | constant_e | space_value_e ,
   .type           = FldAlphanumeric ,
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_low_values[1] = {'\0'};
@@ -166,7 +169,8 @@ struct cblc_field_t __ggsr__low_values = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_zeros[1] = {'0'};
@@ -186,7 +190,8 @@ struct cblc_field_t __ggsr__zeros = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_high_values[1] = {0xFF};
@@ -206,7 +211,8 @@ struct cblc_field_t __ggsr__high_values = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_quotes[1] = {0xFF};
@@ -226,7 +232,8 @@ struct cblc_field_t __ggsr__quotes = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_nulls[8] = {0,0,0,0,0,0,0,0};
@@ -246,7 +253,8 @@ struct cblc_field_t __ggsr__nulls = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data__file_status[2] = {0,0};
@@ -266,7 +274,8 @@ struct cblc_field_t __ggsr___file_status = {
   .level          = 0 ,
   .digits         = 2 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 
@@ -287,7 +296,8 @@ struct cblc_field_t __ggsr___14_linage_counter6 = {
   .level          = 0 ,
   .digits         = 4 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 
@@ -308,7 +318,8 @@ struct cblc_field_t __ggsr__upsi_0 = {
   .level          = 0 ,
   .digits         = 4 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 short __gg__data_return_code = 0;
@@ -328,7 +339,8 @@ struct cblc_field_t __ggsr__return_code = {
   .level          = 0 ,
   .digits         = 4 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg___data_dev_stdin[] = "/dev/stdin";
@@ -348,7 +360,8 @@ struct cblc_field_t __ggsr___dev_stdin = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
  unsigned char __gg___data_dev_stdout[] = "/dev/stdout";
@@ -368,7 +381,8 @@ struct cblc_field_t __ggsr___dev_stdout = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg___data_dev_stderr[] = "/dev/stderr";
@@ -388,7 +402,8 @@ struct cblc_field_t __ggsr___dev_stderr = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg___data_dev_null[] = "/dev/null";
@@ -408,7 +423,8 @@ struct cblc_field_t __ggsr___dev_null = {
   .level          = 0 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_tally[] = {0,0};
@@ -428,7 +444,8 @@ struct cblc_field_t __ggsr__tally = {
   .level          = 0 ,
   .digits         = 5 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 unsigned char __gg__data_argi[] = {0,0};
@@ -448,8 +465,25 @@ struct cblc_field_t __ggsr__argi = {
   .level          = 0 ,
   .digits         = 5 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
+
+/**
+
+Special registers used by the XML parser
+Special register Implicit definition and usage Content
+    
+XML-EVENT PICTURE X(30) USAGE DISPLAY VALUE SPACE *> name of XML event
+XML-CODE  PICTURE S9(9) USAGE BINARY VALUE ZERO   *> status of XML event 
+XML-TEXT  Variable-length alphanumeric item
+XML-NTEXT Variable-length national item
+
+
+
+**/
+
+
 
 /* The following defines storage for the global DEBUG-ITEM:
 
@@ -491,7 +525,8 @@ struct cblc_field_t __ggsr__debug_item = {
   .level          = 01 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_line = {
@@ -510,7 +545,8 @@ struct cblc_field_t __ggsr__debug_line = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_filler_1 = {
@@ -529,7 +565,8 @@ struct cblc_field_t __ggsr__debug_filler_1 = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_name = {
@@ -548,7 +585,8 @@ struct cblc_field_t __ggsr__debug_name = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_filler_2 = {
@@ -567,7 +605,8 @@ struct cblc_field_t __ggsr__debug_filler_2 = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_sub_1 = {
@@ -586,7 +625,8 @@ struct cblc_field_t __ggsr__debug_sub_1 = {
   .level          = 05 ,
   .digits         = 4 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_filler_3 = {
@@ -605,7 +645,8 @@ struct cblc_field_t __ggsr__debug_filler_3 = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_sub_2 = {
@@ -624,7 +665,8 @@ struct cblc_field_t __ggsr__debug_sub_2 = {
   .level          = 05 ,
   .digits         = 4 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_filler_4 = {
@@ -643,7 +685,8 @@ struct cblc_field_t __ggsr__debug_filler_4 = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_sub_3 = {
@@ -662,7 +705,8 @@ struct cblc_field_t __ggsr__debug_sub_3 = {
   .level          = 05 ,
   .digits         = 4 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_filler_5 = {
@@ -681,7 +725,8 @@ struct cblc_field_t __ggsr__debug_filler_5 = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 struct cblc_field_t __ggsr__debug_contents = {
@@ -700,7 +745,8 @@ struct cblc_field_t __ggsr__debug_contents = {
   .level          = 05 ,
   .digits         = 0 ,
   .rdigits        = 0 ,
-  .dummy          = 0 ,
+  .encoding       = iconv_CP1252_e ,
+  .alphabet       = 0 ,
   };
 
 #pragma GCC diagnostic pop

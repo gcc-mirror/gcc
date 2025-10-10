@@ -39,21 +39,10 @@
 
 #include "ec.h"
 #include "common-defs.h"
+#include "valconv.h"
 #include "charmaps.h"
 
-#include "valconv.h"
 #include "exceptl.h"
-
-int __gg__decimal_point        = '.'  ;
-int __gg__decimal_separator    = ','  ;
-int __gg__quote_character      = '"'  ;
-int __gg__low_value_character  = 0x00 ;
-int __gg__high_value_character = 0xFF ;
-char **__gg__currency_signs           ;
-
-int __gg__default_currency_sign;
-
-char *__gg__ct_currency_signs[256];  // Compile-time currency signs
 
 std::unordered_map<size_t, alphabet_state> __gg__alphabet_states;
 
@@ -112,7 +101,6 @@ __gg__alphabet_create(  cbl_encoding_t encoding,
 
   return;
   }
-
 
 static int
 expand_picture(char *dest, const char *picture)
@@ -227,6 +215,10 @@ __gg__string_to_numeric_edited( char * const dest,
                                 int is_negative,
                                 const char *picture)
   {
+  // This routine operates in ASCII space.  Life is hard enough without trying
+  // to do this in EBCDIC, too.  So, 'source' and 'picture' are assumed to be
+  // CP1252
+
   // We need to expand the picture string.  We assume that the caller left
   // enough room in dest to take the expanded picture string.
 
@@ -448,7 +440,6 @@ __gg__string_to_numeric_edited( char * const dest,
             dest[i] = ascii_space;
             }
           }
-
 
         if( index_s >= decimal_point_index )
           {
@@ -1214,24 +1205,29 @@ got_float:
         }
       }
     }
-  bool retval = false;
 
+  bool retval = false;
   return retval;
   }
 
 extern "C"
 void
 __gg__string_to_alpha_edited(   char *dest,
+                                cbl_encoding_t dest_encoding,
                                 const char *source,
                                 int slength,
                                 const char *picture)
   {
+  // 'source' is in 'dest' encoding
+
   // Put the PICTURE into the data area.  If the caller didn't leave enough
   // room, well, poo on them.  Said another way; if they specify disaster,
   // disaster is what they will get.
 
   // This routine expands picture into dest using ascii characters, but
-  // replaces them with internal characters
+  // replaces them with encoded characters
+
+  charmap_t *charmap_dest = __gg__get_charmap(dest_encoding);
 
   int destlength = expand_picture(dest, picture);
 
@@ -1246,15 +1242,15 @@ __gg__string_to_alpha_edited(   char *dest,
       {
       case ascii_b:   // Replaced with space
       case ascii_B:
-        dest[dindex] = internal_space;
+        dest[dindex] = charmap_dest->mapped_character(ascii_space);
         break;
 
       case ascii_zero:   // These are left alone:
-        dest[dindex] = ascii_to_internal(ascii_zero);
+        dest[dindex] = charmap_dest->mapped_character(ascii_0);
         break;
 
       case ascii_slash:
-        dest[dindex] = ascii_to_internal(ascii_slash);
+        dest[dindex] = charmap_dest->mapped_character(ascii_slash);
         break;
 
       default:
@@ -1267,14 +1263,14 @@ __gg__string_to_alpha_edited(   char *dest,
           }
         else
           {
-          sch = internal_space;
+          sch = charmap_dest->mapped_character(ascii_space);;
           }
         dest[dindex] = sch;
       }
     dindex += 1;
     }
   }
-
+  
 extern "C"
 void
 __gg__currency_sign_init()
@@ -1323,7 +1319,7 @@ __gg__remove_trailing_zeroes(char *p)
 
   if( strchr(left, '.') )
     {
-    while(*right == '0' || *right == internal_space)
+    while( *right == '0' )
       {
       right -= 1;
       }

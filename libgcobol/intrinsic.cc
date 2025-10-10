@@ -86,11 +86,11 @@ static int is_leap_year(int);
 typedef char * PCHAR;
 
 static void
-trim_trailing_spaces(PCHAR left, PCHAR &right)
+trim_trailing_spaces(PCHAR left, PCHAR &right, int mapped_space)
   {
   while( right > left )
     {
-    if( *(right-1) != internal_space )
+    if( *(right-1) != mapped_space )
       {
       break;
       }
@@ -99,12 +99,13 @@ trim_trailing_spaces(PCHAR left, PCHAR &right)
   }
 
 static bool
-is_zulu_format(PCHAR left, PCHAR &right)
+is_zulu_format(PCHAR left, PCHAR &right, charmap_t *charmap)
   {
+  int char_Z = charmap->mapped_character(ascii_Z);
   bool retval = false;
   if( right > left )
     {
-    retval = std::toupper((unsigned char)*(right-1)) == internal_Z;
+    retval = std::toupper((unsigned char)*(right-1)) == char_Z;
     }
   return retval;
   }
@@ -231,7 +232,8 @@ string_to_dest(cblc_field_t *dest, const char *psz)
   size_t dest_length = dest->capacity;
   size_t source_length = strlen(psz);
   size_t length = std::min(dest_length, source_length);
-  memset(dest->data, internal_space, dest_length);
+  charmap_t *charmap = __gg__get_charmap(dest->encoding);
+  memset(dest->data, charmap->mapped_character(ascii_space), dest_length);
   memcpy(dest->data, psz, length);
   }
 
@@ -524,7 +526,8 @@ variance( size_t         ncount,
 
 static
 void
-get_all_time( char *stime,
+get_all_time( const cblc_field_t *dest, // needed for the target encoding
+              char *stime,
               const struct cobol_tm &ctm)
   {
   // This routine represents a universal source for all output formatted date
@@ -572,8 +575,9 @@ get_all_time( char *stime,
           ctm.day_of_week+1,
           ctm.day_of_year,
           ctm.ZZZZ);
-  // We might be operating in EBCDIC:
-  ascii_to_internal_str(stime, strlen(stime));
+  __gg__convert_encoding(PTRCAST(char, stime),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   }
 
 static
@@ -798,6 +802,7 @@ ftime_replace(char *dest,
               char const * const dest_end,
               char const *       source,
               char const * const source_end,
+              charmap_t  *       charmap_source,
               char const * const ftime)
   {
   // This routine is highly dependent on the source format being correct.
@@ -806,24 +811,34 @@ ftime_replace(char *dest,
   bool saw_decimal_point = false;
   bool saw_plus_sign = false;
   char decimal_point = __gg__get_decimal_point();
-  static const int OFFSET_TO_YYYY = 0;
-  static const int OFFSET_TO_MM   = 4;
-  static const int OFFSET_TO_DD   = 6;
-  static const int OFFSET_TO_HOUR = 9;
-  static const int OFFSET_TO_MINUTE = 11;
-  static const int OFFSET_TO_SECOND = 13;
-  static const int OFFSET_TO_FRACTION = 16;
-  static const int OFFSET_TO_OFFSET = 25;
-  static const int OFFSET_TO_OFFSET_HOUR = 26;
-  static const int OFFSET_TO_OFFSET_MINUTE = 28;
-  static const int OFFSET_TO_WEEK = 30;
-  static const int OFFSET_TO_DOW = 33;
-  static const int OFFSET_TO_DOY  = 34;
-  static const int OFFSET_TO_ZZZZ = 37;
+  static const int OFFSET_TO_YYYY           =  0;
+  static const int OFFSET_TO_MM             =  4;
+  static const int OFFSET_TO_DD             =  6;
+  static const int OFFSET_TO_HOUR           =  9;
+  static const int OFFSET_TO_MINUTE         = 11;
+  static const int OFFSET_TO_SECOND         = 13;
+  static const int OFFSET_TO_FRACTION       = 16;
+  static const int OFFSET_TO_OFFSET         = 25;
+  static const int OFFSET_TO_OFFSET_HOUR    = 26;
+  static const int OFFSET_TO_OFFSET_MINUTE  = 28;
+  static const int OFFSET_TO_WEEK           = 30;
+  static const int OFFSET_TO_DOW            = 33;
+  static const int OFFSET_TO_DOY            = 34;
+  static const int OFFSET_TO_ZZZZ           = 37;
+
+  int source_Y    = charmap_source->mapped_character(ascii_Y   );
+  int source_W    = charmap_source->mapped_character(ascii_W   );
+  int source_s    = charmap_source->mapped_character(ascii_s   );
+  int source_m    = charmap_source->mapped_character(ascii_m   );
+  int source_h    = charmap_source->mapped_character(ascii_h   );
+  int source_plus = charmap_source->mapped_character(ascii_plus);
+  int source_D    = charmap_source->mapped_character(ascii_D   );
+  int source_M    = charmap_source->mapped_character(ascii_M   );
+
   while( source < source_end && dest < dest_end )
     {
     char fchar = *source;
-    if( fchar == internal_Y )
+    if( fchar == source_Y )
       {
       // This can only be a YYYY
       // But, we have a choice.  If there is a 'W' in the format, then we
@@ -832,7 +847,7 @@ ftime_replace(char *dest,
       const char *p = source;
       while(p < source_end)
         {
-        if( *p++ == internal_W )
+        if( *p++ == source_W )
           {
           src = ftime + OFFSET_TO_ZZZZ;
           }
@@ -840,21 +855,21 @@ ftime_replace(char *dest,
 
       ncount = 4;
       }
-    else if( fchar == internal_M )
+    else if( fchar == source_M )
       {
       // This can only be a MM
       ncount = 2;
       src = ftime + OFFSET_TO_MM;
       }
-    else if( fchar == internal_D )
+    else if( fchar == source_D )
       {
       // It can be a D, DD or DDD
-      if( source[2] == internal_D )
+      if( source[2] == source_D )
         {
         ncount = 3;
         src = ftime + OFFSET_TO_DOY;
         }
-      else if( source[1] == internal_D )
+      else if( source[1] == source_D )
         {
         ncount = 2;
         src = ftime + OFFSET_TO_DD;
@@ -865,13 +880,13 @@ ftime_replace(char *dest,
         src = ftime + OFFSET_TO_DOW;
         }
       }
-    else if( fchar == internal_plus )
+    else if( fchar == source_plus )
       {
       saw_plus_sign = true;
       ncount = 1;
       src = ftime + OFFSET_TO_OFFSET;
       }
-    else if( fchar == internal_h )
+    else if( fchar == source_h )
       {
       ncount = 2;
       if(saw_plus_sign)
@@ -883,7 +898,7 @@ ftime_replace(char *dest,
         src = ftime + OFFSET_TO_HOUR;
         }
       }
-    else if( fchar == internal_m )
+    else if( fchar == source_m )
       {
       ncount = 2;
       if(saw_plus_sign)
@@ -901,7 +916,7 @@ ftime_replace(char *dest,
       ncount = 1;
       src = source;
       }
-    else if( fchar == internal_s )
+    else if( fchar == source_s )
       {
       if(saw_decimal_point)
         {
@@ -915,7 +930,7 @@ ftime_replace(char *dest,
         src = ftime + OFFSET_TO_SECOND;
         }
       }
-    else if( fchar == internal_W )
+    else if( fchar == source_W )
       {
       ncount = 3;
       src = ftime + OFFSET_TO_WEEK;
@@ -1141,7 +1156,8 @@ __gg__char( cblc_field_t *dest,
                                                               source_size));
   ordinal /= __gg__power_of_ten(rdigits);
   int ch = ordinal-1;
-  memset(dest->data, internal_space, dest->capacity);
+  charmap_t *charmap = __gg__get_charmap(dest->encoding);
+  memset(dest->data, charmap->mapped_character(ascii_space), dest->capacity);
   dest->data[0] = ch;
   }
 
@@ -1223,7 +1239,9 @@ __gg__current_date(cblc_field_t *dest)
 
   char retval[DATE_STRING_BUFFER_SIZE];
   timespec_to_string(retval, tp);
-  ascii_to_internal_str(retval, strlen(retval));
+  __gg__convert_encoding(PTRCAST(char, retval),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   string_to_dest(dest, retval);
   }
 
@@ -1235,7 +1253,7 @@ __gg__seconds_past_midnight(cblc_field_t *dest)
   struct cbl_timespec tp = {};
   struct tm tm;
   __int128 retval=0;
-  
+
   __gg__clock_gettime(&tp); // time_t tv_sec; long tv_nsec
   localtime_r(&tp.tv_sec, &tm);
 
@@ -1462,10 +1480,18 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   {
   // FUNCTION FORMATTED-CURRENT-DATE
 
+  cbl_encoding_t from = input->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap_from = __gg__get_charmap(from);
+  charmap_t *charmap_to   = __gg__get_charmap(to);
+
+  int dest_space = charmap_to->mapped_character(ascii_space);
+  int format_Z   = charmap_from->mapped_character(ascii_Z);
+
   // Establish the destination, and set it to spaces
   char *d    = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
-  memset(d, internal_space, dest->capacity);
+  memset(d, dest_space, dest->capacity);
 
   // Establish the formatting string:
   const char *format     = PTRCAST(char, (input->data+input_offset));
@@ -1477,7 +1503,7 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   while( p < format_end )
     {
     int ch = *p++;
-    if( ch == internal_Z )
+    if( ch == format_Z )
       {
       is_zulu = true;
       break;
@@ -1510,8 +1536,8 @@ __gg__formatted_current_date( cblc_field_t *dest, // Destination string
   ctm.tz_offset = -timezone/60;
 
   char achftime[64];
-  get_all_time(achftime, ctm);
-  ftime_replace(d, dend, format, format_end, achftime);
+  get_all_time(dest, achftime, ctm);
+  ftime_replace(d, dend, format, format_end, charmap_from, achftime);
   }
 
 extern "C"
@@ -1526,10 +1552,17 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
   {
   // FUNCTION FORMATTED-DATE
 
+  cbl_encoding_t from = arg1->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap_from = __gg__get_charmap(from);
+  charmap_t *charmap_to   = __gg__get_charmap(to);
+
+  int dest_space = charmap_to->mapped_character(ascii_space);
+
   // Establish the destination, and set it to spaces
   char *d    = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
-  memset(d, internal_space, dest->capacity);
+  memset(d, dest_space, dest->capacity);
 
   // Establish the formatting string:
   char *format     = PTRCAST(char, (arg1->data+arg1_offset));
@@ -1540,14 +1573,14 @@ __gg__formatted_date(cblc_field_t *dest, // Destination string
   populate_ctm_from_date(ctm, arg2, arg2_offset, arg2_size);
 
   char achftime[64];
-  get_all_time(achftime, ctm);
+  get_all_time(dest, achftime, ctm);
   if( __gg__exception_code )
     {
-    memset(d, internal_space, dend-d);
+    memset(d, dest_space, dend-d);
     }
   else
     {
-    ftime_replace(d, dend, format, format_end, achftime);
+    ftime_replace(d, dend, format, format_end, charmap_from, achftime);
     __gg__adjust_dest_size(dest, format_end-format);
     }
   }
@@ -1571,16 +1604,21 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
   {
   // FUNCTION FORMATTED-DATETIME
 
+  cbl_encoding_t from = par1->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap_from = __gg__get_charmap(from);
+  charmap_t *charmap_to   = __gg__get_charmap(to);
+
   // Establish the destination, and set it to spaces
         char *d    = PTRCAST(char, (dest->data));
   const char *dend = d + dest->capacity;
-  memset(d, internal_space, dest->capacity);
+  memset(d, charmap_from->mapped_character(ascii_space), dest->capacity);
 
   // Establish the formatting string:
   char *format     = PTRCAST(char, (par1->data+par1_o));
   char *format_end = format + par1_s;
-  trim_trailing_spaces(format, format_end);
-  bool is_zulu = is_zulu_format(format, format_end);
+  trim_trailing_spaces(format, format_end, charmap_from->mapped_character(ascii_space));
+  bool is_zulu = is_zulu_format(format, format_end, charmap_from);
 
   struct cobol_tm ctm = {};
 
@@ -1595,14 +1633,14 @@ __gg__formatted_datetime( cblc_field_t *dest, // Destination string
     }
 
   char achftime[64];
-  get_all_time(achftime, ctm);
+  get_all_time(dest, achftime, ctm);
   if( __gg__exception_code )
     {
-    memset(d, internal_space, dend-d);
+    memset(d, charmap_to->mapped_character(ascii_space), dend-d);
     }
   else
     {
-    ftime_replace(d, dend, format, format_end, achftime);
+    ftime_replace(d, dend, format, format_end, charmap_from, achftime);
     __gg__adjust_dest_size(dest, format_end-format);
     }
   }
@@ -1623,16 +1661,25 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
   {
   // FUNCTION FORMATTED-TIME
 
+  cbl_encoding_t from = par1->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap_from = __gg__get_charmap(from);
+  charmap_t *charmap_to   = __gg__get_charmap(to);
+
+  int dest_space = charmap_to->mapped_character(ascii_space);
+
   // Establish the destination, and set it to spaces
   char *d          = PTRCAST(char, dest->data);
   const char *dend = d + dest->capacity;
-  memset(d, internal_space, dest->capacity);
+  memset(d, dest_space, dest->capacity);
 
   // Establish the formatting string:
   char *format     = PTRCAST(char, (par1->data+par1_o));
   char *format_end = format + par1_s;
-  trim_trailing_spaces(format, format_end);
-  bool is_zulu = is_zulu_format(format, format_end);
+  trim_trailing_spaces( format,
+                        format_end,
+                        charmap_from->mapped_character(ascii_space));
+  bool is_zulu = is_zulu_format(format, format_end, charmap_from);
 
   struct cobol_tm ctm = {};
   populate_ctm_from_time( ctm,
@@ -1649,14 +1696,14 @@ __gg__formatted_time( cblc_field_t *dest,// Destination string
     }
 
   char achftime[64];
-  get_all_time(achftime, ctm);
+  get_all_time(dest, achftime, ctm);
   if( __gg__exception_code )
     {
-    memset(d, internal_space, dend-d);
+    memset(d, dest_space, dend-d);
     }
   else
     {
-    ftime_replace(d, dend, format, format_end, achftime);
+    ftime_replace(d, dend, format, format_end, charmap_from, achftime);
     __gg__adjust_dest_size(dest, format_end-format);
     }
   }
@@ -1988,14 +2035,27 @@ __gg__lower_case( cblc_field_t *dest,
                   size_t        input_offset,
                   size_t        input_size)
   {
+  cbl_encoding_t from = input->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap_dest = __gg__get_charmap(to);
+
   size_t dest_length = dest->capacity;
   size_t source_length = input_size;
-  memset(dest->data, internal_space, dest_length);
-  memcpy(dest->data, input->data+input_offset, std::min(dest_length, source_length));
-  internal_to_ascii( PTRCAST(char, dest->data), dest_length);
+  size_t length = std::min(dest_length, source_length);
+  memset( dest->data,
+          charmap_dest->mapped_character(ascii_space),
+          dest_length);
+  memcpy(dest->data, input->data+input_offset, length);
+  __gg__convert_encoding_length(PTRCAST(char, dest->data),
+                                length,
+                                from,
+                                DEFAULT_CHARMAP_SOURCE);
   std::transform(dest->data, dest->data + dest_length, dest->data,
-		 [](unsigned char c) { return std::tolower(c); });
-  ascii_to_internal_str( PTRCAST(char, dest->data), dest_length);
+                 [](unsigned char c) { return std::tolower(c); });
+  __gg__convert_encoding_length(PTRCAST(char, dest->data),
+                                length,
+                                DEFAULT_CHARMAP_SOURCE,
+                                to);
   }
 
 extern "C"
@@ -2302,8 +2362,16 @@ numval( cblc_field_t *dest,
   __int128 retval = 0;
   int retval_rdigits = 0;
 
+  charmap_t *charmap = __gg__get_charmap(input->encoding);
+  unsigned char decimal_point
+                   = charmap->mapped_character(__gg__get_decimal_point());
+  int mapped_0 = charmap->mapped_character(ascii_0);
+  int mapped_9 = charmap->mapped_character(ascii_9);
+  int mapped_space = charmap->mapped_character(ascii_space);
+  int mapped_plus = charmap->mapped_character(ascii_plus);
+  int mapped_minus = charmap->mapped_character(ascii_minus);
+
   bool saw_digit= false;
-  char decimal_point = ascii_to_internal(__gg__get_decimal_point());
   bool in_fraction  = false;
   bool leading_sign = false;
   bool is_negative  = false;
@@ -2330,24 +2398,24 @@ numval( cblc_field_t *dest,
       case SPACE1:
         // We tolerate spaces, and expect to end with a sign, digit,
         // or decimal point:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           continue;
           }
-        if( ch == internal_plus )
+        if( ch == mapped_plus )
           {
           leading_sign = true;
           state = SPACE2;
           break;
           }
-        if( ch == internal_minus )
+        if( ch == mapped_minus )
           {
           leading_sign = true;
           is_negative  = true;
           state = SPACE2;
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           saw_digit = true;
           retval = ch & 0xF;
@@ -2366,11 +2434,11 @@ numval( cblc_field_t *dest,
 
       case SPACE2:
         // We tolerate spaces, and expect to end with a digit or decimal point:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           saw_digit = true;
           retval = ch & 0xF;
@@ -2392,7 +2460,7 @@ numval( cblc_field_t *dest,
         // end with a space, a sign, "DB" or "CR", or the the end of the string
         // It's a bit complicated
 
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           saw_digit = true;
           retval *= 10;
@@ -2413,27 +2481,27 @@ numval( cblc_field_t *dest,
           in_fraction = true;
           break;
           }
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           state = SPACE3;
           break;
           }
-        if( ch == internal_plus && leading_sign)
+        if( ch == mapped_plus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == internal_minus && leading_sign)
+        if( ch == mapped_minus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == internal_plus )
+        if( ch == mapped_plus )
           {
           state = SPACE4;
           break;
           }
-        if( ch == internal_minus )
+        if( ch == mapped_minus )
           {
           is_negative = true;
           state = SPACE4;
@@ -2477,26 +2545,26 @@ numval( cblc_field_t *dest,
 
       case SPACE3:
         // We tolerate spaces, or we end with a sign:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
-        if( ch == internal_plus && leading_sign)
+        if( ch == mapped_plus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == internal_minus && leading_sign)
+        if( ch == mapped_minus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == internal_plus )
+        if( ch == mapped_plus )
           {
           state = SPACE4;
           break;
           }
-        if( ch == internal_minus )
+        if( ch == mapped_minus )
           {
           is_negative = true;
           state = SPACE4;
@@ -2537,7 +2605,7 @@ numval( cblc_field_t *dest,
         goto done;
         break;
       case SPACE4:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
@@ -2597,8 +2665,24 @@ numval_c( cblc_field_t *dest,
   int sign = 0;
   int rdigits = 0;
   int rdigit_bump = 0;
-  unsigned char decimal_point     = ascii_to_internal(__gg__get_decimal_point());
-  unsigned char decimal_separator = ascii_to_internal(__gg__get_decimal_separator());
+  charmap_t *charmap = __gg__get_charmap(src->encoding);
+  unsigned char decimal_point
+                   = charmap->mapped_character(__gg__get_decimal_point());
+  unsigned char decimal_separator
+                   = charmap->mapped_character(__gg__get_decimal_separator());
+  int mapped_0 = charmap->mapped_character(ascii_0);
+  int mapped_9 = charmap->mapped_character(ascii_9);
+  int mapped_space = charmap->mapped_character(ascii_space);
+  int mapped_plus = charmap->mapped_character(ascii_plus);
+  int mapped_minus = charmap->mapped_character(ascii_minus);
+  int mapped_C = charmap->mapped_character(ascii_C);
+  int mapped_R = charmap->mapped_character(ascii_R);
+  int mapped_D = charmap->mapped_character(ascii_D);
+  int mapped_B = charmap->mapped_character(ascii_B);
+  int mapped_c = charmap->mapped_character(ascii_c);
+  int mapped_r = charmap->mapped_character(ascii_r);
+  int mapped_d = charmap->mapped_character(ascii_d);
+  int mapped_b = charmap->mapped_character(ascii_b);
 
   char *currency_start;
   char *currency_end;
@@ -2614,12 +2698,12 @@ numval_c( cblc_field_t *dest,
     }
   char *pcurrency = currency_start;
   // Trim off spaces from the currency:
-  while( *pcurrency == internal_space && pcurrency < currency_end )
+  while( *pcurrency == mapped_space && pcurrency < currency_end )
     {
     pcurrency += 1;
     }
 
-  while( *(currency_end-1) == internal_space && currency_end > currency_start )
+  while( *(currency_end-1) == mapped_space && currency_end > currency_start )
     {
     currency_end -= 1;
     }
@@ -2646,11 +2730,12 @@ numval_c( cblc_field_t *dest,
       {
       case first_space   :
         // Eat up spaces, if any, and then dispatch on the first non-space:
-        if( ch != internal_space )
+        if( ch != mapped_space )
           {
           // ch can now be a plus, a minus, a digit, or the first character
           // of the currency string
-          if( ch == internal_plus || ch == internal_minus )
+          if(   ch == mapped_plus
+             || ch == mapped_minus )
             {
             state = first_sign;
             // Decrement to pointer in order to pick up the character again
@@ -2661,7 +2746,7 @@ numval_c( cblc_field_t *dest,
             state = currency;
             p -= 1;
             }
-          else if(  (ch >= internal_0 && ch <= internal_9)
+          else if(  (ch >= mapped_0 && ch <= mapped_9)
                     || ch == decimal_point )
             {
             state = digits;
@@ -2681,7 +2766,7 @@ numval_c( cblc_field_t *dest,
 
       case first_sign    :
         // We know the character is a plus or a minus:
-        if( ch == internal_plus )
+        if( ch == mapped_plus )
           {
           sign = 1;
           state = second_space;
@@ -2696,14 +2781,14 @@ numval_c( cblc_field_t *dest,
       case second_space :
         // Eat up spaces, if any.  This segment has to end with a currency or
         // a digit:
-        if( ch != internal_space )
+        if( ch != mapped_space )
           {
           if( ch == *pcurrency )
             {
             state = currency;
             p -= 1;
             }
-          else if(  (ch >= internal_0 && ch <= internal_9)
+          else if(  (ch >= mapped_0 && ch <= mapped_9)
                     || ch == decimal_point )
             {
             state = digits;
@@ -2744,9 +2829,9 @@ numval_c( cblc_field_t *dest,
 
       case before_digits :
         // Eat up spaces, if any.  This segment has to end with a digit
-        if( ch != internal_space )
+        if( ch != mapped_space )
           {
-          if(  (ch >= internal_0 && ch <= internal_9)
+          if(  (ch >= mapped_0 && ch <= mapped_9)
                || ch == decimal_point )
             {
             state = digits;
@@ -2766,7 +2851,7 @@ numval_c( cblc_field_t *dest,
       case digits     :
         // The only thing allowed here are digits, decimal points, and
         // decimal separators
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           // We have a digit.
           rdigits += rdigit_bump;
@@ -2799,14 +2884,14 @@ numval_c( cblc_field_t *dest,
 
       case after_digits  :
         // after digits, the only valid things are spaces, plus, minus, D, or C
-        if( ch != internal_space )
+        if( ch != charmap->mapped_character(ascii_space) )
           {
-          if(       ch == internal_plus
-                 || ch == internal_minus
-                 || ch == internal_D
-                 || ch == internal_d
-                 || ch == internal_C
-                 || ch == internal_c )
+          if(       ch == mapped_plus
+                 || ch == mapped_minus
+                 || ch == mapped_D
+                 || ch == mapped_d
+                 || ch == mapped_C
+                 || ch == mapped_c )
             {
             state = second_sign;
             p -= 1;
@@ -2821,24 +2906,24 @@ numval_c( cblc_field_t *dest,
           errcode = p - pstart;
           p = pend;
           }
-        if( ch == internal_plus )
+        if( ch == mapped_plus )
           {
           sign = 1;
           }
-        else if( ch == internal_minus )
+        else if( ch == mapped_minus )
           {
           sign = -1;
           }
-        else if(    (ch == internal_D || ch == internal_d)
+        else if(    (ch == mapped_D || ch == mapped_d)
                     && p < pend
-                    && (*p == internal_B || *p == internal_b) )
+                    && (*p == mapped_B || *p == mapped_b) )
           {
           sign = -1;
           p += 1;
           }
-        else if(    (ch == internal_C || ch == internal_c)
+        else if(    (ch == mapped_C || ch == mapped_c)
                     && p < pend
-                    && (*p == internal_R || *p == internal_r) )
+                    && (*p == mapped_R || *p == mapped_r) )
           {
           sign = -1;
           p += 1;
@@ -2848,7 +2933,7 @@ numval_c( cblc_field_t *dest,
 
       case final_space   :
         // There should be only spaces until the end
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           continue;
           }
@@ -2963,14 +3048,11 @@ __gg__ord(cblc_field_t *dest,
           size_t input_offset,
           size_t /*input_size*/)
   {
-  // We get our input in internal_character form.
+  // FUNCTION ORD
   const char *arg = PTRCAST(char, (input->data + input_offset));
 
   // The ORD function takes a single-character string and returns the
   // ordinal position of that character.
-
-  // In ASCII  mode, an A is 0x41, so we return 0x42
-  // In EBCDIC mode, an A is 0xC1, so we return 0xC2
 
   size_t retval = (arg[0]&0xFF) + 1;
   __gg__int128_to_field(dest,
@@ -3317,6 +3399,11 @@ __gg__trim( cblc_field_t *dest,
             size_t        arg2_offset,
             size_t        arg2_size)
   {
+  cbl_encoding_t from = arg1->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap = __gg__get_charmap(to);
+  int mapped_space = charmap->mapped_character(ascii_space);
+
   int rdigits;
   __int128 type = __gg__binary_value_from_qualified_field(&rdigits,
                                                           arg2,
@@ -3330,30 +3417,39 @@ __gg__trim( cblc_field_t *dest,
         !(dest->attr & intermediate_e) )
     {
     fprintf(stderr,
-            "We expect the target of a FUNCTION TIME to "
+            "We expect the target of a FUNCTION TRIM to "
             "be an intermediate alphanumeric\n");
     abort();
     }
   dest->capacity = dest->offset;
 
+  // Make a copy of the input:
+  char *copy = static_cast<char *>(malloc(arg1_size));
+  massert(copy);
+  memcpy(copy, arg1->data+arg1_offset, arg1_size);
+
+  // Convert it to the destination encoding
+  __gg__convert_encoding_length(copy, arg1_size, from, to);
+
+
   // No matter what, we want to find the leftmost non-space and the
   // rightmost non-space:
 
-  char *left  = PTRCAST(char, (arg1->data+arg1_offset));
+  char *left  = copy;
   char *right = left + arg1_size-1;
 
   // Find left and right: the first and last non-spaces
   while( left <= right )
     {
-    if( *left != internal_space && *right != internal_space )
+    if( *left != mapped_space && *right != mapped_space )
       {
       break;
       }
-    if( *left == internal_space )
+    if( *left == mapped_space )
       {
       left += 1;
       }
-    if( *right == internal_space )
+    if( *right == mapped_space )
       {
       right -= 1;
       }
@@ -3362,13 +3458,13 @@ __gg__trim( cblc_field_t *dest,
     {
     // We want to leave any trailing spaces, so we return 'right' to its
     // original value:
-    right = PTRCAST(char, (arg1->data+arg1_offset)) + arg1_size-1;
+    right = copy + arg1_size-1;
     }
   else if( type == TRAILING )
     {
     // We want to leave any leading spaces, so we return 'left' to its
     // original value:
-    left = PTRCAST(char, (arg1->data+arg1_offset));
+    left = copy;
     }
 
   if( left > right )
@@ -3382,12 +3478,6 @@ __gg__trim( cblc_field_t *dest,
   size_t ncount = right+1 - left;
   __gg__adjust_dest_size(dest, ncount);
 
-  // Because it's a temporary, we are weakly confident that we can change
-  // the capacity to match what we want.  At this writing, we aren't 100%
-  // sure of the implications of the run-time capacity not matching what the
-  // compiler believes the capacity to be at compile-time.  But we obviously
-  // think it'll be okay.
-
   char *dest_left  = PTRCAST(char, dest->data);
   char *dest_right = dest_left + dest->capacity - 1;
   const char *dest_end   = dest_left + dest->capacity;
@@ -3398,7 +3488,7 @@ __gg__trim( cblc_field_t *dest,
     }
   while(dest_left < dest_end)
     {
-    *dest_left++ = internal_space;
+    *dest_left++ = mapped_space;
     }
   }
 
@@ -3430,7 +3520,7 @@ __gg__random( cblc_field_t *dest,
     // This is the very first time through
     buf = (random_data *)malloc(sizeof(struct random_data));
     buf->state = NULL;
-    state = (char *)malloc(state_len);
+    state = static_cast<char *>(malloc(state_len));
 
     struct cbl_timespec ts;
     __gg__clock_gettime(&ts);
@@ -3471,7 +3561,7 @@ __gg__random_next(cblc_field_t *dest)
     // This is the very first time through
     buf = (random_data *)malloc(sizeof(struct random_data));
     buf->state = NULL;
-    state = (char *)malloc(state_len);
+    state = static_cast<char *>(malloc(state_len));
     struct cbl_timespec ts;
     __gg__clock_gettime(&ts);
     initstate_r( ts.tv_nsec, state, state_len, buf);
@@ -3494,18 +3584,37 @@ __gg__reverse(cblc_field_t *dest,
               size_t input_offset,
               size_t input_size)
   {
+  cbl_encoding_t from = input->encoding;
+  cbl_encoding_t to   = dest->encoding;
+
   size_t dest_length = dest->capacity;
   size_t source_length = input_size;
   size_t length = std::min(dest_length, source_length);
-  memset(dest->data, internal_space, dest_length);
+
+  // Make a copy of the input
+  char *copy = static_cast<char *>(malloc(length));
+  massert(copy);
+  memcpy(copy, input->data+input_offset, length);
+
+  // Convert the input to the destination encoding
+  __gg__convert_encoding_length(copy,
+                                length,
+                                from,
+                                to);
+
+  // Set the destination to all spaces
+  charmap_t *charmap = __gg__get_charmap(to);
+  memset(dest->data, charmap->mapped_character(ascii_space), dest_length);
   for(size_t i=0; i<length; i++)
     {
-    dest->data[i] = (input->data+input_offset)[source_length-1-i];
+    dest->data[i] = copy[source_length-1-i];
     }
   if( (dest->attr & intermediate_e) )
     {
     dest->capacity = std::min(dest_length, source_length);
     }
+
+  free(copy);
   }
 
 extern "C"
@@ -3745,14 +3854,27 @@ __gg__upper_case( cblc_field_t *dest,
                   size_t        input_offset,
                   size_t        input_size)
   {
+  cbl_encoding_t from = input->encoding;
+  cbl_encoding_t to   = dest->encoding;
+  charmap_t *charmap_dest = __gg__get_charmap(to);
+
   size_t dest_length = dest->capacity;
   size_t source_length = input_size;
-  memset(dest->data, internal_space, dest_length);
-  memcpy(dest->data, input->data+input_offset, std::min(dest_length, source_length));
-  internal_to_ascii( PTRCAST(char, dest->data), dest_length);
+  size_t length = std::min(dest_length, source_length);
+  memset( dest->data,
+          charmap_dest->mapped_character(ascii_space),
+          dest_length);
+  memcpy(dest->data, input->data+input_offset, length);
+  __gg__convert_encoding_length(PTRCAST(char, dest->data),
+                                length,
+                                from,
+                                DEFAULT_CHARMAP_SOURCE);
   std::transform(dest->data, dest->data + dest_length, dest->data,
-		 [](unsigned char c) { return std::toupper(c); });
-  ascii_to_internal_str( PTRCAST(char, dest->data), dest_length);
+                 [](unsigned char c) { return std::toupper(c); });
+  __gg__convert_encoding_length(PTRCAST(char, dest->data),
+                                length,
+                                DEFAULT_CHARMAP_SOURCE,
+                                to);
   }
 
 extern "C"
@@ -3781,7 +3903,9 @@ __gg__when_compiled(cblc_field_t *dest, size_t tv_sec, long tv_nsec)
   tp.tv_nsec = tv_nsec;
   char retval[DATE_STRING_BUFFER_SIZE];
   timespec_to_string(retval, tp);
-  ascii_to_internal_str(retval, strlen(retval));
+  __gg__convert_encoding(PTRCAST(char, retval),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   string_to_dest(dest, retval);
   }
 
@@ -3815,12 +3939,20 @@ __gg__year_to_yyyy( cblc_field_t *dest,
 
 static
 int
-gets_int(int ndigits, const char *p, const char *pend, int *digits)
+gets_int( int ndigits,
+          const char *p,
+          const char *pend,
+          charmap_t *charmap,
+          int *digits)
   {
   // This routine returns the value of the integer at p.  If there is something
   // wrong with the integer, it returns a negative number, the value being the
   // position (starting at 1) where the problem is.
   int retval = 0;
+
+  int checked_0 = charmap->mapped_character(ascii_0);
+  int checked_9 = charmap->mapped_character(ascii_9);
+
   memset(digits, 0xFF, ndigits * sizeof(int));
   for(int i=1; i<=ndigits; i++)
     {
@@ -3831,7 +3963,7 @@ gets_int(int ndigits, const char *p, const char *pend, int *digits)
       break;
       }
     int ch = *p++;
-    if( ch < internal_0 || ch > internal_9 )
+    if( ch < checked_0 || ch > checked_9 )
       {
       // This isn't a digit zero through nine
       retval = -i;
@@ -3846,7 +3978,10 @@ gets_int(int ndigits, const char *p, const char *pend, int *digits)
 
 static
 int
-gets_year(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_year(const char *p,
+          const char *pend,
+          charmap_t *charmap,
+          struct cobol_tm &ctm)
   {
   // Populates ctm.YYYY, ctm.days_in_year, and ctm.weeks_in_year, which are
   // all determined by the YYYY value.
@@ -3856,7 +3991,7 @@ gets_year(const char *p, const char *pend, struct cobol_tm &ctm)
 
   int retval = 0;
   int digits[4];
-  int YYYY = gets_int(4, p, pend, digits);
+  int YYYY = gets_int(4, p, pend, charmap, digits);
 
   if( digits[0] == -1 || digits[0] == 0 )
     {
@@ -3910,7 +4045,10 @@ gets_year(const char *p, const char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_month(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_month( const char *p,
+            const char *pend,
+            charmap_t *charmap,
+            struct cobol_tm &ctm)
   {
   // Populates ctm.MM
 
@@ -3919,7 +4057,7 @@ gets_month(const char *p, const char *pend, struct cobol_tm &ctm)
 
   int digits[2];
   int retval = 0;
-  int MM = gets_int(2, p, pend, digits);
+  int MM = gets_int(2, p, pend, charmap, digits);
 
   if( digits[0] == -1 || digits[0] > 1)
     {
@@ -3957,7 +4095,10 @@ gets_month(const char *p, const char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_day(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_day( const char *p,
+          const char *pend,
+          charmap_t *charmap,
+          struct cobol_tm &ctm)
   {
   // Populates ctm.DD, ctm.day_of_week, ctm.week_of_year, ctm.day_of_week
 
@@ -3965,7 +4106,7 @@ gets_day(const char *p, const char *pend, struct cobol_tm &ctm)
 
   int digits[2];
   int retval = 0;
-  int DD = gets_int(2, p, pend, digits);
+  int DD = gets_int(2, p, pend, charmap, digits);
 
   if( digits[0] == -1 || digits[0] > 3)
     {
@@ -4026,12 +4167,15 @@ gets_day(const char *p, const char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_day_of_week(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_day_of_week( const char *p,
+                  const char *pend,
+                  charmap_t *charmap,
+                  struct cobol_tm &ctm)
   {
   // This is just a simple D, for day-of-week.  The COBOL spec is that
   // it be 1 to 7, 1 being Monday
   int digits[1];
-  int day_of_week = gets_int(1, p, pend, digits);
+  int day_of_week = gets_int(1, p, pend, charmap, digits);
   if( day_of_week<0 || day_of_week >7)
     {
     // The single character at source is no good:
@@ -4075,11 +4219,14 @@ gets_day_of_week(const char *p, const char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_day_of_year(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_day_of_year( const char *p,
+                  const char *pend,
+                  charmap_t *charmap,
+                  struct cobol_tm &ctm)
   {
   // This is a three-digit day-of-year, 001 through 365,366
   int digits[3];
-  int DDD = gets_int(3, p, pend, digits);
+  int DDD = gets_int(3, p, pend, charmap, digits);
   if( digits[0] == -1 || digits[0] > 3)
     {
     return 1;
@@ -4132,11 +4279,14 @@ gets_day_of_year(const char *p, const char *pend, struct cobol_tm &ctm)
 
 static
 int
-gets_week(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_week(const char *p,
+          const char *pend,
+          charmap_t *charmap,
+          struct cobol_tm &ctm)
   {
   // This is a two-digit value, 01 through 52,53
   int digits[2];
-  int ww = gets_int(2, p, pend, digits);
+  int ww = gets_int(2, p, pend, charmap, digits);
   if( digits[0] == -1 || digits[0] > 5 )
     {
     return 1;
@@ -4174,12 +4324,13 @@ static
 int
 gets_hours( const char *p,
             const char *pend,
+            charmap_t *charmap,
             struct cobol_tm &ctm,
             bool in_offset)
   {
   // This is a two-digit value, 01 through 23
   int digits[2];
-  int hh = gets_int(2, p, pend, digits);
+  int hh = gets_int(2, p, pend, charmap, digits);
 
   if( digits[0] == -1 || digits[0] > 2 )
     {
@@ -4222,12 +4373,13 @@ static
 int
 gets_minutes( const char *p,
               const char *pend,
+              charmap_t *charmap,
               struct cobol_tm &ctm,
               bool in_offset)
   {
   // This is a two-digit value, 01 through 59
   int digits[2];
-  int mm = gets_int(2, p, pend, digits);
+  int mm = gets_int(2, p, pend, charmap, digits);
   if( digits[0] == -1 || digits[0] > 5 )
     {
     return 1;
@@ -4261,11 +4413,14 @@ gets_minutes( const char *p,
 
 static
 int
-gets_seconds(const char *p, const char *pend, struct cobol_tm &ctm)
+gets_seconds( const char *p,
+              const char *pend,
+              charmap_t *charmap,
+              struct cobol_tm &ctm)
   {
   // This is a two-digit value, 01 through 59
   int digits[2];
-  int ss = gets_int(2, p, pend, digits);
+  int ss = gets_int(2, p, pend, charmap, digits);
   if( digits[0] == -1 || digits[0] > 5 )
     {
     return 1;
@@ -4295,26 +4450,32 @@ gets_nanoseconds( const char *f,
                   const char *f_end,
                   const char *p,
                   const char *pend,
-                  struct cobol_tm &ctm)
+                  struct cobol_tm &ctm,
+                  charmap_t *charmap_format,
+                  charmap_t *charmap_source)
   {
   // Because nanoseconds digits to the right of the decimal point can vary from
   // one digit to our implementation-specific limit of nine characters, this
   // routine is slightly different.  If there is an error, that causes a
   // positive return value.  A negative return value contains the number of
-  // digits we processed
+  // digits we processed,
+
+  int format_s = charmap_format->mapped_character(ascii_s);
+  int source_0 = charmap_source->mapped_character(ascii_0);
+  int source_9 = charmap_source->mapped_character(ascii_9);
 
   int errpos = 0;
   int ncount = 0;
   int nanoseconds = 0;
 
   const char *pinit = p;
-  while( f < f_end && *f == internal_s && p < pend )
+  while( f < f_end && *f == format_s && p < pend )
     {
     f += 1;
     int ch = *p++;
     errpos += 1;
 
-    if( ch < internal_0 || ch > internal_9 )
+    if( ch < source_0 || ch > source_9 )
       {
       // Let our caller know we see a bad character
       return errpos;
@@ -4354,9 +4515,29 @@ fill_cobol_tm(cobol_tm &ctm,
   char *source     = PTRCAST(char, (par2->data+par2_offset));
   char *source_end = source + par2_size;
 
+  charmap_t *charmap_format = __gg__get_charmap(par1->encoding);
+  charmap_t *charmap_checked = __gg__get_charmap(par2->encoding);
+  int checked_space = charmap_checked->mapped_character(ascii_space);
+  int format_space  = charmap_format->mapped_character(ascii_space);
+  int format_T      = charmap_format->mapped_character(ascii_T      );
+  int format_colon  = charmap_format->mapped_character(ascii_colon  );
+  int format_plus   = charmap_format->mapped_character(ascii_plus   );
+  int format_minus  = charmap_format->mapped_character(ascii_minus  );
+  int format_W      = charmap_format->mapped_character(ascii_W      );
+  int format_Z      = charmap_format->mapped_character(ascii_Z      );
+  int format_z      = charmap_format->mapped_character(ascii_z      );
+  int format_s      = charmap_format->mapped_character(ascii_s      );
+  int format_m      = charmap_format->mapped_character(ascii_m      );
+  int format_h      = charmap_format->mapped_character(ascii_h      );
+  int format_w      = charmap_format->mapped_character(ascii_w      );
+  int format_Y      = charmap_format->mapped_character(ascii_Y      );
+  int format_M      = charmap_format->mapped_character(ascii_M      );
+  int format_D      = charmap_format->mapped_character(ascii_D      );
+  int format_zero   = charmap_format->mapped_character(ascii_zero   );
+
   // Let's eliminate trailing spaces...
-  trim_trailing_spaces(format, format_end);
-  trim_trailing_spaces(source, source_end);
+  trim_trailing_spaces(format, format_end, format_space);
+  trim_trailing_spaces(source, source_end, checked_space);
 
   bool in_offset = false;
   bool in_nanoseconds = false;
@@ -4375,10 +4556,10 @@ fill_cobol_tm(cobol_tm &ctm,
     {
     char ch = *format;
 
-    if(    ch == internal_T
-           || ch == internal_colon
-           || ch == internal_minus
-           || ch == internal_W)
+    if(    ch == format_T
+           || ch == format_colon
+           || ch == format_minus
+           || ch == format_W)
       {
       // These are just formatting characters.  They need to be duplicated,
       // but are otherwise ignored.
@@ -4390,34 +4571,34 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_plus )
+    if( ch == format_plus )
       {
       // This flags a following hhmm offset.  It needs to match a '+' or '-'
-      if(    *source != internal_plus
-          && *source != internal_minus
-          && *source != internal_zero)
+      if(    *source != format_plus
+          && *source != format_minus
+          && *source != format_zero)
         {
         break;
         }
-      if( *source == internal_zero )
+      if( *source == format_zero )
         {
         // The next four characters have to be zeroes
-        if( source[1] != internal_zero )
+        if( source[1] != format_zero )
           {
           retval += 1;
           break;
           }
-        if( source[2] != internal_zero )
+        if( source[2] != format_zero )
           {
           retval += 2;
           break;
           }
-        if( source[3] != internal_zero )
+        if( source[3] != format_zero )
           {
           retval += 3;
           break;
           }
-        if( source[4] != internal_zero )
+        if( source[4] != format_zero )
           {
           retval += 4;
           break;
@@ -4441,9 +4622,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_Y )
+    if( ch == format_Y )
       {
-      errpos = gets_year(source, source_end, ctm);
+      errpos = gets_year(source, source_end, charmap_checked, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4453,9 +4634,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_M )
+    if( ch == format_M )
       {
-      errpos = gets_month(source, source_end, ctm);
+      errpos = gets_month(source, source_end, charmap_checked, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4465,13 +4646,13 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_D )
+    if( ch == format_D )
       {
       // We have three possibilities: DDD, DD, and D
-      if( format[1] != internal_D )
+      if( format[1] != format_D )
         {
         // A singleton 'D' is a day-of-week
-        errpos = gets_day_of_week(source, source_end, ctm);
+        errpos = gets_day_of_week(source, source_end, charmap_checked, ctm);
         if( errpos > 0)
           {
           retval += errpos - 1;
@@ -4479,10 +4660,10 @@ fill_cobol_tm(cobol_tm &ctm,
           }
         bump = 1;
         }
-      else if( format[2] != internal_D )
+      else if( format[2] != format_D )
         {
         // This is DD, for day-of-month
-        errpos = gets_day(source, source_end, ctm);
+        errpos = gets_day(source, source_end, charmap_checked, ctm);
         if( errpos > 0)
           {
           retval += errpos - 1;
@@ -4494,7 +4675,7 @@ fill_cobol_tm(cobol_tm &ctm,
         {
         // Arriving here means that it is DDD, for day-of-year
         // This is DD, for day-of-month
-        errpos = gets_day_of_year(source, source_end, ctm);
+        errpos = gets_day_of_year(source, source_end, charmap_checked, ctm);
         if( errpos > 0)
           {
           retval += errpos - 1;
@@ -4505,9 +4686,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_w )
+    if( ch == format_w )
       {
-      errpos = gets_week(source, source_end, ctm);
+      errpos = gets_week(source, source_end, charmap_checked, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4517,9 +4698,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_h )
+    if( ch == format_h )
       {
-      errpos = gets_hours(source, source_end, ctm, in_offset);
+      errpos = gets_hours(source, source_end, charmap_checked, ctm, in_offset);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4529,9 +4710,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_m )
+    if( ch == format_m )
       {
-      errpos = gets_minutes(source, source_end, ctm, in_offset);
+      errpos = gets_minutes(source, source_end, charmap_checked, ctm, in_offset);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4541,9 +4722,9 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_s && !in_nanoseconds )
+    if( ch == format_s && !in_nanoseconds )
       {
-      errpos = gets_seconds(source, source_end, ctm);
+      errpos = gets_seconds(source, source_end, charmap_checked, ctm);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4553,10 +4734,16 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_s && in_nanoseconds )
+    if( ch == format_s && in_nanoseconds )
       {
       // Peel off digits to the right of the decimal point one at a time
-      errpos = gets_nanoseconds(format, format_end, source, source_end, ctm);
+      errpos = gets_nanoseconds(format,
+                                format_end,
+                                source,
+                                source_end,
+                                ctm,
+                                charmap_format,
+                                charmap_checked);
       if( errpos > 0 )
         {
         retval += errpos - 1;
@@ -4566,7 +4753,7 @@ fill_cobol_tm(cobol_tm &ctm,
       goto proceed;
       }
 
-    if( ch == internal_Z || ch == internal_z )
+    if( ch == format_Z || ch == format_z )
       {
       // This has to be the end of the road
       if( std::toupper((unsigned char)source[0]) != 'Z' )
@@ -4691,14 +4878,15 @@ __gg__hex_of(cblc_field_t *dest,
              size_t field_offset,
              size_t field_size)
   {
+  charmap_t *charmap = __gg__get_charmap(dest->encoding);
   static const char hex[17] = "0123456789ABCDEF";
   size_t bytes = field_size;
   __gg__adjust_dest_size(dest, 2*bytes);
   for(size_t i=0; i<bytes; i++)
     {
     unsigned char byte = (field->data+field_offset)[i];
-    dest->data[2*i] = ascii_to_internal(hex[byte>>4]);
-    dest->data[2*i+1] = ascii_to_internal(hex[byte&0xF]);
+    dest->data[2*i  ] = charmap->mapped_character(hex[byte>>4]);
+    dest->data[2*i+1] = charmap->mapped_character(hex[byte&0xF]);
     }
   }
 
@@ -4809,10 +4997,21 @@ __gg__lowest_algebraic( cblc_field_t *dest,
   }
 
 static int
-floating_format_tester(char const * const f, char const * const f_end)
+floating_format_tester( char const * const f,
+                        char const * const f_end,
+                        cbl_encoding_t encoding)
   {
+  charmap_t *charmap = __gg__get_charmap(encoding);
+  int mapped_space = charmap->mapped_character(ascii_space);
+  int mapped_plus  = charmap->mapped_character(ascii_plus);
+  int mapped_minus = charmap->mapped_character(ascii_minus);
+  int mapped_0 = charmap->mapped_character(ascii_0);
+  int mapped_9 = charmap->mapped_character(ascii_9);
+  int mapped_E = charmap->mapped_character(ascii_E);
+  int mapped_e = charmap->mapped_character(ascii_e);
+  int decimal_point = charmap->mapped_character(__gg__get_decimal_point());
+
   int retval = -1;
-  char decimal_point = __gg__get_decimal_point();
 
   enum
     {
@@ -4833,18 +5032,18 @@ floating_format_tester(char const * const f, char const * const f_end)
     switch(state)
       {
       case SPACE1:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           // Just keep looking
           break;
           }
-        if(    ch == internal_minus
-            || ch == internal_plus)
+        if(    ch == mapped_minus
+            || ch == mapped_plus)
           {
           state = SPACE2;
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           state = DIGITS1;
           break;
@@ -4859,11 +5058,11 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case SPACE2:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           state = DIGITS1;
           break;
@@ -4877,7 +5076,7 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case DIGITS1:
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           break;
           }
@@ -4886,7 +5085,7 @@ floating_format_tester(char const * const f, char const * const f_end)
           state = DIGITS2;
           break;
           }
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           state = SPACE3;
           break;
@@ -4895,16 +5094,16 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case DIGITS2:
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           break;
           }
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           state = SPACE3;
           break;
           }
-        if( ch == internal_E || ch == internal_e )
+        if( ch == mapped_E || ch == mapped_e )
           {
           state = SPACE4;
           break;
@@ -4913,16 +5112,16 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case SPACE3:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           retval = index;
           break;
           }
-        if( ch == internal_E || ch == internal_e )
+        if( ch == mapped_E || ch == mapped_e )
           {
           state = SPACE4;
           break;
@@ -4931,16 +5130,16 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case SPACE4:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
-        if( ch == internal_minus || ch == internal_plus )
+        if( ch == mapped_minus || ch == mapped_plus )
           {
           state = SPACE5;
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           state = DIGITS3;
           break;
@@ -4949,11 +5148,11 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case SPACE5:
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           break;
           }
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           state = DIGITS3;
           break;
@@ -4962,11 +5161,11 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case DIGITS3:
-        if( ch >= internal_0 && ch <= internal_9 )
+        if( ch >= mapped_0 && ch <= mapped_9 )
           {
           break;
           }
-        if( ch == internal_space )
+        if( ch == mapped_space )
           {
           state = SPACE6;
           break;
@@ -4975,7 +5174,7 @@ floating_format_tester(char const * const f, char const * const f_end)
         break;
 
       case SPACE6:
-      if( ch == internal_space )
+      if( ch == mapped_space )
         {
         break;
         }
@@ -5004,8 +5203,12 @@ __gg__numval_f( cblc_field_t *dest,
   GCOB_FP128 value = 0;
   const char *data     = PTRCAST(char, (source->data + source_offset));
   const char *data_end = data + source_size;
+  charmap_t *charmap = __gg__get_charmap(source->encoding);
+  int mapped_space = charmap->mapped_character(ascii_space);
 
-  int error = floating_format_tester(data, data_end);
+  int error = floating_format_tester( data,
+                                      data_end,
+                                      source->encoding);
 
   if( error || source_size >= 256 )
     {
@@ -5019,7 +5222,7 @@ __gg__numval_f( cblc_field_t *dest,
     while( data < data_end )
       {
       char ch = *data++;
-      if( ch != internal_space )
+      if( ch != mapped_space )
         {
         *p++ = ch;
         }
@@ -5043,7 +5246,9 @@ __gg__test_numval_f(cblc_field_t *dest,
   const char *data     = PTRCAST(char, (source->data + source_offset));
   const char *data_end = data + source_size;
 
-  int error = floating_format_tester(data, data_end);
+  int error = floating_format_tester( data,
+                                      data_end,
+                                      source->encoding);
 
   __gg__int128_to_field(dest,
                         error,
@@ -5122,7 +5327,7 @@ strcasestr( const char *haystack,
   return retval;
   }
 
-static 
+static
 const char *
 strlaststr( const char *haystack,
             const char *haystack_e,
@@ -5142,7 +5347,7 @@ strlaststr( const char *haystack,
   return retval;
   }
 
-static 
+static
 const char *
 strcaselaststr( const char *haystack,
                 const char *haystack_e,
@@ -5164,7 +5369,7 @@ strcaselaststr( const char *haystack,
 
 
 extern "C"
-void 
+void
 __gg__substitute( cblc_field_t *dest,
             const cblc_field_t *arg1_f,
                   size_t        arg1_o,
@@ -5376,8 +5581,10 @@ __gg__locale_compare( cblc_field_t *dest,
     }
 
   __gg__adjust_dest_size(dest, 1);
-  ascii_to_internal_str(achretval, 1);
   dest->data[0] = *achretval;
+  __gg__convert_encoding(PTRCAST(char, dest->data),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   }
 
 extern "C"
@@ -5412,7 +5619,9 @@ __gg__locale_date(cblc_field_t *dest,
     }
 
   __gg__adjust_dest_size(dest, strlen(ach));
-  ascii_to_internal_str(ach, strlen(ach));
+  __gg__convert_encoding(PTRCAST(char, dest->data),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   memcpy(dest->data, ach, strlen(ach));
   }
 
@@ -5448,7 +5657,9 @@ __gg__locale_time(cblc_field_t *dest,
     }
 
   __gg__adjust_dest_size(dest, strlen(ach));
-  ascii_to_internal_str(ach, strlen(ach));
+  __gg__convert_encoding(PTRCAST(char, dest->data),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   memcpy(dest->data, ach, strlen(ach));
   }
 
@@ -5486,6 +5697,8 @@ __gg__locale_time_from_seconds( cblc_field_t *dest,
     }
 
   __gg__adjust_dest_size(dest, strlen(ach));
-  ascii_to_internal_str(ach, strlen(ach));
+  __gg__convert_encoding(PTRCAST(char, dest->data),
+                         DEFAULT_CHARMAP_SOURCE,
+                         dest->encoding);
   memcpy(dest->data, ach, strlen(ach));
   }

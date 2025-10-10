@@ -61,7 +61,8 @@ typedef struct cblc_field_t
     signed char level;          // This variable's level in the naming heirarchy
     signed char digits;         // Digits specified in PIC string; e.g. 5 for 99v999
     signed char rdigits;        // Digits to the right of the decimal point. 3 for 99v999
-    int    dummy;               // GCC seems to want an even number of 32-bit values
+    cbl_encoding_t encoding;    //
+    int            alphabet;    // Same as cbl_field_t::codeset::language
     } cblc_field_t;
 
 /*
@@ -126,6 +127,8 @@ typedef struct cblc_file_t
     int                  recent_char;      // This is the most recent char sent to the file
     int                  recent_key;
     cblc_file_prior_op_t prior_op;         // run-time type is INT
+    cbl_encoding_t       encoding;         // We assume size int
+    int                  alphabet;         // Actually cbl_encoding_t
     int                  dummy;
     } cblc_file_t;
 

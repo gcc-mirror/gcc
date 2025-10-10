@@ -178,6 +178,7 @@ arithmetic_operation(size_t nC, cbl_num_result_t *C,
     temp_field.data.rdigits   = remainder->field->data.rdigits ;
     temp_field.data.initial   = remainder->field->data.initial ;
     temp_field.data.picture   = remainder->field->data.picture ;
+    temp_field.codeset        = remainder->field->codeset ;
     parser_symbol_add(&temp_field);
     temp_remainder.field = &temp_field;
 

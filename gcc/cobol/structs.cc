@@ -181,11 +181,13 @@ create_cblc_field_t()
         signed char level;          // This variable's level in the naming heirarchy
         signed char digits;         // Digits specified in PIC string; e.g. 5 for 99v999
         signed char rdigits;        // Digits to the right of the decimal point. 3 for 99v999
+        cbl_encoding_t  encoding;   // Same as cbl_field_t::codeset::encoding
+        int             alphabet;   // Same as cbl_field_t::codeset::language
         } cblc_field_t;
     */
     tree retval = NULL_TREE;
     retval = gg_get_filelevel_struct_type_decl( "cblc_field_t",
-                                            16,
+                                            17,
                                             UCHAR_P, "data",
                                             SIZE_T,  "capacity",
                                             SIZE_T,  "allocated",
@@ -201,7 +203,8 @@ create_cblc_field_t()
                                             SCHAR,   "level",
                                             SCHAR,   "digits",
                                             SCHAR,   "rdigits",
-                                            INT,     "dummy");  // Needed to make it an even number of 32-bit ints
+                                            INT,     "encoding",
+                                            INT,     "alphabet");
     retval = TREE_TYPE(retval);
 
     return retval;
@@ -245,13 +248,15 @@ typedef struct cblc_file_t
     int                  recent_char;      // This is the most recent char sent to the file
     int                  recent_key;
     cblc_file_prior_op_t prior_op;
+    int                  encoding;         // Actually cbl_encoding_t
+    int                  alphabet;         // Actually cbl_encoding_t
     int                  dummy             // We need an even number of INT
     } cblc_file_t;
     */
 
     tree retval = NULL_TREE;
     retval = gg_get_filelevel_struct_type_decl( "cblc_file_t",
-                                            31,
+                                            33,
                                             CHAR_P,    "name",
                                             SIZE_T,    "symbol_table_index",
                                             CHAR_P,    "filename",
@@ -282,6 +287,8 @@ typedef struct cblc_file_t
                                             INT,       "recent_char",
                                             INT,       "recent_key",
                                             INT,       "prior_op",
+                                            INT,       "encoding", // Actually cbl_encoding_t
+                                            INT,       "alphabet",
                                             INT,       "dummy");
     retval = TREE_TYPE(retval);
     return retval;

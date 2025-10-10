@@ -890,7 +890,8 @@ get_binary_value( tree value,
                                   signp,
                                   pointer,
                                   build_int_cst_type(INT, field->data.digits),
-                                  NULL_TREE));
+                              build_int_cst_type(INT, field->codeset.encoding),
+                              NULL_TREE));
           // Assign the value we got from the string to our "return" value:
           gg_assign(value, gg_cast(TREE_TYPE(value), val128));
           }
@@ -1739,11 +1740,13 @@ get_literal_string(cbl_field_t *field)
   size_t buffer_length = field->data.capacity+1;
   char *buffer = static_cast<char *>(xcalloc(1, buffer_length));
 
-  for(size_t i=0; i<field->data.capacity; i++)
-    {
-    buffer[i] = ascii_to_internal(field->data.initial[i]);
-    }
-
+  size_t charsout;
+  const char *converted = __gg__iconverter(DEFAULT_CHARMAP_SOURCE,
+                                     field->codeset.encoding,
+                                     field->data.initial,
+                                     field->data.capacity,
+                                     &charsout);
+  memcpy(buffer, converted, field->data.capacity+1);
   return buffer;
   }
 

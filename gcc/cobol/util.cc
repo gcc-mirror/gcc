@@ -61,6 +61,7 @@
 #include "../../libgcobol/io.h"
 #include "genapi.h"
 #include "genutil.h"
+#include "../../libgcobol/charmaps.h"
 
 #pragma GCC diagnostic ignored "-Wunused-result"
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
@@ -323,8 +324,6 @@ cbl_field_type_str( enum cbl_field_type_t type )
     return "FldSwitch";
   case FldPointer:
     return "FldPointer";
-  case FldBlob:
-    return "FldBlob";
  }
   cbl_internal_error("%s:%d: invalid %<symbol_type_t%> %d", __func__, __LINE__, type);
   return "???";
@@ -613,7 +612,6 @@ is_elementary( enum cbl_field_type_t type )
     case FldForward:
     case FldIndex:
     case FldSwitch:
-    case FldBlob:
       return false;
     case FldPointer:
     case FldAlphanumeric:
@@ -805,6 +803,7 @@ symbol_field_type_update( cbl_field_t *field,
   // type matches itself
   if( field->type == candidate ) {
     if( is_usage ) field->usage = candidate;
+    field->codeset.set();
     return true;
   }
   if( is_usage && field->usage == candidate ) return true;
@@ -831,7 +830,6 @@ symbol_field_type_update( cbl_field_t *field,
    */
   if( is_usage ) {
     switch(field->type) {
-    case FldBlob:
     case FldDisplay:
       gcc_unreachable(); // type is never just "display"
       break;
@@ -882,11 +880,24 @@ symbol_field_type_update( cbl_field_t *field,
   case FldInvalid:
     field->type = candidate;
     field->attr |= numeric_group_attrs(field);
+    // update encoding
+    switch( field->type ) {
+    case FldNumericDisplay:
+    case FldAlphaEdited:
+    case FldNumericEdited:
+      {
+      bool retval = field->codeset.set();
+      return retval;
+      }
+    default:
+      break;
+    }
     return true;
   case FldDisplay:
     if( is_displayable(candidate) ) {
       field->type = candidate;
       field->attr |= numeric_group_attrs(field);
+      if( ! field->codeset.valid() ) return field->codeset.set();
       return true;
     }
     break;
@@ -897,6 +908,7 @@ symbol_field_type_update( cbl_field_t *field,
     field->clear_attr(all_x_e);
     field->type = field->usage;
     field->attr |= numeric_group_attrs(field);
+    if( ! field->codeset.valid() ) return field->codeset.set();
     return true;
   case FldNumericDisplay:
   case FldNumericEdited:
@@ -908,7 +920,6 @@ symbol_field_type_update( cbl_field_t *field,
   case FldForward:
   case FldSwitch:
   case FldPointer:
-  case FldBlob:
     // invalid usage value
     gcc_unreachable();
     break;
@@ -1082,11 +1093,21 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
   // consider all-alphabetic
   if( has_attr(all_alpha_e) ) {
     bool alpha_value = fig != zero_value_e;
+    
+    // In order to check for all alphabetic characters, we have to convert
+    // data.initial back to ASCII:
+
+    size_t outchars;
+    char *initial = __gg__iconverter(codeset.encoding,
+                                     DEFAULT_CHARMAP_SOURCE,
+                                     data.initial,
+                                     data.capacity,
+                                     &outchars);
 
     if( fig == normal_value_e ) {
-      alpha_value = std::all_of( data.initial,
-                                 data.initial +
-                                 strlen(data.initial),
+      alpha_value = std::all_of( initial,
+                                 initial +
+                                 data.capacity,
                                  []( char ch ) {
                                    return ISSPACE(ch) ||
                                      ISPUNCT(ch) ||
@@ -1094,7 +1115,7 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
     }
     if( ! alpha_value ) {
       error_msg(loc, "alpha-only %s VALUE '%s' contains non-alphabetic data",
-               name, fig == zero_value_e? cbl_figconst_str(fig) : data.initial);
+               name, fig == zero_value_e? cbl_figconst_str(fig) : initial);
     }
   }
 
@@ -1262,7 +1283,6 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
       return false;
     // parser should not allow the following types here
     case FldForward:
-    case FldBlob:
     default:
       if( sizeof(matrix[0]) < field->type ) {
         cbl_internal_error("logic error: MOVE %s %s invalid type:",
@@ -1292,8 +1312,16 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
     case 0:
       if( src->type == FldLiteralA && is_numericish(tgt) && !is_literal(tgt) ) {
         // Allow if input string is an integer.
-        const char *p = src->data.initial, *pend = p + src->data.capacity;
-        if( p[0] == '+' || p[0] == '-' ) p++;
+        size_t outcount;
+        char *in_ascii = static_cast<char *>(xmalloc(4 * src->data.capacity));
+        const char *in_asciip = __gg__iconverter( src->codeset.encoding,
+                                                  DEFAULT_CHARMAP_SOURCE,
+                                                  src->data.initial,
+                                                  src->data.capacity,
+                                                  &outcount );
+        memcpy(in_ascii, in_asciip, outcount);
+        const char *p = in_ascii, *pend = p + src->data.capacity;
+        if( (p[0] == ascii_plus) || (p[0] == ascii_minus) ) p++;
         retval = std::all_of( p, pend, isdigit );
         if( yydebug && ! retval ) {
           auto bad = std::find_if( p, pend,
@@ -1302,6 +1330,7 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
                  HOST_SIZE_T_PRINT_UNSIGNED,
                  __func__, __LINE__, *bad, (fmt_size_t)(bad - p));
         }
+      free(in_ascii);
       }
       break;
     case 1:
@@ -1340,8 +1369,6 @@ bool
 valid_picture( enum cbl_field_type_t type, const char picture[] )
 {
   switch(type) {
-  case FldBlob:
-    gcc_unreachable(); // can't get here via the parser
   case FldInvalid:
   case FldGroup:
   case FldLiteralA:
@@ -1386,7 +1413,6 @@ uint32_t
 type_capacity( enum cbl_field_type_t type, uint32_t digits )
 {
     switch(type) {
-    case FldBlob: gcc_unreachable();
     case FldInvalid:
     case FldGroup:
     case FldAlphanumeric:
@@ -2085,11 +2111,6 @@ template <typename LOC>
 static void
 gcc_location_set_impl( const LOC& loc ) {
   // Set the position to the first line & column in the location.
-  if( getenv("KILROY") )
-    {
-    fprintf(stderr, "********** KILROY %d\n", loc.first_line);
-    }
-
  static location_t loc_m_1 = 0;
 
   token_location = linemap_line_start( line_table, loc.first_line, 80 );
@@ -2503,7 +2524,7 @@ cbl_unimplementedw(const char *gmsgid, ...) {
   auto_diagnostic_group d;
   va_list ap;
   va_start(ap, gmsgid);
-  emit_diagnostic_valist( diagnostics::kind::sorry,
+  emit_diagnostic_valist( diagnostics::kind::warning,
 			  token_location, option_zero, gmsgid, &ap );
   va_end(ap);
 }

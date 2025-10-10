@@ -103,11 +103,16 @@
 
     Stay alert!    */
 
+extern int    __gg__decimal_point        ;
+extern int    __gg__decimal_separator    ;
+extern int    __gg__quote_character      ;
+extern int    __gg__low_value_character  ;
+extern int    __gg__high_value_character ;
+extern char **__gg__currency_signs       ;
+extern int    __gg__default_currency_sign;
+extern char  *__gg__ct_currency_signs[256];  // Compile-time currency signs
 
 extern bool __gg__ebcdic_codeset_in_use;
-#define internal_is_ebcdic (__gg__ebcdic_codeset_in_use)
-
-extern unsigned short const *__gg__internal_codeset_map;
 
 #define NULLCH ('\0')
 #define DEGENERATE_HIGH_VALUE 0xFF
@@ -197,84 +202,6 @@ extern unsigned short const *__gg__internal_codeset_map;
 #define ascii_newline          ((uint8_t)('\n'))
 #define ascii_return           ((uint8_t)('\r'))
 
-#define internal_space     ((uint8_t)__gg__internal_codeset_map[ascii_space])
-#define internal_zero      ((uint8_t)__gg__internal_codeset_map[ascii_zero])
-#define internal_period    ((uint8_t)__gg__internal_codeset_map[ascii_period])
-#define internal_comma     ((uint8_t)__gg__internal_codeset_map[ascii_comma])
-#define internal_dquote    ((uint8_t)__gg__internal_codeset_map[ascii_dquote])
-#define internal_asterisk  ((uint8_t)__gg__internal_codeset_map[ascii_asterisk])
-#define internal_plus      ((uint8_t)__gg__internal_codeset_map[ascii_plus])
-#define internal_minus     ((uint8_t)__gg__internal_codeset_map[ascii_minus])
-#define internal_cr        ((uint8_t)__gg__internal_codeset_map[ascii_cr])
-#define internal_ff        ((uint8_t)__gg__internal_codeset_map[ascii_ff])
-#define internal_newline   ((uint8_t)__gg__internal_codeset_map[ascii_newline])
-#define internal_return    ((uint8_t)__gg__internal_codeset_map[ascii_return])
-#define internal_0         ((uint8_t)__gg__internal_codeset_map[ascii_0])
-#define internal_1         ((uint8_t)__gg__internal_codeset_map[ascii_1])
-#define internal_2         ((uint8_t)__gg__internal_codeset_map[ascii_2])
-#define internal_3         ((uint8_t)__gg__internal_codeset_map[ascii_3])
-#define internal_4         ((uint8_t)__gg__internal_codeset_map[ascii_4])
-#define internal_5         ((uint8_t)__gg__internal_codeset_map[ascii_5])
-#define internal_6         ((uint8_t)__gg__internal_codeset_map[ascii_6])
-#define internal_7         ((uint8_t)__gg__internal_codeset_map[ascii_7])
-#define internal_8         ((uint8_t)__gg__internal_codeset_map[ascii_8])
-#define internal_9         ((uint8_t)__gg__internal_codeset_map[ascii_9])
-#define internal_colon     ((uint8_t)__gg__internal_codeset_map[ascii_colon])
-#define internal_query     ((uint8_t)__gg__internal_codeset_map[ascii_query])
-#define internal_A         ((uint8_t)__gg__internal_codeset_map[ascii_A])
-#define internal_B         ((uint8_t)__gg__internal_codeset_map[ascii_B])
-#define internal_C         ((uint8_t)__gg__internal_codeset_map[ascii_C])
-#define internal_D         ((uint8_t)__gg__internal_codeset_map[ascii_D])
-#define internal_E         ((uint8_t)__gg__internal_codeset_map[ascii_E])
-#define internal_F         ((uint8_t)__gg__internal_codeset_map[ascii_F])
-#define internal_G         ((uint8_t)__gg__internal_codeset_map[ascii_G])
-#define internal_H         ((uint8_t)__gg__internal_codeset_map[ascii_H])
-#define internal_I         ((uint8_t)__gg__internal_codeset_map[ascii_I])
-#define internal_J         ((uint8_t)__gg__internal_codeset_map[ascii_J])
-#define internal_K         ((uint8_t)__gg__internal_codeset_map[ascii_K])
-#define internal_L         ((uint8_t)__gg__internal_codeset_map[ascii_L])
-#define internal_M         ((uint8_t)__gg__internal_codeset_map[ascii_M])
-#define internal_N         ((uint8_t)__gg__internal_codeset_map[ascii_N])
-#define internal_O         ((uint8_t)__gg__internal_codeset_map[ascii_O])
-#define internal_P         ((uint8_t)__gg__internal_codeset_map[ascii_P])
-#define internal_Q         ((uint8_t)__gg__internal_codeset_map[ascii_Q])
-#define internal_R         ((uint8_t)__gg__internal_codeset_map[ascii_R])
-#define internal_S         ((uint8_t)__gg__internal_codeset_map[ascii_S])
-#define internal_T         ((uint8_t)__gg__internal_codeset_map[ascii_T])
-#define internal_U         ((uint8_t)__gg__internal_codeset_map[ascii_U])
-#define internal_V         ((uint8_t)__gg__internal_codeset_map[ascii_V])
-#define internal_W         ((uint8_t)__gg__internal_codeset_map[ascii_W])
-#define internal_X         ((uint8_t)__gg__internal_codeset_map[ascii_X])
-#define internal_Y         ((uint8_t)__gg__internal_codeset_map[ascii_Y])
-#define internal_Z         ((uint8_t)__gg__internal_codeset_map[ascii_Z])
-#define internal_a         ((uint8_t)__gg__internal_codeset_map[ascii_a])
-#define internal_b         ((uint8_t)__gg__internal_codeset_map[ascii_b])
-#define internal_c         ((uint8_t)__gg__internal_codeset_map[ascii_c])
-#define internal_d         ((uint8_t)__gg__internal_codeset_map[ascii_d])
-#define internal_e         ((uint8_t)__gg__internal_codeset_map[ascii_e])
-#define internal_f         ((uint8_t)__gg__internal_codeset_map[ascii_f])
-#define internal_g         ((uint8_t)__gg__internal_codeset_map[ascii_g])
-#define internal_h         ((uint8_t)__gg__internal_codeset_map[ascii_h])
-#define internal_i         ((uint8_t)__gg__internal_codeset_map[ascii_i])
-#define internal_j         ((uint8_t)__gg__internal_codeset_map[ascii_j])
-#define internal_k         ((uint8_t)__gg__internal_codeset_map[ascii_k])
-#define internal_l         ((uint8_t)__gg__internal_codeset_map[ascii_l])
-#define internal_m         ((uint8_t)__gg__internal_codeset_map[ascii_m])
-#define internal_n         ((uint8_t)__gg__internal_codeset_map[ascii_n])
-#define internal_o         ((uint8_t)__gg__internal_codeset_map[ascii_o])
-#define internal_p         ((uint8_t)__gg__internal_codeset_map[ascii_p])
-#define internal_q         ((uint8_t)__gg__internal_codeset_map[ascii_q])
-#define internal_r         ((uint8_t)__gg__internal_codeset_map[ascii_r])
-#define internal_s         ((uint8_t)__gg__internal_codeset_map[ascii_s])
-#define internal_t         ((uint8_t)__gg__internal_codeset_map[ascii_t])
-#define internal_u         ((uint8_t)__gg__internal_codeset_map[ascii_u])
-#define internal_v         ((uint8_t)__gg__internal_codeset_map[ascii_v])
-#define internal_w         ((uint8_t)__gg__internal_codeset_map[ascii_w])
-#define internal_x         ((uint8_t)__gg__internal_codeset_map[ascii_x])
-#define internal_y         ((uint8_t)__gg__internal_codeset_map[ascii_y])
-#define internal_z         ((uint8_t)__gg__internal_codeset_map[ascii_z])
-
-
 enum text_device_t
     {
     td_default_e,
@@ -289,7 +216,6 @@ enum text_codeset_t
     cs_cp1252_e,
     cs_cp1140_e
     };
-
 
 extern unsigned char __gg__data_space[1]       ;
 extern unsigned char __gg__data_low_values[1]  ;
@@ -315,56 +241,197 @@ extern const unsigned short __gg__ebcdic_to_cp1252_collation[256];
 
 // These routines convert a single ASCII character to either ASCII or EBCDIC
 
-extern "C"
-char __gg__ascii_to_ascii_chr(char ch);
-extern "C"
-char __gg__ascii_to_ebcdic_chr(char ch);
-extern "C"
-char (*__gg__ascii_to_internal_chr)(char);
-#define ascii_to_internal(a) ((*__gg__ascii_to_internal_chr)(a))
-
-extern "C"
-void __gg__ascii_to_ascii(char *str, size_t length);
-extern "C"
-void __gg__ascii_to_ebcdic(char *str, size_t length);
-extern "C"
-void (*__gg__ascii_to_internal_str)(char *str, size_t length);
-#define ascii_to_internal_str(a, b) ((*__gg__ascii_to_internal_str)((a), (b)))
-
-extern "C"
-char *__gg__raw_to_ascii(char **dest, size_t *dest_size, const char *str, size_t length);
-extern "C"
-char *__gg__raw_to_ebcdic(char **dest, size_t *dest_size, const char *in, size_t length);
-extern "C"
-char *(*__gg__raw_to_internal)(char **dest, size_t *dest_length, const char *in, size_t length);
-#define raw_to_internal(a, b, c, d) ((*__gg__raw_to_internal)((a), (b), (c), (d)))
-
-extern "C"
-char *__gg__ascii_to_console(char **dest, size_t *dest_size, char const * const str, const size_t length);
-extern "C"
-char *__gg__ebcdic_to_console(char **dest, size_t *dest_size, char const * const str, const size_t length);
-extern "C"
-char *(*__gg__internal_to_console_cm)(char **dest, size_t *dest_size, const char *in, size_t length);
-#define internal_to_console(a, b, c, d) ((*__gg__internal_to_console_cm)((a), (b), (c), (d)))
-
-extern "C"
-void __gg__console_to_ascii(char * const str, size_t length);
-extern "C"
-void __gg__console_to_ebcdic(char * const str, size_t length);
-extern "C"
-void (*__gg__console_to_internal_cm)(char * const str, size_t length);
-#define console_to_internal(a, b) ((*__gg__console_to_internal_cm)((a), (b)))
-
-extern "C"
-void __gg__ebcdic_to_ascii(char *str, const size_t length);
-extern "C"
-void (*__gg__internal_to_ascii)(char *str, size_t length);
-#define internal_to_ascii(a, b) ((*__gg__internal_to_ascii)((a), (b)))
-
 extern "C" void __gg__set_internal_codeset(int use_ebcdic);
 
 extern "C"
 void __gg__text_conversion_override(text_device_t device,
                                     text_codeset_t codeset);
+
+const char * __gg__encoding_iconv_name( cbl_encoding_t encoding );
+cbl_encoding_t __gg__encoding_iconv_type( const char *name );
+
+char * __gg__iconverter(cbl_encoding_t from,
+                        cbl_encoding_t to,
+                  const char *str,
+                        size_t length,
+                        size_t *outlength);
+
+#define DEFAULT_CHARMAP_SOURCE (iconv_CP1252_e)
+
+class charmap_t
+  {
+  private:
+    // This is the encoding of this character map
+    cbl_encoding_t m_encoding;
+
+    enum
+      {
+      sign_type_ascii,
+      sign_type_ebcdic,
+      } m_numeric_sign_type;
+
+    // This map retains the ASCII-to-encoded value in m_encoding, so that iconv
+    // need be called but once for each ASCII value.
+    std::unordered_map<int, int>m_map_of_encodings;
+
+    void determine_sign_type()
+      {
+      if( mapped_character(ascii_0) & 0x80 )
+        {
+        m_numeric_sign_type = sign_type_ebcdic;
+        }
+      else
+        {
+        m_numeric_sign_type = sign_type_ascii;
+        }
+      }
+
+  public:
+    explicit charmap_t(cbl_encoding_t e) : m_encoding(e)
+      {
+      determine_sign_type();
+      }
+    explicit charmap_t(uint16_t e) : m_encoding(static_cast<cbl_encoding_t>(e))
+      {
+      determine_sign_type();
+      }
+
+    int mapped_character(int ch)
+      {
+      // The assumption is that anybody calling this routine is providing
+      // a single-byte character in the DEFAULT_CHARMAP_SOURCE encoding.  We
+      // return the equivalent character in the m_encoding
+      int retval;
+      std::unordered_map<int, int>::const_iterator it =
+                                                   m_map_of_encodings.find(ch);
+      if( it != m_map_of_encodings.end() )
+        {
+        retval = it->second;
+        }
+      else
+        {
+        retval = 0;
+        size_t outlength = 0;
+        const char *mapped = __gg__iconverter(DEFAULT_CHARMAP_SOURCE,
+                                              m_encoding,
+                                              PTRCAST(char, &ch),
+                                              1,
+                                              &outlength);
+        memcpy(&retval, mapped, outlength);
+        m_map_of_encodings[ch] = retval;
+        }
+      return retval;
+      }
+
+    int decimal_point()
+      {
+      return mapped_character(__gg__decimal_point);
+      }
+    int decimal_separator()
+      {
+      return mapped_character(__gg__decimal_separator);
+      }
+    int quote_character()
+      {
+      return mapped_character(__gg__quote_character);
+      }
+    int low_value_character()
+      {
+      return __gg__low_value_character;
+      }
+    int high_value_character()
+      {
+      return __gg__high_value_character;
+      }
+
+    int figconst_character(cbl_figconst_t figconst)
+      {
+      int const_char = 0;  // Head off a compiler warning
+      switch(figconst)
+        {
+        case normal_value_e :
+          const_char = -1;
+          break;
+        case low_value_e    :
+          const_char = low_value_character();
+          break;
+        case zero_value_e   :
+          const_char = mapped_character(ascii_0);
+          break;
+        case space_value_e  :
+          const_char = mapped_character(ascii_space);
+          break;
+        case quote_value_e  :
+          const_char = quote_character();
+          break;
+        case high_value_e   :
+          const_char = high_value_character();
+          break;
+        case null_value_e:
+          const_char = '\0';
+          break;
+        default:
+          abort();
+          break;
+        }
+      return const_char;
+      }
+
+  bool
+  is_digit_negative(int digit)
+    {
+    bool retval;
+    switch(m_numeric_sign_type)
+      {
+      case sign_type_ascii:
+        retval = !!(digit & NUMERIC_DISPLAY_SIGN_BIT_ASCII);
+        break;
+
+      case sign_type_ebcdic:
+        retval = !!((~digit) & NUMERIC_DISPLAY_SIGN_BIT_EBCDIC);
+        break;
+      }
+    return retval;
+    }
+
+  int
+  set_digit_negative(int digit, bool is_negative)
+    {
+    switch(m_numeric_sign_type)
+      {
+      case sign_type_ascii:
+        if( is_negative )
+          {
+          digit |= NUMERIC_DISPLAY_SIGN_BIT_ASCII;
+          }
+        else
+          {
+          digit &= ~NUMERIC_DISPLAY_SIGN_BIT_ASCII;
+          }
+        break;
+
+      case sign_type_ebcdic:
+        if( is_negative )
+          {
+          digit &= ~NUMERIC_DISPLAY_SIGN_BIT_EBCDIC;
+          }
+        else
+          {
+          digit |= NUMERIC_DISPLAY_SIGN_BIT_EBCDIC;
+          }
+        break;
+      }
+    return digit;
+    }
+
+  bool
+  is_like_ebcdic() const
+    {
+    return m_numeric_sign_type == sign_type_ebcdic;
+    }
+
+  };
+
+charmap_t *__gg__get_charmap(cbl_encoding_t encoding);
 
 #endif

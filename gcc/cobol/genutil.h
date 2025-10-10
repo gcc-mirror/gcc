@@ -30,11 +30,6 @@
 #ifndef _GENUTIL_H_
 #define _GENUTIL_H_
 
-#define EBCDIC_MINUS (0x60)
-#define EBCDIC_PLUS  (0x4E)
-#define EBCDIC_ZERO  (0xF0)
-#define EBCDIC_NINE  (0xF9)
-
 bool internal_codeset_is_ebcdic();
 
 extern bool exception_location_active;

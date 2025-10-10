@@ -1417,6 +1417,15 @@ it may contain several directory names separated by a colon
 .Ev COBPATH
 is searched first, followed by
 .Ev LD_LIBRARY_PATH .
+Note that
+.Ev COBPATH does not change where the runtime linker looks for
+.Pa libgcobol.so
+itself.
+How the runtime linker searches for
+.Pa libgcobol.so
+when the executable loads is controlled by 
+.Xr ld.so 8 ,
+not libgcobol.
 .Pp
 Each directory is searched for files whose name ends in
 .Ql ".so" .

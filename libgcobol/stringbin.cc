@@ -153,7 +153,7 @@ string_from_combined(const COMBINED &combined)
     {
     case 1:
       // We know that val8 is a single digit
-      combined_string[combined.start] = combined.val8 + zero_char;;
+      combined_string[combined.start] = combined.val8 + zero_char;
       break;
 
     case 2:
@@ -298,9 +298,13 @@ __gg__binary_to_string_ascii(char *result, int digits, __int128 value)
   }
 
 bool
-__gg__binary_to_string_internal(char *result, int digits, __int128 value)
+__gg__binary_to_string_encoded( char *result,
+                                int digits,
+                                __int128 value,
+                                cbl_encoding_t encoding)
   {
-  zero_char = internal_zero;
+  charmap_t *charmap = __gg__get_charmap(encoding);
+  zero_char = charmap->mapped_character(ascii_0);
 
   // Note that this routine does not terminate the generated string with a
   // NUL.  This routine is sometimes used to generate a NumericDisplay string
@@ -327,7 +331,6 @@ __gg__binary_to_string_internal(char *result, int digits, __int128 value)
   memcpy(result, combined_string, digits);
   return retval;
   }
-
 
 static
 void
@@ -480,7 +483,8 @@ extern "C"
 __int128
 __gg__numeric_display_to_binary(unsigned char *signp,
                           const unsigned char *psz,
-                                int n )
+                                int            n,
+                                cbl_encoding_t encoding)
   {
   /*  This is specific to numeric display values.
 
@@ -504,6 +508,11 @@ __gg__numeric_display_to_binary(unsigned char *signp,
       and so we build up a 128-bit result in three 64-bit pieces, and assemble
       them at the end.  */
 
+  charmap_t *charmap = __gg__get_charmap(encoding);
+  unsigned char zero  = charmap->mapped_character(ascii_0);
+  unsigned char minus = charmap->mapped_character(ascii_minus);
+
+  bool is_ebcdic = (zero == 0xF0);
 
   static const uint8_t lookup[] =
     {
@@ -575,10 +584,10 @@ __gg__numeric_display_to_binary(unsigned char *signp,
   unsigned char sign_byte = *signp;
 
   const unsigned char *mapper;
-  if( internal_is_ebcdic )
+  if( is_ebcdic )
     {
     mapper = from_ebcdic;
-    if( sign_byte == EBCDIC_MINUS )
+    if( sign_byte == minus )
       {
       is_negative = true;
       }
@@ -595,7 +604,7 @@ __gg__numeric_display_to_binary(unsigned char *signp,
   else
     {
     mapper = from_ascii;
-    if( sign_byte == '-' )
+    if( sign_byte == minus )
       {
       is_negative = true;
       }
@@ -692,7 +701,6 @@ __gg__numeric_display_to_binary(unsigned char *signp,
 
   // Replace the original sign byte:
   *signp = sign_byte; // cppcheck-suppress redundantAssignment
-
   return retval;
   }
 
@@ -788,6 +796,7 @@ __gg__packed_to_binary(const unsigned char *psz,
 
   // back up one byte to fetch the sign nybble.
   uint8_t sign_nybble = *(psz-1) & 0x0F;
+  enum{ PACKED_NYBBLE_MINUS= 0x0D};
 
   if( sign_nybble > 9 )
     {

@@ -197,10 +197,13 @@ get_filename( const cblc_file_t *file,
   static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
   static char *fname = static_cast<char *>(malloc(MINIMUM_ALLOCATION_SIZE));
   massert(fname);
-  fname = internal_to_console(&fname,
-                              &fname_size,
-                              file->filename,
-                              strlen(file->filename));
+  if( strlen(file->filename)+1 > fname_size)
+    {
+    fname_size = strlen(file->filename)+1 ;
+    fname = static_cast<char *>(realloc(fname, fname_size));
+    }
+
+  strcpy(fname, file->filename);
 
   if( !is_quoted )
     {
@@ -320,10 +323,21 @@ __gg__file_init(
   int access,
   int optional,
   size_t record_area_min,
-  size_t record_area_max)
+  size_t record_area_max,
+  cbl_encoding_t encoding,
+  int alphabet
+  )
   {
   if( !(file->flags & file_flag_initialized_e) )
     {
+    if( encoding != iconv_CP1140_e && __gg__ebcdic_codeset_in_use )
+      {
+      // This code is to be eliminated when 'encoding' is valid.
+      encoding = iconv_CP1140_e;
+      }
+
+    charmap_t *charmap = __gg__get_charmap(encoding);
+
     file->name                = strdup(name);
     file->symbol_table_index  = symbol_table_index;
     file->filename            = NULL ;
@@ -343,7 +357,7 @@ __gg__file_init(
     file->access              = (cbl_file_access_t)access ;
     file->errnum              = 0 ;
     file->io_status           = FsSuccess ;
-    file->delimiter           = internal_newline ;
+    file->delimiter           = charmap->mapped_character(ascii_newline) ;
     file->flags               = file_flag_none_e;
         file->flags          |= (optional ? file_flag_optional_e : file_flag_none_e)
                                 + file_flag_initialized_e;
@@ -351,6 +365,8 @@ __gg__file_init(
     file->record_area_max     = record_area_max;
     file->prior_read_location = 0;
     file->prior_op            = file_op_none;
+    file->encoding            = encoding;
+    file->alphabet            = alphabet;
 
     if( file->access == file_inaccessible_e )
       {
@@ -727,7 +743,10 @@ relative_file_delete(cblc_file_t *file, bool is_random)
       goto done;
       }
 
-    if( presult == 0 || record_marker != internal_newline )
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+
+    if(    presult == 0
+        || record_marker != charmap->mapped_character(ascii_newline) )
       {
       // There isn't a record there for us to delete, which is an error
       file->io_status = FsNotFound;   // "23"
@@ -1428,7 +1447,8 @@ relative_file_start(cblc_file_t *file,
       // end of file
       goto done;
       }
-    if( record_marker == internal_newline )
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+    if( record_marker == charmap->mapped_character(ascii_newline) )
       {
       // The record is a valid one
       fpos = rfp.record_position;
@@ -1881,7 +1901,8 @@ relative_file_rewrite( cblc_file_t *file, size_t length, bool is_random )
       goto done;
       }
 
-    if( presult == 0 || record_marker != internal_newline )
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+    if( presult == 0 || record_marker != charmap->mapped_character(ascii_newline) )
       {
       // The record is not specified:
       file->io_status = FsNotFound;   // "23"
@@ -2336,7 +2357,8 @@ relative_file_write_varying(cblc_file_t    *file,
 
   while( payload_length < file->record_area_max )
     {
-    fputc(internal_space, file->file_pointer);
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+    fputc(charmap->mapped_character(ascii_space), file->file_pointer);
     if( handle_ferror(file, __func__, "fputc() error") )
       {
       goto done;
@@ -2377,7 +2399,12 @@ relative_file_write(cblc_file_t    *file,
   file->io_status = FsErrno;
 
   long necessary_file_size;
-  const unsigned char achPostamble[] = {internal_cr, internal_newline};
+  charmap_t *charmap = __gg__get_charmap(file->encoding);
+  const unsigned char achPostamble[] =
+    {
+    (unsigned char)charmap->mapped_character(ascii_cr),
+    (unsigned char)charmap->mapped_character(ascii_newline)
+    };
 
   relative_file_parameters rfp;
 
@@ -2425,7 +2452,7 @@ relative_file_write(cblc_file_t    *file,
       goto done;
       }
 
-    if( presult == 1 && record_marker == internal_newline )
+    if( presult == 1 && record_marker == charmap->mapped_character(ascii_newline) )
       {
       // The slot has something in it already:
       file->io_status = FsDupWrite;   // "22"
@@ -2467,7 +2494,7 @@ relative_file_write(cblc_file_t    *file,
     size_t padding = file->record_area_max - length;
     while(padding--)
       {
-      fputc(internal_space, file->file_pointer);
+      fputc(charmap->mapped_character(ascii_space), file->file_pointer);
       }
     }
 
@@ -2502,6 +2529,8 @@ sequential_file_write(cblc_file_t    *file,
                       int             lines)
   {
   // This code handles SEQUENTIAL and LINE SEQUENTIAl
+  charmap_t *charmap = __gg__get_charmap(file->encoding);
+
   char ch = '\0';
   size_t characters_to_write;
 
@@ -2510,7 +2539,7 @@ sequential_file_write(cblc_file_t    *file,
   if( lines < -1 )
     {
     // We are using -666 for a form feed
-    ch = internal_ff;  // Form feed
+    ch = charmap->mapped_character(ascii_ff);  // Form feed
     lcount = 1;
     }
   else if( lines == -1 )
@@ -2521,12 +2550,12 @@ sequential_file_write(cblc_file_t    *file,
   else if( lines == 0 )
     {
     lcount = 1;
-    ch = internal_return;
+    ch = charmap->mapped_character(ascii_return);
     }
   else /* if( lines > 0 ) */
     {
     lcount = lines;
-    ch = internal_newline;
+    ch = charmap->mapped_character(ascii_newline);
     }
 
   // By default, we write out the number of characters in the record area
@@ -2545,19 +2574,19 @@ sequential_file_write(cblc_file_t    *file,
     {
     // If file-sequential, then trailing spaces are removed:
     while(     characters_to_write > 0
-               && location[characters_to_write-1] == internal_space )
+               && location[characters_to_write-1] == charmap->mapped_character(ascii_space) )
       {
       characters_to_write -= 1;
       }
     }
 
-  if( after && file->org == file_line_sequential_e && ch == internal_newline )
+  if( after && file->org == file_line_sequential_e && ch == charmap->mapped_character(ascii_newline) )
     {
     // In general, we terminate every line with a newline.  Because this
     // line is supposed to start with a newline, we decrement the line
     // counter by one if we had already sent one.
-    if( lcount && (   file->recent_char == internal_newline
-                     || file->recent_char == internal_ff) )
+    if( lcount && (   file->recent_char == charmap->mapped_character(ascii_newline)
+                     || file->recent_char == charmap->mapped_character(ascii_ff)) )
       {
       lcount -= 1;
       }
@@ -2575,7 +2604,7 @@ sequential_file_write(cblc_file_t    *file,
       file->recent_char = ch;
       }
     // That might have been a formfeed; switch back to newline:
-    ch = internal_newline;
+    ch = charmap->mapped_character(ascii_newline);
     }
 
   switch(file->org)
@@ -2660,12 +2689,12 @@ sequential_file_write(cblc_file_t    *file,
       {
       goto done;
       }
-    file->recent_char = internal_newline;
+    file->recent_char = charmap->mapped_character(ascii_newline);
     }
 
   if( !after  )
     {
-    // We did the output BEFORE, so now it's time to send some internal_newlines
+    // We did the output BEFORE, so now it's time to send some newlines
     while(lcount--)
       {
       fputc(ch, file->file_pointer);
@@ -3004,7 +3033,9 @@ line_sequential_file_read(  cblc_file_t *file)
   while(remaining < file->record_area_max )
     {
     // Space fill shorty records
-    file->default_record->data[remaining++] = internal_space;
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+    file->default_record->data[remaining++] =
+                                        charmap->mapped_character(ascii_space);
     }
 
   if( hit_eof && !characters_read)
@@ -3028,7 +3059,7 @@ line_sequential_file_read(  cblc_file_t *file)
   else // We filled the whole record area.  Look ahead one character
     {
 #ifdef POSSIBLY_IBM
-    // In this code, unread characters before the internal_newline
+    // In this code, unread characters before the newline
     // are read next time.  See page 133 of the IBM Language Reference
     // Manual: "If the first unread character is the record delimiter, it
     // is discarded. Otherwise, the first unread character becomes the first
@@ -3046,7 +3077,7 @@ line_sequential_file_read(  cblc_file_t *file)
       goto done;
       }
 #else
-    // In this code, extra characters before the internal_newline
+    // In this code, extra characters before the newline
     // are read next time are discarded.  GnuCOBOL works this way, and
     // the Michael Coughlin "Beginning COBOL" examples require this mode.
     // The ISO/IEC 2014 standard is silent on the question of LINE
@@ -3165,7 +3196,10 @@ sequential_file_read(  cblc_file_t  *file)
     }
   if( characters_read < bytes_in_record )
     {
-    memset(file->default_record->data, internal_space, bytes_to_read);
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+    memset( file->default_record->data,
+            charmap->mapped_character(ascii_space),
+            bytes_to_read);
     file->io_status = FsEofSeq; // "10"
     fpos = -1;
     goto done;
@@ -3472,7 +3506,8 @@ relative_file_read( cblc_file_t *file,
       {
       goto done;
       }
-    if(record_marker == internal_newline)
+    charmap_t *charmap = __gg__get_charmap(file->encoding);
+    if(record_marker == charmap->mapped_character(ascii_newline) )
       {
       // We have a good record to read:
 
@@ -3953,16 +3988,6 @@ file_indexed_open(cblc_file_t *file)
     case '+':
       if( file->flags & file_flag_existed_e )
         {
-        // We need to open the file for reading, and build the
-        // maps for each index:
-        static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-        static char *fname = static_cast<char *>(malloc(fname_size));
-        massert(fname);
-
-        internal_to_console(&fname,
-                            &fname_size,
-                            file->filename, strlen(file->filename));
-
         // We are going to scan through the entire file, building index
         // entries for each record.
 
@@ -4102,7 +4127,7 @@ __gg__file_reopen(cblc_file_t *file, int mode_char)
     bool all_spaces = true;
     for(size_t i=0; i<strlen(file->filename); i++)
       {
-      if( file->filename[i] != internal_space )
+      if( file->filename[i] != ascii_space )
         {
         all_spaces = false;
         }
@@ -4116,16 +4141,9 @@ __gg__file_reopen(cblc_file_t *file, int mode_char)
       goto done;
       }
 
-    static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-    static char *fname = static_cast<char *>(malloc(fname_size));
-    massert(fname)
-    internal_to_console(&fname,
-                        &fname_size,
-                        file->filename,
-                        strlen(file->filename));
     warnx(  "%s(): There is no environment variable named \"%s\"\n",
             __func__,
-            fname);
+            file->filename);
     file->io_status = FsNoFile;    // "35"
     goto done;
     }
@@ -4323,7 +4341,8 @@ __io__file_open(cblc_file_t *file,
                 int mode_char,
                 int is_quoted)
   {
-  // Filename is a pointer to a malloc() buffer.
+  // 'filename' is a pointer to a malloc() buffer.
+  // The 'filename' has to be in the system encoding, typically ASCII
 
   // The complication:  A filename can be literal text, it can be from a COBOL
   // alphanumeric variable, or it can be the name of an environment variable
@@ -4359,9 +4378,9 @@ __io__file_close( cblc_file_t *file, int how )
 
   // if(    file->org == file_line_sequential_e
   // && ( file->mode_char == 'w' || file->mode_char == 'a' )
-  // && file->recent_char != internal_newline )
+  // && file->recent_char != inter nal_newline )
   // {
-  // int ch = internal_newline;
+  // int ch = inter nal_newline;
   // fputc(ch, file->file_pointer);
   // if( handle_ferror(file, __func__, "fputc() error [6]") )
   // {
@@ -4401,9 +4420,7 @@ __io__file_close( cblc_file_t *file, int how )
     file_indexed_close(file);
     }
 
-  // The filename can be from a COBOL alphanumeric variable, which means it can
-  // between a file_close and a subsequent file_open.  So, we get rid of it
-  // here
+  // The filename was malloced.  So, we get rid of it here.
   free(file->filename);
   file->filename = NULL;
 
@@ -4588,8 +4605,9 @@ __gg__file_open(cblc_file_t *file,
                 int mode_char,
                 int is_quoted)
   {
-    gcobol_io_t *functions = gcobol_io_funcs();
-    functions->Open(file, filename, mode_char, is_quoted);
+  // The 'filename' has to be in the system encoding, typically ASCII
+  gcobol_io_t *functions = gcobol_io_funcs();
+  functions->Open(file, filename, mode_char, is_quoted);
   }
 
 extern "C"

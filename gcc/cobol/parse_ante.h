@@ -273,8 +273,35 @@ static inline char * dequote( char input[] ) {
 static const char *
 name_of( cbl_field_t *field ) {
   assert(field);
+  // Because this can be called after .initial has been converted to the
+  // field->codeset.encoding, we have to undo that.  There may be some danger
+  // associated with returning a static.  I don't actually know. -- RJD.
+  static size_t static_length = 0;
+  static char * static_buffer = nullptr;
+  if( field->name[0] == '_' )
+    {
+    // Make a copy of .initial
+    if( static_length < field->data.capacity+1 )
+      {
+      static_length = field->data.capacity+1;
+      static_buffer = static_cast<char *>(xrealloc(static_buffer,
+                                                   static_length));
+      memcpy(static_buffer, field->data.initial, field->data.capacity);
+      static_buffer[field->data.capacity] = '\0';
+      }
+    // Convert it from ->encoding to DEFAULT_CHARMAP_SOURCE
+    size_t charsout;
+    char *converted =  __gg__iconverter(field->codeset.encoding,
+                                        DEFAULT_CHARMAP_SOURCE,
+                                        field->data.initial,
+                                        field->data.capacity,
+                                        &charsout );
+    memcpy(static_buffer, converted, charsout);
+    static_buffer[charsout] = '\0';
+    }
+
   return field->name[0] == '_' && field->data.initial?
-    field->data.initial : field->name;
+    static_buffer : field->name;
 }
 
 static const char *
@@ -1305,11 +1332,30 @@ std::map<std::string, std::list<std::string>>
 
 class prog_descr_t {
   std::set<std::string> call_targets, subprograms;
- public:
+public:
   std::set<function_descr_t> function_repository;
   size_t program_index;
   cbl_label_t *declaratives_eval, *paragraph, *section;
   const char *collating_sequence;
+  struct encoding_t {
+    struct encoding_base_t {
+      size_t isym;
+      cbl_encoding_t encoding;
+      encoding_base_t() : isym(0), encoding(CP1252_e) {}
+      encoding_base_t(cbl_encoding_t encoding) : isym(0), encoding(encoding) {}
+      void set( size_t isym, cbl_encoding_t encoding ) {
+        this->isym = isym;
+        this->encoding = encoding;
+      }
+      void set( cbl_encoding_t encoding ) {
+        assert(encoding != custom_encoding_e);
+        this->isym = 0;
+        this->encoding = encoding;
+      }
+
+    } alpha, national;
+    encoding_t() : national(EBCDIC_e) {}
+  } alphabet;
   struct locale_t {
     cbl_name_t name; const char *os_name;
     locale_t() : name(""), os_name(nullptr) {}
@@ -1599,6 +1645,8 @@ static class current_t {
   rel_part_t antecedent_cache;
 
  public:
+  static prog_descr_t::encoding_t::encoding_base_t default_encoding;
+
   current_t()
     : first_statement(0)
     , in_declaratives(false)
@@ -1836,6 +1884,26 @@ static class current_t {
     return client->second;
   }
 
+  void alpha_encoding( size_t isym, cbl_encoding_t encoding ) {
+    prog_descr_t& program = programs.top();
+    program.alphabet.alpha.set(isym, encoding);
+  }
+  void national_encoding( size_t isym, cbl_encoding_t encoding ) {
+    prog_descr_t& program = programs.top();
+    program.alphabet.national.set(isym, encoding);
+  }
+
+  cbl_encoding_t  alpha_encoding() const {
+    if( programs.empty() ) return CP1252_e;
+    const prog_descr_t& program = programs.top();
+    return program.alphabet.alpha.encoding;
+  }
+  cbl_encoding_t  national_encoding() const {
+    if( programs.empty() ) return EBCDIC_e;
+    const prog_descr_t& program = programs.top();
+    return program.alphabet.national.encoding;
+  }
+
   bool
   collating_sequence( const cbl_name_t name ) {
     assert(name);
@@ -1891,7 +1959,16 @@ static class current_t {
 
     const cbl_label_t *L;
     if( (L = symbol_program_add(parent, &label)) == NULL ) return false;
-    programs.push( prog_descr_t(symbol_index(symbol_elem_of(L))) );
+    prog_descr_t program(symbol_index(symbol_elem_of(L)));
+#if 1 //EBCDIC  // enable when ready
+      auto alpha_encoding =
+        programs.empty()? default_encoding : programs.top().alphabet.alpha;
+      if( alpha_encoding.encoding == EBCDIC_e ) {
+        dbgmsg("%s:%d: We're in EBCDIC", __func__, __LINE__);
+      }
+      program.alphabet.alpha = alpha_encoding;
+#endif
+    programs.push( program );
     programs.apply_pending();
 
     bool fOK = symbol_at(programs.top().program_index) + 1 == symbols_end();
@@ -2009,6 +2086,14 @@ static class current_t {
     parser_leave_section( programs.top().section );
     programs.pop();
 
+#if 0
+    if( programs.empty() ) {
+      // The default encoding can be changed only with -finternal-ebcdic, and
+      // remains in effect for all programs while the compiler runs.
+      // This comment here to remind us.  
+      default_encoding = prog_descr_t::encoding_t::encoding_base_t();
+    }
+#endif
     debugging_clients.clear();
     error_clients.clear();
     exception_clients.clear();
@@ -2189,6 +2274,8 @@ static class current_t {
   cbl_label_t * compute_label() { return error_labels.compute_error; }
 } current;
 
+prog_descr_t::encoding_t::encoding_base_t current_t::default_encoding;
+
 void current_enabled_ecs( tree ena ) {
   current.declaratives.runtime.ena = ena;
 }
@@ -2206,6 +2293,22 @@ add_debugging_declarative( const cbl_label_t * label ) {
 
 cbl_options_t current_options() {
   return current.options_paragraph;
+}
+
+cbl_encoding_t current_encoding( char a_or_n ) {
+  cbl_encoding_t retval;
+  switch(a_or_n) {
+  case 'A':
+    retval = current.alpha_encoding();
+    break;
+  case 'N':
+    retval = current.national_encoding();
+    break;
+  default:
+    gcc_unreachable();
+    break;
+  }
+  return retval;
 }
 
 size_t current_program_index() {
@@ -2338,7 +2441,6 @@ needs_picture( cbl_field_type_t type ) {
   case FldNumericBin5:
     return false;
 
-  case FldBlob:
   case FldClass:
   case FldConditional:
   case FldForward:
@@ -2367,7 +2469,6 @@ is_callable( const cbl_field_t *field ) {
   case FldForward:
   case FldSwitch:
   case FldDisplay:
-  case FldBlob:
   case FldNumericDisplay:
   case FldNumericBinary:
   case FldFloat:
@@ -2763,7 +2864,7 @@ field_attr_str( const cbl_field_t *field ) {
     intermediate_e, embiggened_e, all_alpha_e, all_x_e,
     all_ax_e, prog_ptr_e, scaled_e, refmod_e, based_e, any_length_e,
     global_e, external_e, blank_zero_e, linkage_e, local_e, leading_e,
-    separate_e, envar_e, dnu_1_e, bool_encoded_e, hex_encoded_e,
+    separate_e, envar_e, encoded_e, bool_encoded_e, hex_encoded_e,
     depends_on_e, initialized_e, has_value_e, ieeedec_e, big_endian_e,
     same_as_e, record_key_e, typedef_e, strongdef_e,
   };
@@ -2871,29 +2972,27 @@ blank_pad_initial( const char initial[], size_t capacity, size_t new_size ) {
   return p;
 }
 
-static bool
-value_encoding_check( const YYLTYPE& loc, cbl_field_t *field ) {
+static void
+value_encoding_check( const YYLTYPE& loc, cbl_field_t *field, cbl_encoding_t encoding ) {
   if( ! field->internalize() ) {
     error_msg(loc, "inconsistent string literal encoding for '%s'",
               field->data.initial);
-    return false;
   }
-  return true;
+  if( encoding != field->codeset.encoding ) {
+    warn_msg(loc, "VALUE encoded as %qs for data item encoded as %qs",
+             __gg__encoding_iconv_name(encoding), field->codeset.name());
+  }
 }
-
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wmissing-field-initializers"
 
 static struct cbl_field_t *
 field_alloc( const YYLTYPE& loc, cbl_field_type_t type, size_t parent, const char name[] ) {
-  cbl_field_t *f, field = {};
-  field.type = type;
-  field.usage = FldInvalid;
+  static const uint32_t level = 0;
+  cbl_field_t *f, field = { type, 0, cbl_field_data_t(), level, name, yylineno };
   field.parent = parent;
-  field.line = yylineno;
   
-  if( !namcpy(loc, field.name, name) ) return NULL;
   f = field_add(loc, &field);
   assert(f);
   return f;
@@ -2909,7 +3008,7 @@ static cbl_file_t *
 file_add( YYLTYPE loc, cbl_file_t *file ) {
   gcc_assert(file);
   enum { level = 1 };
-  struct cbl_field_t area = { 0, FldAlphanumeric, FldInvalid, 0, 0,0, level, {}, yylineno },
+  struct cbl_field_t area{ FldAlphanumeric, level, yylineno },
                      *field = field_add(loc, &area);
   file->default_record = field_index(field);
 
@@ -2928,6 +3027,7 @@ file_add( YYLTYPE loc, cbl_file_t *file ) {
              "%s%s", record_area_name_stem, file->name);
   }
   field->file = field->parent = symbol_index(e);
+  field->codeset.set();
 
   return file;
 }

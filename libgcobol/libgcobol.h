@@ -52,9 +52,10 @@ extern "C" __int128 __gg__power_of_ten(int n);
 extern "C" __int128 __gg__dirty_to_binary_source( const char *dirty,
                                                   int length,
                                                   int *rdigits);
-extern "C" __int128 __gg__dirty_to_binary_internal( const char *dirty,
-                                                    int length,
-                                                    int *rdigits);
+extern "C" __int128 __gg__dirty_to_binary(const char *dirty,
+                                          cbl_encoding_t encoding,
+                                          int length,
+                                          int *rdigits);
 extern "C" __int128 __gg__binary_value_from_field(  int *rdigits,
                                                     cblc_field_t *var);
 
@@ -116,7 +117,6 @@ extern "C" void __gg__realloc_if_necessary( char **dest,
                                             size_t *dest_size,
                                             size_t new_size);
 extern "C" void __gg__set_exception_file(const cblc_file_t *file);
-extern "C" void __gg__internal_to_console_in_place(char *loc, size_t length);
 extern "C" __int128 __gg__binary_value_from_qualified_field(int     *rdigits,
                                                             const cblc_field_t *var,
                                                             size_t     offset,
@@ -128,5 +128,18 @@ extern "C"  __int128 __gg__integer_from_qualified_field(cblc_field_t *var,
                                                         size_t var_offset,
                                                         size_t var_size);
 void __gg__abort(const char *msg);
+
+int __gg__fc_char(const cblc_field_t *field);
+
+extern "C"
+void __gg__convert_encoding(char *psz,
+                            cbl_encoding_t from,
+                            cbl_encoding_t to );
+
+extern "C"
+void __gg__convert_encoding_length(char *pch,
+                                   size_t length,
+                                   cbl_encoding_t from,
+                                   cbl_encoding_t to );
 
 #endif

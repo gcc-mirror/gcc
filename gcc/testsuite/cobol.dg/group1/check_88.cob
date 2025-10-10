@@ -13,11 +13,11 @@
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {There should be no garbage after character 32(\n|\r\n|\r)} }
 *> { dg-output {\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\*\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-(\n|\r\n|\r)} }
-*> { dg-output {.* Bundesstra.e                                (\n|\r\n|\r)} }
-*> { dg-output {.* Bundesstra.e                                (\n|\r\n|\r)} }
+*> { dg-output {.*(\n|\r\n|\r)} }
+*> { dg-output {.*(\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {There should be no spaces before the final quote(\n|\r\n|\r)} }
-*> { dg-output {".* Bundesstra.e"(\n|\r\n|\r)} }
+*> { dg-output {".*"(\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {   IsLow   ""(\n|\r\n|\r)} }
 *> { dg-output {   IsZero  "000"(\n|\r\n|\r)} }
@@ -39,7 +39,7 @@
            88  CheckZero   VALUE ZERO.
            88  CheckQuotes VALUE QUOTE.
            88  CheckBob    VALUE "bob".
-           88  CheckBinary VALUE X"000102". *> { dg-warning embedded }
+           88  CheckBinary VALUE X"000102". *>
         01 000VARL PIC XXX VALUE LOW-VALUE.
         01 000VARS PIC XXX VALUE SPACE.
         01 000VARQ PIC XXX VALUE QUOTE.

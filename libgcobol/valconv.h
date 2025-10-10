@@ -31,16 +31,6 @@
 #ifndef __VALCONV_H
 #define __VALCONV_H
 
-extern int    __gg__decimal_point        ;
-extern int    __gg__decimal_separator    ;
-extern int    __gg__quote_character      ;
-extern int    __gg__low_value_character  ;
-extern int    __gg__high_value_character ;
-extern char **__gg__currency_signs       ;
-extern int    __gg__default_currency_sign;
-extern char  *__gg__ct_currency_signs[256];  // Compile-time currency signs
-
-
 // All "ordinals" are zero-based ordinals.  The COBOL spec's ordinal values
 // for ordinary ASCII/EBCDIC ranger from 1 to 256, so we call them zero through
 // 255.  We use unsigned ints so that when an custom alphabet is described, we
@@ -69,6 +59,7 @@ extern "C"
                                       int is_negative,
                                       const char *picture);
   void __gg__string_to_alpha_edited(char *dest,
+                                    cbl_encoding_t dest_encoding,
                                     const char *source,
                                     int slength,
                                     const char *picture);

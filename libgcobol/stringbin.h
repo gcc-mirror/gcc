@@ -35,9 +35,10 @@ bool __gg__binary_to_string_ascii(char *result,
                                   int digits,
                                   __int128 value);
 extern "C"
-bool __gg__binary_to_string_internal( char *result,
-                                      int digits,
-                                      __int128 value);
+bool __gg__binary_to_string_encoded(char *result,
+                                    int digits,
+                                    __int128 value,
+                                    cbl_encoding_t encoding);
 
 extern "C"
 void __gg__binary_to_packed( unsigned char *result,
@@ -47,7 +48,8 @@ void __gg__binary_to_packed( unsigned char *result,
 extern "C"
 __int128 __gg__numeric_display_to_binary( unsigned char *sign_byte,
                                     const unsigned char *digits,
-                                          int ndigits );
+                                          int ndigits,
+                                          cbl_encoding_t encoding);
 
 extern "C"
 __int128

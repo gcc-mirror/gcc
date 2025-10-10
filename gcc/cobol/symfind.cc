@@ -205,6 +205,7 @@ field_structure( symbol_elem_t& sym ) {
   if( !is_data_field(sym) ) return none;
 
   cbl_field_t *field = cbl_field_of(&sym);
+  assert(field->type != FldForward); // eliminated by is_data_field
 
   symbol_map_t::key_type key( sym.program, field->name, field->parent );
   symbol_map_t::value_type elem( key, std::vector<size_t>() );
@@ -230,16 +231,6 @@ field_structure( symbol_elem_t& sym ) {
   }
 
   return elem;
-}
-
-void erase_symbol_map_fwds( size_t beg ) {
-  for( auto p = symbols_begin(beg); p < symbols_end(); p++ ) {
-    if( p->type != SymField ) continue;
-    const auto& field(*cbl_field_of(p));
-    if( field.type == FldForward ) {
-      symbol_map.erase( sym_name_t(p->program, field.name, field.parent) );
-    }
-  }
 }
 
 void
@@ -539,13 +530,13 @@ symbol_find( size_t program, std::list<const char *> names ) {
 
   auto unique = items.size() == 1;
 
-  if( !unique ) {
+  if( ! unique ) {
     if( items.empty() ) {
       return std::pair<symbol_elem_t *, bool>(NULL, false);
     }
     if( yydebug ) {
       dbgmsg( "%s:%d: '%s' has " HOST_SIZE_T_PRINT_UNSIGNED " possible matches",
-             __func__, __LINE__, names.back(), (fmt_size_t)items.size() );
+              __func__, __LINE__, names.back(), (fmt_size_t)items.size() );
       std::for_each( items.begin(), items.end(), dump_symbol_map_value1 );
     }
   }

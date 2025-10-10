@@ -45,8 +45,22 @@
 #include "common-defs.h"
 #include "io.h"
 #include "gcobolio.h"
-#include "charmaps.h"
 #include "valconv.h"
+#include "charmaps.h"
+#include "encodings.h"
+
+// These values are in the ASCII space.
+int __gg__decimal_point        = '.'  ;
+int __gg__decimal_separator    = ','  ;
+int __gg__quote_character      = '"'  ;
+int __gg__low_value_character  = 0x00 ;
+int __gg__high_value_character = 0xFF ;
+char **__gg__currency_signs           ;
+
+int __gg__default_currency_sign;
+
+char *__gg__ct_currency_signs[256];  // Compile-time currency signs
+
 
 // First: single-byte-coded (SBC) character sets:
 
@@ -128,7 +142,6 @@ __gg__one_to_one_values[256] =
 
 // Programmers who use the ALPHABET clause to change the HIGH-VALUE are on their
 // own.
-
 
 const unsigned short
 __gg__cp1140_to_cp1252_values[256] =
@@ -222,364 +235,9 @@ __gg__ebcdic_to_cp1252_collation[256] =
     0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0xB3, 0xDB, 0xDC, 0xD9, 0xDA, 0xFF,
     };
 
-// This table is used for converting code page 1252 to the subset of UTF-8 that
-// that contains CP1252
-
-static const unsigned short
-cp1252_to_utf8_values[256] =
-    {
-    0x0000, 0x0001, 0x0002, 0x0003, 0x0004, 0x0005, 0x0006, 0x0007, 0x0008, 0x0009, 0x000a, 0x000b, 0x000c, 0x000d, 0x000e, 0x000f, // 00
-    0x0010, 0x0011, 0x0012, 0x0013, 0x0014, 0x0015, 0x0016, 0x0017, 0x0018, 0x0019, 0x001a, 0x001b, 0x001c, 0x001d, 0x001e, 0x001f, // 10
-    0x0020, 0x0021, 0x0022, 0x0023, 0x0024, 0x0025, 0x0026, 0x0027, 0x0028, 0x0029, 0x002a, 0x002b, 0x002c, 0x002d, 0x002e, 0x002f, // 20
-    0x0030, 0x0031, 0x0032, 0x0033, 0x0034, 0x0035, 0x0036, 0x0037, 0x0038, 0x0039, 0x003a, 0x003b, 0x003c, 0x003d, 0x003e, 0x003f, // 30
-    0x0040, 0x0041, 0x0042, 0x0043, 0x0044, 0x0045, 0x0046, 0x0047, 0x0048, 0x0049, 0x004a, 0x004b, 0x004c, 0x004d, 0x004e, 0x004f, // 40
-    0x0050, 0x0051, 0x0052, 0x0053, 0x0054, 0x0055, 0x0056, 0x0057, 0x0058, 0x0059, 0x005a, 0x005b, 0x005c, 0x005d, 0x005e, 0x005f, // 50
-    0x0060, 0x0061, 0x0062, 0x0063, 0x0064, 0x0065, 0x0066, 0x0067, 0x0068, 0x0069, 0x006a, 0x006b, 0x006c, 0x006d, 0x006e, 0x006f, // 60
-    0x0070, 0x0071, 0x0072, 0x0073, 0x0074, 0x0075, 0x0076, 0x0077, 0x0078, 0x0079, 0x007a, 0x007b, 0x007c, 0x007d, 0x007e, 0x007f, // 70
-    0x20ac, 0x0081, 0x201a, 0x0192, 0x201e, 0x2026, 0x2020, 0x2021, 0x02c6, 0x2030, 0x0160, 0x2039, 0x0152, 0x008d, 0x017d, 0x008f, // 80
-    0x0090, 0x2018, 0x2019, 0x201c, 0x201d, 0x2022, 0x2013, 0x2014, 0x02dc, 0x2122, 0x0161, 0x203a, 0x0153, 0x009d, 0x017e, 0x0178, // 90
-    0x00a0, 0x00a1, 0x00a2, 0x00a3, 0x00a4, 0x00a5, 0x00a6, 0x00a7, 0x00a8, 0x00a9, 0x00aa, 0x00ab, 0x00ac, 0x00ad, 0x00ae, 0x00af, // A0
-    0x00b0, 0x00b1, 0x00b2, 0x00b3, 0x00b4, 0x00b5, 0x00b6, 0x00b7, 0x00b8, 0x00b9, 0x00ba, 0x00bb, 0x00bc, 0x00bd, 0x00be, 0x00bf, // B0
-    0x00c0, 0x00c1, 0x00c2, 0x00c3, 0x00c4, 0x00c5, 0x00c6, 0x00c7, 0x00c8, 0x00c9, 0x00ca, 0x00cb, 0x00cc, 0x00cd, 0x00ce, 0x00cf, // C0
-    0x00d0, 0x00d1, 0x00d2, 0x00d3, 0x00d4, 0x00d5, 0x00d6, 0x00d7, 0x00d8, 0x00d9, 0x00da, 0x00db, 0x00dc, 0x00dd, 0x00de, 0x00df, // D0
-    0x00e0, 0x00e1, 0x00e2, 0x00e3, 0x00e4, 0x00e5, 0x00e6, 0x00e7, 0x00e8, 0x00e9, 0x00ea, 0x00eb, 0x00ec, 0x00ed, 0x00ee, 0x00ef, // E0
-    0x00f0, 0x00f1, 0x00f2, 0x00f3, 0x00f4, 0x00f5, 0x00f6, 0x00f7, 0x00f8, 0x00f9, 0x00fa, 0x00fb, 0x00fc, 0x00fd, 0x00fe, 0x00ff, // F0
-    };
-
-// This map table does the reverse UTF-8 conversion back to cp1252
-static const std::unordered_map<unsigned short, unsigned char>utf8_to_cp1252_values =
-    {
-    {0x0000, 0x00}, {0x0001, 0x01}, {0x0002, 0x02}, {0x0003, 0x03}, {0x0004, 0x04}, {0x0005, 0x05}, {0x0006, 0x06}, {0x0007, 0x07},
-    {0x0008, 0x08}, {0x0009, 0x09}, {0x000a, 0x0a}, {0x000b, 0x0b}, {0x000c, 0x0c}, {0x000d, 0x0d}, {0x000e, 0x0e}, {0x000f, 0x0f},
-    {0x0010, 0x10}, {0x0011, 0x11}, {0x0012, 0x12}, {0x0013, 0x13}, {0x0014, 0x14}, {0x0015, 0x15}, {0x0016, 0x16}, {0x0017, 0x17},
-    {0x0018, 0x18}, {0x0019, 0x19}, {0x001a, 0x1a}, {0x001b, 0x1b}, {0x001c, 0x1c}, {0x001d, 0x1d}, {0x001e, 0x1e}, {0x001f, 0x1f},
-    {0x0020, 0x20}, {0x0021, 0x21}, {0x0022, 0x22}, {0x0023, 0x23}, {0x0024, 0x24}, {0x0025, 0x25}, {0x0026, 0x26}, {0x0027, 0x27},
-    {0x0028, 0x28}, {0x0029, 0x29}, {0x002a, 0x2a}, {0x002b, 0x2b}, {0x002c, 0x2c}, {0x002d, 0x2d}, {0x002e, 0x2e}, {0x002f, 0x2f},
-    {0x0030, 0x30}, {0x0031, 0x31}, {0x0032, 0x32}, {0x0033, 0x33}, {0x0034, 0x34}, {0x0035, 0x35}, {0x0036, 0x36}, {0x0037, 0x37},
-    {0x0038, 0x38}, {0x0039, 0x39}, {0x003a, 0x3a}, {0x003b, 0x3b}, {0x003c, 0x3c}, {0x003d, 0x3d}, {0x003e, 0x3e}, {0x003f, 0x3f},
-    {0x0040, 0x40}, {0x0041, 0x41}, {0x0042, 0x42}, {0x0043, 0x43}, {0x0044, 0x44}, {0x0045, 0x45}, {0x0046, 0x46}, {0x0047, 0x47},
-    {0x0048, 0x48}, {0x0049, 0x49}, {0x004a, 0x4a}, {0x004b, 0x4b}, {0x004c, 0x4c}, {0x004d, 0x4d}, {0x004e, 0x4e}, {0x004f, 0x4f},
-    {0x0050, 0x50}, {0x0051, 0x51}, {0x0052, 0x52}, {0x0053, 0x53}, {0x0054, 0x54}, {0x0055, 0x55}, {0x0056, 0x56}, {0x0057, 0x57},
-    {0x0058, 0x58}, {0x0059, 0x59}, {0x005a, 0x5a}, {0x005b, 0x5b}, {0x005c, 0x5c}, {0x005d, 0x5d}, {0x005e, 0x5e}, {0x005f, 0x5f},
-    {0x0060, 0x60}, {0x0061, 0x61}, {0x0062, 0x62}, {0x0063, 0x63}, {0x0064, 0x64}, {0x0065, 0x65}, {0x0066, 0x66}, {0x0067, 0x67},
-    {0x0068, 0x68}, {0x0069, 0x69}, {0x006a, 0x6a}, {0x006b, 0x6b}, {0x006c, 0x6c}, {0x006d, 0x6d}, {0x006e, 0x6e}, {0x006f, 0x6f},
-    {0x0070, 0x70}, {0x0071, 0x71}, {0x0072, 0x72}, {0x0073, 0x73}, {0x0074, 0x74}, {0x0075, 0x75}, {0x0076, 0x76}, {0x0077, 0x77},
-    {0x0078, 0x78}, {0x0079, 0x79}, {0x007a, 0x7a}, {0x007b, 0x7b}, {0x007c, 0x7c}, {0x007d, 0x7d}, {0x007e, 0x7e}, {0x007f, 0x7f},
-    {0x20ac, 0x80}, {0x0081, 0x81}, {0x201a, 0x82}, {0x0192, 0x83}, {0x201e, 0x84}, {0x2026, 0x85}, {0x2020, 0x86}, {0x2021, 0x87},
-    {0x02c6, 0x88}, {0x2030, 0x89}, {0x0160, 0x8a}, {0x2039, 0x8b}, {0x0152, 0x8c}, {0x008d, 0x8d}, {0x017d, 0x8e}, {0x008f, 0x8f},
-    {0x0090, 0x90}, {0x2018, 0x91}, {0x2019, 0x92}, {0x201c, 0x93}, {0x201d, 0x94}, {0x2022, 0x95}, {0x2013, 0x96}, {0x2014, 0x97},
-    {0x02dc, 0x98}, {0x2122, 0x99}, {0x0161, 0x9a}, {0x203a, 0x9b}, {0x0153, 0x9c}, {0x009d, 0x9d}, {0x017e, 0x9e}, {0x0178, 0x9f},
-    {0x00a0, 0xa0}, {0x00a1, 0xa1}, {0x00a2, 0xa2}, {0x00a3, 0xa3}, {0x00a4, 0xa4}, {0x00a5, 0xa5}, {0x00a6, 0xa6}, {0x00a7, 0xa7},
-    {0x00a8, 0xa8}, {0x00a9, 0xa9}, {0x00aa, 0xaa}, {0x00ab, 0xab}, {0x00ac, 0xac}, {0x00ad, 0xad}, {0x00ae, 0xae}, {0x00af, 0xaf},
-    {0x00b0, 0xb0}, {0x00b1, 0xb1}, {0x00b2, 0xb2}, {0x00b3, 0xb3}, {0x00b4, 0xb4}, {0x00b5, 0xb5}, {0x00b6, 0xb6}, {0x00b7, 0xb7},
-    {0x00b8, 0xb8}, {0x00b9, 0xb9}, {0x00ba, 0xba}, {0x00bb, 0xbb}, {0x00bc, 0xbc}, {0x00bd, 0xbd}, {0x00be, 0xbe}, {0x00bf, 0xbf},
-    {0x00c0, 0xc0}, {0x00c1, 0xc1}, {0x00c2, 0xc2}, {0x00c3, 0xc3}, {0x00c4, 0xc4}, {0x00c5, 0xc5}, {0x00c6, 0xc6}, {0x00c7, 0xc7},
-    {0x00c8, 0xc8}, {0x00c9, 0xc9}, {0x00ca, 0xca}, {0x00cb, 0xcb}, {0x00cc, 0xcc}, {0x00cd, 0xcd}, {0x00ce, 0xce}, {0x00cf, 0xcf},
-    {0x00d0, 0xd0}, {0x00d1, 0xd1}, {0x00d2, 0xd2}, {0x00d3, 0xd3}, {0x00d4, 0xd4}, {0x00d5, 0xd5}, {0x00d6, 0xd6}, {0x00d7, 0xd7},
-    {0x00d8, 0xd8}, {0x00d9, 0xd9}, {0x00da, 0xda}, {0x00db, 0xdb}, {0x00dc, 0xdc}, {0x00dd, 0xdd}, {0x00de, 0xde}, {0x00df, 0xdf},
-    {0x00e0, 0xe0}, {0x00e1, 0xe1}, {0x00e2, 0xe2}, {0x00e3, 0xe3}, {0x00e4, 0xe4}, {0x00e5, 0xe5}, {0x00e6, 0xe6}, {0x00e7, 0xe7},
-    {0x00e8, 0xe8}, {0x00e9, 0xe9}, {0x00ea, 0xea}, {0x00eb, 0xeb}, {0x00ec, 0xec}, {0x00ed, 0xed}, {0x00ee, 0xee}, {0x00ef, 0xef},
-    {0x00f0, 0xf0}, {0x00f1, 0xf1}, {0x00f2, 0xf2}, {0x00f3, 0xf3}, {0x00f4, 0xf4}, {0x00f5, 0xf5}, {0x00f6, 0xf6}, {0x00f7, 0xf7},
-    {0x00f8, 0xf8}, {0x00f9, 0xf9}, {0x00fa, 0xfa}, {0x00fb, 0xfb}, {0x00fc, 0xfc}, {0x00fd, 0xfd}, {0x00fe, 0xfe}, {0x00ff, 0xff},
-    };
-
-// This function extracts the next unicode code point from a stream of UTF-8
-// data.
-
-static bool
-raw_is_SBC()
-  {
-  bool retval = false;
-  switch(source_codeset)
-    {
-    case cs_cp1252_e:
-      retval = true;
-      break;
-    default:
-      break;
-    }
-  return retval;
-  }
-
-
-static size_t
-extract_next_code_point(const unsigned char *utf8,
-                        const size_t /*length_in_bytes*/,
-                        size_t &position)
-  {
-  long retval = -1; // Means a badly formed code point
-  unsigned char ch = utf8[position++];
-  long under_construction = 0;
-  int countdown = 0;
-
-  if( (ch & 0x80) == 0x00 )
-    {
-    // We are in the ASCII subset of UTF-8, and we are done
-    retval = ch;
-    goto done;
-    }
-  else if( (ch & 0xE0) == 0xC0 )
-    {
-    // There is one byte to follow
-    countdown = 1;
-    under_construction = ch & 0x1F;
-    }
-  else if( (ch & 0xF0) == 0xE0 )
-    {
-    countdown = 2;
-    under_construction = ch & 0x0F;
-    }
-  else if( (ch & 0xF8) == 0xF0 )
-    {
-    countdown = 3;
-    under_construction = ch & 0x07;
-    }
-  else
-    {
-    // We have a poorly-constructed UTF-8 encoding
-    goto done;
-    }
-  while( countdown-- )
-    {
-    ch = utf8[position++];
-    // We are in a follow-up encoded byte:
-    if( (ch & 0xC0) == 0x80 )
-      {
-      // The top two bits are 10, so build in the bottom six bits
-      under_construction <<= 6;
-      under_construction |= (ch & 0x3F);
-      }
-    else
-      {
-      // This is a poorly-formed encoding
-      goto done;
-      }
-    }
-  retval = under_construction;
-
-  done:
-  return retval;
-  }
-
-void flipper(void)
-    {
-    for(int i=0; i<256; i++)
-        {
-        fprintf(stderr, "{0x%4.4x, 0x%2.2x}, ", cp1252_to_utf8_values[i], i);
-        if( (i % 8) == 7 )
-            {
-            fprintf(stderr, "\n");
-            }
-        }
-    }
-
-extern "C"
-char __gg__ascii_to_ascii_chr(char ch)
-    {
-    return ch;
-    }
-
-extern "C"
-char __gg__ascii_to_ebcdic_chr(char ch)
-    {
-    return (char)__gg__cp1252_to_cp1140_values[(ch&0xFF)];
-    }
-
-extern "C"
-char *
-__gg__raw_to_ascii(char **dest, size_t *dest_size, const char *in, size_t length)
-  {
-  // We are anticipating `length` characters, some of which might be multi-
-  // character UTF-8 codepoints.  We are sending back a nul-terminated string
-  // of SBC ASCII values.
-
-  __gg__realloc_if_necessary(dest, dest_size, length+1);
-
-  // This is the byte position of the output
-  size_t index = 0;
-
-  // This is the byte position of the input
-  size_t position = 0;
-
-  while( index < length )
-    {
-    // In the case of "display "âêîôû", when the source code is encoded in
-    // UTF-8, the field->data.capacity is showing up as 10, because that
-    // UTF-8 string is ten bytes long, and the parser is not counting
-    // characters.  The data.initial field is indeed nul-terminated, so when we
-    // hit a nul, we bug out:
-    if( in[position] == '\0' )
-      {
-      // We have hit the end. We want to space-fill to the right:
-      while( index < length )
-        {
-        (*dest)[index++] = internal_space;
-        }
-      break;
-      }
-
-    // Special handling for PIC X VALUE HIGH-VALUE.  If we just hand default
-    // 0xFF values to the rest of the routine, the utf-8 detection will give
-    // us a result that confuses the remainder of the processing.
-    if( (in[position]&0xFF) == 0xFF )
-      {
-      (*dest)[index++] = in[position++];
-      continue;
-      }
-
-    if( raw_is_SBC() )
-      {
-      (*dest)[index++] = in[position++];
-      continue;
-      }
-
-    size_t code_point;
-    // Pull the next code_point from the UTF-8 stream
-    long unicode_point = extract_next_code_point(reinterpret_cast<const unsigned char *>(in),
-                                                 length,
-                                                 position );
-
-    // Check for that unicode code point in the subset of characters we
-    // know about:
-    auto it = utf8_to_cp1252_values.find(unicode_point);
-    if( it == utf8_to_cp1252_values.end() )
-        {
-        // That unicode character isn't in our list
-        code_point = ASCII_REPLACEMENT;
-        }
-    else
-        {
-        code_point = it->second;
-        }
-    (*dest)[index++] = (char)code_point;
-    }
-  (*dest)[index++] = '\0';
-
-  return *dest;
-  }
-
-extern "C"
-char *
-__gg__raw_to_ebcdic(char **dest, size_t *dest_size, const char *in, size_t length)
-    {
-    // A UTF-8 string is at least as long as the single-byte-coded resulting
-    // string:
-    __gg__realloc_if_necessary(dest, dest_size, length+1);
-
-    size_t index = 0;
-
-    size_t position = 0;
-    size_t code_point;
-    while( index < length )
-        {
-        // See comments in __gg__raw_to_ascii
-        if( in[position] == '\0' )
-          {
-          // We have hit the end. We want to space-fill to the right:
-          while( index < length )
-            {
-            (*dest)[index++] = internal_space;
-            }
-          break;
-          }
-        if( raw_is_SBC() )
-          {
-          code_point = in[position++];
-          long ebcdic_code_point = __gg__cp1252_to_cp1140_values[code_point&0xFF];
-          (*dest)[index++] = ebcdic_code_point;
-          continue;
-          }
-        if( (in[position]&0xff) == 0xff )
-          {
-          // HIGH-VALUE is a special case
-          (*dest)[index++] = in[position++];
-          continue;
-          }
-
-        // Pull the next code_point from the UTF-8 stream
-        long unicode_point = extract_next_code_point(   reinterpret_cast<const unsigned char *>(in),
-                                                                length,
-                                                                position );
-        // Check for that unicode code point in the subset of characters we
-        // know about:
-        auto it = utf8_to_cp1252_values.find(unicode_point);
-        if( it == utf8_to_cp1252_values.end() )
-            {
-            // That unicode character isn't in our list
-            code_point = ASCII_REPLACEMENT;
-            }
-        else
-            {
-            code_point = it->second;
-            }
-        // TODO: This could be sped up by creating a utf8_to_cp1140_values map.
-        // But sufficient unto the day are the evils thereof
-        long ebcdic_code_point = __gg__cp1252_to_cp1140_values[code_point&0xFF];
-        (*dest)[index++] = ebcdic_code_point;
-        }
-    (*dest)[index++] = '\0';
-
-    return *dest;
-    }
-
-static
-char *
-convert_cp1252_to_utf8(char **dest, size_t *dest_size, const char *in, size_t length)
-    {
-    // Worst case is all unicode characters.
-    __gg__realloc_if_necessary(dest, dest_size, 4 * length + 1);
-
-    size_t index = 0;
-    for(size_t i=0; i<length; i++)
-        {
-        unsigned char ch = *in++;
-        size_t unicode_point = cp1252_to_utf8_values[ch];
-        if( unicode_point < 0x0080 )
-            {
-            // Single-byte
-            (*dest)[index++] = (char)unicode_point;
-            }
-        else if(unicode_point < 0x0800)
-            {
-            // Two-byte:
-            (*dest)[index++] = 0xC0 + (unicode_point>>6);
-            (*dest)[index++] = 0x80 + ((unicode_point>>0) & 0x3F);
-            }
-        else if(unicode_point < 0x10000)
-            {
-            // Three-byte:
-            (*dest)[index++] = 0xE0 + (unicode_point>>12);
-            (*dest)[index++] = 0x80 + ((unicode_point>>6) & 0x3F);
-            (*dest)[index++] = 0x80 + ((unicode_point>>0) & 0x3F);
-            }
-        else
-            {
-            // Four-byte:
-            (*dest)[index++] = 0xF0 + (unicode_point>>18);
-            (*dest)[index++] = 0x80 + ((unicode_point>>12) & 0x3F);
-            (*dest)[index++] = 0x80 + ((unicode_point>>6)  & 0x3F);
-            (*dest)[index++] = 0x80 + ((unicode_point>>0)  & 0x3F);
-            }
-        }
-    (*dest)[index++] = '\0';
-
-    return *dest;
-    }
-
-// This is the address of the 256-character map for internal characters
-// It'll be set to one-to-one for ASCII, and to cp1252-to-cp1140_values for
-// EBCDIC.
-unsigned short const *__gg__internal_codeset_map;
 
 // Here is the list of function pointers establish which ones of the paired
 // possibilities of conversion routines are actually in use.
-
-char  (*__gg__ascii_to_internal_chr)(char);
-void  (*__gg__ascii_to_internal_str)(char *str, size_t length);
-char *(*__gg__raw_to_internal)(char **dest, size_t *dest_size, const char *in, const size_t length);
-char *(*__gg__internal_to_console_cm)(char **dest, size_t *dest_size, const char *in, size_t length);
-void  (*__gg__console_to_internal_cm)(char * const str, size_t length);
-void  (*__gg__internal_to_ascii)(char *str, size_t length);
 
 extern "C"
 void __gg__set_internal_codeset(int use_ebcdic)
@@ -593,29 +251,6 @@ void __gg__text_conversion_override(text_device_t device,
     {
     // Establish the default sourcecode and console codesets, and
     // establish the codeset conversion routines:
-
-    if( internal_is_ebcdic )
-        {
-//        fprintf(stderr, "Setting up EBCDIC\n");
-        __gg__internal_codeset_map   =  __gg__cp1252_to_cp1140_values;
-        __gg__ascii_to_internal_chr  = &__gg__ascii_to_ebcdic_chr;
-        __gg__ascii_to_internal_str  = &__gg__ascii_to_ebcdic;
-        __gg__raw_to_internal        = &__gg__raw_to_ebcdic;
-        __gg__internal_to_console_cm = &__gg__ebcdic_to_console;
-        __gg__console_to_internal_cm = &__gg__console_to_ebcdic;
-        __gg__internal_to_ascii      = &__gg__ebcdic_to_ascii;
-        }
-    else
-        {
-//        fprintf(stderr, "Setting up ASCII\n");
-        __gg__internal_codeset_map   =  __gg__one_to_one_values;
-        __gg__ascii_to_internal_chr  = &__gg__ascii_to_ascii_chr;
-        __gg__ascii_to_internal_str  = &__gg__ascii_to_ascii;
-        __gg__raw_to_internal        = &__gg__raw_to_ascii;
-        __gg__internal_to_console_cm = &__gg__ascii_to_console;
-        __gg__console_to_internal_cm = &__gg__console_to_ascii;
-        __gg__internal_to_ascii      = &__gg__ascii_to_ascii;
-        }
 
     switch(device)
         {
@@ -668,255 +303,1336 @@ void __gg__text_conversion_override(text_device_t device,
         }
     }
 
-extern "C"
-void
-__gg__ascii_to_ascii(char *, size_t )
-    {
-    return;
-    }
+static encodings_t encodings[] = {
+  { iconv_437_e, "437" },
+  { iconv_500_e, "500" },
+  { iconv_500V1_e, "500V1" },
+  { iconv_850_e, "850" },
+  { iconv_851_e, "851" },
+  { iconv_852_e, "852" },
+  { iconv_855_e, "855" },
+  { iconv_856_e, "856" },
+  { iconv_857_e, "857" },
+  { iconv_858_e, "858" },
+  { iconv_860_e, "860" },
+  { iconv_861_e, "861" },
+  { iconv_862_e, "862" },
+  { iconv_863_e, "863" },
+  { iconv_864_e, "864" },
+  { iconv_865_e, "865" },
+  { iconv_866_e, "866" },
+  { iconv_866NAV_e, "866NAV" },
+  { iconv_869_e, "869" },
+  { iconv_874_e, "874" },
+  { iconv_904_e, "904" },
+  { iconv_1026_e, "1026" },
+  { iconv_1046_e, "1046" },
+  { iconv_1047_e, "1047" },
+  { iconv_8859_1_e, "8859_1" },
+  { iconv_8859_2_e, "8859_2" },
+  { iconv_8859_3_e, "8859_3" },
+  { iconv_8859_4_e, "8859_4" },
+  { iconv_8859_5_e, "8859_5" },
+  { iconv_8859_6_e, "8859_6" },
+  { iconv_8859_7_e, "8859_7" },
+  { iconv_8859_8_e, "8859_8" },
+  { iconv_8859_9_e, "8859_9" },
+  { iconv_10646_1_1993_e, "10646-1:1993" },
+  { iconv_10646_1_1993_e, "UCS4/ 10646-1:1993/UCS4/" },
+  { iconv_ANSI_X3_4_1968_e, "ANSI_X3.4-1968" },
+  { iconv_ANSI_X3_4_1986_e, "ANSI_X3.4-1986" },
+  { iconv_ANSI_X3_4_e, "ANSI_X3.4" },
+  { iconv_ANSI_X3_110_1983_e, "ANSI_X3.110-1983" },
+  { iconv_ANSI_X3_110_e, "ANSI_X3.110" },
+  { iconv_ARABIC_e, "ARABIC" },
+  { iconv_ARABIC7_e, "ARABIC7" },
+  { iconv_ARMSCII_8_e, "ARMSCII-8" },
+  { iconv_ARMSCII8_e, "ARMSCII8" },
+  { iconv_ASCII_e, "ASCII" },
+  { iconv_ASMO_708_e, "ASMO-708" },
+  { iconv_ASMO_449_e, "ASMO_449" },
+  { iconv_BALTIC_e, "BALTIC" },
+  { iconv_BIG_5_e, "BIG-5" },
+  { iconv_BIG_FIVE_e, "BIG-FIVE" },
+  { iconv_BIG5_HKSCS_e, "BIG5-HKSCS" },
+  { iconv_BIG5_e, "BIG5" },
+  { iconv_BIG5HKSCS_e, "BIG5HKSCS" },
+  { iconv_BIGFIVE_e, "BIGFIVE" },
+  { iconv_BRF_e, "BRF" },
+  { iconv_BS_4730_e, "BS_4730" },
+  { iconv_CA_e, "CA" },
+  { iconv_CN_BIG5_e, "CN-BIG5" },
+  { iconv_CN_GB_e, "CN-GB" },
+  { iconv_CN_e, "CN" },
+  { iconv_CP_AR_e, "CP-AR" },
+  { iconv_CP_GR_e, "CP-GR" },
+  { iconv_CP_HU_e, "CP-HU" },
+  { iconv_CP037_e, "CP037" },
+  { iconv_CP038_e, "CP038" },
+  { iconv_CP273_e, "CP273" },
+  { iconv_CP274_e, "CP274" },
+  { iconv_CP275_e, "CP275" },
+  { iconv_CP278_e, "CP278" },
+  { iconv_CP280_e, "CP280" },
+  { iconv_CP281_e, "CP281" },
+  { iconv_CP282_e, "CP282" },
+  { iconv_CP284_e, "CP284" },
+  { iconv_CP285_e, "CP285" },
+  { iconv_CP290_e, "CP290" },
+  { iconv_CP297_e, "CP297" },
+  { iconv_CP367_e, "CP367" },
+  { iconv_CP420_e, "CP420" },
+  { iconv_CP423_e, "CP423" },
+  { iconv_CP424_e, "CP424" },
+  { iconv_CP437_e, "CP437" },
+  { iconv_CP500_e, "CP500" },
+  { iconv_CP737_e, "CP737" },
+  { iconv_CP770_e, "CP770" },
+  { iconv_CP771_e, "CP771" },
+  { iconv_CP772_e, "CP772" },
+  { iconv_CP773_e, "CP773" },
+  { iconv_CP774_e, "CP774" },
+  { iconv_CP775_e, "CP775" },
+  { iconv_CP803_e, "CP803" },
+  { iconv_CP813_e, "CP813" },
+  { iconv_CP819_e, "CP819" },
+  { iconv_CP850_e, "CP850" },
+  { iconv_CP851_e, "CP851" },
+  { iconv_CP852_e, "CP852" },
+  { iconv_CP855_e, "CP855" },
+  { iconv_CP856_e, "CP856" },
+  { iconv_CP857_e, "CP857" },
+  { iconv_CP858_e, "CP858" },
+  { iconv_CP860_e, "CP860" },
+  { iconv_CP861_e, "CP861" },
+  { iconv_CP862_e, "CP862" },
+  { iconv_CP863_e, "CP863" },
+  { iconv_CP864_e, "CP864" },
+  { iconv_CP865_e, "CP865" },
+  { iconv_CP866_e, "CP866" },
+  { iconv_CP866NAV_e, "CP866NAV" },
+  { iconv_CP868_e, "CP868" },
+  { iconv_CP869_e, "CP869" },
+  { iconv_CP870_e, "CP870" },
+  { iconv_CP871_e, "CP871" },
+  { iconv_CP874_e, "CP874" },
+  { iconv_CP875_e, "CP875" },
+  { iconv_CP880_e, "CP880" },
+  { iconv_CP891_e, "CP891" },
+  { iconv_CP901_e, "CP901" },
+  { iconv_CP902_e, "CP902" },
+  { iconv_CP903_e, "CP903" },
+  { iconv_CP904_e, "CP904" },
+  { iconv_CP905_e, "CP905" },
+  { iconv_CP912_e, "CP912" },
+  { iconv_CP915_e, "CP915" },
+  { iconv_CP916_e, "CP916" },
+  { iconv_CP918_e, "CP918" },
+  { iconv_CP920_e, "CP920" },
+  { iconv_CP921_e, "CP921" },
+  { iconv_CP922_e, "CP922" },
+  { iconv_CP930_e, "CP930" },
+  { iconv_CP932_e, "CP932" },
+  { iconv_CP933_e, "CP933" },
+  { iconv_CP935_e, "CP935" },
+  { iconv_CP936_e, "CP936" },
+  { iconv_CP937_e, "CP937" },
+  { iconv_CP939_e, "CP939" },
+  { iconv_CP949_e, "CP949" },
+  { iconv_CP950_e, "CP950" },
+  { iconv_CP1004_e, "CP1004" },
+  { iconv_CP1008_e, "CP1008" },
+  { iconv_CP1025_e, "CP1025" },
+  { iconv_CP1026_e, "CP1026" },
+  { iconv_CP1046_e, "CP1046" },
+  { iconv_CP1047_e, "CP1047" },
+  { iconv_CP1070_e, "CP1070" },
+  { iconv_CP1079_e, "CP1079" },
+  { iconv_CP1081_e, "CP1081" },
+  { iconv_CP1084_e, "CP1084" },
+  { iconv_CP1089_e, "CP1089" },
+  { iconv_CP1097_e, "CP1097" },
+  { iconv_CP1112_e, "CP1112" },
+  { iconv_CP1122_e, "CP1122" },
+  { iconv_CP1123_e, "CP1123" },
+  { iconv_CP1124_e, "CP1124" },
+  { iconv_CP1125_e, "CP1125" },
+  { iconv_CP1129_e, "CP1129" },
+  { iconv_CP1130_e, "CP1130" },
+  { iconv_CP1132_e, "CP1132" },
+  { iconv_CP1133_e, "CP1133" },
+  { iconv_CP1137_e, "CP1137" },
+  { iconv_CP1140_e, "CP1140" },
+  { iconv_CP1141_e, "CP1141" },
+  { iconv_CP1142_e, "CP1142" },
+  { iconv_CP1143_e, "CP1143" },
+  { iconv_CP1144_e, "CP1144" },
+  { iconv_CP1145_e, "CP1145" },
+  { iconv_CP1146_e, "CP1146" },
+  { iconv_CP1147_e, "CP1147" },
+  { iconv_CP1148_e, "CP1148" },
+  { iconv_CP1149_e, "CP1149" },
+  { iconv_CP1153_e, "CP1153" },
+  { iconv_CP1154_e, "CP1154" },
+  { iconv_CP1155_e, "CP1155" },
+  { iconv_CP1156_e, "CP1156" },
+  { iconv_CP1157_e, "CP1157" },
+  { iconv_CP1158_e, "CP1158" },
+  { iconv_CP1160_e, "CP1160" },
+  { iconv_CP1161_e, "CP1161" },
+  { iconv_CP1162_e, "CP1162" },
+  { iconv_CP1163_e, "CP1163" },
+  { iconv_CP1164_e, "CP1164" },
+  { iconv_CP1166_e, "CP1166" },
+  { iconv_CP1167_e, "CP1167" },
+  { iconv_CP1250_e, "CP1250" },
+  { iconv_CP1251_e, "CP1251" },
+  { iconv_CP1252_e, "CP1252" },
+  { iconv_CP1253_e, "CP1253" },
+  { iconv_CP1254_e, "CP1254" },
+  { iconv_CP1255_e, "CP1255" },
+  { iconv_CP1256_e, "CP1256" },
+  { iconv_CP1257_e, "CP1257" },
+  { iconv_CP1258_e, "CP1258" },
+  { iconv_CP1282_e, "CP1282" },
+  { iconv_CP1361_e, "CP1361" },
+  { iconv_CP1364_e, "CP1364" },
+  { iconv_CP1371_e, "CP1371" },
+  { iconv_CP1388_e, "CP1388" },
+  { iconv_CP1390_e, "CP1390" },
+  { iconv_CP1399_e, "CP1399" },
+  { iconv_CP4517_e, "CP4517" },
+  { iconv_CP4899_e, "CP4899" },
+  { iconv_CP4909_e, "CP4909" },
+  { iconv_CP4971_e, "CP4971" },
+  { iconv_CP5347_e, "CP5347" },
+  { iconv_CP9030_e, "CP9030" },
+  { iconv_CP9066_e, "CP9066" },
+  { iconv_CP9448_e, "CP9448" },
+  { iconv_CP10007_e, "CP10007" },
+  { iconv_CP12712_e, "CP12712" },
+  { iconv_CP16804_e, "CP16804" },
+  { iconv_CPIBM861_e, "CPIBM861" },
+  { iconv_CSA7_1_e, "CSA7-1" },
+  { iconv_CSA7_2_e, "CSA7-2" },
+  { iconv_CSASCII_e, "CSASCII" },
+  { iconv_CSA_T500_1983_e, "CSA_T500-1983" },
+  { iconv_CSA_T500_e, "CSA_T500" },
+  { iconv_CSA_Z243_4_1985_1_e, "CSA_Z243.4-1985-1" },
+  { iconv_CSA_Z243_4_1985_2_e, "CSA_Z243.4-1985-2" },
+  { iconv_CSA_Z243_419851_e, "CSA_Z243.419851" },
+  { iconv_CSA_Z243_419852_e, "CSA_Z243.419852" },
+  { iconv_CSDECMCS_e, "CSDECMCS" },
+  { iconv_CSEBCDICATDE_e, "CSEBCDICATDE" },
+  { iconv_CSEBCDICATDEA_e, "CSEBCDICATDEA" },
+  { iconv_CSEBCDICCAFR_e, "CSEBCDICCAFR" },
+  { iconv_CSEBCDICDKNO_e, "CSEBCDICDKNO" },
+  { iconv_CSEBCDICDKNOA_e, "CSEBCDICDKNOA" },
+  { iconv_CSEBCDICES_e, "CSEBCDICES" },
+  { iconv_CSEBCDICESA_e, "CSEBCDICESA" },
+  { iconv_CSEBCDICESS_e, "CSEBCDICESS" },
+  { iconv_CSEBCDICFISE_e, "CSEBCDICFISE" },
+  { iconv_CSEBCDICFISEA_e, "CSEBCDICFISEA" },
+  { iconv_CSEBCDICFR_e, "CSEBCDICFR" },
+  { iconv_CSEBCDICIT_e, "CSEBCDICIT" },
+  { iconv_CSEBCDICPT_e, "CSEBCDICPT" },
+  { iconv_CSEBCDICUK_e, "CSEBCDICUK" },
+  { iconv_CSEBCDICUS_e, "CSEBCDICUS" },
+  { iconv_CSEUCKR_e, "CSEUCKR" },
+  { iconv_CSEUCPKDFMTJAPANESE_e, "CSEUCPKDFMTJAPANESE" },
+  { iconv_CSGB2312_e, "CSGB2312" },
+  { iconv_CSHPROMAN8_e, "CSHPROMAN8" },
+  { iconv_CSIBM037_e, "CSIBM037" },
+  { iconv_CSIBM038_e, "CSIBM038" },
+  { iconv_CSIBM273_e, "CSIBM273" },
+  { iconv_CSIBM274_e, "CSIBM274" },
+  { iconv_CSIBM275_e, "CSIBM275" },
+  { iconv_CSIBM277_e, "CSIBM277" },
+  { iconv_CSIBM278_e, "CSIBM278" },
+  { iconv_CSIBM280_e, "CSIBM280" },
+  { iconv_CSIBM281_e, "CSIBM281" },
+  { iconv_CSIBM284_e, "CSIBM284" },
+  { iconv_CSIBM285_e, "CSIBM285" },
+  { iconv_CSIBM290_e, "CSIBM290" },
+  { iconv_CSIBM297_e, "CSIBM297" },
+  { iconv_CSIBM420_e, "CSIBM420" },
+  { iconv_CSIBM423_e, "CSIBM423" },
+  { iconv_CSIBM424_e, "CSIBM424" },
+  { iconv_CSIBM500_e, "CSIBM500" },
+  { iconv_CSIBM803_e, "CSIBM803" },
+  { iconv_CSIBM851_e, "CSIBM851" },
+  { iconv_CSIBM855_e, "CSIBM855" },
+  { iconv_CSIBM856_e, "CSIBM856" },
+  { iconv_CSIBM857_e, "CSIBM857" },
+  { iconv_CSIBM860_e, "CSIBM860" },
+  { iconv_CSIBM863_e, "CSIBM863" },
+  { iconv_CSIBM864_e, "CSIBM864" },
+  { iconv_CSIBM865_e, "CSIBM865" },
+  { iconv_CSIBM866_e, "CSIBM866" },
+  { iconv_CSIBM868_e, "CSIBM868" },
+  { iconv_CSIBM869_e, "CSIBM869" },
+  { iconv_CSIBM870_e, "CSIBM870" },
+  { iconv_CSIBM871_e, "CSIBM871" },
+  { iconv_CSIBM880_e, "CSIBM880" },
+  { iconv_CSIBM891_e, "CSIBM891" },
+  { iconv_CSIBM901_e, "CSIBM901" },
+  { iconv_CSIBM902_e, "CSIBM902" },
+  { iconv_CSIBM903_e, "CSIBM903" },
+  { iconv_CSIBM904_e, "CSIBM904" },
+  { iconv_CSIBM905_e, "CSIBM905" },
+  { iconv_CSIBM918_e, "CSIBM918" },
+  { iconv_CSIBM921_e, "CSIBM921" },
+  { iconv_CSIBM922_e, "CSIBM922" },
+  { iconv_CSIBM930_e, "CSIBM930" },
+  { iconv_CSIBM932_e, "CSIBM932" },
+  { iconv_CSIBM933_e, "CSIBM933" },
+  { iconv_CSIBM935_e, "CSIBM935" },
+  { iconv_CSIBM937_e, "CSIBM937" },
+  { iconv_CSIBM939_e, "CSIBM939" },
+  { iconv_CSIBM943_e, "CSIBM943" },
+  { iconv_CSIBM1008_e, "CSIBM1008" },
+  { iconv_CSIBM1025_e, "CSIBM1025" },
+  { iconv_CSIBM1026_e, "CSIBM1026" },
+  { iconv_CSIBM1097_e, "CSIBM1097" },
+  { iconv_CSIBM1112_e, "CSIBM1112" },
+  { iconv_CSIBM1122_e, "CSIBM1122" },
+  { iconv_CSIBM1123_e, "CSIBM1123" },
+  { iconv_CSIBM1124_e, "CSIBM1124" },
+  { iconv_CSIBM1129_e, "CSIBM1129" },
+  { iconv_CSIBM1130_e, "CSIBM1130" },
+  { iconv_CSIBM1132_e, "CSIBM1132" },
+  { iconv_CSIBM1133_e, "CSIBM1133" },
+  { iconv_CSIBM1137_e, "CSIBM1137" },
+  { iconv_CSIBM1140_e, "CSIBM1140" },
+  { iconv_CSIBM1141_e, "CSIBM1141" },
+  { iconv_CSIBM1142_e, "CSIBM1142" },
+  { iconv_CSIBM1143_e, "CSIBM1143" },
+  { iconv_CSIBM1144_e, "CSIBM1144" },
+  { iconv_CSIBM1145_e, "CSIBM1145" },
+  { iconv_CSIBM1146_e, "CSIBM1146" },
+  { iconv_CSIBM1147_e, "CSIBM1147" },
+  { iconv_CSIBM1148_e, "CSIBM1148" },
+  { iconv_CSIBM1149_e, "CSIBM1149" },
+  { iconv_CSIBM1153_e, "CSIBM1153" },
+  { iconv_CSIBM1154_e, "CSIBM1154" },
+  { iconv_CSIBM1155_e, "CSIBM1155" },
+  { iconv_CSIBM1156_e, "CSIBM1156" },
+  { iconv_CSIBM1157_e, "CSIBM1157" },
+  { iconv_CSIBM1158_e, "CSIBM1158" },
+  { iconv_CSIBM1160_e, "CSIBM1160" },
+  { iconv_CSIBM1161_e, "CSIBM1161" },
+  { iconv_CSIBM1163_e, "CSIBM1163" },
+  { iconv_CSIBM1164_e, "CSIBM1164" },
+  { iconv_CSIBM1166_e, "CSIBM1166" },
+  { iconv_CSIBM1167_e, "CSIBM1167" },
+  { iconv_CSIBM1364_e, "CSIBM1364" },
+  { iconv_CSIBM1371_e, "CSIBM1371" },
+  { iconv_CSIBM1388_e, "CSIBM1388" },
+  { iconv_CSIBM1390_e, "CSIBM1390" },
+  { iconv_CSIBM1399_e, "CSIBM1399" },
+  { iconv_CSIBM4517_e, "CSIBM4517" },
+  { iconv_CSIBM4899_e, "CSIBM4899" },
+  { iconv_CSIBM4909_e, "CSIBM4909" },
+  { iconv_CSIBM4971_e, "CSIBM4971" },
+  { iconv_CSIBM5347_e, "CSIBM5347" },
+  { iconv_CSIBM9030_e, "CSIBM9030" },
+  { iconv_CSIBM9066_e, "CSIBM9066" },
+  { iconv_CSIBM9448_e, "CSIBM9448" },
+  { iconv_CSIBM12712_e, "CSIBM12712" },
+  { iconv_CSIBM16804_e, "CSIBM16804" },
+  { iconv_CSIBM11621162_e, "CSIBM11621162" },
+  { iconv_CSISO4UNITEDKINGDOM_e, "CSISO4UNITEDKINGDOM" },
+  { iconv_CSISO10SWEDISH_e, "CSISO10SWEDISH" },
+  { iconv_CSISO11SWEDISHFORNAMES_e, "CSISO11SWEDISHFORNAMES" },
+  { iconv_CSISO14JISC6220RO_e, "CSISO14JISC6220RO" },
+  { iconv_CSISO15ITALIAN_e, "CSISO15ITALIAN" },
+  { iconv_CSISO16PORTUGESE_e, "CSISO16PORTUGESE" },
+  { iconv_CSISO17SPANISH_e, "CSISO17SPANISH" },
+  { iconv_CSISO18GREEK7OLD_e, "CSISO18GREEK7OLD" },
+  { iconv_CSISO19LATINGREEK_e, "CSISO19LATINGREEK" },
+  { iconv_CSISO21GERMAN_e, "CSISO21GERMAN" },
+  { iconv_CSISO25FRENCH_e, "CSISO25FRENCH" },
+  { iconv_CSISO27LATINGREEK1_e, "CSISO27LATINGREEK1" },
+  { iconv_CSISO49INIS_e, "CSISO49INIS" },
+  { iconv_CSISO50INIS8_e, "CSISO50INIS8" },
+  { iconv_CSISO51INISCYRILLIC_e, "CSISO51INISCYRILLIC" },
+  { iconv_CSISO58GB1988_e, "CSISO58GB1988" },
+  { iconv_CSISO60DANISHNORWEGIAN_e, "CSISO60DANISHNORWEGIAN" },
+  { iconv_CSISO60NORWEGIAN1_e, "CSISO60NORWEGIAN1" },
+  { iconv_CSISO61NORWEGIAN2_e, "CSISO61NORWEGIAN2" },
+  { iconv_CSISO69FRENCH_e, "CSISO69FRENCH" },
+  { iconv_CSISO84PORTUGUESE2_e, "CSISO84PORTUGUESE2" },
+  { iconv_CSISO85SPANISH2_e, "CSISO85SPANISH2" },
+  { iconv_CSISO86HUNGARIAN_e, "CSISO86HUNGARIAN" },
+  { iconv_CSISO88GREEK7_e, "CSISO88GREEK7" },
+  { iconv_CSISO89ASMO449_e, "CSISO89ASMO449" },
+  { iconv_CSISO90_e, "CSISO90" },
+  { iconv_CSISO92JISC62991984B_e, "CSISO92JISC62991984B" },
+  { iconv_CSISO99NAPLPS_e, "CSISO99NAPLPS" },
+  { iconv_CSISO103T618BIT_e, "CSISO103T618BIT" },
+  { iconv_CSISO111ECMACYRILLIC_e, "CSISO111ECMACYRILLIC" },
+  { iconv_CSISO121CANADIAN1_e, "CSISO121CANADIAN1" },
+  { iconv_CSISO122CANADIAN2_e, "CSISO122CANADIAN2" },
+  { iconv_CSISO139CSN369103_e, "CSISO139CSN369103" },
+  { iconv_CSISO141JUSIB1002_e, "CSISO141JUSIB1002" },
+  { iconv_CSISO143IECP271_e, "CSISO143IECP271" },
+  { iconv_CSISO150_e, "CSISO150" },
+  { iconv_CSISO150GREEKCCITT_e, "CSISO150GREEKCCITT" },
+  { iconv_CSISO151CUBA_e, "CSISO151CUBA" },
+  { iconv_CSISO153GOST1976874_e, "CSISO153GOST1976874" },
+  { iconv_CSISO646DANISH_e, "CSISO646DANISH" },
+  { iconv_CSISO2022CN_e, "CSISO2022CN" },
+  { iconv_CSISO2022JP_e, "CSISO2022JP" },
+  { iconv_CSISO2022JP2_e, "CSISO2022JP2" },
+  { iconv_CSISO2022KR_e, "CSISO2022KR" },
+  { iconv_CSISO2033_e, "CSISO2033" },
+  { iconv_CSISO5427CYRILLIC_e, "CSISO5427CYRILLIC" },
+  { iconv_CSISO5427CYRILLIC1981_e, "CSISO5427CYRILLIC1981" },
+  { iconv_CSISO5428GREEK_e, "CSISO5428GREEK" },
+  { iconv_CSISO10367BOX_e, "CSISO10367BOX" },
+  { iconv_CSISOLATIN1_e, "CSISOLATIN1" },
+  { iconv_CSISOLATIN2_e, "CSISOLATIN2" },
+  { iconv_CSISOLATIN3_e, "CSISOLATIN3" },
+  { iconv_CSISOLATIN4_e, "CSISOLATIN4" },
+  { iconv_CSISOLATIN5_e, "CSISOLATIN5" },
+  { iconv_CSISOLATIN6_e, "CSISOLATIN6" },
+  { iconv_CSISOLATINARABIC_e, "CSISOLATINARABIC" },
+  { iconv_CSISOLATINCYRILLIC_e, "CSISOLATINCYRILLIC" },
+  { iconv_CSISOLATINGREEK_e, "CSISOLATINGREEK" },
+  { iconv_CSISOLATINHEBREW_e, "CSISOLATINHEBREW" },
+  { iconv_CSKOI8R_e, "CSKOI8R" },
+  { iconv_CSKSC5636_e, "CSKSC5636" },
+  { iconv_CSMACINTOSH_e, "CSMACINTOSH" },
+  { iconv_CSNATSDANO_e, "CSNATSDANO" },
+  { iconv_CSNATSSEFI_e, "CSNATSSEFI" },
+  { iconv_CSN_369103_e, "CSN_369103" },
+  { iconv_CSPC8CODEPAGE437_e, "CSPC8CODEPAGE437" },
+  { iconv_CSPC775BALTIC_e, "CSPC775BALTIC" },
+  { iconv_CSPC850MULTILINGUAL_e, "CSPC850MULTILINGUAL" },
+  { iconv_CSPC858MULTILINGUAL_e, "CSPC858MULTILINGUAL" },
+  { iconv_CSPC862LATINHEBREW_e, "CSPC862LATINHEBREW" },
+  { iconv_CSPCP852_e, "CSPCP852" },
+  { iconv_CSSHIFTJIS_e, "CSSHIFTJIS" },
+  { iconv_CSUCS4_e, "CSUCS4" },
+  { iconv_CSUNICODE_e, "CSUNICODE" },
+  { iconv_CSWINDOWS31J_e, "CSWINDOWS31J" },
+  { iconv_CUBA_e, "CUBA" },
+  { iconv_CWI_2_e, "CWI-2" },
+  { iconv_CWI_e, "CWI" },
+  { iconv_CYRILLIC_e, "CYRILLIC" },
+  { iconv_DE_e, "DE" },
+  { iconv_DEC_MCS_e, "DEC-MCS" },
+  { iconv_DEC_e, "DEC" },
+  { iconv_DECMCS_e, "DECMCS" },
+  { iconv_DIN_66003_e, "DIN_66003" },
+  { iconv_DK_e, "DK" },
+  { iconv_DS2089_e, "DS2089" },
+  { iconv_DS_2089_e, "DS_2089" },
+  { iconv_E13B_e, "E13B" },
+  { iconv_EBCDIC_AT_DE_A_e, "EBCDIC-AT-DE-A" },
+  { iconv_EBCDIC_AT_DE_e, "EBCDIC-AT-DE" },
+  { iconv_EBCDIC_BE_e, "EBCDIC-BE" },
+  { iconv_EBCDIC_BR_e, "EBCDIC-BR" },
+  { iconv_EBCDIC_CA_FR_e, "EBCDIC-CA-FR" },
+  { iconv_EBCDIC_CP_AR1_e, "EBCDIC-CP-AR1" },
+  { iconv_EBCDIC_CP_AR2_e, "EBCDIC-CP-AR2" },
+  { iconv_EBCDIC_CP_BE_e, "EBCDIC-CP-BE" },
+  { iconv_EBCDIC_CP_CA_e, "EBCDIC-CP-CA" },
+  { iconv_EBCDIC_CP_CH_e, "EBCDIC-CP-CH" },
+  { iconv_EBCDIC_CP_DK_e, "EBCDIC-CP-DK" },
+  { iconv_EBCDIC_CP_ES_e, "EBCDIC-CP-ES" },
+  { iconv_EBCDIC_CP_FI_e, "EBCDIC-CP-FI" },
+  { iconv_EBCDIC_CP_FR_e, "EBCDIC-CP-FR" },
+  { iconv_EBCDIC_CP_GB_e, "EBCDIC-CP-GB" },
+  { iconv_EBCDIC_CP_GR_e, "EBCDIC-CP-GR" },
+  { iconv_EBCDIC_CP_HE_e, "EBCDIC-CP-HE" },
+  { iconv_EBCDIC_CP_IS_e, "EBCDIC-CP-IS" },
+  { iconv_EBCDIC_CP_IT_e, "EBCDIC-CP-IT" },
+  { iconv_EBCDIC_CP_NL_e, "EBCDIC-CP-NL" },
+  { iconv_EBCDIC_CP_NO_e, "EBCDIC-CP-NO" },
+  { iconv_EBCDIC_CP_ROECE_e, "EBCDIC-CP-ROECE" },
+  { iconv_EBCDIC_CP_SE_e, "EBCDIC-CP-SE" },
+  { iconv_EBCDIC_CP_TR_e, "EBCDIC-CP-TR" },
+  { iconv_EBCDIC_CP_US_e, "EBCDIC-CP-US" },
+  { iconv_EBCDIC_CP_WT_e, "EBCDIC-CP-WT" },
+  { iconv_EBCDIC_CP_YU_e, "EBCDIC-CP-YU" },
+  { iconv_EBCDIC_CYRILLIC_e, "EBCDIC-CYRILLIC" },
+  { iconv_EBCDIC_DK_NO_A_e, "EBCDIC-DK-NO-A" },
+  { iconv_EBCDIC_DK_NO_e, "EBCDIC-DK-NO" },
+  { iconv_EBCDIC_ES_A_e, "EBCDIC-ES-A" },
+  { iconv_EBCDIC_ES_S_e, "EBCDIC-ES-S" },
+  { iconv_EBCDIC_ES_e, "EBCDIC-ES" },
+  { iconv_EBCDIC_FI_SE_A_e, "EBCDIC-FI-SE-A" },
+  { iconv_EBCDIC_FI_SE_e, "EBCDIC-FI-SE" },
+  { iconv_EBCDIC_FR_e, "EBCDIC-FR" },
+  { iconv_EBCDIC_GREEK_e, "EBCDIC-GREEK" },
+  { iconv_EBCDIC_INT_e, "EBCDIC-INT" },
+  { iconv_EBCDIC_INT1_e, "EBCDIC-INT1" },
+  { iconv_EBCDIC_IS_FRISS_e, "EBCDIC-IS-FRISS" },
+  { iconv_EBCDIC_IT_e, "EBCDIC-IT" },
+  { iconv_EBCDIC_JP_E_e, "EBCDIC-JP-E" },
+  { iconv_EBCDIC_JP_KANA_e, "EBCDIC-JP-KANA" },
+  { iconv_EBCDIC_PT_e, "EBCDIC-PT" },
+  { iconv_EBCDIC_UK_e, "EBCDIC-UK" },
+  { iconv_EBCDIC_US_e, "EBCDIC-US" },
+  { iconv_EBCDICATDE_e, "EBCDICATDE" },
+  { iconv_EBCDICATDEA_e, "EBCDICATDEA" },
+  { iconv_EBCDICCAFR_e, "EBCDICCAFR" },
+  { iconv_EBCDICDKNO_e, "EBCDICDKNO" },
+  { iconv_EBCDICDKNOA_e, "EBCDICDKNOA" },
+  { iconv_EBCDICES_e, "EBCDICES" },
+  { iconv_EBCDICESA_e, "EBCDICESA" },
+  { iconv_EBCDICESS_e, "EBCDICESS" },
+  { iconv_EBCDICFISE_e, "EBCDICFISE" },
+  { iconv_EBCDICFISEA_e, "EBCDICFISEA" },
+  { iconv_EBCDICFR_e, "EBCDICFR" },
+  { iconv_EBCDICISFRISS_e, "EBCDICISFRISS" },
+  { iconv_EBCDICIT_e, "EBCDICIT" },
+  { iconv_EBCDICPT_e, "EBCDICPT" },
+  { iconv_EBCDICUK_e, "EBCDICUK" },
+  { iconv_EBCDICUS_e, "EBCDICUS" },
+  { iconv_ECMA_114_e, "ECMA-114" },
+  { iconv_ECMA_118_e, "ECMA-118" },
+  { iconv_ECMA_128_e, "ECMA-128" },
+  { iconv_ECMA_CYRILLIC_e, "ECMA-CYRILLIC" },
+  { iconv_ECMACYRILLIC_e, "ECMACYRILLIC" },
+  { iconv_ELOT_928_e, "ELOT_928" },
+  { iconv_ES_e, "ES" },
+  { iconv_ES2_e, "ES2" },
+  { iconv_EUC_CN_e, "EUC-CN" },
+  { iconv_EUC_JISX0213_e, "EUC-JISX0213" },
+  { iconv_EUC_JP_MS_e, "EUC-JP-MS" },
+  { iconv_EUC_JP_e, "EUC-JP" },
+  { iconv_EUC_KR_e, "EUC-KR" },
+  { iconv_EUC_TW_e, "EUC-TW" },
+  { iconv_EUCCN_e, "EUCCN" },
+  { iconv_EUCJP_MS_e, "EUCJP-MS" },
+  { iconv_EUCJP_OPEN_e, "EUCJP-OPEN" },
+  { iconv_EUCJP_WIN_e, "EUCJP-WIN" },
+  { iconv_EUCJP_e, "EUCJP" },
+  { iconv_EUCKR_e, "EUCKR" },
+  { iconv_EUCTW_e, "EUCTW" },
+  { iconv_FI_e, "FI" },
+  { iconv_FR_e, "FR" },
+  { iconv_GB_e, "GB" },
+  { iconv_GB2312_e, "GB2312" },
+  { iconv_GB13000_e, "GB13000" },
+  { iconv_GB18030_e, "GB18030" },
+  { iconv_GBK_e, "GBK" },
+  { iconv_GB_1988_80_e, "GB_1988-80" },
+  { iconv_GB_198880_e, "GB_198880" },
+  { iconv_GEORGIAN_ACADEMY_e, "GEORGIAN-ACADEMY" },
+  { iconv_GEORGIAN_PS_e, "GEORGIAN-PS" },
+  { iconv_GOST_19768_74_e, "GOST_19768-74" },
+  { iconv_GOST_19768_e, "GOST_19768" },
+  { iconv_GOST_1976874_e, "GOST_1976874" },
+  { iconv_GREEK_CCITT_e, "GREEK-CCITT" },
+  { iconv_GREEK_e, "GREEK" },
+  { iconv_GREEK7_OLD_e, "GREEK7-OLD" },
+  { iconv_GREEK7_e, "GREEK7" },
+  { iconv_GREEK7OLD_e, "GREEK7OLD" },
+  { iconv_GREEK8_e, "GREEK8" },
+  { iconv_GREEKCCITT_e, "GREEKCCITT" },
+  { iconv_HEBREW_e, "HEBREW" },
+  { iconv_HP_GREEK8_e, "HP-GREEK8" },
+  { iconv_HP_ROMAN8_e, "HP-ROMAN8" },
+  { iconv_HP_ROMAN9_e, "HP-ROMAN9" },
+  { iconv_HP_THAI8_e, "HP-THAI8" },
+  { iconv_HP_TURKISH8_e, "HP-TURKISH8" },
+  { iconv_HPGREEK8_e, "HPGREEK8" },
+  { iconv_HPROMAN8_e, "HPROMAN8" },
+  { iconv_HPROMAN9_e, "HPROMAN9" },
+  { iconv_HPTHAI8_e, "HPTHAI8" },
+  { iconv_HPTURKISH8_e, "HPTURKISH8" },
+  { iconv_HU_e, "HU" },
+  { iconv_IBM_803_e, "IBM-803" },
+  { iconv_IBM_856_e, "IBM-856" },
+  { iconv_IBM_901_e, "IBM-901" },
+  { iconv_IBM_902_e, "IBM-902" },
+  { iconv_IBM_921_e, "IBM-921" },
+  { iconv_IBM_922_e, "IBM-922" },
+  { iconv_IBM_930_e, "IBM-930" },
+  { iconv_IBM_932_e, "IBM-932" },
+  { iconv_IBM_933_e, "IBM-933" },
+  { iconv_IBM_935_e, "IBM-935" },
+  { iconv_IBM_937_e, "IBM-937" },
+  { iconv_IBM_939_e, "IBM-939" },
+  { iconv_IBM_943_e, "IBM-943" },
+  { iconv_IBM_1008_e, "IBM-1008" },
+  { iconv_IBM_1025_e, "IBM-1025" },
+  { iconv_IBM_1046_e, "IBM-1046" },
+  { iconv_IBM_1047_e, "IBM-1047" },
+  { iconv_IBM_1097_e, "IBM-1097" },
+  { iconv_IBM_1112_e, "IBM-1112" },
+  { iconv_IBM_1122_e, "IBM-1122" },
+  { iconv_IBM_1123_e, "IBM-1123" },
+  { iconv_IBM_1124_e, "IBM-1124" },
+  { iconv_IBM_1129_e, "IBM-1129" },
+  { iconv_IBM_1130_e, "IBM-1130" },
+  { iconv_IBM_1132_e, "IBM-1132" },
+  { iconv_IBM_1133_e, "IBM-1133" },
+  { iconv_IBM_1137_e, "IBM-1137" },
+  { iconv_IBM_1140_e, "IBM-1140" },
+  { iconv_IBM_1141_e, "IBM-1141" },
+  { iconv_IBM_1142_e, "IBM-1142" },
+  { iconv_IBM_1143_e, "IBM-1143" },
+  { iconv_IBM_1144_e, "IBM-1144" },
+  { iconv_IBM_1145_e, "IBM-1145" },
+  { iconv_IBM_1146_e, "IBM-1146" },
+  { iconv_IBM_1147_e, "IBM-1147" },
+  { iconv_IBM_1148_e, "IBM-1148" },
+  { iconv_IBM_1149_e, "IBM-1149" },
+  { iconv_IBM_1153_e, "IBM-1153" },
+  { iconv_IBM_1154_e, "IBM-1154" },
+  { iconv_IBM_1155_e, "IBM-1155" },
+  { iconv_IBM_1156_e, "IBM-1156" },
+  { iconv_IBM_1157_e, "IBM-1157" },
+  { iconv_IBM_1158_e, "IBM-1158" },
+  { iconv_IBM_1160_e, "IBM-1160" },
+  { iconv_IBM_1161_e, "IBM-1161" },
+  { iconv_IBM_1162_e, "IBM-1162" },
+  { iconv_IBM_1163_e, "IBM-1163" },
+  { iconv_IBM_1164_e, "IBM-1164" },
+  { iconv_IBM_1166_e, "IBM-1166" },
+  { iconv_IBM_1167_e, "IBM-1167" },
+  { iconv_IBM_1364_e, "IBM-1364" },
+  { iconv_IBM_1371_e, "IBM-1371" },
+  { iconv_IBM_1388_e, "IBM-1388" },
+  { iconv_IBM_1390_e, "IBM-1390" },
+  { iconv_IBM_1399_e, "IBM-1399" },
+  { iconv_IBM_4517_e, "IBM-4517" },
+  { iconv_IBM_4899_e, "IBM-4899" },
+  { iconv_IBM_4909_e, "IBM-4909" },
+  { iconv_IBM_4971_e, "IBM-4971" },
+  { iconv_IBM_5347_e, "IBM-5347" },
+  { iconv_IBM_9030_e, "IBM-9030" },
+  { iconv_IBM_9066_e, "IBM-9066" },
+  { iconv_IBM_9448_e, "IBM-9448" },
+  { iconv_IBM_12712_e, "IBM-12712" },
+  { iconv_IBM_16804_e, "IBM-16804" },
+  { iconv_IBM037_e, "IBM037" },
+  { iconv_IBM038_e, "IBM038" },
+  { iconv_IBM256_e, "IBM256" },
+  { iconv_IBM273_e, "IBM273" },
+  { iconv_IBM274_e, "IBM274" },
+  { iconv_IBM275_e, "IBM275" },
+  { iconv_IBM277_e, "IBM277" },
+  { iconv_IBM278_e, "IBM278" },
+  { iconv_IBM280_e, "IBM280" },
+  { iconv_IBM281_e, "IBM281" },
+  { iconv_IBM284_e, "IBM284" },
+  { iconv_IBM285_e, "IBM285" },
+  { iconv_IBM290_e, "IBM290" },
+  { iconv_IBM297_e, "IBM297" },
+  { iconv_IBM367_e, "IBM367" },
+  { iconv_IBM420_e, "IBM420" },
+  { iconv_IBM423_e, "IBM423" },
+  { iconv_IBM424_e, "IBM424" },
+  { iconv_IBM437_e, "IBM437" },
+  { iconv_IBM500_e, "IBM500" },
+  { iconv_IBM775_e, "IBM775" },
+  { iconv_IBM803_e, "IBM803" },
+  { iconv_IBM813_e, "IBM813" },
+  { iconv_IBM819_e, "IBM819" },
+  { iconv_IBM848_e, "IBM848" },
+  { iconv_IBM850_e, "IBM850" },
+  { iconv_IBM851_e, "IBM851" },
+  { iconv_IBM852_e, "IBM852" },
+  { iconv_IBM855_e, "IBM855" },
+  { iconv_IBM856_e, "IBM856" },
+  { iconv_IBM857_e, "IBM857" },
+  { iconv_IBM858_e, "IBM858" },
+  { iconv_IBM860_e, "IBM860" },
+  { iconv_IBM861_e, "IBM861" },
+  { iconv_IBM862_e, "IBM862" },
+  { iconv_IBM863_e, "IBM863" },
+  { iconv_IBM864_e, "IBM864" },
+  { iconv_IBM865_e, "IBM865" },
+  { iconv_IBM866_e, "IBM866" },
+  { iconv_IBM866NAV_e, "IBM866NAV" },
+  { iconv_IBM868_e, "IBM868" },
+  { iconv_IBM869_e, "IBM869" },
+  { iconv_IBM870_e, "IBM870" },
+  { iconv_IBM871_e, "IBM871" },
+  { iconv_IBM874_e, "IBM874" },
+  { iconv_IBM875_e, "IBM875" },
+  { iconv_IBM880_e, "IBM880" },
+  { iconv_IBM891_e, "IBM891" },
+  { iconv_IBM901_e, "IBM901" },
+  { iconv_IBM902_e, "IBM902" },
+  { iconv_IBM903_e, "IBM903" },
+  { iconv_IBM904_e, "IBM904" },
+  { iconv_IBM905_e, "IBM905" },
+  { iconv_IBM912_e, "IBM912" },
+  { iconv_IBM915_e, "IBM915" },
+  { iconv_IBM916_e, "IBM916" },
+  { iconv_IBM918_e, "IBM918" },
+  { iconv_IBM920_e, "IBM920" },
+  { iconv_IBM921_e, "IBM921" },
+  { iconv_IBM922_e, "IBM922" },
+  { iconv_IBM930_e, "IBM930" },
+  { iconv_IBM932_e, "IBM932" },
+  { iconv_IBM933_e, "IBM933" },
+  { iconv_IBM935_e, "IBM935" },
+  { iconv_IBM937_e, "IBM937" },
+  { iconv_IBM939_e, "IBM939" },
+  { iconv_IBM943_e, "IBM943" },
+  { iconv_IBM1004_e, "IBM1004" },
+  { iconv_IBM1008_e, "IBM1008" },
+  { iconv_IBM1025_e, "IBM1025" },
+  { iconv_IBM1026_e, "IBM1026" },
+  { iconv_IBM1046_e, "IBM1046" },
+  { iconv_IBM1047_e, "IBM1047" },
+  { iconv_IBM1089_e, "IBM1089" },
+  { iconv_IBM1097_e, "IBM1097" },
+  { iconv_IBM1112_e, "IBM1112" },
+  { iconv_IBM1122_e, "IBM1122" },
+  { iconv_IBM1123_e, "IBM1123" },
+  { iconv_IBM1124_e, "IBM1124" },
+  { iconv_IBM1129_e, "IBM1129" },
+  { iconv_IBM1130_e, "IBM1130" },
+  { iconv_IBM1132_e, "IBM1132" },
+  { iconv_IBM1133_e, "IBM1133" },
+  { iconv_IBM1137_e, "IBM1137" },
+  { iconv_IBM1140_e, "IBM1140" },
+  { iconv_IBM1141_e, "IBM1141" },
+  { iconv_IBM1142_e, "IBM1142" },
+  { iconv_IBM1143_e, "IBM1143" },
+  { iconv_IBM1144_e, "IBM1144" },
+  { iconv_IBM1145_e, "IBM1145" },
+  { iconv_IBM1146_e, "IBM1146" },
+  { iconv_IBM1147_e, "IBM1147" },
+  { iconv_IBM1148_e, "IBM1148" },
+  { iconv_IBM1149_e, "IBM1149" },
+  { iconv_IBM1153_e, "IBM1153" },
+  { iconv_IBM1154_e, "IBM1154" },
+  { iconv_IBM1155_e, "IBM1155" },
+  { iconv_IBM1156_e, "IBM1156" },
+  { iconv_IBM1157_e, "IBM1157" },
+  { iconv_IBM1158_e, "IBM1158" },
+  { iconv_IBM1160_e, "IBM1160" },
+  { iconv_IBM1161_e, "IBM1161" },
+  { iconv_IBM1162_e, "IBM1162" },
+  { iconv_IBM1163_e, "IBM1163" },
+  { iconv_IBM1164_e, "IBM1164" },
+  { iconv_IBM1166_e, "IBM1166" },
+  { iconv_IBM1167_e, "IBM1167" },
+  { iconv_IBM1364_e, "IBM1364" },
+  { iconv_IBM1371_e, "IBM1371" },
+  { iconv_IBM1388_e, "IBM1388" },
+  { iconv_IBM1390_e, "IBM1390" },
+  { iconv_IBM1399_e, "IBM1399" },
+  { iconv_IBM4517_e, "IBM4517" },
+  { iconv_IBM4899_e, "IBM4899" },
+  { iconv_IBM4909_e, "IBM4909" },
+  { iconv_IBM4971_e, "IBM4971" },
+  { iconv_IBM5347_e, "IBM5347" },
+  { iconv_IBM9030_e, "IBM9030" },
+  { iconv_IBM9066_e, "IBM9066" },
+  { iconv_IBM9448_e, "IBM9448" },
+  { iconv_IBM12712_e, "IBM12712" },
+  { iconv_IBM16804_e, "IBM16804" },
+  { iconv_IEC_P27_1_e, "IEC_P27-1" },
+  { iconv_IEC_P271_e, "IEC_P271" },
+  { iconv_INIS_8_e, "INIS-8" },
+  { iconv_INIS_CYRILLIC_e, "INIS-CYRILLIC" },
+  { iconv_INIS_e, "INIS" },
+  { iconv_INIS8_e, "INIS8" },
+  { iconv_INISCYRILLIC_e, "INISCYRILLIC" },
+  { iconv_ISIRI_3342_e, "ISIRI-3342" },
+  { iconv_ISIRI3342_e, "ISIRI3342" },
+  { iconv_ISO_2022_CN_EXT_e, "ISO-2022-CN-EXT" },
+  { iconv_ISO_2022_CN_e, "ISO-2022-CN" },
+  { iconv_ISO_2022_JP_2_e, "ISO-2022-JP-2" },
+  { iconv_ISO_2022_JP_3_e, "ISO-2022-JP-3" },
+  { iconv_ISO_2022_JP_e, "ISO-2022-JP" },
+  { iconv_ISO_2022_KR_e, "ISO-2022-KR" },
+  { iconv_ISO_8859_1_e, "ISO-8859-1" },
+  { iconv_ISO_8859_2_e, "ISO-8859-2" },
+  { iconv_ISO_8859_3_e, "ISO-8859-3" },
+  { iconv_ISO_8859_4_e, "ISO-8859-4" },
+  { iconv_ISO_8859_5_e, "ISO-8859-5" },
+  { iconv_ISO_8859_6_e, "ISO-8859-6" },
+  { iconv_ISO_8859_7_e, "ISO-8859-7" },
+  { iconv_ISO_8859_8_e, "ISO-8859-8" },
+  { iconv_ISO_8859_9_e, "ISO-8859-9" },
+  { iconv_ISO_8859_9E_e, "ISO-8859-9E" },
+  { iconv_ISO_8859_10_e, "ISO-8859-10" },
+  { iconv_ISO_8859_11_e, "ISO-8859-11" },
+  { iconv_ISO_8859_13_e, "ISO-8859-13" },
+  { iconv_ISO_8859_14_e, "ISO-8859-14" },
+  { iconv_ISO_8859_15_e, "ISO-8859-15" },
+  { iconv_ISO_8859_16_e, "ISO-8859-16" },
+  { iconv_ISO_10646_e, "ISO-10646" },
+  { iconv_ISO_10646_e, "UCS2/ ISO-10646/UCS2/" },
+  { iconv_ISO_10646_e, "UCS4/ ISO-10646/UCS4/" },
+  { iconv_ISO_10646_e, "UTF-8/ ISO-10646/UTF-8/" },
+  { iconv_ISO_10646_e, "UTF8/ ISO-10646/UTF8/" },
+  { iconv_ISO_CELTIC_e, "ISO-CELTIC" },
+  { iconv_ISO_IR_4_e, "ISO-IR-4" },
+  { iconv_ISO_IR_6_e, "ISO-IR-6" },
+  { iconv_ISO_IR_8_1_e, "ISO-IR-8-1" },
+  { iconv_ISO_IR_9_1_e, "ISO-IR-9-1" },
+  { iconv_ISO_IR_10_e, "ISO-IR-10" },
+  { iconv_ISO_IR_11_e, "ISO-IR-11" },
+  { iconv_ISO_IR_14_e, "ISO-IR-14" },
+  { iconv_ISO_IR_15_e, "ISO-IR-15" },
+  { iconv_ISO_IR_16_e, "ISO-IR-16" },
+  { iconv_ISO_IR_17_e, "ISO-IR-17" },
+  { iconv_ISO_IR_18_e, "ISO-IR-18" },
+  { iconv_ISO_IR_19_e, "ISO-IR-19" },
+  { iconv_ISO_IR_21_e, "ISO-IR-21" },
+  { iconv_ISO_IR_25_e, "ISO-IR-25" },
+  { iconv_ISO_IR_27_e, "ISO-IR-27" },
+  { iconv_ISO_IR_37_e, "ISO-IR-37" },
+  { iconv_ISO_IR_49_e, "ISO-IR-49" },
+  { iconv_ISO_IR_50_e, "ISO-IR-50" },
+  { iconv_ISO_IR_51_e, "ISO-IR-51" },
+  { iconv_ISO_IR_54_e, "ISO-IR-54" },
+  { iconv_ISO_IR_55_e, "ISO-IR-55" },
+  { iconv_ISO_IR_57_e, "ISO-IR-57" },
+  { iconv_ISO_IR_60_e, "ISO-IR-60" },
+  { iconv_ISO_IR_61_e, "ISO-IR-61" },
+  { iconv_ISO_IR_69_e, "ISO-IR-69" },
+  { iconv_ISO_IR_84_e, "ISO-IR-84" },
+  { iconv_ISO_IR_85_e, "ISO-IR-85" },
+  { iconv_ISO_IR_86_e, "ISO-IR-86" },
+  { iconv_ISO_IR_88_e, "ISO-IR-88" },
+  { iconv_ISO_IR_89_e, "ISO-IR-89" },
+  { iconv_ISO_IR_90_e, "ISO-IR-90" },
+  { iconv_ISO_IR_92_e, "ISO-IR-92" },
+  { iconv_ISO_IR_98_e, "ISO-IR-98" },
+  { iconv_ISO_IR_99_e, "ISO-IR-99" },
+  { iconv_ISO_IR_100_e, "ISO-IR-100" },
+  { iconv_ISO_IR_101_e, "ISO-IR-101" },
+  { iconv_ISO_IR_103_e, "ISO-IR-103" },
+  { iconv_ISO_IR_109_e, "ISO-IR-109" },
+  { iconv_ISO_IR_110_e, "ISO-IR-110" },
+  { iconv_ISO_IR_111_e, "ISO-IR-111" },
+  { iconv_ISO_IR_121_e, "ISO-IR-121" },
+  { iconv_ISO_IR_122_e, "ISO-IR-122" },
+  { iconv_ISO_IR_126_e, "ISO-IR-126" },
+  { iconv_ISO_IR_127_e, "ISO-IR-127" },
+  { iconv_ISO_IR_138_e, "ISO-IR-138" },
+  { iconv_ISO_IR_139_e, "ISO-IR-139" },
+  { iconv_ISO_IR_141_e, "ISO-IR-141" },
+  { iconv_ISO_IR_143_e, "ISO-IR-143" },
+  { iconv_ISO_IR_144_e, "ISO-IR-144" },
+  { iconv_ISO_IR_148_e, "ISO-IR-148" },
+  { iconv_ISO_IR_150_e, "ISO-IR-150" },
+  { iconv_ISO_IR_151_e, "ISO-IR-151" },
+  { iconv_ISO_IR_153_e, "ISO-IR-153" },
+  { iconv_ISO_IR_155_e, "ISO-IR-155" },
+  { iconv_ISO_IR_156_e, "ISO-IR-156" },
+  { iconv_ISO_IR_157_e, "ISO-IR-157" },
+  { iconv_ISO_IR_166_e, "ISO-IR-166" },
+  { iconv_ISO_IR_179_e, "ISO-IR-179" },
+  { iconv_ISO_IR_193_e, "ISO-IR-193" },
+  { iconv_ISO_IR_197_e, "ISO-IR-197" },
+  { iconv_ISO_IR_199_e, "ISO-IR-199" },
+  { iconv_ISO_IR_203_e, "ISO-IR-203" },
+  { iconv_ISO_IR_209_e, "ISO-IR-209" },
+  { iconv_ISO_IR_226_e, "ISO-IR-226" },
+  { iconv_ISO_e, "TR_11548-1/ ISO/TR_11548-1/" },
+  { iconv_ISO646_CA_e, "ISO646-CA" },
+  { iconv_ISO646_CA2_e, "ISO646-CA2" },
+  { iconv_ISO646_CN_e, "ISO646-CN" },
+  { iconv_ISO646_CU_e, "ISO646-CU" },
+  { iconv_ISO646_DE_e, "ISO646-DE" },
+  { iconv_ISO646_DK_e, "ISO646-DK" },
+  { iconv_ISO646_ES_e, "ISO646-ES" },
+  { iconv_ISO646_ES2_e, "ISO646-ES2" },
+  { iconv_ISO646_FI_e, "ISO646-FI" },
+  { iconv_ISO646_FR_e, "ISO646-FR" },
+  { iconv_ISO646_FR1_e, "ISO646-FR1" },
+  { iconv_ISO646_GB_e, "ISO646-GB" },
+  { iconv_ISO646_HU_e, "ISO646-HU" },
+  { iconv_ISO646_IT_e, "ISO646-IT" },
+  { iconv_ISO646_JP_OCR_B_e, "ISO646-JP-OCR-B" },
+  { iconv_ISO646_JP_e, "ISO646-JP" },
+  { iconv_ISO646_KR_e, "ISO646-KR" },
+  { iconv_ISO646_NO_e, "ISO646-NO" },
+  { iconv_ISO646_NO2_e, "ISO646-NO2" },
+  { iconv_ISO646_PT_e, "ISO646-PT" },
+  { iconv_ISO646_PT2_e, "ISO646-PT2" },
+  { iconv_ISO646_SE_e, "ISO646-SE" },
+  { iconv_ISO646_SE2_e, "ISO646-SE2" },
+  { iconv_ISO646_US_e, "ISO646-US" },
+  { iconv_ISO646_YU_e, "ISO646-YU" },
+  { iconv_ISO2022CN_e, "ISO2022CN" },
+  { iconv_ISO2022CNEXT_e, "ISO2022CNEXT" },
+  { iconv_ISO2022JP_e, "ISO2022JP" },
+  { iconv_ISO2022JP2_e, "ISO2022JP2" },
+  { iconv_ISO2022KR_e, "ISO2022KR" },
+  { iconv_ISO6937_e, "ISO6937" },
+  { iconv_ISO8859_1_e, "ISO8859-1" },
+  { iconv_ISO8859_2_e, "ISO8859-2" },
+  { iconv_ISO8859_3_e, "ISO8859-3" },
+  { iconv_ISO8859_4_e, "ISO8859-4" },
+  { iconv_ISO8859_5_e, "ISO8859-5" },
+  { iconv_ISO8859_6_e, "ISO8859-6" },
+  { iconv_ISO8859_7_e, "ISO8859-7" },
+  { iconv_ISO8859_8_e, "ISO8859-8" },
+  { iconv_ISO8859_9_e, "ISO8859-9" },
+  { iconv_ISO8859_9E_e, "ISO8859-9E" },
+  { iconv_ISO8859_10_e, "ISO8859-10" },
+  { iconv_ISO8859_11_e, "ISO8859-11" },
+  { iconv_ISO8859_13_e, "ISO8859-13" },
+  { iconv_ISO8859_14_e, "ISO8859-14" },
+  { iconv_ISO8859_15_e, "ISO8859-15" },
+  { iconv_ISO8859_16_e, "ISO8859-16" },
+  { iconv_ISO11548_1_e, "ISO11548-1" },
+  { iconv_ISO88591_e, "ISO88591" },
+  { iconv_ISO88592_e, "ISO88592" },
+  { iconv_ISO88593_e, "ISO88593" },
+  { iconv_ISO88594_e, "ISO88594" },
+  { iconv_ISO88595_e, "ISO88595" },
+  { iconv_ISO88596_e, "ISO88596" },
+  { iconv_ISO88597_e, "ISO88597" },
+  { iconv_ISO88598_e, "ISO88598" },
+  { iconv_ISO88599_e, "ISO88599" },
+  { iconv_ISO88599E_e, "ISO88599E" },
+  { iconv_ISO885910_e, "ISO885910" },
+  { iconv_ISO885911_e, "ISO885911" },
+  { iconv_ISO885913_e, "ISO885913" },
+  { iconv_ISO885914_e, "ISO885914" },
+  { iconv_ISO885915_e, "ISO885915" },
+  { iconv_ISO885916_e, "ISO885916" },
+  { iconv_ISO_646_IRV_1991_e, "ISO_646.IRV:1991" },
+  { iconv_ISO_2033_1983_e, "ISO_2033-1983" },
+  { iconv_ISO_2033_e, "ISO_2033" },
+  { iconv_ISO_5427_EXT_e, "ISO_5427-EXT" },
+  { iconv_ISO_5427_e, "ISO_5427" },
+  { iconv_ISO_5427_1981_e, "ISO_5427:1981" },
+  { iconv_ISO_5427EXT_e, "ISO_5427EXT" },
+  { iconv_ISO_5428_e, "ISO_5428" },
+  { iconv_ISO_5428_1980_e, "ISO_5428:1980" },
+  { iconv_ISO_6937_2_e, "ISO_6937-2" },
+  { iconv_ISO_6937_2_1983_e, "ISO_6937-2:1983" },
+  { iconv_ISO_6937_e, "ISO_6937" },
+  { iconv_ISO_6937_1992_e, "ISO_6937:1992" },
+  { iconv_ISO_8859_1_e, "ISO_8859-1" },
+  { iconv_ISO_8859_1_1987_e, "ISO_8859-1:1987" },
+  { iconv_ISO_8859_2_e, "ISO_8859-2" },
+  { iconv_ISO_8859_2_1987_e, "ISO_8859-2:1987" },
+  { iconv_ISO_8859_3_e, "ISO_8859-3" },
+  { iconv_ISO_8859_3_1988_e, "ISO_8859-3:1988" },
+  { iconv_ISO_8859_4_e, "ISO_8859-4" },
+  { iconv_ISO_8859_4_1988_e, "ISO_8859-4:1988" },
+  { iconv_ISO_8859_5_e, "ISO_8859-5" },
+  { iconv_ISO_8859_5_1988_e, "ISO_8859-5:1988" },
+  { iconv_ISO_8859_6_e, "ISO_8859-6" },
+  { iconv_ISO_8859_6_1987_e, "ISO_8859-6:1987" },
+  { iconv_ISO_8859_7_e, "ISO_8859-7" },
+  { iconv_ISO_8859_7_1987_e, "ISO_8859-7:1987" },
+  { iconv_ISO_8859_7_2003_e, "ISO_8859-7:2003" },
+  { iconv_ISO_8859_8_e, "ISO_8859-8" },
+  { iconv_ISO_8859_8_1988_e, "ISO_8859-8:1988" },
+  { iconv_ISO_8859_9_e, "ISO_8859-9" },
+  { iconv_ISO_8859_9_1989_e, "ISO_8859-9:1989" },
+  { iconv_ISO_8859_9E_e, "ISO_8859-9E" },
+  { iconv_ISO_8859_10_e, "ISO_8859-10" },
+  { iconv_ISO_8859_10_1992_e, "ISO_8859-10:1992" },
+  { iconv_ISO_8859_14_e, "ISO_8859-14" },
+  { iconv_ISO_8859_14_1998_e, "ISO_8859-14:1998" },
+  { iconv_ISO_8859_15_e, "ISO_8859-15" },
+  { iconv_ISO_8859_15_1998_e, "ISO_8859-15:1998" },
+  { iconv_ISO_8859_16_e, "ISO_8859-16" },
+  { iconv_ISO_8859_16_2001_e, "ISO_8859-16:2001" },
+  { iconv_ISO_9036_e, "ISO_9036" },
+  { iconv_ISO_10367_BOX_e, "ISO_10367-BOX" },
+  { iconv_ISO_10367BOX_e, "ISO_10367BOX" },
+  { iconv_ISO_11548_1_e, "ISO_11548-1" },
+  { iconv_ISO_69372_e, "ISO_69372" },
+  { iconv_IT_e, "IT" },
+  { iconv_JIS_C6220_1969_RO_e, "JIS_C6220-1969-RO" },
+  { iconv_JIS_C6229_1984_B_e, "JIS_C6229-1984-B" },
+  { iconv_JIS_C62201969RO_e, "JIS_C62201969RO" },
+  { iconv_JIS_C62291984B_e, "JIS_C62291984B" },
+  { iconv_JOHAB_e, "JOHAB" },
+  { iconv_JP_OCR_B_e, "JP-OCR-B" },
+  { iconv_JP_e, "JP" },
+  { iconv_JS_e, "JS" },
+  { iconv_JUS_I_B1_002_e, "JUS_I.B1.002" },
+  { iconv_KOI_7_e, "KOI-7" },
+  { iconv_KOI_8_e, "KOI-8" },
+  { iconv_KOI8_R_e, "KOI8-R" },
+  { iconv_KOI8_RU_e, "KOI8-RU" },
+  { iconv_KOI8_T_e, "KOI8-T" },
+  { iconv_KOI8_U_e, "KOI8-U" },
+  { iconv_KOI8_e, "KOI8" },
+  { iconv_KOI8R_e, "KOI8R" },
+  { iconv_KOI8U_e, "KOI8U" },
+  { iconv_KSC5636_e, "KSC5636" },
+  { iconv_L1_e, "L1" },
+  { iconv_L2_e, "L2" },
+  { iconv_L3_e, "L3" },
+  { iconv_L4_e, "L4" },
+  { iconv_L5_e, "L5" },
+  { iconv_L6_e, "L6" },
+  { iconv_L7_e, "L7" },
+  { iconv_L8_e, "L8" },
+  { iconv_L10_e, "L10" },
+  { iconv_LATIN_9_e, "LATIN-9" },
+  { iconv_LATIN_GREEK_1_e, "LATIN-GREEK-1" },
+  { iconv_LATIN_GREEK_e, "LATIN-GREEK" },
+  { iconv_LATIN1_e, "LATIN1" },
+  { iconv_LATIN2_e, "LATIN2" },
+  { iconv_LATIN3_e, "LATIN3" },
+  { iconv_LATIN4_e, "LATIN4" },
+  { iconv_LATIN5_e, "LATIN5" },
+  { iconv_LATIN6_e, "LATIN6" },
+  { iconv_LATIN7_e, "LATIN7" },
+  { iconv_LATIN8_e, "LATIN8" },
+  { iconv_LATIN9_e, "LATIN9" },
+  { iconv_LATIN10_e, "LATIN10" },
+  { iconv_LATINGREEK_e, "LATINGREEK" },
+  { iconv_LATINGREEK1_e, "LATINGREEK1" },
+  { iconv_MAC_CENTRALEUROPE_e, "MAC-CENTRALEUROPE" },
+  { iconv_MAC_CYRILLIC_e, "MAC-CYRILLIC" },
+  { iconv_MAC_IS_e, "MAC-IS" },
+  { iconv_MAC_SAMI_e, "MAC-SAMI" },
+  { iconv_MAC_UK_e, "MAC-UK" },
+  { iconv_MAC_e, "MAC" },
+  { iconv_MACCYRILLIC_e, "MACCYRILLIC" },
+  { iconv_MACINTOSH_e, "MACINTOSH" },
+  { iconv_MACIS_e, "MACIS" },
+  { iconv_MACUK_e, "MACUK" },
+  { iconv_MACUKRAINIAN_e, "MACUKRAINIAN" },
+  { iconv_MIK_e, "MIK" },
+  { iconv_MS_ANSI_e, "MS-ANSI" },
+  { iconv_MS_ARAB_e, "MS-ARAB" },
+  { iconv_MS_CYRL_e, "MS-CYRL" },
+  { iconv_MS_EE_e, "MS-EE" },
+  { iconv_MS_GREEK_e, "MS-GREEK" },
+  { iconv_MS_HEBR_e, "MS-HEBR" },
+  { iconv_MS_MAC_CYRILLIC_e, "MS-MAC-CYRILLIC" },
+  { iconv_MS_TURK_e, "MS-TURK" },
+  { iconv_MS932_e, "MS932" },
+  { iconv_MS936_e, "MS936" },
+  { iconv_MSCP949_e, "MSCP949" },
+  { iconv_MSCP1361_e, "MSCP1361" },
+  { iconv_MSMACCYRILLIC_e, "MSMACCYRILLIC" },
+  { iconv_MSZ_7795_3_e, "MSZ_7795.3" },
+  { iconv_MS_KANJI_e, "MS_KANJI" },
+  { iconv_NAPLPS_e, "NAPLPS" },
+  { iconv_NATS_DANO_e, "NATS-DANO" },
+  { iconv_NATS_SEFI_e, "NATS-SEFI" },
+  { iconv_NATSDANO_e, "NATSDANO" },
+  { iconv_NATSSEFI_e, "NATSSEFI" },
+  { iconv_NC_NC0010_e, "NC_NC0010" },
+  { iconv_NC_NC00_10_e, "NC_NC00-10" },
+  { iconv_NC_NC00_10_81_e, "NC_NC00-10:81" },
+  { iconv_NF_Z_62_010_e, "NF_Z_62-010" },
+  { iconv_NF_Z_62_010__1973__e, "NF_Z_62-010_(1973)" },
+  { iconv_NF_Z_62_010_1973_e, "NF_Z_62-010_1973" },
+  { iconv_NF_Z_62010_e, "NF_Z_62010" },
+  { iconv_NF_Z_62010_1973_e, "NF_Z_62010_1973" },
+  { iconv_NO_e, "NO" },
+  { iconv_NO2_e, "NO2" },
+  { iconv_NS_4551_1_e, "NS_4551-1" },
+  { iconv_NS_4551_2_e, "NS_4551-2" },
+  { iconv_NS_45511_e, "NS_45511" },
+  { iconv_NS_45512_e, "NS_45512" },
+  { iconv_OS2LATIN1_e, "OS2LATIN1" },
+  { iconv_OSF00010001_e, "OSF00010001" },
+  { iconv_OSF00010002_e, "OSF00010002" },
+  { iconv_OSF00010003_e, "OSF00010003" },
+  { iconv_OSF00010004_e, "OSF00010004" },
+  { iconv_OSF00010005_e, "OSF00010005" },
+  { iconv_OSF00010006_e, "OSF00010006" },
+  { iconv_OSF00010007_e, "OSF00010007" },
+  { iconv_OSF00010008_e, "OSF00010008" },
+  { iconv_OSF00010009_e, "OSF00010009" },
+  { iconv_OSF0001000A_e, "OSF0001000A" },
+  { iconv_OSF00010020_e, "OSF00010020" },
+  { iconv_OSF00010100_e, "OSF00010100" },
+  { iconv_OSF00010101_e, "OSF00010101" },
+  { iconv_OSF00010102_e, "OSF00010102" },
+  { iconv_OSF00010104_e, "OSF00010104" },
+  { iconv_OSF00010105_e, "OSF00010105" },
+  { iconv_OSF00010106_e, "OSF00010106" },
+  { iconv_OSF00030010_e, "OSF00030010" },
+  { iconv_OSF0004000A_e, "OSF0004000A" },
+  { iconv_OSF0005000A_e, "OSF0005000A" },
+  { iconv_OSF05010001_e, "OSF05010001" },
+  { iconv_OSF100201A4_e, "OSF100201A4" },
+  { iconv_OSF100201A8_e, "OSF100201A8" },
+  { iconv_OSF100201B5_e, "OSF100201B5" },
+  { iconv_OSF100201F4_e, "OSF100201F4" },
+  { iconv_OSF100203B5_e, "OSF100203B5" },
+  { iconv_OSF1002011C_e, "OSF1002011C" },
+  { iconv_OSF1002011D_e, "OSF1002011D" },
+  { iconv_OSF1002035D_e, "OSF1002035D" },
+  { iconv_OSF1002035E_e, "OSF1002035E" },
+  { iconv_OSF1002035F_e, "OSF1002035F" },
+  { iconv_OSF1002036B_e, "OSF1002036B" },
+  { iconv_OSF1002037B_e, "OSF1002037B" },
+  { iconv_OSF10010001_e, "OSF10010001" },
+  { iconv_OSF10010004_e, "OSF10010004" },
+  { iconv_OSF10010006_e, "OSF10010006" },
+  { iconv_OSF10020025_e, "OSF10020025" },
+  { iconv_OSF10020111_e, "OSF10020111" },
+  { iconv_OSF10020115_e, "OSF10020115" },
+  { iconv_OSF10020116_e, "OSF10020116" },
+  { iconv_OSF10020118_e, "OSF10020118" },
+  { iconv_OSF10020122_e, "OSF10020122" },
+  { iconv_OSF10020129_e, "OSF10020129" },
+  { iconv_OSF10020352_e, "OSF10020352" },
+  { iconv_OSF10020354_e, "OSF10020354" },
+  { iconv_OSF10020357_e, "OSF10020357" },
+  { iconv_OSF10020359_e, "OSF10020359" },
+  { iconv_OSF10020360_e, "OSF10020360" },
+  { iconv_OSF10020364_e, "OSF10020364" },
+  { iconv_OSF10020365_e, "OSF10020365" },
+  { iconv_OSF10020366_e, "OSF10020366" },
+  { iconv_OSF10020367_e, "OSF10020367" },
+  { iconv_OSF10020370_e, "OSF10020370" },
+  { iconv_OSF10020387_e, "OSF10020387" },
+  { iconv_OSF10020388_e, "OSF10020388" },
+  { iconv_OSF10020396_e, "OSF10020396" },
+  { iconv_OSF10020402_e, "OSF10020402" },
+  { iconv_OSF10020417_e, "OSF10020417" },
+  { iconv_PT_e, "PT" },
+  { iconv_PT2_e, "PT2" },
+  { iconv_PT154_e, "PT154" },
+  { iconv_R8_e, "R8" },
+  { iconv_R9_e, "R9" },
+  { iconv_RK1048_e, "RK1048" },
+  { iconv_ROMAN8_e, "ROMAN8" },
+  { iconv_ROMAN9_e, "ROMAN9" },
+  { iconv_RUSCII_e, "RUSCII" },
+  { iconv_SE_e, "SE" },
+  { iconv_SE2_e, "SE2" },
+  { iconv_SEN_850200_B_e, "SEN_850200_B" },
+  { iconv_SEN_850200_C_e, "SEN_850200_C" },
+  { iconv_SHIFT_JIS_e, "SHIFT-JIS" },
+  { iconv_SHIFTJISX0213_e, "SHIFTJISX0213" },
+  { iconv_SHIFT_JIS_e, "SHIFT_JIS" },
+  { iconv_SHIFT_JISX0213_e, "SHIFT_JISX0213" },
+  { iconv_SJIS_OPEN_e, "SJIS-OPEN" },
+  { iconv_SJIS_WIN_e, "SJIS-WIN" },
+  { iconv_SJIS_e, "SJIS" },
+  { iconv_SS636127_e, "SS636127" },
+  { iconv_STRK1048_2002_e, "STRK1048-2002" },
+  { iconv_ST_SEV_358_88_e, "ST_SEV_358-88" },
+  { iconv_T_61_8BIT_e, "T.61-8BIT" },
+  { iconv_T_61_e, "T.61" },
+  { iconv_T_618BIT_e, "T.618BIT" },
+  { iconv_TCVN_5712_e, "TCVN-5712" },
+  { iconv_TCVN_e, "TCVN" },
+  { iconv_TCVN5712_1_e, "TCVN5712-1" },
+  { iconv_TCVN5712_1_1993_e, "TCVN5712-1:1993" },
+  { iconv_THAI8_e, "THAI8" },
+  { iconv_TIS_620_e, "TIS-620" },
+  { iconv_TIS620_0_e, "TIS620-0" },
+  { iconv_TIS620_2529_1_e, "TIS620.2529-1" },
+  { iconv_TIS620_2533_0_e, "TIS620.2533-0" },
+  { iconv_TIS620_e, "TIS620" },
+  { iconv_TS_5881_e, "TS-5881" },
+  { iconv_TSCII_e, "TSCII" },
+  { iconv_TURKISH8_e, "TURKISH8" },
+  { iconv_UCS_2_e, "UCS-2" },
+  { iconv_UCS_2BE_e, "UCS-2BE" },
+  { iconv_UCS_2LE_e, "UCS-2LE" },
+  { iconv_UCS_4_e, "UCS-4" },
+  { iconv_UCS_4BE_e, "UCS-4BE" },
+  { iconv_UCS_4LE_e, "UCS-4LE" },
+  { iconv_UCS2_e, "UCS2" },
+  { iconv_UCS4_e, "UCS4" },
+  { iconv_UHC_e, "UHC" },
+  { iconv_UJIS_e, "UJIS" },
+  { iconv_UK_e, "UK" },
+  { iconv_UNICODE_e, "UNICODE" },
+  { iconv_UNICODEBIG_e, "UNICODEBIG" },
+  { iconv_UNICODELITTLE_e, "UNICODELITTLE" },
+  { iconv_US_ASCII_e, "US-ASCII" },
+  { iconv_US_e, "US" },
+  { iconv_UTF_7_e, "UTF-7" },
+  { iconv_UTF_8_e, "UTF-8" },
+  { iconv_UTF_16_e, "UTF-16" },
+  { iconv_UTF_16BE_e, "UTF-16BE" },
+  { iconv_UTF_16LE_e, "UTF-16LE" },
+  { iconv_UTF_32_e, "UTF-32" },
+  { iconv_UTF_32BE_e, "UTF-32BE" },
+  { iconv_UTF_32LE_e, "UTF-32LE" },
+  { iconv_UTF7_e, "UTF7" },
+  { iconv_UTF8_e, "UTF8" },
+  { iconv_UTF16_e, "UTF16" },
+  { iconv_UTF16BE_e, "UTF16BE" },
+  { iconv_UTF16LE_e, "UTF16LE" },
+  { iconv_UTF32_e, "UTF32" },
+  { iconv_UTF32BE_e, "UTF32BE" },
+  { iconv_UTF32LE_e, "UTF32LE" },
+  { iconv_VISCII_e, "VISCII" },
+  { iconv_WCHAR_T_e, "WCHAR_T" },
+  { iconv_WIN_SAMI_2_e, "WIN-SAMI-2" },
+  { iconv_WINBALTRIM_e, "WINBALTRIM" },
+  { iconv_WINDOWS_31J_e, "WINDOWS-31J" },
+  { iconv_WINDOWS_874_e, "WINDOWS-874" },
+  { iconv_WINDOWS_936_e, "WINDOWS-936" },
+  { iconv_WINDOWS_1250_e, "WINDOWS-1250" },
+  { iconv_WINDOWS_1251_e, "WINDOWS-1251" },
+  { iconv_WINDOWS_1252_e, "WINDOWS-1252" },
+  { iconv_WINDOWS_1253_e, "WINDOWS-1253" },
+  { iconv_WINDOWS_1254_e, "WINDOWS-1254" },
+  { iconv_WINDOWS_1255_e, "WINDOWS-1255" },
+  { iconv_WINDOWS_1256_e, "WINDOWS-1256" },
+  { iconv_WINDOWS_1257_e, "WINDOWS-1257" },
+  { iconv_WINDOWS_1258_e, "WINDOWS-1258" },
+  { iconv_WINSAMI2_e, "WINSAMI2" },
+  { iconv_WS2_e, "WS2" },
+  { iconv_YU_e, "YU" },
+};
 
-extern "C"
-void
-__gg__ascii_to_ebcdic(char *str, size_t length)
-    {
-    for(size_t i=0; i<length; i++)
-        {
-        str[i] = __gg__cp1252_to_cp1140_values[str[i]&0xFF];
-        }
-    }
+const char *
+__gg__encoding_iconv_name( cbl_encoding_t encoding ) {
+  static encodings_t *eoencodings = encodings + COUNT_OF(encodings);
 
-extern "C"
-void
-__gg__ebcdic_to_ascii(char * const str, size_t length)
-    {
-    for(size_t i=0; i<length; i++)
-        {
-        str[i] = __gg__cp1140_to_cp1252_values[str[i]&0xFF];
-        }
-    }
+  auto p = std::find_if( encodings, eoencodings,
+                         [encoding]( const encodings_t& elem ) {
+                           return encoding == elem.type;
+                         } );
+  return p < eoencodings? p->name : nullptr;
+}
 
-extern "C"
-char *__gg__ascii_to_console( char **dest,
-                              size_t *dest_size,
-                              char const * const str,
-                              const size_t length)
-    {
-    if( console_codeset == cs_utf8_e )
-        {
-        __gg__realloc_if_necessary(dest, dest_size, length);
-        convert_cp1252_to_utf8(dest, dest_size, str, length);
-        }
-    else
-        {
-        __gg__realloc_if_necessary(dest, dest_size, length+1);
-        memcpy(*dest, str, length);
-        (*dest)[length] = '\0';
-        }
-    return *dest;
-    }
+cbl_encoding_t
+__gg__encoding_iconv_type( const char *name ) {
+  static encodings_t *eoencodings = encodings + COUNT_OF(encodings);
 
-extern "C"
-char *__gg__ebcdic_to_console(char **dest,
-                              size_t *dest_size,
-                              char const * const str,
-                              const size_t length)
-    {
-    static size_t ebcdic_size = MINIMUM_ALLOCATION_SIZE;
-    static char *ebcdic = static_cast<char *>(malloc(ebcdic_size));
-    if(!ebcdic)abort();
-    __gg__realloc_if_necessary(&ebcdic, &ebcdic_size, length);
+  auto p = std::find_if( encodings, eoencodings,
+                         [name]( const encodings_t& elem ) {
+                           return strcmp(name, elem.name) == 0;
+                         } );
+  return p < eoencodings? p->type : no_encoding_e;
+}
 
-    memcpy(ebcdic, str, length);
-    __gg__ebcdic_to_ascii(ebcdic, length);
-
-    if( console_codeset == cs_utf8_e )
-        {
-        convert_cp1252_to_utf8(dest, dest_size, ebcdic, length);
-        }
-    else
-        {
-        __gg__realloc_if_necessary(dest, dest_size, length+1);
-        strcpy(*dest, ebcdic);
-        }
-    return *dest;
-    }
-
-extern "C"
-void __gg__console_to_ascii(char * const str, size_t length)
-    {
-    // In-place conversion of ASCII data that might be UTF-8 to CP1252
-    if( console_codeset == cs_cp1252_e )
-        {
-        // It's already what we want it to be
-        return;
-        }
-    char *dest = str;
-
-    size_t position = 0;
-    while( position < length )
-        {
-        size_t code_point;
-        // Pull the next code_point from the UTF-8 stream
-        long unicode_point
-            = extract_next_code_point(    reinterpret_cast<const unsigned char *>(str),
-                                                length,
-                                                position );
-        if( unicode_point == -1 )
-            {
-            // The UTF-8 stream was poorly formed.
-            code_point = ASCII_REPLACEMENT;
-            }
-        else
-            {
-            // Check for that unicode code point in the subset of characters we
-            // know about:
-            auto it = utf8_to_cp1252_values.find(unicode_point);
-            if( it == utf8_to_cp1252_values.end() )
-                {
-                // That unicode character isn't in our list
-                code_point = ASCII_REPLACEMENT;
-                }
-            else
-                {
-                code_point = it->second;
-                }
-            }
-        *dest++ = (char)code_point;
-        }
-    *dest++ = '\0';
-    }
-
-extern "C"
-void
-__gg__console_to_ebcdic(char * const str, size_t length)
-    {
-    char *dest = str;
-
-    size_t position = 0;
-    while( position < length )
-        {
-        size_t code_point;
-        // Pull the next code_point from the UTF-8 stream
-        long unicode_point
-            = extract_next_code_point(    reinterpret_cast<const unsigned char *>(str),
-                                                length,
-                                                position );
-        if( unicode_point == -1 )
-            {
-            // The UTF-8 stream was poorly formed.
-            code_point = ASCII_REPLACEMENT;
-            }
-        else
-            {
-            // Check for that unicode code point in the subset of characters we
-            // know about:
-            auto it = utf8_to_cp1252_values.find(unicode_point);
-            if( it == utf8_to_cp1252_values.end() )
-                {
-                // That unicode character isn't in our list
-                code_point = ASCII_REPLACEMENT;
-                }
-            else
-                {
-                code_point = it->second;
-                }
-            }
-        *dest++ = __gg__cp1252_to_cp1140_values[code_point&0xFF]   ;
-        }
-    *dest++ = '\0';
-    }
-
-extern "C"
-size_t
-_to_ctype(char * const location, size_t length)
+char *
+__gg__iconverter( cbl_encoding_t from,
+                  cbl_encoding_t to,
+            const char *str,
+                  size_t length,
+                  size_t *outlength)
   {
-  // Converts from our internal codeset to the system LC_TYPE codeset
-  const char *fromcode;
-  const char *tocode;
-  if( __gg__ebcdic_codeset_in_use )
+  static size_t retsize = 1;
+  static char *retval = static_cast<char *>(malloc(retsize));
+
+  // Let's consider the possibility of each input character needed four output
+  // characters:
+  size_t needed = 4*length;
+  if( retsize < needed )
     {
-    fromcode = "CP1140";
+    retsize = needed;
+    retval = static_cast<char *>(realloc(retval, retsize));
+    }
+
+  if( from == to )
+    {
+    memcpy(retval, str, length);
+    *outlength = length;
     }
   else
     {
-    fromcode = "CP1252";
+    // Converts the given string from from to to using iconv.
+
+    // The return value points to a static memory area in this function, the
+    // caller has to respect that.
+
+    // We attempt to minimize overhead by using a map to call
+    // iconv_open but once for each from/to pairing.
+
+    iconv_t cd;
+
+    static std::unordered_map<uint32_t, iconv_t> pairings;
+    uint32_t pairing = static_cast<uint32_t>(from) << 16;
+    pairing += static_cast<uint32_t>(to);
+    std::unordered_map<uint32_t, iconv_t>::const_iterator it =
+          pairings.find(pairing);
+    if( it == pairings.end() )
+      {
+      // This pairing is new to us.
+      assert(to   > custom_encoding_e);
+      assert(from > custom_encoding_e);
+      cd = iconv_open(__gg__encoding_iconv_name(to),
+                      __gg__encoding_iconv_name(from));
+      pairings[pairing] = cd;
+      }
+    else
+      {
+      // We've seen this pairing before.
+      cd = it->second;
+      }
+
+    char *inbuf  = const_cast<char *>(str);
+    char *outbuf = retval;
+    size_t incount = length;
+    size_t outcount = retsize;
+    *outlength = iconv( cd,
+                        &inbuf, &incount,
+                        &outbuf, &outcount);
+    *outlength = retsize - outcount;
+
+    if( *outlength == length )
+      {
+      /*  In a kind of shortsighted way, we are going to assume
+          single-byte-coding, and we are going to cope here with the
+          COBOL-world reality of HIGH-VALUE being, by default, the value 0xFF.
+          This is required by IBM in the EBCDIC and ASCII worlds.  The
+          implications for other locales are being left for another time.
+
+          So, for now, we are regarding 0xFF as invariant.  Thus, at this
+          point, we have to scan the input and make sure the output has 0xFF
+          where the input does.  */
+      for(size_t i=0; i<length; i++)
+        {
+        if( static_cast<unsigned char>(str[i]) == 0xFF )
+          {
+          retval[i] = static_cast<char>(0xFF);
+          }
+        }
+      }
     }
-  const char *ctype = setlocale(LC_CTYPE, "");
+  // For the convenience of those who call this routine, we are sticking a
+  // terminating NUL on the end of the generated string
+  retval[*outlength] = '\0';
 
-  if( strcasestr(ctype, "UTF") )
-    {
-    tocode = "UTF-8";
-    }
-  else
-    {
-    tocode = "CP1252";
-    }
-
-  iconv_t cd = iconv_open(tocode, fromcode);
-  assert( cd != (iconv_t)-1 );
-
-  static char  *dest      = NULL;
-  static size_t dest_size = 0;
-
-  // create a buffer long enough that iconv() won't fail:
-  __gg__realloc_if_necessary(&dest, &dest_size, 4*length+1);
-
-  // Set up for the iconv() call:
-  char  *inbuf        = location;
-  size_t inbytesleft  = length;
-  char  *outbuf       = dest;
-  size_t outbytesleft = 2*length+1;
-
-  memset(dest, ' ',  2*length+1);
-  iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
-  memcpy(location, dest, length);
-  return 0;
+  return retval;
   }
 
-extern "C"
-size_t
-_from_ctype(char * const location, size_t length)
+static
+std::unordered_map<cbl_encoding_t, charmap_t *>map_of_encodings;
+
+charmap_t *
+__gg__get_charmap(cbl_encoding_t encoding)
   {
-  // Converts from our internal codeset to the system LC_TYPE codeset
-  const char *fromcode;
-  const char *tocode;
-  if( __gg__ebcdic_codeset_in_use )
+  // In various places in the runtime, there will be need of charmap_t for
+  // various encodings.  By using this routine, the overhead of creating and
+  // using them is kept low.
+
+  // Sometimes the encoding is custom_encoding_e, like when initializing a
+  // FldPointer.  But we still need to have *something*, because of the need
+  // to handle certain figurative constants.  An example is
+  //      01 FOO pointer value NULL
+  // where the encoding is irrelevant. So, in that case we force it to be
+  // something.
+
+  if( encoding == custom_encoding_e)
     {
-    tocode = "CP1140";
+    encoding = DEFAULT_CHARMAP_SOURCE;
+    }
+
+  charmap_t *retval;
+  std::unordered_map<cbl_encoding_t, charmap_t *>::const_iterator it
+                          = map_of_encodings.find(encoding);
+  if( it != map_of_encodings.end() )
+    {
+    retval = it->second;
     }
   else
     {
-    tocode = "CP1252";
+    retval = new charmap_t(encoding);
+    map_of_encodings[encoding] = retval;
     }
-  const char *ctype = setlocale(LC_CTYPE, "");
-
-  if( strcasestr(ctype, "UTF") )
-    {
-    fromcode = "UTF-8";
-    }
-  else
-    {
-    fromcode = "CP1252";
-    }
-
-  iconv_t cd = iconv_open(tocode, fromcode);
-  assert( cd != (iconv_t)-1 );
-
-  static char  *dest      = NULL;
-  static size_t dest_size = 0;
-
-  // create a buffer long enough that iconv() won't fail:
-  __gg__realloc_if_necessary(&dest, &dest_size, length+1);
-
-  // Set up for the iconv() call:
-  char  *inbuf        = location;
-  size_t inbytesleft  = length;
-  char  *outbuf       = dest;
-  size_t outbytesleft = length+1;
-
-  memset(dest, internal_space, length+1);
-  ///size_t iret =
-  iconv(cd, &inbuf, &inbytesleft, &outbuf, &outbytesleft);
-  memcpy(location, dest, length);
-  return 0;
+  return retval;
   }
+
