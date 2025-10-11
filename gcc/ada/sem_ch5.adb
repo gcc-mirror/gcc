@@ -420,7 +420,6 @@ package body Sem_Ch5 is
       end if;
 
       Analyze (Lhs);
-      Analyze (Rhs);
 
       --  Ensure that we never do an assignment on a variable marked as
       --  Is_Safe_To_Reevaluate.
@@ -434,91 +433,143 @@ package body Sem_Ch5 is
 
       T1 := Etype (Lhs);
 
+      if not Is_Overloaded (Lhs) then
+         Analyze (Rhs);
+
       --  In the most general case, both Lhs and Rhs can be overloaded, and we
       --  must compute the intersection of the possible types on each side.
+      --  Note that only nonlimited interpretations are considered (see
+      --  AI22-0112, RM 5.2(4/6)).
 
-      if Is_Overloaded (Lhs) then
-         declare
-            I  : Interp_Index;
-            It : Interp;
+      else
+         --  When there are target names ("@") present in the expression,
+         --  the assignment's left-hand side must be resolved as a complete
+         --  context (RM 8.6(9.1/5)), and the determined type will then be used
+         --  to resolve the right-hand side expression.
 
-         begin
-            T1 := Any_Type;
-            Get_First_Interp (Lhs, I, It);
+         if Has_Target_Names (N) then
+            declare
+               I  : Interp_Index;
+               It : Interp;
 
-            while Present (It.Typ) loop
+            begin
+               T1 := Any_Type;
+               Get_First_Interp (Lhs, I, It);
 
-               --  An indexed component with generalized indexing is always
-               --  overloaded with the corresponding dereference. Discard the
-               --  interpretation that yields a reference type, which is not
-               --  assignable.
-
-               if Nkind (Lhs) = N_Indexed_Component
-                 and then Present (Generalized_Indexing (Lhs))
-                 and then Has_Implicit_Dereference (It.Typ)
-               then
-                  null;
-
-               elsif Has_Compatible_Type (Rhs, It.Typ) then
-                  if T1 = Any_Type then
+               while Present (It.Typ) loop
+                  if Is_Limited_Type (It.Typ) then
+                     Remove_Interp (I);
+                  elsif T1 = Any_Type then
                      T1 := It.Typ;
-                  else
-                     --  An explicit dereference is overloaded if the prefix
-                     --  is. Try to remove the ambiguity on the prefix, the
-                     --  error will be posted there if the ambiguity is real.
-
-                     if Nkind (Lhs) = N_Explicit_Dereference then
-                        declare
-                           PI    : Interp_Index;
-                           PI1   : Interp_Index := 0;
-                           PIt   : Interp;
-                           Found : Boolean;
-
-                        begin
-                           Found := False;
-                           Get_First_Interp (Prefix (Lhs), PI, PIt);
-
-                           while Present (PIt.Typ) loop
-                              if Is_Access_Type (PIt.Typ)
-                                and then Has_Compatible_Type
-                                           (Rhs, Designated_Type (PIt.Typ))
-                              then
-                                 if Found then
-                                    PIt :=
-                                      Disambiguate (Prefix (Lhs),
-                                        PI1, PI, Any_Type);
-
-                                    if PIt = No_Interp then
-                                       Error_Msg_N
-                                         ("ambiguous left-hand side in "
-                                          & "assignment", Lhs);
-                                       exit;
-                                    else
-                                       Resolve (Prefix (Lhs), PIt.Typ);
-                                    end if;
-
-                                    exit;
-                                 else
-                                    Found := True;
-                                    PI1 := PI;
-                                 end if;
-                              end if;
-
-                              Get_Next_Interp (PI, PIt);
-                           end loop;
-                        end;
-
-                     else
-                        Error_Msg_N
-                          ("ambiguous left-hand side in assignment", Lhs);
-                        exit;
-                     end if;
                   end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+
+               if Is_Ambiguous_Operand (Lhs, Report_Errors  => False) then
+                  Error_Msg_N ("ambiguous left-hand side in assignment", Lhs);
+
+                  Kill_Lhs;
+                  goto Leave;
                end if;
 
-               Get_Next_Interp (I, It);
-            end loop;
-         end;
+               if T1 = Any_Type then
+                  Error_Msg_N
+                    ("no valid types for left-hand side for assignment", Lhs);
+                  Kill_Lhs;
+                  goto Leave;
+               end if;
+
+            end;
+
+            --  We delay analyzing Rhs until Lhs has been resolved, so that the
+            --  type of Lhs has been determined and can be used for the type of
+            --  target names occurring in Rhs.
+
+            Analyze (Rhs);
+
+         --  Case where Lhs is overloaded, but Rhs does not have target names
+
+         else
+            Analyze (Rhs);
+
+            declare
+               I  : Interp_Index;
+               It : Interp;
+
+            begin
+               T1 := Any_Type;
+               Get_First_Interp (Lhs, I, It);
+
+               while Present (It.Typ) loop
+                  --  AI22-0112 restores the Ada 95 rule that excludes limited
+                  --  types from consideration during resolution of the target
+                  --  variable in assignment statements.
+
+                  if Is_Limited_Type (It.Typ) then
+                     Remove_Interp (I);
+
+                  elsif Has_Compatible_Type (Rhs, It.Typ) then
+                     if T1 = Any_Type then
+                        T1 := It.Typ;
+                     else
+                        --  An explicit dereference is overloaded if the prefix
+                        --  is. Try to remove the ambiguity on the prefix, the
+                        --  error will be posted there if ambiguity is real.
+
+                        if Nkind (Lhs) = N_Explicit_Dereference then
+                           declare
+                              PI    : Interp_Index;
+                              PI1   : Interp_Index := 0;
+                              PIt   : Interp;
+                              Found : Boolean;
+
+                           begin
+                              Found := False;
+                              Get_First_Interp (Prefix (Lhs), PI, PIt);
+
+                              while Present (PIt.Typ) loop
+                                 if Is_Access_Type (PIt.Typ)
+                                   and then Has_Compatible_Type
+                                              (Rhs, Designated_Type (PIt.Typ))
+                                 then
+                                    if Found then
+                                       PIt :=
+                                         Disambiguate (Prefix (Lhs),
+                                           PI1, PI, Any_Type);
+
+                                       if PIt = No_Interp then
+                                          Error_Msg_N
+                                            ("ambiguous left-hand side in "
+                                             & "assignment", Lhs);
+                                          exit;
+                                       else
+                                          Resolve (Prefix (Lhs), PIt.Typ);
+                                       end if;
+
+                                       exit;
+                                    else
+                                       Found := True;
+                                       PI1 := PI;
+                                    end if;
+                                 end if;
+
+                                 Get_Next_Interp (PI, PIt);
+                              end loop;
+                           end;
+
+                        else
+                           Error_Msg_N
+                             ("ambiguous left-hand side in assignment", Lhs);
+                           exit;
+                        end if;
+                     end if;
+                  end if;
+
+                  Get_Next_Interp (I, It);
+               end loop;
+            end;
+         end if;
 
          if T1 = Any_Type then
             Error_Msg_N

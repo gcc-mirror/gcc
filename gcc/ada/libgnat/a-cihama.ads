@@ -143,11 +143,12 @@ is
    --  a variable view) of the node designed by the cursor.
 
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is private
+      (Element : not null access constant Element_Type) is limited private
    with
       Implicit_Dereference => Element;
 
-   type Reference_Type (Element : not null access Element_Type) is private
+   type Reference_Type
+     (Element : not null access Element_Type) is limited private
    with
       Implicit_Dereference => Element;
 

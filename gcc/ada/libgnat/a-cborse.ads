@@ -100,8 +100,7 @@ is
       Process  : not null access procedure (Element : Element_Type));
 
    type Constant_Reference_Type
-      (Element : not null access constant Element_Type) is
-   private
+      (Element : not null access constant Element_Type) is limited private
    with
       Implicit_Dereference => Element;
 
@@ -290,7 +289,8 @@ is
          Process   : not null access
                        procedure (Element : in out Element_Type));
 
-      type Reference_Type (Element : not null access Element_Type) is private
+      type Reference_Type
+        (Element : not null access Element_Type) is limited private
       with
          Implicit_Dereference => Element;
 

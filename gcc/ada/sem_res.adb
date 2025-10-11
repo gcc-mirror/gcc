@@ -13742,8 +13742,10 @@ package body Sem_Res is
 
             --  Report the first two interpretations
 
-            Report_Interpretation (Operand, It.Nam, It.Typ);
-            Report_Interpretation (Operand, N1, T1);
+            if Report_Errors then
+               Report_Interpretation (Operand, It.Nam, It.Typ);
+               Report_Interpretation (Operand, N1, T1);
+            end if;
 
             return True;
          end if;

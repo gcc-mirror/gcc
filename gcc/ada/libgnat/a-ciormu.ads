@@ -133,8 +133,9 @@ is
    --  with elements") will raise Program_Error.
 
    type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is private
-        with Implicit_Dereference => Element;
+     (Element : not null access constant Element_Type) is limited private
+   with
+      Implicit_Dereference => Element;
 
    function Constant_Reference
      (Container : aliased Set;

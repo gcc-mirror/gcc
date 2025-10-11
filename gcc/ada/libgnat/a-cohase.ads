@@ -165,8 +165,9 @@ is
    --  designed by the cursor.
 
    type Constant_Reference_Type
-     (Element : not null access constant Element_Type) is private
-        with Implicit_Dereference => Element;
+     (Element : not null access constant Element_Type) is limited private
+   with
+      Implicit_Dereference => Element;
 
    function Constant_Reference
      (Container : aliased Set;
@@ -457,8 +458,10 @@ is
       --  completes. Otherwise, the node is removed from the set and
       --  Program_Error is raised.
 
-      type Reference_Type (Element : not null access Element_Type) is private
-        with Implicit_Dereference => Element;
+      type Reference_Type
+        (Element : not null access Element_Type) is limited private
+      with
+         Implicit_Dereference => Element;
 
       function Reference_Preserving_Key
         (Container : aliased in out Set;
