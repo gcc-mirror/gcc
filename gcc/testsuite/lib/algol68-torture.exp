@@ -1,0 +1,483 @@
+# Copyright (C) 2009-2024 Free Software Foundation, Inc.
+
+# This program is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3 of the License, or
+# (at your option) any later version.
+# 
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+# 
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# Please email any bugs, comments, and/or additions to this file to
+# the author.
+
+load_lib dg.exp
+
+load_lib target-supports.exp
+
+load_lib target-utils.exp
+
+# The default option list can be overridden by
+# TORTURE_OPTIONS="{ { list1 } ... { listN } }"
+
+if ![info exists TORTURE_OPTIONS] {
+    set TORTURE_OPTIONS [list \
+	{ -O0 } { -O1 } { -O2 } \
+	{ -O2 -fomit-frame-pointer -finline-functions } \
+	{ -O2 -fomit-frame-pointer -finline-functions -funroll-loops } \
+	{ -O2 -fcheck=bounds } \
+	{ -O2 -fcheck=nil } \
+	{ -O3 -g } \
+	{ -Os }]
+
+    if [check_effective_target_lto] {
+	set TORTURE_OPTIONS \
+	    [concat $TORTURE_OPTIONS [list {-flto}]]
+    }
+}
+
+# Location of built modules
+set BUILT_MODULES_DIR ""
+
+# Build a series of modules ACCESSed by this test.
+#
+# The first to dg-modules is a list of module names.  The source file
+# for a given module MODULE is assumed to be MODULE.a68, and that file
+# must reside in the current directory.
+#
+# The second option to dg-modules, which is optional, can be used to
+# specify additional options to be passed to ga68 when it compiles the
+# modules.
+
+proc dg-modules { args } {
+
+    global objdir
+    global srcdir
+    global subdir
+    global algol68_module_objects
+
+    if { [llength $args] != 2  && [llength $args] != 3 } {
+	error "[lindex $args 0]: invalid arguments"
+    }
+    set modules [lindex $args 1]
+
+    set module_options {}
+    if { [llength $args] == 3 } {
+	set module_options [lindex $args 2]
+    }
+
+    foreach module $modules {
+	set srcfile "${module}.a68"
+	set objfile "${module}.o"
+	# Compile the module
+	set comp_output [algol68_target_compile $srcdir/$subdir/$srcfile \
+			     $objdir/$objfile object $module_options]
+	lappend algol68_module_objects $objfile
+    }
+}
+
+#
+# algol68-torture-compile -- compile an algol68/execute/torture testcase.
+#
+# SRC is the full pathname of the testcase.
+# OPTION is the specific compiler flag we're testing (eg: -O2).
+#
+proc algol68-torture-compile { src option } {
+    global output
+    global srcdir tmpdir
+    global host_triplet
+
+    set output "$tmpdir/[file tail [file rootname $src]].o"
+
+    regsub "(?q)$srcdir/" $src "" testcase
+
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    verbose "Testing $testcase, $option" 1
+
+    # Run the compiler and get results in comp_output.
+    set options ""
+    lappend options "additional_flags=-w $option"
+
+    set comp_output [algol68_target_compile "$src" "$output" object $options]
+    
+    # See if we got something bad.
+    set fatal_signal "*algol68*: Internal compiler error: program*got fatal signal"
+ 
+    if [string match "$fatal_signal 6" $comp_output] then {
+	algol68_fail $testcase "Got Signal 6, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    if [string match "$fatal_signal 11" $comp_output] then {
+	algol68_fail $testcase "Got Signal 11, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    if [regexp -line -- "internal compiler error.*" $comp_output ice] then {
+	algol68_fail $testcase "$option ($ice)"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    # We shouldn't get these because of -w, but just in case.
+    if [string match "*algol68*:*warning:*" $comp_output] then {
+	warning "$testcase: (with warnings) $option"
+	send_log "$comp_output\n"
+	unresolved "$testcase, $option"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    # Prune warnings we know are unwanted.
+    set comp_output [prune_warnings $comp_output]
+
+    # Report if the testcase is not supported.
+    set unsupported_message [algol68_check_unsupported_p $comp_output]
+    if { $unsupported_message != "" } {
+	unsupported "$testcase: $unsupported_message"
+	catch { remote_file build delete $output }
+	return
+    }
+
+    # remove any leftover LF/CR to make sure any output is legit
+    regsub -all -- "\[\r\n\]*" $comp_output "" comp_output
+
+    # If any message remains, we fail.
+    if ![string match "" $comp_output] then {
+	algol68_fail $testcase $option
+	catch { remote_file build delete $output }
+	return
+    }
+
+    algol68_pass $testcase $option
+    catch { remote_file build delete $output }
+}
+
+
+#
+# algol68-torture-execute -- compile and execute a testcase.
+#
+# SRC is the full pathname of the testcase.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc algol68-torture-execute { src } {
+    global output
+    global srcdir tmpdir
+    global tool
+    global compiler_conditional_xfail_data
+    global TORTURE_OPTIONS
+    global BUILT_MODULES_DIR
+    global errorCode errorInfo
+    global algol68_module_objects
+    global algol68_compile_args
+    global algol68_execute_args
+    global dg-extra-tool-flags
+
+    set dg-excess-errors-flag 0
+    set dg-messages ""
+    set dg-extra-tool-flags ""
+    set dg-final-code ""
+
+    # `dg-output-text' is a list of two elements: pass/fail and text.
+    # Leave second element off for now (indicates "don't perform test")
+    set dg-output-text "P"
+
+    # The list of module objects to include in the compilation line
+    # is built by dg-get-options while processing the { dg-modules }
+    # marks.  See the dg-modules procedure above.
+    set algol68_module_objects ""
+
+    set tmp [dg-get-options $src]
+    foreach op $tmp {
+        verbose "Processing option: $op" 3
+        set status [catch $op errmsg]
+        if { $status != 0 } {
+            if { 0 && [info exists errorInfo] } {
+                # This also prints a backtrace which will just confuse
+                # testcase writers, so it's disabled.
+                perror "$src: $errorInfo\n"
+            } else {
+                perror "$src: $errmsg for \"$op\"\n"
+            }
+            perror "$src: $errmsg for \"$op\"" 0
+            return
+        }
+    }
+
+    # Check for alternate driver.
+    set additional_flags ""
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+
+    # Setup the options for the testcase run.
+    set option_list $TORTURE_OPTIONS
+    set executable $tmpdir/[file tail [file rootname $src].x]
+    regsub "(?q)$srcdir/" $src "" testcase
+
+    if { ! [info exists algol68_compile_args] } {
+	set algol68_compile_args ""
+    }
+    if { ! [info exists algol68_execute_args] } {
+	set algol68_execute_args ""
+    }
+
+    # If we couldn't rip $srcdir out of `src' then just do the best we can.
+    # The point is to reduce the unnecessary noise in the logs.  Don't strip
+    # out too much because different testcases with the same name can confuse
+    # `test-tool'.
+    if [string match "/*" $testcase] {
+	set testcase "[file tail [file dirname $src]]/[file tail $src]"
+    }
+
+    # Walk the list of options and compile and run the testcase for all
+    # options that are not explicitly disabled by the .x script (if present).
+    foreach option $option_list {
+
+	# Torture_{compile,execute}_xfail are set by the .x script.
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# Torture_execute_before_{compile,execute} can be set by the .x script.
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	# FIXME: We should make sure that the modules required by this testcase
+	# exist.  If not, the testcase should XFAIL.
+
+	# Compile the testcase.
+	catch { remote_file build delete $executable }
+	verbose "Testing $testcase, $option" 1
+
+	set options ""
+	lappend options "additional_flags=-w $option"
+	if { ${dg-extra-tool-flags} != "" } {
+	    lappend options "additional_flags=${dg-extra-tool-flags}"
+	}
+	if { $additional_flags != "" } {
+	    lappend options "additional_flags=$additional_flags"
+	}
+	if { $algol68_compile_args != "" } {
+	    lappend options "additional_flags=$algol68_compile_args"
+	}
+	if { $BUILT_MODULES_DIR != "" } {
+	    lappend options "additional_flags=-I$BUILT_MODULES_DIR"
+	}
+	if { $algol68_module_objects != "" } {
+	    lappend options "additional_flags=$algol68_module_objects"
+	}
+	set comp_output [algol68_target_compile "$src" "$executable" executable $options]
+
+	# See if we got something bad.
+	set fatal_signal "*algol68*: Internal compiler error: program*got fatal signal"
+	
+	if [string match "$fatal_signal 6" $comp_output] then {
+	    algol68_fail $testcase "Got Signal 6, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+	
+	if [string match "$fatal_signal 11" $comp_output] then {
+	    algol68_fail $testcase "Got Signal 11, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+
+	if [regexp -line -- "internal compiler error.*" $comp_output ice] then {
+	    algol68_fail $testcase "$option ($ice)"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+	
+	# We shouldn't get these because of -w, but just in case.
+	if [string match "*algol68*:*warning:*" $comp_output] then {
+	    warning "$testcase: (with warnings) $option"
+	    send_log "$comp_output\n"
+	    unresolved "$testcase, $option"
+	    catch { remote_file build delete $executable }
+	    continue
+	}
+	
+	# Prune warnings we know are unwanted.
+	set comp_output [prune_warnings $comp_output]
+
+	# Report if the testcase is not supported.
+	set unsupported_message [algol68_check_unsupported_p $comp_output]
+	if { $unsupported_message != "" } {
+	    unsupported "$testcase: $unsupported_message"
+	    continue
+	} elseif ![file exists $executable] {
+	    if ![is3way] {
+		fail "$testcase compilation, $option"
+		untested "$testcase execution, $option"
+		continue
+	    } else {
+		# FIXME: since we can't test for the existence of a remote
+		# file without short of doing an remote file list, we assume
+		# that since we got no output, it must have compiled.
+		pass "$testcase compilation, $option"		
+	    }
+	} else {
+	    pass "$testcase compilation, $option"
+	}
+
+	if [info exists torture_execute_xfail] {
+	    setup_xfail $torture_execute_xfail
+	}
+
+	if [info exists torture_eval_before_execute] {
+            set ignore_me [eval $torture_eval_before_execute]
+	}
+
+	# Run the testcase, and analyse the output.
+	set result [algol68_load "$executable" "$algol68_execute_args" ""]
+	set status [lindex $result 0]
+	set output [lindex $result 1]
+	if { $status eq "pass" } {
+	    pass "$testcase execution test, $option"
+	    verbose "Exec succeeded." 3
+	    if { [llength ${dg-output-text}] > 1 } {
+		if { [lindex ${dg-output-text} 0] eq "F" } {
+		    setup_xfail "*-*-*"
+		}
+		set texttmp [lindex ${dg-output-text} 1]
+		if { ![regexp -- $texttmp $output] } {
+		    fail "$testcase output pattern test, $option"
+		    send_log "Output was:\n${output}\nShould match:\n$texttmp\n"
+		    verbose "Failed test for output pattern $texttmp" 3
+		} else {
+		    pass "$testcase output pattern test, $option"
+		    verbose "Passed test for output pattern $texttmp" 3
+		}
+		unset texttmp
+	    }
+	} elseif { $status eq "fail" } {
+	    if {[info exists errorCode]} {
+		verbose "Exec failed, errorCode: $errorCode" 3
+	    } else {
+		verbose "Exec failed, errorCode not defined!" 3
+	    }
+	    fail "$testcase execution test, $option"
+	} else {
+	    $status "$testcase execution, $option"
+	}
+	catch { remote_file build delete $executable }
+    }
+}
+
+
+#
+# search_for_re -- looks for a string match in a file
+#
+proc search_for_re { file pattern } {
+    set fd [open $file r]
+    while { [gets $fd cur_line]>=0 } {
+	set lower [string tolower $cur_line]
+	if [regexp "$pattern" $lower] then {
+	    close $fd
+	    return 1
+	}
+    }
+    close $fd
+    return 0
+}
+
+
+#
+# algol68-torture -- the algol68-torture testcase source file processor
+#
+# This runs compilation only tests (no execute tests).
+#
+# SRC is the full pathname of the testcase, or just a file name in which
+# case we prepend $srcdir/$subdir.
+#
+# If the testcase has an associated .x file, we source that to run the
+# test instead.  We use .x so that we don't lengthen the existing filename
+# to more than 14 chars.
+#
+proc algol68-torture { args } {
+    global srcdir subdir
+    global compiler_conditional_xfail_data
+    global TORTURE_OPTIONS
+
+    set src [lindex $args 0]
+    if { [llength $args] > 1 } {
+	set options [lindex $args 1]
+    } else {
+	set options ""
+    }
+
+    # Prepend $srdir/$subdir if missing.
+    if ![string match "*/*" $src] {
+	set src "$srcdir/$subdir/$src"
+    }
+
+    # Check for alternate driver.
+    if [file exists [file rootname $src].x] {
+	verbose "Using alternate driver [file rootname [file tail $src]].x" 2
+	set done_p 0
+	catch "set done_p \[source [file rootname $src].x\]"
+	if { $done_p } {
+	    return
+	}
+    }
+   
+    # loop through all the options
+    set option_list $TORTURE_OPTIONS
+    foreach option $option_list {
+
+	# torture_compile_xfail is set by the .x script (if present)
+	if [info exists torture_compile_xfail] {
+	    setup_xfail $torture_compile_xfail
+	}
+
+	# torture_execute_before_compile is set by the .x script (if present)
+	if [info exists torture_eval_before_compile] {
+            set ignore_me [eval $torture_eval_before_compile]
+	}
+
+	algol68-torture-compile $src "$option $options"
+    }
+}
+
+#
+# add-ieee-options -- add options necessary for 100% ieee conformance.
+#
+proc add-ieee-options { } {
+    # Ensure that excess precision does not cause problems.
+    if { [istarget i?86-*-*]
+	 || [istarget m68k-*-*] } then {
+      uplevel 1 lappend additional_flags "-ffloat-store"
+    }
+
+    # Enable full IEEE compliance mode.
+    if { [istarget alpha*-*-*]
+         || [istarget sh*-*-*] } then {
+      uplevel 1 lappend additional_flags "-mieee"
+    }
+}
