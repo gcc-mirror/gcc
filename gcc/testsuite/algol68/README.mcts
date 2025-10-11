@@ -1,0 +1,18 @@
+The mcts testsuite is not distributed along with GCC due to unclear
+distribution terms of its contents, which have to be clarified with
+the CWI.
+
+In the meanwhile, you can find the testset at:
+
+  https://git.sr.ht/~jemarch/a68-mcts
+
+In order to install them in the GCC sources, just copy the file and
+two directories to the testsuite/algol68 directory, like:
+
+  $ git clone https://git.sr.ht/~jemarch/a68-mcts
+  $ cd a68-mcts
+  $ cp README.mcts  /path/to/gcc/gcc/testsuite/algol68/
+  $ cp -r compile/* /path/to/gcc/gcc/testsuite/algol68/compile/
+  $ cp -r execute/* /path/to/gcc/gcc/testsuite/algol68/execute/
+
+Then make check-algol68 will include the evil MCTS as well.
