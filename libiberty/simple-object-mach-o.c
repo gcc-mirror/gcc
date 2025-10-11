@@ -617,7 +617,6 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
       char *name;
       off_t secoffset;
       size_t secsize;
-      int l;
 
       sechdr = secdata + i * sechdrsize;
 
@@ -669,12 +668,15 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
 	    }
 	}
 
+      memset (namebuf, 0, sizeof (namebuf));
+      /* Copy the section name so we can append a null to make it into a
+	 c-string (Mach-o section names are not terminated).  */
+      memcpy (namebuf, sechdr + sectname_offset, MACH_O_NAME_LEN);
+      namebuf[MACH_O_NAME_LEN] = '\0';
+      name = &namebuf[0];
+      /* Maybe override this if we have long section name extension.  */
       if ((gnu_sections_found & SOMO_LONGN_PRESENT) != 0)
 	{
-	  memcpy (namebuf, sechdr + sectname_offset, MACH_O_NAME_LEN);
-	  namebuf[MACH_O_NAME_LEN] = '\0';
-
-	  name = &namebuf[0];
 	  if (strtab != NULL && name[0] == '_' && name[1] == '_')
 	    {
 	      unsigned long stringoffset;
@@ -695,19 +697,6 @@ simple_object_mach_o_segment (simple_object_read *sobj, off_t offset,
 		  name = strtab + stringoffset;
 		}
 	  }
-	}
-      else
-	{
-	   /* Otherwise, make a name like __segment,__section as per the
-	      convention in mach-o asm.  */
-	  name = &namebuf[0];
-	  memcpy (namebuf, (char *) sechdr + segname_offset, MACH_O_NAME_LEN);
-	  namebuf[MACH_O_NAME_LEN] = '\0';
-	  l = strlen (namebuf);
-	  namebuf[l] = ',';
-	  memcpy (namebuf + l + 1, (char *) sechdr + sectname_offset,
-		  MACH_O_NAME_LEN);
-	  namebuf[l + 1 + MACH_O_NAME_LEN] = '\0';
 	}
 
       simple_object_mach_o_section_info (omr->is_big_endian, is_32, sechdr,
