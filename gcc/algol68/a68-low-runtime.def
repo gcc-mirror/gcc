@@ -1,0 +1,92 @@
+/* a68-low-runtime.def -- Definitions for Algol 68 runtime functions.
+   Copyright (C) 2025 Jose E. Marchesi.
+
+GCC is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GCC is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GCC; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  */
+
+/* Helper macros for parameter building.  */
+#define P0()	0
+#define P1(T1)	1, LCT_ ## T1
+#define P2(T1, T2) \
+		2, LCT_ ## T1, LCT_ ## T2
+#define P3(T1, T2, T3) \
+		3, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3
+#define P4(T1, T2, T3, T4) \
+		4, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4
+#define P5(T1, T2, T3, T4, T5)  \
+		5, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4, LCT_ ## T5
+#define P6(T1, T2, T3, T4, T5, T6)  \
+		6, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4, LCT_ ## T5, LCT_ ## T6
+#define P7(T1, T2, T3, T4, T5, T6, T7)					\
+                7, LCT_ ## T1, LCT_ ## T2, LCT_ ## T3, LCT_ ## T4, LCT_ ## T5, LCT_ ## T6, LCT_ ## T7
+#define RT(T1)	LCT_ ## T1
+
+/* Algol 68 runtime library functions.  */
+
+/* DEF_A68_RUNTIME (CODE, NAME, TYPE, PARAMS, FLAGS)
+   CODE	    The enum code used to refer to this function.
+   NAME	    The name of this function as a string.
+   FLAGS    ECF flags to describe attributes of the function.
+
+   Used for declaring functions that are called by generated code.  */
+
+DEF_A68_RUNTIME (ASSERT, "_libga68_assert", RT(VOID), P2(CONSTCHARPTR, UINT), ECF_NORETURN)
+DEF_A68_RUNTIME (SET_EXIT_STATUS, "_libga68_set_exit_status", RT(VOID), P1(INT), 0)
+DEF_A68_RUNTIME (MALLOC, "_libga68_malloc", RT(VOIDPTR), P1(SIZE), ECF_NOTHROW | ECF_LEAF | ECF_MALLOC)
+DEF_A68_RUNTIME (DEREFNIL, "_libga68_derefnil", RT(VOID), P2(CONSTCHARPTR, UINT), ECF_NORETURN)
+DEF_A68_RUNTIME (UNREACHABLE, "_libga68_unreachable", RT(VOID), P2(CONSTCHARPTR, UINT), ECF_NORETURN)
+DEF_A68_RUNTIME (INVALIDCHARERROR, "_libga68_invalidcharerror", RT(VOID), P3(CONSTCHARPTR,UINT,INT), ECF_NORETURN)
+DEF_A68_RUNTIME (BITSBOUNDSERROR, "_libga68_bitsboundserror", RT(VOID), P3(CONSTCHARPTR,UINT,SSIZE), ECF_NORETURN)
+DEF_A68_RUNTIME (ARRAYLOWERBOUND, "_libga68_lower_bound", RT(VOID),
+		 P4(CONSTCHARPTR, UINT, SSIZE, SSIZE), ECF_NORETURN)
+DEF_A68_RUNTIME (ARRAYUPPERBOUND, "_libga68_upper_bound", RT(VOID),
+		 P4(CONSTCHARPTR, UINT, SSIZE, SSIZE), ECF_NORETURN)
+DEF_A68_RUNTIME (ARRAYBOUNDS, "_libga68_bounds", RT(VOID),
+		 P5(CONSTCHARPTR, UINT, SSIZE, SSIZE, SSIZE), ECF_NORETURN)
+DEF_A68_RUNTIME (ARRAYBOUNDSMISMATCH, "_libga68_bounds_mismatch", RT(VOID),
+		 P7(CONSTCHARPTR, UINT, SIZE, SSIZE, SSIZE, SSIZE, SSIZE), ECF_NORETURN)
+DEF_A68_RUNTIME (ARRAYDIM, "_libga68_dim", RT(VOID),
+                 P4(CONSTCHARPTR, UINT, SIZE, SIZE), ECF_NORETURN)
+DEF_A68_RUNTIME (RANDOM, "_libga68_random", RT(FLOAT), P0(), 0)
+DEF_A68_RUNTIME (LONGRANDOM, "_libga68_longrandom", RT(DOUBLE), P0(), 0)
+DEF_A68_RUNTIME (LONGLONGRANDOM, "_libga68_longlongrandom", RT(LONGDOUBLE), P0(), 0)
+DEF_A68_RUNTIME (POSIX_FCONNECT, "_libga68_posixfconnect", RT(INT), P4(UNISTRPTR,SIZE,SIZE,INT), 0)
+DEF_A68_RUNTIME (POSIX_FOPEN, "_libga68_posixfopen", RT(INT), P4(UNISTRPTR,SIZE,SIZE,UINT), 0)
+DEF_A68_RUNTIME (POSIX_FCREATE, "_libga68_posixcreat", RT(INT), P4(UNISTRPTR,SIZE,SIZE,UINT), 0)
+DEF_A68_RUNTIME (POSIX_FCLOSE, "_libga68_posixclose", RT(INT), P0(), 0)
+DEF_A68_RUNTIME (POSIX_FSIZE, "_libga68_posixfsize", RT(LONGLONGINT), P1(INT), 0)
+DEF_A68_RUNTIME (POSIX_ARGC, "_libga68_posixargc", RT(INT), P0(), 0)
+DEF_A68_RUNTIME (POSIX_ARGV, "_libga68_posixargv", RT(UNISTRPTR), P2(INT, SIZEPTR), 0)
+DEF_A68_RUNTIME (POSIX_PUTCHAR, "_libga68_posixputchar", RT(CHAR), P1(CHAR), 0)
+DEF_A68_RUNTIME (POSIX_FPUTC, "_libga68_posixfputc", RT(CHAR), P2(INT,CHAR), 0)
+DEF_A68_RUNTIME (POSIX_PUTS, "_libga68_posixputs", RT(VOID), P3(UNISTR,SIZE,SIZE), 0)
+DEF_A68_RUNTIME (POSIX_FPUTS, "_libga68_posixfputs", RT(INT), P4(INT,UNISTRPTR,SIZE,SIZE), 0)
+DEF_A68_RUNTIME (POSIX_GETCHAR, "_libga68_posixgetchar", RT(CHAR), P0(), 0)
+DEF_A68_RUNTIME (POSIX_FGETC, "_libga68_posixfgetc", RT(CHAR), P1(INT), 0)
+DEF_A68_RUNTIME (POSIX_GETS, "_libga68_posixgets", RT(UNISTRPTR), P2(INT,SIZEPTR), 0)
+DEF_A68_RUNTIME (POSIX_FGETS, "_libga68_posixfgets", RT(UNISTRPTR), P3(INT,INT,SIZEPTR), 0)
+DEF_A68_RUNTIME (POSIX_GETENV, "_libga68_posixgetenv", RT(VOID), P5(UNISTR,SIZE,SIZE,UNISTRPTR,SIZEPTR), 0)
+DEF_A68_RUNTIME (POSIX_ERRNO, "_libga68_posixerrno", RT(INT), P0(), 0)
+DEF_A68_RUNTIME (POSIX_PERROR, "_libga68_posixperror", RT(VOID), P3(UNISTR,SIZE,SIZE), 0)
+DEF_A68_RUNTIME (POSIX_STRERROR, "_libga68_posixstrerror", RT(UNISTRPTR), P2(INT, SIZEPTR), 0)
+DEF_A68_RUNTIME (POSIX_LSEEK, "_libga68_posixlseek", RT(LONGLONGINT), P3(INT,LONGLONGINT,INT), 0)
+DEF_A68_RUNTIME (U32_CMP2, "_libga68_u32_cmp2", RT(INT), P6(UNISTR, SIZE, SIZE, UNISTR, SIZE, SIZE), 0)
+
+#undef P0
+#undef P1
+#undef P2
+#undef P3
+#undef P4
+#undef P5
+#undef RT
