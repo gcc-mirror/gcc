@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Simple mode declarations.  #
+BEGIN MODE INTEGER = INT;
+      MODE Z = INT, R = REAL, B = BOOL, V = VOID;
+      MODE ARRAYA = [100]INT, ARRAYB = [10,2:9]REAL;
+      SKIP
+END

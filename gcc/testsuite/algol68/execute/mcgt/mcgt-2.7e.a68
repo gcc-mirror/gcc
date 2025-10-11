@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Dereferencing and widening.  #
+BEGIN INT n, REAL x = n;
+      SKIP
+END

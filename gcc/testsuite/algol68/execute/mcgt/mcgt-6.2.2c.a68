@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Using BIN  #
+BEGIN ASSERT (BIN 7 = 2r111);
+      INT i = 22;
+      ASSERT ((BITS b = BIN i; ABS (b SHL 3) + ABS (b SHL 1)) = 220)
+END

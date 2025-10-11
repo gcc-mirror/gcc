@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Widening.  #
+BEGIN REAL x := 4, y := 7, z := 2.7;
+      SKIP
+END

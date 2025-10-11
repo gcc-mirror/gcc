@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Comparing objects of mode BITS  #
+BEGIN ASSERT (2r1010 <= 2r1110);
+      ASSERT (4r331 >= 8r74);
+      ASSERT (NOT (2r100 >= 2r011))
+END

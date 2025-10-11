@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRUCT (INT day, month, year) indep day = (4, 7, 1776);
+      ASSERT (day OF indep day = 4);
+      ASSERT (month OF indep day = 7);
+      ASSERT (year OF indep day = 1776);
+      SKIP
+END

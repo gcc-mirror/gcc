@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Real denotations.  #
+BEGIN .5; 0.5; 2.0; .001;
+      2.3e1; 2e0; 2e+0; 2e-0
+END

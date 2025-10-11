@@ -1,0 +1,16 @@
+# { dg-options "-fstropping=upper" }  #
+# Using jumps.  #
+BEGIN INT a, INT b = 0, c = 2, d = 10, BOOL e = TRUE;
+      CO The following program using jumps is equivalent to:
+         FOR a FROM b BY c TO d WHILE e DO SKIP OD
+      CO
+      BEGIN INT j := b, INT k = c, m = d;
+      next: IF (k > 0 AND j <= m) OR (k < 0 AND j >= m) OR k = 0
+            THEN INT i = j;
+                 IF e
+                 THEN SKIP; j +:= k; GOTO next
+                 FI
+            FI;
+            ASSERT (j = 12)
+      END
+END

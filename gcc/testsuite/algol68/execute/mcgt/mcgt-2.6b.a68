@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Comparison operators and boolean operators.  #
+BEGIN INT a = 4, b = 5, c = 9, REAL x = 4.7, y = 5.7, z = 6.7;
+      ASSERT (NOT (x + y < z) AND a + b = c)
+END

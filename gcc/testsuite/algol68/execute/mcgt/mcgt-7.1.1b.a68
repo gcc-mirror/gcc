@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+# Null row displays an string denotations.  #
+BEGIN FLEX[4]INT a, FLEX[4,6]INT b, FLEX[10]CHAR c;
+      a := ();
+      ASSERT (LWB a = 1 AND UPB a = 0);
+      b := ((),());
+      ASSERT (1 LWB b = 1 AND 1 UPB b = 2
+              AND 2 LWB b = 1 AND 2 UPB b = 0);
+      c := ();
+      c := ""
+END

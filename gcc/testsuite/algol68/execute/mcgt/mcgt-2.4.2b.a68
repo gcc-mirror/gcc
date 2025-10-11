@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+# Integer division.  The operator OVER (%) performs integer
+  division with truncation.  #
+BEGIN ASSERT (4 % 2 = 2);
+      ASSERT (4 OVER 2 = 2);
+      ASSERT (5 % 3 = 1);
+      ASSERT (5 OVER 3 = 1);
+      INT n = -5, m = -3;
+      ASSERT (n % 3 = -1);
+      ASSERT (n % m = 1)
+END

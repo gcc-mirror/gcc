@@ -1,0 +1,15 @@
+# { dg-options "-fstropping=upper" }  #
+# Procedure declarations I.  #
+BEGIN INT x = 10, y = 20, i = 2;
+      PROC xxx = (INT arg) INT: 10;
+      PROC yyy = (INT arg) INT: 20;
+      PROC zzz = (INT arg) INT: 30;
+      PROC(INT)INT f = IF x > y THEN xxx ELSE zzz FI,
+                   g = CASE i IN xxx, yyy, zzz ESAC;
+      PROC(INT)INT h := IF x < y THEN xxx ELSE yyy FI;
+      ASSERT (f (100) = 30);
+      ASSERT (g (200) = 20);
+      ASSERT (h (300) = 10);
+      h := yyy;
+      ASSERT (h (300) = 20)
+END

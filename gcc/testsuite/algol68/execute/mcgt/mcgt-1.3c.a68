@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT n := 10, result;
+      result := n * (n + 1) * (2 * n + 1)
+END

@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Coercions and assignations.  #
+BEGIN REAL y, INT n, m := 1;
+      y := n % m
+END

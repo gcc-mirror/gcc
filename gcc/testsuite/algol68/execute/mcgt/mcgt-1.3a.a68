@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL e = 2.7182818284; REAL circum;
+      circum := 2 * pi * e
+END

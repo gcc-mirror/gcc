@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# Transient references and declarations.  #
+BEGIN FLEX[4,6]INT p;
+      []INT q1 = p[3,]; # Transient name is dereferenced giving []INT  #
+      REF FLEX[,]INT q5 = p; # p and q5 are different ways of accessing
+                               the same name.  #
+      SKIP
+END

@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Monadic lwb and upb.  #
+BEGIN INT n := 4; [n]INT a;
+      ASSERT (UPB a = 4);
+      n := 6;
+      ASSERT (UPB a = 4)
+END

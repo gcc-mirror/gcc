@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []STRUCT(CHAR letter, INT integer) roman
+        = (("I",1),("V",5),("X",10),("L",50),("C",100));
+      # XXX letter OF roman should be ("I","V","X","L","C")  #
+      # XXX integer OF roman whould be (1,5,10,50,100)  #
+      SKIP
+END

@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Comparison operators.  #
+BEGIN REAL x = 2.7, y = 3.6, z = 4.7;
+      ASSERT (x < y);
+      ASSERT ("B" /= "C")
+END

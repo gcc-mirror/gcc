@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Using AND and OR  #
+BEGIN ASSERT ((2r111 AND 2r101) = 2r101);
+      ASSERT ((16rff AND 2r111) = 16r7)
+END

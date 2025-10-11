@@ -1,0 +1,15 @@
+# { dg-options "-fstropping=upper" }  #
+# Dynamic arrays revisited.  #
+BEGIN INT p := 2, q := 10;
+      MODE M = [p:q]INT;
+      M a;
+      ASSERT (LWB a = 2 AND UPB a = 10);
+      q := 4;
+      M b;
+      ASSERT (LWB a = 2 AND UPB a = 10);
+      ASSERT (LWB b = 2 AND UPB b = 4);
+      M c = (1,2,3,4); # M is interpreted as formal declarer.
+                         Bounds are ignored.
+                       #
+      ASSERT (LWB c = 1 AND UPB c = 4)
+END

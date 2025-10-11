@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Initialisation.  #
+BEGIN CHAR firstchar := "A", lastchar := "Z", currentchar;
+      SKIP
+END

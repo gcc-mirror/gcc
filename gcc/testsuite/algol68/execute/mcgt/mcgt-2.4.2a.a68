@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Ordinary division.  #
+BEGIN ASSERT (4/2 = 2.0);
+      INT a = 4, b = 7;
+      a/b # Yields a value of mode REAL.  #
+END

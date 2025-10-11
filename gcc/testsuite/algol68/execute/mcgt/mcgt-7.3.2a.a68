@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+# Virtual declarers.  #
+BEGIN REF[]INT s;
+      STRUCT ([10]INT a, [4]REF[]INT b) c;
+      UNION (REF FLEX[]INT, PROC(INT)INT) f;
+      FLEX[4][3]INT a;
+      REF FLEX[][]INT aa = LOC FLEX[4][3]INT;
+      [4]FLEX[3]INT b;
+      REF[]FLEX[]INT bb = LOC[4]FLEX[3]INT;
+      SKIP
+END

@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Identity declarations.  #
+BEGIN REAL e = 2.7182818284, log2 = 0.618, INT ten = 10, g = 32;
+      SKIP
+END

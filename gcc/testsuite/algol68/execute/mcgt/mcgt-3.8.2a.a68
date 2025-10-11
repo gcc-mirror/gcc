@@ -1,0 +1,13 @@
+# { dg-options "-fstropping=upper" }  #
+# Using case clauses.  #
+BEGIN PROC is divisible = (INT m) BOOL:
+      BEGIN BOOL divisible := FALSE;
+            FOR i TO 4 WHILE NOT divisible
+            DO INT k = (i|3, 5, 7, 11);
+               divisible := m MOD k = 0
+            OD;
+            divisible
+      END;
+      ASSERT (is divisible (50));
+      ASSERT (is divisible (253))
+END

@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Further row displays.  #
+BEGIN [4]INT a, b;
+      [4]INT c := a, d := (1,2,3,0);
+      [2,4]INT ab := (a,b), cd := ((0,0,0,0), b);
+      SKIP
+END

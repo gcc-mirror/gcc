@@ -1,0 +1,29 @@
+# { dg-options "-fstropping=upper" }  #
+# Procedure declarations III  #
+BEGIN # From the ALGOL68 Revised Report.  #
+      PROC my char in string = (CHAR c, REF INT i, []CHAR s) BOOL:
+      BEGIN BOOL found := FALSE;
+            FOR k FROM LWB s TO UPB s WHILE NOT found
+            DO (c = s[k] | i := k; found := TRUE) OD;
+            found
+      END;
+      ASSERT ((INT idx := 0;
+               my char in string ("o", idx, "foo")
+               ANDTH idx = 2));
+      ASSERT (my char in string ("x", LOC INT, "foo") = FALSE);
+      # Swapping function.  #
+      PROC swap = (REF INT a, b) VOID:
+         (INT r = a; a := b; b := r);
+      ASSERT ((INT x := 1, y := 2;
+               swap (x, y);
+               x = 2 AND y = 1));
+      # Euclid's algorithm.  #
+      PROC hcf = (INT m, n) INT:
+      BEGIN INT a := m, b := n;
+            IF a < b THEN swap (a, b) FI;
+            WHILE b /= 0
+            DO INT c = b; b := a MOD b; a := c OD;
+            a
+      END;
+      ASSERT (hcf (10, 20) = 10)
+END

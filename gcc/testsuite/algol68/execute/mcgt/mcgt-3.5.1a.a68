@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+# Equivalence.  #
+BEGIN INT m := 3; REF INT p = m;
+      ASSERT (m = 3 AND p = 3);
+      BEGIN INT m := 100;
+            ASSERT (m = 100 AND p = 3);
+            m -:= 1; p +:= 1
+      END;
+      ASSERT (m = 4 AND p = 4)
+END

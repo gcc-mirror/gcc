@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# Dyadic lwb an upb.  #
+BEGIN [0:10,-4:100]REAL xx;
+      ASSERT (1 LWB xx = 0);
+      ASSERT (1 UPB xx = 10);
+      ASSERT (1 UPB xx = UPB xx);
+      ASSERT (2 LWB xx = -4);
+      ASSERT (2 UPB xx = 100)
+END

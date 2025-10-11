@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# On the availability and accessibility of space.  #
+BEGIN INT m := 3, INT five = 5;
+      ASSERT (m = 3);
+      BEGIN INT m := 100; CHAR five = "5";
+            m +:= 1
+      END;
+      ASSERT (m = 3 AND five = 5)
+END

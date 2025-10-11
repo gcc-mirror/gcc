@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Equivalent declarations.  #
+BEGIN REAL x = 2.34;
+      REF INT n = LOC INT, REF INT m = LOC INT;
+      SKIP
+END

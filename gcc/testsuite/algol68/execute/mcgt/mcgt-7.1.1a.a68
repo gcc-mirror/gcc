@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# Declarations of flexible names.  #
+BEGIN FLEX[1:0]INT n;
+      ASSERT (LWB n = 1 AND UPB n = 0 AND ELEMS n = 0);
+      FLEX[4,6]INT p;
+      ASSERT (1 LWB p = 1 AND 1 UPB p = 4 AND 1 ELEMS p = 4
+              AND 2 LWB p = 1 AND 2 UPB p = 6 AND 2 ELEMS p = 6)
+END

@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# Integer modulus.  The operator MOD (%*) performs integer modulus
+  with truncation.  #
+BEGIN ASSERT (0 MOD 4 = 0);
+      ASSERT (0 %* 4 = 0);
+      ASSERT (5 %* 3 = 2);
+      INT m = 5, n = -3;
+      ASSERT (m MOD n = 2)
+END

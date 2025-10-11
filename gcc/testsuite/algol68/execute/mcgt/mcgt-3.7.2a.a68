@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT p := 10, q := 12;
+      FROM p TO q DO (p +:= 1, q +:= 1) OD;
+      ASSERT (p = 13 AND q = 15)
+END

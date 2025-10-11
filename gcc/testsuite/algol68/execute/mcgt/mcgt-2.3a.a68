@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Identifiers.  #
+BEGIN INT circum, r, ibm, a1, log2, begin;
+      SKIP
+END

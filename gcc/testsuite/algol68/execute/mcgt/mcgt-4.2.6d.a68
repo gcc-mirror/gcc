@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+# Multiple values and structures.
+
+  Having strings of different lenghts would not be valid in a variable
+  declaration, but is acceptable in an identity declaration.
+#
+BEGIN []STRUCT ([]CHAR name, INT age) family =
+         (("JOHN", 3), ("ROBERT", 1), ("CATHERINE", 4));
+      SKIP
+END
+

@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN
+   [3]INT a := (1,2,3);
+
+   CO Comparing transient or flex names using an identity relation is
+      undefined.  Therefore, a[2:3] :=: a[2:3] is undefined.
+   CO
+
+   # But the following are defined.  #
+   ASSERT (a[1] :=: a[1]);
+   ASSERT (a[1] :/=: a[2])
+END

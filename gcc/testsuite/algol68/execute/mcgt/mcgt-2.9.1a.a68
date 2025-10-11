@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Arithmetical assignment operators.  #
+BEGIN INT m, n := 4;
+      n PLUSAB 1;
+      ASSERT (n = 5)
+END

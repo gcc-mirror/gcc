@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [4]REAL x2 := (6, 7, 8, 9);
+      ASSERT (x2[2] > 6.9);
+      ASSERT (x2[2] < 7.1);
+      x2 := (1, 1, 1, 1);
+      ASSERT(x2[2] > 0.9);
+      ASSERT(x2[2] < 1.1)
+END

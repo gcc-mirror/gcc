@@ -1,0 +1,23 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT n := 3, m := 3;
+      REF INT w := n, z := n, REF INT y = n;
+      # Delivers TRUE since y and n deliver the same variable of mode REF
+        INT.  No coercions take place.
+      #
+      ASSERT (y :=: n);
+      # Delivers TRUE.  here w is dereferenced to yield n.  The right
+        hand side is taken to be strong since dereferencing cannot
+        occur in a soft position.
+      #
+      ASSERT (n :=: w);
+      # Similarly delivers TRUE.  Strong position is lhs.  #
+      ASSERT (w :=: n);
+      # Delivers TRUE.  No coercions take place.  #
+      ASSERT (y ISNT m);
+      # Delivers true.  w gets coerced to REF INT due to the strong
+        context introduced by the cast.  No further coercions take place.
+      #
+      ASSERT (REF INT (w) :=: z);
+      # Delives true.  No coercions take place.  #
+      ASSERT (w :/=: z)
+END

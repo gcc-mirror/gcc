@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN REAL r := 10.0, circum, area;
+      circum := 2 * pi * r; area := pi * r * r
+END

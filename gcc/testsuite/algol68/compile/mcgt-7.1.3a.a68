@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+
+# Transient references and declarations.  #
+BEGIN FLEX[4,6]INT p;
+      # Illegal.  p cannot be deflexed since it is a REF FLEX.  #
+      REF[,]INT q3 = p; # { dg-error "" }  #
+      SKIP
+END

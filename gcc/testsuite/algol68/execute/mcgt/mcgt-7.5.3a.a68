@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# Declarations involving global generators.  #
+BEGIN REF REAL xx;
+      BEGIN REF REAL x = HEAP REAL := 4;
+            xx := x
+      END;
+      ASSERT (xx = 4)
+END

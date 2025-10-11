@@ -1,0 +1,19 @@
+# { dg-options "-fstropping=upper" }  #
+# Recursive procedures.  #
+BEGIN PROC f = (INT m, n) INT:
+         IF n = 0
+         THEN m
+         ELIF m < n
+         THEN f (n, m)
+         ELSE m * f (m % n, n - 1) + n * f (m - 1, n)
+         FI;
+      f (10, 20);
+      PROC a = (INT m, n) INT:
+         IF m = 0
+         THEN  + 1
+         ELIF n = 0
+         THEN a (m - 1, 1)
+         ELSE a (m - 1, a (m, n - 1))
+         FI;
+      a (10, 20)
+END
