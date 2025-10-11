@@ -409,6 +409,7 @@ enum dwarf_source_language
     DW_LANG_Ruby = 0x0040,
     DW_LANG_Move = 0x0041,
     DW_LANG_Hylo = 0x0042,
+    DW_LANG_Algol68 = 0x0044,
 
     DW_LANG_lo_user = 0x8000,	/* Implementation-defined range start.  */
     DW_LANG_hi_user = 0xffff,	/* Implementation-defined range end.  */
@@ -476,6 +477,7 @@ enum dwarf_source_language_name
     DW_LNAME_Odin = 0x002a,
     DW_LNAME_P4 = 0x002b,
     DW_LNAME_Metal = 0x002c,
+    DW_LNAME_Algol68 = 0x002e,
 
     DW_LNAME_lo_user = 0x8000,	/* Implementation-defined range start.  */
     DW_LNAME_hi_user = 0xffff	/* Implementation-defined range end.  */

@@ -25821,6 +25821,14 @@ gen_compile_unit_die (const char *filename)
 	  else if (strcmp (language_string, "GNU Rust") == 0)
 	    language = DW_LANG_Rust;
 	}
+      else if (!dwarf_strict)
+        {
+          if (strcmp (language_string, "GNU Algol 68") == 0)
+	    {
+	      language = DW_LANG_Algol68;
+	      lname = DW_LNAME_Algol68;
+	    }
+        }
     }
   /* Use a degraded Fortran setting in strict DWARF2 so is_fortran works.  */
   else if (startswith (language_string, "GNU Fortran"))
