@@ -1,0 +1,383 @@
+\input texinfo  @c -*-texinfo-*-
+@c %**start of header
+@setfilename ga68-internals.info
+
+@include gcc-common.texi
+
+@synindex tp cp
+
+@settitle GNU Algol 68 Compiler Internals
+
+@c %**end of header
+
+@c %** start of document
+
+@copying
+Copyright @copyright{} 2025 Jose E. Marchesi.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.  A
+copy of the license is included in the section entitled ``GNU Free
+Documentation License''.
+@end copying
+
+@ifinfo
+@dircategory Software development
+@direntry
+* ga68-internals: (ga68-internals).           The GNU Algol 68 Compiler Internals.
+@end direntry
+This file documents the internals of the GNU Algol 68
+compiler, (@command{ga68}).
+
+@insertcopying
+@end ifinfo
+
+@c Macro for bold-tags.  In TeX and HTML they expand to proper bold words,
+@c in other formats it resorts to upper stropping.
+@iftex
+@macro B{tag}
+@strong{\tag\}
+@end macro
+@end iftex
+
+@ifhtml
+@macro B{tag}
+@strong{\tag\}
+@end macro
+@end ifhtml
+
+@ifnottex
+@ifnothtml
+@macro B{tag}
+@sc{\tag\}
+@end macro
+@end ifnothtml
+@end ifnottex
+
+@setchapternewpage odd
+@titlepage
+@title GNU Algol 68 Internals
+@versionsubtitle
+@author Jose E. Marchesi
+@page
+@vskip 0pt plus 1filll
+@sp 1
+@insertcopying
+@end titlepage
+
+@summarycontents
+@contents
+
+@page
+
+@ifnottex
+@node Top
+@top Introduction
+@cindex Introduction
+
+This manual documents (some of) the internals of @command{ga68}, the
+GNU Algol 68 compiler.
+
+@menu
+* Scope Checking::         Scope checking in assignation.
+* Storage Management::     Management of run-time storage.
+* Lowering Declarations::  Mapping external objects to internal objects.
+* Lowering Assignations::  Superceding the value referred by a name.
+* GNU Free Documentation License::
+                           How you can copy and share this manual.
+* Index::                  Index of this documentation.
+@end menu
+@end ifnottex
+
+@c ---------------------------------------------------------------------
+@c Scope Checking
+@c ---------------------------------------------------------------------
+
+@node Scope Checking
+@chapter Scope Checking
+
+Static scope checking: pass.
+Dynamic scope checking: run-time call.
+
+@c ---------------------------------------------------------------------
+@c Storage Management
+@c ---------------------------------------------------------------------
+
+@node Storage Management
+@chapter Storage Management
+
+This chapter discusses the run-time management of internal objects in
+Algol 68.
+
+First, a conceptual model is presented that describes the restrictions
+as mandated by the Report.  The storage implied by the lowered GENERIC
+entities, as described in the previous chapter, shall match the
+storage of the conceptual model.
+
+@menu
+* Storage Structure of Objects::
+* Copying of Objects::
+* The Stack::
+* The Heap::
+@end menu
+
+@node Storage Structure of Objects
+@section Storage Structure of Objects
+
+The internal objects which are the values in an Algol 68 program may
+consist on a hierarchy of memory locations, which may not be
+contiguous.  This hierarchy of memory locations is the storage
+structure of the object, and is not concerned by the particular
+bit-patterns stored.
+
+Simple values.
+
+Names.
+
+Multiple values.
+
+Structured values.
+
+Values of united modes.
+
+@node Copying of Objects
+@section Copying of Objects
+
+@node The Stack
+@section The Stack
+
+XXX
+
+@node The Heap
+@section The Heap
+
+@itemize @minus
+@item
+A value that has rows and gets returned by a procedure shall be
+allocated on the stack.
+@item
+A copy of the right hand side is made before assigning it to the left
+hand side.  This copy is always allocated in the heap, because the
+scope of the left hand side may be older than the scope of the right
+hand side.  This happens when assigning to a global variable.
+@item
+A trimmer of a name.  This is because the trimmed multiple may be
+allocated on the heap, and the trim shall have the same scope than the
+trimmed multiple.
+@end itemize
+
+@c ---------------------------------------------------------------------
+@c Internal Objects
+@c ---------------------------------------------------------------------
+
+@node Lowering Declarations
+@chapter Lowering Declarations
+
+This chapter describes the mapping between external objects declared
+in identity and variable declarations and the internal objects that
+are the result of lowering the external objects in the parse tree into
+GENERIC entities.
+
+@menu
+* Identity Declarations::             @code{@B{amode} xxx = init value}
+* Variable Declarations::             @code{@B{amode} xxx [:= init value]}
+* Procedure Identity Declarations::   @code{@B{proc} xxx = routine text}
+* Procedure Variable Declarations::   @code{@B{proc} xxx := routine text}
+* Operator Brief Declarations::       @code{@B{op} @B{xxx} = routine text}
+* Operator Declarations::             @code{@B{op}(...)@B{amode} @B{xxx} = routine text}
+* Applied Identifiers::
+@end menu
+
+@node Identity Declarations
+@section Identity Declarations
+
+An identity declaration with the form:
+
+@example
+@B{c} part 1 @B{c}
+@B{amode} defining_identifier = unit;
+@B{c} part 2 @B{c}
+@end example
+
+@noindent
+Introduces the identifier @code{defining_identifier} in the current
+range and ascribes a copy of the value yielded by @code{unit} to it.
+Once established, the relationship between an identifier and the value
+ascribed to it is constant and it cannot change during the reach of
+the identifier.  The ascribed unit can be any unitary clause, and its
+elaboration can be arbitrarily complicated.  In particular, it is not
+required to be a compile-time constant.  @code{@B{amode}} determines
+the mode of the value yielded by the unit, and the unit is elaborated
+in a strong context.
+
+An identity declaration like the above, where @code{@B{amode}} is not
+a procedure mode (@xref{Procedure Identity Declarations}) is lowered
+into:
+
+@itemize @bullet
+@item
+A @code{VAR_DECL} with name @code{defining_identifier}, type
+@code{CTYPE (@B{amode})} and initial value @code{@B{amode}(@B{skip})}
+that gets chained into the declarations list of the current block.
+@item
+A @code{DECL_EXPR} that gets prepended in the current statement's list.
+@item
+A @code{MODIFY_EXPR} setting the @code{VAR_DECL} to a copy of the
+lowering of @code{unit}, @code{a68_low_dup (unit)}.
+@end itemize
+
+@noindent
+Schematically:
+
+@example
+   BIND_EXPR (BLOCK (DECLS: ... -> VAR_DECL (defining_identifier, INITIAL=SKIP)))
+     STMT_LIST
+     |
+     +-- DECL_EXPR (defining_identifier)
+     |
+     |   @B{c} part 1 @B{c}
+     |
+     +-- MODIFY_EXPR (defining_identifier, unit)
+     |
+     |   @B{c} part 2 @B{c}
+     |
+@end example
+
+The reason why the @code{VAR_DECL} is initialized to @code{@B{skip}}
+and then set to the initial @code{unit} specified in the source line
+is that the Report specifies that Algol 68 identifiers can be used
+before they are defined provided we are in the right range, but in
+that case the value ascribed to the identifier is ``undefined''.
+Accessing an ``undefined'' value in traditional Algol 68
+implementations would lead to a run-time error (these implementations
+used a special value to denote undefined, such as @code{F00L}) but in
+GNU Algol 68 the ``undefined'' value is always @code{@B{skip}} which,
+if not terribly useful in most cases, is at least well defined in this
+implementation and doesn't lead to an error.
+
+Identity declarations are the Algol 68 way of defining constants, and
+one may wonder why we are not using @code{CONST_DECL} instead of
+@code{VAR_DECL}.  The reason is that @code{CONST_DECL} is really only
+intended for integral values in C enums, and the @code{@B{amode}} in
+the identity declaration can really be any mode, from simple integers
+or characters to fairly complicated structured modes, which may
+involve also rows and united modes.  Whether the @code{VAR_DECL} will
+lead to allocating storage on the stack depends on the nature of the
+mode and the way the identifier is used in the program: whether its
+address is taken, etc.
+
+@node Variable Declarations
+@section Variable Declarations
+
+A variable declaration with the form:
+
+@example
+[@B{loc}|@B{heap}] @B{amode} defining identifier [:= unit];
+@end example
+
+@noindent
+Is in principle equivalent to the identity declaration:
+
+@example
+@B{ref} @B{amode} defining identifier = [@B{loc}|@B{heap}] @B{amode};
+@end example
+
+@noindent
+In both cases the object ascribed to the defining identifier is of
+mode @code{@B{ref} @B{amode}}.  The ascribed object is a name which is
+created by a generator implied in the actual declarer in the variable
+declaration case, and an explicit generator in the initialization
+expression in the identity declaration case.
+
+However, in this compiler these two cases are handled differently in
+order to reduce the amount of both indirect addressing and of storage:
+
+@itemize @bullet
+@item
+The variable declaration @code{[@B{loc}|@B{heap}] @B{amode} foo}
+lowers into a @code{VAR_DECL} with type @code{CTYPE (amode)} provided
+that the generator is @code{@B{loc}} and that the type contains no
+rows.  Accessing the variable will then involve direct addressing, and
+when its address is required an @code{ADDR_EXPR} shall be used.
+@item
+The identity declaration @code{@B{ref} @B{amode} foo = @B{loc}
+@B{amode}} lowers into a @code{VAR_DECL} with type @code{*CTYPE
+(amode)}.  Accessing the variable will then involve indirect
+addressing: it is effectively a pointer.
+@end itemize
+
+This optimization introduces the complication that an expression (the
+@code{VAR_DECL}) whose type is TYPE can appear in a place where *TYPE
+is expected, depending on the context and the r-value and l-value
+interpretation of the @code{VAR_DECL}.  The function
+@code{a68_consolidate_ref} is used in several parts of the lowering
+pass to guarantee a given name is an address regardless of how it was
+initialized.
+
+@node Procedure Identity Declarations
+@section Procedure Identity Declarations
+
+XXX
+
+@node Procedure Variable Declarations
+@section Procedure Variable Declarations
+
+XXX
+
+@node Operator Brief Declarations
+@section Operator Brief Declarations
+
+XXX
+
+@node Operator Declarations
+@section Operator Declarations
+
+XXX
+
+@node Applied Identifiers
+@section Applied Identifiers
+
+XXX
+
+@c ---------------------------------------------------------------------
+@c Lowering Assignations
+@c ---------------------------------------------------------------------
+
+@node Lowering Assignations
+@chapter Lowering Assignations
+
+Scope checking:
+
+@itemize @bullet
+@item
+If static scope checking is relevant and OK, then just perform assignation.
+@item
+If static scope checking is relevant and not OK, a compile-time error
+will have already being emitted.
+@item
+If static scope checking is not relevant, perform dynamic scope
+checking: each time a name, a routine or a format of the data
+structure is assigned, its dynamic scope (scope%_si) is compared with
+the one of the destination (scope%_d).  A run-time error message is
+provided in case scope%_d < scope%_si.
+@end itemize
+
+@c ---------------------------------------------------------------------
+@c GNU Free Documentation License
+@c ---------------------------------------------------------------------
+
+@include fdl.texi
+
+
+@c ---------------------------------------------------------------------
+@c Index
+@c ---------------------------------------------------------------------
+
+@node Index
+@unnumbered Index
+
+@printindex cp
+
+@bye

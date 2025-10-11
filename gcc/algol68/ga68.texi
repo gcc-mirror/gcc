@@ -1,0 +1,3169 @@
+\input texinfo @c -*-texinfo-*-
+@setfilename ga68.info
+@settitle The GNU Algol 68 Compiler
+
+@c Macro for bold-tags.  In TeX and HTML they expand to proper bold words,
+@c in other formats it resorts to upper stropping.
+@iftex
+@macro B{tag}
+@strong{\tag\}
+@end macro
+@end iftex
+
+@ifhtml
+@macro B{tag}
+@strong{\tag\}
+@end macro
+@end ifhtml
+
+@ifnottex
+@ifnothtml
+@macro B{tag}
+\tag\
+@end macro
+@end ifnothtml
+@end ifnottex
+
+@c Create a separate index for command line options
+@defcodeindex op
+@c Merge the standard indexes into a single one.
+@syncodeindex fn cp
+@syncodeindex vr cp
+@syncodeindex ky cp
+@syncodeindex pg cp
+@syncodeindex tp cp
+
+@include gcc-common.texi
+
+@c Copyright years for this manual.
+@set copyrights-ga68 2025
+
+@copying
+@c man begin COPYRIGHT
+Copyright @copyright{} @value{copyrights-ga68} Free Software Foundation, Inc.
+
+Permission is granted to copy, distribute and/or modify this document
+under the terms of the GNU Free Documentation License, Version 1.3 or
+any later version published by the Free Software Foundation; with no
+Invariant Sections, no Front-Cover Texts, and no Back-Cover Texts.
+A copy of the license is included in the
+@c man end
+section entitled ``GNU Free Documentation License''.
+@ignore
+@c man begin COPYRIGHT
+man page gfdl(7).
+@c man end
+@end ignore
+@end copying
+
+@ifinfo
+@format
+@dircategory Software development
+@direntry
+* ga68: (ga68).               A GCC-based compiler for Algol 68
+@end direntry
+@end format
+
+@insertcopying
+@end ifinfo
+
+@titlepage
+@title The GNU Algol 68 Compiler
+@versionsubtitle
+@author Jose E. Marchesi
+
+@page
+@vskip 0pt plus 1filll
+@sp 1
+@insertcopying
+@end titlepage
+@summarycontents
+@contents
+@page
+
+@node Top
+@top Introduction
+
+This manual describes how to use @command{ga68}, the GNU compiler for
+Algol 68.  This manual is specifically about how to invoke
+@command{ga68}, as well as its features.  For more information about
+the Algol 68 language in general, the reader is referred to the
+bibliography.
+
+Note that the particular way of representing Algol 68 code snippets in
+this manual will depend on the media.  If you are reading this manual
+in a printed support or a PDF file rendered for publication then the
+bold words in programs will be rendered in actual bold typography and
+tags may have spaces within them.  If you are reading this manual in a
+terminal or other media not supporting rich typography the code
+examples will follow the modern stropping regime with is the default
+in ga68.
+
+Note also that we are making use of @dfn{pseudo-comments} in code
+examples, as it is traditional in Algol 68 related documentation.
+These appear surrounded by @code{@B{C}} marks and act as placeholders
+of some Algol 68 code.  For example, @code{@B{C} frob the input
+variable @B{C}} is a pseudo-comment.
+
+@menu
+* Invoking ga68::               How to run the compiler.
+* Composing programs::          Packets, modules, holes, particular programs.
+* Comments and pragmats::       Comments and pragmas.
+* Hardware representation::     Representation of programs.
+* Standard prelude::            Standard modes, operators, etc.
+* Extended prelude::            GNU extensions to the standard prelude.
+* POSIX prelude::               Simple I/O and system interaction facilities.
+* Language extensions::         GNU extensions to the Algol 68 language.
+* Copying::                     The GNU General Public License.
+* GNU Free Documentation License::
+                                How you can share and copy this manual.
+* Option Index::                Index of command line options.
+* General Index::               General index.
+@end menu
+
+@node Invoking ga68
+@chapter Invoking ga68
+
+@c man title ga68 A GCC-based compiler for Algol 68
+
+@ignore
+@c man begin SYNOPSIS ga68
+ga68 [@option{-c}|@option{-S}] [@option{-g}] [@option{-pg}]
+     [@option{-O}@var{level}] [@option{-W}@var{warn}@dots{}]
+     [@option{-I}@var{dir}@dots{}] [@option{-L}@var{dir}@dots{}]
+     [@option{-f}@var{option}@dots{}] [@option{-m}@var{machine-option}@dots{}]
+     [@option{-o} @var{outfile}] [@@@var{file}] @var{infile}@dots{}
+
+Only the most useful options are listed here; see below for the
+remainder.
+@c man end
+@c man begin SEEALSO
+gpl(7), gfdl(7), fsf-funding(7), gcc(1)
+and the Info entries for @file{ga68} and @file{gcc}.
+@c man end
+@end ignore
+
+@c man begin DESCRIPTION ga68
+
+The @command{ga68} command is the GNU compiler for the Algol 68 language and
+supports many of the same options as @command{gcc}.  @xref{Option Summary, ,
+Option Summary, gcc, Using the GNU Compiler Collection (GCC)}.
+This manual only documents the options specific to @command{ga68}.
+
+@c man end
+
+@menu
+* Dialect options::         Options controlling the accepted language.
+* Directory options::       Options influencing where to find source files.
+* Warnings options::        Options controlling warnings specific to ga68
+* Runtime options::         Options controlling runtime behavior
+* Linking options::         Options influencing the linking step
+* Developer options::       Options useful for developers of ga68
+@end menu
+
+@node Dialect options
+@section Dialect options
+@cindex options, dialect
+
+The following options control how the compiler handles certain dialect
+variations of the language.
+
+@table @gcctabopt
+@opindex std=@var{std}
+@item -std=@var{std}
+Specify the standard to which the program is expected to conform,
+which may be one of @samp{algol68} or @samp{gnu68}.  The default value
+for @var{std} is @samp{gnu68}, which specifies a strict super language
+of Algol 68 allowing GNU extensions.  The @samp{algol68} value
+specifies that the program strictly conform to the Revised Report.
+@opindex fstropping=@var{stropping_regime}
+@item -fstropping=@var{stropping_regime}
+Specify the stropping regime to expect in the input programs.  The
+default value for @var{stropping_regime} is @samp{supper}, which
+specifies the modern SUPPER stropping which is a GNU extension.  The
+@samp{upper} value specifies the classic UPPER stropping of Algol 68
+programs.  @xref{Stropping regimes}.
+@opindex fbrackets
+@opindex fno-brackets
+@item -fbrackets
+This option controls whether @code{[ .. ]} and @code{@{ .. @}} are
+considered equivalent to @code{( .. )}.  This syntactic variation is
+blessed by the Revised Report and is still strict Algol 68.
+
+This option is disabled by default.
+@end table
+
+@node Directory options
+@section Options for Directory Search
+@cindex directory options
+@cindex options, directory search
+@cindex search path
+
+These options specify directories to search for files, libraries, and
+other parts of the compiler:
+
+@table @gcctabopt
+
+@opindex I
+@item -I@var{dir}
+Add the directory @var{dir} to the list of directories to be searched
+for files when processing the @ref{pragmat include}. Multiple
+@option{-I} options can be used, and the directories specified are
+scanned in left-to-right order, as with @command{gcc}.
+
+@end table
+
+@node Warnings options
+@section Warnings options
+@cindex options, warnings
+@cindex options, errors
+@cindex warnings, suppressing
+@cindex messages, error
+@cindex messages, warning
+@cindex suppressing warnings
+
+Warnings are diagnostic messages that report constructions that
+are not inherently erroneous but that are risky or suggest there
+is likely to be a bug in the program.  Unless @option{-Werror} is
+specified, they do not prevent compilation of the program.
+
+@table @gcctabopt
+@opindex Wvoiding
+@opindex Wno-voiding
+@item -Wvoiding
+Warn on non-void units being voided due to a strong context.
+@opindex Wscope
+@opindex Wno-scope
+@item -Wscope
+Warn when a potential name scope violation is found.
+@opindex Whidden-declarations
+@opindex Wno-hidden-declarations
+@item -Whidden-declarations=@var{level}
+Warn when a declaration hides another declaration in a larger reach.
+This includes operators that hide firmly related operators defined in
+larger reach.
+
+@table @gcctabopt
+@item -Whidden-declarations=none
+At this level no warning is issued for any hidden declaration on an
+outer scope.
+
+@item -Whidden-declarations=prelude
+At this level, warnings are issued for hidden declarations defined in
+the standard prelude.  This is the default warning level of
+@option{-Whidden-declarations}.
+
+@item -Whidden-declarations=all
+At this level, warnings are issued for any and all hidden
+declarations.
+@end table
+
+@opindex Wextensions
+@opindex Wno-extensions
+@item -Wextensions
+Warn when a non-portable Algol 68 construct is used, like GNU
+extensions to Algol 68.
+@end table
+
+@node Runtime options
+@section Runtime options
+@cindex options, runtime
+
+These options affect the runtime behavior of programs compiled with
+@command{ga68}.
+
+@table @gcctabopt
+@opindex fassert
+@opindex fno-assert
+@item -fno-assert
+Turn off code generation for @code{ASSERT} contracts.
+
+@opindex fcheck
+@item -fcheck=@var{<keyword>}
+Enable the generation of run-time checks; the argument shall be a
+comma-delimited list of the following keywords.  Prefixing a check
+with @option{no-} disables it if it was activated by a previous
+specification.
+
+@table @asis
+@item @samp{all}
+Enable all run-time test of @option{-fcheck}.
+
+@item @samp{none}
+Disable all run-time test of @option{-fcheck}.
+
+@item @samp{nil}
+Check for nil while dereferencing.
+
+@item @samp{bounds}
+Enable generation of run-time checks when indexing and trimming
+multiple values.
+@end table
+@end table
+
+@node Linking options
+@section Linking options
+@cindex options, linking
+@cindex linking, static
+
+These options come into play when the compiler links object files into
+an executable output file.  They are meaningless if the compiler is
+not doing a link step.
+
+@table @gcctabopt
+
+@opindex shared-libga68
+@item -shared-libga68
+On systems that provide @file{libga68} as a shared and a static
+library, this option forces the use of the shared version.  If no
+shared version was built when the compiler was configured, this option
+has no effect.
+
+@opindex static-libga68
+@item -static-libga68
+On systems that provide @file{libga68} as a shared and a static
+library, this option forces the use of the static version.  If no
+static version was built when the compiler was configured, this option
+has no effect.  This is the default.
+@end table
+
+@node Developer options
+@section Developer options
+@cindex developer options
+@cindex debug dump options
+@cindex dump options
+
+This section describes command-line options that are primarily of
+interest to developers.
+
+@table @gcctabopt
+@opindex fa68-dump-modes
+@item -fa68-dump-modes
+Output a list of all the modes parsed by the front-end.
+
+@opindex fa68-dump-ast
+@item -fa68-dump-ast
+Dump a textual representation of the parse tree.
+
+@opindex fa68-dump-module-interfaces
+@item -fa68-dump-module-interfaces
+Dump the interfaces of module definitions in the compiled packet.
+@end table
+
+@node Composing programs
+@chapter Composing programs
+@cindex program
+@cindex separated compilation
+
+This chapter documents how to compose full Algol 68 programs using the
+modules and separated compilation support provided by this compiler.
+
+@menu
+* Packets::                  Compilation units.
+* Modules::                  Facilities for bottom-up programming.
+* Holes::                    Facilities for top-down programming.
+* Particular programs::      The main program.
+* The standard environment:: Environment conforming a full program.
+@end menu
+
+@node Packets
+@section Packets
+@cindex packet
+@cindex compilation unit
+
+Each Algol 68 source file contains a @dfn{packet}.  Packets therefore
+play the role of @dfn{compilation units}, and each packet can be
+compiled separately to an object file.  A set of compiled object files
+can then be linked in the usual fashion into an executable, archive or
+shared object by the system linker, without the need of any
+language-specific link editor or build system.
+
+@noindent
+This compiler supports three different kind of packets:
+
+@itemize @minus
+@item
+@dfn{Particular programs} constitute the entry point of a program.
+They correspond to the @code{main} function of other languages like C.
+
+@xref{Particular programs}.
+
+@item
+@dfn{Prelude packets} contain the definition of one or more modules,
+which @dfn{publicize} definitions of modes, procedures, variables,
+operators and even the publicized definitions of other modules.  The
+modules defined at the top-level of a prelude packet can be accessed
+by other packets via an @code{@B{access}} construct.  Prelude packets
+are so-called because their contents get stuffed in the
+@dfn{user-prelude} in the case of user-defined modules, or the
+@dfn{library-prelude} in the case of module packets provided by the
+compiler.  They are usually used to compose libraries that can be used
+in a bottom-up fashion.
+
+@xref{Modules}.
+
+@item
+@dfn{Stuffing packets} contain the definition of an @dfn{actual hole},
+an @code{@B{egg}} construct, that can be stuffed in a matching
+@dfn{formal hole} in another package via a @code{@B{nest}} construct.
+Formal holes are used in order to achieve separated compilation in a
+top-bottom fashion, and also to invoke procedures written in other
+languages, such as C functions or Fortran subroutines.
+
+@xref{Holes}.
+@end itemize
+
+A @dfn{collection of packets}, all of which must be compatible with
+each other, constitutes either a @dfn{program} or a @dfn{library}.
+Exactly one of the packets constituting a program shall be a
+particular program.  In libraries at least one packet must be a
+prelude packet.
+
+@node Modules
+@section Modules
+@cindex module
+
+@dfn{Definition modules}, often referred as just @dfn{modules} in the
+sequel, fulfill two different but related purposes.  On one side, they
+provide some degree of @dfn{protection} by preventing accessing
+indicators defined within the module but not explicitly publicized.
+On the other, they allow to define @dfn{interfaces}, allow separated
+compilation based on these interfaces, and conform libraries.
+
+Modules are usually associated with bottom-up development strategies,
+where several already written components are grouped and combined to
+conform bigger components.
+
+@menu
+* Writing modules::                Writing modules.
+* Accessing modules::              Using the definitions of a module.
+* Module activation::              How and when modules execute.
+* Modules and libraries::          Using modules to conform libraries.
+* Modules and protection::         When block structure is not enough.
+@end menu
+
+@node Writing modules
+@subsection Writing modules
+
+A @dfn{definition module} is a construct that provides access to a set
+of publicized definitions.  They can appear anywhere, but are
+typically found in the outer reach and compiled separately, in which
+case they conform a prelude packet (@pxref{Packets}).  They are
+composed of a prelude and a postlude.  The publicized definitions
+appear in the module's prelude.
+
+Consider for example the following definition module, which implements
+a very simple logging facility:
+
+@example
+@B{module} @B{Logger} =
+   @B{def} @B{int} fd = stderr;
+       @B{pub} @B{string} originator;
+       @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
+              fputs (fd, (originator /= "" | ": ") + msg + "\n");
+
+       log ("beginning of log\n");
+   @B{postlude}
+       log ("end of log\n");
+   @B{fed}
+@end example
+
+@noindent
+The @dfn{module text} delimited by @code{@B{def}} and @code{@B{fed}}
+gets ascribed to the module indicator @code{@B{Logger}}.  Module
+indicators are bold tags.  Once defined, the module @code{@B{Logger}}
+is accessible anywhere within its reach.
+
+The @dfn{prelude} of the module spans from @code{@B{def}} to either
+@code{@B{postlude}}, or to @code{@B{fed}} in case of modules not
+featuring a postlude.  It consists on a restricted serial clause in a
+void strong context, which can contain units and declarations, but no
+labels or completers.  The declarations in the prelude may be either
+publicized or no publicized.  As we shall see, publicized indicators
+are accessible within the reach of the defining module publicizing
+them.  Publicized declarations are marked by preceding them with
+@code{@B{pub}}.
+
+In our example the module prelude consists on three declarations and
+one unit.  The indicator @code{fd} is not publicized and is to be used
+internally by the module.  The indicators @code{originator} and
+@code{log}, on the other hand, are publicized and conform the
+interface of the module.  Note how the range of the prelude also
+covers the postlude: the @code{log} procedure is reachable there, as
+it would be @code{fd} as well.
+
+The @dfn{postlude} of the module is optional and spans from
+@code{@B{postlude}} to @code{@B{fed}}.  It consists on a serial clause
+in a @code{@B{void}} strong context, where definitions, labels and
+module accesses are not allowed, just units.
+
+@node Accessing modules
+@subsection Accessing modules
+
+Once a module is defined (@pxref{Writing modules}) it can be accessed,
+provided it is within reach, using an @dfn{access clause}.  The access
+clause identifies the modules to access and then makes the publicized
+definitions of these modules visible within a @dfn{control clause}.
+
+For example, this is how we could use the logger definition module
+defined in a previous section to log the progress of some program that
+reads an input file and writes some output file:
+
+@example
+@B{access} @B{Logger}
+@B{begin} # Identify ourselves with the program name #
+      originator := argv (1);
+
+      # Read input file.  #
+      @B{if} @B{NOT} parse_input (argv (2))
+      @B{then} log ("error parsing input file"); stop @B{fi};
+
+      # Write output file.  #
+      @B{if} @B{NOT} write_output (argv (3))
+      @B{then} log ("error writing output file"); stop @B{fi};
+
+      log ("success")
+@B{end}
+@end example
+
+@noindent
+In this case the controlled clause is the closed clause conforming the
+particular program, and the definitions publicized by the logger
+module, in this case @code{originator} and @code{log}, can be used
+within it.
+
+@subsubsection Accessing several modules
+
+An access clause is not restricted to just provide access to a single
+module: any number of module indicators can be specified in an access
+clause.  Suppose that our example processing program has to read and
+write the data in JSON format, and that a suitable JSON library is
+available in the form of a reachable module.  We could then make both
+logger and json modules accessible like this:
+
+@example
+@B{access} @B{Logger}, @B{JSON}
+@B{begin} # Identify ourselves with the program name #
+      originator := argv (1);
+
+      @B{JSONVal} data;
+
+      # Read input file.  #
+      @B{if} data := json_from_file (argv (2));
+         data = json no val
+      @B{then} log ("error parsing input file"); stop @B{fi};
+
+      # Write output file.  #
+      @B{if} @B{not} json_to_file (argv (3), data)
+      @B{then} log ("error writing output file"); stop @B{fi};
+
+      log ("success")
+@B{end}
+@end example
+
+@noindent
+In this version of the program the access clause includes the module
+indicator @code{@B{json}}, and that makes the mode indicator
+@code{@B{jsonval}} and the tags @code{@B{json no val}}, @code{json
+from file} and @code{json to file} visible within the program's
+closed clause.
+
+Note that the following two access clauses are not equivalent:
+
+@example
+@B{access} @B{Logger}, @B{JSON} @B{C} ... @B{C};
+@B{access} @B{Logger} @B{access} @B{JSON} @B{C} ... @B{C};
+@end example
+
+@noindent
+In the first case, a compilation time error is emitted if there is a
+conflict among the publicized definitions of both modules; for
+example, if both modules were to publicize a procedure called
+@code{log}.  In the second case, the declaration of @code{log}
+publicized by @code{@B{Logger}} would hide the declaration of
+@code{log} publicized by @code{@B{JSON}}.  This also has implications
+related to activation, that we will be discussing in a later section.
+
+@subsubsection The controlled clause
+
+The controlled clause in an access clause doesn't have to be a serial
+clause, like in the examples above.  It can be any enclosed clause,
+like for example a loop clause:
+
+@example
+@B{proc} frobnicate frobs = ([]@B{Frob} frobs) @B{void}:
+   @B{access} @B{Logger} @B{to} @B{UPB} frobs
+                 @B{do} log ("frobnicating " + name @B{of} frob);
+                    frobnicate (frob)
+                 @B{od}
+@end example
+
+@subsubsection The value yielded by an access clause
+
+The elaboration of an access clause yields a value, which is the value
+yielded by the elaboration of the controlled clause.  Since the later
+is an enclosed clause, coercions get passed into them whenever
+required, the usual fashion.
+
+We can see an example of this in the following procedure, whose body
+is a controlled closed clause that yields a @code{@B{real}} value:
+
+@example
+@B{proc} incr factor = (@B{ref}[]@B{real} factors, @B{int} idx) @B{real}:
+   @B{access} @B{logger} (log ("factor increased"); factors[idx] +:= 1.0)
+@end example
+
+@noindent
+Note how the access clause above is in a strong context requiring a
+value of mode @code{@B{real}}.  The value yielded by the access clause
+is the value yielded by the controlled enclosed clause, which in this
+case is a closed clause.  The strong context and required mode gets
+passed to the last unit of the closed clause (the assignation) which
+in this case yields a value of mode @code{@B{ref} @B{real}}.  The unit
+is coerced to @code{@B{real}} by dereferencing, and the resulting
+value becomes the value yielded by the access clause.
+
+@subsubsection Modules accessing other modules
+
+A definition module may itself access other modules.  This is done by
+placing the module text as a controlled clause of an access clause.
+Suppose we rewrite our logger module so it uses JSON internally to log
+JSON objects rather than raw strings.  We could do it this way:
+
+@example
+@B{module} @B{logger} =
+   @B{access} @B{json}
+   @B{def} @B{int} fd = stderr;
+       @B{pub} @B{string} originator;
+       @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
+              fputs (fd, json array (json string (originator),
+                                     json string (msg)));
+
+       log (json string ("beginning of log\n"));
+   @B{postlude}
+       log (json string ("end of log\n"));
+   @B{fed}
+@end example
+
+@noindent
+Note how this version of @code{@B{logger}} uses a few definitions
+publicized by the @code{@B{json}} module.
+
+A program accessing @code{@B{logger}} will not see the definitions
+publicized by the @code{@B{json}} module.  If that is what we
+intended, for example to allow the users of the logger to tweak their
+own JSON, we would need to specify it this way:
+
+@example
+@B{module} @B{logger} =
+   @B{access} @B{pub} @B{json}
+   @B{def} @B{c} ...as before... @B{c} @B{fed}
+@end example
+
+@noindent
+In this version the definitions publicized by @code{@B{json}} become
+visible to programs accessing @code{@B{logger}}.
+
+@node Module activation
+@subsection Module activation
+
+In all the examples seen so far the modules were accessed just once.
+In these cases, accessing the module via an access-clause caused the
+@dfn{activation} of the module.
+
+Activating a module involves elaborating all the declarations and
+units that conform its prelude.  Depending on the particular module
+definition that gets activated, this may involve all sort of side
+effects, such as allocating space for values and initializing them,
+opening files, @i{etc}.  Once the modules specified in the access
+clause are successfully activated, the controlled clause gets
+elaborated itself, within the reach of all the publicized definitions
+by the activated modules as we saw in the last section.  Finally, once
+the controlled clause has been elaborated, the module gets
+@dfn{revoked} by elaborating the serial clause in its postlude.
+
+However, nothing prevents some given definition module to be accessed
+more than once in the same program.  The following program, that makes
+use of the @code{@B{logger}} module, exemplifies this:
+
+@example
+@B{access} @B{logger}
+@B{begin} originator := argv (1);
+      log ("executing program");
+      @B{c} ... @B{c}
+      @B{access} @B{logger} (originator := argv (1) + ":subtask";
+                     log ("doing subtask")
+                     @B{c} ... @B{c})
+@B{end}
+@end example
+
+@noindent
+In this program the module @code{@B{logger}} is accessed twice.  The
+code is obviously written assuming that the inner access clause
+triggers a new activation of the @code{@B{logger}} module, allocating
+new storage and executing its prelude.  This would result in the
+following log contents:
+
+@example
+a.out: beginning of log
+a.out: executing program
+a.out:subtask: beginning of log
+a.out:subtask: doing subtask
+a.out:subtask: end of log
+a.out: end of log
+@end example
+
+@noindent
+However, this is not what happens.  The module gets only activated
+once, as the result of the outer access clause.  The inner access
+clause just makes the publicized indicators visible in its controlled
+clause.  The actual resulting log output is:
+
+@example
+a.out: beginning of log
+a.out: executing program
+a.out:subtask: doing subtask
+a.out:subtask: end of log
+@end example
+
+@noindent
+Which is not what we intended.  Modules are not classes.  If we wanted
+the logger to support several originators that can be nested, we would
+need to add support for it in the definition module.  Something like:
+
+@example
+@B{module} @B{logger} =
+   @B{def} @B{int} fd = stderr, max originators = 10;
+       @B{int} orig := 0;
+       [max originators]@B{string} originators;
+
+       @B{pub} @B{proc} push originator = (@B{string} str) @B{void}:
+              (@B{assert} (orig < max originators);
+               orig +:= 1;
+               originators[orig] := str);
+       @B{pub} @B{proc} pop originator = @B{void}:
+              (@B{assert} (max originators > 0);
+               orig -:= 1);
+       @B{pub} @B{proc} log = (@B{string} msg) @B{void}:
+              fputs (fd, (originator[orig] /= "" | ": ") + msg + "\n");
+
+       log ("beginning of log\n");
+   @B{postlude}
+       log ("end of log\n");
+   @B{fed}
+@end example
+
+@noindent
+Note how in this version of @code{@B{logger}} @code{originators} acts
+as a stack of originator strings, and it is not publicized.  The
+management of the stack is done via a pair of publicized procedures
+@code{push originator} and @code{pop originator}.  Our program will
+now look like:
+
+@example
+@B{access} @B{logger}
+@B{begin} push originator (argv (1));
+      log ("executing program");
+      @B{c} ... @B{c}
+      @B{access} @B{logger} (push originator ("subtask");
+                     log ("doing subtask")
+                     @B{c} ... @B{c};
+                     pop originator)
+@B{end}
+@end example
+
+@noindent
+And the log output is:
+
+@example
+a.out: beginning of log
+a.out: executing program
+a.out:subtask: doing subtask
+a.out: end of log
+@end example
+
+
+--------------------------------------------------------------
+
+module-indications are used to find interface-definitions of modules:
+
+  ACCESS FOO SKIP
+
+Looks for (in order):
+
+  foo.m68
+  foo.o
+  libfoo.so
+
+Should we use instead:
+
+  ACCESS "foo" SKIP
+
+That would use for module indicators the same syntax than hole
+indicators.
+
+Modules get accessed, invoked and revoked.
+
+Access clauses:
+
+: ACCESS A, B <enclosed clause>
+
+Where A and B are ``revelations''.
+
+In
+
+: MODULE A = ACCESS B DEF ... FED
+
+Doesn't reveals any contents of B.  Whereas in:
+
+: MODULE A = ACCESS PUB B DEF .. FED
+
+The module A is also revealing B's public declarations.  So accessing
+A provides access to B.
+
+User-defined preludes go to the user-prelude.
+
+Invocation and revocation:: How modules are executed.
+
+It is possible for a definition module to not publicize any
+definition.  Such modules would be used only for the side effects
+produced from executing the prelude and postlude when the module gets
+invoked and revoked. XXX: provide an example?
+
+XXX
+
+@node Modules and libraries
+@subsection Modules and libraries
+@cindex library
+@cindex prelude packet
+
+XXX
+
+@node Modules and protection
+@subsection Modules and protection
+@cindex protection
+@cindex publicized definition
+
+XXX
+
+@node Holes
+@section Holes
+@cindex hole
+
+XXX
+
+@node Particular programs
+@section Particular programs
+@cindex particular program
+
+An Algol 68 @dfn{particular program} consists on an enclosed clause in
+a strong context with target mode @code{@B{void}}, possibly preceded
+by a set of zero or more labels.  For example:
+
+@example
+hello:
+@B{begin} puts ("Hello, world!\n")
+@B{end}
+@end example
+
+@noindent
+Note that the enclosed clause conforming the particular program
+doesn't have to be a closed clause.  Consider for example the
+following program, that prints out its command line arguments:
+
+@example
+@B{for} i @B{to} argc
+@B{do} puts (argv (i) + "\n") @B{od}
+@end example
+
+@menu
+* Exit status::              How do programs communicate success or failure.
+* The @code{stop} label::    How to terminate a program at any time.
+@end menu
+
+@node Exit status
+@subsection Exit status
+@cindex exit status
+
+Some operating systems have the notion of @dfn{exit status} of a
+process.  In such systems, by default the execution of the particular
+program results in an exit status of success.  It is possible for the
+program to specify an explicit exit status by using the standard
+procedure @code{set exit status}, like:
+
+@example
+@b{begin} # ... program code ... #
+     @B{if} error found;
+     @B{then} set exit status (1) @B{fi}
+@b{end}
+@end example
+
+In POSIX systems the status is an integer, and the system interprets a
+value other than zero as a run-time error.  In other systems the
+status may be of some other type.  To support this, the @code{set
+error status} procedure accepts as an argument an united value that
+accommodates all the supported systems.
+
+The following example shows a very simple program that prints ``Hello
+world'' on the standard output and then returns to the operating
+system with a success status:
+
+@example
+@B{begin} puts ("Hello world\n")
+@B{end}
+@end example
+
+@node The @code{stop} label
+@subsection The @code{stop} label
+@cindex @code{stop}
+
+A predefined label named @code{stop} is defined in the standard
+postlude.  This label can be jumped to at any time by a program and it
+will cause it to terminate and exit.  For example:
+
+@example
+@B{begin} @B{if} argc /= 2
+      @B{then} puts ("Program requires exactly two arguments.");
+     goto stop
+      @B{fi}
+      @B{C} ... @B{C}
+@B{end}
+@end example
+
+@node The standard environment
+@section The standard environment
+@cindex standard environment
+
+The environment in which particular programs run is expressed here in
+the form of pseudo code:
+
+@example
+(@B{c} standard-prelude @B{c};
+ @B{c} library-prelude @B{c};
+ @B{c} system-prelude @B{c};
+ @B{par} @B{begin} @B{c} system-task-1 @B{c},
+           @B{c} system-task-2 @B{c},
+           @B{c} system-task-n @B{c},
+           @B{c} user-task-1 @B{c},
+           @B{c} user-task-2 @B{c},
+           @B{c} user-task-m @B{c}
+     @B{end})
+@end example
+
+@noindent
+Where each user task consists on:
+
+@example
+(@B{c} particular-prelude @B{c};
+ @B{c} user-prelude @B{c};
+ @B{c} particular-program @B{c};
+ @B{c} particular-postlude @B{c})
+@end example
+
+The only standard system task described in the report is expressed in
+pseudo-code as:
+
+@example
+@B{do} @B{down} gremlins; undefined; @B{up} bfileprotect @B{od}
+@end example
+
+@noindent
+Which denotes that, once a book (file) is closed, anything may happen.
+Other system tasks may exist, depending on the operating system.  In
+general these tasks in the parallel clause denote the fact that the
+operating system is running in parallel (intercalated) with the user's
+particular programs.
+
+@itemize @bullet
+@item
+The library-prelude contains, among other things, the prelude parts of
+the defining modules provided by library.
+
+@item
+The particular-prelude and particular-postlude are common to all the
+particular programs.
+
+@item
+The user-prelude is where the prelude parts of the defining modules
+involved in the compilation get stuffed.  If no defining module is
+involved then the user-prelude is empty.
+@end itemize
+
+Subsequent sections in this manual include a detailed description of
+the contents of these preludes.
+
+@node Comments and pragmats
+@chapter Comments and pragmats
+
+Comments and pragmats, also known collectively as @dfn{pragments}, can
+appear almost anywhere in an Algol 68 program.  Comments are usually
+used for documentation purposes, and pragmats contain annotations for
+the compiler.  Both are handled at the lexical level.
+
+@menu
+* Comments::                    Your typical friendly comments.
+* Pragmats::                    In-source directives for the compiler.
+@end menu
+
+@node Comments
+@section Comments
+
+In the default modern stropping regime supported by GCC comments are
+written between @code{@{} and @code{@}} delimiters, and can be nested
+to arbitrary depth.  For example:
+
+@example
+foo +:= 1; @{ Increment foo.  @}
+@end example
+
+If UPPER stropping is selected, this compiler additionally supports
+three classical Algol 68 comment styles, in which the symbols marking
+the beginning of comments are the same than the symbols marking the
+end of comments and therefore can't be nested: @code{@B{comment}
+... @B{comment}}, @code{@B{co} ... @B{co}} and @code{# .. #}.  For
+example:
+
+@example
+@B{comment}
+  This is a comment.
+@B{comment}
+
+foo := 10; @B{co} this is also a comment @B{co}
+foo +:= 1; # and so is this.  #
+@end example
+
+Unless @option{-std=algol68} is specified in the command line, two
+styles of nestable comments can be also used with UPPER stropping: the
+already explained @code{@{ ... @}} and a ``bold'' style that uses
+@code{@B{code} ... @B{edoc}}.  For example:
+
+@example
+foo := 10; @{ this is a nestable comment in brief style.  @}
+foo +:= 1; @B{note} this is a nestable comment in bold style.  @B{eton}.
+@end example
+
+@example
+@B{note}
+   "Bold" nestable comments.
+@B{eton}
+
+@{ "Brief" nestable comments. @}
+@end example
+
+In UPPER stropping all comment styles are available, both classic and
+nestable.  In modern SUPPER stropping, which is based on reserved
+words, only @code{@{ ... @}} is available.
+
+@node Pragmats
+@section Pragmats
+
+@cindex pragmat
+@dfn{Pragmats} (also known as @dfn{pragmas} in other programming
+languages) are directives and annotations for the compiler, and their
+usage impacts the compilation process in several ways.  A pragmat
+starts with either @code{@B{pragmat}} or @code{@B{pr}} and finished
+with either @code{@B{pragmat}} or @code{@B{pr}} respectively.
+Pragmats cannot be nested.  For example:
+
+@example
+@B{pr} include "foo.a68" @B{pr}
+@end example
+
+The interpretation of pragmats is compiler-specific.  This chapter
+documents the pragmats supported by GCC.
+
+@menu
+* pragmat include::         Include another source file.
+@end menu
+
+@node pragmat include
+@subsection pragmat include
+@cindex include
+
+An @dfn{include pragmat} has the form:
+
+@example
+@B{pr} include "PATH" @B{pr}
+@end example
+
+@noindent
+Where @code{PATH} is the path of the file whose contents are to be
+included at the location of the pragmat.  If the provided path is
+relative then it is interpreted as relative to the directory
+containing the source file that contains the pragmat.
+
+The @option{-I} command line option can be used in order to add
+additional search paths for @code{include}.
+
+@node Hardware representation
+@chapter Hardware representation
+
+The @dfn{reference language} specified by the Revised Report describes
+Algol 68 particular programs as composed by @dfn{symbols}.  However,
+the Report leaves the matter of the concrete representation of these
+symbols, the @dfn{representation language}, open to the several
+implementations.  This was motivated by the very heterogeneous
+computer systems in existence at the time the Report was written,
+which made flexibility in terms of representation a crucial matter.
+
+This flexibility was indeed exploited by the early implementations,
+and there was a price to pay for it.  A few years after the
+publication of the Revised Report the different implementations had
+already given rise to a plethora of many related languages that,
+albeit being strict Algol 68, differed considerably in appearance.
+This, and the fact that people were already engrossed in writing
+programs other than compilers that needed to process Algol 68
+programs, such as code formatters and macro processors, prompted the
+WG 2.1 to develop and publish a @dfn{Report on the Standard Hardware
+Representation for ALGOL 68}, which came out in 1975.
+
+This compiler generally follows the Standard Hardware Representation,
+but deviates from it in a few aspects.  This chapter provides an
+overview of the hardware representation and documents any deviation.
+
+@menu
+* Representation languages::  From symbols to syntactic marks.
+* Worthy characters::         Marks that can appear in a program.
+* Base characters::           Mapping of worthy characters to code points.
+* Stropping regimes::         Representation of bold words.
+* Monads and Nomads::         Characters that can appear in operator names.
+* String breaks::             String literals and escape sequences.
+@end menu
+
+@node Representation languages
+@section Representation languages
+
+A program in the strict Algol 68 language is composed by a series of
+symbols.  These symbols have names such as @code{letter-a-symbol} and
+@code{assigns-to-symbol} which are, well, purely symbolic. In fact,
+these are notions in the two-level grammar that defines the strict
+language.
+
+A @dfn{representation language} provides a mapping between symbols in
+the strict language and the representation of these symbols.  Each
+representation is a sequence of syntactic marks.  For example, the
+@code{completion symbol} may be represented by @strong{exit}, where
+the marks are the bold letters.  The @code{tilde symbol} may be
+represented by @code{~}, which is a single mark. The representation of
+@code{assigns to symbol} is @code{:=}, which is composed by the two
+marks @code{:} and @code{=}.  The representation of @code{letter-a}
+is, not surprising, the single mark @code{a}.
+
+The section 9.4 of the Report describes the recommended representation
+for all the symbols of the language.  The set of all recommendations
+constitutes the so-called @dfn{reference language}. Algol 68
+implementations are strongly encouraged to use representation
+languages which are similar enough to the reference language,
+recognizable ``without further elucidation'', but this is not
+strictly required.
+
+A representation language may specify more than one representation for
+a given symbol.  For example, in the reference language the @code{is
+not symbol} is represented by @strong{isnt}, @code{:/=:} and a variant
+of the later where the slash sign is superimposed on the equal sign.
+In this case, an implementation can choose to implement any number of
+the representations.
+
+Spaces, tabs and newlines are @dfn{typographical display features}
+that, when they appear between symbols, are of no significance and do
+not alter the meaning of the program.  However, when a space or a tab
+appear in string or character denotations, they represent the
+@code{space symbol} and the @code{tab symbol}
+respectively@footnote{The @code{tab symbol} is a GNU extension}.
+
+@node Worthy characters
+@section Worthy characters
+@cindex worthy characters
+
+The syntactic marks of a representation language, both symbols and
+typographical display features, are realized as a set of @dfn{worthy
+characters} and the newline. Effectively, an Algol 68 program is a
+sequence of @dfn{worthy characters} and newlines.  The worthy
+characters are:
+
+@example
+a b c d e f g h i j k l m n o p q r s t u v w x y z
+A B C D E F G H I J K L M N O P Q R S T U V W X Y Z
+0 1 2 3 4 5 6 7 8 9
+space tab " # $ % & ' ( ) * + , - . / : ; < = >  @ [ \ ]
+^ _ | @ ! ? ~ @{ @}
+@end example
+
+Some of the characters above were considered unworthy by the original
+Standard Hardware Representation:
+
+@table @code
+@item !
+It was considered unworthy because many installations didn't have a
+vertical bar base character, and @code{!} was used as a base character
+for @code{|}.  Today every computer system features a vertical bar
+character, so @code{!} can qualify as a worthy character.
+@item &
+The Revised Report specifies that @code{&} is a monad, used as a
+symbol for the dyadic @code{@B{and}} operator.  The Standard Hardware
+representation decided to turn it into an unworthy character,
+motivated by the fact that no nomads existed for the other logical
+operators @code{@B{not}} and @code{@B{or}}, and also with the goal of
+maintaining the set of worthy characters as small as possible to
+improve portability.  Recognizing that the first motivation still
+holds, but not the second, this compiler re-instates @code{&} as a
+monad but doesn't use it as an alternative representation of the
+@code{@B{and}} operator.
+@item ~
+The Standard Hardware Representation vaguely cites some ``severe
+difficulties'' with the hardware representation of the tilde
+character.  Whatever these difficulties were at the time, they surely
+don't exist anymore.  This compiler therefore recognizes @code{~} as a
+worthy character, and is used as a monad.
+@item ?
+The question mark character was omitted as a worthy character to limit
+the size of the worthy set.  This compiler recognizes @code{?} as a
+worthy character, and is used as a monad.
+@item \
+Back-slash wasn't included as a worthy character because back in 1975
+it wasn't supported in EBCDIC (it is now).  This compiler recognizes
+@code{\} as a worthy character.
+@item tab
+This compiler recognizes the tabulator character as a worthy
+character, and it is used as a typographical display feature.
+@end table
+
+@node Base characters
+@section Base characters
+@cindex base characters
+
+The worthy characters described in the previous section are to be
+interpreted symbolically rather than visually.  The worthy character
+@code{|}, for example, is the vertical line character and generally
+looks the same in every system.  The worthy character @code{space} is
+obviously referred by a symbolic name.
+
+The actual visually distinguishable characters available in an
+installation are known as @dfn{base characters}.  The Standard
+Hardware Representation allows implementations the possibility of
+using two or more base characters to represent a single worthy
+character.  This was the case of the @code{|} character, which was
+represented in many implementations by either @code{|} or @code{!}.
+
+This compiler uses the set of base characters corresponding to the
+subset of the Unicode character set that maps one to one to the set of
+worthy characters described in the previous section:
+
+@example
+A-Z   65-90
+a-z   97-122
+space 32
+tab   9
+!     33
+"     34
+#     35
+$     36
+%     37
+&     38
+'     39
+(     40
+)     41
+*     42
++     43
+,     44
+-     45
+.     46
+/     47
+:     58
+;     59
+<     60
+=     61
+>     62
+?     63
+@@     64
+[     91
+\     92
+]     93
+^     94
+_     95
+|     124
+~     126
+@end example
+
+@node Stropping regimes
+@section Stropping regimes
+
+The Algol 68 reference language establishes that certain source
+constructs, namely mode indications and operator indications, consist
+in a sequence of @dfn{bold letters} and @dfn{bold digits}, known as a
+@dfn{bold word}.  In contrast, other constructs like identifiers,
+field selectors and labels, collectively known as @dfn{tags}, are
+composed of regular, non-bold letters and digits.
+
+What is precisely a bold letter or digit, and how they differ from
+non-bold letters and digits, is not specified by the Report.  This is
+no negligence, but a conscious effort at abstracting the definition of
+the so-called @dfn{strict language} from its representation.  This
+allows different representations of the same language.
+
+Some representations of Algol 68 are intended to be published in
+books, be it paper or electronic devices, and be consumed by persons.
+These are called @dfn{publication languages}.  In publication
+languages bold letters and digits are typically represented by actual
+bold alphanumeric typographic marks.  An Algol 68 program hand written
+on a napkin or a sheet of paper would typically represent bold letters
+and digits underlined, or stroked using a different color ink.
+
+Other representations of Algol 68 are intended to be automatically
+processed by a computer.  These representations are called
+@dfn{hardware languages}.  Sometimes the hardware languages are also
+intended to be written and read by programmers; these are called
+@dfn{programming languages}.
+
+Unfortunately, computer systems today usually do not yet provide
+readily usable and ergonomic bold or underline alphanumeric marks,
+despite the existence of Unicode and modern and sophisticated editing
+environments.  The lack of appropriate input methods surely plays a
+role to explain this.  Thus, the programming representation languages
+of Algol 68 should resort to a technique known as @dfn{stropping} in
+order to differentiate bold letters and digits from non-bold letters
+and digits.  The set of rules specifying the representation of these
+characters is called a @dfn{stropping regime}.
+
+There are three classical stropping regimes for Algol 68, which are
+standardized and specified in the Standard Hardware Representation
+normative document.  These are @dfn{POINT stropping}, @dfn{RES
+stropping} and @dfn{UPPER stropping}.  The following sections do a
+cursory tour over them; for more details the reader is referred to the
+Standard Hardware Representation.
+
+This compiler implements UPPER stropping and SUPPER stropping.
+
+@menu
+* POINT stropping::
+* RES stropping::
+* UPPER stropping::
+* SUPPER stropping::
+@end menu
+
+@node POINT stropping
+@subsection POINT stropping
+
+POINT stropping is in a way the most fundamental of the three standard
+regimes.  It was designed to work in installations with limited
+character sets that provide only one alphabet, one set of digits, and
+a very restricted set of other symbols.
+
+In POINT stropping a bold word is represented by its constituent
+letters and digits preceded by a point character.  For example, the
+symbol @code{bold begin symbol} in the strict language, which is
+represented as @strong{begin} in bold face in the reference language,
+would be represented as @code{.BEGIN} in POINT stropping.
+
+More examples are summarized in the following table.
+
+@multitable @columnfractions .33 .33 .33
+@headitem Strict language @tab Reference language @tab POINT stropping
+@item @code{true symbol} @tab @strong{true} @tab @code{.TRUE}
+@item @code{false symbol} @tab @strong{false} @tab @code{.FALSE}
+@item @code{integral symbol} @tab @strong{int} @tab @code{.INT}
+@item @code{completion symbol} @tab @strong{exit} @tab @code{.EXIT}
+@item @code{bold-letter-c-...} @tab @strong{crc32} @tab @code{.CRC32}
+@end multitable
+
+In POINT stropping a tag is represented by writing its constituent
+non-bold letters and digits in order.  But they are organized in
+several @dfn{taggles}.
+
+Each taggle is a sequence of one or more letters and digits,
+optionally followed by an underscore character.  For example, the tag
+@code{PRINT} is composed of a single taggle, but the tag
+@code{PRINT_TABLE} is composed of a first taggle @code{PRINT_}
+followed by a second taggle @code{TABLE}.
+
+To improve readability it is possible to insert zero or more white
+space characters between the taggles in a tag.  Therefore, the tag
+@code{PRINT_TABLE} could have been written @code{PRINT TABLE}, or even
+@code{PRINT_ TABLE}.  This is the reason why Algol 68 identifiers,
+labels and field selectors can and do usually feature white spaces in
+them.
+
+It is important to note that both the trailing underscore characters
+in taggles and the white spaces in a tag do not contribute anything to
+the denoted tag: these are just stropping artifacts aimed to improve
+readability.  Therefore @code{FOOBAR} @code{FOO BAR}, @code{FOO_BAR}
+and @code{FOO_BAR_} are all representations of the same tag, that
+represents the
+@code{letter-f-letter-o-letter-o-letter-b-letter-a-letter-r} language
+construct.
+
+Below is the text of an example Algol 68 procedure encoded in POINT
+stropping.
+
+@example
+.PROC RECSEL OUTPUT RECORDS = .VOID:
+.BEGIN .BITS FLAGS
+         := (INCLUDE DESCRIPTORS | REC F DESCRIPTOR | REC F NONE);
+       .RECRSET RES = REC DB QUERY (DB, RECUTL TYPE,
+                                    RECUTL QUICK, FLAGS);
+       .RECWRITER WRITER := REC WRITER FILE NEW (STDOUT);
+
+       SKIP COMMENTS .OF WRITER := .TRUE;
+       .IF RECUTL PRINT SEXPS
+       .THEN MODE .OF WRITER := REC WRITER SEXP .FI;
+       REC WRITE (WRITER, RES)
+.END
+@end example
+
+@node RES stropping
+@subsection RES stropping
+
+The early installations where Algol 68 ran not only featured a very
+restricted character set, but also suffered from limited storage and
+complex to use and time consuming input methods such as card punchers
+and readers.  It was important for the representation of programs to
+be as compact as possible.
+
+It is likely that is what motivated the introduction of the RES
+stropping regime.  As its name implies, it removes the need of
+stropping many bold words by introducing @dfn{reserved words}.
+
+A @dfn{reserved word} is one of the bold words specified in the
+section 9.4.1 of the Report as a representation of some symbol.
+Examples are @strong{at}, @strong{begin}, @strong{if}, @strong{int}
+and @strong{real}.
+
+RES stropping encodes bold words and tags like POINT stropping, but if
+a bold word is a reserved word then it can then be written without a
+preceding point, achieving this way a more compact, and easier to
+read, representation for programs.
+
+Introducing reserved words has the obvious disadvantage that some tags
+cannot be written the obvious way due to the possibility of conflicts.
+For example, to represent a tag @code{if} it is not possible to just
+write @code{IF}, because it conflicts with a reserved word, but this
+can be overcome easily (if not elegantly) by writing @code{IF_}
+instead.
+
+Below is the @code{recsel output records} procedure again, this time
+encoded in RES stropping.
+
+@example
+PROC RECSEL OUTPUT RECORDS = VOID:
+BEGIN BITS FLAGS
+         := (INCLUDE DESCRIPTORS | REC F DESCRIPTOR | REC F NONE);
+      .RECRSET RES = REC DB QUERY (DB, RECUTL TYPE,
+                                   RECUTL QUICK, FLAGS);
+      .RECWRITER WRITER := REC WRITER FILE NEW (STDOUT);
+
+      SKIP COMMENTS OF WRITER := TRUE;
+      IF RECUTL PRINT SEXPS
+      THEN MODE .OF WRITER := REC WRITER SEXP FI;
+      REC WRITE (WRITER, RES)
+END
+@end example
+
+Note how user-defined mode an operator indications still require
+explicit stropping.
+
+@node UPPER stropping
+@subsection UPPER stropping
+
+In time computers added support for more than one alphabet by
+introducing character sets with both upper and lower case letters,
+along with convenient ways to both input and display these.
+
+In UPPER stropping the bold letters in bold word are represented by
+upper-case letters, whereas the letters in tags are represented by
+lower-case letters.
+
+The notions of upper- and lower-case are not applicable to digits, but
+since the language syntax assures that it is not possible to have a
+bold word that starts with a digit, digits are considered to be bold
+if they follow a bold letter or another bold digit.
+
+Below is the @code{recsel output records} procedure again, this time
+encoded in UPPER stropping.
+
+@example
+PROC recsel output records = VOID:
+BEGIN BITS flags
+         := (include descriptors | rec f descriptor | rec f none);
+      RECRSET res = rec db query (db, recutl type,
+                                  recutl quick, flags);
+      RECWRITER writer := rec writer file new (stdout);
+
+      skip comments of writer := TRUE;
+      IF recutl print sexps
+      THEN mode OF writer := rec writer sexp FI;
+      rec write (writer, res)
+END
+@end example
+
+Note how in this regime it is almost never necessary to introduce bold
+tags with points.  All in all, it looks much more natural to
+contemporary readers.  UPPER stropping is in fact the stropping regime
+of choice today.  It is difficult to think of any reason why anyone
+would resort to use POINT or RES stropping.
+
+@node SUPPER stropping
+@subsection SUPPER stropping
+
+In the SUPPER stropping regime bold words are written by writing a
+sequence of one or more @dfn{taggles}. Each taggle is written by
+writing a letter followed by zero or more other letters and digits and
+is optionally followed by a trailing underscore character.  The first
+letter in a bold word shall be an upper-case letter.  The rest of the
+letters in the bold word may be either upper- or lower-case.
+
+For example, @code{RecRset}, @code{Rec_Rset} and @code{RECRset} are
+all different ways to represent the same mode indication.  This allows
+to recreate popular naming conventions such as @code{CamelCase}.
+
+As in the other stropping regimes, the casing of the letters and the
+underscore characters are not really part of the mode or operator
+indication.
+
+Operator indications are also bold words and are written in exactly
+the same way than mode indications, but it is usually better to always
+use upper-case letters in operator indications.  On one side, it looks
+better, especially in the case of dyadic operators where the asymmetry
+of, for example @code{Equal} would look odd, consider @code{m1 Equal
+m2} as opposed to @code{m1 EQUAL m2}.  On the other side, tools like
+editors can make use of this convention in order to highlight operator
+indications differently than mode indications.
+
+In the SUPPER stropping regime tags are written by writing a sequence
+of one or more @dfn{taggles}.  Each taggle is written by writing a
+letter followed by zero or more other letters and digits and is
+optionally followed by a trailing underscore character.  All letters
+in a tag shall be lower-case letters.
+
+For example, the identifier @code{list} is represented by a single
+taggle, and it is composed by the letters @code{l}, @code{i}, @code{s}
+and @code{t}, in order.  In the jargon of the strict language we would
+spell the tag as @code{letter-l-letter-i-letter-s-letter-t}.
+
+The label @code{found_zero} is represented by two taggles,
+@code{found_} and @code{zero}, and it is composed by the letters
+@code{f}, @code{o}, @code{u}, @code{n}, @code{d}, @code{z}, @code{e},
+@code{r} and @code{o}, in order.  In the jargon of the strict language
+we would spell the tag as @code{letter-f-letter-o-letter-u-letter-n
+-letter-d-letter-z-letter-e-letter-r-letter-o}.
+
+The identifier @code{crc_32} is likewise represented by two taggles,
+@code{crc_} and @code{32}.  Note how the second taggle contains only
+digits.  In the jargon of the strict language we would spell the tag
+as @code{letter-c-letter-r-letter-c-digit-three-digit-two}.
+
+The underscore characters are not really part of the tag, but part of
+the stropping.  For example, both @code{goto found_zero} and
+@code{goto foundzero} jump to the same label.
+
+The @code{recsel output records} procedure, encoded in SUPPER
+stropping, looks like below.
+
+@example
+proc recsel_output_records = void:
+begin bits flags
+        := (include_descriptors | rec_f_descriptor | rec_f_none);
+      RecRset res = rec_db_query (db, recutl_type,
+                                  recutl_uick, flags);
+      RecWriter writer := rec_writer_file_new (stdout);
+
+      skip_comments of writer := true;
+      if recutl_print_sexps
+      then mode_ of writer := rec_writer_sexp fi;
+      rec_write (writer, res)
+end
+@end example
+
+@node Monads and Nomads
+@section Monads and Nomads
+@cindex monads
+@cindex nomads
+
+Algol68 operators, be them predefined or defined by the programmer,
+can be referred via either bold tags or sequences of certain
+non-alphabetic symbols.  For example, the dyadic operator @code{+} is
+defined for many modes to perform addition, the monadic operator
+@code{@B{entier}} gets a real value and rounds it to an integral
+value, and the operator @code{:=:} is the identity relation.  Many
+operators provide both bold tag names and symbols names, like in the
+case of @code{:/=:} that can also be written as @code{@B{isnt}}.
+
+Bold tags are lexically well delimited, and if the same tag is used to
+refer to a monadic operator and to a dyadic operator, no ambiguity can
+arise.  For example, in the following program it is clear that the
+second instance of @code{@B{plus}} refers to the monadic operator, and
+the first instance refers to the dyadic operator@footnote{If one would
+write @code{@B{plusplus}}, it would be a third different bold tag.}.
+
+@example
+@B{op} @B{PLUS} = (@B{int} a, b) @B{int}: a + b,
+   @B{PLUS} = (@B{int} a): a;
+@B{int} val = 2 @B{PLUS} @B{PLUS} 3;
+@end example
+
+On the other hand, symbols are not lexically delimited as words, and
+one symbol can appear immediately following another symbol.  This can
+lead to ambiguities.  For example, if we were to define a C-like
+monadic operator @code{++} like:
+
+@example
+@B{op} ++ = (@B{ref} @B{int} a) @B{int}: (@B{int} t = a; a +:=1; t);
+@end example
+
+@noindent
+Then the expression @code{++a} would be ambiguous: is it @code{++a} or
+@code{+(+a)}?.  In a similar way, if we would use @code{++} as the
+name of a dyadic operator, an expression like @code{a++b} could be
+also interpreted as both @code{a++b} and @code{a+(+b)}.
+
+To avoid these problems Algol 68 divides the symbols which are
+suitable to appear in the name of an operator into two classes: monads
+and nomads.  @dfn{Monads} are symbols that can be used as monadic
+operators.  @dfn{Nomads} are symbols which can be used as both monadic
+or dyadic operators.  Given these two sets, the rules to conform a
+valid operator are:
+
+@itemize @minus
+@item A bold tag.
+@item Any monad.
+@item A monad followed by a nomad.
+@item A monad optionally followed by a nomad followed by either @code{:=} or @code{=:}, but not by both.
+@end itemize
+
+@noindent
+In the GNU Algol 68 compiler:
+
+@itemize @minus
+@item The set of monads is @code{%^&+-~!?}.
+@item The set of nomads is @code{></=*}.
+@end itemize
+
+@node String breaks
+@section String breaks
+
+The intrinsic value of each worthy character that appears inside a
+string denotation is itself.  The string @code{"/abc"}, therefore,
+contains a slash character followed by the three letters @code{a},
+@code{b} and @code{c}.
+
+Sometimes, however, it becomes necessary to represent some non-worthy
+character in a string denotation.  In these cases, an escape
+convention has to be used to represent these extra string-items.  It
+is up to the implementation to decide this convention, and the only
+requirement imposed by the Standard Hardware Representation on this
+regard is that the character used to introduce escapes, the
+@dfn{escape character}, shall be the apostrophe.  This section
+documents the escape conventions implemented by the GNU compiler.
+
+Two characters have special meaning inside string denotations: double
+quote (@code{"}) and apostrophe (@code{'}).  The first finishes the
+string denotation, and the second starts a @dfn{string break}, which
+is the Algol 68 term for what is known as an ``escape sequence'' in
+other programming languages.  Two consecutive double-quote characters
+specify a single double-quote character.
+
+The following string breaks are recognized by this compiler:
+
+@table @code
+@item ''
+Apostrophe character @code{'}.
+@item 'n
+Newline character.
+@item 'f
+Form feed character.
+@item 'r
+Carriage return (no line feed).
+@item 't
+Tab.
+@item '(list of character codes separated by commas)
+The indicated characters, where each code has the form @code{uhhhh} or
+@code{Uhhhhhhhh}, where @code{hhhh} and @code{hhhhhhhh} are integers
+expressing the character code in hexadecimal.  The list must contain
+at least one entry.
+@end table
+
+A string break can appear as the single string-item in a character
+denotation, subject to the following restrictions:
+
+@itemize @bullet
+@item
+List of characters string breaks @code{'(...)} that contain more than
+one character code are not allowed in character denotations.  If the
+specified code point is not a valid Unicode character then a
+compilation error shall be raised.
+@end itemize
+
+@node Standard prelude
+@chapter Standard prelude
+@cindex prelude, standard
+
+The Algol 68 Revised Report defines an extensive set of standard
+modes, operators, procedures and values, collectively known as the
+@dfn{standard prelude}.
+
+The standard prelude is available to Algol 68 programs without needing
+to import any module.
+
+For brevity, in this section the pseudo-mode @code{@B{L}} represents a
+@dfn{shortsety}, i.e. a sequence of either zero or more
+@code{@B{LONG}} or zero or more @code{@B{SHORT}}.
+
+@menu
+* Environment enquiries::              Information about the implementation.
+* Standard modes::                     Modes defined by the standard prelude.
+* Standard priorities::                Priorities of all standard operators.
+* Rows operators::                     Rows and associated operations.
+* Boolean operators::                  Operations on boolean operands.
+* Integral operators::                 Operations on integral operands.
+* Real operators::                     Operations on real operands.
+* Character operators::                Operations on character operands.
+* String operators::                   Strings and associated operations.
+* Complex operators::                  Operations on complex operands.
+* Bits operators::                     Bits and associated operations.
+* Bytes operators::                    Bytes and associated operations.
+* Semaphore operators::                Synchronization operations.
+* Math procedures::                    Standard mathematical constants and functions.
+@end menu
+
+@node Environment enquiries
+@section Environment enquiries
+
+An @dfn{environment enquiry} is a constant or a procedure, whose
+elaboration yields a value that may be useful to the programmer, that
+reflects some characteristic of the particular implementation.  The
+values of these enquiries are also determined by the architecture and
+operating system targeted by the compiler.
+
+@deftypevr Constant @B{int} {int lengths}
+1 plus the number of extra lenghts of integers which are meaningful.
+@end deftypevr
+
+@deftypevr Constant @B{int} {int shorths}
+1 plus the number of extra shorths of integers which are meaningful.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{int}} {L max int}
+The largest integral value.
+@end deftypevr
+
+@deftypevr Constant @B{int} {real lengths}
+1 plus the number of extra lenghts of real numbers which are
+meaningful.
+@end deftypevr
+
+@deftypevr Constant @B{int} {real shorths}
+1 plus the number of extra shorths of real numbers which are
+meaningful.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{real}} {L max real}
+The largest real value.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{real}} {L small real}
+The smallest real value such that both @code{1 + small real > 1} and
+@code{1 - small real < 1}.
+@end deftypevr
+
+@deftypevr Constant @B{int} {bits lengths}
+1 plus the number of extra widths of bits which are meaningful.
+@end deftypevr
+
+@deftypevr Constant @B{int} {bits shorths}
+1 plus the number of extra shorths of bits which are meaningful.
+@end deftypevr
+
+@deftypevr Constant @B{int} {bits width}
+@deftypevrx Constant @B{int} {long bits width}
+@deftypevrx Constant @B{int} {long long bits width}
+The number of bits in a @code{@B{bits}} value.
+@end deftypevr
+
+@deftypevr Constant @B{int} {bytes lengths}
+1 plus the number of extra widths of bytes which are meaningful.
+@end deftypevr
+
+@deftypevr Constant @B{int} {bytes shorths}
+1 plus the number of extra shorths of bytes which are meaningful.
+@end deftypevr
+
+@deftypevr Constant @B{int} {bytes width}
+@deftypevrx Constant @B{int} {long bytes width}
+@deftypevrx Constant @B{int} {long long bytes width}
+The number of chars in a @code{@B{bytes}} value.
+@end deftypevr
+
+@deftypevr Constant @B{int} {max abs char}
+The largest value which @code{@B{abs}} of a @code{@B{char}} can yield.
+@end deftypevr
+
+@deftypevr Constant @B{char} {null character}
+Some character.
+@end deftypevr
+
+@deftypevr Constant @B{char} flip
+@deftypevrx Constant @B{char} flop
+Characters used to represent @code{@B{true}} and @code{@B{false}}
+boolean values in textual transput.
+@end deftypevr
+
+@deftypevr Constant @B{char} {error char}
+Character used to represent the digit of a value resulting from a
+conversion error in textual transput.
+@end deftypevr
+
+@deftypevr Constant @B{char} blank
+The space character.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{real}} {L pi}
+The number pi.
+@end deftypevr
+
+@node Standard modes
+@section Standard modes
+
+@deftp Mode @B{void}
+The only value of this mode is @code{@B{empty}}.
+@end deftp
+
+@deftp Mode @B{bool}
+Mode for the boolean truth values @code{@B{true}} and @code{@B{false}}.
+@end deftp
+
+@deftp Mode {@B{l} @B{int}}
+Modes for signed integral values.  Each @code{@B{long}} or
+@code{@B{short}} may increase or decrease the range of the domain,
+depending on the characteristics of the current target.  Further
+@code{@B{long}}s and @code{@B{short}}s may be specified with no
+effect.
+@end deftp
+
+@deftp Mode {@B{l} @B{real}}
+Modes for signed real values.  Each @code{@B{long}} may increase the
+upper range of the domain, depending on the characteristics of the
+current target.  Further @code{@B{long}}s may be specified but with no
+effect.
+@end deftp
+
+@deftp Mode @B{char}
+Mode for character values.  The character values are mapped one-to-one
+to code points in the 21-bit space of Unicode.
+@end deftp
+
+@deftp Mode @B{string} {= @B{flex}[1:0]@B{char}}
+Mode for sequences of characters.  This is implemented as a flexible
+row of @code{@B{char}} values.
+@end deftp
+
+@deftp Mode {@B{l} @B{compl}} {= @B{struct} (@B{real} re,im)}
+Modes for complex values.  Each @code{@B{long}} may increase the
+precision of both the real and imaginary parts of the numbers,
+depending on the characteristics of the current target.  Further
+@code{@B{long}}s may be specified with no effect.
+@end deftp
+
+@deftp Mode {@B{l} @B{bits}}
+Compact and efficient representation of a row of boolean values.  Each
+@code{@B{long}} may increase the number of booleans that can be packed
+in a bits, depending on the characteristics of the current target.
+@end deftp
+
+@deftp Mode {@B{l} @B{bytes}}
+Compact and efficient representation of a row of character values.
+Each @code{@B{long}} may increase the number of characters that can be
+packed in a bytes, depending on the characteristics of the current
+target.
+@end deftp
+
+@node Standard priorities
+@section Standard priorities
+
+@table @code
+@item 1
+@itemize @bullet
+@item @code{plusab}, @code{+:=}
+@item @code{minusab}, @code{-:=}
+@item @code{timesab}, @code{*:=}
+@item @code{divab}, @code{/:=}
+@item @code{overab}, @code{%:=}
+@item @code{modab}, @code{%*:=}
+@item @code{plusto}, @code{+=:}
+@end itemize
+
+@item 2
+@itemize @bullet
+@item @code{or}
+@end itemize
+
+@item 3
+@itemize @bullet
+@item @code{and}
+@item @code{xor}
+@end itemize
+
+@item 4
+@itemize @bullet
+@item @code{@B{eq}}, @code{=}
+@item @code{@B{ne}}, @code{/=}
+@end itemize
+
+@item  5
+@itemize @bullet
+@item @code{@B{lt}}, @code{<},
+@item @code{@B{le}}, @code{<=}
+@item @code{@B{gt}}, @code{>}
+@item @code{@B{ge}}, @code{>=}
+@end itemize
+
+@item 6
+@itemize @bullet
+@item @code{+}
+@item @code{-}
+@end itemize
+
+@item 7
+@itemize @bullet
+@item @code{*}
+@item @code{/}
+@item @code{@B{over}}, @code{%}
+@item @code{@B{mod}}, @code{%*}
+@item @code{@B{elem}}
+@end itemize
+
+@item 8
+@itemize @bullet
+@item @code{**}
+@item @code{@B{shl}}, @code{@B{up}}
+@item @code{@B{shr}}, @code{@B{down}}
+@item @code{@B{up}}, @code{@B{down}}
+@item @code{^}
+@item @code{@B{lwb}}
+@item @code{@B{upb}}
+@end itemize
+
+@item 9
+@itemize @bullet
+@item @code{@B{i}}
+@item @code{+*}
+@end itemize
+@end table
+
+@node Rows operators
+@section Rows operators
+
+The following operators work on any row mode, denoted below using the
+pseudo-mode @code{@B{rows}}.
+
+@deftypefn Operator {} {@B{lwb}} {= (@B{rows} a) @B{int}}
+Monadic operator that yields the lower bound of the first bound pair
+of the descriptor of the value of @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{upb}} {= (@B{rows} a) @B{int}}
+Monadic operator that yields the upper bound of the first bound pair
+of the descriptor of the value of @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lwb}} {= (@B{int} n, @B{rows} a) @B{int}}
+Dyadic operator that yields the lower bound in the n-th bound pair of
+the descriptor of the value of @code{a}, if that bound pair exists.
+Attempting to access a non-existing bound pair results in a run-time
+error.
+@end deftypefn
+
+@deftypefn Operator {} {@B{upb}} {= (@B{int} n, @B{rows} a) @B{int}}
+Dyadic operator that yields the upper bound in the n-th bound pair of
+the descriptor of the value of @code{a}, if that bound pair exists.
+Attempting to access a non-existing bound pair results in a run-time
+error.
+@end deftypefn
+
+@node Boolean operators
+@section Boolean operators
+
+@deftypefn Operator {} {@B{not}} {= (@B{bool} a) @B{bool}}
+@deftypefnx Operator {} {~} {= (@B{bool} a) @B{bool}}
+Monadic operator that yields the logical negation of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{or}} {= (@B{bool} a, b) @B{bool}}
+Dyadic operator that yields the logical ``or'' of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {@B{and}} {= (@B{bool} a, b) @B{bool}}
+@deftypefnx Operator {} {@B{&}} {= (@B{bool} a, b) @B{bool}}
+Dyadic operator that yields the logical ``and'' of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {@B{eq}} {= (@B{bool} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{bool} a, b) @B{bool}}
+Dyadic operator that yields @code{@B{true}} if its operands are the
+same truth value, @code{@B{false}} otherwise.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{bool} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{bool} a, b) @B{bool}}
+Dyadic operator that yields @code{@B{false}} if its operands are the
+same truth value, @code{@B{true}} otherwise.
+@end deftypefn
+
+@deftypefn Operator {} {@B{abs}} {= (@B{bool} a) @B{int}}
+Monadic operator that yields 1 if its operand is @code{@B{true}}, and
+0 if its operand is @code{@B{false}}.
+@end deftypefn
+
+@node Integral operators
+@section Integral operators
+
+@subsection Arithmetic
+
+@deftypefn Operator {} {+} {= (@B{l} @B{int} a) @B{l} @B{int}}
+Monadic operator that yields the affirmation of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{l} @B{int} a) @B{l} @B{int}}
+Monadic operator that yields the negative of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{abs}} {= (@B{l} @B{int} a) @B{l} @B{int}}
+Monadic operator that yields the absolute value of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{sign}} {= (@B{l} @B{int} a) @B{int}}
+Monadic operator that yields -1 if @code{a} if negative, 0 if @code{a}
+is zero and 1 if @code{a} is positive.
+@end deftypefn
+
+@deftypefn Operator {} {@B{odd}} {= (@B{l} @B{int} a) @B{bool}}
+Monadic operator that yields @code{@B{true}} if its operand is odd,
+@code{@B{false}} otherwise.
+@end deftypefn
+
+@deftypefn Operator {} {+} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields the addition of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields @code{b} subtracted from @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {*} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields the multiplication of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {@B{over}} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+@deftypefnx Operator {} {%} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields the integer division of @code{a} by
+@code{b}, rounding the quotient toward zero.
+@end deftypefn
+
+@deftypefn Operator {} {@B{mod}} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+@deftypefnx Operator {} {%*} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields the remainder of the division of @code{a}
+by @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {/} {= (@B{l} @B{int} a, b) @B{l} @B{real}}
+Dyadic operator that yields the integer division with real result of
+@code{a} by @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {**} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+@deftypefnx Operator {} {^} {= (@B{l} @B{int} a, b) @B{l} @B{int}}
+Dyadic operator that yields @code{a} raised to the exponent @code{b}.
+@end deftypefn
+
+@subsection Arithmetic combined with assignation
+
+@deftypefn Operator {} {@B{plusab}} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+@deftypefnx Operator {} {+:=} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+@dfn{Plus and become}.  Dyadic operator that calculates @code{a + b},
+assigns the result of the operation to the name @code{a} and then
+yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{minusab}} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+@deftypefnx Operator {} {-:=} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+Dyadic operator that calculates @code{a - b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{timesab}} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+@deftypefnx Operator {} {*:=} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+Dyadic operator that calculates @code{a * b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{overab}} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+@deftypefnx Operator {} {%:=} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+Dyadic operator that calculates @code{a % b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{modab}} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+@deftypefnx Operator {} {%*:=} {= (@B{ref} @B{l} @B{int} a, @B{l} @B{int} b) @B{ref} @B{l} @B{int}}
+Dyadic operator that calculates @code{a %* b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{l} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{l} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{l} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{l} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than, or equal to
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{l} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{l} @B{int} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{l} @B{int} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than, or equal
+to @code{b}.
+@end deftypefn
+
+@subsection Conversion
+
+@deftypefn Operator {} {@B{shorten}} {= (@B{short} @B{int} a) @B{short} @B{short} @B{int}}
+@deftypefnx Operator {} {@B{shorten}} {= (@B{int} a) @B{short} @B{int}}
+@deftypefnx Operator {} {@B{shorten}} {= (@B{long} @B{int} a) @B{int}}
+@deftypefnx Operator {} {@B{shorten}} {= (@B{long} @B{long} @B{int} a) @B{long} @B{int}}
+Monadic operator that yields, if it exists, the integral value that
+can be lengthened to the value of @code{a}.  If the value doesn't
+exist then the operator yields either the most positive integral value
+in the destination mode, if @code{a} is bigger than that value, or the
+most negative integral value in the destination mode, if @code{a} is
+smaller than that value.
+@end deftypefn
+
+@deftypefn Operator {} {@B{leng}} {= (@B{short} @B{short} @B{int} a) @B{short} @B{int}}
+@deftypefnx Operator {} {@B{leng}} {= (@B{short} @B{int} a) @B{int}}
+@deftypefnx Operator {} {@B{leng}} {= (@B{int} a) @B{long} @B{int}}
+@deftypefnx Operator {} {@B{leng}} {= (@B{long} @B{int} a) @B{long} @B{long} @B{int}}
+Monadic operator that yields the integral value lengthened from the
+value of @code{a}.
+@end deftypefn
+
+@node Real operators
+@section Real operators
+
+@subsection Arithmetic
+
+@deftypefn Operator {} {+} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Monadic operator that yields the affirmation of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Monadic operator that yields the negative of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{abs}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Monadic operator that yields the absolute value of its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{sign}} {= (@B{l} @B{real} a) @B{int}}
+Monadic operator that yields -1 if @code{a} if negative, 0 if @code{a}
+is zero and 1 if @code{a} is positive.
+@end deftypefn
+
+@deftypefn Operator {} {+} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+Dyadic operator that yields the addition of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {-} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+Dyadic operator that yields @code{b} subtracted from @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {*} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+Dyadic operator that yields the multiplication of its operands.
+@end deftypefn
+
+@deftypefn Operator {} {/} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+Dyadic operator that yields the realeger division with real result of
+@code{a} by @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {**} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+@deftypefnx Operator {} {^} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+Dyadic operator that yields @code{a} raised to the real exponent @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {**} {= (@B{l} @B{real} a, @B{int} b) @B{l} @B{real}}
+@deftypefnx Operator {} {^} {= (@B{l} @B{real} a, @B{int} b) @B{l} @B{real}}
+Dyadic operator that yields @code{a} raised to the integral exponent
+@code{b}.
+@end deftypefn
+
+@subsection Arithmetic combined with assignation
+
+@deftypefn Operator {} {@B{plusab}} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+@deftypefnx Operator {} {+:=} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+@dfn{Plus and become}.  Dyadic operator that calculates @code{a + b},
+assigns the result of the operation to the name @code{a} and then
+yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{minusab}} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+@deftypefnx Operator {} {-:=} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+Dyadic operator that calculates @code{a - b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{timesab}} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+@deftypefnx Operator {} {*:=} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+Dyadic operator that calculates @code{a * b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{divab}} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+@deftypefnx Operator {} {/:=} {= (@B{ref} @B{l} @B{real} a, @B{l} @B{real} b) @B{ref} @B{l} @B{real}}
+Dyadic operator that calculates @code{a / b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{l} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{l} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{l} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{l} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{l} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{l} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{l} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{l} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than, or equal to
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{l} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{l} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{l} @B{real} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{l} @B{real} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than, or equal
+to @code{b}.
+@end deftypefn
+
+@subsection Conversions
+
+@deftypefn Operator {} {@B{round}} {= (@B{l} @B{real} a) @B{int}}
+Monadic operator that yields the nearest integer to its operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{entier}} {= (@B{l} @B{real} a) @B{int}}
+Monadic operator that yields the integer equal to @code{a}, or the
+next integer below (more negative than) @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{shorten}} {= (@B{long} @B{real} a) @B{real}}
+@deftypefnx Operator {} {@B{shorten}} {= (@B{long} @B{long} @B{real} a) @B{long} @B{real}}
+Monadic operator that yields, if it exists, the real value that
+can be lengthened to the value of @code{a}.  If the value doesn't
+exist then the operator yields either the most positive real value
+in the destination mode, if @code{a} is bigger than that value, or the
+most negative real value in the destination mode, if @code{a} is
+smaller than that value.
+@end deftypefn
+
+@deftypefn Operator {} {@B{leng}} {= (@B{real} a) @B{long} @B{real}}
+@deftypefnx Operator {} {@B{leng}} {= (@B{long} @B{real} a) @B{long} @B{long} @B{real}}
+Monadic operator that yields the real value lengthened from the
+value of @code{a}.
+@end deftypefn
+
+@node Character operators
+@section Character operators
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{char} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{char} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{char} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{char} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{char} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{char} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{char} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{char} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is less than, or equal to
+@code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{char} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{char} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{char} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{char} a, b) @B{bool}}
+Dyadic operator that yields whether @code{a} is greater than, or equal
+to @code{b}.
+@end deftypefn
+
+@subsection Conversions
+
+@deftypefn Operator {} {@B{ABS}} {= (@B{char} a) @B{int}}
+Monadic operator that yields an unique integer for each permissable
+value of @code{@B{char}}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{REPR}} {= (@B{int} a) @B{char}}
+The opposite of @code{@B{abs}} of a character.
+@end deftypefn
+
+@node String operators
+@section String operators
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{string} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{string} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.  Two
+strings are equal if they contain the same sequence of characters.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{string} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{string} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{string} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{string} a, b) @B{bool}}
+Dyadic operator that yields whether the string @code{a} is less than
+the string @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{string} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{string} a, b) @B{bool}}
+Dyadic operator that yields whether the string @code{a} is less than,
+or equal to string @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{string} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{string} a, b) @B{bool}}
+Dyadic operator that yields whether the string @code{a} is greater
+than the string @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{string} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{string} a, b) @B{bool}}
+Dyadic operator that yields whether the string @code{a} is greater
+than, or equal to the string @code{b}.
+@end deftypefn
+
+@subsection Composition
+
+@deftypefn Operator {} {+} {= (@B{string} a, b) @B{string}}
+Dyadic operator that yields the concatenation of the two given
+strings as a new string.
+@end deftypefn
+
+@deftypefn Operator {} {+} {= (@B{string} a, @B{char} b) @B{string}}
+Dyadic operator that yields the concatenation of the given string
+@code{a} and a string whose contents are the character @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {*} (= (@B{int} a, @B{string} b) @B{string})
+@deftypefnx Operator {} {*} (= (@B{string} b, @B{int} a) @B{string})
+Dyadic operator that yields the string @code{a} concatenated @code{a}
+times to itself.  If @code{a} is less than zero then it is interpreted
+to be zero.
+@end deftypefn
+
+@subsection Composition combined with assignation
+
+@deftypefn Operator {} {@B{plusab}} {= (@B{ref} @B{string} a, @B{string} b) @B{ref} @B{string}}
+@deftypefnx Operator {} {+:=} {= (@B{ref} @B{string} a, @B{string} b) @B{ref} @B{string}}
+@dfn{Plus and become}.  Dyadic operator that calculates @code{a + b},
+assigns the result of the operation to the name @code{a} and then
+yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{plusto}} {= (@B{string} b, @B{ref} @B{string} a) @B{ref} @B{string}}
+@deftypefnx Operator {} {+=:} {= (@B{string} b, @B{ref} @B{string} b) @B{ref} @B{string}}
+Dyadic operator that calculates @code{a + b}, assigns the result of
+the operation to the name @code{a} and then yields @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{timesab}} {= (@B{ref} @B{string} a, @B{string} b) @B{ref} @B{string}}
+@deftypefnx Operator {} {*:=} {= (@B{ref} @B{string} a, @B{string} b) @B{ref} @B{stringl}}
+@dfn{Plus and become}.  Dyadic operator that calculates @code{a * b},
+assigns the result of the operation to the name @code{a} and then
+yields @code{a}.
+@end deftypefn
+
+@node Complex operators
+@section Complex operators
+
+@node Bits operators
+@section Bits operators
+
+@subsection Logical
+
+@deftypefn Operator {} {@B{NOT}} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+@deftypefnx Operator {} {~} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+Monadic operator that yields the element-wise not logical operation in
+the elements of the given bits operand.
+@end deftypefn
+
+@deftypefn Operator {} {@B{AND}} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+@deftypefnx Operator {} {&} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+Dyadic operator that yields the element-wise and logical operation in
+the elements of the given bits operands.
+@end deftypefn
+
+@deftypefn Operator {} {@B{OR}} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+Dyadic operator that yields the element-wise ``or'' logical operation
+in the elements of the given bits operands.
+@end deftypefn
+
+@subsection Shifting
+
+@deftypefn Operator {} {@B{SHL}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
+@deftypefnx Operator {} {@B{UP}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
+Dyadic operator that yields the given bits operand shifted @code{n}
+positions to the left.  Extra elements introduced on the right are
+initialized to @code{@B{false}}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{SHR}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
+@deftypefnx Operator {} {@B{DOWN}} {= (@B{l} @B{bits} a, @B{int} n) @B{l} @B{bits}}
+Dyadic operator that yields the given bits operand shifted @code{n}
+positions to the right.  Extra elements introduced on the left are
+initialized to @code{@B{false}}.
+@end deftypefn
+
+@subsection Relational
+
+@deftypefn Operator {} {@B{eq}} {= (@B{l} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {=} {= (@B{l} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are equal.  Two
+bits are equal if they contain the same sequence of booleans.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ne}} {= (@B{l} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {/=} {= (@B{l} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether its operands are not equal.
+@end deftypefn
+
+@deftypefn Operator {} {@B{lt}} {= (@B{l} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {<} {= (@B{l} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is less than
+the bits @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{le}} {= (@B{l} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {<=} {= (@B{l} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is less than,
+or equal to bits @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{gt}} {= (@B{l} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {>} {= (@B{l} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is greater than
+the bits @code{b}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{ge}} {= (@B{l} @B{bits} a, b) @B{bool}}
+@deftypefnx Operator {} {>=} {= (@B{l} @B{bits} a, b) @B{bool}}
+Dyadic operator that yields whether the bits @code{a} is greater
+than, or equal to the bits @code{b}.
+@end deftypefn
+
+@subsection Conversions
+
+@deftypefn Operator {} {@B{abs}} {= (@B{l} @B{bits} a) @B{l} @B{int}}
+Monadic operator that yields the integral value whose constituent bits
+correspond to the booleans stored in @code{a}. @xref{@code{@B{bin}}
+and @code{@B{abs}} of negative integral values}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{bin}} {= (@B{l} @B{int} a) @B{l} @B{bits}}
+Monadic operator that yields the bits value whose boolean elements map
+the bits in the given integral operand. @xref{@code{@B{bin}} and
+@code{@B{abs}} of negative integral values}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{shorten}} {= (@B{long} @B{bits} a) @B{bits}}
+@deftypefnx Operator {} {@B{shorten}} {= (@B{long} @B{long} @B{bits} a) @B{long} @B{bits}}
+Monadic operator that yields the bits value that can be lengthened to
+the value of @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{leng}} {= (@B{bits} a) @B{long} @B{bits}}
+@deftypefnx Operator {} {@B{leng}} {= (@B{long} @B{bits} a) @B{long} @B{long} @B{bits}}
+Monadic operator that yields the bits value lengthened from the value
+of @code{a}.  The lengthened value features @code{@B{false}} in the
+extra left positions added to match the lengthened size.
+@end deftypefn
+
+@node Bytes operators
+@section Bytes operators
+
+@node Semaphore operators
+@section Semaphore operators
+
+@node Math procedures
+@section Math procedures
+
+@subsection Arithmetic
+
+@deftypefn Procedure {} {@B{sqrt}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the square root of the given real argument.
+@end deftypefn
+
+@subsection Logarithms
+
+@deftypefn Procedure {} {@B{ln}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the base @code{e} logarithm of the given real
+argument.
+@end deftypefn
+
+@deftypefn Procedure {} {@B{exp}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the exponential function of the given real
+argument.  This is the inverse of @code{@B{ln}}.
+@end deftypefn
+
+@subsection Trigonometric
+
+@deftypefn Procedure {} {@B{sin}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the sin trigonometric function of the given real
+argument.
+@end deftypefn
+
+@deftypefn Procedure {} {@B{arcsin}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the arc-sin trigonometric function of the given real
+argument.
+@end deftypefn
+
+@deftypefn Procedure {} {@B{cos}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the cos trigonometric function of the given real
+argument.
+@end deftypefn
+
+@deftypefn Procedure {} {@B{arccos}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the arc-cos trigonometric function of the given real
+argument.
+@end deftypefn
+
+@deftypefn Procedure {} {@B{tan}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the tan trigonometric function of the given real
+argument.
+@end deftypefn
+
+@deftypefn Procedure {} {@B{arctan}} {= (@B{l} @B{real} a) @B{l} @B{real}}
+Procedure that yields the arc-tan trigonometric function of the given
+real argument.
+@end deftypefn
+
+@node Extended prelude
+@chapter Extended prelude
+@cindex prelude, extended
+
+This chapter documents the GNU extensions to the standard prelude.
+The facilities documented below are available to Algol 68 programs
+only if the @option{gnu68} language dialect is selected, which is the
+default.
+
+The extended prelude is available to Algol 68 programs without needing
+to import any module, provided they are compiled as @code{gnu68} code,
+which is the default.
+
+@menu
+* Extended priorities::                Priorities of extended operators.
+* Extended environment enquiries::     Information about the implementation.
+* Extended rows operators::            Rows and associated operations.
+* Extended boolean operators::         Operations on boolean operands.
+* Extended bits operators::            Bits and associated operations.
+* Extended math procedures::           Mathematical constants and functions.
+@end menu
+
+@node Extended priorities
+@section Extended priorities
+
+@table @code
+@item 3
+@itemize @bullet
+@item @code{@B{xor}}
+@end itemize
+
+@item 8
+@itemize @bullet
+@item @code{@B{elems}}
+@end itemize
+@end table
+
+@node Extended environment enquiries
+@section Extended environment enquiries
+
+An @dfn{environment enquiry} is a constant, whose value may be useful
+to the programmer, that reflects some characteristic of the particular
+implementation.  The values of these enquiries are also determined by
+the architecture and operating system targeted by the compiler.
+
+@deftypevr Constant {@B{l} @B{int}} {L min int}
+The most negative integral value.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{real}} {L min real}
+The most negative real value.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{real}} {L infinity}
+Positive infinity expressed in a real value.
+@end deftypevr
+
+@deftypevr Constant {@B{l} @B{real}} {L minus infinity}
+Negative infinity expressed in a real value.
+@end deftypevr
+
+@deftypevr Constant @B{char} {replacement char}
+A character that is unknown, unrecognizable or unrepresentable in
+Unicode.
+@end deftypevr
+
+@deftypevr Constant @B{char} {eof char}
+@B{char} value that doesn't denote an actual char, but an end-of-file
+situation.
+@end deftypevr
+
+@node Extended rows operators
+@section Extended rows operators
+
+The following operators work on any row mode, denoted below using the
+pseudo-mode @code{@B{rows}}.
+
+@deftypefn Operator {} {@B{elems}} {= (@B{rows} a) @B{int}}
+Monadic operator that yields the number of elements implied by the
+first bound pair of the descriptor of the value of @code{a}.
+@end deftypefn
+
+@deftypefn Operator {} {@B{elems}} {= (@B{int} n, @B{rows} a) @B{int}}
+Dyadic operator that yields the number of elements implied by the n-th
+bound pair of the descriptor of the value of @code{a}.
+@end deftypefn
+
+@node Extended boolean operators
+@section Extended boolean operators
+
+@deftypefn Operator {} {@B{xor}} {= (@B{bool} a, b) @B{bool}}
+Dyadic operator that yields the exclusive-or operation of the given
+boolean arguments.
+@end deftypefn
+
+@node Extended bits operators
+@section Extended bits operators
+
+@deftypefn Operator {} {@B{xor}} {= (@B{l} @B{bits} a, b) @B{l} @B{bits}}
+Dyadic operator that yields the bit exclusive-or operation of the
+given bits arguments.
+@end deftypefn
+
+@node Extended math procedures
+@section Extended math procedures
+
+@subsection Logarithms
+
+@deftypefn Procedure {} {@B{log}} {= (@B{l} @B{real} a, b) @B{l} @B{real}}
+Procedure that calculates the base ten logarithm of the given arguments.
+@end deftypefn
+
+@node POSIX prelude
+@chapter POSIX prelude
+
+The POSIX prelude provides facilities to perform simple transput (I/O)
+based on POSIX file descriptors, accessing the file system,
+command-line arguments, environment variables, etc.
+
+This prelude is available to Algol 68 programs without needing to
+import any module, provided they are compiled as @code{gnu68} code,
+which is the default.
+
+@menu
+* POSIX process::           Process exit status.
+* POSIX command line::      Parsing command-line arguments.
+* POSIX environment::       Environment variables.
+* POSIX errors::            Error handling and error descriptions.
+* POSIX files::             Creating, opening and closing files.
+* POSIX sockets::           Communication endpoints.
+* POSIX string transput::   Reading and writing characters and strings.
+@end menu
+
+@node POSIX process
+@section POSIX process
+
+The Algol 68 program can report an exit status to the operating system
+once they stop running.  The exit status reported by default is zero,
+which corresponds to success.
+
+@deftypefn Procedure {} {set exit status} {= (@B{int} status)}
+Procedure that sets the exit status to report to the operating system
+once the program stop executing.  The default exit status is 0 which,
+by convention, is interpreted by POSIX systems as success.  A value
+different to zero is interpreted as an error status.  This procedure
+can be invoked more than one, the previous exit status being
+overwritten.
+@end deftypefn
+
+@node POSIX command line
+@section POSIX command line
+
+Algol 68 programs can access the command-line arguments passed to them
+by using the following procedures.
+
+@deftypefn Procedure {} {argc} {= @B{int}}
+Procedure that yields the number of arguments passed in the command
+line, including the name of the program.
+@end deftypefn
+
+@deftypefn Procedure {} {argv} {= (@B{int} n) @B{string}}
+Procedure that yields the @code{n}th argument passed in the command
+line.  The first argument is always the name used to invoke the
+program.  If @code{n} is out of range then this procedure returns the
+empty string.
+@end deftypefn
+
+@node POSIX environment
+@section POSIX environment
+
+@deftypefn Procedure {} {getenv} {= (@B{string} varname) @B{string}}
+Procedure that yields the value of the environment variable
+@code{varname} as a string.  If the specified environmental variable
+is not defined the this procedure returns an empty string.
+@end deftypefn
+
+@node POSIX errors
+@section POSIX errors
+
+When a call to a procedure in this prelude results in an error, the
+called procedure signals the error in some particular way and also
+sets a global @code{errno} to a code describing the error.  For
+example, trying to opening a file that doesn't exist will result in
+@code{fopen} returning -1, which signals an error.  The caller can
+then inspect the global @code{errno} to see what particular error
+prevented the operation to be completed: in this case, @code{errno}
+will contain the error code corresponding to ``file doesn't exist''.
+
+@deftypefn Procedure {} {errno} {= @B{int}}
+This procedure yields the current value of the global @code{errno}.
+The yielded value reflects the error status of the last executed POSIX
+prelude operation.
+@end deftypefn
+
+@deftypefn Procedure {} {strerror} {= (@B{int} ecode) @B{string}}
+This procedure gets an error code and yields a string containing an
+explanatory short description of the error.  It is typical to pass the
+output of @code{errno} to this procedure.
+@end deftypefn
+
+@deftypefn Procedure {} {perror} {= (@B{string} msg) @B{void}}
+This procedure prints the given string @code{msg} in the standard
+error output, followed by a colon character, a space character and
+finally the string error of the current value of @code{errno}.
+@end deftypefn
+
+@node POSIX files
+@section POSIX files
+
+File descriptors are @code{@B{int}} values that identify open files
+that can be accessed by the program.  The @code{fopen} procedure
+allocates file descriptors as it opens files, and the descriptor is
+used in subsequent transput calls to perform operations on the files.
+
+@subsection Standard file descriptors
+
+There are three descriptors, however, which are automatically opened
+when the program starts executing and automatically closed when the
+program finishes.  These are:
+
+@deftypevr Constant {@B{int}} {stdin}
+File descriptor associated with the standard input.  Its value is @code{0}.
+@end deftypevr
+
+@deftypevr Constant {@B{int}} {stdout}
+File descriptor associated with the standard output.  Its value is @code{1}.
+@end deftypevr
+
+@deftypevr Constant {@B{int}} {stderr}
+File descriptor associated with the standard error.  Its value is @code{2}.
+@end deftypevr
+
+@subsection Opening and closing files
+
+@deftypefn Procedure {} {fopen} {= (@B{string} pathname, @B{bits} flags) @B{int}}
+Open the file specified by @code{pathname}.  The argument @code{flags}
+is a combination of @code{file o} flags as defined below.  If the
+specified file is successfully opened while satisfying the constraints
+implied by @code{flags} then this procedure yields a file descriptor
+that is used in subsequent I/O calls to refer to the open
+file. Otherwise, this procedure yields -1.  The particular error can
+be inspected by calling the @code{errno} procedure.
+@end deftypefn
+
+@deftypefn Procedure {} {fclose} {= (@B{int} fd) @B{int}}
+Close the given file descriptor, which no longer refers to any file.
+This procedure yields zero on success, and -1 on error.  In the later
+case, the program can look at the particular error by calling the
+@code{errno} procedure.
+@end deftypefn
+
+@subsection Creating files
+
+@deftypefn Procedure {} {fcreate} {= (@B{string} pathname, @B{bits} mode) @B{int}}
+Create a file with name @code{pathname}.  The argument @code{mode} is
+a @code{@B{bits}} value containing a bit pattern that determines the
+permissions on the created file.  The bit pattern has the form
+@code{8rUGO}, where @code{U} reflects the permissions of the user who
+owns the file, @code{U} reflects the permissions of the users
+pertaining to the file's group, and @code{O} reflects the permissions
+of all other users.  The permission bits are 1 for execute, 2 for
+write and 4 for read.  If the file is successfully created then this
+procedure yields a file descriptor that is used in subsequent I/O
+calls to refer to the newly created file.  Otherwise, this procedure
+yields -1.  The particular error can be inspected by calling the
+@code{errno} procedure.
+@end deftypefn
+
+@subsection Flags for @code{fopen}
+
+The following flags can be combined using bit-wise operators.  Note
+that in POSIX systems the effective mode of the created file is the
+mode specified by the programmer masked with the process's
+@dfn{umask}.
+
+@deftypevr Constant {@B{bits}} {file o default}
+Flag for @code{fopen} indicating that the file shall be opened with
+whatever capabilities allowed by its permissions.
+@end deftypevr
+
+@deftypevr Constant {@B{bits}} {file o rdwr}
+Flag for @code{fopen} indicating that the file shall be opened for
+both reading and writing.
+@end deftypevr
+
+@deftypevr Constant {@B{bits}} {file o rdonly}
+Flag for @code{fopen} indicating that the file shall be opened for
+reading only.  This flag is not compatible with @code{file o rdwr} nor
+with @code{file o wronly}.
+@end deftypevr
+
+@deftypevr Constant {@B{bits}} {file o wronly}
+Flag for @code{fopen} indicating that the file shall be opened for
+write only.  This flag is not compatible with @code{file o rdwr} nor
+with @code{file o rdonly}.
+@end deftypevr
+
+@deftypevr Constant {@B{bits}} {file o trunc}
+Flag for @code{fopen} indicating that the opened file shall be
+truncated upon opening it.  The file must allow writing for this flag
+to take effect.  The effect of combining @code{file o trunc} and
+@code{file o rdonly} is undefined and varies among implementations.
+@end deftypevr
+
+@subsection Getting file properties
+
+@deftypefn Procedure {} {fsize} {= (@B{int} fd) @B{long} @B{long} @B{int}}
+Return the size in bytes of the file characterized by the file
+descriptor @code{fd}.  If the system entity characterized by the given
+file descriptor doesn't have a size, if the size of the file cannot be
+stored in a @code{@B{long} @B{long} @B{int}}, or if there is any other
+error condition, this procedure yields -1 and @code{errno} is set
+appropriately.
+@end deftypefn
+
+@deftypefn Procedure {} {lseek} {= (@B{int} fd, @B{long int} offset, @B{int} whence) @B{long long int}}
+Set the file offset of the file characterized by the file descriptor @code{fd}
+depending on the values of @code{offset} and @code{whence}.  On success, the
+resulting offset, as measured in bytes from the beginning of the file, is
+returned. Otherwise, -1 is returned, @code{errno} is set to indicate the error,
+and the file offset remains unchanged.  The effects of @code{offset} and
+@code{whence} are:
+@itemize
+@item
+If @code{whence} is @code{seek set}, the file offset is set to @code{offset}
+bytes.
+@item
+If @code{whence} is @code{seek cur}, the file offset is set to its current
+location plus @code{offset}.
+@item
+If @code{whence} is @code{seek end}, the file offset is set to the size of the
+file plus @code{offset}.
+@end itemize
+@end deftypefn
+
+@node POSIX sockets
+@section POSIX sockets
+
+A program can communicate with other computers, or with other
+processes running in the same computer, via sockets.  The sockets are
+identified by file descriptors.
+
+@deftypefn Procedure {} {fconnect} {= (@B{string} host, @B{int} port) @B{int}}
+This procedure creates a stream socket and connects it to the given
+@code{host} using port @code{port}.  The established communication is
+full-duplex, and allows sending and receiving data using transput
+until it gets closed.  On success this procedure yields a file
+descriptor.  On error this procedure yields -1 and @code{errno} is set
+appropriately.
+@end deftypefn
+
+@node POSIX string transput
+@section POSIX string transput
+
+The following procedures read or write characters and strings from and
+to open files.  The external encoding of the files is assumed to be
+UTF-8.  Since Algol 68 @code{@B{char}}s are UCS-4, this means that
+reading or writing a character may involve reading or writing more
+than one byte, depending on the particular Unicode code points
+involved.
+
+@subsection Output of strings and chars
+
+@deftypefn Procedure {} {putchar} {= (@B{char} c) @B{char}}
+Write the given character to the standard output.  This procedure
+yields @code{c} in case the character got successfully written, or
+@code{eof char} otherwise.
+@end deftypefn
+
+@deftypefn Procedure {} {puts} {= (@B{string} str) @B{void}}
+Write the given string to the standard output.
+@end deftypefn
+
+@deftypefn Procedure {} {fputc} {= (@B{int} fd, @B{char} c) @B{int}}
+Write given character @code{c} to the file with descriptor @code{fd}.
+This procedure yields @code{c} on success, or @code{eof char} on
+error.
+@end deftypefn
+
+@deftypefn Procedure {} {fputs} {= (@B{int} fd, @B{string} str) @B{int}}
+Write the given string @code{str} to the file with descriptor
+@code{fd}.  This procedure yields the number of bytes written on
+success, or 0 on error.
+@end deftypefn
+
+@subsection Input of strings and chars
+
+@deftypefn Procedure {} {getchar} {= @B{char}}
+Read a character from the standard input.  This procedure yields the
+read character in case the character got successfully read, or
+@code{eof char} otherwise.
+@end deftypefn
+
+@deftypefn Procedure {} {gets} {= (@B{int} n) @B{ref} @B{string}}
+Read a string composed of @code{n} characters from the standard input
+and yield a reference to it.  If @code{n} is bigger than zero then
+characters get read until either @code{n} characters have been read or
+the end of line is reached.  If @code{n} is zero or negative then
+characters get read until either a new line character is read or the
+end of line is reached.
+@end deftypefn
+
+@deftypefn Procedure {} {fgetc} {= (@B{int} fd) @B{int}}
+Read a character from the file with descriptor @code{fd}.  This
+procedure yields the read character in case a valid Unicode character
+got successfully read.  If an unrecognizable or unknown character is
+found then this procedure yields @code{replacement char}.  In case of
+end of file this procedure yields @code{eof char}.
+@end deftypefn
+
+@deftypefn Procedure {} {fgets} {= (@B{int} fd, @B{int} n) @B{ref} @B{string}}
+Read a string from the file with descriptor @code{fd} and yield a
+reference to it.  If @code{n} is bigger than zero then characters get
+read until either @code{n} characters have been read or the end of
+line is reached.  If @code{n} is zero or negative then characters get
+read until either a new line character is read or the end of line is
+reached.
+@end deftypefn
+
+@node Language extensions
+@chapter Language extensions
+
+This chapter documents the GNU extensions implemented by this compiler
+on top of the Algol 68 programming language.  These extensions
+collectively conform a strict @dfn{superlanguage} of Algol 68, and are
+enabled by default.  To disable them the user can select the strict
+Algol 68 standard by passing the option @option{-std=algol68} when
+invoking the compiler.
+
+@menu
+* @code{@B{bin}} and @code{@B{abs}} of negative integral values::
+* Bold taggles::              Using underscores in mode and operator indications.
+@end menu
+
+@node @code{@B{bin}} and @code{@B{abs}} of negative integral values
+@section @code{@B{bin}} and @code{@B{abs}} of negative integral values
+
+The @code{@B{bin}} operator gets an integral value and yields a
+@code{@B{bits}} value that reflects the internal bits of the integral
+value.  The semantics of this operator, as defined in the Algol 68
+standard prelude, are:
+
+@example
+@B{op} @B{bin} = (L @B{int} a) L @B{bits}:
+  @B{if} a >= L 0
+  @B{then} L @B{int} b := a; L @B{bits};
+       @B{for} i @B{from} L bits width @B{by} -1 @B{to} 1
+       @B{do} (L F @B{of} c)[i] := @B{odd} b; b := b % L 2 @B{od};
+       c
+  @B{fi};
+@end example
+
+The @code{@B{abs}} operator performs the inverse operation of
+@code{@B{bits}}.  Given a @code{L @B{bits}} value, it yields the
+@code{L @B{int}} value whose bits representation is the bits value.
+The semantics of this operator, as defined in the Algol 68 prelude,
+are:
+
+@example
+@B{op} @B{abs} = (L @B{bits} a) L @B{int}:
+@B{begin} L @B{int} c := L 0;
+      @B{for} i @B{to} L bits width
+      @B{do} c := L 2 * c + K @B{abs} (L F @B{of} a)[i] @B{od};
+      c
+@B{end}
+@end example
+
+@noindent
+Note how the @code{@B{bin}} of a negative integral value is not
+defined: the implicit else-part of the conditional yields
+@code{@B{skip}}, which is defined as any bits value in that context.
+Note also how @code{@B{abs}} doesn't make any provision to check
+whether the resulting value is positive: it assumes it is so.
+
+The GNU Algol 68 compiler, when working in strict Algol 68 mode
+(@option{-std=algol68}), makes @code{@B{bin}} to always yield @code{L
+@B{bits} (@B{skip})} when given a negative value, as mandated by the
+report.  But the skip value is always the bits representation of zero,
+@i{i.e.} 2r0.  Strict Algol 68 programs, however, must not rely on
+this.
+
+When GNU extensions are enabled (@option{-std=gnu68}) the
+@code{@B{bin}} of a negative value yields the two's complement bit
+pattern of the value rather than zero.  Therefore, @code{@B{bin} -
+@B{short} @B{short} 2} yields @code{2r11111110}.  And @code{@B{abs}
+@B{short} @B{short} 2r11111110} yields -2.
+
+@node Bold taggles
+@section Bold taggles
+
+This compiler supports the stropping regimes known as UPPER and
+SUPPER.  In both regimes bold words are written by writing their
+constituent bold letters and digits, in order.  In UPPER regime all
+the letters of a bold word are to be written using upper-case.  In
+SUPPER regime, only the first bold letter is required to be written
+using upper-case, and this only when the bold word is not a reserved
+word.
+
+When a bold word comprises several natural words, it may be a little
+difficult to distinguish them at first sight.  Consider for example
+the following code, written fist in UPPER stropping:
+
+@example
+MODE TREENODE = STRUCT (TREENODEPAYLOAD data, REF TREENODE next),
+     TREENODEPAYLOAD = STRUCT (INT code, REAL average, mean);
+@end example
+
+@noindent
+Then written in SUPPER stropping:
+
+@example
+mode TreeNode = struct (TreeNodePayload data, REF TreeNode next),
+     TreeNodePayload = struct (int code, real average, mean);
+@end example
+
+Particularly in UPPER stropping, it may be difficult to distinguish
+the constituent natural words at first sight.
+
+In order to improve this, this compiler implements a GNU extension
+called @dfn{bold taggles} that allows to use underscore characters
+(@code{_}) within mode and operator indications as a visual aid to
+improve readability.  When this extension is enabled, mode indications
+and operator indications consist in a sequence of the so-called
+@dfn{bold taggles}, which are themselves sequences of one or more bold
+letters or digits optionally terminated by an underscore character.
+
+With bold taggles enabled the program above could have been written
+using UPPER stropping as:
+
+@example
+MODE TREE_NODE = STRUCT (TREE_NODE_PAYLOAD data, REF TREE_NODE next),
+     TREE_NODE_PAYLOAD = STRUCT (INT code, REAL average, mean);
+@end example
+
+@noindent
+And using SUPPER stropping as:
+
+@example
+mode Tree_Node = struct (Tree_Node_Payload data, ref Tree_Node next),
+     Tree_Node_Payload = struct (int code, real average, mean);
+@end example
+
+@noindent
+Which is perhaps more readable for most people.  Note that the
+underscore characters are not really part of the mode or operator
+indication.  Both @code{TREE_NODE} and @code{TREENODE} denote the same
+mode indication.  Note also that, following the definition, constructs
+like @code{Foo__bar} and @code{_Baz} are not valid indications.
+
+Bold taggles are available when the gnu68 dialect of the language is
+selected.  @xref{Dialect options}.
+
+@include gpl_v3.texi
+@include fdl.texi
+
+@node Option Index
+@unnumbered Option Index
+
+@command{ga68}'s command line options are indexed here without any initial
+@samp{-} or @samp{--}.  Where an option has both positive and negative forms
+(such as @option{-f@var{option}} and @option{-fno-@var{option}}), relevant
+entries in the manual are indexed under the most appropriate form; it may
+sometimes be useful to look up both forms.
+
+@printindex op
+
+@node General Index
+@unnumbered Index
+
+@printindex cp
+
+@bye
