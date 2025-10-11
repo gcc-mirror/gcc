@@ -1,3 +1,71 @@
+2025-10-10  David Faust  <david.faust@oracle.com>
+
+	PR target/122141
+	* config/bpf/bpf.cc (bpf_expand_cbranch): Use swap_condition
+	rather than reverse_condition when reversing jump condition to
+	work around missing instructions in very old BPF ISAs.
+
+2025-10-10  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (do_simple_agr_dse): New function.
+	(pass_forwprop::execute): Call do_simple_agr_dse for clobbers.
+
+2025-10-10  Umesh Kalvakuntla  <Umesh.Kalvakuntla@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Fix znver5 family
+	model numbers.
+	(get_available_features): Set FEATURE_PREFETCHI for bit_AMD_PREFETCHI.
+	* config/i386/cpuid.h (bit_AMD_PREFETCHI): New Macro.
+
+2025-10-10  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*widen_wsubu_wx_<mode>): Add new
+	pattern to match vwsubu.wx.
+
+2025-10-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* config/s390/vector.md (fmax<mode>3): Restrict to no trapping
+	math.
+	(fmin<mode>3): Ditto.
+
+2025-10-10  Segher Boessenkool  <segher@kernel.crashing.org>
+
+	* config/rs6000/rs6000.md (mode_iterator CCANY): Add CCFP and CCEQ.
+
+2025-10-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* config/arm/mve.md (@mve_vbicq_f<mode>): Fix operands order.
+
+2025-10-10  Andrew Stubbs  <ams@baylibre.com>
+
+	* tree-vect-stmts.cc: Fix VEC_STMT parameter comments throughout.
+
+2025-10-10  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Improve Apple
+	M3 and add Apple M4 cores.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Add apple-m4 core to the ones listed
+	for arch and tune selections.
+
+2025-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122111
+	* tree-ssa-math-opts.cc (build_and_insert_cast): Remove
+	conversion simplification, instead use gimple_convert.
+
+2025-10-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/arm/arm.cc (arm_builtin_support_vector_misalignment):
+	Remove use of type.
+
+2025-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122225
+	* tree-cfg.cc (verify_gimple_return): Look at DECL_RESULT
+	for DECL_BY_REFERENCE.
+
 2025-10-10  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
 
 	Revert:

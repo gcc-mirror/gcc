@@ -1,3 +1,74 @@
+2025-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50377
+	* gfortran.dg/pr41011.f: Fix invalid testcase.
+	* gfortran.dg/actual_procedure_2.f: New test.
+
+2025-10-10  David Faust  <david.faust@oracle.com>
+
+	PR target/122141
+	* gcc.target/bpf/pr122141-1.c: New.
+	* gcc.target/bpf/pr122141-2.c: New.
+
+2025-10-10  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group1/check_88.cob: Likewise.
+
+2025-10-10  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gfortran.dg/intent_optimize_10.f90: Update so -g won't fail.
+	* gcc.dg/tree-ssa/copy-prop-aggregate-sra-1.c: New testcase.
+
+2025-10-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* g++.dg/template/dependent-base6.C: New test.
+
+2025-10-10  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vwsubu.wx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen.h: Add test helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/wx_vwsubu-run-1-u64.c: New test.
+
+2025-10-10  Juergen Christ  <jchrist@linux.ibm.com>
+
+	* gcc.target/s390/fminmax-1.c: Disable for signaling NaNs.
+	* gcc.target/s390/fminmax-2.c: Ditto.
+	* gcc.target/s390/vector/reduc-minmax-1.c: Ditto.
+
+2025-10-10  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR testsuite/116421
+	* c-c++-common/vector-subscript-4.c: Check for vectors prior
+	ISEL.
+
+2025-10-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.dg/vect/vect-reduc-chain-1.c: Adjust expected
+	dump.
+
+2025-10-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* gcc.target/arm/mve/intrinsics/pr122223.c: New test.
+
+2025-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122111
+	* gcc.target/arm/pr122111.c: New test.
+
 2025-10-10  YunQiang Su  <yunqiang@isrc.iscas.ac.cn>
 
 	Revert:

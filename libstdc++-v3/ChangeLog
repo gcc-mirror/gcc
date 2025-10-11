@@ -1,3 +1,147 @@
+2025-10-10  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122172
+	* include/bits/shared_ptr_base.h (_Sp_counted_base): Define
+	_Unsigned_count_type for make_unsigned<_Atomic_word>.
+	Replace __int_traits<_Atomic_word> with equivalent expression.
+	* include/ext/atomicity.h (_GLIBCXX_UNSIGNED_ATOMIC_WORD):
+	Define macro for unsigned type to use for arithmetic.
+	(__exchange_and_add_single, __atomic_add_single): Use it.
+
+2025-10-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/month_day_last/io.cc: Remove TODO comments
+	for test_parse().
+	* testsuite/std/time/month_weekday/io.cc: Likewise.
+	* testsuite/std/time/month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/weekday_indexed/io.cc: Likewise.
+	* testsuite/std/time/weekday_last/io.cc: Likewise.
+	* testsuite/std/time/year_month_day_last/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday/io.cc: Likewise.
+	* testsuite/std/time/year_month_weekday_last/io.cc: Likewise.
+
+2025-10-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121790
+	* include/bits/chrono_io.h (enable_nonlocking_formatter_optimization):
+	Adjust specializations for duration, hh_mm_ss and time_points.
+	* include/std/format (enable_nonlocking_formatter_optimization):
+	Apply remove_cvref_t on pair and tuple elements.
+	* include/std/queue (enable_nonlocking_formatter_optimization):
+	Change specialization value to false.
+	* include/std/stack (enable_nonlocking_formatter_optimization):
+	Change specialization value to false.
+	* testsuite/std/format/ranges/adaptors.cc: Adjusted tests.
+	* testsuite/std/format/tuple.cc: Adjusted tests.
+	* testsuite/std/time/format/nonlocking.cc: Adjusted tests.
+
+2025-10-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121790
+	* include/bits/chrono_io.h
+	(enable_nonlocking_formatter_optimization): Define specializations
+	for chrono types.
+	* include/bits/version.def (print): Bump.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (enable_nonlocking_formatter_optimization):
+	Define specializations for pair, tuple and ranges.
+	* include/std/queue (enable_nonlocking_formatter_optimization):
+	Define specializations for queue and priority_queue.
+	* include/std/stack (enable_nonlocking_formatter_optimization):
+	Define specialization for stack.
+	* include/std/stacktrace (enable_nonlocking_formatter_optimization):
+	Define specialization for basic_stacktrace and stacktrace_entry.
+	* include/std/thread (enable_nonlocking_formatter_optimization):
+	Define specialization for thread::id.
+	* include/std/vector (enable_nonlocking_formatter_optimization):
+	Define specialization for vector<bool>::reference.
+	* testsuite/23_containers/vector/bool/format.cc: Test value of
+	enable_nonlocking_formatter_optimization.
+	* testsuite/30_threads/thread/id/output.cc: Likewise.
+	* testsuite/std/format/ranges/adaptors.cc: Likewise.
+	* testsuite/std/format/ranges/formatter.cc: Likewise.
+	* testsuite/std/format/tuple.cc: Likewise.
+	* testsuite/std/time/format/empty_spec.cc: Extract Rep class
+	to custom_rep.h.
+	* testsuite/std/time/format/custom_rep.h: Extracted from
+	empty_spec.cc.
+	* testsuite/std/time/format/nonlocking.cc: New test.
+
+2025-10-10  Jonathan Wakely  <jwakely@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121790
+	* acinclude.m4 (GLIBCXX_CHECK_STDIO_LOCKING): New macro to check
+	for std::print dependencies.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GLIBCXX_CHECK_STDIO_LOCKING.
+	* include/bits/formatfwd.h (enable_nonlocking_formatter_optimization):
+	Define new variable template.
+	* include/bits/version.def (print): Bump value.
+	* include/bits/version.h: Regenerate.
+	* include/std/format (enable_nonlocking_formatter_optimization):
+	Define specializations for variable template.
+	* include/std/ostream (print) [!_WIN32]: Do not use
+	vprint_unicode at all.
+	(println): Append newline to format string instead of formatting
+	twice.
+	* include/std/print (_File_sink): New class.
+	(vprint_nonunicode_locking): New function.
+	(vprint_unicode_locking): New function reusing previous code
+	from vprint_unicode.
+	(vprintf_unicode): Defer to vprint_nonunicode for Windows or to
+	vprint_unicode_locking otherwise.
+	(print): [!_WIN32]: Do no use vprint_unicode at all.
+	Check enable_nonlocking_formatter_optimization and defer to
+	either vprint_nonunicode_locking or vprint_nonunicode.
+	(println): Use vprint_unicode or format directly to a _File_sink
+	instead of formatting twice.
+	* testsuite/27_io/print/1.cc: Updated and added new tests.
+	* testsuite/std/format/formatter/nonlocking.cc: New tests.
+
+2025-10-10  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/115402
+	* include/bits/atomic_base.h (__atomic_ref_base<const _Tp>)
+	(__atomic_ref_base<_Tp>): Define by extracting common methods
+	from atomic_ref specializations.
+	(__atomic_ref<_Tp, In, Fp, Pt>): Inherit from __atomic_ref_base
+	and remove extracted method.
+	(__atomic_ref<const _Tp, In, Fp, Pt>): Define.
+	* include/std/atomic (std::atomic): Added an
+	* testsuite/29_atomics/atomic/requirements/types_neg.cc:
+	Add test for volatile qualified types.
+	* testsuite/29_atomics/atomic_ref/bool.cc: Move the content
+	to op_support.cc, add test for bool.
+	* testsuite/29_atomics/atomic_ref/op_support.cc: New test
+	expanded from atomic_ref/bool.cc.
+	* testsuite/29_atomics/atomic_ref/cv_qual.cc: New test.
+	* testsuite/29_atomics/atomic_ref/requirements_neg.cc: New test.
+	* testsuite/29_atomics/atomic_ref/deduction.cc: Add tests for
+	cv-qualified types.
+	* testsuite/29_atomics/atomic_ref/float.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/integral.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/pointer.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/requirements.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/wait_notify.cc: Add tests for
+	const qualified types.
+
+2025-10-10  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121929
+	* include/bits/chrono_io.h (_ChronoData::_M_fill_aux)
+	(_ChronoData::_M_fill_aux): Add comment documenting precondition.
+	(formatter<chrono::year_month_day, _CharT>::format): Compute
+	local_days inline.
+	(formatter<chrono::year_month_day_last, _CharT>::format)
+	(formatter<chrono::year_month_weekday, _CharT>::format)
+	(formatter<chrono::year_month_weekday_last, _CharT>::format):
+	Change how the _M_day field is computed.
+	* testsuite/std/time/year_month_weekday/io.cc: Adjust tests.
+
 2025-10-09  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/hashtable.h (_Hashtable::_S_nothrow_move): Use

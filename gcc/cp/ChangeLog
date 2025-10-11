@@ -1,3 +1,13 @@
+2025-10-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* decl.cc (make_typename_type): Document base-specifier as
+	another type-only lookup case.
+	* parser.cc (cp_parser_class_name): Propagate tag_type to
+	make_typename_type instead of hardcoding typename_type.
+	(cp_parser_base_specifier): Pass class_type instead of
+	typename_type as tag_type to cp_parser_class_name.
+
 2025-10-09  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h (cp_build_function_type): Declare.

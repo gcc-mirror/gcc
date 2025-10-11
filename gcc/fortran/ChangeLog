@@ -1,3 +1,9 @@
+2025-10-10  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50377
+	* resolve.cc (resolve_actual_arglist): Check procedure actual
+	arguments.
+
 2025-10-09  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/122206

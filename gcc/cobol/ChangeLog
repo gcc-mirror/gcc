@@ -1,3 +1,118 @@
+2025-10-10  Robert Dubner  <rdubner@symas.com>
+
+	* cdf.y: In support of the described changes.
+	* gcobol.1: Likewise.
+	* genapi.cc (level_88_helper): Likewise.
+	(get_level_88_domain): Likewise.
+	(get_class_condition_string): Likewise.
+	(initialize_variable_internal): Likewise.
+	(gg_default_qualification): Likewise.
+	(cobol_compare): Likewise.
+	(move_tree): Likewise.
+	(move_tree_to_field): Likewise.
+	(psa_FldBlob): Likewise.
+	(parser_accept_date_yymmdd): Likewise.
+	(parser_accept_date_yyyymmdd): Likewise.
+	(parser_accept_date_yyddd): Likewise.
+	(parser_accept_date_yyyyddd): Likewise.
+	(parser_accept_date_dow): Likewise.
+	(parser_accept_date_hhmmssff): Likewise.
+	(parser_alphabet): Likewise.
+	(parser_alphabet_use): Likewise.
+	(parser_display_internal): Likewise.
+	(parser_display): Likewise.
+	(is_valuable): Likewise.
+	(parser_division): Likewise.
+	(parser_relop_long): Likewise.
+	(parser_setop): Likewise.
+	(parser_set_conditional88): Likewise.
+	(parser_file_add): Likewise.
+	(parser_file_open): Likewise.
+	(create_and_call): Likewise.
+	(parser_call): Likewise.
+	(mh_identical): Likewise.
+	(mh_source_is_literalN): Likewise.
+	(picky_memcpy): Likewise.
+	(mh_numeric_display): Likewise.
+	(mh_source_is_group): Likewise.
+	(mh_source_is_literalA): Likewise.
+	(move_helper): Likewise.
+	(initial_from_initial): Likewise.
+	(actually_create_the_static_field): Likewise.
+	(psa_FldLiteralA): Likewise.
+	(parser_symbol_add): Likewise.
+	* genmath.cc (arithmetic_operation): Likewise.
+	* genutil.cc (get_binary_value): Likewise.
+	(get_literal_string): Likewise.
+	* genutil.h (EBCDIC_MINUS): Likewise.
+	(EBCDIC_PLUS): Likewise.
+	(EBCDIC_ZERO): Likewise.
+	(EBCDIC_NINE): Likewise.
+	* parse.y: Likewise.
+	* parse_ante.h (name_of): Likewise.
+	(class prog_descr_t): Likewise.
+	(current_encoding): Likewise.
+	(needs_picture): Likewise.
+	(is_callable): Likewise.
+	(field_attr_str): Likewise.
+	(value_encoding_check): Likewise.
+	(field_alloc): Likewise.
+	(file_add): Likewise.
+	* scan.l: Likewise.
+	* structs.cc (create_cblc_field_t): Likewise.
+	* symbols.cc (elementize): Likewise.
+	(cbl_field_attr_str): Likewise.
+	(is_variable_length): Likewise.
+	(field_str): Likewise.
+	(extend_66_capacity): Likewise.
+	(assert): Likewise.
+	(symbols_update): Likewise.
+	(symbol_field_parent_set): Likewise.
+	(add_token): Likewise.
+	(symbol_table_init): Likewise.
+	(symbol_field_add): Likewise.
+	(symbol_field_forward_add): Likewise.
+	(symbol_field_same_as): Likewise.
+	(cbl_alphabet_t::reencode): Likewise.
+	(new_temporary_impl): Likewise.
+	(parser_symbol_add2): Likewise.
+	(new_literal_add): Likewise.
+	(temporaries_t::literal): Likewise.
+	(new_literal): Likewise.
+	(standard_internal): Likewise.
+	(new_temporary): Likewise.
+	(cbl_field_t::holds_ascii): Likewise.
+	(cbl_field_t::is_ascii): Likewise.
+	(cbl_field_t::internalize): Likewise.
+	(symbol_label_add): Likewise.
+	(symbol_label_section_exists): Likewise.
+	(cbl_occurs_t::subscript_ok): Likewise.
+	(cbl_file_t::deforward): Likewise.
+	(has_value): Likewise.
+	* symbols.h (is_numeric): Likewise.
+	(__gg__encoding_iconv_name): Likewise.
+	(current_encoding): Likewise.
+	(struct cbl_field_t): Likewise.
+	(new_literal): Likewise.
+	(class temporaries_t): Likewise.
+	(struct function_descr_t): Likewise.
+	(hex_decode): Likewise.
+	(struct cbl_alphabet_t): Likewise.
+	(struct cbl_file_t): Likewise.
+	* symfind.cc (field_structure): Likewise.
+	(erase_symbol_map_fwds): Likewise.
+	(symbol_find): Likewise.
+	* token_names.h: Likewise.
+	* util.cc (cbl_field_type_str): Likewise.
+	(is_elementary): Likewise.
+	(symbol_field_type_update): Likewise.
+	(cbl_field_t::report_invalid_initial_value): Likewise.
+	(valid_move): Likewise.
+	(valid_picture): Likewise.
+	(type_capacity): Likewise.
+	(gcc_location_set_impl): Likewise.
+	(cbl_unimplementedw): Likewise.
+
 2025-09-05  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (trace1_init): Prepend two internal variables with
