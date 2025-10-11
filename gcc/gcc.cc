@@ -4651,11 +4651,13 @@ driver_handle_option (struct gcc_options *opts,
     case OPT_static_libgfortran:
     case OPT_static_libquadmath:
     case OPT_static_libphobos:
+    case OPT_static_libga68:
     case OPT_static_libgm2:
     case OPT_static_libstdc__:
       /* These are always valid; gcc.cc itself understands the first two
 	 gfortranspec.cc understands -static-libgfortran,
 	 libgfortran.spec handles -static-libquadmath,
+	 a68spec.cc understands -static-libga68,
 	 d-spec.cc understands -static-libphobos,
 	 gm2spec.cc understands -static-libgm2,
 	 and g++spec.cc understands -static-libstdc++.  */

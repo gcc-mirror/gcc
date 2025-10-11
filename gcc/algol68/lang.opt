@@ -1,0 +1,122 @@
+; Options for the Algol 68 front end.
+; Copyright (C) 2025 Free Software Foundation, Inc.
+;
+; GCC is free software; you can redistribute it and/or modify it under
+; the terms of the GNU General Public License as published by the Free
+; Software Foundation; either version 3, or (at your option) any later
+; version.
+;
+; GCC is distributed in the hope that it will be useful, but WITHOUT ANY
+; WARRANTY; without even the implied warranty of MERCHANTABILITY or
+; FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+; for more details.
+;
+; You should have received a copy of the GNU General Public License
+; along with GCC; see the file COPYING3.  If not see
+; <http://www.gnu.org/licenses/>.
+
+; See the GCC internals manual for a description of this file's format.
+
+; Please try to keep this file in ASCII collating order.
+
+; Describes command-line options used by this frontend
+
+Language
+Algol68
+
+I
+Algol68 Joined Separate
+; Documented in c-family/c.opt
+
+Wextensions
+Algol68 Warning Var(warn_algol68_extensions) LangEnabledBy(Algol68, Wextra)
+Warn for usage of non-portable extensions of Algol 68.
+
+Wvoiding
+Algol68 Warning Var(warn_algol68_voiding) LangEnabledBy(Algol68, Wextra)
+Warn when voiding occurs.
+
+Wextra
+Algol68 Warning
+; Documented in common.opt
+
+Wscope
+Algol68 Warning Var(warn_algol68_scope)
+Warn for potential name scope violations.
+
+Enum
+Name(warn_hidden_declarations_level) Type(int) UnknownError(argument %qs to %<-Whidden-declaration%> not recognized)
+
+EnumValue
+Enum(warn_hidden_declarations_level) String(none) Value(0)
+
+EnumValue
+Enum(warn_hidden_declarations_level) String(prelude) Value(1)
+
+EnumValue
+Enum(warn_hidden_declarations_level) String(all) Value(2)
+
+Whidden-declarations
+Algol68 Alias(Whidden-declarations=,prelude,none)
+Warn about hidden declarations in inner scopes.
+
+Whidden-declarations=
+Algol68 Warning Var(warn_algol68_hidden_declarations) Enum(warn_hidden_declarations_level) Joined RejectNegative LangEnabledBy(Algol68,Wall)
+-Whidden-declarations=[none|prelude|all] Warn about declarations hidden in inner scopes.
+
+fbrackets
+Algol68 Var(flag_brackets)
+-fbrackets  	Consider [ .. ] and { .. } as being equivalent to ( .. ).
+
+fassert
+Algol68 Var(flag_assert)
+Generate code for assert contracts.
+
+fcheck=
+Algol68 RejectNegative JoinedOrMissing
+-fcheck=[...]	Specify which runtime checks are to be performed.
+
+fa68-dump-modes
+Algol68 Var(flag_a68_dump_modes)
+Dump Algol 68 modes after parsing.
+
+fa68-dump-ast
+Algol68 Var(flag_a68_dump_ast)
+Dump Algol 68 parse tree after parsing.
+
+fa68-dump-module-interfaces
+Algol68 Var(flag_a68_dump_moif)
+Dump the interfaces of module definitions in the compiled packet.
+
+static-libga68
+Driver
+Link the GNU Algol run-time library statically in the compilation.
+
+shared-libga68
+Driver
+Link the GNU Algol 68 run-time library dynamically in the compilation.
+
+std=algol68
+Algol68
+Compile strict Algol 68 as defined by the Revised Report
+
+std=gnu68
+Algol68
+Accept GNU extensions to Algol 68
+
+; Stropping regimes.
+
+fstropping=
+Algol68 Joined RejectNegative Enum(stropping_regime) Var(flag_stropping_regime)
+-fstropping=[upper|supper]              Stropping regime to expect in Algol 68 programs.
+
+Enum
+Name(stropping_regime) Type(int) UnknownError(unknown stropping_regime setting %qs)
+
+EnumValue
+Enum(stropping_regime) String(upper) Value(0)
+
+EnumValue
+Enum(stropping_regime) String(supper) Value(1)
+
+; This comment is to ensure we retain the blank line above.

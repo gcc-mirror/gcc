@@ -1999,6 +1999,9 @@ UrlSuffix(gcc/Overall-Options.html#index-specs)
 static
 UrlSuffix(gcc/Link-Options.html#index-static)
 
+static-libga68
+LangUrlSuffix_Algol68(ga68/Linking-options.html#index-static-libga68)
+
 static-libgcc
 UrlSuffix(gcc/Link-Options.html#index-static-libgcc)
 

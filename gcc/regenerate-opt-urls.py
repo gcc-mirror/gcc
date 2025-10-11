@@ -361,7 +361,8 @@ def write_url_file(index, optfile, dstfile):
 PER_LANGUAGE_OPTION_INDEXES = [
     ('gcc/Option-Index.html', None),
     ('gdc/Option-Index.html', 'D'),
-    ('gfortran/Option-Index.html', 'Fortran')
+    ('gfortran/Option-Index.html', 'Fortran'),
+    ('ga68/Option-Index.html', 'Algol68'),
 ]
 
 def main(args):

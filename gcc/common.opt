@@ -3985,6 +3985,9 @@ Driver Joined
 static
 Driver
 
+static-libga68
+Driver
+
 static-libgcc
 Driver
 
