@@ -350,7 +350,7 @@ in the build directory starts the build process. The <literal>all</literal> targ
    <para>
      If you're wondering what that line noise in the last example was,
      that's how you embed autoconf special characters in output text.
-     They're called <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="http://www.gnu.org/software/autoconf/manual/autoconf.html#Quadrigraphs"><emphasis>quadrigraphs</emphasis></link>
+     They're called <link xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="https://www.gnu.org/savannah-checkouts/gnu/autoconf/manual/"><emphasis>quadrigraphs</emphasis></link>
      and you should use them whenever necessary.
  </para>
  </listitem>
