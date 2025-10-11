@@ -186,7 +186,7 @@
    (set (match_dup 1)
 	(unspec_volatile:GPR
 	  [(any_atomic:GPR (match_dup 1)
-		     (match_operand:GPR 2 "reg_or_0_operand" "rJ"))
+		     (match_operand:GPR 2 "arith_operand" "rI"))
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))
    (clobber (match_scratch:GPR 4 "=&r"))]	  ;; tmp_1
@@ -194,7 +194,7 @@
   {
     return "1:\;"
 	   "lr.<amo>%I3\t%0, %1\;"
-	   "<insn>\t%4, %0, %2\;"
+	   "<insn>%i2\t%4, %0, %2\;"
 	   "sc.<amo>%J3\t%4, %4, %1\;"
 	   "bnez\t%4, 1b";
   }
@@ -207,20 +207,20 @@
    (set (match_dup 1)
 	(unspec_volatile:SI
 	  [(any_atomic:SI (match_dup 1)
-		     (match_operand:SI 2 "register_operand" "rI")) ;; value for op
+		     (match_operand:SI 2 "arith_operand" "rI")) ;; value for op
 	   (match_operand:SI 3 "const_int_operand")]		   ;; model
 	 UNSPEC_SYNC_OLD_OP_SUBWORD))
-    (match_operand:SI 4 "register_operand" "rI")		   ;; mask
-    (match_operand:SI 5 "register_operand" "rI")		   ;; not_mask
+    (match_operand:SI 4 "arith_operand" "rI")		   ;; mask
+    (match_operand:SI 5 "arith_operand" "rI")		   ;; not_mask
     (clobber (match_scratch:SI 6 "=&r"))			   ;; tmp_1
     (clobber (match_scratch:SI 7 "=&r"))]			   ;; tmp_2
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I3\t%0, %1\;"
-	   "<insn>\t%6, %0, %2\;"
-	   "and\t%6, %6, %4\;"
-	   "and\t%7, %0, %5\;"
+	   "<insn>%i2\t%6, %0, %2\;"
+	   "and%i4\t%6, %6, %4\;"
+	   "and%i5\t%7, %0, %5\;"
 	   "or\t%7, %7, %6\;"
 	   "sc.w%J3\t%6, %7, %1\;"
 	   "bnez\t%6, 1b";
@@ -274,21 +274,21 @@
    (set (match_dup 1)
 	(unspec_volatile:SI
 	  [(not:SI (and:SI (match_dup 1)
-			   (match_operand:SI 2 "register_operand" "rI"))) ;; value for op
+			   (match_operand:SI 2 "arith_operand" "rI")))    ;; value for op
 	   (match_operand:SI 3 "const_int_operand")]			  ;; mask
 	 UNSPEC_SYNC_OLD_OP_SUBWORD))
-    (match_operand:SI 4 "register_operand" "rI")			  ;; mask
-    (match_operand:SI 5 "register_operand" "rI")			  ;; not_mask
+    (match_operand:SI 4 "arith_operand" "rI")				  ;; mask
+    (match_operand:SI 5 "arith_operand" "rI")				  ;; not_mask
     (clobber (match_scratch:SI 6 "=&r"))				  ;; tmp_1
     (clobber (match_scratch:SI 7 "=&r"))]				  ;; tmp_2
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I3\t%0, %1\;"
-	   "and\t%6, %0, %2\;"
+	   "and%i2\t%6, %0, %2\;"
 	   "not\t%6, %6\;"
-	   "and\t%6, %6, %4\;"
-	   "and\t%7, %0, %5\;"
+	   "and%i4\t%6, %6, %4\;"
+	   "and%i5\t%7, %0, %5\;"
 	   "or\t%7, %7, %6\;"
 	   "sc.w%J3\t%6, %7, %1\;"
 	   "bnez\t%6, 1b";
@@ -509,17 +509,17 @@
 	(match_operand:SI 1 "memory_operand" "+A"))	 ;; mem location
    (set (match_dup 1)
 	(unspec_volatile:SI
-	  [(match_operand:SI 2 "reg_or_0_operand" "rI")	 ;; value
+	  [(match_operand:SI 2 "arith_operand" "rI")	 ;; value
 	   (match_operand:SI 3 "const_int_operand")]	 ;; model
       UNSPEC_SYNC_EXCHANGE_SUBWORD))
-    (match_operand:SI 4 "reg_or_0_operand" "rI")	 ;; not_mask
+    (match_operand:SI 4 "arith_operand" "rI")	 ;; not_mask
     (clobber (match_scratch:SI 5 "=&r"))]		 ;; tmp_1
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I3\t%0, %1\;"
-	   "and\t%5, %0, %4\;"
-	   "or\t%5, %5, %2\;"
+	   "and%i4\t%5, %0, %4\;"
+	   "or%i2\t%5, %5, %2\;"
 	   "sc.w%J3\t%5, %5, %1\;"
 	   "bnez\t%5, 1b";
   }
@@ -793,20 +793,20 @@
 	(match_operand:SI 1 "memory_operand" "+A"))			   ;; mem location
    (set (match_dup 1)
 	(unspec_volatile:SI [(match_operand:SI 2 "reg_or_0_operand" "rJ")  ;; expected value
-			     (match_operand:SI 3 "reg_or_0_operand" "rJ")] ;; desired value
+			     (match_operand:SI 3 "arith_operand" "rI")] ;; desired value
 	 UNSPEC_COMPARE_AND_SWAP_SUBWORD))
 	(match_operand:SI 4 "const_int_operand")			   ;; model
-	(match_operand:SI 5 "register_operand" "rI")			   ;; mask
-	(match_operand:SI 6 "register_operand" "rI")			   ;; not_mask
+	(match_operand:SI 5 "arith_operand" "rI")			   ;; mask
+	(match_operand:SI 6 "arith_operand" "rI")			   ;; not_mask
 	(clobber (match_scratch:SI 7 "=&r"))]				   ;; tmp_1
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
 	   "lr.w%I4\t%0, %1\;"
-	   "and\t%7, %0, %5\;"
+	   "and%i5\t%7, %0, %5\;"
 	   "bne\t%7, %z2, 1f\;"
-	   "and\t%7, %0, %6\;"
-	   "or\t%7, %7, %3\;"
+	   "and%i6\t%7, %0, %6\;"
+	   "or%i3\t%7, %7, %3\;"
 	   "sc.w%J4\t%7, %7, %1\;"
 	   "bnez\t%7, 1b\;"
 	   "1:";
