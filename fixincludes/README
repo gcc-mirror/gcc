@@ -6,8 +6,8 @@ If you are having some problem with a system header that is either
 broken by the manufacturer, or is broken by the fixinclude process,
 then you will need to alter or add information to the include fix
 definitions file, ``inclhack.def''.  Please also send relevant
-information to gcc-bugs@gcc.gnu.org, gcc-patches@gcc.gnu.org and,
-please, to me:  bkorb@gnu.org.
+information according to https://gcc.gnu.org/bugs/, to
+gcc-patches@gcc.gnu.org and, please, to me:  bkorb@gnu.org.
 
 To make your fix, you will need to do several things:
 

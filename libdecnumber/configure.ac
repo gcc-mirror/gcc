@@ -19,7 +19,7 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-AC_INIT(libdecnumber, [ ], gcc-bugs@gcc.gnu.org, libdecnumber)
+AC_INIT(libdecnumber, [ ], https://gcc.gnu.org/bugs/, libdecnumber)
 AC_CONFIG_SRCDIR(decNumber.h)
 AC_CONFIG_MACRO_DIR(../config)
 AC_CONFIG_AUX_DIR(..)

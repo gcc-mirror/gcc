@@ -1,7 +1,7 @@
 #                                               -*- Autoconf -*-
 # Process this file with autoconf to produce a configure script.
 
-AC_INIT(cpplib, [ ], gcc-bugs@gcc.gnu.org, cpplib)
+AC_INIT(cpplib, [ ], https://gcc.gnu.org/bugs/, cpplib)
 AC_CONFIG_SRCDIR(ucnid.h)
 AC_CONFIG_MACRO_DIR(../config)
 AC_CANONICAL_SYSTEM

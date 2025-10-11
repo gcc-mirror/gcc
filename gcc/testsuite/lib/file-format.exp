@@ -14,8 +14,8 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
-# Please email any bugs, comments, and/or additions to this file to:
-# gcc-bugs@gcc.gnu.org
+# Please report any bugs, comments, and/or additions to this file according
+# to instructions at https://gcc.gnu.org/bugs/
 
 # This file defines a proc for determining the file format in use by the
 # target.  This is useful for tests that are only supported by certain file
