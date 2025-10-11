@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC rec parse comment = VOID:
+      BEGIN STRING content;
+            done;
+            100;
+      done:
+            ASSERT (content + "x" = "x")
+      END;
+
+      rec parse comment
+END

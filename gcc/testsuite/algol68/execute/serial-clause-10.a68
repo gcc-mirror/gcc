@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# NIL is not voided and can appear in a context requiring VOID.  #
+BEGIN (NIL);
+      SKIP
+END

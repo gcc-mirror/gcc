@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN (INT i := 11; i OVERAB 2; ASSERT (i = 5));
+      (INT i := 11; i %:= 2; ASSERT (i = 5));
+      (SHORT INT i := SHORT 11; i OVERAB SHORT 2; ASSERT (i = SHORT 5));
+      (SHORT INT i := SHORT 11; i %:= SHORT 2; ASSERT (i = SHORT 5));
+      (SHORT SHORT INT i := SHORT SHORT 11; i OVERAB SHORT SHORT 2; ASSERT (i = SHORT SHORT 5));
+      (SHORT SHORT INT i := SHORT SHORT 11; i %:= SHORT SHORT 2; ASSERT (i = SHORT SHORT 5));
+      (LONG INT i := LONG 11; i OVERAB LONG 2; ASSERT (i = LONG 5));
+      (LONG INT i := LONG 11; i %:= LONG 2; ASSERT (i = LONG 5));
+      (LONG LONG INT i := LONG LONG 11; i OVERAB LONG LONG 2; ASSERT (i = LONG LONG 5));
+      (LONG LONG INT i := LONG LONG 11; i %:= LONG LONG 2; ASSERT (i = LONG LONG 5))
+END

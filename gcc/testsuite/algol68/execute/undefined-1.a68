@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+# j's value is undefined (defined to be 0 in GNU Algol)  #
+BEGIN INT x := 0;
+      FOR i TO 5
+      DO ASSERT (j = 0);
+         IF j > 20 THEN stop FI;
+         INT j = x + i;
+         x +:= 1
+      OD
+END

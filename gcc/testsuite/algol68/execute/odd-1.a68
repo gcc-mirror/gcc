@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT a = 1;
+      ASSERT (ODD a);
+      ASSERT (ODD LONG 3);
+      ASSERT (NOT ODD LONG LONG 4);
+      ASSERT (ODD SHORT 3);
+      ASSERT (NOT ODD SHORT SHORT 4)
+END

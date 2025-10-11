@@ -1,0 +1,13 @@
+module Module =
+def
+    pub int ce_port;
+    pub string ce_host;
+
+    pub proc ce_connect = void:
+           myconnect (ce_host, ce_port);
+
+    proc myconnect = (string host, int port) void:
+       skip;
+
+    skip
+fed

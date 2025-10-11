@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC is even = (INT n) BOOL: (n = 0 | TRUE | is odd (n - 1));
+      PROC is odd = (INT n) BOOL: (n = 0 | FALSE | is even (n - 1));
+      ASSERT (is even (20));
+      ASSERT (is odd (13))
+END

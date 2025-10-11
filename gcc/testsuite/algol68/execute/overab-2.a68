@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT n := 10;
+      (((n OVERAB 1))) := 5;
+      ASSERT (n = 5)
+END

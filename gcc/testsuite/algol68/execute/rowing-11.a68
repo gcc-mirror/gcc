@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 10;
+      REF[,,]INT a = i;
+      ASSERT (1 LWB a = 1 AND 1 UPB a = 1 AND 1 ELEMS a = 1);
+      ASSERT (2 LWB a = 1 AND 2 UPB a = 1 AND 2 ELEMS a = 1);
+      ASSERT (3 LWB a = 1 AND 3 UPB a = 1 AND 3 ELEMS a = 1);
+      a[1,1,1] := a[1,1,1] + 1;
+      ASSERT (a[1,1,1] = 11)
+END

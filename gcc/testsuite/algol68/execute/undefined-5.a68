@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC is even = (INT n) BOOL: (n = zero | TRUE | is odd (DECR n));
+      PROC is odd = (INT n) BOOL: (n = zero | FALSE | is even (DECR n));
+      OP DECR = (INT a) INT:  a - 1;
+      ASSERT (is even (20));
+      ASSERT (is odd (13));
+      INT zero := 0;
+      SKIP
+END

@@ -1,0 +1,31 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 2;
+      i *:= 2;
+      ASSERT (i = 4);
+      i *:= 2;
+      ASSERT (i = 8);
+
+      SHORT INT s := SHORT 2;
+      s *:= SHORT 2;
+      ASSERT (s = SHORT 4);
+      s *:= SHORT 3;
+      ASSERT (s = SHORT 12);
+
+      SHORT SHORT INT ss := SHORT SHORT 2;
+      ss *:= SHORT SHORT 2;
+      ASSERT (ss = SHORT SHORT 4);
+      ss *:= SHORT SHORT 3;
+      ASSERT (ss = SHORT SHORT 12);
+
+      REF LONG INT ii = HEAP LONG INT := LONG 2;
+      ii *:= LONG 2;
+      ASSERT (ii = LONG 4);
+      ii *:= LONG 2;
+      ASSERT (ii = LONG 8);
+
+      LONG LONG INT iii := LONG LONG 2;
+      iii *:= LONG LONG 2;
+      ASSERT (iii = LONG LONG 4);
+      iii *:= LONG LONG 2;
+      ASSERT (iii = LONG LONG 8)
+END

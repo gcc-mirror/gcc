@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT ("" >= "");
+      ASSERT ("" <= "");
+      ASSERT ("zzz" > "aaa");
+      ASSERT ("zzz" >= "aaa");
+      ASSERT ("HelloA" < "HelloB")
+END

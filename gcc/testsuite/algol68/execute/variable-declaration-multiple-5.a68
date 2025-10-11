@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT n := -4, m := 0;
+      [n:m,2]INT arr;
+      FOR i FROM 1 LWB arr TO 1 UPB arr
+      DO FOR j FROM 2 LWB arr TO 2 UPB arr
+         DO ASSERT (arr[i,j] = INT(SKIP)) OD
+      OD
+END

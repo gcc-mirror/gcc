@@ -1,0 +1,8 @@
+module Module_16 =
+def
+    pub int counter;
+    skip
+postlude
+    assert (counter = 666);
+    skip
+fed

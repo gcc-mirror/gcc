@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE VEC = STRUCT (REAL xcoord, ycoord, zcoord);
+      VEC v1, v2, v3;
+      v1 := (1,1,1);
+      ASSERT (xcoord OF v1 = 1);
+      ASSERT (ycoord OF v1 = 1);
+      ASSERT (zcoord OF v1 = 1);
+      REAL x = 3.14, i = 3;
+      v2 := (x + 2, 3.4, i - 3)
+END

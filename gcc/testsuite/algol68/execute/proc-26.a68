@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC sum = (INT a, b) INT: a + b,
+           minus = (INT a, b) INT: a - b;
+      ASSERT (sum (1, 2) = 3);
+      ASSERT (minus (1, 2) = -1)
+END

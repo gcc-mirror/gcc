@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE INCOME = STRUCT (REAL salary, stock, INT code);
+      MODE PERSON = STRUCT (INT age, INCOME income, INT num children);
+      INCOME income = (100.0, 200.0, 300);
+      ASSERT (code OF income = 300);
+      PERSON person := (24, (1000.0, 2000.0, 3000), 3);
+      ASSERT (code OF income OF person = 3000);
+      ASSERT (num children OF person = 3)
+END

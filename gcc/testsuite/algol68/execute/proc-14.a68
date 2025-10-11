@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC is even := (INT n) BOOL: n %* 2 = 0;
+      PROC is odd := (INT n) BOOL: n %* 2 /= 0;
+      PROC(INT)BOOL f = is even;
+      PROC(INT)BOOL g = is odd;
+      ASSERT (f (40));
+      ASSERT (g (3))
+END

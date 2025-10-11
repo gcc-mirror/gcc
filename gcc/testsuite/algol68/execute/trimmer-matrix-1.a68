@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [,]INT matrix = ((1,2,3),
+                       (4,5,6),
+                       (7,8,9));
+      [2]INT column := matrix[3,2:3];
+      ASSERT (column[1] = 8);
+      ASSERT (column[2] = 9)
+END

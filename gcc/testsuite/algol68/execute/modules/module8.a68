@@ -1,0 +1,9 @@
+module Module_8 =
+access Module_1, Module_4
+def
+    pub proc checks = void:
+        begin assert (ten = 10);
+              assert (beast_number = 666)
+        end;
+    skip
+fed

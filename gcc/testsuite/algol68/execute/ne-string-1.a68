@@ -1,0 +1,15 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING foo = "foo", bar = "bar", quux = "quux";
+      # /=  #
+      ASSERT (NOT ("" /= ""));
+      ASSERT (NOT ("foo" /= foo));
+      ASSERT (foo /= bar);
+      ASSERT (foo /= quux);
+      ASSERT (quux /= foo);
+      # NE  #
+      ASSERT (NOT ("" NE ""));
+      ASSERT (NOT ("foo" NE foo));
+      ASSERT (foo NE bar);
+      ASSERT (foo NE quux);
+      ASSERT (quux NE foo)
+END

@@ -1,0 +1,18 @@
+# { dg-options "-fstropping=upper" }  #
+# XOR for SIZETY BITS.  #
+BEGIN BITS b = 16rf0f0;
+      ASSERT ((b XOR 16r0f0f) = 16rffff);
+      ASSERT ((b XOR 16r00ff) = 16rf00f);
+      LONG BITS bb = LONG 16rf0f0;
+      ASSERT ((bb XOR LONG 16r0f0f) = LONG 16rffff);
+      ASSERT ((bb XOR LONG 16r00ff) = LONG 16rf00f);
+      LONG LONG BITS bbb = LONG LONG 16rf0f0;
+      ASSERT ((bbb XOR LONG LONG 16r0f0f) = LONG LONG 16rffff);
+      ASSERT ((bbb XOR LONG LONG 16r00ff) = LONG LONG 16rf00f);
+      SHORT BITS ss = SHORT 16rf0f0;
+      ASSERT ((ss XOR SHORT 16r0f0f) = SHORT 16rffff);
+      ASSERT ((ss XOR SHORT 16r00ff) = SHORT 16rf00f);
+      SHORT SHORT BITS sss = SHORT SHORT 16rf0;
+      ASSERT ((sss XOR SHORT SHORT 16r0f) = SHORT SHORT 16rff);
+      ASSERT ((sss XOR SHORT SHORT 16rff) = SHORT SHORT 16r0f)
+END

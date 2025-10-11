@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT fd = fopen ("doesn''t exist", file o default);
+      ASSERT (fd = -1)
+END

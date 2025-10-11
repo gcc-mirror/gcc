@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []INT list1 = (1,2,3),
+            list2 = (4,5,6),
+            list3 = (7,8,9);
+      [,]INT matrix = (list1, list2, list3);
+      [,,]INT cube = (matrix, matrix, matrix);
+      ASSERT (cube[1,1,1] = 1);
+      ASSERT (cube[2,2,2] = 5);
+      ASSERT (cube[3,3,3] = 9)
+END

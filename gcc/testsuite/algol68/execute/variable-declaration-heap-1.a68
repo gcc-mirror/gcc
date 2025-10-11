@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN HEAP INT a := 10;
+      ASSERT (a = 10)
+END

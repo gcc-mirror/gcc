@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Check SKIP values for BOOL and CHAR. #
+BEGIN BOOL bool skip = SKIP;
+      ASSERT (bool skip = FALSE);
+      CHAR char skip = SKIP;
+      ASSERT (char skip = " ")
+END

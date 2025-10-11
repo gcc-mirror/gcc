@@ -1,0 +1,16 @@
+{ dg-modules "module3" }
+
+access Module_3
+begin assert (getcounter = 10);
+      bump;
+      assert (getcounter = 11);
+      bumptimes (3);
+      assert (getcounter = 14)
+      { vbump and vbumptimes are set to non-publicized routines
+        that are local to the module, so it is a scope violation
+        to call them.  }
+{      vbump;
+      assert (getcounter = 15);
+      vbumptimes (10);
+      assert (anothergetcounter = 25) }
+end

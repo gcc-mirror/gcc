@@ -1,0 +1,15 @@
+{ dg-modules "module1" }
+
+begin int x = 1 + access Module1 ( beast_number);
+      int i = access Module1 ( beast_number ) + 1;
+      int z = 1 + access Module1 if true then beast_number fi;
+      int v = access Module1 if true then beast_number fi + 1;
+      int w = access Module1 if true then beast_number fi
+              + access Module1 if true then beast_number fi;
+      assert (i = 667);
+      assert (x = 667);
+      assert (z = 667);
+      assert (v = 667);
+      assert (w = 666 * 2);
+      skip
+end

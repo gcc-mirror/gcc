@@ -1,0 +1,6 @@
+begin string foo := "foo";
+      "bar" PLUSTO foo;
+      assert (foo = "barfoo");
+      "quux" +=: foo;
+      assert (foo = "quuxbarfoo")
+end

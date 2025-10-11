@@ -1,0 +1,7 @@
+This directory contains tests that require using several packets.
+
+Files named module*.a68 contain prelude packets, i.e. the definitions
+of one or more modules.  These are to be referred within test programs
+using dg-modules.
+
+Each program*.a68 file is a testcase.

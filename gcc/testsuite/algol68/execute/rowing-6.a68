@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Rowing of NIL yields NIL.  #
+BEGIN REF[]INT a = REF INT(NIL);
+      ASSERT (a :=: NIL)
+END

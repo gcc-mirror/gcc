@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT n := 10, m := 3;
+      [n,m]INT arr;
+      ASSERT (1 LWB arr = 1 AND 1 UPB arr = 10 AND 1 ELEMS arr = 10);
+      ASSERT (2 LWB arr = 1 AND 2 UPB arr = 3 AND 2 ELEMS arr = 3)
+END

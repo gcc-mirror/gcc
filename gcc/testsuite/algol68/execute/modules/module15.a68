@@ -1,0 +1,8 @@
+module Module15 =
+access Module13, Module14
+def pub proc foo = int:
+        begin JSON_Val val = getval;
+              i of val
+        end;
+    skip
+fed

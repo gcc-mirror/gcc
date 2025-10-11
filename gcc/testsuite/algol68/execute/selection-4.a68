@@ -1,0 +1,19 @@
+# { dg-options "-fstropping=upper" }  #
+# Structs can be nested in other structs.  Version with subnames.  #
+BEGIN MODE INCOME = STRUCT (REAL salary, stock, INT code);
+      MODE PERSON = STRUCT (INT age, INCOME income, INT num children);
+
+      PERSON person;
+
+      age OF person := 44;
+      salary OF income OF person := 999.99;
+      stock OF income OF person := 0.0;
+      num children OF person := 3;
+      code OF income OF person := num children OF person;
+
+      ASSERT (age OF person = 44);
+      ASSERT (code OF income OF person = num children OF person);
+      ASSERT (code OF income OF person = 3);
+      ASSERT (num children OF person = 3);
+      ASSERT (num children OF person * code OF income OF person = 9)
+END

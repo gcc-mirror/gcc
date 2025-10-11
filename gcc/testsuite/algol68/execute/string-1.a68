@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING s = "";
+      ASSERT (LWB s = 1 AND UPB s = 0);
+      STRING t = ();
+      ASSERT (LWB t = 1 AND UPB t = 0)
+END

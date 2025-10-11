@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i = 10;
+      BEGIN INT i = 20; # { dg-warning "hides" } #
+            ASSERT (i = 20);
+            i
+      END;
+      ASSERT (i = 10)
+END

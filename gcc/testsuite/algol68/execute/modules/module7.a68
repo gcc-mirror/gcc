@@ -1,0 +1,10 @@
+{ This module exports an operator defined in a non-brief operator
+  declaration.  This means the exported symbol is a pointer to a
+  function and shall be indirected on the accessing side.  }
+
+module Module_7 =
+def pub prio MINUS = 9;
+    pub op (int,int)int MINUS = minus;
+    proc minus = (int a, b) int: a - b;
+    skip
+fed

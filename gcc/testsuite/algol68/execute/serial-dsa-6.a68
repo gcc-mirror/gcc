@@ -1,0 +1,4 @@
+{ DSA and completers in a serial clause.  }
+begin assert ((ref int a = loc int := 10; a exit foo: a +:= 1) + 1 = 11);
+      skip
+end

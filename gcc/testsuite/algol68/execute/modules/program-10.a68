@@ -1,0 +1,6 @@
+{ dg-modules "module3 module9 module10" }
+
+access Module10
+begin int x = 11;
+      assert (x = bar)
+end

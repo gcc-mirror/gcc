@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING foo = "abc";
+      ASSERT (foo[] * 2 = "abcabc")
+END

@@ -1,0 +1,9 @@
+{ dg-modules "module6" }
+
+{ New priority is given to an importe operator.  }
+
+access Module_6
+begin assert (2 // 3 = 5);
+      prio // = 9;
+      skip
+end

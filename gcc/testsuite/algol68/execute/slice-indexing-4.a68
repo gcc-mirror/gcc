@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE PERSON = STRUCT (INT i, STRING s);
+      []PERSON persons = ((10, "foo"), (20, "barbar"), (30, "baz"));
+      puts (s OF persons[1]);
+      puts (s OF persons[2]);
+      puts (s OF persons[3]);
+      ASSERT (i OF persons[1] = 10);
+      ASSERT (i OF persons[2] = 20);
+      ASSERT (i OF persons[3] = 30)
+END

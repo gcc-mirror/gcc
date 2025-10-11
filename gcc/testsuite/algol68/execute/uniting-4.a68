@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Uniting STRING to ROWS.  #
+BEGIN PROC strlen = (STRING s) INT: ELEMS s;
+      ASSERT (strlen ("foo") = 3)
+END

@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []INT foo = (10,20,30);
+      ASSERT (foo[1] = 10);
+      ASSERT (foo[2] = 20);
+      ASSERT (foo[3] = 30);
+      [3]INT bar := (100,200,300);
+      ASSERT (bar[1] = 100);
+      ASSERT (bar[2] = 200);
+      ASSERT (bar[3] = 300)
+END

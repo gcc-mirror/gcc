@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 0, n := 2;
+      FOR a TO n + 1 DO i +:= a OD;
+      ASSERT (i = 1 + 2 + 3)
+END

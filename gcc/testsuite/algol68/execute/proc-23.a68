@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC increment = (INT a) INT: a + 1;
+      PROC getproc = PROC(INT)INT:
+      BEGIN increment
+      END;
+      # getproc below gets deprocedured to yield increment.  #
+      ASSERT (getproc (10) = 11)
+END

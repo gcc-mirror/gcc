@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# A heap proc variable.  #
+BEGIN HEAP PROC foo := INT: 666;
+      ASSERT (foo = 666)
+END

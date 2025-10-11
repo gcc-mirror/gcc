@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN OP ONEOVER = (REAL a) REAL: 1/a;
+      REAL x;
+      x := ONEOVER 3.14
+END

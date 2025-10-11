@@ -1,0 +1,5 @@
+module Module_12 =
+def pub proc foo = (proc(int,string)void cb, int a) void: cb (a, "Foo");
+    pub proc bar = (real r) void: skip;
+    skip
+fed

@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+# Selecting a struct name results in sub-names.  #
+BEGIN MODE PERSON = STRUCT (INT age, REAL income, INT num children);
+      PERSON person;
+      age OF person := 44;
+      income OF person := 999.99;
+      num children OF person := 0;
+      ASSERT (age OF person = 44);
+      ASSERT (num children OF person = 0);
+      REF INT ptr to age := age OF person;
+      ASSERT (ptr to age = 44);
+      age OF person := 55;
+      ASSERT (ptr to age = 55)
+END

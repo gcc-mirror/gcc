@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# The undefined value of the multiple `a' is an empty multiple. #
+BEGIN ASSERT (i = 0);
+      ASSERT (LWB a = 1 AND UPB a = 0 AND ELEMS a = 0);
+      []INT a = (1, 2, 3);
+      INT i = 10;
+      ASSERT (i = 10);
+      ASSERT (LWB a = 1 AND UPB a = 3 AND ELEMS a = 3)
+END

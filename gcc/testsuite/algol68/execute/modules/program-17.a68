@@ -1,0 +1,7 @@
+{ dg-modules module17 }
+
+access Module17
+begin ce_port := 8888;
+      ce_host := "localhost";
+      ce_connect
+end

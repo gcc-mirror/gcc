@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC reciprocal = (REAL a) REAL: 1/a;
+      REAL x;
+      x := reciprocal (3.14)
+END

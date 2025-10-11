@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# Serial clause with jump at the end.  #
+
+BEGIN INT i := BEGIN BOOL cont := TRUE;
+               back: cont := FALSE;
+                     IF cont THEN GOTO back FI
+               END;
+      ASSERT (i = 0)
+END

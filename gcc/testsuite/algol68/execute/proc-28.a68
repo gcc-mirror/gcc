@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC hcf = (INT m, n) INT:
+         IF m < n
+         THEN hcf (n, m)
+         ELIF n = 0
+         THEN m
+         ELSE hcf (n, m MOD n)
+         FI;
+      ASSERT (hcf (10, 20) = 10)
+END

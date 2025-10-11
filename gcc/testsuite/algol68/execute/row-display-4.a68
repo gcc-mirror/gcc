@@ -1,0 +1,16 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [,][]INT duples = (((1,2), (3,4), (5,6)),
+                         ((7,8), (9,10), (11,12)));
+      ASSERT (duples[1,1][1] = 1);
+      ASSERT (duples[1,1][2] = 2);
+      ASSERT (duples[1,2][1] = 3);
+      ASSERT (duples[1,2][2] = 4);
+      ASSERT (duples[1,3][1] = 5);
+      ASSERT (duples[1,3][2] = 6);
+      ASSERT (duples[2,1][1] = 7);
+      ASSERT (duples[2,1][2] = 8);
+      ASSERT (duples[2,2][1] = 9);
+      ASSERT (duples[2,2][2] = 10);
+      ASSERT (duples[2,3][1] = 11);
+      ASSERT (duples[2,3][2] = 12)
+END

@@ -1,0 +1,13 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT n = 10;
+      # Note that the priority for the monadic operators gets ignored.  #
+      PRIO JORL = 6, JURL = 6, XXX = 6, YYY = 6;
+      OP(INT)INT JORL = (n > 10 | (INT a) INT: a + 1 | (INT a) INT: a - 1),
+                 JURL = (n <= 10 | (INT a) INT: a + 1 | (INT a) INT: a - 1);
+      OP(INT,INT)INT XXX = (INT a, b) INT: a + b,
+                     YYY = (n > 10 | (INT a,b) INT: a * b | (INT a,b) INT: a - b);
+      ASSERT (JORL 10 = 9);
+      ASSERT (JURL 10 = 11);
+      ASSERT (2 XXX 3 = 5);
+      ASSERT (2 YYY 3 = -1);
+END

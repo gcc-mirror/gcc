@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 4;
+beg:  WHILE i > 0
+      DO []PROC VOID table = (l3,l1,l2,end);
+         table[i];
+l1:      puts ("uno\n"); i -:= 1; beg;
+l2:      puts ("dos\n"); i -:= 1; beg;
+l3:      puts ("tres\n"); i -:= 1; beg;
+end:     puts ("cuatro\n"); i -:= 1; beg
+      OD
+END

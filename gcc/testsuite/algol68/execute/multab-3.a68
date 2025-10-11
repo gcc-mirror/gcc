@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT num ints := 10;
+      num ints *:= 2;
+      ASSERT (num ints = 20);
+      ASSERT ((LOC INT *:= 12) = 0)
+END

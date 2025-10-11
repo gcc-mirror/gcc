@@ -1,0 +1,34 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN BEGIN INT i := 10;
+            i +:= 2;
+            ASSERT (i = 12);
+            i PLUSAB 2;
+            ASSERT (i = 14)
+      END;
+
+      BEGIN SHORT INT i := SHORT 1000;
+            i +:= SHORT 100;
+            ASSERT (i = SHORT 1100);
+            i PLUSAB SHORT 100;
+            ASSERT (i = SHORT 1200)
+      END;
+      BEGIN SHORT SHORT INT i := SHORT SHORT 10000;
+            i +:= SHORT SHORT 1000;
+            ASSERT (i = SHORT SHORT 11000);
+            i PLUSAB SHORT SHORT 1000;
+            ASSERT (i = SHORT SHORT 12000)
+      END;
+
+      BEGIN LONG INT i := LONG 1000;
+            i +:= LONG 100;
+            ASSERT (i = LONG 1100);
+            i PLUSAB LONG 100;
+            ASSERT (i = LONG 1200)
+      END;
+      BEGIN LONG LONG INT i := LONG LONG 10000;
+            i +:= LONG LONG 1000;
+            ASSERT (i = LONG LONG 11000);
+            i PLUSAB LONG LONG 1000;
+            ASSERT (i = LONG LONG 12000)
+      END
+END

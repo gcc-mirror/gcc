@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE FOO = STRUCT (INT i, REF INT j);
+      INT x := 10;
+      FOO foo;
+      foo := (10, x);
+      ASSERT (j OF foo = 10)
+END

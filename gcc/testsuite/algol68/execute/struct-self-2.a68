@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE NODE = STRUCT (INT code, REF NODE next);
+      NODE top = (20, NIL);
+      ASSERT (code OF top = 20);
+      ASSERT (next OF top :=: NIL)
+END

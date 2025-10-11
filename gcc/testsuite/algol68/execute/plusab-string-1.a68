@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING foo := "";
+      foo +:= "foo";
+      ASSERT (LWB foo = 1 AND UPB foo = 3 AND foo = "foo");
+      foo PLUSAB "bar";
+      ASSERT (LWB foo = 1 AND UPB foo = 6 AND foo = "foobar")
+END

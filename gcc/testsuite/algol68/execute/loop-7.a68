@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 0, n := 5;
+      TO n + 1 DO i +:= 1 OD;
+      ASSERT (i = 6)
+END

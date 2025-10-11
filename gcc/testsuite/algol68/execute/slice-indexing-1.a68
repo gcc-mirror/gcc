@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING foo = "foo";
+      ASSERT (foo[1] = "f");
+      ASSERT (foo[2] = "o");
+      ASSERT (foo[3] = "o");
+      STRING bar := "foo";
+      ASSERT (bar[1] = "f");
+      ASSERT (bar[2] = "o");
+      ASSERT (bar[3] = "o")
+END

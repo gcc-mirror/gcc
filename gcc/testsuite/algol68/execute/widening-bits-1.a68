@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# XXX use environment enquiry for actual size of BITS #
+BEGIN []BOOL foo = 16rffff;
+      ASSERT (LWB foo = 1 AND UPB foo = 32);
+      FOR i TO 16 DO ASSERT (foo[i] = FALSE) OD;
+      FOR i FROM 17 TO 32 DO ASSERT (foo[i] = TRUE) OD
+END

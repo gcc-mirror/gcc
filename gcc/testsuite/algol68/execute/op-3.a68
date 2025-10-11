@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN OP MIN = (REAL a, b) REAL: (a < b | a | b),
+         MIN = (INT a, REAL b) REAL: (a < b | a | b),
+         MIN = (REAL a, INT b) REAL: a MIN REAL (b);
+      PRIO MIN = 6;
+      ASSERT (10.0 MIN 20.0 > 9.9 AND 10.0 MIN 20.0 < 10.1);
+      ASSERT (10.0 MIN 100 > 9.9 AND 10.0 MIN 100 < 10.1);
+      ASSERT (100.0 MIN 10 > 9.9 AND 100.0 MIN 10 < 10.1)
+END

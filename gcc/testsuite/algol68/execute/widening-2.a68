@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN LONG INT i = LONG 10;
+      LONG REAL foo = i;
+      ASSERT (foo > LONG 9.9);
+      ASSERT (foo < LONG 10.1)
+END

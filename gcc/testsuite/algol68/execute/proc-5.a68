@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Recursive function.  #
+BEGIN PROC foo = (INT i) INT: (i > 0 | i + foo (i - 1) | 0);
+      ASSERT (foo (10) = 55)
+END

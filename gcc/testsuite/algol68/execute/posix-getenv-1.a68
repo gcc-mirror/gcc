@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (getenv ("") = "");
+      ASSERT (getenv ("DOESNT EXIST FOR SURE") = "")
+END

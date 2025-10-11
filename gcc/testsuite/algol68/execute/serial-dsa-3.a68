@@ -1,0 +1,12 @@
+{ The jump to leak should not leak stack.  }
+begin by 10000
+      do
+         by 10000
+         do [10000]int foo;
+            skip;
+            goto leak
+         od;
+      leak:
+         skip
+      od
+end

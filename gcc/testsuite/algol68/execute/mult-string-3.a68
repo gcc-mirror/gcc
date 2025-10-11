@@ -1,0 +1,13 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN FLEX[3]CHAR foo := ("f","o","o");
+      ASSERT (foo * -10 = "foo");
+      ASSERT (-10 * foo = "foo");
+      ASSERT (foo * 0 = "foo");
+      ASSERT (0 * foo = "foo");
+      ASSERT (foo * 1 = "foo");
+      ASSERT (1 * foo = "foo");
+      ASSERT (foo * 2 = "foofoo");
+      ASSERT (2 * foo = "foofoo");
+      ASSERT (foo * 3 = "foofoofoo");
+      ASSERT (3 * foo = "foofoofoo")
+END

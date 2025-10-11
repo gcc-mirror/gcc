@@ -1,0 +1,7 @@
+{ dg-modules "module5" }
+
+access Module_5
+begin assert (2 // 3 = 5);
+      assert (2 LALA 3 = -1);
+      skip
+end

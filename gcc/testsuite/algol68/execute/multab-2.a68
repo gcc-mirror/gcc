@@ -1,0 +1,31 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 2;
+      i TIMESAB 2;
+      ASSERT (i = 4);
+      i TIMESAB 2;
+      ASSERT (i = 8);
+
+      REF SHORT INT ss = HEAP SHORT INT := SHORT 2;
+      ss TIMESAB SHORT 2;
+      ASSERT (ss = SHORT 4);
+      ss TIMESAB SHORT 2;
+      ASSERT (ss = SHORT 8);
+
+      SHORT SHORT INT sss := SHORT SHORT 2;
+      sss TIMESAB SHORT SHORT 2;
+      ASSERT (sss = SHORT SHORT 4);
+      sss TIMESAB SHORT SHORT 2;
+      ASSERT (sss = SHORT SHORT 8);
+      
+      REF LONG INT ii = HEAP LONG INT := LONG 2;
+      ii TIMESAB LONG 2;
+      ASSERT (ii = LONG 4);
+      ii TIMESAB LONG 2;
+      ASSERT (ii = LONG 8);
+
+      LONG LONG INT iii := LONG LONG 2;
+      iii TIMESAB LONG LONG 2;
+      ASSERT (iii = LONG LONG 4);
+      iii TIMESAB LONG LONG 2;
+      ASSERT (iii = LONG LONG 8)
+END

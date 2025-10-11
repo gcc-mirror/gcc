@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (i = 0);
+      INT i = 10;
+      ASSERT (i = 10)
+END

@@ -1,0 +1,8 @@
+{ dg-modules module16 }
+
+access Module_16
+begin assert (counter = 0);
+      counter := 20;
+      access Module_16 (assert (counter = 20));
+      counter := 666
+end

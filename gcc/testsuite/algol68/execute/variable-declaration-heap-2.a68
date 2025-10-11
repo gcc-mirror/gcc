@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN HEAP INT x, y;
+      SKIP
+END

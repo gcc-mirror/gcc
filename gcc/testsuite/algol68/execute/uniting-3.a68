@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN UNION(INT,REAL,CHAR) datum := 10;
+      UNION(INT,REAL,[]INT,CHAR) datux;
+      datux := datum;
+      ASSERT (CASE datux
+              IN (INT): 10,
+                 (REAL): 20,
+                 (CHAR c): 30
+              ESAC = 10);
+      SKIP
+END

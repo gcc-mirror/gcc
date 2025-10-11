@@ -1,0 +1,13 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING s;
+      ASSERT (LWB s = 1 AND UPB s = 0 AND ELEMS s = 0);
+      s := "foo";
+      puts (s);
+      ASSERT (LWB s = 1 AND UPB s = 3 AND s[1] = "f" AND s[2] = "o" AND s[3] = "o");
+      s := "bar";
+      puts (s);
+      ASSERT (LWB s = 1 AND UPB s = 3 AND s[1] = "b" AND s[2] = "a" AND s[3] = "r");
+      s := "x";
+      ASSERT (LWB s = 1 AND UPB s = 1 AND s[1] = "x");
+      puts (s)
+END

@@ -1,0 +1,7 @@
+module Module_5 =
+def pub prio // = 9;
+    pub op // = (int a, b) int: a + b;
+    pub prio LALA = 9;
+    pub op LALA = (int a, b) int: a - b;
+    skip
+fed

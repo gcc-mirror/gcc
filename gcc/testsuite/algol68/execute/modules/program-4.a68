@@ -1,0 +1,7 @@
+{ dg-modules "module4" }
+
+{ The widening coercion "jumps" inside the controlled xclause.  }
+
+begin real realten = access Module_4 (ten);
+      skip
+end

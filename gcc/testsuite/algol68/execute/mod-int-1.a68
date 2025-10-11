@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i = 10;
+      LONG INT ii = LONG 10, LONG LONG INT iii = LONG LONG 10;
+      SHORT INT ss = SHORT 10, SHORT SHORT INT sss = SHORT SHORT 10;
+      ASSERT (i %* 3 = 1);
+      ASSERT (ii %* LONG 3 = LONG 1);
+      ASSERT (iii %* LONG LONG 3 = LONG LONG 1);
+      ASSERT (ss %* SHORT 3 = SHORT 1);
+      ASSERT (sss MOD SHORT SHORT 3 = SHORT SHORT 1)
+END

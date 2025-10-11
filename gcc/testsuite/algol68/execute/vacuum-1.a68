@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []INT a = ();
+      ASSERT (LWB a = 1 AND UPB a = 0)
+END

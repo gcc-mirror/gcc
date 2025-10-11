@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []INT a = 10;
+      ASSERT (1 LWB a = 1 AND 1 UPB a = 1 AND 1 ELEMS a = 1);
+      [,]INT aa = a;
+      ASSERT (1 LWB aa = 1 AND 1 UPB aa = 1 AND 1 ELEMS aa = 1);
+      ASSERT (2 LWB aa = 1 AND 2 UPB aa = 1 AND 2 ELEMS aa = 1);
+      [,,]INT aaa = aa;
+      ASSERT (1 LWB aaa = 1 AND 1 UPB aaa = 1 AND 1 ELEMS aaa = 1);
+      ASSERT (2 LWB aaa = 1 AND 2 UPB aaa = 1 AND 2 ELEMS aaa = 1);
+      ASSERT (3 LWB aaa = 1 AND 3 UPB aaa = 1 AND 3 ELEMS aaa = 1);
+      ASSERT (aaa[1,1,1] = 10)
+END

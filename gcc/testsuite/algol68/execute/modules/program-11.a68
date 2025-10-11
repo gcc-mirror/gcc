@@ -1,0 +1,3 @@
+{ dg-modules "module1 module3 module11" }
+
+access Module11 ( assert (someproc (2, 3) = 5))

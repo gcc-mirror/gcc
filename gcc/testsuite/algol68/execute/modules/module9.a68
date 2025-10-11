@@ -1,0 +1,8 @@
+module Module9 =
+def pub int foo = 10;
+    pub prio // = 9;
+    pub op QUUX = (int a, b) int: a + b;
+    prio QUUX = 9;
+    pub mode Lala = int;
+    skip
+fed

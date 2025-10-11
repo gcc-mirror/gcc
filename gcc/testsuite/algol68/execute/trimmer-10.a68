@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+# Trimming with flat descriptors should lead to flat multiples.  #
+BEGIN []INT a = (1,2,3);
+
+      ASSERT (UPB a[2:1] < LWB a[2:1]);
+      ASSERT (UPB a[20:2] < LWB a[20:2]);
+
+      [,]INT aa = ((1,2,3),
+                   (4,5,6),
+                   (7,8,9));
+      
+      ASSERT ((1 UPB aa[1,2:1]) < ((1 LWB aa[1,2:1])));
+      ASSERT ((1 UPB aa[1,20:]) < ((1 LWB aa[1,20:])))
+END

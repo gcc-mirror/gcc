@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [][]INT a = 10;
+      ASSERT (a[1][1] = 10);
+      ASSERT (LWB a = 1 AND UPB a = 1 AND ELEMS a = 1);
+      ASSERT (LWB a[1] = 1 AND UPB a[1] = 1 AND ELEMS a[1] = 1)
+END

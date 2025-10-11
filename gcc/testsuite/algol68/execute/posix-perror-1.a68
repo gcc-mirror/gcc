@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# { dg-output "^something unique: " }  #
+BEGIN INT fd = fopen ("doesn''t exist", file o default);
+      IF fd = -1 THEN
+         ASSERT (strerror (errno) /= "");
+         perror ("something unique")
+      FI
+END

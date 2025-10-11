@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE FOO = STRUCT (INT i, REAL r);
+      FOO foo = (10, 3.14);
+      [][]FOO a = foo;
+      ASSERT (LWB a = 1 AND UPB a = 1 AND ELEMS a = 1);
+      ASSERT (LWB a[1] = 1 AND UPB a[1] = 1 AND ELEMS a[1] = 1);
+      ASSERT (i OF a[1][1] = 10)
+END

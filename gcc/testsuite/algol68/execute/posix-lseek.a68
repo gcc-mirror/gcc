@@ -1,0 +1,17 @@
+begin int fd = fopen ("../../ga68", file_o_rdonly);
+      assert (fd /= -1);
+      assert (errno = 0);
+      long long int offset;
+      offset := lseek (fd, long long 0, seek_cur);
+      assert (offset = long long 0);
+      assert (errno = 0);
+      offset := lseek (fd, long long 0, seek_set);
+      assert (offset = long long 0);
+      assert (errno = 0);
+      offset := lseek (fd, long long 0, seek_end);
+      long long int offset2 = lseek (fd, offset, seek_set);
+      assert (offset = offset2);
+      long long int file_size = fsize (fd);
+      assert (errno = 0);
+      assert (offset = file_size)
+end

@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN IF random > 0.5 THEN puts ("yes\n") ELSE puts ("no\n") FI;
+      LONG REAL rr = long random;
+      IF rr > LONG 0.5 THEN puts ("long yes\n") ELSE puts ("long no\n") FI;
+      LONG LONG REAL rrr = long long random;
+      IF rrr > LONG LONG 0.5 THEN puts ("long long yes\n") ELSE puts ("long long no\n") FI
+END

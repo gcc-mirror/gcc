@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT fd = fopen ("doesn''t exist", file o default);
+      IF fd = -1 THEN ASSERT (strerror (errno) /= "") FI
+END

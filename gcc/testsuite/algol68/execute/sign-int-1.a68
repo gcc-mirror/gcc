@@ -1,0 +1,28 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT zero = 0;
+      SHORT INT short zero = SHORT 0;
+      SHORT SHORT INT short short zero = SHORT SHORT 0;
+      LONG INT long zero = LONG 0;
+      LONG LONG INT long long zero = LONG LONG 0;
+      INT ten = 10;
+      SHORT INT short ten = SHORT 10;
+      SHORT SHORT INT short short ten = SHORT SHORT 10;
+      LONG INT long ten = LONG 10;
+      LONG LONG INT long long ten = LONG LONG 10;
+      ASSERT (SIGN zero = 0);
+      ASSERT (SIGN short zero = 0);
+      ASSERT (SIGN short short zero = 0);
+      ASSERT (SIGN long zero = 0);
+      ASSERT (SIGN long long zero = 0);
+      ASSERT (SIGN ten = 1);
+      ASSERT (SIGN short ten = 1);
+      ASSERT (SIGN short short ten = 1);
+      ASSERT (SIGN long ten = 1);
+      ASSERT (SIGN long long ten = 1);
+      ASSERT (SIGN -ten = -1);
+      ASSERT (SIGN -short ten = -1);
+      ASSERT (SIGN -short short ten = -1);
+      ASSERT (SIGN -long ten = -1);
+      ASSERT (SIGN -long long ten = -1)
+END
+

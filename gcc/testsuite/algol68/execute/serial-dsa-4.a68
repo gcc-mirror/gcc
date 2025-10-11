@@ -1,0 +1,4 @@
+begin (ref int a = loc int := 10; goto leak; a);
+leak:
+      skip
+end

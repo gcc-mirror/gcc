@@ -1,0 +1,8 @@
+begin assert (UPB "foo'nbar" = 7 AND "foo'nbar"[4] = REPR 10);
+      assert (UPB "foo'tbar" = 7 AND "foo'tbar"[4] = REPR 9);
+      assert (UPB "foo'rbar" = 7 AND "foo'rbar"[4] = REPR 13);
+      assert (UPB "foo'fbar" = 7 AND "foo'fbar"[4] = REPR 12);
+      assert (UPB "foo''bar" = 7 AND "foo''bar"[4] = REPR 39);
+      assert ("'(u0048,u0065,U0000006c,u006c,U0000006f)" = "Hello");
+      assert ("'( u0048,   u0065,   U0000006c,u006c,     U0000006f  )" = "Hello")
+end

@@ -1,0 +1,18 @@
+{ This tests stack management for DSA serial clauses.
+  If it fails a stack overflow happens.  }
+begin { DSA due to stack allocated multiple.  }
+      to 10000
+      do [10000]int foo;
+         skip
+      od;
+      { DSA due to stack allocated multiple.  Explicit loc.  }
+      to 10000
+      do loc[10000]int foo;
+         skip
+      od;
+      { DSA due to loc generator.  }
+      to 10000
+      do ref[]int jorl = loc [10000]int;
+         skip
+      od
+end

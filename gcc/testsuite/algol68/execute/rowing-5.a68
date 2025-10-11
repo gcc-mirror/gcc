@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# Rowing of a name.  #
+BEGIN INT i := 10;
+      REF[]INT a = i;
+      ASSERT (LWB a = 1 AND UPB a = 1 AND ELEMS a = 1);
+      a[1] := a[1] + 1;
+      ASSERT (a[1] = 11)
+END

@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING s := "foo";
+      s[2] := "x"
+END

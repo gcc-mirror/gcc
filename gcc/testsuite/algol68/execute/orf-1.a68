@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 10;
+      ASSERT (i = 0 OREL i = 10)
+END

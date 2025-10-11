@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC foo = INT: 100;
+      ASSERT (foo = 100)
+END

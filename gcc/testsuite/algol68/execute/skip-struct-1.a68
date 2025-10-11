@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE INCOME = STRUCT (REAL salary, stock, INT jorl);
+      MODE PERSON = STRUCT (INT age, INCOME income, INT num children);
+      PERSON person = SKIP;
+      ASSERT (age OF person = 0);
+      ASSERT (jorl OF income OF person = 0)
+END

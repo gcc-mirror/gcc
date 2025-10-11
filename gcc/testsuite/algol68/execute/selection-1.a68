@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Selecting a struct results in a sub-value.  #
+BEGIN MODE PERSON = STRUCT (INT age, REAL income, INT num children);
+      PERSON person = (44, 999.99, 0);
+      ASSERT (age OF person = 44);
+      ASSERT (num children OF person = 0)
+END

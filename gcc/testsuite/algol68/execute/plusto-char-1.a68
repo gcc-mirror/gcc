@@ -1,0 +1,7 @@
+begin string foo := "foo";
+      char c := "x";
+      c PLUSTO foo;
+      assert (foo = "xfoo");
+      c +=: foo;
+      assert (foo = "xxfoo")
+end

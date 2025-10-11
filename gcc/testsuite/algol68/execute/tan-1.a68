@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL r = 0.0;
+      LONG REAL rr = LONG 50.0;
+      LONG LONG REAL rrr = LONG LONG 50.0;
+      ASSERT (tan (r) = 0.0);
+      long tan (rr);
+      long long tan (rrr)
+END

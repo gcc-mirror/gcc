@@ -1,0 +1,20 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN BEGIN REAL i := 10.0;
+            i -:= 2.0;
+            ASSERT (i = 8.0);
+            i MINUSAB 2.0;
+            ASSERT (i = 6.0)
+      END;
+      BEGIN LONG REAL i := LONG 1000.0;
+            i -:= LONG 100.0;
+            ASSERT (i = LONG 900.0);
+            i MINUSAB LONG 100.0;
+            ASSERT (i = LONG 800.0)
+      END;
+      BEGIN LONG LONG REAL i := LONG LONG 10000.0;
+            i -:= LONG LONG 1000.0;
+            ASSERT (i = LONG LONG 9000.0);
+            i MINUSAB LONG LONG 1000.0;
+            ASSERT (i = LONG LONG 8000.0)
+      END
+END

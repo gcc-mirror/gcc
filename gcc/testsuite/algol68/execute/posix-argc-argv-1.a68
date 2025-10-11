@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (argc >= 1);
+      ASSERT (argv (1000) = "");
+      ASSERT (argv (-1) = "");
+      FOR i TO argc
+      DO puts (argv (i)) OD
+END

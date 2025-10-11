@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT rsp := 5;
+      [10]INT run stack;
+      run stack [(rsp -:= 1) + 1]
+END

@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN OP + = (INT a, b) INT: a - -b;
+      ASSERT (10 + 30 = 40)
+END

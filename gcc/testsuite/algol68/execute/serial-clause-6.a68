@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT ((INT y := 10;
+               INT x := 20;
+               REF INT yy;
+               (REF INT xx := x;
+                yy := y;
+                xx := yy
+               )
+              ) = 10)
+END

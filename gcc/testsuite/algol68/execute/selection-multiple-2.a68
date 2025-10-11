@@ -1,0 +1,18 @@
+begin [10,5]struct (int age, string name) persons;
+
+      for i to 1 UPB persons
+      do for j to 2 UPB persons
+         do age of persons[i,j] := 20 + i + j;
+            name of persons[i,j] := "x" * (i + j)
+         od
+      od;
+
+      assert (1 UPB name of persons = 10);
+      assert (2 UPB name of persons = 5);
+      for i to 1 UPB name of persons
+      do for j to 2 UPB name of persons
+         do assert ((age of persons)[i,j] = 20 + i + j);
+            assert ((name of persons)[i,j] = "x" * (i + j))
+         od
+      od
+end

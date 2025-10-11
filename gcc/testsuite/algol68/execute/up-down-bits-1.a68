@@ -1,0 +1,33 @@
+# { dg-options "-fstropping=upper" }  #
+# SHORTEN and LENG on SIZETY BITS #
+BEGIN BITS b = 16rff;
+      ASSERT (b UP 4 = 16rff0);
+      ASSERT (b SHL 4 = 16rff0);
+      ASSERT (b DOWN 4 = 16r0f);
+      ASSERT (b SHR 4 = 16r0f);
+
+      LONG BITS bb = LONG 16rff;
+      ASSERT (bb UP 4 = LONG 16rff0);
+      ASSERT (bb SHL 4 = LONG 16rff0);
+      ASSERT (bb DOWN 4 = LONG 16r0f);
+      ASSERT (bb SHR 4 = LONG 16r0f);
+
+      LONG LONG BITS bbb = LONG LONG 16rff;
+      ASSERT (bbb UP 4 = LONG LONG 16rff0);
+      ASSERT (bbb SHL 4 = LONG LONG 16rff0);
+      ASSERT (bbb DOWN 4 = LONG LONG 16r0f);
+      ASSERT (bbb SHR 4 = LONG LONG 16r0f);
+
+      SHORT BITS ss = SHORT 16rff;
+      ASSERT (ss UP 4 = SHORT 16rff0);
+      ASSERT (ss SHL 4 = SHORT 16rff0);
+      ASSERT (ss DOWN 4 = SHORT 16r0f);
+      ASSERT (ss SHR 4 = SHORT 16r0f);
+
+      SHORT SHORT BITS sss = SHORT SHORT 16r0f;
+      ASSERT (sss UP 4 = SHORT SHORT 16rf0);
+      ASSERT (sss SHL 4 = SHORT SHORT 16rf0);
+      ASSERT (sss DOWN 2 = SHORT SHORT 16r03);
+      ASSERT (sss SHR 2 = SHORT SHORT 16r03)
+END
+

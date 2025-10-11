@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN fputc (stdout, "X");
+      ASSERT (fputs (stdout, "foo") = 3);
+      fputs (stdout, fputc (stdout, "Y") + "T");
+      fputc (stdout, "Z");
+      ASSERT (fputs (stdout, "") = 0);
+      puts ("")
+END

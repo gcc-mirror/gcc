@@ -1,0 +1,55 @@
+{ Test for overflow/underflow in loops with implicit and explicit
+  iterators. }
+
+begin int count;
+
+      { Overflow.  }
+      count := 0;
+      by 1 while true do count +:= 1 od;
+      assert (count = max_int);
+
+      count := 0;
+      from max_int do count +:= 1 od;
+      assert (count = 1);
+      count := 0;
+
+      by max_int do count +:= 1 od;
+      assert (count = 1);
+
+      count := 0;
+      for i by max_int do count +:= 1 od;
+      assert (count = 1);
+
+      count := 0;
+      by max_int % 2 do count +:= 1 od;
+      assert (count = 3);
+
+      count := 0;
+      by max_int - 1 do count +:= 1 od;
+      assert (count = 2);
+
+      { Underflow.  }
+      count := 0;
+      by -1 while true do count +:= 1 od;
+      assert (count = -min_int + 2);
+
+      count := 0;
+      from min_int by -1 do count +:= 1 od;
+      assert (count = 1);
+      count := 0;
+
+      by min_int do count +:= 1 od;
+      assert (count = 2);
+
+      count := 0;
+      for i by min_int do count +:= 1 od;
+      assert (count = 2);
+
+      count := 0;
+      by min_int % 2 do count +:= 1 od;
+      assert (count = 3);
+
+      count := 0;
+      by min_int + 1 do count +:= 1 od;
+      assert (count = 2)
+end

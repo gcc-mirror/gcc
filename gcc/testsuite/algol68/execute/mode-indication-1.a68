@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT j; REAL y;
+      MODE R = REAL;
+      BEGIN MODE R = INT;
+            R i := j;
+            SKIP
+      END;
+      R x := y;
+      SKIP
+END

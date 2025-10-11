@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [,]CHAR matrix = (("1","H","3"),
+                        ("4","O","6"),
+                        ("7","M","9"),
+                        ("8","E","0"));
+      []CHAR column = matrix[1:4,2];
+      puts (column);
+      fputs (stdout, matrix[3,2:3]);
+      puts ("\n");
+      fputs (stdout, matrix[1:3,1]);
+      puts ("\n");
+      puts (getenv (matrix[,2]));
+      perror (matrix[,3])
+END

@@ -1,0 +1,7 @@
+module Module10 =
+access Module9, Module3
+def int je = foo;
+    prio QUUX = 9;
+    pub Lala bar = (bump; getcounter); {11}
+    skip
+fed

@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL r = 100.0;
+      LONG REAL rr = LONG 25.0;
+      LONG LONG REAL rrr = LONG LONG 25.0;
+      ASSERT (sqrt (r) = 10.0);
+      ASSERT (long sqrt (rr) = LONG 5.0);
+      ASSERT (long long sqrt (rrr) = LONG LONG 5.0)
+END

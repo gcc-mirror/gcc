@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+# Particular program with preceding labels.  #
+jo: ju:
+BEGIN SKIP END

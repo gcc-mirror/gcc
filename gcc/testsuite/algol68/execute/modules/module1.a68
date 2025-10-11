@@ -1,0 +1,9 @@
+module Module1 =
+def
+    pub mode MyInt = int;
+    pub int beast_number := 666;
+    pub string who = "jemarch";
+    puts ("Hello from module'n")
+postlude
+    puts ("Bye from module'n")
+fed

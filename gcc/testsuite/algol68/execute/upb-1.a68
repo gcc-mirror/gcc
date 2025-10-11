@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (UPB "foo" = 3);
+      ASSERT (1 UPB "foo" = 3);
+      ASSERT (UPB "" = 0);
+      ASSERT ((INT i = 1; UPB "") = 0)
+END

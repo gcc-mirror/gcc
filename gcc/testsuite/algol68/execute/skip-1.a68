@@ -1,0 +1,13 @@
+# { dg-options "-fstropping=upper" }  #
+# Check SKIPs for INT modes #
+BEGIN INT int skip = SKIP;
+      ASSERT (int skip = 0);
+      SHORT INT short int skip = SKIP;
+      ASSERT (short int skip = SHORT 0);
+      SHORT SHORT INT short short int skip = SKIP;
+      ASSERT (short short int skip = SHORT SHORT 0);
+      LONG INT long int skip = SKIP;
+      ASSERT (long int skip = LONG 0);
+      LONG LONG INT long long int skip = SKIP;
+      ASSERT (long long int skip = LONG LONG 0)
+END

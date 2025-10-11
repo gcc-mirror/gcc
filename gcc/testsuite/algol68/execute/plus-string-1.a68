@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING foo = "foo", bar = "bar", quux = "quux";
+      ASSERT ("" + "" = "");
+      ASSERT ("" + foo = "foo");
+      ASSERT (bar + "" = "bar");
+      ASSERT (foo + bar = "foobar");
+      STRING res = foo + bar;
+      ASSERT (LWB res = 1 AND UPB res = 6);
+      STRING empty = "" + "";
+      ASSERT (LWB empty = 1 AND UPB empty = 0)
+END

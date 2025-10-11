@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [,]CHAR matrix = (("1","H","3"),
+                        ("4","O","6"),
+                        ("7","M","9"),
+                        ("8","E","2"));
+      ASSERT (matrix[1:2,1] + matrix[3:4,3] = "1492")
+END

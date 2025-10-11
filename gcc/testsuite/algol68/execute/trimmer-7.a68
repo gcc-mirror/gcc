@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []INT arr = (1,2,3);
+      ASSERT (arr[2] = 2 AND arr[3] = 3);
+      []INT jorl = arr[2:3@20];
+      ASSERT (LWB jorl = 20 AND UPB jorl = 21);
+      ASSERT (jorl[20] = 2 AND jorl [21] = 3)
+END

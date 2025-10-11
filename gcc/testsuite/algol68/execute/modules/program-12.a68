@@ -1,0 +1,6 @@
+{ dg-modules "module12" }
+
+access Module_12
+begin  proc lala = (int n, string s) void: skip;
+       foo (lala, 10)
+end

@@ -1,0 +1,20 @@
+{ dg-modules "module1" }
+
+begin string je = access Module1 begin who end;
+      string ju = access Module1 ( who );
+      string ji = access Module1 if true then who else who fi;
+      string ja = access Module1 (true | who | who);
+      string aa = access Module1 case 1 in who, "no" esac;
+      mode United = union (void,int);
+      string bb = access Module1 case United (10) in (int): who esac;
+      string cc = access Module1 (1 | who, "no");
+      assert (je = "jemarch");
+      assert (ju = "jemarch");
+      assert (ji = "jemarch");
+      assert (ja = "jemarch");
+      assert (aa = "jemarch");
+      assert (bb = "jemarch");
+      assert (cc = "jemarch");
+      access Module1 to 1 do assert (who = "jemarch") od;
+      access Module1 (assert (beast_number = 666))
+end

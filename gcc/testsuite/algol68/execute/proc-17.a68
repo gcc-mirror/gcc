@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+# Identity declarations and procedures.  #
+BEGIN PROC foo = (INT i) INT: i + 1;
+      ASSERT (foo (10) = 11);
+      PROC(INT)INT bar = (INT i) INT: i + 1;
+      ASSERT (bar (10) = 11);
+      PROC(INT)INT baz = foo;
+      ASSERT (baz (10) = 11);
+      PROC(INT)INT quux = IF 10 > 1 THEN baz ELSE foo FI;
+      ASSERT (quux (10) = 11)
+END

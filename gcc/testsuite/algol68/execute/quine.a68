@@ -1,0 +1,2 @@
+# { dg-options "-fstropping=upper" }  #
+(STRING a="(STRING a="";puts(2*a[:19]+2*a[19:]);0)";puts(2*a[:19]+2*a[19:]))

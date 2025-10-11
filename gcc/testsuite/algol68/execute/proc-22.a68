@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# REF REF PROC  #
+BEGIN PROC foo = (INT i) INT: i + 1;
+      PROC(INT)INT bar := foo;
+      REF PROC(INT)INT baz := bar;
+      ASSERT (baz (10) = 11)
+END

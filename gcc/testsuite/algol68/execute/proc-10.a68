@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC(INT,INT)INT foo = (INT i, j) INT: i + j;
+      ASSERT (foo (10, 20) = 30)
+END
