@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for pi constants.  #
+BEGIN ASSERT (pi > 3.0 AND pi < 4.0);
+      ASSERT (long pi > LONG 3.0 AND long pi < LONG 4.0);
+      ASSERT (long long pi > LONG LONG 3.0 AND long long pi < LONG LONG 4.0)
+END
+

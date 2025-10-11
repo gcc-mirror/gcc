@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE JORL = STRUCT (UNION(INT,REAL) i, REF JORL next);
+      REF JORL p := HEAP JORL := (10, HEAP JORL := (20.0, NIL));
+      p := HEAP JORL := (30, p);
+      INT num ints := 0, num reals := 0;
+      WHILE REF JORL (p) ISNT NIL
+      DO CASE i OF p IN (INT): num ints +:= 1, (REAL): num reals +:= 1 ESAC;
+         p := next OF p
+      OD;
+      ASSERT (num ints = 2 AND num reals = 1)
+END

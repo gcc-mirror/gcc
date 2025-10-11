@@ -1,0 +1,10 @@
+begin flex[10:-10]int je;
+      int num_fields = 3;
+      assert (UPB je = -10 AND LWB je = 10 AND ELEMS je = 0);
+
+      [1:num_fields][1:num_fields]string fields;
+      for i to num_fields
+      do for j to num_fields
+         do assert (fields[i][j] = "") od
+      od
+end

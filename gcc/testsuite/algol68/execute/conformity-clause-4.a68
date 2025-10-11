@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []UNION(INT,STRING,REAL) datum = (10, 3.14, "foo", 200);
+      ASSERT (CASE datum[1] IN (INT): 100 ESAC = 100);
+      ASSERT (CASE datum[2] IN (REAL): 200 ESAC = 200);
+      ASSERT (CASE datum[3] IN (STRING): 300 ESAC = 300);
+      ASSERT (CASE datum[4] IN (INT): 400 ESAC = 400)
+END

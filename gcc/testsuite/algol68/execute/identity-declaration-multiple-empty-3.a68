@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC foo = ([]INT a) VOID: (ASSERT (ELEMS a = 0));
+      foo ([]INT())
+END

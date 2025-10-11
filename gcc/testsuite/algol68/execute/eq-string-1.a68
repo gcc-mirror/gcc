@@ -1,0 +1,16 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRING foo = "foo", bar = "bar", quux = "quux";
+      # =  #
+      ASSERT ("" = "");
+      ASSERT ("foo" = foo);
+      ASSERT (NOT (foo = bar));
+      ASSERT (NOT (foo = quux));
+      ASSERT (NOT (quux = foo));
+      # EQ  #
+      ASSERT ("" EQ "");
+      ASSERT ("foo" EQ foo);
+      ASSERT (NOT (foo EQ bar));
+      ASSERT (NOT (foo EQ quux));
+      ASSERT (NOT (quux EQ foo))
+END
+

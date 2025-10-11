@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN CHAR c;
+      c := "x";
+      ASSERT (c = "x")
+END

@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN FLEX[1:0]INT a;
+      ASSERT (LWB a = 1 AND UPB a = 0 AND ELEMS a = 0);
+      a := (1,2,3);
+      ASSERT (LWB a = 1 AND UPB a = 3 AND a[1] = 1 AND a[2] = 2 AND a[3] = 3);
+      a := (10,a[2],a[3]);
+      ASSERT (LWB a = 1 AND UPB a = 3 AND a[1] = 10 AND a[2] = 2 AND a[3] = 3);
+      a := 100;
+      ASSERT (LWB a = 1 AND UPB a = 1 AND a[1] = 100);
+      a := ();
+      ASSERT (LWB a = 1 AND UPB a = 0 AND ELEMS a = 0)
+END

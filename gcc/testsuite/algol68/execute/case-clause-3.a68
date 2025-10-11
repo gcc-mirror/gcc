@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT days, INT month = 2, year = 2024;
+      days := CASE month
+              IN 31, (year MOD 4 = 0 AND year MOD 100 /= 0 OR year MOD 400 = 0 | 29 | 28),
+                 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 ESAC;
+      ASSERT (days = 29)
+END

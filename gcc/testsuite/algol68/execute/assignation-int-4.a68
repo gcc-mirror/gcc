@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REF INT xx;
+      INT x := 10;
+      ASSERT ((xx := (x)) = 10)
+END

@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for SIZETY BITS #
+BEGIN ASSERT (bits width > 0);
+      ASSERT (long bits width >= bits width);
+      ASSERT (long long bits width >= long bits width);
+      ASSERT (short bits width <= bits width);
+      ASSERT (short short bits width <= short bits width)
+END
+

@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL my small real := 0.001;
+      PROC my sqrt = (REAL r) REAL: r;
+      REAL res = 4 * (REAL w := 0, INT i := 1; REAL z = my sqrt (my small real / 2);
+                      loop: w := w + 2/(i * (i + 2)); i := i + 4;
+                      IF 1/i > z THEN loop FI;
+                      w);
+      SKIP
+END

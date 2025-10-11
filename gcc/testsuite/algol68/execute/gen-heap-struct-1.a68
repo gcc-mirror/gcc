@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN HEAP STRUCT(INT i, REAL r) foo;
+      ASSERT (i OF foo = 0)
+END

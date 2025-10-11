@@ -1,0 +1,170 @@
+# { dg-options "-fstropping=upper" }  #
+# The Most Contrived Factorial Program
+  By John P. Baker
+  University of Bristol.
+
+  Published in the Algol Bulletin 42.
+  http://jemarch.net/algol-bulletin-42.pdf
+
+  Version adapted for GCC.
+#
+
+BEGIN INT one = 1, two = 2, three = 3, four = 4, five = 5,
+          six = 6, seven = 7, eight = 8, nine = 9, ten = 10,
+          eleven = 11, twelve = 12;
+      INT a = one;
+      PRIO ME=5, LOVE=7, MY=7, LORDS=7, LADIES=7,
+           PIPERS=7, DRUMMERS=7, MAIDS=7, SWANS=7, GEESE=7,
+           GOLD=7, COLLY=7, FRENCH=7, TURTLE=7, PARTRIDGE=6;
+      BOOL sent to := TRUE;
+      OP THE = (BOOL a) BOOL: a,
+         TWELFTH = (INT a) BOOL: a = twelve,
+         ELEVENTH = (INT a) BOOL: a = eleven,
+         TENTH = (INT a) BOOL: a = ten,
+         NINTH = (INT a) BOOL: a = nine,
+         EIGHTH = (INT a) BOOL: a = eight,
+         SEVENTH = (INT a) BOOL: a = seven,
+         SIXTH = (INT a) BOOL: a = six,
+         FIFTH = (INT a) BOOL: a = five,
+         FOURTH = (INT a) BOOL: a = four,
+         THIRD = (INT a) BOOL: a = three,
+         SECOND = (INT a) BOOL: a = two,
+         FIRST = (INT a) BOOL: a = one;
+      OP ME = (BOOL a, INT b) VOID: SKIP; # XXX when transput done (a|print(b)) #
+      OP LOVE = (BOOL a, b) BOOL: (a|b|FALSE),
+         MY = (BOOL a, b) BOOL: a LOVE b;
+      OP AND = (INT a) INT: a;
+      MODE DATE = STRUCT (INT day, month);
+      LOC DATE christmas := (25, 12);
+      OP LORDS = (INT a, b) INT: a * b,
+         LADIES = (INT a, b) INT: a * b,
+         PIPERS = (INT a, b) INT: a * b,
+         DRUMMERS = (INT a, b) INT: a * b,
+         MAIDS = (INT a, b) INT: a * b,
+         SWANS = (INT a, b) INT: a * b,
+         GEESE = (INT a, b) INT: a * b,
+         GOLD = (INT a, b) INT: a * b,
+         COLLY = (INT a, b) INT: a * b,
+         FRENCH = (INT a, b) INT: a * b,
+         TURTLE = (INT a, b) INT: a * b;
+      OP LEAPING = (INT a) INT: a,
+         DANCING = (INT a) INT: a,
+         PIPING = (INT a) INT: a,
+         DRUMMING = (INT a) INT: a,
+         MILKING = (INT a) INT: a,
+         SWIMMING = (INT a) INT: a,
+         LAYING = (INT a) INT: a,
+         RINGS = (INT a) INT: a,
+         BIRDS = (INT a) INT: a,
+         HENS = (INT a) INT: a,
+         DOVES = (INT a) INT: a;
+      OP PARTRIDGE = (INT a, b) INT: a + b;
+      INT in a pear tree = 0;
+
+      # Now we are ready...  #
+
+       THE FIRST day OF christmas MY TRUE LOVE sent to ME
+      a PARTRIDGE in a pear tree;
+
+       THE SECOND day OF christmas MY TRUE LOVE sent to ME
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE THIRD day OF christmas MY TRUE LOVE sent to ME
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE FOURTH day OF christmas MY TRUE LOVE sent to ME
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE FIFTH day OF christmas MY TRUE LOVE sent to ME
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE SIXTH day OF christmas MY TRUE LOVE sent to ME
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE SEVENTH day OF christmas MY TRUE LOVE sent to ME
+      seven SWANS SWIMMING
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE EIGHTH day OF christmas MY TRUE LOVE sent to ME
+      eight MAIDS MILKING
+      seven SWANS SWIMMING
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE NINTH day OF christmas MY TRUE LOVE sent to ME
+      nine DRUMMERS DRUMMING
+      eight MAIDS MILKING
+      seven SWANS SWIMMING
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE TENTH day OF christmas MY TRUE LOVE sent to ME
+      ten PIPERS PIPING
+      nine DRUMMERS DRUMMING
+      eight MAIDS MILKING
+      seven SWANS SWIMMING
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE ELEVENTH day OF christmas MY TRUE LOVE sent to ME
+      eleven LADIES DANCING
+      ten PIPERS PIPING
+      nine DRUMMERS DRUMMING
+      eight MAIDS MILKING
+      seven SWANS SWIMMING
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+       THE TWELFTH day OF christmas MY TRUE LOVE sent to ME
+      twelve LORDS LEAPING
+      eleven LADIES DANCING
+      ten PIPERS PIPING
+      nine DRUMMERS DRUMMING
+      eight MAIDS MILKING
+      seven SWANS SWIMMING
+      six GEESE LAYING
+      five GOLD RINGS
+      four COLLY BIRDS
+      three FRENCH HENS
+      two TURTLE DOVES AND
+      a PARTRIDGE in a pear tree;
+
+   SKIP
+END
+

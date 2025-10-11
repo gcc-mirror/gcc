@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL r = 0.0;
+      LONG REAL rr = LONG 45.0;
+      LONG LONG REAL rrr = LONG LONG 60.0;
+      ASSERT (cos (r) = 1.0);
+      long cos (rr);
+      long long cos (rrr)
+END

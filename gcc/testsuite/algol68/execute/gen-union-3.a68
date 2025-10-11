@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+# An union generated from SKIP has -1 as overhead.  #
+BEGIN MODE JSONVAL = UNION (JSONOBJ,JSONSTR),
+           JSONSTR = STRING,
+           JSONOBJ = STRUCT (REF JSONFLD fields),
+           JSONFLD = STRUCT (JSONVAL value, REF JSONFLD next);
+
+      JSONFLD fields;
+      ASSERT (CASE value OF fields
+              IN (JSONSTR s): "string",
+                 (JSONOBJ o): "object"
+              OUT "fuckyou"
+              ESAC = "fuckyou")
+END

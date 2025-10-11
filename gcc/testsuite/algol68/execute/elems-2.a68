@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Flat and ultra-flat multiples.  #
+BEGIN [3,10:3]INT arr;
+      ASSERT (2 ELEMS arr = 0);
+      [1:0]INT arr2;
+      ASSERT (ELEMS arr2 = 0)
+END

@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN GOTO end;
+      ASSERT(FALSE);
+end:  SKIP
+END

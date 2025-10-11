@@ -1,0 +1,20 @@
+# { dg-options "-fstropping=upper" }  #
+# pr UPPER pr  #
+BEGIN [10]UNION(INT,REAL,[]INT,CHAR) datux;
+      FOR i FROM LWB datux TO UPB datux
+      DO ASSERT (CASE datux[i]
+                 IN (INT): 10,
+                    (REAL): 20,
+                    (CHAR): 30,
+                    ([]INT): 40
+                 ESAC = 0);
+         []INT ja = (1,2,3);
+         datux[i] := ja;
+         ASSERT (CASE datux[i]
+                 IN (INT): 10,
+                    (REAL): 20,
+                    (CHAR): 30,
+                    ([]INT): 40
+                 ESAC = 40)
+      OD
+END

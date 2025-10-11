@@ -1,0 +1,18 @@
+# { dg-options "-fstropping=upper" }  #
+# ELEM for SIZETY BITS #
+BEGIN BITS b = 2r1010;
+      ASSERT ((bits width - 1) ELEM b);
+      ASSERT (NOT ((bits width - 2) ELEM b));
+      LONG BITS bb = LONG 2r1010;
+      ASSERT ((long bits width - 1) ELEM bb);
+      ASSERT (NOT ((long bits width - 2) ELEM bb));
+      LONG LONG BITS bbb = LONG LONG 2r1010;
+      ASSERT ((long long bits width - 1) ELEM bbb);
+      ASSERT (NOT ((long long bits width - 2) ELEM bbb));
+      SHORT BITS ss = SHORT 2r1010;
+      ASSERT ((short bits width - 1) ELEM ss);
+      ASSERT (NOT ((short bits width - 2) ELEM ss));
+      SHORT SHORT BITS sss = SHORT SHORT 2r1010;
+      ASSERT ((short short bits width - 1) ELEM sss);
+      ASSERT (NOT ((short short bits width - 2) ELEM sss))
+END

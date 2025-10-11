@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN []INT foo = (1,2,3);
+      ASSERT (ELEMS foo = 3)
+END

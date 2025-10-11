@@ -1,0 +1,42 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT x := 10;
+      REF INT xx := x;
+      REF REF INT xxx := xx;
+      ASSERT (x = 10);
+      ASSERT (xx = 10);
+      ASSERT (xxx = 10);
+      ASSERT ((x) = 10);
+      ASSERT ((xx) = 10);
+      ASSERT ((xxx) = 10);
+      ASSERT (x + 1 = 11);
+      ASSERT (xx + 1 = 11);
+      ASSERT (xxx + 1 = 11);
+      ASSERT ((x + 1) = 11);
+      ASSERT ((xx + 1) = 11);
+      ASSERT ((xxx + 1) = 11);
+      ASSERT ((x := x) = 10);
+      ASSERT ((xx := x) = 10);
+      ASSERT ((xxx := xx) = 10);
+      ASSERT ((x := x) + 1 = 11);
+      ASSERT ((xx := x) + 1 = 11);
+      ASSERT ((xxx := xx) + 1 = 11);
+      x := 20;
+      ASSERT (x = 20);
+      ASSERT (xx = 20);
+      ASSERT (xxx = 20);
+      ASSERT ((x) = 20);
+      ASSERT ((xx) = 20);
+      ASSERT ((xxx) = 20);
+      ASSERT (x + 1 = 21);
+      ASSERT (xx + 1 = 21);
+      ASSERT (xxx + 1 = 21);
+      ASSERT ((x + 1) = 21);
+      ASSERT ((xx + 1) = 21);
+      ASSERT ((xxx + 1) = 21);
+      ASSERT ((x := x) = 20);
+      ASSERT ((xx := x) = 20);
+      ASSERT ((xxx := xx) = 20);
+      ASSERT ((x := x) + 1 = 21);
+      ASSERT ((xx := x) + 1 = 21);
+      ASSERT ((xxx := xx) + 1 = 21)
+END

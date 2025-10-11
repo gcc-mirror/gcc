@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i;
+      PROC side = INT: (i := 1; i := 2; i);
+      PROC add = (INT ii, INT jj) INT: ii + jj;
+      INT res = add (side, side);
+      # can be 3 or 4 due to collateral evaluation of arguments.  #
+      ASSERT (res = 3 OR res = 4)
+END

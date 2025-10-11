@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+# An identity declaration shall make a copy of the struct value being
+  ascribed.  #
+BEGIN MODE FOO = STRUCT (STRING s, INT n);
+      FOO f1 := ("foo", 10);
+      FOO f2 = f1;
+      f1 := ("bar", 20);
+      ASSERT (n OF f1 = 20);
+      ASSERT (n OF f2 = 10)
+END

@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i;
+      i := 20;
+      ASSERT (i = 20)
+END

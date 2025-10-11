@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT jorl;
+      INT var := LOC INT := 15; # The generated name goes away #
+      ASSERT (var = 15)
+END

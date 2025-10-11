@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT x := 20;
+      REF INT i := (foo; x := 10 EXIT foo: x EXIT bar: x := 30);
+      ASSERT (i = 20)
+END

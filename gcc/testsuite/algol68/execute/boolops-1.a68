@@ -1,0 +1,18 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN BOOL t := TRUE;
+      BOOL f := FALSE;
+      ASSERT (NOT t = FALSE);
+      ASSERT (~t = FALSE);
+      ASSERT ((t AND t) = TRUE);
+      ASSERT ((t AND f) = FALSE);
+      ASSERT ((f AND f) = FALSE);
+      ASSERT ((f AND t) = FALSE);
+      ASSERT ((t OR t) = TRUE);
+      ASSERT ((t OR f) = TRUE);
+      ASSERT ((f OR f) = FALSE);
+      ASSERT ((f OR t) = TRUE);
+      ASSERT ((t XOR t) = FALSE);
+      ASSERT ((t XOR f) = TRUE);
+      ASSERT ((f XOR f) = FALSE);
+      ASSERT ((f XOR t) = TRUE)
+END

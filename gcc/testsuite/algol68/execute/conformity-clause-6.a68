@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN UNION (CHAR,BOOL,REAL) cbra = 3.14, UNION (INT,REAL) ira = 10;
+      IF (cbra | (CHAR): FALSE, (BOOL b): b
+          |: ira | (INT i): i > 0, (REAL r): r > 0)
+      THEN SKIP
+      ELSE ASSERT (FALSE)
+      FI
+END

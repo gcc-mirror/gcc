@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT ("a" = "a")
+END
+

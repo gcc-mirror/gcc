@@ -1,0 +1,27 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for SIZETY INTs #
+BEGIN # LENG  #
+      (SHORT SHORT INT iii = short short max int; ASSERT (LENG iii = LENG short short max int));
+      (SHORT INT ii = short max int; ASSERT (LENG ii = LENG short max int));
+      (INT i = max int; ASSERT (LENG i = LENG max int));
+      (LONG INT ii = long max int; ASSERT (LENG ii = LENG long max int));
+      # SHORTEN  #
+      (SHORT INT i = SHORT 10; SHORT SHORT INT ii = SHORT SHORT 100; ASSERT (ii + SHORTEN i = SHORT SHORT 110));
+      IF int shorths > 2
+      THEN (SHORT INT ii = LENG short short max int - SHORT 2;
+            ASSERT (SHORTEN ii = short short max int - SHORT SHORT 2));
+           (SHORT INT ii = LENG short short max int + SHORT 1; ASSERT (SHORTEN ii = short short max int));
+           (SHORT INT ii = LENG short short min int - SHORT 1; ASSERT (SHORTEN ii = short short min int))
+      FI;
+      (INT i = LENG short max int - 2; ASSERT (SHORTEN i = SHORTEN max int - SHORT 2));
+      (INT i = LENG short max int + 1; ASSERT (SHORTEN i = SHORTEN max int));
+      (INT i = LENG short min int - 1; ASSERT (SHORTEN i = SHORTEN min int));
+      (LONG INT ii = LENG max int - LONG 2; ASSERT (SHORTEN ii = max int - 2));
+      (LONG INT ii = LENG max int + LONG 1; ASSERT (SHORTEN ii = max int));
+      (LONG INT ii = LENG min int - LONG 1; ASSERT (SHORTEN ii = min int));
+      IF int lengths > 2
+      THEN (LONG LONG INT ii = LENG long max int - LONG LONG 2; ASSERT (SHORTEN ii = long max int - LONG 2));
+           (LONG LONG INT ii = LENG long max int + LONG LONG 1; ASSERT (SHORTEN ii = long max int));
+           (LONG LONG INT ii = LENG long min int - LONG LONG 1; ASSERT (SHORTEN ii = long min int))
+      FI
+END

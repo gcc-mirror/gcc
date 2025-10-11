@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT j := 1;
+      ASSERT ((j|10,20,30|40) = 10);
+      j := 2;
+      ASSERT ((j|10,20,30|40) = 20);
+      j := 3;
+      ASSERT ((j|10,20,30|40) = 30);
+      j := 100;
+      ASSERT ((j|10,20,30|40) = 40)
+END

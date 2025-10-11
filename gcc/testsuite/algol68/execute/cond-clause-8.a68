@@ -1,0 +1,20 @@
+# { dg-options "-fstropping=upper" }  #
+# ELIF  #
+BEGIN
+   INT i = 12;
+   IF i > 20 THEN
+      1
+   ELIF i > 5 THEN
+      BEGIN
+         IF FALSE THEN
+            ASSERT (FALSE);
+            1
+         ELSE
+            0
+         FI
+      END
+   ELIF i < 10 THEN
+      ASSERT (FALSE);
+      1
+   FI
+END

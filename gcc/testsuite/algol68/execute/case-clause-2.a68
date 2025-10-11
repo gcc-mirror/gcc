@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 2;
+      ASSERT (CASE INT x = 10; i
+              IN x + 1,
+                 x + 2,
+                 x + 3
+              ESAC = 12)
+END

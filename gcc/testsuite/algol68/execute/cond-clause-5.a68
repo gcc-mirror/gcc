@@ -1,0 +1,3 @@
+# { dg-options "-fstropping=upper" }  #
+# Closed clauses in enquiry clause.  #
+((INT i; (i := 3 ; i := 2); ((i /= i))) | ASSERT (FALSE); 1 | 0)

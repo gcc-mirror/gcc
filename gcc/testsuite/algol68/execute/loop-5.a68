@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Skip in loop.  #
+BEGIN INT i := 0;
+      WHILE i +:= 1; i < 10
+      DO SKIP OD;
+      ASSERT (i = 10)
+END

@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for certain particular characters.  #
+BEGIN ASSERT (null character /= blank);
+      ASSERT (max abs char = ABS 16r10ffff)
+END

@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRUCT ([2:3]INT m, [1:5]REAL g) s;
+      g OF s:= (1.0, 2.0, 3.0, 4.0, 5.0)
+END

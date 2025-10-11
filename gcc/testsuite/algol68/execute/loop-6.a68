@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# The range of the while-part shall cover the do-part.  #
+BEGIN INT i := 0;
+      WHILE INT incr = 2; i < 10
+      DO i +:= incr OD;
+      ASSERT (i = 10)
+END

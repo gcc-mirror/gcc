@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT x := 10;
+      INT y := 20;
+      REF INT xx := x;
+      # This sets x to the current value of y #
+      REF INT (xx) := y;
+      ASSERT (x = 20)
+END

@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+# Make sure structs are copied when ascribed.  #
+BEGIN MODE BAR = STRUCT (INT j, REAL r);
+      MODE FOO = STRUCT (INT i, BAR bar);
+
+      FOO f1 := (10, (20, 3.14));
+      FOO f2 = f1;
+
+      j OF bar OF f1 := 200;
+      ASSERT (j OF bar OF f1 = 200);
+      ASSERT (j OF bar OF f2 = 20)
+END

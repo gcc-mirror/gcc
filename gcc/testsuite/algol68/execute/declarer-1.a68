@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+# Tests a jump out of the elaboration of a declarer.  #
+BEGIN STRING month = CASE 13
+                     IN "Jan", "Feb","March","April","May","June",
+		        "July","Aug","Sept", "Oct",  "Nov","Dec",
+                        stop
+                     ESAC;
+      ASSERT (FALSE)
+END

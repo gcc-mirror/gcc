@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN COMPL z = 4I5;
+      LONG COMPL zz = LONG 4 I LONG 6;
+      LONG LONG COMPL zzz = LONG LONG 4 I LONG LONG7;
+      SKIP
+END

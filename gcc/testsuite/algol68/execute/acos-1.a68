@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL r = 1.0;
+      LONG REAL rr = LONG 45.0;
+      LONG LONG REAL rrr = LONG LONG 60.0;
+      ASSERT (arccos (r) = 0.0);
+      long arccos (rr);
+      long long arccos (rrr)
+END

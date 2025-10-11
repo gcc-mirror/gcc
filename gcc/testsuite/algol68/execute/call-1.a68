@@ -1,0 +1,19 @@
+# { dg-options "-fstropping=upper" }  #
+# Calling a procedure that gets a row of united values.  #
+BEGIN INT num ints := 0, num reals := 0, num strings := 0;
+      PROC foo = ([]UNION(INT,REAL,STRING) d) VOID:
+      BEGIN FOR i TO UPB d
+            DO CASE d[i]
+               IN (STRING): num strings +:= 1,
+                  (INT): num ints +:= 1,
+                  (REAL): num reals +:= 1
+               ESAC
+            OD
+      END;
+      foo (());
+      foo (10);
+      ASSERT (num ints = 1 AND num reals = 0 AND num strings = 0);
+      num ints := 0;
+      foo (("baz", 1, 3.14, 2, 0.0, "foo"));
+      ASSERT (num ints = 2 AND num reals = 2 AND num strings = 2)
+END

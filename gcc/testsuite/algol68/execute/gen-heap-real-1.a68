@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REF REAL x = HEAP REAL := 4;
+      ASSERT (x > 3.9 AND x < 4.1)
+END

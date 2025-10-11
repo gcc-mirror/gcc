@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (ABS 10 = 10);
+      ASSERT (ABS -10 = 10);
+      ASSERT (ABS SHORT 10 = SHORT 10);
+      ASSERT (ABS - SHORT 10 = SHORT 10);
+      ASSERT (ABS - SHORT SHORT 10 = SHORT SHORT 10);
+      ASSERT (ABS LONG 10 = LONG 10);
+      ASSERT (ABS - LONG 10 = LONG 10);
+      ASSERT (ABS - LONG LONG 10 = LONG LONG 10)
+END

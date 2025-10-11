@@ -1,0 +1,17 @@
+# { dg-options "-fstropping=upper" }  #
+# <= and => for SIZETY BITS #
+BEGIN ASSERT (16rff <= 16rffff);
+      ASSERT (2r101 LE 2r111);
+      ASSERT (2r111 >= 2r101);
+      ASSERT (16rffff GE 16rff);
+
+      ASSERT (LONG 16rff <= LONG 16rffff);
+      ASSERT (LONG 2r101 LE LONG 2r111);
+      ASSERT (LONG 2r111 >= LONG 2r101);
+      ASSERT (LONG 16rffff GE LONG 16rff);
+
+      ASSERT (LONG LONG 16rff <= LONG LONG 16rffff);
+      ASSERT (LONG LONG 2r101 LE LONG LONG 2r111);
+      ASSERT (LONG LONG 2r111 >= LONG LONG 2r101);
+      ASSERT (LONG LONG 16rffff GE LONG LONG 16rff)
+END

@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL x = 3.14, y = 3.80;
+      LONG REAL xx = LONG 3.14, yy = LONG 3.80;
+      LONG LONG REAL xxx = LONG LONG 3.14, yyy = LONG LONG 3.80;
+      ASSERT (ENTIER x = 3 AND ENTIER y = 3);
+      ASSERT (ENTIER xx = LONG 3 AND ENTIER yy = LONG 3);
+      ASSERT (ENTIER xxx = LONG LONG 3 AND ENTIER yyy = LONG LONG 3)
+END

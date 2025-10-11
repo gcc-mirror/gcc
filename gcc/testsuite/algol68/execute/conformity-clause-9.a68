@@ -1,0 +1,10 @@
+begin union (int, bool, string) foo = 666;
+      case foo
+      in (union(int,string) bar):
+            case bar
+            in (int i): assert (i = 666),
+               (string s): assert (false)
+            esac,
+         (bool baz): assert (false)
+      esac
+end

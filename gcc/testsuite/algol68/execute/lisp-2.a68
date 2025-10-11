@@ -1,0 +1,21 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT num constants := 0, num vars := 0, num operators := 0;
+      PROC collect stats = (REF EXPRESSION expr) VOID:
+      BEGIN CASE left OF expr
+            IN (INT): num constants +:= 1,
+               (CHAR): num vars +:= 1,
+               (REF EXPRESSION s): collect stats (s)
+            ESAC;
+            num operators +:= 1;
+            CASE right OF expr
+            IN (INT): num constants +:= 1,
+               (CHAR): num vars +:= 1,
+               (REF EXPRESSION s): collect stats (s)
+            ESAC
+      END;
+      MODE OPERAND = UNION (CHAR,INT,REF EXPRESSION),
+           EXPRESSION = STRUCT (OPERAND left, CHAR operator, OPERAND right);
+      REF EXPRESSION expression := HEAP EXPRESSION := ("X", "+", HEAP EXPRESSION := ("Y", "x", 2));
+      collect stats (expression);
+      ASSERT (num constants = 1 AND num vars = 2 AND num operators = 2)
+END

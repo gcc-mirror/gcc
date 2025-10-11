@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL r := 3.14;
+      r DIVAB 2.0;
+      r /:= 2.0;
+      LONG REAL rr := LONG 3.14;
+      rr DIVAB LONG 2.0;
+      rr /:= LONG 2.0;
+      LONG LONG REAL rrr := LONG LONG 3.14;
+      rrr DIVAB LONG LONG 2.0;
+      rrr /:= LONG LONG 2.0
+END

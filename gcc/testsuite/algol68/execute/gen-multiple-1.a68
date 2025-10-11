@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE JORL = [(INT x; x + 1)]INT;
+      JORL xx;
+      ASSERT (ELEMS xx = 1 AND xx[1] = 0)
+END

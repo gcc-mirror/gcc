@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN MODE DATUM = UNION(INT,REAL,CHAR);
+      DATUM datum := "X";
+      INT i = CASE datum
+              IN (REAL): 2,
+                 (INT val): val + 1
+              OUT INT x = 100;
+                  x + 10
+              ESAC;
+      ASSERT (i = 110)
+END

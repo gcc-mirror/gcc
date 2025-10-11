@@ -1,0 +1,15 @@
+begin [5]struct(char i, real r) foo;
+
+      { The stride in the single dimension of the multiple resulting
+        from the selection is not the size of a 'char'.  }
+      i of foo := ("a","b","c","d","e");
+      puts ((i of foo) + "'n");
+      { Via indexing then selection.  }
+      assert (i of foo[1] = "a");
+      assert (i of foo[2] = "b");
+      assert (i of foo[3] = "c");
+      assert (i of foo[4] = "d");
+      assert (i of foo[5] = "e");
+      { Via selection of multiple.  }
+      assert (i of foo = "abcde");
+end

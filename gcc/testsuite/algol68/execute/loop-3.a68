@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+# Nested loops.  #
+BEGIN INT i := 10, res := 0;
+      WHILE i > 0
+      DO INT j := 10;
+         WHILE j > 0
+         DO res +:= 1;
+            j -:= 1
+         OD;
+         ASSERT (j = 0);
+         i -:= 1;
+      OD;
+      ASSERT (i = 0 AND res = 100)
+END

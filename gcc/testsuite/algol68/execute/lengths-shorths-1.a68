@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (int lengths > 0);
+      ASSERT (int shorths > 0);
+      ASSERT (bits lengths > 0);
+      ASSERT (bits shorths > 0);
+      ASSERT (real lengths > 0);
+      ASSERT (real shorths > 0)
+END

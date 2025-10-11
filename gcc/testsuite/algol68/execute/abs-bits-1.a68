@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# ABS for SIZETY BITS #
+BEGIN ASSERT (255 = ABS 16rff);
+      ASSERT (LONG 255 = ABS LONG 16rff);
+      ASSERT (LONG LONG 255 = ABS LONG LONG 16rff)
+      # XXX test ABS of negative numbers (extension).  #
+END

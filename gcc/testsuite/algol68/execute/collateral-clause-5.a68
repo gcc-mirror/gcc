@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT x, y, z;
+      (x := 1, y := 2, z := 3);
+      ASSERT (x = 1 AND y = 2 AND z = 3)
+END

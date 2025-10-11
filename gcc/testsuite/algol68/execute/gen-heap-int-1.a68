@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REF INT x = HEAP INT := 4;
+      ASSERT (x = 4)
+END

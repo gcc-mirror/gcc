@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN ASSERT (UPB IF FALSE THEN []INT (1) ELSE [,]REAL (1) FI = 1);
+      ASSERT (2 UPB CASE 2 IN []INT (1), [,]REAL (1) ESAC = 1)
+END

@@ -1,0 +1,25 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT num ints := 0, num chars := 0;
+      PROC collect stats = (REF CONS tree) VOID:
+      BEGIN REF CONS e := tree;
+            WHILE REF CONS (e) ISNT NIL
+            DO CASE car OF e
+               IN (CHAR c): num chars +:= 1,
+                  (INT): num ints +:= 1,
+                  (REF CONS s): collect stats (s)
+               ESAC;
+               e := cdr OF e
+            OD
+      END;
+      MODE ATOM = UNION (CHAR, INT);
+      MODE CONS = STRUCT (UNION (ATOM, REF CONS) car, REF CONS cdr);
+      PROC list = ([]UNION (ATOM, REF CONS) item) REF CONS:
+      BEGIN REF CONS a := NIL;
+            FOR i FROM UPB item BY -1 TO 1
+            DO a := HEAP CONS := (item[i], a) OD;
+            a
+      END;
+      REF CONS expression := list (("X", "+", list (("Y", "x", 2))));
+      collect stats (expression);
+      ASSERT (num ints = 1 AND num chars = 4)
+END

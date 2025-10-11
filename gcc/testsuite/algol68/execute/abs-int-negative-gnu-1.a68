@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper -std=gnu68" }  #
+BEGIN SHORT SHORT BITS b = BIN - SHORT SHORT 2;
+      ASSERT (ABS b = - SHORT SHORT 2)
+END

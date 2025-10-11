@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN HEAP STRUCT([10]INT i, STRING s) foo;
+      FOR i FROM LWB i OF foo TO UPB i OF foo
+      DO ASSERT ((i OF foo)[i] = 0) OD
+END

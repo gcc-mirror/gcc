@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT x := 10;
+      INT y := 20;
+      REF INT xx := x;
+      CO This makes xx to refer to y
+         REF REF INT := REF INT
+      CO
+      xx := y;
+      y := 30;
+      ASSERT (xx = 30)
+END

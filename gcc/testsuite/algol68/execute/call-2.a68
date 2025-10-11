@@ -1,0 +1,21 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT control := 0;
+      PROC set control = (PROC(INT)VOID p) VOID: p (100);
+      PROC setter = (INT i) VOID: control := i;
+      PROC(INT)VOID setter 2 = (INT i) VOID: control := i + 1;
+      PROC(INT)VOID setter 3 := setter 2;
+      PROC(INT)VOID setter 4 := (INT i) VOID: control := i + 2;
+      REF PROC(INT)VOID setter 5 := setter 4;
+      set control (setter);
+      ASSERT (control = 100);
+      set control (setter 2);
+      ASSERT (control = 101);
+      control := 0;
+      set control (setter 3);
+      ASSERT (control = 101);
+      set control (setter 4);
+      ASSERT (control = 102);
+      control := 0;
+      set control (setter 5);
+      ASSERT (control = 102)
+END

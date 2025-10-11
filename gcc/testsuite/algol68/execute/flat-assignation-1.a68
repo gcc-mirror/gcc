@@ -1,0 +1,7 @@
+{ Assigning to the flexible name replaces the descriptor
+  as well as the elements.  }
+begin [10:0]int flat1;
+      flex[10:-10]int flat2;
+      flat2 := flat1;
+      assert (UPB flat2 = 0 AND LWB flat2 = 10)
+end

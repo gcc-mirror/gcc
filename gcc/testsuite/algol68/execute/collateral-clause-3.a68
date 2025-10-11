@@ -1,0 +1,11 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 10;
+      (
+         i +:= 1;
+         BEGIN
+            (i + 1, (i +:= 1, i + 10, i + 11, SKIP), i + 2)
+         END;
+         i +:= i
+      );
+      ASSERT (i = 24)
+END

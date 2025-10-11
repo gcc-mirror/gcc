@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# While loop.  #
+BEGIN INT i := 0;
+      WHILE INT j = 5; i < j
+      DO i +:= 1 OD;
+      ASSERT (i = 5)
+END

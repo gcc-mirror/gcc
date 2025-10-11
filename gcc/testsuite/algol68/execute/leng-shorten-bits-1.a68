@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# SHORTEN and LENG on SIZETY BITS #
+BEGIN ASSERT (LENG 16rff = LONG 16rff);
+      ASSERT (SHORTEN LONG 16rffff = 16rffff);
+      ASSERT (LENG LONG 16rffff = LONG LONG 16rffff);
+      ASSERT (SHORTEN LONG LONG 16rffff = LONG 16rffff)
+END

@@ -1,0 +1,15 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for widths #
+BEGIN ASSERT (int width > 0);
+      ASSERT (long int width > 0);
+      ASSERT (long long int width > 0);
+      ASSERT (short int width > 0);
+      ASSERT (short short int width > 0);
+      ASSERT (real width > 0);
+      ASSERT (long real width > 0);
+      ASSERT (long long real width > 0)
+CO      exp width;
+        long exp width;
+        long long exp width;
+CO
+END

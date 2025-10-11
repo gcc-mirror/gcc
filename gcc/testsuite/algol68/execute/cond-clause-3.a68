@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 5;
+      IF i = 5
+      THEN 0
+      ELSE ASSERT (FALSE); 1
+      FI
+END

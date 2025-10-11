@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN COMPL z = 4.0I5.0;
+      CONJ z;
+      LONG COMPL zz = LONG 4.0 I LONG 6.0;
+      CONJ zz;
+      LONG LONG COMPL zzz = LONG LONG 4.0 I LONG LONG 7.0;
+      CONJ zzz;
+      SKIP
+END

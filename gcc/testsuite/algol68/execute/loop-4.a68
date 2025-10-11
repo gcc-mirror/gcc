@@ -1,0 +1,13 @@
+# { dg-options "-fstropping=upper" }  #
+# Nested loops and j on outside range.  #
+BEGIN INT i := 10, j := 10, res := 0;
+      WHILE i > 0
+      DO j := 10;
+         WHILE j > 0
+         DO res +:= 1;
+            j -:= 1
+         OD;
+         i -:= 1
+      OD;
+      ASSERT (i = 0 AND j = 0 AND res = 100)
+END

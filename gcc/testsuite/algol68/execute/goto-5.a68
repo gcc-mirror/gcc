@@ -1,0 +1,20 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC is prime = (INT m) BOOL:
+      BEGIN IF m < 2
+            THEN puts ("program terminated because m is less than 2\n");
+                 GOTO stop
+            FI;
+
+            BOOL factor found := NOT (ODD m OR m = 2);
+            FOR i FROM 3 BY 2 TO m - 1 WHILE NOT factor found
+            DO factor found := m MOD i = 0 OD;
+            factor found
+      END;
+
+      ASSERT (is prime (1));
+      ASSERT (is prime (3));
+      ASSERT (is prime (71));
+      ASSERT (is prime (97));
+      is prime (0);
+      ASSERT (FALSE) # Should jump to stop in the standard postlude.  #
+END

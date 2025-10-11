@@ -1,0 +1,17 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for SIZETY REALs #
+BEGIN # LENG  #
+      (REAL i = max real; ASSERT (LENG i = LENG max real));
+      (LONG REAL ii = long max real; ASSERT (LENG ii = LENG long max real));
+
+      # SHORTEN  #
+      (LONG REAL ii = LENG max real - LONG 2.0; ASSERT (SHORTEN ii = max real - 2.0));
+      (LONG REAL ii = LENG max real + LONG 1.0; ASSERT (SHORTEN ii = max real));
+      (LONG REAL ii = LENG min real - LONG 1.0; ASSERT (SHORTEN ii = min real));
+      IF (long long max real > LENG long max real)
+      THEN (LONG LONG REAL ii = LENG long max real - LONG LONG 2.0;
+            ASSERT (SHORTEN ii = long max real - LONG 2.0));
+           (LONG LONG REAL ii = LENG long max real + LONG LONG 1.0; ASSERT (SHORTEN ii = long max real));
+           (LONG LONG REAL ii = LENG long min real - LONG LONG 1.0; ASSERT (SHORTEN ii = long min real))
+      FI
+END

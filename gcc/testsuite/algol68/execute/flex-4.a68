@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+# Rowing to flexible rows.  #
+BEGIN FLEX[3]INT list := (1,2,3);
+      list := (10,20,30,40);
+      ASSERT (list[4] = 40)
+END

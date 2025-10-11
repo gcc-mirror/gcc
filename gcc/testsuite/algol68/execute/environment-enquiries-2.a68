@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for SIZETY REALs #
+BEGIN ASSERT (max real /= 0.0);
+      ASSERT (long max real >= LENG max real);
+      ASSERT (long long max real >= LENG long max real);
+      ASSERT (min real /= 0.0);
+      ASSERT (long min real <= LENG min real);
+      ASSERT (long long min real <= LENG long min real);
+      ASSERT (small real > 0.0);
+      ASSERT (long small real > LONG 0.0);
+      ASSERT (long long small real > LONG LONG 0.0)
+END

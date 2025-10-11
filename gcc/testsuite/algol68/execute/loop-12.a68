@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 0, n := 5;
+      FOR a TO n WHILE a < 3 DO i +:= 1 OD;
+      ASSERT (i = 2)
+END

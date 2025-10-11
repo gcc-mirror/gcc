@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# Rowing to flexible rows.  #
+BEGIN FLEX[]INT list = 10;
+      ASSERT (list[1] = 10);
+      FLEX[,]INT table = 10;
+      ASSERT (table[1,1] = 10)
+END
+

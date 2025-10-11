@@ -1,0 +1,48 @@
+# { dg-options "-fstropping=upper" }  #
+# Dereferencing of struct fields.  #
+BEGIN MODE S = STRUCT (REF INT x, REF REF INT xx, REF REF REF INT xxx);
+
+      INT x := 10;
+      REF INT xx := x;
+      REF REF INT xxx := xx;
+
+      S s = (x, xx, xxx);
+
+      ASSERT (x OF s = 10);
+      ASSERT (xx OF s = 10);
+      ASSERT (xxx OF s = 10);
+      ASSERT ((x) = 10);
+      ASSERT ((xx) = 10);
+      ASSERT ((xxx) = 10);
+      ASSERT (x OF s + 1 = 11);
+      ASSERT (xx OF s + 1 = 11);
+      ASSERT (xxx OF s + 1 = 11);
+      ASSERT ((x OF s + 1) = 11);
+      ASSERT ((xx OF s + 1) = 11);
+      ASSERT ((xxx OF s + 1) = 11);
+      ASSERT ((x OF s := x) = 10);
+      ASSERT ((xx OF s := x) = 10);
+      ASSERT ((xxx OF s := xx) = 10);
+      ASSERT ((x OF s := x) + 1 = 11);
+      ASSERT ((xx OF s := x) + 1 = 11);
+      ASSERT ((xxx OF s := xx) + 1 = 11);
+      x OF s := 20;
+      ASSERT (x OF s = 20);
+      ASSERT (xx OF s = 20);
+      ASSERT (xxx OF s = 20);
+      ASSERT ((x) = 20);
+      ASSERT ((xx) = 20);
+      ASSERT ((xxx) = 20);
+      ASSERT (x OF s + 1 = 21);
+      ASSERT (xx OF s + 1 = 21);
+      ASSERT (xxx OF s + 1 = 21);
+      ASSERT ((x OF s + 1) = 21);
+      ASSERT ((xx OF s + 1) = 21);
+      ASSERT ((xxx OF s + 1) = 21);
+      ASSERT ((x OF s := x) = 20);
+      ASSERT ((xx OF s := x) = 20);
+      ASSERT ((xxx OF s := xx) = 20);
+      ASSERT ((x OF s := x) + 1 = 21);
+      ASSERT ((xx OF s := x) + 1 = 21);
+      ASSERT ((xxx OF s := xx) + 1 = 21)
+END

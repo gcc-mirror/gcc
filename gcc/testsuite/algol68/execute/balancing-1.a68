@@ -1,0 +1,12 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REAL x, y;
+      REF REAL xx, yy;
+      xx := yy := x;
+
+      ASSERT (xx :=: x);
+      ASSERT (x :=: xx);
+      ASSERT (xx :/=: yy);
+      ASSERT (REF REAL (xx) :=: yy);
+      ASSERT (xx :=: REF REAL (yy));
+      ASSERT (REF REAL (xx) :=: REF REAL (yy))
+END

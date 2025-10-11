@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN [3]INT a := (1,2,3);
+      REF[]INT nn = a; # No copy happens here.  #
+      nn[1] := 200;
+      ASSERT (a[1] = 200)
+END

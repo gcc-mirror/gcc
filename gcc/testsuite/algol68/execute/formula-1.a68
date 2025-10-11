@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN OP JORL = (INT a, b) INT: a + b;
+      OP JORL = (REAL a, b) REAL: a + b;
+      OP JORL = ([]CHAR s) INT: ELEMS s;
+      PRIO JORL = 6;
+      ASSERT (10 JORL 20 = 30);
+      ASSERT (REAL r = 3.14 JORL REAL (1); r > 4.13 AND r < 4.15);
+      ASSERT (JORL "foo" = 3)
+END

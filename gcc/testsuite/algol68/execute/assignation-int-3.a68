@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN REF INT j = LOC INT;
+      INT i;
+      i := j := 20;
+      ASSERT (i + j = 40)
+END

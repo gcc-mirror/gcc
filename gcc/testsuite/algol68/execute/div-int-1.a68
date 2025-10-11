@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i = 10;
+      LONG INT ii = LONG 10, LONG LONG INT iii = LONG LONG 10;
+      ASSERT (i / 2 = 5.0);
+      ASSERT (ii / LONG 2 = LONG 5.0);
+      ASSERT (iii / LONG LONG 2 = LONG LONG 5.0)
+END

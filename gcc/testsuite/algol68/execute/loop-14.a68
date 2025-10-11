@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# The while-part shall not be elaborated if the iterator is exhausted.  #
+BEGIN STRING s = "abc", INT j := 0;
+      FOR i TO UPB s WHILE s[i] /= "x"
+      DO j +:= 1 OD;
+      ASSERT (j = 3)
+END

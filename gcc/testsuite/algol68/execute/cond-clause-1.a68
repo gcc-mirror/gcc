@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN INT i := 10, x;
+      IF i > 5 THEN x := i FI;
+      ASSERT (x = i)
+END

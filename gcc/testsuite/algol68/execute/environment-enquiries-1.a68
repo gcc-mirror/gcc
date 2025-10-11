@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+# Environment enquiries for SIZETY INTs #
+BEGIN ASSERT (max int /= 0);
+      (INT max int = 10; ASSERT (max int = 10));
+      ASSERT (long max int >= LENG max int);
+      ASSERT (long long max int >= LENG long max int);
+      ASSERT (min int /= 0);
+      ASSERT (long min int <= LENG min int);
+      ASSERT (long long min int <= LENG long min int)
+END

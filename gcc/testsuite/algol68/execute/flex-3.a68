@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+# Slicing flexible names.  #
+BEGIN FLEX[]INT list = (1,2,3);
+      FLEX[]INT sliced = list[2:3];
+      ASSERT (LWB sliced = 1 AND UPB sliced = 2);
+      ASSERT (sliced[1] = 2 AND sliced[2] = 3)
+END

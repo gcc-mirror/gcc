@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN BITS b, LONG BITS bb = LONG 16rff,  LONG LONG BITS bbb;
+      SHORT BITS ss = SHORT 16rff, SHORT SHORT BITS sss;
+      ASSERT (b = 2r0);
+      ASSERT (bb EQ LONG 8r377);
+      ASSERT (bbb = LONG LONG 8r0);
+      ASSERT (ss EQ SHORT 8r377);
+      ASSERT (sss = SHORT SHORT 8r0)
+END
+

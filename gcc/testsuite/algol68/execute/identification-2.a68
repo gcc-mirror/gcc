@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+# The identification of c in the assignation marked with XXX works.
+  In some Algol 68 systems the assignation may fail or result in UB,
+  because the storage of the REF REAL c doesn't exist yet.  In GNU
+  Algol 68 this works and the value yielded by c is guaranteed to be
+  zero.
+#
+
+BEGIN REAL b;
+      b := c; # XXX #
+      ASSERT (b = 0);
+      REAL c;
+      c := b
+END

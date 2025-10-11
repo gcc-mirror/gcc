@@ -1,0 +1,6 @@
+begin int n := 1;
+      { The actual-declarer below should be
+        elaborated only once.  }
+      [1: n +:= 1]real a, b;
+      assert (n = 2)
+end

@@ -1,0 +1,14 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN UNION(CHAR,BOOL,INT,REAL) cbira := "X";
+      IF CASE cbira
+         IN (BOOL b): b,
+            (INT i): i > 0,
+            (REAL r): r > 0
+         OUT FALSE
+         ESAC
+      THEN # We get here if cbira was not a CHAR and was otherwise
+             TRUE or >0, as the case may be.
+           #
+         ASSERT (FALSE)
+      FI
+END
