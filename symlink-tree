@@ -24,7 +24,7 @@
 # the same distribution terms that you use for the rest of that program.
 #
 # Please report bugs to <gcc-bugs@gnu.org>
-# and send patches to <gcc-patches@gnu.org>.
+# and send patches to <gcc-patches@gcc.gnu.org>.
 
 # Syntax: symlink-tree srcdir "ignore1 ignore2 ..."
 #
