@@ -458,6 +458,27 @@
 
 ;; XTheadMemIdx
 
+;; Help reload to add a displacement for the base register.
+;; In the case `zext(*(uN*))(base+((rN<<1)&0x1fffffffe))` LRA splits
+;; off two new instructions: a) `new_base = base + disp`, and
+;; b) `index = (rN<<1)&0x1fffffffe`.  The index calculation has no
+;; corresponding instruction pattern and needs this insn_and_split
+;; to recover.
+
+(define_insn_and_split "*th_memidx_operand"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (ashift:DI (match_operand:DI 1 "register_operand" "r")
+			   (match_operand:QI 2 "imm123_operand" "Ds3"))
+		(match_operand 3 "const_int_operand" "n")))]
+  "TARGET_64BIT && TARGET_XTHEADMEMIDX && (lra_in_progress || reload_completed)
+   && (INTVAL (operands[3]) >> INTVAL (operands[2])) == 0xffffffff"
+  "#"
+  "&& !TARGET_ZBA && reload_completed"
+  [(set (match_dup 0) (zero_extend:DI (subreg:SI (match_dup 1) 0)))
+   (set (match_dup 0) (ashift:DI (match_dup 0) (match_dup 2)))]
+  ""
+  [(set_attr "type" "bitmanip")])
+
 (define_insn "*th_memidx_zero_extendqi<SUPERQI:mode>2"
   [(set (match_operand:SUPERQI 0 "register_operand" "=r,r,r,r,r,r")
 	(zero_extend:SUPERQI
