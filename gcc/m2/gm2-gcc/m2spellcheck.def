@@ -1,0 +1,66 @@
+(* m2spellcheck.def definition module for m2spellcheck.cc.
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE FOR "C" m2spellcheck  ;
+
+FROM CDataTypes IMPORT ConstCharStar ;
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+TYPE
+   Candidates = ADDRESS ;
+
+
+(*
+   InitCandidates - create an empty candidate array.
+*)
+
+PROCEDURE InitCandidates () : Candidates ;
+
+
+(*
+   Push - push a string to the Candidates array.
+          The possibly new candidates array is returned which
+          will contain str at the end.
+*)
+
+PROCEDURE Push (cand: Candidates; str: ConstCharStar) ;
+
+
+(*
+   KillCandidates - deallocates the candidates array.
+*)
+
+PROCEDURE KillCandidates (VAR cand: Candidates) ;
+
+
+(*
+   FindClosestCharStar - return a C string which is the closest
+                         string found in candidates array.
+                         NIL is returned if no suitable candidate
+                         is found.
+*)
+
+PROCEDURE FindClosestCharStar (cand: Candidates;
+                               name: ConstCharStar) : ConstCharStar ;
+
+
+END m2spellcheck.

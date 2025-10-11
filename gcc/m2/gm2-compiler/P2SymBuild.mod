@@ -1284,6 +1284,7 @@ BEGIN
             THEN
                IF isunknown
                THEN
+                  (* --fixme-- spellcheck.  *)      
                   MetaError2('attempting to declare a type {%1ad} to a type which is itself and also unknown {%2ad}',
                              Sym, Type)
                ELSE

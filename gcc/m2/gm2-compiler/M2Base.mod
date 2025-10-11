@@ -1214,14 +1214,17 @@ BEGIN
       END ;
       IF IsUnknown(t1) AND IsUnknown(t2)
       THEN
+         (* --fixme-- spellcheck.  *)      
          s := ConCat(s, InitString('two different unknown types {%1a:{%2a:{%1a} and {%2a}}} must either be declared or imported)')) ;
          MetaErrorStringT2 (tok, s, t1, t2)
       ELSIF IsUnknown(t1)
       THEN
+         (* --fixme-- spellcheck.  *)      
          s := ConCat(s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
          MetaErrorStringT1 (tok, s, t1)
       ELSIF IsUnknown(t2)
       THEN
+         (* --fixme-- spellcheck.  *)      
          s := ConCat (s, InitString('this type {%1a} is currently unknown, it must be declared or imported')) ;
          MetaErrorStringT1 (tok, s, t2)
       ELSE

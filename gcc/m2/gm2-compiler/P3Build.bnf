@@ -56,6 +56,7 @@ FROM M2Debug IMPORT Assert ;
 FROM P2SymBuild IMPORT BuildString, BuildNumber ;
 FROM M2MetaError IMPORT MetaErrorT0, MetaErrorT2 ;
 FROM M2CaseList IMPORT ElseCase ;
+FROM M2StackSpell IMPORT GetRecordField ;
 
 FROM M2Reserved IMPORT tokToTok, toktype,
                        NulTok, ImportTok, ExportTok, QualifiedTok, UnQualifiedTok,
@@ -1135,16 +1136,11 @@ SubDesignator := "."                                                       % VAR
                                                                              StartScope(Type) %
                  Ident
                                                                            % PopTtok (name, tok) ;
-                                                                             Sym := GetLocalSym(Type, name) ;
-                                                                             IF Sym=NulSym
-                                                                             THEN
-                                                                                n1 := GetSymName(Type) ;
-                                                                                WriteFormat2('field %a does not exist within record %a', name, n1)
-                                                                             END ;
-                                                                             Type := GetType(Sym) ;
+									     Sym := GetRecordField (GetTokenNo () -1, Type, name) ;
+                                                                             Type := GetType (Sym) ;
                                                                              PushTFtok (Sym, Type, tok) ;
                                                                              EndScope ;
-                                                                             PushT(1) ;
+                                                                             PushT (1) ;
                                                                              BuildDesignatorRecord (dotpostok) %
                  | "[" ArrayExpList
                    "]"

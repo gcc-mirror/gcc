@@ -564,6 +564,7 @@ GM2_C_OBJS        = m2/gm2-lang.o \
                     m2/gm2-gcc/m2decl.o \
                     m2/gm2-gcc/m2expr.o \
                     m2/gm2-gcc/m2linemap.o \
+                    m2/gm2-gcc/m2spellcheck.o \
                     m2/gm2-gcc/m2statement.o \
                     m2/gm2-gcc/m2type.o \
                     m2/gm2-gcc/m2tree.o \
@@ -814,6 +815,7 @@ GM2-COMP-BOOT-DEFS = \
    M2Size.def \
    M2StackAddress.def \
    M2StackWord.def \
+   M2StackSpell.def \
    M2StateCheck.def \
    M2Students.def \
    M2Swig.def \
@@ -889,6 +891,7 @@ GM2-COMP-BOOT-MODS = \
    M2Size.mod \
    M2StackAddress.mod \
    M2StackWord.mod \
+   M2StackSpell.mod \
    M2StateCheck.mod \
    M2Students.mod \
    M2Swig.mod \
@@ -926,6 +929,7 @@ GM2-GCC-DEFS = \
    m2linemap.def \
    m2misc.def \
    m2pp.def \
+   m2spellcheck.def \
    m2statement.def \
    m2top.def \
    m2tree.def \
@@ -1103,6 +1107,7 @@ GM2-COMP-DEFS = \
    M2Size.def \
    M2StackAddress.def \
    M2StackWord.def \
+   M2StackSpell.def \
    M2StateCheck.def \
    M2Students.def \
    M2Swig.def \
@@ -1175,6 +1180,7 @@ GM2-COMP-MODS = \
    M2Size.mod \
    M2StackAddress.mod \
    M2StackWord.mod \
+   M2StackSpell.mod \
    M2StateCheck.mod \
    M2Students.mod \
    M2Swig.mod \

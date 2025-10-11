@@ -287,8 +287,7 @@ FROM M2LangDump IMPORT IsDumpRequired ;
 FROM SymbolConversion IMPORT GccKnowsAbout ;
 FROM M2Diagnostic IMPORT Diagnostic, InitMemDiagnostic, MemIncr, MemSet ;
 
-IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO ;
-
+IMPORT M2Error, FIO, SFIO, DynamicStrings, StdIO, M2StackSpell ;
 
 CONST
    DebugStackOn = TRUE ;
@@ -5405,8 +5404,10 @@ BEGIN
       DisplayStack
    ELSIF IsUnknown (ProcSym)
    THEN
-      MetaError1 ('{%1Ua} is not recognised as a procedure, check declaration or import', ProcSym) ;
-      PopN (NoOfParam + 2)
+      (* Spellcheck.  *)
+      MetaError1 ('{%1Ua} is not recognised as a procedure {%1&s}', ProcSym) ;
+      PopN (NoOfParam + 2) ;
+      UnknownReported (ProcSym)
    ELSE
       DisplayStack ;
       BuildRealProcedureCall (tokno) ;
@@ -5685,9 +5686,12 @@ BEGIN
    THEN
       IF IsUnknown(Proc)
       THEN
-         MetaError1('{%1Ua} is not recognised as a procedure, check declaration or import', Proc)
+         (* Spellcheck.  *)
+         MetaError1('{%1Ua} is not recognised as a procedure, check declaration or import {%1&s}', Proc) ;
+         UnknownReported (Proc)
       ELSE
-         MetaErrors1('{%1a} is not recognised as a procedure, check declaration or import',
+         (* --fixme-- filter on Var, Const, Procedure.  *)
+         MetaErrors1('{%1a} is not recognised as a procedure, check declaration or import {%1&s}',
                      '{%1Ua} is not recognised as a procedure, check declaration or import',
                      Proc)
       END
@@ -6041,8 +6045,9 @@ BEGIN
    THEN
       IF IsUnknown(FormalType)
       THEN
+         (* Spellcheck.  *)
          FailParameter(tokpos,
-                       'procedure parameter type is undeclared',
+                       'procedure parameter type is undeclared {%1&s}',
                        Actual, ProcSym, i) ;
          RETURN
       END ;
@@ -6145,10 +6150,11 @@ BEGIN
          s1 := Mark(DescribeType(Type)) ;
          s := ConCat(ConCat(s, Mark(InitString('] OF '))), s1)
       ELSE
-         IF IsUnknown(Type)
+         IF IsUnknown (Type)
          THEN
+            (* Spellcheck.  *)
             s1 := Mark(InitStringCharStar(KeyToCharStar(GetSymName(Type)))) ;
-            s := Sprintf1(Mark(InitString('%s (currently unknown, check declaration or import)')),
+            s := Sprintf1(Mark(InitString('%s (currently unknown, check declaration or import) {%1&s}')),
                           s1)
          ELSE
             s := InitStringCharStar(KeyToCharStar(GetSymName(Type)))
@@ -7805,9 +7811,11 @@ BEGIN
    (* Compile time stack restored to entry state.  *)
    IF IsUnknown (ProcSym)
    THEN
+      (* Spellcheck.  *)
       paramtok := OperandTtok (1) ;
       combinedtok := MakeVirtual2Tok (functok, paramtok) ;
-      MetaErrorT1 (functok, 'procedure function {%1Ea} is undefined', ProcSym) ;
+      MetaErrorT1 (functok, 'procedure function {%1Ea} is undefined {%1&s}', ProcSym) ;
+      UnknownReported (ProcSym) ;
       PopN (NoOfParam + 2) ;
       (* Fake return value to continue compiling.  *)
       PushT (MakeConstLit (combinedtok, MakeKey ('0'), NulSym))
@@ -8622,6 +8630,7 @@ END BuildHighFromUnbounded ;
 PROCEDURE GetQualidentImport (tokno: CARDINAL;
                               n: Name; module: Name) : CARDINAL ;
 VAR
+   sym,
    ModSym: CARDINAL ;
 BEGIN
    ModSym := MakeDefinitionSource (tokno, module) ;
@@ -8635,8 +8644,20 @@ BEGIN
    Assert(IsDefImp(ModSym)) ;
    IF (GetExported (tokno, ModSym, n)=NulSym) OR IsUnknown (GetExported (tokno, ModSym, n))
    THEN
-      MetaErrorN2 ('module %a does not export procedure %a which is a necessary component of the runtime system, hint check the path and library/language variant',
-                   module, n) ;
+      sym := GetExported (tokno, ModSym, n) ;
+      IF IsUnknown (sym)
+      THEN
+         (* Spellcheck.  *)
+         MetaErrorN2 ('module %a does not export procedure %a which is a necessary component' +
+                      ' of the runtime system, hint check the path and library/language variant',
+                      module, n) ;
+         MetaErrorT1 (tokno, 'unknown symbol {%1&s}', sym) ;
+         UnknownReported (sym)
+      ELSE
+         MetaErrorN2 ('module %a does not export procedure %a which is a necessary component' +
+                      ' of the runtime system, hint check the path and library/language variant',
+                      module, n)
+      END ;
       FlushErrors ;
       RETURN NulSym
    END ;
@@ -9546,11 +9567,13 @@ BEGIN
       PopTtok (ProcSym, tok) ;
       IF IsUnknown (Type)
       THEN
-         (* not sensible to try and recover when we dont know the return type.  *)
+         (* Spellcheck.  *)
+         (* It is sensible not to try and recover when we dont know the return type.  *)
          MetaErrorT1 (typetok,
-                      'undeclared type found in builtin procedure function {%AkVAL} {%1ad}',
-                      Type)
-         (* non recoverable error.  *)
+                      'undeclared type found in builtin procedure function {%AkVAL} {%1ad} {%1&s}',
+                      Type) ;
+         (* Non recoverable error.  *)
+         UnknownReported (Type)
       ELSIF ConstExprError (ProcSym, Exp, exptok, ConstExpr)
       THEN
          (* Generate fake result.  *)
@@ -9638,9 +9661,11 @@ BEGIN
       exptok := OperandTok (1) ;
       IF IsUnknown (Type)
       THEN
-         (* we cannot recover if we dont have a type.  *)
-         MetaErrorT1 (typetok, 'undeclared type {%1Aad} found in {%kCAST}', Type)
-         (* non recoverable error.  *)
+         (* Spellcheck.  *)
+         (* We cannot recover if we dont have a type.  *)
+         MetaErrorT1 (typetok, 'undeclared type {%1Aad} found in {%kCAST} {%1&s}', Type) ;
+         (* Non recoverable error.  *)
+         UnknownReported (Type)
       ELSIF ConstExprError (ProcSym, Exp, exptok, ConstExpr)
       THEN
          (* Generate fake result.  *)
@@ -9745,14 +9770,18 @@ BEGIN
       PopT (ProcSym) ;
       IF IsUnknown (Type)
       THEN
-         (* we cannot recover if we dont have a type.  *)
-         MetaErrorT1 (typetok, 'undeclared type {%1Aad} found in {%kCONVERT}', Type)
-         (* non recoverable error.  *)
+         (* Spellcheck.  *)
+         (* We cannot recover if we dont have a type.  *)
+         MetaErrorT1 (typetok, 'undeclared type {%1Aad} found in {%kCONVERT} {%1&s}', Type) ;
+         UnknownReported (Type)
+         (* Non recoverable error.  *)
       ELSIF IsUnknown (Exp)
       THEN
-         (* we cannot recover if we dont have a type.  *)
-         MetaErrorT1 (typetok, 'unknown {%1Ad} {%1ad} found in {%kCONVERT}', Exp)
-         (* non recoverable error.  *)
+         (* Spellcheck.  *)
+         (* We cannot recover if we dont have an expression.  *)
+         MetaErrorT1 (typetok, 'unknown {%1Ad} {%1ad} found in {%kCONVERT} {%1&s}', Exp) ;
+         UnknownReported (Exp)
+         (* Non recoverable error.  *)
       ELSIF ConstExprError (ProcSym, Exp, exptok, ConstExpr)
       THEN
          (* Generate fake result.  *)
@@ -10879,9 +10908,18 @@ BEGIN
    THEN
       IF (Type = NulSym) OR IsPartialUnbounded (Type) OR IsUnknown (Type)
       THEN
-         MetaError1 ('the type used in the formal parameter declaration in {%1Md} {%1a} is unknown',
-                     BlockSym)
+         IF IsUnknown (Type)
+         THEN
+            (* Spellcheck.  *)
+            MetaError2 ('the type used in the formal parameter declaration in {%1Md} {%1a} is unknown {%2&s}',
+                        BlockSym, Type) ;
+            UnknownReported (Type)
+         ELSE
+            MetaError1 ('the type used in the formal parameter declaration in {%1Md} {%1a} is unknown',
+                        BlockSym)
+         END
       ELSE
+         (* --fixme-- filter spellcheck on type.  *)
          MetaError2 ('the type {%1Ead} used in the formal parameter declaration in {%2Md} {%2a} was not declared as a type',
                      Type, BlockSym)
       END
@@ -10905,10 +10943,12 @@ BEGIN
                      BlockSym)
       ELSIF IsPartialUnbounded(Type) OR IsUnknown(Type)
       THEN
-         MetaError2 ('the type {%1EMad} used during variable declaration section in procedure {%2ad} is unknown',
+         (* Spellcheck.  *)
+         MetaError2 ('the type {%1EMad} used during variable declaration section in procedure {%2ad} is unknown {%1&s}',
                      Type, BlockSym) ;
          MetaError2 ('the type {%1Ead} used during variable declaration section in procedure {%2Mad} is unknown',
-                     Type, BlockSym)
+                     Type, BlockSym) ;
+         UnknownReported (Type)
       ELSE
          MetaError2 ('the {%1d} {%1Ea} is not a type and therefore cannot be used to declare a variable in {%2d} {%2a}',
                      Type, BlockSym)
@@ -11976,7 +12016,9 @@ BEGIN
       MetaErrorT1 (ptrtok, '{%1ad} has no type and therefore cannot be dereferenced by ^', Sym1)
    ELSIF IsUnknown (Sym1)
    THEN
-      MetaError1 ('{%1EMad} is undefined and therefore {%1ad}^ cannot be resolved', Sym1)
+      (* Spellcheck.  *)
+      MetaError1 ('{%1EMad} is undefined and therefore {%1ad}^ cannot be resolved {%1&s}', Sym1) ;
+      UnknownReported (Sym1)
    ELSE
       combinedtok := MakeVirtual2Tok (destok, ptrtok) ;
       IF IsPointer (Type1)
@@ -12069,6 +12111,7 @@ BEGIN
       END ;
       StartScope (Type)
    END ;
+   M2StackSpell.Push (Type) ;
    DisplayStack ;
 END StartBuildWith ;
 
@@ -12081,7 +12124,8 @@ PROCEDURE EndBuildWith ;
 BEGIN
    DisplayStack ;
    EndScope ;
-   PopWith
+   PopWith ;
+   M2StackSpell.Pop ;
  ; DisplayStack ;
 END EndBuildWith ;
 
@@ -12154,31 +12198,37 @@ VAR
    i, n, rw,
    Sym, Type: CARDINAL ;
 BEGIN
-   n := NoOfItemsInStackAddress(WithStack) ;
+   n := NoOfItemsInStackAddress (WithStack) ;
    IF (n>0) AND (NOT SuppressWith)
    THEN
       PopTFrwtok (Sym, Type, rw, tokpos) ;
       Assert (tokpos # UnknownTokenNo) ;
-      (* inner WITH always has precidence *)
-      i := 1 ;  (* top of stack *)
-      WHILE i<=n DO
-         (* WriteString('Checking for a with') ; *)
-         f := PeepAddress (WithStack, i) ;
-         WITH f^ DO
-            IF IsRecordField (Sym) AND (GetRecord (GetParent (Sym)) = RecordType)
-            THEN
-               IF IsUnused (Sym)
+      IF IsUnknown (Sym)
+      THEN
+         MetaErrorT1 (tokpos, '{%1ad} is unknown {%1&s}', Sym) ;
+         UnknownReported (Sym)
+      ELSE
+         (* Inner WITH always has precedence.  *)
+         i := 1 ;   (* top of stack *)
+         WHILE i<=n DO
+            (* WriteString('Checking for a with') ; *)
+            f := PeepAddress (WithStack, i) ;
+            WITH f^ DO
+               IF IsRecordField (Sym) AND (GetRecord (GetParent (Sym)) = RecordType)
                THEN
-                  MetaError1('record field {%1Dad} was declared as unused by a pragma', Sym)
-               END ;
-               (* Fake a RecordSym.op *)
-               PushTFrwtok (RecordRef, RecordType, rw, RecordTokPos) ;
-               PushTFtok (Sym, Type, tokpos) ;
-               BuildAccessWithField ;
-               PopTFrw (Sym, Type, rw) ;
-               i := n+1  (* Finish loop.  *)
-            ELSE
-               INC (i)
+                  IF IsUnused (Sym)
+                  THEN
+                     MetaError1('record field {%1Dad} was declared as unused by a pragma', Sym)
+                  END ;
+                  (* Fake a RecordSym.op *)
+                  PushTFrwtok (RecordRef, RecordType, rw, RecordTokPos) ;
+                  PushTFtok (Sym, Type, tokpos) ;
+                  BuildAccessWithField ;
+                  PopTFrw (Sym, Type, rw) ;
+                  i := n+1  (* Finish loop.  *)
+               ELSE
+                  INC (i)
+               END
             END
          END
       END ;
@@ -12363,13 +12413,13 @@ BEGIN
       typepos := tokpos
    ELSIF IsUnknown (Type)
    THEN
-      n := GetSymName (Type) ;
-      WriteFormat1 ('set type %a is undefined', n) ;
+      (* Spellcheck.  *)
+      MetaError1 ('set type {%1a} is undefined {%1&s}', Type) ;
+      UnknownReported (Type) ;
       Type := Bitset
    ELSIF NOT IsSet (SkipType (Type))
    THEN
-      n := GetSymName (Type) ;
-      WriteFormat1('expecting a set type %a', n) ;
+      MetaError1 ('expecting a set type {%1a} and not a {%1d}', Type) ;
       Type := Bitset
    ELSE
       Type := SkipType (Type) ;
@@ -13411,7 +13461,8 @@ BEGIN
    type := GetSType (sym) ;
    IF IsUnknown (sym)
    THEN
-      MetaErrorT1 (tokpos, '{%1EUad} has not been declared', sym) ;
+      (* Spellcheck.  *)
+      MetaErrorT1 (tokpos, '{%1EUad} has not been declared {%1&s}', sym) ;
       UnknownReported (sym)
    ELSIF IsPseudoSystemFunction (sym) OR IsPseudoBaseFunction (sym)
    THEN

@@ -38,6 +38,7 @@ FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Error IMPORT MoveError ;
 FROM M2Debug IMPORT Assert ;
 FROM Storage IMPORT ALLOCATE ;
+FROM M2StackSpell IMPORT GetSpellHint ;
 
 FROM Indexing IMPORT Index, InitIndex, KillIndex, GetIndice, PutIndice,
                      DeleteIndice, HighIndice ;
@@ -90,6 +91,9 @@ TYPE
                    len,
                    ini       : INTEGER ;
                    vowel,
+                   importHint,
+                   exportHint,
+                   withStackHint,
                    glyph,
                    chain,
                    root,
@@ -517,6 +521,9 @@ BEGIN
       ini        := 0 ;
       glyph      := FALSE ;  (* Nothing to output yet.  *)
       vowel      := FALSE ;  (* Check for a vowel when outputing string?  *)
+      importHint := FALSE;
+      exportHint := FALSE ;
+      withStackHint := FALSE ;
       quotes     := TRUE ;
       positive   := TRUE ;
       root       := FALSE ;
@@ -524,7 +531,7 @@ BEGIN
       currentCol := findColorType (input) ;
       beginCol   := unsetColor ;
       endCol     := unsetColor ;
-      stackPtr   := 0
+      stackPtr   := 0 ;
    END
 END initErrorBlock ;
 
@@ -558,21 +565,21 @@ BEGIN
    THEN
       toblock.stackPtr := fromblock.stackPtr ;
       toblock.colorStack := fromblock.colorStack ;
-      popColor (toblock)   (* and restore the color from the push start.  *)
+      popColor (toblock)   (* Lastly restore the color from the push start.  *)
    ELSE
       IF fromblock.quotes
       THEN
-         (* string needs to be quoted.  *)
+         (* The string needs to be quoted.  *)
          IF toblock.currentCol = unsetColor
          THEN
-            (* caller has not yet assigned a color, so use the callee color at the end.  *)
+            (* The caller has not yet assigned a color, so use the callee color at the end.  *)
             OutOpenQuote (toblock) ;
             OutGlyphS (toblock, fromblock.out) ;
             OutCloseQuote (toblock) ;
             changeColor (toblock, fromblock.currentCol)
          ELSE
             shutdownColor (fromblock) ;
-            (* caller has assigned a color, so use it after the new string.  *)
+            (* The caller has assigned a color, so use it after the new string.  *)
             c := toblock.currentCol ;
             OutOpenQuote (toblock) ;
             OutGlyphS (toblock, fromblock.out) ;
@@ -582,12 +589,12 @@ BEGIN
       ELSE
          IF toblock.currentCol = unsetColor
          THEN
-            OutGlyphS (toblock, fromblock.out) ;
+            JoinSentances (toblock, fromblock.out) ;
             toblock.endCol := fromblock.endCol ;
             changeColor (toblock, fromblock.endCol)
          ELSE
             pushColor (toblock) ;
-            OutGlyphS (toblock, fromblock.out) ;
+            JoinSentances (toblock, fromblock.out) ;
             toblock.endCol := fromblock.endCol ;
             popColor (toblock)
          END
@@ -600,7 +607,7 @@ BEGIN
    toblock.chain := fromblock.chain ;
    toblock.root := fromblock.root ;
    toblock.ini := fromblock.ini ;
-   toblock.type := fromblock.type   (* might have been changed by the callee.  *)
+   toblock.type := fromblock.type   (* It might have been changed by the callee.  *)
 END pop ;
 
 
@@ -1714,7 +1721,8 @@ END copySym ;
 (*
    op := {'!'|'a'|'c'|'d'|'k'|'n'|'p'|'q'|'s'|'t'|'u'|'v'|
           'A'|'B'|'C'|'D'|'E'|'F'|'G'|'H'|'K'|'M'|'N'|
-          'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'} then =:
+          'O'|'P'|'Q'|'R'|'S'|'T'|'U'|'V'|'W'|'X'|'Y'|'Z'|
+          '&' } then =:
 *)
 
 PROCEDURE op (VAR eb: errorBlock;
@@ -1768,6 +1776,8 @@ BEGIN
       'X':  pushOutput (eb) |
       'Y':  processDefine (eb) |
       'Z':  popOutput (eb) |
+      '&':  continuation (eb, sym, bol) ;
+            DEC (eb.ini) |
       ':':  ifNonNulThen (eb, sym) ;
             DEC (eb.ini) |
       '1':  InternalError ('incorrect format spec, expecting %1 rather than % spec 1') |
@@ -1786,6 +1796,42 @@ BEGIN
       dump (eb)
    END
 END op ;
+
+
+(*
+   continuation := {':'|'1'|'2'|'3'|'4'|'i'|'s'|'x'|'w'} =:
+*)
+
+PROCEDURE continuation (VAR eb: errorBlock;
+                        VAR sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+BEGIN
+   Assert ((eb.ini < eb.len) AND (char (eb.in, eb.ini) = '&')) ;
+   INC (eb.ini) ;
+   WHILE (eb.ini < eb.len) AND (char (eb.in, eb.ini) # '}') DO
+      CASE char (eb.in, eb.ini) OF
+
+      ':':  ifNonNulThen (eb, sym) ;
+            DEC (eb.ini) |
+      '1':  InternalError ('incorrect format spec, expecting %1 rather than % spec 1') |
+      '2':  InternalError ('incorrect format spec, expecting %2 rather than % spec 2') |
+      '3':  InternalError ('incorrect format spec, expecting %3 rather than % spec 3') |
+      '4':  InternalError ('incorrect format spec, expecting %4 rather than % spec 4') |
+      'i':  AddImportsHint (eb) |
+      's':  SpellHint (eb, sym, bol) |
+      'x':  AddExportsHint (eb) |
+      'w':  AddWithStackHint (eb)
+
+      ELSE
+         InternalFormat (eb, 'expecting one of [:1234isxw]',
+                         __LINE__)
+      END ;
+      INC (eb.ini)
+   END ;
+   IF (eb.ini < eb.len) AND (char (eb.in, eb.ini) # '}')
+   THEN
+      DEC (eb.ini)
+   END
+END continuation ;
 
 
 (*
@@ -1827,6 +1873,85 @@ BEGIN
       END
    END
 END percenttoken ;
+
+
+(*
+   IsPunct - returns TRUE if ch is a punctuation character.
+*)
+
+PROCEDURE IsPunct (ch: CHAR) : BOOLEAN ;
+BEGIN
+   RETURN (ch = '.') OR (ch = ',') OR (ch = ':') OR
+          (ch = ';') OR (ch = '!') OR (ch = '(') OR
+          (ch = ')') OR (ch = '[') OR (ch = ']')
+END IsPunct ;
+
+
+(*
+   JoinSentances - join s onto eb.  It removes trailing
+                   spaces from eb if s starts with a punctuation
+                   character.
+*)
+
+PROCEDURE JoinSentances (VAR eb: errorBlock; s: String) ;
+VAR
+   i: INTEGER ;
+BEGIN
+   IF (s # NIL) AND (Length (s) > 0)
+   THEN
+      IF IsPunct (char (s, 0))
+      THEN
+         eb.out := RemoveWhitePostfix (eb.out)
+      END ;
+      flushColor (eb) ;
+      eb.out := ConCat (eb.out, s) ;
+      eb.glyph := TRUE ;
+      eb.quotes := FALSE
+   END
+END JoinSentances ;
+
+
+(*
+   SpellHint -
+*)
+
+PROCEDURE SpellHint (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
+BEGIN
+   IF (bol <= HIGH (sym)) AND IsUnknown (sym[bol])
+   THEN
+      JoinSentances (eb, GetSpellHint (sym[bol]))
+   END
+END SpellHint ;
+
+
+(*
+   AddImportsHint -
+*)
+
+PROCEDURE AddImportsHint (VAR eb: errorBlock) ;
+BEGIN
+   eb.importHint := TRUE
+END AddImportsHint ;
+
+
+(*
+   AddExportsHint -
+*)
+
+PROCEDURE AddExportsHint (VAR eb: errorBlock) ;
+BEGIN
+   eb.exportHint := TRUE
+END AddExportsHint ;
+
+
+(*
+   AddWithStackHint -
+*)
+
+PROCEDURE AddWithStackHint (VAR eb: errorBlock) ;
+BEGIN
+   eb.withStackHint := TRUE
+END AddWithStackHint ;
 
 
 (*
@@ -2166,9 +2291,10 @@ BEGIN
    printf1 ("\nLength (out) = %d", l) ;
    printf1 ("\nlen       = %d", eb.len) ;
    printf1 ("\nhighplus1 = %d", eb.highplus1) ;
-   printf1 ("\nglyph     = %d", eb.glyph) ;
+   (* printf1 ("\nglyph     = %d", eb.glyph) ;
    printf1 ("\nquotes    = %d", eb.quotes) ;
    printf1 ("\npositive  = %d", eb.positive) ;
+   *)
    printf0 ("\nbeginCol  = ") ; dumpColorType (eb.beginCol) ;
    printf0 ("\nendCol    = ") ; dumpColorType (eb.endCol) ;
    printf0 ("\ncurrentCol = ") ; dumpColorType (eb.currentCol) ;

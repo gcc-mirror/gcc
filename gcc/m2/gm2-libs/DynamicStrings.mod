@@ -1692,7 +1692,7 @@ END RemoveWhitePrefix ;
 
 
 (*
-   RemoveWhitePostfix - removes any leading white space from String, s.
+   RemoveWhitePostfix - removes any trailing white space from String, s.
                         A new string is returned.
 *)
 

@@ -8677,12 +8677,12 @@ BEGIN
       WriteString('RequestSym for: ') ; WriteKey(SymName) ; WriteLn ;
    *)
    Sym := GetSym (SymName) ;
-   IF Sym=NulSym
+   IF Sym = NulSym
    THEN
       Sym := GetSymFromUnknownTree (SymName) ;
-      IF Sym=NulSym
+      IF Sym = NulSym
       THEN
-         (* Make unknown *)
+         (* Make unknown.  *)
          NewSym (Sym) ;
          FillInUnknownFields (tok, Sym, SymName) ;
          (* Add to unknown tree *)

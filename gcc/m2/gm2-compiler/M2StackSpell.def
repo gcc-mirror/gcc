@@ -1,0 +1,62 @@
+(* M2StackSpell.def definition module for M2StackSpell.mod.
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with GNU Modula-2; see the file COPYING3.  If not see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE M2StackSpell ;
+
+FROM DynamicStrings IMPORT String ;
+FROM NameKey IMPORT Name ;
+
+
+(*
+   GetSpellHint - return a string describing a spelling hint.
+*)
+
+PROCEDURE GetSpellHint (unknown: CARDINAL) : String ;
+
+
+(*
+   Push - push a scope onto the spelling stack.
+          sym might be a ModSym, DefImpSym or a varsym
+          of a record type denoting a with statement.
+*)
+
+PROCEDURE Push (sym: CARDINAL) ;
+
+
+(*
+   Pop - remove the top scope from the spelling stack.
+*)
+
+PROCEDURE Pop ;
+
+
+(*
+   GetRecordField - return the record field containing fieldName.
+                    An error is generated if the fieldName is not
+                    found in record.
+*)
+
+PROCEDURE GetRecordField (tokno: CARDINAL;
+                          record: CARDINAL;
+                          fieldName: Name) : CARDINAL ;
+
+
+END M2StackSpell.
