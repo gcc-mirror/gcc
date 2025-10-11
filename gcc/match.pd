@@ -3719,6 +3719,36 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        bool c2_is_type_precision_p = tree_to_uhwi (@2) == prec;
       }
       (if (c2_is_type_precision_p && (mult_p || widen_mult_p)))))))
+ (match (unsigned_integer_sat_mul @0 @1)
+  (convert (min (widen_mult:c@3 @0 @1) INTEGER_CST@2))
+  (if (types_match (type, @0, @1))
+   (with
+    {
+     unsigned prec = TYPE_PRECISION (type);
+     unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+
+     wide_int max = wi::mask (prec, false, widen_prec);
+     bool c2_is_max_p = wi::eq_p (wi::to_wide (@2), max);
+     bool widen_mult_p = prec * 2 == widen_prec;
+    }
+    (if (c2_is_max_p && widen_mult_p)))))
+  (match (unsigned_integer_sat_mul @0 @1)
+   (convert1?
+    (bit_ior
+     (convert?
+      (negate
+       (convert (ne (convert2? (rshift @3 INTEGER_CST@2)) integer_zerop))))
+     (convert (widen_mult:c@3 @0 @1))))
+   (if (types_match (type, @0, @1))
+    (with
+     {
+      unsigned prec = TYPE_PRECISION (type);
+      unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
+
+      bool c2_is_type_precision_p = tree_to_uhwi (@2) == prec;
+      bool widen_mult_p = prec * 2 == widen_prec;
+     }
+     (if (c2_is_type_precision_p && widen_mult_p)))))
 )
 
 /* The boundary condition for case 10: IMM = 1:
