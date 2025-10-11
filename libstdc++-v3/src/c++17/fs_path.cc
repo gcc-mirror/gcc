@@ -34,6 +34,7 @@
 #include <filesystem>
 #include <algorithm>
 #include <array>
+#include <new>
 #include <bits/stl_uninitialized.h>
 #include <ext/numeric_traits.h> // __gnu_cxx::__int_traits
 
@@ -207,6 +208,10 @@ struct path::_List::_Impl
 
   _Impl(int cap) : _M_size(0), _M_capacity(cap) { }
 
+  ~_Impl() { clear(); }
+
+  // Align the first member like the value_type so that we can store one or
+  // more objects of that type immediately after the memory occupied by *this.
   alignas(value_type) int _M_size;
   int _M_capacity;
 
@@ -246,12 +251,18 @@ struct path::_List::_Impl
   unique_ptr<_Impl, _Impl_deleter> copy() const
   {
     const auto n = size();
-    void* p = ::operator new(sizeof(_Impl) + n * sizeof(value_type));
-    unique_ptr<_Impl, _Impl_deleter> newptr(::new (p) _Impl{n});
+    // *this already has n elements so don't need to check if n overflows:
+    auto newptr = create_unchecked(n);
     std::uninitialized_copy_n(begin(), n, newptr->begin());
     newptr->_M_size = n;
     return newptr;
   }
+
+  // We use the two least significant bits to store a _Type value so
+  // require memory aligned to at least 4 bytes:
+  static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= 4);
+  // Require memory suitably aligned for an _Impl and its value types:
+  static_assert(__STDCPP_DEFAULT_NEW_ALIGNMENT__ >= alignof(value_type));
 
   // Clear the lowest two bits from the pointer (i.e. remove the _Type value)
   static _Impl* notype(_Impl* p)
@@ -259,16 +270,48 @@ struct path::_List::_Impl
     constexpr uintptr_t mask = ~(uintptr_t)0x3;
     return reinterpret_cast<_Impl*>(reinterpret_cast<uintptr_t>(p) & mask);
   }
+
+  // Create a new _Impl with capacity for n components.
+  static unique_ptr<_Impl, _Impl_deleter>
+  create(int n)
+  {
+    using __gnu_cxx::__int_traits;
+    // Nobody should need paths with this many components.
+    if (n >= __int_traits<int>::__max / 4)
+      std::__throw_bad_alloc();
+
+    if constexpr (__int_traits<int>::__max >= __int_traits<size_t>::__max)
+      {
+	// Check that the calculation in create_unchecked(n) won't overflow.
+	size_t bytes;
+	if (__builtin_mul_overflow(n, sizeof(value_type), &bytes)
+	      || __builtin_add_overflow(sizeof(_Impl), bytes, &bytes))
+	  std::__throw_bad_alloc();
+      }
+    // Otherwise, it can't overflow, even for 20-bit size_t on msp430.
+
+    return create_unchecked(n);
+  }
+
+  // pre: no overflow in Si + n * Sv
+  static unique_ptr<_Impl, _Impl_deleter>
+  create_unchecked(int n)
+  {
+    void* p = ::operator new(sizeof(_Impl) + n * sizeof(value_type));
+    return std::unique_ptr<_Impl, _Impl_deleter>(::new(p) _Impl{n});
+  }
 };
 
-void path::_List::_Impl_deleter::operator()(_Impl* p) const noexcept
+// Destroy and deallocate an _Impl.
+void
+path::_List::_Impl_deleter::operator()(_Impl* p) const noexcept
 {
   p = _Impl::notype(p);
   if (p)
     {
-      __glibcxx_assert(p->_M_size <= p->_M_capacity);
-      p->clear();
-      ::operator delete(p, sizeof(*p) + p->_M_capacity * sizeof(value_type));
+      const auto n = p->_M_capacity;
+      p->~_Impl();
+      ::operator delete(p, sizeof(_Impl) + n * sizeof(_Impl::value_type));
     }
 }
 
@@ -455,24 +498,7 @@ path::_List::reserve(int newcap, bool exact = false)
 	    newcap = nextcap;
 	}
 
-      using __gnu_cxx::__int_traits;
-      // Nobody should need paths with this many components.
-      if (newcap >= __int_traits<int>::__max / 4)
-	std::__throw_bad_alloc();
-
-      size_t bytes;
-      if constexpr (__int_traits<int>::__max >= __int_traits<size_t>::__max)
-	{
-	  size_t components;
-	  if (__builtin_mul_overflow(newcap, sizeof(value_type), &components)
-		|| __builtin_add_overflow(sizeof(_Impl), components, &bytes))
-	    std::__throw_bad_alloc();
-	}
-      else // This won't overflow, even for 20-bit size_t on msp430.
-	bytes = sizeof(_Impl) + newcap * sizeof(value_type);
-
-      void* p = ::operator new(bytes);
-      std::unique_ptr<_Impl, _Impl_deleter> newptr(::new(p) _Impl{newcap});
+      auto newptr = _Impl::create(newcap);
       const int cursize = curptr ? curptr->size() : 0;
       if (cursize)
 	{
