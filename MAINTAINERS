@@ -173,6 +173,7 @@ objective-c/c++         Mike Stump              <mikestump@comcast.net>
 objective-c/c++         Iain Sandoe             <iain@sandoe.co.uk>
 Rust                    Arthur Cohen            <arthur.cohen@embecosm.com>
 Rust                    Philip Herron           <herron.philip@googlemail.com>
+Algol 68                Jose E. Marchesi        <jemarch@gnu.org>
 
                         Various Maintainers
 
@@ -181,6 +182,7 @@ libcpp                  Per Bothner             <per@bothner.com>
 libcpp                  All C and C++ front end maintainers
 libcpp                  David Malcolm           <dmalcolm@redhat.com>
 fp-bit                  Ian Lance Taylor        <ian@airs.com>
+libga68                 Jose E. Marchesi        <jemarch@gnu.org>
 libgcc                  Ian Lance Taylor        <ian@airs.com>
 libgo                   Ian Lance Taylor        <ian@airs.com>
 libgomp                 Jakub Jelinek           <jakub@redhat.com>
