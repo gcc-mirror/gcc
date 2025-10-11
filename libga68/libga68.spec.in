@@ -1,0 +1,11 @@
+#
+# This spec file is read by ga68 when linking.
+# It is used to specify the libraries we need to link in, in the right
+# order.
+#
+
+%rename link linkorig_ga68_renamed
+*link: %(linkorig_ga68_renamed)
+
+%rename lib liborig_ga68_renamed
+*lib: %{noga68lib: ; :@SPEC_LIBGA68_DEPS@} %(liborig_ga68_renamed)
