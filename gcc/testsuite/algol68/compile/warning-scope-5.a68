@@ -1,0 +1,8 @@
+# { dg-options {-Wscope -fstropping=upper} }  #
+# The scope violation here is due to the routine text, which is copied
+  to P, referring to a value whose range doesn't exist anymore: X #
+BEGIN (PROC REAL p;
+       (REAL x;
+        p := REAL: x * 2); # { dg-warning "scope violation" }  #
+       p)
+END

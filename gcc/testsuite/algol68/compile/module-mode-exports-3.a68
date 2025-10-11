@@ -1,0 +1,12 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyString = string;
+    skip
+fed
+
+{ GA68_MODE_STRING = 14UB }
+
+{ dg-final { scan-assembler-times "\[\t \]+0xe\[\t \]+\[^\n\]*string" 1 } }

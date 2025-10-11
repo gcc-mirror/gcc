@@ -1,0 +1,5 @@
+{ dg-options "-Whidden-declarations" }
+begin op UPB = (union (int,union(string,real)) v) int: { dg-warning "hides" }
+         (v | (string s): UPB s | 0);
+      UPB "lala"
+end

@@ -1,0 +1,10 @@
+# { dg-options "-Wextensions -fstropping=upper" }  #
+
+# This program shall compile without warning, because
+  widening from INT to REAL is legal in the strict language,
+  since they have the same size.  #
+
+BEGIN BOOL cond;
+      REAL x, y;
+      y + (cond | x | 10)
+END

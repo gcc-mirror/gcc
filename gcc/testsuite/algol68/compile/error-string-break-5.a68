@@ -1,0 +1,2 @@
+begin puts ("hello '(u0010u0020) world") # { dg-error "" }  #
+end

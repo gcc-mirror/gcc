@@ -1,0 +1,17 @@
+{ dg-options "-O0" }
+
+{ Procedure variable declarations.  }
+
+module Foo = def pub proc int foo;          { dg-final { scan-assembler "FOO_foo" } }
+                 proc int bar := int: skip; { dg-final { scan-assembler "FOO_bar" } }
+                 skip
+             fed,
+       Bar = def pub proc int foo;    { dg-final { scan-assembler "BAR_foo" } }
+                 proc int bar := foo; { dg-final { scan-assembler "BAR_bar" } }
+                 skip
+             fed
+
+{ dg-final { scan-assembler "FOO__prelude" } }
+{ dg-final { scan-assembler "FOO__postlude" } }
+{ dg-final { scan-assembler "BAR__prelude" } }
+{ dg-final { scan-assembler "BAR__postlude" } }

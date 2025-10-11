@@ -1,0 +1,3 @@
+begin struct (int i, real r) j;
+      j := "joo" { dg-error "char.*struct \\(int i, real r\\)" }
+end

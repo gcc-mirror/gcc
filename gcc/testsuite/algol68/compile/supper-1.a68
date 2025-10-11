@@ -1,0 +1,11 @@
+{ dg-options {-fstropping=supper} }
+
+begin mode Some_Mode = real;
+      Some_Mode some_real := random;
+
+      puts ("Hello time for SUPPER!\n");
+      if some_real > 0.5
+      then puts ("YES\n")
+      else puts ("NO\n")
+      fi
+end

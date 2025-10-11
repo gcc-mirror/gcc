@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+
+# Potential scope violation warnings are disabled by default.  #
+BEGIN PROC increase = (REF INT i) REF INT:
+      BEGIN INT j := i;
+            j # Inhibited warning.  #
+      END;
+      increase (LOC INT)
+END

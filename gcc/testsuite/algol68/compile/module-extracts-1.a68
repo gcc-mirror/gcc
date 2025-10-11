@@ -1,0 +1,29 @@
+{ dg-options "-O0 -dA" }
+
+module Foo =
+def pub mode JURL = union (void,int,real);
+    { dg-final { scan-assembler "mode extract FOO_JURL" } }
+    pub proc plus = (int a, b) int: a + b;
+    { dg-final { scan-assembler "identifier extract FOO_plus" } }
+    pub proc vplus := (int a, b) int: a + b;
+    { dg-final { scan-assembler "identifier extract FOO_vplus" } }
+    pub proc lvplus := (int a, b) int: a + b;
+    { dg-final { scan-assembler "identifier extract FOO_lvplus" } }
+    pub heap proc hvplus := (int a, b) int: a + b;
+    { dg-final { scan-assembler "identifier extract FOO_hvplus" } }
+    pub proc(int,int)int vplus2 = vplus;
+    { dg-final { scan-assembler "identifier extract FOO_vplus2" } }
+    pub proc(int,int)int lvplus2 := lvplus;
+    { dg-final { scan-assembler "identifier extract FOO_lvplus2" } }
+    pub heap proc(int,int)int hvplus2 := hvplus;
+    { dg-final { scan-assembler "identifier extract FOO_hvplus2" } }
+    pub int i;
+    { dg-final { scan-assembler "identifier extract FOO_i" } }
+    int k = 10;
+    { dg-final { scan-assembler-not "identifier extract FOO_k" } }
+    pub prio // = 8;
+    { dg-final { scan-assembler "operator extract FOO_s_s_\[0-9\]+" } }
+    pub op // = (int a, b) int: a % b;
+    { dg-final { scan-assembler "operator extract FOO_s_s_\[0-9\]+" } }
+    skip
+fed

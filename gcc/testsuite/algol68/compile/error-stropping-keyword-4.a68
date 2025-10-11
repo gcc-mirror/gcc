@@ -1,0 +1,3 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN IF THEN 10 ELSE 20 FI # { dg-error "IF" } #
+END

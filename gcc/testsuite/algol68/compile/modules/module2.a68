@@ -1,0 +1,5 @@
+module Module2 =
+def prio // = 9; { Note priority is not publicized.  }
+    pub op // = (int a, b) int: a + b;
+    skip
+fed

@@ -1,0 +1,14 @@
+{ dg-options "-O0" }
+
+{ Operator symbols are numbered so having overloaded symbols in the
+  module's public range works.  }
+
+module Foo =
+def prio // =9;
+    op // = (int a, b) int: a + b;    { dg-final { scan-assembler "FOO_s_s_\[0-9\]+" } }
+    op // = (real a, b) real: a + b;  { dg-final { scan-assembler "FOO_s_s_\[0-9\]+" } }
+    skip
+fed
+
+{ dg-final { scan-assembler "FOO__prelude" } }
+{ dg-final { scan-assembler "FOO__postlude" } }

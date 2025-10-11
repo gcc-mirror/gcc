@@ -1,0 +1,5 @@
+# { dg-options {-fstropping=supper} }  #
+
+begin int foo__bar = 10; # { dg-error "unworthy" }  #
+      skip
+end

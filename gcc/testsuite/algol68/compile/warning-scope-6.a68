@@ -1,0 +1,6 @@
+# { dg-options {-Wscope -fstropping=upper} }  #
+BEGIN (PROC REAL p; REAL mypi := 3.14;
+       (REAL x;
+        p := REAL: mypi * 2); # No scope violation here.  #
+       p)
+END

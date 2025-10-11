@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN PROC sum = (INT a, INT b) INT:
+         ( a + b );
+      sum (10, 20) # Voiding warning won't be emitted by default.  #
+END

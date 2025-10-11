@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN
+   LONG LONG INT d := LONG 0; # { dg-error "coerced" }  #
+   d
+END

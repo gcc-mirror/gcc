@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN PRIO MIN = 6;
+      OP MIN = (REF REAL a, b) REF REAL: (a < b | a | b), # { dg-error "firmly related" }  #
+         MIN = (REAL a, b) REAL: (a < b | a | b); # { dg-error "firmly related" }  #
+      SKIP
+END

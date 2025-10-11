@@ -1,0 +1,11 @@
+{ dg-options {-Whidden-declarations} }
+
+begin mode Trilean = union (void,bool);
+
+      Trilean unknown = empty;
+      op NOT = (Trilean a) Trilean: { dg-warning "hides" }
+         skip;
+      op AND = (Trilean a,b) Trilean: { dg-warning "hides" }
+         skip;
+      skip
+end

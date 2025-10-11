@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+
+# This is an infinite loop, but it should compile just fine an yield
+  an integer after infinite time.  #
+
+BEGIN foo: foo
+END

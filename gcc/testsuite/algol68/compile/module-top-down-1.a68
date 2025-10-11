@@ -1,0 +1,14 @@
+{ This test is to check that serial clauses and
+  enquiry clauses are properly skipped in module texts.  }
+module Foo =
+def int i;
+    int j = 20;
+    string ss;
+    prio // = 8;
+    op // = (int a, b) int: a + b;
+    proc ticks = void: to i do puts ("tick'n") od;
+    i := 5
+postlude
+    if j > 5 then ticks fi;
+    (j < 0 | puts ("error'n") | puts ("success'n"))
+fed

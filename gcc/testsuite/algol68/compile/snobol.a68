@@ -1,0 +1,1100 @@
+# { dg-options "-fstropping=upper" }  #
+
+# This is Frank Pagan's SNOBOL4 Interpreter in ALGOL 68 (1976),
+  fetched from Dick Grune's page https://dickgrune.com/CS/Algol68/
+
+  The interpreter described in "Algol 68 as an Implementation Language\
+  for Portable Interpreters", ACM SIGPLAN Notices - Proceedings of the
+  Strathclyde ALGOL 68 conference, Volume 12 Issue 6, June 1977,
+  pp. 54 - 62, and "A Highly-Structured Interpreter for a SNOBOL4
+  Subset", Software: Practice and Experience, Vol. 9, 4,
+  pp. 281-312, April 1979.
+
+  Modifications by Jose E. Marchesi:
+  - Use the simple POSIX-like transput provided by GCC.
+  - Read programs from lines rather than from cards.
+  - Add command-line option -l (listing).
+#
+
+BEGIN PROC itoa = (INT i) STRING:
+      BEGIN IF i = 0
+            THEN "0"
+            ELSE INT n := ABS i;
+                 STRING res;
+                 WHILE n /= 0
+                 DO INT rem = n %* 10;
+                    res := REPR (rem > 9 | (rem - 10) + ABS "a" | rem + ABS "0") + res;
+                    n %:= 10
+                 OD;
+                 (i < 0 | "-" + res | res)
+            FI
+      END;
+
+      CHAR sharp = REPR 35; # Sharp character,
+                              to avoid confusing Emacs.  #
+
+      # Input file.  #
+      INT filein;
+
+      # IMPLEMENTATION RESTRICTIONS #
+      INT spoolsize = 400,
+          stlim = 50,
+          arglim = 5,
+          rslim = 80,
+          pslim = 20,
+          ftlim = 10;
+
+      # ABSTRACT MACHINE #
+      MODE ITEM = UNION (INT, REF STRINGITEM, PATTERN),
+           STRINGITEM = STRUCT (STRING val, REF ITEM ref),
+           PATTERN = REF[]COMPONENT,
+           COMPONENT = STRUCT (INT routine, subsequent, alternate, extra,
+                               REF ITEM arg),
+           PSENTRY = STRUCT (INT cursor, alternate),
+           RSENTRY = REF ITEM,
+           FTENTRY = STRUCT (REF ITEM fnname, entry name,
+                             REF[]REF ITEM params, locals);
+
+      [1:spoolsize] REF ITEM spool;
+      [1:pslim] PSENTRY pattern stack;
+      [1:rslim] RSENTRY run stack;
+      [1:ftlim] FTENTRY function table;
+
+      BOOL failed := FALSE;
+      INT nin, psp, rsp := 0, ftp := 0;
+      INT mstr = 1, mlen = 2, mbrk = 3, mspn = 4, many = 5, mnul = 6,
+          miv1 = 7, miv2 = 8, m1 = 9, mat = 10, mpos = 11, mtab = 12,
+          mrpos = 13, mrtab = 14, mnty = 15;
+
+      # INTERNAL FORM OF PROGRAMS #
+
+      MODE STMT = STRUCT (REF IDR label,
+                          UNION (REF ASMT, REF MATCH,
+                                 REF REPL, REF EXPR) stmt core,
+                          REF GOTOFIELD goto),
+           IDR = STRUCT (REF ITEM idr addr),
+           NUM = STRUCT (REF ITEM num addr),
+           LSTR = STRUCT (REF ITEM lstr addr),
+           ASMT = STRUCT (REF EXPR subject, object),
+           MATCH = STRUCT (REF EXPR subject, pattern),
+           REPL = STRUCT (REF EXPR subject, pattern, object),
+           EXPR = UNION (REF UNARYEXPR, REF BINARYEXPR, IDR, NUM,
+                         LSTR, REF CALL),
+           GOTOFIELD = STRUCT (REF DEST upart, spart, fpart),
+           DEST = UNION (REF EXPR, CHAR),
+           UNARYEXPR = STRUCT (REF EXPR operand, CHAR operator),
+           BINARYEXPR = STRUCT (REF EXPR operand1, operand2,
+                                CHAR operator),
+           CALL = STRUCT (IDR fnname, REF[]REF EXPR args);
+
+      REF[]STMT t;
+      REF ITEM prog entry := NIL;
+
+      PROC error = (STRING mess) VOID:
+         (puts ("error: " + mess + "'n"); stop);
+
+      # TRANSLATION PHASE #
+
+      BEGIN # DECLARATIONS FOR SCANNER #
+            STRING card, INT cp,       # SOURCE LINE AND POINTER #
+            CHAR ch,                   # SOURCE CHARACTER #
+            [1:80]CHAR str, INT sp,    # STRING BUFFER AND POINTER #
+            CHAR tok,                  # TOKEN CODE #
+            REF ITEM psn,              # POSITION OF A CREATED VALUE #
+            INT nv,                    # NUMERIC VALUE OF CONSTANT #
+            INT stn,                   # SOURCE STATEMENT NUMBER #
+            BOOL listing,              # FLAG FOR SOURCE LISTING #
+            CHAR c;                    # TEMPORARY #
+
+            # TOKEN MNEMONICS #
+            CHAR doll    = "$",    bdoll   = "D",
+                 plus    = "+",    bplus   = "P",
+                 minus   = "-",    bminus  = "M",
+                 at      = "@",    bbar    = "!",
+                 bstar   = "*",    bslash  = "/",
+                 lpar    = "(",    rpar    = ")",
+                 comma   = ",",    colon   = ":",
+                 equal   = "=",    blank   = " ",
+                 eos     = ";",    name    = "A",
+                 lstring = "L",    number  = "U",
+                 endt    = "E",    ret     = "R",
+                 fret    = "F",    stok    = "Y",
+                 ftok    = "Z";
+
+            PROC get card = VOID:
+            BEGIN cp := 0;
+                  WHILE card := fgets (filein, 80);
+                        IF UPB card = 0 THEN exit FI;
+                        c := card[1];
+                        IF c /= "." AND c /= "+" AND c /= "-" AND c /= "*"
+                        THEN stn := stn + 1 FI;
+                        IF listing THEN puts (itoa (stn) + "    " + card + "'n") FI;
+                        IF c = "-"
+                        THEN IF card[2:5] = "LIST"
+                             THEN listing := TRUE
+                             ELIF card[2:7] = "UNLIST"
+                             THEN listing := FALSE
+                             FI
+                        FI;
+                        c = "-" OR c = "*"
+                  DO SKIP OD;
+            exit: SKIP
+            END;
+
+            PROC next ch = VOID:
+               IF cp = UPB card
+               THEN get card;
+                    IF c = "." OR c = "+"
+                    THEN ch := " "; cp := 1
+                    ELSE ch := sharp   # END OF LINE AND STATEMENT #
+                    FI
+               ELSE ch := card[cp +:= 1]
+               FI;
+
+            PROC lookup = (STRING sv) REF ITEM : (
+               INT i := 0, BOOL nf := TRUE;
+               WHILE IF (i +:= 1) <= nin
+                     THEN nf := sv /= val OF (spool[i] | (REF STRINGITEM s) : s)
+                     ELSE FALSE
+                     FI
+               DO SKIP OD;
+               IF nf
+               THEN IF nin = spoolsize THEN error ("too many strings") FI;
+                    spool[nin +:= 1] := HEAP ITEM := HEAP STRINGITEM :=
+                       (sv, NIL)
+               FI;
+               spool[i]);
+
+            PROC scan = VOID:
+               IF ch = " " # BLANKS AND BINARY OPERATORS #
+               THEN WHILE next ch; ch = " " DO SKIP OD;
+                    # IGNORE TRAILING BLANKS IN A STATEMENT #
+                    IF ch = ";" THEN next ch; stn := stn + 1; tok := eos
+                    ELIF ch = sharp THEN next ch; tok := eos
+                    ELIF ch = "!" OR ch = "$" OR ch = "+" OR ch = "-"
+                         OR ch = "*" OR ch = "/"
+                    THEN IF card[cp+1] = " "
+                         THEN c := ch;
+                              WHILE next ch; ch = " " DO SKIP OD ;
+                              tok := (c = "!" | bbar
+                                      |: c = "$" | bdoll
+                                      |: c = "-" | bminus
+                                      |: c = "+" | bplus
+                                      |: c = "*" | bstar
+                                      | bslash)
+                         ELSE tok := blank
+                         FI
+                    ELSE tok := blank
+                    FI
+               ELIF ch = "''" OR ch = """" # LITERAL STRINGS #
+               THEN c := ch; sp := 0;
+                    WHILE next ch;
+                          IF ch = sharp THEN error ("UNTERMINATED LITERAL") FI;
+                          (str[sp +:= 1] := ch) /= c
+                    DO SKIP OD ;
+                    next ch;
+                    tok := lstring;
+                    IF sp = 1
+                    THEN psn := NIL
+                    ELSE STRING s = str[1:sp-1] ;
+                         psn := lookup (s)
+                    FI
+               ELIF ch >= "0" AND ch <= "9" # NUMBERS #
+               THEN nv := 0 ;
+                    WHILE nv := nv * 10 + ABS ch - ABS "0";
+                          next ch;
+                          ch >= "0" AND ch <= "9"
+                    DO SKIP OD ;
+                    tok := number;
+                    psn := HEAP ITEM := nv
+               ELIF ch >= "A" AND ch <= "Z" # NAMES #
+               THEN sp := 0;
+                    WHILE str[sp +:= 1] := ch;
+                          next ch;
+                          ch = "." OR ch >= "A" AND ch <= "Z"
+                          OR ch >= "0" AND ch <= "9"
+                    DO SKIP OD ;
+                    STRING s = str[1:sp];
+                    tok := (s = "S" | stok
+                            |: s = "F" | ftok
+                            |: s = "END" | endt
+                            |: s = "RETURN" | ret
+                            |: s = "FRETURN" | fret
+                            | psn := lookup (s);  name)
+               ELIF ch = ";"
+               THEN next ch;  stn := stn + 1; tok := eos
+               ELIF ch = sharp
+               THEN next ch;  tok := eos
+               ELSE #  ( ) , : = @ $ + -  #
+                  tok := ch; next ch
+               FI;
+
+            PROC init = VOID:
+            BEGIN stn := 0;
+                  spool[nin := 1] := HEAP ITEM := HEAP STRINGITEM :=
+                     ("ARB", HEAP ITEM := HEAP[1:3]COMPONENT :=
+                                ((mnul, 2, 0, SKIP, NIL),
+                                 (mnul, 0, 3, SKIP, NIL),
+                                 (m1, 2, 0, SKIP, NIL)));
+                  get card;
+                  next ch;
+                  scan
+            END;
+
+            PROC verify = (CHAR token) VOID:
+               IF tok = token THEN scan
+               ELSE STRING s := "TOKEN "" "" DOES NOT OCCUR WHERE EXPECTED";
+                    s[8] := token;
+                    error (s)
+               FI;
+
+            PROC translate = VOID:
+            BEGIN HEAP[1:stlim]STMT ss, INT ssc := 0;
+                  WHILE IF ssc = stlim THEN error ("TOO MANY STATEMENTS") FI;
+                        tok /= endt
+                  DO ss[ssc +:= 1] := trans stmt OD;
+                  scan;
+                  IF tok = blank
+                  THEN scan;
+                       IF tok = name THEN prog entry := psn FI
+                  FI;
+                  t := ss[1:ssc]
+            END;
+
+            PROC trans stmt = STMT:
+            BEGIN
+               REF IDR lab := NIL;
+               REF EXPR subj, pat, obj := NIL;
+               REF GOTOFIELD go := NIL;
+               BOOL asgn;
+
+               PROC move to obj = STMT:
+               BEGIN
+                  IF tok = blank
+                  THEN scan;
+                       IF tok = colon
+                       THEN go := trans gofield
+                       ELSE obj := trans expr;
+                            IF tok = colon
+                            THEN go := trans gofield
+                            ELSE verify (eos)
+                            FI
+                       FI
+                  ELSE verify (eos)
+                  FI ;
+                  IF asgn
+                  THEN STMT (lab, HEAP ASMT := (subj, obj), go)
+                  ELSE STMT (lab, HEAP REPL := (subj, pat, obj), go)
+                  FI
+               END;
+
+               PROC move to subj = STMT:
+               BEGIN scan;
+                     IF tok = colon
+                     THEN STMT (lab, REF EXPR (NIL), trans gofield)
+                     ELSE subj := trans elem;
+                          IF tok = blank
+                          THEN scan;
+                               IF tok = colon
+                               THEN STMT (lab, REF EXPR (subj), trans gofield)
+                               ELIF tok = equal
+                               THEN asgn := TRUE; scan;  move to obj
+                               ELSE pat := trans expr;
+                                    IF tok = colon
+                                    THEN STMT (lab, HEAP MATCH := (subj, pat), trans gofield)
+                                    ELIF tok = equal
+                                    THEN asgn := FALSE; scan; move to obj
+                                    ELSE verify (eos);
+                                         STMT (lab, HEAP MATCH := (subj, pat), NIL)
+                                    FI
+                               FI
+                          ELSE verify (eos);
+                               STMT (lab, REF EXPR (subj), NIL)
+                          FI
+                     FI
+               END;
+
+               # Body of trans stmt. #
+               IF tok = name
+               THEN lab := HEAP IDR; idr addr OF lab := psn; scan;
+                    IF tok = blank
+                    THEN move to subj
+                    ELSE verify (eos);
+                         STMT (lab, REF EXPR (NIL), NIL)
+                    FI
+               ELIF tok = blank
+               THEN move to subj
+               ELSE verify (eos);
+                    STMT (lab, REF EXPR (NIL), NIL)
+               FI
+            END;
+
+            PROC trans gofield = REF GOTOFIELD:
+            BEGIN PROC where = REF DEST:
+                  BEGIN HEAP DEST d;
+                        verify (lpar);
+                        IF tok = blank THEN scan FI;
+                        d := (tok = endt | scan; "E"
+                              |: tok = ret | scan; "R"
+                              |: tok = fret | scan; "F"
+                              | trans expr);
+                        verify (rpar);
+                        d
+                  END;
+
+                  REF DEST uncond := NIL, succ := NIL, fail := NIL;
+                  scan; IF tok = blank THEN scan FI;
+                  IF tok = stok
+                  THEN scan; succ := where;
+                       IF tok = blank THEN scan FI;
+                       IF tok = ftok THEN scan; fail := where FI;
+                       verify (eos)
+                  ELIF tok = ftok
+                  THEN scan; fail := where;
+                       IF tok = blank THEN scan FI;
+                       IF tok = stok THEN scan; succ := where FI;
+                       verify (eos)
+                  ELSE uncond := where; verify (eos)
+                  FI;
+                  HEAP GOTOFIELD := (uncond, succ, fail)
+            END;
+
+            PROC trans expr = REF EXPR:
+            BEGIN REF EXPR e := trans expr1;
+                  WHILE tok = bbar
+                  DO scan;
+                     e := HEAP EXPR := HEAP BINARYEXPR := (e, trans expr1, "!")
+                  OD;
+                  e
+            END;
+
+            PROC trans expr1 = REF EXPR:
+            BEGIN REF EXPR e := trans expr2;
+                  WHILE tok = blank
+                  DO scan;
+                     IF tok /= colon AND tok /= rpar AND tok /= comma AND tok /= equal
+                     THEN e := HEAP EXPR := HEAP BINARYEXPR := (e, trans expr2, "C")
+                     FI
+                  OD;
+                  e
+            END;
+
+            PROC trans expr2 = REF EXPR:
+            BEGIN REF EXPR e := trans term;
+                  CHAR opr;
+                  WHILE tok = bplus OR tok = bminus
+                  DO opr := (tok = bplus | "+" | "-");
+                     scan;
+                     e := HEAP EXPR := HEAP BINARYEXPR := (e, trans term, opr)
+                  OD;
+                  e
+            END;
+
+            PROC trans term = REF EXPR:
+            BEGIN REF EXPR e := trans term1;
+                  WHILE tok = bslash
+                  DO scan;
+                     e := HEAP EXPR := HEAP BINARYEXPR := (e, trans term1, "/")
+                  OD;
+                  e
+            END;
+
+            PROC trans term1 = REF EXPR:
+            BEGIN REF EXPR e := trans term2;
+                  WHILE tok = bstar
+                  DO scan;
+                     e := HEAP EXPR := HEAP BINARYEXPR := (e, trans term2, "*")
+                  OD;
+                  e
+            END;
+
+            PROC trans term2 = REF EXPR:
+            BEGIN REF EXPR e := trans elem;
+                  WHILE tok = bdoll
+                  DO scan;
+                     e := HEAP EXPR := HEAP BINARYEXPR := (e, trans elem, "$")
+                  OD;
+                  e
+            END;
+
+            PROC trans elem = REF EXPR:
+               IF tok = doll OR tok = plus OR tok = minus OR tok = at
+               THEN CHAR opr = tok;
+                    scan;
+                    HEAP EXPR := HEAP UNARYEXPR := (trans element, opr)
+               ELSE trans element
+               FI;
+
+            PROC trans element = REF EXPR:
+               IF tok = name
+               THEN IDR n;
+                    idr addr OF n := psn;
+                    scan;
+                    IF tok /= lpar
+                    THEN HEAP EXPR := n
+                    ELSE HEAP[1:arglim]REF EXPR a, INT ac := 0;
+                         WHILE scan;
+                               IF tok = blank THEN scan FI;
+                               IF ac = arglim
+                               THEN error ("TOO MANY ARGUMENTS IN FUNCTION CALL")
+                               FI;
+                               IF NOT (ac = 0 AND tok = rpar)
+                               THEN a[ac +:= 1] := (tok = comma OR tok = rpar | NIL | trans expr)
+                               FI;
+                               IF tok /= comma AND tok /= rpar
+                               THEN error ("ERROR IN ARGUMENT LIST")
+                               FI;
+                               tok = comma
+                         DO SKIP OD;
+                         scan;
+                         HEAP EXPR := HEAP CALL := (n, a[1:ac])
+                    FI
+               ELIF tok = lstring
+               THEN LSTR ls;
+                    lstr addr OF ls := psn;
+                    scan;
+                    HEAP EXPR := ls
+               ELIF tok = number
+               THEN NUM nu;  num addr OF nu := psn;
+                    scan;
+                    HEAP EXPR := nu
+               ELSE verify (lpar);
+                    IF tok = blank THEN scan FI;
+                    REF EXPR e = trans expr;
+                    verify (rpar);
+                    e
+               FI;
+
+            PROC usage = VOID:
+            BEGIN puts ("Usage: snobol [-l] FILE'n");
+                  stop
+            END;
+
+            listing := FALSE;
+            IF argc < 2 THEN usage FI;
+            FOR i FROM 2 TO argc
+            DO IF argv (i) = "-l" THEN listing := TRUE
+               ELIF filein = 0
+               THEN filein := fopen (argv (i), file o rdonly);
+                    IF (filein = -1)
+                    THEN error ("opening " + argv (i) + ": " + strerror (errno)) FI
+               ELSE usage
+               FI
+            OD;
+            init;
+            translate
+      END; # TRANSLATION PHASE #
+
+      BEGIN # INTERPRETATION PHASE #
+
+            OP INTG = (REF ITEM a) INT: (a | (INT i) : i),
+               STR = (REF ITEM a) REF STRINGITEM: (a | (REF STRINGITEM s): s),
+               PAT = (REF ITEM a) PATTERN: (a | (PATTERN p) : p);
+            BOOL fn success;
+
+            PROC interpret = (INT stmt no) VOID:
+            BEGIN INT sn := stmt no; BOOL cycling := TRUE;
+
+                  PROC jump = (REF DEST dest) VOID:
+                  BEGIN failed := FALSE;
+                        CASE dest
+                        IN (REF EXPR e): sn := find label (eval softly (e)),
+                           (CHAR c): IF c = "E" THEN sn := UPB t + 1
+                                     ELIF c = "R" THEN fn success := TRUE;
+                                                       cycling := FALSE
+                                     ELSE # c = "F" # fn success := cycling := FALSE
+                                     FI
+                        ESAC
+                  END;
+
+                  WHILE cycling
+                  DO IF sn > UPB t THEN stop FI;
+                     failed := FALSE;
+
+                     # EXECUTE STATEMENT CORE #
+                     CASE stmt core OF t[sn]
+                     IN (REF ASMT a):
+                           (REF ITEM sp = eval softly (subject OF a);
+                            assign (sp, eval strongly (object OF a))),
+                        (REF MATCH m):
+                           (REF ITEM svp = eval strongly (subject OF m);
+                            match (convert to str (svp),
+                                   convert to pat (eval strongly (pattern OF m)))),
+                        (REF REPL r):
+                           (REF ITEM sp = eval softly (subject OF r);
+                            REF ITEM pp = convert to pat (eval strongly (pattern OF r));
+                            REF ITEM svp = convert to str (ref OF (STR sp));
+                            INT c = match (svp, pp);
+                            REF ITEM b = (svp IS NIL | NIL | make str ((val OF (STR svp))[c+1:]));
+                            REF ITEM obp = eval strongly (object OF r);
+                            assign (sp, concatenate (obp, b))),
+                        (REF EXPR e):
+                           eval strongly (e)
+                     ESAC;
+
+                     # PROCESS GOTO FIELD #
+                     REF GOTOFIELD go = goto OF t[sn];
+                     IF go IS NIL THEN sn := sn + 1
+                     ELIF REF DEST (upart OF go) ISNT NIL
+                     THEN jump (upart OF go)
+                     ELIF NOT failed AND (REF DEST (spart OF go) ISNT NIL)
+                     THEN jump (spart OF go)
+                     ELIF failed AND (REF DEST (fpart OF go) ISNT NIL)
+                     THEN jump (fpart OF go)
+                     ELSE sn := sn + 1
+                     FI
+                  OD
+            END; # END OF INTERPRET #
+
+            PROC find label = (REF ITEM label ptr) INT:
+            BEGIN INT stmt no := 0;
+                  IF failed THEN error ("FAILURE IN GOTO FIELD") FI;
+                  FOR i TO UPB t WHILE stmt no = 0
+                  DO IF (REF IDR (label OF t[i]) IS NIL
+                         | FALSE
+                         | label ptr IS idr addr OF label OF t[i])
+                     THEN stmt no := i
+                     FI
+                  OD;
+                  IF stmt no = 0 THEN error ("UNDEFINED LABEL") FI;
+                  stmt no
+            END;
+
+            PROC match = (REF ITEM subject ptr, pattern ptr) INT:
+               IF failed
+               THEN 0
+               ELSE PATTERN p = PAT pattern ptr;
+                    STRING subj = (subject ptr IS NIL | "" | val OF (STR subject ptr));
+                    INT u = UPB subj;
+                    INT iarg,       # INTEGER COMPONENT ARGUMENT #
+                    STRING sarg,    # STRING COMPONENT ARGUMENT #
+                    INT l;          # LENGTH OF SARG #
+                    INT cn := 1,    # COMPONENT NUMBER #
+                        c := 0,     # CURSOR #
+                        code;       # NEW CURSOR OR -1 IF COMPONENT NO-MATCH #
+                    BOOL matching := TRUE;
+
+                    psp := 0;       # CLEAR PATTERN STACK #
+                    WHILE matching
+                    DO IF alternate OF p[cn] /= 0
+                       THEN # PUSH PATTERN STACK #
+                            pattern stack[psp +:= 1] := (c, alternate OF p[cn])
+                       FI;
+                       IF REF ITEM (arg OF p[cn]) ISNT NIL
+                       THEN CASE arg OF p[cn]
+                            IN (INT i) : iarg := i,
+                               (REF STRINGITEM s):
+                                  (sarg := val OF s;  l := UPB sarg)
+                            ESAC
+                       FI;
+
+                       # EXECUTE INDICATED MATCHING ROUTINE #
+                       CASE routine OF p[cn]
+                       IN # MSTR #
+                          IF REF ITEM (arg OF p[cn]) IS NIL
+                          THEN code := c
+                          ELIF c + l > u THEN code := -1
+                          ELSE code := (sarg = subj[c+1:c+l] | c + l | -1)
+                          FI,
+                          # MLEN #
+                          code := (iarg <= u - c | c + iarg | -1),
+                          # MBRK #
+                          IF c >= u THEN code := -1
+                          ELSE INT n = break scan (subj[c+1:], sarg);
+                               code := (n < u - c | c + n | -1)
+                          FI,
+                          # MSPN #
+                          IF c >= u THEN code := -1
+                          ELIF any (sarg, subj[c+1])
+                          THEN INT j := c + 1;
+                               FOR i FROM c + 2 TO u WHILE any (sarg, subj[i])
+                               DO j := i OD;
+                               code := j
+                          ELSE code := -1
+                          FI,
+                          # MANY #
+                          IF c >= u
+                          THEN code := -1
+                          ELSE code := (any (sarg, subj[c+1]) | c + 1 | -1)
+                          FI,
+                          # MNUL #
+                          code := c,
+                          # MIV1 #
+                          code := extra OF p[cn] := c,
+                          # MIV2 #
+                          (INT m = extra OF p[cn - extra OF p[cn]] + 1;
+                           assign (arg OF p[cn], make str (subj[m:c]));
+                           code := c),
+                          # M1 #
+                          code := (1 <= u - c | c + 1 | -1),
+                          # MAT #
+                          (assign (arg OF p[cn], make int (c));
+                           code := c),
+                          # MPOS #
+                          code := (c = iarg | c | -1),
+                          # MTAB #
+                          code := (c <= iarg AND iarg <= u | iarg | -1),
+                          # MRPOS #
+                          code := (u - c = iarg | c | -1),
+                          # MRTAB #
+                          code := (u - c >= iarg | u - iarg | -1),
+                          # MNTY #
+                          IF c >= u
+                          THEN code := -1
+                          ELSE code := (any (sarg, subj[c+1]) | -1 | c + 1)
+                          FI
+                       ESAC;
+
+                       # DECIDE WHAT TO DO NEXT #
+                       IF code >= 0
+                       THEN IF subsequent OF p[cn] = 0
+                            THEN matching := FALSE #SUCCESSFUL TERMINATION #
+                            ELSE cn := subsequent OF p[cn];
+                                 c := code  # CONTINUE #
+                            FI
+                       ELIF psp = 0
+                       THEN failed := TRUE;
+                            matching := FALSE  # STMT FAILURE #
+                       ELSE  # POP PATTERN STACK TO BACKTRACK #
+                             cn := alternate OF pattern stack[psp];
+                             c := cursor OF pattern stack[psp];
+                             psp := psp - 1
+                       FI
+                    OD;
+                    (failed | 0 | code)
+               FI; # END OF MATCH PROCEDURE #
+
+            PROC assign = (REF ITEM subject ptr, object ptr) VOID:
+               IF failed THEN SKIP
+               ELSE REF STRINGITEM s = STR subject ptr;
+                    ref OF s := object ptr;
+                    IF val OF s = "OUTPUT"
+                    THEN IF object ptr IS NIL
+                         THEN puts ("'n")
+                         ELSE CASE object ptr
+                              IN (REF STRINGITEM r): puts ((val OF r) + "'n"),
+                                 (INT i): puts (itoa (i) + "'n"),
+                                 (PATTERN): (error ("ATTEMPT TO OUTPUT PATTERN"); SKIP)
+                              ESAC
+                         FI
+                    FI
+               FI;
+
+            PROC eval softly = (REF EXPR expression) REF ITEM:
+               IF failed THEN SKIP
+               ELSE CASE expression # CAN NEVER BE NIL #
+                    IN (IDR id): idr addr OF id,
+                       (REF UNARYEXPR ue):
+                          IF operator OF ue = "$"
+                          THEN REF ITEM r = convert to str (eval strongly (operand OF ue));
+                               IF r IS NIL
+                               THEN error ("NULL RESULT WHERE VAR REQUIRED");
+                                    SKIP
+                               ELSE r
+                               FI
+                          ELSE error ("INAPPROPRIATE UNARY EXPR WHERE VAR REQUIRED");
+                               SKIP
+                          FI
+                    OUT error ("INAPPROPRIATE EXPR WHERE VAR REQUIRED");
+                        SKIP
+                    ESAC
+               FI;
+
+            PROC eval strongly = (REF EXPR expression) REF ITEM:
+               IF failed THEN SKIP
+               ELIF expression IS NIL THEN NIL
+               ELSE CASE expression
+                    IN (IDR id):
+                          (REF STRINGITEM s = STR (idr addr OF id);
+                           IF val OF s = "INPUT"
+                           THEN STRING line;
+                                # SNOBOL programs read data from stdin.  #
+                                line := gets (80);
+                                IF (line = "") THEN failed := TRUE; eof FI;
+                                assign (idr addr OF id, make str (line));
+                                eof: SKIP
+                           FI;
+                           ref OF s),
+                       (NUM nbr):
+                          num addr OF nbr,
+                       (LSTR ls):
+                          lstr addr OF ls,
+                       (REF UNARYEXPR ue):
+                          (REF ITEM arg ptr = (operator OF ue = "@"
+                                               | eval softly (operand OF ue)
+                                               | eval strongly (operand OF ue));
+                           eval unary (arg ptr, operator OF ue)),
+                       (REF BINARYEXPR be):
+                          (REF ITEM arg1 ptr = eval strongly (operand1 OF be);
+                           REF ITEM arg2 ptr = (operator OF be = "$"
+                                                | eval softly (operand2 OF be)
+                                                | eval strongly (operand2 OF be));
+                           eval binary (arg1 ptr, arg2 ptr, operator OF be)),
+                       (REF CALL cl):
+                          (INT n = UPB args OF cl;
+                           [1:n]REF ITEM arglist;
+                           FOR i TO n
+                           DO arglist[i] := eval strongly ((args OF cl)[i]) OD;
+                           eval call (idr addr OF fnname OF cl, arglist))
+                    ESAC
+               FI;
+
+            PROC eval unary = (REF ITEM arg ptr, CHAR opr) REF ITEM:
+               IF failed THEN SKIP
+               ELSE IF opr = "$"
+                    THEN IF arg ptr IS NIL
+                         THEN error ("INDIRECTION APPLIED TO NULL STRING");
+                              SKIP
+                         ELSE ref OF (STR convert to str (arg ptr))
+                         FI
+                    ELIF opr = "+"
+                    THEN convert to int (arg ptr)
+                    ELIF opr = "-"
+                    THEN INT k = INTG convert to int (arg ptr);
+                         make int (-k)
+                    ELSE # OPR = "@" #
+                         make pat comp (mat, arg ptr)
+                    FI
+               FI;
+
+            PROC eval binary = (REF ITEM arg1 ptr, arg2 ptr, CHAR opr) REF ITEM:
+               IF failed THEN SKIP
+               ELSE IF opr = "$"
+                    THEN REF ITEM c = concatenate (make pat comp (miv1, NIL),
+                                                   arg1 ptr);
+                         concatenate (c, make pat comp (miv2, arg2 ptr))
+                    ELIF opr = "*" OR opr = "/" OR opr = "+" OR opr = "-"
+                    THEN INT m = INTG convert to int (arg1 ptr),
+                         n = INTG convert to int (arg2 ptr);
+                         make int ((opr = "*" | m * n
+                                    |: opr = "/" | m OVER n
+                                    |: opr = "+" | m + n | m - n))
+                    ELIF opr = "C"
+                    THEN concatenate (arg1 ptr, arg2 ptr)
+                    ELSE # OPR = "!" #
+                         PATTERN p1 = PAT convert to pat (arg1 ptr),
+                         p2 = PAT convert to pat (arg2 ptr);
+                         INT u1 = UPB p1, u2 = UPB p2;
+                         PATTERN p = HEAP[u1 + u2]COMPONENT,
+                         INT offset = u1 + 1, INT j := 1;
+                         p[1:u1] := p1[1:u1];
+                         WHILE alternate OF p[j] /= 0
+                         DO j := alternate OF p[j] OD;
+                         alternate OF p[j] := offset;
+                         FOR i FROM offset TO u1 + u2
+                         DO p[i] := p2 [i - u1];
+                            IF subsequent OF p[i] /= 0
+                            THEN subsequent OF p[i] +:= u1
+                            FI;
+                            IF alternate OF p[i] /= 0
+                            THEN alternate OF p[i] +:= u1
+                            FI
+                         OD;
+                         HEAP ITEM := p
+                    FI
+               FI;
+
+            PROC eval call = (REF ITEM name ptr, REF[]REF ITEM arglist) REF ITEM:
+               IF failed THEN SKIP
+               ELSE # SEARCH FUNCTION TABLE FOR NAME #
+                    BOOL not found := TRUE, INT j;
+                    FOR i TO ftp WHILE not found
+                    DO IF name ptr IS fnname OF function table[i]
+                       THEN j := i; not found := FALSE
+                       FI
+                    OD;
+                    IF not found
+                    THEN exec prim fn (name ptr, arglist)
+                    ELSE #PROGRAMMER-DEFINED FUNCTION #
+
+                         PROC stack = (REF ITEM a) VOID:
+                            (IF rsp = rslim THEN error ("RUN STACK OVERFLOW") FI;
+                             run stack [rsp +:= 1] := a);
+
+                         PROC unstack = REF ITEM:
+                            (IF rsp = 0 THEN error ("RETURN FROM LEVEL 0") FI;
+                             run stack [(rsp -:= 1) + 1]);
+
+                         REF STRINGITEM name = STR name ptr;
+
+                         # ENTRY PROTOCOL #
+                         stack (ref OF name);
+                         assign (name ptr, NIL);
+                         REF[]REF ITEM params = params OF function table[j],
+                         INT n = UPB arglist;
+                         IF UPB params /= n
+                         THEN error ("WRONG NUMBER OF ARGUMENTS IN CALL")
+                         FI;
+                         FOR i TO n
+                         DO stack (ref OF (STR params[i]));
+                            assign (params[i], arglist[i])
+                         OD;
+                         REF[]REF ITEM locals = locals OF function table[j];
+                         FOR i TO UPB locals
+                         DO stack (ref OF (STR locals[i]));
+                            assign (locals[i], NIL)
+                         OD;
+
+                         interpret (find label (entry name OF function table[j]));
+
+                         # RETURN PROTOCOL #
+                         FOR i FROM UPB locals BY -1 TO 1
+                         DO assign (locals[i], unstack) OD;
+                         FOR i FROM n BY -1 TO 1
+                         DO assign (params[i], unstack) OD;
+                         REF ITEM result = ref OF name;
+                         assign (name ptr, unstack);
+                         (fn success | result | failed := TRUE ; SKIP)
+                    FI
+               FI;
+
+            PROC exec prim fn = (REF ITEM name ptr,
+                                 REF[]REF ITEM arglist) REF ITEM:
+            BEGIN
+                  PROC gen1 = (INT routine) REF ITEM:
+                  BEGIN # CREATE PATTERN COMPONENT WITH STRING ARGUMENT #
+                        REF ITEM arg = convert to str (arglist[1]);
+                        IF arg IS NIL
+                        THEN error ("NULL ARG FOR PATTERN-VALUED PRIMITIVE FUNCTION" )
+                        FI;
+                        make pat comp (routine, arg)
+                  END;
+
+                  PROC gen2 = (INT routine) REF ITEM:
+                  BEGIN # CREATE PATTERN COMPONENT WITH INTEGER ARGUMENT #
+                        REF ITEM arg = convert to int (arglist[1]);
+                        IF INTG arg < 0
+                        THEN error ("NEGATIVE ARG FOR PATTERN-VALUED PRIMITIVE FUNCTION")
+                        FI;
+                        make pat comp (routine, arg)
+                  END;
+
+                  STRING fn = val OF (STR name ptr), INT n = UPB arglist;
+                  IF fn = "LE" AND n = 2
+                  THEN IF INTG convert to int (arglist[1])
+                          <= INTG convert to int (arglist[2])
+                       THEN NIL
+                       ELSE failed := TRUE;
+                            SKIP
+                       FI
+                  ELIF fn = "EQ" AND n = 2
+                  THEN IF INTG convert to int (arglist[1])
+                          = INTG convert to int (arglist[2])
+                       THEN NIL
+                       ELSE failed := TRUE;
+                            SKIP
+                       FI
+                  ELIF fn = "NE" AND n = 2
+                  THEN IF INTG convert to int (arglist[1])
+                          /= INTG convert to int (arglist[2])
+                       THEN NIL
+                       ELSE failed := TRUE;
+                            SKIP
+                       FI
+                  ELIF fn = "IDENT" AND n = 2
+                  THEN IF REF ITEM (arglist[1]) IS arglist[2]
+                       THEN NIL
+                       ELSE failed := TRUE;
+                            SKIP
+                       FI
+                  ELIF fn = "DIFFER" AND n = 2
+                  THEN IF REF ITEM (arglist[1]) ISNT arglist[2]
+                       THEN NIL
+                       ELSE failed := TRUE;
+                            SKIP
+                       FI
+                  ELIF fn = "ANY" AND n = 1 THEN gen1 (many)
+                  ELIF fn = "LEN" AND n = 1 THEN gen2 (mlen)
+                  ELIF fn = "POS" AND n = 1 THEN gen2 (mpos)
+                  ELIF fn = "TAB" AND n = 1 THEN gen2 (mtab)
+                  ELIF fn = "SPAN" AND n = 1 THEN gen1 (mspn)
+                  ELIF fn = "RPOS" AND n = 1 THEN gen2 (mrpos)
+                  ELIF fn = "RTAB" AND n = 1 THEN gen2 (mrtab)
+                  ELIF fn = "BREAK" AND n = 1 THEN gen1 (mbrk)
+                  ELIF fn = "NOTANY" AND n = 1 THEN gen1 (mnty)
+                  ELIF fn = "SIZE" AND n = 1
+                  THEN make int (UPB val OF (STR convert to str (arglist[1])))
+                  ELIF fn = "DEFINE" AND n = 2
+                  THEN IF REF ITEM (arglist[1]) IS NIL
+                       THEN error ("NULL PROTOTYPE") FI;
+                       STRING prototype = val OF (STR convert to str (arglist[1]));
+                       REF ITEM entry = convert to str (arglist[2]);
+                       IF entry IS NIL THEN error ("NULL ENTRY LABEL") FI;
+
+                       PROC check and find = (STRING str) REF ITEM:
+                       BEGIN IF UPB str = 0 THEN error ("ILLEGAL PROTOTYPE") FI;
+                             STRING an = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789.";
+                             IF NOT any (an[:26], str[1])
+                             THEN error ("ILLEGAL PROTOTYPE") FI;
+                             FOR i FROM 2 TO UPB str
+                             DO IF NOT any (an, str[i])
+                                THEN error ("ILLEGAL PROTOTYPE")
+                                FI
+                             OD;
+                             make str (str)
+                       END;
+
+                       PROC breakup = (STRING str) REF[]REF ITEM:
+                       BEGIN #ANALYZE A LIST OF IDENTIFIERS #
+                             [1:arglim]REF ITEM r, INT p := 0, a := 1, b;
+                             WHILE a <= UPB str
+                             DO b := break scan (str[a:], ",");
+                                IF p >= arglim
+                                THEN error ("TOO MANY PARAMETERS OR LOCALS IN PROTOTYPE") FI;
+                                r[p +:= 1] := check and find (str[a:a+b-1]);
+                                a := a + b + 1
+                             OD;
+                             HEAP[1:p]REF ITEM := r[:p]
+                       END;
+
+                       INT lp = UPB prototype;
+                       INT a = break scan (prototype, "(");
+                       IF a >= lp THEN error ("ILLEGAL PROTOTYPE") FI;
+                       REF ITEM name ptr = check and find (prototype[:a]);
+                       INT b = break scan (prototype[a+2:], ")");
+                       IF b >= lp - a - 1 THEN error ("ILLEGAL PROTOTYPE") FI;
+                       REF[]REF ITEM params = breakup (prototype[a+2:a+1+b]);
+                       REF[]REF ITEM locals = breakup (prototype[a+b+3:]);
+
+                       BOOL not found := TRUE;
+                       FOR i TO ftp WHILE not found
+                       DO IF name ptr IS fnname OF function table[i]
+                          THEN not found := FALSE;
+                               function table[i] := (name ptr, entry, params, locals)
+                          FI
+                       OD;
+                       IF not found
+                       THEN IF ftp = ftlim
+                            THEN error ("FUNCTION TABLE OVERFLOW") FI;
+                            function table [ftp +:= 1] := (name ptr, entry, params, locals)
+                       FI;
+                       NIL # RESULT OF DEFINE(...) #
+                  ELSE error ("ILLEGAL FUNCTION CALL");
+                       SKIP
+                  FI
+            END;
+
+            PROC concatenate = (REF ITEM ptr1, ptr2) REF ITEM:
+            BEGIN
+
+                  PROC concat patterns = (PATTERN p1, p2) REF ITEM:
+                  BEGIN INT u1 = UPB p1, u2 = UPB p2;
+                        PATTERN p = HEAP[u1 + u2]COMPONENT;
+                        INT offset = u1 + 1;
+                        FOR i TO u1
+                        DO p[i] := p1[i];
+                           IF subsequent OF p[i] = 0
+                           THEN subsequent OF p[i] := offset FI
+                        OD;
+                        FOR i FROM offset TO u1 + u2
+                        DO p[i] := p2[i - u1];
+                           IF subsequent OF p[i] /= 0
+                           THEN subsequent OF p[i] +:= u1 FI;
+                           IF alternate OF p[i] /= 0
+                           THEN alternate OF p[i] +:= u1 FI
+                        OD;
+                        IF u2 = 1 AND routine OF p[offset] = miv2
+                        THEN extra OF p[offset] := u1 FI;
+                        HEAP ITEM := p
+                  END;
+
+                  IF failed THEN SKIP
+                  ELSE IF ptr1 IS NIL THEN ptr2
+                       ELIF ptr2 IS NIL THEN ptr1
+                       ELSE CASE ptr1
+                            IN (PATTERN p1):
+                                concat patterns (p1, PAT convert to pat (ptr2))
+                            OUSE ptr2
+                            IN (PATTERN p2):
+                                concat patterns (PAT convert to pat (ptr1), p2)
+                            OUT STRING s1 = val OF (STR convert to str (ptr1));
+                                make str (s1 + val OF (STR convert to str (ptr2)))
+                            ESAC
+                       FI
+                  FI
+            END;
+
+            PROC convert to int = (REF ITEM ptr) REF ITEM:
+               IF failed THEN SKIP
+               ELSE IF ptr IS NIL THEN make int (0)
+                    ELSE CASE ptr
+                         IN (INT): ptr,
+                            (PATTERN): (error ("PATTERN VALUE WHERE INTEGER REQUIRED"); SKIP),
+                            (REF STRINGITEM s):
+                               (INT n := 0, d, z := ABS "0";
+                                FOR i TO UPB val OF s
+                                DO d := ABS (val OF s)[i] - z;
+                                   IF d < 0 OR d > 9
+                                   THEN error ("STRING NOT CONVERTIBLE TO INTEGER") FI;
+                                   n := n * 10 + d
+                                OD;
+                                make int (n))
+                         ESAC
+                    FI
+               FI;
+
+            PROC convert to pat = (REF ITEM ptr) REF ITEM:
+               IF failed THEN SKIP
+               ELSE IF ptr IS NIL
+                    THEN make pat comp (mstr, NIL)
+                    ELSE CASE ptr
+                         IN (PATTERN): ptr
+                         OUT make pat comp (mstr, convert to str (ptr))
+                         ESAC
+                    FI
+               FI;
+
+            PROC convert to str = (REF ITEM ptr) REF ITEM:
+               IF failed THEN SKIP
+               ELSE IF ptr IS NIL THEN ptr
+                    ELSE CASE ptr
+                         IN (REF STRINGITEM): ptr,
+                            (PATTERN): (error ("PATTERN VALUE WHERE STRING REQUIRED"); SKIP),
+                            (INT i): make str (itoa (i))
+                         ESAC
+                    FI
+               FI;
+
+            PROC make int = (INT val) REF ITEM:
+               IF failed THEN SKIP
+               ELSE HEAP ITEM := val
+               FI;
+
+            PROC make pat comp = (INT routine, REF ITEM arg) REF ITEM:
+               IF failed THEN SKIP
+               ELSE HEAP ITEM := HEAP[1:1]COMPONENT := COMPONENT (routine, 0, 0, SKIP, arg)
+               FI;
+
+            PROC make str = (STRING val) REF ITEM:
+               IF failed THEN SKIP
+               ELIF UPB val = 0 THEN NIL
+               ELSE INT i := 0, BOOL nf := TRUE;
+                    WHILE IF (i +:= 1) <= nin
+                          THEN nf := val /= val OF (STR spool [i])
+                          ELSE FALSE
+                          FI
+                    DO SKIP OD;
+                    IF nf
+                    THEN IF nin = spoolsize THEN error ("TOO MANY STRINGS") FI;
+                         spool[nin +:= 1] := HEAP ITEM := HEAP STRINGITEM := (val, NIL)
+                    FI;
+                    spool[i]
+               FI;
+
+            PROC break scan = (STRING str, arg) INT:
+            BEGIN # RESULT = UPB STR IF NO BREAK CHAR, LESS OTHERWISE #
+                  INT j := 0;
+                  FOR i TO UPB str WHILE NOT any (arg, str[i])
+                  DO j := i OD;
+                  j
+            END;
+
+            PROC any = (STRING str, CHAR ch) BOOL:
+            BEGIN BOOL nf;
+                  FOR i TO UPB str WHILE nf := ch /= str[i] DO SKIP OD;
+                  NOT nf
+            END;
+
+            interpret ((REF ITEM (prog entry) IS NIL | 1 | find label (prog entry)))
+      END # INTERPRETATION PHASE #
+END

@@ -1,0 +1,5 @@
+proc hello = (string name) string:
+begin string msg := "Hello " + name;
+      msg
+end;
+

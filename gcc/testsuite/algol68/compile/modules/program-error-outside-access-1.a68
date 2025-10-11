@@ -1,0 +1,6 @@
+{ dg-modules "module1" }
+
+begin int x = access Module1 ( beast_number ),
+          y = beast_number; { dg-error "declared" }
+      skip
+end

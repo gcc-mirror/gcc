@@ -1,0 +1,8 @@
+{ dg-error "unrecognized pragmat" } pr invalid Foo in "module" pr
+
+begin prio // = 8;
+      op (int,int)int // = lala;
+      proc lala = (int a, b) int: a + b;
+      proc void jeje = skip;
+      skip
+end

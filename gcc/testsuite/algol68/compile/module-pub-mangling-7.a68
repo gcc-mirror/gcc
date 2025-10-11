@@ -1,0 +1,19 @@
+{ dg-options "-O0" }
+
+{ Operator identity declarations.  }
+
+module Foo =
+def prio // = 8;
+    pub op(int,int)int // = lala;
+    { dg-final { scan-assembler "FOO_s_s_" } }
+    proc lala = (int a, b) int: a + b;
+    prio JORL = 8, JURL = 9;
+    pub op(int,int)int JORL = lala;
+    { dg-final { scan-assembler "FOO_JORL" } }
+    op(int,int)int JURL = (int a, b) int: a - b;
+    { dg-final { scan-assembler "FOO_JORL" } }
+    skip
+fed
+
+{ dg-final { scan-assembler "FOO__prelude" } }
+{ dg-final { scan-assembler "FOO__postlude" } }

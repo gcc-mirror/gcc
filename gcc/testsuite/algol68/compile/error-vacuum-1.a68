@@ -1,0 +1,2 @@
+begin { dg-error "" }
+end

@@ -1,0 +1,21 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyInt = int;
+    pub mode MyLongInt = long int;
+    pub mode MyLongLongInt = long long int;
+    pub mode MyShortInt = short int;
+    pub mode MyShortShortInt = short short int;
+    skip
+fed
+
+{ GA68_MODE_INT = 2UB }
+
+{ dg-final { scan-assembler-times "2\[\t ]+\[^0-9\]+int" 5 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x2\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x1\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0xff\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0xfe\[\t \]+\[^\n\]*sizety" 1 } }

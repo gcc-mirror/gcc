@@ -1,0 +1,4 @@
+module Module_4 =
+def access Module_3 (foo (10, "foo"));
+    skip
+fed

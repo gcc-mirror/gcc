@@ -1,0 +1,6 @@
+{ The string in nested comment is in one logical line.  }
+begin
+      { puts ("{'n\
+"); { this prints foo }}
+      skip
+end

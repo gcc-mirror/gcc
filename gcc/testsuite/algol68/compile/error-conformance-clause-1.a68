@@ -1,0 +1,8 @@
+{ This is an invalid program.  }
+begin case
+           if true then "foo" else 10 fi { dg-error "not a united mode" }
+      in (string): skip,
+         (int): skip
+      esac
+end
+   

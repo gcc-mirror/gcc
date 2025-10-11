@@ -1,0 +1,8 @@
+{ dg-modules "module3" }
+
+access Module_3
+begin foo (10, "foo");
+      Jorl x = (10, "foo");
+      Jurl y = 3.14;
+      skip
+end

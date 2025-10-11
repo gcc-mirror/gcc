@@ -1,0 +1,5 @@
+# { dg-options {-Wvoiding -fstropping=upper} }  #
+BEGIN PROC sum = (INT a, INT b) INT:
+         ( a + b );
+      sum (10, 20) # { dg-warning "will be voided" } #
+END

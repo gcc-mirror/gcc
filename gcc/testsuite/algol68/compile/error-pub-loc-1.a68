@@ -1,0 +1,10 @@
+{ Publicized varifables cannot go on the stack, for obvious reasons.  }
+
+module Foo =
+def
+    pub string xx;
+    pub heap string yy;
+    pub loc string zz; { dg-error "" }
+    loc string vv;
+    skip
+fed

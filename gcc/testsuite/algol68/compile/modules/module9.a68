@@ -1,0 +1,6 @@
+module Module_9 =
+def
+    pub mode Foo = struct (flex[1:0]Event events);
+    pub mode Event = int;
+    skip
+fed

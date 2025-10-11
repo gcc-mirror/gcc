@@ -1,0 +1,5 @@
+{ dg-options {-fstropping=supper} }
+
+begin goto done;
+done: skip
+end

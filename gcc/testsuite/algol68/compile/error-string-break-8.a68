@@ -1,0 +1,4 @@
+begin string s =
+         "'(Uf09f94a5)"; { dg-error "Unicode" }
+      skip
+end

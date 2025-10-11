@@ -1,0 +1,7 @@
+{ dg-options "-fstropping=supper" }
+
+{ mode_ should not be recognized as a symbol.  }
+
+begin int mode_ = 10;
+      skip
+end

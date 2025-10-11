@@ -1,0 +1,10 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN INT d := 0;
+      INT y := 10;
+      LONG REAL x;
+      2
+        + (d > 0 | x | # { dg-error "" }  #
+           y
+          )
+END

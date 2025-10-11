@@ -1,0 +1,5 @@
+module Module_8 =
+def
+    pub proc lala = ([]struct (string n, v) arg) void: skip;
+    skip
+fed

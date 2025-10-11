@@ -1,0 +1,11 @@
+{ Make sure char denotations with string breaks work.  }
+begin prio % = 9;
+      op % = (char a) char: a;
+      assert (ABS %"'n" = 10);
+      assert (ABS %"'f" = 12);
+      assert (ABS %"'t" = 9);
+      assert (ABS %"'r" = 13);
+      assert (%"'(  u0061)" = "a");
+      assert (%"'(U00000061  )" = "a");
+      assert (%"'(u1234)" = replacement_char)
+end

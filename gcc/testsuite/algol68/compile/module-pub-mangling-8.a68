@@ -1,0 +1,18 @@
+{ dg-options "-O0" }
+
+{ Symbols that should _not_ include the module name.  }
+
+module Foo =
+def begin string foo = "foo'n"; { dg-final { scan-assembler-not "FOO_foo" } }
+          proc printfoo = void: puts (foo); { dg-final { scan-assembler-not "FOO_printfoo" } }
+          printfoo
+    end;
+    skip
+postlude
+    int lala;
+    proc incrlala = void: lala +:= 1;  { dg-final { scan-assembler-not "FOO_incrlala" } } 
+    incrlala
+fed
+
+{ dg-final { scan-assembler "FOO__prelude" } }
+{ dg-final { scan-assembler "FOO__postlude" } }

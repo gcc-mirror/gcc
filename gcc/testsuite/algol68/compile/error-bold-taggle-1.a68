@@ -1,0 +1,6 @@
+# { dg-options {-std=algol68 -fstropping=upper} }  #
+
+BEGIN MODE FOO_BAR = INT; # { dg-error "unworthy" }  #
+      FOO_BAR foo_bar = 10;
+      SKIP
+END

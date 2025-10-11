@@ -1,0 +1,15 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyBool = bool;
+    pub mode MyVoid = void;
+    skip
+fed
+
+{ GA68_MODE_BOOL = 7UB
+  GA68_MODE_VOID = 1UB }
+
+{ dg-final { scan-assembler-times "7\[\t ]+\[^0-9\]+bool" 1 } }
+{ dg-final { scan-assembler-times "1\[\t ]+\[^0-9\]+void" 1 } }

@@ -1,0 +1,15 @@
+{ dg-options "-O0" }
+
+module Foo = def pub struct (int i, real r) foo;{ dg-final { scan-assembler "FOO_foo" } }
+                 struct (int i, real r) bar;    { dg-final { scan-assembler "FOO_bar" } }
+                 skip
+             fed,
+       Bar = def pub struct (int i, real r) foo;{ dg-final { scan-assembler "BAR_foo" } }
+                 struct (int i, real r) bar;    { dg-final { scan-assembler "BAR_bar" } }
+                 skip
+             fed
+
+{ dg-final { scan-assembler "FOO__prelude" } }
+{ dg-final { scan-assembler "FOO__postlude" } }
+{ dg-final { scan-assembler "BAR__prelude" } }
+{ dg-final { scan-assembler "BAR__postlude" } }

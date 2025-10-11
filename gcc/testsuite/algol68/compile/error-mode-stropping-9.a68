@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN LONG INT j;
+      j := "joo" { dg-error "CHAR.*LONG INT" }
+END

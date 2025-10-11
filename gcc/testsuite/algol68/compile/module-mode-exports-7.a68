@@ -1,0 +1,13 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyName = ref int;
+    skip
+fed
+
+{ GA68_MODE_NAME = 12UB }
+
+{ dg-final { scan-assembler-times "0xc\[\t ]+\[^0-9\]+ref" 1 } }
+{ dg-final { scan-assembler-times "0x2\[\t ]+\[^0-9\]+int" 1 } }

@@ -1,0 +1,16 @@
+module Foo = def pub int idpublic = 10;
+                 int idprivate = 20;
+                 pub int varpublic := 100;
+                 real varprivate := 3.14;
+                 pub proc lala = (int a, b) int: a + b;
+                 pub proc lele := (int a, b) int: a - b;
+                 skip
+             fed,
+       Bar = def pub int idpublic = 30;
+                 int idprivate = 40;
+                 pub int varpublic := 100;
+                 real varprivate := 3.14;
+                 pub proc lala = (int a, b) int: a + b;
+                 pub proc lele := (int a, b) int: a - b;
+                 skip
+             fed

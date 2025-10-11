@@ -1,0 +1,12 @@
+# { dg-options {-Wscope -fstropping=upper} }  #
+# N,M below represent pairs of insc, outsc  #
+BEGIN (INT x;
+       REF INT xx;
+       (REF INT yy;
+        INT y;
+        xx := yy; # 0,0 := 1,0. Dynamic check.  #
+        yy := y;  # 1,1 := 1,1. OK  #
+        xx := y   # 0,0 := 1,1. { dg-warning "scope violation" } #
+       )
+      )
+END

@@ -1,0 +1,5 @@
+{ dg-options {-fstropping=supper} }
+
+begin int foo_bar = 10;
+      skip
+end

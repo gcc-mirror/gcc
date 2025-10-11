@@ -1,0 +1,4 @@
+{ Comment delimiters within strings get ignored.  }
+begin { puts { ("{""'n"); } }
+      skip
+end

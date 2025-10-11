@@ -1,0 +1,16 @@
+module Foo =
+def pub mode JORL = int, JURL = union (void,int,real);
+    pub proc plus = (int a, b) int: a + b;
+    pub proc vplus := (int a, b) int: a + b;
+    pub proc lvplus := (int a, b) int: a + b;
+    pub heap proc hvplus := (int a, b) int: a + b;
+    pub proc(int,int)int vplus2 = vplus;
+    pub proc(int,int)int lvplus2 := lvplus;
+    pub heap proc(int,int)int hvplus2 := hvplus;
+    pub int i, x, y;
+    pub int k = 10;
+    pub int j := 20;
+    pub prio // = 8;
+    pub op // = (int a, b) int: a % b;
+    skip
+fed

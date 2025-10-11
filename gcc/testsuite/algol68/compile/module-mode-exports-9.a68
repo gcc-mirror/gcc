@@ -1,0 +1,12 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyProc = proc void;
+    skip
+fed
+
+{ GA68_MODE_CMPL = 8UB }
+
+{ dg-final { scan-assembler-times "0xd\[\t ]+\[^0-9\]+proc" 1 } }

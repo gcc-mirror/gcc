@@ -1,0 +1,9 @@
+{ dg-options "-Whidden-declarations=prelude" }
+begin real b;
+      begin int getchar = 10; { dg-warning "hides" }
+            int b;
+            op UPB = (int i, union (int,string) v) int: { dg-warning "hides" }
+               (v | (string s): UPB s | 0);
+            UPB "lala"
+      end
+end

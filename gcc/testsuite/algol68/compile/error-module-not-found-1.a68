@@ -1,0 +1,4 @@
+access
+       Foo { dg-error "cannot find module" }
+begin skip end
+      

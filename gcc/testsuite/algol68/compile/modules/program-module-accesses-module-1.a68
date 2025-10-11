@@ -1,0 +1,5 @@
+{ dg-modules "module3 module4" }
+{ This test accesses a Module4 that itself accesses a Module3.  }
+
+access Module_4 (skip)
+      

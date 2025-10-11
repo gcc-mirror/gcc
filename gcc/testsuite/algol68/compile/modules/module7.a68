@@ -1,0 +1,5 @@
+module Module7 =
+access Module5, Module6
+def pub JSON_Val val = getval;
+    skip
+fed

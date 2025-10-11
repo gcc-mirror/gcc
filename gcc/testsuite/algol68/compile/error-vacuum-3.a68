@@ -1,0 +1,3 @@
+begin struct(int i, real r) foo = (); { dg-error "" }
+      skip
+end

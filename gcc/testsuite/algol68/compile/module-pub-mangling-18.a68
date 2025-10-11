@@ -1,0 +1,10 @@
+{ dg-options "-O0" }
+
+{ Mangling of monads, nomads and :
+  Unfortunately we cannot do all of them in a single test.  }
+
+module Foo =
+def prio > = 9;
+    op > = (int a, b) int: skip; { dg-final { scan-assembler "FOO_g_\[0-9\]+" } }
+    skip
+fed

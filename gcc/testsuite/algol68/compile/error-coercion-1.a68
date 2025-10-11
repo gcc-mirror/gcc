@@ -1,0 +1,5 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN INT a;
+      a := "foo" # { dg-error "cannot be coerced" } #
+END

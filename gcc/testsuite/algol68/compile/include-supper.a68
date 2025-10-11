@@ -1,0 +1,16 @@
+{ dg-options "-I$srcdir/algol68/compile/a68includes" }
+{ dg-additional-files "$srcdir/algol68/compile/a68includes/hello-supper.a68 $srcdir/algol68/compile/a68includes/goodbye-supper.a68" }
+
+begin string name := "Algol68 with supper!";
+      { Both files are in `./a68includes'.
+        The first one will be included because we uwed `-I.
+        The second one will be included because of the relative path. }
+      pr include "hello-supper.a68" pr
+      pr include "a68includes/goodbye-supper.a68" pr
+
+      string bye := goodbye(name);
+      string hi := hello(name);
+
+      puts(hi + "\n");
+      puts(bye  + "\n")
+end

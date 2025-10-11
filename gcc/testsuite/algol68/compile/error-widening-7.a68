@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN
+   LONG REAL d := 3.14; # { dg-error "coerced" }  #
+   d
+END

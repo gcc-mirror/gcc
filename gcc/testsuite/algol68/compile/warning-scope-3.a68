@@ -1,0 +1,3 @@
+# { dg-options {-Wscope -fstropping=upper} }  #
+(REF INT xx;
+ xx := (INT x; x := 3)) # { dg-warning "scope violation" }  #

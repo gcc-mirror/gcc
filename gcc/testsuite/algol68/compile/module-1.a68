@@ -1,0 +1,69 @@
+module Argp =
+def mode ArgOpt = struct (char name, string long_name,
+                          bool arg_required, proc(string)bool handler);
+
+    proc argp = (int p, [][]ArgOpt opts,
+                 proc(int,string)bool no_opt_handler,
+                 proc(string)void error_handler) void:
+    begin
+          proc getopt = (string prefix, string arg) ArgOpt:
+          begin ArgOpt res, bool found := false;
+                for i to UPB opts while NOT found
+                do for j to UPB opts[i] while NOT found
+                   do if arg = long_name of opts[i][j]
+                         OR (arg /= " " AND arg = name of opts[i][j])
+                      then res := opts[i][j]; found := true
+                      fi
+                   od
+                od;
+                (NOT found | error_handler ("unknown option " + prefix + arg));
+                res
+          end;
+
+          bool found_dash_dash := false,
+               skip_next_opt := false,
+               continue := true;
+
+          for i from p to argc while continue
+          do string arg = argv (i);
+             if skip_next_opt
+             then skip_next_opt := false
+             elif arg = "--" AND NOT found_dash_dash
+             then found_dash_dash := true
+             elif found_dash_dash OR (UPB arg >= 1 andth arg[1] /= "-")
+             then continue := no_opt_handler (i + 1, arg)
+             elif UPB arg > 1 andth arg[2] = "-"
+             then { Long option.  It may have an argument.  }
+                  int eqidx = char_in_string (arg, "=");
+                  string optname = (eqidx > 0 | arg[3:eqidx - 1] | arg[3:]),
+                  optarg = (eqidx > 0 AND UPB arg >= (eqidx + 1) | arg[eqidx + 1:]);
+                  ArgOpt opt = getopt ("--", optname);
+
+                  if (arg_required of opt) AND optarg = ""
+                  then error_handler ("option --" + arg + " requires an argument") fi;
+                  continue := (handler of opt) (optarg)
+             else { This is one or more short options.  }
+                  for j to UPB arg[2:]
+                  do ArgOpt opt = getopt ("-", arg[j + 1]);
+                     if arg_required of opt
+                     then if i = argc orel (ELEMS argv (i + 1) > 1 andth argv (i + 1)[1] = "-")
+                          then error_handler ("option -" + arg[2+j] + " requires an argument")
+                          fi;
+                          (handler of opt) (argv (i + 1));
+                          skip_next_opt := true
+                     else continue := (handler of opt) ("")
+                     fi
+                  od
+             fi
+          od
+    end;
+
+    proc char_in_string = (string s, char c) int:
+    begin int res := 0, bool found := false;
+          for i to UPB s while NOT found
+          do (s[i] = c | res := i; found := true) od;
+          res
+    end;
+
+    skip
+fed

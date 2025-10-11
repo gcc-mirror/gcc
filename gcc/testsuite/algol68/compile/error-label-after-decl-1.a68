@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN GOTO end;
+      ASSERT(FALSE);
+end:  0;
+      INT i = 10; # { dg-error "declaration cannot follow" }  #
+      i
+END

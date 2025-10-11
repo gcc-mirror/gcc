@@ -1,0 +1,7 @@
+begin mode Word = union (int, struct (ref Word w)),
+           Value = union (void,Word),
+           Stack = struct (ref Stack prev, Value val);
+
+      struct (Word a) qs;  { type_2 has no size! }
+      skip
+end

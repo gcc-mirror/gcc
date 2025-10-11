@@ -1,0 +1,15 @@
+{ This test makes sure mode checks are carried
+  over the inside of module texts. }
+module Foo = def
+                skip
+             postlude
+                int i = "foo"; { dg-error "coerced" }
+                skip
+             fed,
+       Bar = def
+                int i = 3.14; { dg-error "coerced" }
+                skip
+             postlude
+                skip
+             fed,
+       Baz = def skip fed

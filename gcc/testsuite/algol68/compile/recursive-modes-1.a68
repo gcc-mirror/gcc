@@ -1,0 +1,33 @@
+# { dg-options "-fstropping=upper" }  #
+
+# This program triggered a bug related to incomplete modes.  #
+BEGIN MODE REC_MSET = STRUCT (REF REC_MSET_ELM head, tail,
+                              INT num elems,
+                              PROC(REC_MSET_DATA)BOOL gate),
+           REC_MSET_ELM = STRUCT (REC_MSET_DATA data, BOOL mark, REF REC_MSET_ELM next),
+           REC_MSET_DATA = UNION (REC_RSET,REC_RECORD,REC_FIELD,REC_CMNT),
+           REC_RSET = STRUCT (REC_MSET mset,
+                              INT min size, max size,
+                              REF REC_RECORD descriptor),
+           REC_RECORD = STRUCT (REC_LOC loc, REC_MSET mset, INT foo),
+           REC_CMNT = STRUCT (REC_LOC loc, STRING content),
+           REC_FIELD = STRUCT (REC_LOC loc, STRING name, value),
+           REC_LOC = STRUCT (STRING source, INT line, char);
+
+      PROC rec loc unknown = REC_LOC:
+         ("unknown", 0, 0);
+      PROC rec record gate = (REC_MSET_DATA d) BOOL:
+         (d | (REC_FIELD): TRUE, (REC_CMNT): TRUE | FALSE);
+      REF REC_MSET_ELM rec no mset elm = NIL;
+      
+      PROC rec mset new = (PROC(REC_MSET_DATA)BOOL gate) REC_MSET:
+         (HEAP REC_MSET := (rec no mset elm, rec no mset elm,
+                            0, gate));
+
+      REF REC_RECORD rec no record = NIL;
+
+      PROC rec record new = REF REC_RECORD:
+         HEAP REC_RECORD := (rec loc unknown, rec mset new (rec record gate), 0);
+      
+      SKIP
+END

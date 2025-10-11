@@ -1,0 +1,9 @@
+begin pub mode Jorl = void; { dg-error "" }
+      pub proc lala = void: skip; { dg-error "" }
+      pub proc lele := void: skip; { dg-error "" }
+      begin pub prio + = 4; { dg-error "" }
+            skip
+      end;
+      pub op // = (int a, b) int: a % b; { dg-error "" }
+      skip
+end

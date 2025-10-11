@@ -1,0 +1,6 @@
+module Module_3 =
+def pub proc foo = (int i, string s) void: skip;
+    pub mode Jorl = struct (int i, string s);
+    pub mode Jurl = union (int, string, real);
+    skip
+fed

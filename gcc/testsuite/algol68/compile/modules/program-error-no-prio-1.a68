@@ -1,0 +1,6 @@
+{ dg-modules "module2" }
+
+access Module_2
+begin assert (2 // 3 = 5); { dg-error "no priority" }
+      skip
+end

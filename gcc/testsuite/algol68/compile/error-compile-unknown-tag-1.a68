@@ -1,0 +1,8 @@
+module Foo = def pub int idpublic = 10;
+                 int idprivate = 20;
+                 skip
+             fed,
+       Bar = def pub int idpublic = 30;
+                 int idprivate = 40;
+                 xxx { dg-error "" }
+             fed

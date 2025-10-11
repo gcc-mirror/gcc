@@ -1,0 +1,15 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN [1:10]INT i,
+      [1:10]STRUCT(REF[]INT i, BOOL j) k,
+      [1:10]STRUCT([1:10]INT i, BOOL j) l,
+      [1:10]REF[]INT p;
+      # formal, so no bounds allowed:  #
+      [1:10]PROC[1:10]INT q, # { dg-error "formal bounds expected" }  #
+      STRUCT(REF[1:10]INT i, BOOLj) m, # { dg-error "virtual bounds expected" }  #
+      [1:10]REF[1:10]INT mn, # { dg-error "virtual bounds expected" }  #
+      PROC([1:10]INT)VOID pp, # { dg-error "formal bounds expected" }  #
+      UNION([1:10] INT, BOOL) nm, # { dg-error "formal bounds expected" }  #
+      [1:10]INT u = (1); # { dg-error "formal bounds expected" }  #
+      SKIP
+END

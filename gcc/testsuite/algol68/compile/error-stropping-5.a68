@@ -1,0 +1,3 @@
+begin int j;
+      j := "joo" { dg-error "char.*int" }
+end

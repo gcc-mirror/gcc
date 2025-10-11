@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+
+# Underscores are unworthy characters if they are not trailing a
+  taggle or, in UPPER stropping, a bold word..  #
+BEGIN MODE INVALID_BOLD_WORD__; # { dg-error "unworthy character" } #
+      SKIP
+END

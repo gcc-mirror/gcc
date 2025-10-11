@@ -1,0 +1,5 @@
+module Module6 =
+  access Module5
+def pub proc getval = JSON_VAl: skip;
+    skip
+fed

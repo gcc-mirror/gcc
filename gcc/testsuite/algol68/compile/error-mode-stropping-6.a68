@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN PROC UNION (INT,REAL) j;
+      j := "joo" { dg-error "CHAR.*PROC UNION \\( *REAL *, *INT *\\)" }
+END

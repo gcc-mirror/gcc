@@ -1,0 +1,3 @@
+begin flex[1:0]int j;
+      j := "joo" { dg-error "char.*flex.*int" }
+end

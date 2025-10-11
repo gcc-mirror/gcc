@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+
+# Contracting mixed collateral variable and constant declarations is
+  not allowed.  #
+BEGIN PROC x = VOID: SKIP,
+      y := VOID: SKIP; # { dg-error "mixed" } #
+      x
+END

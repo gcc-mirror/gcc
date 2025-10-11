@@ -1,0 +1,17 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyReal = real;
+    pub mode MyLongReal = long real;
+    pub mode MyLongLongReal = long long real;
+    skip
+fed
+
+{ GA68_MODE_REAL = 3UB }
+
+{ dg-final { scan-assembler-times "\[\t \]+0x3\[\t \]+\[^\n\]*real" 3 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x2\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x1\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0\[\t \]+\[^\n\]*sizety" 1 } }

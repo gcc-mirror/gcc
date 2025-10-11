@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+# PR UPPER PR #
+
+PROC goodbye = (STRING name) STRING:
+BEGIN
+    STRING msg := "Goodbye " + name;
+    msg
+END;

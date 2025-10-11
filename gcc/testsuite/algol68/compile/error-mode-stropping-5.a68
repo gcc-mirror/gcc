@@ -1,0 +1,3 @@
+begin proc union (int,real) j;
+      j := "joo" { dg-error "char.*proc union \\( *real *, *int *\\)" }
+end

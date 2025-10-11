@@ -1,0 +1,12 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyChar = char;
+    skip
+fed
+
+{ GA68_MODE_CHAR = 6UB }
+
+{ dg-final { scan-assembler-times "\[\t \]+0x6\[\t \]+\[^\n\]*char" 1 } }

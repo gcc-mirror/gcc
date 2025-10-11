@@ -1,0 +1,21 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyBits = bits;
+    pub mode MyLongBits = long bits;
+    pub mode MyLongLongBits = long long bits;
+    pub mode MyShortBits = short bits;
+    pub mode MyShortShortBits = short short bits;
+    skip
+fed
+
+{ GA68_MODE_BITS = 4UB }
+
+{ dg-final { scan-assembler-times "4\[\t ]+\[^0-9\]+bits" 5 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x2\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x1\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0xff\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0xfe\[\t \]+\[^\n\]*sizety" 1 } }

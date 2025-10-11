@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+
+# Union modes shall not contain modes which are firmly related, i.e.
+  it shall not be possible to coerce from one mode to another in a
+  firm context. #
+BEGIN UNION(INT, REF INT) incestuous; # { dg-error "has firmly related components" } #
+      incestuous
+END

@@ -1,0 +1,8 @@
+{ dg-options {-fstropping=supper} }
+begin mode JSON_Val = union (int,ref JSON_Obj),
+           JSON_Obj = struct (int je),
+
+      proc json_new_obj = JSON_Val:
+         (JSON_Obj o; o);
+      skip
+end

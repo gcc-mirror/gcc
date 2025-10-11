@@ -1,0 +1,6 @@
+# { dg-options {-std=gnu68 -fstropping=upper} }  #
+
+BEGIN MODE FOO_BAR = INT;
+      FOO_BAR foo_bar = 10;
+      SKIP
+END

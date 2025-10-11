@@ -1,0 +1,17 @@
+{ dg-options "-dA" }
+
+{ Test for mode table in module definition exports. }
+
+module Foo =
+def pub mode MyCompl = compl;
+    pub mode MyLongCompl = long compl;
+    pub mode MyLongLongCompl = long long compl;
+    skip
+fed
+
+{ GA68_MODE_CMPL = 8UB }
+
+{ dg-final { scan-assembler-times "0x8\[\t ]+\[^0-9\]+compl" 3 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x2\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0x1\[\t \]+\[^\n\]*sizety" 1 } }
+{ dg-final { scan-assembler-times "\[\t \]+0\[\t \]+\[^\n\]*sizety" 1 } }

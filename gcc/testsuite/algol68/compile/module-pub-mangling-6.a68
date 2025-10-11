@@ -1,0 +1,21 @@
+{ dg-options "-O0" }
+
+{ Operator brief identity declarations.  }
+
+module Foo = def pub op + = (int a, b) int: a + b;
+                 { dg-final { scan-assembler "FOO_u_" } }
+                 op - = (int a, b) int: a - b;
+                 { dg-final { scan-assembler "FOO_m_" } }
+                 skip
+             fed,
+       Bar = def pub op + = (int a, b) int: a + b;
+                 { dg-final { scan-assembler "BAR_u_" } }
+                 op - = (int a, b) int: a - b;
+                 { dg-final { scan-assembler "BAR_m_" } }
+                 skip
+             fed
+
+{ dg-final { scan-assembler "FOO__prelude" } }
+{ dg-final { scan-assembler "FOO__postlude" } }
+{ dg-final { scan-assembler "BAR__prelude" } }
+{ dg-final { scan-assembler "BAR__postlude" } }

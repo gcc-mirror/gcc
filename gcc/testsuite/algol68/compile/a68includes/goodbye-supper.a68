@@ -1,0 +1,4 @@
+proc goodbye = (string name) string:
+begin string msg := "Goodbye " + name;
+      msg
+end;

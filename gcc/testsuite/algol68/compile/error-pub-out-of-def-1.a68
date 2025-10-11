@@ -1,0 +1,13 @@
+module Foo =
+def pub mode JORL = int;
+    pub proc plus = (int a, b) int: a + b;
+    pub proc vplus := (int a, b) int: a + b;
+    pub loc proc lvplus := (int a, b) int: a + b;
+    pub heap proc hvplus := (int a, b) int: a + b;
+    pub prio // = 8;
+    pub op // = (int a, b) int: a % b;
+    proc invalid = void:
+       (pub mode JI = void;  { dg-error "" }
+        skip);
+    skip
+fed

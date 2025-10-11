@@ -1,0 +1,8 @@
+# { dg-options {-Wscope -fstropping=upper} }  #
+BEGIN PROC increase = (REF INT i) REF INT:
+      BEGIN
+         INT j := i;
+         j # { dg-warning "scope violation" } #
+      END;
+      increase (LOC INT)
+END

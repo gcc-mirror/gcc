@@ -1,0 +1,7 @@
+# { dg-options {-fstropping=upper} }  #
+# pr UPPER pr  #
+BEGIN NOTE This is a
+           NOTE nestable ETON comment in bold style.
+      ETON
+      SKIP
+END

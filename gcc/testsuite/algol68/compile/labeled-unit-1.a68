@@ -1,0 +1,7 @@
+# { dg-options "-fstropping=upper" }  #
+
+# This tests that the mode of the value yielded by a labeled unit is
+  the mode of the unit.  #
+BEGIN 10;
+jorl: 20
+END

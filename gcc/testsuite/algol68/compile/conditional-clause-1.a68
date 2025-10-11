@@ -1,0 +1,9 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN INT i := 26;
+      IF INT ii = i * 2; ii > 50 THEN
+         ii
+      ELIF i = 10 THEN
+         100
+      FI
+END

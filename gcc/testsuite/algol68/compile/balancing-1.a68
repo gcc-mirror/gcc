@@ -1,0 +1,7 @@
+mode Word = union (void,real),
+     Rules = union (void,string);
+
+op LEN = (Word w) int: skip,
+LEN = (Rules r) int: skip;
+
+skip

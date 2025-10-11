@@ -1,0 +1,7 @@
+module Foo =
+def pub ref int xx = loc int := 777; { dg-warning "" }
+    pub ref int yy;
+    pub ref int zz = heap int := 888;
+    ref int vv = loc int := 999;
+    skip
+fed

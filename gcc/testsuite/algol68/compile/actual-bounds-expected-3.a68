@@ -1,0 +1,6 @@
+# { dg-options "-fstropping=upper" }  #
+
+BEGIN LOC[]INT a := (1,2,3), # { dg-error "actual bounds expected" }  #
+               b := (4);
+      SKIP
+END

@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN STRUCT (INT i, REAL r) j;
+      j := "joo" # { dg-error "CHAR.*STRUCT \\(INT i, REAL r\\)" } #
+END

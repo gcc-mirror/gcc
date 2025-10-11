@@ -1,0 +1,9 @@
+{ dg-options "-Whidden-declarations=none" }
+begin real b;
+      begin int getchar = 10;
+            int b;
+            op UPB = (int i, union (int,string) v) int:
+               (v | (string s): UPB s | 0);
+            UPB "lala"
+      end
+end

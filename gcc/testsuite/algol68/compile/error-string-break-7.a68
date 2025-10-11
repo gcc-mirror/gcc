@@ -1,0 +1,2 @@
+begin puts ("'") # { dg-error "" }  #
+end

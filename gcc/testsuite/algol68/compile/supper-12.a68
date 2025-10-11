@@ -1,0 +1,6 @@
+{ dg-options {-fstropping=supper} }
+
+begin for i while i < 10
+      do puts ("lala\n")
+      od
+end

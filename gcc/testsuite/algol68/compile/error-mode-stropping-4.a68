@@ -1,0 +1,4 @@
+# { dg-options "-fstropping=upper" }  #
+BEGIN UNION (INT,REAL) j;
+      j := "joo" { dg-error "CHAR.*UNION \\( *REAL *, *INT *\\)" }
+END

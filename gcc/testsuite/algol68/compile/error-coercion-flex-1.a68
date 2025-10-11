@@ -1,0 +1,8 @@
+# { dg-options "-fstropping=upper" }  #
+
+# Coercing from REF FLEX[]REAL to REF[]REAL is not allowed, since
+  flexibility shall match #
+BEGIN FLEX[1:0] REAL rowvar := SKIP;
+      REF [] REAL xlm = rowvar; # { dg-error "FLEX.*cannot be coerced" }  #
+      SKIP
+END
