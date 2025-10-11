@@ -1,0 +1,130 @@
+This is the GNU Algol 68 compiler.
+
+This compiler implements the Algol 68 programming language
+(https://www.algol68-lang.org) as defined in the Revised Report, along
+with several GNU extensions to the language which are oriented to
+enhance its application in systems programming and to achieve a good
+integration in POSIX systems.
+
+The parser component used in this front-end has been adapted from
+Algol 68 Genie, an Algol 68 interpreter written by Marcel van der
+Veer.  It is worth noting that this parser is not your typical garden
+variety parser, as it is capable of effectively parsing the two-level
+grammar of Algol 68, which is no small task.  Parsing Algol 68 is
+notoriously difficult, and without Marcel's careful work of many years
+this front-end would most probably not exist.  It is also a beautiful
+implementation that is a delight to both read and work with.
+
+The syntax tree built by the parser is lowered into a GENERIC tree by
+a lowering pass, which then invokes the gimplifier and hands the
+resulting gimple IR over to the rest of the compilation, down the
+rabbit hole all the way to optimized assembly code.
+
+The compiler driver is called `ga68'.
+The compiler proper is called `a681'.
+
+Programs built by this compiler make use of the libga68 run-time
+library.
+
+Building
+========
+
+Configure and build GCC with:
+
+  $ mkdir build-algol68
+  $ cd build-algol68
+  $ ../configure --enable-languages=algol68
+  $ make
+  $ make install
+
+Alternatively you can configure and build a non-bootstrapped compiler,
+which is much faster to build.  But note that in this case you better
+pass some flags so the compiler gets built optimized, or the resulting
+compiler will be rather slow:
+
+  $ mkdir build-algol68
+  $ cd build-algol68
+  $ ../configure --enable-languages=algol68 BOOT_CFLAGS="-O2 -g" \
+      BOOT_CXXFLAGS="-O2 -g" \
+      STAGE1_CFLAGS="-O2 -g" \
+      STAGE1_CXXFLAGS="-O2 -g"
+  $ make
+  $ make install
+
+Debugging
+=========
+
+A few front-end specific options useful for debugging are:
+
+  '-fa68-dump-ast'
+  Emits a textual representation of the parse tree as produced by the parser.
+
+  '-fa68-dump-modes'
+  Emits a list of all parsed modes.
+
+See the Developer Options section in the GNU Algol Compiler manual for
+more hacking related options.
+
+Testing
+=======
+
+Invoke the full testsuite from the build directory:
+
+  $ make check-algol68
+
+You can pass -jN to run tests in parallel:
+
+  $ make -jN check-algol68
+
+Invoke a subset of the testsuite.  For example, to only run tests that
+involve compilation but not running:
+
+  $ make check-algol68 RUNTESTFLAGS="compile.exp"
+
+There are the following sets of tests:
+
+  compile.exp - compilation tests
+
+Invoke only a specific test:
+
+  $ make check-algol68 RUNTESTFLAGS="--all compile.exp=bad-coercion-1.a68"
+
+Test in both 32-bit and 64-bit in multilib arches:
+
+  $ make check-algol68 RUNTESTFLAGS="--target_board=unix\{-m64,-m32\}"
+
+Test that integration with the GCC GC is correct:
+
+  $ make check-algol68 RUNTESTFLAGS="CFLAGS_FOR_TARGET='--param=ggc-min-expand=0 --param=ggc-min-heapsize=0'"
+
+Logs (with corresponding commands) can be found in
+BUILD/gcc/testsuite/algol68/algol68.log.
+
+See https://gcc.gnu.org/install/test.html for more details.
+
+Useful Resources
+================
+
+- An Emacs mode for editing Algol 68 programs can be found at
+  https://git.sr.ht/~jemarch/a68-mode.  It supports automatic
+  indentation, pretty-printing of bold tags, an auto-stropping minor
+  mode and other features.
+
+- The Algol 68 Jargon File at https://jemarch.net/a68-jargon provides
+  a comprehensive list of definitions of many of the technical and
+  non-technical terms used in the context of Algol 68.
+
+- The very formal Revised Report on the Algorithmic Language ALGOL 68
+  can be found at [1].
+
+- The truly delightful Informal Introduction to ALGOL 68 by C.H
+  Lindsey and van der Meulen can be found at [2].
+
+Community
+=========
+
+mailing list: algol68@gcc.gnu.org
+irc: irc.oftc.net - #gnualgol
+
+[1] https://www.softwarepreservation.org/projects/ALGOL/report/Algol68_revised_report-AB-600dpi.pdf
+[2] https://inria.hal.science/hal-03027689/file/Lindsey_van_der_Meulen-IItA68-Revised.pdf
