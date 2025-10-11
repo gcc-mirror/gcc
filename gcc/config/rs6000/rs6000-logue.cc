@@ -5332,18 +5332,18 @@ rs6000_output_function_epilogue (FILE *file)
       /* Tbtab format type.  Use format type 0.  */
       fputs ("\t.byte 0,", file);
 
-      /* Language type.  Unfortunately, there does not seem to be any
-	 official way to discover the language being compiled, so we
-	 use language_string.
-	 C is 0.  Fortran is 1.  Ada is 3.  Modula-2 is 8.  C++ is 9.
-	 Java is 13.  Objective-C is 14.  Objective-C++ isn't assigned
-	 a number, so for now use 9.  LTO, Go, D, and JIT aren't assigned
-	 numbers either, so for now use 0.  */
+      /* Language type.  Unfortunately, there does not seem to be any official
+	 way to discover the language being compiled, so we use
+	 language_string.  C is 0.  Fortran is 1.  Ada is 3.  Modula-2 is 8.
+	 C++ is 9.  Java is 13.  Objective-C is 14.  Objective-C++ isn't
+	 assigned a number, so for now use 9.  LTO, Go, D, Algol 68 and JIT
+	 aren't assigned numbers either, so for now use 0.  */
       if (lang_GNU_C ()
 	  || ! strcmp (language_string, "GNU GIMPLE")
 	  || ! strcmp (language_string, "GNU Go")
 	  || ! strcmp (language_string, "GNU D")
 	  || ! strcmp (language_string, "GNU Rust")
+	  || ! strcmp (language_string, "GNU Algol 68")
 	  || ! strcmp (language_string, "libgccjit"))
 	i = 0;
       else if (! strcmp (language_string, "GNU F77")
