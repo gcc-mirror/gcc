@@ -6,6 +6,6 @@
 !
 program p
    type t(a)                   ! { dg-error "does not have a component" }
-      integer(kind=t()) :: x   ! { dg-error "Expected initialization expression" }
+      integer(kind=t()) :: x   ! { dg-error "empty type specification" }
    end type
 end

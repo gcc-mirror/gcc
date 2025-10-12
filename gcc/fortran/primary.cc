@@ -4083,7 +4083,13 @@ gfc_match_rvalue (gfc_expr **result)
 		 NULL.  */
 	      if (gfc_peek_ascii_char() == '(')
 		type_spec_list = true;
-
+	      if (!actual_arglist && !type_spec_list)
+		{
+		  gfc_error_now ("F2023 R755: The empty type specification at %C "
+				 "is not allowed");
+		  m = MATCH_ERROR;
+		  break;
+		}
 	      /* Generate this instance using the type parameters from the
 		 first argument list and return the parameter list in
 		 ctr_arglist.  */

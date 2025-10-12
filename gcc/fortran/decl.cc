@@ -3855,7 +3855,7 @@ insert_parameter_exprs (gfc_expr* e, gfc_symbol* sym ATTRIBUTE_UNUSED,
 	if (strcmp (e->symtree->n.sym->name, param->name) == 0)
 	  break;
 
-      if (param)
+      if (param && param->expr)
 	{
 	  copy = gfc_copy_expr (param->expr);
 	  *e = *copy;
@@ -4028,6 +4028,12 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  /* Try simplification even for LEN expressions.  */
 	  bool ok;
 	  gfc_resolve_expr (kind_expr);
+
+	  if (c1->attr.pdt_kind
+	      && kind_expr->expr_type != EXPR_CONSTANT
+	      && type_param_spec_list)
+	  gfc_insert_parameter_exprs (kind_expr, type_param_spec_list);
+
 	  ok = gfc_simplify_expr (kind_expr, 1);
 	  /* Variable expressions seem to default to BT_PROCEDURE.
 	     TODO find out why this is and fix it.  */
@@ -4807,6 +4813,16 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
       gfc_error ("Type name %qs at %C conflicts with previously declared "
 		 "entity at %L, which has the same name", name,
 		 &sym->declared_at);
+      return MATCH_ERROR;
+    }
+
+  if (dt_sym && decl_type_param_list
+      && dt_sym->attr.flavor == FL_DERIVED
+      && !dt_sym->attr.pdt_type
+      && !dt_sym->attr.pdt_template)
+    {
+      gfc_error ("Type %qs is not parameterized and so the type parameter spec "
+		 "list at %C may not appear", dt_sym->name);
       return MATCH_ERROR;
     }
 
