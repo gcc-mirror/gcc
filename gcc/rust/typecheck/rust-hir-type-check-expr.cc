@@ -126,7 +126,13 @@ TypeCheckExpr::visit (HIR::TupleIndexExpr &expr)
     }
 
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (resolved);
-  rust_assert (!adt->is_enum ());
+  if (!adt->is_tuple_struct ())
+    {
+      rust_error_at (expr.get_locus (),
+		     "expected tuple or tuple struct, found %qs",
+		     adt->get_name ().c_str ());
+      return;
+    }
   rust_assert (adt->number_of_variants () == 1);
 
   TyTy::VariantDef *variant = adt->get_variants ().at (0);
