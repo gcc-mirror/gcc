@@ -1,3 +1,12 @@
+2025-10-11  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	Backported from master:
+	2025-10-07  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/121845
+	* config/riscv/riscv-v.cc (shuffle_series_patterns):
+	Modulo indices for VLA and punt when wrapping for VLS.
+
 2025-10-08  Aurelien Jarno  <aurelien@aurel32.net>
 
 	Backported from master:

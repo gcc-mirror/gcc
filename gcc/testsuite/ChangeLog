@@ -1,3 +1,11 @@
+2025-10-11  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	Backported from master:
+	2025-10-07  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/121845
+	* gcc.target/riscv/rvv/autovec/pr121845.c: New test.
+
 2025-10-09  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
