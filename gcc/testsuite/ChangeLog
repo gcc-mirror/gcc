@@ -1,3 +1,16 @@
+2025-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2/iso/fail/badfield.mod: New test.
+	* gm2/iso/fail/badfield2.mod: New test.
+	* gm2/iso/fail/badprocedure.mod: New test.
+	* gm2/iso/fail/badprocedure2.mod: New test.
+	* gm2/iso/fail/badset4.mod: New test.
+
+2025-10-11  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	PR target/119587
+	* gcc.target/riscv/xtheadmemidx-bug.c: New test.
+
 2025-10-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/50377

@@ -1,3 +1,36 @@
+2025-10-11  Bohan Lei  <garthlei@linux.alibaba.com>
+
+	PR target/119587
+	* config/riscv/thead.md (*th_memidx_operand): New splitter.
+
+2025-10-11  Georg-Johann Lay  <avr@gjlay.de>
+
+	* coretypes.h (enum artificial_rodata): New enum type.
+	* doc/tm.texi: Rebuild.
+	* doc/tm.texi.in (TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA):
+	New hook.
+	* target.def (addr_sapce.for_artificial_rodata): New DEFHOOK.
+	* targhooks.cc (default_addr_space_convert): New function.
+	* targhooks.h (default_addr_space_convert): New prototype.
+	* tree-switch-conversion.cc (build_one_array) <value_type>:
+	Set type_quals address-space according to
+	targetm.addr_space.for_artificial_rodata().
+	* config/avr/avr.cc (avr_rodata_in_flash_p): Move up.
+	(TARGET_ADDR_SPACE_FOR_ARTIFICIAL_RODATA): Define to...
+	(avr_addr_space_for_artificial_rodata): ...this new function.
+	* common/config/avr/avr-common.cc (avr_option_optimization_table):
+	Adjust -ftree-switch-conversion comment.
+
+2025-10-11  Austin Law  <austinklaw@gmail.com>
+
+	* config/riscv/sync.md (lrsc_atomic_fetch_<atomic_optab><mode>):
+	Adjust operand predicate/constraint to allow simm12 operands
+	where valid.  Adjust output template accordingly.
+	(subword_atomic_fech_strong_<atomic_optab>): Likewise.
+	(subword_atomic_fetch_strong_nand): Likewise.
+	(subword_atomic_exchange_strong): Likewise.
+	(subword_atomic_cas_strong): Likewise.
+
 2025-10-10  David Faust  <david.faust@oracle.com>
 
 	PR target/122141

@@ -1,3 +1,8 @@
+2025-10-11  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* doc/xml/manual/build_hacking.xml: Update Autoconf manual link.
+	* doc/html/manual/appendix_porting.html: Regenerate.
+
 2025-10-10  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122172

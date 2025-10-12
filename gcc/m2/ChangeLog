@@ -1,3 +1,58 @@
+2025-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122241
+	* Make-lang.in (GM2_C_OBJS): Add m2/gm2-gcc/m2spellcheck.o.
+	(GM2-COMP-BOOT-DEFS): Add M2StackSpell.def.
+	(GM2-COMP-BOOT-MODS): Add M2StackSpell.mod.
+	(GM2-GCC-DEFS): Add m2spellcheck.def.
+	(GM2-COMP-DEFS): Add M2StackSpell.def.
+	(GM2-COMP-MODS): Add M2StackSpell.mod.
+	* gm2-compiler/M2Base.mod (CheckCompatible): Add comments.
+	* gm2-compiler/M2MetaError.mod (importHint): New field.
+	(exportHint): Ditto.
+	(withStackHint): Ditto.
+	* gm2-compiler/M2Quads.mod (M2StackSpell): Import.
+	(BuildProcedureCall): Add spell check specifier when
+	encountering an unknown symbol.
+	(CheckProcedureParameters): Ditto.
+	(CheckParameter): Ditto.
+	(DescribeType): Ditto.
+	(GetQualidentImport): Ditto.
+	(BuildValFunction): Ditto.
+	(BuildCastFunction): Ditto.
+	(BuildConvertFunction): Ditto.
+	(ExpectingParameterType): Ditto.
+	(ExpectingVariableType): Ditto.
+	(BuildDesignatorPointer): Ditto.
+	(BuildEmptySet): Ditto.
+	(CheckVariableOrConstantOrProcedure): Ditto.
+	* gm2-compiler/P2SymBuild.mod (BuildType): Add comment.
+	* gm2-compiler/P3Build.bnf (SubDesignator): Reimplement.
+	* gm2-compiler/P3SymBuild.mod (P3StartBuildDefModule): Add
+	M2StackSpell.Push.
+	(P3StartBuildProgModule): Ditto.
+	(P3StartBuildImpModule): Ditto.
+	(StartBuildInnerModule): Ditto.
+	(StartBuildProcedure): Ditto.
+	(P3EndBuildDefModule): Add M2StackSpell.Pop.
+	(P3EndBuildImpModule): Ditto.
+	(P3EndBuildProgModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	(EndBuildProcedure): Ditto.
+	(BuildProcedureHeading): Ditto.
+	(EndBuildForward): Ditto.
+	* gm2-compiler/SymbolTable.mod (RequestSym): Reformat.
+	* gm2-gcc/init.cc (_M2_M2StackSpell_init): New prototype.
+	(init_PerCompilationInit): Call _M2_M2StackSpell_init.
+	* gm2-libs/DynamicStrings.def (RemoveWhitePrefix): Correct
+	comment.
+	* gm2-libs/DynamicStrings.mod (RemoveWhitePrefix): Ditto.
+	* gm2-compiler/M2StackSpell.def: New file.
+	* gm2-compiler/M2StackSpell.mod: New file.
+	* gm2-gcc/m2spellcheck.cc: New file.
+	* gm2-gcc/m2spellcheck.def: New file.
+	* gm2-gcc/m2spellcheck.h: New file.
+
 2025-10-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122009

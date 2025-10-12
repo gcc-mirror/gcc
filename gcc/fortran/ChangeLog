@@ -1,3 +1,9 @@
+2025-10-11  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/50377
+	PR fortran/122257
+	* resolve.cc (resolve_actual_arglist): Initialize variable.
+
 2025-10-10  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/50377
