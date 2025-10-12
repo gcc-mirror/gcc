@@ -713,6 +713,7 @@ extern struct c_arg_info *get_parm_info (bool, tree);
 extern tree grokfield (location_t, struct c_declarator *,
 		       struct c_declspecs *, tree, tree *, tree *);
 extern tree groktypename (struct c_type_name *, tree *, bool *);
+extern tree grokgenassoc (struct c_type_name *);
 extern tree grokparm (const struct c_parm *, tree *);
 extern tree implicitly_declare (location_t, tree);
 extern void keep_next_level (void);

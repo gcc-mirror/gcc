@@ -11240,7 +11240,7 @@ c_parser_generic_selection (c_parser *parser)
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);
 	      return error_expr;
 	    }
-	  assoc.type = groktypename (type_name, NULL, NULL);
+	  assoc.type = grokgenassoc (type_name);
 	  if (assoc.type == error_mark_node)
 	    {
 	      c_parser_skip_until_found (parser, CPP_CLOSE_PAREN, NULL);

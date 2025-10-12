@@ -71,7 +71,8 @@ enum decl_context
   FUNCDEF,			/* Function definition */
   PARM,				/* Declaration of parm before function body */
   FIELD,			/* Declaration inside struct or union */
-  TYPENAME};			/* Typename (inside cast or sizeof)  */
+  TYPENAME,			/* Typename (inside cast or sizeof)  */
+  GENERIC_ASSOC };		/* Typename in generic association  */
 
 /* States indicating how grokdeclarator() should handle declspecs marked
    with __attribute__((deprecated)) or __attribute__((unavailable)).
@@ -5456,19 +5457,11 @@ build_array_declarator (location_t loc,
 		 "ISO C90 does not support %<static%> or type "
 		 "qualifiers in parameter array declarators");
   if (vla_unspec_p)
-    pedwarn_c90 (loc, OPT_Wpedantic,
-		 "ISO C90 does not support %<[*]%> array declarators");
-  if (vla_unspec_p)
     {
-      if (!current_scope->parm_flag)
-	{
-	  /* C99 6.7.5.2p4 */
-	  error_at (loc, "%<[*]%> not allowed in other than "
-		    "function prototype scope");
-	  declarator->u.array.vla_unspec_p = false;
-	  return NULL;
-	}
-      current_scope->had_vla_unspec = true;
+      pedwarn_c90 (loc, OPT_Wpedantic,
+		   "ISO C90 does not support %<[*]%> array declarators");
+      if (current_scope->parm_flag)
+	current_scope->had_vla_unspec = true;
     }
   return declarator;
 }
@@ -5573,6 +5566,29 @@ groktypename (struct c_type_name *type_name, tree *expr,
 
   return type;
 }
+
+
+/* Decode a "typename", such as "int **", returning a ..._TYPE node,
+   as for groktypename but setting the context to GENERIC_ASSOC.  */
+
+tree
+grokgenassoc (struct c_type_name *type_name)
+{
+  tree type;
+  tree attrs = type_name->specs->attrs;
+
+  type_name->specs->attrs = NULL_TREE;
+
+  type = grokdeclarator (type_name->declarator, type_name->specs, GENERIC_ASSOC,
+			 false, NULL, &attrs, NULL, NULL, DEPRECATED_NORMAL);
+
+  /* Apply attributes.  */
+  attrs = c_warn_type_attributes (type, attrs);
+  decl_attributes (&type, attrs, 0);
+
+  return type;
+}
+
 
 /* Looks up the most recent pushed declaration corresponding to DECL.  */
 
@@ -6772,6 +6788,7 @@ build_arg_spec_attribute (tree type, bool static_p, tree attrs)
       or before a function body).  Make a PARM_DECL, or return void_type_node.
      TYPENAME if for a typename (in a cast or sizeof).
       Don't make a DECL node; just return the ..._TYPE node.
+     GENERIC_ASSOC for typenames in a generic association.
      FIELD for a struct or union field; make a FIELD_DECL.
    INITIALIZED is true if the decl has an initializer.
    WIDTH is non-NULL for bit-fields, and is a pointer to an INTEGER_CST node
@@ -6908,6 +6925,7 @@ grokdeclarator (const struct c_declarator *declarator,
       {
 	gcc_assert (decl_context == PARM
 		    || decl_context == TYPENAME
+		    || decl_context == GENERIC_ASSOC
 		    || (decl_context == FIELD
 			&& declarator->kind == cdk_id));
 	gcc_assert (!initialized);
@@ -7481,14 +7499,6 @@ grokdeclarator (const struct c_declarator *declarator,
 		  itype = build_index_type (NULL_TREE);
 	      }
 
-	    if (array_parm_vla_unspec_p)
-	      {
-		/* C99 6.7.5.2p4 */
-		if (decl_context == TYPENAME)
-		  warning (0, "%<[*]%> not in a declaration");
-		size_varies = true;
-	      }
-
 	    /* Complain about arrays of incomplete types.  */
 	    if (!COMPLETE_TYPE_P (type))
 	      {
@@ -7525,6 +7535,22 @@ grokdeclarator (const struct c_declarator *declarator,
 		  type = c_build_array_type_unspecified (type);
 		else
 		  type = c_build_array_type (type, itype);
+	      }
+
+	    if (array_parm_vla_unspec_p)
+	      {
+		/* C99 6.7.5.2p4 */
+		if (decl_context == TYPENAME)
+		  warning (0, "%<[*]%> not in a declaration");
+		else if (decl_context != GENERIC_ASSOC
+			 && decl_context != PARM
+			 && decl_context != FIELD)
+		  {
+		    error ("%<[*]%> not allowed in other than function prototype scope "
+			   "or generic association");
+		    type = error_mark_node;
+		  }
+		size_varies = true;
 	      }
 
 	    if (type != error_mark_node)
@@ -7898,7 +7924,7 @@ grokdeclarator (const struct c_declarator *declarator,
   /* If this is a type name (such as, in a cast or sizeof),
      compute the type and return it now.  */
 
-  if (decl_context == TYPENAME)
+  if (decl_context == TYPENAME || decl_context == GENERIC_ASSOC)
     {
       /* Note that the grammar rejects storage classes in typenames
 	 and fields.  */
