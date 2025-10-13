@@ -175,7 +175,7 @@ typedef fibonacci_node <inline_badness, cgraph_edge> edge_heap_node_t;
 
 /* Statistics we collect about inlining algorithm.  */
 static int overall_size;
-static profile_count max_count;
+static bool has_nonzero_ipa_profile;
 static profile_count spec_rem;
 
 /* Return false when inlining edge E would lead to violating
@@ -2105,7 +2105,7 @@ inline_small_functions (void)
   /* Compute overall unit size and other global parameters used by badness
      metrics.  */
 
-  max_count = profile_count::uninitialized ();
+  has_nonzero_ipa_profile = false;
   ipa_reduced_postorder (order, true, ignore_edge_p);
   free (order);
 
@@ -2148,7 +2148,9 @@ inline_small_functions (void)
 	  }
 
 	for (edge = node->callers; edge; edge = edge->next_caller)
-	  max_count = max_count.max (edge->count.ipa ());
+	  if (edge->count.ipa ().initialized_p ()
+	      && edge->count.ipa ().nonzero_p ())
+	  has_nonzero_ipa_profile = true;
       }
   ipa_free_postorder_info ();
   initialize_growth_caches ();
@@ -2221,7 +2223,7 @@ inline_small_functions (void)
     }
 
   gcc_assert (in_lto_p
-	      || !(max_count > 0)
+	      || !has_nonzero_ipa_profile
 	      || flag_auto_profile
 	      || (profile_info && flag_branch_probabilities));
 
@@ -2243,7 +2245,7 @@ inline_small_functions (void)
 	 This check is affected by scaling roundoff errors when compiling for
 	 IPA this we skip it in that case.  */
       if (flag_checking && !edge->callee->count.ipa_p ()
-	  && (!max_count.initialized_p () || !max_count.nonzero_p ()))
+	  && !has_nonzero_ipa_profile)
 	{
 	  sreal cached_badness = edge_badness (edge, false);
 
@@ -2762,7 +2764,7 @@ dump_inline_stats (void)
       else if (e->count.ipa ().initialized_p ())
 	indirect_cnt += e->count.ipa ().to_gcov_type ();
   }
-  if (max_count.initialized_p ())
+  if (has_nonzero_ipa_profile)
     {
       fprintf (dump_file,
 	       "Inlined %" PRId64 " + speculative "
