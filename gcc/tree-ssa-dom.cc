@@ -2040,11 +2040,6 @@ cprop_operand (gimple *stmt, use_operand_p op_p, range_query *query)
 
   if (val && val != op)
     {
-      /* Do not replace hard register operands in asm statements.  */
-      if (gimple_code (stmt) == GIMPLE_ASM
-	  && !may_propagate_copy_into_asm (op))
-	return;
-
       /* Certain operands are not allowed to be copy propagated due
 	 to their interaction with exception handling and some GCC
 	 extensions.  */

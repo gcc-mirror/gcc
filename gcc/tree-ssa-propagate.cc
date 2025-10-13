@@ -578,10 +578,6 @@ substitute_and_fold_engine::replace_uses_in (gimple *stmt)
       if (val == tuse || val == NULL_TREE)
 	continue;
 
-      if (gimple_code (stmt) == GIMPLE_ASM
-	  && !may_propagate_copy_into_asm (tuse))
-	continue;
-
       if (!may_propagate_copy (tuse, val))
 	continue;
 
@@ -1141,15 +1137,6 @@ may_propagate_copy_into_stmt (gimple *dest, tree orig)
 
   return true;
 }
-
-/* Similarly, but we know that we're propagating into an ASM_EXPR.  */
-
-bool
-may_propagate_copy_into_asm (tree dest ATTRIBUTE_UNUSED)
-{
-  return true;
-}
-
 
 /* Replace *OP_P with value VAL (assumed to be a constant or another SSA_NAME).
 
