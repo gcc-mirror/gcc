@@ -9099,6 +9099,7 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  for (unsigned i = 0; i < nappend_args && varg; i++)
 	    varg = TREE_CHAIN (varg);
 	  tree saved_vargs;
+	  int saved_no_named_args_stdarg = 0;
 	  if (nbase_args)
 	    {
 	      saved_vargs = TREE_CHAIN (vargs);
@@ -9108,6 +9109,11 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	    {
 	      saved_vargs = vargs;
 	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = varg;
+	      saved_no_named_args_stdarg
+		= TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant));
+	      if (TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (decl))
+		  && varg == NULL_TREE)
+		TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant)) = 1;
 	    }
 	  /* Skip assert check that TYPE_CANONICAL is the same.  */
 	  fail = !comptypes (TREE_TYPE (decl), TREE_TYPE (variant),
@@ -9115,7 +9121,11 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
 	  if (nbase_args)
 	    TREE_CHAIN (vargs) = saved_vargs;
 	  else
-	    TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_vargs;
+	    {
+	      TYPE_ARG_TYPES (TREE_TYPE (variant)) = saved_vargs;
+	      TYPE_NO_NAMED_ARGS_STDARG_P (TREE_TYPE (variant))
+		= saved_no_named_args_stdarg;
+	    }
 	  varg = saved_vargs;
 	  if (!fail && !processing_template_decl)
 	    for (unsigned i = 0; i < nappend_args;
