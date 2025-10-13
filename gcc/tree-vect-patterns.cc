@@ -5447,12 +5447,19 @@ vect_recog_mod_var_pattern (vec_info *vinfo,
    same number of elements as VAR's vector type.  */
 
 static tree
-integer_type_for_mask (tree var, vec_info *vinfo)
+integer_type_for_mask (tree var, vec_info *vinfo, vect_def_type *dt = nullptr)
 {
   if (!VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (var)))
     return NULL_TREE;
 
   stmt_vec_info def_stmt_info = vinfo->lookup_def (var);
+  if (dt)
+    {
+      if (!def_stmt_info)
+	*dt = vect_external_def;
+      else
+	*dt = STMT_VINFO_DEF_TYPE (def_stmt_info);
+    }
   if (!def_stmt_info
       || STMT_VINFO_DEF_TYPE (def_stmt_info) == vect_external_def
       || !vect_use_mask_type_p (def_stmt_info))
@@ -5756,20 +5763,25 @@ vect_recog_bool_pattern (vec_info *vinfo,
 
       return pattern_stmt;
     }
-  else if (rhs_code == BIT_XOR_EXPR
-	   || rhs_code == BIT_AND_EXPR
-	   || rhs_code == BIT_IOR_EXPR)
+  else if ((rhs_code == BIT_XOR_EXPR
+	    || rhs_code == BIT_AND_EXPR
+	    || rhs_code == BIT_IOR_EXPR)
+	   && TREE_CODE (var) == SSA_NAME)
     {
+      tree rhs2 = gimple_assign_rhs2 (last_stmt);
+      if (TREE_CODE (rhs2) != SSA_NAME)
+	return NULL;
       tree lhs_type = integer_type_for_mask (lhs, vinfo);
       if (!lhs_type)
 	return NULL;
       vectype = get_mask_type_for_scalar_type (vinfo, lhs_type);
       if (!vectype)
 	return NULL;
-      tree rhs2 = gimple_assign_rhs2 (last_stmt);
-      tree rhs1_type = integer_type_for_mask (var, vinfo);
-      tree rhs2_type = integer_type_for_mask (rhs2, vinfo);
-      if (rhs1_type && rhs2_type)
+      vect_def_type dt1, dt2;
+      tree rhs1_type = integer_type_for_mask (var, vinfo, &dt1);
+      tree rhs2_type = integer_type_for_mask (rhs2, vinfo, &dt2);
+      if ((rhs1_type || dt1 == vect_external_def)
+	  && (rhs2_type || dt2 == vect_external_def))
 	return NULL;
       /* When one input is a mask and the other is not create a pattern
 	 stmt sequence that creates a mask for the non-mask input and
