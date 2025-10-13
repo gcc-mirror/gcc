@@ -4,12 +4,12 @@
 # it under the terms of the GNU General Public License as published by
 # the Free Software Foundation; either version 3 of the License, or
 # (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU General Public License
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
@@ -36,11 +36,11 @@ if ![info exists DEFAULT_CFLAGS] then {
 dg-init
 
 # Main loop.
-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{c,S} ]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.{c,S,i} ]] \
 	"" $DEFAULT_CFLAGS
 
 # C/C++ common tests.
-dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cpp/*.{c,S} ]] \
+dg-runtest [lsort [glob -nocomplain $srcdir/c-c++-common/cpp/*.{c,S,i} ]] \
 	" -Wc++-compat " ""
 
 

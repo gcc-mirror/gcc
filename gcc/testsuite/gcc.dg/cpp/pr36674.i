@@ -1,6 +1,6 @@
 /* PR cpp/36674  #include location is offset by one row in errors from preprocessed files */
 /* { dg-do compile } */
-/* { dg-options "-fshow-column" } */
+/* { dg-options "-fshow-column -Wno-implicit-int" } */
 # 1 "gcc/testsuite/gcc.dg/pr36674.c"
 # 1 "<built-in>"
 # 1 "<command-line>"
