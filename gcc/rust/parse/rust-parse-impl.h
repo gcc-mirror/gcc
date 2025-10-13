@@ -8234,7 +8234,14 @@ Parser<ManagedTokenSource>::parse_while_let_loop_expr (
   // parse predicate patterns
   std::vector<std::unique_ptr<AST::Pattern>> predicate_patterns
     = parse_match_arm_patterns (EQUAL);
-  // TODO: have to ensure that there is at least 1 pattern?
+  // ensure that there is at least 1 pattern
+  if (predicate_patterns.empty ())
+    {
+      Error error (lexer.peek_token ()->get_locus (),
+		   "should be at least 1 pattern");
+      add_error (std::move (error));
+      return nullptr;
+    }
 
   if (!skip_token (EQUAL))
     {
