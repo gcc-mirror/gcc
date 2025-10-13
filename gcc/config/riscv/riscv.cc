@@ -11809,6 +11809,13 @@ riscv_dwarf_poly_indeterminate_value (unsigned int i, unsigned int *factor,
   */
   gcc_assert (i == 1);
   *factor = BYTES_PER_RISCV_VECTOR.coeffs[1];
+
+  /* The factor will be zero if vector is not enabled.  That ultimately
+     causes problems in the dwarf2 emitter as the factor is used for
+     a division, causing a divide by zero.  */
+  if (*factor == 0)
+    *factor = 1;
+
   *offset = 1;
   return RISCV_DWARF_VLENB;
 }
