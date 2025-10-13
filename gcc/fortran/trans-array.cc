@@ -11385,9 +11385,27 @@ gfc_allocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank,
 /* Recursively traverse an object of parameterized derived type, generating
    code to deallocate parameterized components.  */
 
+static bool
+has_parameterized_comps (gfc_symbol * der_type)
+{
+  /* A type without parameterized components causes gimplifier problems.  */
+  bool parameterized_comps = false;
+  for (gfc_component *c = der_type->components; c; c = c->next)
+    if (c->attr.pdt_array || c->attr.pdt_string)
+      parameterized_comps = true;
+    else if (c->ts.type == BT_DERIVED
+	     && c->ts.u.derived->attr.pdt_type
+	     && strcmp (der_type->name, c->ts.u.derived->name))
+      parameterized_comps = has_parameterized_comps (c->ts.u.derived);
+  return parameterized_comps;
+}
+
 tree
 gfc_deallocate_pdt_comp (gfc_symbol * der_type, tree decl, int rank)
 {
+  if (!has_parameterized_comps (der_type))
+    return NULL_TREE;
+
   return structure_alloc_comps (der_type, decl, NULL_TREE, rank,
 				DEALLOCATE_PDT_COMP, 0, NULL);
 }
