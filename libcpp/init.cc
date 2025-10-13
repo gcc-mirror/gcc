@@ -893,11 +893,34 @@ read_original_directory (cpp_reader *pfile)
 
       if (pfile->cb.dir_change)
 	{
-	  /* Smash the string directly, it's dead at this point  */
-	  char *smashy = (char *)text;
-	  smashy[len - 3] = 0;
+	  cpp_string s = { 0, 0 };
+	  const char *dir_slashslash;
+	  unsigned int dir_slashslash_len;
 
-	  pfile->cb.dir_change (pfile, smashy + 1);
+	  /* If we fail to decode escape sequences in the string literal, fall
+	     back onto the literal itself, manually removing the opening and
+	     closing quotes (").  */
+	  if (cpp_interpret_string_notranslate (pfile, &string->val.str, 1, &s,
+						CPP_STRING))
+	    {
+	      /* At this point, the trailing NUL byte in S is included in its
+		 length, so take it out.  */
+	      dir_slashslash = (const char *) s.text;
+	      dir_slashslash_len = s.len - 1;
+	    }
+	  else
+	    {
+	      dir_slashslash = (const char *) string->val.str.text + 1;
+	      dir_slashslash_len = string->val.str.len - 2;
+	    }
+
+	  /* Strip the trailing double slash.  */
+	  const unsigned dir_len = dir_slashslash_len - 2;
+	  char *dir = (char *) alloca (dir_len + 1);
+	  memcpy (dir, dir_slashslash, dir_len);
+	  dir[dir_len] = '\0';
+
+	  pfile->cb.dir_change (pfile, dir);
 	}
 
       /* We should be at EOL.  */
