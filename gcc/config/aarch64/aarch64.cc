@@ -519,7 +519,6 @@ typedef struct {
 #define F_DEPRECATED		   (1 << 1)
 #define F_REG_READ		   (1 << 2)
 #define F_REG_WRITE		   (1 << 3)
-#define F_ARCHEXT		   (1 << 4)
 /* Flag indicating register name is alias for another system register.  */
 #define F_REG_ALIAS		   (1 << 5)
 /* Flag indicatinig registers which may be implemented with 128-bits.  */

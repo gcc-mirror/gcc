@@ -240,43 +240,21 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_SIMD (TARGET_BASE_SIMD && TARGET_NON_STREAMING)
 #define TARGET_FLOAT AARCH64_HAVE_ISA (FP)
 
-/* AARCH64_FL options necessary for system register implementation.  */
-
 /* Define AARCH64_FL aliases for architectural features which are protected
    by -march flags in binutils but which receive no special treatment by GCC.
+   These features are used in the aarch64-sys-regs.def file, which is copied
+   from Binutils.
 
-   Such flags are inherited from the Binutils definition of system registers
-   and are mapped to the architecture in which the feature is implemented.  */
+   We should try to eliminate these inconsistencies in future.  */
 #define AARCH64_FL_RAS		   AARCH64_FL_V8A
 #define AARCH64_FL_LOR		   AARCH64_FL_V8_1A
 #define AARCH64_FL_PAN		   AARCH64_FL_V8_1A
-#define AARCH64_FL_AMU		   AARCH64_FL_V8_4A
-#define AARCH64_FL_SCXTNUM	   AARCH64_FL_V8_5A
-#define AARCH64_FL_ID_PFR2	   AARCH64_FL_V8_5A
-
-/* Armv8.9-A extension feature bits defined in Binutils but absent from GCC,
-   aliased to their base architecture.  */
-#define AARCH64_FL_AIE		   AARCH64_FL_V8_9A
-#define AARCH64_FL_DEBUGv8p9	   AARCH64_FL_V8_9A
-#define AARCH64_FL_FGT2	   AARCH64_FL_V8_9A
 #define AARCH64_FL_ITE		   AARCH64_FL_V8_9A
-#define AARCH64_FL_PFAR	   AARCH64_FL_V8_9A
-#define AARCH64_FL_PMUv3_ICNTR	   AARCH64_FL_V8_9A
-#define AARCH64_FL_PMUv3_SS	   AARCH64_FL_V8_9A
-#define AARCH64_FL_PMUv3p9	   AARCH64_FL_V8_9A
 #define AARCH64_FL_RASv2	   AARCH64_FL_V8_9A
-#define AARCH64_FL_S1PIE	   AARCH64_FL_V8_9A
-#define AARCH64_FL_S1POE	   AARCH64_FL_V8_9A
-#define AARCH64_FL_S2PIE	   AARCH64_FL_V8_9A
-#define AARCH64_FL_S2POE	   AARCH64_FL_V8_9A
-#define AARCH64_FL_SCTLR2	   AARCH64_FL_V8_9A
-#define AARCH64_FL_SEBEP	   AARCH64_FL_V8_9A
-#define AARCH64_FL_SPE_FDS	   AARCH64_FL_V8_9A
-#define AARCH64_FL_TCR2	   AARCH64_FL_V8_9A
+
 
 #define TARGET_V8R AARCH64_HAVE_ISA (V8R)
 #define TARGET_V9A AARCH64_HAVE_ISA (V9A)
-
 
 /* SHA2 is an optional extension to AdvSIMD.  */
 #define TARGET_SHA2 AARCH64_HAVE_ISA (SHA2)
