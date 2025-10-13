@@ -3648,15 +3648,19 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 
   if (then_assign == NULL
       || !gimple_assign_single_p (then_assign)
-      || gimple_clobber_p (then_assign)
-      || gimple_has_volatile_ops (then_assign)
       || else_assign == NULL
       || !gimple_assign_single_p (else_assign)
-      || gimple_clobber_p (else_assign)
-      || gimple_has_volatile_ops (else_assign)
       || stmt_references_abnormal_ssa_name (then_assign)
       || stmt_references_abnormal_ssa_name (else_assign))
     return false;
+
+  /* Allow both being clobbers but no other volatile operations. */
+  if (gimple_clobber_p (then_assign)
+      && gimple_clobber_p (else_assign))
+    ;
+  else if (gimple_has_volatile_ops (then_assign)
+	   || gimple_has_volatile_ops (else_assign))
+   return false;
 
   lhs = gimple_assign_lhs (then_assign);
   if (!operand_equal_p (lhs, gimple_assign_lhs (else_assign), 0))
@@ -3674,7 +3678,14 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 
   if (!is_gimple_reg_type (TREE_TYPE (lhs)))
     {
-      if (!operand_equal_p (then_rhs, else_rhs))
+      /* Handle clobbers seperately as operand_equal_p does not check
+	 the kind of the clobbers being the same. */
+      if (TREE_CLOBBER_P (then_rhs) && TREE_CLOBBER_P (else_rhs))
+	{
+	  if (CLOBBER_KIND (then_rhs) != CLOBBER_KIND  (else_rhs))
+	    return false;
+	}
+      else if (!operand_equal_p (then_rhs, else_rhs))
 	return false;
       /* Currently only handle commoning of `= {}`.   */
       if (TREE_CODE (then_rhs) != CONSTRUCTOR)
@@ -3683,7 +3694,10 @@ cond_if_else_store_replacement_1 (basic_block then_bb, basic_block else_bb,
 
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf(dump_file, "factoring out stores:\n\tthen:\n");
+      if (TREE_CLOBBER_P (then_rhs))
+	fprintf(dump_file, "factoring out clobber:\n\tthen:\n");
+      else
+	fprintf(dump_file, "factoring out stores:\n\tthen:\n");
       print_gimple_stmt (dump_file, then_assign, 0,
 			 TDF_VOPS|TDF_MEMSYMS);
       fprintf(dump_file, "\telse:\n");
