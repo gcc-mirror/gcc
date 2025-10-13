@@ -38,5 +38,4 @@ void q() {
 }
 /* { dg-final { scan-rtl-dump-not "const_sum_of_two_s12" "reload" } } */
 /* { dg-final { scan-rtl-dump-not "const_sum_of_two_s12" "late_combine2" } } */
-/* { dg-final { scan-assembler "addi.*sp,2047\n\tl\[dw\]\t.*,1\(.*\).*" } } */
-
+/* { dg-final { scan-assembler "addi.*\[ats\]\[0-9\]*,sp,\[0-9\]*\n\tld\t.*,2047\(.*\).*" } } */

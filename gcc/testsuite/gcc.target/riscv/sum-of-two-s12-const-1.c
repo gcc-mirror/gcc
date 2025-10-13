@@ -26,7 +26,7 @@ plus3(unsigned long i)
 long
 minus1(unsigned long i)
 {
-   return i - 4096;
+   return i - 4094;
 }
 
 long
