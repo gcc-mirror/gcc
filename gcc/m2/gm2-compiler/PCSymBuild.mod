@@ -257,13 +257,13 @@ END PCStartBuildDefModule ;
                               |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildDefModule ;
+PROCEDURE PCEndBuildDefModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : CARDINAL ;
 BEGIN
    Assert(CompilingDefinitionModule()) ;
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -325,13 +325,13 @@ END PCStartBuildImpModule ;
                                   |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildImpModule ;
+PROCEDURE PCEndBuildImpModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : Name ;
 BEGIN
    Assert(CompilingImplementationModule()) ;
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -398,13 +398,13 @@ END PCStartBuildProgModule ;
                            |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildProgModule ;
+PROCEDURE PCEndBuildProgModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : Name ;
 BEGIN
    Assert(CompilingProgramModule()) ;
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -468,12 +468,12 @@ END PCStartBuildInnerModule ;
                          |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildInnerModule ;
+PROCEDURE PCEndBuildInnerModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : Name ;
 BEGIN
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;

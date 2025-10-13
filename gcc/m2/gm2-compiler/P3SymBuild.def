@@ -64,7 +64,7 @@ PROCEDURE P3StartBuildDefModule ;
                               |------------|        |-----------|
 *)
 
-PROCEDURE P3EndBuildDefModule ;
+PROCEDURE P3EndBuildDefModule (tokno: CARDINAL) ;
 
 
 (*
@@ -101,7 +101,7 @@ PROCEDURE P3StartBuildImpModule ;
                                   |------------|        |-----------|
 *)
 
-PROCEDURE P3EndBuildImpModule ;
+PROCEDURE P3EndBuildImpModule (tokno: CARDINAL) ;
 
 
 (*
@@ -138,7 +138,7 @@ PROCEDURE P3StartBuildProgModule ;
                            |------------|        |-----------|
 *)
 
-PROCEDURE P3EndBuildProgModule ;
+PROCEDURE P3EndBuildProgModule (tokno: CARDINAL) ;
 
 
 (*
@@ -182,7 +182,7 @@ PROCEDURE StartBuildInnerModule ;
                          |------------|        |-----------|
 *)
 
-PROCEDURE EndBuildInnerModule ;
+PROCEDURE EndBuildInnerModule (tokno: CARDINAL) ;
 
 
 (*

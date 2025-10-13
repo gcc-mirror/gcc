@@ -9585,29 +9585,29 @@ END ForeachParamSymDo ;
                              an error message is displayed.
 *)
 
-PROCEDURE CheckForUnknownInModule ;
+PROCEDURE CheckForUnknownInModule (tokno: CARDINAL) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
-   pSym := GetPsym(GetCurrentModuleScope()) ;
+   pSym := GetPsym (GetCurrentModuleScope ()) ;
    WITH pSym^ DO
       CASE SymbolType OF
 
       DefImpSym: WITH DefImp DO
-                    CheckForUnknowns (name, ExportQualifiedTree,
+                    CheckForUnknowns (tokno, name, ExportQualifiedTree,
                                       'EXPORT QUALIFIED') ;
-                    CheckForUnknowns (name, ExportUnQualifiedTree,
+                    CheckForUnknowns (tokno, name, ExportUnQualifiedTree,
                                       'EXPORT UNQUALIFIED') ;
-                    CheckForSymbols  (ExportRequest,
-                                      'requested by another modules import (symbols have not been exported by the appropriate definition module)') ;
-                    CheckForUnknowns (name, Unresolved, 'unresolved') ;
-                    CheckForUnknowns (name, LocalSymbols, 'locally used')
+                    CheckForSymbols (ExportRequest,
+                                     'requested by another modules import (symbols have not been exported by the appropriate definition module)') ;
+                    CheckForUnknowns (tokno, name, Unresolved, 'unresolved') ;
+                    CheckForUnknowns (tokno, name, LocalSymbols, 'locally used')
                  END |
       ModuleSym: WITH Module DO
-                    CheckForUnknowns (name, Unresolved, 'unresolved') ;
-                    CheckForUnknowns (name, ExportUndeclared, 'exported but undeclared') ;
-                    CheckForUnknowns (name, ExportTree, 'exported but undeclared') ;
-                    CheckForUnknowns (name, LocalSymbols, 'locally used')
+                    CheckForUnknowns (tokno, name, Unresolved, 'unresolved') ;
+                    CheckForUnknowns (tokno, name, ExportUndeclared, 'exported but undeclared') ;
+                    CheckForUnknowns (tokno, name, ExportTree, 'exported but undeclared') ;
+                    CheckForUnknowns (tokno, name, LocalSymbols, 'locally used')
                  END
 
       ELSE
@@ -9626,7 +9626,7 @@ BEGIN
    IF IsUnreportedUnknown (sym)
    THEN
       IncludeElementIntoSet (ReportedUnknowns, sym) ;
-      MetaErrorStringT1 (GetFirstUsed (sym), InitString ("unknown symbol {%1EUad}"), sym)
+      MetaErrorStringT1 (GetFirstUsed (sym), InitString ("unknown symbol {%1EUad} {%1&s}"), sym)
    END
 END UnknownSymbolError ;
 
@@ -9705,22 +9705,24 @@ END Listify ;
                       together with an error message.
 *)
 
-PROCEDURE CheckForUnknowns (name: Name; Tree: SymbolTree;
+PROCEDURE CheckForUnknowns (tokno: CARDINAL; name: Name; Tree: SymbolTree;
                             a: ARRAY OF CHAR) ;
 VAR
    s: String ;
 BEGIN
-   IF DoesTreeContainAny(Tree, IsUnreportedUnknown)
+   IF DoesTreeContainAny (Tree, IsUnreportedUnknown)
    THEN
-      CurrentError := NewError(GetTokenNo()) ;
-      s := InitString("{%E} the following unknown symbols in module %<") ;
-      s := ConCat(s, Mark(InitStringCharStar(KeyToCharStar(name)))) ;
-      s := ConCat(s, Mark(InitString('%> were '))) ;
-      s := ConCat(s, Mark(InitString(a))) ;
-      s := ConCat (s, Mark (InitString (': '))) ;
-      s := ConCat (s, Mark (Listify (Tree, IsUnreportedUnknown))) ;
-      MetaErrorStringT0(GetTokenNo(), s) ;
-      ForeachNodeDo(Tree, UnknownSymbolError)
+      ForeachNodeDo (Tree, UnknownSymbolError) ;
+      IF NoOfNodes (Tree, IsUnreportedUnknown) > 0
+      THEN
+         s := InitString ("{%E} the following unknown symbols in module %<") ;
+         s := ConCat (s, Mark (InitStringCharStar (KeyToCharStar (name)))) ;
+         s := ConCat (s, Mark (InitString ('%> were '))) ;
+         s := ConCat (s, Mark (InitString (a))) ;
+         s := ConCat (s, Mark (InitString (': '))) ;
+         s := ConCat (s, Mark (Listify (Tree, IsUnreportedUnknown))) ;
+         MetaErrorStringT0 (tokno, s)
+      END
    END
 END CheckForUnknowns ;
 

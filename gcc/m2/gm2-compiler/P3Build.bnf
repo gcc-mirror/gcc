@@ -655,7 +655,7 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule :=                                                           % VAR modulet, endt: CARDINAL ; %
+ProgramModule :=                                                           % VAR modulet, endt, namet: CARDINAL ; %
                                                                            % modulet := GetTokenNo () %
                  "MODULE"                                                  % M2Error.DefaultProgramModule %
                                                                            % PushAutoOn %
@@ -670,12 +670,13 @@ ProgramModule :=                                                           % VAR
                   { Import }
                   Block                                                    % PushAutoOn %
                                                                            % endt := GetTokenNo () -1 %
+                                                                           % namet := GetTokenNo () %
                   Ident                                                    % EndBuildFile (endt) %
-                                                                           % P3EndBuildProgModule %
+                                                                           % P3EndBuildProgModule (namet) %
                   "."                                                      % PopAuto ; PopAuto %
                   =:
 
-ImplementationModule :=                                                    % VAR modulet, endt: CARDINAL ; %
+ImplementationModule :=                                                    % VAR modulet, endt, namet: CARDINAL ; %
                                                                            % modulet := GetTokenNo () %
                         "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
                                          "MODULE"                          % PushAutoOn %
@@ -689,8 +690,9 @@ ImplementationModule :=                                                    % VAR
                          { Import }
                          Block                                             % PushAutoOn %
                                                                            % endt := GetTokenNo () -1 %
+                                                                           % namet := GetTokenNo () %
                          Ident                                             % EndBuildFile (endt) %
-                                                                           % P3EndBuildImpModule %
+                                                                           % P3EndBuildImpModule (namet) %
                          "."                                               % PopAuto ; PopAuto ; PopAuto %
                       =:
 
@@ -1503,7 +1505,7 @@ DefOptArg := "[" Ident ":" FormalType "=" ConstExpression                  % Bui
 
 FormalType := { "ARRAY" "OF" } QualidentCheck =:
 
-ModuleDeclaration :=                                                       % VAR modulet: CARDINAL ; %
+ModuleDeclaration :=                                                       % VAR modulet, namet: CARDINAL ; %
                                                                            % modulet := GetTokenNo () %
                      "MODULE"                                              % M2Error.DefaultInnerModule %
                                                                            % PushAutoOn %
@@ -1513,7 +1515,8 @@ ModuleDeclaration :=                                                       % VAR
                      [ Priority ] ";"
                      { Import } [ Export ]
                        Block                                               % PushAutoOn %
-                       Ident                                               % EndBuildInnerModule %
+		                                                           % namet := GetTokenNo () %
+                       Ident                                               % EndBuildInnerModule (namet) %
                                                                            % PopAuto ; PopAuto ; PopAuto %
                      =:
 
@@ -1540,7 +1543,7 @@ WithoutFromImport :=                                                       % Pus
 
 Import :=  FromImport | WithoutFromImport =:
 
-DefinitionModule :=                                                        % VAR deft, endt: CARDINAL ; %
+DefinitionModule :=                                                        % VAR deft, endt, namet: CARDINAL ; %
                                                                            % deft := GetTokenNo () %
                     "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
                                  "MODULE"                                  % PushAutoOn %
@@ -1553,8 +1556,9 @@ DefinitionModule :=                                                        % VAR
                                         ]
                     { Definition }                                         % endt := GetTokenNo () %
                                    "END"                                   % PushAutoOn %
+                                                                           % namet := GetTokenNo () %
                                          Ident                             % EndBuildFile (endt) ;
-                                                                             P3EndBuildDefModule %
+                                                                             P3EndBuildDefModule (namet) %
                                                "."                         % PopAuto ; PopAuto ; PopAuto %
                   =:
 

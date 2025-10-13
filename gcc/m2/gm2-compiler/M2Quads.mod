@@ -10712,7 +10712,7 @@ BEGIN
    ELSE
       resulttok := functok ;
       MetaErrorT1 (resulttok,
-                   '{%E}SYSTEM procedure {%kSIZE} expects a variable as its parameter, seen {%1Ed}',
+                   '{%E}SYSTEM procedure {%kSIZE} expects a variable or type as its parameter, seen {%1Ed}',
                    OperandT (1)) ;
       ReturnVar := MakeConstLit (resulttok, MakeKey('0'), Cardinal)
    END ;
@@ -10777,7 +10777,7 @@ BEGIN
          GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, GetSType (OperandT (1)), FALSE)
       ELSE
          MetaErrorT1 (resulttok,
-                      '{%E}SYSTEM procedure function {%kTSIZE} expects a variable as its first parameter, seen {%1Ed}',
+                      '{%E}SYSTEM procedure function {%kTSIZE} expects a variable or type as its first parameter, seen {%1Ed}',
                       OperandT (1)) ;
          ReturnVar := MakeConstLit (resulttok, MakeKey ('0'), Cardinal)
       END

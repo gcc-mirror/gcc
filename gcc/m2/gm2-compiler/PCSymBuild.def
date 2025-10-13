@@ -71,7 +71,7 @@ PROCEDURE PCStartBuildDefModule ;
                               |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildDefModule ;
+PROCEDURE PCEndBuildDefModule (tokno: CARDINAL) ;
 
 
 (*
@@ -108,7 +108,7 @@ PROCEDURE PCStartBuildImpModule ;
                                   |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildImpModule ;
+PROCEDURE PCEndBuildImpModule (tokno: CARDINAL) ;
 
 
 (*
@@ -145,7 +145,7 @@ PROCEDURE PCStartBuildProgModule ;
                            |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildProgModule ;
+PROCEDURE PCEndBuildProgModule (tokno: CARDINAL) ;
 
 
 (*
@@ -182,7 +182,7 @@ PROCEDURE PCStartBuildInnerModule ;
                           |------------|        |-----------|
 *)
 
-PROCEDURE PCEndBuildInnerModule ;
+PROCEDURE PCEndBuildInnerModule (tokno: CARDINAL) ;
 
 
 (*

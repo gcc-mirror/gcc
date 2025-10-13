@@ -598,7 +598,8 @@ FileUnit :=                                                                % Pus
               ImplementationOrProgramModule )                              % PopAuto %
          =:
 
-ProgramModule := "MODULE"                                                  % M2Error.DefaultProgramModule %
+ProgramModule := "MODULE"                                                  % VAR namet: CARDINAL ; %
+                                                                           % M2Error.DefaultProgramModule %
                                                                            % PushAutoOn %
                   Ident                                                    % PCStartBuildProgModule %
                                                                            % PushAutoOff %
@@ -608,11 +609,13 @@ ProgramModule := "MODULE"                                                  % M2E
                   { Import                                                 % PCBuildImportOuterModule %
                   }
                   Block                                                    % PushAutoOn %
-                  Ident                                                    % PCEndBuildProgModule %
+		                                                           % namet := GetTokenNo () %
+                  Ident                                                    % PCEndBuildProgModule (namet) %
                   "."                                                      % PopAuto ; PopAuto %
                   =:
 
-ImplementationModule := "IMPLEMENTATION"                                   % M2Error.DefaultImplementationModule %
+ImplementationModule := "IMPLEMENTATION"                                   % VAR namet: CARDINAL ; %
+                                                                           % M2Error.DefaultImplementationModule %
                                          "MODULE"                          % PushAutoOn %
                          Ident                                             % PCStartBuildImpModule %
                                                                            % PushAutoOff %
@@ -621,8 +624,8 @@ ImplementationModule := "IMPLEMENTATION"                                   % M2E
                          { Import                                          % PCBuildImportOuterModule %
                            }
                          Block                                             % PushAutoOn %
-
-                         Ident                                             % PCEndBuildImpModule %
+		                                                           % namet := GetTokenNo () %
+                         Ident                                             % PCEndBuildImpModule (namet) %
                          "."                                               % PopAuto ; PopAuto ; PopAuto %
                       =:
 
@@ -1271,7 +1274,8 @@ DefOptArg := "[" Ident ":" FormalType "=" ConstExpression "]" =:
 
 FormalType := { "ARRAY" "OF" } Qualident =:
 
-ModuleDeclaration := "MODULE"                                              % M2Error.DefaultInnerModule %
+ModuleDeclaration := "MODULE"                                              % VAR namet: CARDINAL ; %
+                                                                           % M2Error.DefaultInnerModule %
                                                                            % PushAutoOn %
                      Ident                                                 % PCStartBuildInnerModule %
                                                                            % PushAutoOff %
@@ -1280,7 +1284,8 @@ ModuleDeclaration := "MODULE"                                              % M2E
                         } [ Export
                             ]
                        Block                                               % PushAutoOn %
-                       Ident                                               % PCEndBuildInnerModule %
+		                                                           % namet := GetTokenNo () %
+                       Ident                                               % PCEndBuildInnerModule (namet) %
                                                                            % PopAuto ; PopAuto ; PopAuto %
                      =:
 
@@ -1299,7 +1304,8 @@ Import :=                                                                  % Pus
             IdentList ";" )                                                % PopAuto %
         =:
 
-DefinitionModule := "DEFINITION"                                           % M2Error.DefaultDefinitionModule %
+DefinitionModule := "DEFINITION"                                           % VAR namet: CARDINAL ; %
+                                                                           % M2Error.DefaultDefinitionModule %
                                  "MODULE"                                  % PushAutoOn %
                     [ "FOR" string ]
                     Ident                                                  % PCStartBuildDefModule ;
@@ -1310,7 +1316,8 @@ DefinitionModule := "DEFINITION"                                           % M2E
                                         ]
                     { Definition }
                                    "END"                                   % PushAutoOn %
-                                         Ident                             % PCEndBuildDefModule %
+				                                           % namet := GetTokenNo () %
+                                         Ident                             % PCEndBuildDefModule (namet) %
                                                "."                         % PopAuto ; PopAuto ; PopAuto %
                   =:
 

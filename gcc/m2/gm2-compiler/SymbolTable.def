@@ -2124,7 +2124,7 @@ PROCEDURE CheckForUndeclaredExports (ModSym: CARDINAL) ;
                              an error message is displayed.
 *)
 
-PROCEDURE CheckForUnknownInModule ;
+PROCEDURE CheckForUnknownInModule (tokno: CARDINAL) ;
 
 
 (*

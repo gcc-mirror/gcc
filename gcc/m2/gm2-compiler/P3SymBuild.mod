@@ -117,13 +117,13 @@ END P3StartBuildDefModule ;
                               |------------|        |-----------|
 *)
 
-PROCEDURE P3EndBuildDefModule ;
+PROCEDURE P3EndBuildDefModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : CARDINAL ;
 BEGIN
    Assert(CompilingDefinitionModule()) ;
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    M2StackSpell.Pop ;
    PopT(NameEnd) ;
@@ -187,13 +187,13 @@ END P3StartBuildImpModule ;
                                   |------------|        |-----------|
 *)
 
-PROCEDURE P3EndBuildImpModule ;
+PROCEDURE P3EndBuildImpModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : Name ;
 BEGIN
    Assert(CompilingImplementationModule()) ;
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    M2StackSpell.Pop ;
    PopT(NameEnd) ;
@@ -262,13 +262,13 @@ END P3StartBuildProgModule ;
                            |------------|        |-----------|
 *)
 
-PROCEDURE P3EndBuildProgModule ;
+PROCEDURE P3EndBuildProgModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : Name ;
 BEGIN
    Assert(CompilingProgramModule()) ;
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
@@ -334,12 +334,12 @@ END StartBuildInnerModule ;
                          |------------|        |-----------|
 *)
 
-PROCEDURE EndBuildInnerModule ;
+PROCEDURE EndBuildInnerModule (tokno: CARDINAL) ;
 VAR
    NameStart,
    NameEnd  : Name ;
 BEGIN
-   CheckForUnknownInModule ;
+   CheckForUnknownInModule (tokno) ;
    EndScope ;
    PopT(NameEnd) ;
    PopT(NameStart) ;
