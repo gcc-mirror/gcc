@@ -4569,8 +4569,8 @@ pass_phiopt::execute (function *)
 	    hoist_adjacent_loads (bb, bb1, bb2, bb3);
 
 	  /* Try to see if there are only store in each side of the if
-	     and try to remove that.  */
-	  if (EDGE_COUNT (bb3->preds) == 2)
+	     and try to remove that; don't do this for -Og.  */
+	  if (EDGE_COUNT (bb3->preds) == 2 && !optimize_debug)
 	    while (cond_if_else_store_replacement_limited (bb1, bb2, bb3))
 	      ;
 	}
@@ -4586,7 +4586,8 @@ pass_phiopt::execute (function *)
 
       /* Factor out operations from the phi if possible. */
       if (single_pred_p (bb1)
-	  && EDGE_COUNT (merge->preds) == 2)
+	  && EDGE_COUNT (merge->preds) == 2
+	  && !optimize_debug)
 	{
 	  for (gsi = gsi_start (phis); !gsi_end_p (gsi); )
 	    {
