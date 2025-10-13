@@ -5169,18 +5169,39 @@ proc check_effective_target_arm_vfp3_ok { } {
 
 # Return 1 if this is an ARM target supporting -mfpu=fp-armv8
 # -mfloat-abi=softfp.
-proc check_effective_target_arm_v8_vfp_ok {} {
-    if { [check_effective_target_arm32] } {
-	return [check_no_compiler_messages arm_v8_vfp_ok object {
-	  int foo (void)
-	  {
-	     __asm__ volatile ("vrinta.f32.f32 s0, s0");
-	     return 0;
-	  }
-	} "-mfpu=fp-armv8 -mfloat-abi=softfp"]
-    } else {
-	return 0
+proc check_effective_target_arm_v8_vfp_ok_nocache {} {
+    global et_arm_v8_vfp_flags
+    set et_arm_v8_vfp_flags ""
+    foreach flags {
+	""
+	"-mfloat-abi=softfp"
+	"-mcpu=unset -march=armv8-a+simd -mfpu=auto"
+	"-mcpu=unset -march=armv8-a+simd -mfpu=auto -mfloat-abi=softfp"
+    } {
+	if { [check_no_compiler_messages_nocache arm_v8_vfp_ok object {
+	    #if __ARM_ARCH < 8
+	    #error not armv8 or later
+	    #endif
+	    #if __ARM_ARCH_PROFILE == 'M'
+	    #error incompatible profile
+	    #endif
+	    int foo (void)
+	    {
+		__asm__ volatile ("vrinta.f32.f32 s0, s0");
+		return 0;
+	    }
+	} "$flags"] } {
+	    set et_arm_v8_vfp_flags "$flags"
+	    return 1
+	}
     }
+
+    return 0
+}
+
+proc check_effective_target_arm_v8_vfp_ok { } {
+    return [check_cached_effective_target arm_v8_vfp_ok \
+		check_effective_target_arm_v8_vfp_ok_nocache]
 }
 
 # Return 1 if this is an ARM target supporting -mfpu=vfp
@@ -5455,7 +5476,8 @@ proc add_options_for_arm_v8_vfp { flags } {
     if { ! [check_effective_target_arm_v8_vfp_ok] } {
 	return "$flags"
     }
-    return "$flags -mfpu=fp-armv8 -mfloat-abi=softfp"
+    global et_arm_v8_vfp_flags
+    return "$flags $et_arm_v8_vfp_flags"
 }
 
 proc add_options_for_arm_v8_neon { flags } {

@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_v8_vfp_ok } */
-/* { dg-options "-O2 -marm -march=armv8-a" } */
+/* { dg-options "-O2 -marm" } */
 /* { dg-add-options arm_v8_vfp } */
 
 double foo (double a)

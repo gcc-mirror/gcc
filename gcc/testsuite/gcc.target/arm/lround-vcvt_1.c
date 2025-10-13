@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-skip-if "-mpure-code supports M-profile only" { *-*-* } { "-mpure-code" } } */
 /* { dg-require-effective-target arm_v8_vfp_ok } */
-/* { dg-options "-O2 -march=armv8-a -ffast-math" } */
+/* { dg-options "-O2 -ffast-math" } */
 /* { dg-add-options arm_v8_vfp } */
 
 int
