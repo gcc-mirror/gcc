@@ -1,3 +1,17 @@
+2025-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/95543
+	PR fortran/103748
+	* decl.cc (insert_parameter_exprs): Guard param->expr before
+	using it.
+	(gfc_get_pdt_instance): Substitute paramaters in kind default
+	initializers.
+	(gfc_match_decl_type_spec): Emit an error if a type paramter
+	specification list appears in a variable declaraion with a
+	non-parameterized type.
+	* primary.cc (gfc_match_rvalue): Emit an error if a type spec
+	list is empty.
+
 2025-10-11  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/50377

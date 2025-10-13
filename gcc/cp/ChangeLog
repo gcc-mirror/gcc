@@ -1,3 +1,9 @@
+2025-10-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122163
+	* expr.cc (mark_use): When processing a reference, always return
+	an lvalue reference when !rvalue_p.
+
 2025-10-10  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/122192

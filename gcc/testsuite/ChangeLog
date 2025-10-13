@@ -1,3 +1,16 @@
+2025-10-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122163
+	* g++.dg/cpp0x/lambda/lambda-ref3.C: New test.
+
+2025-10-12  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/95543
+	PR fortran/103748
+	* gfortran.dg/pdt_17.f03: Change error message.
+	* gfortran.dg/pdt_57.f03: New test.
+	* gfortran.dg/pdt_58.f03: New test.
+
 2025-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	* gm2/iso/fail/badfield.mod: New test.
