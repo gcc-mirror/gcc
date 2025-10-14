@@ -8,5 +8,7 @@ struct A {
 
 struct S1 : A::B { }; // OK
 
-template<class T> struct S2 : T::B { }; // OK, used to fail
+template<class T> struct S2 : T::B { // OK, used to fail
+  S2() : T::B() { } // Also OK
+};
 template struct S2<A>;
