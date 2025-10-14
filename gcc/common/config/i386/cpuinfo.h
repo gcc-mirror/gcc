@@ -1024,8 +1024,6 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AMX_AVX512);
 	  if (eax & bit_AMX_TF32)
 	    set_feature (FEATURE_AMX_TF32);
-	  if (eax & bit_AMX_TRANSPOSE)
-	    set_feature (FEATURE_AMX_TRANSPOSE);
 	  if (eax & bit_AMX_FP8)
 	    set_feature (FEATURE_AMX_FP8);
 	  if (eax & bit_AMX_MOVRS)

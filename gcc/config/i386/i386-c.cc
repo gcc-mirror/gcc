@@ -743,8 +743,6 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
     def_or_undef (parse_in, "__AMX_AVX512__");
   if (isa_flag2 & OPTION_MASK_ISA2_AMX_TF32)
     def_or_undef (parse_in, "__AMX_TF32__");
-  if (isa_flag2 & OPTION_MASK_ISA2_AMX_TRANSPOSE)
-    def_or_undef (parse_in, "__AMX_TRANSPOSE__");
   if (isa_flag2 & OPTION_MASK_ISA2_AMX_FP8)
     def_or_undef (parse_in, "__AMX_FP8__");
   if (isa_flag2 & OPTION_MASK_ISA2_MOVRS)

@@ -1506,8 +1506,7 @@ See RS/6000 and PowerPC Options.
 -mamx-tile  -mamx-int8  -mamx-bf16 -muintr -mhreset -mavxvnni -mamx-fp8
 -mavx512fp16 -mavxifma -mavxvnniint8 -mavxneconvert -mcmpccxadd -mamx-fp16
 -mprefetchi -mraoint -mamx-complex -mavxvnniint16 -msm3 -msha512 -msm4 -mapxf
--musermsr -mavx10.1 -mavx10.2 -mamx-avx512 -mamx-tf32 -mamx-transpose -mmovrs
--mamx-movrs
+-musermsr -mavx10.1 -mavx10.2 -mamx-avx512 -mamx-tf32 -mmovrs -mamx-movrs
 -mcldemote  -mms-bitfields  -mno-align-stringops  -minline-all-stringops
 -minline-stringops-dynamically  -mstringop-strategy=@var{alg}
 -mkl -mwidekl
@@ -36154,9 +36153,6 @@ preferred alignment to @option{-mpreferred-stack-boundary=2}.
 @opindex mamx-tf32
 @itemx -mamx-tf32
 @need 200
-@opindex mamx-transpose
-@itemx -mamx-transpose
-@need 200
 @itemx -mamx-fp8
 @opindex mamx-fp8
 @need 200
@@ -36175,9 +36171,9 @@ WAITPKG, VPCLMULQDQ, AVX512BITALG, MOVDIRI, MOVDIR64B, AVX512BF16, ENQCMD,
 AVX512VPOPCNTDQ, AVX512VNNI, SERIALIZE, UINTR, HRESET, AMXTILE, AMXINT8,
 AMXBF16, KL, WIDEKL, AVXVNNI, AVX512-FP16, AVXIFMA, AVXVNNIINT8, AVXNECONVERT,
 CMPCCXADD, AMX-FP16, PREFETCHI, RAOINT, AMX-COMPLEX, AVXVNNIINT16, SM3, SHA512,
-SM4, APX_F, USER_MSR, AVX10.1, AVX10.2, AMX-AVX512, AMX-TF32, AMX-TRANSPOSE,
-AMX-FP8, MOVRS, AMX-MOVRS or CLDEMOTE extended instruction sets. Each has a
-corresponding @option{-mno-} option to disable use of these instructions.
+SM4, APX_F, USER_MSR, AVX10.1, AVX10.2, AMX-AVX512, AMX-TF32, AMX-FP8, MOVRS,
+AMX-MOVRS or CLDEMOTE extended instruction sets. Each has a corresponding
+@option{-mno-} option to disable use of these instructions.
 
 These extensions are also available as built-in functions: see
 @ref{x86 Built-in Functions}, for details of the functions enabled and

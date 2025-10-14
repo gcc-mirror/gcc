@@ -11238,17 +11238,6 @@ proc check_effective_target_amx_tf32 { } {
     } "-mamx-tf32" ]
 }
 
-# Return 1 if amx-transpose instructions can be compiled.
-proc check_effective_target_amx_transpose { } {
-    return [check_no_compiler_messages amx_transpose object {
-	void
-	foo ()
-	{
-	  __asm__ volatile ("ttransposed\t%%tmm1, %%tmm2" ::);
-	}
-    } "-mamx-transpose" ]
-}
-
 # Return 1 if amx-fp8 instructions can be compiled.
 proc check_effective_target_amx_fp8 { } {
     return [check_no_compiler_messages amx_fp8 object {

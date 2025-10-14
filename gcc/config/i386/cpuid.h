@@ -170,7 +170,6 @@
 /* AMX sub leaf (%eax == 0x1e, %ecx == 1) */
 /* %eax */
 #define bit_AMX_FP8	(1 << 4)
-#define bit_AMX_TRANSPOSE	(1 << 5)
 #define bit_AMX_TF32	(1 << 6)
 #define bit_AMX_AVX512  (1 << 7)
 #define bit_AMX_MOVRS	(1 << 8)

@@ -260,9 +260,6 @@ main ()
 #ifdef AMX_TF32
       && __builtin_cpu_supports ("amx-tf32")
 #endif
-#ifdef AMX_TRANSPOSE
-      && __builtin_cpu_supports ("amx-transpose")
-#endif
 #ifdef AMX_FP8
       && __builtin_cpu_supports ("amx-fp8")
 #endif

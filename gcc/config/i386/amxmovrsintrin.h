@@ -59,53 +59,6 @@ __asm__ volatile					  \
 #pragma GCC pop_options
 #endif /* __DISABLE_AMX_MOVRS__ */
 
-#if !defined(__AMX_MOVRS__) || !defined (__AMX_TRANSPOSE__)
-#pragma GCC push_options
-#pragma GCC target("amx-movrs,amx-transpose")
-#define __DISABLE_AMX_MOVRS_TRANSPOSE__
-#endif /* __AMX_MOVRS_TRANSPOSE__ */
-
-#define _tile_2rpntlvwz0rs_internal(tdst, base, stride)	  \
-  __asm__ volatile					  \
-  ("{t2rpntlvwz0rs\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz0rs\t%%tmm"#tdst", [%0+%1*1]}"	  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
-
-#define _tile_2rpntlvwz0rst1_internal(tdst, base, stride) \
-  __asm__ volatile					  \
-  ("{t2rpntlvwz0rst1\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz0rst1\t%%tmm"#tdst", [%0+%1*1]}"	  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
-
-#define _tile_2rpntlvwz1rs_internal(tdst, base, stride)	  \
-  __asm__ volatile					  \
-  ("{t2rpntlvwz1rs\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz1rs\t%%tmm"#tdst", [%0+%1*1]}"		  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
-
-#define _tile_2rpntlvwz1rst1_internal(tdst, base, stride) \
-  __asm__ volatile					  \
-  ("{t2rpntlvwz1rst1\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz1rst1\t%%tmm"#tdst", [%0+%1*1]}"	  \
-   :: "r" ((const void*) (base)), "r" ((long) (stride)))
-
-#define _tile_2rpntlvwz0rs(tdst, base, stride)		  \
-  _tile_2rpntlvwz0rs_internal(tdst, base, stride)
-
-#define _tile_2rpntlvwz0rst1(tdst, base, stride)	  \
-  _tile_2rpntlvwz0rst1_internal(tdst, base, stride)
-
-#define _tile_2rpntlvwz1rs(tdst, base, stride)		  \
-  _tile_2rpntlvwz1rs_internal(tdst, base, stride)
-
-#define _tile_2rpntlvwz1rst1(tdst, base, stride)	  \
-  _tile_2rpntlvwz1rst1_internal(tdst, base, stride)
-
-#ifdef __DISABLE_AMX_MOVRS_TRANSPOSE__
-#undef __DISABLE_AMX_MOVRS_TRANSPOSE__
-#pragma GCC pop_options
-#endif /* __DISABLE_AMX_MOVRS_TRANSPOSE__ */
-
 #endif /* __x86_64__ */
 
 #endif /* _AMX_MOVRSINTRIN_H_INCLUDED */

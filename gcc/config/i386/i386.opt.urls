@@ -605,9 +605,6 @@ UrlSuffix(gcc/x86-Options.html#index-mamx-avx512)
 mamx-tf32
 UrlSuffix(gcc/x86-Options.html#index-mamx-tf32)
 
-mamx-transpose
-UrlSuffix(gcc/x86-Options.html#index-mamx-transpose)
-
 mamx-fp8
 UrlSuffix(gcc/x86-Options.html#index-mamx-fp8)
 

@@ -2698,9 +2698,6 @@ Target supports the execution of @code{amx-movrs} instructions.
 @item amx_tf32
 Target supports the execution of @code{amx-tf32} instructions.
 
-@item amx_transpose
-Target supports the execution of @code{amx-transpose} instructions.
-
 @item amx_fp8
 Target supports the execution of @code{amx-fp8} instructions.
 

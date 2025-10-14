@@ -1362,10 +1362,6 @@ mamx-tf32
 Target Mask(ISA2_AMX_TF32) Var(ix86_isa_flags2) Save
 Support AMX-TF32 built-in functions and code generation.
 
-mamx-transpose
-Target Mask(ISA2_AMX_TRANSPOSE) Var(ix86_isa_flags2) Save
-Support AMX-TRANSPOSE built-in functions and code generation.
-
 mamx-fp8
 Target Mask(ISA2_AMX_FP8) Var(ix86_isa_flags2) Save
 Support AMX-FP8 built-in functions and code generation.

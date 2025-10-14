@@ -136,8 +136,6 @@
 
 #include <amxtf32intrin.h>
 
-#include <amxtransposeintrin.h>
-
 #include <amxfp8intrin.h>
 
 #include <prfchwintrin.h>
