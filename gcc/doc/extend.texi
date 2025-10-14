@@ -3471,12 +3471,41 @@ Function Attributes}, @ref{PowerPC Function Attributes},
 @ref{ARM Function Attributes}, @ref{AArch64 Function Attributes},
 and @ref{S/390 Function Attributes} for details.
 
+On targets supporting @code{target} function multiversioning (x86), when using
+C++, you can declare multiple functions with the same signatures but different
+@code{target} attribute values, and the correct version is chosen by the
+dynamic linker. In the example below, two function versions are produced
+with differing mangling. Additionally an ifunc resolver is created to
+select the correct version to populate the @code{func} symbol.
+
+@smallexample
+int func (void) __attribute__ ((target ("arch=core2"))) @{ return 1; @}
+int func (void) __attribute__ ((target ("sse3"))) @{ return 2; @}
+@end smallexample
+
+Declarations annotated with @code{target} cannot be used in combination with
+declarations annotated with @code{target_clones} in a single multiversioned
+function definition.
+
+@xref{Function Multiversioning} for more details.
+
+@cindex @code{target_version} function attribute
+@item target_version (@var{option})
+On targets with @code{target_version} function multiversioning (AArch64 and
+RISC-V) in C or C++, you can declare multiple functions with
+@code{target_version} or @code{target_clones} attributes to define a function
+version set.
+
+@xref{Function Multiversioning} for more details.
+
 @cindex @code{target_clones} function attribute
 @item target_clones (@var{options})
 The @code{target_clones} attribute is used to specify that a function
 be cloned into multiple versions compiled with different target options
-than specified on the command line.  The supported options and restrictions
-are the same as for @code{target} attribute.
+than specified on the command line.
+
+For the x86 and PowerPC targets, the supported options and restrictions
+are the same as for the @code{target} attribute.
 
 For instance, on an x86, you could compile a function with
 @code{target_clones("sse4.1,avx")}.  GCC creates two function clones,
@@ -3488,16 +3517,20 @@ function clones, one compiled with @option{-mcpu=power9} and another
 with the default options.  GCC must be configured to use GLIBC 2.23 or
 newer in order to use the @code{target_clones} attribute.
 
-It also creates a resolver function (see
-the @code{ifunc} attribute above) that dynamically selects a clone
-suitable for current architecture.  The resolver is created only if there
-is a usage of a function with @code{target_clones} attribute.
+@code{target_clones} works similarly for targets that support the
+@code{target_version} attribute (AArch64 and RISC-V).  The attribute takes
+multiple arguments, and generates a versioned clone for each.  A function
+annotated with @code{target_clones} is equivalent to the same function
+duplicated for each valid version string in the argument, where each
+version is instead annotated with @code{target_version}.  This means that a
+@code{target_clones} annotated function definition can be used in combination
+with @code{target_version} annotated functions definitions and other
+@code{target_clones} annotated function definitions.
 
-Note that any subsequent call of a function without @code{target_clone}
-from a @code{target_clone} caller will not lead to copying
-(target clone) of the called function.
-If you want to enforce such behavior,
-we recommend declaring the calling function with the @code{flatten} attribute?
+For these targets the supported options and restrictions are the same as for
+the @code{target_version} attribute.
+
+@xref{Function Multiversioning} for more details.
 
 @cindex @code{unavailable} function attribute
 @item unavailable
@@ -30938,11 +30971,79 @@ For the effects of the @code{hot} attribute on functions, see
 @section Function Multiversioning
 @cindex function versions
 
-With the GNU C++ front end, for x86 targets, you may specify multiple
-versions of a function, where each function is specialized for a
-specific target feature.  At runtime, the appropriate version of the
-function is automatically executed depending on the characteristics of
-the execution platform.  Here is an example.
+Function multiversioning is a mechanism that enables compiling multiple
+versions of a function, each specialized for different combinations of
+architecture extensions.  Additionally, the compiler generates a resolver that
+the dynamic linker uses to detect architecture support and choose the
+appropriate version at runtime.
+
+Function multiversioning relies on the indirect function extension to the ELF
+standard, and therefore Binutils version 2.20.1 or higher and GNU C Library
+version 2.11.1 are required to use this feature.
+
+There are two versions of function multiversioning supported by GCC.
+
+For targets supporting the @code{target_version} attribute (AArch64 and RISC-V),
+when compiling for C or C++, a function version set can be defined by a
+combination of function definitions with @code{target_version} and
+@code{target_clones} attributes, across translation units.
+
+For example:
+
+@smallexample
+// fmv.h:
+int foo ();
+int foo [[gnu::target_clones("sve", "sve2")]] ();
+int foo [[gnu::target_version("dotprod;priority=1")]] ();
+
+// fmv1.cc
+#include "fmv.h"
+
+int foo ()
+@{
+  // The default version of foo.
+  return 0;
+@}
+
+// fmv2.cc:
+#include "fmv.h"
+
+int foo [[gnu::target_clones("sve", "sve2")]] ()
+@{
+  // foo versions for sve and sve2
+  return 1;
+@}
+
+int foo [[gnu::target_version("dotprod")]] ()
+@{
+  // foo version for dotprod extension
+  return 2;
+@}
+
+// main.cc
+#include "fmv.h"
+
+int main ()
+@{
+  int (*p)() = &foo;
+  assert ((*p) () == foo ());
+  return 0;
+@}
+@end smallexample
+
+This example results in 4 versions of the foo function being generated, and
+a resolver which is used by the dynamic linker to choose the correct version.
+
+For the AArch64 target GCC implements function multiversionsing, with the
+semantics and version strings as specified in the
+@ref{ARM C Language Extensions (ACLE)}.
+
+For targets that support multiversioning with the @code{target} attribute
+(x86) a multiversioned function can be defined with either multiple function
+definitions with the @code{target} attribute (in C++) within a translation unit,
+or a single definition with the @code{target_clones} attribute.
+
+Here is an example.
 
 @smallexample
 __attribute__ ((target ("default")))
