@@ -5726,6 +5726,22 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 
   maxval = (HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
+  /* For floating-point comparisons, prefer >= and > over <= and < since
+     the former are supported by VSEL on some architectures.  Only do this
+     if both operands are registers.  */
+  if (GET_MODE_CLASS (mode) == MODE_FLOAT
+      && (*code == LE
+	  || *code == LT
+	  || *code == UNGT
+	  || *code == UNGE)
+      && register_operand (*op0, mode)
+      && register_operand (*op1, mode))
+    {
+      std::swap (*op0, *op1);
+      *code = (int) swap_condition ((rtx_code)*code);
+      return;
+    }
+
   /* For DImode, we have GE/LT/GEU/LTU comparisons (with cmp/sbc).  In
      ARM mode we can also use cmp/cmpeq for GTU/LEU.  GT/LE must be
      either reversed or (for constant OP1) adjusted to GE/LT.
@@ -32860,6 +32876,9 @@ arm_validize_comparison (rtx *comparison, rtx * op1, rtx * op2)
     case E_HFmode:
       if (!TARGET_VFP_FP16INST)
 	break;
+      if (!arm_vsel_comparison_operator (*comparison, mode))
+	return false;
+
       /* FP16 comparisons are done in SF mode.  */
       mode = SFmode;
       *op1 = convert_to_mode (mode, *op1, 1);
