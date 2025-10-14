@@ -4189,13 +4189,49 @@ vect_build_slp_instance (vec_info *vinfo,
 static bool
 vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 			      scalar_stmts_to_slp_tree_map_t *bst_map,
-			      vec<stmt_vec_info> &scalar_stmts,
-			      stmt_vec_info reduc_phi_info,
+			      stmt_vec_info scalar_stmt,
 			      unsigned max_tree_size, unsigned *limit)
 {
-  /* If there's no budget left bail out early.  */
-  if (*limit == 0)
+  vec<stmt_vec_info> scalar_stmts = vNULL;
+
+  bool fail = false;
+  /* ???  We could leave operation code checking to SLP discovery.  */
+  code_helper code = STMT_VINFO_REDUC_CODE (STMT_VINFO_REDUC_DEF
+					      (vect_orig_stmt (scalar_stmt)));
+  bool first = true;
+  stmt_vec_info next_stmt = scalar_stmt;
+  do
+    {
+      stmt_vec_info stmt = next_stmt;
+      gimple_match_op op;
+      if (!gimple_extract_op (STMT_VINFO_STMT (stmt), &op))
+	gcc_unreachable ();
+      tree reduc_def = gimple_arg (STMT_VINFO_STMT (stmt),
+				   STMT_VINFO_REDUC_IDX (stmt));
+      next_stmt = vect_stmt_to_vectorize (vinfo->lookup_def (reduc_def));
+      gcc_assert (is_a <gphi *> (STMT_VINFO_STMT (next_stmt))
+		  || STMT_VINFO_REDUC_IDX (next_stmt) != -1);
+      if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)), &op))
+	gcc_unreachable ();
+      if (CONVERT_EXPR_CODE_P (op.code)
+	  && (first
+	      || is_a <gphi *> (STMT_VINFO_STMT (next_stmt))))
+	;
+      else if (code != op.code)
+	{
+	  fail = true;
+	  break;
+	}
+      else
+	scalar_stmts.safe_push (stmt);
+      first = false;
+    }
+  while (!is_a <gphi *> (STMT_VINFO_STMT (next_stmt)));
+  if (fail || scalar_stmts.length () <= 1)
     return false;
+
+  scalar_stmts.reverse ();
+  stmt_vec_info reduc_phi_info = next_stmt;
 
   /* Build the tree for the SLP instance.  */
   vec<stmt_vec_info> root_stmt_infos = vNULL;
@@ -4315,7 +4351,9 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 
       return true;
     }
+
   /* Failed to SLP.  */
+  scalar_stmts.release ();
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location,
 		     "SLP discovery of reduction chain failed\n");
@@ -4338,55 +4376,14 @@ vect_analyze_slp_reduction (loop_vec_info vinfo,
   if (*limit == 0)
     return false;
 
-  vec<stmt_vec_info> scalar_stmts = vNULL;
   /* Try to gather a reduction chain.  */
   if (! force_single_lane
-      && STMT_VINFO_DEF_TYPE (scalar_stmt) == vect_reduction_def)
-    {
-      bool fail = false;
-      /* ???  We could leave operation code checking to SLP discovery.  */
-      code_helper code
-	= STMT_VINFO_REDUC_CODE (STMT_VINFO_REDUC_DEF
-				   (vect_orig_stmt (scalar_stmt)));
-      bool first = true;
-      stmt_vec_info next_stmt = scalar_stmt;
-      do
-	{
-	  stmt_vec_info stmt = next_stmt;
-	  gimple_match_op op;
-	  if (!gimple_extract_op (STMT_VINFO_STMT (stmt), &op))
-	    gcc_unreachable ();
-	  tree reduc_def = gimple_arg (STMT_VINFO_STMT (stmt),
-				       STMT_VINFO_REDUC_IDX (stmt));
-	  next_stmt = vect_stmt_to_vectorize (vinfo->lookup_def (reduc_def));
-	  gcc_assert (is_a <gphi *> (STMT_VINFO_STMT (next_stmt))
-		      || STMT_VINFO_REDUC_IDX (next_stmt) != -1);
-	  if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)), &op))
-	    gcc_unreachable ();
-	  if (CONVERT_EXPR_CODE_P (op.code)
-	      && (first
-		  || is_a <gphi *> (STMT_VINFO_STMT (next_stmt))))
-	    ;
-	  else if (code != op.code)
-	    {
-	      fail = true;
-	      break;
-	    }
-	  else
-	    scalar_stmts.safe_push (stmt);
-	  first = false;
-	}
-      while (!is_a <gphi *> (STMT_VINFO_STMT (next_stmt)));
-      if (!fail && scalar_stmts.length () > 1)
-	{
-	  scalar_stmts.reverse ();
-	  if (vect_analyze_slp_reduc_chain (vinfo, bst_map, scalar_stmts,
-					    next_stmt, max_tree_size, limit))
-	    return true;
-	  scalar_stmts.release ();
-	}
-    }
+      && STMT_VINFO_DEF_TYPE (scalar_stmt) == vect_reduction_def
+      && vect_analyze_slp_reduc_chain (vinfo, bst_map, scalar_stmt,
+				       max_tree_size, limit))
+    return true;
 
+  vec<stmt_vec_info> scalar_stmts;
   scalar_stmts.create (1);
   scalar_stmts.quick_push (scalar_stmt);
 
