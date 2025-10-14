@@ -406,11 +406,12 @@ tag_conditions (const char *filename, unsigned /* tag */, int length,
     {
       for (unsigned ix = 0; ix != n_conditions; ix++)
 	{
+	  const gcov_position_t position = gcov_position ();
 	  const unsigned blockno = gcov_read_unsigned ();
 	  const unsigned nterms = gcov_read_unsigned ();
 
 	  printf ("\n");
-	  print_prefix (filename, depth, gcov_position ());
+	  print_prefix (filename, depth, position);
 	  printf (VALUE_PADDING_PREFIX "block %u:", blockno);
 	  printf (" %u", nterms);
 	}
