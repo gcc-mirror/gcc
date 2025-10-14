@@ -1,3 +1,67 @@
+2025-10-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122241
+	* gm2-compiler/M2Quads.mod (BuildSizeFunction): Improve
+	error message.
+	(BuildTSizeFunction): Improve error message.
+	* gm2-compiler/P3Build.bnf (ProgramModule): New variable
+	namet.
+	Pass namet to P3EndBuildProgModule.
+	(ImplementationModule): New variable namet.
+	Pass namet to P3EndBuildImpModule.
+	(ModuleDeclaration): New variable namet.
+	Pass namet to P3EndBuildInnerModule.
+	(DefinitionModule): New variable namet.
+	Pass namet to P3EndBuildDefModule.
+	* gm2-compiler/P3SymBuild.def (P3EndBuildDefModule): New
+	parameter tokno.
+	(P3EndBuildImpModule): Ditto.
+	(P3EndBuildProgModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	* gm2-compiler/P3SymBuild.mod (P3EndBuildDefModule): New
+	parameter tokno.
+	Pass tokno to CheckForUnknownInModule.
+	(P3EndBuildImpModule): Ditto.
+	(P3EndBuildProgModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	* gm2-compiler/PCBuild.bnf (ProgramModule): New variable
+	namet.
+	Pass namet to PCEndBuildProgModule.
+	(ImplementationModule): New variable namet.
+	Pass namet to PCEndBuildImpModule.
+	(ModuleDeclaration): New variable namet.
+	Pass namet to PCEndBuildInnerModule.
+	(DefinitionModule): New variable namet.
+	Pass namet to PCEndBuildDefModule.
+	* gm2-compiler/PCSymBuild.def (PCEndBuildDefModule): New
+	parameter tokno.
+	(PCEndBuildImpModule): Ditto.
+	(PCEndBuildProgModule):	Ditto.
+	(PCEndBuildInnerModule): Ditto.
+	* gm2-compiler/PCSymBuild.mod (PCEndBuildDefModule): New
+	parameter tokno.
+	Pass tokno to CheckForUnknownInModule.
+	(PCEndBuildImpModule): Ditto.
+	(PCEndBuildProgModule): Ditto.
+	(PCEndBuildInnerModule): Ditto.
+	* gm2-compiler/PHBuild.bnf (DefinitionModule): New variable
+	namet.
+	Pass namet to PHEndBuildDefModule.
+	(ModuleDeclaration): New variable namet.
+	Pass namet to PHEndBuildProgModule.
+	(ImplementationModule): New variable namet.
+	Pass namet to PHEndBuildImpModule.
+	(ModuleDeclaration): New variable namet.
+	Pass namet to PHEndBuildInnerModule.
+	(DefinitionModule): New variable namet.
+	Pass namet to PHEndBuildDefModule.
+	* gm2-compiler/SymbolTable.def (CheckForUnknownInModule): Add
+	tokno parameter.
+	* gm2-compiler/SymbolTable.mod (CheckForUnknownInModule): Add
+	tokno parameter.
+	Pass tokno to CheckForUnknowns.
+	(CheckForUnknowns): Reimplement.
+
 2025-10-11  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122241

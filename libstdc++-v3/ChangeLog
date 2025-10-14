@@ -1,3 +1,25 @@
+2025-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/stl_iterator_base_funcs.h (advance): Fix comment.
+
+2025-10-13  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/atomic_base.h: Implement address().
+	* include/bits/version.def: Bump version number.
+	* include/bits/version.h: Regenerate.
+	* testsuite/29_atomics/atomic_ref/address.cc: New test.
+
+2025-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (_Utf_view::_M_read_reverse_utf16):
+	Fix check for high surrogate preceding low surrogate.
+	* testsuite/ext/unicode/view.cc: Check unpaired low surrogates.
+
+2025-10-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/unicode.h (__is_single_code_unit): Fix check for
+	7-bit ASCII characters.
+
 2025-10-11  Gerald Pfeifer  <gerald@pfeifer.com>
 
 	* doc/xml/manual/build_hacking.xml: Update Autoconf manual link.

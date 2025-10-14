@@ -1,3 +1,11 @@
+2025-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121191
+	* trans-array.cc (has_parameterized_comps): New function which
+	checks if a derived type has parameterized components.
+	( gfc_deallocate_pdt_comp): Use it to prevent deallocation of
+	PDTs if there are no parameterized components.
+
 2025-10-12  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/95543

@@ -1,3 +1,61 @@
+2025-10-13  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/120811
+	* config/riscv/riscv.cc (synthesize_add): Exchange constant terms when
+	generating addi pairs.
+	(synthesize_addsi): Similarly.
+	* config/riscv/riscv.md (addptr<mode>3): New define_expand.
+	(*add<mode>3_const_sum_of_two_s12): Remove pattern.
+
+2025-10-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120674
+	* config/riscv/riscv.cc (riscv_dwarf_poly_indeterminite_value): Do not
+	set FACTOR to zero, for that case use one instead.
+
+2025-10-13  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add simplifed pattern for widen_mul based unsigned
+	SAT_MUL.
+
+2025-10-13  Jan Hubicka  <hubicka@ucw.cz>
+
+	* ipa-inline.cc (max_count): Remove.
+	(has_nonzero_ipa_profile): New.
+	(inline_small_functions): Update.
+	(dump_inline_stats): Update.
+
+2025-10-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118019
+	* internal-fn.cc (get_supported_else_vals): Exit at invalid
+	index.
+	(internal_strided_fn_supported_p): New funtion.
+	* internal-fn.h (internal_strided_fn_supported_p): Declare.
+	* tree-vect-stmts.cc (vector_vector_composition_type):
+	Add vector_only argument.
+	(vect_use_grouped_gather): New function.
+	(vect_get_store_rhs): Adjust docs of
+	vector_vector_composition_type.
+	(get_load_store_type): Try grouped gather.
+	(vectorizable_store): Use punned vectype.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (struct vect_load_store_data): Add punned
+	vectype.
+
+2025-10-13  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122213
+	* match.pd: Canonicalize unsigned pow2 div only for trunk, floor and
+	exact div.
+
+2025-10-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-patterns.cc (integer_type_for_mask): Add optional
+	output dt argument.
+	(vect_recog_bool_pattern): Make sure to not apply the bitwise
+	binary pattern to an external operand.
+
 2025-10-11  Bohan Lei  <garthlei@linux.alibaba.com>
 
 	PR target/119587

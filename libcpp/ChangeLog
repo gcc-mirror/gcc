@@ -1,3 +1,8 @@
+2025-10-13  Pierre Marie de Rodat  <derodat@adacore.com>
+
+	* init.cc (read_original_directory): Attempt to decode escape
+	sequences with cpp_interpret_string_notranslate.
+
 2025-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* makeucnid.cc (write_copyright): Adjust copyright year.

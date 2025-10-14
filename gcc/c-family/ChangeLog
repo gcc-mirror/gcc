@@ -1,3 +1,8 @@
+2025-10-13  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* c.opt: Enable Wignored-attributes for Objective-C and
+	Objective-C++.
+
 2025-10-09  David Faust  <david.faust@oracle.com>
 
 	* c-attribs.cc (c_common_attribute_table): Add btf_decl_tag and

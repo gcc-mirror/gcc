@@ -1,3 +1,49 @@
+2025-10-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/cpp/cpp.exp: Process .i files.
+	* gcc.dg/cpp/pr36674.i: Pass -Wno-implicit-int.
+	* gcc.dg/cpp/escape-3.i: New test.
+
+2025-10-13  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/120811
+	* gcc.target/riscv/add-synthesis-1.c: Adjust const to fit in range.
+	* gcc.target/riscv/pr120811.c: Add new test case.
+	* gcc.target/riscv/sum-of-two-s12-const-1.c: Adjust const to fit in range.
+
+2025-10-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120674
+	* gcc.target/riscv/pr120674.c: New test.
+
+2025-10-13  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122228
+	* g++.dg/cpp1y/func_constexpr3.C: New test.
+
+2025-10-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122241
+	* gm2/iso/fail/badconst.mod: New test.
+	* gm2/iso/fail/badtype.mod: New test.
+	* gm2/iso/fail/badvar.mod: New test.
+
+2025-10-13  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* gcc.target/aarch64/torture/pr121772.c: Add -fchecking to
+	dg-options.
+
+2025-10-13  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/118019
+	* gcc.target/riscv/rvv/autovec/pr118019-2.c: New test.
+
+2025-10-13  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/121191
+	* gfortran.dg/pdt_59.f03: New test.
+
 2025-10-12  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122163
