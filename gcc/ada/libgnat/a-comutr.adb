@@ -1844,11 +1844,11 @@ is
       end Rec;
 
    begin
-      if First_Child (Root (V)) = No_Element then
+      if Is_Empty (V) then
          Array_Before (S);
          Array_After (S);
       else
-         Rec (First_Child (Root (V)));
+         Rec (Root (V));
       end if;
    end Put_Image;
 
