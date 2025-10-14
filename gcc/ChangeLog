@@ -1,3 +1,9 @@
+2025-10-13  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122213
+	* match.pd: Canonicalize unsigned pow2 div only for trunk, floor and
+	exact div.
+
 2025-10-11  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	Backported from master:
