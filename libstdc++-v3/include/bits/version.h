@@ -1956,6 +1956,16 @@
 #endif /* !defined(__cpp_lib_ranges_starts_ends_with) */
 #undef __glibcxx_want_ranges_starts_ends_with
 
+#if !defined(__cpp_lib_ranges_indices)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_ranges_indices 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_ranges_indices)
+#   define __cpp_lib_ranges_indices 202506L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_ranges_indices) */
+#undef __glibcxx_want_ranges_indices
+
 #if !defined(__cpp_lib_constexpr_bitset)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED && (__cpp_constexpr_dynamic_alloc)
 #  define __glibcxx_constexpr_bitset 202202L

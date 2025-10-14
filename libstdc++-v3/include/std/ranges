@@ -65,6 +65,7 @@
 #define __glibcxx_want_ranges_chunk
 #define __glibcxx_want_ranges_chunk_by
 #define __glibcxx_want_ranges_enumerate
+#define __glibcxx_want_ranges_indices
 #define __glibcxx_want_ranges_join_with
 #define __glibcxx_want_ranges_repeat
 #define __glibcxx_want_ranges_slide
@@ -785,6 +786,18 @@ namespace views
   };
 
   inline constexpr _Iota iota{};
+
+#ifdef __cpp_lib_ranges_indices // C++ >= 26
+  struct _Indices
+  {
+    template<ranges::__detail::__is_integer_like _Tp>
+      [[nodiscard]] constexpr auto
+      operator() (_Tp __e) const noexcept
+      { return iota(_Tp{}, __e); }
+  };
+
+  inline constexpr _Indices indices{};
+#endif // __cpp_lib_ranges_indices
 } // namespace views
 
 #if _GLIBCXX_HOSTED
