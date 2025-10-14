@@ -330,6 +330,13 @@ DEF_INTERNAL_OPTAB_FN (REDUC_IOR, ECF_CONST | ECF_NOTHROW,
 		       reduc_ior_scal, unary)
 DEF_INTERNAL_OPTAB_FN (REDUC_XOR, ECF_CONST | ECF_NOTHROW,
 		       reduc_xor_scal, unary)
+DEF_INTERNAL_OPTAB_FN (REDUC_SBOOL_AND, ECF_CONST | ECF_NOTHROW,
+		       reduc_sbool_and_scal, reduc_sbool)
+DEF_INTERNAL_OPTAB_FN (REDUC_SBOOL_IOR, ECF_CONST | ECF_NOTHROW,
+		       reduc_sbool_ior_scal, reduc_sbool)
+DEF_INTERNAL_OPTAB_FN (REDUC_SBOOL_XOR, ECF_CONST | ECF_NOTHROW,
+		       reduc_sbool_xor_scal, reduc_sbool)
+
 
 /* Extract the last active element from a vector.  */
 DEF_INTERNAL_OPTAB_FN (EXTRACT_LAST, ECF_CONST | ECF_NOTHROW,

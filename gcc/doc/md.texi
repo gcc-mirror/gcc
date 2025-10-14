@@ -5736,6 +5736,19 @@ of a vector of mode @var{m}.  Operand 1 is the vector input and operand 0
 is the scalar result.  The mode of the scalar result is the same as one
 element of @var{m}.
 
+@cindex @code{reduc_sbool_and_scal_@var{m}} instruction pattern
+@cindex @code{reduc_sbool_ior_scal_@var{m}} instruction pattern
+@cindex @code{reduc_sbool_xor_scal_@var{m}} instruction pattern
+@item @samp{reduc_sbool_and_scal_@var{m}}
+@itemx @samp{reduc_sbool_ior_scal_@var{m}}
+@itemx @samp{reduc_sbool_xor_scal_@var{m}}
+Compute the bitwise @code{AND}/@code{IOR}/@code{XOR} reduction of the elements
+of a vector boolean of mode @var{m}.  Operand 1 is the vector input and
+operand 0 is the scalar result.  The mode of the scalar result is @var{QImode}
+with its value either zero or one.  If mode @var{m} is a scalar integer mode
+then operand 2 is the number of elements in the input vector to provide
+disambiguation for the case @var{m} is ambiguous.
+
 @cindex @code{extract_last_@var{m}} instruction pattern
 @item @code{extract_last_@var{m}}
 Find the last set bit in mask operand 1 and extract the associated element
