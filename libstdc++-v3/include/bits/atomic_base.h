@@ -1538,7 +1538,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_required_aligment()
       {
 	if constexpr (is_floating_point_v<_Vt> || is_pointer_v<_Vt>)
-	  return alignof(_Vt);
+	  return __alignof__(_Vt);
 	else if constexpr ((sizeof(_Vt) & (sizeof(_Vt) - 1)) || sizeof(_Vt) > 16)
 	  return alignof(_Vt);
 	else
