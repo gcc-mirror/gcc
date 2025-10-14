@@ -1426,7 +1426,6 @@ namespace __format
 	_M_format_range(_Rg&& __rg, basic_format_context<_Out, _CharT>& __fc) const
 	{
 	  using _Range = remove_reference_t<_Rg>;
-	  using _String = basic_string<_CharT>;
 	  using _String_view = basic_string_view<_CharT>;
 	  if constexpr (!is_lvalue_reference_v<_Rg>)
 	    return _M_format_range<_Range&>(__rg, __fc);
