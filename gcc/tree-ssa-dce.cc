@@ -1682,9 +1682,12 @@ eliminate_unnecessary_stmts (bool aggressive)
 		  update_stmt (call_stmt);
 		  release_ssa_name (name);
 
+		  /* __builtin_stack_save without lhs is not needed.  */
+		  if (gimple_call_builtin_p (call_stmt, BUILT_IN_STACK_SAVE))
+		    remove_dead_stmt (&gsi, bb, to_remove_edges);
 		  /* GOMP_SIMD_LANE (unless three argument) or ASAN_POISON
 		     without lhs is not needed.  */
-		  if (gimple_call_internal_p (call_stmt))
+		  else if (gimple_call_internal_p (call_stmt))
 		    switch (gimple_call_internal_fn (call_stmt))
 		      {
 		      case IFN_GOMP_SIMD_LANE:
