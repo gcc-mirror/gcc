@@ -476,6 +476,128 @@ finish_contract_condition (cp_expr condition)
   return condition_conversion (condition);
 }
 
+/* Wrap the DECL into VIEW_CONVERT_EXPR representing const qualified version
+   of the declaration.  */
+
+tree
+view_as_const (tree decl)
+{
+  if (!contract_const_wrapper_p (decl))
+    {
+      tree ctype = TREE_TYPE (decl);
+      location_t loc =
+	  EXPR_P (decl) ? EXPR_LOCATION (decl) : DECL_SOURCE_LOCATION (decl);
+      ctype = cp_build_qualified_type (ctype, (cp_type_quals (ctype)
+					       | TYPE_QUAL_CONST));
+      decl = build1 (VIEW_CONVERT_EXPR, ctype, decl);
+      SET_EXPR_LOCATION (decl, loc);
+      /* Mark the VCE as contract const wrapper.  */
+      CONST_WRAPPER_P (decl) = true;
+    }
+  return decl;
+}
+
+/* Constify access to DECL from within the contract condition.  */
+
+tree
+constify_contract_access (tree decl)
+{
+  /* We check if we have a variable, a parameter, a variable of reference type,
+   * or a parameter of reference type
+   */
+  if (!TREE_READONLY (decl)
+      && (VAR_P (decl)
+	  || (TREE_CODE (decl) == PARM_DECL)
+	  || (REFERENCE_REF_P (decl)
+	      && (VAR_P (TREE_OPERAND (decl, 0))
+		  || (TREE_CODE (TREE_OPERAND (decl, 0)) == PARM_DECL)
+		  || (TREE_CODE (TREE_OPERAND (decl, 0))
+		      == TEMPLATE_PARM_INDEX)))))
+    decl = view_as_const (decl);
+
+  return decl;
+}
+
+/* Indicate that PARM_DECL DECL is ODR used in a postcondition.  */
+
+static void
+set_parm_used_in_post (tree decl, bool constify = true)
+{
+  gcc_checking_assert (TREE_CODE (decl) == PARM_DECL);
+  DECL_LANG_FLAG_4 (decl) = constify;
+}
+
+/* Test if PARM_DECL is ODR used in a postcondition.  */
+
+static bool
+parm_used_in_post_p (const_tree decl)
+{
+  /* Check if this parameter is odr used within a function's postcondition  */
+  return ((TREE_CODE (decl) == PARM_DECL) && DECL_LANG_FLAG_4 (decl));
+}
+
+/* If declaration DECL is a PARM_DECL and it appears in a postcondition, then
+   check that it is not a non-const by-value param. LOCATION is where the
+   expression was found and is used for diagnostic purposes.  */
+
+void
+check_param_in_postcondition (tree decl, location_t location)
+{
+  if (processing_postcondition
+      && TREE_CODE (decl) == PARM_DECL
+      /* TREE_CODE (decl) == PARM_DECL only holds for non-reference
+	 parameters.  */
+      && !cp_unevaluated_operand
+      /* Return value parameter has DECL_ARTIFICIAL flag set. The flag
+	 presence of the flag should be sufficient to distinguish the
+	 return value parameter in this context.  */
+      && !(DECL_ARTIFICIAL (decl)))
+    {
+      set_parm_used_in_post (decl);
+
+      if (!dependent_type_p (TREE_TYPE (decl))
+	  && !CP_TYPE_CONST_P (TREE_TYPE (decl)))
+	{
+	  error_at (location,
+		    "a value parameter used in a postcondition must be const");
+	  inform (DECL_SOURCE_LOCATION (decl), "parameter declared here");
+	}
+    }
+}
+
+/* Check if parameters used in postconditions are const qualified on
+   a redeclaration that does not specify contracts or on an instantiation
+   of a function template.  */
+
+void
+check_postconditions_in_redecl (tree olddecl, tree newdecl)
+{
+  tree contract_spec = get_fn_contract_specifiers (olddecl);
+  if (!contract_spec)
+    return;
+
+  tree t1 = FUNCTION_FIRST_USER_PARM (olddecl);
+  tree t2 = FUNCTION_FIRST_USER_PARM (newdecl);
+
+  for (; t1 && t1 != void_list_node;
+  t1 = TREE_CHAIN (t1), t2 = TREE_CHAIN (t2))
+    {
+      if (parm_used_in_post_p (t1))
+	{
+	  set_parm_used_in_post (t2);
+	  if (!dependent_type_p (TREE_TYPE (t2))
+	      && !CP_TYPE_CONST_P (TREE_TYPE (t2))
+	      && !TREE_READONLY (t2))
+	    {
+	      error_at (DECL_SOURCE_LOCATION (t2),
+	      "value parameter %qE used in a postcondition must be const", t2);
+	      inform (DECL_SOURCE_LOCATION (olddecl),
+	      "previous declaration here");
+	    }
+	}
+    }
+}
+
 void
 maybe_update_postconditions (tree fndecl)
 {
@@ -1013,7 +1135,10 @@ check_redecl_contract (tree newdecl, tree olddecl)
     }
 
   if (old_contracts && !new_contracts)
-    return;
+    /* We allow re-declarations to omit contracts declared on the initial decl.
+       In fact, this is required if the conditions contain lambdas.  Check if
+       all the parameters are correctly const qualified. */
+    check_postconditions_in_redecl (olddecl, newdecl);
   else if (old_contracts && new_contracts
 	   && !contract_any_deferred_p (old_contracts)
 	   && contract_any_deferred_p (new_contracts)

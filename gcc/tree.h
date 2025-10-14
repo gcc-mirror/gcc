@@ -796,6 +796,11 @@ extern void omp_clause_range_check_failed (const_tree, const char *, int,
 /* Determines whether an ENUMERAL_TYPE has defined the list of constants. */
 #define ENUM_IS_OPAQUE(NODE) (ENUMERAL_TYPE_CHECK (NODE)->base.private_flag)
 
+/* Determines whether a VIEW_CONVERT_EXPR node is used to create const
+   qualified variant of its first operand (used by C++ contracts).  */
+#define CONST_WRAPPER_P(NODE) \
+  (TREE_CHECK (NODE, VIEW_CONVERT_EXPR)->base.private_flag)
+
 /* In an expr node (usually a conversion) this means the node was made
    implicitly and should not lead to any sort of warning.  In a decl node,
    warnings concerning the decl should be suppressed.  This is used at

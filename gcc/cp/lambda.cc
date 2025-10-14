@@ -33,6 +33,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "target.h"
 #include "decl.h"
 #include "flags.h"
+#include "contracts.h"
 
 /* Constructor for a lambda expression.  */
 
@@ -496,6 +497,8 @@ build_capture_proxy (tree member, tree init, bool early_p)
 	  if (PACK_EXPANSION_P (init))
 	    init = PACK_EXPANSION_PATTERN (init);
 	}
+
+      init = strip_contract_const_wrapper (init);
 
       if (INDIRECT_REF_P (init))
 	init = TREE_OPERAND (init, 0);

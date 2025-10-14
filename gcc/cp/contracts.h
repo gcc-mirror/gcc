@@ -131,6 +131,8 @@ extern void update_late_contract		(tree, tree, cp_expr);
 extern void check_redecl_contract		(tree, tree);
 extern tree invalidate_contract			(tree);
 extern tree copy_and_remap_contracts		(tree, tree);
+extern tree constify_contract_access		(tree);
+extern tree view_as_const			(tree);
 
 extern void set_fn_contract_specifiers		(tree, tree);
 extern void update_fn_contract_specifiers	(tree, tree);
@@ -160,6 +162,29 @@ inline void
 set_decl_contracts (tree decl, tree contract_attrs)
 {
   set_fn_contract_specifiers (decl, contract_attrs);
+}
+
+/* Test if EXP is a contract const wrapper node.  */
+
+inline bool
+contract_const_wrapper_p (const_tree exp)
+{
+  /* A wrapper node has code VIEW_CONVERT_EXPR, and the flag base.private_flag
+     is set. The wrapper node is used to used to constify entities inside
+     contract assertions.  */
+  return ((TREE_CODE (exp) == VIEW_CONVERT_EXPR) && CONST_WRAPPER_P (exp));
+}
+
+/* If EXP is a contract_const_wrapper_p, return the wrapped expression.
+   Otherwise, do nothing. */
+
+inline tree
+strip_contract_const_wrapper (tree exp)
+{
+  if (contract_const_wrapper_p (exp))
+    return TREE_OPERAND (exp, 0);
+  else
+    return exp;
 }
 
 /* TODO : decide if we should push the tests into contracts.cc  */

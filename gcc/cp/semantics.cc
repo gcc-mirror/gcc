@@ -4886,6 +4886,10 @@ finish_id_expression_1 (tree id_expression,
 		   "integral or enumeration type", decl, TREE_TYPE (decl));
 	  *non_integral_constant_expression_p = true;
 	}
+
+      if (flag_contracts && processing_contract_condition)
+	r = constify_contract_access (r);
+
       return r;
     }
   else if (TREE_CODE (decl) == UNBOUND_CLASS_TEMPLATE)
@@ -5082,6 +5086,10 @@ finish_id_expression_1 (tree id_expression,
 	  decl = convert_from_reference (decl);
 	}
     }
+
+  check_param_in_postcondition (decl, location);
+  if (flag_contracts && processing_contract_condition)
+    decl = constify_contract_access (decl);
 
   return cp_expr (decl, location);
 }
@@ -13053,6 +13061,12 @@ finish_decltype_type (tree expr, bool id_expression_or_member_access_p,
          overloaded functions, the program is ill-formed.  */
       if (identifier_p (expr))
         expr = lookup_name (expr);
+
+      /* If e is a constified expression inside a contract assertion,
+	 strip the const wrapper. Per P2900R14, "For a function f with the
+	 return type T , the result name is an lvalue of type const T , decltype(r)
+	 is T , and decltype((r)) is const T&."  */
+      expr = strip_contract_const_wrapper (expr);
 
       if (INDIRECT_REF_P (expr)
 	  || TREE_CODE (expr) == VIEW_CONVERT_EXPR)

@@ -15270,6 +15270,9 @@ tsubst_function_decl (tree t, tree args, tsubst_flags_t complain,
   if (tree ctrct = get_fn_contract_specifiers (t))
     set_fn_contract_specifiers (r, ctrct);
 
+  /* The parms have now been substituted, check for incorrect const cases.  */
+  check_postconditions_in_redecl (t, r);
+
   if (DECL_FRIEND_CONTEXT (t))
     SET_DECL_FRIEND_CONTEXT (r,
 			     tsubst (DECL_FRIEND_CONTEXT (t),
@@ -23036,6 +23039,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (REF_PARENTHESIZED_P (t))
 	  /* force_paren_expr can also create a VIEW_CONVERT_EXPR.  */
 	  RETURN (finish_parenthesized_expr (op));
+
+	check_param_in_postcondition (op, EXPR_LOCATION (t));
+
+	if (flag_contracts && processing_contract_condition)
+	    op = constify_contract_access (op);
 
 	/* Otherwise, we're dealing with a wrapper to make a C++20 template
 	   parameter object const.  */
