@@ -4085,9 +4085,12 @@ vect_recog_vector_vector_shift_pattern (vec_info *vinfo,
 	 != TYPE_PRECISION (TREE_TYPE (oprnd0)))
     return NULL;
 
-  stmt_vec_info def_vinfo = vect_get_internal_def (vinfo, oprnd1);
-  if (!def_vinfo)
+  stmt_vec_info def_vinfo = vinfo->lookup_def (oprnd1);
+  if (!def_vinfo || STMT_VINFO_DEF_TYPE (def_vinfo) == vect_external_def)
     return NULL;
+
+  def_vinfo = vect_stmt_to_vectorize (def_vinfo);
+  gcc_assert (def_vinfo);
 
   *type_out = get_vectype_for_scalar_type (vinfo, TREE_TYPE (oprnd0));
   if (*type_out == NULL_TREE)
