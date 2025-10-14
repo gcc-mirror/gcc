@@ -25,6 +25,7 @@
 #include "rust-derive-ord.h"
 #include "rust-derive-partial-eq.h"
 #include "rust-derive-hash.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
@@ -38,6 +39,16 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
 		       BuiltinMacro to_derive)
 {
   auto loc = attr.get_locus ();
+
+  using Kind = AST::Item::Kind;
+  auto item_kind = item.get_item_kind ();
+  if (item_kind != Kind::Enum && item_kind != Kind::Struct
+      && item_kind != Kind::Union)
+    {
+      rust_error_at (loc,
+		     "derive may only be applied to structs, enums and unions");
+      return {};
+    }
 
   switch (to_derive)
     {
