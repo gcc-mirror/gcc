@@ -53,6 +53,9 @@ along with GCC; see the file COPYING3.  If not see
 #include "sreal.h"
 #include "predict.h"
 
+#define REDUC_GROUP_FIRST_ELEMENT(S) \
+  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->first_element)
+
 static bool vect_transform_slp_perm_load_1 (vec_info *, slp_tree,
 					    load_permutation_t &,
 					    const vec<tree> &,

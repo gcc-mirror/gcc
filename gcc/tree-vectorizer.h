@@ -1538,7 +1538,7 @@ public:
   /*  Whether the stmt is SLPed, loop-based vectorized, or both.  */
   enum slp_vect_type slp_type;
 
-  /* Interleaving and reduction chains info.  */
+  /* Interleaving chains info.  */
   /* First element in the group.  */
   stmt_vec_info first_element;
   /* Pointer to the next element in the group.  */
@@ -1710,13 +1710,6 @@ struct gather_scatter_info {
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->size)
 #define DR_GROUP_GAP(S) \
   (gcc_checking_assert ((S)->dr_aux.dr), (S)->gap)
-
-#define REDUC_GROUP_FIRST_ELEMENT(S) \
-  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->first_element)
-#define REDUC_GROUP_NEXT_ELEMENT(S) \
-  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->next_element)
-#define REDUC_GROUP_SIZE(S) \
-  (gcc_checking_assert (!(S)->dr_aux.dr), (S)->size)
 
 #define STMT_VINFO_RELEVANT_P(S)          ((S)->relevant != vect_unused_in_scope)
 
