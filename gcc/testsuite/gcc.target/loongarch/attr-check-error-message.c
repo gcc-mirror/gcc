@@ -28,3 +28,11 @@ test6 (void)	/* { dg-error "attribute \\\'target\\\' argument not a string" } */
 __attribute__ ((target ("lsx,"))) void
 test7 (void)	/* { dg-error "malformed \\\'target\\\(\\\"lsx,\\\"\\\)\\\' pragma or attribute" } */
 {}
+
+__attribute__ ((target ("arch"))) void
+test8 (void)	/* { dg-error "the value of pragma or attribute \\\'target\\\(\\\"arch\\\"\\\)\\\' not be empty" } */
+{}
+
+__attribute__ ((target ("lsx;priority=1"))) void
+test9 (void)	/* { dg-error "attribute \\\'target\\\' argument \\\'lsx;priority=1\\\' is unknown" } */
+{}

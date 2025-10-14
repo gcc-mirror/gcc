@@ -203,7 +203,13 @@ loongarch_process_one_target_attr (char *arg_str, location_t loc)
 	  /* Use the option setting machinery to set an option to an enum.  */
 	  case loongarch_attr_enum:
 	    {
-	      gcc_assert (arg);
+	      if (!arg)
+		{
+		  error_at (loc, "the value of pragma or attribute "
+			    "%<target(\"%s\")%> not be empty", str_to_check);
+		  return false;
+		}
+
 	      bool valid;
 	      int value;
 	      struct cl_decoded_option decoded;
@@ -244,7 +250,7 @@ loongarch_process_one_target_attr (char *arg_str, location_t loc)
      were malformed we will have returned false already.  */
   if (!found)
     error_at (loc, "attribute %<target%> argument %qs is unknown",
-	      str_to_check);
+	      arg_str);
 
   return found;
 }
