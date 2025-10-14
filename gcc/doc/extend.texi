@@ -303,7 +303,7 @@ typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @cindex @code{__Float16} data type
 
 On ARM and AArch64 targets, GCC supports half-precision (16-bit) floating
-point via the @code{__fp16} type defined in the ARM C Language Extensions.
+point via the @code{__fp16} type defined in the Arm C Language Extensions.
 On ARM systems, you must enable this type explicitly with the
 @option{-mfp16-format} command-line option in order to use it.
 On x86 targets with SSE2 enabled, GCC supports half-precision (16-bit)
@@ -18534,7 +18534,7 @@ instructions, but allow the compiler to schedule those calls.
 * Alpha Built-in Functions::
 * ARC Built-in Functions::
 * ARC SIMD Built-in Functions::
-* ARM C Language Extensions (ACLE)::
+* Arm C Language Extensions (ACLE)::
 * ARM Floating Point Status and Control Intrinsics::
 * ARM ARMv8-M Security Extensions::
 * AVR Built-in Functions::
@@ -19149,26 +19149,22 @@ _v4hi __builtin_arc_vaddsub4h (__v4hi, __v4hi);
 _v4hi __builtin_arc_vsubadd4h (__v4hi, __v4hi);
 @end example
 
-@node ARM C Language Extensions (ACLE)
-@subsection ARM C Language Extensions (ACLE)
+@node Arm C Language Extensions (ACLE)
+@subsection Arm C Language Extensions (ACLE)
 
-GCC implements extensions for C as described in the ARM C Language
+GCC implements extensions for C and C++ as described in the Arm C Language
 Extensions (ACLE) specification, which can be found at
-@uref{https://developer.arm.com/documentation/ihi0053/latest/}.
+@uref{https://arm-software.github.io/acle/main/}.
 
-As a part of ACLE, GCC implements extensions for Advanced SIMD as described in
-the ARM C Language Extensions Specification.  The complete list of Advanced SIMD
-intrinsics can be found at
-@uref{https://developer.arm.com/documentation/ihi0073/latest/}.
-The built-in intrinsics for the Advanced SIMD extension are available when
-NEON is enabled.
+As a part of ACLE, GCC implements extensions for Arm Vector extensions
+as described in the Arm C Language Extensions Specification.  The complete
+list of Arm Vector extension intrinsics is available at
+@uref{https://arm-software.github.io/acle/main/}.
+The built-in intrinsics for the Arm vector extensions are available when
+the respective extensions are enabled.
 
-Currently, ARM and AArch64 back ends do not support ACLE 2.0 fully.  Both
-back ends support CRC32 intrinsics and the ARM back end supports the
-Coprocessor intrinsics, all from @file{arm_acle.h}.  The ARM back end's 16-bit
-floating-point Advanced SIMD intrinsics currently comply to ACLE v1.1.
-AArch64's back end does not have support for 16-bit floating point Advanced SIMD
-intrinsics yet.
+Not all aspects of ACLE are supported.  Support for each feature of the ACLE
+is determined with the @code{__ARM_FEATURE_@var{X}} macros.
 
 See @ref{ARM Options} and @ref{AArch64 Options} for more information on the
 availability of extensions.
@@ -31262,7 +31258,7 @@ a resolver which is used by the dynamic linker to choose the correct version.
 
 For the AArch64 target GCC implements function multiversionsing, with the
 semantics and version strings as specified in the
-@ref{ARM C Language Extensions (ACLE)}.
+@ref{Arm C Language Extensions (ACLE)}.
 
 For targets that support multiversioning with the @code{target} attribute
 (x86) a multiversioned function can be defined with either multiple function
