@@ -46,7 +46,6 @@ static tree verify_stmt_tree_r (tree *, int *, void *);
 
 static tree handle_init_priority_attribute (tree *, tree, tree, int, bool *);
 static tree handle_abi_tag_attribute (tree *, tree, tree, int, bool *);
-static tree handle_contract_attribute (tree *, tree, tree, int, bool *);
 static tree handle_no_dangling_attribute (tree *, tree, tree, int, bool *);
 static tree handle_annotation_attribute (tree *, tree, tree, int, bool *);
 
@@ -4104,50 +4103,6 @@ called_fns_equal (tree t1, tree t2)
     return cp_tree_equal (t1, t2);
 }
 
-bool comparing_override_contracts;
-
-/* In a component reference, return the innermost object of
-   the postfix-expression.  */
-
-static tree
-get_innermost_component (tree t)
-{
-  gcc_assert (TREE_CODE (t) == COMPONENT_REF);
-  while (TREE_CODE (t) == COMPONENT_REF)
-    t = TREE_OPERAND (t, 0);
-  return t;
-}
-
-/* Returns true if T is a possibly converted 'this' or '*this' expression.  */
-
-static bool
-is_this_expression (tree t)
-{
-  t = get_innermost_component (t);
-  /* See through deferences and no-op conversions.  */
-  if (INDIRECT_REF_P (t))
-    t = TREE_OPERAND (t, 0);
-  if (TREE_CODE (t) == NOP_EXPR)
-    t = TREE_OPERAND (t, 0);
-  return is_this_parameter (t);
-}
-
-static bool
-comparing_this_references (tree t1, tree t2)
-{
-  return is_this_expression (t1) && is_this_expression (t2);
-}
-
-static bool
-equivalent_member_references (tree t1, tree t2)
-{
-  if (!comparing_this_references (t1, t2))
-    return false;
-  t1 = TREE_OPERAND (t1, 1);
-  t2 = TREE_OPERAND (t2, 1);
-  return t1 == t2;
-}
-
 /* Return truthvalue of whether T1 is the same tree structure as T2.
    Return 1 if they are the same. Return 0 if they are different.  */
 
@@ -4523,13 +4478,6 @@ cp_tree_equal (tree t1, tree t2)
 			  PACK_INDEX_INDEX (t2)))
 	return false;
       return true;
-
-    case COMPONENT_REF:
-      /* If we're comparing contract conditions of overrides, member references
-	 compare equal if they designate the same member.  */
-      if (comparing_override_contracts)
-	return equivalent_member_references (t1, t2);
-      break;
 
     case REFLECT_EXPR:
       if (!cp_tree_equal (REFLECT_EXPR_HANDLE (t1), REFLECT_EXPR_HANDLE (t2))
@@ -5617,10 +5565,6 @@ static const attribute_spec std_attributes[] =
     handle_carries_dependency_attribute, NULL },
   { "indeterminate", 0, 0, true, false, false, false,
     handle_indeterminate_attribute, NULL },
-  { "pre", 0, -1, false, false, false, false,
-    handle_contract_attribute, NULL },
-  { "post", 0, -1, false, false, false, false,
-    handle_contract_attribute, NULL }
 };
 
 const scoped_attribute_specs std_attribute_table =
@@ -5885,17 +5829,6 @@ handle_abi_tag_attribute (tree* node, tree name, tree args,
 
  fail:
   *no_add_attrs = true;
-  return NULL_TREE;
-}
-
-/* Perform checking for contract attributes.  */
-
-tree
-handle_contract_attribute (tree *ARG_UNUSED (node), tree ARG_UNUSED (name),
-			   tree ARG_UNUSED (args), int ARG_UNUSED (flags),
-			   bool *ARG_UNUSED (no_add_attrs))
-{
-  /* TODO: Is there any checking we could do here?  */
   return NULL_TREE;
 }
 

@@ -1127,9 +1127,6 @@ c_cpp_builtins (cpp_reader *pfile)
 	cpp_warn (pfile, "__cpp_concepts");
       if (flag_contracts)
 	{
-	  cpp_define (pfile, "__cpp_contracts=201906L");
-	  cpp_define (pfile, "__cpp_contracts_literal_semantics=201906L");
-	  cpp_define (pfile, "__cpp_contracts_roles=201906L");
 	}
       else if (cxx_dialect >= cxx26)
 	cpp_warn (pfile, "__cpp_contracts");

@@ -236,8 +236,6 @@ enum cp_tree_index
     CPTI_THREAD_ATEXIT,
     CPTI_DSO_HANDLE,
     CPTI_DCAST,
-
-    CPTI_PSEUDO_CONTRACT_VIOLATION,
     CPTI_META_INFO_TYPE,
 
     CPTI_MAX
@@ -269,7 +267,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
 #define current_aggr			cp_global_trees[CPTI_AGGR_TAG]
 /* std::align_val_t */
 #define align_type_node			cp_global_trees[CPTI_ALIGN_TYPE]
-#define pseudo_contract_violation_type	cp_global_trees[CPTI_PSEUDO_CONTRACT_VIOLATION]
 #define meta_info_type_node		cp_global_trees[CPTI_META_INFO_TYPE]
 
 /* We cache these tree nodes so as to call get_identifier less frequently.
@@ -454,7 +451,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       OVL_DEDUP_P (in OVERLOAD)
       INIT_EXPR_NRV_P (in INIT_EXPR)
       ATOMIC_CONSTR_MAP_INSTANTIATED_P (in ATOMIC_CONSTR)
-      contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
       RETURN_EXPR_LOCAL_ADDR_P (in RETURN_EXPR)
       PACK_INDEX_PARENTHESIZED_P (in PACK_INDEX_*)
       MUST_NOT_THROW_NOEXCEPT_P (in MUST_NOT_THROW_EXPR)
@@ -505,7 +501,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       LAMBDA_EXPR_CAPTURE_OPTIMIZED (in LAMBDA_EXPR)
       IMPLICIT_CONV_EXPR_BRACED_INIT (in IMPLICIT_CONV_EXPR)
       PACK_EXPANSION_AUTO_P (in *_PACK_EXPANSION)
-      contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
       STATIC_INIT_DECOMP_NONBASE_P (in the TREE_LIST
 				    for {static,tls}_aggregates)
       MUST_NOT_THROW_CATCH_P (in MUST_NOT_THROW_EXPR)
@@ -524,7 +519,6 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       LAMBDA_EXPR_STATIC_P (in LAMBDA_EXPR)
       TARGET_EXPR_ELIDING_P (in TARGET_EXPR)
       IF_STMT_VACUOUS_INIT_P (IF_STMT)
-      contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
       TYPENAME_IS_RESOLVING_P (in TYPENAME_TYPE)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
@@ -2080,7 +2074,6 @@ struct GTY(()) saved_scope {
   int x_processing_template_decl;
   int x_processing_specialization;
   int x_processing_constraint;
-  int x_processing_contract_condition;
   int suppress_location_wrappers;
   BOOL_BITFIELD x_processing_explicit_instantiation : 1;
   BOOL_BITFIELD need_pop_function_context : 1;
@@ -2160,12 +2153,6 @@ extern GTY(()) struct saved_scope *scope_chain;
 #define processing_specialization scope_chain->x_processing_specialization
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 #define processing_omp_trait_property_expr scope_chain->x_processing_omp_trait_property_expr
-
-/* Nonzero if we are parsing the conditional expression of a contract
-   condition. These expressions appear outside the parameter list (like a
-   trailing return type), but are potentially evaluated.  */
-
-#define processing_contract_condition scope_chain->x_processing_contract_condition
 
 #define in_discarded_stmt scope_chain->discarded_stmt
 #define in_consteval_if_p scope_chain->consteval_if_p
@@ -6156,11 +6143,6 @@ extern int comparing_specializations;
 /* Nonzero if we want different dependent aliases to compare as unequal.
    FIXME we should always do this except during deduction/ordering.  */
 extern int comparing_dependent_aliases;
-
-/* Nonzero if we want to consider different member expressions to compare
-   equal if they designate the same entity. This is set when comparing
-   contract conditions of overrides.  */
-extern bool comparing_override_contracts;
 
 /* In parser.cc.  */
 

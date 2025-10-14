@@ -49,7 +49,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "builtins.h"
 #include "omp-general.h"
 #include "pretty-print-markup.h"
-#include "contracts.h"
 
 /* The type of functions taking a tree, and some additional data, and
    returning an int.  */
@@ -3271,7 +3270,6 @@ check_explicit_specialization (tree declarator,
 		}
 	      decl = register_specialization (tmpl, gen_tmpl, targs,
 					      is_friend, 0);
-	      remove_contract_attributes (result);
 	      return decl;
 	    }
 
@@ -3363,11 +3361,6 @@ check_explicit_specialization (tree declarator,
 	      decl = register_specialization (decl, gen_tmpl, targs,
 					      is_friend, 0);
 	    }
-
-	  /* If this is a specialization, splice any contracts that may have
-	     been inherited from the template, removing them.  */
-	  if (decl != error_mark_node && DECL_TEMPLATE_SPECIALIZATION (decl))
-	    remove_contract_attributes (decl);
 
 	  /* A 'structor should already have clones.  */
 	  gcc_assert (decl == error_mark_node
@@ -12176,113 +12169,6 @@ can_complete_type_without_circularity (tree type)
 static tree tsubst_omp_clauses (tree, enum c_omp_region_type, tree,
 				tsubst_flags_t, tree);
 
-/* Instantiate the contract statement.  */
-
-static tree
-tsubst_contract (tree decl, tree t, tree args, tsubst_flags_t complain,
-		 tree in_decl)
-{
-  tree type = decl ? TREE_TYPE (TREE_TYPE (decl)) : NULL_TREE;
-  bool auto_p  = type_uses_auto (type);
-
-  tree r = copy_node (t);
-
-  /* Rebuild the result variable.  */
-  if (type && POSTCONDITION_P (t) && POSTCONDITION_IDENTIFIER (t))
-    {
-      tree oldvar = POSTCONDITION_IDENTIFIER (t);
-
-      tree newvar = copy_node (oldvar);
-      TREE_TYPE (newvar) = type;
-      DECL_CONTEXT (newvar) = decl;
-      POSTCONDITION_IDENTIFIER (r) = newvar;
-
-      /* Make sure the postcondition is valid.  */
-      location_t loc = DECL_SOURCE_LOCATION (oldvar);
-      if (!auto_p)
-	if (!check_postcondition_result (decl, type, loc))
-	  return invalidate_contract (r);
-
-      /* Make the variable available for lookup.  */
-      register_local_specialization (newvar, oldvar);
-    }
-
-  /* Instantiate the condition.  If the return type is undeduced, process
-     the expression as if inside a template to avoid spurious type errors.  */
-  if (auto_p)
-    ++processing_template_decl;
-  ++processing_contract_condition;
-  CONTRACT_CONDITION (r)
-      = tsubst_expr (CONTRACT_CONDITION (t), args, complain, in_decl);
-  --processing_contract_condition;
-  if (auto_p)
-    --processing_template_decl;
-
-  /* And the comment.  */
-  CONTRACT_COMMENT (r)
-      = tsubst_expr (CONTRACT_COMMENT (r), args, complain, in_decl);
-
-  return r;
-}
-
-/* Update T by instantiating its contract attribute.  */
-
-static void
-tsubst_contract_attribute (tree decl, tree t, tree args,
-			   tsubst_flags_t complain, tree in_decl)
-{
-  /* For non-specializations, adjust the current declaration to the most general
-     version of in_decl. Because we defer the instantiation of contracts as long
-     as possible, they are still written in terms of the parameters (and return
-     type) of the most general template.  */
-  tree tmpl = DECL_TI_TEMPLATE (in_decl);
-  if (!DECL_TEMPLATE_SPECIALIZATION (tmpl))
-    in_decl = DECL_TEMPLATE_RESULT (most_general_template (in_decl));
-  local_specialization_stack specs (lss_copy);
-  register_parameter_specializations (in_decl, decl);
-
-  /* Get the contract to be instantiated.  */
-  tree contract = CONTRACT_STATEMENT (t);
-
-  /* Use the complete set of template arguments for instantiation. The
-     contract may not have been instantiated and still refer to outer levels
-     of template parameters.  */
-  args = DECL_TI_ARGS (decl);
-
-  /* For member functions, make this available for semantic analysis.  */
-  tree save_ccp = current_class_ptr;
-  tree save_ccr = current_class_ref;
-  if (DECL_IOBJ_MEMBER_FUNCTION_P (decl))
-    {
-      tree arg_types = TYPE_ARG_TYPES (TREE_TYPE (decl));
-      tree this_type = TREE_TYPE (TREE_VALUE (arg_types));
-      inject_this_parameter (this_type, cp_type_quals (this_type));
-    }
-
-  contract = tsubst_contract (decl, contract, args, complain, in_decl);
-
-  current_class_ptr = save_ccp;
-  current_class_ref = save_ccr;
-
-  /* Rebuild the attribute.  */
-  TREE_VALUE (t) = build_tree_list (NULL_TREE, contract);
-}
-
-/* Rebuild the attribute list for DECL, substituting into contracts
-   as needed.  */
-
-void
-tsubst_contract_attributes (tree decl, tree args, tsubst_flags_t complain, tree in_decl)
-{
-  tree list = copy_list (DECL_ATTRIBUTES (decl));
-  for (tree attr = list; attr; attr = CONTRACT_CHAIN (attr))
-    {
-      if (cxx_contract_attribute_p (attr))
-	tsubst_contract_attribute (decl, attr, args, complain, in_decl);
-    }
-  DECL_ATTRIBUTES (decl) = list;
-}
-
 /* Instantiate a single dependent attribute T (a TREE_LIST), and return either
    T or a new TREE_LIST, possibly a chain in the case of a pack expansion.  */
 
@@ -12291,10 +12177,6 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
 		  tsubst_flags_t complain, tree in_decl)
 {
   gcc_assert (ATTR_IS_DEPENDENT (t));
-
-  /* Note that contract attributes are never substituted from this function.
-     Their instantiation is triggered by regenerate_from_template_decl when
-     we instantiate the body of the function.  */
 
   tree val = TREE_VALUE (t);
   if (val == NULL_TREE)
@@ -19361,19 +19243,6 @@ tsubst_stmt (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       finish_using_directive (USING_STMT_NAMESPACE (t), /*attribs=*/NULL_TREE);
       break;
 
-    case PRECONDITION_STMT:
-    case POSTCONDITION_STMT:
-      gcc_unreachable ();
-
-    case ASSERTION_STMT:
-      {
-	r = tsubst_contract (NULL_TREE, t, args, complain, in_decl);
-	if (r != error_mark_node)
-	  add_stmt (r);
-	RETURN (r);
-      }
-      break;
-
     case DECL_EXPR:
       {
 	tree decl, pattern_decl;
@@ -22239,7 +22108,7 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		      error_at (loc, "call to %<__builtin_operator_new%> "
 				     "does not select replaceable global "
 				     "allocation function");
-		    else 
+		    else
 		      error_at (loc, "call to %<__builtin_operator_delete%> "
 				     "does not select replaceable global "
 				     "deallocation function");
@@ -22648,7 +22517,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 					       complain, adc_variable_type);
 		    }
 		  gcc_assert (cp_unevaluated_operand
-			      || processing_contract_condition
 			      || TREE_STATIC (r)
 			      || decl_constant_var_p (r)
 			      || seen_error ());
@@ -27952,21 +27820,6 @@ regenerate_decl_from_template (tree decl, tree tmpl, tree args)
 	  *p = tsubst_decl (pattern_parm, args, tf_error);
 	  for (tree t = *p; t; t = DECL_CHAIN (t))
 	    DECL_CONTEXT (t) = decl;
-	}
-
-      if (DECL_CONTRACTS (decl))
-	{
-	  /* If we're regenerating a specialization, the contracts will have
-	     been copied from the most general template. Replace those with
-	     the ones from the actual specialization.  */
-	  tree tmpl = DECL_TI_TEMPLATE (decl);
-	  if (DECL_TEMPLATE_SPECIALIZATION (tmpl))
-	    {
-	      remove_contract_attributes (decl);
-	      copy_contract_attributes (decl, code_pattern);
-	    }
-
-	  tsubst_contract_attributes (decl, args, tf_warning_or_error, code_pattern);
 	}
 
       /* Merge additional specifiers from the CODE_PATTERN.  */

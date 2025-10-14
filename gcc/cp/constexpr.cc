@@ -41,7 +41,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "fold-const.h"
 #include "intl.h"
 #include "toplev.h"
-#include "contracts.h"
 
 static bool verify_constant (tree, bool, bool *, bool *);
 #define VERIFY_CONSTANT(X)						\
@@ -10325,18 +10324,7 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
     case ASSERTION_STMT:
     case PRECONDITION_STMT:
     case POSTCONDITION_STMT:
-      {
-	if (contract_ignored_p (t))
-	  break;
-
-	if (!cxx_eval_assert (ctx, CONTRACT_CONDITION (t),
-			      G_("contract predicate is false in "
-				 "constant expression"),
-			      EXPR_LOCATION (t), contract_evaluated_p (t),
-			      non_constant_p, overflow_p))
-	  *non_constant_p = true;
-	r = void_node;
-      }
+      gcc_checking_assert (false && "hoo...");
       break;
 
     case TEMPLATE_ID_EXPR:
@@ -12732,9 +12720,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case ASSERTION_STMT:
     case PRECONDITION_STMT:
     case POSTCONDITION_STMT:
-      if (!checked_contract_p (get_contract_semantic (t)))
-	return true;
-      return RECUR (CONTRACT_CONDITION (t), rval);
+      gcc_checking_assert (false && "hmm...");
 
     case LABEL_EXPR:
       t = LABEL_EXPR_LABEL (t);

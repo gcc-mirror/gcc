@@ -26,7 +26,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "c-family/c-common.h"
 #include "dwarf2.h"
 #include "stringpool.h"
-#include "contracts.h"
 
 /* Class to determine whether a given C++ language feature is available.
    Used to implement __has_{feature,extension}.  */
@@ -740,38 +739,6 @@ cp_handle_option (size_t scode, const char *arg, HOST_WIDE_INT value,
 {
   if (handle_module_option (unsigned (scode), arg, value))
     return true;
-
-  enum opt_code code = (enum opt_code) scode;
-  bool handled_p = true;
-
-  switch (code)
-    {
-    case OPT_fcontract_build_level_:
-      handle_OPT_fcontract_build_level_ (arg);
-      break;
-
-    case OPT_fcontract_assumption_mode_:
-      handle_OPT_fcontract_assumption_mode_ (arg);
-      break;
-
-    case OPT_fcontract_continuation_mode_:
-      handle_OPT_fcontract_continuation_mode_ (arg);
-      break;
-
-    case OPT_fcontract_role_:
-      handle_OPT_fcontract_role_ (arg);
-      break;
-
-    case OPT_fcontract_semantic_:
-      handle_OPT_fcontract_semantic_ (arg);
-      break;
-
-    default:
-      handled_p = false;
-      break;
-    }
-  if (handled_p)
-    return handled_p;
 
   return c_common_handle_option (scode, arg, value, kind, loc, handlers);
 }

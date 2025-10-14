@@ -43,7 +43,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-general.h"
 #include "opts.h"
 #include "gcc-urlifier.h"
-#include "contracts.h"
 
 /* Keep track of forward references to immediate-escalating functions in
    case they become consteval.  This vector contains ADDR_EXPRs and
@@ -2121,23 +2120,6 @@ cp_genericize_r (tree *stmt_p, int *walk_subtrees, void *data)
       cp_walk_tree (&BIND_EXPR_BODY (stmt),
 		    cp_genericize_r, data, NULL);
       wtd->bind_expr_stack.pop ();
-      break;
-
-    case ASSERTION_STMT:
-    case PRECONDITION_STMT:
-    case POSTCONDITION_STMT:
-      {
-	if (tree check = build_contract_check (stmt))
-	  {
-	    *stmt_p = check;
-	    return cp_genericize_r (stmt_p, walk_subtrees, data);
-	  }
-
-	/* If we didn't build a check, replace it with void_node so we don't
-	   leak contracts into GENERIC.  */
-	*stmt_p = void_node;
-	*walk_subtrees = 0;
-      }
       break;
 
     case USING_STMT:

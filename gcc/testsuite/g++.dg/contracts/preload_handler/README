@@ -1,2 +1,0 @@
-build and install gcc to $prefix, then run:
-LD_LIBRARY_PATH=$prefix/lib64 CXX=$prefix/bin/g++ make run

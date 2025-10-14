@@ -1,8 +1,0 @@
-LD_PRELOAD=./libhandle_contract_violation.so ./assert_fail
-contract violation: assert_fail.cpp:3: fun1::x < 0 is false [with contract level=default]
-violation occurs here:
-    assert_fail.cpp:fun1():4
-    assert_fail.cpp:tns::fun2():8
-    assert_fail.cpp:void fun3<int>(int):13
-    assert_fail.cpp:fun4():16
-    assert_fail.cpp:main:21
