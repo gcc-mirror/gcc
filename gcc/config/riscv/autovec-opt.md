@@ -1913,7 +1913,7 @@
 
 (define_insn_and_split "*widen_waddu_wx_<mode>"
  [(set (match_operand:VWEXTI_D       0 "register_operand")
-       (any_widen_binop:VWEXTI_D
+       (plus:VWEXTI_D
 	 (vec_duplicate:VWEXTI_D
 	   (any_extend:<VEL>
 	     (match_operand:<VSUBEL> 2 "register_operand")))
@@ -1933,7 +1933,7 @@
 
 (define_insn_and_split "*widen_wsubu_wx_<mode>"
  [(set (match_operand:VWEXTI_D       0 "register_operand")
-       (any_widen_binop:VWEXTI_D
+       (minus:VWEXTI_D
 	 (match_operand:VWEXTI_D     1 "register_operand")
 	 (vec_duplicate:VWEXTI_D
 	   (any_extend:<VEL>
