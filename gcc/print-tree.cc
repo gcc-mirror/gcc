@@ -747,6 +747,14 @@ print_node (FILE *file, const char *prefix, tree node, int indent,
     case tcc_reference:
     case tcc_statement:
     case tcc_vl_exp:
+      if ((code == MEM_REF || code == TARGET_MEM_REF)
+	  && MR_DEPENDENCE_CLIQUE (node) != 0)
+	{
+	  indent_to (file, indent + 4);
+	  fprintf (file, "clique: %d base: %d",
+		   MR_DEPENDENCE_CLIQUE (node),
+		   MR_DEPENDENCE_BASE (node));
+	}
       if (code == BIND_EXPR)
 	{
 	  print_node (file, "vars", TREE_OPERAND (node, 0), indent + 4);
