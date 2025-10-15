@@ -1792,12 +1792,13 @@ public:
        The fold routines expect the replacement statement to have the
        same lhs as the original call, so return the copy statement
        rather than the field update.  */
-    gassign *copy = gimple_build_assign (unshare_expr (f.lhs), rhs_tuple);
+    gassign *copy = gimple_build_assign (f.lhs, rhs_tuple);
 
     /* Get a reference to the individual vector.  */
     tree field = tuple_type_field (TREE_TYPE (f.lhs));
     tree lhs_array
-      = build3 (COMPONENT_REF, TREE_TYPE (field), f.lhs, field, NULL_TREE);
+      = build3 (COMPONENT_REF, TREE_TYPE (field), unshare_expr (f.lhs),
+		field, NULL_TREE);
     tree lhs_vector = build4 (ARRAY_REF, TREE_TYPE (rhs_vector), lhs_array,
 			      index, NULL_TREE, NULL_TREE);
     gassign *update = gimple_build_assign (lhs_vector, rhs_vector);
