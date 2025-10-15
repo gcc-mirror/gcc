@@ -749,6 +749,8 @@ handle_aarch64_vector_pcs_attribute (tree *node, tree name, tree,
       *no_add_attrs = true;
       return NULL_TREE;
 
+      /* Rely on the exclusions list for preserve_none.  */
+    case ARM_PCS_PRESERVE_NONE:
     case ARM_PCS_TLSDESC:
     case ARM_PCS_UNKNOWN:
       break;
@@ -851,6 +853,16 @@ handle_arm_shared (tree *node, tree name, tree args,
   return NULL_TREE;
 }
 
+/* Mutually-exclusive function type attributes for various PCS variants.  */
+static const struct attribute_spec::exclusions aarch64_pcs_exclusions[] =
+{
+  /* Attribute name     exclusion applies to:
+			function, type, variable */
+  { "aarch64_vector_pcs", false, true, false },
+  { "preserve_none", false, true, false },
+  { NULL, false, false, false }
+};
+
 /* Mutually-exclusive function type attributes for controlling PSTATE.SM.  */
 static const struct attribute_spec::exclusions attr_streaming_exclusions[] =
 {
@@ -867,7 +879,10 @@ static const attribute_spec aarch64_gnu_attributes[] =
   /* { name, min_len, max_len, decl_req, type_req, fn_type_req,
        affects_type_identity, handler, exclude } */
   { "aarch64_vector_pcs", 0, 0, false, true,  true,  true,
-			  handle_aarch64_vector_pcs_attribute, NULL },
+			  handle_aarch64_vector_pcs_attribute,
+			  aarch64_pcs_exclusions },
+  { "preserve_none",      0, 0, false, true,  true,  true,  NULL,
+			  aarch64_pcs_exclusions },
   { "indirect_return",    0, 0, false, true, true, true, NULL, NULL },
   { "arm_sve_vector_bits", 1, 1, false, true,  false, true,
 			  aarch64_sve::handle_arm_sve_vector_bits_attribute,
@@ -1315,6 +1330,23 @@ aarch64_sve_abi (void)
       sve_abi.initialize (ARM_PCS_SVE, full_reg_clobbers);
     }
   return sve_abi;
+}
+
+/* Return the descriptor of the preserve_none PCS.  */
+
+static const predefined_function_abi &
+aarch64_preserve_none_abi (void)
+{
+  auto &preserve_none_abi = function_abis[ARM_PCS_PRESERVE_NONE];
+  if (!preserve_none_abi.initialized_p ())
+    {
+      HARD_REG_SET preserved_regs = {};
+      if (!CALL_USED_X18)
+	SET_HARD_REG_BIT (preserved_regs, R18_REGNUM);
+      auto full_reg_clobbers = reg_class_contents[ALL_REGS] & ~preserved_regs;
+      preserve_none_abi.initialize (ARM_PCS_PRESERVE_NONE, full_reg_clobbers);
+    }
+  return preserve_none_abi;
 }
 
 /* If X is an UNSPEC_SALT_ADDR expression, return the address that it
@@ -2312,6 +2344,9 @@ aarch64_fntype_abi (const_tree fntype)
   if (lookup_attribute ("aarch64_vector_pcs", TYPE_ATTRIBUTES (fntype)))
     return aarch64_simd_abi ();
 
+  if (lookup_attribute ("preserve_none", TYPE_ATTRIBUTES (fntype)))
+    return aarch64_preserve_none_abi ();
+
   if (aarch64_returns_value_in_sve_regs_p (fntype)
       || aarch64_takes_arguments_in_sve_regs_p (fntype))
     return aarch64_sve_abi ();
@@ -2519,6 +2554,10 @@ aarch64_reg_save_mode (unsigned int regno)
   if (FP_REGNUM_P (regno))
     switch (crtl->abi->id ())
       {
+      case ARM_PCS_PRESERVE_NONE:
+	/* In preserve_none all fpr registers are caller saved, so the choice
+	   here should not matter.  Nevertheless, fall back to the base AAPCS
+	   for consistency.  */
       case ARM_PCS_AAPCS64:
 	/* Only the low 64 bits are saved by the base PCS.  */
 	return DFmode;
@@ -2649,7 +2688,9 @@ aarch64_hard_regno_call_part_clobbered (unsigned int abi_id,
 					unsigned int regno,
 					machine_mode mode)
 {
-  if (FP_REGNUM_P (regno) && abi_id != ARM_PCS_SVE)
+  if (FP_REGNUM_P (regno)
+      && abi_id != ARM_PCS_SVE
+      && abi_id != ARM_PCS_PRESERVE_NONE)
     {
       poly_int64 per_register_size = GET_MODE_SIZE (mode);
       unsigned int nregs = hard_regno_nregs (regno, mode);
@@ -6826,6 +6867,10 @@ aarch64_function_ok_for_sibcall (tree, tree exp)
   auto from_abi = crtl->abi->id ();
   auto to_abi = expr_callee_abi (exp).id ();
 
+  /* preserve_none functions can tail-call anything that the base PCS can.  */
+  if (from_abi != to_abi && from_abi == ARM_PCS_PRESERVE_NONE)
+    from_abi = ARM_PCS_AAPCS64;
+
   /* ARM_PCS_SVE preserves strictly more than ARM_PCS_SIMD, which in
      turn preserves strictly more than the base PCS.  The callee must
      preserve everything that the caller is required to preserve.  */
@@ -7287,6 +7332,49 @@ bitint_or_aggr_of_bitint_p (tree type)
   return false;
 }
 
+/* How many GPR are available for argument passing in the procedure call
+   standard.  */
+static int
+num_pcs_arg_regs (enum arm_pcs pcs)
+{
+  switch (pcs)
+    {
+    case ARM_PCS_PRESERVE_NONE:
+      return NUM_PRESERVE_NONE_ARG_REGS;
+    case ARM_PCS_AAPCS64:
+    case ARM_PCS_SIMD:
+    case ARM_PCS_SVE:
+    case ARM_PCS_TLSDESC:
+    case ARM_PCS_UNKNOWN:
+      return NUM_ARG_REGS;
+    }
+  gcc_unreachable ();
+}
+
+/* Get the NUM'th GPR argument passing register from the PCS procedure call
+ * standard.  */
+
+static int
+get_pcs_arg_reg (enum arm_pcs pcs, int num)
+{
+  static const int ARM_PCS_PRESERVE_NONE_REGISTERS[] = PRESERVE_NONE_REGISTERS;
+
+  gcc_assert (num < num_pcs_arg_regs (pcs));
+
+  switch (pcs)
+    {
+    case ARM_PCS_PRESERVE_NONE:
+      return ARM_PCS_PRESERVE_NONE_REGISTERS[num];
+    case ARM_PCS_AAPCS64:
+    case ARM_PCS_SIMD:
+    case ARM_PCS_SVE:
+    case ARM_PCS_TLSDESC:
+    case ARM_PCS_UNKNOWN:
+      return R0_REGNUM + num;
+    }
+  gcc_unreachable ();
+}
+
 /* Layout a function argument according to the AAPCS64 rules.  The rule
    numbers refer to the rule numbers in the AAPCS64.  ORIG_MODE is the
    mode that was originally given to us by the target hook, whereas the
@@ -7385,7 +7473,9 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	 unprototyped function.  There is no ABI-defined location we
 	 can return in this case, so we have no real choice but to raise
 	 an error immediately, even though this is only a query function.  */
-      if (arg.named && pcum->pcs_variant != ARM_PCS_SVE)
+      if (arg.named
+	  && pcum->pcs_variant != ARM_PCS_SVE
+	  && pcum->pcs_variant != ARM_PCS_PRESERVE_NONE)
 	{
 	  gcc_assert (!pcum->silent_p);
 	  error ("SVE type %qT cannot be passed to an unprototyped function",
@@ -7400,7 +7490,6 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       pcum->aapcs_nextnvrn = pcum->aapcs_nvrn + pst_info.num_zr ();
       pcum->aapcs_nextnprn = pcum->aapcs_nprn + pst_info.num_pr ();
       gcc_assert (arg.named
-		  && pcum->pcs_variant == ARM_PCS_SVE
 		  && pcum->aapcs_nextnvrn <= NUM_FP_ARG_REGS
 		  && pcum->aapcs_nextnprn <= NUM_PR_ARG_REGS);
       pcum->aapcs_reg = pst_info.get_rtx (mode, V0_REGNUM + pcum->aapcs_nvrn,
@@ -7514,7 +7603,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   /* C6 - C9.  though the sign and zero extension semantics are
      handled elsewhere.  This is the case where the argument fits
      entirely general registers.  */
-  if (allocate_ncrn && (ncrn + nregs <= NUM_ARG_REGS))
+  if (allocate_ncrn && (ncrn + nregs <= num_pcs_arg_regs (pcum->pcs_variant)))
     {
       gcc_assert (nregs == 0 || nregs == 1 || nregs == 2);
 
@@ -7550,7 +7639,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 		inform (input_location, "parameter passing for argument of type "
 			"%qT changed in GCC 9.1", type);
 	      ++ncrn;
-	      gcc_assert (ncrn + nregs <= NUM_ARG_REGS);
+	      gcc_assert (ncrn + nregs <= num_pcs_arg_regs (pcum->pcs_variant));
 	    }
 	}
 
@@ -7572,7 +7661,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
       if (nregs == 0
 	  || (nregs == 1 && !sve_p)
 	  || GET_MODE_CLASS (mode) == MODE_INT)
-	pcum->aapcs_reg = gen_rtx_REG (mode, R0_REGNUM + ncrn);
+	pcum->aapcs_reg
+	  = gen_rtx_REG (mode, get_pcs_arg_reg (pcum->pcs_variant, ncrn));
       else
 	{
 	  rtx par;
@@ -7584,7 +7674,8 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	      scalar_int_mode reg_mode = word_mode;
 	      if (nregs == 1)
 		reg_mode = int_mode_for_mode (mode).require ();
-	      rtx tmp = gen_rtx_REG (reg_mode, R0_REGNUM + ncrn + i);
+	      int reg = get_pcs_arg_reg (pcum->pcs_variant, ncrn + i);
+	      rtx tmp = gen_rtx_REG (reg_mode, reg);
 	      tmp = gen_rtx_EXPR_LIST (VOIDmode, tmp,
 				       GEN_INT (i * UNITS_PER_WORD));
 	      XVECEXP (par, 0, i) = tmp;
@@ -7597,7 +7688,7 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
     }
 
   /* C.11  */
-  pcum->aapcs_nextncrn = NUM_ARG_REGS;
+  pcum->aapcs_nextncrn = num_pcs_arg_regs (pcum->pcs_variant);
 
   /* The argument is passed on stack; record the needed number of words for
      this argument and align the total size if necessary.  */
@@ -7675,7 +7766,8 @@ aarch64_function_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   gcc_assert (pcum->pcs_variant == ARM_PCS_AAPCS64
 	      || pcum->pcs_variant == ARM_PCS_SIMD
-	      || pcum->pcs_variant == ARM_PCS_SVE);
+	      || pcum->pcs_variant == ARM_PCS_SVE
+	      || pcum->pcs_variant == ARM_PCS_PRESERVE_NONE);
 
   if (arg.end_marker_p ())
     {
@@ -7767,7 +7859,8 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
   CUMULATIVE_ARGS *pcum = get_cumulative_args (pcum_v);
   if (pcum->pcs_variant == ARM_PCS_AAPCS64
       || pcum->pcs_variant == ARM_PCS_SIMD
-      || pcum->pcs_variant == ARM_PCS_SVE)
+      || pcum->pcs_variant == ARM_PCS_SVE
+      || pcum->pcs_variant == ARM_PCS_PRESERVE_NONE)
     {
       aarch64_layout_arg (pcum_v, arg);
       gcc_assert ((pcum->aapcs_reg != NULL_RTX)
@@ -7786,12 +7879,40 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
     }
 }
 
+/* Checks if a register is live at entry of a preserve_none pcs function.
+   That is, it used for passing registers.  See ARM_PCS_PRESERVE_NONE_REGISTERS
+   for full list and order of argument passing registers.  */
+
+static bool
+function_arg_preserve_none_regno_p (unsigned regno)
+{
+  return ((GP_REGNUM_P (regno) && regno != R8_REGNUM && regno != R15_REGNUM
+	   && regno != R16_REGNUM && regno != R17_REGNUM && regno != R18_REGNUM
+	   && regno != R19_REGNUM && regno != R29_REGNUM && regno != R30_REGNUM)
+	  || (FP_REGNUM_P (regno) && regno < V0_REGNUM + NUM_FP_ARG_REGS)
+	  || (PR_REGNUM_P (regno) && regno < P0_REGNUM + NUM_PR_ARG_REGS));
+}
+/* Implements FUNCTION_ARG_REGNO_P.  */
 bool
 aarch64_function_arg_regno_p (unsigned regno)
 {
-  return ((GP_REGNUM_P (regno) && regno < R0_REGNUM + NUM_ARG_REGS)
-	  || (FP_REGNUM_P (regno) && regno < V0_REGNUM + NUM_FP_ARG_REGS)
-	  || (PR_REGNUM_P (regno) && regno < P0_REGNUM + NUM_PR_ARG_REGS));
+  enum arm_pcs pcs
+    = cfun ? (arm_pcs) fndecl_abi (cfun->decl).id () : ARM_PCS_AAPCS64;
+
+  switch (pcs)
+    {
+    case ARM_PCS_AAPCS64:
+    case ARM_PCS_SIMD:
+    case ARM_PCS_SVE:
+    case ARM_PCS_TLSDESC:
+    case ARM_PCS_UNKNOWN:
+      return ((GP_REGNUM_P (regno) && regno < R0_REGNUM + NUM_ARG_REGS)
+	      || (FP_REGNUM_P (regno) && regno < V0_REGNUM + NUM_FP_ARG_REGS)
+	      || (PR_REGNUM_P (regno) && regno < P0_REGNUM + NUM_PR_ARG_REGS));
+    case ARM_PCS_PRESERVE_NONE:
+      return function_arg_preserve_none_regno_p (regno);
+    }
+  gcc_unreachable ();
 }
 
 /* Implement FUNCTION_ARG_BOUNDARY.  Every parameter gets at least
@@ -21777,8 +21898,9 @@ aarch64_expand_builtin_va_start (tree valist, rtx nextarg ATTRIBUTE_UNUSED)
 
   cum = &crtl->args.info;
   if (cfun->va_list_gpr_size)
-    gr_save_area_size = MIN ((NUM_ARG_REGS - cum->aapcs_ncrn) * UNITS_PER_WORD,
-			     cfun->va_list_gpr_size);
+    gr_save_area_size = MIN ((num_pcs_arg_regs (cum->pcs_variant)
+			      - cum->aapcs_ncrn)
+			     * UNITS_PER_WORD, cfun->va_list_gpr_size);
   if (cfun->va_list_fpr_size)
     vr_save_area_size = MIN ((NUM_FP_ARG_REGS - cum->aapcs_nvrn)
 			     * UNITS_PER_VREG, cfun->va_list_fpr_size);
@@ -22163,7 +22285,8 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v,
   /* Found out how many registers we need to save.
      Honor tree-stdvar analysis results.  */
   if (cfun->va_list_gpr_size)
-    gr_saved = MIN (NUM_ARG_REGS - local_cum.aapcs_ncrn,
+    gr_saved = MIN (num_pcs_arg_regs (local_cum.pcs_variant)
+		    - local_cum.aapcs_ncrn,
 		    cfun->va_list_gpr_size / UNITS_PER_WORD);
   if (cfun->va_list_fpr_size)
     vr_saved = MIN (NUM_FP_ARG_REGS - local_cum.aapcs_nvrn,
@@ -22187,8 +22310,22 @@ aarch64_setup_incoming_varargs (cumulative_args_t cum_v,
 	  mem = gen_frame_mem (BLKmode, ptr);
 	  set_mem_alias_set (mem, get_varargs_alias_set ());
 
-	  move_block_from_reg (local_cum.aapcs_ncrn + R0_REGNUM,
-			       mem, gr_saved);
+	  /* For preserve_none pcs we can't use move_block_from_reg as the
+	     argument passing register order is not consecutive.  */
+	  if (local_cum.pcs_variant == ARM_PCS_PRESERVE_NONE)
+	    {
+	      for (int i = 0; i < gr_saved; ++i)
+		{
+		  rtx tem = operand_subword (mem, i, 1, BLKmode);
+		  gcc_assert (tem);
+		  int reg = get_pcs_arg_reg (local_cum.pcs_variant,
+					     local_cum.aapcs_ncrn + i);
+		  emit_move_insn (tem, gen_rtx_REG (word_mode, reg));
+		}
+	    }
+	  else
+	    move_block_from_reg (R0_REGNUM + local_cum.aapcs_ncrn, mem,
+				 gr_saved);
 	}
       if (vr_saved > 0)
 	{
@@ -25494,7 +25631,7 @@ aarch64_is_variant_pcs (tree fndecl)
 {
   /* Check for ABIs that preserve more registers than usual.  */
   arm_pcs pcs = (arm_pcs) fndecl_abi (fndecl).id ();
-  if (pcs == ARM_PCS_SIMD || pcs == ARM_PCS_SVE)
+  if (pcs == ARM_PCS_SIMD || pcs == ARM_PCS_SVE || pcs == ARM_PCS_PRESERVE_NONE)
     return true;
 
   /* Check for ABIs that allow PSTATE.SM to be 1 on entry.  */
@@ -30224,6 +30361,8 @@ aarch64_comp_type_attributes (const_tree type1, const_tree type2)
   };
 
   if (!check_attr ("gnu", "aarch64_vector_pcs"))
+    return 0;
+  if (!check_attr ("gnu", "preserve_none"))
     return 0;
   if (!check_attr ("gnu", "indirect_return"))
     return 0;

@@ -696,6 +696,31 @@ through +ssve-fp8dot2.  */
 #define NUM_FP_ARG_REGS			8
 #define NUM_PR_ARG_REGS			4
 
+/* The argument passing regs for preserve_none pcs.  */
+#if TARGET_AARCH64_MS_ABI
+#define NUM_PRESERVE_NONE_ARG_REGS 23
+#define PRESERVE_NONE_REGISTERS \
+{ \
+  R20_REGNUM, R21_REGNUM, R22_REGNUM, R23_REGNUM, R24_REGNUM, R25_REGNUM,\
+  R26_REGNUM, R27_REGNUM, R28_REGNUM,\
+  R0_REGNUM, R1_REGNUM, R2_REGNUM, R3_REGNUM, R4_REGNUM, R5_REGNUM,\
+  R6_REGNUM, R7_REGNUM,\
+  R10_REGNUM, R11_REGNUM, R12_REGNUM, R13_REGNUM, R14_REGNUM, R9_REGNUM\
+}
+#else
+#define NUM_PRESERVE_NONE_ARG_REGS 24
+#define PRESERVE_NONE_REGISTERS \
+{ \
+  R20_REGNUM, R21_REGNUM, R22_REGNUM, R23_REGNUM, R24_REGNUM, R25_REGNUM,\
+  R26_REGNUM, R27_REGNUM, R28_REGNUM,\
+  R0_REGNUM, R1_REGNUM, R2_REGNUM, R3_REGNUM, R4_REGNUM, R5_REGNUM,\
+  R6_REGNUM, R7_REGNUM,\
+  R10_REGNUM, R11_REGNUM, R12_REGNUM, R13_REGNUM, R14_REGNUM, R9_REGNUM,\
+  R15_REGNUM\
+}
+#endif
+
+
 /* A Homogeneous Floating-Point or Short-Vector Aggregate may have at most
    four members.  */
 #define HA_MAX_NUM_FLDS		4
@@ -1150,6 +1175,8 @@ enum arm_pcs
   ARM_PCS_SVE,			/* For functions that pass or return
 				   values in SVE registers.  */
   ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
+  ARM_PCS_PRESERVE_NONE,	/* PCS variant with no call-preserved
+				   registers except X29.  */
   ARM_PCS_UNKNOWN
 };
 
