@@ -2424,3 +2424,44 @@
   }
   [(set_attr "type" "vfalu")]
 )
+
+;; Combine vsext.vf + vsll.vi to vwsll.vi depends on ZVBB.
+;; The vwsll.vi is zero extend, thus only the ashift bits
+;; is equal or greater than double truncated bits is valid.
+;; Appears in the satd function of x264.
+(define_insn_and_split "*vwsll_sign_extend_<mode>"
+  [(set (match_operand:VWEXTI               0 "register_operand")
+	(ashift:VWEXTI
+	  (sign_extend:VWEXTI
+	    (match_operand:<V_DOUBLE_TRUNC> 1 "register_operand"))
+	  (match_operand                    2 "const_int_operand")))]
+  "TARGET_VECTOR && TARGET_ZVBB && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    int imm = INTVAL (operands[2]);
+    int trunc_prec = GET_MODE_PRECISION (GET_MODE_INNER (<V_DOUBLE_TRUNC>mode));
+
+    if (imm >= trunc_prec)
+      {
+	insn_code icode = code_for_pred_vwsll_scalar (<MODE>mode);
+	emit_vlmax_insn (icode, riscv_vector::BINARY_OP, operands);
+      }
+    else
+      {
+	insn_code icode = code_for_pred_vf2 (SIGN_EXTEND, <MODE>mode);
+	rtx extend = gen_reg_rtx (<MODE>mode);
+	rtx unary_ops[] = {extend, operands[1]};
+	riscv_vector::emit_vlmax_insn (icode, riscv_vector::UNARY_OP,
+				       unary_ops);
+
+	icode = code_for_pred_scalar (ASHIFT, <MODE>mode);
+	rtx binary_ops[] = {operands[0], extend, operands[2]};
+	riscv_vector::emit_vlmax_insn (icode, riscv_vector::BINARY_OP,
+				       binary_ops);
+      }
+
+    DONE;
+  }
+)
