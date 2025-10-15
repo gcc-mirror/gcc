@@ -11671,15 +11671,29 @@ get_feature_mask_for_version (tree decl,
 {
   tree version_attr = lookup_attribute ("target_version",
 					DECL_ATTRIBUTES (decl));
+
+  /* When a function is added with "__attribute__((target_version(**)))" to
+     define multiple versions, it is allowed to define this function without
+     adding the "__attribute__((target_version("default")))" attribute.
+     In this case, the function without the attribute will be compiled as the
+     default version.
+     If version_attr is empty, it is the default version of the function.
+     Set the feature_mask of this function to 0 and the priority to
+     LA_PRIO_NONE.  */
   if (version_attr == NULL)
-    return;
+    {
+      if (feature_mask)
+	feature_mask = 0ULL;
+
+      if (feature_priority)
+	feature_priority->safe_push (0);
+      return;
+    }
 
   string_slice version_string
     = TREE_STRING_POINTER (TREE_VALUE (TREE_VALUE (version_attr)));
   loongarch_parse_fmv_features (decl, version_string, feature_mask,
 				feature_priority);
-
-  return;
 }
 
 /* This adds a condition to the basic_block NEW_BB in function FUNCTION_DECL
@@ -12027,6 +12041,23 @@ loongarch_generate_version_dispatcher_body (void *node_p)
   return resolver_decl;
 }
 
+/* This function returns true if FN1 and FN2 are versions of the same function,
+   that is, the target_version attributes of the function decls are different.
+   This assumes that FN1 and FN2 have the same signature.  */
+
+bool
+loongarch_option_same_function_versions (string_slice str1, string_slice str2)
+{
+  loongarch_fmv_feature_mask feature_mask1;
+  loongarch_fmv_feature_mask feature_mask2;
+  loongarch_parse_fmv_features (NULL, str1,
+				&feature_mask1, NULL);
+  loongarch_parse_fmv_features (NULL, str2,
+				&feature_mask2, NULL);
+
+  return feature_mask1 == feature_mask2;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -12333,6 +12364,10 @@ loongarch_generate_version_dispatcher_body (void *node_p)
 #undef TARGET_COMPARE_VERSION_PRIORITY
 #define TARGET_COMPARE_VERSION_PRIORITY \
   loongarch_compare_version_priority
+
+#undef TARGET_OPTION_SAME_FUNCTION_VERSIONS
+#define TARGET_OPTION_SAME_FUNCTION_VERSIONS \
+  loongarch_option_same_function_versions
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
