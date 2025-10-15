@@ -1427,25 +1427,82 @@ bpf_expand_setmem (rtx *operands)
   unsigned inc = GET_MODE_SIZE (mode);
   unsigned offset = 0;
 
+  /* If val is a constant, then build a new constant value duplicating
+     the byte across to the size of stores we might do.
+       e.g. if val is 0xab and we can store in 4-byte chunks, build
+       0xabababab and use that to do the memset.
+     If val is not a constant, then by constraint it is a QImode register
+     and we similarly duplicate the byte across.  */
+  rtx src;
+  if (CONST_INT_P (val))
+    {
+      unsigned HOST_WIDE_INT tmp = UINTVAL (val) & 0xff;
+      /* Need src in the proper mode.  */
+      switch (mode)
+	{
+	case DImode:
+	  src = gen_rtx_CONST_INT (DImode, tmp * 0x0101010101010101);
+	  break;
+	case SImode:
+	  src = gen_rtx_CONST_INT (SImode, tmp * 0x01010101);
+	  break;
+	case HImode:
+	  src = gen_rtx_CONST_INT (HImode, tmp * 0x0101);
+	  break;
+	default:
+	  src = val;
+	  break;
+	}
+    }
+  else
+    {
+      /* VAL is a subreg:QI (reg:DI N).
+	 Copy that byte to fill the whole register.  */
+      src = gen_reg_rtx (mode);
+      emit_move_insn (src, gen_rtx_ZERO_EXTEND (mode, val));
+
+      /* We can fill the whole register with copies of the byte by multiplying
+	 by 0x010101...
+	 For DImode this requires a tmp reg with lldw, but only if we will
+	 actually do nonzero iterations of stxdw.  */
+      if (mode < DImode || iters == 0)
+	emit_move_insn (src, gen_rtx_MULT (mode, src, GEN_INT (0x01010101)));
+      else
+	{
+	  rtx tmp = gen_reg_rtx (mode);
+	  emit_move_insn (tmp, GEN_INT (0x0101010101010101));
+	  emit_move_insn (src, gen_rtx_MULT (mode, src, tmp));
+	}
+    }
+
   for (unsigned int i = 0; i < iters; i++)
     {
-      emit_move_insn (adjust_address (dst, mode, offset), val);
+      emit_move_insn (adjust_address (dst, mode, offset), src);
       offset += inc;
     }
   if (remainder & 4)
     {
-      emit_move_insn (adjust_address (dst, SImode, offset), val);
+      emit_move_insn (adjust_address (dst, SImode, offset),
+		      REG_P (src)
+		      ? simplify_gen_subreg (SImode, src, mode, 0)
+		      : src);
       offset += 4;
       remainder -= 4;
     }
   if (remainder & 2)
     {
-      emit_move_insn (adjust_address (dst, HImode, offset), val);
+      emit_move_insn (adjust_address (dst, HImode, offset),
+		      REG_P (src)
+		      ? simplify_gen_subreg (HImode, src, mode, 0)
+		      : src);
       offset += 2;
       remainder -= 2;
     }
   if (remainder & 1)
-    emit_move_insn (adjust_address (dst, QImode, offset), val);
+    emit_move_insn (adjust_address (dst, QImode, offset),
+		    REG_P (src)
+		    ? simplify_gen_subreg (QImode, src, mode, 0)
+		    : src);
 
   return true;
 }
