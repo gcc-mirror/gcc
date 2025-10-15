@@ -2328,6 +2328,7 @@ Define an argument called @var{key} with a value of @var{value}
 for the plugin called @var{name}.
 
 @opindex fdump-ada-spec
+@opindex fdump-ada-spec-slim
 @item -fdump-ada-spec@r{[}-slim@r{]}
 For C and C++ source and include files, generate corresponding Ada specs.
 @xref{Generating Ada Bindings for C and C++ headers,,, gnat_ugn,
@@ -3266,6 +3267,7 @@ semantic.  Defaults to off.
 [P1332] Specify the concrete semantics for each contract level
 of a particular contract role.
 
+@opindex fcontract-semantic
 @item -fcontract-semantic=[default|audit|axiom]:<semantic>
 [P1429] Specify the concrete semantic for a particular
 contract level.
@@ -5495,6 +5497,7 @@ Note - this option also affects the display of the @samp{#error} and
 function/type/variable attribute.  It does not however affect the
 @samp{pragma GCC warning} and @samp{pragma GCC error} pragmas.
 
+@opindex fdiagnostics-plain-output
 @item -fdiagnostics-plain-output
 This option requests that diagnostic output look as plain as possible, which
 may be useful when running @command{dejagnu} or other utilities that need to
@@ -9829,6 +9832,8 @@ disabled in the expression that follows @code{__extension__}.
 
 @opindex Wc11-c23-compat
 @opindex Wno-c11-c23-compat
+@opindex Wc11-c2x-compat
+@opindex Wno-c11-c2x-compat
 @item -Wc11-c23-compat @r{(C and Objective-C only)}
 @itemx -Wc11-c2x-compat @r{(C and Objective-C only)}
 Warn about features not present in ISO C11, but present in ISO C23.
@@ -11178,6 +11183,7 @@ See also @option{-Walloca-larger-than=@var{byte-size}}.
 Disable @option{-Wvla-larger-than=} warnings.  The option is equivalent
 to @option{-Wvla-larger-than=}@samp{SIZE_MAX} or larger.
 
+@opindex Wvla-parameter
 @opindex Wno-vla-parameter
 @item -Wvla-parameter
 Warn about redeclarations of functions involving arguments of Variable
@@ -12417,16 +12423,21 @@ With @option{-fno-analyzer-undo-inlining} this attempt to reconstruct
 the original frame information can be disabled, which may be of help
 when debugging issues in the analyzer.
 
+@opindex fanalyzer-verbose-edges
+@opindex fno-analyzer-verbose-edges
 @item -fanalyzer-verbose-edges
 This option is intended for analyzer developers.  It enables more
 verbose, lower-level detail in the descriptions of control flow
 within diagnostic paths.
 
+@opindex fanalyzer-verbose-state-changes
+@opindex fno-analyzer-verbose-state-changes
 @item -fanalyzer-verbose-state-changes
 This option is intended for analyzer developers.  It enables more
 verbose, lower-level detail in the descriptions of events relating
 to state machines within diagnostic paths.
 
+@opindex fanalyzer-verbosity
 @item -fanalyzer-verbosity=@var{level}
 This option controls the complexity of the control flow paths that are
 emitted for analyzer diagnostics.
@@ -15161,6 +15172,8 @@ The maximum allowed @var{n} option value is 65536.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
+@opindex flimit-function-alignment
+@opindex fno-limit-function-alignment
 @item -flimit-function-alignment
 If this option is enabled, the compiler tries to avoid unnecessarily
 overaligning functions. It attempts to instruct the assembler to align

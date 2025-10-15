@@ -262,6 +262,7 @@ Accept universal character names and extended characters in
 identifiers.  This option is enabled by default for C99 (and later C
 standard versions) and C++.
 
+@opindex fcanonical-system-headers
 @opindex fno-canonical-system-headers
 @item -fno-canonical-system-headers
 When preprocessing, do not shorten system header paths with canonicalization.
