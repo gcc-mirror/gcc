@@ -12484,17 +12484,17 @@ GraphViz to @file{@var{file}.eg.dot}.
 Nodes are color-coded based on state-machine states to emphasize
 state changes.
 
-@opindex dump-analyzer-exploded-nodes
+@opindex fdump-analyzer-exploded-nodes
 @item -fdump-analyzer-exploded-nodes
 Emit diagnostics showing where nodes in the ``exploded graph'' are
 in relation to the program source.
 
-@opindex dump-analyzer-exploded-nodes-2
+@opindex fdump-analyzer-exploded-nodes-2
 @item -fdump-analyzer-exploded-nodes-2
 Dump a textual representation of the ``exploded graph'' to
 @file{@var{file}.eg.txt}.
 
-@opindex dump-analyzer-exploded-nodes-3
+@opindex fdump-analyzer-exploded-nodes-3
 @item -fdump-analyzer-exploded-nodes-3
 Dump a textual representation of the ``exploded graph'' to
 one dump file per node, to @file{@var{file}.eg-@var{id}.txt}.
@@ -12505,14 +12505,14 @@ This is typically a large number of dump files.
 Dump a textual representation of the ``exploded path'' for each
 diagnostic to @file{@var{file}.@var{idx}.@var{kind}.epath.txt}.
 
-@opindex dump-analyzer-feasibility
+@opindex fdump-analyzer-feasibility
 @item -fdump-analyzer-feasibility
 Dump internal details about the analyzer's search for feasible paths.
 The details are written in a form suitable for viewing with GraphViz
 to filenames of the form @file{@var{file}.*.fg.dot},
 @file{@var{file}.*.tg.dot}, and @file{@var{file}.*.fpath.txt}.
 
-@opindex dump-analyzer-infinite-loop
+@opindex fdump-analyzer-infinite-loop
 @item -fdump-analyzer-infinite-loop
 Dump internal details about the analyzer's search for infinite loops.
 The details are written in a form suitable for viewing with GraphViz
@@ -20015,7 +20015,7 @@ can figure out the other form by either removing @samp{no-} or adding
 it.
 
 @table @gcctabopt
-@opindex fstack_reuse
+@opindex fstack-reuse
 @item -fstack-reuse=@var{reuse-level}
 This option controls stack space reuse for user declared local/auto variables
 and compiler generated temporaries.  @var{reuse_level} can be @samp{all},
