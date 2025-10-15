@@ -74,7 +74,7 @@ readwrite_armv8p9a_sysregs ()
   a = __arm_rsr64 ("pmicfiltr_el0"); /* { { dg-final { scan-assembler "mrs\tx0, s3_3_c9_c6_0" } } */
   a = __arm_rsr64 ("pmicntr_el0"); /* { { dg-final { scan-assembler "mrs\tx0, s3_3_c9_c4_0" } } */
   a = __arm_rsr64 ("pmicntsvr_el1"); /* { { dg-final { scan-assembler "mrs\tx0, s2_0_c14_c12_0" } } */
-  a = __arm_rsr64 ("pmsdsfr_el1"); /* { { dg-final { scan-assembler "mrs\tx0, s3_4_c9_c10_4" } } */
+  a = __arm_rsr64 ("pmsdsfr_el1"); /* { { dg-final { scan-assembler "mrs\tx0, s3_0_c9_c10_4" } } */
   a = __arm_rsr64 ("pmsscr_el1"); /* { { dg-final { scan-assembler "mrs\tx0, s3_0_c9_c13_3" } } */
   a = __arm_rsr64 ("pmuacr_el1"); /* { { dg-final { scan-assembler "mrs\tx0, s3_0_c9_c14_4" } } */
   a = __arm_rsr64 ("por_el0"); /* { { dg-final { scan-assembler "mrs\tx0, s3_3_c10_c2_4" } } */
