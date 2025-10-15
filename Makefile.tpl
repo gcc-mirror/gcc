@@ -979,7 +979,7 @@ local-distclean:
 	-rmdir texinfo/makeinfo texinfo/po texinfo/util 2>/dev/null
 	-rmdir c++tools fastjar gcc gnattools gotools 2>/dev/null
 	-rmdir libcc1 libiberty texinfo zlib 2>/dev/null
-	-find . -name config.cache -exec rm -f {} \; \; 2>/dev/null
+	-find . -name config.cache -exec rm -f {} \; 2>/dev/null
 
 local-maintainer-clean:
 	@echo "This command is intended for maintainers to use;"
