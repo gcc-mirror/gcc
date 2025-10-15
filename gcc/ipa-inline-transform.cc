@@ -833,7 +833,8 @@ inline_transform (struct cgraph_node *node)
       FOR_ALL_BB_FN (bb, cfun)
 	{
 	  bb->count = bb->count.apply_scale (num, den);
-	  cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+	  cfun->cfg->count_max = profile_count::max_prefer_initialized
+		  (cfun->cfg->count_max, bb->count);
 	}
       ENTRY_BLOCK_PTR_FOR_FN (cfun)->count = node->count;
     }

@@ -824,7 +824,7 @@ merge_blocks (basic_block a, basic_block b)
   else if (a->count.quality () < b->count.quality ())
     a->count = b->count;
   else if (a->count.quality () == b->count.quality ())
-    a->count = a->count.max (b->count);
+    a->count = profile_count::max_prefer_initialized (a->count, b->count);
 
   cfg_hooks->merge_blocks (a, b);
 

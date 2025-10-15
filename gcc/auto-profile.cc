@@ -3600,11 +3600,12 @@ scale_bb_profile ()
     {
       profile_count cnt = bb->count;
       bbs.safe_push (bb);
-      max_count = max_count.max (bb->count);
+      max_count = profile_count::max_prefer_initialized (max_count, cnt);
       if (afdo_set_bb_count (bb, zero_bbs))
 	{
 	  std::swap (cnt, bb->count);
-	  max_count_in_fn = max_count_in_fn.max (cnt);
+	  max_count_in_fn
+	    = profile_count::max_prefer_initialized (max_count_in_fn, cnt);
 	  add_scale (&scales, cnt, bb->count);
 	}
     }
@@ -3646,7 +3647,8 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
     if (is_bb_annotated (seed_bb, *annotated_bb))
       {
 	component[seed_bb->index] = 1;
-	max_count_in_fn = max_count_in_fn.max (seed_bb->count);
+	max_count_in_fn
+	  = profile_count::max_prefer_initialized (max_count_in_fn, seed_bb->count);
       }
     else
       component[seed_bb->index] = 0;
@@ -3669,7 +3671,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 	   basic_block b = stack.pop ();
 
 	   bbs.quick_push (b);
-	   max_count = max_count.max (b->count);
+	   max_count = profile_count::max_prefer_initialized (max_count, b->count);
 
 	   for (edge e: b->preds)
 	     if (!component[e->src->index])

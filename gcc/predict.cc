@@ -3849,7 +3849,7 @@ update_max_bb_count (void)
   basic_block bb;
 
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
-    true_count_max = true_count_max.max (bb->count);
+    true_count_max = profile_count::max_prefer_initialized (true_count_max, bb->count);
 
   cfun->cfg->count_max = true_count_max;
 
@@ -4162,7 +4162,9 @@ estimate_bb_frequencies ()
 	 executed, then preserve this info.  */
       if (!(bb->count == profile_count::zero ()))
 	bb->count = count.guessed_local ().combine_with_ipa_count (ipa_count);
-      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+      cfun->cfg->count_max
+	= profile_count::max_prefer_initialized (cfun->cfg->count_max,
+						 bb->count);
     }
 
   free_aux_for_blocks ();
@@ -4473,7 +4475,9 @@ rebuild_frequencies (void)
   cfun->cfg->count_max = profile_count::uninitialized ();
   FOR_BB_BETWEEN (bb, ENTRY_BLOCK_PTR_FOR_FN (cfun), NULL, next_bb)
     {
-      cfun->cfg->count_max = cfun->cfg->count_max.max (bb->count);
+      cfun->cfg->count_max
+	      = profile_count::max_prefer_initialized (cfun->cfg->count_max,
+						       bb->count);
       if (bb->count.nonzero_p () && bb->count.quality () >= AFDO)
 	feedback_found = true;
       /* Uninitialized count may be result of inlining or an omision in an

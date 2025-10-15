@@ -136,7 +136,8 @@ struct unswitch_predicate
     tree rhs = gimple_cond_rhs (stmt);
     enum tree_code code = gimple_cond_code (stmt);
     condition = build2 (code, boolean_type_node, lhs, rhs);
-    count = EDGE_SUCC (bb, 0)->count ().max (EDGE_SUCC (bb, 1)->count ());
+    count = profile_count::max_prefer_initialized (EDGE_SUCC (bb, 0)->count (),
+						   EDGE_SUCC (bb, 1)->count ());
     if (irange::supports_p (TREE_TYPE (lhs)))
       {
 	auto range_op = range_op_handler (code);

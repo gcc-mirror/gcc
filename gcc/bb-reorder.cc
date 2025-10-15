@@ -2389,8 +2389,10 @@ edge_order (const void *ve1, const void *ve2)
   /* Since profile_count::operator< does not establish a strict weak order
      in presence of uninitialized counts, use 'max': this makes them appear
      as if having execution frequency less than any initialized count.  */
-  profile_count m = c1.max (c2);
-  return (m == c2) - (m == c1);
+  gcov_type gc1 = c1.initialized_p () ? c1.to_gcov_type () : 0;
+  gcov_type gc2 = c2.initialized_p () ? c2.to_gcov_type () : 0;
+  gcov_type m = MAX (gc1, gc2);
+  return (m == gc1) - (m == gc2);
 }
 
 /* Reorder basic blocks using the "simple" algorithm.  This tries to

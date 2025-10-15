@@ -2356,7 +2356,8 @@ param_change_prob (ipa_func_body_info *fbi, gimple *stmt, int i)
       /* Lookup the most frequent update of the value and believe that
 	 it dominates all the other; precise analysis here is difficult.  */
       EXECUTE_IF_SET_IN_BITMAP (info.bb_set, 0, index, bi)
-	max = max.max (BASIC_BLOCK_FOR_FN (cfun, index)->count);
+	max = profile_count::max_prefer_initialized
+		(max, BASIC_BLOCK_FOR_FN (cfun, index)->count);
       if (dump_file)
 	{
           fprintf (dump_file, "     Set with count ");
