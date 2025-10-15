@@ -1,3 +1,27 @@
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122133
+	* stmt.cc (resolve_asm_operand_names): Handle % and 2 letters followed
+	by open square.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122104
+	* tree-ssa-math-opts.cc (maybe_optimize_guarding_check): Call
+	reset_flow_sensitive_info_in_bb on bb when optimizing out the
+	guarding condition.
+
+2025-10-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h (PTA_DIAMONDRAPIDS): Remove AMX-TRANSPOSE.
+	* doc/invoke.texi: Correct documentation.
+
 2025-10-13  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	PR tree-optimization/122213

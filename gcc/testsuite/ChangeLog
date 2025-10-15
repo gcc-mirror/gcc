@@ -1,3 +1,43 @@
+2025-10-14  Jason Merrill  <jason@redhat.com>
+
+	Backported from master:
+	2025-08-21  Jason Merrill  <jason@redhat.com>
+
+	PR c++/120757
+	* g++.dg/cpp1y/auto-fn66.C: New test.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* gcc.dg/torture/pr122188.c: New test.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* c-c++-common/pr122188.c: New test.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-06  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122133
+	* c-c++-common/toplevel-asm-9.c: New test.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122104
+	* gcc.target/i386/pr122104.c: New test.
+
 2025-10-11  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	Backported from master:
