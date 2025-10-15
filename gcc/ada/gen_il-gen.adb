@@ -505,13 +505,11 @@ package body Gen_IL.Gen is
       Node_Field_Types_Used, Entity_Field_Types_Used : Type_Set;
 
       Setter_Needs_Parent : Field_Set :=
-        (Expression | Then_Actions | Else_Actions => True,
+        (Then_Actions | Else_Actions => True,
          others => False);
       --  Set of fields where the setter should set the Parent. True for
-      --  syntactic fields of type Node_Id and List_Id, but with some
-      --  exceptions. Expression is syntactic AND semantic, and the Parent
-      --  is needed. Then_Actions and Else_Actions are not syntactic, but the
-      --  Parent is needed.
+      --  syntactic fields of type Node_Id and List_Id. Then_Actions and
+      --  Else_Actions are not syntactic, but the Parent is needed.
       --
       --  Computed in Check_For_Syntactic_Field_Mismatch.
 
@@ -1296,26 +1294,15 @@ package body Gen_IL.Gen is
                      end if;
                   end loop;
 
-                  --  ???The following fields violate this rule. We might want
-                  --  to simplify by getting rid of these cases, but we allow
-                  --  them for now. At least, we don't want to add any new
-                  --  cases of syntactic/semantic mismatch.
-                  --  ???Just one case left.
+                  if Syntactic_Seen and Semantic_Seen then
+                     raise Illegal with
+                       "syntactic/semantic mismatch for " & Image (F);
+                  end if;
 
-                  if F in Expression then
-                     pragma Assert (Syntactic_Seen and Semantic_Seen);
-
-                  else
-                     if Syntactic_Seen and Semantic_Seen then
-                        raise Illegal with
-                          "syntactic/semantic mismatch for " & Image (F);
-                     end if;
-
-                     if Field_Table (F).Field_Type in Traversed_Field_Type
-                       and then Syntactic_Seen
-                     then
-                        Setter_Needs_Parent (F) := True;
-                     end if;
+                  if Field_Table (F).Field_Type in Traversed_Field_Type
+                    and then Syntactic_Seen
+                  then
+                     Setter_Needs_Parent (F) := True;
                   end if;
                end;
             end if;

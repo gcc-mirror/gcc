@@ -6839,9 +6839,15 @@ package Sinfo is
       --  N_Exception_Declaration
       --  Sloc points to EXCEPTION
       --  Defining_Identifier
-      --  Expression
+      --  Expression (see below)
       --  More_Ids (set to False if no more identifiers in list)
       --  Prev_Ids (set to False if no previous identifiers in list)
+
+      --  Expression is not present in the syntax; it is set during expansion.
+      --  An exception_declaration is treated by the back end like an object of
+      --  type Standard.Exception_Type, and Expression is the initial value.
+      --  Expression is a syntactic field to match the Expression fields of
+      --  other node kinds.
 
       ------------------------------------------
       -- 11.2  Handled Sequence Of Statements --

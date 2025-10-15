@@ -48,14 +48,12 @@
 --  If a field is syntactic, then the constructors in Nmake take a parameter to
 --  initialize that field. In addition, the tree-traversal routines in Atree
 --  (Traverse_Func and Traverse_Proc) traverse syntactic fields that are of
---  type Node_Id (or subtypes of Node_Id) or List_Id. Finally, (with some
---  exceptions documented in the body) the setter for a syntactic node or list
---  field "Set_F (N, Val)" will set the Parent of Val to N, unless Val is Empty
---  or Error[_List].
+--  type Node_Id (or subtypes of Node_Id) or List_Id. Finally, the setter for a
+--  syntactic node or list field "Set_F (N, Val)" will set the Parent of Val to
+--  N, unless Val is Empty or Error[_List].
 --
---  Note that the same field can be syntactic in some node types but semantic
---  in other node types. This is an added complexity that we might want to
---  eliminate someday. We shouldn't add any new such cases.
+--  No syntactic/semantic mixing: the same field cannot be syntactic in some
+--  node types but semantic in other node types.
 --
 --  A "program" written in the Gen_IL.Gen language consists of calls to the
 --  "Create_..." routines below, followed by a call to Compile, also below. In

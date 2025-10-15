@@ -1290,7 +1290,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Exception_Declaration, N_Declaration,
        (Sy (Defining_Identifier, Node_Id),
         Sy (Aspect_Specifications, List_Id, Default_No_List),
-        Sm (Expression, Node_Id),
+        Sy (Expression, Node_Id, Default_Empty),
         Sm (More_Ids, Flag),
         Sm (Prev_Ids, Flag)));
 

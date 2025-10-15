@@ -1031,7 +1031,7 @@ package body Exp_Ch11 is
       --  "hoisted" (i.e., Is_Statically_Allocated and not Is_Library_Level)
       --  entity must also be either Library_Level or hoisted. It turns out
       --  that this would be incompatible with the current treatment of an
-      --  object which is local to a subprogram, subject to an Export pragma,
+      --  object that is local to a subprogram, subject to an Export pragma,
       --  not subject to an address clause, and whose declaration contains
       --  references to other local (non-hoisted) objects (e.g., in the initial
       --  value expression).
@@ -1558,7 +1558,7 @@ package body Exp_Ch11 is
             Build_Location_String (Buf, Loc);
 
             --  If the exception is a renaming, use the exception that it
-            --  renames (which might be a predefined exception, e.g.).
+            --  renames (which might be a predefined exception).
 
             if Present (Renamed_Entity (Id)) then
                Id := Renamed_Entity (Id);
