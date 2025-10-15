@@ -15,3 +15,6 @@ static_assert(b::f() == 42);
 static_assert(b::g() == 123);
 static_assert(c::other::h() == 99);
 static_assert(y::i() == 5);
+
+// unexported 'using namespace a'; should not be visible in 'c'
+int result = c::f();  // { dg-error "'f' is not a member of 'c'" }

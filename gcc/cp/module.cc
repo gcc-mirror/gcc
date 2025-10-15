@@ -14761,10 +14761,11 @@ depset::hash::add_namespace_entities (tree ns, bitmap partitions)
 
   /* Seed any using-directives so that we emit the relevant namespaces.  */
   for (tree udir : NAMESPACE_LEVEL (ns)->using_directives)
-    if (TREE_CODE (udir) == USING_DECL && DECL_MODULE_EXPORT_P (udir))
+    if (TREE_CODE (udir) == USING_DECL && DECL_MODULE_PURVIEW_P (udir))
       {
 	make_dependency (USING_DECL_DECLS (udir), depset::EK_NAMESPACE);
-	count++;
+	if (DECL_MODULE_EXPORT_P (udir))
+	  count++;
       }
 
   if (count)
@@ -17397,14 +17398,16 @@ module_state::write_using_directives (elf_out *to, depset::hash &table,
       tree parent = parent_dep->get_entity ();
       for (auto udir : NAMESPACE_LEVEL (parent)->using_directives)
 	{
-	  if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_EXPORT_P (udir))
+	  if (TREE_CODE (udir) != USING_DECL || !DECL_MODULE_PURVIEW_P (udir))
 	    continue;
+	  bool exported = DECL_MODULE_EXPORT_P (udir);
 	  tree target = USING_DECL_DECLS (udir);
 	  depset *target_dep = table.find_dependency (target);
 	  gcc_checking_assert (target_dep);
 
 	  dump () && dump ("Writing using-directive in %N for %N",
 			   parent, target);
+	  sec.u (exported);
 	  write_namespace (sec, parent_dep);
 	  write_namespace (sec, target_dep);
 	  ++num;
@@ -17441,13 +17444,15 @@ module_state::read_using_directives (unsigned num)
 
   for (unsigned ix = 0; ix != num; ++ix)
     {
+      bool exported = sec.u ();
       tree parent = read_namespace (sec);
       tree target = read_namespace (sec);
       if (sec.get_overrun ())
 	break;
 
       dump () && dump ("Read using-directive in %N for %N", parent, target);
-      add_using_namespace (parent, target);
+      if (exported || is_module () || is_partition ())
+	add_using_namespace (parent, target);
     }
 
   dump.outdent ();

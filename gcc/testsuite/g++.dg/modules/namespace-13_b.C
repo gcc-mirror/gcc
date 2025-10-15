@@ -6,6 +6,7 @@ module;
 
 namespace gmf::blah {}
 namespace gmf::other {}
+using namespace gmf::other;  // not emitted
 
 export module b;
 export import a;
@@ -21,7 +22,7 @@ namespace c {
   using namespace a;
 }
 
-// { dg-final { scan-lang-dump {Using-directives 3} module } }
+// { dg-final { scan-lang-dump {Using-directives 4} module } }
 
 // { dg-final { scan-lang-dump {Writing using-directive in '::b' for '::a'} module } }
 // { dg-final { scan-lang-dump {Writing using-directive in '::b' for '::gmf::blah'} module } }
@@ -30,3 +31,4 @@ namespace c {
 
 // { dg-final { scan-lang-dump {Writing namespace:[0-9]* '::gmf::blah', public} module } }
 // { dg-final { scan-lang-dump-not {Writing namespace:[0-9]* '::gmf::other'} module } }
+// { dg-final { scan-lang-dump-not {Writing using-directive in '::' for '::gmf::other'} module } }
