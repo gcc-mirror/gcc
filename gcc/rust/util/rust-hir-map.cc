@@ -925,10 +925,10 @@ Mappings::lookup_macro_invocation (AST::MacroInvocation &invoc)
 void
 Mappings::insert_exported_macro (AST::MacroRulesDefinition &def)
 {
-  exportedMacros.emplace_back (def.get_node_id ());
+  exportedMacros.emplace_back (def);
 }
 
-std::vector<NodeId> &
+std::vector<AST::MacroRulesDefinition>
 Mappings::get_exported_macros ()
 {
   return exportedMacros;

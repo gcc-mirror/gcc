@@ -23,6 +23,7 @@
 #include "rust-ast-dump.h"
 #include "rust-abi.h"
 #include "rust-item.h"
+#include "rust-macro.h"
 #include "rust-object-export.h"
 
 #include "md5.h"
@@ -111,14 +112,12 @@ ExportContext::emit_function (const HIR::Function &fn)
 }
 
 void
-ExportContext::emit_macro (NodeId macro)
+ExportContext::emit_macro (AST::MacroRulesDefinition &macro)
 {
   std::stringstream oss;
   AST::Dump dumper (oss);
 
-  AST::Item *item = mappings.lookup_ast_item (macro).value ();
-
-  dumper.go (*item);
+  dumper.go (macro);
 
   public_interface_buffer += oss.str ();
 }
@@ -195,7 +194,7 @@ PublicInterface::gather_export_data ()
 	vis_item.accept_vis (visitor);
     }
 
-  for (const auto &macro : mappings.get_exported_macros ())
+  for (auto &macro : mappings.get_exported_macros ())
     context.emit_macro (macro);
 }
 

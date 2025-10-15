@@ -48,7 +48,7 @@ public:
    * directly refer to them using their NodeId. There's no need to keep an HIR
    * node for them.
    */
-  void emit_macro (NodeId macro);
+  void emit_macro (AST::MacroRulesDefinition &macro);
 
   const std::string &get_interface_buffer () const;
 

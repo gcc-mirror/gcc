@@ -279,7 +279,7 @@ public:
   lookup_macro_invocation (AST::MacroInvocation &invoc);
 
   void insert_exported_macro (AST::MacroRulesDefinition &def);
-  std::vector<NodeId> &get_exported_macros ();
+  std::vector<AST::MacroRulesDefinition> get_exported_macros ();
 
   void insert_derive_proc_macros (CrateNum num,
 				  std::vector<CustomDeriveProcMacro> macros);
@@ -408,7 +408,7 @@ private:
   std::map<NodeId, std::pair<AST::MacroRulesDefinition *, CrateNum>>
     macroMappings;
   std::map<NodeId, AST::MacroRulesDefinition *> macroInvocations;
-  std::vector<NodeId> exportedMacros;
+  std::vector<AST::MacroRulesDefinition> exportedMacros;
 
   // Procedural macros
   std::map<CrateNum, std::vector<CustomDeriveProcMacro>>
