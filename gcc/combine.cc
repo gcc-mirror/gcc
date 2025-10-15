@@ -195,7 +195,7 @@ struct reg_stat_type {
      sign bits copies it was known to have when it was last set.  */
 
   unsigned HOST_WIDE_INT	last_set_nonzero_bits;
-  char				last_set_sign_bit_copies;
+  unsigned short		last_set_sign_bit_copies;
   ENUM_BITFIELD(machine_mode)	last_set_mode : MACHINE_MODE_BITSIZE;
 
   /* Set to true if references to register n in expressions should not be
@@ -216,7 +216,7 @@ struct reg_stat_type {
 
      If an entry is zero, it means that we don't know anything special.  */
 
-  unsigned char			sign_bit_copies;
+  unsigned short		sign_bit_copies;
 
   unsigned HOST_WIDE_INT	nonzero_bits;
 
