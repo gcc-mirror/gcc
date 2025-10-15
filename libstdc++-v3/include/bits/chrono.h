@@ -1515,8 +1515,9 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
   } // namespace filesystem
 #endif // C++17 && HOSTED
 
-#if defined _GLIBCXX_USE_NANOSLEEP || defined _GLIBCXX_USE_CLOCK_REALTIME \
-    || defined _GLIBCXX_HAS_GTHREADS
+#if _GLIBCXX_HOSTED
+#if ! defined _GLIBCXX_NO_SLEEP || defined _GLIBCXX_HAS_GTHREADS \
+    || _GLIBCXX_HAVE_LINUX_FUTEX
 namespace chrono
 {
 /// @cond undocumented
@@ -1585,7 +1586,8 @@ namespace chrono
 
 /// @endcond
 } // namespace chrono
-#endif // USE_NANOSLEEP || USE_CLOCK_REALTIME || HAS_GTHREADS
+#endif // !NO_SLEEP || HAS_GTHREADS || HAVE_LINUX_FUTEX
+#endif // HOSTED
 
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std

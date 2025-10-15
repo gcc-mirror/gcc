@@ -36,7 +36,6 @@
 
 #if __cplusplus >= 201103L
 #include <bits/chrono.h> // std::chrono::*
-#include <ext/numeric_traits.h> // __int_traits
 
 #ifdef _GLIBCXX_USE_NANOSLEEP
 # include <cerrno>  // errno, EINTR
