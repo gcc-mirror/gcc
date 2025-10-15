@@ -569,6 +569,18 @@
    (V16SI "TARGET_AVX512F") (V8SI "TARGET_AVX2") V4SI
    (V8DI "TARGET_AVX512F") (V4DI "TARGET_AVX2") V2DI])
 
+(define_mode_iterator VI_AVX
+  [(V32QI "TARGET_AVX") V16QI
+   (V16HI "TARGET_AVX") V8HI
+   (V8SI "TARGET_AVX") V4SI
+   (V4DI "TARGET_AVX") V2DI])
+
+(define_mode_iterator VI_AVX2_CMP
+  [(V32QI "TARGET_AVX2") V16QI
+   (V16HI "TARGET_AVX2") V8HI
+   (V8SI "TARGET_AVX2") V4SI
+   (V4DI "TARGET_AVX2") V2DI])
+
 (define_mode_iterator VI_AVX_AVX512F
   [(V64QI "TARGET_AVX512F") (V32QI "TARGET_AVX") V16QI
    (V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX") V8HI
@@ -896,7 +908,8 @@
 (define_mode_attr ssebytemode
   [(V8DI "V64QI") (V4DI "V32QI") (V2DI "V16QI")
    (V16SI "V64QI") (V8SI "V32QI") (V4SI "V16QI")
-   (V8HI "V16QI")])
+   (V16HI "V32QI") (V8HI "V16QI")
+   (V32QI "V32QI") (V16QI "V16QI")])
 
 (define_mode_attr sseintconvert
   [(V32HI "w") (V16HI "w") (V8HI "w")
@@ -4090,6 +4103,88 @@
        gcc_unreachable ();
 
     }
+
+  emit_move_insn (operands[0], gen_lowpart (QImode, popcnt1));
+  DONE;
+})
+
+(define_expand "reduc_sbool_and_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:VI_AVX 1 "register_operand")]
+ "TARGET_SSE4_1"
+{
+  rtx flags = gen_rtx_REG (CCZmode, FLAGS_REG);
+  rtx op2, tmp;
+  if (TARGET_AVX2 || <MODE_SIZE> != 32)
+    {
+      op2 = force_reg (<MODE>mode, CONST0_RTX (<MODE>mode));
+      tmp = gen_reg_rtx (<MODE>mode);
+      rtx op1 = gen_rtx_EQ (<MODE>mode, operands[1], op2);
+      emit_insn (gen_vec_cmp<mode><mode> (tmp, op1, operands[1], op2));
+    }
+  else
+    {
+      op2 = force_reg (<MODE>mode, CONSTM1_RTX (<MODE>mode));
+      tmp = gen_reg_rtx (<MODE>mode);
+      rtx ops[3] = { tmp, operands[1], op2 };
+      ix86_expand_vector_logical_operator (XOR, <MODE>mode, ops);
+    }
+
+  tmp = gen_rtx_UNSPEC (CCZmode, gen_rtvec(2, tmp, tmp), UNSPEC_PTEST);
+  emit_insn (gen_rtx_SET (flags, tmp));
+  rtx ret = gen_rtx_fmt_ee (EQ, VOIDmode, flags, const0_rtx);
+  PUT_MODE (ret, QImode);
+  emit_insn (gen_rtx_SET (operands[0], ret));
+  DONE;
+
+})
+
+(define_expand "reduc_sbool_ior_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:VI_AVX 1 "register_operand")]
+ "TARGET_SSE4_1"
+{
+  rtx flags = gen_rtx_REG (CCZmode, FLAGS_REG);
+  rtx tmp = gen_rtx_UNSPEC (CCZmode, gen_rtvec(2, operands[1], operands[1]), UNSPEC_PTEST);
+  emit_insn (gen_rtx_SET (flags, tmp));
+  rtx ret = gen_rtx_fmt_ee (NE, VOIDmode, flags, const0_rtx);
+  PUT_MODE (ret, QImode);
+  emit_insn (gen_rtx_SET (operands[0], ret));
+  DONE;
+})
+
+(define_expand "reduc_sbool_xor_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:VI1_AVX2 1 "register_operand")]
+ "TARGET_SSE2 && TARGET_POPCNT"
+{
+  rtx popcnt1 = gen_reg_rtx (SImode);
+  emit_insn (gen_<sse2_avx2>_pmovmskb (popcnt1,operands[1]));
+
+  emit_insn (gen_popcountsi2 (popcnt1, popcnt1));
+  emit_insn (gen_andsi3 (popcnt1, popcnt1, GEN_INT (0x1)));
+
+  emit_move_insn (operands[0], gen_lowpart (QImode, popcnt1));
+  DONE;
+})
+
+(define_mode_attr ssefltvecmode
+  [(V2DI "V2DF") (V4DI "V4DF") (V4SI "V4SF") (V8SI "V8SF")])
+
+(define_expand "reduc_sbool_xor_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:VI48_AVX 1 "register_operand")]
+ "TARGET_SSE2 && TARGET_POPCNT"
+{
+  rtx popcnt1 = gen_reg_rtx (SImode);
+  rtx tmp = gen_rtx_UNSPEC (SImode, gen_rtvec(1,
+				    gen_lowpart (<ssefltvecmode>mode,
+				    operands[1])),
+			    UNSPEC_MOVMSK);
+  emit_insn (gen_rtx_SET (popcnt1, tmp));
+
+  emit_insn (gen_popcountsi2 (popcnt1, popcnt1));
+  emit_insn (gen_andsi3 (popcnt1, popcnt1, GEN_INT (0x1)));
 
   emit_move_insn (operands[0], gen_lowpart (QImode, popcnt1));
   DONE;
@@ -18084,6 +18179,24 @@
    (set_attr "prefix" "vex")
    (set_attr "mode" "OI")])
 
+(define_insn_and_split "*eq<mode>3_2_negate"
+  [(set (match_operand:VI_AVX2_CMP 0 "register_operand")
+	(eq:VI_AVX2_CMP
+	  (eq:VI_AVX2_CMP
+	    (eq: VI_AVX2_CMP
+	      (match_operand:VI_AVX2_CMP 1 "nonimmediate_operand")
+	      (match_operand:VI_AVX2_CMP 2 "general_operand"))
+	    (match_operand:VI_AVX2_CMP 3 "const0_operand"))
+	  (match_operand:VI_AVX2_CMP 4 "const0_operand")))]
+  "TARGET_SSE4_1 && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (match_dup 0)
+	(eq:VI_AVX2_CMP (match_dup 1)
+			(match_dup 5)))]
+ "operands[5] = force_reg (<MODE>mode, operands[2]);")
+
+
 (define_insn_and_split "*avx2_pcmp<mode>3_1"
  [(set (match_operand:VI_128_256  0 "register_operand")
 	(vec_merge:VI_128_256
@@ -23774,9 +23887,6 @@
    (set_attr "btver2_decode" "vector,vector,vector")
    (set_attr "mode" "<MODE>")])
 
-(define_mode_attr ssefltvecmode
-  [(V2DI "V2DF") (V4DI "V4DF") (V4SI "V4SF") (V8SI "V8SF")])
-
 (define_insn_and_split "*<sse4_1>_blendv<ssefltmodesuffix><avxsizesuffix>_ltint"
   [(set (match_operand:<ssebytemode> 0 "register_operand" "=Yr,*x,x")
 	(unspec:<ssebytemode>
@@ -25590,6 +25700,36 @@
    (set (pc) (if_then_else (match_op_dup 3 [(reg:CCC FLAGS_REG) (const_int 0)])
 			   (match_dup 0)
 			   (pc)))])
+
+
+;; (unspec:ccz [(eq (eq op0 const0) const0)] unspec_ptest)
+;; is equal to (unspec:ccz [op0 op0] unspec_ptest).
+(define_insn_and_split "*ptest<mode>_ccz"
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ
+	  [(eq:VI_AVX
+	     (eq:VI_AVX
+	       (match_operand:VI_AVX 0 "vector_operand")
+	       (match_operand:VI_AVX 1 "const0_operand"))
+	     (match_operand:VI_AVX 2 "const0_operand"))
+	   (eq:VI_AVX
+	     (eq:VI_AVX (match_dup 0) (match_dup 1))
+	     (match_dup 2))]
+	 UNSPEC_PTEST))]
+  "TARGET_SSE4_1
+   && ix86_pre_reload_split ()"
+  "#"
+  "&& 1"
+  [(set (reg:CCZ FLAGS_REG)
+	(unspec:CCZ
+	  [(match_dup 3) (match_dup 3)]
+	 UNSPEC_PTEST))]
+{
+  if (MEM_P (operands[0]))
+    operands[3] = force_reg (<MODE>mode, operands[0]);
+  else
+    operands[3] = operands[0];
+})
 
 (define_expand "nearbyint<mode>2"
   [(set (match_operand:VFH 0 "register_operand")
