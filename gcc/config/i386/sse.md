@@ -4013,6 +4013,88 @@
   DONE;
 })
 
+(define_expand "reduc_sbool_and_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand")
+  (match_operand:SI 2 "const_int_operand")]
+ "TARGET_AVX512F"
+{
+  int n_elt = INTVAL (operands[2]);
+  rtx op2 = CONSTM1_RTX (<MODE>mode);
+  rtx op1 = operands[1];
+  if (n_elt < 8)
+    {
+      op2 = gen_int_mode ((1u << n_elt) - 1, QImode);
+      op1 = gen_reg_rtx (QImode);
+      emit_insn (gen_andqi3 (op1, operands[1], op2));
+    }
+  ix86_expand_setcc (operands[0], EQ, op1, op2);
+  DONE;
+})
+
+(define_expand "reduc_sbool_ior_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand")
+  (match_operand:SI 2 "const_int_operand")]
+ "TARGET_AVX512F"
+{
+  int n_elt = INTVAL (operands[2]);
+  rtx op1 = operands[1];
+  if (n_elt < 8)
+    {
+      rtx op2 = gen_int_mode ((1u << n_elt) - 1, QImode);
+      op1 = gen_reg_rtx (QImode);
+      emit_insn (gen_andqi3 (op1, operands[1], op2));
+    }
+  ix86_expand_setcc (operands[0], NE,
+		    op1, CONST0_RTX (<MODE>mode));
+  DONE;
+})
+
+(define_expand "reduc_sbool_xor_scal_<mode>"
+ [(match_operand:QI 0 "register_operand")
+  (match_operand:SWI1248_AVX512BWDQ 1 "register_operand")
+  (match_operand:SI 2 "const_int_operand")]
+ "TARGET_AVX512F && TARGET_POPCNT
+  && (TARGET_64BIT || <MODE>mode != DImode)"
+{
+  rtx popcnt1, op1 = operands[1];
+  int n_elt = INTVAL (operands[2]);
+  if (n_elt < 8)
+    {
+      rtx op2 = gen_int_mode ((1u << n_elt) - 1, QImode);
+      op1 = gen_reg_rtx (QImode);
+      emit_insn (gen_andqi3 (op1, operands[1], op2));
+    }
+
+  switch (<MODE_SIZE>)
+    {
+    case 1:
+    case 2:
+      op1 = gen_reg_rtx (SImode);
+      emit_move_insn (op1, gen_rtx_ZERO_EXTEND (SImode, operands[1]));
+      /* FALLTHRU.  */
+    case 4:
+      popcnt1 = gen_reg_rtx (SImode);
+      emit_insn (gen_popcountsi2 (popcnt1, op1));
+      emit_insn (gen_andsi3 (popcnt1, popcnt1, GEN_INT (0x1)));
+      break;
+
+    case 8:
+      popcnt1 = gen_reg_rtx (DImode);
+      emit_insn (gen_popcountdi2 (popcnt1, op1));
+      emit_insn (gen_anddi3 (popcnt1, popcnt1, GEN_INT (0x1)));
+      break;
+
+     default:
+       gcc_unreachable ();
+
+    }
+
+  emit_move_insn (operands[0], gen_lowpart (QImode, popcnt1));
+  DONE;
+})
+
 (define_insn "<mask_codefor>reducep<mode><mask_name><round_saeonly_name>"
   [(set (match_operand:VFH_AVX512VL 0 "register_operand" "=v")
 	(unspec:VFH_AVX512VL
