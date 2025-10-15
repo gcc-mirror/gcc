@@ -179,7 +179,7 @@ GCN_DEVICE(gfx942, GFX942, 0x4c, ISA_CDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ GFX9_4_GENERIC
 	   )
 
 GCN_DEVICE(gfx950, GFX950, 0x4f, ISA_CDNA3,
@@ -190,7 +190,7 @@ GCN_DEVICE(gfx950, GFX950, 0x4f, ISA_CDNA3,
 	   /* Max ISA VGPRs */ 512,
 	   /* Generic code obj version */ 0,  /* non-generic */
 	   /* Architecture Family */ GFX9,
-	   /* Generic Name */ NONE
+	   /* Generic Name */ GFX9_4_GENERIC
 	   )
 
 GCN_DEVICE(gfx9-generic, GFX9_GENERIC, 0x051, ISA_GCN5,

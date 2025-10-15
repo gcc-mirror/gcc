@@ -6824,6 +6824,13 @@ the following traits are supported in addition; while OpenMP is supported
 on more architectures, GCC currently does not match any @code{arch} or
 @code{isa} traits for those.
 
+Note that for AMD GCN and Nvidia PTX, the @code{isa} is currently an
+exact match between the compiled-for ISA architecture and the matching
+@code{isa} trait value.  For instance, when compiling for @code{gfx942},
+the @code{isa} trait value @code{gfx9-4-generic} is not matched and,
+likewise, @code{gfx942} is not matched when compiling for its generic
+architecture.
+
 @multitable @columnfractions .65 .30
 @headitem @code{arch} @tab @code{isa}
 @item @code{x86}, @code{x86_64}, @code{i386}, @code{i486},
