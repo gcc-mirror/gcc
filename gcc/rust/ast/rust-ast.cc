@@ -248,7 +248,7 @@ Attribute::as_string () const
 bool
 Attribute::is_derive () const
 {
-  return has_attr_input () && get_path () == "derive";
+  return has_attr_input () && get_path () == Values::Attributes::DERIVE;
 }
 
 /**

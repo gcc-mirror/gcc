@@ -90,6 +90,8 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::PROC_MACRO, EXPANSION},
      {Attrs::PROC_MACRO_DERIVE, EXPANSION},
      {Attrs::PROC_MACRO_ATTRIBUTE, EXPANSION},
+
+     {Attrs::DERIVE, EXPANSION},
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
      {Attrs::TARGET_FEATURE, CODE_GENERATION},
@@ -170,6 +172,7 @@ AttributeChecker::go (AST::Crate &crate)
 void
 AttributeChecker::visit (AST::Crate &crate)
 {
+  check_inner_attributes (crate.get_inner_attrs ());
   check_attributes (crate.get_inner_attrs ());
 
   for (auto &item : crate.items)
@@ -351,6 +354,15 @@ AttributeChecker::check_attribute (const AST::Attribute &attribute)
   // and costly
   if (result.name == Attrs::DOC)
     check_doc_attribute (attribute);
+}
+
+void
+AttributeChecker::check_inner_attributes (const AST::AttrVec &attributes)
+{
+  for (auto &attr : attributes)
+    if (attr.is_derive ())
+      rust_error_at (attr.get_locus (),
+		     "derive attribute cannot be used at crate level");
 }
 
 void

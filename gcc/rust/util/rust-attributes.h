@@ -106,6 +106,8 @@ private:
   void check_attribute (const AST::Attribute &attribute);
 
   /* Check the validity of all given attributes */
+
+  void check_inner_attributes (const AST::AttrVec &attributes);
   void check_attributes (const AST::AttrVec &attributes);
 
   // rust-ast.h
