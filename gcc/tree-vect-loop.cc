@@ -7752,7 +7752,9 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
      assumption is not true: we use reduc_index to record the index of the
      reduction variable.  */
   int reduc_index = SLP_TREE_REDUC_IDX (slp_node);
-  tree vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
+  tree vectype_in = SLP_TREE_VECTYPE (slp_node);
+  if (lane_reducing_op_p (op.code))
+    vectype_in = SLP_TREE_VECTYPE (SLP_TREE_CHILDREN (slp_node)[0]);
 
   vec_num = vect_get_num_copies (loop_vinfo, SLP_TREE_CHILDREN (slp_node)[0]);
 
