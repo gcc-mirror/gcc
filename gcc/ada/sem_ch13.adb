@@ -7834,7 +7834,7 @@ package body Sem_Ch13 is
                         end if;
                      end if;
 
-                  --  For Object'Size, set Esize only
+                  --  For objects, set Esize only
 
                   else
                      if Is_Elementary_Type (Etyp)
@@ -7848,26 +7848,37 @@ package body Sem_Ch13 is
                         Error_Msg_Uint_2 :=
                           UI_From_Int (System_Max_Integer_Size);
                         Error_Msg_N
-                          ("size for primitive object must be a power of 2 in "
-                           & "the range ^-^", N);
+                          ("size for elementary object must be a power of 2 "
+                           & "in the range ^-^", N);
+
+                     --  As per RM 13.1(25/5), only a confirming size clause
+                     --  (i.e. Size = Type'Object_Size) for aliased objects
+                     --  of elementary types is required to be supported.
+                     --  We reject nonconfirming clauses for these objects.
+
+                     elsif Is_Aliased (U_Ent)
+                       and then Is_Elementary_Type (Etyp)
+                       and then Size /= Esize (Etyp)
+                     then
+                        Error_Msg_N
+                          ("nonconfirming Size for aliased object is not "
+                           & "supported", N);
+
+                     --  We also reject nonconfirming clauses for (nonaliased)
+                     --  objects of floating-point types because smaller sizes
+                     --  would require integer operations to access the objects
+                     --  and larger sizes would require integer operations to
+                     --  manipulate the padding bits.
+
+                     elsif Is_Floating_Point_Type (Etyp)
+                       and then Size /= Esize (Etyp)
+                     then
+                        Error_Msg_N
+                          ("nonconfirming Size for floating-point object is "
+                           & "not supported", N);
                      end if;
 
                      Set_Esize (U_Ent, Size);
-                  end if;
-
-                  --  As of RM 13.1, only confirming size
-                  --  (i.e. (Size = Esize (Etyp))) for aliased object of
-                  --  elementary type must be supported.
-                  --  GNAT rejects nonconfirming size for such object.
-
-                  if Is_Aliased (U_Ent)
-                    and then Is_Elementary_Type (Etyp)
-                    and then Known_Esize (U_Ent)
-                    and then Size /= Esize (Etyp)
-                  then
-                     Error_Msg_N
-                       ("nonconfirming Size for aliased object is not "
-                        & "supported", N);
                   end if;
 
                   --  Handle extension aspect 'Size'Class which allows for
