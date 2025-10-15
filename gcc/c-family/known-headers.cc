@@ -352,3 +352,23 @@ suggest_missing_option::~suggest_missing_option ()
 	  " this is probably fixable by adding %qs to the command-line options",
 	  m_name_str, option_name, option_name);
 }
+
+/* macro_like_function_used's ctor.  */
+
+macro_like_function_used::macro_like_function_used (location_t loc, const char *name)
+: deferred_diagnostic (loc), m_name_str (name)
+{
+  gcc_assert (name);
+}
+
+/* macro_like_function_used's dtor.  */
+
+macro_like_function_used::~macro_like_function_used ()
+{
+  if (is_suppressed_p ())
+    return;
+
+  inform (get_location (),
+	  "%qs is a function-like macro and might be used incorrectly",
+	  m_name_str);
+}
