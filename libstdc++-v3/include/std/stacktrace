@@ -208,6 +208,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    if (_S_current(__cb, std::__addressof(__ret)))
 	      __ret._M_clear();
+	    else
+	      __ret._M_trim();
 	  }
 	return __ret;
       }
@@ -224,6 +226,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  {
 	    if (_S_current(__cb, std::__addressof(__ret), __skip))
 	      __ret._M_clear();
+	    else
+	      __ret._M_trim();
 	  }
 
 	return __ret;
@@ -260,6 +264,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		      }
 		  }
 	      }
+	    else
+	      __ret._M_trim();
 	  }
 	return __ret;
       }
@@ -650,6 +656,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_size = __other._M_size;
 	}
       };
+
+      void
+      _M_trim() noexcept
+      {
+	// libbacktrace adds an invalid -1UL entry at the end, remove it.
+	if (!empty() && !end()[-1])
+	  _M_impl._M_resize(size() - 1, _M_alloc);
+      }
 
       [[no_unique_address]] allocator_type  _M_alloc{};
 
