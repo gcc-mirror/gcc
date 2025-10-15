@@ -683,13 +683,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline ostream&
   operator<<(ostream& __os, const stacktrace_entry& __f)
   {
+    if (!__f) [[unlikely]]
+      return __os << "<unknown>";
+
     string __desc, __file;
     int __line;
-    if (__f._M_get_info(&__desc, &__file, &__line))
+    if (__f._M_get_info(&__desc, &__file, &__line)) [[likely]]
       {
-	__os.width(4);
-	__os << __desc << " at " << __file << ':' << __line;
+	__os << ' ';
+	if (__desc.empty()) [[unlikely]]
+	  __os << "<unknown>";
+	else
+	  __os << __desc;
+	if (!__file.empty()) [[likely]]
+	  __os << " at " << __file << ':' << __line;
       }
+
+    struct _Flag_guard // Set and restore hex format
+    {
+      _Flag_guard(ios& __s) : _M_ios(__s) { }
+      ~_Flag_guard() { _M_ios.setf(_M_f); }
+
+      ios& _M_ios;
+      ios::fmtflags _M_f = _M_ios.setf(ios::hex, ios::basefield);
+    };
+    _Flag_guard __g(__os);
+    __os << " [0x" << __f.native_handle() << ']';
     return __os;
   }
 
@@ -697,7 +716,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline ostream&
     operator<<(ostream& __os, const basic_stacktrace<_Allocator>& __st)
     {
-      for (stacktrace::size_type __i = 0; __i < __st.size(); ++__i)
+      using size_type = typename basic_stacktrace<_Allocator>::size_type;
+      for (size_type __i = 0, __size = __st.size(); __i < __size; ++__i)
 	{
 	  __os.width(4);
 	  __os << __i << "# " << __st[__i] << '\n';
