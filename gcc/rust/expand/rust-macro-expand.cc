@@ -962,12 +962,10 @@ transcribe_expression (Parser<MacroInvocLexer> &parser)
 
   auto attrs = parser.parse_outer_attributes ();
   auto expr = parser.parse_expr (std::move (attrs));
-  if (expr == nullptr)
-    {
-      for (auto error : parser.get_errors ())
-	error.emit ();
-      return AST::Fragment::create_error ();
-    }
+  for (auto error : parser.get_errors ())
+    error.emit ();
+  if (!expr)
+    return AST::Fragment::create_error ();
 
   // FIXME: make this an error for some edititons
   if (parser.peek_current_token ()->get_id () == SEMICOLON)
@@ -997,6 +995,8 @@ transcribe_type (Parser<MacroInvocLexer> &parser)
   auto type = parser.parse_type (true);
   for (auto err : parser.get_errors ())
     err.emit ();
+  if (!type)
+    return AST::Fragment::create_error ();
 
   auto end = lexer.get_offs ();
 
@@ -1017,6 +1017,9 @@ transcribe_pattern (Parser<MacroInvocLexer> &parser)
   auto pattern = parser.parse_pattern ();
   for (auto err : parser.get_errors ())
     err.emit ();
+
+  if (!pattern)
+    return AST::Fragment::create_error ();
 
   auto end = lexer.get_offs ();
 
