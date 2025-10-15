@@ -63,7 +63,8 @@ enum features_prio
   LA_PRIO_LSX,
   LA_PRIO_LA64V1_0,
   LA_PRIO_LA64V1_1,
-  LA_PRIO_LASX
+  LA_PRIO_LASX,
+  LA_PRIO_MAX
 };
 
 /* All the information needed to handle a target attribute.
@@ -513,13 +514,19 @@ loongarch_option_valid_attribute_p (tree fndecl, tree, tree args, int)
    If FEATURE_MASK is nonnull, then assign to it a bitmask representing
    the set of features explicitly specified in the feature string.
 
-   If FEATURE_PRIORITY is nonnull, set an unsigned integer values
-   presenting the priority of the feature string.  */
+   If FEATURE_PRIORITY is nonnull, set one or two unsigned integer values
+   presenting the priority of the feature string.  When the priority is
+   set explicitly in the attribute string, the number of members of
+   feature_priority is 2, feature_priority[0] is the priority set in the
+   code, and feature_priority[1] is the priority calculated from the
+   feature string.  When the priority is not set in the attribute string,
+   the number of members of feature_priority is 1, and its value is the
+   priority calculated by the feature string.  */
 
 bool
 loongarch_parse_fmv_features (tree decl, string_slice str,
 			      loongarch_fmv_feature_mask *feature_mask,
-			      unsigned int *feature_priority)
+			      auto_vec<unsigned int> *feature_priority)
 {
   location_t loc
     = decl == NULL ? UNKNOWN_LOCATION : DECL_SOURCE_LOCATION (decl);
@@ -530,17 +537,82 @@ loongarch_parse_fmv_features (tree decl, string_slice str,
   string_slice attr_str = string_slice::tokenize (&str, ";");
   attr_str = attr_str.strip ();
 
-  if (str.is_valid ())
+  if (attr_str == "default")
     {
-      error_at (loc, "attribute %qs is invalid", attr_str.begin ());
+      if (str.is_valid ())
+	{
+	  error_at (loc, "\"default\" cannot be set together with other "
+		    "features in %qs", attr_str.begin ());
+	  return false;
+	}
+
+      if (feature_priority)
+	feature_priority->safe_push (LA_PRIO_NONE);
+      return true;
+    }
+
+  if (attr_str.empty ())
+    {
+      error_at (loc, "characher before %<;%> in attribute %qs cannot be empty",
+		attr_str.begin ());
       return false;
     }
 
-  if (attr_str == "default")
+  /* At this time, str stores the string with the priority set in attribute.
+     If it does not exist, it is illegal.  */
+  if (str.is_valid ())
     {
-      if (feature_priority)
-	*feature_priority = LA_PRIO_NONE;
-      return true;
+      if (str.empty ())
+	{
+	  error_at (loc, "in attribute %qs priority cannot be empty",
+		    attr_str.begin ());
+	  return false;
+	}
+
+      string_slice prio_str = string_slice::tokenize (&str, ";");
+
+      if (str.is_valid ())
+	{
+	  error_at (loc, "in attribute %qs the number of reatures "
+		    "cannot exceed two", attr_str.begin ());
+	  return false;
+	}
+
+      prio_str = prio_str.strip ();
+      string_slice name = string_slice::tokenize (&prio_str, "=");
+
+      if (name == "priority" && prio_str.is_valid ())
+	{
+	  unsigned int tmp_prio = 0;
+	  unsigned int len = 0;
+
+	  for (char c : prio_str)
+	    {
+	      if (ISDIGIT (c))
+		len++;
+	      else
+		break;
+	    }
+
+	  if (len != prio_str.size ()
+	      || sscanf (prio_str.begin (), "%u", &tmp_prio) != 1)
+	    {
+	      error_at (loc, "Setting the priority value to %qs is "
+			"illegal in attribute %qs", prio_str.begin (),
+			attr_str.begin ());
+	      return false;
+	    }
+
+	  if (feature_priority)
+	    feature_priority->safe_push (tmp_prio + LA_PRIO_MAX);
+	}
+      else
+	{
+	  error_at (loc, "in attribute %qs, the second feature should be "
+		    "\"priority=%<num%>\" instead of %qs", attr_str.begin (),
+		    name.begin ());
+	  return false;
+	}
     }
 
   if (attr_str.is_valid ())
@@ -596,7 +668,7 @@ loongarch_parse_fmv_features (tree decl, string_slice str,
 	    *feature_mask = tmp_mask;
 
 	  if (feature_priority)
-	    *feature_priority = tmp_prio;
+	    feature_priority->safe_push (tmp_prio);
 	}
       else
 	{
@@ -619,7 +691,7 @@ loongarch_parse_fmv_features (tree decl, string_slice str,
 		    *feature_mask = loongarch_attributes[i].feat_mask;
 
 		  if (feature_priority)
-		    *feature_priority = loongarch_attributes[i].priority;
+		    feature_priority->safe_push (loongarch_attributes[i].priority);
 		  break;
 		}
 	    }
@@ -633,5 +705,50 @@ loongarch_parse_fmv_features (tree decl, string_slice str,
 	}
     }
 
+  if (feature_priority)
+    gcc_assert (feature_priority->length () == 1
+		|| feature_priority->length () == 2);
+
   return true;
+}
+
+/* Compare priorities of two version decls. Return:
+    1: decl1 has a higher priority
+   -1: decl2 has a higher priority
+    0: decl1 and decl2 have the same priority.
+*/
+
+int
+loongarch_compare_version_priority (tree decl1, tree decl2)
+{
+  auto_vec<unsigned int> prio1, prio2;
+
+  get_feature_mask_for_version (decl1, NULL, &prio1);
+  get_feature_mask_for_version (decl2, NULL, &prio2);
+
+  unsigned int max_prio1
+    = prio1.length () == 2 ? MAX (prio1[0], prio1[1]) : prio1[0];
+  unsigned int max_prio2
+    = prio2.length () == 2 ? MAX (prio2[0], prio2[1]) : prio2[0];
+
+  if (max_prio1 != max_prio2)
+    return max_prio1 > max_prio2 ? 1 : -1;
+
+  /* If max_prio1 == max_prio2, and max_prio1 >= LA_PRIO_MAX,
+     it means that the attribute strings of decl1 and decl2 are both
+     set with priorities, and the priority values are the same.
+     So next we use the priority calculated by the attribute string to
+     compare.  */
+  if (max_prio1 >= LA_PRIO_MAX)
+    {
+      unsigned int min_prio1
+	= prio1.length () == 2 ? MIN (prio1[0], prio1[1]) : prio1[0];
+      unsigned int min_prio2
+	= prio2.length () == 2 ? MIN (prio2[0], prio2[1]) : prio2[0];
+
+      if (min_prio1 != min_prio2)
+	return min_prio1 > min_prio2 ? 1 : -1;
+    }
+
+  return 0;
 }

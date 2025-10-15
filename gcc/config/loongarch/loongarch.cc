@@ -11470,8 +11470,22 @@ loongarch_process_target_version_attr (tree args, tree fndecl)
   if (str == "default")
     return true;
 
+  if (loongarch_parse_fmv_features (fndecl, str, NULL, NULL) == false)
+    return false;
+
+  /* Get the attribute string and take out only the option part.
+     eg:
+       "arch=la64v1.0;priority=1"
+     The attr_string is "arch=la64v1.0".
+   */
+  string_slice attr_string = string_slice::tokenize (&str, ";");
+  attr_string = attr_string.strip ();
+
+  args = build_string (attr_string.size (), attr_string.begin ());
+
   return loongarch_process_target_attr (args, fndecl);
 }
+
 
 /* Implement TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P.  This is used to
    process attribute ((target_version ("..."))).  */
@@ -11653,7 +11667,7 @@ get_suffixed_assembler_name (tree default_decl, const char *suffix)
 void
 get_feature_mask_for_version (tree decl,
 			      loongarch_fmv_feature_mask *feature_mask,
-			      unsigned int *feature_priority)
+			      auto_vec<unsigned int> *feature_priority)
 {
   tree version_attr = lookup_attribute ("target_version",
 					DECL_ATTRIBUTES (decl));
@@ -12011,23 +12025,6 @@ loongarch_generate_version_dispatcher_body (void *node_p)
   symtab->change_decl_assembler_name (node->decl, base_name);
 
   return resolver_decl;
-}
-
-/* Compare priorities of two version decls. Return:
-    1: decl1 has a higher priority
-   -1: decl2 has a higher priority
-    0: decl1 and decl2 have the same priority.
-*/
-
-int
-loongarch_compare_version_priority (tree decl1, tree decl2)
-{
-  unsigned int prio1, prio2;
-  get_feature_mask_for_version (decl1, NULL, &prio1);
-  get_feature_mask_for_version (decl2, NULL, &prio2);
-
-  return prio1 == prio2 ? 0
-    : prio1 > prio2 ? 1 : -1;
 }
 
 /* Initialize the GCC target structure.  */

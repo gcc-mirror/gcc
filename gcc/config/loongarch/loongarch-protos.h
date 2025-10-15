@@ -230,7 +230,8 @@ extern bool loongarch_process_target_attr (tree args, tree fndecl);
 extern rtx loongarch_gen_stepped_int_parallel (unsigned int nelts, int base,
 					       int step);
 extern bool loongarch_parse_fmv_features (tree, string_slice, loongarch_fmv_feature_mask *,
-					  unsigned int *);
+					  auto_vec<unsigned int> *);
 extern void get_feature_mask_for_version (tree, loongarch_fmv_feature_mask *,
-					  unsigned int *);
+					  auto_vec<unsigned int> *);
+extern int loongarch_compare_version_priority (tree, tree);
 #endif /* ! GCC_LOONGARCH_PROTOS_H */
