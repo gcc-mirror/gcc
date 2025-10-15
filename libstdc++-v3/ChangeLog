@@ -1,3 +1,154 @@
+2025-10-14  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/this_thread/sleep_for.cc: Add
+	test_negative() test.
+	* testsuite/30_threads/this_thread/sleep_until.cc: Make existing
+	test use both system_clock and steady_clock. Add test_negative()
+	test.
+
+2025-10-14  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/timed_mutex/try_lock_until/116586.cc: New
+	test.
+
+2025-10-14  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/116586.cc:
+	New test.
+
+2025-10-14  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/future/members/116586.cc: New test.
+
+2025-10-14  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/condition_variable/members/116586.cc: New
+	test.
+
+2025-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/116586.cc:
+	New test.
+
+2025-10-14  Mike Crowe  <mac@mcrowe.com>
+
+	PR libstdc++/116586
+	* testsuite/30_threads/semaphore/try_acquire_for.cc: Add tests.
+	* testsuite/30_threads/semaphore/try_acquire_until.cc: Add
+	tests.
+
+2025-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/113327
+	PR libstdc++/116586
+	PR libstdc++/119258
+	PR libstdc++/58931
+	* include/bits/chrono.h (__to_timeout_timespec): New overloaded
+	function templates for converting chrono types to timespec.
+	* include/bits/std_mutex.h (__to_timeout_gthread_time_t): New
+	function template for converting time_point to __gthread_time_t.
+	* include/bits/this_thread_sleep.h (sleep_for): Use
+	__to_timeout_timespec.
+	(__sleep_for): Remove namespace-scope declaration.
+	* include/std/condition_variable: Likewise.
+	* include/std/mutex: Likewise.
+	* include/std/shared_mutex: Likewise.
+	* src/c++11/thread.cc (limit): New helper function.
+	(__sleep_for): Use limit to prevent overflow when converting
+	chrono::seconds to time_t, unsigned, or chrono::milliseconds.
+	* src/c++20/atomic.cc: Use __to_timeout_timespec and
+	__to_timeout_gthread_time_t for timeouts.
+	* testsuite/30_threads/this_thread/113327.cc: New test.
+
+2025-10-14  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/format (_M_format_range): Remove unused local type
+	alias _String.
+
+2025-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/hashtable.h: Check specific feature test macros
+	instead of checking thevalue of __cplusplus.
+	* include/bits/stl_map.h: Likewise.
+	* include/bits/stl_multimap.h: Likewise.
+	* include/bits/stl_multiset.h: Likewise.
+	* include/bits/stl_set.h: Likewise.
+	* include/bits/stl_tree.h: Likewise.
+	* include/bits/unordered_map.h: Likewise.
+	* include/bits/unordered_set.h: Likewise.
+	* include/debug/map.h: Likewise.
+	* include/debug/multimap.h: Likewise.
+	* include/debug/multiset.h: Likewise.
+	* include/debug/set.h: Likewise.
+	* include/debug/unordered_map: Likewise.
+	* include/debug/unordered_set: Likewise.
+
+2025-10-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122255
+	* src/c++17/fs_path.cc (path::_List::_Impl::~_Impl): Define
+	destructor.
+	(path::_List::_Impl::copy): Use create_unchecked.
+	(path::_List::_Impl): Add static assertions.
+	(path::_List::_Impl::create): New static member function.
+	(path::_List::_Impl::create_unchecked): Likewise.
+	(path::_List::_Impl_deleter::operator()): Use destructor.
+	(path::_List::reserve): Use create.
+
+2025-10-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/format (__format::__write_escape_seqs)
+	(__format::_Escaping_sink): Define.
+	(__format::__write_escaped_unicode_part): Extract from
+	__format::__write_escaped_unicode.
+	(__format::__write_escaped_unicode): Forward to
+	__write_escaped_unicode_part.
+	(__formatter_str::_M_format_range): Use _Escaping sink.
+	* testsuite/std/format/ranges/string.cc: New tests for
+	character which codepoints will be split in buffer and
+	escaping. Invoked test_padding.
+
+2025-10-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/118757
+	* include/bits/shared_ptr_atomic.h (_Atomic_count::_M_wait_unlock):
+	Add parameter capturing reference to _M_ptr. Reimplement in terms
+	of __atomic_wait_address.
+	(_Atomic_count::~_Atomic_count, _Atomic_count::lock)
+	(_Atomic_count::unlock, _Atomic_count::_M_swap_unlock): Replace
+	invocation of atomic member funcitons with __atomic builtins.
+	(_Atomic_count::notify_one, _Atomic_count::notify_all):
+	Use __atomic_notify_address.
+	(_Sp_atomic::element_type): Define.
+	(_Sp_atomic::_M_val): Change type to uintptr_t.
+	(_Sp_atomic::wait): Pass _M_ptr to _M_wait_unlock.
+	* python/libstdcxx/v6/printers.py:
+	* testsuite/20_util/shared_ptr/atomic/pr118757.cc: New test.
+	* testsuite/20_util/weak_ptr/pr118757.cc: New test.
+
+2025-10-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122267
+	* include/bits/atomic_base.h
+	(__atomic_ref_base<const _Tp>::_S_required_alignment):
+	Use __alignof__	instead of alignof.
+
+2025-10-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/std/time/month_day/io.cc: New formatting tests.
+	* testsuite/std/time/month_day_last/io.cc: Likewise.
+	* testsuite/std/time/month_weekday/io.cc: Likewise.
+	* testsuite/std/time/month_weekday_last/io.cc: Likewise.
+	* testsuite/std/time/weekday_indexed/io.cc: Likewise.
+	* testsuite/std/time/weekday_last/io.cc: Likewise.
+	* testsuite/std/time/year_month/io.cc: Likewise.
+
 2025-10-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/stl_iterator_base_funcs.h (advance): Fix comment.

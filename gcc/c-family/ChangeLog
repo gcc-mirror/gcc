@@ -1,3 +1,19 @@
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	* c.opt (Wflex-array-member-not-at-end, Wignored-qualifiers,
+	Wopenacc-parallelism, Wstrict-flex-arrays, Wsync-nand,
+	fstrict-flex-arrays, fstrict-flex-arrays=): Enable also for ObjC and
+	ObjC++ next to C and C++.
+	(Wmisleading-indentation, Wopenmp-simd): Likewise.  Also change
+	LangEnabledBy from just C C++ to C ObjC C++ ObjC++.
+	(Wplacement-new, Wplacement-new=, fcontract-assumption-mode=,
+	fcontract-build-level=, fcontract-strict-declarations=,
+	fcontract-mode=, fcontract-continuation-mode=, fcontract-role=,
+	fcontract-semantic=, fcoroutines, flang-info-include-translate,
+	flang-info-include-translate-not, flang-info-include-translate=,
+	flang-info-module-cmi, flang-info-module-cmi=): Enable also
+	for ObjC++ next to C++.
+
 2025-10-13  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* c.opt: Enable Wignored-attributes for Objective-C and

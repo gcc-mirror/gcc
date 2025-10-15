@@ -1,3 +1,10 @@
+2025-10-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* parser.cc (cp_parser_mem_initializer_id): Pass class_type
+	instead of typename_type to cp_parser_class_name in the
+	nested-name-specifier case.
+
 2025-10-13  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/122228

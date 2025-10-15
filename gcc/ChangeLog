@@ -1,3 +1,118 @@
+2025-10-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (REDUC_GROUP_FIRST_ELEMENT,
+	REDUC_GROUP_NEXT_ELEMENT, REDUC_GROUP_SIZE): Remove.
+	* tree-vect-slp.cc (REDUC_GROUP_FIRST_ELEMENT): Re-instantiate
+	here.
+
+2025-10-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp_reduction): Move
+	reduction chain discovery ...
+	(vect_analyze_slp_reduc_chain): ... here.
+
+2025-10-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction): Move
+	bitsize compute down to where it is used and consistently
+	use vectype1 for element extraction.
+
+2025-10-14  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/121949
+	* tree-vect-patterns.cc (vect_recog_vector_vector_shift_pattern): Remove
+	restriction on internal_def.
+
+2025-10-14  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-stmts.cc (get_load_store_type): Add load-permutation
+	checks and setting of slp_perm.
+	(vectorizable_store): Remove perm_ok argument.
+	(vectorizable_load): Ditto and replace slp_perm by ls.slp_perm.
+	* tree-vectorizer.h (struct vect_load_store_data): Add slp_perm.
+
+2025-10-14  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_reduc_info_s::is_reduc_chain): New.
+	(_loop_vec_info::reduction_chains): Remove.
+	(LOOP_VINFO_REDUCTION_CHAINS): Likewise.
+	* tree-vect-patterns.cc (vect_reassociating_reduction_p):
+	Do not special-case reduction group stmts.
+	* tree-vect-loop.cc (vect_is_simple_reduction): Remove
+	reduction chain handling.
+	(vect_analyze_scalar_cycles_1): Remove slp parameter and adjust.
+	(vect_analyze_scalar_cycles): Likewise.
+	(vect_fixup_reduc_chain): Remove.
+	(vect_fixup_scalar_cycles_with_patterns): Likewise.
+	(vect_analyze_loop_2): Adjust.
+	(vect_create_epilog_for_reduction): Check the reduction info
+	for whether this is a reduction chain.
+	(vect_transform_cycle_phi): Likewise.
+	(vectorizable_reduction): Likewise.  Simplify code for all-SLP.
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Simplify.
+	(vect_analyze_slp_reduction): New function, perform reduction
+	chain discovery here.
+	(vect_analyze_slp): Remove reduction chain handling.
+	Use vect_analyze_slp_reduction for possible reduction chain
+	processing.
+
+2025-10-14  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_available_features): Remove AMX-TRANSPOSE.
+	* common/config/i386/i386-common.cc
+	(OPTION_MASK_ISA2_AMX_TRANSPOSE_SET): Removed.
+	(OPTION_MASK_ISA2_AMX_TRANSPOSE_UNSET): Ditto.
+	(ix86_handle_option): Remove amx-transpose handle.
+	* common/config/i386/i386-cpuinfo.h
+	(enum processor_features): Remove FEATURE_AMX_TRANSPOSE.
+	Set FEATURE_AMX_MOVRS value.
+	* common/config/i386/i386-isas.h: Remove AMX-TRANSPOSE.
+	* config.gcc: Do not include amxtransposeintrin.h.
+	* config/i386/amxmovrsintrin.h: Remove AMX-TRANSPOSE intrins.
+	* config/i386/amxtransposeintrin.h: Ditto.
+	* config/i386/cpuid.h (bit_AMX_TRANSPOSE): Removed.
+	* config/i386/i386.h (PTA_DIAMONDRAPIDS): Remove AMX-TRANSPOSE.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Remove
+	AMX_TRANSPOSE.
+	* config/i386/i386-isa.def (AMX_TRANSPOSE): Removed.
+	* config/i386/i386-options.cc
+	(ix86_valid_target_attribute_inner_p): Remove AMX-TRANSPOSE.
+	* config/i386/i386.opt: Ditto.
+	* config/i386/i386.opt.urls: Ditto.
+	* config/i386/immintrin.h: Remove amxtransposeintrin.h.
+	* doc/extend.texi: Remove amx-transpose.
+	* doc/invoke.texi: Ditto.
+	* doc/sourcebuild.texi: Ditto.
+
+2025-10-14  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-phiopt.cc (pass_phiopt::execute): Disable
+	cselim-limited and factor out operations for -Og.
+
+2025-10-14  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122178
+	* tree-ssa-phiopt.cc (cond_if_else_store_replacement_1): Handle
+	clobber statements.
+
+2025-10-14  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122182
+	* tree-ssa-dom.cc (cprop_operand): Don't check may_propagate_copy_into_asm.
+	* tree-ssa-propagate.cc (substitute_and_fold_engine::replace_uses_in): Don't
+	check may_propagate_copy_into_asm.
+	(may_propagate_copy_into_asm): Remove.
+	* tree-ssa-propagate.h (may_propagate_copy_into_asm): Remove.
+
+2025-10-14  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::get_profile_name):
+	New function.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Define
+	profile macro if a profile is detected.
+	* config/riscv/riscv-subset.h (riscv_subset_list::get_profile_name): Declare.
+
 2025-10-13  Shreya Munnangi  <smunnangi1@ventanamicro.com>
 
 	PR target/120811
