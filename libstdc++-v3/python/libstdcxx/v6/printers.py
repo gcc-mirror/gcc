@@ -2357,6 +2357,37 @@ class StdTextEncodingPrinter(printer_base):
             return 'unknown'
         return rep['_M_name']
 
+class StdStacktraceEntryPrinter(printer_base):
+    """Print a std::stacktrace_entry."""
+
+    def __init__(self, typename, val):
+        self._val = val
+        self._typename = typename
+
+    def to_string(self):
+        block = gdb.current_progspace().block_for_pc(self._val['_M_pc'])
+        if block is None or block.function is None:
+            return "<unknown>"
+        sym = block.function
+        return "{{{} at {}:{}}}".format(sym.print_name, sym.symtab.filename, sym.line)
+
+class StdStacktracePrinter(printer_base):
+    """Print a std::stacktrace."""
+
+    def __init__(self, typename, val):
+        self._val = val
+        self._typename = typename
+        self._size = self._val['_M_impl']['_M_size']
+
+    def to_string(self):
+        return '%s of length %d' % (self._typename, self._size)
+
+    def children(self):
+        return StdSpanPrinter._iterator(self._val['_M_impl']['_M_frames'], self._size)
+
+    def display_hint(self):
+        return 'array'
+
 # A "regular expression" printer which conforms to the
 # "SubPrettyPrinter" protocol from gdb.printing.
 class RxPrinter(object):
@@ -2976,6 +3007,12 @@ def build_libstdcxx_dictionary():
         'std::chrono::', 'tzdb', StdChronoTzdbPrinter)
     # libstdcxx_printer.add_version('std::chrono::(anonymous namespace)', 'Rule',
     #                              StdChronoTimeZoneRulePrinter)
+
+    # C++23 components
+    libstdcxx_printer.add_version('std::', 'stacktrace_entry',
+                                  StdStacktraceEntryPrinter)
+    libstdcxx_printer.add_version('std::', 'basic_stacktrace',
+                                  StdStacktracePrinter)
 
     # C++26 components
     libstdcxx_printer.add_version('std::', 'text_encoding',
