@@ -12013,6 +12013,23 @@ loongarch_generate_version_dispatcher_body (void *node_p)
   return resolver_decl;
 }
 
+/* Compare priorities of two version decls. Return:
+    1: decl1 has a higher priority
+   -1: decl2 has a higher priority
+    0: decl1 and decl2 have the same priority.
+*/
+
+int
+loongarch_compare_version_priority (tree decl1, tree decl2)
+{
+  unsigned int prio1, prio2;
+  get_feature_mask_for_version (decl1, NULL, &prio1);
+  get_feature_mask_for_version (decl2, NULL, &prio2);
+
+  return prio1 == prio2 ? 0
+    : prio1 > prio2 ? 1 : -1;
+}
+
 /* Initialize the GCC target structure.  */
 #undef TARGET_ASM_ALIGNED_HI_OP
 #define TARGET_ASM_ALIGNED_HI_OP "\t.half\t"
@@ -12315,6 +12332,10 @@ loongarch_generate_version_dispatcher_body (void *node_p)
 #undef TARGET_GENERATE_VERSION_DISPATCHER_BODY
 #define TARGET_GENERATE_VERSION_DISPATCHER_BODY \
   loongarch_generate_version_dispatcher_body
+
+#undef TARGET_COMPARE_VERSION_PRIORITY
+#define TARGET_COMPARE_VERSION_PRIORITY \
+  loongarch_compare_version_priority
 
 struct gcc_target targetm = TARGET_INITIALIZER;
 
