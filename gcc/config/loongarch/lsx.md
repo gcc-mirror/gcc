@@ -844,59 +844,6 @@
   [(set_attr "type" "simd_div")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "xor<mode>3"
-  [(set (match_operand:LSX 0 "register_operand" "=f,f,f")
-	(xor:LSX
-	  (match_operand:LSX 1 "register_operand" "f,f,f")
-	  (match_operand:LSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
-  "ISA_HAS_LSX"
-  "@
-   vxor.v\t%w0,%w1,%w2
-   vbitrevi.%v0\t%w0,%w1,%V2
-   vxori.b\t%w0,%w1,%B2"
-  [(set_attr "type" "simd_logic,simd_bit,simd_logic")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "ior<mode>3"
-  [(set (match_operand:LSX 0 "register_operand" "=f,f,f")
-	(ior:LSX
-	  (match_operand:LSX 1 "register_operand" "f,f,f")
-	  (match_operand:LSX 2 "reg_or_vector_same_val_operand" "f,YC,Urv8")))]
-  "ISA_HAS_LSX"
-  "@
-   vor.v\t%w0,%w1,%w2
-   vbitseti.%v0\t%w0,%w1,%V2
-   vori.b\t%w0,%w1,%B2"
-  [(set_attr "type" "simd_logic,simd_bit,simd_logic")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "and<mode>3"
-  [(set (match_operand:LSX 0 "register_operand" "=f,f,f")
-	(and:LSX
-	  (match_operand:LSX 1 "register_operand" "f,f,f")
-	  (match_operand:LSX 2 "reg_or_vector_same_val_operand" "f,YZ,Urv8")))]
-  "ISA_HAS_LSX"
-{
-  switch (which_alternative)
-    {
-    case 0:
-      return "vand.v\t%w0,%w1,%w2";
-    case 1:
-      {
-	rtx elt0 = CONST_VECTOR_ELT (operands[2], 0);
-	unsigned HOST_WIDE_INT val = ~UINTVAL (elt0);
-	operands[2] = loongarch_gen_const_int_vector (<MODE>mode, val & (-val));
-	return "vbitclri.%v0\t%w0,%w1,%V2";
-      }
-    case 2:
-      return "vandi.b\t%w0,%w1,%B2";
-    default:
-      gcc_unreachable ();
-    }
-}
-  [(set_attr "type" "simd_logic,simd_bit,simd_logic")
-   (set_attr "mode" "<MODE>")])
-
 (define_insn "one_cmpl<mode>2"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
 	(not:ILSX (match_operand:ILSX 1 "register_operand" "f")))]
