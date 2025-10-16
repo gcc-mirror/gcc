@@ -394,6 +394,31 @@ object::set_bool (const char *key, bool v)
   set (key, new json::literal (v));
 }
 
+void
+object::set_string (const string_property &property, const char *utf8_value)
+{
+  set_string (property.m_key.get (), utf8_value);
+}
+
+void
+object::set_integer (const integer_property &property, long value)
+{
+  set_integer (property.m_key.get (), value);
+}
+
+void
+object::set_bool (const bool_property &property, bool value)
+{
+  set_bool (property.m_key.get (), value);
+}
+
+void
+object::set_array_of_string (const array_of_string_property &property,
+			     std::unique_ptr<json::array> value)
+{
+  set<array> (property.m_key.get (), std::move (value));
+}
+
 /* Subroutine of json::compare for comparing a pairs of objects.  */
 
 int

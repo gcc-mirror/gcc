@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
 #define GCC_DIAGNOSTICS_DIGRAPHS_H
 
 #include "json.h"
+#include "tristate.h"
 #include "diagnostics/logical-locations.h"
 
 class graphviz_out;
@@ -55,22 +56,56 @@ class edge;
 class object
 {
 public:
-  const char *
-  get_attr (const char *key_prefix,
-	    const char *key) const;
+  /* String properties.  */
+  const char *get_property (const json::string_property &property) const;
+  void set_property (const json::string_property &property,
+		     const char *utf8_value);
 
-  void
-  set_attr (const char *key_prefix,
-	    const char *key,
-	    const char *value);
+  /* Integer properties.  */
+  bool maybe_get_property (const json::integer_property &property, long &out) const;
+  void set_property (const json::integer_property &property, long value);
 
+  /* Bool properties.  */
+  tristate
+  get_property_as_tristate (const json::bool_property &property) const;
+  void set_property (const json::bool_property &property, bool value);
+
+  /* Array-of-string properties.  */
+  json::array *
+  get_property (const json::array_of_string_property &property) const;
+
+  /* enum properties.  */
+  template <typename EnumType>
+  EnumType
+  get_property (const json::enum_property<EnumType> &property) const
+  {
+    if (m_property_bag)
+      {
+	EnumType result;
+	if (m_property_bag->maybe_get_enum<EnumType> (property, result))
+	  return result;
+      }
+    return json::enum_traits<EnumType>::get_unknown_value ();
+  }
+  template <typename EnumType>
   void
-  set_json_attr (const char *key_prefix,
-		 const char *key,
-		 std::unique_ptr<json::value> value);
+  set_property (const json::enum_property<EnumType> &property,
+		EnumType value)
+  {
+    auto &bag = ensure_property_bag ();
+    bag.set_enum<EnumType> (property, value);
+  }
+
+  /* json::value properties.  */
+  const json::value *get_property (const json::json_property &property) const;
+  void set_property (const json::json_property &property,
+		     std::unique_ptr<json::value> value);
 
   json::object *
   get_property_bag () const { return m_property_bag.get (); }
+
+  json::object &
+  ensure_property_bag ();
 
   void
   set_property_bag (std::unique_ptr<json::object> property_bag)
@@ -188,6 +223,9 @@ class digraph : public object
 
   std::unique_ptr<digraph> clone () const;
 
+  const char *get_graph_kind () const;
+  void set_graph_kind (const char *);
+
  private:
   void
   add_node_id (std::string node_id, node &new_node)
@@ -300,7 +338,7 @@ class node : public object
   clone (digraph &new_graph,
 	 std::map<node *, node *> &node_mapping) const;
 
- private:
+private:
   std::string m_id;
   std::unique_ptr<std::string> m_label;
   std::vector<std::unique_ptr<node>> m_children;

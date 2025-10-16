@@ -40,11 +40,12 @@ struct html_generation_options
   // If true, attempt to show state diagrams at events
   bool m_show_state_diagrams;
 
-  // If true, show the SARIF form of the state with such diagrams
-  bool m_show_state_diagrams_sarif;
+  /* If true, show the SARIF form of the state with such diagrams,
+     and of other graphs.  */
+  bool m_show_graph_sarif;
 
-  // If true, show the .dot source used for the diagram
-  bool m_show_state_diagrams_dot_src;
+  // If true, show the .dot source used for such graphs
+  bool m_show_graph_dot_src;
 };
 
 extern diagnostics::output_file

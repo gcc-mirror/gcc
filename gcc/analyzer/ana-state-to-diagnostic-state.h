@@ -23,34 +23,38 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "diagnostics/state-graphs.h"
 #include "tree-logical-location.h"
+#include "custom-sarif-properties/state-graphs.h"
 
 namespace ana {
+
+namespace state_node_properties = custom_sarif_properties::state_graphs::node;
 
 class analyzer_state_graph : public diagnostics::digraphs::digraph
 {
 public:
   analyzer_state_graph (const program_state &state,
 			const extrinsic_state &ext_state);
-  diagnostics::state_graphs::state_node_ref
+  diagnostics::digraphs::node &
   get_or_create_state_node (const region &reg);
 
 private:
+
   struct pending_edge
   {
-    diagnostics::state_graphs::state_node_ref m_src_node;
+    diagnostics::digraphs::node & m_src_node;
     const region &m_dst_reg;
   };
-  
-  diagnostics::state_graphs::state_node_ref
+
+  diagnostics::digraphs::node &
   create_and_add_state_node (const region &reg);
 
   std::unique_ptr<diagnostics::digraphs::node>
-  make_state_node (diagnostics::state_graphs::node_kind kind,
+  make_state_node (enum state_node_properties::kind_t kind,
 		   std::string id);
 
   std::unique_ptr<diagnostics::digraphs::node>
   make_memspace_state_node (const region &reg,
-			    enum diagnostics::state_graphs::node_kind kind);
+			    enum state_node_properties::kind_t kind);
 
   std::unique_ptr<diagnostics::digraphs::node>
   create_state_node (const region &reg);
@@ -71,14 +75,14 @@ private:
 				    bit_range &out);
 
   void
-  populate_state_node_for_typed_region (diagnostics::state_graphs::state_node_ref,
+  populate_state_node_for_typed_region (diagnostics::digraphs::node &,
 					const region &reg,
 					const concrete_bindings_t &conc_bindings,
 					bool create_all);
 
   void
   set_attr_for_dynamic_extents (const region &reg,
-				diagnostics::state_graphs::state_node_ref);
+				diagnostics::digraphs::node &);
 
   bool
   show_child_state_node_for_child_region_p (const region &reg,
@@ -95,7 +99,8 @@ private:
   const program_state &m_state;
   const extrinsic_state &m_ext_state;
   region_model_manager &m_mgr;
-  std::map<const region *, diagnostics::digraphs::node *> m_region_to_state_node_map;
+  std::map<const region *,
+	   diagnostics::digraphs::node *> m_region_to_state_node_map;
   std::map<const region *, tree> m_types_for_untyped_regions;
   unsigned m_next_id;
   std::vector<pending_edge> m_pending_edges;

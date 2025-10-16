@@ -1861,6 +1861,8 @@ OBJS = \
 # Objects in libcommon.a, potentially used by all host binaries and with
 # no target dependencies.
 OBJS-libcommon = \
+	custom-sarif-properties/digraphs.o \
+	custom-sarif-properties/state-graphs.o \
 	diagnostic-global-context.o \
 	diagnostics/buffering.o \
 	diagnostics/changes.o \
@@ -1880,7 +1882,6 @@ OBJS-libcommon = \
 	diagnostics/paths.o \
 	diagnostics/paths-output.o \
 	diagnostics/source-printing.o \
-	diagnostics/state-graphs.o \
 	diagnostics/state-graphs-to-dot.o \
 	diagnostics/selftest-context.o \
 	diagnostics/selftest-logical-locations.o \

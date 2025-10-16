@@ -30,12 +30,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "graphviz.h"
 #include "diagnostics/digraphs.h"
 #include "diagnostics/sarif-sink.h"
+#include "custom-sarif-properties/digraphs.h"
 
-#include "selftest.h"
-
+using digraph_object = diagnostics::digraphs::object;
 using digraph = diagnostics::digraphs::digraph;
 using digraph_node = diagnostics::digraphs::node;
 using digraph_edge = diagnostics::digraphs::edge;
+
+namespace properties = custom_sarif_properties::digraphs;
 
 namespace {
 
@@ -171,66 +173,145 @@ conversion_to_dot::has_edges_p (const digraph_node &input_node)
 
 // class object
 
+/* String properties.  */
+
 const char *
-diagnostics::digraphs::object::
-get_attr (const char *key_prefix, const char *key) const
+digraph_object::get_property (const json::string_property &property) const
 {
   if (!m_property_bag)
     return nullptr;
-  std::string prefixed_key = std::string (key_prefix) + key;
-  if (json::value *jv = m_property_bag->get (prefixed_key.c_str ()))
+  if (json::value *jv = m_property_bag->get (property.m_key.get ()))
     if (json::string *jstr = jv->dyn_cast_string ())
       return jstr->get_string ();
   return nullptr;
 }
 
 void
-diagnostics::digraphs::object::
-set_attr (const char *key_prefix, const char *key, const char *value)
+digraph_object::set_property (const json::string_property &property,
+			      const char *utf8_value)
 {
-  set_json_attr (key_prefix, key, std::make_unique<json::string> (value));
+  auto &bag = ensure_property_bag ();
+  bag.set_string (property.m_key.get (), utf8_value);
+}
+
+/* Integer properties.  */
+
+bool
+digraph_object::maybe_get_property (const json::integer_property &property,
+				    long &out_value) const
+{
+  if (!m_property_bag)
+    return false;
+  if (json::value *jv = m_property_bag->get (property.m_key.get ()))
+    if (json::integer_number *jnum = jv->dyn_cast_integer_number ())
+      {
+	out_value = jnum->get ();
+	return true;
+      }
+  return false;
 }
 
 void
-diagnostics::digraphs::object::
-set_json_attr (const char *key_prefix, const char *key, std::unique_ptr<json::value> value)
+digraph_object::set_property (const json::integer_property &property, long value)
 {
-  std::string prefixed_key = std::string (key_prefix) + key;
+  auto &bag = ensure_property_bag ();
+  bag.set_integer (property.m_key.get (), value);
+}
+
+/* Bool properties.  */
+void
+digraph_object::set_property (const json::bool_property &property, bool value)
+{
+  auto &bag = ensure_property_bag ();
+  bag.set_bool (property.m_key.get (), value);  
+}
+
+tristate
+digraph_object::
+get_property_as_tristate (const json::bool_property &property) const
+{
+  if (m_property_bag)
+    {
+      if (json::value *jv = m_property_bag->get (property.m_key.get ()))
+	switch (jv->get_kind ())
+	  {
+	  default:
+	    break;
+	  case json::JSON_TRUE:
+	    return tristate (true);
+	  case json::JSON_FALSE:
+	    return tristate (false);
+	  }
+    }
+  return tristate::unknown ();
+}
+
+/* Array-of-string properties.  */
+json::array *
+digraph_object::get_property (const json::array_of_string_property &property) const
+{
+  if (m_property_bag)
+    if (json::value *jv = m_property_bag->get (property.m_key.get ()))
+      if (json::array *arr = jv->dyn_cast_array ())
+	return arr;
+  return nullptr;
+}
+
+/* json::value properties.  */
+const json::value *
+digraph_object::get_property (const json::json_property &property) const
+{
+  if (m_property_bag)
+    return m_property_bag->get (property.m_key.get ());
+  return nullptr;
+}
+
+void
+digraph_object::set_property (const json::json_property &property,
+			      std::unique_ptr<json::value> value)
+{
+  auto &bag = ensure_property_bag ();
+  bag.set (property.m_key.get (), std::move (value));
+}
+
+json::object &
+digraph_object::ensure_property_bag ()
+{
   if (!m_property_bag)
-    m_property_bag = std::make_unique<json::object> ();
-  m_property_bag->set (prefixed_key.c_str (), std::move (value));
+    m_property_bag = std::make_unique<sarif_property_bag> ( );
+  return *m_property_bag;
 }
 
 // class digraph
 
 DEBUG_FUNCTION void
-diagnostics::digraphs::digraph::dump () const
+digraph::dump () const
 {
   make_json_sarif_graph ()->dump ();
 }
 
 std::unique_ptr<json::object>
-diagnostics::digraphs::digraph::make_json_sarif_graph () const
+digraph::make_json_sarif_graph () const
 {
   return make_sarif_graph (*this, nullptr, nullptr);
 }
 
 std::unique_ptr<dot::graph>
-diagnostics::digraphs::digraph::make_dot_graph () const
+digraph::make_dot_graph () const
 {
-  conversion_to_dot to_dot;
-  return to_dot.make_dot_graph_from_diagnostic_graph (*this);
+  conversion_to_dot converter;
+  return converter.make_dot_graph_from_diagnostic_graph (*this);
 }
 
-std::unique_ptr<diagnostics::digraphs::digraph>
-diagnostics::digraphs::digraph::clone () const
+std::unique_ptr<digraph>
+digraph::clone () const
 {
   auto result = std::make_unique<diagnostics::digraphs::digraph> ();
 
   if (get_property_bag ())
     result->set_property_bag (get_property_bag ()->clone_as_object ());
 
-  std::map<diagnostics::digraphs::node *, diagnostics::digraphs::node *> node_mapping;
+  std::map<digraph_node *, digraph_node *> node_mapping;
 
   for (auto &iter : m_nodes)
     result->add_node (iter->clone (*result, node_mapping));
@@ -241,10 +322,10 @@ diagnostics::digraphs::digraph::clone () const
 }
 
 void
-diagnostics::digraphs::digraph::add_edge (const char *id,
-					  node &src_node,
-					  node &dst_node,
-					  const char *label)
+digraph::add_edge (const char *id,
+		   node &src_node,
+		   node &dst_node,
+		   const char *label)
 {
   auto e = std::make_unique<digraph_edge> (*this,
 					   id,
@@ -263,7 +344,7 @@ diagnostics::digraphs::digraph::add_edge (const char *id,
    to edges by id (SARIF 2.1.0's §3.43.2 edgeId property).  */
 
 std::string
-diagnostics::digraphs::digraph::make_edge_id (const char *edge_id)
+digraph::make_edge_id (const char *edge_id)
 {
   /* If we have an id, use it.  */
   if (edge_id)
@@ -284,27 +365,38 @@ diagnostics::digraphs::digraph::make_edge_id (const char *edge_id)
     }
 }
 
+const char *
+digraph::get_graph_kind () const
+{
+  return get_property (properties::digraph::kind);
+}
+
+void
+digraph::set_graph_kind (const char *kind)
+{
+  set_property (properties::digraph::kind, kind);
+}
+
 // class node
 
 DEBUG_FUNCTION void
-diagnostics::digraphs::node::dump () const
+digraph_node::dump () const
 {
   to_json_sarif_node ()->dump ();
 }
 
 std::unique_ptr<json::object>
-diagnostics::digraphs::node::to_json_sarif_node () const
+digraph_node::to_json_sarif_node () const
 {
   return make_sarif_node (*this, nullptr, nullptr);
 }
 
-std::unique_ptr<diagnostics::digraphs::node>
-diagnostics::digraphs::node::clone (digraph &new_graph,
-				    std::map<node *, node *> &node_mapping) const
+std::unique_ptr<digraph_node>
+digraph_node::clone (digraph &new_graph,
+		     std::map<node *, node *> &node_mapping) const
 {
   auto result
-    = std::make_unique<diagnostics::digraphs::node> (new_graph,
-						     get_id ());
+    = std::make_unique<digraph_node> (new_graph, get_id ());
   node_mapping.insert ({const_cast <node *> (this), result.get ()});
 
   result->set_logical_loc (m_logical_loc);
@@ -353,6 +445,9 @@ diagnostics::digraphs::edge::to_json_sarif_edge () const
 
 #if CHECKING_P
 
+#include "selftest.h"
+#include "custom-sarif-properties/state-graphs.h"
+
 namespace diagnostics {
 namespace selftest {
 
@@ -391,16 +486,17 @@ test_simple_graph ()
 #define KEY_PREFIX "/placeholder/"
   auto g = std::make_unique<digraph> ();
   g->set_description ("test graph");
-  g->set_attr (KEY_PREFIX, "date", "1066");
+  g->set_property (json::string_property (KEY_PREFIX, "date"), "1066");
 
   auto a = std::make_unique<digraph_node> (*g, "a");
   auto b = std::make_unique<digraph_node> (*g, "b");
-  b->set_attr (KEY_PREFIX, "color", "red");
+  b->set_property (json::string_property (KEY_PREFIX, "color"), "red");
   auto c = std::make_unique<digraph_node> (*g, "c");
   c->set_label ("I am a node label");
 
   auto e = std::make_unique<digraph_edge> (*g, nullptr, *a, *c);
-  e->set_attr (KEY_PREFIX, "status", "copacetic");
+  e->set_property (json::string_property (KEY_PREFIX, "status"),
+		   "copacetic");
   e->set_label ("I am an edge label");
   g->add_edge (std::move (e));
 
@@ -449,6 +545,34 @@ test_simple_graph ()
   }
 }
 
+static void
+test_property_objects ()
+{
+  namespace state_node_properties = custom_sarif_properties::state_graphs::node;
+
+  digraph g;
+  digraph_node node (g, "a");
+
+  ASSERT_EQ (node.get_property (state_node_properties::kind_prop),
+	     state_node_properties::kind_t::other);
+  node.set_property (state_node_properties::kind_prop,
+		     state_node_properties::kind_t::stack);
+  ASSERT_EQ (node.get_property (state_node_properties::kind_prop),
+	     state_node_properties::kind_t::stack);
+
+  ASSERT_EQ (node.get_property (state_node_properties::dynalloc_state_prop),
+	     state_node_properties::dynalloc_state_t::unknown);
+  node.set_property (state_node_properties::dynalloc_state_prop,
+		     state_node_properties::dynalloc_state_t::freed);
+  ASSERT_EQ (node.get_property (state_node_properties::dynalloc_state_prop),
+	     state_node_properties::dynalloc_state_t::freed);
+
+  ASSERT_EQ (node.get_property (state_node_properties::type), nullptr);
+  node.set_property (state_node_properties::type, "const char *");
+  ASSERT_STREQ (node.get_property (state_node_properties::type),
+		"const char *");
+}
+
 /* Run all of the selftests within this file.  */
 
 void
@@ -456,6 +580,7 @@ digraphs_cc_tests ()
 {
   test_empty_graph ();
   test_simple_graph ();
+  test_property_objects ();
 }
 
 } // namespace diagnostics::selftest

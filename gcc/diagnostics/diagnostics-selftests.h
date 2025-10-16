@@ -44,7 +44,6 @@ extern void paths_output_cc_tests ();
 extern void sarif_sink_cc_tests ();
 extern void selftest_logical_locations_cc_tests ();
 extern void source_printing_cc_tests ();
-extern void state_graphs_cc_tests ();
 
 } /* end of namespace diagnostics::selftest.  */
 

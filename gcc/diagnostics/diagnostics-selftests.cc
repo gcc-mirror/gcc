@@ -46,7 +46,6 @@ run_diagnostics_selftests ()
   sarif_sink_cc_tests ();
   digraphs_cc_tests ();
   output_spec_cc_tests ();
-  state_graphs_cc_tests ();
   lazy_paths_cc_tests ();
   paths_output_cc_tests ();
   changes_cc_tests ();
