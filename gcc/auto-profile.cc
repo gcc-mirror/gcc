@@ -122,7 +122,7 @@ along with GCC; see the file COPYING3.  If not see
 */
 
 #define DEFAULT_AUTO_PROFILE_FILE "fbdata.afdo"
-#define AUTO_PROFILE_VERSION 2
+#define AUTO_PROFILE_VERSION 3
 
 /* profile counts determined by AFDO smaller than afdo_hot_bb_threshold are
    considered cols.  */
@@ -188,7 +188,7 @@ struct decl_lineno
 typedef auto_vec<decl_lineno, 20> inline_stack;
 
 /* String array that stores function names.  */
-typedef auto_vec<char *> string_vector;
+typedef auto_vec<const char *> string_vector;
 
 /* Map from function name's index in string_table to target's
    execution count.  */
@@ -232,6 +232,8 @@ struct string_compare
 class string_table
 {
 public:
+  static const int unknown_filename = -1;
+
   string_table ()
   {}
 
@@ -243,27 +245,82 @@ public:
   /* For a given decl, returns the index of the decl name.  */
   int get_index_by_decl (tree decl) const;
 
-  /* For a given index, returns the string.  */
-  const char *get_name (int index) const;
+  /* For a given index, returns the symbol name.  */
+  const char *get_symbol_name (int index) const;
+
+  /* For a given index, returns the filename.  */
+  const char *get_filename (int index) const;
+
+  /* For a given symbol name index, returns the filename index.  */
+  int get_filename_by_symbol (int index) const;
+
+  /* For a given function name, returns the filename index.  */
+  int get_filename_by_symbol (const char *name) const;
+
+  /* For a given filename, returns the index.  */
+  int get_filename_index (const char *name) const;
 
   /* Read profile, return TRUE on success.  */
   bool read ();
 
   /* Return number of entries.  */
-  size_t num_entries ()
-  {
-    return vector_.length ();
-  }
+  size_t num_entries () { return symbol_names_.length (); }
 
-  /* Add new name and return its index.  */
-  int add_name (char *);
+  /* Add new symbol name STRING (with an associated file name FILENAME_IDX) and
+     return its index.  */
+  int add_symbol_name (const char *string, int filename_idx);
+
+  /* Add new filename and return its index (returning the same if it already
+     exists).  */
+  int add_filename (const char *name);
 
   /* Return cgraph node corresponding to given name index.  */
   cgraph_node *get_cgraph_node (int);
 private:
   typedef std::map<const char *, unsigned, string_compare> string_index_map;
-  string_vector vector_;
-  string_index_map map_;
+  typedef std::map<const char *, auto_vec<unsigned>, string_compare>
+    clashing_name_map;
+  typedef std::map<const char *, char *, string_compare> string_string_map;
+
+  string_vector symbol_names_;
+  string_vector filenames_;
+
+  string_index_map symbol_name_map_;
+  string_index_map filename_map_;
+  string_index_map symbol_to_filename_map_;
+};
+
+/* Descriptor for a function_instance which can be used to disambiguate it from
+   other instances.  This consists of the symbol name and the file name indices
+   from string_table.  */
+
+class function_instance_descriptor
+{
+  /* The string_table index for the file name.  */
+  unsigned file_name_;
+  /* The string_table index for the function name.  */
+  unsigned symbol_name_;
+
+public:
+  unsigned file_name () const { return file_name_; }
+  unsigned symbol_name () const { return symbol_name_; }
+
+  function_instance_descriptor (unsigned file_name, unsigned symbol_name)
+    : file_name_ (file_name), symbol_name_ (symbol_name)
+  {}
+
+  function_instance_descriptor (int file_name, int symbol_name)
+    : file_name_ (file_name), symbol_name_ (symbol_name)
+  {}
+
+  void set_symbol_name (unsigned new_name) { symbol_name_ = new_name; }
+
+  bool operator< (const function_instance_descriptor &other) const
+  {
+    return file_name_ < other.file_name_
+	   || (file_name_ == other.file_name_
+	       && symbol_name_ < other.symbol_name_);
+  }
 };
 
 /* Profile of a function instance:
@@ -273,6 +330,7 @@ private:
         instead of the inlined copy).
      3. map from source location (decl_lineno) to profile (count_info).
      4. map from callsite to callee function_instance.  */
+
 class function_instance
 {
 public:
@@ -289,16 +347,11 @@ public:
   ~function_instance ();
 
   /* Accessors.  */
-  int
-  name () const
-  {
-    return name_;
-  }
-  int
-  set_name (int index)
-  {
-    return name_ = index;
-  }
+  int symbol_name () const { return descriptor_.symbol_name (); }
+  int file_name () const { return descriptor_.file_name (); }
+  void set_symbol_name (int index) { descriptor_.set_symbol_name (index); }
+  function_instance_descriptor get_descriptor () const { return descriptor_; }
+
   gcov_type
   total_count () const
   {
@@ -472,10 +525,11 @@ private:
   /* Map from callsite to callee function_instance.  */
   typedef std::map<callsite, function_instance *> callsite_map;
 
-  function_instance (unsigned name, gcov_type head_count)
-	  : name_ (name), total_count_ (0), head_count_ (head_count),
-      removed_icall_target_ (false), realized_ (false),
-      in_worklist_ (false), inlined_to_ (NULL),
+  function_instance (unsigned symbol_name, unsigned file_name,
+		     gcov_type head_count)
+    : descriptor_ (file_name, symbol_name), total_count_ (0),
+      head_count_ (head_count), removed_icall_target_ (false),
+      realized_ (false), in_worklist_ (false), inlined_to_ (NULL),
       location_ (UNKNOWN_LOCATION), call_location_ (UNKNOWN_LOCATION)
   {
   }
@@ -483,8 +537,8 @@ private:
   /* Map from source location (decl_lineno) to profile (count_info).  */
   typedef std::map<unsigned, count_info> position_count_map;
 
-  /* function_instance name index in the string_table.  */
-  unsigned name_;
+  /* The indices into the string table identifying the function_instance.  */
+  function_instance_descriptor descriptor_;
 
   /* Total sample count.  */
   gcov_type total_count_;
@@ -541,8 +595,9 @@ public:
   /* For a given DECL, returns the top-level function_instance.  */
   function_instance *get_function_instance_by_decl (tree decl) const;
 
-  /* For a given name index, returns the top-level function_instance.  */
-  function_instance *get_function_instance_by_name_index (int) const;
+  /* For a given DESCRIPTOR, return the matching instance if found.  */
+  function_instance *
+    get_function_instance_by_descriptor (function_instance_descriptor) const;
 
   void add_function_instance (function_instance *);
 
@@ -572,10 +627,12 @@ public:
   void offline_external_functions ();
 
   void offline_unrealized_inlines ();
+
 private:
-  /* Map from function_instance name index (in string_table) to
-     function_instance.  */
-  typedef std::map<unsigned, function_instance *> name_function_instance_map;
+  /* Map from pair of function_instance filename and symbol name (in
+     string_table) to function_instance.  */
+  typedef std::map<function_instance_descriptor, function_instance *>
+    name_function_instance_map;
 
   autofdo_source_profile () {}
 
@@ -586,6 +643,21 @@ private:
      inline STACK.  */
   function_instance *
   get_function_instance_by_inline_stack (const inline_stack &stack) const;
+
+  /* Find the matching function instance which has DESCRIPTOR as its
+     descriptor.  If not found, also try checking if an instance exists with the
+     same name which has no associated filename.  */
+  name_function_instance_map::const_iterator find_iter_for_function_instance (
+    function_instance_descriptor descriptor) const;
+
+  /* Similar to the above, but return a pointer to the instance instead of an
+     iterator.  */
+  function_instance *
+  find_function_instance (function_instance_descriptor descriptor) const;
+
+  /* Remove a function instance from the map.  Returns true if the entry was
+     actually deleted.  */
+  bool remove_function_instance (function_instance *inst);
 
   name_function_instance_map map_;
 
@@ -826,14 +898,29 @@ get_relative_location_for_stmt (tree fn, gimple *stmt)
 	   gimple_location (stmt));
 }
 
+/* Return either the basename or the realpath for a given path based on
+   PARAM_PROFILE_FUNC_INTERNAL_ID.  */
+
+static const char *
+get_normalized_path (const char *path, bool from_gcov = false)
+{
+  if (param_profile_func_internal_id == 1)
+    /* The GCOV will already contain the entire path.  It doesn't need to be
+       normalized with lrealpath ().  */
+    return from_gcov ? path : lrealpath (path);
+  return lbasename (path);
+}
+
 /* Member functions for string_table.  */
 
 /* Deconstructor.  */
 
 string_table::~string_table ()
 {
-  for (unsigned i = 0; i < vector_.length (); i++)
-    free (vector_[i]);
+  for (unsigned i = 0; i < symbol_names_.length (); i++)
+    free (const_cast<char *> (symbol_names_[i]));
+  for (unsigned i = 0; i < filenames_.length (); i++)
+    free (const_cast<char *> (filenames_[i]));
 }
 
 
@@ -845,8 +932,8 @@ string_table::get_index (const char *name) const
 {
   if (name == NULL)
     return -1;
-  string_index_map::const_iterator iter = map_.find (name);
-  if (iter == map_.end ())
+  string_index_map::const_iterator iter = symbol_name_map_.find (name);
+  if (iter == symbol_name_map_.end ())
     return -1;
 
   return iter->second;
@@ -871,20 +958,86 @@ string_table::get_index_by_decl (tree decl) const
 /* Return the function name of a given INDEX.  */
 
 const char *
-string_table::get_name (int index) const
+string_table::get_symbol_name (int index) const
 {
-  gcc_assert (index > 0 && index < (int)vector_.length ());
-  return vector_[index];
+  if (index <= 0 || index >= (int) symbol_names_.length ())
+    fatal_error (UNKNOWN_LOCATION,
+		 "auto-profile contains invalid symbol name index %d", index);
+
+  return symbol_names_[index];
 }
 
-/* Add new name SRRING and return its index.  */
+/* For a given index, returns the string.  */
+
+const char *
+string_table::get_filename (int index) const
+{
+  /* There may not be any file name for some functions, ignore them.  */
+  if (index == string_table::unknown_filename)
+    return "<unknown>";
+
+  if (index < 0 || index >= (int) filenames_.length ())
+    fatal_error (UNKNOWN_LOCATION,
+		 "auto-profile contains invalid filename index %d", index);
+
+  return filenames_[index];
+}
+
+/* For a given symbol name index, returns the filename index.  */
 
 int
-string_table::add_name (char *string)
+string_table::get_filename_by_symbol (int index) const
 {
-  vector_.safe_push (string);
-  map_[vector_.last ()] = vector_.length () - 1;
-  return vector_.length () - 1;
+  return get_filename_by_symbol (get_symbol_name (index));
+}
+
+/* For a given function name, returns the filename index.  */
+
+int
+string_table::get_filename_by_symbol (const char *name) const
+{
+  auto it = symbol_to_filename_map_.find (name);
+  if (it != symbol_to_filename_map_.end () && it->second < filenames_.length ())
+    return it->second;
+  return string_table::unknown_filename;
+}
+
+/* For a given filename, returns the index.  */
+
+int
+string_table::get_filename_index (const char *name) const
+{
+  auto iter = filename_map_.find (name);
+  return iter == filename_map_.end () ? string_table::unknown_filename
+				      : iter->second;
+}
+
+/* Add new symbol name STRING (with an associated file name FILENAME_IDX) and
+   return its index.  */
+
+int
+string_table::add_symbol_name (const char *string, int filename_idx)
+{
+  gcc_checking_assert (
+    filename_idx == string_table::unknown_filename
+    || (filename_idx >= 0 && filename_idx < (int) filenames_.length ()));
+  symbol_names_.safe_push (string);
+  symbol_name_map_[symbol_names_.last ()] = symbol_names_.length () - 1;
+  symbol_to_filename_map_[symbol_names_.last ()] = filename_idx;
+  return symbol_names_.length () - 1;
+}
+
+/* Add new filename and return its index (returning the same if it already
+   exists).  */
+
+int
+string_table::add_filename (const char *name)
+{
+  auto it = filename_map_.find (name);
+  if (it != filename_map_.end ())
+    return it->second;
+  filenames_.safe_push (xstrdup (name));
+  return filenames_.length () - 1;
 }
 
 /* Read the string table. Return TRUE if reading is successful.  */
@@ -897,12 +1050,26 @@ string_table::read ()
   /* Skip the length of the section.  */
   gcov_read_unsigned ();
   /* Read in the file name table.  */
+  unsigned file_num = gcov_read_unsigned ();
+  filenames_.reserve (file_num);
+  for (unsigned i = 0; i < file_num; i++)
+    {
+      const char *filename = gcov_read_string ();
+      filenames_.quick_push (xstrdup (get_normalized_path (filename, true)));
+      filename_map_[filenames_.last ()] = i;
+      free (const_cast<char *> (filename));
+      if (gcov_is_error ())
+	return false;
+    }
+  /* Read in the function name -> file name table.  */
   unsigned string_num = gcov_read_unsigned ();
-  vector_.reserve (string_num);
+  symbol_names_.reserve (string_num);
   for (unsigned i = 0; i < string_num; i++)
     {
-      vector_.quick_push (xstrdup (gcov_read_string ()));
-      map_[vector_.last ()] = i;
+      symbol_names_.quick_push (const_cast<char *> (gcov_read_string ()));
+      symbol_name_map_[symbol_names_.last ()] = i;
+      unsigned filename_idx = gcov_read_unsigned ();
+      symbol_to_filename_map_[symbol_names_.last ()] = filename_idx;
       if (gcov_is_error ())
 	return false;
     }
@@ -914,7 +1081,7 @@ string_table::read ()
 cgraph_node *
 string_table::get_cgraph_node (int name_index)
 {
-  const char *sname = get_name (name_index);
+  const char *sname = get_symbol_name (name_index);
 
   symtab_node *n = cgraph_node::get_for_asmname (get_identifier (sname));
   for (;n; n = n->next_sharing_asm_name)
@@ -929,7 +1096,7 @@ string_table::get_cgraph_node (int name_index)
 cgraph_node *
 function_instance::get_cgraph_node ()
 {
-  return afdo_string_table->get_cgraph_node (name ());
+  return afdo_string_table->get_cgraph_node (symbol_name ());
 }
 
 /* Member functions for function_instance.  */
@@ -974,9 +1141,9 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
 			   dump_user_location_t::from_location_t (location),
 			   "auto-profile has mismatched function name %s"
 			   " instead of %s at loc %i:%i",
-			   afdo_string_table->get_name (iter.first.second),
-			   raw_symbol_name (decl),
-			   lineno >> 16,
+			   afdo_string_table->get_symbol_name (
+			     iter.first.second),
+			   raw_symbol_name (decl), lineno >> 16,
 			   lineno & 65535);
     }
 
@@ -991,7 +1158,12 @@ function_instance::merge (function_instance *other,
 			  vec <function_instance *> &new_functions)
 {
   /* Do not merge to itself and only merge functions of same name.  */
-  gcc_checking_assert (other != this && other->name () == name ());
+  gcc_checking_assert (other != this
+		       && other->symbol_name () == symbol_name ());
+
+  if (file_name () != other->file_name ())
+    return;
+
   total_count_ += other->total_count_;
   if (other->total_count () && total_count () && other->head_count () == -1)
     head_count_ = -1;
@@ -1111,7 +1283,8 @@ function_instance::offline (function_instance *fn,
       gcc_checking_assert (s->total_count_ >= 0);
     }
   function_instance *to
-    = afdo_source_profile->get_function_instance_by_name_index (fn->name ());
+    = afdo_source_profile->get_function_instance_by_descriptor (
+      fn->get_descriptor ());
   fn->set_inlined_to (NULL);
   /* If there is offline function of same name, we need to merge profile.
      Delay this by adding function to a worklist so we do not run into
@@ -1186,7 +1359,8 @@ match_with_target (cgraph_node *n,
 {
   cgraph_node *callee = orig_callee->ultimate_alias_target ();
   const char *symbol_name = raw_symbol_name (callee->decl);
-  const char *name = afdo_string_table->get_name (inlined_fn->name ());
+  const char *name
+    = afdo_string_table->get_symbol_name (inlined_fn->symbol_name ());
   if (strcmp (name, symbol_name))
     {
       int i;
@@ -1200,18 +1374,21 @@ match_with_target (cgraph_node *n,
 	}
       /* Accept dwarf names and stripped suffixes.  */
       if (!strcmp (lang_hooks.dwarf_name (callee->decl, 0),
-		   afdo_string_table->get_name (inlined_fn->name ()))
-	  || (!name[i] && symbol_name[i] == '.')
-	  || in_suffix)
+		   afdo_string_table->get_symbol_name (
+		     inlined_fn->symbol_name ()))
+	  || (!name[i] && symbol_name[i] == '.') || in_suffix)
 	{
 	  int index = afdo_string_table->get_index (symbol_name);
 	  if (index == -1)
-	    index = afdo_string_table->add_name (xstrdup (symbol_name));
+	    index = afdo_string_table->add_symbol_name (
+	      xstrdup (symbol_name),
+	      afdo_string_table->add_filename (
+		get_normalized_path (DECL_SOURCE_FILE (callee->decl))));
 	  if (dump_file)
 	    fprintf (dump_file,
 		     "  Renaming inlined call target %s to %s\n",
 		     name, symbol_name);
-	  inlined_fn->set_name (index);
+	  inlined_fn->set_symbol_name (index);
 	  return 2;
 	}
       /* Only warn about declarations.  It is possible that the function
@@ -1493,10 +1670,9 @@ function_instance::match (cgraph_node *node,
 				       "auto-profile of %q+F seem to contain"
 				       " lost discriminator %i for"
 				       " call of %s at relative location %i",
-				       node->decl,
-				       loc & 65535,
-				       afdo_string_table->get_name
-					 (inlined_fn_nodisc->name ()),
+				       node->decl, loc & 65535,
+				       afdo_string_table->get_symbol_name (
+					 inlined_fn_nodisc->symbol_name ()),
 				       loc >> 16))
 			    inform (gimple_location (stmt),
 				    "corresponding call");
@@ -1512,19 +1688,18 @@ function_instance::match (cgraph_node *node,
 		    {
 		      if (inlined_fn)
 			{
-			  int old_name = inlined_fn->name ();
+			  int old_name = inlined_fn->symbol_name ();
 			  int r = match_with_target (node, stmt, inlined_fn,
 						     callee_node);
 			  if (r == 2)
 			    {
 			      auto iter = callsites.find ({loc, old_name});
-			      gcc_checking_assert (old_name
-						   != inlined_fn->name ()
-						   && iter != callsites.end ()
-						   && iter->second
-						      == inlined_fn);
+			      gcc_checking_assert (
+				old_name != inlined_fn->symbol_name ()
+				&& iter != callsites.end ()
+				&& iter->second == inlined_fn);
 			      callsite key2 = {stack[0].afdo_loc,
-						inlined_fn->name ()};
+					       inlined_fn->symbol_name ()};
 			      callsites.erase (iter);
 			      callsites[key2] = inlined_fn;
 			    }
@@ -1575,23 +1750,24 @@ function_instance::match (cgraph_node *node,
 			    (gimple_location (stmt));
 			  /* Do renaming if needed so we can look up
 			     cgraph node and recurse into inlined function.  */
-			  int *newn = to_symbol_name.get (inlined_fn->name ());
-			  gcc_checking_assert
-			    (!newn || *newn != inlined_fn->name ());
+			  int *newn
+			    = to_symbol_name.get (inlined_fn->symbol_name ());
+			  gcc_checking_assert (
+			    !newn || *newn != inlined_fn->symbol_name ());
 			  if (newn || lost_discriminator)
 			    {
-			      auto iter = callsites.find
-					    ({loc, inlined_fn->name ()});
+			      auto iter = callsites.find (
+				{loc, inlined_fn->symbol_name ()});
 			      gcc_checking_assert (iter != callsites.end ()
 						   && iter->second
 						      == inlined_fn);
-			      callsite key2 = {stack[0].afdo_loc,
-					       newn ? *newn
-					       : inlined_fn->name ()};
+			      callsite key2
+				= {stack[0].afdo_loc,
+				   newn ? *newn : inlined_fn->symbol_name ()};
 			      callsites.erase (iter);
 			      callsites[key2] = inlined_fn;
-			      inlined_fn->set_name (newn ? *newn
-						    : inlined_fn->name ());
+			      inlined_fn->set_symbol_name (
+				newn ? *newn : inlined_fn->symbol_name ());
 			    }
 			  functions.add (inlined_fn);
 			}
@@ -1682,8 +1858,8 @@ function_instance::match (cgraph_node *node,
 	    fprintf (dump_file, ":%" PRIu64, iter->second.count);
 	    for (auto &titer : iter->second.targets)
 	      fprintf (dump_file, " %s:%" PRIu64,
-		       afdo_string_table->get_name (titer.first),
-		       (int64_t)titer.second);
+		       afdo_string_table->get_symbol_name (titer.first),
+		       (int64_t) titer.second);
 	    fprintf (dump_file, "\n");
 	  }
 	iter = pos_counts.erase (iter);
@@ -1709,9 +1885,9 @@ function_instance::match (cgraph_node *node,
 	      inform (DECL_SOURCE_LOCATION (node->decl),
 		      "call of %s with total count %" PRId64
 		      ", relative location +%i, discriminator %i",
-		      afdo_string_table->get_name (iter->first.second),
-		      iter->second->total_count (),
-		      iter->first.first >> 16, iter->first.first & 65535);
+		      afdo_string_table->get_symbol_name (iter->first.second),
+		      iter->second->total_count (), iter->first.first >> 16,
+		      iter->first.first & 65535);
 	    if ((iter->first.first >> 16) > (end_location >> 16) && warned)
 	      inform (DECL_SOURCE_LOCATION (node->decl),
 		      "location is after end of function");
@@ -1772,8 +1948,8 @@ function_instance::remove_external_functions
       }
     else
       {
-	gcc_checking_assert ((int)iter->first.second
-			     == iter->second->name ());
+	gcc_checking_assert ((int) iter->first.second
+			     == iter->second->symbol_name ());
 	int *newn = iter->second->get_call_location () == UNKNOWN_LOCATION
 		    ? to_symbol_name.get (iter->first.second)
 		    : NULL;
@@ -1791,7 +1967,7 @@ function_instance::remove_external_functions
       auto iter = callsites.find (key);
       callsite key2 = key;
       key2.second = *to_symbol_name.get (key.second);
-      iter->second->set_name (key2.second);
+      iter->second->set_symbol_name (key2.second);
       callsites.erase (iter);
       callsites[key2] = iter->second;
     }
@@ -1852,9 +2028,9 @@ void
 function_instance::dump (FILE *f, int indent, bool nested) const
 {
   if (!nested)
-    fprintf (f, "%*s%s total:%" PRIu64 " head:%" PRId64 "\n",
-	     indent, "", afdo_string_table->get_name (name ()),
-	     (int64_t)total_count (), (int64_t)head_count ());
+    fprintf (f, "%*s%s total:%" PRIu64 " head:%" PRId64 "\n", indent, "",
+	     afdo_string_table->get_symbol_name (symbol_name ()),
+	     (int64_t) total_count (), (int64_t) head_count ());
   else
     fprintf (f, " total:%" PRIu64 "\n", (int64_t)total_count ());
   for (auto const &iter : pos_counts)
@@ -1865,17 +2041,19 @@ function_instance::dump (FILE *f, int indent, bool nested) const
 
       for (auto const &titer : iter.second.targets)
 	fprintf (f, "  %s:%" PRIu64,
-		 afdo_string_table->get_name (titer.first),
-		 (int64_t)titer.second);
+		 afdo_string_table->get_symbol_name (titer.first),
+		 (int64_t) titer.second);
       fprintf (f,"\n");
     }
   for (auto const &iter : callsites)
     {
       fprintf (f, "%*s", indent + 2, "");
       dump_afdo_loc (f, iter.first.first);
-      fprintf (f, ": %s", afdo_string_table->get_name (iter.first.second));
+      fprintf (f, ": %s",
+	       afdo_string_table->get_symbol_name (iter.first.second));
       iter.second->dump (f, indent + 2, true);
-      gcc_checking_assert ((int)iter.first.second == iter.second->name ());
+      gcc_checking_assert ((int) iter.first.second
+			   == iter.second->symbol_name ());
     }
 }
 
@@ -1893,9 +2071,9 @@ function_instance::dump_inline_stack (FILE *f) const
 	   iter != s->callsites.end (); ++iter)
 	if (iter->second == p)
 	  {
-	    gcc_checking_assert (!found
-				 && (int)iter->first.second == p->name ());
-	    stack.safe_push ({iter->first.first, s->name ()});
+	    gcc_checking_assert (
+	      !found && (int) iter->first.second == p->symbol_name ());
+	    stack.safe_push ({iter->first.first, s->symbol_name ()});
 	    found = true;
 	  }
       gcc_checking_assert (found);
@@ -1904,11 +2082,11 @@ function_instance::dump_inline_stack (FILE *f) const
     }
   for (callsite &s: stack)
     {
-      fprintf (f, "%s:", afdo_string_table->get_name (s.second));
+      fprintf (f, "%s:", afdo_string_table->get_symbol_name (s.second));
       dump_afdo_loc (f, s.first);
       fprintf (f, " ");
     }
-  fprintf (f, "%s", afdo_string_table->get_name (name ()));
+  fprintf (f, "%s", afdo_string_table->get_symbol_name (symbol_name ()));
 }
 
 /* Dump instance to stderr.  */
@@ -1944,13 +2122,13 @@ function_instance::find_icall_target_map (tree fn, gcall *stmt,
   for (callsite_map::const_iterator iter = callsites.begin ();
        iter != callsites.end (); ++iter)
     {
-      unsigned callee = iter->second->name ();
+      unsigned callee = iter->second->symbol_name ();
       /* Check if callsite location match the stmt.  */
       if (iter->first.first != stmt_offset
 	  || iter->second->removed_icall_target ())
 	continue;
       struct cgraph_node *node = cgraph_node::get_for_asmname (
-          get_identifier (afdo_string_table->get_name (callee)));
+	get_identifier (afdo_string_table->get_symbol_name (callee)));
       if (node == NULL)
         continue;
       (*map)[callee] = iter->second->total_count () * afdo_count_scale;
@@ -1996,7 +2174,7 @@ autofdo_source_profile::offline_external_functions ()
      .isra, .ipcp.  */
   for (size_t i = 1; i < afdo_string_table->num_entries (); i++)
     {
-      const char *n1 = afdo_string_table->get_name (i);
+      const char *n1 = afdo_string_table->get_symbol_name (i);
       char *n2 = get_original_name (n1);
       if (!strcmp (n1, n2))
 	{
@@ -2004,7 +2182,7 @@ autofdo_source_profile::offline_external_functions ()
 	  /* Watch for duplicate entries.
 	     This seems to happen in practice and may be useful to distinguish
 	     multiple static symbols of the same name, but we do not realy
-	     have a way to differentiate them in get_name lookup.  */
+	     have a way to differentiate them in get_symbol_name lookup.  */
 	  int index = afdo_string_table->get_index (n1);
 	  if (index != (int)i)
 	    {
@@ -2020,10 +2198,9 @@ autofdo_source_profile::offline_external_functions ()
 	fprintf (dump_file, "Adding rename removing clone suffixes %s -> %s\n",
 		 n1, n2);
       int index = afdo_string_table->get_index (n2);
-      if (index != -1)
-	free (n2);
-      else
-	index = afdo_string_table->add_name (n2);
+      if (index == -1)
+	index = afdo_string_table->add_symbol_name (xstrdup (n2),
+						    string_table::unknown_filename);
       to_symbol_name.put (i, index);
     }
   last_name = afdo_string_table->num_entries ();
@@ -2042,11 +2219,14 @@ autofdo_source_profile::offline_external_functions ()
 	  if (index2 != -1)
 	    {
 	      if (index == -1)
-		index = afdo_string_table->add_name (xstrdup (name));
+		index = afdo_string_table->add_symbol_name (
+		  xstrdup (name),
+		  afdo_string_table->add_filename (
+		    get_normalized_path (DECL_SOURCE_FILE (node->decl))));
 	      if (dump_file)
 		{
 		  fprintf (dump_file, "Adding dwarf->symbol rename %s -> %s\n",
-			   afdo_string_table->get_name (index2), name);
+			   afdo_string_table->get_symbol_name (index2), name);
 		  if (to_symbol_name.get (index2))
 		    fprintf (dump_file, "Dwarf name is not unique");
 		}
@@ -2058,7 +2238,7 @@ autofdo_source_profile::offline_external_functions ()
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "%s is defined in node %s\n",
-		     afdo_string_table->get_name (index),
+		     afdo_string_table->get_symbol_name (index),
 		     node->dump_name ());
 	  seen.add (index);
 	}
@@ -2109,10 +2289,10 @@ autofdo_source_profile::offline_external_functions ()
   auto_vec <function_instance *, 20>fns2;
   /* Populate worklist with all functions to process.  Processing
      may introduce new functions by offlining.  */
-  for (auto const &iter : map_)
+  for (auto &function : map_)
     {
-      iter.second->set_in_worklist ();
-      fns.safe_push (iter.second);
+      function.second->set_in_worklist ();
+      fns.safe_push (function.second);
     }
 
   /* There are two worklists.  First all functions needs to be matched
@@ -2124,7 +2304,7 @@ autofdo_source_profile::offline_external_functions ()
       /* In case renaming introduced new name, keep seen up to date.  */
       for (; last_name < afdo_string_table->num_entries (); last_name++)
 	{
-	  const char *name = afdo_string_table->get_name (last_name);
+	  const char *name = afdo_string_table->get_symbol_name (last_name);
 	  symtab_node *n
 	    = afdo_string_table->get_cgraph_node (last_name);
 	  if (dump_file)
@@ -2139,20 +2319,19 @@ autofdo_source_profile::offline_external_functions ()
 	  function_instance *f = fns.pop ();
 	  if (f->get_location () == UNKNOWN_LOCATION)
 	    {
-	      int index = f->name ();
+	      int index = f->symbol_name ();
 	      int *newn = to_symbol_name.get (index);
 	      if (newn)
 		{
-		  f->set_name (*newn);
-		  if (map_.count (index)
-		      && map_[index] == f)
-		    map_.erase (index);
-		  if (!map_.count (*newn))
-		    map_[*newn] = f;
+		  if (find_function_instance (f->get_descriptor ()) == f)
+		    remove_function_instance (f);
+		  f->set_symbol_name (*newn);
+		  if (!find_function_instance (f->get_descriptor ()))
+		    add_function_instance (f);
 		}
 	      if (cgraph_node *n = f->get_cgraph_node ())
 		{
-		  gcc_checking_assert (seen.contains (f->name ()));
+		  gcc_checking_assert (seen.contains (f->symbol_name ()));
 		  f->match (n, fns, to_symbol_name);
 		}
 	    }
@@ -2161,12 +2340,14 @@ autofdo_source_profile::offline_external_functions ()
       else
 	{
 	  function_instance *f = fns2.pop ();
-	  int index = f->name ();
+	  int index = f->symbol_name ();
 	  gcc_checking_assert (f->in_worklist_p ());
 
 	  /* If map has different function_instance of same name, then
 	     this is a duplicated entry which needs to be merged.  */
-	  if (map_.count (index) && map_[index] != f)
+	  function_instance *index_inst
+	    = find_function_instance (f->get_descriptor ());
+	  if (index_inst && index_inst != f)
 	    {
 	      if (dump_file)
 		{
@@ -2174,7 +2355,7 @@ autofdo_source_profile::offline_external_functions ()
 		  f->dump_inline_stack (dump_file);
 		  fprintf (dump_file, "\n");
 		}
-	      map_[index]->merge (f, fns);
+	      index_inst->merge (f, fns);
 	      gcc_checking_assert (!f->inlined_to ());
 	      f->clear_in_worklist ();
 	      delete f;
@@ -2186,9 +2367,10 @@ autofdo_source_profile::offline_external_functions ()
 	      f->clear_in_worklist ();
 	      if (dump_file)
 		fprintf (dump_file, "Removing external %s\n",
-			 afdo_string_table->get_name (f->name ()));
-	      if (map_.count (index) && map_[index] == f)
-		map_.erase (f->name ());
+			 afdo_string_table->get_symbol_name (
+			   f->symbol_name ()));
+	      if (index_inst == f)
+		remove_function_instance (f);
 	      delete f;
 	    }
 	  /* If this is offline function instance seen in this
@@ -2202,10 +2384,10 @@ autofdo_source_profile::offline_external_functions ()
 	}
     }
   if (dump_file)
-    for (auto const &iter : map_)
+    for (auto const &function : map_)
       {
-	seen.contains (iter.second->name ());
-	iter.second->dump (dump_file);
+	seen.contains (function.second->symbol_name ());
+	function.second->dump (dump_file);
       }
 }
 
@@ -2259,22 +2441,24 @@ autofdo_source_profile::offline_unrealized_inlines ()
   auto_vec <function_instance *>fns;
   /* Populate worklist with all functions to process.  Processing
      may introduce new functions by offlining.  */
-  for (auto const &iter : map_)
+  for (auto const &function : map_)
     {
-      fns.safe_push (iter.second);
-      iter.second->set_in_worklist ();
+      fns.safe_push (function.second);
+      function.second->set_in_worklist ();
     }
   while (fns.length ())
     {
       function_instance *f = fns.pop ();
-      int index = f->name ();
-      bool in_map = map_.count (index);
+      int index = f->symbol_name ();
+      function_instance *index_inst
+	= find_function_instance (f->get_descriptor ());
+      bool in_map = index_inst != nullptr;
       if (in_map)
 	if (cgraph_node *n = f->get_cgraph_node ())
 	  {
 	    if (dump_file)
 	      fprintf (dump_file, "Marking realized %s\n",
-		       afdo_string_table->get_name (index));
+		       afdo_string_table->get_symbol_name (index));
 	    f->set_realized ();
 	    if (DECL_INITIAL (n->decl)
 		&& DECL_INITIAL (n->decl) != error_mark_node)
@@ -2285,7 +2469,7 @@ autofdo_source_profile::offline_unrealized_inlines ()
 			   && f->in_worklist_p ());
 
       /* If this is duplicated instance, merge it into one in map.  */
-      if (in_map && map_[index] != f)
+      if (in_map && index_inst != f)
 	{
 	  if (dump_file)
 	    {
@@ -2293,7 +2477,7 @@ autofdo_source_profile::offline_unrealized_inlines ()
 	      f->dump_inline_stack (dump_file);
 	      fprintf (dump_file, "\n");
 	    }
-	  map_[index]->merge (f, fns);
+	  index_inst->merge (f, fns);
 	  f->clear_in_worklist ();
 	  gcc_checking_assert (!f->inlined_to ());
 	  delete f;
@@ -2303,8 +2487,8 @@ autofdo_source_profile::offline_unrealized_inlines ()
 	{
 	  if (dump_file)
 	    fprintf (dump_file, "Removing optimized out function %s\n",
-		     afdo_string_table->get_name (f->name ()));
-	  map_.erase (index);
+		     afdo_string_table->get_symbol_name (f->symbol_name ()));
+	  remove_function_instance (index_inst);
 	  f->clear_in_worklist ();
 	  delete f;
 	}
@@ -2312,8 +2496,8 @@ autofdo_source_profile::offline_unrealized_inlines ()
 	f->clear_in_worklist ();
     }
   if (dump_file)
-    for (auto const &iter : map_)
-      iter.second->dump (dump_file);
+    for (auto const &function : map_)
+      function.second->dump (dump_file);
 }
 
 /* Read the profile and create a function_instance with head count as
@@ -2354,7 +2538,10 @@ function_instance::read_function_instance (function_instance_stack *stack,
   unsigned name = gcov_read_unsigned ();
   unsigned num_pos_counts = gcov_read_unsigned ();
   unsigned num_callsites = gcov_read_unsigned ();
-  function_instance *s = new function_instance (name, head_count);
+  function_instance *s
+    = new function_instance (name,
+			     afdo_string_table->get_filename_by_symbol (name),
+			     head_count);
   if (!stack->is_empty ())
     s->set_inlined_to (stack->last ());
   stack->safe_push (s);
@@ -2383,8 +2570,9 @@ function_instance::read_function_instance (function_instance_stack *stack,
       unsigned offset = gcov_read_unsigned ();
       function_instance *callee_function_instance
           = read_function_instance (stack, -1);
-      s->callsites[std::make_pair (offset, callee_function_instance->name ())]
-          = callee_function_instance;
+      s->callsites[std::make_pair (offset,
+				   callee_function_instance->symbol_name ())]
+	= callee_function_instance;
     }
   stack->pop ();
   return s;
@@ -2404,21 +2592,23 @@ autofdo_source_profile::~autofdo_source_profile ()
 function_instance *
 autofdo_source_profile::get_function_instance_by_decl (tree decl) const
 {
+  const char *filename = get_normalized_path (DECL_SOURCE_FILE (decl));
   int index = afdo_string_table->get_index_by_decl (decl);
   if (index == -1)
     return NULL;
-  name_function_instance_map::const_iterator ret = map_.find (index);
-  return ret == map_.end () ? NULL : ret->second;
+
+  function_instance_descriptor descriptor (
+    afdo_string_table->get_filename_index (filename), index);
+  return find_function_instance (descriptor);
 }
 
-/* For a given NAME_INDEX, returns the top-level function_instance.  */
+/* For a given DESCRIPTOR, return the matching instance if found.  */
 
 function_instance *
-autofdo_source_profile::get_function_instance_by_name_index (int name_index)
-       	const
+autofdo_source_profile::get_function_instance_by_descriptor (
+  function_instance_descriptor descriptor) const
 {
-  name_function_instance_map::const_iterator ret = map_.find (name_index);
-  return ret == map_.end () ? NULL : ret->second;
+  return find_function_instance (descriptor);
 }
 
 /* Add function instance FN.  */
@@ -2426,9 +2616,8 @@ autofdo_source_profile::get_function_instance_by_name_index (int name_index)
 void
 autofdo_source_profile::add_function_instance (function_instance *fn)
 {
-  int index = fn->name ();
-  gcc_checking_assert (map_.count (index) == 0);
-  map_[index] = fn;
+  gcc_checking_assert (map_.find (fn->get_descriptor ()) == map_.end ());
+  map_[fn->get_descriptor ()] = fn;
 }
 
 /* Find count_info for a given gimple STMT. If found, store the count_info
@@ -2587,12 +2776,13 @@ autofdo_source_profile::get_callsite_total_count (
 	fprintf (dump_file, "No function instance found\n");
       return 0;
     }
-  if (afdo_string_table->get_index_by_decl (edge->callee->decl) != s->name ())
+  if (afdo_string_table->get_index_by_decl (edge->callee->decl)
+      != s->symbol_name ())
     {
       if (dump_file)
 	fprintf (dump_file, "Mismatched name of callee %s and profile %s\n",
 		 raw_symbol_name (edge->callee->decl),
-		 afdo_string_table->get_name (s->name ()));
+		 afdo_string_table->get_symbol_name (s->symbol_name ()));
       return 0;
     }
 
@@ -2632,17 +2822,16 @@ autofdo_source_profile::read ()
   for (unsigned i = 0; i < function_num; i++)
     {
       function_instance::function_instance_stack stack;
-      function_instance *s = function_instance::read_function_instance (
-          &stack, gcov_read_counter ());
-      int fun_id = s->name ();
-      /* If function_instance with get_original_name (without the clone
-	 suffix) exits, merge the function instances.  */
-      if (map_.count (fun_id) == 0)
-	map_[fun_id] = s;
+      function_instance *s
+	= function_instance::read_function_instance (&stack,
+						     gcov_read_counter ());
+
+      if (find_function_instance (s->get_descriptor ()) == nullptr)
+	add_function_instance (s);
       else
 	fatal_error (UNKNOWN_LOCATION,
 		     "auto-profile contains duplicated function instance %s",
-		     afdo_string_table->get_name (s->name ()));
+		     afdo_string_table->get_symbol_name (s->symbol_name ()));
     }
   int hot_frac = param_hot_bb_count_fraction;
   /* Scale up the profile, but leave some bits in case some counts gets
@@ -2679,16 +2868,20 @@ function_instance *
 autofdo_source_profile::get_function_instance_by_inline_stack (
     const inline_stack &stack) const
 {
-  name_function_instance_map::const_iterator iter = map_.find (
-      afdo_string_table->get_index_by_decl (stack[stack.length () - 1].decl));
-  if (iter == map_.end ())
+  function_instance_descriptor descriptor (
+    afdo_string_table->get_filename_index (
+      get_normalized_path (DECL_SOURCE_FILE (stack[stack.length () - 1].decl))),
+    afdo_string_table->get_index_by_decl (stack[stack.length () - 1].decl));
+  function_instance *s = find_function_instance (descriptor);
+
+  if (s == NULL)
     {
       if (dump_file)
 	fprintf (dump_file, "No offline instance for %s\n",
 		 raw_symbol_name (stack[stack.length () - 1].decl));
       return NULL;
     }
-  function_instance *s = iter->second;
+
   for (unsigned i = stack.length () - 1; i > 0; i--)
     {
       s = s->get_function_instance_by_decl (stack[i].afdo_loc,
@@ -2714,6 +2907,50 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
 	}
     }
   return s;
+}
+
+/* Find the matching function instance which has DESCRIPTOR as its
+   descriptor.  If not found, also try checking if an instance exists with the
+   same name which has no associated filename.  */
+
+autofdo_source_profile::name_function_instance_map::const_iterator
+autofdo_source_profile::find_iter_for_function_instance (
+  function_instance_descriptor descriptor) const
+{
+  auto it = map_.find (descriptor);
+
+  /* Try searching for the symbol not having a filename if it isn't found.  */
+  if (it == map_.end ())
+    it = map_.find (
+      function_instance_descriptor (string_table::unknown_filename,
+				    (int) descriptor.symbol_name ()));
+  return it;
+}
+
+/* Similar to the above, but return a pointer to the instance instead of an
+   iterator.  */
+
+function_instance *
+autofdo_source_profile::find_function_instance (
+  function_instance_descriptor descriptor) const
+{
+  auto it = find_iter_for_function_instance (descriptor);
+  return it == map_.end () ? NULL : it->second;
+}
+
+/* Remove a function instance from the map.  Returns true if the entry was
+   actually deleted.  */
+
+bool
+autofdo_source_profile::remove_function_instance (function_instance *inst)
+{
+  auto iter = find_iter_for_function_instance (inst->get_descriptor ());
+  if (iter != map_.end ())
+    {
+      map_.erase (iter);
+      return true;
+    }
+  return false;
 }
 
 /* Module profile is only used by LIPO. Here we simply ignore it.  */
@@ -2840,12 +3077,12 @@ afdo_indirect_call (gcall *stmt, const icall_target_map &map,
     }
   total *= afdo_count_scale;
   struct cgraph_node *direct_call = cgraph_node::get_for_asmname (
-      get_identifier (afdo_string_table->get_name (max_iter->first)));
+    get_identifier (afdo_string_table->get_symbol_name (max_iter->first)));
   if (direct_call == NULL)
     {
       if (dump_file)
 	fprintf (dump_file, "Failed to find cgraph node for %s\n",
-		 afdo_string_table->get_name (max_iter->first));
+		 afdo_string_table->get_symbol_name (max_iter->first));
       return false;
     }
 
