@@ -1,3 +1,13 @@
+2025-10-15  Chris Johns  <chrisj@rtems.org>
+
+	* configure: Regenerate.
+	* configure.ac (newlib, *-rtems*): Add HAVE_SYS_IOCTL_H,
+	HAVE_SYS_STAT_H, HAVE_SYS_TYPES_H, HAVE_S_ISREG, HAVE_UNISTD_H,
+	HAVE_UNLINKAT, _GLIBCXX_USE_CHMOD, _GLIBCXX_USE_MKDIR,
+	_GLIBCXX_USE_CHDIR, _GLIBCXX_USE_GETCWD, _GLIBCXX_USE_UTIME,
+	_GLIBCXX_USE_LINK, _GLIBCXX_USE_READLINK, _GLIBCXX_USE_SYMLINK,
+	_GLIBCXX_USE_TRUNCATE and _GLIBCXX_USE_FDOPENDIR.
+
 2025-09-24  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
