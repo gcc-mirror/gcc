@@ -49,6 +49,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pretty-print.h"
 #include "gcc-rich-location.h"
 #include "gcc-urlifier.h"
+#include "attr-callback.h"
 
 static tree handle_packed_attribute (tree *, tree, tree, int, bool *);
 static tree handle_nocommon_attribute (tree *, tree, tree, int, bool *);
@@ -484,6 +485,8 @@ const struct attribute_spec c_common_gnu_attributes[] =
 			      handle_tm_attribute, NULL },
   { "transaction_may_cancel_outer", 0, 0, false, true, false, false,
 			      handle_tm_attribute, NULL },
+  { CALLBACK_ATTR_IDENT,      1, -1, true, false, false, false,
+			      handle_callback_attribute, NULL },
   /* ??? These two attributes didn't make the transition from the
      Intel language document to the multi-vendor language document.  */
   { "transaction_pure",       0, 0, false, true,  false, false,

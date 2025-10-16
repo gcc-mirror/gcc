@@ -2359,6 +2359,19 @@ copy_bb (copy_body_data *id, basic_block bb,
 			  indirect->count
 			     = copy_basic_block->count.apply_probability (prob);
 			}
+		      /* If edge is a callback-carrying edge, copy all its
+			 attached edges as well.  */
+		      else if (edge->has_callback)
+			{
+			  edge
+			    = edge->clone (id->dst_node, call_stmt,
+					   gimple_uid (stmt), num, den, true);
+			  cgraph_edge *e;
+			  for (e = old_edge->first_callback_edge (); e;
+			       e = e->next_callback_edge ())
+			    edge = e->clone (id->dst_node, call_stmt,
+					     gimple_uid (stmt), num, den, true);
+			}
 		      else
 			{
 			  edge = edge->clone (id->dst_node, call_stmt,
@@ -3051,8 +3064,18 @@ redirect_all_calls (copy_body_data * id, basic_block bb)
 	    {
 	      if (!id->killed_new_ssa_names)
 		id->killed_new_ssa_names = new hash_set<tree> (16);
-	      cgraph_edge::redirect_call_stmt_to_callee (edge,
-		id->killed_new_ssa_names);
+	      cgraph_edge::redirect_call_stmt_to_callee (
+		edge, id->killed_new_ssa_names);
+	      if (edge->has_callback)
+		{
+		  /* When redirecting a carrying edge, we need to redirect its
+		     attached edges as well.  */
+		  cgraph_edge *cbe;
+		  for (cbe = edge->first_callback_edge (); cbe;
+		       cbe = cbe->next_callback_edge ())
+		    cgraph_edge::redirect_call_stmt_to_callee (
+		      cbe, id->killed_new_ssa_names);
+		}
 
 	      if (stmt == last && id->call_stmt && maybe_clean_eh_stmt (stmt))
 		gimple_purge_dead_eh_edges (bb);

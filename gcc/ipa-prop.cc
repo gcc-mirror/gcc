@@ -61,6 +61,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "value-range-storage.h"
 #include "vr-values.h"
 #include "lto-streamer.h"
+#include "attribs.h"
+#include "attr-callback.h"
 
 /* Function summary where the parameter infos are actually stored. */
 ipa_node_params_t *ipa_node_params_sum = NULL;
@@ -323,6 +325,10 @@ ipa_get_param_decl_index (class ipa_node_params *info, tree ptree)
 {
   return ipa_get_param_decl_index_1 (info->descriptors, ptree);
 }
+
+static void
+ipa_duplicate_jump_function (cgraph_edge *src, cgraph_edge *dst,
+			     ipa_jump_func *src_jf, ipa_jump_func *dst_jf);
 
 /* Populate the param_decl field in parameter DESCRIPTORS that correspond to
    NODE.  */
@@ -2416,6 +2422,18 @@ skip_a_safe_conversion_op (tree t)
   return t;
 }
 
+/* Initializes ipa_edge_args summary of CBE given its callback-carrying edge.
+   This primarily means allocating the correct amount of jump functions.  */
+
+static inline void
+init_callback_edge_summary (struct cgraph_edge *cbe, tree attr)
+{
+  ipa_edge_args *cb_args = ipa_edge_args_sum->get_create (cbe);
+  size_t jf_vec_length = callback_num_args(attr);
+  vec_safe_grow_cleared (cb_args->jump_functions,
+			 jf_vec_length, true);
+}
+
 /* Compute jump function for all arguments of callsite CS and insert the
    information in the jump_functions array in the ipa_edge_args corresponding
    to this callsite.  */
@@ -2441,6 +2459,7 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
   if (ipa_func_spec_opts_forbid_analysis_p (cs->caller))
     return;
 
+  auto_vec<cgraph_edge*> callback_edges;
   for (n = 0; n < arg_num; n++)
     {
       struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (args, n);
@@ -2519,10 +2538,57 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 
       arg = skip_a_safe_conversion_op (arg);
       if (is_gimple_ip_invariant (arg)
-	  || (VAR_P (arg)
-	      && is_global_var (arg)
-	      && TREE_READONLY (arg)))
-	ipa_set_jf_constant (jfunc, arg, cs);
+	  || (VAR_P (arg) && is_global_var (arg) && TREE_READONLY (arg)))
+	{
+	  ipa_set_jf_constant (jfunc, arg, cs);
+	  if (TREE_CODE (arg) == ADDR_EXPR)
+	    {
+	      tree pointee = TREE_OPERAND (arg, 0);
+	      if (TREE_CODE (pointee) == FUNCTION_DECL && !cs->callback
+		  && cs->callee)
+		{
+		  /* Argument is a pointer to a function. Look for a callback
+		     attribute describing this argument.  */
+		  tree callback_attr
+		    = lookup_attribute (CALLBACK_ATTR_IDENT,
+					DECL_ATTRIBUTES (cs->callee->decl));
+		  for (; callback_attr;
+		       callback_attr
+		       = lookup_attribute (CALLBACK_ATTR_IDENT,
+					   TREE_CHAIN (callback_attr)))
+		    if (callback_get_fn_index (callback_attr) == n)
+		      break;
+
+		  /* If no callback attribute is found, check if the function is
+		     a special case.  */
+		  if (!callback_attr
+		      && callback_is_special_cased (cs->callee->decl, call))
+		    {
+		      callback_attr
+			= callback_special_case_attr (cs->callee->decl);
+		      /* Check if the special attribute describes the correct
+			 attribute, as a special cased function might have
+			 multiple callbacks.  */
+		      if (callback_get_fn_index (callback_attr) != n)
+			callback_attr = NULL;
+		    }
+
+		  /* If a callback attribute describing this pointer is found,
+			   create a callback edge to the pointee function to
+		     allow for further optimizations.  */
+		  if (callback_attr)
+		    {
+		      cgraph_node *kernel_node
+			= cgraph_node::get_create (pointee);
+		      unsigned callback_id = n;
+		      cgraph_edge *cbe
+			= cs->make_callback (kernel_node, callback_id);
+		      init_callback_edge_summary (cbe, callback_attr);
+		      callback_edges.safe_push (cbe);
+		    }
+		}
+	    }
+	}
       else if (!is_gimple_reg_type (TREE_TYPE (arg))
 	       && TREE_CODE (arg) == PARM_DECL)
 	{
@@ -2580,6 +2646,34 @@ ipa_compute_jump_functions_for_edge (struct ipa_func_body_info *fbi,
 	      || POINTER_TYPE_P (param_type)))
 	determine_known_aggregate_parts (fbi, call, arg, param_type, jfunc);
     }
+
+  if (!callback_edges.is_empty ())
+    {
+      /* For every callback edge, fetch jump functions of arguments
+	 passed to them and copy them over to their respective summaries.
+	 This avoids recalculating them for every callback edge, since their
+	 arguments are just passed through.  */
+      unsigned j;
+      for (j = 0; j < callback_edges.length (); j++)
+	{
+	  cgraph_edge *callback_edge = callback_edges[j];
+	  ipa_edge_args *cb_summary
+	    = ipa_edge_args_sum->get_create (callback_edge);
+	  auto_vec<int> arg_mapping
+	    = callback_get_arg_mapping (callback_edge, cs);
+	  unsigned i;
+	  for (i = 0; i < arg_mapping.length (); i++)
+	    {
+	      if (arg_mapping[i] == -1)
+		continue;
+	      class ipa_jump_func *src
+		= ipa_get_ith_jump_func (args, arg_mapping[i]);
+	      class ipa_jump_func *dst = ipa_get_ith_jump_func (cb_summary, i);
+	      ipa_duplicate_jump_function (cs, callback_edge, src, dst);
+	    }
+	}
+    }
+
   if (!useful_context)
     vec_free (args->polymorphic_call_contexts);
 }

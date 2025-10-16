@@ -144,6 +144,9 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
   new_edge->can_throw_external = can_throw_external;
   new_edge->call_stmt_cannot_inline_p = call_stmt_cannot_inline_p;
   new_edge->speculative = speculative;
+  new_edge->callback = callback;
+  new_edge->has_callback = has_callback;
+  new_edge->callback_id = callback_id;
   new_edge->in_polymorphic_cdtor = in_polymorphic_cdtor;
 
   /* Update IPA profile.  Local profiles need no updating in original.  */

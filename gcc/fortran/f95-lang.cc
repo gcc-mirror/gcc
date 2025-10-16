@@ -580,6 +580,7 @@ gfc_builtin_function (tree decl)
 #define ATTR_COLD_NORETURN_NOTHROW_LEAF_LIST \
 					(ECF_COLD | ECF_NORETURN | \
 					 ECF_NOTHROW | ECF_LEAF)
+#define ATTR_CALLBACK_GOMP_LIST (ECF_CB_1_2 | ATTR_NOTHROW_LIST)
 #define ATTR_PURE_NOTHROW_LIST (ECF_PURE | ECF_NOTHROW)
 
 static void

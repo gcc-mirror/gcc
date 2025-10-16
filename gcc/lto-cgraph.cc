@@ -274,6 +274,9 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (&bp, edge->speculative_id, 16);
   bp_pack_value (&bp, edge->indirect_inlining_edge, 1);
   bp_pack_value (&bp, edge->speculative, 1);
+  bp_pack_value (&bp, edge->callback, 1);
+  bp_pack_value (&bp, edge->has_callback, 1);
+  bp_pack_value (&bp, edge->callback_id, 16);
   bp_pack_value (&bp, edge->call_stmt_cannot_inline_p, 1);
   gcc_assert (!edge->call_stmt_cannot_inline_p
 	      || edge->inline_failed != CIF_BODY_NOT_AVAILABLE);
@@ -1539,6 +1542,9 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
 
   edge->indirect_inlining_edge = bp_unpack_value (&bp, 1);
   edge->speculative = bp_unpack_value (&bp, 1);
+  edge->callback = bp_unpack_value(&bp, 1);
+  edge->has_callback = bp_unpack_value(&bp, 1);
+  edge->callback_id = bp_unpack_value(&bp, 16);
   edge->lto_stmt_uid = stmt_id;
   edge->speculative_id = speculative_id;
   edge->inline_failed = inline_failed;

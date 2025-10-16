@@ -845,7 +845,17 @@ inline_transform (struct cgraph_node *node)
       if (!e->inline_failed)
 	has_inline = true;
       next = e->next_callee;
-      cgraph_edge::redirect_call_stmt_to_callee (e);
+      if (e->has_callback)
+	{
+	  /* Redirect callback edges when redirecting their carrying edge.  */
+	  cgraph_edge *cbe;
+	  cgraph_edge::redirect_call_stmt_to_callee (e);
+	  for (cbe = e->first_callback_edge (); cbe;
+	       cbe = cbe->next_callback_edge ())
+	    cgraph_edge::redirect_call_stmt_to_callee (cbe);
+	}
+      else
+	cgraph_edge::redirect_call_stmt_to_callee (e);
     }
   node->remove_all_references ();
 

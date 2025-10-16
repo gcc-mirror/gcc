@@ -417,6 +417,11 @@ do_estimate_growth_1 (struct cgraph_node *node, void *data)
     {
       gcc_checking_assert (e->inline_failed);
 
+      /* Don't count callback edges into growth, since they are never inlined
+	 anyway.  */
+      if (e->callback)
+	continue;
+
       if (cgraph_inline_failed_type (e->inline_failed) == CIF_FINAL_ERROR
 	  || !opt_for_fn (e->caller->decl, optimize))
 	{

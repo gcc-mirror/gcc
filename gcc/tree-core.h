@@ -98,6 +98,13 @@ struct die_struct;
 /* Nonzero if this is a function expected to end with an exception.  */
 #define ECF_XTHROW		  (1 << 16)
 
+/* Flags for various callback attribute combinations.  These constants are only
+   meant to be used for the construction of builtin functions.  They were only
+   added because Fortran uses them for attributes of builtins.  */
+
+/* callback(1, 2) */
+#define ECF_CB_1_2		  (1 << 17)
+
 /* Call argument flags.  */
 
 /* Nonzero if the argument is not used by the function.  */

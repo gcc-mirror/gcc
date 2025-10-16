@@ -75,6 +75,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dfp.h"
 #include "asan.h"
 #include "ubsan.h"
+#include "attr-callback.h"
 
 /* Names of tree components.
    Used for printing out the tree and error messages.  */
@@ -10000,7 +10001,15 @@ set_call_expr_flags (tree decl, int flags)
     DECL_ATTRIBUTES (decl)
       = tree_cons (get_identifier ("expected_throw"),
 		   NULL, DECL_ATTRIBUTES (decl));
-  /* Looping const or pure is implied by noreturn.
+
+  if (flags & ECF_CB_1_2)
+    {
+      tree attr = callback_build_attr (1, 1, 2);
+      TREE_CHAIN (attr) = DECL_ATTRIBUTES (decl);
+      DECL_ATTRIBUTES (decl) = attr;
+    }
+
+    /* Looping const or pure is implied by noreturn.
      There is currently no way to declare looping const or looping pure alone.  */
   gcc_assert (!(flags & ECF_LOOPING_CONST_OR_PURE)
 	      || ((flags & ECF_NORETURN) && (flags & (ECF_CONST | ECF_PURE))));

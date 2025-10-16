@@ -1738,12 +1738,14 @@ public:
   /* Remove EDGE from the cgraph.  */
   static void remove (cgraph_edge *edge);
 
-  /* Change field call_stmt of edge E to NEW_STMT.  If UPDATE_SPECULATIVE and E
-     is any component of speculative edge, then update all components.
+  /* Change field call_stmt of edge E to NEW_STMT.  If UPDATE_DERIVED_EDGES and
+     E is any component of speculative edge, then update all components.
      Speculations can be resolved in the process and EDGE can be removed and
-     deallocated.  Return the edge that now represents the call.  */
+     deallocated.  Return the edge that now represents the call.  If
+     UPDATE_DERIVED_EDGES and E is a part of a callback edge, update all
+     associated edges and return the callback-carrying edge.  */
   static cgraph_edge *set_call_stmt (cgraph_edge *e, gcall *new_stmt,
-				     bool update_speculative = true);
+				     bool update_derived_edges = true);
 
   /* Redirect callee of the edge to N.  The function does not update underlying
      call expression.  */
@@ -1768,6 +1770,32 @@ public:
    */
   cgraph_edge *make_speculative (cgraph_node *n2, profile_count direct_count,
 				 unsigned int speculative_id = 0);
+
+  /* Create a callback edge, representing an indirect call to n2
+     passed to a function by argument.  Sets has_callback flag of the original
+     edge. Both edges are attached to the same call statement.  Returns created
+     callback edge.  */
+  cgraph_edge *make_callback (cgraph_node *n2, unsigned int callback_hash);
+
+  /* Returns the callback-carrying edge of a callback edge or NULL, if such edge
+     cannot be found.  An edge is considered callback-carrying, if it has it's
+     has_callback flag set and shares it's call statement with the edge
+     this method is caled on.  */
+  cgraph_edge *get_callback_carrying_edge ();
+
+  /* Returns the first callback edge in the list of callees of the caller node.
+     Note that the edges might be in arbitrary order.  Must be called on a
+     callback or callback-carrying edge.  */
+  cgraph_edge *first_callback_edge ();
+
+  /* Given a callback edge, returns the next callback edge belonging to the same
+     callback-carrying edge.  Must be called on a callback edge, not the
+     callback-carrying edge.  */
+  cgraph_edge *next_callback_edge ();
+
+  /* When called on a callback-carrying edge, removes all of its attached
+     callback edges and sets has_callback to FALSE.  */
+  void purge_callback_edges ();
 
   /* Speculative call consists of an indirect edge and one or more
      direct edge+ref pairs.  Speculative will expand to the following sequence:
@@ -1990,6 +2018,23 @@ public:
      Optimizers may later redirect direct call to clone, so 1) and 3)
      do not need to necessarily agree with destination.  */
   unsigned int speculative : 1;
+  /* Edges with CALLBACK flag represent indirect calls to functions passed
+     to their callers by argument.  This is useful in cases, where the body
+     of these caller functions is not known, e. g. qsort in glibc or
+     GOMP_parallel in libgomp.  These edges are never made into real calls,
+     but are used instead to optimize these callback functions and later replace
+     their addresses with their optimized versions.  Edges with this flag set
+     share their call statement with their callback-carrying edge.  */
+  unsigned int callback : 1;
+  /* Edges with this flag set have one or more callback edges attached.  They
+     share their call statements with this edge.  This flag represents the fact
+     that the callee of this edge takes a function and it's parameters by
+     argument and calls it at a later time.  */
+  unsigned int has_callback : 1;
+  /* Used to pair callback edges and the attributes that originated them
+     together.  Currently the index of the callback argument, retrieved
+     from the attribute.  */
+  unsigned int callback_id : 16;
   /* Set to true when caller is a constructor or destructor of polymorphic
      type.  */
   unsigned in_polymorphic_cdtor : 1;

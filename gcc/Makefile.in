@@ -1853,6 +1853,7 @@ OBJS = \
 	web.o \
 	wide-int.o \
 	wide-int-print.o \
+	attr-callback.o \
 	$(out_object_file) \
 	$(ANALYZER_OBJS) \
 	$(EXTRA_OBJS) \

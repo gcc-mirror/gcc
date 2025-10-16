@@ -131,7 +131,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "dbgcnt.h"
 #include "symtab-clones.h"
 #include "gimple-range.h"
-
+#include "attr-callback.h"
 
 /* Allocation pools for values and their sources in ipa-cp.  */
 
@@ -6214,6 +6214,72 @@ identify_dead_nodes (struct cgraph_node *node)
     }
 }
 
+/* Removes all useless callback edges from the callgraph.  Useless callback
+   edges might mess up the callgraph, because they might be impossible to
+   redirect and so on, leading to crashes.  Their usefulness is evaluated
+   through callback_edge_useful_p.  */
+
+static void
+purge_useless_callback_edges ()
+{
+  if (dump_file)
+    fprintf (dump_file, "\nPurging useless callback edges:\n");
+
+  cgraph_edge *e;
+  cgraph_node *node;
+  FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
+    {
+      for (e = node->callees; e; e = e->next_callee)
+	{
+	  if (e->has_callback)
+	    {
+	      if (dump_file)
+		fprintf (dump_file, "\tExamining callbacks of edge %s -> %s:\n",
+			 e->caller->dump_name (), e->callee->dump_name ());
+	      if (!lookup_attribute (CALLBACK_ATTR_IDENT,
+				     DECL_ATTRIBUTES (e->callee->decl))
+		  && !callback_is_special_cased (e->callee->decl, e->call_stmt))
+		{
+		  if (dump_file)
+		    fprintf (
+		      dump_file,
+		      "\t\tPurging callbacks, because the callback-dispatching"
+		      "function no longer has any callback attributes.\n");
+		  e->purge_callback_edges ();
+		  continue;
+		}
+	      cgraph_edge *cbe, *next;
+	      for (cbe = e->first_callback_edge (); cbe; cbe = next)
+		{
+		  next = cbe->next_callback_edge ();
+		  if (!callback_edge_useful_p (cbe))
+		    {
+		      if (dump_file)
+			fprintf (dump_file,
+				 "\t\tCallback edge %s -> %s not deemed "
+				 "useful, removing.\n",
+				 cbe->caller->dump_name (),
+				 cbe->callee->dump_name ());
+		      cgraph_edge::remove (cbe);
+		    }
+		  else
+		    {
+		      if (dump_file)
+			fprintf (dump_file,
+				 "\t\tKept callback edge %s -> %s "
+				 "because it looks useful.\n",
+				 cbe->caller->dump_name (),
+				 cbe->callee->dump_name ());
+		    }
+		}
+	    }
+	}
+    }
+
+  if (dump_file)
+    fprintf (dump_file, "\n");
+}
+
 /* The decision stage.  Iterate over the topological order of call graph nodes
    TOPO and make specialized clones if deemed beneficial.  */
 
@@ -6244,6 +6310,11 @@ ipcp_decision_stage (class ipa_topo_info *topo)
       if (change)
 	identify_dead_nodes (node);
     }
+
+  /* Currently, the primary use of callback edges is constant propagation.
+     Constant propagation is now over, so we have to remove unused callback
+     edges.  */
+  purge_useless_callback_edges ();
 }
 
 /* Look up all VR and bits information that we have discovered and copy it

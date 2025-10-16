@@ -990,7 +990,10 @@ ipa_call_summary_t::duplicate (struct cgraph_edge *src,
   info->predicate = NULL;
   edge_set_predicate (dst, srcinfo->predicate);
   info->param = srcinfo->param.copy ();
-  if (!dst->indirect_unknown_callee && src->indirect_unknown_callee)
+  if (!dst->indirect_unknown_callee && src->indirect_unknown_callee
+      /* Don't subtract the size when dealing with callback pairs, since the
+	 edge has no real size.  */
+      && !src->has_callback && !dst->callback)
     {
       info->call_stmt_size -= (eni_size_weights.indirect_call_cost
 			       - eni_size_weights.call_cost);
@@ -3105,6 +3108,25 @@ analyze_function_body (struct cgraph_node *node, bool early)
 			= ipa_call_summaries->get_create (direct);
 		      ipa_call_summaries->duplicate (edge, direct,
 						     es, es3);
+		    }
+		}
+
+	      /* If dealing with a carrying edge, copy its summary over to its
+		 attached edges as well.  */
+	      if (edge->has_callback)
+		{
+		  cgraph_edge *cbe;
+		  for (cbe = edge->first_callback_edge (); cbe;
+		       cbe = cbe->next_callback_edge ())
+		    {
+		      ipa_call_summary *es2 = ipa_call_summaries->get (cbe);
+		      es2 = ipa_call_summaries->get_create (cbe);
+		      ipa_call_summaries->duplicate (edge, cbe, es, es2);
+		      /* Unlike speculative edges, callback edges have no real
+			 size or time; the call doesn't exist.  Reflect that in
+			 their summaries.  */
+		      es2->call_stmt_size = 0;
+		      es2->call_stmt_time = 0;
 		    }
 		}
 	    }

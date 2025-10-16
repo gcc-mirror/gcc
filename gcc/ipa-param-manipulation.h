@@ -229,7 +229,8 @@ public:
   /* Return if the first parameter is left intact.  */
   bool first_param_intact_p ();
   /* Build a function type corresponding to the modified call.  */
-  tree build_new_function_type (tree old_type, bool type_is_original_p);
+  tree build_new_function_type (tree old_type, bool type_is_original_p,
+				bool *args_modified = NULL);
   /* Build a declaration corresponding to the target of the modified call.  */
   tree adjust_decl (tree orig_decl);
   /* Fill a vector marking which parameters are intact by the described
