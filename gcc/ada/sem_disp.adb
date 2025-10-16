@@ -586,7 +586,6 @@ package body Sem_Disp is
       Actual                 : Node_Id;
       Formal                 : Entity_Id;
       Control                : Node_Id := Empty;
-      Func                   : Entity_Id;
       Subp_Entity            : constant Entity_Id := Entity (Name (N));
 
       Indeterm_Ctrl_Type : Entity_Id := Empty;
@@ -1095,55 +1094,6 @@ package body Sem_Disp is
 
                Next_Actual (Actual);
                Next_Formal (Formal);
-            end loop;
-
-            Check_Dispatching_Context (N);
-
-         elsif Nkind (N) /= N_Function_Call then
-
-            --  The call is not dispatching, so check that there aren't any
-            --  tag-indeterminate abstract calls left among its actuals.
-
-            Actual := First_Actual (N);
-            while Present (Actual) loop
-               if Is_Tag_Indeterminate (Actual) then
-
-                  --  Function call case
-
-                  if Nkind (Original_Node (Actual)) = N_Function_Call then
-                     Func := Entity (Name (Original_Node (Actual)));
-
-                  --  If the actual is an attribute then it can't be abstract
-                  --  (the only current case of a tag-indeterminate attribute
-                  --  is the stream Input attribute).
-
-                  elsif Nkind (Original_Node (Actual)) = N_Attribute_Reference
-                  then
-                     Func := Empty;
-
-                  --  Ditto if it is an explicit dereference
-
-                  elsif Nkind (Original_Node (Actual)) = N_Explicit_Dereference
-                  then
-                     Func := Empty;
-
-                  --  Only other possibility is a qualified expression whose
-                  --  constituent expression is itself a call.
-
-                  else
-                     Func :=
-                       Entity (Name (Original_Node
-                         (Expression (Original_Node (Actual)))));
-                  end if;
-
-                  if Present (Func) and then Is_Abstract_Subprogram (Func) then
-                     Error_Msg_N
-                       ("call to abstract function must be dispatching",
-                        Actual);
-                  end if;
-               end if;
-
-               Next_Actual (Actual);
             end loop;
 
             Check_Dispatching_Context (N);
