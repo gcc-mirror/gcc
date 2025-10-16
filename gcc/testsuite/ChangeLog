@@ -1,3 +1,8 @@
+2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-armv8p9.c: Fix pmsdsfr_el1
+	encoding.
+
 2025-10-14  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

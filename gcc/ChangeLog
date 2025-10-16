@@ -1,3 +1,13 @@
+2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Fix pmsdsfr_el1 encoding.
+
+2025-10-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h
+	(PTA_PANTHERLAKE): Remove PREFETCHI.
+	* doc/invoke.texi: Correct documentation.
+
 2025-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
