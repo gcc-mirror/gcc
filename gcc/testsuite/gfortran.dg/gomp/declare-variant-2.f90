@@ -195,7 +195,7 @@ contains
     !$omp declare variant (f1) match(implementation={atomic_default_mem_order("relaxed")})	! { dg-error "expected identifier at .1." }
   end subroutine
   subroutine f77 ()
-    !$omp declare variant (f1) match(user={condition(score(f76):.true.)})  ! { dg-error ".score. argument must be constant integer expression at .1." }
+    !$omp declare variant (f1) match(user={condition(score(f76):.true.)})  ! { dg-error "Unexpected use of subroutine name 'f76'" }
   end subroutine
   subroutine f78 ()
     !$omp declare variant (f1) match(user={condition(score(-130):.true.)}) ! { dg-error ".score. argument must be non-negative" }

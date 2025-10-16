@@ -21,7 +21,7 @@ void s1 (int a1, int a2, int a3)
 	      /* According to the grammar, this is intervening code; we
 		 don't know that we are also missing a nested for loop
 		 until we have parsed this whole compound expression.  */
-#pragma omp barrier	/* { dg-error "intervening code must not contain OpenMP directives" } */
+#pragma omp barrier	/* { dg-error "intervening code must not contain executable OpenMP directives" } */
 	      f1 (2, k);
 	      f2 (2, k);
 	    }
