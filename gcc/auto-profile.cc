@@ -260,6 +260,11 @@ public:
   /* For a given filename, returns the index.  */
   int get_filename_index (const char *name) const;
 
+  /* Get the original name and file name index for a node.  This will return the
+     name from the current TU if there are multiple symbols that map to
+     NAME.  */
+  std::pair<const char *, int> get_original_name (const char *name) const;
+
   /* Read profile, return TRUE on success.  */
   bool read ();
 
@@ -288,6 +293,9 @@ private:
   string_index_map symbol_name_map_;
   string_index_map filename_map_;
   string_index_map symbol_to_filename_map_;
+
+  string_string_map original_names_map_;
+  clashing_name_map clashing_names_map_;
 };
 
 /* Descriptor for a function_instance which can be used to disambiguate it from
@@ -682,7 +690,6 @@ static gcov_type afdo_count_scale = 1;
 
 /* Helper functions.  */
 
-
 /* Return the original name of NAME: strip the suffix that starts
    with '.' for names that are generated after auto-profile pass.
    This is to match profiled names with the names in the IR at this stage.
@@ -921,6 +928,9 @@ string_table::~string_table ()
     free (const_cast<char *> (symbol_names_[i]));
   for (unsigned i = 0; i < filenames_.length (); i++)
     free (const_cast<char *> (filenames_[i]));
+  for (auto it = original_names_map_.begin (); it != original_names_map_.end ();
+       it++)
+    free (it->second);
 }
 
 
@@ -1012,6 +1022,50 @@ string_table::get_filename_index (const char *name) const
 				      : iter->second;
 }
 
+/* Get the original name and file name index for a node.  This will return the
+   name from the current TU if there are multiple symbols that map to
+   NAME.  */
+
+std::pair<const char *, int>
+string_table::get_original_name (const char *name) const
+{
+  /* Check if the un-prefixed name differs from the actual name.  */
+  auto stripped = original_names_map_.find (name);
+
+  /* The original name for the symbol is its name, i.e. there are no
+     suffixes.  */
+  if (stripped == original_names_map_.end ())
+    return {name, get_filename_by_symbol (name)};
+
+  /* Figure out if a clash exists.  */
+  auto clash = clashing_names_map_.find (stripped->second);
+  gcc_checking_assert (clash != clashing_names_map_.end ());
+
+  /* Try to find a function from the current TU.  */
+  gcc_checking_assert (clash->second.length () >= 1);
+  if (symtab_node *n
+      = cgraph_node::get_for_asmname (get_identifier (stripped->second));
+      n && is_a<cgraph_node *> (n))
+    for (cgraph_node *cn = dyn_cast<cgraph_node *> (n); cn;)
+      {
+	/* Check if there is a symbol in the current TU that has the same name
+	   as in the GCOV.  */
+	for (auto name : clash->second)
+	  {
+	    int filename_idx = get_filename_by_symbol (name);
+	    if (cn->definition && cn->has_gimple_body_p ()
+		&& !strcmp (get_normalized_path (DECL_SOURCE_FILE (cn->decl)),
+			    get_filename (filename_idx)))
+	      return {stripped->second, filename_idx};
+	  }
+	cn = dyn_cast<cgraph_node *> (cn->next_sharing_asm_name);
+      }
+
+  /* No match found.  Just stick to the current symbol and return the stripped
+     name.  */
+  return {stripped->second, get_filename_by_symbol (name)};
+}
+
 /* Add new symbol name STRING (with an associated file name FILENAME_IDX) and
    return its index.  */
 
@@ -1070,6 +1124,25 @@ string_table::read ()
       symbol_name_map_[symbol_names_.last ()] = i;
       unsigned filename_idx = gcov_read_unsigned ();
       symbol_to_filename_map_[symbol_names_.last ()] = filename_idx;
+      char *original = const_cast<char *> (
+	autofdo::get_original_name (symbol_names_.last ()));
+      if (strcmp (original, symbol_names_.last ()))
+	{
+	  /* Take ownership of ORIGINAL.  */
+	  original_names_map_[symbol_names_.last ()] = original;
+	  clashing_names_map_[original].safe_push (i);
+	  /* It is possible that a public symbol with the stripped name exists.
+	     If it does exist, add it as well.  */
+	  auto publik = symbol_name_map_.find (original);
+	  if (publik != symbol_name_map_.end ()
+	      && clashing_names_map_.find (publik->first)
+		   == clashing_names_map_.end ())
+	    clashing_names_map_[publik->first].safe_push (publik->second);
+	}
+      else
+	/* There are no suffixes to remove.  */
+	free (original);
+
       if (gcov_is_error ())
 	return false;
     }
@@ -2175,10 +2248,11 @@ autofdo_source_profile::offline_external_functions ()
   for (size_t i = 1; i < afdo_string_table->num_entries (); i++)
     {
       const char *n1 = afdo_string_table->get_symbol_name (i);
-      char *n2 = get_original_name (n1);
+      std::pair<const char *, int> name_filename
+	= afdo_string_table->get_original_name (n1);
+      const char *n2 = name_filename.first;
       if (!strcmp (n1, n2))
 	{
-	  free (n2);
 	  /* Watch for duplicate entries.
 	     This seems to happen in practice and may be useful to distinguish
 	     multiple static symbols of the same name, but we do not realy
@@ -2200,7 +2274,7 @@ autofdo_source_profile::offline_external_functions ()
       int index = afdo_string_table->get_index (n2);
       if (index == -1)
 	index = afdo_string_table->add_symbol_name (xstrdup (n2),
-						    string_table::unknown_filename);
+						    name_filename.second);
       to_symbol_name.put (i, index);
     }
   last_name = afdo_string_table->num_entries ();
