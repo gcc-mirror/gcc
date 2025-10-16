@@ -4805,11 +4805,9 @@
   ""
   {
     enum rtx_code code = GET_CODE (operands[1]);
-    if (code == UNEQ || code == LTGT)
-      FAIL;
-
     rtx ccreg = XEXP (operands[1], 0);
     enum machine_mode ccmode = GET_MODE (ccreg);
+
     if (GET_MODE_CLASS (ccmode) == MODE_CC)
       gcc_assert (XEXP (operands[1], 1) == const0_rtx);
     else if (ccmode == QImode || ccmode == HImode)
@@ -4830,8 +4828,6 @@
   ""
   {
     enum rtx_code code = GET_CODE (operands[1]);
-    if (code == UNEQ || code == LTGT)
-      FAIL;
 
     rtx ccreg = XEXP (operands[1], 0);
     enum machine_mode ccmode = GET_MODE (ccreg);
@@ -4855,8 +4851,6 @@
   ""
   {
     enum rtx_code code = GET_CODE (operands[1]);
-    if (code == UNEQ || code == LTGT)
-      FAIL;
 
     rtx ccreg = XEXP (operands[1], 0);
     enum machine_mode ccmode = GET_MODE (ccreg);
