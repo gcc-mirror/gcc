@@ -2862,7 +2862,12 @@ min_vis_expr_r (tree *tp, int */*walk_subtrees*/, void *data)
 	  break;
 	}
     addressable:
-      if (! TREE_PUBLIC (t))
+      if (decl_linkage (t) == lk_none)
+	tpvis = type_visibility (TREE_TYPE (t));
+      /* Decls that have had their visibility constrained will report
+	 as external linkage, but we still want to transitively constrain
+	 if we refer to them, so just check TREE_PUBLIC instead.  */
+      else if (!TREE_PUBLIC (t))
 	tpvis = VISIBILITY_ANON;
       else
 	tpvis = DECL_VISIBILITY (t);
