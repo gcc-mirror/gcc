@@ -5060,14 +5060,17 @@ resolve_conditional (gfc_expr *expr)
 
   /* TODO: support more data types for conditional expressions  */
   if (true_expr->ts.type != BT_INTEGER && true_expr->ts.type != BT_LOGICAL
-      && true_expr->ts.type != BT_REAL && true_expr->ts.type != BT_COMPLEX)
+      && true_expr->ts.type != BT_REAL && true_expr->ts.type != BT_COMPLEX
+      && true_expr->ts.type != BT_CHARACTER)
     {
-      gfc_error ("Sorry, only integer, logical, real and complex types "
-		 "are currently supported for conditional expressions at %L",
-		 &expr->where);
+      gfc_error (
+	"Sorry, only integer, logical, real, complex and character types are "
+	"currently supported for conditional expressions at %L",
+	&expr->where);
       return false;
     }
 
+  /* TODO: support arrays in conditional expressions  */
   if (true_expr->rank > 0)
     {
       gfc_error ("Sorry, array is currently unsupported for conditional "

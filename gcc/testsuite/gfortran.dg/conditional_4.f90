@@ -10,12 +10,16 @@ program conditional_resolve
   integer, dimension(1, 1) :: a_2d
   logical :: l1(2)
   integer :: i1(2)
+  type :: Point
+    real :: x = 0.0
+  end type Point
+  type(Point) :: p1, p2
 
   i = (l1 ? 1 : -1) ! { dg-error "Condition in conditional expression must be a scalar logical" }
   i = (i ? 1 : -1) ! { dg-error "Condition in conditional expression must be a scalar logical" }
   i = (i /= 0 ? 1 : "oh no") ! { dg-error "must have the same declared type" }
   i = (i /= 0 ? k1 : k4) ! { dg-error "must have the same kind parameter" }
   i = (i /= 0 ? a_1d : a_2d) ! { dg-error "must have the same rank" }
-  k1 = (i /= 0 ? k1 : k1) ! { dg-error "Sorry, only integer, logical, real and complex types are currently supported for conditional expressions" }
+  p1 = (i /= 0 ? p1 : p2) ! { dg-error "Sorry, only integer, logical, real, complex and character types are currently supported for conditional expressions" }
   i1 = (i /= 0 ? i1 : i1 + 1) ! { dg-error "Sorry, array is currently unsupported for conditional expressions" }
 end program conditional_resolve

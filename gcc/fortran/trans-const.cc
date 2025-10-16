@@ -438,4 +438,12 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
      structure, too.  */
   if (expr->ts.type == BT_CHARACTER)
     se->string_length = TYPE_MAX_VALUE (TYPE_DOMAIN (TREE_TYPE (se->expr)));
+
+  if (se->want_pointer)
+    {
+      if (expr->ts.type == BT_CHARACTER)
+	gfc_conv_string_parameter (se);
+      else
+	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+    }
 }

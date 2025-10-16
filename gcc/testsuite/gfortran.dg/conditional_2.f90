@@ -4,6 +4,8 @@ program conditional_constant
   implicit none
   integer :: i = 42
 
+  print *, (.true. ? 1 : -1)
+  print *, (.false. ? "hello" : "world")
   i = (.true. ? 1 : -1)
   if (i /= 1) stop 1
 

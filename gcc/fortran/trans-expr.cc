@@ -4418,6 +4418,11 @@ gfc_conv_conditional_expr (gfc_se *se, gfc_expr *expr)
 
   se->expr = fold_build3_loc (input_location, COND_EXPR, type, condition,
 			      true_val, false_val);
+  if (expr->ts.type == BT_CHARACTER)
+    se->string_length
+      = fold_build3_loc (input_location, COND_EXPR, gfc_charlen_type_node,
+			 condition, true_se.string_length,
+			 false_se.string_length);
 }
 
 /* If a string's length is one, we convert it to a single character.  */
@@ -11544,6 +11549,29 @@ gfc_conv_string_parameter (gfc_se * se)
       type = TREE_TYPE (TREE_TYPE (se->expr));
       se->expr = gfc_build_addr_expr (build_pointer_type (type), se->expr);
       return;
+    }
+
+  if (TREE_CODE (se->expr) == COND_EXPR)
+    {
+      tree cond = TREE_OPERAND (se->expr, 0);
+      tree lhs = TREE_OPERAND (se->expr, 1);
+      tree rhs = TREE_OPERAND (se->expr, 2);
+
+      gfc_se lse, rse;
+      gfc_init_se (&lse, NULL);
+      gfc_init_se (&rse, NULL);
+
+      lse.expr = lhs;
+      lse.string_length = se->string_length;
+      gfc_conv_string_parameter (&lse);
+
+      rse.expr = rhs;
+      rse.string_length = se->string_length;
+      gfc_conv_string_parameter (&rse);
+
+      se->expr
+	= fold_build3_loc (input_location, COND_EXPR, TREE_TYPE (lse.expr),
+			   cond, lse.expr, rse.expr);
     }
 
   if ((TREE_CODE (TREE_TYPE (se->expr)) == ARRAY_TYPE
