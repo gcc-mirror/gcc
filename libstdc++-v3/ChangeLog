@@ -1,3 +1,33 @@
+2025-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/printers.py (StdStacktraceEntryPrinter):
+	New printer for std::stacktrace_entry.
+	(StdStacktracePrinter): New printer for std::basic_stacktrace.
+
+2025-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace (basic_stacktrace::current): Call
+	_M_trim before returning.
+	(basic_stacktrace::_M_trim): New member function.
+
+2025-10-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122293
+	* include/bits/chrono.h (__to_timeout_timespec): Fix
+	preprocessor condition to match the conditions under which
+	callers of this function are defined.
+	* include/bits/this_thread_sleep.h: Remove unused include.
+
+2025-10-15  Chris Johns  <chrisj@rtems.org>
+
+	* configure: Regenerate.
+	* configure.ac (newlib, *-rtems*): Add HAVE_SYS_IOCTL_H,
+	HAVE_SYS_STAT_H, HAVE_SYS_TYPES_H, HAVE_S_ISREG, HAVE_UNISTD_H,
+	HAVE_UNLINKAT, _GLIBCXX_USE_CHMOD, _GLIBCXX_USE_MKDIR,
+	_GLIBCXX_USE_CHDIR, _GLIBCXX_USE_GETCWD, _GLIBCXX_USE_UTIME,
+	_GLIBCXX_USE_LINK, _GLIBCXX_USE_READLINK, _GLIBCXX_USE_SYMLINK,
+	_GLIBCXX_USE_TRUNCATE and _GLIBCXX_USE_FDOPENDIR.
+
 2025-10-14  Mike Crowe  <mac@mcrowe.com>
 
 	PR libstdc++/116586

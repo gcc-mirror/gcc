@@ -1,3 +1,45 @@
+2025-10-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/121468
+	PR tree-optimization/121206
+	PR tree-optimization/122200
+	* gcc.dg/pr121468.c: New.
+	* gcc.dg/pr122200.c: New.
+
+2025-10-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118460
+	* gcc.target/arm/armv8_2-fp16-move-1.c: Adjust expected output.
+	* gcc.target/arm/armv8_2-fp16-move-2.c: Likewise.
+
+2025-10-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122037
+	* gcc.dg/tree-ssa/vla-1.c: New test.
+
+2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* gcc.target/aarch64/acle/rwsr-armv8p9.c: Fix incorrect encoding.
+
+2025-10-15  Sebastian Pop  <spop@nvidia.com>
+
+	* gcc.dg/autopar/runtime-auto.c: New test.
+
+2025-10-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122189
+	* gcc.target/arm/mve/intrinsics/vadcq-check-carry.c: New test.
+	* gcc.target/arm/mve/intrinsics/vadcq_m_s32.c: Adjust instructions
+	order.
+	* gcc.target/arm/mve/intrinsics/vadcq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_u32.c: Likewise.
+
+2025-10-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/122266
+	* gcc.target/i386/pr122266.c: New test case.
+
 2025-10-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/122192

@@ -1,3 +1,15 @@
+2025-10-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Context Selectors): Add note that there is
+	currently an exact match between ISA and compilation, ignoring
+	compatibilities in both ways.
+	* testsuite/libgomp.c/declare-variant-4.h: Add missing variant
+	functions for specific and generic AMD GPUs.
+	* testsuite/libgomp.c/declare-variant-4-gfx10-3-generic.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx11-generic.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx9-4-generic.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx9-generic.c: New test.
+
 2025-10-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	* plugin/plugin-gcn.c (is_integrated_apu): New; currently '#if 0'.

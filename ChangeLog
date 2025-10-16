@@ -1,3 +1,8 @@
+2025-10-15  Basil Milanich  <bmilanich@gmail.com>
+
+	* Makefile.tpl (distclean): Remove extraenous semicolon.
+	* Makefile.in: Rebuilt.
+
 2025-10-11  Ben Boeckel  <ben.boeckel@kitware.com>
 
 	* config-ml.in: Update patch email address.

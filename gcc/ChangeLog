@@ -1,3 +1,139 @@
+2025-10-15  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/121468
+	PR tree-optimization/121206
+	PR tree-optimization/122200
+	* value-range.cc (irange_bitmask::range_from_mask): New.
+	(irange::snap): Add explicit overflow flag.
+	(irange::snap_subranges): Use overflow flag.
+	(irange::set_range_from_bitmask): Use range_from_mask.
+	(test_irange_snap_bounds): Adjust for improved ranges.
+	* value-range.h (irange::range_from_mask): Add prototype.
+	(irange::snap): Adjust prototype.
+
+2025-10-15  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config/gcn/gcn-devices.def (gfx942, gfx950): Set generic name
+	to GFX9_4_GENERIC.
+	* config/gcn/t-omp-device: Include generic names for OpenMP's
+	ISA trait.
+
+2025-10-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* print-tree.cc (print_node): Print out clique/base
+	for MEM_REF and TARGET_MEM_REF.
+
+2025-10-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118460
+	* config/arm/arm.cc (arm_canonicalize_comparison): For floating-
+	point comparisons, swap the operand order if that will be more
+	likely to produce a comparison that can be used with VSEL.
+	(arm_validize_comparison): Make sure that HFmode comparisons
+	are compatible with VSEL.
+
+2025-10-15  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122037
+	* tree-ssa-dce.cc (eliminate_unnecessary_stmts): Remove
+	__builtin_stack_save when the lhs is unused.
+
+2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/aarch64-sys-regs.def: Copy from Binutils.
+	* config/aarch64/aarch64.cc (F_ARCHEXT): Delete flag.
+	* config/aarch64/aarch64.h
+	(AARCH64_FL_AMU): Delete unused macro.
+	(AARCH64_FL_SCXTNUM): Ditto.
+	(AARCH64_FL_ID_PFR2): Ditto.
+	(AARCH64_FL_AIE): Ditto.
+	(AARCH64_FL_DEBUGv8p9): Ditto.
+	(AARCH64_FL_FGT2): Ditto.
+	(AARCH64_FL_PFAR): Ditto.
+	(AARCH64_FL_PMUv3_ICNTR): Ditto.
+	(AARCH64_FL_PMUv3_SS): Ditto.
+	(AARCH64_FL_PMUv3p9): Ditto.
+	(AARCH64_FL_S1PIE): Ditto.
+	(AARCH64_FL_S1POE): Ditto.
+	(AARCH64_FL_S2PIE): Ditto.
+	(AARCH64_FL_S2POE): Ditto.
+	(AARCH64_FL_SCTLR2): Ditto.
+	(AARCH64_FL_SEBEP): Ditto.
+	(AARCH64_FL_SPE_FDS): Ditto.
+	(AARCH64_FL_TCR2): Ditto.
+
+2025-10-15  Sebastian Pop  <spop@nvidia.com>
+
+	* doc/invoke.texi (ftree-parallelize-loops): Update.
+	* common.opt (ftree-parallelize-loops): Add alias that maps to
+	special value INT_MAX for runtime thread detection.
+	* tree-parloops.cc (create_parallel_loop): Use INT_MAX for runtime
+	detection.  Call gimple_build_omp_parallel without building a
+	OMP_CLAUSE_NUM_THREADS clause.
+	(gen_parallel_loop): For auto-detection, use a conservative
+	estimate of 2 threads.
+	(parallelize_loops): Same.
+
+2025-10-15  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122189
+	* config/arm/iterators.md (VxCIQ_carry, VxCIQ_M_carry, VxCQ_carry)
+	(VxCQ_M_carry): New iterators.
+	* config/arm/mve.md (get_fpscr_nzcvqc, set_fpscr_nzcvqc): Use
+	unspec instead of unspec_volatile.
+	(vadciq, vadciq_m, vadcq, vadcq_m): Use vfpcc in operation.  Use a
+	different unspec code for carry calcultation.
+	* config/arm/unspecs.md (VADCQ_U_carry, VADCQ_M_U_carry)
+	(VADCQ_S_carry, VADCQ_M_S_carry, VSBCIQ_U_carry ,VSBCIQ_S_carry
+	,VSBCIQ_M_U_carry ,VSBCIQ_M_S_carry ,VSBCQ_U_carry ,VSBCQ_S_carry
+	,VSBCQ_M_U_carry ,VSBCQ_M_S_carry ,VADCIQ_U_carry
+	,VADCIQ_M_U_carry ,VADCIQ_S_carry ,VADCIQ_M_S_carry): New unspec
+	codes.
+
+2025-10-15  Roger Sayle  <roger@nextmovesoftware.com>
+
+	PR rtl-optimization/122266
+	* combine.cc (struct reg_stat_type): Change types of sign_bit_copies
+	and last_set_sign_bit_copies to unsigned short, to avoid overflows
+	on TImode (and wider) values.
+
+2025-10-15  Jan Hubicka  <hubicka@ucw.cz>
+
+	* auto-profile.cc (scale_bb_profile): Use
+	profile_count::max_prefer_initialized.
+	(afdo_adjust_guessed_profile): Likewise.
+	* bb-reorder.cc (edge_order): Do not use max.
+	* cfghooks.cc (merge_blocks): Likewise.
+	* ipa-fnsummary.cc (param_change_prob): Likewise.
+	* ipa-inline-transform.cc (inline_transform): Likewise.
+	* predict.cc (update_max_bb_count): Likewise.
+	(estimate_bb_frequencies): Likewise.
+	(rebuild_frequencies): Likewise.
+	* tree-ssa-loop-unswitch.cc (struct unswitch_predicate): Likewise.
+	* profile-count.h (profile_count::max): Rename to
+	(profile_count::max_prefer_initialized): this; update handling
+	of qualities.
+
+2025-10-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Wildcat Lake.
+	* common/config/i386/i386-common.cc (processor_name):
+	Add Wildcat Lake.
+	* doc/invoke.texi: Ditto.
+
+2025-10-15  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/i386.h
+	(PTA_PANTHERLAKE): Remove PREFETCHI.
+	(PTA_DIAMONDRAPIDS): Remove USER_MSR.
+	* doc/invoke.texi: Correct documentation.
+
+2025-10-15  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md: Take concrete op instead
+	of any_widen_binop for vwaddu/vwsubu wx combine.
+
 2025-10-14  Richard Biener  <rguenther@suse.de>
 
 	* tree-vectorizer.h (REDUC_GROUP_FIRST_ELEMENT,
