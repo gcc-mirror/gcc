@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 
-/* This test used to ICE after erroring on the metadirective in the
-   loop nest.  */
+/* This test case checks that the inner metadirective is accepted as intervening
+   code since it resolves to 'omp nothing'.  */
 
 int main()
 {
@@ -14,7 +14,7 @@ int main()
                             when(user={condition(1)}: target teams loop collapse(2) map(qq[:0]) private(i))
   for(k=0; k<blksize; k++)
     {
-#pragma omp metadirective when(user={condition(0)}: simd) default() // { dg-error "intervening code must not contain OpenMP directives" }
+#pragma omp metadirective when(user={condition(0)}: simd) default()
       for (i=0; i<nq; i++)
         qq[k*nq + i] = 0.0;
     }

@@ -52740,6 +52740,18 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
     }
   cp_parser_skip_to_pragma_eol (parser, pragma_tok);
 
+  /* If only one selector matches and it evaluates to 'omp nothing', no need to
+     proceed.  */
+  if (ctxs.length () == 1)
+    {
+      tree ctx = ctxs[0];
+      if (ctx == NULL_TREE
+	  || (omp_context_selector_matches (ctx, NULL_TREE, false) == 1
+	      && cp_parser_pragma_kind (&directive_tokens[0])
+		   == PRAGMA_OMP_NOTHING))
+	return;
+    }
+
   if (!default_seen)
     {
       /* Add a default clause that evaluates to 'omp nothing'.  */
@@ -53852,6 +53864,14 @@ cp_parser_omp_error (cp_parser *parser, cp_token *pragma_tok,
 			 "may only be used in compound statements");
 	  return true;
 	}
+      if (parser->omp_for_parse_state
+	  && parser->omp_for_parse_state->in_intervening_code)
+	{
+	  error_at (loc, "%<#pragma omp error%> with %<at(execution)%> clause "
+			 "may not be used in intervening code");
+	  parser->omp_for_parse_state->fail = true;
+	  return true;
+	}
       tree fndecl
 	= builtin_decl_explicit (severity_fatal ? BUILT_IN_GOMP_ERROR
 						: BUILT_IN_GOMP_WARNING);
@@ -54769,11 +54789,15 @@ cp_parser_pragma (cp_parser *parser, enum pragma_context context, bool *if_p)
   id = cp_parser_pragma_kind (pragma_tok);
   if (parser->omp_for_parse_state
       && parser->omp_for_parse_state->in_intervening_code
-      && id >= PRAGMA_OMP__START_
-      && id <= PRAGMA_OMP__LAST_)
+      && id >= PRAGMA_OMP__START_ && id <= PRAGMA_OMP__LAST_
+      /* Allow a safe subset of non-executable directives. See classification in
+	 array c_omp_directives.  */
+      && id != PRAGMA_OMP_METADIRECTIVE && id != PRAGMA_OMP_NOTHING
+      && id != PRAGMA_OMP_ASSUME && id != PRAGMA_OMP_ERROR)
     {
-      error_at (pragma_tok->location,
-		"intervening code must not contain OpenMP directives");
+      error_at (
+	pragma_tok->location,
+	"intervening code must not contain executable OpenMP directives");
       parser->omp_for_parse_state->fail = true;
       cp_parser_skip_to_pragma_eol (parser, pragma_tok);
       return false;

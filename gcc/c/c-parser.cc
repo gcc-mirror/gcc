@@ -15787,11 +15787,15 @@ c_parser_pragma (c_parser *parser, enum pragma_context context, bool *if_p,
   gcc_assert (id != PRAGMA_NONE);
   if (parser->omp_for_parse_state
       && parser->omp_for_parse_state->in_intervening_code
-      && id >= PRAGMA_OMP__START_
-      && id <= PRAGMA_OMP__LAST_)
+      && id >= PRAGMA_OMP__START_ && id <= PRAGMA_OMP__LAST_
+      /* Allow a safe subset of non-executable directives. See classification in
+	 array c_omp_directives.  */
+      && id != PRAGMA_OMP_METADIRECTIVE && id != PRAGMA_OMP_NOTHING
+      && id != PRAGMA_OMP_ASSUME && id != PRAGMA_OMP_ERROR)
     {
-      error_at (input_location,
-		"intervening code must not contain OpenMP directives");
+      error_at (
+	input_location,
+	"intervening code must not contain executable OpenMP directives");
       parser->omp_for_parse_state->fail = true;
       c_parser_skip_until_found (parser, CPP_PRAGMA_EOL, NULL);
       return false;
@@ -29334,6 +29338,14 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
 			 "may only be used in compound statements");
 	  return true;
 	}
+      if (parser->omp_for_parse_state
+	  && parser->omp_for_parse_state->in_intervening_code)
+	{
+	  error_at (loc, "%<#pragma omp error%> with %<at(execution)%> clause "
+			 "may not be used in intervening code");
+	  parser->omp_for_parse_state->fail = true;
+	  return true;
+	}
       tree fndecl
 	= builtin_decl_explicit (severity_fatal ? BUILT_IN_GOMP_ERROR
 						: BUILT_IN_GOMP_WARNING);
@@ -29864,6 +29876,17 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
     }
   c_parser_skip_to_pragma_eol (parser);
 
+  /* If only one selector matches and it evaluates to 'omp nothing', no need to
+     proceed.  */
+  if (ctxs.length () == 1)
+    {
+      tree ctx = ctxs[0];
+      if (ctx == NULL_TREE
+	  || (omp_context_selector_matches (ctx, NULL_TREE, false) == 1
+	      && directive_tokens[0].pragma_kind == PRAGMA_OMP_NOTHING))
+	return;
+    }
+
   if (!default_seen)
     {
       /* Add a default clause that evaluates to 'omp nothing'.  */
@@ -29944,7 +29967,7 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 	  if (standalone_body == NULL_TREE)
 	    {
 	      standalone_body = push_stmt_list ();
-	      c_parser_statement (parser, if_p);
+	      c_parser_statement (parser, if_p); // TODO skip this
 	      standalone_body = pop_stmt_list (standalone_body);
 	    }
 	  else

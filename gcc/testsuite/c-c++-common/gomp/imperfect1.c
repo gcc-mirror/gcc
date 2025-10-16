@@ -15,7 +15,7 @@ void s1 (int a1, int a2, int a3)
       f1 (0, i);
       for (j = 0; j < a2; j++)
 	{
-#pragma omp barrier	/* { dg-error "intervening code must not contain OpenMP directives" } */
+#pragma omp barrier	/* { dg-error "intervening code must not contain executable OpenMP directives" } */
 	  f1 (1, j);
 	  if (i == 2)
 	    continue;	/* { dg-error "invalid exit" } */

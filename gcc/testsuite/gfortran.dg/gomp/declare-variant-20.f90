@@ -44,6 +44,7 @@ contains
     !$omp  declare variant(variant5) match(target_device={device_num(-4)})  ! OK - omp_invalid_device (will never match)
     ! OK - but not handled -> PR middle-end/113904
     !$omp  declare variant(variant5) match(target_device={device_num(my_device)}) ! { dg-error "property must be a constant integer expression" }
+    ! { dg-error "Symbol 'my_device' at .1. has no IMPLICIT type" "" { target *-*-* } .-1 }
     !$omp  declare variant(variant5) match(target_device={device_num(-2)})  ! { dg-error "property must be a conforming device number" }
 
     res = 99
