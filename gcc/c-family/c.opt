@@ -1503,8 +1503,8 @@ C ObjC C++ ObjC++ Var(warn_sync_nand) Init(1) Warning
 Warn when __sync_fetch_and_nand and __sync_nand_and_fetch built-in functions are used.
 
 Wsynth
-C++ ObjC++ Var(warn_synth) Warning
-Deprecated.  This switch has no effect.
+C++ ObjC++ Warning Ignore
+Does nothing. Preserved for backward compatibility.
 
 Wsystem-headers
 C ObjC C++ ObjC++ Warning

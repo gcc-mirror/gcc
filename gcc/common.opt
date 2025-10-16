@@ -3345,8 +3345,8 @@ Common Var(flag_tree_ter) Optimization
 Replace temporary expressions in the SSA->normal pass.
 
 ftree-lrs
-Common Var(flag_tree_live_range_split) Optimization
-Perform live range splitting during the SSA->normal pass.
+Common Ignore
+Does nothing.  Preserved for backward compatibility.
 
 ftree-vrp
 Common Var(flag_tree_vrp) Init(0) Optimization
