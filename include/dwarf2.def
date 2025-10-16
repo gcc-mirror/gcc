@@ -175,6 +175,8 @@ DW_TAG (DW_TAG_GNU_formal_parameter_pack, 0x4108)
 DW_TAG (DW_TAG_GNU_call_site, 0x4109)
 DW_TAG (DW_TAG_GNU_call_site_parameter, 0x410a)
 
+/* GNU annotation extension used by btf_decl_tag and btf_type_tag.
+   See https://gcc.gnu.org/wiki/GNUAnnotationsDwarf .  */
 DW_TAG (DW_TAG_GNU_annotation, 0x6001)
 
 /* Extensions for UPC.  See: http://dwarfstd.org/doc/DWARF4.pdf.  */
@@ -459,6 +461,8 @@ DW_AT (DW_AT_GNU_pubtypes, 0x2135)
 DW_AT (DW_AT_GNU_discriminator, 0x2136)
 DW_AT (DW_AT_GNU_locviews, 0x2137)
 DW_AT (DW_AT_GNU_entry_view, 0x2138)
+/* GNU annotation extension used by btf_decl_tag and btf_type_tag.
+   See https://gcc.gnu.org/wiki/GNUAnnotationsDwarf .  */
 DW_AT (DW_AT_GNU_annotation, 0x2139)
 /* VMS extensions.  */
 DW_AT (DW_AT_VMS_rtnbeg_pd_address, 0x2201)
