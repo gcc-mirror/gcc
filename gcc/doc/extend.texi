@@ -4828,7 +4828,16 @@ Calls to @code{foo} are mapped to calls to @code{foo@{20040821@}}.
 @node LoongArch Function Attributes
 @subsubsection LoongArch Function Attributes
 
-These function attributes are supported by the LoongArch end:
+The following attributes are supported by LoongArch end:
+
+@table @code
+
+@cindex @code{target (option,...)} loongarch function attribute target
+@item target (option,...)
+
+The following target-specific function attributes are available for the
+LoongArch target.  These options mirror the behavior of similar
+command-line options (@pxref{LoongArch Options}), but on a per-function basis.
 
 @table @code
 @cindex @code{strict-align} function attribute, LoongArch
@@ -4941,6 +4950,158 @@ compiling the function.  The behavior is same as for the command-line option
 @code{ld-seq-sa} indicates that whether need load-load barries (dbar 0x700)
 @option{-mld-seq-sa} and @option{-mno-ld-seq-sa}.
 
+@end table
+
+Multiple target function attributes can be specified by separating them with
+a comma.  For example:
+
+@smallexample
+__attribute__((target("arch=la64v1.1,lasx")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+is valid and compiles function @code{foo} for LA64V1.1 with @code{lasx}.
+
+@subsubheading Inlining rules
+Specifying target attributes on individual functions or performing link-time
+optimization across translation units compiled with different target options
+can affect function inlining rules:
+
+In particular, a caller function can inline a callee function only if the
+architectural features available to the callee are a subset of the features
+available to the caller.
+
+Note that when the callee function does not have the always_inline attribute,
+it will not be inlined if the code model of the caller function is different
+from the code model of the callee function.
+
+@cindex @code{target_clones (string,...)} loongarch function attribute target_clones
+@item target_clones (string,...)
+
+Like attribute @code{target}, these options also reflect the behavior of
+similar command line options.
+
+Note that this attribute requires GLIBC2.38 and newer that support HWCAP.
+
+@code{string} can take the following values:
+
+@itemize @bullet
+@item default
+@item strict-align
+@item arch=
+@item lsx
+@item lasx
+@item frecipe
+@item div32
+@item lam-bh
+@item lamcas
+@item scq
+@item ld-seq-sa
+@end itemize
+You can set the priority of attributes in target_clones (except @code{default}).
+For example:
+
+@smallexample
+__attribute__((target_clones ("default","arch=la64v1.1","lsx;priority=1")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+The priority is from low to high:
+@itemize @bullet
+@item default
+@item arch=loongarch64
+@item strict-align
+@item frecipe = div32 = lam-bh = lamcas = scq = ld-seq-sa
+@item lsx
+@item arch=la64v1.0
+@item arch=la64v1.1
+@item lasx
+@end itemize
+
+Note that the option values on the gcc command line are not considered when
+calculating the priority.
+
+If a priority is set for a feature in target_clones, then the priority of this
+feature will be higher than @code{lasx}.
+
+For example:
+
+@smallexample
+__attribute__((target_clones ("default","arch=la64v1.1","lsx;priority=1")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+In this test case, the priority of @code{lsx} is higher than that of
+@code{arch=la64v1.1}.
+
+If the same priority is explicitly set for two features, the priority is still
+calculated according to the priority list above.
+
+For example:
+
+@smallexample
+__attribute__((target_clones ("default","arch=la64v1.1;priority=1","lsx;priority=1")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+In this test case, the priority of @code{arch=la64v1.1;priority=1} is higher
+than that of @code{lsx;priority=1}.
+
+@cindex @code{target_version (string)} loongarch function attribute target_versions
+@item target_version (string)
+Support attributes and priorities are the same as @code{target_clones}.
+Note that this attribute requires GLIBC2.38 and newer that support HWCAP.
+
+For example:
+
+@code{test1.C}
+@smallexample
+__attribute__((target_clones ("default","arch=la64v1.1","lsx;priority=1")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+
+@code{test2.C}
+@smallexample
+__attribute__((target_version ("default")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+__attribute__((target_version ("arch=la64v1.1")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+__attribute__((target_version ("lsx;priority=1")))
+int
+foo (int a)
+@{
+  return a + 5;
+@}
+@end smallexample
+The implementations of @code{test1.C} and @code{test2.C} are equivalent.
 @end table
 
 @node M32C Function Attributes
