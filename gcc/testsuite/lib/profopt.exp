@@ -452,7 +452,7 @@ proc profopt-execute { src } {
 	    # convert profile
 	    if { $run_autofdo == 1 } {
                 set bprefix "afdo."
-		set cmd "create_gcov --binary $execname1 --profile=$tmpdir/$base.perf.data -gcov_version=2 --gcov=$tmpdir/$bprefix$base.$ext"
+		set cmd "create_gcov --binary $execname1 --profile=$tmpdir/$base.perf.data --gcov_version=3 --gcov=$tmpdir/$bprefix$base.$ext"
 		verbose "Running $cmd"
 		set id [remote_spawn "" $cmd]
 		if { $id < 0 } {

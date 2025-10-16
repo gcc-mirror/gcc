@@ -201,7 +201,7 @@ create_fdas_for_cc1plus: ../stage1-gcc/cc1plus$(exeext) ../prev-gcc/$(PERF_DATA)
 	  echo $$perf_path; \
 	  if [ -f $$perf_path ]; then \
 	    profile_name=cc1plus_$$component_in_prev.fda; \
-	    $(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2 || exit 1; \
+	    $(CREATE_GCOV) -binary ../stage1-gcc/cc1plus$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 3 || exit 1; \
 	  fi; \
 	done;
 
@@ -211,7 +211,7 @@ create_fdas_for_cc1plus: ../stage1-gcc/cc1plus$(exeext) ../prev-gcc/$(PERF_DATA)
 	  echo $$perf_path; \
 	  if [ -f $$perf_path ]; then \
 	    profile_name=cc1plus_$$component_in_prev_target.fda; \
-	    $(CREATE_GCOV) -binary ../prev-gcc/cc1plus$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 2 || exit 1; \
+	    $(CREATE_GCOV) -binary ../prev-gcc/cc1plus$(exeext) -gcov $$profile_name -profile $$perf_path -gcov_version 3 || exit 1; \
 	  fi; \
 	done;
 
