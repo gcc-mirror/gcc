@@ -1,3 +1,8 @@
+2025-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc
+	(report_diag_with_graphs): Port from set_attr to set_property.
+
 2025-10-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/121468

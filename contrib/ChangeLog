@@ -1,3 +1,7 @@
+2025-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.doxy (INPUT): Add gcc/custom-sarif-properties
+
 2025-10-08  Jakub Jelinek  <jakub@redhat.com>
 
 	* unicode/README: Add HangulSyllableType.txt file to the

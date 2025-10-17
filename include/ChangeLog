@@ -1,3 +1,9 @@
+2025-10-16  David Faust  <david.faust@oracle.com>
+
+	* dwarf2.def (DW_TAG_GNU_annotation): Add link to wiki page
+	documenting the extension.
+	(DW_AT_GNU_annotation): Likewise.
+
 2025-10-10  Tobias Burnus  <tburnus@baylibre.com>
 
 	* hsa_ext_amd.h (enum hsa_amd_agent_info_s): Add

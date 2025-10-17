@@ -1,3 +1,13 @@
+2025-10-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/stacktrace
+	(operator<<(ostream&, const stacktrace_entry&)): Improve output
+	when description() or source_file() returns an empty string,
+	or the stacktrace_entry is invalid. Append frame address to
+	output.
+	(operator<<(ostream&, const basic_stacktrace<A>&)): Use the
+	size_type of the correct specialization.
+
 2025-10-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* python/libstdcxx/v6/printers.py (StdStacktraceEntryPrinter):

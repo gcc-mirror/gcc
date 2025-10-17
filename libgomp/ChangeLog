@@ -1,3 +1,36 @@
+2025-10-16  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.c/declare-variant-4-gfx10-3-generic.c: Add
+	dg-excess-errors to handle possible missing libgomp multi lib.
+	* testsuite/libgomp.c/declare-variant-4-gfx1030.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1036.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx11-generic.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1100.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1103.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx9-4-generic.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx9-generic.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx900.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx906.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx908.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90a.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx90c.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx942.c: Likewise.
+	* testsuite/libgomp.c/declare-variant-4-gfx1031.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1032.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1033.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1034.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1035.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1101.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1102.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1150.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1151.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1152.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx1153.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx902.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx904.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx909.c: New test.
+	* testsuite/libgomp.c/declare-variant-4-gfx950.c: New test.
+
 2025-10-15  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (OpenMP Context Selectors): Add note that there is

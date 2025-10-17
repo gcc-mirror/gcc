@@ -1,3 +1,115 @@
+2025-10-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* Makefile.in (OBJS-libcommon): Add
+	custom-sarif-properties/digraphs.o and
+	custom-sarif-properties/state-graphs.o.  Remove
+	diagnostics/state-graphs.o.
+	* configure: Regenerate.
+	* configure.ac: Add custom-sarif-properties to subdir iteration.
+	* custom-sarif-properties/digraphs.cc: New file.
+	* custom-sarif-properties/digraphs.h: New file.
+	* custom-sarif-properties/state-graphs.cc: New file.
+	* custom-sarif-properties/state-graphs.h: New file.
+	* diagnostics/diagnostics-selftests.cc
+	(run_diagnostics_selftests): Drop call of state_graphs_cc_tests.
+	* diagnostics/diagnostics-selftests.h (state_graphs_cc_tests):
+	Delete decl.
+	* diagnostics/digraphs.cc: Include
+	"custom-sarif-properties/digraphs.h".  Move include of
+	"selftest.h" to within CHECKING_P section.
+	(using digraph_object): New.
+	(namespace properties): New.
+	(diagnostics::digraphs::object::get_attr): Delete.
+	(diagnostics::digraphs::object::set_attr): Delete.
+	(diagnostics::digraphs::object::set_json_attr): Delete.
+	(digraph_object::get_property): New definitions, for various
+	property types.
+	(digraph_object::set_property): Likewise.
+	(digraph_object::maybe_get_property): New.
+	(digraph_object::get_property_as_tristate): New.
+	(digraph_object::ensure_property_bag): New.
+	(digraph::get_graph_kind): New.
+	(digraph::set_graph_kind): New.
+	Add include of "custom-sarif-properties/state-graphs.h".
+	(selftest::test_simple_graph): Rewrite to use json::property
+	instances rather than string attribute names.
+	(selftest::test_property_objects): New test.
+	(selftest::digraphs_cc_tests): Call it.
+	* diagnostics/digraphs.h: Include "tristate.h".
+	(object::get_attr): Delete.
+	(object::set_attr): Delete.
+	(object::get_property): New decls.
+	(object::set_property): New decls.
+	(object::maybe_get_property): New.
+	(object::get_property_as_tristate): New.
+	(object::set_json_attr): Delete.
+	(object::ensure_property_bag): New.
+	(graph::get_graph_kind): New.
+	(graph::set_graph_kind): New.
+	* diagnostics/html-sink.cc
+	(html_generation_options::html_generation_options): Update for
+	field renamings.
+	(html_generation_options::dump): Likewise.
+	(html_builder::maybe_make_state_diagram): Likewise.
+	(html_builder::add_graph): Show SARIF and .dot src inline, if
+	requested.
+	* diagnostics/html-sink.h
+	(html_generation_options::m_show_state_diagrams_sarif): Rename
+	to...
+	(html_generation_options::m_show_graph_sarif): ...this.
+	(html_generation_options::m_show_state_diagrams_dot_src): Rename
+	to...
+	(html_generation_options::m_show_graph_dot_src0): ...this.
+	* diagnostics/output-spec.cc
+	(html_scheme_handler::maybe_handle_kv): Rename keys.
+	(html_scheme_handler::get_keys): Likewise.
+	* diagnostics/state-graphs-to-dot.cc: : Reimplement throughout to
+	use json::property instances found within custom_sarif_properties
+	throughout, rather than types in diagnostics::state_graphs.
+	* diagnostics/state-graphs.cc: Deleted file.
+	* diagnostics/state-graphs.h: Delete almost all, except decl of
+	diagnostics::state_graphs::make_dot_graph.
+	* doc/invoke.texi: Update for changes to "experimental-html" sink
+	keys.
+	* json.cc (json::object::set_string): New.
+	(json::object::set_integer): New.
+	(json::object::set_bool): New.
+	(json::object::set_array_of_string): New.
+	* json.h: Include "label-text.h".
+	(struct json::property): New template.
+	(json::string_property): New.
+	(json::integer_property): New.
+	(json::bool_property): New.
+	(json::json_property): New.
+	(using json::array_of_string_property): New.
+	(struct json::enum_traits): New.
+	(enum_json::property): New.
+	(json::value::dyn_cast_array): New vfunc.
+	(json::value::dyn_cast_integer_number): New vfunc.
+	(json::value::set_string): New.
+	(json::value::set_integer): New.
+	(json::value::set_bool): New.
+	(json::value::set_array_of_string): New.
+	(json::value::maybe_get_enum): New.
+	(json::value::set_enum): New.
+	(json::array::dyn_cast_array): New.
+	(json::integer_number::dyn_cast_integer_number): New.
+	(object::maybe_get_enum): New.
+	(object::set_enum): New.
+
+2025-10-16  Ayappan Perumal  <ayappap2@in.ibm.com>
+
+	* config/rs6000/aix.h (SUBTARGET_DRIVER_SELF_SPECS):
+	Error out when stack-protector option is used in AIX
+	as it is not supported on AIX
+	Approved By: Segher Boessenkool <segher@kernel.crashing.org>
+
+2025-10-16  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122292
+	* tree-vect-loop.cc (vect_transform_reduction): Compute the
+	input vector type the same way the analysis phase does.
+
 2025-10-15  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/121468
