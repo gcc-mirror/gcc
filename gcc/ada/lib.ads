@@ -901,7 +901,7 @@ private
    function Unit_Name_Hash (Id : Unit_Name_Type) return Unit_Name_Header_Num;
    --  Simple hash function for Unit_Name_Types
 
-   package Unit_Names is new GNAT.Htable.Simple_HTable
+   package Unit_Names is new GNAT.HTable.Simple_HTable
      (Header_Num => Unit_Name_Header_Num,
       Element    => Unit_Number_Type,
       No_Element => No_Unit,

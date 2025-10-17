@@ -31148,7 +31148,7 @@ package body Sem_Util is
          ----------------------
 
          package Interval_Sorting is
-           new Gnat.Heap_Sort_G (Move_Interval, Lt_Interval);
+           new GNAT.Heap_Sort_G (Move_Interval, Lt_Interval);
 
          -------------
          -- Is_Null --

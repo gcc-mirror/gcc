@@ -119,7 +119,7 @@ package body Repinfo is
    function Entity_Hash (Id : Entity_Id) return Entity_Header_Num;
    --  Simple hash function for Entity_Ids
 
-   package Relevant_Entities is new GNAT.Htable.Simple_HTable
+   package Relevant_Entities is new GNAT.HTable.Simple_HTable
      (Header_Num => Entity_Header_Num,
       Element    => Boolean,
       No_Element => False,

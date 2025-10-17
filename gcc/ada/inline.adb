@@ -151,7 +151,7 @@ package body Inline is
    function Node_Hash (Id : Node_Id) return Node_Header_Num;
    --  Simple hash function for Node_Ids
 
-   package To_Pending_Instantiations is new GNAT.Htable.Simple_HTable
+   package To_Pending_Instantiations is new GNAT.HTable.Simple_HTable
      (Header_Num => Node_Header_Num,
       Element    => Int,
       No_Element => -1,

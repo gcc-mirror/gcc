@@ -4990,14 +4990,6 @@ package body Sem_Ch12 is
 
       Preanalyze_Actuals (N, Act_Decl_Id);
 
-      --  Turn off style checking in instances. If the check is enabled on the
-      --  generic unit, a warning in an instance would just be noise. If not
-      --  enabled on the generic, then a warning in an instance is just wrong.
-      --  This must be done after analyzing the actuals, which do come from
-      --  source and are subject to style checking.
-
-      Style_Check := False;
-
       Init_Env;
       Env_Installed := True;
 
@@ -5015,6 +5007,14 @@ package body Sem_Ch12 is
       if not Is_Abbrev then
          Check_Generic_Child_Unit (Gen_Id, Parent_Installed);
       end if;
+
+      --  Turn off style checking in instances. If the check is enabled on the
+      --  generic unit, a warning in an instance would just be noise. If not
+      --  enabled on the generic, then a warning in an instance is just wrong.
+      --  This must be done after analyzing the actuals and possibly installing
+      --  the parent, which come from source and are subject to style checking.
+
+      Style_Check := False;
 
       Gen_Unit := Entity (Gen_Id);
 

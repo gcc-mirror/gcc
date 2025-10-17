@@ -206,7 +206,7 @@ package body Sem_Ch7 is
    function Node_Hash (Id : Entity_Id) return Entity_Header_Num;
    --  Simple hash function for Entity_Ids
 
-   package Subprogram_Table is new GNAT.Htable.Simple_HTable
+   package Subprogram_Table is new GNAT.HTable.Simple_HTable
      (Header_Num => Entity_Header_Num,
       Element    => Boolean,
       No_Element => False,
@@ -216,7 +216,7 @@ package body Sem_Ch7 is
    --  Hash table to record which subprograms are referenced. It is declared
    --  at library level to avoid elaborating it for every call to Analyze.
 
-   package Traversed_Table is new GNAT.Htable.Simple_HTable
+   package Traversed_Table is new GNAT.HTable.Simple_HTable
      (Header_Num => Entity_Header_Num,
       Element    => Boolean,
       No_Element => False,
