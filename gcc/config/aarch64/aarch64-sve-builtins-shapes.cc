@@ -21,7 +21,10 @@
 #include "system.h"
 #include "coretypes.h"
 #include "tm.h"
+#include "basic-block.h"
 #include "tree.h"
+#include "function.h"
+#include "gimple.h"
 #include "rtl.h"
 #include "tm_p.h"
 #include "memmodel.h"
@@ -68,23 +71,36 @@ za_group_is_pure_overload (const function_group_info &group)
    types in ARGUMENT_TYPES.  RETURN_TYPE is the type returned by the
    function.  */
 static void
-apply_predication (const function_instance &instance, tree return_type,
+apply_predication (function_instance &instance, tree return_type,
 		   vec<tree> &argument_types)
 {
+  /* Initially mark the function as not being predicated.  */
+  instance.gp_index = -1;
+
   /* There are currently no SME ZA instructions that have both merging and
      unpredicated forms, so for simplicity, the predicates are always included
      in the original format string.  */
   if (instance.pred != PRED_none && instance.pred != PRED_za_m)
     {
       argument_types.quick_insert (0, instance.gp_type ());
+      instance.gp_index = 0;
       /* For unary merge operations, the first argument is a vector with
 	 the same type as the result.  For unary_convert_narrowt it also
 	 provides the "bottom" half of active elements, and is present
 	 for all types of predication.  */
       auto nargs = argument_types.length () - 1;
       if (instance.shape->has_merge_argument_p (instance, nargs))
-	argument_types.quick_insert (0, return_type);
+	{
+	  argument_types.quick_insert (0, return_type);
+	  instance.gp_index = 1;
+	}
     }
+
+  /* In this case the predicate type we added above is a non-governing
+     predicate operand (and there is no GP), so update the gp_index value
+     accordingly.  */
+  if (!instance.shape->has_gp_argument_p (instance))
+    instance.gp_index = -1;
 }
 
 /* Parse and move past an element type in FORMAT and return it as a type
@@ -3331,6 +3347,14 @@ struct pmov_to_vector_lane_def : public overloaded_base<0>
        ??? This should probably be folded into function_checker::m_base_arg,
        but it doesn't currently have the necessary information.  */
     return c.require_immediate_range (1, 1, bytes - 1);
+  }
+
+  /* This function has a predicate argument, and is a merging instruction, but
+     the predicate is not a GP.  */
+  bool
+  has_gp_argument_p (const function_instance &) const override
+  {
+    return false;
   }
 };
 SHAPE (pmov_to_vector_lane)

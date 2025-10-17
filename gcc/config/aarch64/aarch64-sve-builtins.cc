@@ -3632,24 +3632,22 @@ gimple_folder::redirect_pred_x ()
 gimple *
 gimple_folder::fold_pfalse ()
 {
-  if (pred == PRED_none)
+  tree gp = gp_value (call);
+  /* If there isn't a GP then we can't do any folding as the instruction isn't
+     predicated.  */
+  if (!gp)
     return nullptr;
-  tree arg0 = gimple_call_arg (call, 0);
+
   if (pred == PRED_m)
     {
-      /* Unary function shapes with _m predication are folded to the
-	 inactive vector (arg0), while other function shapes are folded
-	 to op1 (arg1).  */
-      tree arg1 = gimple_call_arg (call, 1);
-      if (is_pfalse (arg1))
-	return fold_call_to (arg0);
-      if (is_pfalse (arg0))
-	return fold_call_to (arg1);
+      tree val = inactive_values (call);
+      if (is_pfalse (gp))
+	return fold_call_to (val);
       return nullptr;
     }
-  if ((pred == PRED_x || pred == PRED_z) && is_pfalse (arg0))
+  if ((pred == PRED_x || pred == PRED_z) && is_pfalse (gp))
     return fold_call_to (build_zero_cst (TREE_TYPE (lhs)));
-  if (pred == PRED_implicit && is_pfalse (arg0))
+  if (pred == PRED_implicit && is_pfalse (gp))
     {
       unsigned int flags = call_properties ();
       /* Folding to lhs = {0, ...} is not appropriate for intrinsics with
