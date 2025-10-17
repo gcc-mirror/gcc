@@ -3001,7 +3001,7 @@ vect_recog_over_widening_pattern (vec_info *vinfo,
   tree_code code = gimple_assign_rhs_code (last_stmt);
 
   /* Punt for reductions where we don't handle the type conversions.  */
-  if (STMT_VINFO_DEF_TYPE (last_stmt_info) == vect_reduction_def)
+  if (vect_is_reduction (last_stmt_info))
     return NULL;
 
   /* Keep the first operand of a COND_EXPR as-is: only the other two
@@ -7517,14 +7517,17 @@ vect_mark_pattern_stmts (vec_info *vinfo,
 		    break;
 		  }
 	      /* Try harder to find a mid-entry into an earlier pattern
-		 sequence.  This means that the initial 'lookfor' was
+		 sequence.  Likewise an entry to a stmt skipping a conversion
+		 on an input.  This means that the initial 'lookfor' was
 		 bogus.  */
 	      if (!found)
 		{
 		  for (unsigned i = 0; i < op.num_ops; ++i)
 		    if (TREE_CODE (op.ops[i]) == SSA_NAME)
 		      if (auto def = vinfo->lookup_def (op.ops[i]))
-			if (vect_is_reduction (def))
+			if (vect_is_reduction (def)
+			    || (is_a <gphi *> (def->stmt)
+				&& STMT_VINFO_REDUC_DEF (def) != NULL))
 			  {
 			    STMT_VINFO_REDUC_IDX (vinfo->lookup_stmt (s)) = i;
 			    lookfor = gimple_get_lhs (s);
