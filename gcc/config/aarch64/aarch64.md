@@ -4816,25 +4816,6 @@
   }
 )
 
-(define_expand "mov<GPF:mode><GPI:mode>cc"
-  [(set (match_operand:GPI 0 "register_operand")
-	(if_then_else:GPI (match_operand 1 "aarch64_comparison_operator_cc")
-			  (match_operand:GPF 2 "register_operand")
-			  (match_operand:GPF 3 "register_operand")))]
-  ""
-  {
-    enum rtx_code code = GET_CODE (operands[1]);
-
-    rtx ccreg = XEXP (operands[1], 0);
-    enum machine_mode ccmode = GET_MODE (ccreg);
-    if (GET_MODE_CLASS (ccmode) != MODE_CC)
-      {
-	ccreg = aarch64_gen_compare_reg (code, ccreg, XEXP (operands[1], 1));
-	operands[1] = gen_rtx_fmt_ee (code, VOIDmode, ccreg, const0_rtx);
-      }
-  }
-)
-
 (define_expand "<neg_not_op><mode>cc"
   [(set (match_operand:GPI 0 "register_operand")
 	(if_then_else:GPI (match_operand 1 "aarch64_comparison_operator_cc")
