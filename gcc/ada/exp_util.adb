@@ -7317,6 +7317,35 @@ package body Exp_Util is
       Loc : constant Source_Ptr := Sloc (Var);
       Ent : constant Entity_Id  := Entity (Var);
 
+      function Is_Transient_Action (N : Node_Id) return Boolean;
+      --  Returns True for nodes that belong to a transient action and so they
+      --  have no parent, because they have not been inserted to the tree yet.
+
+      -------------------------
+      -- Is_Transient_Action --
+      -------------------------
+
+      function Is_Transient_Action (N : Node_Id) return Boolean is
+      begin
+         if Scope_Stack.Last >= Scope_Stack.First
+           and then Scope_Is_Transient
+           and then Is_List_Member (N)
+         then
+            declare
+               Transient_Actions : Scope_Actions renames
+                 Scope_Stack.Table (Scope_Stack.Last).Actions_To_Be_Wrapped;
+            begin
+               for Action_Kind in Scope_Actions'Range loop
+                  if List_Containing (N) = Transient_Actions (Action_Kind) then
+                     return True;
+                  end if;
+               end loop;
+            end;
+         end if;
+
+         return False;
+      end Is_Transient_Action;
+
       procedure Process_Current_Value_Condition (N : Node_Id; S : Boolean);
       --  N is an expression which holds either True (S = True) or False (S =
       --  False) in the condition. This procedure digs out the expression and
@@ -7490,157 +7519,134 @@ package body Exp_Util is
       declare
          CV   : constant Node_Id := Current_Value (Ent);
          Sens : Boolean;
-         Stm  : Node_Id;
 
       begin
          --  If statement. Condition is known true in THEN section, known False
          --  in any ELSIF or ELSE part, and unknown outside the IF statement.
 
-         if Nkind (CV) = N_If_Statement then
+         if Nkind (CV) in N_If_Statement | N_Elsif_Part then
 
-            --  Before start of IF statement
-
-            if Loc < Sloc (CV) then
-               return;
-
-            --  In condition of IF statement
-
-            elsif In_Subtree (N => Var, Root => Condition (CV)) then
-               return;
-
-            --  After end of IF statement
-
-            elsif Loc >= Sloc (CV) + Text_Ptr (UI_To_Int (End_Span (CV))) then
-               return;
-            end if;
-
-            --  At this stage we know that we are within the IF statement, but
-            --  unfortunately, the tree does not record the SLOC of the ELSE so
-            --  we cannot use a simple SLOC comparison to distinguish between
-            --  the then/else statements, so we have to climb the tree.
+            --  At this stage we know that we are within the conditional
+            --  statement, but we have to climb the tree to know in which part,
+            --  e.g. in THEN or ELSE statements of an IF statement.
 
             declare
-               N : Node_Id;
+               If_Stmt : constant Node_Id :=
+                 (if Nkind (CV) = N_If_Statement
+                  then CV
+                  else Parent (CV));
+
+               Prev : Node_Id := Var;
+               Curr : Node_Id := Parent (Var);
 
             begin
-               N := Parent (Var);
-               while Parent (N) /= CV loop
-                  N := Parent (N);
+               --  An ELSIF part whose condition is false could have been
+               --  already rewritten into NULL statement and we are already
+               --  past the statements inside that ELSIF part.
 
-                  --  If we fall off the top of the tree, then that's odd, but
-                  --  perhaps it could occur in some error situation, and the
-                  --  safest response is simply to assume that the outcome of
-                  --  the condition is unknown. No point in bombing during an
-                  --  attempt to optimize things.
-
-                  if No (N) then
-                     return;
-                  end if;
-               end loop;
-
-               --  Now we have N pointing to a node whose parent is the IF
-               --  statement in question, so now we can tell if we are within
-               --  the THEN statements.
-
-               if Is_List_Member (N)
-                 and then List_Containing (N) = Then_Statements (CV)
-               then
-                  Sens := True;
-
-               --  If the variable reference does not come from source, we
-               --  cannot reliably tell whether it appears in the else part.
-               --  In particular, if it appears in generated code for a node
-               --  that requires finalization, it may be attached to a list
-               --  that has not been yet inserted into the code. For now,
-               --  treat it as unknown.
-
-               elsif not Comes_From_Source (N) then
+               if Nkind (If_Stmt) /= N_If_Statement then
+                  pragma Assert
+                    (Nkind (If_Stmt) = N_Null
+                     and then Nkind (CV) = N_Elsif_Part
+                     and then Is_Rewrite_Substitution (If_Stmt));
                   return;
-
-               --  Otherwise we must be in ELSIF or ELSE part
-
-               else
-                  Sens := False;
                end if;
-            end;
 
-            --  ELSIF part. Condition is known true within the referenced
-            --  ELSIF, known False in any subsequent ELSIF or ELSE part,
-            --  and unknown before the ELSE part or after the IF statement.
-
-         elsif Nkind (CV) = N_Elsif_Part then
-
-            --  if the Elsif_Part had condition_actions, the elsif has been
-            --  rewritten as a nested if, and the original elsif_part is
-            --  detached from the tree, so there is no way to obtain useful
-            --  information on the current value of the variable.
-            --  Can this be improved ???
-
-            if No (Parent (CV)) then
-               return;
-            end if;
-
-            Stm := Parent (CV);
-
-            --  If the tree has been otherwise rewritten there is nothing
-            --  else to be done either.
-
-            if Nkind (Stm) /= N_If_Statement then
-               return;
-            end if;
-
-            --  Before start of ELSIF part
-
-            if Loc < Sloc (CV) then
-               return;
-
-            --  In condition of ELSIF part
-
-            elsif In_Subtree (N => Var, Root => Condition (CV)) then
-               return;
-
-            --  After end of IF statement
-
-            elsif Loc >= Sloc (Stm) +
-              Text_Ptr (UI_To_Int (End_Span (Stm)))
-            then
-               return;
-            end if;
-
-            --  Again we lack the SLOC of the ELSE, so we need to climb the
-            --  tree to see if we are within the ELSIF part in question.
-
-            declare
-               N : Node_Id;
-
-            begin
-               N := Parent (Var);
-               while Parent (N) /= Stm loop
-                  N := Parent (N);
-
+               loop
                   --  If we fall off the top of the tree, then that's odd, but
                   --  perhaps it could occur in some error situation, and the
                   --  safest response is simply to assume that the outcome of
                   --  the condition is unknown. No point in bombing during an
                   --  attempt to optimize things.
 
-                  if No (N) then
+                  if No (Curr) then
+
+                     --  In particular, we expect to miss the enclosing IF
+                     --  statement for:
+                     --  * references within a freezing action (whose location
+                     --    is unrelated to the IF statement),
+                     --  * validity checks (which are inserted before the IF
+                     --    statement even for references within the IF
+                     --    condition),
+                     --  * source locations before and after the IF statement
+
+                     pragma Assert
+                       (Inside_Freezing_Actions > 0
+                        or else
+                        (Ekind (Entity (Var)) = E_Variable
+                         and then Present (Validated_Object (Entity (Var))))
+                        or else
+                        Loc < Sloc (If_Stmt)
+                        or else
+                        Loc >=
+                        Sloc (If_Stmt)
+                        + Text_Ptr (UI_To_Int (End_Span (If_Stmt)))
+                        or else
+                        Serious_Errors_Detected > 0);
                      return;
+
+                  --  For itype declarations follow their associated node
+
+                  elsif Nkind (Curr) = N_Subtype_Declaration
+                    and then Is_Itype (Defining_Identifier (Curr))
+                  then
+                     Prev := Curr;
+                     Curr :=
+                       Associated_Node_For_Itype (Defining_Identifier (Prev));
+
+                     --  If associated node has not been set yet, we can use
+                     --  the related expression, which is set earlier.
+                     --  ??? this should be investigated
+
+                     if No (Curr) then
+                        Curr :=
+                          Related_Expression (Defining_Identifier (Prev));
+                     end if;
+                     pragma Assert (Present (Curr));
+
+                  --  Same for itypes that have no declaration
+
+                  elsif Nkind (Curr) = N_Defining_Identifier
+                     and then Is_Itype (Curr)
+                  then
+                     pragma Assert (No (Parent (Curr)));
+                     Prev := Curr;
+                     Curr := Associated_Node_For_Itype (Prev);
+
+                  --  For transient actions follow where they will be inserted
+
+                  elsif Is_Transient_Action (Curr) then
+                     Prev := Curr;
+                     Curr :=
+                       Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped;
+
+                  --  Finally, check whether the reference is in the IF, THEN
+                  --  or ELSE/ELSIF part.
+
+                  elsif Curr = If_Stmt then
+                     --  Ignore references from within the IF condition itself
+
+                     if Prev = Condition (If_Stmt) then
+                        return;
+
+                     else
+                        pragma Assert
+                          (List_Containing (Prev)
+                             in Then_Statements (If_Stmt)
+                              | Elsif_Parts (If_Stmt)
+                              | Else_Statements (If_Stmt));
+
+                        Sens :=
+                          (if CV = If_Stmt
+                           then List_Containing (Prev) = Then_Statements (CV)
+                           else Prev = CV);
+                        exit;
+                     end if;
+                  else
+                     Prev := Curr;
+                     Curr := Parent (Curr);
                   end if;
                end loop;
-
-               --  Now we have N pointing to a node whose parent is the IF
-               --  statement in question, so see if is the ELSIF part we want.
-               --  the THEN statements.
-
-               if N = CV then
-                  Sens := True;
-
-                  --  Otherwise we must be in subsequent ELSIF or ELSE part
-
-               else
-                  Sens := False;
-               end if;
             end;
 
          --  Iteration scheme of while loop. The condition is known to be
