@@ -459,6 +459,21 @@
   return aarch64_get_condition_code (op) >= 0;
 })
 
+(define_predicate "aarch64_comparison_operator_cc"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+	       ordered,unlt,unle,unge,ungt")
+{
+  rtx ccreg = XEXP (op, 0);
+  enum machine_mode ccmode = GET_MODE (ccreg);
+
+   if (GET_MODE_CLASS (ccmode) == MODE_CC)
+    gcc_assert (XEXP (op, 1) == const0_rtx);
+  else if (ccmode == QImode || ccmode == HImode)
+    return false;
+
+  return true;
+})
+
 (define_special_predicate "aarch64_equality_operator"
   (match_code "eq,ne"))
 
