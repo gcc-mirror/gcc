@@ -335,7 +335,7 @@ Common Var(flag_analyzer_verbose_state_changes) Init(0)
 Emit more verbose descriptions of state changes in diagnostics.
 
 fanalyzer-verbosity=
-Common Joined UInteger Var(analyzer_verbosity) Init(2)
+Common RejectNegative Joined UInteger Var(analyzer_verbosity) Init(2)
 Control which events are displayed in diagnostic paths.
 
 fdump-analyzer

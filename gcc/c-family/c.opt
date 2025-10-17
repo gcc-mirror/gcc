@@ -267,15 +267,15 @@ C ObjC C++ ObjC++ Joined Separate MissingArgError(missing makefile target after 
 -MT <target>	Add a target that does not require quoting.
 
 fdeps-format=
-C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing format after %qs)
+C ObjC C++ ObjC++ RejectNegative Joined MissingArgError(missing format after %qs)
 Structured format for output dependency information.  Supported (\"p1689r5\").
 
 fdeps-file=
-C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing output path after %qs)
+C ObjC C++ ObjC++ RejectNegative Joined MissingArgError(missing output path after %qs)
 File for output dependency information.
 
 fdeps-target=
-C ObjC C++ ObjC++ NoDriverArg Joined MissingArgError(missing path after %qs)
+C ObjC C++ ObjC++ RejectNegative Joined MissingArgError(missing path after %qs)
 -fdeps-target=obj.o Output file for the compile step.
 
 P
@@ -351,12 +351,12 @@ C ObjC C++ ObjC++ Var(warn_alloc_size) Warning LangEnabledBy(C ObjC C++ ObjC++, 
 Warn when allocating insufficient storage for the target type of the assigned pointer.
 
 Walloc-size-larger-than=
-C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Joined Host_Wide_Int ByteSize Warning Init(HOST_WIDE_INT_MAX)
+C ObjC C++ LTO ObjC++ Var(warn_alloc_size_limit) Joined RejectNegative Host_Wide_Int ByteSize Warning Init(HOST_WIDE_INT_MAX)
 -Walloc-size-larger-than=<bytes>	Warn for calls to allocation functions that
 attempt to allocate objects larger than the specified number of bytes.
 
 Wno-alloc-size-larger-than
-C ObjC C++ LTO ObjC++ Alias(Walloc-size-larger-than=,18446744073709551615EiB,none) Warning
+C ObjC C++ LTO ObjC++ RejectNegative Alias(Walloc-size-larger-than=,18446744073709551615EiB,none) Warning
 Disable Walloc-size-larger-than= warning.  Equivalent to Walloc-size-larger-than=<SIZE_MAX> or larger.
 
 Walloc-zero
@@ -364,13 +364,13 @@ C ObjC C++ ObjC++ Var(warn_alloc_zero) Warning
 Warn for calls to allocation functions that specify zero bytes.
 
 Walloca-larger-than=
-C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined Host_Wide_Int ByteSize Init(HOST_WIDE_INT_MAX)
+C ObjC C++ LTO ObjC++ Var(warn_alloca_limit) Warning Joined RejectNegative Host_Wide_Int ByteSize Init(HOST_WIDE_INT_MAX)
 -Walloca-larger-than=<number>	Warn on unbounded uses of
 alloca, and on bounded uses of alloca whose bound can be larger than
 <number> bytes.
 
 Wno-alloca-larger-than
-C ObjC C++ LTO ObjC++ Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
+C ObjC C++ LTO ObjC++ RejectNegative Alias(Walloca-larger-than=,18446744073709551615EiB,none) Warning
 Disable Walloca-larger-than= warning.  Equivalent to Walloca-larger-than=<SIZE_MAX> or larger.
 
 Warith-conversion
@@ -1211,7 +1211,7 @@ C++ ObjC++ Warning Alias(Woverloaded-virtual=,2,0)
 Warn about overloaded virtual function names.
 
 Woverloaded-virtual=
-C++ ObjC++ Joined UInteger IntegerRange(0,2) Var(warn_overloaded_virtual) Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
+C++ ObjC++ Joined RejectNegative UInteger IntegerRange(0,2) Var(warn_overloaded_virtual) Warning LangEnabledBy(C++ ObjC++,Wall,1,0)
 Warn about overloaded virtual function names.
 
 Woverride-init
@@ -1651,13 +1651,13 @@ C ObjC C++ ObjC++ Var(warn_vla) Init(-1) Warning
 Warn if a variable length array is used.
 
 Wvla-larger-than=
-C ObjC C++ LTO ObjC++ Var(warn_vla_limit) Warning Joined Host_Wide_Int ByteSize Init(HOST_WIDE_INT_MAX)
+C ObjC C++ LTO ObjC++ Var(warn_vla_limit) Warning Joined RejectNegative Host_Wide_Int ByteSize Init(HOST_WIDE_INT_MAX)
 -Wvla-larger-than=<number>	Warn on unbounded uses of variable-length
 arrays, and on bounded uses of variable-length arrays whose bound can be
 larger than <number> bytes.
 
 Wno-vla-larger-than
-C ObjC C++ LTO ObjC++ Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
+C ObjC C++ LTO ObjC++ RejectNegative Alias(Wvla-larger-than=,18446744073709551615EiB,none) Warning
 Disable Wvla-larger-than= warning.  Equivalent to Wvla-larger-than=<SIZE_MAX> or larger.
 
 Wvla-parameter
@@ -2263,7 +2263,7 @@ C ObjC C++ ObjC++ LTO Var(flag_openacc)
 Enable OpenACC.
 
 fopenacc-dim=
-C ObjC C++ ObjC++ LTO Joined Var(flag_openacc_dims)
+C ObjC C++ ObjC++ LTO Joined RejectNegative Var(flag_openacc_dims)
 Specify default OpenACC compute dimensions.
 
 fopenmp
@@ -2494,15 +2494,15 @@ ObjC ObjC++ Driver Var(flag_gen_declaration) RejectNegative
 Dump declarations to a .decl file.
 
 femit-struct-debug-baseonly
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++  RejectNegative
 -femit-struct-debug-baseonly	Aggressive reduced debug info for structs.
 
 femit-struct-debug-reduced
-C ObjC C++ ObjC++
+C ObjC C++ ObjC++ RejectNegative
 -femit-struct-debug-reduced	Conservative reduced debug info for structs.
 
 femit-struct-debug-detailed=
-C ObjC C++ ObjC++ Joined
+C ObjC C++ ObjC++ Joined RejectNegative
 -femit-struct-debug-detailed=<spec-list>	Detailed reduced debug info for structs.
 
 fext-numeric-literals

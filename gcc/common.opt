@@ -426,16 +426,16 @@ Driver Alias(v)
 ;; as -fhelp; the following four entries are for compatibility with
 ;; any direct uses of those (undocumented) -f forms
 fhelp
-Common Driver Alias(-help)
+Common Driver RejectNegative Alias(-help)
 
 fhelp=
-Common Driver Joined Alias(-help=)
+Common Driver RejectNegative Joined Alias(-help=)
 
 ftarget-help
-Common Driver Alias(-target-help)
+Common Driver RejectNegative Alias(-target-help)
 
 fversion
-Common Driver Alias(-version)
+Common Driver RejectNegative Alias(-version)
 
 -sysroot
 Driver Separate Alias(-sysroot=)
@@ -628,7 +628,7 @@ Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_frame_large
 -Wframe-larger-than=<byte-size>	Warn if a function's stack frame requires in excess of <byte-size>.
 
 Wno-frame-larger-than
-Common Alias(Wframe-larger-than=,18446744073709551615EiB,none) Warning
+Common RejectNegative Alias(Wframe-larger-than=,18446744073709551615EiB,none) Warning
 Disable -Wframe-larger-than= warning.  Equivalent to -Wframe-larger-than=<SIZE_MAX> or larger.
 
 Wfree-nonheap-object
@@ -670,7 +670,7 @@ Common RejectNegative Joined Host_Wide_Int ByteSize Warning Var(warn_larger_than
 -Wlarger-than=<byte-size>	Warn if an object's size exceeds <byte-size>.
 
 Wno-larger-than
-Common Alias(Wlarger-than=,18446744073709551615EiB,none) Warning
+Common RejectNegative Alias(Wlarger-than=,18446744073709551615EiB,none) Warning
 Disable -Wlarger-than= warning.  Equivalent to -Wlarger-than=<SIZE_MAX> or larger.
 
 Wnonnull-compare
@@ -755,7 +755,7 @@ Common Joined RejectNegative Host_Wide_Int ByteSize Var(warn_stack_usage) Warnin
 -Wstack-usage=<byte-size>	Warn if stack usage might exceed <byte-size>.
 
 Wno-stack-usage
-Common Alias(Wstack-usage=,18446744073709551615EiB,none) Warning
+Common RejectNegative Alias(Wstack-usage=,18446744073709551615EiB,none) Warning
 Disable Wstack-usage= warning.  Equivalent to Wstack-usage=<SIZE_MAX> or larger.
 
 Wstrict-aliasing
@@ -1618,7 +1618,7 @@ EnumValue
 Enum(diagnostic_text_art_charset) String(emoji) Value(DIAGNOSTICS_TEXT_ART_CHARSET_EMOJI)
 
 fdiagnostics-minimum-margin-width=
-Common Joined UInteger Var(diagnostics_minimum_margin_width) Init(6)
+Common Joined RejectNegative UInteger Var(diagnostics_minimum_margin_width) Init(6)
 Set minimum width of left margin of source code when showing source.
 
 fdiagnostics-show-nesting
@@ -2311,7 +2311,7 @@ Common RejectNegative Joined Var(flag_lto)
 Link-time optimization with number of parallel jobs or jobserver.
 
 flto-incremental=
-Common Joined Var(flag_lto_incremental)
+Common Joined RejectNegative Var(flag_lto_incremental)
 Enable incremental LTO, with its cache in given directory.
 
 flto-incremental-cache-size=
@@ -2443,10 +2443,10 @@ Common Var(flag_non_call_exceptions) Optimization
 Support synchronous non-call exceptions.
 
 foffload=
-Driver Joined MissingArgError(targets missing after %qs)
+Driver Joined RejectNegative MissingArgError(targets missing after %qs)
 
 foffload-options=
-Common Driver Joined MissingArgError(options or targets=options missing after %qs)
+Common Driver Joined RejectNegative MissingArgError(options or targets=options missing after %qs)
 -foffload-options=<targets>=<options>	Specify options for the offloading targets.
 
 foffload-abi=
@@ -2463,7 +2463,7 @@ EnumValue
 Enum(offload_abi) String(lp64) Value(OFFLOAD_ABI_LP64)
 
 foffload-abi-host-opts=
-Common Joined MissingArgError(option missing after %qs)
+Common Joined RejectNegative MissingArgError(option missing after %qs)
 -foffload-abi-host-opts=<options>	Specify host ABI options.
 
 fomit-frame-pointer
@@ -2716,7 +2716,7 @@ Common Var(flag_profile_reorder_functions) Optimization
 Enable function reordering that improves code placement.
 
 fpatchable-function-entry=
-Common Var(flag_patchable_function_entry) Joined Optimization
+Common Var(flag_patchable_function_entry) Joined RejectNegative Optimization
 Insert NOP instructions at each function entry.
 
 frandom-seed
@@ -3723,15 +3723,15 @@ RejectNegative Joined Undocumented
 ; Catch the gno- prefix, so it doesn't backtrack to g<level>.
 
 gno-pubnames
-Common Driver Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
+Common Driver RejectNegative Negative(gpubnames) Var(debug_generate_pub_sections, 0) Init(-1)
 Don't generate DWARF pubnames and pubtypes sections.
 
 gpubnames
-Common Driver Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
+Common Driver RejectNegative Negative(ggnu-pubnames) Var(debug_generate_pub_sections, 1)
 Generate DWARF pubnames and pubtypes sections.
 
 ggnu-pubnames
-Common Driver Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
+Common Driver RejectNegative Negative(gno-pubnames) Var(debug_generate_pub_sections, 2)
 Generate DWARF pubnames and pubtypes sections with GNU extensions.
 
 grecord-gcc-switches
