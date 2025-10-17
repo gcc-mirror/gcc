@@ -3380,15 +3380,6 @@ package body Inline is
       --  be performed in a separate pass, using an instantiation of the
       --  previous subprogram over aspect specifications reachable from N.
 
-      function Process_Sloc (Nod : Node_Id) return Traverse_Result;
-      --  If the call being expanded is that of an internal subprogram, set the
-      --  sloc of the generated block to that of the call itself, so that the
-      --  expansion is skipped by the "next" command in gdb. Same processing
-      --  for a subprogram in a predefined file, e.g. Ada.Tags. If
-      --  Debug_Generated_Code is true, suppress this change to simplify our
-      --  own development. Same in GNATprove mode, to ensure that warnings and
-      --  diagnostics point to the proper location.
-
       procedure Reset_Dispatching_Calls (N : Node_Id);
       --  In subtree N search for occurrences of dispatching calls that use the
       --  Ada 2005 Object.Operation notation and the object is a formal of the
@@ -3646,22 +3637,6 @@ package body Inline is
 
       procedure Replace_Formals_In_Aspects is
         new Traverse_Proc (Process_Formals_In_Aspects);
-
-      ------------------
-      -- Process_Sloc --
-      ------------------
-
-      function Process_Sloc (Nod : Node_Id) return Traverse_Result is
-      begin
-         if not Debug_Generated_Code then
-            Set_Sloc (Nod, Sloc (N));
-            Set_Comes_From_Source (Nod, False);
-         end if;
-
-         return OK;
-      end Process_Sloc;
-
-      procedure Reset_Slocs is new Traverse_Proc (Process_Sloc);
 
       ------------------------------
       --  Reset_Dispatching_Calls --
@@ -4175,13 +4150,6 @@ package body Inline is
       Replace_Formals (Blk);
       Replace_Formals_In_Aspects (Blk);
       Set_Parent (Blk, N);
-
-      if GNATprove_Mode then
-         null;
-
-      elsif not Comes_From_Source (Subp) or else Is_Predef then
-         Reset_Slocs (Blk);
-      end if;
 
       if Is_Unc_Decl then
 
