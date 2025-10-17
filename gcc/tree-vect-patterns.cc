@@ -4838,6 +4838,281 @@ vect_recog_sat_trunc_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
   return NULL;
 }
 
+
+/* Function add_code_for_floorceilround_divmod
+   A helper function to add compensation code for implementing FLOOR_MOD_EXPR,
+   FLOOR_DIV_EXPR, CEIL_MOD_EXPR, CEIL_DIV_EXPR, ROUND_MOD_EXPR and
+   ROUND_DIV_EXPR
+   The quotient and remainder are needed for implemented these operators.
+   FLOOR cases
+   r = x %[fl] y; r = x/[fl] y;
+   is
+   r = x % y; if (r && (x ^ y) < 0) r += y;
+   r = x % y; d = x/y; if (r && (x ^ y) < 0) d--; Respectively
+   Produce following sequence
+   v0 = x^y
+   v1 = -r
+   v2 = r | -r
+   v3 = v0 & v2
+   v4 = v3 < 0
+   if (floor_mod)
+     v5 = v4 ? y : 0
+     v6 = r + v5
+   if (floor_div)
+     v5 = v4 ? 1 : 0
+     v6 = d - 1
+   Similar sequences of vector instructions are produces for following cases
+   CEIL cases
+   r = x %[cl] y; r = x/[cl] y;
+   is
+   r = x % y; if (r && (x ^ y) >= 0) r -= y;
+   r = x % y; if (r) r -= y; (unsigned)
+   r = x % y; d = x/y; if (r && (x ^ y) >= 0) d++;
+   r = x % y; d = x/y; if (r) d++; (unsigned)
+   ROUND cases
+   r = x %[rd] y; r = x/[rd] y;
+   is
+   r = x % y; if (r > ((y-1)/2)) if ((x ^ y) >= 0) r -= y; else r += y;
+   r = x % y; if (r > ((y-1)/2)) r -= y; (unsigned)
+   r = x % y; d = x/y; if (r > ((y-1)/2)) if ((x ^ y) >= 0) d++; else d--;
+   r = x % y; d = x/y; if (r > ((y-1)/2)) d++; (unsigned)
+   Inputs:
+     VECTYPE: Vector type of the operands
+     STMT_VINFO: Statement where pattern begins
+     RHS_CODE: Should either be FLOOR_MOD_EXPR or FLOOR_DIV_EXPR
+     Q: The quotient of division
+     R: Remainder of division
+     OPRDN0/OPRND1: Actual operands involved
+     ITYPE: tree type of oprnd0
+   Output:
+     NULL if vectorization not possible
+     Gimple statement based on rhs_code
+*/
+static gimple *
+add_code_for_floorceilround_divmod (tree vectype, vec_info *vinfo,
+				    stmt_vec_info stmt_vinfo,
+				    enum tree_code rhs_code, tree q, tree r,
+				    tree oprnd0, tree oprnd1, tree itype)
+{
+  gimple *def_stmt;
+  tree mask_vectype = truth_type_for (vectype);
+  if (!mask_vectype)
+    return NULL;
+  tree bool_cond;
+  bool unsigned_p = TYPE_UNSIGNED (itype);
+
+  switch (rhs_code)
+    {
+    case FLOOR_MOD_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_MOD_EXPR:
+    case CEIL_DIV_EXPR:
+      {
+	if (!target_has_vecop_for_code (NEGATE_EXPR, vectype)
+	    || !target_has_vecop_for_code (BIT_XOR_EXPR, vectype)
+	    || !target_has_vecop_for_code (BIT_IOR_EXPR, vectype)
+	    || !target_has_vecop_for_code (PLUS_EXPR, vectype)
+	    || !target_has_vecop_for_code (MINUS_EXPR, vectype)
+	    || !expand_vec_cmp_expr_p (vectype, mask_vectype, LT_EXPR)
+	    || !expand_vec_cond_expr_p (vectype, mask_vectype))
+	  return NULL;
+	if (unsigned_p)
+	  {
+	    gcc_assert (rhs_code == CEIL_MOD_EXPR || rhs_code == CEIL_DIV_EXPR);
+
+	    if (!expand_vec_cmp_expr_p (vectype, mask_vectype, GT_EXPR))
+	      return NULL;
+	    bool is_mod = rhs_code == CEIL_MOD_EXPR;
+	    // r > 0
+	    bool_cond = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+	    def_stmt = gimple_build_assign (bool_cond, GT_EXPR, r,
+					    build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, mask_vectype,
+				    itype);
+
+	    // (r > 0) ? y : 0 (mod)
+	    // (r > 0) ? 1 : 0 (ceil)
+	    tree extr_cond = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt
+	      = gimple_build_assign (extr_cond, COND_EXPR, bool_cond,
+				     is_mod ? oprnd1 : build_int_cst (itype, 1),
+				     build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // r -= (r > 0) ? y : 0 (mod)
+	    // d += (x^y < 0 && r) ? -1 : 0 (ceil)
+	    tree result = vect_recog_temp_ssa_var (itype, NULL);
+	    return gimple_build_assign (result, is_mod ? MINUS_EXPR : PLUS_EXPR,
+					is_mod ? r : q, extr_cond);
+	  }
+	else
+	  {
+	    bool ceil_p
+	      = (rhs_code == CEIL_MOD_EXPR || rhs_code == CEIL_DIV_EXPR);
+	    if (ceil_p && !target_has_vecop_for_code (BIT_NOT_EXPR, vectype))
+	      return NULL;
+	    // x ^ y
+	    tree xort = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (xort, BIT_XOR_EXPR, oprnd0, oprnd1);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    tree cond_reg = xort;
+	    // ~(x ^ y) (ceil)
+	    if (ceil_p)
+	      {
+		cond_reg = vect_recog_temp_ssa_var (itype, NULL);
+		def_stmt = gimple_build_assign (cond_reg, BIT_NOT_EXPR, xort);
+		append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+	      }
+
+	    // -r
+	    tree negate_r = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (negate_r, NEGATE_EXPR, r);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // r | -r , sign bit is set if r!=0
+	    tree r_or_negr = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt
+	      = gimple_build_assign (r_or_negr, BIT_IOR_EXPR, r, negate_r);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // (x ^ y) & (r | -r)
+	    // ~(x ^ y) & (r | -r) (ceil)
+	    tree r_or_negr_and_xor = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (r_or_negr_and_xor, BIT_AND_EXPR,
+					    r_or_negr, cond_reg);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // (x ^ y) & (r | -r) < 0 which is equivalent to (x^y < 0 && r!=0)
+	    bool_cond = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+	    def_stmt
+	      = gimple_build_assign (bool_cond, LT_EXPR, r_or_negr_and_xor,
+				     build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, mask_vectype,
+				    itype);
+
+	    // (x^y < 0 && r) ? y : 0 (mod)
+	    // (x^y < 0 && r) ? -1 : 0 (div)
+	    bool is_mod
+	      = (rhs_code == FLOOR_MOD_EXPR || rhs_code == CEIL_MOD_EXPR);
+	    tree extr_cond = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (extr_cond, COND_EXPR, bool_cond,
+					    is_mod ? oprnd1
+						   : build_int_cst (itype, -1),
+					    build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // r += (x ^ y < 0 && r) ? y : 0 (floor mod)
+	    // d += (x^y < 0 && r) ? -1 : 0 (floor div)
+	    // r -= (x ^ y < 0 && r) ? y : 0 (ceil mod)
+	    // d -= (x^y < 0 && r) ? -1 : 0 (ceil div)
+	    tree result = vect_recog_temp_ssa_var (itype, NULL);
+	    return gimple_build_assign (result,
+					(rhs_code == FLOOR_MOD_EXPR
+					 || rhs_code == FLOOR_DIV_EXPR)
+					  ? PLUS_EXPR
+					  : MINUS_EXPR,
+					is_mod ? r : q, extr_cond);
+	  }
+      }
+    case ROUND_MOD_EXPR:
+    case ROUND_DIV_EXPR:
+      {
+	if (!target_has_vecop_for_code (BIT_AND_EXPR, vectype)
+	    || !target_has_vecop_for_code (PLUS_EXPR, vectype)
+	    || !expand_vec_cmp_expr_p (vectype, mask_vectype, LT_EXPR)
+	    || !expand_vec_cmp_expr_p (vectype, mask_vectype, GT_EXPR)
+	    || !expand_vec_cond_expr_p (vectype, mask_vectype))
+	  return NULL;
+
+	bool is_mod = rhs_code == ROUND_MOD_EXPR;
+	HOST_WIDE_INT d = TREE_INT_CST_LOW (oprnd1);
+	unsigned HOST_WIDE_INT abs_d
+	  = (d >= 0 ? (unsigned HOST_WIDE_INT) d : -(unsigned HOST_WIDE_INT) d);
+	unsigned HOST_WIDE_INT mid_d = (abs_d - 1) >> 1;
+	if (!unsigned_p)
+	  {
+	    // check availibility of abs expression for vector
+	    if (!target_has_vecop_for_code (ABS_EXPR, vectype))
+	      return NULL;
+	    // abs (r)
+	    tree abs_r = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (abs_r, ABS_EXPR, r);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // abs (r) > (abs (y-1) >> 1)
+	    tree round_p = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+	    def_stmt = gimple_build_assign (round_p, GT_EXPR, abs_r,
+					    build_int_cst (itype, mid_d));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, mask_vectype,
+				    itype);
+
+	    // x ^ y
+	    tree cond_reg = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt
+	      = gimple_build_assign (cond_reg, BIT_XOR_EXPR, oprnd0, oprnd1);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    // x ^ y < 0
+	    bool_cond = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+	    def_stmt = gimple_build_assign (bool_cond, LT_EXPR, cond_reg,
+					    build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, mask_vectype,
+				    itype);
+
+	    // x ^ y < 0 ? y : -y (mod)
+	    // x ^ y < 0 ? -1 : 1 (div)
+	    tree val1 = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt
+	      = gimple_build_assign (val1, COND_EXPR, bool_cond,
+				     build_int_cst (itype, is_mod ? d : -1),
+				     build_int_cst (itype, is_mod ? -d : 1));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+	    int precision = TYPE_PRECISION (itype);
+	    wide_int wmask = wi::mask (precision, false, precision);
+
+	    // abs (r) > (abs (y-1) >> 1) ? 0xffffffff : 0
+	    tree val2 = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (val2, COND_EXPR, round_p,
+					    wide_int_to_tree (itype, wmask),
+					    build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    tree fval = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt = gimple_build_assign (fval, BIT_AND_EXPR, val1, val2);
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    tree result = vect_recog_temp_ssa_var (itype, NULL);
+	    return gimple_build_assign (result, PLUS_EXPR, is_mod ? r : q,
+					fval);
+	  }
+	else
+	  {
+	    // r > (y-1 >> 1)
+	    tree round_p = vect_recog_temp_ssa_var (boolean_type_node, NULL);
+	    def_stmt = gimple_build_assign (round_p, GT_EXPR, r,
+					    build_int_cst (itype, mid_d));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt, mask_vectype,
+				    itype);
+
+	    // (r > (y-1)>>1) ? -d : 1
+	    tree val2 = vect_recog_temp_ssa_var (itype, NULL);
+	    def_stmt
+	      = gimple_build_assign (val2, COND_EXPR, round_p,
+				     build_int_cst (itype, is_mod ? -d : 1),
+				     build_int_cst (itype, 0));
+	    append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
+
+	    tree result = vect_recog_temp_ssa_var (itype, NULL);
+	    return gimple_build_assign (result, PLUS_EXPR, is_mod ? r : q,
+					val2);
+	  }
+      }
+    default:
+      return NULL;
+    }
+}
+
 /* Detect a signed division by a constant that wouldn't be
    otherwise vectorized:
 
@@ -4882,7 +5157,8 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 {
   gimple *last_stmt = stmt_vinfo->stmt;
   tree oprnd0, oprnd1, vectype, itype, cond;
-  gimple *pattern_stmt, *def_stmt;
+  gimple *pattern_stmt = NULL;
+  gimple *def_stmt = NULL;
   enum tree_code rhs_code;
   optab optab;
   tree q, cst;
@@ -4899,6 +5175,12 @@ vect_recog_divmod_pattern (vec_info *vinfo,
     case TRUNC_DIV_EXPR:
     case EXACT_DIV_EXPR:
     case TRUNC_MOD_EXPR:
+    case FLOOR_MOD_EXPR:
+    case FLOOR_DIV_EXPR:
+    case CEIL_MOD_EXPR:
+    case CEIL_DIV_EXPR:
+    case ROUND_MOD_EXPR:
+    case ROUND_DIV_EXPR:
       break;
     default:
       return NULL;
@@ -4930,9 +5212,16 @@ vect_recog_divmod_pattern (vec_info *vinfo,
     }
 
   prec = TYPE_PRECISION (itype);
+
+  bool is_flclrd_moddiv_p
+    = rhs_code == FLOOR_MOD_EXPR || rhs_code == FLOOR_DIV_EXPR
+    || rhs_code == CEIL_MOD_EXPR || rhs_code == CEIL_DIV_EXPR
+    || rhs_code == ROUND_MOD_EXPR || rhs_code == ROUND_DIV_EXPR;
   if (integer_pow2p (oprnd1))
     {
-      if (TYPE_UNSIGNED (itype) || tree_int_cst_sgn (oprnd1) != 1)
+      if ((TYPE_UNSIGNED (itype)
+	   && (rhs_code == FLOOR_MOD_EXPR || rhs_code == FLOOR_DIV_EXPR))
+	  || tree_int_cst_sgn (oprnd1) != 1)
 	return NULL;
 
       /* Pattern detected.  */
@@ -4949,18 +5238,27 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	  tree var_div = vect_recog_temp_ssa_var (itype, NULL);
 	  gimple *div_stmt = gimple_build_call_internal (ifn, 2, oprnd0, shift);
 	  gimple_call_set_lhs (div_stmt, var_div);
-
-	  if (rhs_code == TRUNC_MOD_EXPR)
+	  if (rhs_code == TRUNC_MOD_EXPR || is_flclrd_moddiv_p)
 	    {
 	      append_pattern_def_seq (vinfo, stmt_vinfo, div_stmt);
+	      tree t1 = vect_recog_temp_ssa_var (itype, NULL);
 	      def_stmt
-		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-				       LSHIFT_EXPR, var_div, shift);
+		= gimple_build_assign (t1, LSHIFT_EXPR, var_div, shift);
 	      append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
 	      pattern_stmt
 		= gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-				       MINUS_EXPR, oprnd0,
-				       gimple_assign_lhs (def_stmt));
+				       MINUS_EXPR, oprnd0, t1);
+	      if (is_flclrd_moddiv_p)
+		{
+		  append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
+		  pattern_stmt
+		    = add_code_for_floorceilround_divmod (vectype, vinfo,
+							  stmt_vinfo, rhs_code,
+							  var_div, t1, oprnd0,
+							  oprnd1, itype);
+		  if (pattern_stmt == NULL)
+		    return NULL;
+		}
 	    }
 	  else
 	    pattern_stmt = div_stmt;
@@ -4974,8 +5272,12 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 				      build_int_cst (itype, 0));
       append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt,
 			      truth_type_for (vectype), itype);
+      tree div_result = NULL_TREE;
       if (rhs_code == TRUNC_DIV_EXPR
-	  || rhs_code == EXACT_DIV_EXPR)
+	  || rhs_code == EXACT_DIV_EXPR
+	  || rhs_code == FLOOR_DIV_EXPR
+	  || rhs_code == CEIL_DIV_EXPR
+	  || rhs_code == ROUND_DIV_EXPR)
 	{
 	  tree var = vect_recog_temp_ssa_var (itype, NULL);
 	  tree shift;
@@ -4992,12 +5294,17 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
 
 	  shift = build_int_cst (itype, tree_log2 (oprnd1));
+	  div_result = vect_recog_temp_ssa_var (itype, NULL);
 	  pattern_stmt
-	    = gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-				   RSHIFT_EXPR, var, shift);
+	    = gimple_build_assign (div_result, RSHIFT_EXPR, var, shift);
 	}
-      else
+      if (rhs_code == TRUNC_MOD_EXPR || is_flclrd_moddiv_p)
 	{
+	  if (rhs_code == FLOOR_DIV_EXPR
+	      || rhs_code == CEIL_DIV_EXPR
+	      || rhs_code == ROUND_DIV_EXPR)
+	    append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
+
 	  tree signmask;
 	  if (compare_tree_int (oprnd1, 2) == 0)
 	    {
@@ -5042,10 +5349,21 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 						build_int_cst (itype, 1)));
 	  append_pattern_def_seq (vinfo, stmt_vinfo, def_stmt);
 
+	  tree r = vect_recog_temp_ssa_var (itype, NULL);
 	  pattern_stmt
-	    = gimple_build_assign (vect_recog_temp_ssa_var (itype, NULL),
-				   MINUS_EXPR, gimple_assign_lhs (def_stmt),
+	    = gimple_build_assign (r, MINUS_EXPR, gimple_assign_lhs (def_stmt),
 				   signmask);
+	  if (is_flclrd_moddiv_p)
+	    {
+	      append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
+	      pattern_stmt
+		= add_code_for_floorceilround_divmod (vectype, vinfo,
+						      stmt_vinfo, rhs_code,
+						      div_result, r, oprnd0,
+						      oprnd1, itype);
+	      if (pattern_stmt == NULL)
+		return NULL;
+	    }
 	}
 
       return pattern_stmt;
@@ -5352,7 +5670,7 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 	}
     }
 
-  if (rhs_code == TRUNC_MOD_EXPR)
+  if (rhs_code == TRUNC_MOD_EXPR || is_flclrd_moddiv_p)
     {
       tree r, t1;
 
@@ -5367,6 +5685,17 @@ vect_recog_divmod_pattern (vec_info *vinfo,
 
       r = vect_recog_temp_ssa_var (itype, NULL);
       pattern_stmt = gimple_build_assign (r, MINUS_EXPR, oprnd0, t1);
+
+      if (is_flclrd_moddiv_p)
+	{
+	append_pattern_def_seq (vinfo, stmt_vinfo, pattern_stmt);
+	pattern_stmt
+	  = add_code_for_floorceilround_divmod (vectype, vinfo, stmt_vinfo,
+						rhs_code, q, r, oprnd0, oprnd1,
+						itype);
+	if (pattern_stmt == NULL)
+	  return NULL;
+	}
     }
 
   /* Pattern detected.  */
