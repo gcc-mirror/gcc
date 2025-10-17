@@ -24875,10 +24875,20 @@ package body Sem_Util is
          --  Scalar_Range
 
          if Is_Discrete_Type (Id) then
+
+            --  The scalar range of the source entity had a parent, so the
+            --  scalar range of the newly created entity should also have a
+            --  parent, so that the AST structure is the same.
+
+            pragma Assert (Present (Parent (Scalar_Range (Id))));
+
             Set_Scalar_Range (Id, Node_Id (
               Copy_Field_With_Replacement
                 (Field    => Union_Id (Scalar_Range (Id)),
                  Semantic => True)));
+
+            pragma Assert (No (Parent (Scalar_Range (Id))));
+            Set_Parent (Scalar_Range (Id), Id);
          end if;
 
          --  Scope
