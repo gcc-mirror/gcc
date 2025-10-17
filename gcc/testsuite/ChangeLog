@@ -1,3 +1,12 @@
+2025-10-16  Alex Coplan  <alex.coplan@arm.com>
+
+	Backported from master:
+	2025-10-13  Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/121772
+	* gcc.target/aarch64/torture/pr121772.c: Add -fchecking to
+	dg-options.
+
 2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* gcc.target/aarch64/acle/rwsr-armv8p9.c: Fix pmsdsfr_el1
