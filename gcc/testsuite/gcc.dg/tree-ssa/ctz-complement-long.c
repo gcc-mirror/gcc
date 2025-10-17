@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target ctzl } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fno-tree-ch -fdump-tree-optimized" } */
 
 #define PREC (__CHAR_BIT__ * __SIZEOF_LONG__)
 

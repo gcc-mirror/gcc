@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-ivcanon-scev" } */
+/* { dg-options "-O2 -fno-tree-scev-cprop -fdump-tree-ivcanon-scev" } */
 
 struct struct_t
 {
