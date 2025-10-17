@@ -5514,6 +5514,15 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
        && slp_reduc
        && !TYPE_VECTOR_SUBPARTS (vectype).is_constant ());
 
+  /* If signed overflow is undefined we might need to perform reduction
+     computations in an unsigned type.  */
+  tree compute_vectype = vectype;
+  if (ANY_INTEGRAL_TYPE_P (vectype)
+      && TYPE_OVERFLOW_UNDEFINED (vectype)
+      && code.is_tree_code ()
+      && arith_code_with_undefined_signed_overflow ((tree_code) code))
+    compute_vectype = unsigned_type_for (vectype);
+
   /* In case of reduction chain, e.g.,
      # a1 = phi <a3, a0>
      a2 = operation (a1)
@@ -5533,16 +5542,27 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
      a multiple of the SLP group size.
 
      The same is true if we couldn't use a single defuse cycle.  */
-  if (!slp_reduc
-      || direct_slp_reduc
-      || (slp_reduc
-	  && constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype), group_size)))
+  if ((!slp_reduc
+       || direct_slp_reduc
+       || (slp_reduc
+	   && constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype), group_size)))
+      && reduc_inputs.length () > 1)
     {
       gimple_seq stmts = NULL;
       tree single_input = reduc_inputs[0];
+      if (compute_vectype != vectype)
+	single_input = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     compute_vectype, single_input);
       for (k = 1; k < reduc_inputs.length (); k++)
-	single_input = gimple_build (&stmts, code, vectype,
-				     single_input, reduc_inputs[k]);
+	{
+	  tree input = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     compute_vectype, reduc_inputs[k]);
+	  single_input = gimple_build (&stmts, code, compute_vectype,
+				       single_input, input);
+	}
+      if (compute_vectype != vectype)
+	single_input = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+				     vectype, single_input);
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 
       reduc_inputs.truncate (0);
@@ -5905,6 +5925,18 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	 halves against each other.  */
       enum machine_mode mode1 = mode;
       tree stype = TREE_TYPE (vectype);
+      if (compute_vectype != vectype)
+	{
+	  stype = unsigned_type_for (stype);
+	  gimple_seq stmts = NULL;
+	  for (unsigned i = 0; i < reduc_inputs.length (); ++i)
+	    {
+	      tree new_temp = gimple_build (&stmts, VIEW_CONVERT_EXPR,
+					    compute_vectype, reduc_inputs[i]);
+	      reduc_inputs[i] = new_temp;
+	    }
+	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+	}
       unsigned nunits = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
       unsigned nunits1 = nunits;
       if ((mode1 = targetm.vectorize.split_reduction (mode)) != mode
@@ -6121,10 +6153,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	{
           new_temp = scalar_results[0];
 	  gcc_assert (TREE_CODE (TREE_TYPE (adjustment_def)) != VECTOR_TYPE);
-	  adjustment_def = gimple_convert (&stmts, TREE_TYPE (vectype),
+	  adjustment_def = gimple_convert (&stmts, TREE_TYPE (compute_vectype),
 					   adjustment_def);
-	  new_temp = gimple_convert (&stmts, TREE_TYPE (vectype), new_temp);
-	  new_temp = gimple_build (&stmts, code, TREE_TYPE (vectype),
+	  new_temp = gimple_convert (&stmts, TREE_TYPE (compute_vectype),
+				     new_temp);
+	  new_temp = gimple_build (&stmts, code, TREE_TYPE (compute_vectype),
 				   new_temp, adjustment_def);
 	  new_temp = gimple_convert (&stmts, scalar_type, new_temp);
 	}
