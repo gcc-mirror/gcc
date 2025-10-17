@@ -756,4 +756,18 @@ sat_u_mul_##NT##_from_##WT##_fmt_5 (NT a, NT b) \
   sat_u_mul_##NT##_from_##WT##_fmt_5 (a, b)
 #define RUN_SAT_U_MUL_FMT_5_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_5(NT, WT, a, b)
 
+#define DEF_SAT_U_MUL_FMT_6(NT, WT)             \
+NT __attribute__((noinline))                    \
+sat_u_mul_##NT##_from_##WT##_fmt_6 (NT a, NT b) \
+{                                               \
+  WT x = (WT)a * (WT)b;                         \
+  NT max = -1;                                  \
+  return x > (WT)(max) ? max : (NT)x;           \
+}
+
+#define DEF_SAT_U_MUL_FMT_6_WRAP(NT, WT) DEF_SAT_U_MUL_FMT_6(NT, WT)
+#define RUN_SAT_U_MUL_FMT_6(NT, WT, a, b) \
+  sat_u_mul_##NT##_from_##WT##_fmt_6 (a, b)
+#define RUN_SAT_U_MUL_FMT_6_WRAP(NT, WT, a, b) RUN_SAT_U_MUL_FMT_6(NT, WT, a, b)
+
 #endif
