@@ -270,6 +270,7 @@ along with GCC; see the file COPYING3.  If not see
 /* Allow code model to be selected.  */
 #undef TARGET_CMODEL
 #define TARGET_CMODEL rs6000_current_cmodel
+#undef SET_CMODEL
 #define SET_CMODEL(opt) rs6000_current_cmodel = opt
 
 /* For link specs, we leverage the linux configuration bits through
