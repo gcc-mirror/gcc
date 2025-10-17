@@ -1,3 +1,13 @@
+2025-10-16  Ayappan Perumal  <ayappap2@in.ibm.com>
+
+	Backported from master:
+	2025-10-16  Ayappan Perumal  <ayappap2@in.ibm.com>
+
+	* config/rs6000/aix.h (SUBTARGET_DRIVER_SELF_SPECS):
+	Error out when stack-protector option is used in AIX
+	as it is not supported on AIX
+	Approved By: Segher Boessenkool <segher@kernel.crashing.org>
+
 2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* config/aarch64/aarch64-sys-regs.def: Fix pmsdsfr_el1 encoding.
