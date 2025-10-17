@@ -6844,11 +6844,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (bit_and:c (ne:c @0 @1) (ne (bit_ior @0 @1) integer_zerop))
  (ne @0 @1))
 (simplify
- (bit_ior:c (ne:c @0 @1) (ne (bit_ior @0 @1) integer_zerop))
- (ne (bit_ior @0 @1) { integer_zero_node; }))
+ (bit_ior:c (ne:c @0 @1) (ne (bit_ior@2 @0 @1) integer_zerop@3))
+ (ne @2 @3))
 (simplify
- (bit_and:c (eq:c @0 @1) (eq (bit_ior @0 @1) integer_zerop))
- (eq (bit_ior @0 @1) { integer_zero_node; }))
+ (bit_and:c (eq:c @0 @1) (eq (bit_ior@2 @0 @1) integer_zerop@3))
+ (eq @2 @3))
 (simplify
  (bit_ior:c (eq:c @0 @1) (eq (bit_ior @0 @1) integer_zerop))
  (eq @0 @1))
