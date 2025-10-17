@@ -1535,7 +1535,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       static consteval int
-      _S_required_aligment()
+      _S_required_alignment()
       {
 	if constexpr (is_floating_point_v<_Vt> || is_pointer_v<_Vt>)
 	  return __alignof__(_Vt);
@@ -1555,7 +1555,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(is_always_lock_free || !is_volatile_v<_Tp>,
 	"atomic operations on volatile T must be lock-free");
 
-      static constexpr size_t required_alignment = _S_required_aligment();
+      static constexpr size_t required_alignment = _S_required_alignment();
 
       __atomic_ref_base() = delete;
       __atomic_ref_base& operator=(const __atomic_ref_base&) = delete;
