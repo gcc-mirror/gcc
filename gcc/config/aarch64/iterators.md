@@ -1935,6 +1935,11 @@
 			   (VNx2DI "VNx4SI") (VNx2DF "VNx4SF")
 			   (VNx8SI "VNx8HI") (VNx16SI "VNx16QI")
 			   (VNx8DI "VNx8HI")])
+(define_mode_attr Vnarrow [(VNx8HI "vnx16qi")
+			   (VNx4SI "vnx8hi") (VNx4SF "vnx8hf")
+			   (VNx2DI "vnx4si") (VNx2DF "vnx4sf")
+			   (VNx8SI "vnx8hi") (VNx16SI "vnx16qi")
+			   (VNx8DI "vnx8hi")])
 
 ;; Suffix mapping Advanced SIMD modes to be expanded as SVE instructions.
 (define_mode_attr sve_di_suf [(VNx16QI "") (VNx8HI "") (VNx4SI "") (VNx2DI "")
