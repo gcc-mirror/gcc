@@ -4703,6 +4703,38 @@
   DONE;
 })
 
+(define_expand "widen_ssum<mode><vsi2qi>3"
+  [(set (match_operand:VS 0 "register_operand")
+	(plus:VS (sign_extend:VS
+		   (match_operand:<VSI2QI> 1 "register_operand"))
+		 (match_operand:VS 2 "register_operand")))]
+  "TARGET_DOTPROD"
+  {
+    rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
+    emit_insn (gen_sdot_prod<mode><vsi2qi> (operands[0], operands[1], ones,
+					    operands[2]));
+    DONE;
+  }
+)
+
+;; Use dot product to perform double widening sum reductions by
+;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
+(define_expand "widen_usum<mode><vsi2qi>3"
+  [(set (match_operand:VS 0 "register_operand")
+	(plus:VS (zero_extend:VS
+		        (match_operand:<VSI2QI> 1 "register_operand"))
+		      (match_operand:VS 2 "register_operand")))]
+  "TARGET_DOTPROD"
+  {
+    rtx ones = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
+    emit_insn (gen_udot_prod<mode><vsi2qi> (operands[0], operands[1], ones,
+					    operands[2]));
+    DONE;
+  }
+)
+
+;; Use dot product to perform double widening sum reductions by
+;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
 (define_insn "aarch64_<ANY_EXTEND:su>subw<mode>"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(minus:<VWIDE> (match_operand:<VWIDE> 1 "register_operand" "w")
