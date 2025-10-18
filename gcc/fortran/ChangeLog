@@ -1,3 +1,8 @@
+2025-10-17  Josef Melcr  <jmelcr02@gmail.com>
+
+	* f95-lang.cc (ATTR_CALLBACK_GOMP_LIST): New attr list
+	corresponding to the list in builtin-attrs.def.
+
 2025-10-13  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/121191

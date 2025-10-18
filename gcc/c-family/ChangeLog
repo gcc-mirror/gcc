@@ -1,3 +1,7 @@
+2025-10-17  Josef Melcr  <jmelcr02@gmail.com>
+
+	* c-attribs.cc: Define callback attr.
+
 2025-10-14  Jakub Jelinek  <jakub@redhat.com>
 
 	* c.opt (Wflex-array-member-not-at-end, Wignored-qualifiers,

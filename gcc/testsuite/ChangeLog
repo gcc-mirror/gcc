@@ -1,3 +1,81 @@
+2025-10-17  David Faust  <david.faust@oracle.com>
+
+	PR target/122139
+	* gcc.target/bpf/memset-3.c: New.
+	* gcc.target/bpf/memset-4.c: New.
+
+2025-10-17  Tamar Christina  <tamar.christina@arm.com>
+	    Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121604
+	* gcc.target/aarch64/sve/pr121604_brk.c: New test.
+	* gcc.target/aarch64/sve2/pr121604_pmov.c: New test.
+
+2025-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122308
+	* gcc.dg/vect/vect-pr122308.c: New testcase.
+
+2025-10-17  Josef Melcr  <jmelcr02@gmail.com>
+
+	* gcc.dg/ipa/ipcp-cb-spec1.c: New test.
+	* gcc.dg/ipa/ipcp-cb-spec2.c: New test.
+	* gcc.dg/ipa/ipcp-cb1.c: New test.
+
+2025-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/style1.ads: New test.
+
+2025-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122301
+	* gcc.dg/vect/vect-pr122301.c: New testcase.
+
+2025-10-17  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/104116
+	* gcc.dg/vect/pr104116-ceil-div-2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-div-pow2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-div.c: New test.
+	* gcc.dg/vect/pr104116-ceil-mod-2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-mod-pow2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-mod.c: New test.
+	* gcc.dg/vect/pr104116-ceil-udiv-2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-udiv-pow2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-udiv.c: New test.
+	* gcc.dg/vect/pr104116-ceil-umod-2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-umod-pow2.c: New test.
+	* gcc.dg/vect/pr104116-ceil-umod.c: New test.
+	* gcc.dg/vect/pr104116-floor-div-2.c: New test.
+	* gcc.dg/vect/pr104116-floor-div-pow2.c: New test.
+	* gcc.dg/vect/pr104116-floor-div.c: New test.
+	* gcc.dg/vect/pr104116-floor-mod-2.c: New test.
+	* gcc.dg/vect/pr104116-floor-mod-pow2.c: New test.
+	* gcc.dg/vect/pr104116-floor-mod.c: New test.
+	* gcc.dg/vect/pr104116-round-div-2.c: New test.
+	* gcc.dg/vect/pr104116-round-div-pow2.c: New test.
+	* gcc.dg/vect/pr104116-round-div.c: New test.
+	* gcc.dg/vect/pr104116-round-mod-2.c: New test.
+	* gcc.dg/vect/pr104116-round-mod-pow2.c: New test.
+	* gcc.dg/vect/pr104116-round-mod.c: New test.
+	* gcc.dg/vect/pr104116-round-udiv-2.c: New test.
+	* gcc.dg/vect/pr104116-round-udiv-pow2.c: New test.
+	* gcc.dg/vect/pr104116-round-udiv.c: New test.
+	* gcc.dg/vect/pr104116-round-umod-2.c: New test.
+	* gcc.dg/vect/pr104116-round-umod-pow2.c: New test.
+	* gcc.dg/vect/pr104116-round-umod.c: New test.
+	* gcc.dg/vect/pr104116.h: New test.
+
+2025-10-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122296
+	* gcc.dg/torture/int-bwise-opt-1.c: New test.
+
+2025-10-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122296
+	* gcc.dg/tree-ssa/int-bwise-opt-vect01.c: New test.
+
 2025-10-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.dg/plugin/diagnostic_plugin_test_graphs.cc

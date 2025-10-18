@@ -1,3 +1,138 @@
+2025-10-17  David Faust  <david.faust@oracle.com>
+
+	PR target/122139
+	* config/bpf/bpf.cc (bpf_expand_setmem): Duplicate byte value
+	across to new mode when using larger modes for store.
+
+2025-10-17  Tamar Christina  <tamar.christina@arm.com>
+	    Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121604
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (apply_predication):
+	Store gp_index.
+	(struct pmov_to_vector_lane_def): Mark instruction as has no GP.
+	* config/aarch64/aarch64-sve-builtins.h (function_instance::gp_value,
+	function_instance::inactive_values, function_instance::gp_index,
+	function_shape::has_gp_argument_p): New.
+	* config/aarch64/aarch64-sve-builtins.cc (gimple_folder::fold_pfalse):
+	Simplify code and use GP helpers.
+
+2025-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122308
+	* gimple-loop-jam.cc (tree_loop_unroll_and_jam): Do LIM
+	after applying unroll-and-jam.
+
+2025-10-17  Josef Melcr  <jmelcr02@gmail.com>
+
+	* Makefile.in: Add attr-callback.o to OBJS.
+	* builtin-attrs.def (ATTR_CALLBACK): Callback attr identifier.
+	(DEF_CALLBACK_ATTRIBUTE): Macro for callback attr creation.
+	(GOMP): Attr for libgomp functions.
+	(ATTR_CALLBACK_GOMP_LIST): ATTR_NOTHROW_LIST with GOMP callback
+	attr added.
+	* cgraph.cc (cgraph_add_edge_to_call_site_hash): Always hash the
+	callback-carrying edge.
+	(cgraph_node::get_edge): Always return the callback-carrying
+	edge.
+	(cgraph_edge::set_call_stmt): Add cascade for callback edges.
+	(symbol_table::create_edge): Allow callback edges to share call
+	stmts, initialize new flags.
+	(cgraph_edge::make_callback): New method, derives a new callback
+	edge.
+	(cgraph_edge::get_callback_carrying_edge): New method.
+	(cgraph_edge::first_callback_edge): Likewise.
+	(cgraph_edge::next_callback_edge): Likewise.
+	(cgraph_edge::purge_callback_edges): Likewise.
+	(cgraph_edge::redirect_callee): When redirecting a callback
+	edge, redirect its ref as well.
+	(cgraph_edge::redirect_call_stmt_to_callee): Add callback edge
+	redirection logic, set update_derived_edges to true hwne
+	redirecting the carrying edge.
+	(cgraph_node::remove_callers): Add cascade for callback edges.
+	(cgraph_edge::dump_edge_flags): Print callback flags.
+	(cgraph_node::verify_node): Add sanity checks for callback
+	edges.
+	* cgraph.h: Add new 1 bit flags and 16 bit callback_id to
+	cgraph_edge class.
+	* cgraphclones.cc (cgraph_edge::clone): Copy over callback data.
+	* cif-code.def (CALLBACK_EDGE): Add CIF_CALLBACK_EDGE code.
+	* ipa-cp.cc (purge_useless_callback_edges): New function,
+	deletes callback edges when necessary.
+	(ipcp_decision_stage): Call purge_useless_callback_edges.
+	* ipa-fnsummary.cc (ipa_call_summary_t::duplicate): Add
+	an exception for callback edges.
+	(analyze_function_body): Copy over summary from carrying to
+	callback edge.
+	* ipa-inline-analysis.cc (do_estimate_growth_1): Skip callback
+	edges when estimating growth.
+	* ipa-inline-transform.cc (inline_transform): Add redirection
+	cascade for callback edges.
+	* ipa-param-manipulation.cc
+	(drop_decl_attribute_if_params_changed_p): New function.
+	(ipa_param_adjustments::build_new_function_type): Add
+	args_modified out param.
+	(ipa_param_adjustments::adjust_decl): Drop callback attrs when
+	modifying args.
+	* ipa-param-manipulation.h: Adjust decl of
+	build_new_function_type.
+	* ipa-prop.cc (ipa_duplicate_jump_function): Add decl.
+	(init_callback_edge_summary): New function.
+	(ipa_compute_jump_functions_for_edge): Add callback edge
+	creation logic.
+	* lto-cgraph.cc (lto_output_edge): Stream out callback data.
+	(input_edge): Input callback data.
+	* omp-builtins.def (BUILT_IN_GOMP_PARALLEL_LOOP_STATIC): Use new
+	attr list.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_GUIDED): Likewise.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_DYNAMIC): Likewise.
+	(BUILT_IN_GOMP_PARALLEL_LOOP_NONMONOTONIC_RUNTIME): Likewise.
+	(BUILT_IN_GOMP_PARALLEL): Likewise.
+	(BUILT_IN_GOMP_PARALLEL_SECTIONS): Likewise.
+	(BUILT_IN_GOMP_TEAMS_REG): Likewise.
+	* tree-core.h (ECF_CB_1_2): New constant for callback(1,2).
+	* tree-inline.cc (copy_bb): Copy callback edges when copying the
+	carrying edge.
+	(redirect_all_calls): Redirect callback edges.
+	* tree.cc (set_call_expr_flags): Create callback attr according
+	to the ECF_CB flag.
+	* attr-callback.cc: New file.
+	* attr-callback.h: New file.
+
+2025-10-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122301
+	* tree-vect-patterns.cc (vect_recog_over_widening_pattern):
+	Fix reduction guard.
+	(vect_mark_pattern_stmts): Fix reduction def check.
+
+2025-10-17  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/104116
+	* tree-vect-patterns.cc (add_code_for_floorceilround_divmod): patt recog
+	for {FLOOR,ROUND,CEIL}_{DIV,MOD}_EXPR.
+	(vect_recog_divmod_pattern): Call add_code_for_floorceilround_divmod
+	after computing div/mod for each control path.
+
+2025-10-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122296
+	* match.pd (`(a != b) | ((a|b) != 0)`): Reuse both
+	the ior and zero instead of recreating them.
+	(`(a == b) & ((a|b) == 0)`): Likewise
+
+2025-10-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122296
+	* match.pd (`(a == b) | ((a|b) != 0)`): Fix true value.
+
+2025-10-17  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122119
+	* config/i386/amxmovrsintrin.h
+	(_tile_loaddrs_internal): Use __PTRDIFF_TYPE__ instead of long.
+	(_tile_loaddrst1_internal): Ditto.
+
 2025-10-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* Makefile.in (OBJS-libcommon): Add

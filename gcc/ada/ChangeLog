@@ -1,3 +1,16 @@
+2025-10-17  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122295
+	* sem_ch12.adb (Analyze_Package_Instantiation): Force Style_Check
+	to False only after possibly installing the parent.
+	* aspects.adb (UAD_Pragma_Map): Fix style violation.
+	* inline.adb (To_Pending_Instantiations): Likewise.
+	* lib.ads (Unit_Names): Likewise.
+	* repinfo.adb (Relevant_Entities): Likewise.
+	* sem_ch7.adb (Subprogram_Table): Likewise.
+	(Traversed_Table): Likewise.
+	* sem_util.adb (Interval_Sorting): Likewise.
+
 2025-10-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	Revert:

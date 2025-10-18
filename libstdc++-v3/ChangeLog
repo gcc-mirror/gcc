@@ -1,3 +1,9 @@
+2025-10-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/atomic_base.h
+	(__atomic_ref_base::_S_required_alignment): Renamed from...
+	(__atomic_ref_base::_S_required_aligment): Renamed.
+
 2025-10-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/stacktrace
