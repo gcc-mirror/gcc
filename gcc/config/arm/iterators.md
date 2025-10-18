@@ -1788,6 +1788,11 @@
                   (V4HI "V2SI") (V8HI "V4SI")
                   (V2SI "DI")   (V4SI "V2DI")])
 
+;; Modes with double-width elements.
+(define_mode_attr v_double_width [(V8QI "v4hi") (V16QI "v8hi")
+				  (V4HI "v2si") (V8HI "v4si")
+				  (V2SI "di")   (V4SI "v2di")])
+
 ;; Double-sized modes with the same element size.
 ;; Used for neon_vdup_lane, where the second operand is double-sized
 ;; even when the first one is quad.

@@ -981,7 +981,7 @@
 
 ;; Widening operations
 
-(define_expand "widen_ssum<mode>3"
+(define_expand "widen_ssum<v_double_width><mode>3"
   [(set (match_operand:<V_double_width> 0 "s_register_operand")
 	(plus:<V_double_width>
 	 (sign_extend:<V_double_width>
@@ -1040,7 +1040,7 @@
 }
   [(set_attr "type" "neon_add_widen")])
 
-(define_insn "widen_ssum<mode>3"
+(define_insn "widen_ssum<V_widen_l><mode>3"
   [(set (match_operand:<V_widen> 0 "s_register_operand" "=w")
 	(plus:<V_widen>
 	 (sign_extend:<V_widen>
@@ -1051,7 +1051,7 @@
   [(set_attr "type" "neon_add_widen")]
 )
 
-(define_expand "widen_usum<mode>3"
+(define_expand "widen_usum<v_double_width><mode>3"
   [(set (match_operand:<V_double_width> 0 "s_register_operand")
 	(plus:<V_double_width>
 	 (zero_extend:<V_double_width>
@@ -1110,7 +1110,7 @@
 }
   [(set_attr "type" "neon_add_widen")])
 
-(define_insn "widen_usum<mode>3"
+(define_insn "widen_usum<V_widen_l><mode>3"
   [(set (match_operand:<V_widen> 0 "s_register_operand" "=w")
 	(plus:<V_widen> (zero_extend:<V_widen>
 			  (match_operand:VW 1 "s_register_operand" "%w"))
