@@ -28592,13 +28592,9 @@ _ACEOF
 
         $as_echo "#define HAVE_LINK 1" >>confdefs.h
 
-        $as_echo "#define HAVE_SYS_IOCT4YL_H 1" >>confdefs.h
-
         $as_echo "#define HAVE_SYS_STAT_H 1" >>confdefs.h
 
         $as_echo "#define HAVE_SYS_TYPES_H 1" >>confdefs.h
-
-        $as_echo "#define HAVE_S_ISREG 1" >>confdefs.h
 
         $as_echo "#define HAVE_QUICK_EXIT 1" >>confdefs.h
 
@@ -28613,12 +28609,6 @@ _ACEOF
         $as_echo "#define HAVE_STRERROR_L 1" >>confdefs.h
 
         $as_echo "#define HAVE_SYMLINK 1" >>confdefs.h
-
-        $as_echo "#define HAVE_SYS_IOCT4YL_H 1" >>confdefs.h
-
-        $as_echo "#define HAVE_SYS_STAT_H 1" >>confdefs.h
-
-        $as_echo "#define HAVE_SYS_TYPES_H 1" >>confdefs.h
 
         $as_echo "#define HAVE_S_ISREG 1" >>confdefs.h
 
@@ -28639,16 +28629,6 @@ _ACEOF
         $as_echo "#define _GLIBCXX_USE_GETCWD 1" >>confdefs.h
 
         $as_echo "#define _GLIBCXX_USE_UTIME 1" >>confdefs.h
-
-        $as_echo "#define _GLIBCXX_USE_LINK 1" >>confdefs.h
-
-        $as_echo "#define _GLIBCXX_USE_READLINK 1" >>confdefs.h
-
-        $as_echo "#define _GLIBCXX_USE_SYMLINK 1" >>confdefs.h
-
-        $as_echo "#define _GLIBCXX_USE_TRUNCATE 1" >>confdefs.h
-
-        $as_echo "#define _GLIBCXX_USE_FDOPENDIR 1" >>confdefs.h
 
         $as_echo "#define HAVE_USLEEP 1" >>confdefs.h
 
