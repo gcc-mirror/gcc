@@ -657,14 +657,14 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	  {
 	    emit_pattern_size_error (pattern, par.get_fields ().size (),
 				     min_size_required);
-	    // TODO attempt to continue to do typechecking even after wrong
-	    // size
-	    break;
+	    // continue and attempt to resolve individual items in the pattern
 	  }
 
 	// Resolve lower patterns
 	std::vector<TyTy::TyVar> pattern_elems;
-	for (size_t i = 0; i < lower.size (); i++)
+	size_t nlower_items_to_resolve
+	  = std::min (lower.size (), par.get_fields ().size ());
+	for (size_t i = 0; i < nlower_items_to_resolve; i++)
 	  {
 	    auto &p = lower[i];
 	    TyTy::BaseType *par_type = par.get_field (i);
@@ -673,16 +673,23 @@ TypeCheckPattern::visit (HIR::TuplePattern &pattern)
 	    pattern_elems.emplace_back (elem->get_ref ());
 	  }
 
+	if (lower.size () > par.get_fields ().size ())
+	  break;
+
 	// Pad pattern_elems until needing to resolve upper patterns
-	size_t rest_end = par.get_fields ().size () - upper.size ();
+	size_t rest_end
+	  = std::max (par.get_fields ().size () - upper.size (), lower.size ());
 	for (size_t i = lower.size (); i < rest_end; i++)
 	  {
 	    TyTy::BaseType *par_type = par.get_field (i);
 	    pattern_elems.emplace_back (par_type->get_ref ());
 	  }
 
+	size_t nupper_items_to_resolve
+	  = std::min (upper.size (),
+		      par.get_fields ().size () - pattern_elems.size ());
 	// Resolve upper patterns
-	for (size_t i = 0; i < upper.size (); i++)
+	for (size_t i = 0; i < nupper_items_to_resolve; i++)
 	  {
 	    auto &p = upper[i];
 	    TyTy::BaseType *par_type = par.get_field (rest_end + i);
