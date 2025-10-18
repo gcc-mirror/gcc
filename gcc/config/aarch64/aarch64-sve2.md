@@ -2390,7 +2390,19 @@
 	   (match_dup 1)]
 	  UNSPEC_SADDWT))]
   "TARGET_SVE2"
-)
+{
+  /* Use dot product to perform double widening sum reductions by
+     changing += a into += (a * 1).  i.e. we seed the multiplication with 1.  */
+  if (TARGET_SVE2p1_OR_SME2
+      && <VNARROW>mode == VNx8HImode
+      && <MODE>mode == VNx4SImode)
+    {
+      rtx ones = force_reg (VNx8HImode, CONST1_RTX (VNx8HImode));
+      emit_insn (gen_sdot_prodvnx4sivnx8hi (operands[0], operands[1],
+					    ones, operands[2]));
+      DONE;
+    }
+})
 
 ;; Define single step widening for widen_usum using UADDWB and UADDWT
 (define_expand "widen_usum<mode><Vnarrow>3"
@@ -2405,7 +2417,17 @@
 	   (match_dup 1)]
 	  UNSPEC_UADDWT))]
   "TARGET_SVE2"
-)
+{
+  if (TARGET_SVE2p1_OR_SME2
+      && <VNARROW>mode == VNx8HImode
+      && <MODE>mode == VNx4SImode)
+    {
+      rtx ones = force_reg (VNx8HImode, CONST1_RTX (VNx8HImode));
+      emit_insn (gen_udot_prodvnx4sivnx8hi (operands[0], operands[1],
+					    ones, operands[2]));
+      DONE;
+    }
+})
 
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Long binary arithmetic
