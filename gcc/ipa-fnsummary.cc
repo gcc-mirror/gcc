@@ -271,6 +271,8 @@ redirect_to_unreachable (struct cgraph_edge *e)
   es->call_stmt_time = 0;
   if (callee)
     callee->remove_symbol_and_inline_clones ();
+  if (e->has_callback)
+    e->purge_callback_edges ();
   return e;
 }
 
@@ -3119,8 +3121,7 @@ analyze_function_body (struct cgraph_node *node, bool early)
 		  for (cbe = edge->first_callback_edge (); cbe;
 		       cbe = cbe->next_callback_edge ())
 		    {
-		      ipa_call_summary *es2 = ipa_call_summaries->get (cbe);
-		      es2 = ipa_call_summaries->get_create (cbe);
+		      ipa_call_summary *es2 = ipa_call_summaries->get_create (cbe);
 		      ipa_call_summaries->duplicate (edge, cbe, es, es2);
 		      /* Unlike speculative edges, callback edges have no real
 			 size or time; the call doesn't exist.  Reflect that in
