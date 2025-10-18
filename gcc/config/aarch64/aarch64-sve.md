@@ -7722,6 +7722,22 @@
   [(set_attr "sve_type" "sve_int_dot")]
 )
 
+;; Define double widen_[su]sum as dotproduct
+;; Use dot product to perform double widening sum reductions by
+;; changing += a into += (a * 1).  i.e. we seed the multiplication with 1.
+(define_expand "widen_<sur>sum<mode><vsi2qi>3"
+  [(set (match_operand:SVE_FULL_SDI 0 "register_operand")
+	(plus:SVE_FULL_SDI
+	  (unspec:SVE_FULL_SDI
+	    [(match_operand:<VSI2QI> 1 "register_operand")
+	     (match_dup 3)]
+	    DOTPROD)
+	  (match_operand:SVE_FULL_SDI 2 "register_operand")))]
+  "TARGET_SVE"
+{
+  operands[3] = force_reg (<VSI2QI>mode, CONST1_RTX (<VSI2QI>mode));
+})
+
 ;; -------------------------------------------------------------------------
 ;; ---- [INT] Sum of absolute differences
 ;; -------------------------------------------------------------------------
