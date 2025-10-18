@@ -2789,6 +2789,8 @@ vec<tree, va_heap, vl_embed> *post_load_decls;
 typedef hash_map<tree, auto_vec<tree>> keyed_map_t;
 static keyed_map_t *keyed_table;
 
+static tree get_keyed_decl_scope (tree);
+
 /* Instantiations of temploid friends imported from another module
    need to be attached to the same module as the temploid.  This maps
    these decls to the temploid they are instantiated from, as there is
@@ -11275,20 +11277,12 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	    if (DECL_IMPLICIT_TYPEDEF_P (STRIP_TEMPLATE (decl))
 		&& LAMBDA_TYPE_P (TREE_TYPE (decl)))
 	      {
-		if (tree scope = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl)))
-		  {
-		    /* Lambdas attached to fields are keyed to its class.  */
-		    if (TREE_CODE (scope) == FIELD_DECL)
-		      scope = TYPE_NAME (DECL_CONTEXT (scope));
-		    if (DECL_LANG_SPECIFIC (scope)
-			&& DECL_MODULE_KEYED_DECLS_P (scope))
-		      {
-			mk = MK_keyed;
-			break;
-		      }
-		  }
-		/* Lambdas not attached to any mangling scope are TU-local.  */
-		mk = MK_unique;
+		if (get_keyed_decl_scope (decl))
+		  mk = MK_keyed;
+		else
+		  /* Lambdas not attached to any mangling scope are TU-local
+		     and so cannot be deduplicated.  */
+		  mk = MK_unique;
 		break;
 	      }
 
@@ -11589,16 +11583,9 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	case MK_keyed:
 	  {
-	    gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (inner)));
-	    tree scope = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (inner));
-	    gcc_checking_assert (TREE_CODE (scope) == VAR_DECL
-				 || TREE_CODE (scope) == FIELD_DECL
-				 || TREE_CODE (scope) == PARM_DECL
-				 || TREE_CODE (scope) == TYPE_DECL
-				 || TREE_CODE (scope) == CONCEPT_DECL);
-	    /* Lambdas attached to fields are keyed to the class.  */
-	    if (TREE_CODE (scope) == FIELD_DECL)
-	      scope = TYPE_NAME (DECL_CONTEXT (scope));
+	    tree scope = get_keyed_decl_scope (inner);
+	    gcc_checking_assert (scope);
+
 	    auto *root = keyed_table->get (scope);
 	    unsigned ix = root->length ();
 	    /* If we don't find it, we'll write a really big number
@@ -20916,9 +20903,21 @@ maybe_key_decl (tree ctx, tree decl)
       && TREE_CODE (ctx) != CONCEPT_DECL)
     return;
 
-  /* For fields, key it to the containing type to handle deduplication
-     correctly.  */
-  if (TREE_CODE (ctx) == FIELD_DECL)
+  /* For members, key it to the containing type to handle deduplication
+     correctly.  For fields, this is necessary as FIELD_DECLs have no
+     dep and so would only be streamed after the lambda type, defeating
+     our ability to merge them.
+
+     Other class-scope key decls might depend on the type of the lambda
+     but be within the same cluster; we need to ensure that we never
+     first see the key decl while streaming the lambda type as merging
+     would then fail when comparing the partially-streamed lambda type
+     of the key decl with the existing (PR c++/122310).
+
+     Perhaps sort_cluster can be adjusted to handle this better, but
+     this is a simple workaround (and might down on the number of
+     entries in keyed_table as a bonus).  */
+  while (DECL_CLASS_SCOPE_P (ctx))
     ctx = TYPE_NAME (DECL_CONTEXT (ctx));
 
   if (!keyed_table)
@@ -20931,6 +20930,30 @@ maybe_key_decl (tree ctx, tree decl)
       DECL_MODULE_KEYED_DECLS_P (ctx) = true;
     }
   vec.safe_push (decl);
+}
+
+/* Find the scope that the lambda DECL is keyed to, if any.  */
+
+static tree
+get_keyed_decl_scope (tree decl)
+{
+  gcc_checking_assert (LAMBDA_TYPE_P (TREE_TYPE (decl)));
+  tree scope = LAMBDA_TYPE_EXTRA_SCOPE (TREE_TYPE (decl));
+  if (!scope)
+    return NULL_TREE;
+
+  gcc_checking_assert (TREE_CODE (scope) == VAR_DECL
+		       || TREE_CODE (scope) == FIELD_DECL
+		       || TREE_CODE (scope) == PARM_DECL
+		       || TREE_CODE (scope) == TYPE_DECL
+		       || TREE_CODE (scope) == CONCEPT_DECL);
+
+  while (DECL_CLASS_SCOPE_P (scope))
+    scope = TYPE_NAME (DECL_CONTEXT (scope));
+
+  gcc_checking_assert (DECL_LANG_SPECIFIC (scope)
+		       && DECL_MODULE_KEYED_DECLS_P (scope));
+  return scope;
 }
 
 /* DECL is an instantiated friend that should be attached to the same
