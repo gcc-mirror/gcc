@@ -3772,7 +3772,7 @@
   DONE;
 })
 
-(define_expand "widen_usum<mode>3"
+(define_expand "widen_usumv4si<mode>3"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (plus:V4SI (match_operand:V4SI 2 "register_operand" "v")
                    (unspec:V4SI [(match_operand:VIshort 1 "register_operand" "v")]
@@ -3786,7 +3786,7 @@
   DONE;
 })
 
-(define_expand "widen_ssumv16qi3"
+(define_expand "widen_ssumv4siv16qi3"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (plus:V4SI (match_operand:V4SI 2 "register_operand" "v")
                    (unspec:V4SI [(match_operand:V16QI 1 "register_operand" "v")]
@@ -3800,7 +3800,7 @@
   DONE;
 })
 
-(define_expand "widen_ssumv8hi3"
+(define_expand "widen_ssumv4siv8hi3"
   [(set (match_operand:V4SI 0 "register_operand" "=v")
         (plus:V4SI (match_operand:V4SI 2 "register_operand" "v")
                    (unspec:V4SI [(match_operand:V8HI 1 "register_operand" "v")]
