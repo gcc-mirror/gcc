@@ -2542,8 +2542,8 @@ vect_recog_widen_sum_pattern (vec_info *vinfo,
 
   vect_pattern_detected ("vect_recog_widen_sum_pattern", last_stmt);
 
-  if (!vect_supportable_direct_optab_p (vinfo, type, WIDEN_SUM_EXPR,
-					unprom0.type, type_out))
+  if (!vect_supportable_conv_optab_p (vinfo, type, WIDEN_SUM_EXPR,
+				      unprom0.type, type_out))
     return NULL;
 
   var = vect_recog_temp_ssa_var (type, NULL);

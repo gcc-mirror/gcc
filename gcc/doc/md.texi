@@ -5847,15 +5847,15 @@ equal or wider than the mode of the absolute difference. The result is placed
 in operand 0, which is of the same mode as operand 3.
 @var{m} is the mode of operand 1 and operand 2.
 
-@cindex @code{widen_ssum@var{m}3} instruction pattern
-@cindex @code{widen_usum@var{m}3} instruction pattern
-@item @samp{widen_ssum@var{m}3}
-@itemx @samp{widen_usum@var{m}3}
+@cindex @code{widen_ssum@var{n}@var{m}3} instruction pattern
+@cindex @code{widen_usum@var{n}@var{m}3} instruction pattern
+@item @samp{widen_ssum@var{n}@var{m}3}
+@itemx @samp{widen_usum@var{n}@var{m}3}
 Operands 0 and 2 are of the same mode, which is wider than the mode of
 operand 1. Add operand 1 to operand 2 and place the widened result in
 operand 0. (This is used express accumulation of elements into an accumulator
 of a wider mode.)
-@var{m} is the mode of operand 1.
+@var{m} is the mode of operand 1 and @var{n} is the mode of operand 0.
 
 @cindex @code{smulhs@var{m}3} instruction pattern
 @cindex @code{umulhs@var{m}3} instruction pattern

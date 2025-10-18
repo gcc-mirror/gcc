@@ -322,6 +322,10 @@ expand_widen_pattern_expr (const_sepops ops, rtx op0, rtx op1, rtx wide_op,
     icode = find_widening_optab_handler (widen_pattern_optab,
 					 TYPE_MODE (TREE_TYPE (ops->op2)),
 					 tmode0);
+  else if (ops->code == WIDEN_SUM_EXPR)
+    icode = find_widening_optab_handler (widen_pattern_optab,
+					 TYPE_MODE (TREE_TYPE (ops->op1)),
+					 tmode0);
   else
     icode = optab_handler (widen_pattern_optab, tmode0);
   gcc_assert (icode != CODE_FOR_nothing);
