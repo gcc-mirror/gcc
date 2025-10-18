@@ -1,3 +1,14 @@
+2025-10-17  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122119
+	* config/i386/amxmovrsintrin.h
+	(_tile_loaddrs_internal): Use __PTRDIFF_TYPE__ instead of long.
+	(_tile_loaddrst1_internal): Ditto.
+	(_tile_2rpntlvwz0rs_internal): Ditto.
+	(_tile_2rpntlvwz0rst1_internal): Ditto.
+	(_tile_2rpntlvwz1rs_internal): Ditto.
+	(_tile_2rpntlvwz1rst1_internal): Ditto.
+
 2025-10-16  Ayappan Perumal  <ayappap2@in.ibm.com>
 
 	Backported from master:
