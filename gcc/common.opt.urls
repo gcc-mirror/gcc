@@ -1550,6 +1550,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-optimize)
 ftree-parallelize-loops=
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-parallelize-loops)
 
+ftree-parallelize-loops
+UrlSuffix(gcc/Optimize-Options.html#index-ftree-parallelize-loops)
+
 ftree-phiprop
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-phiprop)
 
