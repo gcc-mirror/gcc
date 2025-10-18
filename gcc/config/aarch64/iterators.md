@@ -1901,6 +1901,11 @@
                   (V4HI "V2SI") (V8HI "V4SI")
                   (V2SI "DI")   (V4SI "V2DI")])
 
+;; Modes with double-width elements.
+(define_mode_attr Vdblw [(V8QI "v4hi") (V16QI "v8hi")
+			 (V4HI "v2si") (V8HI "v4si")
+			 (V2SI "di")   (V4SI "v2di")])
+
 (define_mode_attr VQUADW [(V8QI "V4SI") (V16QI "V8SI")
                   (V4HI "V2DI") (V8HI "V4DI")])
 
@@ -2003,7 +2008,9 @@
 (define_mode_attr VWIDE_PRED [(VNx8HF "VNx4BI") (VNx4SF "VNx2BI")])
 
 ;; Widened modes of vector modes, lowercase
-(define_mode_attr Vwide [(V2SF "v2df") (V4HF "v4sf")
+(define_mode_attr Vwide [(V2SI "v2di") (V4HI "v4si")
+			 (V2SF "v2df") (V4HF "v4sf")
+			 (V8QI "v8hi")
 			 (VNx16QI "vnx8hi") (VNx8HI "vnx4si")
 			 (VNx4SI  "vnx2di")
 			 (VNx8HF  "vnx4sf") (VNx4SF "vnx2df")
