@@ -139,6 +139,7 @@ int         __gg__default_compute_error       = 0    ;
 int         __gg__rdigits                     = 0    ;
 int         __gg__nop                         = 0    ;
 int         __gg__main_called                 = 0    ;
+void       *__gg__entry_label                 = NULL ;
 cbl_encoding_t __gg__console_encoding         = no_encoding_e    ;
 
 // During SORT operations, we don't want the end-of-file condition, which
@@ -484,16 +485,7 @@ struct program_state
 
     memset(rt_currency_signs, 0, sizeof(rt_currency_signs));
 
-    // The default collating sequence:
-    if( __gg__ebcdic_codeset_in_use )
-      {
-      rt_collation = __gg__cp1140_to_cp1252_values;
-      }
-    else
-      {
-      rt_collation = __gg__one_to_one_values;
-      }
-//    rt_collation = __gg__one_to_one_values;
+    rt_collation = __gg__one_to_one_values;
     rt_program_name = NULL;
     }
 
@@ -694,21 +686,13 @@ void
 __gg__pop_program_state()
   {
   program_states.pop_back();
-
-// #define decimal_point        (program_states.back().rt_decimal_point)
-// #define decimal_separator    (program_states.back().rt_decimal_separator)
-// #define quote_character      (program_states.back().rt_quote_character)
-// #define low_value_character  (program_states.back().rt_low_value_character)
-// #define high_value_character (program_states.back().rt_high_value_character)
-
   __gg__decimal_point        = program_states.back().rt_decimal_point        ;
   __gg__decimal_separator    = program_states.back().rt_decimal_separator    ;
   __gg__quote_character      = program_states.back().rt_quote_character      ;
   __gg__low_value_character  = program_states.back().rt_low_value_character  ;
   __gg__high_value_character = program_states.back().rt_high_value_character ;
   __gg__currency_signs       = program_states.back().rt_currency_signs       ;
-
-}
+  }
 
 static
 int
@@ -10733,7 +10717,8 @@ __gg__set_pointer(cblc_field_t       *target,
 
 extern "C"
 void
-__gg__alphabet_use( cbl_encoding_t encoding,
+__gg__alphabet_use( cbl_encoding_t alphabetic_encoding,
+                    cbl_encoding_t encoding,
                     size_t alphabet_index)
   {
   // We simply replace the values in the current program_state.  If the
@@ -10743,26 +10728,35 @@ __gg__alphabet_use( cbl_encoding_t encoding,
   if( program_states.empty() )
     {
     // When there is no DATA DIVISION, program_states can be empty when
-    // we arrive here.  So, we need to remedy that:
+    // we arrive here.  So, we need to remedy that.
     initialize_program_state();
     }
+
+  const charmap_t *charmap_alphabetic = __gg__get_charmap(alphabetic_encoding);
 
   switch( encoding )
     {
     case ASCII_e:
     case iso646_e:
+      // This is one of the very common standard situations; where we are using
+      // something like a CP1252 Western European ASCII-like character set.
+
       __gg__low_value_character  = DEGENERATE_LOW_VALUE;
       __gg__high_value_character = DEGENERATE_HIGH_VALUE;
 
       program_states.back().rt_low_value_character   = DEGENERATE_LOW_VALUE;
       program_states.back().rt_high_value_character  = DEGENERATE_HIGH_VALUE;
 
-      if( !__gg__ebcdic_codeset_in_use )
+      if( !charmap_alphabetic->is_like_ebcdic() )
         {
+        // The codeset is ascii-like, and the collation is ascii, so we use
+        // one-to-one values:
         program_states.back().rt_collation = __gg__one_to_one_values;
         }
       else
         {
+        // The codeset is ebcdic-like, but the collation is specified as
+        // ascii-like.  So, we need that collation:
         program_states.back().rt_collation = __gg__ebcdic_to_cp1252_collation;
         }
 
@@ -10774,12 +10768,16 @@ __gg__alphabet_use( cbl_encoding_t encoding,
 
       program_states.back().rt_low_value_character   = DEGENERATE_LOW_VALUE;
       program_states.back().rt_high_value_character  = DEGENERATE_HIGH_VALUE;
-      if( __gg__ebcdic_codeset_in_use )
+      if( charmap_alphabetic->is_like_ebcdic() )
         {
+        // The alphanumeric codeset is ebcdic-like, and so is the specified
+        // collation:
         program_states.back().rt_collation = __gg__one_to_one_values;
         }
       else
         {
+        // The alphanumeric codeset is ebcdic-like, but the specified collation
+        // is ascii-like:
         program_states.back().rt_collation = __gg__cp1252_to_ebcdic_collation;
         }
       break;

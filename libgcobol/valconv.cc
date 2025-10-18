@@ -79,6 +79,9 @@ __gg__alphabet_create(  cbl_encoding_t encoding,
 
   if( it == __gg__alphabet_states.end() )
     {
+    // This is an alphabet we don't know about.  So just assume the collation
+    // is the same as the character ordering:
+
     alphabet_state new_state;
     new_state.low_char  = low_char;
     new_state.high_char = high_char;

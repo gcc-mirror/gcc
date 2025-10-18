@@ -112,8 +112,6 @@ extern char **__gg__currency_signs       ;
 extern int    __gg__default_currency_sign;
 extern char  *__gg__ct_currency_signs[256];  // Compile-time currency signs
 
-extern bool __gg__ebcdic_codeset_in_use;
-
 #define NULLCH ('\0')
 #define DEGENERATE_HIGH_VALUE 0xFF
 #define DEGENERATE_LOW_VALUE 0x00
@@ -202,21 +200,6 @@ extern bool __gg__ebcdic_codeset_in_use;
 #define ascii_newline          ((uint8_t)('\n'))
 #define ascii_return           ((uint8_t)('\r'))
 
-enum text_device_t
-    {
-    td_default_e,
-    td_sourcecode_e,
-    td_console_e,
-    };
-
-enum text_codeset_t
-    {
-    cs_default_e,
-    cs_utf8_e,
-    cs_cp1252_e,
-    cs_cp1140_e
-    };
-
 extern unsigned char __gg__data_space[1]       ;
 extern unsigned char __gg__data_low_values[1]  ;
 extern unsigned char __gg__data_zeros[1]       ;
@@ -233,19 +216,6 @@ extern const unsigned short __gg__cp1140_to_cp1252_values[256];
 // These are the two standard collations.
 extern const unsigned short __gg__cp1252_to_ebcdic_collation[256];
 extern const unsigned short __gg__ebcdic_to_cp1252_collation[256];
-
-// As described above, we have a number of operations we need to accomplish. But
-// the actual routines are dependent on whether EBCDIC or ASCII is in use. We
-// implement that by having a function pointer for each function; those pointers
-// are established when the __gg__ebcdic_codeset_in_use variable is established.
-
-// These routines convert a single ASCII character to either ASCII or EBCDIC
-
-extern "C" void __gg__set_internal_codeset(int use_ebcdic);
-
-extern "C"
-void __gg__text_conversion_override(text_device_t device,
-                                    text_codeset_t codeset);
 
 const char * __gg__encoding_iconv_name( cbl_encoding_t encoding );
 cbl_encoding_t __gg__encoding_iconv_type( const char *name );

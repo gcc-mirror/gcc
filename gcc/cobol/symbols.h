@@ -503,6 +503,13 @@ const char * __gg__encoding_iconv_name( cbl_encoding_t encoding );
 
 bool is_elementary( enum cbl_field_type_t type );
 
+// These were introduced to discourage the use of 
+//    current_encoding('A') and current_encoding('N')
+enum
+  {
+  encoding_display_e  = 'A',
+  encoding_national_e = 'N'
+  };
 cbl_encoding_t current_encoding( char a_or_n );
 
 /*  In cbl_field_t:

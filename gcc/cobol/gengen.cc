@@ -1830,7 +1830,10 @@ gg_build_logical_expression(tree operand_a,
   }
 
 void
-gg_create_goto_pair(tree *goto_expr, tree *label_expr, tree *label_addr, const char *name)
+gg_create_goto_pair(tree *goto_expr,
+                    tree *label_expr,
+                    tree *label_addr,
+                    const char *name)
   {
   // We are going to create a pair of expressions for our
   // caller.  They are a matched set of goto/label expressions,
@@ -1884,16 +1887,6 @@ gg_create_goto_pair(tree *goto_expr,
   *goto_expr  = build1(GOTO_EXPR, void_type_node, *label_decl);
   *label_expr = build1(LABEL_EXPR, void_type_node, *label_decl);
   *label_addr = gg_get_address_of(*label_decl);
-  }
-
-void
-gg_goto_label_decl(tree label_decl)
-  {
-  tree goto_expr  = build1_loc( gg_token_location(),
-                                GOTO_EXPR,
-                                void_type_node,
-                                label_decl);
-  gg_append_statement(goto_expr);
   }
 
 void

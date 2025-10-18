@@ -50,8 +50,6 @@
 #include "../../libgcobol/exceptl.h"
 #include "exceptg.h"
 
-bool internal_codeset_is_ebcdic() { return gcobol_feature_internal_ebcdic(); }
-
 bool exception_location_active = true;
 bool skip_exception_processing = true;
 
@@ -107,7 +105,12 @@ tree var_decl_treeplet_4s; // SIZE_T_P                , "__gg__treeplet_4s"
 // wasn't successful figuring out how to create an actual NOP assembly language
 // instruction, I instead gg_assign(var_decl_nop, integer_zero_node)
 tree var_decl_nop;                // int         __gg__nop;
+
+// Indicates which routine main() called
 tree var_decl_main_called;        // int         __gg__main_called;
+
+// Indicates the target label for an ENTRY statement
+tree var_decl_entry_label; // void* __gg__entry_label
 
 #if 0
 #define REFER(a)

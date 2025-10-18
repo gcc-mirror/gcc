@@ -558,8 +558,9 @@ void parser_call( cbl_refer_t name,
 
 void parser_entry_activate( size_t iprog, const cbl_label_t *declarative );
 
-void parser_entry( cbl_field_t *name,
-                   size_t narg = 0, cbl_ffi_arg_t args[] = NULL);
+void parser_entry( const cbl_field_t *name,
+                   size_t narg = 0,
+                   cbl_ffi_arg_t args[] = NULL);
 
 bool is_ascending_key(const cbl_refer_t& key);
 

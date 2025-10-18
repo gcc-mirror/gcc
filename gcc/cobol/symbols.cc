@@ -1643,7 +1643,7 @@ symbols_alphabet_set( size_t program, const char name[]) {
   };
 
   // Define alphabets for codegen.
-  std::for_each(symbols_begin(), symbols_end(), alpha() );
+  std::for_each(symbols_begin(program), symbols_end(), alpha() );
 
   // Set collation sequence before parser_symbol_add.
   if( name ) {

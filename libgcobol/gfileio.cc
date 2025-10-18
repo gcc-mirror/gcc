@@ -330,12 +330,6 @@ __gg__file_init(
   {
   if( !(file->flags & file_flag_initialized_e) )
     {
-    if( encoding != iconv_CP1140_e && __gg__ebcdic_codeset_in_use )
-      {
-      // This code is to be eliminated when 'encoding' is valid.
-      encoding = iconv_CP1140_e;
-      }
-
     charmap_t *charmap = __gg__get_charmap(encoding);
 
     file->name                = strdup(name);

@@ -94,13 +94,6 @@ char *__gg__ct_currency_signs[256];  // Compile-time currency signs
 // And we will take some pains to figure out if the source code file was done
 // as UTF-8; if not, we will assume 1252/8859-1
 
-// __gg__ebcdic_codeset_in_use is the ultimate determinator of whether the
-// internal codeset is ASCII/CP1252 or EBCDIC/CP1140.
-bool __gg__ebcdic_codeset_in_use = false ;
-
-static text_codeset_t source_codeset  = cs_cp1252_e;
-static text_codeset_t console_codeset = cs_default_e;
-
 #define UNICODE_REPLACEMENT 0xFFFD  // This a white question mark in a black diamond
 #define ASCII_REPLACEMENT 0x87     // In CP1252, 0x87 is a double-dagger
 
@@ -234,74 +227,6 @@ __gg__ebcdic_to_cp1252_collation[256] =
     0x5C, 0xF7, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5A, 0xB2, 0xD4, 0xD6, 0xD2, 0xD3, 0xD5,
     0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0xB3, 0xDB, 0xDC, 0xD9, 0xDA, 0xFF,
     };
-
-
-// Here is the list of function pointers establish which ones of the paired
-// possibilities of conversion routines are actually in use.
-
-extern "C"
-void __gg__set_internal_codeset(int use_ebcdic)
-    {
-    __gg__ebcdic_codeset_in_use = !!use_ebcdic;
-    }
-
-extern "C"
-void __gg__text_conversion_override(text_device_t device,
-                                    text_codeset_t codeset)
-    {
-    // Establish the default sourcecode and console codesets, and
-    // establish the codeset conversion routines:
-
-    switch(device)
-        {
-        case td_default_e:
-          {
-          // We are setting our codesets to the defaults
-
-          // First, sort out the console:
-
-          // It is my understanding that the environment variable LANG is
-          // supposed to be set by the terminal to indicate the terminal's
-          // current character set.  Let's use that as the winner, even if
-          // that's not quite the way locale(3) works.
-          const char *envLANG = getenv("LANG");
-          if( !envLANG )
-            {
-            // This is odd.  No "LANG"?
-            envLANG = setlocale(LC_CTYPE, NULL);
-            }
-          if( !envLANG )
-            {
-            // This is even more odd. Pick something as a backup to the backup
-            envLANG = "UTF-8";
-            }
-          if( envLANG )
-            {
-            if( strcasestr(envLANG, "UTF-8") )
-              {
-              console_codeset = cs_utf8_e;
-              }
-            else
-              {
-              // If it isn't UTF-8, then figure on it being CP1252 as a
-              // convenient way of specifying an SBC codeset.
-              console_codeset  = cs_cp1252_e;
-              }
-            }
-          break;
-          }
-
-        case td_sourcecode_e:
-            // Explicitly set the source code codeset:
-            source_codeset = codeset;
-            break;
-
-        case td_console_e:
-            // Explicitly set the console codeset:
-            console_codeset = codeset;
-            break;
-        }
-    }
 
 static encodings_t encodings[] = {
   { iconv_437_e, "437" },
