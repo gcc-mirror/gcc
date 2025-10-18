@@ -584,7 +584,7 @@
   operands[1] = gen_lowpart (DImode, operands[1]);
 })
 
-(define_expand "widen_usumv8qi3"
+(define_expand "widen_usumv4hiv8qi3"
   [(match_operand:V4HI 0 "gr_register_operand" "")
    (match_operand:V8QI 1 "gr_register_operand" "")
    (match_operand:V4HI 2 "gr_register_operand" "")]
@@ -594,7 +594,7 @@
   DONE;
 })
 
-(define_expand "widen_usumv4hi3"
+(define_expand "widen_usumv2siv4hi3"
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand:V4HI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
@@ -604,7 +604,7 @@
   DONE;
 })
 
-(define_expand "widen_ssumv8qi3"
+(define_expand "widen_ssumv4hiv8qi3"
   [(match_operand:V4HI 0 "gr_register_operand" "")
    (match_operand:V8QI 1 "gr_register_operand" "")
    (match_operand:V4HI 2 "gr_register_operand" "")]
@@ -614,7 +614,7 @@
   DONE;
 })
 
-(define_expand "widen_ssumv4hi3"
+(define_expand "widen_ssumv2siv4hi3"
   [(match_operand:V2SI 0 "gr_register_operand" "")
    (match_operand:V4HI 1 "gr_register_operand" "")
    (match_operand:V2SI 2 "gr_register_operand" "")]
