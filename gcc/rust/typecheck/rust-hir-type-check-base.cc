@@ -412,7 +412,7 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
       bool is_repr = attr.get_path ().as_string () == Values::Attributes::REPR;
       if (is_repr && !attr.has_attr_input ())
 	{
-	  rust_error_at (attr.get_locus (), "malformed %qs attribute", "repr");
+	  rust_error_at (attr.get_locus (), "malformed %<repr%> attribute");
 	  continue;
 	}
 
@@ -421,7 +421,11 @@ TypeCheckBase::parse_repr_options (const AST::AttrVec &attrs, location_t locus)
 	  const AST::AttrInput &input = attr.get_attr_input ();
 	  bool is_token_tree = input.get_attr_input_type ()
 			       == AST::AttrInput::AttrInputType::TOKEN_TREE;
-	  rust_assert (is_token_tree);
+	  if (!is_token_tree)
+	    {
+	      rust_error_at (attr.get_locus (), "malformed %<repr%> attribute");
+	      continue;
+	    }
 	  const auto &option = static_cast<const AST::DelimTokenTree &> (input);
 	  AST::AttrInputMetaItemContainer *meta_items
 	    = option.parse_to_meta_item ();
