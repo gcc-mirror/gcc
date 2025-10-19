@@ -1,3 +1,10 @@
+2025-10-18  Yuao Ma  <c8ef@outlook.com>
+
+	* resolve.cc (resolve_conditional): Allow character in cond-expr.
+	* trans-const.cc (gfc_conv_constant): Handle want_pointer.
+	* trans-expr.cc (gfc_conv_conditional_expr): Fill se->string_length.
+	(gfc_conv_string_parameter): Handle COND_EXPR tree code.
+
 2025-10-17  Josef Melcr  <jmelcr02@gmail.com>
 
 	* f95-lang.cc (ATTR_CALLBACK_GOMP_LIST): New attr list

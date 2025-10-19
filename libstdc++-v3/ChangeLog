@@ -1,3 +1,12 @@
+2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/119060
+	* include/bits/version.def: Add observable_checkpoint at present
+	allowed from C++26.
+	* include/bits/version.h: Regenerate.
+	* include/std/utility: Add std::observable_checkpoint().
+	* src/c++23/std.cc.in: Add obervable_checkpoint () to utility.
+
 2025-10-17  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	* include/bits/atomic_base.h

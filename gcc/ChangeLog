@@ -1,3 +1,101 @@
+2025-10-18  Mark Wielaard  <mark@klomp.org>
+
+	* common.opt.urls: Regenerate.
+
+2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/119060
+	* builtins.cc (expand_builtin): Handle BUILT_IN_OBSERVABLE_CHKPT.
+	* builtins.def (BUILT_IN_OBSERVABLE_CHKPT): New.
+	* tree.cc (build_common_builtin_nodes): Build observable
+	checkpoint builtin.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/aarch64/aarch64-sve2.md
+	(widen_ssum<mode><Vnarrow>3): Update.
+	(widen_usum<mode><Vnarrow>3): Update.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/aarch64/aarch64-sve2.md: (widen_ssum<mode><Vnarrow>3): New.
+	(widen_usum<mode><Vnarrow>3): New.
+	* config/aarch64/iterators.md (Vnarrow): New, to match VNARROW.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/aarch64/aarch64-sve.md (widen_<sur>sum<mode><vsi2qi>3): New.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/rs6000/altivec.md (widen_usum<mode>3): Rename ...
+	(widen_usumv4si<mode>3): ... to this.
+	(widen_ssumv16qi3): Rename ...
+	(widen_ssumv4siv16qi3): ... to this.
+	(widen_ssumv8hi3): Rename ...
+	(widen_ssumv4siv8hi3): ... to this.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/ia64/vect.md (widen_usumv8qi3): Renamed ...
+	(widen_usumv4hiv8qi3): ... into this.
+	(widen_usumv4hi3): Renamed ...
+	(widen_usumv2siv4hi3): ... into this.
+	(widen_ssumv8qi3): Renamed ...
+	(widen_ssumv4hiv8qi3): ... into this.
+	(widen_ssumv4hi3): Renamed ...
+	(widen_ssumv2siv4hi3): ... into this.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/arm/iterators.md (v_double_width): New, matching
+	V_double_width.
+	* config/arm/neon.md (widen_ssum<mode>3): Renamed ...
+	(widen_ssum<v_double_width><mode>3, widen_ssum<V_widen_l><mode>3): ...
+	into these.
+	(widen_usum<mode>3): Renamed ...
+	(widen_usum<v_double_width><mode>3, widen_usum<V_widen_l><mode>3): ...
+	into these.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/aarch64/aarch64-simd.md (widen_ssum<mode><vsi2qi>3): New.
+	(widen_usum<mode><vsi2qi>3): New.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* config/aarch64/aarch64-simd.md (widen_ssum<mode>3): Change into..
+	(widen_ssum<Vdblw><mode>3, widen_ssum<Vwide><mode>3): ... these.
+	(widen_usum<mode>3): Change into ...
+	(widen_usum<Vdblw><mode>3, widen_usum<Vwide><mode>3): ... these.
+	* config/aarch64/iterators.md (Vdblw): New.
+	(Vwide): Extend to match VWIDE.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* doc/md.texi (widen_ssum@var{n}@var{m}3, widen_usum@var{n}@var{m}3):
+	Update docs.
+	* optabs.cc (expand_widen_pattern_expr): Add WIDEN_SUM_EXPR as widening.
+	* optabs.def (ssum_widen_optab, usum_widen_optab): Convert from direct
+	to a conversion optab.
+	* tree-vect-patterns.cc (vect_recog_widen_sum_pattern): Change
+	vect_supportable_direct_optab_p into vect_supportable_conv_optab_p.
+
+2025-10-18  Linsen Zhou  <i@lin.moe>
+
+	PR tree-optimization/122012
+	* tree-object-size.cc (check_for_plus_in_loops): Skip check
+	for the variable offset
+
 2025-10-17  David Faust  <david.faust@oracle.com>
 
 	PR target/122139

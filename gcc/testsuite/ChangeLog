@@ -1,3 +1,61 @@
+2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/119060
+	* g++.dg/cpp26/observable-checkpoint.C: New test.
+
+2025-10-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122279
+	* g++.dg/modules/namespace-13_b.C: Adjust expected results.
+	* g++.dg/modules/namespace-13_c.C: Test non-exported
+	using-directive is not used.
+	* g++.dg/modules/namespace-14_a.C: New test.
+	* g++.dg/modules/namespace-14_b.C: New test.
+	* g++.dg/modules/namespace-14_c.C: New test.
+	* g++.dg/modules/namespace-14_d.C: New test.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/sve2/pr122069_3.c: New test.
+	* gcc.target/aarch64/sve2/pr122069_4.c: New test.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/sve2/pr122069_1.c: New test.
+	* gcc.target/aarch64/sve2/pr122069_2.c: New test.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/sve/pr122069_1.c: New test.
+	* gcc.target/aarch64/sve/pr122069_2.c: New test.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/pr122069_3.c: New test.
+	* gcc.target/aarch64/pr122069_4.c: New test.
+
+2025-10-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122069
+	* gcc.target/aarch64/pr122069_1.c: New test.
+	* gcc.target/aarch64/pr122069_2.c: New test.
+
+2025-10-18  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.dg/conditional_1.f90: Test character type.
+	* gfortran.dg/conditional_2.f90: Test print constants.
+	* gfortran.dg/conditional_4.f90: Test diagnostic message.
+	* gfortran.dg/conditional_6.f90: Test character cond-arg.
+
+2025-10-18  Linsen Zhou  <i@lin.moe>
+
+	PR tree-optimization/122012
+	* gcc.dg/torture/pr122012.c: New test.
+
 2025-10-17  David Faust  <david.faust@oracle.com>
 
 	PR target/122139

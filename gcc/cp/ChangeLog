@@ -1,3 +1,20 @@
+2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR c++/119060
+	* cxxapi-data.csv: Add observable_checkpoint to <utility>.
+	* std-name-hint.gperf: Add observable_checkpoint to <utility>.
+	* std-name-hint.h: Regenerate.
+
+2025-10-18  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122279
+	* module.cc (depset::hash::add_namespace_entities): Seed any
+	purview using-decls.
+	(module_state::write_using_directives): Stream if the udir was
+	exported or not.
+	(module_state::read_using_directives): Add the using-directive
+	if it's either exported or part of this module.
+
 2025-10-14  Patrick Palka  <ppalka@redhat.com>
 
 	PR c++/122192
