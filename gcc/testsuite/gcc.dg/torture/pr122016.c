@@ -3,11 +3,11 @@
 
 int merge_parse_args_argc;
 char merge_parse_args_argv_0;
-int strncmp(char *, char *, long);
-void _setjmp();
+int strncmp(const char *, const char *, __SIZE_TYPE__);
+void _setjmp(void);
 typedef enum { FALSE, TRUE } boool;
-void directory_exists();
-void merge_parse_args() {
+void directory_exists(void);
+void merge_parse_args(void) {
   int i;
   boool help_found = FALSE;
   while (i < merge_parse_args_argc && !help_found) {
