@@ -162,19 +162,32 @@ TypeCheckPattern::visit (HIR::TupleStructPattern &pattern)
 
   infered = pattern_ty;
   TyTy::ADTType *adt = static_cast<TyTy::ADTType *> (infered);
-  rust_assert (adt->number_of_variants () > 0);
 
-  TyTy::VariantDef *variant = adt->get_variants ().at (0);
+  TyTy::VariantDef *variant = nullptr;
   if (adt->is_enum ())
     {
       HirId variant_id = UNKNOWN_HIRID;
       bool ok = context->lookup_variant_definition (
 	pattern.get_path ().get_mappings ().get_hirid (), &variant_id);
-      rust_assert (ok);
+      if (!ok)
+	{
+	  rust_error_at (
+	    pattern.get_locus (), ErrorCode::E0532,
+	    "expected tuple struct or tuple variant, found enum %qs",
+	    pattern_ty->get_name ().c_str ());
+	  return;
+	}
 
       ok = adt->lookup_variant_by_id (variant_id, &variant);
       rust_assert (ok);
     }
+  else
+    {
+      rust_assert (adt->number_of_variants () > 0);
+      variant = adt->get_variants ().at (0);
+    }
+
+  rust_assert (variant != nullptr);
 
   // error[E0532]: expected tuple struct or tuple variant, found struct
   // variant `Foo::D`, E0532 by rustc 1.49.0 , E0164 by rustc 1.71.0
