@@ -15222,7 +15222,7 @@ avr_emit3_fix_outputs (rtx (*gen)(rtx,rtx,rtx), rtx *op,
 
 
 /* A helper for the insn condition of "*nzb=1.<code>.lsr[.not]_split"
-   where <code> is AND, IOR or XOR.  Return true when
+   where <code> is AND, IOR, XOR or PLUS.  Return true when
 
       OP[0] <code>= OP[1] >> OP[2]
 
@@ -15251,6 +15251,7 @@ avr_nonzero_bits_lsr_operands_p (rtx_code code, rtx *op)
 
     case IOR:
     case XOR:
+    case PLUS:
       return op1_non0 >> offs == 1;
 
     case AND:
