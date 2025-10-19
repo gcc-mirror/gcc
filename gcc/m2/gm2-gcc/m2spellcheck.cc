@@ -1,4 +1,4 @@
-/* m2spellcheck.cc provides an interface to GCC expression trees.
+/* m2spellcheck.cc provides an interface to the GCC spell checker.
 
 Copyright (C) 2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
@@ -34,9 +34,10 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 
 
 /* Define the hidden type Candidates declared in the definition module.  */
+typedef auto_vec<const char *> candidates_array_vec_t;
 
 typedef struct Candidates_t {
-  auto_vec<const char *> candidates_array;
+  candidates_array_vec_t candidates_array;
   struct Candidates_t *next;
 } Candidates;
 
@@ -57,12 +58,13 @@ m2spellcheck_InitCandidates (void)
       c = freeList;
       freeList = freeList->next;
     }
-  memset (c, 0, sizeof (Candidates));
+  :: new (&c->candidates_array) auto_vec<const char *> ();
+  c->next = NULL;
   return c;
 }
 
 /* Push a string to the Candidates array.
-   The candidates array will contain str at the end.  */
+   The candidates array will contain the string name at the end.  */
 
 static
 void
@@ -80,12 +82,15 @@ m2spellcheck_Push (void *cand, const char *name)
   Push (static_cast<Candidates *> (cand), name);
 }
 
+/* Return the Candidates structure to the freeList and deallocate
+   the auto_vec candidates_array.  */
+
 static
 void
 KillCandidates (Candidates **cand)
 {
-  // --fixme-- deallocate and zero the candidates_array.
   (*cand)->next = freeList;
+  (*cand)->candidates_array.~candidates_array_vec_t ();
   freeList = *cand;
   (*cand) = NULL;
 }

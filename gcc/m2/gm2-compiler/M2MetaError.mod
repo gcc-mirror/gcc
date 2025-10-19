@@ -1894,8 +1894,6 @@ END IsPunct ;
 *)
 
 PROCEDURE JoinSentances (VAR eb: errorBlock; s: String) ;
-VAR
-   i: INTEGER ;
 BEGIN
    IF (s # NIL) AND (Length (s) > 0)
    THEN
