@@ -22,7 +22,7 @@ int main()
 {
   if (ZSTD_countLeadingZeros32_fallback (0) != 31)
     __builtin_abort ();
-  if (ZSTD_countLeadingZeros32_fallback (-1U) != 0)
+  if (ZSTD_countLeadingZeros32_fallback (0xffffffff) != 0)
     __builtin_abort ();
   return 0;
 }
