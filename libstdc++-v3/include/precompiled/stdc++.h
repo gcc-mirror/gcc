@@ -232,6 +232,7 @@
 #endif
 
 #if __cplusplus > 202302L
+#include <contracts>
 #include <debugging>
 #include <inplace_vector>
 #include <meta>

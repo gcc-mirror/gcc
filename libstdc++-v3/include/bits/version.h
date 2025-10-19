@@ -2546,4 +2546,14 @@
 #endif /* !defined(__cpp_lib_is_implicit_lifetime) */
 #undef __glibcxx_want_is_implicit_lifetime
 
+#if !defined(__cpp_lib_contracts)
+# if (__cplusplus >  202302L) && (__cpp_contracts >= 202502L)
+#  define __glibcxx_contracts 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_contracts)
+#   define __cpp_lib_contracts 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_contracts) */
+#undef __glibcxx_want_contracts
+
 #undef __glibcxx_want_all

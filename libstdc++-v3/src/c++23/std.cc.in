@@ -1017,6 +1017,18 @@ export namespace std
 }
 #endif
 
+// 17.10.1 <contracts>
+#if __cpp_lib_contracts
+export namespace std::contracts
+{
+  using std::contracts::assertion_kind;
+  using std::contracts::evaluation_semantic;
+  using std::contracts::detection_mode;
+  using std::contracts::contract_violation;
+  using std::contracts::invoke_default_violation_handler;
+}
+#endif // __cpp_lib_contracts
+
 // 17.12.2 <coroutine>
 #if __cpp_lib_coroutine
 export namespace std
