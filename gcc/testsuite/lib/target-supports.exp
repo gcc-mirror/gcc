@@ -12573,6 +12573,16 @@ foreach { aarch64_ext } $exts_sve2 {
     }]
 }
 
+proc check_effective_target_aarch64_sysreg_guarding_ok { } {
+    if { [istarget aarch64*-*-*] && [check_effective_target_elf] } {
+	return [check_no_compiler_messages aarch64_assembler object {
+	    __asm__ ("msr\ts3_3_c9_c13_4, x0");
+	} "-menable-sysreg-checking"]
+    } else {
+	return 0
+    }
+}
+
 proc check_effective_target_aarch64_asm_sve2p1_ok { } {
     if { [istarget aarch64*-*-*] } {
 	return [check_no_compiler_messages aarch64_sve2p1_assembler object {

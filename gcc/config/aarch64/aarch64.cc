@@ -31663,7 +31663,9 @@ aarch64_valid_sysreg_name_p (const char *regname)
   const sysreg_t *sysreg = aarch64_lookup_sysreg_map (regname);
   if (sysreg == NULL)
     return aarch64_is_implem_def_reg (regname);
-  return true;
+
+  return (!aarch64_enable_sysreg_guarding
+	  || ((~aarch64_isa_flags & sysreg->arch_reqs) == 0));
 }
 
 /* Return the generic sysreg specification for a valid system register
@@ -31685,6 +31687,9 @@ aarch64_retrieve_sysreg (const char *regname, bool write_p, bool is128op)
     return NULL;
   if ((write_p && (sysreg->properties & F_REG_READ))
       || (!write_p && (sysreg->properties & F_REG_WRITE)))
+    return NULL;
+  if (aarch64_enable_sysreg_guarding
+      && ((~aarch64_isa_flags & sysreg->arch_reqs) != 0))
     return NULL;
   return sysreg->encoding;
 }

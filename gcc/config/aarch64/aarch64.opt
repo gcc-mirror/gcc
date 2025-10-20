@@ -82,6 +82,11 @@ mbig-endian
 Target RejectNegative Mask(BIG_END)
 Assume target CPU is configured as big endian.
 
+menable-sysreg-checking
+Target RejectNegative Var(aarch64_enable_sysreg_guarding) Init(0)
+Generates an error message if an attempt is made to access a system register
+which is not available on the target architecture.
+
 mgeneral-regs-only
 Target RejectNegative Mask(GENERAL_REGS_ONLY) Save
 Generate code which uses only the general registers.

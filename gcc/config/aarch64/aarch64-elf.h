@@ -136,6 +136,7 @@
 #define ASM_SPEC "\
 %{mbig-endian:-EB} \
 %{mlittle-endian:-EL} \
+%{menable-sysreg-checking} \
 %(asm_cpu_spec)" \
 ASM_MABI_SPEC
 #endif

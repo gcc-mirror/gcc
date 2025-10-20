@@ -826,6 +826,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{AArch64 Options} (@ref{AArch64 Options})
 @gccoptlist{-mabi=@var{name}  -mbig-endian  -mlittle-endian
+-menable-sysreg-checking
 -mgeneral-regs-only
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large
 -mstrict-align  -mno-strict-align
@@ -22158,6 +22159,11 @@ The @samp{ilp32} model is deprecated.
 @item -mbig-endian
 Generate big-endian code.  This is the default when GCC is configured for an
 @samp{aarch64_be-*-*} target.
+
+@opindex menable-sysreg-checking
+@item -menable-sysreg-checking
+Generates an error message if an attempt is made to access a system register
+which is not available on the target architecture.
 
 @opindex mgeneral-regs-only
 @item -mgeneral-regs-only
