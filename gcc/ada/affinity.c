@@ -56,7 +56,7 @@ __gnat_set_affinity_mask (TASK_ID tid, unsigned mask)
   CPUSET_ZERO(cpuset);
 
   for (index = 0; index < sizeof (unsigned) * 8; index++)
-    if (mask & (1 << index))
+    if (mask & (1U << index))
       CPUSET_SET(cpuset, index);
 
   return taskCpuAffinitySet (tid, cpuset);
