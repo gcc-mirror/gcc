@@ -4632,6 +4632,33 @@
 	   UNSPEC_PCMP_ITER))]
   "operands[4] = GEN_INT (INTVAL (operands[3]) ^ 4);")
 
+(define_insn_and_split "*<avx512>_cmp<mode>3_dup_op"
+  [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
+	(unspec:<avx512fmaskmode>
+	  [(match_operand:VI1248_AVX512VLBW 1 "general_operand")
+	   (match_operand:VI1248_AVX512VLBW 2 "general_operand")
+	   (match_operand:SI 3 "<cmp_imm_predicate>")]
+	  UNSPEC_PCMP_ITER))]
+  "TARGET_AVX512F && ix86_pre_reload_split ()
+   && rtx_equal_p (operands[1], operands[2])"
+  "#"
+  "&& 1"
+  [(set (match_dup 0) (match_dup 4))]
+{
+  int cmp_imm = INTVAL (operands[3]);
+  rtx res = CONST0_RTX (<avx512fmaskmode>mode);
+  /* EQ/LE/NLT.  */
+  if (cmp_imm == 0 || cmp_imm == 2 || cmp_imm == 5)
+  {
+    int nelts = GET_MODE_NUNITS (<MODE>mode);
+    if (nelts >= 8)
+      res = CONSTM1_RTX (<avx512fmaskmode>mode);
+    else
+      res = gen_int_mode ((1u << nelts) - 1, QImode);
+  }
+  operands[4] = res;
+})
+
 (define_insn "*<avx512>_eq<mode>3<mask_scalar_merge_name>_1"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand" "=k,k")
 	(unspec:<avx512fmaskmode>
