@@ -1662,18 +1662,14 @@ package body Sem_Ch12 is
 
             if Box_Present (Src_Assoc) then
                Assoc.Actual := (Kind => Box_Actual);
-               if False then -- ???
-                  --  Disable this for now, because we have various
-                  --  code that needs to be updated.
-                  Error_Msg_N
-                    ("box requires named notation", Src_Assoc);
-               end if;
+               Error_Msg_N ("box requires named notation", Src_Assoc);
             else
                Assoc.Actual :=
                  (Name_Exp,
                   Explicit_Generic_Actual_Parameter (Src_Assoc));
                pragma Assert (Present (Assoc.Actual.Name_Exp));
             end if;
+
             Assoc.Actual_Origin := From_Explicit_Actual;
 
             Next (Src_Assoc);
