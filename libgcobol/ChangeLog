@@ -1,3 +1,18 @@
+2025-10-19  Robert Dubner  <rdubner@symas.com>
+
+	* charmaps.cc (__gg__set_internal_codeset): Eliminate ascii/ebcdic.
+	(__gg__text_conversion_override): Remove.
+	* charmaps.h (enum text_device_t):  Eliminate ascii/ebcdic.
+	(enum text_codeset_t): Remove.
+	(__gg__set_internal_codeset): Remove.
+	(__gg__text_conversion_override): Remove.
+	* gfileio.cc: Anticipate cbl_encoding_t fixes.
+	* libgcobol.cc (struct program_state): Incorporate
+	__gg__entry_label.
+	(__gg__pop_program_state): Eliminate unused defines.
+	(__gg__alphabet_use): Eliminate ascii/ebcdic dichotomy.
+	* valconv.cc (__gg__alphabet_create): Likewise.
+
 2025-10-10  Robert Dubner  <rdubner@symas.com>
 
 	* charmaps.cc (raw_is_SBC): Likewise.

@@ -1,3 +1,44 @@
+2025-10-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/122212
+	PR testsuite/52641
+	* gcc.dg/torture/pr122212.c: Pass 0xffffffff instead of -1u
+	for all bits set in uint32_t.
+
+2025-10-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR testsuite/122016
+	PR testsuite/52641
+	* gcc.dg/torture/pr122016.c (strncmp): Use __SIZE_TYPE__ instead
+	of long as type of the size argument.
+
+2025-10-19  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_mul-7-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u16-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u16-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u32-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u32-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u8-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-7-u8-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-7-u8-from-u64.c: New test.
+
 2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/119060

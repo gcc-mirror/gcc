@@ -1,3 +1,12 @@
+2025-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122333
+	* gm2-compiler/M2MetaError.mod (JoinSentances): Remove
+	unused variable.
+	* gm2-gcc/m2spellcheck.cc (m2spellcheck_InitCandidates): Rewrite.
+	(KillCandidates): Deallocate auto_vec candidates_array.
+	(candidates_array_vec_t): New declaration.
+
 2025-10-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122241

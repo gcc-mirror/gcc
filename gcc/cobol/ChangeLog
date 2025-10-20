@@ -1,3 +1,30 @@
+2025-10-19  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (move_tree): Formatting.
+	(parser_enter_file): Incorporate global __gg__entry_label.
+	(enter_program_common): Remove calls to alphabet overrides.
+	(parser_alphabet): Change cbl_alphabet_e handling.
+	(parser_alphabet_use): Likewise.
+	(initialize_the_data): Likewise.
+	(establish_using): Process passed parameters in a subroutine.
+	(parser_division): Remove in-line parameter processing;
+	call establish_using() instead. Check for __gg__entry_label.
+	(parser_file_add): Temporary workaround for charset encoding.
+	(parser_file_open): Likewise.
+	(create_and_call): Push/pop program state around call to external.
+	(parser_entry): Implement new ENTRY statement feature.
+	(mh_source_is_literalN): Formatting.
+	* genapi.h (parser_entry): New ENTRY statement.
+	* gengen.cc (gg_create_goto_pair): Formatting.
+	(gg_goto_label_decl): Remove.
+	* gengen.h (gg_goto_label_decl): Remove.
+	* genutil.cc (internal_codeset_is_ebcdic): Remove.
+	* genutil.h (internal_codeset_is_ebcdic): Remove.
+	* symbols.cc (symbols_alphabet_set): Restrict alphabet scan to
+	program.
+	* symbols.h (is_elementary): Use defined constants instead of
+	explicit 'A'and 'N'
+
 2025-10-10  Robert Dubner  <rdubner@symas.com>
 
 	* cdf.y: In support of the described changes.

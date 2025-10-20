@@ -1,3 +1,12 @@
+2025-10-19  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_nonzero_bits_lsr_operands_p): Also
+	handle PLUS.
+	* config/avr/avr.md (pixaop): New code iterator for PLUS,
+	IOR, XOR, AND.
+	(nzb=1 insns): Use pixaop instead of bitop code iterator.
+	Handle PLUS in outputs.
+
 2025-10-18  Mark Wielaard  <mark@klomp.org>
 
 	* common.opt.urls: Regenerate.
