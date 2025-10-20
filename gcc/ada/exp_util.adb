@@ -7317,9 +7317,108 @@ package body Exp_Util is
       Loc : constant Source_Ptr := Sloc (Var);
       Ent : constant Entity_Id  := Entity (Var);
 
+      procedure Find_In_Enclosing_Context
+        (Stmt : Node_Id; Current, Previous : in out Node_Id);
+      --  Locate an object reference inside a composite statement Stmt. On
+      --  entry, Previous and Current should be an object reference and its
+      --  parent, respectively. When search is successful, Current is Stmt and
+      --  Previous is its child node, so the caller can determine in which part
+      --  of the statement the original reference was. When search fails, both
+      --  Current and Previous are Empty.
+
       function Is_Transient_Action (N : Node_Id) return Boolean;
       --  Returns True for nodes that belong to a transient action and so they
       --  have no parent, because they have not been inserted to the tree yet.
+
+      -------------------------------
+      -- Find_In_Enclosing_Context --
+      -------------------------------
+
+      procedure Find_In_Enclosing_Context
+        (Stmt : Node_Id; Current, Previous : in out Node_Id)
+      is
+      begin
+         loop
+            --  If we fall off the top of the tree, then that's odd, but
+            --  perhaps it could occur in some error situation, and the safest
+            --  response is simply to assume that the outcome of the condition
+            --  is unknown. No point in bombing during an attempt to optimize
+            --  things.
+
+            if No (Current) then
+
+               --  In particular, we expect to miss the enclosing conditional
+               --  statement for:
+               --  * references within a freezing action (because their
+               --    location is unrelated to the conditional statement),
+               --  * validity checks (becuase for references inside the
+               --    condition they are inserted before the conditional
+               --    statement itself),
+               --  * source locations before and after the conditionaal
+               --    statement.
+
+               pragma Assert
+                 (Inside_Freezing_Actions > 0
+                  or else
+                    (Ekind (Entity (Var)) = E_Variable
+                     and then Present (Validated_Object (Entity (Var))))
+                  or else
+                    Loc < Sloc (Stmt)
+                  or else
+                    Loc >= Sloc (Stmt) + Text_Ptr (UI_To_Int (End_Span (Stmt)))
+                  or else
+                    Serious_Errors_Detected > 0);
+
+               return;
+
+            --  We found the enclosing conditional statement
+
+            elsif Current = Stmt then
+               return;
+
+            --  For itype declarations follow their associated node
+
+            elsif Nkind (Current) = N_Subtype_Declaration
+              and then Is_Itype (Defining_Identifier (Current))
+            then
+               Previous := Current;
+               Current :=
+                 Associated_Node_For_Itype (Defining_Identifier (Previous));
+
+               --  If associated node has not been set yet, we can use the
+               --  related expression, which is set earlier.
+               --  ??? this should be investigated
+
+               if No (Current) then
+                  Current :=
+                    Related_Expression (Defining_Identifier (Previous));
+               end if;
+               pragma Assert (Present (Current));
+
+            --  Same for itypes that have no declaration
+
+            elsif Nkind (Current) = N_Defining_Identifier
+              and then Is_Itype (Current)
+            then
+               pragma Assert (No (Parent (Current)));
+               Previous := Current;
+               Current := Associated_Node_For_Itype (Previous);
+
+            --  For transient actions follow where they will be inserted
+
+            elsif Is_Transient_Action (Current) then
+               Previous := Current;
+               Current :=
+                 Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped;
+
+            --  Otherwise, continue climbing
+
+            else
+               Previous := Current;
+               Current := Parent (Current);
+            end if;
+         end loop;
+      end Find_In_Enclosing_Context;
 
       -------------------------
       -- Is_Transient_Action --
@@ -7521,14 +7620,15 @@ package body Exp_Util is
          Sens : Boolean;
 
       begin
-         --  If statement. Condition is known true in THEN section, known False
-         --  in any ELSIF or ELSE part, and unknown outside the IF statement.
+         --  For IF statement the condition is known true in THEN section,
+         --  known False in any ELSIF or ELSE part, and unknown outside the
+         --  IF statement.
 
          if Nkind (CV) in N_If_Statement | N_Elsif_Part then
 
             --  At this stage we know that we are within the conditional
-            --  statement, but we have to climb the tree to know in which part,
-            --  e.g. in THEN or ELSE statements of an IF statement.
+            --  statement, but we have to climb the tree to know in which
+            --  part, e.g. in THEN or ELSE statements of an IF statement.
 
             declare
                If_Stmt : constant Node_Id :=
@@ -7536,8 +7636,8 @@ package body Exp_Util is
                   then CV
                   else Parent (CV));
 
-               Prev : Node_Id := Var;
-               Curr : Node_Id := Parent (Var);
+               Previous : Node_Id := Var;
+               Current  : Node_Id := Parent (Var);
 
             begin
                --  An ELSIF part whose condition is false could have been
@@ -7546,107 +7646,38 @@ package body Exp_Util is
 
                if Nkind (If_Stmt) /= N_If_Statement then
                   pragma Assert
-                    (Nkind (If_Stmt) = N_Null
-                     and then Nkind (CV) = N_Elsif_Part
+                    (Nkind (CV) = N_Elsif_Part
                      and then Is_Rewrite_Substitution (If_Stmt));
                   return;
                end if;
 
-               loop
-                  --  If we fall off the top of the tree, then that's odd, but
-                  --  perhaps it could occur in some error situation, and the
-                  --  safest response is simply to assume that the outcome of
-                  --  the condition is unknown. No point in bombing during an
-                  --  attempt to optimize things.
+               Find_In_Enclosing_Context (If_Stmt, Current, Previous);
 
-                  if No (Curr) then
+               --  Check whether the reference is in the IF, THEN or ELSE/ELSIF
+               --  part.
 
-                     --  In particular, we expect to miss the enclosing IF
-                     --  statement for:
-                     --  * references within a freezing action (whose location
-                     --    is unrelated to the IF statement),
-                     --  * validity checks (which are inserted before the IF
-                     --    statement even for references within the IF
-                     --    condition),
-                     --  * source locations before and after the IF statement
+               if Current = If_Stmt then
 
-                     pragma Assert
-                       (Inside_Freezing_Actions > 0
-                        or else
-                        (Ekind (Entity (Var)) = E_Variable
-                         and then Present (Validated_Object (Entity (Var))))
-                        or else
-                        Loc < Sloc (If_Stmt)
-                        or else
-                        Loc >=
-                        Sloc (If_Stmt)
-                        + Text_Ptr (UI_To_Int (End_Span (If_Stmt)))
-                        or else
-                        Serious_Errors_Detected > 0);
+                  --  Ignore references from within the IF condition itself
+
+                  if Previous = Condition (If_Stmt) then
                      return;
 
-                  --  For itype declarations follow their associated node
-
-                  elsif Nkind (Curr) = N_Subtype_Declaration
-                    and then Is_Itype (Defining_Identifier (Curr))
-                  then
-                     Prev := Curr;
-                     Curr :=
-                       Associated_Node_For_Itype (Defining_Identifier (Prev));
-
-                     --  If associated node has not been set yet, we can use
-                     --  the related expression, which is set earlier.
-                     --  ??? this should be investigated
-
-                     if No (Curr) then
-                        Curr :=
-                          Related_Expression (Defining_Identifier (Prev));
-                     end if;
-                     pragma Assert (Present (Curr));
-
-                  --  Same for itypes that have no declaration
-
-                  elsif Nkind (Curr) = N_Defining_Identifier
-                     and then Is_Itype (Curr)
-                  then
-                     pragma Assert (No (Parent (Curr)));
-                     Prev := Curr;
-                     Curr := Associated_Node_For_Itype (Prev);
-
-                  --  For transient actions follow where they will be inserted
-
-                  elsif Is_Transient_Action (Curr) then
-                     Prev := Curr;
-                     Curr :=
-                       Scope_Stack.Table (Scope_Stack.Last).Node_To_Be_Wrapped;
-
-                  --  Finally, check whether the reference is in the IF, THEN
-                  --  or ELSE/ELSIF part.
-
-                  elsif Curr = If_Stmt then
-                     --  Ignore references from within the IF condition itself
-
-                     if Prev = Condition (If_Stmt) then
-                        return;
-
-                     else
-                        pragma Assert
-                          (List_Containing (Prev)
-                             in Then_Statements (If_Stmt)
-                              | Elsif_Parts (If_Stmt)
-                              | Else_Statements (If_Stmt));
-
-                        Sens :=
-                          (if CV = If_Stmt
-                           then List_Containing (Prev) = Then_Statements (CV)
-                           else Prev = CV);
-                        exit;
-                     end if;
                   else
-                     Prev := Curr;
-                     Curr := Parent (Curr);
+                     pragma Assert
+                       (List_Containing (Previous)
+                          in Then_Statements (If_Stmt)
+                           | Elsif_Parts (If_Stmt)
+                           | Else_Statements (If_Stmt));
+
+                     Sens :=
+                       (if CV = If_Stmt
+                        then List_Containing (Previous) = Then_Statements (CV)
+                        else Previous = CV);
                   end if;
-               end loop;
+               else
+                  return;
+               end if;
             end;
 
          --  Iteration scheme of while loop. The condition is known to be
@@ -7656,26 +7687,31 @@ package body Exp_Util is
             declare
                Loop_Stmt : constant Node_Id := Parent (CV);
 
+               Previous : Node_Id := Var;
+               Current  : Node_Id := Parent (Var);
+
             begin
-               --  Before start of body of loop
+               pragma Assert (Nkind (Loop_Stmt) = N_Loop_Statement);
 
-               if Loc < Sloc (Loop_Stmt) then
-                  return;
+               Find_In_Enclosing_Context (Loop_Stmt, Current, Previous);
 
-               --  In condition of while loop
+               --  Check whether the reference is inside the WHILE loop
 
-               elsif In_Subtree (N => Var, Root => Condition (CV)) then
-                  return;
+               if Current = Loop_Stmt then
 
-               --  After end of LOOP statement
+                  --  Ignore references from within the WHILE condition itself
 
-               elsif Loc >= Sloc (End_Label (Loop_Stmt)) then
-                  return;
+                  if Previous = Iteration_Scheme (Loop_Stmt) then
+                     return;
 
-               --  We are within the body of the loop
+                  else
+                     pragma Assert
+                       (List_Containing (Previous) = Statements (Loop_Stmt));
 
+                     Sens := True;
+                  end if;
                else
-                  Sens := True;
+                  return;
                end if;
             end;
 
