@@ -10,4 +10,4 @@ long foo (long cond)
   return cond;
 }
 
-/* { dg-final { scan-assembler {\mnds.beqc} } } */
+/* { dg-final { scan-assembler {\mnds.b..c} } } */

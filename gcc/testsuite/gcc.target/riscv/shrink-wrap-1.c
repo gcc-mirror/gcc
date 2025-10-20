@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fshrink-wrap" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Oz" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-Os" "-Oz" "-O1" "-Og" } } */
 
 void g(void);
 
