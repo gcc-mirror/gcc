@@ -30,10 +30,12 @@ int fn [[gnu::target_version("fp16")]] (int)			{ return 1; }
 int fn_fp16(int) asm("fn._Mfp16");
 int fn [[gnu::target_version("fp16fml")]] (int)			{ return 1; }
 int fn_fp16fml(int) asm("fn._Mfp16fml");
-/* TODO: These FMV features are not yet supported in GCC. */
-// int fn [[gnu::target_version("dit")]] (int)			{ return 1; }
-// int fn [[gnu::target_version("dpb")]] (int)			{ return 1; }
-// int fn [[gnu::target_version("dpb2")]] (int)			{ return 1; }
+int fn [[gnu::target_version("dit")]] (int)			{ return 1; }
+int fn_dit(int) asm("fn._Mdit");
+int fn [[gnu::target_version("dpb")]] (int)			{ return 1; }
+int fn_dpb(int) asm("fn._Mdpb");
+int fn [[gnu::target_version("dpb2")]] (int)			{ return 1; }
+int fn_dpb2(int) asm("fn._Mdpb2");
 int fn [[gnu::target_version("jscvt")]] (int)			{ return 1; }
 int fn_jscvt(int) asm("fn._Mjscvt");
 int fn [[gnu::target_version("fcma")]] (int)			{ return 1; }
@@ -68,15 +70,14 @@ int fn [[gnu::target_version("sve2-sm4")]] (int)		{ return 1; }
 int fn_sve2_sm4(int) asm("fn._Msve2_sm4");
 int fn [[gnu::target_version("sve2+sme")]] (int)		{ return 1; }
 int fn_sve2_sme(int) asm("fn._Msve2Msme");
-/* TODO: This FMV features is not yet supported in GCC. */
-// int fn [[gnu::target_version("memtag")]] (int)		{ return 1; }
+int fn [[gnu::target_version("memtag")]] (int)		{ return 1; }
+int fn_memtag(int) asm("fn._Mmemtag");
 int fn [[gnu::target_version("sb")]] (int)			{ return 1; }
 int fn_sb(int) asm("fn._Msb");
-/* TODO: This FMV feature is not yet supported in GCC. */
-// int fn [[gnu::target_version("ssbs")]] (int)			{ return 1; }
-// int fn_ssbs(int) asm("fn._Mssbs");
-/* TODO: This FMV feature is not yet supported in GCC. */
-// int fn [[gnu::target_version("bti")]] (int)			{ return 1; }
+int fn [[gnu::target_version("ssbs")]] (int)			{ return 1; }
+int fn_ssbs(int) asm("fn._Mssbs");
+int fn [[gnu::target_version("bti")]] (int)			{ return 1; }
+int fn_bti(int) asm("fn._Mbti");
 int fn [[gnu::target_version("wfxt")]] (int)			{ return 1; }
 int fn_wfxt(int) asm("fn._Mwfxt");
 int fn [[gnu::target_version("sve2+sme-f64f64")]] (int)		{ return 1; }

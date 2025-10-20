@@ -20380,6 +20380,8 @@ typedef struct
 /* The "rdma" alias uses a different FEAT_NAME to avoid a duplicate
    feature_deps name.  */
 #define FEAT_RDMA FEAT_RDM
+#define FEAT_SSBS FEAT_SSBS2
+#define FEAT_MEMTAG FEAT_MEMTAG2
 
 /* FMV features are listed in priority order, to make it easier to sort target
    strings.  */

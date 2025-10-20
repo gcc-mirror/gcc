@@ -155,6 +155,12 @@ AARCH64_OPT_EXTENSION("fp16fml", F16FML, (), (F16), (), "asimdfhm")
 
 AARCH64_FMV_FEATURE("fp16fml", FP16FML, (F16FML))
 
+AARCH64_FMV_FEATURE("dit", DIT, ())
+
+AARCH64_FMV_FEATURE("dpb", DPB, ())
+
+AARCH64_FMV_FEATURE("dpb2", DPB2, ())
+
 AARCH64_OPT_FMV_EXTENSION("jscvt", JSCVT, (FP), (), (), "jscvt")
 
 AARCH64_OPT_FMV_EXTENSION("fcma", FCMA, (SIMD), (), (), "fcma")
@@ -209,13 +215,15 @@ AARCH64_OPT_EXTENSION("sve2p1", SVE2p1, (SVE2), (), (), "sve2p1")
 
 AARCH64_OPT_FMV_EXTENSION("sme", SME, (BF16, FCMA, F16, F16FML), (), (), "sme")
 
-AARCH64_OPT_EXTENSION("memtag", MEMTAG, (), (), (), "")
+AARCH64_OPT_FMV_EXTENSION("memtag", MEMTAG, (), (), (), "")
 
 AARCH64_OPT_FMV_EXTENSION("sb", SB, (), (), (), "sb")
 
 AARCH64_OPT_EXTENSION("predres", PREDRES, (), (), (), "")
 
-AARCH64_OPT_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
+AARCH64_OPT_FMV_EXTENSION("ssbs", SSBS, (), (), (), "ssbs")
+
+AARCH64_FMV_FEATURE("bti", BTI, ())
 
 AARCH64_OPT_EXTENSION("profile", PROFILE, (), (), (), "")
 

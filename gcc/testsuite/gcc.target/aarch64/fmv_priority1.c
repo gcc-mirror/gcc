@@ -81,14 +81,14 @@ int main () {
   if(resolver() != &fn_fp16fml) return 1;
 
   setCPUFeature (FEAT_DIT);
-  // if(resolver() != &fn_dit) return 1;
-  // 
+  if(resolver() != &fn_dit) return 1;
+
   setCPUFeature (FEAT_DPB);
-  // if(resolver() != &fn_dpb) return 1;
-  // 
+  if(resolver() != &fn_dpb) return 1;
+
   setCPUFeature (FEAT_DPB2);
-  // if(resolver() != &fn_dpb2) return 1;
-  // 
+  if(resolver() != &fn_dpb2) return 1;
+
   setCPUFeature (FEAT_JSCVT);
   if (resolver () != &fn_jscvt) return 1;
 
@@ -102,8 +102,8 @@ int main () {
   if (resolver () != &fn_rcpc2) return 1;
 
   setCPUFeature (FEAT_RCPC3);
-  // if(resolver() != &fn_rcpc3) return 1;
-  // 
+  if(resolver() != &fn_rcpc3) return 1;
+
   setCPUFeature (FEAT_FRINTTS);
   if (resolver () != &fn_frintts) return 1;
 
@@ -141,16 +141,16 @@ int main () {
   if (resolver () != &fn_sve2_sme) return 1;
 
   setCPUFeature(FEAT_MEMTAG2);
-  // if(resolver() != &fn_memtag) return 1;
+  if(resolver() != &fn_memtag) return 1;
 
   setCPUFeature (FEAT_SB);
   if (resolver () != &fn_sb) return 1;
 
   setCPUFeature(FEAT_SSBS2);
-  // if(resolver() != &fn_ssbs) return 1;
+  if(resolver() != &fn_ssbs) return 1;
  
   setCPUFeature(FEAT_BTI);
-  // if(resolver() != &fn_bti) return 1;
+  if(resolver() != &fn_bti) return 1;
 
   setCPUFeature (FEAT_WFXT);
   if (resolver () != &fn_wfxt) return 1;
