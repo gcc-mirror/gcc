@@ -25,6 +25,11 @@
 /* This is a basic "malloc" implementation intended for use with small,
    low-latency memories.
 
+   Compared to the "simple" allocator, this one is designed to keep the
+   metadata and heap together (no slow memory needed), and prioritize
+   space-efficiency over algorithm speed (the memory already being
+   low-latency).
+
    To use this template, define BASIC_ALLOC_PREFIX, and then #include the
    source file.  The other configuration macros are optional.
 

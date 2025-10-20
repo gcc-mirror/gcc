@@ -6959,9 +6959,10 @@ Additional notes regarding the traits:
 @itemize
 @item The @code{pinned} trait is supported on Linux hosts, but is usually
       subject to the OS @code{ulimit}/@code{rlimit} locked memory settings (see
-      @ref{Offload-Target Specifics} for exceptions).  It currently uses
-      @code{mmap} and is therefore optimized for few allocations, including
-      large data.
+      @ref{Offload-Target Specifics} for exceptions).  The implementation
+      uses a custom allocator to try to use as few memory pages as possible.
+      At present, freed pinned memory is not returned to the OS (although it
+      may be reused by subsequent pinned allocations).
 @item The default for the @code{pool_size} trait is no pool and for every
       (re)allocation the associated library routine is called, which might
       internally use a memory pool.
