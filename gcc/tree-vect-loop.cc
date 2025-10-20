@@ -8220,6 +8220,10 @@ vect_transform_cycle_phi (loop_vec_info loop_vinfo,
     /* Leave the scalar phi in place.  */
     return true;
 
+  if (reduc_info && reduc_info->is_reduc_chain && dump_enabled_p ())
+    dump_printf_loc (MSG_NOTE, vect_location,
+		     "vectorizing a reduction chain\n");
+
   vec_num = vect_get_num_copies (loop_vinfo, slp_node);
 
   /* Check whether we should use a single PHI node and accumulate
