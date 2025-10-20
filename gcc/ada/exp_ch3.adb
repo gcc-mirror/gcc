@@ -5537,7 +5537,9 @@ package body Exp_Ch3 is
             --  initialize scalars mode, and these types are treated specially
             --  and do not need initialization procedures.
 
-            elsif Is_Standard_String_Type (Base) then
+            elsif Is_Standard_String_Type (Base)
+              and then No (Default_Aspect_Component_Value (Base))
+            then
                null;
 
             --  Otherwise we have to build an init proc for the subtype
