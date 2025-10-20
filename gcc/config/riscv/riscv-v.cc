@@ -4885,6 +4885,54 @@ expand_reduction (unsigned unspec, unsigned unspec_for_vl0_safe,
   emit_insn (gen_pred_extract_first (m1_mode, scalar_dest, m1_tmp2));
 }
 
+/* Expand mask reductions.  OPS are {dest, src} where DEST's mode
+   is QImode and SRC's mode is a mask mode.
+   CODE is one of AND, IOR, XOR.  */
+
+void
+expand_mask_reduction (rtx *ops, rtx_code code)
+{
+  machine_mode mode = GET_MODE (ops[1]);
+  rtx dest = ops[0];
+  gcc_assert (GET_MODE (dest) == QImode);
+
+  rtx tmp = gen_reg_rtx (Xmode);
+  rtx cpop_ops[] = {tmp, ops[1]};
+  emit_vlmax_insn (code_for_pred_popcount (mode, Xmode), CPOP_OP, cpop_ops);
+
+  bool eq_zero = false;
+
+  /* AND reduction is popcount (mask) == len,
+     IOR reduction is popcount (mask) != 0,
+     XOR reduction is popcount (mask) & 1 != 0.  */
+  if (code == AND)
+    {
+      rtx len = gen_int_mode (GET_MODE_NUNITS (mode), HImode);
+      tmp = expand_binop (Xmode, sub_optab, tmp, len, NULL, true,
+			  OPTAB_DIRECT);
+      eq_zero = true;
+    }
+  else if (code == IOR)
+    ;
+  else if (code == XOR)
+    tmp = expand_binop (Xmode, and_optab, tmp, GEN_INT (1), NULL, true,
+			OPTAB_DIRECT);
+  else
+    gcc_unreachable ();
+
+  rtx els = gen_label_rtx ();
+  rtx end = gen_label_rtx ();
+
+  riscv_expand_conditional_branch (els, eq_zero ? EQ : NE, tmp, const0_rtx);
+  emit_move_insn (dest, const0_rtx);
+  emit_jump_insn (gen_jump (end));
+  emit_barrier ();
+
+  emit_label (els);
+  emit_move_insn (dest, const1_rtx);
+  emit_label (end);
+}
+
 /* Prepare ops for ternary operations.
    It can be called before or after RA.  */
 void

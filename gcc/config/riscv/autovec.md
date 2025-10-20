@@ -2302,6 +2302,37 @@
 })
 
 ;; -------------------------------------------------------------------------
+;; ---- [INT] Mask reductions
+;; -------------------------------------------------------------------------
+
+(define_expand "reduc_sbool_and_scal_<mode>"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:VB_VLS 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_mask_reduction (operands, AND);
+  DONE;
+})
+
+(define_expand "reduc_sbool_ior_scal_<mode>"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:VB_VLS 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_mask_reduction (operands, IOR);
+  DONE;
+})
+
+(define_expand "reduc_sbool_xor_scal_<mode>"
+  [(match_operand:QI 0 "register_operand")
+   (match_operand:VB_VLS 1 "register_operand")]
+  "TARGET_VECTOR"
+{
+  riscv_vector::expand_mask_reduction (operands, XOR);
+  DONE;
+})
+
+;; -------------------------------------------------------------------------
 ;; ---- [FP] Tree reductions
 ;; -------------------------------------------------------------------------
 ;; Includes:
