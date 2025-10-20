@@ -2,10 +2,6 @@
 // { dg-additional-options "-std=c++23" }
 // { dg-additional-options -DMEM_SHARED { target offload_device_shared_as } }
 
-/* { dg-ice {TODO PR120450} { offload_target_amdgcn && { ! offload_device_shared_as } } }
-   { dg-excess-errors {'mkoffload' failure etc.} { xfail { offload_target_amdgcn && { ! offload_device_shared_as } } } }
-   (For effective-target 'offload_device_shared_as', we've got '-DMEM_SHARED', and therefore don't invoke the constructor with placement new.)  */
-
 #include <stdlib.h>
 #include <time.h>
 #include <flat_map>

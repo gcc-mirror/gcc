@@ -1,5 +1,8 @@
 /* { dg-additional-options -std=c++23 } */
 
+/* { dg-ice {TODO PR122268} { offload_target_amdgcn || offload_target_nvptx } }
+   { dg-excess-errors {'mkoffload' failure etc.} { xfail { offload_target_amdgcn || offload_target_nvptx } } } */
+
 /* C++23 container adaptors in target region.
    Severely needs additional tests.  */
 
