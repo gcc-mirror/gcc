@@ -109,6 +109,7 @@ powerpcspe port         Andrew Jenner           <andrew@codesourcery.com>
 pru port                Dimitar Dimitrov        <dimitar@dinux.eu>
 riscv port              Kito Cheng              <kito.cheng@gmail.com>
 riscv port              Palmer Dabbelt          <palmer@dabbelt.com>
+riscv port              Robin Dapp              <rdapp.gcc@gmail.com>
 riscv port              Andrew Waterman         <andrew@sifive.com>
 riscv port              Jim Wilson              <jim.wilson.gcc@gmail.com>
 rs6000/powerpc port     David Edelsohn          <dje.gcc@gmail.com>
@@ -317,11 +318,11 @@ Plugin                  Le-Chun Wu              <lcwu@google.com>
 register allocation     Peter Bergner           <bergner@tenstorrent.com>
 register allocation     Kenneth Zadeck          <zadeck@naturalbridge.com>
 register allocation     Seongbae Park           <seongbae.park@gmail.com>
-riscv port              Robin Dapp              <rdapp.gcc@gmail.com>
 riscv port              Juzhe Zhong             <juzhe.zhong@rivai.ai>
 RTL optimizers          Steven Bosscher         <steven@gcc.gnu.org>
 selective scheduling    Andrey Belevantsev      <abel@ispras.ru>
 selective scheduling    Alexander Monakov       <amonakov@ispras.ru>
+vectorizer (+ tree-if-conv) Robin Dapp          <rdapp.gcc@gmail.com>
 wide-int                Kenneth Zadeck          <zadeck@naturalbridge.com>
 wide-int                Mike Stump              <mikestump@comcast.net>
 wide-int                Richard Sandiford       <rdsandiford@googlemail.com>
