@@ -454,6 +454,9 @@ init_options_struct (struct gcc_options *opts, struct gcc_options *opts_set)
   /* Some targets have ABI-specified unwind tables.  */
   opts->x_flag_unwind_tables = targetm_common.unwind_tables_default;
 
+  /* Languages not explicitly specifying a default get fortran rules.  */
+  opts->x_flag_complex_method = 1;
+
   /* Some targets have other target-specific initialization.  */
   targetm_common.option_init_struct (opts);
 }
@@ -1392,10 +1395,6 @@ finish_options (struct gcc_options *opts, struct gcc_options *opts_set,
       = (opts->x_flag_unroll_loops
          || opts->x_flag_peel_loops
          || opts->x_optimize >= 3);
-
-  /* Use a frontend provided default for the complex eval method.  */
-  if (!opts_set->x_flag_complex_method)
-    opts->x_flag_complex_method = opts->x_flag_default_complex_method;
 
   /* Use -fvect-cost-model=cheap instead of -fvect-cost-mode=very-cheap
      by default with explicit -ftree-{loop,slp}-vectorize.  */
