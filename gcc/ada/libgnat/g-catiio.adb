@@ -515,7 +515,7 @@ package body GNAT.Calendar.Time_IO is
                   Result := Result &
                     Image (Month_Name'Image (Month_Name'Val (Month - 1)));
 
-               --  Locale's date and time (Sat Nov 04 12:02:33 EST 1989)
+               --  Locale's date and time (Sat Nov 04 12:02:33 1989)
 
                when 'c' =>
                   case Padding is
