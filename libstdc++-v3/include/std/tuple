@@ -1999,6 +1999,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
 	tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept { }
+
+#if __cpp_lib_tuple_like // >= C++23
+      // Comparison operators for tuple<> with other empty tuple-like types
+      template<__tuple_like _UTuple>
+	requires (!__is_tuple_v<_UTuple> && tuple_size_v<_UTuple> == 0)
+      [[nodiscard]]
+      friend constexpr bool
+      operator==(const tuple&, const _UTuple&) noexcept
+      { return true; }
+
+      template<__tuple_like _UTuple>
+	requires (!__is_tuple_v<_UTuple> && tuple_size_v<_UTuple> == 0)
+      friend constexpr strong_ordering
+      operator<=>(const tuple&, const _UTuple&) noexcept
+      { return strong_ordering::equal; }
+#endif // C++23
     };
 
 #if !(__cpp_concepts && __cpp_consteval && __cpp_conditional_explicit) // !C++20
