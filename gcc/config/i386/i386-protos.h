@@ -78,6 +78,7 @@ extern void substitute_vpternlog_operands (rtx[]);
 extern bool ix86_expand_strlen (rtx, rtx, rtx, rtx);
 extern bool ix86_expand_set_or_cpymem (rtx, rtx, rtx, rtx, rtx, rtx,
 				       rtx, rtx, rtx, rtx, bool);
+extern bool ix86_expand_movmem (rtx[]);
 extern bool ix86_expand_cmpstrn_or_cmpmem (rtx, rtx, rtx, rtx, rtx, bool);
 
 extern enum reg_class ix86_insn_base_reg_class (rtx_insn *);
