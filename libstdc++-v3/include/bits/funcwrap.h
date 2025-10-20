@@ -546,8 +546,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	if constexpr (is_member_object_pointer_v<_Fn>)
 	  {
 	    if constexpr (is_invocable_v<_Fn, _Tr>)
-	      // TODO Consider reporting issue to make this noexcept
-	      return static_cast<invoke_result_t<_Fn, _Tr>(*)()>(nullptr);
+	      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	      // 4425. CTAD function_ref from data member pointer should produce
+	      //       noexcept signature
+	      return static_cast<invoke_result_t<_Fn, _Tr>(*)() noexcept>(nullptr);
 	  }
 	else if constexpr (requires { typename __skip_first_arg<_Fn>::type; })
 	  return static_cast<__skip_first_arg<_Fn>::type*>(nullptr);

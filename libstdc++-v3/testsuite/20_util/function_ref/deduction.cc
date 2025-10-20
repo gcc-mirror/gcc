@@ -89,13 +89,13 @@ S s{};
 const S cs{};
 
 static_assert( is_same_v<decltype(function_ref(nontype<&S::mem>, s)),
-			 function_ref<int&()>> );
+			 function_ref<int&() noexcept>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::mem>, cs)),
-			 function_ref<const int&()>> );
+			 function_ref<const int&() noexcept>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::mem>, &s)),
-			 function_ref<int&()>> );
+			 function_ref<int&() noexcept>> );
 static_assert( is_same_v<decltype(function_ref(nontype<&S::mem>, &cs)),
-			 function_ref<const int&()>> );
+			 function_ref<const int&() noexcept>> );
 static_assert( !deductible<&S::mem, int> );
 
 static_assert( is_same_v<decltype(function_ref(nontype<&S::f>, s)),
