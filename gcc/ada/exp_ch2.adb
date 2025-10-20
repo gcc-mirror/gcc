@@ -706,9 +706,15 @@ package body Exp_Ch2 is
       T : constant Entity_Id := Etype (N);
 
    begin
+      --  Mark the entity as referenced since this reference is going away
+
+      Set_Referenced (E);
+
+      --  Now rewrite the reference as a copy of the renamed object
+
       Rewrite (N, New_Copy_Tree (Renamed_Object (E)));
 
-      --  We mark the copy as unanalyzed, so that it is sure to be reanalyzed
+      --  Mark the copy as unanalyzed to make sure that it is reanalyzed
       --  at the top level. This is needed in the packed case since we
       --  specifically avoided expanding packed array references when the
       --  renaming declaration was analyzed.
