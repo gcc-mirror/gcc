@@ -1,3 +1,5 @@
+/* { dg-skip-if "PR121975" { c++26 } { "*" } { "" } } */
+
 /* Reduced from 'libgomp.oacc-c-c++-common/kernels-loop-2.c'.  */
 
 /* { dg-additional-options "--param openacc-kernels=decompose" } */
