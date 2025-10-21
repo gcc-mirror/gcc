@@ -225,6 +225,7 @@ cobol/scan.o: cobol/scan.cc			\
 	$(srcdir)/cobol/scan_post.h		\
 	$(srcdir)/cobol/symbols.h		\
 	$(srcdir)/cobol/util.h			\
+	$(srcdir)/cobol/token_names.h		\
 	$(srcdir)/hwint.h			\
 	$(srcdir)/system.h			\
 	$(srcdir)/../include/ansidecl.h		\
@@ -240,6 +241,15 @@ cobol/scan.o: cobol/scan.cc			\
 	config.h 				\
 	cobol/cdf.cc				\
 	cobol/parse.cc
+
+# Update token names if the generator script is installed
+# (by a developer) and there's been a change. 
+$(srcdir)/cobol/token_names.h: cobol/parse.cc
+	if [ -f $@.gen ]; then			\
+		$@.gen $(subst .cc,.h,$^)	\
+		| diff -u $@ -			\
+		| patch -t --set-time $@ ;	\
+	fi
 
 #
 # The src<foo> targets are executed if

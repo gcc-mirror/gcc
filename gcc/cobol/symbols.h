@@ -500,6 +500,7 @@ struct cbl_subtable_t {
 };
 
 const char * __gg__encoding_iconv_name( cbl_encoding_t encoding );
+bool         __gg__encoding_iconv_valid( cbl_encoding_t encoding );
 
 bool is_elementary( enum cbl_field_type_t type );
 
@@ -964,6 +965,7 @@ enum cbl_label_type_t {
   LblString,
   LblArith,
   LblCompute,
+  LblXml,
 };
 
 struct cbl_proc_addresses_t {
@@ -1188,6 +1190,12 @@ struct cbl_compute_error_t {
     tree compute_error_code;
 };
 
+struct cbl_xml_parse_t {
+    cbl_label_addresses_t over;
+    cbl_label_addresses_t exception;
+    cbl_label_addresses_t no_exception;
+};
+
 struct cbl_label_t {
   enum cbl_label_type_t type;
   size_t parent;
@@ -1221,6 +1229,10 @@ struct cbl_label_t {
 
     // for parser_op/parser_assign error tracking
     struct cbl_compute_error_t *compute_error;
+    
+    // for parse_xml processing:
+    struct cbl_xml_parse_t *xml_parse;
+    
     } structs;
 
   bool is_function() const { return type == LblFunction; }
@@ -1239,6 +1251,7 @@ struct cbl_label_t {
     case LblString: return "LblString";
     case LblArith: return "LblArith";
     case LblCompute: return "LblCompute";
+    case LblXml: return "LblXml";
     }
     gcc_unreachable();
   }
@@ -1293,7 +1306,9 @@ struct label_cmp_lessthan {
 
 size_t field_index( const cbl_field_t *f );
 
-cbl_field_t * new_temporary( enum cbl_field_type_t type, const char initial[] = NULL );
+cbl_field_t * new_temporary( enum cbl_field_type_t type,
+                             const char initial[] = NULL,
+                             bool attr = false );
 cbl_field_t * new_temporary_like( cbl_field_t skel );
 cbl_field_t * new_temporary_clone( const cbl_field_t *orig);
 cbl_field_t * keep_temporary( cbl_field_type_t type );
@@ -1953,6 +1968,14 @@ symbol_elem_of( cbl_alphabet_t *alphabet ) {
     reinterpret_cast<symbol_elem_t *>((char*)alphabet - n);
 }
 
+static inline const symbol_elem_t *
+symbol_elem_of( const cbl_alphabet_t *alphabet ) {
+  size_t n = offsetof(symbol_elem_t, elem.alphabet);
+  return
+    // cppcheck-suppress cstyleCast
+    reinterpret_cast<const symbol_elem_t *>((const char*)alphabet - n);
+}
+
 static inline symbol_elem_t *
 symbol_elem_of( cbl_file_t *file ) {
   size_t n = offsetof(struct symbol_elem_t, elem.file);
@@ -2027,14 +2050,14 @@ const cbl_field_t *
 symbol_unresolved_file_key( const cbl_file_t * file,
                             const cbl_name_t key_field_name );
 
-static inline struct cbl_section_t *
-cbl_section_of( struct symbol_elem_t *e ) {
+static inline cbl_section_t *
+cbl_section_of( symbol_elem_t *e ) {
   assert(e && e->type == SymDataSection);
   return &e->elem.section;
 }
 
-static inline struct cbl_field_t *
-cbl_field_of( struct symbol_elem_t *e ) {
+static inline cbl_field_t *
+cbl_field_of( symbol_elem_t *e ) {
   assert(e && e->type == SymField);
   return &e->elem.field;
 }
@@ -2044,8 +2067,8 @@ cbl_field_of( const symbol_elem_t *e ) {
   return &e->elem.field;
 }
 
-static inline struct cbl_label_t *
-cbl_label_of( struct symbol_elem_t *e ) {
+static inline cbl_label_t *
+cbl_label_of( symbol_elem_t *e ) {
   assert(e && e->type == SymLabel);
   return &e->elem.label;
 }
@@ -2056,20 +2079,26 @@ cbl_label_of( const symbol_elem_t *e ) {
   return &e->elem.label;
 }
 
-static inline struct cbl_special_name_t *
-cbl_special_name_of( struct symbol_elem_t *e ) {
+static inline cbl_special_name_t *
+cbl_special_name_of( symbol_elem_t *e ) {
   assert(e && e->type == SymSpecial);
   return &e->elem.special;
 }
 
-static inline struct cbl_alphabet_t *
-cbl_alphabet_of( struct symbol_elem_t *e ) {
+static inline cbl_alphabet_t *
+cbl_alphabet_of( symbol_elem_t *e ) {
   assert(e && e->type == SymAlphabet);
   return &e->elem.alphabet;
 }
 
-static inline struct cbl_file_t *
-cbl_file_of( struct symbol_elem_t *e ) {
+static inline const cbl_alphabet_t *
+cbl_alphabet_of( const symbol_elem_t *e ) {
+  assert(e && e->type == SymAlphabet);
+  return &e->elem.alphabet;
+}
+
+static inline cbl_file_t *
+cbl_file_of( symbol_elem_t *e ) {
   assert(e && e->type == SymFile);
   return &e->elem.file;
 }

@@ -278,6 +278,9 @@ name_of( cbl_field_t *field ) {
   // associated with returning a static.  I don't actually know. -- RJD.
   static size_t static_length = 0;
   static char * static_buffer = nullptr;
+  
+  if( field->data.initial == nullptr ) return field->name;
+
   if( field->name[0] == '_' )
     {
     // Make a copy of .initial
@@ -756,6 +759,8 @@ class eval_subject_t {
     return true;
   }
 };
+
+static std::stack<cbl_label_t *> xml_statements;
 
 class evaluate_t : private std::stack<eval_subject_t> {
 public:
@@ -2366,8 +2371,13 @@ char *
 normalize_picture( char picture[] );
 
 static inline cbl_field_t *
-new_tempnumeric(const cbl_name_t name = nullptr) {
-  return new_temporary(FldNumericBin5, name);
+new_tempnumeric(const cbl_name_t name = nullptr, cbl_field_attr_t attr = signable_e ) {
+  return new_temporary(FldNumericBin5, name, attr == signable_e);
+}
+
+static inline cbl_field_t *
+new_tempnumeric(const cbl_field_attr_t attr ) {
+  return new_temporary(FldNumericBin5, nullptr, attr == signable_e);
 }
 
 static inline cbl_field_t *
@@ -3183,6 +3193,16 @@ ast_set_pointers( const list<cbl_num_result_t>& tgts, cbl_refer_t src ) {
   parser_set_pointers(nptr, ptrs.data(), src);
 }
 
+static void
+ast_save_locale( cbl_refer_t refer, int /* token */ ) {
+  assert( ! refer.addr_of && ! refer.is_reference() );
+  if( ! refer.is_pointer() ) {
+    error_msg(refer.loc, "%s must be USAGE POINTER", refer.name());
+    return;
+  }
+  cbl_unimplemented("SET identifier-11 TO LOCALE");
+}
+
 void
 stringify( refer_collection_t *inputs,
            const cbl_refer_t& into, const cbl_refer_t& pointer,
@@ -3269,7 +3289,11 @@ data_division_ready() {
     const char *name = current.collating_sequence();
 
     if( ! symbols_alphabet_set(PROGRAM, name) ) {
-      error_msg(yylloc, "no alphabet '%s' defined", name);
+      if( name ) {
+        error_msg(yylloc, "no alphabet '%s' defined", name);
+      } else {
+        error_msg(yylloc, "no alphabet defined");
+      }
       return false;
     }
   }

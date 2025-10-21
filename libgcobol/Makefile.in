@@ -115,6 +115,7 @@ target_triplet = @target@
 # Handle embedded rpaths for Darwin.
 @BUILD_LIBGCOBOL_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@am__append_1 = -Wc,-nodefaultrpaths \
 @BUILD_LIBGCOBOL_TRUE@@ENABLE_DARWIN_AT_RPATH_TRUE@	-Wl,-rpath,@loader_path
+@BUILD_LIBGCOBOL_FALSE@libgcobol_la_DEPENDENCIES =
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/clang-plugin.m4 \
@@ -176,11 +177,13 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)" \
 	"$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
-libgcobol_la_LIBADD =
+am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_OBJECTS = charmaps.lo \
 @BUILD_LIBGCOBOL_TRUE@	constants.lo gfileio.lo gmath.lo \
 @BUILD_LIBGCOBOL_TRUE@	intrinsic.lo io.lo libgcobol.lo \
-@BUILD_LIBGCOBOL_TRUE@	stringbin.lo valconv.lo
+@BUILD_LIBGCOBOL_TRUE@	posix/errno.lo posix/localtime.lo \
+@BUILD_LIBGCOBOL_TRUE@	posix/stat.lo stringbin.lo valconv.lo \
+@BUILD_LIBGCOBOL_TRUE@	xmlparse.lo
 libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -390,7 +393,7 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-AUTOMAKE_OPTIONS = 1.8 foreign
+AUTOMAKE_OPTIONS = 1.8 foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # May be used by various substitution variables.
@@ -407,11 +410,18 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	intrinsic.cc				\
 @BUILD_LIBGCOBOL_TRUE@	io.cc					\
 @BUILD_LIBGCOBOL_TRUE@	libgcobol.cc				\
+@BUILD_LIBGCOBOL_TRUE@	posix/errno.cc				\
+@BUILD_LIBGCOBOL_TRUE@	posix/localtime.cc			\
+@BUILD_LIBGCOBOL_TRUE@	posix/stat.cc				\
 @BUILD_LIBGCOBOL_TRUE@	stringbin.cc				\
-@BUILD_LIBGCOBOL_TRUE@	valconv.cc
+@BUILD_LIBGCOBOL_TRUE@	valconv.cc				\
+@BUILD_LIBGCOBOL_TRUE@	xmlparse.cc
 
+@BUILD_LIBGCOBOL_TRUE@libgcobol_la_LIBADD = -lxml2
 @BUILD_LIBGCOBOL_TRUE@WARN_CFLAGS = -W -Wall -Wwrite-strings
-@BUILD_LIBGCOBOL_TRUE@AM_CPPFLAGS = -I. -I$(srcdir) $(LIBQUADINCLUDE)
+@BUILD_LIBGCOBOL_TRUE@AM_CPPFLAGS = -I. -I$(srcdir) -I$(srcdir)/posix \
+@BUILD_LIBGCOBOL_TRUE@	$(LIBQUADINCLUDE) -I \
+@BUILD_LIBGCOBOL_TRUE@	/usr/include/libxml2
 @BUILD_LIBGCOBOL_TRUE@AM_CFLAGS = $(XCFLAGS)
 @BUILD_LIBGCOBOL_TRUE@AM_CXXFLAGS = $(XCFLAGS) $(WARN_CFLAGS) \
 @BUILD_LIBGCOBOL_TRUE@	-DIN_TARGET_LIBS -fno-strict-aliasing
@@ -420,7 +430,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
 @BUILD_LIBGCOBOL_TRUE@version_arg = -version-info $(LIBGCOBOL_VERSION)
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
-@BUILD_LIBGCOBOL_TRUE@	$(extra_ldflags_libgcobol) $(LIBS) $(version_arg)
+@BUILD_LIBGCOBOL_TRUE@	$(extra_ldflags_libgcobol) $(LIBS) -lxml2 $(version_arg)
 
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
 all: config.h
@@ -513,12 +523,24 @@ clean-toolexeclibLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
+posix/$(am__dirstamp):
+	@$(MKDIR_P) posix
+	@: > posix/$(am__dirstamp)
+posix/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) posix/$(DEPDIR)
+	@: > posix/$(DEPDIR)/$(am__dirstamp)
+posix/errno.lo: posix/$(am__dirstamp) posix/$(DEPDIR)/$(am__dirstamp)
+posix/localtime.lo: posix/$(am__dirstamp) \
+	posix/$(DEPDIR)/$(am__dirstamp)
+posix/stat.lo: posix/$(am__dirstamp) posix/$(DEPDIR)/$(am__dirstamp)
 
 libgcobol.la: $(libgcobol_la_OBJECTS) $(libgcobol_la_DEPENDENCIES) $(EXTRA_libgcobol_la_DEPENDENCIES) 
 	$(AM_V_GEN)$(libgcobol_la_LINK) $(am_libgcobol_la_rpath) $(libgcobol_la_OBJECTS) $(libgcobol_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f posix/*.$(OBJEXT)
+	-rm -f posix/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -532,24 +554,31 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libgcobol.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/stringbin.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/valconv.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlparse.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@posix/$(DEPDIR)/errno.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@posix/$(DEPDIR)/localtime.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@posix/$(DEPDIR)/stat.Plo@am__quote@
 
 .cc.o:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ $<
 
 .cc.obj:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(CXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCXX_TRUE@	$(CXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(CXXCOMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .cc.lo:
-@am__fastdepCXX_TRUE@	$(AM_V_CXX)$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCXX_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@am__fastdepCXX_TRUE@	$(AM_V_CXX)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCXX_TRUE@	$(LTCXXCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCXX_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	$(AM_V_CXX)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCXX_FALSE@	DEPDIR=$(DEPDIR) $(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCXX_FALSE@	$(AM_V_CXX@am__nodep@)$(LTCXXCOMPILE) -c -o $@ $<
@@ -559,6 +588,7 @@ mostlyclean-libtool:
 
 clean-libtool:
 	-rm -rf .libs _libs
+	-rm -rf posix/.libs posix/_libs
 
 distclean-libtool:
 	-rm -f libtool config.lt
@@ -675,6 +705,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-rm -f posix/$(DEPDIR)/$(am__dirstamp)
+	-rm -f posix/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -686,7 +718,7 @@ clean-am: clean-generic clean-libtool clean-toolexeclibLTLIBRARIES \
 
 distclean: distclean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ./$(DEPDIR) posix/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-hdr distclean-libtool distclean-tags
@@ -735,7 +767,7 @@ installcheck-am:
 maintainer-clean: maintainer-clean-am
 	-rm -f $(am__CONFIG_DISTCLEAN_FILES)
 	-rm -rf $(top_srcdir)/autom4te.cache
-	-rm -rf ./$(DEPDIR)
+	-rm -rf ./$(DEPDIR) posix/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

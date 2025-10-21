@@ -1202,6 +1202,7 @@ enum cbl_encoding_t {
 #define iso646_e iconv_ISO_10646_e
 
 struct encodings_t {
+  bool supported;
   cbl_encoding_t type;
   const char name[32];
 };

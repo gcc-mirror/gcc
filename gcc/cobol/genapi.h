@@ -81,7 +81,7 @@ void parser_accept_date_dow( cbl_field_t *tgt );
 void parser_accept_date_hhmmssff( cbl_field_t *tgt );
 
 void
-parser_alphabet( cbl_alphabet_t& alphabet );
+parser_alphabet( const cbl_alphabet_t& alphabet );
 void
 parser_alphabet_use( cbl_alphabet_t& alphabet );
 
@@ -89,6 +89,18 @@ void
 parser_allocate( cbl_refer_t size_or_based, cbl_refer_t returning, bool initialized );
 void
 parser_free( size_t n, cbl_refer_t refers[] );
+
+void parser_xml_parse( cbl_label_t *stmt,
+                       cbl_refer_t input,
+                       cbl_field_t *encoding,
+                       cbl_field_t *validating,
+                       bool returns_national,
+                       cbl_label_t *from_proc,
+                       cbl_label_t *to_proc );
+
+void parser_xml_on_exception( cbl_label_t *name );
+void parser_xml_not_exception( cbl_label_t *name );
+void parser_xml_end( cbl_label_t *name );
 
 void
 parser_add( size_t nC, cbl_num_result_t *C,
@@ -321,6 +333,9 @@ parser_label_label( struct cbl_label_t *label );
 
 void
 parser_label_goto( struct cbl_label_t *label );
+
+callback_t *
+parser_label_addr( struct cbl_label_t *label );
 
 void
 parser_goto( cbl_refer_t value, size_t narg, cbl_label_t * const labels[] );

@@ -517,7 +517,6 @@ THAN		{ return THAN; }
 TEST		{ return TEST; }
 TERMINATE	{ return TERMINATE; }
 TALLYING	{ return TALLYING; }
-TALLY		{ return TALLY; }
 SYSPUNCH	{ return SYSPUNCH; }
 SYSOUT		{ return SYSOUT; }
 SYSIN		{ return SYSIN; }
@@ -997,12 +996,12 @@ USE({SPC}FOR)?		{ return USE; }
   COMP(UTATIONAL)?-X		{ return ucomputable(FldNumericBin5, 0xFF); }
   COMP(UTATIONAL)?-6		{ return ucomputable(FldPacked, 0); }
   COMP(UTATIONAL)?-5		{ return ucomputable(FldNumericBin5, 0); }
-  COMP(UTATIONAL)?-4		{ return scomputable(FldNumericBinary, 0); }
+  COMP(UTATIONAL)?-4		{ return ucomputable(FldNumericBinary, 0); }
   COMP(UTATIONAL)?-3		{ return PACKED_DECIMAL; }
   COMP(UTATIONAL)?-2		{ return ucomputable(FldFloat, 8); }
   COMP(UTATIONAL)?-1		{ return ucomputable(FldFloat, 4); }
   COMP(UTATIONAL)?		{ return ucomputable(FldNumericBinary, 0); }
-  BINARY            		{ return scomputable(FldNumericBinary, 0); }
+  BINARY            		{ return ucomputable(FldNumericBinary, 0); }
 
   BINARY-CHAR	   		{ return bcomputable(FldNumericBin5, 1); }
   BINARY-SHORT	  		{ return bcomputable(FldNumericBin5, 2); }
@@ -2262,7 +2261,7 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   DE		{ return DE; }
   DECIMAL-POINT	{ return DECIMAL_POINT; }
   DECLARATIVES	{ return DECLARATIVES; }
-  DEFAULT	{ return DEFAULT; }
+  DEFAULT	{ yylval.number = 'D'; return DEFAULT; }
   DELETE	{ return DELETE; }
   DELIMITED	{ return DELIMITED; }
   DELIMITER	{ return DELIMITER; }

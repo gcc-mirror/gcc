@@ -1634,6 +1634,9 @@ extend_66_capacity( cbl_field_t *alias ) {
 
 bool
 symbols_alphabet_set( size_t program, const char name[]) {
+
+////////
+// Older version
   struct alpha {
     void operator()( symbol_elem_t& elem ) const {
       if( elem.type == SymAlphabet ) {
@@ -1654,6 +1657,38 @@ symbols_alphabet_set( size_t program, const char name[]) {
     parser_alphabet_use(*cbl_alphabet_of(e));
   }
   return true;
+// End older version
+////////
+
+////  // Define alphabets for codegen.
+////  const cbl_alphabet_t *alphabet = nullptr;
+////  bool supported = true;
+////  
+////  std::for_each( symbols_begin(program), symbols_end(),
+////                 [&alphabet, &supported]( const auto& sym ) {
+////                   if( sym.type == SymAlphabet ) {
+////                     alphabet = cbl_alphabet_of(&sym);
+////                     supported = __gg__encoding_iconv_valid(alphabet->encoding);
+////                     if( supported ) {
+////                       parser_alphabet( *alphabet );
+////                     }
+////                   }
+////                 } );
+////  if( ! supported ) {
+////    const char *encoding = __gg__encoding_iconv_name(alphabet->encoding);
+////    cbl_unimplemented("alphabet %qs (as %qs)", alphabet->name, encoding);
+////    return false;
+////  }
+////  
+////  // Set collation sequence before parser_symbol_add.`
+////  if( name ) {
+////    symbol_elem_t *e = symbol_alphabet(program, name);
+////    if( !e ) {
+////      return false;
+////    }
+////    parser_alphabet_use(*cbl_alphabet_of(e));
+////  }
+////  return true;
 }
 
 static std::ostream&
@@ -2352,6 +2387,7 @@ symbol_table_init(void) {
   assert(table.nelem < table.capacity);
   std::for_each(debug_start+1, p, parent_elem_set(debug_start - table.elems));
 
+  // special registers
   static cbl_field_t special_registers[] = {
     { FldNumericDisplay, register_e, {2,2,2,0, NULL}, 0, "_FILE_STATUS" },
     { FldNumericBin5,    register_e, {2,2,4,0, NULL}, 0, "UPSI-0" },
@@ -2363,13 +2399,32 @@ symbol_table_init(void) {
     { FldLiteralA, constq|register_e, {0,0,0,0, "/dev/null"},   0, "_dev_null" },
   };
 
-  // special registers
   assert(table.nelem + COUNT_OF(special_registers) < table.capacity);
 
   p = table.elems + table.nelem;
   p = std::transform(special_registers,
                      special_registers + COUNT_OF(special_registers),
                      p, elementize);
+  table.nelem = p - table.elems;
+  assert(table.nelem < table.capacity);
+
+  // xml registers
+  static cbl_field_t xml_registers[] = {
+    { FldNumericBin5,  register_e, {4,4,9,0, "0"}, 1, "XML-CODE" },
+    { FldAlphanumeric, register_e, {30,30,0,0, " "}, 1, "XML-EVENT" },
+    { FldNumericBin5,  register_e, {4,4,9,0, "0"}, 1, "XML-INFORMATION" },
+    { FldAlphanumeric, register_e | based_e | any_length_e, {1,1,0,0, nullptr}, 1, "XML-NAMESPACE" },
+    { FldAlphanumeric, register_e | based_e | any_length_e, {1,1,0,0, nullptr}, 1, "XML-NNAMESPACE" },
+    { FldAlphanumeric, register_e | based_e | any_length_e, {1,1,0,0, nullptr}, 1, "XML-NAMESPACE-PREFIX" },
+    { FldAlphanumeric, register_e | based_e | any_length_e, {1,1,0,0, nullptr}, 1, "XML-NNAMESPACE-PREFIX" },
+    { FldAlphanumeric, register_e | based_e | any_length_e, {1,1,0,0, nullptr}, 1, "XML-TEXT" },
+    { FldAlphanumeric, register_e | based_e | any_length_e, {1,1,0,0, nullptr}, 1, "XML-NTEXT" },
+  }, * const eoxml = xml_registers + COUNT_OF(xml_registers);
+
+  assert(table.nelem + COUNT_OF(xml_registers) < table.capacity);
+
+  p = table.elems + table.nelem;
+  p = std::transform(xml_registers, eoxml, p, elementize);
   table.nelem = p - table.elems;
   assert(table.nelem < table.capacity);
 
@@ -3533,12 +3588,16 @@ new_alphanumeric( size_t capacity, const cbl_name_t name = nullptr ) {
 
 extern os_locale_t os_locale;
 
-const encodings_t cbl_field_t::codeset_t::standard_internal = { iconv_CP1252_e, "CP1252" };
+const encodings_t cbl_field_t::codeset_t::standard_internal = {
+  true, iconv_CP1252_e, "CP1252"
+};
 #define standard_internal cbl_field_t::codeset_t::standard_internal
 
 cbl_field_t *
-new_temporary( enum cbl_field_type_t type, const char *initial ) {
-  if( ! initial ) {
+new_temporary( enum cbl_field_type_t type, const char *initial, bool is_signed ) {
+  const bool force_unsigned = type == FldNumericBin5 && ! is_signed;
+  
+  if( ! initial && ! force_unsigned ) {
     assert( ! is_literal(type) ); // Literal type must have literal value.
     return temporaries.acquire(type, initial);
   }
@@ -3549,7 +3608,14 @@ new_temporary( enum cbl_field_type_t type, const char *initial ) {
     return field;
   }
   cbl_field_t *field = new_temporary_impl(type, initial);
-  temporaries.add(field);
+
+  // don't reuse unsigned numeric
+  if( force_unsigned ) {
+    field->clear_attr(signable_e);
+  } else {
+    temporaries.add(field);
+  }
+
   parser_symbol_add(field);
 
   return field;

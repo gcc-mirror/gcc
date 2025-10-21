@@ -3051,7 +3051,7 @@ format_for_display_internal(char **dest,
         bool is_negative;
         int index = 0;  // This is the running index into our output destination
 
-        ptrdiff_t signoffset;
+        std::ptrdiff_t signoffset;
         switch(signtype)
           {
           case 0:
@@ -10736,6 +10736,7 @@ __gg__alphabet_use( cbl_encoding_t alphabetic_encoding,
 
   switch( encoding )
     {
+    case iconv_CP1252_e:
     case ASCII_e:
     case iso646_e:
       // This is one of the very common standard situations; where we are using
@@ -11589,8 +11590,7 @@ default_exception_handler( ec_type_t ec )
       filename = file.filename;
       switch( last_exception_file_operation ) {
       case file_op_none:   // not an I/O statement
-        assert(false);
-        abort();
+        break;
       case file_op_open:
       case file_op_close:  // No OPEN/CLOSE results in a fatal error.
         disposition = ec_category_none_e;

@@ -778,6 +778,30 @@ resolution of
 .Ar filename
 is deferred until runtime, when the name must appear in the program's
 environment.
+.Ss XML PARSE
+.Nm
+emulates the IBM
+.Sy "XML PARSE"
+statement.  The following values for
+.Sy XML-EVENT
+are defined:
+.Bl -tag -compact
+.It Sy COMMENT
+Text of a comment between "<!--" and "-->"
+.It Sy CONTENT-CHARACTERS
+Some or all of the character content of the element between start and end tags.
+.It Sy END-OF-ELEMENT
+End-element tag, with name if present in the input.
+.It Sy PROCESSING-INSTRUCTION-DATA
+Processing instruction (after the target name), excluding "?>".
+.It Sy PROCESSING-INSTRUCTION-TARGET
+The processing instruction target name appears in 
+.Sy XML-TEXT
+or
+.Sy XML-NTEXT .
+.It Sy START-OF-ELEMENT
+Name of the start element tag or empty element tag.
+.El
 .
 .Sh ISO \*[lang] Implementation Status
 .Ss USAGE Data Types
@@ -1478,6 +1502,18 @@ If the value is just
 the effect is different: each copybook read is reported on standard
 error.  This feature is meant to help diagnose mysterious copybook
 errors.
+.El
+.
+.Ss Variables for Developers
+.Bl -tag -compact
+.It Ev GCOBOL_SHOW
+produces a trace of the internal calls made by the parser to prepare
+the GENERIC tree.
+.It Ev GCOBOL_TRACE
+used at compile time, produces an executable that traces the
+execution, mapping it back the same code-creation functions as
+.Ev GCOBOL_SHOW ,
+as well as the values of data items and branch conditions.
 .El
 .
 .Sh FILES

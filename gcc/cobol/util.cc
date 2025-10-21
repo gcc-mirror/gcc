@@ -2107,28 +2107,35 @@ void current_location_minus_one_clear()
   first_line_minus_1 = 0;
   }
 
+/*
+ * Update global token_location with a location_t expressing a source range
+ * with start and caret at the first line/column of LOC, and finishing at the
+ * last line/column of LOC.
+ */
 template <typename LOC>
 static void
 gcc_location_set_impl( const LOC& loc ) {
   // Set the position to the first line & column in the location.
  static location_t loc_m_1 = 0;
+ const location_t
+   start_line   = linemap_line_start( line_table, loc.first_line, 80 ),
+   token_start  = linemap_position_for_column( line_table, loc.first_column),
+   finish_line  = linemap_line_start( line_table, loc.last_line, 80 ),
+   token_finish = linemap_position_for_column( line_table, loc.last_column);
+ token_location = make_location (token_start, token_start, token_finish);
 
-  token_location = linemap_line_start( line_table, loc.first_line, 80 );
-  token_location = linemap_position_for_column( line_table, loc.first_column);
-
-  if( loc.first_line > first_line_minus_1 )
-    {
-    // In order for GDB-COBOL to be able to step through COBOL code properly,
-    // it is sometimes necessary for the code at the beginning of a COBOL
-    // line to be using the location_t of the previous line.  This is true, for
-    // example, when laying down the infrastructure code between the last
-    // statement of a paragraph and the code created at the beginning of the
-    // following paragragh.  This code assumes that token_location values of
-    // interest are monotonic, and stores that prior value.
-    first_line_minus_1 = loc.first_line;
-    token_location_minus_1 = loc_m_1;
-    loc_m_1 = token_location;
-    }
+ if( loc.first_line > first_line_minus_1 ) {
+   // In order for GDB-COBOL to be able to step through COBOL code properly,
+   // it is sometimes necessary for the code at the beginning of a COBOL
+   // line to be using the location_t of the previous line.  This is true, for
+   // example, when laying down the infrastructure code between the last
+   // statement of a paragraph and the code created at the beginning of the
+   // following paragragh.  This code assumes that token_location values of
+   // interest are monotonic, and stores that prior value.
+   first_line_minus_1 = loc.first_line;
+   token_location_minus_1 = loc_m_1;
+   loc_m_1 = token_location;
+ }
 
   location_dump(__func__, __LINE__, "parser", loc);
 }

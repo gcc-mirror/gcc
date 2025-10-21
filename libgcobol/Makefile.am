@@ -19,7 +19,7 @@
 
 # Written de novo for libgcobol.
 
-AUTOMAKE_OPTIONS = 1.8 foreign
+AUTOMAKE_OPTIONS = 1.8 foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
 # May be used by various substitution variables.
@@ -34,6 +34,7 @@ toolexeclib_DATA = libgcobol.spec
 ## 2.2.12 Automatic Dependency Tracking
 ## Automake generates code for automatic dependency tracking by default
 ##
+
 libgcobol_la_SOURCES =				\
 	charmaps.cc				\
 	constants.cc				\
@@ -42,12 +43,20 @@ libgcobol_la_SOURCES =				\
 	intrinsic.cc				\
 	io.cc					\
 	libgcobol.cc				\
+	posix/errno.cc				\
+	posix/localtime.cc			\
+	posix/stat.cc				\
 	stringbin.cc				\
-	valconv.cc
+	valconv.cc				\
+	xmlparse.cc
+
+libgcobol_la_LIBADD = -lxml2
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
-AM_CPPFLAGS = -I. -I$(srcdir) $(LIBQUADINCLUDE)
+AM_CPPFLAGS = -I. -I$(srcdir) -I$(srcdir)/posix $(LIBQUADINCLUDE)
+AM_CPPFLAGS += -I /usr/include/libxml2
+
 AM_CFLAGS = $(XCFLAGS)
 AM_CXXFLAGS = $(XCFLAGS)
 AM_CXXFLAGS += $(WARN_CFLAGS)
@@ -64,7 +73,7 @@ endif
 libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
 version_arg = -version-info $(LIBGCOBOL_VERSION)
 libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
-	$(extra_ldflags_libgcobol) $(LIBS) $(version_arg)
+	$(extra_ldflags_libgcobol) $(LIBS) -lxml2 $(version_arg)
 libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
 
 endif BUILD_LIBGCOBOL

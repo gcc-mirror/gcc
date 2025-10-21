@@ -33,7 +33,11 @@
 #include <cassert>
 #include <cstdio>
 #include <cstdint>
+
+#include <algorithm>
 #include <list>
+#include <set>
+#include <vector>
 
 #include "encodings.h"
 
@@ -124,6 +128,8 @@
  * "A COBOL word is a character-string of not more than 63 characters"
  */
 typedef char cbl_name_t[64];
+
+typedef void (callback_t)();
 
 // Note that the field_type enum is duplicated in the source code for the
 // COBOL-aware GDB, and so any changes here (or there) have to be reflected

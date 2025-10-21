@@ -244,21 +244,21 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %type	<boolean>	     DEFINED
 %token OTHER 699  PARAMETER_kw 369    "PARAMETER"
 %token OFF 688  OVERRIDE 370
-%token THRU 952
-%token TRUE_kw 815    "True"
+%token THRU 949
+%token TRUE_kw 814    "True"
 
 %token CALL_COBOL 393    "CALL"
 %token CALL_VERBATIM 394    "CALL (as C)"
 
-%token TURN 817  CHECKING 497  LOCATION 650  ON 690  WITH 844
+%token TURN 816  CHECKING 497  LOCATION 650  ON 690  WITH 843
 
-%left OR 953
-%left AND 954
-%right NOT 955
-%left '<'  '>'  '='  NE 956  LE 957  GE 958
+%left OR 950
+%left AND 951
+%right NOT 952
+%left '<'  '>'  '='  NE 953  LE 954  GE 955
 %left '-'  '+'
 %left '*'  '/'
-%right NEG 960
+%right NEG 957
 
 %define api.prefix {ydf}
 %define api.token.prefix{YDF_}
