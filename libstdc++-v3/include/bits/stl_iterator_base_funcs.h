@@ -201,7 +201,7 @@ namespace __detail
       // concept requirements
       __glibcxx_function_requires(_InputIteratorConcept<_InputIterator>)
       __glibcxx_assert(__n >= 0);
-      while (__n--)
+      while (__n-- > 0)
 	++__i;
     }
 
