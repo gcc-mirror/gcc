@@ -5097,6 +5097,42 @@ replaceable_type_p (tree t)
   return true;
 }
 
+/* Returns 1 iff type T is an implicit-lifetime type, as defined in
+   [basic.types.general] and [class.prop].  */
+
+bool
+implicit_lifetime_type_p (tree t)
+{
+  if (SCALAR_TYPE_P (t)
+      || (TREE_CODE (t) == ARRAY_TYPE
+	  && !(TYPE_SIZE (t) && integer_zerop (TYPE_SIZE (t))))
+      /* GNU extension.  */
+      || TREE_CODE (t) == VECTOR_TYPE)
+    return true;
+  if (!CLASS_TYPE_P (t))
+    return false;
+  t = TYPE_MAIN_VARIANT (t);
+  if (CP_AGGREGATE_TYPE_P (t)
+      && (!CLASSTYPE_DESTRUCTOR (t)
+	  || !user_provided_p (CLASSTYPE_DESTRUCTOR (t))))
+    return true;
+  if (is_trivially_xible (BIT_NOT_EXPR, t, NULL_TREE))
+    {
+      if (is_trivially_xible (INIT_EXPR, t, make_tree_vec (0)))
+	return true;
+      tree arg = make_tree_vec (1);
+      tree ct
+	= cp_build_qualified_type (t, (cp_type_quals (t) | TYPE_QUAL_CONST));
+      TREE_VEC_ELT (arg, 0) = cp_build_reference_type (ct, /*rval=*/false);
+      if (is_trivially_xible (INIT_EXPR, t, arg))
+	return true;
+      TREE_VEC_ELT (arg, 0) = t;
+      if (is_trivially_xible (INIT_EXPR, t, arg))
+	return true;
+    }
+  return false;
+}
+
 /* Returns 1 iff type T is a POD type, as defined in [basic.types].  */
 
 bool

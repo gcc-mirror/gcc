@@ -13595,6 +13595,9 @@ trait_expr_value (cp_trait_kind kind, tree type1, tree type2)
     case CPTK_IS_FUNCTION:
       return type_code1 == FUNCTION_TYPE;
 
+    case CPTK_IS_IMPLICIT_LIFETIME:
+      return implicit_lifetime_type_p (type1);
+
     case CPTK_IS_INVOCABLE:
       return !error_operand_p (build_invoke (type1, type2, tf_none));
 
@@ -13914,6 +13917,7 @@ finish_trait_expr (location_t loc, cp_trait_kind kind, tree type1, tree type2)
        type to know whether an array is an aggregate, so use kind=4 here.  */
     case CPTK_IS_AGGREGATE:
     case CPTK_IS_FINAL:
+    case CPTK_IS_IMPLICIT_LIFETIME:
       if (!check_trait_type (type1, /* kind = */ 4))
 	return error_mark_node;
       break;
