@@ -1580,8 +1580,7 @@ machines with strict alignment requirements, GNAT
 checks (at compile time if possible, generating a warning, or at execution
 time with a run-time check) that the alignment is appropriate.  If the
 run-time check fails, then ``Program_Error`` is raised.  This run-time
-check is suppressed if range checks are suppressed, or if the special GNAT
-check Alignment_Check is suppressed, or if
+check is suppressed if the GNAT check Alignment_Check is suppressed, or if
 ``pragma Restrictions (No_Elaboration_Code)`` is in effect. It is also
 suppressed by default on non-strict alignment machines (such as the x86).
 

@@ -442,11 +442,6 @@ package body Sem_Ch13 is
 
       Off : Boolean;
       --  Whether the address is offset within Y in the second case
-
-      Alignment_Checks_Suppressed : Boolean;
-      --  Whether alignment checks are suppressed by an active scope suppress
-      --  setting. We need to save the value in order to be able to reuse it
-      --  after the back end has been run.
    end record;
 
    package Address_Clause_Checks is new Table.Table (
@@ -456,26 +451,6 @@ package body Sem_Ch13 is
      Table_Initial        => 20,
      Table_Increment      => 200,
      Table_Name           => "Address_Clause_Checks");
-
-   function Alignment_Checks_Suppressed
-     (ACCR : Address_Clause_Check_Record) return Boolean;
-   --  Return whether the alignment check generated for the address clause
-   --  is suppressed.
-
-   ---------------------------------
-   -- Alignment_Checks_Suppressed --
-   ---------------------------------
-
-   function Alignment_Checks_Suppressed
-     (ACCR : Address_Clause_Check_Record) return Boolean
-   is
-   begin
-      if Checks_May_Be_Suppressed (ACCR.X) then
-         return Is_Check_Suppressed (ACCR.X, Alignment_Check);
-      else
-         return ACCR.Alignment_Checks_Suppressed;
-      end if;
-   end Alignment_Checks_Suppressed;
 
    -----------------------------------------
    -- Adjust_Record_For_Reverse_Bit_Order --
@@ -7086,11 +7061,15 @@ package body Sem_Ch13 is
                      end if;
                   end;
 
-                  --  Entity has delayed freeze, so we will generate an
+                  --  The entity has delayed freeze, so we will generate an
                   --  alignment check at the freeze point unless suppressed.
+                  --  We will unconditionally generate it when the alignment
+                  --  is specified in addition to the address, to compensate
+                  --  for the check being suppressed by default on machines
+                  --  that do not need strict alignment of memory accesses.
 
-                  if not Range_Checks_Suppressed (U_Ent)
-                    and then not Alignment_Checks_Suppressed (U_Ent)
+                  if not Alignment_Checks_Suppressed (U_Ent)
+                    or else Present (Alignment_Clause (U_Ent))
                   then
                      Set_Check_Address_Alignment (N);
                   end if;
@@ -7164,6 +7143,14 @@ package body Sem_Ch13 is
 
                if Is_Array_Type (U_Ent) then
                   Set_Alignment (Base_Type (U_Ent), Align);
+               end if;
+
+               --  See the Attribute_Address case above for the rationale
+
+               if not Is_Type (U_Ent)
+                 and then Present (Address_Clause (U_Ent))
+               then
+                  Set_Check_Address_Alignment (Address_Clause (U_Ent));
                end if;
             end if;
          end Alignment;
@@ -16669,9 +16656,8 @@ package body Sem_Ch13 is
       Y   : Entity_Id;
       Off : Boolean)
    is
-      ACS : constant Boolean := Scope_Suppress.Suppress (Alignment_Check);
    begin
-      Address_Clause_Checks.Append ((N, X, A, Y, Off, ACS));
+      Address_Clause_Checks.Append ((N, X, A, Y, Off));
    end Register_Address_Clause_Check;
 
    ------------------------
@@ -19121,7 +19107,7 @@ package body Sem_Ch13 is
                --  Check for known value not multiple of alignment
 
                if No (ACCR.Y) then
-                  if not Alignment_Checks_Suppressed (ACCR)
+                  if Check_Address_Alignment (ACCR.N)
                     and then X_Alignment /= 0
                     and then ACCR.A mod X_Alignment /= 0
                   then
@@ -19166,7 +19152,7 @@ package body Sem_Ch13 is
                --  Note: we do not check the alignment if we gave a size
                --  warning, since it would likely be redundant.
 
-               elsif not Alignment_Checks_Suppressed (ACCR)
+               elsif Check_Address_Alignment (ACCR.N)
                  and then Y_Alignment /= Uint_0
                  and then
                    (Y_Alignment < X_Alignment
