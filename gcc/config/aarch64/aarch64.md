@@ -689,6 +689,7 @@
 
 ;; Dispatch scheduling
 (include "neoversev2.md")
+(include "olympus.md")
 
 ;; -------------------------------------------------------------------
 ;; Jumps and other miscellaneous insns
