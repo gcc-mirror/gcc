@@ -596,9 +596,10 @@ package body Checks is
       --  Note: we do not check for checks suppressed here, since that check
       --  was done in Sem_Ch13 when the address clause was processed. We are
       --  only called if checks were not suppressed. The reason for this is
-      --  that we have to delay the call to Apply_Alignment_Check till freeze
-      --  time (so that all types etc are elaborated), but we have to check
-      --  the status of check suppressing at the point of the address clause.
+      --  that we have to delay the call to Apply_Address_Clause_Check till
+      --  freeze time (so that all types etc are elaborated), but we have to
+      --  check the status of check suppressing at the point of the address
+      --  clause.
 
       if No (AC)
         or else not Check_Address_Alignment (AC)
