@@ -3103,8 +3103,9 @@ operator_cast::fold_range (irange &r, tree type ATTRIBUTE_UNUSED,
       int_range_max tmp;
       fold_pair (tmp, x, inner, outer);
       r.union_ (tmp);
+      // If we hit varying, go update the bitmask.
       if (r.varying_p ())
-	return true;
+	break;
     }
 
   update_bitmask (r, inner, outer);
@@ -3204,6 +3205,25 @@ operator_cast::op1_range (irange &r, tree type,
 	}
       // And intersect with any known value passed in the extra operand.
       r.intersect (op2);
+      if (r.undefined_p ())
+	return true;
+
+      // Now create a bitmask indicating that the lower bit must match the
+      // bits in the LHS.   Zero-extend LHS bitmask to precision of op1.
+      irange_bitmask bm = lhs.get_bitmask ();
+      wide_int mask = wide_int::from (bm.mask (), TYPE_PRECISION (type),
+				      UNSIGNED);
+      wide_int value = wide_int::from (bm.value (), TYPE_PRECISION (type),
+				       UNSIGNED);
+
+      // Set then additonal unknown bits in mask.
+      wide_int lim = wi::mask (TYPE_PRECISION (lhs_type), true,
+			       TYPE_PRECISION (type));
+      mask = mask | lim;
+
+      // Now set the new bitmask for the range.
+      irange_bitmask new_bm (value, mask);
+      r.update_bitmask (new_bm);
       return true;
     }
 
