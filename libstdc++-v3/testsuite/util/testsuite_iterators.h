@@ -674,6 +674,9 @@ namespace __gnu_test
   template <class T, template<class TT> class ItType>
   struct test_container
   {
+    typedef ItType<T> iterator;
+    typedef typename iterator::value_type value_type;
+
     typename ItType<T>::ContainerType bounds;
 
     _GLIBCXX_CONSTEXPR
