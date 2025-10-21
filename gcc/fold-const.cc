@@ -151,74 +151,89 @@ static tree fold_view_convert_expr (tree, tree);
 static tree fold_negate_expr (location_t, tree);
 
 /* This is a helper function to detect min/max for some operands of COND_EXPR.
+   The form is "(exp0 CMP cst1) ? exp0 : cst2". */
+tree_code
+minmax_from_comparison (tree_code cmp, tree exp0,
+			const widest_int cst1,
+			const widest_int cst2)
+{
+  if (cst1 == cst2)
+    {
+      if (cmp == LE_EXPR || cmp == LT_EXPR)
+	return MIN_EXPR;
+      if (cmp == GT_EXPR || cmp == GE_EXPR)
+	return MAX_EXPR;
+    }
+  if (cst1 == cst2 - 1)
+    {
+      /* X <= Y - 1 equals to X < Y.  */
+      if (cmp == LE_EXPR)
+	return MIN_EXPR;
+      /* X > Y - 1 equals to X >= Y.  */
+      if (cmp == GT_EXPR)
+	return MAX_EXPR;
+      /* a != MIN_RANGE<a> ? a : MIN_RANGE<a>+1 -> MAX_EXPR<MIN_RANGE<a>+1, a> */
+      if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
+	{
+	  int_range_max r;
+	  get_range_query (cfun)->range_of_expr (r, exp0);
+	  if (r.undefined_p ())
+	    r.set_varying (TREE_TYPE (exp0));
+
+	  widest_int min = widest_int::from (r.lower_bound (),
+					     TYPE_SIGN (TREE_TYPE (exp0)));
+	  if (min == cst1)
+	    return MAX_EXPR;
+	}
+  }
+  if (cst1 == cst2 + 1)
+    {
+      /* X < Y + 1 equals to X <= Y.  */
+      if (cmp == LT_EXPR)
+        return MIN_EXPR;
+      /* X >= Y + 1 equals to X > Y.  */
+      if (cmp == GE_EXPR)
+	return MAX_EXPR;
+      /* a != MAX_RANGE<a> ? a : MAX_RANGE<a>-1 -> MIN_EXPR<MIN_RANGE<a>-1, a> */
+      if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
+	{
+	  int_range_max r;
+	  get_range_query (cfun)->range_of_expr (r, exp0);
+	  if (r.undefined_p ())
+	    r.set_varying (TREE_TYPE (exp0));
+
+	  widest_int max = widest_int::from (r.upper_bound (),
+					     TYPE_SIGN (TREE_TYPE (exp0)));
+	  if (max == cst1)
+	    return MIN_EXPR;
+	}
+    }
+  return ERROR_MARK;
+}
+	
+	
+/* This is a helper function to detect min/max for some operands of COND_EXPR.
    The form is "(EXP0 CMP EXP1) ? EXP2 : EXP3". */
 tree_code
 minmax_from_comparison (tree_code cmp, tree exp0, tree exp1, tree exp2, tree exp3)
 {
-  enum tree_code code = ERROR_MARK;
-
   if (HONOR_NANS (exp0) || HONOR_SIGNED_ZEROS (exp0))
     return ERROR_MARK;
 
   if (!operand_equal_p (exp0, exp2))
     return ERROR_MARK;
 
-  if (TREE_CODE (exp3) == INTEGER_CST && TREE_CODE (exp1) == INTEGER_CST)
-    {
-      if (wi::to_widest (exp1) == (wi::to_widest (exp3) - 1))
-	{
-	  /* X <= Y - 1 equals to X < Y.  */
-	  if (cmp == LE_EXPR)
-	    code = LT_EXPR;
-	  /* X > Y - 1 equals to X >= Y.  */
-	  if (cmp == GT_EXPR)
-	    code = GE_EXPR;
-	  /* a != MIN_RANGE<a> ? a : MIN_RANGE<a>+1 -> MAX_EXPR<MIN_RANGE<a>+1, a> */
-	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
-	    {
-	      int_range_max r;
-	      get_range_query (cfun)->range_of_expr (r, exp0);
-	      if (r.undefined_p ())
-		r.set_varying (TREE_TYPE (exp0));
-
-	      widest_int min = widest_int::from (r.lower_bound (),
-						 TYPE_SIGN (TREE_TYPE (exp0)));
-	      if (min == wi::to_widest (exp1))
-		code = MAX_EXPR;
-	    }
-	}
-      if (wi::to_widest (exp1) == (wi::to_widest (exp3) + 1))
-	{
-	  /* X < Y + 1 equals to X <= Y.  */
-	  if (cmp == LT_EXPR)
-	    code = LE_EXPR;
-	  /* X >= Y + 1 equals to X > Y.  */
-	  if (cmp == GE_EXPR)
-	  code = GT_EXPR;
-	  /* a != MAX_RANGE<a> ? a : MAX_RANGE<a>-1 -> MIN_EXPR<MIN_RANGE<a>-1, a> */
-	  if (cmp == NE_EXPR && TREE_CODE (exp0) == SSA_NAME)
-	    {
-	      int_range_max r;
-	      get_range_query (cfun)->range_of_expr (r, exp0);
-	      if (r.undefined_p ())
-		r.set_varying (TREE_TYPE (exp0));
-
-	      widest_int max = widest_int::from (r.upper_bound (),
-						 TYPE_SIGN (TREE_TYPE (exp0)));
-	      if (max == wi::to_widest (exp1))
-		code = MIN_EXPR;
-	    }
-	}
-    }
-  if (code != ERROR_MARK
-      || operand_equal_p (exp1, exp3))
+  if (operand_equal_p (exp1, exp3))
     {
       if (cmp == LT_EXPR || cmp == LE_EXPR)
-	code = MIN_EXPR;
+	return MIN_EXPR;
       if (cmp == GT_EXPR || cmp == GE_EXPR)
-	code = MAX_EXPR;
+	return MAX_EXPR;
     }
-  return code;
+  if (TREE_CODE (exp3) == INTEGER_CST
+      && TREE_CODE (exp1) == INTEGER_CST)
+    return minmax_from_comparison (cmp, exp0, wi::to_widest (exp1), wi::to_widest (exp3));
+  return ERROR_MARK;
 }
 
 /* Return EXPR_LOCATION of T if it is not UNKNOWN_LOCATION.

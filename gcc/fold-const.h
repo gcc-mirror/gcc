@@ -254,6 +254,9 @@ extern tree fold_build_pointer_plus_hwi_loc (location_t loc, tree ptr, HOST_WIDE
 #define fold_build_pointer_plus_hwi(p,o) \
 	fold_build_pointer_plus_hwi_loc (UNKNOWN_LOCATION, p, o)
 
+extern tree_code minmax_from_comparison (tree_code, tree,
+					 const widest_int,
+					 const widest_int);
 extern tree_code minmax_from_comparison (tree_code, tree, tree,
 					 tree, tree);
 
