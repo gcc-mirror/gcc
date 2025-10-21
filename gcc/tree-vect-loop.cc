@@ -5219,6 +5219,15 @@ vect_create_partial_epilog (tree vec_def, tree vectype, code_helper code,
 
       new_temp = gimple_build (seq, code, vectype1, dst1, dst2);
     }
+  if (!useless_type_conversion_p (vectype, TREE_TYPE (new_temp)))
+    {
+      tree dst3 = make_ssa_name (vectype);
+      gimple *epilog_stmt = gimple_build_assign (dst3, VIEW_CONVERT_EXPR,
+						 build1 (VIEW_CONVERT_EXPR,
+							 vectype, new_temp));
+      gimple_seq_add_stmt_without_update (seq, epilog_stmt);
+      new_temp = dst3;
+    }
 
   return new_temp;
 }
