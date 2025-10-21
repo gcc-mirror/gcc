@@ -449,6 +449,30 @@ scalar_chain::analyze_register_chain (bitmap candidates, df_ref ref,
   return true;
 }
 
+/* Check whether X is a convertible *concatditi_? variant.  X is known
+   to be any_or_plus:TI, i.e. PLUS:TI, IOR:TI or XOR:TI.  */
+
+static bool
+timode_concatdi_p (rtx x)
+{
+  rtx op0 = XEXP (x, 0);
+  rtx op1 = XEXP (x, 1);
+
+  if (GET_CODE (op1) == ASHIFT)
+    std::swap (op0, op1);
+
+  return GET_CODE (op0) == ASHIFT
+	 && GET_CODE (XEXP (op0, 0)) == ZERO_EXTEND
+	 && GET_MODE (XEXP (XEXP (op0, 0), 0)) == DImode
+	 && REG_P (XEXP (XEXP (op0, 0), 0))
+	 && CONST_INT_P (XEXP (op0, 1))
+	 && INTVAL (XEXP (op0, 1)) == 64
+	 && GET_CODE (op1) == ZERO_EXTEND
+	 && GET_MODE (XEXP (op1, 0)) == DImode
+	 && REG_P (XEXP (op1, 0));
+}
+
+
 /* Add instruction into a chain.  Return true if OK, false if the search
    was aborted.  */
 
@@ -477,9 +501,26 @@ scalar_chain::add_insn (bitmap candidates, unsigned int insn_uid,
       if (!analyze_register_chain (candidates, ref, disallowed))
 	return false;
 
-  /* The operand(s) of VEC_SELECT don't need to be converted/convertible.  */
-  if (def_set && GET_CODE (SET_SRC (def_set)) == VEC_SELECT)
-    return true;
+  /* The operand(s) of VEC_SELECT, ZERO_EXTEND and similar ops don't need
+     to be converted/convertible.  */
+  if (def_set)
+    switch (GET_CODE (SET_SRC (def_set)))
+      {
+      case VEC_SELECT:
+	return true;
+      case ZERO_EXTEND:
+	if (GET_MODE (XEXP (SET_SRC (def_set), 0)) == DImode)
+	  return true;
+	break;
+      case PLUS:
+      case IOR:
+      case XOR:
+	if (smode == TImode && timode_concatdi_p (SET_SRC (def_set)))
+	  return true;
+	break;
+      default:
+	break;
+      }
 
   for (ref = DF_INSN_UID_USES (insn_uid); ref; ref = DF_REF_NEXT_LOC (ref))
     if (!DF_REF_REG_MEM_P (ref))
@@ -1628,12 +1669,32 @@ timode_scalar_chain::compute_convert_gain ()
 	  break;
 
 	case AND:
-	case XOR:
-	case IOR:
 	  if (!MEM_P (dst))
 	    igain = COSTS_N_INSNS (1);
 	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
 	    igain += timode_immed_const_gain (XEXP (src, 1), bb);
+	  break;
+
+	case XOR:
+	case IOR:
+	  if (timode_concatdi_p (src))
+	    {
+	      /* vmovq;vpinsrq (11 bytes).  */
+	      igain = speed_p ? -2 * ix86_cost->sse_to_integer
+			      : -COSTS_N_BYTES (11);
+	      break;
+	    }
+	  if (!MEM_P (dst))
+	    igain = COSTS_N_INSNS (1);
+	  if (CONST_SCALAR_INT_P (XEXP (src, 1)))
+	    igain += timode_immed_const_gain (XEXP (src, 1), bb);
+	  break;
+
+	case PLUS:
+	  if (timode_concatdi_p (src))
+	    /* vmovq;vpinsrq (11 bytes).  */
+	    igain = speed_p ? -2 * ix86_cost->sse_to_integer
+			    : -COSTS_N_BYTES (11);
 	  break;
 
 	case ASHIFT:
@@ -1794,6 +1855,13 @@ timode_scalar_chain::compute_convert_gain ()
 	    igain = !speed_p ? -COSTS_N_BYTES (6) : -COSTS_N_INSNS (1);
 	  break;
 
+	case ZERO_EXTEND:
+	  if (GET_MODE (XEXP (src, 0)) == DImode)
+	    /* xor (2 bytes) vs. vmovq (5 bytes).  */
+	    igain = speed_p ? COSTS_N_INSNS (1) - ix86_cost->sse_to_integer
+			    : -COSTS_N_BYTES (3);
+	  break;
+
 	default:
 	  break;
 	}
@@ -1856,6 +1924,28 @@ timode_scalar_chain::fix_debug_reg_uses (rtx reg)
 	    df_insn_rescan (insn);
 	}
     }
+}
+
+/* Convert SRC, a *concatditi3 pattern, into a vec_concatv2di instruction.
+   Insert this before INSN, and return the result as a V1TImode subreg.  */
+
+static rtx
+timode_convert_concatdi (rtx src, rtx_insn *insn)
+{
+  rtx hi, lo;
+  rtx tmp = gen_reg_rtx (V2DImode);
+  if (GET_CODE (XEXP (src, 0)) == ASHIFT)
+    {
+      hi = XEXP (XEXP (XEXP (src, 0), 0), 0);
+      lo = XEXP (XEXP (src, 1), 0);
+    }
+  else
+    {
+      hi = XEXP (XEXP (XEXP (src, 1), 0), 0);
+      lo = XEXP (XEXP (src, 0), 0);
+    }
+  emit_insn_before (gen_vec_concatv2di (tmp, lo, hi), insn);
+  return gen_rtx_SUBREG (V1TImode, tmp, 0);
 }
 
 /* Convert INSN from TImode to V1T1mode.  */
@@ -1967,10 +2057,24 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
 	  PUT_MODE (src, V1TImode);
 	  break;
 	}
-      /* FALLTHRU */
+      convert_op (&XEXP (src, 0), insn);
+      convert_op (&XEXP (src, 1), insn);
+      PUT_MODE (src, V1TImode);
+      if (MEM_P (dst))
+	{
+	  tmp = gen_reg_rtx (V1TImode);
+	  emit_insn_before (gen_rtx_SET (tmp, src), insn);
+	  src = tmp;
+	}
+      break;
 
     case XOR:
     case IOR:
+      if (timode_concatdi_p (src))
+	{
+	  src = timode_convert_concatdi (src, insn);
+	  break;
+	}
       convert_op (&XEXP (src, 0), insn);
       convert_op (&XEXP (src, 1), insn);
       PUT_MODE (src, V1TImode);
@@ -2008,6 +2112,26 @@ timode_scalar_chain::convert_insn (rtx_insn *insn)
     case ROTATE:
       convert_op (&XEXP (src, 0), insn);
       PUT_MODE (src, V1TImode);
+      break;
+
+    case ZERO_EXTEND:
+      if (GET_MODE (XEXP (src, 0)) == DImode)
+	{
+	  /* Convert to *vec_concatv2di_0.  */
+	  rtx tmp = gen_reg_rtx (V2DImode);
+	  rtx pat = gen_rtx_VEC_CONCAT (V2DImode, XEXP (src, 0), const0_rtx);
+	  emit_insn_before (gen_move_insn (tmp, pat), insn);
+	  src = gen_rtx_SUBREG (vmode, tmp, 0);
+	}
+      else
+	gcc_unreachable ();
+      break;
+
+    case PLUS:
+      if (timode_concatdi_p (src))
+	src = timode_convert_concatdi (src, insn);
+      else
+	gcc_unreachable ();
       break;
 
     default:
@@ -2389,6 +2513,8 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
 
     case IOR:
     case XOR:
+      if (timode_concatdi_p (src))
+	return true;
       return (REG_P (XEXP (src, 0))
 	      || timode_mem_p (XEXP (src, 0)))
 	     && (REG_P (XEXP (src, 1))
@@ -2407,6 +2533,13 @@ timode_scalar_to_vector_candidate_p (rtx_insn *insn)
       return REG_P (XEXP (src, 0))
 	     && CONST_INT_P (XEXP (src, 1))
 	     && (INTVAL (XEXP (src, 1)) & ~0x7f) == 0;
+
+    case PLUS:
+      return timode_concatdi_p (src);
+
+    case ZERO_EXTEND:
+      return REG_P (XEXP (src, 0))
+	     && GET_MODE (XEXP (src, 0)) == DImode;
 
     default:
       return false;
