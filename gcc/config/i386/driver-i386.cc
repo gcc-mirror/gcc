@@ -639,18 +639,24 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		}
 	      else if (has_feature (FEATURE_AVX))
 		{
-		  /* Assume Panther Lake.  */
-		  if (has_feature (FEATURE_PREFETCHI))
-		    cpu = "pantherlake";
 		  /* Assume Clearwater Forest.  */
-		  else if (has_feature (FEATURE_USER_MSR))
+		  if (has_feature (FEATURE_USER_MSR))
 		    cpu = "clearwaterforest";
-		  /* Assume Arrow Lake S.  */
 		  else if (has_feature (FEATURE_SM3))
-		    cpu = "arrowlake-s";
+		    {
+			if (has_feature (FEATURE_KL))
+			  /* Assume Arrow Lake S.  */
+			  cpu = "arrowlake-s";
+			else
+			  /* Assume Panther Lake.  */
+			  cpu = "pantherlake";
+		    }
 		  /* Assume Sierra Forest.  */
-		  else if (has_feature (FEATURE_AVXVNNIINT8))
+		  else if (has_feature (FEATURE_CLDEMOTE))
 		    cpu = "sierraforest";
+		  /* Assume Arrow Lake.  */
+		  else if (has_feature (FEATURE_AVXVNNIINT8))
+		    cpu = "arrowlake";
 		  /* Assume Alder Lake.  */
 		  else if (has_feature (FEATURE_SERIALIZE))
 		    cpu = "alderlake";
