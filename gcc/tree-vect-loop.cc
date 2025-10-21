@@ -5616,13 +5616,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       && VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info)
       && vectype != VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info))
     {
-      gcc_assert (reduc_inputs.length () == 1);
       vectype = VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info);
       gimple_seq stmts = NULL;
-      reduc_inputs[0] = gimple_build (&stmts, VEC_COND_EXPR, vectype,
-				      reduc_inputs[0],
-				      build_one_cst (vectype),
-				      build_zero_cst (vectype));
+      for (unsigned i = 0; i < reduc_inputs.length (); ++i)
+	reduc_inputs[i] = gimple_build (&stmts, VEC_COND_EXPR, vectype,
+					reduc_inputs[i],
+					build_one_cst (vectype),
+					build_zero_cst (vectype));
       gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
     }
 
@@ -5963,24 +5963,28 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 	      gcc_assert (exact_log2 (nunits1) != -1 && nunits1 <= nunits);
 	    }
 	}
-      if (!slp_reduc
-	  && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
+      else if (!slp_reduc
+	       && (mode1 = targetm.vectorize.split_reduction (mode)) != mode)
 	nunits1 = GET_MODE_NUNITS (mode1).to_constant ();
 
-      tree vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
-							   stype, nunits1);
+      tree vectype1 = vectype;
+      if (mode1 != mode)
+	{
+	  vectype1 = get_related_vectype_for_scalar_type (TYPE_MODE (vectype),
+							  stype, nunits1);
+	  /* First reduce the vector to the desired vector size we should
+	     do shift reduction on by combining upper and lower halves.  */
+	  gimple_seq stmts = NULL;
+	  new_temp = vect_create_partial_epilog (reduc_inputs[0], vectype1,
+						 code, &stmts);
+	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
+	  reduc_inputs[0] = new_temp;
+	}
+
       reduce_with_shift = have_whole_vector_shift (mode1);
       if (!VECTOR_MODE_P (mode1)
 	  || !directly_supported_p (code, vectype1))
 	reduce_with_shift = false;
-
-      /* First reduce the vector to the desired vector size we should
-	 do shift reduction on by combining upper and lower halves.  */
-      gimple_seq stmts = NULL;
-      new_temp = vect_create_partial_epilog (reduc_inputs[0], vectype1,
-					     code, &stmts);
-      gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
-      reduc_inputs[0] = new_temp;
 
       if (reduce_with_shift && (!slp_reduc || group_size == 1))
 	{
@@ -6009,7 +6013,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 			     "Reduce using vector shifts\n");
 
 	  gimple_seq stmts = NULL;
-	  new_temp = gimple_convert (&stmts, vectype1, new_temp);
+	  new_temp = gimple_convert (&stmts, vectype1, reduc_inputs[0]);
           for (elt_offset = nelements / 2;
                elt_offset >= 1;
                elt_offset /= 2)
@@ -6053,13 +6057,13 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 			     "Reduce using scalar code.\n");
 
 	  tree compute_type = TREE_TYPE (vectype1);
-	  tree bitsize = TYPE_SIZE (compute_type);
-	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
-	  int element_bitsize = tree_to_uhwi (bitsize);
+	  unsigned vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
+	  unsigned element_bitsize = vector_element_bits (vectype1);
+	  tree bitsize = bitsize_int (element_bitsize);
 	  gimple_seq stmts = NULL;
 	  FOR_EACH_VEC_ELT (reduc_inputs, i, vec_temp)
             {
-              int bit_offset;
+	      unsigned bit_offset;
 	      new_temp = gimple_build (&stmts, BIT_FIELD_REF, compute_type,
 				       vec_temp, bitsize, bitsize_zero_node);
 
