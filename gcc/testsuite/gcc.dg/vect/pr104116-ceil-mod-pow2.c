@@ -17,6 +17,7 @@ int main (void)
   unsigned int *a = (unsigned int*)&arr;
   init_arr(a, N);
   div(a);
+  #pragma GCC novector
   for (int i=0; i<N; i++)
   {
     unsigned int expected = cl_mod (i - N/2, 8);

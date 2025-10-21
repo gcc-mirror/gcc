@@ -16,6 +16,7 @@ int main (void)
   int * a = (int*)&arr;
   init_arr(a, N);
   div_2(a);
+  #pragma GCC novector
   for (int i=0; i<N; i++)
   {
     int expected = fl_div (i - N/2, 2);

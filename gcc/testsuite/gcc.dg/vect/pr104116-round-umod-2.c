@@ -16,6 +16,7 @@ int main (void)
   unsigned int * a = (unsigned int*)&uarr;
   init_uarr(a, N);
   mod(a);
+  #pragma GCC novector
   for (unsigned int i=0; i<N; i++)
   {
     unsigned int expected = rd_umod (0xf0000000 + i, 2);

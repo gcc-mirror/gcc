@@ -82,17 +82,17 @@ NAME (unsigned int * a) \
 
 #define N 1024
 int arr[N];
-__attribute__((optimize("O0")))
 void init_arr (int *a, int n)
 {
-	for (int i=0; i<n; i++)
-		a[i] = i - n/2;
+  #pragma GCC novector
+  for (int i=0; i<n; i++)
+    a[i] = i - n/2;
 }
 
 unsigned int uarr[N];
-__attribute__((optimize("O0")))
 void init_uarr (unsigned int *a, int n)
 {
+  #pragma GCC novector
   for (unsigned int i=0; i<n; i++)
     a[i] = 0xf0000000 + i;
 }
@@ -140,7 +140,6 @@ int fl_div (int x, int y)
     q--;
   return q;
 }
-
 
 int fl_mod (int x, int y)
 {

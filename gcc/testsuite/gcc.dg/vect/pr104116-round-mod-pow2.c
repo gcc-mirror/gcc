@@ -16,6 +16,7 @@ int main (void)
   int * a = (int*)&arr;
   init_arr(a, N);
   mod(a);
+  #pragma GCC novector
   for (int i=0; i<N; i++)
   {
     int expected = rd_mod (i - N/2, 8);
