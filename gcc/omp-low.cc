@@ -3765,7 +3765,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	    }
 	  else if (gimple_code (stmt) == GIMPLE_OMP_ATOMIC_LOAD
 		   || gimple_code (stmt) == GIMPLE_OMP_ATOMIC_STORE
-		   || gimple_code (stmt) == GIMPLE_OMP_SCAN)
+		   || gimple_code (stmt) == GIMPLE_OMP_SCAN
+		   || gimple_code (stmt) == GIMPLE_OMP_STRUCTURED_BLOCK)
 	    return true;
 	  else if (gimple_code (stmt) == GIMPLE_OMP_FOR
 		   && gimple_omp_for_kind (ctx->stmt) == GF_OMP_FOR_KIND_SIMD)
@@ -3795,7 +3796,8 @@ check_omp_nesting_restrictions (gimple *stmt, omp_context *ctx)
 	       && gimple_code (stmt) != GIMPLE_OMP_PARALLEL
 	       && (gimple_code (stmt) != GIMPLE_OMP_FOR
 		   || gimple_omp_for_kind (stmt) != GF_OMP_FOR_KIND_SIMD)
-	       && gimple_code (stmt) != GIMPLE_OMP_SCAN)
+	       && gimple_code (stmt) != GIMPLE_OMP_SCAN
+	       && gimple_code (stmt) != GIMPLE_OMP_STRUCTURED_BLOCK)
 	{
 	  if (ctx->loop_p)
 	    error_at (gimple_location (stmt),

@@ -12701,7 +12701,8 @@ resolve_omp_do (gfc_code *code)
 		     name, i, &code->loc);
 	  goto fail;
 	}
-      else if (next != do_code->block->next || next->next)
+      else if (next != do_code->block->next
+	       || (next->next && next->next->op != EXEC_CONTINUE))
 	/* Imperfectly nested loop found.  */
 	{
 	  /* Only diagnose violation of imperfect nesting constraints once.  */
