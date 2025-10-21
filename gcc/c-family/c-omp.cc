@@ -4604,6 +4604,9 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_DECLARATIVE, false },
   /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
     C_OMP_DIR_DECLARATIVE, false }, */
+  /* 'begin metadirective' is not yet implemented; however,
+     it is only applicable if an end-directive exists, but
+     metadirectives are of limited use for declarative directives.  */
   /* { "begin", "metadirective", nullptr, PRAGMA_OMP_BEGIN,
     C_OMP_DIR_META, false },  */
   { "cancel", nullptr, nullptr, PRAGMA_OMP_CANCEL,
@@ -4612,8 +4615,10 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_STANDALONE, false },
   { "critical", nullptr, nullptr, PRAGMA_OMP_CRITICAL,
     C_OMP_DIR_CONSTRUCT, false },
-  /* { "declare", "mapper", nullptr, PRAGMA_OMP_DECLARE,
-    C_OMP_DIR_DECLARATIVE, false },  */
+  /* { "declare", "induction", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, true }, */
+  { "declare", "mapper", nullptr, PRAGMA_OMP_DECLARE,
+    C_OMP_DIR_DECLARATIVE, false },
   { "declare", "reduction", nullptr, PRAGMA_OMP_DECLARE,
     C_OMP_DIR_DECLARATIVE, true },
   { "declare", "simd", nullptr, PRAGMA_OMP_DECLARE,
@@ -4639,12 +4644,18 @@ const struct c_omp_directive c_omp_directives[] = {
   /* error with at(execution) is C_OMP_DIR_STANDALONE.  */
   { "error", nullptr, nullptr, PRAGMA_OMP_ERROR,
     C_OMP_DIR_UTILITY, false },
+  /* { "flatten", nullptr, nullptr, PRAGMA_OMP_FLATTEN,
+    C_OMP_DIR_CONSTRUCT, true },  */
   { "flush", nullptr, nullptr, PRAGMA_OMP_FLUSH,
     C_OMP_DIR_STANDALONE, false },
   { "for", nullptr, nullptr, PRAGMA_OMP_FOR,
     C_OMP_DIR_CONSTRUCT, true },
+  /* { "fuse", nullptr, nullptr, PRAGMA_OMP_FUSE,
+    C_OMP_DIR_CONSTRUCT, true },  */
   /* { "groupprivate", nullptr, nullptr, PRAGMA_OMP_GROUPPRIVATE,
     C_OMP_DIR_DECLARATIVE, false },  */
+  /* { "interchange", nullptr, nullptr, PRAGMA_OMP_INTERCHANGE,
+    C_OMP_DIR_CONSTRUCT, true },  */
   { "interop", nullptr, nullptr, PRAGMA_OMP_INTEROP,
     C_OMP_DIR_STANDALONE, false },
   { "loop", nullptr, nullptr, PRAGMA_OMP_LOOP,
@@ -4676,6 +4687,10 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   { "single", nullptr, nullptr, PRAGMA_OMP_SINGLE,
     C_OMP_DIR_CONSTRUCT, false },
+  /* { "split", nullptr, nullptr, PRAGMA_OMP_SPLIT,
+    C_OMP_DIR_CONSTRUCT, true },  */
+  /* { "stripe", nullptr, nullptr, PRAGMA_OMP_STRIPE,
+    C_OMP_DIR_CONSTRUCT, true },  */
   { "target", "data", nullptr, PRAGMA_OMP_TARGET,
     C_OMP_DIR_CONSTRUCT, false },
   { "target", "enter", "data", PRAGMA_OMP_TARGET,
@@ -4688,6 +4703,10 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_CONSTRUCT, true },
   { "task", nullptr, nullptr, PRAGMA_OMP_TASK,
     C_OMP_DIR_CONSTRUCT, false },
+  /* { "task", "iteration", nullptr, PRAGMA_OMP_TASK_ITERATION,
+    C_OMP_DIR_STANDALONE, false },  */
+  /* { "taskgraph", nullptr, nullptr, PRAGMA_OMP_TASKGRAPH,
+    C_OMP_DIR_CONSTRUCT, false },  */
   { "taskgroup", nullptr, nullptr, PRAGMA_OMP_TASKGROUP,
     C_OMP_DIR_CONSTRUCT, false },
   { "taskloop", nullptr, nullptr, PRAGMA_OMP_TASKLOOP,

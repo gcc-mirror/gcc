@@ -51233,6 +51233,7 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 						      directive[1],
 						      directive[2]);
 		      if (dir
+			  && dir->id != PRAGMA_OMP_END
 			  && (dir->kind == C_OMP_DIR_DECLARATIVE
 			      || dir->kind == C_OMP_DIR_INFORMATIONAL
 			      || dir->kind == C_OMP_DIR_META))
@@ -51241,9 +51242,9 @@ cp_parser_omp_assumption_clauses (cp_parser *parser, cp_token *pragma_tok,
 					"informational, and meta directives "
 					"not permitted", p);
 		      else if (dir == NULL
-			  || dir->id == PRAGMA_OMP_END
-			  || (!dir->second && directive[1])
-			  || (!dir->third && directive[2]))
+			       || dir->id == PRAGMA_OMP_END
+			       || (!dir->second && directive[1])
+			       || (!dir->third && directive[2]))
 			error_at (dloc, "unknown OpenMP directive name in "
 					"%qs clause argument", p);
 		      else

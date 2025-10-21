@@ -29480,6 +29480,7 @@ c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 						      directive[1],
 						      directive[2]);
 		      if (dir
+			  && dir->id != PRAGMA_OMP_END
 			  && (dir->kind == C_OMP_DIR_DECLARATIVE
 			      || dir->kind == C_OMP_DIR_INFORMATIONAL
 			      || dir->kind == C_OMP_DIR_META))

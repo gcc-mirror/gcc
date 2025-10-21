@@ -31,11 +31,13 @@ foo (int i, int *a)
   ;
   #pragma omp assume contains (begin assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
   ;
-  #pragma omp assume contains (end assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
+  #pragma omp assume contains (end assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
   ;
   #pragma omp assume contains (foo)				/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
   ;
   #pragma omp assume absent (target enter something)		/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
+  ;
+  #pragma omp assume contains (declare mapper)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument: declarative, informational, and meta directives not permitted" } */
   ;
   #pragma omp assume foobar					/* { dg-error "expected assumption clause" } */
   ;

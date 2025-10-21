@@ -59,6 +59,7 @@ struct gfc_omp_directive {
    and "nothing".  */
 
 static const struct gfc_omp_directive gfc_omp_directives[] = {
+  /* allocate as alias for allocators is also executive. */
   {"allocate", GFC_OMP_DIR_DECLARATIVE, ST_OMP_ALLOCATE},
   {"allocators", GFC_OMP_DIR_EXECUTABLE, ST_OMP_ALLOCATORS},
   {"assumes", GFC_OMP_DIR_INFORMATIONAL, ST_OMP_ASSUMES},
@@ -68,6 +69,7 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   {"cancellation point", GFC_OMP_DIR_EXECUTABLE, ST_OMP_CANCELLATION_POINT},
   {"cancel", GFC_OMP_DIR_EXECUTABLE, ST_OMP_CANCEL},
   {"critical", GFC_OMP_DIR_EXECUTABLE, ST_OMP_CRITICAL},
+  /* {"declare induction", GFC_OMP_DIR_DECLARATIVE, ST_OMP_DECLARE_INDUCTION}, */
   /* {"declare mapper", GFC_OMP_DIR_DECLARATIVE, ST_OMP_DECLARE_MAPPER}, */
   {"declare reduction", GFC_OMP_DIR_DECLARATIVE, ST_OMP_DECLARE_REDUCTION},
   {"declare simd", GFC_OMP_DIR_DECLARATIVE, ST_OMP_DECLARE_SIMD},
@@ -79,7 +81,10 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   {"do", GFC_OMP_DIR_EXECUTABLE, ST_OMP_DO},
   /* "error" becomes GFC_OMP_DIR_EXECUTABLE with at(execution) */
   {"error", GFC_OMP_DIR_UTILITY, ST_OMP_ERROR},
+  /* {"flatten", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLATTEN}, */
   {"flush", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLUSH},
+  /* {"fuse", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLUSE}, */
+  /* {"interchange", GFC_OMP_DIR_EXECUTABLE, ST_OMP_INTERCHANGE}, */
   {"interop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_INTEROP},
   {"loop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_LOOP},
   {"masked", GFC_OMP_DIR_EXECUTABLE, ST_OMP_MASKED},
@@ -98,11 +103,15 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   {"section", GFC_OMP_DIR_SUBSIDIARY, ST_OMP_SECTION},
   {"simd", GFC_OMP_DIR_EXECUTABLE, ST_OMP_SIMD},
   {"single", GFC_OMP_DIR_EXECUTABLE, ST_OMP_SINGLE},
+  /* {"split", GFC_OMP_DIR_EXECUTABLE, ST_OMP_SPLIT}, */
+  /* {"strip", GFC_OMP_DIR_EXECUTABLE, ST_OMP_STRIP}, */
   {"target data", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TARGET_DATA},
   {"target enter data", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TARGET_ENTER_DATA},
   {"target exit data", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TARGET_EXIT_DATA},
   {"target update", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TARGET_UPDATE},
   {"target", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TARGET},
+  /* {"taskgraph", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TASKGRAPH}, */
+  /* {"task iteration", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TASK_ITERATION}, */
   {"taskloop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TASKLOOP},
   {"taskwait", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TASKWAIT},
   {"taskyield", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TASKYIELD},
@@ -111,6 +120,7 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   {"threadprivate", GFC_OMP_DIR_DECLARATIVE, ST_OMP_THREADPRIVATE},
   {"tile", GFC_OMP_DIR_EXECUTABLE, ST_OMP_TILE},
   {"unroll", GFC_OMP_DIR_EXECUTABLE, ST_OMP_UNROLL},
+  /* {"workdistribute", GFC_OMP_DIR_EXECUTABLE, ST_OMP_WORKDISTRIBUTE}, */
   {"workshare", GFC_OMP_DIR_EXECUTABLE, ST_OMP_WORKSHARE},
 };
 

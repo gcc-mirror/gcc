@@ -13,7 +13,7 @@
 #pragma omp assumes absent (assume)				/* { dg-error "invalid OpenMP directive name in 'absent' clause argument" } */
 #pragma omp assumes absent (assumes)				/* { dg-error "invalid OpenMP directive name in 'absent' clause argument" } */
 #pragma omp assumes contains (begin assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
-#pragma omp assumes contains (end assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
+#pragma omp assumes contains (end assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
 #pragma omp assumes contains (foo)				/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
 #pragma omp assumes absent (target enter something)		/* { dg-error "unknown OpenMP directive name in 'absent' clause argument" } */
 #pragma omp assumes foobar					/* { dg-error "expected assumption clause" } */

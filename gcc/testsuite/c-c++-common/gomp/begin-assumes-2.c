@@ -43,7 +43,7 @@ void f14 (void) {}
 #pragma omp begin assumes contains (begin assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
 void f15 (void) {}
 #pragma omp end assumes
-#pragma omp begin assumes contains (end assumes)			/* { dg-error "invalid OpenMP directive name in 'contains' clause argument" } */
+#pragma omp begin assumes contains (end assumes)			/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
 void f16 (void) {}
 #pragma omp end assumes
 #pragma omp begin assumes contains (foo)				/* { dg-error "unknown OpenMP directive name in 'contains' clause argument" } */
