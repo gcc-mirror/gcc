@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-original -fdump-tree-phiopt1 -fdump-tree-forwprop2" } */
+/* { dg-options "-O1 -fdump-tree-optimized -fdump-tree-original -fdump-tree-phiopt2-raw" } */
 #define bool _Bool
 int maxbool(bool ab, bool bb)
 {
@@ -28,15 +28,12 @@ int minbool(bool ab, bool bb)
 /* { dg-final { scan-tree-dump-times "MIN_EXPR" 0 "original" } } */
 /* { dg-final { scan-tree-dump-times "if " 2 "original" } } */
 
-/* PHI-OPT1 should have converted it into min/max */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR" 1 "phiopt1" } } */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 1 "phiopt1" } } */
-/* { dg-final { scan-tree-dump-times "if " 0 "phiopt1" } } */
-
-/* Forwprop2 (after ccp) will convert it into &\| */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "forwprop2" } } */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR" 0 "forwprop2" } } */
-/* { dg-final { scan-tree-dump-times "if " 0 "forwprop2" } } */
+/* PHI-OPT2 should have converted it into &\| */
+/* { dg-final { scan-tree-dump-not "min_expr, " "phiopt2" } } */
+/* { dg-final { scan-tree-dump-not "max_expr, " "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times "bit_ior_expr, " 1 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times "bit_and_expr, " 1 "phiopt2" } } */
+/* { dg-final { scan-tree-dump-times "gimple_cond " 0 "phiopt2" } } */
 
 /* By optimize there should be no min/max nor if  */
 /* { dg-final { scan-tree-dump-times "MAX_EXPR" 0 "optimized" } } */
