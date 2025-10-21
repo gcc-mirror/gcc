@@ -1,3 +1,27 @@
+2025-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122322
+	* configure.ac (with_newlib) <*-rtems*>: Remove
+	HAVE_SYS_IOCT4YL_H, _GLIBCXX_USE_LINK, _GLIBCXX_USE_READLINK,
+	_GLIBCXX_USE_SYMLINK, _GLIBCXX_USE_TRUNCATE, and
+	_GLIBCXX_USE_FDOPENDIR. Remove duplicates.
+	* configure: Regenerate.
+
+2025-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-09-26  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122062
+	* include/bits/random.tcc (__detail::__normalize): Use void cast
+	for operands of comma operator.
+	(piecewise_linear_distribution): Likewise.
+	* testsuite/26_numerics/random/piecewise_linear_distribution/cons/122062.cc:
+	New test.
+
 2025-10-15  Chris Johns  <chrisj@rtems.org>
 
 	* configure: Regenerate.

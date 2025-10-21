@@ -1,3 +1,11 @@
+2025-10-20  Svante Signell  <svante.signell@gmail.com>
+
+	Backported from master:
+	2025-10-20  Svante Signell  <svante.signell@gmail.com>
+
+	PR go/104290
+	* config/gnu.h (OPTION_GLIBC_P, OPTION_GLIBC): Define.
+
 2025-10-17  Hu, Lin1  <lin1.hu@intel.com>
 
 	PR target/122119

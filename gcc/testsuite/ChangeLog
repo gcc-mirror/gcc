@@ -1,3 +1,7 @@
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming18.adb: New test.
+
 2025-10-15  Alice Carlotti  <alice.carlotti@arm.com>
 
 	* gcc.target/aarch64/acle/rwsr-armv8p9.c: Fix pmsdsfr_el1
