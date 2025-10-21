@@ -4233,6 +4233,8 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
   if (fail)
     return false;
 
+  /* When the SSA def chain through reduc-idx does not form a natural
+     reduction chain try to linearize an associative operation manually.  */
   if (scalar_stmts.length () == 1
       && code.is_tree_code ()
       && associative_tree_code ((tree_code)code)
@@ -4247,11 +4249,6 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       vect_slp_linearize_chain (vinfo, worklist, chain, (tree_code)code,
 				scalar_stmts[0]->stmt, op_stmt, other_op_stmt,
 				NULL);
-      if (chain.length () < 3)
-	{
-	  scalar_stmts.release ();
-	  return false;
-	}
 
       scalar_stmts.truncate (0);
       stmt_vec_info tail = NULL;
@@ -4275,6 +4272,63 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 	  scalar_stmts.safe_push (stmt);
 	}
       gcc_assert (tail);
+
+      /* When this linearization didn't produce a chain see if stripping
+	 a wrapping sign conversion produces one.  */
+      if (scalar_stmts.length () == 1)
+	{
+	  gimple *stmt = scalar_stmts[0]->stmt;
+	  if (!is_gimple_assign (stmt)
+	      || !CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (stmt))
+	      || TREE_CODE (gimple_assign_rhs1 (stmt)) != SSA_NAME
+	      || !tree_nop_conversion_p (TREE_TYPE (gimple_assign_lhs (stmt)),
+					 TREE_TYPE (gimple_assign_rhs1 (stmt))))
+	    {
+	      scalar_stmts.release ();
+	      return false;
+	    }
+	  stmt = SSA_NAME_DEF_STMT (gimple_assign_rhs1 (stmt));
+	  if (!is_gimple_assign (stmt)
+	      || gimple_assign_rhs_code (stmt) != (tree_code)code)
+	    {
+	      scalar_stmts.release ();
+	      return false;
+	    }
+	  chain.truncate (0);
+	  vect_slp_linearize_chain (vinfo, worklist, chain, (tree_code)code,
+				    stmt, op_stmt, other_op_stmt, NULL);
+
+	  scalar_stmts.truncate (0);
+	  tail = NULL;
+	  for (auto el : chain)
+	    {
+	      if (el.dt == vect_external_def
+		  || el.dt == vect_constant_def
+		  || el.code != (tree_code) code)
+		{
+		  scalar_stmts.release ();
+		  return false;
+		}
+	      stmt_vec_info stmt = vinfo->lookup_def (el.op);
+	      if (STMT_VINFO_REDUC_IDX (stmt) != -1
+		  || STMT_VINFO_REDUC_DEF (stmt))
+		{
+		  gcc_assert (tail == NULL);
+		  tail = stmt;
+		  continue;
+		}
+	      scalar_stmts.safe_push (stmt);
+	    }
+	  /* Unlike the above this does not include the reduction SSA
+	     cycle.  */
+	  gcc_assert (!tail);
+	}
+
+      if (scalar_stmts.length () < 2)
+	{
+	  scalar_stmts.release ();
+	  return false;
+	}
 
       if (dump_enabled_p ())
 	{
