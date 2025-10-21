@@ -1,3 +1,15 @@
+2025-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122322
+	* configure.ac (with_newlib) <*-rtems*>: Remove
+	HAVE_SYS_IOCT4YL_H, _GLIBCXX_USE_LINK, _GLIBCXX_USE_READLINK,
+	_GLIBCXX_USE_SYMLINK, _GLIBCXX_USE_TRUNCATE, and
+	_GLIBCXX_USE_FDOPENDIR. Remove duplicates.
+	* configure: Regenerate.
+
 2025-10-15  Joel Sherrill  <joel@rtems.org>
 
 	* configure: Regenerate.

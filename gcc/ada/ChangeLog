@@ -1,3 +1,8 @@
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/107536
+	* exp_ch2.adb (Expand_Renaming): Mark the entity as referenced.
+
 2025-10-05  Steve Baird  <baird@adacore.com>
 
 	PR ada/113536
