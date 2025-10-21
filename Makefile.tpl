@@ -2122,6 +2122,7 @@ configure-target-[+module+]: maybe-all-target-newlib maybe-all-target-libgloss[+
   ENDIF +][+ IF (lang-dep "cxx") +]
 configure-target-[+module+]: maybe-all-target-libstdc++-v3[+
   ENDIF +]
+[+ ENDFOR target_modules +]
 
 @if gcc-bootstrap[+ FOR target_modules +][+ IF (not (lang-dep "no_atomic"))
   +][+ IF bootstrap +][+ FOR bootstrap_stage +]
@@ -2133,7 +2134,6 @@ configure-stage[+id+]-target-[+module+]: maybe-all-stage[+id+]-target-libatomic[
 configure-target-[+module+]: maybe-all-target-libatomic[+
   ENDIF +][+ ENDFOR target_modules +]
 @endif gcc-no-bootstrap
-[+ ENDFOR target_modules +]
 
 CONFIGURE_GDB_TK = @CONFIGURE_GDB_TK@
 GDB_TK = @GDB_TK@
