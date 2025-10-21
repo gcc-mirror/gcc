@@ -1,3 +1,16 @@
+2025-10-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* MAINTAINERS (Various Maintainers): Add myself for the vectorizer.
+
+2025-10-20  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* .forgejo/workflows/sanity-checks.yaml: New file.
+
+2025-10-20  Richard Biener  <rguenther@suse.de>
+
+	* MAINTAINERS (auto-vectorizer): Change attribution to
+	vectorizer (+ tree-if-conv).
+
 2025-10-15  Basil Milanich  <bmilanich@gmail.com>
 
 	* Makefile.tpl (distclean): Remove extraenous semicolon.

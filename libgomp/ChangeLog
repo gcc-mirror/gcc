@@ -1,3 +1,22 @@
+2025-10-20  Josef Melcr  <jmelcr02@gmail.com>
+
+	* testsuite/libgomp.c/ipcp-cb-spec1.c: Moved from
+	gcc/testsuite/gcc.dg/ipa/.
+	* testsuite/libgomp.c/ipcp-cb-spec2.c: Likewise.
+	* testsuite/libgomp.c/ipcp-cb1.c: Likewise.
+
+2025-10-20  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/114457
+	PR c++/122268
+	PR c++/120450
+	* testsuite/libgomp.c++/target-flex-101.C: XFAIL GCN, nvptx
+	offloading compilation.
+	* testsuite/libgomp.c++/target-std__flat_map-concurrent.C:
+	Un-XFAIL GCN offloading compilation.
+	* testsuite/libgomp.c++/target-std__flat_multimap-concurrent.C:
+	Likewise.
+
 2025-10-16  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c/declare-variant-4-gfx10-3-generic.c: Add

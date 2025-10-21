@@ -1,3 +1,85 @@
+2025-10-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-8.c: Adjust expected output.
+
+2025-10-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: Add test-arrays-u64.c.
+	* jit.dg/test-arrays-u64.c: New test.
+
+2025-10-20  Josef Melcr  <jmelcr02@gmail.com>
+
+	* gcc.dg/ipa/ipcp-cb-spec1.c: Moved to libgomp/testsuite/libgomp.c/.
+	* gcc.dg/ipa/ipcp-cb-spec2.c: Likewise.
+	* gcc.dg/ipa/ipcp-cb1.c: Likewise.
+
+2025-10-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/test-error-array-bounds.c: Fix test.
+
+2025-10-20  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR c++/114457
+	* c-c++-common/goacc/kernels-decompose-pr100280-1.c: Skip for
+	c++26 until PR121975 is fixed.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/component_value1.adb: New test.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/use_type3.adb: New test.
+
+2025-10-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* gcc.target/aarch64/acle/asm-inlined-sysreg-1.c: New test.
+	* gcc.target/aarch64/acle/asm-inlined-sysreg-2.c: Likewise.
+	* gcc.target/aarch64/acle/rwsr-gated-1.c: Likewise.
+	* gcc.target/aarch64/acle/rwsr-gated-2.c: Likewise.
+	* lib/target-supports.exp
+	(check_effective_target_aarch64_sysreg_guarding_ok): Check
+	assembler support of -menable-sysreg-checking flag.
+
+2025-10-20  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-6.c: Skip scan-asm test for -O1 too.
+	* gcc.target/riscv/rvv/vsetvl/imm_switch-7.c: Likewise.
+	* gcc.target/riscv/shrink-wrap-1.c: Likewise.  Skip for -Og as well.
+	* gcc.target/riscv/xandes/xandesperf-1.c: Adjust expected output.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming18.adb: New test.
+
+2025-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101639
+	PR tree-optimization/103495
+	* gcc.dg/vect/vect-reduc-bool-1.c: New testcase.
+	* gcc.dg/vect/vect-reduc-bool-2.c: Likewise.
+	* gcc.dg/vect/vect-reduc-bool-3.c: Likewise.
+	* gcc.dg/vect/vect-reduc-bool-4.c: Likewise.
+	* gcc.dg/vect/vect-reduc-bool-5.c: Likewise.
+	* gcc.dg/vect/vect-reduc-bool-6.c: Likewise.
+	* gcc.dg/vect/vect-reduc-bool-7.c: Likewise.
+	* gcc.dg/vect/vect-reduc-bool-8.c: Likewise.
+
+2025-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99930
+	PR target/122323
+	* gcc.target/i386/builtin-copysign-2.c: New test.
+	* gcc.target/i386/builtin-copysign-3.c: Likewise.
+	* gcc.target/i386/builtin-copysign-4.c: Likewise.
+	* gcc.target/i386/builtin-copysign-5.c: Likewise.
+	* gcc.target/i386/builtin-copysign-6.c: Likewise.
+	* gcc.target/i386/builtin-copysign-7.c: Likewise.
+	* gcc.target/i386/builtin-copysign-8a.c: Likewise.
+	* gcc.target/i386/builtin-copysign-8b.c: Likewise.
+	* gcc.target/i386/builtin-fabs-1.c: Likewise.
+	* gcc.target/i386/builtin-fabs-2.c: Likewise.
+
 2025-10-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	PR testsuite/122212

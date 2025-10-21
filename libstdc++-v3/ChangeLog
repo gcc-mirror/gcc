@@ -1,3 +1,25 @@
+2025-10-20  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/version.def: Add ranges_indices FTM.
+	* include/bits/version.h: Regenerate.
+	* include/std/ranges: Implement views::indices.
+	* testsuite/std/ranges/indices/1.cc: New test.
+
+2025-10-20  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/funcwrap.h (__polyfunc::__deduce_funcref):
+	Adjust signature produced for member object pointers.
+	* testsuite/20_util/function_ref/deduction.cc: Update tests.
+
+2025-10-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122322
+	* configure.ac (with_newlib) <*-rtems*>: Remove
+	HAVE_SYS_IOCT4YL_H, _GLIBCXX_USE_LINK, _GLIBCXX_USE_READLINK,
+	_GLIBCXX_USE_SYMLINK, _GLIBCXX_USE_TRUNCATE, and
+	_GLIBCXX_USE_FDOPENDIR. Remove duplicates.
+	* configure: Regenerate.
+
 2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/119060

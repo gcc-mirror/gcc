@@ -1,3 +1,24 @@
+2025-10-20  Olivier Hainque  <hainque@adacore.com>
+	    Ashley Gay  <gay@adacore.com>
+
+	* config/gthr-vxworks.h: Include stdatomic.h and prevent indirect
+	inclusion of contents from the system version of that header.
+
+2025-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* config/gthr-vxworks-thread.c (__init_gthread_tcb): Make static.
+	(__delete_gthread_tcb): Likewise.
+	(__task_wrapper): Likewise.
+	(__gthread_create): Convert __task_wrapper to (void *) before going
+	to (FUNCPTR).
+	* config/gthr-vxworks-tls.c (tls_delete_hook): Accommodate prototype
+	variations between kernel and rtp. Return STATUS.
+
+2025-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* config/t-vxworks: -include vxworks-predef.h explicitly, as the
+	automatic inclusion is disabled by -nostdinc.
+
 2025-10-07  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/120691

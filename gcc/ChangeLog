@@ -1,3 +1,115 @@
+2025-10-20  Josef Melcr  <jmelcr02@gmail.com>
+
+	* ipa-fnsummary.cc (redirect_to_unreachable): Purge callback
+	edges when redirecting the carrying edge.
+	(analyze_function_body): Fix typo.
+
+2025-10-20  Svante Signell  <svante.signell@gmail.com>
+
+	PR go/104290
+	* config/gnu.h (OPTION_GLIBC_P, OPTION_GLIBC): Define.
+
+2025-10-20  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/constraints.md (R, U):
+	Change define_memory_constraint to define_special_memory_constraint.
+	* config/xtensa/xtensa.md
+	(movsi_internal, movhi_internal, movqi_internal):
+	Rearrange their alternatives in the order of constant assignment, register-
+	register move, load, store and special.  And also consolidate overlapping
+	alternatives.
+	(movsf_internal): Rearrange the alternatives as above, and remove the '^'
+	alternative character which is no longer needed.
+
+2025-10-20  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(constantsynth_method_const16): New.
+	(constantsynth_methods): Append constantsynth_method_const16().
+	(constantsynth_info): Add cost calculation for full-word constant
+	assignment when TARGET_CONST16 is enabled.
+	(constantsynth_pass1): Change it so that it works regardless of
+	TARGET_CONST16.
+	* config/xtensa/xtensa.md (*xtensa_const16): New.
+
+2025-10-20  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (do_largeconst):
+	Change split_DI_SF_DF_const() to be called unconditionally.
+
+2025-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* config.gcc (powerpc*-wrs-vxworks7r*): Add linux-protos.h
+	to tm_p_file.
+
+2025-10-20  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_OS_CPP_BUILTINS): Only
+	builtin_define TOOL and TOOL_FAMILY for !TARGET_VXWORKS7.
+	Augment comment on VXWORKS_PERSONALITY.
+	* config/vxworks/vxworks-predef.h: Infer TOOL and TOOL_FAMILY
+	from the VSB autoconf.h	when we have one, determined by the presence
+	of a _VSB_CONFIG_FILE definition.
+
+2025-10-20  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/aarch64/aarch64-elf.h (ASM_SPEC): Update the macro.
+	* config/aarch64/aarch64.cc (aarch64_valid_sysreg_name_p):
+	Add feature check condition.
+	(aarch64_retrieve_sysreg): Likewise.
+	* config/aarch64/aarch64.opt (menable-sysreg-checking):
+	Define new flag.
+	* doc/invoke.texi (menable-sysreg-checking): Document new flag.
+
+2025-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121631
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	When the reduction operation invokes UB on signed overflow
+	make sure to perform operations with it on an unsigned type.
+
+2025-10-20  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/101639
+	PR tree-optimization/103495
+	* tree-vectorizer.h (vect_reduc_info_s): Add reduc_type_for_mask.
+	(VECT_REDUC_INFO_VECTYPE_FOR_MASK): New.
+	* tree-vect-patterns.cc (vect_determine_mask_precision):
+	Return whether the mask precision changed.
+	(vect_determine_precisions): Iterate mask precision computation
+	for loop vectorization.
+	* tree-vect-loop.cc (get_initial_defs_for_reduction): Properly
+	convert non-mask initial values to a mask initial def for
+	the reduction.
+	(sbool_reduction_fn_for_fn): New function.
+	(vect_create_epilog_for_reduction): For a mask input convert
+	it to the vector type analysis decided to use.  Use a regular
+	conversion for the final convert to the scalar code type.
+	(vectorizable_reduction): Support mask reductions.  Verify
+	we can compute a data vector from the mask result or a direct
+	maks reduction is provided by the target.
+
+2025-10-20  Richard Biener  <rguenther@suse.de>
+
+	* doc/md.texi (reduc_sbool_{and,ior,xor}_scal_<mode>): Document.
+	* optabs.def (reduc_sbool_and_scal_optab,
+	reduc_sbool_ior_scal_optab, reduc_sbool_xor_scal_optab): New.
+	* internal-fn.def (REDUC_SBOOL_AND, REDUC_SBOOL_IOR,
+	REDUC_SBOO_XOR): Likewise.
+	* internal-fn.cc (reduc_sbool_direct): New initializer.
+	(expand_reduc_sbool_optab_fn): New expander.
+	(direct_reduc_sbool_optab_supported_p): New.
+
+2025-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99930
+	PR target/122323
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Swap
+	operands[1] with operands[2].  Optimize copysign (x, const_double)
+	instead of copysign (const_double, x).
+	* config/i386/i386.md (copysign<mode>3): Swap constraints for
+	operands[1] and operands[2].
+
 2025-10-19  Georg-Johann Lay  <avr@gjlay.de>
 
 	* config/avr/avr.cc (avr_nonzero_bits_lsr_operands_p): Also

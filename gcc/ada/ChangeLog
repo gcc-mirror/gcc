@@ -1,3 +1,41 @@
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/102078
+	* affinity.c (__gnat_set_affinity_mask): Add U qualifier.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/32318
+	* libgnat/g-catiio.adb (Image_Helper) <'c'>: Fix comment.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/68179
+	* exp_ch3.adb (Expand_Freeze_Array_Type): Build an initialization
+	procedure for a type derived from String declared with the aspect
+	Default_Aspect_Component_Value.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/52319
+	* sem_ch7.adb (Uninstall_Declarations): Use direct test on Nkind
+	to spot operators.
+	* sem_ch8.adb (End_Use_Package): Also test the Etype of operators
+	to spot those which are primitive operators of use-visible types.
+
+2025-10-20  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/87777
+	* gnatchop.adb: Add with clause for Osint.
+	(Locate_Executable): Delete.
+	(Gnatchop): Use Osint.Program_Name and Locate_Exec_On_Path instead
+	of Locate_Executable to locate GCC's driver executable.
+
+2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/107536
+	* exp_ch2.adb (Expand_Renaming): Mark the entity as referenced.
+
 2025-10-17  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/122295

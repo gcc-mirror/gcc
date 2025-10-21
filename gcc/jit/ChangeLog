@@ -1,3 +1,71 @@
+2025-10-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_37): New ABI tag.
+	* docs/topics/types.rst: Document
+	gcc_jit_context_new_array_type_u64.
+	* jit-playback.cc (new_array_type): Change num_elements type to
+	uint64_t.
+	* jit-playback.h (new_array_type): Change num_elements type to
+	uint64_t.
+	* jit-recording.cc (recording::context::new_array_type): Change
+	num_elements type to uint64_t.
+	(recording::array_type::make_debug_string): Use uint64_t
+	format.
+	(recording::array_type::write_reproducer): Switch to
+	gcc_jit_context_new_array_type_u64.
+	* jit-recording.h (class array_type): Change num_elements type
+	to uint64_t.
+	(new_array_type): Change num_elements type to uint64_t.
+	(num_elements): Change return type to uint64_t.
+	* libgccjit.cc (gcc_jit_context_new_array_type_u64):
+	New function.
+	* libgccjit.h (gcc_jit_context_new_array_type_u64):
+	New function.
+	* libgccjit.exports: New function.
+	* libgccjit.map: New function.
+
+2025-10-20  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-playback.cc (add_error, add_error_va): Send DK_ERROR to
+	add_error_va.
+	(add_diagnostic): Call add_diagnostic instead of add_error.
+	* jit-recording.cc (DEFINE_DIAGNOSTIC_KIND): New define.
+	(recording::context::add_diagnostic): New function.
+	(recording::context::add_error): Send DK_ERROR to add_error_va.
+	(recording::context::add_error_va): New parameter diagnostic_kind.
+	* jit-recording.h (add_diagnostic): New function.
+	(add_error_va): New parameter diagnostic_kind.
+	* libgccjit.cc (jit_error): Send DK_ERROR to add_error_va.
+
+2025-10-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/105827
+	* dummy-frontend.cc: Fix lang_tree_node.
+	* jit-common.h: New function (jit_tree_chain_next) used by
+	lang_tree_node.
+
+2025-10-20  Antoni Boucher  <bouanto@zoho.com>
+
+	PR jit/117886
+	* dummy-frontend.cc: Support some missing types.
+	* jit-playback.h (get_abort_on_unsupported_target_builtin): New
+	function.
+	* jit-recording.cc (get_abort_on_unsupported_target_builtin,
+	set_abort_on_unsupported_target_builtin): New functions.
+	* jit-recording.h (get_abort_on_unsupported_target_builtin,
+	set_abort_on_unsupported_target_builtin): New functions.
+	(m_abort_on_unsupported_target_builtin): New field.
+	* libgccjit.cc
+	(gcc_jit_context_set_abort_on_unsupported_target_builtin): New
+	function.
+	* libgccjit.h
+	(gcc_jit_context_set_abort_on_unsupported_target_builtin): New
+	function.
+	* libgccjit.exports (LIBGCCJIT_ABI_36): New ABI tag.
+	* libgccjit.map (LIBGCCJIT_ABI_36): New ABI tag.
+	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_36): New ABI tag.
+	* docs/topics/contexts.rst: Document new function.
+
 2025-10-08  Antoni Boucher  <bouanto@zoho.com>
 
 	PR jit/112466
