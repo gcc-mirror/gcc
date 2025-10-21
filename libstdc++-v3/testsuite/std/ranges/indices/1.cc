@@ -4,7 +4,7 @@
 
 #include <ranges>
 #include <type_traits>
-#include <vector>
+#include <stddef.h>
 
 template <typename T>
 constexpr bool test(T n) {
@@ -29,3 +29,17 @@ int main() {
   VERIFY(test<size_t>(44));
   static_assert(test<size_t>(44));
 }
+
+template<typename T>
+constexpr size_t test_wider(T n)
+{
+  // If indices(n) works, try again with ranges::distance(indices(n)),
+  // which will be a wider type, until we get to an unsupported type.
+  // This verifies that indices(n) is SFINAE-friendly, because otherwise we
+  // would get a hard error outside the immediate context checked by requires.
+  if constexpr (requires { std::views::indices(n); })
+    return test_wider(std::ranges::distance(std::views::indices(n)));
+  return sizeof(T);
+}
+
+static_assert(test_wider(0) > sizeof(long long));

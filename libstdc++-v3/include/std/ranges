@@ -791,6 +791,7 @@ namespace views
   struct _Indices
   {
     template<ranges::__detail::__is_integer_like _Tp>
+      requires __detail::__can_iota_view<_Tp>
       [[nodiscard]] constexpr auto
       operator() (_Tp __e) const noexcept
       { return iota(_Tp{}, __e); }
