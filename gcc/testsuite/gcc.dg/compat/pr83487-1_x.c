@@ -1,4 +1,5 @@
 /* { dg-options "-fno-common" { target { hppa*-*-hpux* } } } */
+/* { dg-options "-Wno-psabi" { target { riscv*-*-* } } } */
 #include "pr83487-1.h"
 
 extern

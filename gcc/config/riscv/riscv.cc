@@ -5886,11 +5886,47 @@ static int
 riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 			       int n, HOST_WIDE_INT offset,
 			       bool ignore_zero_width_bit_field_p,
+			       bool ignore_empty_union_and_zero_len_array_p,
 			       bool vls_p = false, unsigned abi_vlen = 0)
 {
   int max_aggregate_field = vls_p ? 8 : 2;
   switch (TREE_CODE (type))
     {
+    case UNION_TYPE:
+      {
+	if (!ignore_empty_union_and_zero_len_array_p)
+	  return -1;
+	/* Empty union should ignore.  */
+	if (TYPE_SIZE (type) == NULL || integer_zerop (TYPE_SIZE (type)))
+	  return n;
+	/* Or all union member are empty union or empty struct. */
+	for (tree f = TYPE_FIELDS (type); f; f = DECL_CHAIN (f))
+	  {
+	    if (TREE_CODE (f) != FIELD_DECL)
+	      continue;
+	    int m;
+	    HOST_WIDE_INT pos = offset + int_byte_position (f);
+	    switch (TREE_CODE (TREE_TYPE (f)))
+	      {
+	      case ARRAY_TYPE:
+	      case UNION_TYPE:
+	      case RECORD_TYPE:
+		m = riscv_flatten_aggregate_field (
+		      TREE_TYPE (f), fields, n, pos,
+		      ignore_zero_width_bit_field_p,
+		      true);
+		/* Any non-empty struct/union/array will stop the flatten.  */
+		if (m != n)
+		  return -1;
+	        break;
+	      default:
+		/* Any member are not struct, union or array will stop the
+		   flatten.  */
+	      return -1;
+	    }
+	}
+      return n;
+      }
     case RECORD_TYPE:
      /* Can't handle incomplete types nor sizes that are not fixed.  */
      if (!COMPLETE_TYPE_P (type)
@@ -5916,7 +5952,9 @@ riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 	      {
 		HOST_WIDE_INT pos = offset + int_byte_position (f);
 		n = riscv_flatten_aggregate_field (
-		  TREE_TYPE (f), fields, n, pos, ignore_zero_width_bit_field_p,
+		  TREE_TYPE (f), fields, n, pos,
+		  ignore_zero_width_bit_field_p,
+		  ignore_empty_union_and_zero_len_array_p,
 		  vls_p, abi_vlen);
 	      }
 	    if (n < 0)
@@ -5930,14 +5968,20 @@ riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 	riscv_aggregate_field subfields[8];
 	tree index = TYPE_DOMAIN (type);
 	tree elt_size = TYPE_SIZE_UNIT (TREE_TYPE (type));
+
+	/* Array with zero size member should be ignored.  */
+	if (ignore_empty_union_and_zero_len_array_p && integer_zerop (elt_size))
+	  return n;
+
 	int n_subfields
-	  = riscv_flatten_aggregate_field (TREE_TYPE (type), subfields, 0,
-					   offset,
-					   ignore_zero_width_bit_field_p, vls_p,
-					   abi_vlen);
+	  = riscv_flatten_aggregate_field (
+	      TREE_TYPE (type), subfields, 0,
+	      offset,
+	      ignore_zero_width_bit_field_p,
+	      ignore_empty_union_and_zero_len_array_p,
+	      vls_p, abi_vlen);
 	/* Can't handle incomplete types nor sizes that are not fixed.  */
-	if (n_subfields <= 0
-	    || !COMPLETE_TYPE_P (type)
+	if (!COMPLETE_TYPE_P (type)
 	    || TREE_CODE (TYPE_SIZE (type)) != INTEGER_CST
 	    || !index
 	    || !TYPE_MAX_VALUE (index)
@@ -5945,6 +5989,15 @@ riscv_flatten_aggregate_field (const_tree type, riscv_aggregate_field *fields,
 	    || !TYPE_MIN_VALUE (index)
 	    || !tree_fits_uhwi_p (TYPE_MIN_VALUE (index))
 	    || !tree_fits_uhwi_p (elt_size))
+	  return -1;
+
+	/* Zero-length array with empty union/struct should be ignored.  */
+	if (ignore_empty_union_and_zero_len_array_p && n_subfields == 0
+	    && integer_zerop (TYPE_MIN_VALUE (index))
+	    && integer_all_onesp (TYPE_MAX_VALUE (index)))
+	  return n;
+
+	if (n_subfields <= 0)
 	  return -1;
 
 	n_elts = 1 + tree_to_uhwi (TYPE_MAX_VALUE (index))
@@ -6026,14 +6079,25 @@ static int
 riscv_flatten_aggregate_argument (const_tree type,
 				  riscv_aggregate_field *fields,
 				  bool ignore_zero_width_bit_field_p,
+				  bool ignore_empty_union_and_zero_len_array_p,
 				  bool vls_p = false, unsigned abi_vlen = 0)
 {
   if (!type || TREE_CODE (type) != RECORD_TYPE)
     return -1;
 
   return riscv_flatten_aggregate_field (type, fields, 0, 0,
-					ignore_zero_width_bit_field_p, vls_p,
-					abi_vlen);
+					ignore_zero_width_bit_field_p,
+					ignore_empty_union_and_zero_len_array_p,
+					vls_p, abi_vlen);
+}
+
+static bool
+riscv_any_non_float_type_field (riscv_aggregate_field *fields, int n)
+{
+  for (int i = 0; i < n; i++)
+    if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
+      return true;
+  return false;
 }
 
 /* See whether TYPE is a record whose fields should be returned in one or
@@ -6044,24 +6108,18 @@ riscv_pass_aggregate_in_fpr_pair_p (const_tree type,
 				    riscv_aggregate_field fields[2])
 {
   static int warned = 0;
+  if (!type)
+    return 0;
 
   /* This is the old ABI, which differs for C++ and C.  */
-  int n_old = riscv_flatten_aggregate_argument (type, fields, false);
-  for (int i = 0; i < n_old; i++)
-    if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
-      {
-	n_old = -1;
-	break;
-      }
+  int n_old = riscv_flatten_aggregate_argument (type, fields, false, false);
+  if (riscv_any_non_float_type_field (fields, n_old))
+    n_old = -1;
 
   /* This is the new ABI, which is the same for C++ and C.  */
-  int n_new = riscv_flatten_aggregate_argument (type, fields, true);
-  for (int i = 0; i < n_new; i++)
-    if (!SCALAR_FLOAT_TYPE_P (fields[i].type))
-      {
-	n_new = -1;
-	break;
-      }
+  int n_new = riscv_flatten_aggregate_argument (type, fields, true, false);
+  if (riscv_any_non_float_type_field (fields, n_new))
+    n_new = -1;
 
   if ((n_old != n_new) && (warned == 0))
     {
@@ -6070,7 +6128,58 @@ riscv_pass_aggregate_in_fpr_pair_p (const_tree type,
       warned = 1;
     }
 
-  return n_new > 0 ? n_new : 0;
+  /* ABI with fixing flatten empty union.  */
+  int n_new2 = riscv_flatten_aggregate_argument (type, fields, true, true);
+  if (riscv_any_non_float_type_field (fields, n_new2))
+    n_new2 = -1;
+
+  bool num_fpr = riscv_pass_mode_in_fpr_p (TYPE_MODE (type));
+
+  /* There is a special case for struct with zero length array with struct and a
+     floating point member.
+     e.g:
+     struct S0ae_1f {
+       struct {
+       } e1[0];
+       float f;
+     };
+
+     This case we will got 1, but legacy ABI will got -1, however legacy ABI
+     will got 1 in later logic, so we should consider this case as compatible.
+  */
+  bool compatible_p = n_new2 == 1 && n_new == -1 && num_fpr == 1;
+
+  if ((n_new2 != n_new)
+      && !compatible_p && (warned == 0))
+    {
+      warning (OPT_Wpsabi, "ABI for flattened empty union and zero "
+	       "length array changed in GCC 16");
+      warned = 1;
+    }
+
+  return n_new2 > 0 ? n_new2 : 0;
+}
+
+struct riscv_aggregate_field_info_t {
+  unsigned num_fpr;
+  unsigned num_gpr;
+
+  riscv_aggregate_field_info_t ()
+    : num_fpr (0), num_gpr (0)
+  {}
+};
+
+static riscv_aggregate_field_info_t
+riscv_parse_aggregate_field_info (riscv_aggregate_field *fields, int n)
+{
+  riscv_aggregate_field_info_t info;
+  for (int i = 0; i < n; i++)
+    {
+      info.num_fpr += SCALAR_FLOAT_TYPE_P (fields[i].type);
+      info.num_gpr += INTEGRAL_TYPE_P (fields[i].type);
+    }
+
+  return info;
 }
 
 /* See whether TYPE is a record whose fields should be returned in one or
@@ -6084,35 +6193,48 @@ riscv_pass_aggregate_in_fpr_and_gpr_p (const_tree type,
   static int warned = 0;
 
   /* This is the old ABI, which differs for C++ and C.  */
-  unsigned num_int_old = 0, num_float_old = 0;
-  int n_old = riscv_flatten_aggregate_argument (type, fields, false);
-  for (int i = 0; i < n_old; i++)
-    {
-      num_float_old += SCALAR_FLOAT_TYPE_P (fields[i].type);
-      num_int_old += INTEGRAL_TYPE_P (fields[i].type);
-    }
+  int n_old = riscv_flatten_aggregate_argument (type, fields, false, false);
+  riscv_aggregate_field_info_t old_info;
+  old_info = riscv_parse_aggregate_field_info (fields, n_old);
 
   /* This is the new ABI, which is the same for C++ and C.  */
-  unsigned num_int_new = 0, num_float_new = 0;
-  int n_new = riscv_flatten_aggregate_argument (type, fields, true);
-  for (int i = 0; i < n_new; i++)
-    {
-      num_float_new += SCALAR_FLOAT_TYPE_P (fields[i].type);
-      num_int_new += INTEGRAL_TYPE_P (fields[i].type);
-    }
+  int n_new = riscv_flatten_aggregate_argument (type, fields, true, false);
+  riscv_aggregate_field_info_t new_info;
+  new_info = riscv_parse_aggregate_field_info (fields, n_new);
 
-  if (((num_int_old == 1 && num_float_old == 1
-	&& (num_int_old != num_int_new || num_float_old != num_float_new))
-       || (num_int_new == 1 && num_float_new == 1
-	   && (num_int_old != num_int_new || num_float_old != num_float_new)))
-      && (warned == 0))
+  bool values_changed = old_info.num_fpr != new_info.num_fpr
+			|| old_info.num_gpr != new_info.num_gpr;
+  bool old_is_one_one = old_info.num_fpr == 1 && old_info.num_gpr == 1;
+  bool new_is_one_one = new_info.num_fpr == 1 && new_info.num_gpr == 1;
+
+  if (values_changed
+      && (old_is_one_one || new_is_one_one)
+      && warned == 0)
     {
       warning (OPT_Wpsabi, "ABI for flattened struct with zero-length "
 			   "bit-fields changed in GCC 10");
       warned = 1;
     }
 
-  return num_int_new == 1 && num_float_new == 1;
+  /* ABI with fixing flatten empty union.  */
+  int n_new2 = riscv_flatten_aggregate_argument (type, fields, true, true);
+  riscv_aggregate_field_info_t new2_info;
+  new2_info = riscv_parse_aggregate_field_info (fields, n_new2);
+
+  values_changed = new_info.num_fpr != new2_info.num_fpr
+		   || new_info.num_gpr != new2_info.num_gpr;
+  bool new2_is_one_one = new2_info.num_fpr == 1 && new2_info.num_gpr == 1;
+
+  if (values_changed
+      && (new_is_one_one || new2_is_one_one)
+      && warned == 0)
+    {
+      warning (OPT_Wpsabi, "ABI for flattened empty union and zero "
+	       "length array changed in GCC 16");
+      warned = 1;
+    }
+
+  return new2_is_one_one;
 }
 
 /* Return the representation of an argument passed or returned in an FPR
@@ -6466,7 +6588,7 @@ riscv_pass_aggregate_in_vr (struct riscv_arg_info *info,
   riscv_aggregate_field fields[8];
   unsigned int abi_vlen = riscv_get_cc_abi_vlen (cum->variant_cc);
   int i;
-  int n = riscv_flatten_aggregate_argument (type, fields, true,
+  int n = riscv_flatten_aggregate_argument (type, fields, true, true,
 					    /* vls_p */ true, abi_vlen);
 
   if (n == -1)

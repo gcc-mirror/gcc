@@ -42,6 +42,8 @@ gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/sched1-spills/*.{\[cS\],
 	"" $DEFAULT_CFLAGS
 gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/xandes/*.\[cS\]]] \
 	"" $DEFAULT_CFLAGS
+gcc-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/abi/*.\[cS\]]] \
+	"" $DEFAULT_CFLAGS
 
 # Saturation alu
 foreach opt {

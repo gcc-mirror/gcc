@@ -29,6 +29,7 @@ dg-init
 
 # Main loop.
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/*.C]] "" ""
+dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/abi/*.cc]] "" ""
 
 # All done.
 dg-finish

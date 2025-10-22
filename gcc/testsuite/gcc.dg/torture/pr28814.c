@@ -1,4 +1,5 @@
 /* { dg-do compile { target { ilp32 || lp64 } } } */
+/* { dg-options "-Wno-psabi" { target { riscv*-*-* } } } */
 
 struct w49
 {
