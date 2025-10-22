@@ -6405,27 +6405,30 @@ vectorize_fold_left_reduction (loop_vec_info loop_vinfo,
      would also allow generalizing this for reduction paths of length > 1
      and/or SLP reductions.  */
   slp_tree reduc_node = SLP_TREE_CHILDREN (slp_node)[reduc_index];
-  tree reduc_var = vect_get_slp_scalar_def (reduc_node, 0);
+  stmt_vec_info reduc_var_def = SLP_TREE_SCALAR_STMTS (reduc_node)[0];
+  tree reduc_var = gimple_get_lhs (STMT_VINFO_STMT (reduc_var_def));
 
   /* The operands either come from a binary operation or an IFN_COND operation.
      The former is a gimple assign with binary rhs and the latter is a
      gimple call with four arguments.  */
   gcc_assert (num_ops == 2 || num_ops == 4);
 
-  int group_size = 1;
-  stmt_vec_info scalar_dest_def_info;
   auto_vec<tree> vec_oprnds0, vec_opmask;
   vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[(is_cond_op ? 2 : 0)
 						  + (1 - reduc_index)],
 						  &vec_oprnds0);
-  group_size = SLP_TREE_SCALAR_STMTS (slp_node).length ();
-  scalar_dest_def_info = SLP_TREE_SCALAR_STMTS (slp_node)[group_size - 1];
   /* For an IFN_COND_OP we also need the vector mask operand.  */
   if (is_cond_op)
     vect_get_slp_defs (SLP_TREE_CHILDREN (slp_node)[0], &vec_opmask);
 
-  gimple *sdef = vect_orig_stmt (scalar_dest_def_info)->stmt;
-  tree scalar_dest = gimple_get_lhs (sdef);
+  /* The transform below relies on preserving the original scalar PHI
+     and its latch def which we replace.  So work backwards from there.  */
+  tree scalar_dest
+    = gimple_phi_arg_def_from_edge (as_a <gphi *> (STMT_VINFO_STMT
+						     (reduc_var_def)),
+				    loop_latch_edge (loop));
+  stmt_vec_info scalar_dest_def_info
+    = vect_stmt_to_vectorize (loop_vinfo->lookup_def (scalar_dest));
   tree scalar_type = TREE_TYPE (scalar_dest);
 
   int vec_num = vec_oprnds0.length ();

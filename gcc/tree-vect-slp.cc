@@ -4235,7 +4235,11 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 
   if (scalar_stmts.length () == 1
       && code.is_tree_code ()
-      && associative_tree_code ((tree_code)code))
+      && associative_tree_code ((tree_code)code)
+      /* We may not associate if a fold-left reduction is required.  */
+      && !needs_fold_left_reduction_p (TREE_TYPE (gimple_get_lhs
+						    (scalar_stmt->stmt)),
+				       code))
     {
       auto_vec<chain_op_t> chain;
       auto_vec<std::pair<tree_code, gimple *> > worklist;
