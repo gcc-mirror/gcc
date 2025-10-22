@@ -397,19 +397,30 @@ form @option{-fno-working-directory}.  If the @option{-P} flag is
 present in the command line, this option has no effect, since no
 @code{#line} directives are emitted whatsoever.
 
+@c The documentation for this option is not helpful to users without
+@c the longer explanation that appears only in the CPP manual, plus
+@c it's been documented as obsolete and "do not use" since 2001!
+@ifset cppmanual
 @opindex A
+@opindex assert
 @item -A @var{predicate}=@var{answer}
+@itemx --assert @var{predicate}=@var{answer}
+@itemx --assert=@var{predicate}=@var{answer}
 Make an assertion with the predicate @var{predicate} and answer
 @var{answer}.  This form is preferred to the older form @option{-A
 @var{predicate}(@var{answer})}, which is still supported, because
 it does not use shell special characters.
-@ifset cppmanual
-@xref{Obsolete Features}.
-@end ifset
+
+Assertions are an obsolete feature of the preprocessor, supported only
+for compatibility with legacy system headers on some targets.
+@xref{Obsolete Features}, for more details on use.
 
 @item -A -@var{predicate}=@var{answer}
+@itemx --assert -@var{predicate}=@var{answer}
+@itemx --assert=-@var{predicate}=@var{answer}
 Cancel an assertion with the predicate @var{predicate} and answer
 @var{answer}.
+@end ifset
 
 @opindex C
 @item -C

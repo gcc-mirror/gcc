@@ -723,9 +723,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
-@gccoptlist{-A@var{question}=@var{answer}
--A-@var{question}@r{[}=@var{answer}@r{]}
--C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]}
+@gccoptlist{-C  -CC  -D@var{macro}@r{[}=@var{defn}@r{]}
 -dD  -dI  -dM  -dN  -dU
 -fdebug-cpp  -fdirectives-only  -fdollars-in-identifiers
 -fexec-charset=@var{charset}  -fextended-identifiers
