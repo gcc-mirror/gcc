@@ -1,3 +1,106 @@
+2025-08-08  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+		     Julian Brown   <julian@codesourcery.com>
+
+	* doc/tm.texi.in (TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Add
+	documentation hook.
+	* doc/tm.texi: Regenerate.
+	* target.def (prefer_gather_scatter): Add target hook under vectorizer.
+	* hooks.cc (hook_bool_mode_int_unsigned_false): New function.
+	* hooks.h (hook_bool_mode_int_unsigned_false): New prototype.
+	* tree-vect-stmts.cc (vect_use_strided_gather_scatters_p): Add
+	parameters group_size and single_element_p, and rework to use
+	targetm.vectorize.prefer_gather_scatter.
+	(get_group_load_store_type): Move some of the condition into
+	vect_use_strided_gather_scatters_p.
+	* config/gcn/gcn.cc (gcn_prefer_gather_scatter): New function.
+	(TARGET_VECTORIZE_PREFER_GATHER_SCATTER): Define hook.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_option_override): Add note to set default for
+	param_vect_partial_vector_usage to "1".
+	* optc-save-gen.awk: Don't pass through options marked "NoOffload".
+	* params.opt (-param=vect-epilogues-nomask): Add NoOffload.
+	(-param=vect-partial-vector-usage): Likewise.
+	(-param=vect-inner-loop-cost-factor): Likewise.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (gather_load<mode><vndi>): New.
+	(scatter_store<mode><vndi>): New.
+	(mask_gather_load<mode><vndi>): New.
+	(mask_scatter_store<mode><vndi>): New.
+	* config/gcn/gcn.cc (gcn_expand_scaled_offsets): Support DImode.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (GEN_VNM_NOEXEC): Use USE_QHF.
+	(GEN_VNM): Likewise, and call for new ashl and mul variants.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-21  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_dup): New.
+	(add<mode>3_dup_exec): New.
+	(<su>mul<mode>3_highpart_dup<exec>): New.
+	(mul<mode>3_dup): Move the vec_duplicate to operand 1.
+	(mul<mode>3_dup_exec): New.
+	(vec_series<mode>): Adjust call to gen_mul<mode>3_dup.
+	* config/gcn/gcn.cc (gcn_expand_vector_init): Likewise.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-16  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3_vcc_dup<exec_vcc>): Change
+	operand 2 to allow gcn_alu_operand.  Swap the operands in the VCC
+	update RTL.
+	(add<mode>3_vcc_zext_dup): Likewise.
+	(add<mode>3_vcc_zext_dup_exec): Likewise.
+	(add<mode>3_vcc_zext_dup2): Likewise.
+	(add<mode>3_vcc_zext_dup2_exec): Likewise.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-14  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (vec_cmpu<mode>di_exec): Call gen_vec_cmp*,
+	not gen_vec_cmpu*.
+
+2025-07-30  Andrew Stubbs  <ams@baylibre.com>
+
+	Backported from master:
+	2025-07-14  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn-valu.md (add<mode>3<exec_clobber>): Rename ...
+	(add<mode>3<exec>): ... to this, remove the clobber, and change the
+	instruction from v_add_co_u32 to v_add_u32.
+	(add<mode>3_dup<exec_clobber>): Rename ...
+	(add<mode>3_dup<exec>): ... to this, and likewise.
+	(sub<mode>3<exec_clobber>): Rename ...
+	(sub<mode>3<exec>): ... to this, and likewise
+	* config/gcn/gcn.md (addsi3): Remove the DI clobber, and change the
+	instruction from v_add_co_u32 to v_add_u32.
+	(addsi3_scc): Likewise.
+	(subsi3): Likewise, but for v_sub_co_u32.
+	(muldi3): Likewise.
+
 2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:

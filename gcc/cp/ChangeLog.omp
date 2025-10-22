@@ -1,3 +1,16 @@
+2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c/120180
+	PR fortran/122306
+	* parser.cc (cp_parser_omp_metadirective): Return early if only one
+	selector matches and it resolves to 'omp nothing'.
+	(cp_parser_omp_error): Reject 'error at(execution)' in intervening code.
+	(cp_parser_pragma): Accept a subset of non-executable OpenMP directives
+	as intervening code.
+
 2025-06-05  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:

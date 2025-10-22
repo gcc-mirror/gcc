@@ -1,3 +1,35 @@
+2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR middle-end/122378
+	* c-c++-common/gomp/attrs-metadirective-2.c: Uncomment local label
+	declaration.
+	* c-c++-common/gomp/metadirective-2.c: Likewise.
+
+2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c/120180
+	PR fortran/122306
+	* c-c++-common/gomp/imperfect1.c: Adjust dg-error.
+	* c-c++-common/gomp/imperfect4.c: Likewise.
+	* c-c++-common/gomp/pr120180.c: Move to...
+	* c-c++-common/gomp/pr120180-1.c: ...here. Remove dg-error.
+	* g++.dg/gomp/attrs-imperfect1.C: Adjust dg-error.
+	* g++.dg/gomp/attrs-imperfect4.C: Likewise.
+	* gfortran.dg/gomp/declare-variant-2.f90: Adjust dg-error.
+	* gfortran.dg/gomp/declare-variant-20.f90: Likewise.
+	* c-c++-common/gomp/pr120180-2.c: New test.
+	* g++.dg/gomp/pr120180-1.C: New test.
+	* gfortran.dg/gomp/pr120180-1.f90: New test.
+	* gfortran.dg/gomp/pr120180-2.f90: New test.
+	* gfortran.dg/gomp/pr122306-1.f90: New file.
+	* gfortran.dg/gomp/pr122306-2.f90: New file.
+
 2025-07-21  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	Backported from master:
