@@ -1,3 +1,103 @@
+2025-10-21  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/c2y-generic-6.c: New test.
+	* gcc.dg/c2y-generic-7.c: New test.
+
+2025-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/ext/is_implicit_lifetime.C: New test.
+
+2025-10-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122189
+	* gcc.target/arm/mve/intrinsics/vadcq_m_s32.c
+	* gcc.target/arm/mve/intrinsics/vadcq_m_u32.c
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_s32.c
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_u32.c
+
+2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c/120180
+	PR fortran/122306
+	* c-c++-common/gomp/imperfect1.c: Adjust dg-error.
+	* c-c++-common/gomp/imperfect4.c: Likewise.
+	* c-c++-common/gomp/pr120180.c: Move to...
+	* c-c++-common/gomp/pr120180-1.c: ...here. Remove dg-error.
+	* g++.dg/gomp/attrs-imperfect1.C: Adjust dg-error.
+	* g++.dg/gomp/attrs-imperfect4.C: Likewise.
+	* gfortran.dg/gomp/declare-variant-2.f90: Adjust dg-error.
+	* gfortran.dg/gomp/declare-variant-20.f90: Likewise.
+	* c-c++-common/gomp/pr120180-2.c: New test.
+	* g++.dg/gomp/pr120180-1.C: New test.
+	* gfortran.dg/gomp/pr120180-1.f90: New test.
+	* gfortran.dg/gomp/pr120180-2.f90: New test.
+	* gfortran.dg/gomp/pr122306-1.f90: New file.
+	* gfortran.dg/gomp/pr122306-2.f90: New file.
+
+2025-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* gcc.target/i386/sse4_1-stv-10.c: New test case.
+	* gcc.target/i386/sse4_1-stv-11.c: Likewise.
+	* gcc.target/i386/sse4_1-stv-12.c: Likewise.
+
+2025-10-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/assumes-2.c: Change for 'invalid'
+	to 'unknown' change for end directives.
+	* c-c++-common/gomp/begin-assumes-2.c: Likewise.
+	* c-c++-common/gomp/assume-2.c: Likewise. Check 'declare
+	mapper'.
+
+2025-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120687
+	* gcc.dg/vect/vect-reduc-chain-4.c: New testcase.
+
+2025-10-21  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/104116
+	* gcc.dg/vect/pr104116-ceil-div-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-div-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-div.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-mod-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-mod-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-mod.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-udiv-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-udiv-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-udiv.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-umod-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-umod-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-ceil-umod.c: disable vectorization.
+	* gcc.dg/vect/pr104116-floor-div-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-floor-div-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-floor-div.c: disable vectorization.
+	* gcc.dg/vect/pr104116-floor-mod-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-floor-mod-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-floor-mod.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-div-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-div-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-div.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-mod-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-mod-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-mod.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-udiv-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-udiv-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-udiv.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-umod-2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-umod-pow2.c: disable vectorization.
+	* gcc.dg/vect/pr104116-round-umod.c: disable vectorization.
+	* gcc.dg/vect/pr104116.h (init_arr): use std idiom, correct
+	indentation.
+	(init_uarr): use std idiom.
+
+2025-10-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/95699
+	PR tree-optimization/101024
+	PR tree-optimization/110068
+	* gcc.dg/tree-ssa/pr101024-1.c: New test.
+	* gcc.dg/tree-ssa/pr110068-1.c: New test.
+
 2025-10-20  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/autovec/reduc/reduc-8.c: Adjust expected output.

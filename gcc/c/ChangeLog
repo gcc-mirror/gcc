@@ -1,3 +1,26 @@
+2025-10-21  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (build_array_declarator): Remove error.
+	(grokgenassoc): New function.
+	(grokdeclarator): Add error.
+	* c-parser.cc (c_parser_generic_selection): Use grokgenassoc.
+	* c-tree.h (grokgenassoc): Add prototype.
+
+2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c/120180
+	PR fortran/122306
+	* c-parser.cc (c_parser_pragma): Accept a subset of non-executable
+	OpenMP directives in intervening code.
+	(c_parser_omp_error): Reject 'error at(execution)' in intervening code.
+	(c_parser_omp_metadirective): Return early if only one selector matches
+	and it resolves to 'omp nothing'.
+
+2025-10-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Switch to
+	'unknown' not 'invalid' directive name for end directives.
+
 2025-10-08  Joseph Myers  <josmyers@redhat.com>
 
 	* c-typeck.cc (in_generic, save_maybe_used, restore_maybe_used):

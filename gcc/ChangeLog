@@ -1,3 +1,68 @@
+2025-10-21  Antoni Boucher  <bouanto@zoho.com>
+
+	* config.gcc (jit_target_objs): Don't set this variable since
+	the object files don't exist.
+
+2025-10-21  Roger Sayle  <roger@nextmovesoftware.com>
+
+	* config/i386/i386-features.cc (timode_concatdi_p): New
+	function to recognize the various variants of *concatditi3_[1-7].
+	(scalar_chain::add_insn): Like VEC_SELECT, ZERO_EXTEND and
+	timode_concatdi_p instructions don't require their input
+	operands to be converted (to TImode).
+	(timode_scalar_chain::compute_convert_gain): Split/clone XOR and
+	IOR cases from AND case, to handle timode_concatdi_p costs.
+	<case PLUS>: Handle timode_concatdi_p conversion costs.
+	<case ZERO_EXTEND>: Provide costs of DImode to TImode extension.
+	(timode_convert_concatdi): Helper function to transform
+	a *concatditi3 instruction into a vec_concatv2di instruction.
+	(timode_scalar_chain::convert_insn): Split/clone XOR and IOR
+	cases from ANS case, to handle timode_concatdi_p using the new
+	timode_convert_concatdi helper function.
+	<case ZERO_EXTEND>: Convert zero_extendditi2 to *vec_concatv2di_0.
+	<case PLUS>: Handle timode_concatdi_p using the new
+	timode_convert_concatdi helper function.
+	(timode_scalar_to_vector_candidate_p): Support timode_concatdi_p
+	instructions in IOR, XOR and PLUS cases.
+	<case ZERO_EXTEND>: Consider zero extension of a register from
+	DImode to TImode to be a candidate.
+
+2025-10-21  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120687
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): When
+	there's no natural reduction chain see if vect_slp_linearize_chain
+	can recover one and built the SLP instance manually in that
+	case.
+	(vect_schedule_slp): Deal with NULL lanes when looking for
+	stores to remove.
+	* tree-vect-loop.cc (vect_transform_cycle_phi): Dump when we
+	are successfully transforming a reduction chain.
+
+2025-10-21  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_create_partial_epilog): Pun back
+	to the requested type if necessary.
+
+2025-10-21  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/95699
+	PR tree-optimization/101024
+	PR tree-optimization/110068
+	* match.pd (`(type1)x CMP CST1 ? (type2)x : CST2`): Treat
+	`(signed)x </>= 0` as `x >=/< SIGNED_TYPE_MIN`
+
+2025-10-21  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (ASM_PREFERRED_EH_DATA_FORMAT):
+	Redefine.
+
+2025-10-21  Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks.h (VXWORKS_ADDITIONAL_CPP_SPEC):
+	Remove guard on -fself-tests and replace %:getenv(VSB_DIR) by
+	sysroot references.
+
 2025-10-20  Josef Melcr  <jmelcr02@gmail.com>
 
 	* ipa-fnsummary.cc (redirect_to_unreachable): Purge callback

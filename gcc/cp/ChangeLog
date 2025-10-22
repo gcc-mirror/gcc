@@ -1,3 +1,29 @@
+2025-10-21  Jakub Jelinek  <jakub@redhat.com>
+
+	* cp-tree.h: Implement C++23 P2674R1 - A trait for implicit lifetime
+	types.
+	(implicit_lifetime_type_p): Declare.
+	* tree.cc (implicit_lifetime_type_p): New function.
+	* cp-trait.def (IS_IMPLICIT_LIFETIME): New unary trait.
+	* semantics.cc (trait_expr_value): Handle CPTK_IS_IMPLICIT_LIFETIME.
+	(finish_trait_expr): Likewise.
+	* constraint.cc (diagnose_trait_expr): Likewise.
+
+2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c/120180
+	PR fortran/122306
+	* parser.cc (cp_parser_omp_metadirective): Return early if only one
+	selector matches and it resolves to 'omp nothing'.
+	(cp_parser_omp_error): Reject 'error at(execution)' in intervening code.
+	(cp_parser_pragma): Accept a subset of non-executable OpenMP directives
+	as intervening code.
+
+2025-10-21  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_assumption_clauses): Switch to
+	'unknown' not 'invalid' directive name for end directives.
+
 2025-10-18  Iain Sandoe  <iain@sandoe.co.uk>
 
 	PR c++/119060
