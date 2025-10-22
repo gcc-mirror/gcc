@@ -6071,6 +6071,10 @@ can_be_broadcast_p (rtx op)
   if (mode == HFmode && !TARGET_ZVFH)
     return false;
 
+  /* We don't have a vfmv.bf16.v.f.  */
+  if (mode == BFmode)
+    return false;
+
   /* Same for float, just that we can always handle 64-bit doubles
      even on !TARGET_64BIT.  We have ruled out 16-bit HF already
      above.  */
@@ -6108,6 +6112,10 @@ strided_broadcast_p (rtx op)
 
   /* Zvfhmin does not have a vfmv.v.f/vfmv.s.f.  for 16-bit elements.  */
   if (!TARGET_ZVFH && mode == HFmode)
+    return true;
+
+  /* We don't have a vfmv.bf16.v.f.  */
+  if (mode == BFmode)
     return true;
 
   return false;
