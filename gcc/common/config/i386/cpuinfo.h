@@ -639,6 +639,22 @@ get_intel_cpu (struct __processor_model *cpu_model,
       default:
 	break;
       }
+  /* Parse family and model for family 0x12.  */
+  else if (cpu_model2->__cpu_family == 0x12)
+    switch (cpu_model2->__cpu_model)
+      {
+      case 0x01:
+      case 0x03:
+	/* Nova Lake.  */
+	cpu = "novalake";
+	CHECK___builtin_cpu_is ("corei7");
+	CHECK___builtin_cpu_is ("novalake");
+	cpu_model->__cpu_type = INTEL_COREI7;
+	cpu_model->__cpu_subtype = INTEL_COREI7_NOVALAKE;
+	break;
+      default:
+	break;
+      }
   /* Parse family and model for family 0x13.  */
   else if (cpu_model2->__cpu_family == 0x13)
     switch (cpu_model2->__cpu_model)

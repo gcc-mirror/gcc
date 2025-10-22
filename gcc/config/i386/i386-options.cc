@@ -132,6 +132,7 @@ along with GCC; see the file COPYING3.  If not see
 #define m_ARROWLAKE_S (HOST_WIDE_INT_1U<<PROCESSOR_ARROWLAKE_S)
 #define m_PANTHERLAKE (HOST_WIDE_INT_1U<<PROCESSOR_PANTHERLAKE)
 #define m_DIAMONDRAPIDS (HOST_WIDE_INT_1U<<PROCESSOR_DIAMONDRAPIDS)
+#define m_NOVALAKE (HOST_WIDE_INT_1U<<PROCESSOR_NOVALAKE)
 #define m_CORE_AVX512 (m_SKYLAKE_AVX512 | m_CANNONLAKE \
 		       | m_ICELAKE_CLIENT | m_ICELAKE_SERVER | m_CASCADELAKE \
 		       | m_TIGERLAKE | m_COOPERLAKE | m_SAPPHIRERAPIDS \
@@ -140,7 +141,7 @@ along with GCC; see the file COPYING3.  If not see
 #define m_CORE_AVX2 (m_HASWELL | m_SKYLAKE | m_CORE_AVX512)
 #define m_CORE_ALL (m_CORE2 | m_NEHALEM  | m_SANDYBRIDGE | m_CORE_AVX2)
 #define m_CORE_HYBRID (m_ALDERLAKE | m_ARROWLAKE | m_ARROWLAKE_S \
-		       | m_PANTHERLAKE)
+		       | m_PANTHERLAKE | m_NOVALAKE)
 #define m_GOLDMONT (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT)
 #define m_GOLDMONT_PLUS (HOST_WIDE_INT_1U<<PROCESSOR_GOLDMONT_PLUS)
 #define m_TREMONT (HOST_WIDE_INT_1U<<PROCESSOR_TREMONT)
@@ -790,6 +791,7 @@ static const struct processor_costs *processor_cost_table[] =
   &alderlake_cost,	/* PROCESSOR_ARROWLAKE_S.	*/
   &alderlake_cost,	/* PROCESSOR_PANTHERLAKE.	*/
   &icelake_cost,	/* PROCESSOR_DIAMONDRAPIDS.	*/
+  &alderlake_cost,	/* PROCESSOR_NOVALAKE.		*/
   &alderlake_cost,	/* PROCESSOR_INTEL.		*/
   &lujiazui_cost,	/* PROCESSOR_LUJIAZUI.		*/
   &yongfeng_cost,	/* PROCESSOR_YONGFENG.		*/

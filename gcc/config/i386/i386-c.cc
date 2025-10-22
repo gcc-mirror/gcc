@@ -295,6 +295,10 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       def_or_undef (parse_in, "__diamondrapids");
       def_or_undef (parse_in, "__diamondrapids__");
       break;
+    case PROCESSOR_NOVALAKE:
+      def_or_undef (parse_in, "__novalake");
+      def_or_undef (parse_in, "__novalake__");
+      break;
 
     /* use PROCESSOR_max to not set/unset the arch macro.  */
     case PROCESSOR_max:
@@ -497,6 +501,9 @@ ix86_target_macros_internal (HOST_WIDE_INT isa_flag,
       break;
     case PROCESSOR_DIAMONDRAPIDS:
       def_or_undef (parse_in, "__tune_diamondrapids__");
+      break;
+    case PROCESSOR_NOVALAKE:
+      def_or_undef (parse_in, "__tune_novalake__");
       break;
     case PROCESSOR_INTEL:
     case PROCESSOR_GENERIC:

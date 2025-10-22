@@ -553,6 +553,7 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 	  processor = PROCESSOR_PENTIUM;
 	  break;
 	case 6:
+	case 18:
 	case 19:
 	  processor = PROCESSOR_PENTIUMPRO;
 	  break;
@@ -642,6 +643,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Clearwater Forest.  */
 		  if (has_feature (FEATURE_USER_MSR))
 		    cpu = "clearwaterforest";
+		  /* Assume Nova Lake.  */
+		  else if (has_feature (FEATURE_PREFETCHI))
+		    cpu = "novalake";
 		  else if (has_feature (FEATURE_SM3))
 		    {
 			if (has_feature (FEATURE_KL))
