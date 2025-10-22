@@ -11927,6 +11927,59 @@ and,
       (if (full_perm_p)
 	(vec_perm (op@3 @0 @1) @3 @2))))))
 
+/* Fold
+     x = VEC_PERM_EXPR <a, ANY, sel0>;
+     y = VEC_PERM_EXPR <ANY, b, sel0>;
+     c = VEC_PERM_EXPR <x, y, sel1>;
+   into
+     c = VEC_PERM_EXPR <a, b, sel0>;
+   if sel0 combined with sel1 denotes extracting a contiguous subvector from
+   the conceptual concatenated [ a | b ].  */
+(simplify
+ (vec_perm (view_convert? (vec_perm @0 @4 VECTOR_CST@2))
+	   (view_convert? (vec_perm @5 @1 VECTOR_CST@2))
+	   VECTOR_CST@3)
+ (with
+  {
+    bool can_fold = false;
+    unsigned HOST_WIDE_INT nelts;
+    vec_perm_builder builder;
+    if (TYPE_VECTOR_SUBPARTS (type).is_constant (&nelts)
+	&& tree_to_vec_perm_builder (&builder, @2))
+      {
+	/* Set can_fold to true when
+	   - sel0 is a vector of consecutive indices.
+	   - sel1 is composed of two parts of consecutive indices [ ia | ib ],
+	     selecting the elements originally in 'a' and 'b', respectively.  */
+	vec_perm_indices sel0 (builder, 2, VECTOR_CST_NELTS (@2));
+	unsigned int sel0_first_idx = sel0[0].to_constant ();
+	unsigned int elt_size = vector_element_bits (TREE_TYPE (@0));
+	unsigned int ia_size = tree_to_uhwi (TYPE_SIZE (type))
+			       - elt_size * sel0_first_idx;
+	unsigned int ib_start;
+	if (sel0.series_p (0, 1, sel0_first_idx, 1)
+	    && multiple_p (ia_size, vector_element_bits (type), &ib_start)
+	    && tree_to_vec_perm_builder (&builder, @3))
+	  {
+	    /* Check if the ib part contains consecutive indices starting from
+	       'nelts + ib_start'.  */
+	    vec_perm_indices sel1 (builder, 2, VECTOR_CST_NELTS (@3));
+	    can_fold = sel1.series_p (ib_start, 1, nelts + ib_start, 1);
+
+	    /* Check if the ia part contains indices [0 ... ib_start - 1].  */
+	    if (can_fold)
+	      for (unsigned int i = 0; i < ib_start; i++)
+		if (sel1[i].to_constant () != i)
+		  {
+		    can_fold = false;
+		    break;
+		  }
+	  }
+      }
+  }
+  (if (can_fold)
+    (view_convert (vec_perm @0 @1 @2)))))
+
 #if GIMPLE
 /* Simplify (a >> 1) + (b >> 1) + ((a | b) & 1) to .AVG_CEIL (a, b).
    Similar for (a | b) - ((a ^ b) >> 1).  */
