@@ -878,12 +878,17 @@ ftms = {
 // Moved down here (after concepts) by topological sort.
 ftms = {
   name = optional;
-  values = {
+  values = { // optional<T&>
+    v = 202506;
+    cxxmin = 26;
+    extra_cond = "__glibcxx_concepts";
+  };
+  values = { // monadic operations
     v = 202110;
     cxxmin = 23;
     extra_cond = "__glibcxx_concepts";
   };
-  values = {
+  values = { // full constexpr support
     v = 202106;
     cxxmin = 20;
   };

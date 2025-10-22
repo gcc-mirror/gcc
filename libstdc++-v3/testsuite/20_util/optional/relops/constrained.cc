@@ -8,8 +8,8 @@
 # error "Feature-test macro for constrained_equality has wrong value"
 #endif
 
-template<typename T, typename U = T>
-concept eq_comparable
+template<typename T, typename U>
+concept eq_comparable_impl
 = requires (const std::optional<T>& t, const std::optional<U>& u) {
   t == u;
   *t == u;
@@ -17,7 +17,19 @@ concept eq_comparable
 };
 
 template<typename T, typename U = T>
-concept ne_comparable
+concept eq_comparable =
+  eq_comparable_impl<T, U>
+#if __cplusplus > 202302l
+  && eq_comparable_impl<T&, U&>
+  && eq_comparable_impl<T const&, U const&>
+  && eq_comparable_impl<T const&, U&>
+  && eq_comparable_impl<T, U const&>
+  && eq_comparable_impl<T&, U>
+#endif
+;
+
+template<typename T, typename U>
+concept ne_comparable_impl
 = requires (const std::optional<T>& t, const std::optional<U>& u) {
   t != u;
   *t != u;
@@ -25,7 +37,19 @@ concept ne_comparable
 };
 
 template<typename T, typename U = T>
-concept lt_comparable
+concept ne_comparable =
+  ne_comparable_impl<T, U>
+#if __cplusplus > 202302l
+  && ne_comparable_impl<T&, U&>
+  && ne_comparable_impl<T const&, U const&>
+  && ne_comparable_impl<T const&, U&>
+  && ne_comparable_impl<T, U const&>
+  && ne_comparable_impl<T&, U>
+#endif
+;
+
+template<typename T, typename U>
+concept lt_comparable_impl
 = requires (const std::optional<T>& t, const std::optional<U>& u) {
   t < u;
   *t < u;
@@ -33,7 +57,19 @@ concept lt_comparable
 };
 
 template<typename T, typename U = T>
-concept le_comparable
+concept lt_comparable =
+  lt_comparable_impl<T, U>
+#if __cplusplus > 202302l
+  && lt_comparable_impl<T&, U&>
+  && lt_comparable_impl<T const&, U const&>
+  && lt_comparable_impl<T const&, U&>
+  && lt_comparable_impl<T, U const&>
+  && lt_comparable_impl<T&, U>
+#endif
+;
+
+template<typename T, typename U>
+concept le_comparable_impl
 = requires (const std::optional<T>& t, const std::optional<U>& u) {
   t <= u;
   *t <= u;
@@ -41,7 +77,19 @@ concept le_comparable
 };
 
 template<typename T, typename U = T>
-concept gt_comparable
+concept le_comparable =
+  le_comparable_impl<T, U>
+#if __cplusplus > 202302l
+  && le_comparable_impl<T&, U&>
+  && le_comparable_impl<T const&, U const&>
+  && le_comparable_impl<T const&, U&>
+  && le_comparable_impl<T, U const&>
+  && le_comparable_impl<T&, U>
+#endif
+;
+
+template<typename T, typename U>
+concept gt_comparable_impl
 = requires (const std::optional<T>& t, const std::optional<U>& u) {
   t > u;
   *t > u;
@@ -49,12 +97,36 @@ concept gt_comparable
 };
 
 template<typename T, typename U = T>
-concept ge_comparable
+concept gt_comparable =
+  gt_comparable_impl<T, U>
+#if __cplusplus > 202302l
+  && gt_comparable_impl<T&, U&>
+  && gt_comparable_impl<T const&, U const&>
+  && gt_comparable_impl<T const&, U&>
+  && gt_comparable_impl<T, U const&>
+  && gt_comparable_impl<T&, U>
+#endif
+;
+
+template<typename T, typename U>
+concept ge_comparable_impl
 = requires (const std::optional<T>& t, const std::optional<U>& u) {
   t >= u;
   *t >= u;
   t >= *u;
 };
+
+template<typename T, typename U = T>
+concept ge_comparable =
+  ge_comparable_impl<T, U>
+#if __cplusplus > 202302l
+  && ge_comparable_impl<T&, U&>
+  && ge_comparable_impl<T const&, U const&>
+  && ge_comparable_impl<T const&, U&>
+  && ge_comparable_impl<T, U const&>
+  && ge_comparable_impl<T&, U>
+#endif
+;
 
 static_assert( eq_comparable<int> );
 static_assert( ne_comparable<int> );

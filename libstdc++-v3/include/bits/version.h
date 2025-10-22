@@ -985,7 +985,12 @@
 #undef __glibcxx_want_concepts
 
 #if !defined(__cpp_lib_optional)
-# if (__cplusplus >= 202100L) && (__glibcxx_concepts)
+# if (__cplusplus >  202302L) && (__glibcxx_concepts)
+#  define __glibcxx_optional 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_optional)
+#   define __cpp_lib_optional 202506L
+#  endif
+# elif (__cplusplus >= 202100L) && (__glibcxx_concepts)
 #  define __glibcxx_optional 202110L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_optional)
 #   define __cpp_lib_optional 202110L
@@ -2198,7 +2203,7 @@
 #   define __cpp_lib_observable_checkpoint 202506L
 #  endif
 # endif
-#endif /* !defined(__cpp_lib_observable_checkpoint) && defined(__glibcxx_want_observable_checkpoint) */
+#endif /* !defined(__cpp_lib_observable_checkpoint) */
 #undef __glibcxx_want_observable_checkpoint
 
 #if !defined(__cpp_lib_algorithm_default_value_type)

@@ -777,6 +777,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # define _GLIBCXX_USE_CONSTRAINTS_FOR_OPTIONAL 1
 #endif
 
+  template<typename _Tp>
+    inline constexpr bool __is_valid_contained_type_for_optional =
+      (
+#if __cpp_lib_optional >= 202506L
+	is_lvalue_reference_v<_Tp> ||
+#endif
+	(is_object_v<_Tp> && is_destructible_v<_Tp> && !is_array_v<_Tp>)
+      )
+      && !is_same_v<remove_cv_t<remove_reference_t<_Tp>>, nullopt_t>
+      && !is_same_v<remove_cv_t<remove_reference_t<_Tp>>, in_place_t>;
+
   /**
     * @brief Class template for optional values.
     */
@@ -795,9 +806,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// Unique tag type.
 	optional<_Tp>>
     {
-      static_assert(!is_same_v<remove_cv_t<_Tp>, nullopt_t>);
-      static_assert(!is_same_v<remove_cv_t<_Tp>, in_place_t>);
-      static_assert(is_object_v<_Tp> && !is_array_v<_Tp>);
+      static_assert(__is_valid_contained_type_for_optional<_Tp>);
 
     private:
       using _Base = _Optional_base<_Tp>;
@@ -894,7 +903,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
 	{
 	  if (__t)
-	    emplace(__t._M_get());
+	    emplace(__t._M_fwd());
 	}
 
       template<typename _Up>
@@ -906,7 +915,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	{
 	  if (__t)
-	    emplace(std::move(__t._M_get()));
+	    emplace(std::move(__t)._M_fwd());
 	}
 
       template<typename... _Args>
@@ -956,7 +965,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
 	{
 	  if (__t)
-	    emplace(__t._M_get());
+	    emplace(__t._M_fwd());
 	}
 
       template<typename _Up,
@@ -969,7 +978,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, const _Up&>)
 	{
 	  if (__t)
-	    emplace(__t._M_get());
+	    emplace(__t._M_fwd());
 	}
 
       template<typename _Up,
@@ -982,7 +991,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	{
 	  if (__t)
-	    emplace(std::move(__t._M_get()));
+	    emplace(std::move(__t)._M_fwd());
 	}
 
       template<typename _Up,
@@ -995,7 +1004,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	noexcept(is_nothrow_constructible_v<_Tp, _Up>)
 	{
 	  if (__t)
-	    emplace(std::move(__t._M_get()));
+	    emplace(std::move(__t)._M_fwd());
 	}
 
       template<typename... _Args,
@@ -1074,9 +1083,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__u)
 	    {
 	      if (this->_M_is_engaged())
-		this->_M_get() = __u._M_get();
+		this->_M_get() = __u._M_fwd();
 	      else
-		this->_M_construct(__u._M_get());
+		this->_M_construct(__u._M_fwd());
 	    }
 	  else
 	    {
@@ -1108,9 +1117,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (__u)
 	    {
 	      if (this->_M_is_engaged())
-		this->_M_get() = std::move(__u._M_get());
+		this->_M_get() = std::move(__u)._M_fwd();
 	      else
-		this->_M_construct(std::move(__u._M_get()));
+		this->_M_construct(std::move(__u)._M_fwd());
 	    }
 	  else
 	    {
@@ -1310,7 +1319,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) &
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp&>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+	  static_assert(__is_optional_v<_Up>,
 			"the function passed to std::optional<T>::and_then "
 			"must return a std::optional");
 	  if (has_value())
@@ -1338,7 +1347,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) &&
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+	  static_assert(__is_optional_v<_Up>,
 			"the function passed to std::optional<T>::and_then "
 			"must return a std::optional");
 	  if (has_value())
@@ -1352,7 +1361,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	and_then(_Fn&& __f) const &&
 	{
 	  using _Up = remove_cvref_t<invoke_result_t<_Fn, const _Tp>>;
-	  static_assert(__is_optional_v<remove_cvref_t<_Up>>,
+	  static_assert(__is_optional_v<_Up>,
 			"the function passed to std::optional<T>::and_then "
 			"must return a std::optional");
 	  if (has_value())
@@ -1441,6 +1450,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     private:
       using _Base::_M_get;
 
+      [[__gnu__::__always_inline__]]
+      constexpr _Tp&
+      _M_fwd() & noexcept
+      { return _M_get(); }
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Tp&&
+      _M_fwd() && noexcept
+      { return std::move(_M_get()); }
+
+      [[__gnu__::__always_inline__]]
+      constexpr const _Tp&
+      _M_fwd() const& noexcept
+      { return _M_get(); }
+
+      [[__gnu__::__always_inline__]]
+      constexpr const _Tp&&
+      _M_fwd() const&& noexcept
+      { return std::move(_M_get()); }
+
       template<typename _Up> friend class optional;
 
 #if __cpp_lib_optional >= 202110L // C++23
@@ -1452,6 +1481,310 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 #endif
     };
+
+#if __cpp_lib_optional >= 202506L // C++26
+  template<typename _Tp>
+    class optional<_Tp&>
+    {
+      static_assert(__is_valid_contained_type_for_optional<_Tp&>);
+
+    public:
+      using value_type = _Tp;
+      using iterator = __gnu_cxx::__normal_iterator<_Tp*, optional>;
+
+      // Constructors.
+      constexpr optional() noexcept = default;
+      constexpr optional(nullopt_t) noexcept : optional() {}
+      constexpr optional(const optional&) noexcept = default;
+
+      template<typename _Arg>
+	requires is_constructible_v<_Tp&, _Arg>
+	  && (!reference_constructs_from_temporary_v<_Tp&, _Arg>)
+	explicit constexpr
+	optional(in_place_t, _Arg&& __arg)
+	{
+	  __convert_ref_init_val(std::forward<_Arg>(__arg));
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<remove_cvref_t<_Up>, optional>)
+	  && (!is_same_v<remove_cvref_t<_Up>, in_place_t>)
+	  && is_constructible_v<_Tp&, _Up>
+	  && (!reference_constructs_from_temporary_v<_Tp&, _Up>)
+	explicit(!is_convertible_v<_Up, _Tp&>)
+	constexpr
+	optional(_Up&& __u)
+	noexcept(is_nothrow_constructible_v<_Tp&, _Up>)
+	{
+	  __convert_ref_init_val(std::forward<_Up>(__u));
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<remove_cvref_t<_Up>, optional>)
+	  && (!is_same_v<remove_cvref_t<_Up>, in_place_t>)
+	  && is_constructible_v<_Tp&, _Up>
+	  && reference_constructs_from_temporary_v<_Tp&, _Up>
+	explicit(!is_convertible_v<_Up, _Tp&>)
+	constexpr
+	optional(_Up&& __u) = delete;
+
+      // optional<U> &
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, _Up&>
+	  && (!reference_constructs_from_temporary_v<_Tp&, _Up&>)
+	explicit(!is_convertible_v<_Up&, _Tp&>)
+	constexpr
+	optional(optional<_Up>& __rhs)
+	noexcept(is_nothrow_constructible_v<_Tp&, _Up&>)
+	{
+	  if (__rhs)
+	    __convert_ref_init_val(__rhs._M_fwd());
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, _Up&>
+	  && reference_constructs_from_temporary_v<_Tp&, _Up&>
+	explicit(!is_convertible_v<_Up&, _Tp&>)
+	constexpr
+	optional(optional<_Up>& __rhs) = delete;
+
+      // const optional<U>&
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, const _Up&>
+	  && (!reference_constructs_from_temporary_v<_Tp&, const _Up&>)
+	explicit(!is_convertible_v<const _Up&, _Tp&>)
+	constexpr
+	optional(const optional<_Up>& __rhs)
+	noexcept(is_nothrow_constructible_v<_Tp&, _Up&>)
+	{
+	  if (__rhs)
+	    __convert_ref_init_val(__rhs._M_fwd());
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, const _Up&>
+	  && reference_constructs_from_temporary_v<_Tp&, const _Up&>
+	explicit(!is_convertible_v<const _Up&, _Tp&>)
+	constexpr
+	optional(const optional<_Up>& __rhs) = delete;
+
+      // optional<U>&&
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, _Up>
+	  && (!reference_constructs_from_temporary_v<_Tp&, _Up>)
+	explicit(!is_convertible_v<_Up, _Tp&>)
+	constexpr
+	optional(optional<_Up>&& __rhs)
+	noexcept(is_nothrow_constructible_v<_Tp&, _Up>)
+	{
+	  if (__rhs)
+	    __convert_ref_init_val(std::move(__rhs)._M_fwd());
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, _Up>
+	  && reference_constructs_from_temporary_v<_Tp&, _Up>
+	explicit(!is_convertible_v<_Up, _Tp&>)
+	constexpr
+	optional(optional<_Up>&& __rhs) = delete;
+
+      // const optional<U>&&
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, const _Up>
+	  && (!reference_constructs_from_temporary_v<_Tp&, _Up>)
+	explicit(!is_convertible_v<const _Up, _Tp&>)
+	constexpr
+	optional(const optional<_Up>&& __rhs)
+	noexcept(is_nothrow_constructible_v<_Tp&, const _Up>)
+	{
+	  if (__rhs)
+	    __convert_ref_init_val(std::move(__rhs)._M_fwd());
+	}
+
+      template<typename _Up>
+	requires (!is_same_v<remove_cv_t<_Tp>, optional<_Up>>)
+	  && (!is_same_v<_Tp&, _Up>)
+	  && is_constructible_v<_Tp&, const _Up>
+	  && reference_constructs_from_temporary_v<_Tp&, const _Up>
+	explicit(!is_convertible_v<const _Up, _Tp&>)
+	constexpr
+	optional(const optional<_Up>&& __rhs) = delete;
+
+      constexpr ~optional() = default;
+
+      // Assignment.
+      constexpr optional& operator=(nullopt_t) noexcept
+      {
+	_M_val = nullptr;
+	return *this;
+      }
+
+      constexpr optional& operator=(const optional&) noexcept = default;
+
+      template<typename _Up>
+	requires is_constructible_v<_Tp&, _Up>
+	  && (!reference_constructs_from_temporary_v<_Tp&, _Up>)
+	constexpr _Tp&
+	emplace(_Up&& __u)
+	noexcept(is_nothrow_constructible_v<_Tp&, _Up>)
+	{
+	  __convert_ref_init_val(std::forward<_Up>(__u));
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 4300. Missing Returns: element in optional<T&>::emplace
+	  return *_M_val;
+	}
+
+      // Swap.
+      constexpr void swap(optional& __rhs) noexcept
+      { std::swap(_M_val, __rhs._M_val); }
+
+      // Iterator support.
+      constexpr iterator begin() const noexcept
+      {
+	return iterator(_M_val);
+      }
+
+      constexpr iterator end() const noexcept
+      {
+	return begin() + has_value();
+      }
+
+      // Observers.
+      constexpr _Tp* operator->() const noexcept
+      {
+	__glibcxx_assert(_M_val); // hardened precondition
+	return _M_val;
+      }
+
+      constexpr _Tp& operator*() const noexcept
+      {
+	__glibcxx_assert(_M_val); // hardened precondition
+	return *_M_val;
+      }
+
+      constexpr explicit operator bool() const noexcept
+      {
+	return _M_val;
+      }
+
+      constexpr bool has_value() const noexcept
+      {
+	return _M_val;
+      }
+
+      constexpr _Tp& value() const
+      {
+	if (_M_val)
+	  return *_M_val;
+	__throw_bad_optional_access();
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4304. std::optional<NonReturnable&> is ill-formed due to value_or
+      template<typename _Up = remove_cv_t<_Tp>>
+	requires is_object_v<_Tp> && (!is_array_v<_Tp>)
+	constexpr decay_t<_Tp>
+	value_or(_Up&& __u) const
+	{
+	  using _Xp = remove_cv_t<_Tp>;
+	  static_assert(is_constructible_v<_Xp, _Tp&>);
+	  static_assert(is_convertible_v<_Up, _Xp>);
+	  return _M_val ? *_M_val : static_cast<_Xp>(std::forward<_Up>(__u));
+	}
+
+      // Monadic operations.
+      template<typename _Fn>
+	constexpr auto
+	and_then(_Fn&& __f) const
+	{
+	  using _Up = remove_cvref_t<invoke_result_t<_Fn, _Tp&>>;
+	  static_assert(__is_optional_v<_Up>,
+			"the function passed to std::optional<T&>::and_then "
+			"must return a std::optional");
+	  if (has_value())
+	    return std::__invoke(std::forward<_Fn>(__f), *_M_val);
+	  else
+	    return _Up();
+	}
+
+      template<typename _Fn>
+	constexpr
+	optional<remove_cv_t<invoke_result_t<_Fn, _Tp&>>>
+	transform(_Fn&& __f) const
+	{
+	  using _Up = remove_cv_t<invoke_result_t<_Fn, _Tp&>>;
+	  if (has_value())
+	    return optional<_Up>(_Optional_func<_Fn>{__f}, *_M_val);
+	  else
+	    return optional<_Up>();
+	}
+
+      template<typename _Fn>
+	requires invocable<_Fn>
+	constexpr
+	optional
+	or_else(_Fn&& __f) const
+	{
+	  static_assert(is_same_v<remove_cvref_t<invoke_result_t<_Fn>>, optional>,
+			"the function passed to std::optional<T&>::or_else "
+			"must return a std::optional<T&>");
+	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+	  // 4367. Improve optional<T&>::or_else
+	  if (has_value())
+	    return *this;
+	  else
+	    return std::forward<_Fn>(__f)();
+	}
+
+      // Modifiers.
+      constexpr void reset() noexcept
+      {
+	_M_val = nullptr;
+      }
+
+    private:
+      _Tp *_M_val = nullptr;
+
+      [[__gnu__::__always_inline__]]
+      constexpr _Tp&
+      _M_fwd() const noexcept
+      { return *_M_val; }
+
+      template<typename _Up> friend class optional;
+
+      template<typename _Up>
+	constexpr
+	void
+	__convert_ref_init_val(_Up&& __u)
+	noexcept
+	{
+	  _Tp& __r(std::forward<_Up>(__u));
+	  _M_val = std::addressof(__r);
+	}
+
+      template<typename _Fn, typename _Value>
+	explicit constexpr
+	optional(_Optional_func<_Fn> __f, _Value&& __v)
+	{
+	  _Tp& __r = std::__invoke(std::forward<_Fn>(__f._M_f), std::forward<_Value>(__v));
+	  _M_val = std::addressof(__r);
+	}
+    };
+#endif // __cpp_lib_optional >= 202506L
 
   template<typename _Tp>
     using __optional_relop_t =
@@ -1740,19 +2073,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     noexcept(noexcept(__lhs.swap(__rhs)))
     { __lhs.swap(__rhs); }
 
+#if __cpp_lib_optional >= 202506L
+  // We deviate from standard, that do not declared separate swap overload
+  // from optional<T&>.
+  template<typename _Tp>
+    constexpr void
+    swap(optional<_Tp&>& __lhs, optional<_Tp&>& __rhs) noexcept
+    { __lhs.swap(__rhs); }
+#endif
+
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
   // 2766. Swapping non-swappable types
   template<typename _Tp>
     enable_if_t<!(is_move_constructible_v<_Tp> && is_swappable_v<_Tp>)>
     swap(optional<_Tp>&, optional<_Tp>&) = delete;
 
+#if __cpp_lib_optional >= 202506L
+  template<int = 0, typename _Tp>
+#else
   template<typename _Tp>
+#endif
     constexpr
     enable_if_t<is_constructible_v<decay_t<_Tp>, _Tp>,
 		optional<decay_t<_Tp>>>
     make_optional(_Tp&& __t)
     noexcept(is_nothrow_constructible_v<optional<decay_t<_Tp>>, _Tp>)
-    { return optional<decay_t<_Tp>>{ std::forward<_Tp>(__t) }; }
+    { return optional<decay_t<_Tp>>( std::forward<_Tp>(__t) ); }
 
   template<typename _Tp, typename... _Args>
     constexpr
@@ -1760,7 +2106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		optional<_Tp>>
     make_optional(_Args&&... __args)
     noexcept(is_nothrow_constructible_v<_Tp, _Args...>)
-    { return optional<_Tp>{ in_place, std::forward<_Args>(__args)... }; }
+    { return optional<_Tp>( in_place, std::forward<_Args>(__args)... ); }
 
   template<typename _Tp, typename _Up, typename... _Args>
     constexpr
@@ -1768,7 +2114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		optional<_Tp>>
     make_optional(initializer_list<_Up> __il, _Args&&... __args)
     noexcept(is_nothrow_constructible_v<_Tp, initializer_list<_Up>&, _Args...>)
-    { return optional<_Tp>{ in_place, __il, std::forward<_Args>(__args)... }; }
+    { return optional<_Tp>( in_place, __il, std::forward<_Args>(__args)... ); }
 
   // Hash.
 
@@ -1796,6 +2142,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp>
     struct hash<optional<_Tp>>
+    // hash for optional<T&> is disabled because is_hash_enabled_for<T&> is false
     : public __conditional_t<__is_hash_enabled_for<remove_const_t<_Tp>>,
 			     __optional_hash<_Tp>,
 			     __hash_not_enabled<_Tp>>

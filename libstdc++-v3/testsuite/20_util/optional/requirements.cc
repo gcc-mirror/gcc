@@ -26,8 +26,10 @@
 # error "Feature test macro for optional has wrong value in <optional>"
 #elif __cplusplus == 202002L && __cpp_lib_optional != 202106L
 # error "Feature test macro for optional has wrong value for C++20 in <optional>"
-#elif __cplusplus > 202002L && __cpp_lib_optional != 202110L
-# error "Feature test macro for optional has wrong value for C++23 in <version>"
+#elif __cplusplus == 202302L && __cpp_lib_optional != 202110L
+# error "Feature test macro for optional has wrong value for C++23 in <optional>"
+#elif __cplusplus > 202302L && __cpp_lib_optional != 202506L
+# error "Feature test macro for optional has wrong value for C++26 in <optional>"
 #endif
 
 #include <testsuite_hooks.h>
