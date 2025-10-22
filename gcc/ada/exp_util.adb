@@ -7663,9 +7663,12 @@ package body Exp_Util is
                   if Previous = Condition (If_Stmt) then
                      return;
 
-                  else
-                     pragma Assert
-                       (List_Containing (Previous)
+                  --  Guard against if-statements coming from if-statements
+                  --  with broken chain of parents.
+
+                  elsif Is_List_Member (Previous) then
+                     pragma Assert (
+                       List_Containing (Previous)
                           in Then_Statements (If_Stmt)
                            | Elsif_Parts (If_Stmt)
                            | Else_Statements (If_Stmt));
@@ -7674,6 +7677,9 @@ package body Exp_Util is
                        (if CV = If_Stmt
                         then List_Containing (Previous) = Then_Statements (CV)
                         else Previous = CV);
+                  else
+                     pragma Assert (From_Conditional_Expression (If_Stmt));
+                     return;
                   end if;
                else
                   return;
