@@ -1,3 +1,21 @@
+2025-10-21  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121599
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::use_cond_insn): Use add_fixed_operand if
+	fallback_arg == CONST0_RTX (mode).
+
+2025-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2025-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR other/118919
+	* input.cc (file_cache_slot::m_file_path): Make non-const.
+	(file_cache_slot::evict): Free m_file_path.
+	(file_cache_slot::create): Store a copy of file_path if non-null.
+	(file_cache_slot::~file_cache_slot): Free m_file_path.
+
 2025-10-20  Svante Signell  <svante.signell@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,16 @@
+2025-10-21  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121599
+	* gcc.target/aarch64/sve2/pr121599.c: New test.
+
+2025-10-21  David Malcolm  <dmalcolm@redhat.com>
+
+	Backported from master:
+	2025-02-19  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/118300
+	* gcc.dg/analyzer/ubsan-pr118300.c: New test.
+
 2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/renaming18.adb: New test.
