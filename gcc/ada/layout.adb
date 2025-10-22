@@ -668,8 +668,8 @@ package body Layout is
    -----------------------------
 
    procedure Set_Composite_Alignment (E : Entity_Id) is
-      Siz   : Uint;
       Align : Nat;
+      Siz   : Uint;
 
    begin
       --  If alignment is already set, then nothing to do
@@ -682,7 +682,7 @@ package body Layout is
       --  the setting of the Optimize_Alignment mode.
 
       --  If Optimize_Alignment is set to Space, then we try to give packed
-      --  records an aligmment of 1, unless there is some reason we can't.
+      --  records an alignment of 1, unless there is some reason we can't.
 
       if Optimize_Alignment_Space (E)
         and then Is_Record_Type (E)
@@ -698,13 +698,13 @@ package body Layout is
                  ("\pragma ignored for atomic record??", E);
             else
                Error_Msg_N
-                 ("\pragma ignored for bolatile full access record??", E);
+                 ("\pragma ignored for volatile full access record??", E);
             end if;
 
             return;
          end if;
 
-         --  No effect if independent components
+         --  No effect for record with independent components
 
          if Has_Independent_Components (E) then
             Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
@@ -744,7 +744,7 @@ package body Layout is
             end loop;
          end;
 
-         --  Optimize_Alignment has no effect on variable length record
+         --  No effect on variable length record
 
          if not Size_Known_At_Compile_Time (E) then
             Error_Msg_N ("Optimize_Alignment has no effect for &??", E);
@@ -755,8 +755,6 @@ package body Layout is
          --  All tests passed, we can set alignment to 1
 
          Align := 1;
-
-      --  Not a record, or not packed
 
       else
          --  The only other cases we worry about here are where the size is
@@ -782,9 +780,9 @@ package body Layout is
          elsif Siz = 8 * SSU then
             Align := 8;
 
-            --  If Optimize_Alignment is set to Space, then make sure the
-            --  alignment matches the size, for example, if the size is 17
-            --  bytes then we want an alignment of 1 for the type.
+         --  If Optimize_Alignment is set to Space, then make sure the
+         --  alignment matches the size, for example, if the size is 17
+         --  bytes then we want an alignment of 1 for the type.
 
          elsif Optimize_Alignment_Space (E) then
             if Siz mod (8 * SSU) = 0 then
@@ -797,9 +795,9 @@ package body Layout is
                Align := 1;
             end if;
 
-            --  If Optimize_Alignment is set to Time, then we reset for odd
-            --  "in between sizes", for example a 17 bit record is given an
-            --  alignment of 4.
+         --  If Optimize_Alignment is set to Time, then we reset for odd
+         --  "in between sizes", for example a 17 bit record is given an
+         --  alignment of 4.
 
          elsif Optimize_Alignment_Time (E)
            and then Siz > SSU
@@ -813,14 +811,14 @@ package body Layout is
                Align := 8;
             end if;
 
-            --  No special alignment fiddling needed
+         --  No special alignment fiddling needed
 
          else
             return;
          end if;
       end if;
 
-      --  Here we have Set Align to the proposed improved value. Make sure the
+      --  Here we have set Align to the proposed improved value. Make sure the
       --  value set does not exceed Maximum_Alignment for the target.
 
       if Align > Maximum_Alignment then
@@ -828,8 +826,8 @@ package body Layout is
       end if;
 
       --  Further processing for record types only to reduce the alignment
-      --  set by the above processing in some specific cases. We do not
-      --  do this for full access records, since we need max alignment there,
+      --  set by the above processing in some specific cases. We do not do
+      --  this for full access records, since we need max alignment there.
 
       if Is_Record_Type (E) and then not Is_Full_Access (E) then
 
