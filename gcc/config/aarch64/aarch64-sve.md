@@ -8745,7 +8745,7 @@
 
 ;; Predicated integer comparisons in which only the flags result is
 ;; interesting.
-(define_insn_and_rewrite "*cmp<cmp_op><mode>_ptest"
+(define_insn_and_rewrite "@aarch64_pred_cmp<cmp_op><mode>_ptest"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC
 	  [(match_operand:VNx16BI 1 "register_operand")
@@ -9963,7 +9963,7 @@
 ;;   cntp    x0, p0, p0.b
 ;;   and     w0, w0, 1
 ;;
-(define_expand "reduc_sbool_xor_scal_<mode>"
+(define_expand "@reduc_sbool_xor_scal_<mode>"
   [(set (match_dup 2)
 	(zero_extend:DI
 	  (unspec:SI [(match_dup 1)
