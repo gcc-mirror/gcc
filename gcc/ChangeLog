@@ -1,3 +1,18 @@
+2025-10-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-10-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* config/arm/mve.md (@mve_vbicq_f<mode>): Fix operands order.
+
+2025-10-21  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121599
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_expander::use_cond_insn): Use add_fixed_operand if
+	fallback_arg == CONST0_RTX (mode).
+
 2025-10-20  Svante Signell  <svante.signell@gmail.com>
 
 	Backported from master:

@@ -1,3 +1,16 @@
+2025-10-21  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-10-10  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* gcc.target/arm/mve/intrinsics/pr122223.c: New test.
+
+2025-10-21  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121599
+	* gcc.target/aarch64/sve2/pr121599.c: New test.
+
 2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/renaming18.adb: New test.
