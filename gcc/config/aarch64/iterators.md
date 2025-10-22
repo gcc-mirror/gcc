@@ -217,6 +217,9 @@
 ;; All Advanced SIMD modes on which we support any arithmetic operations.
 (define_mode_iterator VALL [V8QI V16QI V4HI V8HI V2SI V4SI V2DI V2SF V4SF V2DF])
 
+;; All Advanced SIMD integer modes
+(define_mode_iterator VALLI [VDQ_BHSI V2DI])
+
 ;; All Advanced SIMD modes suitable for moving, loading, and storing.
 (define_mode_iterator VALL_F16 [V8QI V16QI V4HI V8HI V2SI V4SI V2DI
 				V4HF V8HF V4BF V8BF V2SF V4SF V2DF])

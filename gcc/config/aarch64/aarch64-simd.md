@@ -3469,6 +3469,103 @@
   DONE;
 })
 
+;; AND tree reductions.
+;; Check if after a min pairwise reduction that all the lanes are 1.
+;;
+;;   uminp  v1.4s, v1.4s, v1.4s
+;;   fmov   x1, d1
+;;   cmn    x1, #1
+;;   cset   w0, eq
+;;
+(define_expand "reduc_sbool_and_scal_<mode>"
+  [(set (match_operand:QI 0 "register_operand")
+	(unspec:QI [(match_operand:VALLI 1 "register_operand")]
+		    UNSPEC_ANDV))]
+  "TARGET_SIMD"
+{
+  rtx tmp = operands[1];
+  /* 128-bit vectors need to be compressed to 64-bits first.  */
+  if (known_eq (128, GET_MODE_BITSIZE (<MODE>mode)))
+    {
+      /* Always reduce using a V4SI.  */
+      rtx reduc = gen_lowpart (V4SImode, tmp);
+      rtx res = gen_reg_rtx (V4SImode);
+      emit_insn (gen_aarch64_uminpv4si (res, reduc, reduc));
+      emit_move_insn (tmp, gen_lowpart (<MODE>mode, res));
+    }
+  rtx val = gen_reg_rtx (DImode);
+  emit_move_insn (val, gen_lowpart (DImode, tmp));
+  rtx cc_reg = aarch64_gen_compare_reg (EQ, val, constm1_rtx);
+  rtx cmp = gen_rtx_fmt_ee (EQ, SImode, cc_reg, constm1_rtx);
+  rtx tmp2 = gen_reg_rtx (SImode);
+  emit_insn (gen_aarch64_cstoresi (tmp2, cmp, cc_reg));
+  emit_move_insn (operands[0], gen_lowpart (QImode, tmp2));
+  DONE;
+})
+
+;; IOR tree reductions.
+;; Check that after a MAX pairwise reduction any lane is not 0
+;;
+;;   umaxp  v1.4s, v1.4s, v1.4s
+;;   fmov   x1, d1
+;;   cmp    x1, 0
+;;   cset   w0, ne
+;;
+(define_expand "reduc_sbool_ior_scal_<mode>"
+  [(set (match_operand:QI 0 "register_operand")
+	(unspec:QI [(match_operand:VALLI 1 "register_operand")]
+		    UNSPEC_IORV))]
+  "TARGET_SIMD"
+{
+  rtx tmp = operands[1];
+  /* 128-bit vectors need to be compressed to 64-bits first.  */
+  if (known_eq (128, GET_MODE_BITSIZE (<MODE>mode)))
+    {
+      /* Always reduce using a V4SI.  */
+      rtx reduc = gen_lowpart (V4SImode, tmp);
+      rtx res = gen_reg_rtx (V4SImode);
+      emit_insn (gen_aarch64_umaxpv4si (res, reduc, reduc));
+      emit_move_insn (tmp, gen_lowpart (<MODE>mode, res));
+    }
+  rtx val = gen_reg_rtx (DImode);
+  emit_move_insn (val, gen_lowpart (DImode, tmp));
+  rtx cc_reg = aarch64_gen_compare_reg (NE, val, const0_rtx);
+  rtx cmp = gen_rtx_fmt_ee (NE, SImode, cc_reg, const0_rtx);
+  rtx tmp2 = gen_reg_rtx (SImode);
+  emit_insn (gen_aarch64_cstoresi (tmp2, cmp, cc_reg));
+  emit_move_insn (operands[0], gen_lowpart (QImode, tmp2));
+  DONE;
+})
+
+;; Unpredicated predicate XOR tree reductions.
+;; Check to see if the number of active lanes in the predicates is a multiple
+;; of 2.  We use a normal reduction after masking with 0x1.
+;;
+;;  movi  v1.16b, 0x1
+;;  and   v2.16b, v2.16b, v2.16b
+;;  addv  b3, v2.16b
+;;  fmov  w1, s3
+;;  and   w0, w1, 1
+;;
+(define_expand "reduc_sbool_xor_scal_<mode>"
+  [(set (match_operand:QI 0 "register_operand")
+	(unspec:QI [(match_operand:VALLI 1 "register_operand")]
+		    UNSPEC_XORV))]
+  "TARGET_SIMD"
+{
+  rtx tmp = gen_reg_rtx (<MODE>mode);
+  rtx one_reg = force_reg (<MODE>mode, CONST1_RTX (<MODE>mode));
+  emit_move_insn (tmp, gen_rtx_AND (<MODE>mode, operands[1], one_reg));
+  rtx tmp2 = gen_reg_rtx (<VEL>mode);
+  emit_insn (gen_reduc_plus_scal_<mode> (tmp2, tmp));
+  rtx tmp3 = gen_reg_rtx (DImode);
+  emit_move_insn (tmp3, gen_rtx_AND (DImode,
+				     lowpart_subreg (DImode, tmp2, <VEL>mode),
+				     const1_rtx));
+  emit_move_insn (operands[0], gen_lowpart (QImode, tmp2));
+  DONE;
+})
+
 ;; SADDLV and UADDLV can be expressed as an ADDV instruction that first
 ;; sign or zero-extends its elements.
 (define_insn "aarch64_<su>addlv<mode>"
