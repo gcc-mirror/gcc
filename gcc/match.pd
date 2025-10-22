@@ -6592,25 +6592,30 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
      tree from_type = TREE_TYPE (@1);
      tree c1_type = TREE_TYPE (@3), c2_type = TREE_TYPE (@2);
      enum tree_code code = ERROR_MARK;
-     enum tree_code ncmp = cmp;
-     tree c1 = @3;
 
      /* `((signed)a) < 0` should be converted back into
         `a >= (unsigned)SIGNED_TYPE_MIN`.
 	`((signed)a) >= 0` should be converted back into
 	`a < (unsigned)SIGNED_TYPE_MIN`. */
-     if (integer_zerop (c1)
+     if (integer_zerop (@3)
+         && INTEGRAL_TYPE_P (from_type)
          && (cmp == GE_EXPR || cmp == LT_EXPR)
 	 && TYPE_UNSIGNED (from_type)
 	 && !TYPE_UNSIGNED (c1_type)
-	 && TYPE_PRECISION (from_type) == TYPE_PRECISION (c1_type))
+	 && TYPE_PRECISION (from_type) == TYPE_PRECISION (c1_type)
+	 && int_fits_type_p (@2, from_type)
+	 && (types_match (c2_type, from_type)
+	     || (TYPE_PRECISION (c2_type) > TYPE_PRECISION (from_type)
+		 && (TYPE_UNSIGNED (from_type)
+		     || TYPE_SIGN (c2_type) == TYPE_SIGN (from_type)))))
 	{
-	  ncmp = cmp == GE_EXPR ? LT_EXPR : GE_EXPR;
-	  c1 = fold_convert (from_type, TYPE_MIN_VALUE (c1_type));
-	  c1_type = from_type;
+	  tree_code ncmp = cmp == GE_EXPR ? LE_EXPR : GT_EXPR;
+	  widest_int c1 = wi::mask<widest_int>(TYPE_PRECISION (type) - 1, 0);
+	  code = minmax_from_comparison (ncmp, @1, c1, wi::to_widest (@2));
 	}
 
-     if (INTEGRAL_TYPE_P (from_type)
+     if (code == ERROR_MARK
+         && INTEGRAL_TYPE_P (from_type)
 	 && int_fits_type_p (@2, from_type)
 	 && (types_match (c1_type, from_type)
 	     || (TYPE_PRECISION (c1_type) > TYPE_PRECISION (from_type)
@@ -6621,8 +6626,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 		 && (TYPE_UNSIGNED (from_type)
 		     || TYPE_SIGN (c2_type) == TYPE_SIGN (from_type)))))
        {
-	 if (ncmp != EQ_EXPR)
-	   code = minmax_from_comparison (ncmp, @1, c1, @1, @2);
+	 if (cmp != EQ_EXPR)
+	   code = minmax_from_comparison (cmp, @1, @3, @1, @2);
 	 /* Can do A == C1 ? A : C2  ->  A == C1 ? C1 : C2?  */
 	 else if (int_fits_type_p (@3, from_type))
 	   code = EQ_EXPR;
