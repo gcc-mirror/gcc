@@ -5616,7 +5616,7 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
       && VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info)
       && vectype != VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info))
     {
-      vectype = VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info);
+      compute_vectype = vectype = VECT_REDUC_INFO_VECTYPE_FOR_MASK (reduc_info);
       gimple_seq stmts = NULL;
       for (unsigned i = 0; i < reduc_inputs.length (); ++i)
 	reduc_inputs[i] = gimple_build (&stmts, VEC_COND_EXPR, vectype,
