@@ -9515,9 +9515,9 @@ ix86_expand_set_or_cpymem (rtx dst, rtx src, rtx count_exp, rtx val_exp,
   machine_mode move_mode = VOIDmode;
   int unroll_factor = 1;
   /* TODO: Once value ranges are available, fill in proper data.  */
-  unsigned HOST_WIDE_INT min_size = 0;
-  unsigned HOST_WIDE_INT max_size = -1;
-  unsigned HOST_WIDE_INT probable_max_size = -1;
+  unsigned HOST_WIDE_INT min_size = HOST_WIDE_INT_0U;
+  unsigned HOST_WIDE_INT max_size = HOST_WIDE_INT_M1U;
+  unsigned HOST_WIDE_INT probable_max_size = HOST_WIDE_INT_M1U;
   bool misaligned_prologue_used = false;
   addr_space_t dst_as, src_as = ADDR_SPACE_GENERIC;
 
