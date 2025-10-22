@@ -10296,6 +10296,7 @@ braced_list_to_string (tree type, tree ctor, bool member)
 		    j = i - start;
 		  else
 		    j -= start;
+		  value = copy_node (value);
 		  RAW_DATA_POINTER (value) -= start;
 		  RAW_DATA_LENGTH (value) += start + end;
 		  i += end;
