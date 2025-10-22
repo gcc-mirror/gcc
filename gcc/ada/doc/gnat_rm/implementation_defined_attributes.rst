@@ -653,11 +653,12 @@ Attribute Maximum_Alignment
 
 .. index:: Maximum_Alignment
 
-``Standard'Maximum_Alignment`` (``Standard`` is the only
-allowed prefix) provides the maximum useful alignment value for the
-target.  This is a static value that can be used to specify the alignment
-for an object, guaranteeing that it is properly aligned in all
-cases.
+``Standard'Maximum_Alignment`` (``Standard`` is the only allowed prefix)
+provides the maximum default alignment value for the target, that is to
+say the maximum alignment that the compiler may choose by default for a
+type or an object. Larger alignments are supported up to some maximum
+value dependent on the target, but may require specific mechanisms that
+are not needed up to ``Standard'Maximum_Alignment``.
 
 Attribute Max_Integer_Size
 ==========================

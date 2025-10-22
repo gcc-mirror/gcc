@@ -40,8 +40,8 @@ The default alignment values are as follows:
 
   For elementary types, the alignment is the minimum of the actual size of
   objects of the type divided by ``Storage_Unit``,
-  and the maximum alignment supported by the target.
-  (This maximum alignment is given by the GNAT-specific attribute
+  and the maximum default alignment supported by the target.
+  (This maximum default alignment is given by the GNAT-specific attribute
   ``Standard'Maximum_Alignment``; see :ref:`Attribute_Maximum_Alignment`.)
 
   .. index:: Maximum_Alignment attribute
@@ -96,8 +96,7 @@ The default alignment values are as follows:
   strict alignment.
 
 An alignment clause may specify a larger alignment than the default value
-up to some maximum value dependent on the target (obtainable by using the
-attribute reference ``Standard'Maximum_Alignment``). It may also specify
+up to some maximum value dependent on the target. It may also specify
 a smaller alignment than the default value for enumeration, integer and
 fixed point types, as well as for record types, for example
 

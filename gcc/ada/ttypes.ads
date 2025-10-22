@@ -177,8 +177,10 @@ package Ttypes is
    ----------------------------------------
 
    Maximum_Alignment : constant Pos := Set_Targ.Maximum_Alignment;
-   --  The maximum alignment, in storage units, that an object or type may
-   --  require on the target machine.
+   --  The maximum default alignment, in storage units, that an object or type
+   --  may require on the target machine. The implementation must never choose
+   --  a larger alignment on its own, that is to say when it is not explicitly
+   --  requested by an alignment aspect/clause in the source code.
 
    System_Allocator_Alignment : constant Pos :=
                                   Set_Targ.System_Allocator_Alignment;

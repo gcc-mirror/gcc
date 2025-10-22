@@ -7108,7 +7108,7 @@ package body Sem_Ch13 is
                Set_Has_Alignment_Clause (U_Ent);
 
                --  Tagged type case, check for attempt to set alignment to a
-               --  value greater than Max_Align, and reset if so.
+               --  value greater than Maximum_Alignment, and reset if so.
 
                if Is_Tagged_Type (U_Ent) and then Align > Max_Align then
                   Error_Msg_N

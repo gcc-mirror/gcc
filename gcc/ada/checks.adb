@@ -590,8 +590,7 @@ package body Checks is
       --  reset to reference the value expression of the constant).
 
    begin
-      --  See if alignment check needed. Note that we never need a check if the
-      --  maximum alignment is one, since the check will always succeed.
+      --  See if alignment check needed
 
       --  Note: we do not check for checks suppressed here, since that check
       --  was done in Sem_Ch13 when the address clause was processed. We are
@@ -601,10 +600,7 @@ package body Checks is
       --  check the status of check suppressing at the point of the address
       --  clause.
 
-      if No (AC)
-        or else not Check_Address_Alignment (AC)
-        or else Maximum_Alignment = 1
-      then
+      if No (AC) or else not Check_Address_Alignment (AC) then
          return;
       end if;
 
