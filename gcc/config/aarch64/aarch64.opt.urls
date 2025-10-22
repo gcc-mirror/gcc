@@ -3,6 +3,9 @@
 mbig-endian
 UrlSuffix(gcc/AArch64-Options.html#index-mbig-endian)
 
+menable-sysreg-checking
+UrlSuffix(gcc/AArch64-Options.html#index-menable-sysreg-checking)
+
 mgeneral-regs-only
 UrlSuffix(gcc/AArch64-Options.html#index-mgeneral-regs-only)
 
