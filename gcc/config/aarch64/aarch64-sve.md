@@ -135,6 +135,7 @@
 ;; ---- [INT,FP] Conditional reductions
 ;; ---- [INT] Tree reductions
 ;; ---- [FP] Tree reductions
+;; ---- [Predicate] Tree reductions
 ;; ---- [FP] Left-to-right reductions
 ;;
 ;; == Permutes
@@ -9885,6 +9886,100 @@
   "TARGET_SVE"
   "<sve_fp_op>\t%<Vetype>0, %1, %2.<Vetype>"
   [(set_attr "sve_type" "sve_fp_reduc")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [Predicate] Tree reductions
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - IORV
+;; - XORV
+;; - ANDV
+;; -------------------------------------------------------------------------
+
+;; Unpredicated predicate AND tree reductions.
+;; Invert the predicate and check across all lanes
+;; that the Zero flag is set.
+;;
+;; ptrue   p3.b, all
+;; nots    p3.b, p3/z, p0.b
+;; cset    w0, none
+;;
+(define_expand "reduc_sbool_and_scal_<mode>"
+  [(set (match_operand:QI 0 "register_operand")
+	(unspec:QI [(match_operand:PRED_ALL 1 "register_operand")]
+		    UNSPEC_ANDV))]
+  "TARGET_SVE"
+  {
+    rtx ptrue = force_reg (VNx16BImode, aarch64_ptrue_all (<data_bytes>));
+    rtx cast_ptrue = gen_lowpart (<MODE>mode, ptrue);
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+    emit_insn (gen_aarch64_pred_one_cmpl_z (<MODE>mode, tmp, cast_ptrue,
+					    operands[1]));
+    emit_insn (
+      gen_aarch64_ptest<mode> (ptrue, cast_ptrue,
+			       gen_int_mode (SVE_KNOWN_PTRUE, SImode),
+			       tmp));
+    rtx cc_reg = gen_rtx_REG (CC_NZCmode, CC_REGNUM);
+    rtx cmp = gen_rtx_fmt_ee (EQ, SImode, cc_reg, const0_rtx);
+    rtx tmp2 = gen_reg_rtx (SImode);
+    emit_insn (gen_aarch64_cstoresi (tmp2, cmp, cc_reg));
+    emit_move_insn (operands[0], gen_lowpart (QImode, tmp2));
+    DONE;
+  }
+)
+
+;; Unpredicated predicate IOR tree reductions.
+;; We need to make sure the results are in the CC flags, so execute a ptest
+;; on the same predicate.
+;;
+;;   ptest   p0, p0.b
+;;   cset    w0, any
+;;
+(define_expand "reduc_sbool_ior_scal_<mode>"
+  [(set (match_operand:QI 0 "register_operand")
+	(unspec:QI [(match_operand:PRED_ALL 1 "register_operand")]
+		    UNSPEC_IORV))]
+  "TARGET_SVE"
+  {
+    rtx ptrue = lowpart_subreg (VNx16BImode, operands[1], <MODE>mode);
+    emit_insn (
+      gen_aarch64_ptest<mode> (ptrue, operands[1],
+			       gen_int_mode (SVE_MAYBE_NOT_PTRUE, SImode),
+			       operands[1]));
+    rtx cc_reg = gen_rtx_REG (CC_NZCmode, CC_REGNUM);
+    rtx cmp = gen_rtx_fmt_ee (NE, SImode, cc_reg, const0_rtx);
+    rtx tmp = gen_reg_rtx (SImode);
+    emit_insn (gen_aarch64_cstoresi (tmp, cmp, cc_reg));
+    emit_move_insn (operands[0], gen_lowpart (QImode, tmp));
+    DONE;
+  }
+)
+
+;; Unpredicated predicate XOR tree reductions.
+;; Check to see if the number of active lanes in the predicates is a multiple
+;; of 2.  This generates:
+;;
+;;   cntp    x0, p0, p0.b
+;;   and     w0, w0, 1
+;;
+(define_expand "reduc_sbool_xor_scal_<mode>"
+  [(set (match_dup 2)
+	(zero_extend:DI
+	  (unspec:SI [(match_dup 1)
+		      (const_int SVE_MAYBE_NOT_PTRUE)
+		      (match_operand:PRED_ALL 1 "register_operand")]
+		     UNSPEC_CNTP)))
+    (set (match_dup 4)
+	 (and:DI (match_dup 2)
+		 (const_int 1)))
+    (set (match_operand:QI 0 "register_operand")
+	 (subreg:QI (match_dup 4) 0))]
+  "TARGET_SVE"
+  {
+    operands[2] = gen_reg_rtx (DImode);
+    operands[4] = gen_reg_rtx (DImode);
+  }
 )
 
 ;; -------------------------------------------------------------------------
