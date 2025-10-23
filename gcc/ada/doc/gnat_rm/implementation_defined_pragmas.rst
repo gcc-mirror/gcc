@@ -6672,12 +6672,9 @@ names that are implementation defined (as permitted by the RM):
 
 
 *
-  ``Alignment_Check`` can be used to suppress alignment checks
-  on addresses used in address clauses. Such checks can also be suppressed
-  by suppressing range checks, but the specific use of ``Alignment_Check``
-  allows suppression of alignment checks without suppressing other range checks.
-  Note that ``Alignment_Check`` is suppressed by default on machines (such as
-  the x86) with non-strict alignment.
+  ``Alignment_Check`` can be used to suppress alignment checks on addresses
+  used in address clauses. Note that ``Alignment_Check`` is suppressed by
+  default on non-strict alignment machines (such as the x86).
 
 *
   ``Atomic_Synchronization`` can be used to suppress the special memory
