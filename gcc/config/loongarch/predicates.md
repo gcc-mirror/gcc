@@ -699,3 +699,19 @@
 
   return true;
 })
+
+;; PARALLEL for a vec_select that selects the low half
+;; elements of a vector of MODE.
+(define_special_predicate "vect_par_cnst_low_half"
+  (match_code "parallel")
+{
+  return loongarch_check_vect_par_cnst_half (op, mode, false);
+})
+
+;; PARALLEL for a vec_select that selects the high half
+;; elements of a vector of MODE.
+(define_special_predicate "vect_par_cnst_high_half"
+  (match_code "parallel")
+{
+  return loongarch_check_vect_par_cnst_half (op, mode, true);;
+})

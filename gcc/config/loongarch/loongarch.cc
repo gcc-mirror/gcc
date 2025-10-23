@@ -1846,6 +1846,37 @@ loongarch_const_vector_shuffle_set_p (rtx op, machine_mode mode)
   return true;
 }
 
+/* Check if OP is a PARALLEL RTX with CONST_INT elements representing
+   the HIGH (high_p == TRUE) or LOW (high_p == FALSE) half of a vector
+   for mode MODE. Returns true if the pattern matches, false otherwise.  */
+
+bool
+loongarch_check_vect_par_cnst_half (rtx op, machine_mode mode, bool high_p)
+{
+  int nunits = XVECLEN (op, 0);
+  int nelts = GET_MODE_NUNITS (mode);
+
+  if (!known_eq (nelts, nunits * 2))
+    return false;
+
+  rtx first = XVECEXP (op, 0, 0);
+  if (!CONST_INT_P (first))
+    return false;
+
+  int base = high_p ? nelts / 2 : 0;
+  if (INTVAL (first) != base)
+    return false;
+
+  for (int i = 1; i < nunits; i++)
+    {
+      rtx elem = XVECEXP (op, 0, i);
+      if (!CONST_INT_P (elem) || INTVAL (elem) != INTVAL (first) + i)
+	return false;
+    }
+
+  return true;
+}
+
 rtx
 loongarch_const_vector_vrepli (rtx x, machine_mode mode)
 {
@@ -4141,6 +4172,19 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
     default:
       return false;
     }
+}
+
+/* All CPUs prefer to avoid cross-lane operations so perform reductions
+   upper against lower halves up to LSX reg size.  */
+
+machine_mode
+loongarch_split_reduction (machine_mode mode)
+{
+  if (LSX_SUPPORTED_MODE_P (mode))
+    return mode;
+
+  return mode_for_vector (as_a <scalar_mode> (GET_MODE_INNER (mode)),
+			  GET_MODE_NUNITS (mode) / 2).require ();
 }
 
 /* Implement targetm.vectorize.builtin_vectorization_cost.  */
@@ -11396,6 +11440,10 @@ loongarch_can_inline_p (tree caller, tree callee)
 #undef TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES
 #define TARGET_VECTORIZE_AUTOVECTORIZE_VECTOR_MODES \
   loongarch_autovectorize_vector_modes
+
+#undef TARGET_VECTORIZE_SPLIT_REDUCTION
+#define TARGET_VECTORIZE_SPLIT_REDUCTION \
+  loongarch_split_reduction
 
 #undef TARGET_OPTAB_SUPPORTED_P
 #define TARGET_OPTAB_SUPPORTED_P loongarch_optab_supported_p

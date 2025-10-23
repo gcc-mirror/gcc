@@ -633,6 +633,48 @@
   [(set_attr "move_type" "fmove")
    (set_attr "mode" "<UNITMODE>")])
 
+(define_expand "vec_extract<mode><lasxhalf>"
+  [(match_operand:<VHMODE256_ALL> 0 "register_operand")
+   (match_operand:LASX 1 "register_operand")
+   (match_operand 2 "const_0_or_1_operand")]
+  "ISA_HAS_LASX"
+{
+  if (INTVAL (operands[2]))
+    {
+     operands[2] = loongarch_lsx_vec_parallel_const_half (<MODE>mode, true);
+     emit_insn (gen_vec_extract_hi_<mode> (operands[0], operands[1],
+                 operands[2]));
+    }
+  else
+    {
+     operands[2] = loongarch_lsx_vec_parallel_const_half (<MODE>mode, false);
+     emit_insn (gen_vec_extract_lo_<mode> (operands[0], operands[1],
+                 operands[2]));
+    }
+  DONE;
+})
+
+(define_insn_and_split "vec_extract_lo_<mode>"
+  [(set (match_operand:<VHMODE256_ALL> 0 "register_operand" "=f")
+    (vec_select:<VHMODE256_ALL>
+      (match_operand:LASX 1 "register_operand" "f")
+      (match_operand:LASX 2 "vect_par_cnst_low_half")))]
+  "ISA_HAS_LASX"
+  "#"
+  "&& reload_completed"
+  [(set (match_dup 0) (match_dup 1))]
+  "operands[1] = gen_lowpart (<VHMODE256_ALL>mode, operands[1]);")
+
+(define_insn "vec_extract_hi_<mode>"
+  [(set (match_operand:<VHMODE256_ALL> 0 "register_operand" "=f")
+    (vec_select:<VHMODE256_ALL>
+      (match_operand:LASX 1 "register_operand" "f")
+      (match_operand:LASX 2 "vect_par_cnst_high_half")))]
+  "ISA_HAS_LASX"
+  "xvpermi.d\t%u0,%u1,0xe"
+  [(set_attr "move_type" "fmove")
+   (set_attr "mode" "<MODE>")])
+
 (define_expand "vec_perm<mode>"
  [(match_operand:LASX 0 "register_operand")
   (match_operand:LASX 1 "register_operand")
