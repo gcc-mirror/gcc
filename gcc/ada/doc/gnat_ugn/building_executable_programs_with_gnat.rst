@@ -2740,9 +2740,9 @@ of the kinds of warnings that are generated.
 
 * Unreferenced or unmodified variables. Note that a special
   exemption applies to variables which contain any of the substrings
-  ``DISCARD, DUMMY, IGNORE, JUNK, UNUSED``, in any casing. Such variables
-  are considered likely to be intentionally used in a situation where
-  otherwise a warning would be given, so warnings of this kind are
+  ``DISCARD, DUMMY, IGNORE, JUNK, UNUSE, TMP, TEMP`` in any casing. Such
+  variables are considered likely to be intentionally used in a situation
+  where otherwise a warning would be given, so warnings of this kind are
   always suppressed for such variables.
 
 * Address overlays that could clobber memory
