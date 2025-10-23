@@ -738,7 +738,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     nonlinear_iv (false),
     ivexpr_map (NULL),
     scan_map (NULL),
-    slp_unrolling_factor (1),
     inner_loop_cost_factor (param_vect_inner_loop_cost_factor),
     vectorizable (false),
     can_use_partial_vectors_p (param_vect_partial_vector_usage != 0),
@@ -2236,16 +2235,15 @@ start_over:
   if (!ok)
     return ok;
 
-  /* If there are any SLP instances mark them as pure_slp.  */
+  /* If there are any SLP instances mark them as pure_slp and compute
+     the overall vectorization factor.  */
   if (!vect_make_slp_decision (loop_vinfo))
     return opt_result::failure_at (vect_location, "no stmts to vectorize.\n");
 
   if (dump_enabled_p ())
     dump_printf_loc (MSG_NOTE, vect_location, "Loop contains only SLP stmts\n");
 
-  /* Determine the vectorization factor from the SLP decision.  */
-  LOOP_VINFO_VECT_FACTOR (loop_vinfo)
-    = LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo);
+  /* Dump the vectorization factor from the SLP decision.  */
   if (dump_enabled_p ())
     {
       dump_printf_loc (MSG_NOTE, vect_location, "vectorization factor = ");

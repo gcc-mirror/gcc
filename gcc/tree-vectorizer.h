@@ -945,7 +945,8 @@ public:
      used.  */
   poly_uint64 versioning_threshold;
 
-  /* Unrolling factor  */
+  /* Unrolling factor.  In case of suitable super-word parallelism
+     it can be that no unrolling is needed, and thus this is 1.  */
   poly_uint64 vectorization_factor;
 
   /* If this loop is an epilogue loop whose main loop can be skipped,
@@ -1089,10 +1090,6 @@ public:
   /* Map of OpenMP "omp simd array" scan variables to corresponding
      rhs of the store of the initializer.  */
   hash_map<tree, tree> *scan_map;
-
-  /* The unrolling factor needed to SLP the loop. In case of that pure SLP is
-     applied to the loop, i.e., no unrolling is needed, this is 1.  */
-  poly_uint64 slp_unrolling_factor;
 
   /* The factor used to over weight those statements in an inner loop
      relative to the loop being vectorized.  */
@@ -1294,7 +1291,6 @@ public:
 #define LOOP_VINFO_USER_UNROLL(L)          (L)->user_unroll
 #define LOOP_VINFO_GROUPED_STORES(L)       (L)->grouped_stores
 #define LOOP_VINFO_SLP_INSTANCES(L)        (L)->slp_instances
-#define LOOP_VINFO_SLP_UNROLLING_FACTOR(L) (L)->slp_unrolling_factor
 #define LOOP_VINFO_REDUCTIONS(L)           (L)->reductions
 #define LOOP_VINFO_PEELING_FOR_GAPS(L)     (L)->peeling_for_gaps
 #define LOOP_VINFO_PEELING_FOR_NITER(L)    (L)->peeling_for_niter

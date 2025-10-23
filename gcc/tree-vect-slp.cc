@@ -8171,7 +8171,7 @@ vect_make_slp_decision (loop_vec_info loop_vinfo)
 	decided_to_slp++;
     }
 
-  LOOP_VINFO_SLP_UNROLLING_FACTOR (loop_vinfo) = unrolling_factor;
+  LOOP_VINFO_VECT_FACTOR (loop_vinfo) = unrolling_factor;
 
   if (decided_to_slp && dump_enabled_p ())
     {
