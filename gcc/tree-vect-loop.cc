@@ -2253,12 +2253,6 @@ start_over:
       dump_printf (MSG_NOTE, "\n");
     }
 
-  /* Optimize the SLP graph with the vectorization factor fixed.  */
-  vect_optimize_slp (loop_vinfo);
-
-  /* Gather the loads reachable from the SLP graph entries.  */
-  vect_gather_slp_loads (loop_vinfo);
-
   /* We don't expect to have to roll back to anything other than an empty
      set of rgroups.  */
   gcc_assert (LOOP_VINFO_MASKS (loop_vinfo).is_empty ());
@@ -2272,6 +2266,12 @@ start_over:
   /* Now the vectorization factor is final.  */
   poly_uint64 vectorization_factor = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
   gcc_assert (known_ne (vectorization_factor, 0U));
+
+  /* Optimize the SLP graph with the vectorization factor fixed.  */
+  vect_optimize_slp (loop_vinfo);
+
+  /* Gather the loads reachable from the SLP graph entries.  */
+  vect_gather_slp_loads (loop_vinfo);
 
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo) && dump_enabled_p ())
     {
