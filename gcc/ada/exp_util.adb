@@ -7641,13 +7641,11 @@ package body Exp_Util is
 
             begin
                --  An ELSIF part whose condition is false could have been
-               --  already rewritten into NULL statement and we are already
-               --  past the statements inside that ELSIF part.
+               --  already rewritten and we are already past the statements
+               --  inside that ELSIF part.
 
                if Nkind (If_Stmt) /= N_If_Statement then
-                  pragma Assert
-                    (Nkind (CV) = N_Elsif_Part
-                     and then Is_Rewrite_Substitution (If_Stmt));
+                  pragma Assert (Nkind (CV) = N_Elsif_Part);
                   return;
                end if;
 
