@@ -1,3 +1,21 @@
+2025-10-23  Andrew Stubbs  <ams@baylibre.com>
+
+	Revert:
+	2025-05-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* common.opt: Add -foffload-memory and its enum values.
+	* coretypes.h (enum offload_memory): New.
+	* doc/invoke.texi: Document -foffload-memory.
+
+2025-10-23  Andrew Stubbs  <ams@baylibre.com>
+
+	Revert:
+	2025-05-15  Andrew Stubbs  <ams@baylibre.com>
+
+	* omp-builtins.def (BUILT_IN_GOMP_ENABLE_PINNED_MODE): New.
+	* omp-low.cc (omp_enable_pinned_mode): New function.
+	(execute_lower_omp): Call omp_enable_pinned_mode.
+
 2025-08-08  Andrew Stubbs  <ams@baylibre.com>
 
 	Backported from master:
