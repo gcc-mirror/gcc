@@ -11995,6 +11995,26 @@ package body Sem_Prag is
             if Is_First_Subtype (E) and then Etype (E) /= E then
                Suppress_Unsuppress_Echeck (Etype (E), C);
             end if;
+
+            --  For the alignment check of an object with an address clause,
+            --  we want the pragma to be taken into account even if it comes
+            --  after the address clause:
+
+            --    A : Integer;
+            --    for A'Address use ...
+            --    pragma Suppress (Alignment_Check, A);
+
+            --  When there is also an alignment clause, the check is generated
+            --  unconditionally, see Analyze_Attribute_Definition_Clause.
+
+            if C = Alignment_Check
+              and then not Is_Type (E)
+              and then Present (Address_Clause (E))
+              and then No (Alignment_Clause (E))
+            then
+               Set_Check_Address_Alignment
+                 (Address_Clause (E), not Suppress_Case);
+            end if;
          end Suppress_Unsuppress_Echeck;
 
       --  Start of processing for Process_Suppress_Unsuppress
