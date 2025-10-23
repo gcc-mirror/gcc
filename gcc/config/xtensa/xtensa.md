@@ -2516,7 +2516,7 @@
 })
 
 (define_insn "call_internal"
-  [(call (mem (match_operand:SI 0 "call_insn_operand" "nir"))
+  [(call (mem (match_operand:SI 0 "call_insn_operand" "ir"))
 	 (match_operand 1 "" ""))]
   "!SIBLING_CALL_P (insn)"
 {
@@ -2538,7 +2538,7 @@
 
 (define_insn "call_value_internal"
   [(set (match_operand 0 "register_operand" "=a")
-	(call (mem (match_operand:SI 1 "call_insn_operand" "nir"))
+	(call (mem (match_operand:SI 1 "call_insn_operand" "ir"))
 	      (match_operand 2 "" "")))]
   "!SIBLING_CALL_P (insn)"
 {
@@ -2558,7 +2558,7 @@
 })
 
 (define_insn "sibcall_internal"
-  [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "nic"))
+  [(call (mem:SI (match_operand:SI 0 "call_insn_operand" "ic"))
 	 (match_operand 1 "" ""))]
   "!TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)"
 {
@@ -2580,7 +2580,7 @@
 
 (define_insn "sibcall_value_internal"
   [(set (match_operand 0 "register_operand" "=a")
-	(call (mem:SI (match_operand:SI 1 "call_insn_operand" "nic"))
+	(call (mem:SI (match_operand:SI 1 "call_insn_operand" "ic"))
 	      (match_operand 2 "" "")))]
   "!TARGET_WINDOWED_ABI && SIBLING_CALL_P (insn)"
 {
