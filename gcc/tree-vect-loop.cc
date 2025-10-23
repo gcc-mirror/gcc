@@ -2598,7 +2598,7 @@ again:
 
       stmt_vec_info vinfo;
       vinfo = SLP_TREE_SCALAR_STMTS (SLP_INSTANCE_TREE (instance))[0];
-      if (! STMT_VINFO_GROUPED_ACCESS (vinfo))
+      if (!vinfo || !STMT_VINFO_GROUPED_ACCESS (vinfo))
 	continue;
       vinfo = DR_GROUP_FIRST_ELEMENT (vinfo);
       unsigned int size = DR_GROUP_SIZE (vinfo);
