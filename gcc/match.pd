@@ -794,6 +794,27 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
  (rdiv @0 (negate @1))
  (rdiv (negate @0) @1))
 
+/* convert semantics of round(x) function to floor(x+0.5).  */
+/* (x-floor(x)) < (ceil(x)-x) ? floor(x) : ceil(x) --> floor(x+0.5).  */
+/* (x-floor(x)) >= (ceil(x)-x) ? ceil(x) : floor(x) --> floor(x+0.5).  */
+/* (ceil(x)-x) > (x-floor(x)) ? floor(x) : ceil(x) --> floor(x+0.5).  */
+/* (ceil(x)-x) <= (x-floor(x)) ? ceil(x) : floor(x) --> floor(x+0.5).  */
+(for op (lt lt lt lt ge ge ge ge)
+     bt (BUILT_IN_FLOORF BUILT_IN_FLOOR BUILT_IN_FLOORL IFN_FLOOR
+	 BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL IFN_CEIL)
+     bf (BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL IFN_CEIL
+	 BUILT_IN_FLOORF BUILT_IN_FLOOR BUILT_IN_FLOORL IFN_FLOOR)
+     floor (BUILT_IN_FLOORF BUILT_IN_FLOOR BUILT_IN_FLOORL IFN_FLOOR
+	    BUILT_IN_FLOORF BUILT_IN_FLOOR BUILT_IN_FLOORL IFN_FLOOR)
+     ceil (BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL IFN_CEIL
+	   BUILT_IN_CEILF BUILT_IN_CEIL BUILT_IN_CEILL IFN_CEIL)
+ (simplify
+  (cond (op:c (minus:s SSA_NAME@0 (floor SSA_NAME@0))
+	      (minus:s (ceil SSA_NAME@0) SSA_NAME@0))
+	(bt SSA_NAME@0) (bf SSA_NAME@0))
+  (if (!HONOR_SIGNED_ZEROS (type) && !HONOR_SIGN_DEPENDENT_ROUNDING (type))
+   (floor (plus @0 { build_real (type, dconsthalf); })))))
+
 (if (flag_unsafe_math_optimizations)
  /* Simplify (C / x op 0.0) to x op 0.0 for C != 0, C != Inf/Nan.
     Since C / x may underflow to zero, do this only for unsafe math.  */
