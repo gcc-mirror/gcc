@@ -478,7 +478,7 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_cvt_long(S, D, T) \
   D (f32, f16), D (f64, f32)
 
-/* _f16_f32.  */
+/* _f32_f64.  */
 #define TYPES_cvt_narrow_s(S, D, T) \
   D (f32, f64)
 

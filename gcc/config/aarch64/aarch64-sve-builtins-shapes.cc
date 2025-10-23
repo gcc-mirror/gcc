@@ -1035,6 +1035,8 @@ template <unsigned int BITS> struct luti_zt_base : public nonoverloaded_base
 /* sv<t0>_t svfoo[_t0](sv<t0>_t, sv<t0:quarter>_t,
 		       sv<t0:quarter>_t)  (for integer t0)
    sv<t0>_t svmmla[_t0](sv<t0>_t, sv<t0>_t, sv<t0>_t)  (for floating-point t0)
+   sv<t0>_t svmmla[_t0](sv<t0>_t, sv<t1>_t, sv<t1>_t)
+		       (for floating-point t0, t1)
 
    The functions act like the equivalent of "ternary_qq" for integer elements
    and normal vector-only ternary functions for floating-point elements.  */
@@ -1045,7 +1047,12 @@ struct mmla_def : public overloaded_base<0>
   {
     b.add_overloaded_functions (group, MODE_none);
     if (type_suffixes[group.types[0][0]].float_p)
-      build_all (b, "v0,v0,v0,v0", group, MODE_none);
+      {
+	if (group.types[0][1] == NUM_TYPE_SUFFIXES)
+	  build_all (b, "v0,v0,v0,v0", group, MODE_none);
+	else
+	  build_all (b, "v0,v0,v1,v1", group, MODE_none);
+      }
     else
       build_all (b, "v0,v0,vq0,vq0", group, MODE_none);
   }
@@ -1054,24 +1061,39 @@ struct mmla_def : public overloaded_base<0>
   resolve (function_resolver &r) const override
   {
     unsigned int i, nargs;
-    type_suffix_index type;
+    type_suffix_index type1, type2;
     if (!r.check_gp_argument (3, i, nargs)
-	|| (type = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES)
+	|| (type1 = r.infer_vector_type (i)) == NUM_TYPE_SUFFIXES
+	|| (type2 = r.infer_vector_type (i + 1)) == NUM_TYPE_SUFFIXES)
       return error_mark_node;
 
+    bool float_p = type_suffixes[type1].float_p;
     /* Make sure that the function exists now, since not all forms
        follow a set pattern after this point.  */
-    tree res = r.resolve_to (r.mode_suffix_id, type);
+    tree res = (float_p && type1 != type2)
+	       ? r.resolve_to (r.mode_suffix_id, type1, type2)
+	       : r.resolve_to (r.mode_suffix_id, type1);
     if (res == error_mark_node)
       return res;
 
-    bool float_p = type_suffixes[type].float_p;
-    unsigned int modifier = float_p ? r.SAME_SIZE : r.QUARTER_SIZE;
-    if (!r.require_derived_vector_type (i + 1, i, type, r.SAME_TYPE_CLASS,
-					modifier)
-	|| !r.require_derived_vector_type (i + 2, i, type, r.SAME_TYPE_CLASS,
-					   modifier))
-      return error_mark_node;
+    if (float_p)
+      {
+	/* In the float case, require arg i+1 to have same type as i+2.  */
+	if (!r.require_derived_vector_type (i + 2, i + 1, type2,
+					    r.SAME_TYPE_CLASS, r.SAME_SIZE))
+	  return error_mark_node;
+      }
+    else
+      {
+	/* In the int case, require arg i+1 and i+2 to have a quarter the size
+	   of arg i.  */
+	if (!r.require_derived_vector_type (i + 1, i, type1, r.SAME_TYPE_CLASS,
+					    r.QUARTER_SIZE)
+	    || !r.require_derived_vector_type (i + 2, i, type1,
+					       r.SAME_TYPE_CLASS,
+					       r.QUARTER_SIZE))
+	  return error_mark_node;
+      }
 
     return res;
   }

@@ -430,3 +430,17 @@ DEF_SVE_FUNCTION_GS_FPM (svcvtl1, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvtl2, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS (svscale, binary_int_opt_single_n, all_float, x24, none)
 #undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  nonstreaming_sve (AARCH64_FL_SVE2 | AARCH64_FL_F8F16MM)
+DEF_SVE_FUNCTION_GS_FPM (svmmla, mmla, h_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS \
+  nonstreaming_sve (AARCH64_FL_SVE2 | AARCH64_FL_F8F32MM)
+DEF_SVE_FUNCTION_GS_FPM (svmmla, mmla, s_float_mf8, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE_F16F32MM)
+DEF_SVE_FUNCTION (svmmla, mmla, cvt_f32_f16, none)
+#undef REQUIRED_EXTENSIONS

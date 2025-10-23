@@ -12664,7 +12664,7 @@ set exts {
     "bf16" "cmpbr" "crc" "crypto" "dotprod" "f32mm" "f64mm" "faminmax"
     "fp" "fp8" "fp8dot2" "fp8dot4" "fp8fma" "i8mm" "ls64" "lse" "lut"
     "sb" "simd" "sve-b16b16" "sve" "sve2" "sve-sm4" "sve-aes" "sve-bitperm"
-    "sve-sha3"
+    "sve-sha3" "f8f16mm" "f8f32mm" "sve-f16f32mm"
 }
 
 # We don't support SME without SVE2, so we'll use armv9 as the base

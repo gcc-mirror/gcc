@@ -4178,6 +4178,7 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 
     case UNSPEC_FAMAX:
     case UNSPEC_FAMIN:
+    case UNSPEC_FMMLA:
     case UNSPEC_F1CVTL_FP8:
     case UNSPEC_F2CVTL_FP8:
     case UNSPEC_FDOT_FP8:

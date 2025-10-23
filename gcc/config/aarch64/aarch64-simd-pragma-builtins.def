@@ -296,6 +296,16 @@ ENTRY_LOAD_LANE (vld4q_lane_mf8, mf8qx4, mf8_scalar_const_ptr, mf8qx4,
 		 UNSPEC_LD4_LANE)
 #undef REQUIRED_EXTENSIONS
 
+// mmla f16 mf8
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_F8F16MM)
+ENTRY_TERNARY (vmmlaq_f16_mf8, f16q, f16q, mf8q, mf8q, UNSPEC_FMMLA, FP8)
+#undef REQUIRED_EXTENSIONS
+
+// mmla f32 mf8
+#define REQUIRED_EXTENSIONS nonstreaming_only (AARCH64_FL_F8F32MM)
+ENTRY_TERNARY (vmmlaq_f32_mf8, f32q, f32q, mf8q, mf8q, UNSPEC_FMMLA, FP8)
+#undef REQUIRED_EXTENSIONS
+
 // mov
 #define REQUIRED_EXTENSIONS nonstreaming_only (TARGET_SIMD)
 ENTRY_UNARY (vmov_n_mf8, mf8, mf8_scalar, UNSPEC_DUP, QUIET)

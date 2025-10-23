@@ -43,14 +43,14 @@ f2 (svbool_t pg, svint8_t s8, svuint8_t u8, svuint32_t u32, svint32_t s32,
   svmmla (u32, s32, s32); /* { dg-error {passing 'svint32_t' instead of the expected 'svuint8_t' to argument 2 of 'svmmla', after passing 'svuint32_t' to argument 1} } */
   svmmla (u32, u32, u32); /* { dg-error {passing 'svuint32_t' instead of the expected 'svuint8_t' to argument 2 of 'svmmla', after passing 'svuint32_t' to argument 1} } */
 
-  svmmla (f16, s8, s8); /* { dg-error {'svmmla' has no form that takes 'svfloat16_t' arguments} } */
-  svmmla (f32, s8, s8); /* { dg-error {passing 'svint8_t' to argument 2 of 'svmmla', but argument 1 had type 'svfloat32_t'} } */
-  svmmla (f32, s32, s32); /* { dg-error {passing 'svint32_t' to argument 2 of 'svmmla', but argument 1 had type 'svfloat32_t'} } */
-  svmmla (f32, f16, f16); /* { dg-error {passing 'svfloat16_t' to argument 2 of 'svmmla', but argument 1 had type 'svfloat32_t'} } */
-  svmmla (f64, f16, f16); /* { dg-error {passing 'svfloat16_t' to argument 2 of 'svmmla', but argument 1 had type 'svfloat64_t'} } */
-  svmmla (f32, f32, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svmmla', but argument 1 had type 'svfloat32_t'} } */
-  svmmla (f64, f32, f16); /* { dg-error {passing 'svfloat32_t' to argument 2 of 'svmmla', but argument 1 had type 'svfloat64_t'} } */
-  svmmla (f64, f64, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svmmla', but argument 1 had type 'svfloat64_t'} } */
+  svmmla (f16, s8, s8); /* { dg-error {'svmmla' has no form that takes 'svfloat16_t' and 'svint8_t' arguments} } */
+  svmmla (f32, s8, s8); /* { dg-error {'svmmla' has no form that takes 'svfloat32_t' and 'svint8_t' arguments} } */
+  svmmla (f32, s32, s32); /* { dg-error {'svmmla' has no form that takes 'svfloat32_t' and 'svint32_t' arguments} } */
+  svmmla (f32, f16, f16); /* { dg-error {ACLE function 'svmmla_f32_f16' requires ISA extension 'sve-f16f32mm'} } */
+  svmmla (f64, f16, f16); /* { dg-error {'svmmla' has no form that takes 'svfloat64_t' and 'svfloat16_t' arguments} } */
+  svmmla (f32, f32, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svmmla', but argument 2 had type 'svfloat32_t'} } */
+  svmmla (f64, f32, f16); /* { dg-error {'svmmla' has no form that takes 'svfloat64_t' and 'svfloat32_t' arguments} } */
+  svmmla (f64, f64, f16); /* { dg-error {passing 'svfloat16_t' to argument 3 of 'svmmla', but argument 2 had type 'svfloat64_t'} } */
 
   svmmla (f16, f16, f16); /* { dg-error {'svmmla' has no form that takes 'svfloat16_t' arguments} } */
   svmmla (f32, f32, f32);

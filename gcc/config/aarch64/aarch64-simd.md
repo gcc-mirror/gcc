@@ -10650,3 +10650,18 @@
     return "<insn>\t%0.<V4SF_ONLY:Vtype>, %2.16b, %3.b[%4]";
   }
 )
+
+(define_insn "@aarch64_<insn><mode>"
+  [(set (match_operand:VDQ_HSF_FMMLA 0 "register_operand")
+	(unspec:VDQ_HSF_FMMLA
+	 [(match_operand:V16QI 2 "register_operand")
+	  (match_operand:V16QI 3 "register_operand")
+	  (match_operand:VDQ_HSF_FMMLA 1 "register_operand")
+	  (reg:DI FPM_REGNUM)]
+	 FMMLA))]
+  ""
+  {@ [ cons: =0 , 1 , 2 , 3 ]
+     [ w        , 0 , w , w ] <insn>\t%0.<Vtype>, %2.16b, %3.16b
+  }
+)
+

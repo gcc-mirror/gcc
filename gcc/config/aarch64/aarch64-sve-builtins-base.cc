@@ -2289,7 +2289,14 @@ public:
 	  icode = code_for_aarch64_sve_add (UNSPEC_SMATMUL, e.vector_mode (0));
       }
     else
-      icode = code_for_aarch64_sve (UNSPEC_FMMLA, e.vector_mode (0));
+      {
+	if (e.type_suffix_ids[1] == NUM_TYPE_SUFFIXES)
+	  icode = code_for_aarch64_sve (UNSPEC_FMMLA, e.vector_mode (0));
+	else
+	  icode = code_for_aarch64_sve2 (UNSPEC_FMMLA,
+					e.vector_mode (0),
+					e.vector_mode (1));
+      }
     return e.use_exact_insn (icode);
   }
 };

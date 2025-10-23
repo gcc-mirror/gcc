@@ -209,6 +209,9 @@
 				    (V2SF "TARGET_FP8DOT4")
 				    (V4SF "TARGET_FP8DOT4")])
 
+(define_mode_iterator VDQ_HSF_FMMLA [(V8HF "TARGET_F8F16MM")
+				     (V4SF "TARGET_F8F32MM")])
+
 ;; Modes suitable to use as the return type of a vcond expression.
 (define_mode_iterator VDQF_COND [V2SF V2SI V4SF V4SI V2DF V2DI])
 
@@ -555,6 +558,11 @@
 ;; mode.
 (define_mode_iterator SVE_FULL_HSF_FP8_FDOT [(VNx4SF "TARGET_SSVE_FP8DOT4")
 					     (VNx8HF "TARGET_SSVE_FP8DOT2")])
+
+;; Like SVE_FULL_HSF, but selectively enables those modes that are valid
+;; for the variant of the FMMLA instructions associated with that mode.
+(define_mode_iterator SVE_FULL_HSF_FMMLA [(VNx4SF "TARGET_F8F32MM")
+					  (VNx8HF "TARGET_F8F16MM")])
 
 ;; Partial SVE floating-point vector modes that have 16-bit or 32-bit
 ;; elements.
@@ -4148,7 +4156,8 @@
    (UNSPEC_FMLALLBT_FP8 "fmlallbt")
    (UNSPEC_FMLALLTB_FP8 "fmlalltb")
    (UNSPEC_FMLALLTT_FP8 "fmlalltt")
-   (UNSPEC_FSCALE "fscale")])
+   (UNSPEC_FSCALE "fscale")
+   (UNSPEC_FMMLA "fmmla")])
 
 ;; The optab associated with an operation.  Note that for ANDF, IORF
 ;; and XORF, the optab pattern is not actually defined; we just use this

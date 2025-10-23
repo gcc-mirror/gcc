@@ -322,6 +322,11 @@ aarch64_update_cpp_builtins (cpp_reader *pfile)
   cpp_undef (pfile, "__FLT_EVAL_METHOD_C99__");
   builtin_define_with_int_value ("__FLT_EVAL_METHOD_C99__",
 				 c_flt_eval_method (false));
+
+  aarch64_def_or_undef (TARGET_F8F16MM, "__ARM_FEATURE_F8F16MM", pfile);
+  aarch64_def_or_undef (TARGET_F8F32MM, "__ARM_FEATURE_F8F32MM", pfile);
+  aarch64_def_or_undef (TARGET_SVE_F16F32MM, "__ARM_FEATURE_SVE_F16F32MM",
+			pfile);
 }
 
 /* Implement TARGET_CPU_CPP_BUILTINS.  */
