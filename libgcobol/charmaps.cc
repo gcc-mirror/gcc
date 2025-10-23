@@ -56,11 +56,11 @@ int __gg__quote_character      = '"'  ;
 int __gg__low_value_character  = 0x00 ;
 int __gg__high_value_character = 0xFF ;
 char **__gg__currency_signs           ;
-
 int __gg__default_currency_sign;
-
 char *__gg__ct_currency_signs[256];  // Compile-time currency signs
 
+cbl_encoding_t __gg__display_encoding  = no_encoding_e;
+cbl_encoding_t __gg__national_encoding = no_encoding_e;
 
 // First: single-byte-coded (SBC) character sets:
 

@@ -508,8 +508,8 @@ bool is_elementary( enum cbl_field_type_t type );
 //    current_encoding('A') and current_encoding('N')
 enum
   {
-  encoding_display_e  = 'A',
-  encoding_national_e = 'N'
+  display_encoding_e  = 'A',
+  national_encoding_e = 'N'
   };
 cbl_encoding_t current_encoding( char a_or_n );
 
@@ -1547,6 +1547,7 @@ struct cbl_alphabet_t {
   cbl_name_t name;
   cbl_encoding_t encoding;
   unsigned char low_index, high_index, last_index, alphabet[256];
+  unsigned char low_char, high_char;
 
   cbl_alphabet_t()
     : loc { 1,1, 1,1 }
@@ -1554,6 +1555,8 @@ struct cbl_alphabet_t {
     , low_index(0)
     , high_index(255)
     , last_index(0)
+    , low_char(0)
+    , high_char(0)
   {
     memset(name, '\0', sizeof(name));
     memset(alphabet, 0xFF, sizeof(alphabet));
@@ -1565,6 +1568,8 @@ struct cbl_alphabet_t {
     , low_index(0)
     , high_index(255)
     , last_index(0)
+    , low_char(0)
+    , high_char(0)
   {
     memset(name, '\0', sizeof(name));
     memset(alphabet, 0xFF, sizeof(alphabet));
@@ -1577,6 +1582,8 @@ struct cbl_alphabet_t {
     , encoding(custom_encoding_e)
     , low_index(low_index), high_index(high_index)
     , last_index(high_index)
+    , low_char(low_index)
+    , high_char(high_index)
   {
     assert(strlen(name) < sizeof(this->name));
     strcpy(this->name, name);

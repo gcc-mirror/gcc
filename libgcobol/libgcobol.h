@@ -142,4 +142,6 @@ void __gg__convert_encoding_length(char *pch,
                                    cbl_encoding_t from,
                                    cbl_encoding_t to );
 
+const unsigned short *__gg__current_collation();
+
 #endif

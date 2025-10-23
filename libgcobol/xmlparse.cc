@@ -567,7 +567,7 @@ initialize_handlers( callback_t *callback ) {
 
 extern "C"
 int 
-__gg__xml_parse(  cblc_field_t *input_field,
+__gg__xml_parse(  const cblc_field_t *input_field,
                   size_t        input_offset,
                   size_t        len,
                   cblc_field_t *encoding,
@@ -575,8 +575,6 @@ __gg__xml_parse(  cblc_field_t *input_field,
                   int           returns_national,
                   void (*callback)(void) )
 {
-  extern struct cblc_field_t __ggsr__xml_code;
-
   initialize_handlers(callback);
 
   const char *input = PTRCAST(char, input_field->data + input_offset);

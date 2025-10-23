@@ -1,0 +1,21 @@
+Test1: Demonstrate ODO limits:
+00 ""
+01 "1"
+02 "12"
+03 "123"
+04 "1234"
+05 "12345"
+06 "123456"
+07 "1234567"
+08 "12345678"
+09 "123456789"
+10 "1234567890"
+Test2:  result should be ABC4567890
+        result is        ABC4567890
+Test3A: result should be 05ABCDE
+        result is        05ABCDE
+Test3B: result should be 10ABCDEFGHIJ
+        result is        10ABCDEFGHIJ
+Test4:  result should be 10lmnopqGHIJ
+        result is        10lmnopqGHIJ
+

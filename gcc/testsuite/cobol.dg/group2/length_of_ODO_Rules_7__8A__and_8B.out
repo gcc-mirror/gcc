@@ -1,0 +1,14 @@
+Demonstrates 13.18.38.4 OCCURS General rules 7)
+depl is completely separate
+output should be "12345    "
+"12345    "
+Demonstrates 13.18.38.4 OCCURS General rules 8a)
+depl is not subordinate to digitgrp
+output should be "12345    "
+"12345    "
+Demonstrates 13.18.38.4 OCCURS General rules 8b)
+depl is subordinate to digtab
+output should be "123" followed by "123456789"
+"123"
+"123456789"
+

@@ -3217,6 +3217,13 @@ cbl_alphabet_t::reencode()  {
   const unsigned char * const pend = alphabet + sizeof(alphabet);
   std::vector<char> tgt(256, (char)0xFF);
 
+  /*  Keep copies of low_index and last_index for use in run-time as LOW-VALUE
+      and HIGH-VALUE, which are kept as globals in the source-code codeset
+      and converted to the display encoding as necessary. */
+
+  low_char  = low_index;
+  high_char = last_index;
+
   /*
    * For now, assume CP1252 source-code encoding because we're not capturing it
    * anywhere except in cbl_field_t::internalize().  The only known examples of

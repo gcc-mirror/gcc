@@ -110,6 +110,8 @@ extern int    __gg__low_value_character  ;
 extern int    __gg__high_value_character ;
 extern char **__gg__currency_signs       ;
 extern int    __gg__default_currency_sign;
+extern cbl_encoding_t __gg__display_encoding ;
+extern cbl_encoding_t __gg__national_encoding ;
 extern char  *__gg__ct_currency_signs[256];  // Compile-time currency signs
 
 #define NULLCH ('\0')
@@ -307,11 +309,11 @@ class charmap_t
       }
     int low_value_character()
       {
-      return __gg__low_value_character;
+      return mapped_character(__gg__low_value_character);
       }
     int high_value_character()
       {
-      return __gg__high_value_character;
+      return mapped_character(__gg__high_value_character);
       }
 
     int figconst_character(cbl_figconst_t figconst)

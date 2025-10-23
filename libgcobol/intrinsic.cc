@@ -1146,19 +1146,58 @@ __gg__char( cblc_field_t *dest,
 
   // The CHAR function takes an integer, the ordinal position.  It
   // returns a single-character string, which is the character at that
-  // ordinal position.
+  // ordinal position in the DISPLAY collation.
 
-  // 'A', with the ascii value of 65, is at the ordinal position 66.
+  // 'A', with the ascii value of 65, is at the ordinal position 66
+  // in the default collation.
 
   int ordinal = (int)(__gg__binary_value_from_qualified_field(&rdigits,
                                                               source,
                                                               source_offset,
                                                               source_size));
   ordinal /= __gg__power_of_ten(rdigits);
-  int ch = ordinal-1;
-  charmap_t *charmap = __gg__get_charmap(dest->encoding);
-  memset(dest->data, charmap->mapped_character(ascii_space), dest->capacity);
-  dest->data[0] = ch;
+  ordinal -= 1;
+
+  // We now look for that ordinal position in the collation table:
+  const unsigned short *collation = __gg__current_collation();
+  int ch = -1;
+  for(int i=0; i<256; i++)
+    {
+    if( collation[i] == ordinal )
+      {
+      ch = i;
+      break;
+      }
+    }
+  if( ch == -1 )
+    {
+    // This means that the given ordinal was not in the range of
+    // LOW-VALUE through HIGH-VALUE
+    exception_raise(ec_argument_function_e);
+    }
+
+  // We need to convert the ch character to the destination encoding.
+  const char achFrom[2] = {static_cast<char>(ch), '\0'};
+  size_t charsout;
+  const char *converted = __gg__iconverter(__gg__display_encoding,
+                                           dest->encoding,
+                                           achFrom,
+                                           1,
+                                           &charsout );
+  // Pick up our character, because mapped_character() might clobber
+  // the converted contents.
+  int converted_char = *converted; // cppcheck-suppress variableScope
+  // Space fill the dest:
+  charmap_t *charmap_dest = __gg__get_charmap(dest->encoding);
+  memset(dest->data,
+         charmap_dest->mapped_character(ascii_space),
+         dest->capacity);
+  // Make the first character of the destination equal to our converted
+  // character:
+  if( ch > -1 && charsout == 1 )
+    {
+    dest->data[0] = converted_char;
+    }
   }
 
 extern "C"
@@ -3052,9 +3091,12 @@ __gg__ord(cblc_field_t *dest,
   const char *arg = PTRCAST(char, (input->data + input_offset));
 
   // The ORD function takes a single-character string and returns the
-  // ordinal position of that character.
+  // ordinal position of that character within the current collation.
 
-  size_t retval = (arg[0]&0xFF) + 1;
+  const unsigned short *collation = __gg__current_collation();
+
+  size_t retval = (collation[arg[0]&0xFF]) + 1;
+
   __gg__int128_to_field(dest,
                         retval,
                         NO_RDIGITS,

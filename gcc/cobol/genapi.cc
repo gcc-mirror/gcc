@@ -4007,18 +4007,18 @@ public:
     }
     return true;
   }
-  bool vet() const { // be always agreeable, for now. 
+  bool vet() const { // be always agreeable, for now.
     return dangling.empty();
   }
   void dump() const {
     fprintf(stderr, "%u nonexistent labels called\n", unsigned(dangling.size()) );
     for( auto sym : dangling ) {
-      auto label = cbl_label_of(symbol_at(sym));
+      const cbl_label_t *label = cbl_label_of(symbol_at(sym));
       fprintf(stderr, "\t %s\n", label->name);
     }
   }
 } label_verify;
-    
+
 void
 parser_end_program(const char *prog_name  )
   {
@@ -5124,6 +5124,7 @@ parser_alphabet( const cbl_alphabet_t& alphabet )
 
     case custom_encoding_e:
       {
+#pragma message "Use program-id to disambiguate"
       size_t alphabet_index = symbol_index(symbol_elem_of(&alphabet));
 
       unsigned char ach[256];
@@ -5139,25 +5140,27 @@ parser_alphabet( const cbl_alphabet_t& alphabet )
         gg_assign(  gg_array_value(table256, ch),
                     build_int_cst_type(UCHAR, (alphabet.alphabet[i])) );
         }
+
+      unsigned int low_char  = alphabet.low_char;
+      unsigned int high_char = alphabet.high_char;
       __gg__alphabet_create(alphabet.encoding,
                             alphabet_index,
                             ach,
-                            alphabet.low_index,
-                            alphabet.high_index);
+                            low_char,
+                            high_char);
       gg_call(VOID,
               "__gg__alphabet_create",
               build_int_cst_type(INT, alphabet.encoding),
               build_int_cst_type(SIZE_T, alphabet_index),
               gg_get_address_of(table256),
-              build_int_cst_type(INT, alphabet.low_index),
-              build_int_cst_type(INT, alphabet.high_index),
-
+              build_int_cst_type(INT, low_char),
+              build_int_cst_type(INT, high_char),
               NULL_TREE );
       break;
       }
     default:
       fprintf(stderr, "%s: Program ID %s:\n",
-              cobol_filename(), 
+              cobol_filename(),
               cbl_label_of(symbol_at(current_program_index()))->name);
       gcc_unreachable();
     }
@@ -5216,7 +5219,8 @@ parser_alphabet_use( cbl_alphabet_t& alphabet )
       __gg__high_value_character = DEGENERATE_HIGH_VALUE;
       gg_call(VOID,
               "__gg__alphabet_use",
-              build_int_cst_type(INT, current_encoding(encoding_display_e)),
+              build_int_cst_type(INT, current_encoding(display_encoding_e)),
+              build_int_cst_type(INT, current_encoding(national_encoding_e)),
               build_int_cst_type(INT, alphabet.encoding),
               null_pointer_node,
               NULL_TREE);
@@ -5232,7 +5236,8 @@ parser_alphabet_use( cbl_alphabet_t& alphabet )
 
       gg_call(VOID,
               "__gg__alphabet_use",
-              build_int_cst_type(INT, current_encoding(encoding_display_e)),
+              build_int_cst_type(INT, current_encoding(display_encoding_e)),
+              build_int_cst_type(INT, current_encoding(national_encoding_e)),
               build_int_cst_type(INT, alphabet.encoding),
               build_int_cst_type(SIZE_T, alphabet_index),
               NULL_TREE);
@@ -6880,7 +6885,7 @@ parser_xml_parse( cbl_label_t *instance,
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_LABEL("", instance)
+    SHOW_PARSE_LABEL_OK("", instance)
     SHOW_PARSE_REF(" ", input)
     SHOW_PARSE_END
     }
@@ -6908,7 +6913,7 @@ parser_xml_parse( cbl_label_t *instance,
   // We need to create a COBOL ENTRY point into this function.  That entry
   // point will be used by __gg__xml_parse to perform from_proc through to_proc
   // as part of processing the libxml2 callbacks.
-  
+
   char ach[64];
   static int instance_counter = 1;
   sprintf(ach,
@@ -6946,10 +6951,10 @@ parser_xml_parse( cbl_label_t *instance,
                               gg_get_address_of(input.field->var_decl_node),
                               refer_offset(input),
                               refer_size_source(input),
-                              encoding ? 
+                              encoding ?
                                   gg_get_address_of(encoding->var_decl_node)
                                 : null_pointer_node,
-                              validating ? 
+                              validating ?
                                   gg_get_address_of(validating->var_decl_node)
                                 : null_pointer_node,
                               build_int_cst_type(INT, returns_national),
@@ -6974,7 +6979,7 @@ parser_xml_on_exception( cbl_label_t *instance )
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_LABEL(" ", instance)
+    SHOW_PARSE_LABEL_OK(" ", instance)
     SHOW_PARSE_END
     }
   gg_append_statement(instance->structs.xml_parse->over.go_to);
@@ -6987,7 +6992,7 @@ parser_xml_not_exception( cbl_label_t *instance )
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_LABEL(" ", instance)
+    SHOW_PARSE_LABEL_OK(" ", instance)
     SHOW_PARSE_END
     }
   gg_append_statement(instance->structs.xml_parse->over.go_to);
@@ -6999,7 +7004,7 @@ void parser_xml_end( cbl_label_t *instance )
   SHOW_PARSE
     {
     SHOW_PARSE_HEADER
-    SHOW_PARSE_LABEL(" ", instance)
+    SHOW_PARSE_LABEL_OK(" ", instance)
     SHOW_PARSE_END
     }
   gg_append_statement(instance->structs.xml_parse->over.label);
@@ -7136,7 +7141,8 @@ initialize_the_data()
   // This is one-time initialization of the libgcobol program state stack
   gg_call(VOID,
           "__gg__init_program_state",
-          build_int_cst_type(INT, current_encoding(encoding_display_e)),
+          build_int_cst_type(INT, current_encoding(display_encoding_e)),
+          build_int_cst_type(INT, current_encoding(national_encoding_e)),
           NULL_TREE);
 
   __gg__currency_signs = __gg__ct_currency_signs;
@@ -8196,11 +8202,17 @@ parser_label_label(struct cbl_label_t *label)
 
   CHECK_LABEL(label);
   
+#if 1
+  // At the present time, label_verify.lay is returning true, so I edited
+  // out the if( !... ) to quiet cppcheck
+  label_verify.lay(label);
+#else
   if( ! label_verify.lay(label) )
     {
     yywarn("%s: label %qs already exists", __func__, label->name);
     gcc_unreachable();
     }
+#endif
 
   if(strcmp(label->name, "_end_declaratives") == 0 )
     {
@@ -8241,6 +8253,8 @@ parser_label_goto(struct cbl_label_t *label)
 
   CHECK_LABEL(label);
   
+  label_verify.go_to(label);
+
   label_verify.go_to(label);
 
   if( strcmp(label->name, "_end_declaratives") == 0 )
@@ -9876,6 +9890,7 @@ parser_file_add(struct cbl_file_t *file)
           __func__);
     }
 
+#pragma message "Use program-id to disambiguate"
   size_t symbol_table_index = symbol_index(symbol_elem_of(file));
 
   gg_call(VOID,
@@ -9902,7 +9917,7 @@ parser_file_add(struct cbl_file_t *file)
 /*  Right now, file->codeset.encoding is not being set properly.  Remove this
     comment and fix the following code when that's repaired.  */
 //          build_int_cst_type(INT, (int)file->codeset.encoding),
-          build_int_cst_type(INT, current_encoding(encoding_display_e)),
+          build_int_cst_type(INT, current_encoding(display_encoding_e)),
           build_int_cst_type(INT, (int)file->codeset.alphabet),
           NULL_TREE);
   file->var_decl_node = new_var_decl;
@@ -11332,6 +11347,16 @@ parser_intrinsic_call_1( cbl_field_t *tgt,
         }
       }
     }
+  else if( strcmp(function_name, "__gg__char") == 0 )
+    {
+    gg_call(VOID,
+            function_name,
+            gg_get_address_of(tgt->var_decl_node),
+            gg_get_address_of(ref1.field->var_decl_node),
+            refer_offset(ref1),
+            refer_size_source(ref1),
+            NULL_TREE);
+    }
   else
     {
     TRACE1
@@ -11386,13 +11411,15 @@ parser_intrinsic_call_2( cbl_field_t *tgt,
     TRACE1_REFER("parameter 2: ", ref2, "")
     }
   store_location_stuff(function_name);
+
   gg_call(VOID,
           function_name,
           gg_get_address_of(tgt->var_decl_node),
           gg_get_address_of(ref1.field->var_decl_node),
           refer_offset(ref1),
           refer_size_source(ref1),
-          ref2.field ? gg_get_address_of(ref2.field->var_decl_node) : null_pointer_node,
+          ref2.field ? gg_get_address_of(ref2.field->var_decl_node)
+                     : null_pointer_node,
           refer_offset(ref2),
           refer_size_source(ref2),
           NULL_TREE);

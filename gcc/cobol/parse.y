@@ -10803,7 +10803,7 @@ intrinsic:      function_udf
         |       ORD  '(' alpha_val[r1] ')'
                 {
                   location_set(@1);
-                  $$ = new_tempnumeric("ORD");
+                  $$ = new_tempnumeric("ORD", none_e);
                   if( ! intrinsic_call_1($$, ORD, $r1, @r1)) YYERROR;
                 }
         |       RANDOM

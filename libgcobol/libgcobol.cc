@@ -462,6 +462,8 @@ struct program_state
   int rt_high_value_character;
   char *rt_currency_signs[256];
   const unsigned short *rt_collation;  // Points to a table of 256 values;
+  cbl_encoding_t rt_display_encoding;
+  cbl_encoding_t rt_national_encoding;
   char *rt_program_name;
 
   program_state()
@@ -485,6 +487,8 @@ struct program_state
 
     memset(rt_currency_signs, 0, sizeof(rt_currency_signs));
 
+    rt_display_encoding  = __gg__display_encoding;
+    rt_national_encoding = __gg__national_encoding;
     rt_collation = __gg__one_to_one_values;
     rt_program_name = NULL;
     }
@@ -496,10 +500,12 @@ struct program_state
     rt_quote_character      = ps.rt_quote_character       ;
     rt_low_value_character  = ps.rt_low_value_character   ;
     // Note throughout the code that there is special processing for the
-    // high-value character.  In EBCDIC 0xFF doesn't map to ASCII 0xFF, so
-    // we are forced to avoid converting EBCDIC 0xFF.
+    // default high-value character.  In EBCDIC 0xFF doesn't map
+    // to ASCII 0xFF, so we are forced to avoid converting EBCDIC 0xFF.
     rt_high_value_character = ps.rt_high_value_character  ;
-    rt_collation            = ps.rt_collation  ;
+    rt_display_encoding     = ps.rt_display_encoding      ;
+    rt_national_encoding    = ps.rt_national_encoding     ;
+    rt_collation            = ps.rt_collation             ;
 
     for( int i=0; i<256; i++ )
       {
@@ -532,13 +538,13 @@ struct program_state
 static std::vector<program_state> program_states;
 #define collated(a)          (program_states.back().rt_collation[(unsigned int)(a&0xFF)])
 #define program_name         (program_states.back().rt_program_name)
-// #define decimal_point        (program_states.back().rt_decimal_point)
-// #define decimal_separator    (program_states.back().rt_decimal_separator)
-// #define quote_character      (program_states.back().rt_quote_character)
-// #define low_value_character  (program_states.back().rt_low_value_character)
-// #define high_value_character (program_states.back().rt_high_value_character)
-// #define currency_signs(a)    (program_states.back().rt_currency_signs[(a)])
 #define currency_signs(a)    (__gg__currency_signs[(a)])
+
+const unsigned short *
+__gg__current_collation()
+  {
+  return program_states.back().rt_collation;
+  }
 
 #ifdef DEBUG_MALLOC
 void *malloc(size_t a)
@@ -691,6 +697,8 @@ __gg__pop_program_state()
   __gg__quote_character      = program_states.back().rt_quote_character      ;
   __gg__low_value_character  = program_states.back().rt_low_value_character  ;
   __gg__high_value_character = program_states.back().rt_high_value_character ;
+  __gg__display_encoding     = program_states.back().rt_display_encoding     ;
+  __gg__national_encoding    = program_states.back().rt_national_encoding    ;
   __gg__currency_signs       = program_states.back().rt_currency_signs       ;
   }
 
@@ -732,9 +740,13 @@ __gg__decimal_point_is_comma()
 
 extern "C"
 void
-__gg__init_program_state()
+__gg__init_program_state(cbl_encoding_t display_encoding,
+                         cbl_encoding_t national_encoding)
   {
   // This routine gets called at DATA DIVISION time.
+
+  __gg__display_encoding  = display_encoding;
+  __gg__national_encoding = national_encoding;
 
   // We need to make sure that the program_states vector has at least one
   // entry in it.  This happens when we are the very first PROGRAM-ID called
@@ -2972,18 +2984,32 @@ format_for_display_internal(char **dest,
     case FldAlphanumeric:
     case FldNumericEdited:
     case FldAlphaEdited:
+      {
       __gg__realloc_if_necessary(dest, dest_size, actual_length+1);
-      if( actual_location )
+
+      cbl_figconst_t figconst = (cbl_figconst_t)(var->attr & FIGCONST_MASK);
+      if( figconst )
         {
-        memcpy(*dest, actual_location, actual_length);
+        charmap_t *charmap = __gg__get_charmap(retval);
+        int figconst_char  = charmap->figconst_character(figconst);
+        memset(*dest, figconst_char, actual_length);
+        (*dest)[actual_length] = NULLCH;
         }
       else
         {
-        fprintf(stderr, "attempting to display a NULL pointer in %s\n", var->name);
-        abort();
+        if( actual_location )
+          {
+          memcpy(*dest, actual_location, actual_length);
+          }
+        else
+          {
+          fprintf(stderr, "attempting to display a NULL pointer in %s\n", var->name);
+          abort();
+          }
+        (*dest)[actual_length] = NULLCH;
         }
-      (*dest)[actual_length] = NULLCH;
       break;
+      }
 
     case FldNumericDisplay:
       {
@@ -4160,6 +4186,7 @@ __gg__compare_2(cblc_field_t *left_side,
 
   unsigned int fig_left  = 0;
   unsigned int fig_right = 0;
+
   fig_left  = charmap_left->figconst_character(left_figconst);
   fig_right = charmap_right->figconst_character(right_figconst);
 
@@ -10717,13 +10744,17 @@ __gg__set_pointer(cblc_field_t       *target,
 
 extern "C"
 void
-__gg__alphabet_use( cbl_encoding_t alphabetic_encoding,
+__gg__alphabet_use( cbl_encoding_t display_encoding,
+                    cbl_encoding_t national_encoding,
                     cbl_encoding_t encoding,
                     size_t alphabet_index)
   {
   // We simply replace the values in the current program_state.  If the
   // state needs to be saved -- for example, if we are doing a SORT with an
   // ALPHABET override -- that's up to the caller
+
+  __gg__display_encoding  = display_encoding;
+  __gg__national_encoding = national_encoding;
 
   if( program_states.empty() )
     {
@@ -10732,7 +10763,7 @@ __gg__alphabet_use( cbl_encoding_t alphabetic_encoding,
     initialize_program_state();
     }
 
-  const charmap_t *charmap_alphabetic = __gg__get_charmap(alphabetic_encoding);
+  const charmap_t *charmap_alphabetic = __gg__get_charmap(display_encoding);
 
   switch( encoding )
     {
