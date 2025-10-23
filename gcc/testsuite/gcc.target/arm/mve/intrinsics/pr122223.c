@@ -21,5 +21,5 @@ float32x4_t foo() {
 }
 #endif
 
-/* { dg-final { scan-assembler-not "vmov.f32\tq0, #0.0" } } */
-/* { dg-final { scan-assembler "vmov.f32\tq0, #1.0" } } */
+/* { dg-final { scan-assembler-not "vmov.f32\tq\[0-9\]+, #0.0" } } */
+/* { dg-final { scan-assembler "vmov.f32\tq\[0-9\]+, #1.0" } } */
