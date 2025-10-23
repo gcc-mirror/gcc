@@ -406,7 +406,6 @@ GOMP_5.0.1 {
   global:
 	GOMP_alloc;
 	GOMP_free;
-	GOMP_enable_pinned_mode;
 } GOMP_5.0;
 
 GOMP_5.1 {
