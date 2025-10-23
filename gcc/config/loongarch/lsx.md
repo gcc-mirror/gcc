@@ -145,9 +145,6 @@
 ;; Only integer modes equal or larger than a word.
 (define_mode_iterator ILSX_DW  [V2DI V4SI])
 
-;; Only integer modes smaller than a word.
-(define_mode_iterator ILSX_HB  [V8HI V16QI])
-
 ;;;; Only integer modes for fixed-point madd_q/maddr_q.
 ;;(define_mode_iterator ILSX_WH  [V4SI V8HI])
 

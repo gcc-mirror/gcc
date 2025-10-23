@@ -23,6 +23,10 @@
 ;; Integer modes supported by LASX.
 (define_mode_iterator ILASX   [V4DI V8SI V16HI V32QI])
 
+;; Only integer modes smaller than a word.
+(define_mode_iterator ILSX_HB  [V8HI V16QI])
+(define_mode_iterator ILASX_HB  [V16HI V32QI])
+
 ;; FP modes supported by LSX
 (define_mode_iterator FLSX    [V2DF V4SF])
 
@@ -37,6 +41,10 @@
 
 ;; All integer modes available
 (define_mode_iterator IVEC    [(ILSX "ISA_HAS_LSX") (ILASX "ISA_HAS_LASX")])
+
+;; All integer modes smaller than a word.
+(define_mode_iterator IVEC_HB [(ILSX_HB "ISA_HAS_LSX")
+			       (ILASX_HB "ISA_HAS_LASX")])
 
 ;; All FP modes available
 (define_mode_iterator FVEC    [(FLSX "ISA_HAS_LSX") (FLASX "ISA_HAS_LASX")])
@@ -90,11 +98,17 @@
 			     (V8HI "V4SI") (V16HI "V8SI")
 			     (V16QI "V8HI") (V32QI "V16HI")])
 
+(define_mode_attr WVEC_QUARTER [(V8HI "V2DI") (V16HI "V4DI")
+				(V16QI "V4SI") (V32QI "V8SI")])
+
 ;; Lower-case version.
 (define_mode_attr wvec_half [(V2DI "v1ti") (V4DI "v2ti")
 			     (V4SI "v2di") (V8SI "v4di")
 			     (V8HI "v4si") (V16HI "v8si")
 			     (V16QI "v8hi") (V32QI "v16hi")])
+
+(define_mode_attr wvec_quarter [(V8HI "v2di") (V16HI "v4di")
+				(V16QI "v4si") (V32QI "v8si")])
 
 ;; Integer vector modes with the same length and unit size as a mode.
 (define_mode_attr VIMODE [(V2DI "V2DI") (V4SI "V4SI")
@@ -124,11 +138,15 @@
 			   (V8HI "h") (V16HI "h")
 			   (V16QI "b") (V32QI "b")])
 
-;; Suffix for widening LSX or LASX instructions.
+;; Suffix for double widening LSX or LASX instructions.
 (define_mode_attr simdfmt_w [(V2DI "q") (V4DI "q")
 			     (V4SI "d") (V8SI "d")
 			     (V8HI "w") (V16HI "w")
 			     (V16QI "h") (V32QI "h")])
+
+;; Suffix for quadruple widening LSX or LASX instructions.
+(define_mode_attr simdfmt_qw [(V8HI "d") (V16HI "d")
+			     (V16QI "w") (V32QI "w")])
 
 ;; Suffix for integer mode in LSX or LASX instructions with FP input but
 ;; integer output.
@@ -836,6 +854,39 @@
   emit_insn (
     gen_<simd_isa>_<x>vmaddwod_<simdfmt_w>_<simdfmt><u> (op[0], op[0],
 							 op[1], op[2]));
+  DONE;
+})
+
+(define_expand "<su>dot_prod<wvec_quarter><mode>"
+ [(match_operand:<WVEC_QUARTER> 0 "register_operand" "=f,f")
+  (match_operand:IVEC_HB 1 "register_operand" "f,f")
+  (match_operand:IVEC_HB 2 "register_operand" "f,f")
+  (match_operand:<WVEC_QUARTER> 3 "reg_or_0_operand" "f, YG")
+  (any_extend (const_int 0))]
+  ""
+{
+  rtx *op = operands;
+  rtx res_mulev = gen_reg_rtx (<WVEC_HALF>mode);
+  rtx res_mulod = gen_reg_rtx (<WVEC_HALF>mode);
+  rtx res_addev = gen_reg_rtx (<WVEC_QUARTER>mode);
+  rtx res_addod = gen_reg_rtx (<WVEC_QUARTER>mode);
+  emit_insn (gen_<simd_isa>_<x>vmulwev_<simdfmt_w>_<simdfmt><u>
+	      (res_mulev, op[1], op[2]));
+  emit_insn (gen_<simd_isa>_<x>vmulwod_<simdfmt_w>_<simdfmt><u>
+	      (res_mulod, op[1], op[2]));
+  emit_insn (gen_<simd_isa>_<x>vhaddw_<simdfmt_qw><u>_<simdfmt_w><u>
+              (res_addev, res_mulev, res_mulev));
+  emit_insn (gen_<simd_isa>_<x>vhaddw_<simdfmt_qw><u>_<simdfmt_w><u>
+	      (res_addod, res_mulod, res_mulod));
+  if (op[3] == CONST0_RTX (<WVEC_QUARTER>mode))
+    emit_insn (gen_add<wvec_quarter>3 (op[0], res_addev,
+				       res_addod));
+  else
+    {
+      emit_insn (gen_add<wvec_quarter>3 (res_addev, res_addev,
+					 res_addod));
+      emit_insn (gen_add<wvec_quarter>3 (op[0], res_addev, op[3]));
+    }
   DONE;
 })
 

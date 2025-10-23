@@ -146,9 +146,6 @@
 ;; Only integer modes equal or larger than a word.
 (define_mode_iterator ILASX_DW  [V4DI V8SI])
 
-;; Only integer modes smaller than a word.
-(define_mode_iterator ILASX_HB  [V16HI V32QI])
-
 ;; Only used for immediate set shuffle elements instruction.
 (define_mode_iterator LASX_WHB_W [V8SI V16HI V32QI V8SF])
 
