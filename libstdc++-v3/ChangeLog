@@ -1,3 +1,71 @@
+2025-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122224
+	* include/bits/stl_iterator_base_funcs.h (prev): Compare
+	distance as n > 0 instead of n != 0.
+	* testsuite/24_iterators/range_operations/122224.cc: New test.
+
+2025-10-22  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/ranges (indices::operator()): Constrain using
+	__can_iota_view concept.
+	* testsuite/std/ranges/indices/1.cc: Check SFINAE-friendliness
+	required by expression equivalence. Replace unused <vector>
+	header with <stddef.h> needed for size_t.
+
+2025-10-22  Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121748
+	* include/bits/version.def: Bump value for optional,
+	* include/bits/version.h: Regenerate.
+	* include/std/optional (std::__is_valid_contained_type_for_optional):
+	Define.
+	(std::optional<T>): Use __is_valid_contained_type_for_optional.
+	(optional<T>(const optional<_Up>&), optional<T>(optional<_Up>&&))
+	(optional<T>::operator=(const optional<_Up>&))
+	(optional<T>::operator=(optional<_Up>&&)): Replacex._M_get() with
+	x._M_fwd(), and std::move(x._M_get()) with std::move(x)._M_fwd().
+	(optional<T>::and_then): Remove uncessary remove_cvref_t.
+	(optional<T>::_M_fwd): Define.
+	(std::optional<T&>): Define new partial specialization.
+	(std::swap(std::optional<T&>, std::optional<T&>)): Define.
+	(std::make_optional(_Tp&&)): Add non-type template parameter.
+	(std::make_optional): Use parenthesis to constructor optional.
+	(std::hash<optional<T>>): Add comment.
+	* testsuite/20_util/optional/make_optional-2.cc: Guarded not longer
+	working example.
+	* testsuite/20_util/optional/relops/constrained.cc: Expand test to
+	cover optionals of reference.
+	* testsuite/20_util/optional/requirements.cc: Ammend for
+	optional<T&>.
+	* testsuite/20_util/optional/requirements_neg.cc: Likewise.
+	* testsuite/20_util/optional/version.cc: Test new value of
+	__cpp_lib_optional.
+	* testsuite/20_util/optional/make_optional_neg.cc: New test.
+	* testsuite/20_util/optional/monadic/ref_neg.cc: New test.
+	* testsuite/20_util/optional/ref/access.cc: New test.
+	* testsuite/20_util/optional/ref/assign.cc: New test.
+	* testsuite/20_util/optional/ref/cons.cc: New test.
+	* testsuite/20_util/optional/ref/internal_traits.cc: New test.
+	* testsuite/20_util/optional/ref/make_optional/1.cc: New test.
+	* testsuite/20_util/optional/ref/make_optional/from_args_neg.cc:
+	New test.
+	* testsuite/20_util/optional/ref/make_optional/from_lvalue_neg.cc:
+	New test.
+	* testsuite/20_util/optional/ref/make_optional/from_rvalue_neg.cc:
+	New test.
+	* testsuite/20_util/optional/ref/monadic.cc: New test.
+	* testsuite/20_util/optional/ref/relops.cc: New test.
+
+2025-10-22  Osama Abdelkader  <osama.abdelkader@gmail.com>
+
+	PR libstdc++/119721
+	* include/std/tuple (tuple<>::operator==, tuple<>::operator<=>):
+	Define.
+	* testsuite/23_containers/tuple/comparison_operators/119721.cc:
+	New test.
+
 2025-10-20  Yuao Ma  <c8ef@outlook.com>
 
 	* include/bits/version.def: Add ranges_indices FTM.

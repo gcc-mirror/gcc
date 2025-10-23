@@ -1,3 +1,102 @@
+2025-10-22  H.J. Lu  <hjl.tools@gmail.com>
+
+	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Use
+	HOST_WIDE_INT_0U and HOST_WIDE_INT_M1U to initialize unsigned
+	HOST_WIDE_INT.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (reduc_sbool_and_scal_<mode>,
+	reduc_sbool_ior_scal_<mode>, reduc_sbool_xor_scal_<mode>): Use SVE if
+	available.
+	* config/aarch64/aarch64-sve.md (*cmp<cmp_op><mode>_ptest): Rename ...
+	(@aarch64_pred_cmp<cmp_op><mode>_ptest): ... To this.
+	(reduc_sbool_xor_scal_<mode>): Rename ...
+	(@reduc_sbool_xor_scal_<mode>): ... To this.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-simd.md (reduc_sbool_and_scal_<mode>,
+	reduc_sbool_ior_scal_<mode>, reduc_sbool_xor_scal_<mode>): New.
+	* config/aarch64/iterators.md (VALLI): New.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (reduc_sbool_and_scal_<mode>,
+	reduc_sbool_ior_scal_<mode>, reduc_sbool_xor_scal_<mode>): New.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* tree-vect-loop.cc (vectorizable_reduction): Don't always require
+	IFN_VEC_SHL_INSERT when using reduc sbool optabs.
+
+2025-10-22  Srinath Parvathaneni  <srinath.parvathaneni@arm.com>
+
+	* config/aarch64/aarch64.opt.urls: Regenerate.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122364
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Re-try
+	linearization on a conversion source.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122370
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Also update compute_vectype when demoting masks to an
+	integer vector.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122371
+	* tree-vect-loop.cc (vectorize_fold_left_reduction): Get
+	to the scalar def to replace via the scalar PHI backedge def.
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Do not
+	re-associate to for a reduction chain if a fold-left
+	reduction is required.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122365
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Convert all inputs.  Use the proper vector element sizes
+	for the elementwise reduction.
+
+2025-10-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/cpuinfo.h
+	(get_intel_cpu): Handle Nova Lake.
+	* common/config/i386/i386-common.cc (processor_name):
+	Add Nova Lake.
+	(processor_alias_table): Ditto.
+	* common/config/i386/i386-cpuinfo.h (enum processor_types):
+	Add INTEL_COREI7_NOVALAKE.
+	* config.gcc: Add -march=novalake.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Handle
+	novalake.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Ditto.
+	* config/i386/i386-options.cc (processor_cost_table): Ditto.
+	(m_NOVALAKE): New.
+	(m_CORE_HYBRID): Add novalake.
+	* config/i386/i386.h (enum processor_type): Ditto.
+	* doc/extend.texi: Ditto.
+	* doc/invoke.texi: Ditto.
+
+2025-10-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Correct
+	the logic for unknown model number cpu guess value.
+
+2025-10-22  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/122320
+	* config/i386/sse.md (*<avx512>_cmp<mode>3_dup_op): New define_insn_and_split.
+
+2025-10-22  Antoni Boucher  <bouanto@zoho.com>
+
+	* config/i386/i386-jit.cc: Mark new float types as supported.
+
 2025-10-21  Antoni Boucher  <bouanto@zoho.com>
 
 	* config.gcc (jit_target_objs): Don't set this variable since

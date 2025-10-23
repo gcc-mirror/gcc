@@ -1,3 +1,9 @@
+2025-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122302
+	* c-common.cc (braced_list_to_string): Call copy_node on RAW_DATA_CST
+	before changing RAW_DATA_POINTER and RAW_DATA_LENGTH on it.
+
 2025-10-21  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-omp.cc (c_omp_directives): Uncomment 'declare mapper',

@@ -1,3 +1,12 @@
+2025-10-22  Antoni Boucher  <bouanto@zoho.com>
+
+	* docs/topics/types.rst: Document new types.
+	* dummy-frontend.cc: Support new types in tree_type_to_jit_type.
+	* jit-common.h: Update NUM_GCC_JIT_TYPES.
+	* jit-playback.cc: Support new types in get_tree_node_for_type.
+	* jit-recording.cc: Support new types.
+	* libgccjit.h (gcc_jit_types): Add new types.
+
 2025-10-20  Antoni Boucher  <bouanto@zoho.com>
 
 	* docs/topics/compatibility.rst (LIBGCCJIT_ABI_37): New ABI tag.

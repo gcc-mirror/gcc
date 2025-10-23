@@ -1,3 +1,91 @@
+2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR middle-end/122378
+	* c-c++-common/gomp/attrs-metadirective-2.c: Uncomment local label
+	declaration.
+	* c-c++-common/gomp/metadirective-2.c: Likewise.
+
+2025-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122302
+	* g++.dg/cpp0x/pr122302.C: New test.
+	* g++.dg/cpp/embed-27.C: New test.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/vect-reduc-bool-10.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-11.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-12.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-13.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-14.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-15.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-16.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-17.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-18.c: New test.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/vect-reduc-bool-1.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-2.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-3.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-4.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-5.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-6.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-7.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-8.c: New test.
+	* gcc.target/aarch64/vect-reduc-bool-9.c: New test.
+
+2025-10-22  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/sve/vect-reduc-bool-1.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-2.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-3.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-4.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-5.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-6.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-7.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-8.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-9.c: New test.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122364
+	* gcc.dg/vect/vect-reduc-chain-5.c: New testcase.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122370
+	* gcc.dg/vect/vect-pr122370.c: New testcase.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122371
+	* gcc.dg/vect/vect-pr122371.c: New testcase.
+
+2025-10-22  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122365
+	* gcc.dg/vect/vect-reduc-bool-9.c: New testcase.
+
+2025-10-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* g++.target/i386/mv16.C: Ditto.
+	* gcc.target/i386/funcspec-56.inc: Handle new march.
+
+2025-10-22  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr122320-mask16.c: New test.
+	* gcc.target/i386/pr122320-mask2.c: New test.
+	* gcc.target/i386/pr122320-mask32.c: New test.
+	* gcc.target/i386/pr122320-mask4.c: New test.
+	* gcc.target/i386/pr122320-mask64.c: New test.
+	* gcc.target/i386/pr122320-mask8.c: New test.
+
+2025-10-22  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit.dg/all-non-failing-tests.h: Mention new test.
+	* jit.dg/test-sized-float.c: New test.
+
 2025-10-21  Martin Uecker  <uecker@tugraz.at>
 
 	* gcc.dg/c2y-generic-6.c: New test.
