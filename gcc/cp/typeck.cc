@@ -1870,42 +1870,103 @@ next_common_initial_sequence (tree &memb1, tree &memb2)
 /* Return true if TYPE1 and TYPE2 are layout-compatible types.  */
 
 bool
-layout_compatible_type_p (tree type1, tree type2)
+layout_compatible_type_p (tree type1, tree type2, bool explain/*=false*/)
 {
   if (type1 == error_mark_node || type2 == error_mark_node)
     return false;
   if (type1 == type2)
     return true;
-  if (TREE_CODE (type1) != TREE_CODE (type2))
-    return false;
 
   type1 = cp_build_qualified_type (type1, TYPE_UNQUALIFIED);
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
+  if (same_type_p (type1, type2))
+    return true;
+
+  if (TREE_CODE (type1) != TREE_CODE (type2)
+      || (TREE_CODE (type1) != ENUMERAL_TYPE
+	  && !CLASS_TYPE_P (type1))
+      || (TREE_CODE (type2) != ENUMERAL_TYPE
+	  && !CLASS_TYPE_P (type2)))
+    {
+      if (explain)
+	inform (input_location, "%q#T and %q#T are not both the same type, "
+		"layout-compatible enumerations, or "
+		"layout-compatible standard-layout class types",
+		type1, type2);
+      return false;
+    }
+
+  if (!std_layout_type_p (type1))
+    {
+      if (explain)
+	inform (location_of (type1),
+		"%qT is not a standard-layout type", type1);
+      return false;
+    }
+  if (!std_layout_type_p (type2))
+    {
+      if (explain)
+	inform (location_of (type2),
+		"%qT is not a standard-layout type", type2);
+      return false;
+    }
 
   if (TREE_CODE (type1) == ENUMERAL_TYPE)
-    return same_type_p (finish_underlying_type (type1),
-			finish_underlying_type (type2));
-
-  if (CLASS_TYPE_P (type1)
-      && std_layout_type_p (type1)
-      && std_layout_type_p (type2))
+    {
+      tree underlying1 = finish_underlying_type (type1);
+      tree underlying2 = finish_underlying_type (type2);
+      if (!same_type_p (underlying1, underlying2))
+	{
+	  if (explain)
+	    {
+	      inform (location_of (type1),
+		      "the underlying type of %qT is %qT, but",
+		      type1, underlying1);
+	      inform (location_of (type2),
+		      "the underlying type of %qT is %qT",
+		      type2, underlying2);
+	    }
+	  return false;
+	}
+    }
+  else if (TREE_CODE (type1) == RECORD_TYPE)
     {
       tree field1 = TYPE_FIELDS (type1);
       tree field2 = TYPE_FIELDS (type2);
-      if (TREE_CODE (type1) == RECORD_TYPE)
+      while (1)
 	{
-	  while (1)
+	  if (!next_common_initial_sequence (field1, field2))
 	    {
-	      if (!next_common_initial_sequence (field1, field2))
-		return false;
-	      if (field1 == NULL_TREE)
-		return true;
-	      field1 = DECL_CHAIN (field1);
-	      field2 = DECL_CHAIN (field2);
+	      if (explain)
+		{
+		  if (field1 && field2)
+		    {
+		      inform (DECL_SOURCE_LOCATION (field1),
+			      "%qD and %qD do not correspond",
+			      field1, field2);
+		      inform (DECL_SOURCE_LOCATION (field2),
+			      "%qD declared here", field2);
+		    }
+		  else if (field1)
+		    inform (DECL_SOURCE_LOCATION (field1),
+			    "%qT has no member corresponding to %qD",
+			    type2, field1);
+		  else if (field2)
+		    inform (DECL_SOURCE_LOCATION (field2),
+			    "%qT has no member corresponding to %qD",
+			    type1, field2);
+		}
+	      return false;
 	    }
+	  if (field1 == NULL_TREE)
+	    break;
+	  field1 = DECL_CHAIN (field1);
+	  field2 = DECL_CHAIN (field2);
 	}
-      /* Otherwise both types must be union types.
-	 The standard says:
+    }
+  else if (TREE_CODE (type1) == UNION_TYPE)
+    {
+      /* The standard says:
 	 "Two standard-layout unions are layout-compatible if they have
 	 the same number of non-static data members and corresponding
 	 non-static data members (in any order) have layout-compatible
@@ -1913,6 +1974,8 @@ layout_compatible_type_p (tree type1, tree type2)
 	 but the code anticipates that bitfield vs. non-bitfield,
 	 different bitfield widths or presence/absence of
 	 [[no_unique_address]] should be checked as well.  */
+      tree field1 = TYPE_FIELDS (type1);
+      tree field2 = TYPE_FIELDS (type2);
       auto_vec<tree, 16> vec;
       unsigned int count = 0;
       for (; field1; field1 = DECL_CHAIN (field1))
@@ -1921,11 +1984,26 @@ layout_compatible_type_p (tree type1, tree type2)
       for (; field2; field2 = DECL_CHAIN (field2))
 	if (TREE_CODE (field2) == FIELD_DECL)
 	  vec.safe_push (field2);
+
       /* Discussions on core lean towards treating multiple union fields
 	 of the same type as the same field, so this might need changing
 	 in the future.  */
       if (count != vec.length ())
-	return false;
+	{
+	  if (explain)
+	    {
+	      inform_n (location_of (type1), count,
+			"%qT has %u field, but",
+			"%qT has %u fields, but",
+			type1, count);
+	      inform_n (location_of (type2), vec.length (),
+			"%qT has %u field",
+			"%qT has %u fields",
+			type2, vec.length ());
+	    }
+	  return false;
+	}
+
       for (field1 = TYPE_FIELDS (type1); field1; field1 = DECL_CHAIN (field1))
 	{
 	  if (TREE_CODE (field1) != FIELD_DECL)
@@ -1959,13 +2037,23 @@ layout_compatible_type_p (tree type1, tree type2)
 	      break;
 	    }
 	  if (j == vec.length ())
-	    return false;
+	    {
+	      if (explain)
+		{
+		  inform (DECL_SOURCE_LOCATION (field1),
+			  "%qT has no member corresponding to %qD",
+			  type2, field1);
+		  inform (location_of (type2), "%qT declared here", type2);
+		}
+	      return false;
+	    }
 	  vec.unordered_remove (j);
 	}
-      return true;
     }
+  else
+    gcc_unreachable ();
 
-  return same_type_p (type1, type2);
+  return true;
 }
 
 /* Returns 1 if TYPE1 is at least as qualified as TYPE2.  */

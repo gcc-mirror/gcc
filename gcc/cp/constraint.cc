@@ -3188,7 +3188,8 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       }
       break;
     case CPTK_IS_LAYOUT_COMPATIBLE:
-      inform (loc, "%qT is not layout compatible with %qT", t1, t2);
+      inform (loc, "%qT is not layout compatible with %qT, because", t1, t2);
+      layout_compatible_type_p (t1, t2, /*explain=*/true);
       break;
     case CPTK_IS_LITERAL_TYPE:
       inform (decl_loc, "%qT is not a literal type", t1);
