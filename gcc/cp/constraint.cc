@@ -3075,6 +3075,9 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
 
   tree t1 = TRAIT_EXPR_TYPE1 (expr);
   tree t2 = TRAIT_EXPR_TYPE2 (expr);
+  gcc_checking_assert (t1 != error_mark_node && t2 != error_mark_node);
+
+  iloc_sentinel ils (loc);
 
   /* For traits intrinsically about the properties of user-defined types,
      decl_loc will point to the declaration of that type.  */
