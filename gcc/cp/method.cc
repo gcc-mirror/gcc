@@ -2410,7 +2410,11 @@ destructible_expr (tree to, bool explain)
   else if (scalarish_type_p (to))
     return void_node;
   else
-    return error_mark_node;
+    {
+      if (explain)
+	error_at (location_of (to), "%qT is not a class or scalar type", to);
+      return error_mark_node;
+    }
 }
 
 /* Returns a tree iff TO is assignable (if CODE is MODIFY_EXPR) or

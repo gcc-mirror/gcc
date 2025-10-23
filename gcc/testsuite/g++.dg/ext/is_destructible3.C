@@ -9,6 +9,10 @@ static_assert(is_destructible<void>::value, "");  // { dg-error "assert" }
 // { dg-message "'void' is not destructible, because" "" { target *-*-* } .-1 }
 // { dg-error "'void' is incomplete" "" { target *-*-* } .-2 }
 
+static_assert(is_destructible<void() volatile>::value, "");  // { dg-error "assert" }
+// { dg-message "'void\\(\\) volatile' is not destructible, because" "" { target *-*-* } .-1 }
+// { dg-error "not a class or scalar type" "" { target *-*-* } .-2 }
+
 struct A {
   ~A() = delete;  // { dg-message "declared here" }
 };
