@@ -8728,13 +8728,18 @@ gfc_conv_intrinsic_transfer (gfc_se * se, gfc_expr * expr)
     }
   else
     {
+      bool simply_contiguous = gfc_is_simply_contiguous (arg->expr,
+							 false, true);
       argse.want_pointer = 0;
+      /* A non-contiguous SOURCE needs packing.  */
+      if (!simply_contiguous)
+	argse.force_tmp = 1;
       gfc_conv_expr_descriptor (&argse, arg->expr);
       source = gfc_conv_descriptor_data_get (argse.expr);
       source_type = gfc_get_element_type (TREE_TYPE (argse.expr));
 
       /* Repack the source if not simply contiguous.  */
-      if (!gfc_is_simply_contiguous (arg->expr, false, true))
+      if (!simply_contiguous)
 	{
 	  tmp = gfc_build_addr_expr (NULL_TREE, argse.expr);
 
