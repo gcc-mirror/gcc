@@ -4898,22 +4898,35 @@ std_layout_type_p (const_tree t)
     return scalarish_type_p (t);
 }
 
-static bool record_has_unique_obj_representations (const_tree, const_tree);
+static bool record_has_unique_obj_representations (const_tree, const_tree, bool);
 
 /* Returns true iff T satisfies std::has_unique_object_representations<T>,
-   as defined in [meta.unary.prop].  */
+   as defined in [meta.unary.prop].  If EXPLAIN is true, explain why not.  */
 
 bool
-type_has_unique_obj_representations (const_tree t)
+type_has_unique_obj_representations (const_tree t, bool explain/*=false*/)
 {
   bool ret;
 
   t = strip_array_types (CONST_CAST_TREE (t));
 
-  if (!trivially_copyable_p (t))
+  if (t == error_mark_node)
     return false;
 
-  if (CLASS_TYPE_P (t) && CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS_SET (t))
+  location_t loc = input_location;
+  if (tree m = TYPE_MAIN_DECL (t))
+    loc = DECL_SOURCE_LOCATION (m);
+
+  if (!trivially_copyable_p (t))
+    {
+      if (explain)
+	inform (loc, "%qT is not trivially copyable", t);
+      return false;
+    }
+
+  if (CLASS_TYPE_P (t)
+      && CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS_SET (t)
+      && !explain)
     return CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS (t);
 
   switch (TREE_CODE (t))
@@ -4931,16 +4944,21 @@ type_has_unique_obj_representations (const_tree t)
       return true;
 
     case ENUMERAL_TYPE:
-      return type_has_unique_obj_representations (ENUM_UNDERLYING_TYPE (t));
+      return type_has_unique_obj_representations (ENUM_UNDERLYING_TYPE (t),
+						  explain);
 
     case REAL_TYPE:
       /* XFmode certainly contains padding on x86, which the CPU doesn't store
 	 when storing long double values, so for that we have to return false.
 	 Other kinds of floating point values are questionable due to +.0/-.0
 	 and NaNs, let's play safe for now.  */
+      if (explain)
+	inform (loc, "%qT is a floating-point type", t);
       return false;
 
     case FIXED_POINT_TYPE:
+      if (explain)
+	inform (loc, "%qT is a fixed-point type", t);
       return false;
 
     case OFFSET_TYPE:
@@ -4948,10 +4966,10 @@ type_has_unique_obj_representations (const_tree t)
 
     case COMPLEX_TYPE:
     case VECTOR_TYPE:
-      return type_has_unique_obj_representations (TREE_TYPE (t));
+      return type_has_unique_obj_representations (TREE_TYPE (t), explain);
 
     case RECORD_TYPE:
-      ret = record_has_unique_obj_representations (t, TYPE_SIZE (t));
+      ret = record_has_unique_obj_representations (t, TYPE_SIZE (t), explain);
       if (CLASS_TYPE_P (t))
 	{
 	  CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS_SET (t) = 1;
@@ -4967,15 +4985,31 @@ type_has_unique_obj_representations (const_tree t)
 	if (TREE_CODE (field) == FIELD_DECL)
 	  {
 	    any_fields = true;
-	    if (!type_has_unique_obj_representations (TREE_TYPE (field))
-		|| simple_cst_equal (DECL_SIZE (field), TYPE_SIZE (t)) != 1)
+	    if (simple_cst_equal (DECL_SIZE (field), TYPE_SIZE (t)) != 1)
 	      {
+		if (explain)
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "%qD does not fill all bits of %q#T", field, t);
+		ret = false;
+		break;
+	      }
+	    if (!type_has_unique_obj_representations (TREE_TYPE (field)))
+	      {
+		if (explain)
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "%qD has type %qT that does not have "
+			  "unique object representations",
+			  field, TREE_TYPE (field));
 		ret = false;
 		break;
 	      }
 	  }
       if (!any_fields && !integer_zerop (TYPE_SIZE (t)))
-	ret = false;
+	{
+	  if (explain)
+	    inform (loc, "%q#T has no data fields", t);
+	  ret = false;
+	}
       if (CLASS_TYPE_P (t))
 	{
 	  CLASSTYPE_UNIQUE_OBJ_REPRESENTATIONS_SET (t) = 1;
@@ -4984,9 +5018,8 @@ type_has_unique_obj_representations (const_tree t)
       return ret;
 
     case NULLPTR_TYPE:
-      return false;
-
-    case ERROR_MARK:
+      if (explain)
+	inform (loc, "%<std::nullptr_t%> has padding bits and no value bits");
       return false;
 
     default:
@@ -4997,7 +5030,8 @@ type_has_unique_obj_representations (const_tree t)
 /* Helper function for type_has_unique_obj_representations.  */
 
 static bool
-record_has_unique_obj_representations (const_tree t, const_tree sz)
+record_has_unique_obj_representations (const_tree t, const_tree sz,
+				       bool explain)
 {
   for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
     if (TREE_CODE (field) != FIELD_DECL)
@@ -5009,35 +5043,91 @@ record_has_unique_obj_representations (const_tree t, const_tree sz)
     else if (DECL_FIELD_IS_BASE (field))
       {
 	if (!record_has_unique_obj_representations (TREE_TYPE (field),
-						    DECL_SIZE (field)))
-	  return false;
+						    DECL_SIZE (field),
+						    /*explain=*/false))
+	  {
+	    if (explain)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "base %qT does not have unique object representations",
+		      TREE_TYPE (field));
+	    return false;
+	  }
       }
     else if (DECL_C_BIT_FIELD (field) && !DECL_UNNAMED_BIT_FIELD (field))
       {
 	tree btype = DECL_BIT_FIELD_TYPE (field);
 	if (!type_has_unique_obj_representations (btype))
-	  return false;
+	  {
+	    if (explain)
+	      inform (DECL_SOURCE_LOCATION (field),
+		      "%qD with type %qT does not have "
+		      "unique object representations",
+		      field, btype);
+	    return false;
+	  }
       }
     else if (!type_has_unique_obj_representations (TREE_TYPE (field)))
-      return false;
+      {
+	if (explain)
+	  inform (DECL_SOURCE_LOCATION (field),
+		  "%qD with type %qT does not have "
+		  "unique object representations",
+		  field, TREE_TYPE (field));
+	return false;
+      }
 
   offset_int cur = 0;
+  tree last_field = NULL_TREE;
+  tree last_named_field = NULL_TREE;
   for (tree field = TYPE_FIELDS (t); field; field = DECL_CHAIN (field))
-    if (TREE_CODE (field) == FIELD_DECL && !DECL_UNNAMED_BIT_FIELD (field))
+    if (TREE_CODE (field) == FIELD_DECL)
       {
+	if (DECL_UNNAMED_BIT_FIELD (field))
+	  {
+	    last_field = field;
+	    continue;
+	  }
 	offset_int fld = wi::to_offset (DECL_FIELD_OFFSET (field));
 	offset_int bitpos = wi::to_offset (DECL_FIELD_BIT_OFFSET (field));
 	fld = fld * BITS_PER_UNIT + bitpos;
 	if (cur != fld)
-	  return false;
+	  {
+	    if (explain)
+	      {
+		if (last_named_field)
+		  inform (DECL_SOURCE_LOCATION (last_named_field),
+			  "padding occurs between %qD and %qD",
+			  last_named_field, field);
+		else if (last_field)
+		  inform (DECL_SOURCE_LOCATION (last_field),
+			  "unnamed bit-field inserts padding before %qD",
+			  field);
+		else
+		  inform (DECL_SOURCE_LOCATION (field),
+			  "padding occurs before %qD", field);
+	      }
+	    return false;
+	  }
 	if (DECL_SIZE (field))
 	  {
 	    offset_int size = wi::to_offset (DECL_SIZE (field));
 	    cur += size;
 	  }
+	last_named_field = last_field = field;
       }
   if (cur != wi::to_offset (sz))
-    return false;
+    {
+      if (explain)
+	{
+	  if (last_named_field)
+	    inform (DECL_SOURCE_LOCATION (last_named_field),
+		    "padding occurs after %qD", last_named_field);
+	  else
+	    inform (DECL_SOURCE_LOCATION (t),
+		    "%qT has padding and no data fields", t);
+	}
+      return false;
+    }
 
   return true;
 }

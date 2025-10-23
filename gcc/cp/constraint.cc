@@ -3109,7 +3109,9 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       inform (decl_loc, "%qT is not trivially destructible", t1);
       break;
     case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS:
-      inform (decl_loc, "%qT does not have unique object representations", t1);
+      inform (decl_loc, "%qT does not have unique object "
+	      "representations, because", t1);
+      type_has_unique_obj_representations (t1, /*explain=*/true);
       break;
     case CPTK_HAS_VIRTUAL_DESTRUCTOR:
       {
