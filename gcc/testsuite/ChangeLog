@@ -1,3 +1,12 @@
+2025-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122302
+	* g++.dg/cpp0x/pr122302.C: New test.
+	* g++.dg/cpp/embed-27.C: New test.
+
 2025-10-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

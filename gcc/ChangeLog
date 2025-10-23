@@ -1,3 +1,8 @@
+2025-10-22  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Correct
+	the logic for unknown model number cpu guess value.
+
 2025-10-21  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
