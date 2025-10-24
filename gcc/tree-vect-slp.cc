@@ -6302,6 +6302,7 @@ private:
 
   /* Layout selection.  */
   bool is_compatible_layout (slp_tree, unsigned int);
+  bool is_compatible_layout (const slpg_partition_info &, unsigned int);
   int change_layout_cost (slp_tree, unsigned int, unsigned int);
   slpg_partition_layout_costs &partition_layout_costs (unsigned int,
 						       unsigned int);
@@ -6309,6 +6310,7 @@ private:
 			       int, unsigned int);
   int internal_node_cost (slp_tree, int, unsigned int);
   void start_choosing_layouts ();
+  bool legitimize ();
 
   /* Cost propagation.  */
   slpg_layout_cost edge_layout_cost (graph_edge *, unsigned int,
@@ -6712,6 +6714,29 @@ vect_optimize_slp_pass::is_compatible_layout (slp_tree node,
   if (SLP_TREE_LANES (node) != m_perms[layout_i].length ())
     return false;
 
+  return true;
+}
+
+/* Return true if layout LAYOUT_I is compatible with the number of SLP lanes
+   that NODE would operate on for each NODE in PARTITION.
+   This test is independent of NODE's actual operations.  */
+
+bool
+vect_optimize_slp_pass::is_compatible_layout (const slpg_partition_info
+						&partition,
+					      unsigned int layout_i)
+{
+  for (unsigned int order_i = partition.node_begin;
+       order_i < partition.node_end; ++order_i)
+    {
+      unsigned int node_i = m_partitioned_nodes[order_i];
+      auto &vertex = m_vertices[node_i];
+
+      /* The layout is incompatible if it is individually incompatible
+	 with any node in the partition.  */
+      if (!is_compatible_layout (vertex.node, layout_i))
+	return false;
+    }
   return true;
 }
 
@@ -8034,6 +8059,62 @@ vect_optimize_slp_pass::decide_masked_load_lanes ()
     }
 }
 
+/* Perform legitimizing attempts.  This is intended to improve the
+   situation when layout 0 is not valid which is a situation the cost
+   based propagation does not handle well.
+   Return true if further layout optimization is possible, false if
+   the layout configuration should be considered final.  */
+
+bool
+vect_optimize_slp_pass::legitimize ()
+{
+  /* Perform a very simple legitimizing attempt by attempting to choose
+     a single layout for all partitions that will make all permutations
+     a noop.  That should also be the optimal layout choice in case
+     layout zero is legitimate.
+     ???  Disconnected components of the SLP graph could have distinct
+     single layouts.  */
+  int single_layout_i = -1;
+  unsigned deferred_up_to = -1U;
+  for (unsigned partition_i = 0; partition_i < m_partitions.length ();
+       ++partition_i)
+    {
+      auto &partition = m_partitions[partition_i];
+      if (single_layout_i == -1)
+	{
+	  single_layout_i = partition.layout;
+	  deferred_up_to = partition_i;
+	}
+      else if (partition.layout == single_layout_i || partition.layout == -1)
+	;
+      else
+	single_layout_i = 0;
+      if (single_layout_i == 0)
+	return true;
+
+      if (single_layout_i != -1
+	  && !is_compatible_layout (partition, single_layout_i))
+	return true;
+    }
+
+  if (single_layout_i <= 0)
+    return true;
+
+  for (unsigned partition_i = 0; partition_i < deferred_up_to; ++partition_i)
+    if (!is_compatible_layout (m_partitions[partition_i],
+			       single_layout_i))
+      return true;
+
+  for (unsigned partition_i = 0; partition_i < m_partitions.length ();
+       ++partition_i)
+    {
+      auto &partition = m_partitions[partition_i];
+      partition.layout = single_layout_i;
+    }
+
+  return false;
+}
+
 /* Main entry point for the SLP graph optimization pass.  */
 
 void
@@ -8044,8 +8125,11 @@ vect_optimize_slp_pass::run ()
   start_choosing_layouts ();
   if (m_perms.length () > 1)
     {
-      forward_pass ();
-      backward_pass ();
+      if (legitimize ())
+	{
+	  forward_pass ();
+	  backward_pass ();
+	}
       if (dump_enabled_p ())
 	dump ();
       materialize ();
@@ -9036,8 +9120,11 @@ vect_slp_analyze_operations (vec_info *vinfo)
 	  stmt_vec_info stmt_info;
 	  if (!SLP_INSTANCE_ROOT_STMTS (instance).is_empty ())
 	    stmt_info = SLP_INSTANCE_ROOT_STMTS (instance)[0];
-	  else
+	  else if (!SLP_TREE_SCALAR_STMTS (node).is_empty ()
+		   && SLP_TREE_SCALAR_STMTS (node)[0])
 	    stmt_info = SLP_TREE_SCALAR_STMTS (node)[0];
+	  else
+	    stmt_info = SLP_TREE_REPRESENTATIVE (node);
 	  if (is_a <loop_vec_info> (vinfo))
 	    {
 	      if (dump_enabled_p ())
