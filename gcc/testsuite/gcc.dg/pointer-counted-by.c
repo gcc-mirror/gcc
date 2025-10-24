@@ -49,9 +49,10 @@ struct pointer_array_6 {
   int *array_6 __attribute__ ((counted_by (days)));
 }; 
 
+/* counted_by is allowed for pointer to void when GNU extension is enabled.  */
 struct pointer_array_7 {
   int count;
-  void *array_7 __attribute__ ((counted_by (count))); /* { dg-error "attribute is not allowed for a pointer to void" } */
+  void *array_7 __attribute__ ((counted_by (count)));
 }; 
 
 struct pointer_array_8 {

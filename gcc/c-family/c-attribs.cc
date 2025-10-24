@@ -2963,14 +2963,16 @@ handle_counted_by_attribute (tree *node, tree name,
 		" array member field", name);
       *no_add_attrs = true;
     }
-  /* This attribute cannot be applied to a pointer to void type.  */
+  /* This attribute can be applied to a pointer to void type, but issue
+     warning when -Wpointer-arith is presenting.  */
   else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE
 	   && TREE_CODE (TREE_TYPE (TREE_TYPE (decl))) == VOID_TYPE)
     {
-      error_at (DECL_SOURCE_LOCATION (decl),
-		"%qE attribute is not allowed for a pointer to void",
-		name);
-      *no_add_attrs = true;
+      if (warn_pointer_arith)
+	warning_at (DECL_SOURCE_LOCATION (decl),
+		    OPT_Wpointer_arith,
+		    "%qE attribute is used for a pointer to void",
+		    name);
     }
   /* This attribute cannot be applied to a pointer to function type.  */
   else if (TREE_CODE (TREE_TYPE (decl)) == POINTER_TYPE

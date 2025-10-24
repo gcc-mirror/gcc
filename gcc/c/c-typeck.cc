@@ -3179,7 +3179,10 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
   tree result_type = is_fam ? c_build_pointer_type (TREE_TYPE (ref))
 		     : TREE_TYPE (ref);
 
-  tree element_size = TYPE_SIZE_UNIT (TREE_TYPE (TREE_TYPE (ref)));
+  tree element_type = TREE_TYPE (TREE_TYPE (ref));
+  tree element_size = VOID_TYPE_P (element_type)
+		      ? build_one_cst (size_type_node)
+		      : TYPE_SIZE_UNIT (element_type);
 
   tree first_param = is_fam
 		     ? c_fully_fold (array_to_pointer_conversion (loc, ref),

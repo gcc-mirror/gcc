@@ -7311,11 +7311,16 @@ the attribute.
 When the field that represents the number of the elements is assigned a
 negative integer value, the compiler treats the value as zero.
 
-The @code{counted_by} attribute is not allowed for a pointer to @code{void},
-a pointer to function, or a pointer to a structure or union that includes
-a flexible array member.  However, it is allowed for a pointer to
-non-void incomplete structure or union types, as long as the type could
-be completed before the first reference to the pointer.
+The @code{counted_by} attribute is not allowed for a pointer to function,
+or a pointer to a structure or union that includes a flexible array member.
+However, it is allowed for a pointer to non-void incomplete structure
+or union types, as long as the type could be completed before the first
+reference to the pointer.
+
+The attribute is allowed for a pointer to @code{void}.  However,
+warnings will be issued for such cases when @option{-Wpointer-arith} is
+specified.  When this attribute is applied on a pointer to @code{void},
+the size of each element of this pointer array is treated as 1.
 
 An explicit @code{counted_by} annotation defines a relationship between
 two objects, @code{p->array} and @code{p->count}, and there are the
