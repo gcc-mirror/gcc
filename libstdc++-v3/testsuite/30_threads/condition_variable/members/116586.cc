@@ -1,4 +1,7 @@
 // { dg-do run { target c++11 } }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-require-gthreads "" }
+// { dg-require-effective-target hosted }
 
 #include <condition_variable>
 #include <chrono>

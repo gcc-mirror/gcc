@@ -1,4 +1,5 @@
 // { dg-do run { target c++20 } }
+// { dg-additional-options "-pthread" { target pthread } }
 // { dg-require-gthreads "" }
 // { dg-require-effective-target hosted }
 
