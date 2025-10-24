@@ -1872,10 +1872,10 @@ export namespace std
 #if __glibcxx_padded_layouts
   using std::layout_left_padded;
   using std::layout_right_padded;
-  using strided_slice;
-  using full_extent_t;
-  using full_extent;
-  using submdspan_mapping_result;
+  using std::strided_slice;
+  using std::full_extent_t;
+  using std::full_extent;
+  using std::submdspan_mapping_result;
 #endif
   // FIXME submdspan_extents, mdsubspan
 }
