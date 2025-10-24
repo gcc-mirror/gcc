@@ -1,3 +1,11 @@
+2025-10-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-10-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* gcc.target/arm/mve/intrinsics/pr122223.c: Relax expected code.
+
 2025-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
