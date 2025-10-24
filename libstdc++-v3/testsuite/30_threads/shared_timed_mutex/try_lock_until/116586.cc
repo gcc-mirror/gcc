@@ -1,4 +1,7 @@
 // { dg-do run { target c++14 } }
+// { dg-additional-options "-pthread" { target pthread } }
+// { dg-require-gthreads "" }
+// { dg-require-effective-target hosted }
 
 #include <shared_mutex>
 #include <chrono>
@@ -8,9 +11,17 @@
 
 namespace chrono = std::chrono;
 
-// thread.timedmutex.requirements.general:
+// [thread.timedmutex.requirements.general]:
 //   If abs_time has already passed, the function attempts to obtain
 //   ownership without blocking (as if by calling try_lock()).
+
+// C++14 [thread.sharedtimedmutex.class] 3.2 says it's undefined for a thread
+// to attempt to recursively gain any ownership of a shared_timed_mutex.
+// This isn't just theoretical, as Glibc's pthread_rwlock_timedrdlock will
+// return EDEADLK if called on the same thread that already holds the
+// exclusive (write) lock.
+#define VERIFY_IN_NEW_THREAD(X) \
+  (void) std::async(std::launch::async, [&] { VERIFY(X); })
 
 template <typename Clock>
 void
@@ -19,7 +30,7 @@ test_exclusive_absolute(chrono::nanoseconds offset)
   std::shared_timed_mutex stm;
   chrono::time_point<Clock> tp(offset);
   VERIFY(stm.try_lock_until(tp));
-  VERIFY(!stm.try_lock_until(tp));
+  VERIFY_IN_NEW_THREAD(!stm.try_lock_until(tp));
 }
 
 template <typename Clock>
@@ -32,15 +43,7 @@ test_shared_absolute(chrono::nanoseconds offset)
   stm.unlock_shared();
 
   VERIFY(stm.try_lock_for(chrono::seconds{10}));
-
-  {
-    // NPTL will give us EDEADLK if pthread_rwlock_timedrdlock() is called on
-    // the same thread that already holds the exclusive (write) lock, so let's
-    // arrange for a different thread to try to acquire the shared lock.
-    auto t = std::async(std::launch::async, [&stm, tp]() {
-	VERIFY(!stm.try_lock_shared_until(tp));
-      });
-  }
+  VERIFY_IN_NEW_THREAD(!stm.try_lock_shared_until(tp));
 }
 
 // The type of clock used for the actual wait depends on whether
@@ -53,7 +56,7 @@ test_exclusive_relative(chrono::nanoseconds offset)
   std::shared_timed_mutex stm;
   const auto d = -Clock::now().time_since_epoch() + offset;
   VERIFY(stm.try_lock_for(d));
-  VERIFY(!stm.try_lock_for(d));
+  VERIFY_IN_NEW_THREAD(!stm.try_lock_for(d));
 }
 
 template <typename Clock>
@@ -66,7 +69,7 @@ test_shared_relative(chrono::nanoseconds offset)
   stm.unlock_shared();
   // Should complete immediately
   VERIFY(stm.try_lock_for(chrono::seconds{10}));
-  VERIFY(!stm.try_lock_shared_for(d));
+  VERIFY_IN_NEW_THREAD(!stm.try_lock_shared_for(d));
 }
 
 int main()
