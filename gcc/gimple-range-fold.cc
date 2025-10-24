@@ -1187,6 +1187,17 @@ fold_using_range::condexpr_adjust (vrange &r1, vrange &r2, gimple *, tree cond,
 	  ssa2, src))
 	r2.intersect (tmp2);
     }
+  // If the same name is specified in the condition and COND_EXPR,
+  // combine the calculated condition range and the other one provided. ie:
+  // c_1 = b_2 < 10
+  // f_3 = c_1 ? 0 : b_2
+  // With b_2 providing the false value, the value of f_3 will be
+  // either 0 UNION  (0 = b_2 < 10), which is [-INF, 9].
+  // COND_EXPR is
+  if (ssa1 && cond_name == ssa1)
+    r1 = cond_true;
+  else if (ssa2 && cond_name == ssa2)
+    r2 = cond_false;
   return true;
 }
 
