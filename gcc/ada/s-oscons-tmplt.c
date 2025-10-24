@@ -1882,6 +1882,7 @@ CND(IF_NAMESIZE, "Max size of interface name with 0 terminator");
 #endif
 
 #elif defined(_WIN32)
+#undef  POLLPRI
 #define POLLPRI 0
 /*  If the POLLPRI flag is set on a socket for the Microsoft Winsock provider,
  *  the WSAPoll function will fail. */
