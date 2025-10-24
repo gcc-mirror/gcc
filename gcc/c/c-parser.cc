@@ -675,14 +675,15 @@ c_token_starts_typename (c_token *token)
     }
 }
 
-/* Return true if the next token from PARSER can start a type name,
-   false otherwise.  LA specifies how to do lookahead in order to
+/* Return true if the next token from PARSER, starting from token N, can start
+   a type name, false otherwise.  LA specifies how to do lookahead in order to
    detect unknown type names.  If unsure, pick CLA_PREFER_ID.  */
 
 static inline bool
-c_parser_next_tokens_start_typename (c_parser *parser, enum c_lookahead_kind la)
+c_parser_next_tokens_start_typename (c_parser *parser, enum c_lookahead_kind la,
+				     unsigned int n = 1)
 {
-  c_token *token = c_parser_peek_token (parser);
+  c_token *token = c_parser_peek_nth_token (parser, n);
   if (c_token_starts_typename (token))
     return true;
 
@@ -695,8 +696,8 @@ c_parser_next_tokens_start_typename (c_parser *parser, enum c_lookahead_kind la)
       && !parser->objc_could_be_foreach_context
 
       && (la == cla_prefer_type
-	  || c_parser_peek_2nd_token (parser)->type == CPP_NAME
-	  || c_parser_peek_2nd_token (parser)->type == CPP_MULT)
+	  || c_parser_peek_nth_token (parser, n + 1)->type == CPP_NAME
+	  || c_parser_peek_nth_token (parser, n + 1)->type == CPP_MULT)
 
       /* Only unknown identifiers.  */
       && !lookup_name (token->value))
@@ -892,30 +893,47 @@ c_parser_next_token_starts_declspecs (c_parser *parser)
   return c_token_starts_declspecs (token);
 }
 
-/* Return true if the next tokens from PARSER can start declaration
-   specifiers (not including standard attributes) or a static
-   assertion, false otherwise.  */
+static bool c_parser_check_balanced_raw_token_sequence (c_parser *,
+							unsigned int *);
+
+/* Return true if the next tokens from PARSER (starting with token N, 1-based)
+   can start declaration specifiers (not including standard attributes) or a
+   static assertion, false otherwise.  */
 bool
-c_parser_next_tokens_start_declaration (c_parser *parser)
+c_parser_next_tokens_start_declaration (c_parser *parser, unsigned int n)
 {
-  c_token *token = c_parser_peek_token (parser);
+  c_token *token = c_parser_peek_nth_token (parser, n);
 
   /* Same as above.  */
   if (c_dialect_objc ()
       && token->type == CPP_NAME
       && token->id_kind == C_ID_CLASSNAME
-      && c_parser_peek_2nd_token (parser)->type == CPP_DOT)
+      && c_parser_peek_nth_token (parser, n + 1)->type == CPP_DOT)
     return false;
 
   /* Labels do not start declarations.  */
   if (token->type == CPP_NAME
-      && c_parser_peek_2nd_token (parser)->type == CPP_COLON)
+      && c_parser_peek_nth_token (parser, n + 1)->type == CPP_COLON)
     return false;
+
+  /* A static assertion is only a declaration if followed by a semicolon;
+     otherwise, it may be an expression in C2Y.  */
+  if (token->keyword == RID_STATIC_ASSERT
+      && c_parser_peek_nth_token (parser, n + 1)->type == CPP_OPEN_PAREN)
+    {
+      n += 2;
+      if (!c_parser_check_balanced_raw_token_sequence (parser, &n)
+	  || c_parser_peek_nth_token_raw (parser, n)->type != CPP_CLOSE_PAREN)
+	/* Invalid static assertion syntax; treat as a declaration and report a
+	   syntax error there.  */
+	return true;
+      return c_parser_peek_nth_token_raw (parser, n + 1)->type == CPP_SEMICOLON;
+    }
 
   if (c_token_starts_declaration (token))
     return true;
 
-  if (c_parser_next_tokens_start_typename (parser, cla_nonabstract_decl))
+  if (c_parser_next_tokens_start_typename (parser, cla_nonabstract_decl, n))
     return true;
 
   return false;
@@ -5855,9 +5873,6 @@ c_parser_balanced_token_sequence (c_parser *parser)
     }
 }
 
-static bool c_parser_check_balanced_raw_token_sequence (c_parser *,
-							unsigned int *);
-
 /* Parse arguments of omp::directive or omp::decl attribute.
 
    directive-name ,[opt] clause-list[opt]
@@ -7724,7 +7739,7 @@ c_parser_compound_statement_nostart (c_parser *parser)
 		     == RID_EXTENSION))
 	    c_parser_consume_token (parser);
 	  if (!have_std_attrs
-	      && (c_token_starts_declaration (c_parser_peek_2nd_token (parser))
+	      && (c_parser_next_tokens_start_declaration (parser, 2)
 		  || c_parser_nth_token_starts_std_attributes (parser, 2)))
 	    {
 	      int ext;
@@ -9132,7 +9147,7 @@ c_parser_for_statement (c_parser *parser, bool ivdep, unsigned short unroll,
 		 && (c_parser_peek_2nd_token (parser)->keyword
 		     == RID_EXTENSION))
 	    c_parser_consume_token (parser);
-	  if (c_token_starts_declaration (c_parser_peek_2nd_token (parser))
+	  if (c_parser_next_tokens_start_declaration (parser, 2)
 	      || c_parser_nth_token_starts_std_attributes (parser, 2))
 	    {
 	      int ext;
@@ -10513,8 +10528,9 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
      _Countof ( type-name )
      sizeof unary-expression
      sizeof ( type-name )
+     static-assert-declaration-no-semi
 
-   (_Countof is new in C2y.)
+   (_Countof and the use of static assertions in expressions are new in C2y.)
 
    unary-operator: one of
      & * + - ~ !
@@ -10679,6 +10695,15 @@ c_parser_unary_expression (c_parser *parser)
 	case RID_TRANSACTION_RELAXED:
 	  return c_parser_transaction_expression (parser,
 	      c_parser_peek_token (parser)->keyword);
+	case RID_STATIC_ASSERT:
+	  c_parser_static_assert_declaration_no_semi (parser);
+	  pedwarn_c23 (op_loc, OPT_Wpedantic,
+		       "ISO C does not support static assertions in "
+		       "expressions before C2Y");
+	  ret.value = void_node;
+	  set_c_expr_source_range (&ret, op_loc, op_loc);
+	  ret.m_decimal = 0;
+	  return ret;
 	default:
 	  return c_parser_postfix_expression (parser);
 	}

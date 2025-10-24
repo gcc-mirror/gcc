@@ -156,7 +156,8 @@ extern void c_parser_skip_until_found (c_parser *parser, enum cpp_ttype type,
 				       const char *msgid,
 				       location_t = UNKNOWN_LOCATION);
 extern bool c_parser_next_token_starts_declspecs (c_parser *parser);
-bool c_parser_next_tokens_start_declaration (c_parser *parser);
+bool c_parser_next_tokens_start_declaration (c_parser *parser,
+					     unsigned int n = 1);
 bool c_token_starts_typename (c_token *token);
 
 /* Abstraction to avoid defining c_parser here which messes up gengtype
