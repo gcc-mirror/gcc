@@ -1,7 +1,8 @@
 /* Verify pattern initialization for nested structure type automatic variables with
    padding.  */
 /* { dg-do compile } */
-/* { dg-options "-O -ftrivial-auto-var-init=pattern" } */
+/* SRA should be turned off as it can fully scalarize var as the padding is not touched. */
+/* { dg-options "-O -ftrivial-auto-var-init=pattern -fno-tree-sra" } */
 
 struct test_aligned {
         unsigned internal1;
