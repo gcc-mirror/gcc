@@ -724,13 +724,16 @@ __gnat_setup_child_communication
     if (bRet == FALSE) {
       cpid = -1;
     }
-
-    dwRet = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
-    if (dwRet != 0) {
-      cpid = -1;
+    else {
+      dwRet = buf[0] | (buf[1] << 8) | (buf[2] << 16) | (buf[3] << 24);
+      if (dwRet != 0) {
+	cpid = -1;
+      }
+      else {
+	cpid = buf[4] | (buf[5] << 8) | (buf[6] << 16) | (buf[7] << 24);
+      }
     }
 
-    cpid = buf[4] | (buf[5] << 8) | (buf[6] << 16) | (buf[7] << 24);
     process->pid = cpid;
   }
 
