@@ -8,7 +8,7 @@
 **foo:
 **...
 **	ja	.L[0-9]+
-**	movss	4\(%rdi\), %xmm2
+**	movss	4\(%(e|r)di\), %xmm2
 **	orps	%xmm2, %xmm1
 **	comiss	%xmm1, %xmm0
 **	seta	%al
