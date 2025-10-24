@@ -330,7 +330,7 @@ package body Styleg is
          --  Do we need to worry about UTF_32 line terminators here ???
 
          S := Scan_Ptr + 3;
-         while Source (S) not in Line_Terminator loop
+         while Source (S) not in EOF | Line_Terminator loop
             S := S + 1;
          end loop;
 
