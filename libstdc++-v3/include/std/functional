@@ -928,10 +928,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       using _Fn = const decltype(__fn)&;
       template <typename... _Args>
+	requires is_invocable_v<_Fn, _Args...>
 	constexpr static decltype(auto)
-	operator()(_Args... __args)
-	  noexcept(is_nothrow_invocable_v<_Fn, _Args...>)
-	  requires is_invocable_v<_Fn, _Args...>
+	operator()(_Args&&... __args)
+	noexcept(is_nothrow_invocable_v<_Fn, _Args...>)
 	{ return std::invoke(__fn, std::forward<_Args>(__args)...); }
     };
 #endif
@@ -1188,7 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Fn = decltype(__fn);
       if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
 	static_assert(__fn != nullptr);
-      return []<typename... _Args>(_Args... __args) static
+      return []<typename... _Args>(_Args&&... __args) static
 	  noexcept(noexcept(
 	    !std::invoke(__fn, std::forward<_Args>(__args)...) ))
 	  -> decltype(auto)

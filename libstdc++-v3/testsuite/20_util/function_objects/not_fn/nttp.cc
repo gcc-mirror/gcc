@@ -81,6 +81,52 @@ test07()
   static_assert( !std::is_invocable<NotF>::value, "cannot negate" );
 }
 
+void
+test08()
+{
+  struct quals
+  {
+    bool as_const;
+    bool as_lvalue;
+
+    quals operator!() const
+    { return *this; };
+  };
+
+  struct F
+  {
+    quals operator()(int&) const { return { false, true }; }
+    quals operator()(int const&) const { return { true, true }; }
+    quals operator()(int&&) const { return { false, false }; }
+    quals operator()(int const&&) const { return { true, false }; }
+  };
+
+  constexpr F f;
+  auto g = not_fn<f>();
+  const auto& cg = g;
+  quals q;
+  int i = 10;
+  const int ci = i;
+
+  q = g(i);
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = g(std::move(i));
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = g(ci);
+  VERIFY( q.as_const && q.as_lvalue );
+  q = g(std::move(ci));
+  VERIFY( q.as_const && ! q.as_lvalue );
+
+  q = cg(i);
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = cg(std::move(i));
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = cg(ci);
+  VERIFY( q.as_const && q.as_lvalue );
+  q = cg(std::move(ci));
+  VERIFY( q.as_const && ! q.as_lvalue );
+}
+
 int
 main()
 {
@@ -89,6 +135,7 @@ main()
   test05();
   test06();
   test07();
+  test08();
   constexpr auto f = []{ return false; };
   static_assert(std::not_fn<f>()());
 }

@@ -39,101 +39,145 @@ test01()
       >);
 }
 
-void
-test02()
+struct quals
 {
-  struct quals
-  {
-    bool as_const;
-    bool as_lvalue;
-  };
+  bool as_const;
+  bool as_lvalue;
+};
 
+template<typename... Args>
+void
+testTarget(Args... args)
+{
   struct F
   {
-    quals operator()(int, int) & { return { false, true }; }
-    quals operator()(int, int) const & { return { true, true }; }
-    quals operator()(int, int) && { return { false, false }; }
-    quals operator()(int, int) const && { return { true, false }; }
+    quals operator()(Args...) & { return { false, true }; }
+    quals operator()(Args...) const & { return { true, true }; }
+    quals operator()(Args...) && { return { false, false }; }
+    quals operator()(Args...) const && { return { true, false }; }
   };
 
-  // Constness and value category forwarded to the target object?
-  { // no bound args
-    constexpr F f;
-    auto g = bind_back<f>();
-    const auto& cg = g;
-    quals q;
-
-    q = g(0,0);
-    VERIFY( q.as_const && q.as_lvalue );
-    q = std::move(g)(0,0);
-    VERIFY( q.as_const && q.as_lvalue );
-    q = cg(0,0);
-    VERIFY( q.as_const && q.as_lvalue );
-    q = std::move(cg)(0,0);
-    VERIFY( q.as_const && q.as_lvalue );
-  }
-  { // one bound arg
-    constexpr F f;
-    auto g = bind_back<f>(0);
-    const auto& cg = g;
-    quals q;
-
-    q = g(0);
-    VERIFY( q.as_const && q.as_lvalue );
-    q = std::move(g)(0);
-    VERIFY( q.as_const && q.as_lvalue );
-    q = cg(0);
-    VERIFY( q.as_const && q.as_lvalue );
-    q = std::move(cg)(0);
-    VERIFY( q.as_const && q.as_lvalue );
-  }
-  { // two bound args, the general case
-    constexpr F f;
-    auto g = bind_back<f>(0,0);
-    const auto& cg = g;
-    quals q;
-
-    q = g();
-    VERIFY( q.as_const && q.as_lvalue );
-    q = std::move(g)();
-    VERIFY( q.as_const && q.as_lvalue );
-    q = cg();
-    VERIFY( q.as_const && q.as_lvalue );
-    q = std::move(cg)();
-    VERIFY( q.as_const && q.as_lvalue );
-  }
-}
-
-void
-test02a()
-{
-  struct quals
-  {
-    bool as_const;
-    bool as_lvalue;
-  };
-  struct F
-  {
-    quals operator()(int, int&) const { return { false, true }; }
-    quals operator()(int, int const&) const { return { true, true }; }
-    quals operator()(int, int&&) const { return { false, false }; }
-    quals operator()(int, int const&&) const  { return { true, false }; }
-  };
-  constexpr F f{};
-
-  // verify propagation
-  auto h = bind_back<f>(10);
-  auto const& ch = h;
+  constexpr F f;
+  auto g = bind_back<f>(args...);
+  const auto& cg = g;
   quals q;
 
-  q = h(0);
-  VERIFY( !q.as_const && q.as_lvalue );
-  q = ch(0);
+  // template parameter object is always constant lvalue
+  q = g();
   VERIFY( q.as_const && q.as_lvalue );
-  q = std::move(h)(0);
-  VERIFY( !q.as_const && !q.as_lvalue );
-  q = std::move(ch)(0);
-  VERIFY( q.as_const && !q.as_lvalue );
+  q = std::move(g)();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = cg();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(cg)();
+  VERIFY( q.as_const && q.as_lvalue );
+}
+
+template<typename... Args>
+void
+testBoundArgs(Args... args)
+{
+  struct F
+  {
+    quals operator()(Args..., int&) const { return { false, true }; }
+    quals operator()(Args..., int const&) const { return { true, true }; }
+    quals operator()(Args..., int&&) const { return { false, false }; }
+    quals operator()(Args..., int const&&) const { return { true, false }; }
+  };
+
+  constexpr F f;
+  auto g = bind_back<f>(args..., 10);
+  const auto& cg = g;
+  quals q;
+
+  // constness and value category should be forwarded to the bound objects:
+  q = g();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = std::move(g)();
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = cg();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(cg)();
+  VERIFY( q.as_const && ! q.as_lvalue );
+
+  int i = 0;
+  auto gr = bind_back<f>(args..., std::ref(i));
+  const auto& cgr = gr;
+
+  // bound object is reference wrapper, converts to same type of reference
+  q = gr();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = std::move(gr)();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = cgr();
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = std::move(cgr)();
+  VERIFY( ! q.as_const && q.as_lvalue );
+
+  auto gcr = bind_back<f>(args..., std::cref(i));
+  const auto& cgcr = gcr;
+
+  q = gcr();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(gcr)();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = cgcr();
+  VERIFY( q.as_const && q.as_lvalue );
+  q = std::move(cgcr)();
+  VERIFY( q.as_const && q.as_lvalue );
+}
+
+template<typename... Args>
+void
+testCallArgs(Args... args)
+{
+  struct F
+  {
+    quals operator()(int&, Args...) const { return { false, true }; }
+    quals operator()(int const&, Args...) const { return { true, true }; }
+    quals operator()(int&&, Args...) const { return { false, false }; }
+    quals operator()(int const&&, Args...) const { return { true, false }; }
+  };
+
+  constexpr F f;
+  auto g = bind_back<f>(args...);
+  const auto& cg = g;
+  quals q;
+  int i = 10;
+  const int ci = i;
+
+  q = g(i);
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = g(std::move(i));
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = g(ci);
+  VERIFY( q.as_const && q.as_lvalue );
+  q = g(std::move(ci));
+  VERIFY( q.as_const && ! q.as_lvalue );
+
+  q = cg(i);
+  VERIFY( ! q.as_const && q.as_lvalue );
+  q = cg(std::move(i));
+  VERIFY( ! q.as_const && ! q.as_lvalue );
+  q = cg(ci);
+  VERIFY( q.as_const && q.as_lvalue );
+  q = cg(std::move(ci));
+  VERIFY( q.as_const && ! q.as_lvalue );
+
+  struct S
+  {
+    int operator()(long, long, Args...) const { return 1; }
+    int operator()(int, void*, Args...) const { return 2; }
+  };
+
+  constexpr S s;
+  // literal zero can be converted to any pointer, so (int, void*)
+  // is best candidate
+  VERIFY( s(0, 0, args...) == 2 );
+  // both arguments are bound to int&&, and no longer can be
+  // converted to pointer, (long, long) is only candidate
+  VERIFY( bind_back<s>()(0, 0, args...) == 1 );
+  VERIFY( bind_back<s>(args...)(0, 0) == 1 );
 }
 
 void
@@ -233,26 +277,52 @@ test04()
   return true;
 }
 
-struct C { int i = 0; };
-struct D : C { D(){} D(D&&) { ++i; } };
-int f5(D const& d1, D const& d2, D const& d3)
-{ return d1.i + d2.i + d3.i; }
-
-void test05()
+struct CountedArg
 {
-  // Must move arguments into capture object, not construct in place
-  // like normal arguments.
-  VERIFY( bind_back<f5>(D{}, D{})(D{}) == 2 );
+  CountedArg() = default;
+  CountedArg(CountedArg&& f) noexcept : counter(f.counter) { ++counter; }
+  CountedArg& operator=(CountedArg&&) = delete;
+
+  int counter = 0;
+};
+CountedArg const c;
+
+void
+testMaterialization()
+{
+  struct F
+  {
+    int operator()(CountedArg arg, int) const
+    { return arg.counter; };
+  };
+
+  // CountedArg is bound to rvalue-reference thus moved
+  auto f0 = std::bind_back<F{}>();
+  VERIFY( f0(CountedArg(), 10) == 1 );
+
+  auto f1 = std::bind_back<F{}>(10);
+  VERIFY( f1(CountedArg()) == 1 );
 }
 
 int
 main()
 {
   test01();
-  test02();
-  test02a();
   test03();
   test03a();
   static_assert(test04());
-  test05();
+
+  testTarget();
+  testTarget(10);
+  testTarget(10, 20, 30);
+
+  testBoundArgs();
+  testBoundArgs(10);
+  testBoundArgs(10, 20, 30);
+
+  testCallArgs();
+  testCallArgs(10);
+  testCallArgs(10, 20, 30);
+
+  testMaterialization();
 }
