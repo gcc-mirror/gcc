@@ -1596,7 +1596,11 @@ general_operand (rtx op, machine_mode mode)
     {
       rtx y = XEXP (op, 0);
 
-      if (! volatile_ok && MEM_VOLATILE_P (op))
+      /* If -ffuse-ops-with-volatile-access is enabled, allow volatile
+	 memory reference.  */
+      if (!flag_fuse_ops_with_volatile_access
+	  && !volatile_ok
+	  && MEM_VOLATILE_P (op))
 	return false;
 
       /* Use the mem's mode, since it will be reloaded thus.  LRA can

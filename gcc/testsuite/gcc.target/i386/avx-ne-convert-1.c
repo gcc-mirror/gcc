@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavxneconvert -O2" } */
+/* { dg-options "-mavxneconvert -O2 -fno-fuse-ops-with-volatile-access" } */
 /* { dg-final { scan-assembler-times "vbcstnebf162ps\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vbcstnebf162ps\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vbcstnesh2ps\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */

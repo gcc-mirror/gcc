@@ -3189,7 +3189,9 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	      rhs = XEXP (rhs, 0);
 	    }
 
-	  if (rtx_equal_p (lhs, rhs))
+	  /* Keep PLUS of 2 volatile memory references.  */
+	  if (rtx_equal_p (lhs, rhs)
+	      && (!MEM_P (lhs) || !MEM_VOLATILE_P (lhs)))
 	    {
 	      rtx orig = gen_rtx_PLUS (int_mode, op0, op1);
 	      rtx coeff;

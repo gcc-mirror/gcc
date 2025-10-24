@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mavx512f" } */
+/* { dg-options "-O2 -fno-fuse-ops-with-volatile-access -mavx512f" } */
 /* { dg-final { scan-assembler-times "vcmppd\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n^k\]*%k\[0-7\](?:\n|\[ \\t\]+#)" 9 } } */
 /* { dg-final { scan-assembler-times "vcmppd\[ \\t\]+\[^\{\n\]*\[^\}\]%zmm\[0-9\]+\[^\n^k\]*%k\[0-7\]\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 9 } } */
 /* { dg-final { scan-assembler-times "vcmppd\[ \\t\]+\[^\{\n\]*\{sae\}\[^\n\]*%zmm\[0-9\]+\[^\n^k\]*%k\[0-7\](?:\n|\[ \\t\]+#)" 1 } } */

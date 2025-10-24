@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512f -O2" } */
+/* { dg-options "-mavx512f -O2 -fno-fuse-ops-with-volatile-access" } */
 /* { dg-final { scan-assembler-times "vextractf64x4\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)"  1 } } */
 /* { dg-final { scan-assembler-times "vextractf64x4\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}\{z\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vextractf64x4\[ \\t\]+\[^\{\n\]*%ymm\[0-9\]+\{%k\[1-7\]\}(?:\n|\[ \\t\]+#)" 1 } } */

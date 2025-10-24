@@ -1,6 +1,21 @@
 /* { dg-do compile } */
-/* { dg-options "-O2" } */
-/* { dg-final { scan-assembler "testb" } } */
+/* { dg-options "-O2 -fomit-frame-pointer" } */
+/* { dg-additional-options "-mregparm=1" { target ia32 } } */
+/* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
+/* { dg-final { check-function-bodies "**" "" "" { target *-*-* } {^\t?\.} } } */
+
+/*
+**ftn:
+**...
+**.L[0-9]+:
+**	movb	\$-24, \(%(e|r)(di|ax)\)
+**	cmpb	\$0, \(%(e|r)(di|ax)\)
+**	jns	.L[0-9]+
+**	ret
+**	.cfi_endproc
+**...
+*/
+
 void
 ftn (char *sp)
 {

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx512fp16 -mavx512vl -O2" } */
+/* { dg-options "-mavx512fp16 -mavx512vl -O2 -fno-fuse-ops-with-volatile-access" } */
 /* { dg-final { scan-assembler-times "vcvtph2udq\[ \\t\]+\[^\{\n\]*%xmm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtph2udq\[ \\t\]+%xmm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}(?:\n|\[ \\t\]+#)" 1 } } */
 /* { dg-final { scan-assembler-times "vcvtph2udq\[ \\t\]+%xmm\[0-9\]+\[^\n\r]*%ymm\[0-9\]+\{%k\[0-9\]\}\{z\}\[^\n\r]*(?:\n|\[ \\t\]+#)" 1 } } */

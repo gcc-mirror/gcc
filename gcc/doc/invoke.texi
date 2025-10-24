@@ -621,7 +621,7 @@ Objective-C and Objective-C++ Dialects}.
 -ffast-math  -ffat-lto-objects  -ffinite-loops
 -ffinite-math-only  -ffloat-store
 -fforward-propagate  -ffp-contract=@var{style}  -ffp-int-builtin-inexact
--ffunction-sections
+-ffunction-sections -ffuse-ops-with-volatile-access
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
@@ -13789,6 +13789,15 @@ that alter the assembler output may be confused by the optimizations
 performed when this option is not used.
 
 The default is @option{-ffunction-cse}
+
+@opindex ffuse-ops-with-volatile-access
+@opindex fno-fuse-ops-with-volatile-access
+@item -ffuse-ops-with-volatile-access
+Allow limited optimization of operations with volatile memory access
+when doing so does not change the semantics outlined in
+@xref{Volatiles,,When is a Volatile Object Accessed?}.
+
+The default is @option{-ffuse-ops-with-volatile-access}
 
 @opindex fno-zero-initialized-in-bss
 @opindex fzero-initialized-in-bss

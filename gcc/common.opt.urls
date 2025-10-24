@@ -782,6 +782,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-ffunction-cse)
 ffunction-sections
 UrlSuffix(gcc/Optimize-Options.html#index-ffunction-sections)
 
+ffuse-ops-with-volatile-access
+UrlSuffix(gcc/Optimize-Options.html#index-ffuse-ops-with-volatile-access)
+
 fgcse
 UrlSuffix(gcc/Optimize-Options.html#index-fgcse)
 
