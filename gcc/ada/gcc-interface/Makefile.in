@@ -955,3 +955,5 @@ targext.o : targext.c
 # In GNU Make, ignore whether `stage*' exists.
 .PHONY: stage1 stage2 stage3 stage4 clean realclean TAGS bootstrap
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
+
+force:
