@@ -7147,11 +7147,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
      reduction variable.  */
   slp_tree *slp_op = XALLOCAVEC (slp_tree, op.num_ops);
   tree *vectype_op = XALLOCAVEC (tree, op.num_ops);
-  /* We need to skip an extra operand for COND_EXPRs with embedded
-     comparison.  */
-  unsigned opno_adjust = 0;
-  if (op.code == COND_EXPR && COMPARISON_CLASS_P (op.ops[0]))
-    opno_adjust = 1;
+  gcc_assert (op.code != COND_EXPR || !COMPARISON_CLASS_P (op.ops[0]));
   for (i = 0; i < (int) op.num_ops; i++)
     {
       /* The condition of COND_EXPR is checked in vectorizable_condition().  */
@@ -7161,7 +7157,7 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
       stmt_vec_info def_stmt_info;
       enum vect_def_type dt;
       if (!vect_is_simple_use (loop_vinfo, slp_for_stmt_info,
-			       i + opno_adjust, &op.ops[i], &slp_op[i], &dt,
+			       i, &op.ops[i], &slp_op[i], &dt,
 			       &vectype_op[i], &def_stmt_info))
 	{
 	  if (dump_enabled_p ())
@@ -7172,12 +7168,14 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
 
       /* Skip reduction operands, and for an IFN_COND_OP we might hit the
 	 reduction operand twice (once as definition, once as else).  */
-      if (op.ops[i] == op.ops[STMT_VINFO_REDUC_IDX (stmt_info)])
+      if (SLP_TREE_CHILDREN (slp_for_stmt_info)[i]
+	  == SLP_TREE_CHILDREN
+	       (slp_for_stmt_info)[SLP_TREE_REDUC_IDX (slp_for_stmt_info)])
 	continue;
 
       /* There should be only one cycle def in the stmt, the one
 	 leading to reduc_def.  */
-      if (VECTORIZABLE_CYCLE_DEF (dt))
+      if (SLP_TREE_CHILDREN (slp_for_stmt_info)[i]->cycle_info.id != -1)
 	return false;
 
       if (!vectype_op[i])
