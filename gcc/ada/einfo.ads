@@ -405,12 +405,27 @@ package Einfo is
 --       (including exceptions where it refers to the static data allocated for
 --       an exception), loop parameters, and formal parameters. This indicates
 --       the desired alignment for a type, or the actual alignment for an
---       object. A value of zero (Uint_0) indicates that the alignment has not
---       been set yet. The alignment can be set by an explicit alignment
---       clause, or set by the front-end in package Layout, or set by the
---       back-end as part of the back-end back-annotation process. The
---       alignment field is also defined in E_Exception entities, but there it
---       is used only by the back-end for back annotation.
+--       object. The alignment can be set by an explicit alignment aspect or
+--       clause, or set by the front end in the package Layout, or set by the
+--       back end as part of the back-end back-annotation process. The field
+--       is also defined in E_Exception entities, but there it is used only by
+--       the back end for back annotation.
+
+--       The implementation guarantees that the run-time address of an object
+--       is a multiple of the value of its Alignment field in storage units,
+--       up to some maximum value dependent on the target that is under the
+--       sole control of the back end (not equal to Ttypes.Maximum_Alignment
+--       in the general case), provided that the object is not subject to an
+--       address aspect/clause.
+
+--       When the object is subject to an address aspect/clause, this guarantee
+--       is voided and the object may be misaligned at run time. On the targets
+--       that require strict alignment of memory accesses, a run-time alignment
+--       check is generated unconditionally and Program_Error is raised if the
+--       object is misaligned. On the other targets, this run-time alignment
+--       check is generated only if the object is also subject to an alignment
+--       aspect/clause; if it is not, the program may run with the misaligned
+--       object (its execution is erroneous as per the RM 13.3(27) subclause).
 
 --    Alignment_Clause (synthesized)
 --       Applies to all entities for types and objects. If an alignment
