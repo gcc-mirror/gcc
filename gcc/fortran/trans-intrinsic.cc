@@ -2316,9 +2316,13 @@ gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
   int i;
   tree fncall0;
   gfc_array_spec *as;
+  gfc_symbol *sym = NULL;
 
   if (arg->ts.type == BT_CLASS)
     gfc_add_class_array_ref (arg);
+
+  if (arg->expr_type == EXPR_VARIABLE)
+    sym = arg->symtree->n.sym;
 
   ss = gfc_walk_expr (arg);
   gcc_assert (ss != gfc_ss_terminator);
@@ -2342,7 +2346,7 @@ gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
       fncall0 = build_call_expr_loc (input_location,
 				     gfor_fndecl_is_contiguous0, 1, desc);
       se->expr = fncall0;
-      se->expr = convert (logical_type_node, se->expr);
+      se->expr = convert (boolean_type_node, se->expr);
     }
   else
     {
@@ -2374,6 +2378,22 @@ gfc_conv_is_contiguous_expr (gfc_se *se, gfc_expr *arg)
 	}
       se->expr = cond;
     }
+
+  /* A pointer that does not have the CONTIGUOUS attribute needs to be checked
+     if it points to an array whose span differs from the element size.  */
+  if (as && sym && IS_POINTER(sym) && !sym->attr.contiguous)
+    {
+      tree span = gfc_conv_descriptor_span_get (desc);
+      tmp = fold_convert (TREE_TYPE (span),
+			  gfc_conv_descriptor_elem_len (desc));
+      cond = fold_build2_loc (input_location, EQ_EXPR, boolean_type_node,
+			      span, tmp);
+      se->expr = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+				  boolean_type_node, cond,
+				  convert (boolean_type_node, se->expr));
+    }
+
+  gfc_free_ss_chain (ss);
 }
 
 

@@ -11344,20 +11344,32 @@ gfc_trans_pointer_assignment (gfc_expr * expr1, gfc_expr * expr2)
 	  int dim;
 	  gcc_assert (remap->u.ar.dimen == expr1->rank);
 
+	  /* Always set dtype.  */
+	  tree dtype = gfc_conv_descriptor_dtype (desc);
+	  tmp = gfc_get_dtype (TREE_TYPE (desc));
+	  gfc_add_modify (&block, dtype, tmp);
+
+	  /* For unlimited polymorphic LHS use elem_len from RHS.  */
+	  if (UNLIMITED_POLY (expr1) && expr2->ts.type != BT_CLASS)
+	    {
+	      tree elem_len;
+	      tmp = TYPE_SIZE_UNIT (gfc_typenode_for_spec (&expr2->ts));
+	      elem_len = fold_convert (gfc_array_index_type, tmp);
+	      elem_len = gfc_evaluate_now (elem_len, &block);
+	      tmp = gfc_conv_descriptor_elem_len (desc);
+	      gfc_add_modify (&block, tmp,
+			      fold_convert (TREE_TYPE (tmp), elem_len));
+	    }
+
 	  if (rank_remap)
 	    {
 	      /* Do rank remapping.  We already have the RHS's descriptor
 		 converted in rse and now have to build the correct LHS
 		 descriptor for it.  */
 
-	      tree dtype, data, span;
+	      tree data, span;
 	      tree offs, stride;
 	      tree lbound, ubound;
-
-	      /* Set dtype.  */
-	      dtype = gfc_conv_descriptor_dtype (desc);
-	      tmp = gfc_get_dtype (TREE_TYPE (desc));
-	      gfc_add_modify (&block, dtype, tmp);
 
 	      /* Copy data pointer.  */
 	      data = gfc_conv_descriptor_data_get (rse.expr);
