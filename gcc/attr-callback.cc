@@ -48,7 +48,7 @@ callback_build_attr (unsigned fn_idx, unsigned arg_count...)
     {
       int num = va_arg (args, int);
       tree tnum = build_int_cst (integer_type_node, num);
-      *pp = build_tree_list (NULL, tnum PASS_MEM_STAT);
+      *pp = build_tree_list (NULL, tnum);
       pp = &TREE_CHAIN (*pp);
     }
   cblist
