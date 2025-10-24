@@ -720,7 +720,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     valarray<_Tp>::~valarray() _GLIBCXX_NOEXCEPT
     {
       std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
-      std::__valarray_release_memory(_M_data);
+      std::__valarray_release_memory(_M_data, _M_size);
     }
 
   template<typename _Tp>
@@ -736,7 +736,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_data)
 	    {
 	      std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
-	      std::__valarray_release_memory(_M_data);
+	      std::__valarray_release_memory(_M_data, _M_size);
 	    }
 	  _M_size = __v._M_size;
 	  _M_data = __valarray_get_storage<_Tp>(_M_size);
@@ -754,7 +754,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_data)
 	{
 	  std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
-	  std::__valarray_release_memory(_M_data);
+	  std::__valarray_release_memory(_M_data, _M_size);
 	}
       _M_size = __v._M_size;
       _M_data = __v._M_data;
@@ -776,7 +776,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_data)
 	    {
 	      std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
-	      std::__valarray_release_memory(_M_data);
+	      std::__valarray_release_memory(_M_data, _M_size);
 	    }
 	  _M_size = __l.size();
 	  _M_data = __valarray_get_storage<_Tp>(_M_size);
@@ -854,7 +854,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (_M_data)
 	    {
 	      std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
-	      std::__valarray_release_memory(_M_data);
+	      std::__valarray_release_memory(_M_data, _M_size);
 	    }
 	  _M_size = __e.size();
 	  _M_data = __valarray_get_storage<_Tp>(_M_size);
@@ -1049,7 +1049,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       std::__valarray_destroy_elements(_M_data, _M_data + _M_size);
       if (_M_size != __n)
 	{
-	  std::__valarray_release_memory(_M_data);
+	  std::__valarray_release_memory(_M_data, _M_size);
 	  _M_size = __n;
 	  _M_data = __valarray_get_storage<_Tp>(__n);
 	}

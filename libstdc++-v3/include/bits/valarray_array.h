@@ -38,6 +38,7 @@
 
 #include <bits/c++config.h>
 #include <bits/cpp_type_traits.h>
+#include <bits/new_allocator.h>
 #include <cstdlib>
 #include <new>
 
@@ -57,12 +58,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp>
     inline _Tp*
     __valarray_get_storage(size_t __n)
-    { return static_cast<_Tp*>(operator new(__n * sizeof(_Tp))); }
+    { return std::__new_allocator<_Tp>().allocate(__n); }
 
   // Return memory to the system
-  inline void
-  __valarray_release_memory(void* __p)
-  { operator delete(__p); }
+  template<typename _Tp>
+    inline void
+    __valarray_release_memory(_Tp* __p, size_t __n)
+    { std::__new_allocator<_Tp>().deallocate(__p, __n); }
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
