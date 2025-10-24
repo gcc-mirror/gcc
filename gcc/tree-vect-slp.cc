@@ -4233,6 +4233,9 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
   if (fail)
     return false;
 
+  /* Remember a stmt with the actual reduction operation.  */
+  stmt_vec_info reduc_scalar_stmt = scalar_stmts[0];
+
   /* When the SSA def chain through reduc-idx does not form a natural
      reduction chain try to linearize an associative operation manually.  */
   if (scalar_stmts.length () == 1
@@ -4240,7 +4243,7 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       && associative_tree_code ((tree_code)code)
       /* We may not associate if a fold-left reduction is required.  */
       && !needs_fold_left_reduction_p (TREE_TYPE (gimple_get_lhs
-						    (scalar_stmt->stmt)),
+						    (reduc_scalar_stmt->stmt)),
 				       code))
     {
       auto_vec<chain_op_t> chain;
@@ -4361,21 +4364,45 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       VECT_REDUC_INFO_FN (reduc_info) = IFN_LAST;
       reduc_info->is_reduc_chain = true;
 
-      /* Build the node for the PHI and possibly the conversion(s?).  */
+      /* Build the node for the PHI and possibly the conversions.  */
       slp_tree phis = vect_create_new_slp_node (2, ERROR_MARK);
       SLP_TREE_REPRESENTATIVE (phis) = next_stmt;
       phis->cycle_info.id = cycle_id;
       SLP_TREE_LANES (phis) = group_size;
-      SLP_TREE_VECTYPE (phis) = SLP_TREE_VECTYPE (node);
+      if (reduc_scalar_stmt == scalar_stmt)
+	SLP_TREE_VECTYPE (phis) = SLP_TREE_VECTYPE (node);
+      else
+	SLP_TREE_VECTYPE (phis)
+	  = signed_or_unsigned_type_for (TYPE_UNSIGNED
+					   (TREE_TYPE (gimple_get_lhs
+							 (scalar_stmt->stmt))),
+					 SLP_TREE_VECTYPE (node));
       /* ???  vect_cse_slp_nodes cannot cope with cycles without any
 	 SLP_TREE_SCALAR_STMTS.  */
       SLP_TREE_SCALAR_STMTS (phis).create (group_size);
       for (unsigned i = 0; i < group_size; ++i)
 	SLP_TREE_SCALAR_STMTS (phis).quick_push (next_stmt);
 
+      slp_tree op_input = phis;
+      if (reduc_scalar_stmt != scalar_stmt)
+	{
+	  slp_tree conv = vect_create_new_slp_node (1, ERROR_MARK);
+	  SLP_TREE_REPRESENTATIVE (conv)
+	    = vinfo->lookup_def (gimple_arg (reduc_scalar_stmt->stmt,
+					     STMT_VINFO_REDUC_IDX
+					       (reduc_scalar_stmt)));
+	  SLP_TREE_CHILDREN (conv).quick_push (phis);
+	  conv->cycle_info.id = cycle_id;
+	  SLP_TREE_REDUC_IDX (conv) = 0;
+	  SLP_TREE_LANES (conv) = group_size;
+	  SLP_TREE_VECTYPE (conv) = SLP_TREE_VECTYPE (node);
+	  SLP_TREE_SCALAR_STMTS (conv) = vNULL;
+	  op_input = conv;
+	}
+
       slp_tree reduc = vect_create_new_slp_node (2, ERROR_MARK);
-      SLP_TREE_REPRESENTATIVE (reduc) = scalar_stmt;
-      SLP_TREE_CHILDREN (reduc).quick_push (phis);
+      SLP_TREE_REPRESENTATIVE (reduc) = reduc_scalar_stmt;
+      SLP_TREE_CHILDREN (reduc).quick_push (op_input);
       SLP_TREE_CHILDREN (reduc).quick_push (node);
       reduc->cycle_info.id = cycle_id;
       SLP_TREE_REDUC_IDX (reduc) = 0;
@@ -4383,9 +4410,26 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       SLP_TREE_VECTYPE (reduc) = SLP_TREE_VECTYPE (node);
       /* ???  For the reduction epilogue we need a live lane.  */
       SLP_TREE_SCALAR_STMTS (reduc).create (group_size);
-      SLP_TREE_SCALAR_STMTS (reduc).quick_push (scalar_stmt);
+      SLP_TREE_SCALAR_STMTS (reduc).quick_push (reduc_scalar_stmt);
       for (unsigned i = 1; i < group_size; ++i)
 	SLP_TREE_SCALAR_STMTS (reduc).quick_push (NULL);
+
+      if (reduc_scalar_stmt != scalar_stmt)
+	{
+	  slp_tree conv = vect_create_new_slp_node (1, ERROR_MARK);
+	  SLP_TREE_REPRESENTATIVE (conv) = scalar_stmt;
+	  SLP_TREE_CHILDREN (conv).quick_push (reduc);
+	  conv->cycle_info.id = cycle_id;
+	  SLP_TREE_REDUC_IDX (conv) = 0;
+	  SLP_TREE_LANES (conv) = group_size;
+	  SLP_TREE_VECTYPE (conv) = SLP_TREE_VECTYPE (phis);
+	  /* ???  For the reduction epilogue we need a live lane.  */
+	  SLP_TREE_SCALAR_STMTS (conv).create (group_size);
+	  SLP_TREE_SCALAR_STMTS (conv).quick_push (scalar_stmt);
+	  for (unsigned i = 1; i < group_size; ++i)
+	    SLP_TREE_SCALAR_STMTS (conv).quick_push (NULL);
+	  reduc = conv;
+	}
 
       edge le = loop_latch_edge (LOOP_VINFO_LOOP (vinfo));
       SLP_TREE_CHILDREN (phis).quick_push (NULL);
