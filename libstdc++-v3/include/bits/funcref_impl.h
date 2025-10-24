@@ -138,13 +138,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
 	    static_assert(__fn != nullptr);
 
-	  using _Tr = _Td _GLIBCXX_MOF_CV&;
-	  if constexpr (is_member_pointer_v<_Fn> && is_lvalue_reference_v<_Tr>)
+	  if constexpr (is_member_pointer_v<_Fn>
+			  && same_as<_Td, typename __inv_unwrap<_Td>::type>)
 	    // N.B. invoking member pointer on lvalue produces the same effects,
 	    // as invoking it on pointer to that lvalue.
 	    _M_invoke = &_Invoker::template _S_bind_ptr<__fn, _Td _GLIBCXX_MOF_CV>;
 	  else
-	    _M_invoke = &_Invoker::template _S_bind_ref<__fn, _Tr>;
+	    _M_invoke = &_Invoker::template _S_bind_ref<__fn, _Td _GLIBCXX_MOF_CV&>;
 	  _M_init(std::addressof(__ref));
 	}
 
