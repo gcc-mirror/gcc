@@ -3128,6 +3128,20 @@
   }
   [(set_attr "type" "mult")])
 
+(define_expand "abs<mode>2"
+  [(set (match_operand:V_INT 0 "register_operand")
+        (abs:V_INT (match_operand:V_INT 1 "register_operand")))]
+  ""
+  {
+    rtx vcc = gen_reg_rtx (DImode);
+    rtx zero = gcn_vec_constant (<MODE>mode, 0);
+    emit_insn (gen_vec_cmp<mode>di (vcc, gen_rtx_LT (VOIDmode, 0, 0),
+				    operands[1], zero));
+    emit_insn (gen_sub<mode>3_exec (operands[0], zero, operands[1],
+				    operands[1], vcc));
+    DONE;
+  })
+
 ;; }}}
 ;; {{{ FP binops - special cases
 
