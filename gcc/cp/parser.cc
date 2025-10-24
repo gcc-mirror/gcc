@@ -32369,6 +32369,8 @@ cp_parser_label_declaration (cp_parser* parser)
       /* If we failed, stop.  */
       if (identifier == error_mark_node)
 	break;
+      if (parser->omp_metadirective_state)
+	identifier = mangle_metadirective_region_label (parser, identifier);
       /* Declare it as a label.  */
       finish_label_decl (identifier);
       /* If the next token is a `;', stop.  */
