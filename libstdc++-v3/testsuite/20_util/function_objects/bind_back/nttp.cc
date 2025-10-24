@@ -24,6 +24,25 @@ test01()
   struct F { void operator()(int) {} };
   constexpr F f{};
 
+  // Arguments should be decayed:
+  static_assert(std::is_same_v<
+      decltype(bind_back<f>(std::declval<int>())),
+      decltype(bind_back<f>(std::declval<int&>()))
+      >);
+  static_assert(std::is_same_v<
+      decltype(bind_back<f>(std::declval<int>())),
+      decltype(bind_back<f>(std::declval<const int&>()))
+      >);
+
+  static_assert(std::is_same_v<
+      decltype(bind_back<f>(std::declval<int>(), std::declval<float>())),
+      decltype(bind_back<f>(std::declval<int&>(), std::declval<float&>()))
+      >);
+  static_assert(std::is_same_v<
+      decltype(bind_back<f>(std::declval<int>(), std::declval<float>())),
+      decltype(bind_back<f>(std::declval<const int&>(), std::declval<const float&>()))
+      >);
+
   // Reference wrappers should be handled:
   static_assert(!std::is_same_v<
       decltype(bind_back<f>(std::declval<int&>())),
@@ -270,10 +289,8 @@ test04()
   VERIFY(bind_back<g>(1)(2, 3) == 3*1 + 1*2 + 2*3 );
   constexpr auto g2 = bind_back<f>(1, 2);
   VERIFY(g2(3) == 2*1 + 3*2 + 1*3 );
-  VERIFY(bind_back<g1>(2)(3) == 3*1 + 2*2 + 1*3 );
   constexpr auto g3 = bind_back<f>(1, 2, 3);
   VERIFY(g3() == 1 + 2*2 + 3*3);
-  VERIFY(bind_back<g2>(3)() == 1*2 + 2*3 + 3*1 );
   return true;
 }
 

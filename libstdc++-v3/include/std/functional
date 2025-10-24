@@ -957,7 +957,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if __cpp_lib_bind_front >= 202306L
-
   /** Create call wrapper by partial application of arguments to function.
    *
    * The result of `std::bind_front<fn>(bind_args...)` is a function object
@@ -970,32 +969,17 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<auto __fn, typename... _BindArgs>
     constexpr decltype(auto)
     bind_front(_BindArgs&&... __bind_args)
-      noexcept(__and_v<is_nothrow_constructible<_BindArgs>...>)
+    noexcept(__and_v<is_nothrow_constructible<_BindArgs>...>)
     {
       using _Fn = decltype(__fn);
-      static_assert(
-	(is_constructible_v<decay_t<_BindArgs>, _BindArgs> && ...) &&
-	(is_move_constructible_v<decay_t<_BindArgs>> && ...));
       if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
 	static_assert(__fn != nullptr);
 
       if constexpr (sizeof...(_BindArgs) == 0)
 	return _Bind_fn_t<__fn>{};
-      else {
-	return [... __bound_args(std::forward<_BindArgs>(__bind_args))]
-	  <typename _Self, typename... _CallArgs>
-	  (this _Self&&, _CallArgs&&... __call_args)
-	    noexcept(is_nothrow_invocable_v<
-	      const _Fn&, __like_t<_Self, decay_t<_BindArgs>>..., _CallArgs...>)
-	    -> decltype(auto)
-	    requires is_invocable_v<
-	      const _Fn&, __like_t<_Self, decay_t<_BindArgs>>..., _CallArgs...>
-	  {
-	    return std::invoke(__fn,
-	      std::forward_like<_Self>(__bound_args)...,
-	      std::forward<_CallArgs>(__call_args)...);
-	  };
-      }
+      else
+        return _Bind_front_t<_Bind_fn_t<__fn>, _BindArgs...>(0,
+		 _Bind_fn_t<__fn>{}, std::forward<_BindArgs>(__bind_args)...);
     }
 
 #endif // __cpp_lib_bind_front  // C++26
@@ -1035,36 +1019,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<auto __fn, typename... _BindArgs>
     constexpr decltype(auto)
     bind_back(_BindArgs&&... __bind_args)
-      noexcept(__and_v<is_nothrow_constructible<_BindArgs>...>)
+    noexcept(__and_v<is_nothrow_constructible<_BindArgs>...>)
     {
       using _Fn = decltype(__fn);
-      static_assert(
-	(is_constructible_v<decay_t<_BindArgs>, _BindArgs> && ...) &&
-	(is_move_constructible_v<decay_t<_BindArgs>> && ...));
       if constexpr (is_pointer_v<_Fn> || is_member_pointer_v<_Fn>)
 	static_assert(__fn != nullptr);
 
       if constexpr (sizeof...(_BindArgs) == 0)
 	return _Bind_fn_t<__fn>{};
       else
-      {
-	// Capture arguments in a lambda and return that.
-	return [... __bound_args(std::forward<_BindArgs>(__bind_args))]
-	  <typename _Self, typename... _CallArgs>
-	  (this _Self&&, _CallArgs&&... __call_args)
-	    noexcept(is_nothrow_invocable_v<
-	      const _Fn&, _CallArgs..., __like_t<_Self, decay_t<_BindArgs>>...>)
-	    -> decltype(auto)
-	    requires is_invocable_v<
-	      const _Fn&, _CallArgs..., __like_t<_Self, decay_t<_BindArgs>>...>
-	  {
-	    return std::invoke(__fn,
-	      std::forward<_CallArgs>(__call_args)...,
-	      std::forward_like<_Self>(__bound_args)...);
-	  };
-      }
+        return _Bind_back_t<_Bind_fn_t<__fn>, _BindArgs...>(0,
+		 _Bind_fn_t<__fn>{}, std::forward<_BindArgs>(__bind_args)...);
     }
-
 #endif // __cpp_lib_bind_back  // C++26, nttp
 #endif // __cpp_lib_bind_back
 
@@ -1168,7 +1134,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     }
 
 #if __cpp_lib_not_fn >= 202306L
-
   /** Wrap a function type to create a function object that negates its result.
    *
    * The function template `std::not_fn` creates a "forwarding call wrapper",
@@ -1196,7 +1161,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    !std::invoke(__fn, std::forward<_Args>(__args)...); }
 	{ return !std::invoke(__fn, std::forward<_Args>(__args)...); };
     };
-
 #endif // __cpp_lib_not_fn >= 202306L
 #endif // __cpp_lib_not_fn
 
