@@ -82,6 +82,45 @@ private
 
       Waiting : Boolean;
       --  Flag showing if there is a task already suspended on this object
+      --
+      --  When reviewing how this component is used, one should keep in mind
+      --  RM D.10 (10.2/5), which allows us to tolerate some race conditions
+      --  that can potentially cause deadlocks.
+      --
+      --  For example, consider the following code:
+      --
+      --     SO : Suspension_Object;
+      --
+      --     task A;
+      --     task B;
+      --
+      --     task body A is
+      --     begin
+      --        Suspend_Until_True (SO);
+      --     end A;
+      --
+      --     task body B is
+      --     begin
+      --        Set_True (SO);
+      --        Suspend_Until_True (SO);
+      --     end B;
+      --
+      --  One might be worried about the following ordering of events:
+      --  - A enters Suspend_Until_True and starts waiting on the condition
+      --    variable
+      --  - B calls Set_True, which sets Waiting to False and signals the
+      --    condvar.
+      --  - The scheduler keeps running B. B enters Suspend_Until_True and sets
+      --    Waiting to True again.
+      --  - A wakes up from pthread_cond_wait, sees that Waiting is True, so
+      --    concludes that the wakeup was spurious and starts waiting again,
+      --    effectively missing B's Set_True.
+      --
+      --  But this is in fact not a problem because the code falls into the
+      --  category described by RM D.10 (10.2/5): if the first thing to happen
+      --  is B's call to Set_True, the two remaining calls to
+      --  Suspend_Until_True clearly happen concurrently, which is the bounded
+      --  error case.
 
       L : aliased System.OS_Locks.RTS_Lock;
       --  Protection for ensuring mutual exclusion on the Suspension_Object
