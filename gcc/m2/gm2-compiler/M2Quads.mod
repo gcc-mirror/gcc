@@ -10776,8 +10776,9 @@ BEGIN
          PutVar (ReturnVar, Cardinal) ;
          GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, GetSType (OperandT (1)), FALSE)
       ELSE
+         (* Spellcheck.  *)
          MetaErrorT1 (resulttok,
-                      '{%E}SYSTEM procedure function {%kTSIZE} expects a variable or type as its first parameter, seen {%1Ed}',
+                      '{%E}SYSTEM procedure function {%kTSIZE} expects a variable or type as its first parameter, seen {%1Ed} {%1&s}',
                       OperandT (1)) ;
          ReturnVar := MakeConstLit (resulttok, MakeKey ('0'), Cardinal)
       END

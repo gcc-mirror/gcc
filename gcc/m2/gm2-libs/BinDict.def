@@ -1,0 +1,92 @@
+(* BinDict.def provides a generic binary dictionary.
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+Contributed by Gaius Mulley <gaiusmod2@gmail.com>.
+
+This file is part of GNU Modula-2.
+
+GNU Modula-2 is free software; you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; either version 3, or (at your option)
+any later version.
+
+GNU Modula-2 is distributed in the hope that it will be useful, but
+WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+General Public License for more details.
+
+Under Section 7 of GPL version 3, you are granted additional
+permissions described in the GCC Runtime Library Exception, version
+3.1, as published by the Free Software Foundation.
+
+You should have received a copy of the GNU General Public License and
+a copy of the GCC Runtime Library Exception along with this program;
+see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
+<http://www.gnu.org/licenses/>.  *)
+
+DEFINITION MODULE BinDict ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+TYPE
+   Dictionary ;
+   Node ;
+   Compare   = PROCEDURE (ADDRESS, ADDRESS) : INTEGER ;
+   Delete    = PROCEDURE (ADDRESS) ;
+   VisitNode = PROCEDURE (Node) ;
+
+
+(*
+   Init - create and return a new binary dictionary which will use
+          the compare procedure to order the contents as they are added.
+*)
+
+PROCEDURE Init (KeyCompare: Compare;
+                KeyDelete, ValueDelete: Delete) : Dictionary ;
+
+
+(*
+   Kill - delete the dictionary and its contents.
+          dict is assigned to NIL.
+*)
+
+PROCEDURE Kill (VAR dict: Dictionary) ;
+
+
+(*
+   PostOrder - visit each dictionary entry in post order.
+*)
+
+PROCEDURE PostOrder (dict: Dictionary; visit: VisitNode) ;
+
+
+(*
+   Insert - insert key value pair into the dictionary.
+*)
+
+PROCEDURE Insert (dict: Dictionary; key, value: ADDRESS) ;
+
+
+(*
+   Get - return the value associated with the key or NIL
+         if it does not exist.
+*)
+
+PROCEDURE Get (dict: Dictionary; key: ADDRESS) : ADDRESS ;
+
+
+(*
+   Value - return the value from node.
+*)
+
+PROCEDURE Value (node: Node) : ADDRESS ;
+
+
+(*
+   Key - return the key from node.
+*)
+
+PROCEDURE Key (node: Node) : ADDRESS ;
+
+
+END BinDict.

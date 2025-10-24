@@ -671,6 +671,7 @@ GM2-LIBS-BOOT-DEFS = \
    ASCII.def \
    Args.def \
    Assertion.def \
+   BinDict.def \
    Break.def \
    CmdArgs.def \
    Debug.def \
@@ -718,6 +719,7 @@ GM2-LIBS-BOOT-MODS = \
    ASCII.mod \
    Args.mod \
    Assertion.mod \
+   BinDict.mod \
    Break.mod \
    CmdArgs.mod \
    Debug.mod \
@@ -769,6 +771,7 @@ GM2-LIBS-BOOT-CC = \
 # Definition modules for the front end found in gm2-compiler.
 
 GM2-COMP-BOOT-DEFS = \
+   FilterError.def \
    FifoQueue.def \
    Lists.def \
    M2ALU.def \
@@ -845,6 +848,7 @@ GM2-COMP-BOOT-DEFS = \
 # Implementation modules for the front end found in gm2-compiler.
 
 GM2-COMP-BOOT-MODS = \
+   FilterError.mod \
    FifoQueue.mod \
    Lists.mod \
    Lists.mod \
@@ -946,6 +950,7 @@ GM2-LIBS-DEFS = \
    ASCII.def \
    Args.def \
    Assertion.def \
+   BinDict.def \
    Break.def \
    Builtins.def \
    COROUTINES.def \
@@ -1000,6 +1005,7 @@ GM2-LIBS-MODS = \
    ASCII.mod \
    Args.mod \
    Assertion.mod \
+   BinDict.mod \
    Break.mod \
    Builtins.mod \
    COROUTINES.mod \
@@ -1062,6 +1068,7 @@ GM2-LIBS-CC = \
 # cc1gm2$(exeext) uses these definition modules found in the gm2-compiler directory.
 
 GM2-COMP-DEFS = \
+   FilterError.def \
    FifoQueue.def \
    Lists.def \
    M2ALU.def \
@@ -1135,6 +1142,7 @@ GM2-COMP-DEFS = \
 # cc1gm2$(exeext) uses these implementation modules found in the gm2-compiler directory.
 
 GM2-COMP-MODS = \
+   FilterError.mod \
    FifoQueue.mod \
    Lists.mod \
    M2ALU.mod \

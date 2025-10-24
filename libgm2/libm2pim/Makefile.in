@@ -159,13 +159,13 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(toolexeclibdir)"
 LTLIBRARIES = $(toolexeclib_LTLIBRARIES)
 libm2pim_la_LIBADD =
-@BUILD_PIMLIB_TRUE@am__objects_1 = ASCII.lo IO.lo Args.lo M2RTS.lo \
-@BUILD_PIMLIB_TRUE@	M2Dependent.lo M2Diagnostic.lo M2WIDESET.lo \
-@BUILD_PIMLIB_TRUE@	Assertion.lo NumberIO.lo Break.lo SYSTEM.lo \
-@BUILD_PIMLIB_TRUE@	CmdArgs.lo Scan.lo StrCase.lo FIO.lo \
-@BUILD_PIMLIB_TRUE@	StrIO.lo StrLib.lo TimeString.lo \
-@BUILD_PIMLIB_TRUE@	Environment.lo FpuIO.lo Debug.lo \
-@BUILD_PIMLIB_TRUE@	SysStorage.lo Storage.lo StdIO.lo \
+@BUILD_PIMLIB_TRUE@am__objects_1 = ASCII.lo Args.lo BinDict.lo IO.lo \
+@BUILD_PIMLIB_TRUE@	M2RTS.lo M2Dependent.lo M2Diagnostic.lo \
+@BUILD_PIMLIB_TRUE@	M2WIDESET.lo Assertion.lo NumberIO.lo \
+@BUILD_PIMLIB_TRUE@	Break.lo SYSTEM.lo CmdArgs.lo Scan.lo \
+@BUILD_PIMLIB_TRUE@	StrCase.lo FIO.lo StrIO.lo StrLib.lo \
+@BUILD_PIMLIB_TRUE@	TimeString.lo Environment.lo FpuIO.lo \
+@BUILD_PIMLIB_TRUE@	Debug.lo SysStorage.lo Storage.lo StdIO.lo \
 @BUILD_PIMLIB_TRUE@	SEnvironment.lo DynamicStrings.lo SFIO.lo \
 @BUILD_PIMLIB_TRUE@	SArgs.lo SCmdArgs.lo PushBackInput.lo \
 @BUILD_PIMLIB_TRUE@	StringConvert.lo FormatStrings.lo \
@@ -479,8 +479,9 @@ AM_MAKEFLAGS = \
 # Subdir rules rely on $(FLAGS_TO_PASS)
 FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_PIMLIB_TRUE@toolexeclib_LTLIBRARIES = libm2pim.la
-@BUILD_PIMLIB_TRUE@M2MODS = ASCII.mod IO.mod \
-@BUILD_PIMLIB_TRUE@       Args.mod M2RTS.mod \
+@BUILD_PIMLIB_TRUE@M2MODS = ASCII.mod \
+@BUILD_PIMLIB_TRUE@       Args.mod BinDict.mod \
+@BUILD_PIMLIB_TRUE@       IO.mod M2RTS.mod \
 @BUILD_PIMLIB_TRUE@       M2Dependent.mod \
 @BUILD_PIMLIB_TRUE@       M2Diagnostic.mod \
 @BUILD_PIMLIB_TRUE@       M2WIDESET.mod \
@@ -513,7 +514,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 
 # COROUTINES.mod has been removed as it is implemented in ../libm2iso.
 @BUILD_PIMLIB_TRUE@M2DEFS = Args.def   ASCII.def \
-@BUILD_PIMLIB_TRUE@         Assertion.def  Break.def \
+@BUILD_PIMLIB_TRUE@         Assertion.def  BinDict.def \
+@BUILD_PIMLIB_TRUE@         Break.def \
 @BUILD_PIMLIB_TRUE@         Builtins.def  cbuiltin.def \
 @BUILD_PIMLIB_TRUE@         CmdArgs.def CFileSysOp.def \
 @BUILD_PIMLIB_TRUE@         COROUTINES.def \

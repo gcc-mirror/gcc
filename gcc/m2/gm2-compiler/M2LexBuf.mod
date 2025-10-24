@@ -1078,6 +1078,10 @@ BEGIN
    THEN
       caret := right
    END ;
+   IF (caret = left) AND (left = right)
+   THEN
+      RETURN caret
+   END ;
    IF isSrcToken (caret) AND isSrcToken (left) AND isSrcToken (right)
    THEN
       lc := TokenToLocation (caret) ;

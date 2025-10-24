@@ -130,6 +130,14 @@ PROCEDURE MoveError (e: Error; AtTokenNo: CARDINAL) : Error ;
 
 
 (*
+   KillError - remove error e from the error list and deallocate
+               memory associated with e.
+*)
+
+PROCEDURE KillError (VAR e: Error) ;
+
+
+(*
    SetColor - informs the error module that this error will have had colors
               assigned to it.  If an error is issued without colors assigned
               then the default colors will be assigned to the legacy error

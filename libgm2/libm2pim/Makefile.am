@@ -96,8 +96,9 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 if BUILD_PIMLIB
 toolexeclib_LTLIBRARIES = libm2pim.la
 
-M2MODS = ASCII.mod IO.mod \
-       Args.mod M2RTS.mod \
+M2MODS = ASCII.mod \
+       Args.mod BinDict.mod \
+       IO.mod M2RTS.mod \
        M2Dependent.mod \
        M2Diagnostic.mod \
        M2WIDESET.mod \
@@ -130,7 +131,8 @@ M2MODS = ASCII.mod IO.mod \
 # COROUTINES.mod has been removed as it is implemented in ../libm2iso.
 
 M2DEFS = Args.def   ASCII.def \
-         Assertion.def  Break.def \
+         Assertion.def  BinDict.def \
+         Break.def \
          Builtins.def  cbuiltin.def \
          CmdArgs.def CFileSysOp.def \
          COROUTINES.def \

@@ -26,7 +26,11 @@ FROM M2Base IMPORT ZType, RType, IsPseudoBaseFunction, IsPseudoBaseProcedure ;
 FROM NameKey IMPORT Name, KeyToCharStar, NulName ;
 FROM StrLib IMPORT StrLen ;
 FROM M2LexBuf IMPORT GetTokenNo, UnknownTokenNo ;
-FROM M2Error IMPORT Error, NewError, NewWarning, NewNote, ErrorString, InternalError, ChainError, SetColor, FlushErrors, FlushWarnings ;
+
+FROM M2Error IMPORT Error, NewError, KillError,
+                    NewWarning, NewNote, ErrorString, InternalError,
+                    ChainError, SetColor, FlushErrors, FlushWarnings ;
+
 FROM FIO IMPORT StdOut, WriteLine ;
 FROM SFIO IMPORT WriteS ;
 FROM StringConvert IMPORT ctos ;
@@ -67,6 +71,9 @@ FROM SymbolTable IMPORT NulSym,
 
 IMPORT M2ColorString ;
 IMPORT M2Error ;
+IMPORT FilterError ;
+
+FROM FilterError IMPORT Filter, AddSymError, IsSymError ;
 
 
 CONST
@@ -85,6 +92,8 @@ TYPE
    errorBlock = RECORD
                    useError  : BOOLEAN ;
                    e         : Error ;
+                   symcause  : CARDINAL ;  (* The symbol (or NulSym) associated with the token no.  *)
+                   token     : CARDINAL ;
                    type      : errorType ;
                    out, in   : String ;
                    highplus1 : CARDINAL ;
@@ -115,12 +124,13 @@ TYPE
 
 
 VAR
-   lastRoot  : Error ;
-   lastColor : colorType ;
-   seenAbort : BOOLEAN ;
-   dictionary : Index ;
-   outputStack: Index ;
-   freeEntry  : dictionaryEntry ;
+   lastRoot     : Error ;
+   lastColor    : colorType ;
+   seenAbort    : BOOLEAN ;
+   dictionary   : Index ;
+   outputStack  : Index ;
+   freeEntry    : dictionaryEntry ;
+   FilterUnknown: Filter ;
 
 
 (*
@@ -513,6 +523,8 @@ BEGIN
    WITH eb DO
       useError   := TRUE ;
       e          := NIL ;
+      symcause   := NulSym ;
+      token      := UnknownTokenNo ;
       type       := error ;  (* Default to the error color.  *)
       out        := InitString ('') ;
       in         := input ;
@@ -543,9 +555,9 @@ END initErrorBlock ;
 
 PROCEDURE push (VAR newblock: errorBlock; oldblock: errorBlock) ;
 BEGIN
-   pushColor (oldblock) ;  (* save the current color.  *)
-   newblock := oldblock ;  (* copy all the fields.  *)
-   newblock.out := NIL ;  (* must do this before a clear as we have copied the address.  *)
+   pushColor (oldblock) ;  (* Save the current color.  *)
+   newblock := oldblock ;  (* Now copy all the fields.  *)
+   newblock.out := NIL ;  (* We must do this before a clear as we have copied the address.  *)
    clear (newblock) ;
    newblock.quotes := TRUE
 END push ;
@@ -603,6 +615,10 @@ BEGIN
    IF toblock.e = NIL
    THEN
       toblock.e := fromblock.e
+   END ;
+   IF toblock.symcause = NulSym
+   THEN
+      toblock.symcause := fromblock.symcause
    END ;
    toblock.chain := fromblock.chain ;
    toblock.root := fromblock.root ;
@@ -1173,27 +1189,46 @@ END doChain ;
    doError - creates and returns an error note.
 *)
 
-PROCEDURE doError (VAR eb: errorBlock; tok: CARDINAL) ;
+PROCEDURE doError (VAR eb: errorBlock; tok: CARDINAL; sym: CARDINAL) ;
 BEGIN
    IF eb.useError
    THEN
-      chooseError (eb, tok)
+      chooseError (eb, tok, sym)
    END
 END doError ;
 
 
 (*
-   defaultError - adds the default error location to, tok, if one has not already been
-                  assigned.
+   defaultError - adds the default error location to, tok,
+                  if one has not already been assigned.
 *)
 
 PROCEDURE defaultError (VAR eb: errorBlock; tok: CARDINAL) ;
 BEGIN
    IF eb.e = NIL
    THEN
-      doError (eb, tok)
+      doError (eb, tok, NulSym)
+   END ;
+   IF eb.token = UnknownTokenNo
+   THEN
+      eb.token := tok
    END
 END defaultError ;
+
+
+(*
+   updateTokSym - assign symcause to sym if not NulSym.
+                  Update token.
+*)
+
+PROCEDURE updateTokSym (VAR eb: errorBlock; tok: CARDINAL; sym: CARDINAL) ;
+BEGIN
+   IF sym # NulSym
+   THEN
+      eb.symcause := sym
+   END ;
+   eb.token := tok
+END updateTokSym ;
 
 
 (*
@@ -1201,7 +1236,7 @@ END defaultError ;
                  Either an error, warning or note will be generated.
 *)
 
-PROCEDURE chooseError (VAR eb: errorBlock; tok: CARDINAL) ;
+PROCEDURE chooseError (VAR eb: errorBlock; tok: CARDINAL; sym: CARDINAL) ;
 BEGIN
    IF eb.chain
    THEN
@@ -1217,19 +1252,22 @@ BEGIN
                    eb.e := NewError (tok)
                 ELSE
                    eb.e := MoveError (eb.e, tok)
-                END |
+                END ;
+                updateTokSym (eb, tok, sym) |
       warning:  IF eb.e=NIL
                 THEN
                    eb.e := NewWarning (tok)
                 ELSE
                    eb.e := MoveError (eb.e, tok)
-                END |
+                END ;
+                updateTokSym (eb, tok, sym) |
       note   :  IF eb.e=NIL
                 THEN
                    eb.e := NewNote (tok)
                 ELSE
                    eb.e := MoveError (eb.e, tok)
-                END
+                END ;
+                updateTokSym (eb, tok, sym)
 
       ELSE
          InternalError ('unexpected enumeration value')
@@ -1257,9 +1295,9 @@ BEGIN
    THEN
       IF IsInnerModule (scope)
       THEN
-         doError (eb, GetDeclaredMod (sym))
+         doError (eb, GetDeclaredMod (sym), sym)
       ELSE
-         doError (eb, GetDeclaredMod (sym))
+         doError (eb, GetDeclaredMod (sym), sym)
       END
    ELSE
       Assert (IsDefImp (scope)) ;
@@ -1269,9 +1307,9 @@ BEGIN
          UNTIL GetScope(OuterModule)=NulSym.  *)
       IF GetDeclaredModule (sym) = UnknownTokenNo
       THEN
-         doError (eb, GetDeclaredDef (sym))
+         doError (eb, GetDeclaredDef (sym), sym)
       ELSE
-         doError (eb, GetDeclaredMod (sym))
+         doError (eb, GetDeclaredMod (sym), sym)
       END
    END
 END doErrorScopeModule ;
@@ -1290,9 +1328,9 @@ BEGIN
    THEN
       IF IsInnerModule (scope)
       THEN
-         doError (eb, GetDeclaredFor (sym))
+         doError (eb, GetDeclaredFor (sym), sym)
       ELSE
-         doError (eb, GetDeclaredFor (sym))
+         doError (eb, GetDeclaredFor (sym), sym)
       END
    ELSE
       Assert (IsDefImp (scope)) ;
@@ -1302,9 +1340,9 @@ BEGIN
          UNTIL GetScope(OuterModule)=NulSym.  *)
       IF GetDeclaredModule (sym) = UnknownTokenNo
       THEN
-         doError (eb, GetDeclaredDef (sym))
+         doError (eb, GetDeclaredDef (sym), sym)
       ELSE
-         doError (eb, GetDeclaredFor (sym))
+         doError (eb, GetDeclaredFor (sym), sym)
       END
    END
 END doErrorScopeForward ;
@@ -1324,12 +1362,12 @@ BEGIN
    IF scope = NulSym
    THEN
       M2Error.EnterErrorScope (NIL) ;
-      doError (eb, GetDeclaredMod (sym))
+      doError (eb, GetDeclaredMod (sym), sym)
    ELSE
       M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsProcedure (scope)
       THEN
-         doError (eb, GetDeclaredMod (sym))
+         doError (eb, GetDeclaredMod (sym), sym)
       ELSE
          doErrorScopeModule (eb, sym)
       END
@@ -1353,12 +1391,12 @@ BEGIN
    IF scope = NulSym
    THEN
       M2Error.EnterErrorScope (NIL) ;
-      doError (eb, GetDeclaredFor (sym))
+      doError (eb, GetDeclaredFor (sym), sym)
    ELSE
       M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsProcedure (scope)
       THEN
-         doError (eb, GetDeclaredFor (sym))
+         doError (eb, GetDeclaredFor (sym), sym)
       ELSE
          doErrorScopeForward (eb, sym)
       END
@@ -1392,16 +1430,16 @@ BEGIN
    IF IsModule (scope)
    THEN
       (* No definition module for a program module.  *)
-      doError (eb, GetDeclaredMod (sym))
+      doError (eb, GetDeclaredMod (sym), sym)
    ELSE
       Assert (IsDefImp (scope)) ;
       IF GetDeclaredDefinition (sym) = UnknownTokenNo
       THEN
          (* Fall back to the implementation module if no declaration exists
             in the definition module.  *)
-         doError (eb, GetDeclaredMod (sym))
+         doError (eb, GetDeclaredMod (sym), sym)
       ELSE
-         doError (eb, GetDeclaredDef (sym))
+         doError (eb, GetDeclaredDef (sym), sym)
       END
    END
 END doErrorScopeDefinition ;
@@ -1421,12 +1459,12 @@ BEGIN
    IF scope = NulSym
    THEN
       M2Error.EnterErrorScope (NIL) ;
-      doError (eb, GetDeclaredFor (sym))
+      doError (eb, GetDeclaredFor (sym), sym)
    ELSE
       M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsProcedure (scope)
       THEN
-         doError (eb, GetDeclaredDef (sym))
+         doError (eb, GetDeclaredDef (sym), sym)
       ELSE
          doErrorScopeDefinition (eb, sym)
       END
@@ -1477,25 +1515,25 @@ BEGIN
    IF scope = NulSym
    THEN
       M2Error.EnterErrorScope (NIL) ;
-      doError (eb, GetDeclaredDef (sym))
+      doError (eb, GetDeclaredDef (sym), sym)
    ELSE
       M2Error.EnterErrorScope (GetErrorScope (scope)) ;
       IF IsVar (sym) OR IsParameter (sym)
       THEN
-         doError (eb, GetVarParamTok (sym))
+         doError (eb, GetVarParamTok (sym), sym)
       ELSIF IsProcedure (scope)
       THEN
-         doError (eb, GetDeclaredDef (sym))
+         doError (eb, GetDeclaredDef (sym), sym)
       ELSIF IsModule (scope)
       THEN
-         doError (eb, GetDeclaredMod (sym))
+         doError (eb, GetDeclaredMod (sym), sym)
       ELSE
          Assert (IsDefImp (scope)) ;
          IF GetDeclaredDefinition (sym) = UnknownTokenNo
          THEN
-            doError (eb, GetDeclaredMod (sym))
+            doError (eb, GetDeclaredMod (sym), sym)
          ELSE
-            doError (eb, GetDeclaredDef (sym))
+            doError (eb, GetDeclaredDef (sym), sym)
          END
       END
    END ;
@@ -1550,7 +1588,7 @@ PROCEDURE used (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
 BEGIN
    IF bol <= HIGH (sym)
    THEN
-      doError (eb, GetFirstUsed (sym[bol]))
+      doError (eb, GetFirstUsed (sym[bol]), sym[bol])
    END
 END used ;
 
@@ -1755,7 +1793,8 @@ BEGIN
       'B':  declaredType (eb, sym, bol) |
       'C':  eb.chain := TRUE |
       'D':  declaredDef (eb, sym, bol) |
-      'E':  eb.type := error |
+      'E':  eb.type := error ;
+            eb.symcause := sym[bol] |
       'F':  filename (eb) ;
             DEC (eb.ini) |
       'G':  declaredFor (eb, sym, bol) |
@@ -1764,7 +1803,8 @@ BEGIN
             DEC (eb.ini) |
       'M':  declaredMod (eb, sym, bol) |
       'N':  doCount (eb, sym, bol) |
-      'O':  eb.type := note |
+      'O':  eb.type := note ;
+            eb.symcause := sym[bol] |
       'P':  pushColor (eb) |
       'Q':  resetDictionary |
       'R':  eb.root := TRUE |
@@ -1772,7 +1812,8 @@ BEGIN
       'T':  doGetType (eb, sym, bol) |
       'U':  used (eb, sym, bol) |
       'V':  declaredVar (eb, sym, bol) |
-      'W':  eb.type := warning |
+      'W':  eb.type := warning ;
+            eb.symcause := sym[bol] |
       'X':  pushOutput (eb) |
       'Y':  processDefine (eb) |
       'Z':  popOutput (eb) |
@@ -2402,7 +2443,12 @@ BEGIN
    ebnf (eb, sym) ;
    flushColor (eb) ;
    defaultError (eb, tok) ;
-   ErrorString (eb.e, Dup (eb.out)) ;
+   IF isUniqueError (eb)
+   THEN
+      ErrorString (eb.e, Dup (eb.out)) ;
+   ELSE
+      KillError (eb.e)
+   END ;
    killErrorBlock (eb) ;
    checkAbort
 END MetaErrorStringT1 ;
@@ -2425,7 +2471,12 @@ BEGIN
    ebnf (eb, sym) ;
    flushColor (eb) ;
    defaultError (eb, tok) ;
-   ErrorString (eb.e, Dup (eb.out)) ;
+   IF isUniqueError (eb)
+   THEN
+      ErrorString (eb.e, Dup (eb.out))
+   ELSE
+      KillError (eb.e)
+   END ;
    killErrorBlock (eb) ;
    checkAbort
 END MetaErrorStringT2 ;
@@ -2450,7 +2501,12 @@ BEGIN
    ebnf (eb, sym) ;
    flushColor (eb) ;
    defaultError (eb, tok) ;
-   ErrorString (eb.e, Dup (eb.out)) ;
+   IF isUniqueError (eb)
+   THEN
+      ErrorString (eb.e, Dup (eb.out))
+   ELSE
+      KillError (eb.e)
+   END ;
    killErrorBlock (eb) ;
    checkAbort
 END MetaErrorStringT3 ;
@@ -2475,7 +2531,12 @@ BEGIN
    ebnf (eb, sym) ;
    flushColor (eb) ;
    defaultError (eb, tok) ;
-   ErrorString (eb.e, Dup (eb.out)) ;
+   IF isUniqueError (eb)
+   THEN
+      ErrorString (eb.e, Dup (eb.out))
+   ELSE
+      KillError (eb.e)
+   END ;
    killErrorBlock (eb) ;
    checkAbort
 END MetaErrorStringT4 ;
@@ -2518,6 +2579,31 @@ END MetaError4 ;
 
 
 (*
+   isUniqueError - return TRUE if the symbol associated with the
+                   error block is unknown and we have seen the same
+                   token before.
+*)
+
+PROCEDURE isUniqueError (VAR eb: errorBlock) : BOOLEAN ;
+BEGIN
+   IF (eb.symcause # NulSym) AND IsUnknown (eb.symcause)
+   THEN
+      (* A candidate for filtering.  *)
+      IF IsSymError (FilterUnknown, eb.symcause, eb.token)
+      THEN
+         (* Seen and reported about this unknown and token
+            location before.  *)
+         RETURN FALSE
+      ELSE
+         (* Remember this combination.  *)
+         AddSymError (FilterUnknown, eb.symcause, eb.token)
+      END
+   END ;
+   RETURN TRUE
+END isUniqueError ;
+
+
+(*
    wrapErrors -
 *)
 
@@ -2531,15 +2617,20 @@ BEGIN
    ebnf (eb, sym) ;
    flushColor (eb) ;
    defaultError (eb, tok) ;
-   lastRoot := eb.e ;
-   ErrorString (eb.e, Dup (eb.out)) ;
-   killErrorBlock (eb) ;
-   initErrorBlock (eb, InitString (m2), sym) ;
-   eb.type := chained ;
-   ebnf (eb, sym) ;
-   flushColor (eb) ;
-   defaultError (eb, tok) ;
-   ErrorString (eb.e, Dup (eb.out)) ;
+   IF isUniqueError (eb)
+   THEN
+      lastRoot := eb.e ;
+      ErrorString (eb.e, Dup (eb.out)) ;
+      killErrorBlock (eb) ;
+      initErrorBlock (eb, InitString (m2), sym) ;
+      eb.type := chained ;
+      ebnf (eb, sym) ;
+      flushColor (eb) ;
+      defaultError (eb, tok) ;
+      ErrorString (eb.e, Dup (eb.out))
+   ELSE
+      KillError (eb.e)
+   END ;
    killErrorBlock (eb)
 END wrapErrors ;
 
@@ -2871,5 +2962,6 @@ BEGIN
    seenAbort := FALSE ;
    outputStack := InitIndex (1) ;
    dictionary := InitIndex (1) ;
-   freeEntry := NIL
+   freeEntry := NIL ;
+   FilterUnknown := FilterError.Init ()
 END M2MetaError.
