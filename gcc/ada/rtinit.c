@@ -419,6 +419,7 @@ __gnat_runtime_initialize (int install_handler)
      int last;
      int argc_expanded = 0;
      TCHAR result [MAX_PATH];
+     int arglen;
      int quoted;
 
      __gnat_get_argw (GetCommandLineW (), &wargv, &wargc);
@@ -436,7 +437,10 @@ __gnat_runtime_initialize (int install_handler)
 
 	 for (k=1; k<wargc; k++)
 	   {
-	     quoted = (wargv[k][0] == _T('\''));
+	     arglen = _tcslen (wargv[k]);
+	     quoted = wargv[k][0] == _T('\'')
+		      && arglen > 1
+		      && wargv[k][arglen - 1] == _T('\'');
 
 	     /* Check for wildcard expansion if the argument is not quoted. */
 	     if (!quoted && __gnat_do_argv_expansion
