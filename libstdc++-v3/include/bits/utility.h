@@ -172,6 +172,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     using index_sequence_for = make_index_sequence<sizeof...(_Types)>;
 #endif // __glibcxx_integer_sequence
 
+#if __cpp_structured_bindings >= 202411L
+#if __has_builtin(__integer_pack)
+  template <auto _Num, typename _Tp = decltype(_Num)>
+    inline constexpr _Tp
+    _IotaArray[_Num] = {__integer_pack(_Tp(_Num))...};
+#elif defined __glibcxx_integer_sequence
+  template <auto _Num, typename _Tp = decltype(_Num), typename = make_integer_sequence<_Tp, _Num>>
+    inline constexpr _Tp
+    _IotaArray[_Num];
+
+  template <auto _Num, typename _Tp, _Tp... _Is>
+    inline constexpr _Tp
+    _IotaArray<_Num, _Tp, integer_sequence<_Tp, _Is...>>[_Num] = {_Is...};
+#endif // __integer_pack
+#endif // __cpp_structured_bindings >= 202411L
+
 #if __cplusplus >= 201703L
 
   struct in_place_t {
