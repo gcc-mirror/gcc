@@ -1,3 +1,45 @@
+2025-10-23  Robert Dubner  <rdubner@symas.com>
+
+	* charmaps.cc: Encoding.
+	* charmaps.h (class charmap_t): Encoding.
+	* intrinsic.cc (__gg__char): Report the character at the
+	collation position.
+	(__gg__ord): Report the collation position of a character.
+	* libgcobol.cc (struct program_state): Add encodings;
+	Remove obsolete defines.
+	(__gg__current_collation): New function for encoding/collation.
+	(__gg__pop_program_state): Encoding.
+	(__gg__init_program_state): Encoding.
+	(format_for_display_internal): Handle LOW-VALUE and HIGH-VALUE.
+	(__gg__compare_2): Encoding.
+	(__gg__alphabet_use): Likewise.
+	* libgcobol.h (__gg__current_collation): New declaration.
+	* xmlparse.cc (__gg__xml_parse): Make a parameter const.
+
+2025-10-23  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* Makefile.am: Changes for XML PARSE and POSIX functions.
+	* Makefile.in: Likewise.
+	* charmaps.cc: Augment encodings[] table with "supported" boolean.
+	(__gg__encoding_iconv_name): Modify how encodings are identified.
+	(encoding_descr): Likewise.
+	(__gg__encoding_iconv_valid): Likewise.
+	* common-defs.h (callback_t): Define function pointer.
+	* constants.cc: Use named cbl_attr_e constants instead of magic
+	numbers.; New definitions for XML special registers.
+	* encodings.h (struct encodings_t): Declare "supported" boolean.
+	* libgcobol.cc (format_for_display_internal): Use std::ptrdiff_t.
+	(__gg__alphabet_use): Add case for iconv_CP1252_e.
+	(default_exception_handler): Repair exception handling after a
+	successful file operation.
+	* posix/errno.cc: New file.
+	* posix/localtime.cc: New file.
+	* posix/stat.cc: New file.
+	* posix/stat.h: New file.
+	* posix/tm.h: New file.
+	* xmlparse.cc: New file to support XML PARSE statement.
+
 2025-10-19  Robert Dubner  <rdubner@symas.com>
 
 	* charmaps.cc (__gg__set_internal_codeset): Eliminate ascii/ebcdic.

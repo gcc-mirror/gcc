@@ -1,3 +1,79 @@
+2025-10-23  Robert Dubner  <rdubner@symas.com>
+
+	* cobol.dg/group2/Length_overflow__2_.out: Updated test result.
+	* cobol.dg/group2/Length_overflow_with_offset__1_.out: Likewise.
+	* cobol.dg/group2/Offset_overflow.out: Likewise.
+	* cobol.dg/group2/CALL_with_OCCURS_DEPENDING_ON.cob: New test.
+	* cobol.dg/group2/CALL_with_OCCURS_DEPENDING_ON.out: New test.
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_ASCII.cob: New test.
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_ASCII.out: New test.
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_EBCDIC.cob: New test.
+	* cobol.dg/group2/CHAR_and_ORD_with_COLLATING_sequence_-_EBCDIC.out: New test.
+	* cobol.dg/group2/EC-BOUND-REF-MOD_checking_process_termination.cob: New test.
+	* cobol.dg/group2/EC-BOUND-REF-MOD_checking_process_termination.out: New test.
+	* cobol.dg/group2/Intrinsics_without_FUNCTION_keyword__3_.cob: New test.
+	* cobol.dg/group2/Occurs_DEPENDING_ON__source_and_dest.cob: New test.
+	* cobol.dg/group2/Occurs_DEPENDING_ON__source_and_dest.out: New test.
+	* cobol.dg/group2/Recursive_subscripts.cob: New test.
+	* cobol.dg/group2/Recursive_subscripts.out: New test.
+	* cobol.dg/group2/SEARCH_ALL_with_OCCURS_DEPENDING_ON.cob: New test.
+	* cobol.dg/group2/SEARCH_ALL_with_OCCURS_DEPENDING_ON.out: New test.
+	* cobol.dg/group2/Subscript_by_arithmetic_expression.cob: New test.
+	* cobol.dg/group2/Subscript_out_of_bounds__1_.cob: New test.
+	* cobol.dg/group2/Subscript_out_of_bounds__1_.out: New test.
+	* cobol.dg/group2/Subscript_out_of_bounds__2_.cob: New test.
+	* cobol.dg/group2/Subscript_out_of_bounds__2_.out: New test.
+	* cobol.dg/group2/Subscripted_refmods.cob: New test.
+	* cobol.dg/group2/Subscripted_refmods.out: New test.
+	* cobol.dg/group2/length_of_ODO_Rules_7__8A__and_8B.cob: New test.
+	* cobol.dg/group2/length_of_ODO_Rules_7__8A__and_8B.out: New test.
+	* cobol.dg/group2/length_of_ODO_w_-_reference_modification.cob: New test.
+
+2025-10-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/bool-12.c: Update based on when BIT_AND/BIT_IOR
+	is created and no longer MIN/MAX.
+
+2025-10-23  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* cobol.dg/typo-1.cob: New test for squiggles and carets.
+
+2025-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/fmv_priority1.c: New test.
+	* gcc.target/aarch64/fmv_priority2.c: New test.
+	* gcc.target/aarch64/fmv_priority.in: Support file.
+
+2025-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122190
+	* gcc.target/aarch64/pr122190.c: New test
+
+2025-10-23  zhaozhou  <zhaozhou@loongson.cn>
+
+	* gcc.dg/fold-round-1.c: New test.
+
+2025-10-23  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* gcc.target/arm/mve/intrinsics/pr122223.c: Relax expected code.
+
+2025-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr101639_reduc_mask_vdi.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_vqi.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_vsi.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_ior_vqi.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_and_vqi.c: New test.
+
+2025-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr101639_reduc_mask_di.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_hi.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_qi.c: New test.
+	* gcc.target/i386/pr101639_reduc_mask_si.c: New test.
+
 2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
 
 	PR middle-end/122378

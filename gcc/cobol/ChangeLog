@@ -1,3 +1,78 @@
+2025-10-23  Robert Dubner  <rdubner@symas.com>
+
+	* genapi.cc (parser_alphabet): Alphabet encoding.
+	(parser_alphabet_use): Likewise.
+	(parser_xml_parse): Use correct debugging macro; encoding.
+	(parser_xml_on_exception): Likewise.
+	(parser_xml_not_exception): Likewise.
+	(parser_xml_end): Likewise.
+	(initialize_the_data): Encoding.
+	(parser_label_label): Debugging macros.
+	(parser_label_goto): Likewise.
+	(parser_file_add): Encoding.
+	(parser_intrinsic_call_1): Special handling for __gg__char.
+	(parser_intrinsic_call_2): Formatting.
+	* parse.y: Response from FUNCTION ORD is flagged "unsigned".
+	* symbols.cc (cbl_alphabet_t::reencode): Establish
+	low_char & high_char.
+	* symbols.h (struct cbl_alphabet_t): Likewise.
+
+2025-10-23  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* Make-lang.in: Incorporate new token_names.h file.
+	* cdf.y: Modify tokens.
+	* gcobol.1: Document XML PARSE statement
+	* genapi.cc (parser_enter_program): Verify that every goto has a
+	matching label.
+	(parser_end_program): Likewise.
+	(parser_alphabet): Refine handling codeset encodings.
+	(parser_alphabet_use): Likewise.
+	(label_fetch): Moved from later in the source code.
+	(parser_xml_parse): New routine for XML PARSE.
+	(parser_xml_on_exception): Likewise.
+	(parser_xml_not_exception): Likewise.
+	(parser_xml_end): Likewise.
+	(parser_label_label): Verify goto/label matching.
+	(parser_label_goto): Likewise.
+	(parser_entry): Minor change to SHOW_PARSE report.
+	* genapi.h (parser_alphabet): Set parameter to const.
+	(parser_xml_parse): Declare new function.
+	(parser_xml_on_exception): Likewise.
+	(parser_xml_not_exception): Likewise.
+	(parser_xml_end): Likewise.
+	(parser_label_addr): Likewise.
+	* parse.y: label_pair_t structure; locale processing; new token
+	processing for alphabets and XML PARSE.
+	* parse_ante.h (name_of): Return field->name when initial is NULL.
+	(new_tempnumeric): Make signable_e optional.
+	(ast_save_locale): New function.
+	(data_division_ready): Warning for "no alphabet".
+	* scan.l: Repair interpretation of BINARY, COMP, COMP-4, and
+	COMP-5.
+	* scan_ante.h (struct bint_t): Likewise.
+	* scan_post.h (current_tokens_t::tokenset_t::tokenset_t):
+	Include token_names.h.
+	* symbols.cc (symbols_alphabet_set): Revert to prior alphabet
+	determination.
+	(symbol_table_init): New XML special registers.
+	(new_temporary): Make signable_e controllable, not fixed.
+	* symbols.h (__gg__encoding_iconv_valid): New declaration.
+	(enum cbl_label_type_t): New LblXml label type.
+	(struct cbl_xml_parse_t):
+	(struct cbl_label_t): Implement XML PARSE.
+	(new_temporary): Incorporate boolean for signable_e.
+	(symbol_elem_of): Change label field type handling.
+	(cbl_section_of): Likewise.
+	(cbl_field_of): Likewise.
+	(cbl_label_of): Likewise.
+	(cbl_special_name_of):  Likewise.
+	(cbl_alphabet_of):  Likewise.
+	(cbl_file_of):  Likewise.
+	* token_names.h: New file.
+	* util.cc (gcc_location_set_impl): Improve location_t calculations
+	when entering and leaving COPYBOOKs.
+
 2025-10-19  Robert Dubner  <rdubner@symas.com>
 
 	* genapi.cc (move_tree): Formatting.

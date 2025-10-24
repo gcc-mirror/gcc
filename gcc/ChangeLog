@@ -1,3 +1,92 @@
+2025-10-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (`(type1)x CMP CST1 ? (type2)x : CST2`): Better handling
+	of `((signed)x) < 0`.
+
+2025-10-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/101024
+	* tree-ssa-phiopt.cc (match_simplify_replacement): Special
+	case fp `a CMP b ? a : b` when not creating a min/max.
+	(strip_bit_not): Remove.
+	(invert_minmax_code): Remove.
+	(minmax_replacement): Remove.
+	(pass_phiopt::execute): Update pass comment.
+	Don't call minmax_replacement.
+
+2025-10-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/101024
+	* fold-const.cc (minmax_from_comparison): New version that takes widest_int
+	instead of tree.
+	(minmax_from_comparison):  Call minmax_from_comparison for integer cst case.
+	* fold-const.h (minmax_from_comparison): New declaration.
+	* match.pd (`((signed)a </>= 0) ? min/max (a, c) : b`): New pattern.
+
+2025-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Add
+	__HAVE_FUNCTION_MULTI_VERSIONING macro.
+
+2025-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc (dispatch_function_versions): Remove
+	unnecessary sorting and data structure.
+
+2025-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122190
+	* config/aarch64/aarch64.cc (compare_feature_masks): Fix version rules.
+
+2025-10-23  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_generate_version_dispatcher_body):
+	Dump function versions and the ordering.
+
+2025-10-23  zhaozhou  <zhaozhou@loongson.cn>
+
+	* match.pd: Add new pattern for round.
+
+2025-10-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_loop_vec_info::slp_unrolling_factor): Remove.
+	(LOOP_VINFO_SLP_UNROLLING_FACTOR): Likewise.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info): Adjust.
+	(vect_analyze_loop_2): Likewise.
+	* tree-vect-slp.cc (vect_make_slp_decision): Set
+	LOOP_VINFO_VECT_FACTOR directly.
+
+2025-10-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Move vect_optimize_slp
+	after applying suggested_unroll_factor.
+
+2025-10-23  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_analyze_loop_2): Deal with NULL
+	element in SLP_TREE_SCALAR_STMTS.
+
+2025-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101639
+	* config/i386/sse.md
+	(VI_AVX): New mode iterator.
+	(VI_AVX_CMP): Ditto.
+	(ssebytemode): Add V16HI, V32QI, V16QI.
+	(reduc_sbool_and_scal_<mode>): New expander.
+	(reduc_sbool_ior_scal_<mode>): Ditto.
+	(reduc_sbool_xor_scal_<mode>): Ditto.
+	(*eq<mode>3_2_negate): New pre_reload splitter.
+	(*ptest<mode>_ccz): Ditto.
+
+2025-10-23  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/101639
+	* config/i386/sse.md
+	(reduc_sbool_and_scal_<mode>): New expander.
+	(reduc_sbool_ior_scal_<mode>): Ditto.
+	(reduc_sbool_xor_scal_<mode>): Ditto.
+
 2025-10-22  H.J. Lu  <hjl.tools@gmail.com>
 
 	* config/i386/i386-expand.cc (ix86_expand_set_or_cpymem): Use
