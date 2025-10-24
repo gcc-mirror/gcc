@@ -905,7 +905,6 @@ adadecode.o : adadecode.c adadecode.h
 aux-io.o  : aux-io.c
 argv.o    : argv.c
 cal.o     : cal.c
-deftarg.o : deftarg.c
 errno.o   : errno.c
 exit.o    : adaint.h exit.c
 expect.o  : expect.c
@@ -938,10 +937,6 @@ init.o    : init.c adaint.h raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
 
-init-vxsim.o : init-vxsim.c
-	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
-	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
-
 initialize.o : initialize.c raise.h
 	$(CC) -c $(ALL_CFLAGS) $(ADA_CFLAGS) \
 	         $(ALL_CPPFLAGS) $(INCLUDES) $< $(OUTPUT_OPTION)
@@ -960,5 +955,3 @@ targext.o : targext.c
 # In GNU Make, ignore whether `stage*' exists.
 .PHONY: stage1 stage2 stage3 stage4 clean realclean TAGS bootstrap
 .PHONY: risky-stage1 risky-stage2 risky-stage3 risky-stage4
-
-force:
