@@ -28657,6 +28657,12 @@ aarch64_gen_ccmp_next (rtx_insn **prep_seq, rtx_insn **gen_seq, rtx prev,
   struct expand_operand ops[6];
   int aarch64_cond;
 
+  /* Exit early for modes that are ot handled to avoid O(n^2) part of expand_operands. */
+  op_mode = TYPE_MODE (TREE_TYPE (treeop0));
+  if (!(op_mode == QImode || op_mode == HImode || op_mode == SImode || op_mode == DImode
+	|| op_mode == SFmode || op_mode == DFmode))
+   return NULL_RTX;
+
   push_to_sequence (*prep_seq);
   expand_operands (treeop0, treeop1, NULL_RTX, &op0, &op1, EXPAND_NORMAL);
 
