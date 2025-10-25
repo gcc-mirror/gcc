@@ -3430,7 +3430,7 @@ recording::string *
 recording::array_type::make_debug_string ()
 {
   return string::from_printf (m_ctxt,
-			      "%s[%ld]",
+			      "%s[%" PRIu64 "]",
 			      m_element_type->get_debug_string (),
 			      m_num_elements);
 }
@@ -3446,7 +3446,7 @@ recording::array_type::write_reproducer (reproducer &r)
 	   "    gcc_jit_context_new_array_type_u64 (%s,\n"
 	   "                                        %s, /* gcc_jit_location *loc */\n"
 	   "                                        %s, /* gcc_jit_type *element_type */\n"
-	   "                                        %li); /* int num_elements */\n",
+	   "                                        %" PRIu64 "); /* int num_elements */\n",
 	   id,
 	   r.get_identifier (get_context ()),
 	   r.get_identifier (m_loc),
