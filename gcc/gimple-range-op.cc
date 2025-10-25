@@ -150,6 +150,10 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
 	      if (TREE_CODE (ssa) == SSA_NAME)
 		m_op1 = ssa;
 	    }
+	  // VIEW_CONVERT_EXPR needs to descend one level deeper to pick
+	  // up the symbolic operand.
+	  if (TREE_CODE (m_op1) == VIEW_CONVERT_EXPR)
+	    m_op1 = TREE_OPERAND (m_op1, 0);
 	  if (gimple_num_ops (m_stmt) >= 3)
 	    m_op2 = gimple_assign_rhs2 (m_stmt);
 	  // Check that operands are supported types.  One check is enough.

@@ -527,6 +527,47 @@ private:
 			   const irange &outer) const;
 };
 
+
+class operator_view : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::update_bitmask;
+  bool fold_range (irange &r, tree type,
+		   const irange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const override;
+  bool fold_range (prange &r, tree type,
+		   const prange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (irange &r, tree type,
+		   const prange &op1, const irange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool fold_range (prange &r, tree type,
+		   const irange &op1, const prange &op2,
+		   relation_trio rel = TRIO_VARYING) const final override;
+
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const override;
+  bool op1_range (prange &r, tree type,
+		  const prange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const prange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (prange &r, tree type,
+		  const irange &lhs, const prange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &) const final override;
+private:
+// VIEW_CONVERT_EXPR works much like a cast between integral values, so use
+// the cast operator.  Non-integrals are not handled as yet.
+  operator_cast m_cast;
+};
+
 class operator_plus : public range_operator
 {
 public:

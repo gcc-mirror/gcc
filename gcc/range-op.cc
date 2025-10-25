@@ -60,6 +60,7 @@ operator_ge op_ge;
 operator_identity op_ident;
 operator_cst op_cst;
 operator_cast op_cast;
+operator_view op_view;
 operator_plus op_plus;
 operator_abs op_abs;
 operator_minus op_minus;
@@ -97,6 +98,7 @@ range_op_table::range_op_table ()
   set (INTEGER_CST, op_cst);
   set (NOP_EXPR, op_cast);
   set (CONVERT_EXPR, op_cast);
+  set (VIEW_CONVERT_EXPR, op_view);
   set (FLOAT_EXPR, op_cast);
   set (FIX_TRUNC_EXPR, op_cast);
   set (PLUS_EXPR, op_plus);
@@ -3245,6 +3247,80 @@ operator_cast::op1_range (irange &r, tree type,
   // Cast the calculated range to the type of the RHS.
   fold_range (r, type, tmp, int_range<1> (type));
   return true;
+}
+
+// VIEW_CONVERT_EXPR works like a cast between integral values.
+// If the number of bits are not the same, behaviour is undefined,
+// so cast behaviour still works.
+
+bool
+operator_view::fold_range (irange &r, tree type,
+			   const irange &op1, const irange &op2,
+			   relation_trio rel) const
+{
+  return m_cast.fold_range (r, type, op1, op2, rel);
+}
+
+bool
+operator_view::fold_range (prange &r, tree type,
+			   const prange &op1, const prange &op2,
+			   relation_trio rel) const
+{
+  return m_cast.fold_range (r, type, op1, op2, rel);
+}
+bool
+operator_view::fold_range (irange &r, tree type,
+			   const prange &op1, const irange &op2,
+			   relation_trio rel) const
+{
+  return m_cast.fold_range (r, type, op1, op2, rel);
+}
+
+bool
+operator_view::fold_range (prange &r, tree type,
+			   const irange &op1, const prange &op2,
+			   relation_trio rel) const
+{
+  return m_cast.fold_range (r, type, op1, op2, rel);
+}
+
+bool
+operator_view::op1_range (irange &r, tree type,
+			  const irange &lhs, const irange &op2,
+			  relation_trio rel) const
+{
+  return m_cast.op1_range (r, type, lhs, op2, rel);
+}
+
+bool
+operator_view::op1_range (prange &r, tree type,
+			  const prange &lhs, const prange &op2,
+			  relation_trio rel) const
+{
+  return m_cast.op1_range (r, type, lhs, op2, rel);
+}
+
+bool
+operator_view::op1_range (irange &r, tree type,
+			  const prange &lhs, const irange &op2,
+			  relation_trio rel) const
+{
+  return m_cast.op1_range (r, type, lhs, op2, rel);
+}
+
+bool
+operator_view::op1_range (prange &r, tree type,
+			  const irange &lhs, const prange &op2,
+			  relation_trio rel) const
+{
+  return m_cast.op1_range (r, type, lhs, op2, rel);
+}
+
+void
+operator_view::update_bitmask (irange &r, const irange &lh,
+			       const irange &rh) const
+{
+  m_cast.update_bitmask (r, lh, rh);
 }
 
 
