@@ -3041,6 +3041,16 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
+(define_insn "sign_extend_ashift<GPR:mode><SHORT:mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=r")
+	(ashift:GPR
+	   (sign_extend:GPR (match_operand:SHORT 1 "register_operand" "r"))
+	   (match_operand:SI 2 "const_uimm5_operand")))]
+  "(GET_MODE_BITSIZE (<SHORT:MODE>mode) + INTVAL (operands[2])) == 32"
+  "slli.w\t%0,%1,%2"
+  [(set_attr "type" "shift")
+   (set_attr "mode" "<GPR:MODE>")])
+
 (define_insn "*rotr<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r,r")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand" "r,r")
