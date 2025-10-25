@@ -2523,6 +2523,38 @@
   [(set_attr "type" "condmove")
    (set_attr "mode" "<GPR:MODE>")])
 
+(define_insn_and_split "both_non_zero"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (ne:DI (match_operand:DI 1 "register_operand" "r")
+		       (const_int 0))
+		(ne:DI (match_operand:DI 2 "register_operand" "r")
+		       (const_int 0))))]
+  "TARGET_64BIT"
+  "#"
+  "&& true"
+  [(set (match_dup 0)
+	(ne:DI (match_dup 1) (const_int 0)))
+   (set (match_dup 0)
+	(if_then_else:DI (ne:DI (match_dup 2) (const_int 0))
+			 (match_dup 0)
+			 (const_int 0)))])
+
+(define_insn_and_split "both_non_zero_subreg"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(and:DI (subreg:DI (ne:SI (match_operand:DI 1 "register_operand" "r")
+				  (const_int 0)) 0)
+		(subreg:DI (ne:SI (match_operand:DI 2 "register_operand" "r")
+				  (const_int 0)) 0)))]
+  "TARGET_64BIT"
+  "#"
+  "&& true"
+  [(set (match_dup 0)
+	(ne:DI (match_dup 1) (const_int 0)))
+   (set (match_dup 0)
+	(if_then_else:DI (ne:DI (match_dup 2) (const_int 0))
+			 (match_dup 0)
+			 (const_int 0)))])
+
 ;; fsel copies the 3rd argument when the 1st is non-zero and the 2nd
 ;; argument if the 1st is zero.  This means operand 2 and 3 are
 ;; inverted in the instruction.
