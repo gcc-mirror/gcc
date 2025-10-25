@@ -1984,14 +1984,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class tuple<>
     {
     public:
-      _GLIBCXX20_CONSTEXPR
-      void swap(tuple&) noexcept { /* no-op */ }
-#if __cpp_lib_ranges_zip // >= C++23
-      constexpr void swap(const tuple&) const noexcept { /* no-op */ }
-#endif
       // We need the default since we're going to define no-op
       // allocator constructors.
       tuple() = default;
+      // Defaulted copy operations to maintain trivial copyability.
+      // and support non-const assignment expressions.
+      tuple(const tuple&) = default;
+      tuple& operator=(const tuple&) = default;
+
+      _GLIBCXX20_CONSTEXPR
+      void swap(tuple&) noexcept { /* no-op */ }
+
+#if __cpp_lib_ranges_zip // >= C++23
+      constexpr void swap(const tuple&) const noexcept
+      { /* no-op */ }
+#endif
+
       // No-op allocator constructors.
       template<typename _Alloc>
 	_GLIBCXX20_CONSTEXPR
@@ -2001,16 +2009,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	tuple(allocator_arg_t, const _Alloc&, const tuple&) noexcept { }
 
 #if __cpp_lib_tuple_like // >= C++23
-      // Comparison operators for tuple<> with other empty tuple-like types
       template<__tuple_like _UTuple>
-	requires (!__is_tuple_v<_UTuple> && tuple_size_v<_UTuple> == 0)
+	requires (!is_same_v<remove_cvref_t<_UTuple>, tuple>)
+		  && (!is_same_v<remove_cvref_t<_UTuple>, allocator_arg_t>)
+		  && (tuple_size_v<remove_cvref_t<_UTuple>> == 0)
+      constexpr
+      tuple(_UTuple&&) noexcept { }
+
+      template<typename _Alloc, __tuple_like _UTuple>
+	requires (!is_same_v<remove_cvref_t<_UTuple>, tuple>)
+		  && (tuple_size_v<remove_cvref_t<_UTuple>> == 0)
+      constexpr
+      tuple(allocator_arg_t, const _Alloc&, _UTuple&&) noexcept { }
+
+      template<__tuple_like _UTuple>
+	requires (!is_same_v<remove_cvref_t<_UTuple>, tuple>)
+		  && (tuple_size_v<remove_cvref_t<_UTuple>> == 0)
+      constexpr tuple&
+      operator=(_UTuple&&) noexcept
+      { return *this; }
+
+      template<__tuple_like _UTuple>
+	requires (!is_same_v<remove_cvref_t<_UTuple>, tuple>)
+		  && (tuple_size_v<remove_cvref_t<_UTuple>> == 0)
+      constexpr const tuple&
+      operator=(_UTuple&&) const noexcept
+      { return *this; }
+
+      template<__tuple_like _UTuple>
+	requires (!__is_tuple_v<_UTuple>) && (tuple_size_v<_UTuple> == 0)
       [[nodiscard]]
       friend constexpr bool
       operator==(const tuple&, const _UTuple&) noexcept
       { return true; }
 
       template<__tuple_like _UTuple>
-	requires (!__is_tuple_v<_UTuple> && tuple_size_v<_UTuple> == 0)
+	requires (!__is_tuple_v<_UTuple>) && (tuple_size_v<_UTuple> == 0)
       friend constexpr strong_ordering
       operator<=>(const tuple&, const _UTuple&) noexcept
       { return strong_ordering::equal; }
