@@ -4056,6 +4056,17 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 	*total = loongarch_cost->int_mult_di;
       else
 	*total = loongarch_cost->int_mult_si;
+
+      /* Check for mul_widen.  */
+      if ((GET_CODE (XEXP (x, 0)) == SIGN_EXTEND
+	   && GET_CODE (XEXP (x, 1)) == SIGN_EXTEND)
+	  || (GET_CODE (XEXP (x, 0)) == ZERO_EXTEND
+	      && GET_CODE (XEXP (x, 1)) == ZERO_EXTEND))
+	{
+	  *total += (set_src_cost (XEXP (XEXP (x, 0), 0), mode, speed)
+		     + set_src_cost (XEXP (XEXP (x, 1), 0), mode, speed));
+	  return true;
+	}
       return false;
 
     case DIV:
