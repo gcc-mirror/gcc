@@ -8,6 +8,6 @@ struct is_virtual_base_of {
 static_assert(is_virtual_base_of<int, int>::value, "");  // { dg-error "assert" }
 // { dg-message "'int' is not a virtual base of 'int'" "" { target *-*-* } .-1 }
 
-struct A {};  // { dg-message "'A' is not a virtual base of 'B'" }
-struct B : A {};  // { dg-message "declared here" }
+struct A {};
+struct B : A {};  // { dg-message "'A' is not a virtual base of 'B'" }
 static_assert(is_virtual_base_of<A, B>::value, "");  // { dg-error "assert" }

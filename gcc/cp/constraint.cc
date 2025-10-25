@@ -3134,7 +3134,7 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       is_xible (MODIFY_EXPR, t1, t2, /*explain=*/true);
       break;
     case CPTK_IS_BASE_OF:
-      inform (decl_loc, "%qT is not a base of %qT", t1, t2);
+      inform (location_of (t2), "%qT is not a base of %qT", t1, t2);
       break;
     case CPTK_IS_BOUNDED_ARRAY:
       inform (loc, "%qT is not a bounded array", t1);
@@ -3235,7 +3235,8 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       inform (loc, "%qT is not an object type", t1);
       break;
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
-      inform (decl_loc, "%qT is not a pointer-interconvertible base of %qT",
+      inform (location_of (t2),
+	      "%qT is not a pointer-interconvertible base of %qT",
 	      t1, t2);
       break;
     case CPTK_IS_POD:
@@ -3288,9 +3289,7 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       inform (decl_loc, "%qT is not a union", t1);
       break;
     case CPTK_IS_VIRTUAL_BASE_OF:
-      inform (decl_loc, "%qT is not a virtual base of %qT", t1, t2);
-      if (CLASS_TYPE_P (t2))
-	inform (location_of (t2), "%qT declared here", t2);
+      inform (location_of (t2), "%qT is not a virtual base of %qT", t1, t2);
       break;
     case CPTK_IS_VOLATILE:
       inform (loc, "%qT is not a volatile type", t1);
