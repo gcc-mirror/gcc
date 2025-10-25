@@ -1,3 +1,15 @@
+2025-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118782
+	* styleg.adb (Is_Box_Comment): Also stop the loop at EOF.
+
+2025-10-24  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/81087
+	* gnatlink.adb (Is_Prefix): Move around, streamline and return false
+	when the prefix is not strict.
+	(Gnatlink): Fix other instances of incorrect lower bound assumption.
+
 2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/107536
