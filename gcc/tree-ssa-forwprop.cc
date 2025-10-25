@@ -216,6 +216,31 @@ static bitmap to_purge;
 /* Const-and-copy lattice.  */
 static vec<tree> lattice;
 
+/* forwprop_may_propagate_copy is like may_propagate_copy except
+   after the final folding, don't allow propagating of pointer ORIG
+   that have a lower alignment than the DEST name.
+   This is to prevent losing alignment information from
+   __builtin_assume_aligned for expand (See also PR 122086).  */
+static bool
+forwprop_may_propagate_copy (tree dest, tree orig,
+			     bool dest_not_abnormal_phi_edge_p = false)
+{
+  if (!may_propagate_copy (dest, orig, dest_not_abnormal_phi_edge_p))
+    return false;
+
+  /* Only check alignment for the final folding.  */
+  if (!(cfun->curr_properties & PROP_last_full_fold))
+    return true;
+
+  /* Alignment only matters for pointer types.  */
+  if (!POINTER_TYPE_P (TREE_TYPE (dest)) || !POINTER_TYPE_P (TREE_TYPE (orig)))
+    return true;
+
+  unsigned aligndest = get_pointer_alignment (dest);
+  unsigned alignorig = get_pointer_alignment (orig);
+  return aligndest <= alignorig;
+}
+
 /* Set the lattice entry for NAME to VAL.  */
 static void
 fwprop_set_lattice_val (tree name, tree val)
@@ -5177,7 +5202,7 @@ pass_forwprop::execute (function *fun)
 	    }
 	  if (all_same)
 	    {
-	      if (may_propagate_copy (res, first))
+	      if (forwprop_may_propagate_copy (res, first))
 		to_remove_defs.safe_push (SSA_NAME_VERSION (res));
 	      fwprop_set_lattice_val (res, first);
 	    }
@@ -5532,7 +5557,7 @@ pass_forwprop::execute (function *fun)
 		{
 		  if (!is_gimple_debug (stmt))
 		    bitmap_set_bit (simple_dce_worklist, SSA_NAME_VERSION (use));
-		  if (may_propagate_copy (use, val))
+		  if (forwprop_may_propagate_copy (use, val))
 		    {
 		      propagate_value (usep, val);
 		      substituted_p = true;
@@ -5695,7 +5720,7 @@ pass_forwprop::execute (function *fun)
 		  /* If we can propagate the lattice-value mark the
 		     stmt for removal.  */
 		  if (val != lhs
-		      && may_propagate_copy (lhs, val))
+		      && forwprop_may_propagate_copy (lhs, val))
 		    to_remove_defs.safe_push (SSA_NAME_VERSION (lhs));
 		  fwprop_set_lattice_val (lhs, val);
 		}
@@ -5717,7 +5742,7 @@ pass_forwprop::execute (function *fun)
 	      continue;
 	    tree val = fwprop_ssa_val (arg);
 	    if (val != arg
-		&& may_propagate_copy (arg, val, !(e->flags & EDGE_ABNORMAL)))
+		&& forwprop_may_propagate_copy (arg, val, !(e->flags & EDGE_ABNORMAL)))
 	      propagate_value (use_p, val);
 	  }
 
