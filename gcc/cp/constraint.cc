@@ -3239,8 +3239,9 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       break;
     case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF:
       inform (location_of (t2),
-	      "%qT is not a pointer-interconvertible base of %qT",
+	      "%qT is not a pointer-interconvertible base of %qT, because",
 	      t1, t2);
+      pointer_interconvertible_base_of_p (t1, t2, /*explain=*/true);
       break;
     case CPTK_IS_POD:
       inform (loc, "%qT is not a POD type", t1);

@@ -8291,6 +8291,7 @@ extern void finish_static_assert                (tree, tree, location_t,
 						 bool, bool, bool = false);
 extern tree finish_decltype_type                (tree, bool, tsubst_flags_t);
 extern tree fold_builtin_is_corresponding_member (location_t, int, tree *);
+extern bool pointer_interconvertible_base_of_p	(tree, tree, bool = false);
 extern tree fold_builtin_is_pointer_inverconvertible_with_class (location_t, int, tree *);
 extern tree finish_structured_binding_size	(location_t, tree, tsubst_flags_t);
 extern tree finish_trait_expr			(location_t, enum cp_trait_kind, tree, tree);
