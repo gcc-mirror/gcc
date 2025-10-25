@@ -582,7 +582,7 @@ __gg__xml_parse(  const cblc_field_t *input_field,
   int erc = xmlSAXUserParseMemory(&handlers, nullptr, input, len);
 
   if( erc ) {
-    xmlErrorPtr	msg = xmlCtxtGetLastError(nullptr);
+    const xmlError* msg = xmlCtxtGetLastError(nullptr);
     fprintf(stderr, "XML PARSE: error: line %d: %s (%d: %d.%d.%d)\n",
             msg->line, msg->message, erc, msg->domain, msg->level, msg->code);
   }
