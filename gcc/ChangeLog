@@ -1,3 +1,16 @@
+2025-10-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-10-20  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/99930
+	PR target/122323
+	* config/i386/i386-expand.cc (ix86_expand_copysign): Swap
+	operands[1] with operands[2].  Optimize copysign (x, const_double)
+	instead of copysign (const_double, x).
+	* config/i386/i386.md (copysign<mode>3): Swap constraints for
+	operands[1] and operands[2].
+
 2025-10-22  Haochen Jiang  <haochen.jiang@intel.com>
 
 	* config/i386/driver-i386.cc (host_detect_local_cpu): Correct
