@@ -6896,15 +6896,14 @@ compiler checks for @code{nocf_check} attribute mismatch and reports
 a warning in case of mismatch.
 
 @smallexample
-@{
-int foo (void) __attribute__(nocf_check);
-void (*foo1)(void) __attribute__(nocf_check);
+int foo (void) __attribute__((nocf_check));
+void (*foo1)(void) __attribute__((nocf_check));
 void (*foo2)(void);
 
 /* foo's address is assumed to be valid.  */
 int
 foo (void) 
-
+@{
   /* This call site is not checked for control-flow 
      validity.  */
   (*foo1)();
