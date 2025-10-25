@@ -1,3 +1,10 @@
+2025-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122407
+	* libm2pim/Makefile.am (M2MODS): Add BinDict.mod.
+	(M2DEFS): Add BinDict.def.
+	* libm2pim/Makefile.in: Regenerate.
+
 2025-10-07  Jonathan Wakely  <jwakely@redhat.com>
 
 	* configure.host: Fix spelling in comment.

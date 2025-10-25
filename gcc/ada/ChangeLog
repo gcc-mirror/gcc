@@ -1,3 +1,44 @@
+2025-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/80033
+	* gcc-interface/Makefile.in (force): Restore.
+
+2025-10-24  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/80033
+	* gcc-interface/Makefile.in (deftarg.o): Delete.
+	(init-vxsim.o): Likewise.
+	(force): Likewise.
+
+2025-10-24  Mivirl  <octoberstargazer7405@mivirl.dev>
+
+	PR ada/122367
+	* rtinit.c (__gnat_runtime_initialize) [__MINGW32__]: Fix detection
+	of quoted arguments.
+
+2025-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/118782
+	* styleg.adb (Is_Box_Comment): Also stop the loop at EOF.
+
+2025-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113516
+	* s-oscons-tmplt.c [_WIN32]: Undefine POLLPRI before redefining it.
+
+2025-10-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/98879
+	* terminals.c (__gnat_setup_child_communication) [_WIN32]: Add else
+	blocks in the processing of the data returned by ReadFile.
+
+2025-10-24  Nicolas Boulenguez  <nicolas@debian.org>
+
+	PR ada/81087
+	* gnatlink.adb (Is_Prefix): Move around, streamline and return false
+	when the prefix is not strict.
+	(Gnatlink): Fix other instances of incorrect lower bound assumption.
+
 2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/102078

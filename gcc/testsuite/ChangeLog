@@ -1,3 +1,96 @@
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr110405.c: New.
+
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/114025
+	* g++.dg/pr114025.C: New.
+
+2025-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122407
+	* gm2.dg/spell/iso/fail/badspellabs.mod: New test.
+	* gm2.dg/spell/iso/fail/badspelladr.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellcap.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellchr.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellchr2.mod: New test.
+	* gm2.dg/spell/iso/fail/badspelldec.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellexcl.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellinc.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellincl.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellnew.mod: New test.
+	* gm2.dg/spell/iso/fail/badspellsize.mod: New test.
+	* gm2.dg/spell/iso/fail/dg-spell-iso-fail.exp: New test.
+
+2025-10-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122402
+	* gcc.target/aarch64/auto-init-padding-2.c: Turn off SRA.
+	* gcc.target/aarch64/auto-init-padding-4.c: Likewise.
+
+2025-10-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122386
+	* gfortran.dg/transfer_array_subref_2.f90: New test.
+
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr114725.c: New.
+
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/118254
+	PR tree-optimization/114331
+	* gcc.dg/pr114331.c: New.
+	* gcc.dg/pr118254.c: New.
+
+2025-10-24  Alex Coplan  <alex.coplan@arm.com>
+
+	* gcc.dg/torture/vect-permute-ice.c: New test.
+
+2025-10-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-pr122406-1.c: Adjust to expect reduction
+	chain vectorization.
+	* gcc.dg/vect/vect-pr122406-2.c: Likewise.
+
+2025-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122406
+	* gcc.dg/vect/vect-pr122406-1.c: New testcase.
+	* gcc.dg/vect/vect-pr122406-2.c: Likewise.
+
+2025-10-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/121452
+	* c-c++-common/gomp/pr121452-1.c: New test.
+	* c-c++-common/gomp/pr121452-2.c: New test.
+	* gfortran.dg/gomp/pr121452-1.f90: New test.
+	* gfortran.dg/gomp/pr121452-2.f90: New test.
+	* gfortran.dg/gomp/pr121452-3.f90: New test.
+
+2025-10-24  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122323
+	* gcc.target/i386/builtin-fabs-2.c: Also scan (%edi)for x32.
+
+2025-10-24  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* gcc.dg/fold-vecperm-1.c: New test.
+
+2025-10-24  Olivier Hainque  <hainque@adacore.com>
+
+	* lib/target-supports.exp (check_weak_available):
+	Return 1 for VxWorks7.
+
+2025-10-24  Joseph Myers  <josmyers@redhat.com>
+
+	* gcc.dg/c23-static-assert-5.c, gcc.dg/c23-static-assert-6.c,
+	gcc.dg/c23-static-assert-7.c, gcc.dg/c23-static-assert-8.c,
+	gcc.dg/c2y-static-assert-2.c, gcc.dg/c2y-static-assert-3.c,
+	gcc.dg/c2y-static-assert-4.c: New tests.
+
 2025-10-23  Robert Dubner  <rdubner@symas.com>
 
 	* cobol.dg/group2/Length_overflow__2_.out: Updated test result.

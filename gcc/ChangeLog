@@ -1,3 +1,76 @@
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/114025
+	* gimple-range-fold.cc (fold_using_range::condexpr_adjust): Handle
+	the same ssa_name in the condition and the COND_EXPR better.
+
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	* range-op.cc (operator_bitwise_and::wi_fold): Split signed
+	operations crossing zero into 2 operations.
+
+2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/118254
+	PR tree-optimization/114331
+	* range-op.cc (operator_cast::fold_range): When VARYING is
+	reached, update the bitmask if we reach VARYING.
+	(operator_cast::op1_range): For truncating casts, create a
+	bitmask bit in LHS.
+
+2025-10-24  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (call_internal, call_value_internal,
+	sibcall_internal, sibcall_value_internal): Remove 'n'-constraint.
+
+2025-10-24  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*addsubx, *subsi3_from_const,
+	*xtensa_clamps, *andsi3_const_pow2_minus_one,
+	*andsi3_const_negative_pow2, *andsi3_const_shifted_mask,
+	*splice_bits, extvsi_internal, extzvsi_internal,
+	*extzvsi-1bit_ashlsi3, *extzvsi-1bit_addsubx, insvsi, *lsiu, *ssiu,
+	*lsip, *ssip, *shift_per_byte_omit_AND_0, *shift_per_byte_omit_AND_1,
+	*shlrd_const, *shlrd_per_byte_omit_AND, *masktrue_const_bitcmpl,
+	*masktrue_const_pow2_minus_one, *masktrue_const_negative_pow2,
+	*masktrue_const_shifted_mask, call_internal, call_value_internal,
+	sibcall_internal, sibcall_value_internal, entry,
+	*eqne_zero_masked_bits, *eqne_in_range): Remove 'i'-constraint.
+
+2025-10-24  Josef Melcr  <jmelcr02@gmail.com>
+
+	PR middle-end/122392
+	* attr-callback.cc (callback_build_attr): Remove erroneous
+	annotation.
+
+2025-10-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vectorizable_reduction): SLP-ify reduction
+	operation processing a bit more.
+
+2025-10-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122406
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Create
+	the SLP nodes for the conversions around the reduction
+	operation if required.
+
+2025-10-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/121452
+	* omp-low.cc (check_omp_nesting_restrictions): Accept an
+	OMP_STRUCTURED_BLOCK in a collapsed simd region and in an ordered loop.
+
+2025-10-24  Pengfei Li  <Pengfei.Li2@arm.com>
+
+	* match.pd: Fold VEC_PERM_EXPR chains implementing vector
+	concat-and-extract.
+
+2025-10-24  Olivier Hainque  <hainque@adacore.com>
+
+	* config/rs6000/vxworks.h (SET_CMODEL): Undefine before
+	(re)defining.
+
 2025-10-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* match.pd (`(type1)x CMP CST1 ? (type2)x : CST2`): Better handling

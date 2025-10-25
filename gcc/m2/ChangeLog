@@ -1,3 +1,79 @@
+2025-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122407
+	* gm2-compiler/FilterError.def (Copyright): Use correct
+	licence.
+	* gm2-compiler/FilterError.mod (Copyright): Ditto.
+	* gm2-compiler/M2Quads.mod (BuildNewProcedure): Rewrite.
+	(BuildIncProcedure): Ditto.
+	(BuildDecProcedure): Ditto.
+	(BuildInclProcedure): Ditto.
+	(BuildExclProcedure): Ditto.
+	(BuildAbsFunction): Ditto.
+	(BuildCapFunction): Ditto.
+	(BuildChrFunction): Ditto.
+	(BuildOrdFunction): Ditto.
+	(BuildIntFunction): Ditto.
+	(BuildMinFunction): Ditto.
+	(BuildMaxFunction): Ditto.
+	(BuildTruncFunction): Ditto.
+	(BuildTBitSizeFunction): Ditto.
+	(BuildTSizeFunction): Ditto.
+	(BuildSizeFunction): Ditto.
+
+2025-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122407
+	* Make-lang.in (GM2-LIBS-BOOT-DEFS): Add BinDict.def.
+	(GM2-LIBS-BOOT-MODS): Add BinDict.mod.
+	(GM2-COMP-BOOT-DEFS): Add FilterError.def.
+	(GM2-COMP-BOOT-MODS): Add FilterError.mod.
+	(GM2-LIBS-DEFS): Add BinDict.def.
+	(GM2-LIBS-MODS): Add BinDict.mod.
+	* gm2-compiler/M2Error.def (KillError): New procedure.
+	* gm2-compiler/M2Error.mod (WriteFormat3): Reformat.
+	(NewError): Rewrite and call AddToList.
+	(AddToList): New procedure.
+	(SubFromList): Ditto.
+	(WipeReferences): Ditto.
+	(KillError): Ditto.
+	* gm2-compiler/M2LexBuf.mod (MakeVirtualTok): Return
+	caret if all token positions are identical.
+	* gm2-compiler/M2MetaError.mod (KillError): Import.
+	(FilterError): Import.
+	(FilterUnknown): New global.
+	(initErrorBlock): Initialize symcause and token.
+	(push): Capitalize comments.
+	(pop): Copy symcause to toblock if discovered.
+	(doError): Add parameter sym.
+	(defaultError): Assign token if discovered.
+	Pass NulSym to doError.
+	(updateTokSym): New procedure.
+	(chooseError): Call updateTokSym.
+	(doErrorScopeModule): Pass sym to doError.
+	(doErrorScopeForward): Ditto.
+	(doErrorScopeMod): Ditto.
+	(doErrorScopeFor): Ditto.
+	(doErrorScopeDefinition): Ditto.
+	(doErrorScopeDef): Ditto.
+	(doErrorScopeProc): Ditto.
+	(used): Pass sym[bol] to doError.
+	(op): Assign symcause when encountering
+	an error, warning or note.
+	(MetaErrorStringT1): Rewrite.
+	(MetaErrorStringT2): Ditto.
+	(MetaErrorStringT3): Ditto.
+	(MetaErrorStringT4): Ditto.
+	(isUniqueError): New procedure function.
+	(wrapErrors): Rewrite.
+	(FilterUnknown): Initialize.
+	* gm2-compiler/M2Quads.mod (BuildTSizeFunction): Add spell check
+	hint specifier.
+	* gm2-compiler/FilterError.def: New file.
+	* gm2-compiler/FilterError.mod: New file.
+	* gm2-libs/BinDict.def: New file.
+	* gm2-libs/BinDict.mod: New file.
+
 2025-10-19  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122333

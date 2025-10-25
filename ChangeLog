@@ -1,3 +1,10 @@
+2025-10-24  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR driver/81358
+	* Makefile.tpl: Move generation of dependencies for libatomic out
+	of loop over 'target_modules'.
+	* Makefile.in: Regenerate.
+
 2025-10-22  Josef Melcr  <jmelcr02@gmail.com>
 
 	* MAINTAINERS: Update my contact information.

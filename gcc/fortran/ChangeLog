@@ -1,3 +1,16 @@
+2025-10-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122386
+	* dependency.cc (gfc_ref_needs_temporary_p): Revert r16-518.
+	* trans-intrinsic.cc (gfc_conv_intrinsic_transfer): Force temporary
+	for SOURCE not being a simply-contiguous array.
+
+2025-10-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/121452
+	* openmp.cc (resolve_omp_do): Allow CONTINUE as end statement of a
+	perfectly nested loop.
+
 2025-10-21  Paul-Antoine Arras  <parras@baylibre.com>
 
 	PR c/120180

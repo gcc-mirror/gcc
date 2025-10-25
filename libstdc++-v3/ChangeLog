@@ -1,3 +1,20 @@
+2025-10-24  Eric Pimentel Aguiar  <eric.pimentela@gmail.com>
+
+	* src/c++23/std.cc.in (std::strided_slice, std::full_extent_t)
+	(std::full_extent, std::submdspan_mapping_result): Add std
+	qualification.
+
+2025-10-24  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122022
+	* include/std/functional (_Bind_fn_t): Use forwarding reference as
+	paremeter.
+	(std::not_fn<f>): Use forwarding reference as lambda parameter.
+	* testsuite/20_util/function_objects/bind_back/nttp.cc: Rework tests.
+	* testsuite/20_util/function_objects/bind_front/nttp.cc: Likewise.
+	* testsuite/20_util/function_objects/not_fn/nttp.cc: Add test for
+	argument forwarding.
+
 2025-10-22  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122224

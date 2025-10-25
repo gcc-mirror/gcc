@@ -1,3 +1,18 @@
+2025-10-24  Joseph Myers  <josmyers@redhat.com>
+
+	* c-parser.cc (c_parser_next_tokens_start_typename)
+	(c_parser_next_tokens_start_declaration): Add argument for token
+	to start from
+	(c_parser_next_tokens_start_declaration): Check for whether static
+	assertion followed by semicolon.
+	(c_parser_check_balanced_raw_token_sequence): Declare earlier.
+	(c_parser_compound_statement_nostart, c_parser_for_statement): Use
+	c_parser_next_tokens_start_declaration not
+	c_token_starts_declaration on second token.
+	(c_parser_unary_expression): Handle static assertions.
+	* c-parser.h (c_parser_next_tokens_start_declaration): Add
+	argument.
+
 2025-10-21  Martin Uecker  <uecker@tugraz.at>
 
 	* c-decl.cc (build_array_declarator): Remove error.
