@@ -2071,6 +2071,23 @@ gfc_match_actual_arglist (int sub_flag, gfc_actual_arglist **argp, bool pdt)
 	    }
 	}
 
+    /* PDT kind expressions are acceptable as initialization expressions.
+       However, intrinsics with a KIND argument reject them. Convert the
+       expression now by use of the component initializer.  */
+    if (tail->expr
+	&& tail->expr->expr_type == EXPR_VARIABLE
+	&& gfc_expr_attr (tail->expr).pdt_kind)
+      {
+	gfc_ref *ref;
+	gfc_expr *tmp = NULL;
+	for (ref = tail->expr->ref; ref; ref = ref->next)
+	     if (!ref->next && ref->type == REF_COMPONENT
+		 && ref->u.c.component->attr.pdt_kind
+		 && ref->u.c.component->initializer)
+	  tmp = gfc_copy_expr (ref->u.c.component->initializer);
+	if (tmp)
+	  gfc_replace_expr (tail->expr, tmp);
+      }
 
     next:
       if (gfc_match_char (')') == MATCH_YES)

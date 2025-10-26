@@ -16077,10 +16077,13 @@ resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
 
 	  /* Preempt 'gfc_check_new_interface' for submodules, where the
 	     mechanism for handling module procedures winds up resolving
-	     operator interfaces twice and would otherwise cause an error.  */
+	     operator interfaces twice and would otherwise cause an error.
+	     Likewise, new instances of PDTs can cause the operator inter-
+	     faces to be resolved multiple times.  */
 	  for (intr = derived->ns->op[op]; intr; intr = intr->next)
 	    if (intr->sym == target_proc
-		&& target_proc->attr.used_in_submodule)
+		&& (target_proc->attr.used_in_submodule
+		    || derived->attr.pdt_type))
 	      return true;
 
 	  if (!gfc_check_new_interface (derived->ns->op[op],

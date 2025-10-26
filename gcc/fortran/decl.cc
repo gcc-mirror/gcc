@@ -3101,7 +3101,16 @@ variable_decl (int elem)
 	      goto cleanup;
 	    }
 
-	  m = gfc_match_init_expr (&initializer);
+	  if (gfc_comp_struct (gfc_current_state ())
+	      && gfc_current_block ()->attr.pdt_template)
+	    {
+	      m = gfc_match_expr (&initializer);
+	      if (initializer && initializer->ts.type == BT_UNKNOWN)
+		initializer->ts = current_ts;
+	    }
+	  else
+	    m = gfc_match_init_expr (&initializer);
+
 	  if (m == MATCH_NO)
 	    {
 	      gfc_error ("Expected an initialization expression at %C");
@@ -3179,7 +3188,7 @@ variable_decl (int elem)
 	      gfc_error ("BOZ literal constant at %L cannot appear as an "
 			 "initializer", &initializer->where);
 	      m = MATCH_ERROR;
-      	      goto cleanup;
+	      goto cleanup;
 	    }
 	  param->value = gfc_copy_expr (initializer);
 	}
@@ -4035,8 +4044,8 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  gfc_insert_parameter_exprs (kind_expr, type_param_spec_list);
 
 	  ok = gfc_simplify_expr (kind_expr, 1);
-	  /* Variable expressions seem to default to BT_PROCEDURE.
-	     TODO find out why this is and fix it.  */
+	  /* Variable expressions default to BT_PROCEDURE in the absence of an
+	     initializer so allow for this.  */
 	  if (kind_expr->ts.type != BT_INTEGER
 	      && kind_expr->ts.type != BT_PROCEDURE)
 	    {
@@ -4271,6 +4280,9 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 
 	  if (!c2->initializer && c1->initializer)
 	    c2->initializer = gfc_copy_expr (c1->initializer);
+
+	  if (c2->initializer)
+	    gfc_insert_parameter_exprs (c2->initializer, type_param_spec_list);
 	}
 
       /* Copy the array spec.  */
@@ -4374,7 +4386,21 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	}
       else if (!(c2->attr.pdt_kind || c2->attr.pdt_len || c2->attr.pdt_string
 		 || c2->attr.pdt_array) && c1->initializer)
-	c2->initializer = gfc_copy_expr (c1->initializer);
+	{
+	  c2->initializer = gfc_copy_expr (c1->initializer);
+	  if (c2->initializer->ts.type == BT_UNKNOWN)
+	    c2->initializer->ts = c2->ts;
+	  gfc_insert_parameter_exprs (c2->initializer, type_param_spec_list);
+	  /* The template initializers are parsed using gfc_match_expr rather
+	     than gfc_match_init_expr. Apply the missing reduction to the
+	     PDT instance initializers.  */
+	  if (!gfc_reduce_init_expr (c2->initializer))
+	    {
+	      gfc_free_expr (c2->initializer);
+	      goto error_return;
+	    }
+	  gfc_simplify_expr (c2->initializer, 1);
+	}
     }
 
   if (alloc_seen)
