@@ -13,12 +13,20 @@
 @opindex iquote
 @opindex isystem
 @opindex idirafter
+@opindex include-directory
+@opindex include-directory-after
 @item -I @var{dir}
 @itemx -iquote @var{dir}
 @itemx -isystem @var{dir}
 @itemx -idirafter @var{dir}
+@itemx --include-directory-after=@var{dir}
+@itemx --include-directory-after @var{dir}
+@itemx --include-directory=@var{dir}
+@itemx --include-directory @var{dir}
 Add the directory @var{dir} to the list of directories to be searched
-for header files during preprocessing.
+for header files during preprocessing.  @option{--include-directory}
+is an alias for @option{-I}, while @option{--include-directory-after}
+is an alias for @option{-idirafter}.
 @ifset cppmanual
 @xref{Search Path}.
 @end ifset
@@ -91,7 +99,9 @@ use the @option{-nostdinc} and/or @option{-isystem} options.
 @end ifset
 
 @opindex I-
+@opindex include-barrier
 @item -I-
+@itemx --include-barrier
 Split the include path.
 This option has been deprecated.  Please use @option{-iquote} instead for
 @option{-I} directories before the @option{-I-} and remove the @option{-I-}
@@ -112,19 +122,36 @@ file directory as the first search directory for @code{@w{#include
 @end ifset
 
 @opindex iprefix
+@opindex include-prefix
 @item -iprefix @var{prefix}
+@itemx --include-prefix=@var{prefix}
+@itemx --include-prefix @var{prefix}
 Specify @var{prefix} as the prefix for subsequent @option{-iwithprefix}
 options.  If the prefix represents a directory, you should include the
 final @samp{/}.
 
 @opindex iwithprefix
 @opindex iwithprefixbefore
+@opindex include-with-prefix
+@opindex include-with-prefix-after
+@opindex include-with-prefix-before
 @item -iwithprefix @var{dir}
 @itemx -iwithprefixbefore @var{dir}
+@itemx --include-with-prefix=@var{prefix}
+@itemx --include-with-prefix @var{prefix}
+@itemx --include-with-prefix-after=@var{prefix}
+@itemx --include-with-prefix-after @var{prefix}
+@itemx --include-with-prefix-before=@var{prefix}
+@itemx --include-with-prefix-before @var{prefix}
 Append @var{dir} to the prefix specified previously with
 @option{-iprefix}, and add the resulting directory to the include search
 path.  @option{-iwithprefixbefore} puts it in the same place @option{-I}
 would; @option{-iwithprefix} puts it where @option{-idirafter} would.
+
+@option{--include-with-prefix} and @option{--include-with-prefix-after} are
+both aliases for @option{-iwithprefix}, while
+@option{--include-with-prefix-before} is an alias for
+@option{-iwithprefixbefore}.
 
 @opindex isysroot
 @item -isysroot @var{dir}
@@ -139,7 +166,9 @@ Use @var{dir} as a subdirectory of the directory containing
 target-specific C++ headers.
 
 @opindex nostdinc
+@opindex no-standard-includes
 @item -nostdinc
+@itemx --no-standard-includes
 Do not search the standard system directories for header files.
 Only the directories explicitly specified with @option{-I},
 @option{-iquote}, @option{-isystem}, and/or @option{-idirafter}
@@ -153,7 +182,10 @@ but do still search the other standard directories.  (This option is
 used when building the C++ library.)
 
 @opindex embed-dir
+@opindex embed-directory
 @item --embed-dir=@var{dir}
+@itemx --embed-directory=@var{dir}
+@itemx --embed-directory @var{dir}
 Append @var{dir} directory to the list of searched directories for
 @code{#embed} preprocessing directive or @code{__has_embed} macro.
 There are no default directories for @code{#embed}.

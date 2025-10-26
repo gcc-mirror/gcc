@@ -194,7 +194,12 @@ in the following sections.
 -pass-exit-codes  -pipe  -specs=@var{file}  -wrapper
 @@@var{file}  -ffile-prefix-map=@var{old}=@var{new}  -fcanon-prefix-map
 -fplugin=@var{file}  -fplugin-arg-@var{name}=@var{arg}
--fdump-ada-spec@r{[}-slim@r{]}  -fada-spec-parent=@var{unit}  -fdump-go-spec=@var{file}}
+-fdump-ada-spec@r{[}-slim@r{]}  -fada-spec-parent=@var{unit}
+-fdump-go-spec=@var{file}
+--assemble  --compile  --dumpbase @var{dumpbase}
+--dumpbase-ext @var{auxdropsuf}  --dumpdir @var{dumppfx}
+--language=@var{language}  --output=@var{file}  --pass-exit-codes
+--pipe  --preprocess  --specs=@var{file}  --verbose}
 
 @item C Language Options
 @xref{C Dialect Options,,Options Controlling C Dialect}.
@@ -206,7 +211,7 @@ in the following sections.
 -fpermitted-flt-eval-methods=@var{standard}
 -fplan9-extensions  -fsigned-bitfields  -funsigned-bitfields
 -fsigned-char  -funsigned-char  -fstrict-flex-arrays[=@var{n}]
--fsso-struct=@var{endianness}}
+-fsso-struct=@var{endianness}  --ansi}
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
@@ -468,7 +473,9 @@ Objective-C and Objective-C++ Dialects}.
 -Wvolatile-register-var  -Wwrite-strings
 -Wno-xor-used-as-pow
 -Wzero-as-null-pointer-constant
--Wzero-length-bounds}
+-Wzero-length-bounds
+--all-warnings  --extra-warnings  --no-warnings
+--pedantic  --pedantic-errors}
 
 @item Static Analyzer Options
 @gccoptlist{
@@ -585,7 +592,8 @@ Objective-C and Objective-C++ Dialects}.
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]}
 -fno-eliminate-unused-debug-symbols  -femit-class-debug-always
 -fno-merge-debug-strings  -fno-dwarf2-cfi-asm
--fvar-tracking  -fvar-tracking-assignments}
+-fvar-tracking  -fvar-tracking-assignments
+--debug}
 
 @item Optimization Options
 @xref{Optimize Options,,Options that Control Optimization}.
@@ -684,11 +692,11 @@ Objective-C and Objective-C++ Dialects}.
 -fipa-ra  -fvariable-expansion-in-unroller  -fvect-cost-model  -fvpt
 -fweb  -fwhole-program  -fwpa  -fuse-linker-plugin -fzero-call-used-regs
 --param @var{name}=@var{value}
--O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og  -Oz}
+-O  -O0  -O1  -O2  -O3  -Os  -Ofast  -Og  -Oz  --optimize}
 
 @item Program Instrumentation Options
 @xref{Instrumentation Options,,Program Instrumentation Options}.
-@gccoptlist{-p  -pg  -fprofile-arcs  --coverage  -ftest-coverage
+@gccoptlist{-p  -pg  -fprofile-arcs  -coverage  -ftest-coverage
 -fcondition-coverage
 -fpath-coverage
 -fprofile-abs-path
@@ -719,7 +727,8 @@ Objective-C and Objective-C++ Dialects}.
 -finstrument-functions-exclude-function-list=@var{sym},@var{sym},@dots{}
 -finstrument-functions-exclude-file-list=@var{file},@var{file},@dots{}
 -fprofile-prefix-map=@var{old}=@var{new}
--fpatchable-function-entry=@var{N}@r{[},@var{M}@r{]}}
+-fpatchable-function-entry=@var{N}@r{[},@var{M}@r{]}
+--coverage --profile}
 
 @item Preprocessor Options
 @xref{Preprocessor Options,,Options Controlling the Preprocessor}.
@@ -737,23 +746,37 @@ Objective-C and Objective-C++ Dialects}.
 -no-integrated-cpp  -P  -pthread  -remap
 -traditional  -traditional-cpp  -trigraphs
 -U@var{macro}  -undef
--Wp,@var{option}  -Xpreprocessor @var{option}}
+-Wp,@var{option}  -Xpreprocessor @var{option}
+--comments  --comments-in-macros
+--define-macro=@var{macro}@r{[}=@var{defn}@r{]}
+--dependencies  --dump=@var{letters}
+--imacros=@var{file}  --include=@var{file}
+--no-integrated-cpp  --no-line-commands
+--print-missing-file-dependencies
+--traditional  --traditional-cpp  --trigraphs  --trace-includes
+--undefine-macro=@var{macro}
+--user-dependencies  --write-dependencies  --write-user-dependencies
+}
 
 @item Assembler Options
 @xref{Assembler Options,,Passing Options to the Assembler}.
-@gccoptlist{-Wa,@var{option}  -Xassembler @var{option}}
+@gccoptlist{-Wa,@var{option}  -Xassembler @var{option}
+--for-assembler=@var{option}}
 
 @item Linker Options
 @xref{Link Options,,Options for Linking}.
 @gccoptlist{@var{object-file-name} -flink-libatomic  -fuse-ld=@var{linker}  -l@var{library}
 -nostartfiles  -nodefaultlibs  -nolibc  -nostdlib  -nostdlib++
--e @var{entry}  --entry=@var{entry}
+-e @var{entry}
 -pie  -pthread  -r  -rdynamic
 -s  -static  -static-pie  -static-libgcc  -static-libstdc++
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan
 -shared  -shared-libgcc  -symbolic
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option}
--u @var{symbol}  -z @var{keyword}}
+-u @var{symbol}  -z @var{keyword}
+--entry=@var{entry}  --for-linker=@var{option}
+--force-link=@var{symbol}  --no-standard-library
+--pie  --static  --static-pie  --symbolic}
 
 @item Directory Options
 @xref{Directory Options,,Options for Directory Search}.
@@ -763,9 +786,15 @@ Objective-C and Objective-C++ Dialects}.
 -iplugindir=@var{dir}  -iprefix @var{file}
 -iquote @var{dir}  -isysroot @var{dir}  -isystem @var{dir}
 -iwithprefix @var{dir}  -iwithprefixbefore @var{dir}
---embed-dir=@var{dir}
 -L@var{dir}  -no-canonical-prefixes  --no-sysroot-suffix
--nostdinc  -nostdinc++  --sysroot=@var{dir}}
+-nostdinc  -nostdinc++
+--embed-dir=@var{dir}  --embed-directory=@var{dir}
+--include-barrier  --include-directory=@var{dir}
+--include-directory-after=@var{dir}  --include-prefix=@var{prefix}
+--include-with-prefix=@var{prefix}  --include-with-prefix-after=@var{prefix}
+--include-with-prefix-before=@var{prefix}
+--no-canonical-prefixes  --no-standard-includes
+--prefix=@var{prefix}  --sysroot=@var{dir}}
 
 @item Code Generation Options
 @xref{Code Gen Options,,Options for Code Generation Conventions}.
@@ -831,7 +860,14 @@ Objective-C and Objective-C++ Dialects}.
 -print-multiarch
 -print-prog-name=@var{program}  -print-search-dirs  -Q
 -print-sysroot  -print-sysroot-headers-suffix
--save-temps  -save-temps=cwd  -save-temps=obj  -time@r{[}=@var{file}@r{]}}
+-save-temps  -save-temps=cwd  -save-temps=obj  -time@r{[}=@var{file}@r{]}
+--dump=@var{letters}
+--print-file-name=@var{library}  --print-libgcc-file-file-name
+--print-multi-directory  --print-multi-lib  --print-multi-os-directory
+--print-multiarch  --print-prog-name=@var{program}
+--print-search-dirs  --print-sysroot  --print-sysroot-headers-suffix
+--save-temps
+}
 
 @item Machine-Dependent Options
 @xref{Submodel Options,,Machine-Dependent Options}.
@@ -1718,10 +1754,13 @@ Any file name with no recognized suffix is treated this way.
 @end table
 
 @opindex x
+@opindex language
 You can specify the input language explicitly with the @option{-x} option:
 
 @table @gcctabopt
 @item -x @var{language}
+@itemx --language=@var{language}
+@itemx --language @var{language}
 Specify explicitly the @var{language} for the following input files
 (rather than letting the compiler choose a default based on the file
 name suffix).  This option applies to all following input files until
@@ -1757,7 +1796,9 @@ one of the options @option{-c}, @option{-S}, or @option{-E} to say where
 
 @table @gcctabopt
 @opindex c
+@opindex compile
 @item -c
+@itemx --compile
 Compile or assemble the source files, but do not link.  The linking
 stage simply is not done.  The ultimate output is in the form of an
 object file for each source file.
@@ -1769,7 +1810,9 @@ Unrecognized input files, not requiring compilation or assembly, are
 ignored.
 
 @opindex S
+@opindex assemble
 @item -S
+@itemx --assemble
 Stop after the stage of compilation proper; do not assemble.  The output
 is in the form of an assembler code file for each non-assembler input
 file specified.
@@ -1780,7 +1823,9 @@ replacing the suffix @samp{.c}, @samp{.i}, etc., with @samp{.s}.
 Input files that don't require compilation are ignored.
 
 @opindex E
+@opindex preprocess
 @item -E
+@itemx --preprocess
 Stop after the preprocessing stage; do not run the compiler proper.  The
 output is in the form of preprocessed source code, which is sent to the
 standard output.
@@ -1789,7 +1834,10 @@ Input files that don't require preprocessing are ignored.
 
 @cindex output file option
 @opindex o
+@opindex output
 @item -o @var{file}
+@itemx --output=@var{file}
+@itemx --output @var{file}
 Place the primary output in file @var{file}.  This applies to whatever
 sort of output is being produced, whether it be an executable file, an
 object file, an assembler file or preprocessed C code.
@@ -1861,6 +1909,7 @@ by the options @option{-dumpbase}, @option{-dumpbase-ext},
 
 @opindex dumpbase
 @item -dumpbase @var{dumpbase}
+@item --dumpbase @var{dumpbase}
 This option sets the base name for auxiliary and dump output files.  It
 does not affect the name of the primary output file.  Intermediate
 outputs, when preserved, are not regarded as primary outputs, but as
@@ -1950,6 +1999,7 @@ auxiliary files.
 
 @opindex dumpbase-ext
 @item -dumpbase-ext @var{auxdropsuf}
+@itemx --dumpbase-ext @var{auxdropsuf}
 When forming the name of an auxiliary (but not a dump) output file, drop
 trailing @var{auxdropsuf} from @var{dumpbase} before appending any
 suffixes.  If not specified, this option defaults to the suffix of a
@@ -1984,6 +2034,7 @@ the auxiliary and dump outputs by using the executable name minus
 
 @opindex dumpdir
 @item -dumpdir @var{dumppfx}
+@itemx --dumpdir @var{dumppfx}
 When forming the name of an auxiliary or dump output file, use
 @var{dumppfx} as a prefix:
 
@@ -2111,7 +2162,9 @@ component so that it overrides any @option{-dumpdir}, and passes that as
 @option{-dumpbase} to sub-compilers.
 
 @opindex v
+@opindex verbose
 @item -v
+@itemx --verbose
 Print (on standard error output) the commands executed to run the stages
 of compilation.  Also print the version number of the compiler driver
 program and of the preprocessor and the compiler proper.
@@ -2264,6 +2317,7 @@ Display the version number and copyrights of the invoked GCC@.
 
 @opindex pass-exit-codes
 @item -pass-exit-codes
+@itemx --pass-exit-codes
 Normally the @command{gcc} program exits with the code of 1 if any
 phase of the compiler returns a non-success return code.  If you specify
 @option{-pass-exit-codes}, the @command{gcc} program instead returns with
@@ -2273,6 +2327,7 @@ compiler error is encountered.
 
 @opindex pipe
 @item -pipe
+@itemx --pipe
 Use pipes rather than temporary files for communication between the
 various stages of compilation.  This fails to work on some systems where
 the assembler is unable to read from a pipe; but the GNU assembler has
@@ -2280,6 +2335,8 @@ no trouble.
 
 @opindex specs
 @item -specs=@var{file}
+@itemx --specs=@var{file}
+@itemx --specs @var{file}
 Process @var{file} after the compiler reads in the standard @file{specs}
 file, in order to override the defaults which the @command{gcc} driver
 program uses when determining what switches to pass to @command{cc1},
@@ -2417,6 +2474,7 @@ accepts:
 @cindex ISO support
 @opindex ansi
 @item -ansi
+@itemx --ansi
 In C mode, this is equivalent to @option{-std=c90}. In C++ mode, it is
 equivalent to @option{-std=c++98}.
 
@@ -6439,7 +6497,9 @@ specified, then @option{-Wfatal-errors} takes precedence over this
 option.
 
 @opindex w
+@opindex no-warnings
 @item -w
+@itemx --no-warnings
 Inhibit all warning messages.
 
 @opindex Werror
@@ -6520,6 +6580,7 @@ problems, in some cases it may also cause false positives.
 @opindex Wno-pedantic
 @item -Wpedantic
 @itemx -pedantic
+@itemx --pedantic
 Issue all the warnings demanded by strict ISO C and ISO C++;
 diagnose all programs that use forbidden extensions, and some other
 programs that do not follow ISO C and ISO C++.  This follows the version
@@ -6558,6 +6619,7 @@ nothing to warn about.)
 
 @opindex pedantic-errors
 @item -pedantic-errors
+@itemx --pedantic-errors
 Give an error whenever the @dfn{base standard} (see @option{-Wpedantic})
 requires a diagnostic, in some cases where there is undefined behavior
 at compile-time and in some other cases that do not prevent compilation
@@ -6628,7 +6690,9 @@ modes (@option{-std=c89}, @option{-std=gnu89}, @option{-std=c90},
 
 @opindex Wall
 @opindex Wno-all
+@opindex all-warnings
 @item -Wall
+@itemx --all-warnings
 This enables all the warnings about constructions that some users
 consider questionable, and that are easy to avoid (or modify to
 prevent the warning), even in conjunction with macros.  This also
@@ -6730,7 +6794,9 @@ them must be enabled individually.
 @opindex W
 @opindex Wextra
 @opindex Wno-extra
+@opindex extra-warnings
 @item -Wextra
+@itemx --extra-warnings
 This enables some extra warning flags that are not enabled by
 @option{-Wall}. (This option used to be called @option{-W}.  The older
 name is still supported, but the newer name is more descriptive.)
@@ -12601,7 +12667,9 @@ information useful for debugging do not run at all, so that
 
 @table @gcctabopt
 @opindex g
+@opindex debug
 @item -g
+@itemx --debug
 Produce debugging information in the operating system's native format
 (stabs, COFF, XCOFF, or DWARF)@.  GDB can work with this debugging
 information.
@@ -13110,8 +13178,10 @@ to find out the exact set of optimizations that are enabled at each level.
 @table @gcctabopt
 @opindex O
 @opindex O1
+@opindex optimize
 @item -O
 @itemx -O1
+@itemx --optimize
 Optimize.  Optimizing compilation takes somewhat more time, and a lot
 more memory for a large function.
 
@@ -16323,6 +16393,7 @@ attribute @code{zero_call_used_regs} (@pxref{Function Attributes}).
 
 @opindex param
 @item --param @var{name}=@var{value}
+@itemx --param=@var{name}=@var{value}
 In some places, GCC uses various constants to control the amount of
 optimization that is done.  For example, GCC does not inline functions
 that contain more than a certain number of instructions.  You can
@@ -18030,10 +18101,13 @@ program analysis purposes.
 @cindex @command{gprof}
 @opindex p
 @opindex pg
+@opindex profile
 @item -p
 @itemx -pg
+@itemx --profile
 Generate extra code to write profile information suitable for the
-analysis program @command{prof} (for @option{-p}) or @command{gprof}
+analysis program @command{prof} (for @option{-p} or @option{--profile})
+or @command{gprof}
 (for @option{-pg}).  You must use this option when compiling
 the source files you want data about, and you must also use it when
 linking.
@@ -18101,9 +18175,11 @@ is @var{250000}.
 @cindex @command{gcov}
 @opindex coverage
 @item --coverage
+@itemx -coverage
 
 This option is used to compile and link code instrumented for coverage
-analysis.  The option is a synonym for @option{-fprofile-arcs}
+analysis.  The options @option{-coverage} and @option{--coverage} are
+equivalent; both are a synonym for @option{-fprofile-arcs}
 @option{-ftest-coverage} (when compiling) and @option{-lgcov} (when
 linking).  See the documentation for those options for more details.
 
@@ -19467,6 +19543,7 @@ If you want to pass an option that takes an argument, you must use
 
 @opindex no-integrated-cpp
 @item -no-integrated-cpp
+@itemx --no-integrated-cpp
 Perform preprocessing as a separate pass before compilation.
 By default, GCC performs preprocessing as an integrated part of
 input tokenization and parsing.
@@ -19495,7 +19572,10 @@ Pass @var{option} as an option to the assembler.  If @var{option}
 contains commas, it is split into multiple options at the commas.
 
 @opindex Xassembler
+@opindex for-assembler
 @item -Xassembler @var{option}
+@itemx --for-assembler=@var{option}
+@itemx --for-assembler @var{option}
 Pass @var{option} as an option to the assembler.  You can use this to
 supply system-specific assembler options that GCC does not
 recognize.
@@ -19670,7 +19750,9 @@ absence of a C library is assumed, for example @option{-lpthread} or
 targets when there is indeed no C library available.
 
 @opindex nostdlib
+@opindex no-standard-libraries
 @item -nostdlib
+@itemx --no-standard-libraries
 Do not use the standard system startup files or libraries when linking.
 No startup files and only the libraries you specify are passed to
 the linker, and options specifying linkage of the system libraries, such as
@@ -19712,6 +19794,7 @@ Do not implicitly link with standard C++ libraries.
 @opindex entry
 @item -e @var{entry}
 @itemx --entry=@var{entry}
+@itemx --entry @var{entry}
 
 Specify that the program entry point is @var{entry}.  The argument is
 interpreted by the linker; the GNU linker accepts either a symbol name
@@ -19719,6 +19802,7 @@ or an address.
 
 @opindex pie
 @item -pie
+@itemx --pie
 Produce a dynamically linked position independent executable on targets
 that support it.  For predictable results, you must also specify the same
 set of options used for compilation (@option{-fpie}, @option{-fPIE},
@@ -19730,6 +19814,7 @@ Don't produce a dynamically linked position independent executable.
 
 @opindex static-pie
 @item -static-pie
+@itemx --static-pie
 Produce a static position independent executable on targets that support
 it.  A static position independent executable is similar to a static
 executable, but can be loaded at any address without a dynamic linker.
@@ -19764,12 +19849,14 @@ Remove all symbol table and relocation information from the executable.
 
 @opindex static
 @item -static
+@itemx --static
 On systems that support dynamic linking, this overrides @option{-pie}
 and prevents linking with the shared libraries.  On other systems, this
 option has no effect.
 
 @opindex shared
 @item -shared
+@itemx --shared
 Produce a shared object which can then be linked with other objects to
 form an executable.  Not all systems support this option.  For predictable
 results, you must also specify the same set of options used for compilation
@@ -19873,6 +19960,7 @@ libraries statically.
 
 @opindex symbolic
 @item -symbolic
+@itemx --symbolic
 Bind references to global symbols when building a shared object.  Warn
 about any unresolved references (unless overridden by the link editor
 option @option{-Xlinker -z -Xlinker defs}).  Only a few systems support
@@ -19906,7 +19994,10 @@ syntax than as separate arguments.  For example, you can specify
 this syntax for command-line options.
 
 @opindex Wl
+@opindex for-linker
 @item -Wl,@var{option}
+@itemx --for-linker=@var{option}
+@itemx --for-linker @var{option}
 Pass @var{option} as an option to the linker.  If @var{option} contains
 commas, it is split into multiple options at the commas.  You can use this
 syntax to pass an argument to the option.
@@ -19915,7 +20006,10 @@ linker.  When using the GNU linker, you can also get the same effect with
 @option{-Wl,-Map=output.map}.
 
 @opindex u
+@opindex force-link
 @item -u @var{symbol}
+@itemx --force-link=@var{symbol}
+@itemx --force-link @var{symbol}
 Pretend the symbol @var{symbol} is undefined, to force linking of
 library modules to define it.  You can use @option{-u} multiple times with
 different symbols to force loading of additional library modules.
@@ -19947,12 +20041,18 @@ by @option{-fplugin=@var{name}} instead of
 to be used by the user, but only passed by the driver.
 
 @opindex L
+@opindex library-directory
 @item -L@var{dir}
+@itemx --library-directory=@var{dir}
+@itemx --library-directory @var{dir}
 Add directory @var{dir} to the list of directories to be searched
 for @option{-l}.
 
 @opindex B
+@opindex prefix
 @item -B@var{prefix}
+@itemx --prefix=@var{prefix}
+@itemx --prefix @var{prefix}
 This option specifies where to find the executables, libraries,
 include files, and data files of the compiler itself.
 
@@ -19997,12 +20097,14 @@ with boot-strapping the compiler.
 
 @opindex no-canonical-prefixes
 @item -no-canonical-prefixes
+@itemx --no-canonical-prefixes
 Do not expand any symbolic links, resolve references to @samp{/../}
 or @samp{/./}, or make the path absolute when generating a relative
 prefix.
 
 @opindex sysroot
 @item --sysroot=@var{dir}
+@itemx --sysroot @var{dir}
 Use @var{dir} as the logical root directory for headers and libraries.
 For example, if the compiler normally searches for headers in
 @file{/usr/include} and libraries in @file{/usr/lib}, it instead
@@ -20828,8 +20930,11 @@ may generate multiple callgraph information files next to intermediate
 LTO output files.
 
 @opindex d
+@opindex dump
 @opindex fdump-rtl-@var{pass}
 @item -d@var{letters}
+@itemx --dump=@var{letters}
+@itemx --dump @var{letters}
 @itemx -fdump-rtl-@var{pass}
 @itemx -fdump-rtl-@var{pass}-@var{options}
 @itemx -fdump-rtl-@var{pass}-@var{options}=@var{filename}
@@ -21091,35 +21196,42 @@ These dumps are defined but always produce empty files.
 @opindex da
 @opindex fdump-rtl-all
 @item -da
+@itemx --dump=a
 @itemx -fdump-rtl-all
 Produce all the dumps listed above.
 
 @opindex dA
 @item -dA
+@itemx --dump=A
 Annotate the assembler output with miscellaneous debugging information.
 
 @opindex dD
 @item -dD
+@itemx --dump=D
 Dump all macro definitions, at the end of preprocessing, in addition to
 normal output.
 
 @opindex dH
 @item -dH
+@itemx --dump=H
 Produce a core dump whenever an error occurs.
 
 @opindex dp
 @item -dp
+@itemx --dump=p
 Annotate the assembler output with a comment indicating which
 pattern and alternative is used.  The length and cost of each instruction are
 also printed.
 
 @opindex dP
 @item -dP
+@itemx --dump=P
 Dump the RTL in the assembler output as a comment before each instruction.
 Also turns on @option{-dp} annotation.
 
 @opindex dx
 @item -dx
+@itemx --dump=x
 Just generate RTL for a function instead of compiling it.  Usually used
 with @option{-fdump-rtl-expand}.
 @end table
@@ -21729,6 +21841,7 @@ The @var{string} should be different for every file you compile.
 
 @opindex save-temps
 @item -save-temps
+@itemx --save-temps
 Store the usual ``temporary'' intermediate files permanently; name them
 as auxiliary output files, as specified described under
 @option{-dumpbase} and @option{-dumpdir}.
@@ -22001,6 +22114,8 @@ For @code{dbg_cnt(tail_call)} true is returned for first 10 invocations.
 
 @opindex print-file-name
 @item -print-file-name=@var{library}
+@itemx --print-file-name=@var{library}
+@itemx --print-file-name @var{library}
 Print the full absolute name of the library file @var{library} that
 would be used when linking---and don't do anything else.  With this
 option, GCC does not compile or link anything; it just prints the
@@ -22008,12 +22123,14 @@ file name.
 
 @opindex print-multi-directory
 @item -print-multi-directory
+@itemx --print-multi-directory
 Print the directory name corresponding to the multilib selected by any
 other switches present in the command line.  This directory is supposed
 to exist in @env{GCC_EXEC_PREFIX}.
 
 @opindex print-multi-lib
 @item -print-multi-lib
+@itemx --print-multi-lib
 Print the mapping from multilib directory names to compiler switches
 that enable them.  The directory name is separated from the switches by
 @samp{;}, and each switch starts with an @samp{@@} instead of the
@@ -22022,6 +22139,7 @@ ease shell processing.
 
 @opindex print-multi-os-directory
 @item -print-multi-os-directory
+@itemx --print-multi-os-directory
 Print the path to OS libraries for the selected
 multilib, relative to some @file{lib} subdirectory.  If OS libraries are
 present in the @file{lib} subdirectory and no multilibs are used, this is
@@ -22032,15 +22150,19 @@ subdirectories it prints e.g.@: @file{amd64}, @file{sparcv9} or @file{ev6}.
 
 @opindex print-multiarch
 @item -print-multiarch
+@itemx --print-multiarch
 Print the path to OS libraries for the selected multiarch,
 relative to some @file{lib} subdirectory.
 
 @opindex print-prog-name
 @item -print-prog-name=@var{program}
+@itemx --print-prog-name=@var{program}
+@itemx --print-prog-name @var{program}
 Like @option{-print-file-name}, but searches for a program such as @command{cpp}.
 
 @opindex print-libgcc-file-name
 @item -print-libgcc-file-name
+@itemx --print-libgcc-file-name
 Same as @option{-print-file-name=libgcc.a}.
 
 This is useful when you use @option{-nostdlib} or @option{-nodefaultlibs}
@@ -22052,6 +22174,7 @@ gcc -nostdlib @var{files}@dots{} `gcc -print-libgcc-file-name`
 
 @opindex print-search-dirs
 @item -print-search-dirs
+@itemx --print-search-dirs
 Print the name of the configured installation directory and a list of
 program and library directories @command{gcc} searches---and don't do anything else.
 
@@ -22065,6 +22188,7 @@ Don't forget the trailing @samp{/}.
 
 @opindex print-sysroot
 @item -print-sysroot
+@itemx --print-sysroot
 Print the target sysroot directory that is used during
 compilation.  This is the target sysroot specified either at configure
 time or using the @option{--sysroot} option, possibly with an extra
@@ -22073,6 +22197,7 @@ specified, the option prints nothing.
 
 @opindex print-sysroot-headers-suffix
 @item -print-sysroot-headers-suffix
+@itemx --print-sysroot-headers-suffix
 Print the suffix added to the target sysroot when searching for
 headers, or give an error if the compiler is not configured with such
 a suffix---and don't do anything else.
