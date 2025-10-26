@@ -2143,7 +2143,7 @@ dr_safe_speculative_read_required (stmt_vec_info stmt_info)
   return dr_info->safe_speculative_read_required;
 }
 
-/* Set the safe_speculative_read_required for the the stmt_vec_info, if group
+/* Set the safe_speculative_read_required for the stmt_vec_info, if group
    access then set on the fist element otherwise set on DR directly.  */
 inline void
 dr_set_safe_speculative_read_required (stmt_vec_info stmt_info,
