@@ -304,17 +304,14 @@ mdoc. GNU groff is required to convert them to PDF format.  Conversion
 to HTML is done with mandoc, available at
 @uref{https://mandoc.bsd.lv}.
 
+The COBOL runtime library. libgcobol, requires libxml2 2.9 or later.
+It implements support for @code{XML PARSE}.  
+
 Because ISO COBOL defines strict requirements for numerical precision,
-gcobol requires hardware with 128-bit computation instructions.  This
-requirement applies to both host and target. For integer and
-fixed-point computation, gcobol uses
-@deftp {Data type} __int128
-@end deftp
-meaning @code{16 == sizeof(long long int)}.
-For floating point, gcobol uses
-@deftp {Data type} _Float128
-@end deftp
-(On some architectures, GCC supports 128-bit floating point in software.)
+gcobol computes with 128-bit operands.  This requirement applies to
+both host and target. For integers, gcobol requires the platform to
+support the GCC @code{__int128} type.  For floating point it uses
+@code{_Float128} or similar.  
 
 gcobol has so far been tested on two architectures only: x86_64 and
 aarch64 with little-endian encoding.
