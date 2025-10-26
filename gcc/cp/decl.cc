@@ -7096,6 +7096,14 @@ maybe_deduce_size_from_array_init (tree decl, tree init)
       cp_apply_type_quals_to_decl (cp_type_quals (TREE_TYPE (decl)), decl);
 
       relayout_decl (decl);
+
+      /* Update the type of the corresponding TEMPLATE_DECL to match.  */
+      if (DECL_LANG_SPECIFIC (decl) && DECL_TEMPLATE_INFO (decl))
+	{
+	  tree tmpl = template_for_substitution (decl);
+	  if (DECL_TEMPLATE_RESULT (tmpl) == decl)
+	    TREE_TYPE (tmpl) = TREE_TYPE (decl);
+	}
     }
 }
 
