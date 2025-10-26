@@ -21867,8 +21867,17 @@ package body Sem_Prag is
 
             if Rep_Item_Too_Late (Def_Id, N) then
                return;
-            else
-               Set_Has_Gigi_Rep_Item (Def_Id);
+            end if;
+
+            Set_Has_Gigi_Rep_Item (Def_Id);
+
+            --  The pragma is processed directly by the back end when Def_Id is
+            --  translated. If the argument is not a string literal, it may be
+            --  declared after Def_Id and before the pragma, which requires the
+            --  processing of Def_Id to be delayed for the back end.
+
+            if Nkind (Get_Pragma_Arg (Arg2)) /= N_String_Literal then
+               Set_Has_Delayed_Freeze (Def_Id);
             end if;
          end Machine_Attribute;
 
