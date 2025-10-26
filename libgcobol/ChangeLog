@@ -1,3 +1,8 @@
+2025-10-25  Sam James  <sam@gentoo.org>
+
+	PR cobol/122398
+	* xmlparse.cc (__gg__xml_parse): Make 'msg' const.
+
 2025-10-23  Robert Dubner  <rdubner@symas.com>
 
 	* charmaps.cc: Encoding.

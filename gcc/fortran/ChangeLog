@@ -1,3 +1,13 @@
+2025-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114023
+	* trans-expr.cc (gfc_trans_pointer_assignment): Always set dtype
+	when remapping a pointer.  For unlimited polymorphic LHS use
+	elem_len from RHS.
+	* trans-intrinsic.cc (gfc_conv_is_contiguous_expr): Extend inline
+	generated code for IS_CONTIGUOUS for pointer arguments to detect
+	when span differs from the element size.
+
 2025-10-24  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/122386

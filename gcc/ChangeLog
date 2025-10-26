@@ -1,3 +1,21 @@
+2025-10-25  Sam James  <sam@gentoo.org>
+
+	* doc/extend.texi (nocf_check): Fix syntax errors in example.
+
+2025-10-25  Jiahao Xu  <xujiahao@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_extract<mode><lasxhalf>): New define_expand.
+	(vec_extract_lo_<mode>): New define_insn_and_split.
+	(vec_extract_hi_<mode>): New define_insn.
+	* config/loongarch/loongarch-protos.h (loongarch_check_vect_par_cnst_half)
+	New function prototype.
+	* config/loongarch/loongarch.cc (loongarch_split_reduction):
+	Implement TARGET_VECTORIZE_SPLIT_REDUCTION.
+	(loongarch_check_vect_par_cnst_half): New function.
+	* config/loongarch/predicates.md
+	(vect_par_cnst_low_half): New predicate.
+	(vect_par_cnst_high_half): New predicate.
+
 2025-10-24  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/114025
