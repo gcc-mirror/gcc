@@ -9802,6 +9802,29 @@ expand_expr_divmod (tree_code code, machine_mode mode, tree treeop0,
   return expand_divmod (mod_p, code, mode, op0, op1, target, unsignedp);
 }
 
+/* Return true if EXP has a range of values [0..1], false
+   otherwise. This works for constants and ssa names, calling back into the ranger.  */
+static bool
+expr_has_boolean_range (tree exp, gimple *stmt)
+{
+  /* An integral type with a single bit of precision.  */
+  if (INTEGRAL_TYPE_P (TREE_TYPE (exp))
+      && TYPE_UNSIGNED (TREE_TYPE (exp))
+      && TYPE_PRECISION (TREE_TYPE (exp)) == 1)
+    return true;
+
+  /* Signed 1 bit integers are not boolean ranges. */
+  if (!INTEGRAL_TYPE_P (TREE_TYPE (exp))
+      || TYPE_PRECISION (TREE_TYPE (exp)) <= 1)
+    return false;
+
+  if (TREE_CODE (exp) == SSA_NAME)
+    return ssa_name_has_boolean_range (exp, stmt);
+  if (TREE_CODE (exp) == INTEGER_CST)
+    return wi::leu_p (wi::to_wide (exp), 1);
+  return false;
+}
+
 rtx
 expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
 		    enum expand_modifier modifier)
@@ -10460,9 +10483,8 @@ expand_expr_real_2 (const_sepops ops, rtx target, machine_mode tmode,
       /* Expand X*Y as X&-Y when Y must be zero or one.  */
       if (SCALAR_INT_MODE_P (mode))
 	{
-	  bool gimple_zero_one_valued_p (tree, tree (*)(tree));
-	  bool bit0_p = gimple_zero_one_valued_p (treeop0, nullptr);
-	  bool bit1_p = gimple_zero_one_valued_p (treeop1, nullptr);
+	  bool bit0_p = expr_has_boolean_range (treeop0, currently_expanding_gimple_stmt);
+	  bool bit1_p = expr_has_boolean_range (treeop1, currently_expanding_gimple_stmt);
 
 	  /* Expand X*Y as X&Y when both X and Y must be zero or one.  */
 	  if (bit0_p && bit1_p)

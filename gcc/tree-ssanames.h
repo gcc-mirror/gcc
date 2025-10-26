@@ -62,7 +62,7 @@ extern void set_nonzero_bits (tree, const wide_int &);
 extern void set_bitmask (tree, const wide_int &value, const wide_int &mask);
 extern wide_int get_nonzero_bits (const_tree);
 extern wide_int get_known_nonzero_bits (const_tree);
-extern bool ssa_name_has_boolean_range (tree);
+extern bool ssa_name_has_boolean_range (tree, gimple * = nullptr);
 extern void init_ssanames (struct function *, int);
 extern void fini_ssanames (struct function *);
 extern void ssanames_print_statistics (void);
