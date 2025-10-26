@@ -245,7 +245,7 @@ cobol/scan.o: cobol/scan.cc			\
 # Update token names if the generator script is installed
 # (by a developer) and there's been a change. 
 $(srcdir)/cobol/token_names.h: cobol/parse.cc
-	if [ -f $@.gen ]; then			\
+	@if [ -f $@.gen ]; then			\
 		$@.gen $(subst .cc,.h,$^)	\
 		| diff -u $@ -			\
 		| patch -t --set-time $@ ;	\
