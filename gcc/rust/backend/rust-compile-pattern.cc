@@ -87,6 +87,8 @@ CompilePatternCheckExpr::visit (HIR::LiteralPattern &pattern)
   auto litexpr = std::make_unique<HIR::LiteralExpr> (
     HIR::LiteralExpr (pattern.get_mappings (), pattern.get_literal (),
 		      pattern.get_locus (), std::vector<AST::Attribute> ()));
+  if (pattern.get_has_minus ())
+    litexpr->set_negative ();
 
   // Note: Floating point literals are currently accepted but will likely be
   // forbidden in LiteralPatterns in a future version of Rust.

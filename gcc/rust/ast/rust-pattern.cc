@@ -48,7 +48,7 @@ tokenid_to_rangekind (TokenId id)
 std::string
 LiteralPattern::as_string () const
 {
-  return lit.as_string ();
+  return (has_minus ? "-" : "") + lit.as_string ();
 }
 
 std::string

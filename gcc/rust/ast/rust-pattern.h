@@ -30,6 +30,7 @@ class LiteralPattern : public Pattern
   Literal lit;
   location_t locus;
   NodeId node_id;
+  bool has_minus;
 
 public:
   std::string as_string () const override;
@@ -37,16 +38,33 @@ public:
   // Constructor for a literal pattern
   LiteralPattern (Literal lit, location_t locus)
     : lit (std::move (lit)), locus (locus),
-      node_id (Analysis::Mappings::get ().get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      has_minus (false)
+  {}
+
+  LiteralPattern (Literal lit, location_t locus, bool has_minus)
+    : lit (std::move (lit)), locus (locus),
+      node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      has_minus (has_minus)
   {}
 
   LiteralPattern (std::string val, Literal::LitType type, location_t locus,
 		  PrimitiveCoreType type_hint)
     : lit (Literal (std::move (val), type, type_hint)), locus (locus),
-      node_id (Analysis::Mappings::get ().get_next_node_id ())
+      node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      has_minus (false)
+  {}
+
+  LiteralPattern (std::string val, Literal::LitType type, location_t locus,
+		  PrimitiveCoreType type_hint, bool has_minus)
+    : lit (Literal (std::move (val), type, type_hint)), locus (locus),
+      node_id (Analysis::Mappings::get ().get_next_node_id ()),
+      has_minus (has_minus)
   {}
 
   location_t get_locus () const override final { return locus; }
+
+  bool get_has_minus () const { return has_minus; }
 
   void accept_vis (ASTVisitor &vis) override;
 

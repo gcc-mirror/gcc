@@ -280,7 +280,8 @@ ASTLoweringPattern::visit (AST::LiteralPattern &pattern)
 
   HIR::Literal l = lower_literal (pattern.get_literal ());
   translated
-    = new HIR::LiteralPattern (mapping, std::move (l), pattern.get_locus ());
+    = new HIR::LiteralPattern (mapping, std::move (l), pattern.get_locus (),
+			       pattern.get_has_minus ());
 }
 
 void

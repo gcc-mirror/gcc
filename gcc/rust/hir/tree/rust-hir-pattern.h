@@ -32,19 +32,27 @@ class LiteralPattern : public Pattern
   Literal lit;
   location_t locus;
   Analysis::NodeMapping mappings;
+  bool has_minus;
 
 public:
   std::string as_string () const override;
 
   // Constructor for a literal pattern
   LiteralPattern (Analysis::NodeMapping mappings, Literal lit, location_t locus)
-    : lit (std::move (lit)), locus (locus), mappings (mappings)
+    : lit (std::move (lit)), locus (locus), mappings (mappings),
+      has_minus (false)
+  {}
+
+  LiteralPattern (Analysis::NodeMapping mappings, Literal lit, location_t locus,
+		  bool has_minus)
+    : lit (std::move (lit)), locus (locus), mappings (mappings),
+      has_minus (has_minus)
   {}
 
   LiteralPattern (Analysis::NodeMapping mappings, std::string val,
 		  Literal::LitType type, location_t locus)
     : lit (Literal (std::move (val), type, PrimitiveCoreType::CORETYPE_STR)),
-      locus (locus), mappings (mappings)
+      locus (locus), mappings (mappings), has_minus (false)
   {}
 
   location_t get_locus () const override { return locus; }
@@ -64,6 +72,8 @@ public:
 
   Literal &get_literal () { return lit; }
   const Literal &get_literal () const { return lit; }
+
+  bool get_has_minus () const { return has_minus; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
