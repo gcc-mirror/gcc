@@ -1951,6 +1951,31 @@
   }
   [(set_attr "type" "viwalu")])
 
+(define_insn_and_split "*widen_mul_plus_vx_<mode>"
+  [(set (match_operand:VWEXTI                 0 "register_operand")
+	(plus:VWEXTI
+	  (mult:VWEXTI
+	    (zero_extend:VWEXTI
+	      (match_operand:<V_DOUBLE_TRUNC> 2 "register_operand"))
+	    (vec_duplicate:VWEXTI
+	      (zero_extend:<VEL>
+		(match_operand:<VSUBEL>       1 "register_operand"))))
+	  (match_operand:VWEXTI               3 "register_operand")))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    insn_code icode = code_for_pred_widen_mul_plus_u_vx (<MODE>mode);
+    rtx v_undef = RVV_VUNDEF(<MODE>mode);
+    rtx ops[] = {operands[0], operands[1], operands[2], operands[3], v_undef};
+
+    riscv_vector::emit_vlmax_insn (icode, riscv_vector::TERNARY_OP, ops);
+
+    DONE;
+  }
+  [(set_attr "type" "viwmuladd")])
+
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
 ;; Include

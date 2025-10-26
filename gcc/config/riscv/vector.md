@@ -9044,6 +9044,56 @@
     riscv_vector::prepare_ternary_operands (operands);
   })
 
+(define_insn "*pred_widen_mul_plus_u_vx<mode>_undef"
+  [(set (match_operand:VWEXTI                   0 "register_operand"      "=&vr")
+	(if_then_else:VWEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM>                1 "vector_mask_operand"   "vmWc1")
+	     (match_operand                     6 "vector_length_operand" "  rvl")
+	     (match_operand                     7 "const_int_operand"     "    i")
+	     (match_operand                     8 "const_int_operand"     "    i")
+	     (match_operand                     9 "const_int_operand"     "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (plus:VWEXTI
+	    (mult:VWEXTI
+	      (zero_extend:VWEXTI
+		(vec_duplicate:<V_DOUBLE_TRUNC>
+		  (match_operand:<VSUBEL>       3 "register_operand"      "   rJ")))
+	      (zero_extend:VWEXTI
+		(match_operand:<V_DOUBLE_TRUNC> 4 "register_operand"      "   vr")))
+	    (match_operand:VWEXTI               5 "register_operand"      "    0"))
+	  (match_operand:VWEXTI                 2 "vector_undef_operand")))]
+  "TARGET_VECTOR"
+  "vwmaccu.vx\t%0,%z3,%4%p1"
+  [(set_attr "type" "vimuladd")
+   (set_attr "mode" "<MODE>")])
+
+(define_expand "@pred_widen_mul_plus_u_vx<mode>"
+  [(set (match_operand:VWEXTI                   0 "register_operand")
+	(if_then_else:VWEXTI
+	  (unspec:<VM>
+	    [(match_operand:<VM>                1 "vector_mask_operand")
+	     (match_operand                     6 "vector_length_operand")
+	     (match_operand                     7 "const_int_operand")
+	     (match_operand                     8 "const_int_operand")
+	     (match_operand                     9 "const_int_operand")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	  (plus:VWEXTI
+	    (mult:VWEXTI
+	      (zero_extend:VWEXTI
+		(vec_duplicate:<V_DOUBLE_TRUNC>
+		  (match_operand:<VSUBEL>       2 "register_operand")))
+	      (zero_extend:VWEXTI
+		(match_operand:<V_DOUBLE_TRUNC> 3 "register_operand")))
+	    (match_operand:VWEXTI               4 "register_operand"))
+	  (match_operand:VWEXTI                 5 "vector_merge_operand")))]
+  "TARGET_VECTOR"
+  {
+    riscv_vector::prepare_ternary_operands (operands);
+  })
+
 (include "autovec.md")
 (include "autovec-opt.md")
 (include "sifive-vector.md")
