@@ -2337,10 +2337,40 @@ diagnose_mismatched_decls (tree newdecl, tree olddecl,
 		error ("conflicting type qualifiers for %q+D", newdecl);
 	    }
 	  else
-	    error ("conflicting types for %q+D; have %qT", newdecl, newtype);
-	  diagnose_arglist_conflict (newdecl, olddecl, newtype, oldtype);
-	  locate_old_decl (olddecl);
-	  return false;
+	    {
+	      if (TREE_CODE (olddecl) == FUNCTION_DECL)
+		{
+		  tree attrs = TYPE_ATTRIBUTES (TREE_TYPE (olddecl));
+		  if (attrs && !TYPE_ATTRIBUTES (TREE_TYPE (newdecl)))
+		    {
+		      /* Similar to the C++ front-end, for FUNCTION_DECL,
+			 if OLDDECL has attributes and NEWDECL doesn't,
+			 try the type with OLDDECL attributes.  */
+		      tree rettype = TREE_TYPE (newtype);
+		      tree tryargs = TYPE_ARG_TYPES (newtype);
+		      tree trytype = c_build_function_type (rettype,
+							    tryargs);
+		      trytype = c_build_type_attribute_variant (trytype,
+								attrs);
+		      if (comptypes (oldtype, trytype))
+			{
+			  *newtypep = newtype = trytype;
+			  comptypes_result = 1;
+			}
+		    }
+		}
+
+	      if (!comptypes_result)
+		error ("conflicting types for %q+D; have %qT", newdecl,
+		       newtype);
+	    }
+	  if (!comptypes_result)
+	    {
+	      diagnose_arglist_conflict (newdecl, olddecl, newtype,
+					 oldtype);
+	      locate_old_decl (olddecl);
+	      return false;
+	    }
 	}
     }
   /* Warn about enum/integer type mismatches.  They are compatible types
