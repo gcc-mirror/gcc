@@ -1,3 +1,21 @@
+2025-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-10-09  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122206
+	* trans-types.cc (gfc_get_function_type): Do not clobber an
+	existing procedure interface.
+
+2025-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-10-04  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/107968
+	* trans-io.cc (gfc_trans_transfer): Also scalarize I/O of section
+	of an array pointer.
+
 2025-09-28  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
