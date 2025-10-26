@@ -3723,6 +3723,12 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	      riscv_vector::emit_vec_extract (result, v,
 					      gen_int_mode (index + i, Pmode));
 
+	      /* The low-part must be zero-extended when ELEN == 32 and
+		 mode == 64.  */
+	      if (num == 2 && i == 0)
+		emit_insn (gen_extend_insn (int_reg, result, mode, smode,
+					    true));
+
 	      if (i == 1)
 		{
 		  if (UNITS_PER_WORD < mode_size)

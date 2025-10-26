@@ -6,5 +6,6 @@
 /* { dg-final { scan-assembler-times {vsetivli\s+zero,\s*2,\s*e32,\s*m1,\s*t[au],\s*m[au]} 1 } } */
 /* { dg-final { scan-assembler-times {vmv\.x\.s} 2 } } */
 /* { dg-final { scan-assembler-times {vslidedown.vi\s+v[0-9]+,\s*v[0-9]+,\s*1} 1 } } */
-/* { dg-final { scan-assembler-times {slli\s+[a-x0-9]+,[a-x0-9]+,32} 1 } } */
+/* { dg-final { scan-assembler-times {slli\s+[a-x0-9]+,[a-x0-9]+,32} 2 } } */
+/* { dg-final { scan-assembler-times {srli\s+[a-x0-9]+,[a-x0-9]+,32} 1 } } */
 /* { dg-final { scan-assembler-times {or\s+[a-x0-9]+,[a-x0-9]+,[a-x0-9]+} 1 } } */
