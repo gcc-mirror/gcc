@@ -13048,12 +13048,11 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  if (DECL_EXPLICIT_INSTANTIATION (decl)
 	      && !DECL_EXTERNAL (decl))
 	    setup_explicit_instantiation_definition_linkage (decl);
-	  if (DECL_IMPLICIT_INSTANTIATION (decl)
-	      || (DECL_EXPLICIT_INSTANTIATION (decl)
-		  && !DECL_EXTERNAL (decl))
-	      || (DECL_CLASS_SCOPE_P (decl)
-		  && !DECL_VTABLE_OR_VTT_P (decl)
-		  && !DECL_TEMPLATE_INFO (decl)))
+	  /* Class static data members are handled in read_class_def.  */
+	  if (!DECL_CLASS_SCOPE_P (decl)
+	      && (DECL_IMPLICIT_INSTANTIATION (decl)
+		  || (DECL_EXPLICIT_INSTANTIATION (decl)
+		      && !DECL_EXTERNAL (decl))))
 	    note_vague_linkage_variable (decl);
 	}
       if (!dyn_init)
@@ -13467,6 +13466,10 @@ trees_in::read_class_def (tree defn, tree maybe_template)
 			DECL_ACCESS (d) = tree_cons (type, access, list);
 		    }
 		}
+
+	      if (TREE_CODE (decl) == VAR_DECL
+		  && TREE_CODE (maybe_template) != TEMPLATE_DECL)
+		note_vague_linkage_variable (decl);
 	    }
 	}
 
