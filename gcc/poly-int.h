@@ -374,7 +374,7 @@ template<> struct poly_int_fullness<true> { using type = poly_int_full; };
 /* A class containing polynomial integers.  The polynomial has N coefficients
    of type C, and N - 1 indeterminates.  */
 template<unsigned int N, typename C>
-struct poly_int
+class poly_int
 {
 public:
   poly_int () = default;
