@@ -121,6 +121,8 @@ compile_range_pattern_bound (HIR::RangePatternBound &bound,
 
 	HIR::LiteralExpr litexpr (mappings, ref.get_literal (), locus,
 				  std::vector<AST::Attribute> ());
+	if (ref.get_has_minus())
+		litexpr.set_negative();
 
 	result = CompileExpr::Compile (litexpr, ctx);
       }
