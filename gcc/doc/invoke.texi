@@ -1097,7 +1097,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfpu=@var{fpu-type} -msimd=@var{simd-type}
 -msoft-float -msingle-float -mdouble-float -mlsx -mno-lsx -mlasx -mno-lasx
 -mbranch-cost=@var{n} -maddr-reg-reg-cost=@var{n}  -mcheck-zero-division
--mno-check-zero-division
+-mno-check-zero-division -mbreak-code=@var{code}
 -mcond-move-int  -mno-cond-move-int
 -mcond-move-float  -mno-cond-move-float
 -memcpy  -mno-memcpy -mstrict-align -mno-strict-align -G @var{num}
@@ -28456,6 +28456,17 @@ Set the cost of ADDRESS_REG_REG to the value calculated by @var{n}.
 Trap (do not trap) on integer division by zero.  The default is
 @option{-mcheck-zero-division} for @option{-O0} or @option{-Og}, and
 @option{-mno-check-zero-division} for other optimization levels.
+
+@opindex mbreak-code
+@item -mbreak-code=@var{code}
+Emit a @code{break} @var{code} instruction for irrecoverable traps
+from @code{__builtin_trap} or inserted by the compiler (for example
+an erroneous path isolated with
+@option{-fisolate-erroneous-paths-dereference}), or an
+@code{amswap.w $r0, $r1, $r0} instruction which will cause the hardware
+to trigger an Instruction Not-defined Exception if @var{code} is negative
+or greater than 32767.  The default is -1, meaning to use the
+@code{amswap.w} instruction.
 
 @opindex mcond-move-int
 @item -mcond-move-int

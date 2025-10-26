@@ -679,14 +679,22 @@
 ;;  ....................
 ;;
 
-(define_insn "trap"
-  [(trap_if (const_int 1) (const_int 0))]
+(define_insn "*trap"
+  [(trap_if (const_int 1) (match_operand 0 "const_int_operand"))]
   ""
 {
-  return "break\t0";
+  return (const_uimm15_operand (operands[0], VOIDmode)
+	  ? "break\t%0"
+	  : "amswap.w\t$r0,$r1,$r0");
 }
   [(set_attr "type" "trap")])
 
+(define_expand "trap"
+  [(trap_if (const_int 1) (match_dup 0))]
+  ""
+{
+  operands[0] = GEN_INT (la_break_code);
+})
 
 
 ;;

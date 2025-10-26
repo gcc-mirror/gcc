@@ -205,6 +205,10 @@ mmax-inline-memcpy-size=
 Target Joined RejectNegative UInteger Var(la_max_inline_memcpy_size) Init(1024) Save
 -mmax-inline-memcpy-size=SIZE	Set the max size of memcpy to inline, default is 1024.
 
+mbreak-code=
+Target Joined UInteger Var(la_break_code) Init(-1) Save
+-mbreak-code=CODE	Use 'break CODE' for traps supposed to be unrecoverable, or an 'amswap.w' instruction leading to INE if CODE is out of range.
+
 Enum
 Name(explicit_relocs) Type(int)
 The code model option names for -mexplicit-relocs:

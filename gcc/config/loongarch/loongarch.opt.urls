@@ -48,6 +48,9 @@ UrlSuffix(gcc/LoongArch-Options.html#index-mstrict-align-1)
 mmax-inline-memcpy-size=
 UrlSuffix(gcc/LoongArch-Options.html#index-mmax-inline-memcpy-size)
 
+mbreak-code=
+UrlSuffix(gcc/LoongArch-Options.html#index-mbreak-code)
+
 mexplicit-relocs=
 UrlSuffix(gcc/LoongArch-Options.html#index-mexplicit-relocs-1)
 
