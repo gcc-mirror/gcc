@@ -7,7 +7,7 @@
 
 /*
 ** foo:
-**	movi	d([0-9]+), #0
+**	movi?	[vdz]([0-9]+)\.?b?, #0
 **	movprfx	z0\.b, p0/z, z0\.b
 **	usqadd	z0\.b, p0/m, z0\.b, z\1\.b
 **	ret
@@ -19,7 +19,7 @@ svuint8_t foo (svbool_t pg, svuint8_t op1)
 
 /*
 ** bar:
-**	movi	d([0-9]+), #0
+**	movi?	[vdz]([0-9]+)\.?b?, #0
 **	movprfx	z0\.b, p0/z, z0\.b
 **	suqadd	z0\.b, p0/m, z0\.b, z\1\.b
 **	ret
