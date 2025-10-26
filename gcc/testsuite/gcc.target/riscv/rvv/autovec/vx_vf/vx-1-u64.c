@@ -11,6 +11,7 @@
 TEST_BINARY_VX_UNSIGNED_0(T)
 TEST_TERNARY_VX_UNSIGNED_0(T)
 TEST_WIDEN_BINARY_VX_UNSIGNED(T, NT)
+TEST_WIDEN_TERNARY_VX_UNSIGNED(T, NT)
 
 /* { dg-final { scan-assembler-times {vadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vsub.vx} 1 } } */
@@ -37,3 +38,4 @@ TEST_WIDEN_BINARY_VX_UNSIGNED(T, NT)
 /* { dg-final { scan-assembler-times {vwmulu.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vwaddu.wx} 1 } } */
 /* { dg-final { scan-assembler-times {vwsubu.wx} 1 } } */
+/* { dg-final { scan-assembler-times {vwmaccu.vx} 1 } } */

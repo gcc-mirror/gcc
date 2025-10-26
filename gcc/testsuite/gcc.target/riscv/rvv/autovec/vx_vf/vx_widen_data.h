@@ -59,6 +59,7 @@
 DEF_BINARY_WIDEN_STRUCT_0_WRAP(uint64_t, uint32_t, add)
 DEF_BINARY_WIDEN_STRUCT_0_WRAP(uint64_t, uint32_t, sub)
 DEF_BINARY_WIDEN_STRUCT_0_WRAP(uint64_t, uint32_t, mul)
+DEF_BINARY_WIDEN_STRUCT_0_WRAP(uint64_t, uint32_t, wmacc)
 
 #define DEF_BINARY_WIDEN_STRUCT_1(WT, NT, NAME)            \
   DEF_BINARY_WIDEN_STRUCT_1_TYPE_WRAP(WT, NT, NAME)        \
@@ -265,6 +266,59 @@ DEF_BINARY_WIDEN_STRUCT_1_DECL_WRAP(uint64_t, uint32_t, sub)[] = {
                   0,             0,             0,             0,
       4294967295ull, 4294967295ull, 4294967295ull, 4294967295ull,
       4294967296ull, 4294967296ull, 4294967296ull, 4294967296ull,
+    },
+  },
+};
+
+DEF_BINARY_WIDEN_STRUCT_0_DECL_WRAP(uint64_t, uint32_t, wmacc)[] = {
+  {
+    /* vs2 NT */
+    {
+               3,          3,          3,          3,
+               7,          7,          7,          7,
+               9,          9,          9,          9,
+               5,          5,          5,          5,
+    },
+    /* rs1 NT */
+    1,
+    /* expect WT */
+    {
+               4,          4,          4,          4,
+               9,          9,          9,          9,
+              17,         17,         17,         17,
+               5,          5,          5,          5,
+    },
+    /* vd WT */
+    {
+               1,          1,          1,          1,
+               2,          2,          2,          2,
+               8,          8,          8,          8,
+               0,          0,          0,          0,
+    },
+  },
+  {
+    /* vs2 NT */
+    {
+      4294967295ull, 4294967295ull, 4294967295ull, 4294967295ull,
+      4294967294ull, 4294967294ull, 4294967294ull, 4294967294ull,
+      4294967293ull, 4294967293ull, 4294967293ull, 4294967293ull,
+      4294967292ull, 4294967292ull, 4294967292ull, 4294967292ull,
+    },
+    /* rs1 NT */
+    2,
+    /* expect WT */
+    {
+      8589934591ull, 8589934591ull, 8589934591ull, 8589934591ull,
+      8589934590ull, 8589934590ull, 8589934590ull, 8589934590ull,
+      8589934589ull, 8589934589ull, 8589934589ull, 8589934589ull,
+      8589934584ull, 8589934584ull, 8589934584ull, 8589934584ull,
+    },
+    /* vd WT */
+    {
+               1,          1,          1,          1,
+               2,          2,          2,          2,
+               3,          3,          3,          3,
+               0,          0,          0,          0,
     },
   },
 };
