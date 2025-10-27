@@ -7356,13 +7356,14 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 	  else
 	    lookup_lhs = NULL_TREE;
 	}
-      tree val = NULL_TREE;
+      tree val = NULL_TREE, tem;
       if (lookup_lhs)
 	val = vn_reference_lookup (lookup_lhs, gimple_vuse (stmt),
 				   VN_WALKREWRITE, &vnresult, false,
 				   NULL, NULL_TREE, true);
       if (TREE_CODE (rhs) == SSA_NAME)
 	rhs = VN_INFO (rhs)->valnum;
+      gassign *ass;
       if (val
 	  && (operand_equal_p (val, rhs, 0)
 	      /* Due to the bitfield lookups above we can get bit
@@ -7370,9 +7371,14 @@ eliminate_dom_walker::eliminate_stmt (basic_block b, gimple_stmt_iterator *gsi)
 		 are redundant as well.  */
 	      || (TREE_CODE (val) == SSA_NAME
 		  && gimple_assign_single_p (SSA_NAME_DEF_STMT (val))
-		  && (val = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (val)))
-		  && TREE_CODE (val) == VIEW_CONVERT_EXPR
-		  && TREE_OPERAND (val, 0) == rhs)))
+		  && (tem = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (val)))
+		  && TREE_CODE (tem) == VIEW_CONVERT_EXPR
+		  && TREE_OPERAND (tem, 0) == rhs)
+	      || (TREE_CODE (rhs) == SSA_NAME
+		  && (ass = dyn_cast <gassign *> (SSA_NAME_DEF_STMT (rhs)))
+		  && gimple_assign_rhs1 (ass) == val
+		  && CONVERT_EXPR_CODE_P (gimple_assign_rhs_code (ass))
+		  && tree_nop_conversion_p (TREE_TYPE (rhs), TREE_TYPE (val)))))
 	{
 	  /* We can only remove the later store if the former aliases
 	     at least all accesses the later one does or if the store
