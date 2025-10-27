@@ -1,3 +1,12 @@
+2025-10-26  Alexandre Oliva  <oliva@adacore.com>
+
+	Backported from master:
+	2025-10-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/121599
+	* gcc.target/aarch64/sve2/pr121599.c: Tolerate alterate insn
+	selection.
+
 2025-10-25  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
