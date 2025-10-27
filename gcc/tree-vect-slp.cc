@@ -4217,6 +4217,7 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
       if (!gimple_extract_op (STMT_VINFO_STMT (vect_orig_stmt (stmt)), &op))
 	gcc_unreachable ();
       if (CONVERT_EXPR_CODE_P (op.code)
+	  && tree_nop_conversion_p (op.type, TREE_TYPE (op.ops[0]))
 	  && (first
 	      || is_a <gphi *> (STMT_VINFO_STMT (next_stmt))))
 	;
