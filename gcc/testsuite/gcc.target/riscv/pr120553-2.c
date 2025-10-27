@@ -83,8 +83,8 @@ T1(63)
 #endif
 
 /* { dg-final { scan-assembler-times "\\t(srai)" 128 { target rv64 } } } */
-/* { dg-final { scan-assembler-times "\\t(orn|ori|bset)" 128 { target rv64 } } } */
+/* { dg-final { scan-assembler-times "\\t(orn|ori|bset)" 196 { target rv64 } } } */
 
 /* { dg-final { scan-assembler-times "\\t(srai)" 64 { target rv32 } } } */
-/* { dg-final { scan-assembler-times "\\t(orn|ori|bset)" 64 { target rv32 } } } */
+/* { dg-final { scan-assembler-times "\\t(orn|ori|bset)" 66 { target rv32 } } } */
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-march=rv64gc_zbb -mabi=lp64" } */
-/* { dg-skip-if "" { *-*-* } { "-O0" "-g" "-Oz" "-Os" } } */
+/* { dg-skip-if "" { *-*-* } { "-O0" "-g" "-O1" "-Oz" "-Os" } } */
 
 int foo1(int rs1)
 {

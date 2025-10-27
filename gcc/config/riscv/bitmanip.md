@@ -1,4 +1,4 @@
-;); Machine description for RISC-V Bit Manipulation operations.
+;; Machine description for RISC-V Bit Manipulation operations.
 ;; Copyright (C) 2021-2025 Free Software Foundation, Inc.
 
 ;; This file is part of GCC.
@@ -237,19 +237,20 @@
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<X:MODE>")])
 
-(define_insn_and_split "*<optab>_not_const<mode>"
-  [(set (match_operand:X 0 "register_operand" "=r")
-       (bitmanip_bitwise:X (not:X (match_operand:X 1 "register_operand" "r"))
-              (match_operand:X 2 "const_arith_operand" "I")))
-  (clobber (match_scratch:X 3 "=&r"))]
+(define_peephole2
+  [(match_scratch:X 4 "r")
+   (set (match_operand:X 0 "register_operand")
+	(not:X (match_operand:X 1 "register_operand")))
+   (set (match_operand:X 2 "register_operand")
+	(bitmanip_bitwise:X (match_dup 0)
+			    (match_operand 3 "const_int_operand")))
+   (match_dup 4)]
   "(TARGET_ZBB || TARGET_ZBKB) && !TARGET_ZCB
-   && !optimize_function_for_size_p (cfun)"
-  "#"
-  "&& reload_completed"
-  [(set (match_dup 3) (match_dup 2))
-   (set (match_dup 0) (bitmanip_bitwise:X (not:X (match_dup 1)) (match_dup 3)))]
-  ""
-  [(set_attr "type" "bitmanip")])
+   && !optimize_function_for_size_p (cfun)
+   && rtx_equal_p (operands[0], operands[2])
+   && riscv_const_insns (operands[3], false) == 1"
+  [(set (match_dup 4) (match_dup 3))
+   (set (match_dup 0) (bitmanip_bitwise:X (not:X (match_dup 1)) (match_dup 4)))])
 
 ;; '(a >= 0) ? b : 0' is emitted branchless (from if-conversion).  Without a
 ;; bit of extra help for combine (i.e., the below split), we end up emitting

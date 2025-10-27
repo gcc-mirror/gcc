@@ -1289,13 +1289,13 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
       bool speed_p = optimize_insn_for_speed_p ();
       if (exact_log2 (val_a + 1) >= 0
 	  && (rtx_cost (shift_right, mode, SET, 1, speed_p)
-	      <= rtx_cost (and_form, mode, SET, 1, speed_p)))
+	      < rtx_cost (and_form, mode, SET, 1, speed_p)))
 	temp = expand_simple_binop (mode, LSHIFTRT, temp,
 				    GEN_INT (rshift_count),
 				    if_info->x, false, OPTAB_WIDEN);
       else if (exact_log2 (~val_a + 1) >= 0
 	       && (rtx_cost (shift_left, mode, SET, 1, speed_p)
-		   <= rtx_cost (and_form, mode, SET, 1, speed_p)))
+		   < rtx_cost (and_form, mode, SET, 1, speed_p)))
 	temp = expand_simple_binop (mode, ASHIFT, temp,
 				    GEN_INT (ctz_hwi (val_a)),
 				    if_info->x, false, OPTAB_WIDEN);
@@ -1341,13 +1341,13 @@ noce_try_sign_bit_splat (struct noce_if_info *if_info)
       bool speed_p = optimize_insn_for_speed_p ();
       if (exact_log2 (val_b + 1) >= 0
 	  && (rtx_cost (shift_right, mode, SET, 1, speed_p)
-	      <= rtx_cost (and_form, mode, SET, 1, speed_p)))
+	      < rtx_cost (and_form, mode, SET, 1, speed_p)))
 	temp = expand_simple_binop (mode, LSHIFTRT, temp,
 				    GEN_INT (rshift_count),
 				    if_info->x, false, OPTAB_WIDEN);
       else if (exact_log2 (~val_b + 1) >= 0
 	       && (rtx_cost (shift_left, mode, SET, 1, speed_p)
-		   <= rtx_cost (and_form, mode, SET, 1, speed_p)))
+		   < rtx_cost (and_form, mode, SET, 1, speed_p)))
 	temp = expand_simple_binop (mode, ASHIFT, temp,
 				    GEN_INT (ctz_hwi (val_b)),
 				    if_info->x, false, OPTAB_WIDEN);
