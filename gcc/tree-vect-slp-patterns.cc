@@ -841,15 +841,23 @@ compatible_complex_nodes_p (slp_compat_nodes_map_t *compat_cache,
   return true;
 }
 
+
+/* Check to see if the oprands to two multiplies, 2 each in LEFT_OP and
+   RIGHT_OP match a complex multiplication  or complex multiply-and-accumulate
+   or complex multiply-and-subtract pattern.  Do this using the permute cache
+   PERM_CACHE and the combination compatibility list COMPAT_CACHE.  If
+   the operation is successful the macthing operands are returned in OPS and
+   _STATUS indicates if the operation matched includes a conjugate of one of the
+   operands.  If the operation succeeds True is returned, otherwise False and
+   the values in ops are meaningless.  */
 static inline bool
 vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
 			      slp_compat_nodes_map_t *compat_cache,
-			      vec<slp_tree> &left_op,
-			      vec<slp_tree> &right_op,
-			      bool subtract,
+			      const vec<slp_tree> &left_op,
+			      const vec<slp_tree> &right_op,
+			      bool subtract, vec<slp_tree> &ops,
 			      enum _conj_status *_status)
 {
-  auto_vec<slp_tree> ops;
   enum _conj_status stats = CONJ_NONE;
 
   /* The complex operations can occur in two layouts and two permute sequences
@@ -880,30 +888,30 @@ vect_validate_multiplication (slp_tree_to_load_perm_map_t *perm_cache,
   bool neg0 = vect_match_expression_p (right_op[0], NEGATE_EXPR);
   bool neg1 = vect_match_expression_p (right_op[1], NEGATE_EXPR);
 
+  /* Create the combined inputs after remapping and flattening.  */
+  ops.create (4);
+  ops.safe_splice (left_op);
+  ops.safe_splice (right_op);
+
   /* Determine which style we're looking at.  We only have different ones
      whenever a conjugate is involved.  */
   if (neg0 && neg1)
     ;
   else if (neg0)
     {
-      right_op[0] = SLP_TREE_CHILDREN (right_op[0])[0];
+      ops[2] = SLP_TREE_CHILDREN (right_op[0])[0];
       stats = CONJ_FST;
       if (subtract)
 	perm = 0;
     }
   else if (neg1)
     {
-      right_op[1] = SLP_TREE_CHILDREN (right_op[1])[0];
+      ops[3] = SLP_TREE_CHILDREN (right_op[1])[0];
       stats = CONJ_SND;
       perm = 1;
     }
 
   *_status = stats;
-
-  /* Flatten the inputs after we've remapped them.  */
-  ops.create (4);
-  ops.safe_splice (left_op);
-  ops.safe_splice (right_op);
 
   /* Extract out the elements to check.  */
   slp_tree op0 = ops[styles[style][0]];
@@ -1067,15 +1075,16 @@ complex_mul_pattern::matches (complex_operation_t op,
     return IFN_LAST;
 
   enum _conj_status status;
+  auto_vec<slp_tree> res_ops;
   if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
-				     right_op, false, &status))
+				     right_op, false, res_ops, &status))
     {
       /* Try swapping the order and re-trying since multiplication is
 	 commutative.  */
       std::swap (left_op[0], left_op[1]);
       std::swap (right_op[0], right_op[1]);
       if (!vect_validate_multiplication (perm_cache, compat_cache, left_op,
-					 right_op, false, &status))
+					 right_op, false, res_ops, &status))
 	return IFN_LAST;
     }
 
@@ -1103,24 +1112,24 @@ complex_mul_pattern::matches (complex_operation_t op,
   if (add0)
     ops->quick_push (add0);
 
-  complex_perm_kinds_t kind = linear_loads_p (perm_cache, left_op[0]);
+  complex_perm_kinds_t kind = linear_loads_p (perm_cache, res_ops[0]);
   if (kind == PERM_EVENODD || kind == PERM_TOP)
     {
-      ops->quick_push (left_op[1]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (left_op[0]);
+      ops->quick_push (res_ops[1]);
+      ops->quick_push (res_ops[3]);
+      ops->quick_push (res_ops[0]);
     }
   else if (kind == PERM_EVENEVEN && status != CONJ_SND)
     {
-      ops->quick_push (left_op[0]);
-      ops->quick_push (right_op[0]);
-      ops->quick_push (left_op[1]);
+      ops->quick_push (res_ops[0]);
+      ops->quick_push (res_ops[2]);
+      ops->quick_push (res_ops[1]);
     }
   else
     {
-      ops->quick_push (left_op[0]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (left_op[1]);
+      ops->quick_push (res_ops[0]);
+      ops->quick_push (res_ops[3]);
+      ops->quick_push (res_ops[1]);
     }
 
   return ifn;
@@ -1292,15 +1301,17 @@ complex_fms_pattern::matches (complex_operation_t op,
     return IFN_LAST;
 
   enum _conj_status status;
+  auto_vec<slp_tree> res_ops;
   if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
-				     left_op, true, &status))
+				     left_op, true, res_ops, &status))
     {
       /* Try swapping the order and re-trying since multiplication is
 	 commutative.  */
       std::swap (left_op[0], left_op[1]);
       std::swap (right_op[0], right_op[1]);
+      auto_vec<slp_tree> res_ops;
       if (!vect_validate_multiplication (perm_cache, compat_cache, right_op,
-					 left_op, true, &status))
+					 left_op, true, res_ops, &status))
 	return IFN_LAST;
     }
 
@@ -1315,20 +1326,20 @@ complex_fms_pattern::matches (complex_operation_t op,
   ops->truncate (0);
   ops->create (4);
 
-  complex_perm_kinds_t kind = linear_loads_p (perm_cache, right_op[0]);
+  complex_perm_kinds_t kind = linear_loads_p (perm_cache, res_ops[2]);
   if (kind == PERM_EVENODD)
     {
       ops->quick_push (l0node[0]);
-      ops->quick_push (right_op[0]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (left_op[1]);
+      ops->quick_push (res_ops[2]);
+      ops->quick_push (res_ops[3]);
+      ops->quick_push (res_ops[1]);
     }
   else
     {
       ops->quick_push (l0node[0]);
-      ops->quick_push (right_op[1]);
-      ops->quick_push (right_op[0]);
-      ops->quick_push (left_op[0]);
+      ops->quick_push (res_ops[3]);
+      ops->quick_push (res_ops[2]);
+      ops->quick_push (res_ops[0]);
     }
 
   return ifn;
