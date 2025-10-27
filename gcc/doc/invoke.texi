@@ -219,7 +219,8 @@ in the following sections.
 -fno-access-control  -faligned-new=@r{[}@var{n}@r{]}
 -fno-assume-sane-operators-new-delete
 -fchar8_t  -fcheck-new
--fconcepts  -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
+-fconcepts  -fconcepts-diagnostics-depth=@var{n}
+-fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
 -fcontracts  -fcontract-assumption-mode=@r{[}on@r{|}off@r{]}
 -fcontract-build-level=@r{[}off@r{|}default@r{|}audit@r{]}
@@ -243,7 +244,6 @@ in the following sections.
 -fno-module-lazy
 -fmodule-mapper=@var{specification}
 -fmodule-only
--fmodule-version-ignore
 -fmodules
 -fms-extensions
 -fnew-inheriting-ctors
@@ -381,7 +381,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wc++20-compat  -Wc++26-compat
 -Wno-c++11-extensions  -Wno-c++14-extensions -Wno-c++17-extensions
 -Wno-c++20-extensions  -Wno-c++23-extensions
--Wcalloc-transposed-args
+-Wcalloc-transposed-args  -Wcannot-profile
 -Wcast-align  -Wcast-align=strict  -Wcast-function-type  -Wcast-qual
 -Wchar-subscripts
 -Wclobbered  -Wcomment
@@ -400,7 +400,7 @@ Objective-C and Objective-C++ Dialects}.
 -Werror  -Werror=*  -Wexpansion-to-defined  -Wfatal-errors
 -Wflex-array-member-not-at-end
 -Wfloat-conversion  -Wfloat-equal  -Wformat  -Wformat=2
--Wno-format-contains-nul  -Wno-format-extra-args
+-Wno-format-contains-nul  -Wno-format-diag  -Wno-format-extra-args
 -Wformat-nonliteral  -Wformat-overflow=@var{n}
 -Wformat-security  -Wformat-signedness  -Wformat-truncation=@var{n}
 -Wformat-y2k  -Wframe-address
@@ -445,7 +445,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wsizeof-array-div
 -Wsizeof-pointer-div  -Wsizeof-pointer-memaccess
 -Wstack-protector  -Wstack-usage=@var{byte-size}  -Wstrict-aliasing
--Wstrict-aliasing=n  -Wstrict-overflow  -Wstrict-overflow=@var{n}
+-Wstrict-aliasing=@var{n}  -Wstrict-overflow  -Wstrict-overflow=@var{n}
 -Wstring-compare
 -Wno-stringop-overflow -Wno-stringop-overread
 -Wno-stringop-truncation  -Wstrict-flex-arrays
@@ -592,7 +592,7 @@ Objective-C and Objective-C++ Dialects}.
 -femit-struct-debug-detailed@r{[}=@var{spec-list}@r{]}
 -fno-eliminate-unused-debug-symbols  -femit-class-debug-always
 -fno-merge-debug-strings  -fno-dwarf2-cfi-asm
--fvar-tracking  -fvar-tracking-assignments
+-fvar-tracking  -fvar-tracking-assignments  -fvar-tracking-uninit
 --debug}
 
 @item Optimization Options
@@ -615,20 +615,24 @@ Objective-C and Objective-C++ Dialects}.
 -fdata-sections  -fdce  -fdelayed-branch
 -fdelete-null-pointer-checks  -fdep-fusion -fdevirtualize
 -fdevirtualize-speculatively  -fdevirtualize-at-ltrans  -fdse
--fearly-inlining  -fipa-sra  -fexpensive-optimizations  -ffat-lto-objects
--ffast-math  -ffinite-math-only  -ffloat-store  -fexcess-precision=@var{style}
--ffinite-loops
+-fearly-inlining  -fexcess-precision=@var{style}
+-fexpensive-optimizations  -fext-dce
+-ffast-math  -ffat-lto-objects  -ffinite-loops
+-ffinite-math-only  -ffloat-store
 -fforward-propagate  -ffp-contract=@var{style}  -ffp-int-builtin-inexact
 -ffunction-sections
 -fgcse  -fgcse-after-reload  -fgcse-las  -fgcse-lm  -fgraphite-identity
 -fgcse-sm  -fhoist-adjacent-loads  -fif-conversion
 -fif-conversion2  -findirect-inlining
--finline-stringops[=@var{fn}]
--finline-functions  -finline-functions-called-once  -finline-limit=@var{n}
--finline-small-functions -fipa-modref -fipa-cp  -fipa-cp-clone
+-finline-atomics  -finline-functions  -finline-functions-called-once
+-finline-limit=@var{n}  -finline-small-functions
+-finline-stringops@r{[}=@var{fn}@r{]}
+-fipa-modref -fipa-cp  -fipa-cp-clone
 -fipa-bit-cp  -fipa-vrp  -fipa-pta  -fipa-profile  -fipa-pure-const
 -fipa-reference  -fipa-reference-addressable -fipa-reorder-for-locality
--fipa-stack-alignment  -fipa-icf  -fira-algorithm=@var{algorithm}
+-fipa-sra  -fipa-stack-alignment
+-fipa-icf  -fipa-icf-functions  -fipa-icf-variables
+-fira-algorithm=@var{algorithm}
 -flate-combine-instructions -flifetime-dse -flive-patching=@var{level}
 -fira-region=@var{region}  -fira-hoist-pressure
 -fira-loop-pressure  -fno-ira-share-save-slots
@@ -699,7 +703,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-p  -pg  -fprofile-arcs  -coverage  -ftest-coverage
 -fcondition-coverage
 -fpath-coverage
--fprofile-abs-path
+-fprofile  -fprofile-abs-path
 -fprofile-dir=@var{path}  -fprofile-generate  -fprofile-generate=@var{path}
 -fprofile-info-section  -fprofile-info-section=@var{name}
 -fprofile-note=@var{path} -fprofile-prefix-path=@var{path}
@@ -831,6 +835,7 @@ Objective-C and Objective-C++ Dialects}.
 -fdump-debug  -fdump-earlydebug
 -fdump-noaddr  -fdump-unnumbered  -fdump-unnumbered-links
 -fdump-final-insns@r{[}=@var{file}@r{]}
+-fdump-internal-locations
 -fdump-ipa-all  -fdump-ipa-cgraph  -fdump-ipa-inline
 -fdump-lang-all
 -fdump-lang-@var{switch}
@@ -906,7 +911,8 @@ Objective-C and Objective-C++ Dialects}.
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{AMD GCN Options} (@ref{AMD GCN Options})
-@gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}}
+@gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}
+-Wopenacc-dims}
 
 @emph{ARC Options} (@ref{ARC Options})
 @gccoptlist{-mbarrel-shifter  -mjli-always
@@ -3244,6 +3250,11 @@ into the standard, could additionally be enabled by
 in GCC 14 and removed in GCC 15; users are expected to convert their code
 to C++20 concepts.
 
+@opindex fconcepts-diagnostics-depth
+@item -fconcepts-diagnostics-depth=@var{n}
+Specify maximum error replay depth during recursive diagnosis of a constraint
+satisfaction failure.  The default is 1.
+
 @opindex fconstexpr-depth
 @item -fconstexpr-depth=@var{n}
 Set the maximum nested evaluation depth for C++11 constexpr functions
@@ -4071,8 +4082,12 @@ by @option{-Wall}.
 Warn that the implicit declaration of a copy constructor or copy
 assignment operator is deprecated if the class has a user-provided
 copy constructor or copy assignment operator, in C++11 and up.  This
-warning is enabled by @option{-Wextra}.  With
-@option{-Wdeprecated-copy-dtor}, also deprecate if the class has a
+warning is enabled by @option{-Wextra}.
+
+@opindex Wdeprecated-copy-dtor
+@opindex Wno-deprecated-copy-dtor
+@item -Wdeprecated-copy-dtor @r{(C++ and Objective-C++ only)}
+Similar to @option{-Wdeprecated-copy}, but also deprecate if the class has a
 user-provided destructor.
 
 @opindex Wdeprecated-enum-enum-conversion
@@ -7132,7 +7147,7 @@ Option @option{-Wformat} is equivalent to @option{-Wformat=1}, and
 @option{-Wformat} also checks for null format arguments for several
 functions, @option{-Wformat} also implies @option{-Wnonnull}.  Some
 aspects of this level of format checking can be disabled by the
-options: @option{-Wno-format-contains-nul},
+options: @option{-Wno-format-contains-nul}, @option{-Wno-format-diag},
 @option{-Wno-format-extra-args}, and @option{-Wno-format-zero-length}.
 @option{-Wformat} is enabled by @option{-Wall}.
 
@@ -7148,6 +7163,12 @@ equivalent to @option{-Wformat -Wformat-nonliteral -Wformat-security
 @item -Wno-format-contains-nul
 If @option{-Wformat} is specified, do not warn about format strings that
 contain NUL bytes.
+
+@opindex Wno-format-diag
+@opindex Wformat-diag
+@item -Wno-format-diag
+If @option{-Wformat} is specified, do not warn about format strings that
+are unsuitable for GCC diagnostics.
 
 @opindex Wno-format-extra-args
 @opindex Wformat-extra-args
@@ -8573,8 +8594,7 @@ cases, but does attempt to catch the more common pitfalls.  It is
 included in @option{-Wall}.
 It is equivalent to @option{-Wstrict-aliasing=3}.
 
-@opindex Wstrict-aliasing=n
-@item -Wstrict-aliasing=n
+@item -Wstrict-aliasing=@var{n}
 This option is only active when @option{-fstrict-aliasing} is active.
 It warns about code that might break the strict aliasing rules that the
 compiler is using for optimization.
@@ -9020,6 +9040,12 @@ This option warns on all uses of @code{alloca} in the source.
 @opindex Wauto-profile
 @item -Wauto-profile
 Output warnings about auto-profile inconsistencies.
+
+@opindex Wcannot-profile
+@opindex Wno-cannot-profile
+@item -Wcannot-profile
+Warn when profiling instrumentation was requested, but could not be applied to
+a certain function.
 
 @opindex Walloca-larger-than=
 @opindex Wno-alloca-larger-than
@@ -12853,6 +12879,17 @@ annotations are created and maintained, but discarded at the end.
 By default, this flag is enabled together with @option{-fvar-tracking},
 except when selective scheduling is enabled.
 
+@opindex fvar-tracking-uninit
+@opindex fno-var-tracking-uninit
+@item -fvar-tracking-uninit
+@itemx -fno-var-tracking-uninit
+Perform variable tracking and also mark uninitialized variables in the
+debug information.
+This flag is enabled by default by @option{-fvar-tracking}; it
+also implies @option{-fvar-tracking}.
+To do variable tracking without marking uninitialized variables, use
+@option{-fvar-tracking} @option{-fno-var-tracking-uninit}.
+
 @opindex gsplit-dwarf
 @item -gsplit-dwarf
 If DWARF debugging information is enabled, separate as much debugging
@@ -12888,6 +12925,10 @@ Generate DWARF @code{.debug_pubnames} and @code{.debug_pubtypes} sections.
 Generate @code{.debug_pubnames} and @code{.debug_pubtypes} sections in a format
 suitable for conversion into a GDB@ index.  This option is only useful
 with a linker that can produce GDB@ index version 7.
+
+@opindex gno-pubnames
+@item -gno-pubnames
+Don't generate DWARF @code{.debug_pubnames} and @code{.debug_pubtypes} sections.
 
 @opindex fdebug-types-section
 @opindex fno-debug-types-section
@@ -13508,8 +13549,15 @@ their @code{_FORTIFY_SOURCE} counterparts into faster alternatives.
 
 Enabled at levels @option{-O2}, @option{-O3}.
 
+@opindex finline-atomics
+@opindex fno-inline-atomics
+@item -finline-atomics
+@itemx -fno-inline-atomics
+Inline @samp{__atomic} operations when a lock-free instruction sequence
+is available.  This optimization is enabled by default.
+
 @opindex finline-stringops
-@item -finline-stringops[=@var{fn}]
+@item -finline-stringops@r{[}=@var{fn}@r{]}
 Expand memory and string operations (for now, only @code{memset})
 inline, even when the length is variable or big enough as to require
 looping.  This is most useful along with @option{-ffreestanding} and
@@ -13953,6 +14001,13 @@ disabled by default.
 Perform a number of minor optimizations that are relatively expensive.
 
 Enabled at levels @option{-O2}, @option{-O3}, @option{-Os}.
+
+@opindex fext-dce
+@opindex fno-ext-dce
+@item -fext-dce
+@itemx -fno-ext-dce
+Perform dead code elimination on zero and sign extensions, with special
+dataflow analysis.
 
 @opindex free
 @item -free
@@ -14451,17 +14506,26 @@ ranges. This flag is enabled by default at @option{-O2}. It requires
 that @option{-fipa-cp} is enabled.
 
 @opindex fipa-icf
-@item -fipa-icf
-Perform Identical Code Folding for functions and read-only variables.
+@opindex fipa-icf-functions
+@opindex fipa-icf-variables
+@opindex fno-ipa-icf
+@opindex fno-ipa-icf-functions
+@opindex fno-ipa-icf-variables
+@item -fipa-icf-functions
+@itemx -fipa-icf-variables
+@itemx -fipa-icf
+Perform Identical Code Folding for functions (@option{-fipa-icf-functions}),
+read-only variables (@option{-fipa-icf-variables}), or both
+(@option{-fipa-icf}).
 The optimization reduces code size and may disturb unwind stacks by replacing
-a function by equivalent one with a different name. The optimization works
+a function by an equivalent one with a different name. The optimization works
 more effectively with link-time optimization enabled.
 
 Although the behavior is similar to the Gold Linker's ICF optimization, GCC ICF
 works on different levels and thus the optimizations are not same - there are
 equivalences that are found only by GCC and equivalences found only by Gold.
 
-This flag is enabled by default at @option{-O2} and @option{-Os}.
+@option{-fipa-icf} is enabled by default at @option{-O2} and @option{-Os}.
 
 @opindex flate-combine-instructions
 @item -flate-combine-instructions
@@ -18100,13 +18164,16 @@ program analysis purposes.
 @cindex @command{prof}
 @cindex @command{gprof}
 @opindex p
-@opindex pg
 @opindex profile
+@opindex fprofile
+@opindex pg
 @item -p
-@itemx -pg
 @itemx --profile
+@itemx -fprofile
+@itemx -pg
 Generate extra code to write profile information suitable for the
-analysis program @command{prof} (for @option{-p} or @option{--profile})
+analysis program @command{prof} (for @option{-p}, @option{--profile},
+and @option{-fprofile})
 or @command{gprof}
 (for @option{-pg}).  You must use this option when compiling
 the source files you want data about, and you must also use it when
@@ -21271,6 +21338,11 @@ When doing debugging dumps (see @option{-d} option above), suppress
 instruction numbers for the links to the previous and next instructions
 in a sequence.
 
+@opindex fdump-internal-locations
+@item -fdump-internal-locations
+Dump detailed information about GCC's internal representation of source code
+locations.
+
 @opindex fdump-ipa
 @item -fdump-ipa-@var{switch}
 @itemx -fdump-ipa-@var{switch}-@var{options}
@@ -23295,6 +23367,11 @@ or either mode.  Some devices always require XNACK and some allow the user to
 configure XNACK.  The compiled code must match the device mode.
 The default is @samp{-mxnack=any} on devices that support Unified Shared
 Memory, and @samp{-mxnack=no} otherwise.
+
+@opindex Wopenacc-dims
+@opindex Wno-openacc-dims
+@item -Wopenacc-dims
+Warn about invalid OpenACC dimensions.
 
 @end table
 
