@@ -19,7 +19,7 @@ program atomic
   write(*,*) me
 end program
 
-! { dg-final { scan-tree-dump-times "value.. = 0;" 1 "original" } }
-! { dg-final { scan-tree-dump-times "_gfortran_caf_atomic_define \\(caf_token.., 0, 1, &value.., 0B, 1, 4\\);" 1 "original" } }
+! { dg-final { scan-tree-dump-times "D\\.\[0-9\]+ = 0;" 1 "original" } }
+! { dg-final { scan-tree-dump-times "_gfortran_caf_atomic_define \\(caf_token.., 0, 1, &D\\.\[0-9\]+, 0B, 1, 4\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_atomic_op \\(1, caf_token.., 0, 1, &me, 0B, 0B, 1, 4\\);" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "_gfortran_caf_atomic_ref \\(caf_token.., 0, 1, &me, 0B, 1, 4\\);" 1 "original" } }

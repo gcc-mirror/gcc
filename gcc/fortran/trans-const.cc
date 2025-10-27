@@ -444,6 +444,8 @@ gfc_conv_constant (gfc_se * se, gfc_expr * expr)
       if (expr->ts.type == BT_CHARACTER)
 	gfc_conv_string_parameter (se);
       else
-	se->expr = gfc_build_addr_expr (NULL_TREE, se->expr);
+	se->expr
+	  = gfc_build_addr_expr (NULL_TREE,
+				 gfc_trans_force_lval (&se->pre, se->expr));
     }
 }

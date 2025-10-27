@@ -29,6 +29,6 @@ end
 ! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, 0B, 0B, 0B, 0\\)" "original" } }
 ! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, 0B, &istat, 0B, 0\\)" "original" } }
 ! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, 0B, &istat, &err, 30\\)" "original" } }
-! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, &C\\.\[0-9\]+, 0B, 0B, 0\\)" "original" } }
-! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, &C\\.\[0-9\]+, &istat, 0B, 0\\)" "original" } }
-! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, &C\\.\[0-9\]+, &istat, &err, 30\\)" "original" } }
+! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, &D\\.\[0-9\]+, 0B, 0B, 0\\)" "original" } }
+! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, &D\\.\[0-9\]+, &istat, 0B, 0\\)" "original" } }
+! { dg-final { scan-tree-dump "_gfortran_caf_form_team \\(new_team, &team, &D\\.\[0-9\]+, &istat, &err, 30\\)" "original" } }
