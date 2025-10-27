@@ -2266,7 +2266,32 @@ package body Sem_Ch7 is
                         Next_Elmt (Op_Elmt_2);
                      end loop;
 
-                     --  Case 2: We have not found any explicit overriding and
+                     --  Case 2: For a formal type, we need to explicitly check
+                     --  whether a local subprogram hides from all visibility
+                     --  the implicitly declared primitive, because subprograms
+                     --  declared in a generic package specification are never
+                     --  primitive for a formal type, even if they happen to
+                     --  override an operation of the type (RM 3.2.3(7.d/2)).
+
+                     if Is_Generic_Type (E) then
+                        declare
+                           S : Entity_Id;
+
+                        begin
+                           S := E;
+                           while Present (S) loop
+                              if Chars (S) = Chars (Parent_Subp)
+                                and then Type_Conformant (Prim_Op, S)
+                              then
+                                 goto Next_Primitive;
+                              end if;
+
+                              Next_Entity (S);
+                           end loop;
+                        end;
+                     end if;
+
+                     --  Case 3: We have not found any explicit overriding and
                      --  hence we need to declare the operation (i.e., make it
                      --  visible).
 
