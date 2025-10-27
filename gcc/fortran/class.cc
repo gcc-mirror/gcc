@@ -1034,7 +1034,7 @@ comp_is_finalizable (gfc_component *comp)
    of calling the appropriate finalizers, coarray deregistering, and
    deallocation of allocatable subcomponents.  */
 
-static void
+static bool
 finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
 		    gfc_symbol *stat, gfc_symbol *fini_coarray, gfc_code **code,
 		    gfc_namespace *sub_ns)
@@ -1044,14 +1044,14 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   gfc_was_finalized *f;
 
   if (!comp_is_finalizable (comp))
-    return;
+    return false;
 
   /* If this expression with this component has been finalized
      already in this namespace, there is nothing to do.  */
   for (f = sub_ns->was_finalized; f; f = f->next)
     {
       if (f->e == expr && f->c == comp)
-	return;
+	return false;
     }
 
   e = gfc_copy_expr (expr);
@@ -1208,8 +1208,6 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
       final_wrap->ext.actual->next->next = gfc_get_actual_arglist ();
       final_wrap->ext.actual->next->next->expr = fini_coarray_expr;
 
-
-
       if (*code)
 	{
 	  (*code)->next = final_wrap;
@@ -1221,11 +1219,14 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   else
     {
       gfc_component *c;
+      bool ret = false;
 
       for (c = comp->ts.u.derived->components; c; c = c->next)
-	finalize_component (e, comp->ts.u.derived, c, stat, fini_coarray, code,
-			    sub_ns);
-      gfc_free_expr (e);
+	ret |= finalize_component (e, comp->ts.u.derived, c, stat, fini_coarray,
+				   code, sub_ns);
+      /* Only free the expression, if it has never been used.  */
+      if (!ret)
+	gfc_free_expr (e);
     }
 
   /* Record that this was finalized already in this namespace.  */
@@ -1234,6 +1235,7 @@ finalize_component (gfc_expr *expr, gfc_symbol *derived, gfc_component *comp,
   sub_ns->was_finalized->e = expr;
   sub_ns->was_finalized->c = comp;
   sub_ns->was_finalized->next = f;
+  return true;
 }
 
 
@@ -2314,6 +2316,7 @@ finish_assumed_rank:
     {
       gfc_symbol *stat;
       gfc_code *block = NULL;
+      gfc_expr *ptr_expr;
 
       if (!ptr)
 	{
@@ -2359,14 +2362,15 @@ finish_assumed_rank:
 					     sub_ns);
       block = block->next;
 
+      ptr_expr = gfc_lval_expr_from_sym (ptr);
       for (comp = derived->components; comp; comp = comp->next)
 	{
 	  if (comp == derived->components && derived->attr.extension
 	      && ancestor_wrapper && ancestor_wrapper->expr_type != EXPR_NULL)
 	    continue;
 
-	  finalize_component (gfc_lval_expr_from_sym (ptr), derived, comp,
-			      stat, fini_coarray, &block, sub_ns);
+	  finalize_component (ptr_expr, derived, comp, stat, fini_coarray,
+			      &block, sub_ns);
 	  if (!last_code->block->next)
 	    last_code->block->next = block;
 	}

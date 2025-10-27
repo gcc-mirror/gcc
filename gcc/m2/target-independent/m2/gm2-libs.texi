@@ -35,17 +35,21 @@ type results in a number of equivalent modules that can either handle
 These modules have been extensively tested and are used throughout
 building the GNU Modula-2 compiler.
 @menu
+* gm2-libs/ARRAYOFCHAR::ARRAYOFCHAR.def
 * gm2-libs/ASCII::ASCII.def
 * gm2-libs/Args::Args.def
 * gm2-libs/Assertion::Assertion.def
 * gm2-libs/Break::Break.def
 * gm2-libs/Builtins::Builtins.def
+* gm2-libs/CFileSysOp::CFileSysOp.def
+* gm2-libs/CHAR::CHAR.def
 * gm2-libs/COROUTINES::COROUTINES.def
 * gm2-libs/CmdArgs::CmdArgs.def
 * gm2-libs/Debug::Debug.def
 * gm2-libs/DynamicStrings::DynamicStrings.def
 * gm2-libs/Environment::Environment.def
 * gm2-libs/FIO::FIO.def
+* gm2-libs/FileSysOp::FileSysOp.def
 * gm2-libs/FormatStrings::FormatStrings.def
 * gm2-libs/FpuIO::FpuIO.def
 * gm2-libs/GetOpt::GetOpt.def
@@ -76,7 +80,9 @@ building the GNU Modula-2 compiler.
 * gm2-libs/StrCase::StrCase.def
 * gm2-libs/StrIO::StrIO.def
 * gm2-libs/StrLib::StrLib.def
+* gm2-libs/String::String.def
 * gm2-libs/StringConvert::StringConvert.def
+* gm2-libs/StringFileSysOp::StringFileSysOp.def
 * gm2-libs/SysExceptions::SysExceptions.def
 * gm2-libs/SysStorage::SysStorage.def
 * gm2-libs/TimeString::TimeString.def
@@ -95,7 +101,30 @@ building the GNU Modula-2 compiler.
 * gm2-libs/wrapc::wrapc.def
 @end menu
 
-@node gm2-libs/ASCII, gm2-libs/Args, , Base libraries
+@node gm2-libs/ARRAYOFCHAR, gm2-libs/ASCII, , Base libraries
+@subsection gm2-libs/ARRAYOFCHAR
+
+@example
+DEFINITION MODULE ARRAYOFCHAR ;
+
+FROM FIO IMPORT File ;
+
+
+(*
+   Description: provides write procedures for ARRAY OF CHAR.
+*)
+
+@findex Write
+PROCEDURE Write (f: File; str: ARRAY OF CHAR) ;
+@findex WriteLn
+PROCEDURE WriteLn (f: File) ;
+
+
+END ARRAYOFCHAR.
+@end example
+@page
+
+@node gm2-libs/ASCII, gm2-libs/Args, gm2-libs/ARRAYOFCHAR, Base libraries
 @subsection gm2-libs/ASCII
 
 @example
@@ -232,7 +261,7 @@ END Break.
 @end example
 @page
 
-@node gm2-libs/Builtins, gm2-libs/COROUTINES, gm2-libs/Break, Base libraries
+@node gm2-libs/Builtins, gm2-libs/CFileSysOp, gm2-libs/Break, Base libraries
 @subsection gm2-libs/Builtins
 
 @example
@@ -584,6 +613,15 @@ PROCEDURE __BUILTIN__ strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 @findex strrchr
 PROCEDURE __BUILTIN__ strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 
+@findex clz
+PROCEDURE __BUILTIN__ clz (value: CARDINAL) : INTEGER ;
+@findex clzll
+PROCEDURE __BUILTIN__ clzll (value: LONGCARD) : INTEGER ;
+@findex ctz
+PROCEDURE __BUILTIN__ ctz (value: CARDINAL) : INTEGER ;
+@findex ctzll
+PROCEDURE __BUILTIN__ ctzll (value: LONGCARD) : INTEGER ;
+
 (*
    longjmp - this GCC builtin restricts the val to always 1.
 *)
@@ -632,7 +670,100 @@ END Builtins.
 @end example
 @page
 
-@node gm2-libs/COROUTINES, gm2-libs/CmdArgs, gm2-libs/Builtins, Base libraries
+@node gm2-libs/CFileSysOp, gm2-libs/CHAR, gm2-libs/Builtins, Base libraries
+@subsection gm2-libs/CFileSysOp
+
+@example
+DEFINITION MODULE CFileSysOp ;
+
+FROM SYSTEM IMPORT ADDRESS ;
+
+
+(*
+   Description: provides access to filesystem operations.
+                The implementation module is written in C
+                and the parameters behave as their C
+                counterparts.
+*)
+
+TYPE
+@findex AccessMode (type)
+   AccessMode = SET OF AccessStatus ;
+@findex AccessStatus (type)
+   AccessStatus = (F_OK, R_OK, W_OK, X_OK, A_FAIL) ;
+
+
+@findex Unlink
+PROCEDURE Unlink (filename: ADDRESS) : INTEGER ;
+
+
+(*
+   Access - test access to a path or file.  The behavior is
+            the same as defined in access(2).  Except that
+            on A_FAIL is only used during the return result
+            indicating the underlying C access has returned
+            -1 (and errno can be checked).
+*)
+
+@findex Access
+PROCEDURE Access (pathname: ADDRESS; mode: AccessMode) : AccessMode ;
+
+
+(* Return TRUE if the caller can see the existance of the file or
+   directory on the filesystem.  *)
+
+(*
+   IsDir - return true if filename is a regular directory.
+*)
+
+@findex IsDir
+PROCEDURE IsDir (dirname: ADDRESS) : BOOLEAN ;
+
+
+(*
+   IsFile - return true if filename is a regular file.
+*)
+
+@findex IsFile
+PROCEDURE IsFile (filename: ADDRESS) : BOOLEAN ;
+
+
+(*
+   Exists - return true if pathname exists.
+*)
+
+@findex Exists
+PROCEDURE Exists (pathname: ADDRESS) : BOOLEAN ;
+
+
+END CFileSysOp.
+@end example
+@page
+
+@node gm2-libs/CHAR, gm2-libs/COROUTINES, gm2-libs/CFileSysOp, Base libraries
+@subsection gm2-libs/CHAR
+
+@example
+DEFINITION MODULE CHAR ;
+
+FROM FIO IMPORT File ;
+
+
+(*
+   Write a single character ch to file f.
+*)
+
+@findex Write
+PROCEDURE Write (f: File; ch: CHAR) ;
+@findex WriteLn
+PROCEDURE WriteLn (f: File) ;
+
+
+END CHAR.
+@end example
+@page
+
+@node gm2-libs/COROUTINES, gm2-libs/CmdArgs, gm2-libs/CHAR, Base libraries
 @subsection gm2-libs/COROUTINES
 
 @example
@@ -1179,7 +1310,7 @@ END Environment.
 @end example
 @page
 
-@node gm2-libs/FIO, gm2-libs/FormatStrings, gm2-libs/Environment, Base libraries
+@node gm2-libs/FIO, gm2-libs/FileSysOp, gm2-libs/Environment, Base libraries
 @subsection gm2-libs/FIO
 
 @example
@@ -1543,7 +1674,37 @@ END FIO.
 @end example
 @page
 
-@node gm2-libs/FormatStrings, gm2-libs/FpuIO, gm2-libs/FIO, Base libraries
+@node gm2-libs/FileSysOp, gm2-libs/FormatStrings, gm2-libs/FIO, Base libraries
+@subsection gm2-libs/FileSysOp
+
+@example
+DEFINITION MODULE FileSysOp ;
+
+FROM CFileSysOp IMPORT AccessMode ;
+
+
+(*
+   Description: provides access to filesystem operations using
+                Modula-2 base types.
+*)
+
+@findex Exists
+PROCEDURE Exists (filename: ARRAY OF CHAR) : BOOLEAN ;
+@findex IsDir
+PROCEDURE IsDir (dirname: ARRAY OF CHAR) : BOOLEAN ;
+@findex IsFile
+PROCEDURE IsFile (filename: ARRAY OF CHAR) : BOOLEAN ;
+@findex Unlink
+PROCEDURE Unlink (filename: ARRAY OF CHAR) : BOOLEAN ;
+@findex Access
+PROCEDURE Access (pathname: ARRAY OF CHAR; mode: AccessMode) : AccessMode ;
+
+
+END FileSysOp.
+@end example
+@page
+
+@node gm2-libs/FormatStrings, gm2-libs/FpuIO, gm2-libs/FileSysOp, Base libraries
 @subsection gm2-libs/FormatStrings
 
 @example
@@ -1984,6 +2145,15 @@ PROCEDURE ForeachIndiceInIndexDo (i: Index; p: IndexProcedure) ;
 
 @findex IsEmpty
 PROCEDURE IsEmpty (i: Index) : BOOLEAN ;
+
+
+(*
+   FindIndice - returns the indice containing a.
+                It returns zero if a is not found in array i.
+*)
+
+@findex FindIndice
+PROCEDURE FindIndice (i: Index; a: ADDRESS) : CARDINAL ;
 
 
 END Indexing.
@@ -3303,7 +3473,7 @@ END SMathLib0.
 DEFINITION MODULE SYSTEM ;
 
 EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* 
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, CARDINAL64, (* 
                  Target specific data types.  *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE ;
                  (* SIZE is also exported if -fpim2 is used.  *)
@@ -3872,7 +4042,7 @@ END StrIO.
 @end example
 @page
 
-@node gm2-libs/StrLib, gm2-libs/StringConvert, gm2-libs/StrIO, Base libraries
+@node gm2-libs/StrLib, gm2-libs/String, gm2-libs/StrIO, Base libraries
 @subsection gm2-libs/StrLib
 
 @example
@@ -3946,7 +4116,25 @@ END StrLib.
 @end example
 @page
 
-@node gm2-libs/StringConvert, gm2-libs/SysExceptions, gm2-libs/StrLib, Base libraries
+@node gm2-libs/String, gm2-libs/StringConvert, gm2-libs/StrLib, Base libraries
+@subsection gm2-libs/String
+
+@example
+DEFINITION MODULE String ;
+
+FROM DynamicStrings IMPORT String ;
+FROM FIO IMPORT File ;
+
+@findex Write
+PROCEDURE Write (f: File; str: String) ;
+@findex WriteLn
+PROCEDURE WriteLn (f: File) ;
+
+END String.
+@end example
+@page
+
+@node gm2-libs/StringConvert, gm2-libs/StringFileSysOp, gm2-libs/String, Base libraries
 @subsection gm2-libs/StringConvert
 
 @example
@@ -4290,7 +4478,33 @@ END StringConvert.
 @end example
 @page
 
-@node gm2-libs/SysExceptions, gm2-libs/SysStorage, gm2-libs/StringConvert, Base libraries
+@node gm2-libs/StringFileSysOp, gm2-libs/SysExceptions, gm2-libs/StringConvert, Base libraries
+@subsection gm2-libs/StringFileSysOp
+
+@example
+DEFINITION MODULE StringFileSysOp ;
+
+FROM DynamicStrings IMPORT String ;
+FROM CFileSysOp IMPORT AccessMode ;
+
+
+@findex Exists
+PROCEDURE Exists (filename: String) : BOOLEAN ;
+@findex IsDir
+PROCEDURE IsDir (dirname: String) : BOOLEAN ;
+@findex IsFile
+PROCEDURE IsFile (filename: String) : BOOLEAN ;
+@findex Unlink
+PROCEDURE Unlink (filename: String) : BOOLEAN ;
+@findex Access
+PROCEDURE Access (pathname: String; mode: AccessMode) : AccessMode ;
+
+
+END StringFileSysOp.
+@end example
+@page
+
+@node gm2-libs/SysExceptions, gm2-libs/SysStorage, gm2-libs/StringFileSysOp, Base libraries
 @subsection gm2-libs/SysExceptions
 
 @example
@@ -4476,7 +4690,10 @@ EXPORT UNQUALIFIED alloca, memcpy,
                    index, rindex,
                    memcmp, memset, memmove,
                    strcat, strncat, strcpy, strncpy, strcmp, strncmp,
-                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr ;
+                   strlen, strstr, strpbrk, strspn, strcspn, strchr, strrchr,
+
+                   clz, clzll,
+                   ctz, ctzll ;
 
 @findex alloca
 PROCEDURE alloca (i: CARDINAL) : ADDRESS ;
@@ -4732,6 +4949,16 @@ PROCEDURE strchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 @findex strrchr
 PROCEDURE strrchr (s: ADDRESS; c: INTEGER) : ADDRESS ;
 
+@findex clz
+PROCEDURE clz (value: CARDINAL) : INTEGER ;
+@findex clzll
+PROCEDURE clzll (value: CARDINAL) : INTEGER ;
+@findex ctz
+PROCEDURE ctz (value: CARDINAL) : INTEGER ;
+@findex ctzll
+PROCEDURE ctzll (value: CARDINAL) : INTEGER ;
+
+
 END cbuiltin.
 @end example
 @page
@@ -4893,7 +5120,7 @@ PROCEDURE strtod (s: ADDRESS; VAR error: BOOLEAN) : REAL ;
 
 @findex dtoa
 PROCEDURE dtoa (d        : REAL;
-                mode     : Mode;
+                mode     : INTEGER;
                 ndigits  : INTEGER;
 	        VAR decpt: INTEGER;
 	        VAR sign : BOOLEAN) : ADDRESS ;
@@ -4999,7 +5226,7 @@ PROCEDURE strtold (s: ADDRESS; VAR error: BOOLEAN) : LONGREAL ;
 
 @findex ldtoa
 PROCEDURE ldtoa (d        : LONGREAL;
-                 mode     : Mode;
+                 mode     : INTEGER;
                  ndigits  : INTEGER;
                  VAR decpt: INTEGER;
                  VAR sign : BOOLEAN) : ADDRESS ;
@@ -5015,9 +5242,11 @@ END ldtoa.
 @example
 DEFINITION MODULE FOR "C" libc ;
 
-FROM SYSTEM IMPORT ADDRESS, CSIZE_T, CSSIZE_T ;
+FROM SYSTEM IMPORT ADDRESS, CSIZE_T, CSSIZE_T, COFF_T ;
 
 EXPORT UNQUALIFIED time_t, timeb, tm, ptrToTM,
+                   atof, atoi, atol, atoll,
+                   strtod, strtof, strtold, strtol, strtoll, strtoul, strtoull,
                    write, read,
                    system, abort,
                    malloc, free,
@@ -5069,6 +5298,99 @@ TYPE
 
 @findex exitP (type)
    exitP = PROCEDURE () : INTEGER ;
+
+
+(*
+     double atof(const char *nptr)
+*)
+
+@findex atof
+PROCEDURE atof (nptr: ADDRESS) : REAL ;
+
+
+(*
+     int atoi(const char *nptr)
+*)
+
+@findex atoi
+PROCEDURE atoi (nptr: ADDRESS) : INTEGER ;
+
+
+(*
+     long atol(const char *nptr);
+*)
+
+@findex atol
+PROCEDURE atol (nptr: ADDRESS) : CSSIZE_T ;
+
+
+(*
+     long long atoll(const char *nptr);
+*)
+
+@findex atoll
+PROCEDURE atoll (nptr: ADDRESS) : LONGINT ;
+
+
+(*
+     double strtod(const char *restrict nptr, char **_Nullable restrict endptr)
+*)
+
+@findex strtod
+PROCEDURE strtod (nptr, endptr: ADDRESS) : REAL ;
+
+
+(*
+     float strtof(const char *restrict nptr, char **_Nullable restrict endptr)
+*)
+
+@findex strtof
+PROCEDURE strtof (nptr, endptr: ADDRESS) : SHORTREAL ;
+
+
+(*
+     long double strtold(const char *restrict nptr,
+                         char **_Nullable restrict endptr)
+*)
+
+@findex strtold
+PROCEDURE strtold (nptr, endptr: ADDRESS) : LONGREAL ;
+
+
+(*
+     long strtol(const char *restrict nptr, char **_Nullable restrict endptr,
+                 int base)
+*)
+
+@findex strtol
+PROCEDURE strtol (nptr, endptr: ADDRESS; base: INTEGER) : CSSIZE_T ;
+
+
+(*
+     long long strtoll(const char *restrict nptr,
+                       char **_Nullable restrict endptr, int base)
+*)
+
+@findex strtoll
+PROCEDURE strtoll (nptr, endptr: ADDRESS; base: INTEGER) : LONGINT ;
+
+
+(*
+     unsigned long strtoul(const char *restrict nptr,
+                           char **_Nullable restrict endptr, int base)
+*)
+
+@findex strtoul
+PROCEDURE strtoul (nptr, endptr: ADDRESS; base: INTEGER) : CSIZE_T ;
+
+
+(*
+     unsigned long long strtoull(const char *restrict nptr,
+                                 char **_Nullable restrict endptr, int base)
+*)
+
+@findex strtoull
+PROCEDURE strtoull (nptr, endptr: ADDRESS; base: INTEGER) : LONGCARD ;
 
 
 (*
@@ -5222,7 +5544,7 @@ PROCEDURE close (d: INTEGER) : [ INTEGER ] ;
 *)
 
 @findex open
-PROCEDURE open (filename: ADDRESS; oflag: INTEGER; ...) : INTEGER ;
+PROCEDURE open (filename: ADDRESS; oflag: INTEGER; mode: INTEGER) : INTEGER ;
 
 
 (*
@@ -5240,7 +5562,7 @@ PROCEDURE creat (filename: ADDRESS; mode: CARDINAL) : INTEGER;
 *)
 
 @findex lseek
-PROCEDURE lseek (fd: INTEGER; offset: CSSIZE_T; whence: INTEGER) : [ CSSIZE_T ] ;
+PROCEDURE lseek (fd: INTEGER; offset: COFF_T; whence: INTEGER) : [ COFF_T ] ;
 
 
 (*
@@ -6720,7 +7042,7 @@ PROCEDURE BlockMoveBackward (dest, src: ADDRESS; n: CARDINAL) ;
 
 
 (*
-   BlockClear - fills, block..block+n-1, with zero's.
+   BlockClear - fills, block..block+n-1, with zeros.
 *)
 
 @findex BlockClear
@@ -7381,7 +7703,7 @@ PROCEDURE Doio (VAR f: File) ;
 *)
 
 @findex FileNameChar
-PROCEDURE FileNameChar (ch: CHAR) ;
+PROCEDURE FileNameChar (ch: CHAR) : CHAR ;
 
 
 END FileSystem.
@@ -7512,7 +7834,7 @@ VAR
 
 (*
    OpenInput - reads a string from stdin as the filename for reading.
-               If the filename ends with `.' then it appends the defext
+               If the filename ends with '.' then it appends the defext
                extension. The global variable Done is set if all
                was successful.
 *)
@@ -7532,7 +7854,7 @@ PROCEDURE CloseInput ;
 
 (*
    OpenOutput - reads a string from stdin as the filename for writing.
-                If the filename ends with `.' then it appends the defext
+                If the filename ends with '.' then it appends the defext
                 extension. The global variable Done is set if all
                 was successful.
 *)
@@ -8424,7 +8746,7 @@ EXPORT QUALIFIED SEMAPHORE, DESCRIPTOR,
 
 TYPE
 @findex SEMAPHORE (type)
-   SEMAPHORE ;         (* defines Dijkstra's semaphores *)
+   SEMAPHORE ;         (* defines Dijkstras semaphores  *)
 @findex DESCRIPTOR (type)
    DESCRIPTOR ;        (* handle onto a process         *)
 
@@ -8483,7 +8805,7 @@ PROCEDURE InitSemaphore (v: CARDINAL; Name: ARRAY OF CHAR) : SEMAPHORE ;
 
 
 (*
-   Wait - performs dijkstra's P operation on a semaphore.
+   Wait - performs dijkstras P operation on a semaphore.
           A process which calls this procedure will
           wait until the value of the semaphore is > 0
           and then it will decrement this value.
@@ -8494,7 +8816,7 @@ PROCEDURE Wait (s: SEMAPHORE) ;
 
 
 (*
-   Signal - performs dijkstra's V operation on a semaphore.
+   Signal - performs dijkstras V operation on a semaphore.
             A process which calls the procedure will increment
             the semaphores value.
 *)
@@ -8621,7 +8943,7 @@ DEFINITION MODULE SYSTEM ;
 FROM COROUTINES IMPORT PROTECTION ;
 
 EXPORT QUALIFIED (* the following are built into the compiler: *)
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* 
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, (* 
                  Target specific data types. *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE,
                  (* SIZE is exported depending upon -fpim2 and
@@ -13322,7 +13644,7 @@ DEFINITION MODULE SYSTEM;
   (* The constants and types define underlying properties of storage *)
 
 EXPORT QUALIFIED BITSPERLOC, LOCSPERWORD,
-                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, (* 
+                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, COFF_T, (* 
                  Target specific data types.  *)
                  ADDADR, SUBADR, DIFADR, MAKEADR, ADR, ROTATE,
                  SHIFT, CAST, TSIZE,
@@ -14878,11 +15200,15 @@ IMPORT IOChan ;
 PROCEDURE SkipSpaces (cid: IOChan.ChanId) ;
 
 
-(* The following procedures do not read past line marks.  *)
+(* CharAvailable returns TRUE if IOChan.ReadResult is notKnown or
+   allRight.  *)
 
 @findex CharAvailable
 PROCEDURE CharAvailable (cid: IOChan.ChanId) : BOOLEAN ;
 
+
+(* EofOrEoln returns TRUE if IOChan.ReadResult is endOfLine or
+   endOfInput.  *)
 
 @findex EofOrEoln
 PROCEDURE EofOrEoln (cid: IOChan.ChanId) : BOOLEAN ;

@@ -1,3 +1,45 @@
+2025-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122302
+	* c-common.cc (braced_list_to_string): Call copy_node on RAW_DATA_CST
+	before changing RAW_DATA_POINTER and RAW_DATA_LENGTH on it.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* c-gimplify.cc (c_gimplify_expr): Also gimplify the second operand
+	before the COND_EXPR and use in COND_EXPR result of gimplification.
+
+2025-10-14  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-10-08  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/122188
+	* c-gimplify.cc (c_gimplify_expr): Gimplify CALL_EXPR_ARG (*expr_p, 0)
+	instead of calling save_expr on it.
+
+2025-08-08  Release Manager
+
+	* GCC 15.2.0 released.
+
+2025-07-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-07-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/120837
+	* c-common.cc (pointer_int_sum): Rewrite the intop PLUS_EXPR or
+	MINUS_EXPR optimization into extension of both intop operands,
+	their separate multiplication and then addition/subtraction followed
+	by rest of pointer_int_sum handling after the multiplication.
+
 2025-05-07  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

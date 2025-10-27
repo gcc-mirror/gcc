@@ -5726,6 +5726,13 @@ proc add_options_for_aarch64_sve { flags } {
     return "$flags -march=armv8.2-a+sve"
 }
 
+proc add_options_for_aarch64_sme { flags } {
+    if { ![istarget aarch64*-*-*] || [check_effective_target_aarch64_sme] } {
+	return "$flags"
+    }
+    return "$flags -march=armv9-a+sme"
+}
+
 # Return 1 if this is an ARM target supporting the FP16 alternative
 # format.  Some multilibs may be incompatible with the options needed.  Also
 # set et_arm_fp16_alternative_flags to the best options to add.
@@ -6417,6 +6424,23 @@ proc check_effective_target_aarch64_sve2_hw { } {
     }]
 }
 
+# Return true if this is an AArch64 target that can run SVE2.1 code.
+
+proc check_effective_target_aarch64_sve2p1_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sve2p1_hw_available {
+	#pragma GCC target "+sve2p1"
+	int
+	main (void)
+	{
+	  asm volatile ("dupq z0.b, z0.b[0]");
+	  return 0;
+	}
+    }]
+}
+
 # Return true if this is an AArch64 target that can run SVE code and
 # if its SVE vectors have exactly BITS bits.
 
@@ -6446,6 +6470,22 @@ foreach N { 128 256 512 1024 2048 } {
 	    return [aarch64_sve_hw_bits N]
 	}
     }]
+}
+
+# Return true if this is an AArch64 target that can run SME code.
+
+proc check_effective_target_aarch64_sme_hw { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_runtime aarch64_sme_hw_available {
+	int
+	main (void)
+	{
+	  asm volatile ("rdsvl x0, #1");
+	  return 0;
+	}
+    } [add_options_for_aarch64_sme ""]]
 }
 
 proc check_effective_target_arm_neonv2_hw { } {
@@ -12350,18 +12390,40 @@ proc check_effective_target_aarch64_tiny { } {
 # Create functions to check that the AArch64 assembler supports the
 # various architecture extensions via the .arch_extension pseudo-op.
 
-foreach { aarch64_ext } { "fp" "simd" "crypto" "crc" "lse" "dotprod" "sve"
-			  "i8mm" "f32mm" "f64mm" "bf16" "sb" "sve2" "ls64"
-			  "lut" "sme" "sme-i16i64" "sme2" "sve-b16b16"
-			  "sme-b16b16" "sme-f16f16" "sme2p1" "fp8" "fp8fma"
-			  "ssve-fp8fma" "fp8dot2" "ssve-fp8dot2" "fp8dot4"
-			  "ssve-fp8dot4"} {
+set exts {
+    "bf16" "crc" "crypto" "dotprod" "f32mm" "f64mm" "fp" "fp8"
+    "fp8dot2" "fp8dot4" "fp8fma" "i8mm" "ls64" "lse" "lut" "sb" "simd"
+    "sve-b16b16" "sve" "sve2"
+}
+
+# We don't support SME without SVE2, so we'll use armv9 as the base
+# archiecture for SME and the features that require it.
+set exts_sve2 {
+    "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1"
+    "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma"
+}
+
+foreach { aarch64_ext } $exts {
     eval [string map [list FUNC $aarch64_ext] {
 	proc check_effective_target_aarch64_asm_FUNC_ok { } {
 	  if { [istarget aarch64*-*-*] } {
 		return [check_no_compiler_messages aarch64_FUNC_assembler object {
 			__asm__ (".arch_extension FUNC");
 		} "-march=armv8-a+FUNC"]
+	  } else {
+		return 0
+	  }
+	}
+    }]
+}
+
+foreach { aarch64_ext } $exts_sve2 {
+    eval [string map [list FUNC $aarch64_ext] {
+	proc check_effective_target_aarch64_asm_FUNC_ok { } {
+	  if { [istarget aarch64*-*-*] } {
+		return [check_no_compiler_messages aarch64_FUNC_assembler object {
+			__asm__ (".arch_extension FUNC");
+		} "-march=armv9-a+FUNC"]
 	  } else {
 		return 0
 	  }

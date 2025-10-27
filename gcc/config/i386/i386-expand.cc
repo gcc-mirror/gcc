@@ -2361,34 +2361,44 @@ ix86_expand_copysign (rtx operands[])
     vdest = gen_reg_rtx (vmode);
   else
     dest = NULL_RTX;
-  op1 = lowpart_subreg (vmode, force_reg (mode, operands[2]), mode);
+  op1 = lowpart_subreg (vmode, force_reg (mode, operands[1]), mode);
   mask = ix86_build_signbit_mask (vmode, TARGET_AVX512F && mode != HFmode, 0);
 
-  if (CONST_DOUBLE_P (operands[1]))
+  if (CONST_DOUBLE_P (operands[2]))
     {
-      op0 = simplify_unary_operation (ABS, mode, operands[1], mode);
-      /* Optimize for 0, simplify b = copy_signf (0.0f, a) to b = mask & a.  */
-      if (op0 == CONST0_RTX (mode))
+      if (real_isneg (CONST_DOUBLE_REAL_VALUE (operands[2])))
+	/* Simplify b = copysign (a, negative) to b = mask | a.  */
+	op1 = gen_rtx_IOR (vmode, mask, op1);
+      else
 	{
-	  emit_move_insn (vdest, gen_rtx_AND (vmode, mask, op1));
-	  if (dest)
-	    emit_move_insn (dest, lowpart_subreg (mode, vdest, vmode));
-	  return;
+	  /* Simplify b = copysign (a, positive) to b = invert_mask & a.  */
+	  rtx invert_mask
+	    = ix86_build_signbit_mask (vmode,
+				       TARGET_AVX512F && mode != HFmode,
+				       true);
+	  op1 = gen_rtx_AND (vmode, invert_mask, op1);
 	}
-
-      if (GET_MODE_SIZE (mode) < 16)
-	op0 = ix86_build_const_vector (vmode, false, op0);
-      op0 = force_reg (vmode, op0);
+      emit_move_insn (vdest, op1);
+      if (dest)
+	emit_move_insn (dest, lowpart_subreg (mode, vdest, vmode));
+      return;
     }
   else
-    op0 = lowpart_subreg (vmode, force_reg (mode, operands[1]), mode);
+    op0 = lowpart_subreg (vmode, force_reg (mode, operands[2]), mode);
 
   op2 = gen_reg_rtx (vmode);
   op3 = gen_reg_rtx (vmode);
-  emit_move_insn (op2, gen_rtx_AND (vmode,
-				    gen_rtx_NOT (vmode, mask),
-				    op0));
-  emit_move_insn (op3, gen_rtx_AND (vmode, mask, op1));
+  rtx invert_mask;
+  /* NB: Generate vmovdqa, vpandn, vpand, vpor for AVX and generate pand,
+     pand, por for SSE.  */
+  if (TARGET_AVX)
+    invert_mask = gen_rtx_NOT (vmode, mask);
+  else
+    invert_mask = ix86_build_signbit_mask (vmode,
+					   TARGET_AVX512F && mode != HFmode,
+					   true);
+  emit_move_insn (op2, gen_rtx_AND (vmode, invert_mask, op1));
+  emit_move_insn (op3, gen_rtx_AND (vmode, mask, op0));
   emit_move_insn (vdest, gen_rtx_IOR (vmode, op2, op3));
   if (dest)
     emit_move_insn (dest, lowpart_subreg (mode, vdest, vmode));

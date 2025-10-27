@@ -99,6 +99,18 @@ test04()
   using type = decltype(v);
 }
 
+void
+test05()
+{
+  // PR libstdc++/120934 - views::concat is ill-formed depending on argument order
+  auto v1 = views::single(1);
+  std::vector<int> vec = {2, 3};
+  auto v2 = views::join(views::transform(vec, views::single));
+
+  static_assert( ranges::range<decltype(views::concat(v1, v2))> );
+  static_assert( ranges::range<decltype(views::concat(v2, v1))> );
+}
+
 int
 main()
 {
@@ -107,4 +119,5 @@ main()
   test02();
   test03();
   test04();
+  test05();
 }

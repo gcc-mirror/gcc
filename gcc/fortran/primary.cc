@@ -3057,12 +3057,14 @@ gfc_variable_attr (gfc_expr *expr, gfc_typespec *ts)
 
 	if (comp->ts.type == BT_CLASS)
 	  {
+	    dimension = CLASS_DATA (comp)->attr.dimension;
 	    codimension = CLASS_DATA (comp)->attr.codimension;
 	    pointer = CLASS_DATA (comp)->attr.class_pointer;
 	    allocatable = CLASS_DATA (comp)->attr.allocatable;
 	  }
 	else
 	  {
+	    dimension = comp->attr.dimension;
 	    codimension = comp->attr.codimension;
 	    if (expr->ts.type == BT_CLASS && strcmp (comp->name, "_data") == 0)
 	      pointer = comp->attr.class_pointer;
@@ -4448,7 +4450,7 @@ match_variable (gfc_expr **result, int equiv_flag, int host_flag)
     case FL_PROCEDURE:
       /* Check for a nonrecursive function result variable.  */
       if (sym->attr.function
-	  && !sym->attr.external
+	  && (!sym->attr.external || sym->abr_modproc_decl)
 	  && sym->result == sym
 	  && (gfc_is_function_return_value (sym, gfc_current_ns)
 	      || (sym->attr.entry

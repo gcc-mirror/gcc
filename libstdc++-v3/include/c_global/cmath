@@ -3792,10 +3792,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return std::__hypot3<long double>(__x, __y, __z); }
 
   template<typename _Tp, typename _Up, typename _Vp>
-    __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>
+    typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type
     hypot(_Tp __x, _Up __y, _Vp __z)
     {
-      using __type = __gnu_cxx::__promoted_t<_Tp, _Up, _Vp>;
+      using __type = typename __gnu_cxx::__promote_3<_Tp, _Up, _Vp>::__type;
       return std::__hypot3<__type>(__x, __y, __z);
     }
 

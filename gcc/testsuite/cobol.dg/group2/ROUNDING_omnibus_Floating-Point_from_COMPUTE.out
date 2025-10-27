@@ -1,0 +1,71 @@
+ROUNDING from COMP-2 after COMPUTE.
+Rounding mode TRUNCATION 111 becomes +111
+Rounding mode TRUNCATION 111.099999999999994 becomes +111
+Rounding mode TRUNCATION 111.5 becomes +111
+Rounding mode TRUNCATION 111.900000000000006 becomes +111
+Rounding mode TRUNCATION -111 becomes -111
+Rounding mode TRUNCATION -111.099999999999994 becomes -111
+Rounding mode TRUNCATION -111.5 becomes -111
+Rounding mode TRUNCATION -111.900000000000006 becomes -111
+Rounding mode NEAREST-AWAY-FROM-ZERO 111 becomes +111
+Rounding mode NEAREST-AWAY-FROM-ZERO 111.099999999999994 becomes +111
+Rounding mode NEAREST-AWAY-FROM-ZERO 111.5 becomes +112
+Rounding mode NEAREST-AWAY-FROM-ZERO 111.900000000000006 becomes +112
+Rounding mode NEAREST-AWAY-FROM-ZERO -111 becomes -111
+Rounding mode NEAREST-AWAY-FROM-ZERO -111.099999999999994 becomes -111
+Rounding mode NEAREST-AWAY-FROM-ZERO -111.5 becomes -112
+Rounding mode NEAREST-AWAY-FROM-ZERO -111.900000000000006 becomes -112
+Rounding mode AWAY-FROM-ZERO 111 becomes +111
+Rounding mode AWAY-FROM-ZERO 111.099999999999994 becomes +112
+Rounding mode AWAY-FROM-ZERO 111.5 becomes +112
+Rounding mode AWAY-FROM-ZERO 111.900000000000006 becomes +112
+Rounding mode AWAY-FROM-ZERO -111 becomes -111
+Rounding mode AWAY-FROM-ZERO -111.099999999999994 becomes -112
+Rounding mode AWAY-FROM-ZERO -111.5 becomes -112
+Rounding mode AWAY-FROM-ZERO -111.900000000000006 becomes -112
+Rounding mode NEAREST-EVEN 110 becomes +110
+Rounding mode NEAREST-EVEN 110.099999999999994 becomes +110
+Rounding mode NEAREST-EVEN 110.5 becomes +110
+Rounding mode NEAREST-EVEN 111 becomes +111
+Rounding mode NEAREST-EVEN 111.099999999999994 becomes +111
+Rounding mode NEAREST-EVEN 111.5 becomes +112
+Rounding mode NEAREST-EVEN 111.900000000000006 becomes +112
+Rounding mode NEAREST-EVEN -110 becomes -110
+Rounding mode NEAREST-EVEN -110.099999999999994 becomes -110
+Rounding mode NEAREST-EVEN -110.5 becomes -110
+Rounding mode NEAREST-EVEN -111 becomes -111
+Rounding mode NEAREST-EVEN -111.099999999999994 becomes -111
+Rounding mode NEAREST-EVEN -111.5 becomes -112
+Rounding mode NEAREST-EVEN -111.900000000000006 becomes -112
+Rounding mode NEAREST-TOWARD-ZERO 111 becomes +111
+Rounding mode NEAREST-TOWARD-ZERO 111.099999999999994 becomes +111
+Rounding mode NEAREST-TOWARD-ZERO 111.5 becomes +111
+Rounding mode NEAREST-TOWARD-ZERO 111.900000000000006 becomes +112
+Rounding mode NEAREST-TOWARD-ZERO -111 becomes -111
+Rounding mode NEAREST-TOWARD-ZERO -111.099999999999994 becomes -111
+Rounding mode NEAREST-TOWARD-ZERO -111.5 becomes -111
+Rounding mode NEAREST-TOWARD-ZERO -111.900000000000006 becomes -112
+Rounding mode TOWARD-GREATER 111 becomes +111
+Rounding mode TOWARD-GREATER 111.099999999999994 becomes +112
+Rounding mode TOWARD-GREATER 111.5 becomes +112
+Rounding mode TOWARD-GREATER 111.900000000000006 becomes +112
+Rounding mode TOWARD-GREATER -111 becomes -111
+Rounding mode TOWARD-GREATER -111.099999999999994 becomes -111
+Rounding mode TOWARD-GREATER -111.5 becomes -111
+Rounding mode TOWARD-GREATER -111.900000000000006 becomes -111
+Rounding mode TOWARD-LESSER 111 becomes +111
+Rounding mode TOWARD-LESSER 111.099999999999994 becomes +111
+Rounding mode TOWARD-LESSER 111.5 becomes +111
+Rounding mode TOWARD-LESSER 111.900000000000006 becomes +111
+Rounding mode TOWARD-LESSER -111 becomes -111
+Rounding mode TOWARD-LESSER -111.099999999999994 becomes -112
+Rounding mode TOWARD-LESSER -111.5 becomes -112
+Rounding mode TOWARD-LESSER -111.900000000000006 becomes -112
+Rounding mode PROHIBITED - fits 111 becomes +111
+     EXCEPTION STATUS IS ""
+Rounding mode PROHIBITED - doesn't fit; no ON ERROR phrase 111.5 becomes +123
+     EXCEPTION STATUS IS "EC-SIZE-TRUNCATION"
+Rounding mode PROHIBITED - doesn't fit; ON ERROR phrase 111.5 becomes +123
+     COMPUTE had an ON SIZE error
+     EXCEPTION STATUS IS "EC-SIZE-TRUNCATION"
+

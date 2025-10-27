@@ -167,6 +167,9 @@ package body Exp_Util is
    --  Force evaluation of bounds of a slice, which may be given by a range
    --  or by a subtype indication with or without a constraint.
 
+   function Is_Expression_Of_Func_Return (N : Node_Id) return Boolean;
+   --  Return True if N is the expression of a function return
+
    function Is_Uninitialized_Aggregate
      (Exp : Node_Id;
       T   : Entity_Id) return Boolean;
@@ -6069,14 +6072,19 @@ package body Exp_Util is
       --  now known to be protected, the finalization routine is the one
       --  defined on the corresponding record of the ancestor (corresponding
       --  records do not automatically inherit operations, but maybe they
-      --  should???)
+      --  should???). This does not apply to array types, where every base
+      --  type has a finalization routine that depends on the first subtype.
 
-      if Is_Untagged_Derivation (Btyp) then
+      if Is_Untagged_Derivation (Btyp) and then not Is_Array_Type (Btyp) then
          if Is_Protected_Type (Btyp) then
             Utyp := Corresponding_Record_Type (Root_Type (Btyp));
 
-         else
-            Utyp := Underlying_Type (Root_Type (Btyp));
+         elsif Is_Implicit_Full_View (Utyp) then
+            if Is_Derived_Type (Btyp) then
+               Utyp := Underlying_Type (Root_Type (Btyp));
+            else
+               Utyp := Underlying_Type (Root_Type (Full_View (Btyp)));
+            end if;
 
             if Is_Protected_Type (Utyp) then
                Utyp := Corresponding_Record_Type (Utyp);
@@ -8053,20 +8061,20 @@ package body Exp_Util is
             --  never climb up as far as the N_Expression_With_Actions itself.
 
             when N_Expression_With_Actions =>
-               if N = Expression (P) then
-                  if Is_Empty_List (Actions (P)) then
-                     Append_List_To (Actions (P), Ins_Actions);
-                     Analyze_List (Actions (P));
-                  else
-                     Insert_List_After_And_Analyze
-                       (Last (Actions (P)), Ins_Actions);
-                  end if;
-
-                  return;
-
-               else
+               if Is_List_Member (N) and then List_Containing (N) = Actions (P)
+               then
                   raise Program_Error;
                end if;
+
+               if Is_Empty_List (Actions (P)) then
+                  Append_List_To (Actions (P), Ins_Actions);
+                  Analyze_List (Actions (P));
+               else
+                  Insert_List_After_And_Analyze
+                    (Last (Actions (P)), Ins_Actions);
+               end if;
+
+               return;
 
             --  Case of appearing in the condition of a while expression or
             --  elsif. We insert the actions into the Condition_Actions field.
@@ -8195,20 +8203,24 @@ package body Exp_Util is
                elsif Nkind (Parent (P)) in N_Variant | N_Record_Definition then
                   null;
 
-               --  Do not insert freeze nodes within the loop generated for
-               --  an aggregate, because they may be elaborated too late for
-               --  subsequent use in the back end: within a package spec the
-               --  loop is part of the elaboration procedure and is only
-               --  elaborated during the second pass.
+               --  Do not insert freeze nodes within a block or loop generated
+               --  for an aggregate, because they may be elaborated too late
+               --  for subsequent use in the back end: within a package spec,
+               --  the block or loop is part of the elaboration procedure and
+               --  is only elaborated during the second pass.
 
-               --  If the loop comes from source, or the entity is local to the
-               --  loop itself it must remain within.
+               --  If the block or loop comes from source, or the entity is
+               --  local to the block or loop itself, it must remain within.
 
-               elsif Nkind (Parent (P)) = N_Loop_Statement
-                 and then not Comes_From_Source (Parent (P))
+               elsif ((Nkind (Parent (P)) = N_Handled_Sequence_Of_Statements
+                        and then
+                          Nkind (Parent (Parent (P))) = N_Block_Statement
+                        and then not Comes_From_Source (Parent (Parent (P))))
+                      or else (Nkind (Parent (P)) = N_Loop_Statement
+                                and then not Comes_From_Source (Parent (P))))
                  and then Nkind (First (Ins_Actions)) = N_Freeze_Entity
-                 and then
-                   Scope (Entity (First (Ins_Actions))) /= Current_Scope
+                 and then not
+                   Within_Scope (Entity (First (Ins_Actions)), Current_Scope)
                then
                   null;
 
@@ -8695,6 +8707,20 @@ package body Exp_Util is
       end if;
    end Is_Captured_Function_Call;
 
+   -------------------------------------------------
+   -- Is_Constr_Array_Subt_Of_Unc_With_Controlled --
+   -------------------------------------------------
+
+   function Is_Constr_Array_Subt_Of_Unc_With_Controlled (Typ : Entity_Id)
+     return Boolean
+   is
+   begin
+      return Is_Array_Type (Typ)
+        and then Is_Constrained (Typ)
+        and then Has_Controlled_Component (Typ)
+        and then not Is_Constrained (First_Subtype (Typ));
+   end Is_Constr_Array_Subt_Of_Unc_With_Controlled;
+
    ------------------------------------------
    -- Is_Conversion_Or_Reference_To_Formal --
    ------------------------------------------
@@ -8738,6 +8764,97 @@ package body Exp_Util is
         and then Nkind (Name (N)) = N_Explicit_Dereference;
    end Is_Expanded_Class_Wide_Interface_Object_Decl;
 
+   ----------------------------------
+   -- Is_Expression_Of_Func_Return --
+   ----------------------------------
+
+   function Is_Expression_Of_Func_Return (N : Node_Id) return Boolean is
+      Par : constant Node_Id := Parent (N);
+
+   begin
+      return Nkind (Par) = N_Simple_Return_Statement
+        or else (Nkind (Par) in N_Object_Declaration
+                              | N_Object_Renaming_Declaration
+                  and then Is_Return_Object (Defining_Entity (Par)));
+   end Is_Expression_Of_Func_Return;
+
+   ---------------------------
+   -- Is_Finalizable_Access --
+   ---------------------------
+
+   function Is_Finalizable_Access (Decl : Node_Id) return Boolean is
+      Obj   : constant Entity_Id := Defining_Identifier (Decl);
+      Typ   : constant Entity_Id := Base_Type (Etype (Obj));
+      Desig : constant Entity_Id := Available_View (Designated_Type (Typ));
+      Expr  : constant Node_Id   := Expression (Decl);
+
+      Secondary_Stack_Val : constant Uint :=
+        UI_From_Int (BIP_Allocation_Form'Pos (Secondary_Stack));
+
+      Actual : Node_Id;
+      Call   : Node_Id;
+      Formal : Node_Id;
+      Param  : Node_Id;
+
+   begin
+      --  The prerequisite is a reference to a controlled object
+
+      if No (Expr)
+        or else Nkind (Expr) /= N_Reference
+        or else not Needs_Finalization (Desig)
+      then
+         return False;
+      end if;
+
+      Call := Unqual_Conv (Prefix (Expr));
+
+      --  For a BIP function call, the only case where the return object needs
+      --  to be finalized through Obj is when it is allocated on the secondary
+      --  stack; when it is allocated in the caller, it is finalized directly,
+      --  and when it is allocated on the global heap or in a storage pool, it
+      --  is finalized through another mechanism.
+
+      --  Obj : Access_Typ :=
+      --    BIP_Function_Call (BIPalloc => Secondary_Stack, ...)'reference;
+
+      if Is_Build_In_Place_Function_Call (Call) then
+
+         --  Examine all parameter associations of the function call
+
+         Param := First (Parameter_Associations (Call));
+         while Present (Param) loop
+            if Nkind (Param) = N_Parameter_Association then
+               Formal := Selector_Name (Param);
+               Actual := Explicit_Actual_Parameter (Param);
+
+               --  A match for BIPalloc => Secondary_Stack has been found
+
+               if Is_Build_In_Place_Entity (Formal)
+                 and then BIP_Suffix_Kind (Formal) = BIP_Alloc_Form
+                 and then Nkind (Actual) = N_Integer_Literal
+                 and then Intval (Actual) = Secondary_Stack_Val
+               then
+                  return True;
+               end if;
+            end if;
+
+            Next (Param);
+         end loop;
+
+      --  For a non-BIP function call, the only case where the return object
+      --  need not be finalized is when it itself is going to be returned.
+
+      --  Obj : Typ := Non_BIP_Function_Call'reference;
+
+      elsif Nkind (Call) = N_Function_Call
+        and then not Is_Related_To_Func_Return (Obj)
+      then
+         return True;
+      end if;
+
+      return False;
+   end Is_Finalizable_Access;
+
    ------------------------------
    -- Is_Finalizable_Transient --
    ------------------------------
@@ -8748,19 +8865,6 @@ package body Exp_Util is
    is
       Obj_Id  : constant Entity_Id := Defining_Identifier (Decl);
       Obj_Typ : constant Entity_Id := Base_Type (Etype (Obj_Id));
-
-      function Initialized_By_Aliased_BIP_Func_Call
-        (Trans_Id : Entity_Id) return Boolean;
-      --  Determine whether transient object Trans_Id is initialized by a
-      --  build-in-place function call where the BIPalloc parameter either
-      --  does not exist or is Caller_Allocation, and BIPaccess is not null.
-      --  This case creates an aliasing between the returned value and the
-      --  value denoted by BIPaccess.
-
-      function Initialized_By_Reference (Trans_Id : Entity_Id) return Boolean;
-      --  Determine whether transient object Trans_Id is initialized by a
-      --  reference to another object. This is the only case where we can
-      --  possibly finalize a transient object through an access value.
 
       function Is_Aliased
         (Trans_Id   : Entity_Id;
@@ -8786,115 +8890,6 @@ package body Exp_Util is
       function Is_Part_Of_BIP_Return_Statement (N : Node_Id) return Boolean;
       --  Return True if N is directly part of a build-in-place return
       --  statement.
-
-      ------------------------------------------
-      -- Initialized_By_Aliased_BIP_Func_Call --
-      ------------------------------------------
-
-      function Initialized_By_Aliased_BIP_Func_Call
-        (Trans_Id : Entity_Id) return Boolean
-      is
-         Call : Node_Id := Expression (Parent (Trans_Id));
-
-      begin
-         --  Build-in-place calls usually appear in 'reference format
-
-         if Nkind (Call) = N_Reference then
-            Call := Prefix (Call);
-         end if;
-
-         Call := Unqual_Conv (Call);
-
-         --  We search for a formal with a matching suffix. We can't search
-         --  for the full name, because of the code at the end of Sem_Ch6.-
-         --  Create_Extra_Formals, which copies the Extra_Formals over to
-         --  the Alias of an instance, which will cause the formals to have
-         --  "incorrect" names. See also Exp_Ch6.Build_In_Place_Formal.
-
-         if Is_Build_In_Place_Function_Call (Call) then
-            declare
-               Caller_Allocation_Val : constant Uint :=
-                 UI_From_Int (BIP_Allocation_Form'Pos (Caller_Allocation));
-               Access_Suffix         : constant String :=
-                 BIP_Formal_Suffix (BIP_Object_Access);
-               Alloc_Suffix          : constant String :=
-                 BIP_Formal_Suffix (BIP_Alloc_Form);
-
-               function Has_Suffix (Name, Suffix : String) return Boolean;
-               --  Return True if Name has suffix Suffix
-
-               ----------------
-               -- Has_Suffix --
-               ----------------
-
-               function Has_Suffix (Name, Suffix : String) return Boolean is
-                  Len : constant Natural := Suffix'Length;
-
-               begin
-                  return Name'Length > Len
-                    and then Name (Name'Last - Len + 1 .. Name'Last) = Suffix;
-               end Has_Suffix;
-
-               Access_OK  : Boolean := False;
-               Alloc_OK   : Boolean := True;
-               Param      : Node_Id;
-
-            begin
-               --  Examine all parameter associations of the function call
-
-               Param := First (Parameter_Associations (Call));
-
-               while Present (Param) loop
-                  if Nkind (Param) = N_Parameter_Association
-                    and then Nkind (Selector_Name (Param)) = N_Identifier
-                  then
-                     declare
-                        Actual : constant Node_Id :=
-                          Explicit_Actual_Parameter (Param);
-                        Formal : constant Node_Id :=
-                          Selector_Name (Param);
-                        Name   : constant String :=
-                          Get_Name_String (Chars (Formal));
-
-                     begin
-                        --  A nonnull BIPaccess has been found
-
-                        if Has_Suffix (Name, Access_Suffix)
-                          and then Nkind (Actual) /= N_Null
-                        then
-                           Access_OK := True;
-
-                        --  A BIPalloc has been found
-
-                        elsif Has_Suffix (Name, Alloc_Suffix)
-                          and then Nkind (Actual) = N_Integer_Literal
-                        then
-                           Alloc_OK := Intval (Actual) = Caller_Allocation_Val;
-                        end if;
-                     end;
-                  end if;
-
-                  Next (Param);
-               end loop;
-
-               return Access_OK and Alloc_OK;
-            end;
-         end if;
-
-         return False;
-      end Initialized_By_Aliased_BIP_Func_Call;
-
-      ------------------------------
-      -- Initialized_By_Reference --
-      ------------------------------
-
-      function Initialized_By_Reference (Trans_Id : Entity_Id) return Boolean
-      is
-         Expr : constant Node_Id := Expression (Parent (Trans_Id));
-
-      begin
-         return Present (Expr) and then Nkind (Expr) = N_Reference;
-      end Initialized_By_Reference;
 
       ----------------
       -- Is_Aliased --
@@ -9001,13 +8996,16 @@ package body Exp_Util is
 
          Stmt := First_Stmt;
          while Present (Stmt) loop
-            --  Transient objects initialized by a reference are finalized
-            --  (see Initialized_By_Reference above), so we must make sure
-            --  not to finalize the referenced object twice. And we cannot
-            --  finalize it at all if it is referenced by the nontransient
-            --  object serviced by the transient scope.
+            --  (Transient) objects initialized by a reference to another named
+            --  object are never finalized (see Is_Finalizable_Access), so we
+            --  need not worry about finalizing (transient) referenced objects
+            --  twice. Therefore, we only need to look at the nontransient
+            --  object serviced by the transient scope, if it exists and is
+            --  declared as a reference to another named object.
 
-            if Nkind (Stmt) = N_Object_Declaration then
+            if Nkind (Stmt) = N_Object_Declaration
+              and then Stmt = N
+            then
                Expr := Expression (Stmt);
 
                --  Aliasing of the form:
@@ -9021,8 +9019,8 @@ package body Exp_Util is
                   return True;
                end if;
 
-            --  (Transient) renamings are never finalized so we need not bother
-            --  about finalizing transient renamed objects twice. Therefore, we
+            --  (Transient) renamings are never finalized so we need not worry
+            --  about finalizing (transient) renamed objects twice. Therefore,
             --  we only need to look at the nontransient object serviced by the
             --  transient scope, if it exists and is declared as a renaming.
 
@@ -9222,12 +9220,11 @@ package body Exp_Util is
       function Is_Part_Of_BIP_Return_Statement (N : Node_Id) return Boolean is
          Subp    : constant Entity_Id := Current_Subprogram;
          Context : Node_Id;
+
       begin
          --  First check if N is part of a BIP function
 
-         if No (Subp)
-           or else not Is_Build_In_Place_Function (Subp)
-         then
+         if No (Subp) or else not Is_Build_In_Place_Function (Subp) then
             return False;
          end if;
 
@@ -9251,6 +9248,15 @@ package body Exp_Util is
    --  Start of processing for Is_Finalizable_Transient
 
    begin
+      --  If the node serviced by the transient context is a return statement,
+      --  then the finalization needs to be deferred to the generic machinery.
+
+      if Nkind (N) = N_Simple_Return_Statement
+        or else Is_Part_Of_BIP_Return_Statement (N)
+      then
+         return False;
+      end if;
+
       --  Handle access types
 
       if Is_Access_Type (Desig) then
@@ -9260,34 +9266,27 @@ package body Exp_Util is
       return
         Ekind (Obj_Id) in E_Constant | E_Variable
           and then Needs_Finalization (Desig)
-          and then Nkind (N) /= N_Simple_Return_Statement
-          and then not Is_Part_Of_BIP_Return_Statement (N)
 
           --  Do not consider a transient object that was already processed
 
           and then not Is_Finalized_Transient (Obj_Id)
-
-          --  Do not consider renamed or 'reference-d transient objects because
-          --  the act of renaming extends the object's lifetime.
-
-          and then not Is_Aliased (Obj_Id, Decl)
-
-          --  If the transient object is of an access type, check that it is
-          --  initialized by a reference to another object.
-
-          and then (not Is_Access_Type (Obj_Typ)
-                     or else Initialized_By_Reference (Obj_Id))
-
-          --  Do not consider transient objects which act as indirect aliases
-          --  of build-in-place function results.
-
-          and then not Initialized_By_Aliased_BIP_Func_Call (Obj_Id)
 
           --  Do not consider iterators because those are treated as normal
           --  controlled objects and are processed by the usual finalization
           --  machinery. This avoids the double finalization of an iterator.
 
           and then not Is_Iterator (Desig)
+
+          --  If the transient object is of an access type, check that it must
+          --  be finalized.
+
+          and then (not Is_Access_Type (Obj_Typ)
+                     or else Is_Finalizable_Access (Decl))
+
+          --  Do not consider renamed transient objects because the act of
+          --  renaming extends the object's lifetime.
+
+          and then not Is_Aliased (Obj_Id, Decl)
 
           --  Do not consider containers in the context of iterator loops. Such
           --  transient objects must exist for as long as the loop is around,
@@ -9355,22 +9354,6 @@ package body Exp_Util is
       return Is_Dispatch_Table_Wrapper (E)
         and then Present (LSP_Subprogram (E));
    end Is_LSP_Wrapper;
-
-   --------------------------
-   -- Is_Non_BIP_Func_Call --
-   --------------------------
-
-   function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean is
-   begin
-      --  The expected call is of the format
-      --
-      --    Func_Call'reference
-
-      return
-        Nkind (Expr) = N_Reference
-          and then Nkind (Prefix (Expr)) = N_Function_Call
-          and then not Is_Build_In_Place_Function_Call (Prefix (Expr));
-   end Is_Non_BIP_Func_Call;
 
    ----------------------------------
    -- Is_Possibly_Unaligned_Object --
@@ -9644,21 +9627,16 @@ package body Exp_Util is
 
    function Is_Related_To_Func_Return (Id : Entity_Id) return Boolean is
       Expr : constant Node_Id := Related_Expression (Id);
+
    begin
       --  In the case of a function with a class-wide result that returns
       --  a call to a function with a specific result, we introduce a
       --  type conversion for the return expression. We do not want that
       --  type conversion to influence the result of this function.
 
-      return
-        Present (Expr)
-          and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
-          and then (Nkind (Parent (Expr)) = N_Simple_Return_Statement
-                     or else
-                       (Nkind (Parent (Expr)) in N_Object_Declaration
-                                               | N_Object_Renaming_Declaration
-                         and then
-                        Is_Return_Object (Defining_Entity (Parent (Expr)))));
+      return Present (Expr)
+        and then Nkind (Unqual_Conv (Expr)) = N_Explicit_Dereference
+        and then Is_Expression_Of_Func_Return (Expr);
    end Is_Related_To_Func_Return;
 
    --------------------------------
@@ -9743,55 +9721,6 @@ package body Exp_Util is
          return False;
       end if;
    end Is_Renamed_Object;
-
-   --------------------------------------
-   -- Is_Secondary_Stack_BIP_Func_Call --
-   --------------------------------------
-
-   function Is_Secondary_Stack_BIP_Func_Call (Expr : Node_Id) return Boolean is
-      Actual    : Node_Id;
-      Call      : Node_Id := Expr;
-      Formal    : Node_Id;
-      Param     : Node_Id;
-
-   begin
-      --  Build-in-place calls usually appear in 'reference format. Note that
-      --  the accessibility check machinery may add an extra 'reference due to
-      --  side-effect removal.
-
-      while Nkind (Call) = N_Reference loop
-         Call := Prefix (Call);
-      end loop;
-
-      Call := Unqual_Conv (Call);
-
-      if Is_Build_In_Place_Function_Call (Call) then
-
-         --  Examine all parameter associations of the function call
-
-         Param := First (Parameter_Associations (Call));
-         while Present (Param) loop
-            if Nkind (Param) = N_Parameter_Association then
-               Formal := Selector_Name (Param);
-               Actual := Explicit_Actual_Parameter (Param);
-
-               --  A match for BIPalloc => 2 has been found
-
-               if Is_Build_In_Place_Entity (Formal)
-                 and then BIP_Suffix_Kind (Formal) = BIP_Alloc_Form
-                 and then Nkind (Actual) = N_Integer_Literal
-                 and then Intval (Actual) = Uint_2
-               then
-                  return True;
-               end if;
-            end if;
-
-            Next (Param);
-         end loop;
-      end if;
-
-      return False;
-   end Is_Secondary_Stack_BIP_Func_Call;
 
    ------------------------------
    -- Is_Secondary_Stack_Thunk --
@@ -9982,7 +9911,8 @@ package body Exp_Util is
    begin
       return (not Is_Tagged_Type (T) and then Is_Derived_Type (T))
                or else
-                 (Is_Private_Type (T) and then Present (Full_View (T))
+                 (Is_Private_Type (T)
+                   and then Present (Full_View (T))
                    and then not Is_Tagged_Type (Full_View (T))
                    and then Is_Derived_Type (Full_View (T))
                    and then Etype (Full_View (T)) /= T);
@@ -11696,34 +11626,6 @@ package body Exp_Util is
       end if;
    end Matching_Standard_Type;
 
-   -----------------------------
-   -- May_Generate_Large_Temp --
-   -----------------------------
-
-   --  At the current time, the only types that we return False for (i.e. where
-   --  we decide we know they cannot generate large temps) are ones where we
-   --  know the size is 256 bits or less at compile time, and we are still not
-   --  doing a thorough job on arrays and records.
-
-   function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean is
-   begin
-      if not Size_Known_At_Compile_Time (Typ) then
-         return False;
-      end if;
-
-      if Known_Esize (Typ) and then Esize (Typ) <= 256 then
-         return False;
-      end if;
-
-      if Is_Array_Type (Typ)
-        and then Present (Packed_Array_Impl_Type (Typ))
-      then
-         return May_Generate_Large_Temp (Packed_Array_Impl_Type (Typ));
-      end if;
-
-      return True;
-   end May_Generate_Large_Temp;
-
    ---------------------------------------
    -- Move_To_Initialization_Statements --
    ---------------------------------------
@@ -12836,18 +12738,22 @@ package body Exp_Util is
       --  Otherwise we generate a reference to the expression
 
       else
-         --  Special processing for function calls that return a limited type.
-         --  We need to build a declaration that will enable build-in-place
-         --  expansion of the call. This is not done if the context is already
-         --  an object declaration, to prevent infinite recursion.
+         --  Special processing for function calls with a result type that is
+         --  either BIP or a constrained array with controlled component and
+         --  an unconstrained first subtype, when the context is neither an
+         --  object declaration (to prevent infinite recursion) nor a function
+         --  return (to propagate the anonymous return object).
 
-         --  This is relevant only in Ada 2005 mode. In Ada 95 programs we have
-         --  to accommodate functions returning limited objects by reference.
+         --  We need to build an object declaration to trigger build-in-place
+         --  expansion of the call in the former case, and addition of bounds
+         --  to the object in the latter case.
 
-         if Ada_Version >= Ada_2005
-           and then Nkind (Exp) = N_Function_Call
-           and then Is_Inherently_Limited_Type (Etype (Exp))
+         if Nkind (Exp) = N_Function_Call
+           and then (Is_Build_In_Place_Result_Type (Exp_Type)
+                      or else
+                     Is_Constr_Array_Subt_Of_Unc_With_Controlled (Exp_Type))
            and then Nkind (Parent (Exp)) /= N_Object_Declaration
+           and then not Is_Expression_Of_Func_Return (Exp)
          then
             declare
                Obj  : constant Entity_Id := Make_Temporary (Loc, 'F', Exp);
@@ -13456,7 +13362,6 @@ package body Exp_Util is
       Nested_Constructs : Boolean) return Boolean
    is
       Decl    : Node_Id;
-      Expr    : Node_Id;
       Obj_Id  : Entity_Id;
       Obj_Typ : Entity_Id;
       Pack_Id : Entity_Id;
@@ -13494,7 +13399,6 @@ package body Exp_Util is
          elsif Nkind (Decl) = N_Object_Declaration then
             Obj_Id  := Defining_Identifier (Decl);
             Obj_Typ := Base_Type (Etype (Obj_Id));
-            Expr    := Expression (Decl);
 
             --  Bypass any form of processing for objects which have their
             --  finalization disabled. This applies only to objects at the
@@ -13548,21 +13452,10 @@ package body Exp_Util is
             then
                return True;
 
-            --  The object is of the form:
-            --    Obj : Access_Typ := Non_BIP_Function_Call'reference;
-            --
-            --    Obj : Access_Typ :=
-            --            BIP_Function_Call (BIPalloc => 2, ...)'reference;
+            --  The object is an access-to-controlled that must be finalized
 
             elsif Is_Access_Type (Obj_Typ)
-              and then Needs_Finalization
-                         (Available_View (Designated_Type (Obj_Typ)))
-              and then Present (Expr)
-              and then
-                (Is_Secondary_Stack_BIP_Func_Call (Expr)
-                  or else
-                    (Is_Non_BIP_Func_Call (Expr)
-                      and then not Is_Related_To_Func_Return (Obj_Id)))
+              and then Is_Finalizable_Access (Decl)
             then
                return True;
 
@@ -13735,11 +13628,12 @@ package body Exp_Util is
    --  The above requirements should be documented in Sinfo ???
 
    function Safe_Unchecked_Type_Conversion (Exp : Node_Id) return Boolean is
+      Pexp : constant Node_Id := Parent (Exp);
+
       Otyp   : Entity_Id;
       Ityp   : Entity_Id;
       Oalign : Uint;
       Ialign : Uint;
-      Pexp   : constant Node_Id := Parent (Exp);
 
    begin
       --  If the expression is the RHS of an assignment or object declaration
@@ -13757,18 +13651,12 @@ package body Exp_Util is
          return True;
 
       --  If the expression is the prefix of an N_Selected_Component we should
-      --  also be OK because GCC knows to look inside the conversion except if
-      --  the type is discriminated. We assume that we are OK anyway if the
-      --  type is not set yet or if it is controlled since we can't afford to
-      --  introduce a temporary in this case.
+      --  also be OK because GCC knows to look inside the conversion.
 
       elsif Nkind (Pexp) = N_Selected_Component
         and then Prefix (Pexp) = Exp
       then
-         return No (Etype (Pexp))
-           or else not Is_Type (Etype (Pexp))
-           or else not Has_Discriminants (Etype (Pexp))
-           or else Is_Constrained (Etype (Pexp));
+         return True;
       end if;
 
       --  Set the output type, this comes from Etype if it is set, otherwise we
@@ -13841,14 +13729,7 @@ package body Exp_Util is
       --  known size, but we can't consider them that way here, because we are
       --  talking about the actual size of the object.
 
-      --  We also make sure that in addition to the size being known, we do not
-      --  have a case which might generate an embarrassingly large temp in
-      --  stack checking mode.
-
       elsif Size_Known_At_Compile_Time (Otyp)
-        and then
-          (not Stack_Checking_Enabled
-            or else not May_Generate_Large_Temp (Otyp))
         and then not (Is_Record_Type (Otyp) and then not Is_Constrained (Otyp))
       then
          return True;
@@ -14570,6 +14451,11 @@ package body Exp_Util is
 
          when N_Aggregate =>
             return Compile_Time_Known_Aggregate (N);
+
+         --  A reference is side-effect-free
+
+         when N_Reference =>
+            return True;
 
          --  We consider that anything else has side effects. This is a bit
          --  crude, but we are pretty close for most common cases, and we

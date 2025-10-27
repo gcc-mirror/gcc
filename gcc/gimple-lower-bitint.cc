@@ -76,7 +76,7 @@ enum bitint_prec_kind {
 /* Caches to speed up bitint_precision_kind.  */
 
 static int small_max_prec, mid_min_prec, large_min_prec, huge_min_prec;
-static int limb_prec;
+static int limb_prec, abi_limb_prec;
 
 /* Categorize _BitInt(PREC) as small, middle, large or huge.  */
 
@@ -106,6 +106,9 @@ bitint_precision_kind (int prec)
     large_min_prec = MAX_FIXED_MODE_SIZE + 1;
   if (!limb_prec)
     limb_prec = GET_MODE_PRECISION (limb_mode);
+  if (!abi_limb_prec)
+    abi_limb_prec
+      = GET_MODE_PRECISION (as_a <scalar_int_mode> (info.abi_limb_mode));
   if (!huge_min_prec)
     {
       if (4 * limb_prec >= MAX_FIXED_MODE_SIZE)
@@ -2213,7 +2216,7 @@ range_to_prec (tree op, gimple *stmt)
    from that precision, if it is negative, the operand is sign-extended
    from -*PREC.  If PREC_STORED is NULL, it is the toplevel call,
    otherwise *PREC_STORED is prec from the innermost call without
-   range optimizations.  */
+   range optimizations (0 for uninitialized SSA_NAME).  */
 
 tree
 bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
@@ -2318,7 +2321,7 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 	    {
 	      *prec = TYPE_UNSIGNED (TREE_TYPE (op)) ? limb_prec : -limb_prec;
 	      if (prec_stored)
-		*prec_stored = *prec;
+		*prec_stored = 0;
 	      tree var = create_tmp_var (m_limb_type);
 	      TREE_ADDRESSABLE (var) = 1;
 	      ret = build_fold_addr_expr (var);
@@ -2346,6 +2349,8 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 		  tree rhs_type = TREE_TYPE (rhs1);
 		  int prec_stored_val = 0;
 		  ret = handle_operand_addr (rhs1, g, &prec_stored_val, prec);
+		  if (prec_stored)
+		    *prec_stored = prec_stored_val;
 		  if (TYPE_PRECISION (lhs_type) > TYPE_PRECISION (rhs_type))
 		    {
 		      if (TYPE_UNSIGNED (lhs_type)
@@ -2354,7 +2359,9 @@ bitint_large_huge::handle_operand_addr (tree op, gimple *stmt,
 		    }
 		  else
 		    {
-		      if (*prec > 0 && *prec < TYPE_PRECISION (lhs_type))
+		      if (prec_stored_val == 0)
+			/* Non-widening cast of uninitialized value.  */;
+		      else if (*prec > 0 && *prec < TYPE_PRECISION (lhs_type))
 			;
 		      else if (TYPE_UNSIGNED (lhs_type))
 			{
@@ -6071,7 +6078,7 @@ static unsigned int
 gimple_lower_bitint (void)
 {
   small_max_prec = mid_min_prec = large_min_prec = huge_min_prec = 0;
-  limb_prec = 0;
+  limb_prec = abi_limb_prec = 0;
 
   unsigned int i;
   for (i = 0; i < num_ssa_names; ++i)
@@ -6593,15 +6600,62 @@ gimple_lower_bitint (void)
 	      if (is_gimple_assign (SSA_NAME_DEF_STMT (s)))
 		switch (gimple_assign_rhs_code (SSA_NAME_DEF_STMT (s)))
 		  {
+		  case REALPART_EXPR:
 		  case IMAGPART_EXPR:
 		    {
-		      tree rhs1 = gimple_assign_rhs1 (SSA_NAME_DEF_STMT (s));
+		      gimple *ds = SSA_NAME_DEF_STMT (s);
+		      tree rhs1 = gimple_assign_rhs1 (ds);
 		      rhs1 = TREE_OPERAND (rhs1, 0);
 		      if (TREE_CODE (rhs1) == SSA_NAME)
 			{
 			  gimple *g = SSA_NAME_DEF_STMT (rhs1);
 			  if (optimizable_arith_overflow (g))
-			    continue;
+			    {
+			      if (gimple_assign_rhs_code (ds) == IMAGPART_EXPR)
+				continue;
+			      if (gimple_store_p (use_stmt))
+				{
+				  /* Punt if the cast use of IMAGPART_EXPR stmt
+				     appears before the store use_stmt, because
+				     optimizable arith overflow can't be
+				     lowered at the store location in that case.
+				     See PR121828.  */
+				  gimple_stmt_iterator gsi
+				    = gsi_for_stmt (use_stmt);
+				  unsigned int cnt = 0;
+				  do
+				    {
+				      gsi_prev_nondebug (&gsi);
+				      if (gsi_end_p (gsi))
+					break;
+				      gimple *g2 = gsi_stmt (gsi);
+				      if (g2 == ds)
+					break;
+				      if (++cnt == 64)
+					break;
+				      if (!gimple_assign_cast_p (g2))
+					continue;
+				      tree rhs2 = gimple_assign_rhs1 (g2);
+				      if (TREE_CODE (rhs2) != SSA_NAME)
+					continue;
+				      gimple *g3 = SSA_NAME_DEF_STMT (rhs2);
+				      if (!is_gimple_assign (g3))
+					continue;
+				      if (gimple_assign_rhs_code (g3)
+					  != IMAGPART_EXPR)
+					continue;
+				      rhs2 = gimple_assign_rhs1 (g3);
+				      rhs2 = TREE_OPERAND (rhs2, 0);
+				      if (rhs2 != rhs1)
+					continue;
+				      cnt = 64;
+				      break;
+				    }
+				  while (1);
+				  if (cnt == 64)
+				    break;
+				}
+			    }
 			}
 		    }
 		    /* FALLTHRU */
@@ -6612,7 +6666,6 @@ gimple_lower_bitint (void)
 		  case EXACT_DIV_EXPR:
 		  case TRUNC_MOD_EXPR:
 		  case FIX_TRUNC_EXPR:
-		  case REALPART_EXPR:
 		    if (gimple_store_p (use_stmt)
 			&& is_gimple_assign (use_stmt)
 			&& !gimple_has_volatile_ops (use_stmt)
@@ -7032,7 +7085,20 @@ gimple_lower_bitint (void)
 		       from smaller number.  */
 		    min_prec = prec;
 		  else
-		    min_prec = CEIL (min_prec, limb_prec) * limb_prec;
+		    {
+		      min_prec = CEIL (min_prec, limb_prec) * limb_prec;
+		      if (min_prec > (unsigned) limb_prec
+			  && abi_limb_prec > limb_prec)
+			{
+			  /* For targets with ABI limb precision higher than
+			     limb precision round to ABI limb precision,
+			     otherwise c can contain padding bits.  */
+			  min_prec
+			    = CEIL (min_prec, abi_limb_prec) * abi_limb_prec;
+			  if (min_prec > prec - rem - 2 * limb_prec)
+			    min_prec = prec;
+			}
+		    }
 		  if (min_prec == 0)
 		    c = NULL_TREE;
 		  else if (min_prec == prec)

@@ -1,5 +1,6 @@
 // { dg-options "-O -fomit-frame-pointer -fno-optimize-sibling-calls -funwind-tables -mtrack-speculation" }
-// { dg-final { check-function-bodies "**" "" } }
+// { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {\t\.inst} } }
+
 
 void ns_callee ();
  void s_callee () [[arm::streaming]];
@@ -196,7 +197,7 @@ sc_caller_x1 (int *ptr, int a) [[arm::streaming_compatible]]
 **	tst	x16, #?1
 **	beq	[^\n]*
 **	csel	x15, x15, xzr, ne
-**	smstart	sm
+**	.inst 0xd503437f // smstart sm
 **	...
 */
 void

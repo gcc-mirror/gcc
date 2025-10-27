@@ -33,14 +33,15 @@ namespace dts {
       : input(input)
       , first(NULL), second(NULL), matched(false)
     {
-      static regmatch_t empty = { -1, -1 };
-      regmatch_t& self(*this);
+      static regmatch_t empty;
+      empty.rm_so = empty.rm_eo = -1;
+      regmatch_t& self(*this); // cppcheck-suppress constVariableReference
       self = empty;
     }
     csub_match( const char input[], const regmatch_t& m )
       : input(input)
     {
-      regmatch_t& self(*this);
+      regmatch_t& self(*this); // cppcheck-suppress constVariableReference
       self = m;
       matched = rm_so != -1;
       first =   rm_so == -1? NULL : input + rm_so;
@@ -67,7 +68,6 @@ namespace dts {
 #if __cpp_exceptions
         throw std::logic_error(msg);
 #else
-        pattern = NULL;
         cbl_errx("%s", msg);
 #endif
       }
@@ -77,7 +77,7 @@ namespace dts {
     size_t size() const { return nsubexpr; }
     bool ready() const { return pattern != NULL; }
   private:
-    regex( const regex& ) {}
+    regex( const regex& ) = default;
   };
 
   inline bool regex_search( const char input[], const char *eoinput,
@@ -86,24 +86,30 @@ namespace dts {
 #if __cpp_exceptions
       static const char msg[] = "input not NUL-terminated";
       throw std::domain_error( msg );
-#else
-      eoinput = strchr(input, '\0');
 #endif
     }
-    if( eoinput == NULL ) eoinput = strchr(input, '\0');
     auto ncm = re.size();
     cm.resize(ncm);
     std::vector <regmatch_t> cms(ncm);
 
-
     int erc = regexec( &re, input, ncm, cms.data(), 0 );
     if( erc != 0 ) return false;
+#if  __cpp_exceptions
+    // This is not correct at all, but current use depends on current behavior.
+    // The following line is excluded from the GCC build, which is compiled
+    // without __cpp_exceptions.  parse_copy_directive (for one) depends on
+    // regex_search returning true even if the match is beyond eoinput.
+    if( eoinput < cm[0].second ) return false;
+    // Correct behavior would return match only between input and eoinput.
+    // Because regex(3) uses a NUL terminator, it may match text between
+    // eoinput and the NUL.
+#endif
     std::transform( cms.begin(), cms.end(), cm.begin(),
                     [input]( const regmatch_t& m ) {
                       return csub_match( input, m );
                     } );
     return true;
   }
-};
+}
 
 

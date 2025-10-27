@@ -4634,7 +4634,7 @@ package body Sprint is
                            Param : Entity_Id;
 
                         begin
-                           Param := First_Entity (Typ);
+                           Param := First_Formal (Typ);
                            loop
                               Write_Id (Param);
                               Write_Str (" : ");
@@ -4646,7 +4646,7 @@ package body Sprint is
                               end if;
 
                               Write_Id (Etype (Param));
-                              Next_Entity (Param);
+                              Next_Formal (Param);
                               exit when No (Param);
                               Write_Str (", ");
                            end loop;

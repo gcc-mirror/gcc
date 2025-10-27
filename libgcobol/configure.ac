@@ -40,6 +40,11 @@ AM_MAINTAINER_MODE
 
 AM_INIT_AUTOMAKE([1.15.1 no-define foreign no-dist -Wall -Wno-portability])
 
+AC_MSG_CHECKING([for --enable-libgcobol])
+AC_ARG_ENABLE(libgcobol,
+  [AS_HELP_STRING([--enable-libgcobol], [Enable libgcobol])])
+AC_MSG_RESULT($enable_libgcobol)
+
 AC_MSG_CHECKING([for --enable-version-specific-runtime-libs])
 AC_ARG_ENABLE(version-specific-runtime-libs,
 AS_HELP_STRING([--enable-version-specific-runtime-libs],
@@ -138,6 +143,14 @@ AC_CHECK_SIZEOF([void *])
 unset LIBGCOBOL_SUPPORTED
 . ${srcdir}/configure.tgt
 
+# Decide if it's usable.
+case $LIBGCOBOL_SUPPORTED:$enable_libgcobol in
+*:no)  use_libgcobol=no  ;;
+*:yes) use_libgcobol=yes ;;
+yes:*) use_libgcobol=yes ;;
+*:*)   use_libgcobol=no  ;;
+esac
+
 # -----------------
 # __int128 support
 # -----------------
@@ -164,7 +177,7 @@ AC_CACHE_CHECK([whether __int128 is supported], [libgcobol_cv_have_int128],
     libgcobol_cv_have_int128=no
 ])])
 
-AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$LIBGCOBOL_SUPPORTED" = xyes && test "x$libgcobol_cv_have_int128" = xyes])
+AM_CONDITIONAL(BUILD_LIBGCOBOL, [test "x$use_libgcobol" = xyes && test "x$libgcobol_cv_have_int128" = xyes])
 
 # Check if functions are available in libc before adding extra libs.
 AC_SEARCH_LIBS([malloc], [c])
@@ -188,7 +201,19 @@ esac
 AC_SUBST(extra_ldflags_libgcobol)
 
 AC_CHECK_HEADERS_ONCE(floatingpoint.h ieeefp.h fenv.h fptrap.h \
-complex.h stdlib.h)
+complex.h stdlib.h errno.h)
+
+# Look for a way to represent the program name
+# First, check the GLIBC case
+AC_CHECK_DECLS([program_invocation_short_name], , ,[
+#if HAVE_ERRNO_H
+# define _GNU_SOURCE
+# include <errno.h>
+#endif
+])
+
+# Check an alternate
+AC_CHECK_FUNCS_ONCE(getprogname)
 
 # These are GLIBC
 AC_CHECK_FUNCS_ONCE(random_r srandom_r initstate_r setstate_r)
@@ -206,6 +231,17 @@ libgcobol_have_sinf128=no
 AC_SEARCH_LIBS([sinf128], [c m], libgcobol_have_sinf128=yes)
 libgcobol_have_cacosf128=no
 AC_SEARCH_LIBS([cacosf128], [c m], libgcobol_have_cacosf128=yes)
+
+# Copied from gcc/configure.ac. 2025-06-05 R.J.Dubner
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.
+ac_cv_func_clock_gettime=no
+if test $ac_cv_func_clock_gettime = no; then
+  AC_CHECK_LIB(rt, clock_gettime,
+    [LIBS="-lrt $LIBS"
+     AC_DEFINE(HAVE_CLOCK_GETTIME, 1,
+	       [Define to 1 if you have the `clock_gettime' function.])])
+fi
 
 have_iec_60559_libc_support=no
 if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
@@ -230,6 +266,9 @@ elif test "${ENABLE_LIBQUADMATH_SUPPORT}" = "default" ; then
   enable_libquadmath_support=default
 fi
 LIBGCOBOL_CHECK_FLOAT128
+
+# struct tm tm_zone is a POSIX.1-2024 addition.
+AC_CHECK_MEMBERS([struct tm.tm_zone],,,[#include <time.h>])
 
 if test "${multilib}" = "yes"; then
   multilib_arg="--enable-multilib"

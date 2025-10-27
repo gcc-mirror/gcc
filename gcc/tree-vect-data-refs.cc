@@ -1410,10 +1410,17 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
       /* We can only use base and misalignment information relative to
 	 an innermost loop if the misalignment stays the same throughout the
 	 execution of the loop.  As above, this is the case if the stride of
-	 the dataref evenly divides by the alignment.  */
-      poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
-      step_preserves_misalignment_p
-	= multiple_p (drb->step_alignment * vf, vect_align_c);
+	 the dataref evenly divides by the alignment.  Make sure to check
+	 previous epilogues and the main loop.  */
+      step_preserves_misalignment_p = true;
+      auto lvinfo = loop_vinfo;
+      while (lvinfo)
+	{
+	  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (lvinfo);
+	  step_preserves_misalignment_p
+	    &= multiple_p (drb->step_alignment * vf, vect_align_c);
+	  lvinfo = LOOP_VINFO_ORIG_LOOP_INFO (lvinfo);
+	}
 
       if (!step_preserves_misalignment_p && dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -1480,6 +1487,7 @@ vect_compute_data_ref_alignment (vec_info *vinfo, dr_vec_info *dr_info,
       unsigned int max_alignment;
       tree base = get_base_for_alignment (drb->base_address, &max_alignment);
       if (max_alignment < vect_align_c
+	  || (loop_vinfo && LOOP_VINFO_EPILOGUE_P (loop_vinfo))
 	  || !vect_can_force_dr_alignment_p (base,
 					     vect_align_c * BITS_PER_UNIT))
 	{
@@ -2750,12 +2758,14 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
      2) there is at least one unsupported misaligned data ref with an unknown
         misalignment, and
      3) all misaligned data refs with a known misalignment are supported, and
-     4) the number of runtime alignment checks is within reason.  */
+     4) the number of runtime alignment checks is within reason.
+     5) the vectorization factor is a constant.  */
 
   do_versioning
     = (optimize_loop_nest_for_speed_p (loop)
        && !loop->inner /* FORNOW */
-       && loop_cost_model (loop) > VECT_COST_MODEL_CHEAP);
+       && loop_cost_model (loop) > VECT_COST_MODEL_CHEAP)
+       && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ();
 
   if (do_versioning)
     {
@@ -2796,17 +2806,6 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                   break;
                 }
 
-	      /* At present we don't support versioning for alignment
-		 with variable VF, since there's no guarantee that the
-		 VF is a power of two.  We could relax this if we added
-		 a way of enforcing a power-of-two size.  */
-	      unsigned HOST_WIDE_INT size;
-	      if (!GET_MODE_SIZE (TYPE_MODE (vectype)).is_constant (&size))
-		{
-		  do_versioning = false;
-		  break;
-		}
-
 	      /* Forcing alignment in the first iteration is no good if
 		 we don't keep it across iterations.  For now, just disable
 		 versioning in this case.
@@ -2825,7 +2824,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
                  Construct the mask needed for this test.  For example,
                  GET_MODE_SIZE for the vector mode V4SI is 16 bytes so the
                  mask must be 15 = 0xf. */
-	      int mask = size - 1;
+	      gcc_assert (DR_TARGET_ALIGNMENT (dr_info).is_constant ());
+	      int mask = DR_TARGET_ALIGNMENT (dr_info).to_constant () - 1;
 
 	      /* FORNOW: use the same mask to test all potentially unaligned
 		 references in the loop.  */

@@ -334,12 +334,21 @@
 ;; - LD1Q (SVE2p1)
 ;; -------------------------------------------------------------------------
 
-;; Model this as operating on the largest valid element size, which is DI.
-;; This avoids having to define move patterns & more for VNx1TI, which would
-;; be difficult without a non-gather form of LD1Q.
-(define_insn "aarch64_gather_ld1q"
-  [(set (match_operand:VNx2DI 0 "register_operand")
-	(unspec:VNx2DI
+;; For little-endian targets, it would be enough to use a single pattern,
+;; with a subreg to bitcast the result to whatever mode is needed.
+;; However, on big-endian targets, the bitcast would need to be an
+;; aarch64_sve_reinterpret instruction.  That would interact badly
+;; with the "&" and "?" constraints in this pattern: if the result
+;; of the reinterpret needs to be in the same register as the index,
+;; the RA would tend to prefer to allocate a separate register for the
+;; intermediate (uncast) result, even if the reinterpret prefers tying.
+;;
+;; The index is logically VNx1DI rather than VNx2DI, but introducing
+;; and using VNx1DI would just create more bitcasting.  The ACLE intrinsic
+;; uses svuint64_t, which corresponds to VNx2DI.
+(define_insn "@aarch64_gather_ld1q<mode>"
+  [(set (match_operand:SVE_FULL 0 "register_operand")
+	(unspec:SVE_FULL
 	  [(match_operand:VNx2BI 1 "register_operand")
 	   (match_operand:DI 2 "aarch64_reg_or_zero")
 	   (match_operand:VNx2DI 3 "register_operand")
@@ -784,8 +793,8 @@
 	    (match_operand:SVE_FULL_I 2 "register_operand"))
 	  (match_operand:SVE_FULL_I 3 "register_operand")))]
   "TARGET_SVE2p1_OR_SME"
-  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
-     [       w, %0, w, w; *             ] <su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+  {@ [cons: =0, %1, 2, 3; attrs: movprfx]
+     [       w,  0, w, w; *             ] <su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;<su>clamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
   }
 )
@@ -804,8 +813,8 @@
 	     (match_operand:SVE_FULL_I 3 "register_operand"))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2p1_OR_SME"
-  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
-     [       w, %0, w, w; *             ] #
+  {@ [cons: =0, %1, 2, 3; attrs: movprfx]
+     [       w,  0, w, w; *             ] #
      [     ?&w,  w, w, w; yes           ] #
   }
   "&& true"
@@ -1373,8 +1382,8 @@
 	   (match_operand:SVE_CLAMP_F 3 "register_operand")]
 	  UNSPEC_FMINNM))]
   ""
-  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
-     [       w, %0, w, w; *             ] <b>fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
+  {@ [cons: =0, %1, 2, 3; attrs: movprfx]
+     [       w,  0, w, w; *             ] <b>fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
      [     ?&w,  w, w, w; yes           ] movprfx\t%0, %1\;<b>fclamp\t%0.<Vetype>, %2.<Vetype>, %3.<Vetype>
   }
 )
@@ -1393,8 +1402,8 @@
 	   (match_operand:SVE_CLAMP_F 3 "register_operand")]
 	  UNSPEC_COND_FMINNM))]
   ""
-  {@ [cons: =0,  1, 2, 3; attrs: movprfx]
-     [       w, %0, w, w; *             ] #
+  {@ [cons: =0, %1, 2, 3; attrs: movprfx]
+     [       w,  0, w, w; *             ] #
      [     ?&w,  w, w, w; yes           ] #
   }
   "&& true"
@@ -1626,9 +1635,9 @@
 	       (match_operand:SVE_FULL_I 2 "register_operand")))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
-  {@ [ cons: =0 , 1  , 2 ; attrs: movprfx ]
-     [ w        , %0 , w ; *              ] nbsl\t%0.d, %0.d, %2.d, %0.d
-     [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %0.d
+  {@ [ cons: =0 , %1 , 2 ; attrs: movprfx ]
+     [ w        , 0  , w ; *              ] nbsl\t%0.d, %0.d, %2.d, %0.d
+     [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %1.d
   }
   "&& !CONSTANT_P (operands[3])"
   {
@@ -1648,8 +1657,8 @@
 	       (match_operand:SVE_FULL_I 2 "register_operand")))]
 	  UNSPEC_PRED_X))]
   "TARGET_SVE2"
-  {@ [ cons: =0 , 1  , 2 ; attrs: movprfx ]
-     [ w        , %0 , w ; *              ] nbsl\t%0.d, %0.d, %2.d, %2.d
+  {@ [ cons: =0 , %1 , 2 ; attrs: movprfx ]
+     [ w        , 0  , w ; *              ] nbsl\t%0.d, %0.d, %2.d, %2.d
      [ ?&w      , w  , w ; yes            ] movprfx\t%0, %1\;nbsl\t%0.d, %0.d, %2.d, %2.d
   }
   "&& !CONSTANT_P (operands[3])"
@@ -2152,14 +2161,14 @@
 ;; - FDOT (2-way, indexed) (FP8DOT2)
 ;; -------------------------------------------------------------------------
 (define_insn "@aarch64_sve_dot<mode>"
-  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
-	(unspec:SVE_FULL_HSF
-	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+  [(set (match_operand:SVE_FULL_HSF_FP8_FDOT 0 "register_operand")
+	(unspec:SVE_FULL_HSF_FP8_FDOT
+	  [(match_operand:SVE_FULL_HSF_FP8_FDOT 1 "register_operand")
 	   (match_operand:VNx16QI 2 "register_operand")
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (reg:DI FPM_REGNUM)]
 	  UNSPEC_DOT_FP8))]
-  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  ""
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , w ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b
      [ ?&w      , w , w , w ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b
@@ -2167,15 +2176,15 @@
 )
 
 (define_insn "@aarch64_sve_dot_lane<mode>"
-  [(set (match_operand:SVE_FULL_HSF 0 "register_operand")
-	(unspec:SVE_FULL_HSF
-	  [(match_operand:SVE_FULL_HSF 1 "register_operand")
+  [(set (match_operand:SVE_FULL_HSF_FP8_FDOT 0 "register_operand")
+	(unspec:SVE_FULL_HSF_FP8_FDOT
+	  [(match_operand:SVE_FULL_HSF_FP8_FDOT 1 "register_operand")
 	   (match_operand:VNx16QI 2 "register_operand")
 	   (match_operand:VNx16QI 3 "register_operand")
 	   (match_operand:SI 4 "const_int_operand")
 	   (reg:DI FPM_REGNUM)]
 	  UNSPEC_DOT_LANE_FP8))]
-  "TARGET_SSVE_FP8DOT4 && !(<MODE>mode == VNx8HFmode && !TARGET_SSVE_FP8DOT2)"
+  ""
   {@ [ cons: =0 , 1 , 2 , 3 ; attrs: movprfx ]
      [ w        , 0 , w , y ; *              ] fdot\t%0.<Vetype>, %2.b, %3.b[%4]
      [ ?&w      , w , w , y ; yes            ] movprfx\t%0, %1\;fdot\t%0.<Vetype>, %2.b, %3.b[%4]
@@ -2951,8 +2960,8 @@
 	     UNSPEC_COND_FABS)]
 	  SVE_COND_SMAXMIN))]
   "TARGET_FAMINMAX && TARGET_SVE2_OR_SME2"
-  {@ [ cons: =0 , 1   , 2  , 3 ; attrs: movprfx ]
-     [ w        , Upl , %0 , w ; *              ] <faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
+  {@ [ cons: =0 , 1   , %2 , 3 ; attrs: movprfx ]
+     [ w        , Upl , 0  , w ; *              ] <faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
      [ ?&w      , Upl , w  , w ; yes            ] movprfx\t%0, %2\;<faminmax_cond_uns_op>\t%0.<Vetype>, %1/m, %0.<Vetype>, %3.<Vetype>
   }
   "&& (!rtx_equal_p (operands[1], operands[5])

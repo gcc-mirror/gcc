@@ -20,15 +20,15 @@ along with GCC; see the file COPYING3.  If not see
 
 
 #include "cobol-system.h"
-#include "coretypes.h"
-#include "tree.h"
-#include "diagnostic.h"
-#include "opts.h"
-#include "debug.h"
-#include "langhooks.h"
-#include "langhooks-def.h"
-#include "target.h"
-#include "stringpool.h"
+#include <coretypes.h>
+#include <tree.h>
+#include <diagnostic.h>
+#include <opts.h>
+#include <debug.h>
+#include <langhooks.h>
+#include <langhooks-def.h>
+#include <target.h>
+#include <stringpool.h>
 #include "../../libgcobol/ec.h"
 #include "../../libgcobol/common-defs.h"
 #include "util.h"
@@ -39,7 +39,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "genapi.h"
 #include "../../libgcobol/exceptl.h"
 #include "exceptg.h"
-#include "util.h"
 #include "gengen.h"   // This has some GTY(()) markers
 #include "structs.h"  // This has some GTY(()) markers
 
@@ -357,6 +356,10 @@ cobol_langhook_handle_option (size_t scode,
             copybook_extension_add(cobol_copyext);
             return true;
 
+        case OPT_M:
+            cobol_set_pp_option('M');
+            return true;
+
         case OPT_fstatic_call:
             use_static_call( arg? true : false );
             return true;
@@ -365,16 +368,18 @@ cobol_langhook_handle_option (size_t scode,
             wsclear(cobol_default_byte);
             return true;
 
-        case OPT_fflex_debug:
+        case OPT_fflex_debug: // cppcheck-suppress syntaxError // The need for this is a mystery
             yy_flex_debug = 1;
             cobol_set_debugging( true, yy_debug == 1, cobol_trace_debug == 1 );
             return true;
+
         case OPT_fyacc_debug:
             yy_debug = 1;
             cobol_set_debugging(yy_flex_debug == 1,
                                 true,
                                 cobol_trace_debug == 1 );
             return true;
+
         case OPT_ftrace_debug:
             cobol_set_debugging( yy_flex_debug == 1, yy_debug == 1, true );
             return true;
@@ -403,11 +408,13 @@ cobol_langhook_handle_option (size_t scode,
         case OPT_fsyntax_only:
           mode_syntax_only(identification_div_e);
           break;
+
         case OPT_preprocess:
           if( ! preprocess_filter_add(arg) ) {
             cbl_errx( "could not execute preprocessor %s", arg);
           }
           return true;
+
         case OPT_include:
           if( ! include_file_add(arg) ) {
             cbl_errx( "could not include %s", arg);
@@ -568,7 +575,7 @@ cobol_name_mangler(const char *cobol_name_)
       }
 
     // Allocate enough space for a prepended underscore and a final '\0'
-    char *cobol_name = (char *)xmalloc(strlen(cobol_name_)+2);
+    char *cobol_name = static_cast<char *>(xmalloc(strlen(cobol_name_)+2));
     size_t n = 0;
     if( cobol_name_[0] >= '0' && cobol_name_[0] <= '9' )
       {

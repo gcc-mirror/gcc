@@ -233,6 +233,13 @@ test14()
   VERIFY( ranges::equal(v | views::join, (int[]){1, 2, 3}) );
 }
 
+void
+test15()
+{
+  // PR libstdc++/119962 - __maybe_present_t misses initialization
+  constexpr decltype(views::join(views::single(views::single(0))).begin()) it;
+}
+
 int
 main()
 {
@@ -250,4 +257,5 @@ main()
   test12();
   test13();
   test14();
+  test15();
 }

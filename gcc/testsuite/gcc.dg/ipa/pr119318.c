@@ -30,8 +30,14 @@ int
 main ()
 {
   W x = foo (0, (V) { 0, 5 });
-  for (unsigned i = 0; i < sizeof(x)/sizeof(x[0]); i++)
+  for (unsigned i = 0; i < sizeof (x) / sizeof (x[0]); i++)
+#if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__ && __SIZEOF_INT__ == 4 && __SIZEOF_INT128__ == 16
     if (x[i] != (i ? 0 : 0x1900000000))
-      __builtin_abort();
+#elif __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__ && __SIZEOF_INT__ == 4 && __SIZEOF_INT128__ == 16
+    if (x[i] != (i ? 0 : ((__int128) 0x19) << 64))
+#else
+    if (0)
+#endif
+      __builtin_abort ();
   return 0;
 }

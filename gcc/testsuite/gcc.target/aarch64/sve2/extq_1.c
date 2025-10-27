@@ -1,5 +1,5 @@
 /* { dg-options "-O2 -msve-vector-bits=256" } */
-/* { dg-final { check-function-bodies "**" "" "" { target { le } } } } */
+/* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_sve.h>
 
@@ -15,7 +15,7 @@ typedef svfloat64_t fixed_float64_t __attribute__((arm_sve_vector_bits(256)));
 **	extq	z0\.b, z0\.b, z1\.b, #8
 **	ret
 */
-fixed_float64_t
+[[gnu::noipa]] fixed_float64_t
 f1 (fixed_float64_t z0, fixed_float64_t z1)
 {
   return __builtin_shufflevector (z0, z1, 1, 4, 3, 6);
@@ -26,7 +26,7 @@ f1 (fixed_float64_t z0, fixed_float64_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #4
 **	ret
 */
-fixed_uint32_t
+[[gnu::noipa]] fixed_uint32_t
 f2 (fixed_uint32_t z0, fixed_uint32_t z1)
 {
   return __builtin_shufflevector (z0, z1, 1, 2, 3, 8, 5, 6, 7, 12);
@@ -37,7 +37,7 @@ f2 (fixed_uint32_t z0, fixed_uint32_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #12
 **	ret
 */
-fixed_uint32_t
+[[gnu::noipa]] fixed_uint32_t
 f3 (fixed_uint32_t z0, fixed_uint32_t z1)
 {
   return __builtin_shufflevector (z0, z1, 3, 8, 9, 10, 7, 12, 13, 14);
@@ -48,7 +48,7 @@ f3 (fixed_uint32_t z0, fixed_uint32_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #2
 **	ret
 */
-fixed_float16_t
+[[gnu::noipa]] fixed_float16_t
 f4 (fixed_float16_t z0, fixed_float16_t z1)
 {
   return __builtin_shufflevector (z0, z1,
@@ -61,7 +61,7 @@ f4 (fixed_float16_t z0, fixed_float16_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #10
 **	ret
 */
-fixed_float16_t
+[[gnu::noipa]] fixed_float16_t
 f5 (fixed_float16_t z0, fixed_float16_t z1)
 {
   return __builtin_shufflevector (z0, z1,
@@ -74,7 +74,7 @@ f5 (fixed_float16_t z0, fixed_float16_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #14
 **	ret
 */
-fixed_float16_t
+[[gnu::noipa]] fixed_float16_t
 f6 (fixed_float16_t z0, fixed_float16_t z1)
 {
   return __builtin_shufflevector (z0, z1,
@@ -87,7 +87,7 @@ f6 (fixed_float16_t z0, fixed_float16_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #1
 **	ret
 */
-fixed_int8_t
+[[gnu::noipa]] fixed_int8_t
 f7 (fixed_int8_t z0, fixed_int8_t z1)
 {
   return __builtin_shufflevector (z0, z1,
@@ -102,7 +102,7 @@ f7 (fixed_int8_t z0, fixed_int8_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #11
 **	ret
 */
-fixed_int8_t
+[[gnu::noipa]] fixed_int8_t
 f8 (fixed_int8_t z0, fixed_int8_t z1)
 {
   return __builtin_shufflevector (z0, z1,
@@ -117,7 +117,7 @@ f8 (fixed_int8_t z0, fixed_int8_t z1)
 **	extq	z0\.b, z0\.b, z1\.b, #15
 **	ret
 */
-fixed_int8_t
+[[gnu::noipa]] fixed_int8_t
 f9 (fixed_int8_t z0, fixed_int8_t z1)
 {
   return __builtin_shufflevector (z0, z1,

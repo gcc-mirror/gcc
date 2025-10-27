@@ -2044,9 +2044,15 @@ package body Sem_Ch12 is
       is
       begin
          for Index in Gen_Assocs.Assocs'Range loop
-            if Defining_Entity (Gen_Assocs.Assocs (Index).An_Formal) = F then
-               return Index;
-            end if;
+            declare
+               An_F : constant Node_Id := Gen_Assocs.Assocs (Index).An_Formal;
+            begin
+               if Nkind (An_F) not in N_Use_Package_Clause | N_Use_Type_Clause
+                 and then Defining_Entity (An_F) = F
+               then
+                  return Index;
+               end if;
+            end;
          end loop;
 
          raise Program_Error; -- it must be present
@@ -7541,6 +7547,12 @@ package body Sem_Ch12 is
                  (Ekind (E2) /= Ekind (E1)
                     or else not Same_Instantiated_Function (E1, E2));
             end if;
+
+         --  No check is needed if this is the body of a subprogram that is
+         --  implicitly created in the case of class-wide predefined functions.
+
+         elsif Ekind (E1) = E_Subprogram_Body then
+            null;
 
          else
             raise Program_Error;

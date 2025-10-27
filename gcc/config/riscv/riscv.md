@@ -875,7 +875,7 @@
 ;; Where C1 is not a LUI operand, but ~C1 is a LUI operand
 
 (define_insn_and_split "*lui_constraint<X:mode>_and_to_or"
-	[(set (match_operand:X 0 "register_operand" "=r")
+  [(set (match_operand:X 0 "register_operand" "=r")
 	(plus:X (and:X (match_operand:X 1 "register_operand" "r")
 		       (match_operand 2 "const_int_operand"))
 		(match_operand 3 "const_int_operand")))
@@ -889,13 +889,21 @@
 	<= riscv_const_insns (operands[3], false)))"
   "#"
   "&& reload_completed"
-  [(set (match_dup 4) (match_dup 5))
-   (set (match_dup 0) (ior:X (match_dup 1) (match_dup 4)))
-   (set (match_dup 4) (match_dup 6))
-   (set (match_dup 0) (minus:X (match_dup 0) (match_dup 4)))]
+  [(const_int 0)]
   {
     operands[5] = GEN_INT (~INTVAL (operands[2]));
     operands[6] = GEN_INT ((~INTVAL (operands[2])) | (-INTVAL (operands[3])));
+
+    /* This is always a LUI operand, so it's safe to just emit.  */
+    emit_move_insn (operands[4], operands[5]);
+
+    rtx x = gen_rtx_IOR (word_mode, operands[1], operands[4]);
+    emit_move_insn (operands[0], x);
+
+    /* This may require multiple steps to synthesize.  */
+    riscv_emit_move (operands[4], operands[6]);
+    x = gen_rtx_MINUS (word_mode, operands[0], operands[4]);
+    emit_move_insn (operands[0], x);
   }
   [(set_attr "type" "arith")])
 
@@ -2273,23 +2281,38 @@
   else
     {
       rtx reg;
-      rtx label = gen_label_rtx ();
+      rtx label1 = gen_label_rtx ();
+      rtx label2 = gen_label_rtx ();
+      rtx label3 = gen_label_rtx ();
       rtx end_label = gen_label_rtx ();
       rtx abs_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx coeff_reg = gen_reg_rtx (<ANYF:MODE>mode);
       rtx tmp_reg = gen_reg_rtx (<ANYF:MODE>mode);
 
       riscv_emit_move (tmp_reg, operands[1]);
+
+      if (flag_trapping_math)
+	{
+	  /* Check if the input is a NaN.  */
+	  riscv_expand_conditional_branch (label1, EQ,
+					   operands[1], operands[1]);
+
+	  emit_jump_insn (gen_jump (label3));
+	  emit_barrier ();
+
+	  emit_label (label1);
+	}
+
       riscv_emit_move (coeff_reg,
 		       riscv_vector::get_fp_rounding_coefficient (<ANYF:MODE>mode));
       emit_insn (gen_abs<ANYF:mode>2 (abs_reg, operands[1]));
 
-      riscv_expand_conditional_branch (label, LT, abs_reg, coeff_reg);
+      riscv_expand_conditional_branch (label2, LT, abs_reg, coeff_reg);
 
       emit_jump_insn (gen_jump (end_label));
       emit_barrier ();
 
-      emit_label (label);
+      emit_label (label2);
       switch (<ANYF:MODE>mode)
 	{
 	case SFmode:
@@ -2307,6 +2330,16 @@
 	}
 
       emit_insn (gen_copysign<ANYF:mode>3 (tmp_reg, abs_reg, operands[1]));
+
+      emit_jump_insn (gen_jump (end_label));
+      emit_barrier ();
+
+      if (flag_trapping_math)
+	{
+	  emit_label (label3);
+	  /* Generate a qNaN from an sNaN if needed.  */
+	  emit_insn (gen_add<ANYF:mode>3 (tmp_reg, operands[1], operands[1]));
+	}
 
       emit_label (end_label);
       riscv_emit_move (operands[0], tmp_reg);
@@ -2922,7 +2955,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "DI")])
 
-(define_insn_and_split "*<optab><GPR:mode>3_mask_1"
+(define_insn "*<optab><GPR:mode>3_mask_1"
   [(set (match_operand:GPR     0 "register_operand" "= r")
 	(any_shift:GPR
 	    (match_operand:GPR 1 "register_operand" "  r")
@@ -2931,12 +2964,7 @@
 	       (match_operand:GPR2 2 "register_operand"  "r")
 	       (match_operand 3 "<GPR:shiftm1>"))])))]
   ""
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-	(any_shift:GPR (match_dup 1)
-		      (match_dup 2)))]
-  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  "<insn>\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "mode" "<GPR:MODE>")])
 
@@ -2955,7 +2983,7 @@
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
-(define_insn_and_split "*<optab>si3_extend_mask"
+(define_insn "*<optab>si3_extend_mask"
   [(set (match_operand:DI                   0 "register_operand" "= r")
 	(sign_extend:DI
 	    (any_shift:SI
@@ -2965,13 +2993,7 @@
 	        (match_operand:GPR 2 "register_operand" " r")
 	        (match_operand 3 "const_si_mask_operand"))]))))]
   "TARGET_64BIT"
-  "#"
-  "&& 1"
-  [(set (match_dup 0)
-	(sign_extend:DI
-	 (any_shift:SI (match_dup 1)
-		       (match_dup 2))))]
-  "operands[2] = gen_lowpart (QImode, operands[2]);"
+  "<insn>w\t%0,%1,%2"
   [(set_attr "type" "shift")
    (set_attr "mode" "SI")])
 
@@ -4381,7 +4403,7 @@
 )
 
 (define_insn "prefetch"
-  [(prefetch (match_operand 0 "address_operand" "r")
+  [(prefetch (match_operand 0 "prefetch_operand" "Qr")
              (match_operand 1 "imm5_operand" "i")
              (match_operand 2 "const_int_operand" "n"))]
   "TARGET_ZICBOP"
@@ -4401,7 +4423,7 @@
 				      (const_string "4")))])
 
 (define_insn "riscv_prefetchi_<mode>"
-  [(unspec_volatile:X [(match_operand:X 0 "address_operand" "r")
+  [(unspec_volatile:X [(match_operand:X 0 "prefetch_operand" "Q")
               (match_operand:X 1 "imm5_operand" "i")]
               UNSPECV_PREI)]
   "TARGET_ZICBOP"

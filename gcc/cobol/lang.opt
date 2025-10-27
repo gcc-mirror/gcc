@@ -38,6 +38,11 @@ Cobol Joined Separate
 ;;  -I <dir>	Add copybook search directory
 ; Documented in c.opt
 
+M
+Cobol
+; Documented in c.opt
+
+
 dialect
 Cobol Joined Separate Enum(dialect_type) EnumBitSet Var(cobol_dialect)
 Accept COBOL constructs used by non-ISO compilers

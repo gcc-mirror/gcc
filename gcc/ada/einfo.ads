@@ -2781,6 +2781,10 @@ package Einfo is
 --       identifiers in standard library packages, and to implement the
 --       restriction No_Implementation_Identifiers.
 
+--    Is_Implicit_Full_View
+--       Defined in types. Set on types that the compiler generates to act as
+--       full views of types that are derivations of private types.
+
 --    Is_Imported
 --       Defined in all entities. Set if the entity is imported. For now we
 --       only allow the import of exceptions, functions, procedures, packages,

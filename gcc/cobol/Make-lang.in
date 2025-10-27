@@ -34,6 +34,9 @@
 # - the compiler proper (eg: cc1plus)
 # - define the names for selecting the language in LANGUAGES.
 
+# Use strict warnings for this front end.
+cobol-warn = $(STRICT_WARN)
+
 GCOBOL_INSTALL_NAME := $(shell echo gcobol|sed '$(program_transform_name)')
 GCOBOLIO_INSTALL_NAME := $(shell echo gcobol-io|sed '$(program_transform_name)')
 GCOBOL_TARGET_INSTALL_NAME := $(target_noncanonical)-$(shell echo gcobol|sed '$(program_transform_name)')
@@ -157,10 +160,9 @@ cobol/cdf.cc: cobol/cdf.y
 FLEX_WARNING = warning, dangerous trailing context
 
 cobol/scan.cc: cobol/scan.l
-	$(FLEX) -o$@ $(LFLAGS) $< >$@~ 2>&1
+	$(FLEX) -o$@ $(LFLAGS) $< 2>$@~ || { cat $@~ >&1; exit 1; }
 	awk  '! /$(FLEX_WARNING)/ {print > "/dev/stderr"; nerr++}	\
-	     END {print "$(FLEX):", NR, "messages" > "/dev/stderr";	\
-		  exit nerr}' $@~
+	     END {print "$(FLEX):", NR, "messages" > "/dev/stderr"}' $@~
 	@rm $@~
 
 
@@ -285,7 +287,7 @@ cobol.install-common: installdirs
 	    rm -f $(DESTDIR)$(bindir)/$(GCOBOL_TARGET_INSTALL_NAME)$(exeext); \
 	    rm -f $(DESTDIR)$(bindir)/$(GCOBC_TARGET_INSTALL_NAME)$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
-	      $(LN) $(GCOBOL_INSTALL_NAME)$(exeext) $(GCOBOL_TARGET_INSTALL_NAME)$(exeext) ); \
+	      $(LN) $(GCOBOL_INSTALL_NAME)$(exeext) $(GCOBOL_TARGET_INSTALL_NAME)$(exeext) && \
 	      $(LN) $(GCOBC_INSTALL_NAME)$(exeext) $(GCOBC_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi; \
 	fi
@@ -351,9 +353,15 @@ cobol.srcman:
 
 cobol.mostlyclean:
 
-cobol.clean:
+gcobol.clean:
+# This is intended for non-general use.  It is a last-ditch effort to flush
+# out all oject files and executable code for gcobol and libgcobol, causing 
+# a complete rebuild of all executable code.
 	rm -fr gcobol cobol1 cobol/*		\
 	../*/libgcobol/*
+
+cobol.clean:
+	rm -fr gcobol cobol1 cobol/*
 
 cobol.distclean:
 
@@ -376,3 +384,4 @@ cobol.stagefeedback: stagefeedback-start
 selftest-cobol:
 
 lang_checks += check-cobol
+

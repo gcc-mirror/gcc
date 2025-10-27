@@ -232,6 +232,13 @@ test12()
   return true;
 }
 
+void
+test13()
+{
+  // PR libstdc++/119962 - __maybe_present_t misses initialization
+  constexpr decltype(views::lazy_split(views::single(0), 0).begin()) it;
+}
+
 int
 main()
 {
@@ -247,4 +254,5 @@ main()
   test10();
   test11();
   static_assert(test12());
+  test13();
 }

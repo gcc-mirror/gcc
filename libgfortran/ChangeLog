@@ -1,3 +1,17 @@
+2025-08-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-08-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/121234
+	* io/list_read.c (read_character): Add checks to bypass eating
+	semicolons when reading strings with decimal mode 'point'
+	(list_formatted_read_scalar): Likewise.
+
+2025-08-08  Release Manager
+
+	* GCC 15.2.0 released.
+
 2025-06-02  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:

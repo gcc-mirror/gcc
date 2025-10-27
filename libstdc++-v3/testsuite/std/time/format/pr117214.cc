@@ -7,10 +7,14 @@
 
 #include <chrono>
 #include <locale>
+#include <span>
 #include <testsuite_hooks.h>
 
+
+template<typename ChronoType>
 void
-test_c()
+test_locale_formats(const ChronoType& t,
+		    std::span<const char* const> test_specifiers)
 {
   const char *test_locales[] = {
     "aa_DJ.UTF-8",
@@ -19,13 +23,42 @@ test_c()
     "az_IR.UTF-8",
     "my_MM.UTF-8",
   };
-  std::chrono::sys_seconds t{std::chrono::seconds{1}};
 
+  auto format_args = std::make_format_args(t);
   for (auto locale_name : test_locales)
   {
-    auto s = std::format(std::locale(locale_name), "{:L%c}", t);
-    VERIFY( !s.empty() );
+    std::locale loc(locale_name);
+    for (auto specifier : test_specifiers)
+    {
+      auto s = std::vformat(loc, specifier, format_args);
+      VERIFY( !s.empty() );
+    }
   }
+}
+
+void
+test_locale_formats()
+{
+  using namespace std::chrono;
+
+  const char* test_specifiers[] = {
+    "{:L%x}", "{:L%Ex}",
+    "{:L%c}", "{:L%Ec}",
+    "{:L%X}", "{:L%EX}",
+    "{:L%r}",
+  };
+  auto date_time_specifiers = std::span(test_specifiers);
+  auto date_specifiers = date_time_specifiers.subspan(0, 2);
+  auto time_specifiers = date_time_specifiers.subspan(4);
+
+  auto ymd = 2020y/November/12d;
+  test_locale_formats(ymd, date_specifiers);
+
+  auto tod = 25h + 10min + 12s;
+  test_locale_formats(tod, time_specifiers);
+
+  auto tp = sys_days(ymd) + tod;
+  test_locale_formats(tp, date_time_specifiers);
 }
 
 #include <stdlib.h>
@@ -93,7 +126,7 @@ test_c_local()
 
 int main()
 {
-  test_c();
+  test_locale_formats();
   test_c_zoned();
   test_c_local();
 }

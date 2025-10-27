@@ -3,7 +3,7 @@
 DEFINITION MODULE SYSTEM ;
 
 EXPORT QUALIFIED BITSPERBYTE, BYTESPERWORD,
-                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, (* 
+                 ADDRESS, WORD, BYTE, CSIZE_T, CSSIZE_T, COFF_T, CARDINAL64, (* 
                  Target specific data types.  *)
                  ADR, TSIZE, ROTATE, SHIFT, THROW, TBITSIZE ;
                  (* SIZE is also exported if -fpim2 is used.  *)

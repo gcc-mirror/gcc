@@ -94,6 +94,13 @@ test04()
   return true;
 }
 
+void
+test05()
+{
+  // PR libstdc++/119962 - __maybe_present_t misses initialization
+  constexpr decltype(views::join_with(views::single(views::single(0)), 0).begin()) it;
+}
+
 int
 main()
 {
@@ -105,4 +112,5 @@ main()
 #else
   VERIFY(test04());
 #endif
+  test05();
 }

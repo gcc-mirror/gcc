@@ -4024,9 +4024,14 @@ expand_crc_optab_fn (internal_fn fn, gcall *stmt, convert_optab optab)
   rtx dest = expand_expr (lhs, NULL_RTX, VOIDmode, EXPAND_WRITE);
   rtx crc = expand_normal (rhs1);
   rtx data = expand_normal (rhs2);
-  gcc_assert (TREE_CODE (rhs3) == INTEGER_CST);
-  rtx polynomial = gen_rtx_CONST_INT (TYPE_MODE (result_type),
-				      TREE_INT_CST_LOW (rhs3));
+  rtx polynomial;
+  if (TREE_CODE (rhs3) != INTEGER_CST)
+    {
+      error ("third argument to %<crc%> builtins must be a constant");
+      polynomial = const0_rtx;
+    }
+  else
+    polynomial = convert_to_mode (TYPE_MODE (result_type), expand_normal (rhs3), 0);
 
   /* Use target specific expansion if it exists.
      Otherwise, generate table-based CRC.  */
@@ -4527,6 +4532,33 @@ widening_fn_p (code_helper code)
     case IFN_##NAME:						  \
     case IFN_##NAME##_HI:					  \
     case IFN_##NAME##_LO:					  \
+    case IFN_##NAME##_EVEN:					  \
+    case IFN_##NAME##_ODD:					  \
+      return true;
+    #include "internal-fn.def"
+
+    default:
+      return false;
+    }
+}
+
+/* Return true if this CODE describes an internal_fn that returns a vector with
+   elements twice as wide as the element size of the input vectors and operates
+   on even/odd parts of the input.  */
+
+bool
+widening_evenodd_fn_p (code_helper code)
+{
+  if (!code.is_fn_code ())
+    return false;
+
+  if (!internal_fn_p ((combined_fn) code))
+    return false;
+
+  internal_fn fn = as_internal_fn ((combined_fn) code);
+  switch (fn)
+    {
+    #define DEF_INTERNAL_WIDENING_OPTAB_FN(NAME, F, S, SO, UO, T) \
     case IFN_##NAME##_EVEN:					  \
     case IFN_##NAME##_ODD:					  \
       return true;

@@ -257,7 +257,7 @@ static tree emit_check (tree, tree, int, Node_Id);
 static tree build_unary_op_trapv (enum tree_code, tree, tree, Node_Id);
 static tree build_binary_op_trapv (enum tree_code, tree, tree, tree, Node_Id);
 static tree convert_with_check (Entity_Id, tree, bool, bool, Node_Id);
-static bool addressable_p (tree, tree);
+static bool addressable_p (tree, tree, bool);
 static bool aliasable_p (tree, tree);
 static tree assoc_to_constructor (Entity_Id, Node_Id, tree);
 static tree pos_to_constructor (Node_Id, tree);
@@ -4876,6 +4876,8 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
       tree gnu_formal = present_gnu_tree (gnat_formal)
 			? get_gnu_tree (gnat_formal) : NULL_TREE;
       tree gnu_actual_type = gnat_to_gnu_type (Etype (gnat_actual));
+      const bool is_init_proc
+	= Is_Entity_Name (gnat_subprog) && Is_Init_Proc (Entity (gnat_subprog));
       const bool in_param = (Ekind (gnat_formal) == E_In_Parameter);
       const bool is_true_formal_parm
 	= gnu_formal && TREE_CODE (gnu_formal) == PARM_DECL;
@@ -4925,7 +4927,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 	 copy to avoid breaking strict aliasing rules.  */
       if (is_by_ref_formal_parm
 	  && (gnu_name_type = gnat_to_gnu_type (Etype (gnat_name)))
-	  && (!addressable_p (gnu_name, gnu_name_type)
+	  && (!addressable_p (gnu_name, gnu_name_type, is_init_proc)
 	      || (node_is_type_conversion (gnat_actual)
 		  && (aliasing = !aliasable_p (gnu_name, gnu_actual_type)))))
 	{
@@ -5051,9 +5053,7 @@ Call_to_gnu (Node_Id gnat_node, tree *gnu_result_type_p, tree gnu_target,
 
 	  /* Do not initialize it for the _Init parameter of an initialization
 	     procedure since no data is meant to be passed in.  */
-	  if (Ekind (gnat_formal) == E_Out_Parameter
-	      && Is_Entity_Name (gnat_subprog)
-	      && Is_Init_Proc (Entity (gnat_subprog)))
+	  if (Ekind (gnat_formal) == E_Out_Parameter && is_init_proc)
 	    gnu_name = gnu_temp = create_temporary ("A", TREE_TYPE (gnu_name));
 
 	  /* Initialize it on the fly like for an implicit temporary in the
@@ -6855,9 +6855,22 @@ gnat_to_gnu (Node_Id gnat_node)
 		&& (Is_Array_Type (Etype (gnat_temp))
 		    || Is_Record_Type (Etype (gnat_temp))
 		    || Is_Concurrent_Type (Etype (gnat_temp)))))
-	gnat_to_gnu_entity (gnat_temp,
-			    gnat_to_gnu (Renamed_Object (gnat_temp)),
-			    true);
+	{
+	  gnu_expr = gnat_to_gnu (Renamed_Object (gnat_temp));
+
+	  /* The elaboration of object renamings present in the source code
+	     never needs to be deferred.  But regular objects may be turned
+	     into renamings during expansion and their elaboration may need
+	     to be deferred, in which case we expect the renamed references
+	     to have been stabilized, so we do not do it again here.  */
+	  if (Present (Freeze_Node (gnat_temp)))
+	    {
+	      gcc_assert (!Comes_From_Source (gnat_node));
+	      save_gnu_tree (gnat_node, gnu_expr, true);
+	    }
+	  else
+	    gnat_to_gnu_entity (gnat_temp, gnu_expr, true);
+	}
       break;
 
     case N_Exception_Renaming_Declaration:
@@ -7590,6 +7603,10 @@ gnat_to_gnu (Node_Id gnat_node)
 
     case N_Allocator:
       {
+	const Entity_Id gnat_desig_type
+	  = Designated_Type (Underlying_Type (Etype (gnat_node)));
+	const Entity_Id gnat_pool = Storage_Pool (gnat_node);
+
 	tree gnu_type, gnu_init;
 	bool ignore_init_type;
 
@@ -7608,9 +7625,6 @@ gnat_to_gnu (Node_Id gnat_node)
 
 	else if (Nkind (gnat_temp) == N_Qualified_Expression)
 	  {
-	    const Entity_Id gnat_desig_type
-	      = Designated_Type (Underlying_Type (Etype (gnat_node)));
-
 	    ignore_init_type = Has_Constrained_Partial_View (gnat_desig_type);
 
 	    gnu_init = gnat_to_gnu (Expression (gnat_temp));
@@ -7637,11 +7651,24 @@ gnat_to_gnu (Node_Id gnat_node)
 	else
 	  gcc_unreachable ();
 
-	gnu_result_type = get_unpadded_type (Etype (gnat_node));
+	/* If this is an array allocated with its bounds, use the thin pointer
+	   as the result type to trigger the machinery in build_allocator, but
+	   make sure not to do it for allocations on the return and secondary
+	   stacks (see build_call_alloc_dealloc_proc for more details).  */
+        if (Is_Constr_Array_Subt_With_Bounds (gnat_desig_type)
+	    && Is_Record_Type (Underlying_Type (Etype (gnat_pool)))
+	    && !type_annotate_only)
+	  {
+	    tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_desig_type));
+	    gnu_result_type
+	      = build_pointer_type (TYPE_OBJECT_RECORD_TYPE (gnu_array));
+	  }
+	else
+	  gnu_result_type = get_unpadded_type (Etype (gnat_node));
+
 	return build_allocator (gnu_type, gnu_init, gnu_result_type,
 				Procedure_To_Call (gnat_node),
-				Storage_Pool (gnat_node), gnat_node,
-				ignore_init_type);
+				gnat_pool, gnat_node, ignore_init_type);
       }
       break;
 
@@ -8577,6 +8604,18 @@ gnat_to_gnu (Node_Id gnat_node)
 	  (void) gnat_to_gnu_entity (gnat_desig_type, NULL_TREE, false);
 
 	  gnu_ptr = gnat_to_gnu (gnat_temp);
+
+	  /* If this is an array allocated with its bounds, first convert to
+	     the thin pointer to trigger the special machinery below.  */
+	  if (Is_Constr_Array_Subt_With_Bounds (gnat_desig_type))
+	    {
+	      tree gnu_array = gnat_to_gnu_type (Base_Type (gnat_desig_type));
+	      gnu_ptr
+		= convert (build_pointer_type
+			   (TYPE_OBJECT_RECORD_TYPE (gnu_array)),
+			   gnu_ptr);
+	    }
+
 	  gnu_ptr_type = TREE_TYPE (gnu_ptr);
 
 	  /* If this is a thin pointer, we must first dereference it to create
@@ -8711,7 +8750,7 @@ gnat_to_gnu (Node_Id gnat_node)
 
   /* Set the location information on the result if it's not a simple name
      or something that contains a simple name, for example a tag, because
-     we don"t want all the references to get the location of the first use.
+     we don't want all the references to get the location of the first use.
      Note that we may have no result if we tried to build a CALL_EXPR node
      to a procedure with no side-effects and optimization is enabled.  */
   else if (kind != N_Identifier
@@ -9749,10 +9788,15 @@ process_freeze_entity (Node_Id gnat_node)
     }
   else
     {
+      /* For an object whose elaboration is deferred, the GCC tree of the
+	 declaration, if any, is the initialization expression.  */
+      const Node_Id gnat_decl = Declaration_Node (gnat_entity);
       tree gnu_init
-	= (Nkind (Declaration_Node (gnat_entity)) == N_Object_Declaration
-	   && present_gnu_tree (Declaration_Node (gnat_entity)))
-	  ? get_gnu_tree (Declaration_Node (gnat_entity)) : NULL_TREE;
+	= (Nkind (gnat_decl) == N_Object_Declaration
+	   || Nkind (gnat_decl) == N_Object_Renaming_Declaration)
+	  && Present (Freeze_Node (gnat_entity))
+	  && present_gnu_tree (gnat_decl)
+	  ? get_gnu_tree (gnat_decl) : NULL_TREE;
 
       gnu_new = gnat_to_gnu_entity (gnat_entity, gnu_init, true);
     }
@@ -10353,7 +10397,8 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
    unless it is an expression involving computation or if it involves a
    reference to a bitfield or to an object not sufficiently aligned for
    its type.  If GNU_TYPE is non-null, return true only if GNU_EXPR can
-   be directly addressed as an object of this type.
+   be directly addressed as an object of this type.  COMPG is true when
+   the predicate is invoked for compiler-generated code.
 
    *** Notes on addressability issues in the Ada compiler ***
 
@@ -10410,7 +10455,7 @@ convert_with_check (Entity_Id gnat_type, tree gnu_expr, bool overflow_p,
    generated to connect everything together.  */
 
 static bool
-addressable_p (tree gnu_expr, tree gnu_type)
+addressable_p (tree gnu_expr, tree gnu_type, bool compg)
 {
   /* For an integral type, the size of the actual type of the object may not
      be greater than that of the expected type, otherwise an indirect access
@@ -10471,13 +10516,13 @@ addressable_p (tree gnu_expr, tree gnu_type)
 
     case COMPOUND_EXPR:
       /* The address of a compound expression is that of its 2nd operand.  */
-      return addressable_p (TREE_OPERAND (gnu_expr, 1), gnu_type);
+      return addressable_p (TREE_OPERAND (gnu_expr, 1), gnu_type, compg);
 
     case COND_EXPR:
       /* We accept &COND_EXPR as soon as both operands are addressable and
 	 expect the outcome to be the address of the selected operand.  */
-      return (addressable_p (TREE_OPERAND (gnu_expr, 1), NULL_TREE)
-	      && addressable_p (TREE_OPERAND (gnu_expr, 2), NULL_TREE));
+      return (addressable_p (TREE_OPERAND (gnu_expr, 1), NULL_TREE, compg)
+	      && addressable_p (TREE_OPERAND (gnu_expr, 2), NULL_TREE, compg));
 
     case COMPONENT_REF:
       return (((!DECL_BIT_FIELD (TREE_OPERAND (gnu_expr, 1))
@@ -10491,23 +10536,26 @@ addressable_p (tree gnu_expr, tree gnu_type)
 		&& (DECL_ALIGN (TREE_OPERAND (gnu_expr, 1))
 		    >= default_field_alignment (TREE_OPERAND (gnu_expr, 1),
 						TREE_TYPE (gnu_expr))
-		    /* We do not enforce this on strict-alignment platforms for
-		       internal fields in order to keep supporting misalignment
-		       of tagged types in legacy code.  */
+		    /* But this was historically not enforced for targets that
+		       do not require strict alignment, so we keep not doing
+		       it for 1) internal fields in order to keep supporting
+		       misalignment of tagged types and 2) compiler-generated
+		       code in order to avoid creating useless temporaries.  */
 		    || (!STRICT_ALIGNMENT
-			&& DECL_INTERNAL_P (TREE_OPERAND (gnu_expr, 1)))))
+			&& (DECL_INTERNAL_P (TREE_OPERAND (gnu_expr, 1))
+			    || compg))))
 	       /* The field of a padding record is always addressable.  */
 	       || TYPE_IS_PADDING_P (TREE_TYPE (TREE_OPERAND (gnu_expr, 0))))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
+	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE, compg));
 
     case ARRAY_REF:  case ARRAY_RANGE_REF:
     case REALPART_EXPR:  case IMAGPART_EXPR:
     case NOP_EXPR:
-      return addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE);
+      return addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE, compg);
 
     case CONVERT_EXPR:
       return (AGGREGATE_TYPE_P (TREE_TYPE (gnu_expr))
-	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
+	      && addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE, compg));
 
     case VIEW_CONVERT_EXPR:
       {
@@ -10525,7 +10573,8 @@ addressable_p (tree gnu_expr, tree gnu_type)
 			 || TYPE_ALIGN (inner_type) >= BIGGEST_ALIGNMENT
 			 || TYPE_ALIGN_OK (type)
 			 || TYPE_ALIGN_OK (inner_type))))
-		&& addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE));
+		&& addressable_p (TREE_OPERAND (gnu_expr, 0), NULL_TREE,
+				  compg));
       }
 
     default:

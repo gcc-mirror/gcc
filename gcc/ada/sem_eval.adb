@@ -5290,9 +5290,16 @@ package body Sem_Eval is
    begin
       if Nkind (N) in N_String_Literal | N_Character_Literal then
          return N;
-      else
-         pragma Assert (Is_Entity_Name (N));
+      elsif Is_Entity_Name (N) then
          return Get_String_Val (Constant_Value (Entity (N)));
+      elsif Nkind (N) = N_Integer_Literal then
+         pragma Assert (Serious_Errors_Detected /= 0);
+         return
+           Make_Character_Literal (Sloc (N),
+             Chars              => Error_Name,
+             Char_Literal_Value => Intval (N));
+      else
+         raise Program_Error;
       end if;
    end Get_String_Val;
 

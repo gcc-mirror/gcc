@@ -291,6 +291,24 @@ PROCEDURE InitTypesExpressionCheck (tokno: CARDINAL; d, e: CARDINAL;
 
 
 (*
+   InitTypesIndrXCheck - checks to see that the types of d and e
+                         are assignment compatible.  The type checking
+                         will dereference *e during the type check.
+                         d = *e.
+*)
+
+PROCEDURE InitTypesIndrXCheck (tokno: CARDINAL; d, e: CARDINAL) : CARDINAL ;
+
+
+(*
+   InitTypesReturnTypeCheck - checks to see that the type of val can
+                                   be returned from func.
+*)
+
+PROCEDURE InitTypesReturnTypeCheck (tokno: CARDINAL; func, val: CARDINAL) : CARDINAL ;
+
+
+(*
    InitCaseBounds - creates a case bound range check.
 *)
 

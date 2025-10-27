@@ -3421,6 +3421,21 @@ compute_fn_summary (struct cgraph_node *node, bool early)
 	 info->inlinable = tree_inlinable_function_p (node->decl);
 
        bool no_signature = false;
+
+       /* Don't allow signature changes for functions which have
+	  [[gnu::musttail]] or [[clang::musttail]] calls.  Sometimes
+	  (more often on targets which pass everything on the stack)
+	  signature changes can result in tail calls being impossible
+	  even when without the signature changes they would be ok.
+	  See PR121023.  */
+       if (cfun->has_musttail)
+	 {
+	   if (dump_file)
+	    fprintf (dump_file, "No signature change:"
+		     " function has calls with musttail attribute.\n");
+	   no_signature = true;
+	 }
+
        /* Type attributes can use parameter indices to describe them.
 	  Special case fn spec since we can safely preserve them in
 	  modref summaries.  */

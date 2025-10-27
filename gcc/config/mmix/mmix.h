@@ -184,6 +184,9 @@ struct GTY(()) machine_function
 /* The lower bits are ignored.  */
 #define STRICT_ALIGNMENT 1
 
+/* With the default, (64 bits), most things still work, but code for
+   e.g. __int128 will be suboptimal. */
+#define MAX_FIXED_MODE_SIZE (2 * BITS_PER_WORD)
 
 /* Node: Type Layout */
 

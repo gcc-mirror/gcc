@@ -10,6 +10,6 @@ dupq (int x)
   return svdupq_s32 (0, 1, x, 3);
 }
 
-/* { dg-final { scan-assembler {\tindex\tz[0-9]+\.s, #3, #-1} } } */
+/* { dg-final { scan-assembler {\tindex\tz[0-9]+\.s, #0, #1\n} } } */
 /* { dg-final { scan-assembler {\tins\tv[0-9]+\.s\[2\], w0\n} } } */
 /* { dg-final { scan-assembler {\tdup\tz[0-9]+\.q, z[0-9]+\.q\[0\]\n} } } */

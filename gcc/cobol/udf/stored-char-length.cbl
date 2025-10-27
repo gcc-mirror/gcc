@@ -1,3 +1,6 @@
+        >> PUSH source format
+        >>SOURCE format is fixed
+
       *  This function is in public domain.
       *  Contributed by James K. Lowden of Cobolworx in August 2024
 
@@ -13,3 +16,4 @@
             to Output-Value. 
         End Function STORED-CHAR-LENGTH.
 
+        >> pop source format

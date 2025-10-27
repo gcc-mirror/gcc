@@ -1,5 +1,5 @@
 /* { dg-options "-O2 -msve-vector-bits=256" } */
-/* { dg-final { check-function-bodies "**" "" "" { target { le } } } } */
+/* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include <arm_sve.h>
 
@@ -15,7 +15,7 @@ typedef svuint64_t fixed_uint64_t __attribute__((arm_sve_vector_bits(256)));
 **	trn1	z0\.d, z0\.d, z0\.d
 **	ret
 */
-fixed_uint64_t
+[[gnu::noipa]] fixed_uint64_t
 f1 (fixed_uint64_t z0)
 {
   return __builtin_shufflevector (z0, z0, 0, 0, 2, 2);
@@ -26,7 +26,7 @@ f1 (fixed_uint64_t z0)
 **	trn2	z0\.d, z0\.d, z0\.d
 **	ret
 */
-fixed_uint64_t
+[[gnu::noipa]] fixed_uint64_t
 f2 (fixed_uint64_t z0)
 {
   return __builtin_shufflevector (z0, z0, 1, 1, 3, 3);
@@ -37,7 +37,7 @@ f2 (fixed_uint64_t z0)
 **	dupq	z0\.s, z0\.s\[0\]
 **	ret
 */
-fixed_int32_t
+[[gnu::noipa]] fixed_int32_t
 f3 (fixed_int32_t z0)
 {
   return __builtin_shufflevector (z0, z0, 0, 0, 0, 0, 4, 4, 4, 4);
@@ -48,7 +48,7 @@ f3 (fixed_int32_t z0)
 **	dupq	z0\.s, z0\.s\[1\]
 **	ret
 */
-fixed_int32_t
+[[gnu::noipa]] fixed_int32_t
 f4 (fixed_int32_t z0)
 {
   return __builtin_shufflevector (z0, z0, 1, 1, 1, 1, 5, 5, 5, 5);
@@ -59,7 +59,7 @@ f4 (fixed_int32_t z0)
 **	dupq	z0\.s, z0\.s\[2\]
 **	ret
 */
-fixed_int32_t
+[[gnu::noipa]] fixed_int32_t
 f5 (fixed_int32_t z0)
 {
   return __builtin_shufflevector (z0, z0, 2, 2, 2, 2, 6, 6, 6, 6);
@@ -70,7 +70,7 @@ f5 (fixed_int32_t z0)
 **	dupq	z0\.s, z0\.s\[3\]
 **	ret
 */
-fixed_int32_t
+[[gnu::noipa]] fixed_int32_t
 f6 (fixed_int32_t z0)
 {
   return __builtin_shufflevector (z0, z0, 3, 3, 3, 3, 7, 7, 7, 7);
@@ -81,7 +81,7 @@ f6 (fixed_int32_t z0)
 **	dupq	z0\.h, z0\.h\[0\]
 **	ret
 */
-fixed_uint16_t
+[[gnu::noipa]] fixed_uint16_t
 f7 (fixed_uint16_t z0)
 {
   return __builtin_shufflevector (z0, z0,
@@ -95,7 +95,7 @@ f7 (fixed_uint16_t z0)
 **	dupq	z0\.h, z0\.h\[5\]
 **	ret
 */
-fixed_uint16_t
+[[gnu::noipa]] fixed_uint16_t
 f8 (fixed_uint16_t z0)
 {
   return __builtin_shufflevector (z0, z0,
@@ -108,7 +108,7 @@ f8 (fixed_uint16_t z0)
 **	dupq	z0\.h, z0\.h\[7\]
 **	ret
 */
-fixed_uint16_t
+[[gnu::noipa]] fixed_uint16_t
 f9 (fixed_uint16_t z0)
 {
   return __builtin_shufflevector (z0, z0,
@@ -121,7 +121,7 @@ f9 (fixed_uint16_t z0)
 **	dupq	z0\.b, z0\.b\[0\]
 **	ret
 */
-fixed_uint8_t
+[[gnu::noipa]] fixed_uint8_t
 f10 (fixed_uint8_t z0)
 {
   return __builtin_shufflevector (z0, z0,
@@ -136,7 +136,7 @@ f10 (fixed_uint8_t z0)
 **	dupq	z0\.b, z0\.b\[13\]
 **	ret
 */
-fixed_uint8_t
+[[gnu::noipa]] fixed_uint8_t
 f11 (fixed_uint8_t z0)
 {
   return __builtin_shufflevector (z0, z0,
@@ -151,7 +151,7 @@ f11 (fixed_uint8_t z0)
 **	dupq	z0\.b, z0\.b\[15\]
 **	ret
 */
-fixed_uint8_t
+[[gnu::noipa]] fixed_uint8_t
 f12 (fixed_uint8_t z0)
 {
   return __builtin_shufflevector (z0, z0,

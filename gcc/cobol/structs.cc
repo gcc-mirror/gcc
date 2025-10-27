@@ -156,6 +156,7 @@ tree cblc_field_p_type_node;
 tree cblc_field_pp_type_node;
 tree cblc_file_type_node;
 tree cblc_file_p_type_node;
+tree cbl_enabled_exception_type_node;
 tree cblc_goto_type_node;
 
 // The following functions return type_decl nodes for the various structures
@@ -176,7 +177,7 @@ create_cblc_field_t()
         struct cblc_field_t *parent;// This field's immediate parent field
         size_t occurs_lower;        // non-zero for a table
         size_t occurs_upper;        // non-zero for a table
-        size_t attr;                // See cbl_field_attr_t
+        uint64_t attr;              // See cbl_field_attr_t
         signed char type;           // A one-byte copy of cbl_field_type_t
         signed char level;          // This variable's level in the naming heirarchy
         signed char digits;         // Digits specified in PIC string; e.g. 5 for 99v999
@@ -196,7 +197,7 @@ create_cblc_field_t()
                                             CHAR_P,  "parent",
                                             SIZE_T,  "occurs_lower",
                                             SIZE_T,  "occurs_upper",
-                                            SIZE_T,  "attr",
+                                            ULONGLONG, "attr",
                                             SCHAR,   "type",
                                             SCHAR,   "level",
                                             SCHAR,   "digits",
@@ -216,6 +217,7 @@ create_cblc_file_t()
 typedef struct cblc_file_t
     {
     char                *name;             // This is the name of the structure; might be the name of an environment variable
+    size_t               symbol_index;     // The symbol table index of the related cbl_file_t structure
     char                *filename;         // The name of the file to be opened
     FILE                *file_pointer;     // The FILE *pointer
     cblc_field_t        *default_record;   // The record_area
@@ -250,8 +252,9 @@ typedef struct cblc_file_t
 
     tree retval = NULL_TREE;
     retval = gg_get_filelevel_struct_type_decl( "cblc_file_t",
-                                            30,
+                                            31,
                                             CHAR_P,    "name",
+                                            SIZE_T,    "symbol_table_index",
                                             CHAR_P,    "filename",
                                             FILE_P,    "file_pointer",
                                             cblc_field_p_type_node, "default_record",
@@ -285,6 +288,29 @@ typedef struct cblc_file_t
     return retval;
     }
 
+static tree
+create_cbl_enabled_exception_t()
+    {
+    /*
+    struct cbl_enabled_exception_t
+        {
+        bool enabled, location;
+        ec_type_t ec;
+        size_t file;
+        };
+    */
+    tree retval = NULL_TREE;
+    retval = gg_get_filelevel_struct_type_decl( "cbl_enabled_exception_t",
+                                            4,
+                                            BOOL,   "enabled",
+                                            BOOL,   "location",
+                                            UINT,   "ec",
+                                            SIZE_T, "file");
+    retval = TREE_TYPE(retval);
+
+    return retval;
+    }
+
 void
 create_our_type_nodes()
     {
@@ -297,6 +323,7 @@ create_our_type_nodes()
         cblc_field_pp_type_node           = build_pointer_type(cblc_field_p_type_node);
         cblc_file_type_node               = create_cblc_file_t();
         cblc_file_p_type_node             = build_pointer_type(cblc_file_type_node);
+        cbl_enabled_exception_type_node   = create_cbl_enabled_exception_t();
         }
     }
 

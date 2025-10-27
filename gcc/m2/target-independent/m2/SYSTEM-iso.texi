@@ -8,7 +8,7 @@ DEFINITION MODULE SYSTEM;
   (* The constants and types define underlying properties of storage *)
 
 EXPORT QUALIFIED BITSPERLOC, LOCSPERWORD,
-                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, (* 
+                 LOC, BYTE, WORD, ADDRESS, CSIZE_T, CSSIZE_T, COFF_T, (* 
                  Target specific data types.  *)
                  ADDADR, SUBADR, DIFADR, MAKEADR, ADR, ROTATE,
                  SHIFT, CAST, TSIZE,

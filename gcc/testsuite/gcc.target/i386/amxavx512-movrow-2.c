@@ -1,6 +1,6 @@
 /* { dg-do run { target { ! ia32 } } } */
 /* { dg-require-effective-target amx_avx512 } */
-/* { dg-options "-O2 -march=x86-64-v3 -mamx-avx512" } */
+/* { dg-options "-O2 -march=x86-64-v3 -mamx-avx512 -mavx512fp16" } */
 #define AMX_AVX512
 #define DO_TEST test_amx_avx512_movrow
 void test_amx_avx512_movrow();

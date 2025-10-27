@@ -1106,6 +1106,24 @@ recog_level2 (insn_change &change, add_regno_clobber_fn add_regno_clobber)
 	    }
 	}
 
+  // Per rtl.texi, registers that are modified using RTX_AUTOINC operations
+  // cannot also appear outside an address.
+  vec_rtx_properties properties;
+  properties.add_pattern (pat);
+  for (rtx_obj_reference def : properties.refs ())
+    if (def.is_pre_post_modify ())
+      for (rtx_obj_reference use : properties.refs ())
+	if (def.regno == use.regno && !use.in_address ())
+	  {
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      {
+		fprintf (dump_file, "register %d is both auto-modified"
+			 " and used outside an address:\n", def.regno);
+		print_rtl_single (dump_file, pat);
+	      }
+	    return false;
+	  }
+
   // check_asm_operands checks the constraints after RA, so we don't
   // need to do it again.
   if (reload_completed && !asm_p)

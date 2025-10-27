@@ -30,7 +30,8 @@
 #ifndef GCOBOLIO_H_
 #define GCOBOLIO_H_
 
-#include <stdio.h>
+#include <cstdio>
+
 #include <map>
 #include <unordered_map>
 #include <vector>
@@ -55,7 +56,7 @@ typedef struct cblc_field_t
     struct cblc_field_t *parent;// This field's immediate parent field
     size_t occurs_lower;        // non-zero for a table
     size_t occurs_upper;        // non-zero for a table
-    size_t attr;                // See cbl_field_attr_t
+    unsigned long long attr;    // See cbl_field_attr_t
     signed char type;           // A one-byte copy of cbl_field_type_t
     signed char level;          // This variable's level in the naming heirarchy
     signed char digits;         // Digits specified in PIC string; e.g. 5 for 99v999
@@ -96,6 +97,7 @@ typedef struct cblc_file_t
     {
     // This structure must match the code in structs.cc
     char                *name;             // This is the name of the structure; might be the name of an environment variable
+    size_t               symbol_table_index;  // of the related cbl_field_t structure
     char                *filename;         // The name of the file to be opened
     FILE                *file_pointer;     // The FILE *pointer
     cblc_field_t        *default_record;   // The record_area

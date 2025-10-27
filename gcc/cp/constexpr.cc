@@ -2459,7 +2459,11 @@ cxx_dynamic_cast_fn_p (tree fndecl)
 {
   return (cxx_dialect >= cxx20
 	  && id_equal (DECL_NAME (fndecl), "__dynamic_cast")
-	  && CP_DECL_CONTEXT (fndecl) == abi_node);
+	  && CP_DECL_CONTEXT (fndecl) == abi_node
+	  /* Only consider implementation-detail __dynamic_cast calls that
+	     correspond to a dynamic_cast, and ignore direct calls to
+	     abi::__dynamic_cast.  */
+	  && DECL_ARTIFICIAL (fndecl));
 }
 
 /* Often, we have an expression in the form of address + offset, e.g.
@@ -3363,10 +3367,10 @@ cxx_eval_call_expression (const constexpr_ctx *ctx, tree t,
 	      && TREE_CODE (new_obj) == COMPONENT_REF
 	      && TREE_CODE (TREE_TYPE (TREE_OPERAND (new_obj, 0))) == UNION_TYPE)
 	    {
+	      tree ctor = build_constructor (TREE_TYPE (new_obj), NULL);
+	      CONSTRUCTOR_NO_CLEARING (ctor) = true;
 	      tree activate = build2 (INIT_EXPR, TREE_TYPE (new_obj),
-				      new_obj,
-				      build_constructor (TREE_TYPE (new_obj),
-							 NULL));
+				      new_obj, ctor);
 	      cxx_eval_constant_expression (ctx, activate,
 					    lval, non_constant_p, overflow_p);
 	      ggc_free (activate);
@@ -4879,6 +4883,18 @@ cxx_eval_component_reference (const constexpr_ctx *ctx, tree t,
     }
 
   /* If there's no explicit init for this field, it's value-initialized.  */
+
+  if (AGGREGATE_TYPE_P (TREE_TYPE (t)))
+    {
+      /* As in cxx_eval_store_expression, insert an empty CONSTRUCTOR
+	 and copy the flags.  */
+      constructor_elt *e = get_or_insert_ctor_field (whole, part);
+      e->value = value = build_constructor (TREE_TYPE (part), NULL);
+      CONSTRUCTOR_ZERO_PADDING_BITS (value)
+	= CONSTRUCTOR_ZERO_PADDING_BITS (whole);
+      return value;
+    }
+
   value = build_value_init (TREE_TYPE (t), tf_warning_or_error);
   return cxx_eval_constant_expression (ctx, value,
 				       lval,
@@ -5644,6 +5660,9 @@ cxx_eval_vec_init_1 (const constexpr_ctx *ctx, tree atype, tree init,
   if (init && TREE_CODE (init) == CONSTRUCTOR)
     return cxx_eval_bare_aggregate (ctx, init, lval,
 				    non_constant_p, overflow_p);
+
+  /* We already checked access when building the VEC_INIT_EXPR.  */
+  deferring_access_check_sentinel acs (dk_deferred);
 
   /* For the default constructor, build up a call to the default
      constructor of the element type.  We only need to handle class types
@@ -8025,14 +8044,20 @@ cxx_eval_constant_expression (const constexpr_ctx *ctx, tree t,
 	    ctx->global->put_value (new_ctx.object, new_ctx.ctor);
 	    ctx = &new_ctx;
 	  }
+
+	/* If the initializer is complex, evaluate it to initialize slot.  */
+	bool is_complex = target_expr_needs_replace (t);
+	if (is_complex)
+	  /* In case no initialization actually happens, clear out any
+	     void_node from a previous evaluation.  */
+	  ctx->global->put_value (slot, NULL_TREE);
+
 	/* Pass vc_prvalue because this indicates
 	   initialization of a temporary.  */
 	r = cxx_eval_constant_expression (ctx, TREE_OPERAND (t, 1), vc_prvalue,
 					  non_constant_p, overflow_p);
 	if (*non_constant_p)
 	  break;
-	/* If the initializer is complex, evaluate it to initialize slot.  */
-	bool is_complex = target_expr_needs_replace (t);
 	if (!is_complex)
 	  {
 	    r = unshare_constructor (r);
@@ -11026,6 +11051,9 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
     case CO_AWAIT_EXPR:
     case CO_YIELD_EXPR:
     case CO_RETURN_EXPR:
+      if (flags & tf_error)
+	constexpr_error (cp_expr_loc_or_loc (t, input_location), fundef_p,
+			 "%qE is not a constant expression", t);
       return false;
 
     /* Assume a TU-local entity is not constant, we'll error later when

@@ -729,6 +729,7 @@ package Gen_IL.Fields is
       Is_Ignored_Ghost_Entity,
       Is_Immediately_Visible,
       Is_Implementation_Defined,
+      Is_Implicit_Full_View,
       Is_Imported,
       Is_Independent,
       Is_Initial_Condition_Procedure,

@@ -1219,7 +1219,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 		  offset = 0;
 		}
 	      else
-		offset += pop->off * BITS_PER_UNIT;
+		offset += poly_offset_int (pop->off) * BITS_PER_UNIT;
 	      op0_p = NULL;
 	      break;
 	    }
@@ -1270,7 +1270,7 @@ ao_ref_init_from_vn_reference (ao_ref *ref,
 	  if (maybe_eq (op->off, -1))
 	    max_size = -1;
 	  else
-	    offset += op->off * BITS_PER_UNIT;
+	    offset += poly_offset_int (op->off) * BITS_PER_UNIT;
 	  break;
 
 	case REALPART_EXPR:
@@ -1615,6 +1615,8 @@ fully_constant_vn_reference_p (vn_reference_t ref)
 	      ++i;
 	      break;
 	    }
+	  if (operands[i].reverse)
+	    return NULL_TREE;
 	  if (known_eq (operands[i].off, -1))
 	    return NULL_TREE;
 	  off += operands[i].off;
@@ -2620,6 +2622,12 @@ vn_nary_simplify (vn_nary_op_t nary)
 		      nary->type, nary->length);
   memcpy (op.ops, nary->op, sizeof (tree) * nary->length);
   tree res = vn_nary_build_or_lookup_1 (&op, false, true);
+  /* Do not update *NARY with a simplified result that contains abnormals.
+     This matches what maybe_push_res_to_seq does when requesting insertion.  */
+  for (unsigned i = 0; i < op.num_ops; ++i)
+    if (TREE_CODE (op.ops[i]) == SSA_NAME
+	&& SSA_NAME_OCCURS_IN_ABNORMAL_PHI (op.ops[i]))
+      return res;
   if (op.code.is_tree_code ()
       && op.num_ops <= nary->length
       && (tree_code) op.code != CONSTRUCTOR)
@@ -2807,7 +2815,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
          we find a VN result with exactly the same value as the
 	 possible clobber.  In this case we can ignore the clobber
 	 and return the found value.  */
-      if (is_gimple_reg_type (TREE_TYPE (lhs))
+      if (!gimple_has_volatile_ops (def_stmt)
+	  && is_gimple_reg_type (TREE_TYPE (lhs))
 	  && types_compatible_p (TREE_TYPE (lhs), vr->type)
 	  && (ref->ref || data->orig_ref.ref)
 	  && !data->mask
@@ -3091,7 +3100,8 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
   else if (is_gimple_reg_type (vr->type)
 	   && gimple_assign_single_p (def_stmt)
 	   && gimple_assign_rhs_code (def_stmt) == CONSTRUCTOR
-	   && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (def_stmt)) == 0)
+	   && CONSTRUCTOR_NELTS (gimple_assign_rhs1 (def_stmt)) == 0
+	   && !TREE_THIS_VOLATILE (gimple_assign_lhs (def_stmt)))
     {
       tree base2;
       poly_int64 offset2, size2, maxsize2;
@@ -3147,6 +3157,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && !reverse_storage_order_for_component_p (vr->operands)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
+	   && !TREE_THIS_VOLATILE (gimple_assign_lhs (def_stmt))
 	   && CHAR_BIT == 8
 	   && BITS_PER_UNIT == 8
 	   && BYTES_BIG_ENDIAN == WORDS_BIG_ENDIAN
@@ -3305,6 +3316,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
 	   && !reverse_storage_order_for_component_p (vr->operands)
 	   && !contains_storage_order_barrier_p (vr->operands)
 	   && gimple_assign_single_p (def_stmt)
+	   && !TREE_THIS_VOLATILE (gimple_assign_lhs (def_stmt))
 	   && TREE_CODE (gimple_assign_rhs1 (def_stmt)) == SSA_NAME)
     {
       tree lhs = gimple_assign_lhs (def_stmt);
@@ -3516,6 +3528,7 @@ vn_reference_lookup_3 (ao_ref *ref, tree vuse, void *data_,
      the copy kills ref.  */
   else if (data->vn_walk_kind == VN_WALKREWRITE
 	   && gimple_assign_single_p (def_stmt)
+	   && !gimple_has_volatile_ops (def_stmt)
 	   && (DECL_P (gimple_assign_rhs1 (def_stmt))
 	       || TREE_CODE (gimple_assign_rhs1 (def_stmt)) == MEM_REF
 	       || handled_component_p (gimple_assign_rhs1 (def_stmt))))

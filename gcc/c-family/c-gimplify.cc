@@ -1009,7 +1009,14 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 	    && call_expr_nargs (*expr_p) == 2
 	    && TREE_CODE (CALL_EXPR_ARG (*expr_p, 1)) != INTEGER_CST)
 	  {
-	    tree a = save_expr (CALL_EXPR_ARG (*expr_p, 0));
+	    tree a = CALL_EXPR_ARG (*expr_p, 0);
+	    if (gimplify_expr (&a, pre_p, post_p, is_gimple_val, fb_rvalue)
+		== GS_ERROR)
+	      return GS_ERROR;
+	    tree b = CALL_EXPR_ARG (*expr_p, 1);
+	    if (gimplify_expr (&b, pre_p, post_p, is_gimple_val, fb_rvalue)
+		== GS_ERROR)
+	      return GS_ERROR;
 	    tree c = build_call_expr_loc (EXPR_LOCATION (*expr_p),
 					  fndecl, 1, a);
 	    *expr_p = build3_loc (EXPR_LOCATION (*expr_p), COND_EXPR,
@@ -1017,7 +1024,7 @@ c_gimplify_expr (tree *expr_p, gimple_seq *pre_p ATTRIBUTE_UNUSED,
 				  build2_loc (EXPR_LOCATION (*expr_p),
 					      NE_EXPR, boolean_type_node, a,
 					      build_zero_cst (TREE_TYPE (a))),
-				  c, CALL_EXPR_ARG (*expr_p, 1));
+				  c, b);
 	    return GS_OK;
 	  }
 	break;

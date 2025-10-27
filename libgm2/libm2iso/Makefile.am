@@ -104,6 +104,7 @@ M2DEFS = ChanConsts.def  CharClass.def \
          ConvTypes.def  COROUTINES.def \
          ErrnoCategory.def  EXCEPTIONS.def \
          GeneralUserExceptions.def  IOChan.def \
+         IOChanUtils.def \
          IOConsts.def  IOLink.def \
          IOResult.def  LongComplexMath.def \
          LongConv.def  LongIO.def \
@@ -149,7 +150,8 @@ M2MODS = ChanConsts.mod  CharClass.mod \
          ConvStringShort.mod \
          ConvTypes.mod  COROUTINES.mod \
          EXCEPTIONS.mod  GeneralUserExceptions.mod \
-         IOChan.mod  IOConsts.mod \
+         IOChan.mod  IOChanUtils.mod \
+         IOConsts.mod \
          IOLink.mod  IOResult.mod \
          LongComplexMath.mod  LongConv.mod \
          LongIO.mod  LongMath.mod \

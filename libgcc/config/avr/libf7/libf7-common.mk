@@ -22,19 +22,31 @@ F7_ASM_PARTS += addsub_mant_scaled store load
 F7_ASM_PARTS += to_integer to_unsigned clz normalize_with_carry normalize
 F7_ASM_PARTS += store_expo sqrt16 sqrt_approx div
 
-F7_ASM_PARTS += D_class D_fma D_powi
+F7_ASM_PARTS += D_class D_fma D_powi D_sincos
 F7_ASM_PARTS += D_isnan D_isinf D_isfinite D_signbit D_copysign D_neg D_fabs
+F7_ASM_PARTS += D_cmp D_eq D_ne D_ge D_gt D_le D_lt D_unord D_fminfmax
 
 F7_ASM_PARTS += call_dd call_ddd
+
+# Fixed-point -> double conversions
+F7_ASM_PARTS += qq2D uqq2D            sq2D usq2D
+F7_ASM_PARTS +=            ha2D uha2D sa2D usa2D
+
+# Double -> fixed-point conversions
+F7_ASM_PARTS += D2qq D2uqq D2hq D2uhq
+F7_ASM_PARTS +=            D2ha D2uha D2sa D2usa
+
+# Integer -> double conversions
+F7_ASM_PARTS += D_floatsidf D_floatunsidf
 
 # Stuff that will be wrapped in f7-wraps.h (included by libf7-asm.sx)
 # and give f7_asm_D_*.o modules.
 g_ddd += add sub mul div
-g_xdd_cmp += le lt ge gt ne eq unord
-g_dx += floatunsidf floatsidf extendsfdf2
+g_xdd_cmp +=
+g_dx += extendsfdf2
 g_xd += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 
-m_ddd += pow fmin fmax fmod hypot atan2 fdim
+m_ddd += pow fmod hypot atan2 fdim
 m_ddx += ldexp frexp
 m_dd += sqrt cbrt exp exp10 pow10 log log10 log2 sin cos tan cotan asin acos atan
 m_dd += ceil floor trunc round sinh cosh tanh
@@ -82,7 +94,7 @@ F7F += set_eps set_1pow2
 
 # Renames for ALIASes without own module.
 F7F += min max exp10
-F7F += floatunsidf floatsidf extendsfdf2
+F7F += extendsfdf2
 F7F += fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
 
 # Renames for f7-const.def.

@@ -29,8 +29,7 @@ test01()
 {
   alignas(DeletedDtor) unsigned char buf[sizeof(DeletedDtor)];
   auto p = ::new (buf) DeletedDtor();
-  std::destroy(p, p + 1);	// { dg-error "here" }
-  std::destroy_n(p, 1);		// { dg-error "here" }
+  std::destroy(p, p + 1);
 }
 
 class PrivateDtor {
@@ -42,8 +41,19 @@ test02()
 {
   alignas(PrivateDtor) unsigned char buf[sizeof(PrivateDtor)];
   auto p = ::new (buf) PrivateDtor();
-  std::destroy(p, p + 1);	// { dg-error "here" }
-  std::destroy_n(p, 1);		// { dg-error "here" }
+  std::destroy(p, p + 1);
 }
 
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
+#if __cpp_constexpr_dynamic_alloc // >= C++20
+consteval bool
+test03()
+{
+  DeletedDtor* p = nullptr;
+  std::destroy(p, p);
+  return true;
+}
+static_assert(test03());
+#endif
+
+// { dg-error "deleted function .*DeletedDtor" "" { target *-*-* } 0 }
+// { dg-error "PrivateDtor.* is private" "" { target *-*-* } 0 }

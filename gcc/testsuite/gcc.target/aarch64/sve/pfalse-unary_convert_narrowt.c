@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target elf } */
-/* { dg-options "-O2 -march=armv8.2-a+sve+bf16" } */
+/* { dg-options "-O2 -march=armv8.2-a+sve+bf16 -funwind-tables" } */
 
 #include <arm_sve.h>
 

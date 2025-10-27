@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -mavx2 -mfpmath=sse" } */
+/* { dg-options "-O3 -mavx2 -mfpmath=sse -fno-pie" } */
 
 extern double r[6];
 extern double a[];

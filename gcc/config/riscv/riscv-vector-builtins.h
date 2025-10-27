@@ -407,6 +407,7 @@ public:
   bool any_type_float_p () const;
 
   tree get_return_type () const;
+  bool function_returns_void_p () const;
   tree get_arg_type (unsigned opno) const;
 
   /* The properties of the function.  (The explicit "enum"s are required
@@ -462,21 +463,12 @@ class function_call_info : public function_instance
 public:
   function_call_info (location_t, const function_instance &, tree);
 
-  bool function_returns_void_p ();
-
   /* The location of the call.  */
   location_t location;
 
   /* The FUNCTION_DECL that is being called.  */
   tree fndecl;
 };
-
-/* Return true if the function has no return value.  */
-inline bool
-function_call_info::function_returns_void_p ()
-{
-  return TREE_TYPE (TREE_TYPE (fndecl)) == void_type_node;
-}
 
 /* A class for folding a gimple function call.  */
 class gimple_folder : public function_call_info

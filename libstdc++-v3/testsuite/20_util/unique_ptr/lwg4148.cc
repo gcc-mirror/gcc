@@ -1,4 +1,5 @@
 // { dg-do compile { target c++11 } }
+// { dg-additional-options "-Wsystem-headers" }
 
 // LWG 4148. unique_ptr::operator* should not allow dangling references
 

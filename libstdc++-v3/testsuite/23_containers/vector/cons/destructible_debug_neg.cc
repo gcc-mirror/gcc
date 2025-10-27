@@ -43,11 +43,8 @@ test02()
   std::vector<PrivateDtor> v;
 }
 
-// { dg-error "value type is destructible" "" { target *-*-* } 0 }
+// { dg-error "deleted function .*DeletedDtor" "" { target *-*-* } 0 }
+// { dg-error "PrivateDtor.* is private" "" { target *-*-* } 0 }
 
 // In Debug Mode the "required from here" errors come from <debug/vector>
 // { dg-error "required from here" "" { target *-*-* } 182 }
-
-// Needed because of PR c++/92193
-// { dg-prune-output "deleted function" }
-// { dg-prune-output "private within this context" }

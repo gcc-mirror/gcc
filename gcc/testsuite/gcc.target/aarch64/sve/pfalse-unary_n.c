@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target elf } */
-/* { dg-options "-O2" } */
+/* { dg-options "-O2 -funwind-tables" } */
 
 #include <arm_sve.h>
 

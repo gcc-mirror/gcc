@@ -10,7 +10,7 @@ unsigned int rol(unsigned int rs1, unsigned int rs2)
 }
 unsigned int ror(unsigned int rs1, unsigned int rs2)
 {
-    int shamt = rs2 & (64 - 1);
+    int shamt = rs2 & (32 - 1);
     return (rs1 >> shamt) | (rs1 << ((32 - shamt) & (32 - 1)));
 }
 

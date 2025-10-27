@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target elf } */
-/* { dg-options "-O2 -march=armv8.2-a+sve2+faminmax" } */
+/* { dg-options "-O2 -march=armv8.2-a+sve2+faminmax -funwind-tables" } */
 
 #include "../pfalse-binary_0.h"
 

@@ -62,10 +62,10 @@ class copybook_elem_t {
   struct copybook_loc_t {
     YYLTYPE loc;
     const char *name;
-    copybook_loc_t() : name(NULL) {}
+    copybook_loc_t() : loc(), name(NULL) {}
   } source, library;
   bool suppress;
-  static const char *extensions;
+  static std::list<const char *> suffixes;
  public:
   struct { bool source, library; } literally;
   int  fd;
@@ -74,12 +74,11 @@ class copybook_elem_t {
 
   copybook_elem_t()
     : suppress(false)
+    , literally()
     , fd(-1)
     , nsubexpr(0)
     , regex_text(NULL)
-  {
-    literally = {};
-  }
+  {}
 
   void clear() {
     suppress = false;
@@ -91,7 +90,6 @@ class copybook_elem_t {
   }
 
   int open_file( const char dir[], bool literally = false );
-  void extensions_add( const char ext[], const char alt[] );
 
   static inline bool is_quote( const char ch ) {
     return ch == '\'' || ch == '"';
@@ -102,7 +100,7 @@ class copybook_elem_t {
   }
   static char * dequote( const char orig[] ) {
     gcc_assert(quoted(orig));
-    auto name = (char*)xcalloc(1, strlen(orig));
+    auto name = static_cast<char*>(xcalloc(1, strlen(orig)));
     gcc_assert(name);
     char *tgt = name;
 
@@ -131,7 +129,7 @@ private:
 class uppername_t {
   std::string upper;
  public:
-  uppername_t( const std::string input ) : upper(input) {
+  explicit uppername_t( const std::string& input ) : upper(input) {
     std::transform(input.begin(), input.end(), upper.begin(), 
 		   []( char ch ) { return TOUPPER(ch); } );
   }
@@ -185,12 +183,10 @@ class copybook_t {
     this->source(loc, name);
 
     for( auto dir : directories ) {
-      if( true ) {
-        dbgmsg("copybook_t::open '%s' OF '%s' %s",
-               book.source.name,
-               dir? dir: ".",
-               book.literally.source? ", literally" : "" );
-      }
+      dbgmsg("copybook_t::open '%s' OF '%s' %s",
+	     book.source.name,
+	     dir? dir: ".",
+	     book.literally.source? ", literally" : "" );
       if( (fd = book.open_file(dir, book.literally.source)) != -1 ) break;
     }
     return fd;

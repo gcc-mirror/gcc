@@ -2490,12 +2490,21 @@ package body Exp_Aggr is
             Ref := Convert_To (Init_Typ, New_Copy_Tree (Target));
             Set_Assignment_OK (Ref);
 
-            Append_To (L,
-              Make_Procedure_Call_Statement (Loc,
-                Name                   =>
-                  New_Occurrence_Of
-                    (Find_Controlled_Prim_Op (Init_Typ, Name_Initialize), Loc),
-                Parameter_Associations => New_List (New_Copy_Tree (Ref))));
+            declare
+               Intlz : constant Entity_Id :=
+                 Find_Controlled_Prim_Op (Init_Typ, Name_Initialize);
+            begin
+               if Present (Intlz) then
+                  Append_To
+                    (L,
+                     Make_Procedure_Call_Statement
+                       (Loc,
+                        Name                   =>
+                          New_Occurrence_Of (Intlz, Loc),
+                        Parameter_Associations =>
+                          New_List (New_Copy_Tree (Ref))));
+               end if;
+            end;
          end if;
       end Generate_Finalization_Actions;
 
@@ -6780,7 +6789,9 @@ package body Exp_Aggr is
                --  Choice is a single discrete value
 
                elsif Is_Discrete_Type (Etype (Choice)) then
-                  Update_Choices (Choice, Choice);
+                  if Is_Static_Expression (Choice) then
+                     Update_Choices (Choice, Choice);
+                  end if;
 
                   Temp_Siz_Exp := Make_Integer_Literal (Loc, 1);
                   Set_Is_Static_Expression (Temp_Siz_Exp);
@@ -7004,13 +7015,11 @@ package body Exp_Aggr is
       -- To_Int --
       ------------
 
-      --  The bounds of the discrete range are integers or enumeration literals
+      --  The bounds of the discrete range are static discrete values
 
       function To_Int (Expr : N_Subexpr_Id) return Int is
       begin
-         return UI_To_Int ((if Nkind (Expr) = N_Integer_Literal
-                            then Intval (Expr)
-                            else Enumeration_Pos (Entity (Expr))));
+         return UI_To_Int (Expr_Value (Expr));
       end To_Int;
 
       --  Local variables

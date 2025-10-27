@@ -846,11 +846,9 @@ poplevel (int keep, int reverse, int functionbody)
       DECL_INITIAL (current_function_decl) = block ? block : subblocks;
       if (subblocks)
 	{
-	  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl))
-	    {
-	      if (BLOCK_SUBBLOCKS (subblocks))
-		BLOCK_OUTER_CURLY_BRACE_P (BLOCK_SUBBLOCKS (subblocks)) = 1;
-	    }
+	  if (FUNCTION_NEEDS_BODY_BLOCK (current_function_decl)
+	      && BLOCK_SUBBLOCKS (subblocks))
+	    BLOCK_OUTER_CURLY_BRACE_P (BLOCK_SUBBLOCKS (subblocks)) = 1;
 	  else
 	    BLOCK_OUTER_CURLY_BRACE_P (subblocks) = 1;
 	}

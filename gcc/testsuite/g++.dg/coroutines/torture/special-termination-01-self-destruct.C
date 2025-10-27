@@ -90,7 +90,7 @@ struct coro1 {
   // The coro1 ramp return object will be constructed from this.
   auto get_return_object () {
     PRINT ("get_return_object: handle from promise");
-    return handle_type::from_promise (*this);
+    return coro1(handle_type::from_promise (*this));
   }
 
   auto initial_suspend () { return suspend_always_self_destr_prt{}; }

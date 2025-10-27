@@ -1437,35 +1437,22 @@ BEGIN
       doError (eb, GetDeclaredDef (sym))
    ELSE
       M2Error.EnterErrorScope (GetErrorScope (scope)) ;
-      IF IsProcedure (scope)
+      IF IsVar (sym) OR IsParameter (sym)
       THEN
-         IF IsVar (sym) OR IsParameter (sym)
+         doError (eb, GetVarParamTok (sym))
+      ELSIF IsProcedure (scope)
+      THEN
+         doError (eb, GetDeclaredDef (sym))
+      ELSIF IsModule (scope)
+      THEN
+         doError (eb, GetDeclaredMod (sym))
+      ELSE
+         Assert (IsDefImp (scope)) ;
+         IF GetDeclaredDefinition (sym) = UnknownTokenNo
          THEN
-            doError (eb, GetVarParamTok (sym))
+            doError (eb, GetDeclaredMod (sym))
          ELSE
             doError (eb, GetDeclaredDef (sym))
-         END
-      ELSE
-         IF IsModule (scope)
-         THEN
-            IF IsInnerModule (scope)
-            THEN
-               doError (eb, GetDeclaredDef (sym))
-            ELSE
-               doError (eb, GetDeclaredDef (sym))
-            END
-         ELSE
-            Assert (IsDefImp (scope)) ;
-            (* if this fails then we need to skip to the outer scope.
-            REPEAT
-             OuterModule := GetScope(OuterModule)
-            UNTIL GetScope(OuterModule)=NulSym ;  *)
-            IF GetDeclaredDefinition (sym) = UnknownTokenNo
-            THEN
-               doError (eb, GetDeclaredMod (sym))
-            ELSE
-               doError (eb, GetDeclaredDef (sym))
-            END
          END
       END
    END ;

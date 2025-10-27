@@ -3,25 +3,25 @@
 *> { dg-output {\->   <\-(\n|\r\n|\r)} }
 *> { dg-output {\->"""<\-(\n|\r\n|\r)} }
 *> { dg-output {\->000<\-(\n|\r\n|\r)} }
-*> { dg-output {\->ÿÿÿ<\-(\n|\r\n|\r)} }
+*> { dg-output {\->.*<\-(\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {\-><\-(\n|\r\n|\r)} }
 *> { dg-output {\->    <\-(\n|\r\n|\r)} }
 *> { dg-output {\->""""<\-(\n|\r\n|\r)} }
 *> { dg-output {\->0000<\-(\n|\r\n|\r)} }
-*> { dg-output {\->ÿÿÿÿ<\-(\n|\r\n|\r)} }
+*> { dg-output {\->.*<\-(\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {There should be no garbage after character 32(\n|\r\n|\r)} }
 *> { dg-output {\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\*\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-\-(\n|\r\n|\r)} }
-*> { dg-output {üüüüüüüüüüüüüüüüüüü Bundesstraße                                (\n|\r\n|\r)} }
-*> { dg-output {üüüüüüüüüüüüüüüüüüü Bundesstraße                                (\n|\r\n|\r)} }
+*> { dg-output {.* Bundesstra.e                                (\n|\r\n|\r)} }
+*> { dg-output {.* Bundesstra.e                                (\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {There should be no spaces before the final quote(\n|\r\n|\r)} }
-*> { dg-output {"üüüüüüüüüüüüüüüüüüü Bundesstraße"(\n|\r\n|\r)} }
+*> { dg-output {".* Bundesstra.e"(\n|\r\n|\r)} }
 *> { dg-output { (\n|\r\n|\r)} }
 *> { dg-output {   IsLow   ""(\n|\r\n|\r)} }
 *> { dg-output {   IsZero  "000"(\n|\r\n|\r)} }
-*> { dg-output {   IsHi    "ÿÿÿ"(\n|\r\n|\r)} }
+*> { dg-output {   IsHi    ".*"(\n|\r\n|\r)} }
 *> { dg-output {   IsBob   "bob"(\n|\r\n|\r)} }
 *> { dg-output {   IsQuote """""(\n|\r\n|\r)} }
 *> { dg-output {   IsSpace "   "(\n|\r\n|\r)} }

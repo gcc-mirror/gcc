@@ -79,77 +79,7 @@ _ENDF __divdf3
 #endif /* F7MOD_D_div_ */
 
 ;; Functions that usually live in libgcc: __<name>df2 for <name> in:
-;; le lt ge gt ne eq unord
-
-;; bool __ledf2 (double, double)  ; le
-#ifdef F7MOD_D_le_
-_DEFUN __ledf2
-    .global F7_NAME(le_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(le_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(le_impl)))
-    F7jmp   call_xdd
-_ENDF __ledf2
-#endif /* F7MOD_D_le_ */
-
-;; bool __ltdf2 (double, double)  ; lt
-#ifdef F7MOD_D_lt_
-_DEFUN __ltdf2
-    .global F7_NAME(lt_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(lt_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(lt_impl)))
-    F7jmp   call_xdd
-_ENDF __ltdf2
-#endif /* F7MOD_D_lt_ */
-
-;; bool __gedf2 (double, double)  ; ge
-#ifdef F7MOD_D_ge_
-_DEFUN __gedf2
-    .global F7_NAME(ge_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(ge_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(ge_impl)))
-    F7jmp   call_xdd
-_ENDF __gedf2
-#endif /* F7MOD_D_ge_ */
-
-;; bool __gtdf2 (double, double)  ; gt
-#ifdef F7MOD_D_gt_
-_DEFUN __gtdf2
-    .global F7_NAME(gt_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(gt_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(gt_impl)))
-    F7jmp   call_xdd
-_ENDF __gtdf2
-#endif /* F7MOD_D_gt_ */
-
-;; bool __nedf2 (double, double)  ; ne
-#ifdef F7MOD_D_ne_
-_DEFUN __nedf2
-    .global F7_NAME(ne_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(ne_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(ne_impl)))
-    F7jmp   call_xdd
-_ENDF __nedf2
-#endif /* F7MOD_D_ne_ */
-
-;; bool __eqdf2 (double, double)  ; eq
-#ifdef F7MOD_D_eq_
-_DEFUN __eqdf2
-    .global F7_NAME(eq_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(eq_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(eq_impl)))
-    F7jmp   call_xdd
-_ENDF __eqdf2
-#endif /* F7MOD_D_eq_ */
-
-;; bool __unorddf2 (double, double)  ; unord
-#ifdef F7MOD_D_unord_
-_DEFUN __unorddf2
-    .global F7_NAME(unord_impl)
-    ldi     ZH,     hi8(gs(F7_NAME(unord_impl)))
-    ldi     ZL,     lo8(gs(F7_NAME(unord_impl)))
-    F7jmp   call_xdd
-_ENDF __unorddf2
-#endif /* F7MOD_D_unord_ */
+;; (none)
 
 ;; Functions that usually live in libgcc: __<name> for <name> in:
 ;; fixdfsi fixdfdi fixunsdfdi fixunsdfsi truncdfsf2
@@ -205,27 +135,7 @@ _ENDF __truncdfsf2
 #endif /* F7MOD_D_truncdfsf2_ */
 
 ;; Functions that usually live in libgcc: __<name> for <name> in:
-;; floatunsidf floatsidf extendsfdf2
-
-;; double __floatunsidf (type_t)  ; floatunsidf
-#ifdef F7MOD_D_floatunsidf_
-_DEFUN __floatunsidf
-    .global F7_NAME(floatunsidf)
-    ldi     ZH,     hi8(gs(F7_NAME(floatunsidf)))
-    ldi     ZL,     lo8(gs(F7_NAME(floatunsidf)))
-    F7jmp   call_dx
-_ENDF __floatunsidf
-#endif /* F7MOD_D_floatunsidf_ */
-
-;; double __floatsidf (type_t)  ; floatsidf
-#ifdef F7MOD_D_floatsidf_
-_DEFUN __floatsidf
-    .global F7_NAME(floatsidf)
-    ldi     ZH,     hi8(gs(F7_NAME(floatsidf)))
-    ldi     ZL,     lo8(gs(F7_NAME(floatsidf)))
-    F7jmp   call_dx
-_ENDF __floatsidf
-#endif /* F7MOD_D_floatsidf_ */
+;; extendsfdf2
 
 ;; double __extendsfdf2 (type_t)  ; extendsfdf2
 #ifdef F7MOD_D_extendsfdf2_
@@ -239,7 +149,7 @@ _ENDF __extendsfdf2
 
 ;; Functions that usually live in libm:  Depending on [long] double layout,
 ;; define <name> and <name>l as weak alias(es) of __<name> for <name> in:
-;; pow fmin fmax fmod hypot atan2 fdim
+;; pow fmod hypot atan2 fdim
 
 ;; double __pow (double, double)
 #ifdef F7MOD_D_pow_
@@ -252,30 +162,6 @@ _DEFUN __pow
     F7jmp   call_ddd
 _ENDF __pow
 #endif /* F7MOD_D_pow_ */
-
-;; double __fmin (double, double)
-#ifdef F7MOD_D_fmin_
-_DEFUN __fmin
-    DALIAS fmin
-    LALIAS fminl
-    .global F7_NAME(fmin)
-    ldi     ZH,     hi8(gs(F7_NAME(fmin)))
-    ldi     ZL,     lo8(gs(F7_NAME(fmin)))
-    F7jmp   call_ddd
-_ENDF __fmin
-#endif /* F7MOD_D_fmin_ */
-
-;; double __fmax (double, double)
-#ifdef F7MOD_D_fmax_
-_DEFUN __fmax
-    DALIAS fmax
-    LALIAS fmaxl
-    .global F7_NAME(fmax)
-    ldi     ZH,     hi8(gs(F7_NAME(fmax)))
-    ldi     ZL,     lo8(gs(F7_NAME(fmax)))
-    F7jmp   call_ddd
-_ENDF __fmax
-#endif /* F7MOD_D_fmax_ */
 
 ;; double __fmod (double, double)
 #ifdef F7MOD_D_fmod_

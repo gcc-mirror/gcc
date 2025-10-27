@@ -1565,7 +1565,7 @@ package body Sem is
 
       --  Compile predefined units with GNAT_Mode set to True, to properly
       --  process the categorization stuff. However, do not set GNAT_Mode
-      --  to True for the renamings units (Text_IO, IO_Exceptions, Direct_IO,
+      --  to True for the renaming units (Text_IO, IO_Exceptions, Direct_IO,
       --  Sequential_IO) as this would prevent pragma Extend_System from being
       --  taken into account, for example when Text_IO is renaming DEC.Text_IO.
 

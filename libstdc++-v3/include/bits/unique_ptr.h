@@ -1,4 +1,3 @@
-
 // unique_ptr implementation -*- C++ -*-
 
 // Copyright (C) 2008-2025 Free Software Foundation, Inc.

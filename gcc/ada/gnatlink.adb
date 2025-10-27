@@ -266,6 +266,9 @@ procedure Gnatlink is
    function Index (S, Pattern : String) return Natural;
    --  Return the last occurrence of Pattern in S, or 0 if none
 
+   function Is_Prefix (S, Prefix : String) return Boolean;
+   --  Return whether Prefix is a strict prefix of S
+
    procedure Search_Library_Path
      (Next_Line   : String;
       Nfirst      : Integer;
@@ -394,6 +397,16 @@ procedure Gnatlink is
 
       return 0;
    end Index;
+
+   ---------------
+   -- Is_Prefix --
+   ---------------
+
+   function Is_Prefix (S, Prefix : String) return Boolean is
+   begin
+      return Prefix'Length < S'Length
+        and then S (S'First .. S'First + Prefix'Length - 1) = Prefix;
+   end Is_Prefix;
 
    ------------------
    -- Process_Args --
@@ -1292,13 +1305,8 @@ procedure Gnatlink is
                      else
                         for J in reverse 1 .. Linker_Options.Last loop
                            if Linker_Options.Table (J) /= null
-                             and then
-                               Linker_Options.Table (J)'Length
-                                         > Run_Path_Opt'Length
-                             and then
-                               Linker_Options.Table (J)
-                                 (1 .. Run_Path_Opt'Length) =
-                                                  Run_Path_Opt
+                             and then Is_Prefix
+                               (Linker_Options.Table (J).all, Run_Path_Opt)
                            then
                               --  We have found an already specified
                               --  run_path_option: we will add to this switch,
@@ -1887,31 +1895,12 @@ begin
          Shared_Libgcc_Seen : Boolean := False;
          Static_Libgcc_Seen : Boolean := False;
 
-         function Is_Prefix
-           (Complete_String : String; Prefix : String) return Boolean;
-         --  Returns whether Prefix is a prefix of Complete_String
-
-         ---------------
-         -- Is_Prefix --
-         ---------------
-
-         function Is_Prefix
-           (Complete_String : String; Prefix : String) return Boolean
-         is
-            S : String renames Complete_String;
-            P : String renames Prefix;
-         begin
-            return P'Length <= S'Length
-              and then S (S'First .. S'First + P'Length - 1) = P;
-         end Is_Prefix;
-
       begin
          J := Linker_Options.First;
          while J <= Linker_Options.Last loop
             if Linker_Options.Table (J).all = "-Xlinker"
               and then J < Linker_Options.Last
-              and then Linker_Options.Table (J + 1)'Length > 8
-              and then Linker_Options.Table (J + 1) (1 .. 8) = "--stack="
+              and then Is_Prefix (Linker_Options.Table (J + 1).all, "--stack=")
             then
                if Stack_Op then
                   Linker_Options.Table (J .. Linker_Options.Last - 2) :=
@@ -1956,12 +1945,8 @@ begin
             --  Here we just check for a canonical form that matches the
             --  pragma Linker_Options set in the NT runtime.
 
-            if Is_Prefix
-                 (Complete_String => Linker_Options.Table (J).all,
-                  Prefix => "-Xlinker --stack=")
-              or else Is_Prefix
-                        (Complete_String => Linker_Options.Table (J).all,
-                         Prefix => "-Wl,--stack=")
+            if Is_Prefix (Linker_Options.Table (J).all, "-Xlinker --stack=")
+              or else Is_Prefix (Linker_Options.Table (J).all, "-Wl,--stack=")
             then
                if Stack_Op then
                   Linker_Options.Table (J .. Linker_Options.Last - 1) :=

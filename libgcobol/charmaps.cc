@@ -29,14 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <ctype.h>
-#include <stdio.h>
-#include <string.h>
-#include <time.h>
+#include <iconv.h>
+
+#include <cctype>
+#include <clocale>
+#include <cstdio>
+#include <cstring>
+#include <ctime>
+
 #include <algorithm>
 #include <unordered_map>
-#include <locale.h>
-#include <iconv.h>
+#include <vector>
 
 #include "ec.h"
 #include "common-defs.h"
@@ -432,7 +435,7 @@ __gg__raw_to_ascii(char **dest, size_t *dest_size, const char *in, size_t length
 
     size_t code_point;
     // Pull the next code_point from the UTF-8 stream
-    long unicode_point = extract_next_code_point((const unsigned char *)in,
+    long unicode_point = extract_next_code_point(reinterpret_cast<const unsigned char *>(in),
                                                  length,
                                                  position );
 
@@ -494,7 +497,7 @@ __gg__raw_to_ebcdic(char **dest, size_t *dest_size, const char *in, size_t lengt
           }
 
         // Pull the next code_point from the UTF-8 stream
-        long unicode_point = extract_next_code_point(   (const unsigned char *)in,
+        long unicode_point = extract_next_code_point(   reinterpret_cast<const unsigned char *>(in),
                                                                 length,
                                                                 position );
         // Check for that unicode code point in the subset of characters we
@@ -719,7 +722,8 @@ char *__gg__ebcdic_to_console(char **dest,
                               const size_t length)
     {
     static size_t ebcdic_size = MINIMUM_ALLOCATION_SIZE;
-    static char *ebcdic = (char *)malloc(ebcdic_size);
+    static char *ebcdic = static_cast<char *>(malloc(ebcdic_size));
+    if(!ebcdic)abort();
     __gg__realloc_if_necessary(&ebcdic, &ebcdic_size, length);
 
     memcpy(ebcdic, str, length);
@@ -754,7 +758,7 @@ void __gg__console_to_ascii(char * const str, size_t length)
         size_t code_point;
         // Pull the next code_point from the UTF-8 stream
         long unicode_point
-            = extract_next_code_point(    (const unsigned char *)str,
+            = extract_next_code_point(    reinterpret_cast<const unsigned char *>(str),
                                                 length,
                                                 position );
         if( unicode_point == -1 )
@@ -794,7 +798,7 @@ __gg__console_to_ebcdic(char * const str, size_t length)
         size_t code_point;
         // Pull the next code_point from the UTF-8 stream
         long unicode_point
-            = extract_next_code_point(    (const unsigned char *)str,
+            = extract_next_code_point(    reinterpret_cast<const unsigned char *>(str),
                                                 length,
                                                 position );
         if( unicode_point == -1 )

@@ -1225,7 +1225,6 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
      Note that we rely on the pointer equality created here for
      TYPE_NAME to look through conversions in various places.  */
   TYPE_NAME (new_type) = TYPE_NAME (type);
-  TYPE_PACKED (new_type) = 1;
   TYPE_JUSTIFIED_MODULAR_P (new_type) = TYPE_JUSTIFIED_MODULAR_P (type);
   TYPE_CONTAINS_TEMPLATE_P (new_type) = TYPE_CONTAINS_TEMPLATE_P (type);
   TYPE_REVERSE_STORAGE_ORDER (new_type) = TYPE_REVERSE_STORAGE_ORDER (type);
@@ -1240,6 +1239,8 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
       new_size = ceil_pow2 (size);
       new_align = MIN (new_size, BIGGEST_ALIGNMENT);
       SET_TYPE_ALIGN (new_type, new_align);
+      /* build_aligned_type needs to be able to adjust back the alignment.  */
+      TYPE_PACKED (new_type) = 0;
     }
   else
     {
@@ -1261,6 +1262,7 @@ make_packable_type (tree type, bool in_record, unsigned int max_align)
       if (max_align > 0 && new_align > max_align)
 	new_align = max_align;
       SET_TYPE_ALIGN (new_type, MIN (align, new_align));
+      TYPE_PACKED (new_type) = 1;
     }
 
   TYPE_USER_ALIGN (new_type) = 1;

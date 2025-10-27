@@ -1,7 +1,15 @@
 /* { dg-do compile { target { powerpc*-*-* } } } */
 /* { dg-skip-if "" { powerpc*-*-darwin* } } */
-/* { dg-options "-O2 -mdejagnu-cpu=power7 -fno-inline-functions" } */
+/* { dg-options "-O2 -mdejagnu-cpu=power7 -fno-inline-functions -fno-ipa-icf" } */
 /* { dg-require-effective-target powerpc_vsx } */
+
+/* PR testsuite/119382
+   Note: Added -fno-ipa-icf to disable Interprocedural Identical Code
+   Folding (ICF). Without this, insert_di_0_v2 is merged with insert_di_0
+   due to improved alias analysis introduced in commit r15-7961-gdc47161c1f32c3.
+   This results in the compiler replacing insert_di_0_v2 with a tail call to
+   insert_di_0, altering expected test behavior. Disabling ICF ensures correct
+   execution of the test.  */
 
 /* Test simple extract/insert/slat operations.  Make sure all types are
    supported with various options.  */

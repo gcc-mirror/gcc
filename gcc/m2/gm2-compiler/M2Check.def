@@ -50,7 +50,8 @@ PROCEDURE ParameterTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
 *)
 
 PROCEDURE AssignmentTypeCompatible (token: CARDINAL; format: ARRAY OF CHAR;
-                                    des, expr: CARDINAL) : BOOLEAN ;
+                                    des, expr: CARDINAL;
+                                    enableReason: BOOLEAN) : BOOLEAN ;
 
 
 (*

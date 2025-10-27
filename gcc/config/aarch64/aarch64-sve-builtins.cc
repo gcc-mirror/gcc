@@ -3799,6 +3799,7 @@ gimple_folder::fold_active_lanes_to (tree x)
 
   gimple_seq stmts = NULL;
   tree pred = convert_pred (stmts, vector_type (0), 0);
+  x = force_vector (stmts, TREE_TYPE (lhs), x);
   gsi_insert_seq_before (gsi, stmts, GSI_SAME_STMT);
   return gimple_build_assign (lhs, VEC_COND_EXPR, pred, x, vec_inactive);
 }
@@ -4351,7 +4352,11 @@ function_expander::use_cond_insn (insn_code icode, unsigned int merge_argno)
   add_input_operand (icode, pred);
   for (unsigned int i = 0; i < nops; ++i)
     add_input_operand (icode, args[opno + i]);
-  add_input_operand (icode, fallback_arg);
+  if (fallback_arg == CONST0_RTX (mode)
+      && insn_operand_matches (icode, m_ops.length (), fallback_arg))
+    add_fixed_operand (fallback_arg);
+  else
+    add_input_operand (icode, fallback_arg);
   return generate_insn (icode);
 }
 
@@ -4586,8 +4591,9 @@ function_expander::expand ()
     {
       /* The last element of these functions is always an fpm_t that must be
          written to FPMR before the call to the instruction itself. */
-      gcc_assert (args.last ()->mode == DImode);
-      emit_move_insn (gen_rtx_REG (DImode, FPM_REGNUM), args.last ());
+      rtx fpm = args.last ();
+      gcc_assert (CONST_INT_P (fpm) || GET_MODE (fpm) == DImode);
+      emit_move_insn (gen_rtx_REG (DImode, FPM_REGNUM), fpm);
     }
   return base->expand (*this);
 }

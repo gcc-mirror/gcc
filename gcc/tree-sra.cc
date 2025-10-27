@@ -1291,19 +1291,16 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
       return NULL;
     }
 
-  /* We need to dive through V_C_Es in order to get the size of its parameter
-     and not the result type.  Ada produces such statements.  We are also
-     capable of handling the topmost V_C_E but not any of those buried in other
-     handled components.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-    expr = TREE_OPERAND (expr, 0);
-
-  if (contains_view_convert_expr_p (expr))
+  /* We are capable of handling the topmost V_C_E but not any of those
+     buried in other handled components.  */
+  if (contains_view_convert_expr_p (TREE_CODE (expr) == VIEW_CONVERT_EXPR
+				    ? TREE_OPERAND (expr, 0) : expr))
     {
       disqualify_base_of_expr (expr, "V_C_E under a different handled "
 			       "component.");
       return NULL;
     }
+
   if (TREE_THIS_VOLATILE (expr))
     {
       disqualify_base_of_expr (expr, "part of a volatile reference.");
@@ -1323,6 +1320,7 @@ build_access_from_expr_1 (tree expr, gimple *stmt, bool write)
     case ARRAY_REF:
     case ARRAY_RANGE_REF:
     case BIT_FIELD_REF:
+    case VIEW_CONVERT_EXPR:
       ret = create_access (expr, stmt, write);
       break;
 
@@ -2504,6 +2502,12 @@ sort_and_splice_var_accesses (tree var)
 		}
 	      unscalarizable_region = true;
 	    }
+	  /* If there the same place is accessed with two incompatible
+	     aggregate types, trying to base total scalarization on either of
+	     them can be wrong.  */
+	  if (!first_scalar && !types_compatible_p (access->type, ac2->type))
+	    bitmap_set_bit (cannot_scalarize_away_bitmap,
+			    DECL_UID (access->base));
 
 	  if (grp_same_access_path
 	      && (!ac2->grp_same_access_path
@@ -2889,7 +2893,10 @@ analyze_access_subtree (struct access *root, struct access *parent,
 
   for (child = root->first_child; child; child = child->next_sibling)
     {
-      hole |= covered_to < child->offset;
+      if (totally)
+	covered_to = child->offset;
+      else
+	hole |= covered_to < child->offset;
       sth_created |= analyze_access_subtree (child, root,
 					     allow_replacements && !scalar
 					     && !root->grp_partial_lhs,
@@ -2900,6 +2907,8 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	covered_to += child->size;
       else
 	hole = true;
+      if (totally && !hole)
+	covered_to = limit;
     }
 
   if (allow_replacements && scalar && !root->first_child
@@ -2972,7 +2981,7 @@ analyze_access_subtree (struct access *root, struct access *parent,
 	root->grp_total_scalarization = 0;
     }
 
-  if (!hole || totally)
+  if (!hole)
     root->grp_covered = 1;
   else if (root->grp_write || comes_initialized_p (root->base))
     root->grp_unscalarized_data = 1; /* not covered and written to */
@@ -4074,12 +4083,6 @@ get_access_for_expr (tree expr)
   HOST_WIDE_INT offset, max_size;
   tree base;
   bool reverse;
-
-  /* FIXME: This should not be necessary but Ada produces V_C_Es with a type of
-     a different size than the size of its argument and we need the latter
-     one.  */
-  if (TREE_CODE (expr) == VIEW_CONVERT_EXPR)
-    expr = TREE_OPERAND (expr, 0);
 
   base = get_ref_base_and_extent (expr, &poffset, &psize, &pmax_size,
 				  &reverse);

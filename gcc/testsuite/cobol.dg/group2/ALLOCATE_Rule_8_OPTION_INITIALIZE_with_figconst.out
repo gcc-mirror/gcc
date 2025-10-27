@@ -1,0 +1,16 @@
+initialize zeroes
+allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)
+   (1) as allocated
+       "" "" 0x0000000000000000
+initialize low-value
+allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)
+   (1) as allocated
+       "" "" 0x0000000000000000
+initialize spaces
+allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)
+   (1) as allocated
+       "                        " "   " 0x2020202020202020
+initialize high-value
+allocate characters  (ISO 2023 Rule 8: OPT_INIT if specified, otherwise defaultbyte, otherwise zero)
+0xffffffffffffffff
+

@@ -1,3 +1,42 @@
+2025-08-08  Release Manager
+
+	* GCC 15.2.0 released.
+
+2025-08-01  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2025-05-02  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/120055
+	* c-typeck.cc (convert_arguments): Check if fundecl is null
+	before checking for builtin function declaration.
+
+2025-08-01  Florian Weimer  <fweimer@redhat.com>
+
+	Backported from master:
+	2025-05-01  Florian Weimer  <fweimer@redhat.com>
+
+	PR c/119950
+	* c-typeck.cc (convert_arguments): Check for built-in
+	function declaration before warning.
+
+2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120354
+	* c-decl.cc (finish_struct): Or the results for TYPE_INCLUDES_FLEXARRAY.
+
+2025-07-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	Backported from master:
+	2025-05-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/120353
+	* c-decl.cc (finish_struct): Copy TYPE_INCLUDES_FLEXARRAY marking
+	to all the variant types of the current structure type.
+
 2025-05-30  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	Backported from master:

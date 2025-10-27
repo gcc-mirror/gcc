@@ -733,6 +733,20 @@ AC_SUBST(md_unwind_header)
 AC_SUBST(sfp_machine_header)
 AC_SUBST(thread_header)
 
+AC_ARG_ENABLE(werror,
+[AS_HELP_STRING([--enable-werror],
+		[build with -Werror for selected targets])],
+[
+case ${enable_werror} in
+  no) WERROR="" ;;
+  *) WERROR="-Werror" ;;
+esac
+],
+[
+WERROR="-Werror"
+])
+AC_SUBST(WERROR)
+
 # We need multilib support.
 AC_CONFIG_FILES([Makefile])
 AC_CONFIG_COMMANDS([default],

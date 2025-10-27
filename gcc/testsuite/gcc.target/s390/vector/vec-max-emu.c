@@ -1,5 +1,5 @@
 /* { dg-do run } */
-/* { dg-options "-O3 -mzarch -march=z13 -save-temps" } */
+/* { dg-options "-O3 -mzarch -march=z13 -save-temps -fno-stack-protector" } */
 /* { dg-require-effective-target int128 } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 /* { dg-final { scan-assembler-not {\tvmxq\t} } } */

@@ -29,8 +29,11 @@ IMPLEMENTATION MODULE FileSystem ;
 FROM M2RTS IMPORT InstallTerminationProcedure ;
 FROM Storage IMPORT ALLOCATE ;
 FROM SYSTEM IMPORT ADR, COFF_T ;
-IMPORT SFIO, libc, wrapc ;
-FROM DynamicStrings IMPORT InitString, ConCat, ConCatChar, KillString, string ;
+IMPORT SFIO, libc, wrapc, StrLib ;
+
+FROM DynamicStrings IMPORT InitString, ConCat, ConCatChar,
+                           KillString, string, Dup ;
+
 FROM FormatStrings IMPORT Sprintf2 ;
 
 CONST
@@ -592,6 +595,37 @@ PROCEDURE FileNameChar (ch: CHAR) : CHAR ;
 BEGIN
    RETURN ch
 END FileNameChar ;
+
+
+(*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*)
+
+PROCEDURE GetFileName (file: File) : String ;
+BEGIN
+   RETURN Dup (file.name)
+END GetFileName ;
+
+
+(*
+   WriteString - writes contents to file.  The nul char
+                 will terminate the contents string otherwise
+                 all characters 0..HIGH (contents) are written.
+*)
+
+PROCEDURE WriteString (file: File; contents: ARRAY OF CHAR) ;
+VAR
+   ch     : CHAR ;
+   i, high: CARDINAL ;
+BEGIN
+   i := 0 ;
+   high := StrLib.StrLen (contents) ;
+   WHILE i <= high DO
+      WriteChar (file, contents[i]) ;
+      INC (i)
+   END
+END WriteString ;
 
 
 (*

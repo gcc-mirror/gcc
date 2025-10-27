@@ -376,7 +376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    static_assert(_Count <= extent);
 	  using _Sp = span<element_type, _Count>;
-	  return _Sp{ _SizedPtr{this->data()} };
+	  return _Sp(_SizedPtr{this->data()});
 	}
 
       [[nodiscard]]
@@ -384,7 +384,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       first(size_type __count) const noexcept
       {
 	__glibcxx_assert(__count <= size());
-	return { this->data(), __count };
+	return span<element_type>(this->data(), __count);
       }
 
       template<size_t _Count>
@@ -397,7 +397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  else
 	    static_assert(_Count <= extent);
 	  using _Sp = span<element_type, _Count>;
-	  return _Sp{ _SizedPtr{this->data() + (this->size() - _Count)} };
+	  return _Sp(_SizedPtr{this->data() + (this->size() - _Count)});
 	}
 
       [[nodiscard]]
@@ -405,7 +405,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       last(size_type __count) const noexcept
       {
 	__glibcxx_assert(__count <= size());
-	return { this->data() + (this->size() - __count), __count };
+	return span<element_type>(this->data() + (this->size() - __count),
+				  __count);
       }
 
       template<size_t _Offset, size_t _Count = dynamic_extent>
@@ -424,7 +425,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  using _Sp = span<element_type, _S_subspan_extent<_Offset, _Count>()>;
 
 	  if constexpr (_Count == dynamic_extent)
-	    return _Sp{ this->data() + _Offset, this->size() - _Offset };
+	    return _Sp(this->data() + _Offset, this->size() - _Offset);
 	  else
 	    {
 	      if constexpr (_Extent == dynamic_extent)
@@ -437,7 +438,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		  static_assert(_Count <= extent);
 		  static_assert(_Count <= (extent - _Offset));
 		}
-	      return _Sp{ _SizedPtr{this->data() + _Offset} };
+	      return _Sp(_SizedPtr{this->data() + _Offset});
 	    }
 	}
 
@@ -454,7 +455,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __glibcxx_assert(__count <= size());
 	    __glibcxx_assert(__offset + __count <= size());
 	  }
-	return {this->data() + __offset, __count};
+	return span<element_type>(this->data() + __offset, __count);
       }
 
     private:

@@ -3690,7 +3690,10 @@ get_constraint_for_1 (tree t, vec<ce_s> *results, bool address_p,
 		    size = -1;
 		  for (; curr; curr = vi_next (curr))
 		    {
-		      if (curr->offset - vi->offset < size)
+		      /* The start of the access might happen anywhere
+			 within vi, so conservatively assume it was
+			 at its end.  */
+		      if (curr->offset - (vi->offset + vi->size - 1) < size)
 			{
 			  cs.var = curr->id;
 			  results->safe_push (cs);

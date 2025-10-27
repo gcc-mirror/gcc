@@ -816,6 +816,11 @@ package Exp_Util is
    --    Rnn : constant Ann := Func (...)'reference;
    --    Rnn.all
 
+   function Is_Constr_Array_Subt_Of_Unc_With_Controlled (Typ : Entity_Id)
+     return Boolean;
+   --  Return True if Typ is a constrained subtype of an array type with an
+   --  unconstrained first subtype and a controlled component type.
+
    function Is_Conversion_Or_Reference_To_Formal (N : Node_Id) return Boolean;
    --  Return True if N is a type conversion, or a dereference thereof, or a
    --  reference to a formal parameter.
@@ -824,6 +829,14 @@ package Exp_Util is
       (N : Node_Id) return Boolean;
    --  Determine if N is the expanded code for a class-wide interface type
    --  object declaration.
+
+   function Is_Finalizable_Access (Decl : Node_Id) return Boolean;
+   --  Determine whether declaration Decl denotes an access-to-controlled
+   --  object that must be finalized, i.e. both that the designated object
+   --  is controlled and that it must be finalized through this access, in
+   --  particular that it will not be also finalized directly. That is the
+   --  case only for objects initialized by a reference to a function call
+   --  that meet specific conditions.
 
    function Is_Finalizable_Transient
      (Decl : Node_Id;
@@ -850,9 +863,6 @@ package Exp_Util is
    --  Return True if E is a wrapper built when a subprogram has class-wide
    --  preconditions or postconditions affected by overriding (AI12-0195).
    --  LSP stands for Liskov Substitution Principle.
-
-   function Is_Non_BIP_Func_Call (Expr : Node_Id) return Boolean;
-   --  Determine whether node Expr denotes a non build-in-place function call
 
    function Is_Possibly_Unaligned_Object (N : Node_Id) return Boolean;
    --  Node N is an object reference. This function returns True if it is
@@ -897,10 +907,6 @@ package Exp_Util is
    --
    --  We consider that a (1 .. 2) is a renamed object since it is the prefix
    --  of the name in the renaming declaration.
-
-   function Is_Secondary_Stack_BIP_Func_Call (Expr : Node_Id) return Boolean;
-   --  Determine whether Expr denotes a build-in-place function which returns
-   --  its result on the secondary stack.
 
    function Is_Secondary_Stack_Thunk (Id : Entity_Id) return Boolean;
    --  Determine whether Id denotes a secondary stack thunk
@@ -1057,16 +1063,6 @@ package Exp_Util is
    --  has the same object size value. For example, a 16 bit signed type will
    --  typically return Standard_Short_Integer. For fixed-point types, this
    --  will return integer types of the corresponding size.
-
-   function May_Generate_Large_Temp (Typ : Entity_Id) return Boolean;
-   --  Determines if the given type, Typ, may require a large temporary of the
-   --  kind that causes back-end trouble if stack checking is enabled. The
-   --  result is True only the size of the type is known at compile time and
-   --  large, where large is defined heuristically by the body of this routine.
-   --  The purpose of this routine is to help avoid generating troublesome
-   --  temporaries that interfere with stack checking mechanism. Note that the
-   --  caller has to check whether stack checking is actually enabled in order
-   --  to guide the expansion (typically of a function call).
 
    procedure Move_To_Initialization_Statements (Decl, Stop : Node_Id);
    --  Decl is an N_Object_Declaration node and Stop is a node past Decl in

@@ -33,14 +33,6 @@ FROM SYSTEM IMPORT WORD, BYTE, ADDRESS ;
 IMPORT FIO ;
 FROM DynamicStrings IMPORT String ;
 
-EXPORT QUALIFIED File, Response, Flag, FlagSet,
-
-                 Create, Close, Lookup, Rename, Delete,
-                 SetRead, SetWrite, SetModify, SetOpen,
-                 Doio, SetPos, GetPos, Length, Reset,
-
-                 ReadWord, ReadChar, ReadByte, ReadNBytes,
-                 WriteWord, WriteChar, WriteByte, WriteNBytes ;
 
 TYPE
    File = RECORD
@@ -270,6 +262,23 @@ PROCEDURE Doio (VAR f: File) ;
 *)
 
 PROCEDURE FileNameChar (ch: CHAR) : CHAR ;
+
+
+(*
+   GetFileName - return a new string containing the name of the file.
+                 The string should be killed by the caller.
+*)
+
+PROCEDURE GetFileName (file: File) : String ;
+
+
+(*
+   WriteString - writes contents to file.  The nul char
+                 will terminate the contents string otherwise
+                 all characters 0..HIGH (contents) are written.
+*)
+
+PROCEDURE WriteString (file: File; contents: ARRAY OF CHAR) ;
 
 
 END FileSystem.

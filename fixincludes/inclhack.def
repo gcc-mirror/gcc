@@ -3803,6 +3803,7 @@ fix = {
     hackname  = pthread_incomplete_struct_argument;
     files     = pthread.h;
     select    = "struct __jmp_buf_tag";
+    bypass    = "bits/types/struct___jmp_buf_tag.h";
     c_fix     = format;
     c_fix_arg = "%1 *%2%3";
     c_fix_arg = "^(extern int __sigsetjmp \\(struct __jmp_buf_tag) "

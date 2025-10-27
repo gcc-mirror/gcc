@@ -3575,7 +3575,13 @@ vectorizable_call (vec_info *vinfo,
 
   int mask_opno = -1;
   if (internal_fn_p (cfn))
-    mask_opno = internal_fn_mask_index (as_internal_fn (cfn));
+    {
+      /* We can only handle direct internal masked calls here,
+	 vectorizable_simd_clone_call is for the rest.  */
+      if (cfn == CFN_MASK_CALL)
+	return false;
+      mask_opno = internal_fn_mask_index (as_internal_fn (cfn));
+    }
 
   for (i = 0; i < nargs; i++)
     {
@@ -5935,6 +5941,20 @@ vectorizable_conversion (vec_info *vinfo,
       gcc_unreachable ();
     }
 
+  if (modifier == WIDEN
+      && loop_vinfo
+      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+      && (code1 == VEC_WIDEN_MULT_EVEN_EXPR
+	  || widening_evenodd_fn_p (code1)))
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "can't use a fully-masked loop because"
+			 " widening operation on even/odd elements"
+			 " mixes up lanes.\n");
+      LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+    }
+
   if (!vec_stmt)		/* transformation not required.  */
     {
       if (slp_node
@@ -6870,7 +6890,7 @@ vectorizable_operation (vec_info *vinfo,
   poly_uint64 nunits_out;
   tree vectype_out;
   unsigned int ncopies;
-  int vec_num;
+  unsigned vec_num;
   int i;
   vec<tree> vec_oprnds0 = vNULL;
   vec<tree> vec_oprnds1 = vNULL;
@@ -7441,8 +7461,8 @@ vectorizable_operation (vec_info *vinfo,
 	      && code == BIT_AND_EXPR
 	      && VECTOR_BOOLEAN_TYPE_P (vectype))
 	    {
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op0,
-								 ncopies}))
+	      if (loop_vinfo->scalar_cond_masked_set.contains
+						   ({ op0, vec_num * ncopies}))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					     vec_num * ncopies, vectype, i);
@@ -7451,8 +7471,8 @@ vectorizable_operation (vec_info *vinfo,
 					   vop0, gsi);
 		}
 
-	      if (loop_vinfo->scalar_cond_masked_set.contains ({ op1,
-								 ncopies }))
+	      if (loop_vinfo->scalar_cond_masked_set.contains
+						  ({ op1, vec_num * ncopies }))
 		{
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					     vec_num * ncopies, vectype, i);
@@ -10077,7 +10097,8 @@ vectorizable_store (vec_info *vinfo,
 		= fold_build2 (MEM_REF, vectype, dataref_ptr,
 			       dataref_offset ? dataref_offset
 					      : build_int_cst (ref_type, 0));
-	      if (alignment_support_scheme == dr_aligned)
+	      if (alignment_support_scheme == dr_aligned
+		  && align >= TYPE_ALIGN_UNIT (vectype))
 		;
 	      else
 		TREE_TYPE (data_ref)
@@ -12269,7 +12290,8 @@ vectorizable_load (vec_info *vinfo,
 		      {
 			data_ref
 			  = fold_build2 (MEM_REF, ltype, dataref_ptr, offset);
-			if (alignment_support_scheme == dr_aligned)
+			if (alignment_support_scheme == dr_aligned
+			    && align >= TYPE_ALIGN_UNIT (ltype))
 			  ;
 			else
 			  TREE_TYPE (data_ref)
@@ -15041,6 +15063,8 @@ supportable_widening_operation (vec_info *vinfo,
 
       internal_fn lo, hi, even, odd;
       lookup_hilo_internal_fn (ifn, &lo, &hi);
+      if (BYTES_BIG_ENDIAN)
+	std::swap (lo, hi);
       *code1 = as_combined_fn (lo);
       *code2 = as_combined_fn (hi);
       optab1 = direct_internal_fn_optab (lo, {vectype, vectype});

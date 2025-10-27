@@ -9,7 +9,6 @@ struct param_info
   vec<tree *> *body_uses; /* Worklist of uses, void if there are none.  */
   tree frame_type;   /* The type used to represent this parm in the frame.  */
   tree orig_type;    /* The original type of the parm (not as passed).  */
-  tree guard_var;    /* If we need a DTOR on exception, this bool guards it.  */
   tree fr_copy_dtor; /* If we need a DTOR on exception, this is it.  */
   bool by_ref;       /* Was passed by reference.  */
   bool pt_ref;       /* Was a pointer to object.  */
@@ -103,6 +102,7 @@ private:
   tree orig_fn_decl;		 /* The original function decl.  */
   tree orig_fn_body = NULL_TREE; /* The original function body.  */
   location_t fn_start = UNKNOWN_LOCATION;
+  location_t fn_end = UNKNOWN_LOCATION;
   tree resumer = error_mark_node;
   tree destroyer = error_mark_node;
   tree coroutine_body = NULL_TREE;
@@ -127,6 +127,10 @@ private:
   bool inline_p = false;
   bool valid_coroutine = false;
 
+  tree initial_await = error_mark_node;
+  tree final_await = error_mark_node;
+
+  void analyze_fn_parms ();
   void wrap_original_function_body ();
   bool build_ramp_function ();
 };

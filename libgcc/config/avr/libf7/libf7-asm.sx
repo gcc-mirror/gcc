@@ -618,21 +618,7 @@ DEFUN to_integer
 .Lsaturate.T:
 
 #if F7_HAVE_Inf
-    brtc .Lset_0x7fff
-    ;; -Inf  =>  return 1 + INTxx_MIN
-    mov     ZL,     Flags
-    .global __clr_8
-    XCALL   __clr_8
-    ldi     C6,     0x80
-
-    ldi     CA+0,   0x01
-
-    sbrs    Mask,   5
-    ldi     CA+4,   0x01
-
-    sbrs    Mask,   4
-    ldi     CA+6,   0x01
-    ret
+    brts .Lset_0x8000
 
 .Lset_0x7fff:
     ;; +Inf  =>  return INTxx_MAX
@@ -644,7 +630,7 @@ DEFUN to_integer
 #endif /* F7_HAVE_Inf */
 
 .Lset_0x8000:
-    ;; NaN  =>  return INTxx_MIN
+    ;; NaN  or -Inf =>  return INTxx_MIN
     .global __clr_8
     XCALL   __clr_8
     ldi     C6,     0x80
@@ -1727,6 +1713,321 @@ ENDF class_D
 #endif /* F7MOD_D_class_ */
 
 
+#ifdef F7MOD_D_cmp_
+
+#define A0  18
+#define A1  A0 + 1
+#define A2  A0 + 2
+#define A3  A0 + 3
+#define A4  A0 + 4
+#define A5  A0 + 5
+#define A6  A0 + 6
+#define A7  A0 + 7
+
+#define B0  10
+#define B1  B0 + 1
+#define B2  B0 + 2
+#define B3  B0 + 3
+#define B4  B0 + 4
+#define B5  B0 + 5
+#define B6  B0 + 6
+#define B7  B0 + 7
+
+#define AA5  XH
+#define AA6  ZL
+#define AA7  ZH
+
+#define BB0  A0
+#define BB1  A1
+#define BB2  A2
+#define BB3  A3
+#define BB4  A4
+#define BB5  A5
+#define BB6  A6
+#define BB7  A7
+
+;;; Helper for __<cmp>df2 and __unorddf2.
+;;; T = 1: Comparison is unordered.
+;;; T = 0: Comparison is ordered, and Z, N, C, S flags are set according
+;;; to compare (double A, double B) as if set by a signed int comparison.
+;;; Note that f(+0) = f(-0) = 0.
+;;; In any case:
+;;; -  return R24 = 1.
+;;; -  return R25.0 = isNaN (A)
+;;; -  return R25.1 = isNaN (B)
+DEFUN D_cmp
+    rcall   D_cmp.map_i64
+    bld     __tmp_reg__, 0
+    push    __tmp_reg__
+    ;; Save A somewhere else...
+    wmov    AA6, A6
+    mov     AA5, A5
+    push    A4
+    push    A3
+    push    A2
+    push    A1
+    mov     r0,  A0
+    ;; ... so that we can use D_cmp.map_i64 on B.
+    wmov    BB6, B6
+    wmov    BB4, B4
+    wmov    BB2, B2
+    wmov    BB0, B0
+    rcall   D_cmp.map_i64
+    ;; Run the following code even when B is NaN (T=1) so as to pop the regs.
+    ;; In the non-NaN case, AA and BB can be compared like int64_t for the
+    ;; sake of comparing A and B as double.
+    CP      r0,  BB0  $  pop r0
+    cpc     r0,  BB1  $  pop r0
+    cpc     r0,  BB2  $  pop r0
+    cpc     r0,  BB3  $  pop r0
+    cpc     r0,  BB4
+    cpc     AA5, BB5
+    cpc     AA6, BB6
+    cpc     AA7, BB7
+    pop     r25
+    ;; R25.0 <=> A is NaN
+    ;; R25.1 <=> B is NaN
+    ;; T <=> comparison is unordered
+    bld     r25, 1
+    sbrc    r25, 0
+    set
+    ldi     r24, 1
+    ret
+
+;;; A is NaN: Set T=1.
+;;; A is not a NaN: Set T=0, and map double A to int64_t such that
+;;; f(A) <cmp> f(B)  iff  A <cmp> B, i.e. we can treat the result
+;;; as int64_t for the matter of double comparison.
+;;; Clobbers: XL.
+D_cmp.map_i64:
+    bst     A7, 7
+    cbr     A7, 0x80
+    ;; If Inf < |A|, then we have a NaN.
+    CP      __zero_reg__, A0
+    cpc     __zero_reg__, A1
+    cpc     __zero_reg__, A2
+    cpc     __zero_reg__, A3
+    cpc     __zero_reg__, A4
+    cpc     __zero_reg__, A5
+    ldi     XL, lo8(0x7ff0)     $    cpc    XL, A6
+    ldi     XL, hi8(0x7ff0)     $    cpc    XL, A7
+    brlo .Lunord
+    brtc 9f
+    clt
+    .global __negdi2
+    XJMP    __negdi2
+.Lunord:
+    set
+9:  ret
+
+ENDF D_cmp
+#endif /* F7MOD_D_cmp_ */
+
+
+;; bool __ledf2 (double, double);
+#ifdef F7MOD_D_le_
+_DEFUN __ledf2
+    F7call  D_cmp
+    brts 0f
+    breq 1f
+    brlt 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __ledf2
+#endif /* F7MOD_D_le_ */
+
+;; bool __ltdf2 (double, double);
+#ifdef F7MOD_D_lt_
+_DEFUN __ltdf2
+    F7call  D_cmp
+    brts 0f
+    brlt 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __ltdf2
+#endif /* F7MOD_D_lt_ */
+
+;; bool __gedf2 (double, double);
+#ifdef F7MOD_D_ge_
+_DEFUN __gedf2
+    F7call  D_cmp
+    brts 0f
+    brge 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __gedf2
+#endif /* F7MOD_D_ge_ */
+
+;; bool __gtdf2 (double, double);
+#ifdef F7MOD_D_gt_
+_DEFUN __gtdf2
+    F7call  D_cmp
+    brts 0f
+    breq 0f
+    brge 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __gtdf2
+#endif /* F7MOD_D_gt_ */
+
+;; bool __nedf2 (double, double);
+#ifdef F7MOD_D_ne_
+_DEFUN __nedf2
+    F7call  D_cmp
+    brts 0f
+    brne 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __nedf2
+#endif /* F7MOD_D_ne_ */
+
+;; bool __eqdf2 (double, double);
+#ifdef F7MOD_D_eq_
+_DEFUN __eqdf2
+    F7call  D_cmp
+    brts 0f
+    breq 1f
+0:  ldi     r24, 0
+1:  ret
+_ENDF __eqdf2
+#endif /* F7MOD_D_eq_ */
+
+;; bool __unorddf2 (double, double);
+#ifdef F7MOD_D_unord_
+_DEFUN __unorddf2
+    F7call  D_cmp
+    bld     r24, 0
+    ret
+_ENDF __unorddf2
+#endif /* F7MOD_D_unord_ */
+
+#ifdef F7MOD_D_fminfmax_
+_DEFUN __fmin
+DALIAS fmin
+LALIAS fminl
+    inc     __zero_reg__
+
+_LABEL __fmax
+DALIAS fmax
+LALIAS fmaxl
+    ;; Push A[].
+    push    r25
+    push    r24
+    push    r23
+    push    r22
+    push    r21
+    push    r20
+    push    r19
+    push    r18
+    ;; fmin or fmax
+    push    __zero_reg__
+    clr     __zero_reg__
+
+    XCALL   __gedf2
+
+    pop     __tmp_reg__
+    andi    r25, 0x3            ; NaNs?
+    brne .Lnan
+    ;; No NaNs involved.
+    eor     __tmp_reg__, r24    ; (f == fmin) ^ (A >= B)
+    brne 1f
+2:
+    ;; Return B since the cases are:
+    ;; fmax && A < B
+    ;; fmin && A >= B
+#ifdef __AVR_XMEGA__
+    in      XL, __SP_L__
+    in      XH, __SP_H__
+    adiw    XL, 8
+    out     __SP_L__, XL
+    out     __SP_H__, XH
+#else
+    pop r0  $  pop r0  $  pop r0  $  pop r0
+    pop r0  $  pop r0  $  pop r0  $  pop r0
+#endif
+    wmov    r24, r16
+    wmov    r22, r14
+    wmov    r20, r12
+    wmov    r18, r10
+    ret
+1:
+    ;; Return A since the cases are:
+    ;; fmax && A >= B
+    ;; fmin && A < B
+    pop     r18
+    pop     r19
+    pop     r20
+    pop     r21
+    pop     r22
+    pop     r23
+    pop     r24
+    pop     r25
+    ret
+
+.Lnan:
+    ;; There are NaNs.
+    ;; When only the 1st argument is a NaN, then return the 2nd argument
+    cpi     r25, 0x1
+    breq 2b
+    ;; When the 2nd argument is a NaN, then return the 1st argument.
+    ;; When both arguments are NaNs, then return NaN (e.g. the 1st argument).
+    rjmp 1b
+_ENDF __fmax
+#endif /* F7MOD_D_fminfmax_ */
+
+
+#ifdef F7MOD_D_sincos_
+;;; void sincos (double R18, double *R16, double *R14);
+_DEFUN __sincos
+DALIAS sincos
+LALIAS sincosl
+
+#define n_pushed    4
+#define n_frame    (2 * F7_SIZEOF)
+    do_prologue_saves n_pushed, n_frame
+    ;; Y = FramePointer + 1
+    adiw    Y,      1
+    ;; R16 = frame-arg 1
+    wmov    r16,    Y
+    ;; The double argument is in R18[].
+    XCALL   F7_NAME (set_double_impl)
+    ;; void f7_sincos (f7_t *ss, f7_t *cc, const f7_t *aa)
+    ;; Note that aa may equal ss or cc.
+    wmov    r20,    r16                 ; aa
+    wmov    r24,    r16                 ; ss = FP + 1
+    subi    r16,    lo8(-F7_SIZEOF)
+    sbci    r17,    hi8(-F7_SIZEOF)
+    wmov    r22,    r16                 ; cc = FP + 1 + F7_SIZEOF
+    XCALL   F7_NAME (sincos)
+
+    ;; double R18 = get_double (cc)
+    wmov    r24,    r16
+    XCALL   F7_NAME (get_double)
+    wmov    XL,     r14                 ; double *pcos
+    rcall   store.r18.X                 ; *pcos = R18
+
+    ;; double R18 = get_double (ss)
+    wmov    r24,    Y
+    XCALL   F7_NAME (get_double)
+    ldd     XL,     Y + n_frame + 3     ; Saved R16
+    ldd     XH,     Y + n_frame + 2     ; Saved R17
+    rcall   store.r18.X                 ; *psin = R18
+
+    do_epilogue_restores n_pushed, n_frame
+
+store.r18.X:
+    st      X+,     r18
+    st      X+,     r19
+    st      X+,     r20
+    st      X+,     r21
+    st      X+,     r22
+    st      X+,     r23
+    st      X+,     r24
+    st      X+,     r25
+    ret
+_ENDF __sincos
+#endif /* F7MOD_D_sincos_ */
+
 #ifdef F7MOD_call_dd_
 
 ;; Provide double wrappers for functions that operate on f7_t and get f7_t*.
@@ -1893,5 +2194,278 @@ _DEFUN __powidf2
     F7jmp   call_ddx
 _ENDF __powidf2
 #endif /* F7MOD_D_powi_ */
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixed-point -> double conversions.
+
+;;; The double exponent starts at bit 52 since the encoded mantissa has 52 bits.
+;;; Note that when X is a multiple of 16, then dex_lo(x) evaluates to 0.
+#define DEX16(x)  (x) << (52 - 48)
+#define dex_lo(x) lo8 (DEX16 (x))
+#define dex_hi(x) hi8 (DEX16 (x))
+
+#ifdef F7MOD_usa2D_
+_DEFUN __fractusadf
+    ;; Convert USI to DF.
+    XCALL   __floatunsidf
+    ;; The MSB indicates a value of 0.
+    cpse    r25, __zero_reg__
+    ;; Divide non-zero values by 2^16 in order to adjust for FBIT = 16.
+    subi    r25, dex_hi (16)
+    ret
+_ENDF __fractusadf
+#endif /* F7MOD_usa2D_ */
+
+#ifdef F7MOD_sa2D_
+_DEFUN __fractsadf
+    ;; Convert SI to DF.
+    XCALL   __floatsidf
+    ;; The MSB indicates a value of 0.
+    tst     r25
+    breq 0f
+    ;; Divide non-zero values by 2^15 in order to adjust for FBIT = 15.
+    subi    r24, dex_lo (15)
+    sbci    r25, dex_hi (15)
+0:  ret
+_ENDF __fractsadf
+#endif /* F7MOD_sa2D_ */
+
+#ifdef F7MOD_uha2D_
+_DEFUN __fractuhadf
+    ;; Extend UHA to USA.
+    clr     r22
+    mov     r23, r24
+    mov     r24, r25
+    clr     r25
+    XJMP    __fractusadf
+_ENDF __fractuhadf
+#endif /* F7MOD_uha2D_ */
+
+#ifdef F7MOD_ha2D_
+_DEFUN __fracthadf
+    ;; Extend HA to SA.
+    clr     r22
+    mov     r23, r24
+    mov     r24, r25
+    lsl     r25
+    sbc     r25, r25
+    XJMP    __fractsadf
+_ENDF __fracthadf
+#endif /* F7MOD_ha2D_ */
+
+
+#ifdef F7MOD_usq2D_
+_DEFUN __fractusqdf
+    ;; Convert USI to DF.
+    XCALL   __floatunsidf
+    ;; The MSB indicates a value of 0.
+    cpse    r25, __zero_reg__
+    ;; Divide non-zero values by 2^32 in order to adjust for FBIT = 32.
+    subi    r25, dex_hi (32)
+    ret
+_ENDF __fractusqdf
+#endif /* F7MOD_usq2D_ */
+
+#ifdef F7MOD_sq2D_
+_DEFUN __fractsqdf
+    ;; Convert SI to DF.
+    XCALL   __floatsidf
+    ;; The MSB indicates a value of 0.
+    tst     r25
+    breq 0f
+    ;; Divide non-zero values by 2^31 in order to adjust for FBIT = 31.
+    subi    r24, dex_lo (31)
+    sbci    r25, dex_hi (31)
+0:  ret
+_ENDF __fractsqdf
+#endif /* F7MOD_sq2D_ */
+
+#ifdef F7MOD_uqq2D_
+_DEFUN __fractuqqdf
+    ;; Extend UQQ to UHQ.
+    mov     r25, r24
+    clr     r24
+_LABEL __fractuhqdf
+    ;; Extend UHQ to USQ.
+    clr     r23
+    clr     r22
+    XJMP    __fractusqdf
+_ENDF __fractuqqdf
+#endif /* F7MOD_uqq2D_ */
+
+#ifdef F7MOD_qq2D_
+_DEFUN __fractqqdf
+    ;; Extend QQ to HQ.
+    mov     r25, r24
+    clr     r24
+_LABEL __fracthqdf
+    ;; Extend HQ to SQ.
+    clr     r23
+    clr     r22
+    XJMP    __fractsqdf
+_ENDF __fractqqdf
+#endif /* F7MOD_qq2D_ */
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; Fixed-point -> double conversions.
+
+#ifdef F7MOD_D2qq_
+_DEFUN __fractdfqq
+    ;; Multiply with 2^{24+7} to get a QQ result in r25.
+    subi    r24, dex_lo (-31)
+    sbci    r25, dex_hi (-31)
+    XCALL   __fixdfsi
+    mov     r24, r25
+    ret
+_ENDF __fractdfqq
+#endif /* F7MOD_D2qq_ */
+
+#ifdef F7MOD_D2uqq_
+_DEFUN __fractdfuqq
+    ;; Multiply with 2^{24+8} to get a UQQ result in r25.
+    subi    r25, dex_hi (-32)
+    XCALL   __fixunsdfsi
+    mov     r24, r25
+    ret
+_ENDF __fractdfuqq
+#endif /* F7MOD_D2uqq_ */
+
+#ifdef F7MOD_D2ha_
+_DEFUN __fractdfha
+    ;; Multiply with 2^{16+7} to get a HA result in r25:r24
+    subi    r24, dex_lo (-23)
+    sbci    r25, dex_hi (-23)
+    XJMP    __fixdfsi
+_ENDF __fractdfha
+#endif /* F7MOD_D2ha_ */
+
+#ifdef F7MOD_D2uha_
+_DEFUN __fractdfuha
+    ;; Multiply with 2^24 to get a UHA result in r25:r24.
+    subi    r24, dex_lo (-24)
+    sbci    r25, dex_hi (-24)
+    XJMP    __fixunsdfsi
+_ENDF __fractdfuha
+#endif /* F7MOD_D2uha_ */
+
+#ifdef F7MOD_D2hq_
+_DEFUN __fractdfhq
+    ;; Multiply with 2^{16+15} to get a HQ result in r25:r24
+    ;; resp. with 2^31 to get a SQ result in r25:r22.
+_LABEL __fractdfsq
+    subi    r24, dex_lo (-31)
+    sbci    r25, dex_hi (-31)
+    XJMP    __fixdfsi
+_ENDF __fractdfhq
+#endif /* F7MOD_D2hq_ */
+
+#ifdef F7MOD_D2uhq_
+_DEFUN __fractdfuhq
+    ;; Multiply with 2^{16+16} to get a UHQ result in r25:r24
+    ;; resp. with 2^32 to get a USQ result in r25:r22.
+_LABEL  __fractdfusq
+    subi    r25, dex_hi (-32)
+    XJMP    __fixunsdfsi
+_ENDF __fractdfuhq
+#endif /* F7MOD_D2uhq_ */
+
+#ifdef F7MOD_D2sa_
+_DEFUN __fractdfsa
+    ;; Multiply with 2^15 to get a SA result in r25:r22.
+    subi    r24, dex_lo (-15)
+    sbci    r25, dex_hi (-15)
+    XJMP    __fixdfsi
+_ENDF __fractdfsa
+#endif /* F7MOD_D2sa_ */
+
+#ifdef F7MOD_D2usa_
+_DEFUN __fractdfusa
+    ;; Multiply with 2^16 to get a USA result in r25:r22.
+    subi    r25, dex_hi (-16)
+    XJMP    __fixunsdfsi
+_ENDF __fractdfusa
+#endif /* F7MOD_D2usa_ */
+
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;;; [u]int32_t -> double conversions.
+
+;; double __floatsidf (int32_t);
+#ifdef F7MOD_D_floatsidf_
+_DEFUN __floatsidf
+    bst     r25, 7
+    brtc    0f
+    XCALL   __negsi2
+0:  XJMP    __floatunsidf.ge0
+_ENDF __floatsidf
+#endif /* F7MOD_D_floatsidf_ */
+
+;; double __floatunsidf (uint32_t);
+#ifdef F7MOD_D_floatunsidf_
+_DEFUN __floatunsidf
+    clt
+_LABEL __floatunsidf.ge0
+    ;; Zero-extend SI at the low end.
+    clr     r18
+    clr     r19
+    wmov    r20,    r18
+    ;; Input is zero?
+    sbiw    r24,    0
+    sbci    r23,    0
+    sbci    r22,    0
+    breq 9f
+    ;; No: The double exponent of 0x80000000 is 31 plus a bias of 1023.
+    ;; Align the SI value such that the MSBit is as R25.4.
+    ;; For each << we have to subtract 1 from the exponent, and for
+    ;; each >> we have to add 1.  Since we want the MSB in R25.4 and
+    ;; not in R25.7, the initial exponent must be reduced by 3.
+    ldi     Xl,     dex_lo (31 + 1023 - 3)
+    ldi     Xh,     dex_hi (31 + 1023 - 3)
+    ;; Move the MSByte to R25.
+1:  tst     r25
+    brne 2f
+    subi    Xl,     dex_lo (8)
+    sbci    Xh,     dex_hi (8)
+    mov     r25,    r24
+    mov     r24,    r23
+    mov     r23,    r22
+    clr     r22
+    rjmp    1b
+2:  ;; Now we have R25 != 0.
+    cpi     r25,    0x20
+    brlo 3f
+    adiw    Xl,     DEX16 (1)
+    lsr     r25
+    ror     r24
+    ror     r23
+    ror     r22
+    ror     r21
+    rjmp 2b
+3:  cpi     r25,    0x10
+    brsh 4f
+    sbiw    Xl,     DEX16 (1)
+    lsl     r22
+    rol     r23
+    rol     r24
+    rol     r25
+    rjmp 3b
+4:  ;; Move the mantissa into place and clear the redundant leading 1.
+    cbr     r25,    0x10
+    mov     r20,    r21
+    mov     r21,    r22
+    mov     r22,    r23
+    mov     r23,    r24
+    mov     r24,    r25
+    ;; Insert the biased exponent.
+    or      r24,    Xl
+    mov     r25,    Xh
+    ;; Insert the sign.
+    bld     r25,    7
+9:  ret
+_ENDF __floatunsidf
+#endif /* F7MOD_D_floatunsidf_ */
+
 
 #endif /* !AVR_TINY */

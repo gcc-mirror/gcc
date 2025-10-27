@@ -27,18 +27,21 @@
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
-#include <ctype.h>
-#include <ctype.h>
+
 #include <err.h>
-#include <errno.h>
 #include <fcntl.h>
-#include <math.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <time.h>
 #include <unistd.h>
+
+#include <cctype>
+#include <cerrno>
+#include <cmath>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <ctime>
+
 #include <algorithm>
+#include <vector>
 
 #include "config.h"
 #include "libgcobol-fp.h"
@@ -188,11 +191,12 @@ handle_errno(cblc_file_t *file, const char *function, const char *msg)
 
 static
 char *
-get_filename( cblc_file_t *file,
+get_filename( const cblc_file_t *file,
               int is_quoted)
   {
   static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-  static char *fname = (char *)malloc(MINIMUM_ALLOCATION_SIZE);
+  static char *fname = static_cast<char *>(malloc(MINIMUM_ALLOCATION_SIZE));
+  massert(fname);
   fname = internal_to_console(&fname,
                               &fname_size,
                               file->filename,
@@ -202,14 +206,15 @@ get_filename( cblc_file_t *file,
     {
     // We have been given something that might be the name of an
     // environment variable that contains the filename:
-    char *p_from_environment = getenv(fname);
+    const char *p_from_environment = getenv(fname);
     if( p_from_environment )
       {
       if( strlen(p_from_environment)+1 > fname_size )
         {
         fname_size = strlen(p_from_environment)+1;
         free(fname);
-        fname = (char *)malloc(fname_size);
+        fname = static_cast<char *>(malloc(fname_size));
+        massert(fname);
         }
       strcpy(fname, p_from_environment);
       }
@@ -253,7 +258,7 @@ establish_status(cblc_file_t *file, long read_location)
                                   0,
                                   truncation_e,
                                   NULL);
-  // Set the EC-EXCEPTION accoring the status code
+  // Set the EC-EXCEPTION according to the status code
   __gg__set_exception_file(file);
   }
 
@@ -269,7 +274,7 @@ __gg__set_user_status(cblc_field_t *ustatus, cblc_file_t *file)
   }
 
 static long
-max_value(cblc_field_t *key)
+max_value(const cblc_field_t *key)
   {
   long retval;
   if( key->digits )
@@ -299,6 +304,7 @@ void
 __gg__file_init(
   cblc_file_t   *file,
   const char    *name,
+  size_t         symbol_table_index,
   cblc_field_t **keys,
   int           *key_numbers,
   int           *uniques,
@@ -319,6 +325,7 @@ __gg__file_init(
   if( !(file->flags & file_flag_initialized_e) )
     {
     file->name                = strdup(name);
+    file->symbol_table_index  = symbol_table_index;
     file->filename            = NULL ;
     file->file_pointer        = NULL ;
     file->keys                = keys;
@@ -532,7 +539,8 @@ relative_file_delete_varying(cblc_file_t *file, bool is_random)
 
   size_t payload_length;
 
-  unsigned char *stash = (unsigned char *)malloc(file->default_record->capacity);
+  unsigned char *stash = static_cast<unsigned char *>(malloc(file->default_record->capacity));
+  massert(stash);
   memcpy(stash, file->default_record->data, file->default_record->capacity);
   long starting_pos = ftell(file->file_pointer);
 
@@ -632,7 +640,7 @@ done:
   memcpy(file->default_record->data, stash, file->default_record->capacity);
   free(stash);
   fseek(file->file_pointer, starting_pos, SEEK_SET);
-
+  file->prior_op = file_op_delete;
   establish_status(file, -1);
   }
 
@@ -649,7 +657,8 @@ relative_file_delete(cblc_file_t *file, bool is_random)
 
   char record_marker;
 
-  unsigned char *stash = (unsigned char *)malloc(file->default_record->capacity);
+  unsigned char *stash = static_cast<unsigned char *>(malloc(file->default_record->capacity));
+  massert(stash);
   memcpy(stash, file->default_record->data, file->default_record->capacity);
 
   long starting_pos = ftell(file->file_pointer);
@@ -741,6 +750,7 @@ done:
   memcpy(file->default_record->data, stash, file->default_record->capacity);
   free(stash);
   fseek(file->file_pointer, starting_pos, SEEK_SET);
+  file->prior_op = file_op_delete;
   establish_status(file, -1);
   }
 
@@ -823,7 +833,7 @@ read_an_indexed_record( cblc_file_t *file,
     goto done;
     }
 
-  record_length  = ach[0]<<8;
+  record_length  = static_cast<long>(ach[0])<<8;
   record_length += ach[1];
   if(ach[2] != 0)
     {
@@ -900,7 +910,7 @@ position_state_preserve(cblc_file_t *file, position_state_t &state)
   }
 
 static void
-position_state_restore(cblc_file_t *file, position_state_t &state)
+position_state_restore(cblc_file_t *file, const position_state_t &state)
   {
   file->recent_key = state.recent_key;
   fseek(file->file_pointer, state.starting_position, SEEK_SET);
@@ -967,7 +977,8 @@ indexed_file_delete(cblc_file_t *file, bool is_random)
   // and the record area itself are unchanged by the delete operation.
 
   // So, we save the current record area:
-  stash = (unsigned char *)malloc(file->record_area_max);
+  stash = static_cast<unsigned char *>(malloc(file->record_area_max));
+  massert(stash);
   memcpy(stash, file->default_record->data, file->record_area_max);
 
   // And the position state of our file
@@ -1045,8 +1056,6 @@ indexed_file_delete(cblc_file_t *file, bool is_random)
       // we find one, we check to see if the keys match.  If the keys don't
       // match, then we have to remove the existing one from the index.
 
-      std::vector<unsigned char> the_key
-                                     = file_indexed_make_key(file, key_number);
       bool deleting = true;
       while(deleting)
         {
@@ -1063,6 +1072,7 @@ indexed_file_delete(cblc_file_t *file, bool is_random)
             deleting = true;
             break;
             }
+
           it++;
           }
         }
@@ -1095,9 +1105,11 @@ done:
     memcpy(file->default_record->data, stash, file->record_area_min);
     free(stash);
     stash = NULL;
+    file->prior_op = file_op_delete;
     position_state_restore(file, position_state);
     }
 
+  file->prior_op = file_op_delete;
   establish_status(file, -1);
   }
 
@@ -1124,7 +1136,6 @@ __io__file_delete(cblc_file_t *file, bool is_random)
     {
     file->flags |= file_flag_existed_e;
     }
-  file->prior_op = file_op_delete;
   }
 
 static void
@@ -1227,7 +1238,7 @@ indexed_file_start( cblc_file_t *file,
           file->io_status = FsErrno;
           }
         }
-      else if( result < 0 )
+      else // if( result < 0 )
         {
         // The index is less than the key.
         if(    relop == lt_op
@@ -1529,12 +1540,12 @@ done:
     file->flags |= file_flag_existed_e;
     }
 
+  file->prior_op = file_op_start;
   establish_status(file, fpos);
   if( file->io_status < FhNotOkay )
     {
     file->flags |= file_flag_existed_e;
     }
-  file->prior_op = file_op_start;
   }
 
 static void
@@ -1649,7 +1660,7 @@ sequential_file_rewrite( cblc_file_t *file, size_t length )
 
   if( file->record_area_min != file->record_area_max )
     {
-    unsigned char preamble[4] =
+    const unsigned char preamble[4] =
       {
       (unsigned char)(bytes_to_write>>8),
       (unsigned char)(bytes_to_write),
@@ -1679,10 +1690,8 @@ sequential_file_rewrite( cblc_file_t *file, size_t length )
 done:
   // Per the standard, return the file location pointer back to whence it came:
   fseek(file->file_pointer, starting_position, SEEK_SET);
-  if( handle_ferror(file, __func__, "fseek() error") )
-    {
-    goto done;
-    }
+  handle_ferror(file, __func__, "fseek() error");
+  file->prior_op = file_op_rewrite;
   establish_status(file, starting_position);
   }
 
@@ -1798,10 +1807,8 @@ relative_file_rewrite_varying( cblc_file_t *file, bool is_random )
 done:
   // Per the standard, return the file location pointer back to whence it came:
   fseek(file->file_pointer, starting_position, SEEK_SET);
-  if( handle_ferror(file, __func__, "fseek() error") )
-    {
-    goto done;
-    }
+  handle_ferror(file, __func__, "fseek() error");
+  file->prior_op = file_op_rewrite;
   establish_status(file, starting_position);
   }
 
@@ -1901,10 +1908,8 @@ relative_file_rewrite( cblc_file_t *file, size_t length, bool is_random )
 done:
   // Per the standard, return the file location pointer back to whence it came:
   fseek(file->file_pointer, starting_position, SEEK_SET);
-  if( handle_ferror(file, __func__, "fseek() error") )
-    {
-    goto done;
-    }
+  handle_ferror(file, __func__, "fseek() error");
+  file->prior_op = file_op_rewrite;
   establish_status(file, starting_position);
   }
 
@@ -2173,7 +2178,7 @@ done:
     {
     position_state_restore(file, position_state);
     }
-
+  file->prior_op = file_op_rewrite;
   establish_status(file, fpos);
   file->prior_read_location = -1;
   }
@@ -2204,12 +2209,11 @@ __io__file_rewrite(cblc_file_t *file, size_t length, bool is_random)
     {
     file->flags |= file_flag_existed_e;
     }
-  file->prior_op = file_op_rewrite;
   }
 
 static void
 relative_file_write_varying(cblc_file_t    *file,
-                            unsigned char  *location,
+                      const unsigned char  *location,
                             size_t          length,
                             bool            is_random)
   {
@@ -2352,12 +2356,13 @@ relative_file_write_varying(cblc_file_t    *file,
     }
 
 done:
+  file->prior_op = file_op_write;
   establish_status(file, -1);
   }
 
 static void
 relative_file_write(cblc_file_t    *file,
-                    unsigned char  *location,
+              const unsigned char  *location,
                     size_t          length,
                     bool            is_random)
   {
@@ -2372,7 +2377,7 @@ relative_file_write(cblc_file_t    *file,
   file->io_status = FsErrno;
 
   long necessary_file_size;
-  unsigned char achPostamble[] = {internal_cr, internal_newline};
+  const unsigned char achPostamble[] = {internal_cr, internal_newline};
 
   relative_file_parameters rfp;
 
@@ -2485,12 +2490,13 @@ relative_file_write(cblc_file_t    *file,
     }
 
 done:
+  file->prior_op = file_op_write;
   establish_status(file, -1);
   }
 
 static void
 sequential_file_write(cblc_file_t    *file,
-                      unsigned char  *location,
+                const unsigned char  *location,
                       size_t          length,
                       int             after,
                       int             lines)
@@ -2606,7 +2612,7 @@ sequential_file_write(cblc_file_t    *file,
           {
           // Because of the min/max mismatch, we require a preamble:
           // The first two bytes are the big-endian character count
-          unsigned char preamble[4] =
+          const unsigned char preamble[4] =
             {
             (unsigned char)(characters_to_write>>8),
             (unsigned char)(characters_to_write),
@@ -2672,12 +2678,13 @@ sequential_file_write(cblc_file_t    *file,
     }
 
 done:
+  file->prior_op = file_op_write;
   establish_status(file, -1);
   }
 
 static void
 indexed_file_write( cblc_file_t    *file,
-                    unsigned char  *location,
+              const unsigned char  *location,
                     size_t          length,
                     bool            is_random)
   {
@@ -2748,13 +2755,13 @@ indexed_file_write( cblc_file_t    *file,
     // We are allowed to do the write, but only if there will be no key
     // violations as a result:
 
-    for(size_t  key_number=1;
-                key_number<file->supplemental->indexes.size();
-                key_number++)
+    for(size_t  keynum=1;
+                keynum<file->supplemental->indexes.size();
+                keynum++)
       {
-      if( file->supplemental->uniques[key_number] )
+      if( file->supplemental->uniques[keynum] )
         {
-        long record_position = file_indexed_first_position(file, key_number);
+        long record_position = file_indexed_first_position(file, keynum);
         if( record_position != -1 )
           {
           // No can do, because we already have a unique key with that value
@@ -2839,12 +2846,13 @@ indexed_file_write( cblc_file_t    *file,
   file_indexed_update_indices(file, position_to_write);
 
 done:
+  file->prior_op = file_op_write;
   establish_status(file, -1);
   }
 
 static void
 __io__file_write(   cblc_file_t    *file,
-                    unsigned char  *location,
+              const unsigned char  *location,
                     size_t          length,
                     int             after,
                     int             lines,
@@ -2925,12 +2933,12 @@ __io__file_write(   cblc_file_t    *file,
       break;
     }
 done:
+  file->prior_op = file_op_write;
   establish_status(file, -1);
   if( file->io_status < FhNotOkay )
     {
     file->flags |= file_flag_existed_e;
     }
-  file->prior_op = file_op_write;
   }
 
 static void
@@ -2978,7 +2986,7 @@ line_sequential_file_read(  cblc_file_t *file)
       {
       break;
       }
-    if( ch == file->delimiter || ch == EOF )
+    if( ch == EOF )
       {
       hit_eof = true;
       clearerr(file->file_pointer);
@@ -3074,6 +3082,7 @@ line_sequential_file_read(  cblc_file_t *file)
                                     NULL);
     }
 done:
+  file->prior_op = file_op_read;
   establish_status(file, fpos);
   }
 
@@ -3186,6 +3195,7 @@ sequential_file_read(  cblc_file_t  *file)
                                     NULL);
     }
 done:
+  file->prior_op = file_op_read;
   establish_status(file, fpos);
   return characters_read;
   }
@@ -3373,6 +3383,7 @@ done:
                                     truncation_e,
                                     NULL);
     }
+  file->prior_op = file_op_read;
   establish_status(file, fpos);
   }
 
@@ -3571,6 +3582,7 @@ done:
                                     truncation_e,
                                     NULL);
     }
+  file->prior_op = file_op_read;
   establish_status(file, fpos);
   }
 
@@ -3638,6 +3650,7 @@ indexed_file_read(  cblc_file_t  *file,
       goto done;
       }
 
+    // cppcheck-suppress derefInvalidIteratorRedundantCheck
     fpos = file_index->current_iterator->second;
 
     if( file_index->current_iterator == file_index->key_to_position.end() )
@@ -3719,6 +3732,7 @@ indexed_file_read(  cblc_file_t  *file,
 
     // We are ready to proceed
 
+    // cppcheck-suppress derefInvalidIteratorRedundantCheck
     fpos = file_index->current_iterator->second;
     if( file_index->current_iterator == file_index->key_to_position.end() )
       {
@@ -3764,6 +3778,7 @@ done:
                                     truncation_e,
                                     NULL);
     }
+  file->prior_op = file_op_read;
   establish_status(file, fpos);
   }
 
@@ -3792,6 +3807,7 @@ __io__file_read(cblc_file_t *file,
         {
         file->io_status = FsReadError; // "46"
         }
+      file->prior_op = file_op_read;
       establish_status(file, -1);
       return;
       }
@@ -3810,12 +3826,14 @@ __io__file_read(cblc_file_t *file,
           {
           file->io_status = FsReadError; // "46"
           }
+        file->prior_op = file_op_read;
         establish_status(file, -1);
         }
       else
         {
         // This is a format 2 read
         file->io_status = FsNotFound; // "23"
+        file->prior_op = file_op_read;
         establish_status(file, -1);
         }
       return;
@@ -3826,6 +3844,7 @@ __io__file_read(cblc_file_t *file,
     {
     // Attempting to read a file that isn't open
     file->io_status = FsReadNotOpen;    // "47"
+    file->prior_op = file_op_read;
     establish_status(file, -1);
     return;
     }
@@ -3834,6 +3853,7 @@ __io__file_read(cblc_file_t *file,
     {
     // The file is open, but not in INPUT or I-O mode:
     file->io_status = FsReadNotOpen;    // "47"
+    file->prior_op = file_op_read;
     establish_status(file, -1);
     return;
     }
@@ -3876,7 +3896,6 @@ __io__file_read(cblc_file_t *file,
     {
     file->flags |= file_flag_existed_e;
     }
-  file->prior_op = file_op_read;
   }
 
 static void
@@ -3908,7 +3927,6 @@ file_indexed_open(cblc_file_t *file)
     {
     if( file->key_numbers[index] != current_key_number )
       {
-      file_index_t file_index;
       file->supplemental->indexes.push_back(file_index);
       current_key_number = file->key_numbers[index];
       file->supplemental->uniques.push_back(file->uniques[index]);
@@ -3938,7 +3956,8 @@ file_indexed_open(cblc_file_t *file)
         // We need to open the file for reading, and build the
         // maps for each index:
         static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-        static char *fname = (char *)malloc(fname_size);
+        static char *fname = static_cast<char *>(malloc(fname_size));
+        massert(fname);
 
         internal_to_console(&fname,
                             &fname_size,
@@ -3955,7 +3974,8 @@ file_indexed_open(cblc_file_t *file)
           }
 
         // Stash the existing record area:
-        stash = (unsigned char *)malloc(file->record_area_max);
+        stash = static_cast<unsigned char *>(malloc(file->record_area_max));
+        massert(stash);
         memcpy( stash,
                 file->default_record->data,
                 file->record_area_max);
@@ -4097,7 +4117,8 @@ __gg__file_reopen(cblc_file_t *file, int mode_char)
       }
 
     static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
-    static char *fname = (char *)malloc(fname_size);
+    static char *fname = static_cast<char *>(malloc(fname_size));
+    massert(fname)
     internal_to_console(&fname,
                         &fname_size,
                         file->filename,
@@ -4327,8 +4348,8 @@ __io__file_open(cblc_file_t *file,
 
     __gg__file_reopen(file, mode_char);
     }
-  establish_status(file, -1);
   file->prior_op = file_op_open;
+  establish_status(file, -1);
   }
 
 static void
@@ -4387,8 +4408,8 @@ __io__file_close( cblc_file_t *file, int how )
   file->filename = NULL;
 
   done:
-  establish_status(file, fpos);
   file->prior_op = file_op_close;
+  establish_status(file, fpos);
   }
 
 static cblc_file_t *stashed;
@@ -4451,7 +4472,7 @@ public:
   typedef void (read_t)( cblc_file_t *file,
                          int where );
   typedef void (write_t)( cblc_file_t *file,
-                          unsigned char  *location,
+                          const unsigned char  *location,
                           size_t length,
                           int after,
                           int lines,

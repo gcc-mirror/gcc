@@ -1619,13 +1619,13 @@
     operands[2] = GEN_INT (len);
     operands[4] = GEN_INT (lo);
 
-    if (lo)
-      {
-	rtx tmp = gen_reg_rtx (<MODE>mode);
-	emit_move_insn (tmp, gen_rtx_ASHIFTRT(<MODE>mode, operands[3],
-					      GEN_INT (lo)));
-	operands[3] = tmp;
-      }
+    /* Use a new pseudo register even if lo == 0 or we'll wreck havoc
+       when operands[0] is same as operands[3].  See PR 121906.  */
+    rtx tmp = gen_reg_rtx (<MODE>mode);
+    rtx val = lo ? gen_rtx_ASHIFTRT (<MODE>mode, operands[3], GEN_INT (lo))
+		 : operands[3];
+    emit_move_insn (tmp, val);
+    operands[3] = tmp;
   })
 
 ;; We always avoid the shift operation in bstrins_<mode>_for_ior_mask
@@ -4573,9 +4573,10 @@
   "&& true"
   [(set (match_dup 3) (match_dup 2))
    (set (match_dup 0)
-	(unspec:SI [(match_dup 3) (subreg:SI (match_dup 1) 0)] CRC))]
+	(unspec:SI [(match_dup 3) (match_dup 1)] CRC))]
   {
     operands[3] = gen_reg_rtx (<MODE>mode);
+    operands[1] = lowpart_subreg (SImode, operands[1], DImode);
   })
 
 ;; With normal or medium code models, if the only use of a pc-relative

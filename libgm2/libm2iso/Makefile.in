@@ -163,16 +163,17 @@ libm2iso_la_LIBADD =
 @BUILD_ISOLIB_TRUE@	ConvStringShort.lo ConvTypes.lo \
 @BUILD_ISOLIB_TRUE@	COROUTINES.lo EXCEPTIONS.lo \
 @BUILD_ISOLIB_TRUE@	GeneralUserExceptions.lo IOChan.lo \
-@BUILD_ISOLIB_TRUE@	IOConsts.lo IOLink.lo IOResult.lo \
-@BUILD_ISOLIB_TRUE@	LongComplexMath.lo LongConv.lo LongIO.lo \
-@BUILD_ISOLIB_TRUE@	LongMath.lo LongStr.lo LongWholeIO.lo \
-@BUILD_ISOLIB_TRUE@	LowLong.lo LowReal.lo LowShort.lo \
-@BUILD_ISOLIB_TRUE@	M2EXCEPTION.lo M2RTS.lo MemStream.lo \
-@BUILD_ISOLIB_TRUE@	Preemptive.lo Processes.lo ProgramArgs.lo \
-@BUILD_ISOLIB_TRUE@	RandomNumber.lo RawIO.lo RealConv.lo \
-@BUILD_ISOLIB_TRUE@	RealIO.lo RealMath.lo RealStr.lo RndFile.lo \
-@BUILD_ISOLIB_TRUE@	RTdata.lo RTentity.lo RTfio.lo RTgenif.lo \
-@BUILD_ISOLIB_TRUE@	RTgen.lo RTio.lo Semaphores.lo SeqFile.lo \
+@BUILD_ISOLIB_TRUE@	IOChanUtils.lo IOConsts.lo IOLink.lo \
+@BUILD_ISOLIB_TRUE@	IOResult.lo LongComplexMath.lo LongConv.lo \
+@BUILD_ISOLIB_TRUE@	LongIO.lo LongMath.lo LongStr.lo \
+@BUILD_ISOLIB_TRUE@	LongWholeIO.lo LowLong.lo LowReal.lo \
+@BUILD_ISOLIB_TRUE@	LowShort.lo M2EXCEPTION.lo M2RTS.lo \
+@BUILD_ISOLIB_TRUE@	MemStream.lo Preemptive.lo Processes.lo \
+@BUILD_ISOLIB_TRUE@	ProgramArgs.lo RandomNumber.lo RawIO.lo \
+@BUILD_ISOLIB_TRUE@	RealConv.lo RealIO.lo RealMath.lo \
+@BUILD_ISOLIB_TRUE@	RealStr.lo RndFile.lo RTdata.lo RTentity.lo \
+@BUILD_ISOLIB_TRUE@	RTfio.lo RTgenif.lo RTgen.lo RTio.lo \
+@BUILD_ISOLIB_TRUE@	Semaphores.lo SeqFile.lo \
 @BUILD_ISOLIB_TRUE@	ShortComplexMath.lo ShortConv.lo ShortIO.lo \
 @BUILD_ISOLIB_TRUE@	ShortMath.lo ShortStr.lo ShortWholeIO.lo \
 @BUILD_ISOLIB_TRUE@	SimpleCipher.lo SIOResult.lo SLongIO.lo \
@@ -492,6 +493,7 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         ConvTypes.def  COROUTINES.def \
 @BUILD_ISOLIB_TRUE@         ErrnoCategory.def  EXCEPTIONS.def \
 @BUILD_ISOLIB_TRUE@         GeneralUserExceptions.def  IOChan.def \
+@BUILD_ISOLIB_TRUE@         IOChanUtils.def \
 @BUILD_ISOLIB_TRUE@         IOConsts.def  IOLink.def \
 @BUILD_ISOLIB_TRUE@         IOResult.def  LongComplexMath.def \
 @BUILD_ISOLIB_TRUE@         LongConv.def  LongIO.def \
@@ -537,7 +539,8 @@ FLAGS_TO_PASS = $(AM_MAKEFLAGS)
 @BUILD_ISOLIB_TRUE@         ConvStringShort.mod \
 @BUILD_ISOLIB_TRUE@         ConvTypes.mod  COROUTINES.mod \
 @BUILD_ISOLIB_TRUE@         EXCEPTIONS.mod  GeneralUserExceptions.mod \
-@BUILD_ISOLIB_TRUE@         IOChan.mod  IOConsts.mod \
+@BUILD_ISOLIB_TRUE@         IOChan.mod  IOChanUtils.mod \
+@BUILD_ISOLIB_TRUE@         IOConsts.mod \
 @BUILD_ISOLIB_TRUE@         IOLink.mod  IOResult.mod \
 @BUILD_ISOLIB_TRUE@         LongComplexMath.mod  LongConv.mod \
 @BUILD_ISOLIB_TRUE@         LongIO.mod  LongMath.mod \

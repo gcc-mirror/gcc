@@ -583,7 +583,8 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs, tree labels)
     {
       if (c[1] == '[')
 	break;
-      else if (ISALPHA (c[1]) && c[2] == '[')
+      else if (ISALPHA (c[1])
+	       && (c[2] == '[' || (ISALPHA (c[2]) && c[3] == '[')))
 	break;
       else
 	{
@@ -607,6 +608,8 @@ resolve_asm_operand_names (tree string, tree outputs, tree inputs, tree labels)
 	    p += 1;
 	  else if (ISALPHA (p[1]) && p[2] == '[')
 	    p += 2;
+	  else if (ISALPHA (p[1]) && ISALPHA (p[2]) && p[3] == '[')
+	    p += 3;
 	  else
 	    {
 	      p += 1 + (p[1] == '%');

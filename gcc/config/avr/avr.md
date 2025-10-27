@@ -6811,13 +6811,13 @@
 ;; "cmpqq3" "cmpuqq3"
 (define_insn "cmp<mode>3"
   [(set (reg:CC REG_CC)
-        (compare:CC (match_operand:ALL1 0 "register_operand"  "r  ,r,d")
-                    (match_operand:ALL1 1 "nonmemory_operand" "Y00,r,i")))]
+        (compare:CC (match_operand:ALL1 0 "register_operand"  "d,r  ,r")
+                    (match_operand:ALL1 1 "nonmemory_operand" "i,Y00,r")))]
   "reload_completed"
   "@
-	cp %0, __zero_reg__
-	cp %0,%1
-	cpi %0,lo8(%1)"
+	cpi %0,lo8(%1)
+	cp %0,__zero_reg__
+	cp %0,%1"
   [(set_attr "length" "1,1,1")])
 
 

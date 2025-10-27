@@ -79,7 +79,6 @@ FROM SymbolTable IMPORT NulSym,
                         MakeSubscript, PutSubscript,
                         PutArray, GetType, IsArray,
                         IsProcType, MakeProcType,
-                        PutProcTypeVarParam, PutProcTypeParam,
                         PutProcedureBuiltin, PutProcedureInline,
                         GetSymName,
                         ResolveImports, PutDeclared,
@@ -106,42 +105,6 @@ CONST
 
 VAR
    importStatementCount: CARDINAL ;
-
-
-(*
-   CheckFileName - checks to see that the module name matches the file name.
-*)
-
-(*
-PROCEDURE CheckFileName (tok: CARDINAL; name: Name; ModuleType: ARRAY OF CHAR) ;
-VAR
-   ext,
-   basename: INTEGER ;
-   s,
-   FileName: String ;
-BEGIN
-   FileName := GetFileName() ;
-   basename := RIndex(FileName, '/', 0) ;
-   IF basename=-1
-   THEN
-      basename := 0
-   END ;
-   ext := RIndex(FileName, '.', 0) ;
-   IF ext=-1
-   THEN
-      ext := 0
-   END ;
-   FileName := Slice(FileName, basename, ext) ;
-   IF EqualCharStar(FileName, KeyToCharStar(name))
-   THEN
-      FileName := KillString(FileName)
-   ELSE
-      s := ConCat (InitString (ModuleType),
-                   Mark (InitString (" module name {%1Ea} is inconsistant with the filename {%F{%2a}}"))) ;
-      MetaErrorString2 (s, MakeError (tok, name), MakeErrorS (tok, FileName))
-   END
-END CheckFileName ;
-*)
 
 
 (*
@@ -227,7 +190,7 @@ BEGIN
    END ;
    IF NameStart#NameEnd
    THEN
-      MetaError1 ('inconsistant definition module name {%1Wa}', MakeError (start, NameStart))
+      MetaError1 ('inconsistent definition module name {%1Wa}', MakeError (start, NameStart))
    END ;
    LeaveBlock
 END P1EndBuildDefinitionModule ;
@@ -301,7 +264,7 @@ BEGIN
    IF NameStart#NameEnd
    THEN
       MetaErrorT1 (end,
-                   'inconsistant implementation module name {%1Wa}', MakeError (start, NameStart))
+                   'inconsistent implementation module name {%1Wa}', MakeError (start, NameStart))
    END ;
    LeaveBlock
 END P1EndBuildImplementationModule ;
@@ -381,7 +344,7 @@ BEGIN
    IF NameStart#NameEnd
    THEN
       MetaErrorT1 (end,
-                   'inconsistant program module name {%1Wa}', MakeError (start, NameStart))
+                   'inconsistent program module name {%1Wa}', MakeError (start, NameStart))
    END ;
    LeaveBlock
 END P1EndBuildProgramModule ;
@@ -446,7 +409,7 @@ BEGIN
    IF NameStart#NameEnd
    THEN
       MetaErrorT1 (end,
-                   'inconsistant inner module name {%1Wa}', MakeError (start, NameStart))
+                   'inconsistent inner module name {%1Wa}', MakeError (start, NameStart))
    END ;
    LeaveBlock
 END EndBuildInnerModule ;

@@ -1,3 +1,344 @@
+2025-08-08  Release Manager
+
+	* GCC 15.2.0 released.
+
+2025-07-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-libs/M2EXCEPTION.mod (M2Exception): Add return
+	exException in case Raise completes.
+
+2025-07-26  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-23  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121164
+	* gm2-compiler/P1SymBuild.mod: Remove PutProcTypeParam.
+	Remove PutProcTypeParam.
+	(CheckFileName): Remove.
+	(P1EndBuildDefinitionModule): Correct spelling.
+	(P1EndBuildImplementationModule): Ditto.
+	(P1EndBuildProgramModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	* gm2-compiler/P2SymBuild.mod (P2EndBuildDefModule): Correct
+	spelling.
+	(P2EndBuildImplementationModule): Ditto.
+	(P2EndBuildProgramModule): Ditto.
+	(EndBuildInnerModule): Ditto.
+	(CheckFormalParameterSection): Ditto.
+	* gm2-compiler/P3SymBuild.mod (P3EndBuildDefModule): Ditto.
+	* gm2-compiler/PCSymBuild.mod (PCEndBuildDefModule): Ditto.
+	(fixupProcedureType): Pass tok to PutProcTypeVarParam.
+	Pass tok to PutProcTypeParam.
+	* gm2-compiler/SymbolTable.def (PutProcTypeParam): Add tok
+	parameter.
+	(PutProcTypeVarParam): Ditto.
+	* gm2-compiler/SymbolTable.mod (SymParam): At change type to
+	CARDINAL.
+	New field FullTok.
+	New field Scope.
+	(SymVarParam): At change type to CARDINAL.
+	New field FullTok.
+	New field Scope.
+	(GetVarDeclTok): Check ShadowVar for NulSym and return At.
+	(PutParam): Initialize FullTok.
+	Initialize At.
+	Initialize Scope.
+	(PutVarParam): Initialize FullTok.
+	Assign At.
+	Initialize Scope.
+	(AddProcedureProcTypeParam): Add tok parameter.
+	(GetScope): Add ParamSym and VarParamSym clause.
+	(PutProcTypeVarParam): Add tok parameter.
+	Initialize At.
+	Initialize FullTok.
+	(GetDeclaredDefinition): Clause ParamSym return At.
+	Clause VarParamSym return At.
+	(GetDeclaredModule): Ditto.
+	(PutDeclaredDefinition): Remove clause ParamSym.
+	Remove clause VarParamSym.
+	(PutDeclaredModule): Remove clause ParamSym.
+	Remove clause VarParamSym.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/121164
+	* gm2-libs/ARRAYOFCHAR.mod (Write): Rename 2nd parameter
+	name a to str.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-07-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120912
+	* gm2-libs-iso/IOChanUtils.def (GetFile): New procedure function.
+	* gm2-libs-iso/IOChanUtils.mod (GetFile): New procedure function.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-29  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/117203
+	* gm2-libs-log/FileSystem.def (GetFileName): New
+	procedure function.
+	(WriteString): New procedure.
+	* gm2-libs-log/FileSystem.mod (GetFileName): New
+	procedure function.
+	(WriteString): New procedure.
+	* gm2-libs/SFIO.def (GetFileName): New procedure function.
+	* gm2-libs/SFIO.mod (GetFileName): New procedure function.
+	* gm2-libs-iso/IOChanUtils.def: New file.
+	* gm2-libs-iso/IOChanUtils.mod: New file.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120731
+	* gm2-libs-log/Strings.def (Delete): Rewrite comment.
+	* gm2-libs-log/Strings.mod (Pos): Rewrite.
+	(PosLower): New procedure function.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-21  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	* gm2-compiler/M2GCCDeclare.mod (StartDeclareModuleScopeSeparate):
+	Reformat statement comments.
+	(StartDeclareModuleScopeWholeProgram): Ditto.
+
+2025-07-18  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120673
+	* gm2-compiler/M2GCCDeclare.mod (ErrorDepList): New
+	global variable set containing every errant dependency symbol.
+	(mystop): Remove.
+	(EmitCircularDependancyError): Replace with ...
+	(EmitCircularDependencyError): ... this.
+	(AssertAllTypesDeclared): Rewrite.
+	(DoVariableDeclaration): Ditto.
+	(TypeDependentsDeclared): New procedure function.
+	(PrepareGCCVarDeclaration): Ditto.
+	(DeclareVariable): Remove assert.
+	(DeclareLocalVariable): Ditto.
+	(Constructor): Initialize ErrorDepList.
+	* gm2-compiler/M2MetaError.mod (doErrorScopeProc): Rewrite
+	and ensure that a symbol with a module scope does not lookup
+	from a definition module.
+	* gm2-compiler/P2SymBuild.mod (BuildType): Rewrite so that
+	a synonym type is created using the token refering to the name
+	on the lhs.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-12  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	* gm2-libs/ARRAYOFCHAR.def: Remove comment about non
+	existent read.
+	* target-independent/m2/Builtins.texi: Regenerate.
+	* target-independent/m2/SYSTEM-iso.texi: Ditto.
+	* target-independent/m2/SYSTEM-pim.texi: Ditto.
+	* target-independent/m2/gm2-libs.texi: Ditto.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-09  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120606
+	* gm2-compiler/M2Quads.mod (ForLoopLastIterator): Dereference
+	start and end expressions e1 and e2 respectively.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-07  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/119650
+	PR modula2/117203
+	* gm2-compiler/P2Build.bnf (CheckModuleQualident): New
+	procedure.
+	(Qualident): Rewrite.
+	* gm2-compiler/P3Build.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-compiler/PCBuild.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-compiler/PHBuild.bnf (PushTFQualident): New procedure.
+	(CheckModuleQualident): Ditto.
+	(Qualident): Rewrite.
+	* gm2-libs/ARRAYOFCHAR.def: New file.
+	* gm2-libs/ARRAYOFCHAR.mod: New file.
+	* gm2-libs/CFileSysOp.def: New file.
+	* gm2-libs/CHAR.def: New file.
+	* gm2-libs/CHAR.mod: New file.
+	* gm2-libs/FileSysOp.def: New file.
+	* gm2-libs/FileSysOp.mod: New file.
+	* gm2-libs/String.def: New file.
+	* gm2-libs/String.mod: New file.
+	* gm2-libs/StringFileSysOp.def: New file.
+	* gm2-libs/StringFileSysOp.mod: New file.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-06  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120542
+	* gm2-compiler/M2Quads.mod (BuildReturnLower): New procedure.
+	(BuildReturn): Allow return without an expression from
+	module initialization blocks.  Generate an error if an
+	expression is provided.  Call BuildReturnLower if no error
+	was seen.
+
+2025-07-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120474
+	* gm2-libs-log/InOut.mod (LocalWrite): Call FIO.FlushBuffer.
+
+2025-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-06-01  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120497
+	* gm2-compiler/M2Range.mod (IsAssignmentCompatible): Remove from
+	import list.
+	(FoldTypeReturnFunc): Rewrite to skip the Lvalue of a var
+	variable.
+	(CodeTypeReturnFunc): Ditto.
+	(CodeTypeIndrX): Call AssignmentTypeCompatible rather than
+	IsAssignmentCompatible.
+	(FoldTypeIndrX): Ditto.
+
+2025-07-16  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-31  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2-compiler/M2Check.def (AssignmentTypeCompatible): Add new
+	parameter enableReason.
+	* gm2-compiler/M2Check.mod (EquivalenceProcedure): New type.
+	(falseReason2): New procedure function.
+	(falseReason1): Ditto.
+	(falseReason0): Ditto.
+	(checkTypeEquivalence): Rewrite.
+	(checkUnboundedArray): Ditto.
+	(checkUnbounded): Ditto.
+	(checkArrayTypeEquivalence): Ditto.
+	(checkCharStringTypeEquivalence): Ditto.
+	(buildError4): Add false reason.
+	(buildError2): Ditto.
+	(IsTyped): Use GetDType.
+	(IsTypeEquivalence): New procedure function.
+	(checkVarTypeEquivalence): Ditto.
+	(checkVarEquivalence ): Rewrite.
+	(checkConstMeta): Ditto.
+	(checkEnumField): New procedure function.
+	(checkEnumFieldEquivalence): Ditto.
+	(checkSubrangeTypeEquivalence): Rewrite.
+	(checkSystemEquivalence): Ditto.
+	(checkTypeKindViolation): Ditto.
+	(doCheckPair): Ditto.
+	(InitEquivalenceArray): New procedure.
+	(addEquivalence): Ditto.
+	(checkProcType): Rewrite.
+	(deconstruct): Deallocate reason string.
+	(AssignmentTypeCompatible): Initialize reason and reasonEnable
+	fields.
+	(ParameterTypeCompatible): Ditto.
+	(doExpressionTypeCompatible): Ditto.
+	* gm2-compiler/M2GenGCC.mod (CodeIndrX) Rewrite.
+	(CheckBinaryExpressionTypes): Rewrite and simplify now that the
+	type checker is more robust.
+	(CheckElementSetTypes): Ditto.
+	(CodeXIndr): Add new range assignment type check.
+	* gm2-compiler/M2MetaError.def: Correct comments.
+	* gm2-compiler/M2Options.def (SetStrictTypeAssignment): New procedure.
+	(SetStrictTypeReason): Ditto.
+	* gm2-compiler/M2Options.mod: (SetStrictTypeAssignment): New procedure.
+	(SetStrictTypeReason): Ditto.
+	(StrictTypeReason): Initialize.
+	(StrictTypeAssignment): Ditto.
+	* gm2-compiler/M2Quads.mod (CheckBreak): Delete.
+	(BreakQuad): New global variable.
+	(BreakAtQuad): Delete.
+	(gdbhook): New procedure.
+	(BreakWhenQuadCreated): Ditto.
+	(CheckBreak): Ditto.
+	(Init): Call BreakWhenQuadCreated and gdbhook.
+	(doBuildAssignment): Add type assignment range check.
+	(CheckProcTypeAndProcedure): Only check if the procedure
+	types differ.
+	(doIndrX): Add type IndrX range check.
+	(CheckReturnType): Add range return type check.
+	* gm2-compiler/M2Range.def (InitTypesIndrXCheck): New procedure
+	function.
+	(InitTypesReturnTypeCheck): Ditto.
+	* gm2-compiler/M2Range.mod (InitTypesIndrXCheck): New procedure
+	function.
+	(InitTypesReturnTypeCheck): Ditto.
+	(HandlerExists): Add new clauses.
+	(FoldAssignment): Pass extra FALSE parameter to
+	AssignmentTypeCompatible.
+	(FoldTypeReturnFunc): New procedure.
+	(FoldTypeAssign): Ditto.
+	(FoldTypeIndrX): Ditto.
+	(CodeTypeAssign): Rewrite.
+	(CodeTypeIndrX): New procedure.
+	(CodeTypeReturnFunc): Ditto.
+	(FoldTypeCheck): Add new case clauses.
+	(CodeTypeCheck): Ditto.
+	(FoldRangeCheckLower): Ditto.
+	(IssueWarning): Ditto.
+	* gm2-gcc/m2options.h (M2Options_SetStrictTypeAssignment): New
+	function prototype.
+	(M2Options_SetStrictTypeReason): Ditto.
+
+2025-07-15  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-22  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120389
+	* gm2-compiler/M2GenGCC.mod (CodeXIndr): Check to see that
+	the type of left is assignment compatible with the type of
+	right.
+
+2025-07-11  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	Backported from master:
+	2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/120253
+	* m2.flex (FIRST_COLUMN): New define.
+	(updatepos): Remove commented code.
+	(consumeLine): Assign column to FIRST_COLUMN.
+	(initLine): Ditto.
+	(m2flex_GetColumnNo): Return FIRST_COLUMN if currentLine is NULL.
+	(m2flex_GetLineNo): Rewrite for positive logic.
+	(m2flex_GetLocation): Ditto.
+
 2025-05-13  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	Backported from master:

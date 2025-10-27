@@ -788,6 +788,7 @@ enable_option_checking
 enable_multilib
 enable_maintainer_mode
 enable_silent_rules
+enable_libgcobol
 enable_version_specific_runtime_libs
 enable_dependency_tracking
 enable_shared
@@ -1438,6 +1439,7 @@ Optional Features:
                           sometimes confusing) to the casual installer
   --enable-silent-rules   less verbose build output (undo: "make V=1")
   --disable-silent-rules  verbose build output (undo: "make V=0")
+  --enable-libgcobol      Enable libgcobol
   --enable-version-specific-runtime-libs
                           Specify that runtime libraries should be installed
                           in a compiler-specific directory
@@ -2380,6 +2382,52 @@ $as_echo "$ac_res" >&6; }
 
 } # ac_fn_cxx_check_header_compile
 
+# ac_fn_cxx_check_decl LINENO SYMBOL VAR INCLUDES
+# -----------------------------------------------
+# Tests whether SYMBOL is declared in INCLUDES, setting cache variable VAR
+# accordingly.
+ac_fn_cxx_check_decl ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  as_decl_name=`echo $2|sed 's/ *(.*//'`
+  as_decl_use=`echo $2|sed -e 's/(/((/' -e 's/)/) 0&/' -e 's/,/) 0& (/g'`
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether $as_decl_name is declared" >&5
+$as_echo_n "checking whether $as_decl_name is declared... " >&6; }
+if eval \${$3+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$4
+int
+main ()
+{
+#ifndef $as_decl_name
+#ifdef __cplusplus
+  (void) $as_decl_use;
+#else
+  (void) $as_decl_name;
+#endif
+#endif
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  eval "$3=yes"
+else
+  eval "$3=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$3
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_cxx_check_decl
+
 # ac_fn_cxx_check_func LINENO FUNC VAR
 # ------------------------------------
 # Tests whether FUNC exists, setting the cache variable VAR accordingly
@@ -2449,6 +2497,63 @@ $as_echo "$ac_res" >&6; }
   eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
 
 } # ac_fn_cxx_check_func
+
+# ac_fn_cxx_check_member LINENO AGGR MEMBER VAR INCLUDES
+# ------------------------------------------------------
+# Tries to find if the field MEMBER exists in type AGGR, after including
+# INCLUDES, setting cache variable VAR accordingly.
+ac_fn_cxx_check_member ()
+{
+  as_lineno=${as_lineno-"$1"} as_lineno_stack=as_lineno_stack=$as_lineno_stack
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $2.$3" >&5
+$as_echo_n "checking for $2.$3... " >&6; }
+if eval \${$4+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+$5
+int
+main ()
+{
+static $2 ac_aggr;
+if (sizeof ac_aggr.$3)
+return 0;
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_compile "$LINENO"; then :
+  eval "$4=yes"
+else
+  eval "$4=no"
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+eval ac_res=\$$4
+	       { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_res" >&5
+$as_echo "$ac_res" >&6; }
+  eval $as_lineno_stack; ${as_lineno_stack:+:} unset as_lineno
+
+} # ac_fn_cxx_check_member
 cat >config.log <<_ACEOF
 This file contains any messages produced by compilers while
 running configure, to aid debugging if configure makes a mistake.
@@ -2739,6 +2844,8 @@ as_fn_append ac_header_list " fenv.h"
 as_fn_append ac_header_list " fptrap.h"
 as_fn_append ac_header_list " complex.h"
 as_fn_append ac_header_list " stdlib.h"
+as_fn_append ac_header_list " errno.h"
+as_fn_append ac_func_list " getprogname"
 as_fn_append ac_func_list " random_r"
 as_fn_append ac_func_list " srandom_r"
 as_fn_append ac_func_list " initstate_r"
@@ -3617,6 +3724,16 @@ END
   fi
 fi
 
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-libgcobol" >&5
+$as_echo_n "checking for --enable-libgcobol... " >&6; }
+# Check whether --enable-libgcobol was given.
+if test "${enable_libgcobol+set}" = set; then :
+  enableval=$enable_libgcobol;
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $enable_libgcobol" >&5
+$as_echo "$enable_libgcobol" >&6; }
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for --enable-version-specific-runtime-libs" >&5
 $as_echo_n "checking for --enable-version-specific-runtime-libs... " >&6; }
@@ -11693,7 +11810,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11696 "configure"
+#line 11813 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11799,7 +11916,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11802 "configure"
+#line 11919 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16690,6 +16807,14 @@ _ACEOF
 unset LIBGCOBOL_SUPPORTED
 . ${srcdir}/configure.tgt
 
+# Decide if it's usable.
+case $LIBGCOBOL_SUPPORTED:$enable_libgcobol in
+*:no)  use_libgcobol=no  ;;
+*:yes) use_libgcobol=yes ;;
+yes:*) use_libgcobol=yes ;;
+*:*)   use_libgcobol=no  ;;
+esac
+
 # -----------------
 # __int128 support
 # -----------------
@@ -16782,7 +16907,7 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcobol_cv_have_int128" >&5
 $as_echo "$libgcobol_cv_have_int128" >&6; }
 
- if test "x$LIBGCOBOL_SUPPORTED" = xyes && test "x$libgcobol_cv_have_int128" = xyes; then
+ if test "x$use_libgcobol" = xyes && test "x$libgcobol_cv_have_int128" = xyes; then
   BUILD_LIBGCOBOL_TRUE=
   BUILD_LIBGCOBOL_FALSE='#'
 else
@@ -16959,7 +17084,29 @@ done
 
 
 
-# These are GLIBC
+
+
+# Look for a way to represent the program name
+# First, check the GLIBC case
+ac_fn_cxx_check_decl "$LINENO" "program_invocation_short_name" "ac_cv_have_decl_program_invocation_short_name" "
+#if HAVE_ERRNO_H
+# define _GNU_SOURCE
+# include <errno.h>
+#endif
+
+"
+if test "x$ac_cv_have_decl_program_invocation_short_name" = xyes; then :
+  ac_have_decl=1
+else
+  ac_have_decl=0
+fi
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME $ac_have_decl
+_ACEOF
+
+
+# Check an alternate
 
 
 
@@ -16975,6 +17122,11 @@ _ACEOF
 fi
 done
 
+
+
+
+
+# These are GLIBC
 
 
 
@@ -17122,6 +17274,59 @@ if test "$ac_res" != no; then :
   libgcobol_have_cacosf128=yes
 fi
 
+
+# Copied from gcc/configure.ac. 2025-06-05 R.J.Dubner
+# At least for glibc, clock_gettime is in librt.  But don't pull that
+# in if it still doesn't give us the function we want.
+ac_cv_func_clock_gettime=no
+if test $ac_cv_func_clock_gettime = no; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for clock_gettime in -lrt" >&5
+$as_echo_n "checking for clock_gettime in -lrt... " >&6; }
+if ${ac_cv_lib_rt_clock_gettime+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  ac_check_lib_save_LIBS=$LIBS
+LIBS="-lrt  $LIBS"
+if test x$gcc_no_link = xyes; then
+  as_fn_error $? "Link tests are not allowed after GCC_NO_EXECUTABLES." "$LINENO" 5
+fi
+cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+/* Override any GCC internal prototype to avoid an error.
+   Use char because int might match the return type of a GCC
+   builtin and then its argument prototype would still apply.  */
+#ifdef __cplusplus
+extern "C"
+#endif
+char clock_gettime ();
+int
+main ()
+{
+return clock_gettime ();
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_cxx_try_link "$LINENO"; then :
+  ac_cv_lib_rt_clock_gettime=yes
+else
+  ac_cv_lib_rt_clock_gettime=no
+fi
+rm -f core conftest.err conftest.$ac_objext \
+    conftest$ac_exeext conftest.$ac_ext
+LIBS=$ac_check_lib_save_LIBS
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_cv_lib_rt_clock_gettime" >&5
+$as_echo "$ac_cv_lib_rt_clock_gettime" >&6; }
+if test "x$ac_cv_lib_rt_clock_gettime" = xyes; then :
+  LIBS="-lrt $LIBS"
+
+$as_echo "#define HAVE_CLOCK_GETTIME 1" >>confdefs.h
+
+fi
+
+fi
 
 have_iec_60559_libc_support=no
 if test "x$ac_cv_func_strtof128$ac_cv_func_strfromf128" = xyesyes \
@@ -17432,6 +17637,19 @@ $as_echo "#define USE_IEC_60559 1" >>confdefs.h
 
 
 
+
+
+# struct tm tm_zone is a POSIX.1-2024 addition.
+ac_fn_cxx_check_member "$LINENO" "struct tm" "tm_zone" "ac_cv_member_struct_tm_tm_zone" "#include <time.h>
+"
+if test "x$ac_cv_member_struct_tm_tm_zone" = xyes; then :
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_STRUCT_TM_TM_ZONE 1
+_ACEOF
+
+
+fi
 
 
 if test "${multilib}" = "yes"; then

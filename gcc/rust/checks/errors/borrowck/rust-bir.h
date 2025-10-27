@@ -35,6 +35,26 @@ using BasicBlocks = IndexVec<BasicBlockId, BasicBlock>;
 class Statement;
 class AbstractExpr;
 
+/** Unique identifier for a basic block in the BIR. */
+struct BasicBlockId
+{
+  uint32_t value;
+  // some overloads for comparision
+  bool operator== (const BasicBlockId &rhs) const { return value == rhs.value; }
+  bool operator!= (const BasicBlockId &rhs) const
+  {
+    return !(operator== (rhs));
+  }
+  bool operator< (const BasicBlockId &rhs) const { return value < rhs.value; }
+  bool operator> (const BasicBlockId &rhs) const { return value > rhs.value; }
+  bool operator<= (const BasicBlockId &rhs) const { return !(operator> (rhs)); }
+  bool operator>= (const BasicBlockId &rhs) const { return !(operator< (rhs)); }
+};
+
+static constexpr BasicBlockId INVALID_BB
+  = {std::numeric_limits<uint32_t>::max ()};
+static constexpr BasicBlockId ENTRY_BASIC_BLOCK = {0};
+
 /**
  * Top-level entity of the Borrow-checker IR (BIR).
  * It represents a single function (method, closure, etc.), which is the
@@ -131,26 +151,6 @@ public:
   WARN_UNUSED_RESULT TyTy::BaseType *get_type () const { return type; }
   WARN_UNUSED_RESULT location_t get_location () const { return location; }
 };
-
-/** Unique identifier for a basic block in the BIR. */
-struct BasicBlockId
-{
-  uint32_t value;
-  // some overloads for comparision
-  bool operator== (const BasicBlockId &rhs) const { return value == rhs.value; }
-  bool operator!= (const BasicBlockId &rhs) const
-  {
-    return !(operator== (rhs));
-  }
-  bool operator< (const BasicBlockId &rhs) const { return value < rhs.value; }
-  bool operator> (const BasicBlockId &rhs) const { return value > rhs.value; }
-  bool operator<= (const BasicBlockId &rhs) const { return !(operator> (rhs)); }
-  bool operator>= (const BasicBlockId &rhs) const { return !(operator< (rhs)); }
-};
-
-static constexpr BasicBlockId INVALID_BB
-  = {std::numeric_limits<uint32_t>::max ()};
-static constexpr BasicBlockId ENTRY_BASIC_BLOCK = {0};
 
 struct BasicBlock
 {

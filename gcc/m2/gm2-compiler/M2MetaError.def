@@ -93,9 +93,9 @@ FROM NameKey IMPORT Name ;
     %}        }
     the error messages may also embed optional strings such as:
 
-    {%1a:this string is emitted if the symbol name is non null}
-    {!%1a:this string is emitted if the symbol name is null}
-    {!%1a:{%1d}}
+    {%1a:this string is emitted if the symbol name is null}
+    {!%1a:this string is emitted if the symbol name is non null}
+    {%1a:{%1d}}
            if the symbol name does not exist then print a description
            of the symbol.
     {%1atd} was incompatible with the return type of the procedure
