@@ -16083,7 +16083,8 @@ resolve_typebound_intrinsic_op (gfc_symbol* derived, gfc_intrinsic_op op,
 	  for (intr = derived->ns->op[op]; intr; intr = intr->next)
 	    if (intr->sym == target_proc
 		&& (target_proc->attr.used_in_submodule
-		    || derived->attr.pdt_type))
+		    || derived->attr.pdt_type
+		    || derived->attr.pdt_template))
 	      return true;
 
 	  if (!gfc_check_new_interface (derived->ns->op[op],
