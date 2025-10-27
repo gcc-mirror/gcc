@@ -264,22 +264,6 @@ protected_set_expr_location_unshare (tree x, location_t loc)
   return x;
 }
 
-/* If ARG2 divides ARG1 with zero remainder, carries out the exact
-   division and returns the quotient.  Otherwise returns
-   NULL_TREE.  */
-
-tree
-div_if_zero_remainder (const_tree arg1, const_tree arg2)
-{
-  widest_int quo;
-
-  if (wi::multiple_of_p (wi::to_widest (arg1), wi::to_widest (arg2),
-			 SIGNED, &quo))
-    return wide_int_to_tree (TREE_TYPE (arg1), quo);
-
-  return NULL_TREE;
-}
-
 /* This is nonzero if we should defer warnings about undefined
    overflow.  This facility exists because these warnings are a
    special case.  The code to estimate loop iterations does not want
