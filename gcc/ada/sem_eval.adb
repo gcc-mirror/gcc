@@ -5151,8 +5151,10 @@ package body Sem_Eval is
 
    procedure Fold_Uint (N : Node_Id; Val : Uint; Static : Boolean) is
       Loc : constant Source_Ptr := Sloc (N);
-      Typ : Entity_Id  := Etype (N);
-      Ent : Entity_Id;
+
+      Actual_Typ : Entity_Id;
+      Ent        : Entity_Id;
+      Typ        : Entity_Id;
 
    begin
       if Raises_Constraint_Error (N) then
@@ -5160,17 +5162,21 @@ package body Sem_Eval is
          return;
       end if;
 
+      Typ := Etype (N);
+
+      if Is_Private_Type (Typ) then
+         Typ := Full_View (Typ);
+      end if;
+
       --  If we are folding a named number, retain the entity in the literal
       --  in the original tree.
 
       if Is_Entity_Name (N) and then Ekind (Entity (N)) = E_Named_Integer then
+         Actual_Typ := Universal_Integer;
          Ent := Entity (N);
       else
+         Actual_Typ := Typ;
          Ent := Empty;
-      end if;
-
-      if Is_Private_Type (Typ) then
-         Typ := Full_View (Typ);
       end if;
 
       --  For a result of type integer, substitute an N_Integer_Literal node
@@ -5202,8 +5208,8 @@ package body Sem_Eval is
 
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
-      Set_Etype (N, Typ);
-      Resolve (N);
+      Set_Etype (N, Actual_Typ);
+      Resolve (N, Typ);
       Set_Is_Static_Expression (N, Static);
    end Fold_Uint;
 
@@ -5214,7 +5220,9 @@ package body Sem_Eval is
    procedure Fold_Ureal (N : Node_Id; Val : Ureal; Static : Boolean) is
       Loc : constant Source_Ptr := Sloc (N);
       Typ : constant Entity_Id  := Etype (N);
-      Ent : Entity_Id;
+
+      Actual_Typ : Entity_Id;
+      Ent        : Entity_Id;
 
    begin
       if Raises_Constraint_Error (N) then
@@ -5226,8 +5234,10 @@ package body Sem_Eval is
       --  in the original tree.
 
       if Is_Entity_Name (N) and then Ekind (Entity (N)) = E_Named_Real then
+         Actual_Typ := Universal_Real;
          Ent := Entity (N);
       else
+         Actual_Typ := Typ;
          Ent := Empty;
       end if;
 
@@ -5251,8 +5261,8 @@ package body Sem_Eval is
 
       Analyze (N);
       Set_Is_Static_Expression (N, Static);
-      Set_Etype (N, Typ);
-      Resolve (N);
+      Set_Etype (N, Actual_Typ);
+      Resolve (N, Typ);
       Set_Analyzed (N);
       Set_Is_Static_Expression (N, Static);
    end Fold_Ureal;
