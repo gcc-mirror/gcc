@@ -12236,6 +12236,8 @@ gfc_resolve_omp_context_selector (gfc_omp_set_selector *oss,
 	      }
 	  }
 
+	if (os->code == OMP_TRAIT_INVALID)
+	  break;
 	enum omp_tp_type property_kind = omp_ts_map[os->code].tp_type;
 	gfc_omp_trait_property *otp = os->properties;
 
