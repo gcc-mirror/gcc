@@ -1,3 +1,9 @@
+2025-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* jit-recording.cc (recording::array_type::make_debug_string,
+	recording::array_type::write_reproducer): Use PRIu64 format
+	specifier for uint64_t.
+
 2025-10-22  Antoni Boucher  <bouanto@zoho.com>
 
 	* docs/topics/types.rst: Document new types.

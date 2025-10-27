@@ -1,3 +1,36 @@
+2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122270
+	* config/riscv/riscv-vector-builtins-bases.cc (vset::fold): Use the
+	unshare_expr for the statement that will be added seperately rather
+	the one which will be used for the replacement.
+
+2025-10-26  James K. Lowden  <jklowden@cobolworx.com>
+
+	* doc/install.texi: Add libxml2 dependency for COBOL
+	library. Clarify 128-bit numeric dependency.
+
+2025-10-26  Gerald Pfeifer  <gerald@pfeifer.com>
+
+	* poly-int.h: Change struct poly_int to class poly_int.
+
+2025-10-26  LIU Hao  <lh_mouse@126.com>
+
+	PR target/119079
+	* config/i386/i386.md: Use `movsxd` to perform SI-to-DI extension in Intel
+	syntax.
+
+2025-10-26  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/riscv.cc (riscv_legitimize_move): Append extend.
+
+2025-10-26  Osama Abdelkader  <osama.abdelkader@gmail.com>
+
+	* wide-int.h: Fix typo "accomodate" to "accommodate" in comment.
+	* value-range-storage.h: Likewise.
+	* tree-vectorizer.h (dr_set_safe_speculative_read_required):
+	Fix duplicate "the the" to "the" in comment.
+
 2025-10-25  Sam James  <sam@gentoo.org>
 
 	* doc/extend.texi (nocf_check): Fix syntax errors in example.

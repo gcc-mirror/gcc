@@ -1,3 +1,27 @@
+2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122270
+	* gcc.target/riscv/rvv/base/pr122270-1.c: New test.
+
+2025-10-26  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* gcc.target/riscv/rvv/autovec/pr111391-2.c: Add expected asm.
+
+2025-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/machine_attr3.ads, gnat.dg/machine_attr3.adb: New test.
+
+2025-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122290
+	* gfortran.dg/pdt_60.f03: New test.
+
+2025-10-26  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/121599
+	* gcc.target/aarch64/sve2/pr121599.c: Tolerate alterate insn
+	selection.
+
 2025-10-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114023

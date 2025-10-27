@@ -1,3 +1,9 @@
+2025-10-26  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/13370
+	* sem_prag.adb (Analyze_Pragma) <Pragma_Machine_Attribute>: Set the
+	Has_Delayed_Freeze flag if the argument is not a literal.
+
 2025-10-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/80033

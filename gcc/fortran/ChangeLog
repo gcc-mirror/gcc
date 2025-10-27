@@ -1,3 +1,21 @@
+2025-10-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122290
+	* decl.cc (variable_decl): Matching component initializer
+	expressions in PDT templates should be done with gfc_match_expr
+	to avoid reduction too early. If the expression type is unknown
+	copy the component typespec.
+	(gfc_get_pdt_instance): Change comment from a TODO to an
+	explanation. Insert parameter values in initializers. For
+	components that are not marked with PDT attributes, do the
+	full reduction for init expressions.
+	* primary.cc (gfc_match_actual_arglist): Convert PDT kind exprs
+	using the component initializer.
+	* resolve.cc (resolve_typebound_intrinsic_op): Preempt
+	gfc_check_new_interface for pdt_types as well as entities used
+	in submodules.
+	* simplify.cc (get_kind): Remove PDT kind conversion.
+
 2025-10-25  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/114023
