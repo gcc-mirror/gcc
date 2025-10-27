@@ -1481,7 +1481,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 					class loop *scalar_loop,
 					edge scalar_exit, edge e, edge *new_e,
 					bool flow_loops,
-					vec<basic_block> *updated_doms)
+					vec<basic_block> *updated_doms,
+					bool uncounted_p)
 {
   class loop *new_loop;
   basic_block *new_bbs, *bbs, *pbbs;
@@ -1652,7 +1653,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	 the continuation values into the epilogue header.
 	 Do not bother with exit PHIs for the early exits but
 	 their live virtual operand.  We'll fix up things below.  */
-      if (multiple_exits_p)
+      if (multiple_exits_p || uncounted_p)
 	{
 	  edge loop_e = single_succ_edge (new_preheader);
 	  new_preheader = split_edge (loop_e);
@@ -1707,7 +1708,8 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       if (flow_loops)
 	{
 	  edge loop_entry = single_succ_edge (new_preheader);
-	  bool peeled_iters = single_pred (loop->latch) != loop_exit->src;
+	  bool peeled_iters = (uncounted_p
+			       || single_pred (loop->latch) != loop_exit->src);
 
 	  /* Record the new SSA names in the cache so that we can skip
 	     materializing them again when we fill in the rest of the LC SSA
@@ -1737,7 +1739,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 
 	  /* Create the merge PHI nodes in new_preheader and populate the
 	     arguments for the exits.  */
-	  if (multiple_exits_p)
+	  if (multiple_exits_p || uncounted_p)
 	    {
 	      for (auto gsi_from = gsi_start_phis (loop->header),
 		   gsi_to = gsi_start_phis (new_loop->header);
@@ -1789,7 +1791,10 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		  /* And adjust the epilog entry value.  */
 		  adjust_phi_and_debug_stmts (to_phi, loop_entry, new_res);
 		}
+	    }
 
+	  if (multiple_exits_p)
+	    {
 	      /* After creating the merge PHIs handle the early exits those
 		 should use the values at the start of the loop.  */
 	      for (auto gsi_from = gsi_start_phis (loop->header),
@@ -1826,7 +1831,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  /* For the single exit case only create the missing LC PHI nodes
 	     for the continuation of the loop IVs that are not also already
 	     reductions and thus had LC PHI nodes on the exit already.  */
-	  else
+	  if (!multiple_exits_p && !uncounted_p)
 	    {
 	      for (auto gsi_from = gsi_start_phis (loop->header),
 		   gsi_to = gsi_start_phis (new_loop->header);
@@ -1869,7 +1874,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       /* Finally after wiring the new epilogue we need to update its main exit
 	 to the original function exit we recorded.  Other exits are already
 	 correct.  */
-      if (multiple_exits_p)
+      if (multiple_exits_p || uncounted_p)
 	{
 	  class loop *update_loop = new_loop;
 	  doms = get_all_dominated_blocks (CDI_DOMINATORS, loop->header);
@@ -3499,7 +3504,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       auto_vec<basic_block> doms;
       epilog
 	= slpeel_tree_duplicate_loop_to_edge_cfg (loop, e, epilog, epilog_e, e,
-						  &new_epilog_e, true, &doms);
+						  &new_epilog_e, true, &doms,
+						  uncounted_p);
 
       LOOP_VINFO_EPILOGUE_MAIN_EXIT (loop_vinfo) = new_epilog_e;
       gcc_assert (epilog);
