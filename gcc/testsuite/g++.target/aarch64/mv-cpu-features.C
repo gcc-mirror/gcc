@@ -41,6 +41,14 @@ int impl ()
 #define _IFUNC_ARG_HWCAP (1ULL << 62)
 #endif
 
+#ifndef HWCAP_ATOMICS
+#define HWCAP_ATOMICS (1 << 8)
+#endif
+
+#ifndef HWCAP2_RNG
+#define HWCAP2_RNG (1 << 16)
+#endif
+
 extern "C" void
 __init_cpu_features_resolver (unsigned long hwcap, const ifunc_arg_t *arg);
 
