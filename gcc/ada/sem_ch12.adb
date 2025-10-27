@@ -17639,6 +17639,8 @@ package body Sem_Ch12 is
                Set_Etype  (N2, E);
             end if;
 
+            --  If the entity is global, save its type in the generic node
+
             if Is_Global (E) then
                Set_Global_Type (N, N2);
 
@@ -17659,10 +17661,22 @@ package body Sem_Ch12 is
                Set_Etype (N, Empty);
             end if;
 
+            --  If default actuals have been added to a generic instantiation
+            --  and they are global, save them in the generic node.
+
             if Nkind (Parent (N)) in N_Generic_Instantiation
               and then N = Name (Parent (N))
             then
                Save_Global_Defaults (Parent (N), Parent (N2));
+            end if;
+
+            if Nkind (Parent (N)) = N_Selected_Component
+              and then N = Selector_Name (Parent (N))
+              and then Nkind (Parent (Parent (N))) in N_Generic_Instantiation
+              and then Parent (N) = Name (Parent (Parent (N)))
+            then
+               Save_Global_Defaults
+                 (Parent (Parent (N)), Parent (Parent (N2)));
             end if;
 
          elsif Nkind (Parent (N)) = N_Selected_Component
@@ -18488,12 +18502,13 @@ package body Sem_Ch12 is
          elsif Nkind (N) = N_Pragma then
             Save_References_In_Pragma (N);
 
+         --  Aspects
+
          elsif Nkind (N) =  N_Aspect_Specification then
             declare
                P : constant Node_Id := Parent (N);
-               Expr : Node_Id;
-            begin
 
+            begin
                if Permits_Aspect_Specifications (P) then
 
                   --  The capture of global references within aspects
@@ -18505,15 +18520,11 @@ package body Sem_Ch12 is
                   if Requires_Delayed_Save (Original_Node (P)) then
                      null;
 
-                     --  Otherwise save all global references within the
-                     --  aspects
+                  --  Otherwise save all global references within the
+                  --  expression of the aspect.
 
-                  else
-                     Expr := Expression (N);
-
-                     if Present (Expr) then
-                        Save_Global_References (Expr);
-                     end if;
+                  elsif Present (Expression (N)) then
+                     Save_Global_References (Expression (N));
                   end if;
                end if;
             end;
@@ -18523,10 +18534,11 @@ package body Sem_Ch12 is
          elsif Nkind (N) = N_Implicit_Label_Declaration then
             null;
 
+         --  Other nodes
+
          else
             Save_References_In_Descendants (N);
          end if;
-
       end Save_References;
 
       ---------------------
