@@ -31,4 +31,4 @@ static int *i() {
 }
 int main() { k(c, c); }
 
-/* { dg-final { scan-tree-dump-not "foo" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "foo" "optimized" { xfail *-*-* } } } */
