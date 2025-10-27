@@ -69,12 +69,22 @@ test04()
 {
   std::array<int, 0> a{};
   const std::tuple<> t1;
-  
+
   // Const assignment from array
-  t1 = a;
-  t1 = std::move(a);
-  
-  VERIFY( t1 == a );
+  std::tuple<> t2;
+  const std::tuple<>& r1 = (t1 = t2);
+  VERIFY( &r1 == &t1 );
+  const std::tuple<>& r2 = (t1 = std::move(t2));
+  VERIFY( &r2 == &t1 );
+
+  const std::tuple<>& r3 = (t1 = {});
+  VERIFY( &r3 == &t1 );
+
+  // Const assignment from array
+  const std::tuple<>& r4 = (t1 = a);
+  VERIFY( &r4 == &t1 );
+  const std::tuple<>& r5 = (t1 = std::move(a));
+  VERIFY( &r5 == &t1 );
 }
 
 void

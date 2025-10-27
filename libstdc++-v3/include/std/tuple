@@ -1996,6 +1996,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       void swap(tuple&) noexcept { /* no-op */ }
 
 #if __cpp_lib_ranges_zip // >= C++23
+      template<same_as<tuple> _Tuple = tuple>
+      constexpr const tuple&
+      operator=(const _Tuple&) const noexcept
+      { return *this; }
+
       constexpr void swap(const tuple&) const noexcept
       { /* no-op */ }
 #endif
