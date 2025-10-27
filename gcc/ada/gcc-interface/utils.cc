@@ -3226,6 +3226,9 @@ create_field_decl (tree name, tree type, tree record_type, tree size, tree pos,
 {
   tree field_decl = build_decl (input_location, FIELD_DECL, name, type);
 
+  /* The type must be frozen at this point.  */
+  gcc_assert (COMPLETE_TYPE_P (type));
+
   DECL_CONTEXT (field_decl) = record_type;
   TREE_READONLY (field_decl) = TYPE_READONLY (type);
 

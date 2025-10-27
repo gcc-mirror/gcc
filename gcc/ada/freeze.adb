@@ -5646,14 +5646,9 @@ package body Freeze is
 
             --  If the component is an access type with an allocator as default
             --  value, the designated type will be frozen by the corresponding
-            --  expression in init_proc. In order to place the freeze node for
-            --  the designated type before that for the current record type,
-            --  freeze it now.
-
-            --  Same process if the component is an array of access types,
-            --  initialized with an aggregate. If the designated type is
-            --  private, it cannot contain allocators, and it is premature
-            --  to freeze the type, so we check for this as well.
+            --  expression in the initialization procedure. In order to place
+            --  the freeze node for the designated type ahead of that for the
+            --  current record type, freeze the designated type right now.
 
             elsif Is_Access_Type (Etype (Comp))
               and then Present (Parent (Comp))
@@ -5665,17 +5660,16 @@ package body Freeze is
                declare
                   Alloc : constant Node_Id :=
                             Unqualify (Expression (Parent (Comp)));
-
+                  Desig_Typ : constant Entity_Id :=
+                                Designated_Type (Etype (Comp));
                begin
                   if Nkind (Alloc) = N_Allocator then
-
                      --  If component is pointer to a class-wide type, freeze
                      --  the specific type in the expression being allocated.
                      --  The expression may be a subtype indication, in which
                      --  case freeze the subtype mark.
 
-                     if Is_Class_Wide_Type (Designated_Type (Etype (Comp)))
-                     then
+                     if Is_Class_Wide_Type (Desig_Typ) then
                         if Is_Entity_Name (Expression (Alloc)) then
                            Freeze_And_Append
                              (Entity (Expression (Alloc)), N, Result);
@@ -5686,21 +5680,24 @@ package body Freeze is
                             (Entity (Subtype_Mark (Expression (Alloc))),
                              N, Result);
                         end if;
-                     elsif Is_Itype (Designated_Type (Etype (Comp))) then
+                     elsif Is_Itype (Desig_Typ) then
                         Check_Itype (Etype (Comp));
                      else
-                        Freeze_And_Append
-                          (Designated_Type (Etype (Comp)), N, Result);
+                        Freeze_And_Append (Desig_Typ, N, Result);
                      end if;
                   end if;
                end;
+
             elsif Is_Access_Type (Etype (Comp))
               and then Is_Itype (Designated_Type (Etype (Comp)))
             then
                Check_Itype (Etype (Comp));
 
-            --  Freeze the designated type when initializing a component with
-            --  an aggregate in case the aggregate contains allocators.
+            --  Likewise if the component is an array of access types that is
+            --  initialized with an aggregate, in case the aggregate contains
+            --  allocators. But if the designated type is private, it cannot
+            --  contain allocators, and it is premature to freeze the type,
+            --  so we check for this as well.
 
             --     type T is ...;
             --     type T_Ptr is access all T;
@@ -5712,13 +5709,15 @@ package body Freeze is
 
             elsif Is_Array_Type (Etype (Comp))
               and then Is_Access_Type (Component_Type (Etype (Comp)))
+              and then Present (Parent (Comp))
+              and then Nkind (Parent (Comp)) = N_Component_Declaration
+              and then Present (Expression (Parent (Comp)))
+              and then Nkind (Expression (Parent (Comp))) = N_Aggregate
             then
                declare
-                  Comp_Par  : constant Node_Id   := Parent (Comp);
                   Desig_Typ : constant Entity_Id :=
                                 Designated_Type
                                   (Component_Type (Etype (Comp)));
-
                begin
                   --  The only case when this sort of freezing is not done is
                   --  when the designated type is class-wide and the root type
@@ -5740,12 +5739,7 @@ package body Freeze is
                   then
                      null;
 
-                  elsif Is_Fully_Defined (Desig_Typ)
-                    and then Present (Comp_Par)
-                    and then Nkind (Comp_Par) = N_Component_Declaration
-                    and then Present (Expression (Comp_Par))
-                    and then Nkind (Expression (Comp_Par)) = N_Aggregate
-                  then
+                  elsif Is_Fully_Defined (Desig_Typ) then
                      Freeze_And_Append (Desig_Typ, N, Result);
                   end if;
                end;
