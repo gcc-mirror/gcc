@@ -2995,10 +2995,8 @@ spaceship_replacement (basic_block cond_bb, basic_block middle_bb,
 	      if (has_cast_debug_uses
 		  || (HONOR_NANS (TREE_TYPE (lhs1)) && !is_cast))
 		{
-		  tree temp3 = make_node (DEBUG_EXPR_DECL);
-		  DECL_ARTIFICIAL (temp3) = 1;
-		  TREE_TYPE (temp3) = TREE_TYPE (orig_use_lhs);
-		  SET_DECL_MODE (temp3, TYPE_MODE (type));
+		  tree temp3
+		    = build_debug_expr_decl (TREE_TYPE (orig_use_lhs));
 		  if (has_cast_debug_uses)
 		    t = fold_convert (TREE_TYPE (temp3), temp2);
 		  else
