@@ -734,7 +734,7 @@ xml_push_parse( cblc_field_t *input_field,
   context.push( input_field, input_offset, len, false);
 
 #if LIBXML_VERSION >= 21400
-  const xmlChar * version = xmlCtxtGetVersion( ctxt );
+  const xmlChar * version = xmlCtxtGetVersion( context );
 #else
   const xmlChar * version = xmlchar_of("requires version 2.14");
 #endif
