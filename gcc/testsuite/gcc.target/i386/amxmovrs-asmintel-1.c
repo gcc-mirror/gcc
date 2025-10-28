@@ -1,8 +1,8 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target masm_intel } */
 /* { dg-options "-O2 -mamx-movrs -masm=intel" } */
-/* { dg-final { scan-assembler-times "tileloaddrs\[ \\t]%tmm\[0-9\]" 1 } } */
-/* { dg-final { scan-assembler-times "tileloaddrst1\[ \\t]%tmm\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "tileloaddrs\[ \\t]tmm\[0-9\]" 1 } } */
+/* { dg-final { scan-assembler-times "tileloaddrst1\[ \\t]tmm\[0-9\]" 1 } } */
 #include <immintrin.h>
 
 extern const void* base;

@@ -36,8 +36,10 @@
 
 #if defined(__x86_64__)
 #define _tile_dpbf16ps_internal(dst,src1,src2)					\
-  __asm__ volatile\
-  ("{tdpbf16ps\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|tdpbf16ps\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)
+  __asm__ volatile								\
+  ("{tdpbf16ps\t%%tmm%c[_src2], %%tmm%c[_src1], %%tmm%c[_dst]			\
+    |tdpbf16ps\ttmm%c[_dst], tmm%c[_src1], tmm%c[_src2]}"			\
+    :: [_dst]"i"(dst), [_src1]"i"(src1), [_src2]"i"(src2))
 
 #define _tile_dpbf16ps(dst,src1,src2)					\
   _tile_dpbf16ps_internal (dst, src1, src2)

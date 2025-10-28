@@ -1,10 +1,10 @@
 /* { dg-do compile { target { ! ia32 } } } */
 /* { dg-require-effective-target masm_intel } */
 /* { dg-options "-O2 -mamx-fp16 -masm=intel" } */
-/* { dg-final { scan-assembler "tdpbf8ps\[ \\t]+\[^\n\]*%tmm1+\[^\n\]*%tmm2+\[^\n\]*%tmm3"  } } */
-/* { dg-final { scan-assembler "tdpbhf8ps\[ \\t]+\[^\n\]*%tmm1+\[^\n\]*%tmm2+\[^\n\]*%tmm3"  } } */
-/* { dg-final { scan-assembler "tdphbf8ps\[ \\t]+\[^\n\]*%tmm1+\[^\n\]*%tmm2+\[^\n\]*%tmm3"  } } */
-/* { dg-final { scan-assembler "tdphf8ps\[ \\t]+\[^\n\]*%tmm1+\[^\n\]*%tmm2+\[^\n\]*%tmm3"  } } */
+/* { dg-final { scan-assembler "tdpbf8ps\[ \\t]+\[^\n%\]*tmm1+\[^\n%\]*tmm2+\[^\n%\]*tmm3"  } } */
+/* { dg-final { scan-assembler "tdpbhf8ps\[ \\t]+\[^\n%\]*tmm1+\[^\n%\]*tmm2+\[^\n%\]*tmm3"  } } */
+/* { dg-final { scan-assembler "tdphbf8ps\[ \\t]+\[^\n%\]*tmm1+\[^\n%\]*tmm2+\[^\n%\]*tmm3"  } } */
+/* { dg-final { scan-assembler "tdphf8ps\[ \\t]+\[^\n%\]*tmm1+\[^\n%\]*tmm2+\[^\n%\]*tmm3"  } } */
 
 #include <immintrin.h>
 
