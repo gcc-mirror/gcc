@@ -426,16 +426,16 @@ Driver Alias(v)
 ;; as -fhelp; the following four entries are for compatibility with
 ;; any direct uses of those (undocumented) -f forms
 fhelp
-Common Driver RejectNegative Alias(-help)
+Common Driver RejectNegative Alias(-help) Undocumented
 
 fhelp=
-Common Driver RejectNegative Joined Alias(-help=)
+Common Driver RejectNegative Joined Alias(-help=) Undocumented
 
 ftarget-help
-Common Driver RejectNegative Alias(-target-help)
+Common Driver RejectNegative Alias(-target-help) Undocumented
 
 fversion
-Common Driver RejectNegative Alias(-version)
+Common Driver RejectNegative Alias(-version) Undocumented
 
 -sysroot
 Driver Separate Alias(-sysroot=)
@@ -1200,10 +1200,9 @@ fauto-profile-inlining
 Common Var(flag_auto_profile_inlining) Init(1) Optimization
 Perform inlining using auto-profile.
 
-; -fcheck-bounds causes gcc to generate array bounds checks.
-; For C, C++ and ObjC: defaults off.
-; For Java: defaults to on.
-; For Fortran: defaults to off.
+; -fbounds-check causes gcc to generate array bounds checks.
+; It's presently used only for fortran and d languages, and is documented
+; in the manuals for those languages.
 fbounds-check
 Common Var(flag_bounds_check)
 Generate code to check bounds before indexing arrays.
@@ -1861,7 +1860,7 @@ Common Enum(dwarf_gnat_encodings) Joined RejectNegative Undocumented Var(gnat_en
 
 ; This option is not documented yet as its semantics will change.
 fgraphite
-Common Var(flag_graphite) Optimization
+Common Var(flag_graphite) Optimization Undocumented
 Enable in and out of Graphite representation.
 
 fgraphite-identity
@@ -2889,8 +2888,9 @@ fsel-sched-pipelining-outer-loops
 Common Var(flag_sel_sched_pipelining_outer_loops) Init(0) Optimization
 Perform software pipelining of outer loops during selective scheduling.
 
+; This flag has never been documented or done anything useful AFAICT.
 fsel-sched-reschedule-pipelined
-Common Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization
+Common Var(flag_sel_sched_reschedule_pipelined) Init(0) Optimization Undocumented
 Reschedule pipelined regions without pipelining.
 
 fsemantic-interposition
@@ -3029,6 +3029,7 @@ Common Var(flag_stack_clash_protection) Optimization
 Insert code to probe each page of stack space as it is allocated to protect
 from stack-clash style attacks.
 
+; The real option is fno-stack-limit.
 fstack-limit
 Common Var(common_deferred_options) Defer
 
