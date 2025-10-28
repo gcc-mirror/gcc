@@ -41,7 +41,6 @@
 
 #include <bitset>
 #include <locale>
-#include <sstream>
 #include <stack>
 #include <stdexcept>
 #include <string>

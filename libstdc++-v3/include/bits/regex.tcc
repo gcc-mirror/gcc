@@ -331,20 +331,53 @@ namespace __detail
 	    && __c == __fctyp.widen('_'));
     }
 
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++17-extensions" // if constexpr
   template<typename _Ch_type>
     int
     regex_traits<_Ch_type>::
     value(_Ch_type __ch, int __radix) const
     {
-      std::basic_istringstream<char_type> __is(string_type(1, __ch));
-      long __v;
-      if (__radix == 8)
-	__is >> std::oct;
-      else if (__radix == 16)
-	__is >> std::hex;
-      __is >> __v;
-      return __is.fail() ? -1 : __v;
+      if constexpr (sizeof(_Ch_type) > 1)
+	{
+	  const auto& __ctyp = std::use_facet<ctype<_Ch_type>>(_M_locale);
+	  const char __c = __ctyp.narrow(__ch, '\0');
+	  return regex_traits<char>{}.value(__c, __radix);
+	}
+      else
+	{
+	  const char __c = static_cast<char>(__ch);
+	  const char __max_digit = __radix == 8 ? '7' : '9';
+	  if ('0' <= __ch && __ch <= __max_digit)
+	    return __ch - '0';
+	  if (__radix < 16)
+	    return -1;
+	  switch (__ch)
+	  {
+	    case 'a':
+	    case 'A':
+	      return 10;
+	    case 'b':
+	    case 'B':
+	      return 11;
+	    case 'c':
+	    case 'C':
+	      return 12;
+	    case 'd':
+	    case 'D':
+	      return 13;
+	    case 'e':
+	    case 'E':
+	      return 14;
+	    case 'f':
+	    case 'F':
+	      return 15;
+	    default:
+	      return -1;
+	    }
+	}
     }
+#pragma GCC diagnostic pop
 
   template<typename _Bi_iter, typename _Alloc>
   template<typename _Out_iter>
