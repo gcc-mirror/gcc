@@ -7101,13 +7101,13 @@ riscv_get_vls_cc_attr (const_tree args, bool check_only = false)
 	abi_vlen = TREE_INT_CST_LOW (vlen_arg);
     }
 
-  if (!riscv_valid_abi_vlen_vls_cc_p (abi_vlen))
+  if (!riscv_valid_abi_vlen_vls_cc_p (abi_vlen) && !check_only)
     {
       error_at (input_location,
-		"unsupported ABI_VLEN value %d for %qs attribute;"
-		"ABI_VLEN must be in the range [32, 16384] and must be "
-		"a power of 2.",
-		"riscv_vls_cc", abi_vlen);
+		"unsupported %<ABI_VLEN%> value %d for %qs attribute;"
+		"%<ABI_VLEN must%> be in the range [32, 16384] and must be "
+		"a power of 2",
+		abi_vlen, "riscv_vls_cc");
       return RISCV_CC_UNKNOWN;
     }
 
@@ -7258,7 +7258,7 @@ riscv_handle_type_attribute (tree *node ATTRIBUTE_UNUSED, tree name, tree args,
 }
 
 static tree
-riscv_handle_rvv_vls_cc_attribute (tree *node, tree name, tree args,
+riscv_handle_rvv_vls_cc_attribute (tree *, tree name, tree args,
 				   ATTRIBUTE_UNUSED int flags,
 				   bool *no_add_attrs)
 {
