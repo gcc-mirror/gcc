@@ -4,10 +4,10 @@
 /* { dg-final { scan-assembler "ldtilecfg\[ \\t]"  } } */
 /* { dg-final { scan-assembler "sttilecfg\[ \\t]"  } } */
 /* { dg-final { scan-assembler "tilerelease"  } } */
-/* { dg-final { scan-assembler "tileloadd\[ \\t]%tmm\[0-9\]"  } } */
-/* { dg-final { scan-assembler "tileloaddt1\[ \\t]%tmm\[0-9\]"  } } */
-/* { dg-final { scan-assembler "tilestored\[ \\t]\[^\n\]+\[^\n\]*%tmm\[0-9\]"  } } */
-/* { dg-final { scan-assembler "tilezero\[ \\t]+\[^\n\]*%tmm\[0-9\]"  } } */
+/* { dg-final { scan-assembler "tileloadd\[ \\t]tmm\[0-9\]"  } } */
+/* { dg-final { scan-assembler "tileloaddt1\[ \\t]tmm\[0-9\]"  } } */
+/* { dg-final { scan-assembler "tilestored\[ \\t]\[^\n\]+\[^\n\]*tmm\[0-9\]"  } } */
+/* { dg-final { scan-assembler "tilezero\[ \\t]+\[^\n%\]*tmm\[0-9\]"  } } */
 #include <immintrin.h>
 
 extern int a[];

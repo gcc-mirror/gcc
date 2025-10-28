@@ -39,8 +39,9 @@
 ({									\
   __m512 dst;								\
   __asm__ volatile							\
-  ("{tcvtrowd2ps\t%1, %%tmm"#src", %0|tcvtrowd2ps\t%0, %%tmm"#src", %1}"	\
-   : "=v" (dst) : "r" ((unsigned) (A)));				\
+  ("{tcvtrowd2ps\t%1, %%tmm%c[_src], %0					\
+    |tcvtrowd2ps\t%0, tmm%c[_src], %1}"					\
+   : "=v" (dst) : "r" ((unsigned) (A)), [_src]"i"(src));		\
   dst;									\
 })
 
@@ -48,8 +49,9 @@
 ({									\
   __m512 dst;								\
   __asm__ volatile							\
-  ("{tcvtrowd2ps\t$"#imm", %%tmm"#src", %0|tcvtrowd2ps\t%0, %%tmm"#src", "#imm"}"	\
-   : "=v" (dst) :);							\
+  ("{tcvtrowd2ps\t%[_imm], %%tmm%c[_src], %0				\
+    |tcvtrowd2ps\t%0, tmm%c[_src], %[_imm]}"				\
+   : "=v" (dst) : [_src]"i"(src), [_imm]"i"(imm));			\
   dst;									\
 })
 
@@ -57,8 +59,9 @@
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2bf16h\t%1, %%tmm"#src", %0|tcvtrowps2bf16h\t%0, %%tmm"#src", %1}"	\
-   : "=v" (dst) : "r" ((unsigned) (A)));				\
+  ("{tcvtrowps2bf16h\t%1, %%tmm%c[_src], %0				\
+    |tcvtrowps2bf16h\t%0, tmm%c[_src], %1}"				\
+    : "=v" (dst) : "r" ((unsigned) (A)), [_src]"i"(src));		\
   dst;									\
 })
 
@@ -66,8 +69,9 @@
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2bf16h\t$"#imm", %%tmm"#src", %0|tcvtrowps2bf16h\t%0, %%tmm"#src", "#imm"}"	\
-   : "=v" (dst) :);							\
+  ("{tcvtrowps2bf16h\t%[_imm], %%tmm%c[_src], %0			\
+    |tcvtrowps2bf16h\t%0, tmm%c[_src], %[_imm]}"			\
+    : "=v" (dst) : [_src]"i"(src), [_imm]"i"(imm));			\
   dst;									\
 })
 
@@ -75,8 +79,9 @@
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2bf16l\t%1, %%tmm"#src", %0|tcvtrowps2bf16l\t%0, %%tmm"#src", %1}"	\
-   : "=v" (dst) : "r" ((unsigned) (A)));				\
+  ("{tcvtrowps2bf16l\t%1, %%tmm%c[_src], %0				\
+    |tcvtrowps2bf16l\t%0, tmm%c[_src], %1}"				\
+    : "=v" (dst) : "r" ((unsigned) (A)), [_src]"i"(src));		\
   dst;									\
 })
 
@@ -84,8 +89,9 @@
 ({									\
   __m512bh dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2bf16l\t$"#imm", %%tmm"#src", %0|tcvtrowps2bf16l\t%0, %%tmm"#src", "#imm"}"	\
-   : "=v" (dst) :);							\
+  ("{tcvtrowps2bf16l\t%[_imm], %%tmm%c[_src], %0			\
+    |tcvtrowps2bf16l\t%0, tmm%c[_src], "#imm"}"				\
+    : "=v" (dst) : [_src]"i"(src), [_imm]"i"(imm));			\
   dst;									\
 })
 
@@ -93,8 +99,8 @@
 ({									\
   __m512h dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2phh\t%1, %%tmm"#src", %0|tcvtrowps2phh\t%0, %%tmm"#src", %1}"	\
-   : "=v" (dst) : "r" ((unsigned) (A)));				\
+  ("{tcvtrowps2phh\t%1, %%tmm%c[_src], %0|tcvtrowps2phh\t%0, tmm%c[_src], %1}"	\
+    : "=v" (dst) : "r" ((unsigned) (A)), [_src]"i"(src));		\
   dst;									\
 })
 
@@ -102,8 +108,9 @@
 ({									\
   __m512h dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2phh\t$"#imm", %%tmm"#src", %0|tcvtrowps2phh\t%0, %%tmm"#src", "#imm"}"	\
-   : "=v" (dst) :);							\
+  ("{tcvtrowps2phh\t%[_imm], %%tmm%c[_src], %0				\
+    |tcvtrowps2phh\t%0, tmm%c[_src], "#imm"}"				\
+    : "=v" (dst) : [_src]"i"(src), [_imm]"i"(imm));		      	\
   dst;									\
 })
 
@@ -111,8 +118,8 @@
 ({									\
   __m512h dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2phl\t%1, %%tmm"#src", %0|tcvtrowps2phl\t%0, %%tmm"#src", %1}"	\
-   : "=v" (dst) : "r" ((unsigned) (A)));				\
+  ("{tcvtrowps2phl\t%1, %%tmm%c[_src], %0|tcvtrowps2phl\t%0, tmm%c[_src], %1}"	\
+    : "=v" (dst) : "r" ((unsigned) (A)), [_src]"i"(src));		\
   dst;									\
 })
 
@@ -120,8 +127,9 @@
 ({									\
   __m512h dst;								\
   __asm__ volatile							\
-  ("{tcvtrowps2phl\t$"#imm", %%tmm"#src", %0|tcvtrowps2phl\t%0, %%tmm"#src", "#imm"}"	\
-   : "=v" (dst) :);							\
+  ("{tcvtrowps2phl\t%[_imm], %%tmm%c[_src], %0				\
+    |tcvtrowps2phl\t%0, tmm%c[_src], "#imm"}"				\
+    : "=v" (dst) : [_src]"i"(src), [_imm]"i"(imm));			\
   dst;									\
 })
 
@@ -129,8 +137,8 @@
 ({									\
   __m512 dst;								\
   __asm__ volatile							\
-  ("{tilemovrow\t%1, %%tmm"#src", %0|tilemovrow\t%0, %%tmm"#src", %1}"	\
-   : "=v" (dst) : "r" ((unsigned) (A)));				\
+  ("{tilemovrow\t%1, %%tmm%c[_src], %0|tilemovrow\t%0, tmm%c[_src], %1}"  \
+    : "=v" (dst) : "r" ((unsigned) (A)), [_src]"i"(src));		\
   dst;									\
 })
 
@@ -138,8 +146,9 @@
 ({									\
   __m512 dst;								\
   __asm__ volatile							\
-  ("{tilemovrow\t$"#imm", %%tmm"#src", %0|tilemovrow\t%0, %%tmm"#src", "#imm"}"	\
-   : "=v" (dst) :);							\
+  ("{tilemovrow\t%[_imm], %%tmm%c[_src], %0				\
+    |tilemovrow\t%0, tmm%c[_src], "#imm"}"				\
+    : "=v" (dst) : [_src]"i"(src), [_imm]"i"(imm));			\
   dst;									\
 })
 

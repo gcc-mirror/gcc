@@ -36,17 +36,17 @@
 #define __DISABLE_AMX_MOVRS__
 #endif /* __AMX_MOVRS__ */
 
-#define _tile_loaddrs_internal(tdst, base, stride)	  \
-__asm__ volatile					  \
-  ("{tileloaddrs\t(%0,%1,1), %%tmm"#tdst		  \
-     "|tileloaddrs\t%%tmm"#tdst", [%0+%1*1]}"		  \
-   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
+#define _tile_loaddrs_internal(tdst, base, stride)			\
+__asm__ volatile							\
+  ("{tileloaddrs\t(%0,%1,1), %%tmm%c[_tdst]				\
+    |tileloaddrs\ttmm%c[_tdst], [%0+%1*1]}"				\
+    :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)), [_tdst]"i"(tdst))
 
-#define _tile_loaddrst1_internal(tdst, base, stride)	  \
-__asm__ volatile					  \
-  ("{tileloaddrst1\t(%0,%1,1), %%tmm"#tdst		  \
-     "|tileloaddrst1\t%%tmm"#tdst", [%0+%1*1]}"		  \
-   :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
+#define _tile_loaddrst1_internal(tdst, base, stride)			\
+__asm__ volatile							\
+  ("{tileloaddrst1\t(%0,%1,1), %%tmm%c[_tdst]				\
+    |tileloaddrst1\ttmm%c[_tdst], [%0+%1*1]}"				\
+    :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)), [_tdst]"i"(tdst))
 
 #define _tile_loaddrs(tdst, base, stride)		  \
   _tile_loaddrs_internal(tdst, base, stride)
@@ -68,25 +68,25 @@ __asm__ volatile					  \
 #define _tile_2rpntlvwz0rs_internal(tdst, base, stride)	  \
   __asm__ volatile					  \
   ("{t2rpntlvwz0rs\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz0rs\t%%tmm"#tdst", [%0+%1*1]}"	  \
+     "|t2rpntlvwz0rs\ttmm"#tdst", [%0+%1*1]}"	  \
    :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz0rst1_internal(tdst, base, stride) \
   __asm__ volatile					  \
   ("{t2rpntlvwz0rst1\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz0rst1\t%%tmm"#tdst", [%0+%1*1]}"	  \
+     "|t2rpntlvwz0rst1\ttmm"#tdst", [%0+%1*1]}"	  \
    :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz1rs_internal(tdst, base, stride)	  \
   __asm__ volatile					  \
   ("{t2rpntlvwz1rs\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz1rs\t%%tmm"#tdst", [%0+%1*1]}"		  \
+     "|t2rpntlvwz1rs\ttmm"#tdst", [%0+%1*1]}"		  \
    :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz1rst1_internal(tdst, base, stride) \
   __asm__ volatile					  \
   ("{t2rpntlvwz1rst1\t(%0,%1,1), %%tmm"#tdst		  \
-     "|t2rpntlvwz1rst1\t%%tmm"#tdst", [%0+%1*1]}"	  \
+     "|t2rpntlvwz1rst1\ttmm"#tdst", [%0+%1*1]}"	  \
    :: "r" ((const void*) (base)), "r" ((__PTRDIFF_TYPE__) (stride)))
 
 #define _tile_2rpntlvwz0rs(tdst, base, stride)		  \
