@@ -1,3 +1,24 @@
+2025-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/29958
+	* sem_ch7.adb (Declare_Inherited_Private_Subprograms): Deal with
+	formal types specially.
+
+2025-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/25988
+	* sem_ch12.adb (Save_Global_References.Reset_Entity): Also call
+	Save_Global_Defaults for instances with an expanded name.
+	(Save_Global_References.Save_References): Minor code cleanup.
+
+2025-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/15800
+	* freeze.adb (Freeze_Entity.Freeze_Record_Type): Small cleanup
+	in code and comments.
+	* gcc-interface/utils.cc (create_field_decl): Assert that the type
+	of the field is frozen at this point.
+
 2025-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/13370

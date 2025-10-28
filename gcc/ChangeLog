@@ -1,3 +1,130 @@
+2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* expr.cc (expr_has_boolean_range): New function.
+	(expand_expr_real_2): Use expr_has_boolean_range instead of
+	gimple_zero_one_valued_p.
+	* tree-ssanames.cc (ssa_name_has_boolean_range): Update to take
+	a gimple STMT.
+	* tree-ssanames.h (ssa_name_has_boolean_range): Update for the new
+	argument and default to nullptr.
+
+2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/105749
+	PR tree-optimization/80635
+	* match.pd (`VCE<bool>(zero_one_valued_p) ==\!= 0`): New pattern.
+
+2025-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122408
+	* tree-vect-slp-patterns.cc (vect_validate_multiplication): Cleanup and
+	document interface.
+	(complex_mul_pattern::matches, complex_fms_pattern::matches): Update to
+	new interface.
+
+2025-10-27  Andrew Stubbs  <ams@baylibre.com>
+
+	PR tree-optimization/104116
+	* config/gcn/gcn-valu.md (abs<mode>2): New define_expand for
+	integer vector modes.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/122325
+	* common.opt (flag_default_complex_method): Remove.
+	* opts.cc (init_options_struct): Default to fortran rules
+	for complex evaluations.
+	(finish_options): Remove (re-)instantiating of the frontend
+	default of the complex evaluation method.
+
+2025-10-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-protos.h (riscv_init_cumulative_args): Add
+	bool parameter.
+	* config/riscv/riscv.h (enum riscv_cc): Add RISCV_CC_VLS_V_32,
+	RISCV_CC_VLS_V_64, RISCV_CC_VLS_V_128, RISCV_CC_VLS_V_256,
+	RISCV_CC_VLS_V_512, RISCV_CC_VLS_V_1024, RISCV_CC_VLS_V_2048,
+	RISCV_CC_VLS_V_4096, RISCV_CC_VLS_V_8192, RISCV_CC_VLS_V_16384.
+	(CUMULATIVE_ARGS): Add abi_vlen field.
+	* config/riscv/riscv.cc (riscv_handle_rvv_vls_cc_attribute): New
+	function.
+	(riscv_gnu_attributes): Add vls_cc attribute entry.
+	(riscv_attributes): Add riscv_vls_cc attribute entry.
+	(riscv_flatten_aggregate_field): Add vls_p and abi_vlen parameters
+	to handle VLS vector types.
+	(riscv_flatten_aggregate_argument): Update call to
+	riscv_flatten_aggregate_field.
+	(riscv_get_vector_arg): Add vls_p parameter for VLS handling.
+	(riscv_vls_cc_p): New function.
+	(riscv_get_cc_abi_vlen): New function.
+	(riscv_valid_abi_vlen_vls_cc_p): New function.
+	(riscv_get_riscv_cc_by_abi_vlen): New function.
+	(riscv_get_vls_container_type): New function.
+	(riscv_pass_vls_in_vr): New function.
+	(riscv_pass_aggregate_in_vr): New function.
+	(riscv_get_arg_info): Add VLS calling convention handling.
+	(riscv_function_arg_advance): Update for VLS calling convention.
+	(riscv_return_in_memory): Add fntype parameter and initialize
+	cumulative args properly.
+	(riscv_v_abi): Add abi parameter.
+	(riscv_get_vls_cc_attr): New function.
+	(riscv_vls_cc_function_abi): New function.
+	(riscv_fntype_abi): Add VLS calling convention detection.
+	(riscv_asm_output_variant_cc): Update for VLS calling convention.
+
+2025-10-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/64345
+	PR tree-optimization/80770
+	* config/riscv/bitmanip.md (<optab>_not_const<mode>): Turn into a
+	peephole2 to avoid matching prior to combine.
+	* ifcvt.cc (noce_try_sign_bit_splat): When costs are equal steer
+	towards an AND based sequence.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122419
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Only
+	skip noop conversions.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122435
+	* tree-ssa-sccvn.cc (eliminate_dom_walker::eliminate_stmt):
+	Also match noop conversions when detecting redundant stores.
+
+2025-10-27  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_rtx_costs):
+	Ignore the cost impact of SIGN_EXTEND/ZERO_EXTEND.
+
+2025-10-27  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.md (both_non_zero): New combiner.
+	(both_non_zero_subreg): Ditto.
+
+2025-10-27  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.md
+	(sign_extend_ashift<GPR:mode><SHORT:mode>): New combiner.
+
+2025-10-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* function-abi.h (NUM_ABI_IDS): Increase from 8 to 12.
+
+2025-10-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (one_cmplsi2):
+	Rearrange back as an expand pattern.
+
+2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/107389
+	PR tree-optimization/122086
+	* tree-ssa-forwprop.cc (forwprop_may_propagate_copy): New function.
+	(pass_forwprop::execute):  Use forwprop_may_propagate_copy
+	instead of may_propagate_copy.
+
 2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR target/122270

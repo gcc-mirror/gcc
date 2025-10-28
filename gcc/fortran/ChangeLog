@@ -1,3 +1,19 @@
+2025-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/922290
+	PR fortran/95541
+	* resolve.cc (resolve_typebound_intrinsic_op): Add pdt_template
+	to the list of preemted specifics.
+	* trans-stmt.cc (trans_associate_var): PDT array and string
+	components are separately allocated for each element of a PDT
+	array, so copy in and copy out the selector expression.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/122325
+	* options.cc (gfc_init_options_struct): Set flag_complex_method
+	to fortran rules.
+
 2025-10-26  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/122290

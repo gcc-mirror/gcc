@@ -1,3 +1,842 @@
+2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122422
+	* g++.dg/modules/merge-20.h: New test.
+	* g++.dg/modules/merge-20_a.H: New test.
+	* g++.dg/modules/merge-20_b.C: New test.
+
+2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122310
+	* g++.dg/modules/lambda-12.h: New test.
+	* g++.dg/modules/lambda-12_a.H: New test.
+	* g++.dg/modules/lambda-12_b.C: New test.
+
+2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/105749
+	PR tree-optimization/80635
+	* g++.dg/warn/pr80635-3.C: New test.
+	* g++.dg/warn/pr80635-4.C: New test.
+
+2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c/122427
+	* g++.target/i386/cf_check-1.C: New test.
+	* g++.target/i386/cf_check-2.C: Likewise.
+	* g++.target/i386/cf_check-3.C: Likewise.
+	* g++.target/i386/cf_check-4.C: Likewise.
+	* gcc.target/i386/cf_check-7.c: Likewise.
+	* gcc.target/i386/cf_check-8.c: Likewise.
+	* gcc.target/i386/cf_check-9.c: Likewise.
+	* gcc.target/i386/cf_check-10.c: Likewise.
+	* gcc.target/i386/cf_check-11.c: Likewise.
+	* gcc.target/i386/no-callee-saved-12.c: Remove dg-error.
+	* gcc.target/i386/preserve-none-17.c: Likewise.
+
+2025-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/private3-child.ads: New test.
+	* gnat.dg/specs/private3.ads: New helper.
+
+2025-10-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst3.ads: New test.
+	* gnat.dg/specs/generic_inst3_pkg1.ads: New helper.
+	* gnat.dg/specs/generic_inst3_pkg1.adb: New helper.
+	* gnat.dg/specs/generic_inst3_pkg2.ads: Likewise.
+	* gnat.dg/specs/generic_inst3_pkg3.ads: Likewise.
+	* gnat.dg/specs/generic_inst3_pkg3-child.ads: Likewise.
+
+2025-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122408
+	* gfortran.target/aarch64/pr122408_1.f90: New test.
+	* gfortran.target/aarch64/pr122408_2.f90: New test.
+
+2025-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122394
+	* g++.dg/opt/pr122394.C: New test.
+
+2025-10-27  Olivier Hainque  <hainque@adacore.com>
+
+	* g++.target/riscv/rvv/xtheadvector/pr116593.C: Skip if !hostedlib.
+
+2025-10-27  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/95541
+	* gfortran.dg/pdt_61.f03: New test.
+
+2025-10-27  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/111003
+	* gcc.dg/tree-ssa/pr111003.c: XFAIL.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/122325
+	* gcc.dg/complex-8.c: New testcase.
+	* gcc.dg/complex-9.c: Likewise.
+
+2025-10-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_128bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_256bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_32bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_64bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_all_mixed.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_equivalent_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_four_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_mixed_args.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_mixed_int_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_mixed_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_multiple_unions.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_multiple_vectors.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_simple_union.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_single_register.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_two_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-32/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_128bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_256bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_32bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_64bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_all_mixed.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_equivalent_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_four_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_mixed_args.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_mixed_int_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_mixed_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_multiple_unions.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_multiple_vectors.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_simple_union.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_single_register.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_two_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-32-xlen-64/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_128bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_256bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_32bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_64bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_all_mixed.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_equivalent_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_four_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_mixed_args.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_mixed_int_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_mixed_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_multiple_unions.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_multiple_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_simple_union.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_single_register.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_two_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-32/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_128bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_256bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_32bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_64bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_all_mixed.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_equivalent_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_four_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_mixed_args.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_mixed_int_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_mixed_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_multiple_unions.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_multiple_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_simple_union.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_single_register.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_two_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-512-xlen-64/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_128bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_256bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_32bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_64bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_all_mixed.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_equivalent_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_four_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_fp_vs_int_vectors.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_mixed_args.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_mixed_int_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_mixed_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_multiple_unions.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_multiple_vectors.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_simple_union.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_single_register.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_two_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-32/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_128bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_256bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_32bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_64bit_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_all_mixed.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_equivalent_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_four_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_fp_vs_int_vectors.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_mixed_args.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_mixed_int_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_mixed_struct.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_multiple_unions.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_multiple_vectors.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_simple_union.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_single_register.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_two_registers.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-64-xlen-64/test_vector_array_struct.c:
+	New test.
+
+2025-10-27  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_128bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_256bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_32bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_64bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_all_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_equivalent_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_four_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_mixed_args.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_mixed_int_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_mixed_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_multiple_unions.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_multiple_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_simple_union.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_single_register.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_two_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-32/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_128bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_256bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_32bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_64bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_all_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_equivalent_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_four_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_mixed_args.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_mixed_int_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_mixed_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_multiple_unions.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_multiple_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_simple_union.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_single_register.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_two_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-128-xlen-64/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_128bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_256bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_32bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_64bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_all_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_equivalent_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_four_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_mixed_args.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_mixed_int_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_mixed_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_multiple_unions.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_multiple_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_simple_union.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_single_register.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_two_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-32/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_128bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_256bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_32bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_64bit_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_all_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_call_mixed_function.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_different_vector_elements.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_different_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_different_width_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_equivalent_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_four_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_fp_vs_int_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_large_vector_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_mixed_args.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_mixed_float_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_mixed_int_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_mixed_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_mixed_struct_advanced.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_mixed_vector_types_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_multiple_unions.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_multiple_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_multiple_with_small_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_register_exhaustion.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_register_exhaustion_mixed.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_register_pressure_scenarios.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_same_vectors_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_simple_union.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_single_register.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_single_vector_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_struct_different_abi_vlen.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_struct_eight_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_struct_five_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_struct_four_256bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_struct_nine_128bit_vectors.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_two_registers.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/abi-vlen-256-xlen-64/test_vector_array_struct.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_128bit_vector.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_256bit_vector.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_32bit_vector.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_64bit_vector.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_all_mixed.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_call_mixed_function.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_different_vector_elements.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_different_vectors_struct.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_different_width_vectors_struct.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_equivalent_struct.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_four_registers.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_fp_vs_int_vectors.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_large_vector_small_abi_vlen.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_mixed_args.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_mixed_float_vector.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_mixed_int_vector.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_mixed_struct.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_mixed_struct_advanced.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_mixed_vector_types_struct.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_multiple_unions.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_multiple_vectors.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_multiple_with_small_abi_vlen.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_register_exhaustion.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_register_exhaustion_mixed.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_register_pressure_scenarios.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_same_vectors_struct.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_simple_union.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_single_register.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_single_vector_struct.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_struct_different_abi_vlen.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_struct_eight_128bit_vectors.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_struct_five_256bit_vectors.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_struct_four_256bit_vectors.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_struct_nine_128bit_vectors.h:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_two_registers.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/common/test_vector_array_struct.h: New test.
+	* gcc.target/riscv/rvv/vls-cc/riscv-vls-cc.exp: New test.
+	* gcc.target/riscv/rvv/vls-cc/test_128_abi_vlen_large_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/test_128_abi_vlen_medium_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/test_256_abi_vlen_large_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/test_256_abi_vlen_very_large_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/test_32_abi_vlen_medium_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/test_32_abi_vlen_small_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/test_64_abi_vlen_medium_vector.c:
+	New test.
+	* gcc.target/riscv/rvv/vls-cc/test_64_abi_vlen_small_vector.c: New test.
+	* gcc.target/riscv/rvv/vls-cc/vls-cc-common.h: New test.
+
+2025-10-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/64345
+	PR tree-optimization/80770
+	* gcc.target/riscv/pr120553-2.c: Update expected output.
+	* gcc.target/riscv/pr64345.c: New test.
+	* gcc.target/riscv/zbb-andn-orn-01.c: Skip when peephole2 isn't run.
+	* gcc.target/riscv/zbb-andn-orn-02.c: Likewise.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122419
+	* gcc.dg/vect/pr122419.c: New testcase.
+
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122435
+	* gcc.dg/tree-ssa/ssa-fre-111.c: New testcase.
+
+2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122323
+	* gcc.target/i386/builtin-copysign-8b.c: Add -mtune=generic.
+
+2025-10-27  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/widen-mul-rtx-cost-signed.c: New test.
+	* gcc.target/loongarch/widen-mul-rtx-cost-unsigned.c: New test.
+
+2025-10-27  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/compare-both-non-zero.c: New test.
+
+2025-10-27  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/sign_extend_ashift.c: New test.
+
+2025-10-27  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* gcc.target/xtensa/one_cmpl_abs.c: Remove.
+
+2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/107389
+	PR tree-optimization/122086
+	* gcc.dg/pr107389.c: Move to...
+	* gcc.dg/torture/pr107389.c: ...here. Skip for lto.
+	Use dg-additional-options rather than dg-options.
+	* c-c++-common/ubsan/align-5.c: xfail.
+
 2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR target/122270

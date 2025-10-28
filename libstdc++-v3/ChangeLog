@@ -1,3 +1,37 @@
+2025-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122401
+	* testsuite/20_util/shared_ptr/atomic/pr118757.cc: Add -pthread
+	for et pthread.
+	* testsuite/20_util/weak_ptr/pr118757.cc: Likewise.
+	* testsuite/30_threads/condition_variable/members/116586.cc:
+	Likewise. Only run for hosted targets with gthreads support.
+	* testsuite/30_threads/future/members/116586.cc: Likewise.
+	* testsuite/30_threads/recursive_timed_mutex/try_lock_until/116586.cc:
+	Likewise.
+	* testsuite/30_threads/timed_mutex/try_lock_until/116586.cc:
+	Likewise.
+
+2025-10-27  Matthias Kretz  <m.kretz@gsi.de>
+
+	* include/bits/utility.h (_IotaArray): Define.
+	* testsuite/ext/iotaarray.cc: New test.
+
+2025-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/108951
+	* include/bits/valarray_array.h( __valarray_get_storage): Use
+	std::__new_allocator.
+	(__valarray_release_memory): Likewise.
+	* include/std/valarray: Pass _M_size to
+	__valarray_release_memory.
+	* testsuite/26_numerics/valarray/108951.cc: New test.
+
+2025-10-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/util/testsuite_iterators.h (test_container): Add
+	iterator and value_type typedefs.
+
 2025-10-24  Eric Pimentel Aguiar  <eric.pimentela@gmail.com>
 
 	* src/c++23/std.cc.in (std::strided_slice, std::full_extent_t)

@@ -1,3 +1,49 @@
+2025-10-27  Sam James  <sam@gentoo.org>
+
+	PR cobol/122451
+	* xmlparse.cc (xml_push_parse): Fix xmlCtxtGetVersion argument
+	typo to be 'context'.
+
+2025-10-27  James K. Lowden  <jklowden@cobolworx.com>
+
+	* xmlparse.cc (CTX): Macro for unused user-context parameter.
+	(attributeDecl): Mark unused parameters.
+	(cdataBlock): Same.
+	(characters): Same.
+	(comment): Same.
+	(elementDecl): Same.
+	(endDocument): Same.
+	(endElementNs): Same.
+	(endElement): Same.
+	(entityDecl): Same.
+	(error): Same.
+	(externalSubset): Same.
+	(fatalError): Same.
+	(getEntity): Eliminate via preprocessor until needed.
+	(getParameterEntity): Same.
+	(hasExternalSubset): Mark unused parameters.
+	(hasInternalSubset): Same.
+	(ignorableWhitespace): Same.
+	(internalSubset): Same.
+	(isStandalone): Eliminate via preprocessor until needed.
+	(notationDecl): Mark unused parameters.
+	(processingInstruction): Same.
+	(reference): Same.
+	(resolveEntity): Eliminate via preprocessor until needed.
+	(setDocumentLocator): Mark unused parameters.
+	(startDocument): Same.
+	(startElementNs): Same.
+	(startElement): Same.
+	(unparsedEntityDecl): Same.
+	(warning): Same.
+	(xmlchar_of): Utility cast function.
+	(xmlParserErrors_str): Message string for libxml2 errors.
+	(xmlerror_str): Macro to include textual form of libxml2 error.
+	(context_t): Push-parser context class.
+	(xml_push_parse): Use push-parser.
+	(__gg__xml_parse_done): Signify end-of-input to XML push-parser.
+	(__gg__xml_parse): Mark unused parameters.
+
 2025-10-25  Sam James  <sam@gentoo.org>
 
 	PR cobol/122398

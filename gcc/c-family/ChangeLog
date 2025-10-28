@@ -1,3 +1,9 @@
+2025-10-27  Richard Biener  <rguenther@suse.de>
+
+	PR middle-end/122325
+	* c-opts.cc (c_common_init_options_struct): Remove set of
+	flag_default_complex_method.
+
 2025-10-22  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/122302

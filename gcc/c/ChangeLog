@@ -1,3 +1,10 @@
+2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR c/122427
+	* c-decl.cc (diagnose_mismatched_decls): For FUNCTION_DECL, if
+	OLDDECL has TYPE_ATTRIBUTES and NEWDECL doesn't, try the type
+	with the OLDDECL attributes.
+
 2025-10-24  Joseph Myers  <josmyers@redhat.com>
 
 	* c-parser.cc (c_parser_next_tokens_start_typename)

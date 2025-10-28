@@ -1,3 +1,7 @@
+2025-10-27  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* MAINTAINERS: Change email address.
+
 2025-10-24  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	PR driver/81358

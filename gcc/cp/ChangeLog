@@ -1,3 +1,23 @@
+2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122422
+	* decl.cc (maybe_deduce_size_from_array_init): Propagate type to
+	corresponding TEMPLATE_DECL.
+
+2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122310
+	* module.cc (get_keyed_decl_scope): New function.
+	(trees_out::get_merge_kind): Use it.
+	(trees_out::key_mergeable): Use it.
+	(maybe_key_decl): Key to the containing type for all members.
+
+2025-10-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c++/122378
+	* parser.cc (cp_parser_label_declaration): Mangle label declaration in a
+	metadirective region.
+
 2025-10-21  Jakub Jelinek  <jakub@redhat.com>
 
 	* cp-tree.h: Implement C++23 P2674R1 - A trait for implicit lifetime
