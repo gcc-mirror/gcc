@@ -6735,7 +6735,7 @@ package body Sem_Ch12 is
             --  Remove package itself from visibility, so it does not
             --  conflict with subprogram.
 
-            Set_Name_Entity_Id (Chars (Pack_Id), Homonym (Pack_Id));
+            Remove_Homonym (Pack_Id);
 
             --  Set name and scope of internal subprogram so that the proper
             --  external name will be generated. The proper scope is the scope
