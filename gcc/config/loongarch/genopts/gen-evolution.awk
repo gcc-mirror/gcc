@@ -254,8 +254,10 @@ function gen_full_def()
     print "#endif"
     print ""
     for (i = 1; i <= NR; i++)
-    printf ("  LARCH_ATTR_BOOL (\"%s\", OPT_m%s, OPTION_MASK_ISA_%s)\n",
-            orig_name[i], name[i], name_capitalized[i])
+    printf ("  LARCH_ATTR_BOOL (\"%s\", OPT_m%s, OPTION_MASK_ISA_%s, FEAT_%s," \
+	    " ARCH_LA64V%d_%d, LA_PRIO_%s)\n",
+            orig_name[i], name[i], name_capitalized[i], name_capitalized[i],
+	    isa_version_major[i], isa_version_minor[i], name_capitalized[i])
 }
 
 END {
