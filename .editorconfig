@@ -53,6 +53,7 @@ charset = utf-8
 charset = utf-8
 indent_style = tab
 indent_size = 2
+tab_width = 8
 trim_trailing_whitespace = true
 
 # GCC .def files.  These are generally C fragments that get included
@@ -61,18 +62,21 @@ trim_trailing_whitespace = true
 charset = utf-8
 indent_style = tab
 indent_size = 2
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Texinfo files
 [*.texi]
 charset = utf-8
 indent_size = 2
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Expect / TCL
 [*.{exp,tcl}]
 indent_style = tab
 indent_size = 4
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Python
@@ -91,24 +95,28 @@ trim_trailing_whitespace = true
 [gcc/config/**.md]
 indent_style = tab
 indent_size = 2
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Awk
 [*.awk]
 indent_style = tab
 indent_size = 2
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Autoconf
 [*.{ac,m4}]
 indent_style = tab
 indent_size = 2
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Shell scripts
 [*.sh]
 indent_style = tab
 indent_size = 4
+tab_width = 8
 trim_trailing_whitespace = true
 
 # Ada
