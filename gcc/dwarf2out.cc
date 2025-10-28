@@ -13842,14 +13842,14 @@ gen_btf_tag_dies (tree attr, dw_die_ref die)
 
   if (die)
     {
-      /* Add AT_GNU_annotation referring to the annotation DIE.
-	 It may have already been added, some global declarations are processed
-	 twice, but if so it must be the same or we have a bug.  */
-      dw_die_ref existing = get_AT_ref (die, DW_AT_GNU_annotation);
-      if (existing)
-	gcc_checking_assert (existing == tag_die);
-      else
-	add_AT_die_ref (die, DW_AT_GNU_annotation, tag_die);
+      /* Add (or replace) AT_GNU_annotation referring to the annotation DIE.
+	 Replacement may happen for example when 'die' is a global variable
+	 which has been re-declared multiple times.  In any case, the set of
+	 input attributes is the one that ought to be reflected.  For global
+	 variable re-declarations which add additional decl tags, they will
+	 have been accumulated in the variable's DECL_ATTRIBUTES for us.  */
+      remove_AT (die, DW_AT_GNU_annotation);
+      add_AT_die_ref (die, DW_AT_GNU_annotation, tag_die);
     }
 
   return tag_die;
