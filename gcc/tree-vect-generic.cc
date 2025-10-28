@@ -460,7 +460,8 @@ expand_vector_comparison (gimple_stmt_iterator *gsi, tree type, tree op0,
    of OP0 with shift counts in SHIFTCNTS array and return the temporary holding
    the result if successful, otherwise return NULL_TREE.  */
 static tree
-add_rshift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts)
+add_shift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts,
+	   enum tree_code code)
 {
   optab op;
   unsigned int i, nunits = nunits_for_known_piecewise_op (type);
@@ -477,26 +478,47 @@ add_rshift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts)
 
   if (scalar_shift)
     {
-      op = optab_for_tree_code (RSHIFT_EXPR, type, optab_scalar);
+      op = optab_for_tree_code (code, type, optab_scalar);
       if (op != unknown_optab
 	  && can_implement_p (op, TYPE_MODE (type)))
-	return gimplify_build2 (gsi, RSHIFT_EXPR, type, op0,
+	return gimplify_build2 (gsi, code, type, op0,
 				build_int_cst (NULL_TREE, shiftcnts[0]));
     }
 
-  op = optab_for_tree_code (RSHIFT_EXPR, type, optab_vector);
+  op = optab_for_tree_code (code, type, optab_vector);
   if (op != unknown_optab
       && can_implement_p (op, TYPE_MODE (type)))
     {
       tree_vector_builder vec (type, nunits, 1);
       for (i = 0; i < nunits; i++)
 	vec.quick_push (build_int_cst (TREE_TYPE (type), shiftcnts[i]));
-      return gimplify_build2 (gsi, RSHIFT_EXPR, type, op0, vec.build ());
+      return gimplify_build2 (gsi, code, type, op0, vec.build ());
     }
 
   return NULL_TREE;
 }
+/* Try to expand integer vector multiplication by constant of power 2 using
+   left shifts.  */
+static tree
+expand_vector_mult (gimple_stmt_iterator *gsi, tree type, tree op0,
+		    tree op1)
+{
+  unsigned int nunits = nunits_for_known_piecewise_op (type);
+  int *shifts = XALLOCAVEC (int, nunits);
 
+  // if all element are same value and a power of 2, then we can use shifts
+  for (unsigned int i = 0; i < nunits; i++)
+    {
+      tree cst = VECTOR_CST_ELT (op1, i);
+      if ((TREE_CODE (cst) != INTEGER_CST || integer_zerop (cst))
+	  || !integer_pow2p (cst) || tree_int_cst_sgn (cst) != 1)
+	return NULL_TREE;
+
+      shifts[i] = tree_log2 (cst);
+    }
+  tree cur_op = add_shift (gsi, type, op0, shifts, LSHIFT_EXPR);
+  return cur_op;
+}
 /* Try to expand integer vector division by constant using
    widening multiply, shifts and additions.  */
 static tree
@@ -705,14 +727,15 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	    {
 	      for (i = 0; i < nunits; i++)
 		shift_temps[i] = prec - 1;
-	      cur_op = add_rshift (gsi, type, op0, shift_temps);
+	      cur_op = add_shift (gsi, type, op0, shift_temps, RSHIFT_EXPR);
 	      if (cur_op != NULL_TREE)
 		{
 		  cur_op = gimplify_build1 (gsi, VIEW_CONVERT_EXPR,
 					    uns_type, cur_op);
 		  for (i = 0; i < nunits; i++)
 		    shift_temps[i] = prec - shifts[i];
-		  cur_op = add_rshift (gsi, uns_type, cur_op, shift_temps);
+		  cur_op = add_shift (gsi, uns_type, cur_op, shift_temps,
+				      RSHIFT_EXPR);
 		  if (cur_op != NULL_TREE)
 		    addend = gimplify_build1 (gsi, VIEW_CONVERT_EXPR,
 					      type, cur_op);
@@ -748,7 +771,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  if (sign_p == UNSIGNED)
 	    {
 	      /* q = op0 >> shift;  */
-	      cur_op = add_rshift (gsi, type, op0, shifts);
+	      cur_op = add_shift (gsi, type, op0, shifts, RSHIFT_EXPR);
 	      if (cur_op != NULL_TREE)
 		return cur_op;
 	    }
@@ -761,7 +784,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 		  && can_implement_p (op, TYPE_MODE (type)))
 		{
 		  cur_op = gimplify_build2 (gsi, PLUS_EXPR, type, op0, addend);
-		  cur_op = add_rshift (gsi, type, cur_op, shifts);
+		  cur_op = add_shift (gsi, type, cur_op, shifts, RSHIFT_EXPR);
 		  if (cur_op != NULL_TREE)
 		    return cur_op;
 		}
@@ -823,7 +846,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       /* t1 = oprnd0 >> pre_shift;
 	 t2 = t1 h* ml;
 	 q = t2 >> post_shift;  */
-      cur_op = add_rshift (gsi, type, cur_op, pre_shifts);
+      cur_op = add_shift (gsi, type, cur_op, pre_shifts, RSHIFT_EXPR);
       if (cur_op == NULL_TREE)
 	return NULL_TREE;
       break;
@@ -860,7 +883,7 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
       /* t1 = oprnd0 >> pre_shift;
 	 t2 = t1 h* ml;
 	 q = t2 >> post_shift;  */
-      cur_op = add_rshift (gsi, type, cur_op, post_shifts);
+      cur_op = add_shift (gsi, type, cur_op, post_shifts, RSHIFT_EXPR);
       break;
     case 1:
       /* t1 = oprnd0 h* ml;
@@ -873,13 +896,13 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	  || !can_implement_p (op, TYPE_MODE (type)))
 	return NULL_TREE;
       tem = gimplify_build2 (gsi, MINUS_EXPR, type, op0, cur_op);
-      tem = add_rshift (gsi, type, tem, shift_temps);
+      tem = add_shift (gsi, type, tem, shift_temps, RSHIFT_EXPR);
       op = optab_for_tree_code (PLUS_EXPR, type, optab_default);
       if (op == unknown_optab
 	  || !can_implement_p (op, TYPE_MODE (type)))
 	return NULL_TREE;
       tem = gimplify_build2 (gsi, PLUS_EXPR, type, cur_op, tem);
-      cur_op = add_rshift (gsi, type, tem, post_shifts);
+      cur_op = add_shift (gsi, type, tem, post_shifts, RSHIFT_EXPR);
       if (cur_op == NULL_TREE)
 	return NULL_TREE;
       break;
@@ -902,10 +925,10 @@ expand_vector_divmod (gimple_stmt_iterator *gsi, tree type, tree op0,
 	    return NULL_TREE;
 	  cur_op = gimplify_build2 (gsi, PLUS_EXPR, type, cur_op, op0);
 	}
-      cur_op = add_rshift (gsi, type, cur_op, post_shifts);
+      cur_op = add_shift (gsi, type, cur_op, post_shifts, RSHIFT_EXPR);
       if (cur_op == NULL_TREE)
 	return NULL_TREE;
-      tem = add_rshift (gsi, type, op0, shift_temps);
+      tem = add_shift (gsi, type, op0, shift_temps, RSHIFT_EXPR);
       if (tem == NULL_TREE)
 	return NULL_TREE;
       op = optab_for_tree_code (MINUS_EXPR, type, optab_default);
@@ -1146,7 +1169,23 @@ expand_vector_operation (gimple_stmt_iterator *gsi, tree type, tree compute_type
 	    return ret;
 	  break;
 	}
+      case MULT_EXPR:
+	{
+	  tree rhs1 = gimple_assign_rhs1 (assign);
+	  tree rhs2 = gimple_assign_rhs2 (assign);
+	  tree ret;
 
+	  if (!optimize
+	      || !VECTOR_INTEGER_TYPE_P (type)
+	      || TREE_CODE (rhs2) != VECTOR_CST
+	      || !VECTOR_MODE_P (TYPE_MODE (type)))
+	    break;
+
+	  ret = expand_vector_mult (gsi, type, rhs1, rhs2);
+	  if (ret != NULL_TREE)
+	    return ret;
+	  break;
+	}
       default:
 	break;
       }
