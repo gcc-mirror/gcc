@@ -18958,13 +18958,9 @@ finish_enum_value_list (tree enumtype)
         value = perform_implicit_conversion (underlying_type,
                                              DECL_INITIAL (decl),
                                              tf_warning_or_error);
-      /* Do not clobber shared ints.  */
-      if (value != error_mark_node)
-	{
-	  value = copy_node (value);
+      /* Do not clobber shared ints.  But do share identical enumerators.  */
+      value = fold_convert (enumtype, value);
 
-	  TREE_TYPE (value) = enumtype;
-	}
       DECL_INITIAL (decl) = value;
       if (export_p)
 	DECL_MODULE_EXPORT_P (decl) = true;
