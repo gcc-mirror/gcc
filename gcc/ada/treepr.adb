@@ -140,7 +140,10 @@ package body Treepr is
    procedure Print_Init;
    --  Initialize for printing of tree with descendants
 
-   procedure Print_End_Span (N : Node_Id);
+   procedure Print_End_Span
+     (Prefix : String;
+      Field  : Node_Field;
+      N      : Node_Id);
    --  Print contents of End_Span field of node N. The format includes the
    --  implicit source location as well as the value of the field.
 
@@ -605,10 +608,16 @@ package body Treepr is
    -- Print_End_Span --
    --------------------
 
-   procedure Print_End_Span (N : Node_Id) is
+   procedure Print_End_Span
+     (Prefix : String;
+      Field  : Node_Field;
+      N      : Node_Id)
+   is
       Val : constant Uint := End_Span (N);
 
    begin
+      Write_Str (Prefix);
+      Write_Str (Image (Field) & " = ");
       UI_Write (Val);
       Write_Str (" (Uint = ");
       Write_Str (UI_Image (Val));
@@ -617,6 +626,8 @@ package body Treepr is
       if Present (Val) then
          Write_Location (End_Location (N));
       end if;
+
+      Write_Eol;
    end Print_End_Span;
 
    ------------------------
@@ -1439,7 +1450,7 @@ package body Treepr is
                      --  End_Location.
 
                      if Fields (Field_Index) = F_End_Span then
-                        Print_End_Span (N);
+                        Print_End_Span (Prefix, F_End_Span, N);
 
                      else
                         Print_Node_Field
