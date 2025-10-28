@@ -4974,8 +4974,21 @@ extern tree build_omp_clause (location_t, enum omp_clause_code);
 
 extern tree build_vl_exp (enum tree_code, int CXX_MEM_STAT_INFO);
 
-extern tree build_call_nary (tree, tree, int, ...);
 extern tree build_call_valist (tree, tree, int, va_list);
+extern tree build_call (tree, tree, std::initializer_list<tree>);
+
+
+/* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE and
+   FN and a null static chain slot.  NARGS is the number of call arguments
+   which are specified as "..." arguments.  */
+
+template <typename ...T>
+inline tree build_call_nary (tree return_type, tree fn, int nargs, T... args)
+{
+  std::initializer_list<tree> args_ = {args...};
+  gcc_checking_assert (sizeof...(args) == nargs);
+  return build_call (return_type, fn, args_);
+}
 #define build_call_array(T1,T2,N,T3)\
    build_call_array_loc (UNKNOWN_LOCATION, T1, T2, N, T3)
 extern tree build_call_array_loc (location_t, tree, tree, int, const tree *);

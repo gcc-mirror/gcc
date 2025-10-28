@@ -11031,21 +11031,6 @@ build_call_1 (tree return_type, tree fn, int nargs)
 
 /* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE and
    FN and a null static chain slot.  NARGS is the number of call arguments
-   which are specified as "..." arguments.  */
-
-tree
-build_call_nary (tree return_type, tree fn, int nargs, ...)
-{
-  tree ret;
-  va_list args;
-  va_start (args, nargs);
-  ret = build_call_valist (return_type, fn, nargs, args);
-  va_end (args);
-  return ret;
-}
-
-/* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE and
-   FN and a null static chain slot.  NARGS is the number of call arguments
    which are specified as a va_list ARGS.  */
 
 tree
@@ -11057,6 +11042,23 @@ build_call_valist (tree return_type, tree fn, int nargs, va_list args)
   t = build_call_1 (return_type, fn, nargs);
   for (i = 0; i < nargs; i++)
     CALL_EXPR_ARG (t, i) = va_arg (args, tree);
+  process_call_operands (t);
+  return t;
+}
+
+/* Build a CALL_EXPR of class tcc_vl_exp with the indicated RETURN_TYPE and
+   FN and a null static chain slot.  ARGS specifies the call arguments.  */
+
+tree
+build_call (tree return_type, tree fn, std::initializer_list<tree> args)
+{
+  tree t;
+  int i;
+  int nargs = args.size();
+
+  t = build_call_1 (return_type, fn, nargs);
+  for (i = 0; i < nargs; i++)
+    CALL_EXPR_ARG (t, i) = args.begin()[i];
   process_call_operands (t);
   return t;
 }
