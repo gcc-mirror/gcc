@@ -37,7 +37,9 @@
 #if defined(__x86_64__)
 #define _tile_int8_dp_internal(name,dst,src1,src2)					\
   __asm__ volatile							\
-  ("{"#name"\t%%tmm"#src2", %%tmm"#src1", %%tmm"#dst"|"#name"\t%%tmm"#dst", %%tmm"#src1", %%tmm"#src2"}" ::)
+  ("{"#name"\t%%tmm%c[_src2], %%tmm%c[_src1], %%tmm%c[_dst]		\
+   |"#name"\ttmm%c[_dst], tmm%c[_src1], tmm%c[_src2]}"		\
+   ::[_dst]"i"(dst),[_src1]"i"(src1),[_src2]"i"(src2))
 
 #define _tile_dpbssd(dst,src1,src2)					\
   _tile_int8_dp_internal (tdpbssd, dst, src1, src2)
