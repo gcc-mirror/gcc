@@ -1,3 +1,12 @@
+2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-10-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/121452
+	* omp-low.cc (check_omp_nesting_restrictions): Accept an
+	OMP_STRUCTURED_BLOCK in a collapsed simd region and in an ordered loop.
+
 2025-10-23  Andrew Stubbs  <ams@baylibre.com>
 
 	Revert:

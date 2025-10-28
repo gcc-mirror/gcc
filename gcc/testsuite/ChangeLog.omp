@@ -1,3 +1,15 @@
+2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-10-24  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/121452
+	* c-c++-common/gomp/pr121452-1.c: New test.
+	* c-c++-common/gomp/pr121452-2.c: New test.
+	* gfortran.dg/gomp/pr121452-1.f90: New test.
+	* gfortran.dg/gomp/pr121452-2.f90: New test.
+	* gfortran.dg/gomp/pr121452-3.f90: New test.
+
 2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

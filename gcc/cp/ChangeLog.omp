@@ -1,3 +1,12 @@
+2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-10-27  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR c++/122378
+	* parser.cc (cp_parser_label_declaration): Mangle label declaration in a
+	metadirective region.
+
 2025-10-22  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
