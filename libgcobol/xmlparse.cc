@@ -658,9 +658,9 @@ xmlParserErrors_str( xmlParserErrors erc, const char name[] ) {
  * The global context is NULL if XML PARSE is not in progress.
  */
 static class context_t {
-  xmlParserCtxt * ctxt;
   const int priority;
  public:
+  xmlParserCtxt * ctxt;
   context_t() : ctxt(nullptr), priority(LOG_INFO) {
     const int option = LOG_PERROR, facility = LOG_USER;
 #if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
@@ -734,7 +734,7 @@ xml_push_parse( cblc_field_t *input_field,
   context.push( input_field, input_offset, len, false);
 
 #if LIBXML_VERSION >= 21400
-  const xmlChar * version = xmlCtxtGetVersion( context );
+  const xmlChar * version = xmlCtxtGetVersion( context.ctxt );
 #else
   const xmlChar * version = xmlchar_of("requires version 2.14");
 #endif
