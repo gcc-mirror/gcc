@@ -1,3 +1,35 @@
+2025-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122394
+	* tree-ssa-phiopt.cc (spaceship_replacement): Use
+	build_debug_expr_decl instead of manually building DEBUG_EXPR_DECL
+	and getting SET_DECL_MODE wrong.
+
+2025-10-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-10-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120674
+	* config/riscv/riscv.cc (riscv_dwarf_poly_indeterminite_value): Do not
+	set FACTOR to zero, for that case use one instead.
+
+2025-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-10-17  Tamar Christina  <tamar.christina@arm.com>
+		    Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121604
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (apply_predication):
+	Store gp_index.
+	(struct pmov_to_vector_lane_def): Mark instruction as has no GP.
+	* config/aarch64/aarch64-sve-builtins.h (function_instance::gp_value,
+	function_instance::inactive_values, function_instance::gp_index,
+	function_shape::has_gp_argument_p): New.
+	* config/aarch64/aarch64-sve-builtins.cc (gimple_folder::fold_pfalse):
+	Simplify code and use GP helpers.
+
 2025-10-26  LIU Hao  <lh_mouse@126.com>
 
 	Backported from master:

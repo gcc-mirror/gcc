@@ -1,3 +1,34 @@
+2025-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122394
+	* g++.dg/opt/pr122394.C: New test.
+
+2025-10-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-10-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120674
+	* gcc.target/riscv/pr120674.c: New test.
+
+2025-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-10-17  Tamar Christina  <tamar.christina@arm.com>
+		    Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121604
+	* gcc.target/aarch64/sve/pr121604_brk.c: New test.
+	* gcc.target/aarch64/sve2/pr121604_pmov.c: New test.
+
+2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122323
+	* gcc.target/i386/builtin-copysign-8b.c: Add -mtune=generic.
+
 2025-10-26  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
