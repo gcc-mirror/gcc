@@ -2336,7 +2336,7 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
   gphi_iterator gsi, gsi1;
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block update_bb = update_e->dest;
-  basic_block exit_bb = LOOP_VINFO_IV_EXIT (loop_vinfo)->dest;
+  basic_block exit_bb = update_e->src;
   gimple_stmt_iterator last_gsi = gsi_last_bb (exit_bb);
 
   for (gsi = gsi_start_phis (loop->header), gsi1 = gsi_start_phis (update_bb);
