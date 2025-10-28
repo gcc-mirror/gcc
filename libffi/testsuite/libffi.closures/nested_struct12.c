@@ -41,7 +41,7 @@ int main (void)
 	ffi_type struct_float_type1, struct_float_type2;
 	ffi_type *retType = &ffi_type_float;
 	float arg1;
-	float *arg2 = (float *)malloc(sizeof(stru_Nested_F));
+	float *arg2 = malloc(sizeof(stru_Nested_F));
 
 	struct_float2[0] = &ffi_type_float;
 	struct_float2[1] = &ffi_type_float;
