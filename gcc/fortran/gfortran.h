@@ -3772,6 +3772,7 @@ gfc_st_label *gfc_get_st_label (int);
 void gfc_free_st_label (gfc_st_label *);
 void gfc_define_st_label (gfc_st_label *, gfc_sl_type, locus *);
 bool gfc_reference_st_label (gfc_st_label *, gfc_sl_type);
+gfc_st_label *gfc_rebind_label (gfc_st_label *, int);
 
 gfc_namespace *gfc_get_namespace (gfc_namespace *, int);
 gfc_symtree *gfc_new_symtree (gfc_symtree **, const char *);

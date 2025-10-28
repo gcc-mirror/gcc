@@ -60,6 +60,7 @@ bool gfc_in_omp_metadirective_body;
 /* Each metadirective body in the translation unit is given a unique
    number, used to ensure that labels in the body have unique names.  */
 int gfc_omp_metadirective_region_count;
+vec<int> gfc_omp_metadirective_region_stack;
 
 /* TODO: Re-order functions to kill these forward decls.  */
 static void check_statement_label (gfc_statement);
@@ -6465,6 +6466,9 @@ parse_omp_metadirective_body (gfc_statement omp_st)
       gfc_in_omp_metadirective_body = true;
 
       gfc_omp_metadirective_region_count++;
+      gfc_omp_metadirective_region_stack.safe_push (
+	gfc_omp_metadirective_region_count);
+
       switch (variant->stmt)
 	{
 	case_omp_structured_block:
@@ -6525,6 +6529,28 @@ parse_omp_metadirective_body (gfc_statement omp_st)
       if (gfc_state_stack->head)
 	*variant->code = *gfc_state_stack->head;
       pop_state ();
+
+      gfc_omp_metadirective_region_stack.pop ();
+      int outer_omp_metadirective_region
+	= gfc_omp_metadirective_region_stack.last ();
+
+      /* Rebind labels in the last statement -- which is the first statement
+	 past the end of the metadirective body -- to the outer region.  */
+      if (gfc_statement_label)
+	gfc_statement_label = gfc_rebind_label (gfc_statement_label,
+						outer_omp_metadirective_region);
+      if ((new_st.op == EXEC_READ || new_st.op == EXEC_WRITE)
+	  && new_st.ext.dt->format_label
+	  && new_st.ext.dt->format_label != &format_asterisk)
+	new_st.ext.dt->format_label
+	  = gfc_rebind_label (new_st.ext.dt->format_label,
+			      outer_omp_metadirective_region);
+      if (new_st.label1)
+	new_st.label1
+	  = gfc_rebind_label (new_st.label1, outer_omp_metadirective_region);
+      if (new_st.here)
+	new_st.here
+	  = gfc_rebind_label (new_st.here, outer_omp_metadirective_region);
 
       gfc_commit_symbols ();
       gfc_warning_check ();
@@ -7493,6 +7519,8 @@ gfc_parse_file (void)
   gfc_statement_label = NULL;
 
   gfc_omp_metadirective_region_count = 0;
+  gfc_omp_metadirective_region_stack.truncate (0);
+  gfc_omp_metadirective_region_stack.safe_push (0);
   gfc_in_omp_metadirective_body = false;
   gfc_matching_omp_context_selector = false;
 

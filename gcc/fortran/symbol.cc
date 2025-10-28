@@ -2753,8 +2753,7 @@ gfc_get_st_label (int labelno)
 {
   gfc_st_label *lp;
   gfc_namespace *ns;
-  int omp_region = (gfc_in_omp_metadirective_body
-		    ? gfc_omp_metadirective_region_count : 0);
+  int omp_region = gfc_omp_metadirective_region_stack.last ();
 
   if (gfc_current_state () == COMP_DERIVED)
     ns = gfc_current_block ()->f2k_derived;
@@ -2768,22 +2767,28 @@ gfc_get_st_label (int labelno)
     }
 
   /* First see if the label is already in this namespace.  */
-  lp = ns->st_labels;
-  while (lp)
+  gcc_checking_assert (gfc_omp_metadirective_region_stack.length () > 0);
+  for (int omp_region_idx = gfc_omp_metadirective_region_stack.length () - 1;
+       omp_region_idx >= 0; omp_region_idx--)
     {
-      if (lp->omp_region == omp_region)
+      int omp_region2 = gfc_omp_metadirective_region_stack[omp_region_idx];
+      lp = ns->st_labels;
+      while (lp)
 	{
-	  if (lp->value == labelno)
-	    return lp;
-	  if (lp->value < labelno)
+	  if (lp->omp_region == omp_region2)
+	    {
+	      if (lp->value == labelno)
+		return lp;
+	      if (lp->value < labelno)
+		lp = lp->left;
+	      else
+		lp = lp->right;
+	    }
+	  else if (lp->omp_region < omp_region2)
 	    lp = lp->left;
 	  else
 	    lp = lp->right;
 	}
-      else if (lp->omp_region < omp_region)
-	lp = lp->left;
-      else
-	lp = lp->right;
     }
 
   lp = XCNEW (gfc_st_label);
@@ -2799,6 +2804,53 @@ gfc_get_st_label (int labelno)
   return lp;
 }
 
+/* Rebind a statement label to a new OpenMP region. If a label with the same
+   value already exists in the new region, update it and return it. Otherwise,
+   move the label to the new region.  */
+
+gfc_st_label *
+gfc_rebind_label (gfc_st_label *label, int new_omp_region)
+{
+  gfc_st_label *lp = label->ns->st_labels;
+  int labelno = label->value;
+
+  while (lp)
+    {
+      if (lp->omp_region == new_omp_region)
+	{
+	  if (lp->value == labelno)
+	    {
+	      if (lp == label)
+		return label;
+	      if (lp->defined == ST_LABEL_UNKNOWN
+		  && label->defined != ST_LABEL_UNKNOWN)
+		lp->defined = label->defined;
+	      if (lp->referenced == ST_LABEL_UNKNOWN
+		  && label->referenced != ST_LABEL_UNKNOWN)
+		lp->referenced = label->referenced;
+	      if (lp->format == NULL && label->format != NULL)
+		lp->format = label->format;
+	      gfc_delete_bbt (&label->ns->st_labels, label, compare_st_labels);
+	      return lp;
+	    }
+	  if (lp->value < labelno)
+	    lp = lp->left;
+	  else
+	    lp = lp->right;
+	}
+      else if (lp->omp_region < new_omp_region)
+	lp = lp->left;
+      else
+	lp = lp->right;
+    }
+
+  gfc_delete_bbt (&label->ns->st_labels, label, compare_st_labels);
+  label->left = nullptr;
+  label->right = nullptr;
+  label->omp_region = new_omp_region;
+  gfc_insert_bbt (&label->ns->st_labels, label, compare_st_labels);
+  return label;
+}
 
 /* Called when a statement with a statement label is about to be
    accepted.  We add the label to the list of the current namespace,
@@ -2812,7 +2864,7 @@ gfc_define_st_label (gfc_st_label *lp, gfc_sl_type type, locus *label_locus)
 
   labelno = lp->value;
 
-  if (lp->defined != ST_LABEL_UNKNOWN)
+  if (lp->defined != ST_LABEL_UNKNOWN && !gfc_in_omp_metadirective_body)
     gfc_error ("Duplicate statement label %d at %L and %L", labelno,
 	       &lp->where, label_locus);
   else
@@ -2897,6 +2949,7 @@ gfc_reference_st_label (gfc_st_label *lp, gfc_sl_type type)
     }
 
   if (lp->referenced == ST_LABEL_DO_TARGET && type == ST_LABEL_DO_TARGET
+      && !gfc_in_omp_metadirective_body
       && !gfc_notify_std (GFC_STD_F95_OBS | GFC_STD_F2018_DEL,
 			  "Shared DO termination label %d at %C", labelno))
     return false;
