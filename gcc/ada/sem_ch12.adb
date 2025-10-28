@@ -480,14 +480,16 @@ package body Sem_Ch12 is
    --  Create a new access type with the given designated type
 
    function Analyze_Associations
-     (N       : Node_Id;
-      Formals : List_Id;
-      F_Copy  : List_Id) return List_Id;
+     (N                : Node_Id;
+      Formals          : List_Id;
+      F_Copy           : List_Id;
+      Parent_Installed : Boolean) return List_Id;
    --  At instantiation time, build the list of associations between formals
    --  and actuals. Each association becomes a renaming declaration for the
    --  formal entity. N is the instantiation node. Formals is the list of
-   --  unanalyzed formals. F_Copy is the analyzed list of formals in the
-   --  generic copy.
+   --  unanalyzed formals. F_Copy is the list of analyzed formals in the
+   --  generic copy. Parent_Installed is True if the parent has been installed
+   --  during the instantiation.
 
    procedure Analyze_Subprogram_Instantiation
      (N : Node_Id;
@@ -838,9 +840,12 @@ package body Sem_Ch12 is
    --  the same list it is passing to Actual_Decls.
 
    function Instantiate_Formal_Subprogram
-     (Formal          : Node_Id;
-      Actual          : Node_Id;
-      Analyzed_Formal : Node_Id) return Node_Id;
+     (Formal           : Node_Id;
+      Actual           : Node_Id;
+      Analyzed_Formal  : Node_Id;
+      Parent_Installed : Boolean) return Node_Id;
+   --  Parent_Installed is True if the parent has been installed during the
+   --  instantiation.
 
    function Instantiate_Formal_Package
      (Formal          : Node_Id;
@@ -1283,12 +1288,14 @@ package body Sem_Ch12 is
    procedure Analyze_One_Association
      (N                 : Node_Id;
       Assoc             : Associations.Assoc_Rec;
+      Parent_Installed  : Boolean;
       Result_Renamings  : List_Id;
       Default_Actuals   : List_Id;
       Actuals_To_Freeze : Elist_Id);
-   --  Called by Analyze_Associations for each association. The renamings
-   --  are appended onto Result_Renamings. Defaulted actuals are appended
-   --  onto Default_Actuals, and actuals that require freezing are
+   --  Called by Analyze_Associations for each association. Parent_Installed
+   --  is True if the parent has been installed during the instantiation. The
+   --  renamings are appended onto Result_Renamings. The defaulted actuals are
+   --  appended onto Default_Actuals, and actuals that require freezing are
    --  appended onto Actuals_To_Freeze.
 
    procedure Analyze_Structural_Associations
@@ -2362,9 +2369,10 @@ package body Sem_Ch12 is
    --------------------------
 
    function Analyze_Associations
-     (N       : Node_Id;
-      Formals : List_Id;
-      F_Copy  : List_Id) return List_Id
+     (N                : Node_Id;
+      Formals          : List_Id;
+      F_Copy           : List_Id;
+      Parent_Installed : Boolean) return List_Id
    is
       use Associations;
 
@@ -2412,6 +2420,7 @@ package body Sem_Ch12 is
                Analyze_One_Association
                  (N,
                   Assoc,
+                  Parent_Installed,
                   Result_Renamings,
                   Default_Actuals,
                   Actuals_To_Freeze);
@@ -2470,6 +2479,7 @@ package body Sem_Ch12 is
    procedure Analyze_One_Association
      (N                 : Node_Id;
       Assoc             : Associations.Assoc_Rec;
+      Parent_Installed  : Boolean;
       Result_Renamings  : List_Id;
       Default_Actuals   : List_Id;
       Actuals_To_Freeze : Elist_Id)
@@ -2736,7 +2746,10 @@ package body Sem_Ch12 is
             else
                Append_To (Result_Renamings,
                  Instantiate_Formal_Subprogram
-                   (Assoc.Un_Formal, Match, Assoc.An_Formal));
+                   (Assoc.Un_Formal,
+                    Match,
+                    Assoc.An_Formal,
+                    Parent_Installed));
 
                --  If formal subprogram has contracts, create wrappers
                --  for it. This is an expansion activity that cannot
@@ -3557,7 +3570,7 @@ package body Sem_Ch12 is
       --  List of primitives made temporarily visible in the instantiation
       --  to match the visibility of the formal type.
 
-      function Build_Local_Package return Node_Id;
+      function Build_Local_Package (Parent_Installed : Boolean) return Node_Id;
       --  The formal package is rewritten so that its parameters are replaced
       --  with corresponding declarations. For parameters with bona fide
       --  associations these declarations are created by Analyze_Associations
@@ -3569,7 +3582,8 @@ package body Sem_Ch12 is
       -- Build_Local_Package --
       -------------------------
 
-      function Build_Local_Package return Node_Id is
+      function Build_Local_Package (Parent_Installed : Boolean) return Node_Id
+      is
          Decls     : List_Id;
          Pack_Decl : Node_Id;
 
@@ -3645,9 +3659,10 @@ package body Sem_Ch12 is
 
                Decls :=
                  Analyze_Associations
-                   (N       => Original_Node (N),
-                    Formals => Generic_Formal_Declarations (Act_Tree),
-                    F_Copy  => Generic_Formal_Declarations (Gen_Decl));
+                   (N                => Original_Node (N),
+                    Formals          => Generic_Formal_Declarations (Act_Tree),
+                    F_Copy           => Generic_Formal_Declarations (Gen_Decl),
+                    Parent_Installed => Parent_Installed);
 
                Vis_Prims_List := Check_Hidden_Primitives (Decls);
             end;
@@ -3782,7 +3797,7 @@ package body Sem_Ch12 is
       --  internal declarations.
 
       begin
-         New_N := Build_Local_Package;
+         New_N := Build_Local_Package (Parent_Installed);
 
       --  If there are errors in the parameter list, Analyze_Associations
       --  raises Instantiation_Error. Patch the declaration to prevent further
@@ -5159,9 +5174,10 @@ package body Sem_Ch12 is
 
          Renamings :=
            Analyze_Associations
-             (N       => N,
-              Formals => Generic_Formal_Declarations (Act_Tree),
-              F_Copy  => Generic_Formal_Declarations (Gen_Decl));
+             (N                => N,
+              Formals          => Generic_Formal_Declarations (Act_Tree),
+              F_Copy           => Generic_Formal_Declarations (Gen_Decl),
+              Parent_Installed => Parent_Installed);
 
          --  Bail out if the instantiation has been turned into something else
 
@@ -6981,9 +6997,10 @@ package body Sem_Ch12 is
 
          Renamings :=
            Analyze_Associations
-             (N       => N,
-              Formals => Generic_Formal_Declarations (Act_Tree),
-              F_Copy  => Generic_Formal_Declarations (Gen_Decl));
+             (N                => N,
+              Formals          => Generic_Formal_Declarations (Act_Tree),
+              F_Copy           => Generic_Formal_Declarations (Gen_Decl),
+              Parent_Installed => Parent_Installed);
 
          --  Bail out if the instantiation has been turned into something else
 
@@ -12538,9 +12555,10 @@ package body Sem_Ch12 is
    -----------------------------------
 
    function Instantiate_Formal_Subprogram
-     (Formal          : Node_Id;
-      Actual          : Node_Id;
-      Analyzed_Formal : Node_Id) return Node_Id
+     (Formal           : Node_Id;
+      Actual           : Node_Id;
+      Analyzed_Formal  : Node_Id;
+      Parent_Installed : Boolean) return Node_Id
    is
       Analyzed_S : constant Entity_Id :=
                      Defining_Unit_Name (Specification (Analyzed_Formal));
@@ -12548,13 +12566,7 @@ package body Sem_Ch12 is
                      Defining_Unit_Name (Specification (Formal));
 
       function From_Parent_Scope (Subp : Entity_Id) return Boolean;
-      --  If the generic is a child unit, the parent has been installed on the
-      --  scope stack, but a default subprogram cannot resolve to something
-      --  on the parent because that parent is not really part of the visible
-      --  context (it is there to resolve explicit local entities). If the
-      --  default has resolved in this way, we remove the entity from immediate
-      --  visibility and analyze the node again to emit an error message or
-      --  find another visible candidate.
+      --  Return true if Subp is declared in a parent scope of Analyzed_S
 
       procedure Valid_Actual_Subprogram (Act : Node_Id);
       --  Perform legality check and raise exception on failure
@@ -12812,21 +12824,31 @@ package body Sem_Ch12 is
       end if;
 
       --  Gather possible interpretations for the actual before analyzing the
-      --  instance. If overloaded, it will be resolved when analyzing the
-      --  renaming declaration.
+      --  instance. If the actual is overloaded, then it will be resolved when
+      --  the renaming declaration is analyzed.
 
       if Box_Present (Formal) and then No (Actual) then
          Analyze (Nam);
 
-         if Is_Child_Unit (Scope (Analyzed_S))
-           and then Present (Entity (Nam))
+         --  If the generic is a child unit and the parent has been installed
+         --  during this instantiation (as opposed to having been installed in
+         --  the context of the instantiation at some earlier point), a default
+         --  subprogram cannot resolve to something in the parent because the
+         --  parent is not really part of the visible context (it is there to
+         --  resolve explicit local entities). If the default subprogram has
+         --  been resolved in this way, we remove the entity from immediate
+         --  visibility and analyze the node again to emit an error message
+         --  or find another visible candidate.
+
+         if Present (Entity (Nam))
+           and then Is_Child_Unit (Scope (Analyzed_S))
+           and then Parent_Installed
          then
             if not Is_Overloaded (Nam) then
                if From_Parent_Scope (Entity (Nam)) then
                   Set_Is_Immediately_Visible (Entity (Nam), False);
                   Set_Entity (Nam, Empty);
                   Set_Etype (Nam, Empty);
-
                   Analyze (Nam);
                   Set_Is_Immediately_Visible (Entity (Nam));
                end if;
