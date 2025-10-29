@@ -5437,12 +5437,32 @@ loongarch_expand_conditional_move (rtx *operands)
 	    }
 	}
 
+      auto is_binary_op_0_keep_orig = [](enum rtx_code code)
+	{
+	  switch (code)
+	    {
+	    case PLUS:
+	    case MINUS:
+	    case IOR:
+	    case XOR:
+	    case ROTATE:
+	    case ROTATERT:
+	    case ASHIFT:
+	    case ASHIFTRT:
+	    case LSHIFTRT:
+	      return true;
+	    default:
+	      return false;
+	    }
+	};
+
       /* Check if the optimization conditions are met.  */
       if (value_if_true_insn
 	  && value_if_false_insn
-	  /* Make sure that value_if_false and var are the same.  */
-	  && BINARY_P (value_if_true_insn_src
-		       = SET_SRC (single_set (value_if_true_insn)))
+	  /* Make sure that the orig value OP 0 keep orig.  */
+	  && (value_if_true_insn_src
+	      = SET_SRC (single_set (value_if_true_insn)))
+	  && is_binary_op_0_keep_orig ( GET_CODE (value_if_true_insn_src))
 	  /* Make sure that both value_if_true and value_if_false
 	     has the same var.  */
 	  && rtx_equal_p (XEXP (value_if_true_insn_src, 0),
