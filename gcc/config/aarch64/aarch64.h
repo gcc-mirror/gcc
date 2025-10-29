@@ -291,17 +291,24 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
 #define TARGET_SVE2 AARCH64_HAVE_ISA (SVE2)
 
 /* SVE2 AES instructions, enabled through +sve2-aes.  */
-#define TARGET_SVE2_AES (AARCH64_HAVE_ISA (SVE2_AES) && TARGET_NON_STREAMING)
+#define TARGET_SVE2_AES (AARCH64_HAVE_ISA (SVE2) \
+			 && AARCH64_HAVE_ISA (SVE_AES) \
+			 && TARGET_NON_STREAMING)
 
 /* SVE2 BITPERM instructions, enabled through +sve2-bitperm.  */
-#define TARGET_SVE2_BITPERM (AARCH64_HAVE_ISA (SVE2_BITPERM) \
+#define TARGET_SVE2_BITPERM (AARCH64_HAVE_ISA (SVE2) \
+			     && AARCH64_HAVE_ISA (SVE_BITPERM) \
 			     && TARGET_NON_STREAMING)
 
 /* SVE2 SHA3 instructions, enabled through +sve2-sha3.  */
-#define TARGET_SVE2_SHA3 (AARCH64_HAVE_ISA (SVE2_SHA3) && TARGET_NON_STREAMING)
+#define TARGET_SVE2_SHA3 (AARCH64_HAVE_ISA (SVE2) \
+			  && AARCH64_HAVE_ISA (SVE_SHA3) \
+			  && TARGET_NON_STREAMING)
 
 /* SVE2 SM4 instructions, enabled through +sve2-sm4.  */
-#define TARGET_SVE2_SM4 (AARCH64_HAVE_ISA (SVE2_SM4) && TARGET_NON_STREAMING)
+#define TARGET_SVE2_SM4 (AARCH64_HAVE_ISA (SVE2) \
+			 && AARCH64_HAVE_ISA (SVE_SM4) \
+			 && TARGET_NON_STREAMING)
 
 /* SVE2p1 instructions, enabled through +sve2p1.  */
 #define TARGET_SVE2p1 AARCH64_HAVE_ISA (SVE2p1)

@@ -193,7 +193,7 @@ DEF_SVE_FUNCTION (svstnt1w_scatter, store_scatter_offset_restricted, d_integer, 
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE2 \
-					      | AARCH64_FL_SVE2_AES)
+					      | AARCH64_FL_SVE_AES)
 DEF_SVE_FUNCTION (svaesd, binary, b_unsigned, none)
 DEF_SVE_FUNCTION (svaese, binary, b_unsigned, none)
 DEF_SVE_FUNCTION (svaesimc, unary, b_unsigned, none)
@@ -203,19 +203,19 @@ DEF_SVE_FUNCTION (svpmullt_pair, binary_opt_n, d_unsigned, none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE2 \
-					      | AARCH64_FL_SVE2_BITPERM)
+					      | AARCH64_FL_SVE_BITPERM)
 DEF_SVE_FUNCTION (svbdep, binary_opt_n, all_unsigned, none)
 DEF_SVE_FUNCTION (svbext, binary_opt_n, all_unsigned, none)
 DEF_SVE_FUNCTION (svbgrp, binary_opt_n, all_unsigned, none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE2 \
-					      | AARCH64_FL_SVE2_SHA3)
+					      | AARCH64_FL_SVE_SHA3)
 DEF_SVE_FUNCTION (svrax1, binary, d_integer, none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE2 \
-					      | AARCH64_FL_SVE2_SM4)
+					      | AARCH64_FL_SVE_SM4)
 DEF_SVE_FUNCTION (svsm4e, binary, s_unsigned, none)
 DEF_SVE_FUNCTION (svsm4ekey, binary, s_unsigned, none)
 #undef REQUIRED_EXTENSIONS
