@@ -1138,7 +1138,8 @@ btf_add_used_type_1 (ctf_container_ref ctfc, ctf_dtdef_ref dtd,
 
 	/* Try to avoid chasing pointers to struct/union types if the
 	   underlying type isn't used.  */
-	if (check_ptr && seen_ptr && create_fixups)
+	if (check_ptr && seen_ptr && create_fixups
+	    && kind != BTF_KIND_TYPEDEF)
 	  {
 	    ctf_dtdef_ref ref = dtd->ref_type;
 	    uint32_t ref_kind = btf_dtd_kind (ref);
