@@ -132,6 +132,7 @@ loongarch_update_cpp_builtins (cpp_reader *pfile)
   loongarch_def_or_undef (ISA_HAS_LSX, "__loongarch_simd", pfile);
   loongarch_def_or_undef (ISA_HAS_LSX, "__loongarch_sx", pfile);
   loongarch_def_or_undef (ISA_HAS_LASX, "__loongarch_asx", pfile);
+  loongarch_def_or_undef (ISA_HAS_LASX, "__loongarch_asx_sx_conv", pfile);
 
   builtin_undef ("__loongarch_simd_width");
   if (ISA_HAS_LSX)

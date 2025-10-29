@@ -19701,13 +19701,25 @@ into the data cache.  The instruction is issued in slot I1@.
 
 These built-in functions are available for LoongArch.
 
-Data Type Description:
+@menu
+* Data Types::
+* Directly-mapped Builtin Functions::
+* Directly-mapped Division Builtin Functions::
+* Other Builtin Functions::
+@end menu
+
+@node Data Types
+@subsubsection Data Types
+
 @itemize
 @item @code{imm0_31}, a compile-time constant in range 0 to 31;
 @item @code{imm0_16383}, a compile-time constant in range 0 to 16383;
 @item @code{imm0_32767}, a compile-time constant in range 0 to 32767;
 @item @code{imm_n2048_2047}, a compile-time constant in range -2048 to 2047;
 @end itemize
+
+@node Directly-mapped Builtin Functions
+@subsubsection Directly-mapped Builtin Functions
 
 The intrinsics provided are listed below:
 @smallexample
@@ -19832,6 +19844,9 @@ function you need to include @code{larchintrin.h}.
     void __break (imm0_32767)
 @end smallexample
 
+@node Directly-mapped Division Builtin Functions
+@subsubsection Directly-mapped Division Builtin Functions
+
 These intrinsic functions are available by including @code{larchintrin.h} and
 using @option{-mfrecipe}.
 @smallexample
@@ -19840,6 +19855,9 @@ using @option{-mfrecipe}.
     float __frsqrte_s (float);
     double __frsqrte_d (double);
 @end smallexample
+
+@node Other Builtin Functions
+@subsubsection Other Builtin Functions
 
 Additional built-in functions are available for LoongArch family
 processors to efficiently use 128-bit floating-point (__float128)
@@ -19867,6 +19885,15 @@ GCC provides intrinsics to access the LSX (Loongson SIMD Extension) instructions
 The interface is made available by including @code{<lsxintrin.h>} and using
 @option{-mlsx}.
 
+@menu
+* SX Data Types::
+* Directly-mapped SX Builtin Functions::
+* Directly-mapped SX Division Builtin Functions::
+@end menu
+
+@node SX Data Types
+@subsubsection SX Data Types
+
 The following vectors typedefs are included in @code{lsxintrin.h}:
 
 @itemize
@@ -19893,6 +19920,9 @@ input/output values manipulated:
 @item @code{imm_n1024_1023}, an integer literal in range -1024 to 1023;
 @item @code{imm_n2048_2047}, an integer literal in range -2048 to 2047.
 @end itemize
+
+@node Directly-mapped SX Builtin Functions
+@subsubsection Directly-mapped SX Builtin Functions
 
 For convenience, GCC defines functions @code{__lsx_vrepli_@{b/h/w/d@}} and
 @code{__lsx_b[n]z_@{v/b/h/w/d@}}, which are implemented as follows:
@@ -20677,6 +20707,9 @@ __m128i __lsx_vxori_b (__m128i, imm0_255);
 __m128i __lsx_vxor_v (__m128i, __m128i);
 @end smallexample
 
+@node Directly-mapped SX Division Builtin Functions
+@subsubsection Directly-mapped SX Division Builtin Functions
+
 These intrinsic functions are available by including @code{lsxintrin.h} and
 using @option{-mfrecipe} and @option{-mlsx}.
 @smallexample
@@ -20692,6 +20725,16 @@ __m128 __lsx_vfrsqrte_s (__m128);
 GCC provides intrinsics to access the LASX (Loongson Advanced SIMD Extension)
 instructions. The interface is made available by including @code{<lasxintrin.h>}
 and using @option{-mlasx}.
+
+@menu
+* ASX Data Types::
+* Directly-mapped ASX Builtin Functions::
+* Directly-mapped ASX Division Builtin Functions::
+* Directly-mapped SX and ASX Conversion Builtin Functions::
+@end menu
+
+@node ASX Data Types
+@subsubsection ASX Data Types
 
 The following vectors typedefs are included in @code{lasxintrin.h}:
 
@@ -20720,6 +20763,9 @@ input/output values manipulated:
 @item @code{imm_n1024_1023}, an integer literal in range -1024 to 1023.
 @item @code{imm_n2048_2047}, an integer literal in range -2048 to 2047.
 @end itemize
+
+@node Directly-mapped ASX Builtin Functions
+@subsubsection Directly-mapped ASX Builtin Functions
 
 For convenience, GCC defines functions @code{__lasx_xvrepli_@{b/h/w/d@}} and
 @code{__lasx_b[n]z_@{v/b/h/w/d@}}, which are implemented as follows:
@@ -21525,6 +21571,9 @@ __m256i __lasx_xvxori_b (__m256i, imm0_255);
 __m256i __lasx_xvxor_v (__m256i, __m256i);
 @end smallexample
 
+@node Directly-mapped ASX Division Builtin Functions
+@subsubsection Directly-mapped ASX Division Builtin Functions
+
 These intrinsic functions are available by including @code{lasxintrin.h} and
 using @option{-mfrecipe} and @option{-mlasx}.
 @smallexample
@@ -21532,6 +21581,213 @@ __m256d __lasx_xvfrecipe_d (__m256d);
 __m256 __lasx_xvfrecipe_s (__m256);
 __m256d __lasx_xvfrsqrte_d (__m256d);
 __m256 __lasx_xvfrsqrte_s (__m256);
+@end smallexample
+
+@node Directly-mapped SX and ASX Conversion Builtin Functions
+@subsubsection Directly-mapped SX and ASX Conversion Builtin Functions
+
+For convenience, the @code{lsxintrin.h} file was imported into @code{
+lasxintrin.h} and 18 new interface functions for 128 and 256 vector
+conversions were added, using the @option{-mlasx} option.
+@smallexample
+__m256 __lasx_cast_128_s (__m128);
+__m256d __lasx_cast_128_d (__m128d);
+__m256i __lasx_cast_128 (__m128i);
+__m256 __lasx_concat_128_s (__m128, __m128);
+__m256d __lasx_concat_128_d (__m128d, __m128d);
+__m256i __lasx_concat_128 (__m128i, __m128i);
+__m128 __lasx_extract_128_lo_s (__m256);
+__m128 __lasx_extract_128_hi_s (__m256);
+__m128d __lasx_extract_128_lo_d (__m256d);
+__m128d __lasx_extract_128_hi_d (__m256d);
+__m128i __lasx_extract_128_lo (__m256i);
+__m128i __lasx_extract_128_hi (__m256i);
+__m256 __lasx_insert_128_lo_s (__m256, __m128);
+__m256 __lasx_insert_128_hi_s (__m256, __m128);
+__m256d __lasx_insert_128_lo_d (__m256d, __m128d);
+__m256d __lasx_insert_128_hi_d (__m256d, __m128d);
+__m256i __lasx_insert_128_lo (__m256i, __m128i);
+__m256i __lasx_insert_128_hi (__m256i, __m128i);
+@end smallexample
+
+When gcc does not support interfaces for 128 and 256 conversions,
+use the following code for equivalent substitution.
+
+@smallexample
+
+  #ifndef __loongarch_asx_sx_conv
+
+  #include <lasxintrin.h>
+  #include <lsxintrin.h>
+  __m256 inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_cast_128_s (__m128 src)
+  @{
+    __m256 dest;
+    asm ("" : "=f"(dest) : "0"(src));
+    return dest;
+  @}
+
+  __m256d inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_cast_128_d (__m128d src)
+  @{
+    __m256d dest;
+    asm	("" : "=f"(dest) : "0"(src));
+    return dest;
+  @}
+
+  __m256i inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_cast_128 (__m128i src)
+  @{
+    __m256i dest;
+    asm	("" : "=f"(dest) : "0"(src));
+    return dest;
+  @}
+
+  __m256 inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_concat_128_s (__m128 src1, __m128 src2)
+  @{
+    __m256 dest;
+    asm	("xvpermi.q %u0,%u2,0x02\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256d inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_concat_128_d (__m128d src1, __m128d src2)
+  @{
+    __m256d dest;
+    asm	("xvpermi.q %u0,%u2,0x02\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256i inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_concat_128 (__m128i src1, __m128i src2)
+  @{
+    __m256i dest;
+    asm	("xvpermi.q %u0,%u2,0x02\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m128 inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_extract_128_lo_s (__m256 src)
+  @{
+    __m128 dest;
+    asm	("" : "=f"(dest) : "0"(src));
+    return dest;
+  @}
+
+  __m128d inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_extract_128_lo_d (__m256d src)
+  @{
+    __m128d dest;
+    asm	("" : "=f"(dest) : "0"(src));
+    return dest;
+  @}
+
+  __m128i inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_extract_128_lo (__m256i src)
+  @{
+    __m128i dest;
+    asm	("" : "=f"(dest) : "0"(src));
+    return dest;
+  @}
+
+  __m128 inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_extract_128_hi_s (__m256 src)
+  @{
+    __m128 dest;
+    asm	("xvpermi.d %u0,%u1,0xe\n"
+          : "=f"(dest)
+          : "f"(src));
+    return dest;
+  @}
+
+  __m128d inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_extract_128_hi_d (__m256d src)
+  @{
+    __m128d dest;
+    asm	("xvpermi.d %u0,%u1,0xe\n"
+          : "=f"(dest)
+          : "f"(src));
+    return dest;
+  @}
+
+  __m128i inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_extract_128_hi (__m256i src)
+  @{
+    __m128i dest;
+    asm	("xvpermi.d %u0,%u1,0xe\n"
+          : "=f"(dest)
+          : "f"(src));
+    return dest;
+  @}
+
+  __m256 inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_insert_128_lo_s (__m256 src1, __m128 src2)
+  @{
+    __m256 dest;
+    asm	("xvpermi.q %u0,%u2,0x30\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256d inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_insert_128_lo_d (__m256d a, __m128d b)
+  @{
+    __m256d dest;
+    asm	("xvpermi.q %u0,%u2,0x30\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256i inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_insert_128_lo (__m256i src1, __m128i src2)
+  @{
+    __m256i dest;
+    asm	("xvpermi.q %u0,%u2,0x30\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256 inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_insert_128_hi_s (__m256 src1, __m128 src2)
+  @{
+    __m256 dest;
+    asm	("xvpermi.q %u0,%u2,0x02\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256d inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_insert_128_hi_d (__m256d src1, __m128d src2)
+  @{
+    __m256d dest;
+    asm	("xvpermi.q %u0,%u2,0x02\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+
+  __m256i inline __attribute__((__gnu_inline__, __always_inline__, __artificial__))
+  __lasx_insert_128_hi (__m256i src1, __m128i src2)
+  @{
+    __m256i dest;
+    asm	("xvpermi.q %u0,%u2,0x02\n"
+          : "=f"(dest)
+          : "0"(src1), "f"(src2));
+    return dest;
+  @}
+  #endif
+
 @end smallexample
 
 @node MIPS DSP Built-in Functions

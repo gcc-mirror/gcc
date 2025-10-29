@@ -865,6 +865,27 @@ AVAIL_ALL (lasx_frecipe, ISA_HAS_LASX && ISA_HAS_FRECIPE)
 #define CODE_FOR_lasx_xvmaddwod_q_du	CODE_FOR_lasx_maddwod_q_du_punned
 #define CODE_FOR_lasx_xvmaddwod_q_du_d	CODE_FOR_lasx_maddwod_q_du_d_punned
 
+
+/* Add mutual conversion between 128 and 256 vectors.  */
+#define CODE_FOR_lasx_extract_128_lo_s	CODE_FOR_vec_extract_lo_v8sf
+#define CODE_FOR_lasx_extract_128_hi_s	CODE_FOR_vec_extract_hi_v8sf
+#define CODE_FOR_lasx_extract_128_lo_d	CODE_FOR_vec_extract_lo_v4df
+#define CODE_FOR_lasx_extract_128_hi_d	CODE_FOR_vec_extract_hi_v4df
+#define CODE_FOR_lasx_extract_128_lo	CODE_FOR_vec_extract_lo_v4di
+#define CODE_FOR_lasx_extract_128_hi	CODE_FOR_vec_extract_hi_v4di
+#define CODE_FOR_lasx_insert_128_lo_s	CODE_FOR_vec_insert_lo_v8sf
+#define CODE_FOR_lasx_insert_128_hi_s	CODE_FOR_vec_insert_hi_v8sf
+#define CODE_FOR_lasx_insert_128_lo_d	CODE_FOR_vec_insert_lo_v4df
+#define CODE_FOR_lasx_insert_128_hi_d	CODE_FOR_vec_insert_hi_v4df
+#define CODE_FOR_lasx_insert_128_lo	CODE_FOR_vec_insert_lo_v4di
+#define CODE_FOR_lasx_insert_128_hi	CODE_FOR_vec_insert_hi_v4di
+#define CODE_FOR_lasx_concat_128_s	CODE_FOR_vec_concatv8sf
+#define CODE_FOR_lasx_concat_128_d	CODE_FOR_vec_concatv4df
+#define CODE_FOR_lasx_concat_128	CODE_FOR_vec_concatv4di
+#define CODE_FOR_lasx_cast_128_s   	CODE_FOR_vec_castv8sf
+#define CODE_FOR_lasx_cast_128_d  	CODE_FOR_vec_castv4df
+#define CODE_FOR_lasx_cast_128   	CODE_FOR_vec_castv4di
+
 static const struct loongarch_builtin_description loongarch_builtins[] = {
 #define LARCH_MOVFCSR2GR 0
   DIRECT_BUILTIN (movfcsr2gr, LARCH_USI_FTYPE_UQI, hard_float),
@@ -2407,7 +2428,25 @@ static const struct loongarch_builtin_description loongarch_builtins[] = {
   LASX_BUILTIN (xvssrarni_bu_h, LARCH_UV32QI_FTYPE_UV32QI_V32QI_USI),
   LASX_BUILTIN (xvssrarni_hu_w, LARCH_UV16HI_FTYPE_UV16HI_V16HI_USI),
   LASX_BUILTIN (xvssrarni_wu_d, LARCH_UV8SI_FTYPE_UV8SI_V8SI_USI),
-  LASX_BUILTIN (xvssrarni_du_q, LARCH_UV4DI_FTYPE_UV4DI_V4DI_USI)
+  LASX_BUILTIN (xvssrarni_du_q, LARCH_UV4DI_FTYPE_UV4DI_V4DI_USI),
+  LASX_BUILTIN (extract_128_lo_s, LARCH_V4SF_FTYPE_V8SF),
+  LASX_BUILTIN (extract_128_hi_s, LARCH_V4SF_FTYPE_V8SF),
+  LASX_BUILTIN (extract_128_lo_d, LARCH_V2DF_FTYPE_V4DF),
+  LASX_BUILTIN (extract_128_hi_d, LARCH_V2DF_FTYPE_V4DF),
+  LASX_BUILTIN (extract_128_lo, LARCH_V2DI_FTYPE_V4DI),
+  LASX_BUILTIN (extract_128_hi, LARCH_V2DI_FTYPE_V4DI),
+  LASX_BUILTIN (insert_128_lo_s, LARCH_V8SF_FTYPE_V8SF_V4SF),
+  LASX_BUILTIN (insert_128_hi_s, LARCH_V8SF_FTYPE_V8SF_V4SF),
+  LASX_BUILTIN (insert_128_lo_d, LARCH_V4DF_FTYPE_V4DF_V2DF),
+  LASX_BUILTIN (insert_128_hi_d, LARCH_V4DF_FTYPE_V4DF_V2DF),
+  LASX_BUILTIN (insert_128_lo, LARCH_V4DI_FTYPE_V4DI_V2DI),
+  LASX_BUILTIN (insert_128_hi, LARCH_V4DI_FTYPE_V4DI_V2DI),
+  LASX_BUILTIN (concat_128_s, LARCH_V8SF_FTYPE_V4SF_V4SF),
+  LASX_BUILTIN (concat_128_d, LARCH_V4DF_FTYPE_V2DF_V2DF),
+  LASX_BUILTIN (concat_128, LARCH_V4DI_FTYPE_V2DI_V2DI),
+  LASX_BUILTIN (cast_128_s, LARCH_V8SF_FTYPE_V4SF),
+  LASX_BUILTIN (cast_128_d, LARCH_V4DF_FTYPE_V2DF),
+  LASX_BUILTIN (cast_128, LARCH_V4DI_FTYPE_V2DI)
 };
 
 /* Index I is the function declaration for loongarch_builtins[I], or null if
@@ -3001,6 +3040,10 @@ loongarch_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
 {
   struct expand_operand ops[MAX_RECOG_OPERANDS];
   int opno, argno;
+  /* For vector extraction/insertion operations, sel_high_p being true
+     indicates that the high of the data is selected/retained from the
+     vector register.  */
+  bool sel_high_p = true;
 
   /* Map any target to operand 0.  */
   opno = 0;
@@ -3018,6 +3061,51 @@ loongarch_expand_builtin_direct (enum insn_code icode, rtx target, tree exp,
       loongarch_prepare_builtin_arg (&ops[2], exp, 0);
       create_input_operand (&ops[1], CONST1_RTX (ops[0].mode), ops[0].mode);
       return loongarch_expand_builtin_insn (icode, 3, ops, has_target_p);
+
+    case CODE_FOR_vec_extract_lo_v8sf:
+    case CODE_FOR_vec_extract_lo_v4df:
+    case CODE_FOR_vec_extract_lo_v4di:
+      sel_high_p = false;
+    /* Fall through.  */
+    case CODE_FOR_vec_extract_hi_v8sf:
+    case CODE_FOR_vec_extract_hi_v4df:
+    case CODE_FOR_vec_extract_hi_v4di:
+      {
+	/* The selection method for constructing the high/low half.  */
+	loongarch_prepare_builtin_arg (&ops[1], exp, 0);
+	int nelts = GET_MODE_NUNITS (GET_MODE (ops[1].value));
+	int half_nelts = nelts / 2;
+	int base = sel_high_p ? half_nelts : 0;
+
+	rtx pat_rtx
+	    = loongarch_gen_stepped_int_parallel (half_nelts, base, 1);
+	create_input_operand (&ops[2], pat_rtx, ops[1].mode);
+
+	return loongarch_expand_builtin_insn (icode, 3, ops, has_target_p);
+      }
+
+    case CODE_FOR_vec_insert_hi_v8sf:
+    case CODE_FOR_vec_insert_hi_v4df:
+    case CODE_FOR_vec_insert_hi_v4di:
+      sel_high_p = false;
+    /* Fall through.  */
+    case CODE_FOR_vec_insert_lo_v8sf:
+    case CODE_FOR_vec_insert_lo_v4df:
+    case CODE_FOR_vec_insert_lo_v4di:
+      {
+	/* The selection method for constructing the high/low half.  */
+	loongarch_prepare_builtin_arg (&ops[1], exp, 0);
+	loongarch_prepare_builtin_arg (&ops[2], exp, 1);
+	int nelts = GET_MODE_NUNITS (GET_MODE (ops[1].value));
+	int half_nelts = nelts / 2;
+	int base = sel_high_p ? half_nelts : 0;
+
+	rtx pat_rtx
+	    = loongarch_gen_stepped_int_parallel (half_nelts, base, 1);
+	create_input_operand (&ops[3], pat_rtx, ops[1].mode);
+
+	return loongarch_expand_builtin_insn (icode, 4, ops, has_target_p);
+      }
 
     default:
       break;

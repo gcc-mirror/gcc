@@ -130,6 +130,7 @@
 
 ;; Only used for splitting insert_d and copy_{u,s}.d.
 (define_mode_iterator LASX_WD [V4DI V4DF V8SI V8SF])
+(define_mode_iterator LASX_PART [V4DI V4DF V8SF])
 
 ;; Only used for copy256_{u,s}.w.
 (define_mode_iterator LASX_W    [V8SI V8SF])
@@ -670,6 +671,41 @@
   "ISA_HAS_LASX"
   "xvpermi.d\t%u0,%u1,0xe"
   [(set_attr "move_type" "fmove")
+   (set_attr "mode" "<MODE>")])
+
+;; vr0 -> low xr0
+;;
+(define_insn "vec_cast<mode>"
+  [(set (match_operand:LASX_PART 0 "register_operand" "=f")
+       (subreg:LASX_PART
+         (match_operand:<VHMODE256_ALL> 1 "register_operand" "0") 0))]
+  "ISA_HAS_LASX"
+  ""
+  [(set_attr "type" "simd_splat")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "vec_insert_lo_<mode>"
+  [(set (match_operand:LASX_PART 0 "register_operand" "=f")
+    (vec_concat:LASX_PART
+      (match_operand:<VHMODE256_ALL> 2 "register_operand" "f")
+      (vec_select:<VHMODE256_ALL>
+       (match_operand:LASX_PART 1 "register_operand" "0")
+       (match_operand:LASX_PART 3 "vect_par_cnst_high_half"))))]
+  "ISA_HAS_LASX"
+  "xvpermi.q\t%u0,%u2,0x30"
+  [(set_attr "type" "simd_splat")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "vec_insert_hi_<mode>"
+  [(set (match_operand:LASX_PART 0 "register_operand" "=f")
+    (vec_concat:LASX_PART
+      (vec_select:<VHMODE256_ALL>
+       (match_operand:LASX_PART 1 "register_operand" "0")
+       (match_operand:LASX_PART 3 "vect_par_cnst_low_half"))
+      (match_operand:<VHMODE256_ALL> 2 "register_operand" "f")))]
+  "ISA_HAS_LASX"
+  "xvpermi.q\t%u0,%u2,0x02"
+  [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
 (define_expand "vec_perm<mode>"
