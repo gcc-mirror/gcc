@@ -327,6 +327,17 @@
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
 
+;; <x>vfnmsub.{s/d}
+(define_insn "fnma<mode>4"
+  [(set (match_operand:FVEC 0 "register_operand" "=f")
+	(fma:FVEC (neg:FVEC (match_operand:FVEC 1 "register_operand" "f"))
+		  (match_operand:FVEC 2 "register_operand" "f")
+		  (match_operand:FVEC 3 "register_operand" "f")))]
+  "!HONOR_SIGNED_ZEROS (<MODE>mode)"
+  "<x>vfnmsub.<simdfmt>\t%<wu>0,%<wu>1,%<wu>2,%<wu>3"
+  [(set_attr "type" "simd_fmadd")
+   (set_attr "mode" "<MODE>")])
+
 ;; <x>vfcmp.*.{s/d} with defined RTX code
 ;; There are no fcmp.{sugt/suge/cgt/cge}.{s/d} menmonics in GAS, so we have
 ;; to reverse the operands ourselves :(.
