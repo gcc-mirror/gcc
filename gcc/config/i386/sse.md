@@ -643,6 +643,9 @@
 (define_mode_iterator VI2_AVX512F
   [(V32HI "TARGET_AVX512F") (V16HI "TARGET_AVX2") V8HI])
 
+(define_mode_iterator VI2_AVX10_2
+  [(V32HI "TARGET_AVX10_2") (V16HI "TARGET_AVX2") V8HI])
+
 (define_mode_iterator VI2_AVX512VNNIBW
   [(V32HI "TARGET_AVX512BW || TARGET_AVX512VNNI")
    (V16HI "TARGET_AVX2") V8HI])
@@ -32334,8 +32337,8 @@
 
 (define_expand "usdot_prod<sseunpackmodelower><mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI2_AVX512F 1 "register_operand")
-   (match_operand:VI2_AVX512F 2 "register_operand")
+   (match_operand:VI2_AVX10_2 1 "register_operand")
+   (match_operand:VI2_AVX10_2 2 "register_operand")
    (match_operand:<sseunpackmode> 3 "register_operand")]
   "TARGET_AVXVNNIINT16 || TARGET_AVX10_2"
 {
@@ -32352,8 +32355,8 @@
 
 (define_expand "udot_prod<sseunpackmodelower><mode>"
   [(match_operand:<sseunpackmode> 0 "register_operand")
-   (match_operand:VI2_AVX512F 1 "register_operand")
-   (match_operand:VI2_AVX512F 2 "register_operand")
+   (match_operand:VI2_AVX10_2 1 "register_operand")
+   (match_operand:VI2_AVX10_2 2 "register_operand")
    (match_operand:<sseunpackmode> 3 "register_operand")]
   "TARGET_AVXVNNIINT16 || TARGET_AVX10_2"
 {
