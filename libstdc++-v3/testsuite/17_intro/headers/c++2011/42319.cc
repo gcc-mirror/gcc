@@ -1,5 +1,5 @@
 // { dg-do compile }
-// { dg-options "-std=gnu++11" }
+// { dg-add-options no_pch }
 
 // Copyright (C) 2009-2025 Free Software Foundation, Inc.
 //
@@ -19,4 +19,4 @@
 // <http://www.gnu.org/licenses/>.
 
 // libstdc++/42319
-#include <bits/char_traits.h>
+#include <ios>

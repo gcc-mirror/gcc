@@ -23,7 +23,7 @@
 
 #include <thread>
 #include <system_error>
-#include <bits/move.h> // std::move
+#include <utility> // std::move
 #include <testsuite_hooks.h>
 
 void f() { }
