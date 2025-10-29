@@ -1821,6 +1821,19 @@ do_simple_agr_dse (gassign *stmt, bool full_walk)
 	  if (gimple_clobber_p (use_stmt, kind)
 	      && lhs == gimple_assign_lhs (use_stmt))
 	    continue;
+	  /* If the use is a phi and it is single use then check if that single use
+	     is a clobber of the same kind and lhs is the same.  */
+	  if (gphi *use_phi = dyn_cast<gphi*>(use_stmt))
+	    {
+	      use_operand_p ou;
+	      gimple *ostmt;
+	      if (single_imm_use (gimple_phi_result (use_phi), &ou, &ostmt)
+		  && gimple_clobber_p (ostmt, kind)
+	          && lhs == gimple_assign_lhs (ostmt))
+		continue;
+	      /* A phi node will never be dominating the clobber.  */
+	      return;
+	    }
 	  /* The use needs to be dominating the clobber. */
 	  if ((ubb != bb && !dominated_by_p (CDI_DOMINATORS, bb, ubb))
 	      || ref_maybe_used_by_stmt_p (use_stmt, &read, false))
