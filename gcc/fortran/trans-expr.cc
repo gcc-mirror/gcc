@@ -6090,9 +6090,6 @@ gfc_conv_gfc_desc_to_cfi_desc (gfc_se *parmse, gfc_expr *e, gfc_symbol *fsym)
       se.want_pointer = 1;
       gfc_conv_expr (&se, e);
       gfc = se.expr;
-      /* gfc_conv_constant ignores se.want_poiner, e.g. for string_cst.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (gfc)))
-	gfc = gfc_build_addr_expr (NULL, gfc);
     }
   else
     {
