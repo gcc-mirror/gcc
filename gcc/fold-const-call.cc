@@ -1440,6 +1440,25 @@ fold_const_fold_left (tree type, tree arg0, tree arg1, tree_code code)
   return arg0;
 }
 
+/* Fold a call to IFN_VEC_SHL_INSERT (ARG0, ARG1), returning a value
+   of type TYPE.  */
+
+static tree
+fold_const_vec_shl_insert (tree, tree arg0, tree arg1)
+{
+  if (TREE_CODE (arg0) != VECTOR_CST)
+    return NULL_TREE;
+
+  /* vec_shl_insert ( dup(CST), CST) -> dup (CST). */
+  if (tree elem = uniform_vector_p (arg0))
+    {
+      if (operand_equal_p (elem, arg1))
+	return arg0;
+    }
+
+  return NULL_TREE;
+}
+
 /* Try to evaluate:
 
       *RESULT = FN (*ARG0, *ARG1)
@@ -1842,6 +1861,9 @@ fold_const_call (combined_fn fn, tree type, tree arg0, tree arg1)
 
     case CFN_FOLD_LEFT_PLUS:
       return fold_const_fold_left (type, arg0, arg1, PLUS_EXPR);
+
+    case CFN_VEC_SHL_INSERT:
+      return fold_const_vec_shl_insert (type, arg0, arg1);
 
     case CFN_UBSAN_CHECK_ADD:
     case CFN_ADD_OVERFLOW:

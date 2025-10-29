@@ -12023,3 +12023,8 @@ and,
       && direct_internal_fn_supported_p (IFN_AVG_CEIL, type, OPTIMIZE_FOR_BOTH))
       (IFN_AVG_CEIL @0 @2)))
 #endif
+
+/* vec shift left insert (dup (A), A) -> dup(A) */
+(simplify
+ (IFN_VEC_SHL_INSERT (vec_duplicate@1 @0) @0)
+  @1)
