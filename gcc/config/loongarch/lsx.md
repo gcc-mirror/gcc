@@ -799,16 +799,6 @@
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "fnma<mode>4"
-  [(set (match_operand:FLSX 0 "register_operand" "=f")
-	(fma:FLSX (neg:FLSX (match_operand:FLSX 1 "register_operand" "f"))
-		  (match_operand:FLSX 2 "register_operand" "f")
-		  (match_operand:FLSX 3 "register_operand" "0")))]
-  "ISA_HAS_LSX"
-  "vfnmsub.<flsxfmt>\t%w0,%w1,%w2,%w0"
-  [(set_attr "type" "simd_fmadd")
-   (set_attr "mode" "<MODE>")])
-
 (define_expand "sqrt<mode>2"
   [(set (match_operand:FLSX 0 "register_operand")
     (sqrt:FLSX (match_operand:FLSX 1 "register_operand")))]

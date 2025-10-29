@@ -982,16 +982,6 @@
   [(set_attr "type" "simd_fmadd")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "fnma<mode>4"
-  [(set (match_operand:FLASX 0 "register_operand" "=f")
-	(fma:FLASX (neg:FLASX (match_operand:FLASX 1 "register_operand" "f"))
-		   (match_operand:FLASX 2 "register_operand" "f")
-		   (match_operand:FLASX 3 "register_operand" "0")))]
-  "ISA_HAS_LASX"
-  "xvfnmsub.<flasxfmt>\t%u0,%u1,%u2,%u0"
-  [(set_attr "type" "simd_fmadd")
-   (set_attr "mode" "<MODE>")])
-
 (define_expand "sqrt<mode>2"
   [(set (match_operand:FLASX 0 "register_operand")
     (sqrt:FLASX (match_operand:FLASX 1 "register_operand")))]
