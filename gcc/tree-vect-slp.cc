@@ -4045,7 +4045,9 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
 }
 
 /* Analyze an SLP instance starting from SCALAR_STMTS which are a group
-   of KIND.  Return true if successful.  */
+   of KIND.  Return true if successful.  SCALAR_STMTS is owned by this
+   function, REMAIN and ROOT_STMT_INFOS ownership is transfered back to
+   the caller upon failure.  */
 
 static bool
 vect_build_slp_instance (vec_info *vinfo,
@@ -4059,7 +4061,10 @@ vect_build_slp_instance (vec_info *vinfo,
 {
   /* If there's no budget left bail out early.  */
   if (*limit == 0)
-    return false;
+    {
+      scalar_stmts.release ();
+      return false;
+    }
 
   if (kind == slp_inst_kind_ctor)
     {
@@ -5564,10 +5569,10 @@ vect_analyze_slp (vec_info *vinfo, unsigned max_tree_size,
 				       bb_vinfo->roots[i].remain,
 				       max_tree_size, &limit, bst_map, false))
 	    {
-	      bb_vinfo->roots[i].stmts = vNULL;
 	      bb_vinfo->roots[i].roots = vNULL;
 	      bb_vinfo->roots[i].remain = vNULL;
 	    }
+	  bb_vinfo->roots[i].stmts = vNULL;
 	}
     }
 
