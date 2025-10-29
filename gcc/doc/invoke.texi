@@ -777,7 +777,9 @@ Objective-C and Objective-C++ Dialects}.
 -static-libasan  -static-libtsan  -static-liblsan  -static-libubsan
 -shared  -shared-libgcc  -symbolic
 -T @var{script}  -Wl,@var{option}  -Xlinker @var{option}
--u @var{symbol}  -z @var{keyword}
+-u @var{symbol}
+-Tbss=@var{addr}  -Tdata=@var{addr}  -Ttext=@var{addr}
+-N  -n  -t  -Z  -z @var{keyword}
 --entry=@var{entry}  --for-linker=@var{option}
 --force-link=@var{symbol}  --no-standard-library
 --pie  --static  --static-pie  --symbolic}
@@ -20081,11 +20083,24 @@ Pretend the symbol @var{symbol} is undefined, to force linking of
 library modules to define it.  You can use @option{-u} multiple times with
 different symbols to force loading of additional library modules.
 
+@opindex Tbss
+@opindex Tdata
+@opindex Ttext
+@opindex N
+@opindex n
+@opindex t
+@opindex Z
 @opindex z
-@item -z @var{keyword}
-@option{-z} is passed directly on to the linker along with the keyword
-@var{keyword}. See the section in the documentation of your linker for
-permitted values and their meanings.
+@item -Tbss=@var{addr}
+@itemx -Tdata=@var{addr}
+@itemx -Ttext=@var{addr}
+@itemx -N
+@itemx -n
+@itemx -t
+@itemx -Z
+@itemx -z @var{keyword}
+These options are passed through to the linker without interpretation by GCC.
+Refer to your linker documentation for the meanings of these options.
 @end table
 
 @node Directory Options

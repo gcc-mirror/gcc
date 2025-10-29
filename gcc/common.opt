@@ -457,6 +457,7 @@ Driver Joined Separate
 
 N
 Driver
+Passed to the linker.
 
 O
 Common JoinedOrMissing Optimization
@@ -478,8 +479,10 @@ Oz
 Common Optimization
 Optimize for space aggressively rather than speed.
 
+; Driver passes -quiet to the front end if -Q is not specified.
 Q
 Driver
+-Q --help prints what options are enabled.  Just -Q enables verbose messages.
 
 Qn
 Driver Negative(Qy)
@@ -492,27 +495,35 @@ Driver Joined Separate
 
 S
 Driver
+Stop processing after generating assembly code; do not assemble.
 
 T
 Driver Joined Separate
+Passed to the linker.
 
 Tbss
 Driver Separate
+Passed to the linker.
 
 Tbss=
 Driver Joined
+Passed to the linker.
 
 Tdata
 Driver Separate
+Passed to the linker.
 
 Tdata=
 Driver Joined
+Passed to the linker.
 
 Ttext
 Driver Separate
+Passed to the linker.
 
 Ttext=
 Driver Joined
+Passed to the linker.
 
 W
 Common RejectNegative Warning Alias(Wextra)
@@ -929,6 +940,7 @@ Driver Separate
 
 Z
 Driver
+Passed to the linker.
 
 aux-info
 Common Separate Var(aux_info_file_name)
@@ -3827,6 +3839,7 @@ Driver Joined Separate
 
 n
 Driver
+Passed to the linker.
 
 no-canonical-prefixes
 Driver
@@ -3900,15 +3913,18 @@ Driver Var(print_sysroot)
 print-sysroot-headers-suffix
 Driver Var(print_sysroot_headers_suffix)
 
+; The driver doesn't understand -quiet, only its inverse -Q.
 quiet
-Common Var(quiet_flag) RejectDriver
+Common Var(quiet_flag) RejectDriver Undocumented
 Do not display functions compiled or elapsed time.
 
 r
 Driver
+Produce a relocatable object as output.
 
 s
 Driver
+Remove all symbol table and relocation information from the executable.
 
 save-temps
 Driver
@@ -3918,6 +3934,7 @@ Driver Joined
 
 t
 Driver
+Passed to the linker.
 
 time
 Driver Var(report_times)
@@ -4028,6 +4045,7 @@ Create a static position independent executable.
 
 z
 Driver Joined Separate
+Passed to the linker.
 
 fipa-ra
 Common Var(flag_ipa_ra) Optimization
