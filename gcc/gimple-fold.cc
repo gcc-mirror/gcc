@@ -5233,24 +5233,6 @@ gimple_fold_builtin_constant_p (gimple_stmt_iterator *gsi)
   return true;
 }
 
-/* Fold __builtin_assume_aligned builtin.  */
-
-static bool
-gimple_fold_builtin_assume_aligned (gimple_stmt_iterator *gsi)
-{
-  if (!fold_before_rtl_expansion_p ())
-    return false;
-
-  gcall *call = as_a<gcall*>(gsi_stmt (*gsi));
-
-  if (gimple_call_num_args (call) < 2)
-    return false;
-
-  gimplify_and_update_call_from_tree (gsi, gimple_call_arg (call, 0));
-
-  return true;
-}
-
 /* If va_list type is a simple pointer and nothing special is needed,
    optimize __builtin_va_start (&ap, 0) into ap = __builtin_next_arg (0),
    __builtin_va_end (&ap) out as NOP and __builtin_va_copy into a simple
@@ -5547,9 +5529,6 @@ gimple_fold_builtin (gimple_stmt_iterator *gsi)
 
     case BUILT_IN_CONSTANT_P:
       return gimple_fold_builtin_constant_p (gsi);
-
-    case BUILT_IN_ASSUME_ALIGNED:
-      return gimple_fold_builtin_assume_aligned (gsi);
 
     default:;
     }

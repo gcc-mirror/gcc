@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fdump-tree-optimized" } */
+/* { dg-options "-O3 -fno-tree-vectorize -fdump-tree-optimized-alias" } */
 
 void
 test1 (double *out1, double *out2, double *out3, double *in1,
@@ -19,6 +19,8 @@ test1 (double *out1, double *out2, double *out3, double *in1,
     }
 }
 
+/* { dg-final { scan-tree-dump-times " ALIGN = 16, MISALIGN = 0" 5 "optimized" } } */
+
 void
 test2 (double *out1, double *out2, double *out3, double *in1,
        double *in2, int len)
@@ -37,4 +39,8 @@ test2 (double *out1, double *out2, double *out3, double *in1,
     }
 }
 
-/* { dg-final { scan-tree-dump-not "__builtin_assume_aligned" "optimized" } } */
+
+/* { dg-final { scan-tree-dump-times " ALIGN = 32" 5 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " ALIGN = 32, MISALIGN = 16" 4 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " ALIGN = 32, MISALIGN = 0" 1 "optimized" } } */
+
