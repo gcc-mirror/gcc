@@ -7225,6 +7225,8 @@ package body Sem_Ch8 is
 
       begin
          while Present (Id) loop
+            --  The immediate case is when Id is an entity of the prefix
+
             if Scope (Id) = P_Name then
                Candidate        := Id;
                Is_New_Candidate := True;
@@ -7249,6 +7251,53 @@ package body Sem_Ch8 is
                      Is_New_Candidate := False;
                   end if;
                end if;
+
+            --  If the name of a generic child unit appears within an instance
+            --  of itself, then it is resolved to the renaming of the name of
+            --  the instance built in Sem_Ch12, so we get to the generic parent
+            --  through the renaming.
+
+            elsif Ekind (Id) in E_Function | E_Package | E_Procedure
+              and then Present (Renamed_Entity (Id))
+              and then Is_Generic_Instance (Renamed_Entity (Id))
+              and then In_Open_Scopes (Renamed_Entity (Id))
+            then
+               declare
+                  Gen_Inst : constant Entity_Id := Renamed_Entity (Id);
+                  Gen_Par  : constant Entity_Id :=
+                    Generic_Parent
+                      (Specification (Unit_Declaration_Node (Gen_Inst)));
+
+               begin
+                  --  The easy case is when Gen_Par is an entity of the prefix
+
+                  if Scope (Gen_Par) = P_Name then
+                     Is_New_Candidate := True;
+
+                  --  Now the prefix may also be within an instance of itself,
+                  --  but we do not need to go through the renaming for it, as
+                  --  this was done on entry to the procedure.
+
+                  elsif Is_Generic_Instance (P_Name)
+                    and then In_Open_Scopes (P_Name)
+                  then
+                     declare
+                        Gen_Par_P : constant Entity_Id :=
+                          Generic_Parent
+                            (Specification (Unit_Declaration_Node (P_Name)));
+
+                     begin
+                        if Scope (Gen_Par) = Gen_Par_P then
+                           Is_New_Candidate := True;
+                        else
+                           Is_New_Candidate := False;
+                        end if;
+                     end;
+
+                  else
+                     Is_New_Candidate := False;
+                  end if;
+               end;
 
             --  Ada 2005 (AI-217): Handle shadow entities associated with
             --  types declared in limited-withed nested packages. We don't need
@@ -7282,22 +7331,6 @@ package body Sem_Ch8 is
               and then Unit_Is_Visible (Cunit (Get_Source_Unit (P_Name)))
             then
                Candidate        := Get_Full_View (Id);
-               Is_New_Candidate := True;
-
-            --  An unusual case arises with a fully qualified name for an
-            --  entity local to a generic child unit package, within an
-            --  instantiation of that package. The name of the unit now
-            --  denotes the renaming created within the instance. This is
-            --  only relevant in an instance body, see below.
-
-            elsif Is_Generic_Instance (Scope (Id))
-              and then In_Open_Scopes (Scope (Id))
-              and then In_Instance_Body
-              and then Ekind (Scope (Id)) = E_Package
-              and then Ekind (Id) = E_Package
-              and then Renamed_Entity (Id) = Scope (Id)
-              and then Is_Immediately_Visible (P_Name)
-            then
                Is_New_Candidate := True;
 
             else
@@ -7434,55 +7467,6 @@ package body Sem_Ch8 is
                end if;
 
             else
-               --  Within the instantiation of a child unit, the prefix may
-               --  denote the parent instance, but the selector has the name
-               --  of the original child. That is to say, when A.B appears
-               --  within an instantiation of generic child unit B, the scope
-               --  stack includes an instance of A (P_Name) and an instance
-               --  of B under some other name. We scan the scope to find this
-               --  child instance, which is the desired entity.
-               --  Note that the parent may itself be a child instance, if
-               --  the reference is of the form A.B.C, in which case A.B has
-               --  already been rewritten with the proper entity.
-
-               if In_Open_Scopes (P_Name)
-                 and then Is_Generic_Instance (P_Name)
-               then
-                  declare
-                     Gen_Par : constant Entity_Id :=
-                                 Generic_Parent (Specification
-                                   (Unit_Declaration_Node (P_Name)));
-                     S : Entity_Id := Current_Scope;
-                     P : Entity_Id;
-
-                  begin
-                     for J in reverse 0 .. Scope_Stack.Last loop
-                        S := Scope_Stack.Table (J).Entity;
-
-                        exit when S = Standard_Standard;
-
-                        if Ekind (S) in E_Function | E_Package | E_Procedure
-                        then
-                           P :=
-                             Generic_Parent (Specification
-                               (Unit_Declaration_Node (S)));
-
-                           --  Check that P is a generic child of the generic
-                           --  parent of the prefix.
-
-                           if Present (P)
-                             and then Chars (P) = Chars (Selector)
-                             and then Scope (P) = Gen_Par
-                           then
-                              Id := S;
-                              goto Found;
-                           end if;
-                        end if;
-
-                     end loop;
-                  end;
-               end if;
-
                --  If this is a selection from Ada, System or Interfaces, then
                --  we assume a missing with for the corresponding package.
 
@@ -7589,7 +7573,6 @@ package body Sem_Ch8 is
          end if;
       end if;
 
-      <<Found>>
       if Comes_From_Source (N)
         and then Is_Remote_Access_To_Subprogram_Type (Id)
         and then Ekind (Id) = E_Access_Subprogram_Type
