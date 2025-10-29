@@ -12046,7 +12046,7 @@ riscv_option_override (void)
      value to size fields within a structure is broken.  Any 2^n byte value
      is functionally correct, but may not be performant.  */
   SET_OPTION_IF_UNSET (&global_options, &global_options_set,
-		       param_destruct_interfere_size, 64);
+		       param_destruct_interfere_size, 0);
 
   /* Function to allocate machine-dependent function status.  */
   init_machine_status = &riscv_init_machine_status;
