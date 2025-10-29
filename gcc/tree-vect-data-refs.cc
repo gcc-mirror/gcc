@@ -4431,6 +4431,7 @@ struct gather_scatter_config
 {
   internal_fn ifn;
   tree offset_vectype;
+  int scale;
   vec<int> elsvals;
 };
 
@@ -4523,38 +4524,62 @@ vect_gather_scatter_get_configs (vec_info *vinfo, bool read_p, bool masked_p,
       if (!offset_vectype)
 	continue;
 
-      vec<int> elsvals = vNULL;
+      /* Try multiple scale values.  Start with exact match, then try
+	 smaller common scales that a target might support .  */
+      int scales_to_try[] = {scale, 1, 2, 4, 8};
 
-      /* If we haven't determined which IFN is supported yet, try all three
-	 to find which one the target supports.  */
-      if (ifn == IFN_LAST)
+      for (unsigned int j = 0;
+	   j < sizeof (scales_to_try) / sizeof (*scales_to_try);
+	   j++)
 	{
-	  ifn = vect_gather_scatter_which_ifn (read_p, masked_p,
-					       vectype, memory_type,
-					       offset_vectype, scale, &elsvals);
-	  if (ifn != IFN_LAST)
+	  int try_scale = scales_to_try[j];
+
+	  /* Skip scales >= requested scale (except for exact match).  */
+	  if (j > 0 && try_scale >= scale)
+	    continue;
+
+	  /* Skip if requested scale is not a multiple of this scale.  */
+	  if (j > 0 && scale % try_scale != 0)
+	    continue;
+
+	  vec<int> elsvals = vNULL;
+
+	  /* If we haven't determined which IFN is supported yet, try all three
+	     to find which one the target supports.  */
+	  if (ifn == IFN_LAST)
 	    {
-	      /* Found which IFN is supported.  Save this configuration.  */
-	      gather_scatter_config config;
-	      config.ifn = ifn;
-	      config.offset_vectype = offset_vectype;
-	      config.elsvals = elsvals;
-	      configs.safe_push (config);
+	      ifn = vect_gather_scatter_which_ifn (read_p, masked_p,
+						   vectype, memory_type,
+						   offset_vectype, try_scale,
+						   &elsvals);
+	      if (ifn != IFN_LAST)
+		{
+		  /* Found which IFN is supported.  Save this configuration.  */
+		  gather_scatter_config config;
+		  config.ifn = ifn;
+		  config.offset_vectype = offset_vectype;
+		  config.scale = try_scale;
+		  config.elsvals = elsvals;
+		  configs.safe_push (config);
+		}
 	    }
-	}
-      else
-	{
-	  /* We already know which IFN is supported, just check if this
-	     offset type works with it.  */
-	  if (internal_gather_scatter_fn_supported_p (ifn, vectype, memory_type,
-						      offset_vectype, scale,
-						      &elsvals))
+	  else
 	    {
-	      gather_scatter_config config;
-	      config.ifn = ifn;
-	      config.offset_vectype = offset_vectype;
-	      config.elsvals = elsvals;
-	      configs.safe_push (config);
+	      /* We already know which IFN is supported, just check if this
+		 offset type and scale work with it.  */
+	      if (internal_gather_scatter_fn_supported_p (ifn, vectype,
+							  memory_type,
+							  offset_vectype,
+							  try_scale,
+							  &elsvals))
+		{
+		  gather_scatter_config config;
+		  config.ifn = ifn;
+		  config.offset_vectype = offset_vectype;
+		  config.scale = try_scale;
+		  config.elsvals = elsvals;
+		  configs.safe_push (config);
+		}
 	    }
 	}
     }
@@ -4570,6 +4595,10 @@ vect_gather_scatter_get_configs (vec_info *vinfo, bool read_p, bool masked_p,
    base address.  If OFFSET_TYPE is scalar the function chooses an
    appropriate vector type for it.  SCALE is the amount by which the
    offset should be multiplied *after* it has been converted to address width.
+   If the target does not support the requested SCALE, SUPPORTED_SCALE
+   will contain the scale that is actually supported
+   (which may be smaller, requiring additional multiplication).
+   Otherwise SUPPORTED_SCALE is 0.
 
    Return true if the function is supported, storing the function id in
    *IFN_OUT and the vector type for the offset in *OFFSET_VECTYPE_OUT.
@@ -4582,12 +4611,14 @@ vect_gather_scatter_get_configs (vec_info *vinfo, bool read_p, bool masked_p,
 bool
 vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 			  tree vectype, tree memory_type, tree offset_type,
-			  int scale, internal_fn *ifn_out,
+			  int scale, int *supported_scale,
+			  internal_fn *ifn_out,
 			  tree *offset_vectype_out,
 			  tree *supported_offset_vectype,
 			  vec<int> *elsvals)
 {
   *supported_offset_vectype = NULL_TREE;
+  *supported_scale = 0;
   unsigned int memory_bits = tree_to_uhwi (TYPE_SIZE (memory_type));
   unsigned int element_bits = vector_element_bits (vectype);
   if (element_bits != memory_bits)
@@ -4609,11 +4640,19 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
   if (configs.is_empty ())
     return false;
 
-  /* First, try to find a configuration that matches our offset type
-     (no conversion needed).  */
+  /* Selection priority:
+     1 - Exact scale match + offset type match
+     2 - Exact scale match + sign-swapped offset
+     3 - Smaller scale + offset type match
+     4 - Smaller scale + sign-swapped offset
+     Within each category, prefer smaller offset types.  */
+
+  /* First pass: exact scale match with no conversion.  */
   for (unsigned int i = 0; i < configs.length (); i++)
     {
-      if (TYPE_SIGN (configs[i].offset_vectype) == TYPE_SIGN (offset_vectype))
+      if (configs[i].scale == scale
+	  && TYPE_SIGN (configs[i].offset_vectype)
+	     == TYPE_SIGN (offset_vectype))
 	{
 	  *ifn_out = configs[i].ifn;
 	  *offset_vectype_out = configs[i].offset_vectype;
@@ -4623,19 +4662,24 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 	}
     }
 
-  /* No direct match.  This means we try to find a sign-swapped offset
-     vectype.  */
+  /* No direct match.  This means we try to find either
+      - a sign-swapped offset vectype or
+      - a different scale and 2x larger offset type
+      - a different scale and larger sign-swapped offset vectype.  */
   unsigned int offset_precision = TYPE_PRECISION (TREE_TYPE (offset_vectype));
   unsigned int needed_precision
     = TYPE_UNSIGNED (offset_vectype) ? offset_precision * 2 : POINTER_SIZE;
   needed_precision = std::min (needed_precision, (unsigned) POINTER_SIZE);
 
+  /* Second pass: No direct match.  This means we try to find a sign-swapped
+     offset vectype.  */
   enum tree_code tmp;
   for (unsigned int i = 0; i < configs.length (); i++)
     {
       unsigned int precision
 	= TYPE_PRECISION (TREE_TYPE (configs[i].offset_vectype));
-      if (precision >= needed_precision
+      if (configs[i].scale == scale
+	  && precision >= needed_precision
 	  && (supportable_convert_operation (CONVERT_EXPR,
 					     configs[i].offset_vectype,
 					     offset_vectype, &tmp)
@@ -4646,6 +4690,60 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
 	  *ifn_out = configs[i].ifn;
 	  *offset_vectype_out = offset_vectype;
 	  *supported_offset_vectype = configs[i].offset_vectype;
+	  if (elsvals)
+	    *elsvals = configs[i].elsvals;
+	  return true;
+	}
+    }
+
+  /* Third pass: Try a smaller scale with the same signedness.  */
+  needed_precision = offset_precision * 2;
+  needed_precision = std::min (needed_precision, (unsigned) POINTER_SIZE);
+
+  for (unsigned int i = 0; i < configs.length (); i++)
+    {
+      unsigned int precision
+	= TYPE_PRECISION (TREE_TYPE (configs[i].offset_vectype));
+      if (configs[i].scale < scale
+	  && precision >= needed_precision
+	  && (supportable_convert_operation (CONVERT_EXPR,
+					    configs[i].offset_vectype,
+					    offset_vectype, &tmp)
+	      || (needed_precision == offset_precision
+		  && tree_nop_conversion_p (configs[i].offset_vectype,
+					    offset_vectype))))
+	{
+	  *ifn_out = configs[i].ifn;
+	  *offset_vectype_out = configs[i].offset_vectype;
+	  *supported_scale = configs[i].scale;
+	  if (elsvals)
+	    *elsvals = configs[i].elsvals;
+	  return true;
+	}
+    }
+
+  /* Fourth pass: Try a smaller scale and sign-swapped offset vectype.  */
+  needed_precision
+    = TYPE_UNSIGNED (offset_vectype) ? offset_precision * 2 : POINTER_SIZE;
+  needed_precision = std::min (needed_precision, (unsigned) POINTER_SIZE);
+
+  for (unsigned int i = 0; i < configs.length (); i++)
+    {
+      unsigned int precision
+	= TYPE_PRECISION (TREE_TYPE (configs[i].offset_vectype));
+      if (configs[i].scale < scale
+	  && precision >= needed_precision
+	  && (supportable_convert_operation (CONVERT_EXPR,
+					     configs[i].offset_vectype,
+					     offset_vectype, &tmp)
+	      || (needed_precision == offset_precision
+		  && tree_nop_conversion_p (configs[i].offset_vectype,
+					    offset_vectype))))
+	{
+	  *ifn_out = configs[i].ifn;
+	  *offset_vectype_out = offset_vectype;
+	  *supported_offset_vectype = configs[i].offset_vectype;
+	  *supported_scale = configs[i].scale;
 	  if (elsvals)
 	    *elsvals = configs[i].elsvals;
 	  return true;
@@ -4805,6 +4903,7 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 
   base = fold_convert (sizetype, base);
   base = size_binop (PLUS_EXPR, base, size_int (pbytepos));
+  int tmp_scale;
   tree tmp_offset_vectype;
 
   /* OFF at this point may be either a SSA_NAME or some tree expression
@@ -4878,14 +4977,16 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 		  && !vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 						masked_p, vectype, memory_type,
 						signed_char_type_node,
-						new_scale, &ifn,
+						new_scale, &tmp_scale,
+						&ifn,
 						&offset_vectype,
 						&tmp_offset_vectype,
 						elsvals)
 		  && !vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 						masked_p, vectype, memory_type,
 						unsigned_char_type_node,
-						new_scale, &ifn,
+						new_scale, &tmp_scale,
+						&ifn,
 						&offset_vectype,
 						&tmp_offset_vectype,
 						elsvals))
@@ -4910,7 +5011,9 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
 	      && !POINTER_TYPE_P (TREE_TYPE (off))
 	      && vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr),
 					   masked_p, vectype, memory_type,
-					   TREE_TYPE (off), scale, &ifn,
+					   TREE_TYPE (off),
+					   scale, &tmp_scale,
+					   &ifn,
 					   &offset_vectype,
 					   &tmp_offset_vectype,
 					   elsvals))
@@ -4966,7 +5069,8 @@ vect_check_gather_scatter (stmt_vec_info stmt_info, tree vectype,
   if (use_ifn_p)
     {
       if (!vect_gather_scatter_fn_p (loop_vinfo, DR_IS_READ (dr), masked_p,
-				     vectype, memory_type, offtype, scale,
+				     vectype, memory_type, offtype,
+				     scale, &tmp_scale,
 				     &ifn, &offset_vectype,
 				     &tmp_offset_vectype,
 				     elsvals))
