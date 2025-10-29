@@ -1,3 +1,12 @@
+2025-10-28  Richard Earnshaw  <rearnsha@arm.com>
+
+	* .editorconfig: Explicitly set tab_width whenever a
+	config rule has indent_style = tab and indent_size != 8.
+
+2025-10-28  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* MAINTAINERS: Add myself to write after approval.
+
 2025-10-27  Jennifer Schmitz  <jschmitz@nvidia.com>
 
 	* MAINTAINERS: Change email address.

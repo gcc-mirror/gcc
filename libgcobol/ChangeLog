@@ -1,3 +1,9 @@
+2025-10-28  Sam James  <sam@gentoo.org>
+
+	PR cobol/122451
+	* xmlparse.cc (context_t): Make 'ctxt' public.
+	(xml_push_parse): Fix xmlCtxtGetVersion argument.
+
 2025-10-27  Sam James  <sam@gentoo.org>
 
 	PR cobol/122451

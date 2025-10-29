@@ -1,3 +1,129 @@
+2025-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/48039
+	* sem_ch12.adb (Analyze_Subprogram_Instantiation): Call
+	Remove_Homonym to remove the enclosing package from visibility.
+
+2025-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_util.adb (Remove_Side_Effects): Use separately the Etype of
+	the expression to build new nodes and its Underlying_Type to drive
+	part of the processing.
+
+2025-10-28  Johannes Kliemann  <kliemann@adacore.com>
+
+	* adaint.c: Remove __gnat_enable_signals, __gnat_disable_signals
+	and related code for QNX.
+	* libgnarl/s-taprop__qnx.adb: Disable and enable
+	signals in Ada.
+
+2025-10-28  Alexandre Oliva  <oliva@adacore.com>
+
+	* sem_ch13.adb (Analyze_Aspect_Export_Import): Skip
+	Set_Is_Imported on E_Exception.
+	* sem_prag.adb (Process_Import_Or_Interface): Explain
+	why not Set_Is_Imported.
+
+2025-10-28  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_util.adb (Collect_Primitive_Operations): Avoid setting
+	Is_Primitive for noninherited and nonoverriding subprograms not
+	declared immediately within a package specification.
+	* sem_ch13.adb (Check_Nonoverridable_Aspect_Subprograms): Better
+	error posting to allow multiple errors on same type but different
+	aggregate subprogram.
+
+2025-10-28  Ronan Desplanques  <desplanques@adacore.com>
+
+	* table.ads (Clear, Is_Empty): New subprograms.
+	* table.adb (Clear, Is_Empty): Likewise.
+	(Init): Use new subprogram.
+	* atree.adb (Traverse_Func_With_Parent): Use new subprograms.
+	* fmap.adb (Empty_Tables): Use new subprogram.
+	* par_sco.adb (Process_Pending_Decisions): Likewise.
+	* sem_elab.adb (Check_Elab_Call): Likewise.
+	* sem_ch12.adb (Build_Local_Package, Analyze_Package_Instantiation,
+	Analyze_Subprogram_Instantiation): Likewise.
+	(Save_And_Reset): Use Table.Table.First.
+
+2025-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122063
+	* exp_fixd.adb (Build_Double_Divide_Code): Convert the result of the
+	multiply.
+	(Build_Multiply): Use base types of operands to size the operation.
+	(Build_Rem): Likewise.
+	(Build_Scaled_Divide_Code): Convert the result of the multiply.
+
+2025-10-28  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_rm/obsolescent_features.rst: typo
+	* gnat_rm.texi: Regenerate.
+
+2025-10-28  Javier Miranda  <miranda@adacore.com>
+
+	* aspects.adb (Get_Aspect_Id): Enable aspect Unsigned_Base_Range
+	using -gnatd.u
+	* debug.adb (Debug_Flag_Dot_U): Document this switch.
+	* einfo-utils.adb (Is_Modular_Integer_Type): Return True if
+	the entity is a modular integer type and its base type does
+	not have the attribute has_unsigned_base_range_aspect.
+	(Is_Signed_Integer_Type): Return True if the entity is a signed
+	integer type, or it is a modular integer type and its base type
+	has the attribute has_unsigned_base_range_aspect.
+	* einfo.ads (E_Modular_Integer_Type): Add documentation of
+	Has_Unsigned_Base_Range_Aspect.
+	* par-ch4.adb (Scan_Apostrophe): Enable attribute Unsigned_Base_Range
+	using -gnatd.u
+	* sem_ch13.adb (Analyze_One_Aspect): Check general language
+	restrictions on aspect Unsigned_Base_Range. For Unsigned_Base_Range
+	aspect, do not delay the generation of the pragma becase we need
+	to process it before any type or subtype derivation is analyzed.
+	* sem_ch3.adb (Build_Scalar_Bound): Disable code analyzing the
+	bound with the base type of the parent type because, for unsigned
+	base range types, their base type is a modular type but their
+	type is a signed integer type.
+	* sem_prag.adb (Analyze_Pragma): Enable pragma Unsigned_Base_Range
+	using -gnatd.u. Check more errors on Unsigned_Base_Range pragma,
+	and create the new base type only when required.
+
+2025-10-28  Ronan Desplanques  <desplanques@adacore.com>
+
+	* sem_ch12.adb (Build_Local_Package)
+	(Analyze_Package_Instantiation, Analyze_Subprogram_Instantiation):
+	Fix Set_Last calls.
+	(Set_Instance_Of): Use Table.Table.Append.
+	(Save_And_Reset): Remove useless call. Remove defensive code.
+	(Restore): Remove incorrect Set_Last call and adapt to
+	Set_Instance_Of change.
+
+2025-10-28  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma): Add enclosing quotation when the
+	invalid switch ends with a space.
+
+2025-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/59234
+	* sem_ch12.adb (Analyze_Formal_Package_Declaration): Mark the
+	special name built for the formal in the parent of a child unit
+	as internal.
+
+2025-10-28  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/34511
+	* sem_ch12.adb (Analyze_Associations): Add Parent_Installed formal
+	parameter and pass it in call to Analyze_One_Association.
+	(Analyze_One_Association): Add Parent_Installed formal parameter
+	and pass it in call to Instantiate_Formal_Subprogram.
+	(Analyze_Formal_Package_Declaration): Pass Parent_Installed in call
+	to Analyze_Associations.
+	(Analyze_Package_Instantiation): Likewise.
+	(Analyze_Subprogram_Instantiation): Likewise.
+	(Instantiate_Formal_Subprogram): Add Parent_Installed formal
+	parameter and prune references to the parent unit(s) only if
+	it is true.
+
 2025-10-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/29958

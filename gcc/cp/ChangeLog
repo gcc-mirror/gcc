@@ -1,3 +1,9 @@
+2025-10-28  Marek Polacek  <polacek@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* decl.cc (finish_enum_value_list): Use fold_convert instead of
+	copy_node.
+
 2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122422

@@ -1,3 +1,10 @@
+2025-10-28  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122401
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/116586.cc:
+	Do not try to acquire locks on the thread that already holds a
+	lock. Add -pthread for et pthread.
+
 2025-10-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122401

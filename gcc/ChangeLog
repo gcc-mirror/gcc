@@ -1,3 +1,28 @@
+2025-10-28  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):
+	Avoid explicit LOOP_VINFO_IV_EXIT reference.
+
+2025-10-28  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* match.pd: Add pattern to simplify view_convert (BIT_FIELD_REF).
+
+2025-10-28  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_get_vls_cc_attr): Fix error message
+	parameter order and add check_only condition.  Improve diagnostic
+	message formatting with proper quoting.
+	(riscv_handle_rvv_vls_cc_attribute): Anonymize unused node parameter.
+
+2025-10-28  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122065
+	* tree-vect-generic.cc (add_rshift): Update name and add code parameter.
+	(add_shift): Update name.
+	(expand_vector_mult): New lowering for MULT_EXPR.
+	(expand_vector_divmod): Use updated function name.
+	(expand_vector_operation): Use updated function name.
+
 2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* expr.cc (expr_has_boolean_range): New function.

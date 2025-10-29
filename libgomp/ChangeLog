@@ -1,3 +1,7 @@
+2025-10-28  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* env.c (initialize_env): Simplify 'parse_stacksize' call.
+
 2025-10-23  Andrew Stubbs  <ams@baylibre.com>
 
 	* Makefile.am (libgomp_la_SOURCES): Add simple-allocator.c.
