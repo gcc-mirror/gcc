@@ -1,3 +1,11 @@
+2025-10-28  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122323
+	* gcc.target/i386/builtin-copysign-8b.c: Add -mtune=generic.
+
 2025-10-26  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:
