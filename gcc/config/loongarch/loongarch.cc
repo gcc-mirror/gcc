@@ -4234,7 +4234,8 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 machine_mode
 loongarch_split_reduction (machine_mode mode)
 {
-  if (LSX_SUPPORTED_MODE_P (mode))
+  if (!VECTOR_MODE_P (mode)
+      || LSX_SUPPORTED_MODE_P (mode))
     return mode;
 
   return mode_for_vector (as_a <scalar_mode> (GET_MODE_INNER (mode)),
