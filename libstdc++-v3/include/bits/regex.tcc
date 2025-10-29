@@ -348,11 +348,11 @@ namespace __detail
 	{
 	  const char __c = static_cast<char>(__ch);
 	  const char __max_digit = __radix == 8 ? '7' : '9';
-	  if ('0' <= __ch && __ch <= __max_digit)
-	    return __ch - '0';
+	  if ('0' <= __c && __c <= __max_digit)
+	    return __c - '0';
 	  if (__radix < 16)
 	    return -1;
-	  switch (__ch)
+	  switch (__c)
 	  {
 	    case 'a':
 	    case 'A':
