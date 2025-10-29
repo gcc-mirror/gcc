@@ -2783,15 +2783,23 @@ package body Ch4 is
       --  not the first token on a line (as determined by checking the
       --  previous token position with the start of the current line),
       --  then we insist that we have an appropriate terminating token.
-      --  Consider the following two examples:
+      --  Consider the following examples:
 
       --   1)  if A nad B then ...
 
-      --   2)  A := B
+      --   2)  if A [B] then ...
+      --            ^
+      --   2)  A := [B[;
+      --              ^
+
+      --   3)  A := B
       --       C := D
 
       --  In the first example, we would like to issue a binary operator
       --  expected message and resynchronize to the then. In the second
+      --  example, a left bracket was found instead of a left parenthesis (eg.
+      --  array indexing), or instead of a closing right bracket; in both cases
+      --  we issue an incorrect or mismatching bracket message. In the third
       --  example, we do not want to issue a binary operator message, so
       --  that instead we will get the missing semicolon message. This
       --  distinction is of course a heuristic which does not always work,
@@ -2826,6 +2834,11 @@ package body Ch4 is
             if Ada_Version >= Ada_2012 then
                Error_Msg_SC ("\qualify expression to turn it into a name");
             end if;
+
+         --  Mistake of using brackets instead of parentheses
+
+         elsif Token = Tok_Left_Bracket then
+            Error_Msg_SC ("incorrect or mismatching bracket");
 
          --  Normal case for binary operator expected message
 
