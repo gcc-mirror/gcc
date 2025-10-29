@@ -207,13 +207,13 @@ AARCH64_FMV_FEATURE("f64mm", SVE_F64MM, (F64MM))
 
 AARCH64_OPT_FMV_EXTENSION("sve2", SVE2, (SVE), (), (), "sve2")
 
-AARCH64_OPT_EXTENSION("sve-aes", SVE_AES, (AES), (), (), "sveaes")
+AARCH64_OPT_EXTENSION("sve-aes", SVE_AES, (AES), (), (), "sveaes | smeaes")
 
 AARCH64_OPT_EXTENSION_ALIAS("sve2-aes", SVE2_AES, (SVE2, SVE_AES), (), (SVE_AES), (SVE_AES), "sveaes")
 
 AARCH64_FMV_FEATURE("sve2-aes", SVE_PMULL128, (SVE2, SVE_AES))
 
-AARCH64_OPT_EXTENSION("sve-bitperm", SVE_BITPERM, (), (), (), "svebitperm")
+AARCH64_OPT_EXTENSION("sve-bitperm", SVE_BITPERM, (), (), (), "svebitperm | smesbitperm")
 
 AARCH64_OPT_EXTENSION_ALIAS("sve2-bitperm", SVE2_BITPERM, (SVE2, SVE_BITPERM), (), (SVE_BITPERM),
 			    (SVE_BITPERM), "svebitperm")
@@ -309,6 +309,43 @@ AARCH64_OPT_EXTENSION("lut", LUT, (SIMD), (), (), "lut")
 AARCH64_OPT_EXTENSION ("sme-lutv2", SME_LUTv2, (SME2), (), (), "sme-lutv2")
 
 AARCH64_OPT_EXTENSION("cpa", CPA, (), (), (), "")
+
+AARCH64_OPT_EXTENSION("fprcvt", FPRCVT, (FP), (), (), "fprcvt")
+
+AARCH64_OPT_EXTENSION("lsfe", LSFE, (FP), (), (), "lsfe")
+
+AARCH64_OPT_EXTENSION("f8f32mm", F8F32MM, (SIMD, FP8), (), (), "f8mm8")
+
+AARCH64_OPT_EXTENSION("f8f16mm", F8F16MM, (SIMD, FP8), (), (), "f8mm4")
+
+AARCH64_OPT_EXTENSION("sme2p2", SME2p2, (SME2p1), (), (), "sme2p2")
+
+AARCH64_OPT_EXTENSION("sve2p2", SVE2p2, (SVE2p1), (), (), "sve2p2")
+
+AARCH64_OPT_EXTENSION("sve-aes2", SVE_AES2, (), (), (), "sveaes2")
+
+AARCH64_OPT_EXTENSION("sve-f16f32mm", SVE_F16F32MM, (SVE), (), (), "svef16mm")
+
+AARCH64_OPT_EXTENSION("sve-bfscale", SVE_BFSCALE, (), (), (), "svebfscale")
+
+AARCH64_OPT_EXTENSION("ssve-aes", SSVE_AES, (SME2, SVE_AES), (), (), "smeaes")
+
+AARCH64_OPT_EXTENSION("ssve-bitperm", SSVE_BITPERM, (SME2, SVE_BITPERM), (), (), "smesbitperm")
+
+AARCH64_OPT_EXTENSION("ssve-fexpa", SSVE_FEXPA, (SME2), (), (), "smesfexpa")
+
+AARCH64_OPT_EXTENSION("sme-mop4", SME_MOP4, (SME2), (), (), "smesmop4")
+
+AARCH64_OPT_EXTENSION("sme-tmop", SME_TMOP, (SME2), (), (), "smestmop")
+
+/* FEATURE_STRING not yet defined.  TODO: Update this when that value is decided.  */
+AARCH64_OPT_EXTENSION("lsui", LSUI, (), (), (), "")
+
+AARCH64_OPT_EXTENSION("occmo", OCCMO, (), (), (), "")
+
+AARCH64_OPT_EXTENSION("pcdphint", PCDPHINT, (), (), (), "")
+
+AARCH64_OPT_EXTENSION("pops", PoPS, (), (), (), "")
 
 #undef AARCH64_OPT_FMV_EXTENSION
 #undef AARCH64_OPT_EXTENSION
