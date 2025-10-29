@@ -29,7 +29,7 @@ void
 test_lez ()
 {
   if (lm <= 0)
-    lr &= (1 << 16);
+    lr |= (1 << 16);
   lr += lm;
 }
 
