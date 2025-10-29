@@ -1793,6 +1793,7 @@ do_simple_agr_dse (gassign *stmt, bool full_walk)
   /* Only handle clobbers of a full decl.  */
   if (!DECL_P (lhs))
     return;
+  clobber_kind kind = (clobber_kind)CLOBBER_KIND (gimple_assign_rhs1 (stmt));
   ao_ref_init (&read, lhs);
   tree vuse = gimple_vuse (stmt);
   unsigned limit = full_walk ? param_sccvn_max_alias_queries_per_access : 4;
@@ -1813,6 +1814,12 @@ do_simple_agr_dse (gassign *stmt, bool full_walk)
 	{
 	  basic_block ubb = gimple_bb (use_stmt);
 	  if (stmt == use_stmt)
+	    continue;
+	  /* If the use is the same kind of clobber for lhs,
+	     then it can be safely skipped; this happens with eh
+	     and sometimes jump threading.  */
+	  if (gimple_clobber_p (use_stmt, kind)
+	      && lhs == gimple_assign_lhs (use_stmt))
 	    continue;
 	  /* The use needs to be dominating the clobber. */
 	  if ((ubb != bb && !dominated_by_p (CDI_DOMINATORS, bb, ubb))
