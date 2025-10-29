@@ -18956,7 +18956,8 @@ gfc_impure_variable (gfc_symbol *sym)
     {
       if (ns == sym->ns)
 	break;
-      if (ns->proc_name->attr.flavor == FL_PROCEDURE && !sym->attr.function)
+      if (ns->proc_name->attr.flavor == FL_PROCEDURE
+	  && !(sym->attr.function || sym->attr.result))
 	return 1;
     }
 

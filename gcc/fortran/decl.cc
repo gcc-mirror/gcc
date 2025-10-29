@@ -3938,6 +3938,20 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   actual_param = param_list;
   sprintf (name, "Pdt%s", pdt->name);
 
+  /* Prevent a PDT component of the same type as the template from being
+     converted into an instance. Doing this results in the component being
+     lost.  */
+  if (gfc_current_state () == COMP_DERIVED
+      && !(gfc_state_stack->previous
+	   && gfc_state_stack->previous->state == COMP_DERIVED)
+      && gfc_current_block ()->attr.pdt_template
+      && !strcmp (gfc_current_block ()->name, (*sym)->name))
+    {
+      if (ext_param_list)
+	*ext_param_list = gfc_copy_actual_arglist (param_list);
+      return MATCH_YES;
+    }
+
   /* Run through the parameter name list and pick up the actual
      parameter values or use the default values in the PDT declaration.  */
   for (; type_param_name_list;
