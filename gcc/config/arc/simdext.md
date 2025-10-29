@@ -1438,11 +1438,15 @@
   "reload_completed && GET_CODE (operands[1]) == CONST_VECTOR"
   [(set (match_dup 0) (match_dup 2))]
   {
-   HOST_WIDE_INT intval = INTVAL (XVECEXP (operands[1], 0, 1)) << 16;
-   intval |= INTVAL (XVECEXP (operands[1], 0, 0)) & 0xFFFF;
-
-   operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]));
-   operands[2] = GEN_INT (trunc_int_for_mode (intval, SImode));
+    int hi = TARGET_BIG_ENDIAN ? 0 : 1;
+    int lo = TARGET_BIG_ENDIAN ? 1 : 0;
+    HOST_WIDE_INT hi_val = INTVAL (XVECEXP (operands[1], 0, hi));
+    HOST_WIDE_INT lo_val = INTVAL (XVECEXP (operands[1], 0, lo));
+    hi_val = zext_hwi (hi_val, 16);
+    lo_val = zext_hwi (lo_val, 16);
+    HOST_WIDE_INT intval = lo_val | (hi_val << 16);
+    operands[0] = gen_rtx_REG (SImode, REGNO (operands[0]));
+    operands[2] = GEN_INT (trunc_int_for_mode (intval, SImode));
   }
   [(set_attr "type" "move,move,load,store")
    (set_attr "predicable" "yes,yes,no,no")
