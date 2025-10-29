@@ -2690,6 +2690,14 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       else
 	component = NULL;
 
+      if (previous && inquiry
+	  && (previous->attr.pdt_kind || previous->attr.pdt_len))
+	{
+	  gfc_error_now ("R901: A type parameter ref is not a designtor and "
+		     "cannot be followed by the type inquiry ref at %C");
+	  return MATCH_ERROR;
+	}
+
       if (intrinsic && !inquiry)
 	{
 	  if (previous)
