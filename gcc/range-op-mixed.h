@@ -803,35 +803,6 @@ public:
     { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
 };
 
-class operator_bitwise_xor : public range_operator
-{
-public:
-  using range_operator::op1_range;
-  using range_operator::op2_range;
-  using range_operator::op1_op2_relation_effect;
-  using range_operator::update_bitmask;
-  bool op1_range (irange &r, tree type,
-		  const irange &lhs, const irange &op2,
-		  relation_trio rel = TRIO_VARYING) const final override;
-  bool op2_range (irange &r, tree type,
-		  const irange &lhs, const irange &op1,
-		  relation_trio rel = TRIO_VARYING) const final override;
-  bool op1_op2_relation_effect (irange &lhs_range,
-					tree type,
-					const irange &op1_range,
-					const irange &op2_range,
-					relation_kind rel) const final override;
-  void update_bitmask (irange &r, const irange &lh,
-		       const irange &rh) const final override;
-  // Check compatibility of all operands.
-  bool operand_check_p (tree t1, tree t2, tree t3) const final override
-    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
-private:
-  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
-		const wide_int &lh_ub, const wide_int &rh_lb,
-		const wide_int &rh_ub) const final override;
-};
-
 class operator_bitwise_and : public range_operator
 {
 public:
@@ -895,6 +866,43 @@ protected:
 		const wide_int &lh_ub, const wide_int &rh_lb,
 		const wide_int &rh_ub) const override;
 };
+
+class operator_bitwise_xor : public range_operator
+{
+public:
+  using range_operator::fold_range;
+  using range_operator::op1_range;
+  using range_operator::op2_range;
+  using range_operator::op1_op2_relation_effect;
+  using range_operator::update_bitmask;
+  bool fold_range (irange &r, tree type,
+		   const irange &lh, const irange &rh,
+		   relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_range (irange &r, tree type,
+		  const irange &lhs, const irange &op2,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op2_range (irange &r, tree type,
+		  const irange &lhs, const irange &op1,
+		  relation_trio rel = TRIO_VARYING) const final override;
+  bool op1_op2_relation_effect (irange &lhs_range,
+					tree type,
+					const irange &op1_range,
+					const irange &op2_range,
+					relation_kind rel) const final override;
+  void update_bitmask (irange &r, const irange &lh,
+		       const irange &rh) const final override;
+  // Check compatibility of all operands.
+  bool operand_check_p (tree t1, tree t2, tree t3) const final override
+    { return range_compatible_p (t1, t2) && range_compatible_p (t1, t3); }
+private:
+  void wi_fold (irange &r, tree type, const wide_int &lh_lb,
+		const wide_int &lh_ub, const wide_int &rh_lb,
+		const wide_int &rh_ub) const final override;
+  class operator_bitwise_and m_and;
+  class operator_bitwise_or m_or;
+  class operator_bitwise_not m_not;
+};
+
 
 class operator_min : public range_operator
 {

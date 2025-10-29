@@ -4046,6 +4046,83 @@ operator_bitwise_xor::update_bitmask (irange &r, const irange &lh,
   update_known_bitmask (r, BIT_XOR_EXPR, lh, rh);
 }
 
+bool
+operator_bitwise_xor::fold_range (irange &r, tree type,
+				  const irange &lh, const irange &rh,
+				  relation_trio rel) const
+{
+  // Handle X ^ UNDEFINED = UNDEFINED.
+  if (lh.undefined_p () || rh.undefined_p ())
+    {
+      r.set_undefined ();
+      return true;
+    }
+
+  // Next, handle X ^ X == [0, 0].
+  if (rel.op1_op2 () == VREL_EQ)
+   {
+     r.set_zero (type);
+     return true;
+   }
+
+  // If either operand is VARYING, the result is VARYING.
+  if (lh.varying_p () || rh.varying_p ())
+    {
+      // If the operands are not equal, zero is not possible.
+      if (rel.op1_op2 () != VREL_NE)
+	r.set_varying (type);
+      else
+	r.set_nonzero (type);
+      return true;
+    }
+
+  // Now deal with X ^ 0 == X.
+  if (lh.zero_p ())
+    {
+      r = rh;
+      return true;
+    }
+  if (rh.zero_p ())
+    {
+      r = lh;
+      return true;
+    }
+
+  // Start with the legacy range.  This can sometimes pick up values
+  // when there are a lot of subranges and fold_range aggregates them.
+  bool res = range_operator::fold_range (r, type, lh, rh, rel);
+
+  // Calculate the XOR identity :   x ^ y = (x | y) & ~(x & y)
+  // AND and OR are already much better optimized.
+  int_range_max tmp1, tmp2, tmp3, new_result;
+  int_range<2> varying;
+  varying.set_varying (type);
+
+  if (m_or.fold_range  (tmp1, type, lh, rh, rel)
+      && m_and.fold_range (tmp2, type, lh, rh, rel)
+      && m_not.fold_range (tmp3, type, tmp2, varying, rel)
+      && m_and.fold_range (new_result, type, tmp1, tmp3, rel))
+    {
+      // If the operands are not equal, or the LH does not contain any
+      // element of the RH, zero is not possible.
+      tmp1 = lh;
+      if (rel.op1_op2 () == VREL_NE
+	  || (tmp1.intersect (rh) && tmp1.undefined_p ()))
+	{
+	  tmp1.set_nonzero (type);
+	  new_result.intersect (tmp1);
+	}
+
+      // Combine with the legacy range if there was one.
+      if (res)
+	r.intersect (new_result);
+      else
+	r = new_result;
+      return true;
+    }
+  return res;
+}
+
 void
 operator_bitwise_xor::wi_fold (irange &r, tree type,
 			       const wide_int &lh_lb,
