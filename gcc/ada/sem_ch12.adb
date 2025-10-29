@@ -13223,7 +13223,7 @@ package body Sem_Ch12 is
                --  to capture local names that may be hidden if the generic is
                --  a child unit.
 
-               if Nkind (Actual) = N_Aggregate then
+               if Nkind (Unqualify (Actual)) = N_Aggregate then
                   Preanalyze_And_Resolve (Actual, Typ);
                end if;
 
