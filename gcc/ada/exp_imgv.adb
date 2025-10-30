@@ -112,13 +112,18 @@ package body Exp_Imgv is
       --  exactly spent on all possible paths from this point.
 
       Threshold : constant Nat :=
-        (if Is_Library_Level_Entity (E)
+        (if Restriction_Active (No_Dynamic_Sized_Objects)
+         then Nat'Last
+         elsif Is_Library_Level_Entity (E)
            or else not Always_Compatible_Rep_On_Target
          then 3
          else Nat'Last);
       --  Threshold above which we want to generate the hash function in the
       --  default case. We avoid doing it if this would cause a trampoline to
       --  be generated because the type is local and descriptors are not used.
+      --  We also avoid doing it if a No_Dynamic_Sized_Objects restriction is
+      --  in effect because the hash function will violate the restriction
+      --  by declaring an array subtype with dynamic bounds.
 
       Threshold_For_Size : constant Nat := Nat'Max (Threshold, 9);
       --  But the function and its tables take a bit of space so the threshold
