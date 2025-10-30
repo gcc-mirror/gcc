@@ -77,6 +77,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-pass.h"
 #include "df.h"
 #include "rtl-ssa.h"
+#include "rtl-iter.h"
 #include "cfgcleanup.h"
 #include "insn-attr.h"
 #include "tm-constrs.h"
@@ -411,6 +412,46 @@ pass_avlprop::get_vlmax_ta_preferred_avl (insn_info *insn) const
 	      if (def1->insn ()->bb () == insn->bb ()
 		  && def1->insn ()->compare_with (insn) >= 0)
 		return NULL_RTX;
+	    }
+	  else
+	    {
+	      /* If the use is in a subreg e.g. in a store it is possible that
+		 we punned the vector mode with a larger mode like
+		   (subreg:V1SI (reg:V4QI 123)).
+		 For an AVL of 1 that means we actually store one SImode
+		 element and not 1 QImode elements.  But the latter is what we
+		 would propagate if we took the AVL operand literally.
+		 Instead we scale it by the ratio of inner and outer mode
+		 (4 in the example above).  */
+	      int factor = 1;
+	      if (use->includes_subregs ())
+		{
+		  subrtx_iterator::array_type array;
+		  FOR_EACH_SUBRTX (iter, array, use_insn->rtl (), NONCONST)
+		    {
+		      const_rtx x = *iter;
+		      if (x
+			  && SUBREG_P (x)
+			  && REG_P (SUBREG_REG (x))
+			  && REGNO (SUBREG_REG (x)) == use->regno ()
+			  && known_eq (GET_MODE_SIZE (use->mode ()),
+				       GET_MODE_SIZE (GET_MODE (x))))
+			{
+			  if (can_div_trunc_p (GET_MODE_NUNITS (use->mode ()),
+					       GET_MODE_NUNITS (GET_MODE (x)),
+					       &factor))
+			    {
+			      gcc_assert (factor > 0);
+			      break;
+			    }
+			  else
+			    return NULL_RTX;
+			}
+		    }
+		}
+
+	      if (factor > 1)
+		new_use_avl = GEN_INT (INTVAL (new_use_avl) * factor);
 	    }
 
 	  if (!use_avl)
