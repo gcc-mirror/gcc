@@ -1,6 +1,5 @@
 /* { dg-do compile } */
-/* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
-/* { dg-additional-options "-fdump-tree-optimized-alias" } */
+/* { dg-options "-fdump-tree-optimized-alias" } */
 
 unsigned foo (void *p)
 {

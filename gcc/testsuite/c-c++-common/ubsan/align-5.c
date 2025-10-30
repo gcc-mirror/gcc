@@ -11,6 +11,4 @@ foo (char *p)
   return *q;
 }
 
-/* xfail, see PR 122038 as __builtin_assume_aligned should be instrumented instead
-   of only the load. */
-/* { dg-final { scan-assembler "__ubsan_handle" { xfail *-*-* } } } */
+/* { dg-final { scan-assembler "__ubsan_handle" } } */
