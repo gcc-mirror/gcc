@@ -2552,7 +2552,10 @@ process_alt_operands (int only_alternative)
 		    {
 		      int regno = decode_hard_reg_constraint (p);
 		      gcc_assert (regno >= 0);
-		      cl = REGNO_REG_CLASS (regno);
+		      cl = NO_REGS;
+		      int nregs = hard_regno_nregs (regno, mode);
+		      for (int i = 0; i < nregs; ++i)
+			cl = reg_class_superunion[cl][REGNO_REG_CLASS (regno + i)];
 		      CLEAR_HARD_REG_SET (hard_reg_constraint);
 		      SET_HARD_REG_BIT (hard_reg_constraint, regno);
 		      cl_filter = &hard_reg_constraint;
