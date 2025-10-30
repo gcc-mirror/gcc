@@ -1992,13 +1992,11 @@ Enum(hardcfr_check_noreturn_calls) String(no-xthrow) Value(HCFRNR_NO_XTHROW)
 EnumValue
 Enum(hardcfr_check_noreturn_calls) String(always) Value(HCFRNR_ALWAYS)
 
-; Nonzero means ignore `#ident' directives.  0 means handle them.
-; Generate position-independent code for executables if possible
-; On SVR4 targets, it also controls whether or not to emit a
-; string identifying the compiler.
+; Nonzero means do not emit .ident assembler directives and ignore
+; `#ident' preprocessor directives.
 fident
 Common Var(flag_no_ident,0)
-Process #ident directives.
+Emit .ident assembler directives.
 
 fif-conversion
 Common Var(flag_if_conversion) Optimization

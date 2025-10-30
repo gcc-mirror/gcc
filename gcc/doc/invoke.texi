@@ -821,7 +821,8 @@ Objective-C and Objective-C++ Dialects}.
 -ftrapv  -fwrapv
 -fvisibility=@r{[}default@r{|}internal@r{|}hidden@r{|}protected@r{]}
 -fstrict-volatile-bitfields  -fsync-libcalls
--fzero-init-padding-bits=@var{value}}
+-fzero-init-padding-bits=@var{value}
+-Qy  -Qn}
 
 @item Developer Options
 @xref{Developer Options,,GCC Developer Options}.
@@ -1499,7 +1500,7 @@ See RS/6000 and PowerPC Options.
 -mfix-at697f  -mfix-ut699  -mfix-ut700  -mfix-gr712rc}
 
 @emph{System V Options} (@ref{System V Options})
-@gccoptlist{-Qy  -Qn  -YP,@var{paths}  -Ym,@var{dir}}
+@gccoptlist{-YP,@var{paths}  -Ym,@var{dir}}
 
 @emph{V850 Options} (@ref{V850 Options})
 @gccoptlist{-mlong-calls  -mno-long-calls  -mep  -mno-ep
@@ -20485,8 +20486,15 @@ useful to enable legacy code to link without errors.
 
 @opindex fno-ident
 @opindex fident
+@opindex Qy
+@opindex Qn
 @item -fno-ident
-Ignore the @code{#ident} directive.
+@itemx -Qy
+@itemx -Qn
+@option{-fno-ident} suppresses emission of @code{.ident} assembler
+directives and causes the @code{#ident} preprocessor directive to be ignored.
+@option{-Qy} and @option{-Qn} are obsolete synonyms for @option{-fident}
+and @option{-fno-ident}, respectively.
 
 @opindex finhibit-size-directive
 @item -finhibit-size-directive
@@ -34784,16 +34792,6 @@ compatibility with other compilers on those systems:
 @item -G
 Create a shared object.
 It is recommended that @option{-symbolic} or @option{-shared} be used instead.
-
-@opindex Qy
-@item -Qy
-Identify the versions of each tool used by the compiler, in a
-@code{.ident} assembler directive in the output.
-
-@opindex Qn
-@item -Qn
-Refrain from adding @code{.ident} directives to the output file (this is
-the default).
 
 @opindex YP
 @item -YP,@var{dirs}
