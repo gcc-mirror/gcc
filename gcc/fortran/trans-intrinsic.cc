@@ -12844,14 +12844,6 @@ conv_intrinsic_atomic_cas (gfc_code *code)
           new_val = gfc_build_addr_expr (NULL_TREE, tmp);
 	}
 
-      /* Convert a constant to a pointer.  */
-      if (!POINTER_TYPE_P (TREE_TYPE (comp)))
-	{
-	  tmp = gfc_create_var (TREE_TYPE (TREE_TYPE (old)), "comp");
-	  gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), comp));
-          comp = gfc_build_addr_expr (NULL_TREE, tmp);
-	}
-
       gfc_init_se (&argse, NULL);
       gfc_get_caf_token_offset (&argse, &token, &offset, caf_decl, atom,
 				atom_expr);
