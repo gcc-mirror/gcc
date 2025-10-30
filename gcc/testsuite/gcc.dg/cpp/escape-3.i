@@ -13,4 +13,4 @@ int foo (int a, int b)
 }
 
 /* Test for "/some\\directory" instead of "/some\\\\directory" */
-/* { dg-final { scan-assembler { "/some\\\\directory" } } } */
+/* { dg-final { scan-assembler "/some\\\\\\\\directory" } } */
