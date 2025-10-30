@@ -268,13 +268,7 @@ gfc_conv_descriptor_data_get (tree desc)
   return fold_convert (GFC_TYPE_ARRAY_DATAPTR_TYPE (type), field);
 }
 
-/* This provides WRITE access to the data field.
-
-   TUPLES_P is true if we are generating tuples.
-
-   This function gets called through the following macros:
-     gfc_conv_descriptor_data_set
-     gfc_conv_descriptor_data_set.  */
+/* This provides WRITE access to the data field.  */
 
 void
 gfc_conv_descriptor_data_set (stmtblock_t *block, tree desc, tree value)
