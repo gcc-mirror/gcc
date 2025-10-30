@@ -11863,7 +11863,7 @@ package body Sem_Util is
       Cursor := Get_Name_Entity_Id
                   (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
       while Present (Cursor) loop
-         if Is_Constructor_Procedure (Cursor)
+         if Is_Constructor (Cursor)
            and then No (Next_Formal (First_Formal (Cursor)))
          then
             return True;
@@ -16720,28 +16720,6 @@ package body Sem_Util is
       end if;
    end Is_Constant_Bound;
 
-   ------------------------------
-   -- Is_Constructor_Procedure --
-   ------------------------------
-
-   function Is_Constructor_Procedure (Subp : Entity_Id) return Boolean is
-      First_Param : Entity_Id;
-   begin
-      if not (Present (First_Formal (Subp))
-                and then Ekind (First_Formal (Subp)) = E_In_Out_Parameter
-                and then Is_Direct_Attribute_Subp_Spec (Parent (Subp))
-                and then Attribute_Name (Defining_Unit_Name
-                                          (Original_Node (Parent (Subp))))
-                           = Name_Constructor)
-      then
-         return False;
-      end if;
-
-      First_Param := Implementation_Base_Type (Etype (First_Formal (Subp)));
-      return Scope (Subp) = Scope (First_Param)
-        and then Needs_Construction (First_Param);
-   end Is_Constructor_Procedure;
-
    ---------------------------
    --  Is_Container_Element --
    ---------------------------
@@ -17009,7 +16987,7 @@ package body Sem_Util is
 
       return Present (Ret_Typ)
         and then Is_CPP_Class (Ret_Typ)
-        and then Is_Constructor (Entity (Name (N)))
+        and then Is_CPP_Constructor (Entity (Name (N)))
         and then Is_Imported (Entity (Name (N)));
    end Is_CPP_Constructor_Call;
 

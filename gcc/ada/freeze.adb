@@ -10490,7 +10490,7 @@ package body Freeze is
       --  For C++ constructors check that their external name has been given
       --  (either in pragma CPP_Constructor or in a pragma import).
 
-      if Is_Constructor (E)
+      if Is_CPP_Constructor (E)
         and then Convention (E) = Convention_CPP
         and then
            (No (Interface_Name (E))

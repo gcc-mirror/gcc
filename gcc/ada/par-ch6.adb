@@ -233,9 +233,8 @@ package body Ch6 is
          then
             --  Note that, this workaround is needed to retain the info that
             --  the current subprogram comes from a direct attribute
-            --  definition. Otherwise, we would need to add an entity flag
-            --  Is_Constructor. Currently this flag already exists and could be
-            --  misleading as it refer to CPP constructors ???
+            --  definition. Otherwise, we would need to add an entity flag like
+            --  Is_Direct_Attribute_Definition ???
 
             Copy_Spec := New_Copy (Spec);
 

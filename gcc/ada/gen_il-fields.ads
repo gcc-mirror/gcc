@@ -700,6 +700,7 @@ package Gen_IL.Fields is
       Is_Controlled_Active,
       Is_Controlling_Formal,
       Is_CPP_Class,
+      Is_CPP_Constructor,
       Is_CUDA_Kernel,
       Is_Descendant_Of_Address,
       Is_Destructor,

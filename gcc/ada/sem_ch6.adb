@@ -5354,6 +5354,7 @@ package body Sem_Ch6 is
 
                else
                   Set_Needs_Construction (Prefix_E);
+                  Set_Is_Constructor (Designator);
                end if;
 
             when others =>

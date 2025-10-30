@@ -297,6 +297,8 @@ package body Gen_IL.Internals is
             return "Ignore_SPARK_Mode_Pragmas";
          when Is_CPP_Class =>
             return "Is_CPP_Class";
+         when Is_CPP_Constructor =>
+            return "Is_CPP_Constructor";
          when Is_CUDA_Kernel =>
             return "Is_CUDA_Kernel";
          when Is_DIC_Procedure =>

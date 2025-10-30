@@ -331,6 +331,8 @@ package body Treepr is
             return "Ignore_SPARK_Mode_Pragmas";
          when F_Is_CPP_Class =>
             return "Is_CPP_Class";
+         when F_Is_CPP_Constructor =>
+            return "Is_CPP_Constructor";
          when F_Is_CUDA_Kernel =>
             return "Is_CUDA_Kernel";
          when F_Is_DIC_Procedure =>

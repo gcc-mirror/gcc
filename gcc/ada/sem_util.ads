@@ -1921,10 +1921,6 @@ package Sem_Util is
    --  enumeration literal, or an expression composed of constant-bound
    --  subexpressions which are evaluated by means of standard operators.
 
-   function Is_Constructor_Procedure (Subp : Entity_Id) return Boolean;
-   --  Returns True if Subp's name directly references an attribute, has a
-   --  first in out formal that needs construction within the same scope.
-
    function Is_Container_Element (Exp : Node_Id) return Boolean;
    --  This routine recognizes expressions that denote an element of one of
    --  the predefined containers, when the source only contains an indexing

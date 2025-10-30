@@ -2332,7 +2332,7 @@ package body Exp_Disp is
 
       E := Next_Entity (Typ);
       while Present (E) loop
-         if Ekind (E) = E_Function and then Is_Constructor (E) then
+         if Ekind (E) = E_Function and then Is_CPP_Constructor (E) then
             return True;
          end if;
 
@@ -8285,7 +8285,7 @@ package body Exp_Disp is
       E := Next_Entity (Typ);
       while Present (E) loop
          if Ekind (E) = E_Function
-           and then Is_Constructor (E)
+           and then Is_CPP_Constructor (E)
          then
             Found := True;
             Loc   := Sloc (E);
@@ -8307,15 +8307,15 @@ package body Exp_Disp is
                         Defining_Unit_Name       => IP,
                         Parameter_Specifications => Parms)));
 
-               Set_Init_Proc   (Typ, IP);
-               Set_Is_Imported      (IP);
-               Set_Is_Constructor   (IP);
-               Set_Interface_Name   (IP, Interface_Name (E));
-               Set_Convention       (IP, Convention_CPP);
-               Set_Is_Public        (IP);
-               Set_Has_Completion   (IP);
-               Mutate_Ekind         (IP, E_Procedure);
-               Freeze_Extra_Formals (IP);
+               Set_Init_Proc     (Typ, IP);
+               Set_Is_Imported        (IP);
+               Set_Is_CPP_Constructor (IP);
+               Set_Interface_Name     (IP, Interface_Name (E));
+               Set_Convention         (IP, Convention_CPP);
+               Set_Is_Public          (IP);
+               Set_Has_Completion     (IP);
+               Mutate_Ekind           (IP, E_Procedure);
+               Freeze_Extra_Formals   (IP);
 
             --  Case 2: Constructor of a tagged type
 
@@ -8351,12 +8351,12 @@ package body Exp_Disp is
                         Defining_Unit_Name => Constructor_Id,
                         Parameter_Specifications => Parms));
 
-                  Set_Is_Imported    (Constructor_Id);
-                  Set_Is_Constructor (Constructor_Id);
-                  Set_Interface_Name (Constructor_Id, Interface_Name (E));
-                  Set_Convention     (Constructor_Id, Convention_CPP);
-                  Set_Is_Public      (Constructor_Id);
-                  Set_Has_Completion (Constructor_Id);
+                  Set_Is_Imported        (Constructor_Id);
+                  Set_Is_CPP_Constructor (Constructor_Id);
+                  Set_Interface_Name     (Constructor_Id, Interface_Name (E));
+                  Set_Convention         (Constructor_Id, Convention_CPP);
+                  Set_Is_Public          (Constructor_Id);
+                  Set_Has_Completion     (Constructor_Id);
 
                   --  Build the init procedure as a wrapper of this constructor
 

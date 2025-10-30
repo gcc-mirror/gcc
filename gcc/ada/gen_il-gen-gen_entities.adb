@@ -137,6 +137,7 @@ begin -- Gen_IL.Gen.Gen_Entities
         Sm (Is_Constructor, Flag),
         Sm (Is_Controlled_Active, Flag, Base_Type_Only),
         Sm (Is_CPP_Class, Flag),
+        Sm (Is_CPP_Constructor, Flag),
         Sm (Is_Descendant_Of_Address, Flag),
         Sm (Is_Discrim_SO_Function, Flag),
         Sm (Is_Discriminant_Check_Function, Flag),

@@ -16587,7 +16587,7 @@ package body Sem_Prag is
 
             --  Check if already defined as constructor
 
-            if Is_Constructor (Def_Id) then
+            if Is_CPP_Constructor (Def_Id) then
                Error_Msg_N
                  ("??duplicate argument for pragma 'C'P'P_Constructor", Arg1);
                return;
@@ -16612,7 +16612,7 @@ package body Sem_Prag is
                end if;
 
                Set_Has_Completion (Def_Id);
-               Set_Is_Constructor (Def_Id);
+               Set_Is_CPP_Constructor (Def_Id);
                Set_Convention (Def_Id, Convention_CPP);
 
                --  Imported C++ constructors are not dispatching primitives

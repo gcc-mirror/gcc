@@ -2537,6 +2537,10 @@ package Einfo is
 --       and subtypes, string types and subtypes, and all numeric types).
 --       Set if the type or subtype is constrained.
 
+--    Is_Constructor
+--       Defined in procedure entities. Set if a procedure denotes a
+--       constructor that allows object initialization via the 'Make attribute.
+
 --    Is_Constr_Array_Subt_With_Bounds
 --       Defined in all types and subtypes. Set only for an array subtype
 --       which is constrained but nevertheless requires objects of this
@@ -2547,10 +2551,6 @@ package Einfo is
 --       Defined in all types and subtypes. Set only for the constructed
 --       subtype of an object whose nominal subtype is unconstrained. Note
 --       that the constructed subtype itself will be constrained.
-
---    Is_Constructor
---       Defined in function and procedure entities. Set if a pragma
---       CPP_Constructor applies to the subprogram.
 
 --    Is_Controlled_Active [base type only]
 --       Defined in all type entities. Indicates that the type is controlled,
@@ -2572,6 +2572,10 @@ package Einfo is
 --    Is_CPP_Class
 --       Defined in all type entities, set only for tagged types to which a
 --       valid pragma Import (CPP, ...) or pragma CPP_Class has been applied.
+
+--    Is_CPP_Constructor
+--       Defined in function and procedure entities. Set if a pragma
+--       CPP_Constructor applies to the subprogram.
 
 --    Is_CUDA_Kernel
 --       Defined in function and procedure entities. Set if the subprogram is a
@@ -5632,7 +5636,7 @@ package Einfo is
    --    Is_Abstract_Subprogram               (non-generic case only)
    --    Is_Called                            (non-generic case only)
    --    Is_Class_Wide_Wrapper
-   --    Is_Constructor
+   --    Is_CPP_Constructor
    --    Is_CUDA_Kernel                       (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
    --    Is_Discrim_SO_Function
@@ -5994,6 +5998,7 @@ package Einfo is
    --    Is_Called                            (non-generic case only)
    --    Is_Class_Wide_Wrapper
    --    Is_Constructor
+   --    Is_CPP_Constructor
    --    Is_CUDA_Kernel
    --    Is_Destructor                        (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)

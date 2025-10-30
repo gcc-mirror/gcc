@@ -6341,7 +6341,7 @@ package body Exp_Ch6 is
 
       begin
          if not (Nkind (Specification (N)) = N_Procedure_Specification
-                  and then Is_Constructor_Procedure (Spec_Id))
+                  and then Is_Constructor (Spec_Id))
          then
             return; -- the usual case
          end if;
@@ -10155,7 +10155,7 @@ package body Exp_Ch6 is
       pragma Assert (Nkind (Allocator) = N_Allocator
                       and then Nkind (Function_Call) = N_Function_Call);
       pragma Assert (Convention (Function_Id) = Convention_CPP
-                      and then Is_Constructor (Function_Id));
+                      and then Is_CPP_Constructor (Function_Id));
       pragma Assert (Is_Constrained (Underlying_Type (Result_Subt)));
 
       --  Replace the initialized allocator of form "new T'(Func (...))" with
