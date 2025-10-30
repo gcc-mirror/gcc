@@ -420,7 +420,6 @@ basic_ospanstream, "<spanstream>", cxx23
 basic_spanbuf, "<spanstream>", cxx23
 basic_spanstream, "<spanstream>", cxx23
 ispanstream, "<spanstream>", cxx23
-ispanstream, "<spanstream>", cxx23
 ospanstream, "<spanstream>", cxx23
 spanbuf, "<spanstream>", cxx23
 spanstream, "<spanstream>", cxx23
@@ -432,7 +431,6 @@ basic_istringstream, "<sstream>", cxx98
 basic_ostringstream, "<sstream>", cxx98
 basic_stringbuf, "<sstream>", cxx98
 basic_stringstream, "<sstream>", cxx98
-istringstream, "<sstream>", cxx98
 istringstream, "<sstream>", cxx98
 ostringstream, "<sstream>", cxx98
 stringbuf, "<sstream>", cxx98
