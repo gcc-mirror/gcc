@@ -5206,7 +5206,7 @@ is_cplusplus_method (Entity_Id gnat_entity)
      it is declared without the 'this' parameter in the sources and, although
      the front-end will create a version with the 'this' parameter for code
      generation purposes, we want to return true for both versions.  */
-  if (Is_Constructor (gnat_entity))
+  if (Is_CPP_Constructor (gnat_entity))
     return true;
 
   /* Check that the subprogram has C++ convention.  */
@@ -5836,7 +5836,7 @@ gnat_to_gnu_param (Entity_Id gnat_param, tree gnu_param_type, bool first,
       = make_type_from_size (gnu_param_type, size_int (POINTER_SIZE), 0);
 
   /* Use a pointer type for the "this" pointer of C++ constructors.  */
-  else if (Chars (gnat_param) == Name_uInit && Is_Constructor (gnat_subprog))
+  else if (Chars (gnat_param) == Name_uInit && Is_CPP_Constructor (gnat_subprog))
     {
       gcc_assert (mech == By_Reference);
       gnu_param_type = build_pointer_type (gnu_param_type);
@@ -6611,7 +6611,7 @@ gnat_to_gnu_subprog_type (Entity_Id gnat_subprog, bool definition,
   /* Turn imported C++ constructors into their callable form as done in the
      front-end, i.e. add the "this" pointer and void the return type.  */
   if (method_p
-      && Is_Constructor (gnat_subprog)
+      && Is_CPP_Constructor (gnat_subprog)
       && !VOID_TYPE_P (gnu_return_type))
     {
       tree gnu_param_type
