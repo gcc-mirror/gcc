@@ -1,8 +1,8 @@
 /* PR tree-optimization/92834 */
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
-/* { dg-final { scan-tree-dump-times "MIN_EXPR <" 8 "optimized" } } */
-/* { dg-final { scan-tree-dump-times "MAX_EXPR <" 8 "optimized" } } */
+/* { dg-options "-O2 -fdump-tree-phiopt1" } */
+/* { dg-final { scan-tree-dump-times "MIN_EXPR <" 16 "phiopt1" } } */
+/* { dg-final { scan-tree-dump-times "MAX_EXPR <" 16 "phiopt1" } } */
 
 static inline unsigned
 umax1 (unsigned a, unsigned b)
