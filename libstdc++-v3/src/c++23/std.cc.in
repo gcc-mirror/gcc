@@ -3230,6 +3230,10 @@ export namespace std
   using std::is_scoped_enum;
   using std::is_scoped_enum_v;
 #endif
+#if __cpp_lib_is_implicit_lifetime
+  using std::is_implicit_lifetime;
+  using std::is_implicit_lifetime_v;
+#endif
 }
 
 // <typeindex>

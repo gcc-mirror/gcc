@@ -2455,4 +2455,14 @@
 #endif /* !defined(__cpp_lib_philox_engine) */
 #undef __glibcxx_want_philox_engine
 
+#if !defined(__cpp_lib_is_implicit_lifetime)
+# if (__cplusplus >= 202100L) && (__has_builtin(__builtin_is_implicit_lifetime))
+#  define __glibcxx_is_implicit_lifetime 202302L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_is_implicit_lifetime)
+#   define __cpp_lib_is_implicit_lifetime 202302L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_is_implicit_lifetime) */
+#undef __glibcxx_want_is_implicit_lifetime
+
 #undef __glibcxx_want_all
