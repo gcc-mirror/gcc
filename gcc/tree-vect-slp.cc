@@ -558,7 +558,8 @@ vect_get_operand_map (const gimple *stmt, bool gather_scatter_p = false,
       if (gimple_assign_rhs_code (assign) == COND_EXPR
 	  && COMPARISON_CLASS_P (gimple_assign_rhs1 (assign)))
 	gcc_unreachable ();
-      if (TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison
+      if ((TREE_CODE_CLASS (gimple_assign_rhs_code (assign)) == tcc_comparison
+	   || commutative_tree_code (gimple_assign_rhs_code (assign)))
 	  && swap)
 	return op1_op0_map;
       if (gather_scatter_p)
@@ -1352,7 +1353,12 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 		 uniform but only that of the first stmt matters.  */
 	      && !(first_reduc_idx != -1
 		   && STMT_VINFO_REDUC_IDX (stmt_info) != -1
-		   && REDUC_GROUP_FIRST_ELEMENT (stmt_info)))
+		   && REDUC_GROUP_FIRST_ELEMENT (stmt_info))
+	      && !(first_reduc_idx != -1
+		   && STMT_VINFO_REDUC_IDX (stmt_info) != -1
+		   && rhs_code.is_tree_code ()
+		   && commutative_tree_code (tree_code (rhs_code))
+		   && first_reduc_idx == 1 - STMT_VINFO_REDUC_IDX (stmt_info)))
 	    {
 	      if (dump_enabled_p ())
 		{
@@ -1616,6 +1622,15 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      && TREE_CODE_CLASS ((tree_code)first_stmt_code) == tcc_comparison
 	      && (swap_tree_comparison ((tree_code)first_stmt_code)
 		  == (tree_code)rhs_code))
+	    swap[i] = 1;
+
+	  if (i != 0
+	      && first_reduc_idx != STMT_VINFO_REDUC_IDX (stmt_info)
+	      && first_reduc_idx != -1
+	      && STMT_VINFO_REDUC_IDX (stmt_info) != -1
+	      && rhs_code.is_tree_code ()
+	      && commutative_tree_code (tree_code (rhs_code))
+	      && first_reduc_idx == 1 - STMT_VINFO_REDUC_IDX (stmt_info))
 	    swap[i] = 1;
 	}
 
@@ -4164,6 +4179,10 @@ vect_build_slp_instance (vec_info *vinfo,
 
 	  if (dump_enabled_p ())
 	    {
+	      if (kind == slp_inst_kind_reduc_group)
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "SLP discovery of size %d reduction group "
+				 "succeeded\n", group_size);
 	      dump_printf_loc (MSG_NOTE, vect_location,
 			       "Final SLP tree for instance %p:\n",
 			       (void *) new_instance);
