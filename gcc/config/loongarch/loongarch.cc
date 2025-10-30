@@ -3534,7 +3534,20 @@ loongarch_legitimize_move (machine_mode mode, rtx dest, rtx src)
 {
   if (!register_operand (dest, mode) && !reg_or_0_operand (src, mode))
     {
-      loongarch_emit_move (dest, force_reg (mode, src));
+      /* When loading fixed-point scalar data, if the size of the mode
+	 is smaller than the size of `word_mode`, the immediate value
+	 is first loaded into a register of type `word_mode`.
+	 This facilitates the elimination of common self-expressions.
+	 This reduces redundant immediate value loading instructions.  */
+      rtx tmp;
+      if (GET_MODE_CLASS (mode) == MODE_INT
+	  && GET_CODE (src) == CONST_INT
+	  && GET_MODE_SIZE (mode) < UNITS_PER_WORD)
+	tmp = gen_lowpart (mode, force_reg (word_mode, src));
+      else
+	tmp = force_reg (mode, src);
+
+      loongarch_emit_move (dest, tmp);
       return true;
     }
 
