@@ -1,3 +1,25 @@
+2025-10-29  Yuao Ma  <c8ef@outlook.com>
+
+	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc): Remove unreachable
+	code.
+
+2025-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122165
+	* primary.cc (gfc_match_varspec): If the previous component ref
+	was a type specification parameter, a type inquiry ref cannot
+	follow.
+
+2025-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122433
+	PR fortran/122434
+	* decl.cc (gfc_get_pdt_instance): Prevent a PDT component of
+	the same type as the template from being converted into an
+	instance.
+	* resolve.cc (gfc_impure_variable): The result of a pure
+	function is a valid allocate object since it is pure.
+
 2025-10-28  Yuao Ma  <c8ef@outlook.com>
 
 	PR fortran/122342

@@ -1,3 +1,82 @@
+2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116662
+	* config/riscv/riscv.cc (riscv_option_override): Override
+	default value for destructive interference size.
+
+2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116662
+	* config/riscv/riscv.cc (riscv_option_override): Apply correct version
+	of the patch.
+
+2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116662
+	* config/riscv/riscv.cc (riscv_option_override): Apply correct version
+	of the patch.
+
+2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/116662
+	* config/riscv/riscv.cc (riscv_option_override): Override
+	default value for destructive interference size.
+
+2025-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/91191
+	* gimple-range-op.cc (gimple_range_op_handler): Descend one
+	operand lower for a VIEW_CONVERT_EXPR.
+	* range-op-mixed.h (class operator_view): New.
+	* range-op.cc (range_op_table): Add VIEW_CONVERT_EXPR case.
+	(operator_view::fold_range): New.
+	(operator_view::op1_range): New.
+	(operator_view::update_bitmask): New.
+
+2025-10-29  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-slp.cc (vect_analyze_slp): Mark stmts in BB roots
+	as released after vect_build_slp_instance.
+	(vect_build_slp_instance): Release scalar_stmts when exiting
+	early.
+
+2025-10-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/122097
+	* config/loongarch/loongarch.cc
+	(loongarch_const_vector_bitimm_set_p): Add support for vector float.
+	(loongarch_const_vector_bitimm_clr_p): Likewise.
+	(loongarch_print_operand): Likewise.
+	* config/loongarch/simd.md (and<mode>3): Likewise.
+
+2025-10-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md (xor<mode>3): Delete.
+	(ior<mode>3): Delete.
+	(and<mode>3): Delete.
+	* config/loongarch/lsx.md (xor<mode>3): Delete.
+	(ior<mode>3): Delete.
+	(and<mode>3): Delete.
+	* config/loongarch/simd.md (xor<mode>3): Define.
+	(ior<mode>3): Likewise.
+	(and<mode>3): Likewise.
+
+2025-10-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/genopts/loongarch.opt.in (-mbreak-code=):
+	New.
+	* config/loongarch/loongarch.opt: Regenerate.
+	* config/loongarch/loongarch.md (trap): Separate to a
+	define_insn and a define_expand which takes la_break_code.
+	* doc/invoke.texi (-mbreak-code=): Document.
+	* config/loongarch/loongarch.opt.urls: Regenerate.
+
 2025-10-28  Richard Biener  <rguenther@suse.de>
 
 	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer):

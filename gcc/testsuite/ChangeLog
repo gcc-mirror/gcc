@@ -1,3 +1,35 @@
+2025-10-29  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/91191
+	* gcc.dg/pr91191.c: New.
+
+2025-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122165
+	* gfortran.dg/pdt_64.f03: New test.
+
+2025-10-29  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/70102
+	* gfortran.dg/vect/pr70102.f: New testcase.
+
+2025-10-29  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122433
+	PR fortran/122434
+	* gfortran.dg/pdt_62.f03: New test.
+	* gfortran.dg/pdt_63.f03: New test.
+
+2025-10-29  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/122097
+	* gcc.target/loongarch/pr122097.c: New test.
+
+2025-10-29  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/trap-default.c: New test.
+	* gcc.target/loongarch/trap-1.c: New test.
+
 2025-10-28  Yuao Ma  <c8ef@outlook.com>
 
 	PR fortran/122342

@@ -1,3 +1,47 @@
+2025-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.tcc (regex_traits::value): Use __c instead
+	of __ch.
+
+2025-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/17_intro/headers/c++2011/42319.cc: Include <ios>
+	instead of <bits/char_traits.h>. Add no_pch option. Remove
+	explicit -std=gnu++11 option.
+	* testsuite/30_threads/thread/swap/1.cc: Include <utility>
+	instead of <bits/move.h>.
+
+2025-10-29  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119721
+	* include/std/tuple (tuple<>::operator=(const _Tuple&) const)
+	[__cpp_lib_ranges_zip]: Define.
+	* testsuite/23_containers/tuple/cons/119721.cc: Test const
+	assignment.
+
+2025-10-29  Osama Abdelkader  <osama.abdelkader@gmail.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/119721
+	* include/std/tuple (tuple<>::tuple(const tuple&))
+	(tuple<>::operator=(const tuple&)): Define as defaulted.
+	(tuple<>::swap): Moved the defintion after assignments.
+	(tuple<>::tuple(_UTuple&&))
+	(tuple<>::tuple(allocator_arg_t, const _Alloc&, _UTuple&&))
+	(tuple<>::operator=(_UTuple&&)) [__cpp_lib_tuple_like]: Define.
+	(tuple<>::operator==, tuple<>::opeator<=>): Parenthesize
+	constrains individually.
+	* testsuite/23_containers/tuple/cons/119721.cc: New test for
+	constructors and assignments with empty tuple-like types.
+	* testsuite/20_util/tuple/requirements/empty_trivial.cc:
+	New test verifying tuple<> remains trivially copyable.
+
+2025-10-29  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex.tcc (regex_traits::value): Implement
+	without using istringstream.
+	* include/std/regex: Do not include <sstream>.
+
 2025-10-28  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122401
