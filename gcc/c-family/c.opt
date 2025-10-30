@@ -765,6 +765,10 @@ Wexternal-tu-local
 C++ ObjC++ Var(warn_tu_local) Warning Init(1)
 Warn about naming a TU-local entity declared in another translation unit.
 
+Wexpose-global-module-tu-local
+C++ ObjC++ Var(warn_expose_global_module_tu_local) Init(1) Warning
+Warn when a module exposes a TU-local entity from the global module fragment.
+
 Wextra
 C ObjC C++ ObjC++ Warning
 ; in common.opt

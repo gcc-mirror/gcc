@@ -2365,10 +2365,11 @@ private:
     DB_KIND_BITS = EK_BITS,
     DB_DEFN_BIT = DB_KIND_BIT + DB_KIND_BITS,
     DB_IS_PENDING_BIT,		/* Is a maybe-pending entity.  */
-    DB_TU_LOCAL_BIT,		/* It is a TU-local entity.  */
-    DB_REFS_TU_LOCAL_BIT,	/* Refers to a TU-local entity (but is not
-				   necessarily an exposure.)  */
-    DB_EXPOSURE_BIT,		/* Exposes a TU-local entity.  */
+    DB_TU_LOCAL_BIT,		/* Is a TU-local entity.  */
+    DB_REF_GLOBAL_BIT,		/* Refers to a GMF TU-local entity.  */
+    DB_REF_PURVIEW_BIT,		/* Refers to a purview TU-local entity.  */
+    DB_EXPOSE_GLOBAL_BIT,	/* Exposes a GMF TU-local entity.  */
+    DB_EXPOSE_PURVIEW_BIT,	/* Exposes a purview TU-local entity.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_MAYBE_RECURSIVE_BIT,	/* An entity maybe in a recursive cluster.  */
@@ -2458,19 +2459,40 @@ public:
 	    || (get_entity_kind () == EK_DECL
 		&& get_flag_bit<DB_IS_PENDING_BIT> ()));
   }
+
 public:
-  bool is_tu_local () const
+  /* Only consider global module entities as being TU-local
+     when STRICT is set; otherwise, as an extension we support
+     emitting declarations referencing TU-local GMF entities
+     (and only check purview entities), to assist in migration.  */
+  bool is_tu_local (bool strict = false) const
   {
-    return get_flag_bit<DB_TU_LOCAL_BIT> ();
+    /* Non-strict is only intended for migration purposes, so
+       for simplicity's sake we only care about whether this is
+       a non-purview variable or function at namespace scope;
+       these are the most common cases (coming from C), and
+       that way we don't have to care about diagnostics for
+       nested types and so forth.  */
+    tree inner = STRIP_TEMPLATE (get_entity ());
+    return (get_flag_bit<DB_TU_LOCAL_BIT> ()
+	    && (strict
+		|| !VAR_OR_FUNCTION_DECL_P (inner)
+		|| !NAMESPACE_SCOPE_P (inner)
+		|| (DECL_LANG_SPECIFIC (inner)
+		    && DECL_MODULE_PURVIEW_P (inner))));
   }
-  bool refs_tu_local () const
+  bool refs_tu_local (bool strict = false) const
   {
-    return get_flag_bit<DB_REFS_TU_LOCAL_BIT> ();
+    return (get_flag_bit<DB_REF_PURVIEW_BIT> ()
+	    || (strict && get_flag_bit <DB_REF_GLOBAL_BIT> ()));
   }
-  bool is_exposure () const
+  bool is_exposure (bool strict = false) const
   {
-    return get_flag_bit<DB_EXPOSURE_BIT> ();
+    return (get_flag_bit<DB_EXPOSE_PURVIEW_BIT> ()
+	    || (strict && get_flag_bit <DB_EXPOSE_GLOBAL_BIT> ()));
   }
+
+public:
   bool is_import () const
   {
     return get_flag_bit<DB_IMPORTED_BIT> ();
@@ -2662,6 +2684,10 @@ public:
     void find_dependencies (module_state *);
     bool finalize_dependencies ();
     vec<depset *> connect ();
+
+  private:
+    bool diagnose_bad_internal_ref (depset *dep, bool strict = false);
+    bool diagnose_template_names_tu_local (depset *dep, bool strict = false);
   };
 
 public:
@@ -14335,8 +14361,14 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 		  if (DECL_DECLARED_CONSTEXPR_P (decl)
 		      || DECL_INLINE_VAR_P (decl))
 		    /* A constexpr variable initialized to a TU-local value,
-		       or an inline value (PR c++/119996), is an exposure.  */
-		    dep->set_flag_bit<DB_EXPOSURE_BIT> ();
+		       or an inline value (PR c++/119996), is an exposure.
+
+		       For simplicity, we don't support "non-strict" TU-local
+		       values: even if the TU-local entity we refer to in the
+		       initialiser is in the GMF, we still won't consider this
+		       valid in constant expressions in other TUs, and so
+		       complain accordingly.  */
+		    dep->set_flag_bit<DB_EXPOSE_PURVIEW_BIT> ();
 		}
 	    }
 
@@ -14426,11 +14458,13 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 static bool
 is_exposure_of_member_type (depset *source, depset *ref)
 {
-  gcc_checking_assert (source->refs_tu_local () && ref->is_tu_local ());
+  gcc_checking_assert (source->refs_tu_local (/*strict=*/true)
+		       && ref->is_tu_local (/*strict=*/true));
   tree source_entity = STRIP_TEMPLATE (source->get_entity ());
   tree ref_entity = STRIP_TEMPLATE (ref->get_entity ());
 
-  if (source_entity
+  if (!source->is_tu_local (/*strict=*/true)
+      && source_entity
       && ref_entity
       && DECL_IMPLICIT_TYPEDEF_P (source_entity)
       && DECL_IMPLICIT_TYPEDEF_P (ref_entity)
@@ -14453,11 +14487,20 @@ depset::hash::add_dependency (depset *dep)
   gcc_checking_assert (current && !is_key_order ());
   current->deps.safe_push (dep);
 
-  if (dep->is_tu_local ())
+  if (dep->is_tu_local (/*strict=*/true))
     {
-      current->set_flag_bit<DB_REFS_TU_LOCAL_BIT> ();
+      if (dep->is_tu_local ())
+	current->set_flag_bit<DB_REF_PURVIEW_BIT> ();
+      else
+	current->set_flag_bit<DB_REF_GLOBAL_BIT> ();
+
       if (!ignore_tu_local && !is_exposure_of_member_type (current, dep))
-	current->set_flag_bit<DB_EXPOSURE_BIT> ();
+	{
+	  if (dep->is_tu_local ())
+	    current->set_flag_bit<DB_EXPOSE_PURVIEW_BIT> ();
+	  else
+	    current->set_flag_bit<DB_EXPOSE_GLOBAL_BIT> ();
+	}
     }
 
   if (current->get_entity_kind () == EK_USING
@@ -15342,6 +15385,128 @@ template_has_explicit_inst (tree tmpl)
   return false;
 }
 
+/* Complain about DEP that exposes a TU-local entity.
+
+   If STRICT, DEP only referenced entities from the GMF.  Returns TRUE
+   if we explained anything.  */
+
+bool
+depset::hash::diagnose_bad_internal_ref (depset *dep, bool strict)
+{
+  tree decl = dep->get_entity ();
+
+  /* Don't need to walk if we're not going to be emitting
+     any diagnostics anyway.  */
+  if (strict && !warning_enabled_at (DECL_SOURCE_LOCATION (decl),
+				     OPT_Wexpose_global_module_tu_local))
+    return false;
+
+  for (depset *rdep : dep->deps)
+    if (!rdep->is_binding () && rdep->is_tu_local (strict)
+	&& !is_exposure_of_member_type (dep, rdep))
+      {
+	// FIXME:QOI Better location information?  We're
+	// losing, so it doesn't matter about efficiency.
+	tree exposed = rdep->get_entity ();
+	auto_diagnostic_group d;
+	if (strict)
+	  {
+	    /* Allow suppressing the warning from the point of declaration
+	       of the otherwise-exposed decl, for cases we know that
+	       exposures will never be 'bad'.  */
+	    if (warning_enabled_at (DECL_SOURCE_LOCATION (exposed),
+				    OPT_Wexpose_global_module_tu_local)
+		&& pedwarn (DECL_SOURCE_LOCATION (decl),
+			    OPT_Wexpose_global_module_tu_local,
+			    "%qD exposes TU-local entity %qD", decl, exposed))
+	      {
+		bool informed = is_tu_local_entity (exposed, /*explain=*/true);
+		gcc_checking_assert (informed);
+		return true;
+	      }
+	  }
+	else
+	  {
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "%qD exposes TU-local entity %qD", decl, exposed);
+	    bool informed = is_tu_local_entity (exposed, /*explain=*/true);
+	    gcc_checking_assert (informed);
+	    if (dep->is_tu_local (/*strict=*/true))
+	      inform (DECL_SOURCE_LOCATION (decl),
+		      "%qD is also TU-local but has been exposed elsewhere",
+		      decl);
+	    return true;
+	  }
+      }
+
+  return false;
+}
+
+/* Warn about a template DEP that references a TU-local entity.
+
+   If STRICT, DEP only referenced entities from the GMF.  Returns TRUE
+   if we explained anything.  */
+
+bool
+depset::hash::diagnose_template_names_tu_local (depset *dep, bool strict)
+{
+  tree decl = dep->get_entity ();
+
+  /* Don't bother walking if we know we won't be emitting anything.  */
+  if (!warning_enabled_at (DECL_SOURCE_LOCATION (decl),
+			   OPT_Wtemplate_names_tu_local)
+      /* Only warn strictly if users haven't silenced this warning here.  */
+      || (strict && !warning_enabled_at (DECL_SOURCE_LOCATION (decl),
+					 OPT_Wexpose_global_module_tu_local)))
+    return false;
+
+  /* Friend decls in a class body are ignored, but this is harmless:
+     it should not impact any consumers.  */
+  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
+    return false;
+
+  /* We should now only be warning about templates.  */
+  gcc_checking_assert
+    (TREE_CODE (decl) == TEMPLATE_DECL
+     && VAR_OR_FUNCTION_DECL_P (DECL_TEMPLATE_RESULT (decl)));
+
+  /* Don't warn if we've seen any explicit instantiation definitions,
+     the intent might be for importers to only use those.  */
+  if (template_has_explicit_inst (decl))
+    return false;
+
+  for (depset *rdep : dep->deps)
+    if (!rdep->is_binding () && rdep->is_tu_local (strict))
+      {
+	tree ref = rdep->get_entity ();
+	auto_diagnostic_group d;
+	if (strict)
+	  {
+	    if (warning_enabled_at (DECL_SOURCE_LOCATION (ref),
+				    OPT_Wexpose_global_module_tu_local)
+		&& warning_at (DECL_SOURCE_LOCATION (decl),
+			       OPT_Wtemplate_names_tu_local,
+			       "%qD refers to TU-local entity %qD, which may "
+			       "cause issues when instantiating in other TUs",
+			       decl, ref))
+	      {
+		is_tu_local_entity (ref, /*explain=*/true);
+		return true;
+	      }
+	  }
+	else if (warning_at (DECL_SOURCE_LOCATION (decl),
+			     OPT_Wtemplate_names_tu_local,
+			     "%qD refers to TU-local entity %qD and cannot "
+			     "be instantiated in other TUs", decl, ref))
+	  {
+	    is_tu_local_entity (ref, /*explain=*/true);
+	    return true;
+	  }
+      }
+
+  return false;
+}
+
 /* Sort the bindings, issue errors about bad internal refs.  */
 
 bool
@@ -15366,30 +15531,21 @@ depset::hash::finalize_dependencies ()
 	  if (CHECKING_P)
 	    for (depset *entity : dep->deps)
 	      gcc_checking_assert (!entity->is_import ());
+	  continue;
 	}
-      else if (dep->is_exposure () && !dep->is_tu_local ())
+
+      /* Otherwise, we'll check for bad internal refs.
+	 Don't complain about any references from TU-local entities.  */
+      if (dep->is_tu_local ())
+	continue;
+
+      if (dep->is_exposure ())
 	{
-	  ok = false;
-	  bool explained = false;
+	  bool explained = diagnose_bad_internal_ref (dep);
+
+	  /* A TU-local variable will always be considered an exposure,
+	     so we don't have to worry about strict-only handling.  */
 	  tree decl = dep->get_entity ();
-
-	  for (depset *rdep : dep->deps)
-	    if (!rdep->is_binding ()
-		&& rdep->is_tu_local ()
-		&& !is_exposure_of_member_type (dep, rdep))
-	      {
-		// FIXME:QOI Better location information?  We're
-		// losing, so it doesn't matter about efficiency
-		tree exposed = rdep->get_entity ();
-		auto_diagnostic_group d;
-		error_at (DECL_SOURCE_LOCATION (decl),
-			  "%qD exposes TU-local entity %qD", decl, exposed);
-		bool informed = is_tu_local_entity (exposed, /*explain=*/true);
-		gcc_checking_assert (informed);
-		explained = true;
-		break;
-	      }
-
 	  if (!explained
 	      && VAR_P (decl)
 	      && (DECL_DECLARED_CONSTEXPR_P (decl)
@@ -15414,42 +15570,34 @@ depset::hash::finalize_dependencies ()
 	      explained = true;
 	    }
 
-	  /* We should have emitted an error above.  */
+	  /* We should have emitted an error above, unless the warning was
+	     silenced.  */
 	  gcc_checking_assert (explained);
+	  ok = false;
+	  continue;
 	}
-      else if (warn_template_names_tu_local
-	       && dep->refs_tu_local () && !dep->is_tu_local ())
-	{
-	  tree decl = dep->get_entity ();
 
-	  /* Friend decls in a class body are ignored, but this is harmless:
-	     it should not impact any consumers.  */
-	  if (RECORD_OR_UNION_TYPE_P (TREE_TYPE (decl)))
-	    continue;
+      /* In all other cases, we're just warning (rather than erroring).
+	 We don't want to do too much warning, so let's just bail after
+	 the first warning we successfully emit.  */
+      if (warn_expose_global_module_tu_local
+	  && !dep->is_tu_local (/*strict=*/true)
+	  && dep->is_exposure (/*strict=*/true)
+	  && diagnose_bad_internal_ref (dep, /*strict=*/true))
+	continue;
 
-	  /* We should now only be warning about templates.  */
-	  gcc_checking_assert
-	    (TREE_CODE (decl) == TEMPLATE_DECL
-	     && VAR_OR_FUNCTION_DECL_P (DECL_TEMPLATE_RESULT (decl)));
+      if (warn_template_names_tu_local
+	  && dep->refs_tu_local ()
+	  && diagnose_template_names_tu_local (dep))
+	continue;
 
-	  /* Don't warn if we've seen any explicit instantiation definitions,
-	     the intent might be for importers to only use those.  */
-	  if (template_has_explicit_inst (decl))
-	    continue;
-
-	  for (depset *rdep : dep->deps)
-	    if (!rdep->is_binding () && rdep->is_tu_local ())
-	      {
-		tree ref = rdep->get_entity ();
-		auto_diagnostic_group d;
-		if (warning_at (DECL_SOURCE_LOCATION (decl),
-				OPT_Wtemplate_names_tu_local,
-				"%qD refers to TU-local entity %qD and cannot "
-				"be instantiated in other TUs", decl, ref))
-		  is_tu_local_entity (ref, /*explain=*/true);
-		break;
-	      }
-	}
+      if (warn_template_names_tu_local
+	  && warn_expose_global_module_tu_local
+	  && !dep->is_tu_local (/*strict=*/true)
+	  && dep->refs_tu_local (/*strict=*/true)
+	  && !dep->is_exposure (/*strict=*/true)
+	  && diagnose_template_names_tu_local (dep, /*strict=*/true))
+	continue;
     }
 
   return ok;

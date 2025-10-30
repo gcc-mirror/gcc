@@ -257,7 +257,8 @@ in the following sections.
 -Wdeprecated-copy -Wdeprecated-copy-dtor
 -Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion
 -Weffc++ -Wno-elaborated-enum-base
--Wno-exceptions -Wextra-semi -Wno-global-module -Wno-inaccessible-base
+-Wno-exceptions -Wno-expose-global-module-tu-local -Wno-external-tu-local
+-Wextra-semi -Wno-global-module -Wno-inaccessible-base
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime
 -Winvalid-constexpr -Winvalid-imported-macros
 -Wno-invalid-offsetof  -Wno-literal-suffix
@@ -272,7 +273,7 @@ in the following sections.
 -Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
--Wno-template-id-cdtor  -Wtemplate-names-tu-local -Wno-external-tu-local
+-Wno-template-id-cdtor  -Wtemplate-names-tu-local
 -Wno-terminate  -Wno-vexing-parse  -Wvirtual-inheritance
 -Wno-virtual-move-assign  -Wvolatile}
 
@@ -4758,6 +4759,29 @@ This warning attempts to detect cases where this might occur.
 The presence of an explicit instantiation silences the warning.
 
 This flag is enabled by @option{-Wextra}.
+
+@opindex Wexpose-global-module-tu-local
+@opindex Wno-expose-global-module-tu-local
+@item -Wno-expose-global-module-tu-local
+An exposure of a translation-unit-local entity from a module interface is
+invalid, as this may cause ODR violations and manifest in link errors or other
+unexpected behaviour.  However, many existing libraries declare TU-local
+entities in their interface, and avoiding exposures of these entities may be
+difficult in some cases.
+
+As an extension, GCC allows exposures of internal variables and functions that
+were declared in the global module fragment.  This warning indicates when such
+an invalid exposure has occurred, and can be silenced using diagnostic pragmas
+either at the site of the exposure, or at the point of declaration of the
+internal declaration.
+
+When combined with @option{-Wtemplate-names-tu-local}, GCC will also warn about
+non-exposure references to TU-local entities in template bodies. Such templates
+can still be instantiated in other TUs but the above risks regarding exposures
+of translation-unit-local entities apply.
+
+This warning is enabled by default, and is upgraded to an error by
+@option{-pedantic-errors}.
 
 @opindex Wexternal-tu-local
 @opindex Wno-external-tu-local
