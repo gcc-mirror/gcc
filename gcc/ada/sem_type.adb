@@ -610,14 +610,17 @@ package body Sem_Type is
       First_Interp := All_Interp.Last;
       Add_One_Interp (N, Ent, Etype (N));
 
-      --  For expanded name, pick up all additional entities from the
-      --  same scope, since these are obviously also visible. Note that
-      --  these are not necessarily contiguous on the homonym chain.
+      --  For an expanded name, pick up additional visible entities from
+      --  the same scope. Note that these are not necessarily contiguous
+      --  on the homonym chain.
 
       if Nkind (N) = N_Expanded_Name then
          H := Homonym (Ent);
          while Present (H) loop
-            if Scope (H) = Scope (Entity (N)) then
+            if Scope (H) = Scope (Entity (N))
+              and then (not Is_Hidden (H)
+                         or else Is_Immediately_Visible (H))
+            then
                Add_One_Interp (N, H, Etype (H));
             end if;
 
