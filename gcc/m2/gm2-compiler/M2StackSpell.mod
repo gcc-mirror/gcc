@@ -31,7 +31,7 @@ FROM SymbolTable IMPORT NulSym, IsModule, IsDefImp, IsRecord,
 FROM SymbolKey IMPORT PerformOperation ;
 FROM DynamicStrings IMPORT InitStringCharStar, InitString, Mark, string, ConCat ;
 FROM FormatStrings IMPORT Sprintf1, Sprintf2, Sprintf3 ;
-FROM NameKey IMPORT KeyToCharStar ;
+FROM NameKey IMPORT KeyToCharStar, NulName ;
 FROM M2MetaError IMPORT MetaErrorStringT0 ;
 
 FROM M2StackWord IMPORT StackOfWord, PushWord, PopWord,
@@ -39,6 +39,7 @@ FROM M2StackWord IMPORT StackOfWord, PushWord, PopWord,
                         NoOfItemsInStackWord, PeepWord ;
 
 FROM CDataTypes IMPORT ConstCharStar ;
+FROM M2Batch IMPORT GetModuleNo ;
 
 IMPORT m2spellcheck ;
 FROM m2spellcheck IMPORT Candidates ;
@@ -94,6 +95,60 @@ BEGIN
    END ;
    RETURN sym
 END GetRecordField ;
+
+
+(*
+   CandidatePushName - push a symbol name to the candidate list.
+*)
+
+PROCEDURE CandidatePushName (cand: Candidates; sym: CARDINAL) ;
+VAR
+   str: String ;
+BEGIN
+   str := InitStringCharStar (KeyToCharStar (GetSymName (sym))) ;
+   m2spellcheck.Push (cand, string (str)) ;
+   INC (PushCount)
+END CandidatePushName ;
+
+
+(*
+   GetDefModuleSpellHint - return a string describing a spelling
+                           hint for the definition module name
+                           similiar to defimp.  The premise is that
+                           defimp has been misspelt.  NIL is returned
+                           if no hint can be given.
+*)
+
+PROCEDURE GetDefModuleSpellHint (defimp: CARDINAL) : String ;
+VAR
+   i        : CARDINAL ;
+   sym      : CARDINAL ;
+   cand     : Candidates ;
+   misspell,
+   content  : ConstCharStar ;
+   HintStr  : String ;
+BEGIN
+   HintStr := NIL ;
+   IF GetSymName (defimp) # NulName
+   THEN
+      misspell := KeyToCharStar (GetSymName (defimp)) ;
+      i := 1 ;
+      sym := GetModuleNo (i) ;
+      cand := m2spellcheck.InitCandidates () ;
+      WHILE sym # NulSym DO
+         IF sym # defimp
+         THEN
+            CandidatePushName (cand, sym)
+         END ;
+         INC (i) ;
+         sym := GetModuleNo (i)
+      END ;
+      content := m2spellcheck.FindClosestCharStar (cand, misspell) ;
+      HintStr := BuildHintStr (HintStr, content) ;
+      m2spellcheck.KillCandidates (cand)
+   END ;
+   RETURN AddPunctuation (HintStr, '?')
+END GetDefModuleSpellHint ;
 
 
 (*
@@ -184,6 +239,30 @@ END PushCandidates ;
 
 
 (*
+   BuildHintStr - create the did you mean hint and return it
+                  if HintStr is NIL.  Otherwise append a hint
+                  to HintStr.  If content is NIL then return NIL.
+*)
+
+PROCEDURE BuildHintStr (HintStr: String; content: ConstCharStar) : String ;
+VAR
+   str: String ;
+BEGIN
+   IF content # NIL
+   THEN
+      str := InitStringCharStar (content) ;
+      IF HintStr = NIL
+      THEN
+         RETURN Sprintf1 (Mark (InitString (", did you mean %s")), str)
+      ELSE
+         RETURN Sprintf2 (Mark (InitString ("%s or %s")), HintStr, str)
+      END
+   END ;
+   RETURN NIL
+END BuildHintStr ;
+
+
+(*
    CheckForHintStr - lookup a spell hint matching misspelt.  If one exists
                      then append it to HintStr.  Return HintStr.
 *)
@@ -193,7 +272,6 @@ PROCEDURE CheckForHintStr (sym: CARDINAL;
 VAR
    cand   : Candidates ;
    content: ConstCharStar ;
-   str    : String ;
 BEGIN
    IF IsModule (sym) OR IsDefImp (sym) OR IsProcedure (sym) OR
       IsRecord (sym) OR IsEnumeration (sym)
@@ -206,16 +284,7 @@ BEGIN
          content := NIL
       END ;
       m2spellcheck.KillCandidates (cand) ;
-      IF content # NIL
-      THEN
-         str := InitStringCharStar (content) ;
-         IF HintStr = NIL
-         THEN
-            RETURN Sprintf1 (Mark (InitString (", did you mean %s")), str)
-         ELSE
-            RETURN Sprintf2 (Mark (InitString ("%s or %s")), HintStr, str)
-         END
-      END
+      HintStr := BuildHintStr (HintStr, content)
    END ;
    RETURN HintStr
 END CheckForHintStr ;

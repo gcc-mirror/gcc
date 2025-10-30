@@ -59,4 +59,14 @@ PROCEDURE GetRecordField (tokno: CARDINAL;
                           fieldName: Name) : CARDINAL ;
 
 
+(*
+   GetDefModuleSpellHint - return a string describing a spelling
+                           hint for the definition module name
+                           similiar to unknown.  NIL is returned
+                           if no hint can be given.
+*)
+
+PROCEDURE GetDefModuleSpellHint (defimp: CARDINAL) : String ;
+
+
 END M2StackSpell.

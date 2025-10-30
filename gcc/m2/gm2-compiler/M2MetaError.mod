@@ -42,7 +42,6 @@ FROM SYSTEM IMPORT ADDRESS ;
 FROM M2Error IMPORT MoveError ;
 FROM M2Debug IMPORT Assert ;
 FROM Storage IMPORT ALLOCATE ;
-FROM M2StackSpell IMPORT GetSpellHint ;
 
 FROM Indexing IMPORT Index, InitIndex, KillIndex, GetIndice, PutIndice,
                      DeleteIndice, HighIndice ;
@@ -74,6 +73,7 @@ IMPORT M2Error ;
 IMPORT FilterError ;
 
 FROM FilterError IMPORT Filter, AddSymError, IsSymError ;
+FROM M2StackSpell IMPORT GetDefModuleSpellHint, GetSpellHint ;
 
 
 CONST
@@ -100,6 +100,7 @@ TYPE
                    len,
                    ini       : INTEGER ;
                    vowel,
+                   filterDef,
                    importHint,
                    exportHint,
                    withStackHint,
@@ -533,6 +534,7 @@ BEGIN
       ini        := 0 ;
       glyph      := FALSE ;  (* Nothing to output yet.  *)
       vowel      := FALSE ;  (* Check for a vowel when outputing string?  *)
+      filterDef  := FALSE ;  (* Filter on definition module list?  *)
       importHint := FALSE;
       exportHint := FALSE ;
       withStackHint := FALSE ;
@@ -1840,7 +1842,7 @@ END op ;
 
 
 (*
-   continuation := {':'|'1'|'2'|'3'|'4'|'i'|'s'|'x'|'w'} =:
+   continuation := {':'|'1'|'2'|'3'|'4'|'i'|'s'|'x'|'w'|'D'} =:
 *)
 
 PROCEDURE continuation (VAR eb: errorBlock;
@@ -1860,7 +1862,8 @@ BEGIN
       'i':  AddImportsHint (eb) |
       's':  SpellHint (eb, sym, bol) |
       'x':  AddExportsHint (eb) |
-      'w':  AddWithStackHint (eb)
+      'w':  AddWithStackHint (eb) |
+      'D':  FilterOnDefinitionModule (eb)
 
       ELSE
          InternalFormat (eb, 'expecting one of [:1234isxw]',
@@ -1956,9 +1959,15 @@ END JoinSentances ;
 
 PROCEDURE SpellHint (VAR eb: errorBlock; sym: ARRAY OF CARDINAL; bol: CARDINAL) ;
 BEGIN
-   IF (bol <= HIGH (sym)) AND IsUnknown (sym[bol])
+   IF bol <= HIGH (sym)
    THEN
-      JoinSentances (eb, GetSpellHint (sym[bol]))
+      IF eb.filterDef AND IsDefImp (sym[bol])
+      THEN
+         JoinSentances (eb, GetDefModuleSpellHint (sym[bol]))
+      ELSIF IsUnknown (sym[bol])
+      THEN
+         JoinSentances (eb, GetSpellHint (sym[bol]))
+      END
    END
 END SpellHint ;
 
@@ -1991,6 +2000,16 @@ PROCEDURE AddWithStackHint (VAR eb: errorBlock) ;
 BEGIN
    eb.withStackHint := TRUE
 END AddWithStackHint ;
+
+
+(*
+   FilterOnDefinitionModule - turn on filtering and include all the definition modules.
+*)
+
+PROCEDURE FilterOnDefinitionModule (VAR eb: errorBlock) ;
+BEGIN
+   eb.filterDef := TRUE
+END FilterOnDefinitionModule ;
 
 
 (*

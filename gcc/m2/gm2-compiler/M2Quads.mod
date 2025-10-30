@@ -10697,44 +10697,43 @@ BEGIN
                    NoOfParam) ;
       resulttok := functok ;
       ReturnVar := MakeConstLit (resulttok, MakeKey('0'), Cardinal)
-   ELSIF IsAModula2Type (OperandT (1))
-   THEN
-      paramtok := OperandTok (1) ;
-      resulttok := MakeVirtualTok (functok, functok, paramtok) ;
-      BuildSizeCheckEnd (ProcSym) ;   (* Quadruple generation now on.  *)
-      ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
-      GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, OperandT(1), TRUE)
-   ELSIF IsVar (OperandT (1))
-   THEN
-      BuildSizeCheckEnd (ProcSym) ;   (* Quadruple generation now on.  *)
-      Type := GetSType (OperandT (1)) ;
-      paramtok := OperandTok (1) ;
-      resulttok := MakeVirtualTok (functok, functok, paramtok) ;
-      IF IsUnbounded (Type)
-      THEN
-         (* Eg. SIZE(a) ; where a is unbounded dereference HIGH and multiply by the TYPE.  *)
-         dim := OperandD (1) ;
-         IF dim = 0
-         THEN
-            ReturnVar := calculateMultipicand (resulttok, OperandT (1), Type, dim)
-         ELSE
-            ReturnVar := calculateMultipicand (resulttok, OperandA (1), Type, dim)
-         END
-      ELSE
-         ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
-         IF Type = NulSym
-         THEN
-            MetaErrorT1 (resulttok,
-                         'cannot get the type and size of {%1Ead}', OperandT (1))
-         END ;
-         GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, Type, TRUE)
-      END
    ELSE
       paramtok := OperandTok (1) ;
-      MetaErrorT1 (paramtok,
-                   '{%E}SYSTEM procedure {%kSIZE} expects a variable or type as its parameter, seen {%1Ed} {%1&s}',
-                   OperandT (1)) ;
-      ReturnVar := MakeConstLit (resulttok, MakeKey('0'), Cardinal)
+      resulttok := MakeVirtualTok (functok, functok, paramtok) ;
+      IF IsAModula2Type (OperandT (1))
+      THEN
+         BuildSizeCheckEnd (ProcSym) ;   (* Quadruple generation now on.  *)
+         ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
+         GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, OperandT(1), TRUE)
+      ELSIF IsVar (OperandT (1))
+      THEN
+         BuildSizeCheckEnd (ProcSym) ;   (* Quadruple generation now on.  *)
+         Type := GetSType (OperandT (1)) ;
+         IF IsUnbounded (Type)
+         THEN
+            (* Eg. SIZE(a) ; where a is unbounded dereference HIGH and multiply by the TYPE.  *)
+            dim := OperandD (1) ;
+            IF dim = 0
+            THEN
+               ReturnVar := calculateMultipicand (resulttok, OperandT (1), Type, dim)
+            ELSE
+               ReturnVar := calculateMultipicand (resulttok, OperandA (1), Type, dim)
+            END
+         ELSE
+            ReturnVar := MakeTemporary (resulttok, ImmediateValue) ;
+            IF Type = NulSym
+            THEN
+               MetaErrorT1 (resulttok,
+                            'cannot get the type and size of {%1Ead}', OperandT (1))
+            END ;
+            GenQuadO (resulttok, SizeOp, ReturnVar, NulSym, Type, TRUE)
+         END
+      ELSE
+         MetaErrorT1 (paramtok,
+                      '{%E}SYSTEM procedure {%kSIZE} expects a variable or type as its parameter, seen {%1Ed} {%1&s}',
+                      OperandT (1)) ;
+         ReturnVar := MakeConstLit (paramtok, MakeKey('0'), Cardinal)
+      END
    END ;
    PopN (NoOfParam+1) ;       (* Destroy the arguments and function.  *)
    PushTFtok (ReturnVar, GetSType(ProcSym), resulttok)

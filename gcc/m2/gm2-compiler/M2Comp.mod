@@ -851,12 +851,11 @@ BEGIN
             MergeDeps (DepContent, ChildDep, LibName)
          ELSE
             (* Unrecoverable error.  *)
-            MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found'),
+            MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found {%%1&Ds}'),
                                         FileName), sym)
          END
       ELSE
-         (* Unrecoverable error.  *)
-         MetaError1 ('the file containing the definition module {%1EMAa} cannot be found', sym)
+         MetaError1 ('the file containing the definition module {%1EMAa} cannot be found {%1&Ds}', sym)
       END ;
       ModuleType := Implementation
    ELSE
@@ -928,15 +927,15 @@ BEGIN
             qprintf0 ('\n') ;
             CloseSource
          ELSE
-            (* It is quite legitimate to implement a module in C (and pretend it was a M2
+            (* It is legitimate to implement a module in C (and pretend it was a M2
                implementation) providing that it is not the main program module and the
                definition module does not declare a hidden type when -fextended-opaque
                is used.  *)
             IF (NOT WholeProgram) OR (sym = Main) OR IsHiddenTypeDeclared (sym)
             THEN
                (* Unrecoverable error.  *)
-               MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found'),
-                                           FileName), sym) ;
+               MetaErrorString1 (Sprintf1 (InitString ('file {%%1EUAF%s} containing module {%%1a} cannot be found {%%1&Ds}'),
+                                           FileName), sym)
             END
          END
       END
