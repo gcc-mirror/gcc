@@ -3223,6 +3223,7 @@
     DONE;
   }
 )
+
 (define_insn "extend<mode><Vwide>2"
   [(set (match_operand:<VWIDE> 0 "register_operand" "=w")
 	(float_extend:<VWIDE>
@@ -3231,6 +3232,29 @@
   "fcvtl\\t%0<Vmwtype>, %1<Vmtype>"
   [(set_attr "type" "neon_fp_cvt_widen_s")]
 )
+
+/* A BF->SF is a shift left of 16, however shifts are expensive and the generic
+   middle-end expansion would force through DI move.  Instead use EXT to do the
+   shift to get better throughput and don't go through GPRs.  */
+
+(define_expand "extendbfsf2"
+  [(set (match_operand:SF 0 "register_operand" "=w")
+	(float_extend:SF
+	  (match_operand:BF 1 "register_operand" "w")))]
+  "TARGET_SIMD"
+{
+  rtx tmp0 = aarch64_gen_shareable_zero (V8BFmode);
+  rtx op0 = force_lowpart_subreg (V8BFmode, operands[1], BFmode);
+  rtx res = gen_reg_rtx (V8BFmode);
+  emit_insn (gen_aarch64_extv8bf (res, tmp0, op0, gen_int_mode (7, SImode)));
+  /* Subregs between floating point modes aren't allowed to change size, so go
+     through V4SFmode.  */
+  res = force_lowpart_subreg (V4SFmode, res, V8BFmode);
+  res = force_lowpart_subreg (SFmode, res, V4SFmode);
+  emit_move_insn (operands[0], res);
+  DONE;
+})
+
 
 ;; Float narrowing operations.
 
