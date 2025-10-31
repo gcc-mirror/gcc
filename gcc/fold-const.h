@@ -153,7 +153,6 @@ extern tree build_simple_mem_ref_loc (location_t, tree);
 extern poly_offset_int mem_ref_offset (const_tree);
 extern tree build_invariant_address (tree, tree, poly_int64);
 extern tree constant_boolean_node (bool, tree);
-extern tree div_if_zero_remainder (const_tree, const_tree);
 
 extern bool tree_swap_operands_p (const_tree, const_tree);
 extern enum tree_code swap_tree_comparison (enum tree_code);
