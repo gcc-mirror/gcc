@@ -3949,17 +3949,17 @@ final_value_replacement_loop (class loop *loop)
       auto loc = gimple_phi_arg_location (phi, exit->dest_idx);
       remove_phi_node (&psi, false);
 
-      /* Propagate constants immediately, but leave an unused initialization
-	 around to avoid invalidating the SCEV cache.  */
-      if (CONSTANT_CLASS_P (def) && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rslt))
-	replace_uses_by (rslt, def);
-
       /* Create the replacement statements.  */
       gimple_seq stmts;
       def = force_gimple_operand (def, &stmts, false, NULL_TREE);
       gassign *ass = gimple_build_assign (rslt, def);
       gimple_set_location (ass, loc);
       gimple_seq_add_stmt (&stmts, ass);
+
+      /* Propagate constants immediately, but leave an unused initialization
+	 around to avoid invalidating the SCEV cache.  */
+      if (CONSTANT_CLASS_P (def) && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rslt))
+	replace_uses_by (rslt, def);
 
       /* If def's type has undefined overflow and there were folded
 	 casts, rewrite all stmts added for def into arithmetics
