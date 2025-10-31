@@ -3995,11 +3995,17 @@ final_value_replacement_loop (class loop *loop)
 	{
 	  gimple *use_stmt;
 	  imm_use_iterator imm_iter;
+	  auto_vec<gimple *, 4> to_fold;
 	  FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, rslt)
+	    if (!stmt_can_throw_internal (cfun, use_stmt))
+	      to_fold.safe_push (use_stmt);
+	  /* Delay folding until after the immediate use walk is completed
+	     as we have an active ranger and that might walk immediate
+	     uses of rslt again.  See PR122502.  */
+	  for (gimple *use_stmt : to_fold)
 	    {
 	      gimple_stmt_iterator gsi = gsi_for_stmt (use_stmt);
-	      if (!stmt_can_throw_internal (cfun, use_stmt)
-		  && fold_stmt (&gsi, follow_all_ssa_edges))
+	      if (fold_stmt (&gsi, follow_all_ssa_edges))
 		update_stmt (gsi_stmt (gsi));
 	    }
 	}
