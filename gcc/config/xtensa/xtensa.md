@@ -1139,7 +1139,7 @@
 (define_insn "*fix<s_fix>_truncsfsi2_scaled"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(any_fix:SI (mult:SF (match_operand:SF 1 "register_operand" "f")
-			     (match_operand:SF 2 "fix_scaling_operand" "F"))))]
+			     (match_operand:SF 2 "fix_scaling_operand" ""))))]
   "TARGET_HARD_FLOAT"
   "<m_fix>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
@@ -1158,7 +1158,7 @@
 (define_insn "*float<s_float>sisf2_scaled"
   [(set (match_operand:SF 0 "register_operand" "=f")
 	(mult:SF (any_float:SF (match_operand:SI 1 "register_operand" "a"))
-		 (match_operand:SF 2 "float_scaling_operand" "F")))]
+		 (match_operand:SF 2 "float_scaling_operand" "")))]
   "TARGET_HARD_FLOAT"
   "<m_float>.s\t%0, %1, %V2"
   [(set_attr "type"	"fconv")
@@ -1187,7 +1187,7 @@
 (define_insn "*l<m_round>sfsi2_scaled"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(unspec:SI [(mult:SF (match_operand:SF 1 "register_operand" "f")
-			     (match_operand:SF 2 "fix_scaling_operand" "F"))] ANY_ROUND))]
+			     (match_operand:SF 2 "fix_scaling_operand" ""))] ANY_ROUND))]
   "TARGET_HARD_FLOAT"
   "<m_round>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
