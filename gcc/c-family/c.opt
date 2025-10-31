@@ -1930,6 +1930,14 @@ C++ ObjC++ Var(flag_contracts_conservative_ipa) Init(1)
 -fcontracts-conservative-ipa	Do not allow certain optimisations between
 functions in contract assertions.
 
+fcontract-checks-outlined
+C++ ObjC++ Var(flag_contract_checks_outlined) Init(0)
+-fcontract-checks-outlined	Build contract checks using outlined functions.
+
+fcontract-disable-optimized-checks
+C++ ObjC++ Var(flag_contract_disable_optimized_checks) Init(0)
+-fcontract-disable-optimized-checks	Disable optimisation of contract checks.
+
 fcoroutines
 C++ ObjC++ LTO Var(flag_coroutines)
 Enable C++ coroutines (experimental).

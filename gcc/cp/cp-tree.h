@@ -3183,6 +3183,13 @@ struct GTY(()) lang_decl_min {
   tree access;
 };
 
+enum lang_contract_helper
+{
+  ldf_contract_none = 0,
+  ldf_contract_pre,
+  ldf_contract_post
+};
+
 /* Additional DECL_LANG_SPECIFIC information for functions.  */
 
 struct GTY(()) lang_decl_fn {
@@ -3212,8 +3219,9 @@ struct GTY(()) lang_decl_fn {
   unsigned escalated_p : 1;
 
   unsigned xobj_func : 1;
+  ENUM_BITFIELD(lang_contract_helper) contract_helper : 2;
 
-  unsigned spare : 7;
+  unsigned spare : 5;
 
   /* 32-bits padding on 64-bit host.  */
 
@@ -3360,6 +3368,9 @@ struct GTY(()) lang_decl {
   (&DECL_LANG_SPECIFIC (NODE)->u.decomp)
 
 #endif /* ENABLE_TREE_CHECKING */
+
+#define CONTRACT_HELPER(NODE) \
+ (LANG_DECL_FN_CHECK (NODE)->contract_helper)
 
 /* For a FUNCTION_DECL or a VAR_DECL, the language linkage for the
    declaration.  Some entities (like a member function in a local
@@ -7149,7 +7160,6 @@ extern tree build_conditional_expr		(const op_location_t &,
 extern tree build_addr_func			(tree, tsubst_flags_t);
 extern void set_flags_from_callee		(tree);
 extern tree build_call_a			(tree, int, tree*);
-extern tree build_call_a_1			(tree, int, tree*);
 extern tree build_call_n			(tree, int, ...);
 extern bool null_ptr_cst_p			(tree);
 extern bool null_member_pointer_value_p		(tree);

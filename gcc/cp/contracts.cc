@@ -164,9 +164,9 @@ contract_valid_p (tree contract)
 /* True if the contract specifier is valid.  */
 
 static bool
-contract_specifier_valid_p (tree specifier)
+contract_specifier_valid_p (tree contract)
 {
-  return contract_valid_p (TREE_VALUE (TREE_VALUE (specifier)));
+  return contract_valid_p (TREE_VALUE (TREE_VALUE (contract)));
 }
 
 /* Compare the contract conditions of OLD_CONTRACT and NEW_CONTRACT.
@@ -335,9 +335,9 @@ handle_contracts_p (tree fndecl)
 {
   return (flag_contracts
 	  && !processing_template_decl
+	  && (CONTRACT_HELPER (fndecl) == ldf_contract_none)
 	  && contract_any_active_p (fndecl));
 }
-
 
 /* For use with the tree inliner. This preserves non-mapped local variables,
    such as postcondition result variables, during remapping.  */
@@ -598,14 +598,264 @@ check_postconditions_in_redecl (tree olddecl, tree newdecl)
     }
 }
 
-void
-maybe_update_postconditions (tree fndecl)
+/* Map from FUNCTION_DECL to a FUNCTION_DECL for either the PRE_FN or POST_FN.
+   These are used to parse contract conditions and are called inside the body
+   of the guarded function.  */
+static GTY(()) hash_map<tree, tree> *decl_pre_fn;
+static GTY(()) hash_map<tree, tree> *decl_post_fn;
+
+/* Given a pre or post function decl (for an outlined check function) return
+   the decl for the function for which the outlined checks are being
+   performed.  */
+static GTY(()) hash_map<tree, tree> *orig_from_outlined;
+
+/* Makes PRE the precondition function for FNDECL.  */
+
+static void
+set_precondition_function (tree fndecl, tree pre)
 {
-  /* Update any postconditions and the postcondition checking function
-     as needed.  If there are postconditions, we'll use those to rewrite
-     return statements to check postconditions.  */
-  if (has_active_postconditions (fndecl))
-    rebuild_postconditions (fndecl);
+  gcc_assert (pre);
+  hash_map_maybe_create<hm_ggc> (decl_pre_fn);
+  gcc_checking_assert (!decl_pre_fn->get (fndecl));
+  decl_pre_fn->put (fndecl, pre);
+
+  hash_map_maybe_create<hm_ggc> (orig_from_outlined);
+  gcc_checking_assert (!orig_from_outlined->get (pre));
+  orig_from_outlined->put (pre, fndecl);
+}
+
+/* Makes POST the postcondition function for FNDECL.  */
+
+static void
+set_postcondition_function (tree fndecl, tree post)
+{
+  gcc_checking_assert (post);
+  hash_map_maybe_create<hm_ggc> (decl_post_fn);
+  gcc_checking_assert (!decl_post_fn->get (fndecl));
+  decl_post_fn->put (fndecl, post);
+
+  hash_map_maybe_create<hm_ggc> (orig_from_outlined);
+  gcc_checking_assert (!orig_from_outlined->get (post));
+  orig_from_outlined->put (post, fndecl);
+}
+
+/* For a given pre or post condition function, find the checked function.  */
+tree
+get_orig_for_outlined (tree fndecl)
+{
+  gcc_checking_assert (fndecl);
+  tree *result = hash_map_safe_get (orig_from_outlined, fndecl);
+  return result ? *result : NULL_TREE ;
+}
+
+/* For a given function OLD_FN set suitable names for NEW_FN (which is an
+   outlined contract check) usually by appending '.pre' or '.post'.
+
+   For functions with special meaning names (i.e. main and cdtors) we need to
+   make special provisions and therefore handle all the contracts function
+   name changes here, rather than requiring a separate update to mangle.cc.
+
+   PRE specifies if we need an identifier for a pre or post contract check.  */
+
+static void
+contracts_fixup_names (tree new_fn, tree old_fn, bool pre)
+{
+  bool cdtor = DECL_CXX_CONSTRUCTOR_P (old_fn)
+	       || DECL_CXX_DESTRUCTOR_P (old_fn);
+  const char *fname = IDENTIFIER_POINTER (DECL_NAME (old_fn));
+  const char *pre_or_post = pre ? "pre" : "post";
+  size_t len = strlen (fname);
+  /* Cdtor names have a space at the end.  We need to remove that space
+     when forming the new identifier.  */
+  char *nn = xasprintf ("%.*s%s%s",
+			cdtor ? (int)len-1 : int(len),
+			fname,
+			JOIN_STR,
+			pre_or_post);
+  DECL_NAME (new_fn) = get_identifier (nn);
+  free (nn);
+
+  /* Now do the mangled version.  */
+  fname = IDENTIFIER_POINTER (DECL_ASSEMBLER_NAME (old_fn));
+  nn = xasprintf ("%s%s%s", fname, JOIN_STR, pre_or_post);
+  SET_DECL_ASSEMBLER_NAME (new_fn, get_identifier (nn));
+  free (nn);
+}
+
+/* Build a declaration for the pre- or postcondition of a guarded FNDECL.  */
+
+static tree
+build_contract_condition_function (tree fndecl, bool pre)
+{
+  if (error_operand_p (fndecl))
+    return error_mark_node;
+
+  /* Start the copy.  */
+  tree fn = copy_decl (fndecl);
+
+  /* Don't propagate declaration attributes to the checking function,
+     including the original contracts.  */
+  DECL_ATTRIBUTES (fn) = NULL_TREE;
+
+  /* If requested, disable optimisation of checking functions; this can, in
+     some cases, prevent UB from eliding the checks themselves.  */
+  if (flag_contract_disable_optimized_checks)
+    DECL_ATTRIBUTES (fn)
+      = tree_cons (get_identifier ("optimize"),
+		   build_tree_list (NULL_TREE, build_string (3, "-O0")),
+		   NULL_TREE);
+
+  /* Now parse and add any internal representation of these attrs to the
+     decl.  */
+  if (DECL_ATTRIBUTES (fn))
+    cplus_decl_attributes (&fn, DECL_ATTRIBUTES (fn), 0);
+
+  /* A possible later optimization may delete unused args to prevent extra arg
+     passing.  */
+  /* Handle the args list.  */
+  tree arg_types = NULL_TREE;
+  tree *last = &arg_types;
+  for (tree arg_type = TYPE_ARG_TYPES (TREE_TYPE (fn));
+      arg_type && arg_type != void_list_node;
+      arg_type = TREE_CHAIN (arg_type))
+    {
+      if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl)
+	  && TYPE_ARG_TYPES (TREE_TYPE (fn)) == arg_type)
+      continue;
+      *last = build_tree_list (TREE_PURPOSE (arg_type), TREE_VALUE (arg_type));
+      last = &TREE_CHAIN (*last);
+    }
+
+  /* Copy the function parameters, if present.  Disable warnings for them.  */
+  DECL_ARGUMENTS (fn) = NULL_TREE;
+  if (DECL_ARGUMENTS (fndecl))
+    {
+      tree *last_a = &DECL_ARGUMENTS (fn);
+      for (tree p = DECL_ARGUMENTS (fndecl); p; p = TREE_CHAIN (p))
+	{
+	  *last_a = copy_decl (p);
+	  suppress_warning (*last_a);
+	  DECL_CONTEXT (*last_a) = fn;
+	  last_a = &TREE_CHAIN (*last_a);
+	}
+    }
+
+  tree orig_fn_value_type = TREE_TYPE (TREE_TYPE (fn));
+  if (!pre && !VOID_TYPE_P (orig_fn_value_type))
+    {
+      /* For post contracts that deal with a non-void function, append a
+	 parameter to pass the return value.  */
+      tree name = get_identifier ("__r");
+      tree parm = build_lang_decl (PARM_DECL, name, orig_fn_value_type);
+      DECL_CONTEXT (parm) = fn;
+      DECL_ARTIFICIAL (parm) = true;
+      suppress_warning (parm);
+      DECL_ARGUMENTS (fn) = chainon (DECL_ARGUMENTS (fn), parm);
+      *last = build_tree_list (NULL_TREE, orig_fn_value_type);
+      last = &TREE_CHAIN (*last);
+    }
+
+  *last = void_list_node;
+
+  tree adjusted_type = NULL_TREE;
+
+  /* The handlers are void fns.  */
+  if (DECL_IOBJ_MEMBER_FUNCTION_P (fndecl))
+    adjusted_type = build_method_type_directly (DECL_CONTEXT (fndecl),
+						void_type_node,
+						arg_types);
+  else
+    adjusted_type = build_function_type (void_type_node, arg_types);
+
+  /* If the original function is noexcept, build a noexcept function.  */
+  if (flag_exceptions && type_noexcept_p (TREE_TYPE (fndecl)))
+    adjusted_type = build_exception_variant (adjusted_type, noexcept_true_spec);
+
+  TREE_TYPE (fn) = adjusted_type;
+  DECL_RESULT (fn) = NULL_TREE; /* Let the start function code fill it in.  */
+
+  /* The contract check functions are never a cdtor, nor virtual.  */
+  DECL_CXX_DESTRUCTOR_P (fn) = DECL_CXX_CONSTRUCTOR_P (fn) = 0;
+  DECL_VIRTUAL_P (fn) = false;
+
+  /* Append .pre / .post to a usable name for the original function.  */
+  contracts_fixup_names (fn, fndecl, pre);
+
+  DECL_INITIAL (fn) = NULL_TREE;
+  CONTRACT_HELPER (fn) = pre ? ldf_contract_pre : ldf_contract_post;
+
+  /* Make these functions internal if we can, i.e. if the guarded function is
+     not vague linkage, or if we can put them in a comdat group with the
+     guarded function.  */
+  if (!DECL_WEAK (fndecl) || HAVE_COMDAT_GROUP)
+    {
+      TREE_PUBLIC (fn) = false;
+      DECL_EXTERNAL (fn) = false;
+      DECL_WEAK (fn) = false;
+      DECL_COMDAT (fn) = false;
+
+      /* We may not have set the comdat group on the guarded function yet.
+	 If we haven't, we'll add this to the same group in comdat_linkage
+	 later.  Otherwise, add it to the same comdat group now.  */
+      if (DECL_ONE_ONLY (fndecl))
+	{
+	  symtab_node *n = symtab_node::get (fndecl);
+	  cgraph_node::get_create (fn)->add_to_same_comdat_group (n);
+	}
+
+    }
+
+  DECL_INTERFACE_KNOWN (fn) = true;
+  DECL_ARTIFICIAL (fn) = true;
+  suppress_warning (fn);
+
+  return fn;
+}
+
+/* Build the precondition checking function for FNDECL.  */
+
+static tree
+build_precondition_function (tree fndecl)
+{
+  if (!has_active_preconditions (fndecl))
+    return NULL_TREE;
+
+  return build_contract_condition_function (fndecl, /*pre=*/true);
+}
+
+/* Build the postcondition checking function for FNDECL.  If the return
+   type is undeduced, don't build the function yet.  We do that in
+   apply_deduced_return_type.  */
+
+static tree
+build_postcondition_function (tree fndecl)
+{
+  if (!has_active_postconditions (fndecl))
+    return NULL_TREE;
+
+  tree type = TREE_TYPE (TREE_TYPE (fndecl));
+  if (is_auto (type))
+    return NULL_TREE;
+
+  return build_contract_condition_function (fndecl, /*pre=*/false);
+}
+
+/* If we're outlining the contract, build the functions to do the
+   precondition and postcondition checks, and associate them with
+   the function decl FNDECL.
+ */
+
+static void
+build_contract_function_decls (tree fndecl)
+{
+  /* Build the pre/post functions (or not).  */
+  if (!get_precondition_function (fndecl))
+    if (tree pre = build_precondition_function (fndecl))
+      set_precondition_function (fndecl, pre);
+
+  if (!get_postcondition_function (fndecl))
+    if (tree post = build_postcondition_function (fndecl))
+      set_postcondition_function (fndecl, post);
 }
 
 void
@@ -617,8 +867,8 @@ start_function_contracts (tree fndecl)
   if (!handle_contracts_p (fndecl))
     return;
 
-  /* Check that the user did not try to shadow a function parameter with the
-     specified postcondition result name.  */
+  /* Check that the postcondition result name, if any, does not shadow a
+     function parameter.  */
   for (tree ca = get_fn_contract_specifiers (fndecl); ca; ca = TREE_CHAIN (ca))
     if (POSTCONDITION_P (CONTRACT_STATEMENT (ca)))
       if (tree id = POSTCONDITION_IDENTIFIER (CONTRACT_STATEMENT (ca)))
@@ -644,8 +894,7 @@ start_function_contracts (tree fndecl)
 		location_t co_l = EXPR_LOCATION (CONTRACT_STATEMENT (ca));
 		if (id_l != UNKNOWN_LOCATION)
 		  co_l = make_location (id_l, co_l, co_l);
-		error_at (co_l,
-			  "contract postcondition result name shadows a"
+		error_at (co_l, "contract postcondition result name shadows a"
 			  " function parameter");
 		inform (DECL_SOURCE_LOCATION (seen),
 			"parameter declared here");
@@ -654,6 +903,130 @@ start_function_contracts (tree fndecl)
 		CONTRACT_CONDITION (CONTRACT_STATEMENT (ca)) = error_mark_node;
 	    }
 	}
+
+  /* If we are expanding contract assertions inline then no need to declare
+     the outline function decls.  */
+  if (!flag_contract_checks_outlined)
+    return;
+
+  /* Contracts may have just been added without a chance to parse them, though
+     we still need the PRE_FN available to generate a call to it.  */
+  /* Do we already have declarations generated ? */
+  if (!DECL_PRE_FN (fndecl) && !DECL_POST_FN (fndecl))
+    build_contract_function_decls (fndecl);
+}
+
+void
+maybe_update_postconditions (tree fndecl)
+{
+  /* Update any postconditions and the postcondition checking function
+     as needed.  If there are postconditions, we'll use those to rewrite
+     return statements to check postconditions.  */
+  if (has_active_postconditions (fndecl))
+    {
+      rebuild_postconditions (fndecl);
+      tree post = build_postcondition_function (fndecl);
+      set_postcondition_function (fndecl, post);
+    }
+}
+
+/* Build and return an argument list containing all the parameters of the
+   (presumably guarded) function decl FNDECL.  This can be used to forward
+   all of FNDECL arguments to a function taking the same list of arguments
+   -- namely the unchecked form of FNDECL.
+
+   We use CALL_FROM_THUNK_P instead of forward_parm for forwarding
+   semantics.  */
+
+static vec<tree, va_gc> *
+build_arg_list (tree fndecl)
+{
+  vec<tree, va_gc> *args = make_tree_vector ();
+  for (tree t = DECL_ARGUMENTS (fndecl); t; t = DECL_CHAIN (t))
+    vec_safe_push (args, t);
+  return args;
+}
+
+/* Build and return a thunk like call to FUNC from CALLER using the supplied
+   arguments.  The call is like a thunk call in the fact that we do not
+   want to create additional copies of the arguments.  We can not simply reuse
+   the thunk machinery as it does more than we want.  More specifically, we
+   don't want to mark the calling function as `DECL_THUNK_P` for this
+   particular purpose, we only want the special treatment for the parameters
+   of the call we are about to generate.  We temporarily mark the calling
+   function as DECL_THUNK_P so build_call_a does the right thing.  */
+
+static tree
+build_thunk_like_call (tree func, int n, tree *argarray)
+{
+  bool old_decl_thunk_p = DECL_THUNK_P (current_function_decl);
+  LANG_DECL_FN_CHECK (current_function_decl)->thunk_p  = true;
+
+  tree call = build_call_a (func, n, argarray);
+
+  /* Revert the `DECL_THUNK_P` flag.  */
+  LANG_DECL_FN_CHECK (current_function_decl)->thunk_p = old_decl_thunk_p;
+
+  /* Mark the call as a thunk call to allow for correct gimplification
+   of the arguments.  */
+  CALL_FROM_THUNK_P (call) = true;
+
+  return call;
+}
+
+/* If we have a precondition function and it's valid, call it.  */
+
+static void
+add_pre_condition_fn_call (tree fndecl)
+{
+  /* If we're starting a guarded function with valid contracts, we need to
+     insert a call to the pre function.  */
+  gcc_checking_assert (DECL_PRE_FN (fndecl)
+		       && DECL_PRE_FN (fndecl) != error_mark_node);
+
+  releasing_vec args = build_arg_list (fndecl);
+  tree call = build_thunk_like_call (DECL_PRE_FN (fndecl),
+				     args->length (), args->address ());
+
+  finish_expr_stmt (call);
+}
+
+/* Returns the parameter corresponding to the return value of a guarded
+   function FNDECL.  Returns NULL_TREE if FNDECL has no postconditions or
+   is void.  */
+
+static tree
+get_postcondition_result_parameter (tree fndecl)
+{
+  if (!fndecl || fndecl == error_mark_node)
+    return NULL_TREE;
+
+  if (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (fndecl))))
+    return NULL_TREE;
+
+  tree post = DECL_POST_FN (fndecl);
+  if (!post || post == error_mark_node)
+    return NULL_TREE;
+
+  /* The last param is the return value.  */
+  return tree_last (DECL_ARGUMENTS (post));
+}
+
+/* Build and add a call to the post-condition checking function, when that
+   is in use.  */
+
+static void
+add_post_condition_fn_call (tree fndecl)
+{
+  gcc_checking_assert (DECL_POST_FN (fndecl)
+		       && DECL_POST_FN (fndecl) != error_mark_node);
+
+  releasing_vec args = build_arg_list (fndecl);
+  if (get_postcondition_result_parameter (fndecl))
+    vec_safe_push (args, DECL_RESULT (fndecl));
+  tree call = build_thunk_like_call (DECL_POST_FN (fndecl),
+				     args->length (), args->address ());
+  finish_expr_stmt (call);
 }
 
 /* Allow specifying a sub-set of contract kinds to copy.  */
@@ -756,7 +1129,7 @@ emit_contract_statement (tree contract)
   return true;
 }
 
-/* Generate the statement for the given contract by adding the
+/* Generate the statement for the given contract by adding the contract
    statement to the current block. Returns the next contract in the chain.  */
 
 static tree
@@ -774,9 +1147,14 @@ emit_contract (tree contract)
 static void
 apply_preconditions (tree fndecl)
 {
-  tree contract_copy = copy_contracts (fndecl, cmk_pre);
-  for (; contract_copy; contract_copy = TREE_CHAIN (contract_copy))
-    emit_contract (contract_copy);
+  if (flag_contract_checks_outlined)
+    add_pre_condition_fn_call (fndecl);
+  else
+  {
+    tree contract_copy = copy_contracts (fndecl, cmk_pre);
+    for (; contract_copy; contract_copy = TREE_CHAIN (contract_copy))
+      emit_contract (contract_copy);
+  }
 }
 
 /* Add a call or a direct evaluation of the post checks.  */
@@ -784,9 +1162,14 @@ apply_preconditions (tree fndecl)
 static void
 apply_postconditions (tree fndecl)
 {
-  tree contract_copy = copy_contracts (fndecl, cmk_post);
-  for (; contract_copy; contract_copy = TREE_CHAIN (contract_copy))
-    emit_contract (contract_copy);
+  if (flag_contract_checks_outlined)
+    add_post_condition_fn_call (fndecl);
+  else
+    {
+      tree contract_copy = copy_contracts (fndecl, cmk_post);
+      for (; contract_copy; contract_copy = TREE_CHAIN (contract_copy))
+	emit_contract (contract_copy);
+    }
 }
 
 /* Add contract handling to the function in FNDECL.
@@ -1490,6 +1873,116 @@ update_late_contract (tree contract, tree result, cp_expr condition)
   CONTRACT_CONDITION (contract) = condition;
 }
 
+/* Returns the precondition funtion for FNDECL, or null if not set.  */
+
+tree
+get_precondition_function (tree fndecl)
+{
+  gcc_checking_assert (fndecl);
+  tree *result = hash_map_safe_get (decl_pre_fn, fndecl);
+  return result ? *result : NULL_TREE;
+}
+
+/* Returns the postcondition funtion for FNDECL, or null if not set.  */
+
+tree
+get_postcondition_function (tree fndecl)
+{
+  gcc_checking_assert (fndecl);
+  tree *result = hash_map_safe_get (decl_post_fn, fndecl);
+  return result ? *result : NULL_TREE;
+}
+
+/* Set the PRE and POST functions for FNDECL.  Note that PRE and POST can
+   be null in this case.  If so the functions are not recorded.  Used by the
+   modules code.  */
+
+void
+set_contract_functions (tree fndecl, tree pre, tree post)
+{
+  if (pre)
+    set_precondition_function (fndecl, pre);
+
+  if (post)
+    set_postcondition_function (fndecl, post);
+}
+
+
+/* We're compiling the pre/postcondition function CONDFN; remap any FN
+   contracts that match CODE and emit them.  */
+
+static void
+remap_and_emit_conditions (tree fn, tree condfn, tree_code code)
+{
+  gcc_assert (code == PRECONDITION_STMT || code == POSTCONDITION_STMT);
+  tree contract_spec = get_fn_contract_specifiers (fn);
+  for (; contract_spec; contract_spec = TREE_CHAIN (contract_spec))
+    {
+      tree contract = CONTRACT_STATEMENT (contract_spec);
+      if (TREE_CODE (contract) == code)
+	{
+	  contract = copy_node (contract);
+	  if (CONTRACT_CONDITION (contract) != error_mark_node)
+	    remap_contract (fn, condfn, contract, /*duplicate_p=*/false);
+	  emit_contract_statement (contract);
+	}
+    }
+}
+
+/* Finish up the pre & post function definitions for a guarded FNDECL,
+   and compile those functions all the way to assembler language output.  */
+
+void
+finish_function_outlined_contracts (tree fndecl)
+{
+  /* If the guarded func is either already decided to be ill-formed or is
+     not yet complete return early.  */
+  if (error_operand_p (fndecl)
+      || !DECL_INITIAL (fndecl)
+      || DECL_INITIAL (fndecl) == error_mark_node)
+    return;
+
+  /* If there are no contracts here, or we're building them in-line then we
+     do not need to build the outlined functions.  */
+  if (!handle_contracts_p (fndecl)
+      || !flag_contract_checks_outlined)
+    return;
+
+  /* If either the pre or post functions are bad, don't bother emitting
+     any contracts.  The program is already ill-formed.  */
+  tree pre = DECL_PRE_FN (fndecl);
+  tree post = DECL_POST_FN (fndecl);
+  if (pre == error_mark_node || post == error_mark_node)
+    return;
+
+  /* We are generating code, deferred parses should be complete.  */
+  tree contract_spec = get_fn_contract_specifiers (fndecl);
+  gcc_checking_assert (!contract_any_deferred_p (contract_spec));
+
+  int flags = SF_DEFAULT | SF_PRE_PARSED;
+
+  if (pre && !DECL_INITIAL (pre))
+    {
+      DECL_PENDING_INLINE_P (pre) = false;
+      start_preparsed_function (pre, DECL_ATTRIBUTES (pre), flags);
+      remap_and_emit_conditions (fndecl, pre, PRECONDITION_STMT);
+      finish_return_stmt (NULL_TREE);
+      pre = finish_function (false);
+      expand_or_defer_fn (pre);
+    }
+
+  if (post && !DECL_INITIAL (post))
+    {
+      DECL_PENDING_INLINE_P (post) = false;
+      start_preparsed_function (post, DECL_ATTRIBUTES (post), flags);
+      remap_and_emit_conditions (fndecl, post, POSTCONDITION_STMT);
+      gcc_checking_assert (VOID_TYPE_P (TREE_TYPE (TREE_TYPE (post))));
+      finish_return_stmt (NULL_TREE);
+      post = finish_function (false);
+      expand_or_defer_fn (post);
+    }
+}
+
 /* ===== Code generation ===== */
 
 /* Insert a BUILT_IN_OBSERVABLE_CHECKPOINT epoch marker.  */
@@ -1961,6 +2454,9 @@ get_src_loc_impl_ptr (location_t loc)
     get_contracts_source_location_impl_type ();
 
   tree fndecl = current_function_decl;
+  /* We might be an outlined function.  */
+  if (DECL_IS_PRE_FN_P (fndecl) || DECL_IS_POST_FN_P (fndecl))
+    fndecl = get_orig_for_outlined (fndecl);
 
   gcc_checking_assert (fndecl);
   tree impl__
@@ -2155,7 +2651,7 @@ build_contract_check (tree contract)
   if (condition == error_mark_node)
     return NULL_TREE;
 
-  if (POSTCONDITION_P (contract))
+  if (!flag_contract_checks_outlined && POSTCONDITION_P (contract))
     {
       remap_retval (current_function_decl, contract);
       condition = CONTRACT_CONDITION (contract);

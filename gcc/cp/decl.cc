@@ -20708,6 +20708,10 @@ finish_function (bool inline_p)
       delete coroutine;
     }
 
+  /* If we have used outlined contracts checking functions, build and emit
+     them here.  */
+  finish_function_outlined_contracts (fndecl);
+
   return fndecl;
 }
 

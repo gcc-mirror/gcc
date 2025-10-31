@@ -1098,6 +1098,15 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontracts)
 fcontract-evaluation-semantic=
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-evaluation-semantic)
 
+fcontracts-conservative-ipa
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontracts-conservative-ipa)
+
+fcontract-checks-outlined
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-checks-outlined)
+
+fcontract-disable-optimized-checks
+UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcontract-disable-optimized-checks)
+
 fcoroutines
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-fcoroutines)
 

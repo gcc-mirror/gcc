@@ -226,7 +226,8 @@ in the following sections.
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
 -fcontracts
 -fcontract-evaluation-semantic=@r{[}ignore@r{|}observe@r{|}enforce@r{|}quick_enforce@r{]}
--fcontracts-conservative-ipa
+-fcontracts-conservative-ipa  -fcontract-checks-outlined
+-fcontract-disable-optimized-checks
 -fcoroutines  -fdiagnostics-all-candidates
 -fno-elide-constructors
 -fno-enforce-eh-specs
@@ -3363,6 +3364,22 @@ This prevents inter-procedural analysis from taking action when the body
 of an inline function is visible in a given TU.  This allows for the case
 that contract evaluation conditions are permitted to differ between TUs which
 means that such actions would be potentially incorrect.
+
+@opindex fcontract-checks-outlined
+@opindex fno-contract-checks-outlined
+@item -fcontract-checks-outlined
+By default, contract checks for @code{pre} and @code{post} condition checks are
+expanded in-line into function bodies.  This option causes a small function to
+be created instead (containing the checks) that is called in the relevant
+position.  This permits different criteria to be applied to the compilation of
+the checking and the remainder of the function body.
+
+@opindex fcontract-disable-optimized-checks
+@opindex fno-contract-disable-optimized-checks
+@item -fcontract-disable-optimized-checks
+When @code{pre} and @code{post} condition checks are outlined (using
+@option{-fcontract-checks-outlined}), this option disables the optimisation 
+steps for those functions which can avoid unwanted elision of checking steps.
 
 @opindex fcoroutines
 @opindex fno-coroutines
