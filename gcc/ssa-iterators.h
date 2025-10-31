@@ -53,8 +53,9 @@ struct imm_use_iterator
   ssa_use_operand_t *imm_use;
   /* This marks the last use in the list (use node from SSA_NAME)  */
   ssa_use_operand_t *end_p;
-  /* This node is inserted and used to mark the end of the uses for a stmt.  */
-  ssa_use_operand_t iter_node;
+  /* This is the next ssa_name to visit in an outer FOR_EACH_IMM_USE_STMT.
+     Also used for fast imm use iterator checking.  */
+  ssa_use_operand_t *next_stmt_use;
   /* This is the next ssa_name to visit.  IMM_USE may get removed before
      the next one is traversed to, so it must be cached early.  */
   ssa_use_operand_t *next_imm_name;
@@ -350,7 +351,7 @@ first_readonly_imm_use (imm_use_iterator *imm, tree var)
 {
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
-  imm->iter_node.next = imm->imm_use->next;
+  imm->next_stmt_use = imm->imm_use->next;
   if (end_readonly_imm_use_p (imm))
     return NULL_USE_OPERAND_P;
   return imm->imm_use;
@@ -368,8 +369,8 @@ next_readonly_imm_use (imm_use_iterator *imm)
      using the SAFE version of the iterator.  */
   if (flag_checking)
     {
-      gcc_assert (imm->iter_node.next == old->next);
-      imm->iter_node.next = old->next->next;
+      gcc_assert (imm->next_stmt_use == old->next);
+      imm->next_stmt_use = old->next->next;
     }
 
   imm->imm_use = old->next;
@@ -845,9 +846,8 @@ end_imm_use_stmt_p (const imm_use_iterator *imm)
    placeholder node from the list.  */
 
 inline void
-end_imm_use_stmt_traverse (imm_use_iterator *imm)
+end_imm_use_stmt_traverse (imm_use_iterator *)
 {
-  delink_imm_use (&(imm->iter_node));
 }
 
 /* Immediate use traversal of uses within a stmt require that all the
@@ -880,10 +880,11 @@ move_use_after_head (use_operand_p use_p, use_operand_p head,
 
 
 /* This routine will relink all uses with the same stmt as HEAD into the list
-   immediately following HEAD for iterator IMM.  */
+   immediately following HEAD for iterator IMM and returns the last use on
+   that stmt.  */
 
-inline void
-link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
+inline use_operand_p
+link_use_stmts_after (use_operand_p head, imm_use_iterator *)
 {
   use_operand_p use_p;
   use_operand_p last_p = head;
@@ -915,10 +916,7 @@ link_use_stmts_after (use_operand_p head, imm_use_iterator *imm)
 	    last_p = move_use_after_head (use_p, head, last_p);
 	}
     }
-  /* Link iter node in after last_p.  */
-  if (imm->iter_node.prev != NULL)
-    delink_imm_use (&imm->iter_node);
-  link_imm_use_to_list (&(imm->iter_node), last_p);
+  return last_p;
 }
 
 /* Initialize IMM to traverse over uses of VAR.  Return the first statement.  */
@@ -929,18 +927,14 @@ first_imm_use_stmt (imm_use_iterator *imm, tree var)
   imm->imm_use = imm->end_p->next;
   imm->next_imm_name = NULL_USE_OPERAND_P;
 
-  /* iter_node is used as a marker within the immediate use list to indicate
-     where the end of the current stmt's uses are.  Initialize it to NULL
-     stmt and use, which indicates a marker node.  */
-  imm->iter_node.prev = NULL_USE_OPERAND_P;
-  imm->iter_node.next = NULL_USE_OPERAND_P;
-  imm->iter_node.loc.stmt = NULL;
-  imm->iter_node.use = NULL;
+  /* next_stmt_use is used to point to the immediate use node after
+     the set of uses for the current stmt.  */
+  imm->next_stmt_use = NULL_USE_OPERAND_P;
 
   if (end_imm_use_stmt_p (imm))
     return NULL;
 
-  link_use_stmts_after (imm->imm_use, imm);
+  imm->next_stmt_use = link_use_stmts_after (imm->imm_use, imm)->next;
 
   return USE_STMT (imm->imm_use);
 }
@@ -950,15 +944,11 @@ first_imm_use_stmt (imm_use_iterator *imm, tree var)
 inline gimple *
 next_imm_use_stmt (imm_use_iterator *imm)
 {
-  imm->imm_use = imm->iter_node.next;
+  imm->imm_use = imm->next_stmt_use;
   if (end_imm_use_stmt_p (imm))
-    {
-      if (imm->iter_node.prev != NULL)
-	delink_imm_use (&imm->iter_node);
-      return NULL;
-    }
+    return NULL;
 
-  link_use_stmts_after (imm->imm_use, imm);
+  imm->next_stmt_use = link_use_stmts_after (imm->imm_use, imm)->next;
   return USE_STMT (imm->imm_use);
 }
 
@@ -977,7 +967,7 @@ first_imm_use_on_stmt (imm_use_iterator *imm)
 inline bool
 end_imm_use_on_stmt_p (const imm_use_iterator *imm)
 {
-  return (imm->imm_use == &(imm->iter_node));
+  return (imm->imm_use == imm->next_stmt_use);
 }
 
 /* Bump to the next use on the stmt IMM refers to, return NULL if done.  */
