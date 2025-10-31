@@ -695,13 +695,15 @@
 })
 
 (define_insn "negsf2"
-  [(set (match_operand:SF 0 "register_operand" "=f")
-	(neg:SF (match_operand:SF 1 "register_operand" "f")))]
+  [(set (match_operand:SF 0 "register_operand")
+        (neg:SF (match_operand:SF 1 "register_operand")))
+   (clobber (match_scratch:SI 2))]
   "TARGET_HARD_FLOAT"
-  "neg.s\t%0, %1"
-  [(set_attr "type"	"farith")
-   (set_attr "mode"	"SF")
-   (set_attr "length"	"3")])
+  {@ [cons: =0, 1, =2; attrs: type, length]
+     [D, D, &a; arith , 7] movi.n\t%2, 1\;slli\t%2, %2, 31\;add.n\t%0, %1, %2
+     [f, f,  X; farith, 3] neg.s\t%0, %1
+  }
+  [(set_attr "mode" "SF")])
 
 
 ;; Logical instructions.
