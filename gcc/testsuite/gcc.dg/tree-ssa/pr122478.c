@@ -14,4 +14,4 @@ __BB(2):
   return _180;
 }
 
-/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" "optimized" 1 } } */
+/* { dg-final { scan-tree-dump-times "VIEW_CONVERT_EXPR" 1 "optimized" } } */
