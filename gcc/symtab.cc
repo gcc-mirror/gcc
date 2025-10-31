@@ -873,7 +873,16 @@ symtab_node::dump_referring (FILE *file)
   fprintf (file, "\n");
 }
 
-static const char * const symtab_type_names[] = {"symbol", "function", "variable"};
+static const char * const toplevel_type_names[] =
+{
+ "base",
+ "asm",
+ "symbol",
+ "function",
+ "variable",
+};
+
+static_assert (ARRAY_SIZE(toplevel_type_names)==TOPLEVEL_MAX);
 
 /* Dump the visibility of the symbol.  */
 
@@ -889,7 +898,7 @@ symtab_node::get_visibility_string () const
 const char *
 symtab_node::get_symtab_type_string () const
 {
-  return symtab_type_names[type];
+  return toplevel_type_names[type];
 }
 
 /* Dump base fields of symtab nodes to F.  Not to be used directly.  */
@@ -904,7 +913,7 @@ symtab_node::dump_base (FILE *f)
   fprintf (f, "%s (%s)", dump_asm_name (), name ());
   if (dump_flags & TDF_ADDRESS)
     dump_addr (f, " @", (void *)this);
-  fprintf (f, "\n  Type: %s", symtab_type_names[type]);
+  fprintf (f, "\n  Type: %s", toplevel_type_names[type]);
 
   if (definition)
     fprintf (f, " definition");

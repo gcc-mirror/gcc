@@ -38,6 +38,8 @@ class ipa_opt_pass_d;
 typedef ipa_opt_pass_d *ipa_opt_pass;
 
 /* Toplevel consists of functions, variables and assembly.
+   Make sure toplevel_type_names in symtab.cc is kept in sync
+   with this.
    TODO: add labels and CONST_DECLs.  */
 enum toplevel_type
 {
@@ -45,7 +47,8 @@ enum toplevel_type
   TOPLEVEL_ASM,
   SYMTAB_SYMBOL,
   SYMTAB_FUNCTION,
-  SYMTAB_VARIABLE
+  SYMTAB_VARIABLE,
+  TOPLEVEL_MAX
 };
 
 /* Section names are stored as reference counted strings in GGC safe hashtable
