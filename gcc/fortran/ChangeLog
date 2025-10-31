@@ -1,3 +1,7 @@
+2025-10-30  Mikael Morin  <mikael@gcc.gnu.org>
+
+	* trans-array.cc: Cleanup obsolete comment.
+
 2025-10-29  Yuao Ma  <c8ef@outlook.com>
 
 	* trans-expr.cc (gfc_conv_gfc_desc_to_cfi_desc): Remove unreachable

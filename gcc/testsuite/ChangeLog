@@ -1,3 +1,380 @@
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/tuplepattern-restpattern-typecheck-err.rs: New file.
+
+2025-10-30  Ryo Yoshida  <low.ryoshida@gmail.com>
+
+	* rust/compile/match-tuplestructpattern-non-variant.rs: New test.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-4231.rs: New file.
+
+2025-10-30  Lucas Ly Ba  <lucas.ly-ba@outlook.fr>
+
+	* rust/compile/issue-4212.rs: New test.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* rust/compile/issue-3556.rs: New test.
+
+2025-10-30  Ryo Yoshida  <low.ryoshida@gmail.com>
+
+	* rust/compile/tuple_index_on_non_tuple.rs: New test.
+
+2025-10-30  0xllx0  <github+elle@weathered-steel.dev>
+
+	* rust/compile/issue-4145.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/attr_malformed_doc.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/attr_malformed_path.rs: New test.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/match-tuplestructpattern-err.rs: New file.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/match-tuplestructpattern-rest.rs: New file.
+	* rust/execute/torture/match-tuplestructpattern-rest-1.rs: New file.
+	* rust/execute/torture/match-tuplestructpattern-rest-2.rs: New file.
+
+2025-10-30  0xllx0  <github+elle@weathered-steel.dev>
+
+	* rust/compile/issue-4148.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/core/core.exp: New test.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-3929-1.rs: New file.
+	* rust/compile/issue-3929-2.rs: New file.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/execute/torture/link-name.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macros/mbe/macro58.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3538.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3592.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4165.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4090-1.rs: New test.
+	* rust/compile/issue-4090-2.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4168.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-2394.rs: Update test case
+	* rust/compile/issue-4146.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4139.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/issue-4155.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-3922.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-3924.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3969.rs: New test.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-3965-1.rs: New test.
+	* rust/compile/issue-3965-2.rs: New test.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/tuplepattern-rest-readonly.rs: New file.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-3930.rs: New file.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-1725-2.rs: remove bad error message
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/use_self_alone_in_list.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/use_self_alone.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/primitive-import.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/parse_float_dot.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/format_args_concat.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/global-path-array.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/impl_fnptr.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/parse_closure_bind.rs: New test.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* rust/compile/issue-3645.rs: New test.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/slice_rest_pattern.rs: Removed -fsyntax-only.
+	* rust/execute/torture/match-slicepattern-array-2.rs: New file.
+	* rust/execute/torture/match-slicepattern-slice-2.rs: New file.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/let-identifierpattern-subpattern.rs: New file.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* rust/compile/issue-3958.rs: New test.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* rust/compile/issue-3947.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-3966.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/use_3.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-3974.rs: New test.
+
+2025-10-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* rust/compile/issue-3726.rs: New test.
+	* rust/compile/issue-3898.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macros/mbe/macro-issue4054.rs: New test.
+
+2025-10-30  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* rust/compile/enum_discriminant3.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/cfg-test.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/import_wildcards.rs: New test.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/macros/mbe/macro49.rs: Add missing lang items.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* rust/compile/issue-3928.rs: New test.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/execute/inline_asm_inout_ident.rs: Add arch filter on test.
+	* rust/execute/inline_asm_inout_var.rs: Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust/compile/attr-macro.rs: New test.
+
+2025-10-30  David Faust  <david.faust@oracle.com>
+
+	PR debug/122248
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-4.c: New.
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-5.c: New.
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-6.c: New.
+
+2025-10-30  David Faust  <david.faust@oracle.com>
+
+	* gcc.dg/debug/btf/btf-prune-4.c: New.
+
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/cpp/escape-3.i: Remove parentheses in dg-scan directive.
+
+2025-10-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	* gcc.dg/pointer-counted-by.c: Update for void pointers.
+	* gcc.dg/pointer-counted-by-10.c: New test.
+	* gcc.dg/pointer-counted-by-4-void.c: New test.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/116075
+	* gcc.target/aarch64/sve/dup-insr-1.c: New test.
+	* gcc.target/aarch64/sve/dup-insr-2.c: New test.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122247
+	* g++.dg/tree-ssa/copy-prop-aggregate-sra-2.C: New test.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122247
+	* g++.dg/tree-ssa/copy-prop-aggregate-sra-1.C: New test.
+
+2025-10-30  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.dg/tree-ssa/ctz-char.c: Remove -fno-tree-ch.
+	* gcc.dg/tree-ssa/ctz-complement-char.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-complement-int.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-complement-long-long.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-complement-long.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-int.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-long-long.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-long.c: Ditto.
+	* gcc.dg/tree-ssa/ctz-ch.c: New test.
+	* gcc.dg/pr41488.c: Add -fno-tree-scev-cprop.
+
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst7.ads: New test.
+	* gnat.dg/specs/generic_inst8.ads: New test.
+
+2025-10-30  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/122445
+	* gcc.target/riscv/rvv/autovec/pr122445.c: New test.
+
+2025-10-30  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR tree-optimization/122478
+	* gcc.dg/tree-ssa/pr122478.c: New test.
+
+2025-10-30  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/tree-ssa/pr92834.c: Scan phiopt1 instead of optimized.
+
+2025-10-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR rtl-optimization/121198
+	* gcc.target/avr/pr121198.c: New test.
+
+2025-10-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122485
+	* gm2.dg/spell/iso/fail/badimport.mod: New test.
+
+2025-10-30  Richard Biener  <rguenther@suse.de>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/vect/slp-reduc-13.c: New testcase.
+
+2025-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/116815
+	* gcc.dg/pr116815.c: New test.
+	* gcc.target/i386/pr116815.c: New test.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* c-c++-common/ubsan/align-5.c: Xfail.
+	* gcc.dg/pr107389.c: Move to...
+	* gcc.dg/torture/pr107389.c: ...here. Skip for lto.
+	* gcc.dg/builtin-assume-aligned-1.c: Instead of
+	testing for deleting of assume-align, test for
+	the alignment/misalignment. Also disable the
+	vectorizer.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Revert:
+	2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/107389
+	PR tree-optimization/122086
+	* gcc.dg/pr107389.c: Move to...
+	* gcc.dg/torture/pr107389.c: ...here. Skip for lto.
+	Use dg-additional-options rather than dg-options.
+	* c-c++-common/ubsan/align-5.c: xfail.
+
+2025-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/pr122457.c: New test.
+
+2025-10-30  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/fnmam4-vec.c: New test.
+
+2025-10-30  Jinyang He  <hejinyang@loongson.cn>
+	    Peng Fan  <fanpeng@loongson.cn>
+
+	* gcc.target/loongarch/conditional-move-opt-1.c: Remove mul.
+	* gcc.target/loongarch/conditional-move-opt-2.c: Remove and.
+	* gcc.target/loongarch/conditional-move-opt-3.c: New test.
+
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr32.adb: New test.
+	* gnat.dg/aggr32_pkg.ads: New helper.
+	* gnat.dg/aggr32_pkg-child.ads: Likewise.
+
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst6.ads: New test.
+	* gnat.dg/specs/generic_inst6_pkg1-child.ads: New helper.
+	* gnat.dg/specs/generic_inst6_pkg1-child-grand1.ads: Likewise.
+	* gnat.dg/specs/generic_inst6_pkg1-child-grand2.ads: Likewise.
+	* gnat.dg/specs/generic_inst6_pkg1.ads: Likewise.
+	* gnat.dg/specs/generic_inst6_pkg2.ads: Likewise.
+	* gnat.dg/specs/generic_inst6_pkg3.ads: Likewise.
+
 2025-10-29  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/91191

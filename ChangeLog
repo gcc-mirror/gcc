@@ -1,3 +1,7 @@
+2025-10-30  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* MAINTAINERS: Add myself to reviewers/maintainers.
+
 2025-10-28  Richard Earnshaw  <rearnsha@arm.com>
 
 	* .editorconfig: Explicitly set tab_width whenever a

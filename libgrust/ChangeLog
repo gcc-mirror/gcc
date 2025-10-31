@@ -1,3 +1,261 @@
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* libformat_parser/src/lib.rs (struct FFIOpt): Likewise and
+	remove some now-redundant methods.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rustc-lib/stdarch/.cirrus.yml: New file.
+	* rustc-lib/stdarch/.github/workflows/main.yml: New file.
+	* rustc-lib/stdarch/.gitignore: New file.
+	* rustc-lib/stdarch/CONTRIBUTING.md: New file.
+	* rustc-lib/stdarch/Cargo.toml: New file.
+	* rustc-lib/stdarch/LICENSE-APACHE: New file.
+	* rustc-lib/stdarch/LICENSE-MIT: New file.
+	* rustc-lib/stdarch/README.md: New file.
+	* rustc-lib/stdarch/ci/android-install-ndk.sh: New file.
+	* rustc-lib/stdarch/ci/android-install-sdk.sh: New file.
+	* rustc-lib/stdarch/ci/android-sysimage.sh: New file.
+	* rustc-lib/stdarch/ci/docker/aarch64-linux-android/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/aarch64-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/arm-linux-androideabi/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/arm-unknown-linux-gnueabihf/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/armv7-unknown-linux-gnueabihf/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/i586-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/i686-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/mips-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/mips64-unknown-linux-gnuabi64/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/mips64el-unknown-linux-gnuabi64/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/mipsel-unknown-linux-musl/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/nvptx64-nvidia-cuda/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/powerpc-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/powerpc64-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/powerpc64le-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/s390x-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/wasm32-wasi/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/x86_64-linux-android/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/x86_64-unknown-linux-gnu-emulated/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/docker/x86_64-unknown-linux-gnu/Dockerfile: New file.
+	* rustc-lib/stdarch/ci/dox.sh: New file.
+	* rustc-lib/stdarch/ci/gba.json: New file.
+	* rustc-lib/stdarch/ci/run-docker.sh: New file.
+	* rustc-lib/stdarch/ci/run.sh: New file.
+	* rustc-lib/stdarch/ci/runtest-android.rs: New file.
+	* rustc-lib/stdarch/ci/style.sh: New file.
+	* rustc-lib/stdarch/crates/assert-instr-macro/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/assert-instr-macro/build.rs: New file.
+	* rustc-lib/stdarch/crates/assert-instr-macro/src/lib.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/core_arch/LICENSE-APACHE: New file.
+	* rustc-lib/stdarch/crates/core_arch/LICENSE-MIT: New file.
+	* rustc-lib/stdarch/crates/core_arch/README.md: New file.
+	* rustc-lib/stdarch/crates/core_arch/avx512f.md: New file.
+	* rustc-lib/stdarch/crates/core_arch/build.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/rustfmt.toml: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/crc.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/crypto.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/neon/generated.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/neon/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/prefetch.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/test_support.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/tme.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/aarch64/v8.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/barrier/common.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/barrier/cp15.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/barrier/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/barrier/not_mclass.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/barrier/v8.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/dsp.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/ex.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/hints.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/registers/aarch32.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/registers/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/registers/v6m.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/registers/v7m.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/sat.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/acle/simd32.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/armclang.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/crc.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/neon/generated.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/neon/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/neon/table_lookup_tests.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/test_support.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/v6.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/arm/v7.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/core_arch_docs.md: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/lib.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/macros.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/mips/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/mips/msa.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/mips/msa/macros.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/nvptx/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/powerpc/altivec.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/powerpc/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/powerpc/vsx.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/powerpc64/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/simd.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/simd_llvm.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/v64.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/wasm32/atomic.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/wasm32/memory.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/wasm32/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/wasm32/simd128.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/abm.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/adx.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/aes.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/avx.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/avx2.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/avx512f.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/avx512ifma.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/bmi1.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/bmi2.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/bswap.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/bt.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/cpuid.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/eflags.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/f16c.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/fma.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/fxsr.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/macros.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/pclmulqdq.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/rdrand.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/rdtsc.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/rtm.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sha.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sse.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sse2.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sse3.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sse41.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sse42.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/sse4a.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/ssse3.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/tbm.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/test.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86/xsave.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/abm.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/adx.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/avx.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/avx2.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/avx512f.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/bmi.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/bmi2.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/bswap.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/bt.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/cmpxchg16b.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/fxsr.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/mod.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/rdrand.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/sse.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/sse2.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/sse41.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/sse42.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/src/x86_64/xsave.rs: New file.
+	* rustc-lib/stdarch/crates/core_arch/tests/cpu-detection.rs: New file.
+	* rustc-lib/stdarch/crates/simd-test-macro/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/simd-test-macro/src/lib.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/std_detect/LICENSE-APACHE: New file.
+	* rustc-lib/stdarch/crates/std_detect/LICENSE-MIT: New file.
+	* rustc-lib/stdarch/crates/std_detect/README.md: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/aarch64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/arm.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/mips.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/mips64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/powerpc.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/powerpc64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/arch/x86.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/bit.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/cache.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/error_macros.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/macros.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/mod.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/aarch64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/freebsd/aarch64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/freebsd/arm.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/freebsd/auxvec.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/freebsd/mod.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/freebsd/powerpc.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/aarch64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/arm.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/auxvec.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/cpuinfo.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/mips.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/mod.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/linux/powerpc.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/other.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/windows/aarch64.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/os/x86.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/test_data/linux-rpi3.auxv: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/test_data/linux-x64-i7-6850k.auxv:
+	New file.
+	* rustc-lib/stdarch/crates/std_detect/src/detect/test_data/macos-virtualbox-linux-x86-4850HQ.auxv:
+	New file.
+	* rustc-lib/stdarch/crates/std_detect/src/lib.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/src/mod.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/tests/cpu-detection.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/tests/macro_trailing_commas.rs: New file.
+	* rustc-lib/stdarch/crates/std_detect/tests/x86-specific.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-gen/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/stdarch-gen/README.md: New file.
+	* rustc-lib/stdarch/crates/stdarch-gen/neon.spec: New file.
+	* rustc-lib/stdarch/crates/stdarch-gen/src/main.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-test/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/stdarch-test/src/disassembly.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-test/src/lib.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-test/src/wasm.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/.gitattributes: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/Cargo.toml: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/arm-intrinsics.html: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/build.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/mips-msa.h: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/src/lib.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/tests/arm.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/tests/mips.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/tests/x86-intel.rs: New file.
+	* rustc-lib/stdarch/crates/stdarch-verify/x86-intel.xml: New file.
+	* rustc-lib/stdarch/examples/Cargo.toml: New file.
+	* rustc-lib/stdarch/examples/hex.rs: New file.
+	* rustc-lib/stdarch/examples/wasm.rs: New file.
+	* rustc-lib/stdarch/triagebot.toml: New file.
+	* rustc-lib/stdarch/vendor.yml: New file.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rustc-lib/LICENSE-APACHE: New file.
+	* rustc-lib/LICENSE-MIT: New file.
+	* rustc-lib/version-info: New file.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* libformat_parser/src/lib.rs (struct FFIVec): New.
+	(trait StringLeakExt): Remove.
+	(struct FFIOpt): New.
+	(trait IntoFFI): Adjust implementation for Option.
+	(struct RustHamster): Add lifetime and adjust conversion to and
+	from &str.
+	(enum Piece): Adjust definition to handle changes to
+	RustHamster.
+	(struct Argument): Likewise.
+	(struct FormatSpec): Use FFIOpt and RustHamster.
+	(enum Position): Use RustHamster.
+	(enum Count): Likewise.
+	(struct PieceSlice): Replace with...
+	(typedef PieceVec): ...this.
+	(struct RustString): Remove.
+	(struct FormatArgsHandle): Likewise.
+	(fn collect_pieces): Adjust signature, greatly simplifying
+	implementation.
+	(fn clone_pieces): Likewise.
+	(fn destroy_pieces): Remove.
+	(trait LayoutExt): New.
+	(fn rust_ffi_alloc): New.
+	(fn rust_ffi_dealloc): New.
+
 2025-10-05  Sam James  <sam@gentoo.org>
 
 	* Makefile.in: Regenerate.

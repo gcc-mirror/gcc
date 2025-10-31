@@ -1,3 +1,14 @@
+2025-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/version.def (is_implicit_lifetime): New.
+	* include/bits/version.h: Regenerate.
+	* include/std/type_traits (std::is_implicit_lifetime,
+	std::is_implicit_lifetime_v): New trait.
+	* src/c++23/std.cc.in (std::is_implicit_lifetime,
+	std::is_implicit_lifetime_v): Export.
+	* testsuite/20_util/is_implicit_lifetime/version.cc: New test.
+	* testsuite/20_util/is_implicit_lifetime/value.cc: New test.
+
 2025-10-29  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/regex.tcc (regex_traits::value): Use __c instead

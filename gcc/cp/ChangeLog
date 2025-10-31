@@ -1,3 +1,9 @@
+2025-10-30  Jakub Jelinek  <jakub@redhat.com>
+
+	* std-name-hint.gperf: Remove duplicate entries for ispanstream
+	and istringstream.
+	* std-name-hint.h: Regenerate.
+
 2025-10-28  Marek Polacek  <polacek@redhat.com>
 	    Jakub Jelinek  <jakub@redhat.com>
 

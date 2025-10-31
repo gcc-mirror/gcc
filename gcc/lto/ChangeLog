@@ -1,3 +1,40 @@
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto.cc (stream_out_partitions): Remove asm_nodes_out.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-partition.cc (create_partition_if_empty): New.
+	(node_into_file_partition): Break out from ...
+	(lto_1_to_1_map): ... here. Partition toplevel assembly.
+	(create_asm_partition): New.
+	(lto_max_map): Use create_asm_partition.
+	(lto_balanced_map): Likewise.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-partition.cc (add_symbol_to_partition): Use toplevel_node.
+	(undo_partition): Likewise.
+	(join_partitions): Likewise.
+	(split_partition_into_nodes): Likewise.
+	(is_partition_reorder): Likewise.
+	(lto_balanced_map): Likewise.
+	(lto_promote_cross_file_statics): Likewise.
+	* lto.cc (lto_wpa_write_files): Likewise.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-partition.cc (lto_balanced_map): Simplify.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-symtab.cc (lto_symtab_merge_symbols_1): likewise.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-partition.cc (cmp_partitions_order): Reverse sort.
+	(node_cmp): Reverse sort.
+
 2025-10-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/122325

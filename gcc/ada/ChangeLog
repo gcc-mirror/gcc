@@ -1,3 +1,21 @@
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/15610
+	* sem_type.adb (Collect_Interps): Apply the same visibility
+	criterion to expanded names as Find_Expanded_Name.
+
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/54178
+	* sem_ch12.adb (Instantiate_Object): Strip qualification to detect
+	aggregates used as actuals.
+
+2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/16214
+	* sem_ch8.adb (Find_Expanded_Name): Consolidate and streamline the
+	processing required for references to instances within themselves.
+
 2025-10-28  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/48039

@@ -1,3 +1,201 @@
+2025-10-30  David Faust  <david.faust@oracle.com>
+
+	PR debug/122248
+	* dwarf2out.cc (gen_btf_tag_dies): Always replace an existing
+	AT_GNU_annotation on the target die.
+
+2025-10-30  David Faust  <david.faust@oracle.com>
+
+	* btfout.cc (btf_add_used_type_1): Do not consider creating
+	fixups at typedefs.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-cgraph.cc (output_symtab): Remove asm_nodes_out.
+	* lto-streamer-out.cc (lto_output_toplevel_asms): Use
+	partitioning.
+	(create_order_remap): Remove asm_nodes_out.
+	(lto_output): In LGEN add asm_nodes into partition.
+	* lto-streamer.h (lto_output_toplevel_asms): Add encoder.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* lto-cgraph.cc (compute_ltrans_boundary): Add asm_node.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* ipa-icf.cc (sem_item_optimizer::write_summary): Use
+	toplevel_node.
+	(sem_item_optimizer::read_section): Likewise.
+	* ipa-modref.cc (modref_write): Likewise.
+	* ipa-prop.cc (ipa_write_return_summaries): Likewise.
+	(ipcp_write_transformation_summaries): Likewise.
+	* ipa-reference.cc (ipa_reference_write_optimization_summary):
+	Likewise.
+	* lto-cgraph.cc (lto_symtab_encoder_new): Likewise.
+	(lto_symtab_encoder_encode): Likewise.
+	(lto_symtab_encoder_delete_node): Likewise.
+	(lto_symtab_encoder_in_partition_p): Likewise.
+	(lto_set_symtab_encoder_in_partition): Likewise.
+	(output_refs): Likewise.
+	(compute_ltrans_boundary): Likewise.
+	(output_symtab): Likewise.
+	(output_cgraph_opt_summary): Likewise.
+	* lto-streamer-out.cc (lto_output): Likewise.
+	(produce_symtab): Likewise.
+	(produce_symtab_extension): Likewise.
+	* lto-streamer.h (struct lto_encoder_entry): Likewise.
+	(struct lto_symtab_encoder_d): Likewise.
+	(lto_symtab_encoder_encode): Likewise.
+	(lto_symtab_encoder_delete_node): Likewise.
+	(lto_symtab_encoder_in_partition_p): Likewise.
+	(lto_symtab_encoder_lookup): Likewise.
+	(lsei_next): Likewise.
+	(lsei_varpool_node): Likewise.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* cgraph.h (enum symtab_type): Replace with toplevel_type.
+	(enum toplevel_type): New.
+	(struct toplevel_node): New.
+	(struct asm_node): Inherits from toplevel_node.
+	(test): New.
+	(symbol_table::finalize_toplevel_asm): Use constructor.
+	* coretypes.h (struct toplevel_node): New.
+	(struct asm_node): New.
+	* lto-streamer-in.cc (lto_input_toplevel_asms): Add
+	lto_file_data.
+
+2025-10-30  Michal Jires  <mjires@suse.cz>
+
+	* cgraph.cc (cgraph_node::release_body): Keep lto_file_data.
+	(cgraph_node::remove): likewise.
+	* lto-section-in.cc (lto_free_function_in_decl_state_for_node):
+	likewise.
+	* varpool.cc (varpool_node::remove): likewise.
+
+2025-10-30  Qing Zhao  <qing.zhao@oracle.com>
+
+	* doc/extend.texi: Clarification when the counted_by attribute is applied
+	on a void pointer.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/116075
+	* fold-const-call.cc (fold_const_vec_shl_insert): New function.
+	(fold_const_call): Call fold_const_vec_shl_insert for CFN_VEC_SHL_INSERT.
+	* match.pd (`VEC_SHL_INSERT (dup (A), A)`): New pattern.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122247
+	* tree-ssa-forwprop.cc (do_simple_agr_dse): Allow phi node for the usage
+	if the usage of the phi result is just the "same" as the original clobber.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122247
+	* tree-ssa-forwprop.cc (do_simple_agr_dse): Allow
+	use to be a clobber of the same kind to the same lhs.
+
+2025-10-30  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-ssa-loop-niter.cc (shifted_range_nonzero_p): New
+	function.
+	(number_of_iterations_cltz): Call new function.
+	* tree-ssa-loop.cc (pass_scev_cprop::execute): Enable ranger.
+
+2025-10-30  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/122445
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::get_vlmax_ta_preferred_avl):
+	Scale AVL of subreg uses.
+
+2025-10-30  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	PR tree-optimization/122478
+	* match.pd: Fix the view_convert (BIT_FIELD_REF) pattern.
+
+2025-10-30  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Fix check during opts->x_ix86_move_max initialization.
+
+2025-10-30  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	PR rtl-optimization/121198
+	* lra-constraints.cc (process_alt_operands): Compute least upper
+	bound of all register classes over all required registers in
+	order to determine register class for a hard register constraint.
+
+2025-10-30  Richard Biener  <rguenther@suse.de>
+	    Eric Botcazou  <ebotcazou@adacore.com>
+
+	* tree-vect-slp.cc (vect_get_operand_map): Handle commutative
+	operands when swapping is requested.
+	(vect_build_slp_tree_1): Allow STMT_VINFO_REDUC_IDX differences
+	when operand swapping makes them match and request swapping.
+	(vect_build_slp_instance): Indicate we have successfully
+	discovered a SLP reduction group.
+
+2025-10-30  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/116815
+	* config/i386/i386.md (ovf_add_cmp): New code attribute.
+	(udf_sub_cmp): Ditto.
+	(ovf_comm): New int iterator.
+	(*plus_within_<code><mode>3_<ovf_comm>): New insn and split pattern.
+	(*minus_within_<code><mode>3): Ditto.
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gimple-fold.cc (gimple_fold_builtin_assume_aligned): Remove.
+	(gimple_fold_builtin): Don't fold __builtin_assume_aligned
+
+2025-10-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Revert:
+	2025-10-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/107389
+	PR tree-optimization/122086
+	* tree-ssa-forwprop.cc (forwprop_may_propagate_copy): New function.
+	(pass_forwprop::execute):  Use forwprop_may_propagate_copy
+	instead of may_propagate_copy.
+
+2025-10-30  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120687
+	* tree-vect-slp.cc (vect_optimize_slp_pass::is_compatible_layout):
+	New overload for checking a whole partition.
+	(vect_optimize_slp_pass::legitimize): New function trying
+	a single layout for all partitions for now.
+	(vect_optimize_slp_pass::run): Try legitimizing to a single
+	layout before propagating.
+	(vect_slp_analyze_operations): For dumping deal with
+	SLP_TREE_SCALAR_STMTS being empty or element zero being NULL.
+
+2025-10-30  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/122457
+	* config/i386/sse.md (VI2_AVX10_2): New mode iterator.
+	(usdot_prod<sseunpackmodelower><mode>): Use VI2_AVX10_2
+	instead of VI2_AVX512F.
+	(udot_prod<sseunpackmodelower><mode>): Ditto.
+
+2025-10-30  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (fnma<mode>4): Remove.
+	* config/loongarch/lsx.md (fnma<mode>4): Remove.
+	* config/loongarch/simd.md (fnma<mode>4): Simplify and correct.
+
+2025-10-30  Jinyang He  <hejinyang@loongson.cn>
+	    Peng Fan  <fanpeng@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_conditional_move): Only allow valid binary
+	op when optimize conditional move.
+
 2025-10-29  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

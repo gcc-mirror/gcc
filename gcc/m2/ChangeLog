@@ -1,3 +1,24 @@
+2025-10-30  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122485
+	* gm2-compiler/M2Comp.mod (Pass0CheckDef): Add spell check
+	format specifier filtering on module names.
+	* gm2-compiler/M2MetaError.mod (errorBlock): New field
+	filterDef.
+	(initErrorBlock): Initialize filterDef.
+	(continuation): Add 'D' filter on definition module specifier.
+	(SpellHint): Rewrite to check for filterDef and defimp symbols.
+	(FilterOnDefinitionModule): New procedure.
+	* gm2-compiler/M2Quads.mod (BuildSizeFunction): Rewrite to
+	ensure variables are initialized.
+	* gm2-compiler/M2StackSpell.def (GetDefModuleSpellHint): New
+	procedure function.
+	* gm2-compiler/M2StackSpell.mod (GetDefModuleSpellHint): New
+	procedure function.
+	(CandidatePushName): New procedure.
+	(BuildHintStr): New procedure.
+	(CheckForHintStr): Rewrite.
+
 2025-10-24  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122407

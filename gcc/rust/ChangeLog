@@ -1,3 +1,1446 @@
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-pointer-visitor.cc (PointerVisitor::visit):
+	Handle the expression contained in an ErrorPropagationExpr.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Likewise.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (visit(TuplePattern)): Update HAS_REST
+	case to continue to attempt to resolve pattern items after emitting size error.
+
+2025-10-30  Ryo Yoshida  <low.ryoshida@gmail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): Emit
+	an error when the path refers to an enum itself rather than its variant.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (parse_repr_options): Changed TOKEN_TREE
+	assert into error, update malformed repr attribute error message to be inline
+	with other attribute error messages.
+
+2025-10-30  Lucas Ly Ba  <lucas.ly-ba@outlook.fr>
+
+	* ast/rust-ast.cc (Attribute::is_derive):
+	Change string derive to its definition.
+	* util/rust-attribute-values.h:
+	Add attribute definition derive.
+	* util/rust-attributes.cc (AttributeChecker::visit):
+	Add method check_inner_attributes.
+	(AttributeChecker::check_inner_attributes):
+	Check if there is a bad inner attribute.
+	* util/rust-attributes.h:
+	Add method check_inner_attributes in .h.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* typecheck/rust-tyty-util.cc (TyVar::TyVar): Add null check to avoid ICE.
+	(TyVar::get_tyty): Return nullptr when lookup fails.
+	(TyVar::clone): Handle null base type safely.
+	(TyVar::monomorphized_clone): Add fallback for error types.
+
+2025-10-30  Ryo Yoshida  <low.ryoshida@gmail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): check
+	and properly emit an error when the tuple index is on a non-tuple-struct.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::array_copied_expr): refactor to new classes
+	* backend/rust-compile-pattern.cc (CompilePatternCheckExpr::visit): likewise
+	(CompilePatternBindings::visit): likewise
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): likewise
+	* backend/rust-compile-type.h: likewise
+	* typecheck/rust-hir-type-check-base.cc (TypeCheckBase::resolve_literal): likewise
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): likewise
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): likewise
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): likewise
+	* typecheck/rust-substitution-mapper.cc (SubstMapperInternal::visit): likewise
+	* typecheck/rust-substitution-mapper.h: likewise
+	* typecheck/rust-type-util.cc (unify_site_and): remove bad delete (alpine32)
+	* typecheck/rust-tyty-call.h: refactor to new classes
+	* typecheck/rust-tyty-subst.cc (SubstitutionParamMapping::clone): likewise
+	(SubstitutionRef::infer_substitions): likewise
+	* typecheck/rust-tyty-util.cc (TyVar::get_implicit_const_infer_var): likewise
+	* typecheck/rust-tyty-util.h: likewise
+	* typecheck/rust-tyty-variance-analysis-private.h: likewise
+	* typecheck/rust-tyty-visitor.h: likewise
+	* typecheck/rust-tyty.cc (BaseType::destructure): likewise
+	(BaseType::monomorphized_clone): likewise
+	(BaseType::is_concrete): likewise
+	(VariantDef::clone): likewise
+	(VariantDef::monomorphized_clone): likewise
+	(ArrayType::as_string): likewise
+	(ArrayType::get_capacity): likewise
+	(ArrayType::handle_substitions): likewise
+	(generate_tree_str): likewise
+	(ConstType::ConstType): likewise
+	(ConstParamType::ConstParamType): likewise
+	(ConstType::accept_vis): likewise
+	(ConstParamType::const_kind): likewise
+	(ConstParamType::get_symbol): likewise
+	(ConstParamType::can_resolve): likewise
+	(ConstParamType::resolve): likewise
+	(ConstParamType::accept_vis): likewise
+	(ConstType::set_value): likewise
+	(ConstType::as_string): likewise
+	(ConstParamType::as_string): likewise
+	(ConstType::clone): likewise
+	(ConstParamType::clone): likewise
+	(ConstType::get_symbol): likewise
+	(ConstParamType::get_name): likewise
+	(ConstType::can_resolve): likewise
+	(ConstParamType::is_equal): likewise
+	(ConstType::resolve): likewise
+	(ConstValueType::ConstValueType): likewise
+	(ConstValueType::const_kind): likewise
+	(ConstValueType::accept_vis): likewise
+	(ConstValueType::as_string): likewise
+	(ConstValueType::clone): likewise
+	(ConstValueType::get_name): likewise
+	(ConstValueType::is_equal): likewise
+	(ConstValueType::get_value): likewise
+	(ConstInferType::ConstInferType): likewise
+	(ConstInferType::const_kind): likewise
+	(ConstInferType::accept_vis): likewise
+	(ConstType::get_name): likewise
+	(ConstInferType::as_string): likewise
+	(ConstInferType::clone): likewise
+	(ConstInferType::get_name): likewise
+	(ConstType::is_equal): likewise
+	(ConstInferType::is_equal): likewise
+	(ConstErrorType::ConstErrorType): likewise
+	(ConstErrorType::const_kind): likewise
+	(ConstType::handle_substitions): likewise
+	(ConstErrorType::accept_vis): likewise
+	(ConstErrorType::as_string): likewise
+	(ConstErrorType::clone): likewise
+	(ConstErrorType::get_name): likewise
+	(ConstErrorType::is_equal): likewise
+	* typecheck/rust-tyty.h (class BaseConstType): likewise
+	(class ConstType): likewise
+	(class ConstParamType): likewise
+	(class ConstValueType): likewise
+	(class ConstInferType): likewise
+	(class ConstErrorType): likewise
+	* typecheck/rust-unify.cc (UnifyRules::commit): likewise
+	(UnifyRules::go): likewise
+	(UnifyRules::expect_array): likewise
+	(UnifyRules::expect_const): likewise
+	* typecheck/rust-unify.h: likewise
+
+2025-10-30  0xllx0  <github+elle@weathered-steel.dev>
+
+	* ast/rust-ast.cc (Module::process_file_path): empty module early return
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-attributes.cc (check_doc_attribute): Change message.
+	(AttributeChecker::visit): Add doc attribute checking on traits.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.cc (AttrInputMetaItemContainer::separate_cfg_attrs):
+	Avoid malformed attributes.
+	* util/rust-attributes.cc (AttributeChecker::visit): Change location.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h: Force crash when retrieving locus.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.h: Add missing override modifier.
+	* ast/rust-path.h: Likewise.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-attributes.cc (AttributeChecker::check_attribute): Recurse
+	within attr input for additional attribute checking.
+	(AttributeChecker::visit): Remove empty definition in favor of default
+	ast visitor definition.
+	* util/rust-attributes.h: Remove now unused prototypes.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (visit(TupleStructPattern)):
+	Update error for mismatched number of fields to use rich_location.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-pattern.cc: Add compilation support for TupleStructItemsHasRest
+	in CompilePatternCheckExpr(TupleStructPattern) & CompilePatternBindings(TupleStructPattern)
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::visit(TupleStructPattern)):
+	Implement lowering of AST::TupleStructItemsHasRest to HIR.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit(TupleStructPattern)):
+	Add the respective type checking for AST::TupleStructItemsHasRest
+	* checks/errors/rust-hir-pattern-analysis.cc (lower_tuple_pattern):
+	Add respective pattern for HAS_REST case.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc (visit(StructPattern)): Add type check
+	support for StructPatterns matching against a TUPLE type ADT.
+	* backend/rust-compile-pattern.cc(CompilePatternBindings::visit(StructPattern)):
+	Update assert to allow TUPLE type ADTs.
+	* hir/tree/rust-hir.cc (StructPatternField::as_string()): Improve info dumped.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* ast/rust-pattern.h (StructPatternElements): Rename has_struct_pattern_etc
+	to has_rest_pattern, and has_etc to has_rest to signify presense of rest
+	patterns more clearly.
+	* ast/rust-pattern.cc (StructPatternElements::as_string): Rename variables
+	accordingly.
+	* ast/rust-ast-collector.cc: Rename variables accordingly.
+	* expand/rust-cfg-strip.cc: Rename variables accordingly.
+	* parse/rust-parse-impl.h: Rename variable accordingly.
+	* hir/tree/rust-hir-pattern.h (StructPatternElements): Add a boolean to track
+	presense of rest pattern.
+	* hir/rust-ast-lower-pattern.cc (visit(StructPattern)): Add support for
+	lowering rest pattern to HIR.
+	* typecheck/rust-hir-type-check-pattern.cc (visit(StructPattern)): Remove
+	size check when rest pattern is present.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* backend/rust-compile-extern.h: Add includes.
+	(CompileExternItem::visit): Use get_link_name.
+	(CompileExternItem::get_link_name): New static member function.
+	* util/rust-attribute-values.h (Attributes::LINK_NAME): New
+	static constexpr member variable.
+	* util/rust-attributes.cc (__definitions): New entry for
+	LINK_NAME.
+	* util/rust-ggc.cc: Include "rust-ast.h".
+	(Ident::Ident): Add overload for Rust::Identifier.
+	* util/rust-ggc.h (class Identifier): Forward declare.
+	(Ident::Ident): Add overload for Rust::Identifier.
+
+2025-10-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* expand/rust-expand-visitor.cc: Remove old visitors.
+	* expand/rust-expand-visitor.h: Likewise, plus inherit from PointerVisitor.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-expand.cc: Forward invocation tree locus to
+	substitution context.
+	* expand/rust-macro-substitute-ctx.cc: Use origin location for expanded
+	tokens.
+	* expand/rust-macro-substitute-ctx.h (class SubstituteCtx): Save
+	invocation location.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-expand.cc (transcribe_expression): Emit error
+	early.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-substitute-ctx.cc (is_builtin_metavariable): Add
+	function to check builtin metavars knowledge.
+	(SubstituteCtx::check_repetition_amount): Do not process missing
+	fragment.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-resolve-path.cc: add error diag
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): add error diagnostic
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): check for error
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-expr.cc: remove old hack
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-substitution-mapper.cc (SubstMapperInternal::visit): handle fnptr
+	* typecheck/rust-tyty.cc (FnPtr::handle_substitions): new
+	* typecheck/rust-tyty.h: likewise
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-fmt.h (class FFIOpt): Adjust internal structure to
+	match a repr(C) rust enum.
+
+2025-10-30  Magnus-Mage  <romescha123@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Implement
+	FormatArgs visitor to reconstruct format_args! macro syntax.
+	* ast/rust-builtin-ast-nodes.h (FormatArguments): Add get_args(),
+	size(), and empty() accessor methods.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): check for invalid capacity
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-constexpr.cc (eval_constant_expression): port over missing bits
+	(eval_store_expression): likewise
+	(eval_call_expression): likewise
+	(eval_binary_expression): likewise
+	(eval_bit_field_ref): likewise
+	(eval_check_shift_p): likewise
+	(fold_pointer_plus_expression): likewise
+	(maybe_fold_addr_pointer_plus): likewise
+	(fold_expr): likewise
+	(union_active_member): likewise
+	(fold_indirect_ref_1): likewise
+	(rs_fold_indirect_ref): likewise
+	(rs_eval_indirect_ref): likewise
+	(eval_logical_expression): likewise
+	(eval_vector_conditional_expression): likewise
+	(eval_bare_aggregate): likewise
+	(cxx_eval_trinary_expression): likewise
+	(eval_and_check_array_index): likewise
+	(eval_array_reference): likewise
+	(eval_component_reference): likewise
+	(rs_bind_parameters_in_call): likewise
+	(eval_builtin_function_call): likewise
+	(constexpr_fn_retval): likewise
+	(verify_constant): likewise
+	(get_array_or_vector_nelts): likewise
+	(eval_conditional_expression): likewise
+	(eval_switch_expr): likewise
+	(eval_unary_expression): likewise
+	(cxx_eval_outermost_constant_expr): likewise
+	(potential_constant_expression_1): likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::compile_integer_literal): cleanup
+	* backend/rust-constexpr.cc (struct constexpr_global_ctx): port over c++ helpers
+	(decl_really_constant_value): likewise
+	(eval_constant_expression): likewise
+	(non_const_var_error): likewise
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_pattern): Ignore
+	inner patterns which fail to parse.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Remove
+	overload for TraitItemConst.
+	* ast/rust-ast-collector.h (TokenCollector::visit): Likewise.
+	* ast/rust-ast-pointer-visitor.cc (PointerVisitor::visit):
+	Likewise.
+	* ast/rust-ast-pointer-visitor.h (PointerVisitor::visit):
+	Likewise.
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Likewise.
+	* ast/rust-ast-visitor.h (ASTVisitor::visit): Likewise.
+	(DefaultASTVisitor::visit): Likewise.
+	* expand/rust-cfg-strip.cc (CfgStrip::visit): Likewise.
+	* expand/rust-cfg-strip.h (CfgStrip::visit): Likewise.
+	* expand/rust-derive.h (DeriveVisitor::visit): Likewise.
+	* expand/rust-expand-visitor.cc (ExpandVisitor::visit):
+	Likewise.
+	* expand/rust-expand-visitor.h (ExpandVisitor::visit): Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::visit): Likewise.
+	* hir/rust-ast-lower-base.h (ASTLoweringBase::visit): Likewise.
+	* util/rust-attributes.cc (AttributeChecker::visit): Likewise.
+	* util/rust-attributes.h (AttributeChecker::visit): Likewise.
+	* ast/rust-ast.cc (ConstantItem::as_string): Handle missing
+	expression.
+	(TraitItemConst::as_string): Remove function definition.
+	(TraitItemConst::accept_vis): Remove function definition.
+	* ast/rust-item.h (ConstantItem::mark_for_strip): Adjust
+	comment.
+	(ConstantItem::has_expr): Make const.
+	(class TraitItemConst): Remove definition.
+	* ast/rust-ast-full-decls.h (class TraitItemConst): Remove
+	declaration.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerTraitItem::visit):
+	Handle ConstantItem instead of TraitItemConst.
+	* hir/rust-ast-lower-implitem.h (ASTLowerTraitItem::visit):
+	Likewise.
+	* parse/rust-parse-impl.h (Parser::parse_trait_const): Return
+	pointer to ConstantItem instead of TraitItemConst.
+	* parse/rust-parse.h (Parser::parse_trait_const): Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* Make-lang.in: Handle source files in checks/errors/feature.
+	* checks/errors/rust-feature-gate.cc: Move to...
+	* checks/errors/feature/rust-feature-gate.cc: ...here.
+	* checks/errors/rust-feature-gate.h: Move to...
+	* checks/errors/feature/rust-feature-gate.h: ...here.
+	* checks/errors/rust-feature.cc: Move to...
+	* checks/errors/feature/rust-feature.cc: ...here.
+	* checks/errors/rust-feature.h: Move to...
+	* checks/errors/feature/rust-feature.h: ...here.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* Make-lang.in (GRS_OBJS): Remove rust-early-name-resolver.o.
+	* expand/rust-macro-builtins-helpers.h: Remove inclusion of
+	rust-early-name-resolver.h.
+	* expand/rust-macro-builtins.cc: Likewise.
+	* expand/rust-macro-expand.cc: Likewise.
+	* expand/rust-macro-expand.h: Likewise.
+	* resolve/rust-early-name-resolver.cc: Removed.
+	* resolve/rust-early-name-resolver.h: Removed.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* hir/tree/rust-hir-item.h: add unsafe helper
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): pass in abi and unsafe
+	* typecheck/rust-tyty.cc (BaseType::monomorphized_clone): likewise
+	(FnPtr::as_string): emit more info
+	(FnPtr::clone): update ctor call
+	* typecheck/rust-tyty.h: new ctor params
+	* typecheck/rust-unify.cc (UnifyRules::expect_fnptr): check abi and unsafe
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-unify.cc (UnifyRules::expect_reference): remove clone
+	(UnifyRules::expect_pointer): likewise
+	(UnifyRules::expect_slice): likewise
+	(UnifyRules::expect_tuple): likewise
+	(UnifyRules::expect_int): likewise
+	(UnifyRules::expect_uint): likewise
+	(UnifyRules::expect_float): likewise
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* Make-lang.in (GRS_OBJS): Remove entries.
+	* rust-lang.cc: Remove inclusion of "rust-ast-resolve-item.h".
+	(run_rust_tests): Remove call to rust_simple_path_resolve_test.
+	* resolve/rust-ast-resolve-base.cc: Removed.
+	* resolve/rust-ast-resolve-base.h: Removed.
+	* resolve/rust-ast-resolve-expr.cc: Removed.
+	* resolve/rust-ast-resolve-expr.h: Removed.
+	* resolve/rust-ast-resolve-implitem.h: Removed.
+	* resolve/rust-ast-resolve-item.cc: Removed.
+	* resolve/rust-ast-resolve-item.h: Removed.
+	* resolve/rust-ast-resolve-path.cc: Removed.
+	* resolve/rust-ast-resolve-path.h: Removed.
+	* resolve/rust-ast-resolve-pattern.cc: Removed.
+	* resolve/rust-ast-resolve-pattern.h: Removed.
+	* resolve/rust-ast-resolve-stmt.cc: Removed.
+	* resolve/rust-ast-resolve-stmt.h: Removed.
+	* resolve/rust-ast-resolve-struct-expr-field.cc: Removed.
+	* resolve/rust-ast-resolve-struct-expr-field.h: Removed.
+	* resolve/rust-ast-resolve-toplevel.h: Removed.
+	* resolve/rust-ast-resolve-type.cc: Removed.
+	* resolve/rust-ast-resolve-type.h: Removed.
+	* resolve/rust-ast-resolve.cc: Removed.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Use
+	resolve_type_path_like in overloads for TypePath,
+	StructExprStruct, StructExprStructBase, and
+	StructExprStructFields.
+	(resolve_type_path_like): New static function based off
+	Late::visit overload for TypePath.
+	* util/rust-unwrap-segment.h (unwrap_segment_error_string): New
+	inline static function definitions.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): add guard
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-context.h: add assertions for context peeks
+	* backend/rust-compile-expr.cc (CompileExpr::visit): check for valid loop context
+	(CompileExpr::array_copied_expr): just reuse array tyty capacity value
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): catch error
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* checks/errors/rust-readonly-check.cc (collect_assignment_tuple): Implement
+	read-only checker for tuple patterns with rest pattern.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-var-decl.h (CompileVarDecl::visit(TuplePattern)): Implement
+	variable declaration bindings for tuple patterns with rest pattern (i.e.
+	TuplePatternItemsHasRest).
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* util/rust-attribute-values.h
+	(Attributes::RUSTC_ALLOW_CONST_FN_UNSTABLE): New static
+	constexpr member variable.
+	* util/rust-attributes.cc (__definitions): Add entry for
+	RUSTC_ALLOW_CONST_FN_UNSTABLE.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-unify.cc (UnifyRules::commit): commit hook update
+	(UnifyRules::go): insert implicit infer const types
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-unify.cc (UnifyRules::go): unwrap the const type
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-base.cc (walk_types_to_constrain): track the ref as well
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty-subst.cc: const generic arguments dont have a value yet
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (VariantDef::clone): fix formatting
+	(VariantDef::monomorphized_clone): likewise
+	* typecheck/rust-tyty.h: likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (InferType::can_eq): remove
+	(ErrorType::can_eq): likewise
+	(ADTType::can_eq): likewise
+	(TupleType::can_eq): likewise
+	(FnType::can_eq): likewise
+	(FnPtr::can_eq): likewise
+	(ClosureType::can_eq): likewise
+	(ArrayType::can_eq): likewise
+	(SliceType::can_eq): likewise
+	(BoolType::can_eq): likewise
+	(IntType::can_eq): likewise
+	(UintType::can_eq): likewise
+	(FloatType::can_eq): likewise
+	(USizeType::can_eq): likewise
+	(ISizeType::can_eq): likewise
+	(CharType::can_eq): likewise
+	(ReferenceType::can_eq): likewise
+	(PointerType::can_eq): likewise
+	(ParamType::can_eq): likewise
+	(ConstType::can_eq): likewise
+	(OpaqueType::can_eq): likewise
+	(StrType::can_eq): likewise
+	(NeverType::can_eq): likewise
+	(PlaceholderType::can_eq): likewise
+	(ProjectionType::can_eq): likewise
+	(DynamicObjectType::can_eq): likewise
+	* typecheck/rust-tyty.h: remove can_eq
+	* typecheck/rust-tyty-cmp.h: Removed.
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (ParamType::is_equal): uses types_compatable
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-unify.cc (unify_error_type_node): new static node
+	(UnifyRules::go): likewise
+	(UnifyRules::expect_inference_variable): likewise
+	(UnifyRules::expect_adt): likewise
+	(UnifyRules::expect_str): likewise
+	(UnifyRules::expect_reference): likewise
+	(UnifyRules::expect_pointer): likewise
+	(UnifyRules::expect_param): likewise
+	(UnifyRules::expect_array): likewise
+	(UnifyRules::expect_slice): likewise
+	(UnifyRules::expect_fndef): likewise
+	(UnifyRules::expect_fnptr): likewise
+	(UnifyRules::expect_tuple): likewise
+	(UnifyRules::expect_bool): likewise
+	(UnifyRules::expect_char): likewise
+	(UnifyRules::expect_int): likewise
+	(UnifyRules::expect_uint): likewise
+	(UnifyRules::expect_float): likewise
+	(UnifyRules::expect_isize): likewise
+	(UnifyRules::expect_usize): likewise
+	(UnifyRules::expect_never): likewise
+	(UnifyRules::expect_placeholder): likewise
+	(UnifyRules::expect_projection): likewise
+	(UnifyRules::expect_dyn): likewise
+	(UnifyRules::expect_closure): likewise
+	(UnifyRules::expect_opaque): likewise
+	(UnifyRules::expect_const): likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-unify.cc (UnifyRules::Resolve): check for success
+	(UnifyRules::expect_inference_variable): dont clone
+	(UnifyRules::expect_adt): likewise
+	(UnifyRules::expect_str): likewise
+	(UnifyRules::expect_reference): likewise
+	(UnifyRules::expect_pointer): likewise
+	(UnifyRules::expect_param): likewise
+	(UnifyRules::expect_array): likewise
+	(UnifyRules::expect_slice): likewise
+	(UnifyRules::expect_fndef): likewise
+	(UnifyRules::expect_fnptr): likewise
+	(UnifyRules::expect_tuple): likewise
+	(UnifyRules::expect_bool): likewise
+	(UnifyRules::expect_char): likewise
+	(UnifyRules::expect_int): likewise
+	(UnifyRules::expect_uint): likewise
+	(UnifyRules::expect_float): likewise
+	(UnifyRules::expect_isize): likewise
+	(UnifyRules::expect_usize): likewise
+	(UnifyRules::expect_never): likewise
+	(UnifyRules::expect_placeholder): likewise
+	(UnifyRules::expect_projection): likewise
+	(UnifyRules::expect_dyn): likewise
+	(UnifyRules::expect_closure): likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): use types_compatable instead
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-type-util.cc (types_compatable):  add check bounds flag
+	(unify_site_and): likewise
+	* typecheck/rust-type-util.h (types_compatable): likewise
+	(unify_site_and): likewise
+	* typecheck/rust-tyty-bounds.cc: likewise
+	* typecheck/rust-unify.cc (UnifyRules::UnifyRules): likewise
+	(UnifyRules::Resolve): likewise
+	(UnifyRules::resolve_subtype): likewise
+	(UnifyRules::go): likewise
+	* typecheck/rust-unify.h: likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-path-probe.cc (PathProbeType::process_impl_item_candidate):
+	refactor to types_compatable
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-unify.cc (UnifyRules::expect_inference_variable): dont commit
+	(UnifyRules::expect_adt): likewise
+	(UnifyRules::expect_bool): likewise
+	(UnifyRules::expect_char): likewise
+	(UnifyRules::expect_int): likewise
+	(UnifyRules::expect_uint): likewise
+	(UnifyRules::expect_float): likewise
+	(UnifyRules::expect_isize): likewise
+	(UnifyRules::expect_usize): likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-base.h: remove const
+	* backend/rust-compile-expr.cc: likewise
+	* backend/rust-compile.cc (HIRCompileBase::coerce_to_dyn_object): likewise
+	* typecheck/rust-hir-type-bounds.h: likewise
+	* typecheck/rust-type-util.cc (lookup_associated_impl_block): likewise
+	* typecheck/rust-type-util.h (lookup_associated_impl_block): likewise
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::TypeBoundsProbe): likewise
+	(TypeBoundsProbe::Probe): likewise
+	* typecheck/rust-tyty-cmp.h: likewise
+	* typecheck/rust-tyty-subst.cc (SubstitutionRef::monomorphize): likewise
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): likewise
+	(BaseType::bounds_compatible): likewise
+	(VariantDef::clone): likewise
+	(VariantDef::monomorphized_clone): likewise
+	(OpaqueType::is_equal): likewise
+	(DynamicObjectType::is_equal): likewise
+	* typecheck/rust-tyty.h: likewise
+
+2025-10-30  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-coercion.cc (TypeCoercionRules::select): respect try flag
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::finalize_rebind_import):
+	Replace assert with early break and remove early return.
+	(Early::visit): Check for unsuffixed lower self list.
+	* resolve/rust-early-name-resolver-2.0.h: Add visit function prototype.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::visit): Emit an error
+	on top level rebind self use declaration.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* Make-lang.in (GRS_OBJS): Add "rust-resolve-builtins.o".
+	* resolve/rust-late-name-resolver-2.0.cc: Include
+	"rust-resolve-builtins.h".
+	(next_node_id): Remove function.
+	(next_hir_id): Likewise.
+	(Late::setup_builtin_types): Likewise.
+	(Late::go): Use Builtins::setup_type_ctx instead of
+	Late::setup_builtin_types.
+	* resolve/rust-late-name-resolver-2.0.h
+	(Late::setup_builtin_types): Remove function.
+	* rust-session-manager.cc: Include "rust-resolve-builtins.h".
+	(Session::expansion): Call Builtins::setup_lang_prelude.
+	* resolve/rust-resolve-builtins.cc: New file.
+	* resolve/rust-resolve-builtins.h: New file.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::left_denotation): Remove
+	usage of parse_tuple_index_expr_float.
+	(Parser::parse_closure_expr_pratt): Remove function.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust-session-manager.cc (Session::compile_crate): Move the AST dump
+	after parser error check.
+
+2025-10-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-expression-yeast.cc (ExpressionYeast::dispatch): Rename to...
+	(ExpressionYeast::reseat): ...this.
+	(ExpressionYeast::visit): Remove.
+	* ast/rust-expression-yeast.h: Inherit from PointerVisitor, override reseat instead
+	of declaring dispatch.
+
+2025-10-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* Make-lang.in: Compile it.
+	* ast/rust-builtin-ast-nodes.h: Add missing methods for getting pointers.
+	* ast/rust-expr.h: Likewise.
+	* ast/rust-item.h: Likewise.
+	* ast/rust-path.h: Likewise.
+	* ast/rust-pattern.h: Likewise.
+	* ast/rust-type.h: Likewise.
+	* ast/rust-ast-pointer-visitor.cc: New file.
+	* ast/rust-ast-pointer-visitor.h: New file.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h (class TupleIndexExpr): Store strip information.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/borrowck/rust-bir-builder-internal.h: Remove
+	inclusion of "rust-name-resolver.h".
+	(BuilderContext::resolver): Change type to nr2.0 resolver.
+	(BuilderContext::BuilderContext): Change initialization of
+	resolver reference.
+	(AbstractBuilder::resolve_label): Assume name resolution 2.0 is
+	enabled.
+	(AbstractBuilder::resolve_variable): Likewise.
+	(AbstractBuilder::resolve_variable_or_fn): Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/rust-hir-pattern-analysis.cc: Remove inclusion
+	of "options.h".
+	(PatternChecker::PatternChecker): Change initialization of
+	resolver reference.
+	(PatternChecker::visit): Assume name resolution 2.0 is enabled.
+	* checks/errors/rust-hir-pattern-analysis.h: Include nr2.0
+	header instead of nr1.0 header.
+	(PatternChecker::resolver): Change type to nr2.0 resolver.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust-session-manager.cc: Remove inclusion of name resolution
+	1.0 headers.
+	(Session::compile_crate): Assume name resolution 2.0 is enabled.
+	(Session::expansion): Likewise.
+	(Session::load_extern_crate): Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/privacy/rust-privacy-check.cc: Adjust includes.
+	(Resolver::resolve): Pass 2.0 name resolution context to
+	VisibilityResolver and PrivacyReporter.
+	* checks/errors/privacy/rust-privacy-reporter.cc
+	(PrivacyReporter::PrivacyReporter): Change type of resolver
+	parameter.
+	(is_child_module): Remove static function.
+	(PrivacyReporter::check_for_privacy_violation): Assume nr2.0 is
+	enabled and handle removal of is_child_module.
+	* checks/errors/privacy/rust-privacy-reporter.h: Adjust
+	includes.
+	(PrivacyReporter::PrivacyReporter): Change type of resolver
+	parameter.
+	(PrivacyReporter::resolver): Change member variable type.
+	* checks/errors/privacy/rust-visibility-resolver.cc: Adjust
+	includes.
+	(VisibilityResolver::VisibilityResolver): Change type of
+	resolver parameter.
+	(VisibilityResolver::resolve_module_path): Assume nr2.0 is
+	enabled.
+	* checks/errors/privacy/rust-visibility-resolver.h: Adjust
+	includes.
+	(VisibilityResolver::VisibilityResolver): Change type of
+	resolver parameter.
+	(VisibilityResolver::resolver): Change member variable type.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* ast/rust-pattern.h:
+		- Add a new base abstract class `PatternItems` which are used by pattern items class
+		class derivatives for `TuplePattern`, `TupleStructPattern` & `SlicePattern`.
+		- Standardized the derived class names to have `HasRest` or `NoRest` as suffixes.
+		 - Values for the common `ItemType` enum is updated to `HAS_REST` or `NO_REST`.
+	* ast/rust-pattern.cc: Renamed the classes accordingly.
+	* ast/rust-ast-collector.cc: Renamed the classes accordingly.
+	* ast/rust-ast-collector.h: Renamed the classes accordingly.
+	* ast/rust-ast-full-decls.h: Renamed the classes accordingly.
+	* ast/rust-ast-visitor.cc: Renamed the classes accordingly.
+	* ast/rust-ast-visitor.h: Renamed the classes accordingly.
+	* ast/rust-desugar-for-loops.cc: Renamed the classes accordingly.
+	* ast/rust-desugar-question-mark.cc: Renamed the classes accordingly.
+	* expand/rust-cfg-strip.cc: Renamed the classes accordingly.
+	* expand/rust-cfg-strip.h: Renamed the classes accordingly.
+	* expand/rust-derive-clone.cc: Renamed the classes accordingly.
+	* expand/rust-derive-cmp-common.cc: Renamed the classes accordingly.
+	* expand/rust-derive-hash.cc: Renamed the classes accordingly.
+	* expand/rust-derive-ord.cc: Renamed the classes accordingly.
+	* expand/rust-derive-partial-eq.cc: Renamed the classes accordingly.
+	* expand/rust-derive.h: Renamed the classes accordingly.
+	* expand/rust-expand-visitor.cc: Renamed the classes accordingly.
+	* expand/rust-expand-visitor.h: Renamed the classes accordingly.
+	* hir/rust-ast-lower-base.cc: Renamed the classes accordingly.
+	* hir/rust-ast-lower-base.h: Renamed the classes accordingly.
+	* hir/rust-ast-lower-pattern.cc: Renamed the classes accordingly.
+	* hir/tree/rust-hir-pattern.h: Renamed the classes accordingly.
+	* parse/rust-parse-impl.h: Renamed the classes accordingly.
+	* resolve/rust-ast-resolve-base.cc: Renamed the classes accordingly.
+	* resolve/rust-ast-resolve-base.h: Renamed the classes accordingly.
+	* resolve/rust-ast-resolve-pattern.cc: Renamed the classes accordingly.
+	* util/rust-attributes.cc: Renamed the classes accordingly.
+	* util/rust-attributes.h: Renamed the classes accordingly.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::visit): Use
+	should_have_str instead of has_str.
+	* ast/rust-ast.cc (Token::as_string): Likewise.
+	* expand/rust-macro-builtins-offset-of.cc
+	(MacroBuiltin::offset_of_handler): Likewise.
+	* lex/rust-lex.cc (Lexer::dump_and_skip): Likewise.
+	* ast/rust-ast.h (class Token): Remove dead code.
+	(Token::has_str): Remove function.
+	(Token::should_have_str): New function.
+	* lex/rust-token.cc (Token::get_str): Remove function
+	definition.
+	* lex/rust-token.h: Include "rust-diagnostics.h".
+	(Token::str): Change type from std::unique_ptr<std::string> to
+	std::string.
+	(Token::Token): Adjust initialization of str member variable and
+	the type of the parameter used to initialize it.
+	(Token::make_identifier): Accept std::string instead of rvalue
+	reference to std::string.
+	(Token::make_int): Likewise.
+	(Token::make_float): Likewise.
+	(Token::make_string): Likewise.
+	(Token::make_byte_string): Likewise.
+	(Token::make_raw_string): Likewise.
+	(Token::make_inner_doc_comment): Likewise.
+	(Token::make_outer_doc_comment): Likewise.
+	(Token::make_lifetime): Likewise.
+	(Token::get_str): Add definition to function declaration.
+	(Token::has_str): Remove member function.
+	(Token::should_have_str): Handle INNER_DOC_COMMENT and
+	OUTER_DOC_COMMENT.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-macro-builtins-format-args.cc
+	(format_args_parse_arguments): Split format expression parsing
+	into...
+	(format_args_parse_expr): ...a new function here, while handling
+	eager expansion.
+	(MacroBuiltin::format_args_handler): Use format_args_parse_expr.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_expr): Avoid skipping
+	or splitting tokens.
+	(Parser::null_denotation): Assume initial token was not skipped
+	and adjust function signature to match. Use
+	parse_path_in_expression instead of
+	parse_path_in_expression_pratt and handle SCOPE_RESOLUTION.
+	(Parser::parse_path_in_expression_pratt): Remove function.
+	* parse/rust-parse.h (null_denotation): Remove initial token
+	parameter.
+	(parse_path_in_expression_pratt): Remove function.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-coercion.cc (TypeCoercionRules::do_coercion): Use as
+	member function.
+	(TypeCoercionRules::coerce_borrowed_pointer): Likewise.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-coercion.cc (TypeCoercionRules::do_coercion):
+	Move nevertype coercion from here...
+	(TypeCoercionRules::coerce_never): ... to here.
+	* typecheck/rust-coercion.h: Add function prototype.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-coercion.cc (TypeCoercionRules::do_coercion): Adapt
+	call to new return type.
+	(TypeCoercionRules::coerce_unsized): Change error handling.
+	* typecheck/rust-coercion.h: Update function prototype and add new
+	CoerceUnsizedError error type.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-coercion.cc (TypeCoercionRules::do_coercion): Refactor
+	common return statement.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit): Remove
+	unused assignment.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::resolve_segments):
+	Likewise.
+	* typecheck/rust-tyty.cc (ParamType::handle_substitions): Likewise.
+	* typecheck/rust-unify.cc (UnifyRules::go): Likewise.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_trait):
+	Construct value in place.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-ast-resolve-stmt.cc (ResolveStmt::visit): Remove
+	unused copy.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::generate_closure_fntype):
+	Unwrap the optional.
+	* backend/rust-compile.cc: Change return type container. Adapt code to
+	new return type.
+	* typecheck/rust-hir-dot-operator.cc: Likewise.
+	* typecheck/rust-hir-path-probe.cc: Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItemWithTrait::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit):
+	Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundPredicate::contains_item):
+	Likewise.
+	(TypeBoundPredicate::lookup_associated_item): Likewise.
+	(TypeBoundPredicateItem::get_parent): Likewise.
+	(TypeBoundPredicate::lookup_associated_type): Likewise.
+	* typecheck/rust-tyty.cc (BaseType::satisfies_bound): Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit): Change
+	return type.
+	* typecheck/rust-tyty.h: Likewise.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-casts.cc (TypeCastRules::cast_rules): Authorize
+	cast from function pointer to integer like type.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* typecheck/rust-hir-type-check-base.cc (walk_type_to_constrain): Walk
+	through all kind of type to collect ty leaves.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-type.h: Prevent reconstruction on null pointers.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* util/rust-attribute-values.h (Attributes::SIMD_TEST): Remove
+	static constexpr member variable.
+	* util/rust-attributes.cc (__definitions): Remove entry for
+	SIMD_TEST.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_identifier_pattern):
+	Use parse_pattern_no_alt to parse identifier pattern
+	subpatterns.
+	(Parser::parse_ident_leading_pattern): Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-fmt.cc (Pieces::collect): Handle changes to ffi
+	interface.
+	(Pieces::~Pieces): Remove function definition.
+	(Pieces::Pieces): Likewise.
+	(Pieces::operator=): Likewise.
+	* ast/rust-fmt.h: Include "optional.h".
+	(rust_ffi_alloc): New extern "C" function declaration.
+	(rust_ffi_dealloc): Likewise.
+	(class FFIVec): New class.
+	(class FFIOpt): Likewise.
+	(RustHamster::RustHamster): New constructor accepting const
+	std::string reference.
+	(struct FormatSpec): Use FFIOpt.
+	(struct PieceSlice): Remove struct.
+	(struct RustString): Likewise.
+	(struct FormatArgsHandle): Likewise.
+	(collect_pieces): Change function signature.
+	(clone_pieces): Likewise.
+	(destroy_pieces): Remove extern "C" function declaration.
+	(Pieces::~Pieces): Remove function declaration.
+	(Pieces::operator=): Likewise.
+	(Pieces::get_pieces): Handle changes to class fields.
+	(Pieces::Pieces): Remove copy and move constructor declarations,
+	adjust signature of remaining constructor declaration.
+	(Pieces::pieces_vector): Remove member variable.
+	(Pieces::handle): Likewise.
+	(Pieces::data): Add member variable.
+	* expand/rust-macro-builtins-asm.cc (expand_inline_asm_strings):
+	Use references to avoid copying.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* backend/rust-compile-pattern.cc (CompilePatternLet::visit):
+	Handle tuple destructuring containing by-ref.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* hir/tree/rust-hir-pattern.h: Add SlicePatternItems base class and
+	SlicePatternItemsNoRest/SlicePatternItemsHasRest derived classes.
+	Update SlicePattern to hold patterns using the new classes.
+	* hir/tree/rust-hir-full-decls.h: Declare new classes.
+	* hir/tree/rust-hir.cc: Add visits for new classes.
+	* hir/tree/rust-hir-visitor.h: Add visits for new classes.
+	* hir/tree/rust-hir-visitor.cc: Implement visits for new classes.
+	* hir/rust-hir-dump.h: Add visits for new classes.
+	* hir/rust-hir-dump.cc: Implement Dump::visit for new classes.
+	* hir/rust-ast-lower-base.h: Declare new lower_slice_pattern_no_rest/has_rest
+	methods.
+	* hir/rust-ast-lower-base.cc: Implement lower_slice_pattern_no_rest/has_rest
+	to lower AST slice pattern items to HIR.
+	* hir/rust-ast-lower-pattern.cc: Update ASTLoweringPattern::visit for
+	SlicePattern to use new lowering methods.
+	* backend/rust-compile-pattern.cc: Update CompilePatternCheckExpr::visit
+	and CompilePatternBindings::visit for SlicePattern to handle
+	SlicePatternItemsNoRest/HasRest.
+	* checks/errors/borrowck/rust-bir-builder-pattern.cc: Update
+	PatternBindingBuilder::visit for SlicePattern to iterate members correctly.
+	* checks/errors/borrowck/rust-bir-builder-struct.h: Add visits for new
+	classes.
+	* checks/errors/borrowck/rust-function-collector.h: Add visits for new
+	classes.
+	* checks/errors/rust-const-checker.h: Add visits for new classes.
+	* checks/errors/rust-const-checker.cc: Implement empty visits for new classes.
+	* checks/errors/rust-hir-pattern-analysis.h: Add visits for new classes.
+	* checks/errors/rust-hir-pattern-analysis.cc: Implement empty visits for new
+	classes.
+	* checks/errors/rust-unsafe-checker.h: Add visits for new classes.
+	* checks/errors/rust-unsafe-checker.cc: Implement empty visits for new
+	classes.
+	* typecheck/rust-hir-type-check-pattern.cc: Update TypeCheckPattern::visit
+	for SlicePattern to handle SlicePatternItemsNoRest/HasRest.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* rust-session-manager.cc (Session::compile_crate): Collect lang
+	items after expansion.
+
+2025-10-30  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* Make-lang.in: Replace old read-only checker with new implementation.
+	* checks/errors/rust-readonly-check.cc (ReadonlyChecker::ReadonlyChecker):
+	Replace old read-only checker with new implementation.
+	* checks/errors/rust-readonly-check.h:
+	Replace old read-only checker with new implementation.
+	* rust-session-manager.cc (Session::compile_crate):
+	Switch to new read-only checker.
+	* checks/errors/rust-readonly-check2.cc: Removed.
+	* checks/errors/rust-readonly-check2.h: Removed.
+
+2025-10-30  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* checks/errors/rust-readonly-check2.cc (ReadonlyChecker::check_variable):
+	Read-only check if the variable is mutable type.
+	(ReadonlyChecker::is_mutable_type): Read-only check if the variable is mutable type.
+	* checks/errors/rust-readonly-check2.h: Read-only check if the variable is mutable type.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* typecheck/rust-hir-type-check-pattern.cc(ClosureParamInfer(IdentifierPattern)):
+	Resolve subpattern types for IdentifierPattern.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-pattern.cc(CompilePatternLet::visit(IdentifierPattern)):
+	Add support for subpatterns.
+	* backend/rust-compile-var-decl.h(CompileVarDecl::visit(IdentifierPattern)):
+	Implement compilation for subpatterns.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::Select):
+	Skip asserts by checking candidate type and using early-continue.
+	(MethodResolver::try_select_predicate_candidates):
+	Skip invalid candidates.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* rust-gcc.cc (constructor_expression):
+	Ensure vec_alloc reserves at least one element.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast.cc (Attribute::check_cfg_predicate): Emit an error with
+	empty cfg_attr input.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* resolve/rust-forever-stack.hxx
+	(ForeverStack::resolve_segments): Remove usage of optional
+	reference, allow non-final path segments to resolve to types
+	even outside the type namespace, and allow resolution to
+	progress past non-final path segments which resolve to modules.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_stmt_or_expr): Add null check
+	on parse_macro_invocation_partial call.
+	* ast/rust-path.cc (Path::convert_to_simple_path): Do not exclude
+	capitalized "Self".
+
+2025-10-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast-fragment.cc (Fragment::is_pattern_fragment): New function.
+	(Fragment::take_pattern_fragment): Likewise.
+	(Fragment::assert_single_fragment): Likewise.
+	* ast/rust-ast-fragment.h: Declare them.
+	* ast/rust-ast.cc (SingleASTNode::SingleASTNode): Add new constructor for pattern
+	single AST nodes.
+	(SingleASTNode::operator=): Handle patterns.
+	(SingleASTNode::accept_vis): Likewise.
+	(SingleASTNode::is_error): Likewise.
+	(SingleASTNode::as_string): Likewise.
+	* ast/rust-ast.h: Add get_pattern_ptr() functions.
+	* ast/rust-expr.h: Likewise.
+	* ast/rust-item.h: Likewise.
+	* ast/rust-pattern.h: Likewise.
+	* ast/rust-stmt.h: Likewise.
+	* expand/rust-expand-visitor.cc (derive_item): Use new API enum values.
+	(expand_item_attribute): Likewise.
+	(expand_stmt_attribute): Likewise.
+	(ExpandVisitor::maybe_expand_pattern): New function.
+	(ExpandVisitor::expand_closure_params): Handle patterns.
+	(ExpandVisitor::visit): Add new visitors for patterns and missed exprs.
+	* expand/rust-expand-visitor.h: Declare them.
+	* expand/rust-macro-expand.cc (transcribe_pattern): New function.
+	(transcribe_context): Call it.
+	* expand/rust-macro-expand.h (struct MacroExpander): New Context type.
+
+2025-10-30  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-ast.h: Change NodeType to enum class Kind.
+	* ast/rust-ast-fragment.cc: Use new names.
+	* ast/rust-ast-fragment.h: Likewise.
+	* ast/rust-ast.cc (SingleASTNode::SingleASTNode): Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* parse/rust-parse-impl.h
+	(Parser::parse_identifier_or_keyword_token): Record error on
+	failure.
+
+2025-10-30  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* resolve/rust-ast-resolve-stmt.h:
+	Add name resolution processing for discriminant values.
+
+2025-10-30  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* typecheck/rust-tyty-call.cc (TypeCheckCallExpr::visit): fix error code
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-cfg-strip.cc: Include "rust-macro-expand.h".
+	(fails_cfg): Rename to...
+	(CfgStrip::fails_cfg): ...here and handle test attributes.
+	(fails_cfg_with_expand): Rename to...
+	(CfgStrip::fails_cfg_with_expand): ...here and handle test
+	attributes.
+	* expand/rust-cfg-strip.h (struct ExpansionCfg): Forward
+	declare.
+	(CfgStrip::fails_cfg): New member function.
+	(CfgStrip::fails_cfg_with_expand): Likewise.
+	(CfgStrip::CfgStrip): Accept reference to ExpansionCfg.
+	(CfgStrip::expansion_cfg): New member variable.
+	* rust-session-manager.cc (Session::expansion): Pass
+	ExpansionCfg instance to CfgStrip constructor.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* resolve/rust-early-name-resolver-2.0.cc (Early::finalize_rebind_import):
+	Do not abort on wildcard patterns.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h: Add const getters to llvm members.
+	* hir/rust-ast-lower-expr.cc (check_llvm_asm_support): Check llvm_asm
+	usage validity.
+	(ASTLoweringExpr::visit): Emit an error message instead of aborting.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_llvm_clobbers): Expect a
+	comma between clobbers.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-macro-builtins-asm.cc (parse_asm): Simplify expression.
+	(parse_llvm_asm): Likewise.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast.h (Stmt::get_node_id): Make virtual.
+	(Type::get_node_id): Likewise.
+	(AssociatedItem::get_node_id): New virtual member function.
+	* ast/rust-expr.h (TypeCastExpr::get_casted_expr_ptr): New
+	member function.
+	(TypeCastExpr::get_type_to_cast_to_ptr): Likewise.
+	(ClosureExprInner::get_definition_expr_ptr): Likewise.
+	* ast/rust-item.h (TypeAlias::get_node_id): New member function
+	to override AssociatedItem::get_node_id.
+	(ConstantItem::get_node_id): Likewise.
+	* expand/rust-expand-visitor.cc
+	(ExpandVisitor::maybe_expand_expr): Adjust
+	macro_invoc_expect_id.
+	(ExpandVisitor::maybe_expand_type): Likewise and add an overload
+	for std::unique_ptr<TypeNoBounds>.
+	(ExpandVisitor::visit): Check macro_invoc_expect_id and
+	generally improve visitors so that the testsuite will still
+	pass.
+	* expand/rust-expand-visitor.h (ExpandVisitor::ExpandVisitor):
+	Initialize member variable macro_invoc_expect_id.
+	(ExpandVisitor::maybe_expand_type): Add an overload for
+	std::unique_ptr<TypeNoBounds>.
+	(ExpandVisitor::expand_macro_children): Adjust
+	macro_invoc_expect_id.
+	(ExpandVisitor::visit): Add an overload for TypeCastExpr.
+	(ExpandVisitor::macro_invoc_expect_id): New member variable.
+
+2025-10-30  lishin  <lishin1008@gmail.com>
+
+	* backend/rust-compile-pattern.cc (CompilePatternCheckExpr::visit):
+	Check upper compare operator.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::visit):
+	Handle lowering of exclusive range pattern.
+	* hir/tree/rust-hir-pattern.h (class RangePattern):
+	Add support for exclusive ranges in HIR representation.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* expand/rust-macro-expand.cc (transcribe_expression): Parse any
+	outer attributes before parsing an expression.
+	* parse/rust-parse.h (Parser::parse_outer_attributes): Make
+	public.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h (struct TupleClobber): Add constructor.
+	* backend/rust-compile-context.h (struct fncontext): Likewise.
+	* typecheck/rust-hir-dot-operator.h: Likewise.
+	* typecheck/rust-tyty-variance-analysis-private.h (struct Constraint):
+	Likewise.
+	* typecheck/rust-unify.h: Likewise.
+	* ast/rust-ast-builder.cc (Builder::new_lifetime_param): Add memory
+	reservation and construct in place.
+	(Builder::new_generic_args): Likewise.
+	* ast/rust-ast-collector.cc (TokenCollector::newline): Likewise.
+	(TokenCollector::indentation): Likewise.
+	(TokenCollector::comment): Likewise.
+	* ast/rust-desugar-apit.cc: Likewise.
+	* ast/rust-path.cc (Path::convert_to_simple_path): Likewise.
+	(TypePath::as_simple_path): Likewise.
+	* ast/rust-path.h: Likewise.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Likewise.
+	(TyTyResolveCompile::create_dyn_obj_record): Likewise.
+	* checks/errors/rust-hir-pattern-analysis.cc (Matrix::specialize):
+	Likewise.
+	(WitnessMatrix::apply_constructor): Likewise.
+	(check_match_usefulness): Likewise.
+	* expand/rust-derive-clone.cc (DeriveClone::clone_fn): Likewise.
+	* expand/rust-macro-builtins-asm.cc (parse_clobber_abi): Likewise.
+	* expand/rust-macro-expand.cc (MacroExpander::parse_proc_macro_output):
+	Likewise.
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::lower_generic_args):
+	Likewise.
+	(ASTLoweringBase::lower_extern_block): Likewise.
+	* hir/rust-ast-lower-enumitem.h: Likewise.
+	* hir/rust-ast-lower-expr.cc (ASTLoweringExpr::visit): Likewise.
+	* hir/rust-ast-lower-extern.h: Likewise.
+	* hir/rust-ast-lower-implitem.cc (ASTLowerImplItem::visit): Likewise.
+	(ASTLowerTraitItem::visit): Likewise.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Likewise.
+	* hir/rust-ast-lower-pattern.cc (ASTLoweringPattern::visit): Likewise.
+	* hir/rust-ast-lower.cc (ASTLowering::go): Likewise.
+	(ASTLoweringBlock::visit): Likewise.
+	(ASTLoweringIfLetBlock::desugar_iflet): Likewise.
+	(ASTLoweringExprWithBlock::visit): Likewise.
+	(ASTLowerPathInExpression::visit): Likewise.
+	(ASTLowerQualPathInExpression::visit): Likewise.
+	* hir/tree/rust-hir.cc (PathPattern::convert_to_simple_path): Likewise.
+	(TypePath::as_simple_path): Likewise.
+	* metadata/rust-export-metadata.cc (ExportContext::emit_function):
+	Likewise.
+	* parse/rust-parse-impl.h (Parser::parse_decl_macro_def): Likewise.
+	(Parser::parse_lifetime_params): Likewise.
+	* resolve/rust-ast-resolve-item.cc (ResolveTraitItems::visit):
+	Likewise.
+	(ResolveItem::visit): Likewise.
+	(flatten_list): Likewise.
+	* resolve/rust-ast-resolve-pattern.cc (PatternDeclaration::visit):
+	Likewise.
+	* typecheck/rust-autoderef.cc (AutoderefCycle::try_autoderefed):
+	Likewise.
+	* typecheck/rust-coercion.cc (TypeCoercionRules::coerce_unsized):
+	Likewise.
+	* typecheck/rust-hir-dot-operator.cc: Likewise.
+	* typecheck/rust-hir-path-probe.cc: Likewise.
+	* typecheck/rust-hir-trait-resolve.cc (TraitResolver::resolve_trait):
+	Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::visit):
+	Likewise.
+	(TypeCheckExpr::resolve_fn_trait_call): Likewise.
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckTopLevelExternItem::visit):
+	Likewise.
+	(TypeCheckImplItem::visit): Likewise.
+	* typecheck/rust-hir-type-check-item.cc (TypeCheckItem::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check-struct.cc (TypeCheckStructExpr::resolve):
+	Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit):
+	Likewise.
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn):
+	Likewise.
+	* typecheck/rust-typecheck-context.cc (TypeCheckContext::push_return_type):
+	Likewise.
+	(TypeCheckContext::insert_associated_impl_mapping): Likewise.
+	* typecheck/rust-tyty-bounds.cc (TypeBoundsProbe::scan): Likewise.
+	(TypeBoundsProbe::add_trait_bound): Likewise.
+	(TypeBoundPredicate::operator=): Likewise.
+	(TypeBoundPredicateItem::get_tyty_for_receiver): Likewise.
+	(TypeBoundPredicate::get_associated_type_items): Likewise.
+	* typecheck/rust-tyty-call.cc (TypeCheckMethodCallExpr::go): Likewise.
+	* typecheck/rust-tyty-subst.cc (SubstitutionRef::clone_substs):
+	Likewise.
+	(SubstitutionRef::infer_substitions): Likewise.
+	(SubstitutionRef::are_mappings_bound): Likewise.
+	* typecheck/rust-tyty-variance-analysis.cc (GenericTyPerCrateCtx::query_generic_variance):
+	Likewise.
+	(GenericTyVisitorCtx::add_constraint): Likewise.
+	* typecheck/rust-tyty.cc (FnPtr::clone): Likewise.
+	(DynamicObjectType::get_object_items): Likewise.
+	* typecheck/rust-unify.cc (UnifyRules::Resolve): Likewise.
+	(UnifyRules::go): Likewise.
+	(UnifyRules::expect_tuple): Likewise.
+	* util/rust-canonical-path.h: Likewise.
+	* util/rust-token-converter.cc (convert): Likewise.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/bi-map.h: Add include directive for required declarations.
+	* util/fnv-hash.h: Likewise.
+	* util/rust-dump.h: Likewise.
+	* util/rust-inline-visitor.h: Likewise.
+	* util/rust-unwrap-segment.h: Likewise.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* util/rust-lang-item.h (RUST_LANG_ITEM_H): Add header guards.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse.h: Change class to struct for friend qualification.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* checks/lints/rust-lint-marklive-base.h (RUST_HIR_LIVENESS_BASE):
+	Remove header includes.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-cond-compilation.h: Delete copy constructor for
+	ConfigurationAll and ConfigurationAny.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-type.h: Update member instead of parameter
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-cond-compilation.h: Move vector instead of passing it by
+	value.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-pattern.h: Include header directly.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-cond-compilation.h: Copy cfg_attrs
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-formatting.h (RUST_AST_FORMATTING_H): Include required
+	headers directly.
+
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* util/rust-attributes.cc (Attributes::extract_string_literal):
+	New function definition.
+	* util/rust-attributes.h (Attributes::extract_string_literal):
+	New function declaration.
+	* ast/rust-collect-lang-items.cc (get_lang_item_attr): Use
+	extract_string_literal.
+	* backend/rust-compile-base.cc: Include "rust-attributes.h".
+	(HIRCompileBase::handle_link_section_attribute_on_fndecl):
+	Use extract_string_literal.
+	(HIRCompileBase::handle_must_use_attribute_on_fndecl): Likewise.
+	* hir/rust-ast-lower-base.cc
+	(ASTLoweringBase::handle_lang_item_attribute): Likewise.
+	* rust-session-manager.cc (Session::handle_crate_name):
+	Likewise.
+
+2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* hir/tree/rust-hir-pattern.h:
+		- Rename TupleItems to PatternItems.
+		- Rename TuplePatternItemsMultiple/Ranged & TupleStructItemsRange/NoRange to
+		TuplePatternItemsNoRest/HasRest and TupleStructItemsNoRest/HasRest.
+		- Update enum values to NO_REST/HAS_REST.
+		- Rename clone_tuple_items_impl to clone_pattern_items_impl.
+	* hir/tree/rust-hir-full-decls.h: Renamed the classes accordingly.
+	* hir/tree/rust-hir-visitor.h: Renamed the classes accordingly.
+	* hir/tree/rust-hir-visitor.cc: Renamed the classes accordingly.
+	* hir/rust-hir-dump.h: Renamed the classes accordingly.
+	* hir/rust-hir-dump.cc: Renamed the classes accordingly.
+	* hir/tree/rust-hir.cc: Renamed the classes accordingly.
+	* hir/rust-ast-lower-base.cc: Renamed the classes accordingly.
+	* hir/rust-ast-lower-pattern.cc: Renamed the classes accordingly.
+	* backend/rust-compile-pattern.cc: Renamed the classes accordingly.
+	* backend/rust-compile-var-decl.h: Renamed the classes accordingly.
+	* checks/errors/borrowck/rust-bir-builder-pattern.cc: Renamed the classes accordingly.
+	* checks/errors/borrowck/rust-bir-builder-struct.h: Renamed the classes accordingly.
+	* checks/errors/borrowck/rust-function-collector.h: Renamed the classes accordingly.
+	* checks/errors/rust-const-checker.cc: Renamed the classes accordingly.
+	* checks/errors/rust-const-checker.h: Renamed the classes accordingly.
+	* checks/errors/rust-hir-pattern-analysis.cc: Renamed the classes accordingly.
+	* checks/errors/rust-hir-pattern-analysis.h: Renamed the classes accordingly.
+	* checks/errors/rust-unsafe-checker.cc: Renamed the classes accordingly.
+	* checks/errors/rust-unsafe-checker.h: Renamed the classes accordingly.
+	* checks/errors/rust-readonly-check2.cc: Renamed the classes accordingly.
+	* typecheck/rust-hir-type-check-pattern.cc: Update references to renamed classes and enum
+	values.
+
+2025-10-30  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* expand/rust-derive-eq.cc: Use empty vector explicitly.
+
 2025-08-05  Ryutaro Okada  <1015ryu88@gmail.com>
 
 	* Make-lang.in (rust-readonly-check2.cc):

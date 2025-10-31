@@ -1,3 +1,8 @@
+2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* gcc-changelog/git_commit.py (ignored_prefixes): Add
+	'libgrust/rustc-lib/core/'.
+
 2025-10-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* gcc.doxy (INPUT): Add gcc/custom-sarif-properties
