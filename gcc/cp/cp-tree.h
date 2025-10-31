@@ -2154,6 +2154,13 @@ extern GTY(()) struct saved_scope *scope_chain;
 #define processing_explicit_instantiation scope_chain->x_processing_explicit_instantiation
 #define processing_omp_trait_property_expr scope_chain->x_processing_omp_trait_property_expr
 
+/* Nonzero if we are parsing the expression of a contract condition. These
+   expressions appear outside the parameter list (like a trailing return
+   type), but are potentially evaluated.  */
+
+#define processing_contract_condition \
+  (scope_chain->bindings->kind == sk_contract)
+
 #define in_discarded_stmt scope_chain->discarded_stmt
 #define in_consteval_if_p scope_chain->consteval_if_p
 #define in_expansion_stmt scope_chain->expansion_stmt
