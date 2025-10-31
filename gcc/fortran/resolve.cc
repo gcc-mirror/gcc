@@ -15385,6 +15385,39 @@ resolve_fl_procedure (gfc_symbol *sym, int mp_flag)
       return false;
     }
 
+  /* F2018:C1585: "The function result of a pure function shall not be both
+     polymorphic and allocatable, or have a polymorphic allocatable ultimate
+     component."  */
+  if (sym->attr.pure && sym->result && sym->ts.u.derived)
+    {
+      if (sym->ts.type == BT_CLASS
+	  && sym->attr.class_ok
+	  && CLASS_DATA (sym->result)
+	  && CLASS_DATA (sym->result)->attr.allocatable)
+	{
+	  gfc_error ("Result variable %qs of pure function at %L is "
+		     "polymorphic allocatable",
+		     sym->result->name, &sym->result->declared_at);
+	  return false;
+	}
+
+      if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->components)
+	{
+	  gfc_component *c = sym->ts.u.derived->components;
+	  for (; c; c = c->next)
+	    if (c->ts.type == BT_CLASS
+		&& CLASS_DATA (c)
+		&& CLASS_DATA (c)->attr.allocatable)
+	      {
+		gfc_error ("Result variable %qs of pure function at %L has "
+			   "polymorphic allocatable component %qs",
+			   sym->result->name, &sym->result->declared_at,
+			   c->name);
+		return false;
+	      }
+	}
+    }
+
   if (sym->attr.is_bind_c && sym->attr.is_c_interop != 1)
     {
       gfc_formal_arglist *curr_arg;
