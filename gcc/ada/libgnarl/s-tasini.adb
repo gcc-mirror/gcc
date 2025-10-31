@@ -529,6 +529,7 @@ package body System.Tasking.Initialization is
                | Interrupt_Server_Blocked_Interrupt_Sleep
                | Interrupt_Server_Idle_Sleep
                | Timer_Server_Sleep
+               | Suspension_Object_Sleep
             =>
                Wakeup (T, T.Common.State);
 

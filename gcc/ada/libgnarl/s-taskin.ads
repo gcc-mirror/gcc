@@ -205,8 +205,11 @@ package System.Tasking is
       Activating,
       --  Task has been created and is being made Runnable
 
-      Acceptor_Delay_Sleep
+      Acceptor_Delay_Sleep,
       --  Task is waiting on an selective wait statement
+
+      Suspension_Object_Sleep
+      --  Task is blocked in a call to Suspend_Until_True
      );
 
    type Call_Modes is

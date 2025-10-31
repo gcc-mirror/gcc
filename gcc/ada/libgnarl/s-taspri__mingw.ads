@@ -41,9 +41,6 @@ package System.Task_Primitives is
    type Lock is limited private;
    --  Should be used for implementation of protected objects
 
-   type Suspension_Object is limited private;
-   --  Should be used for the implementation of Ada.Synchronous_Task_Control
-
    type Task_Body_Access is access procedure;
    --  Pointer to the task body's entry point (or possibly a wrapper
    --  declared local to the GNARL).
@@ -85,25 +82,6 @@ private
 
       CV : aliased Win32.HANDLE;
       --  Condition variable used to queue threads until condition is signaled
-   end record;
-
-   type Private_Data is limited record
-      Thread : aliased System.OS_Interface.Thread_Id;
-      pragma Atomic (Thread);
-      --  Thread field may be updated by two different threads of control.
-      --  (See, Enter_Task and Create_Task in s-taprop.adb).
-      --  They put the same value (thr_self value). We do not want to
-      --  use lock on those operations and the only thing we have to
-      --  make sure is that they are updated in atomic fashion.
-
-      Thread_Id : aliased Win32.DWORD;
-      --  Used to provide a better tasking support in gdb
-
-      CV : aliased Condition_Variable;
-      --  Condition Variable used to implement Sleep/Wakeup
-
-      L : aliased System.OS_Locks.RTS_Lock;
-      --  Protection for all components is lock L
    end record;
 
 end System.Task_Primitives;

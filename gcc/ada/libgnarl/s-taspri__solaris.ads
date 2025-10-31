@@ -50,9 +50,6 @@ package System.Task_Primitives is
    function To_RTS_Lock_Ptr is
      new Ada.Unchecked_Conversion (Lock_Ptr, OS_Locks.RTS_Lock_Ptr);
 
-   type Suspension_Object is limited private;
-   --  Should be used for the implementation of Ada.Synchronous_Task_Control
-
    type Task_Body_Access is access procedure;
    --  Pointer to the task body's entry point (or possibly a wrapper
    --  declared local to the GNARL).
@@ -72,23 +69,6 @@ package System.Task_Primitives is
 private
 
    type Lock is new OS_Locks.RTS_Lock;
-
-   type Suspension_Object is record
-      State : Boolean;
-      pragma Atomic (State);
-      --  Boolean that indicates whether the object is open. This field is
-      --  marked Atomic to ensure that we can read its value without locking
-      --  the access to the Suspension_Object.
-
-      Waiting : Boolean;
-      --  Flag showing if there is a task already suspended on this object
-
-      L : aliased System.OS_Interface.mutex_t;
-      --  Protection for ensuring mutual exclusion on the Suspension_Object
-
-      CV : aliased System.OS_Interface.cond_t;
-      --  Condition variable used to queue threads until condition is signaled
-   end record;
 
    --  Note that task support on gdb relies on the fact that the first two
    --  fields of Private_Data are Thread and LWP.

@@ -44,9 +44,6 @@ package System.Task_Primitives is
    type Lock is limited private;
    --  Should be used for implementation of protected objects
 
-   type Suspension_Object is limited private;
-   --  Should be used for the implementation of Ada.Synchronous_Task_Control
-
    type Task_Body_Access is access procedure;
    --  Pointer to the task body's entry point (or possibly a wrapper declared
    --  local to the GNARL).
@@ -68,23 +65,6 @@ private
    type Lock is record
       RW : aliased System.OS_Interface.pthread_rwlock_t;
       WO : aliased System.OS_Locks.RTS_Lock;
-   end record;
-
-   type Suspension_Object is record
-      State : Boolean;
-      pragma Atomic (State);
-      --  Boolean that indicates whether the object is open. This field is
-      --  marked Atomic to ensure that we can read its value without locking
-      --  the access to the Suspension_Object.
-
-      Waiting : Boolean;
-      --  Flag showing if there is a task already suspended on this object
-
-      L : aliased System.OS_Locks.RTS_Lock;
-      --  Protection for ensuring mutual exclusion on the Suspension_Object
-
-      CV : aliased System.OS_Interface.pthread_cond_t;
-      --  Condition variable used to queue threads until condition is signaled
    end record;
 
    type Private_Data is limited record

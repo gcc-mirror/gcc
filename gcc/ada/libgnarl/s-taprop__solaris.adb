@@ -48,16 +48,9 @@ pragma Warnings (Off);
 with System.OS_Lib;
 pragma Warnings (On);
 
-with System.Soft_Links;
---  We use System.Soft_Links instead of System.Tasking.Initialization
---  because the later is a higher level package that we shouldn't depend on.
---  For example when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
 package body System.Task_Primitives.Operations is
 
    package OSC renames System.OS_Constants;
-   package SSL renames System.Soft_Links;
 
    use Interfaces.C;
 
@@ -1580,184 +1573,6 @@ package body System.Task_Primitives.Operations is
    end Check_Finalize_Lock;
 
    ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize (S : in out Suspension_Object) is
-      Result : Interfaces.C.int;
-
-   begin
-      --  Initialize internal state (always to zero (RM D.10(6)))
-
-      S.State := False;
-      S.Waiting := False;
-
-      --  Initialize internal mutex
-
-      Result := mutex_init (S.L'Access, USYNC_THREAD, System.Null_Address);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      if Result = ENOMEM then
-         raise Storage_Error with "Failed to allocate a lock";
-      end if;
-
-      --  Initialize internal condition variable
-
-      Result := cond_init (S.CV'Access, USYNC_THREAD, 0);
-      pragma Assert (Result = 0 or else Result = ENOMEM);
-
-      if Result /= 0 then
-         Result := mutex_destroy (S.L'Access);
-         pragma Assert (Result = 0);
-
-         if Result = ENOMEM then
-            raise Storage_Error;
-         end if;
-      end if;
-   end Initialize;
-
-   --------------
-   -- Finalize --
-   --------------
-
-   procedure Finalize (S : in out Suspension_Object) is
-      Result  : Interfaces.C.int;
-
-   begin
-      --  Destroy internal mutex
-
-      Result := mutex_destroy (S.L'Access);
-      pragma Assert (Result = 0);
-
-      --  Destroy internal condition variable
-
-      Result := cond_destroy (S.CV'Access);
-      pragma Assert (Result = 0);
-   end Finalize;
-
-   -------------------
-   -- Current_State --
-   -------------------
-
-   function Current_State (S : Suspension_Object) return Boolean is
-   begin
-      --  We do not want to use lock on this read operation. State is marked
-      --  as Atomic so that we ensure that the value retrieved is correct.
-
-      return S.State;
-   end Current_State;
-
-   ---------------
-   -- Set_False --
-   ---------------
-
-   procedure Set_False (S : in out Suspension_Object) is
-      Result  : Interfaces.C.int;
-
-   begin
-      SSL.Abort_Defer.all;
-
-      Result := mutex_lock (S.L'Access);
-      pragma Assert (Result = 0);
-
-      S.State := False;
-
-      Result := mutex_unlock (S.L'Access);
-      pragma Assert (Result = 0);
-
-      SSL.Abort_Undefer.all;
-   end Set_False;
-
-   --------------
-   -- Set_True --
-   --------------
-
-   procedure Set_True (S : in out Suspension_Object) is
-      Result : Interfaces.C.int;
-
-   begin
-      SSL.Abort_Defer.all;
-
-      Result := mutex_lock (S.L'Access);
-      pragma Assert (Result = 0);
-
-      --  If there is already a task waiting on this suspension object then
-      --  we resume it, leaving the state of the suspension object to False,
-      --  as it is specified in ARM D.10 par. 9. Otherwise, it just leaves
-      --  the state to True.
-
-      if S.Waiting then
-         S.Waiting := False;
-         S.State := False;
-
-         Result := cond_signal (S.CV'Access);
-         pragma Assert (Result = 0);
-
-      else
-         S.State := True;
-      end if;
-
-      Result := mutex_unlock (S.L'Access);
-      pragma Assert (Result = 0);
-
-      SSL.Abort_Undefer.all;
-   end Set_True;
-
-   ------------------------
-   -- Suspend_Until_True --
-   ------------------------
-
-   procedure Suspend_Until_True (S : in out Suspension_Object) is
-      Result : Interfaces.C.int;
-
-   begin
-      SSL.Abort_Defer.all;
-
-      Result := mutex_lock (S.L'Access);
-      pragma Assert (Result = 0);
-
-      if S.Waiting then
-
-         --  Program_Error must be raised upon calling Suspend_Until_True
-         --  if another task is already waiting on that suspension object
-         --  (RM D.10(10)).
-
-         Result := mutex_unlock (S.L'Access);
-         pragma Assert (Result = 0);
-
-         SSL.Abort_Undefer.all;
-
-         raise Program_Error;
-
-      else
-         --  Suspend the task if the state is False. Otherwise, the task
-         --  continues its execution, and the state of the suspension object
-         --  is set to False (ARM D.10 par. 9).
-
-         if S.State then
-            S.State := False;
-         else
-            S.Waiting := True;
-
-            loop
-               --  Loop in case pthread_cond_wait returns earlier than expected
-               --  (e.g. in case of EINTR caused by a signal).
-
-               Result := cond_wait (S.CV'Access, S.L'Access);
-               pragma Assert (Result = 0 or else Result = EINTR);
-
-               exit when not S.Waiting;
-            end loop;
-         end if;
-
-         Result := mutex_unlock (S.L'Access);
-         pragma Assert (Result = 0);
-
-         SSL.Abort_Undefer.all;
-      end if;
-   end Suspend_Until_True;
-
-   ----------------
    -- Check_Exit --
    ----------------
 
@@ -1997,4 +1812,12 @@ package body System.Task_Primitives.Operations is
       end if;
    end Set_Task_Affinity;
 
+   ---------------------
+   -- Is_Task_Context --
+   ---------------------
+
+   function Is_Task_Context return Boolean is
+   begin
+      return True;
+   end Is_Task_Context;
 end System.Task_Primitives.Operations;

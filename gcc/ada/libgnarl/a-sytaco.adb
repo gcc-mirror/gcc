@@ -31,12 +31,15 @@
 
 with Ada.Exceptions;
 
-with System.Tasking;
-with System.Task_Primitives.Operations;
+with System.Soft_Links;
+with System.Task_Primitives.Operations; use System.Task_Primitives.Operations;
 
 package body Ada.Synchronous_Task_Control with
   SPARK_Mode => Off
 is
+   use type System.Tasking.Task_Id;
+
+   package SSL renames System.Soft_Links;
 
    ----------------
    -- Initialize --
@@ -44,7 +47,9 @@ is
 
    procedure Initialize (S : in out Suspension_Object) is
    begin
-      System.Task_Primitives.Operations.Initialize (S.SO);
+      Initialize_Lock (S.L'Access, PO_Level);
+
+      S.State := False;
    end Initialize;
 
    --------------
@@ -53,7 +58,7 @@ is
 
    procedure Finalize (S : in out Suspension_Object) is
    begin
-      System.Task_Primitives.Operations.Finalize (S.SO);
+      Finalize_Lock (S.L'Access);
    end Finalize;
 
    -------------------
@@ -62,7 +67,7 @@ is
 
    function Current_State (S : Suspension_Object) return Boolean is
    begin
-      return System.Task_Primitives.Operations.Current_State (S.SO);
+      return S.State;
    end Current_State;
 
    ---------------
@@ -71,7 +76,13 @@ is
 
    procedure Set_False (S : in out Suspension_Object) is
    begin
-      System.Task_Primitives.Operations.Set_False (S.SO);
+      SSL.Abort_Defer.all;
+      Write_Lock (S.L'Access);
+
+      S.State := False;
+
+      Unlock (S.L'Access);
+      SSL.Abort_Undefer.all;
    end Set_False;
 
    --------------
@@ -79,8 +90,36 @@ is
    --------------
 
    procedure Set_True (S : in out Suspension_Object) is
+      Suspended_Task : System.Tasking.Task_Id := null;
    begin
-      System.Task_Primitives.Operations.Set_True (S.SO);
+      if Is_Task_Context then
+         SSL.Abort_Defer.all;
+      end if;
+
+      Write_Lock (S.L'Access);
+
+      if S.Suspended_Task /= null then
+         --  We copy the suspended task's ID to a local object. We'll wake the
+         --  task up right after we unlock the suspension object.
+         Suspended_Task := S.Suspended_Task;
+         S.Suspended_Task := null;
+      else
+         S.State := True;
+      end if;
+
+      Unlock (S.L'Access);
+
+      if Suspended_Task /= null then
+         Write_Lock (Suspended_Task);
+
+         Wakeup (Suspended_Task, System.Tasking.Runnable);
+
+         Unlock (Suspended_Task);
+      end if;
+
+      if Is_Task_Context then
+         SSL.Abort_Undefer.all;
+      end if;
    end Set_True;
 
    ------------------------
@@ -88,6 +127,7 @@ is
    ------------------------
 
    procedure Suspend_Until_True (S : in out Suspension_Object) is
+      Self_ID : constant System.Tasking.Task_Id := Self;
    begin
       --  This is a potentially blocking (see ARM D.10, par. 10), so that
       --  if pragma Detect_Blocking is active then Program_Error must be
@@ -100,7 +140,72 @@ is
            (Program_Error'Identity, "potentially blocking operation");
       end if;
 
-      System.Task_Primitives.Operations.Suspend_Until_True (S.SO);
+      SSL.Abort_Defer.all;
+      Write_Lock (S.L'Access);
+
+      if S.Suspended_Task /= null then
+         Unlock (S.L'Access);
+         SSL.Abort_Undefer.all;
+
+         raise Program_Error;
+      else
+         if S.State then
+            S.State := False;
+
+            Unlock (S.L'Access);
+         else
+            Write_Lock (Self_ID);
+
+            --  We treat starting to block in Suspend_Until_True as an abort
+            --  completion point, even if the language does not require it.
+            if Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level then
+               Unlock (Self_ID);
+               Unlock (S.L'Access);
+               SSL.Abort_Undefer.all;
+               return;
+            end if;
+
+            S.Suspended_Task := Self_ID;
+
+            Unlock (S.L'Access);
+
+            Self_ID.Common.State := System.Tasking.Suspension_Object_Sleep;
+
+            --  We sleep until at least one of the following propositions
+            --  becomes true:
+            --
+            --  1. We have been unsuspended by some other task calling
+            --  Set_True.
+            --  2. We have received an abort.
+            loop
+               Sleep (Self_ID, System.Tasking.Suspension_Object_Sleep);
+
+               Write_Lock (S.L'Access);
+
+               --  If S.Suspended_Task /= Self_ID, we've been unsuspended by a
+               --  call to Set_True. S.Suspended_Task is not necessarily null
+               --  because some other task might have started waiting on the
+               --  suspension object.
+               if S.Suspended_Task /= Self_ID then
+                  exit;
+
+               --  Otherwise if we have received an abort, we must free the
+               --  waiting slot on the suspension object.
+               elsif Self_ID.Pending_ATC_Level < Self_ID.ATC_Nesting_Level then
+                  S.Suspended_Task := null;
+                  exit;
+               end if;
+
+               Unlock (S.L'Access);
+            end loop;
+
+            Self_ID.Common.State := System.Tasking.Runnable;
+            Unlock (S.L'Access);
+            Unlock (Self_ID);
+         end if;
+         SSL.Abort_Undefer.all;
+      end if;
+
    end Suspend_Until_True;
 
 end Ada.Synchronous_Task_Control;

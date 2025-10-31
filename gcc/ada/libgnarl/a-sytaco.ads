@@ -33,7 +33,8 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with System.Task_Primitives;
+with System.OS_Locks;
+with System.Tasking;
 
 with Ada.Task_Identification;
 
@@ -75,10 +76,9 @@ private
    --  Finalization for Suspension_Object
 
    type Suspension_Object is limited record
-      SO : System.Task_Primitives.Suspension_Object;
-      --  Use low-level suspension objects so that the synchronization
-      --  functionality provided by this object can be achieved using
-      --  efficient operating system primitives.
+      L              : aliased System.OS_Locks.RTS_Lock;
+      State          : Boolean with Atomic;
+      Suspended_Task : System.Tasking.Task_Id;
    end record
    with
      Finalizable =>

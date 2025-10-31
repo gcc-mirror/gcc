@@ -45,16 +45,7 @@ with System.Task_Info;
 with System.Tasking.Debug;
 with System.Win32.Ext;
 
-with System.Soft_Links;
---  We use System.Soft_Links instead of System.Tasking.Initialization because
---  the later is a higher level package that we shouldn't depend on. For
---  example when using the restricted run time, it is replaced by
---  System.Tasking.Restricted.Stages.
-
 package body System.Task_Primitives.Operations is
-
-   package SSL renames System.Soft_Links;
-
    use Interfaces.C;
    use Interfaces.C.Strings;
 
@@ -1042,163 +1033,6 @@ package body System.Task_Primitives.Operations is
    end RT_Resolution;
 
    ----------------
-   -- Initialize --
-   ----------------
-
-   procedure Initialize (S : in out Suspension_Object) is
-   begin
-      --  Initialize internal state. It is always initialized to False (ARM
-      --  D.10 par. 6).
-
-      S.State := False;
-      S.Waiting := False;
-
-      --  Initialize internal mutex
-
-      InitializeCriticalSection (S.L'Access);
-
-      --  Initialize internal condition variable
-
-      S.CV := CreateEvent (null, Win32.TRUE, Win32.FALSE, Null_Ptr);
-      pragma Assert (S.CV /= 0);
-   end Initialize;
-
-   --------------
-   -- Finalize --
-   --------------
-
-   procedure Finalize (S : in out Suspension_Object) is
-      Result : BOOL;
-
-   begin
-      --  Destroy internal mutex
-
-      DeleteCriticalSection (S.L'Access);
-
-      --  Destroy internal condition variable
-
-      Result := CloseHandle (S.CV);
-      pragma Assert (Result = Win32.TRUE);
-   end Finalize;
-
-   -------------------
-   -- Current_State --
-   -------------------
-
-   function Current_State (S : Suspension_Object) return Boolean is
-   begin
-      --  We do not want to use lock on this read operation. State is marked
-      --  as Atomic so that we ensure that the value retrieved is correct.
-
-      return S.State;
-   end Current_State;
-
-   ---------------
-   -- Set_False --
-   ---------------
-
-   procedure Set_False (S : in out Suspension_Object) is
-   begin
-      SSL.Abort_Defer.all;
-
-      EnterCriticalSection (S.L'Access);
-
-      S.State := False;
-
-      LeaveCriticalSection (S.L'Access);
-
-      SSL.Abort_Undefer.all;
-   end Set_False;
-
-   --------------
-   -- Set_True --
-   --------------
-
-   procedure Set_True (S : in out Suspension_Object) is
-      Result : BOOL;
-
-   begin
-      SSL.Abort_Defer.all;
-
-      EnterCriticalSection (S.L'Access);
-
-      --  If there is already a task waiting on this suspension object then
-      --  we resume it, leaving the state of the suspension object to False,
-      --  as it is specified in ARM D.10 par. 9. Otherwise, it just leaves
-      --  the state to True.
-
-      if S.Waiting then
-         S.Waiting := False;
-         S.State := False;
-
-         Result := SetEvent (S.CV);
-         pragma Assert (Result = Win32.TRUE);
-
-      else
-         S.State := True;
-      end if;
-
-      LeaveCriticalSection (S.L'Access);
-
-      SSL.Abort_Undefer.all;
-   end Set_True;
-
-   ------------------------
-   -- Suspend_Until_True --
-   ------------------------
-
-   procedure Suspend_Until_True (S : in out Suspension_Object) is
-      Result      : DWORD;
-      Result_Bool : BOOL;
-
-   begin
-      SSL.Abort_Defer.all;
-
-      EnterCriticalSection (S.L'Access);
-
-      if S.Waiting then
-
-         --  Program_Error must be raised upon calling Suspend_Until_True
-         --  if another task is already waiting on that suspension object
-         --  (ARM D.10 par. 10).
-
-         LeaveCriticalSection (S.L'Access);
-
-         SSL.Abort_Undefer.all;
-
-         raise Program_Error;
-
-      else
-         --  Suspend the task if the state is False. Otherwise, the task
-         --  continues its execution, and the state of the suspension object
-         --  is set to False (ARM D.10 par. 9).
-
-         if S.State then
-            S.State := False;
-
-            LeaveCriticalSection (S.L'Access);
-
-            SSL.Abort_Undefer.all;
-
-         else
-            S.Waiting := True;
-
-            --  Must reset CV BEFORE L is unlocked
-
-            Result_Bool := ResetEvent (S.CV);
-            pragma Assert (Result_Bool = Win32.TRUE);
-
-            LeaveCriticalSection (S.L'Access);
-
-            SSL.Abort_Undefer.all;
-
-            Result := WaitForSingleObject (S.CV, Wait_Infinite);
-            pragma Assert (Result = 0);
-         end if;
-      end if;
-   end Suspend_Until_True;
-
-   ----------------
    -- Check_Exit --
    ----------------
 
@@ -1358,4 +1192,12 @@ package body System.Task_Primitives.Operations is
       end if;
    end Set_Task_Affinity;
 
+   ---------------------
+   -- Is_Task_Context --
+   ---------------------
+
+   function Is_Task_Context return Boolean is
+   begin
+      return True;
+   end Is_Task_Context;
 end System.Task_Primitives.Operations;

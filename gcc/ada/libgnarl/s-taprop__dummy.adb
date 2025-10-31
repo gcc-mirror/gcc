@@ -110,15 +110,6 @@ package body System.Task_Primitives.Operations is
       return False;
    end Continue_Task;
 
-   -------------------
-   -- Current_State --
-   -------------------
-
-   function Current_State (S : Suspension_Object) return Boolean is
-   begin
-      return False;
-   end Current_State;
-
    ----------------------
    -- Environment_Task --
    ----------------------
@@ -160,15 +151,6 @@ package body System.Task_Primitives.Operations is
    begin
       null;
    end Exit_Task;
-
-   --------------
-   -- Finalize --
-   --------------
-
-   procedure Finalize (S : in out Suspension_Object) is
-   begin
-      null;
-   end Finalize;
 
    -------------------
    -- Finalize_Lock --
@@ -219,11 +201,6 @@ package body System.Task_Primitives.Operations is
       No_Tasking : Boolean;
    begin
       raise Program_Error with "tasking not implemented on this configuration";
-   end Initialize;
-
-   procedure Initialize (S : in out Suspension_Object) is
-   begin
-      null;
    end Initialize;
 
    ---------------------
@@ -345,15 +322,6 @@ package body System.Task_Primitives.Operations is
       null;
    end Set_Ceiling;
 
-   ---------------
-   -- Set_False --
-   ---------------
-
-   procedure Set_False (S : in out Suspension_Object) is
-   begin
-      null;
-   end Set_False;
-
    ------------------
    -- Set_Priority --
    ------------------
@@ -375,15 +343,6 @@ package body System.Task_Primitives.Operations is
    begin
       null;
    end Set_Task_Affinity;
-
-   --------------
-   -- Set_True --
-   --------------
-
-   procedure Set_True (S : in out Suspension_Object) is
-   begin
-      null;
-   end Set_True;
 
    -----------
    -- Sleep --
@@ -433,15 +392,6 @@ package body System.Task_Primitives.Operations is
    begin
       return False;
    end Stop_Task;
-
-   ------------------------
-   -- Suspend_Until_True --
-   ------------------------
-
-   procedure Suspend_Until_True (S : in out Suspension_Object) is
-   begin
-      null;
-   end Suspend_Until_True;
 
    -----------------
    -- Timed_Delay --
@@ -540,4 +490,12 @@ package body System.Task_Primitives.Operations is
       null;
    end Yield;
 
+   ---------------------
+   -- Is_Task_Context --
+   ---------------------
+
+   function Is_Task_Context return Boolean is
+   begin
+      return True;
+   end Is_Task_Context;
 end System.Task_Primitives.Operations;

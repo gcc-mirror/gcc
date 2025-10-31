@@ -38,8 +38,6 @@ package System.Task_Primitives is
 
    type Lock is new Integer;
 
-   type Suspension_Object is new Integer;
-
    type Task_Body_Access is access procedure;
 
    type Private_Data is limited record
