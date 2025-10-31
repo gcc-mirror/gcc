@@ -917,7 +917,7 @@ extern tree c_omp_finish_mapper_clauses (tree);
 extern tree c_omp_mapper_lookup (tree, tree);
 extern tree c_omp_extract_mapper_directive (tree);
 extern tree c_omp_map_array_section (location_t, tree);
-extern tree c_build_va_arg (location_t, tree, location_t, tree);
+extern tree c_build_va_arg (location_t, tree, location_t, tree, tree);
 extern tree c_finish_transaction (location_t, tree, int);
 extern bool c_tree_equal (tree, tree);
 extern tree c_build_function_call_vec (location_t, const vec<location_t>&,

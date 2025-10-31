@@ -18435,7 +18435,8 @@ c_build_qualified_type (tree type, int type_quals, tree orig_qual_type,
 /* Build a VA_ARG_EXPR for the C parser.  */
 
 tree
-c_build_va_arg (location_t loc1, tree expr, location_t loc2, tree type)
+c_build_va_arg (location_t loc1, tree expr, location_t loc2, tree type,
+		tree type_expr)
 {
   if (error_operand_p (type))
     return error_mark_node;
@@ -18459,10 +18460,36 @@ c_build_va_arg (location_t loc1, tree expr, location_t loc2, tree type)
 		type);
       return error_mark_node;
     }
+  else if (TREE_CODE (type) == ARRAY_TYPE && C_TYPE_VARIABLE_SIZE (type)
+	   && !flag_isoc99)
+    {
+      error_at (loc2, "second argument to %<va_arg%> is an array type %qT",
+		type);
+      return error_mark_node;
+    }
   else if (warn_cxx_compat && TREE_CODE (type) == ENUMERAL_TYPE)
     warning_at (loc2, OPT_Wc___compat,
 		"C++ requires promoted type, not enum type, in %<va_arg%>");
-  return build_va_arg (loc2, expr, type);
+
+  if (flag_isoc99 && TREE_CODE (type) == ARRAY_TYPE)
+    {
+      warning_at (loc2, 0, "second argument to %<va_arg%> is an array type %qT",
+		  type);
+      /* We create a trap but evaluate side effects first.  */
+      tree trapfn = builtin_decl_explicit (BUILT_IN_TRAP);
+      trapfn = build_call_expr_loc (loc2, trapfn, 0);
+      tree e2 = build2 (COMPOUND_EXPR, void_type_node, expr, trapfn);
+      /* Return a compound literal of the right type.  */
+      tree e1 = build_compound_literal (loc2, type, NULL, true, 0, NULL);
+      expr = build2 (COMPOUND_EXPR, type, e2, e1);
+    }
+  else
+    expr = build_va_arg (loc2, expr, type);
+
+  if (type_expr)
+    expr = build2 (COMPOUND_EXPR, TREE_TYPE (expr), type_expr, expr);
+
+  return expr;
 }
 
 /* Return truthvalue of whether T1 is the same tree structure as T2.

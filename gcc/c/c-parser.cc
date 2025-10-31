@@ -11793,15 +11793,9 @@ c_parser_postfix_expression (c_parser *parser)
 	    else
 	      {
 		tree type_expr = NULL_TREE;
+		tree type = groktypename (t1, &type_expr, NULL);
 		expr.value = c_build_va_arg (start_loc, e1.value, loc,
-					     groktypename (t1, &type_expr, NULL));
-		if (type_expr)
-		  {
-		    expr.value = build2 (C_MAYBE_CONST_EXPR,
-					 TREE_TYPE (expr.value), type_expr,
-					 expr.value);
-		    C_MAYBE_CONST_EXPR_NON_CONST (expr.value) = true;
-		  }
+					     type, type_expr);
 		set_c_expr_source_range (&expr, start_loc, end_loc);
 	      }
 	  }
