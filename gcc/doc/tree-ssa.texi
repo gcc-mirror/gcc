@@ -355,7 +355,7 @@ FOR_EACH_PHI_OR_STMT_DEF (def_operand_p, phi, iter, flags)
 
 Immediate use information is now always available.  Using the immediate use
 iterators, you may examine every use of any @code{SSA_NAME}. For instance,
-to change each use of @code{ssa_var} to @code{ssa_var2} and call fold_stmt on
+to change each use of @code{ssa_var} to @code{val} and call fold_stmt on
 each stmt after that is done:
 
 @smallexample
@@ -367,8 +367,9 @@ each stmt after that is done:
   FOR_EACH_IMM_USE_STMT (stmt, iterator, ssa_var)
     @{
       FOR_EACH_IMM_USE_ON_STMT (imm_use_p, iterator)
-        SET_USE (imm_use_p, ssa_var_2);
+        SET_USE (imm_use_p, val);
       fold_stmt (stmt);
+      update_stmt (stmt);
     @}
 @end smallexample
 
@@ -389,9 +390,7 @@ terminated early; a destructor takes care of that when leaving the
 @code{FOR_EACH_IMM_USE_STMT} scope.
 
 There are checks in @code{verify_ssa} which verify that the immediate use list
-is up to date, as well as checking that an optimization didn't break from the
-loop without using this macro.  It is safe to simply 'break'; from a
-@code{FOR_EACH_IMM_USE_FAST} traverse.
+is up to date.
 
 Some useful functions and macros:
 @enumerate
@@ -412,7 +411,9 @@ isn't located in a @code{PHI} node.
 @end enumerate
 
 Note that uses are not put into an immediate use list until their statement is
-actually inserted into the instruction stream via a @code{bsi_*} routine.
+actually inserted into the instruction stream via a @code{gsi_*} routine
+which calls @code{update_stmt} to re-scan SSA operands and update the
+immediate use lists.
 
 It is also still possible to utilize lazy updating of statements, but this
 should be used only when absolutely required.  Both alias analysis and the

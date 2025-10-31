@@ -36,25 +36,17 @@ along with GCC; see the file COPYING3.  If not see
    base for a circular list, and initially this is the only node in
    the list.
 
-   Fast iteration allows each use to be examined, but does not allow
-   any modifications to the uses or stmts.
+   Fast iteration via FOR_EACH_IMM_USE_FAST allows each use to be
+   examined, but does not allow any modifications to the uses or stmts.
 
-   Normal iteration allows insertion, deletion, and modification. the
-   iterator manages this by inserting a marker node into the list
-   immediately before the node currently being examined in the list.
-   this marker node is uniquely identified by having null stmt *and* a
-   null use pointer.
+   Safe iteration via FOR_EACH_IMM_USE_STMT and FOR_EACH_IMM_USE_ON_STMT
+   allows insertion, deletion, and modification of SSA operands within
+   the current stmt iterated.  The iterator manages this by re-sorting
+   the immediate uses to batch uses on a single stmt after each other
+   and inserts a marker node into the list immediately after the node
+   ending the current batch.  This marker node is uniquely identified by
+   having null stmt *and* a null use pointer.  */
 
-   When iterating to the next use, the iteration routines check to see
-   if the node after the marker has changed. if it has, then the node
-   following the marker is now the next one to be visited. if not, the
-   marker node is moved past that node in the list (visualize it as
-   bumping the marker node through the list).  this continues until
-   the marker node is moved to the original anchor position. the
-   marker node is then removed from the list.
-
-   If iteration is halted early, the marker node must be removed from
-   the list before continuing.  */
 struct imm_use_iterator
 {
   /* This is the current use the iterator is processing.  */
