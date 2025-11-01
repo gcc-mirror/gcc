@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -fdump-tree-optimized" } */
+/* { dg-options "-O2 -fdump-tree-forwprop3" } */
 
 typedef int v4si __attribute__((vector_size(16)));
 typedef short v8hi __attribute__((vector_size(16)));
@@ -20,4 +20,4 @@ int128 concat (int128 a, int128 b) {
   return res;
 }
 
-/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "optimized" } } */
+/* { dg-final { scan-tree-dump-times "VEC_PERM_EXPR" 1 "forwprop3" } } */
