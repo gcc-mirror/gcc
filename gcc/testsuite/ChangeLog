@@ -1,3 +1,53 @@
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-09-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121870
+	* g++.dg/torture/pr121870.C: New testcase.
+
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-10-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/121256
+	* gcc.dg/vect/vect-recurr-pr121256.c: New testcase.
+	* gcc.dg/vect/vect-recurr-pr121256-2.c: Likewise.
+
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-10-14  Richard Biener  <rguenther@suse.de>
+		    Richard Sandiford   <richard.sandiford@arm.com>
+
+	PR tree-optimization/121059
+	* gcc.dg/vect/pr121059.c: New testcase.
+
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120944
+	* gcc.dg/torture/pr120944.c: New testcase.
+
+2025-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-07-07  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/120817
+	* gcc.dg/vect/pr120817.c: Add SVE HW check.
+
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-07-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120817
+	* gcc.dg/vect/pr120817.c: New testcase.
+
 2025-10-20  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/renaming18.adb: New test.
