@@ -6690,6 +6690,7 @@ trees_out::core_vals (tree t)
       WT (((lang_tree_node *)t)->baselink.binfo);
       WT (((lang_tree_node *)t)->baselink.functions);
       WT (((lang_tree_node *)t)->baselink.access_binfo);
+      WT (((lang_tree_node *)t)->baselink.common.chain);
       break;
 
     case CONSTRAINT_INFO:
@@ -7259,6 +7260,7 @@ trees_in::core_vals (tree t)
       RT (((lang_tree_node *)t)->baselink.binfo);
       RTU (((lang_tree_node *)t)->baselink.functions);
       RT (((lang_tree_node *)t)->baselink.access_binfo);
+      RT (((lang_tree_node *)t)->baselink.common.chain);
       break;
 
     case CONSTRAINT_INFO:
