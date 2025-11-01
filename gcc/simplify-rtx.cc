@@ -3673,6 +3673,63 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 	  && GET_MODE_CLASS (mode) != MODE_CC)
 	return CONSTM1_RTX (mode);
 
+      /* IOR of two single bit bitfields extracted from the same object.
+	 Bitfields are represented as an AND based extraction */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == AND
+	  /* Verify both AND operands are logical right shifts. */
+	  && GET_CODE (XEXP (op0, 0)) == LSHIFTRT
+	  && GET_CODE (XEXP (op1, 0)) == LSHIFTRT
+	  /* Verify both bitfields are extracted from the same object. */
+	  && XEXP (XEXP (op0, 0), 0) == XEXP (XEXP (op1, 0), 0)
+	  /* Verify both fields are a single bit (could be generalized). */
+	  && XEXP (op0, 1) == CONST1_RTX (mode)
+	  && XEXP (op1, 1) == CONST1_RTX (mode)
+	  /* Verify bit positions (for cases with variable bit position). */
+	  && CONST_INT_P (XEXP (op0, 1))
+	  && CONST_INT_P (XEXP (op1, 1)))
+	{
+	  unsigned HOST_WIDE_INT bitpos1 = INTVAL (XEXP (XEXP (op0, 0), 1));
+	  unsigned HOST_WIDE_INT bitpos2 = INTVAL (XEXP (XEXP (op1, 0), 1));
+	  unsigned HOST_WIDE_INT mask
+	    = (HOST_WIDE_INT_1U << bitpos1) | (HOST_WIDE_INT_1U << bitpos2);
+
+	  rtx m = GEN_INT (mask);
+	  rtx t = gen_rtx_AND (mode, XEXP (XEXP (op0, 0), 0), m);
+	  t = gen_rtx_NE (mode, t, CONST0_RTX (mode));
+	  return t;
+	}
+
+      /* IOR of multiple single bit bitfields extracted from the same object
+	 (building on previous case).
+	 First bitfield is represented as an AND based extraction, as done
+		above. Second represented as NE based extraction, from
+		output above. */
+      if (GET_CODE (op0) == AND
+	  && GET_CODE (op1) == NE
+	  /* Verify AND operand is logical right shift. */
+	  && GET_CODE (XEXP (op0, 0)) == LSHIFTRT
+	  /* Verify NE operand is an AND (based on output above). */
+	  && GET_CODE (XEXP (op1, 0)) == AND
+	  /* Verify both bitfields are extracted from the same object. */
+	  && XEXP (XEXP (op0, 0), 0) == XEXP (XEXP (op1, 0), 0)
+	  /* Verify masking is with a single bit and that we have a NE 0
+	     comparison for the other operand.  */
+	  && XEXP (op0, 1) == CONST1_RTX (mode)
+	  && XEXP (op1, 1) == CONST0_RTX (mode)
+	  /* Verify bit position. */
+	  && CONST_INT_P (XEXP (op0, 1)))
+	{
+	  unsigned HOST_WIDE_INT bitpos1 = INTVAL (XEXP (XEXP (op0, 0), 1));
+	  unsigned HOST_WIDE_INT mask
+	    = (HOST_WIDE_INT_1U << bitpos1) | INTVAL (XEXP (XEXP (op1, 0), 1));
+
+	  rtx m = GEN_INT (mask);
+	  rtx t = gen_rtx_AND (mode, XEXP (XEXP (op0, 0), 0), m);
+	  t = gen_rtx_NE (mode, t, CONST0_RTX (mode));
+	  return t;
+	}
+
       /* Convert (ior (plus (A - 1)) (neg A)) to -1.  */
       if (match_plus_neg_pattern (op0, op1, mode))
 	return CONSTM1_RTX (mode);
