@@ -3807,13 +3807,16 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
   bool maybe_blend[2] = { true, true };
   tree one_constant = NULL_TREE;
   tree one_nonconstant = NULL_TREE;
+  tree subelt;
   auto_vec<tree> constants;
   constants.safe_grow_cleared (nelts, true);
   auto_vec<std::pair<unsigned, unsigned>, 64> elts;
+  unsigned int tsubelts = 0;
   FOR_EACH_VEC_SAFE_ELT (CONSTRUCTOR_ELTS (op), i, elt)
     {
       tree ref, op1;
-      unsigned int elem;
+      unsigned int elem, src_elem_size;
+      unsigned HOST_WIDE_INT nsubelts = 1;
 
       if (i >= nelts)
 	return false;
@@ -3824,10 +3827,16 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
       if (op1
 	  && TREE_CODE ((ref = TREE_OPERAND (op1, 0))) == SSA_NAME
 	  && VECTOR_TYPE_P (TREE_TYPE (ref))
-	  && useless_type_conversion_p (TREE_TYPE (op1),
+	  && (useless_type_conversion_p (TREE_TYPE (op1),
 					TREE_TYPE (TREE_TYPE (ref)))
-	  && constant_multiple_p (bit_field_offset (op1),
-				  bit_field_size (op1), &elem)
+	      || (VECTOR_TYPE_P (TREE_TYPE (op1))
+		  && useless_type_conversion_p (TREE_TYPE (TREE_TYPE (op1)),
+						TREE_TYPE (TREE_TYPE (ref)))
+		  && TYPE_VECTOR_SUBPARTS (TREE_TYPE (op1))
+			.is_constant (&nsubelts)))
+	  && constant_multiple_p (bit_field_size (op1), nsubelts,
+				  &src_elem_size)
+	  && constant_multiple_p (bit_field_offset (op1), src_elem_size, &elem)
 	  && TYPE_VECTOR_SUBPARTS (TREE_TYPE (ref)).is_constant (&refnelts))
 	{
 	  unsigned int j;
@@ -3851,7 +3860,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 		maybe_ident = false;
 	      if (elem != i)
 		maybe_blend[j] = false;
-	      elts.safe_push (std::make_pair (j, elem));
+	      for (unsigned int k = 0; k < nsubelts; ++k)
+		elts.safe_push (std::make_pair (j, elem + k));
+	      tsubelts += nsubelts;
 	      continue;
 	    }
 	  /* Else fallthru.  */
@@ -3863,27 +3874,47 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  && orig[1] != error_mark_node)
 	return false;
       orig[1] = error_mark_node;
+      if (VECTOR_TYPE_P (TREE_TYPE (elt->value))
+	  && !TYPE_VECTOR_SUBPARTS (TREE_TYPE (elt->value))
+			.is_constant (&nsubelts))
+	return false;
       if (CONSTANT_CLASS_P (elt->value))
 	{
 	  if (one_nonconstant)
 	    return false;
 	  if (!one_constant)
-	    one_constant = elt->value;
-	  constants[i] = elt->value;
+	    one_constant = TREE_CODE (elt->value) == VECTOR_CST
+			   ? VECTOR_CST_ELT (elt->value, 0)
+			   : elt->value;
+	  if (TREE_CODE (elt->value) == VECTOR_CST)
+	    {
+	      for (unsigned int k = 0; k < nsubelts; k++)
+		constants[tsubelts + k] = VECTOR_CST_ELT (elt->value, k);
+	    }
+	  else
+	    constants[tsubelts] = elt->value;
 	}
       else
 	{
 	  if (one_constant)
 	    return false;
+	  subelt = VECTOR_TYPE_P (TREE_TYPE (elt->value))
+		   ? ssa_uniform_vector_p (elt->value)
+		   : elt->value;
+	  if (!subelt)
+	    return false;
 	  if (!one_nonconstant)
-	    one_nonconstant = elt->value;
-	  else if (!operand_equal_p (one_nonconstant, elt->value, 0))
+	    one_nonconstant = subelt;
+	  else if (!operand_equal_p (one_nonconstant, subelt, 0))
 	    return false;
 	}
-      elts.safe_push (std::make_pair (1, i));
+      for (unsigned int k = 0; k < nsubelts; ++k)
+	elts.safe_push (std::make_pair (1, tsubelts + k));
+      tsubelts += nsubelts;
       maybe_ident = false;
     }
-  if (i < nelts)
+
+  if (elts.length () < nelts)
     return false;
 
   if (! orig[0]

@@ -5303,6 +5303,10 @@ extern tree vector_cst_elt (const_tree, unsigned int);
 
 extern tree uniform_vector_p (const_tree);
 
+/* Same as above, but if VEC is an SSA_NAME, inspect its definition.  */
+
+extern tree ssa_uniform_vector_p (tree);
+
 /* If the argument is INTEGER_CST, return it.  If the argument is vector
    with all elements the same INTEGER_CST, return that INTEGER_CST.  Otherwise
    return NULL_TREE.  */
