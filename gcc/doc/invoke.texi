@@ -911,7 +911,8 @@ Objective-C and Objective-C++ Dialects}.
 -mbranch-cost=@var{num}  -mcmove  -mnops=@var{num}  -msoft-cmpsf
 -msplit-lohi  -mpost-inc  -mpost-modify  -mstack-offset=@var{num}
 -mround-nearest  -mlong-calls  -mshort-calls  -msmall16
--mfp-mode=@var{mode}  -mvect-double  -max-vect-align=@var{num}
+-mfp-mode=@var{mode}  -mmay-round-for-trunc  -mfp-iarith
+-mvect-double  -max-vect-align=@var{num}
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{AMD GCN Options} (@ref{AMD GCN Options})
@@ -23126,12 +23127,16 @@ These @samp{-m} options are defined for Adapteva Epiphany:
 
 @table @gcctabopt
 @opindex mhalf-reg-file
+@opindex mno-half-reg-file
 @item -mhalf-reg-file
+@itemx -mno-half-reg-file
 Don't allocate any register in the range @code{r32}@dots{}@code{r63}.
 That allows code to run on hardware variants that lack these registers.
 
 @opindex mprefer-short-insn-regs
+@opindex mno-prefer-short-insn-regs
 @item -mprefer-short-insn-regs
+@itemx -mno-prefer-short-insn-regs
 Preferentially allocate registers that allow short instruction generation.
 This can result in increased instruction count, so this may either reduce or
 increase overall code size.
@@ -23143,7 +23148,9 @@ This cost is only a heuristic and is not guaranteed to produce
 consistent results across releases.
 
 @opindex mcmove
+@opindex mno-cmove
 @item -mcmove
+@itemx -mno-cmove
 Enable the generation of conditional moves.
 
 @opindex mnops
@@ -23153,6 +23160,7 @@ Emit @var{num} NOPs before every other generated instruction.
 @opindex mno-soft-cmpsf
 @opindex msoft-cmpsf
 @item -mno-soft-cmpsf
+@itemx -msoft-cmpsf
 For single-precision floating-point comparisons, emit an @code{fsub} instruction
 and test the flags.  This is faster than a software comparison, but can
 get incorrect results in the presence of NaNs, or when two different small
@@ -23177,24 +23185,34 @@ toolchain with the appropriate @option{--with-stack-offset=@var{num}} option.
 @opindex mno-round-nearest
 @opindex mround-nearest
 @item -mno-round-nearest
-Make the scheduler assume that the rounding mode has been set to
+@itemx -mround-nearest
+@option{-mno-round-nearest}
+makes the scheduler assume that the rounding mode has been set to
 truncating.  The default is @option{-mround-nearest}.
 
 @opindex mlong-calls
+@opindex mno-long-calls
 @item -mlong-calls
 If not otherwise specified by an attribute, assume all calls might be beyond
 the offset range of the @code{b} / @code{bl} instructions, and therefore load the
 function address into a register before performing a (otherwise direct) call.
 This is the default.
 
-@opindex short-calls
+@opindex mshort-calls
+@opindex mno-short-calls
 @item -mshort-calls
 If not otherwise specified by an attribute, assume all direct calls are
 in the range of the @code{b} / @code{bl} instructions, so use these instructions
-for direct calls.  The default is @option{-mlong-calls}.
+for direct calls.
+
+The default is @option{-mlong-calls}.  Note that @option{-mlong-calls}
+is equivalent to @option{-mno-short-calls}, and similarly
+@option{-mno-long-calls} is equivalent to @option{-mshort-calls}.
 
 @opindex msmall16
+@opindex mno-small16
 @item -msmall16
+@itemx -mno-small16
 Assume addresses can be loaded as 16-bit unsigned values.  This does not
 apply to function addresses for which @option{-mlong-calls} semantics
 are in effect.
@@ -23236,23 +23254,40 @@ integer multiply, or integer multiply-and-accumulate.
 
 The default is @option{-mfp-mode=caller}
 
+@opindex mmay-round-for-trunc
+@opindex mno-may-round-for-trunc
+@item -mmay-round-for-trunc
+@itemx -mno-may-round-for-trunc
+This option allows floating point to integer truncation to be replaced
+with rounding to save mode switching.  It's disabled by default.
+
+@opindex mfp-iarith
+@opindex mno-fp-iarith
+@item -mfp-iarith
+@itemx -mno-fp-iarith
+This option enables use of the floating-point unit for integer add and
+subtract.  It's disabled by default.
+
 @opindex mno-split-lohi
 @opindex msplit-lohi
-@opindex mno-postinc
-@opindex mpostinc
+@opindex mno-post-inc
+@opindex mpost-inc
 @opindex mno-postmodify
-@opindex mpostmodify
-@item -mno-split-lohi
-@itemx -mno-postinc
-@itemx -mno-postmodify
-Code generation tweaks that disable, respectively, splitting of 32-bit
+@opindex mpost-modify
+@item -msplit-lohi
+@itemx -mno-split-lohi
+@itemx -mpost-inc
+@itemx -mno-post-inc
+@itemx -mpost-modify
+@itemx -mno-post-modify
+Code generation tweaks that control, respectively, splitting of 32-bit
 loads, generation of post-increment addresses, and generation of
 post-modify addresses.  The defaults are @option{msplit-lohi},
 @option{-mpost-inc}, and @option{-mpost-modify}.
 
 @opindex mno-vect-double
 @opindex mvect-double
-@item -mnovect-double
+@item -mno-vect-double
 Change the preferred SIMD mode to SImode.  The default is
 @option{-mvect-double}, which uses DImode as preferred SIMD mode.
 
@@ -23265,7 +23300,9 @@ interfaces are unaffected if they don't use SIMD vector modes
 in places that affect size and/or alignment of relevant types.
 
 @opindex msplit-vecmove-early
+@opindex mno-split-vecmove-early
 @item -msplit-vecmove-early
+@itemx -mno-split-vecmove-early
 Split vector moves into single word moves before reload.  In theory this
 can give better register allocation, but so far the reverse seems to be
 generally the case.
