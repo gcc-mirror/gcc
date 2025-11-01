@@ -1,3 +1,78 @@
+2025-10-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122437
+	* fold-const.h (div_if_zero_remainder): Remove.
+
+2025-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121853
+	* config/aarch64/aarch64-simd.md (extendbfsf2): New.
+
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122502
+	* tree-scalar-evolution.cc (final_value_replacement_loop):
+	Avoid folding from within FOR_EACH_IMM_USE_STMT due to active
+	ranger.
+
+2025-10-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122437
+	* fold-const.cc (div_if_zero_remainder): Remove.
+
+2025-10-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122497
+	* tree-scalar-evolution.cc (final_value_replacement_loop): Call replace_uses_by
+	only after the replacement statement was created.
+
+2025-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md: Support.
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vec_widen_hilo): Remove unused code.
+	* config/loongarch/lsx.md: Support.
+
+2025-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md (ILASX_HB): Move to ...
+	* config/loongarch/lsx.md (ILSX_HB): Move to ...
+	* config/loongarch/simd.md (ILSX_HB): ... here.
+	(ILASX_HB): ... here.
+	(IVEC_HB): New iterator.
+	(WVEC_QUARTER): New attr.
+	(wvec_quarter): Likewise.
+	(simdfmt_qw): Likewise.
+	(<su>dot_prod<wvec_quarter><mode>): New template.
+
+2025-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md (hi_lo): Move to ...
+	* config/loongarch/simd.md (hi_lo): ... here.
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vec_widen_hilo): Add 128-bit data processing.
+	* config/loongarch/lsx.md
+	(vec_widen_<su><optab>_<hi_lo>_<mode>):	New define_expand.
+	(vec_widen_<su>mult_<hi_lo>_<mode>): Likewise.
+
+2025-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_widen_<su>add_hi_<mode>):
+	Move.
+	(vec_widen_<su>add_lo_<mode>): Move.
+	(vec_widen_<su>sub_hi_<mode>): Move.
+	(vec_widen_<su>sub_lo_<mode>): Move.
+	(vec_widen_<su>mult_hi_<mode>): Move.
+	(vec_widen_<su>mult_lo_<mode>): Move.
+	(hi_lo): New define_int_attr.
+	(vec_widen_<su><optab>_<hi_lo>_<mode>): New define_expand.
+	(vec_widen_<su>mult_<hi_lo>_<mode>): Likewise.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_expand_vec_widen_hilo): Modify the function
+	parameter list.
+	* config/loongarch/loongarch.cc
+	(loongarch_expand_vec_widen_hilo): Optimized.
+
 2025-10-30  David Faust  <david.faust@oracle.com>
 
 	PR debug/122248

@@ -1,3 +1,42 @@
+2025-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121853
+	* gcc.target/aarch64/pr121853_1.c: New test.
+	* gcc.target/aarch64/pr121853_2.c: New test.
+
+2025-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122452
+	* gfortran.dg/pdt_65.f03: New test.
+
+2025-10-31  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122502
+	* gcc.dg/torture/pr122502.c: New testcase.
+
+2025-10-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/tree-ssa/pr122478.c: Swap `1` and `"optimized"`.
+
+2025-10-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122497
+	* gcc.dg/torture/pr122497-1.c: New test.
+
+2025-10-31  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.dg/vect/slp-widen-mult-half.c: Remove '-mlasx'.
+	* gcc.dg/vect/tree-vect.h: Check whether the runtime
+	environment supports LSX instructions.
+	* gcc.dg/vect/vect-widen-mult-const-s16.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-const-u16.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-half-u8.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-half.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u16.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u8-s16-s32.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u8-u32.c: Dito.
+	* gcc.dg/vect/vect-widen-mult-u8.c: Dito.
+
 2025-10-30  Yap Zhi Heng  <yapzhhg@gmail.com>
 
 	* rust/compile/tuplepattern-restpattern-typecheck-err.rs: New file.

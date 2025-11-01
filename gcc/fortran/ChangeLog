@@ -1,3 +1,17 @@
+2025-10-31  Yuao Ma  <c8ef@outlook.com>
+
+	* intrinsic.texi: Fix typo.
+	* trans-intrinsic.cc (conv_intrinsic_atomic_cas): Remove unreachable
+	code.
+
+2025-10-31  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122452
+	* primary.cc (gfc_match_rvalue): Give priority to specific
+	procedures in a generic interface with the same name as a
+	PDT template. If found, use as the procedure instead of the
+	constructor generated from the PDT template.
+
 2025-10-30  Mikael Morin  <mikael@gcc.gnu.org>
 
 	* trans-array.cc: Cleanup obsolete comment.
