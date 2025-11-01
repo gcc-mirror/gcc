@@ -3978,9 +3978,34 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
 				      speed);
       return true;
 
+    case LSHIFTRT:
+      /* Correct the cost of mulh.{w[u]/d[u]}.  */
+      if (outer_code == TRUNCATE && CONST_INT_P (XEXP (x, 1))
+	  && INTVAL (XEXP (x, 1)) == (GET_MODE_BITSIZE (mode) / 2)
+	  && GET_CODE (XEXP (x, 0)) == MULT
+	  && ((GET_CODE (XEXP (XEXP (x, 0), 0)) == ZERO_EXTEND
+	       && GET_CODE (XEXP (XEXP (x, 0), 1)) == ZERO_EXTEND)
+	      || (GET_CODE (XEXP (XEXP (x, 0), 0)) == SIGN_EXTEND
+		  && GET_CODE (XEXP (XEXP (x, 0), 1)) == SIGN_EXTEND))
+	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == REG
+	  && GET_CODE (XEXP (XEXP (XEXP (x, 0), 1), 0)) == REG)
+	{
+	  if (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == SImode
+	      && GET_MODE (XEXP (XEXP (XEXP (x, 0), 1), 0)) == SImode)
+	    {
+	      *total = loongarch_cost->int_mult_si;
+	      return true;
+	    }
+	  if (GET_MODE (XEXP (XEXP (XEXP (x, 0), 0), 0)) == DImode
+	      && GET_MODE (XEXP (XEXP (XEXP (x, 0), 1), 0)) == DImode)
+	    {
+	      *total = loongarch_cost->int_mult_di;
+	      return true;
+	    }
+	}
+      /* Fall through.  */
     case ASHIFT:
     case ASHIFTRT:
-    case LSHIFTRT:
     case ROTATE:
     case ROTATERT:
       if (CONSTANT_P (XEXP (x, 1)))
