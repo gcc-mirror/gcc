@@ -2185,9 +2185,9 @@ export namespace std
   using std::print;
   using std::println;
   using std::vprint_unicode;
-  //FIXME using std::vprint_unicode_buffered;
+  using std::vprint_unicode_buffered;
   using std::vprint_nonunicode;
-  //FIXME using std::vprint_nonunicode_buffered;
+  using std::vprint_nonunicode_buffered;
 }
 #endif
 
