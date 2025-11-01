@@ -209,6 +209,11 @@ rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vector_permconst (gcc::context *ctxt);
 rtl_opt_pass * make_pass_bclr_lowest_set_bit (gcc::context *ctxt);
 
+/* Routines implemented in riscv-vsetvl.cc.  */
+extern bool has_vtype_op (rtx_insn *);
+extern bool mask_agnostic_p (rtx_insn *);
+extern rtx get_avl (rtx_insn *);
+extern bool vsetvl_insn_p (rtx_insn *);
 
 /* Routines implemented in riscv-string.c.  */
 extern bool riscv_expand_block_compare (rtx, rtx, rtx, rtx);

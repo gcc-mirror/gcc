@@ -1437,6 +1437,8 @@
   [(set_attr "type" "vlde,vste,vmov")
    (set_attr "mode" "<MODE>")
    (set (attr "merge_op_idx") (const_int INVALID_ATTRIBUTE))
+   (set (attr "has_vl_op") (const_string "false"))
+   (set (attr "has_vtype_op") (const_string "false"))
    (set (attr "avl_type_idx") (const_int INVALID_ATTRIBUTE))
    (set (attr "mode_idx") (const_int INVALID_ATTRIBUTE))]
 )

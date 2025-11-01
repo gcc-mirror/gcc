@@ -10576,6 +10576,71 @@ riscv_issue_rate (void)
   return tune_param->issue_rate;
 }
 
+/* Structure for very basic vector configuration tracking in the scheduler.  */
+struct last_vconfig
+{
+  bool valid;
+  bool ta;
+  bool ma;
+  uint8_t sew;
+  uint8_t vlmul;
+  rtx avl;
+} last_vconfig;
+
+/* Clear LAST_VCONFIG so we have no known state.  */
+static void
+clear_vconfig (void)
+{
+  memset (&last_vconfig, 0, sizeof (last_vconfig));
+}
+
+/* Return TRUE if INSN is a vector insn needing a particular
+   vector configuration that is trivially equal to the last
+   vector insn issued.  Return FALSE otherwise.  */
+static bool
+compatible_with_last_vconfig (rtx_insn *insn)
+{
+  /* We might be able to extract the data from a preexisting vsetvl.  */
+  if (vsetvl_insn_p (insn))
+    return false;
+
+  /* Nothing to do for these cases.  */
+  if (!NONDEBUG_INSN_P (insn) || !has_vtype_op (insn))
+    return false;
+
+  extract_insn_cached (insn);
+
+  rtx avl = get_avl (insn);
+  if (avl != last_vconfig.avl)
+    return false;
+
+  if (get_sew (insn) != last_vconfig.sew)
+    return false;
+
+  if (get_vlmul (insn) != last_vconfig.vlmul)
+    return false;
+
+  if (tail_agnostic_p (insn) != last_vconfig.ta)
+    return false;
+
+  if (mask_agnostic_p (insn) != last_vconfig.ma)
+    return false;
+
+  /* No differences found, they're trivially compatible.  */
+  return true;
+}
+
+/* Implement TARGET_SCHED_INIT, we use this to track the vector configuration
+   of the last issued vector instruction.  We can then use that information
+   to potentially adjust the ready queue to issue instructions of a compatible
+   vector configuration instead of a conflicting configuration.  That will
+   reduce the number of vsetvl instructions we ultimately emit.  */
+static void
+riscv_sched_init (FILE *, int, int)
+{
+  clear_vconfig ();
+}
+
 /* Implement TARGET_SCHED_VARIABLE_ISSUE.  */
 static int
 riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
@@ -10600,8 +10665,87 @@ riscv_sched_variable_issue (FILE *, int, rtx_insn *insn, int more)
      an assert so we can find and fix this problem.  */
   gcc_assert (insn_has_dfa_reservation_p (insn));
 
+  /* If this is a vector insn with vl/vtype info, then record the last
+     vector configuration.  */
+  if (vsetvl_insn_p (insn))
+    clear_vconfig ();
+  else if (NONDEBUG_INSN_P (insn) && has_vtype_op (insn))
+    {
+      extract_insn_cached (insn);
+
+      rtx avl = get_avl (insn);
+      if (avl == RVV_VLMAX)
+       avl = const0_rtx;
+
+      if (!avl || !CONST_INT_P (avl))
+       clear_vconfig ();
+      else
+	{
+	  last_vconfig.valid = true;
+	  last_vconfig.avl = avl;
+	  last_vconfig.sew = get_sew (insn);
+	  last_vconfig.vlmul = get_vlmul (insn);
+	  last_vconfig.ta = tail_agnostic_p (insn);
+	  last_vconfig.ma = mask_agnostic_p (insn);
+	}
+    }
+
   return more - 1;
 }
+
+/* Implement TARGET_SCHED_REORDER.  The goal here is to look at the ready
+   queue and reorder it ever so slightly to encourage issing an insn with
+   the same vector configuration as the most recently issued vector
+   instruction.  That will reduce vsetvl instructions.  */
+static int
+riscv_sched_reorder (FILE *, int, rtx_insn **ready, int *nreadyp, int)
+{
+  /* If we don't have a valid prior vector configuration, then there is
+     no point in reordering the ready queue, similarly if there is
+     just one entry in the queue.  */
+  if (!last_vconfig.valid || *nreadyp == 1)
+    return riscv_issue_rate ();
+
+  return riscv_issue_rate ();
+  int nready = *nreadyp;
+  int priority = INSN_PRIORITY (ready[nready - 1]);
+  for (int i = nready - 1; i >= 0; i--)
+    {
+      rtx_insn *insn = ready[i];
+
+      /* On a high performance core, vsetvl instructions should be
+	 inexpensive.  Removing them is very much a secondary concern, so
+	 be extremely conservative with reordering, essentially only
+	 allowing reordering within the highest priority value.
+
+	 Lower end cores may benefit from more flexibility here.  That
+	 tuning is left to those who understand their core's behavior
+	 and can thoroughly benchmark the result.  Assuming such
+	 designs appear, we can probably put an entry in the tuning
+	 structure to indicate how much difference in priority to allow.  */
+      if (INSN_PRIORITY (insn) < priority)
+	break;
+
+      if (compatible_with_last_vconfig (insn))
+	{
+	  /* This entry is compatible with the last vconfig and has
+	     the same priority as the most important insn.  So swap
+	     it so that we keep the vector configuration as-is and
+	     ultimately eliminate a vsetvl.
+
+	     Note no need to swap if this is the first entry in the
+	     queue.  */
+	  if (i == nready - 1)
+	    break;
+
+	  std::swap (ready[i], ready[nready - 1]);
+	  break;
+	}
+    }
+
+  return riscv_issue_rate ();
+}
+
 
 /* Implement TARGET_SCHED_MACRO_FUSION_P.  Return true if target supports
    instruction fusion of some sort.  */
@@ -16011,8 +16155,14 @@ riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
 #undef TARGET_SCHED_MACRO_FUSION_PAIR_P
 #define TARGET_SCHED_MACRO_FUSION_PAIR_P riscv_macro_fusion_pair_p
 
+#undef TARGET_SCHED_INIT
+#define TARGET_SCHED_INIT riscv_sched_init
+
 #undef  TARGET_SCHED_VARIABLE_ISSUE
 #define TARGET_SCHED_VARIABLE_ISSUE riscv_sched_variable_issue
+
+#undef  TARGET_SCHED_REORDER
+#define TARGET_SCHED_REORDER riscv_sched_reorder
 
 #undef  TARGET_SCHED_ADJUST_COST
 #define TARGET_SCHED_ADJUST_COST riscv_sched_adjust_cost

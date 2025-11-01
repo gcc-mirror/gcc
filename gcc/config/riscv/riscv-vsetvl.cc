@@ -258,7 +258,7 @@ policy_to_str (bool agnostic_p)
 
 /* Return true if it is an RVV instruction depends on VTYPE global
    status register.  */
-static bool
+bool
 has_vtype_op (rtx_insn *rinsn)
 {
   return recog_memoized (rinsn) >= 0 && get_attr_has_vtype_op (rinsn);
@@ -306,7 +306,7 @@ vector_config_insn_p (rtx_insn *rinsn)
 }
 
 /* Return true if it is vsetvldi or vsetvlsi.  */
-static bool
+bool
 vsetvl_insn_p (rtx_insn *rinsn)
 {
   if (!rinsn || !vector_config_insn_p (rinsn))
@@ -386,7 +386,7 @@ get_vl (rtx_insn *rinsn)
 }
 
 /* Helper function to get AVL operand.  */
-static rtx
+rtx
 get_avl (rtx_insn *rinsn)
 {
   if (vsetvl_insn_p (rinsn) || vsetvl_discard_result_insn_p (rinsn))
@@ -411,7 +411,7 @@ get_default_ma ()
 }
 
 /* Helper function to get MA operand.  */
-static bool
+bool
 mask_agnostic_p (rtx_insn *rinsn)
 {
   /* If it doesn't have MA, we return agnostic by default.  */
