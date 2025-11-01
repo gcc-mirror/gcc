@@ -916,7 +916,10 @@ Objective-C and Objective-C++ Dialects}.
 -msplit-vecmove-early  -m1reg-@var{reg}}
 
 @emph{AMD GCN Options} (@ref{AMD GCN Options})
-@gccoptlist{-march=@var{gpu} -mtune=@var{gpu} -mstack-size=@var{bytes}
+@gccoptlist{-march=@var{gpu} -mtune=@var{gpu}
+-mgang-private-size=@var{bytes}
+-msram-ecc=@r{[}on@r{|}off@r{|}any@r{]}
+-mxnack=@r{[}on@r{|}off@r{|}any@r{]}
 -Wopenacc-dims}
 
 @emph{ARC Options} (@ref{ARC Options})
@@ -23426,6 +23429,11 @@ Compile generic code for GFX11 devices, executable on gfx1100, gfx1101,
 gfx1102, gfx1103, gfx1150, gfx1151, gfx1152, and gfx1153.
 @end table
 
+@opindex mgang-private-size
+@item -mgang-private-size=@var{bytes}
+Set the amount of local data-share (LDS) memory to reserve for
+gang-private variables.  The default is 512.
+
 @opindex msram-ecc
 @item -msram-ecc=on
 @itemx -msram-ecc=off
@@ -23434,14 +23442,6 @@ Compile binaries suitable for devices with the SRAM-ECC feature enabled,
 disabled, or either mode.  This feature can be enabled per-process on some
 devices.  The compiled code must match the device mode. The default is
 @samp{any}, for devices that support it.
-
-@opindex mstack-size
-@item -mstack-size=@var{bytes}
-Specify how many @var{bytes} of stack space will be requested for each GPU
-thread (wave-front).  Beware that there may be many threads and limited memory
-available.  The size of the stack allocation may also have an impact on
-run-time performance.  The default is 32KB when using OpenACC or OpenMP, and
-1MB otherwise.
 
 @opindex mxnack
 @item -mxnack=on
@@ -23456,7 +23456,8 @@ Memory, and @samp{-mxnack=no} otherwise.
 @opindex Wopenacc-dims
 @opindex Wno-openacc-dims
 @item -Wopenacc-dims
-Warn about invalid OpenACC dimensions.
+@itemx -Wno-openacc-dims
+Control warnings about invalid OpenACC dimensions.
 
 @end table
 

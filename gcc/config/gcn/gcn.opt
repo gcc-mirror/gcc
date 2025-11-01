@@ -29,29 +29,39 @@ mtune=
 Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_GFX90A)
 Specify the name of the target GPU.
 
+; mkoffload passes -m32, -m64, and -mgomp to the offload compiler, but
+; nothing in the offload compiler actually uses any of these flags.
+; Maybe they're there for compatibility with other offload backends,
+; or maybe we can just delete these.  In any case, there's no point in
+; documenting them for users.
 m32
-Target RejectNegative InverseMask(ABI64)
+Target RejectNegative InverseMask(ABI64) Undocumented
 Generate code for a 32-bit ABI.
 
 m64
-Target RejectNegative Mask(ABI64)
+Target RejectNegative Mask(ABI64) Undocumented
 Generate code for a 64-bit ABI.
 
 mgomp
-Target RejectNegative
+Target RejectNegative Undocumented
 Enable OpenMP GPU offloading.
 
+; This option seems not to ever have done anything useful, or to have
+; been documented.
+Variable
 bool flag_bypass_init_error = false
 
 mbypass-init-error
-Target RejectNegative Var(flag_bypass_init_error)
+Target RejectNegative Var(flag_bypass_init_error) Undocumented
 
+Variable
 int stack_size_opt = -1
 
 mstack-size=
-Target RejectNegative Joined UInteger Var(stack_size_opt) Init(-1)
+Target RejectNegative Joined UInteger Var(stack_size_opt) Init(-1) Undocumented
 Obsolete; use GCN_STACK_SIZE at runtime.
 
+Variable
 int gang_private_size_opt = -1
 
 mgang-private-size=
