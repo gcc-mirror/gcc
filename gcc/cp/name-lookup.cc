@@ -1372,11 +1372,14 @@ name_lookup::adl_class_fns (tree type)
 	  {
 	    tree fn = TREE_VALUE (friends);
 
-	    /* Only interested in global functions with potentially hidden
-	       (i.e. unqualified) declarations.  */
+	    /* Before C++20, ADL just makes hidden friends visible, so we
+	       only include functions in the same namespace.  After C++20,
+	       include all namespace-scope functions.  */
 	    if (!context)
 	      context = decl_namespace_context (type);
-	    if (CP_DECL_CONTEXT (fn) != context)
+	    if (cxx_dialect < cxx20
+		? CP_DECL_CONTEXT (fn) != context
+		: !DECL_NAMESPACE_SCOPE_P (fn))
 	      continue;
 
 	    dedup (true);
