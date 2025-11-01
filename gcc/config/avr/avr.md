@@ -3947,9 +3947,17 @@
                              (match_operand:PSI 2 "nonmemory_operand" "")))
               (clobber (reg:HI 26))
               (clobber (reg:DI 18))])]
-  "AVR_HAVE_MUL"
+  "AVR_HAVE_MUL
+   || (avropt_pr118012
+       /* AVR_TINY passes args on the stack, so we cannot work
+          around PR118012 like this. */
+       && ! AVR_TINY)"
   {
-    if (s8_operand (operands[2], PSImode))
+    if (!AVR_HAVE_MUL)
+      {
+        operands[2] = force_reg (PSImode, operands[2]);
+      }
+    else if (s8_operand (operands[2], PSImode))
       {
         rtx reg = force_reg (QImode, gen_int_mode (INTVAL (operands[2]), QImode));
         emit_insn (gen_mulsqipsi3 (operands[0], reg, operands[1]));
@@ -4038,7 +4046,9 @@
                   (match_operand:PSI 2 "pseudo_register_or_const_int_operand" "rn")))
    (clobber (reg:HI 26))
    (clobber (reg:DI 18))]
-  "AVR_HAVE_MUL && !reload_completed"
+  "!reload_completed
+   && (AVR_HAVE_MUL
+       || (avropt_pr118012 && !AVR_TINY))"
   { gcc_unreachable(); }
   "&& 1"
   [(set (reg:PSI 18)
@@ -4048,13 +4058,30 @@
    (parallel [(set (reg:PSI 22)
                    (mult:PSI (reg:PSI 22)
                              (reg:PSI 18)))
-              (clobber (reg:QI 21))
-              (clobber (reg:QI 25))
-              (clobber (reg:HI 26))])
+              (clobber (match_dup 3))
+              (clobber (match_dup 4))
+              (clobber (match_dup 5))])
    (set (match_dup 0)
         (reg:PSI 22))]
   {
-    if (s8_operand (operands[2], PSImode))
+    if (AVR_HAVE_MUL)
+      {
+        operands[3] = gen_rtx_REG (QImode, REG_21);
+        operands[4] = gen_rtx_REG (QImode, REG_25);
+        operands[5] = gen_rtx_REG (HImode, REG_26);
+      }
+    else
+      {
+        operands[3] = gen_rtx_REG (SImode, REG_18);
+        operands[4] = gen_rtx_SCRATCH (QImode);
+        operands[5] = gen_rtx_SCRATCH (HImode);
+      }
+
+    if (!AVR_HAVE_MUL)
+      {
+        operands[2] = force_reg (PSImode, operands[2]);
+      }
+    else if (s8_operand (operands[2], PSImode))
       {
         rtx reg = force_reg (QImode, gen_int_mode (INTVAL (operands[2]), QImode));
         emit_insn (gen_mulsqipsi3 (operands[0], reg, operands[1]));
@@ -4103,6 +4130,32 @@
    (clobber (reg:HI 26))
    (clobber (reg:CC REG_CC))]
   "AVR_HAVE_MUL && reload_completed"
+  "%~call __mulpsi3"
+  [(set_attr "type" "xcall")])
+
+(define_insn_and_split "*mulpsi3-nomul.libgcc_split"
+  [(set (reg:PSI 22)
+        (mult:PSI (reg:PSI 22)
+                  (reg:PSI 18)))
+   (clobber (reg:SI 18))
+   (clobber (scratch:QI))
+   (clobber (scratch:HI))]
+  "!AVR_HAVE_MUL && avropt_pr118012 && !AVR_TINY"
+  "#"
+  "&& reload_completed"
+  [(scratch)]
+  { DONE_ADD_CCC })
+
+(define_insn "*mulpsi3-nomul.libgcc"
+  [(set (reg:PSI 22)
+        (mult:PSI (reg:PSI 22)
+                  (reg:PSI 18)))
+   (clobber (reg:SI 18))
+   (clobber (scratch:QI))
+   (clobber (scratch:HI))
+   (clobber (reg:CC REG_CC))]
+  "reload_completed
+   && !AVR_HAVE_MUL && avropt_pr118012 && !AVR_TINY"
   "%~call __mulpsi3"
   [(set_attr "type" "xcall")])
 
