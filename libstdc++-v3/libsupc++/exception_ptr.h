@@ -214,6 +214,10 @@ namespace std _GLIBCXX_VISIBILITY(default)
       { return __x._M_exception_object != __y._M_exception_object; }
 #endif
 
+      // Friend for ADL with module std.
+      friend _GLIBCXX26_CONSTEXPR void
+      swap(exception_ptr& __lhs, exception_ptr& __rhs);
+
       const class std::type_info*
       __cxa_exception_type() const _GLIBCXX_USE_NOEXCEPT
 	__attribute__ ((__pure__));

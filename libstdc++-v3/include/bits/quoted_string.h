@@ -61,6 +61,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_Quoted_string&
 	operator=(_Quoted_string&) = delete;
 
+	// Friends for ADL with module std.
+	template<typename _CharT2, typename _Traits>
+	friend std::basic_ostream<_CharT2, _Traits>&
+	operator<<(std::basic_ostream<_CharT2, _Traits>& __os,
+		   const _Quoted_string<const _CharT2*, _CharT2>& __str);
+
+	template<typename _CharT2, typename _Traits, typename _String2>
+	friend std::basic_ostream<_CharT2, _Traits>&
+	operator<<(std::basic_ostream<_CharT2, _Traits>& __os,
+		   const _Quoted_string<_String2, _CharT2>& __str);
+
+	template<typename _CharT2, typename _Traits, typename _Alloc>
+	friend std::basic_istream<_CharT2, _Traits>&
+	operator>>(std::basic_istream<_CharT2, _Traits>& __is,
+		   const _Quoted_string<basic_string<_CharT2, _Traits, _Alloc>&,
+		   _CharT2>& __str);
+
 	_String _M_string;
 	_CharT _M_delim;
 	_CharT _M_escape;
@@ -77,6 +94,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	_Quoted_string&
 	operator=(_Quoted_string&) = delete;
+
+	// Friend for ADL with module std.
+	template<typename _CharT2, typename _Traits2, typename _String2>
+	friend std::basic_ostream<_CharT2, _Traits2>&
+	operator<<(std::basic_ostream<_CharT2, _Traits2>& __os,
+		   const _Quoted_string<_String2, _CharT2>& __str);
 
 	basic_string_view<_CharT, _Traits> _M_string;
 	_CharT _M_delim;
