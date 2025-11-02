@@ -1003,10 +1003,11 @@ context::action_after_output (enum kind diag_kind)
 	/* Attempt to ensure that any outputs are flushed e.g. that .sarif
 	   files are written out.
 	   Only do it once.  */
-	static bool finishing_due_to_ice = false;
-	if (!finishing_due_to_ice)
+	static char **saved_argv = nullptr;
+	if (!saved_argv)
 	  {
-	    finishing_due_to_ice = true;
+	    saved_argv = m_original_argv;
+	    m_original_argv = nullptr;
 	    finish ();
 	  }
 
@@ -1020,6 +1021,12 @@ context::action_after_output (enum kind diag_kind)
 
 	if (m_abort_on_error)
 	  real_abort ();
+
+	bool space = false;
+	for (auto *argv = saved_argv; *argv; space = true)
+	  fnotice (stderr, &" %s"[1 - space], *argv++);
+	fnotice (stderr, "\n");
+	freeargv (saved_argv);
 
 	if (m_report_bug)
 	  fnotice (stderr, "Please submit a full bug report, "
