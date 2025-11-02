@@ -10920,7 +10920,7 @@ start_function (struct c_declspecs *declspecs, struct c_declarator *declarator,
   if (old_decl)
     {
       location_t origloc = DECL_SOURCE_LOCATION (old_decl);
-      warn_parm_array_mismatch (origloc, old_decl, parms);
+      warn_parms_array_mismatch (origloc, old_decl, parms);
     }
 
   /* To enable versions to be created across TU's we mark and mangle all

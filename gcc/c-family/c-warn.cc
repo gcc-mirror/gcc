@@ -3431,7 +3431,7 @@ expr_to_str (pretty_printer &pp, tree expr, const char *dflt)
    (FNDECL's is set to the location of the redeclaration).  */
 
 void
-warn_parm_array_mismatch (location_t origloc, tree fndecl, tree newparms)
+warn_parms_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 {
   /* The original parameter list (copied from the original declaration
      into the current [re]declaration, FNDECL)).  The two are equal if

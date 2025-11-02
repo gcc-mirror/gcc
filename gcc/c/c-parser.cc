@@ -3013,7 +3013,7 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 			  && DECL_INITIAL (d) == NULL_TREE)
 			DECL_ARGUMENTS (d) = parms;
 
-		      warn_parm_array_mismatch (lastloc, d, parms);
+		      warn_parms_array_mismatch (lastloc, d, parms);
 		    }
 		}
 	      if (omp_declare_simd_clauses
