@@ -300,6 +300,7 @@ dnl Sets:
 dnl  with_gnu_ld
 dnl  libat_ld_is_gold (possibly)
 dnl  libat_ld_is_mold (possibly)
+dnl  libat_ld_is_wild (possibly)
 dnl  libat_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -333,10 +334,13 @@ AC_DEFUN([LIBAT_CHECK_LINKER_FEATURES], [
   # does some of this, but throws away the result.
   libat_ld_is_gold=no
   libat_ld_is_mold=no
+  libat_ld_is_wild=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libat_ld_is_gold=yes
   elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
     libat_ld_is_mold=yes
+  elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+    libat_ld_is_wild=yes
   fi
   changequote(,)
   ldver=`$LD --version 2>/dev/null |
@@ -493,6 +497,8 @@ if test $enable_symvers != no && test $libat_shared_libgcc = yes; then
     elif test $libat_ld_is_gold = yes ; then
       enable_symvers=gnu
     elif test $libat_ld_is_mold = yes ; then
+      enable_symvers=gnu
+    elif test $libat_ld_is_wild = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?

@@ -2797,6 +2797,16 @@ if test x$gcc_cv_ld != x; then
 fi
 AC_MSG_RESULT($ld_is_mold)
 
+# Check to see if we are using Wild instead of ld
+AC_MSG_CHECKING(whether we are using wild)
+ld_is_wild=no
+if test x$gcc_cv_ld != x; then
+  if $gcc_cv_ld --version 2>/dev/null | sed 1q \
+     | grep "Wild" > /dev/null; then
+    ld_is_wild=yes
+  fi
+fi
+AC_MSG_RESULT($ld_is_wild)
 
 AC_MSG_CHECKING(gold linker with split stack support as non default)
 # Check to see if default ld is not gold, but gold is
@@ -3219,6 +3229,8 @@ else
     :
   elif test x"$ld_is_mold" = xyes; then
     :
+  elif test x"$ld_is_wild" = xyes; then
+    :
   elif echo "$ld_ver" | grep GNU > /dev/null; then
     if test 0"$ld_date" -lt 20020404; then
       if test -n "$ld_date"; then
@@ -3286,8 +3298,11 @@ elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x ; 
   if $gcc_cv_as -o conftest1.o conftest1.s > /dev/null 2>&1 \
      && $gcc_cv_as -o conftest2.o conftest2.s > /dev/null 2>&1 \
      && $gcc_cv_as -o conftest3.o conftest3.s > /dev/null 2>&1; then
+    # Note the Wild linker has --gc-sections on by default.
     if $gcc_cv_ld -shared -o conftest1.so conftest1.o \
-       conftest2.o conftest3.o > /dev/null 2>&1 \
+          conftest2.o conftest3.o --no-gc-sections > /dev/null 2>&1 \
+       || $gcc_cv_ld -shared -o conftest1.so conftest1.o \
+          conftest2.o conftest3.o > /dev/null 2>&1 \
        || $gcc_cv_ld -r -o conftest1.so conftest1.o \
 	  conftest2.o conftest3.o > /dev/null 2>&1; then
       gcc_cv_ld_ro_rw_mix=`$gcc_cv_objdump -h conftest1.so \
@@ -3702,6 +3717,8 @@ fi
 if test x"$ld_is_gold" = xyes; then
   comdat_group=yes
 elif test x"$ld_is_mold" = xyes; then
+  comdat_group=yes
+elif test x"$ld_is_wild" = xyes; then
   comdat_group=yes
 elif test $in_tree_ld = yes ; then
   comdat_group=no

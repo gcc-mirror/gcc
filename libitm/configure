@@ -17604,10 +17604,13 @@ fi
   # does some of this, but throws away the result.
   libitm_ld_is_gold=no
   libitm_ld_is_mold=no
+  libitm_ld_is_wild=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libitm_ld_is_gold=yes
   elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
     libitm_ld_is_mold=yes
+  elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+    libitm_ld_is_wild=yes
   fi
 
   ldver=`$LD --version 2>/dev/null |
@@ -17811,6 +17814,8 @@ if test $enable_symvers != no && test $libitm_shared_libgcc = yes; then
     elif test $libitm_ld_is_gold = yes ; then
       enable_symvers=gnu
     elif test $libitm_ld_is_mold = yes ; then
+      enable_symvers=gnu
+    elif test $libitm_ld_is_wild = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?

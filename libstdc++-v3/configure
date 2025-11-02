@@ -23068,6 +23068,7 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -23076,6 +23077,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -23088,7 +23091,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -28936,6 +28939,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -28944,6 +28948,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -28956,7 +28962,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -32115,6 +32121,7 @@ done
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -32123,6 +32130,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -32135,7 +32144,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -38333,6 +38342,7 @@ done
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -38341,6 +38351,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -38353,7 +38365,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -38621,6 +38633,7 @@ done
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -38629,6 +38642,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -38641,7 +38656,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -39086,6 +39101,7 @@ ac_compiler_gnu=$ac_cv_c_compiler_gnu
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -39094,6 +39110,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -39106,7 +39124,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -42528,6 +42546,7 @@ done
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -42536,6 +42555,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -42548,7 +42569,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -45923,6 +45944,7 @@ $as_echo "#define HAVE_TLS 1" >>confdefs.h
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -45931,6 +45953,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -45943,7 +45967,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -46136,6 +46160,7 @@ done
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ld version" >&5
 $as_echo_n "checking for ld version... " >&6; }
@@ -46144,6 +46169,8 @@ $as_echo_n "checking for ld version... " >&6; }
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -46156,7 +46183,7 @@ $as_echo "$glibcxx_gnu_ld_version" >&6; }
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -51196,6 +51223,8 @@ $as_echo "$as_me: WARNING: === Symbol versioning will be disabled." >&2;}
     : All versions of gold support symbol versioning.
   elif test $glibcxx_ld_is_mold = yes ; then
     : All versions of mold support symbol versioning.
+  elif test $glibcxx_ld_is_wild = yes ; then
+    : All versions of Wild support symbol versioning.
   elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
     # The right tools, the right setup, but too old.  Fallbacks?
     { $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: === Linker version $glibcxx_gnu_ld_version is too old for" >&5

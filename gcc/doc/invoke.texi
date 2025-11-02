@@ -19759,6 +19759,10 @@ Use the LLVM @command{lld} linker instead of the default linker.
 @item -fuse-ld=mold
 Use the Modern Linker (@command{mold}) instead of the default linker.
 
+@opindex fuse-ld=wild
+@item -fuse-ld=wild
+Use the Wild linker (@command{wild}) instead of the default linker.
+
 @cindex Libraries
 @opindex l
 @item -l@var{library}

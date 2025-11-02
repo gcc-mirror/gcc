@@ -3448,6 +3448,10 @@ fuse-ld=mold
 Common Driver Negative(fuse-ld=mold)
 Use the Modern linker (MOLD) linker instead of the default linker.
 
+fuse-ld=wild
+Common Driver Negative(fuse-ld=wild)
+Use the Wild linker instead of the default linker.
+
 fuse-linker-plugin
 Common Undocumented Var(flag_use_linker_plugin)
 

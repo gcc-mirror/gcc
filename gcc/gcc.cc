@@ -4290,6 +4290,10 @@ driver_handle_option (struct gcc_options *opts,
        use_ld = ".mold";
        break;
 
+    case OPT_fuse_ld_wild:
+       use_ld = ".wild";
+       break;
+
     case OPT_fcompare_debug_second:
       compare_debug_second = 1;
       break;

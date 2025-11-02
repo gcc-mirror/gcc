@@ -777,6 +777,7 @@ main (int argc, char **argv)
       USE_BFD_LD,
       USE_LLD_LD,
       USE_MOLD_LD,
+      USE_WILD_LD,
       USE_LD_MAX
     } selected_linker = USE_DEFAULT_LD;
   static const char *const ld_suffixes[USE_LD_MAX] =
@@ -786,7 +787,8 @@ main (int argc, char **argv)
       "ld.gold",
       "ld.bfd",
       "ld.lld",
-      "ld.mold"
+      "ld.mold",
+      "wild"
     };
   static const char *const real_ld_suffix = "real-ld";
   static const char *const collect_ld_suffix = "collect-ld";
@@ -868,7 +870,7 @@ main (int argc, char **argv)
 #ifdef CROSS_DIRECTORY_STRUCTURE
     /* lld and mold are platform-agnostic and not prefixed with target
        triple.  */
-    if (!(i == USE_LLD_LD || i == USE_MOLD_LD))
+    if (!(i == USE_LLD_LD || i == USE_MOLD_LD || i == USE_WILD_LD))
       full_ld_suffixes[i] = concat (target_machine, "-", ld_suffixes[i],
 				    NULL);
     else
@@ -964,6 +966,8 @@ main (int argc, char **argv)
 	  selected_linker = USE_LLD_LD;
 	else if (strcmp (argv[i], "-fuse-ld=mold") == 0)
 	  selected_linker = USE_MOLD_LD;
+	else if (strcmp (argv[i], "-fuse-ld=wild") == 0)
+	  selected_linker = USE_WILD_LD;
 	else if (startswith (argv[i], "-o"))
 	  {
 	    /* Parse the output filename if it's given so that we can make
@@ -1056,7 +1060,8 @@ main (int argc, char **argv)
   ld_file_name = 0;
 #ifdef DEFAULT_LINKER
   if (selected_linker == USE_BFD_LD || selected_linker == USE_GOLD_LD ||
-      selected_linker == USE_LLD_LD || selected_linker == USE_MOLD_LD)
+      selected_linker == USE_LLD_LD || selected_linker == USE_MOLD_LD ||
+      selected_linker == USE_WILD_LD)
     {
       char *linker_name;
 # ifdef HOST_EXECUTABLE_SUFFIX
@@ -1293,7 +1298,7 @@ main (int argc, char **argv)
 	      else if (!use_collect_ld
 		       && startswith (arg, "-fuse-ld="))
 		{
-		  /* Do not pass -fuse-ld={bfd|gold|lld|mold} to the linker. */
+		  /* Do not pass -fuse-ld={bfd|gold|lld|mold|wild} to the linker. */
 		  ld1--;
 		  ld2--;
 		}

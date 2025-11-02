@@ -173,6 +173,7 @@ dnl Sets:
 dnl  with_gnu_ld
 dnl  glibcxx_ld_is_gold (set to "no" or "yes")
 dnl  glibcxx_ld_is_mold (set to "no" or "yes")
+dnl  glibcxx_ld_is_wild (set to "no" or "yes")
 dnl  glibcxx_gnu_ld_version (possibly)
 dnl
 dnl The last will be a single integer, e.g., version 1.23.45.0.67.89 will
@@ -206,6 +207,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
   # does some of this, but throws away the result.
   glibcxx_ld_is_gold=no
   glibcxx_ld_is_mold=no
+  glibcxx_ld_is_wild=no
   if test x"$with_gnu_ld" = x"yes"; then
     AC_MSG_CHECKING([for ld version])
     changequote(,)
@@ -213,6 +215,8 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
       glibcxx_ld_is_gold=yes
     elif $LD --version 2>/dev/null | grep 'mold' >/dev/null 2>&1; then
       glibcxx_ld_is_mold=yes
+    elif $LD --version 2>/dev/null | grep 'Wild' >/dev/null 2>&1; then
+      glibcxx_ld_is_wild=yes
     fi
     ldver=`$LD --version 2>/dev/null |
 	   sed -e 's/[. ][0-9]\{8\}$//;s/.* \([^ ]\{1,\}\)$/\1/; q'`
@@ -224,7 +228,7 @@ AC_DEFUN([GLIBCXX_CHECK_LINKER_FEATURES], [
 
   # Set --gc-sections.
   glibcxx_have_gc_sections=no
-  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" ; then
+  if test "$glibcxx_ld_is_gold" = "yes" || test "$glibcxx_ld_is_mold" = "yes" || test "$glibcxx_ld_is_wild" = "yes" ; then
     if $LD --help 2>/dev/null | grep gc-sections >/dev/null 2>&1; then
       glibcxx_have_gc_sections=yes
     fi
@@ -4063,6 +4067,8 @@ changequote([,])dnl
     : All versions of gold support symbol versioning.
   elif test $glibcxx_ld_is_mold = yes ; then
     : All versions of mold support symbol versioning.
+  elif test $glibcxx_ld_is_wild = yes ; then
+    : All versions of Wild support symbol versioning.
   elif test $glibcxx_gnu_ld_version -lt $glibcxx_min_gnu_ld_version ; then
     # The right tools, the right setup, but too old.  Fallbacks?
     AC_MSG_WARN(=== Linker version $glibcxx_gnu_ld_version is too old for)

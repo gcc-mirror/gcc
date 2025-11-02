@@ -16544,10 +16544,13 @@ with_gnu_ld=$lt_cv_prog_gnu_ld
   # does some of this, but throws away the result.
   libgomp_ld_is_gold=no
   libgomp_ld_is_mold=no
+  libgomp_ld_is_wild=no
   if $LD --version 2>/dev/null | grep 'GNU gold'> /dev/null 2>&1; then
     libgomp_ld_is_gold=yes
   elif $LD --version 2>/dev/null | grep 'mold'> /dev/null 2>&1; then
     libgomp_ld_is_mold=yes
+  elif $LD --version 2>/dev/null | grep 'Wild'> /dev/null 2>&1; then
+    libgomp_ld_is_wild=yes
   fi
 
   ldver=`$LD --version 2>/dev/null |
@@ -16751,6 +16754,8 @@ if test $enable_symvers != no && test $libgomp_shared_libgcc = yes; then
     elif test $libgomp_ld_is_gold = yes ; then
       enable_symvers=gnu
     elif test $libgomp_ld_is_mold = yes ; then
+      enable_symvers=gnu
+    elif test $libgomp_ld_is_wild = yes ; then
       enable_symvers=gnu
     else
       # The right tools, the right setup, but too old.  Fallbacks?
