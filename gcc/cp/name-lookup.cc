@@ -4063,6 +4063,11 @@ pushdecl (tree decl, bool hiding)
 	      }
 	}
 
+      /* Skip a hidden builtin we failed to match already.  There can
+	 only be one.  */
+      if (old && anticipated_builtin_p (old))
+	old = OVL_CHAIN (old);
+
       /* Check for redeclaring an import.  */
       if (slot && *slot && TREE_CODE (*slot) == BINDING_VECTOR)
 	if (tree match
@@ -4080,11 +4085,6 @@ pushdecl (tree decl, bool hiding)
 	  }
 
       /* We are pushing a new decl.  */
-
-      /* Skip a hidden builtin we failed to match already.  There can
-	 only be one.  */
-      if (old && anticipated_builtin_p (old))
-	old = OVL_CHAIN (old);
 
       if (hiding)
 	; /* Hidden bindings don't shadow anything.  */
