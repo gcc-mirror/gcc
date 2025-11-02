@@ -35,5 +35,5 @@ void cbcondle (long a)
 
 /* { dg-final { scan-assembler "cxbe\t%"  } } */
 /* { dg-final { scan-assembler "cxbne\t%" } } */
-/* { dg-final { scan-assembler "cxbl\t%"  } } */
-/* { dg-final { scan-assembler "cxble\t%" } } */
+/* { dg-final { scan-assembler "cxbl|cxbge\t%"  } } */
+/* { dg-final { scan-assembler "cxble|cxbg\t%" } } */

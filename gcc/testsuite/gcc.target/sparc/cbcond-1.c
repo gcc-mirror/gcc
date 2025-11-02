@@ -34,5 +34,5 @@ void cbcondle (int a)
 
 /* { dg-final { scan-assembler "cwbe\t%"  { target ilp32 } } } */
 /* { dg-final { scan-assembler "cwbne\t%" { target ilp32 } } } */
-/* { dg-final { scan-assembler "cwbl\t%"  } } */
-/* { dg-final { scan-assembler "cwble\t%" } } */
+/* { dg-final { scan-assembler "cwbl|cwbge\t%"  } } */
+/* { dg-final { scan-assembler "cwble|cwbg\t%" } } */

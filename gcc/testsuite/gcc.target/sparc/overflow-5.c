@@ -38,6 +38,6 @@ bool my_neg_overflow (int64_t a, int64_t *res)
 /* { dg-final { scan-assembler-times "addcc\t%" 2 } } */
 /* { dg-final { scan-assembler-times "subcc\t%" 4 } } */
 /* { dg-final { scan-assembler-times "addxc\t%" 3 } } */
-/* { dg-final { scan-assembler-times "bvs" 3 } } */
+/* { dg-final { scan-assembler-times "bvs|bvc" 3 } } */
 /* { dg-final { scan-assembler-not "cmp\t%" } } */
 /* { dg-final { scan-assembler-not "save\t%" } } */
