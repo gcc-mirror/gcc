@@ -1670,6 +1670,24 @@
     DONE;
   })
 
+(define_insn_and_split "bstrins_bstrpick_for_and_imm<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(and:X (match_operand:X 1 "register_operand" "r")
+	       (match_operand:X 2 "const_int_operand" "i")))]
+  "loongarch_use_bstrins_bstrpick_for_and (operands[2], <MODE>mode)"
+  "#"
+  "&& true"
+  [(const_int 0)]
+{
+  unsigned HOST_WIDE_INT op2 = INTVAL (operands[2]);
+  int leading_zero_bit = __builtin_clzll (op2);
+  unsigned HOST_WIDE_INT mask = (~0ULL) << (64 - leading_zero_bit);
+  emit_insn (gen_extzv<mode> (operands[0], operands[1],
+			      GEN_INT (64 - leading_zero_bit), const0_rtx));
+  emit_insn (gen_and<mode>3 (operands[0], operands[0], GEN_INT (op2 | mask)));
+}
+  [(set_attr "length" "8")])
+
 (define_insn "*iorhi3"
   [(set (match_operand:HI 0 "register_operand" "=r,r")
 	(ior:HI (match_operand:HI 1 "register_operand" "%r,r")

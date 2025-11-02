@@ -159,6 +159,7 @@ extern bool loongarch_use_ins_ext_p (rtx, HOST_WIDE_INT, HOST_WIDE_INT);
 extern bool loongarch_check_zero_div_p (void);
 extern bool loongarch_pre_reload_split (void);
 extern int loongarch_use_bstrins_for_ior_with_mask (machine_mode, rtx *);
+extern bool loongarch_use_bstrins_bstrpick_for_and (rtx, machine_mode);
 extern rtx loongarch_rewrite_mem_for_simple_ldst (rtx);
 
 union loongarch_gen_fn_ptrs

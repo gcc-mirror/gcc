@@ -3798,6 +3798,34 @@ loongarch_use_bstrins_for_ior_with_mask_1 (machine_mode mode,
   return 0;
 }
 
+/* Check if it is possible to optimize AND operation with an immediate:
+   a. immediate is loaded by more than 1 instruction
+   b. can use bstrpick.d + bstrins.d.  */
+
+bool
+loongarch_use_bstrins_bstrpick_for_and (rtx op, machine_mode mode)
+{
+  if (!TARGET_64BIT)
+    return false;
+
+  /* Avoid aggressive optimization of combine before reload.  */
+  if (!reload_completed)
+    return false;
+
+  /* It's meaningless if the OP is not splittable
+     and skip the cases already supported in AND operation.  */
+  if (!splittable_const_int_operand (op, mode) || and_operand (op, mode))
+    return false;
+
+  int leading_zero_bit = __builtin_clzll (UINTVAL (op));
+  unsigned HOST_WIDE_INT mask = (~0ULL) << (64 - leading_zero_bit);
+
+  if (ins_zero_bitmask_operand (GEN_INT (UINTVAL (op) | mask), mode))
+    return true;
+
+  return false;
+}
+
 /* Return the cost of moving between two registers of mode MODE.  */
 
 static int
@@ -3917,14 +3945,24 @@ loongarch_rtx_costs (rtx x, machine_mode mode, int outer_code,
       return false;
 
     case AND:
-      /* Check for a *clear_upper32 pattern and treat it like a zero
-	 extension.  See the pattern's comment for details.  */
-      if (TARGET_64BIT && mode == DImode && CONST_INT_P (XEXP (x, 1))
-	  && UINTVAL (XEXP (x, 1)) == 0xffffffff)
+      if (TARGET_64BIT && mode == DImode && CONST_INT_P (XEXP (x, 1)))
 	{
-	  *total = (loongarch_zero_extend_cost (XEXP (x, 0))
-		    + set_src_cost (XEXP (x, 0), mode, speed));
-	  return true;
+	  /* Check for a *clear_upper32 pattern and treat it like a zero
+	     extension.  See the pattern's comment for details.  */
+	  if (UINTVAL (XEXP (x, 1)) == 0xffffffff)
+	    {
+	      *total = (loongarch_zero_extend_cost (XEXP (x, 0))
+			+ set_src_cost (XEXP (x, 0), mode, speed));
+	      return true;
+	    }
+	  /* Check if it can be done by bstrpick.d and bstrins.d.  */
+	  else if (loongarch_use_bstrins_bstrpick_for_and (XEXP (x, 1), mode))
+	    {
+	      /* The pattern will be split into 2 insns.  */
+	      *total = (COSTS_N_INSNS (2)
+			+ set_src_cost (XEXP (x, 0), mode, speed));
+	      return true;
+	    }
 	}
       /* (AND (NOT op0) (NOT op1) is a nor operation that can be done in
 	 a single instruction.  */
