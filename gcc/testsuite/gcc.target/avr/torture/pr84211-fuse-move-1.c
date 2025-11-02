@@ -1,5 +1,6 @@
 /* { dg-do run } */
-/* { dg-additional-options -std=gnu99 } */
+/* Disable LTO since it has problems with flobal asm. */
+/* { dg-additional-options { -std=gnu99 -fno-lto } } */
 
 #define USE_VALUE 0
 
