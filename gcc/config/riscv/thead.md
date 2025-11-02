@@ -34,7 +34,7 @@
 (define_insn "*th_srri<mode>3"
   [(set (match_operand:GPR 0 "register_operand" "=r")
 	(rotatert:GPR (match_operand:GPR 1 "register_operand" "r")
-		     (match_operand 2 "const_int_operand" "n")))]
+		      (match_operand 2 "const_int_operand" "n")))]
   "TARGET_XTHEADBB && (TARGET_64BIT || <MODE>mode == SImode)"
   {
     bool wform = TARGET_64BIT && (<MODE>mode == SImode);
@@ -44,6 +44,22 @@
   }
   [(set_attr "type" "bitmanip")
    (set_attr "mode" "<GPR:MODE>")])
+
+;; Version with explicit sign extension to facilitate sign extension
+;; removal.
+(define_insn "*th_srrisi3_extended"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(sign_extend:DI
+	  (rotatert:SI (match_operand:SI 1 "register_operand" "r")
+		       (match_operand 2 "const_int_operand" "n"))))]
+  "TARGET_XTHEADBB && TARGET_64BIT"
+  {
+    operands[2] = GEN_INT (INTVAL (operands[2])
+			   & (GET_MODE_BITSIZE (SImode) - 1));
+    return "th.srriw\t%0,%1,%2";
+  }
+  [(set_attr "type" "bitmanip")
+   (set_attr "mode" "SI")])
 
 (define_insn "*th_ext<mode>4"
   [(set (match_operand:GPR 0 "register_operand" "=r")

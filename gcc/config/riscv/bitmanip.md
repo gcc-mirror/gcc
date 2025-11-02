@@ -357,7 +357,7 @@
 {
   if (TARGET_XTHEADBB && !immediate_operand (operands[2], VOIDmode))
     FAIL;
-  if (TARGET_64BIT && register_operand (operands[2], QImode))
+  if (TARGET_64BIT)
     {
       rtx t = gen_reg_rtx (DImode);
       emit_insn (gen_rotrsi3_sext (t, operands[1], operands[2]));
