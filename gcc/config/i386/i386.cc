@@ -598,6 +598,20 @@ ix86_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
 	}
     }
 
+  /* SUB (a, b) underflows precisely when a < b.  Convert
+     (compare (minus (a b)) a) to (compare (a b))
+     to match *sub<mode>_3 pattern.  */
+  if (!op0_preserve_value
+      && (*code == GTU || *code == LEU)
+      && GET_CODE (*op0) == MINUS
+      && rtx_equal_p (XEXP (*op0, 0), *op1))
+    {
+      *op1 = XEXP (*op0, 1);
+      *op0 = XEXP (*op0, 0);
+      *code = (int) swap_condition ((enum rtx_code) *code);
+      return;
+    }
+
   /* Swap operands of GTU comparison to canonicalize
      addcarry/subborrow comparison.  */
   if (!op0_preserve_value
