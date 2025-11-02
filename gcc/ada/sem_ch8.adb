@@ -5330,11 +5330,6 @@ package body Sem_Ch8 is
    ---------------------
 
    procedure End_Use_Package (N : Node_Id) is
-      Pack      : Entity_Id;
-      Pack_Name : Node_Id;
-      Id        : Entity_Id;
-      Elmt      : Elmt_Id;
-
       function Type_In_Use (T : Entity_Id; P : Entity_Id) return Boolean;
       --  Check whether type T is declared in P and appears in an active
       --  use_type clause.
@@ -5348,6 +5343,14 @@ package body Sem_Ch8 is
       begin
          return Scope (BT) = P and then (In_Use (T) or else In_Use (BT));
       end Type_In_Use;
+
+      --  Local variables
+
+      Elmt      : Elmt_Id;
+      Id        : Entity_Id;
+      Pack      : Entity_Id;
+      Pack_Name : Node_Id;
+      Scop      : Entity_Id;
 
    --  Start of processing for End_Use_Package
 
@@ -5373,17 +5376,20 @@ package body Sem_Ch8 is
 
                --  Preserve use-visibility of operators that are primitive
                --  operators of a type that is use-visible through an active
-               --  use_type_clause.
+               --  use_type_clause. Note that we compare with the scope of
+               --  the operator and not Pack itself, lest Pack be a renaming.
+
+               Scop := Scope (Id);
 
                if Nkind (Id) = N_Defining_Operator_Symbol
                  and then
-                   (Type_In_Use (Etype (Id), Pack)
-                     or else Type_In_Use (Etype (First_Formal (Id)), Pack)
+                   (Type_In_Use (Etype (Id), Scop)
+                     or else Type_In_Use (Etype (First_Formal (Id)), Scop)
                      or else
                        (Present (Next_Formal (First_Formal (Id)))
                          and then
                            Type_In_Use
-                             (Etype (Next_Formal (First_Formal (Id))), Pack)))
+                             (Etype (Next_Formal (First_Formal (Id))), Scop)))
                then
                   null;
                else
