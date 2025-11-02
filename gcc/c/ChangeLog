@@ -1,3 +1,21 @@
+2025-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	* c-decl.cc (build_compound_literal): Add error.
+	* c-parser.cc (c_parser_braced_init): Take bool argument for
+	variable size instead of DECL.
+	(c_parser_initializer,c_parser_initval): Adapt.
+	(c_parser_postfix_expression_after_paren_type): Change
+	error to pedwarn.
+	* c-typeck.cc (process_init_element): Add error for
+	variable-size compound literal with static or constexpr.
+
+2025-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/97986
+	* c-parser.cc (c_parser_postfix_expression): Adapt.
+	* c-tree.h (c_build_va_arg): Adapt prototype.
+	* c-typeck.cc (c_build_va_arg): Handle UB.
+
 2025-10-30  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-typeck.cc (build_access_with_size_for_counted_by): When the element

@@ -1,3 +1,9 @@
+2025-11-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/78640
+	* resolve.cc (resolve_fl_procedure): Check function result of a
+	pure function against F2018:C1585.
+
 2025-10-31  Yuao Ma  <c8ef@outlook.com>
 
 	* intrinsic.texi: Fix typo.

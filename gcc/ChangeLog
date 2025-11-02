@@ -1,3 +1,69 @@
+2025-11-01  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/67731
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1):
+	Handle IOR of single bit bitfields from the same object.
+
+2025-11-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-protos.h (has_vtype_op): Add prototype.
+	(mask_agnostic_p, get_avl, vsetvl_insn_p): Likewise.
+	* config/riscv/riscv-vsetvl.cc (has_vtype_op): No longer static.
+	(vsetvl_insn_p, get_avl_mask_agnostic_p): Likewise.
+	* config/riscv/riscv.cc (struct last_vcofnig): New structure.
+	(clear_vconfig): New function.
+	(compatible_with_last_vconfig, riscv_sched_init): Likewise.
+	(riscv_sched_reorder): Likewise.
+	(TARGET_SCHED_INIT, TARGET_SCHED_REORDER): Define.
+	* config/riscv/vector.md ("*mov<mode>"): Set has_vtype_op, has_vl_op
+	attributes.
+	* .simplify-rtx.cc.swo: New file.
+
+2025-11-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122321
+	* lra-constraints.cc (update_equiv): Make sure REGNO is in
+	ira_reg_equiv before trying to update ira_reg_equiv.
+
+2025-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	* doc/extend.texi: Document new extension.
+
+2025-11-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (negsf2):
+	Add another insn pattern that is valid when TARGET_DENSITY is
+	enabled and both the source and destination are address registers.
+
+2025-11-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md
+	(c_enum "unspec", int_iterator ANY_ROUND): Add UNSPEC_ROUND.
+	(int_attr m_round): Add a pair of UNSPEC_ROUND and "round".
+	(int_attr c_round): New integer iterator attribute, that expands
+	to "flag_unsafe_math_optimizations" in the case of UNSPEC_ROUND,
+	and to "1" otherwise.
+	(l<m_round>sfsi2, *l<m_round>sfsi2_2x, *l<m_round>sfsi2_scaled):
+	Append " && <c_round>" to the conditions.
+
+2025-11-01  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (*fix<s_fix>_truncsfsi2_scaled,
+	*float<s_float>sisf2_scaled, *l<m_round>sfsi2_scaled):
+	Remove 'F'-constraint.
+
+2025-11-01  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR ipa/122512
+	* cgraph.h (enum toplevel_type): Add TOPLEVEL_MAX. Add comment
+	about keeping toplevel_type_names in sync.
+	* symtab.cc (symtab_type_names): Rename to ...
+	(toplevel_type_names): Add new types and add an assert about
+	the size.
+	(symtab_node::get_symtab_type_string): Use toplevel_type_names
+	instead of symtab_type_names.
+	(symtab_node::dump_base): Likewise.
+
 2025-10-31  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/122437

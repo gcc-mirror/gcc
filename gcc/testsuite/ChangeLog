@@ -1,3 +1,43 @@
+2025-11-01  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/67731
+	* gcc.target/riscv/pr67731.c: New test.
+	* gcc.target/sh/pr67731.c: New test.
+
+2025-11-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122321
+	* gcc.target/riscv/rvv/autovec/pr122321.c: New test.
+
+2025-11-01  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/78640
+	* gfortran.dg/pure_result.f90: New test.
+
+2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122381
+	* g++.dg/modules/convop-2_a.H: New test.
+	* g++.dg/modules/convop-2_b.C: New test.
+
+2025-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	* gcc.dg/gnu-compoundlit-1.c: New test.
+	* gcc.dg/gnu-compoundlit-2.c: New test.
+	* gcc.dg/pr68090.c: Adapt.
+	* gcc.dg/vla-init-4.c: Adapt.
+	* gcc.dg/vla-init-5.c: Adapt.
+
+2025-11-01  Martin Uecker  <uecker@tugraz.at>
+
+	PR c/97986
+	* gcc.dg/pr97986-1.c: New test.
+	* gcc.dg/pr97986-2.c: New test.
+
+2025-11-01  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.dg/fold-vecperm-1.c: Test at forwprop3.
+
 2025-10-31  Tamar Christina  <tamar.christina@arm.com>
 
 	PR target/121853
