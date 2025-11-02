@@ -1,3 +1,13 @@
+2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122381
+	* module.cc (trees_out::core_vals): Write BASELINK_OPTYPE (aka
+	TREE_CHAIN).
+	(trees_in::core_vals): Read it.
+
 2025-10-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
