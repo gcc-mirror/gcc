@@ -7108,6 +7108,10 @@ static bool
 loongarch_can_change_mode_class (machine_mode from, machine_mode to,
 				 reg_class_t rclass)
 {
+  if ((INTEGRAL_MODE_P (from) && FLOAT_MODE_P (to))
+      || (INTEGRAL_MODE_P (to) && FLOAT_MODE_P (from)))
+    return true;
+
   /* Allow conversions between different LSX/LASX vector modes.  */
   if (LASX_SUPPORTED_MODE_P (from) && LASX_SUPPORTED_MODE_P (to))
     return true;
