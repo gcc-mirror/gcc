@@ -8500,26 +8500,28 @@ package body Sem_Ch3 is
          Full_P := Full_View (Parent_Type);
 
          --  A type extension of a type with unknown discriminants is an
-         --  indefinite type that the back-end cannot handle directly.
+         --  indefinite type that the back end cannot handle directly.
          --  We treat it as a private type, and build a completion that is
          --  derived from the full view of the parent, and hopefully has
-         --  known discriminants.
+         --  known discriminants. Note that the type will nevertheless be
+         --  turned into a public type in Build_Derived_Record_Type as for
+         --  any other extension; the only difference is the completion.
 
          --  If the full view of the parent type has an underlying record view,
-         --  use it to generate the underlying record view of this derived type
+         --  use it to generate the underlying record view of the derived type
          --  (required for chains of derivations with unknown discriminants).
 
-         --  Minor optimization: we avoid the generation of useless underlying
-         --  record view entities if the private type declaration has unknown
-         --  discriminants but its corresponding full view has no
-         --  discriminants.
+         --  Minor optimization: we avoid creating useless underlying record
+         --  view entities when the private type has unknown discriminants but
+         --  its corresponding full view has no discriminants.
 
          if Has_Unknown_Discriminants (Parent_Type)
            and then Present (Full_P)
            and then (Has_Discriminants (Full_P)
                       or else Present (Underlying_Record_View (Full_P)))
-           and then not In_Open_Scopes (Par_Scope)
-           and then Expander_Active
+           and then (not In_Open_Scopes (Par_Scope)
+                      or else not (In_Package_Body (Par_Scope)
+                                    or else In_Private_Part (Par_Scope)))
          then
             declare
                Full_Der : constant Entity_Id := Make_Temporary (Loc, 'T');
@@ -8534,7 +8536,7 @@ package body Sem_Ch3 is
 
                --  Build anonymous completion, as a derivation from the full
                --  view of the parent. This is not a completion in the usual
-               --  sense, because the current type is not private.
+               --  sense, because the derived type is no longer private.
 
                Decl :=
                  Make_Full_Type_Declaration (Loc,
@@ -8557,8 +8559,18 @@ package body Sem_Ch3 is
                     Underlying_Record_View (Full_P));
                end if;
 
+               --  If the extension is done in the public part of the scope of
+               --  the parent, its visible declarations have been installed, so
+               --  we first need to uninstall them before reinstalling both the
+               --  private and the visible declarations in this order.
+
+               if In_Open_Scopes (Par_Scope) then
+                  Uninstall_Declarations (Par_Scope);
+               end if;
+
                Install_Private_Declarations (Par_Scope);
                Install_Visible_Declarations (Par_Scope);
+
                Insert_Before (N, Decl);
 
                --  Mark entity as an underlying record view before analysis,
@@ -8581,6 +8593,13 @@ package body Sem_Ch3 is
                       or else Serious_Errors_Detected > 0);
 
                Uninstall_Declarations (Par_Scope);
+
+               --  If the extension is done in the public part of the scope of
+               --  the parent, reinstall the visible declarations only.
+
+               if In_Open_Scopes (Par_Scope) then
+                  Install_Visible_Declarations (Par_Scope);
+               end if;
 
                if Etype (Full_Der) = Any_Type then
                   pragma Assert (Serious_Errors_Detected > 0);
@@ -10007,13 +10026,15 @@ package body Sem_Ch3 is
                  or else Unknown_Discriminants_Present (N));
 
          --  The partial view of the parent may have unknown discriminants,
-         --  but if the full view has discriminants and the parent type is
-         --  in scope they must be inherited.
+         --  but when its full view has discriminants and is visible, then
+         --  these discriminants must be inherited.
 
          elsif Has_Unknown_Discriminants (Parent_Type)
            and then
             (not Has_Discriminants (Parent_Type)
-              or else not In_Open_Scopes (Scope (Parent_Base)))
+              or else not In_Open_Scopes (Scope (Parent_Base))
+              or else not (In_Package_Body (Scope (Parent_Base))
+                            or else In_Private_Part (Scope (Parent_Base))))
          then
             Set_Has_Unknown_Discriminants (Derived_Type);
          end if;
@@ -15144,18 +15165,19 @@ package body Sem_Ch3 is
          Fixup_Bad_Constraint;
          return;
 
-      --  Check that the type has visible discriminants. The type may be
-      --  a private type with unknown discriminants whose full view has
-      --  discriminants which are invisible.
+      --  Check that the type has known discriminants
 
-      elsif not Has_Discriminants (T)
-        or else
-          (Has_Unknown_Discriminants (T)
-             and then Is_Private_Type (T))
-      then
+      elsif Has_Unknown_Discriminants (T) then
+         Error_Msg_N ("invalid constraint: type has unknown discriminants", C);
+         Fixup_Bad_Constraint;
+         return;
+
+      elsif not Has_Discriminants (T) then
          Error_Msg_N ("invalid constraint: type has no discriminant", C);
          Fixup_Bad_Constraint;
          return;
+
+      --  And is not already constrained
 
       elsif Is_Constrained (E)
         or else (Ekind (E) = E_Class_Wide_Subtype
