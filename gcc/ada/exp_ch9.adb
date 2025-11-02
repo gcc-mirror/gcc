@@ -8212,15 +8212,27 @@ package body Exp_Ch9 is
          --  as part of the regular flow of the front end at the end of
          --  analysis of the enclosing task/protected type declaration.
 
+         --  Freeze immediately all the newly created entities, because
+         --  otherwise they might be frozen in the wrong scope (in the
+         --  non-deferred case, they are frozen when the enclosing task/
+         --  protected type is frozen, but they didn't exist by that time).
+
          if Was_Deferred then
-            Push_Scope (Scope (Entry_Ent));
+            declare
+               From : constant Entity_Id := Last_Entity (Scope (Entry_Ent));
 
-            while First_Decl /= Last_Decl loop
-               Next (First_Decl);
-               Analyze (First_Decl);
-            end loop;
+            begin
+               Push_Scope (Scope (Entry_Ent));
 
-            End_Scope;
+               while First_Decl /= Last_Decl loop
+                  Next (First_Decl);
+                  Analyze (First_Decl);
+               end loop;
+
+               Freeze_All (From, Last_Decl);
+
+               End_Scope;
+            end;
          end if;
       end if;
    end Expand_N_Entry_Declaration;
