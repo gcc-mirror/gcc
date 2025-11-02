@@ -55,7 +55,8 @@ test_vec_unpacks_float_hi_lo_v8si (void)
 }
 
 /* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v8si:.*\tvext2xv\\.d\\.w.*-test_vec_unpacks_hi_lo_v8si" } } */
-/* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v8si:.*\txvpermi\\.q.*-test_vec_unpacks_hi_lo_v8si" } } */
+/* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v8si:.*\txvpermi\\.d.*-test_vec_unpacks_hi_lo_v8si" } } */
+/* { dg-final { scan-assembler-not "test_vec_unpacks_hi_lo_v8si:.*\txvpermi\\.q.*-test_vec_unpacks_hi_lo_v8si" } } */
 void
 test_vec_unpacks_hi_lo_v8si (void)
 {
@@ -64,7 +65,8 @@ test_vec_unpacks_hi_lo_v8si (void)
 }
 
 /* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v16hi:.*\tvext2xv\\.w\\.h.*-test_vec_unpacks_hi_lo_v16hi" } } */
-/* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v16hi:.*\txvpermi\\.q.*-test_vec_unpacks_hi_lo_v16hi" } } */
+/* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v16hi:.*\txvpermi\\.d.*-test_vec_unpacks_hi_lo_v16hi" } } */
+/* { dg-final { scan-assembler-not "test_vec_unpacks_hi_lo_v16hi:.*\txvpermi\\.q.*-test_vec_unpacks_hi_lo_v16hi" } } */
 void
 test_vec_unpacks_hi_lo_v16hi (void)
 {
@@ -73,7 +75,8 @@ test_vec_unpacks_hi_lo_v16hi (void)
 }
 
 /* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v32qi:.*\tvext2xv\\.h\\.b.*-test_vec_unpacks_hi_lo_v32qi" } } */
-/* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v32qi:.*\txvpermi\\.q.*-test_vec_unpacks_hi_lo_v32qi" } } */
+/* { dg-final { scan-assembler "test_vec_unpacks_hi_lo_v32qi:.*\txvpermi\\.d.*-test_vec_unpacks_hi_lo_v32qi" } } */
+/* { dg-final { scan-assembler-not "test_vec_unpacks_hi_lo_v32qi:.*\txvpermi\\.q.*-test_vec_unpacks_hi_lo_v32qi" } } */
 void
 test_vec_unpacks_hi_lo_v32qi (void)
 {
@@ -91,7 +94,8 @@ test_vec_unpacks_hi_lo_v8sf (void)
 }
 
 /* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v8si:.*\tvext2xv\\.du\\.wu.*-test_vec_unpacku_hi_lo_v8si" } } */
-/* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v8si:.*\txvpermi\\.q.*-test_vec_unpacku_hi_lo_v8si" } } */
+/* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v8si:.*\txvpermi\\.d.*-test_vec_unpacku_hi_lo_v8si" } } */
+/* { dg-final { scan-assembler-not "test_vec_unpacku_hi_lo_v8si:.*\txvpermi\\.q.*-test_vec_unpacku_hi_lo_v8si" } } */
 void
 test_vec_unpacku_hi_lo_v8si (void)
 {
@@ -100,7 +104,8 @@ test_vec_unpacku_hi_lo_v8si (void)
 }
 
 /* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v16hi:.*\tvext2xv\\.wu\\.hu.*-test_vec_unpacku_hi_lo_v16hi" } } */
-/* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v16hi:.*\txvpermi\\.q.*-test_vec_unpacku_hi_lo_v16hi" } } */
+/* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v16hi:.*\txvpermi\\.d.*-test_vec_unpacku_hi_lo_v16hi" } } */
+/* { dg-final { scan-assembler-not "test_vec_unpacku_hi_lo_v16hi:.*\txvpermi\\.q.*-test_vec_unpacku_hi_lo_v16hi" } } */
 void
 test_vec_unpacku_hi_lo_v16hi (void)
 {
@@ -109,7 +114,8 @@ test_vec_unpacku_hi_lo_v16hi (void)
 }
 
 /* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v32qi:.*\tvext2xv\\.hu\\.bu.*-test_vec_unpacku_hi_lo_v32qi" } } */
-/* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v32qi:.*\txvpermi\\.q.*-test_vec_unpacku_hi_lo_v32qi" } } */
+/* { dg-final { scan-assembler "test_vec_unpacku_hi_lo_v32qi:.*\txvpermi\\.d.*-test_vec_unpacku_hi_lo_v32qi" } } */
+/* { dg-final { scan-assembler-not "test_vec_unpacku_hi_lo_v32qi:.*\txvpermi\\.q.*-test_vec_unpacku_hi_lo_v32qi" } } */
 void
 test_vec_unpacku_hi_lo_v32qi (void)
 {

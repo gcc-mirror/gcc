@@ -515,7 +515,7 @@
    (set_attr "mode" "<MODE>")])
 
 ;; xvpermi.q
-(define_insn "lasx_xvpermi_q_<LASX:mode>"
+(define_insn_and_split "lasx_xvpermi_q_<LASX:mode>"
   [(set (match_operand:LASX 0 "register_operand" "=f")
 	(unspec:LASX
 	  [(match_operand:LASX 1 "register_operand" "0")
@@ -525,6 +525,37 @@
   "ISA_HAS_LASX"
 {
   return "xvpermi.q\t%u0,%u2,%3";
+}
+  "&& ((INTVAL (operands[3]) & 0xee) == 0x0
+       || (INTVAL (operands[3]) & 0xee) == 0x22)"
+  [(const_int 0)]
+{
+  HOST_WIDE_INT selector = INTVAL (operands[3]);
+  /* Reduce the dependency caused by using output operands[0] as input.  */
+  switch (INTVAL (operands[3]))
+    {
+    case 0x22:
+    case 0x23:
+    case 0x33:
+      selector -= 0x22;
+      operands[2] = operands[1];
+    /* FALLTHRU.  */
+    case 0x0:
+    case 0x1:
+    case 0x11:
+      emit_insn (gen_lasx_xvpermi_d_<mode> (operands[0], operands[2],
+					    GEN_INT (selector * 0xa + 0x44)));
+      break;
+    case 0x10:
+      emit_move_insn (operands[0], operands[2]);
+      break;
+    case 0x32:
+      emit_move_insn (operands[0], operands[1]);
+      break;
+    default:
+      gcc_unreachable ();
+    }
+  DONE;
 }
   [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])

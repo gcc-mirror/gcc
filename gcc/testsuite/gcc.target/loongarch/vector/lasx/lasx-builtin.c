@@ -3301,7 +3301,7 @@ __lasx_vext2xv_du_bu (v32i8 _1)
 v32i8
 __lasx_xvpermi_q (v32i8 _1, v32i8 _2)
 {
-  return __builtin_lasx_xvpermi_q (_1, _2, 1);
+  return __builtin_lasx_xvpermi_q (_1, _2, 0x20);
 }
 v4i64
 __lasx_xvpermi_d (v4i64 _1)
