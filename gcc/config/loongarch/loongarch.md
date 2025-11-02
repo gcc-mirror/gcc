@@ -1636,6 +1636,21 @@
     operands[3] = tmp;
   })
 
+(define_insn "and_load_zero_extend<mode>"
+  [(set (match_operand:X 0 "register_operand" "=r,r,r,r,r,r")
+	(and:X (match_operand:X 1 "memory_operand" "%m,m,m,k,k,k")
+	       (match_operand:X 2 "mask_operand" "Yb,Yh,Yw,Yb,Yh,Yw")))]
+  ""
+  "@
+   ld.bu\t%0,%1
+   ld.hu\t%0,%1
+   ld.wu\t%0,%1
+   ldx.bu\t%0,%1
+   ldx.hu\t%0,%1
+   ldx.wu\t%0,%1"
+  [(set_attr "move_type" "load,load,load,load,load,load")
+   (set_attr "mode" "<MODE>")])
+
 ;; We always avoid the shift operation in bstrins_<mode>_for_ior_mask
 ;; if possible, but the result may be sub-optimal when one of the masks
 ;; is (1 << N) - 1 and one of the src register is the dest register.

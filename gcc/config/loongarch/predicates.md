@@ -413,6 +413,11 @@
        (match_operand 0 "low_bitmask_operand")
        (match_operand 0 "ins_zero_bitmask_operand")))
 
+(define_predicate "mask_operand"
+  (ior (match_operand 0 "qi_mask_operand")
+       (match_operand 0 "hi_mask_operand")
+       (match_operand 0 "si_mask_operand")))
+
 (define_predicate "const_call_insn_operand"
   (match_code "const,symbol_ref,label_ref")
 {
