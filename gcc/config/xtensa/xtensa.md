@@ -103,13 +103,12 @@
 (define_code_attr m_float [(float "float") (unsigned_float "ufloat")])
 (define_code_attr s_float [(float "") (unsigned_float "uns")])
 
-;; This iterator and attribute allow FP-to-integer rounding of two types
+;; This iterator and attribute allow FP-to-integer rounding of three types
 ;; to be generated from one template.
-(define_int_iterator ANY_ROUND [UNSPEC_CEIL UNSPEC_FLOOR UNSPEC_ROUND])
+(define_int_iterator ANY_ROUND [UNSPEC_CEIL UNSPEC_FLOOR
+				(UNSPEC_ROUND "flag_unsafe_math_optimizations")])
 (define_int_attr m_round [(UNSPEC_CEIL "ceil") (UNSPEC_FLOOR "floor")
 			  (UNSPEC_ROUND "round")])
-(define_int_attr c_round [(UNSPEC_CEIL "1") (UNSPEC_FLOOR "1")
-			  (UNSPEC_ROUND "flag_unsafe_math_optimizations")])
 
 
 ;; Attributes.
@@ -1174,7 +1173,7 @@
 (define_insn "l<m_round>sfsi2"
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(unspec:SI [(match_operand:SF 1 "register_operand" "f")] ANY_ROUND))]
-  "TARGET_HARD_FLOAT && <c_round>"
+  "TARGET_HARD_FLOAT"
   "<m_round>.s\t%0, %1, 0"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
@@ -1184,7 +1183,7 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(unspec:SI [(plus:SF (match_operand:SF 1 "register_operand" "f")
 			     (match_dup 1))] ANY_ROUND))]
-  "TARGET_HARD_FLOAT && <c_round>"
+  "TARGET_HARD_FLOAT"
   "<m_round>.s\t%0, %1, 1"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
@@ -1194,7 +1193,7 @@
   [(set (match_operand:SI 0 "register_operand" "=a")
 	(unspec:SI [(mult:SF (match_operand:SF 1 "register_operand" "f")
 			     (match_operand:SF 2 "fix_scaling_operand" ""))] ANY_ROUND))]
-  "TARGET_HARD_FLOAT && <c_round>"
+  "TARGET_HARD_FLOAT"
   "<m_round>.s\t%0, %1, %U2"
   [(set_attr "type"	"fconv")
    (set_attr "mode"	"SF")
