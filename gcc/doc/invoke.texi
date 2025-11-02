@@ -991,12 +991,12 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{Blackfin Options} (@ref{Blackfin Options})
 @gccoptlist{-mcpu=@var{cpu}@r{[}-@var{sirevision}@r{]}
--msim  -momit-leaf-frame-pointer  -mno-omit-leaf-frame-pointer
--mspecld-anomaly  -mno-specld-anomaly  -mcsync-anomaly  -mno-csync-anomaly
--mlow-64k  -mno-low64k  -mstack-check-l1  -mid-shared-library
--mno-id-shared-library  -mshared-library-id=@var{n}
--mleaf-id-shared-library  -mno-leaf-id-shared-library
--msep-data  -mno-sep-data  -mlong-calls  -mno-long-calls
+-msim  -momit-leaf-frame-pointer
+-mspecld-anomaly  -mcsync-anomaly
+-mlow-64k  -mstack-check-l1  -mid-shared-library
+-mleaf-id-shared-library
+-mshared-library-id=@var{n}
+-msep-data  -mlong-calls
 -mfast-fp  -minline-plt  -mmulticore  -mcorea  -mcoreb  -msdram
 -micplb}
 
@@ -26160,73 +26160,66 @@ Certain other options, such as @option{-mid-shared-library} and
 @option{-mfdpic}, imply @option{-msim}.
 
 @opindex momit-leaf-frame-pointer
+@opindex mno-omit-leaf-frame-pointer
 @item -momit-leaf-frame-pointer
 Don't keep the frame pointer in a register for leaf functions.  This
 avoids the instructions to save, set up and restore frame pointers and
 makes an extra register available in leaf functions.
 
 @opindex mspecld-anomaly
+@opindex mno-specld-anomaly
 @item -mspecld-anomaly
+@itemx -mno-specld-anomaly
 When enabled, the compiler ensures that the generated code does not
 contain speculative loads after jump instructions. If this option is used,
 @code{__WORKAROUND_SPECULATIVE_LOADS} is defined.
 
-@opindex mno-specld-anomaly
-@opindex mspecld-anomaly
-@item -mno-specld-anomaly
-Don't generate extra code to prevent speculative loads from occurring.
-
 @opindex mcsync-anomaly
+@opindex mno-csync-anomaly
 @item -mcsync-anomaly
+@itemx -mno-csync-anomaly
 When enabled, the compiler ensures that the generated code does not
 contain CSYNC or SSYNC instructions too soon after conditional branches.
 If this option is used, @code{__WORKAROUND_SPECULATIVE_SYNCS} is defined.
 
-@opindex mno-csync-anomaly
-@opindex mcsync-anomaly
-@item -mno-csync-anomaly
-Don't generate extra code to prevent CSYNC or SSYNC instructions from
-occurring too soon after a conditional branch.
-
 @opindex mlow64k
-@item -mlow64k
-When enabled, the compiler is free to take advantage of the knowledge that
-the entire program fits into the low 64k of memory.
-
 @opindex mno-low64k
-@item -mno-low64k
-Assume that the program is arbitrarily large.  This is the default.
+@item -mlow64k
+@itemx -mno-low64k
+When enabled, the compiler is free to take advantage of the knowledge that
+the entire program fits into the low 64k of memory.  The default behavior
+is to assume that the program is arbitrarily large (@option{-mno-low64k}).
 
 @opindex mstack-check-l1
+@opindex mno-stack-check-l1
 @item -mstack-check-l1
 Do stack checking using information placed into L1 scratchpad memory by the
 uClinux kernel.
 
 @opindex mid-shared-library
+@opindex mno-id-shared-library
 @item -mid-shared-library
+@itemx -mno-id-shared-library
 Generate code that supports shared libraries via the library ID method.
 This allows for execute in place and shared libraries in an environment
 without virtual memory management.  This option implies @option{-fPIC}.
 With a @samp{bfin-elf} target, this option implies @option{-msim}.
-
-@opindex mno-id-shared-library
-@opindex mid-shared-library
-@item -mno-id-shared-library
-Generate code that doesn't assume ID-based shared libraries are being used.
-This is the default.
+The default is @option{-mno-id-shared-library}, to generate
+code that doesn't assume ID-based shared libraries are being used.
 
 @opindex mleaf-id-shared-library
+@opindex mno-leaf-id-shared-library
 @item -mleaf-id-shared-library
+@itemx -mno-leaf-id-shared-library
 Generate code that supports shared libraries via the library ID method,
 but assumes that this library or executable won't link against any other
 ID shared libraries.  That allows the compiler to use faster code for jumps
 and calls.
 
-@opindex mno-leaf-id-shared-library
-@opindex mleaf-id-shared-library
-@item -mno-leaf-id-shared-library
-Do not assume that the code being compiled won't link against any ID shared
-libraries.  Slower code is generated for jump and call insns.
+The default is @option{-mno-leaf-id-shared-library}, in which the
+no assumption is made that the code being compiled won't link
+against any ID shared libraries.  Slower code is generated for jump
+and call insns.
 
 @opindex mshared-library-id
 @item -mshared-library-id=n
@@ -26236,17 +26229,15 @@ other values forces the allocation of that number to the current
 library but is no more space- or time-efficient than omitting this option.
 
 @opindex msep-data
+@opindex mno-sep-data
 @item -msep-data
+@itemx -mno-sep-data
 Generate code that allows the data segment to be located in a different
 area of memory from the text segment.  This allows for execute in place in
 an environment without virtual memory management by eliminating relocations
-against the text section.
-
-@opindex mno-sep-data
-@opindex msep-data
-@item -mno-sep-data
-Generate code that assumes that the data segment follows the text segment.
-This is the default.
+against the text section.  The default is @option{-mno-sep-data}, which
+tells GCC to generate code that assumes that the data segment follows
+the text segment.
 
 @opindex mlong-calls
 @opindex mno-long-calls
@@ -26264,17 +26255,20 @@ switches have no effect on how the compiler generates code to handle
 function calls via function pointers.
 
 @opindex mfast-fp
+@opindex mno-fast-fp
 @item -mfast-fp
 Link with the fast floating-point library. This library relaxes some of
 the IEEE floating-point standard's rules for checking inputs against
 Not-a-Number (NAN), in the interest of performance.
 
 @opindex minline-plt
+@opindex mno-inline-plt
 @item -minline-plt
 Enable inlining of PLT entries in function calls to functions that are
 not known to bind locally.  It has no effect without @option{-mfdpic}.
 
 @opindex mmulticore
+@opindex mno-multicore
 @item -mmulticore
 Build a standalone application for multicore Blackfin processors.
 This option causes proper start files and link scripts supporting
@@ -26291,6 +26285,7 @@ If this option is not used, the single-core application programming
 model is used.
 
 @opindex mcorea
+@opindex mno-corea
 @item -mcorea
 Build a standalone application for Core A of BF561 when using
 the one-application-per-core programming model. Proper start files
@@ -26299,6 +26294,7 @@ and link scripts are used to support Core A, and the macro
 This option can only be used in conjunction with @option{-mmulticore}.
 
 @opindex mcoreb
+@opindex mno-coreb
 @item -mcoreb
 Build a standalone application for Core B of BF561 when using
 the one-application-per-core programming model. Proper start files
@@ -26308,6 +26304,7 @@ should be used instead of @code{main}.
 This option can only be used in conjunction with @option{-mmulticore}.
 
 @opindex msdram
+@opindex mno-sdram
 @item -msdram
 Build a standalone application for SDRAM. Proper start files and
 link scripts are used to put the application into SDRAM, and the macro
@@ -26315,6 +26312,7 @@ link scripts are used to put the application into SDRAM, and the macro
 The loader should initialize SDRAM before loading the application.
 
 @opindex micplb
+@opindex mno-icplb
 @item -micplb
 Assume that ICPLBs are enabled at run time.  This has an effect on certain
 anomaly workarounds.  For Linux targets, the default is to assume ICPLBs
