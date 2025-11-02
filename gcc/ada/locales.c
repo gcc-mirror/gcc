@@ -646,7 +646,7 @@ str_get_last_byte (char *lc_all) {
   return last_byte;
 }
 
-/* Utility function to search in the iso_639_1 table for an iso-639-1 code;
+/* Utility function to search in the iso_639 table for an iso-639-1 code;
    returns the corresponding iso-639-3 code or NULL if not found. */
 
 static char*
@@ -670,7 +670,30 @@ iso_639_1_to_639_3(char* iso_639_1_code) {
   return NULL;
 }
 
-/* Utility function to search in the iso_639_1 table for a language name;
+/* Utility function to search in the iso_639 table for an iso-639-3 code;
+   returns 1 if found or 0 if not found. */
+
+static int
+is_iso_639_3(char* iso_639_3_code) {
+  int len = ARRAY_SIZE (iso_639);
+  char **p = iso_639;
+  int j;
+
+  p = p + 1;
+  for (j=0; j < len/3; j++) {
+    char* s1 = iso_639_3_code;
+    char* s2 = *p;
+
+    if (s1[0]==s2[0] && s1[1]==s2[1] && s1[2]==s2[2])
+      return 1;
+
+    p = p + 3;
+  }
+
+  return 0;
+}
+
+/* Utility function to search in the iso_639 table for a language name;
    returns the corresponding iso-639-3 code or NULL if not found. */
 
 static char*
@@ -772,7 +795,8 @@ c_get_language_code (char4 p) {
     /* Copy the ISO-639-3 code (adding a null terminator) */
 
     } else if (lang_length == 3) {
-      str_copy(iso_639_3_code, lc_all, lang_length);
+      if (is_iso_639_3(lc_all))
+        str_copy(iso_639_3_code, lc_all, lang_length);
 
     /* Handle conversion of language name to ISO-639-3 */
 
