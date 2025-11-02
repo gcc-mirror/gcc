@@ -3425,6 +3425,306 @@ expr_to_str (pretty_printer &pp, tree expr, const char *dflt)
   return pp_formatted_text (&pp);
 }
 
+/* Helper for warn_parms_array_mismatch.  Compare the mappings of
+   two function parameters and diagnose mismatches.  ORIGLOC is the
+   location of the first function declaration.  CURP and NEWP are the
+   parameters in the first and second function declarators,
+   respectively.  PARMPOS is the position of the parameters within the
+   list of parameter declarations.  BUILTIN is true if the function is
+   a builtin.  */
+
+static void
+warn_parm_array_mismatch (location_t origloc, rdwr_map *cur_idx,
+			  rdwr_map *new_idx, tree curp, tree newp,
+			  unsigned parmpos, bool builtin)
+{
+  /* Create an empty access specification and use it for pointers with
+     no spec of their own.  */
+  attr_access ptr_spec = { };
+
+  /* Only check pointers and C++ references.  */
+  tree curptype = TREE_TYPE (curp);
+  tree newptype = TREE_TYPE (newp);
+  if (!POINTER_TYPE_P (curptype) || !POINTER_TYPE_P (newptype))
+    return;
+
+  /* Skip mismatches in __builtin_va_list that is commonly
+     an array but that in declarations of built-ins decays
+     to a pointer.  */
+  if (builtin && TREE_TYPE (newptype) == TREE_TYPE (va_list_type_node))
+    return;
+
+  /* Access specs for the argument on the current (previous) and
+     new (to replace the current) declarations.  Either may be null,
+     indicating the parameter is an ordinary pointer with no size
+     associated with it.  */
+  attr_access *cura = cur_idx->get (parmpos);
+  attr_access *newa = new_idx->get (parmpos);
+
+  if (!newa)
+    {
+      /* Continue if both parameters are pointers with no size
+	 associated with them.  */
+      if (!cura)
+	return;
+
+      /* Otherwise point at PTR_SPEC and set its parameter pointer
+	 and number.  */
+      newa = &ptr_spec;
+      newa->ptr = newp;
+      newa->ptrarg = parmpos;
+    }
+  else if (!cura)
+    {
+      cura = &ptr_spec;
+      cura->ptr = curp;
+      cura->ptrarg = parmpos;
+    }
+
+  /* Set if the parameter is [re]declared as a VLA.  */
+  const bool cur_vla_p = cura->size || cura->minsize == HOST_WIDE_INT_M1U;
+  const bool new_vla_p = newa->size || newa->minsize == HOST_WIDE_INT_M1U;
+
+  if (DECL_P (curp))
+    origloc = DECL_SOURCE_LOCATION (curp);
+  else if (EXPR_P (curp) && EXPR_HAS_LOCATION (curp))
+    origloc = EXPR_LOCATION (curp);
+
+  /* The location of the parameter in the current redeclaration.  */
+  location_t newloc = DECL_SOURCE_LOCATION (newp);
+  if (origloc == UNKNOWN_LOCATION)
+    origloc = newloc;
+
+  const std::string newparmstr = newa->array_as_string (newptype);
+  const std::string curparmstr = cura->array_as_string (curptype);
+  if (new_vla_p && !cur_vla_p)
+    {
+      if (warning_at (newloc, OPT_Wvla_parameter,
+		      "argument %u of type %s "
+		      "declared as a variable length array",
+		      parmpos + 1, newparmstr.c_str ()))
+	inform (origloc,
+		(cura == &ptr_spec
+		 ? G_("previously declared as a pointer %s")
+		 : G_("previously declared as an ordinary array %s")),
+		curparmstr.c_str ());
+      return;
+    }
+
+  if (newa == &ptr_spec)
+    {
+      /* The new declaration uses the pointer form.  Detect mismatches
+	 between the pointer and a previous array or VLA forms.  */
+      if (cura->minsize == HOST_WIDE_INT_M1U)
+	{
+	  /* Diagnose a pointer/VLA mismatch.  */
+	  if (warning_at (newloc, OPT_Wvla_parameter,
+			  "argument %u of type %s declared as a pointer",
+			  parmpos + 1, newparmstr.c_str ()))
+	    inform (origloc,
+		    "previously declared as a variable length array %s",
+		    curparmstr.c_str ());
+	  return;
+	}
+
+      if (cura->minsize && cura->minsize != HOST_WIDE_INT_M1U)
+	{
+	  /* Diagnose mismatches between arrays with a constant
+	     bound and pointers.  */
+	  if (warning_at (newloc, OPT_Warray_parameter_,
+			  "argument %u of type %s declared as a pointer",
+			  parmpos + 1, newparmstr.c_str ()))
+	    inform (origloc, "previously declared as an array %s",
+		    curparmstr.c_str ());
+	  return;
+	}
+    }
+
+  if (!new_vla_p && cur_vla_p)
+    {
+      if (warning_at (newloc, OPT_Wvla_parameter,
+		      "argument %u of type %s declared as an ordinary array",
+		      parmpos + 1, newparmstr.c_str ()))
+	inform (origloc, "previously declared as a variable length array %s",
+		curparmstr.c_str ());
+      return;
+    }
+
+  /* Move on to the next pair of parameters if both of the current
+     pair are VLAs with a single variable bound that refers to
+     a parameter at the same position.  */
+  if (newa->size && cura->size
+      && newa->sizarg != UINT_MAX
+      && newa->sizarg == cura->sizarg
+      && newa->minsize == cura->minsize
+      && !TREE_PURPOSE (newa->size) && !TREE_PURPOSE (cura->size))
+    return;
+
+  if (newa->size || cura->size)
+    {
+      unsigned newunspec, curunspec;
+      unsigned newbnds = newa->vla_bounds (&newunspec) + newunspec;
+      unsigned curbnds = cura->vla_bounds (&curunspec) + curunspec;
+
+      if (newbnds != curbnds)
+	{
+	  if (warning_n (newloc, OPT_Wvla_parameter, newbnds,
+			 "argument %u of type %s declared with "
+			 "%u variable bound",
+			 "argument %u of type %s declared with "
+			 "%u variable bounds",
+			 parmpos + 1, newparmstr.c_str (),
+			 newbnds))
+	    inform_n (origloc, curbnds,
+		      "previously declared as %s with %u variable bound",
+		      "previously declared as %s with %u variable bounds",
+		      curparmstr.c_str (), curbnds);
+	  return;
+	}
+
+      if (newunspec > curunspec)
+	{
+	  location_t warnloc = newloc, noteloc = origloc;
+	  const char *warnparmstr = newparmstr.c_str ();
+	  const char *noteparmstr = curparmstr.c_str ();
+	  unsigned warnunspec = newunspec, noteunspec = curunspec;
+
+	  if (warning_n (warnloc, OPT_Wvla_parameter, warnunspec,
+			 "argument %u of type %s declared with "
+			 "%u unspecified variable bound",
+			 "argument %u of type %s declared with "
+			 "%u unspecified variable bounds",
+			 parmpos + 1, warnparmstr, warnunspec))
+	    {
+	      if (warnloc == newloc)
+		inform_n (noteloc, noteunspec,
+			  "previously declared as %s with "
+			  "%u unspecified variable bound",
+			  "previously declared as %s with "
+			  "%u unspecified variable bounds",
+			  noteparmstr, noteunspec);
+	      else
+		inform_n (noteloc, noteunspec,
+			  "subsequently declared as %s with "
+			  "%u unspecified variable bound",
+			  "subsequently declared as %s with "
+			  "%u unspecified variable bounds",
+			  noteparmstr, noteunspec);
+	    }
+	  return;
+	}
+    }
+
+  /* Iterate over the lists of VLA variable bounds, comparing each
+     pair for equality, and diagnosing mismatches.  */
+  for (tree newvbl = newa->size, curvbl = cura->size; newvbl && curvbl;
+       newvbl = TREE_CHAIN (newvbl), curvbl = TREE_CHAIN (curvbl))
+    {
+      tree newpos = TREE_PURPOSE (newvbl);
+      tree curpos = TREE_PURPOSE (curvbl);
+
+      tree newbnd = vla_bound_parm_decl (TREE_VALUE (newvbl));
+      tree curbnd = vla_bound_parm_decl (TREE_VALUE (curvbl));
+
+      if (newpos == curpos && newbnd == curbnd)
+	/* In the expected case when both bounds either refer to
+	   the same positional parameter or when neither does,
+	   and both are the same expression they are necessarily
+	   the same.  */
+	continue;
+
+      pretty_printer pp1, pp2;
+      const char* const newbndstr = expr_to_str (pp1, newbnd, "*");
+      const char* const curbndstr = expr_to_str (pp2, curbnd, "*");
+
+      if (!newpos != !curpos
+	  || (newpos && !tree_int_cst_equal (newpos, curpos)))
+	{
+	  /* Diagnose a mismatch between a specified VLA bound and
+	     an unspecified one.  This can only happen in the most
+	     significant bound.
+
+	     Distinguish between the common case of bounds that are
+	     other function parameters such as in
+	       f (int n, int[n]);
+	     and others.  */
+
+	  gcc_rich_location richloc (newloc);
+	  bool warned;
+	  if (newpos)
+	    {
+	      /* Also underline the VLA bound argument.  */
+	      richloc.add_range (DECL_SOURCE_LOCATION (newbnd));
+	      warned = warning_at (&richloc, OPT_Wvla_parameter,
+				   "argument %u of type %s "
+				   "declared with mismatched bound argument %E",
+				   parmpos + 1, newparmstr.c_str (),
+				   plus_one (newpos));
+	    }
+	  else
+	    warned = warning_at (&richloc, OPT_Wvla_parameter,
+				 "argument %u of type %s "
+				 "declared with mismatched bound %qs",
+				 parmpos + 1, newparmstr.c_str (),
+				 newbndstr);
+
+	  if (warned)
+	    {
+	      gcc_rich_location richloc (origloc);
+	      if (curpos)
+		{
+		  /* Also underline the VLA bound argument.  */
+		  richloc.add_range (DECL_SOURCE_LOCATION (curbnd));
+		  inform (&richloc,
+			  "previously declared as %s with bound argument %E",
+			  curparmstr.c_str (), plus_one (curpos));
+		}
+	      else
+		inform (&richloc,
+			"previously declared as %s with bound %qs",
+			curparmstr.c_str (), curbndstr);
+
+	      continue;
+	    }
+	}
+
+      if (!newpos && newbnd && curbnd)
+	{
+	  /* The VLA bounds don't refer to other function parameters.
+	     Compare them lexicographically to detect gross mismatches
+	     such as between T[foo()] and T[bar()].  */
+	  if (operand_equal_p (newbnd, curbnd,
+			       OEP_DECL_NAME | OEP_LEXICOGRAPHIC))
+	    continue;
+
+	  if (warning_at (newloc, OPT_Wvla_parameter,
+			  "argument %u of type %s "
+			  "declared with mismatched bound %qs",
+			  parmpos + 1, newparmstr.c_str (), newbndstr))
+	    inform (origloc, "previously declared as %s with bound %qs",
+		    curparmstr.c_str (), curbndstr);
+	  continue;
+	}
+    }
+
+  if (newa->minsize == cura->minsize
+      || (((newa->minsize == 0 && newa->mode != access_deferred)
+	   || (cura->minsize == 0 && cura->mode != access_deferred))
+	  && newa != &ptr_spec
+	  && cura != &ptr_spec))
+    return;
+
+  if (!newa->static_p && !cura->static_p && warn_array_parameter < 2)
+    /* Avoid warning about mismatches in ordinary (non-static) arrays
+       at levels below 2.  */
+    return;
+
+  if (warning_at (newloc, OPT_Warray_parameter_,
+		  "argument %u of type %s with mismatched bound",
+		  parmpos + 1, newparmstr.c_str ()))
+    inform (origloc, "previously declared as %s", curparmstr.c_str ());
+}
+
 /* Detect and diagnose a mismatch between an attribute access specification
    on the original declaration of FNDECL and that on the parameters NEWPARMS
    from its redeclaration.  ORIGLOC is the location of the first declaration
@@ -3480,294 +3780,8 @@ warn_parms_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 	/* Bail on invalid redeclarations with fewer arguments.  */
 	return;
 
-      /* Create an empty access specification and use it for pointers with
-	 no spec of their own.  */
-      attr_access ptr_spec = { };
-
-      /* Only check pointers and C++ references.  */
-      tree curptype = TREE_TYPE (curp);
-      tree newptype = TREE_TYPE (newp);
-      if (!POINTER_TYPE_P (curptype) || !POINTER_TYPE_P (newptype))
-	continue;
-
-      /* Skip mismatches in __builtin_va_list that is commonly
-	 an array but that in declarations of built-ins decays
-	 to a pointer.  */
-      if (builtin && TREE_TYPE (newptype) == TREE_TYPE (va_list_type_node))
-	continue;
-
-      /* Access specs for the argument on the current (previous) and
-	 new (to replace the current) declarations.  Either may be null,
-	 indicating the parameter is an ordinary pointer with no size
-	 associated with it.  */
-      attr_access *cura = cur_idx.get (parmpos);
-      attr_access *newa = new_idx.get (parmpos);
-
-      if (!newa)
-	{
-	  /* Continue if both parameters are pointers with no size
-	     associated with them.  */
-	  if (!cura)
-	    continue;
-
-	  /* Otherwise point at PTR_SPEC and set its parameter pointer
-	     and number.  */
-	  newa = &ptr_spec;
-	  newa->ptr = newp;
-	  newa->ptrarg = parmpos;
-	}
-      else if (!cura)
-	{
-	  cura = &ptr_spec;
-	  cura->ptr = curp;
-	  cura->ptrarg = parmpos;
-	}
-
-      /* Set if the parameter is [re]declared as a VLA.  */
-      const bool cur_vla_p = cura->size || cura->minsize == HOST_WIDE_INT_M1U;
-      const bool new_vla_p = newa->size || newa->minsize == HOST_WIDE_INT_M1U;
-
-      if (DECL_P (curp))
-	origloc = DECL_SOURCE_LOCATION (curp);
-      else if (EXPR_P (curp) && EXPR_HAS_LOCATION (curp))
-	origloc = EXPR_LOCATION (curp);
-
-      /* The location of the parameter in the current redeclaration.  */
-      location_t newloc = DECL_SOURCE_LOCATION (newp);
-      if (origloc == UNKNOWN_LOCATION)
-	origloc = newloc;
-
-      const std::string newparmstr = newa->array_as_string (newptype);
-      const std::string curparmstr = cura->array_as_string (curptype);
-      if (new_vla_p && !cur_vla_p)
-	{
-	  if (warning_at (newloc, OPT_Wvla_parameter,
-			  "argument %u of type %s declared as "
-			  "a variable length array",
-			  parmpos + 1, newparmstr.c_str ()))
-	    inform (origloc,
-		    (cura == &ptr_spec
-		     ? G_("previously declared as a pointer %s")
-		     : G_("previously declared as an ordinary array %s")),
-		    curparmstr.c_str ());
-	  continue;
-	}
-
-      if (newa == &ptr_spec)
-	{
-	  /* The new declaration uses the pointer form.  Detect mismatches
-	     between the pointer and a previous array or VLA forms.  */
-	  if (cura->minsize == HOST_WIDE_INT_M1U)
-	    {
-	      /* Diagnose a pointer/VLA mismatch.  */
-	      if (warning_at (newloc, OPT_Wvla_parameter,
-			      "argument %u of type %s declared "
-			      "as a pointer",
-			      parmpos + 1, newparmstr.c_str ()))
-		inform (origloc,
-			"previously declared as a variable length array %s",
-			curparmstr.c_str ());
-	      continue;
-	    }
-
-	  if (cura->minsize && cura->minsize != HOST_WIDE_INT_M1U)
-	    {
-	      /* Diagnose mismatches between arrays with a constant
-		 bound and pointers.  */
-	      if (warning_at (newloc, OPT_Warray_parameter_,
-			      "argument %u of type %s declared "
-			      "as a pointer",
-			      parmpos + 1, newparmstr.c_str ()))
-		inform (origloc, "previously declared as an array %s",
-			curparmstr.c_str ());
-	      continue;
-	    }
-	}
-
-      if (!new_vla_p && cur_vla_p)
-	{
-	  if (warning_at (newloc, OPT_Wvla_parameter,
-			  "argument %u of type %s declared "
-			  "as an ordinary array",
-			  parmpos + 1, newparmstr.c_str ()))
-	    inform (origloc,
-		    "previously declared as a variable length array %s",
-		    curparmstr.c_str ());
-	  continue;
-	}
-
-      /* Move on to the next pair of parameters if both of the current
-	 pair are VLAs with a single variable bound that refers to
-	 a parameter at the same position.  */
-      if (newa->size && cura->size
-	  && newa->sizarg != UINT_MAX
-	  && newa->sizarg == cura->sizarg
-	  && newa->minsize == cura->minsize
-	  && !TREE_PURPOSE (newa->size) && !TREE_PURPOSE (cura->size))
-	continue;
-
-      if (newa->size || cura->size)
-	{
-	  unsigned newunspec, curunspec;
-	  unsigned newbnds = newa->vla_bounds (&newunspec) + newunspec;
-	  unsigned curbnds = cura->vla_bounds (&curunspec) + curunspec;
-
-	  if (newbnds != curbnds)
-	    {
-	      if (warning_n (newloc, OPT_Wvla_parameter, newbnds,
-			     "argument %u of type %s declared with "
-			     "%u variable bound",
-			     "argument %u of type %s declared with "
-			     "%u variable bounds",
-			     parmpos + 1, newparmstr.c_str (),
-			     newbnds))
-		inform_n (origloc, curbnds,
-			  "previously declared as %s with %u variable bound",
-			  "previously declared as %s with %u variable bounds",
-			  curparmstr.c_str (), curbnds);
-	      continue;
-	    }
-
-	  if (newunspec > curunspec)
-	    {
-	      location_t warnloc = newloc, noteloc = origloc;
-	      const char *warnparmstr = newparmstr.c_str ();
-	      const char *noteparmstr = curparmstr.c_str ();
-	      unsigned warnunspec = newunspec, noteunspec = curunspec;
-
-	      if (warning_n (warnloc, OPT_Wvla_parameter, warnunspec,
-			     "argument %u of type %s declared with "
-			     "%u unspecified variable bound",
-			     "argument %u of type %s declared with "
-			     "%u unspecified variable bounds",
-			     parmpos + 1, warnparmstr, warnunspec))
-		{
-		  if (warnloc == newloc)
-		    inform_n (noteloc, noteunspec,
-			      "previously declared as %s with %u unspecified "
-			      "variable bound",
-			      "previously declared as %s with %u unspecified "
-			      "variable bounds",
-			      noteparmstr, noteunspec);
-		  else
-		    inform_n (noteloc, noteunspec,
-			      "subsequently declared as %s with %u unspecified "
-			      "variable bound",
-			      "subsequently declared as %s with %u unspecified "
-			      "variable bounds",
-			      noteparmstr, noteunspec);
-		}
-	      continue;
-	    }
-	}
-
-      /* Iterate over the lists of VLA variable bounds, comparing each
-	 pair for equality, and diagnosing mismatches.  */
-      for (tree newvbl = newa->size, curvbl = cura->size; newvbl && curvbl;
-	   newvbl = TREE_CHAIN (newvbl), curvbl = TREE_CHAIN (curvbl))
-	{
-	  tree newpos = TREE_PURPOSE (newvbl);
-	  tree curpos = TREE_PURPOSE (curvbl);
-
-	  tree newbnd = vla_bound_parm_decl (TREE_VALUE (newvbl));
-	  tree curbnd = vla_bound_parm_decl (TREE_VALUE (curvbl));
-
-	  if (newpos == curpos && newbnd == curbnd)
-	    /* In the expected case when both bounds either refer to
-	       the same positional parameter or when neither does,
-	       and both are the same expression they are necessarily
-	       the same.  */
-	    continue;
-
-	  pretty_printer pp1, pp2;
-	  const char* const newbndstr = expr_to_str (pp1, newbnd, "*");
-	  const char* const curbndstr = expr_to_str (pp2, curbnd, "*");
-
-	  if (!newpos != !curpos
-	      || (newpos && !tree_int_cst_equal (newpos, curpos)))
-	    {
-	      /* Diagnose a mismatch between a specified VLA bound and
-		 an unspecified one.  This can only happen in the most
-		 significant bound.
-
-		 Distinguish between the common case of bounds that are
-		 other function parameters such as in
-		   f (int n, int[n]);
-		 and others.  */
-
-	      gcc_rich_location richloc (newloc);
-	      bool warned;
-	      if (newpos)
-		{
-		  /* Also underline the VLA bound argument.  */
-		  richloc.add_range (DECL_SOURCE_LOCATION (newbnd));
-		  warned = warning_at (&richloc, OPT_Wvla_parameter,
-				       "argument %u of type %s declared "
-				       "with mismatched bound argument %E",
-				       parmpos + 1, newparmstr.c_str (),
-				       plus_one (newpos));
-		}
-	      else
-		warned = warning_at (&richloc, OPT_Wvla_parameter,
-				     "argument %u of type %s declared "
-				     "with mismatched bound %qs",
-				     parmpos + 1, newparmstr.c_str (),
-				     newbndstr);
-
-	      if (warned)
-		{
-		  gcc_rich_location richloc (origloc);
-		  if (curpos)
-		    {
-		      /* Also underline the VLA bound argument.  */
-		      richloc.add_range (DECL_SOURCE_LOCATION (curbnd));
-		      inform (&richloc, "previously declared as %s with "
-			      "bound argument %E",
-			      curparmstr.c_str (), plus_one (curpos));
-		    }
-		  else
-		    inform (&richloc, "previously declared as %s with bound "
-			    "%qs", curparmstr.c_str (), curbndstr);
-
-		  continue;
-		}
-	    }
-
-	  if (!newpos && newbnd && curbnd)
-	    {
-	      /* The VLA bounds don't refer to other function parameters.
-		 Compare them lexicographically to detect gross mismatches
-		 such as between T[foo()] and T[bar()].  */
-	      if (operand_equal_p (newbnd, curbnd,
-				   OEP_DECL_NAME | OEP_LEXICOGRAPHIC))
-		continue;
-
-	      if (warning_at (newloc, OPT_Wvla_parameter,
-			      "argument %u of type %s declared with "
-			      "mismatched bound %qs",
-			      parmpos + 1, newparmstr.c_str (), newbndstr))
-		inform (origloc, "previously declared as %s with bound %qs",
-			curparmstr.c_str (), curbndstr);
-	      continue;
-	    }
-	}
-
-      if (newa->minsize == cura->minsize
-	  || (((newa->minsize == 0 && newa->mode != access_deferred)
-	       || (cura->minsize == 0 && cura->mode != access_deferred))
-	      && newa != &ptr_spec
-	      && cura != &ptr_spec))
-	continue;
-
-      if (!newa->static_p && !cura->static_p && warn_array_parameter < 2)
-	/* Avoid warning about mismatches in ordinary (non-static) arrays
-	   at levels below 2.  */
-	continue;
-
-      if (warning_at (newloc, OPT_Warray_parameter_,
-		      "argument %u of type %s with mismatched bound",
-		      parmpos + 1, newparmstr.c_str ()))
-	inform (origloc, "previously declared as %s", curparmstr.c_str ());
+      warn_parm_array_mismatch (origloc, &cur_idx, &new_idx, curp, newp, parmpos,
+				builtin);
     }
 }
 
