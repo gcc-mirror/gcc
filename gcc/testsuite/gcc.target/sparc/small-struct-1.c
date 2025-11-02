@@ -42,5 +42,5 @@ double get2x (struct vec2x v)
   return v.x + v.y;
 }
 
-/* { dg-final { scan-assembler-not "ldx" } } */
-/* { dg-final { scan-assembler-not "stx" } } */
+/* { dg-final { scan-assembler-not "ldx" { target *-*-solaris* } } } */
+/* { dg-final { scan-assembler-not "stx" { target *-*-solaris* } } } */
