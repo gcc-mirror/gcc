@@ -3470,10 +3470,6 @@ warn_parms_array_mismatch (location_t origloc, tree fndecl, tree newparms)
      such as between f(T*) and f(T[1]), where the former mapping would be
      empty.  */
 
-  /* Create an empty access specification and use it for pointers with
-     no spec of their own.  */
-  attr_access ptr_spec = { };
-
   /* Iterate over the two lists of function parameters, comparing their
      respective mappings and diagnosing mismatches.  */
   unsigned parmpos = 0;
@@ -3483,6 +3479,10 @@ warn_parms_array_mismatch (location_t origloc, tree fndecl, tree newparms)
       if (!newp)
 	/* Bail on invalid redeclarations with fewer arguments.  */
 	return;
+
+      /* Create an empty access specification and use it for pointers with
+	 no spec of their own.  */
+      attr_access ptr_spec = { };
 
       /* Only check pointers and C++ references.  */
       tree curptype = TREE_TYPE (curp);
