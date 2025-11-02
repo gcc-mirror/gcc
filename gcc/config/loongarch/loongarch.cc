@@ -7196,7 +7196,11 @@ loongarch_modes_tieable_p (machine_mode mode1, machine_mode mode2)
      prefer to put one of them in FPRs.  */
   return (mode1 == mode2
 	  || (!loongarch_mode_ok_for_mov_fmt_p (mode1)
-	      && !loongarch_mode_ok_for_mov_fmt_p (mode2)));
+	      && !loongarch_mode_ok_for_mov_fmt_p (mode2))
+	  || (GET_MODE_CLASS(mode1) == MODE_FLOAT
+	      && GET_MODE_CLASS(mode2) == MODE_INT)
+	  || (GET_MODE_CLASS(mode2) == MODE_FLOAT
+	      && GET_MODE_CLASS(mode1) == MODE_INT));
 }
 
 /* Implement TARGET_PREFERRED_RELOAD_CLASS.  */
