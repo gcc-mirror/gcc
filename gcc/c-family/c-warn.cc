@@ -3505,8 +3505,8 @@ warn_parms_array_mismatch (location_t origloc, tree fndecl, tree newparms)
 
       if (!newa)
 	{
-	  /* Continue of both parameters are pointers with no size
-	     associated with it.  */
+	  /* Continue if both parameters are pointers with no size
+	     associated with them.  */
 	  if (!cura)
 	    continue;
 
