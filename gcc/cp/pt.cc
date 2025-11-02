@@ -9941,17 +9941,6 @@ add_pending_template (tree d)
     pop_tinst_level ();
 }
 
-/* Emit a diagnostic about instantiating a reference to TU-local entity E.  */
-
-static void
-complain_about_tu_local_entity (tree e)
-{
-  auto_diagnostic_group d;
-  error ("instantiation exposes TU-local entity %qD",
-	 TU_LOCAL_ENTITY_NAME (e));
-  inform (TU_LOCAL_ENTITY_LOCATION (e), "declared here");
-}
-
 /* Return a TEMPLATE_ID_EXPR corresponding to the indicated FNS and
    ARGLIST.  Valid choices for FNS are given in the cp-tree.def
    documentation for TEMPLATE_ID_EXPR.  */
@@ -16614,12 +16603,9 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     return t;
 
   /* Any instantiation of a template containing a TU-local entity is an
-     exposure, so always issue a hard error irrespective of complain.  */
-  if (TREE_CODE (t) == TU_LOCAL_ENTITY)
-    {
-      complain_about_tu_local_entity (t);
-      return error_mark_node;
-    }
+     exposure, so always issue a diagnostic irrespective of complain.  */
+  if (instantiating_tu_local_entity (t))
+    return error_mark_node;
 
   tsubst_flags_t tst_ok_flag = (complain & tf_tst_ok);
   complain &= ~tf_tst_ok;
@@ -20865,6 +20851,9 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
   tsubst_flags_t no_name_lookup_flag = (complain & tf_no_name_lookup);
   complain &= ~tf_no_name_lookup;
 
+  if (instantiating_tu_local_entity (t))
+    RETURN (error_mark_node);
+
   if (!no_name_lookup_flag)
     if (tree d = maybe_dependent_member_ref (t, args, complain, in_decl))
       return d;
@@ -22507,11 +22496,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
     case OVERLOAD:
       if (modules_p ())
 	for (tree ovl : lkp_range (t))
-	  if (TREE_CODE (ovl) == TU_LOCAL_ENTITY)
-	    {
-	      complain_about_tu_local_entity (ovl);
-	      RETURN (error_mark_node);
-	    }
+	  if (instantiating_tu_local_entity (ovl))
+	    RETURN (error_mark_node);
       RETURN (t);
 
     case TEMPLATE_DECL:
@@ -22790,10 +22776,6 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	  }
 	RETURN (op);
       }
-
-    case TU_LOCAL_ENTITY:
-      complain_about_tu_local_entity (t);
-      RETURN (error_mark_node);
 
     default:
       /* Handle Objective-C++ constructs, if appropriate.  */

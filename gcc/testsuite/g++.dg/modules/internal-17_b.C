@@ -27,12 +27,14 @@ import M;
 void test_usage() {
   a();
   b();
-  c<int>();
-  d<int>();
+  c<int>();  // { dg-message "required from here" }
+  d<int>();  // { dg-bogus "" }
   e();
-  f<int>();
+  f<int>();  // { dg-message "required from here" }
   g();
-  h<int>();
+  h<int>();  // { dg-bogus "" }
+
+  // { dg-warning "instantiation exposes TU-local entity" "" { target *-*-* } 0 }
 }
 
 inline void expose() {  // { dg-warning "exposes TU-local" }

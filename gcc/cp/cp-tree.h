@@ -7745,6 +7745,8 @@ extern module_state *get_module (tree name, module_state *parent = NULL,
 				 bool partition = false);
 extern bool module_may_redeclare (tree olddecl, tree newdecl = NULL);
 
+extern bool instantiating_tu_local_entity (tree decl);
+
 extern bool module_global_init_needed ();
 extern bool module_determine_import_inits ();
 extern void module_add_import_initializers ();

@@ -2664,11 +2664,6 @@ public:
     void add_namespace_context (depset *, tree ns);
 
   private:
-    bool has_tu_local_tmpl_arg (tree decl, tree args, bool explain);
-    bool is_tu_local_entity (tree decl, bool explain = false);
-    bool is_tu_local_value (tree decl, tree expr, bool explain = false);
-
-  private:
     static bool add_binding_entity (tree, WMB_Flags, void *);
 
   public:
@@ -13934,11 +13929,15 @@ depset::hash::find_binding (tree ctx, tree name)
   return slot ? *slot : NULL;
 }
 
+static bool is_tu_local_entity (tree decl, bool explain = false);
+static bool is_tu_local_value (tree decl, tree expr, bool explain = false);
+static bool has_tu_local_tmpl_arg (tree decl, tree args, bool explain);
+
 /* Returns true if DECL is a TU-local entity, as defined by [basic.link].
    If EXPLAIN is true, emit an informative note about why DECL is TU-local.  */
 
-bool
-depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
+static bool
+is_tu_local_entity (tree decl, bool explain/*=false*/)
 {
   gcc_checking_assert (DECL_P (decl));
   location_t loc = DECL_SOURCE_LOCATION (decl);
@@ -14104,8 +14103,8 @@ depset::hash::is_tu_local_entity (tree decl, bool explain/*=false*/)
 /* Helper for is_tu_local_entity.  Returns true if one of the ARGS of
    DECL is TU-local.  Emits an explanation if EXPLAIN is true.  */
 
-bool
-depset::hash::has_tu_local_tmpl_arg (tree decl, tree args, bool explain)
+static bool
+has_tu_local_tmpl_arg (tree decl, tree args, bool explain)
 {
   if (!args || TREE_CODE (args) != TREE_VEC)
     return false;
@@ -14154,8 +14153,8 @@ depset::hash::has_tu_local_tmpl_arg (tree decl, tree args, bool explain)
 /* Returns true if EXPR (part of the initializer for DECL) is a TU-local value
    or object.  Emits an explanation if EXPLAIN is true.  */
 
-bool
-depset::hash::is_tu_local_value (tree decl, tree expr, bool explain)
+static bool
+is_tu_local_value (tree decl, tree expr, bool explain/*=false*/)
 {
   if (!expr)
     return false;
@@ -14205,6 +14204,63 @@ depset::hash::is_tu_local_value (tree decl, tree expr, bool explain)
       if (is_tu_local_value (decl, f.value, explain))
 	return true;
 
+  return false;
+}
+
+/* Complains if DECL is a TU-local entity imported from a named module.
+   Returns TRUE if instantiation should fail.  */
+
+bool
+instantiating_tu_local_entity (tree decl)
+{
+  if (!modules_p ())
+    return false;
+
+  if (TREE_CODE (decl) == TU_LOCAL_ENTITY)
+    {
+      auto_diagnostic_group d;
+      error ("instantiation exposes TU-local entity %qD",
+	     TU_LOCAL_ENTITY_NAME (decl));
+      inform (TU_LOCAL_ENTITY_LOCATION (decl), "declared here");
+      return true;
+    }
+
+  /* Currently, only TU-local variables and functions will be emitted
+     from named modules.  */
+  if (!VAR_OR_FUNCTION_DECL_P (decl))
+    return false;
+
+  /* From this point we will only be emitting warnings; if we're not
+     warning about this case then there's no need to check further.  */
+  if (!warn_expose_global_module_tu_local
+      || !warning_enabled_at (DECL_SOURCE_LOCATION (decl),
+			      OPT_Wexpose_global_module_tu_local))
+    return false;
+
+  if (!is_tu_local_entity (decl))
+    return false;
+
+  tree origin = get_originating_module_decl (decl);
+  if (!DECL_LANG_SPECIFIC (origin)
+      || !DECL_MODULE_IMPORT_P (origin))
+    return false;
+
+  /* Referencing TU-local entities from a header is generally OK.
+     We don't have an easy way to detect if this declaration came
+     from a header via a separate named module, but we can just
+     ignore that case for warning purposes.  */
+  unsigned index = import_entity_index (origin);
+  module_state *mod = import_entity_module (index);
+  if (mod->is_header ())
+    return false;
+
+  auto_diagnostic_group d;
+  warning (OPT_Wexpose_global_module_tu_local,
+	   "instantiation exposes TU-local entity %qD", decl);
+  inform (DECL_SOURCE_LOCATION (decl), "declared here");
+
+  /* We treat TU-local entities from the GMF as not actually being
+     TU-local as an extension, so allow instantation to proceed.  */
   return false;
 }
 
@@ -14624,7 +14680,7 @@ depset::hash::add_binding_entity (tree decl, WMB_Flags flags, void *data_)
 	return false;
 
       bool internal_decl = false;
-      if (!header_module_p () && data->hash->is_tu_local_entity (decl))
+      if (!header_module_p () && is_tu_local_entity (decl))
 	{
 	  /* A TU-local entity.  For ADL we still need to create bindings
 	     for internal-linkage functions attached to a named module.  */
