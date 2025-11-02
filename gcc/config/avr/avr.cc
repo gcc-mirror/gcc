@@ -4368,7 +4368,8 @@ avr_load_libgcc_p (rtx op)
 
   return (n_bytes > 2
 	  && !AVR_HAVE_LPMX
-	  && avr_mem_flash_p (op));
+	  && avr_mem_flash_p (op)
+	  && MEM_ADDR_SPACE (op) == ADDR_SPACE_FLASH);
 }
 
 /* Return true if a value of mode MODE is read by __xload_* function.  */
@@ -4493,6 +4494,46 @@ avr_out_lpm_no_lpmx (rtx_insn *insn, rtx *xop, int *plen)
 	    avr_asm_len ("sbiw %2,1", xop, plen, 1);
 
 	  break; /* 2 */
+
+	/* cases 3 and 4 are only needed with ELPM but no ELPMx.  */
+
+	case 3:
+	  if (REGNO (dest) == REG_Z - 2
+	      && !reg_unused_after (insn, all_regs_rtx[REG_31]))
+	    avr_asm_len ("push r31", xop, plen, 1);
+
+	  avr_asm_len ("%4lpm $ mov %A0,%3 $ adiw %2,1", xop, plen, 3);
+	  avr_asm_len ("%4lpm $ mov %B0,%3 $ adiw %2,1", xop, plen, 3);
+	  avr_asm_len ("%4lpm $ mov %C0,%3", xop, plen, 2);
+
+	  if (REGNO (dest) == REG_Z - 2)
+	    {
+	      if (!reg_unused_after (insn, all_regs_rtx[REG_31]))
+		avr_asm_len ("pop r31", xop, plen, 1);
+	    }
+	  else if (!reg_unused_after (insn, addr))
+	    avr_asm_len ("sbiw %2,2", xop, plen, 1);
+
+	  break; /* 3 */
+
+	case 4:
+	  avr_asm_len ("%4lpm $ mov %A0,%3 $ adiw %2,1", xop, plen, 3);
+	  avr_asm_len ("%4lpm $ mov %B0,%3 $ adiw %2,1", xop, plen, 3);
+	  if (REGNO (dest) != REG_Z - 2)
+	    {
+	      avr_asm_len ("%4lpm $ mov %C0,%3 $ adiw %2,1", xop, plen, 3);
+	      avr_asm_len ("%4lpm $ mov %D0,%3", xop, plen, 2);
+	      if (!reg_unused_after (insn, addr))
+		avr_asm_len ("sbiw %2,3", xop, plen, 1);
+	    }
+	  else
+	    {
+	      avr_asm_len ("%4lpm $ push %3 $ adiw %2,1", xop, plen, 3);
+	      avr_asm_len ("%4lpm $ mov %D0,%3", xop, plen, 2);
+	      avr_asm_len ("pop $C0", xop, plen, 1);
+	    }
+
+	  break; /* 4 */
 	}
 
       break; /* REG */
