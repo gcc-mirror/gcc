@@ -23,8 +23,10 @@ IMPLEMENTATION MODULE M2StackSpell ;
 
 FROM SymbolTable IMPORT NulSym, IsModule, IsDefImp, IsRecord,
                         IsEnumeration, IsProcedure, GetNth,
-                        GetSymName, GetSym, GetLocalSym,
-                        UnknownReported,
+                        GetSymName, GetSym, GetLocalSym, GetScope,
+                        UnknownReported, IsUnknown,
+                        GetUnknownOnImport, GetUnknownDeclScope,
+                        ForeachExportedDo,
                         ForeachProcedureDo, ForeachLocalSymDo,
                         ForeachFieldEnumerationDo ;
 
@@ -179,8 +181,9 @@ VAR
    PushCount    : CARDINAL ;
    PushCandidate: Candidates ;
 
+
 (*
-   PushName -
+   PushName - push a name to the candidate vec.
 *)
 
 PROCEDURE PushName (sym: CARDINAL) ;
@@ -279,7 +282,7 @@ BEGIN
       cand := m2spellcheck.InitCandidates () ;
       IF PushCandidates (cand, sym) > 1
       THEN
-         content := m2spellcheck.FindClosestCharStar (cand, string (misspelt)) ;
+         content := m2spellcheck.FindClosestCharStar (cand, string (misspelt))
       ELSE
          content := NIL
       END ;
@@ -310,6 +313,52 @@ END AddPunctuation ;
 *)
 
 PROCEDURE GetSpellHint (unknown: CARDINAL) : String ;
+BEGIN
+   IF IsUnknown (unknown) AND
+      GetUnknownOnImport (unknown) AND
+      (GetUnknownDeclScope (unknown) # GetScope (unknown))
+   THEN
+      (* It was created during an import statement.  *)
+      RETURN GetExportedSpellHint (unknown, GetUnknownDeclScope (unknown))
+   END ;
+   RETURN GetScopeSpellHint (unknown)
+END GetSpellHint ;
+
+
+(*
+   GetExportedSpellHint - return a string describing a spelling hint
+                          using the module exported identifiers.
+*)
+
+PROCEDURE GetExportedSpellHint (unknown, module: CARDINAL) : String ;
+VAR
+   content : ConstCharStar ;
+   misspell,
+   HintStr : String ;
+BEGIN
+   misspell := InitStringCharStar (KeyToCharStar (GetSymName (unknown))) ;
+   HintStr := NIL ;
+   PushCount := 0 ;
+   PushCandidate := m2spellcheck.InitCandidates () ;
+   ForeachExportedDo (module, PushName) ;
+   ForeachLocalSymDo (module, PushName) ;
+   IF PushCount > 0
+   THEN
+      content := m2spellcheck.FindClosestCharStar (PushCandidate,
+                                                   string (misspell)) ;
+      HintStr := BuildHintStr (HintStr, content)
+   END ;
+   m2spellcheck.KillCandidates (PushCandidate) ;
+   RETURN AddPunctuation (HintStr, '?')
+END GetExportedSpellHint ;
+
+
+(*
+   GetScopeSpellHint - return a string describing a spelling hint
+                       using the visible scopes.
+*)
+
+PROCEDURE GetScopeSpellHint (unknown: CARDINAL) : String ;
 VAR
    i, n     : CARDINAL ;
    sym      : CARDINAL ;
@@ -331,7 +380,7 @@ BEGIN
       INC (i)
    END ;
    RETURN AddPunctuation (HintStr, '?')
-END GetSpellHint ;
+END GetScopeSpellHint ;
 
 
 (*

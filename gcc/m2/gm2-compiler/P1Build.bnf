@@ -358,9 +358,12 @@ END Ident ;
 *)
 
 PROCEDURE IdentScope (stopset0: SetOfStop0; stopset1: SetOfStop1; stopset2: SetOfStop2) ;
+VAR
+   tokpos: CARDINAL ;
 BEGIN
-   Ident(stopset0, stopset1, stopset2) ;
-   AddNameToScope(LastIdent)
+   tokpos := GetTokenNo () ;
+   Ident (stopset0, stopset1, stopset2) ;
+   AddNameToScope (tokpos, LastIdent)
 END IdentScope ;
 
 
@@ -374,14 +377,14 @@ PROCEDURE PossiblyExportIdent (stopset0: SetOfStop0; stopset1: SetOfStop1; stops
 VAR
    nothing: CARDINAL ;
 BEGIN
-   AddNameToScope(makekey(currentstring)) ;
-   PushTFtok(makekey(currentstring), identtok, GetTokenNo()) ;
+   AddNameToScope (GetTokenNo (), makekey (currentstring)) ;
+   PushTFtok (makekey (currentstring), identtok, GetTokenNo ()) ;
    CheckExplicitExported ;
-   IF NOT IsAutoPushOn()
+   IF NOT IsAutoPushOn ()
    THEN
-      PopT(nothing)
+      PopT (nothing)
    END ;
-   Expect(identtok, stopset0, stopset1, stopset2)
+   Expect (identtok, stopset0, stopset1, stopset2)
 END PossiblyExportIdent ;
 
 

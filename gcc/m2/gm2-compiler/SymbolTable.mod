@@ -230,6 +230,10 @@ TYPE
    SymUndefined = RECORD
                      name      : Name ;       (* Index into name array, name *)
                                               (* of record.                  *)
+                     declScope : CARDINAL ;   (* Scope where unknown is      *)
+                                              (* created.                    *)
+                     onImport  : BOOLEAN ;    (* Was it created during an    *)
+                                              (* import?                     *)
                      oafamily  : CARDINAL ;   (* The oafamily for this sym   *)
                      errorScope: ErrorScope ; (* Title scope used if an      *)
                                               (* error is emitted.           *)
@@ -1591,7 +1595,7 @@ END IsError ;
    MakeObject - creates an object node.
 *)
 
-PROCEDURE MakeObject (name: Name) : CARDINAL ;
+PROCEDURE MakeObject (tok: CARDINAL; name: Name) : CARDINAL ;
 VAR
    pSym: PtrToSymbol ;
    Sym : CARDINAL ;
@@ -1601,8 +1605,8 @@ BEGIN
    WITH pSym^ DO
       SymbolType := ObjectSym ;
       Object.name := name ;
-      InitWhereDeclared(Object.At) ;
-      InitWhereFirstUsed(Object.At)
+      InitWhereDeclaredTok (tok, Object.At) ;
+      InitWhereFirstUsedTok (tok, Object.At)
    END ;
    RETURN( Sym )
 END MakeObject ;
@@ -8647,7 +8651,7 @@ BEGIN
       THEN
          (* Make unknown *)
          NewSym (Sym) ;
-         FillInUnknownFields (tok, Sym, SymName) ;
+         FillInUnknownFields (tok, Sym, SymName, NulSym, FALSE) ;
          (* Add to unknown tree *)
          AddSymToUnknownTree (ScopePtr, SymName, Sym)
          (*
@@ -8684,7 +8688,7 @@ BEGIN
       THEN
          (* Make unknown.  *)
          NewSym (Sym) ;
-         FillInUnknownFields (tok, Sym, SymName) ;
+         FillInUnknownFields (tok, Sym, SymName, NulSym, FALSE) ;
          (* Add to unknown tree *)
          AddSymToUnknownTree (ScopePtr, SymName, Sym)
          (*
@@ -9252,7 +9256,7 @@ BEGIN
                        IF Sym=NulSym
                        THEN
                           NewSym (Sym) ;
-                          FillInUnknownFields (tok, Sym, SymName) ;
+                          FillInUnknownFields (tok, Sym, SymName, ModSym, TRUE) ;
                           PutSymKey (Unresolved, SymName, Sym)
                        END
                     END
@@ -9283,7 +9287,7 @@ BEGIN
                        IF Sym=NulSym
                        THEN
                           NewSym(Sym) ;
-                          FillInUnknownFields (tok, Sym, SymName) ;
+                          FillInUnknownFields (tok, Sym, SymName, ModSym, TRUE) ;
                           PutSymKey (Unresolved, SymName, Sym)
                        END
                     END
@@ -9310,7 +9314,7 @@ BEGIN
                        IF Sym=NulSym
                        THEN
                           NewSym(Sym) ;
-                          FillInUnknownFields (tok, Sym, SymName) ;
+                          FillInUnknownFields (tok, Sym, SymName, scope, TRUE) ;
                           PutSymKey(Unresolved, SymName, Sym)
                        END
                     END |
@@ -9319,7 +9323,7 @@ BEGIN
                        IF Sym=NulSym
                        THEN
                           NewSym(Sym) ;
-                          FillInUnknownFields (tok, Sym, SymName) ;
+                          FillInUnknownFields (tok, Sym, SymName, scope, TRUE) ;
                           PutSymKey(Unresolved, SymName, Sym)
                        END
                     END |
@@ -9328,7 +9332,7 @@ BEGIN
                           IF Sym=NulSym
                           THEN
                              NewSym(Sym) ;
-                             FillInUnknownFields (tok, Sym, SymName) ;
+                             FillInUnknownFields (tok, Sym, SymName, NulSym, FALSE) ;
                              PutSymKey(Unresolved, SymName, Sym)
                           END
                        END
@@ -9599,7 +9603,8 @@ BEGIN
                     CheckForUnknowns (tokno, name, ExportUnQualifiedTree,
                                       'EXPORT UNQUALIFIED') ;
                     CheckForSymbols (ExportRequest,
-                                     'requested by another modules import (symbols have not been exported by the appropriate definition module)') ;
+                                     'requested by another module import' +
+                                     ' and the symbol has not been exported by the appropriate definition module') ;
                     CheckForUnknowns (tokno, name, Unresolved, 'unresolved') ;
                     CheckForUnknowns (tokno, name, LocalSymbols, 'locally used')
                  END |
@@ -9752,12 +9757,12 @@ PROCEDURE CheckForSymbols (Tree: SymbolTree; a: ARRAY OF CHAR) ;
 VAR
    s: String ;
 BEGIN
-   IF NOT IsEmptyTree(Tree)
+   IF DoesTreeContainAny (Tree, IsUnreportedUnknown)
    THEN
       s := InitString ("the symbols are unknown at the end of module {%1Ea} when ") ;
       s := ConCat (s, Mark(InitString(a))) ;
       MetaErrorString1 (s, MainModule) ;
-      ForeachNodeDo(Tree, SymbolError)
+      ForeachNodeDo (Tree, SymbolError)
    END
 END CheckForSymbols ;
 
@@ -11708,10 +11713,11 @@ END IsProcedureAnyNoReturn ;
 
 
 (*
-   FillInUnknownFields -
+   FillInUnknownFields - fills in all fields for the undefined sym.
 *)
 
-PROCEDURE FillInUnknownFields (tok: CARDINAL; sym: CARDINAL; SymName: Name) ;
+PROCEDURE FillInUnknownFields (tok: CARDINAL; sym: CARDINAL; SymName: Name;
+                               descscope: CARDINAL; onimport: BOOLEAN) ;
 VAR
    pSym: PtrToSymbol ;
 BEGIN
@@ -11722,10 +11728,40 @@ BEGIN
          name     := SymName ;
          oafamily := NulSym ;
          errorScope := GetCurrentErrorScope () ;
+         declScope := descscope ;
+         onImport := onimport ;
          InitWhereFirstUsedTok (tok, At)
       END
    END
 END FillInUnknownFields ;
+
+
+(*
+   GetUnknownOnImport - returns the onimport field of unknown sym.
+*)
+
+PROCEDURE GetUnknownOnImport (sym: CARDINAL) : BOOLEAN ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsUnknown (sym)) ;
+   pSym := GetPsym (sym) ;
+   RETURN pSym^.Undefined.onImport
+END GetUnknownOnImport ;
+
+
+(*
+   GetUnknownDeclScope - returns the decl scope of unknown sym.
+*)
+
+PROCEDURE GetUnknownDeclScope (sym: CARDINAL) : CARDINAL ;
+VAR
+   pSym: PtrToSymbol ;
+BEGIN
+   Assert (IsUnknown (sym)) ;
+   pSym := GetPsym (sym) ;
+   RETURN pSym^.Undefined.declScope
+END GetUnknownDeclScope ;
 
 
 (*
@@ -12985,7 +13021,7 @@ END AddNameTo ;
                     current scope.
 *)
 
-PROCEDURE AddNameToScope (n: Name) ;
+PROCEDURE AddNameToScope (tok: CARDINAL; n: Name) ;
 VAR
    pSym : PtrToSymbol ;
    scope: CARDINAL ;
@@ -12995,9 +13031,9 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ProcedureSym:  AddNameTo(Procedure.NamedObjects, MakeObject(n)) |
-      ModuleSym   :  AddNameTo(Module.NamedObjects, MakeObject(n)) |
-      DefImpSym   :  AddNameTo(DefImp.NamedObjects, MakeObject(n))
+      ProcedureSym:  AddNameTo(Procedure.NamedObjects, MakeObject (tok, n)) |
+      ModuleSym   :  AddNameTo(Module.NamedObjects, MakeObject (tok, n)) |
+      DefImpSym   :  AddNameTo(DefImp.NamedObjects, MakeObject (tok, n))
 
       ELSE
          InternalError ('expecting - DefImp')
@@ -13011,7 +13047,7 @@ END AddNameToScope ;
                          module.
 *)
 
-PROCEDURE AddNameToImportList (n: Name) ;
+PROCEDURE AddNameToImportList (tok: CARDINAL; n: Name) ;
 VAR
    pSym : PtrToSymbol ;
    scope: CARDINAL ;
@@ -13021,8 +13057,8 @@ BEGIN
    WITH pSym^ DO
       CASE SymbolType OF
 
-      ModuleSym:  AddNameTo(Module.NamedImports, MakeObject(n)) |
-      DefImpSym:  AddNameTo(DefImp.NamedImports, MakeObject(n))
+      ModuleSym:  AddNameTo (Module.NamedImports, MakeObject (tok, n)) |
+      DefImpSym:  AddNameTo (DefImp.NamedImports, MakeObject (tok, n))
 
       ELSE
          InternalError ('expecting - DefImp or Module symbol')

@@ -2136,6 +2136,20 @@ PROCEDURE UnknownReported (sym: CARDINAL) ;
 
 
 (*
+   GetUnknownOnImport - returns the onimport field of unknown sym.
+*)
+
+PROCEDURE GetUnknownOnImport (sym: CARDINAL) : BOOLEAN ;
+
+
+(*
+   GetUnknownDeclScope - returns the decl scope of unknown sym.
+*)
+
+PROCEDURE GetUnknownDeclScope (sym: CARDINAL) : CARDINAL ;
+
+
+(*
    IsReallyPointer - returns TRUE is sym is a pointer, address or a
                      type declared as a pointer or address.
 *)
@@ -2613,7 +2627,7 @@ PROCEDURE ResolveConstructorTypes ;
                     current scope.
 *)
 
-PROCEDURE AddNameToScope (n: Name) ;
+PROCEDURE AddNameToScope (tok: CARDINAL; n: Name) ;
 
 
 (*
@@ -2621,7 +2635,7 @@ PROCEDURE AddNameToScope (n: Name) ;
                          module.
 *)
 
-PROCEDURE AddNameToImportList (n: Name) ;
+PROCEDURE AddNameToImportList (tok: CARDINAL; n: Name) ;
 
 
 (*
