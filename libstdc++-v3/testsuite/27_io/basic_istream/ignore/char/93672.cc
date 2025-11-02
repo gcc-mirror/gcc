@@ -20,9 +20,9 @@ test_pr93672() // std::basic_istream::ignore hangs if delim MSB is set
   VERIFY( in.gcount() == 3 );
   VERIFY( ! in.eof() );
 
-  // This only works if char is unsigned.
+  // Prior to C++26 (P3223R2), this only works if char is unsigned.
   in.ignore(100, '\xfe');
-  if (std::numeric_limits<char>::is_signed)
+  if (std::numeric_limits<char>::is_signed && __cplusplus <= 202302L)
   {
     // When char is signed, '\xfe' != traits_type::to_int_type('\xfe')
     // so the delimiter does not match the character in the input sequence,
@@ -69,9 +69,9 @@ test_primary_template()
   VERIFY( in.gcount() == 3 );
   VERIFY( ! in.eof() );
 
-  // This only works if char is unsigned.
+  // Prior to C++26 (P3223R2), this only works if char is unsigned.
   in.ignore(100, '\xfe');
-  if (std::numeric_limits<char>::is_signed)
+  if (std::numeric_limits<char>::is_signed && __cplusplus <= 202302L)
   {
     // When char is signed, '\xfe' != traits_type::to_int_type('\xfe')
     // so the delimiter does not match the character in the input sequence,
