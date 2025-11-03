@@ -20,43 +20,42 @@ AC_DEFUN([CLANG_PLUGIN_FILE],[dnl
   yes
 #endif
     ], clang_cv_is_clang=yes, clang_cv_is_clang=no)])
+  AC_CHECK_TOOL(LLVM_CONFIG, llvm-config)
   plugin_file=
   if test $clang_cv_is_clang = yes; then
     AC_MSG_CHECKING([for clang plugin file])
     plugin_names="LLVMgold.so"
     for plugin in $plugin_names; do
       plugin_file=`${CC} ${CFLAGS} --print-file-name $plugin`
-      if test x$plugin_file = x$plugin; then
-	AC_CHECK_TOOL(LLVM_CONFIG, llvm-config)
-	if test "$?" != 0; then
-	  AC_MSG_ERROR([Required tool 'llvm-config' not found on PATH.])
-	fi
-	clang_lib_dir=`$LLVM_CONFIG --libdir`
-	if test -f $clang_lib_dir/$plugin; then
-	  plugin_file=$clang_lib_dir/$plugin
-	fi
-	if test x$plugin_file != x$plugin; then
+      if test "$plugin_file" != "$plugin"; then
+	break;
+      fi
+      if test -n "${LLVM_CONFIG}"; then
+	plugin_file=`${LLVM_CONFIG} --libdir`/$plugin
+	if test -f "$plugin_file"; then
 	  break;
 	fi
       fi
-    done
-    if test -z $plugin_file; then
-      AC_MSG_ERROR([Couldn't find clang plugin file for $CC.])
-    fi
-    dnl Check if ${AR} $plugin_option rc works.
-    AC_CHECK_TOOL(AR, ar)
-    if test "${AR}" = "" ; then
-      AC_MSG_ERROR([Required archive tool 'ar' not found on PATH.])
-    fi
-    plugin_option="--plugin $plugin_file"
-    touch conftest.c
-    ${AR} $plugin_option rc conftest.a conftest.c
-    if test "$?" != 0; then
-      AC_MSG_WARN([Failed: $AR $plugin_option rc])
       plugin_file=
+    done
+    if test -z "$plugin_file"; then
+      AC_MSG_RESULT([no])
+    else
+      AC_MSG_RESULT($plugin_file)
+      dnl Check if ${AR} $plugin_option rc works.
+      AC_CHECK_TOOL(AR, ar)
+      if test -z "${AR}"; then
+	AC_MSG_ERROR([Required archive tool 'ar' not found on PATH.])
+      fi
+      plugin_option="--plugin $plugin_file"
+      touch conftest.c
+      ${AR} $plugin_option rc conftest.a conftest.c
+      if test "$?" != 0; then
+	AC_MSG_WARN([Failed: $AR $plugin_option rc])
+	plugin_file=
+      fi
+      rm -f conftest.*
     fi
-    rm -f conftest.*
-    AC_MSG_RESULT($plugin_file)
   fi
   $1="$plugin_file"
 ])
@@ -84,30 +83,26 @@ AC_DEFUN([CLANG_PLUGIN_FILE_FOR_TARGET],[dnl
   CC="$saved_CC"
   plugin_file=
   if test $clang_target_cv_working = yes; then
+    GCC_TARGET_TOOL(llvm-config, LLVM_CONFIG_FOR_TARGET, LLVM_CONFIG)
     AC_MSG_CHECKING([for clang plugin file for target])
     plugin_names="LLVMgold.so"
-    dnl Check if the host compiler is used.
     for plugin in $plugin_names; do
       plugin_file=`${COMPILER_FOR_TARGET} ${CFLAGS_FOR_TARGET} --print-file-name $plugin`
-      if test x$plugin_file = x$plugin; then
-	GCC_TARGET_TOOL(llvm-config, LLVM_CONFIG_FOR_TARGET, LLVM_CONFIG)
-	if test "$?" != 0; then
-	  AC_MSG_ERROR([Required target tool 'llvm-config' not found.])
-	fi
-	clang_lib_dir=`$LLVM_CONFIG_FOR_TARGET --libdir`
-	if test -f $clang_lib_dir/$plugin; then
-	  plugin_file=$clang_lib_dir/$plugin
-	fi
-      fi
-      if test x$plugin_file != x$plugin; then
+      if test "$plugin_file" != "$plugin"; then
 	break;
+      fi
+      if test -n "${LLVM_CONFIG_FOR_TARGET}"; then
+	plugin_file=`${LLVM_CONFIG_FOR_TARGET} --libdir`/$plugin
+	if test -f "$plugin_file"; then
+	  break;
+	fi
       fi
       plugin_file=
     done
-    if test -n $plugin_file; then
-      AC_MSG_RESULT($plugin_file)
-    else
+    if test -z "$plugin_file"; then
       AC_MSG_RESULT([no])
+    else
+      AC_MSG_RESULT($plugin_file)
     fi
   fi
   $1="$plugin_file"
