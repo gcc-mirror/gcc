@@ -2395,15 +2395,15 @@ static size_t page_mask;
 
 static char *
 lto_read_section_data (struct lto_file_decl_data *file_data,
-		       intptr_t offset, size_t len)
+		       off_t offset, size_t len)
 {
   char *result;
   static int fd = -1;
   static char *fd_name;
 #if LTO_MMAP_IO
-  intptr_t computed_len;
-  intptr_t computed_offset;
-  intptr_t diff;
+  size_t computed_len;
+  off_t computed_offset;
+  off_t diff;
 #endif
 
   /* Keep a single-entry file-descriptor cache.  The last file we
@@ -2436,9 +2436,15 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
       page_mask = ~(page_size - 1);
     }
 
-  computed_offset = offset & page_mask;
+  computed_offset = offset & ((off_t) page_mask);
   diff = offset - computed_offset;
-  computed_len = len + diff;
+  if (len > (size_t) (SSIZE_MAX - diff))
+    {
+      fatal_error (input_location, "Cannot map %s: section is too long",
+		   file_data->file_name);
+      return NULL;
+    }
+  computed_len = (size_t) diff + len;
 
   result = (char *) mmap (NULL, computed_len, PROT_READ, MAP_PRIVATE,
 			  fd, computed_offset);
