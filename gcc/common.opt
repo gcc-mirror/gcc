@@ -3142,7 +3142,7 @@ Common Var(flag_syntax_only)
 Check for syntax errors, then stop.
 
 ftest-coverage
-Common Var(flag_test_coverage)
+Common Var(flag_test_coverage) EnabledBy(fpath-coverage || fcondition-coverage)
 Create data files needed by \"gcov\".
 
 fthread-jumps

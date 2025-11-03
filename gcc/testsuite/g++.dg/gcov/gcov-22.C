@@ -1,4 +1,4 @@
-/* { dg-options "--coverage -fpath-coverage" } */
+/* { dg-options "-fpath-coverage" } */
 /* { dg-do compile } */
 
 #include <stdexcept>

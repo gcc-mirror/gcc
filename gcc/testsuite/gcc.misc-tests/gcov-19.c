@@ -1,4 +1,4 @@
-/* { dg-options "-fcondition-coverage -ftest-coverage" } */
+/* { dg-options "-fcondition-coverage" } */
 /* { dg-do run } */
 
 /* Some side effect to stop branches from being pruned.  */
