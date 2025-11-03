@@ -1835,7 +1835,27 @@ loongarch_const_vector_same_bytes_p (rtx op, machine_mode mode)
 
   first = CONST_VECTOR_ELT (op, 0);
   bytes = GET_MODE_UNIT_SIZE (mode);
-  val = INTVAL (first);
+
+  if (GET_MODE_CLASS (mode) == MODE_VECTOR_FLOAT)
+    {
+      rtx val_s = CONST_VECTOR_ELT (op, 0);
+      const REAL_VALUE_TYPE *x = CONST_DOUBLE_REAL_VALUE (val_s);
+      if (GET_MODE (val_s) == DFmode)
+	{
+	  long tmp[2];
+	  REAL_VALUE_TO_TARGET_DOUBLE (*x, tmp);
+	  val = (unsigned HOST_WIDE_INT) tmp[1] << 32 | tmp[0];
+	}
+      else
+	{
+	  long tmp;
+	  REAL_VALUE_TO_TARGET_SINGLE (*x, tmp);
+	  val = (unsigned HOST_WIDE_INT) tmp;
+	}
+    }
+  else
+    val = UINTVAL (first);
+
   first_byte = val & 0xff;
   for (i = 1; i < bytes; i++)
     {
