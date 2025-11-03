@@ -925,12 +925,10 @@ forward_propagate_addr_expr_1 (tree name, tree def_rhs,
 static bool
 forward_propagate_addr_expr (tree name, tree rhs, bool parent_single_use_p)
 {
-  imm_use_iterator iter;
-  gimple *use_stmt;
   bool all = true;
   bool single_use_p = parent_single_use_p && has_single_use (name);
 
-  FOR_EACH_IMM_USE_STMT (use_stmt, iter, name)
+  for (gimple *use_stmt : gather_imm_use_stmts (name))
     {
       bool result;
       tree use_rhs;
