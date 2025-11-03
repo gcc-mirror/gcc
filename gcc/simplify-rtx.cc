@@ -6451,6 +6451,21 @@ simplify_context::simplify_relational_operation_1 (rtx_code code,
       /* Canonicalize (LEU x 0) as (EQ x 0).  */
       if (code == LEU)
         return simplify_gen_relational (EQ, mode, cmp_mode, op0, op1);
+
+      if ((code == NE || code == EQ)
+	  /* Verify op0 is IOR */
+	  && GET_CODE (op0) == IOR
+	  /* only enters if op1 is 0 */
+	  /* Verify IOR operand is NE */
+	  && GET_CODE (XEXP (op0, 0)) == NE
+	  /* Verfiy second NE operand is 0 */
+	  && XEXP (XEXP (op0, 0), 1) == CONST0_RTX (mode))
+	{
+	  rtx t = gen_rtx_IOR (mode, XEXP (XEXP (op0, 0), 0), XEXP (op0, 1));
+	  t = gen_rtx_fmt_ee (code, mode, t, CONST0_RTX (mode));
+	  return t;
+	}
+
     }
   else if (op1 == const1_rtx)
     {
