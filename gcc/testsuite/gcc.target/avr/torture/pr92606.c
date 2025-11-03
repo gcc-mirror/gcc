@@ -14,10 +14,10 @@ typedef uint32_t T;
         {                                                               \
             uint16_t __addr16 = (uint16_t)(X);                          \
             uint32_t __result;                                          \
-            __asm__ __volatile__ ("lpm %A0, Z+" "\n\t"                  \
-                                  "lpm %B0, Z+" "\n\t"                  \
-                                  "lpm %C0, Z+" "\n\t"                  \
-                                  "lpm %D0, Z" "\n\t"                   \
+            __asm__ __volatile__ ("lpm $ mov %A0,r0 $ adiw %1,1" "\n\t" \
+                                  "lpm $ mov %B0,r0 $ adiw %1,1" "\n\t" \
+                                  "lpm $ mov %C0,r0 $ adiw %1,1" "\n\t" \
+                                  "lpm $ mov %D0,r0"                    \
                                   : "=r" (__result), "+z" (__addr16));  \
             __result;                                                   \
         }))
