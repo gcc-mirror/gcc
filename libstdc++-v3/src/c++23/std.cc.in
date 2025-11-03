@@ -23,11 +23,14 @@
 
 module;
 
+#include <bits/stdc++.h>
+
 // stdc++.h doesn't include <execution> because of TBB issues;
 // FIXME for now let's avoid the problem by suppressing TBB.
-#define _GLIBCXX_USE_TBB_PAR_BACKEND 0
-
-#include <bits/stdc++.h>
+#ifdef _PSTL_PAR_BACKEND_TBB
+#undef _PSTL_PAR_BACKEND_TBB
+#define _PSTL_PAR_BACKEND_SERIAL
+#endif
 #include <execution>
 
 // Module std does include deprecated library interfaces.
