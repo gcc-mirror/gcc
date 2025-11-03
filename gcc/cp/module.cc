@@ -17246,13 +17246,16 @@ module_state::write_namespaces (elf_out *to, vec<depset *> spaces,
 	flags |= 4;
       if (DECL_MODULE_EXPORT_P (ns))
 	flags |= 8;
+      if (TREE_DEPRECATED (ns))
+	flags |= 16;
 
       dump () && dump ("Writing namespace:%u %N%s%s%s%s",
 		       b->cluster, ns,
 		       flags & 1 ? ", public" : "",
 		       flags & 2 ? ", inline" : "",
 		       flags & 4 ? ", purview" : "",
-		       flags & 8 ? ", export" : "");
+		       flags & 8 ? ", export" : "",
+		       flags & 16 ? ", deprecated" : "");
       sec.u (b->cluster);
       sec.u (to->name (DECL_NAME (ns)));
       write_namespace (sec, b->deps[0]);
@@ -17328,7 +17331,8 @@ module_state::read_namespaces (unsigned num)
 		       flags & 1 ? ", public" : "",
 		       flags & 2 ? ", inline" : "",
 		       flags & 4 ? ", purview" : "",
-		       flags & 8 ? ", export" : "");
+		       flags & 8 ? ", export" : "",
+		       flags & 16 ? ", deprecated" : "");
       bool visible_p = ((flags & 8)
 			|| ((flags & 1)
 			    && (flags & 4)
@@ -17348,6 +17352,9 @@ module_state::read_namespaces (unsigned num)
 	  if (flags & 8)
 	    DECL_MODULE_EXPORT_P (inner) = true;
 	}
+
+      if (flags & 16)
+	TREE_DEPRECATED (inner) = true;
 
       if (tags)
 	DECL_ATTRIBUTES (inner)
