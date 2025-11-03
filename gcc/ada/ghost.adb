@@ -112,6 +112,11 @@ package body Ghost is
    --  applicable to the enclosing declaration, statement, assertion pragma
    --  or specification aspect.
    --
+   --  If the declaration occurs inside a ghost declaration, ghost statement,
+   --  assertion pragma or specification aspect and the assertion policy
+   --  applicable to this scope is Ignore, then the assertion policy applicable
+   --  to the declaration is also Ignore.
+   --
    --  Otherwise, the assertion policy applicable to an object declaration
    --  comes either from its assertion level if any, or from the ghost
    --  policy at the point of declaration.
@@ -1031,10 +1036,6 @@ package body Ghost is
       --  Check that the the assertion level of the declared entity is
       --  compatible with assertion level of the ghost region.
 
-      procedure Check_Valid_Ghost_Policy (Id : Entity_Id; Ref : Node_Id);
-      --  Check that the declared identifier does not have a Checked assertion
-      --  policy while being declared inside an ignored ghost region.
-
       ---------------------------------
       -- Check_Valid_Assertion_Level --
       ---------------------------------
@@ -1063,24 +1064,6 @@ package body Ghost is
          end if;
       end Check_Valid_Assertion_Level;
 
-      ------------------------------
-      -- Check_Valid_Ghost_Policy --
-      ------------------------------
-
-      procedure Check_Valid_Ghost_Policy (Id : Entity_Id; Ref : Node_Id) is
-         Policy : constant Name_Id := Ghost_Policy_In_Effect (Id);
-      begin
-         if Ghost_Config.Ghost_Mode = Ignore and then Policy = Name_Check
-         then
-            Error_Msg_Sloc := Sloc (Ref);
-
-            Error_Msg_N (Ghost_Policy_Error_Msg, Ref);
-            Error_Msg_NE ("\& has ghost policy `Check`", Ref, Id);
-            Error_Msg_NE
-              ("\& is declared # within ghost policy `Ignore`", Ref, Id);
-         end if;
-      end Check_Valid_Ghost_Policy;
-
       --  Local variables
 
       Id : constant Entity_Id := Defining_Entity (N);
@@ -1092,7 +1075,6 @@ package body Ghost is
          return;
       end if;
 
-      Check_Valid_Ghost_Policy (Id, N);
       Check_Valid_Assertion_Level (Id, N);
    end Check_Valid_Ghost_Declaration;
 
@@ -1568,7 +1550,9 @@ package body Ghost is
       Level_Nam : constant Name_Id :=
         (if No (Level) then No_Name else Chars (Level));
    begin
-      if Ghost_Config.Is_Inside_Statement_Or_Pragma
+      if Present (Ghost_Config.Ignored_Ghost_Region) then
+         return Name_Ignore;
+      elsif Ghost_Config.Is_Inside_Statement_Or_Pragma
         and then Is_Implicit_Ghost (Id)
       then
          case Ghost_Config.Ghost_Mode is
@@ -2126,8 +2110,16 @@ package body Ghost is
       --  the region.
 
       if Present (Level) then
-         Policy :=
-           Policy_In_Effect (Name_Ghost, Assertion_Level_To_Name (Level));
+         --  Default to the Ignore policy inside ignored ghost regions.
+         --  Similarly to how we do it in Ghost_Policy_In_Effect.
+         --  SPARK RM 6.9 (3)
+
+         if Present (Ghost_Config.Ignored_Ghost_Region) then
+            Policy := Name_Ignore;
+         else
+            Policy :=
+              Policy_In_Effect (Name_Ghost, Assertion_Level_To_Name (Level));
+         end if;
 
       --  A declaration elaborated in a Ghost region is automatically Ghost
       --  (SPARK RM 6.9(2)).
