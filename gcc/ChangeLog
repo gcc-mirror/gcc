@@ -1,3 +1,25 @@
+2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122527
+	* config/avr/avr.cc (avr_load_libgcc_p): Return false if
+	the address-space is not ADDR_SPACE_FLASH.
+	(avr_out_lpm_no_lpmx [addr=REG]): Handle sizes of 3 and 4 bytes.
+
+2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/118012
+	PR tree-optimization/122505
+	* config/avr/avr.md (mulpsi3): Also allow the insn condition
+	in the case where avropt_pr118012 && !AVR_TINY.
+	(*mulpsi3): Handle split for the !AVR_HAVE_MUL case.
+	(*mulpsi3-nomul.libgcc_split, *mulpsi3-nomul.libgcc): New insns.
+
 2025-10-31  Tamar Christina  <tamar.christina@arm.com>
 
 	Backported from master:

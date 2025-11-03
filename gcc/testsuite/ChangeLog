@@ -1,3 +1,12 @@
+2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122421
+	* g++.dg/modules/inst-6_a.C: New test.
+	* g++.dg/modules/inst-6_b.C: New test.
+
 2025-11-01  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
