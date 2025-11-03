@@ -882,7 +882,7 @@ static const char * const toplevel_type_names[] =
  "variable",
 };
 
-static_assert (ARRAY_SIZE(toplevel_type_names)==TOPLEVEL_MAX);
+static_assert (ARRAY_SIZE(toplevel_type_names) == TOPLEVEL_MAX, "");
 
 /* Dump the visibility of the symbol.  */
 
