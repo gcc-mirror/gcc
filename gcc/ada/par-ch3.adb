@@ -757,8 +757,7 @@ package body Ch3 is
                      Typedef_Node := P_Derived_Type_Def_Or_Private_Ext_Decl;
 
                      if Saved_Token = Tok_Synchronized then
-                        if Nkind (Typedef_Node) =
-                          N_Derived_Type_Definition
+                        if Nkind (Typedef_Node) = N_Derived_Type_Definition
                         then
                            Error_Msg_N
                              ("SYNCHRONIZED not allowed for record extension",
@@ -864,7 +863,13 @@ package body Ch3 is
             Set_Abstract_Present (Typedef_Node, Abstract_Present);
 
          elsif Abstract_Present then
-            Error_Msg ("ABSTRACT not allowed here, ignored", Abstract_Loc);
+            if Nkind (Typedef_Node) = N_Derived_Type_Definition then
+               Error_Msg
+                 ("ABSTRACT allowed only for record extension, ignored",
+                  Abstract_Loc);
+            else
+               Error_Msg ("ABSTRACT not allowed here, ignored", Abstract_Loc);
+            end if;
          end if;
 
          Decl_Node := New_Node (N_Full_Type_Declaration, Type_Loc);
