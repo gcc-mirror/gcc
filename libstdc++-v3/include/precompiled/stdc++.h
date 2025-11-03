@@ -29,9 +29,7 @@
 // 17.4.1.2 Headers
 
 // C
-#ifndef _GLIBCXX_NO_ASSERT
-#include <cassert>
-#endif
+// Don't include cassert, it's not suitable for PCH or header unit.
 #include <cctype>
 #include <cfloat>
 #include <climits>
@@ -104,9 +102,6 @@
 
 #if _GLIBCXX_HOSTED
 // C
-#ifndef _GLIBCXX_NO_ASSERT
-#include <cassert>
-#endif
 #include <cctype>
 #include <cerrno>
 #include <cfloat>

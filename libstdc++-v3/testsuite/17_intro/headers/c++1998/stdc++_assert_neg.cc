@@ -1,8 +1,5 @@
 // { dg-do compile }
-// { dg-options "-D_GLIBCXX_NO_ASSERT" }
 // { dg-require-effective-target hosted }
-// NB: This is done to force any generated and possibly included PCH
-// to be invalid, and also to remove cassert from the include set.
 
 // 2005-05-24 bkoz
 

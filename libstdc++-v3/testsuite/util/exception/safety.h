@@ -24,6 +24,7 @@
 #include <ext/throw_allocator.h>
 #include <cstdlib> // getenv, atoi
 #include <cstdio>  // printf, fflush
+#include <cassert> // assert
 
 // Container requirement testing.
 namespace __gnu_test
