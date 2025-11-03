@@ -56,7 +56,7 @@ check_loadstore (gimple *stmt, tree op, tree, void *data)
     {
       TREE_THIS_VOLATILE (op) = 1;
       TREE_SIDE_EFFECTS (op) = 1;
-      update_stmt (stmt);
+      gimple_set_has_volatile_ops (stmt, true);
       return true;
     }
   return false;
@@ -762,6 +762,7 @@ find_implicit_erroneous_behavior (void)
 
 	      /* We've got a NULL PHI argument.  Now see if the
  	         PHI's result is dereferenced within BB.  */
+	      auto_vec <gimple *, 4> uses_in_bb;
 	      FOR_EACH_IMM_USE_STMT (use_stmt, iter, lhs)
 	        {
 	          /* We only care about uses in BB.  Catching cases in
@@ -774,17 +775,22 @@ find_implicit_erroneous_behavior (void)
 		    ? gimple_location (use_stmt)
 		    : phi_arg_loc;
 
-		  if (stmt_uses_name_in_undefined_way (use_stmt, lhs, loc)
-		      && (duplicate || can_duplicate_block_p (bb)))
+		  if (stmt_uses_name_in_undefined_way (use_stmt, lhs, loc))
 		    {
-		      duplicate = isolate_path (bb, duplicate, e,
-						use_stmt, lhs, false);
-
-		      /* When we remove an incoming edge, we need to
-			 reprocess the Ith element.  */
-		      next_i = i;
-		      cfg_altered = true;
+		      if (!can_duplicate_block_p (bb))
+			break;
+		      uses_in_bb.safe_push (use_stmt);
 		    }
+		}
+	      for (gimple *use_stmt : uses_in_bb)
+		{
+		  duplicate = isolate_path (bb, duplicate, e,
+					    use_stmt, lhs, false);
+
+		  /* When we remove an incoming edge, we need to
+		     reprocess the Ith element.  */
+		  next_i = i;
+		  cfg_altered = true;
 		}
 	    }
 	}
