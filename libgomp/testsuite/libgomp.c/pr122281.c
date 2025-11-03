@@ -18,7 +18,7 @@
 int __attribute__((noinline, noclone))
 f(int *A, int n, int dev) {
  int cnt = 0;
- #pragma omp target map(cnt) device(dev)
+ #pragma omp target map(cnt) map(to:A[0:n]) device(dev)
  {
    #pragma omp parallel for simd
    for (int i = 0; i < n; i++)
