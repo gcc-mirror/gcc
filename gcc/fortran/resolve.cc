@@ -8461,7 +8461,20 @@ check_default_none_expr (gfc_expr **e, int *, void *data)
 		break;
 	      ns2 = ns2->parent;
 	    }
-	  if (ns2 != NULL)
+
+	  /* A DO CONCURRENT iterator cannot appear in a locality spec.  */
+	  if (sym->ns->code->ext.concur.forall_iterator)
+	    {
+	      gfc_forall_iterator *iter
+		= sym->ns->code->ext.concur.forall_iterator;
+	      for (; iter; iter = iter->next)
+		if (iter->var->symtree
+		    && strcmp(sym->name, iter->var->symtree->name) == 0)
+		  return 0;
+	    }
+
+	  /* A named constant is not a variable, so skip test.  */
+	  if (ns2 != NULL && sym->attr.flavor != FL_PARAMETER)
 	    {
 	      gfc_error ("Variable %qs at %L not specified in a locality spec "
 			"of DO CONCURRENT at %L but required due to "
