@@ -1,3 +1,49 @@
+2025-11-02  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/122499
+	* gm2.dg/spell/iso/fail/badimport2.mod: New test.
+	* gm2.dg/spell/iso/fail/badimport3.mod: New test.
+	* gm2.dg/spell/iso/fail/badimport4.mod: New test.
+
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/small-struct-1.c: Run only on Solaris.
+
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.target/sparc/cbcond-1.c: Accept reverse branches.
+	* gcc.target/sparc/cbcond-2.c: Likewise.
+	* gcc.target/sparc/overflow-3.c: Likewise.
+	* gcc.target/sparc/overflow-4.c: Likewise.
+	* gcc.target/sparc/overflow-5.c: Likewise.
+
+2025-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122518
+	* gcc.target/i386/pr122518.c: New test.
+
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/unknown_discr1.ads: New test.
+	* gnat.dg/specs/unknown_discr1_pkg.ads: New helper.
+	* gnat.dg/specs/unknown_discr1_pkg-child.ads: Likewise.
+	* gnat.dg/specs/unknown_discr1_pkg-g.ads: Likewise.
+	* gnat.dg/specs/unknown_discr1_pkg-inst.ads: Likewise.
+
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/use_type4.adb: New test.
+
+2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr84211-fuse-move-1.c: Add -fno-lto.
+
+2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122421
+	* g++.dg/modules/inst-6_a.C: New test.
+	* g++.dg/modules/inst-6_b.C: New test.
+
 2025-11-01  Shreya Munnangi  <smunnangi1@ventanamicro.com>
 
 	PR target/67731

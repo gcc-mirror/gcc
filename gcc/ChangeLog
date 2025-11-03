@@ -1,3 +1,43 @@
+2025-11-02  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/bitmanip.md (rotrsi3): Use the sign extended form
+	for 32 bit rotates on TARGET_64BIT, even for constant counts.
+	* config/riscv/thead.md (th_srrisi3_extended): New pattern.
+	(th_srri<mode>3): Adjust formatting.
+
+2025-11-02  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122518
+	* config/i386/i386.cc (ix86_canonicalize_comparison): Convert
+	(compare (minus (a b)) a) to (compare (a b)) to
+	match *sub<mode>_3 pattern.
+
+2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122527
+	* config/avr/avr.cc (avr_load_libgcc_p): Return false if
+	the address-space is not ADDR_SPACE_FLASH.
+	(avr_out_lpm_no_lpmx [addr=REG]): Handle sizes of 3 and 4 bytes.
+
+2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR tree-optimization/118012
+	PR tree-optimization/122505
+	* config/avr/avr.md (mulpsi3): Also allow the insn condition
+	in the case where avropt_pr118012 && !AVR_TINY.
+	(*mulpsi3): Handle split for the !AVR_HAVE_MUL case.
+	(*mulpsi3-nomul.libgcc_split, *mulpsi3-nomul.libgcc): New insns.
+
+2025-11-02  Richard Biener  <rguenther@suse.de>
+
+	* doc/tree-ssa.texi: Remove outdated info on FOR_EACH_IMM_USE_STMT
+	iteration, clarify SSA operand parts.
+	* ssa-iterators.h: Update toplevel comment.
+
+2025-11-02  Sam James  <sam@gentoo.org>
+
+	* .simplify-rtx.cc.swo: Removed.
+
 2025-11-01  Shreya Munnangi  <smunnangi1@ventanamicro.com>
 
 	PR target/67731

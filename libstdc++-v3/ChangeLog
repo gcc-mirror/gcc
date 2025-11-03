@@ -1,3 +1,7 @@
+2025-11-02  Jason Merrill  <jason@redhat.com>
+
+	* src/c++23/std.cc.in: Uncomment usings for vprint_*_buffered.
+
 2025-10-30  Jakub Jelinek  <jakub@redhat.com>
 
 	* include/bits/version.def (is_implicit_lifetime): New.

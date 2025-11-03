@@ -1,3 +1,10 @@
+2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122421
+	* module.cc (trees_in::read_var_def): Don't handle class-scope
+	variables anymore.
+	(trees_in::read_class_def): Handle them here instead.
+
 2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122381

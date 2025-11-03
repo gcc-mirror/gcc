@@ -1,3 +1,25 @@
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* locales.c (is_iso_639_3): New static function.
+	(c_get_language_code): Use it to validate the ISO-639-3 code
+	before returning it.
+
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/58881
+	* sem_ch3.adb (Build_Derived_Private_Type): Build the underlying
+	full view when the derivation occurs in the public part of the
+	scope of the parent.
+	(Build_Derived_Record_Type): Propagate Has_Unknown_Discriminants
+	in the same circumstances.
+	(Constrain_Discriminated_Type): Give a specific error message for
+	any type with the Has_Unknown_Discriminants flag.
+
+2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/52319
+	* sem_ch8.adb (End_Use_Package): Use the scope of the operator.
+
 2025-10-30  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/15610
