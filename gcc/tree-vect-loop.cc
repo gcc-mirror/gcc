@@ -7578,7 +7578,9 @@ vectorizable_reduction (loop_vec_info loop_vinfo,
   if ((double_reduc || neutral_op)
       && !nunits_out.is_constant ()
       && (SLP_TREE_LANES (slp_node) != 1 && !reduc_chain)
-      && !operand_equal_p (neutral_op, vect_phi_initial_value (reduc_def_phi))
+      && (!neutral_op
+	  || !operand_equal_p (neutral_op,
+			       vect_phi_initial_value (reduc_def_phi)))
       && !direct_internal_fn_supported_p (IFN_VEC_SHL_INSERT,
 					  vectype_out, OPTIMIZE_FOR_SPEED))
     {
