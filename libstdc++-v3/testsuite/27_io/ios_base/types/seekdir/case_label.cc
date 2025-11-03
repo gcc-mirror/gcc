@@ -38,7 +38,5 @@ case_labels(test_type b)
       break;
     case std::ios_base::end:
       break;
-    case std::_S_ios_fmtflags_end:
-      break;
     }
 }

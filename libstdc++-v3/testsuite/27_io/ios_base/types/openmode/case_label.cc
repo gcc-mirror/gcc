@@ -48,12 +48,6 @@ case_labels(bitmask_type b)
     case std::ios_base::noreplace:
       break;
 #endif
-    case std::_S_ios_openmode_end:
-      break;
-    case __INT_MAX__:
-      break;
-    case ~__INT_MAX__:
-      break;
     }
   using underlying_type = std::underlying_type<bitmask_type>::type;
   static_assert( sizeof(underlying_type) == sizeof(int),

@@ -56,7 +56,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // as permitted (but not required) in the standard, in order to provide
   // better type safety in iostream calls.  A side effect is that in C++98
   // expressions involving them are not compile-time constants.
-  enum _Ios_Fmtflags
+  enum __attribute__((__flag_enum__)) _Ios_Fmtflags
     {
       _S_boolalpha 	= 1L << 0,
       _S_dec 		= 1L << 1,
@@ -76,9 +76,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_adjustfield 	= _S_left | _S_right | _S_internal,
       _S_basefield 	= _S_dec | _S_oct | _S_hex,
       _S_floatfield 	= _S_scientific | _S_fixed,
-      _S_ios_fmtflags_end = 1L << 16,
-      _S_ios_fmtflags_max = __INT_MAX__,
-      _S_ios_fmtflags_min = ~__INT_MAX__
+      _S_ios_fmtflags_end __attribute__((__unused__)) = 1L << 16,
+      _S_ios_fmtflags_max __attribute__((__unused__)) = __INT_MAX__,
+      _S_ios_fmtflags_min __attribute__((__unused__)) = ~__INT_MAX__
     };
 
   _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
@@ -176,15 +176,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   { return __a = __a ^ __b; }
 
 
-  enum _Ios_Iostate
+  enum __attribute__((__flag_enum__)) _Ios_Iostate
     {
       _S_goodbit 		= 0,
       _S_badbit 		= 1L << 0,
       _S_eofbit 		= 1L << 1,
       _S_failbit		= 1L << 2,
-      _S_ios_iostate_end = 1L << 16,
-      _S_ios_iostate_max = __INT_MAX__,
-      _S_ios_iostate_min = ~__INT_MAX__
+      _S_ios_iostate_end __attribute__((__unused__)) = 1L << 16,
+      _S_ios_iostate_max __attribute__((__unused__)) = __INT_MAX__,
+      _S_ios_iostate_min __attribute__((__unused__)) = ~__INT_MAX__
     };
 
   _GLIBCXX_NODISCARD _GLIBCXX_CONSTEXPR
@@ -228,7 +228,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _S_beg = 0,
       _S_cur = _GLIBCXX_STDIO_SEEK_CUR,
       _S_end = _GLIBCXX_STDIO_SEEK_END,
-      _S_ios_seekdir_end = 1L << 16
+      _S_ios_seekdir_end __attribute__((__unused__)) = 1L << 16
     };
 
 #if __cplusplus >= 201103L
