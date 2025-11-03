@@ -35,7 +35,6 @@
 
 with System.Task_Primitives;
 
-with Ada.Finalization;
 with Ada.Task_Identification;
 
 package Ada.Synchronous_Task_Control with
@@ -75,14 +74,17 @@ private
    procedure Finalize (S : in out Suspension_Object);
    --  Finalization for Suspension_Object
 
-   type Suspension_Object is
-     new Ada.Finalization.Limited_Controlled with
-   record
+   type Suspension_Object is limited record
       SO : System.Task_Primitives.Suspension_Object;
       --  Use low-level suspension objects so that the synchronization
       --  functionality provided by this object can be achieved using
       --  efficient operating system primitives.
-   end record;
+   end record
+   with
+     Finalizable =>
+       (Initialize           => Initialize,
+        Finalize             => Finalize,
+        Relaxed_Finalization => False);
 
    pragma Inline (Set_True);
    pragma Inline (Set_False);
