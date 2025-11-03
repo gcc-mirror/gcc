@@ -6,7 +6,6 @@ implicit none (type, external)
 
 integer(c_int) :: dev, i, val, start, tail
 type(c_ptr) :: ptr, ptr2, tmpptr
-integer(c_int8_t), pointer, contiguous :: fptr(:)
 integer(c_intptr_t) :: intptr
 integer(c_size_t), parameter :: count = 1024
 
@@ -26,10 +25,13 @@ do dev = omp_initial_device, omp_get_num_devices ()
       if (.not. c_associated (tmpptr, ptr2)) stop 1
 
       !$omp target device(dev) is_device_ptr(ptr)
+      block
+        integer(c_int8_t), pointer, contiguous :: fptr(:)
+        call c_f_pointer (ptr, fptr, [count])
         do i = 1 + start, int(count, c_int) - start - tail
-          call c_f_pointer (ptr, fptr, [count])
           if (fptr(i) /= int (val, c_int8_t)) stop 2
         end do
+      end block
       !$omp end target
     end do
   end do

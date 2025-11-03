@@ -11,7 +11,6 @@ do dev = omp_initial_device, omp_get_num_devices ()
 block
   integer(c_int) :: i, val, start, tail
   type(c_ptr) :: ptr, ptr2, tmpptr
-  integer(c_int8_t), pointer, contiguous :: fptr(:)
   integer(c_intptr_t) :: intptr
   integer(c_size_t), parameter :: count = 1024
   integer(omp_depend_kind) :: dep(1)
@@ -35,22 +34,28 @@ block
       !$omp taskwait
 
       !$omp target device(dev) is_device_ptr(ptr) depend(depobj: dep(1)) nowait
+      block
+        integer(c_int8_t), pointer, contiguous :: fptr(:)
+        call c_f_pointer (ptr, fptr, [count])
         do i = 1 + start, int(count, c_int) - start - tail
-          call c_f_pointer (ptr, fptr, [count])
           if (fptr(i) /= int (val, c_int8_t)) stop 2
           fptr(i) = fptr(i) + 2_c_int8_t
         end do
+      end block
       !$omp end target
 
       ptr2 = omp_target_memset_async (tmpptr, val + 3, &
                                       count - start - tail, dev, 1, dep)
 
       !$omp target device(dev) is_device_ptr(ptr) depend(depobj: dep(1)) nowait
+      block
+        integer(c_int8_t), pointer, contiguous :: fptr(:)
+        call c_f_pointer (ptr, fptr, [count])
         do i = 1 + start, int(count, c_int) - start - tail
-          call c_f_pointer (ptr, fptr, [count])
           if (fptr(i) /= int (val + 3, c_int8_t)) stop 3
           fptr(i) = fptr(i) - 1_c_int8_t
         end do
+      end block
       !$omp end target
 
       ptr2 = omp_target_memset_async (tmpptr, val - 3, &
