@@ -90,8 +90,6 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::PROC_MACRO, EXPANSION},
      {Attrs::PROC_MACRO_DERIVE, EXPANSION},
      {Attrs::PROC_MACRO_ATTRIBUTE, EXPANSION},
-
-     {Attrs::DERIVE, EXPANSION},
      // FIXME: This is not implemented yet, see
      // https://github.com/Rust-GCC/gccrs/issues/1475
      {Attrs::TARGET_FEATURE, CODE_GENERATION},
@@ -101,7 +99,6 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::RUSTC_INHERIT_OVERFLOW_CHECKS, CODE_GENERATION},
      {Attrs::STABLE, STATIC_ANALYSIS},
      {Attrs::UNSTABLE, STATIC_ANALYSIS},
-
      // assuming we keep these for static analysis
      {Attrs::RUSTC_PROMOTABLE, CODE_GENERATION},
      {Attrs::RUSTC_CONST_STABLE, STATIC_ANALYSIS},
@@ -114,22 +111,21 @@ static const BuiltinAttrDefinition __definitions[]
      {Attrs::RUSTC_RESERVATION_IMPL, TYPE_CHECK},
      {Attrs::RUSTC_PAREN_SUGAR, TYPE_CHECK},
      {Attrs::RUSTC_NONNULL_OPTIMIZATION_GUARANTEED, TYPE_CHECK},
-
      {Attrs::RUSTC_LAYOUT_SCALAR_VALID_RANGE_START, CODE_GENERATION},
-
      // TODO: be careful about calling functions marked with this?
      {Attrs::RUSTC_ARGS_REQUIRED_CONST, CODE_GENERATION},
-
      {Attrs::PRELUDE_IMPORT, NAME_RESOLUTION},
-
      {Attrs::RUSTC_DIAGNOSTIC_ITEM, STATIC_ANALYSIS},
      {Attrs::RUSTC_ON_UNIMPLEMENTED, STATIC_ANALYSIS},
-
      {Attrs::FUNDAMENTAL, TYPE_CHECK},
      {Attrs::NON_EXHAUSTIVE, TYPE_CHECK},
      {Attrs::RUSTFMT, EXTERNAL},
-
      {Attrs::TEST, CODE_GENERATION}};
+
+static const std::set<std::string> __outer_attributes
+  = {Attrs::INLINE,	    Attrs::DERIVE_ATTR, Attrs::ALLOW_INTERNAL_UNSTABLE,
+     Attrs::LANG,	    Attrs::REPR,	Attrs::PATH,
+     Attrs::TARGET_FEATURE, Attrs::TEST};
 
 BuiltinAttributeMappings *
 BuiltinAttributeMappings::get ()
@@ -327,6 +323,26 @@ check_proc_macro_non_root (AST::AttrVec attributes, location_t loc)
 }
 
 void
+AttributeChecker::check_inner_attribute (const AST::Attribute &attribute)
+{
+  BuiltinAttrDefinition result;
+
+  if (!is_builtin (attribute, result))
+    return;
+
+  if (__outer_attributes.find (result.name) != __outer_attributes.end ())
+    rust_error_at (attribute.get_locus (),
+		   "attribute cannot be used at crate level");
+}
+
+void
+AttributeChecker::check_inner_attributes (const AST::AttrVec &attributes)
+{
+  for (auto &attr : attributes)
+    check_inner_attribute (attr);
+}
+
+void
 AttributeChecker::check_attribute (const AST::Attribute &attribute)
 {
   if (!attribute.empty_input ())
@@ -354,15 +370,6 @@ AttributeChecker::check_attribute (const AST::Attribute &attribute)
   // and costly
   if (result.name == Attrs::DOC)
     check_doc_attribute (attribute);
-}
-
-void
-AttributeChecker::check_inner_attributes (const AST::AttrVec &attributes)
-{
-  for (auto &attr : attributes)
-    if (attr.is_derive ())
-      rust_error_at (attr.get_locus (),
-		     "derive attribute cannot be used at crate level");
 }
 
 void

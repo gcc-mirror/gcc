@@ -49,8 +49,6 @@ public:
   static constexpr auto &PROC_MACRO_DERIVE = "proc_macro_derive";
   static constexpr auto &PROC_MACRO_ATTRIBUTE = "proc_macro_attribute";
 
-  static constexpr auto &DERIVE = "derive";
-
   static constexpr auto &TARGET_FEATURE = "target_feature";
   // From now on, these are reserved by the compiler and gated through
   // #![feature(rustc_attrs)]
