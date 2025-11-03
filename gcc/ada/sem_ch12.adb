@@ -810,11 +810,11 @@ package body Sem_Ch12 is
    --  the suffix is removed is added to Prims_List to restore them later.
 
    procedure Install_Parent (P : Entity_Id; In_Body : Boolean := False);
-   --  When compiling an instance of a child unit the parent (which is
-   --  itself an instance) is an enclosing scope that must be made
-   --  immediately visible. This procedure is also used to install the non-
-   --  generic parent of a generic child unit when compiling its body, so
-   --  that full views of types in the parent are made visible.
+   --  When compiling an instance of a child unit, the parent P is an enclosing
+   --  scope that must be made immediately visible. In_Body is True if this is
+   --  done for an instance body and False for an instance spec. Note that the
+   --  procedure does not insert P on the scope stack above the current scope,
+   --  but instead pushes P and then pushes an extra copy of the current scope.
 
    --  The functions Instantiate_... perform various legality checks and build
    --  the declarations for instantiated generic parameters. In all of these
@@ -930,7 +930,7 @@ package body Sem_Ch12 is
    --  subprogram declaration N.
 
    procedure Remove_Parent (In_Body : Boolean := False);
-   --  Reverse effect after instantiation of child is complete
+   --  Reverse Install_Parent's effect after instantiation of child is complete
 
    function Renames_Standard_Subprogram (Subp : Entity_Id) return Boolean;
    --  Determine whether Subp renames one of the subprograms defined in the
@@ -11168,10 +11168,20 @@ package body Sem_Ch12 is
    ------------------------
 
    procedure Hide_Current_Scope is
-      C : constant Entity_Id := Current_Scope;
+      C : Entity_Id;
       E : Entity_Id;
 
    begin
+      C := Current_Scope;
+
+      --  The analysis of the actual parameters may have created a transient
+      --  scope after the extra copy of the current scope was pushed onto the
+      --  stack, so we need to skip it.
+
+      if Scope_Is_Transient then
+         C := Scope (C);
+      end if;
+
       Set_Is_Hidden_Open_Scope (C);
 
       E := First_Entity (C);
@@ -11194,7 +11204,6 @@ package body Sem_Ch12 is
          Set_Is_Immediately_Visible (C, False);
          Append_Elmt (C, Hidden_Entities);
       end if;
-
    end Hide_Current_Scope;
 
    --------------
@@ -16948,20 +16957,33 @@ package body Sem_Ch12 is
 
    procedure Remove_Parent (In_Body : Boolean := False) is
       S : Entity_Id := Current_Scope;
-      --  S is the scope containing the instantiation just completed. The scope
-      --  stack contains the parent instances of the instantiation, followed by
-      --  the original S.
+      --  S is the extra copy of the current scope that has been pushed by
+      --  Install_Parent. The scope stack next contains the parents of the
+      --  instance followed by the original S.
 
       Cur_P  : Entity_Id;
       E      : Entity_Id;
-      P      : Entity_Id;
       Hidden : Elmt_Id;
+      P      : Entity_Id;
+      SE     : Scope_Stack_Entry;
 
    begin
-      --  After child instantiation is complete, remove from scope stack the
-      --  extra copy of the current scope, and then remove parent instances.
-
       if not In_Body then
+         --  If the analysis of the actual parameters has created a transient
+         --  scope after the extra copy of the current scope was pushed onto
+         --  the stack, we first need to save this transient scope and pop it.
+
+         if Scope_Is_Transient then
+            SE := Scope_Stack.Table (Scope_Stack.Last);
+            Scope_Stack.Decrement_Last;
+            S := Current_Scope;
+         else
+            SE := (Is_Transient => False, others => <>);
+         end if;
+
+         --  After child instantiation is complete, remove from scope stack the
+         --  extra copy of the current scope, and then remove the parents.
+
          Pop_Scope;
 
          while Current_Scope /= S loop
@@ -17044,6 +17066,12 @@ package body Sem_Ch12 is
             Set_Is_Immediately_Visible (Node (Hidden), True);
             Next_Elmt (Hidden);
          end loop;
+
+         --  Restore the transient scope that was popped on entry, if any
+
+         if SE.Is_Transient then
+            Scope_Stack.Append (SE);
+         end if;
 
       else
          --  Each body is analyzed separately, and there is no context that
