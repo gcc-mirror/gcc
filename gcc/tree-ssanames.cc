@@ -406,6 +406,10 @@ make_ssa_name_fn (struct function *fn, tree var, gimple *stmt,
   SSA_NAME_IN_FREE_LIST (t) = 0;
   SSA_NAME_IS_DEFAULT_DEF (t) = 0;
   init_ssa_name_imm_use (t);
+#if defined ENABLE_GIMPLE_CHECKING
+  t->ssa_name.active_iterated_stmt = NULL;
+  t->ssa_name.fast_iteration_depth = 0;
+#endif
 
   return t;
 }

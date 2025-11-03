@@ -1717,6 +1717,10 @@ struct GTY(()) tree_ssa_name {
 		"!POINTER_TYPE_P (TREE_TYPE ((tree)&%1)) : 2"))) info;
   /* Immediate uses list for this SSA_NAME.  */
   struct ssa_use_operand_t imm_uses;
+#if defined ENABLE_GIMPLE_CHECKING
+  gimple *active_iterated_stmt;
+  unsigned fast_iteration_depth;
+#endif
 };
 
 struct GTY(()) phi_arg_d {

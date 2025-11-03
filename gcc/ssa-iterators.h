@@ -59,16 +59,40 @@ struct imm_use_iterator
   /* This is the next ssa_name to visit.  IMM_USE may get removed before
      the next one is traversed to, so it must be cached early.  */
   ssa_use_operand_t *next_imm_name;
+  /* This is the SSA name iterated over.  */
+  tree name;
 };
 
 
 /* Use this iterator when simply looking at stmts.  Adding, deleting or
    modifying stmts will cause this iterator to malfunction.  */
 
+#if ! defined ENABLE_GIMPLE_CHECKING
 #define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)		\
   for ((DEST) = first_readonly_imm_use (&(ITER), (SSAVAR));	\
        !end_readonly_imm_use_p (&(ITER));			\
        (void) ((DEST) = next_readonly_imm_use (&(ITER))))
+#else
+
+/* arrange to automatically call, upon descruction, with a given pointer
+   to imm_use_iterator.  */
+struct auto_end_imm_use_fast_traverse
+{
+  imm_use_iterator *imm;
+  auto_end_imm_use_fast_traverse (imm_use_iterator *imm)
+  : imm (imm) {}
+  ~auto_end_imm_use_fast_traverse ()
+  { imm->name->ssa_name.fast_iteration_depth--; }
+};
+
+#define FOR_EACH_IMM_USE_FAST(DEST, ITER, SSAVAR)		\
+  for (struct auto_end_imm_use_fast_traverse			\
+	 auto_end_imm_use_fast_traverse				\
+	   ((((DEST) = first_readonly_imm_use (&(ITER), (SSAVAR))), \
+	    &(ITER)));						\
+       !end_readonly_imm_use_p (&(ITER));			\
+       (void) ((DEST) = next_readonly_imm_use (&(ITER))))
+#endif
 
 /* Forward declare for use in the class below.  */
 inline void end_imm_use_stmt_traverse (imm_use_iterator *);
@@ -251,6 +275,20 @@ delink_imm_use (ssa_use_operand_t *linknode)
   if (linknode->prev == NULL)
     return;
 
+#if defined ENABLE_GIMPLE_CHECKING
+  if (linknode->loc.stmt
+      /* update_stmt on constant/removed uses.  */
+      && USE_FROM_PTR (linknode)
+      && TREE_CODE (USE_FROM_PTR (linknode)) == SSA_NAME)
+    {
+      tree var = USE_FROM_PTR (linknode);
+      gcc_assert (var->ssa_name.fast_iteration_depth == 0
+		  && (var->ssa_name.active_iterated_stmt == NULL
+		      || (var->ssa_name.active_iterated_stmt
+			  == linknode->loc.stmt)));
+    }
+#endif
+
   linknode->prev->next = linknode->next;
   linknode->next->prev = linknode->prev;
   linknode->prev = NULL;
@@ -349,9 +387,13 @@ end_readonly_imm_use_p (const imm_use_iterator *imm)
 inline use_operand_p
 first_readonly_imm_use (imm_use_iterator *imm, tree var)
 {
+#if defined ENABLE_GIMPLE_CHECKING
+  var->ssa_name.fast_iteration_depth++;
+#endif
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
   imm->next_stmt_use = imm->imm_use->next;
+  imm->name = var;
   if (end_readonly_imm_use_p (imm))
     return NULL_USE_OPERAND_P;
   return imm->imm_use;
@@ -846,8 +888,11 @@ end_imm_use_stmt_p (const imm_use_iterator *imm)
    placeholder node from the list.  */
 
 inline void
-end_imm_use_stmt_traverse (imm_use_iterator *)
+end_imm_use_stmt_traverse (imm_use_iterator * ARG_UNUSED (imm))
 {
+#if defined ENABLE_GIMPLE_CHECKING
+  imm->name->ssa_name.active_iterated_stmt = NULL;
+#endif
 }
 
 /* Immediate use traversal of uses within a stmt require that all the
@@ -923,6 +968,10 @@ link_use_stmts_after (use_operand_p head, imm_use_iterator *)
 inline gimple *
 first_imm_use_stmt (imm_use_iterator *imm, tree var)
 {
+#if defined ENABLE_GIMPLE_CHECKING
+  gcc_assert (var->ssa_name.active_iterated_stmt == NULL
+	      && var->ssa_name.fast_iteration_depth == 0);
+#endif
   imm->end_p = &(SSA_NAME_IMM_USE_NODE (var));
   imm->imm_use = imm->end_p->next;
   imm->next_imm_name = NULL_USE_OPERAND_P;
@@ -930,12 +979,16 @@ first_imm_use_stmt (imm_use_iterator *imm, tree var)
   /* next_stmt_use is used to point to the immediate use node after
      the set of uses for the current stmt.  */
   imm->next_stmt_use = NULL_USE_OPERAND_P;
+  imm->name = var;
 
   if (end_imm_use_stmt_p (imm))
     return NULL;
 
   imm->next_stmt_use = link_use_stmts_after (imm->imm_use, imm)->next;
 
+#if defined ENABLE_GIMPLE_CHECKING
+  var->ssa_name.active_iterated_stmt = USE_STMT (imm->imm_use);
+#endif
   return USE_STMT (imm->imm_use);
 }
 
@@ -948,6 +1001,9 @@ next_imm_use_stmt (imm_use_iterator *imm)
   if (end_imm_use_stmt_p (imm))
     return NULL;
 
+#if defined ENABLE_GIMPLE_CHECKING
+  imm->name->ssa_name.active_iterated_stmt = USE_STMT (imm->imm_use);
+#endif
   imm->next_stmt_use = link_use_stmts_after (imm->imm_use, imm)->next;
   return USE_STMT (imm->imm_use);
 }
