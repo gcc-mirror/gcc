@@ -572,7 +572,10 @@ class StdVectorPrinter(printer_base):
                               self._val['_M_impl']['_M_finish'],
                               self._is_bool)
 
-    def to_string(self):
+    # Helper to compute the bounds of the vector.
+    # Returns a tuple: (length, capacity, suffix)
+    # SUFFIX is a type-name suffix to print.
+    def _bounds(self):
         start = self._val['_M_impl']['_M_start']
         finish = self._val['_M_impl']['_M_finish']
         end = self._val['_M_impl']['_M_end_of_storage']
@@ -582,13 +585,27 @@ class StdVectorPrinter(printer_base):
             fo = self._val['_M_impl']['_M_finish']['_M_offset']
             itype = start.dereference().type
             bl = 8 * itype.sizeof
-            length = bl * (finish - start) + fo
-            capacity = bl * (end - start)
-            return ('%s<bool> of length %d, capacity %d'
-                    % (self._typename, int(length), int(capacity)))
+            length = int(bl * (finish - start) + fo)
+            capacity = int(bl * (end - start))
+            suffix = '<bool>'
         else:
-            return ('%s of length %d, capacity %d'
-                    % (self._typename, int(finish - start), int(end - start)))
+            length = int(finish - start)
+            capacity = int(end - start)
+            suffix = ''
+        if length < 0:
+            # Probably uninitialized.
+            length = 0
+            capacity = 0
+        return (length, capacity, suffix)
+
+    def to_string(self):
+        (length, capacity, suffix) = self._bounds()
+        return ('%s%s of length %d, capacity %d'
+                % (self._typename, suffix, length, capacity))
+
+    def num_children(self):
+        (length, capacity, suffix) = self._bounds()
+        return length
 
     def display_hint(self):
         return 'array'
@@ -733,6 +750,11 @@ class StdStackOrQueuePrinter(printer_base):
         return '%s wrapping: %s' % (self._typename,
                                     self._visualizer.to_string())
 
+    def num_children(self):
+        if hasattr(self._visualizer, 'num_children'):
+            return self._visualizer.num_children()
+        return None
+
     def display_hint(self):
         if hasattr(self._visualizer, 'display_hint'):
             return self._visualizer.display_hint()
@@ -876,6 +898,9 @@ class StdMapPrinter(printer_base):
         node = lookup_node_type('_Rb_tree_node', self._val.type).pointer()
         return self._iter(RbtreeIterator(self._val), node)
 
+    def num_children(slf):
+        return len(RbtreeIterator(self._val))
+
     def display_hint(self):
         return 'map'
 
@@ -915,6 +940,8 @@ class StdSetPrinter(printer_base):
         node = lookup_node_type('_Rb_tree_node', self._val.type).pointer()
         return self._iter(RbtreeIterator(self._val), node)
 
+    def num_children(slf):
+        return len(RbtreeIterator(self._val))
 
 class StdBitsetPrinter(printer_base):
     """Print a std::bitset."""
@@ -1006,7 +1033,8 @@ class StdDequePrinter(printer_base):
         else:
             self._buffer_size = 1
 
-    def to_string(self):
+    # Helper to compute the size.
+    def _size(self):
         start = self._val['_M_impl']['_M_start']
         end = self._val['_M_impl']['_M_finish']
 
@@ -1014,15 +1042,20 @@ class StdDequePrinter(printer_base):
         delta_s = start['_M_last'] - start['_M_cur']
         delta_e = end['_M_cur'] - end['_M_first']
 
-        size = self._buffer_size * delta_n + delta_s + delta_e
+        return long(self._buffer_size * delta_n + delta_s + delta_e)
 
-        return '%s with %s' % (self._typename, num_elements(long(size)))
+    def to_string(self):
+        size = self._size()
+        return '%s with %s' % (self._typename, num_elements(size))
 
     def children(self):
         start = self._val['_M_impl']['_M_start']
         end = self._val['_M_impl']['_M_finish']
         return self._iter(start['_M_node'], start['_M_cur'], start['_M_last'],
                           end['_M_cur'], self._buffer_size)
+
+    def num_children(self):
+        return self._size()
 
     def display_hint(self):
         return 'array'
@@ -1210,6 +1243,9 @@ class Tr1UnorderedSetPrinter(printer_base):
             return izip(counter, Tr1HashtableIterator(self._hashtable()))
         return izip(counter, StdHashtableIterator(self._hashtable()))
 
+    def num_children(self):
+        return int(self._hashtable()['_M_element_count'])
+
 
 class Tr1UnorderedMapPrinter(printer_base):
     """Print a std::unordered_map or tr1::unordered_map."""
@@ -1253,6 +1289,9 @@ class Tr1UnorderedMapPrinter(printer_base):
             imap(self._format_one, StdHashtableIterator(self._hashtable())))
         # Zip the two iterators together.
         return izip(counter, data)
+
+    def num_children(self):
+        return int(self._hashtable()['_M_element_count'])
 
     def display_hint(self):
         return 'map'
@@ -1948,6 +1987,9 @@ class StdSpanPrinter(printer_base):
 
     def children(self):
         return self._iterator(self._val['_M_ptr'], self._size)
+
+    def num_children(self):
+        return int(self._size)
 
     def display_hint(self):
         return 'array'
