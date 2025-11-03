@@ -1206,18 +1206,16 @@ debug_objcopy (const char *infile, bool rename)
 
   const char *p;
   const char *orig_infile = infile;
-  off_t inoff = 0;
-  long loffset;
+  int64_t inoff = 0;
   int consumed;
   if ((p = strrchr (infile, '@'))
       && p != infile
-      && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
+      && sscanf (p, "@%" PRIi64 "%n", &inoff, &consumed) >= 1
       && strlen (p) == (unsigned int) consumed)
     {
       char *fname = xstrdup (infile);
       fname[p - infile] = '\0';
       infile = fname;
-      inoff = (off_t) loffset;
     }
   int infd = open (infile, O_RDONLY | O_BINARY);
   if (infd == -1)
@@ -1483,8 +1481,7 @@ run_gcc (unsigned argc, char *argv[])
     {
       char *p;
       int fd;
-      off_t file_offset = 0;
-      long loffset;
+      int64_t file_offset = 0;
       int consumed;
       char *filename = argv[i];
 
@@ -1498,13 +1495,12 @@ run_gcc (unsigned argc, char *argv[])
 
       if ((p = strrchr (argv[i], '@'))
 	  && p != argv[i]
-	  && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
+	  && sscanf (p, "@%" PRIi64 "%n", &file_offset, &consumed) >= 1
 	  && strlen (p) == (unsigned int) consumed)
 	{
 	  filename = XNEWVEC (char, p - argv[i] + 1);
 	  memcpy (filename, argv[i], p - argv[i]);
 	  filename[p - argv[i]] = '\0';
-	  file_offset = (off_t) loffset;
 	}
       fd = open (filename, O_RDONLY | O_BINARY);
       /* Linker plugin passes -fresolution and -flinker-output options.
@@ -1801,20 +1797,18 @@ cont1:
       for (i = 0; i < num_offload_files; i++)
 	{
 	  char *p;
-	  long loffset;
 	  int fd, consumed;
-	  off_t file_offset = 0;
+	  int64_t file_offset = 0;
 	  char *filename = offload_argv[i];
 
 	  if ((p = strrchr (offload_argv[i], '@'))
 	      && p != offload_argv[i]
-	      && sscanf (p, "@%li%n", &loffset, &consumed) >= 1
+	      && sscanf (p, "@%" PRIi64 "%n", &file_offset, &consumed) >= 1
 	      && strlen (p) == (unsigned int) consumed)
 	    {
 	      filename = XNEWVEC (char, p - offload_argv[i] + 1);
 	      memcpy (filename, offload_argv[i], p - offload_argv[i]);
 	      filename[p - offload_argv[i]] = '\0';
-	      file_offset = (off_t) loffset;
 	    }
 	  fd = open (filename, O_RDONLY | O_BINARY);
 	  if (fd == -1)
