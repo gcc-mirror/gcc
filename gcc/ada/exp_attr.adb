@@ -5581,14 +5581,18 @@ package body Exp_Attr is
       ---------
 
       when Attribute_Old => Old : declare
-         CW_Temp : Entity_Id;
-         CW_Typ  : Entity_Id;
-         Decl    : Node_Id;
-         Ins_Nod : Node_Id;
-         Temp    : Entity_Id;
+         CW_Temp   : Entity_Id;
+         CW_Typ    : Entity_Id;
+         Decl      : Node_Id;
+         Ins_Nod   : Node_Id;
+         Temp      : Entity_Id;
 
          use Old_Attr_Util.Conditional_Evaluation;
          use Old_Attr_Util.Indirect_Temps;
+
+         Cond_Eval : constant Boolean :=
+            Eligible_For_Conditional_Evaluation (N);
+
       begin
          --  'Old can only appear in the case where local contract-related
          --  wrapper has been generated with the purpose of wrapping the
@@ -5617,7 +5621,12 @@ package body Exp_Attr is
 
          Ins_Nod := Last (Declarations (Ins_Nod));
 
-         if Eligible_For_Conditional_Evaluation (N) then
+         --  The code that builds declarations for always evaluated 'Old
+         --  constants doesn't handle the anonymous access type case correctly.
+         --  Indirect temporaries do, so we avoid that problem by going through
+         --  the same code as for conditionally evaluated constants.
+
+         if Cond_Eval or else Is_Anonymous_Access_Type (Etype (N)) then
             declare
                Eval_Stmts : constant List_Id := New_List;
 
@@ -5649,12 +5658,19 @@ package body Exp_Attr is
                Declare_Indirect_Temporary
                  (Attr_Prefix => Pref, Indirect_Temp => Temp);
 
-               Insert_After_And_Analyze (
-                 Ins_Nod,
-                 Make_If_Statement
-                   (Sloc            => Loc,
-                    Condition       => Conditional_Evaluation_Condition  (N),
-                    Then_Statements => Eval_Stmts));
+               --  Prefixes with anonymous access type might be unconditionally
+               --  evaluated.
+
+               if Cond_Eval then
+                  Insert_After_And_Analyze (
+                    Ins_Nod,
+                    Make_If_Statement
+                      (Sloc            => Loc,
+                       Condition       => Conditional_Evaluation_Condition (N),
+                       Then_Statements => Eval_Stmts));
+               else
+                  Insert_List_After_And_Analyze (Ins_Nod, Eval_Stmts);
+               end if;
 
                Rewrite (N, Indirect_Temp_Value
                              (Temp => Temp,

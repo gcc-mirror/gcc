@@ -31520,8 +31520,7 @@ package body Sem_Util is
             Result      : Node_Id :=
               New_Occurrence_Of (Standard_True, Loc);
          begin
-            pragma Assert (Determiners'Length > 0 or else
-                           Is_Anonymous_Access_Type (Etype (Expr)));
+            pragma Assert (Determiners'Length > 0);
 
             for I in Determiners'Range loop
                Result := Make_And_Then
@@ -31735,14 +31734,7 @@ package body Sem_Util is
            (Expr : Node_Id) return Boolean
          is
          begin
-            if Is_Anonymous_Access_Type (Etype (Expr)) then
-               --  The code in exp_attr.adb that also builds declarations
-               --  for 'Old constants doesn't handle the anonymous access
-               --  type case correctly, so we avoid that problem by
-               --  returning True here.
-               return True;
-
-            elsif Ada_Version < Ada_2022 then
+            if Ada_Version < Ada_2022 then
                return False;
 
             elsif Inside_Class_Condition_Preanalysis then

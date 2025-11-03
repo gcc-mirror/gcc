@@ -3635,10 +3635,6 @@ package Sem_Util is
          --     - its determining expressions are all known on entry; and
          --     - Ada_Version >= Ada_2022.
          --  See RM 6.1.1 for definitions of these terms.
-         --
-         --  Also returns True if Expr is of an anonymous access type;
-         --  this is just because we want the code that knows how to build
-         --  'Old temps in that case to reside in only one place.
 
          function Conditional_Evaluation_Condition
            (Expr : Node_Id) return Node_Id;
