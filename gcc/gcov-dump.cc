@@ -39,6 +39,7 @@ static void tag_function (const char *, unsigned, int, unsigned);
 static void tag_blocks (const char *, unsigned, int, unsigned);
 static void tag_arcs (const char *, unsigned, int, unsigned);
 static void tag_conditions (const char *, unsigned, int, unsigned);
+static void tag_paths (const char *, unsigned, int, unsigned);
 static void tag_lines (const char *, unsigned, int, unsigned);
 static void tag_counters (const char *, unsigned, int, unsigned);
 static void tag_summary (const char *, unsigned, int, unsigned);
@@ -79,6 +80,7 @@ static const tag_format_t tag_table[] =
   {GCOV_TAG_BLOCKS, "BLOCKS", tag_blocks},
   {GCOV_TAG_ARCS, "ARCS", tag_arcs},
   {GCOV_TAG_CONDS, "CONDITIONS", tag_conditions},
+  {GCOV_TAG_PATHS, "PATHS", tag_paths},
   {GCOV_TAG_LINES, "LINES", tag_lines},
   {GCOV_TAG_OBJECT_SUMMARY, "OBJECT_SUMMARY", tag_summary},
   {0, NULL, NULL}
@@ -417,6 +419,15 @@ tag_conditions (const char *filename, unsigned /* tag */, int length,
 	}
     }
 }
+
+static void
+tag_paths (const char *filename ATTRIBUTE_UNUSED,
+	   unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED,
+	   unsigned depth ATTRIBUTE_UNUSED)
+{
+  printf (" %u paths", gcov_read_unsigned ());
+}
+
 static void
 tag_lines (const char *filename ATTRIBUTE_UNUSED,
 	   unsigned tag ATTRIBUTE_UNUSED, int length ATTRIBUTE_UNUSED,
