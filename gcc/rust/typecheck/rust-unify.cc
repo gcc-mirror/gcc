@@ -18,8 +18,8 @@
 
 #include "rust-unify.h"
 #include "fold-const.h"
+#include "rust-tyty-util.h"
 #include "rust-tyty.h"
-#include "tree.h"
 
 namespace Rust {
 namespace Resolver {
@@ -302,33 +302,65 @@ UnifyRules::go ()
       else if (ltype->get_kind () == TyTy::TypeKind::CONST
 	       && rtype->get_kind () == TyTy::TypeKind::CONST)
 	{
-	  const auto &lhs = *ltype->as_const_type ();
-	  const auto &rhs = *rtype->as_const_type ();
+	  auto lhs = ltype->as_const_type ();
+	  auto rhs = rtype->as_const_type ();
 
 	  bool both_are_decls
-	    = lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl
-	      && rhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl;
+	    = lhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl
+	      && rhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl;
 	  bool have_decls
-	    = lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl
-	      || rhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl;
+	    = lhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl
+	      || rhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl;
 
 	  if (have_decls && !both_are_decls)
 	    {
-	      if (lhs.const_kind () == TyTy::BaseConstType::ConstKind::Decl)
+	      if (lhs->const_kind () == TyTy::BaseConstType::ConstKind::Decl)
 		{
-		  TyTy::TyVar iv = TyTy::TyVar::get_implicit_const_infer_var (
-		    lhs.as_base_type ()->get_locus ());
-		  ltype = iv.get_tyty ();
+		  auto l = lhs->as_base_type ()->get_locus ();
+		  auto p = static_cast<TyTy::ConstParamType *> (lhs);
+		  auto it = TyTy::TyVar::get_implicit_infer_var (l);
+		  auto iv = TyTy::TyVar::get_implicit_const_infer_var (l, &it);
+		  auto ivt = iv.get_tyty ();
+
+		  infers.emplace_back (0, 0, nullptr, it.get_tyty ());
+		  infers.emplace_back (ltype->get_ref (), ltype->get_ty_ref (),
+				       p, ivt);
+
+		  ltype = ivt;
+		  p->set_ty_ref (ltype->get_ref ());
 		}
-	      else if (rhs.const_kind ()
+	      else if (rhs->const_kind ()
 		       == TyTy::BaseConstType::ConstKind::Decl)
 		{
-		  TyTy::TyVar iv = TyTy::TyVar::get_implicit_const_infer_var (
-		    rhs.as_base_type ()->get_locus ());
-		  rtype = iv.get_tyty ();
+		  auto l = rhs->as_base_type ()->get_locus ();
+		  auto p = static_cast<TyTy::ConstParamType *> (rhs);
+		  auto it = TyTy::TyVar::get_implicit_infer_var (l);
+		  auto iv = TyTy::TyVar::get_implicit_const_infer_var (l, &it);
+		  auto ivt = iv.get_tyty ();
+
+		  infers.emplace_back (0, 0, nullptr, it.get_tyty ());
+		  infers.emplace_back (rtype->get_ref (), rtype->get_ty_ref (),
+				       p, ivt);
+
+		  rtype = ivt;
+		  p->set_ty_ref (rtype->get_ref ());
 		}
 	    }
 	}
+    }
+
+  if (ltype->get_kind () != TyTy::TypeKind::CONST
+      && rtype->get_kind () == TyTy::TypeKind::CONST)
+    {
+      auto *rc = rtype->as_const_type ();
+      rtype = rc->get_specified_type ();
+    }
+
+  if (ltype->get_kind () == TyTy::TypeKind::CONST
+      && rtype->get_kind () != TyTy::TypeKind::CONST)
+    {
+      auto *lc = ltype->as_const_type ();
+      ltype = lc->get_specified_type ();
     }
 
   switch (ltype->get_kind ())

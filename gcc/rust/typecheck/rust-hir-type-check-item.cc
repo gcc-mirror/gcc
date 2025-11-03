@@ -112,17 +112,27 @@ TypeCheckItem::ResolveImplBlockSelfWithInference (
   std::vector<TyTy::SubstitutionArg> args;
   for (auto &p : substitutions)
     {
-      if (p.needs_substitution ())
+      auto param = p.get_param_ty ();
+      if (!p.needs_substitution ())
 	{
-	  TyTy::TyVar infer_var = TyTy::TyVar::get_implicit_infer_var (locus);
-	  args.emplace_back (&p, infer_var.get_tyty ());
+	  auto resolved = param->destructure ();
+	  args.emplace_back (&p, resolved);
+
+	  continue;
+	}
+
+      TyTy::BaseType *argument = nullptr;
+      if (param->get_kind () == TyTy::TypeKind::CONST)
+	{
+	  auto i = TyTy::TyVar::get_implicit_const_infer_var (locus);
+	  argument = i.get_tyty ();
 	}
       else
 	{
-	  auto param = p.get_param_ty ();
-	  auto resolved = param->destructure ();
-	  args.emplace_back (&p, resolved);
+	  auto i = TyTy::TyVar::get_implicit_infer_var (locus);
+	  argument = i.get_tyty ();
 	}
+      args.emplace_back (&p, argument);
     }
 
   // create argument mappings

@@ -132,10 +132,8 @@ ResolvePathRef::resolve_with_node_id (
   tl::optional<HirId> hid
     = ctx->get_mappings ().lookup_node_to_hir (resolved_node_id);
   if (!hid.has_value ())
-    {
-      rust_error_at (expr_locus, "reverse call path lookup failure");
-      return error_mark_node;
-    }
+    return error_mark_node;
+
   auto ref = hid.value ();
 
   // might be a constant
@@ -189,6 +187,17 @@ ResolvePathRef::resolve_with_node_id (
 	}
     }
 
+  // possibly a const expr value
+  if (lookup->get_kind () == TyTy::TypeKind::CONST)
+    {
+      auto d = lookup->destructure ();
+      rust_assert (d->get_kind () == TyTy::TypeKind::CONST);
+      auto c = d->as_const_type ();
+      rust_assert (c->const_kind () == TyTy::BaseConstType::ConstKind::Value);
+      auto val = static_cast<TyTy::ConstValueType *> (c);
+      return val->get_value ();
+    }
+
   // Handle unit struct
   tree resolved_item = error_mark_node;
   if (lookup->get_kind () == TyTy::TypeKind::ADT)
@@ -203,9 +212,7 @@ ResolvePathRef::resolve_with_node_id (
   resolved_item = query_compile (ref, lookup, final_segment, mappings,
 				 expr_locus, is_qualified_path);
   if (resolved_item != error_mark_node)
-    {
-      TREE_USED (resolved_item) = 1;
-    }
+    TREE_USED (resolved_item) = 1;
 
   return resolved_item;
 }

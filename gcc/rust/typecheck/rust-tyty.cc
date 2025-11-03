@@ -785,10 +785,17 @@ BaseType::is_concrete () const
 {
   const TyTy::BaseType *x = destructure ();
 
-  if (x->is<ParamType> () || x->is<ProjectionType> ()
-      || x->is<ConstParamType> ())
+  if (x->is<ParamType> () || x->is<ProjectionType> ())
     {
       return false;
+    }
+  else if (x->get_kind () == TyTy::TypeKind::CONST)
+    {
+      auto p = x->as_const_type ();
+      if (p->const_kind () == BaseConstType::ConstKind::Decl)
+	return false;
+
+      return true;
     }
   // placeholder is a special case for this case when it is not resolvable
   // it means we its just an empty placeholder associated type which is
@@ -3633,9 +3640,8 @@ ConstParamType::get_name () const
     return get_symbol ();
 
   BaseType *lookup = resolve ();
-  // Avoid infinite recursion if resolve() returns this same type
   if (lookup == this->as_base_type ())
-    return get_symbol ();
+    return get_symbol () + ":" + get_specified_type ()->get_name ();
 
   return lookup->get_name ();
 }
@@ -3660,9 +3666,25 @@ ConstParamType::is_equal (const BaseType &other) const
     return false;
 
   if (can_resolve ())
-    return Resolver::types_compatable (TyTy::TyWithLocation (resolve ()),
-				       TyTy::TyWithLocation (other2.resolve ()),
-				       ident.locus, false);
+    {
+      // Compare the resolved ty_ref values to avoid infinite recursion
+      // through types_compatable/unification
+      BaseType *lhs = resolve ();
+      BaseType *rhs = other2.resolve ();
+
+      // If they resolve to the same type (same ty_ref), they're equal
+      if (lhs->get_ty_ref () == rhs->get_ty_ref ())
+	return true;
+
+      // Otherwise check if the resolved types are equal
+      // Avoid recursion by checking if we'd be comparing ConstParamTypes again
+      if (lhs->get_kind () == TypeKind::CONST
+	  && lhs->as_const_type ()->const_kind ()
+	       == BaseConstType::ConstKind::Decl)
+	return false; // Would cause recursion, so not equal
+
+      return lhs->is_equal (*rhs);
+    }
 
   return get_symbol ().compare (other2.get_symbol ()) == 0;
 }

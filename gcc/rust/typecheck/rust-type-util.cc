@@ -221,13 +221,13 @@ unify_site_and (HirId id, TyTy::TyWithLocation lhs, TyTy::TyWithLocation rhs,
     }
   else if (cleanup)
     {
-      // FIXME
-      // reset the get_next_hir_id
-
       for (auto &i : infers)
 	{
-	  i.param->set_ref (i.pref);
-	  i.param->set_ty_ref (i.ptyref);
+	  if (i.param != nullptr)
+	    {
+	      i.param->set_ref (i.pref);
+	      i.param->set_ty_ref (i.ptyref);
+	    }
 
 	  // remove the inference variable
 	  context.clear_type (i.infer);
