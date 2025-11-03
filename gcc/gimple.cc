@@ -2283,6 +2283,28 @@ gimple_copy (gimple *stmt)
 	}
     }
 
+  switch (gimple_code (stmt))
+    {
+    case GIMPLE_OMP_ATOMIC_LOAD:
+      {
+	gomp_atomic_load *g = as_a <gomp_atomic_load *> (copy);
+	gimple_omp_atomic_load_set_lhs (g,
+	  unshare_expr (gimple_omp_atomic_load_lhs (g)));
+	gimple_omp_atomic_load_set_rhs (g,
+	  unshare_expr (gimple_omp_atomic_load_rhs (g)));
+	break;
+      }
+    case GIMPLE_OMP_ATOMIC_STORE:
+      {
+	gomp_atomic_store *g = as_a <gomp_atomic_store *> (copy);
+	gimple_omp_atomic_store_set_val (g,
+	  unshare_expr (gimple_omp_atomic_store_val (g)));
+	break;
+      }
+    default:
+      break;
+    }
+
   /* Make copy of operands.  */
   for (i = 0; i < num_ops; i++)
     gimple_set_op (copy, i, unshare_expr (gimple_op (stmt, i)));
