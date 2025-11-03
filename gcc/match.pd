@@ -3656,34 +3656,39 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Saturation mult for unsigned integer.  */
 (if (INTEGRAL_TYPE_P (type) && TYPE_UNSIGNED (type))
  (for mult_op (mult widen_mult)
-  (match (unsigned_integer_sat_mul @0 @1)
-   /* SAT_U_MUL (X, Y) = {
-	WT x = (WT)a * (WT)b;
-	T max = -1;
-	if (x > (WT)(max))
-	  return max;
-	else
-	  return (T)x;
+  (match (usmul_widen_mult @0 @1)
+   (mult_op:c (convert@2 @0) (convert @1))
+    (if (types_match (@0, @1) && TYPE_UNSIGNED (TREE_TYPE (@0)))
+     (with
+      {
+	unsigned prec = TYPE_PRECISION (TREE_TYPE (@0));
+	unsigned cvt2_prec = TYPE_PRECISION (TREE_TYPE (@2));
+	bool widen_cvt_p = cvt2_prec > prec;
       }
-      while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
-   (convert (min (mult_op:c@3 (convert@4 @0) (convert@5 @1)) INTEGER_CST@2))
-   (if (types_match (type, @0, @1))
-    (with
-     {
+      (if (widen_cvt_p))))))
+ (match (usmul_widen_mult @0 @1)
+  (widen_mult:c @0 @1)
+   (if (types_match (@0, @1))))
+ (match (unsigned_integer_sat_mul @0 @1)
+  /* SAT_U_MUL (X, Y) = {
+       WT x = (WT)a * (WT)b;
+       T max = -1;
+       if (x > (WT)(max))
+	 return max;
+       else
+	 return (T)x;
+     }
+     while WT is uint128_t, T is uint8_t, uint16_t, uint32_t or uint64_t.  */
+  (convert (min (usmul_widen_mult@3 @0 @1) INTEGER_CST@2))
+  (if (types_match (type, @0, @1))
+   (with
+    {
       unsigned prec = TYPE_PRECISION (type);
       unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
-      unsigned cvt4_prec = TYPE_PRECISION (TREE_TYPE (@4));
-      unsigned cvt5_prec = TYPE_PRECISION (TREE_TYPE (@5));
-
       wide_int max = wi::mask (prec, false, widen_prec);
       bool c2_is_max_p = wi::eq_p (wi::to_wide (@2), max);
-
-      bool widen_mult_p = mult_op == WIDEN_MULT_EXPR && cvt4_prec == cvt5_prec
-	&& widen_prec == cvt5_prec * 2 && widen_prec > prec;
-      bool mult_p = mult_op == MULT_EXPR && cvt4_prec == cvt5_prec
-	&& cvt4_prec == widen_prec && widen_prec > prec;
-     }
-     (if (c2_is_max_p && (widen_mult_p || mult_p)))))))
+    }
+    (if (c2_is_max_p)))))
   (match (unsigned_integer_sat_mul @0 @1)
    /* SAT_U_MUL (X, Y) = {
 	T result;
@@ -3751,19 +3756,6 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        bool c2_is_type_precision_p = tree_to_uhwi (@2) == prec;
       }
       (if (c2_is_type_precision_p && (mult_p || widen_mult_p)))))))
- (match (unsigned_integer_sat_mul @0 @1)
-  (convert (min (widen_mult:c@3 @0 @1) INTEGER_CST@2))
-  (if (types_match (type, @0, @1))
-   (with
-    {
-     unsigned prec = TYPE_PRECISION (type);
-     unsigned widen_prec = TYPE_PRECISION (TREE_TYPE (@3));
-
-     wide_int max = wi::mask (prec, false, widen_prec);
-     bool c2_is_max_p = wi::eq_p (wi::to_wide (@2), max);
-     bool widen_mult_p = prec * 2 == widen_prec;
-    }
-    (if (c2_is_max_p && widen_mult_p)))))
   (match (unsigned_integer_sat_mul @0 @1)
    (convert1?
     (bit_ior
