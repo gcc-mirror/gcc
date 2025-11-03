@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-require-effective-target rv64 } */
 /* { dg-require-effective-target rvv_zvl256b_ok } */
-/* { dg-additional-options "-march=rv64gcv_zvl256b -mabi=lp64d -O3 -fsigned-char -fwrapv -mrvv-vector-bits=zvl" } */
+/* { dg-additional-options "-march=rv64gcv_zvl256b -mabi=lp64d -O3 -fsigned-char -fwrapv -mrvv-vector-bits=zvl -std=gnu99" } */
 
 short a[4][14][14];
 void
