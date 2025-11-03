@@ -8996,11 +8996,14 @@ trees_in::decl_value ()
 	  dump (dumper::TREE) && dump ("CDTOR %N is %scloned",
 				       decl, cloned_p ? "" : "not ");
 	  if (cloned_p)
-	    build_cdtor_clones (decl, flags & 2, flags & 4,
-				/* Update the member vec, if there is
-				   one (we're in a different cluster
-				   to the class defn).  */
-				CLASSTYPE_MEMBER_VEC (DECL_CONTEXT (decl)));
+	    {
+	      /* Update the member vec, if there is one (we're in a different
+		 cluster to the class defn) and this isn't a primary template
+		 specialization (as in tsubst_function_decl).  */
+	      bool up = (CLASSTYPE_MEMBER_VEC (DECL_CONTEXT (decl))
+			 && !primary_template_specialization_p (decl));
+	      build_cdtor_clones (decl, flags & 2, flags & 4, up);
+	    }
 	}
     }
 
