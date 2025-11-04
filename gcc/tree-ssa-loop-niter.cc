@@ -1752,14 +1752,21 @@ dump_affine_iv (FILE *file, affine_iv *iv)
   if (!integer_zerop (iv->step))
     fprintf (file, "[");
 
-  print_generic_expr (dump_file, iv->base, TDF_SLIM);
+  print_generic_expr (file, iv->base, TDF_SLIM);
 
   if (!integer_zerop (iv->step))
     {
       fprintf (file, ", + , ");
-      print_generic_expr (dump_file, iv->step, TDF_SLIM);
+      print_generic_expr (file, iv->step, TDF_SLIM);
       fprintf (file, "]%s", iv->no_overflow ? "(no_overflow)" : "");
     }
+}
+
+DEBUG_FUNCTION void
+debug (affine_iv *iv)
+{
+  dump_affine_iv (stderr, iv);
+  fputc ('\n', stderr);
 }
 
 /* Determine the number of iterations according to condition (for staying
