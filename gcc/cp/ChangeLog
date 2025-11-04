@@ -1,3 +1,23 @@
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (name_lookup::adl_class_fns): Include all
+	namespace-scope friends.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (pushdecl): Discard built-in sooner.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_in::decl_value): Don't add an instantiation to
+	CLASSTYPE_MEMBER_VEC.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::write_namespaces): Handle
+	TREE_DEPRECATED.
+	(module_state::read_namespaces): Likewise.
+
 2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122421

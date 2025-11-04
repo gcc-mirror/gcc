@@ -1,3 +1,403 @@
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/78175
+	* sem_ch12.adb (Hide_Current_Scope): Deal with a transient scope
+	as current scope.
+	(Remove_Parent): Likewise.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/55324
+	* par-ch3.adb (P_Type_Declaration): Give a better error message
+	for illegal "abstract" in a type derivation.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Get_Current_Value_Condition): Guard against orphaned
+	references in rewritten if-expressions.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst (Address
+	Clauses): Adjust description of alignment checks.
+	* sem_ch13.adb (Address_Clause_Check_Record): Remove now unused
+	Alignment_Checks_Suppressed component.
+	(Alignment_Checks_Suppressed): Delete.
+	(Analyze_Attribute_Definition_Clause) <Attribute_Alignment>: Do not
+	consider the status of range checks to decide whether to generate an
+	alignment check.  Always generate it if an alignment clause is also
+	given for the entity.
+	<Attribute_Alignment>: Generate an alignment check if an address
+	clause is also given for the entity.
+	(Register_Address_Clause_Check): Adjust for above removal.
+	(Validate_Address_Clauses): Test the Check_Address_Alignment flag
+	on the clause to decide whether to give the warning.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* checks.adb (Apply_Address_Clause_Check): Adjust self-reference in
+	the opening comment.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Find_In_Enclosing_Context): Refactor from handling of
+	IF statements.
+	(Get_Current_Value_Condition): Reuse IF code for WHILE statements.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Get_Current_Value_Condition): Rewrite to not rely on
+	Sloc and End_Span of an if statement.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_util.adb (Update_Semantic_Fields): Preserve tree structure when
+	copying scalar range of a discrete type.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* inline.adb (Process_Sloc): Remove.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/61127
+	* sem_ch12.adb (Associations.Match_Positional): Remove the always
+	false condition that guards the error on a positional box.
+
+2025-11-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* sem_disp.adb (Check_Dispatching_Call): Remove "elsif" that does error
+	checking for abstract tag-indeterminate calls (seems to be no longer
+	needed).
+
+2025-11-03  Marc Poulhiès  <poulhies@adacore.com>
+
+	* exp_ch7.adb (Fixup_Inner_Scopes): Adjust to handle N_Freeze_Entity nodes.
+	* exp_unst.adb (Get_Level): Assert when the function didn't find the
+	nested level (indicates that inner sub has scope pointing higher in
+	the stack)
+
+2025-11-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* fname.adb (Is_Predefined_File_Name): Tweak.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Exception_Declaration):
+	Change Expression from Sm to Sy, to match other Expression fields.
+	* gen_il-gen.adb (Setter_Needs_Parent):
+	Expression no longer needs to be a special case.
+	(Check_For_Syntactic_Field_Mismatch):
+	Do not exempt Expression from the Sy/Sm mixing rule.
+	This was the last such case, so remove all the exemption code.
+	* gen_il-gen.ads: Update comments to match new code.
+	* sinfo.ads (N_Exception_Declaration):
+	Document the meaning of the Expression field, because it
+	doesn't follow from the RM syntax of exception_declaration.
+	* exp_ch11.adb: Minor comment fixes.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause)
+	<Attribute_Size>: Tweak wording of existing error message for the
+	size of all elementary objects.  Move error handling for aliased
+	objects into the block for objects and give a similar error for
+	(nonaliased) floating-point objects.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_attr.adb (Rewrite_Attribute_Proc_Call)<Attribute_Put_Image>:
+	Fix call to Analyze.
+
+2025-11-03  Piotr Trojanek  <trojanek@adacore.com>
+
+	* sem_attr.adb (Resolve_Attribute): Remove rewriting of a slice
+	address expression.
+
+2025-11-03  Viljar Indus  <indus@adacore.com>
+
+	* libgnat/a-cbmutr.adb (Put_Image): Fix the condition and starting point
+	for printing the tree.
+	* libgnat/a-cimutr.adb (Put_Image): Likewise.
+	* libgnat/a-comutr.adb (Put_Image): Likewise.
+
+2025-11-03  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch6.adb (Analyze_Subprogram_Body_Helper): Avoid disabling
+	the expander for ignored ghost regions if Codepeer_Mode is active.
+	* sem_ch7.adb (Analyze_Package_Body_Helper): Likewise.
+	* freeze.adb (Freeze_Entity): Avoid triggering special freezing
+	action for entities within ignored ghost regions in Codepeer_Mode.
+
+2025-11-03  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Is_Ok_Context): consider ghost prefix to always
+	be a valid ghost context.
+
+2025-11-03  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* errout.adb (Set_Msg_Node): Support N_Attribute_Reference and
+	nodes that denotes direct attribute definitions.
+	* exp_dbug.ads: Description for the encoding of direct attribute
+	definitions as tick are hard to deal in entity names.
+	* erroutc.adb
+	(Set_Msg_Insertion_Name): Replace underscore between prefix and
+	attribute name in direct attribute definitions; at this point we
+	lost the semantic information of node type and we resort to match
+	the string name as described in exp_dbug.adb.
+	* exp_aggr.adb (Convert_To_Positional): Use Needs_Construction and
+	Has_Default_Constructor.
+	* exp_ch3.adb (Build_Record_Init_Proc)
+	(Expand_N_Object_Declaration): Likewise.
+	* exp_attr.adb (Expand_N_Attribute_Reference): Likewise.
+	* exp_ch4.adb (Expand_N_Allocator): Likewise.
+	* exp_ch6.adb
+	(Prepend_Constructor_Procedure_Prologue): Use
+	Is_Constructor_Procedure.
+	(Make_Parent_Constructor_Call): Use
+	Direct_Attribute_Definition_Name.
+	* gen_il-fields.ads: Remove Constructor_List and Constructor_Name.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* einfo.ads (Needs_Construction): Add description.
+	(Has_Delayed_Aspects): Adjust indentation.
+	* par-ch13.adb (P_Attribute_Designators): Parse attribute
+	designators.
+	(P_Representation_Clause): Use P_Attribute_Designators.
+	* par-ch6.adb (P_Subprogram): Support attribute designators in
+	subprogram name.
+	(Rewrites_Entity_If_Direct_Attribute_Def): Fix the specification
+	node in case of direct attribute definitions.
+	* par-endh.adb (Check_End, Same_Label): Likewise.
+	* par.adb (P_Attribute_Designators): Specification.
+	* sem_attr.adb (Analyze_Attribute): Error when using 'Constructor
+	outside procedure specification.
+	(Analyze_Attribute): Add error handling code.
+	* sem_ch3.adb (Analyze_Aspect_Specifications): Likewise.
+	* sem_ch6.adb (Analyze_Direct_Attribute_Definition): Handle direct
+	attribute definitions. Add error handling code for the
+	'Construction attribute and set constructor flags when necessary.
+	(Analyze_Subprogram_Specification): Use
+	Analyze_Direct_Attribute_Definition.
+	* sem_util.adb (Direct_Attribute_Definition_Name): Name of
+	entities created for direct attribute definitions. We emit an
+	error if multiple attributes.
+	(Is_Direct_Attribute_Subp_Spec): Helper to check whether a
+	subprogram specification is a direct attribute definition.
+	(Is_Constructor_Procedure): Helper to check whether a subprogram
+	is a constructor procedure.
+	(Has_Default_Constructor): Check whether the default constructor
+	exists.
+	(Default_Constructor): Not used anymore.
+	(Parameter_Count): Likewise.
+	(Process_End_Label): Get_Attribute_Reference_Name_String encodes
+	also direct attribute definition end labels.
+	* sem_util.ads: Likewise.
+	* snames.ads-tmpl: Support for 'Constructor attribute.
+	* snames.adb-tmpl (Is_Direct_Attribute_Definition_Name): Helper to
+	check attributes allowed in direct attribute definitions.
+	* aspects.ads: Remove constructor aspect.
+	* sem_ch13.adb: Likewise.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122161
+	* sem_ch12.adb: Improve the description of Check_Generic_Actuals,
+	Restore_Private_Views and Switch_View, and alphabetize them.
+	(Check_Generic_Actuals): Make actuals visible only if needed.
+	(Install_Formal_Packages): Pass exact Is_Formal_Box parameter and
+	remove call to Set_Is_Hidden.
+	(Instantiate_Formal_Package): Use Next_Non_Pragma consistently in
+	the loop computing the visibility of actuals.
+	(Analyze_Package_Instantiation): Use named second parameter in the
+	call to Restore_Private_Views.
+	(Analyze_Subprogram_Instantiation): Likewise.
+	(Instantiate_Package_Body): Likewise and for Check_Generic_Actuals.
+	(Instantiate_Subprogram_Body): Likewise.
+	(Restore_Env): Replace call to Restore_Private_Views.
+	(Restore_Private_Views): Remove default value for second parameter
+	and test of presence for first parameter.  Consistently clear the
+	Is_Potentially_Use_Visible flag when setting the Is_Hidden flag.
+	Remove call to Set_Is_Hidden for a formal package of the enclosing
+	generic unit, if any.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen.adb (N_Short_Circuit):
+	Make Actions syntactic.
+	(N_Case_Expression_Alternative): Likewise.
+	* gen_il-gen-gen_nodes.adb (Create_Type):
+	No longer exempt Actions from the syntactic/semantic ordering rule.
+	(Check_For_Syntactic_Field_Mismatch):
+	No longer exempt Actions from the syntactic/semantic mixing rule.
+	* sinfo.ads (N_Compound_Statement):
+	Add comment.
+
+2025-11-03  Marc Poulhiès  <poulhies@adacore.com>
+
+	* sem_aux.adb (Enclosing_Dynamic_Scope): Remove comment.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads: Remove unused fields.
+	* gen_il-fields.ads: Likewise.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* gen_il-gen-gen_nodes.adb: Likewise.
+	* sinfo.ads: Likewise.
+	* gen_il-gen.adb (Compile): Remove obsolete comment.
+
+2025-11-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-stratt__cheri.adb (W_80IEEE): New procedure.
+
+2025-11-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-stratt.adb (W_80IEEE): Make constant local.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* einfo.ads (Has_Pragma_Controlled): Remove.
+	(Is_Activation_Record): Document usage by llvm.
+	* gen_il-fields.ads (Opt_Field_Enum):
+	Remove Has_Pragma_Controlled.
+	* gen_il-gen-gen_entities.adb (Access_Kind):
+	Remove Has_Pragma_Controlled.
+	* sem_prag.adb:
+	Remove setting of Has_Pragma_Controlled.
+	* sinfo.ads (Corresponding_Entry_Body):
+	Document usage by codepeer.
+
+2025-11-03  Alexandre Oliva  <oliva@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Insert ctor call
+	after representation clauses.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* atree.adb (Same_Node_To_Fetch_From):
+	Use Node_To_Fetch_From_If_Set, and remove handler.
+	* einfo-utils.adb (Root_Type_If_Set):
+	Return Empty if Base_Type_If_Set returns Empty.
+	Return Empty if we find Etype (T) = Empty.
+	(Underlying_Type): Use "Has_Non_Limited_View..." instead
+	of "Present (Non_Limited_View...)", because the latter raises
+	an exception when given the wrong Ekind.
+
+2025-11-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* gen_il-fields.ads (Is_IEEE_Extended_Precision): New flag.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* gen_il-internals.adb (Image): Likewise.
+	* treepr.adb (Image): Likewise.
+	* einfo.ads: Document new flag.
+	* cstand.adb (Copy_Float_Type, Register_Float_Type): Use new flag.
+	* libgnat/s-stratt.ads (W_80IEEE): New procedure.
+	* libgnat/s-stratt.adb (W_80IEEE): Likewise.
+	* exp_strm.adb (Get_Primitives): Select new procedure when
+	appropriate.
+	* rtsfind.ads: Register new runtime procedure.
+	* sem_ch3.adb (Build_Derived_Numeric_Type,
+	Analyze_Subtype_Declaration): Propagate new flag.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122160
+	* sem_res.adb (Resolve_Op_Concat_Rest): Do not build the subtype of
+	the second operand again if it has already been built.
+	(Resolve_String_Literal): Do not defer the creation of the subtype
+	for the right operand of a concatenation whose left operand may be
+	the null string.
+
+2025-11-03  Gary Dismukes  <dismukes@adacore.com>
+
+	* exp_ch6.ads (Make_Build_In_Place_Call_In_Allocator): Simplify comment.
+	* exp_ch6.adb (Make_Build_In_Place_Call_In_Allocator): Remove obsolete
+	comment about not being able to allocate fixed-size controlled results
+	on the caller side, and replace another obsolete comment with a simpler
+	comment. Call Build_Allocate_Deallocate_Proc when the function doesn't
+	need a BIPalloc formal to ensure that function results with controlled
+	parts allocated on the caller side will be chained for finalization.
+	(Make_Build_In_Place_Call_In_Object_Declaration): Call Needs_BIP_Collection
+	on the function's Entity_Id rather than the function call.
+	(Needs_BIP_Collection): If a BIP function doesn't need a BIPalloc formal
+	then it doesn't need a BIP collection either; return False in that case.
+	(Needs_BIP_Alloc_Form): Remove test of Needs_BIP_Collection.
+	* exp_ch7.adb (Expand_Cleanup_Actions): Move test of Uses_Sec_Stack
+	to be the first conjunct in setting of Needs_Sec_Stack_Mark, and put
+	the other tests in a disjunction subsidiary to that. Improve preceding
+	comment.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb: Rename Default_Expression to be
+	Expression.
+	* gen_il-gen.adb (Check_For_Syntactic_Field_Mismatch): Do not
+	exempt Default_Expression from the rule.
+	* par-ch12.adb (P_Formal_Object_Declarations): Use renamed setter.
+	* sem_ch12.adb (Default): Use renamed getter.
+	(Analyze_Formal_Object_Declaration): Likewise.
+	* sprint.adb (Sprint_Node_Actual): Use renamed getter.
+	* sinfo.ads: Fix comments.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* style.adb (Check_Xtra_Parens_Precedence):
+	Give warning based on Original_Node.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122161
+	* sem_ch12.adb (Check_Generic_Actuals): Consistently set the
+	Is_Potentially_Use_Visible flag on actuals whenever the Is_Hidden
+	flag is cleared.
+	(Restore_Private_Views): Clear the Is_Potentially_Use_Visible flag
+	explicitly on the entities of an actual package.
+
+2025-11-03  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-trasym.ads (Calling_Entity): New function.
+	* libgnat/s-trasym.adb (Calling_Entity): Add dummy body.
+	* libgnat/s-trasym__dwarf.adb (Calling_Entity): New function.
+	(Symbolic_Traceback, Symbolic_Traceback_No_Lock,
+	Module_Symbolic_Traceback, Multi_Module_Symbolic_Traceback): Add
+	Subprg_Name_Only parameter and corresponding functionality.
+	(Symbolic_Traceback_No_Lock): Fix typo in documentation comment.
+	* libgnat/s-dwalin.ads (Symbolic_Traceback): Likewise.
+	* libgnat/s-dwalin.adb (Symbolic_Traceback): Likewise.
+
+2025-11-03  Bob Duff  <duff@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Op):
+	Make Chars syntactic, and move it down into subclasses
+	N_Binary_Op and N_Unary_Op.
+	* gen_il-gen.adb (Create_Type):
+	Do not exempt Chars from the ordering rule.
+	(Exception_To_Inheritance_Rule): Exempt Chars from the
+	inheritance rule.
+	(Check_For_Syntactic_Field_Mismatch):
+	Do not exempt Chars from the syntactic mismatch rule.
+	This is the main point of this change.
+	(Put_Make_Bodies): The Nmake functions for types in N_Op
+	will now take a Chars parameter, which should always
+	default to No_Name. This will be overwritten by the
+	special-case Set_Chars call. Assert that it is in
+	fact defaulted.
+	* exp_ch4.adb (Expand_Array_Comparison):
+	Use the Nkind instead of the Chars, which seems cleaner.
+	Use a case instead of an elsif chain.
+	* sem_attr.adb (Proper_Op): Minor cleanup.
+	* sem_ch8.adb: Minor reformatting.
+	* sem_res.adb (Operator_Kind): Tighten up the result subtype.
+
+2025-11-03  Viljar Indus  <indus@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Use the
+	First_Subtype when creating the procedure for stream
+	attributes.
+	(Get_Array_Stream_Item_Type): New method for calculating
+	the type for the Item argument for streaming methods.
+
 2025-11-02  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* locales.c (is_iso_639_3): New static function.

@@ -1,3 +1,10 @@
+2025-11-03  Steve Kargl  <kargls@comcast.net>
+
+	PR fortran/122513
+	* resolve.cc (check_default_none_expr): Do not allow an
+	iterator in a locality spec. Allow a named constant to be
+	used within the loop.
+
 2025-11-01  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/78640

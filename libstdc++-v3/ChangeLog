@@ -1,3 +1,34 @@
+2025-11-03  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/quoted_string.h: Add ADL friends.
+	* libsupc++/exception_ptr.h: Add ADL friend.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* src/c++23/std.cc.in: Move TBB macro shenanigans after
+	bits/stdc++.h.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* include/precompiled/stdc++.h: Remove <cassert>.
+	* testsuite/util/exception/safety.h: Add <cassert>.
+	* testsuite/17_intro/headers/c++1998/stdc++_assert_neg.cc:
+	Don't define _GLIBCXX_NO_ASSERT.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* include/bits/ios_base.h: Add attribs to _Ios_Fmtflags,
+	_Ios_Iostate, _ios_seekdir.
+	* testsuite/27_io/ios_base/types/fmtflags/case_label.cc: Remove
+	unneeded cases.
+	* testsuite/27_io/ios_base/types/iostate/case_label.cc: Likewise.
+	* testsuite/27_io/ios_base/types/openmode/case_label.cc: Likewise.
+	* testsuite/27_io/ios_base/types/seekdir/case_label.cc: Likewise.
+
 2025-11-02  Jason Merrill  <jason@redhat.com>
 
 	* src/c++23/std.cc.in: Uncomment usings for vprint_*_buffered.

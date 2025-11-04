@@ -1,3 +1,26 @@
+2025-11-03  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2025-11-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/122543
+	* testsuite/libgomp.fortran/omp_target_memset.f90: Move fptr inside
+	the target to avoid implicit mapping of its uninit pointee.
+	* testsuite/libgomp.fortran/omp_target_memset-2.f90: Likewise.
+
+2025-11-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR libgomp/122281
+	* testsuite/libgomp.c/pr122281.c: Fix for non-USM offloading
+	execution.
+
+2025-11-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/122281
+	PR middle-end/105001
+	* testsuite/libgomp.c/pr122281.c: New file.
+
 2025-10-28  Thomas Schwinge  <tschwinge@baylibre.com>
 
 	* env.c (initialize_env): Simplify 'parse_stacksize' call.

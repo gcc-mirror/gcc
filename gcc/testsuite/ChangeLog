@@ -1,3 +1,210 @@
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/generic_inst15.adb: New test.
+	* gnat.dg/generic_inst15_pkg-g.ads: New helper.
+	* gnat.dg/generic_inst15_pkg.ads: Likewise.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/abstract1.ads: New test.
+
+2025-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122534
+	* gcc.target/i386/pr122534.c: New test.
+
+2025-11-03  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* gcc.target/riscv/rvv/base/pr119115.c: Add -std=gnu99.
+
+2025-11-03  Steve Kargl  <kargls@comcast.net>
+
+	PR fortran/122513
+	* gfortran.dg/pr122513.f90: New test.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/lookup/koenig16.C: New test.
+	* g++.dg/modules/adl-11_a.C: New file.
+	* g++.dg/modules/adl-11_b.C: New file.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/builtin-9_a.C: New test.
+	* g++.dg/modules/builtin-9_b.C: New test.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/clone-5_a.C: New test.
+	* g++.dg/modules/clone-5_b.C: New test.
+
+2025-11-03  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/namespace-15_a.C: New test.
+	* g++.dg/modules/namespace-15_b.C: New test.
+
+2025-11-03  Georg-Johann Lay  <avr@gjlay.de>
+
+	* gcc.target/avr/torture/pr92606.c: Use LPM even if LPMx
+	is available.
+
+2025-11-03  Loeka Rogge  <loeka@synopsys.com>
+
+	* gcc.target/arc/movv2hi-be.c: New test.
+
+2025-11-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* g++.dg/abi/param2.C: Add -Wno-psabi option for RISC-V.
+	* g++.target/riscv/abi/empty-struct+union-1.cc: New test.
+	* g++.target/riscv/abi/empty-struct+union-2.cc: New test.
+	* g++.target/riscv/abi/empty-struct+union-3.cc: New test.
+	* g++.target/riscv/abi/empty-struct+union-4.cc: New test.
+	* g++.target/riscv/abi/empty-struct-1.cc: New test.
+	* g++.target/riscv/abi/empty-struct-2.cc: New test.
+	* g++.target/riscv/abi/empty-struct-3.cc: New test.
+	* g++.target/riscv/abi/empty-struct-4.cc: New test.
+	* g++.target/riscv/abi/empty-struct-5.cc: New test.
+	* g++.target/riscv/abi/empty-struct-6.cc: New test.
+	* g++.target/riscv/abi/empty-struct-7.cc: New test.
+	* g++.target/riscv/abi/empty-struct-8.cc: New test.
+	* g++.target/riscv/abi/empty-struct-9.cc: New test.
+	* g++.target/riscv/abi/empty-struct-10.cc: New test.
+	* g++.target/riscv/abi/empty-struct-11.cc: New test.
+	* g++.target/riscv/abi/empty-struct-12.cc: New test.
+	* g++.target/riscv/abi/empty-union-1.cc: New test.
+	* g++.target/riscv/abi/empty-union-2.cc: New test.
+	* g++.target/riscv/abi/empty-union-3.cc: New test.
+	* g++.target/riscv/abi/empty-union-4.cc: New test.
+	* g++.target/riscv/riscv.exp: Add abi subdirectory.
+	* gcc.dg/compat/pr83487-1_x.c: Add -Wno-psabi option for RISC-V.
+	* gcc.dg/compat/pr83487-1_y.c: Likewise.
+	* gcc.dg/compat/pr83487-2_x.c: Likewise.
+	* gcc.dg/compat/pr83487-2_y.c: Likewise.
+	* gcc.dg/torture/pr28814.c: Likewise.
+	* gcc.target/riscv/abi/empty-struct+union-1.c: New test.
+	* gcc.target/riscv/abi/empty-struct+union-2.c: New test.
+	* gcc.target/riscv/abi/empty-struct+union-3.c: New test.
+	* gcc.target/riscv/abi/empty-struct+union-4.c: New test.
+	* gcc.target/riscv/abi/empty-struct-1.c: New test.
+	* gcc.target/riscv/abi/empty-struct-2.c: New test.
+	* gcc.target/riscv/abi/empty-struct-3.c: New test.
+	* gcc.target/riscv/abi/empty-struct-4.c: New test.
+	* gcc.target/riscv/abi/empty-struct-5.c: New test.
+	* gcc.target/riscv/abi/empty-struct-6.c: New test.
+	* gcc.target/riscv/abi/empty-struct-7.c: New test.
+	* gcc.target/riscv/abi/empty-struct-8.c: New test.
+	* gcc.target/riscv/abi/empty-struct-9.c: New test.
+	* gcc.target/riscv/abi/empty-struct-10.c: New test.
+	* gcc.target/riscv/abi/empty-struct-11.c: New test.
+	* gcc.target/riscv/abi/empty-struct-12.c: New test.
+	* gcc.target/riscv/abi/empty-union-1.c: New test.
+	* gcc.target/riscv/abi/empty-union-2.c: New test.
+	* gcc.target/riscv/abi/empty-union-3.c: New test.
+	* gcc.target/riscv/abi/empty-union-4.c: New test.
+	* gcc.target/riscv/riscv.exp: Add abi subdirectory.
+
+2025-11-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122405
+	* g++.target/aarch64/mv-cpu-features.C: Add HWCAP_ATOMICS and
+	HWCAP2_RNG defines.
+
+2025-11-03  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/fmv_priority.in: Update for new features.
+	* gcc.target/aarch64/fmv_priority1.c: Ditto.
+	* gcc.target/aarch64/fmv_priority2.c: Ditto.
+
+2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/vect19.ads, gnat.dg/vect19.adb: New test.
+	* gnat.dg/vect19_pkg.ads, gnat.dg/vect19_pkg.adb: New helper.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/mode-tieable-opt.c: New test.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/mem-and-mask-opt.c: New test.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/vec_pack_unpack_256.c: Adjust to changed
+	lasx_xvpermi_q_<LASX:mode> template.
+	* gcc.target/loongarch/vector/lasx/lasx-builtin.c: Ditto.
+	* gcc.target/loongarch/lasx-xvpermi_q-opt.c: New test.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/and-large-immediate-opt.c: New test.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/extendsidi2-combine.c: New test.
+	* gcc.target/loongarch/spill-less.c: New test.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/mulh_wu.c: New test.
+
+2025-11-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122475
+	* gcc.dg/vect/pr122475.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-19.c: New test.
+	* gcc.target/aarch64/sve/vect-reduc-bool-20.c: New test.
+
+2025-11-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/builtin-memmove-1a.c: New test.
+	* gcc.target/i386/builtin-memmove-1b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1d.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2d.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-6.c: Likewise.
+	* gcc.target/i386/builtin-memmove-7.c: Likewise.
+	* gcc.target/i386/builtin-memmove-8.c: Likewise.
+	* gcc.target/i386/builtin-memmove-9.c: Likewise.
+	* gcc.target/i386/builtin-memmove-10.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-12.c: Likewise.
+	* gcc.target/i386/builtin-memmove-13.c: Likewise.
+	* gcc.target/i386/builtin-memmove-14.c: Likewise.
+	* gcc.target/i386/builtin-memmove-15.c: Likewise.
+
+2025-11-03  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/52345
+	* gcc.target/riscv/pr52345.c: Add new test cases.
+
+2025-11-03  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/vect-concat-128-256-result.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-concat-128-256.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-extract-256-128-result.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-extract-256-128.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-insert-128-256-result.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-insert-128-256.c: New test.
+
+2025-11-03  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/imm-load.c: Modify.
+
 2025-11-02  Gaius Mulley  <gaiusmod2@gmail.com>
 
 	PR modula2/122499

@@ -1,3 +1,212 @@
+2025-11-03  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122534
+	* config/i386/i386.md (@test<mode>_ccno_1):
+	Use <general_szext_operand> as operand 1 predicate.
+	(testqi_ccz_1): Use general_operand as operand 1 predicate.
+	(*testdi_1): Use x86_64_szext_general_operand as operand 1 predicate.
+	(*testqi_1_maybe_si): Use general_operand as operand 1 predicate.
+	Add (n,*a) alternative to allow UV pairing for pentium processor.
+	(*test<mode>_1): Use <general_operand> as operand 1 predicate.
+
+2025-11-03  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
+2025-11-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122536
+	* simplify-rtx.cc (simplify_context::simplify_binary_operation_1): Fix
+	guard against variable bit extracts in recent change.
+
+2025-11-03  Thomas Schwinge  <tschwinge@baylibre.com>
+
+	PR ipa/122512
+	* symtab.cc: Fix 'static_assert'.
+
+2025-11-03  Loeka Rogge  <loeka@synopsys.com>
+
+	* config/arc/simdext.md(movv2hi_insn): Change order for movv2hi
+	for big-endian.
+
+2025-11-03  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/122281
+	PR middle-end/105001
+	* gimple.cc (gimple_copy): Add missing unshare_expr for
+	GIMPLE_OMP_ATOMIC_LOAD and GIMPLE_OMP_ATOMIC_STORE.
+
+2025-11-03  Alfie Richards  <alfie.richards@arm.com>
+
+	PR c/122202
+	* doc/extend.texi (target function attribute): Update to describe FMV
+	behaviour.
+	(target_version function attribute): New section.
+	(target_clones attribute): Update to descrbe new behaviour with
+	target_version.
+	(Function Multiversioning): Update to discuss both target_version and
+	target based FMV.
+
+2025-11-03  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv.cc (riscv_flatten_aggregate_field): Skip
+	empty unions and zero-length arrays when flattening aggregate
+	fields for ABI classification.
+	(riscv_pass_aggregate_in_fpr_pair_p): Refactor to use separate
+	field parsing and emit ABI change warning for affected types.
+	(riscv_pass_aggregate_in_fpr_and_gpr_p): Likewise.
+
+2025-11-03  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (dit): New fmv feature.
+	(dpb): New fmv feature.
+	(dpb2): New fmv feature.
+	(memtag): Change to also define an FMV feature.
+	(ssbs): Change to also define an FMV feature.
+	(bti): New fmv feature.
+	* config/aarch64/aarch64.cc (FEAT_SSBS): Add macro.
+	(FEAT_MEMTAG): Ditto.
+
+2025-11-03  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.md (int_iterator ANY_ROUND):
+	Specify "flag_unsafe_math_optimizations" in the condition of the
+	UNSPEC_ROUND element.
+	(int_attr c_round): Remove.
+	(l<m_round>sfsi2, *l<m_round>sfsi2_2x, *l<m_round>sfsi2_scaled):
+	Remove " && <c_round>" from the conditions.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_modes_tieable_p):
+	Make MODE_FLOAT and MODE_INT tieable.
+	* config/loongarch/loongarch.md: Adjust constraints.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.md
+	(and_load_zero_extend<mode>): New combiner.
+	* config/loongarch/predicates.md
+	(mask_operand):	New predicate.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_xvpermi_q_<LASX:mode>):
+	Add new splitter for optimization.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_use_bstrins_bstrpick_for_and): New proto.
+	* config/loongarch/loongarch.cc
+	(loongarch_use_bstrins_bstrpick_for_and): Decide whether
+	to optimize.
+	(loongarch_rtx_costs): Adjust the cost of AND operation.
+	* config/loongarch/loongarch.md
+	(bstrins_bstrpick_for_and_imm<mode>): New insn_and_split.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_can_change_mode_class): Support for conversion
+	between scalar INT and scalar FP.
+
+2025-11-03  Guo Jie  <guojie@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_rtx_costs):
+	Correct the cost of mulh.{w[u]|d[u]}.
+
+2025-11-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122475
+	* tree-vect-loop.cc (vectorizable_reduction): Check for neutral_op.
+
+2025-11-03  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/90262
+	* config/i386/i386-expand.cc (ix86_expand_unroll_movmem): New.
+	(ix86_expand_n_move_movmem): Likewise.
+	(ix86_expand_load_movmem): Likewise.
+	(ix86_expand_store_movmem): Likewise.
+	(ix86_expand_n_overlapping_move_movmem): Likewise.
+	(ix86_expand_less_move_movmem): Likewise.
+	(ix86_expand_movmem): Likewise.
+	* config/i386/i386-protos.h (ix86_expand_movmem): Likewise.
+	* config/i386/i386.md (movmem<mode>): Likewise.
+
+2025-11-03  Shreya Munnangi  <smunnangi1@ventanamicro.com>
+
+	PR target/52345
+	* simplify-rtx.cc (simplify_relational_operation_1): Optimize boolean
+	IOR equality tests.
+
+2025-11-03  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* config/loongarch/lasx.md (vec_cast<mode>): New template
+	implemention.
+	(vec_insert_lo_<mode>): Dito.
+	(vec_insert_hi_<mode>): Dito.
+	* config/loongarch/lasxintrin.h (defined): Test for adding
+	the builtin function.
+	(__lasx_cast_128_s): Dito.
+	(__lasx_cast_128_d): Dito.
+	(__lasx_cast_128): Dito.
+	(__lasx_concat_128_s): Dito.
+	(__lasx_concat_128_d): Dito.
+	(__lasx_concat_128): Dito.
+	(__lasx_extract_128_lo_s): Dito.
+	(__lasx_extract_128_hi_s): Dito.
+	(__lasx_extract_128_lo_d): Dito.
+	(__lasx_extract_128_hi_d): Dito.
+	(__lasx_extract_128_lo): Dito.
+	(__lasx_extract_128_hi): Dito.
+	(__lasx_insert_128_lo_s): Dito.
+	(__lasx_insert_128_hi_s): Dito.
+	(__lasx_insert_128_lo_d): Dito.
+	(__lasx_insert_128_hi_d): Dito.
+	(__lasx_insert_128_lo): Dito.
+	(__lasx_insert_128_hi): Dito.
+	* config/loongarch/loongarch-builtins.cc
+	(CODE_FOR_lasx_extract_128_lo_s): Add builtins and register
+	icode.
+	(CODE_FOR_lasx_extract_128_hi_s): Dito.
+	(CODE_FOR_lasx_extract_128_lo_d): Dito.
+	(CODE_FOR_lasx_extract_128_hi_d): Dito.
+	(CODE_FOR_lasx_extract_128_lo): Dito.
+	(CODE_FOR_lasx_extract_128_hi): Dito.
+	(CODE_FOR_lasx_insert_128_lo_s): Dito.
+	(CODE_FOR_lasx_insert_128_hi_s): Dito.
+	(CODE_FOR_lasx_insert_128_lo_d): Dito.
+	(CODE_FOR_lasx_insert_128_hi_d): Dito.
+	(CODE_FOR_lasx_insert_128_lo): Dito.
+	(CODE_FOR_lasx_insert_128_hi): Dito.
+	(CODE_FOR_lasx_concat_128_s): Dito.
+	(CODE_FOR_lasx_concat_128_d): Dito.
+	(CODE_FOR_lasx_concat_128): Dito.
+	(CODE_FOR_lasx_cast_128_s): Dito.
+	(CODE_FOR_lasx_cast_128_d): Dito.
+	(CODE_FOR_lasx_cast_128): Dito.
+	(loongarch_expand_builtin_direct): For the newly added
+	insertion or extraction, construct the parallel parameter
+	corresponding to the operand.
+	* config/loongarch/loongarch-c.cc
+	(loongarch_update_cpp_builtins): Define
+	__loongarch_asx_sx_conv.
+	* config/loongarch/loongarch-ftypes.def: Declare the type
+	of the builtin function.
+	* doc/extend.texi: Add document description.
+
+2025-11-03  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_move_integer):
+	No new virtual register is allocated during immediate load.
+
+2025-11-03  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/122477
+	* config/loongarch/loongarch.cc
+	(loongarch_split_reduction): Added handling of scalar mode.
+
 2025-11-02  Jeff Law  <jlaw@ventanamicro.com>
 
 	* config/riscv/bitmanip.md (rotrsi3): Use the sign extended form

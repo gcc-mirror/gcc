@@ -1,3 +1,7 @@
+2025-11-03  Sam James  <sam@gentoo.org>
+
+	* configure: Regenerate.
+
 2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* libformat_parser/src/lib.rs (struct FFIOpt): Likewise and
