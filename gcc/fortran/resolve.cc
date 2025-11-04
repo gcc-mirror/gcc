@@ -8754,6 +8754,8 @@ resolve_locality_spec (gfc_code *code, gfc_namespace *ns)
 	  plist = &((*plist)->next);
 	}
     }
+
+  delete data.sym_hash;
 }
 
 /* Resolve a list of FORALL iterators.  The FORALL index-name is constrained
