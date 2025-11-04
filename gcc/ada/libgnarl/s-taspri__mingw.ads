@@ -67,21 +67,23 @@ private
 
    type Condition_Variable is new System.Win32.HANDLE;
 
-   type Suspension_Object is record
-      State : Boolean;
-      pragma Atomic (State);
-      --  Boolean that indicates whether the object is open. This field is
-      --  marked Atomic to ensure that we can read its value without locking
-      --  the access to the Suspension_Object.
+   type Private_Data is limited record
+      Thread : aliased System.OS_Interface.Thread_Id;
+      pragma Atomic (Thread);
+      --  Thread field may be updated by two different threads of control.
+      --  (See, Enter_Task and Create_Task in s-taprop.adb).
+      --  They put the same value (thr_self value). We do not want to
+      --  use lock on those operations and the only thing we have to
+      --  make sure is that they are updated in atomic fashion.
 
-      Waiting : Boolean;
-      --  Flag showing if there is a task already suspended on this object
+      Thread_Id : aliased Win32.DWORD;
+      --  Used to provide a better tasking support in gdb
+
+      CV : aliased Condition_Variable;
+      --  Condition Variable used to implement Sleep/Wakeup
 
       L : aliased System.OS_Locks.RTS_Lock;
-      --  Protection for ensuring mutual exclusion on the Suspension_Object
-
-      CV : aliased Win32.HANDLE;
-      --  Condition variable used to queue threads until condition is signaled
+      --  Protection for all components is lock L
    end record;
 
 end System.Task_Primitives;
