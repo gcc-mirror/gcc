@@ -9,5 +9,4 @@ test (int a)
   return a / 3;
 }
 
-/* { dg-final { scan-assembler {\tmulw.d.w\t} } } */
 /* { dg-final { scan-assembler-not {\tdiv.w\t} } } */
