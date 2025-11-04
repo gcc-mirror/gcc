@@ -4184,6 +4184,46 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		 not do an AND.  */
 	      if ((nzop0 & ~val1) == 0)
 		return op0;
+
+	      /* Canonicalize (and (subreg (lshiftrt X shift)) mask) into
+		 (and (lshiftrt (subreg X) shift) mask).
+
+		 Keeps shift and AND in the same mode, improving recognition.
+		 Only applied when subreg is a lowpart, shift is valid,
+		 and no precision is lost.  */
+	      if (SUBREG_P (op0) && subreg_lowpart_p (op0)
+		  && GET_CODE (XEXP (op0, 0)) == LSHIFTRT
+		  && CONST_INT_P (XEXP (XEXP (op0, 0), 1))
+		  && INTVAL (XEXP (XEXP (op0, 0), 1)) >= 0
+		  && INTVAL (XEXP (XEXP (op0, 0), 1)) < HOST_BITS_PER_WIDE_INT
+		  && ((INTVAL (XEXP (XEXP (op0, 0), 1))
+		      + floor_log2 (val1))
+		      < GET_MODE_PRECISION (as_a <scalar_int_mode> (mode))))
+		{
+		  tem = XEXP (XEXP (op0, 0), 0);
+		  if (SUBREG_P (tem))
+		    {
+		      if (subreg_lowpart_p (tem))
+			tem = SUBREG_REG (tem);
+		      else
+			tem = NULL_RTX;
+		    }
+		  if (tem != NULL_RTX)
+		    {
+		      offset = subreg_lowpart_offset (mode, GET_MODE (tem));
+		      tem = simplify_gen_subreg (mode, tem, GET_MODE (tem),
+						 offset);
+		      if (tem)
+			{
+			  unsigned shiftamt = INTVAL (XEXP (XEXP (op0, 0), 1));
+			  rtx shiftamtrtx = gen_int_shift_amount (mode,
+								  shiftamt);
+			  op0 = simplify_gen_binary (LSHIFTRT, mode, tem,
+						     shiftamtrtx);
+			  return simplify_gen_binary (AND, mode, op0, op1);
+			}
+		    }
+		}
 	    }
 	  nzop1 = nonzero_bits (trueop1, mode);
 	  /* If we are clearing all the nonzero bits, the result is zero.  */
