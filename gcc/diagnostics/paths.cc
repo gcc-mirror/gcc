@@ -97,6 +97,22 @@ event::meaning::maybe_get_verb_str (enum verb v)
       return "branch";
     case verb::danger:
       return "danger";
+
+    /* Special control flow operations.
+
+       These are not part of SARIF v2.1.0 section 3.38.8, but the
+       spec allows other values; see
+       https://github.com/oasis-tcs/sarif-spec/issues/735  */
+    case verb::throw_:
+      return "throw";
+    case verb::catch_:
+      return "catch";
+    case verb::unwind_:
+      return "unwind";
+    case verb::setjmp_:
+      return "setjmp";
+    case verb::longjmp_:
+      return "longjmp";
     }
 }
 

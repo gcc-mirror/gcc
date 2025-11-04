@@ -539,6 +539,8 @@ public:
       pp_string (&pp, "...catching exception here");
   }
 
+  meaning get_meaning () const override;
+
 private:
   tree m_type;
 };
@@ -666,6 +668,8 @@ public:
 
   void print_desc (pretty_printer &pp) const final override;
 
+  meaning get_meaning () const override;
+
   void prepare_for_emission (checker_path *path,
 			     pending_diagnostic *pd,
 			     diagnostics::paths::event_id_t emission_id) final override;
@@ -687,6 +691,8 @@ public:
   tree get_longjmp_caller () const;
   tree get_setjmp_caller () const;
   const exploded_edge *get_eedge () const { return m_eedge; }
+
+  meaning get_meaning () const override;
 
  protected:
   rewind_event (const exploded_edge *eedge,
@@ -754,6 +760,8 @@ public:
   {
   }
 
+  meaning get_meaning () const override;
+
 protected:
   const exploded_node *m_enode;
   const gcall &m_throw_call;
@@ -816,6 +824,8 @@ public:
     m_num_frames (1)
   {
   }
+
+  meaning get_meaning () const override;
 
   void print_desc (pretty_printer &pp) const final override;
 

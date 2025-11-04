@@ -833,6 +833,14 @@ start_cfg_edge_event::should_print_expr_p (tree expr)
   return false;
 }
 
+/* class catch_cfg_edge_event : public cfg_edge_event.  */
+
+diagnostics::paths::event::meaning
+catch_cfg_edge_event::get_meaning () const
+{
+  return meaning (verb::catch_);
+}
+
 /* class call_event : public superedge_event.  */
 
 /* call_event's ctor.  */
@@ -1034,6 +1042,12 @@ setjmp_event::print_desc (pretty_printer &pp) const
 	     get_user_facing_name (m_setjmp_call));
 }
 
+diagnostics::paths::event::meaning
+setjmp_event::get_meaning () const
+{
+  return meaning (verb::setjmp_);
+}
+
 /* Implementation of checker_event::prepare_for_emission vfunc for setjmp_event.
 
    Record this setjmp's event ID into the path, so that rewind events can
@@ -1064,6 +1078,12 @@ tree
 rewind_event::get_setjmp_caller () const
 {
   return m_eedge->m_dest->get_function ()->decl;
+}
+
+diagnostics::paths::event::meaning
+rewind_event::get_meaning () const
+{
+  return meaning (verb::longjmp_);
 }
 
 /* rewind_event's ctor.  */
@@ -1163,6 +1183,12 @@ rewind_to_setjmp_event::prepare_for_emission (checker_path *path,
 
 /* class throw_event : public checker_event.  */
 
+diagnostics::paths::event::meaning
+throw_event::get_meaning () const
+{
+  return meaning (verb::throw_);
+}
+
 /* class explicit_throw_event : public throw_event.  */
 void
 explicit_throw_event::print_desc (pretty_printer &pp) const
@@ -1203,6 +1229,12 @@ unwind_event::print_desc (pretty_printer &pp) const
     pp_printf (&pp, "unwinding %i stack frames", m_num_frames);
   else
     pp_printf (&pp, "unwinding stack frame");
+}
+
+diagnostics::paths::event::meaning
+unwind_event::get_meaning () const
+{
+  return meaning (verb::unwind_);
 }
 
 /* class warning_event : public checker_event.  */

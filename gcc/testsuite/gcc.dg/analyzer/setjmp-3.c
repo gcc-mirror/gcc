@@ -1,4 +1,6 @@
 /* { dg-additional-options "-fdiagnostics-show-line-numbers -fdiagnostics-path-format=inline-events -fdiagnostics-show-caret" } */
+/* { dg-additional-options "-fdiagnostics-add-output=sarif" } */
+
 /* { dg-enable-nn-line-numbers "" } */
 /* { dg-require-effective-target indirect_jumps } */
 
@@ -107,3 +109,10 @@ void outer (void)
     |      |       (11) here
     |
     { dg-end-multiline-output "" } */
+
+/* Verify that some JSON was written to a file with the expected name.  */
+/* { dg-final { verify-sarif-file } } */
+
+/* Use a Python script to verify various properties about the generated
+   .sarif file:
+   { dg-final { run-sarif-pytest setjmp-3.c "setjmp-3-sarif.py" } } */

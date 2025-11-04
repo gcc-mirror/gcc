@@ -1,3 +1,5 @@
+/* { dg-additional-options "-fdiagnostics-add-output=sarif" } */
+
 /* Verify that we follow the correct paths when we know the typeinfo of
    an exception: interprocedural case where unwind multiple frame,
    failing to match the type.  */
@@ -53,3 +55,10 @@ int outer ()
   __analyzer_dump_path (); // { dg-bogus "path" }
   return 0;
 }
+
+/* Verify that some JSON was written to a file with the expected name.  */
+/* { dg-final { verify-sarif-file } } */
+
+/* Use a Python script to verify various properties about the generated
+   .sarif file:
+   { dg-final { run-sarif-pytest exception-path-unwind-multiple-2.C "exception-path-unwind-multiple-2-sarif.py" } } */

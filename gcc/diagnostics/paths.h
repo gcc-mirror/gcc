@@ -96,7 +96,14 @@ class event
     return_,
     branch,
 
-    danger
+    danger,
+
+    // Special control flow operations:
+    throw_,
+    catch_,
+    unwind_, // unwinding stack frame(s) during exception-handling
+    setjmp_,
+    longjmp_
   };
   enum class noun
   {
@@ -129,6 +136,10 @@ class event
     : m_verb (verb::unknown),
       m_noun (noun::unknown),
       m_property (property::unknown)
+    {
+    }
+    meaning (enum verb verb)
+    : m_verb (verb), m_noun (noun::unknown), m_property (property::unknown)
     {
     }
     meaning (enum verb verb, enum noun noun)
