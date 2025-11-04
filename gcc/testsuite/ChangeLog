@@ -1,3 +1,19 @@
+2025-11-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-11-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122321
+	* gcc.target/riscv/rvv/autovec/pr122321.c: New test.
+
+2025-11-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122270
+	* gcc.target/riscv/rvv/base/pr122270-1.c: New test.
+
 2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:

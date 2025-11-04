@@ -1,3 +1,22 @@
+2025-11-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-11-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122321
+	* lra-constraints.cc (update_equiv): Make sure REGNO is in
+	ira_reg_equiv before trying to update ira_reg_equiv.
+
+2025-11-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122270
+	* config/riscv/riscv-vector-builtins-bases.cc (vset::fold): Use the
+	unshare_expr for the statement that will be added seperately rather
+	the one which will be used for the replacement.
+
 2025-11-02  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
