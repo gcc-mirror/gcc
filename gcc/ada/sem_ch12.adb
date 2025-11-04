@@ -642,8 +642,9 @@ package body Sem_Ch12 is
    --  of freeze nodes for instance bodies that may depend on other instances.
 
    function Find_Actual_Type
-     (Typ       : Entity_Id;
-      Gen_Type  : Entity_Id) return Entity_Id;
+     (Typ      : Entity_Id;
+      Gen_Type : Entity_Id;
+      Typ_Ref  : Node_Id) return Entity_Id;
    --  When validating the actual types of a child instance, check whether
    --  the formal is a formal type of the parent unit, and retrieve the current
    --  actual for it. Typ is the entity in the analyzed formal type declaration
@@ -653,7 +654,8 @@ package body Sem_Ch12 is
    --  be declared in a formal package of a parent. In both cases it is a
    --  generic actual type because it appears within a visible instance.
    --  Finally, it may be declared in a parent unit without being a formal
-   --  of that unit, in which case it must be retrieved by visibility.
+   --  of that unit, in which case it must be retrieved by visibility and
+   --  Typ_Ref is the unanalyzed subtype mark in the instance to be used.
    --  Ambiguities may still arise if two homonyms are declared in two formal
    --  packages, and the prefix of the formal type may be needed to resolve
    --  the ambiguity in the instance ???
@@ -10465,10 +10467,10 @@ package body Sem_Ch12 is
 
    function Find_Actual_Type
      (Typ      : Entity_Id;
-      Gen_Type : Entity_Id) return Entity_Id
+      Gen_Type : Entity_Id;
+      Typ_Ref  : Node_Id) return Entity_Id
    is
       Gen_Scope : constant Entity_Id := Scope (Gen_Type);
-      T         : Entity_Id;
 
    begin
       --  Special processing only applies to child units
@@ -10482,6 +10484,12 @@ package body Sem_Ch12 is
       elsif Scope (Typ) = Gen_Scope then
          return Get_Instance_Of (Typ);
 
+      --  If designated or component type is declared in a formal of the child
+      --  unit, its instance is available.
+
+      elsif Scope (Scope (Typ)) = Gen_Scope then
+         return Get_Instance_Of (Typ);
+
       --  If the array or access type is not declared in the parent unit,
       --  no special processing needed.
 
@@ -10493,18 +10501,8 @@ package body Sem_Ch12 is
       --  Otherwise, retrieve designated or component type by visibility
 
       else
-         T := Current_Entity (Typ);
-         while Present (T) loop
-            if In_Open_Scopes (Scope (T)) then
-               return T;
-            elsif Is_Generic_Actual_Type (T) then
-               return T;
-            end if;
-
-            T := Homonym (T);
-         end loop;
-
-         return Typ;
+         Analyze (Typ_Ref);
+         return Entity (Typ_Ref);
       end if;
    end Find_Actual_Type;
 
@@ -14596,7 +14594,8 @@ package body Sem_Ch12 is
 
       procedure Validate_Access_Type_Instance is
          Desig_Type : constant Entity_Id :=
-                        Find_Actual_Type (Designated_Type (A_Gen_T), A_Gen_T);
+           Find_Actual_Type
+             (Designated_Type (A_Gen_T), A_Gen_T, Subtype_Indication (Def));
          Desig_Act  : Entity_Id;
 
       begin
@@ -14685,31 +14684,15 @@ package body Sem_Ch12 is
       ----------------------------------
 
       procedure Validate_Array_Type_Instance is
-         I1 : Node_Id;
-         I2 : Node_Id;
-         T2 : Entity_Id;
+         Dims : constant List_Id
+           := (if Nkind (Def) = N_Constrained_Array_Definition
+               then Discrete_Subtype_Definitions (Def)
+               else Subtype_Marks (Def));
 
-         function Formal_Dimensions return Nat;
-         --  Count number of dimensions in array type formal
-
-         -----------------------
-         -- Formal_Dimensions --
-         -----------------------
-
-         function Formal_Dimensions return Nat is
-            Dims : List_Id;
-
-         begin
-            if Nkind (Def) = N_Constrained_Array_Definition then
-               Dims := Discrete_Subtype_Definitions (Def);
-            else
-               Dims := Subtype_Marks (Def);
-            end if;
-
-            return List_Length (Dims);
-         end Formal_Dimensions;
-
-      --  Start of processing for Validate_Array_Type_Instance
+         Dim : Node_Id;
+         I1  : Node_Id;
+         I2  : Node_Id;
+         T2  : Entity_Id;
 
       begin
          if not Is_Array_Type (Act_T) then
@@ -14734,15 +14717,16 @@ package body Sem_Ch12 is
             end if;
          end if;
 
-         if Formal_Dimensions /= Number_Dimensions (Act_T) then
+         if List_Length (Dims) /= Number_Dimensions (Act_T) then
             Error_Msg_NE
               ("dimensions of actual do not match formal &", Actual, Gen_T);
             Abandon_Instantiation (Actual);
          end if;
 
-         I1 := First_Index (A_Gen_T);
-         I2 := First_Index (Act_T);
-         for J in 1 .. Formal_Dimensions loop
+         Dim := First (Dims);
+         I1  := First_Index (A_Gen_T);
+         I2  := First_Index (Act_T);
+         for J in 1 .. List_Length (Dims) loop
 
             --  If the indexes of the actual were given by a subtype_mark,
             --  the index was transformed into a range attribute. Retrieve
@@ -14765,7 +14749,13 @@ package body Sem_Ch12 is
             end if;
 
             if not Subtypes_Match
-                     (Find_Actual_Type (Etype (I1), A_Gen_T), T2)
+                     (Find_Actual_Type
+                       (Etype (I1),
+                        A_Gen_T,
+                        (if Nkind (Dim) = N_Subtype_Indication
+                         then Subtype_Mark (Dim)
+                         else Dim)),
+                      T2)
             then
                Error_Msg_NE
                  ("index types of actual do not match those of formal &",
@@ -14773,34 +14763,20 @@ package body Sem_Ch12 is
                Abandon_Instantiation (Actual);
             end if;
 
+            Next (Dim);
             Next_Index (I1);
             Next_Index (I2);
          end loop;
 
-         --  Check matching subtypes. Note that there are complex visibility
-         --  issues when the generic is a child unit and some aspect of the
-         --  generic type is declared in a parent unit of the generic. We do
-         --  the test to handle this special case only after a direct check
-         --  for static matching has failed. The case where both the component
-         --  type and the array type are separate formals, and the component
-         --  type is a private view may also require special checking in
-         --  Subtypes_Match. Finally, we assume that a child instance where
-         --  the component type comes from a formal of a parent instance is
-         --  correct because the generic was correct. A more precise check
-         --  seems too complex to install???
+         --  Check matching component subtypes
 
-         if Subtypes_Match
-           (Component_Type (A_Gen_T), Component_Type (Act_T))
-             or else
-               Subtypes_Match
-                 (Find_Actual_Type (Component_Type (A_Gen_T), A_Gen_T),
-                  Component_Type (Act_T))
-            or else
-              (not Inside_A_Generic
-                 and then Is_Child_Unit (Scope (Component_Type (A_Gen_T))))
+         if not Subtypes_Match
+                  (Find_Actual_Type
+                    (Component_Type (A_Gen_T),
+                     A_Gen_T,
+                     Subtype_Indication (Component_Definition (Def))),
+                   Component_Type (Act_T))
          then
-            null;
-         else
             Error_Msg_NE
               ("component subtype of actual does not match that of formal &",
                Actual, Gen_T);
