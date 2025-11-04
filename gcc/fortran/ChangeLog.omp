@@ -1,3 +1,22 @@
+2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/122369
+	PR fortran/122508
+	* gfortran.h (gfc_rebind_label): Declare new function.
+	* parse.cc (parse_omp_metadirective_body): Rebind labels to the outer
+	region. Maintain a vector of metadirective regions.
+	(gfc_parse_file): Initialise it.
+	* parse.h (GFC_PARSE_H): Declare it.
+	* symbol.cc (gfc_get_st_label): Look for existing labels in outer
+	metadirective regions.
+	(gfc_rebind_label): Define new function.
+	(gfc_define_st_label): Accept duplicate labels in metadirective body.
+	(gfc_reference_st_label): Accept shared DO termination labels in
+	metadirective body.
+
 2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:

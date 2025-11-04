@@ -1,3 +1,17 @@
+2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/122369
+	PR fortran/122508
+	* gfortran.dg/gomp/pr122369-1.f90: New test.
+	* gfortran.dg/gomp/pr122369-2.f90: New test.
+	* gfortran.dg/gomp/pr122369-3.f90: New test.
+	* gfortran.dg/gomp/pr122369-4.f90: New test.
+	* gfortran.dg/gomp/pr122508-1.f90: New test.
+	* gfortran.dg/gomp/pr122508-2.f90: New test.
+
 2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
