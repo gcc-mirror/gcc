@@ -83,7 +83,7 @@ enum non_integral_constant {
   NIC_FUNC_CALL,
   /* an increment */
   NIC_INC,
-  /* an decrement */
+  /* a decrement */
   NIC_DEC,
   /* an array reference */
   NIC_ARRAY_REF,
@@ -3782,7 +3782,7 @@ cp_parser_non_integral_constant_expression (cp_parser  *parser,
 		       "cannot appear in a constant-expression");
 		return true;
 	      case NIC_DEC:
-		error ("an decrement "
+		error ("a decrement "
 		       "cannot appear in a constant-expression");
 		return true;
 	      case NIC_ARRAY_REF:
