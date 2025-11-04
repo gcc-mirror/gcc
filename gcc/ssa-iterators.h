@@ -114,6 +114,11 @@ struct auto_end_imm_use_stmt_traverse
        (void) ((DEST) = next_imm_use_on_stmt (&(ITER))))
 
 
+/* Use this to get a vector of all gimple stmts using SSAVAR without
+   duplicates.  It's cheaper than FOR_EACH_IMM_USE_STMT and has no
+   constraints on what you are allowed to do inside an iteration
+   over the vector.  */
+extern auto_vec<gimple *, 2> gather_imm_use_stmts (tree ssavar);
 
 extern bool single_imm_use_1 (const ssa_use_operand_t *head,
 			      use_operand_p *use_p, gimple **stmt);

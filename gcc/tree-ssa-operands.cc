@@ -1416,3 +1416,23 @@ single_imm_use_1 (const ssa_use_operand_t *head,
   return single_use;
 }
 
+/* Gather all stmts SSAVAR is used on, eliminating duplicates.  */
+
+auto_vec<gimple *, 2>
+gather_imm_use_stmts (tree ssavar)
+{
+  auto_vec<gimple *, 2> stmts;
+  imm_use_iterator iter;
+  use_operand_p use_p;
+  FOR_EACH_IMM_USE_FAST (use_p, iter, ssavar)
+    {
+      gimple *use_stmt = USE_STMT (use_p);
+      if (use_stmt->ilf)
+	continue;
+      use_stmt->ilf = 1;
+      stmts.safe_push (use_stmt);
+    }
+  for (gimple *use_stmt : stmts)
+    use_stmt->ilf = 0;
+  return stmts;
+}
