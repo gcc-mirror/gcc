@@ -1615,7 +1615,7 @@ Use little endian by default.  Provide a multilib for big endian.
 
 @item --with-cmodel=@var{cmodel}
 Specify what code model to use by default.
-Currently only implemented for riscv*-*-*.
+Currently only implemented for loongarch*-*-* and riscv*-*-*.
 
 @item --enable-threads
 Specify that the target

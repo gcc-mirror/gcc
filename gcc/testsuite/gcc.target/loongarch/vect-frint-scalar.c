@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlsx -ffp-int-builtin-inexact" } */
+/* { dg-options "-O2 -mlsx -ffp-int-builtin-inexact -mcmodel=normal" } */
 
 #define test(func, suffix) \
 __typeof__ (1.##suffix) \

@@ -540,7 +540,7 @@ fallback:
 
 
   /* 5.  Target code model */
-  t.cmodel = constrained.cmodel ? target->cmodel : CMODEL_NORMAL;
+  t.cmodel = constrained.cmodel ? target->cmodel : TARGET_DEFAULT_CMODEL;
 
   switch (t.cmodel)
     {

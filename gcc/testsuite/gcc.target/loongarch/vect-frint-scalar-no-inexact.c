@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mlsx -fno-fp-int-builtin-inexact" } */
+/* { dg-options "-O2 -mlsx -fno-fp-int-builtin-inexact -mcmodel=normal" } */
 
 #include "vect-frint-scalar.c"
 

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mabi=lp64d -mdouble-float -fno-math-errno -ffp-int-builtin-inexact -mlasx" } */
+/* { dg-options "-O2 -mabi=lp64d -mdouble-float -fno-math-errno -ffp-int-builtin-inexact -mlasx -mcmodel=normal" } */
 
 int out_x[8];
 long out_y[4];

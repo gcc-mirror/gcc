@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mabi=lp64d -mdouble-float -fno-math-errno -fno-fp-int-builtin-inexact -mlasx" } */
+/* { dg-options "-O2 -mabi=lp64d -mdouble-float -fno-math-errno -fno-fp-int-builtin-inexact -mlasx -mcmodel=normal" } */
 
 #include "vect-ftint.c"
 

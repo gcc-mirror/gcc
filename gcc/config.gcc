@@ -5118,7 +5118,7 @@ case "${target}" in
 		;;
 
 	loongarch*-*)
-		supported_defaults="abi arch tune fpu simd multilib-default strict-align-lib tls"
+		supported_defaults="abi arch tune fpu simd multilib-default strict-align-lib tls cmodel"
 
 		# Local variables
 		unset \
@@ -5539,6 +5539,22 @@ case "${target}" in
 		# Remove the excessive appending comma.
 		loongarch_multilib_list_c=${loongarch_multilib_list_c%,}
 		loongarch_multilib_list_make=${loongarch_multilib_list_make%,}
+
+		# Handle --with-cmodel.
+		# Make sure --with-cmodel is valid.  If it was not specified,
+		# use medium as the default value.
+		case "${with_cmodel}" in
+		"" | medium)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CMODEL_MEDIUM"
+			;;
+		normal)
+			tm_defines="${tm_defines} TARGET_DEFAULT_CMODEL=CMODEL_NORMAL"
+			;;
+		*)
+			echo "invalid option for --with-cmodel: '${with_cmodel}', available values are 'medium' and 'normal'" 1>&2
+			exit 1
+			;;
+		esac
 		;;
 
 	nds32*-*-*)
