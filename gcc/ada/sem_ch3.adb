@@ -6145,6 +6145,10 @@ package body Sem_Ch3 is
                Set_Is_Tagged_Type       (Id, Is_Tagged_Type        (T));
                Set_Last_Entity          (Id, Last_Entity           (T));
 
+               if Is_Protected_Type (T) then
+                  Set_Uses_Lock_Free (Id, Uses_Lock_Free (T));
+               end if;
+
                if Is_Tagged_Type (T) then
                   Set_No_Tagged_Streams_Pragma
                     (Id, No_Tagged_Streams_Pragma (T));
