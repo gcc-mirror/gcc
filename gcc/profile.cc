@@ -1554,7 +1554,7 @@ branch_prob (bool thunk)
 	      location_t loc = DECL_SOURCE_LOCATION (current_function_decl);
 	      if (!RESERVED_LOCATION_P (loc))
 		{
-		  seen_locations.add (loc);
+		  seen_locations.add (get_pure_location (loc));
 		  expanded_location curr_location = expand_location (loc);
 		  output_location (&streamed_locations, curr_location.file,
 				   MAX (1, curr_location.line), &offset, bb);
@@ -1567,7 +1567,7 @@ branch_prob (bool thunk)
 	      location_t loc = gimple_location (stmt);
 	      if (!RESERVED_LOCATION_P (loc))
 		{
-		  seen_locations.add (loc);
+		  seen_locations.add (get_pure_location (loc));
 		  output_location (&streamed_locations, gimple_filename (stmt),
 				   MAX (1, gimple_lineno (stmt)), &offset, bb);
 		}
@@ -1580,7 +1580,7 @@ branch_prob (bool thunk)
 	  if (single_succ_p (bb)
 	      && (loc = single_succ_edge (bb)->goto_locus)
 	      && !RESERVED_LOCATION_P (loc)
-	      && !seen_locations.contains (loc))
+	      && !seen_locations.contains (get_pure_location (loc)))
 	    {
 	      expanded_location curr_location = expand_location (loc);
 	      output_location (&streamed_locations, curr_location.file,
