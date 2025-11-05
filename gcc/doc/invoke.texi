@@ -1018,14 +1018,14 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{C-SKY Options} (@ref{C-SKY Options})
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}
--mbig-endian  -EB  -mlittle-endian  -EL
--mhard-float  -msoft-float  -mfpu=@var{fpu}  -mdouble-float  -mfdivdu
+-mbig-endian  -mlittle-endian
+-mfpu=@var{fpu}  -mdouble-float  -mfdivdu
 -mfloat-abi=@var{name}
 -melrw  -mistack  -mmp  -mcp  -mcache  -msecurity  -mtrust
 -mdsp  -medsp  -mvdsp
 -mdiv  -msmart  -mhigh-registers  -manchor
 -mpushpop  -mmultiple-stld  -mconstpool  -mstack-size  -mccrt
--mbranch-cost=@var{n}  -mcse-cc  -msched-prolog -msim}
+-mbranch-cost=@var{n}  -msched-prolog -msim}
 
 @emph{Cygwin and MinGW Options} (@ref{Cygwin and MinGW Options})
 @gccoptlist{-mconsole  -mcrtdll=@var{library}  -mdll
@@ -26557,13 +26557,9 @@ Specify the C-SKY target processor.  Valid values for @var{cpu} are:
 @samp{ck810tv}, @samp{ck810ft}, and @samp{ck810ftv}.
 
 @opindex mbig-endian
-@opindex EB
 @opindex mlittle-endian
-@opindex EL
 @item -mbig-endian
-@itemx -EB
 @itemx -mlittle-endian
-@itemx -EL
 
 Select big- or little-endian code.  The default is little-endian.
 
@@ -26584,15 +26580,8 @@ the hard-float and soft-float ABIs are not link-compatible; you must
 compile your entire program with the same ABI, and link with a
 compatible set of libraries.
 
-@opindex mhard-float
-@opindex msoft-float
-@item -mhard-float
-@itemx -msoft-float
-
-Select hardware or software floating-point implementations.
-The default is soft float.
-
 @opindex mdouble-float
+@opindex mno-double-float
 @item -mdouble-float
 @itemx -mno-double-float
 When @option{-mhard-float} is in effect, enable generation of
@@ -26600,6 +26589,7 @@ double-precision float instructions.  This is the default except
 when compiling for CK803.
 
 @opindex mfdivdu
+@opindex mno-fdivdu
 @item -mfdivdu
 @itemx -mno-fdivdu
 When @option{-mhard-float} is in effect, enable generation of
@@ -26616,12 +26606,14 @@ Values for @var{fpu} are
 @samp{fpv2_divd} (@samp{-mdouble-float -mdivdu}).
 
 @opindex melrw
+@opindex mno-elrw
 @item -melrw
 @itemx -mno-elrw
 Enable the extended @code{lrw} instruction.  This option defaults to on
 for CK801 and off otherwise.
 
 @opindex mistack
+@opindex mno-istack
 @item -mistack
 @itemx -mno-istack
 Enable interrupt stack instructions; the default is off.
@@ -26631,40 +26623,58 @@ The @option{-mistack} option is required to handle the
 (@pxref{C-SKY Function Attributes}).
 
 @opindex mmp
+@opindex mno-mp
 @item -mmp
+@itemx -mno-mp
 Enable multiprocessor instructions; the default is off.
 
 @opindex mcp
+@opindex mno-cp
 @item -mcp
+@itemx -mno-cp
 Enable coprocessor instructions; the default is off.
 
 @opindex mcache
+@opindex mno-cache
 @item -mcache
+@itemx -mno-cache
 Enable coprocessor instructions; the default is off.
 
 @opindex msecurity
+@opindex mno-security
 @item -msecurity
+@itemx -mno-security
 Enable C-SKY security instructions; the default is off.
 
 @opindex mtrust
+@opindex mno-trust
 @item -mtrust
+@itemx -mno-trust
 Enable C-SKY trust instructions; the default is off.
 
 @opindex mdsp
+@opindex mno-dsp
 @opindex medsp
+@opindex mno-edsp
 @opindex mvdsp
+@opindex mno-vdsp
 @item -mdsp
+@itemx -mno-dsp
 @itemx -medsp
+@itemx -mno-edsp
 @itemx -mvdsp
+@itemx -mno-vdsp
 Enable C-SKY DSP, Enhanced DSP, or Vector DSP instructions, respectively.
 All of these options default to off.
 
 @opindex mdiv
+@opindex mno-div
 @item -mdiv
 @itemx -mno-div
 Generate divide instructions.  Default is off.
 
 @opindex msmart
+@opindex mno-smart
 @item -msmart
 @itemx -mno-smart
 Generate code for Smart Mode, using only registers numbered 0-7 to allow
@@ -26673,6 +26683,7 @@ is the required behavior, and it defaults to on for CK802.
 For other targets, the default is off.
 
 @opindex mhigh-registers
+@opindex mno-high-registers
 @item -mhigh-registers
 @itemx -mno-high-registers
 Generate code using the high registers numbered 16-31.  This option
@@ -26680,25 +26691,27 @@ is not supported on CK801, CK802, or CK803, and is enabled by default
 for other processors.
 
 @opindex manchor
+@opindex mno-anchor
 @item -manchor
 @itemx -mno-anchor
 Generate code using global anchor symbol addresses.
 
 @opindex mpushpop
+@opindex mno-pushpop
 @item -mpushpop
 @itemx -mno-pushpop
 Generate code using @code{push} and @code{pop} instructions.  This option
 defaults to on.
 
 @opindex mmultiple-stld
+@opindex mno-multiple-stld
 @item -mmultiple-stld
-@itemx -mstm
 @itemx -mno-multiple-stld
-@itemx -mno-stm
 Generate code using @code{stm} and @code{ldm} instructions.  This option
 isn't supported on CK801 but is enabled by default on other processors.
 
 @opindex mconstpool
+@opindex mno-constpool
 @item -mconstpool
 @itemx -mno-constpool
 Create constant pools in the compiler instead of deferring it to the
@@ -26706,12 +26719,14 @@ assembler.  This option is the default and required for correct code
 generation on CK801 and CK802, and is optional on other processors.
 
 @opindex mstack-size
+@opindex mno-stack-size
 @item -mstack-size
-@item -mno-stack-size
+@itemx -mno-stack-size
 Emit @code{.stack_size} directives for each function in the assembly
 output.  This option defaults to off.
 
 @opindex mccrt
+@opindex mno-ccrt
 @item -mccrt
 @itemx -mno-ccrt
 Generate code for the C-SKY compiler runtime instead of libgcc.  This
@@ -26730,7 +26745,9 @@ prologue requirements and that cannot be debugged or backtraced.
 It is disabled by default.
 
 @opindex msim
+@opindex mno-sim
 @item -msim
+@itemx -mno-sim
 Links the library libsemi.a which is in compatible with simulator. Applicable
 to ELF compiler only.
 
