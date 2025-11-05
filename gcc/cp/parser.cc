@@ -18509,7 +18509,7 @@ cp_parser_mem_initializer_id (cp_parser* parser)
     return cp_parser_class_name (parser,
 				 /*typename_keyword_p=*/true,
 				 /*template_keyword_p=*/template_p,
-				 typename_type,
+				 class_type,
 				 /*check_dependency_p=*/true,
 				 /*class_head_p=*/false,
 				 /*is_declaration=*/true);
@@ -27809,8 +27809,7 @@ cp_parser_class_name (cp_parser *parser,
   /* If this is a typename, create a TYPENAME_TYPE.  */
   if (typename_p && decl != error_mark_node)
     {
-      decl = make_typename_type (scope, decl, typename_type,
-				 /*complain=*/tf_error);
+      decl = make_typename_type (scope, decl, tag_type, /*complain=*/tf_error);
       if (decl != error_mark_node)
 	decl = TYPE_NAME (decl);
     }
@@ -30203,7 +30202,7 @@ cp_parser_base_specifier (cp_parser* parser)
       type = cp_parser_class_name (parser,
 				   class_scope_p,
 				   template_p,
-				   typename_type,
+				   class_type,
 				   /*check_dependency_p=*/true,
 				   /*class_head_p=*/false,
 				   /*is_declaration=*/true);

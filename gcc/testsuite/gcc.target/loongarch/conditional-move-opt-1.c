@@ -27,7 +27,7 @@ void
 test_lt ()
 {
   if (lm < ln)
-    lr *= (1 << 16);
+    lr += (1 << 16);
   lr += lm;
 }
 
@@ -35,7 +35,7 @@ void
 test_le ()
 {
   if (lm <= ln)
-    lr = lm * ((long)1 << 32);
+    lr = lm + ((long)1 << 32);
   else
     lr = lm;
   lr += lm;

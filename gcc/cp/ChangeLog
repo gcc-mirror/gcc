@@ -1,3 +1,66 @@
+2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122253
+	* decl2.cc (min_vis_expr_r): Don't mark no-linkage declarations
+	as VISIBILITY_ANON.
+
+2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122421
+	* module.cc (trees_in::read_var_def): Don't handle class-scope
+	variables anymore.
+	(trees_in::read_class_def): Handle them here instead.
+
+2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122381
+	* module.cc (trees_out::core_vals): Write BASELINK_OPTYPE (aka
+	TREE_CHAIN).
+	(trees_in::core_vals): Read it.
+
+2025-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-10-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* parser.cc (cp_parser_mem_initializer_id): Pass class_type
+	instead of typename_type to cp_parser_class_name in the
+	nested-name-specifier case.
+
+2025-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-10-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* decl.cc (make_typename_type): Document base-specifier as
+	another type-only lookup case.
+	* parser.cc (cp_parser_class_name): Propagate tag_type to
+	make_typename_type instead of hardcoding typename_type.
+	(cp_parser_base_specifier): Pass class_type instead of
+	typename_type as tag_type to cp_parser_class_name.
+
+2025-10-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122310
+	* module.cc (get_keyed_decl_scope): New function.
+	(trees_out::get_merge_kind): Use it.
+	(trees_out::key_mergeable): Use it.
+	(maybe_key_decl): Key to the containing type for all members.
+
 2025-10-14  Jason Merrill  <jason@redhat.com>
 
 	Backported from master:

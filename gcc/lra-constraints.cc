@@ -522,6 +522,11 @@ update_equiv (int regno)
 {
   rtx x;
 
+  /* If REGNO is beyond the length of the equivalence array structure,
+     then there's nothing to update.  */
+  if (regno >= ira_reg_equiv_len)
+    return;
+
   if ((x = ira_reg_equiv[regno].memory) != NULL_RTX)
     ira_reg_equiv[regno].memory
       = simplify_replace_fn_rtx (x, NULL_RTX, loc_equivalence_callback,

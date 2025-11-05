@@ -1,3 +1,145 @@
+2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122253
+	* g++.dg/modules/internal-16.C: New test.
+
+2025-11-03  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-11-01  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122321
+	* gcc.target/riscv/rvv/autovec/pr122321.c: New test.
+
+2025-11-03  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2025-10-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122270
+	* gcc.target/riscv/rvv/base/pr122270-1.c: New test.
+
+2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122421
+	* g++.dg/modules/inst-6_a.C: New test.
+	* g++.dg/modules/inst-6_b.C: New test.
+
+2025-11-01  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-10-25  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/114023
+	* gfortran.dg/is_contiguous_5.f90: New test.
+
+2025-11-01  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-10-24  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122386
+	* gfortran.dg/transfer_array_subref_2.f90: New test.
+
+2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122381
+	* g++.dg/modules/convop-2_a.H: New test.
+	* g++.dg/modules/convop-2_b.C: New test.
+
+2025-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122408
+	* gfortran.target/aarch64/pr122408_1.f90: New test.
+	* gfortran.target/aarch64/pr122408_2.f90: New test.
+
+2025-10-31  Jinyang He  <hejinyang@loongson.cn>
+
+	Backported from master:
+	2025-10-30  Jinyang He  <hejinyang@loongson.cn>
+		    Peng Fan  <fanpeng@loongson.cn>
+
+	* gcc.target/loongarch/conditional-move-opt-1.c: Remove mul.
+	* gcc.target/loongarch/conditional-move-opt-2.c: Remove and.
+	* gcc.target/loongarch/conditional-move-opt-3.c: New test.
+
+2025-10-30  Guo Jie  <guojie@loongson.cn>
+
+	Backported from master:
+	2025-10-30  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/fnmam4-vec.c: New test.
+
+2025-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-10-14  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* g++.dg/template/dependent-base6.C: Verify mem-initializer-id
+	qualified name lookup is type-only too.
+
+2025-10-28  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-10-10  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122192
+	* g++.dg/template/dependent-base6.C: New test.
+
+2025-10-28  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-10-27  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122310
+	* g++.dg/modules/lambda-12.h: New test.
+	* g++.dg/modules/lambda-12_a.H: New test.
+	* g++.dg/modules/lambda-12_b.C: New test.
+
+2025-10-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122394
+	* g++.dg/opt/pr122394.C: New test.
+
+2025-10-27  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-10-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/120674
+	* gcc.target/riscv/pr120674.c: New test.
+
+2025-10-27  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-10-17  Tamar Christina  <tamar.christina@arm.com>
+		    Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	PR target/121604
+	* gcc.target/aarch64/sve/pr121604_brk.c: New test.
+	* gcc.target/aarch64/sve2/pr121604_pmov.c: New test.
+
+2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	Backported from master:
+	2025-10-27  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122323
+	* gcc.target/i386/builtin-copysign-8b.c: Add -mtune=generic.
+
 2025-10-26  Alexandre Oliva  <oliva@adacore.com>
 
 	Backported from master:

@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-avx512f -mavx" } */
+/* { dg-options "-O2 -mno-avx512f -mavx -mtune=generic" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target { ! ia32 } } {^\t?\.} } } */
 
