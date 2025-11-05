@@ -4191,30 +4191,36 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	 to obtain the instance of the extended type.  */
       if (gfc_current_state () != COMP_DERIVED
 	  && c1 == pdt->components
-	  && (c1->ts.type == BT_DERIVED || c1->ts.type == BT_CLASS)
-	  && c1->ts.u.derived && c1->ts.u.derived->attr.pdt_template
+	  && c1->ts.type == BT_DERIVED
+	  && c1->ts.u.derived
 	  && gfc_get_derived_super_type (*sym) == c2->ts.u.derived)
 	{
-	  gfc_formal_arglist *f;
-
-	  old_param_spec_list = type_param_spec_list;
-
-	  /* Obtain a spec list appropriate to the extended type..*/
-	  actual_param = gfc_copy_actual_arglist (type_param_spec_list);
-	  type_param_spec_list = actual_param;
-	  for (f = c1->ts.u.derived->formal; f && f->next; f = f->next)
-	    actual_param = actual_param->next;
-	  if (actual_param)
+	  if (c1->ts.u.derived->attr.pdt_template)
 	    {
-	      gfc_free_actual_arglist (actual_param->next);
-	      actual_param->next = NULL;
-	    }
+	      gfc_formal_arglist *f;
 
-	  /* Now obtain the PDT instance for the extended type.  */
-	  c2->param_list = type_param_spec_list;
-	  m = gfc_get_pdt_instance (type_param_spec_list, &c2->ts.u.derived,
-				    &c2->param_list);
-	  type_param_spec_list = old_param_spec_list;
+	      old_param_spec_list = type_param_spec_list;
+
+	      /* Obtain a spec list appropriate to the extended type..*/
+	      actual_param = gfc_copy_actual_arglist (type_param_spec_list);
+	      type_param_spec_list = actual_param;
+	      for (f = c1->ts.u.derived->formal; f && f->next; f = f->next)
+		actual_param = actual_param->next;
+	      if (actual_param)
+		{
+		  gfc_free_actual_arglist (actual_param->next);
+		  actual_param->next = NULL;
+		}
+
+	      /* Now obtain the PDT instance for the extended type.  */
+	      c2->param_list = type_param_spec_list;
+	      m = gfc_get_pdt_instance (type_param_spec_list,
+					&c2->ts.u.derived,
+					&c2->param_list);
+	      type_param_spec_list = old_param_spec_list;
+	    }
+	  else
+	    c2->ts = c1->ts;
 
 	  c2->ts.u.derived->refs++;
 	  gfc_set_sym_referenced (c2->ts.u.derived);
