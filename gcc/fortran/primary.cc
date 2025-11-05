@@ -3543,7 +3543,7 @@ gfc_convert_to_structure_constructor (gfc_expr *e, gfc_symbol *sym, gfc_expr **c
 	}
 
       /* Find the current component in the structure definition and check
-	     its access is not private.  */
+	 its access is not private.  */
       if (comp)
 	this_comp = gfc_find_component (sym, comp->name, false, false, NULL);
       else
@@ -3836,8 +3836,6 @@ gfc_match_rvalue (gfc_expr **result)
   bool implicit_char;
   gfc_ref *ref;
   gfc_symtree *pdt_st;
-  gfc_symbol *found_specific = NULL;
-
 
   m = gfc_match ("%%loc");
   if (m == MATCH_YES)
@@ -4085,29 +4083,21 @@ gfc_match_rvalue (gfc_expr **result)
 	  break;
 	}
 
-      gfc_gobble_whitespace ();
-      found_specific = NULL;
-
-      /* Even if 'name' is that of a PDT template, priority has to be given to
-	 possible specific procedures in the generic interface.  */
-      gfc_find_sym_tree (gfc_dt_upper_string (name), NULL, 1, &pdt_st);
-      if (sym->generic && sym->generic->next
-	  && gfc_peek_ascii_char() != '(')
-	{
-	  gfc_actual_arglist *arg = actual_arglist;
-	  for (; arg && pdt_st; arg = arg->next)
-	    gfc_resolve_expr (arg->expr);
-	  found_specific = gfc_search_interface (sym->generic, 0,
-						 &actual_arglist);
-	}
-
       /* Check to see if this is a PDT constructor.  The format of these
 	 constructors is rather unusual:
 		name [(type_params)](component_values)
 	 where, component_values excludes the type_params. With the present
 	 gfortran representation this is rather awkward because the two are not
-	 distinguished, other than by their attributes.  */
-      if (sym->attr.generic && pdt_st != NULL && found_specific == NULL)
+	 distinguished, other than by their attributes.
+
+	 Even if 'name' is that of a PDT template, priority has to be given to
+	 specific procedures, other than the constructor, in the generic
+	 interface.  */
+
+      gfc_gobble_whitespace ();
+      gfc_find_sym_tree (gfc_dt_upper_string (name), NULL, 1, &pdt_st);
+      if (sym->attr.generic && pdt_st != NULL
+	  && !(sym->generic->next && gfc_peek_ascii_char() != '('))
 	{
 	  gfc_symbol *pdt_sym;
 	  gfc_actual_arglist *ctr_arglist = NULL, *tmp;
@@ -4172,12 +4162,8 @@ gfc_match_rvalue (gfc_expr **result)
 		  tmp = tmp->next;
 		}
 
-	      if (found_specific)
-		gfc_find_sym_tree (found_specific->name,
-				   NULL, 1, &symtree);
-	      else
-		gfc_find_sym_tree (gfc_dt_lower_string (pdt_sym->name),
-				   NULL, 1, &symtree);
+	      gfc_find_sym_tree (gfc_dt_lower_string (pdt_sym->name),
+				 NULL, 1, &symtree);
 	      if (!symtree)
 		{
 		  gfc_get_ha_sym_tree (gfc_dt_lower_string (pdt_sym->name) ,
