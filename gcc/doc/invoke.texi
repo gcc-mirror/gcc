@@ -1010,8 +1010,11 @@ Objective-C and Objective-C++ Dialects}.
 -metrax4  -metrax100  -mpdebug  -mcc-init  -mno-side-effects
 -mstack-align  -mdata-align  -mconst-align
 -m32-bit  -m16-bit  -m8-bit  -mno-prologue-epilogue
--melf  -maout  -sim  -sim2
--mmul-bug-workaround  -mno-mul-bug-workaround}
+-mbest-lib-options  -moverride-best-lib-options
+-mtrap-using-break8  -mtrap-unaligned-atomic
+-munaligned-atomic-may-use-library
+-sim  -sim2
+-mmul-bug-workaround}
 
 @emph{C-SKY Options} (@ref{C-SKY Options})
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}
@@ -26407,6 +26410,8 @@ Warn when the stack frame of a function exceeds @var{n} bytes.
 
 @opindex metrax4
 @opindex metrax100
+@opindex mno-etrax4
+@opindex mno-etrax100
 @item -metrax4
 @itemx -metrax100
 The options @option{-metrax4} and @option{-metrax100} are synonyms for
@@ -26420,6 +26425,7 @@ Work around a bug in the @code{muls} and @code{mulu} instructions for CPU
 models where it applies.  This option is disabled by default.
 
 @opindex mpdebug
+@opindex mno-pddebug
 @item -mpdebug
 Enable CRIS-specific verbose debug-related information in the assembly
 code.  This option also has the effect of turning off the @samp{#NO_APP}
@@ -26427,6 +26433,7 @@ formatted-code indicator to the assembler at the beginning of the
 assembly file.
 
 @opindex mcc-init
+@opindex mno-cc-init
 @item -mcc-init
 Do not use condition-code results from previous instruction; always emit
 compare and test instructions before use of condition codes.
@@ -26476,9 +26483,32 @@ option only together with visual inspection of the compiled code: no
 warnings or errors are generated when call-saved registers must be saved,
 or storage for local variables needs to be allocated.
 
-@opindex melf
-@item -melf
-Legacy no-op option.
+@opindex mbest-lib-options
+@opindex moverride-best-lib-options
+@item -mbest-lib-options
+@itemx -moverride-best-lib-options
+@option{-mbest-lib-options} selects the most feature-enabling options
+allowed by other options.  This option has no @samp{no-} form, but
+@option{-moverride-best-lib-options} disables it regardless of the relative
+order of the two options on the command line.
+
+@opindex mtrap-using-break8
+@opindex mno-trap-using-break8
+@item -mtrap-using-break8
+Emit traps as @samp{break 8}.  This is the default for CRIS v3 and up.  If
+disabled, calls to @code{abort} are used instead.
+
+@opindex mtrap-unaligned-atomic
+@opindex mno-trap-unaligned-atomic
+@item -mtrap-unaligned-atomic
+Emit checks causing @samp{break 8} instructions to execute when
+applying atomic builtins on misaligned memory.
+
+@opindex munaligned-atomic-may-use-library
+@opindex mno-unaligned-atomic-may-use-library
+@item -munaligned-atomic-may-use-library
+Handle atomic builtins that may be applied to unaligned data by calling
+library functions.  This option overrides @option{-mtrap-unaligned-atomic}.
 
 @opindex sim
 @item -sim

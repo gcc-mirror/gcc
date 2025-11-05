@@ -108,28 +108,32 @@ Do not tune code and read-only data alignment.
 
 ; See cris_handle_option.
 m32-bit
-Target RejectNegative Undocumented
-
-; See cris_handle_option.
-m32bit
 Target RejectNegative
 Align code and data to 32 bits.
 
 ; See cris_handle_option.
-m16-bit
+m32bit
 Target RejectNegative Undocumented
+Align code and data to 32 bits.
+
+; See cris_handle_option.
+m16-bit
+Target RejectNegative
+Align code and data to 16 bits.
 
 ; See cris_handle_option.
 m16bit
 Target RejectNegative Undocumented
+Align code and data to 16 bits.
 
 ; See cris_handle_option.
 m8-bit
-Target RejectNegative Undocumented
+Target RejectNegative
+Don't align items in code or data.
 
 ; See cris_handle_option.
 m8bit
-Target RejectNegative
+Target RejectNegative Undocumented
 Don't align items in code or data.
 
 ; TARGET_PROLOGUE_EPILOGUE: Whether or not to omit function
