@@ -49,4 +49,12 @@ namespace gnu
   unsigned short us = USHRT_MAX;
   unsigned long ul = ULONG_MAX;
 
+#if __cplusplus >= 201103L
+  // long long
+  long long ll1 = LLONG_MIN;
+  long long ll2 = LLONG_MAX;
+
+  // unsigned long long
+  unsigned long long ull1 = ULLONG_MAX;
+#endif
 }
