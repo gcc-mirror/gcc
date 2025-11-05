@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <time.h>
 #include <map>
+#include <omp.h>
 
 // Make sure that KEY_MAX is less than N to ensure some duplicate keys.
 #define N 3000
@@ -53,6 +54,16 @@ int main (void)
 	for (auto it = range.first; it != range.second; ++it)
 	  sum += (long long) it->first * it->second;
       }
+#ifdef MEM_SHARED
+  /* Even with USM, memory allocated on the device (with _map.insert)
+     must be freed on the device.  */
+  if (omp_get_default_device () != omp_initial_device
+      && omp_get_default_device () != omp_get_num_devices ())
+    {
+      #pragma omp target
+	_map.clear ();
+    }
+#endif
 
 #ifndef MEM_SHARED
   #pragma omp target
