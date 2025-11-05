@@ -1,3 +1,11 @@
+2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122253
+	* g++.dg/modules/internal-16.C: New test.
+
 2025-11-03  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:

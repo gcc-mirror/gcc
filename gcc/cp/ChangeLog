@@ -1,3 +1,12 @@
+2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122253
+	* decl2.cc (min_vis_expr_r): Don't mark no-linkage declarations
+	as VISIBILITY_ANON.
+
 2025-11-02  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Backported from master:
