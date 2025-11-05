@@ -42,10 +42,10 @@ along with GCC; see the file COPYING3.  If not see
    Safe iteration via FOR_EACH_IMM_USE_STMT and FOR_EACH_IMM_USE_ON_STMT
    allows insertion, deletion, and modification of SSA operands within
    the current stmt iterated.  The iterator manages this by re-sorting
-   the immediate uses to batch uses on a single stmt after each other
-   and inserts a marker node into the list immediately after the node
-   ending the current batch.  This marker node is uniquely identified by
-   having null stmt *and* a null use pointer.  */
+   the immediate uses to batch uses on a single stmt after each other.
+   If using an inner FOR_EACH_IMM_USE_ON_STMT iteration only the active
+   use may be manipulated.  Safety relies on new immediate uses being
+   inserted at the front of immediate use lists.  */
 
 struct imm_use_iterator
 {
