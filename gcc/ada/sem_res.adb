@@ -658,6 +658,24 @@ package body Sem_Res is
       P    : Node_Id;
       D    : Node_Id;
 
+      procedure Check_Legality_In_Constraint (Alone : Boolean);
+      --  RM 3.8(12/3): Check that the discriminant mentioned in a constraint
+      --  appears alone as a direct name.
+
+      ----------------------------------
+      -- Check_Legality_In_Constraint --
+      ----------------------------------
+
+      procedure Check_Legality_In_Constraint (Alone : Boolean) is
+      begin
+         if not Alone then
+            Error_Msg_N ("discriminant in constraint must appear alone", N);
+
+         elsif Nkind (N) = N_Expanded_Name and then Comes_From_Source (N) then
+            Error_Msg_N ("discriminant must appear alone as a direct name", N);
+         end if;
+      end Check_Legality_In_Constraint;
+
    begin
       --  Any use in a spec-expression is legal
 
@@ -694,19 +712,11 @@ package body Sem_Res is
             --  processing for records). See Sem_Ch3.Build_Derived_Record_Type
             --  for more info.
 
-            if Ekind (Current_Scope) = E_Record_Type
-              and then Scope (Disc) = Current_Scope
-              and then not
-                (Nkind (Parent (P)) = N_Subtype_Indication
-                  and then
-                    Nkind (Parent (Parent (P))) in N_Component_Definition
-                                                 | N_Subtype_Declaration
-                  and then Paren_Count (N) = 0)
-            then
-               Error_Msg_N
-                 ("discriminant must appear alone in component constraint", N);
-               return;
-            end if;
+            Check_Legality_In_Constraint
+              (Nkind (Parent (P)) = N_Subtype_Indication
+                and then Nkind (Parent (Parent (P))) in N_Component_Definition
+                                                      | N_Subtype_Declaration
+                and then Paren_Count (N) = 0);
 
             --   Detect a common error:
 
@@ -817,18 +827,7 @@ package body Sem_Res is
       elsif Nkind (PN) in N_Index_Or_Discriminant_Constraint
                         | N_Discriminant_Association
       then
-         if Paren_Count (N) > 0 then
-            Error_Msg_N
-              ("discriminant in constraint must appear alone",  N);
-
-         elsif Nkind (N) = N_Expanded_Name
-           and then Comes_From_Source (N)
-         then
-            Error_Msg_N
-              ("discriminant must appear alone as a direct name", N);
-         end if;
-
-         return;
+         Check_Legality_In_Constraint (Paren_Count (N) = 0);
 
       --  Otherwise, context is an expression. It should not be within (i.e. a
       --  subexpression of) a constraint for a component.
@@ -863,8 +862,7 @@ package body Sem_Res is
            or else Nkind (P) = N_Entry_Declaration
            or else Nkind (D) = N_Defining_Identifier
          then
-            Error_Msg_N
-              ("discriminant in constraint must appear alone",  N);
+            Check_Legality_In_Constraint (False);
          end if;
       end if;
    end Check_Discriminant_Use;
