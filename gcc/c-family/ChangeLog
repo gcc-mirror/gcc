@@ -1,3 +1,14 @@
+2025-11-04  Alejandro Colomar  <alx@kernel.org>
+
+	* c-warn.cc (warn_parms_array_mismatch): Fix typos in comment.
+
+2025-11-04  Alejandro Colomar  <alx@kernel.org>
+
+	* c-common.h (warn_parm_array_mismatch):
+	Rename warn_parm_array_mismatch => warn_parms_array_mismatch.
+	* c-warn.cc (warn_parm_array_mismatch):
+	Rename warn_parm_array_mismatch => warn_parms_array_mismatch.
+
 2025-10-30  Qing Zhao  <qing.zhao@oracle.com>
 
 	* c-attribs.cc (handle_counted_by_attribute): Allow counted_by for

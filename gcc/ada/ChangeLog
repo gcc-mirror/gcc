@@ -1,3 +1,20 @@
+2025-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch3.adb (Analyze_Subtype_Declaration) <Concurrent_Kind>:
+	Propagate the Uses_Lock_Free flag for protected types.
+
+2025-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/18453
+	* sem_ch12.adb (Find_Actual_Type): Add Typ_Ref parameter and
+	perform a standard resolution on it in the fallback case.
+	Call Get_Instance_Of if the type is declared in a formal of
+	the child unit.
+	(Instantiate_Type.Validate_Access_Type_Instance): Adjust call
+	to Find_Actual_Type.
+	(Instantiate_Type.Validate_Array_Type_Instance): Likewise and
+	streamline the check for matching component subtypes.
+
 2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/78175

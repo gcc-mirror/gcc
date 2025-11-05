@@ -1,3 +1,10 @@
+2025-11-04  Alejandro Colomar  <alx@kernel.org>
+
+	* c-decl.cc (start_function):
+	Rename warn_parm_array_mismatch => warn_parms_array_mismatch.
+	* c-parser.cc (c_parser_declaration_or_fndef):
+	Rename warn_parm_array_mismatch => warn_parms_array_mismatch.
+
 2025-11-01  Martin Uecker  <uecker@tugraz.at>
 
 	* c-decl.cc (build_compound_literal): Add error.

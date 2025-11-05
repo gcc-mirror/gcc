@@ -1,3 +1,17 @@
+2025-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122544
+	* checker-event.cc (catch_cfg_edge_event::get_meaning): New.
+	(setjmp_event::get_meaning): New.
+	(rewind_event::get_meaning): New.
+	(throw_event::get_meaning): New.
+	(unwind_event::get_meaning): New.
+	* checker-event.h (catch_cfg_edge_event::get_meaning): New decl.
+	(setjmp_event::get_meaning): New decl.
+	(rewind_event::get_meaning): New decl.
+	(throw_event::get_meaning): New decl.
+	(unwind_event::get_meaning): New decl.
+
 2025-10-16  David Malcolm  <dmalcolm@redhat.com>
 
 	* ana-state-to-diagnostic-state.cc: Reimplement throughout to use

@@ -1,3 +1,84 @@
+2025-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/protected_subtype1.adb: New test.
+
+2025-11-04  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/generic_inst9.ads: New test.
+	* gnat.dg/specs/generic_inst9_pkg1.ads: New helper.
+	* gnat.dg/specs/generic_inst9_pkg2.ads: Likewise.
+	* gnat.dg/specs/generic_inst9_pkg2-g.ads: Likewise.
+
+2025-11-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122390
+	* gcc.target/i386/pr122390.c: New test.
+	* gcc.target/i386/pr122390-1.c: New test.
+
+2025-11-04  Kees Cook  <kees@kernel.org>
+
+	* gcc.target/arc/builtin_fls_const.c: New test.  Verify that
+	const attribute enables CSE optimization for mathematical ARC
+	builtins by checking that duplicate calls are eliminated and
+	results are optimized to shift operations.
+
+2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/122369
+	PR fortran/122508
+	* gfortran.dg/gomp/pr122369-1.f90: New test.
+	* gfortran.dg/gomp/pr122369-2.f90: New test.
+	* gfortran.dg/gomp/pr122369-3.f90: New test.
+	* gfortran.dg/gomp/pr122369-4.f90: New test.
+	* gfortran.dg/gomp/pr122508-1.f90: New test.
+	* gfortran.dg/gomp/pr122508-2.f90: New test.
+
+2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lib/lto.exp (lto-build-archive): New procedure.
+	(lto-execute-1): Use it.
+	(lto-link-and-maybe-run, lto-get-options-main): Handle ar-link.
+	* gcc.dg/lto/pr122515_0.c: New test case.
+	* gcc.dg/lto/pr122515_1.c: New file.
+	* gcc.dg/lto/pr122515_2.c: Likewise.
+	* gcc.dg/lto/pr122515_3.c: Likewise.
+	* gcc.dg/lto/pr122515_4.c: Likewise.
+	* gcc.dg/lto/pr122515_5.c: Likewise.
+	* gcc.dg/lto/pr122515_6.c: Likewise.
+	* gcc.dg/lto/pr122515_7.c: Likewise.
+	* gcc.dg/lto/pr122515_8.c: Likewise.
+	* gcc.dg/lto/pr122515_9.c: Likewise.
+
+2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122253
+	* g++.dg/modules/internal-16.C: New test.
+
+2025-11-04  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/122513
+	* gfortran.dg/pr122513-2.f90: New test.
+
+2025-11-04  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR rtl-optimization/93738
+	* gcc.target/powerpc/rlwimi-2.c: Update expected rldicl count.
+
+2025-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122544
+	* g++.dg/analyzer/exception-path-1-sarif.py: New test script.
+	* g++.dg/analyzer/exception-path-1.C: Add SARIF output, and use
+	the above to check it.
+	* g++.dg/analyzer/exception-path-unwind-multiple-2-sarif.py: New
+	test script.
+	* g++.dg/analyzer/exception-path-unwind-multiple-2.C: Add SARIF
+	output, and use the above to check it.
+	* gcc.dg/analyzer/setjmp-3-sarif.py: New test script.
+	* gcc.dg/analyzer/setjmp-3.c: Add SARIF output, and use
+	the above to check it.
+
 2025-11-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/generic_inst15.adb: New test.

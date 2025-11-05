@@ -1,3 +1,16 @@
+2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122253
+	* decl2.cc (min_vis_expr_r): Don't mark no-linkage declarations
+	as VISIBILITY_ANON.
+
+2025-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	* parser.cc (enum non_integral_constant): Fix typo
+	"an decrement" -> "a decrement" in comment.
+	(cp_parser_non_integral_constant_expression): Likewise in error
+	message.
+
 2025-11-03  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.cc (name_lookup::adl_class_fns): Include all

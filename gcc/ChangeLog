@@ -1,3 +1,48 @@
+2025-11-04  Uros Bizjak  <ubizjak@gmail.com>
+
+	PR target/122390
+	* config/i386/i386.md (*add<mode>3_carry_2): New insn pattern.
+	(*add<mode>3_carry_0_cc): Ditto.
+	(*add<mode>3_carry_0r_cc): Ditto.
+	(*sub<mode>3_carry_2): Ditto.
+	(*sub<mode>3_carry_0_cc): Ditto.
+	(*sub<mode>3_carry_0r_cc): Ditt.
+
+2025-11-04  Kees Cook  <kees@kernel.org>
+
+	* config/arc/builtins.def: Add ATTRS parameter to DEF_BUILTIN
+	macro calls.  Mark mathematical builtins (FFS, FLS, NORM, NORMW,
+	SWAP) with attr_const, leave others as NULL_TREE.
+	* config/arc/arc.cc: Add support for builtin function attributes.
+	Create attr_const using tree_cons.  Update DEF_BUILTIN macro to
+	pass ATTRS parameter to add_builtin_function.
+
+2025-11-04  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add usmul_widen_mult helper and referenced by
+	min based unsigned SAT_MUL pattern.
+
+2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lto-wrapper.cc (debug_objcopy): Set type of INOFF to int64_t.
+	(run_gcc): Set type of FILE_OFFSET to int64_t.
+
+2025-11-04  Kishan Parmar  <kishan@linux.ibm.com>
+
+	PR rtl-optimization/93738
+	* simplify-rtx.cc (simplify_binary_operation_1): Canonicalize
+	SUBREG(LSHIFTRT) into LSHIFTRT(SUBREG) when valid.
+
+2025-11-04  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122544
+	* diagnostics/paths.cc (event::meaning::maybe_get_verb_str):
+	Handle the new verbs.
+	* diagnostics/paths.h (event::meaning::verb): Add new values
+	for special control flow operations.
+	(event::meaning::meaning): Add ctor taking just a verb.
+
 2025-11-03  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/122534
