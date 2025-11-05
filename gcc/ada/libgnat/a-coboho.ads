@@ -69,6 +69,10 @@ package Ada.Containers.Bounded_Holders is
    --  The 'Size of each Element_Type object must be a multiple of
    --  System.Storage_Unit; e.g. creating Holders from 5-bit objects won't
    --  work.
+   --
+   --  Do not confuse this GNAT-defined unit with the similar (similar
+   --  in both name and functionality) predefined unit
+   --  Ada.Containers.Bounded_Indefinite_Holders described in Ada RM A.18.32.
 
    type Holder is private
      with Preelaborable_Initialization

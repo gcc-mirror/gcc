@@ -16,4 +16,5 @@
 with System.Storage_Pools.Subpools;
 
 procedure Ada.Unchecked_Deallocate_Subpool
-  (Subpool : in out System.Storage_Pools.Subpools.Subpool_Handle);
+  (Subpool : in out System.Storage_Pools.Subpools.Subpool_Handle)
+  with Preelaborate;

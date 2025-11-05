@@ -584,6 +584,7 @@ package body Impunit is
     ("a-cborma", T),  -- Ada.Containers.Bounded_Ordered_Maps
     ("a-cbhase", T),  -- Ada.Containers.Bounded_Hashed_Sets
     ("a-cbhama", T),  -- Ada.Containers.Bounded_Hashed_Maps
+    ("a-cbinho", T),  -- Ada.Containers.Bounded_Indefinite_Holders
     ("a-coinho", T),  -- Ada.Containers.Indefinite_Holders
     ("a-comutr", T),  -- Ada.Containers.Multiway_Trees
     ("a-cimutr", T),  -- Ada.Containers.Indefinite_Multiway_Trees

@@ -110,6 +110,7 @@ GNATRTL_NONTASKING_OBJS= \
   a-cbdlli$(objext) \
   a-cbhama$(objext) \
   a-cbhase$(objext) \
+  a-cbinho$(objext) \
   a-cbmutr$(objext) \
   a-cborma$(objext) \
   a-cborse$(objext) \
