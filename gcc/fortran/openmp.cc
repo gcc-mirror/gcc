@@ -12320,6 +12320,7 @@ static void
 resolve_omp_metadirective (gfc_code *code, gfc_namespace *ns)
 {
   gfc_omp_variant *variant = code->ext.omp_variants;
+  gfc_omp_variant *prev_variant = variant;
 
   while (variant)
     {
@@ -12333,15 +12334,19 @@ resolve_omp_metadirective (gfc_code *code, gfc_namespace *ns)
 	     as the 'otherwise' clause should always match.  */
 	  if (variant == code->ext.omp_variants && !variant->next)
 	    break;
-	  if (variant == code->ext.omp_variants)
-	    code->ext.omp_variants = variant->next;
 	  gfc_omp_variant *tmp = variant;
-	  variant = variant->next;
+	  if (variant == code->ext.omp_variants)
+	    variant = prev_variant = code->ext.omp_variants = variant->next;
+	  else
+	    variant = prev_variant->next = variant->next;
 	  gfc_free_omp_set_selector_list (tmp->selectors);
 	  free (tmp);
 	}
       else
-	variant = variant->next;
+	{
+	  prev_variant = variant;
+	  variant = variant->next;
+	}
     }
   /* Replace metadirective by its body if only 'nothing' remains.  */
   if (!code->ext.omp_variants->next && code->ext.omp_variants->stmt == ST_NONE)
