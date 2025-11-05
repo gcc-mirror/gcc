@@ -1078,10 +1078,10 @@ Objective-C and Objective-C++ Dialects}.
 -mlong-double-128  -mlong-double-64}
 
 @emph{eBPF Options} (@ref{eBPF Options})
-@gccoptlist{-mbig-endian -mlittle-endian
--mframe-limit=@var{bytes} -mxbpf -mco-re -mno-co-re -mjmpext
--mjmp32 -malu32 -mv3-atomics -mbswap -msdiv -msmov -mcpu=@var{version}
--masm=@var{dialect} -minline-memops-threshold=@var{bytes}}
+@gccoptlist{-mbig-endian  -mlittle-endian
+-mframe-limit=@var{bytes}  -mxbpf  -mco-re  -mjmpext  -mjmp32
+-malu32  -mv3-atomics  -mbswap  -msdiv  -msmov  -mcpu=@var{version}
+-masm=@var{dialect}  -minline-memops-threshold=@var{bytes}}
 
 @emph{FR30 Options} (@ref{FR30 Options})
 @gccoptlist{-msmall-model  -mno-lsim}
@@ -27582,41 +27582,48 @@ Generate code for a big-endian target.
 Generate code for a little-endian target.  This is the default.
 
 @opindex mjmpext
+@opindex mno-jmpext
 @item -mjmpext
 @itemx -mno-jmpext
 Enable or disable generation of extra conditional-branch instructions.
 Enabled for CPU v2 and above.
 
 @opindex mjmp32
+@opindex mno-jmp32
 @item -mjmp32
 @itemx -mno-jmp32
 Enable or disable generation of 32-bit jump instructions.
 Enabled for CPU v3 and above.
 
 @opindex malu32
+@opindex mno-alu32
 @item -malu32
 @itemx -mno-alu32
 Enable or disable generation of 32-bit ALU instructions.
 Enabled for CPU v3 and above.
 
 @opindex mv3-atomics
+@opindex mno-v3-atomics
 @item -mv3-atomics
 @itemx -mno-v3-atomics
 Enable or disable instructions for general atomic operations introduced
 in CPU v3.  Enabled for CPU v3 and above.
 
 @opindex mbswap
+@opindex mno-bswap
 @item -mbswap
 @itemx -mno-bswap
 Enable or disable byte swap instructions.  Enabled for CPU v4 and above.
 
 @opindex msdiv
+@opindex mno-sdiv
 @item -msdiv
 @itemx -mno-sdiv
 Enable or disable signed division and modulus instructions.  Enabled for
 CPU v4 and above.
 
 @opindex msmov
+@opindex mno-smov
 @item -msmov
 @itemx -mno-smov
 Enable or disable sign-extending move and memory load instructions.
@@ -27654,16 +27661,15 @@ All features of v3, plus:
 @end table
 
 @opindex mco-re
-@item -mco-re
-Enable BPF Compile Once - Run Everywhere (CO-RE) support. Requires and
-is implied by @option{-gbtf}.
-
 @opindex mno-co-re
-@item -mno-co-re
-Disable BPF Compile Once - Run Everywhere (CO-RE) support. BPF CO-RE
-support is enabled by default when generating BTF debug information for
-the BPF target.
+@item -mco-re
+@itemx -mno-co-re
+Enable or disable BPF Compile Once - Run Everywhere (CO-RE) support.
+BPF CO-RE support is enabled by default when generating BTF debug
+information for the BPF target (@option{-gbtf}).
 
+@opindex mxbpf
+@opindex mno-xbpf
 @item -mxbpf
 Generate code for an expanded version of BPF, which relaxes some of
 the restrictions imposed by the BPF architecture:
