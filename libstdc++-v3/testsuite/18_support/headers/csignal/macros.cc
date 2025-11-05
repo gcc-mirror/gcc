@@ -37,6 +37,10 @@ namespace gnu
     #error "SIG_DFL_must_be_a_macro"
 #endif
 
+#ifndef SIG_IGN
+    #error "SIG_IGN_must_be_a_macro"
+#endif
+
 #ifndef SIGFPE
     #error "SIGFPE_must_be_a_macro"
 #endif
