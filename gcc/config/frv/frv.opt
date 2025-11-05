@@ -45,7 +45,7 @@ Dynamically allocate cc registers.
 ; generating SCC instructions and or/and-ing them together, and then doing the
 ; branch on the result, which collectively generate much worse code.
 mbranch-cost=
-Target RejectNegative Joined UInteger Var(frv_branch_cost_int) Init(1)
+Target RejectNegative Joined UInteger Var(frv_branch_cost_int) Init(1) Undocumented
 Set the cost of branches.
 
 mcond-exec
@@ -53,11 +53,11 @@ Target Mask(COND_EXEC)
 Enable conditional execution other than moves/scc.
 
 mcond-exec-insns=
-Target RejectNegative Joined UInteger Var(frv_condexec_insns) Init(8)
+Target RejectNegative Joined UInteger Var(frv_condexec_insns) Init(8) Undocumented
 Change the maximum length of conditionally-executed sequences.
 
 mcond-exec-temps=
-Target RejectNegative Joined UInteger Var(frv_condexec_temps) Init(4)
+Target RejectNegative Joined UInteger Var(frv_condexec_temps) Init(4) Undocumented
 Change the number of temporary registers that are available to conditionally-executed sequences.
 
 mcond-move

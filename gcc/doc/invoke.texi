@@ -1092,18 +1092,14 @@ Objective-C and Objective-C++ Dialects}.
 @emph{FRV Options} (@ref{FRV Options})
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64
 -mhard-float  -msoft-float
--malloc-cc  -mfixed-cc  -mdword  -mno-dword
--mdouble  -mno-double
--mmedia  -mno-media  -mmuladd  -mno-muladd
+-malloc-cc  -mfixed-cc  -mdword  -mdouble  -mmedia  -mmuladd
 -mfdpic  -minline-plt  -mgprel-ro  -multilib-library-pic
 -mlinked-fp  -mlong-calls  -malign-labels
 -mlibrary-pic  -macc-4  -macc-8
--mpack  -mno-pack  -mno-eflags  -mcond-move  -mno-cond-move
--moptimize-membar  -mno-optimize-membar
--mscc  -mno-scc  -mcond-exec  -mno-cond-exec
--mvliw-branch  -mno-vliw-branch
--mmulti-cond-exec  -mno-multi-cond-exec  -mnested-cond-exec
--mno-nested-cond-exec  -mtomcat-stats
+-mpack  -mno-eflags  -mno-cond-move
+-mno-optimize-membar  -mno-scc  -mno-cond-exec
+-mno-vliw-branch  -mno-multi-cond-exec  -mno-nested-cond-exec
+-mtomcat-stats
 -mTLS  -mtls
 -mcpu=@var{cpu}}
 
@@ -27814,47 +27810,35 @@ Do not try to dynamically allocate condition code registers, only
 use @code{icc0} and @code{fcc0}.
 
 @opindex mdword
-@item -mdword
-
-Change ABI to use double word insns.
-
 @opindex mno-dword
-@opindex mdword
-@item -mno-dword
+@item -mdword
+@itemx -mno-dword
 
-Do not use double word instructions.
+Control whether the ABI uses double-word instructions.
 
 @opindex mdouble
-@item -mdouble
-
-Use floating-point double instructions.
-
 @opindex mno-double
-@item -mno-double
+@item -mdouble
+@itemx -mno-double
 
-Do not use floating-point double instructions.
+Enable or disable use of floating-point double instructions.
 
 @opindex mmedia
-@item -mmedia
-
-Use media instructions.
-
 @opindex mno-media
-@item -mno-media
+@item -mmedia
+@itemx -mno-media
 
-Do not use media instructions.
+Enable or disable use of media instructions.
 
 @opindex mmuladd
-@item -mmuladd
-
-Use multiply and add/subtract instructions.
-
 @opindex mno-muladd
-@item -mno-muladd
+@item -mmuladd
+@itemx -mno-muladd
 
-Do not use multiply and add/subtract instructions.
+Enable or disable use of multiply and add/subtract instructions.
 
 @opindex mfdpic
+@opindex mno-fdpic
 @item -mfdpic
 
 Select the FDPIC ABI, which uses function descriptors to represent
@@ -27866,6 +27850,7 @@ are computed with 32 bits.
 With a @samp{bfin-elf} target, this option implies @option{-msim}.
 
 @opindex minline-plt
+@opindex mno-inline-plt
 @item -minline-plt
 
 Enable inlining of PLT entries in function calls to functions that are
@@ -27886,6 +27871,7 @@ Assume a large TLS segment when generating thread-local code.
 Do not assume a large TLS segment when generating thread-local code.
 
 @opindex mgprel-ro
+@opindex mno-gprel-ro
 @item -mgprel-ro
 
 Enable the use of @code{GPREL} relocations in the FDPIC ABI for data
@@ -27906,6 +27892,7 @@ Link with the (library, not FD) pic libraries.  It's implied by
 it explicitly.
 
 @opindex mlinked-fp
+@opindex mno-linked-fp
 @item -mlinked-fp
 
 Follow the EABI requirement of always creating a frame pointer whenever
@@ -27913,6 +27900,7 @@ a stack frame is allocated.  This option is enabled by default and can
 be disabled with @option{-mno-linked-fp}.
 
 @opindex mlong-calls
+@opindex mno-long-calls
 @item -mlong-calls
 
 Use indirect addressing to call functions outside the current
@@ -27920,6 +27908,7 @@ compilation unit.  This allows the functions to be placed anywhere
 within the 32-bit address space.
 
 @opindex malign-labels
+@opindex mno-align-labels
 @item -malign-labels
 
 Try to align labels to an 8-byte boundary by inserting NOPs into the
@@ -27928,6 +27917,7 @@ is enabled.  It doesn't create new packets; it merely adds NOPs to
 existing ones.
 
 @opindex mlibrary-pic
+@opindex mno-library-pic
 @item -mlibrary-pic
 
 Generate position-independent EABI code.
@@ -27943,14 +27933,11 @@ Use only the first four media accumulator registers.
 Use all eight media accumulator registers.
 
 @opindex mpack
-@item -mpack
-
-Pack VLIW instructions.
-
 @opindex mno-pack
+@item -mpack
 @item -mno-pack
 
-Do not pack VLIW instructions.
+Enable or disable packing VLIW instructions.
 
 @opindex mno-eflags
 @item -mno-eflags
@@ -27958,116 +27945,80 @@ Do not pack VLIW instructions.
 Do not mark ABI switches in e_flags.
 
 @opindex mcond-move
-@item -mcond-move
-
-Enable the use of conditional-move instructions (default).
-
-This switch is mainly for debugging the compiler and will likely be removed
-in a future version.
-
 @opindex mno-cond-move
-@item -mno-cond-move
+@item -mcond-move
+@itemx -mno-cond-move
 
-Disable the use of conditional-move instructions.
+Enable or disable the use of conditional-move instructions; it is enabled
+by default.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
 
 @opindex mscc
-@item -mscc
-
-Enable the use of conditional set instructions (default).
-
-This switch is mainly for debugging the compiler and will likely be removed
-in a future version.
-
 @opindex mno-scc
-@item -mno-scc
+@item -mscc
+@itemx -mno-scc
 
-Disable the use of conditional set instructions.
+Enable or disable the use of conditional set instructions; it is enabled
+by default.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
 
 @opindex mcond-exec
-@item -mcond-exec
-
-Enable the use of conditional execution (default).
-
-This switch is mainly for debugging the compiler and will likely be removed
-in a future version.
-
 @opindex mno-cond-exec
-@item -mno-cond-exec
+@item -mcond-exec
+@itemx -mno-cond-exec
 
-Disable the use of conditional execution.
+Enable or disable the use of conditional execution; it is enabled by default.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
 
 @opindex mvliw-branch
-@item -mvliw-branch
-
-Run a pass to pack branches into VLIW instructions (default).
-
-This switch is mainly for debugging the compiler and will likely be removed
-in a future version.
-
 @opindex mno-vliw-branch
-@item -mno-vliw-branch
+@item -mvliw-branch
+@itemx -mno-vliw-branch
 
-Do not run a pass to pack branches into VLIW instructions.
+Enable or disable an optimization pass to pack branches into VLIW instructions;
+it is enabled by default.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
 
 @opindex mmulti-cond-exec
-@item -mmulti-cond-exec
-
-Enable optimization of @code{&&} and @code{||} in conditional execution
-(default).
-
-This switch is mainly for debugging the compiler and will likely be removed
-in a future version.
-
 @opindex mno-multi-cond-exec
-@item -mno-multi-cond-exec
+@item -mmulti-cond-exec
+@itemx -mno-multi-cond-exec
 
-Disable optimization of @code{&&} and @code{||} in conditional execution.
+Enable or disable optimization of @code{&&} and @code{||} in conditional
+execution; it is enabled by default.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
 
 @opindex mnested-cond-exec
-@item -mnested-cond-exec
-
-Enable nested conditional execution optimizations (default).
-
-This switch is mainly for debugging the compiler and will likely be removed
-in a future version.
-
 @opindex mno-nested-cond-exec
-@item -mno-nested-cond-exec
+@item -mnested-cond-exec
+@itemx -mno-nested-cond-exec
 
-Disable nested conditional execution optimizations.
+Enable or disable nested conditional execution optimizations; it is enabled
+by default.
 
 This switch is mainly for debugging the compiler and will likely be removed
 in a future version.
 
 @opindex moptimize-membar
+@opindex mno-optimize-membar
 @item -moptimize-membar
+@itemx -mno-optimize-membar
 
 This switch removes redundant @code{membar} instructions from the
 compiler-generated code.  It is enabled by default.
 
-@opindex mno-optimize-membar
-@opindex moptimize-membar
-@item -mno-optimize-membar
-
-This switch disables the automatic removal of redundant @code{membar}
-instructions from the generated code.
-
 @opindex mtomcat-stats
+@opindex mno-tomcat-stats
 @item -mtomcat-stats
 
 Cause gas to print out tomcat statistics.
