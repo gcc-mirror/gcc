@@ -8190,9 +8190,11 @@ package body Exp_Ch4 is
       --  Unchecked_Union subtype. Typ is a record type.
 
       procedure Warn_On_Abstract_Equality_For_Component
-        (Comp_Type : Entity_Id);
+        (Comp_Type : Entity_Id; Comp : Entity_Id);
       --  If Comp_Type is a record type with a user-defined abstract primitive
       --  equality, then issue a warning that Program_Error will be raised.
+      --  Comp is Empty in the array case. In the record case, it is the
+      --  component declaration, and is used in the message.
 
       -------------------------
       -- Build_Equality_Call --
@@ -8423,7 +8425,7 @@ package body Exp_Ch4 is
       ---------------------------------------------
 
       procedure Warn_On_Abstract_Equality_For_Component
-        (Comp_Type : Entity_Id)
+        (Comp_Type : Entity_Id; Comp : Entity_Id)
       is
          Eq : Entity_Id;
       begin
@@ -8435,6 +8437,12 @@ package body Exp_Ch4 is
                Error_Msg_NE ("call to abstract equality function of "
                              & "component type &<<", N, Comp_Type);
                Error_Msg_N ("\Program_Error [<<", N);
+
+               if Present (Comp) then
+                  Error_Msg_Sloc := Sloc (Comp);
+                  Error_Msg_NE
+                    ("\abstract ""="" called for component & #<<", N, Comp);
+               end if;
             end if;
          end if;
       end Warn_On_Abstract_Equality_For_Component;
@@ -8514,7 +8522,8 @@ package body Exp_Ch4 is
          --  predefined equality.
 
          if not Present (Get_User_Defined_Equality (Typl)) then
-            Warn_On_Abstract_Equality_For_Component (Component_Type (Typl));
+            Warn_On_Abstract_Equality_For_Component
+              (Component_Type (Typl), Comp => Empty);
          end if;
 
          --  If we are doing full validity checking, and it is possible for the
@@ -8608,7 +8617,8 @@ package body Exp_Ch4 is
             begin
                while Present (Comp) loop
                   if Chars (Comp) /= Name_uParent then
-                     Warn_On_Abstract_Equality_For_Component (Etype (Comp));
+                     Warn_On_Abstract_Equality_For_Component
+                       (Etype (Comp), Comp);
                   end if;
 
                   Next_Component (Comp);
