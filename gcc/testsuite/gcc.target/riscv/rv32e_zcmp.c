@@ -259,8 +259,7 @@ foo (void)
 **test_popretz:
 **	cm.push	{ra}, -16
 **	call	f1(?:@plt)?
-**	li	a0,0
-**	cm.popret	{ra}, 16
+**	cm.popretz	{ra}, 16
 */
 long
 test_popretz ()

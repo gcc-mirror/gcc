@@ -208,6 +208,7 @@ rtl_opt_pass * make_pass_vsetvl (gcc::context *ctxt);
 rtl_opt_pass * make_pass_insert_landing_pad (gcc::context *ctxt);
 rtl_opt_pass * make_pass_vector_permconst (gcc::context *ctxt);
 rtl_opt_pass * make_pass_bclr_lowest_set_bit (gcc::context *ctxt);
+rtl_opt_pass * make_pass_combine_popretz (gcc::context *ctxt);
 
 /* Routines implemented in riscv-vsetvl.cc.  */
 extern bool has_vtype_op (rtx_insn *);
