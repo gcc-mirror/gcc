@@ -1,3 +1,9 @@
+2025-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/122570
+	* openmp.cc (resolve_omp_metadirective): Fix 'skip' of
+	never matchable metadirective variants.
+
 2025-11-04  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
