@@ -3871,7 +3871,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
 
  private:
   void write_config (elf_out *to, struct module_state_config &, unsigned crc);
-  bool read_config (struct module_state_config &);
+  bool read_config (struct module_state_config &, bool = true);
   static void write_counts (elf_out *to, unsigned [MSC_HWM], unsigned *crc_ptr);
   bool read_counts (unsigned *);
 
@@ -3898,6 +3898,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
   unsigned write_cluster (elf_out *to, depset *depsets[], unsigned size,
 			  depset::hash &, unsigned *counts, unsigned *crc_ptr);
   bool read_cluster (unsigned snum);
+  bool open_slurp (cpp_reader *);
 
  private:
   unsigned write_inits (elf_out *to, depset::hash &, unsigned *crc_ptr);
@@ -3959,6 +3960,7 @@ class GTY((chain_next ("%h.parent"), for_user)) module_state {
  public:
   void set_filename (const Cody::Packet &);
   bool do_import (cpp_reader *, bool outermost);
+  bool check_importable (cpp_reader *);
 };
 
 /* Hash module state by name.  This cannot be a member of
@@ -20280,7 +20282,7 @@ module_state::note_cmi_name ()
 }
 
 bool
-module_state::read_config (module_state_config &config)
+module_state::read_config (module_state_config &config, bool complain)
 {
   bytes_in cfg;
 
@@ -20309,7 +20311,9 @@ module_state::read_config (module_state_config &config)
 		       /* The 'I know what I'm doing' switch.  */
 		       && !flag_module_version_ignore);
       bool inform_p = true;
-      if (reject_p)
+      if (!complain)
+	inform_p = false;
+      else if (reject_p)
 	{
 	  cfg.set_overrun ();
 	  error_at (loc, "compiled module is %sversion %s",
@@ -20369,7 +20373,9 @@ module_state::read_config (module_state_config &config)
     unsigned e_crc = crc;
     crc = cfg.get_crc ();
     dump () && dump ("Reading CRC=%x", crc);
-    if (!is_direct () && crc != e_crc)
+    /* When not complaining we haven't set directness yet, so ignore the
+       mismatch. */
+    if (complain && !is_direct () && crc != e_crc)
       {
 	error_at (loc, "module %qs CRC mismatch", get_flatname ());
 	cfg.set_overrun ();
@@ -20397,8 +20403,9 @@ module_state::read_config (module_state_config &config)
     const char *their_dialect = cfg.str ();
     if (strcmp (their_dialect, config.dialect_str))
       {
-	error_at (loc, "language dialect differs %qs, expected %qs",
-		  their_dialect, config.dialect_str);
+	if (complain)
+	  error_at (loc, "language dialect differs %qs, expected %qs",
+		    their_dialect, config.dialect_str);
 	cfg.set_overrun ();
 	goto done;
       }
@@ -20811,9 +20818,6 @@ module_state::read_initial (cpp_reader *reader)
 {
   module_state_config config;
   bool ok = true;
-
-  if (ok && !from ()->begin (loc))
-    ok = false;
 
   if (ok && !read_config (config))
     ok = false;
@@ -21892,20 +21896,14 @@ module_state::set_flatname ()
     flatname = IDENTIFIER_POINTER (name);
 }
 
-/* Read the CMI file for a module.  */
+/* Open the GCM file and prepare to read.  Return whether that was
+   successful.  */
 
 bool
-module_state::do_import (cpp_reader *reader, bool outermost)
+module_state::open_slurp (cpp_reader *reader)
 {
-  gcc_assert (global_namespace == current_scope () && loadedness == ML_NONE);
-
-  /* If this TU is a partition of the module we're importing,
-     that module is the primary module interface.  */
-  if (this_module ()->is_partition ()
-      && this == get_primary (this_module ()))
-    module_p = true;
-
-  loc = linemap_module_loc (line_table, loc, get_flatname ());
+  if (slurp)
+    return true;
 
   if (lazy_open >= lazy_limit)
     freeze_an_elf ();
@@ -21928,14 +21926,50 @@ module_state::do_import (cpp_reader *reader, bool outermost)
   gcc_checking_assert (!slurp);
   slurp = new slurping (new elf_in (fd, e));
 
-  bool ok = true;
+  bool ok = from ()->begin (loc);
+  if (ok)
+    {
+      lazy_open++;
+      slurp->lru = ++lazy_lru;
+    }
+  return ok;
+}
+
+/* Return whether importing this GCM would work without an error in
+   read_config.  */
+
+bool
+module_state::check_importable (cpp_reader *reader)
+{
+  if (loadedness > ML_CONFIG)
+    return true;
+  if (!open_slurp (reader))
+    return false;
+  module_state_config config;
+  return read_config (config, /*complain*/false);
+}
+
+/* Read the CMI file for a module.  */
+
+bool
+module_state::do_import (cpp_reader *reader, bool outermost)
+{
+  gcc_assert (global_namespace == current_scope () && loadedness == ML_NONE);
+
+  /* If this TU is a partition of the module we're importing,
+     that module is the primary module interface.  */
+  if (this_module ()->is_partition ()
+      && this == get_primary (this_module ()))
+    module_p = true;
+
+  loc = linemap_module_loc (line_table, loc, get_flatname ());
+
+  bool ok = open_slurp (reader);
   if (!from ()->get_error ())
     {
       announce ("importing");
       loadedness = ML_CONFIG;
-      lazy_open++;
       ok = read_initial (reader);
-      slurp->lru = ++lazy_lru;
     }
 
   gcc_assert (slurp->current == ~0u);
@@ -22477,7 +22511,7 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   auto packet = mapper->IncludeTranslate (path, Cody::Flags::None, len);
 
   enum class xlate_kind {
-    unknown, text, import,
+    unknown, text, import, invalid
   } translate = xlate_kind::unknown;
 
   if (packet.GetCode () == Cody::Client::PC_BOOL)
@@ -22488,7 +22522,10 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 	 We may already know about this import, but libcpp doesn't yet.  */
       module_state *import = get_module (build_string (len, path));
       import->set_filename (packet);
-      translate = xlate_kind::import;
+      if (import->check_importable (reader))
+	translate = xlate_kind::import;
+      else
+	translate = xlate_kind::invalid;
     }
   else
     {
@@ -22497,7 +22534,7 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
 		path, packet.GetString ().c_str ());
     }
 
-  bool note = false;
+  bool note = (translate == xlate_kind::invalid);
   if (note_include_translate_yes && translate == xlate_kind::import)
     note = true;
   else if (note_include_translate_no && translate == xlate_kind::unknown)
@@ -22512,6 +22549,8 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
   if (note)
     inform (loc, translate == xlate_kind::import
 	    ? G_("include %qs translated to import")
+	    : translate == xlate_kind::invalid
+	    ? G_("import of %qs failed, falling back to include")
 	    : G_("include %qs processed textually"), path);
 
   dump () && dump (translate == xlate_kind::import
