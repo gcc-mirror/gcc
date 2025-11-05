@@ -55,6 +55,11 @@ loongarch_define_unconditional_macros (cpp_reader *pfile)
       builtin_define ("__loongarch_grlen=64");
       builtin_define ("__loongarch64");
     }
+  else
+      builtin_define ("__loongarch_grlen=32");
+
+  if (TARGET_ABI_ILP32)
+      builtin_define ("__loongarch_ilp32");
 
   if (TARGET_ABI_LP64)
     {

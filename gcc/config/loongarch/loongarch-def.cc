@@ -43,14 +43,17 @@ array_arch<const char *> loongarch_arch_strings = array_arch<const char *> ()
   .set (ARCH_LA464, STR_CPU_LA464)
   .set (ARCH_LA664, STR_CPU_LA664)
   .set (ARCH_LA64V1_0, STR_ARCH_LA64V1_0)
-  .set (ARCH_LA64V1_1, STR_ARCH_LA64V1_1);
+  .set (ARCH_LA64V1_1, STR_ARCH_LA64V1_1)
+  .set (ARCH_LA32V1_0, STR_ARCH_LA32V1_0)
+  .set (ARCH_LA32RV1_0, STR_ARCH_LA32RV1_0);
 
 array_tune<const char *> loongarch_tune_strings = array_tune<const char *> ()
   .set (TUNE_NATIVE, STR_CPU_NATIVE)
   .set (TUNE_GENERIC, STR_TUNE_GENERIC)
   .set (TUNE_LOONGARCH64, STR_CPU_LOONGARCH64)
   .set (TUNE_LA464, STR_CPU_LA464)
-  .set (TUNE_LA664, STR_CPU_LA664);
+  .set (TUNE_LA664, STR_CPU_LA664)
+  .set (TUNE_LOONGARCH32, STR_TUNE_LOONGARCH32);
 
 array_arch<loongarch_isa> loongarch_cpu_default_isa =
   array_arch<loongarch_isa> ()
@@ -86,8 +89,17 @@ array_arch<loongarch_isa> loongarch_cpu_default_isa =
 	    .simd_ (ISA_EXT_SIMD_LSX)
 	    .evolution_ (OPTION_MASK_ISA_DIV32 | OPTION_MASK_ISA_LD_SEQ_SA
 			 | OPTION_MASK_ISA_LAM_BH | OPTION_MASK_ISA_LAMCAS
-			 | OPTION_MASK_ISA_FRECIPE | OPTION_MASK_ISA_SCQ));
+			 | OPTION_MASK_ISA_FRECIPE | OPTION_MASK_ISA_SCQ))
 
+    .set (ARCH_LA32V1_0,
+	  loongarch_isa ()
+	    .base_ (ISA_BASE_LA32)
+	    .fpu_ (ISA_EXT_NONE))
+
+    .set (ARCH_LA32RV1_0,
+	  loongarch_isa ()
+	    .base_ (ISA_BASE_LA32R)
+	    .fpu_ (ISA_EXT_NONE));
 
 static inline loongarch_cache la464_cache ()
 {
@@ -103,7 +115,8 @@ array_tune<loongarch_cache> loongarch_cpu_cache =
     .set (TUNE_GENERIC, la464_cache ())
     .set (TUNE_LOONGARCH64, la464_cache ())
     .set (TUNE_LA464, la464_cache ())
-    .set (TUNE_LA664, la464_cache ());
+    .set (TUNE_LA664, la464_cache ())
+    .set (TUNE_LOONGARCH32, la464_cache ());
 
 static inline loongarch_align la464_align ()
 {
@@ -120,7 +133,8 @@ array_tune<loongarch_align> loongarch_cpu_align =
     .set (TUNE_GENERIC, la664_align ())
     .set (TUNE_LOONGARCH64, la664_align ())
     .set (TUNE_LA464, la464_align ())
-    .set (TUNE_LA664, la664_align ());
+    .set (TUNE_LA664, la664_align ())
+    .set (TUNE_LOONGARCH32, la664_align ());
 
 /* Default RTX cost initializer.  */
 loongarch_rtx_cost_data::loongarch_rtx_cost_data ()
@@ -172,14 +186,16 @@ array_tune<int> loongarch_cpu_issue_rate = array_tune<int> ()
   .set (TUNE_GENERIC, 4)
   .set (TUNE_LOONGARCH64, 4)
   .set (TUNE_LA464, 4)
-  .set (TUNE_LA664, 6);
+  .set (TUNE_LA664, 6)
+  .set (TUNE_LOONGARCH32, 4);
 
 array_tune<int> loongarch_cpu_multipass_dfa_lookahead = array_tune<int> ()
   .set (TUNE_NATIVE, 4)
   .set (TUNE_GENERIC, 4)
   .set (TUNE_LOONGARCH64, 4)
   .set (TUNE_LA464, 4)
-  .set (TUNE_LA664, 6);
+  .set (TUNE_LA664, 6)
+  .set (TUNE_LOONGARCH32, 4);
 
 /* Wiring string definitions from loongarch-str.h to global arrays
    with standard index values from loongarch-opts.h, so we can
@@ -188,6 +204,8 @@ array_tune<int> loongarch_cpu_multipass_dfa_lookahead = array_tune<int> ()
 
 array<const char *, N_ISA_BASE_TYPES> loongarch_isa_base_strings =
   array<const char *, N_ISA_BASE_TYPES> ()
+    .set (ISA_BASE_LA32, STR_ISA_BASE_LA32)
+    .set (ISA_BASE_LA32R, STR_ISA_BASE_LA32R)
     .set (ISA_BASE_LA64, STR_ISA_BASE_LA64);
 
 array<const char *, N_ISA_EXT_TYPES> loongarch_isa_ext_strings =
@@ -200,6 +218,9 @@ array<const char *, N_ISA_EXT_TYPES> loongarch_isa_ext_strings =
 
 array<const char *, N_ABI_BASE_TYPES> loongarch_abi_base_strings =
   array<const char *, N_ABI_BASE_TYPES> ()
+    .set (ABI_BASE_ILP32D, STR_ABI_BASE_ILP32D)
+    .set (ABI_BASE_ILP32F, STR_ABI_BASE_ILP32F)
+    .set (ABI_BASE_ILP32S, STR_ABI_BASE_ILP32S)
     .set (ABI_BASE_LP64D, STR_ABI_BASE_LP64D)
     .set (ABI_BASE_LP64F, STR_ABI_BASE_LP64F)
     .set (ABI_BASE_LP64S, STR_ABI_BASE_LP64S);
@@ -220,6 +241,22 @@ array<const char *, N_CMODEL_TYPES> loongarch_cmodel_strings =
 array<array<loongarch_isa, N_ABI_EXT_TYPES>, N_ABI_BASE_TYPES>
   abi_minimal_isa = array<array<loongarch_isa, N_ABI_EXT_TYPES>,
 			  N_ABI_BASE_TYPES> ()
+    .set (ABI_BASE_ILP32D,
+	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
+	    .set (ABI_EXT_BASE,
+		  loongarch_isa ()
+		    .base_ (ISA_BASE_LA32R)
+		    .fpu_ (ISA_EXT_FPU64)))
+    .set (ABI_BASE_ILP32F,
+	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
+	    .set (ABI_EXT_BASE,
+		  loongarch_isa ()
+		    .base_ (ISA_BASE_LA32R)
+		    .fpu_ (ISA_EXT_FPU32)))
+    .set (ABI_BASE_ILP32S,
+	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
+	    .set (ABI_EXT_BASE,
+		  loongarch_isa ().base_ (ISA_BASE_LA32R)))
     .set (ABI_BASE_LP64D,
 	  array<loongarch_isa, N_ABI_EXT_TYPES> ()
 	    .set (ABI_EXT_BASE,

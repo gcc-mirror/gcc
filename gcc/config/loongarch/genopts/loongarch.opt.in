@@ -33,6 +33,12 @@ Name(isa_base) Type(int)
 Basic ISAs of LoongArch:
 
 EnumValue
+Enum(isa_base) String(@@STR_ISA_BASE_LA32@@) Value(ISA_BASE_LA32)
+
+EnumValue
+Enum(isa_base) String(@@STR_ISA_BASE_LA32R@@) Value(ISA_BASE_LA32R)
+
+EnumValue
 Enum(isa_base) String(@@STR_ISA_BASE_LA64@@) Value(ISA_BASE_LA64)
 
 ;; ISA extensions / adjustments
@@ -119,6 +125,12 @@ Enum(arch_type) String(@@STR_ARCH_LA64V1_0@@) Value(ARCH_LA64V1_0)
 EnumValue
 Enum(arch_type) String(@@STR_ARCH_LA64V1_1@@) Value(ARCH_LA64V1_1)
 
+EnumValue
+Enum(arch_type) String(@@STR_ARCH_LA32V1_0@@) Value(ARCH_LA32V1_0)
+
+EnumValue
+Enum(arch_type) String(@@STR_ARCH_LA32RV1_0@@) Value(ARCH_LA32RV1_0)
+
 m@@OPTSTR_ARCH@@=
 Target RejectNegative Joined Enum(arch_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_ARCH@@=PROCESSOR	Generate code for the given PROCESSOR ISA.
@@ -142,6 +154,9 @@ Enum(tune_type) String(@@STR_CPU_LA464@@) Value(TUNE_LA464)
 EnumValue
 Enum(tune_type) String(@@STR_CPU_LA664@@) Value(TUNE_LA664)
 
+EnumValue
+Enum(tune_type) String(@@STR_TUNE_LOONGARCH32@@) Value(TUNE_LOONGARCH32)
+
 m@@OPTSTR_TUNE@@=
 Target RejectNegative Joined Enum(tune_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET) Save
 -m@@OPTSTR_TUNE@@=PROCESSOR	Generate optimized code for PROCESSOR.
@@ -154,6 +169,15 @@ Target RejectNegative Joined Enum(tune_type) Var(la_opt_cpu_tune) Init(M_OPT_UNS
 Enum
 Name(abi_base) Type(int)
 Base ABI types for LoongArch:
+
+EnumValue
+Enum(abi_base) String(@@STR_ABI_BASE_ILP32D@@) Value(ABI_BASE_ILP32D)
+
+EnumValue
+Enum(abi_base) String(@@STR_ABI_BASE_ILP32F@@) Value(ABI_BASE_ILP32F)
+
+EnumValue
+Enum(abi_base) String(@@STR_ABI_BASE_ILP32S@@) Value(ABI_BASE_ILP32S)
 
 EnumValue
 Enum(abi_base) String(@@STR_ABI_BASE_LP64D@@) Value(ABI_BASE_LP64D)

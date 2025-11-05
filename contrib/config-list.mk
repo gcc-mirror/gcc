@@ -64,6 +64,7 @@ LIST = \
   ia64-linux ia64-hpuxOPT-enable-obsolete \
   ia64-hp-vmsOPT-enable-obsolete iq2000-elf lm32-elf \
   lm32-rtems lm32-uclinux \
+  loongarch32-linux-gnuf64 loongarch32-linux-gnuf32 loongarch32-linux-gnusf \
   loongarch64-linux-gnuf64 loongarch64-linux-gnuf32 loongarch64-linux-gnusf \
   m32c-elfOPT-enable-obsolete m32r-elf m32rle-elf \
   m68k-elf m68k-netbsdelf \

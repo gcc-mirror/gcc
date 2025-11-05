@@ -28781,6 +28781,10 @@ and all LoongArch v1.1 instructions.
 LoongArch64 ISA version 1.0.
 @item la64v1.1
 LoongArch64 ISA version 1.1.
+@item la32v1.0
+LoongArch32 ISA version 1.0.
+@item la32rv1.0
+LoongArch32 Reduced ISA version 1.0.
 @end table
 
 More information about LoongArch ISA versions can be found at
@@ -28803,6 +28807,8 @@ Generic LoongArch 64-bit processor.
 LoongArch LA464 core.
 @item la664
 LoongArch LA664 core.
+@item loongarch32
+Generic LoongArch 32-bit processor.
 @end table
 
 

@@ -41,6 +41,12 @@ Name(isa_base) Type(int)
 Basic ISAs of LoongArch:
 
 EnumValue
+Enum(isa_base) String(la32) Value(ISA_BASE_LA32)
+
+EnumValue
+Enum(isa_base) String(la32r) Value(ISA_BASE_LA32R)
+
+EnumValue
 Enum(isa_base) String(la64) Value(ISA_BASE_LA64)
 
 ;; ISA extensions / adjustments
@@ -127,6 +133,12 @@ Enum(arch_type) String(la64v1.0) Value(ARCH_LA64V1_0)
 EnumValue
 Enum(arch_type) String(la64v1.1) Value(ARCH_LA64V1_1)
 
+EnumValue
+Enum(arch_type) String(la32v1.0) Value(ARCH_LA32V1_0)
+
+EnumValue
+Enum(arch_type) String(la32rv1.0) Value(ARCH_LA32RV1_0)
+
 march=
 Target RejectNegative Joined Enum(arch_type) Var(la_opt_cpu_arch) Init(M_OPT_UNSET) Save
 -march=PROCESSOR	Generate code for the given PROCESSOR ISA.
@@ -150,6 +162,9 @@ Enum(tune_type) String(la464) Value(TUNE_LA464)
 EnumValue
 Enum(tune_type) String(la664) Value(TUNE_LA664)
 
+EnumValue
+Enum(tune_type) String(loongarch32) Value(TUNE_LOONGARCH32)
+
 mtune=
 Target RejectNegative Joined Enum(tune_type) Var(la_opt_cpu_tune) Init(M_OPT_UNSET) Save
 -mtune=PROCESSOR	Generate optimized code for PROCESSOR.
@@ -162,6 +177,15 @@ Target RejectNegative Joined Enum(tune_type) Var(la_opt_cpu_tune) Init(M_OPT_UNS
 Enum
 Name(abi_base) Type(int)
 Base ABI types for LoongArch:
+
+EnumValue
+Enum(abi_base) String(ilp32d) Value(ABI_BASE_ILP32D)
+
+EnumValue
+Enum(abi_base) String(ilp32f) Value(ABI_BASE_ILP32F)
+
+EnumValue
+Enum(abi_base) String(ilp32s) Value(ABI_BASE_ILP32S)
 
 EnumValue
 Enum(abi_base) String(lp64d) Value(ABI_BASE_LP64D)

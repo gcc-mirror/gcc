@@ -35,6 +35,13 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_ARCH_LA64V1_0 "la64v1.0"
 #define STR_ARCH_LA64V1_1 "la64v1.1"
 
+#define STR_ARCH_LA32V1_0 "la32v1.0"
+#define STR_ARCH_LA32RV1_0 "la32rv1.0"
+
+#define STR_TUNE_LOONGARCH32 "loongarch32"
+
+#define STR_ISA_BASE_LA32 "la32"
+#define STR_ISA_BASE_LA32R "la32r"
 #define STR_ISA_BASE_LA64 "la64"
 
 #define OPTSTR_ISA_EXT_FPU "fpu"
@@ -52,6 +59,9 @@ along with GCC; see the file COPYING3.  If not see
 #define STR_ISA_EXT_LASX "lasx"
 
 #define OPTSTR_ABI_BASE "abi"
+#define STR_ABI_BASE_ILP32D "ilp32d"
+#define STR_ABI_BASE_ILP32F "ilp32f"
+#define STR_ABI_BASE_ILP32S "ilp32s"
 #define STR_ABI_BASE_LP64D "lp64d"
 #define STR_ABI_BASE_LP64F "lp64f"
 #define STR_ABI_BASE_LP64S "lp64s"

@@ -93,15 +93,26 @@ struct loongarch_flags {
 #define TARGET_CMODEL_EXTREME	    (la_target.cmodel == CMODEL_EXTREME)
 
 #define TARGET_HARD_FLOAT	    (la_target.isa.fpu != ISA_EXT_NONE)
-#define TARGET_HARD_FLOAT_ABI	    (la_target.abi.base == ABI_BASE_LP64D \
+#define TARGET_HARD_FLOAT_ABI	    (la_target.abi.base == ABI_BASE_ILP32D \
+				     || la_target.abi.base == ABI_BASE_ILP32F \
+				     || la_target.abi.base == ABI_BASE_LP64D \
 				     || la_target.abi.base == ABI_BASE_LP64F)
 
 #define TARGET_SOFT_FLOAT	  (la_target.isa.fpu == ISA_EXT_NONE)
-#define TARGET_SOFT_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64S)
+#define TARGET_SOFT_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_ILP32S \
+				     || la_target.abi.base == ABI_BASE_LP64S)
 #define TARGET_SINGLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU32)
-#define TARGET_SINGLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64F)
+#define TARGET_SINGLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_ILP32F \
+				     || la_target.abi.base == ABI_BASE_LP64F)
 #define TARGET_DOUBLE_FLOAT	  (la_target.isa.fpu == ISA_EXT_FPU64)
-#define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_LP64D)
+#define TARGET_DOUBLE_FLOAT_ABI	  (la_target.abi.base == ABI_BASE_ILP32D \
+				     || la_target.abi.base == ABI_BASE_LP64D)
+
+
+#define TARGET_32BIT_S		  (la_target.isa.base == ISA_BASE_LA32)
+#define TARGET_32BIT_R		  (la_target.isa.base == ISA_BASE_LA32R)
+#define TARGET_32BIT		  (TARGET_32BIT_S || TARGET_32BIT_R)
+#define TARGET_ABI_ILP32	  ABI_ILP32_P(la_target.abi.base)
 
 #define TARGET_64BIT		  (la_target.isa.base == ISA_BASE_LA64)
 #define TARGET_ABI_LP64		  ABI_LP64_P(la_target.abi.base)

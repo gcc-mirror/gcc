@@ -31,7 +31,14 @@ STR_CPU_LA664	      la664
 STR_ARCH_LA64V1_0     la64v1.0
 STR_ARCH_LA64V1_1     la64v1.1
 
+STR_ARCH_LA32V1_0     la32v1.0
+STR_ARCH_LA32RV1_0    la32rv1.0
+
+STR_TUNE_LOONGARCH32  loongarch32 # No loongarch32 arch, only loongarch32 tune
+
 # Base architecture
+STR_ISA_BASE_LA32 la32
+STR_ISA_BASE_LA32R la32r
 STR_ISA_BASE_LA64 la64
 
 # -mfpu
@@ -52,6 +59,9 @@ STR_ISA_EXT_LASX      lasx
 
 # -mabi=
 OPTSTR_ABI_BASE	      abi
+STR_ABI_BASE_ILP32D   ilp32d
+STR_ABI_BASE_ILP32F   ilp32f
+STR_ABI_BASE_ILP32S   ilp32s
 STR_ABI_BASE_LP64D    lp64d
 STR_ABI_BASE_LP64F    lp64f
 STR_ABI_BASE_LP64S    lp64s

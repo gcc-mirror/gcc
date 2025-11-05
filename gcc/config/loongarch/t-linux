@@ -16,6 +16,9 @@
 # along with GCC; see the file COPYING3.  If not see
 # <http://www.gnu.org/licenses/>.
 
+MULTIOSDIR_ilp32d := ../lib32$(call if_multiarch,:loongarch32-linux-gnu)
+MULTIOSDIR_ilp32f := ../lib32/f32$(call if_multiarch,:loongarch32-linux-gnuf32)
+MULTIOSDIR_ilp32s := ../lib32/sf$(call if_multiarch,:loongarch32-linux-gnusf)
 MULTIOSDIR_lp64d := ../lib64$(call if_multiarch,:loongarch64-linux-gnu)
 MULTIOSDIR_lp64f := ../lib64/f32$(call if_multiarch,:loongarch64-linux-gnuf32)
 MULTIOSDIR_lp64s := ../lib64/sf$(call if_multiarch,:loongarch64-linux-gnusf)
@@ -24,6 +27,9 @@ MULTIOSDIR_lp64s := ../lib64/sf$(call if_multiarch,:loongarch64-linux-gnusf)
 ifeq ($(filter LA_DISABLE_MULTILIB,$(tm_defines)),)
 
     MULTILIB_OSDIRNAMES = .=$(MULTIOSDIR_$(mlib_default))
+    MULTILIB_OSDIRNAMES += mabi.ilp32d=$(MULTIOSDIR_ilp32d)
+    MULTILIB_OSDIRNAMES += mabi.ilp32f=$(MULTIOSDIR_ilp32f)
+    MULTILIB_OSDIRNAMES += mabi.ilp32s=$(MULTIOSDIR_ilp32s)
     MULTILIB_OSDIRNAMES += mabi.lp64d=$(MULTIOSDIR_lp64d)
     MULTILIB_OSDIRNAMES += mabi.lp64f=$(MULTIOSDIR_lp64f)
     MULTILIB_OSDIRNAMES += mabi.lp64s=$(MULTIOSDIR_lp64s)

@@ -25,7 +25,13 @@ along with GCC; see the file COPYING3.  If not see
   && defined(LA_DISABLE_MULTILIB) \
   && defined(LA_DISABLE_MULTIARCH)
 
-  #if DEFAULT_ABI_BASE == ABI_BASE_LP64D
+  #if DEFAULT_ABI_BASE == ABI_BASE_ILP32D
+    #define ABI_LIBDIR "lib32"
+  #elif DEFAULT_ABI_BASE == ABI_BASE_ILP32F
+    #define ABI_LIBDIR "lib32/f32"
+  #elif DEFAULT_ABI_BASE == ABI_BASE_ILP32S
+    #define ABI_LIBDIR "lib32/sf"
+  #elif DEFAULT_ABI_BASE == ABI_BASE_LP64D
     #define ABI_LIBDIR "lib64"
   #elif DEFAULT_ABI_BASE == ABI_BASE_LP64F
     #define ABI_LIBDIR "lib64/f32"

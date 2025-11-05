@@ -55,7 +55,9 @@ along with GCC; see the file COPYING3.  If not see
 /* ISA base */
 enum {
   ISA_BASE_LA64		= 0,  /* LoongArch64 */
-  N_ISA_BASE_TYPES	= 1
+  ISA_BASE_LA32		= 1,  /* LoongArch32 */
+  ISA_BASE_LA32R	= 2,  /* LoongArch32 Reduced */
+  N_ISA_BASE_TYPES	= 3
 };
 
 extern loongarch_def_array<const char *, N_ISA_BASE_TYPES>
@@ -81,12 +83,20 @@ extern loongarch_def_array<const char *, N_ISA_EXT_TYPES>
 #define ABI_BASE_LP64D	  0
 #define ABI_BASE_LP64F	  1
 #define ABI_BASE_LP64S	  2
-#define N_ABI_BASE_TYPES  3
+#define ABI_BASE_ILP32D	  3
+#define ABI_BASE_ILP32F	  4
+#define ABI_BASE_ILP32S	  5
+#define N_ABI_BASE_TYPES  6
 
 extern loongarch_def_array<const char *, N_ABI_BASE_TYPES>
   loongarch_abi_base_strings;
 
 #define TO_LP64_ABI_BASE(C) (C)
+
+#define ABI_ILP32_P(abi_base) \
+  (abi_base == ABI_BASE_ILP32D \
+   || abi_base == ABI_BASE_ILP32F \
+   || abi_base == ABI_BASE_ILP32S)
 
 #define ABI_LP64_P(abi_base) \
   (abi_base == ABI_BASE_LP64D \
@@ -94,12 +104,11 @@ extern loongarch_def_array<const char *, N_ABI_BASE_TYPES>
    || abi_base == ABI_BASE_LP64S)
 
 #define ABI_FPU64_P(abi_base) \
-  (abi_base == ABI_BASE_LP64D)
+  (abi_base == ABI_BASE_LP64D || abi_base == ABI_BASE_ILP32D)
 #define ABI_FPU32_P(abi_base) \
-  (abi_base == ABI_BASE_LP64F)
+  (abi_base == ABI_BASE_LP64F || abi_base == ABI_BASE_ILP32F)
 #define ABI_NOFPU_P(abi_base) \
-  (abi_base == ABI_BASE_LP64S)
-
+  (abi_base == ABI_BASE_LP64S || abi_base == ABI_BASE_ILP32S)
 
 /* ABI Extension */
 enum {
@@ -190,7 +199,9 @@ enum {
   ARCH_LA664	    = 4,
   ARCH_LA64V1_0     = 5,
   ARCH_LA64V1_1     = 6,
-  N_ARCH_TYPES      = 7,
+  ARCH_LA32V1_0     = 7,
+  ARCH_LA32RV1_0    = 8,
+  N_ARCH_TYPES      = 9,
 };
 
 /* Tune target presets (-mtune=*) */
@@ -200,7 +211,8 @@ enum {
   TUNE_LOONGARCH64  = 2,
   TUNE_LA464	    = 3,
   TUNE_LA664	    = 4,
-  N_TUNE_TYPES      = 5,
+  TUNE_LOONGARCH32  = 5,
+  N_TUNE_TYPES      = 6,
 };
 
 /* TLS types.  */

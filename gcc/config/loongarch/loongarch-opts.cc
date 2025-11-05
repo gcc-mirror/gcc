@@ -46,6 +46,9 @@ abi_priority_list[] = {
     {ABI_BASE_LP64D, ABI_EXT_BASE},
     {ABI_BASE_LP64F, ABI_EXT_BASE},
     {ABI_BASE_LP64S, ABI_EXT_BASE},
+    {ABI_BASE_ILP32D, ABI_EXT_BASE},
+    {ABI_BASE_ILP32F, ABI_EXT_BASE},
+    {ABI_BASE_ILP32S, ABI_EXT_BASE},
 };
 
 /* Initialize enabled_abi_types from TM_MULTILIB_LIST.  */
@@ -578,18 +581,24 @@ isa_default_abi (const struct loongarch_isa *isa)
   switch (isa->fpu)
     {
       case ISA_EXT_FPU64:
-	if (isa->base >= ISA_BASE_LA64)
+	if (isa->base == ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64D;
+	else if (isa->base == ISA_BASE_LA32 || isa->base == ISA_BASE_LA32R)
+	  abi.base = ABI_BASE_ILP32D;
 	break;
 
       case ISA_EXT_FPU32:
-	if (isa->base >= ISA_BASE_LA64)
+	if (isa->base == ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64F;
+	else if (isa->base == ISA_BASE_LA32 || isa->base == ISA_BASE_LA32R)
+	  abi.base = ABI_BASE_ILP32F;
 	break;
 
       case ISA_EXT_NONE:
-	if (isa->base >= ISA_BASE_LA64)
+	if (isa->base == ISA_BASE_LA64)
 	  abi.base = ABI_BASE_LP64S;
+	else if (isa->base == ISA_BASE_LA32 || isa->base == ISA_BASE_LA32R)
+	  abi.base = ABI_BASE_ILP32S;
 	break;
 
       default:
@@ -608,7 +617,13 @@ isa_base_compat_p (const struct loongarch_isa *set1,
   switch (set2->base)
     {
       case ISA_BASE_LA64:
-	return (set1->base >= ISA_BASE_LA64);
+	return (set1->base == ISA_BASE_LA64);
+
+      case ISA_BASE_LA32:
+	return (set1->base == ISA_BASE_LA32);
+
+      case ISA_BASE_LA32R:
+	return (set1->base == ISA_BASE_LA32R || set1->base == ISA_BASE_LA32);
 
       default:
 	gcc_unreachable ();
@@ -661,6 +676,12 @@ abi_default_cpu_arch (struct loongarch_abi abi,
   if (abi.ext == ABI_EXT_BASE)
     switch (abi.base)
       {
+	case ABI_BASE_ILP32D:
+	case ABI_BASE_ILP32F:
+	case ABI_BASE_ILP32S:
+	  *isa = isa_required (abi);
+	  return ARCH_LA32V1_0;
+
 	case ABI_BASE_LP64D:
 	case ABI_BASE_LP64F:
 	case ABI_BASE_LP64S:
@@ -692,6 +713,8 @@ default_tune_for_arch (int arch, int fallback)
     case ARCH_ABI_DEFAULT:
     case ARCH_LA64V1_0:
     case ARCH_LA64V1_1:
+    case ARCH_LA32V1_0:
+    case ARCH_LA32RV1_0:
       ret = fallback;
     }
 
