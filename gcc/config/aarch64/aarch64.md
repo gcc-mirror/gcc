@@ -5697,12 +5697,48 @@
   [(set_attr "type" "logics_shift_imm")]
 )
 
+;; CLZ, CTZ, CLS, RBIT instructions.
+
 (define_insn "clz<mode>2"
   [(set (match_operand:GPI 0 "register_operand" "=r")
 	(clz:GPI (match_operand:GPI 1 "register_operand" "r")))]
   ""
   "clz\\t%<w>0, %<w>1"
   [(set_attr "type" "clz")]
+)
+
+;; Model ctz as a target instruction.
+;; If TARGET_CSSC is not available, emit rbit and clz.
+
+(define_insn "ctz<mode>2"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(ctz:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  ""
+  {
+    if (TARGET_CSSC)
+      return "ctz\\t%<w>0, %<w>1";
+    return "rbit\\t%<w>0, %<w>1\;clz\\t%<w>0, %<w>0";
+  }
+  [(set_attr "type" "clz")
+   (set (attr "length") (if_then_else (match_test "TARGET_CSSC")
+				      (const_int 4) (const_int 8)))
+  ]
+)
+
+(define_insn "clrsb<mode>2"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(clrsb:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  ""
+  "cls\\t%<w>0, %<w>1"
+  [(set_attr "type" "clz")]
+)
+
+(define_insn "@aarch64_rbit<mode>"
+  [(set (match_operand:GPI 0 "register_operand" "=r")
+	(bitreverse:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  ""
+  "rbit\\t%<w>0, %<w>1"
+  [(set_attr "type" "rbit")]
 )
 
 (define_expand "ffs<mode>2"
@@ -5712,9 +5748,7 @@
   {
     rtx ccreg = aarch64_gen_compare_reg (EQ, operands[1], const0_rtx);
     rtx x = gen_rtx_NE (VOIDmode, ccreg, const0_rtx);
-
-    emit_insn (gen_aarch64_rbit (<MODE>mode, operands[0], operands[1]));
-    emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
+    emit_insn (gen_ctz<mode>2 (operands[0], operands[1]));
     emit_insn (gen_csinc3<mode>_insn (operands[0], x, operands[0], const0_rtx));
     DONE;
   }
@@ -5808,40 +5842,6 @@
   emit_insn (gen_aarch64_zero_extenddi_reduc_plus_v16qi (operands[0], v1));
   DONE;
 })
-
-(define_insn "clrsb<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-        (clrsb:GPI (match_operand:GPI 1 "register_operand" "r")))]
-  ""
-  "cls\\t%<w>0, %<w>1"
-  [(set_attr "type" "clz")]
-)
-
-(define_insn "@aarch64_rbit<mode>"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(bitreverse:GPI (match_operand:GPI 1 "register_operand" "r")))]
-  ""
-  "rbit\\t%<w>0, %<w>1"
-  [(set_attr "type" "rbit")]
-)
-
-;; Split after reload into RBIT + CLZ.  Since RBIT is represented as an UNSPEC
-;; it is unlikely to fold with any other operation, so keep this as a CTZ
-;; expression and split after reload to enable scheduling them apart if
-;; needed.  For TARGET_CSSC we have a single CTZ instruction that can do this.
-
-(define_insn_and_split "ctz<mode>2"
- [(set (match_operand:GPI           0 "register_operand" "=r")
-       (ctz:GPI (match_operand:GPI  1 "register_operand" "r")))]
-  ""
-  { return TARGET_CSSC ? "ctz\\t%<w>0, %<w>1" : "#"; }
-  "reload_completed && !TARGET_CSSC"
-  [(const_int 0)]
-  "
-  emit_insn (gen_aarch64_rbit (<MODE>mode, operands[0], operands[1]));
-  emit_insn (gen_clz<mode>2 (operands[0], operands[0]));
-  DONE;
-")
 
 (define_insn "*and<mode>_compare0"
   [(set (reg:CC_Z CC_REGNUM)
