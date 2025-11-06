@@ -151,6 +151,7 @@ ignored_prefixes = {
     'libffi/',
     'libgo/',
     'libgrust/rustc-lib/core/',
+    'libgrust/rustc-lib/stdarch/',
     'libphobos/libdruntime/',
     'libphobos/src/',
     'libsanitizer/',
