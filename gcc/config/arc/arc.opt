@@ -181,9 +181,9 @@ mlong-calls
 Target Mask(LONG_CALLS_SET)
 Generate call insns as register indirect calls.
 
-mno-brcc
-Target Mask(NO_BRCC_SET)
-Do no generate BRcc instructions in arc_reorg.
+mbrcc
+Target InverseMask(NO_BRCC_SET)
+Generate BRcc instructions in arc_reorg.
 
 msdata
 Target InverseMask(NO_SDATA_SET)
@@ -221,9 +221,9 @@ mdpfp-fast
 Target Mask(DPFP_FAST_SET)
 FPX: Generate Double Precision FPX (fast) instructions.
 
-mno-dpfp-lrsr
-Target Mask(DPFP_DISABLE_LRSR)
-Disable LR and SR instructions from using FPX extension aux registers.
+mdpfp-lrsr
+Target InverseMask(DPFP_DISABLE_LRSR)
+Enable LR and SR instructions to use FPX extension aux registers.
 
 msimd
 Target Mask(SIMD_SET)
