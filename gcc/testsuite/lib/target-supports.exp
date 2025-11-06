@@ -12682,7 +12682,7 @@ set exts {
 set exts_sve2 {
     "sme-f8f16" "sme-f8f32"
     "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1"
-    "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma"
+    "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma" "sve-bfscale"
 }
 
 foreach { aarch64_ext } $exts {

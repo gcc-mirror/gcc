@@ -2315,11 +2315,18 @@ class svmul_impl : public rtx_code_function
 {
 public:
   CONSTEXPR svmul_impl ()
-    : rtx_code_function (MULT, MULT, UNSPEC_COND_FMUL) {}
+    : rtx_code_function (MULT, MULT, UNSPEC_COND_FMUL, UNSPEC_FMUL) {}
 
   gimple *
   fold (gimple_folder &f) const override
   {
+    /* The code below assumes that the function has 3 arguments (pg, rn, rm).
+       Unpredicated functions have only 2 arguments (rn, rm) so will cause the
+       code below to crash.  Also skip if it does not operate on integers,
+       since all the optimizations below are for integer multiplication.  */
+    if (!f.type_suffix (0).integer_p || f.pred == aarch64_sve::PRED_none)
+      return nullptr;
+
     if (auto *res = f.fold_const_binary (MULT_EXPR))
       return res;
 

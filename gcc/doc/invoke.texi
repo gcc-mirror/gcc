@@ -23638,7 +23638,8 @@ Enable the Checked Pointer Arithmetic instructions.
 @item sve-b16b16
 Enable the SVE non-widening brain floating-point (@code{bf16}) extension.
 This only has an effect when @code{sve2} or @code{sme2} are also enabled.
-
+@item sve-bfscale
+Enable the SVE_BFSCALE extension.
 @end table
 
 Feature @option{crypto} implies @option{aes}, @option{sha2}, and @option{simd},

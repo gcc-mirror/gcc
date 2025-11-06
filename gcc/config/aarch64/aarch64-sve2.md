@@ -61,6 +61,7 @@
 ;; ---- [FP] Non-widening bfloat16 arithmetic
 ;; ---- [FP] Clamp to minimum/maximum
 ;; ---- [FP] Scaling by powers of two
+;; ---- [FP] Multiplication
 ;;
 ;; == Uniform ternary arithmnetic
 ;; ---- [INT] General ternary arithmetic that maps to unspecs
@@ -1492,26 +1493,74 @@
 ;; -------------------------------------------------------------------------
 ;; Includes the multiple and single vector and multiple vectors forms of
 ;; - FSCALE
+;; - BFSCALE (SVE_BFSCALE)
 ;; -------------------------------------------------------------------------
 
+;; FSCALE / BFSCALE (multiple vectors)
+;; sv{b}floatNx2_t svscale[_{b}fN_x2] (sv{b}floatNx2_t zdn, svintNx2_t zm) __arm_streaming;
+;; sv{b}floatNx4_t svscale[_{b}fN_x4] (sv{b}floatNx4_t zdn, svintNx4_t zm) __arm_streaming;
+;; {B}FSCALE { <Zdn1>.T-<Zdn2>.T }, { <Zdn1>.T-<Zdn2>.T }, { <Zm1>.H-<Zm2>.T }
+;; {B}FSCALE { <Zdn1>.T-<Zdn4>.T }, { <Zdn1>.T-<Zdn4>.T }, { <Zm1>.H-<Zm4>.T }
 (define_insn "@aarch64_sve_fscale<mode>"
-  [(set (match_operand:SVE_Fx24_NOBF 0 "register_operand" "=Uw<vector_count>")
-	(unspec:SVE_Fx24_NOBF
-	  [(match_operand:SVE_Fx24_NOBF 1 "register_operand" "0")
+  [(set (match_operand:SVE_Fx24_BFSCALE 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24_BFSCALE
+	  [(match_operand:SVE_Fx24_BFSCALE 1 "register_operand" "0")
 	   (match_operand:<SVSCALE_INTARG> 2 "register_operand" "Uw<vector_count>")]
 	  UNSPEC_FSCALE))]
-  "TARGET_STREAMING_SME2 && TARGET_FP8"
-  "fscale\t%0, %1, %2"
+  "TARGET_STREAMING_SME2 && (<is_bf16> ? TARGET_SVE_BFSCALE : TARGET_FP8)"
+  "<b>fscale\t%0, %1, %2"
 )
 
+;; FSCALE / BFSCALE (multiple and single vector)
+;; sv{b}floatNx2_t svscale[_single_{b}fN_x2] (sv{b}floatNx2_t zdn, svintN_t zm) __arm_streaming;
+;; sv{b}floatNx4_t svscale[_single_{b}fN_x4] (sv{b}floatNx4_t zdn, svintN_t zm) __arm_streaming;
+;; {B}FSCALE { <Zdn1>.T-<Zdn2>.T }, { <Zdn1>.T-<Zdn2>.T }, <Zm1>.T
+;; {B}FSCALE { <Zdn1>.T-<Zdn4>.T }, { <Zdn1>.T-<Zdn4>.T }, <Zm1>.T
 (define_insn "@aarch64_sve_single_fscale<mode>"
-  [(set (match_operand:SVE_Fx24_NOBF 0 "register_operand" "=Uw<vector_count>")
-	(unspec:SVE_Fx24_NOBF
-	  [(match_operand:SVE_Fx24_NOBF 1 "register_operand" "0")
+  [(set (match_operand:SVE_Fx24_BFSCALE 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24_BFSCALE
+	  [(match_operand:SVE_Fx24_BFSCALE	  1 "register_operand" "0")
 	   (match_operand:<SVSCALE_SINGLE_INTARG> 2 "register_operand" "x")]
 	  UNSPEC_FSCALE))]
-  "TARGET_STREAMING_SME2 && TARGET_FP8"
-  "fscale\t%0, %1, %2.<Vetype>"
+  "TARGET_STREAMING_SME2 && (<is_bf16> ? TARGET_SVE_BFSCALE : TARGET_FP8)"
+  "<b>fscale\t%0, %1, %2.<Vetype>"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Multiplication
+;; -------------------------------------------------------------------------
+;; Includes the multiple and single vector and multiple vectors forms of
+;; - BFMUL (SVE_BFSCALE)
+;; -------------------------------------------------------------------------
+
+;; BFMUL (multiple vectors)
+;; svbfloat16x2_t svmul[_bf16_x2](svbfloat16x2_t zd, svbfloat16x2_t zm) __arm_streaming;
+;; svbfloat16x4_t svmul[_bf16_x4](svbfloat16x4_t zd, svbfloat16x4_t zm) __arm_streaming;
+;; BFMUL { <Zd1>.H-<Zd2>.H }, { <Zn1>.H-<Zn2>.H }, { <Zm1>.H-<Zm2>.H }
+;; BFMUL { <Zd1>.H-<Zd4>.H }, { <Zn1>.H-<Zn4>.H }, { <Zm1>.H-<Zm4>.H }
+(define_insn "@aarch64_sve_<optab><mode>"
+  [(set (match_operand:SVE_BFx24 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_BFx24
+	  [(match_operand:SVE_BFx24 1 "register_operand" "Uw<vector_count>")
+	   (match_operand:SVE_BFx24 2 "register_operand" "Uw<vector_count>")]
+	  SVE_FP_MUL))]
+  "TARGET_STREAMING_SME2 && TARGET_SVE_BFSCALE"
+  "bfmul\t%0, %1, %2"
+)
+
+;; BFMUL (multiple and single vector)
+;; svbfloat16x2_t svmul[_single_bf16_x2](svbfloat16x2_t zd, svbfloat16_t zm) __arm_streaming;
+;; svbfloat16x4_t svmul[_single_bf16_x4](svbfloat16x4_t zd, svbfloat16_t zm) __arm_streaming;
+;; BFMUL { <Zd1>.H-<Zd2>.H }, { <Zn1>.H-<Zn2>.H }, <Zm>.H
+;; BFMUL { <Zd1>.H-<Zd4>.H }, { <Zn1>.H-<Zn4>.H }, <Zm>.H
+(define_insn "@aarch64_sve_<optab><mode>_single"
+  [(set (match_operand:SVE_BFx24 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_BFx24
+	  [(match_operand:SVE_BFx24 1 "register_operand" "Uw<vector_count>")
+	   (match_operand:<VSINGLE> 2 "register_operand" "x")]
+	  SVE_FP_MUL))]
+  "TARGET_STREAMING_SME2 && TARGET_SVE_BFSCALE"
+  "bfmul\t%0, %1, %2.h"
 )
 
 ;; =========================================================================
@@ -4704,4 +4753,3 @@
   }
   [(set_attr "sve_type" "sve_fp_mul")]
 )
-

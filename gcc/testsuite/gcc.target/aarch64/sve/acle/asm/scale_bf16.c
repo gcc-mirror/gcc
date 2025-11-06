@@ -1,0 +1,337 @@
+/* { dg-do assemble { target aarch64_asm_sve-bfscale_ok } } */
+/* { dg-do compile { target { ! aarch64_asm_sve-bfscale_ok } } } */
+/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } } */
+
+#include "test_sve_acle.h"
+#pragma GCC target "+sve2,+sve-bfscale"
+#ifdef STREAMING_COMPATIBLE
+#pragma GCC target "+sme2"
+#endif
+
+/*
+** scale_bf16_m_tied1:
+**	bfscale	z0\.h, p0/m, z0\.h, z4\.h
+**	ret
+*/
+TEST_DUAL_Z (scale_bf16_m_tied1, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_m (p0, z0, z4),
+	     z0 = svscale_m (p0, z0, z4))
+
+/*
+** scale_bf16_m_tied2:
+**	mov	(z[0-9]+)\.d, z0\.d
+**	movprfx	z0, z4
+**	bfscale	z0\.h, p0/m, z0\.h, \1\.h
+**	ret
+*/
+TEST_DUAL_Z_REV (scale_bf16_m_tied2, svbfloat16_t, svint16_t,
+		 z0_res = svscale_bf16_m (p0, z4, z0),
+		 z0_res = svscale_m (p0, z4, z0))
+
+/*
+** scale_bf16_m_untied:
+**	movprfx	z0, z1
+**	bfscale	z0\.h, p0/m, z0\.h, z4\.h
+**	ret
+*/
+TEST_DUAL_Z (scale_bf16_m_untied, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_m (p0, z1, z4),
+	     z0 = svscale_m (p0, z1, z4))
+
+/*
+** scale_w0_bf16_m_tied1:
+**	mov	(z[0-9]+\.h), w0
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_ZX (scale_w0_bf16_m_tied1, svbfloat16_t, int16_t,
+		 z0 = svscale_n_bf16_m (p0, z0, x0),
+		 z0 = svscale_m (p0, z0, x0))
+
+/*
+** scale_w0_bf16_m_untied:
+**	mov	(z[0-9]+\.h), w0
+**	movprfx	z0, z1
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_ZX (scale_w0_bf16_m_untied, svbfloat16_t, int16_t,
+		 z0 = svscale_n_bf16_m (p0, z1, x0),
+		 z0 = svscale_m (p0, z1, x0))
+
+/*
+** scale_3_bf16_m_tied1:
+**	mov	(z[0-9]+\.h), #3
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_3_bf16_m_tied1, svbfloat16_t,
+		z0 = svscale_n_bf16_m (p0, z0, 3),
+		z0 = svscale_m (p0, z0, 3))
+
+/*
+** scale_3_bf16_m_untied:
+**	mov	(z[0-9]+\.h), #3
+**	movprfx	z0, z1
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_3_bf16_m_untied, svbfloat16_t,
+		z0 = svscale_n_bf16_m (p0, z1, 3),
+		z0 = svscale_m (p0, z1, 3))
+
+/*
+** scale_m3_bf16_m:
+**	mov	(z[0-9]+\.h), #-3
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_m3_bf16_m, svbfloat16_t,
+		z0 = svscale_n_bf16_m (p0, z0, -3),
+		z0 = svscale_m (p0, z0, -3))
+
+/*
+** scale_bf16_z_tied1:
+**	movprfx	z0\.h, p0/z, z0\.h
+**	bfscale	z0\.h, p0/m, z0\.h, z4\.h
+**	ret
+*/
+TEST_DUAL_Z (scale_bf16_z_tied1, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_z (p0, z0, z4),
+	     z0 = svscale_z (p0, z0, z4))
+
+/*
+** scale_bf16_z_tied2:
+**	mov	(z[0-9]+)\.d, z0\.d
+**	movprfx	z0\.h, p0/z, z4\.h
+**	bfscale	z0\.h, p0/m, z0\.h, \1\.h
+**	ret
+*/
+TEST_DUAL_Z_REV (scale_bf16_z_tied2, svbfloat16_t, svint16_t,
+		 z0_res = svscale_bf16_z (p0, z4, z0),
+		 z0_res = svscale_z (p0, z4, z0))
+
+/*
+** scale_bf16_z_untied:
+**	movprfx	z0\.h, p0/z, z1\.h
+**	bfscale	z0\.h, p0/m, z0\.h, z4\.h
+**	ret
+*/
+TEST_DUAL_Z (scale_bf16_z_untied, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_z (p0, z1, z4),
+	     z0 = svscale_z (p0, z1, z4))
+
+/*
+** scale_w0_bf16_z_tied1:
+**	mov	(z[0-9]+\.h), w0
+**	movprfx	z0\.h, p0/z, z0\.h
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_ZX (scale_w0_bf16_z_tied1, svbfloat16_t, int16_t,
+		 z0 = svscale_n_bf16_z (p0, z0, x0),
+		 z0 = svscale_z (p0, z0, x0))
+
+/*
+** scale_w0_bf16_z_untied:
+**	mov	(z[0-9]+\.h), w0
+**	movprfx	z0\.h, p0/z, z1\.h
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_ZX (scale_w0_bf16_z_untied, svbfloat16_t, int16_t,
+		 z0 = svscale_n_bf16_z (p0, z1, x0),
+		 z0 = svscale_z (p0, z1, x0))
+
+/*
+** scale_3_bf16_z_tied1:
+**	mov	(z[0-9]+\.h), #3
+**	movprfx	z0\.h, p0/z, z0\.h
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_3_bf16_z_tied1, svbfloat16_t,
+		z0 = svscale_n_bf16_z (p0, z0, 3),
+		z0 = svscale_z (p0, z0, 3))
+
+/*
+** scale_3_bf16_z_untied:
+**	mov	(z[0-9]+\.h), #3
+**	movprfx	z0\.h, p0/z, z1\.h
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_3_bf16_z_untied, svbfloat16_t,
+		z0 = svscale_n_bf16_z (p0, z1, 3),
+		z0 = svscale_z (p0, z1, 3))
+
+/*
+** scale_m3_bf16_z:
+**	mov	(z[0-9]+\.h), #-3
+**	movprfx	z0\.h, p0/z, z0\.h
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_m3_bf16_z, svbfloat16_t,
+		z0 = svscale_n_bf16_z (p0, z0, -3),
+		z0 = svscale_z (p0, z0, -3))
+
+/*
+** scale_bf16_x_tied1:
+**	bfscale	z0\.h, p0/m, z0\.h, z4\.h
+**	ret
+*/
+TEST_DUAL_Z (scale_bf16_x_tied1, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_x (p0, z0, z4),
+	     z0 = svscale_x (p0, z0, z4))
+
+/*
+** scale_bf16_x_tied2:
+**	mov	(z[0-9]+)\.d, z0\.d
+**	movprfx	z0, z4
+**	bfscale	z0\.h, p0/m, z0\.h, \1\.h
+**	ret
+*/
+TEST_DUAL_Z_REV (scale_bf16_x_tied2, svbfloat16_t, svint16_t,
+		 z0_res = svscale_bf16_x (p0, z4, z0),
+		 z0_res = svscale_x (p0, z4, z0))
+
+/*
+** scale_bf16_x_untied:
+**	movprfx	z0, z1
+**	bfscale	z0\.h, p0/m, z0\.h, z4\.h
+**	ret
+*/
+TEST_DUAL_Z (scale_bf16_x_untied, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_x (p0, z1, z4),
+	     z0 = svscale_x (p0, z1, z4))
+
+/*
+** scale_w0_bf16_x_tied1:
+**	mov	(z[0-9]+\.h), w0
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_ZX (scale_w0_bf16_x_tied1, svbfloat16_t, int16_t,
+		 z0 = svscale_n_bf16_x (p0, z0, x0),
+		 z0 = svscale_x (p0, z0, x0))
+
+/*
+** scale_w0_bf16_x_untied:
+**	mov	(z[0-9]+\.h), w0
+**	movprfx	z0, z1
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_ZX (scale_w0_bf16_x_untied, svbfloat16_t, int16_t,
+		 z0 = svscale_n_bf16_x (p0, z1, x0),
+		 z0 = svscale_x (p0, z1, x0))
+
+/*
+** scale_3_bf16_x_tied1:
+**	mov	(z[0-9]+\.h), #3
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_3_bf16_x_tied1, svbfloat16_t,
+		z0 = svscale_n_bf16_x (p0, z0, 3),
+		z0 = svscale_x (p0, z0, 3))
+
+/*
+** scale_3_bf16_x_untied:
+**	mov	(z[0-9]+\.h), #3
+**	movprfx	z0, z1
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_3_bf16_x_untied, svbfloat16_t,
+		z0 = svscale_n_bf16_x (p0, z1, 3),
+		z0 = svscale_x (p0, z1, 3))
+
+/*
+** scale_m3_bf16_x:
+**	mov	(z[0-9]+\.h), #-3
+**	bfscale	z0\.h, p0/m, z0\.h, \1
+**	ret
+*/
+TEST_UNIFORM_Z (scale_m3_bf16_x, svbfloat16_t,
+		z0 = svscale_n_bf16_x (p0, z0, -3),
+		z0 = svscale_x (p0, z0, -3))
+
+/*
+** ptrue_scale_bf16_x_tied1:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_DUAL_Z (ptrue_scale_bf16_x_tied1, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_x (svptrue_b16 (), z0, z4),
+	     z0 = svscale_x (svptrue_b16 (), z0, z4))
+
+/*
+** ptrue_scale_bf16_x_tied2:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_DUAL_Z_REV (ptrue_scale_bf16_x_tied2, svbfloat16_t, svint16_t,
+		 z0_res = svscale_bf16_x (svptrue_b16 (), z4, z0),
+		 z0_res = svscale_x (svptrue_b16 (), z4, z0))
+
+/*
+** ptrue_scale_bf16_x_untied:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_DUAL_Z (ptrue_scale_bf16_x_untied, svbfloat16_t, svint16_t,
+	     z0 = svscale_bf16_x (svptrue_b16 (), z1, z4),
+	     z0 = svscale_x (svptrue_b16 (), z1, z4))
+
+/*
+** ptrue_scale_3_bf16_x_tied1:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_UNIFORM_Z (ptrue_scale_3_bf16_x_tied1, svbfloat16_t,
+		z0 = svscale_n_bf16_x (svptrue_b16 (), z0, 3),
+		z0 = svscale_x (svptrue_b16 (), z0, 3))
+
+/*
+** ptrue_scale_3_bf16_x_untied:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_UNIFORM_Z (ptrue_scale_3_bf16_x_untied, svbfloat16_t,
+		z0 = svscale_n_bf16_x (svptrue_b16 (), z1, 3),
+		z0 = svscale_x (svptrue_b16 (), z1, 3))
+
+/*
+** ptrue_scale_m3_bf16_x_tied1:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_UNIFORM_Z (ptrue_scale_m3_bf16_x_tied1, svbfloat16_t,
+		z0 = svscale_n_bf16_x (svptrue_b16 (), z0, -3),
+		z0 = svscale_x (svptrue_b16 (), z0, -3))
+
+/*
+** ptrue_scale_m3_bf16_x_untied:
+**	...
+**	ptrue	p[0-9]+\.b[^\n]*
+**	...
+**	ret
+*/
+TEST_UNIFORM_Z (ptrue_scale_m3_bf16_x_untied, svbfloat16_t,
+		z0 = svscale_n_bf16_x (svptrue_b16 (), z1, -3),
+		z0 = svscale_x (svptrue_b16 (), z1, -3))
+

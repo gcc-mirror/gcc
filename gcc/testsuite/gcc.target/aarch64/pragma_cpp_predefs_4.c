@@ -111,6 +111,11 @@
 #error Foo
 #endif
 
+#pragma GCC target "+nothing+sve-bfscale"
+#ifndef __ARM_FEATURE_SVE_BFSCALE
+#error "__ARM_FEATURE_SVE_BFSCALE should be defined but isn't"
+#endif
+
 #pragma GCC target "+nothing+sve2+sme-f8f16"
 #ifndef __ARM_FEATURE_SME_F8F16
 #error Foo

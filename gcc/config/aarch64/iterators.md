@@ -501,9 +501,12 @@
 (define_mode_iterator SVE_F [SVE_PARTIAL_F SVE_FULL_F])
 
 ;; Fully-packed SVE floating-point vector modes and their scalar equivalents.
-(define_mode_iterator SVE_FULL_F_SCALAR [SVE_FULL_F GPF_HF])
+(define_mode_iterator SVE_FULL_F_SCALAR [SVE_FULL_F GPF_HF (VNx8BF "TARGET_SVE_BFSCALE")])
 
 (define_mode_iterator SVE_FULL_F_B16B16 [(VNx8BF "TARGET_SSVE_B16B16") SVE_FULL_F])
+
+(define_mode_iterator SVE_FULL_F_BFSCALE [SVE_FULL_F
+					 (VNx8BF "TARGET_SVE_BFSCALE")])
 
 (define_mode_iterator SVE_PARTIAL_F_B16B16 [(VNx2BF "TARGET_SSVE_B16B16")
 					    (VNx4BF "TARGET_SSVE_B16B16")
@@ -746,9 +749,17 @@
 (define_mode_iterator SVE_Fx24_NOBF [VNx16HF VNx8SF VNx4DF
 				     VNx32HF VNx16SF VNx8DF])
 
+(define_mode_iterator SVE_Fx24_BFSCALE [
+	SVE_Fx24_NOBF
+	(VNx16BF "TARGET_SVE_BFSCALE") ;; bf16x2
+	(VNx32BF "TARGET_SVE_BFSCALE") ;; bf16x4
+])
+
 (define_mode_iterator SVE_Fx24 [(VNx16BF "TARGET_SSVE_B16B16")
 				(VNx32BF "TARGET_SSVE_B16B16")
 				SVE_Fx24_NOBF])
+
+(define_mode_iterator SVE_BFx24 [VNx16BF VNx32BF])
 
 (define_mode_iterator SVE_SFx24 [VNx8SF VNx16SF])
 
@@ -824,6 +835,7 @@
     UNSPEC_FMAX		; Used in aarch64-simd.md.
     UNSPEC_FMAXNMV	; Used in aarch64-simd.md.
     UNSPEC_FMAXV	; Used in aarch64-simd.md.
+    UNSPEC_FMUL		; Used in aarch64-sve2.md.
     UNSPEC_FMIN		; Used in aarch64-simd.md.
     UNSPEC_FMINNMV	; Used in aarch64-simd.md.
     UNSPEC_FMINV	; Used in aarch64-simd.md.
@@ -2211,6 +2223,8 @@
 			       (VNx16QI "VNx16QI")
 			       (VNx8HI  "VNx8HI") (VNx8HF "VNx8HI")
 			       (VNx8BF  "VNx8HI")
+			       (VNx16BF  "VNx16HI")
+			       (VNx32BF  "VNx32HI")
 			       (VNx4SI  "VNx4SI") (VNx4SF "VNx4SI")
 			       (VNx2DI  "VNx2DI") (VNx2DF "VNx2DI")
 			       (VNx8SF  "VNx8SI") (VNx16SF "VNx16SI")
@@ -2792,17 +2806,20 @@
 				 (V8HI "vec") (V2SI "vec") (V4SI "vec")
 				 (V2DI "vec") (DI "offset")])
 
-(define_mode_attr b [(V4BF "b") (V4HF "") (V8BF "b") (V8HF "")
+(define_mode_attr b [(BF "b") (HF "") (SF "") (DF "")
+		     (V4BF "b") (V4HF "") (V8BF "b") (V8HF "")
 		     (VNx2BF "b") (VNx2HF "") (VNx2SF "")
 		     (VNx4BF "b") (VNx4HF "") (VNx4SF "")
 		     (VNx8BF "b") (VNx8HF "") (VNx2DF "")
 		     (VNx16BF "b") (VNx16HF "") (VNx8SF "") (VNx4DF "")
 		     (VNx32BF "b") (VNx32HF "") (VNx16SF "") (VNx8DF "")])
 
-(define_mode_attr is_bf16 [(VNx2BF "true") (VNx4BF "true") (VNx8BF "true")
-			   (VNx2HF "false") (VNx4HF "false") (VNx8HF "false")
-			   (VNx2SF "false") (VNx4SF "false")
-			   (VNx2DF "false")])
+(define_mode_attr is_bf16 [
+	(VNx2BF "true")  (VNx4BF "true")  (VNx8BF "true")  (VNx16BF "true")  (VNx32BF "true")
+	(VNx2HF "false") (VNx4HF "false") (VNx8HF "false") (VNx16HF "false") (VNx32HF "false")
+	(VNx2SF "false") (VNx4SF "false") (VNx8SF "false") (VNx16SF "false")
+	(VNx2DF "false") (VNx4DF "false") (VNx8DF "false")
+])
 
 (define_mode_attr aligned_operand [(VNx16QI "register_operand")
 				   (VNx8HI "register_operand")
@@ -2829,21 +2846,28 @@
 
 ;; Maps the output type of svscale to the corresponding int vector type in the
 ;; second argument.
-(define_mode_attr SVSCALE_SINGLE_INTARG [(VNx16HF "VNx8HI") ;; f16_x2 -> s16
-					 (VNx32HF "VNx8HI") ;; f16_x4 -> s16
-					 (VNx8SF "VNx4SI") ;; f32_x2 -> s32
-					 (VNx16SF "VNx4SI") ;; f32_x4 -> s32
-					 (VNx4DF "VNx2DI") ;; f64_x2 -> s64
-					 (VNx8DF "VNx2DI") ;; f64_x4 -> s64
+(define_mode_attr SVSCALE_SINGLE_INTARG [
+	(VNx16HF "VNx8HI") ;; f16_x2  -> s16
+	(VNx32HF "VNx8HI") ;; f16_x4  -> s16
+	(VNx16BF "VNx8HI") ;; bf16_x2 -> s16
+	(VNx32BF "VNx8HI") ;; bf16_x4 -> s16
+	(VNx8SF  "VNx4SI") ;; f32_x2  -> s32
+	(VNx16SF "VNx4SI") ;; f32_x4  -> s32
+	(VNx4DF  "VNx2DI") ;; f64_x2  -> s64
+	(VNx8DF  "VNx2DI") ;; f64_x4  -> s64
 ])
 
-(define_mode_attr SVSCALE_INTARG [(VNx16HF "VNx16HI") ;; f16_x2 -> s16x2
-				  (VNx32HF "VNx32HI") ;; f16_x4 -> s16x4
-				  (VNx8SF "VNx8SI") ;; f32_x2 -> s32_x2
-				  (VNx16SF "VNx16SI") ;; f32_x4 -> s32_x4
-				  (VNx4DF "VNx4DI") ;; f64_x2 -> s64_x2
-				  (VNx8DF "VNx8DI") ;; f64_x4 -> s64_x4
+(define_mode_attr SVSCALE_INTARG [
+	(VNx16HF "VNx16HI") ;; f16_x2  -> s16x2
+	(VNx32HF "VNx32HI") ;; f16_x4  -> s16x4
+	(VNx16BF "VNx16HI") ;; bf16_x2 -> s16x2
+	(VNx32BF "VNx32HI") ;; bf16_x4 -> s16x4
+	(VNx8SF  "VNx8SI")  ;; f32_x2  -> s32_x2
+	(VNx16SF "VNx16SI") ;; f32_x4  -> s32_x4
+	(VNx4DF  "VNx4DI")  ;; f64_x2  -> s64_x2
+	(VNx8DF  "VNx8DI")  ;; f64_x4  -> s64_x4
 ])
+
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators
@@ -3644,6 +3668,8 @@
 (define_int_iterator SVE_COND_FP_SUB [UNSPEC_COND_FSUB])
 (define_int_iterator SVE_COND_FP_MUL [UNSPEC_COND_FMUL])
 
+(define_int_iterator SVE_FP_MUL [UNSPEC_FMUL])
+
 (define_int_iterator SVE_COND_FP_BINARY_I1 [UNSPEC_COND_FMAX
 					    UNSPEC_COND_FMAXNM
 					    UNSPEC_COND_FMIN
@@ -4205,6 +4231,7 @@
 			(UNSPEC_FMINNMQV "fminnmqv")
 			(UNSPEC_FMINNMV "smin")
 			(UNSPEC_FMINV "smin_nan")
+			(UNSPEC_FMUL "fmul")
 		        (UNSPEC_SMUL_HIGHPART "smulh")
 		        (UNSPEC_UMUL_HIGHPART "umulh")
 			(UNSPEC_FMLA "fma")

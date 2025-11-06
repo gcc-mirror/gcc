@@ -447,3 +447,46 @@ DEF_SVE_FUNCTION_GS_FPM (svmmla, mmla, s_float_mf8, none, none, set)
 #define REQUIRED_EXTENSIONS nonstreaming_sve (AARCH64_FL_SVE_F16F32MM)
 DEF_SVE_FUNCTION (svmmla, mmla, cvt_f32_f16, none)
 #undef REQUIRED_EXTENSIONS
+
+/*
+- BFSCALE (predicated)
+  // Only if __ARM_FEATURE_SVE_BFSCALE != 0 && __ARM_FEATURE_SVE2 != 0
+  svbfloat16_t svscale[_bf16]_m (svbool_t pg, svbfloat16_t zdn, svint16_t zm);
+  svbfloat16_t svscale[_bf16]_x (svbool_t pg, svbfloat16_t zdn, svint16_t zm);
+  svbfloat16_t svscale[_bf16]_z (svbool_t pg, svbfloat16_t zdn, svint16_t zm);
+  svbfloat16_t svscale[_n_bf16]_m (svbool_t pg, svbfloat16_t zdn, int16_t zm);
+  svbfloat16_t svscale[_n_bf16]_x (svbool_t pg, svbfloat16_t zdn, int16_t zm);
+  svbfloat16_t svscale[_n_bf16]_z (svbool_t pg, svbfloat16_t zdn, int16_t zm);  */
+#define REQUIRED_EXTENSIONS \
+  sve_and_sme (AARCH64_FL_SVE2 | AARCH64_FL_SVE_BFSCALE, \
+	       AARCH64_FL_SME2 | AARCH64_FL_SVE_BFSCALE)
+DEF_SVE_FUNCTION (svscale, binary_int_opt_n, h_bfloat, mxz)
+#undef REQUIRED_EXTENSIONS
+
+/*
+- BFSCALE (multiple vectors)
+  // Only if __ARM_FEATURE_SVE_BFSCALE != 0 && __ARM_FEATURE_SME2 != 0
+  svbfloat16x2_t svscale[_bf16_x2] (svbfloat16x2_t zdn, svint16x2_t zm) __arm_streaming;
+  svbfloat16x4_t svscale[_bf16_x4] (svbfloat16x4_t zdn, svint16x4_t zm) __arm_streaming;
+
+- BFSCALE (multiple and single vector)
+  // Only if __ARM_FEATURE_SVE_BFSCALE != 0 && __ARM_FEATURE_SME2 != 0
+  svbfloat16x2_t svscale[_single_bf16_x2] (svbfloat16x2_t zn, svint16_t zm) __arm_streaming;
+  svbfloat16x4_t svscale[_single_bf16_x4] (svbfloat16x4_t zn, svint16_t zm) __arm_streaming;  */
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SVE_BFSCALE | AARCH64_FL_SME2)
+DEF_SVE_FUNCTION_GS (svscale, binary_int_opt_single_n, h_bfloat, x24, none)
+#undef REQUIRED_EXTENSIONS
+
+/*
+- BFMUL (multiple vectors)
+  // Only if __ARM_FEATURE_SVE_BFSCALE != 0 && __ARM_FEATURE_SME2 != 0
+  svbfloat16x2_t svmul[_bf16_x2] (svbfloat16x2_t zdn, svbfloat16x2_t zm) __arm_streaming;
+  svbfloat16x4_t svmul[_bf16_x4] (svbfloat16x4_t zdn, svbfloat16x4_t zm) __arm_streaming;
+
+- BFMUL (multiple and single vector)
+  // Only if __ARM_FEATURE_SVE_BFSCALE != 0 && __ARM_FEATURE_SME2 != 0
+  svbfloat16x2_t svmul[_single_bf16_x2] (svbfloat16x2_t zn, svbfloat16x2_t zm) __arm_streaming;
+  svbfloat16x4_t svmul[_single_bf16_x4] (svbfloat16x4_t zn, svbfloat16x4_t zm) __arm_streaming;  */
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SVE_BFSCALE | AARCH64_FL_SME2)
+DEF_SVE_FUNCTION_GS (svmul, binary_opt_single_n, h_bfloat, x24, none)
+#undef REQUIRED_EXTENSIONS
