@@ -8510,92 +8510,104 @@ package body Sem_Ch8 is
                end;
             end if;
 
+            --  Case of the enclosing construct
+
             if In_Open_Scopes (P_Name) then
                Set_Entity (P, P_Name);
                Set_Is_Overloaded (P, False);
                Find_Expanded_Name (N);
 
+            --  If no interpretation as an expanded name is possible, then it
+            --  must be a selected component of a record returned by a function
+            --  call. Reformat the prefix as a function call and analyze it.
+
             else
-               --  If no interpretation as an expanded name is possible, it
-               --  must be a selected component of a record returned by a
-               --  function call. Reformat prefix as a function call, the rest
-               --  is done by type resolution.
+               declare
+                  procedure Diagnose_Call;
+                  --  Try and give useful diagnostics on error
 
-               --  Error if the prefix is procedure or entry, as is P.X
+                  -------------------
+                  -- Diagnose_Call --
+                  -------------------
 
-               if Ekind (P_Name) /= E_Function
-                 and then
-                   (not Is_Overloaded (P)
-                     or else Nkind (Parent (N)) = N_Procedure_Call_Statement)
-               then
-                  --  Prefix may mention a package that is hidden by a local
-                  --  declaration: let the user know. Scan the full homonym
-                  --  chain, the candidate package may be anywhere on it.
+                  procedure Diagnose_Call is
+                     Ent : Entity_Id;
 
-                  if Present (Homonym (Current_Entity (P_Name))) then
-                     P_Name := Current_Entity (P_Name);
+                  begin
+                     --  Prefix may mention a package that is hidden by a local
+                     --  declaration: let the user know. Scan the full homonym
+                     --  chain, the candidate package may be anywhere on it.
 
-                     while Present (P_Name) loop
-                        exit when Ekind (P_Name) = E_Package;
-                        P_Name := Homonym (P_Name);
+                     Ent := Current_Entity (P_Name);
+
+                     while Present (Ent) loop
+                        exit when Ekind (Ent) = E_Package;
+                        Ent := Homonym (Ent);
                      end loop;
 
-                     if Present (P_Name) then
-                        if not Is_Reference_In_Subunit then
-                           Error_Msg_Sloc := Sloc (Entity (Prefix (N)));
-                           Error_Msg_NE
-                             ("package& is hidden by declaration#", N, P_Name);
-                        end if;
+                     if Present (Ent) and then not Is_Reference_In_Subunit then
+                        Error_Msg_Sloc := Sloc (P_Name);
+                        Error_Msg_NE
+                          ("\package& is hidden by declaration#", N, Ent);
+                     end if;
 
-                        Set_Entity (Prefix (N), P_Name);
-                        Find_Expanded_Name (N);
+                     --  Format node as expanded name, to avoid cascaded errors
+
+                     Change_Selected_Component_To_Expanded_Name (N);
+                     Set_Entity (N, Any_Id);
+                     Set_Etype (N, Any_Type);
+                  end Diagnose_Call;
+
+               begin
+                  --  Error if the prefix is procedure or entry, as in P.X
+
+                  if Ekind (P_Name) /= E_Function
+                    and then not Is_Overloaded (P)
+                  then
+                     Error_Msg_NE
+                       ("invalid prefix& in selected component", N, P_Name);
+                     Diagnose_Call;
+                     return;
+
+                  --  Here we may have a function call, so do the reformatting
+
+                  else
+                     Nam := New_Copy (P);
+                     Save_Interps (P, Nam);
+
+                     --  We use Replace here because this is one of those cases
+                     --  where the parser has misclassified the node and we fix
+                     --  things up and then do semantic analysis on the fixed
+                     --  up node. Normally we do this using one of the Sinfo.CN
+                     --  routines, but this is too tricky for that.
+
+                     --  Note that using Rewrite would be wrong, since we would
+                     --  have a tree where the original node is unanalyzed.
+
+                     Replace (P, Make_Function_Call (Sloc (P), Name => Nam));
+
+                     --  Now analyze the reformatted node
+
+                     Analyze_Call (P);
+
+                     --  If the prefix is illegal after this transformation,
+                     --  there may be a visibility error on the prefix. The
+                     --  safest is to treat the selected component as an error.
+
+                     if Error_Posted (P) then
+                        Diagnose_Call;
                         return;
 
                      else
-                        P_Name := Entity (Prefix (N));
+                        Analyze_Selected_Component (N);
+
+                        if Error_Posted (N) then
+                           Diagnose_Call;
+                           return;
+                        end if;
                      end if;
                   end if;
-
-                  Error_Msg_NE
-                    ("invalid prefix in selected component&", N, P_Name);
-                  Change_Selected_Component_To_Expanded_Name (N);
-                  Set_Entity (N, Any_Id);
-                  Set_Etype (N, Any_Type);
-
-               --  Here we have a function call, so do the reformatting
-
-               else
-                  Nam := New_Copy (P);
-                  Save_Interps (P, Nam);
-
-                  --  We use Replace here because this is one of those cases
-                  --  where the parser has missclassified the node, and we fix
-                  --  things up and then do the semantic analysis on the fixed
-                  --  up node. Normally we do this using one of the Sinfo.CN
-                  --  routines, but this is too tricky for that.
-
-                  --  Note that using Rewrite would be wrong, because we would
-                  --  have a tree where the original node is unanalyzed.
-
-                  Replace (P,
-                    Make_Function_Call (Sloc (P), Name => Nam));
-
-                  --  Now analyze the reformatted node
-
-                  Analyze_Call (P);
-
-                  --  If the prefix is illegal after this transformation, there
-                  --  may be visibility errors on the prefix. The safest is to
-                  --  treat the selected component as an error.
-
-                  if Error_Posted (P) then
-                     Set_Etype (N, Any_Type);
-                     return;
-
-                  else
-                     Analyze_Selected_Component (N);
-                  end if;
-               end if;
+               end;
             end if;
 
          --  Remaining cases generate various error messages

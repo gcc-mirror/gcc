@@ -7147,7 +7147,7 @@ package body Sem_Ch4 is
               and then N = Prefix (Parent (N))
             then
                Error_Msg_N -- CODEFIX
-                 ("\period should probably be semicolon", Parent (N));
+                 ("\period is probably a typographical error", Parent (N));
             end if;
          end if;
 
