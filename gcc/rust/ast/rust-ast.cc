@@ -4185,6 +4185,14 @@ Attribute::check_cfg_predicate (const Session &session) const
 		     "malformed %<cfg_attr%> attribute input");
       return false;
     }
+
+  if (string_path == Values::Attributes::CFG
+      && meta_item.get_items ().size () != 1)
+    {
+      rust_error_at (path.get_locus (), "multiple %qs predicates are specified",
+		     path.as_string ().c_str ());
+      return false;
+    }
   return meta_item.get_items ().front ()->check_cfg_predicate (session);
 }
 
