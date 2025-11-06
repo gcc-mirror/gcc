@@ -18,6 +18,19 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+/* defaults.h requires HAVE_INITFINI_ARRAY_SUPPORT to be present
+   in order for attribute "retain" to be recognized.  This is due
+   to some quirks in crtstuff.h -- which isn't even used by avr.
+   All we need is that Binutils supports the "R"etain section flag.
+   If that's the case, define SUPPORTS_SHF_GNU_RETAIN so that
+   defaults.h doesn't define it to 0.  */
+#if defined(IN_GCC) && !defined(USED_FOR_TARGET) && !defined(GENERATOR_FILE)
+#include "auto-host.h" /* HAVE_GAS_SHF_GNU_RETAIN */
+#if HAVE_GAS_SHF_GNU_RETAIN
+#undef SUPPORTS_SHF_GNU_RETAIN
+#define SUPPORTS_SHF_GNU_RETAIN 1
+#endif
+#endif
 
 /* Overriding some definitions from elfos.h for AVR.  */
 
