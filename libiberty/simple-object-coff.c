@@ -57,6 +57,32 @@ struct external_filehdr
   unsigned char f_flags[2];	/* flags			*/
 };
 
+/* BigObj COFF file header.  */
+
+struct external_filehdr_bigobj
+{
+  unsigned char sig1[2];	/* Must be 0x0000 */
+  unsigned char sig2[2];	/* Must be 0xFFFF */
+  unsigned char version[2];	/* Version, currently 2 */
+  unsigned char machine[2];	/* Machine type */
+  unsigned char timdat[4];	/* time & date stamp */
+  unsigned char classid[16];	/* Magic GUID that identifies BigObj format */
+  unsigned char sizeofdata[4];	/* Size of data (unused, set to 0) */
+  unsigned char flags[4];	/* Flags (unused, set to 0) */
+  unsigned char metadatasize[4];	/* Metadata size (unused, set to 0) */
+  unsigned char metadataoffset[4];	/* Metadata offset (unused, set to 0) */
+  unsigned char nscns[4];	/* number of sections (32-bit!) */
+  unsigned char symptr[4];	/* file pointer to symtab */
+  unsigned char nsyms[4];	/* number of symtab entries */
+};
+
+/* The BigObj magic GUID (ClassID).  */
+static const unsigned char bigobj_magic[16] =
+{
+  0xC7, 0xA1, 0xBA, 0xD1, 0xEE, 0xBA, 0xA9, 0x4B,
+  0xAF, 0x20, 0xFA, 0xF6, 0x6A, 0xA4, 0xDC, 0xB8
+};
+
 /* Bits for filehdr f_flags field.  */
 
 #define F_EXEC			(0x0002)
@@ -119,6 +145,28 @@ struct external_syment
   unsigned char e_numaux[1];
 };
 
+/* BigObj COFF symbol table entry (20 bytes instead of 18).  */
+
+struct external_syment_bigobj
+{
+  union
+  {
+    unsigned char e_name[E_SYMNMLEN];
+
+    struct
+    {
+      unsigned char e_zeroes[4];
+      unsigned char e_offset[4];
+    } e;
+  } e;
+
+  unsigned char e_value[4];
+  unsigned char e_scnum[4];	/* 32-bit section number! */
+  unsigned char e_type[2];
+  unsigned char e_sclass[1];
+  unsigned char e_numaux[1];
+};
+
 /* Length allowed for filename in aux sym format 4.  */
 
 #define E_FILNMLEN	18
@@ -149,6 +197,33 @@ union external_auxent
   } x_scn;
 };
 
+/* BigObj auxiliary symbol (20 bytes to match symbol size).  */
+
+union external_auxent_bigobj
+{
+  /* Aux sym format 4: file.  */
+  union
+  {
+    char x_fname[E_FILNMLEN];
+    struct
+    {
+      unsigned char x_zeroes[4];
+      unsigned char x_offset[4];
+    } x_n;
+  } x_file;
+  /* Aux sym format 5: section.  */
+  struct
+  {
+    unsigned char x_scnlen[4];		/* section length		*/
+    unsigned char x_nreloc[2];		/* # relocation entries		*/
+    unsigned char x_nlinno[2];		/* # line numbers		*/
+    unsigned char x_checksum[4];	/* section COMDAT checksum	*/
+    unsigned char x_associated[2];	/* COMDAT assoc section index	*/
+    unsigned char x_comdat[1];		/* COMDAT selection number	*/
+    unsigned char x_pad[3];		/* Padding to 20 bytes		*/
+  } x_scn;
+};
+
 /* Symbol-related constants.  */
 
 #define IMAGE_SYM_DEBUG		(-2)
@@ -168,8 +243,10 @@ struct simple_object_coff_read
   unsigned short magic;
   /* Whether the file is big-endian.  */
   unsigned char is_big_endian;
+  /* Whether this is BigObj format.  */
+  unsigned char is_bigobj;
   /* Number of sections.  */
-  unsigned short nscns;
+  unsigned int nscns;
   /* File offset of symbol table.  */
   off_t symptr;
   /* Number of symbol table entries.  */
@@ -188,6 +265,8 @@ struct simple_object_coff_attributes
   unsigned short magic;
   /* Whether the file is big-endian.  */
   unsigned char is_big_endian;
+  /* Whether this is BigObj format.  */
+  unsigned char is_bigobj;
   /* Flags.  */
   unsigned short flags;
 };
@@ -240,10 +319,12 @@ simple_object_coff_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
   int is_big_endian;
   unsigned short (*fetch_16) (const unsigned char *);
   unsigned int (*fetch_32) (const unsigned char *);
-  unsigned char hdrbuf[sizeof (struct external_filehdr)];
+  unsigned char hdrbuf[sizeof (struct external_filehdr_bigobj)];
   unsigned short flags;
   struct simple_object_coff_read *ocr;
+  unsigned short sig1, sig2;
 
+  /* Try regular COFF first.  */
   c = sizeof (coff_magic) / sizeof (coff_magic[0]);
   magic_big = simple_object_fetch_big_16 (header);
   magic_little = simple_object_fetch_little_16 (header);
@@ -254,12 +335,64 @@ simple_object_coff_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
 	  : coff_magic[i].magic == magic_little)
 	break;
     }
-  if (i >= c)
+
+  /* Check for BigObj if regular COFF didn't match.  */
+  sig1 = simple_object_fetch_little_16 (header);
+  sig2 = simple_object_fetch_little_16 (header + 2);
+
+  if (i >= c && (sig1 != 0 || sig2 != 0xFFFF))
     {
+      /* Not regular COFF and not BigObj.  */
       *errmsg = NULL;
       *err = 0;
       return NULL;
     }
+
+  if (sig1 == 0 && sig2 == 0xFFFF)
+    {
+      /* This looks like BigObj.  Verify the ClassID.  */
+      unsigned char bigobj_hdrbuf[sizeof (struct external_filehdr_bigobj)];
+
+      if (!simple_object_internal_read (descriptor, offset, bigobj_hdrbuf,
+					sizeof bigobj_hdrbuf, errmsg, err))
+	return NULL;
+
+      if (memcmp (bigobj_hdrbuf + offsetof (struct external_filehdr_bigobj,
+					    classid),
+		  bigobj_magic, 16) != 0)
+	{
+	  *errmsg = NULL;
+	  *err = 0;
+	  return NULL;
+	}
+
+      /* BigObj is always little-endian.  */
+      is_big_endian = 0;
+
+      ocr = XNEW (struct simple_object_coff_read);
+      ocr->magic = simple_object_fetch_little_16
+		     (bigobj_hdrbuf
+		      + offsetof (struct external_filehdr_bigobj, machine));
+      ocr->is_big_endian = 0;
+      ocr->is_bigobj = 1;
+      ocr->nscns = simple_object_fetch_little_32
+		     (bigobj_hdrbuf
+		      + offsetof (struct external_filehdr_bigobj, nscns));
+      ocr->symptr = simple_object_fetch_little_32
+		      (bigobj_hdrbuf
+		       + offsetof (struct external_filehdr_bigobj, symptr));
+      ocr->nsyms = simple_object_fetch_little_32
+		     (bigobj_hdrbuf
+		      + offsetof (struct external_filehdr_bigobj, nsyms));
+      ocr->flags = simple_object_fetch_little_32
+		     (bigobj_hdrbuf
+		      + offsetof (struct external_filehdr_bigobj, flags));
+      ocr->scnhdr_offset = sizeof (struct external_filehdr_bigobj);
+
+      return (void *) ocr;
+    }
+
+  /* Regular COFF.  */
   is_big_endian = coff_magic[i].is_big_endian;
 
   magic = is_big_endian ? magic_big : magic_little;
@@ -270,7 +403,7 @@ simple_object_coff_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
 	      ? simple_object_fetch_big_32
 	      : simple_object_fetch_little_32);
 
-  if (!simple_object_internal_read (descriptor, offset, hdrbuf, sizeof hdrbuf,
+  if (!simple_object_internal_read (descriptor, offset, hdrbuf, sizeof (struct external_filehdr),
 				    errmsg, err))
     return NULL;
 
@@ -285,6 +418,7 @@ simple_object_coff_match (unsigned char header[SIMPLE_OBJECT_MATCH_HEADER_LEN],
   ocr = XNEW (struct simple_object_coff_read);
   ocr->magic = magic;
   ocr->is_big_endian = is_big_endian;
+  ocr->is_bigobj = 0;
   ocr->nscns = fetch_16 (hdrbuf + offsetof (struct external_filehdr, f_nscns));
   ocr->symptr = fetch_32 (hdrbuf
 			  + offsetof (struct external_filehdr, f_symptr));
@@ -309,9 +443,13 @@ simple_object_coff_read_strtab (simple_object_read *sobj, size_t *strtab_size,
   unsigned char strsizebuf[4];
   size_t strsize;
   char *strtab;
+  size_t sym_size;
 
-  strtab_offset = sobj->offset + ocr->symptr
-		  + ocr->nsyms * sizeof (struct external_syment);
+  /* Symbol size depends on format.  */
+  sym_size = ocr->is_bigobj ? sizeof (struct external_syment_bigobj)
+			    : sizeof (struct external_syment);
+
+  strtab_offset = sobj->offset + ocr->symptr + ocr->nsyms * sym_size;
   if (!simple_object_internal_read (sobj->descriptor, strtab_offset,
 				    strsizebuf, 4, errmsg, err))
     return NULL;
@@ -444,6 +582,7 @@ simple_object_coff_fetch_attributes (simple_object_read *sobj,
   ret = XNEW (struct simple_object_coff_attributes);
   ret->magic = ocr->magic;
   ret->is_big_endian = ocr->is_big_endian;
+  ret->is_bigobj = ocr->is_bigobj;
   ret->flags = ocr->flags;
   return ret;
 }
@@ -466,7 +605,9 @@ simple_object_coff_attributes_merge (void *todata, void *fromdata, int *err)
   struct simple_object_coff_attributes *from =
     (struct simple_object_coff_attributes *) fromdata;
 
-  if (to->magic != from->magic || to->is_big_endian != from->is_big_endian)
+  if (to->magic != from->magic
+      || to->is_big_endian != from->is_big_endian
+      || to->is_bigobj != from->is_bigobj)
     {
       *err = 0;
       return "COFF object format mismatch";
@@ -498,6 +639,52 @@ simple_object_coff_start_write (void *attributes_data,
   ret = XNEW (struct simple_object_coff_attributes);
   *ret = *attrs;
   return ret;
+}
+
+/* Write out a BigObj COFF filehdr.  */
+
+static int
+simple_object_coff_write_filehdr_bigobj (simple_object_write *sobj,
+					 int descriptor,
+					 unsigned int nscns,
+					 size_t symtab_offset,
+					 unsigned int nsyms,
+					 const char **errmsg, int *err)
+{
+  struct simple_object_coff_attributes *attrs =
+    (struct simple_object_coff_attributes *) sobj->data;
+  unsigned char hdrbuf[sizeof (struct external_filehdr_bigobj)];
+  unsigned char *hdr;
+  void (*set_16) (unsigned char *, unsigned short);
+  void (*set_32) (unsigned char *, unsigned int);
+
+  hdr = &hdrbuf[0];
+
+  /* BigObj is always little-endian.  */
+  set_16 = simple_object_set_little_16;
+  set_32 = simple_object_set_little_32;
+
+  memset (hdr, 0, sizeof (struct external_filehdr_bigobj));
+
+  /* Set BigObj signatures.  */
+  set_16 (hdr + offsetof (struct external_filehdr_bigobj, sig1), 0);
+  set_16 (hdr + offsetof (struct external_filehdr_bigobj, sig2), 0xFFFF);
+  set_16 (hdr + offsetof (struct external_filehdr_bigobj, version), 2);
+  set_16 (hdr + offsetof (struct external_filehdr_bigobj, machine),
+	  attrs->magic);
+  /* timdat left as zero.  */
+  /* Copy ClassID.  */
+  memcpy (hdr + offsetof (struct external_filehdr_bigobj, classid),
+	  bigobj_magic, 16);
+  /* sizeofdata, flags, metadatasize, metadataoffset left as zero.  */
+  set_32 (hdr + offsetof (struct external_filehdr_bigobj, nscns), nscns);
+  set_32 (hdr + offsetof (struct external_filehdr_bigobj, symptr),
+	  symtab_offset);
+  set_32 (hdr + offsetof (struct external_filehdr_bigobj, nsyms), nsyms);
+
+  return simple_object_internal_write (descriptor, 0, hdrbuf,
+				       sizeof (struct external_filehdr_bigobj),
+				       errmsg, err);
 }
 
 /* Write out a COFF filehdr.  */
@@ -618,13 +805,15 @@ simple_object_coff_write_to_file (simple_object_write *sobj, int descriptor,
      what 'gas' uses when told to assemble from stdin.  */
   const char *source_filename = "fake";
   size_t sflen;
-  union
-  {
-    struct external_syment sym;
-    union external_auxent aux;
-  } syms[2];
+  size_t symsize;
   void (*set_16) (unsigned char *, unsigned short);
   void (*set_32) (unsigned char *, unsigned int);
+
+  /* Determine symbol size based on format.  */
+  if (attrs->is_bigobj)
+    symsize = sizeof (struct external_syment_bigobj);
+  else
+    symsize = sizeof (struct external_syment);
 
   set_16 = (attrs->is_big_endian
 	    ? simple_object_set_big_16
@@ -637,7 +826,10 @@ simple_object_coff_write_to_file (simple_object_write *sobj, int descriptor,
   for (section = sobj->sections; section != NULL; section = section->next)
     ++nscns;
 
-  scnhdr_offset = sizeof (struct external_filehdr);
+  if (attrs->is_bigobj)
+    scnhdr_offset = sizeof (struct external_filehdr_bigobj);
+  else
+    scnhdr_offset = sizeof (struct external_filehdr);
   offset = scnhdr_offset + nscns * sizeof (struct external_scnhdr);
   name_offset = 4;
   for (section = sobj->sections; section != NULL; section = section->next)
@@ -693,91 +885,198 @@ simple_object_coff_write_to_file (simple_object_write *sobj, int descriptor,
   symtab_offset = offset;
   /* Advance across space reserved for symbol table to locate
      start of string table.  */
-  offset += nsyms * sizeof (struct external_syment);
+  offset += nsyms * symsize;
 
   /* Write out file symbol.  */
-  memset (&syms[0], 0, sizeof (syms));
-  strcpy ((char *)&syms[0].sym.e.e_name[0], ".file");
-  set_16 (&syms[0].sym.e_scnum[0], IMAGE_SYM_DEBUG);
-  set_16 (&syms[0].sym.e_type[0], IMAGE_SYM_TYPE);
-  syms[0].sym.e_sclass[0] = IMAGE_SYM_CLASS_FILE;
-  syms[0].sym.e_numaux[0] = 1;
-  /* The name need not be nul-terminated if it fits into the x_fname field
-     directly, but must be if it has to be placed into the string table.  */
-  sflen = strlen (source_filename);
-  if (sflen <= E_FILNMLEN)
-    memcpy (&syms[1].aux.x_file.x_fname[0], source_filename, sflen);
-  else
+  if (attrs->is_bigobj)
     {
-      set_32 (&syms[1].aux.x_file.x_n.x_offset[0], name_offset);
-      if (!simple_object_internal_write (descriptor, offset + name_offset,
-					 ((const unsigned char *)
-					  source_filename),
-					 sflen + 1, &errmsg, err))
-	return errmsg;
-      name_offset += strlen (source_filename) + 1;
-    }
-  if (!simple_object_internal_write (descriptor, symtab_offset,
-				     (const unsigned char *) &syms[0],
-				     sizeof (syms), &errmsg, err))
-    return errmsg;
+      union
+      {
+	struct external_syment_bigobj sym;
+	union external_auxent_bigobj aux;
+      } syms[2];
 
-  /* Write the string table length, followed by the strings and section
-     symbols in step with each other.  */
-  set_32 (strsizebuf, name_offset);
-  if (!simple_object_internal_write (descriptor, offset, strsizebuf, 4,
-				     &errmsg, err))
-    return errmsg;
-
-  name_offset = 4;
-  secsym_offset = symtab_offset + sizeof (syms);
-  memset (&syms[0], 0, sizeof (syms));
-  set_16 (&syms[0].sym.e_type[0], IMAGE_SYM_TYPE);
-  syms[0].sym.e_sclass[0] = IMAGE_SYM_CLASS_STATIC;
-  syms[0].sym.e_numaux[0] = 1;
-  secnum = 1;
-
-  for (section = sobj->sections; section != NULL; section = section->next)
-    {
-      size_t namelen;
-      size_t scnsize;
-      struct simple_object_write_section_buffer *buffer;
-
-      namelen = strlen (section->name);
-      set_16 (&syms[0].sym.e_scnum[0], secnum++);
-      scnsize = 0;
-      for (buffer = section->buffers; buffer != NULL; buffer = buffer->next)
-	scnsize += buffer->size;
-      set_32 (&syms[1].aux.x_scn.x_scnlen[0], scnsize);
-      if (namelen > SCNNMLEN)
-	{
-	  set_32 (&syms[0].sym.e.e.e_zeroes[0], 0);
-	  set_32 (&syms[0].sym.e.e.e_offset[0], name_offset);
-	  if (!simple_object_internal_write (descriptor, offset + name_offset,
-					     ((const unsigned char *)
-					      section->name),
-					     namelen + 1, &errmsg, err))
-	    return errmsg;
-	  name_offset += namelen + 1;
-	}
+      memset (&syms[0], 0, sizeof (syms));
+      strcpy ((char *)&syms[0].sym.e.e_name[0], ".file");
+      set_32 (&syms[0].sym.e_scnum[0], IMAGE_SYM_DEBUG);
+      set_16 (&syms[0].sym.e_type[0], IMAGE_SYM_TYPE);
+      syms[0].sym.e_sclass[0] = IMAGE_SYM_CLASS_FILE;
+      syms[0].sym.e_numaux[0] = 1;
+      /* The name need not be nul-terminated if it fits into the x_fname field
+	 directly, but must be if it has to be placed into the string table.  */
+      sflen = strlen (source_filename);
+      if (sflen <= E_FILNMLEN)
+	memcpy (&syms[1].aux.x_file.x_fname[0], source_filename, sflen);
       else
 	{
-	  memcpy (&syms[0].sym.e.e_name[0], section->name,
-		  strlen (section->name));
-	  memset (&syms[0].sym.e.e_name[strlen (section->name)], 0,
-		  E_SYMNMLEN - strlen (section->name));
+	  set_32 (&syms[1].aux.x_file.x_n.x_offset[0], name_offset);
+	  if (!simple_object_internal_write (descriptor, offset + name_offset,
+					     ((const unsigned char *)
+					      source_filename),
+					     sflen + 1, &errmsg, err))
+	    return errmsg;
+	  name_offset += strlen (source_filename) + 1;
 	}
-
-      if (!simple_object_internal_write (descriptor, secsym_offset,
+      if (!simple_object_internal_write (descriptor, symtab_offset,
 					 (const unsigned char *) &syms[0],
 					 sizeof (syms), &errmsg, err))
 	return errmsg;
-      secsym_offset += sizeof (syms);
+
+      /* Write the string table length, followed by the strings and section
+	 symbols in step with each other.  */
+      set_32 (strsizebuf, name_offset);
+      if (!simple_object_internal_write (descriptor, offset, strsizebuf, 4,
+					 &errmsg, err))
+	return errmsg;
+
+      name_offset = 4;
+      secsym_offset = symtab_offset + sizeof (syms);
+      memset (&syms[0], 0, sizeof (syms));
+      set_16 (&syms[0].sym.e_type[0], IMAGE_SYM_TYPE);
+      syms[0].sym.e_sclass[0] = IMAGE_SYM_CLASS_STATIC;
+      syms[0].sym.e_numaux[0] = 1;
+      secnum = 1;
+
+      for (section = sobj->sections; section != NULL; section = section->next)
+	{
+	  size_t namelen;
+	  size_t scnsize;
+	  struct simple_object_write_section_buffer *buffer;
+
+	  namelen = strlen (section->name);
+	  set_32 (&syms[0].sym.e_scnum[0], secnum++);
+	  scnsize = 0;
+	  for (buffer = section->buffers; buffer != NULL; buffer = buffer->next)
+	    scnsize += buffer->size;
+	  set_32 (&syms[1].aux.x_scn.x_scnlen[0], scnsize);
+	  if (namelen > SCNNMLEN)
+	    {
+	      set_32 (&syms[0].sym.e.e.e_zeroes[0], 0);
+	      set_32 (&syms[0].sym.e.e.e_offset[0], name_offset);
+	      if (!simple_object_internal_write (descriptor, offset + name_offset,
+						 ((const unsigned char *)
+						  section->name),
+						 namelen + 1, &errmsg, err))
+		return errmsg;
+	      name_offset += namelen + 1;
+	    }
+	  else
+	    {
+	      memcpy (&syms[0].sym.e.e_name[0], section->name,
+		      strlen (section->name));
+	      memset (&syms[0].sym.e.e_name[strlen (section->name)], 0,
+		      E_SYMNMLEN - strlen (section->name));
+	    }
+
+	  if (!simple_object_internal_write (descriptor, secsym_offset,
+					     (const unsigned char *) &syms[0],
+					     sizeof (syms), &errmsg, err))
+	    return errmsg;
+	  secsym_offset += sizeof (syms);
+	}
+    }
+  else
+    {
+      /* Regular COFF.  */
+      union
+      {
+	struct external_syment sym;
+	union external_auxent aux;
+      } syms[2];
+
+      memset (&syms[0], 0, sizeof (syms));
+      strcpy ((char *)&syms[0].sym.e.e_name[0], ".file");
+      set_16 (&syms[0].sym.e_scnum[0], IMAGE_SYM_DEBUG);
+      set_16 (&syms[0].sym.e_type[0], IMAGE_SYM_TYPE);
+      syms[0].sym.e_sclass[0] = IMAGE_SYM_CLASS_FILE;
+      syms[0].sym.e_numaux[0] = 1;
+      /* The name need not be nul-terminated if it fits into the x_fname field
+	 directly, but must be if it has to be placed into the string table.  */
+      sflen = strlen (source_filename);
+      if (sflen <= E_FILNMLEN)
+	memcpy (&syms[1].aux.x_file.x_fname[0], source_filename, sflen);
+      else
+	{
+	  set_32 (&syms[1].aux.x_file.x_n.x_offset[0], name_offset);
+	  if (!simple_object_internal_write (descriptor, offset + name_offset,
+					     ((const unsigned char *)
+					      source_filename),
+					     sflen + 1, &errmsg, err))
+	    return errmsg;
+	  name_offset += strlen (source_filename) + 1;
+	}
+      if (!simple_object_internal_write (descriptor, symtab_offset,
+					 (const unsigned char *) &syms[0],
+					 sizeof (syms), &errmsg, err))
+	return errmsg;
+
+      /* Write the string table length, followed by the strings and section
+	 symbols in step with each other.  */
+      set_32 (strsizebuf, name_offset);
+      if (!simple_object_internal_write (descriptor, offset, strsizebuf, 4,
+					 &errmsg, err))
+	return errmsg;
+
+      name_offset = 4;
+      secsym_offset = symtab_offset + sizeof (syms);
+      memset (&syms[0], 0, sizeof (syms));
+      set_16 (&syms[0].sym.e_type[0], IMAGE_SYM_TYPE);
+      syms[0].sym.e_sclass[0] = IMAGE_SYM_CLASS_STATIC;
+      syms[0].sym.e_numaux[0] = 1;
+      secnum = 1;
+
+      for (section = sobj->sections; section != NULL; section = section->next)
+	{
+	  size_t namelen;
+	  size_t scnsize;
+	  struct simple_object_write_section_buffer *buffer;
+
+	  namelen = strlen (section->name);
+	  set_16 (&syms[0].sym.e_scnum[0], secnum++);
+	  scnsize = 0;
+	  for (buffer = section->buffers; buffer != NULL; buffer = buffer->next)
+	    scnsize += buffer->size;
+	  set_32 (&syms[1].aux.x_scn.x_scnlen[0], scnsize);
+	  if (namelen > SCNNMLEN)
+	    {
+	      set_32 (&syms[0].sym.e.e.e_zeroes[0], 0);
+	      set_32 (&syms[0].sym.e.e.e_offset[0], name_offset);
+	      if (!simple_object_internal_write (descriptor, offset + name_offset,
+						 ((const unsigned char *)
+						  section->name),
+						 namelen + 1, &errmsg, err))
+		return errmsg;
+	      name_offset += namelen + 1;
+	    }
+	  else
+	    {
+	      memcpy (&syms[0].sym.e.e_name[0], section->name,
+		      strlen (section->name));
+	      memset (&syms[0].sym.e.e_name[strlen (section->name)], 0,
+		      E_SYMNMLEN - strlen (section->name));
+	    }
+
+	  if (!simple_object_internal_write (descriptor, secsym_offset,
+					     (const unsigned char *) &syms[0],
+					     sizeof (syms), &errmsg, err))
+	    return errmsg;
+	  secsym_offset += sizeof (syms);
+	}
     }
 
-  if (!simple_object_coff_write_filehdr (sobj, descriptor, nscns,
-					 symtab_offset, nsyms, &errmsg, err))
-    return errmsg;
+  if (attrs->is_bigobj)
+    {
+      if (!simple_object_coff_write_filehdr_bigobj (sobj, descriptor, nscns,
+						     symtab_offset, nsyms,
+						     &errmsg, err))
+	return errmsg;
+    }
+  else
+    {
+      if (!simple_object_coff_write_filehdr (sobj, descriptor, nscns,
+					     symtab_offset, nsyms, &errmsg, err))
+	return errmsg;
+    }
 
   return NULL;
 }
