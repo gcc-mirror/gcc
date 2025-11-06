@@ -1856,15 +1856,6 @@ vect_use_strided_gather_scatters_p (stmt_vec_info stmt_info, tree vectype,
 						masked_p, gs_info, elsvals))
 	return false;
     }
-  else
-    {
-      tree old_offset_type = TREE_TYPE (gs_info->offset);
-      tree new_offset_type = TREE_TYPE (gs_info->offset_vectype);
-
-      gcc_assert (TYPE_PRECISION (new_offset_type)
-		  >= TYPE_PRECISION (old_offset_type));
-      gs_info->offset = fold_convert (new_offset_type, gs_info->offset);
-    }
 
   if (!single_element_p
       && !targetm.vectorize.prefer_gather_scatter (TYPE_MODE (vectype),
