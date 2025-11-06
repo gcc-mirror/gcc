@@ -3752,6 +3752,57 @@
   [(set_attr "type" "slt")
    (set_attr "mode" "<X:MODE>")])
 
+;; We can sometimes do better for unsigned comparisons against
+;; values where there's a run of 1s in the LSBs.
+;;
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+       (gtu:X (match_operand:X 1 "register_operand")
+	      (match_operand 2 "const_int_operand")))
+   (clobber (match_operand:X 3 "register_operand"))]
+  "exact_log2 (INTVAL (operands[2]) + 1) >= 0"
+  [(set (match_dup 3) (lshiftrt:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (ne:X (match_dup 3) (const_int 0)))]
+{ operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2]) + 1)); })
+
+(define_split
+  [(set (match_operand:X 0 "register_operand")
+       (leu:X (match_operand:X 1 "register_operand")
+	      (match_operand 2 "const_int_operand")))
+   (clobber (match_operand:X 3 "register_operand"))]
+  "exact_log2 (INTVAL (operands[2]) + 1) >= 0"
+  [(set (match_dup 3) (lshiftrt:X (match_dup 1) (match_dup 2)))
+   (set (match_dup 0) (eq:X (match_dup 3) (const_int 0)))]
+{ operands[2] = GEN_INT (exact_log2 (INTVAL (operands[2]) + 1)); })
+
+;; Alternate forms that are ultimately just sltiu
+(define_insn ""
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(eq:X (zero_extract:X (match_operand:X 1 "register_operand" "r")
+			      (match_operand 2 "const_int_operand")
+			      (match_operand 3 "const_int_operand"))
+	      (const_int 0)))]
+  "(INTVAL (operands[3]) < 11
+    && INTVAL (operands[2]) + INTVAL (operands[3]) == BITS_PER_WORD)"
+{
+  operands[2] = GEN_INT (HOST_WIDE_INT_1U << INTVAL (operands[3]));
+  return "sltiu\t%0,%1,%2";
+}
+  [(set_attr "type" "slt")
+   (set_attr "mode" "<X:MODE>")])
+
+(define_insn ""
+  [(set (match_operand:X 0 "register_operand" "=r")
+	(eq:X (lshiftrt:X (match_operand:X 1 "register_operand" "r")
+			  (match_operand 2 "const_int_operand"))
+	      (const_int 0)))]
+  "INTVAL (operands[2]) < 11"
+{
+  operands[2] = GEN_INT (HOST_WIDE_INT_1U << INTVAL (operands[2]));
+  return "sltiu\t%0,%1,%2";
+}
+  [(set_attr "type" "slt")
+   (set_attr "mode" "<X:MODE>")])
 ;;
 ;;  ....................
 ;;
