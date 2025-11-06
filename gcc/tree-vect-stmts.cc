@@ -5282,15 +5282,12 @@ vectorizable_conversion (vec_info *vinfo,
     return false;
 
   if (!VECTOR_BOOLEAN_TYPE_P (vectype_out)
-      && ((INTEGRAL_TYPE_P (lhs_type)
-	   && !type_has_mode_precision_p (lhs_type))
-	  || (INTEGRAL_TYPE_P (rhs_type)
-	      && !type_has_mode_precision_p (rhs_type))))
+      && INTEGRAL_TYPE_P (lhs_type)
+      && !type_has_mode_precision_p (lhs_type))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-                         "type conversion to/from bit-precision unsupported."
-                         "\n");
+			 "type conversion to bit-precision unsupported\n");
       return false;
     }
 
