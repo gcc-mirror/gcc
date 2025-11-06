@@ -248,6 +248,9 @@ tree gfor_fndecl_zgemm;
 /* RANDOM_INIT function.  */
 tree gfor_fndecl_random_init;      /* libgfortran, 1 image only.  */
 
+/* Deep copy helper for recursive allocatable array components.  */
+tree gfor_fndecl_cfi_deep_copy_array;
+
 static void
 gfc_add_decl_to_parent_function (tree decl)
 {
@@ -3587,6 +3590,23 @@ gfc_build_intrinsic_function_decls (void)
     gfc_charlen_type_node, 6, gfc_charlen_type_node, pchar1_type_node,
     gfc_charlen_type_node, pchar1_type_node, gfc_charlen_type_node,
     gfc_logical4_type_node);
+
+  {
+    tree copy_helper_ptr_type;
+    tree copy_helper_fn_type;
+
+    copy_helper_fn_type = build_function_type_list (void_type_node,
+						    pvoid_type_node,
+						    pvoid_type_node,
+						    NULL_TREE);
+    copy_helper_ptr_type = build_pointer_type (copy_helper_fn_type);
+
+    gfor_fndecl_cfi_deep_copy_array
+      = gfc_build_library_function_decl_with_spec (
+	  get_identifier (PREFIX ("cfi_deep_copy_array")), ". R R . ",
+	  void_type_node, 3, pvoid_type_node, pvoid_type_node,
+	  copy_helper_ptr_type);
+  }
 
   gfor_fndecl_adjustl = gfc_build_library_function_decl_with_spec (
 	get_identifier (PREFIX("adjustl")), ". W . R ",

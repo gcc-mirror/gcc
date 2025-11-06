@@ -218,6 +218,7 @@ endif
 gfor_src= \
 runtime/bounds.c \
 runtime/compile_options.c \
+runtime/deep_copy.c \
 runtime/memory.c \
 runtime/string.c \
 runtime/select.c

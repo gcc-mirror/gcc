@@ -231,7 +231,7 @@ libgfortran_la_LIBADD =
 @LIBGFOR_MINIMAL_FALSE@	runtime/fpu.lo runtime/main.lo \
 @LIBGFOR_MINIMAL_FALSE@	runtime/pause.lo runtime/stop.lo
 am__objects_3 = runtime/bounds.lo runtime/compile_options.lo \
-	runtime/memory.lo runtime/string.lo runtime/select.lo \
+	runtime/deep_copy.lo runtime/memory.lo runtime/string.lo runtime/select.lo \
 	$(am__objects_1) $(am__objects_2)
 am__objects_4 = generated/matmul_i1.lo generated/matmul_i2.lo \
 	generated/matmul_i4.lo generated/matmul_i8.lo \
@@ -1013,8 +1013,8 @@ gfor_helper_src = intrinsics/associated.c intrinsics/abort.c \
 @IEEE_SUPPORT_TRUE@ieee/ieee_exceptions.F90 \
 @IEEE_SUPPORT_TRUE@ieee/ieee_features.F90
 
-gfor_src = runtime/bounds.c runtime/compile_options.c runtime/memory.c \
-	runtime/string.c runtime/select.c $(am__append_6) \
+gfor_src = runtime/bounds.c runtime/compile_options.c runtime/deep_copy.c \
+	runtime/memory.c runtime/string.c runtime/select.c $(am__append_6) \
 	$(am__append_7)
 i_matmul_c = \
 generated/matmul_i1.c \
@@ -1980,6 +1980,8 @@ runtime/$(DEPDIR)/$(am__dirstamp):
 runtime/bounds.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/compile_options.lo: runtime/$(am__dirstamp) \
+	runtime/$(DEPDIR)/$(am__dirstamp)
+runtime/deep_copy.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)
 runtime/memory.lo: runtime/$(am__dirstamp) \
 	runtime/$(DEPDIR)/$(am__dirstamp)

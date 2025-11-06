@@ -2037,4 +2037,5 @@ GFORTRAN_16 {
   global:
     _gfortran_string_split;
     _gfortran_string_split_char4;
+    _gfortran_cfi_deep_copy_array;
 } GFORTRAN_15.2;

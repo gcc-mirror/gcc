@@ -914,6 +914,14 @@ internal_proto(xcalloc);
 extern void *xrealloc (void *, size_t);
 internal_proto(xrealloc);
 
+/* deep_copy.c - Runtime helper for recursive allocatable array components */
+
+struct CFI_cdesc_t;
+extern void cfi_deep_copy_array (gfc_array_void *,
+				 gfc_array_void *,
+				 void (*copy_element) (void *, void *));
+export_proto(cfi_deep_copy_array);
+
 /* environ.c */
 
 extern void init_variables (void);
