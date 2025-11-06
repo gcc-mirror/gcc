@@ -943,27 +943,22 @@ Objective-C and Objective-C++ Dialects}.
 -mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}  -mrf16  -mbranch-index}
 
 @emph{ARM Options} (@ref{ARM Options})
-@gccoptlist{-mapcs-frame  -mno-apcs-frame
+@gccoptlist{-mapcs-frame  -mapcs
 -mabi=@var{name}
--mapcs-stack-check  -mno-apcs-stack-check
--mapcs-reentrant  -mno-apcs-reentrant
--mgeneral-regs-only
--msched-prolog  -mno-sched-prolog
+-mgeneral-regs-only  -mno-sched-prolog
 -mlittle-endian  -mbig-endian
 -mbe8  -mbe32
 -mfloat-abi=@var{name}
 -mfp16-format=@var{name}
--mthumb-interwork  -mno-thumb-interwork
--mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}
--mtune=@var{name}  -mprint-tune-info
+-mthumb-interwork
+-mcpu=@var{name}  -march=@var{name}  -mfpu=@var{name}  -mtune=@var{name}
 -mstructure-size-boundary=@var{n}
--mabort-on-noreturn
--mlong-calls  -mno-long-calls
--msingle-pic-base  -mno-single-pic-base
--mpic-register=@var{reg}
+-mabort-on-noreturn  -mlong-calls
+-msingle-pic-base  -mpic-register=@var{reg}
+-mpic-data-is-text-relative
 -mnop-fun-dllimport
 -mpoke-function-name
--mthumb  -marm  -mflip-thumb
+-mthumb  -marm
 -mtpcs-frame  -mtpcs-leaf-frame
 -mcaller-super-interworking  -mcallee-super-interworking
 -mtp=@var{name}  -mtls-dialect=@var{dialect}
@@ -972,15 +967,14 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cortex-a57-aes-1742098
 -mfix-cortex-a72-aes-1655431
 -munaligned-access
--mneon-for-64bits
 -mslow-flash-data
 -masm-syntax-unified
 -mrestrict-it
--mverbose-cost-dump
 -mpure-code
 -mcmse
 -mfix-cmse-cve-2021-35465
--mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset}
+-mstack-protector-guard=@var{guard}
+-mstack-protector-guard-offset=@var{offset}
 -mfdpic
 -mbranch-protection=@var{features}}
 
@@ -24260,6 +24254,7 @@ Generate code for the specified ABI@.  Permissible values are: @samp{apcs-gnu},
 @samp{atpcs}, @samp{aapcs} and @samp{aapcs-linux}.
 
 @opindex mapcs-frame
+@opindex mno-apcs-frame
 @item -mapcs-frame
 Generate a stack frame that is compliant with the ARM Procedure Call
 Standard for all functions, even if this is not strictly necessary for
@@ -24272,26 +24267,8 @@ This option is deprecated.
 @item -mapcs
 This is a synonym for @option{-mapcs-frame} and is deprecated.
 
-@ignore
-@c not currently implemented
-@opindex mapcs-stack-check
-@item -mapcs-stack-check
-Generate code to check the amount of stack space available upon entry to
-every function (that actually uses some stack space).  If there is
-insufficient space available then either the function
-@code{__rt_stkovf_split_small} or @code{__rt_stkovf_split_big} is
-called, depending upon the amount of stack space required.  The runtime
-system is required to provide these functions.  The default is
-@option{-mno-apcs-stack-check}, since this produces smaller code.
-
-@c not currently implemented
-@opindex mapcs-reentrant
-@item -mapcs-reentrant
-Generate reentrant, position-independent code.  The default is
-@option{-mno-apcs-reentrant}.
-@end ignore
-
 @opindex mthumb-interwork
+@opindex mno-thumb-interwork
 @item -mthumb-interwork
 Generate code that supports calling between the ARM and Thumb
 instruction sets.  Without this option, on pre-v5 architectures, the
@@ -24300,12 +24277,14 @@ default is @option{-mno-thumb-interwork}, since slightly larger code
 is generated when @option{-mthumb-interwork} is specified.  In AAPCS
 configurations this option is meaningless.
 
-@opindex mno-sched-prolog
 @opindex msched-prolog
-@item -mno-sched-prolog
-Prevent the reordering of instructions in the function prologue, or the
+@opindex mno-sched-prolog
+@item -msched-prolog
+@itemx -mno-sched-prolog
+Allow or prevent the reordering of instructions in the function prologue, or the
 merging of those instruction with the instructions in the function's
-body.  This means that all functions start with a recognizable set
+body.  With @option{-mno-sched-prolog},
+this means that all functions start with a recognizable set
 of instructions (or in fact one of a choice from a small set of
 different function prologues), and this information can be used to
 locate the start of functions inside an executable piece of code.  The
@@ -25069,6 +25048,7 @@ information using structures or unions.
 This option is deprecated.
 
 @opindex mabort-on-noreturn
+@opindex mno-abort-on-noreturn
 @item -mabort-on-noreturn
 Generate a call to the function @code{abort} at the end of a
 @code{noreturn} function.  It is executed if the function tries to
@@ -25103,6 +25083,7 @@ the compiler generates code to handle function calls via function
 pointers.
 
 @opindex msingle-pic-base
+@opindex mno-single-pic-base
 @item -msingle-pic-base
 Treat the register used for PIC addressing as read-only, rather than
 loading it in the prologue for each function.  The runtime system is
@@ -25118,6 +25099,7 @@ determined by compiler.  For single PIC base case, the default is
 otherwise the default is @samp{R10}.
 
 @opindex mpic-data-is-text-relative
+@opindex mno-pic-data-is-text-relative
 @item -mpic-data-is-text-relative
 Assume that the displacement between the text and data segments is fixed
 at static link time.  This permits using PC-relative addressing
@@ -25127,6 +25109,7 @@ disabled on such targets, it will enable @option{-msingle-pic-base} by
 default.
 
 @opindex mpoke-function-name
+@opindex mno-poke-function-name
 @item -mpoke-function-name
 Write the name of each function into the text section, directly
 preceding the function prologue.  The generated code is similar to this:
@@ -25164,25 +25147,22 @@ You can also override the ARM and Thumb mode for each function
 by using the @code{target("thumb")} and @code{target("arm")} function attributes
 (@pxref{ARM Function Attributes}) or pragmas (@pxref{Function Specific Option Pragmas}).
 
-@opindex mflip-thumb
-@item -mflip-thumb
-Switch ARM/Thumb modes on alternating functions.
-This option is provided for regression testing of mixed Thumb/ARM code
-generation, and is not intended for ordinary use in compiling code.
-
 @opindex mtpcs-frame
+@opindex mno-tpcs-frame
 @item -mtpcs-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
 Standard for all non-leaf functions.  (A leaf function is one that does
 not call any other functions.)  The default is @option{-mno-tpcs-frame}.
 
 @opindex mtpcs-leaf-frame
+@opindex mno-tpcs-leaf-frame
 @item -mtpcs-leaf-frame
 Generate a stack frame that is compliant with the Thumb Procedure Call
 Standard for all leaf functions.  (A leaf function is one that does
 not call any other functions.)  The default is @option{-mno-apcs-leaf-frame}.
 
 @opindex mcallee-super-interworking
+@opindex mno-callee-super-interworking
 @item -mcallee-super-interworking
 Gives all externally visible functions in the file being compiled an ARM
 instruction set header which switches to Thumb mode before executing the
@@ -25191,6 +25171,7 @@ non-interworking code.  This option is not valid in AAPCS configurations
 because interworking is enabled by default.
 
 @opindex mcaller-super-interworking
+@opindex mno-caller-super-interworking
 @item -mcaller-super-interworking
 Allows calls via function pointers (including virtual functions) to
 execute correctly regardless of whether the target code has been
@@ -25224,6 +25205,7 @@ library support.  Initial and local exec TLS models are unaffected by
 this option and always use the original scheme.
 
 @opindex mword-relocations
+@opindex mno-word-relocations
 @item -mword-relocations
 Only generate absolute relocations on word-sized values (i.e.@: R_ARM_ABS32).
 This is enabled by default on targets (uClinux, SymbianOS) where the runtime
@@ -25231,6 +25213,7 @@ loader imposes this restriction, and when @option{-fpic} or @option{-fPIC}
 is specified. This option conflicts with @option{-mslow-flash-data}.
 
 @opindex mfix-cortex-m3-ldrd
+@opindex mno-fix-cortex-m3-ldrd
 @item -mfix-cortex-m3-ldrd
 Some Cortex-M3 cores can cause data corruption when @code{ldrd} instructions
 with overlapping destination and base registers are used.  This option avoids
@@ -25263,11 +25246,8 @@ setting of this option.  If unaligned access is enabled then the
 preprocessor symbol @code{__ARM_FEATURE_UNALIGNED} is also
 defined.
 
-@opindex mneon-for-64bits
-@item -mneon-for-64bits
-This option is deprecated and has no effect.
-
 @opindex mslow-flash-data
+@opindex mno-slow-flash-data
 @item -mslow-flash-data
 Assume loading data from flash is slower than fetching instruction.
 Therefore literal load is minimized for better performance.
@@ -25275,6 +25255,7 @@ This option is only supported when compiling for ARMv7 M-profile and
 off by default. It conflicts with @option{-mword-relocations}.
 
 @opindex masm-syntax-unified
+@opindex mno-asm-syntax-unified
 @item -masm-syntax-unified
 Assume inline assembler is using unified asm syntax.  The default is
 currently off which implies divided syntax.  This option has no impact
@@ -25282,24 +25263,14 @@ on Thumb2. However, this may change in future releases of GCC.
 Divided syntax should be considered deprecated.
 
 @opindex mrestrict-it
+@opindex mno-restrict-it
 @item -mrestrict-it
 Restricts generation of IT blocks to conform to the rules of ARMv8-A.
 IT blocks can only contain a single 16-bit instruction from a select
 set of instructions. This option is on by default for ARMv8-A Thumb mode.
 
-@opindex mprint-tune-info
-@item -mprint-tune-info
-Print CPU tuning information as comment in assembler file.  This is
-an option used only for regression testing of the compiler and not
-intended for ordinary use in compiling code.  This option is disabled
-by default.
-
-@opindex mverbose-cost-dump
-@item -mverbose-cost-dump
-Enable verbose cost model dumping in the debug dump files.  This option is
-provided for use in debugging the compiler.
-
 @opindex mpure-code
+@opindex mno-pure-code
 @item -mpure-code
 Do not allow constant data to be placed in code sections.
 Additionally, when compiling for ELF object format give all text sections the
@@ -25313,6 +25284,7 @@ Development Tools Engineering Specification", which can be found on
 @url{https://developer.arm.com/documentation/ecm0359818/latest/}.
 
 @opindex mfix-cmse-cve-2021-35465
+@opindex mno-fix-cmse-cve-2021-35465
 @item -mfix-cmse-cve-2021-35465
 Mitigate against a potential security issue with the @code{VLLDM} instruction
 in some M-profile devices when using CMSE (CVE-2021-365465).  This option is
