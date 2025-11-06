@@ -310,6 +310,8 @@ AM_CONDITIONAL(ARCH_AARCH64_LINUX,
 	       [expr "$config_path" : ".* linux/aarch64 .*" > /dev/null])
 AM_CONDITIONAL(ARCH_ARM_LINUX,
 	       [expr "$config_path" : ".* linux/arm .*" > /dev/null])
+AM_CONDITIONAL(ARCH_LOONGARCH,
+	       [test "$ARCH" = loongarch])
 AM_CONDITIONAL(ARCH_I386,
 	       [test "$ARCH" = x86 && test x$libat_cv_wordsize = x4])
 AM_CONDITIONAL(ARCH_X86_64,

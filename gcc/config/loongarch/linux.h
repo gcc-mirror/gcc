@@ -53,3 +53,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* The stack pointer needs to be moved while checking the stack.  */
 #define STACK_CHECK_MOVING_SP 1
+
+/* Depend on glibc because the libatomic ifunc resolver needs glibc
+   ifunc resolver interface.  */
+#define HAVE_IFUNC_FOR_LIBATOMIC_16B (HAVE_AS_16B_ATOMIC && OPTION_GLIBC)

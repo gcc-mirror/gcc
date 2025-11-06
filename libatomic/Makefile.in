@@ -100,7 +100,8 @@ target_triplet = @target@
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@am__append_4 = $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@		       $(addsuffix _16_2_.lo,$(SIZEOBJS))
 
-@ARCH_AARCH64_LINUX_TRUE@@PARTIAL_VXWORKS_FALSE@am__append_5 = atomic_16.S
+@ARCH_LOONGARCH_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@am__append_5 = $(addsuffix _16_1_.lo,$(SIZEOBJS))
+@ARCH_AARCH64_LINUX_TRUE@@PARTIAL_VXWORKS_FALSE@am__append_6 = atomic_16.S
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
@@ -436,9 +437,9 @@ libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 
 @PARTIAL_VXWORKS_FALSE@libatomic_la_SOURCES = gload.c gstore.c gcas.c \
 @PARTIAL_VXWORKS_FALSE@	gexch.c glfree.c lock.c init.c fenv.c \
-@PARTIAL_VXWORKS_FALSE@	fence.c flag.c $(am__append_5)
+@PARTIAL_VXWORKS_FALSE@	fence.c flag.c $(am__append_6)
 @PARTIAL_VXWORKS_TRUE@libatomic_la_SOURCES = fenv.c fence.c flag.c \
-@PARTIAL_VXWORKS_TRUE@	$(am__append_5)
+@PARTIAL_VXWORKS_TRUE@	$(am__append_6)
 @PARTIAL_VXWORKS_FALSE@SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
 @PARTIAL_VXWORKS_FALSE@EXTRA_libatomic_la_SOURCES = $(addsuffix _n.c,$(SIZEOBJS))
 @PARTIAL_VXWORKS_FALSE@libatomic_la_DEPENDENCIES = $(libatomic_la_LIBADD) $(libatomic_version_dep)
@@ -449,7 +450,7 @@ libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 @PARTIAL_VXWORKS_FALSE@PAT_N = $(word 2,$(PAT_SPLIT))
 @PARTIAL_VXWORKS_FALSE@PAT_S = $(word 3,$(PAT_SPLIT))
 @PARTIAL_VXWORKS_FALSE@IFUNC_DEF = -DIFUNC_ALT=$(PAT_S)
-@PARTIAL_VXWORKS_FALSE@IFUNC_OPT = $(word $(PAT_S),$(IFUNC_OPTIONS))
+@PARTIAL_VXWORKS_FALSE@IFUNC_OPT = $(subst |,$(space),$(word $(PAT_S),$(IFUNC_OPTIONS)))
 @PARTIAL_VXWORKS_FALSE@@AMDEP_TRUE@M_DEPS = -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
 @PARTIAL_VXWORKS_FALSE@@AMDEP_FALSE@M_DEPS = 
 @PARTIAL_VXWORKS_FALSE@M_SIZE = -DN=$(PAT_N)
@@ -467,10 +468,11 @@ libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 @PARTIAL_VXWORKS_FALSE@	s,$(SIZES),$(addsuffix \
 @PARTIAL_VXWORKS_FALSE@	_$(s)_.lo,$(SIZEOBJS))) $(am__append_1) \
 @PARTIAL_VXWORKS_FALSE@	$(am__append_2) $(am__append_3) \
-@PARTIAL_VXWORKS_FALSE@	$(am__append_4)
+@PARTIAL_VXWORKS_FALSE@	$(am__append_4) $(am__append_5)
 @ARCH_AARCH64_LINUX_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@IFUNC_OPTIONS = -march=armv8-a+lse
 @ARCH_ARM_LINUX_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@IFUNC_OPTIONS = -march=armv7-a+fp -DHAVE_KERNEL64
 @ARCH_I386_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@IFUNC_OPTIONS = -march=i586
+@ARCH_LOONGARCH_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@IFUNC_OPTIONS = -mlsx|-mscq
 @ARCH_X86_64_TRUE@@HAVE_IFUNC_TRUE@@PARTIAL_VXWORKS_FALSE@IFUNC_OPTIONS = -mcx16 -mcx16
 libatomic_convenience_la_SOURCES = $(libatomic_la_SOURCES)
 libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)

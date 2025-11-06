@@ -117,6 +117,30 @@ EOF
 	ARCH=x86
 	;;
 
+  loongarch*)
+	cat > conftestx.c <<EOF
+#ifndef __GCC_HAVE_SYNC_COMPARE_AND_SWAP_16
+#error lock-free 16-byte atomics is not supported by compiler configuration
+#endif
+EOF
+	if ${CC} ${CFLAGS} -mlsx -mscq -E conftestx.c > /dev/null 2>&1; then
+	  cat > conftesty.c <<EOF
+#if defined (__loongarch_sx) && defined (__loongarch_scq)
+#error LSX and SCQ assumed available on target CPU so they are always used
+#endif
+EOF
+	  if ${CC} ${CFLAGS} -E conftesty.c > /dev/null 2>&1; then
+	    try_ifunc=yes
+	  else
+	    try_ifunc=no
+	  fi
+	else
+	  try_ifunc=no
+	fi
+	rm -f conftestx.c conftesty.c
+	ARCH=loongarch
+	;;
+
   *)			ARCH="${target_cpu}" ;;
 esac
 

@@ -5585,6 +5585,12 @@ x:
       [lu12i.w $t0,%le_hi20_r(a)],,
       [AC_DEFINE(HAVE_AS_TLS_LE_RELAXATION, 1,
 	  [Define if your assembler supports tls le relocation.])])
+    gcc_GAS_CHECK_FEATURE([16-byte atomic support],
+      gcc_cv_as_loongarch_16_byte_atomic_support,,
+      [vori.b $vr0, $vr1, 0
+       sc.q $a0, $a1, $a2, 0],,
+      [AC_DEFINE(HAVE_AS_16B_ATOMIC, 1,
+	  [Define if your assembler supports LSX and SCQ for 16B atomic.])])
     ;;
     s390*-*-*)
     gcc_GAS_CHECK_FEATURE([.gnu_attribute support],

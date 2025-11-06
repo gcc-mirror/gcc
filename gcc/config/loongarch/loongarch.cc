@@ -1394,6 +1394,42 @@ loongarch_can_use_return_insn (void)
   return reload_completed && cfun->machine->frame.total_size == 0;
 }
 
+/* If we want to support lock-free 16B atomic, we must support at least
+   lock-free atomic load, store, and CAS (other operations can be emulated
+   with CAS even if not supported directly).  Otherwise, for example if
+   store is lock-free but CAS is not, the store may happen when the CAS
+   operation is holding the lock, breaking the atomicity of CAS.
+
+   We need LSX for load/store and SCQ for CAS, so require both for
+   lock-free 16B atomic.
+
+   If we link a TU (1) compiled with -mlsx -mscq and the TU (2) not, for
+   the same reason we need to ensure the libatomic call invoked by TU (2)
+   always use the lock-free sequence.  Thus libatomic must contain the
+   ifuncs built with -mlsx -mscq.  Since the ifunc resolver interface is
+   glibc-specific and the hwcap bits are Linux-specific, the resolver
+   implementation in libatomic assumes GNU/Linux and
+   HAVE_IFUNC_FOR_LIBATOMIC_16B is only enabled for it.  To support
+   another OS, add the correct ifunc resolver implementation into
+   libatomic/config/loongarch/host-config.h and then define
+   HAVE_IFUNC_FOR_LIBATOMIC_16B for it.
+
+   FIXME: when ifunc is not supported but libatomic is entirely built with
+   -mlsx -mscq, we don't really need ifunc.  But we don't have a way to
+   get CFLAGS_FOR_TARGET here...  */
+bool
+loongarch_16b_atomic_lock_free_p (void)
+{
+#ifdef HAVE_IFUNC_FOR_LIBATOMIC_16B
+  bool ok_p = HAVE_IFUNC_FOR_LIBATOMIC_16B;
+#else
+  bool ok_p = false;
+#endif
+
+  return (ok_p && targetm.has_ifunc_p ()
+	  && TARGET_64BIT && ISA_HAS_LSX && ISA_HAS_SCQ);
+}
+
 /* Expand function epilogue using the following insn patterns:
    "epilogue"	      (style == NORMAL_RETURN)
    "sibcall_epilogue" (style == SIBCALL_RETURN)

@@ -147,4 +147,8 @@ struct loongarch_flags {
 #define HAVE_AS_TLS_LE_RELAXATION 0
 #endif
 
+#ifndef HAVE_AS_16B_ATOMIC
+#define HAVE_AS_16B_ATOMIC 0
+#endif
+
 #endif /* LOONGARCH_OPTS_H */

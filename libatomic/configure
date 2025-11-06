@@ -637,6 +637,8 @@ ARCH_X86_64_FALSE
 ARCH_X86_64_TRUE
 ARCH_I386_FALSE
 ARCH_I386_TRUE
+ARCH_LOONGARCH_FALSE
+ARCH_LOONGARCH_TRUE
 ARCH_ARM_LINUX_FALSE
 ARCH_ARM_LINUX_TRUE
 ARCH_AARCH64_LINUX_FALSE
@@ -11847,7 +11849,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11850 "configure"
+#line 11852 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11953,7 +11955,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11956 "configure"
+#line 11958 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -16199,6 +16201,14 @@ else
   ARCH_ARM_LINUX_FALSE=
 fi
 
+ if test "$ARCH" = loongarch; then
+  ARCH_LOONGARCH_TRUE=
+  ARCH_LOONGARCH_FALSE='#'
+else
+  ARCH_LOONGARCH_TRUE='#'
+  ARCH_LOONGARCH_FALSE=
+fi
+
  if test "$ARCH" = x86 && test x$libat_cv_wordsize = x4; then
   ARCH_I386_TRUE=
   ARCH_I386_FALSE='#'
@@ -16417,6 +16427,10 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_ARM_LINUX_TRUE}" && test -z "${ARCH_ARM_LINUX_FALSE}"; then
   as_fn_error $? "conditional \"ARCH_ARM_LINUX\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${ARCH_LOONGARCH_TRUE}" && test -z "${ARCH_LOONGARCH_FALSE}"; then
+  as_fn_error $? "conditional \"ARCH_LOONGARCH\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${ARCH_I386_TRUE}" && test -z "${ARCH_I386_FALSE}"; then

@@ -222,7 +222,7 @@
 	  [(match_operand:V2DI 1 "register_operand" "f")
 	   (match_operand:SI   2 "const_int_operand")] ;; model
 	UNSPEC_ATOMIC_STORE))]
-  "ISA_HAS_LSX && TARGET_64BIT"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   enum memmodel model = memmodel_base (INTVAL (operands[2]));
 
@@ -243,28 +243,12 @@
 }
   [(set (attr "length") (const_int 12))])
 
-(define_insn "atomic_storeti_scq"
-  [(set (match_operand:TI 0 "memory_operand" "=m")
-	(unspec_volatile:TI
-	  [(match_operand:TI 1 "register_operand" "r")]
-	  UNSPEC_ATOMIC_STORE))
-   (clobber (match_scratch:DI 2 "=&r"))]
-  "TARGET_64BIT && ISA_HAS_SCQ"
-  "1:\\n\\tll.d\t$r0,%0\n\tmove\t%2,%1\n\tsc.q\t%2,%t1,%0\n\tbeqz\t%2,1b"
-  [(set (attr "length") (const_int 16))])
-
 (define_expand "atomic_storeti"
   [(match_operand:TI 0 "memory_operand"   "=m")
    (match_operand:TI 1 "reg_or_0_operand" "rJ")
    (match_operand:SI 2 "const_int_operand")]
-  "TARGET_64BIT && (ISA_HAS_LSX || ISA_HAS_SCQ)"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
-  if (!ISA_HAS_LSX)
-    {
-      emit_insn (gen_atomic_storeti_scq (operands[0], operands[1]));
-      DONE;
-    }
-
   rtx vr = gen_reg_rtx (V2DImode), op1 = operands[1];
   rtvec v = rtvec_alloc (2);
 
@@ -330,7 +314,7 @@
   }
   [(set (attr "length") (const_int 16))])
 
-(define_mode_iterator ALL_SC [GPR (TI "TARGET_64BIT && ISA_HAS_SCQ")])
+(define_mode_iterator ALL_SC [GPR (TI "loongarch_16b_atomic_lock_free_p ()")])
 (define_mode_attr _scq [(SI "") (DI "") (TI "_scq")])
 (define_expand "atomic_fetch_nand<mode>"
   [(match_operand:ALL_SC 0 "register_operand")
@@ -374,7 +358,7 @@
    (set (match_dup 1)
 	(match_operand:TI 2 "register_operand" "rJ"))
    (clobber (match_scratch:DI 3 "=&r"))]
-  "TARGET_64BIT && ISA_HAS_SCQ"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   output_asm_insn ("1:", operands);
   output_asm_insn ("ll.d\t%0,%1", operands);
@@ -394,7 +378,7 @@
    (match_operand:TI 1 "memory_operand"   "+ZB")
    (match_operand:TI 2 "register_operand" "rJ")
    (match_operand:SI 3 "const_int_operand")] ;; model
-  "TARGET_64BIT && ISA_HAS_SCQ"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   emit_insn (gen_atomic_exchangeti_scq (operands[0], operands[1],
 					operands[2]));
@@ -694,7 +678,7 @@
 	(ne:FCC (match_dup 1) (match_dup 2)))
    (clobber (match_scratch:V2DI 6 "=&f"))
    (clobber (match_scratch:DI   7 "=&r"))]
-  "TARGET_64BIT && ISA_HAS_SCQ && ISA_HAS_LSX"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   output_asm_insn ("1:", operands);
 
@@ -755,7 +739,7 @@
    (match_operand:SI 5 "const_int_operand" "")  ;; is_weak
    (match_operand:SI 6 "const_int_operand" "")  ;; mod_s
    (match_operand:SI 7 "const_int_operand" "")] ;; mod_f
-  "TARGET_64BIT && ISA_HAS_SCQ && ISA_HAS_LSX"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   rtx fcc = gen_reg_rtx (FCCmode);
   rtx gpr = gen_reg_rtx (DImode);
@@ -945,7 +929,7 @@
 	  UNSPEC_TI_FETCH))
    (clobber (match_scratch:DI 3 "=&r"))
    (clobber (match_scratch:DI 4 "=&r"))]
-  "TARGET_64BIT && ISA_HAS_SCQ"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   output_asm_insn ("1:", operands);
   output_asm_insn ("ll.d\t%0,%1", operands);
@@ -998,7 +982,7 @@
 	   (match_operand:TI 2 "reg_or_0_operand" "rJ")]
 	  UNSPEC_TI_FETCH_DIRECT))
    (match_operand:SI    3 "const_int_operand")] ;; model
-  "TARGET_64BIT && ISA_HAS_SCQ"
+  "loongarch_16b_atomic_lock_free_p ()"
 {
   /* Model is ignored as sc.q implies a full barrier.  */
   emit_insn (gen_atomic_fetch_<amop_ti_fetch>ti_scq (operands[0],

@@ -361,6 +361,12 @@
 #endif
 
 
+/* Define if your assembler supports LSX and SCQ for 16B atomic. */
+#ifndef USED_FOR_TARGET
+#undef HAVE_AS_16B_ATOMIC
+#endif
+
+
 /* Define if your assembler supports AEABI build attributes. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_AS_AEABI_BUILD_ATTRIBUTES

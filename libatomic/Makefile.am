@@ -107,7 +107,7 @@ PAT_BASE	= $(word 1,$(PAT_SPLIT))
 PAT_N		= $(word 2,$(PAT_SPLIT))
 PAT_S		= $(word 3,$(PAT_SPLIT))
 IFUNC_DEF	= -DIFUNC_ALT=$(PAT_S)
-IFUNC_OPT	= $(word $(PAT_S),$(IFUNC_OPTIONS))
+IFUNC_OPT	= $(subst |,$(space),$(word $(PAT_S),$(IFUNC_OPTIONS)))
 
 @AMDEP_TRUE@M_DEPS		= -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
 @AMDEP_FALSE@M_DEPS		=
@@ -151,6 +151,10 @@ if ARCH_X86_64
 IFUNC_OPTIONS	     = -mcx16 -mcx16
 libatomic_la_LIBADD += $(addsuffix _16_1_.lo,$(SIZEOBJS)) \
 		       $(addsuffix _16_2_.lo,$(SIZEOBJS))
+endif
+if ARCH_LOONGARCH
+IFUNC_OPTIONS	     = -mlsx|-mscq
+libatomic_la_LIBADD += $(addsuffix _16_1_.lo,$(SIZEOBJS))
 endif
 endif
 
