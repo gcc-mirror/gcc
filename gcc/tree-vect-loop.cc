@@ -2108,6 +2108,10 @@ vect_analyze_loop_2 (loop_vec_info loop_vinfo, int masked_p, bool &fatal,
     orig_loop_vinfo = loop_vinfo;
   gcc_assert (orig_loop_vinfo);
 
+  /* We can't mask on niters for uncounted loops due to unkown upper bound.  */
+  if (LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+    LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+
   /* The first group of checks is independent of the vector size.  */
   fatal = true;
 
