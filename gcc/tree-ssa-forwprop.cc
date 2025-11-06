@@ -5080,7 +5080,12 @@ optimize_unreachable (basic_block bb)
       stmt = gsi_stmt (gsi);
       if (gcond *cond_stmt = dyn_cast <gcond *> (stmt))
 	{
-	  if (e->flags & EDGE_TRUE_VALUE)
+	  /* If the condition is already true/false
+	     ignore it. This can happen during copy prop of forwprop. */
+	  if (gimple_cond_true_p (cond_stmt)
+	      || gimple_cond_false_p (cond_stmt))
+	    continue;
+	  else if (e->flags & EDGE_TRUE_VALUE)
 	    gimple_cond_make_false (cond_stmt);
 	  else if (e->flags & EDGE_FALSE_VALUE)
 	    gimple_cond_make_true (cond_stmt);
