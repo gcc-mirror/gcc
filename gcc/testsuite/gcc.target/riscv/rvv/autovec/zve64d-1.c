@@ -3,4 +3,7 @@
 
 #include "template-1.h"
 
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 6 "vect" } } */
+/* With length-control for VLS modes we don't vectorize foo4 anymore.
+   That's due to a very tight costing decision in the small loop.
+   Therefore expect 5 instead of 6 vectorized loops.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 5 "vect" } } */

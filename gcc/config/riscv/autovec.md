@@ -23,10 +23,10 @@
 ;; =========================================================================
 
 (define_expand "mask_len_load<mode><vm>"
-  [(match_operand:V 0 "register_operand")
-   (match_operand:V 1 "memory_operand")
+  [(match_operand:V_VLS 0 "register_operand")
+   (match_operand:V_VLS 1 "memory_operand")
    (match_operand:<VM> 2 "vector_mask_operand")
-   (match_operand:V 3 "maskload_else_operand")
+   (match_operand:V_VLS 3 "maskload_else_operand")
    (match_operand 4 "autovec_length_operand")
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
@@ -36,8 +36,8 @@
 })
 
 (define_expand "mask_len_store<mode><vm>"
-  [(match_operand:V 0 "memory_operand")
-   (match_operand:V 1 "register_operand")
+  [(match_operand:V_VLS 0 "memory_operand")
+   (match_operand:V_VLS 1 "register_operand")
    (match_operand:<VM> 2 "vector_mask_operand")
    (match_operand 3 "autovec_length_operand")
    (match_operand 4 "const_0_operand")]
@@ -440,8 +440,8 @@
 
 ;; Slide an RVV vector left and insert a scalar into element 0.
 (define_expand "vec_shl_insert_<mode>"
-  [(match_operand:VI 0 "register_operand")
-   (match_operand:VI 1 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
+   (match_operand:V_VLSI 1 "register_operand")
    (match_operand:<VEL> 2 "reg_or_0_operand")]
   "TARGET_VECTOR"
 {
@@ -452,8 +452,8 @@
 })
 
 (define_expand "vec_shl_insert_<mode>"
-  [(match_operand:VF 0 "register_operand")
-   (match_operand:VF 1 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
+   (match_operand:V_VLSF 1 "register_operand")
    (match_operand:<VEL> 2 "register_operand")]
   "TARGET_VECTOR"
 {
@@ -622,10 +622,10 @@
 )
 
 (define_expand "vcond_mask_len_<mode>"
-  [(match_operand:V 0 "register_operand")
+  [(match_operand:V_VLS 0 "register_operand")
     (match_operand:<VM> 1 "nonmemory_operand")
-    (match_operand:V 2 "nonmemory_operand")
-    (match_operand:V 3 "autovec_else_operand")
+    (match_operand:V_VLS 2 "nonmemory_operand")
+    (match_operand:V_VLS 3 "autovec_else_operand")
     (match_operand 4 "autovec_length_operand")
     (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1730,11 +1730,11 @@
 })
 
 (define_expand "cond_len_<optab><mode>"
-  [(match_operand:VI 0 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (any_int_unop:VI
-     (match_operand:VI 2 "register_operand"))
-   (match_operand:VI 3 "autovec_else_operand")
+   (any_int_unop:V_VLSI
+     (match_operand:V_VLSI 2 "register_operand"))
+   (match_operand:V_VLSI 3 "autovec_else_operand")
    (match_operand 4 "autovec_length_operand")
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1765,11 +1765,11 @@
 })
 
 (define_expand "cond_len_<optab><mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (any_float_unop_nofrm:VF
-     (match_operand:VF 2 "register_operand"))
-   (match_operand:VF 3 "autovec_else_operand")
+   (any_float_unop_nofrm:V_VLSF
+     (match_operand:V_VLSF 2 "register_operand"))
+   (match_operand:V_VLSF 3 "autovec_else_operand")
    (match_operand 4 "autovec_length_operand")
    (match_operand 5 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1801,12 +1801,12 @@
 })
 
 (define_expand "cond_len_<optab><mode>"
-  [(match_operand:VI 0 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (any_shift:VI
-     (match_operand:VI 2 "register_operand")
-     (match_operand:VI 3 "vector_shift_operand"))
-   (match_operand:VI 4 "autovec_else_operand")
+   (any_shift:V_VLSI
+     (match_operand:V_VLSI 2 "register_operand")
+     (match_operand:V_VLSI 3 "vector_shift_operand"))
+   (match_operand:V_VLSI 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1839,12 +1839,12 @@
 })
 
 (define_expand "cond_len_<optab><mode>"
-  [(match_operand:VI 0 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (any_int_binop_no_shift:VI
-     (match_operand:VI 2 "<binop_rhs1_predicate>")
-     (match_operand:VI 3 "<binop_rhs2_predicate>"))
-   (match_operand:VI 4 "autovec_else_operand")
+   (any_int_binop_no_shift:V_VLSI
+     (match_operand:V_VLSI 2 "<binop_rhs1_predicate>")
+     (match_operand:V_VLSI 3 "<binop_rhs2_predicate>"))
+   (match_operand:V_VLSI 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1877,12 +1877,12 @@
 })
 
 (define_expand "cond_len_<optab><mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (any_float_binop:VF
-     (match_operand:VF 2 "register_operand")
-     (match_operand:VF 3 "register_operand"))
-   (match_operand:VF 4 "autovec_else_operand")
+   (any_float_binop:V_VLSF
+     (match_operand:V_VLSF 2 "register_operand")
+     (match_operand:V_VLSF 3 "register_operand"))
+   (match_operand:V_VLSF 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1913,12 +1913,12 @@
 })
 
 (define_expand "cond_len_<optab><mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (any_float_binop_nofrm:VF
-     (match_operand:VF 2 "register_operand")
-     (match_operand:VF 3 "register_operand"))
-   (match_operand:VF 4 "autovec_else_operand")
+   (any_float_binop_nofrm:V_VLSF
+     (match_operand:V_VLSF 2 "register_operand")
+     (match_operand:V_VLSF 3 "register_operand"))
+   (match_operand:V_VLSF 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR"
@@ -1943,12 +1943,12 @@
 })
 
 (define_expand "cond_len_<ieee_fmaxmin_op><mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (unspec:VF
-     [(match_operand:VF 2 "register_operand")
-      (match_operand:VF 3 "register_operand")] UNSPEC_VFMAXMIN)
-   (match_operand:VF 4 "autovec_else_operand")
+   (unspec:V_VLSF
+     [(match_operand:V_VLSF 2 "register_operand")
+      (match_operand:V_VLSF 3 "register_operand")] UNSPEC_VFMAXMIN)
+   (match_operand:V_VLSF 4 "autovec_else_operand")
    (match_operand 5 "autovec_length_operand")
    (match_operand 6 "const_0_operand")]
   "TARGET_VECTOR && !HONOR_SNANS (<MODE>mode)"
@@ -2002,12 +2002,12 @@
 })
 
 (define_expand "cond_len_fma<mode>"
-  [(match_operand:VI 0 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (match_operand:VI 2 "register_operand")
-   (match_operand:VI 3 "register_operand")
-   (match_operand:VI 4 "register_operand")
-   (match_operand:VI 5 "autovec_else_operand")
+   (match_operand:V_VLSI 2 "register_operand")
+   (match_operand:V_VLSI 3 "register_operand")
+   (match_operand:V_VLSI 4 "register_operand")
+   (match_operand:V_VLSI 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -2032,12 +2032,12 @@
 })
 
 (define_expand "cond_len_fnma<mode>"
-  [(match_operand:VI 0 "register_operand")
+  [(match_operand:V_VLSI 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (match_operand:VI 2 "register_operand")
-   (match_operand:VI 3 "register_operand")
-   (match_operand:VI 4 "register_operand")
-   (match_operand:VI 5 "autovec_else_operand")
+   (match_operand:V_VLSI 2 "register_operand")
+   (match_operand:V_VLSI 3 "register_operand")
+   (match_operand:V_VLSI 4 "register_operand")
+   (match_operand:V_VLSI 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -2069,12 +2069,12 @@
 })
 
 (define_expand "cond_len_fma<mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (match_operand:VF 2 "register_operand")
-   (match_operand:VF 3 "register_operand")
-   (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "autovec_else_operand")
+   (match_operand:V_VLSF 2 "register_operand")
+   (match_operand:V_VLSF 3 "register_operand")
+   (match_operand:V_VLSF 4 "register_operand")
+   (match_operand:V_VLSF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -2099,12 +2099,12 @@
 })
 
 (define_expand "cond_len_fnma<mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (match_operand:VF 2 "register_operand")
-   (match_operand:VF 3 "register_operand")
-   (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "autovec_else_operand")
+   (match_operand:V_VLSF 2 "register_operand")
+   (match_operand:V_VLSF 3 "register_operand")
+   (match_operand:V_VLSF 4 "register_operand")
+   (match_operand:V_VLSF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -2129,12 +2129,12 @@
 })
 
 (define_expand "cond_len_fms<mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (match_operand:VF 2 "register_operand")
-   (match_operand:VF 3 "register_operand")
-   (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "autovec_else_operand")
+   (match_operand:V_VLSF 2 "register_operand")
+   (match_operand:V_VLSF 3 "register_operand")
+   (match_operand:V_VLSF 4 "register_operand")
+   (match_operand:V_VLSF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -2159,12 +2159,12 @@
 })
 
 (define_expand "cond_len_fnms<mode>"
-  [(match_operand:VF 0 "register_operand")
+  [(match_operand:V_VLSF 0 "register_operand")
    (match_operand:<VM> 1 "vector_mask_operand")
-   (match_operand:VF 2 "register_operand")
-   (match_operand:VF 3 "register_operand")
-   (match_operand:VF 4 "register_operand")
-   (match_operand:VF 5 "autovec_else_operand")
+   (match_operand:V_VLSF 2 "register_operand")
+   (match_operand:V_VLSF 3 "register_operand")
+   (match_operand:V_VLSF 4 "register_operand")
+   (match_operand:V_VLSF 5 "autovec_else_operand")
    (match_operand 6 "autovec_length_operand")
    (match_operand 7 "const_0_operand")]
   "TARGET_VECTOR"
@@ -2450,7 +2450,7 @@
 (define_insn_and_split "mask_len_fold_left_plus_<mode>"
   [(set (match_operand:<VEL> 0 "register_operand")
         (unspec:<VEL> [
-          (match_operand:VF 2 "register_operand")
+          (match_operand:V_VLSF 2 "register_operand")
           (match_operand:<VEL> 1 "register_operand")
           (match_operand:<VM> 3 "vector_mask_operand")
           (match_operand 4 "autovec_length_operand")
@@ -2486,6 +2486,9 @@
 ;; - vfmv.f.s
 ;; -------------------------------------------------------------------------
 
+;; If this is available for VLS modes we sometimes don't fall back to
+;; non-partial accesses, thus missing a vectorization opportunity.
+;; See PR122938.
 (define_expand "len_fold_extract_last_<mode>"
   [(match_operand:<VEL> 0 "register_operand")
    (match_operand:<VEL> 1 "register_operand")
@@ -3066,10 +3069,10 @@
 ;; - vrol.vv vror.vv
 ;; -------------------------------------------------------------------------
 (define_expand "v<bitmanip_optab><mode>3"
-  [(set (match_operand:VI 0 "register_operand")
-	(bitmanip_rotate:VI
-	  (match_operand:VI 1 "register_operand")
-	  (match_operand:VI 2 "register_operand")))]
+  [(set (match_operand:V_VLSI 0 "register_operand")
+	(bitmanip_rotate:V_VLSI
+	  (match_operand:V_VLSI 1 "register_operand")
+	  (match_operand:V_VLSI 2 "register_operand")))]
   "TARGET_ZVBB || TARGET_ZVKB"
   {
     riscv_vector::emit_vlmax_insn (code_for_pred_v (<CODE>, <MODE>mode),

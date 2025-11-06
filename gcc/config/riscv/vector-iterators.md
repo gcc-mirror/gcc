@@ -845,6 +845,32 @@
   RVVM8QI RVVM4QI RVVM2QI RVVM1QI RVVMF2QI RVVMF4QI (RVVMF8QI "TARGET_VECTOR_ELEN_64")
 
   RVVM8HI RVVM4HI RVVM2HI RVVM1HI RVVMF2HI (RVVMF4HI "TARGET_VECTOR_ELEN_64")
+
+  (V1QI "riscv_vector::vls_mode_valid_p (V1QImode)")
+  (V2QI "riscv_vector::vls_mode_valid_p (V2QImode)")
+  (V4QI "riscv_vector::vls_mode_valid_p (V4QImode)")
+  (V8QI "riscv_vector::vls_mode_valid_p (V8QImode)")
+  (V16QI "riscv_vector::vls_mode_valid_p (V16QImode)")
+  (V32QI "riscv_vector::vls_mode_valid_p (V32QImode)")
+  (V64QI "riscv_vector::vls_mode_valid_p (V64QImode) && TARGET_MIN_VLEN >= 64")
+  (V128QI "riscv_vector::vls_mode_valid_p (V128QImode) && TARGET_MIN_VLEN >= 128")
+  (V256QI "riscv_vector::vls_mode_valid_p (V256QImode) && TARGET_MIN_VLEN >= 256")
+  (V512QI "riscv_vector::vls_mode_valid_p (V512QImode) && TARGET_MIN_VLEN >= 512")
+  (V1024QI "riscv_vector::vls_mode_valid_p (V1024QImode) && TARGET_MIN_VLEN >= 1024")
+  (V2048QI "riscv_vector::vls_mode_valid_p (V2048QImode) && TARGET_MIN_VLEN >= 2048")
+  (V4096QI "riscv_vector::vls_mode_valid_p (V4096QImode) && TARGET_MIN_VLEN >= 4096")
+  (V1HI "riscv_vector::vls_mode_valid_p (V1HImode)")
+  (V2HI "riscv_vector::vls_mode_valid_p (V2HImode)")
+  (V4HI "riscv_vector::vls_mode_valid_p (V4HImode)")
+  (V8HI "riscv_vector::vls_mode_valid_p (V8HImode)")
+  (V16HI "riscv_vector::vls_mode_valid_p (V16HImode)")
+  (V32HI "riscv_vector::vls_mode_valid_p (V32HImode) && TARGET_MIN_VLEN >= 64")
+  (V64HI "riscv_vector::vls_mode_valid_p (V64HImode) && TARGET_MIN_VLEN >= 128")
+  (V128HI "riscv_vector::vls_mode_valid_p (V128HImode) && TARGET_MIN_VLEN >= 256")
+  (V256HI "riscv_vector::vls_mode_valid_p (V256HImode) && TARGET_MIN_VLEN >= 512")
+  (V512HI "riscv_vector::vls_mode_valid_p (V512HImode) && TARGET_MIN_VLEN >= 1024")
+  (V1024HI "riscv_vector::vls_mode_valid_p (V1024HImode) && TARGET_MIN_VLEN >= 2048")
+  (V2048HI "riscv_vector::vls_mode_valid_p (V2048HImode) && TARGET_MIN_VLEN >= 4096")
 ])
 
 (define_mode_iterator VI_QHS [
@@ -5852,40 +5878,128 @@
   (V2048BI "riscv_vector::vls_mode_valid_p (V2048BImode) && TARGET_MIN_VLEN >= 2048")
   (V4096BI "riscv_vector::vls_mode_valid_p (V4096BImode) && TARGET_MIN_VLEN >= 4096")])
 
-(define_mode_iterator VSI [
+(define_mode_iterator V_VLSI_S [
   RVVM8SI RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_VECTOR_ELEN_64")
+
+  (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
+  (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
+  (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
+  (V8SI "riscv_vector::vls_mode_valid_p (V8SImode)")
+  (V16SI "riscv_vector::vls_mode_valid_p (V16SImode) && TARGET_MIN_VLEN >= 64")
+  (V32SI "riscv_vector::vls_mode_valid_p (V32SImode) && TARGET_MIN_VLEN >= 128")
+  (V64SI "riscv_vector::vls_mode_valid_p (V64SImode) && TARGET_MIN_VLEN >= 256")
+  (V128SI "riscv_vector::vls_mode_valid_p (V128SImode) && TARGET_MIN_VLEN >= 512")
+  (V256SI "riscv_vector::vls_mode_valid_p (V256SImode) && TARGET_MIN_VLEN >= 1024")
+  (V512SI "riscv_vector::vls_mode_valid_p (V512SImode) && TARGET_MIN_VLEN >= 2048")
+  (V1024SI "riscv_vector::vls_mode_valid_p (V1024SImode) && TARGET_MIN_VLEN >= 4096")
 ])
 
-(define_mode_iterator VLMULX2_SI [
+(define_mode_iterator V_VLSI_S_LMULX2 [
   RVVM4SI RVVM2SI RVVM1SI (RVVMF2SI "TARGET_VECTOR_ELEN_64")
+
+  (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
+  (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
+  (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
+  (V8SI "riscv_vector::vls_mode_valid_p (V8SImode)")
+  (V16SI "riscv_vector::vls_mode_valid_p (V16SImode) && TARGET_MIN_VLEN >= 64")
+  (V32SI "riscv_vector::vls_mode_valid_p (V32SImode) && TARGET_MIN_VLEN >= 128")
+  (V64SI "riscv_vector::vls_mode_valid_p (V64SImode) && TARGET_MIN_VLEN >= 256")
+  (V128SI "riscv_vector::vls_mode_valid_p (V128SImode) && TARGET_MIN_VLEN >= 512")
+  (V256SI "riscv_vector::vls_mode_valid_p (V256SImode) && TARGET_MIN_VLEN >= 1024")
+  (V512SI "riscv_vector::vls_mode_valid_p (V512SImode) && TARGET_MIN_VLEN >= 2048")
 ])
 
-(define_mode_iterator VLMULX4_SI [
+(define_mode_iterator V_VLSI_S_LMULX4 [
   RVVM2SI RVVM1SI (RVVMF2SI "TARGET_VECTOR_ELEN_64")
+
+  (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
+  (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
+  (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
+  (V8SI "riscv_vector::vls_mode_valid_p (V8SImode)")
+  (V16SI "riscv_vector::vls_mode_valid_p (V16SImode) && TARGET_MIN_VLEN >= 64")
+  (V32SI "riscv_vector::vls_mode_valid_p (V32SImode) && TARGET_MIN_VLEN >= 128")
+  (V64SI "riscv_vector::vls_mode_valid_p (V64SImode) && TARGET_MIN_VLEN >= 256")
+  (V128SI "riscv_vector::vls_mode_valid_p (V128SImode) && TARGET_MIN_VLEN >= 512")
+  (V256SI "riscv_vector::vls_mode_valid_p (V256SImode) && TARGET_MIN_VLEN >= 1024")
 ])
 
-(define_mode_iterator VLMULX8_SI [
+(define_mode_iterator V_VLSI_S_LMULX8 [
   RVVM1SI (RVVMF2SI "TARGET_VECTOR_ELEN_64")
+
+  (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
+  (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
+  (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
+  (V8SI "riscv_vector::vls_mode_valid_p (V8SImode)")
+  (V16SI "riscv_vector::vls_mode_valid_p (V16SImode) && TARGET_MIN_VLEN >= 64")
+  (V32SI "riscv_vector::vls_mode_valid_p (V32SImode) && TARGET_MIN_VLEN >= 128")
+  (V64SI "riscv_vector::vls_mode_valid_p (V64SImode) && TARGET_MIN_VLEN >= 256")
+  (V128SI "riscv_vector::vls_mode_valid_p (V128SImode) && TARGET_MIN_VLEN >= 512")
 ])
 
-(define_mode_iterator VLMULX16_SI [
+(define_mode_iterator V_VLSI_S_LMULX16 [
   (RVVMF2SI "TARGET_VECTOR_ELEN_64")
+
+  (V1SI "riscv_vector::vls_mode_valid_p (V1SImode)")
+  (V2SI "riscv_vector::vls_mode_valid_p (V2SImode)")
+  (V4SI "riscv_vector::vls_mode_valid_p (V4SImode)")
+  (V8SI "riscv_vector::vls_mode_valid_p (V8SImode)")
+  (V16SI "riscv_vector::vls_mode_valid_p (V16SImode) && TARGET_MIN_VLEN >= 64")
+  (V32SI "riscv_vector::vls_mode_valid_p (V32SImode) && TARGET_MIN_VLEN >= 128")
+  (V64SI "riscv_vector::vls_mode_valid_p (V64SImode) && TARGET_MIN_VLEN >= 256")
 ])
 
-(define_mode_attr VSIX2 [
-  (RVVM8SI "RVVM8SI") (RVVM4SI "RVVM8SI") (RVVM2SI "RVVM4SI") (RVVM1SI "RVVM2SI") (RVVMF2SI "RVVM1SI")
+(define_mode_attr V_VLSI_S_X2 [
+  (RVVM4SI "RVVM8SI") (RVVM2SI "RVVM4SI") (RVVM1SI "RVVM2SI") (RVVMF2SI "RVVM1SI")
+
+  (V1SI "V2SI")
+  (V2SI "V4SI")
+  (V4SI "V8SI")
+  (V8SI "V16SI")
+  (V16SI "V32SI")
+  (V32SI "V64SI")
+  (V64SI "V128SI")
+  (V128SI "V256SI")
+  (V256SI "V512SI")
+  (V512SI "V1024SI")
 ])
 
-(define_mode_attr VSIX4 [
+(define_mode_attr V_VLSI_S_X4 [
   (RVVM2SI "RVVM8SI") (RVVM1SI "RVVM4SI") (RVVMF2SI "RVVM2SI")
+
+  (V1SI "V4SI")
+  (V2SI "V8SI")
+  (V4SI "V16SI")
+  (V8SI "V32SI")
+  (V16SI "V64SI")
+  (V32SI "V128SI")
+  (V64SI "V256SI")
+  (V128SI "V512SI")
+  (V256SI "V1024SI")
 ])
 
-(define_mode_attr VSIX8 [
+(define_mode_attr V_VLSI_S_X8 [
   (RVVM1SI "RVVM8SI") (RVVMF2SI "RVVM4SI")
+
+  (V1SI "V8SI")
+  (V2SI "V16SI")
+  (V4SI "V32SI")
+  (V8SI "V64SI")
+  (V16SI "V128SI")
+  (V32SI "V256SI")
+  (V64SI "V512SI")
+  (V128SI "V1024SI")
 ])
 
-(define_mode_attr VSIX16 [
+(define_mode_attr V_VLSI_S_X16 [
   (RVVMF2SI "RVVM8SI")
+
+  (V1SI "V16SI")
+  (V2SI "V32SI")
+  (V4SI "V64SI")
+  (V8SI "V128SI")
+  (V16SI "V256SI")
+  (V32SI "V512SI")
+  (V64SI "V1024SI")
 ])
 
 (define_mode_iterator VLS_HAS_HALF [

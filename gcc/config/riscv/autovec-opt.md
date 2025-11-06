@@ -37,17 +37,17 @@
 ;; -----------------------------------------------------------------------------
 
 (define_split
-  [(set (match_operand:VB      0 "register_operand")
-	(if_then_else:VB
-	  (unspec:VB
-	    [(match_operand:VB 1 "vector_all_trues_mask_operand")
+  [(set (match_operand:VB_VLS      0 "register_operand")
+	(if_then_else:VB_VLS
+	  (unspec:VB_VLS
+	    [(match_operand:VB_VLS 1 "vector_all_trues_mask_operand")
 	     (match_operand    4 "vector_length_operand")
 	     (match_operand    5 "const_int_operand")
 	     (match_operand    6 "const_int_operand")
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	  (match_operand:VB    3 "vector_move_operand")
-	  (match_operand:VB    2 "vector_undef_operand")))]
+	  (match_operand:VB_VLS    3 "vector_move_operand")
+	  (match_operand:VB_VLS    2 "vector_undef_operand")))]
   "TARGET_VECTOR"
   [(const_int 0)]
   {
@@ -1447,11 +1447,11 @@
 
 ;; Combine neg + vfsgnj to vfsgnjn
 (define_insn_and_split "*copysign<mode>_neg"
-  [(set (match_operand:VF 0 "register_operand")
-        (neg:VF
-          (unspec:VF [
-            (match_operand:VF 1 "register_operand")
-            (match_operand:VF 2 "register_operand")
+  [(set (match_operand:V_VLSF 0 "register_operand")
+        (neg:V_VLSF
+          (unspec:V_VLSF [
+            (match_operand:V_VLSF 1 "register_operand")
+            (match_operand:V_VLSF 2 "register_operand")
           ] UNSPEC_VCOPYSIGN)))]
   "TARGET_VECTOR && can_create_pseudo_p ()"
   "#"

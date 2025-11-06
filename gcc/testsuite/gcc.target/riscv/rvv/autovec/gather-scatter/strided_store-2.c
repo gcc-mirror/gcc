@@ -40,6 +40,7 @@
 
 TEST_ALL (TEST_LOOP)
 
-/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_STORE " 44 "optimized" } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_STORE " 44 "optimized" { target { no-opts "-mrvv-max-lmul=dynamic" "-mrvv-max-lmul=m8" } } } } */
+/* { dg-final { scan-tree-dump-times " \.MASK_LEN_STRIDED_STORE " 49 "optimized" { target { any-opts "-mrvv-max-lmul=dynamic" "-mrvv-max-lmul=m8" } } } } */
 /* { dg-final { scan-tree-dump-not " \.SCATTER_STORE" "optimized" } } */
 /* { dg-final { scan-tree-dump-not " \.MASK_SCATTER_STORE" "optimized" } } */

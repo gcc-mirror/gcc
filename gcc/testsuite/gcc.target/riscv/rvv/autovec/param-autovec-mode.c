@@ -13,4 +13,4 @@ foo (int *a, int *b, int n)
 }
 
 /* { dg-final { scan-tree-dump "Choosing vector mode V4QI" "vect" } } */
-/* { dg-final { scan-tree-dump "Choosing epilogue vector mode RVVM1SI" "vect" } } */
+/* { dg-final { scan-tree-dump "operating on partial vectors." "vect" } } */
