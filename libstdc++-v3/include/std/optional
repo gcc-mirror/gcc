@@ -1484,13 +1484,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 #if __cpp_lib_optional >= 202506L // C++26
   template<typename _Tp>
-    class optional<_Tp&>
+    class optional<_Tp&>;
+
+  template<typename _Tp>
+    struct __optional_ref_base
+    {};
+
+#ifdef __cpp_lib_optional_range_support // >= C++26
+  template<typename _Tp>
+    struct __optional_ref_base<_Tp[]>
+    {};
+
+  template<typename _Tp>
+    requires is_object_v<_Tp>
+    struct __optional_ref_base<_Tp>
+    {
+      using iterator = __gnu_cxx::__normal_iterator<_Tp*, optional<_Tp&>>;
+    };
+#endif // __cpp_lib_optional_range_support
+
+  template<typename _Tp>
+    class optional<_Tp&> : public __optional_ref_base<_Tp>
     {
       static_assert(__is_valid_contained_type_for_optional<_Tp&>);
 
     public:
       using value_type = _Tp;
-      using iterator = __gnu_cxx::__normal_iterator<_Tp*, optional>;
 
       // Constructors.
       constexpr optional() noexcept = default;
@@ -1652,16 +1671,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       constexpr void swap(optional& __rhs) noexcept
       { std::swap(_M_val, __rhs._M_val); }
 
+#ifdef __cpp_lib_optional_range_support // >= C++26
       // Iterator support.
-      constexpr iterator begin() const noexcept
-      {
-	return iterator(_M_val);
-      }
+      constexpr auto begin() const noexcept
+	requires is_object_v<_Tp> && (!is_unbounded_array_v<_Tp>)
+      { return __gnu_cxx::__normal_iterator<_Tp*, optional>(_M_val); }
 
-      constexpr iterator end() const noexcept
-      {
-	return begin() + has_value();
-      }
+      constexpr auto end() const noexcept
+	requires is_object_v<_Tp> && (!is_unbounded_array_v<_Tp>)
+      { return begin() + has_value(); }
+#endif // __cpp_lib_optional_range_support
 
       // Observers.
       constexpr _Tp* operator->() const noexcept
