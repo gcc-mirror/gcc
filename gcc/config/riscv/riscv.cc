@@ -4722,6 +4722,13 @@ riscv_noce_conversion_profitable_p (rtx_insn *seq,
 	      if (last_dest)
 		last_dest = dest;
 	    }
+	  else if (REG_P (dest) && src == CONST0_RTX (GET_MODE (dest)))
+	    {
+	      /* A GPR set to zero can always be replaced with x0, so any
+		 insn that sets a GPR to zero will eventually be eliminated.  */
+	      riscv_if_info.original_cost += COSTS_N_INSNS (1);
+	      riscv_if_info.max_seq_cost += COSTS_N_INSNS (1);
+	    }
 	  else
 	    last_dest = NULL_RTX;
 
