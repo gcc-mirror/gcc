@@ -2182,6 +2182,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     inline constexpr bool
       ranges::enable_view<optional<_Tp>> = true;
 
+#if __cpp_lib_optional >= 202506L // C++26
+  template<typename _Tp>
+    constexpr bool
+    ranges::enable_borrowed_range<optional<_Tp&>> = true;
+#endif
+ 
   template<typename _Tp>
     inline constexpr range_format
       format_kind<optional<_Tp>> = range_format::disabled;

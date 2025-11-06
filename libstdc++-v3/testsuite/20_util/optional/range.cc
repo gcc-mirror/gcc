@@ -19,12 +19,16 @@ test_range_concepts()
   static_assert(std::ranges::contiguous_range<O>);
   static_assert(std::ranges::sized_range<O>);
   static_assert(std::ranges::common_range<O>);
-  static_assert(!std::ranges::borrowed_range<O>);
+
+  // an optional<T&> is borrowed range
+  constexpr bool is_ref_opt = std::is_reference_v<T>;
+  static_assert(std::ranges::borrowed_range<O> == is_ref_opt);
 
   // an optional<const T> is not assignable, and therefore does not satisfy ranges::view
   constexpr bool is_const_opt = std::is_const_v<T>;
   static_assert(std::ranges::view<O> == !is_const_opt);
   static_assert(std::ranges::viewable_range<O> == !is_const_opt);
+
 }
 
 template<typename O>
