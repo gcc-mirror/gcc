@@ -4692,53 +4692,81 @@ expand_cond_binop (unsigned icode, rtx *ops)
 
 /* Prepare insn_code for gather_load/scatter_store according to
    the vector mode and index mode.  */
-static insn_code
-prepare_gather_scatter (machine_mode vec_mode, machine_mode idx_mode,
-			bool is_load)
+insn_code
+get_gather_scatter_code (machine_mode vec_mode, machine_mode idx_mode,
+			 bool is_load)
 {
-  if (!is_load)
-    return code_for_pred_indexed_store (UNSPEC_UNORDERED, vec_mode, idx_mode);
+  unsigned src_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (idx_mode));
+  unsigned dst_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (vec_mode));
+  if (dst_eew_bitsize == src_eew_bitsize)
+    {
+      if (is_load)
+	return code_for_pred_indexed_load_same_eew
+	  (UNSPEC_UNORDERED, vec_mode);
+      else
+	return code_for_pred_indexed_store_same_eew
+	  (UNSPEC_UNORDERED, vec_mode);
+    }
+  else if (dst_eew_bitsize > src_eew_bitsize)
+    {
+      unsigned factor = dst_eew_bitsize / src_eew_bitsize;
+      switch (factor)
+	{
+	case 2:
+	  if (is_load)
+	    return
+	      code_for_pred_indexed_load_x2_greater_eew
+		(UNSPEC_UNORDERED, vec_mode);
+	  else
+	    return
+	      code_for_pred_indexed_store_x2_greater_eew
+		(UNSPEC_UNORDERED, vec_mode);
+	case 4:
+	  if (is_load)
+	    return code_for_pred_indexed_load_x4_greater_eew
+		(UNSPEC_UNORDERED, vec_mode);
+	  else
+	    return code_for_pred_indexed_store_x4_greater_eew
+		(UNSPEC_UNORDERED, vec_mode);
+	case 8:
+	  if (is_load)
+	    return code_for_pred_indexed_load_x8_greater_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	  else
+	    return code_for_pred_indexed_store_x8_greater_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	default:
+	  gcc_unreachable ();
+	}
+    }
   else
     {
-      unsigned src_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (idx_mode));
-      unsigned dst_eew_bitsize = GET_MODE_BITSIZE (GET_MODE_INNER (vec_mode));
-      if (dst_eew_bitsize == src_eew_bitsize)
-	return code_for_pred_indexed_load_same_eew (UNSPEC_UNORDERED, vec_mode);
-      else if (dst_eew_bitsize > src_eew_bitsize)
+      unsigned factor = src_eew_bitsize / dst_eew_bitsize;
+      switch (factor)
 	{
-	  unsigned factor = dst_eew_bitsize / src_eew_bitsize;
-	  switch (factor)
-	    {
-	    case 2:
-	      return code_for_pred_indexed_load_x2_greater_eew (
-		UNSPEC_UNORDERED, vec_mode);
-	    case 4:
-	      return code_for_pred_indexed_load_x4_greater_eew (
-		UNSPEC_UNORDERED, vec_mode);
-	    case 8:
-	      return code_for_pred_indexed_load_x8_greater_eew (
-		UNSPEC_UNORDERED, vec_mode);
-	    default:
-	      gcc_unreachable ();
-	    }
-	}
-      else
-	{
-	  unsigned factor = src_eew_bitsize / dst_eew_bitsize;
-	  switch (factor)
-	    {
-	    case 2:
-	      return code_for_pred_indexed_load_x2_smaller_eew (
-		UNSPEC_UNORDERED, vec_mode);
-	    case 4:
-	      return code_for_pred_indexed_load_x4_smaller_eew (
-		UNSPEC_UNORDERED, vec_mode);
-	    case 8:
-	      return code_for_pred_indexed_load_x8_smaller_eew (
-		UNSPEC_UNORDERED, vec_mode);
-	    default:
-	      gcc_unreachable ();
-	    }
+	case 2:
+	  if (is_load)
+	    return code_for_pred_indexed_load_x2_smaller_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	  else
+	    return code_for_pred_indexed_store_x2_smaller_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	case 4:
+	  if (is_load)
+	    return code_for_pred_indexed_load_x4_smaller_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	  else
+	    return code_for_pred_indexed_store_x4_smaller_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	case 8:
+	  if (is_load)
+	    return code_for_pred_indexed_load_x8_smaller_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	  else
+	    return code_for_pred_indexed_store_x8_smaller_eew
+	      (UNSPEC_UNORDERED, vec_mode);
+	default:
+	  gcc_unreachable ();
 	}
     }
 }
@@ -4769,7 +4797,7 @@ expand_gather_scatter (rtx *ops, bool is_load)
   machine_mode idx_mode = GET_MODE (vec_offset);
   bool is_vlmax = is_vlmax_len_p (vec_mode, len);
 
-  insn_code icode = prepare_gather_scatter (vec_mode, idx_mode, is_load);
+  insn_code icode = get_gather_scatter_code (vec_mode, idx_mode, is_load);
   if (is_vlmax)
     {
       if (is_load)

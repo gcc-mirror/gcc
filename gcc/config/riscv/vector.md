@@ -2680,7 +2680,7 @@
   [(set_attr "type" "vld<order>x")
    (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_indexed_<order>store<RATIO64:mode><RATIO64I:mode>"
+(define_insn "@pred_indexed_<order>store<mode>_same_eew"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -2690,14 +2690,14 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
-	   (match_operand:RATIO64I 2 "register_operand" "  vr")
-	   (match_operand:RATIO64 3 "register_operand"  "  vr")] ORDER))]
+	   (match_operand:<VINDEX> 2 "register_operand" "  vr")
+	   (match_operand:VINDEXED 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<RATIO64I:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO64:MODE>")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_indexed_<order>store<RATIO32:mode><RATIO32I:mode>"
+(define_insn "@pred_indexed_<order>store<mode>_x2_greater_eew"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -2707,14 +2707,14 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
-	   (match_operand:RATIO32I 2 "register_operand" "  vr")
-	   (match_operand:RATIO32 3 "register_operand"  "  vr")] ORDER))]
+	   (match_operand:<VINDEX_DOUBLE_TRUNC> 2 "register_operand" "  vr")
+	   (match_operand:VEEWEXT2 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<RATIO32I:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<double_trunc_sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO32:MODE>")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_indexed_<order>store<RATIO16:mode><RATIO16I:mode>"
+(define_insn "@pred_indexed_<order>store<mode>_x4_greater_eew"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -2724,14 +2724,14 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
-	   (match_operand:RATIO16I 2 "register_operand" "  vr")
-	   (match_operand:RATIO16 3 "register_operand"  "  vr")] ORDER))]
+	   (match_operand:<VINDEX_QUAD_TRUNC> 2 "register_operand" "  vr")
+	   (match_operand:VEEWEXT4 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<RATIO16I:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<quad_trunc_sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO16:MODE>")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_indexed_<order>store<RATIO8:mode><RATIO8I:mode>"
+(define_insn "@pred_indexed_<order>store<mode>_x8_greater_eew"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -2741,14 +2741,14 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
-	   (match_operand:RATIO8I 2 "register_operand" "  vr")
-	   (match_operand:RATIO8 3 "register_operand"  "  vr")] ORDER))]
+	   (match_operand:<VINDEX_OCT_TRUNC> 2 "register_operand" "  vr")
+	   (match_operand:VEEWEXT8 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<RATIO8I:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<quad_trunc_sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO8:MODE>")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_indexed_<order>store<RATIO4:mode><RATIO4I:mode>"
+(define_insn "@pred_indexed_<order>store<mode>_x2_smaller_eew"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -2758,14 +2758,31 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
-	   (match_operand:RATIO4I 2 "register_operand" "  vr")
-	   (match_operand:RATIO4 3 "register_operand"  "  vr")] ORDER))]
+	   (match_operand:<VINDEX_DOUBLE_EXT> 2 "register_operand" "  vr")
+	   (match_operand:VEEWTRUNC2 3 "register_operand"  "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<RATIO4I:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<double_ext_sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO4:MODE>")])
+   (set_attr "mode" "<MODE>")])
 
-(define_insn "@pred_indexed_<order>store<RATIO2:mode><RATIO2I:mode>"
+(define_insn "@pred_indexed_<order>store<mode>_x4_smaller_eew"
+  [(set (mem:BLK (scratch))
+	(unspec:BLK
+	  [(unspec:<VM>
+	    [(match_operand:<VM> 0 "vector_mask_operand" "vmWc1")
+	     (match_operand 4 "vector_length_operand"    "  rvl")
+	     (match_operand 5 "const_int_operand"        "    i")
+	     (reg:SI VL_REGNUM)
+	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	   (match_operand 1 "pmode_reg_or_0_operand"      "  rJ")
+	   (match_operand:<VINDEX_QUAD_EXT> 2 "register_operand" "  vr")
+	   (match_operand:VEEWTRUNC4 3 "register_operand"  "  vr")] ORDER))]
+  "TARGET_VECTOR"
+  "vs<order>xei<quad_ext_sew>.v\t%3,(%z1),%2%p0"
+  [(set_attr "type" "vst<order>x")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@pred_indexed_<order>store<mode>_x8_smaller_eew"
   [(set (mem:BLK (scratch))
 	(unspec:BLK
 	  [(unspec:<VM>
@@ -2775,29 +2792,12 @@
 	     (reg:SI VL_REGNUM)
 	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
 	   (match_operand 1 "pmode_reg_or_0_operand"       "  rJ")
-	   (match_operand:RATIO2I 2 "register_operand"  "  vr")
-	   (match_operand:RATIO2 3 "register_operand"   "  vr")] ORDER))]
+	   (match_operand:<VINDEX_OCT_EXT> 2 "register_operand"  "  vr")
+	   (match_operand:VEEWTRUNC8 3 "register_operand"   "  vr")] ORDER))]
   "TARGET_VECTOR"
-  "vs<order>xei<RATIO2I:sew>.v\t%3,(%z1),%2%p0"
+  "vs<order>xei<oct_ext_sew>.v\t%3,(%z1),%2%p0"
   [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO2:MODE>")])
-
-(define_insn "@pred_indexed_<order>store<RATIO1:mode><RATIO1:mode>"
-  [(set (mem:BLK (scratch))
-	(unspec:BLK
-	  [(unspec:<VM>
-	    [(match_operand:<VM> 0 "vector_mask_operand" "vmWc1")
-	     (match_operand 4 "vector_length_operand"    "  rvl")
-	     (match_operand 5 "const_int_operand"        "    i")
-	     (reg:SI VL_REGNUM)
-	     (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
-	   (match_operand 1 "pmode_reg_or_0_operand"       "  rJ")
-	   (match_operand:RATIO1 2 "register_operand"   "  vr")
-	   (match_operand:RATIO1 3 "register_operand"    "  vr")] ORDER))]
-  "TARGET_VECTOR"
-  "vs<order>xei<RATIO1:sew>.v\t%3,(%z1),%2%p0"
-  [(set_attr "type" "vst<order>x")
-   (set_attr "mode" "<RATIO1:MODE>")])
+   (set_attr "mode" "<MODE>")])
 
 ;; -------------------------------------------------------------------------------
 ;; ---- Predicated integer binary operations
