@@ -4179,10 +4179,11 @@ Attribute::check_cfg_predicate (const Session &session) const
 
   auto &meta_item = static_cast<AttrInputMetaItemContainer &> (*attr_input);
   if (meta_item.get_items ().empty ()
-      && string_path == Values::Attributes::CFG_ATTR)
+      && (string_path == Values::Attributes::CFG
+	  || string_path == Values::Attributes::CFG_ATTR))
     {
-      rust_error_at (path.get_locus (),
-		     "malformed %<cfg_attr%> attribute input");
+      rust_error_at (path.get_locus (), "malformed %<%s%> attribute input",
+		     string_path.c_str ());
       return false;
     }
 
