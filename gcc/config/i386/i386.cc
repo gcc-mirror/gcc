@@ -26609,6 +26609,11 @@ ix86_vector_costs::finish_cost (const vector_costs *scalar_costs)
   if (loop_vinfo
       && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
       && LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant () > 2
+      /* Avoid a masked epilog if cascaded epilogues eventually get us
+	 to one with VF 1 as that means no scalar epilog at all.  */
+      && !((GET_MODE_SIZE (loop_vinfo->vector_mode)
+	    / LOOP_VINFO_VECT_FACTOR (loop_vinfo).to_constant () == 16)
+	   && ix86_tune_features[X86_TUNE_AVX512_TWO_EPILOGUES])
       && ix86_tune_features[X86_TUNE_AVX512_MASKED_EPILOGUES]
       && !OPTION_SET_P (param_vect_partial_vector_usage))
     {
