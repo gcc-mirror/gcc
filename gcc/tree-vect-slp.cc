@@ -1539,9 +1539,13 @@ vect_build_slp_tree_1 (vec_info *vinfo, unsigned char *swap,
 	      && !STMT_VINFO_GATHER_SCATTER_P (stmt_info)
 	      /* Not grouped loads are handled as externals for BB
 		 vectorization.  For loop vectorization we can handle
-		 splats the same we handle single element interleaving.  */
+		 splats the same we handle single element interleaving.
+		 Likewise we can handle a collection of invariant refs.  */
 	      && (is_a <bb_vec_info> (vinfo)
-		  || stmt_info != first_stmt_info))
+		  || (stmt_info != first_stmt_info
+		  && !(integer_zerop (DR_STEP (STMT_VINFO_DATA_REF (stmt_info)))
+		      && integer_zerop (DR_STEP (STMT_VINFO_DATA_REF
+							 (first_stmt_info)))))))
 	    {
 	      /* Not grouped load.  */
 	      if (dump_enabled_p ())
@@ -2094,7 +2098,10 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		load_place = vect_get_place_in_interleaving_chain
 		    (load_info, first_stmt_info);
 	      else
-		load_place = 0;
+		/* Recognize the splat case as { 0, 0, ... } but make
+		   sure to use the appropriate refs for collections
+		   of invariant refs.  */
+		load_place = (load_info == stmt_info) ? 0 : j;
 	      gcc_assert (load_place != -1);
 	      any_permute |= load_place != j;
 	      load_permutation.quick_push (load_place);
@@ -10975,7 +10982,14 @@ vect_transform_slp_perm_load_1 (vec_info *vinfo, slp_tree node,
   machine_mode mode;
 
   if (!STMT_VINFO_GROUPED_ACCESS (stmt_info))
-    dr_group_size = 1;
+    {
+      /* We have both splats of the same non-grouped load and groups
+	 of distinct invariant loads entering here.  */
+      unsigned max_idx = 0;
+      for (auto idx : perm)
+	max_idx = idx > max_idx ? idx : max_idx;
+      dr_group_size = max_idx + 1;
+    }
   else
     {
       stmt_info = DR_GROUP_FIRST_ELEMENT (stmt_info);

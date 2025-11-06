@@ -9903,10 +9903,24 @@ vectorizable_load (vec_info *vinfo,
 	 once at analysis time, remembered and used in the
 	 transform time.  */
       bool hoist_p = (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
-		      && !nested_in_vect_loop
-		      && hoist_defs_of_uses (stmt_info->stmt, loop, false));
+		      && !nested_in_vect_loop);
+      bool uniform_p = true;
+      for (stmt_vec_info sinfo : SLP_TREE_SCALAR_STMTS (slp_node))
+	{
+	  hoist_p = hoist_p && hoist_defs_of_uses (sinfo->stmt, loop, false);
+	  if (sinfo != SLP_TREE_SCALAR_STMTS (slp_node)[0])
+	    uniform_p = false;
+	}
       if (costing_p)
 	{
+	  if (!uniform_p && (!hoist_p || !vf.is_constant ()))
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+				 "not vectorizing non-uniform invariant "
+				 "load\n");
+	      return false;
+	    }
 	  enum vect_cost_model_location cost_loc
 	    = hoist_p ? vect_prologue : vect_body;
 	  unsigned int cost = record_stmt_cost (cost_vec, 1, scalar_load,
@@ -9924,39 +9938,77 @@ vectorizable_load (vec_info *vinfo,
 	}
       if (hoist_p)
 	{
-	  gassign *stmt = as_a <gassign *> (stmt_info->stmt);
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "hoisting out of the vectorized loop: %G",
-			     (gimple *) stmt);
-	  scalar_dest = copy_ssa_name (scalar_dest);
-	  tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
-	  edge pe = loop_preheader_edge (loop);
-	  gphi *vphi = get_virtual_phi (loop->header);
-	  tree vuse;
-	  if (vphi)
-	    vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
-	  else
-	    vuse = gimple_vuse (gsi_stmt (*gsi));
-	  gimple *new_stmt = gimple_build_assign (scalar_dest, rhs);
-	  gimple_set_vuse (new_stmt, vuse);
-	  gsi_insert_on_edge_immediate (pe, new_stmt);
-	  hoist_defs_of_uses (new_stmt, loop, true);
+	  /* ???  For non-uniform lanes there could be still duplicates.
+	     We're leaving those to post-vectorizer CSE for the moment.  */
+	  auto_vec<tree> scalar_defs (SLP_TREE_LANES (slp_node));
+	  for (stmt_vec_info sinfo : SLP_TREE_SCALAR_STMTS (slp_node))
+	    {
+	      gassign *stmt = as_a <gassign *> (sinfo->stmt);
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "hoisting out of the vectorized loop: %G",
+				 (gimple *) stmt);
+	      scalar_dest = copy_ssa_name (gimple_assign_lhs (stmt));
+	      tree rhs = unshare_expr (gimple_assign_rhs1 (stmt));
+	      edge pe = loop_preheader_edge (loop);
+	      gphi *vphi = get_virtual_phi (loop->header);
+	      tree vuse;
+	      if (vphi)
+		vuse = PHI_ARG_DEF_FROM_EDGE (vphi, pe);
+	      else
+		vuse = gimple_vuse (gsi_stmt (*gsi));
+	      gimple *new_stmt = gimple_build_assign (scalar_dest, rhs);
+	      gimple_set_vuse (new_stmt, vuse);
+	      gsi_insert_on_edge_immediate (pe, new_stmt);
+	      hoist_defs_of_uses (new_stmt, loop, true);
+	      if (!useless_type_conversion_p (TREE_TYPE (vectype),
+					      TREE_TYPE (scalar_dest)))
+		{
+		  tree tem = make_ssa_name (TREE_TYPE (vectype));
+		  new_stmt = gimple_build_assign (tem,
+						  NOP_EXPR, scalar_dest);
+		  gsi_insert_on_edge_immediate (pe, new_stmt);
+		  scalar_dest = tem;
+		}
+	      scalar_defs.quick_push (scalar_dest);
+	      if (uniform_p)
+		break;
+	    }
+	  if (!uniform_p)
+	    {
+	      unsigned const_nunits
+		= TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
+	      for (j = 0; j < (int) vec_num; ++j)
+		{
+		  vec<constructor_elt, va_gc> *v = NULL;
+		  vec_safe_reserve (v, const_nunits, true);
+		  for (unsigned i = 0; i < const_nunits; ++i)
+		    {
+		      unsigned def_idx
+			= (j * const_nunits + i) % SLP_TREE_LANES (slp_node);
+		      CONSTRUCTOR_APPEND_ELT (v, NULL_TREE,
+					      scalar_defs[def_idx]);
+		    }
+		  scalar_dest = build_constructor (vectype, v);
+		  new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
+					       vectype, NULL);
+		  slp_node->push_vec_def (new_temp);
+		}
+	      return true;
+	    }
+	  new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
+				       vectype, NULL);
 	}
-      /* These copies are all equivalent.  */
-      if (hoist_p)
-	new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
-				     vectype, NULL);
       else
 	{
+	  gcc_assert (uniform_p);
 	  gimple_stmt_iterator gsi2 = *gsi;
 	  gsi_next (&gsi2);
 	  new_temp = vect_init_vector (vinfo, stmt_info, scalar_dest,
 				       vectype, &gsi2);
 	}
-      gimple *new_stmt = SSA_NAME_DEF_STMT (new_temp);
       for (j = 0; j < (int) vec_num; ++j)
-	slp_node->push_vec_def (new_stmt);
+	slp_node->push_vec_def (new_temp);
       return true;
     }
 
