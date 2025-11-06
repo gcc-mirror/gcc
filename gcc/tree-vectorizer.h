@@ -2468,7 +2468,7 @@ class loop *slpeel_tree_duplicate_loop_to_edge_cfg (class loop *, edge,
 						    class loop *, edge,
 						    edge, edge *, bool = true,
 						    vec<basic_block> * = NULL,
-						    bool = false);
+						    bool = false, bool = false);
 class loop *vect_loop_versioning (loop_vec_info, gimple *);
 extern class loop *vect_do_peeling (loop_vec_info, tree, tree,
 				    tree *, tree *, tree *, int, bool, bool,

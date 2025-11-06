@@ -2595,7 +2595,8 @@ vect_enhance_data_refs_alignment (loop_vec_info loop_vinfo)
       || loop->inner
       /* We don't currently maintaing the LCSSA for prologue peeled inversed
 	 loops.  */
-      || LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+      || (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo)
+	  && !LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo)))
     do_peeling = false;
 
   struct _vect_peel_extended_info peel_for_known_alignment;

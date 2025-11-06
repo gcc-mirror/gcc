@@ -1482,7 +1482,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 					edge scalar_exit, edge e, edge *new_e,
 					bool flow_loops,
 					vec<basic_block> *updated_doms,
-					bool uncounted_p)
+					bool uncounted_p, bool create_main_e)
 {
   class loop *new_loop;
   basic_block *new_bbs, *bbs, *pbbs;
@@ -1940,9 +1940,59 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       flush_pending_stmts (entry_e);
       set_immediate_dominator (CDI_DOMINATORS, new_preheader, entry_e->src);
 
+
+      /* `vect_set_loop_condition' replaces the condition in the main exit of
+	 loop.  For counted loops, this is the IV counting exit, so in the case
+	 of the prolog loop, we are replacing the old IV counting exit limit of
+	 total loop niters for the new limit of the prolog niters, as desired.
+	 For uncounted loops, we don't have an IV-counting exit to replace, so
+	 we add a dummy exit to be consumed by `vect_set_loop_condition' later
+	 on.  */
+      if (create_main_e)
+	{
+	  edge to_latch_e = single_pred_edge (new_loop->latch);
+	  bool latch_is_false = to_latch_e->flags & EDGE_FALSE_VALUE ? true
+								     : false;
+
+	  /* Add new bb for duplicate exit.  */
+	  basic_block bbcond = split_edge (to_latch_e);
+	  gimple_stmt_iterator a = gsi_last_bb (bbcond);
+
+	  /* Fix flags for the edge leading to the latch.  */
+	  to_latch_e = find_edge (bbcond, new_loop->latch);
+	  to_latch_e->flags &= ~EDGE_FALLTHRU;
+	  to_latch_e->flags |= latch_is_false ? EDGE_FALSE_VALUE
+					      : EDGE_TRUE_VALUE;
+
+	  /* Build the condition.  */
+	  tree cone = build_int_cst (sizetype, 1);
+	  tree czero = build_int_cst (sizetype, 0);
+	  gcond *cond_copy = gimple_build_cond (NE_EXPR, cone, czero, NULL_TREE,
+						NULL_TREE);
+
+	  gsi_insert_after (&a, cond_copy, GSI_NEW_STMT);
+
+	  /* Add edge for exiting the loop via new condition.  */
+	  edge dup_exit = make_edge (bbcond, new_exit->dest, latch_is_false
+				? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE);
+
+	  profile_probability probability (0.5, GUESSED);
+	  to_latch_e->probability = dup_exit->probability = probability;
+
+	  set_immediate_dominator (CDI_DOMINATORS, dup_exit->src,
+				   new_exit->src);
+	  new_exit = dup_exit;
+	  *new_e = new_exit;
+	}
+
       redirect_edge_and_branch_force (new_exit, preheader);
       flush_pending_stmts (new_exit);
       set_immediate_dominator (CDI_DOMINATORS, preheader, new_exit->src);
+
+      if (create_main_e)
+	set_immediate_dominator (CDI_DOMINATORS, scalar_exit->dest,
+				 recompute_dominator (CDI_DOMINATORS,
+						      scalar_exit->dest));
 
       /* And remove the non-necessary forwarder again.  Keep the other
          one so we have a proper pre-header for the loop at the exit edge.  */
@@ -1953,11 +2003,11 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 			       loop_preheader_edge (new_loop)->src);
 
       /* Update dominators for multiple exits.  */
-      if (multiple_exits_p)
+      if (multiple_exits_p || create_main_e)
 	{
 	  for (edge alt_e : loop_exits)
 	    {
-	      if (alt_e == loop_exit)
+	      if ((alt_e == loop_exit) && !create_main_e)
 		continue;
 	      basic_block old_dom
 		= get_immediate_dominator (CDI_DOMINATORS, alt_e->dest);
@@ -3396,14 +3446,17 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       e = loop_preheader_edge (loop);
       edge exit_e = LOOP_VINFO_MAIN_EXIT (loop_vinfo);
       gcc_checking_assert (slpeel_can_duplicate_loop_p (loop, exit_e, e)
-			   && !LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo));
+			   && (!LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo)
+			       || uncounted_p));
 
       /* Peel prolog and put it on preheader edge of loop.  */
       edge scalar_e = LOOP_VINFO_SCALAR_MAIN_EXIT (loop_vinfo);
       edge prolog_e = NULL;
       prolog = slpeel_tree_duplicate_loop_to_edge_cfg (loop, exit_e,
 						       scalar_loop, scalar_e,
-						       e, &prolog_e);
+						       e, &prolog_e, true, NULL,
+						       false, uncounted_p);
+
       gcc_assert (prolog);
       prolog->force_vectorize = false;
 
@@ -3456,12 +3509,15 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 
       /* Update init address of DRs.  */
       vect_update_inits_of_drs (loop_vinfo, niters_prolog, PLUS_EXPR);
-      /* Update niters for vector loop.  */
-      LOOP_VINFO_NITERS (loop_vinfo)
-	= fold_build2 (MINUS_EXPR, type, niters, niters_prolog);
-      LOOP_VINFO_NITERSM1 (loop_vinfo)
-	= fold_build2 (MINUS_EXPR, type,
-		       LOOP_VINFO_NITERSM1 (loop_vinfo), niters_prolog);
+      if (!uncounted_p)
+	{
+	  /* Update niters for vector loop.  */
+	  LOOP_VINFO_NITERS (loop_vinfo)
+	    = fold_build2 (MINUS_EXPR, type, niters, niters_prolog);
+	  LOOP_VINFO_NITERSM1 (loop_vinfo)
+	    = fold_build2 (MINUS_EXPR, type,
+			   LOOP_VINFO_NITERSM1 (loop_vinfo), niters_prolog);
+	}
       bool new_var_p = false;
       niters = vect_build_loop_niters (loop_vinfo, &new_var_p);
       /* It's guaranteed that vector loop bound before vectorization is at
