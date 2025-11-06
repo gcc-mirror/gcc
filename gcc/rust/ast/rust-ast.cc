@@ -3834,6 +3834,9 @@ MetaItemLitExpr::check_cfg_predicate (const Session &) const
 {
   /* as far as I can tell, a literal expr can never be a valid cfg body, so
    * false */
+  rust_error_at (this->get_locus (), "'%s' predicate key cannot be a literal",
+		 this->as_string ().c_str ());
+
   return false;
 }
 
