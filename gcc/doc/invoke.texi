@@ -838,8 +838,7 @@ Objective-C and Objective-C++ Dialects}.
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div
 -mpc-relative-literal-loads
 -msign-return-address=@var{scope}
--mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}
-+@var{b-key}]|@var{bti}|@var{gcs}
+-mbranch-protection=@var{features}
 -mharden-sls=@var{opts}
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}
 -moverride=@var{string}  -mverbose-cost-dump
@@ -919,8 +918,7 @@ Objective-C and Objective-C++ Dialects}.
 -mfix-cmse-cve-2021-35465
 -mstack-protector-guard=@var{guard} -mstack-protector-guard-offset=@var{offset}
 -mfdpic
--mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}]
-[+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]}
+-mbranch-protection=@var{features}}
 
 @emph{AVR Options} (@ref{AVR Options})
 @gccoptlist{-mmcu=@var{mcu}  -mabsdata  -maccumulate-args  -mcvt
@@ -22551,19 +22549,28 @@ default value is @samp{none}. This option has been deprecated by
 -mbranch-protection.
 
 @opindex mbranch-protection
-@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}+@var{b-key}]|@var{bti}|@var{gcs}
+@item -mbranch-protection=@var{features}
 Select the branch protection features to use.
+@var{features} can have one of the following forms:
+
 @samp{none} is the default and turns off all types of branch protection.
+
 @samp{standard} turns on all types of branch protection features.  If a feature
 has additional tuning options, then @samp{standard} sets it to its standard
 level.
-@samp{pac-ret[+@var{leaf}]} turns on return address signing to its standard
+
+@samp{pac-ret} turns on return address signing to its standard
 level: signing functions that save the return address to memory (non-leaf
-functions will practically always do this) using the a-key.  The optional
-argument @samp{leaf} can be used to extend the signing to include leaf
-functions.  The optional argument @samp{b-key} can be used to sign the functions
-with the B-key instead of the A-key.
+functions practically always do this) using the A-key.
+
+@samp{pac-ret+leaf} extends the @samp{pac-ret} signing to include leaf
+functions.
+
+@samp{pac-ret+b-key} or @samp{pac-ret+leaf+b-key} can be used to
+sign the functions with the B-key instead of the A-key.
+
 @samp{bti} turns on branch target identification mechanism.
+
 @samp{gcs} turns on guarded control stack compatible code generation.
 
 @opindex mharden-sls
@@ -25028,24 +25035,33 @@ build the Linux kernel using the same (@code{arm-*-uclinuxfdpiceabi})
 toolchain as the one used to build the userland programs.
 
 @opindex mbranch-protection
-@item -mbranch-protection=@var{none}|@var{standard}|@var{pac-ret}[+@var{leaf}][+@var{bti}]|@var{bti}[+@var{pac-ret}[+@var{leaf}]]
+@item -mbranch-protection=@var{features}
+
 Enable branch protection features (armv8.1-m.main only).
-@samp{none} generate code without branch protection or return address
+
+@var{features} can have one of the following forms:
+
+@samp{none} generates code without branch protection or return address
 signing.
-@samp{standard[+@var{leaf}]} generate code with all branch protection
+
+@samp{standard} generates code with all branch protection
 features enabled at their standard level.
-@samp{pac-ret[+@var{leaf}]} generate code with return address signing
+
+@samp{pac-ret} generates code with return address signing
 set to its standard level, which is to sign all functions that save
 the return address to memory.
-@samp{leaf} When return address signing is enabled, also sign leaf
+
+@samp{pac-ret+leaf} extends the @samp{pac-ret} signing to include leaf
 functions even if they do not write the return address to memory.
-+@samp{bti} Add landing-pad instructions at the permitted targets of
+
+@samp{bti} adds landing-pad instructions at the permitted targets of
 indirect branch instructions.
 
-If the @samp{+pacbti} architecture extension is not enabled, then all
+If support for the @samp{+pacbti} architecture extension is not enabled
+(e.g. via @option{-march=}), then all
 branch protection and return address signing operations are
 constrained to use only the instructions defined in the
-architectural-NOP space. The generated code will remain
+architectural-NOP space. The generated code remains
 backwards-compatible with earlier versions of the architecture, but
 the additional security can be enabled at run time on processors that
 support the @samp{PACBTI} extension.
