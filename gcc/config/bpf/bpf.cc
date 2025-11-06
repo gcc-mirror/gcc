@@ -1252,13 +1252,11 @@ static void
 emit_move_loop (rtx src, rtx dst, machine_mode mode, int offset, int inc,
 		unsigned iters, unsigned remainder)
 {
-  rtx reg = gen_reg_rtx (mode);
-
   /* First copy in chunks as large as alignment permits.  */
   for (unsigned int i = 0; i < iters; i++)
     {
-      emit_move_insn (reg, adjust_address (src, mode, offset));
-      emit_move_insn (adjust_address (dst, mode, offset), reg);
+      emit_insn (gen_rtx_SET (adjust_address (dst, mode, offset),
+			      adjust_address (src, mode, offset)));
       offset += inc;
     }
 
@@ -1266,22 +1264,22 @@ emit_move_loop (rtx src, rtx dst, machine_mode mode, int offset, int inc,
      used above.  */
   if (remainder & 4)
     {
-      emit_move_insn (reg, adjust_address (src, SImode, offset));
-      emit_move_insn (adjust_address (dst, SImode, offset), reg);
+      emit_insn (gen_rtx_SET (adjust_address (dst, SImode, offset),
+			      adjust_address (src, SImode, offset)));
       offset += (inc < 0 ? -4 : 4);
       remainder -= 4;
     }
   if (remainder & 2)
     {
-      emit_move_insn (reg, adjust_address (src, HImode, offset));
-      emit_move_insn (adjust_address (dst, HImode, offset), reg);
+      emit_insn (gen_rtx_SET (adjust_address (dst, HImode, offset),
+			      adjust_address (src, HImode, offset)));
       offset += (inc < 0 ? -2 : 2);
       remainder -= 2;
     }
   if (remainder & 1)
     {
-      emit_move_insn (reg, adjust_address (src, QImode, offset));
-      emit_move_insn (adjust_address (dst, QImode, offset), reg);
+      emit_insn (gen_rtx_SET (adjust_address (dst, QImode, offset),
+			      adjust_address (src, QImode, offset)));
     }
 }
 
@@ -1351,13 +1349,13 @@ bpf_expand_cpymem (rtx *operands, bool is_move)
       fwd_label = gen_label_rtx ();
       done_label = gen_label_rtx ();
 
-      rtx dst_addr = copy_to_mode_reg (Pmode, XEXP (dst, 0));
-      rtx src_addr = copy_to_mode_reg (Pmode, XEXP (src, 0));
+      rtx src_addr = force_operand (XEXP (src, 0), NULL_RTX);
+      rtx dst_addr = force_operand (XEXP (dst, 0), NULL_RTX);
       emit_cmp_and_jump_insns (src_addr, dst_addr, GEU, NULL_RTX, Pmode,
 			       true, fwd_label, profile_probability::even ());
 
       /* Emit the "backwards" unrolled loop.  */
-      emit_move_loop (src, dst, mode, size_bytes, -inc, iters, remainder);
+      emit_move_loop (src, dst, mode, (size_bytes - 1), -inc, iters, remainder);
       emit_jump_insn (gen_jump (done_label));
       emit_barrier ();
 
