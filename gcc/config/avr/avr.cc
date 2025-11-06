@@ -14328,6 +14328,16 @@ avr_output_addr_vec (rtx_insn *labl, rtx table)
 
   app_disable();
 
+  // AVR-SD: On functional safety devices, each executed instruction must
+  // be followed by a valid opcode.  This is because instruction validation
+  // runs at fetch and decode for the next instruction and while the 2-stage
+  // pipeline is executing the current one.  There is no multilib option for
+  // these devices, so take all multilib variants that contain AVR-SD.
+  const bool maybe_sd = (AVR_HAVE_JMP_CALL
+			 && (avr_arch_index == ARCH_AVRXMEGA2
+			     || avr_arch_index == ARCH_AVRXMEGA3));
+  bool uses_subsection = false;
+
   // Switch to appropriate (sub)section.
 
   if (DECL_SECTION_NAME (current_function_decl)
@@ -14339,6 +14349,7 @@ avr_output_addr_vec (rtx_insn *labl, rtx table)
 
       switch_to_section (current_function_section ());
       fprintf (stream, "\t.subsection\t1\n");
+      uses_subsection = true;
     }
   else
     {
@@ -14361,9 +14372,21 @@ avr_output_addr_vec (rtx_insn *labl, rtx table)
 	       AVR_HAVE_JMP_CALL ? "a" : "ax");
     }
 
-  // Output the label that preceeds the table.
-
   ASM_OUTPUT_ALIGN (stream, 1);
+
+  if (maybe_sd && uses_subsection)
+    {
+      // Insert a valid opcode prior to the first gs() label.
+      // Any valid opcode will do.  Use CLH since it disassembles
+      // more nicely than NOP = 0x0000.  This is all GCC can do.
+      // Other cases, like inserting CLH after the vector table and
+      // after the last instruction, are handled by other parts of
+      // the toolchain.
+      fprintf (stream, "\tclh\n");
+    }
+
+  // Output the label that precedes the table.
+
   targetm.asm_out.internal_label (stream, "L", CODE_LABEL_NUMBER (labl));
 
   // Output the table's content.
