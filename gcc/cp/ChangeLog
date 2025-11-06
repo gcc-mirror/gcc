@@ -1,3 +1,41 @@
+2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121574
+	* cp-tree.h (instantiating_tu_local_entity): Declare.
+	* module.cc (is_tu_local_entity): Extract from depset::hash.
+	(is_tu_local_value): Likewise.
+	(has_tu_local_tmpl_arg): Likewise.
+	(depset::hash::is_tu_local_entity): Remove.
+	(depset::hash::has_tu_local_tmpl_arg): Remove.
+	(depset::hash::is_tu_local_value): Remove.
+	(instantiating_tu_local_entity): New function.
+	(depset::hash::add_binding_entity): No longer go through
+	depset::hash to check is_tu_local_entity.
+	* pt.cc (complain_about_tu_local_entity): Remove.
+	(tsubst): Use instantiating_tu_local_entity.
+	(tsubst_expr): Likewise.
+
+2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121574
+	* module.cc (depset::disc_bits): Replace 'DB_REFS_TU_LOCAL_BIT'
+	and 'DB_EXPOSURE_BIT' with new four flags
+	'DB_{REF,EXPOSE}_{GLOBAL,PURVIEW}_BIT'.
+	(depset::is_tu_local): Support checking either for only purview
+	TU-local entities or any entity described TU-local by standard.
+	(depset::refs_tu_local): Likewise.
+	(depset::is_exposure): Likewise.
+	(depset::hash::make_dependency): A constant initialized to a
+	TU-local variable is always considered a purview exposure.
+	(is_exposure_of_member_type): Adjust sanity checks to handle if
+	we ever relax requirements for TU-local types.
+	(depset::hash::add_dependency): Differentiate referencing
+	purview or GMF TU-local entities.
+	(depset::hash::diagnose_bad_internal_ref): New function.
+	(depset::hash::diagnose_template_names_tu_local): New function.
+	(depset::hash::finalize_dependencies): Handle new warnings that
+	might be needed for GMF TU-local entities.
+
 2025-11-04  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122253

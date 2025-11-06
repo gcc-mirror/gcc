@@ -1,3 +1,47 @@
+2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121574
+	* doc/invoke.texi: Document '-Wexpose-global-module-tu-local'.
+
+2025-11-05  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Support
+	vector constructor elements.
+	* tree-vect-generic.cc (ssa_uniform_vector_p): Make non-static and
+	move ...
+	* tree.cc (ssa_uniform_vector_p): ... here.
+	* tree.h (ssa_uniform_vector_p): Declare it.
+
+2025-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-forwprop.cc (forward_propagate_addr_expr):
+	Use gather_imm_use_stmts instead of FOR_EACH_IMM_USE_STMT.
+
+2025-11-05  Richard Biener  <rguenther@suse.de>
+
+	* gimple.h (gimple::pad): Rename to ...
+	(gimple::ilf): ... this.
+	* ssa-iterators.h (gather_imm_use_stmts): Declare.
+	* tree-ssa-operands.cc (gather_imm_use_stmts): New function.
+
+2025-11-05  Richard Biener  <rguenther@suse.de>
+
+	* gimple-ssa-isolate-paths.cc (check_loadstore): Set
+	the volatile flag on the stmt manually.
+	(find_implicit_erroneous_behavior): Move code transform
+	outside of FOR_EACH_IMM_USE_STMT iteration.
+
+2025-11-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.cc (dump_affine_iv): Use file, not
+	dump_file when printing.
+	(debug): New overload for affine_iv.
+
+2025-11-05  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.md (cntmap): Change to uppercase.
+	(popcount<GPR:mode>2): Modify to a post reload split.
+
 2025-11-04  Uros Bizjak  <ubizjak@gmail.com>
 
 	PR target/122390

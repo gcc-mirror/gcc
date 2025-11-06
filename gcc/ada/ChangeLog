@@ -1,3 +1,10 @@
+2025-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/35793
+	* sem_res.adb (Check_Discriminant_Use): In a constraint context,
+	check that the discriminant appears alone as a direct name in all
+	cases and give a consistent error message when it does not.
+
 2025-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* sem_ch3.adb (Analyze_Subtype_Declaration) <Concurrent_Kind>:

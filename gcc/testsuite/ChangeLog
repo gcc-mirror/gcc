@@ -1,3 +1,45 @@
+2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121574
+	* g++.dg/modules/internal-17_b.C: Check for diagnostics when
+	instantiating imported TU-local entities.
+
+2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/121574
+	* g++.dg/modules/internal-17_a.C: New test.
+	* g++.dg/modules/internal-17_b.C: New test.
+
+2025-11-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/discr8.ads: New test.
+
+2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122566
+	* gfortran.dg/pdt_68.f03: New test.
+
+2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122501
+	PR fortran/122524
+	* gfortran.dg/pdt_66.f03: New test.
+	* gfortran.dg/pdt_67.f03: New test.
+
+2025-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/122570
+	* gfortran.dg/gomp/pr122570.f: New test.
+
+2025-11-05  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-43.c: New test.
+	* gcc.target/aarch64/simd/combine_ext.c: New test.
+
+2025-11-05  Guo Jie  <guojie@loongson.cn>
+
+	* gcc.target/loongarch/widen-mul-rtx-cost-signed.c: Update.
+
 2025-11-04  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/protected_subtype1.adb: New test.

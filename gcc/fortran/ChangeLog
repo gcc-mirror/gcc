@@ -1,3 +1,25 @@
+2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122566
+	* decl.cc (gfc_get_pdt_instance): Add non-PDT type exstention.
+
+2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122501
+	PR fortran/122524
+	* primary.cc (gfc_convert_to_structure_constructor): Correct
+	whitespace issue.
+	(gfc_match_rvalue): Remove the attempt to match specific procs
+	before filling out PDT constructor. Instead, defer this until
+	resolution with the condition that there not be a following
+	arglist and more than one procedure in the generic interface.
+
+2025-11-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR fortran/122570
+	* openmp.cc (resolve_omp_metadirective): Fix 'skip' of
+	never matchable metadirective variants.
+
 2025-11-04  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/122564
