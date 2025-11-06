@@ -344,22 +344,9 @@ package body Exp_Ch8 is
    --  Start of processing for Expand_N_Subprogram_Renaming_Declaration
 
    begin
-      --  When the prefix of the name is a function call, we must force the
-      --  call to be made by removing side effects from the call, since we
-      --  must only call the function once.
+      --  Perform name evaluation in all cases
 
-      if Nkind (Nam) = N_Selected_Component
-        and then Nkind (Prefix (Nam)) = N_Function_Call
-      then
-         Remove_Side_Effects (Prefix (Nam));
-
-      --  For an explicit dereference, the prefix must be captured to prevent
-      --  reevaluation on calls through the renaming, which could result in
-      --  calling the wrong subprogram if the access value were to be changed.
-
-      elsif Nkind (Nam) = N_Explicit_Dereference then
-         Force_Evaluation (Prefix (Nam));
-      end if;
+      Evaluate_Name (Nam);
 
       --  Handle cases where we build a body for a renamed equality
 

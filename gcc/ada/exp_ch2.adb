@@ -117,8 +117,7 @@ package body Exp_Ch2 is
    procedure Expand_Renaming (N : Node_Id);
    --  For renamings, just replace the identifier by the corresponding
    --  named expression. Note that this has been evaluated (see routine
-   --  Exp_Ch8.Expand_N_Object_Renaming.Evaluate_Name) so this gives
-   --  the correct renaming semantics.
+   --  Exp_Util.Evaluate_Name) so this gives correct renaming semantics.
 
    --------------------------
    -- Expand_Current_Value --

@@ -1873,13 +1873,13 @@ package body Sem_Ch8 is
       New_S   : Entity_Id;
       Is_Body : Boolean)
    is
-      Nam       : constant Node_Id := Name (N);
-      Sel       : constant Node_Id := Selector_Name (Nam);
-      Is_Actual : constant Boolean := Present (Corresponding_Formal_Spec (N));
-      Old_S     : Entity_Id;
+      Nam : constant Node_Id := Name (N);
+      P   : constant Node_Id := Prefix (Nam);
+
+      Old_S : Entity_Id;
 
    begin
-      if Entity (Sel) = Any_Id then
+      if Entity (Selector_Name (Nam)) = Any_Id then
 
          --  Selector is undefined on prefix. Error emitted already
 
@@ -1910,10 +1910,11 @@ package body Sem_Ch8 is
          --  The prefix can be an arbitrary expression that yields a task or
          --  protected object, so it must be resolved.
 
-         if Is_Access_Type (Etype (Prefix (Nam))) then
-            Insert_Explicit_Dereference (Prefix (Nam));
+         if Is_Access_Type (Etype (P)) then
+            Insert_Explicit_Dereference (P);
          end if;
-         Resolve (Prefix (Nam), Scope (Old_S));
+
+         Resolve (P, Scope (Old_S));
       end if;
 
       Set_Convention (New_S, Convention (Old_S));
@@ -1924,9 +1925,9 @@ package body Sem_Ch8 is
 
       if Is_Protected_Type (Scope (Old_S))
         and then Ekind (New_S) = E_Procedure
-        and then not Is_Variable (Prefix (Nam))
+        and then not Is_Variable (P)
       then
-         if Is_Actual then
+         if Present (Corresponding_Formal_Spec (N)) then
             Error_Msg_N
               ("target object of protected operation used as actual for "
                & "formal procedure must be a variable", Nam);
@@ -1951,8 +1952,9 @@ package body Sem_Ch8 is
       New_S   : Entity_Id;
       Is_Body : Boolean)
    is
-      Nam   : constant Node_Id := Name (N);
-      P     : constant Node_Id := Prefix (Nam);
+      Nam : constant Node_Id := Name (N);
+      P   : constant Node_Id := Prefix (Nam);
+
       Old_S : Entity_Id;
 
    begin
@@ -1995,13 +1997,13 @@ package body Sem_Ch8 is
       New_S   : Entity_Id;
       Is_Body : Boolean)
    is
-      Old_S : Entity_Id;
-      Nam   : Entity_Id;
+      Nam : constant Node_Id := Name (N);
+      P   : constant Node_Id := Prefix (Nam);
 
       function Conforms
         (Subp : Entity_Id;
          Ctyp : Conformance_Type) return Boolean;
-      --  Verify that the signatures of the renamed entity and the new entity
+      --  Verify that the profiles of the renamed entity and the new entity
       --  match. The first formal of the renamed entity is skipped because it
       --  is the target object in any subsequent call.
 
@@ -2038,14 +2040,16 @@ package body Sem_Ch8 is
             Next_Formal (Old_F);
          end loop;
 
-         return True;
+         return No (Old_F) and then No (New_F);
       end Conforms;
+
+      Old_S : Entity_Id;
 
    --  Start of processing for Analyze_Renamed_Primitive_Operation
 
    begin
-      if not Is_Overloaded (Selector_Name (Name (N))) then
-         Old_S := Entity (Selector_Name (Name (N)));
+      if not Is_Overloaded (Selector_Name (Nam)) then
+         Old_S := Entity (Selector_Name (Nam));
 
          if not Conforms (Old_S, Type_Conformant) then
             Old_S := Any_Id;
@@ -2060,7 +2064,7 @@ package body Sem_Ch8 is
 
          begin
             Old_S := Any_Id;
-            Get_First_Interp (Selector_Name (Name (N)), Ind, It);
+            Get_First_Interp (Selector_Name (Nam), Ind, It);
 
             while Present (It.Nam) loop
                if Conforms (It.Nam, Type_Conformant) then
@@ -2094,20 +2098,18 @@ package body Sem_Ch8 is
             --  AI12-0204: The prefix of a prefixed view that is renamed or
             --  passed as a formal subprogram must be renamable as an object.
 
-            Nam := Prefix (Name (N));
-
-            if Is_Object_Reference (Nam) then
-               if Is_Dependent_Component_Of_Mutable_Object (Nam) then
+            if Is_Object_Reference (P) then
+               if Is_Dependent_Component_Of_Mutable_Object (P) then
                   Error_Msg_N
                     ("illegal renaming of discriminant-dependent component",
-                     Nam);
-               elsif Depends_On_Mutably_Tagged_Ext_Comp (Nam) then
+                     P);
+               elsif Depends_On_Mutably_Tagged_Ext_Comp (P) then
                   Error_Msg_N
                     ("illegal renaming of mutably tagged dependent component",
-                     Nam);
+                     P);
                end if;
             else
-               Error_Msg_N ("expect object name in renaming", Nam);
+               Error_Msg_N ("expect object name in renaming", P);
             end if;
 
             --  Enforce the rule given in (RM 6.3.1 (10.1/2)): a prefixed
@@ -2119,12 +2121,16 @@ package body Sem_Ch8 is
             Set_Convention (New_S, Convention_Intrinsic);
          end if;
 
-         --  Inherit_Renamed_Profile (New_S, Old_S);
+         Set_Entity (Selector_Name (Nam), Old_S);
 
          --  The prefix can be an arbitrary expression that yields an
          --  object, so it must be resolved.
 
-         Resolve (Prefix (Name (N)));
+         if Is_Access_Type (Etype (P)) then
+            Insert_Explicit_Dereference (P);
+         end if;
+
+         Resolve (P);
       end if;
    end Analyze_Renamed_Primitive_Operation;
 
