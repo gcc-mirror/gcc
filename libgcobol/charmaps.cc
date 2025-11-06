@@ -1376,7 +1376,7 @@ static encodings_t encodings[] = {
   { false, iconv_UTF_7_e, "UTF-7" },
   // Is UTF-8 supported??  "supported" means "recognized by parser_alphabet",
   // but UTF-8 is not a valid runtime encoding.
-  { false, iconv_UTF_8_e, "UTF-8" },  
+  { false, iconv_UTF_8_e, "UTF-8" },
   { false, iconv_UTF_16_e, "UTF-16" },
   { false, iconv_UTF_16BE_e, "UTF-16BE" },
   { false, iconv_UTF_16LE_e, "UTF-16LE" },
@@ -1439,10 +1439,20 @@ cbl_encoding_t
 __gg__encoding_iconv_type( const char *name ) {
   static encodings_t *eoencodings = encodings + COUNT_OF(encodings);
 
+  char *slashless = strdup(name);
+  assert(slashless);
+  char *pslash = strchr(slashless, '/');
+  if( pslash )
+    {
+    *pslash = '\0';
+    }
+
   auto p = std::find_if( encodings, eoencodings,
-                         [name]( const encodings_t& elem ) {
-                           return strcmp(name, elem.name) == 0;
+                         [slashless]( const encodings_t& elem ) {
+                           return strcasecmp(slashless, elem.name) == 0;
                          } );
+  free(slashless);
+
   return p < eoencodings? p->type : no_encoding_e;
 }
 
@@ -1557,7 +1567,7 @@ __gg__get_charmap(cbl_encoding_t encoding)
 
   if( encoding == custom_encoding_e)
     {
-    encoding = DEFAULT_CHARMAP_SOURCE;
+    encoding = DEFAULT_SOURCE_ENCODING;
     }
 
   charmap_t *retval;

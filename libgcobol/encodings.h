@@ -1195,6 +1195,11 @@ enum cbl_encoding_t {
   iconv_YU_e,
 };
 
+static inline bool
+valid_encoding( cbl_encoding_t enc ) {
+  return enc <= iconv_YU_e;
+}
+
 #define ASCII_e  iconv_ASCII_e   
 #define CP1252_e iconv_CP1252_e
 #define EBCDIC_e iconv_CP1140_e

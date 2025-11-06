@@ -228,13 +228,17 @@ char * __gg__iconverter(cbl_encoding_t from,
                         size_t length,
                         size_t *outlength);
 
-#define DEFAULT_CHARMAP_SOURCE (iconv_CP1252_e)
+#define DEFAULT_SOURCE_ENCODING (iconv_CP1252_e)
 
 class charmap_t
   {
   private:
     // This is the encoding of this character map
     cbl_encoding_t m_encoding;
+    bool m_is_valid;
+    bool m_is_big_endian;
+    bool m_has_bom = false;
+    int  m_stride; // Number of bytes between one character and the next
 
     enum
       {
@@ -246,32 +250,114 @@ class charmap_t
     // need be called but once for each ASCII value.
     std::unordered_map<int, int>m_map_of_encodings;
 
-    void determine_sign_type()
-      {
-      if( mapped_character(ascii_0) & 0x80 )
-        {
-        m_numeric_sign_type = sign_type_ebcdic;
-        }
-      else
-        {
-        m_numeric_sign_type = sign_type_ascii;
-        }
-      }
-
   public:
     explicit charmap_t(cbl_encoding_t e) : m_encoding(e)
       {
-      determine_sign_type();
+      // We are constructing a new charmap_t from an arbitrary encoding.  We
+      // need to figure out how wide it is, its endianness, whether or not
+      // it is EBCDIC-based, and so on.
+
+      // We do that by converting "0" to the target encoding, and we analyze
+      // what we get back.
+      
+      size_t outlength = 0;
+      const char challenge[] = "0";
+      const unsigned char *response = PTRCAST(unsigned char,
+                                   __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                                    m_encoding,
+                                                    challenge,
+                                                    1,
+                                                    &outlength));
+      unsigned char char_0 = 0x00;
+
+      m_is_valid = false;
+      m_has_bom  = false;
+      m_is_big_endian = false;
+
+      if( outlength == 1 )
+        {
+        m_stride = 1;
+        // This is our happy place:  A single-byte encoded character set.
+        char_0 = response[0];
+        }
+      else if( outlength == 2 )
+        {
+        m_stride = 2;
+        if( response[0] )
+          {
+          char_0 = response[0];
+          }
+        else if( response[1] )
+          {
+          m_is_big_endian = true;
+          char_0 = response[1];
+          }
+        }
+      else if( outlength == 4 )
+        {
+        // Check for the Byte Order Mark (BOM)
+        if( response[0] == 0xFF && response[1] == 0xFE )
+          {
+          m_stride = 2;
+          m_has_bom = true;
+          char_0 = response[2];
+          }
+        else if( response[0] == 0xFE && response[1] == 0xFF )
+          {
+          m_stride = 2;
+          m_has_bom = true;
+          m_is_big_endian = true;
+          char_0 = response[3];
+          }
+        else if( response[0] )
+          {
+          m_stride = 4;
+          char_0 = response[0];
+          }
+        else
+          {
+          m_stride = 4;
+          m_is_big_endian = true;
+          char_0 = response[3];
+          }
+        }
+      else if( outlength == 8 )
+        {
+        m_stride = 4;
+        if( response[0] == 0xFF && response[1] == 0xFE )
+          {
+          char_0 = response[4];
+          }
+        else if( response[0] == 0xFE && response[1] == 0xFF )
+          {
+          m_is_big_endian = true;
+          char_0 = response[7];
+          }
+        }
+
+      // With everything else established, we now check the zero character.
+      // We know about only 0x30 for ASCII and 0xF0 for EBCDIC.
+      if( char_0 == 0x30 )
+        {
+        m_is_valid = true;
+        m_numeric_sign_type = sign_type_ascii;
+        }
+      else if( char_0 == 0xF0 )
+        {
+        m_is_valid = true;
+        m_numeric_sign_type = sign_type_ebcdic;
+        }
       }
-    explicit charmap_t(uint16_t e) : m_encoding(static_cast<cbl_encoding_t>(e))
-      {
-      determine_sign_type();
-      }
+
+    bool is_valid()      const{return m_is_valid     ;}
+    bool is_big_endian() const{return m_is_big_endian;}
+    bool has_bom()       const{return m_has_bom      ;}
+    int  stride()        const{return m_stride       ;}
 
     int mapped_character(int ch)
       {
       // The assumption is that anybody calling this routine is providing
-      // a single-byte character in the DEFAULT_CHARMAP_SOURCE encoding.  We
+      // a single-byte character in the DEFAULT_SOURCE_ENCODING encoding.  We
       // return the equivalent character in the m_encoding
       int retval;
       std::unordered_map<int, int>::const_iterator it =
@@ -284,7 +370,7 @@ class charmap_t
         {
         retval = 0;
         size_t outlength = 0;
-        const char *mapped = __gg__iconverter(DEFAULT_CHARMAP_SOURCE,
+        const char *mapped = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                               m_encoding,
                                               PTRCAST(char, &ch),
                                               1,

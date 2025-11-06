@@ -51,7 +51,7 @@
     accept_envar_e,
   };
 
-  struct collating_an_t {
+  struct coll_alphanat_t {
     const char *alpha, *national; 
   };
 
@@ -575,7 +575,7 @@ class locale_tgt_t {
 			RD RECORD RECORDING RECORDS RECURSIVE
 			REDEFINES REEL REFERENCE RELATIVE REM REMAINDER REMARKS
 			REMOVAL RENAMES	 REPLACE REPLACING REPORT REPORTING REPORTS
-			REPOSITORY RERUN RESERVE RESTRICTED RESUME
+			REPOSITORY RERUN RESERVE RESTRICTED RESUME RETRY
 			REVERSE REVERSED REWIND RF RH RIGHT ROUNDED RUN
 
 			SAME SCREEN SD
@@ -702,8 +702,8 @@ class locale_tgt_t {
 %type   <number>        open_io alphabet_etc
 %type   <special_type>  device_name
 %type   <string>        numed  context_word ctx_name locale_spec
-%type   <collating_sequences> collating_sequences collating_ans 
-%type   <collating_name> collating_an 
+%type   <char_class_locales> char_class_locales coll_alphanats 
+%type   <collating_name> coll_alphanat 
 %type   <literal>       namestr alphabet_lit program_as repo_as
 %type   <field>         perform_cond kind_of_name
 %type   <refer>         alloc_ret
@@ -738,6 +738,9 @@ class locale_tgt_t {
                         relative_key_clause reserve_clause sharing_clause
 
 %type   <file>          filename read_body write_body delete_body
+%type   <label>         delete_file_body
+%type   <error>         delete_error delete_except delete_excepts
+                                                
 %type   <file>		start_impl start_cond start_body
 %type   <rewrite_t>     rewrite_body
 %type   <min_max>       record_vary rec_contains from_to record_desc
@@ -833,6 +836,7 @@ class locale_tgt_t {
                         global is_global anycase backward
                         end_display
                         exh_changed exh_named
+                        override
 %type   <number>        mistake globally first_last
 %type   <io_mode>   io_mode
 
@@ -874,6 +878,7 @@ class locale_tgt_t {
 %type	<opt_init_sect>	        opt_init_sect
 %type	<number>        opt_init_value
 %type	<number>        locale_current loc_category user_default
+%type   <string>        locale_name
 %type   <token_list>    loc_categories locale_tgt
 %type	<opt_round>	rounded round_between rounded_type rounded_mode
 %type	<opt_arith>	opt_arith_type
@@ -901,7 +906,7 @@ class locale_tgt_t {
     struct { YYLTYPE loc; int token; literal_t name; } prog_end;
     struct { int token; special_name_t id; } special_type;
     struct { char locale_type; const char * name; } locale_phrase;
-             collating_an_t collating_sequences;
+             coll_alphanat_t char_class_locales;
     struct collating_name_t { int token; const char *name; } collating_name;
     struct { size_t isym; cbl_encoding_t encoding; } codeset;
     struct { cbl_field_type_t type;
@@ -2371,6 +2376,23 @@ config_paragraphs: config_paragraph
 config_paragraph:
                 SPECIAL_NAMES '.'
         |       SPECIAL_NAMES '.' special_names '.'
+                {
+                  std::reverse_iterator<symbol_elem_t *>
+                                        p(symbols_end()),
+                                     pend(symbols_begin(PROGRAM));
+                  for( ++p; p != pend; p++ ) {
+                    if( p->type == SymAlphabet ) {
+                      const auto& alphabet = *cbl_alphabet_of(&*p);
+                      if( alphabet.encoding == no_encoding_e ) {
+                        assert(alphabet.locale != 0 );
+                        const auto& missing = *cbl_locale_of(symbol_at(alphabet.locale));
+                        error_msg(alphabet.loc,
+                          "ALPHABET %qs references LOCALE %qs, which is not defined",
+                                  alphabet.name, missing.name);
+                      }
+                    }
+                  }
+                }
         |       SOURCE_COMPUTER  '.' 
         |       SOURCE_COMPUTER  '.' NAME '.'
         |       SOURCE_COMPUTER  '.' NAME with_debug '.'
@@ -2507,19 +2529,36 @@ with_debug:     with DEBUGGING MODE {
                 ;
 
 collations:     %empty
-        |       collation_classification
-        |       collation_sequence
-        |       collation_classification collation_sequence
-        |       collation_sequence collation_classification
+        |       char_classification
+        |       collating_sequence
+        |       char_classification collating_sequence
+        |       collating_sequence char_classification
                 ;
-collation_classification:
-                character CLASSIFICATION collating_sequences[seq]
+char_classification:
+                character CLASSIFICATION char_class_locales[seq]
                 {
-                  warn_msg(@seq, "CHARACTER CLASSIFICATION ignored");
+                  if( $seq.alpha ) {
+                    auto e = symbol_locale(PROGRAM, $seq.alpha);
+                    if( !e ) {
+                      error_msg(@seq, "no LOCALE defined as %qs", $seq.alpha);
+                    } else {
+                      auto& encoding = cbl_locale_of(e)->encoding;
+                      current.alpha_encoding(symbol_index(e), encoding);
+                    }
+                  }
+                  if( $seq.national ) {
+                    auto e = symbol_locale(PROGRAM, $seq.national);
+                    if( !e ) {
+                      error_msg(@seq, "no LOCALE defined as %qs", $seq.national);
+                    } else {
+                      auto& encoding = cbl_locale_of(e)->encoding;
+                      current.national_encoding(symbol_index(e), encoding);
+                    }
+                  }
                 }
                 ;
-collation_sequence:
-                program_kw collating SEQUENCE collating_sequences[seq]
+collating_sequence:
+                program_kw collating SEQUENCE char_class_locales[seq]
                 {
                   if( !current.collating_sequence($seq.alpha) ) {
                     error_msg(@seq, "collating sequence already defined as '%s'",
@@ -2529,20 +2568,20 @@ collation_sequence:
                 }
                 ;
 
-collating_sequences:
+char_class_locales:
                 is NAME[name] {
                   $$.alpha = $name;
                   $$.national = nullptr;
                 }
-        |       collating_ans { $$ = $1; }
+        |       coll_alphanats { $$ = $1; }
                 ;
-collating_ans:  collating_an[encoding] {
-                  $$ = collating_an_t();
+coll_alphanats: coll_alphanat[encoding] {
+                  $$ = coll_alphanat_t();
                   const char **pname =
                     $encoding.token == ALPHANUMERIC? &$$.alpha : &$$.national;
                   *pname = $encoding.name;
                 }
-        |       collating_ans collating_an[encoding]
+        |       coll_alphanats coll_alphanat[encoding]
                 {
                   const char **pname =
                     $encoding.token == ALPHANUMERIC? &$$.alpha : &$$.national;
@@ -2553,7 +2592,7 @@ collating_ans:  collating_an[encoding] {
                   *pname = $encoding.name;
                 }
                 ;
-collating_an:   for alphanational is locale_phrase[locale] {
+coll_alphanat:  for alphanational is locale_phrase[locale] {
                   $$.token = $alphanational;
                   $$.name = $locale.name;
                   if( ! $locale.name ) {
@@ -2568,7 +2607,6 @@ collating_an:   for alphanational is locale_phrase[locale] {
                                       keyword_str($$.token),
                                       locale_name);
                   }
-                  warn_msg(@locale, "LOCALE phrase ignored");
                 }
                 ;             
 
@@ -2643,9 +2681,20 @@ special_name:   dev_mnemonic
                 {
                   symbol_decimal_point_set(',');
                 }
-        |       LOCALE NAME is locale_spec[spec] {
-                  current.locale($NAME, $spec);
-                  cbl_unimplementedw("sorry, unimplemented: LOCALE %qs", $spec);
+        |       LOCALE NAME is locale_spec[spec]
+                {
+                  cbl_locale_t locale($NAME, $spec);
+                  if( locale.encoding == no_encoding_e ) {
+                    error_msg(@NAME, "invalid iconv LOCALE name %qs", $spec);
+                    YYERROR;
+                  }
+                  if( locale.encoding == UTF8_e ) {
+                    cbl_unimplemented("UTF-8");
+                    YYERROR; 
+                  }
+                  if( ! current.locale_add(locale) ) {
+                    error_msg(@NAME, "%qs already defined as LOCALE name", $NAME);
+                  }
                 }
                 ;
         |       upsi
@@ -2655,6 +2704,8 @@ special_name:   dev_mnemonic
                 }
                 ;
 locale_spec:    NAME    { $$ = $1; }
+        |       UTF_8   { static char s[] ="UTF-8";  $$ = s; }
+        |       UTF_16  { static char s[] ="UTF-16"; $$ = s; }
         |       LITERAL { $$ = string_of($1); }
 
                 ;
@@ -2746,14 +2797,16 @@ device_name:	SYSIN           { $$.token = SYSIN; $$.id = SYSIN_e; }
 alphabet_name:  STANDARD_ALPHABET  { $$ = alphabet_add(@1, CP1252_e); }
         |       NATIVE             { $$ = alphabet_add(@1, EBCDIC_e); }
         |       EBCDIC             { $$ = alphabet_add(@1, EBCDIC_e); }
-        |       LOCALE ctx_name
+        |       LOCALE locale_name[name]
                 {
-                  auto e = symbol_alphabet(PROGRAM, $ctx_name);
+                  auto e = symbol_locale(PROGRAM, $name);                  
                   if( !e ) {
-                    error_msg(@ctx_name, "no such ALPHABET %qs", $ctx_name);
-                    YYERROR;
-                  }
-                  $$ = cbl_alphabet_of(e);
+                    dbgmsg("no such LOCALE yet %s", $name);
+                    cbl_locale_t locale($name); // locale is named but not defined 
+                    e = symbol_locale_add(PROGRAM, &locale); 
+                  } 
+                  cbl_alphabet_t alphabet( @name, symbol_index(e), $name);
+                  $$ = alphabet_add(alphabet);
                 }
         |       alphabet_seqs
                 {
@@ -3592,7 +3645,7 @@ const_value:    cce_expr
 
 value78:        literalism
                 {
-                  cbl_field_data_t data = {};
+                  cbl_field_data_t data;
 		  data.capacity = capacity_cast(strlen($1.data));
                   data.initial = $1.data;
                   $$.encoding = $1.encoding;
@@ -3600,13 +3653,15 @@ value78:        literalism
                 }
         |       const_value
                 {
-                  cbl_field_data_t data = {};
+                  cbl_field_data_t data;
 		  data = build_real (float128_type_node, $1);
+                  $$.encoding = current_encoding('A');
                   $$.data = new cbl_field_data_t(data);
                 }
         |       reserved_value[value]
                 {
 		  const auto field = constant_of(constant_index($value));
+                  $$.encoding = current_encoding('A');
                   $$.data = new cbl_field_data_t(field->data);
                 }
 
@@ -3638,6 +3693,7 @@ data_descr1:    level_name
                   field.type = FldLiteralN;
 		  field.data = build_real (float128_type_node, $const_value);
                   field.data.initial = string_of($const_value);
+                  field.codeset.set();
 
                   if( !cdf_value(field.name, cdfval_t($const_value)) ) {
                     error_msg(@1, "%s was defined by CDF", field.name);
@@ -3674,13 +3730,12 @@ data_descr1:    level_name
                   if( !cdf_value(field.name, $lit.data) ) {
                     error_msg(@1, "%s was defined by CDF", field.name);
                   }
-                  if( ! field.codeset.valid() ) {
-                    if( ! field.codeset.set(field.codeset.standard_internal.type) ) {
-                      error_msg(@lit, "CONSTANT inconsistent with encoding %s",
-                                cbl_alphabet_t::encoding_str(field.codeset.encoding));
-                    }
+                  if( ! field.codeset.set() ) {
+                    error_msg(@lit, "CONSTANT inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field.codeset.encoding));
                   }
-                  value_encoding_check(@lit, $1, $lit.encoding);
+                  
+                  value_encoding_check(@lit, $1);
                 }
         |       level_name CONSTANT is_global FROM NAME
                 {
@@ -3718,6 +3773,7 @@ data_descr1:    level_name
                   } else {
                     field.type = FldLiteralN;
                     field.data.initial = string_of(field.data.value_of());
+                    field.codeset.set($data.encoding);
                     if( !cdf_value(field.name, field.as_integer()) ) {
                       yywarn("%s was defined by CDF", field.name);
                     }
@@ -3974,6 +4030,15 @@ data_descr1:    level_name
 
                   // Verify VALUE
                   $field->report_invalid_initial_value(@data_clauses);
+
+                  bool numerical =
+                      $field->type == FldNumericDisplay || is_numeric($field);
+
+                  if( $field->data.initial && ! numerical ) {
+                    if( normal_value_e == cbl_figconst_of($field->data.initial) ) {
+                      value_encoding_check(@data_clauses, $field);
+                    }
+                  }
 
                   // verify REDEFINES
                   const auto parent = parent_of($field);
@@ -4287,14 +4352,16 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
                   if( field->data.initial != NULL ) {
                     if( 0 < field->data.capacity &&
                             field->data.capacity < uint32_t($size) ) {
-                      auto p = blank_pad_initial( field->data.initial,
-                                                  field->data.capacity, $size );
+                      auto p = blank_pad_initial(field->data.initial,
+                                                 field->data.capacity, $size );
                       if( !p ) YYERROR;
                       field->data.initial = p;
                     }
                   }
 
-                  field->data.capacity = $size;
+                  charmap_t *charmap = 
+                                    __gg__get_charmap(field->codeset.encoding);
+                  field->data.capacity = $size * charmap->stride();
                   field->data.picture = NULL;
 
                   if( false ) dbgmsg("PIC alphanum_pic[size]:%d: %s",
@@ -4708,14 +4775,23 @@ usage_clause1:  usage BIT
 
 value_clause:   VALUE all LITERAL[lit] {
                   cbl_field_t *field = current_field();
-                  if( ! field->codeset.set($lit.encoding) ) {
-                    error_msg(@lit, "VALUE inconsistent with encoding %s",
-                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
+
+                  if( $lit.prefix[0] ) { // not the default encoding
+                    if( ! field->codeset.set($lit.encoding) ) {
+                      error_msg(@lit, "VALUE inconsistent with encoding %s",
+                                cbl_alphabet_t::encoding_str(field->codeset.encoding));
+                    }
+                  } else {
+                    field->codeset.set();
                   }
+
+                  if( field->codeset.encoding != $lit.encoding ) {
+                    error_msg(@lit, "PICTURE inconsistent with VALUE %s'%s'",
+                              $lit.prefix, $lit.data);
+                  }
+
                   field->data.initial  = $lit.data;
                   field->attr |= literal_attr($lit.prefix);
-                  // The __gg__initialize_data routine needs to know that VALUE is a
-                  // quoted literal. This is critical for NumericEdited variables
                   field->attr |= quoted_e;
 
                   if( field->data.capacity == 0 ) {
@@ -4732,7 +4808,6 @@ value_clause:   VALUE all LITERAL[lit] {
                       }
                     }
                   }
-                  value_encoding_check(@lit, field, $lit.encoding);
                 }
         |       VALUE all cce_expr[value] {
                   cbl_field_t *field = current_field();
@@ -4761,11 +4836,9 @@ value_clause:   VALUE all LITERAL[lit] {
         |       VALUE all reserved_value[value]
                 {
                   cbl_field_t *field = current_field();
-                  if( ! field->codeset.valid() ) {
-                    if( ! field->codeset.set(field->codeset.standard_internal.type) ) {
-                      error_msg(@value, "VALUE inconsistent with encoding %s",
-                                cbl_alphabet_t::encoding_str(field->codeset.encoding));
-                    }
+                  if( ! field->codeset.set() ) {
+                    error_msg(@value, "VALUE inconsistent with encoding %s",
+                              cbl_alphabet_t::encoding_str(field->codeset.encoding));
                   }
                   if( $value != NULLS ) {
                     auto fig = constant_of(constant_index($value));
@@ -5017,6 +5090,7 @@ typedef_clause: is TYPEDEF strong
                     error_msg(@2, "%s %s IS TYPEDEF must be level 01",
 			    field->level_str(), field->name);
                   }
+                  field->codeset.set();
                   field->attr |= typedef_e;
                   if( $strong ) field->attr |= strongdef_e;
                   if( ! current.typedef_add(field) ) {
@@ -7007,6 +7081,8 @@ context_word:   APPLY                   { static char s[] ="APPLY";
                                          $$ = s; } // LOCK MODE clause
         |       MULTIPLE               { static char s[] ="MULTIPLE";
                                          $$ = s; } // LOCK ON phrase
+        |       NAT                    { static char s[] ="NAT";
+                                         $$ = s; } // CONVERT function
         |       NEAREST_AWAY_FROM_ZERO { static char s[] ="NEAREST-AWAY-FROM-ZERO";
                                          $$ = s; } // INTERMEDIATE ROUNDING clause and ROUNDED phrase
         |       NEAREST_EVEN           { static char s[] ="NEAREST-EVEN";
@@ -8544,7 +8620,7 @@ advance_by:     scalar lines { $$ = $1; } /* BUG: should accept reference */
                    * number of lines is negative.  So, we use the
                    * negative Number Of The Beast as a PAGE flag.
                    */
-                  $$ = new_reference( new_literal("-666") );
+                  $$ = new_reference( new_literal(xstrdup("-666")) );
                 }
         |       device_name { $$ = new_reference(literally_one); }
                 ;
@@ -8601,7 +8677,33 @@ io_invalid:     INVALID key {
 
 delete:         delete_impl  end_delete
         |       delete_cond  end_delete
+        |       delete_file  end_delete
                 ;
+delete_file:    DELETE delete_file_body[stmt] delete_error[err] {
+                  if( ! $err.on_error )  parser_file_delete_on_exception($stmt);
+                  if( ! $err.not_error ) parser_file_delete_not_exception($stmt);
+                  parser_file_delete_end($stmt);
+                  current.declaratives_evaluate();
+                }
+delete_file_body:
+                FILE_KW override filenames retry_phrase {
+                  $$ = label_add(@$, LblXml, uniq_label("xfile"));
+                  xml_statements.push($$);
+                  statement_begin(@$, DELETE);
+                  std::vector<cbl_file_t*>
+                      filenames($filenames->files.begin(),
+                                $filenames->files.end() );
+                  parser_file_delete_file( $$, filenames);
+                }
+                ;
+retry_phrase:   %empty
+        |       RETRY expr TIMES
+        |       FOR expr  SECONDS
+        |       FOREVER {
+                  cbl_unimplemented("DELETE FILE RETRY");
+                }
+                ;
+
 delete_impl:    DELETE delete_body[file]
                 {
                   file_delete_args.call_parser_file_delete(true);
@@ -8634,6 +8736,63 @@ delete_body:    filename[file] record
                   $$ = $file;
                 }
                 ;
+
+delete_error:   %empty	%prec DELETE {
+                  $$.on_error = $$.not_error = nullptr;
+                }
+        |       delete_excepts %prec DELETE
+                ;
+delete_excepts:     delete_except[a] statements %prec DELETE
+                {
+                  assert( $a.on_error || $a.not_error );
+                  assert( ! ($a.on_error && $a.not_error) );
+                  $$ = $a;
+                }
+        |       delete_excepts[a] delete_except[b] statements %prec DELETE
+                {
+                  if( $a.on_error && $a.not_error ) {
+                    error_msg(@1, "too many ON ERROR clauses");
+                    YYERROR;
+                  }
+                  // "ON" and "NOT ON" could be reversed, but not duplicated.
+                  if( $a.on_error && $b.on_error ) {
+                    error_msg(@1, "duplicate ON ERROR clauses");
+                    YYERROR;
+                  }
+                  if( $a.not_error && $b.not_error ) {
+                    error_msg(@1, "duplicate NOT ON ERROR clauses");
+                    YYERROR;
+                  }
+                  $$ = $a;
+                  if( $$.on_error ) {
+                    assert($b.not_error);
+                    $$.not_error = $b.not_error;
+                  } else {
+                assert($b.on_error);
+                    $$.on_error = $b.on_error;
+                  }
+                }
+                ;
+delete_except:  EXCEPTION
+                {
+                  auto xml_stmt = xml_statements.top();
+                  // The value of the pointer no longer matters, only NULL or not. 
+                  $$.on_error = $$.not_error = nullptr;
+                  switch($1) {
+                  case EXCEPTION:
+                    $$.on_error = xml_stmt;
+                    parser_file_delete_on_exception(xml_stmt);
+                    break;
+                  case NOT:
+                    $$.not_error = xml_stmt;
+                    parser_file_delete_not_exception(xml_stmt);
+                    break;
+                  default:
+                    gcc_unreachable();
+                  }
+                }
+                ;
+
 end_delete:     %empty %prec DELETE
         |       END_DELETE
                 ;
@@ -10536,7 +10695,9 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
 				    cbl_ffi_arg_t actual(param.crv, ar);
 				    return actual;
 				  } );
-		  auto name = new_literal(strlen(L->name), L->name, quoted_e);
+                  // Pretend hex-encoded because that means use verbatim.
+                  auto attr = cbl_field_attr_t(quoted_e | hex_encoded_e);
+                  auto name = new_literal(strlen(L->name), L->name, attr);
 		  ast_call( @1, name, $$, args.size(), args.data(), NULL, NULL, true );
                 }
         |       FUNCTION_UDF_0 {
@@ -10547,8 +10708,11 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
 		  const auto returning = cbl_field_of(symbol_at(L->returning));
                   $$ = new_temporary_clone(returning);
 		  $$->data.initial = returning->name; // user's name for the field
-
-                  auto name = new_literal(strlen(L->name), L->name, quoted_e);
+                  cbl_field_attr_t call_attr
+                                 = (cbl_field_attr_t)(quoted_e|hex_encoded_e);
+                  cbl_field_t *name = new_literal(strlen(L->name),
+                                                  L->name,
+                                                  call_attr);
                   ast_call( @1, name, $$, narg, args, NULL, NULL, true );
                 }
                 ;
@@ -11135,6 +11299,18 @@ subst_input:    anycase first_last varg[v1] varg[v2] {
                 }
                 ;
 
+locale_name:    NAME
+                {
+                  auto e = symbol_locale(PROGRAM, $NAME);
+                  if( !e ) {
+                    error_msg(@NAME, "no such SPECIAL-NAMES LOCALE: %qs", $NAME);
+                    YYERROR;
+                  }
+                  $$ = const_cast<char*>(
+                           __gg__encoding_iconv_name(cbl_locale_of(e)->encoding) );
+                }
+                ;
+
 intrinsic_locale:
                 LOCALE_COMPARE '(' varg[r1] varg[r2]  ')'
                 {
@@ -11143,11 +11319,12 @@ intrinsic_locale:
                   cbl_refer_t dummy = {};
                   if( ! intrinsic_call_3($$, LOCALE_COMPARE, $r1, $r2, &dummy) ) YYERROR;
                 }
-        |       LOCALE_COMPARE '(' varg[r1] varg[r2] varg[r3] ')'
+        |       LOCALE_COMPARE '(' varg[r1] varg[r2] locale_name ')'
                 {
                   location_set(@1);
                   $$ = new_alphanumeric();
-                  if( ! intrinsic_call_3($$, LOCALE_COMPARE, $r1, $r2, $r3) ) YYERROR;
+                  cbl_refer_t locale(new_literal($locale_name));
+                  if( ! intrinsic_call_3($$, LOCALE_COMPARE, $r1, $r2, &locale) ) YYERROR;
                 }
 
         |       LOCALE_DATE '(' varg[r1]  ')'
@@ -11452,6 +11629,10 @@ on:             %empty
 optional:       %empty   { $$ = false; }
         |       OPTIONAL { $$ = true;  }
                 ;
+
+override:	%empty   { $$ = false; }
+	|	OVERRIDE { $$ = true; }
+		;
 
 program_kw:     %empty
         |       PROGRAM_kw
@@ -11900,6 +12081,7 @@ void ast_call( const YYLTYPE& loc, cbl_refer_t name, const cbl_refer_t& returnin
   if( is_literal(name.field) ) {
     cbl_field_t called = { FldLiteralA, quoted_e | constant_e,
                            name.field->data, 77 };
+    called.attr |= name.field->attr;
     snprintf(called.name, sizeof(called.name), "_%s", name.field->data.initial);
     name.field = cbl_field_of(symbol_field_add(PROGRAM, &called));
     symbol_field_location(field_index(name.field), loc);
@@ -13030,13 +13212,13 @@ struct expand_group : public std::list<cbl_refer_t> {
 };
 
 
-static const char * initial_default_value;
-       const char * wsclear() { return initial_default_value; }
+static const uint32_t * initial_default_value;
+       const uint32_t * wsclear() { return initial_default_value; }
 
 void
-wsclear( char ch ) {
-  static char byte = ch;
-  initial_default_value = &byte;
+wsclear( uint32_t i ) {
+  static uint32_t init_val = i;
+  initial_default_value = &init_val;
   current.program_needs_initial();
 }
 
@@ -13558,16 +13740,16 @@ literal_t::set( const cbl_field_t * field ) {
 
 literal_t&
 literal_t::set_prefix( const char *input, size_t len ) {
-  encoding = current_encoding('A');
+  encoding = current_encoding(display_encoding_e);
   assert(len < sizeof(prefix));
   std::fill(prefix, prefix + sizeof(prefix), '\0');
   std::transform(input, input + len, prefix, toupper);
   switch(prefix[0]) {
   case '\0': case 'Z':
-    encoding = current_encoding('A');
+    encoding = current_encoding(display_encoding_e);
     break;
   case 'N':
-    encoding = current_encoding('N');
+    encoding = current_encoding(national_encoding_e);
     if( 'X' == prefix[1] ) {
       cbl_unimplemented("NX literals");
     }
@@ -13583,7 +13765,7 @@ literal_t::set_prefix( const char *input, size_t len ) {
   default:
     gcc_unreachable();
   }
-  assert(encoding <= iconv_YU_e);
+  assert(valid_encoding(encoding));
   return *this;
 }
 
@@ -13608,8 +13790,8 @@ literal_attr( const char prefix[] ) {
     case 'X':
       switch(prefix[0]) {
       case 'B': return cbl_field_attr_t(hex_encoded_e | bool_encoded_e);
-      case 'N': 
-      case 'U': cbl_unimplemented("National"); return none_e;
+      case 'N': cbl_unimplemented("Hexadecimal National"); return none_e;
+      case 'U': cbl_unimplemented("Hexadecimal Unicode");  return none_e;
       }
       break;
     }

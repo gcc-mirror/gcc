@@ -1744,7 +1744,7 @@ get_literal_string(cbl_field_t *field)
   char *buffer = static_cast<char *>(xcalloc(1, buffer_length));
 
   size_t charsout;
-  const char *converted = __gg__iconverter(DEFAULT_CHARMAP_SOURCE,
+  const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
                                      field->codeset.encoding,
                                      field->data.initial,
                                      field->data.capacity,

@@ -408,6 +408,7 @@ static void fatalError(void * CTX, const char * msg, ...)
 }
 
 #if 0
+
 static xmlEntityPtr getEntity(void * CTX,
                               const xmlChar * name)
 { SAYSO_DATAZ(name); }
@@ -484,6 +485,7 @@ static void setDocumentLocator(void * CTX,
  * xmlCtxtGetStandalone() to get data from the XML declaration.
  */
 static void startDocument(void * CTX)
+
 {
   SAYSO();
 }
@@ -616,7 +618,6 @@ xmlchar_of( const char input[] ) {
 static const char *
 xmlParserErrors_str( xmlParserErrors erc, const char name[] ) {
   const char *msg = "???";
-
   switch( erc ) {
   case XML_ERR_OK:
     msg = "Success";
@@ -630,6 +631,7 @@ xmlParserErrors_str( xmlParserErrors erc, const char name[] ) {
   case XML_ERR_UNSUPPORTED_ENCODING:
     msg = "Unsupported character encoding";
     break;
+
 #if LIBXML_VERSION >= 21400
   case XML_ERR_RESOURCE_LIMIT:
     msg = "Internal resource limit like maximum amplification factor exceeded";
@@ -709,6 +711,7 @@ static class context_t {
       ctxt = nullptr;
     }
   }
+
 
  protected:
   void init() {

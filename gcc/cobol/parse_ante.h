@@ -273,38 +273,11 @@ static inline char * dequote( char input[] ) {
 static const char *
 name_of( cbl_field_t *field ) {
   assert(field);
-  // Because this can be called after .initial has been converted to the
-  // field->codeset.encoding, we have to undo that.  There may be some danger
-  // associated with returning a static.  I don't actually know. -- RJD.
-  static size_t static_length = 0;
-  static char * static_buffer = nullptr;
-  
-  if( field->data.initial == nullptr ) return field->name;
-
-  if( field->name[0] == '_' )
-    {
-    // Make a copy of .initial
-    if( static_length < field->data.capacity+1 )
-      {
-      static_length = field->data.capacity+1;
-      static_buffer = static_cast<char *>(xrealloc(static_buffer,
-                                                   static_length));
-      memcpy(static_buffer, field->data.initial, field->data.capacity);
-      static_buffer[field->data.capacity] = '\0';
-      }
-    // Convert it from ->encoding to DEFAULT_CHARMAP_SOURCE
-    size_t charsout;
-    char *converted =  __gg__iconverter(field->codeset.encoding,
-                                        DEFAULT_CHARMAP_SOURCE,
-                                        field->data.initial,
-                                        field->data.capacity,
-                                        &charsout );
-    memcpy(static_buffer, converted, charsout);
-    static_buffer[charsout] = '\0';
-    }
-
+  if( field->data.initial == nullptr ) {
+    return field->name;
+  }
   return field->name[0] == '_' && field->data.initial?
-    static_buffer : field->name;
+    field->data.original() : field->name;
 }
 
 static const char *
@@ -1337,6 +1310,7 @@ std::map<std::string, std::list<std::string>>
 
 class prog_descr_t {
   std::set<std::string> call_targets, subprograms;
+  std::set<cbl_locale_t> locales;
 public:
   std::set<function_descr_t> function_repository;
   size_t program_index;
@@ -1361,17 +1335,14 @@ public:
     } alpha, national;
     encoding_t() : national(EBCDIC_e) {}
   } alphabet;
-  struct locale_t {
-    cbl_name_t name; const char *os_name;
-    locale_t() : name(""), os_name(nullptr) {}
-    locale_t(const cbl_name_t name, const char *os_name)
-      : name(""), os_name(os_name) {
-      if( name ) {
-        bool ok = namcpy(YYLTYPE(), this->name, name);
-        gcc_assert(ok);
-      }
-    }
-  } locale;
+  
+  bool locale_add( const cbl_locale_t& locale ) {
+    auto e = symbol_locale_add(program_index, &locale);
+    assert(e);
+    auto p = locales.insert(locale);
+    return p.second;
+  }
+      
   cbl_options_t options;
 
   explicit prog_descr_t( size_t isymbol )
@@ -1904,7 +1875,14 @@ static class current_t {
     return program.alphabet.alpha.encoding;
   }
   cbl_encoding_t  national_encoding() const {
-    if( programs.empty() ) return EBCDIC_e;
+    cbl_encoding_t when_empty = EBCDIC_e;
+    char *alternate = getenv("NATIONAL");
+    if( alternate )
+      {
+      when_empty = __gg__encoding_iconv_type(alternate);
+      gcc_assert(when_empty);
+      }
+    if( programs.empty() ) return when_empty;
     const prog_descr_t& program = programs.top();
     return program.alphabet.national.encoding;
   }
@@ -1929,23 +1907,8 @@ static class current_t {
     return programs.top().options.default_round = mode;
   }
 
-  const char *
-  locale() {
-    return programs.empty()? NULL : programs.top().locale.os_name;
-  }
-  const char *
-  locale( const cbl_name_t name ) {
-    if( programs.empty() ) return NULL;
-    const prog_descr_t::locale_t& locale = programs.top().locale;
-    return 0 == strcmp(name, locale.name)? locale.name : NULL;
-  }
-  const prog_descr_t::locale_t&
-  locale( const cbl_name_t name, const char os_name[] ) {
-    if( programs.empty() ) {
-      static prog_descr_t::locale_t empty;
-      return empty;
-    }
-    return programs.top().locale = prog_descr_t::locale_t(name, os_name);
+  bool locale_add( const cbl_locale_t& locale ) {
+    return programs.top().locale_add(locale);
   }
 
   bool new_program ( const YYLTYPE& loc, cbl_label_type_t type,
@@ -2296,11 +2259,13 @@ add_debugging_declarative( const cbl_label_t * label ) {
   }
 }
 
-cbl_options_t current_options() {
+cbl_options_t
+current_options() {
   return current.options_paragraph;
 }
 
-cbl_encoding_t current_encoding( char a_or_n ) {
+cbl_encoding_t
+current_encoding( char a_or_n ) {
   cbl_encoding_t retval;
   switch(a_or_n) {
   case 'A':
@@ -2316,14 +2281,17 @@ cbl_encoding_t current_encoding( char a_or_n ) {
   return retval;
 }
 
-size_t current_program_index() {
+size_t
+current_program_index() {
   return current.program()? current.program_index() : 0;
 }
 
-cbl_label_t * current_section() {
+cbl_label_t *
+current_section() {
   return current.section();
 }
-cbl_label_t * current_paragraph() {
+cbl_label_t *
+current_paragraph() {
   return current.paragraph();
 }
 
@@ -2402,8 +2370,13 @@ literal_refmod_valid( YYLTYPE loc, const cbl_refer_t& r );
 static bool
 is_integer_literal( const cbl_field_t *field ) {
   if( field->type == FldLiteralN ) {
-    const char *initial = field->data.initial;
-
+    size_t nchar;
+    const char *initial = __gg__iconverter(field->codeset.encoding,
+                                           DEFAULT_SOURCE_ENCODING,
+                                           field->data.initial,
+                                           strlen(field->data.initial),
+                                           &nchar);
+    assert(strlen(initial) == nchar);
     switch( *initial ) {
     case '-': case '+': ++initial;
     }
@@ -2982,15 +2955,27 @@ blank_pad_initial( const char initial[], size_t capacity, size_t new_size ) {
   return p;
 }
 
+/*
+ * When cbl_field_t::internalize is called, its data.initial value has been
+ * set, but nothing has been done to it.  It is encoded according to the source
+ * code.  internalize() converts data.initial to the field's encoding. 
+ *
+ * If syntax used was was PIC VALUE, in that order, then PIC set the field's
+ * encoding, and the VALUE clause can verify that its encoding matches.  If the
+ * order was VALUE PIC, the value leaves the encoding uninitialized unless the
+ * value string bore an encoding prefix.  When PIC is processed, codeset_t::set
+ * allows it to set the encoding only if it's either uninitialized, or the PIC
+ * encoding matches the existing one set by VALUE.  In no event does one
+ * override the other; they must agree.
+ *
+ * internalize() fails if data.initial cannot be converted to the field's
+ * encoding.
+ */
 static void
-value_encoding_check( const YYLTYPE& loc, cbl_field_t *field, cbl_encoding_t encoding ) {
+value_encoding_check( const YYLTYPE& loc, cbl_field_t *field ) {
   if( ! field->internalize() ) {
     error_msg(loc, "inconsistent string literal encoding for '%s'",
               field->data.initial);
-  }
-  if( encoding != field->codeset.encoding ) {
-    warn_msg(loc, "VALUE encoded as %qs for data item encoded as %qs",
-             __gg__encoding_iconv_name(encoding), field->codeset.name());
   }
 }
 
@@ -3046,11 +3031,15 @@ file_add( YYLTYPE loc, cbl_file_t *file ) {
 
 
 static cbl_alphabet_t *
-alphabet_add( const YYLTYPE& loc, cbl_encoding_t encoding ) {
-  cbl_alphabet_t alphabet(loc, encoding);
+alphabet_add( const cbl_alphabet_t& alphabet ) {
   symbol_elem_t *e = symbol_alphabet_add(PROGRAM, &alphabet);
   assert(e);
   return cbl_alphabet_of(e);
+}
+static cbl_alphabet_t *
+alphabet_add( const YYLTYPE& loc, cbl_encoding_t encoding ) {
+  cbl_alphabet_t alphabet(loc, encoding);
+  return alphabet_add(alphabet);
 }
 
 // The current field always exists in the symbol table, even if it's incomplete.
@@ -3302,8 +3291,9 @@ data_division_ready() {
   static size_t nsymbol = 0;
   if( (nsymbol = symbols_update(nsymbol, nparse_error == 0)) > 0 ) {
     if( ! literally_one ) {
-      literally_one = new_literal("1");
-      literally_zero = new_literal("0");
+      // Use strdup so cbl_field_t::internalize can free them if need be.
+      literally_one = new_literal(xstrdup("1"));
+      literally_zero = new_literal(xstrdup("0"));
     }
   }
 

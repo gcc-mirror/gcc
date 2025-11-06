@@ -289,6 +289,7 @@ class ec_status_t {
       case file_op_write: return "write";
       case file_op_rewrite: return "rewrite";
       case file_op_delete: return "delete";
+      case file_op_remove: return "remove";
       }
       return "???";
     }
@@ -1627,7 +1628,7 @@ int128_to_field(cblc_field_t   *var,
                                 var->picture);
               size_t outlength;
               const char *converted = __gg__iconverter(
-                                     DEFAULT_CHARMAP_SOURCE,
+                                     DEFAULT_SOURCE_ENCODING,
                                      var->encoding,
                                      PTRCAST(char, location),
                                      var->capacity,
@@ -2755,7 +2756,7 @@ __gg__dirty_to_float( const char *dirty,
   int delta_r = 0;
 
   // We now loop over the remaining input characters:
-  char ch = '\0';
+  unsigned char ch = '\0';
 
   charmap_t *charmap = __gg__get_charmap(field->encoding);
 
@@ -3055,7 +3056,7 @@ format_for_display_internal(char **dest,
         // This buffer is larger than can validly be needed
         unsigned char converted[128];
         size_t outlength;
-        retval = DEFAULT_CHARMAP_SOURCE;
+        retval = DEFAULT_SOURCE_ENCODING;
         const char *mapped = __gg__iconverter(
                                   var->encoding,
                                   retval,
@@ -3285,7 +3286,7 @@ format_for_display_internal(char **dest,
         }
 
       char ach[128];
-      retval = DEFAULT_CHARMAP_SOURCE;
+      retval = DEFAULT_SOURCE_ENCODING;
       charmap_t *charmap = __gg__get_charmap(retval);
 
       __gg__binary_to_string_ascii(ach, digits, value);
@@ -3724,7 +3725,13 @@ get_float128( const cblc_field_t *field,
     {
     if( __gg__decimal_point == '.' )
       {
-      retval = strtofp128(field->initial, NULL);
+      size_t charsout;
+      char *converted = __gg__iconverter(field->encoding,
+                                         DEFAULT_SOURCE_ENCODING,
+                                         field->initial,
+                                         strlen(field->initial),
+                                         &charsout);
+      retval = strtofp128(converted, NULL);
       }
     else
       {
@@ -3954,7 +3961,7 @@ compare_field_class(const cblc_field_t  *conditional,
         walker = right + right_len;
 
         GCOB_FP128 left_value;
-        if( left_flag == 'F' && left[0] == 'Z' )
+        if( left_flag == ascii_F && left[0] == ascii_Z )
           {
           left_value = 0;
           }
@@ -4375,9 +4382,11 @@ __gg__compare_2(cblc_field_t *left_side,
             }
           massert(buffer);
           strcpy(buffer, right_side->initial);
+
           if( __gg__decimal_point == ',' )
             {
-            // We need to replace any commas with periods
+            // We are operating in DECIMAL IS COMMA mode, so we need to
+            // replace any commas with periods.
             char *p = strchr(buffer, ',');
             if(p)
               {
@@ -4385,8 +4394,9 @@ __gg__compare_2(cblc_field_t *left_side,
               }
             }
 
-          // buffer[] now contains the string we want to convert
-
+          // buffer[] now contains the right-side string we want to convert
+          // to one of the floating-point types.  We want them to be the
+          // same size:
           switch(left_side->capacity)
             {
             case 4:
@@ -4970,7 +4980,7 @@ init_var_both(cblc_field_t  *var,
             {
             strcpy(first, walker);
             __gg__convert_encoding( first,
-                                    DEFAULT_CHARMAP_SOURCE,
+                                    DEFAULT_SOURCE_ENCODING,
                                     var->encoding);
             }
           walker += strlen(first) + 1;
@@ -4987,7 +4997,7 @@ init_var_both(cblc_field_t  *var,
           else
             {
            __gg__convert_encoding( last,
-                                   DEFAULT_CHARMAP_SOURCE,
+                                   DEFAULT_SOURCE_ENCODING,
                                    var->encoding);
             }
           walker += strlen(last) + 1;
@@ -6234,7 +6244,7 @@ __gg__move( cblc_field_t        *fdest,
             // ascii:
             size_t charsout;
             const char *converted = __gg__iconverter(fsource->encoding,
-                                                     DEFAULT_CHARMAP_SOURCE,
+                                                     DEFAULT_SOURCE_ENCODING,
                                     PTRCAST(char, fsource->data+source_offset),
                                                      source_size,
                                                      &charsout);
@@ -9142,11 +9152,17 @@ display_both(cblc_field_t  *field,
       }
     }
 
+  size_t conversion_length = strlen(display_string);
+  if( charmap->stride() != 1 )
+    {
+    conversion_length = qual_size;
+    }
+
   size_t outlength;
   const char *converted = __gg__iconverter( encoding,
                                             encout,
                                             display_string,
-                                            strlen(display_string),
+                                            conversion_length,
                                             &outlength);
   write(file_descriptor,
         converted,
@@ -10059,7 +10075,7 @@ is_numeric_display_numeric(cblc_field_t *field, size_t offset, size_t size)
       digits_e -= 1;
       unsigned char final_char = (unsigned char)*digits_e;
       final_char = charmap->set_digit_negative(final_char, false);
-      if(   final_char<charmap->mapped_character(ascii_0) 
+      if(   final_char<charmap->mapped_character(ascii_0)
          || final_char>charmap->mapped_character(ascii_9) )
         {
         retval = 0;
@@ -10420,14 +10436,14 @@ accept_envar( cblc_field_t  *tgt,
     // Convert the name to the console codeset:
     __gg__convert_encoding( trimmed_env,
                             encoding,
-                            DEFAULT_CHARMAP_SOURCE);
+                            DEFAULT_SOURCE_ENCODING);
 
     // Pick up the environment variable, and convert it to the internal codeset
     const char *p = getenv(trimmed_env);
     if(p)
       {
       retval = 0; // Okay
-      move_string(tgt, tgt_offset, tgt_length, p, DEFAULT_CHARMAP_SOURCE);
+      move_string(tgt, tgt_offset, tgt_length, p, DEFAULT_SOURCE_ENCODING);
       }
     free(env);
     }
@@ -10638,7 +10654,7 @@ __gg__get_argv( cblc_field_t *dest,
                 dest_offset,
                 dest_length,
                 stashed_argv[N],
-                DEFAULT_CHARMAP_SOURCE);
+                DEFAULT_SOURCE_ENCODING);
     retcode = 0;  // Okay
     }
   return retcode;
@@ -11381,7 +11397,7 @@ __gg__unstring( const cblc_field_t *id1,        // The string being unstring
                     id5_o[nreceiver],
                     id5_s[nreceiver],
                     "",
-                    DEFAULT_CHARMAP_SOURCE);
+                    DEFAULT_SOURCE_ENCODING);
         }
       }
 
@@ -11768,6 +11784,7 @@ __gg__check_fatal_exception()
     case file_op_write:
     case file_op_rewrite:
     case file_op_delete:
+    case file_op_remove:
       break;
     }
   } else {
@@ -12041,6 +12058,23 @@ __gg__adjust_dest_size(cblc_field_t *dest, size_t ncount)
 
 extern "C"
 void
+__gg__adjust_encoding(cblc_field_t *field)
+  {
+  // Assume that field->data is in ASCII;  We need to convert it to the target
+  size_t nbytes;
+  const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                           field->encoding,
+                                           PTRCAST(char, field->data),
+                                           field->capacity,
+                                           &nbytes);
+  size_t tocopy = std::min(nbytes, field->allocated);
+  field->capacity = tocopy;
+  memcpy(field->data, converted, tocopy);
+  }
+
+
+extern "C"
+void
 __gg__func_exception_location(cblc_field_t *dest)
   {
   char ach[512] = " ";
@@ -12088,6 +12122,7 @@ __gg__func_exception_location(cblc_field_t *dest)
     }
   __gg__adjust_dest_size(dest, strlen(ach));
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_encoding(dest);
   }
 
 extern "C"
@@ -12102,6 +12137,7 @@ __gg__func_exception_statement(cblc_field_t *dest)
     }
   __gg__adjust_dest_size(dest, strlen(ach));
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_encoding(dest);
   }
 
 extern "C"
@@ -12128,6 +12164,7 @@ __gg__func_exception_status(cblc_field_t *dest)
     }
   __gg__adjust_dest_size(dest, strlen(ach));
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_encoding(dest);
   }
 
 extern "C"
@@ -12195,6 +12232,7 @@ __gg__func_exception_file(cblc_field_t      *dest,
 
   __gg__adjust_dest_size(dest, strlen(ach));
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_encoding(dest);
   }
 
 extern "C"
@@ -12693,7 +12731,7 @@ __gg__just_mangle_name( const cblc_field_t  *field,
   // We need ach_name to be in ASCII:
   size_t charsout;
   const char *converted = __gg__iconverter(field->encoding,
-                                           DEFAULT_CHARMAP_SOURCE,
+                                           DEFAULT_SOURCE_ENCODING,
                                            PTRCAST(char, field->data),
                                            length,
                                            &charsout);
@@ -12784,7 +12822,7 @@ __gg__function_handle_from_name(int                 program_id,
 
   size_t charsout;
   const char *converted = __gg__iconverter(field->encoding,
-                                           DEFAULT_CHARMAP_SOURCE,
+                                           DEFAULT_SOURCE_ENCODING,
                                            PTRCAST(char, field->data + offset),
                                            length,
                                            &charsout);
@@ -13093,6 +13131,7 @@ __gg__deallocate( cblc_field_t *target,
 static int
 get_the_byte(cblc_field_t *field)
   {
+  // This is a helper routine for ALLOCATE
   int retval = -1;
   if( field )
     {
@@ -13100,7 +13139,14 @@ get_the_byte(cblc_field_t *field)
     retval = __gg__fc_char(field);
     if(retval == -1)
       {
-      retval = (int)__gg__get_integer_binary_value(field);
+      retval = (int)(unsigned char)__gg__get_integer_binary_value(field);
+      }
+    else
+      {
+      // This is a bit of a hack.  It turns out the figurative constant is
+      // encoded in ASCII.  We need it to be in the current DISPLAY encoding.
+      charmap_t *charmap = __gg__get_charmap(__gg__display_encoding);
+      retval = charmap->mapped_character(retval);
       }
     }
   return retval;
@@ -13373,6 +13419,7 @@ __gg__module_name(cblc_field_t *dest, module_type_t type)
 
   __gg__adjust_dest_size(dest, strlen(result));
   memcpy(dest->data, result, strlen(result)+1);
+  __gg__adjust_encoding(dest);
   }
 
 /*
@@ -13652,7 +13699,7 @@ __gg__accept_arg_value( cblc_field_t *dest,
                 dest_offset,
                 dest_length,
                 stashed_argv[sv_argument_number],
-                DEFAULT_CHARMAP_SOURCE);
+                DEFAULT_SOURCE_ENCODING);
     retcode = 0;  // Okay
 
     // The Fujitsu spec says bump this value by one.

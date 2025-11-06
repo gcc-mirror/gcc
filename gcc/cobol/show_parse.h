@@ -140,7 +140,13 @@ extern bool cursor_at_sol;
                 fprintf(stderr, "%s", (b).field->name); \
                 if( (b).field->type == FldLiteralA || (b).field->type == FldLiteralN ) \
                     { \
-                    fprintf(stderr, " \"%s\"", (b).field->data.initial); \
+                    size_t nbytes; \
+                    const char *literal = __gg__iconverter((b).field->codeset.encoding, \
+                                                           DEFAULT_SOURCE_ENCODING, \
+                                                           (b).field->data.initial, \
+                                                           strlen((b).field->data.initial), \
+                                                           &nbytes); \
+                    fprintf(stderr, " \"%s\"", literal); \
                     } \
                 else \
                     { \

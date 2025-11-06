@@ -863,8 +863,12 @@ function_pointer_from_name(const cbl_refer_t &name,
                        NULL); // And, hence, no types
 
     // Fetch the FUNCTION_DECL for that FUNCTION_TYPE
-    tree function_decl = gg_build_fn_decl(name.field->data.initial,
+    char *tname = static_cast<char *>(xmalloc(name.field->data.capacity+1));
+    memcpy(tname, name.field->data.original(), name.field->data.capacity);
+    tname[name.field->data.capacity] = '\0';
+    tree function_decl = gg_build_fn_decl(tname,
                                           fndecl_type);
+    free(tname);
     // Take the address of the function decl:
     tree address_of_function = gg_get_address_of(function_decl);
     gg_assign(function_pointer, address_of_function);
@@ -877,11 +881,11 @@ function_pointer_from_name(const cbl_refer_t &name,
       gg_assign(function_pointer,
                 gg_cast(build_pointer_type(function_type),
                         gg_call_expr( VOID_P,
-                                  "__gg__function_handle_from_literal",
-                                  build_int_cst_type(INT,
-                                    current_function->our_symbol_table_index),
-                                  gg_string_literal(name.field->data.initial),
-                                  NULL_TREE)));
+                              "__gg__function_handle_from_literal",
+                              build_int_cst_type(INT,
+                                current_function->our_symbol_table_index),
+                              gg_string_literal(name.field->data.original()),
+                              NULL_TREE)));
       }
     else
       {
@@ -919,7 +923,7 @@ parser_initialize_programs( size_t nprogs,
       if( progs[i].field->type == FldLiteralA )
         {
         SHOW_PARSE_TEXT("\"")
-        SHOW_PARSE_TEXT(progs[i].field->data.initial)
+        SHOW_PARSE_TEXT(progs[i].field->data.original())
         SHOW_PARSE_TEXT("\"")
         }
       else
@@ -2246,21 +2250,19 @@ cobol_compare(  tree return_int,
               {
               // Comparing a FldLiteralN to an alphanumeric
 
-              // CONVERSION ALERT.  lefty->field->data.initial is an ASCII
-              // string.  We want to convert it to the same encoding as the
-              // right side.
-
-              cbl_encoding_t enc_left = DEFAULT_CHARMAP_SOURCE;
-              cbl_encoding_t enc_right =
-                  static_cast<cbl_encoding_t>(righty->field->codeset.encoding);
-
+              // This next conversion may be overkill.  But just in case
+              // the encodings of the two variables are different, we are
+              // going to convert left-side text to the right-side encoding
+              cbl_encoding_t enc_left  = lefty->field->codeset.encoding;
+              cbl_encoding_t enc_right = righty->field->codeset.encoding;
               size_t outlength;
-              char *converted = __gg__iconverter(enc_left,
-                                           enc_right,
-                                           lefty->field->data.initial,
-                                           strlen(lefty->field->data.initial)+1,
-                                           &outlength );
-
+              size_t inlength = strlen(lefty->field->data.initial);
+              char *converted = __gg__iconverter(
+                                         enc_left,
+                                         enc_right,
+                                         lefty->field->data.initial,
+                                         inlength,
+                                         &outlength );
               gg_assign(  return_int, gg_call_expr(
                           INT,
                           "__gg__literaln_alpha_compare",
@@ -2458,7 +2460,7 @@ move_tree(  cbl_field_t  *dest,
       gg_call(VOID,
               "__gg__string_to_alpha_edited",
               location,
-              build_int_cst_type(INT, DEFAULT_CHARMAP_SOURCE),
+              build_int_cst_type(INT, DEFAULT_SOURCE_ENCODING),
               psz_source,
               min_length,
               member(dest->var_decl_node, "picture"),
@@ -3956,7 +3958,7 @@ parser_enter_program( const char *funcname_,
 
   if( strcmp(funcname_, "main") == 0 && this_module_has_main )
     {
-    // setting 'retval' to 1 let's the caller know that we are being told
+    // Setting 'retval' to 1 lets the caller know that we are being told
     // both to synthesize a main() entry point to duplicate GCC's default
     // behavior, and to create an explicit entry point named "main".  This will
     // eventually result in a link error (because of the duplicated entry
@@ -4164,8 +4166,165 @@ parser_init_list()
   gg_call(VOID,
           "__gg__variables_to_init",
           gg_get_address_of(array),
-          wsclear() ? gg_string_literal(wsclear()) : null_pointer_node,
+          wsclear() ? build_string_literal(1, (const char *)wsclear())
+                    : null_pointer_node,
           NULL_TREE);
+  }
+
+static
+FIXED_WIDE_INT(128)
+dirty_to_binary(const char  *instring,
+                uint32_t    &capacity,
+                uint32_t    &digits,
+                int32_t     &rdigits,
+                uint64_t    &attr)
+  {
+  digits = 0;
+  rdigits = 0;
+  attr = 0;
+
+  FIXED_WIDE_INT(128) value = 0;
+
+  // We need to convert data.initial to an FIXED_WIDE_INT(128) value
+  const char *p = instring;
+  int sign = 1;
+  if( *p == '-' )
+    {
+    attr |= signable_e;
+    sign = -1;
+    p += 1;
+    }
+  else if( *p == '+' )
+    {
+    // We set it signable so that the instruction DISPLAY +1
+    // actually outputs "+1"
+    attr |= signable_e;
+    p += 1;
+    }
+
+  //  We need to be able to handle
+  //  123
+  //  123.456
+  //  123E<exp>
+  //  123.456E<exp>
+  //  where <exp> can be N, +N and -N
+  //
+  //  Oh, yeah, and we're talking handling up to 32 digits, or more, so using
+  //  library routines is off the table.
+
+  int rdigit_delta = 0;
+  int exponent = 0;
+  const char *exp = strchr(p, 'E');
+  if( !exp )
+    {
+    exp = strchr(p, 'e');
+    }
+  if(exp)
+    {
+    exponent = atoi(exp+1);
+    }
+
+  // We can now calculate the value, and the number of digits and rdigits.
+
+  // We count up leading zeroes as part of the attr->digits calculation.
+  // It turns out that certain comparisons need to know the number of digits,
+  // because "IF "2" EQUAL 002" is false, while "IF "2" EQUAL 2" is true.  So,
+  // we need to count up leading zeroes.
+
+  for(;;)
+    {
+    char ch = *p++;
+    if( ch == symbol_decimal_point() )
+      {
+      rdigit_delta = 1;
+      continue;
+      }
+    if( ch < '0' || ch > '9' )
+      {
+      break;
+      }
+    digits += 1;
+    rdigits += rdigit_delta;
+    value *= 10;
+    value += ch - '0';
+    }
+
+  if( exponent < 0 )
+    {
+    rdigits += -exponent;
+    }
+  else
+    {
+    while(exponent--)
+      {
+      if(rdigits)
+        {
+        rdigits -= 1;
+        }
+      else
+        {
+        digits += 1;
+        value *= 10;
+        }
+      }
+    }
+
+  if( (int32_t)digits < rdigits )
+    {
+    digits = rdigits;
+    }
+
+  // We now need to calculate the capacity.
+
+  unsigned int min_prec = wi::min_precision(value, UNSIGNED);
+  if( min_prec > 64 )
+    {
+    // Bytes 15 through 8 are non-zero
+    capacity = 16;
+    }
+  else if( min_prec > 32 )
+    {
+    // Bytes 7 through 4 are non-zero
+    capacity = 8;
+    }
+  else if( min_prec > 16 )
+    {
+    // Bytes 3 and 2
+    capacity = 4;
+    }
+  else if( min_prec > 8 )
+    {
+    // Byte 1 is non-zero
+    capacity = 2;
+    }
+  else
+    {
+    // The value is zero through 0xFF
+    capacity = 1;
+    }
+
+  value *= sign;
+
+  // One last adjustment.  The number is signable, so the binary value
+  // is going to be treated as twos complement.  That means that the highest
+  // bit has to be 1 for negative signable numbers, and 0 for positive.  If
+  // necessary, adjust capacity up by one byte so that the variable fits:
+
+  if( capacity < 16 && (attr & signable_e) )
+    {
+    FIXED_WIDE_INT(128) mask
+      = wi::set_bit_in_zero<FIXED_WIDE_INT(128)>(capacity * 8 - 1);
+    if( wi::neg_p (value) && (value & mask) == 0 )
+      {
+      capacity *= 2;
+      }
+    else if( !wi::neg_p (value) && (value & mask) != 0 )
+      {
+      capacity *= 2;
+      }
+    }
+
+  return value;
   }
 
 static void
@@ -4183,159 +4342,21 @@ psa_FldLiteralN(struct cbl_field_t *field )
 
   CHECK_FIELD(field);
 
-  FIXED_WIDE_INT(128) value = 0;
-
-  do
-    {
-    // This is a false do{}while, to isolate the variables:
-
-    // We need to convert data.initial to an FIXED_WIDE_INT(128) value
-    char *p = const_cast<char *>(field->data.initial);
-    int sign = 1;
-    if( *p == '-' )
-      {
-      field->attr |= signable_e;
-      sign = -1;
-      p += 1;
-      }
-    else if( *p == '+' )
-      {
-      // We set it signable so that the instruction DISPLAY +1
-      // actually outputs "+1"
-      field->attr |= signable_e;
-      p += 1;
-      }
-
-    //  We need to be able to handle
-    //  123
-    //  123.456
-    //  123E<exp>
-    //  123.456E<exp>
-    //  where <exp> can be N, +N and -N
-    //
-    //  Oh, yeah, and we're talking handling up to 32 digits, or more, so using
-    //  library routines is off the table.
-
-    int digits = 0;
-    int rdigits = 0;
-    int rdigit_delta = 0;
-    int exponent = 0;
-
-    const char *exp = strchr(p, 'E');
-    if( !exp )
-      {
-      exp = strchr(p, 'e');
-      }
-    if(exp)
-      {
-      exponent = atoi(exp+1);
-      }
-
-    // We can now calculate the value, and the number of digits and rdigits.
-
-    // We count up leading zeroes as part of the attr->digits calculation.
-    // It turns out that certain comparisons need to know the number of digits,
-    // because "IF "2" EQUAL 002" is false, while "IF "2" EQUAL 2" is true.  So,
-    // we need to count up leading zeroes.
-
-    for(;;)
-      {
-      char ch = *p++;
-      if( ch == symbol_decimal_point() )
-        {
-        rdigit_delta = 1;
-        continue;
-        }
-      if( ch < '0' || ch > '9' )
-        {
-        break;
-        }
-      digits += 1;
-      rdigits += rdigit_delta;
-      value *= 10;
-      value += ch - '0';
-      }
-
-    if( exponent < 0 )
-      {
-      rdigits += -exponent;
-      }
-    else
-      {
-      while(exponent--)
-        {
-        if(rdigits)
-          {
-          rdigits -= 1;
-          }
-        else
-          {
-          digits += 1;
-          value *= 10;
-          }
-        }
-      }
-
-    if(digits < rdigits)
-      {
-      digits = rdigits;
-      }
-    field->data.digits = digits;
-    field->data.rdigits = rdigits;
-
-    // We now need to calculate the capacity.
-
-    unsigned int min_prec = wi::min_precision(value, UNSIGNED);
-    int capacity;
-    if( min_prec > 64 )
-      {
-      // Bytes 15 through 8 are non-zero
-      capacity = 16;
-      }
-    else if( min_prec > 32 )
-      {
-      // Bytes 7 through 4 are non-zero
-      capacity = 8;
-      }
-    else if( min_prec > 16 )
-      {
-      // Bytes 3 and 2
-      capacity = 4;
-      }
-    else if( min_prec > 8 )
-      {
-      // Byte 1 is non-zero
-      capacity = 2;
-      }
-    else
-      {
-      // The value is zero through 0xFF
-      capacity = 1;
-      }
-
-    value *= sign;
-
-    // One last adjustment.  The number is signable, so the binary value
-    // is going to be treated as twos complement.  That means that the highest
-    // bit has to be 1 for negative signable numbers, and 0 for positive.  If
-    // necessary, adjust capacity up by one byte so that the variable fits:
-
-    if( capacity < 16 && (field->attr & signable_e) )
-      {
-      FIXED_WIDE_INT(128) mask
-        = wi::set_bit_in_zero<FIXED_WIDE_INT(128)>(capacity * 8 - 1);
-      if( wi::neg_p (value) && (value & mask) == 0 )
-        {
-        capacity *= 2;
-        }
-      else if( !wi::neg_p (value) && (value & mask) != 0 )
-        {
-        capacity *= 2;
-        }
-      }
-    field->data.capacity = capacity;
-
-    }while(0);
+  uint32_t capacity;
+  uint32_t digits;
+  int32_t  rdigits;
+  uint64_t attr;
+  FIXED_WIDE_INT(128) value = dirty_to_binary(field->data.original(),
+                                              capacity,
+                                              digits,
+                                              rdigits,
+                                              attr);
+  // This is a rare occurrence of a parser_xxx call changing the entry
+  // in the symbol table.
+  field->data.capacity = capacity;
+  field->data.digits   = digits;
+  field->data.rdigits  = rdigits;
+  field->attr         |= attr;
 
   char base_name[257];
   char id_string[32] = "";
@@ -5136,9 +5157,9 @@ parser_alphabet( const cbl_alphabet_t& alphabet )
         // character i has the ordinal alphabet[i]
         unsigned char ch = i;
 
-        ach[ch] = (alphabet.alphabet[i]);
+        ach[ch] = (alphabet.collation_sequence[i]);
         gg_assign(  gg_array_value(table256, ch),
-                    build_int_cst_type(UCHAR, (alphabet.alphabet[i])) );
+                    build_int_cst_type(UCHAR, (alphabet.collation_sequence[i])) );
         }
 
       unsigned int low_char  = alphabet.low_char;
@@ -6811,7 +6832,7 @@ parser_allocate(cbl_refer_t size_or_based,
   cbl_field_t *f_working = current_options().initial_working();
   cbl_field_t *f_local   = current_options().initial_local();
 
-  int default_byte = wsclear() ? *wsclear() : -1;
+  unsigned int default_byte = wsclear() ? *wsclear() : (uint32_t)(-1);
 
   gg_call(VOID,
           "__gg__allocate",
@@ -8201,7 +8222,7 @@ parser_label_label(struct cbl_label_t *label)
     }
 
   CHECK_LABEL(label);
-  
+
 #if 1
   // At the present time, label_verify.lay is returning true, so I edited
   // out the if( !... ) to quiet cppcheck
@@ -8252,7 +8273,7 @@ parser_label_goto(struct cbl_label_t *label)
     }
 
   CHECK_LABEL(label);
-  
+
   label_verify.go_to(label);
 
   label_verify.go_to(label);
@@ -9933,6 +9954,44 @@ parser_file_open( size_t nfiles, struct cbl_file_t *files[], int mode_char )
     }
   }
 
+static
+tree get_the_filename(bool &quoted_name, const cbl_file_t *file)
+  {
+  // The cbl_file_t has a cbl_field_t *filename.  This can be a FldAlphanumeric.
+  // The runtime has a (char *)filename, so we need to
+  // do a runtime conversion.
+
+  tree psz;   // This is going to be either the name of the file, or the
+  // possible run-time environment variable that will contain
+  // the name of the file.
+
+  cbl_field_t *field_of_name = symbol_field_forward(file->filename);
+  quoted_name = false;
+  if( field_of_name->type == FldForward )
+    {
+    // The target of ASSIGN TO was unquoted, but didn't resolve to a
+    // cbl_field_t.  This means that the name of the field is an
+    // environment variable that will hold the file name
+    psz = gg_define_char_star();
+    gg_assign(psz, gg_strdup(gg_string_literal(field_of_name->name)));
+    }
+  else
+    {
+    // The name is coming from a presumably FldAlphaNumeric variable
+    psz = get_string_from(field_of_name);
+    gg_call( CHAR_P,
+             "__gg__convert_encoding",
+             psz,
+             build_int_cst_type(INT,
+                                field_of_name->codeset.encoding),
+             build_int_cst_type(INT,
+                                DEFAULT_SOURCE_ENCODING),
+             NULL_TREE);
+    quoted_name = true;
+    }
+  return psz;
+  }
+
 void
 parser_file_open( struct cbl_file_t *file, int mode_char )
   {
@@ -9985,45 +10044,15 @@ parser_file_open( struct cbl_file_t *file, int mode_char )
     TRACE1_END
     }
 
-  // The cbl_file_t has a cbl_field_t *filename.  This can be a FldAlphanumeric.
-  // The runtime has a (char *)filename, so we need to
-  // do a runtime conversion.
-
-  tree psz;   // This is going to be either the name of the file, or the
-  // possible run-time environment variable that will contain
-  // the name of the file.
-
-  cbl_field_t *field_of_name = symbol_field_forward(file->filename);
-  bool quoted_name = false;
-  if( field_of_name->type == FldForward )
-    {
-    // The target of ASSIGN TO was unquoted, but didn't resolve to a
-    // cbl_field_t.  This means that the name of the field is an
-    // environment variable that will hold the file name
-    psz = gg_define_char_star();
-    gg_assign(psz, gg_strdup(gg_string_literal(field_of_name->name)));
-    }
-  else
-    {
-    // The name is coming from a presumably FldAlphaNumeric variable
-    psz = get_string_from(field_of_name);
-    gg_call( CHAR_P,
-             "__gg__convert_encoding",
-             psz,
-             build_int_cst_type(INT,
-                                field_of_name->codeset.encoding),
-             build_int_cst_type(INT,
-                                DEFAULT_CHARMAP_SOURCE),
-             NULL_TREE);
-    quoted_name = true;
-    }
+  bool quoted_name;
+  tree pszFilename = get_the_filename(quoted_name, file);
 
   sv_is_i_o = true;
   store_location_stuff("OPEN");
   gg_call(VOID,
           "__gg__file_open",
           gg_get_address_of(file->var_decl_node),
-          psz,
+          pszFilename,
           build_int_cst_type(INT, mode_char),
           quoted_name ? integer_one_node : integer_zero_node,
           NULL_TREE);
@@ -10382,6 +10411,121 @@ parser_file_delete( struct cbl_file_t *file, bool /*sequentially*/ )
     TRACE1_TEXT(file->name);
     TRACE1_END
     }
+  }
+
+static void
+set_up_delete_file_label(cbl_label_t *delete_file_label)
+  {
+  if( delete_file_label )
+    {
+    if( !delete_file_label->structs.delete_file )
+      {
+      delete_file_label->structs.delete_file
+        = static_cast<cbl_delete_file_t *>
+                                  (xmalloc(sizeof(struct cbl_delete_file_t)));
+      // Set up the address pairs for this clause
+      gg_create_goto_pair(
+                  &delete_file_label->structs.delete_file->over.go_to,
+                  &delete_file_label->structs.delete_file->over.label);
+      gg_create_goto_pair(
+                  &delete_file_label->structs.delete_file->exception.go_to,
+                  &delete_file_label->structs.delete_file->exception.label);
+      gg_create_goto_pair(
+                  &delete_file_label->structs.delete_file->no_exception.go_to,
+                  &delete_file_label->structs.delete_file->no_exception.label);
+      gg_create_goto_pair(
+                  &delete_file_label->structs.delete_file->bottom.go_to,
+                  &delete_file_label->structs.delete_file->bottom.label);
+      }
+    }
+  }
+
+void
+parser_file_delete_file( cbl_label_t *name,
+                         std::vector<cbl_file_t*> filenames )
+  {
+  // This removes a file from the file system.  It is distinct from the
+  // FILE DELETE statement, which deletes a record from a file.
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_TEXT(" ");
+    SHOW_PARSE_TEXT(name->name);
+    for(size_t i=0; i<filenames.size(); i++)
+      {
+      SHOW_PARSE_INDENT
+      SHOW_PARSE_TEXT(filenames[i]->name)
+      }
+    SHOW_PARSE_END
+    }
+  set_up_delete_file_label(name);
+  tree there_was_an_error = gg_define_int(0);
+  for(size_t i=0; i<filenames.size(); i++)
+    {
+    bool quoted_name;
+    tree pszFilename = get_the_filename(quoted_name, filenames[i]);
+    gg_assign(there_was_an_error,
+              gg_bitwise_or(there_was_an_error,
+                            gg_call_expr(
+                            INT,
+                            "__gg__file_remove",
+                            gg_get_address_of(filenames[i]->var_decl_node),
+                            pszFilename,
+                            quoted_name ? integer_one_node : integer_zero_node,
+                            NULL_TREE)));
+    set_user_status(filenames[i]);
+    }
+  IF( there_was_an_error, eq_op, integer_zero_node )
+    {
+    // There was no error detected.
+    gg_append_statement(name->structs.delete_file->no_exception.go_to);
+    }
+  ELSE
+    {
+    // There was an error detected.
+    gg_append_statement(name->structs.delete_file->exception.go_to);
+    }
+  }
+
+void
+parser_file_delete_on_exception( cbl_label_t *name )
+  {
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_TEXT(" ");
+    SHOW_PARSE_TEXT(name->name);
+    SHOW_PARSE_END
+    }
+  gg_append_statement(name->structs.delete_file->bottom.go_to);
+  gg_append_statement(name->structs.delete_file->exception.label);
+  }
+
+void
+parser_file_delete_not_exception( cbl_label_t *name )
+  {
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_TEXT(" ");
+    SHOW_PARSE_TEXT(name->name);
+    SHOW_PARSE_END
+    }
+  gg_append_statement(name->structs.delete_file->bottom.go_to);
+  gg_append_statement(name->structs.delete_file->no_exception.label);
+  }
+
+void
+parser_file_delete_end( cbl_label_t *name )
+  {
+  SHOW_PARSE
+    {
+    SHOW_PARSE_HEADER
+    SHOW_PARSE_TEXT(" ");
+    SHOW_PARSE_TEXT(name->name);
+    SHOW_PARSE_END
+    }
+  gg_append_statement(name->structs.delete_file->bottom.label);
   }
 
 void
@@ -13639,7 +13783,7 @@ parser_call(   cbl_refer_t name,
     create_and_call(narg,
                     args,
                     NULL_TREE,
-                    name.field->data.initial,
+                    name.field->data.original(),
                     returned_value_type,
                     returned,
                     not_except);
@@ -13747,7 +13891,7 @@ parser_entry( const cbl_field_t *name, size_t nusing, cbl_ffi_arg_t *args )
     {
     SHOW_PARSE_HEADER
     SHOW_PARSE_TEXT(" ")
-    SHOW_PARSE_TEXT(name->data.initial)
+    SHOW_PARSE_TEXT(name->data.original())
     SHOW_PARSE_END
     }
 
@@ -13756,7 +13900,7 @@ parser_entry( const cbl_field_t *name, size_t nusing, cbl_ffi_arg_t *args )
 
   // Get the name of the ENTRY point.
   // cppcheck-suppress nullPointerRedundantCheck
-  char *psz = cobol_name_mangler(name->data.initial);
+  char *psz = cobol_name_mangler(name->data.original());
 
   // Create a goto/label pair.  The label will be set up here; the goto will
   // be used when we re-enter the containing function:
@@ -14642,13 +14786,12 @@ mh_source_is_literalN(cbl_refer_t &destref,
           SHOW_PARSE_TEXT("mh_source_is_literalN: __gg__psz_to_alpha_move")
           }
 
-        // We know that the encoding of the literal::initial is in ASCII
-
         // We need the data sent to __gg__psz_to_alpha_move to be in the
         // encoding of the destination
 
         size_t charsout;
-        const char *converted = __gg__iconverter(DEFAULT_CHARMAP_SOURCE,
+        const char *converted = __gg__iconverter(
+                                         sourceref.field->codeset.encoding,
                                          destref.field->codeset.encoding,
                                          sourceref.field->data.initial,
                                          strlen(sourceref.field->data.initial),
@@ -16086,54 +16229,50 @@ real_powi10 (uint32_t x)
   return pow10;
 }
 
+static
 char *
-binary_initial_from_float128(cbl_field_t *field, int rdigits,
-                             REAL_VALUE_TYPE value)
+binary_initial(cbl_field_t *field)
   {
   // This routine returns an xmalloced buffer designed to replace the
   // data.initial member of the incoming field
   char *retval = NULL;
 
-  // We need to adjust value so that it has no decimal places
-  if( rdigits )
-    {
-      REAL_VALUE_TYPE pow10 = real_powi10 (rdigits);
-      real_arithmetic (&value, MULT_EXPR, &value, &pow10);
-      real_convert (&value, TYPE_MODE (float128_type_node), &value);
-    }
-  // We need to make sure that the resulting string will fit into
-  // a number with 'digits' digits
+  uint32_t capacity;
+  uint32_t ddigits;
+  int32_t  drdigits;
+  uint64_t attr;
+  FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.original(),
+                                                 capacity,
+                                                 ddigits,
+                                                 drdigits,
+                                                 attr);
+  int scaled_rdigits = get_scaled_rdigits(field);
 
-  // Keep in mind that pure binary types, like BINARY-CHAR, have no digits
-  if( field->data.digits )
+  int i = field->data.rdigits;
+  while( i<0 )
     {
-      REAL_VALUE_TYPE pow10 = real_powi10 (field->data.digits);
-      mpfr_t m0, m1;
-
-      mpfr_inits2 (REAL_MODE_FORMAT (TYPE_MODE (float128_type_node))->p,
-                   m0, m1, NULL);
-      mpfr_from_real (m0, &value, MPFR_RNDN);
-      mpfr_from_real (m1, &pow10, MPFR_RNDN);
-      mpfr_clear_flags ();
-      mpfr_fmod (m0, m0, m1, MPFR_RNDN);
-      real_from_mpfr (&value, m0,
-                      REAL_MODE_FORMAT (TYPE_MODE (float128_type_node)),
-                      MPFR_RNDN);
-      real_convert (&value, TYPE_MODE (float128_type_node), &value);
-      mpfr_clears (m0, m1, NULL);
+    value128 = value128/10;
+    i += 1;
     }
 
-  real_roundeven (&value, TYPE_MODE (float128_type_node), &value);
-
-  bool fail = false;
-  FIXED_WIDE_INT(128) i
-    = FIXED_WIDE_INT(128)::from (real_to_integer (&value, &fail, 128), SIGNED);
+  // We take the digits of value128, and put them into ach.  We line up
+  // the rdigits, and we truncate the string after desired_digits
+  while(drdigits < scaled_rdigits)
+    {
+    value128 *= 10;
+    drdigits += 1;
+    }
+  while(drdigits > scaled_rdigits)
+    {
+    value128 = value128 / 10;
+    drdigits -= 1;
+    }
 
   retval = static_cast<char *>(xmalloc(field->data.capacity));
   gcc_assert(retval);
   switch(field->data.capacity)
     {
-      tree type;
+    tree type;
     case 1:
     case 2:
     case 4:
@@ -16141,12 +16280,12 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits,
     case 16:
       type = build_nonstandard_integer_type ( field->data.capacity
                                               * BITS_PER_UNIT, 0);
-      native_encode_wide_int (type, i, PTRCAST(unsigned char, retval),
+      native_encode_wide_int (type, value128, PTRCAST(unsigned char, retval),
                               field->data.capacity);
       break;
     default:
       fprintf(stderr,
-              "Trouble in binary_initial_from_float128 at %s() %s:%d\n",
+              "Trouble in binary_initial at %s() %s:%d\n",
               __func__,
               __FILE__,
               __LINE__);
@@ -16157,6 +16296,60 @@ binary_initial_from_float128(cbl_field_t *field, int rdigits,
   return retval;
   }
 
+static void
+digits_from_int128( char                *ach,
+                    cbl_field_t         *field,
+                    uint32_t             desired_digits,
+                    FIXED_WIDE_INT(128)  value128, // cppcheck-suppress unknownMacro
+                    int32_t              rdigits)
+  {
+  if( value128 < 0 )
+    {
+    value128 = -value128;
+    }
+
+  // 'rdigits' are the number of rdigits in value128.
+
+  int scaled_rdigits = get_scaled_rdigits(field);
+
+  int i = field->data.rdigits;
+  while( i<0 )
+    {
+    value128 = value128/10;
+    i += 1;
+    }
+
+  // We take the digits of value128, and put them into ach.  We line up
+  // the rdigits, and we truncate the string after desired_digits
+  while(rdigits < scaled_rdigits)
+    {
+    value128 *= 10;
+    rdigits += 1;
+    }
+  while(rdigits > scaled_rdigits)
+    {
+    value128 = value128 / 10;
+    rdigits -= 1;
+    }
+  char conv[128];
+  print_dec (value128, conv, SIGNED);
+  size_t len = strlen(conv);
+
+  if( len<desired_digits )
+    {
+    memset(ach, ascii_0, desired_digits - len);
+    strcpy(ach+desired_digits - len, conv);
+    }
+  else
+    {
+    strcpy(ach, conv + len-desired_digits);
+    }
+  }
+
+#if 0
+// This routine was replaced with digits_from_int1289.  However, I am choosing
+// to keep it around for a while, because it is a master class in manipulating
+// REAL_VALUE_TYPE and FIXED_WIDE_INT
 
 static void
 digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits, REAL_VALUE_TYPE value)
@@ -16194,8 +16387,6 @@ digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits
   // We convert it to a integer string of digits:
   print_dec (i, ach, SIGNED);
 
-  //fprintf(stderr, "digits_from_float128() %s %f %s ", field->name, (double)value, ach);
-
   gcc_assert( strlen(ach) <= field->data.digits );
   if( strlen(ach) < width )
     {
@@ -16203,6 +16394,7 @@ digits_from_float128(char *retval, cbl_field_t *field, size_t width, int rdigits
     }
   strcpy(retval + (width-strlen(ach)), ach);
   }
+#endif
 
 static char *
 initial_from_initial(cbl_field_t *field)
@@ -16211,10 +16403,9 @@ initial_from_initial(cbl_field_t *field)
   // This routine returns an xmalloced buffer that is intended to replace the
   // data.initial member of the incoming field.
 
-  //fprintf(stderr, "initial_from_initial %s\n", field->name);
+  //fprintf(stderr, " %s\n", field->name);
 
   char *retval = NULL;
-  int rdigits;
 
   // Let's handle the possibility of a figurative constant
   cbl_figconst_t figconst = cbl_figconst_of(field->data.initial);
@@ -16253,6 +16444,8 @@ initial_from_initial(cbl_field_t *field)
   if( field->data.etc_type == cbl_field_data_t::value_e )
     value = TREE_REAL_CST (field->data.value_of ());
 
+#if 0
+  int rdigits;
   // There is always the infuriating possibility of a P-scaled number
   if( field->attr & scaled_e )
     {
@@ -16288,17 +16481,18 @@ initial_from_initial(cbl_field_t *field)
     // Not P-scaled
     rdigits = field->data.rdigits;
     }
+#endif
 
   switch(field->type)
     {
     case FldNumericBin5:
     case FldIndex:
-      retval = binary_initial_from_float128(field, rdigits, value);
+      retval = binary_initial(field);
       break;
 
     case FldNumericBinary:
       {
-      retval = binary_initial_from_float128(field, rdigits, value);
+      retval = binary_initial(field);
       size_t left = 0;
       size_t right = field->data.capacity - 1;
       while(left < right)
@@ -16328,7 +16522,17 @@ initial_from_initial(cbl_field_t *field)
         negative = false;
         }
 
-      digits_from_float128(ach, field, field->data.digits, rdigits, value);
+      // Convert the data.initial to a __int128
+      uint32_t capacity;
+      uint32_t ddigits;
+      int32_t  drdigits;
+      uint64_t attr;
+      FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.initial,
+                                                     capacity,
+                                                     ddigits,
+                                                     drdigits,
+                                                     attr);
+      digits_from_int128(ach, field, field->data.digits, value128, drdigits);
 
       const char *digits = ach;
       if(    (field->attr & signable_e)
@@ -16404,7 +16608,16 @@ initial_from_initial(cbl_field_t *field)
       size_t ndigits =   (field->attr & separate_e)
                        ? field->data.capacity * 2
                        : field->data.capacity * 2 - 1;
-      digits_from_float128(ach, field, ndigits, rdigits, value);
+      uint32_t capacity;
+      uint32_t ddigits;
+      int32_t  drdigits;
+      uint64_t attr;
+      FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.initial,
+                                                     capacity,
+                                                     ddigits,
+                                                     drdigits,
+                                                     attr);
+      digits_from_int128(ach, field, ndigits, value128, drdigits);
 
       const char *digits = ach;
       for(size_t i=0; i<ndigits; i++)
@@ -16517,13 +16730,31 @@ initial_from_initial(cbl_field_t *field)
         else
           {
           size_t ndigits = field->data.capacity;
-          digits_from_float128(ach, field, ndigits, rdigits, value);
-          /* ???  This resides in libgcobol valconv.cc.  */
+          uint32_t capacity;
+          uint32_t ddigits;
+          int32_t  drdigits;
+          uint64_t attr;
+          FIXED_WIDE_INT(128) value128 = dirty_to_binary(field->data.original(),
+                                                         capacity,
+                                                         ddigits,
+                                                         drdigits,
+                                                         attr);
+          digits_from_int128(ach, field, ndigits, value128, drdigits);
+
+          // __gg__string_to_numeric_edited operates in ASCII space:
           __gg__string_to_numeric_edited( retval,
                                           ach,
                                           field->data.rdigits,
                                           negative,
                                           field->data.picture);
+          // So now we convert it to the target encoding:
+          size_t nbytes;
+          const char *converted = __gg__iconverter(DEFAULT_SOURCE_ENCODING,
+                                                   field->codeset.encoding,
+                                                   retval,
+                                                   strlen(retval),
+                                                   &nbytes);
+          strcpy(retval, converted);
           }
         }
       break;
@@ -16556,10 +16787,32 @@ initial_from_initial(cbl_field_t *field)
 
     case FldLiteralN:
       {
-////      retval = static_cast<char *>(xmalloc(field->data.capacity+1));
-////      gcc_assert(retval);
-////      memcpy(retval, field->data.initial, field->data.capacity);
-////      retval[field->data.capacity] = '\0';
+      // This requires annotation.
+
+      // The compiler originally used ASCII for field->data.initial. Later we
+      // expanded the field with the addition of the codeset.encoding
+      // For consistency in the parser processing, the FldLiteralN is arriving
+      // with the Object-Computer's character encoding, and field->data.initial
+      // is showing up encoded.
+
+      // But on the run-time side, if the initial string is needed, it is
+      // invariably more useful in ASCII.  Consider converting that string to
+      // a floating-point value, for example.
+
+      // So, we are going to convert the data.initial string back to ASCII
+      // here.  Later on, when we establish the run-time encoding, we will
+      // check for FldLiteralN and set that to ASCII as well. See
+      // actually_create_the_static_field().
+
+      size_t nbytes;
+      const char *converted = __gg__iconverter(field->codeset.encoding,
+                                               DEFAULT_SOURCE_ENCODING,
+                                               field->data.initial,
+                                               strlen(field->data.initial),
+                                               &nbytes);
+      retval = static_cast<char *>(xmalloc(strlen(field->data.initial)+1));
+      gcc_assert(retval);
+      strcpy(retval, converted);
       break;
       }
 
@@ -16716,9 +16969,14 @@ actually_create_the_static_field( cbl_field_t *new_var,
   next_field = TREE_CHAIN(next_field);
 
   //  INT,     "encoding",
+  //  For FldLiteralN we force the encoding to be ASCII.
+  //  See initial_from_initial() for an explanation.
   CONSTRUCTOR_APPEND_ELT(CONSTRUCTOR_ELTS(constr),
                         next_field,
-                        build_int_cst_type(INT, new_var->codeset.encoding));
+                        build_int_cst_type(INT,
+                                           new_var->type == FldLiteralN ?
+                                                DEFAULT_SOURCE_ENCODING
+                                              : new_var->codeset.encoding));
   next_field = TREE_CHAIN(next_field);
 
   //  INT,     "alphabet",
@@ -17641,6 +17899,10 @@ parser_symbol_add(struct cbl_field_t *new_var )
         case FldAlphanumeric:
         case FldLiteralA:
           length_of_initial_string = new_var->data.capacity+1;
+          break;
+
+        case FldLiteralN:
+          length_of_initial_string = strlen(new_initial)+1;
           break;
 
         default:

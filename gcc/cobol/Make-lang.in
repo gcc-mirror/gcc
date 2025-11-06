@@ -330,7 +330,7 @@ cobol.srcpdf: gcobol.pdf gcobol-io.pdf
 	ln $^ $(srcdir)/cobol/
 
 gcobol.pdf: $(srcdir)/cobol/gcobol.1
-	groff -mdoc -T pdf  $^ > $@~
+	groff -mdoc -t -T pdf  $^ > $@~
 	@mv $@~ $@
 gcobol-io.pdf: $(srcdir)/cobol/gcobol.3
 	groff -mdoc -T pdf  $^ > $@~

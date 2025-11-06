@@ -81,6 +81,7 @@ enum cblc_file_prior_op_t
   file_op_rewrite,
   file_op_delete,
   file_op_close,
+  file_op_remove,
   };
 
 /* end implementation details */

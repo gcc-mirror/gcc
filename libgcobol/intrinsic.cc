@@ -55,7 +55,6 @@
 #include "libgcobol.h"
 #include "charmaps.h"
 
-
 #pragma GCC diagnostic ignored "-Wformat-truncation"
 
 #define JD_OF_1601_01_02 2305812.5
@@ -576,7 +575,7 @@ get_all_time( const cblc_field_t *dest, // needed for the target encoding
           ctm.day_of_year,
           ctm.ZZZZ);
   __gg__convert_encoding(PTRCAST(char, stime),
-                         DEFAULT_CHARMAP_SOURCE,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
   }
 
@@ -810,7 +809,6 @@ ftime_replace(char *dest,
   const char *src;
   bool saw_decimal_point = false;
   bool saw_plus_sign = false;
-  char decimal_point = __gg__get_decimal_point();
   static const int OFFSET_TO_YYYY           =  0;
   static const int OFFSET_TO_MM             =  4;
   static const int OFFSET_TO_DD             =  6;
@@ -826,18 +824,20 @@ ftime_replace(char *dest,
   static const int OFFSET_TO_DOY            = 34;
   static const int OFFSET_TO_ZZZZ           = 37;
 
-  int source_Y    = charmap_source->mapped_character(ascii_Y   );
-  int source_W    = charmap_source->mapped_character(ascii_W   );
-  int source_s    = charmap_source->mapped_character(ascii_s   );
-  int source_m    = charmap_source->mapped_character(ascii_m   );
-  int source_h    = charmap_source->mapped_character(ascii_h   );
-  int source_plus = charmap_source->mapped_character(ascii_plus);
-  int source_D    = charmap_source->mapped_character(ascii_D   );
-  int source_M    = charmap_source->mapped_character(ascii_M   );
+  unsigned int decimal_point =
+                   charmap_source->mapped_character(__gg__get_decimal_point());
+  unsigned int source_Y    = charmap_source->mapped_character(ascii_Y   );
+  unsigned int source_W    = charmap_source->mapped_character(ascii_W   );
+  unsigned int source_s    = charmap_source->mapped_character(ascii_s   );
+  unsigned int source_m    = charmap_source->mapped_character(ascii_m   );
+  unsigned int source_h    = charmap_source->mapped_character(ascii_h   );
+  unsigned int source_plus = charmap_source->mapped_character(ascii_plus);
+  unsigned int source_D    = charmap_source->mapped_character(ascii_D   );
+  unsigned int source_M    = charmap_source->mapped_character(ascii_M   );
 
   while( source < source_end && dest < dest_end )
     {
-    char fchar = *source;
+    unsigned char fchar = *source;
     if( fchar == source_Y )
       {
       // This can only be a YYYY
@@ -847,7 +847,7 @@ ftime_replace(char *dest,
       const char *p = source;
       while(p < source_end)
         {
-        if( *p++ == source_W )
+        if( (unsigned char)*p++ == source_W )
           {
           src = ftime + OFFSET_TO_ZZZZ;
           }
@@ -864,12 +864,12 @@ ftime_replace(char *dest,
     else if( fchar == source_D )
       {
       // It can be a D, DD or DDD
-      if( source[2] == source_D )
+      if( (unsigned char)source[2] == source_D )
         {
         ncount = 3;
         src = ftime + OFFSET_TO_DOY;
         }
-      else if( source[1] == source_D )
+      else if( (unsigned char)source[1] == source_D )
         {
         ncount = 2;
         src = ftime + OFFSET_TO_DD;
@@ -946,7 +946,7 @@ ftime_replace(char *dest,
       {
       // This indicates special processing for a variable number of 's'
       // characters
-      while(*source == 's' && dest < dest_end)
+      while((unsigned char)*source == source_s && dest < dest_end)
         {
         source += 1;
         *dest++ = *src++;
@@ -1279,7 +1279,7 @@ __gg__current_date(cblc_field_t *dest)
   char retval[DATE_STRING_BUFFER_SIZE];
   timespec_to_string(retval, tp);
   __gg__convert_encoding(PTRCAST(char, retval),
-                         DEFAULT_CHARMAP_SOURCE,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
   string_to_dest(dest, retval);
   }
@@ -2022,7 +2022,6 @@ __gg__max(cblc_field_t *dest,
         }
       }
 
-
     __gg__adjust_dest_size(dest, best_length);
     dest->type = FldAlphanumeric;
     assert(best_location);
@@ -2088,12 +2087,12 @@ __gg__lower_case( cblc_field_t *dest,
   __gg__convert_encoding_length(PTRCAST(char, dest->data),
                                 length,
                                 from,
-                                DEFAULT_CHARMAP_SOURCE);
+                                DEFAULT_SOURCE_ENCODING);
   std::transform(dest->data, dest->data + dest_length, dest->data,
                  [](unsigned char c) { return std::tolower(c); });
   __gg__convert_encoding_length(PTRCAST(char, dest->data),
                                 length,
-                                DEFAULT_CHARMAP_SOURCE,
+                                DEFAULT_SOURCE_ENCODING,
                                 to);
   }
 
@@ -2391,24 +2390,22 @@ numval( cblc_field_t *dest,
         size_t input_offset,
         size_t input_size)
   {
-  // Returns the one-based character position of a bad character
-  // returns zero if it is okay
+  // Returns the one-based character position of a bad character.
+  // Returns zero if it is okay.
 
-  const char *p    = PTRCAST(char, (input->data + input_offset));
-  const char *pend =     p + input_size;
+  // This routine works in ASCII space:
+
+  size_t nbytes;
+  const char *p = __gg__iconverter(input->encoding,
+                                   DEFAULT_SOURCE_ENCODING,
+                                   PTRCAST(char, input->data + input_offset),
+                                   input_size,
+                                   &nbytes);
+  const char *pend = p + input_size;
 
   int errpos = 0;
   __int128 retval = 0;
   int retval_rdigits = 0;
-
-  charmap_t *charmap = __gg__get_charmap(input->encoding);
-  unsigned char decimal_point
-                   = charmap->mapped_character(__gg__get_decimal_point());
-  int mapped_0 = charmap->mapped_character(ascii_0);
-  int mapped_9 = charmap->mapped_character(ascii_9);
-  int mapped_space = charmap->mapped_character(ascii_space);
-  int mapped_plus = charmap->mapped_character(ascii_plus);
-  int mapped_minus = charmap->mapped_character(ascii_minus);
 
   bool saw_digit= false;
   bool in_fraction  = false;
@@ -2437,31 +2434,31 @@ numval( cblc_field_t *dest,
       case SPACE1:
         // We tolerate spaces, and expect to end with a sign, digit,
         // or decimal point:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           continue;
           }
-        if( ch == mapped_plus )
+        if( ch == ascii_plus )
           {
           leading_sign = true;
           state = SPACE2;
           break;
           }
-        if( ch == mapped_minus )
+        if( ch == ascii_minus )
           {
           leading_sign = true;
           is_negative  = true;
           state = SPACE2;
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           saw_digit = true;
           retval = ch & 0xF;
           state = DIGITS;
           break;
           }
-        if( ch == decimal_point )
+        if( ch == __gg__decimal_point )
           {
           in_fraction = true;
           state = DIGITS;
@@ -2473,18 +2470,18 @@ numval( cblc_field_t *dest,
 
       case SPACE2:
         // We tolerate spaces, and expect to end with a digit or decimal point:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           saw_digit = true;
           retval = ch & 0xF;
           state = DIGITS;
           break;
           }
-        if( ch == decimal_point )
+        if( ch == __gg__decimal_point )
           {
           in_fraction = true;
           state = DIGITS;
@@ -2499,7 +2496,7 @@ numval( cblc_field_t *dest,
         // end with a space, a sign, "DB" or "CR", or the the end of the string
         // It's a bit complicated
 
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           saw_digit = true;
           retval *= 10;
@@ -2510,43 +2507,43 @@ numval( cblc_field_t *dest,
             }
           break;
           }
-        if( ch == decimal_point && in_fraction )
+        if( ch == __gg__decimal_point && in_fraction )
           {
           // Only one decimal is allowed
           goto done;
           }
-        if( ch == decimal_point )
+        if( ch == __gg__decimal_point )
           {
           in_fraction = true;
           break;
           }
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           state = SPACE3;
           break;
           }
-        if( ch == mapped_plus && leading_sign)
+        if( ch == ascii_plus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == mapped_minus && leading_sign)
+        if( ch == ascii_minus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == mapped_plus )
+        if( ch == ascii_plus )
           {
           state = SPACE4;
           break;
           }
-        if( ch == mapped_minus )
+        if( ch == ascii_minus )
           {
           is_negative = true;
           state = SPACE4;
           break;
           }
-        if( std::tolower(ch) == 'd' )
+        if( std::tolower(ch) == ascii_d )
           {
           if( leading_sign )
             {
@@ -2554,7 +2551,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || std::tolower(ch) != 'b' )
+          if( p > pend || std::tolower(ch) != ascii_b )
             {
             goto done;
             }
@@ -2562,7 +2559,7 @@ numval( cblc_field_t *dest,
           state = SPACE4;
           break;
           }
-        if( std::tolower(ch) == 'c' )
+        if( std::tolower(ch) == ascii_c )
           {
           if( leading_sign )
             {
@@ -2570,7 +2567,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || std::tolower(ch) != 'r' )
+          if( p > pend || std::tolower(ch) != ascii_r )
             {
             goto done;
             }
@@ -2584,26 +2581,26 @@ numval( cblc_field_t *dest,
 
       case SPACE3:
         // We tolerate spaces, or we end with a sign:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
-        if( ch == mapped_plus && leading_sign)
+        if( ch == ascii_plus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == mapped_minus && leading_sign)
+        if( ch == ascii_minus && leading_sign)
           {
           // We are allowed leading or trailing signs, but not both
           goto done;
           }
-        if( ch == mapped_plus )
+        if( ch == ascii_plus )
           {
           state = SPACE4;
           break;
           }
-        if( ch == mapped_minus )
+        if( ch == ascii_minus )
           {
           is_negative = true;
           state = SPACE4;
@@ -2617,7 +2614,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || std::tolower(ch) != 'b' )
+          if( p > pend || std::tolower(ch) != ascii_b )
             {
             goto done;
             }
@@ -2633,7 +2630,7 @@ numval( cblc_field_t *dest,
             }
           ch = *p++;
           errpos += 1;
-          if( p > pend || std::tolower(ch) != 'r' )
+          if( p > pend || std::tolower(ch) != ascii_r )
             {
             goto done;
             }
@@ -2644,7 +2641,7 @@ numval( cblc_field_t *dest,
         goto done;
         break;
       case SPACE4:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
@@ -2658,7 +2655,7 @@ numval( cblc_field_t *dest,
     }
   else if( p == pend )
     {
-    // If we got to the end without seeing adigit, we need to bump the
+    // If we got to the end without seeing a digit, we need to bump the
     // error pointer:
     errpos += 1;
     }
@@ -2696,7 +2693,15 @@ numval_c( cblc_field_t *dest,
   {
   size_t errcode = 0;
 
-  char *pstart = PTRCAST(char, (src->data+src_offset));
+//  char *pstart = PTRCAST(char, (src->data+src_offset));
+  size_t nbytes;
+  const char *converted = __gg__iconverter(src->encoding,
+                                  DEFAULT_SOURCE_ENCODING,
+                                  PTRCAST(char, src->data+src_offset),
+                                  src_size,
+                                  &nbytes);
+  char *pstart = strdup(converted);
+  massert(pstart);
   char *pend   = pstart + src_size;
   char *p      = pstart;
 
@@ -2704,45 +2709,41 @@ numval_c( cblc_field_t *dest,
   int sign = 0;
   int rdigits = 0;
   int rdigit_bump = 0;
-  charmap_t *charmap = __gg__get_charmap(src->encoding);
-  unsigned char decimal_point
-                   = charmap->mapped_character(__gg__get_decimal_point());
-  unsigned char decimal_separator
-                   = charmap->mapped_character(__gg__get_decimal_separator());
-  int mapped_0 = charmap->mapped_character(ascii_0);
-  int mapped_9 = charmap->mapped_character(ascii_9);
-  int mapped_space = charmap->mapped_character(ascii_space);
-  int mapped_plus = charmap->mapped_character(ascii_plus);
-  int mapped_minus = charmap->mapped_character(ascii_minus);
-  int mapped_C = charmap->mapped_character(ascii_C);
-  int mapped_R = charmap->mapped_character(ascii_R);
-  int mapped_D = charmap->mapped_character(ascii_D);
-  int mapped_B = charmap->mapped_character(ascii_B);
-  int mapped_c = charmap->mapped_character(ascii_c);
-  int mapped_r = charmap->mapped_character(ascii_r);
-  int mapped_d = charmap->mapped_character(ascii_d);
-  int mapped_b = charmap->mapped_character(ascii_b);
+  unsigned char decimal_point = __gg__decimal_point;
+  unsigned char decimal_separator = __gg__decimal_separator;
+
+  char *currency_in_ascii;
 
   char *currency_start;
   char *currency_end;
   if( crcy )
     {
-    currency_start = PTRCAST(char, (crcy->data+crcy_offset));
-    currency_end   = currency_start + crcy_size;
+    converted = __gg__iconverter(crcy->encoding,
+                                 DEFAULT_SOURCE_ENCODING,
+                                 PTRCAST(char, crcy->data+crcy_offset),
+                                 crcy_size,
+                                 &nbytes);
+    currency_in_ascii = static_cast<char*>(malloc(nbytes+1));
+    massert(currency_in_ascii);
+    strcpy(currency_in_ascii, converted);
     }
   else
     {
-    currency_start = __gg__get_default_currency_string();
-    currency_end   = currency_start + strlen(currency_start);
+    // This is in ascii
+    currency_in_ascii = strdup(__gg__get_default_currency_string());
+    massert(currency_in_ascii);
     }
+  currency_start = currency_in_ascii;
+  currency_end   = currency_start + strlen(currency_start);
+
   char *pcurrency = currency_start;
   // Trim off spaces from the currency:
-  while( *pcurrency == mapped_space && pcurrency < currency_end )
+  while( *pcurrency == ascii_space && pcurrency < currency_end )
     {
     pcurrency += 1;
     }
 
-  while( *(currency_end-1) == mapped_space && currency_end > currency_start )
+  while( *(currency_end-1) == ascii_space && currency_end > currency_start )
     {
     currency_end -= 1;
     }
@@ -2769,12 +2770,12 @@ numval_c( cblc_field_t *dest,
       {
       case first_space   :
         // Eat up spaces, if any, and then dispatch on the first non-space:
-        if( ch != mapped_space )
+        if( ch != ascii_space )
           {
           // ch can now be a plus, a minus, a digit, or the first character
           // of the currency string
-          if(   ch == mapped_plus
-             || ch == mapped_minus )
+          if(   ch == ascii_plus
+             || ch == ascii_minus )
             {
             state = first_sign;
             // Decrement to pointer in order to pick up the character again
@@ -2785,7 +2786,7 @@ numval_c( cblc_field_t *dest,
             state = currency;
             p -= 1;
             }
-          else if(  (ch >= mapped_0 && ch <= mapped_9)
+          else if(  (ch >= ascii_0 && ch <= ascii_9)
                     || ch == decimal_point )
             {
             state = digits;
@@ -2805,7 +2806,7 @@ numval_c( cblc_field_t *dest,
 
       case first_sign    :
         // We know the character is a plus or a minus:
-        if( ch == mapped_plus )
+        if( ch == ascii_plus )
           {
           sign = 1;
           state = second_space;
@@ -2820,14 +2821,14 @@ numval_c( cblc_field_t *dest,
       case second_space :
         // Eat up spaces, if any.  This segment has to end with a currency or
         // a digit:
-        if( ch != mapped_space )
+        if( ch != ascii_space )
           {
           if( ch == *pcurrency )
             {
             state = currency;
             p -= 1;
             }
-          else if(  (ch >= mapped_0 && ch <= mapped_9)
+          else if(  (ch >= ascii_0 && ch <= ascii_9)
                     || ch == decimal_point )
             {
             state = digits;
@@ -2868,9 +2869,9 @@ numval_c( cblc_field_t *dest,
 
       case before_digits :
         // Eat up spaces, if any.  This segment has to end with a digit
-        if( ch != mapped_space )
+        if( ch != ascii_space )
           {
-          if(  (ch >= mapped_0 && ch <= mapped_9)
+          if(  (ch >= ascii_0 && ch <= ascii_9)
                || ch == decimal_point )
             {
             state = digits;
@@ -2890,7 +2891,7 @@ numval_c( cblc_field_t *dest,
       case digits     :
         // The only thing allowed here are digits, decimal points, and
         // decimal separators
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           // We have a digit.
           rdigits += rdigit_bump;
@@ -2923,14 +2924,14 @@ numval_c( cblc_field_t *dest,
 
       case after_digits  :
         // after digits, the only valid things are spaces, plus, minus, D, or C
-        if( ch != charmap->mapped_character(ascii_space) )
+        if( ch != ascii_space )
           {
-          if(       ch == mapped_plus
-                 || ch == mapped_minus
-                 || ch == mapped_D
-                 || ch == mapped_d
-                 || ch == mapped_C
-                 || ch == mapped_c )
+          if(       ch == ascii_plus
+                 || ch == ascii_minus
+                 || ch == ascii_D
+                 || ch == ascii_d
+                 || ch == ascii_C
+                 || ch == ascii_c )
             {
             state = second_sign;
             p -= 1;
@@ -2945,24 +2946,24 @@ numval_c( cblc_field_t *dest,
           errcode = p - pstart;
           p = pend;
           }
-        if( ch == mapped_plus )
+        if( ch == ascii_plus )
           {
           sign = 1;
           }
-        else if( ch == mapped_minus )
+        else if( ch == ascii_minus )
           {
           sign = -1;
           }
-        else if(    (ch == mapped_D || ch == mapped_d)
+        else if(    (ch == ascii_D || ch == ascii_d)
                     && p < pend
-                    && (*p == mapped_B || *p == mapped_b) )
+                    && (*p == ascii_B || *p == ascii_b) )
           {
           sign = -1;
           p += 1;
           }
-        else if(    (ch == mapped_C || ch == mapped_c)
+        else if(    (ch == ascii_C || ch == ascii_c)
                     && p < pend
-                    && (*p == mapped_R || *p == mapped_r) )
+                    && (*p == ascii_R || *p == ascii_r) )
           {
           sign = -1;
           p += 1;
@@ -2972,7 +2973,7 @@ numval_c( cblc_field_t *dest,
 
       case final_space   :
         // There should be only spaces until the end
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           continue;
           }
@@ -3003,6 +3004,8 @@ numval_c( cblc_field_t *dest,
                             truncation_e,
                             NULL);
     }
+  free(currency_in_ascii);
+  free(pstart);
   return (int)errcode;
   }
 
@@ -3910,12 +3913,12 @@ __gg__upper_case( cblc_field_t *dest,
   __gg__convert_encoding_length(PTRCAST(char, dest->data),
                                 length,
                                 from,
-                                DEFAULT_CHARMAP_SOURCE);
+                                DEFAULT_SOURCE_ENCODING);
   std::transform(dest->data, dest->data + dest_length, dest->data,
                  [](unsigned char c) { return std::toupper(c); });
   __gg__convert_encoding_length(PTRCAST(char, dest->data),
                                 length,
-                                DEFAULT_CHARMAP_SOURCE,
+                                DEFAULT_SOURCE_ENCODING,
                                 to);
   }
 
@@ -3946,7 +3949,7 @@ __gg__when_compiled(cblc_field_t *dest, size_t tv_sec, long tv_nsec)
   char retval[DATE_STRING_BUFFER_SIZE];
   timespec_to_string(retval, tp);
   __gg__convert_encoding(PTRCAST(char, retval),
-                         DEFAULT_CHARMAP_SOURCE,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
   string_to_dest(dest, retval);
   }
@@ -3992,8 +3995,8 @@ gets_int( int ndigits,
   // position (starting at 1) where the problem is.
   int retval = 0;
 
-  int checked_0 = charmap->mapped_character(ascii_0);
-  int checked_9 = charmap->mapped_character(ascii_9);
+  unsigned int checked_0 = charmap->mapped_character(ascii_0);
+  unsigned int checked_9 = charmap->mapped_character(ascii_9);
 
   memset(digits, 0xFF, ndigits * sizeof(int));
   for(int i=1; i<=ndigits; i++)
@@ -4004,7 +4007,7 @@ gets_int( int ndigits,
       retval = -i;
       break;
       }
-    int ch = *p++;
+    unsigned int ch = (unsigned char)*p++;
     if( ch < checked_0 || ch > checked_9 )
       {
       // This isn't a digit zero through nine
@@ -4502,19 +4505,19 @@ gets_nanoseconds( const char *f,
   // positive return value.  A negative return value contains the number of
   // digits we processed,
 
-  int format_s = charmap_format->mapped_character(ascii_s);
-  int source_0 = charmap_source->mapped_character(ascii_0);
-  int source_9 = charmap_source->mapped_character(ascii_9);
+  unsigned int format_s = charmap_format->mapped_character(ascii_s);
+  unsigned int source_0 = charmap_source->mapped_character(ascii_0);
+  unsigned int source_9 = charmap_source->mapped_character(ascii_9);
 
   int errpos = 0;
   int ncount = 0;
   int nanoseconds = 0;
 
   const char *pinit = p;
-  while( f < f_end && *f == format_s && p < pend )
+  while( f < f_end && (unsigned char)*f == format_s && p < pend )
     {
     f += 1;
-    int ch = *p++;
+    unsigned int ch = (unsigned char)*p++;
     errpos += 1;
 
     if( ch < source_0 || ch > source_9 )
@@ -4560,6 +4563,10 @@ fill_cobol_tm(cobol_tm &ctm,
   charmap_t *charmap_format = __gg__get_charmap(par1->encoding);
   charmap_t *charmap_checked = __gg__get_charmap(par2->encoding);
   int checked_space = charmap_checked->mapped_character(ascii_space);
+  int source_plus  = charmap_checked->mapped_character(ascii_plus);
+  int source_minus = charmap_checked->mapped_character(ascii_minus);
+  int source_zero  = charmap_checked->mapped_character(ascii_zero);
+
   int format_space  = charmap_format->mapped_character(ascii_space);
   int format_T      = charmap_format->mapped_character(ascii_T      );
   int format_colon  = charmap_format->mapped_character(ascii_colon  );
@@ -4576,6 +4583,8 @@ fill_cobol_tm(cobol_tm &ctm,
   int format_M      = charmap_format->mapped_character(ascii_M      );
   int format_D      = charmap_format->mapped_character(ascii_D      );
   int format_zero   = charmap_format->mapped_character(ascii_zero   );
+  char decimal_point
+                = charmap_format->mapped_character(__gg__get_decimal_point());
 
   // Let's eliminate trailing spaces...
   trim_trailing_spaces(format, format_end, format_space);
@@ -4583,8 +4592,6 @@ fill_cobol_tm(cobol_tm &ctm,
 
   bool in_offset = false;
   bool in_nanoseconds = false;
-
-  char decimal_point = __gg__get_decimal_point();
 
   // We keep constant track of the current error location.
   int retval = 1;
@@ -4596,7 +4603,7 @@ fill_cobol_tm(cobol_tm &ctm,
   int bump;
   while( format < format_end && source < source_end )
     {
-    char ch = *format;
+    unsigned char ch = *format;
 
     if(    ch == format_T
            || ch == format_colon
@@ -4605,7 +4612,7 @@ fill_cobol_tm(cobol_tm &ctm,
       {
       // These are just formatting characters.  They need to be duplicated,
       // but are otherwise ignored.
-      if( *source != ch )
+      if( (unsigned char)*source != ch )
         {
         break;
         }
@@ -4616,31 +4623,31 @@ fill_cobol_tm(cobol_tm &ctm,
     if( ch == format_plus )
       {
       // This flags a following hhmm offset.  It needs to match a '+' or '-'
-      if(    *source != format_plus
-          && *source != format_minus
-          && *source != format_zero)
+      if(    (unsigned char)*source != source_plus
+          && (unsigned char)*source != source_minus
+          && (unsigned char)*source != source_zero)
         {
         break;
         }
-      if( *source == format_zero )
+      if( (unsigned char)*source == format_zero )
         {
         // The next four characters have to be zeroes
-        if( source[1] != format_zero )
+        if( (unsigned char)source[1] != format_zero )
           {
           retval += 1;
           break;
           }
-        if( source[2] != format_zero )
+        if( (unsigned char)source[2] != format_zero )
           {
           retval += 2;
           break;
           }
-        if( source[3] != format_zero )
+        if( (unsigned char)source[3] != format_zero )
           {
           retval += 3;
           break;
           }
-        if( source[4] != format_zero )
+        if( (unsigned char)source[4] != format_zero )
           {
           retval += 4;
           break;
@@ -4691,7 +4698,7 @@ fill_cobol_tm(cobol_tm &ctm,
     if( ch == format_D )
       {
       // We have three possibilities: DDD, DD, and D
-      if( format[1] != format_D )
+      if( (unsigned char)format[1] != format_D )
         {
         // A singleton 'D' is a day-of-week
         errpos = gets_day_of_week(source, source_end, charmap_checked, ctm);
@@ -4702,7 +4709,7 @@ fill_cobol_tm(cobol_tm &ctm,
           }
         bump = 1;
         }
-      else if( format[2] != format_D )
+      else if( (unsigned char)format[2] != format_D )
         {
         // This is DD, for day-of-month
         errpos = gets_day(source, source_end, charmap_checked, ctm);
@@ -4798,7 +4805,8 @@ fill_cobol_tm(cobol_tm &ctm,
     if( ch == format_Z || ch == format_z )
       {
       // This has to be the end of the road
-      if( std::toupper((unsigned char)source[0]) != 'Z' )
+      if(    (unsigned char)source[0] != format_Z
+          && (unsigned char)source[0] != format_z )
         {
         retval += 0;
         break;
@@ -5040,19 +5048,9 @@ __gg__lowest_algebraic( cblc_field_t *dest,
 
 static int
 floating_format_tester( char const * const f,
-                        char const * const f_end,
-                        cbl_encoding_t encoding)
+                        char const * const f_end)
   {
-  charmap_t *charmap = __gg__get_charmap(encoding);
-  int mapped_space = charmap->mapped_character(ascii_space);
-  int mapped_plus  = charmap->mapped_character(ascii_plus);
-  int mapped_minus = charmap->mapped_character(ascii_minus);
-  int mapped_0 = charmap->mapped_character(ascii_0);
-  int mapped_9 = charmap->mapped_character(ascii_9);
-  int mapped_E = charmap->mapped_character(ascii_E);
-  int mapped_e = charmap->mapped_character(ascii_e);
-  int decimal_point = charmap->mapped_character(__gg__get_decimal_point());
-
+  // This routine operates in ASCII space
   int retval = -1;
 
   enum
@@ -5074,23 +5072,23 @@ floating_format_tester( char const * const f,
     switch(state)
       {
       case SPACE1:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           // Just keep looking
           break;
           }
-        if(    ch == mapped_minus
-            || ch == mapped_plus)
+        if(    ch == ascii_minus
+            || ch == ascii_plus)
           {
           state = SPACE2;
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           state = DIGITS1;
           break;
           }
-        if( decimal_point )
+        if( __gg__decimal_point )
           {
           state = DIGITS2;
           break;
@@ -5100,16 +5098,16 @@ floating_format_tester( char const * const f,
         break;
 
       case SPACE2:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           state = DIGITS1;
           break;
           }
-        if( ch == decimal_point )
+        if( ch == __gg__decimal_point )
           {
           state = DIGITS2;
           break;
@@ -5118,16 +5116,16 @@ floating_format_tester( char const * const f,
         break;
 
       case DIGITS1:
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           break;
           }
-        if( ch == decimal_point )
+        if( ch == __gg__decimal_point )
           {
           state = DIGITS2;
           break;
           }
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           state = SPACE3;
           break;
@@ -5136,16 +5134,16 @@ floating_format_tester( char const * const f,
         break;
 
       case DIGITS2:
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           break;
           }
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           state = SPACE3;
           break;
           }
-        if( ch == mapped_E || ch == mapped_e )
+        if( ch == ascii_E || ch == ascii_e )
           {
           state = SPACE4;
           break;
@@ -5154,16 +5152,16 @@ floating_format_tester( char const * const f,
         break;
 
       case SPACE3:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           retval = index;
           break;
           }
-        if( ch == mapped_E || ch == mapped_e )
+        if( ch == ascii_E || ch == ascii_e )
           {
           state = SPACE4;
           break;
@@ -5172,16 +5170,16 @@ floating_format_tester( char const * const f,
         break;
 
       case SPACE4:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
-        if( ch == mapped_minus || ch == mapped_plus )
+        if( ch == ascii_minus || ch == ascii_plus )
           {
           state = SPACE5;
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           state = DIGITS3;
           break;
@@ -5190,11 +5188,11 @@ floating_format_tester( char const * const f,
         break;
 
       case SPACE5:
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           break;
           }
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           state = DIGITS3;
           break;
@@ -5203,11 +5201,11 @@ floating_format_tester( char const * const f,
         break;
 
       case DIGITS3:
-        if( ch >= mapped_0 && ch <= mapped_9 )
+        if( ch >= ascii_0 && ch <= ascii_9 )
           {
           break;
           }
-        if( ch == mapped_space )
+        if( ch == ascii_space )
           {
           state = SPACE6;
           break;
@@ -5216,7 +5214,7 @@ floating_format_tester( char const * const f,
         break;
 
       case SPACE6:
-      if( ch == mapped_space )
+      if( ch == ascii_space )
         {
         break;
         }
@@ -5242,16 +5240,19 @@ __gg__numval_f( cblc_field_t *dest,
                 size_t source_offset,
                 size_t source_size)
   {
+  // It's just easiest for this routine to operate in ASCII space:
+  size_t nbytes;
+  char *converted = __gg__iconverter(source->encoding,
+                                  DEFAULT_SOURCE_ENCODING,
+                                  PTRCAST(char, source->data + source_offset),
+                                  source_size,
+                                  &nbytes);
   GCOB_FP128 value = 0;
-  const char *data     = PTRCAST(char, (source->data + source_offset));
+  const char *data     = converted;
   const char *data_end = data + source_size;
-  charmap_t *charmap = __gg__get_charmap(source->encoding);
-  int mapped_space = charmap->mapped_character(ascii_space);
 
   int error = floating_format_tester( data,
-                                      data_end,
-                                      source->encoding);
-
+                                      data_end);
   if( error || source_size >= 256 )
     {
     exception_raise(ec_argument_function_e);
@@ -5264,12 +5265,13 @@ __gg__numval_f( cblc_field_t *dest,
     while( data < data_end )
       {
       char ch = *data++;
-      if( ch != mapped_space )
+      if( ch != ascii_space )
         {
         *p++ = ch;
         }
       }
     *p++ = '\0';
+    // This next call is why we needed to be in ASCII space.
     value = strtofp128(ach, NULL);
     }
   __gg__float128_to_field(dest,
@@ -5285,13 +5287,18 @@ __gg__test_numval_f(cblc_field_t *dest,
                     size_t source_offset,
                     size_t source_size)
   {
-  const char *data     = PTRCAST(char, (source->data + source_offset));
+  // It's just easiest for this routine to operate in ASCII space:
+  size_t nbytes;
+  char *converted = __gg__iconverter(source->encoding,
+                                  DEFAULT_SOURCE_ENCODING,
+                                  PTRCAST(char, source->data + source_offset),
+                                  source_size,
+                                  &nbytes);
+
+  const char *data     = converted;
   const char *data_end = data + source_size;
-
   int error = floating_format_tester( data,
-                                      data_end,
-                                      source->encoding);
-
+                                      data_end);
   __gg__int128_to_field(dest,
                         error,
                         NO_RDIGITS,
@@ -5314,14 +5321,52 @@ ismatch(const char *a1, const char *a2, const char *b1, const char *b2)
   }
 
 static bool
-iscasematch(const char *a1, const char *a2, const char *b1, const char *b2)
+iscasematch(const char *a1, const char *a2, 
+            const char *b1, const char *b2,
+            bool is_ebcdic)
   {
-  bool retval = true;
-  while( a1 < a2 && b1 < b2 )
+  static const unsigned int ebcdic_lower[256] =
     {
-    if( std::tolower((unsigned char)*a1++) != std::tolower((unsigned char)*b1++) )
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+    0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, 0x1e, 0x1f,
+    0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f,
+    0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
+    0x60, 0x61, 0x62, 0x63, 0x64, 0x65, 0x66, 0x67, 0x68, 0x69, 0x6a, 0x6b, 0x6c, 0x6d, 0x6e, 0x6f,
+    0x70, 0x71, 0x72, 0x73, 0x74, 0x75, 0x76, 0x77, 0x78, 0x79, 0x7a, 0x7b, 0x7c, 0x7d, 0x7e, 0x7f,
+    0x80, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0x8a, 0x8b, 0x8c, 0x8d, 0x8e, 0x8f,
+    0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b, 0x9c, 0x9d, 0x9e, 0x9f,
+    0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf,
+    0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf,
+    0xc0, 0x81, 0x82, 0x83, 0x84, 0x85, 0x86, 0x87, 0x88, 0x89, 0xca, 0xcb, 0xcc, 0xcd, 0xce, 0xcf,
+    0xd0, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0xda, 0xdb, 0xdc, 0xdd, 0xde, 0xdf,
+    0xe0, 0xe1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7, 0xa8, 0xa9, 0xea, 0xeb, 0xec, 0xed, 0xee, 0xef,
+    0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9, 0xfa, 0xfb, 0xfc, 0xfd, 0xfe, 0xff,
+    };
+
+  bool retval = true;
+
+  if( !is_ebcdic )
+    {
+    while( a1 < a2 && b1 < b2 )
       {
-      retval = false;
+      if( std::tolower((unsigned char)*a1++)
+              != std::tolower((unsigned char)*b1++) )
+        {
+        retval = false;
+        }
+      }
+    }
+  else
+    {
+    while( a1 < a2 && b1 < b2 )
+      {
+      if( ebcdic_lower[(unsigned int)(unsigned char)*a1++]
+                          != ebcdic_lower[(unsigned int)(unsigned char)*b1++] )
+        {
+        retval = false;
+        }
       }
     }
   return retval;
@@ -5353,13 +5398,14 @@ const char *
 strcasestr( const char *haystack,
             const char *haystack_e,
             const char *needle,
-            const char *needle_e)
+            const char *needle_e,
+            bool is_ebcdic)
   {
   const char *retval = NULL;
   const char *pend = haystack_e - (needle_e - needle);
   while( haystack <= pend )
     {
-    if(iscasematch(haystack, haystack_e, needle, needle_e))
+    if(iscasematch(haystack, haystack_e, needle, needle_e, is_ebcdic))
       {
       retval = haystack;
       break;
@@ -5394,13 +5440,14 @@ const char *
 strcaselaststr( const char *haystack,
                 const char *haystack_e,
                 const char *needle,
-                const char *needle_e)
+                const char *needle_e,
+                bool is_ebcdic)
   {
   const char *retval = NULL;
   const char *pend = haystack_e - (needle_e - needle);
   while( haystack <= pend )
     {
-    if(iscasematch(haystack, haystack_e, needle, needle_e))
+    if(iscasematch(haystack, haystack_e, needle, needle_e, is_ebcdic))
       {
       retval = haystack;
       }
@@ -5408,7 +5455,6 @@ strcaselaststr( const char *haystack,
     }
   return retval;
   }
-
 
 extern "C"
 void
@@ -5442,6 +5488,9 @@ __gg__substitute( cblc_field_t *dest,
   const char **pflasts = static_cast<const char **>(malloc(N * sizeof(char *)));
   massert(pflasts);
 
+  const charmap_t *charmap = __gg__get_charmap(arg1_f->encoding);
+  bool is_ebcdic = charmap->is_like_ebcdic();
+
   if( arg1_s == 0 )
     {
     exception_raise(ec_argument_function_e);
@@ -5462,14 +5511,16 @@ __gg__substitute( cblc_field_t *dest,
         pflasts[i] = strcasestr(haystack,
                                 haystack_e,
                                 PTRCAST(char, (arg2_f[i]->data+arg2_o[i])),
-                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i]);
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i],
+                                is_ebcdic);
         }
       else if( control[i] & substitute_last_e)
         {
         pflasts[i] = strcaselaststr(haystack,
                                 haystack_e,
                                 PTRCAST(char, (arg2_f[i]->data+arg2_o[i])),
-                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i]);
+                                PTRCAST(char, (arg2_f[i]->data+arg2_o[i])) + arg2_s[i],
+                                is_ebcdic);
         }
       else
         {
@@ -5532,7 +5583,8 @@ __gg__substitute( cblc_field_t *dest,
                                                                  haystack,
                                                                  haystack_e,
                                                                  needle,
-                                                                 needle_e);
+                                                                 needle_e,
+                                                                 is_ebcdic);
         if( !matched )
           {
           matched = !(control[i] & substitute_anycase_e) && ismatch(haystack,
@@ -5622,11 +5674,11 @@ __gg__locale_compare( cblc_field_t *dest,
       }
     }
 
-  __gg__adjust_dest_size(dest, 1);
-  dest->data[0] = *achretval;
-  __gg__convert_encoding(PTRCAST(char, dest->data),
-                         DEFAULT_CHARMAP_SOURCE,
+  __gg__convert_encoding(achretval,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
+  memcpy(dest->data, achretval, strlen(achretval));
+  __gg__adjust_dest_size(dest, strlen(achretval));
   }
 
 extern "C"
@@ -5659,12 +5711,11 @@ __gg__locale_date(cblc_field_t *dest,
     strcpy(ach, nl_langinfo(D_FMT));
     strftime(ach, sizeof(ach), nl_langinfo(D_FMT), &tm);
     }
-
-  __gg__adjust_dest_size(dest, strlen(ach));
-  __gg__convert_encoding(PTRCAST(char, dest->data),
-                         DEFAULT_CHARMAP_SOURCE,
+  __gg__convert_encoding(ach,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_dest_size(dest, strlen(ach));
   }
 
 extern "C"
@@ -5698,11 +5749,11 @@ __gg__locale_time(cblc_field_t *dest,
     strftime(ach, sizeof(ach), nl_langinfo(T_FMT), &tm);
     }
 
-  __gg__adjust_dest_size(dest, strlen(ach));
-  __gg__convert_encoding(PTRCAST(char, dest->data),
-                         DEFAULT_CHARMAP_SOURCE,
+  __gg__convert_encoding(ach,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_dest_size(dest, strlen(ach));
   }
 
 extern "C"
@@ -5738,9 +5789,9 @@ __gg__locale_time_from_seconds( cblc_field_t *dest,
     strftime(ach, sizeof(ach), nl_langinfo(T_FMT), &tm);
     }
 
-  __gg__adjust_dest_size(dest, strlen(ach));
-  __gg__convert_encoding(PTRCAST(char, dest->data),
-                         DEFAULT_CHARMAP_SOURCE,
+  __gg__convert_encoding(ach,
+                         DEFAULT_SOURCE_ENCODING,
                          dest->encoding);
   memcpy(dest->data, ach, strlen(ach));
+  __gg__adjust_dest_size(dest, strlen(ach));
   }

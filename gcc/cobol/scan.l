@@ -1801,8 +1801,8 @@ B-SHIFT-RC
 				  if( elem->type == SymField ) {
 				    auto f = cbl_field_of(elem);
 				    if( f->type == FldLiteralA && f->has_attr(constant_e) ) {
-				      type = date_time_fmt(f->data.initial);
-				      yylval.string = xstrdup(f->data.initial);
+				      type = date_time_fmt(f->data.original());
+				      yylval.string = xstrdup(f->data.original());
 				    }
 				  } else {
 				    yylval.string = xstrdup(yytext);

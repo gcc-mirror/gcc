@@ -365,6 +365,7 @@ cobol_langhook_handle_option (size_t scode,
             return true;
 
         case OPT_fdefaultbyte:
+            // cobol_default_byte is an unsigned ing
             wsclear(cobol_default_byte);
             return true;
 

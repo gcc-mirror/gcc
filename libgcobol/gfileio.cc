@@ -191,9 +191,10 @@ handle_errno(cblc_file_t *file, const char *function, const char *msg)
 
 static
 char *
-get_filename( const cblc_file_t *file,
-              int is_quoted)
+get_filename( const cblc_file_t *file)
   {
+  bool is_quoted = !!(file->flags & file_name_quoted_e);
+
   static size_t fname_size = MINIMUM_ALLOCATION_SIZE;
   static char *fname = static_cast<char *>(malloc(MINIMUM_ALLOCATION_SIZE));
   massert(fname);
@@ -1149,6 +1150,80 @@ __io__file_delete(cblc_file_t *file, bool is_random)
     {
     file->flags |= file_flag_existed_e;
     }
+  }
+
+static void
+__io__file_remove(cblc_file_t *file, char *filename, int is_quoted)
+  {
+  // filename is the result of a strdup or malloc.  Because both FILE OPEN
+  // and FILE DELETE can establish or change a name, we free it here and
+  // replace it.  The same is true in FILE DELETE Format 2
+  free(file->filename);
+  file->filename = filename;
+  file->flags &= ~file_name_quoted_e;
+  file->flags |= is_quoted ? file_name_quoted_e : file_flag_none_e;
+  int erc;
+
+  // This code copied from reopen
+  const char *trimmed_name = get_filename(file);
+  if( !trimmed_name[0] )
+    {
+    bool all_spaces = true;
+    for(size_t i=0; i<strlen(file->filename); i++)
+      {
+      if( file->filename[i] != ascii_space )
+        {
+        all_spaces = false;
+        }
+      break;
+      }
+    if( all_spaces )
+      {
+      warnx("Warning: %s specified with a filename that is all spaces",
+            file->name);
+      file->io_status = FsNameError;    // "31"
+      goto done;
+      }
+
+    warnx(  "%s(): There is no environment variable named \"%s\"\n",
+            __func__,
+            file->filename);
+    file->io_status = FsNoFile;    // "35"
+    goto done;
+    }
+  // trimmed_name is now the file system name of the file to be removed.
+
+  // If the file is open, we flag that with "41"
+  if( file->file_pointer )
+    {
+    file->io_status = FsIsOpen;    // "41"
+    goto done;
+    }
+
+  // There's been a lot of buildup.  We can now try to remove the file:
+  errno = 0;
+  erc = remove(trimmed_name);
+  if( erc == 0 )
+    {
+    // All is copacetic.  There was a file, and now it's gone.
+    file->io_status = FsSuccess;    // "00"
+    }
+  else if( errno == ENOENT )
+    {
+    // The file didn't exist.  
+    file->io_status = FsUnavail;    // "05"
+    }
+  else
+    {
+    // We have some other kind of error.  Lack of credentials, or whatever.
+    file->io_status = FsErrno;    // 
+    goto done;
+    }
+
+  file->prior_op = file_op_remove;
+  done:
+  file->errnum = errno;
+  establish_status(file, -1);
   }
 
 static void
@@ -4115,7 +4190,7 @@ __gg__file_reopen(cblc_file_t *file, int mode_char)
   // Stash the mode_char for later analysis during READ and WRITE operations
   file->mode_char = mode_char;
   char *trimmed_name;
-  trimmed_name = get_filename(file, !!(file->flags & file_name_quoted_e));
+  trimmed_name = get_filename(file);
   if( !trimmed_name[0] )
     {
     bool all_spaces = true;
@@ -4353,8 +4428,10 @@ __io__file_open(cblc_file_t *file,
     }
   else
     {
-    // filename is the result of a strdup or malloc.  We will free() it at
-    // file close time.
+    // filename is the result of a strdup or malloc.  Because both FILE OPEN
+    // and FILE DELETE can establish or change a name, we free it here and
+    // replace it.  The same is true in FILE DELETE Format 2
+    free(file->filename);
     file->filename = filename;
     file->flags &= ~file_name_quoted_e;
     file->flags |= is_quoted ? file_name_quoted_e : file_flag_none_e;
@@ -4492,6 +4569,9 @@ public:
                             size_t length, bool is_random );
   typedef void (delete_t)( cblc_file_t *file,
                           bool is_random );
+  typedef void (remove_t)( cblc_file_t *file,
+                          char *filename,
+                          int is_quoted);
 
   open_t      *Open;
   close_t     *Close;
@@ -4500,6 +4580,7 @@ public:
   write_t     *Write;
   rewrite_t   *Rewrite;
   delete_t    *Delete;
+  remove_t    *Remove;
 
   gcobol_io_t()
     : Open(NULL)
@@ -4509,15 +4590,17 @@ public:
     , Write(NULL)
     , Rewrite(NULL)
     , Delete(NULL)
+    , Remove(NULL)
   {}
 
-  gcobol_io_t(  open_t      *Open,
+  gcobol_io_t(   open_t      *Open,
                  close_t     *Close,
                  start_t     *Start,
                  read_t      *Read,
                  write_t     *Write,
                  rewrite_t   *Rewrite,
-                 delete_t    *Delete )
+                 delete_t    *Delete,
+                 remove_t    *Remove)
     : Open(Open)
     , Close(Close)
     , Start(Start)
@@ -4525,6 +4608,7 @@ public:
     , Write(Write)
     , Rewrite(Rewrite)
     , Delete(Delete)
+    , Remove(Remove)
   {}
 
 #if FILE_IO_IMPLEMENTED
@@ -4552,7 +4636,8 @@ gcobol_fileops() {
                           __io__file_read,
                           __io__file_write,
                           __io__file_rewrite,
-                          __io__file_delete );
+                          __io__file_delete,
+                          __io__file_remove);
 }
 
 /*
@@ -4657,8 +4742,18 @@ extern "C"
 void
 __gg__file_delete(cblc_file_t *file, bool is_random)
   {
+    // DELETE FILE Format 1 - deletes a record.
     gcobol_io_t *functions = gcobol_io_funcs();
     functions->Delete(file, is_random);
+  }
+extern "C"
+
+void
+__gg__file_remove(cblc_file_t *file, char *name, int is_quoted)
+  {
+    // DELETE FILE Format 2 - removes a file.
+    gcobol_io_t *functions = gcobol_io_funcs();
+    functions->Remove(file, name, is_quoted);
   }
 
 /* end interface functions */

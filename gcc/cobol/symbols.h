@@ -224,6 +224,7 @@ enum symbol_type_t {
   SymAlphabet,
   SymFile,
   SymDataSection,
+  SymLocale, 
 };
 
 // The ISO specification says alphanumeric literals have a maximum length of
@@ -237,7 +238,7 @@ struct cbl_field_data_t {
   uint32_t capacity,            // allocated space
            digits;              // magnitude: total digits (or characters)
   int32_t  rdigits;             // digits to the right
-  const char *initial, *picture;
+  const char *orig, *initial, *picture;
 
   enum etc_type_t { val88_e, upsi_e, value_e } etc_type;
   const char *
@@ -268,6 +269,7 @@ struct cbl_field_data_t {
     , capacity(0)
     , digits(0)
     , rdigits(0)
+    , orig(0)
     , initial(0)
     , picture(0)
     , etc_type(value_e)
@@ -279,6 +281,7 @@ struct cbl_field_data_t {
     , capacity(capacity)
     , digits(0)
     , rdigits(0)
+    , orig(0)
     , initial(0)
     , picture(0)
     , etc_type(value_e)
@@ -293,6 +296,7 @@ struct cbl_field_data_t {
     , capacity(capacity)
     , digits(digits)
     , rdigits(rdigits)
+    , orig(0)
     , initial(initial)
     , picture(picture)
     , etc_type(value_e)
@@ -386,6 +390,12 @@ struct cbl_field_data_t {
     capacity = strlen(initial);
     return valify();
   }
+
+  bool initial_within_capacity() const {
+    return initial[capacity] == '\0'
+      ||   initial[capacity] == '!';
+  }
+  const char *original() const { return orig? orig : initial; }
 
  protected:
   cbl_field_data_t& copy_self( const cbl_field_data_t& that ) {
@@ -531,7 +541,7 @@ struct cbl_field_t {
   uint32_t level;
   cbl_occurs_t occurs;
   struct codeset_t {
-    static const encodings_t standard_internal;
+    static const encodings_t standard_internal, source_encodings[2], *source_encoding;
     cbl_encoding_t encoding;
     size_t alphabet;  // unlikely
     explicit codeset_t(cbl_encoding_t encoding = custom_encoding_e,
@@ -544,22 +554,26 @@ struct cbl_field_t {
         ||
         (alphabet != 0 && encoding == custom_encoding_e);
     }
+    bool consistent() const {
+      return valid() && ( encoding == current_encoding('A')
+                          ||
+                          encoding == current_encoding('N')
+                          ||
+                          encoding == UTF8_e );
+    }
     bool set( cbl_encoding_t encoding, size_t alphabet = 0 ) {
-      assert(encoding <= iconv_YU_e);
+      assert(valid_encoding(encoding));
       if( ! valid() ) { // setting first time
         this->encoding = encoding;
         this->alphabet = alphabet;
         return valid();
       }
-      // DUBNER override.  Encoding has to change when
-      //  01 FOO VALUE ZERO.  Just 0 is okay; ZERO is not.
-          this->encoding = encoding;
       return this->encoding == encoding && this->alphabet == alphabet;
     }
     bool set( const char picture_fragment[] = nullptr) {
       if( ! picture_fragment ) {
-        cbl_encoding_t currenc = current_encoding('A');
-        bool retval = set(currenc);
+        cbl_encoding_t enc = current_encoding('A');
+        bool retval = set(enc);
         return retval;
       }
       size_t len = strlen(picture_fragment);
@@ -568,14 +582,15 @@ struct cbl_field_t {
                      frag.begin(), ftoupper);
       switch(frag[0]) { 
       case 'A': case 'X': case '9':
-        return set(current_encoding('A'));
+        return set(current_encoding(display_encoding_e));
       case 'N': case 'U': 
         if( std::all_of(frag.begin(), frag.end(),
                         [first = frag[0]]( char ch ) {
                           return first == ch;
                         } ) ) {
           // All N's indicates National; all U's indicates UTF-8.
-          auto enc = frag[0] == 'N'? current_encoding('N') : UTF8_e;
+          auto enc = frag[0] == 'N' ? current_encoding(national_encoding_e)
+                                    : UTF8_e;
           return set(enc);
         }
         return false; // They all must be the same. 
@@ -739,7 +754,7 @@ struct cbl_field_t {
   uint32_t size() const; // table capacity or capacity
 
   const char * pretty_name() const {
-    if( name[0] == '_' && data.initial ) return data.initial;
+    if( name[0] == '_' && data.original() ) return data.original();
     return name;
   }
   static const char * level_str(uint32_t level );
@@ -1185,6 +1200,13 @@ struct cbl_arith_error_t {
     cbl_label_addresses_t bottom;
 };
 
+struct cbl_delete_file_t {
+    cbl_label_addresses_t over;
+    cbl_label_addresses_t exception;
+    cbl_label_addresses_t no_exception;
+    cbl_label_addresses_t bottom;
+};
+
 struct cbl_compute_error_t {
     // This is an int.  The value is a cbl_compute_error_code_t
     tree compute_error_code;
@@ -1232,7 +1254,10 @@ struct cbl_label_t {
     
     // for parse_xml processing:
     struct cbl_xml_parse_t *xml_parse;
-    
+
+    // For parser_file_delete_file
+    struct cbl_delete_file_t *delete_file;
+
     } structs;
 
   bool is_function() const { return type == LblFunction; }
@@ -1525,6 +1550,19 @@ struct cbl_section_t {
   }
 };
 
+struct cbl_locale_t {
+  cbl_name_t name;
+  cbl_encoding_t encoding;
+  cbl_name_t collation;
+
+  explicit cbl_locale_t(const cbl_name_t name,
+                        const char iconv_name[] = nullptr );
+
+  bool operator<( const cbl_locale_t& that ) const {
+    return strcmp(name, that.name) < 0;
+  }
+};
+
 struct cbl_special_name_t {
   int token;
   enum special_name_t id;
@@ -1536,22 +1574,35 @@ struct cbl_special_name_t {
 char * hex_decode( const char text[] );
 
 /*
- * For a custom alphabet of single-byte encoding, cbl_alphabet_t::alphabet
+ * An alphabet may just name an encoding, which implies binary collation.
+ *
+ * An alphabet may reference a Special-Names LOCALE, which defines an encoding
+ * and a collation (perhaps by default).
+ * 
+ * During Special-Names parsing, an Alphabet may reference an as-yet undefined
+ * LOCALE with an as-yet unknown encoding. As a placeholder it inserts a named,
+ * undefined cbl_locale_t symbol, which the Alphabet references.  If that
+ * locale is never defined, the encoding remains unknown, resulting in an error
+ * diagnostic at the end of Special-Names.
+ *
+ * For a custom alphabet of single-byte encoding, cbl_alphabet_t::collation_sequence
  * holds the collation position of each encoded value.  
- * If 'A' sorts first (after LOW-VALUE), then alphabet['A'] == 1. 
- * If the encoding is ASCII,         then 'A' is  65 and alphabet[ 65] == 1.
- * If the encoding is EBCDIC CP1140, then 'A' is 193 and alphabet[193] == 1.
+ * If 'A' sorts first (after LOW-VALUE), then collation_sequence['A'] == 1. 
+ * If the encoding is ASCII,         then 'A' is  65 and collation_sequence[ 65] == 1.
+ * If the encoding is EBCDIC CP1140, then 'A' is 193 and collation_sequence[193] == 1.
  */
 struct cbl_alphabet_t {
   YYLTYPE loc;
   cbl_name_t name;
   cbl_encoding_t encoding;
-  unsigned char low_index, high_index, last_index, alphabet[256];
+  size_t locale;  // index to cbl_locale_t symbol
+  unsigned char low_index, high_index, last_index, collation_sequence[256];
   unsigned char low_char, high_char;
 
   cbl_alphabet_t()
     : loc { 1,1, 1,1 }
     , encoding(ASCII_e)
+    , locale(0)
     , low_index(0)
     , high_index(255)
     , last_index(0)
@@ -1559,12 +1610,13 @@ struct cbl_alphabet_t {
     , high_char(0)
   {
     memset(name, '\0', sizeof(name));
-    memset(alphabet, 0xFF, sizeof(alphabet));
+    memset(collation_sequence, 0xFF, sizeof(collation_sequence));
   }
 
   cbl_alphabet_t(const YYLTYPE& loc, cbl_encoding_t enc)
     : loc(loc)
     , encoding(enc)
+    , locale(0)
     , low_index(0)
     , high_index(255)
     , last_index(0)
@@ -1572,14 +1624,17 @@ struct cbl_alphabet_t {
     , high_char(0)
   {
     memset(name, '\0', sizeof(name));
-    memset(alphabet, 0xFF, sizeof(alphabet));
+    memset(collation_sequence, 0xFF, sizeof(collation_sequence));
   }
+
+  cbl_alphabet_t(const YYLTYPE& loc, size_t locale, cbl_name_t name );
 
   cbl_alphabet_t( const YYLTYPE& loc, const cbl_name_t name,
                   unsigned char low_index, unsigned char high_index,
-                  unsigned char alphabet[] )
+                  unsigned char collation_sequence[] )
     : loc(loc)
     , encoding(custom_encoding_e)
+    , locale(0)
     , low_index(low_index), high_index(high_index)
     , last_index(high_index)
     , low_char(low_index)
@@ -1587,21 +1642,23 @@ struct cbl_alphabet_t {
   {
     assert(strlen(name) < sizeof(this->name));
     strcpy(this->name, name);
-    std::copy(alphabet, alphabet + sizeof(this->alphabet), this->alphabet);
+    std::copy(collation_sequence,
+              collation_sequence + sizeof(this->collation_sequence),
+              this->collation_sequence);
   }
 
   unsigned char low_value() const {
-    return alphabet[low_index];
+    return collation_sequence[low_index];
   }
   unsigned char high_value() const {
-    return alphabet[high_index];
+    return collation_sequence[high_index];
   }
 
   void
   add_sequence( const YYLTYPE& loc, const unsigned char seq[] ) {
     if( low_index == 0 ) low_index = seq[0];
 
-    unsigned char last = last_index > 0? alphabet[last_index] + 1 : 0;
+    unsigned char last = last_index > 0? collation_sequence[last_index] + 1 : 0;
 
     for( const unsigned char *p = seq; !end_of_string(p); p++  ) {
       assign(loc, *p, last++);
@@ -1612,7 +1669,7 @@ struct cbl_alphabet_t {
   add_interval( const YYLTYPE& loc, unsigned char low, unsigned char high ) {
     if( low_index == 0 ) low_index = low;
 
-    unsigned char last = alphabet[last_index];
+    unsigned char last = collation_sequence[last_index];
 
     for( unsigned char ch = low; ch < high; ch++  ) {
       assign(loc, ch, last++);
@@ -1649,8 +1706,11 @@ struct cbl_alphabet_t {
                "  0   1   2   3   4   5   6   7"
               "   8   9   A   B   C   C   E   F");
       unsigned int row = 0;
-      for( auto p = alphabet; p < alphabet + sizeof(alphabet); p++ ) {
-        if( (p - alphabet) % 16 == 0 ) fprintf(stderr, "\n%4X\t", row++);
+      for( auto p = collation_sequence;
+           p < collation_sequence + sizeof(collation_sequence); p++ ) {
+        if( (p - collation_sequence) % 16 == 0 ) {
+          fprintf(stderr, "\n%4X\t", row++);
+        }
         fprintf(stderr, "%3u ", *p);
       }
       fprintf(stderr, "\n");
@@ -1870,6 +1930,7 @@ struct symbol_elem_t {
     cbl_field_t        field;
     cbl_label_t        label;
     cbl_special_name_t special;
+    cbl_locale_t       locale;
     cbl_alphabet_t     alphabet;
     cbl_file_t         file;
     cbl_section_t      section;
@@ -1926,6 +1987,9 @@ struct symbol_elem_t {
       break;
     case SymSpecial:
       elem.special = that.elem.special;
+      break;
+    case SymLocale:
+      elem.locale = that.elem.locale;
       break;
     case SymAlphabet:
       elem.alphabet = that.elem.alphabet;
@@ -2092,6 +2156,18 @@ cbl_special_name_of( symbol_elem_t *e ) {
   return &e->elem.special;
 }
 
+static inline cbl_locale_t *
+cbl_locale_of( symbol_elem_t *e ) {
+  assert(e && e->type == SymLocale);
+  return &e->elem.locale;
+}
+
+static inline const cbl_locale_t *
+cbl_locale_of( const symbol_elem_t *e ) {
+  assert(e && e->type == SymLocale);
+  return &e->elem.locale;
+}
+
 static inline cbl_alphabet_t *
 cbl_alphabet_of( symbol_elem_t *e ) {
   assert(e && e->type == SymAlphabet);
@@ -2103,6 +2179,7 @@ cbl_alphabet_of( const symbol_elem_t *e ) {
   assert(e && e->type == SymAlphabet);
   return &e->elem.alphabet;
 }
+
 
 static inline cbl_file_t *
 cbl_file_of( symbol_elem_t *e ) {
@@ -2477,6 +2554,7 @@ struct symbol_elem_t * symbol_literalA( size_t program, const char name[] );
 
 struct cbl_special_name_t * symbol_special( special_name_t id );
 struct symbol_elem_t * symbol_special( size_t program, const char name[] );
+struct symbol_elem_t * symbol_locale( size_t program, const char name[] );
 struct symbol_elem_t * symbol_alphabet( size_t program, const char name[] );
 
 struct symbol_elem_t * symbol_file( size_t program, const char name[] );
@@ -2524,6 +2602,7 @@ cbl_label_t *   symbol_label_add( size_t program,
 cbl_label_t *   symbol_program_add( size_t program, cbl_label_t *input );
 symbol_elem_t * symbol_special_add( size_t program,
 				    cbl_special_name_t *special );
+symbol_elem_t * symbol_locale_add( size_t program, const cbl_locale_t *locale );
 symbol_elem_t * symbol_alphabet_add( size_t program,
 				     const cbl_alphabet_t *alphabet );
 symbol_elem_t * symbol_file_add( size_t program,
@@ -2548,8 +2627,8 @@ static inline size_t upsi_register() {
   return symbol_index(symbol_field(0,0,"UPSI-0"));
 }
 
-void wsclear( char ch);
-const char *wsclear();
+void wsclear( uint32_t ch);
+const uint32_t *wsclear();
 
 enum cbl_call_convention_t {
   cbl_call_verbatim_e = 'V',

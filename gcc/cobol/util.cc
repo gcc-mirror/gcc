@@ -271,6 +271,8 @@ symbol_type_str( enum symbol_type_t type )
         return "SymLabel";
     case SymSpecial:
         return "SymSpecial";
+    case SymLocale:
+        return "SymLocale";
     case SymAlphabet:
         return "SymAlphabet";
     case SymFile:
@@ -1094,28 +1096,18 @@ cbl_field_t::report_invalid_initial_value(const YYLTYPE& loc) const {
   if( has_attr(all_alpha_e) ) {
     bool alpha_value = fig != zero_value_e;
     
-    // In order to check for all alphabetic characters, we have to convert
-    // data.initial back to ASCII:
-
-    size_t outchars;
-    char *initial = __gg__iconverter(codeset.encoding,
-                                     DEFAULT_CHARMAP_SOURCE,
-                                     data.initial,
-                                     data.capacity,
-                                     &outchars);
-
     if( fig == normal_value_e ) {
-      alpha_value = std::all_of( initial,
-                                 initial +
-                                 data.capacity,
-                                 []( char ch ) {
-                                   return ISSPACE(ch) ||
-                                     ISPUNCT(ch) ||
-                                     ISALPHA(ch); } );
+      alpha_value = std::none_of( data.initial,
+                                  data.initial +
+                                  data.capacity,
+                                  []( char ch ) {
+                                    return 
+                                      ISPUNCT(ch) ||
+                                      ISDIGIT(ch); } );
     }
     if( ! alpha_value ) {
       error_msg(loc, "alpha-only %s VALUE '%s' contains non-alphabetic data",
-               name, fig == zero_value_e? cbl_figconst_str(fig) : initial);
+               name, fig == zero_value_e? cbl_figconst_str(fig) : data.initial);
     }
   }
 
@@ -1315,7 +1307,7 @@ valid_move( const struct cbl_field_t *tgt, const struct cbl_field_t *src )
         size_t outcount;
         char *in_ascii = static_cast<char *>(xmalloc(4 * src->data.capacity));
         const char *in_asciip = __gg__iconverter( src->codeset.encoding,
-                                                  DEFAULT_CHARMAP_SOURCE,
+                                                  DEFAULT_SOURCE_ENCODING,
                                                   src->data.initial,
                                                   src->data.capacity,
                                                   &outcount );
@@ -2078,7 +2070,8 @@ cobol_lineno() {
 
 const char *
 cobol_filename() {
-  return input_filenames.empty()? input_filename_vestige : input_filenames.top().name;
+  return input_filenames.empty()?
+    input_filename_vestige : input_filenames.top().name;
 }
 
 void

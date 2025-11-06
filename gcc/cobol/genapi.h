@@ -400,6 +400,12 @@ parser_file_rewrite( cbl_file_t *file, cbl_field_t *field,
 void
 parser_file_delete( cbl_file_t *file, bool sequentially );
 
+void parser_file_delete_file( cbl_label_t *name,
+                              std::vector<cbl_file_t*> filenames );
+void parser_file_delete_on_exception( cbl_label_t *name );
+void parser_file_delete_not_exception( cbl_label_t *name );
+void parser_file_delete_end( cbl_label_t *name );
+
 #if condition_lists
 struct cbl_conditional_t {
   cbl_field_t *tgt;
