@@ -889,22 +889,22 @@ Objective-C and Objective-C++ Dialects}.
 -menable-sysreg-checking
 -mgeneral-regs-only
 -mcmodel=tiny  -mcmodel=small  -mcmodel=large
--mstrict-align  -mno-strict-align
--momit-leaf-frame-pointer
+-mstrict-align  -momit-leaf-frame-pointer
 -mtls-dialect=desc  -mtls-dialect=traditional
--mtls-size=@var{size}
+-mtls-size=@var{size}  -mtp=@var{name}
 -mfix-cortex-a53-835769  -mfix-cortex-a53-843419
 -mlow-precision-recip-sqrt  -mlow-precision-sqrt  -mlow-precision-div
+-mmax-vectorization  -mautovec-preference=@var{name}
 -mpc-relative-literal-loads
 -msign-return-address=@var{scope}
 -mbranch-protection=@var{features}
 -mharden-sls=@var{opts}
 -march=@var{name}  -mcpu=@var{name}  -mtune=@var{name}
--moverride=@var{string}  -mverbose-cost-dump
--mstack-protector-guard=@var{guard} -mstack-protector-guard-reg=@var{sysreg}
--mstack-protector-guard-offset=@var{offset} -mtrack-speculation
--moutline-atomics -mearly-ldp-fusion -mlate-ldp-fusion
--Wexperimental-fmv-target}
+-moverride=@var{string}
+-mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{sysreg}
+-mstack-protector-guard-offset=@var{offset}  -mtrack-speculation
+-moutline-atomics  -mearly-ra  -mearly-ldp-fusion  -mlate-ldp-fusion
+-msve-vector-bits=@var{bits}}
 
 @emph{Adapteva Epiphany Options} (@ref{Adapteva Epiphany Options})
 @gccoptlist{-mhalf-reg-file  -mprefer-short-insn-regs
@@ -22454,6 +22454,11 @@ The @samp{ilp32} model is deprecated.
 Generate big-endian code.  This is the default when GCC is configured for an
 @samp{aarch64_be-*-*} target.
 
+@opindex mlittle-endian
+@item -mlittle-endian
+Generate little-endian code.  This is the default when GCC is configured for an
+@samp{aarch64-*-*} but not an @samp{aarch64_be-*-*} target.
+
 @opindex menable-sysreg-checking
 @item -menable-sysreg-checking
 Generates an error message if an attempt is made to access a system register
@@ -22461,14 +22466,9 @@ which is not available on the target architecture.
 
 @opindex mgeneral-regs-only
 @item -mgeneral-regs-only
-Generate code which uses only the general-purpose registers.  This will prevent
-the compiler from using floating-point and Advanced SIMD registers but will not
+Generate code that uses only the general-purpose registers.  This prevents
+the compiler from using floating-point and Advanced SIMD registers but does not
 impose any restrictions on the assembler.
-
-@opindex mlittle-endian
-@item -mlittle-endian
-Generate little-endian code.  This is the default when GCC is configured for an
-@samp{aarch64-*-*} but not an @samp{aarch64_be-*-*} target.
 
 @opindex mcmodel=
 @opindex mcmodel=tiny
@@ -22599,6 +22599,8 @@ This option only has an effect if @option{-ffast-math} or
 precision of division results to about 16 bits for
 single precision and to 32 bits for double precision.
 
+@opindex mtrack-speculation
+@opindex mno-track-speculation
 @item -mtrack-speculation
 @itemx -mno-track-speculation
 Enable or disable generation of additional code to track speculative
@@ -22607,6 +22609,8 @@ be used by the compiler when expanding calls to
 @code{__builtin_speculation_safe_copy} to permit a more efficient code
 sequence to be generated.
 
+@opindex moutline-atomics
+@opindex mno-outline-atomics
 @item -moutline-atomics
 @itemx -mno-outline-atomics
 Enable or disable calls to out-of-line helpers to implement atomic operations.
@@ -22621,6 +22625,8 @@ used directly.  The same applies when using @option{-mcpu=} when the
 selected cpu supports the @samp{lse} feature.
 This option is on by default.
 
+@opindex mmax-vectorization
+@opindex mno-max-vectorization
 @item -mmax-vectorization
 @itemx -mno-max-vectorization
 Enable or disable an override to vectorizer cost model making vectorization
@@ -22630,6 +22636,7 @@ used for auto-vectorization.  Unlike @option{-fno-vect-cost-model} or
 @option{-fvect-cost-model=unlimited} this option does not turn off cost
 comparison between different vector modes.
 
+@opindex mautovec-preference
 @item -mautovec-preference=@var{name}
 Force an ISA selection strategy for auto-vectorization.  The possible
 values of @var{name} are:
@@ -22797,11 +22804,6 @@ across releases.
 
 This option is only intended to be useful when developing GCC.
 
-@opindex mverbose-cost-dump
-@item -mverbose-cost-dump
-Enable verbose cost model dumping in the debug dump files.  This option is
-provided for use in debugging the compiler.
-
 @opindex mpc-relative-literal-loads
 @opindex mno-pc-relative-literal-loads
 @item -mpc-relative-literal-loads
@@ -22818,7 +22820,7 @@ Permissible values are @samp{none}, which disables return address signing,
 @samp{non-leaf}, which enables pointer signing for functions which are not leaf
 functions, and @samp{all}, which enables pointer signing for all functions.  The
 default value is @samp{none}. This option has been deprecated by
--mbranch-protection.
+@option{-mbranch-protection}.
 
 @opindex mbranch-protection
 @item -mbranch-protection=@var{features}
@@ -22872,12 +22874,16 @@ disables the pass.
 @option{-Os}.  @option{-mearly-ra=none} is the default otherwise.
 
 @opindex mearly-ldp-fusion
+@opindex mno-early-ldp-fusion
 @item -mearly-ldp-fusion
+@itemx -mno-early-ldp-fusion
 Enable the copy of the AArch64 load/store pair fusion pass that runs before
 register allocation.  Enabled by default at @samp{-O} and above.
 
 @opindex mlate-ldp-fusion
+@opindex mno-late-ldp-fusion
 @item -mlate-ldp-fusion
+@itemx -mno-late-ldp-fusion
 Enable the copy of the AArch64 load/store pair fusion pass that runs after
 register allocation.  Enabled by default at @samp{-O} and above.
 
@@ -22903,10 +22909,6 @@ hardware SVE vector lengths.
 The default is @samp{-msve-vector-bits=scalable}, which produces
 vector-length agnostic code.
 
-@opindex Wexperimental-fmv-target
-@opindex Wno-experimental-fmv-target
-@item -Wexperimental-fmv-target
-This option is deprecated.
 @end table
 
 @subsubsection @option{-march} and @option{-mcpu} Feature Modifiers
