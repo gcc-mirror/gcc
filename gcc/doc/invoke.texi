@@ -210,23 +210,36 @@ in the following sections.
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
-@gccoptlist{-fabi-version=@var{n}  -fno-access-control
--faligned-new=@var{n}  -fno-assume-sane-operators-new-delete
+@gccoptlist{-fabi-compat-version=@var{n} -fabi-version=@var{n}
+-fno-access-control  -faligned-new=@r{[}@var{n}@r{]}
+-fno-assume-sane-operators-new-delete
 -fchar8_t  -fcheck-new
 -fconcepts  -fconstexpr-depth=@var{n}  -fconstexpr-cache-depth=@var{n}
 -fconstexpr-loop-limit=@var{n}  -fconstexpr-ops-limit=@var{n}
+-fcontracts  -fcontract-assumption-mode=@r{[}on@r{|}off@r{]}
+-fcontract-build-level=@r{[}off@r{|}default@r{|}audit@r{]}
+-fcontract-continuation-mode=@r{[}on@r{|}off@r{]}
+-fcontract-mode=@r{[}on@r{|}off@r{]}
+-fcontract-role=@var{name}:@var{default},@var{audit},@var{axiom}
+-fcontract-semantic=@r{[}default@r{|}audit@r{|}axiom@r{]}:@var{semantic}
+-fcontract-strict-declarations=@r{[}on@r{|}off@r{]}
+-fcoroutines  -fdiagnostics-all-candidates
 -fno-elide-constructors
 -fno-enforce-eh-specs
+-fext-numeric-literals
 -fno-gnu-keywords
 -fno-immediate-escalation
--fno-implicit-templates
--fno-implicit-inline-templates
 -fno-implement-inlines
--fmodule-header@r{[}=@var{kind}@r{]} -fmodule-only -fmodules
+-fimplicit-constexpr
+-fno-implicit-inline-templates
+-fno-implicit-templates
+-fmodule-header@r{[}=@var{kind}@r{]}
 -fmodule-implicit-inline
 -fno-module-lazy
 -fmodule-mapper=@var{specification}
+-fmodule-only
 -fmodule-version-ignore
+-fmodules
 -fms-extensions
 -fnew-inheriting-ctors
 -fnew-ttp-matching
@@ -234,19 +247,20 @@ in the following sections.
 -fno-optional-diags
 -fno-pretty-templates  -frange-for-ext-temps
 -fno-rtti  -fsized-deallocation
--fstrong-eval-order@r{[}=@var{kind}@r{]}
+-fstrict-enums  -fstrong-eval-order@r{[}=@var{kind}@r{]}
 -ftemplate-backtrace-limit=@var{n}
 -ftemplate-depth=@var{n}
--fno-threadsafe-statics  -fuse-cxa-atexit
+-fno-threadsafe-statics  -fuse-cxa-atexit  -fno-use-cxa-get-exception-ptr
 -fno-weak  -nostdinc++
 -fvisibility-inlines-hidden
 -fvisibility-ms-compat
--fext-numeric-literals
 -flang-info-include-translate@r{[}=@var{header}@r{]}
 -flang-info-include-translate-not
 -flang-info-module-cmi@r{[}=@var{module}@r{]}
 -stdlib=@var{libstdc++,libc++}
--Wabi-tag  -Wcatch-value  -Wcatch-value=@var{n}
+-Wabbreviated-auto-in-template-arg
+-Wabi-tag  -Waligned-new@r{[}=@var{kind}@r{]}
+-Wcatch-value  -Wcatch-value=@var{n}
 -Wno-class-conversion  -Wclass-memaccess
 -Wcomma-subscript  -Wconditionally-supported
 -Wno-conversion-null  -Wctad-maybe-unsupported
@@ -254,23 +268,24 @@ in the following sections.
 -Wno-defaulted-function-deleted
 -Wno-delete-incomplete
 -Wdelete-non-virtual-dtor  -Wno-deprecated-array-compare
--Wdeprecated-copy -Wdeprecated-copy-dtor
--Wno-deprecated-enum-enum-conversion -Wno-deprecated-enum-float-conversion
--Weffc++ -Wno-elaborated-enum-base
--Wno-exceptions -Wno-expose-global-module-tu-local -Wno-external-tu-local
--Wextra-semi -Wno-global-module -Wno-inaccessible-base
+-Wdeprecated-copy  -Wdeprecated-copy-dtor
+-Wno-deprecated-enum-enum-conversion  -Wno-deprecated-enum-float-conversion
+-Wno-deprecated-literal-operator  -Wdeprecated-variadic-comma-omission
+-Weffc++  -Wno-elaborated-enum-base
+-Wno-exceptions  -Wno-expose-global-module-tu-local  -Wno-external-tu-local
+-Wextra-semi  -Wno-global-module  -Wno-inaccessible-base
 -Wno-inherited-variadic-ctor  -Wno-init-list-lifetime
--Winvalid-constexpr -Winvalid-imported-macros
+-Winvalid-constexpr  -Winvalid-imported-macros
 -Wno-invalid-offsetof  -Wno-literal-suffix
--Wmismatched-new-delete -Wmismatched-tags
+-Wmismatched-new-delete  -Wmismatched-tags
 -Wmultiple-inheritance  -Wnamespaces  -Wnarrowing
 -Wnoexcept  -Wnoexcept-type  -Wnon-virtual-dtor
 -Wpessimizing-move  -Wno-placement-new  -Wplacement-new=@var{n}
--Wrange-loop-construct -Wredundant-move -Wredundant-tags
--Wreorder  -Wregister -Wno-sfinae-incomplete
+-Wrange-loop-construct  -Wredundant-move  -Wredundant-tags
+-Wreorder  -Wregister  -Wno-sfinae-incomplete
 -Wstrict-null-sentinel  -Wno-subobject-linkage  -Wtemplates
 -Wno-non-c-typedef-for-linkage  -Wno-non-template-friend  -Wold-style-cast
--Woverloaded-virtual  -Wno-pmf-conversions -Wself-move -Wsign-promo
+-Woverloaded-virtual  -Wno-pmf-conversions  -Wself-move  -Wsign-promo
 -Wsized-deallocation  -Wsuggest-final-methods
 -Wsuggest-final-types  -Wsuggest-override  -Wno-template-body
 -Wno-template-id-cdtor  -Wtemplate-names-tu-local
@@ -815,6 +830,7 @@ Objective-C and Objective-C++ Dialects}.
 -fvar-tracking-assignments-toggle  -gtoggle
 -print-file-name=@var{library}  -print-libgcc-file-name
 -print-multi-directory  -print-multi-lib  -print-multi-os-directory
+-print-multiarch
 -print-prog-name=@var{program}  -print-search-dirs  -Q
 -print-sysroot  -print-sysroot-headers-suffix
 -save-temps  -save-temps=cwd  -save-temps=obj  -time@r{[}=@var{file}@r{]}}
@@ -3056,6 +3072,7 @@ around bugs in the access control code.
 
 @opindex faligned-new
 @item -faligned-new
+@itemx -faligned-new=@var{alignment}
 Enable support for C++17 @code{new} of types that require more
 alignment than @code{void* ::operator new(std::size_t)} provides.  A
 numeric argument such as @code{-faligned-new=32} can be used to
@@ -3242,38 +3259,38 @@ used together.
 
 @table @gcctabopt
 @opindex fcontract-mode
-@item -fcontract-mode=[on|off]
+@item -fcontract-mode=@r{[}on@r{|}off@r{]}
 Control whether any contracts have any semantics at all.  Defaults to on.
 
 @opindex fcontract-assumption-mode
-@item -fcontract-assumption-mode=[on|off]
+@item -fcontract-assumption-mode=@r{[}on@r{|}off@r{]}
 [N4820] Control whether contracts with level @samp{axiom}
 should have the assume semantic.  Defaults to on.
 
 @opindex fcontract-build-level
-@item -fcontract-build-level=[off|default|audit]
+@item -fcontract-build-level=@r{[}off@r{|}default@r{|}audit@r{]}
 [N4820] Specify which level of contracts to generate checks
 for.  Defaults to @samp{default}.
 
 @opindex fcontract-continuation-mode
-@item -fcontract-continuation-mode=[on|off]
+@item -fcontract-continuation-mode=@r{[}on@r{|}off@r{]}
 [N4820] Control whether to allow the program to continue executing
 after a contract violation.  That is, do checked contracts have the
 @samp{maybe} semantic described below rather than the @samp{never}
 semantic.  Defaults to off.
 
 @opindex fcontract-role
-@item -fcontract-role=<name>:<default>,<audit>,<axiom>
+@item -fcontract-role=@var{name}:@var{default},@var{audit},@var{axiom}
 [P1332] Specify the concrete semantics for each contract level
 of a particular contract role.
 
 @opindex fcontract-semantic
-@item -fcontract-semantic=[default|audit|axiom]:<semantic>
+@item -fcontract-semantic=@r{[}default@r{|}audit@r{|}axiom@r{]}:@var{semantic}
 [P1429] Specify the concrete semantic for a particular
 contract level.
 
 @opindex fcontract-strict-declarations
-@item -fcontract-strict-declarations=[on|off]
+@item -fcontract-strict-declarations=@r{[}on@r{|}off@r{]}
 Control whether to reject adding contracts to a function after its
 first declaration.  Defaults to off.
 @end table
@@ -4871,6 +4888,7 @@ Enabled by default with @option{-std=c++20}.  Before
 @opindex Waligned-new
 @opindex Wno-aligned-new
 @item -Waligned-new
+@itemx -Waligned-new=@r{[}none@r{|}global@r{|}all@r{]}
 Warn about a new-expression of a type that requires greater alignment
 than the @code{alignof(std::max_align_t)} but uses an allocation
 function without an explicit alignment parameter. This option is
