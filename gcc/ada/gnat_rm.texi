@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 13, 2025
+GNAT Reference Manual , Nov 18, 2025
 
 AdaCore
 
@@ -33625,8 +33625,7 @@ historical compatibility purposes.
 
 PolyORB is a deprecated product. It will be baselined with the GNAT Pro
 release 28. After this release, there will be no new versions of this
-product. Contact your sales representative or send a message to
-@email{sales@@adacore.com} to get recommendations for replacements.
+product. Contact AdaCore support to get recommendations for replacements.
 
 @node pragma No_Run_Time,pragma Ravenscar,PolyORB,Obsolescent Features
 @anchor{gnat_rm/obsolescent_features id3}@anchor{487}@anchor{gnat_rm/obsolescent_features pragma-no-run-time}@anchor{488}

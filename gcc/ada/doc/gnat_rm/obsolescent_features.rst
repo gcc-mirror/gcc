@@ -16,8 +16,7 @@ PolyORB
 
 PolyORB is a deprecated product. It will be baselined with the GNAT Pro
 release 28. After this release, there will be no new versions of this
-product. Contact your sales representative or send a message to
-sales@adacore.com to get recommendations for replacements.
+product. Contact AdaCore support to get recommendations for replacements.
 
 .. _pragma_No_Run_Time:
 
