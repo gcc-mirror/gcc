@@ -1,3 +1,68 @@
+2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* gfortran.dg/alloc_comp_deep_copy_5.f90: New test for recursive
+	allocatable array deep copy.
+	* gfortran.dg/alloc_comp_deep_copy_6.f90: New test for multi-level
+	recursive allocatable deep copy.
+	* gfortran.dg/array_memcpy_2.f90: Fix test with proper allocation.
+	Signed-off-by: Christopher Albert <albert@tugraz.at>
+
+2025-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/prefix3.adb: New test.
+	* gnat.dg/prefix3_pkg.ads: New helper.
+	* gnat.dg/prefix3_pkg.adb: Likewise.
+
+2025-11-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/czero-bext.c: New test.
+
+2025-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/renaming19.adb: New test.
+	* gnat.dg/renaming19_pkg.ads: New helper.
+	* gnat.dg/renaming19_pkg.adb: Likewise.
+
+2025-11-06  Your Name  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/121136
+	* gcc.target/riscv/pr121136.c: New test.
+	* gcc.dg/cmp-mem-const-1.c: Skip for risc-v.
+	* gcc.dg/cmp-mem-const-2.c: Likewise.
+
+2025-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122502
+	* gcc.dg/torture/pr122502-2.c: New testcase.
+
+2025-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/113632
+	* gcc.dg/pr113632.c: New.
+
+2025-11-06  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_vfp_ok_nocache): New.
+	(check_effective_target_arm_v8_vfp_ok): Call the above helper, and
+	use global flags.
+	(add_options_for_arm_v8_vfp): Use et_arm_v8_vfp_flags.
+	* gcc.target/arm/lceil-vcvt_1.c: Remove -march=armv8-a.
+	* gcc.target/arm/lfloor-vcvt_1.c: Likewise.
+	* gcc.target/arm/lround-vcvt_1.c: Likewise.
+	* gcc.target/arm/vrinta-ce.c: Likewise.
+
+2025-11-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* gcc.target/loongarch/vect-frint-no-inexact.c (dg-options): Add
+	-mcmodel=normal.
+	* gcc.target/loongarch/vect-frint-scalar-no-inexact.c: Likewise.
+	* gcc.target/loongarch/vect-frint-scalar.c: Likewise.
+	* gcc.target/loongarch/vect-frint.c: Likewise.
+	* gcc.target/loongarch/vect-ftint-no-inexact.c: Likewise.
+	* gcc.target/loongarch/vect-ftint.c: Likewise.
+
 2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/121574

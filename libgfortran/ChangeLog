@@ -1,3 +1,13 @@
+2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* Makefile.am: Add runtime/deep_copy.c to source files.
+	* Makefile.in: Regenerate.
+	* gfortran.map: Export _gfortran_cfi_deep_copy_array symbol.
+	* libgfortran.h: Add prototype for internal_deep_copy_array.
+	* runtime/deep_copy.c: New file implementing runtime deep copy
+	helper for recursive allocatable array components.
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

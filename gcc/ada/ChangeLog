@@ -1,3 +1,24 @@
+2025-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113352
+	* sem_ch4.adb (Diagnose_Call): Tweak error message.
+	* sem_ch8.adb (Find_Selected_Component): Remove bypass for calls
+	to procedures in the overloaded overloadable case.  Factor out
+	the diagnostics code and invoke it uniformly in this case.
+
+2025-11-06  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/113350
+	PR ada/113551
+	* exp_ch2.adb (Expand_Renaming): Fix reference to Evaluate_Name.
+	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): Call
+	Evaluate_Name to evaluate the name.
+	* sem_ch8.adb (Analyze_Renamed_Entry): Minor tweaks.
+	(Analyze_Renamed_Family_Member): Likewise.
+	(Analyze_Renamed_Primitive_Operation): Likewise.
+	Fix thinko in the function checking profile conformance, save the
+	result of the resolution and make implicit dereferences explicit.
+
 2025-11-05  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/35793

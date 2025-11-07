@@ -1,3 +1,100 @@
+2025-11-06  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* Make-lang.in: Repair documentation generation.
+	* cdf.y: Changes to tokens.
+	* cobol1.cc (cobol_langhook_handle_option): Add comment.
+	* genapi.cc (function_pointer_from_name): Use data.original() for
+	function name.
+	(parser_initialize_programs): Likewise.
+	(cobol_compare): Make sure encodings of comparands are the same.
+	(move_tree): Change name of DEFAULT_SOURCE_ENCODING macro.
+	(parser_enter_program): Typo.
+	(psa_FldLiteralN): Break out dirty_to_binary() support routine.
+	(dirty_to_binary): Likewise.
+	(parser_alphabet): Rename 'alphabet' to 'collation_sequence'.
+	(parser_allocate): Change wsclear() to be uint32_t instead of char.
+	(parser_label_label): Formatting.
+	(parser_label_goto): Likewise.
+	(get_the_filename): Breakout get_the_filename(), which handles
+	encoding.
+	(parser_file_open): Likewise.
+	(set_up_delete_file_label): Implement DELETE FILE (Format 2).
+	(parser_file_delete_file): Likewise.
+	(parser_file_delete_on_exception): Likewise.
+	(parser_file_delete_not_exception): Likewise.
+	(parser_file_delete_end): Likewise.
+	(parser_call): Use data.original().
+	(parser_entry): Use data.original().
+	(mh_source_is_literalN): Convert from
+	sourceref.field->codeset.encoding.
+	(binary_initial_from_float128): Change to "binary_initial".
+	(binary_initial): Calculate in FIXED_WIDE_INT(128) instead of
+	REAL_VALUE_TYPE.
+	(digits_from_int128): New routine uses binary_initial.
+	(digits_from_float128): Removed.  Kept as comment for reference.
+	(initial_from_initial): Use binary_initial.
+	(actually_create_the_static_field): Use correct encoding.
+	(parser_symbol_add): Likewise.
+	* genapi.h (parser_file_delete_file): Implement FILE DELETE.
+	(parser_file_delete_on_exception): Implement FILE DELETE.
+	(parser_file_delete_not_exception): Implement FILE DELETE.
+	(parser_file_delete_end): Implement FILE DELETE.
+	* genmath.cc: Include charmaps.h.
+	* genutil.cc (get_literal_string):  Change name of
+	DEFAULT_SOURCE_ENCODING macro.
+	* parse.y: Token changes; numerous changes in support of encoding;
+	support for DELETE FILE.
+	* parse_ante.h (name_of): Use data.original().
+	(class prog_descr_t): Support of locales.
+	(current_options): Formatting.
+	(current_encoding):  Formatting.
+	(current_program_index): Formatting.
+	(current_section): Formatting.
+	(current_paragraph): Formatting.
+	(is_integer_literal): Use correct encoding.
+	(value_encoding_check): Handle encoding changes.
+	(alphabet_add): Likewise.
+	(data_division_ready): Likewise.
+	* scan.l: Use data.original().
+	* show_parse.h: Use correct encoding.
+	* symbols.cc (elementize): Likewise.
+	(symbol_elem_cmp): Handle locale.
+	(struct symbol_elem_t): Likewise.
+	(symbol_locale): Likewise.
+	(field_str): Change DEFAULT_SOURCE_ENCODING macro name.
+	(symbols_alphabet_set): Formatting.
+	(symbols_update): Modify consistency checks.
+	(symbol_locale_add): Locale support.
+	(cbl_locale_t::cbl_locale_t): Locale support.
+	(cbl_alphabet_t::cbl_alphabet_t): New structure.
+	(cbl_alphabet_t::reencode): Formatting.
+	(cbl_alphabet_t::assign): Change name of collation_sequence.
+	(cbl_alphabet_t::also): Likewise.
+	(new_literal_add): Anticipate the need for four-byte characters.
+	(guess_encoding): Eliminate.
+	(cbl_field_t::internalize): Refine conversion of data.initial to
+	specified encoding.
+	* symbols.h (enum symbol_type_t): Add SymLocale.
+	(struct cbl_field_data_t): Incorporate data.orig.
+	(struct cbl_field_t): Likewise.
+	(struct cbl_delete_file_t): New structure.
+	(struct cbl_label_t): Incorporate cbl_delete_file_t.
+	(struct cbl_locale_t): Support for locale.
+	(hex_decode): Comment.
+	(struct cbl_alphabet_t): Incorporate locale; change variable name
+	to collation_sequence.
+	(struct symbol_elem_t): Incorporate locale.
+	(cbl_locale_of): Likewise.
+	(cbl_alphabet_of): Likewise.
+	(symbol_locale_add): Likewise.
+	(wsclear): Type is now uint32_t instead of char.
+	* util.cc (symbol_type_str):  Incorporate locale.
+	(cbl_field_t::report_invalid_initial_value): Change test so that
+	pure PIC A() variables are limited to [a-zA-Z] and space.
+	(valid_move): Use DEFAULT_SOURCE_ENCODING macro.
+	(cobol_filename): Formatting.
+
 2025-10-26  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* Make-lang.in ($(srcdir)/cobol/token_names.h): Silence recipe.

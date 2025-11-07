@@ -1,3 +1,103 @@
+2025-11-06  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/invoke.texi (AArch64 Options): Clean up description of
+	-mbranch-protection= argument.
+	(ARM Options): Likewise.
+
+2025-11-06  Alejandro Colomar  <alx@kernel.org>
+
+	* doc/extend.texi: Move _Countof under 'Syntax Extensions'.
+
+2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122516
+	* config/avr/elf.h (SUPPORTS_SHF_GNU_RETAIN): Define if
+	HAVE_GAS_SHF_GNU_RETAIN.
+
+2025-11-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_noce_conversion_profitable_p): Ignore
+	assignments of (const_int 0) to a register.  They will get propagated
+	away.
+
+2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_output_addr_vec): Output
+	a valid opcode prior to the first gs() label provided:
+	- The code is compiled for an arch that has AVR-SD mcus, and
+	- the function has a "section" attribute, and
+	- the function has a gs() label addresses switch/case table.
+
+2025-11-06  Your Name  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/121136
+	* config/riscv/riscv.md: Add define_insn to test the
+	upper bits of a register against zero using sltiu when
+	the bits are extracted via zero_extract or logial right shift.
+	Add 3->2 define_splits for gtu/leu cases testing upper bits
+	against zero.
+
+2025-11-06  Richard Biener  <rguenther@suse.de>
+
+	* tree-core.h (tree_ssa_name::active_iterated_stmt): Mark
+	GTY((skip(""))).
+
+2025-11-06  Richard Biener  <rguenther@suse.de>
+
+	* ssa-iterators.h (imm_use_iterator::name): Add.
+	(delink_imm_use): When in a FOR_EACH_IMM_USE_STMT iteration
+	enforce we only remove uses from the current stmt.
+	(end_imm_use_stmt_traverse): Reset current stmt.
+	(first_imm_use_stmt): Assert no FOR_EACH_IMM_USE_STMT on
+	var is in progress.  Set the current stmt.
+	(next_imm_use_stmt): Set the current stmt.
+	(auto_end_imm_use_fast_traverse): New, lower iteration
+	depth upon destruction.
+	(first_readonly_imm_use): Bump the iteration depth.
+	* tree-core.h (tree_ssa_name::active_iterated_stmt,
+	tree_ssa_name::fast_iteration_depth): New members when
+	ENABLE_GIMPLE_CHECKING.
+	* tree-ssanames.cc (make_ssa_name_fn): Initialize
+	immediate use verifier bookkeeping members.
+
+2025-11-06  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122502
+	* ssa-iterators.h (imm_use_iterator::iter_node): Remove.
+	(imm_use_iterator::next_stmt_use): New.
+	(next_readonly_imm_use): Adjust checking code.
+	(end_imm_use_stmt_traverse): Simplify.
+	(link_use_stmts_after): Likewise.  Return the last use
+	with the same stmt.
+	(first_imm_use_stmt): Simplify.  Set next_stmt_use.
+	(next_imm_use_stmt): Likewise.
+	(end_imm_use_on_stmt_p): Adjust.
+
+2025-11-06  Richard Biener  <rguenther@suse.de>
+
+	* doc/tree-ssa.texi: Update immediate use iterator
+	documentation.
+	* ssa-iterators.h: Likewise.
+
+2025-11-06  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/113632
+	* range-op-mixed.h (operator_bitwise_xor): Relocate and adjust.
+	(operator_bitwise_xor::m_and, m_or, m_not): New.
+	* range-op.cc (operator_bitwise_xor::fold_range): New.
+
+2025-11-06  Xi Ruoyao  <xry111@xry111.site>
+
+	* config.gcc: Support --with-cmodel={medium,normal} and make
+	medium the default for LoongArch, define TARGET_DEFAULT_CMODEL
+	as the selected value.
+	* config/loongarch/loongarch-opts.cc: Use TARGET_DEFAULT_CMODEL
+	instead of hard coding CMODEL_NORMAL.
+	* doc/install.texi: Document that --with-cmodel= is supported
+	for LoongArch.
+	* doc/invoke.texi: Update the document about default code model
+	on LoongArch.
+
 2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/121574

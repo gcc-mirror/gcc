@@ -1,3 +1,25 @@
+2025-11-06  Peter Damianov  <peter0x44@disroot.org>
+
+	PR target/122472
+	* simple-object-coff.c (struct external_filehdr_bigobj): New
+	structure for BigObj file header.
+	(bigobj_magic): New constant for BigObj magic bytes.
+	(struct external_syment_bigobj): New structure for BigObj
+	20-byte symbol table entries.
+	(union external_auxent_bigobj): New union for BigObj 20-byte
+	auxiliary symbol entries.
+	(struct simple_object_coff_read): Add is_bigobj flag and make
+	nscns 32-bit to support both formats.
+	(struct simple_object_coff_attributes): Add is_bigobj flag.
+	(simple_object_coff_match): Add BigObj format detection.
+	(simple_object_coff_read_strtab): Use format-specific symbol
+	size when calculating string table offset.
+	(simple_object_coff_attributes_merge): Check is_bigobj flag.
+	(simple_object_coff_write_filehdr_bigobj): New function.
+	(simple_object_coff_write_to_file): Add logic for writing
+	BigObj vs regular COFF format with appropriate symbol
+	and auxiliary entry structures.
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

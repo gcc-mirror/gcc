@@ -1,3 +1,75 @@
+2025-11-06  Robert Dubner  <rdubner@symas.com>
+	    James K. Lowden  <jklowden@cobolworx.com>
+
+	* charmaps.cc (__gg__encoding_iconv_type): Eliminate trailing
+	'/' characters from encoding names.
+	(__gg__get_charmap): Switch to DEFAULT_SOURCE_ENCODING macro name.
+	* charmaps.h (DEFAULT_CHARMAP_SOURCE): Likewise.
+	(DEFAULT_SOURCE_ENCODING): Likewise.
+	(class charmap_t): Enhance constructor.
+	* encodings.h (valid_encoding): New routine.
+	* gcobolio.h (enum cblc_file_prior_op_t): Support DELETE FILE.
+	* gfileio.cc (get_filename): Likewise.
+	(__io__file_remove): Likewise.
+	(__gg__file_reopen): Likewise.
+	(__io__file_open): Likewise.
+	(gcobol_fileops): Likewise.
+	(__gg__file_delete): Likewise.
+	(__gg__file_remove): Likewise.
+	* intrinsic.cc (get_all_time):  Switch to DEFAULT_SOURCE_ENCODING
+	macro name.
+	(ftime_replace): Support ASCII/EBCDIC encoding.
+	(__gg__current_date): Likewise.
+	(__gg__max): Likewise.
+	(__gg__lower_case): Likewise.
+	(numval): Likewise.
+	(numval_c): Likewise.
+	(__gg__upper_case): Likewise.
+	(__gg__when_compiled): Likewise.
+	(gets_int): Likewise.
+	(gets_nanoseconds): Likewise.
+	(fill_cobol_tm): Likewise.
+	(floating_format_tester): Likewise.
+	(__gg__numval_f): Likewise.
+	(__gg__test_numval_f): Likewise.
+	(iscasematch): Likewise.
+	(strcasestr): Likewise.
+	(strcaselaststr): Likewise.
+	(__gg__substitute): Likewise.
+	(__gg__locale_compare): Support for locale.
+	(__gg__locale_date): Likewise.
+	(__gg__locale_time): Likewise.
+	(__gg__locale_time_from_seconds): Likewise.
+	* libgcobol.cc (class ec_status_t): Support for encoding.
+	(int128_to_field): Likewise.
+	(__gg__dirty_to_float): Likewise.
+	(format_for_display_internal): Likewise.
+	(get_float128): Likewise.
+	(compare_field_class): Likewise.
+	(__gg__compare_2): Likewise.
+	(init_var_both): Likewise.
+	(__gg__move): Likewise.
+	(display_both): Likewise.
+	(is_numeric_display_numeric): Likewise.
+	(accept_envar): Likewise.
+	(__gg__get_argv): Likewise.
+	(__gg__unstring): Likewise.
+	(__gg__check_fatal_exception): Likewise.
+	(__gg__adjust_encoding): Likewise.
+	(__gg__func_exception_location): Likewise.
+	(__gg__func_exception_statement): Likewise.
+	(__gg__func_exception_status): Likewise.
+	(__gg__func_exception_file): Likewise.
+	(__gg__just_mangle_name): Likewise.
+	(__gg__function_handle_from_name): Likewise.
+	(get_the_byte): Likewise.
+	(__gg__module_name): Likewise.
+	(__gg__accept_arg_value): Likewise.
+	* xmlparse.cc (fatalError): Formatting.
+	(setDocumentLocator): Formatting.
+	(xmlchar_of): Formatting.
+	(xmlParserErrors_str): Formatting.
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

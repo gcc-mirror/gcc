@@ -1,3 +1,24 @@
+2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* trans-array.cc (get_copy_helper_function_type): New function to
+	create function type for element copy helpers.
+	(get_copy_helper_pointer_type): New function to create pointer type
+	for element copy helpers.
+	(generate_element_copy_wrapper): New function to generate runtime
+	helper for element-wise deep copying of recursive types.
+	(structure_alloc_comps): Detect recursive allocatable array
+	components and use runtime helper instead of inline recursion.
+	Add includes for cgraph.h and function.h.
+	* trans-decl.cc (gfor_fndecl_cfi_deep_copy_array): New declaration
+	for runtime deep copy helper.
+	(gfc_build_builtin_function_decls): Initialize the runtime helper
+	declaration.
+	* trans-intrinsic.cc (conv_intrinsic_atomic_op): Enhance handling of
+	constant values in coarray atomic operations by detecting and
+	materializing address-of-constant expressions.
+	* trans.h (gfor_fndecl_cfi_deep_copy_array): Add external declaration.
+
 2025-11-05  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/122566
