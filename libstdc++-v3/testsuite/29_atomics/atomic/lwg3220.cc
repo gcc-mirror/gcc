@@ -1,4 +1,4 @@
-// { dg-options "-Wno-deprecated" }
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-do compile { target c++11 } }
 
 // std::shared_ptr is not freestanding.

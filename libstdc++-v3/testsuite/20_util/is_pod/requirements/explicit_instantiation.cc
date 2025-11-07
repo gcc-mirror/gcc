@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-// { dg-additional-options "-Wno-deprecated" { target { c++2a } } }
+// { dg-additional-options "-Wno-deprecated-declarations" { target { c++2a } } }
 // 2010-02-21  Paolo Carlini  <paolo.carlini@oracle.com>
 
 // Copyright (C) 2010-2025 Free Software Foundation, Inc.

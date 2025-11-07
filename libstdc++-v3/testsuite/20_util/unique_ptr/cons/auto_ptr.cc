@@ -1,4 +1,4 @@
-// { dg-options "-Wno-deprecated" }
+// { dg-options "-Wno-deprecated-declarations" }
 // { dg-add-options using-deprecated }
 // { dg-do run { target c++11 } }
 
