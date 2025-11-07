@@ -252,7 +252,7 @@ gimple_ranger::range_on_edge (vrange &r, edge e, tree name)
 
   bool res = true;
   if (!gimple_range_ssa_p (name))
-    res = get_tree_range (r, name, NULL);
+    res = get_tree_range (r, name, NULL, NULL, NULL, e);
   else
     {
       range_on_exit (r, e->src, name);
@@ -783,7 +783,7 @@ bool
 dom_ranger::range_on_edge (vrange &r, edge e, tree expr)
 {
   if (!gimple_range_ssa_p (expr))
-    return get_tree_range (r, expr, NULL);
+    return get_tree_range (r, expr, NULL, NULL, NULL, e);
 
   basic_block bb = e->src;
   unsigned idx;
