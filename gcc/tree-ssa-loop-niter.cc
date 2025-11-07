@@ -3085,6 +3085,15 @@ simplify_using_initial_conditions (class loop *loop, tree expr)
   if (TREE_CODE (expr) == INTEGER_CST)
     return expr;
 
+  value_range expr_range (TREE_TYPE (expr));
+  if (TREE_TYPE (expr) == boolean_type_node
+      && get_range_query (cfun)->range_on_edge (expr_range,
+						loop_preheader_edge (loop),
+						expr)
+      && !expr_range.undefined_p ()
+      && !expr_range.varying_p ())
+    return expr_range.nonzero_p () ? boolean_true_node : boolean_false_node;
+
   backup = expanded = expand_simple_operations (expr);
 
   /* Limit walking the dominators to avoid quadraticness in
