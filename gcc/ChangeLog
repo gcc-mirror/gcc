@@ -1,3 +1,12 @@
+2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122516
+	* config/avr/elf.h (SUPPORTS_SHF_GNU_RETAIN): Define if
+	HAVE_GAS_SHF_GNU_RETAIN.
+
 2025-10-31  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
