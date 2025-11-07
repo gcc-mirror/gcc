@@ -4630,6 +4630,10 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
   tree offset_vectype = VECTOR_TYPE_P (offset_type)
     ? offset_type : get_vectype_for_scalar_type (vinfo, offset_type);
 
+  /* If there is no offset vectype, bail.  */
+  if (!offset_vectype)
+    return false;
+
   offset_type = TREE_TYPE (offset_vectype);
 
   /* Get all supported configurations for this data vector type.  */
