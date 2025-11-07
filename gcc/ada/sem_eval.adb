@@ -6837,6 +6837,15 @@ package body Sem_Eval is
          then
             return True;
 
+         --  Handle class-wide subtypes, which never have discriminants, while
+         --  class-wide types may have them (but they are always unknown).
+
+         elsif Ekind (T2) = E_Class_Wide_Subtype and then Etype (T2) = T1 then
+            return True;
+
+         elsif Ekind (T1) = E_Class_Wide_Subtype and then Etype (T1) = T2 then
+            return True;
+
          --  Because of view exchanges in multiple instantiations, conformance
          --  checking might try to match a partial view of a type with no
          --  discriminants with a full view that has defaulted discriminants.
