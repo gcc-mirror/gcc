@@ -83,6 +83,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "internal-fn.h"
 #include "tree-ssa-sccvn.h"
 #include "tree-into-ssa.h"
+#include "gimple-range.h"
 
 /* Loop or bb location, with hotness information.  */
 dump_user_location_t vect_location;
@@ -1279,6 +1280,7 @@ pass_vectorize::execute (function *fun)
     note_simd_array_uses (&simd_array_to_simduid_htab, fun);
 
   /*  ----------- Analyze loops. -----------  */
+  enable_ranger (fun);
 
   /* If some loop was duplicated, it gets bigger number
      than all previously defined loops.  This fact allows us to run
@@ -1341,6 +1343,7 @@ pass_vectorize::execute (function *fun)
                      num_vectorized_loops);
 
   /*  ----------- Finalize. -----------  */
+  disable_ranger (fun);
 
   if (any_ifcvt_loops)
     for (i = 1; i < number_of_loops (fun); i++)
