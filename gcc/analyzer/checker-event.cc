@@ -361,7 +361,8 @@ region_creation_event_allocation_size::print_desc (pretty_printer &pp) const
 		   "allocated %qE bytes here",
 		   m_capacity);
     }
-  pp_printf (&pp, "allocated here");
+  else
+    pp_printf (&pp, "allocated here");
 }
 
 void
