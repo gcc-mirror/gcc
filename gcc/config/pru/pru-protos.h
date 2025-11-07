@@ -72,6 +72,8 @@ extern int pru_get_ctable_base_offset (HOST_WIDE_INT caddr);
 
 extern int pru_symref2ioregno (rtx op);
 
+extern rtx pru_fixup_jump_address_operand (rtx op);
+
 /* Forward declarations to avoid unnecessarily including headers.  */
 class simple_ipa_opt_pass;
 class gimple_opt_pass;

@@ -1534,6 +1534,23 @@ int pru_symref2ioregno (rtx op)
     return -1;
 }
 
+/* TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS has no arguments to help discern
+   which insn is using the address.  But PRU load/store instructions support
+   offsets, while call instructions do not.
+   So call this when expanding call patterns to revert the effect of
+   TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS.  */
+rtx
+pru_fixup_jump_address_operand (rtx op)
+{
+  if (MEM_P (op)
+      && GET_CODE (XEXP (op, 0)) == PLUS)
+    {
+      rtx tmpval = force_reg (SImode, XEXP (op, 0));
+      op = gen_rtx_MEM (SImode, tmpval);
+    }
+  return op;
+}
+
 /* Implement TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P.  */
 static bool
 pru_addr_space_legitimate_address_p (machine_mode mode, rtx operand,
@@ -1581,6 +1598,29 @@ pru_addr_space_legitimate_address_p (machine_mode mode, rtx operand,
       break;
     }
   return false;
+}
+
+/* Implement TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS.  */
+rtx
+pru_addr_space_legitimize_address (rtx x, rtx, machine_mode, addr_space_t)
+{
+  if (CONST_INT_P (x) && optimize > 0)
+    {
+      HOST_WIDE_INT mask, base, index;
+      rtx base_reg;
+
+      /* Load/store with UBYTE offset is practically free for PRU.
+	 If there two or more operations with addresses in the same UBYTE
+	 address range, they all will share the base constant load operation.
+	 Clearing the lower 8 bits is a good heuristic to
+	 choose a common constant base address.  */
+      mask = 0xff;
+      base = INTVAL (x) & ~mask;
+      index = INTVAL (x) & mask;
+      base_reg = force_reg (SImode, GEN_INT (base));
+      x = plus_constant (Pmode, base_reg, index);
+    }
+  return x;
 }
 
 /* Output assembly language related definitions.  */
@@ -3245,6 +3285,10 @@ pru_unwind_word_mode (void)
 #undef TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P
 #define TARGET_ADDR_SPACE_LEGITIMATE_ADDRESS_P \
   pru_addr_space_legitimate_address_p
+
+#undef TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS
+#define TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS \
+  pru_addr_space_legitimize_address
 
 #undef TARGET_INIT_LIBFUNCS
 #define TARGET_INIT_LIBFUNCS pru_init_libfuncs

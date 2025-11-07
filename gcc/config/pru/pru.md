@@ -1289,7 +1289,9 @@
 		    (match_operand 1 ""))
 	      (clobber (reg:HI RA_REGNUM))])]
   ""
-  "")
+{
+  operands[0] = pru_fixup_jump_address_operand (operands[0]);
+})
 
 (define_expand "call_value"
   [(parallel [(set (match_operand 0 "")
@@ -1297,7 +1299,9 @@
 			 (match_operand 2 "")))
 	      (clobber (reg:HI RA_REGNUM))])]
   ""
-  "")
+{
+  operands[1] = pru_fixup_jump_address_operand (operands[1]);
+})
 
 (define_insn "*call"
   [(call (mem:SI (match_operand:SI 0 "call_operand" "i,r"))
@@ -1325,7 +1329,9 @@
 		    (match_operand 1 ""))
 	      (return)])]
   ""
-  "")
+{
+  operands[0] = pru_fixup_jump_address_operand (operands[0]);
+})
 
 (define_expand "sibcall_value"
   [(parallel [(set (match_operand 0 "")
@@ -1333,7 +1339,9 @@
 			 (match_operand 2 "")))
 	      (return)])]
   ""
-  "")
+{
+  operands[1] = pru_fixup_jump_address_operand (operands[1]);
+})
 
 (define_insn "*sibcall"
  [(call (mem:SI (match_operand:SI 0 "call_operand" "i,Rsib"))
