@@ -923,6 +923,10 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
   unsigned HOST_WIDE_INT hwi_length = UINTVAL (length);
   unsigned HOST_WIDE_INT factor, align;
 
+  if (riscv_memcpy_size_threshold >= 0
+      && hwi_length > riscv_memcpy_size_threshold)
+    return false;
+
   if (riscv_slow_unaligned_access_p)
     {
       align = MIN (MIN (MEM_ALIGN (src), MEM_ALIGN (dest)), BITS_PER_WORD);
@@ -1231,6 +1235,21 @@ expand_block_move (rtx dst_in, rtx src_in, rtx length_in, bool movmem_p)
        / BITS_PER_UNIT);
 
   if (!use_vector_stringop_p (info, potential_ew, length_in))
+    return false;
+
+  if (CONST_INT_P (length_in))
+    {
+      HOST_WIDE_INT length = INTVAL (length_in);
+      if (movmem_p
+	  && riscv_memmove_size_threshold >= 0
+	  && length > riscv_memmove_size_threshold)
+	return false;
+      else if (!movmem_p
+	       && riscv_memmove_size_threshold >= 0
+	       && length > riscv_memcpy_size_threshold)
+	return false;
+    }
+  else
     return false;
 
   /* Inlining general memmove is a pessimisation: we can't avoid having to
@@ -1613,6 +1632,16 @@ expand_vec_setmem (rtx dst_in, rtx length_in, rtx fill_value_in)
   /* Check we are able and allowed to vectorise this operation;
      bail if not.  */
   if (!use_vector_stringop_p (info, 1, length_in) || info.need_loop)
+    return false;
+
+  if (CONST_INT_P (length_in))
+    {
+      HOST_WIDE_INT length = INTVAL (length_in);
+      if (riscv_memset_size_threshold >= 0
+	  && length > riscv_memset_size_threshold)
+	return false;
+    }
+  else
     return false;
 
   rtx dst_addr = copy_addr_to_reg (XEXP (dst_in, 0));

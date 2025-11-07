@@ -361,6 +361,18 @@ mstringop-strategy=
 Target RejectNegative Joined Enum(stringop_strategy) Var(stringop_strategy) Init(STRATEGY_AUTO)
 Specify stringop expansion strategy.
 
+-param=memcpy-size-threshold=
+Target Joined UInteger Var(riscv_memcpy_size_threshold) Init(-1) Param
+Constant memcpy size in bytes above which to start using libcalls over inlining.
+
+-param=memmove-size-threshold=
+Target Joined UInteger Var(riscv_memmove_size_threshold) Init(-1) Param
+Constant memmove size in bytes above which to start using libcalls over inlining.
+
+-param=memset-size-threshold=
+Target Joined UInteger Var(riscv_memset_size_threshold) Init(-1) Param
+Constant memset size in bytes above which to start using libcalls over inlining.
+
 Enum
 Name(rvv_vector_bits) Type(enum rvv_vector_bits_enum)
 The possible RVV vector register lengths:
