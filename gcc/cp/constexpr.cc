@@ -11414,6 +11414,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
   if (t == NULL_TREE)
     return true;
   location_t loc = cp_expr_loc_or_input_loc (t);
+  iloc_sentinel ils = loc;
 
   if (*jump_target)
     /* If we are jumping, ignore everything.  This is simpler than the
@@ -11737,10 +11738,7 @@ potential_constant_expression_1 (tree t, bool want_rval, bool strict, bool now,
       {
         tree from = TREE_OPERAND (t, 0);
 	if (location_wrapper_p (t))
-	  {
-	    iloc_sentinel ils = loc;
-	    return (RECUR (from, want_rval));
-	  }
+	  return (RECUR (from, want_rval));
 	if (INDIRECT_TYPE_P (TREE_TYPE (t)))
 	  {
 	    STRIP_ANY_LOCATION_WRAPPER (from);

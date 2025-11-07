@@ -20467,13 +20467,18 @@ finish_function (bool inline_p)
 	  || is_valid_constexpr_fn (fndecl, /*complain*/false))
 	 && potential_constant_expression (DECL_SAVED_TREE (fndecl)));
 
-  /* Save constexpr function body before it gets munged by
-     the NRV transformation.   */
-  maybe_save_constexpr_fundef (fndecl);
-
   /* Invoke the pre-genericize plugin before we start munging things.  */
   if (!processing_template_decl)
     invoke_plugin_callbacks (PLUGIN_PRE_GENERICIZE, fndecl);
+
+  /* Fold away non-ODR usages of constants so that we don't need to
+     try and stream them in modules if they're internal.  */
+  if (!processing_template_decl)
+    cp_fold_function_non_odr_use (fndecl);
+
+  /* Save constexpr function body before it gets munged by
+     the NRV transformation.   */
+  maybe_save_constexpr_fundef (fndecl);
 
   /* Perform delayed folding before NRV transformation.  */
   if (!processing_template_decl

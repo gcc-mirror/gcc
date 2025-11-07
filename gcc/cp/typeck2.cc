@@ -1589,6 +1589,11 @@ digest_nsdmi_init (tree decl, tree init, tsubst_flags_t complain)
       && CP_AGGREGATE_TYPE_P (type))
     init = reshape_init (type, init, complain);
   init = digest_init_flags (type, init, flags, complain);
+
+  /* Fold away any non-ODR used constants so that we don't need to
+     stream them in modules.  */
+  init = cp_fold_non_odr_use (init, /*rval=*/!TYPE_REF_P (type));
+
   set_target_expr_eliding (init);
 
   /* We may have temporary materialization in a NSDMI, if the initializer

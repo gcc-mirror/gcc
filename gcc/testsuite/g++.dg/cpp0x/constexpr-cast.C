@@ -7,18 +7,18 @@ int i;
 // The following was accepted due to bug 49171.
 constexpr void *q = reinterpret_cast<void*>(&i);    // { dg-error "not a constant expression" }
 
-constexpr void *r0 = reinterpret_cast<void*>(1);    // { dg-error "not a constant expression|'reinterpret_cast' from integer to pointer" }
+constexpr void *r0 = reinterpret_cast<void*>(1);    // { dg-error "'reinterpret_cast' from integer to pointer" }
 constexpr void *r1 = reinterpret_cast<void*>(sizeof 'x');  // { dg-error "'reinterpret_cast<void\\*>\\(1\[ul\]\*\\)' is not a constant expression" }
 
 template <class T>
 constexpr bool f ()
 {
 #if __cplusplus > 201103L
-  T *p = reinterpret_cast<T*>(sizeof (T));  // { dg-error "not a constant expression" "" { target c++14 } }
+  T *p = reinterpret_cast<T*>(sizeof (T));  // { dg-error "'reinterpret_cast' from integer to pointer" "" { target c++14 } }
   return p;
 #else
-  return *reinterpret_cast<T*>(sizeof (T));  // { dg-error "not a constant expression" "" { target c++11_only } }
+  return *reinterpret_cast<T*>(sizeof (T));  // { dg-error "'reinterpret_cast' from integer to pointer" "" { target c++11_only } }
 #endif
 }
 
-constexpr bool b = f<int>();   // { dg-message "in .constexpr. expansion of " }
+constexpr bool b = f<int>();   // { dg-message "called in a constant expression" }

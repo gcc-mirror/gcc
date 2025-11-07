@@ -3281,6 +3281,7 @@ bot_manip (tree* tp, int* walk_subtrees, void* data_)
       TARGET_EXPR_LIST_INIT_P (u) = TARGET_EXPR_LIST_INIT_P (t);
       TARGET_EXPR_DIRECT_INIT_P (u) = TARGET_EXPR_DIRECT_INIT_P (t);
       TARGET_EXPR_ELIDING_P (u) = TARGET_EXPR_ELIDING_P (t);
+      TREE_CONSTANT (u) = TREE_CONSTANT (t);
 
       /* Map the old variable to the new one.  */
       splay_tree_insert (target_remap,

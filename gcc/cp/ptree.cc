@@ -410,6 +410,15 @@ cxx_print_xnode (FILE *file, tree node, int indent)
     case PTRMEM_CST:
       print_node (file, "member", PTRMEM_CST_MEMBER (node), indent+4);
       break;
+    case TU_LOCAL_ENTITY:
+      print_node (file, "name", TU_LOCAL_ENTITY_NAME (node), indent+4);
+      if (location_t loc = TU_LOCAL_ENTITY_LOCATION (node))
+	{
+	  expanded_location xloc = expand_location (loc);
+	  indent_to (file, indent+4);
+	  fprintf (file, "%s:%d:%d", xloc.file, xloc.line, xloc.column);
+	}
+      break;
     default:
       break;
     }
