@@ -358,7 +358,9 @@ can_conditionally_move_p (machine_mode mode)
 opt_machine_mode
 qimode_for_vec_perm (machine_mode mode)
 {
-  if (GET_MODE_INNER (mode) != QImode)
+  if (GET_MODE_INNER (mode) != QImode
+      && multiple_p (GET_MODE_PRECISION (GET_MODE_INNER (mode)),
+		     GET_MODE_PRECISION (QImode)))
     return related_vector_mode (mode, QImode, GET_MODE_SIZE (mode));
   return opt_machine_mode ();
 }
