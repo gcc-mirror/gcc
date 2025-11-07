@@ -3947,11 +3947,15 @@ final_value_replacement_loop (class loop *loop)
 	 GENERIC interface).  */
       def = unshare_expr (def);
       auto loc = gimple_phi_arg_location (phi, exit->dest_idx);
-      remove_phi_node (&psi, false);
 
       /* Create the replacement statements.  */
       gimple_seq stmts;
       def = force_gimple_operand (def, &stmts, false, NULL_TREE);
+
+      /* Remove the old phi after the gimplification to make sure the
+	 SSA name is defined by a statement so that fold_stmt during
+	 the gimplification does not crash. */
+      remove_phi_node (&psi, false);
       gassign *ass = gimple_build_assign (rslt, def);
       gimple_set_location (ass, loc);
       gimple_seq_add_stmt (&stmts, ass);
