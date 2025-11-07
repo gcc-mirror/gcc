@@ -10,6 +10,26 @@
 
 #include <testsuite_hooks.h>
 
+struct NonMovable
+{
+  constexpr NonMovable() {}
+  constexpr NonMovable(int) {}
+
+  NonMovable(NonMovable&&) = delete;
+  NonMovable& operator=(NonMovable&&) = delete;
+
+  friend bool operator==(NonMovable const&, NonMovable const&) = default;
+};
+
+struct NonAssignable
+{
+  NonAssignable() = default;
+  NonAssignable(NonAssignable&&) = default;
+  NonAssignable& operator=(NonAssignable&&) = delete;
+  
+  friend bool operator==(NonAssignable const&, NonAssignable const&) = default;
+};
+
 template<typename T>
 constexpr
 void
@@ -24,10 +44,11 @@ test_range_concepts()
   constexpr bool is_ref_opt = std::is_reference_v<T>;
   static_assert(std::ranges::borrowed_range<O> == is_ref_opt);
 
-  // an optional<const T> is not assignable, and therefore does not satisfy ranges::view
-  constexpr bool is_const_opt = std::is_const_v<T>;
-  static_assert(std::ranges::view<O> == !is_const_opt);
-  static_assert(std::ranges::viewable_range<O> == !is_const_opt);
+  // for any T (including const U) such that optional<T> is not assignable,
+  // it does not satisfy ranges::view
+  constexpr bool is_opt_view = std::is_reference_v<T> || std::movable<T>;
+  static_assert(std::ranges::view<O> == is_opt_view);
+  static_assert(std::ranges::viewable_range<O> == is_opt_view);
 
 }
 
@@ -108,7 +129,7 @@ test_non_empty(const T& value)
     ++count;
   VERIFY(count == 1);
 
-  if constexpr (!std::is_const_v<V> && !std::is_array_v<V>) {
+  if constexpr (std::is_move_assignable_v<V>) {
     for (auto& x : non_empty)
       x = V{};
     VERIFY(non_empty);
@@ -168,6 +189,99 @@ constexpr void test_not_range()
   static_assert(!requires(std::optional<T> o) { o.end(); });
 };
 
+template<typename T>
+constexpr bool is_optional = false;
+
+template<typename T>
+constexpr bool is_optional<std::optional<T>> = true;
+
+template<bool usesOptional, typename T, typename U = std::remove_cv_t<T>>
+constexpr void test_as_const(std::type_identity_t<U> u)
+{
+  std::optional<T> o(std::in_place, std::forward<U>(u));
+  auto cv = std::views::as_const(o);
+  static_assert(is_optional<decltype(cv)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*cv.begin()), const std::remove_reference_t<T>&>);
+  VERIFY(!std::ranges::empty(cv));
+      
+  std::optional<T> e;
+  auto cve = std::views::as_const(e);
+  static_assert(is_optional<decltype(cve)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*cve.begin()), const std::remove_reference_t<T>&>);
+  VERIFY(std::ranges::empty(cve));
+}
+
+template<bool usesOptional, typename T, typename U = std::remove_cv_t<T>>
+constexpr void
+test_reverse(std::type_identity_t<U> u)
+{
+  std::optional<T> o(std::in_place, std::forward<U>(u));
+  auto rv = std::views::reverse(o);
+  static_assert(is_optional<decltype(rv)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*rv.begin()), T&>);
+  VERIFY(!std::ranges::empty(rv));
+      
+  std::optional<T> e;
+  auto rve = std::views::reverse(e);
+  static_assert(is_optional<decltype(rve)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*rve.begin()), T&>);
+  VERIFY(std::ranges::empty(rve));
+}
+
+template<bool usesOptional, typename T, typename U = std::remove_cv_t<T>>
+constexpr void
+test_take(std::type_identity_t<U> u)
+{
+  std::optional<T> o(std::in_place, std::forward<U>(u));
+  auto tvp = std::views::take(o, 3);
+  static_assert(is_optional<decltype(tvp)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*tvp.begin()), T&>);
+  VERIFY(!std::ranges::empty(tvp));
+
+  auto tvz = std::views::take(o, 0);
+  static_assert(is_optional<decltype(tvz)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*tvz.begin()), T&>);
+  VERIFY(std::ranges::empty(tvz));
+
+  std::optional<T> e;
+  auto tvep = std::views::take(e, 5);
+  static_assert(is_optional<decltype(tvep)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*tvep.begin()), T&>);
+  VERIFY(std::ranges::empty(tvep));
+
+  auto tvez = std::views::take(e, 0);
+  static_assert(is_optional<decltype(tvez)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*tvez.begin()), T&>);
+  VERIFY(std::ranges::empty(tvez));
+}
+
+template<bool usesOptional, typename T, typename U = std::remove_cv_t<T>>
+constexpr void
+test_drop(std::type_identity_t<U> u)
+{
+  std::optional<T> o(std::in_place, std::forward<U>(u));
+  auto dvp = std::views::drop(o, 3);
+  static_assert(is_optional<decltype(dvp)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*dvp.begin()), T&>);
+  VERIFY(std::ranges::empty(dvp));
+
+  auto dvz = std::views::drop(o, 0);
+  static_assert(is_optional<decltype(dvz)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*dvz.begin()), T&>);
+  VERIFY(!std::ranges::empty(dvz));
+
+  std::optional<T> e;
+  auto dvep = std::views::drop(e, 5);
+  static_assert(is_optional<decltype(dvep)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*dvep.begin()), T&>);
+  VERIFY(std::ranges::empty(dvep));
+
+  auto dvez = std::views::drop(e, 0);
+  static_assert(is_optional<decltype(dvez)> == usesOptional);
+  static_assert(std::is_same_v<decltype(*dvez.begin()), T&>);
+  VERIFY(std::ranges::empty(dvez));
+}
+
 constexpr
 bool
 all_tests()
@@ -175,6 +289,8 @@ all_tests()
   test(42);
   int i = 42;
   int arr[10]{};
+  NonMovable nm;
+  NonAssignable na;
   test(&i);
   test(std::string_view("test"));
   test(std::vector<int>{1, 2, 3, 4});
@@ -185,6 +301,10 @@ all_tests()
   test<const int&>(i);
   test<int(&)[10]>(arr);
   test<const int(&)[10]>(arr);
+  test<NonMovable&>(nm);
+  test<const NonMovable&>(nm);
+  test<NonAssignable&>(na);
+  test<const NonAssignable&>(na);
   test_not_range<void(&)()>();
   test_not_range<void(&)(int)>();
   test_not_range<int(&)[]>();
@@ -192,6 +312,37 @@ all_tests()
 
   range_chain_example();
 
+  test_as_const<false, int>(i);
+  test_as_const<false, const int>(i);
+  test_as_const<true, int&>(i);
+  test_as_const<true, const int&>(i);
+  test_as_const<false, NonMovable, int>(10);
+  test_as_const<false, const NonMovable, int>(10);
+  test_as_const<true, NonMovable&>(nm);
+  test_as_const<true, const NonMovable&>(nm);
+  test_as_const<false, NonAssignable>({});
+  test_as_const<false, const NonAssignable>({});
+  test_as_const<true, NonAssignable&>(na);
+  test_as_const<true, const NonAssignable&>(na);
+
+#define TEST_ADAPTOR(name) \
+  test_##name<true, int>(i); \
+  test_##name<false, const int>(i); \
+  test_##name<true, int&>(i); \
+  test_##name<true, const int&>(i); \
+  test_##name<false, NonMovable, int>(10); \
+  test_##name<false, const NonMovable, int>(10); \
+  test_##name<true, NonMovable&>(nm); \
+  test_##name<true, const NonMovable&>(nm); \
+  test_##name<false, NonAssignable>({}); \
+  test_##name<false, const NonAssignable>({}); \
+  test_##name<true, NonAssignable&>(na); \
+  test_##name<true, const NonAssignable&>(na)
+
+  TEST_ADAPTOR(reverse);
+  TEST_ADAPTOR(take);
+  TEST_ADAPTOR(drop);
+#undef TEST_ADAPTOR
   return true;
 }
 

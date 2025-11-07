@@ -2403,6 +2403,10 @@ namespace views::__adaptor
 	  using _Tp = remove_cvref_t<_Range>;
 	  if constexpr (__detail::__is_empty_view<_Tp>)
 	    return _Tp();
+#ifdef __cpp_lib_optional_range_support // >= C++26
+	  else if constexpr (__is_optional_v<_Tp> && view<_Tp>)
+	    return __n ? std::forward<_Range>(__r) : _Tp();
+#endif
 	  else if constexpr (random_access_range<_Tp>
 			     && sized_range<_Tp>
 			     && (std::__detail::__is_span<_Tp>
@@ -2679,6 +2683,10 @@ namespace views::__adaptor
 	  using _Tp = remove_cvref_t<_Range>;
 	  if constexpr (__detail::__is_empty_view<_Tp>)
 	    return _Tp();
+#ifdef __cpp_lib_optional_range_support // >= C++26
+	  else if constexpr (__is_optional_v<_Tp> && view<_Tp>)
+	    return __n ? _Tp() : std::forward<_Range>(__r);
+#endif
 	  else if constexpr (random_access_range<_Tp>
 			     && sized_range<_Tp>
 			     && (std::__detail::__is_span<_Tp>
@@ -4156,6 +4164,10 @@ namespace views::__adaptor
 	  using _Tp = remove_cvref_t<_Range>;
 	  if constexpr (__detail::__is_reverse_view<_Tp>)
 	    return std::forward<_Range>(__r).base();
+#ifdef __cpp_lib_optional_range_support // >= C++26
+	  else if constexpr (__is_optional_v<_Tp> && view<_Tp>)
+	    return std::forward<_Range>(__r);
+#endif
 	  else if constexpr (__detail::__is_reversible_subrange<_Tp>)
 	    {
 	      using _Iter = decltype(ranges::begin(__r).base());
@@ -9312,6 +9324,10 @@ namespace views::__adaptor
 	  return views::all(std::forward<_Range>(__r));
 	else if constexpr (__detail::__is_empty_view<_Tp>)
 	  return views::empty<const element_type>;
+#if __cpp_lib_optional >= 202506L && __cpp_lib_optional_range_support // >= C++26
+	else if constexpr (__is_optional_ref_v<_Tp>)
+	  return optional<const typename _Tp::value_type&>(__r);
+#endif
 	else if constexpr (std::__detail::__is_span<_Tp>)
 	  return span<const element_type, _Tp::extent>(std::forward<_Range>(__r));
 	else if constexpr (__detail::__is_constable_ref_view<_Tp>)

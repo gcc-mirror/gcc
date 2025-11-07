@@ -1487,6 +1487,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     class optional<_Tp&>;
 
   template<typename _Tp>
+    constexpr bool __is_optional_ref_v = false;
+
+  template<typename _Tp>
+    constexpr bool __is_optional_ref_v<optional<_Tp&>> = true;
+
+  template<typename _Tp>
     struct __optional_ref_base
     {};
 
@@ -2187,7 +2193,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr bool
     ranges::enable_borrowed_range<optional<_Tp&>> = true;
 #endif
- 
+
   template<typename _Tp>
     inline constexpr range_format
       format_kind<optional<_Tp>> = range_format::disabled;
