@@ -1,3 +1,23 @@
+2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	PR target/122516
+	* config/avr/elf.h (SUPPORTS_SHF_GNU_RETAIN): Define if
+	HAVE_GAS_SHF_GNU_RETAIN.
+
+2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_output_addr_vec): Output
+	a valid opcode prior to the first gs() label provided:
+	- The code is compiled for an arch that has AVR-SD mcus, and
+	- the function has a "section" attribute, and
+	- the function has a gs() label addresses switch/case table.
+
 2025-11-03  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
