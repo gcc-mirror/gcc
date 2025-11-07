@@ -5732,7 +5732,7 @@ package body Sem_Ch6 is
             declare
                D : constant Entity_Id := Directly_Designated_Type (Etype (F1));
                Partial_View_Of_Desig : constant Entity_Id :=
-                 Incomplete_Or_Partial_View (D);
+                 Incomplete_Or_Partial_View (D, Partial_Only => True);
             begin
                return No (Partial_View_Of_Desig)
                  or else Is_Tagged_Type (Partial_View_Of_Desig)

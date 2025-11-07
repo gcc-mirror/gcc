@@ -1751,9 +1751,11 @@ package Sem_Util is
    --  package specification. The package must be on the scope stack, and the
    --  corresponding private part must not.
 
-   function Incomplete_Or_Partial_View (Id : Entity_Id) return Entity_Id;
+   function Incomplete_Or_Partial_View
+     (Id : Entity_Id; Partial_Only : Boolean := False) return Entity_Id;
    --  Given the entity of a constant or a type, retrieve the incomplete or
-   --  partial view of the same entity. Note that Id may not have a partial
+   --  partial view of the same entity. If Partial_Only is True, retrieve
+   --  only the partial view of a type. Note that Id may not have a partial
    --  view in which case the function returns Empty.
 
    function Incomplete_View_From_Limited_With
