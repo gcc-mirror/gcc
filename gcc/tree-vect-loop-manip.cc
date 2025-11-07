@@ -2776,7 +2776,14 @@ vect_gen_scalar_loop_niters (tree niters_prolog, int int_niters_prolog,
 
    In both cases, store niters_vector in *NITERS_VECTOR_PTR and add
    any new statements on the loop preheader edge.  NITERS_NO_OVERFLOW
-   is true if NITERS doesn't overflow (i.e. if NITERS is always nonzero).  */
+   is true if NITERS doesn't overflow (i.e. if NITERS is always nonzero).
+
+   Case (a) is used for LOOP_VINFO_USING_PARTIAL_VECTORS_P or if VF is
+   variable.  As stated above, NITERS_VECTOR then equals the number
+   of scalar iterations and vect_set_loop_condition will handle the
+   step.  As opposed to (b) we don't know anything about NITER_VECTOR's
+   range here.
+*/
 
 void
 vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
@@ -2850,29 +2857,18 @@ vect_gen_vector_loop_niters (loop_vec_info loop_vinfo, tree niters,
 	 we set range information to make niters analyzer's life easier.
 	 Note the number of latch iteration value can be TYPE_MAX_VALUE so
 	 we have to represent the vector niter TYPE_MAX_VALUE + 1 / vf.  */
-      if (stmts != NULL && const_vf > 0 && !LOOP_VINFO_EPILOGUE_P (loop_vinfo))
+      if (stmts != NULL
+	  && integer_onep (step_vector))
 	{
-	  if (niters_no_overflow
-	      && LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-	    {
-	      int_range<1> vr (type,
-			       wi::one (TYPE_PRECISION (type)),
-			       wi::div_ceil (wi::max_value
-							(TYPE_PRECISION (type),
-							 TYPE_SIGN (type)),
-					     const_vf,
-					     TYPE_SIGN (type)));
-	      set_range_info (niters_vector, vr);
-	    }
-	  else if (niters_no_overflow)
+	  if (niters_no_overflow)
 	    {
 	      int_range<1> vr (type,
 			       wi::one (TYPE_PRECISION (type)),
 			       wi::div_trunc (wi::max_value
-							(TYPE_PRECISION (type),
-							 TYPE_SIGN (type)),
-					   const_vf,
-					   TYPE_SIGN (type)));
+					      (TYPE_PRECISION (type),
+					       TYPE_SIGN (type)),
+					      const_vf,
+					      TYPE_SIGN (type)));
 	      set_range_info (niters_vector, vr);
 	    }
 	  /* For VF == 1 the vector IV might also overflow so we cannot
