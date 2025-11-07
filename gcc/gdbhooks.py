@@ -389,6 +389,32 @@ class CfgEdgePrinter:
         return result
 
 ######################################################################
+# Pretty-printers for -fanalyzer (namespace ana)
+######################################################################
+
+class AnaSupernodePrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        result = '<ana::supernode 0x%x' % intptr(self.gdbval)
+        if intptr(self.gdbval):
+            result += ' (SN %i)' % intptr(self.gdbval['m_index'])
+        result += '>'
+        return result
+
+class AnaExplodedNodePrinter:
+    def __init__(self, gdbval):
+        self.gdbval = gdbval
+
+    def to_string (self):
+        result = '<ana::exploded_node 0x%x' % intptr(self.gdbval)
+        if intptr(self.gdbval):
+            result += ' (EN %i)' % intptr(self.gdbval['m_index'])
+        result += '>'
+        return result
+
+######################################################################
 
 class Rtx:
     def __init__(self, gdbval):
@@ -625,6 +651,13 @@ def build_pretty_printer():
     pp.add_printer_for_types(['basic_block', 'basic_block_def *'],
                              'basic_block',
                              BasicBlockPrinter)
+    pp.add_printer_for_types(['ana::supernode *', 'const ana::supernode *'],
+                             'ana::supernode',
+                             AnaSupernodePrinter)
+    pp.add_printer_for_types(['ana::exploded_node *',
+                              'dedge<ana::eg_traits>::node_t *'],
+                             'ana::exploded_node',
+                             AnaExplodedNodePrinter)
     pp.add_printer_for_types(['edge', 'edge_def *'],
                              'edge',
                              CfgEdgePrinter)
