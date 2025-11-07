@@ -4882,25 +4882,38 @@ package body Sem_Ch12 is
       -------------------------------
 
       function Needs_Body_Instantiated (Gen_Unit : Entity_Id) return Boolean is
+         S : constant Entity_Id := Scope (Gen_Unit);
+
       begin
+         --  If the generic package being instantiated is declared within
+         --  a formal package, and we are in the context of the enclosing
+         --  generic unit of the formal package, then there is no body to
+         --  instantiate until the enclosing generic unit is instantiated
+         --  with an actual for the formal package.
+
+         if Is_Generic_Instance (S)
+           and then
+             Nkind (Original_Node (Unit_Declaration_Node (S))) =
+               N_Formal_Package_Declaration
+           and then In_Open_Scopes (Scope (S))
+         then
+            return False;
+
          --  If the instantiation is in the auxiliary declarations of the main
          --  unit, then the body is needed, even if the main unit is generic.
 
-         if Parent (N) = Aux_Decls_Node (Cunit (Main_Unit)) then
+         elsif Parent (N) = Aux_Decls_Node (Cunit (Main_Unit)) then
             return True;
-         end if;
 
          --  No need to instantiate bodies in generic units
 
-         if Is_Generic_Unit (Cunit_Entity (Main_Unit)) then
+         elsif Is_Generic_Unit (Cunit_Entity (Main_Unit)) then
             return False;
-         end if;
 
          --  If the instantiation is in the main unit, then the body is needed
 
-         if Is_In_Main_Unit (N) then
+         elsif Is_In_Main_Unit (N) then
             return True;
-         end if;
 
          --  In GNATprove mode, never instantiate bodies outside of the main
          --  unit, as it does not use frontend/backend inlining in the way that
@@ -4908,15 +4921,13 @@ package body Sem_Ch12 is
          --  contrary, such instantiations may bring artificial constraints,
          --  as for example such bodies may require preprocessing.
 
-         if GNATprove_Mode then
+         elsif GNATprove_Mode then
             return False;
-         end if;
 
          --  If not, then again no need to instantiate bodies in generic units
 
-         if Is_Generic_Unit (Cunit_Entity (Get_Code_Unit (N))) then
+         elsif Is_Generic_Unit (Cunit_Entity (Get_Code_Unit (N))) then
             return False;
-         end if;
 
          --  Here we have a special handling for back-end inlining: if inline
          --  processing is required, then we unconditionally want to have the
@@ -4926,14 +4937,15 @@ package body Sem_Ch12 is
          --  these instantiations are only performed on demand when back-end
          --  inlining is enabled, so this causes very little extra work.
 
-         if Inline_Processing_Required and then Back_End_Inlining then
+         elsif Inline_Processing_Required and then Back_End_Inlining then
             return True;
-         end if;
 
          --  We want to have the bodies instantiated in non-main units if
          --  they might contribute inlined subprograms.
 
-         return Might_Inline_Subp (Gen_Unit);
+         else
+            return Might_Inline_Subp (Gen_Unit);
+         end if;
       end Needs_Body_Instantiated;
 
       --  Local declarations
@@ -5414,43 +5426,6 @@ package body Sem_Ch12 is
                and then (Operating_Mode = Generate_Code
                           or else (Operating_Mode = Check_Semantics
                                     and then GNATprove_Mode));
-
-            --  If front-end inlining is enabled or there are any subprograms
-            --  marked with Inline_Always, do not instantiate body when within
-            --  a generic context.
-
-            if not Back_End_Inlining
-              and then (Front_End_Inlining or else Has_Inline_Always)
-              and then not Expander_Active
-            then
-               Needs_Body := False;
-            end if;
-
-            --  If the current context is generic, and the package being
-            --  instantiated is declared within a formal package, there is no
-            --  body to instantiate until the enclosing generic is instantiated
-            --  and there is an actual for the formal package. If the formal
-            --  package has parameters, we build a regular package instance for
-            --  it, that precedes the original formal package declaration.
-
-            if In_Open_Scopes (Scope (Scope (Gen_Unit))) then
-               declare
-                  Decl : constant Node_Id :=
-                           Original_Node
-                             (Unit_Declaration_Node (Scope (Gen_Unit)));
-               begin
-                  if Nkind (Decl) = N_Formal_Package_Declaration
-                    or else (Nkind (Decl) = N_Package_Declaration
-                              and then Is_List_Member (Decl)
-                              and then Present (Next (Decl))
-                              and then
-                                Nkind (Next (Decl)) =
-                                                N_Formal_Package_Declaration)
-                  then
-                     Needs_Body := False;
-                  end if;
-               end;
-            end if;
          end;
 
          --  For RCI unit calling stubs, we omit the instance body if the
