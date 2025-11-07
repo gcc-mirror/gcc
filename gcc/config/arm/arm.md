@@ -8369,7 +8369,7 @@
 
 (define_expand "movhfcc"
   [(set (match_operand:HF 0 "s_register_operand")
-	(if_then_else:HF (match_operand 1 "arm_cond_move_operator")
+	(if_then_else:HF (match_operand 1 "expandable_comparison_operator")
 			 (match_operand:HF 2 "s_register_operand")
 			 (match_operand:HF 3 "s_register_operand")))]
   "TARGET_VFP_FP16INST"
@@ -8391,7 +8391,7 @@
 
 (define_expand "movsfcc"
   [(set (match_operand:SF 0 "s_register_operand")
-	(if_then_else:SF (match_operand 1 "arm_cond_move_operator")
+	(if_then_else:SF (match_operand 1 "expandable_comparison_operator")
 			 (match_operand:SF 2 "s_register_operand")
 			 (match_operand:SF 3 "s_register_operand")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT"
@@ -8413,7 +8413,7 @@
 
 (define_expand "movdfcc"
   [(set (match_operand:DF 0 "s_register_operand")
-	(if_then_else:DF (match_operand 1 "arm_cond_move_operator")
+	(if_then_else:DF (match_operand 1 "expandable_comparison_operator")
 			 (match_operand:DF 2 "s_register_operand")
 			 (match_operand:DF 3 "s_register_operand")))]
   "TARGET_32BIT && TARGET_HARD_FLOAT && TARGET_VFP_DOUBLE"
