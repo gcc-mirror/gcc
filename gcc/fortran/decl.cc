@@ -1537,9 +1537,47 @@ gfc_verify_c_interop_param (gfc_symbol *sym)
     {
       if (sym->ns->proc_name->attr.is_bind_c == 1)
 	{
+	  bool f2018_allowed = gfc_option.allow_std & ~GFC_STD_OPT_F08;
+	  bool f2018_added = false;
+
 	  is_c_interop = (gfc_verify_c_interop(&(sym->ts)) ? 1 : 0);
 
-	  if (is_c_interop != 1)
+	  /* F2018:18.3.6 has the following text:
+	     "(5) any dummy argument without the VALUE attribute corresponds to
+	     a formal parameter of the prototype that is of a pointer type, and
+	     either
+	     • the dummy argument is interoperable with an entity of the
+	     referenced type (ISO/IEC 9899:2011, 6.2.5, 7.19, and 7.20.1) of
+	     the formal parameter (this is equivalent to the F2008 text),
+	     • the dummy argument is a nonallocatable nonpointer variable of
+	     type CHARACTER with assumed character length and the formal
+	     parameter is a pointer to CFI_cdesc_t,
+	     • the dummy argument is allocatable, assumed-shape, assumed-rank,
+	     or a pointer without the CONTIGUOUS attribute, and the formal
+	     parameter is a pointer to CFI_cdesc_t, or
+	     • the dummy argument is assumed-type and not allocatable,
+	     assumed-shape, assumed-rank, or a pointer, and the formal
+	     parameter is a pointer to void,"  */
+	  if (is_c_interop == 0 && !sym->attr.value && f2018_allowed)
+	    {
+	      bool as_ar = (sym->as
+			    && (sym->as->type == AS_ASSUMED_SHAPE
+				|| sym->as->type == AS_ASSUMED_RANK));
+	      bool cond1 = (sym->ts.type == BT_CHARACTER
+			    && !(sym->ts.u.cl && sym->ts.u.cl->length)
+			    && !sym->attr.allocatable
+			    && !sym->attr.pointer);
+	      bool cond2 = (sym->attr.allocatable
+			    || as_ar
+			    || (IS_POINTER (sym) && !sym->attr.contiguous));
+	      bool cond3 = (sym->ts.type == BT_ASSUMED
+			    && !sym->attr.allocatable
+			    && !sym->attr.pointer
+			    && !as_ar);
+	      f2018_added = cond1 || cond2 || cond3;
+	    }
+
+	  if (is_c_interop != 1 && !f2018_added)
 	    {
 	      /* Make personalized messages to give better feedback.  */
 	      if (sym->ts.type == BT_DERIVED)
