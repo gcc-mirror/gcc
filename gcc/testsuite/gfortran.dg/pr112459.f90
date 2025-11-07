@@ -34,4 +34,6 @@ program myprog
   print *,"After allocation"
 end program myprog
 ! Final subroutines were called with std=gnu and -w = > 14 "_final"s.
-! { dg-final { scan-tree-dump-times "_final" 12 "original" } }
+! Count reduced from 12 after PR90519 fix - separate result symbols
+! disambiguate procedure references from result variables.
+! { dg-final { scan-tree-dump-times "_final" 6 "original" } }

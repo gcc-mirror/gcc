@@ -11697,7 +11697,17 @@ gfc_trans_scalar_assign (gfc_se *lse, gfc_se *rse, gfc_typespec ts,
 	}
 
       gfc_add_block_to_block (&block, &rse->pre);
-      gfc_add_block_to_block (&block, &lse->finalblock);
+
+      /* Skip finalization for self-assignment.  */
+      if (deep_copy && lse->finalblock.head)
+	{
+	  tmp = build3_v (COND_EXPR, cond, build_empty_stmt (input_location),
+			  gfc_finish_block (&lse->finalblock));
+	  gfc_add_expr_to_block (&block, tmp);
+	}
+      else
+	gfc_add_block_to_block (&block, &lse->finalblock);
+
       gfc_add_block_to_block (&block, &lse->pre);
 
       gfc_add_modify (&block, lse->expr,
@@ -12683,11 +12693,29 @@ alloc_scalar_allocatable_for_assignment (stmtblock_t *block,
    to make sure we do not check for reallocation unneccessarily.  */
 
 
+/* Strip parentheses from an expression to get the underlying variable.
+   This is needed for self-assignment detection since (a) creates a
+   parentheses operator node.  */
+
+static gfc_expr *
+strip_parentheses (gfc_expr *expr)
+{
+  while (expr->expr_type == EXPR_OP
+	 && expr->value.op.op == INTRINSIC_PARENTHESES)
+    expr = expr->value.op.op1;
+  return expr;
+}
+
+
 static bool
 is_runtime_conformable (gfc_expr *expr1, gfc_expr *expr2)
 {
   gfc_actual_arglist *a;
   gfc_expr *e1, *e2;
+
+  /* Strip parentheses to handle cases like a = (a).  */
+  expr1 = strip_parentheses (expr1);
+  expr2 = strip_parentheses (expr2);
 
   switch (expr2->expr_type)
     {
@@ -13390,10 +13418,15 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
     }
 
   /* Comply with F2018 (7.5.6.3). Make sure that any finalization code is added
-     after evaluation of the rhs and before reallocation.  */
+     after evaluation of the rhs and before reallocation.
+     Skip finalization for self-assignment to avoid use-after-free.
+     Strip parentheses from both sides to handle cases like a = (a).  */
   final_expr = gfc_assignment_finalizer_call (&lse, expr1, init_flag);
-  if (final_expr && !(expr2->expr_type == EXPR_VARIABLE
-		      && expr2->symtree->n.sym->attr.artificial))
+  if (final_expr
+      && gfc_dep_compare_expr (strip_parentheses (expr1),
+			       strip_parentheses (expr2)) != 0
+      && !(strip_parentheses (expr2)->expr_type == EXPR_VARIABLE
+	   && strip_parentheses (expr2)->symtree->n.sym->attr.artificial))
     {
       if (lss == gfc_ss_terminator)
 	{
@@ -13416,13 +13449,18 @@ gfc_trans_assignment_1 (gfc_expr * expr1, gfc_expr * expr2, bool init_flag,
 
   /* If nothing else works, do it the old fashioned way!  */
   if (tmp == NULL_TREE)
-    tmp
-      = gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
-				 gfc_expr_is_variable (expr2) || scalar_to_array
-				   || expr2->expr_type == EXPR_ARRAY,
-				 !(l_is_temp || init_flag) && dealloc,
-				 expr1->symtree->n.sym->attr.codimension,
-				 assoc_assign);
+    {
+      /* Strip parentheses to detect cases like a = (a) which need deep_copy.  */
+      gfc_expr *expr2_stripped = strip_parentheses (expr2);
+      tmp
+	= gfc_trans_scalar_assign (&lse, &rse, expr1->ts,
+				   gfc_expr_is_variable (expr2_stripped)
+				     || scalar_to_array
+				     || expr2->expr_type == EXPR_ARRAY,
+				   !(l_is_temp || init_flag) && dealloc,
+				   expr1->symtree->n.sym->attr.codimension,
+				   assoc_assign);
+    }
 
   /* Add the lse pre block to the body  */
   gfc_add_block_to_block (&body, &lse.pre);
