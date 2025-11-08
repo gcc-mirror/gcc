@@ -76,6 +76,16 @@ gimple_expand_vec_set_expr (struct function *fun, gimple_stmt_iterator *gsi)
     {
       tree pos = TREE_OPERAND (lhs, 1);
       tree view_op0 = TREE_OPERAND (op0, 0);
+
+      tree idx = TREE_OPERAND (ref, 1);
+      // if index is a constant, then check the bounds
+      poly_uint64 idx_poly;
+      if (poly_int_tree_p (idx, &idx_poly))
+	{
+	  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (view_op0));
+	  if (known_gt (idx_poly, nelts))
+	    return false;
+	}
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
       if ((auto_var_in_fn_p (view_op0, fun->decl)
 	   || (VAR_P (view_op0) && DECL_HARD_REGISTER (view_op0)))
