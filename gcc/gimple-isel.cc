@@ -102,6 +102,16 @@ gimple_expand_vec_set_extract_expr (struct function *fun,
       tree pos = TREE_OPERAND (ref, 1);
 
       tree view_op0 = TREE_OPERAND (op0, 0);
+
+      tree idx = TREE_OPERAND (ref, 1);
+      // if index is a constant, then check the bounds
+      poly_uint64 idx_poly;
+      if (poly_int_tree_p (idx, &idx_poly))
+	{
+	  poly_uint64 nelts = TYPE_VECTOR_SUBPARTS (TREE_TYPE (view_op0));
+	  if (known_gt (idx_poly, nelts))
+	    return false;
+	}
       machine_mode outermode = TYPE_MODE (TREE_TYPE (view_op0));
       machine_mode extract_mode = TYPE_MODE (TREE_TYPE (ref));
 
