@@ -10025,6 +10025,7 @@ enum {DEALLOCATE_ALLOC_COMP = 1, NULLIFY_ALLOC_COMP,
 
 static gfc_actual_arglist *pdt_param_list;
 static bool generating_copy_helper;
+static hash_set<gfc_symbol *> seen_derived_types;
 
 /* Forward declaration of structure_alloc_comps for wrapper generator.  */
 static tree structure_alloc_comps (gfc_symbol *, tree, tree, int, int, int,
@@ -10115,6 +10116,17 @@ generate_element_copy_wrapper (gfc_symbol *der_type, tree comp_type,
   bool saved_generating = generating_copy_helper;
   generating_copy_helper = true;
 
+  /* When generating a wrapper, we need a fresh type tracking state to
+     avoid inheriting the parent context's seen_derived_types, which would
+     cause infinite recursion when the wrapper tries to handle the same
+     recursive type.  Save elements, clear the set, generate wrapper, then
+     restore elements.  */
+  vec<gfc_symbol *> saved_symbols = vNULL;
+  for (hash_set<gfc_symbol *>::iterator it = seen_derived_types.begin ();
+       it != seen_derived_types.end (); ++it)
+    saved_symbols.safe_push (*it);
+  seen_derived_types.empty ();
+
   der_type_ptr = build_pointer_type (comp_type);
   dest_typed = fold_convert (der_type_ptr, dest_parm);
   src_typed = fold_convert (der_type_ptr, src_parm);
@@ -10126,6 +10138,11 @@ generate_element_copy_wrapper (gfc_symbol *der_type, tree comp_type,
 				0, purpose, caf_mode, NULL, false);
   gfc_add_expr_to_block (&block, body);
 
+  /* Restore saved symbols.  */
+  seen_derived_types.empty ();
+  for (unsigned i = 0; i < saved_symbols.length (); i++)
+    seen_derived_types.add (saved_symbols[i]);
+  saved_symbols.release ();
   generating_copy_helper = saved_generating;
 
   body = gfc_finish_block (&block);
@@ -10173,7 +10190,6 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
   int caf_dereg_mode;
   symbol_attribute *attr;
   bool deallocate_called;
-  static hash_set<gfc_symbol *> seen_derived_types;
 
   gfc_init_block (&fnblock);
 
@@ -10984,9 +11000,10 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 					   false, false, NULL_TREE, NULL_TREE);
 	      gfc_add_expr_to_block (&fnblock, tmp);
 	    }
-      /* Special case: recursive allocatable array components require runtime
-	 helper to avoid compile-time infinite recursion. Generate a call to
-	 _gfortran_cfi_deep_copy_array with an element copy wrapper.  */
+      /* Special case: recursive allocatable array components require
+	 runtime helpers to avoid compile-time infinite recursion.  Generate
+	 a call to _gfortran_cfi_deep_copy_array with an element copy
+	 wrapper.  When inside a wrapper, reuse current_function_decl.  */
       else if (c->attr.allocatable && c->as && cmp_has_alloc_comps && same_type
 	       && purpose == COPY_ALLOC_COMP && !c->attr.proc_pointer
 	       && !c->attr.codimension && !caf_in_coarray (caf_mode)
@@ -10997,8 +11014,9 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 	      tree alloc_expr;
 	      int comp_rank;
 
-	      /* Get the element type from ctype (which is already the component type).
-		 For arrays, we need the element type, not the array type.  */
+	      /* Get the element type from ctype (already the component
+		 type).  For arrays we need the element type, not the array
+		 type.  */
 	      elem_type = ctype;
 	      if (GFC_DESCRIPTOR_TYPE_P (ctype))
 		elem_type = gfc_get_element_type (ctype);
@@ -11012,29 +11030,36 @@ structure_alloc_comps (gfc_symbol * der_type, tree decl, tree dest,
 							     comp_rank);
 	      gfc_add_expr_to_block (&fnblock, alloc_expr);
 
-	      /* Generate or reuse the element copy helper.  Inside an existing helper
-		 we can reuse the current function to prevent recursive generation.  */
+	      /* Generate or reuse the element copy helper.  Inside an
+		 existing helper we can reuse the current function to
+		 prevent recursive generation.  */
 	      if (inside_wrapper)
-		copy_wrapper = gfc_build_addr_expr (NULL_TREE, current_function_decl);
+		copy_wrapper
+		  = gfc_build_addr_expr (NULL_TREE, current_function_decl);
 	      else
-		copy_wrapper = generate_element_copy_wrapper (c->ts.u.derived,
-							      elem_type,
-							      purpose, caf_mode);
+		copy_wrapper
+		  = generate_element_copy_wrapper (c->ts.u.derived, elem_type,
+						   purpose, caf_mode);
 	      copy_wrapper = fold_convert (helper_ptr_type, copy_wrapper);
 
 	      /* Build addresses of descriptors.  */
 	      dest_addr = gfc_build_addr_expr (pvoid_type_node, dcmp);
 	      src_addr = gfc_build_addr_expr (pvoid_type_node, comp);
 
-	      /* Build call: _gfortran_cfi_deep_copy_array (&dcmp, &comp, wrapper).  */
+	      /* Build call: _gfortran_cfi_deep_copy_array (&dcmp, &comp,
+		 wrapper).  */
 	      call = build_call_expr_loc (input_location,
 					  gfor_fndecl_cfi_deep_copy_array, 3,
-					  dest_addr, src_addr, copy_wrapper);
+					  dest_addr, src_addr,
+					  copy_wrapper);
 	      gfc_add_expr_to_block (&fnblock, call);
 	    }
 	  else if (c->attr.allocatable && !c->attr.proc_pointer
-		   && (add_when_allocated != NULL_TREE || !cmp_has_alloc_comps || !c->as
-		       || c->attr.codimension || caf_in_coarray (caf_mode)))
+		   && (add_when_allocated != NULL_TREE
+		       || !cmp_has_alloc_comps
+		       || !c->as
+		       || c->attr.codimension
+		       || caf_in_coarray (caf_mode)))
 	    {
 	      rank = c->as ? c->as->rank : 0;
 	      if (c->attr.codimension)

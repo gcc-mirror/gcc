@@ -12559,24 +12559,23 @@ conv_intrinsic_atomic_op (gfc_code *code)
       else
 	image_index = integer_zero_node;
 
-      /* Create a temporary if value is not already a pointer, or if it's an
-	 address of a constant (which is invalid in C).  */
-      bool need_tmp = !POINTER_TYPE_P (TREE_TYPE (value));
-      if (POINTER_TYPE_P (TREE_TYPE (value))
-	  && TREE_CODE (value) == ADDR_EXPR
-	  && TREE_CONSTANT (TREE_OPERAND (value, 0)))
-	need_tmp = true;
-
-      if (need_tmp)
+      /* Ensure VALUE names addressable storage: taking the address of a
+	 constant is invalid in C, and scalars need a temporary as well.  */
+      if (!POINTER_TYPE_P (TREE_TYPE (value)))
 	{
-	  tmp = gfc_create_var (TREE_TYPE (TREE_TYPE (atom)), "value");
-	  if (POINTER_TYPE_P (TREE_TYPE (value)))
-	    gfc_add_modify (&block, tmp,
-			    fold_convert (TREE_TYPE (tmp),
-					  build_fold_indirect_ref (value)));
-	  else
-	    gfc_add_modify (&block, tmp, fold_convert (TREE_TYPE (tmp), value));
-          value = gfc_build_addr_expr (NULL_TREE, tmp);
+	  tree elem
+	    = fold_convert (TREE_TYPE (TREE_TYPE (atom)), value);
+	  elem = gfc_trans_force_lval (&block, elem);
+	  value = gfc_build_addr_expr (NULL_TREE, elem);
+	}
+      else if (TREE_CODE (value) == ADDR_EXPR
+	       && TREE_CONSTANT (TREE_OPERAND (value, 0)))
+	{
+	  tree elem
+	    = fold_convert (TREE_TYPE (TREE_TYPE (atom)),
+			    build_fold_indirect_ref (value));
+	  elem = gfc_trans_force_lval (&block, elem);
+	  value = gfc_build_addr_expr (NULL_TREE, elem);
 	}
 
       gfc_init_se (&argse, NULL);
