@@ -1,3 +1,11 @@
+2025-11-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* gcc.target/arm/mve/intrinsics/pr122223.c: New test.
+	(cherry picked from commits
+	81e226440381cc3e033df7e58cc7793c9b4b4e25 and
+	a52888dc71924afb6cd187b0e5f18d2be4c68a07)
+
 2025-10-31  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:
