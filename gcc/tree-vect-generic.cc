@@ -497,27 +497,201 @@ add_shift (gimple_stmt_iterator *gsi, tree type, tree op0, int *shiftcnts,
 
   return NULL_TREE;
 }
-/* Try to expand integer vector multiplication by constant of power 2 using
-   left shifts.  */
+
+/* Verify that the target has optabs of VECTYPE to perform all the steps
+   needed by the multiplication-by-immediate synthesis algorithm described by
+   ALG and VAR.  Return true iff the target supports all the steps.  */
+static bool
+target_supports_mult_synth_alg (struct algorithm *alg, mult_variant var,
+				tree vectype)
+{
+  if (alg->op[0] != alg_zero && alg->op[0] != alg_m)
+    return false;
+
+  bool plus_supported_p = target_supports_op_p (vectype, PLUS_EXPR,
+						  optab_vector);
+  bool minus_supported_p = target_supports_op_p (vectype, MINUS_EXPR,
+						  optab_vector);
+  bool negate_supported_p = target_supports_op_p (vectype, NEGATE_EXPR,
+						  optab_vector);
+
+  if ((var == negate_variant && !negate_supported_p)
+      || (var == add_variant && !plus_supported_p))
+    return false;
+
+  bool lshift_supported_p
+    = (target_supports_op_p (vectype, LSHIFT_EXPR, optab_scalar)
+       || target_supports_op_p (vectype, LSHIFT_EXPR, optab_vector));
+
+  for (int i = 1; i < alg->ops; i++)
+    {
+      switch (alg->op[i])
+	{
+	case alg_shift:
+	  if (!lshift_supported_p)
+	    return false;
+	  break;
+	case alg_add_t_m2:
+	case alg_add_t2_m:
+	case alg_add_factor:
+	  if (!plus_supported_p || !lshift_supported_p)
+	    return false;
+	  break;
+	case alg_sub_t_m2:
+	case alg_sub_t2_m:
+	case alg_sub_factor:
+	  if (!minus_supported_p || !lshift_supported_p)
+	    return false;
+	  break;
+	case alg_unknown:
+	case alg_m:
+	case alg_zero:
+	case alg_impossible:
+	  return false;
+	default:
+	  gcc_unreachable ();
+	}
+    }
+
+  return true;
+}
+/* For integer multiplications with exact power of 2, use left shifts.
+   In constant is a uniform vector, then check if it can be synthesized with
+   shifts and adds/subs.  Use scalar multiplication cost to compare with the
+   synthesized vector code as done in expmed.cc.  */
 static tree
 expand_vector_mult (gimple_stmt_iterator *gsi, tree type, tree op0,
 		    tree op1)
 {
+  if (!CONSTANT_CLASS_P (op1))
+    return NULL_TREE;
   unsigned int nunits = nunits_for_known_piecewise_op (type);
   int *shifts = XALLOCAVEC (int, nunits);
 
-  // if all element are same value and a power of 2, then we can use shifts
+  bool perfect_pow2_p = true;
+  bool uniform_const_p = true;
+  unsigned HOST_WIDE_INT first_cst, const_elt;
   for (unsigned int i = 0; i < nunits; i++)
     {
       tree cst = VECTOR_CST_ELT (op1, i);
-      if ((TREE_CODE (cst) != INTEGER_CST || integer_zerop (cst))
-	  || !integer_pow2p (cst) || tree_int_cst_sgn (cst) != 1)
+      if (TREE_CODE (cst) != INTEGER_CST || tree_int_cst_sgn (cst) <= 0)
 	return NULL_TREE;
+
+      perfect_pow2_p &= integer_pow2p (cst);
+
+      if (uniform_const_p && tree_fits_uhwi_p (cst))
+	{
+	  const_elt = TREE_INT_CST_LOW (cst);
+	  if (i == 0)
+	    first_cst = const_elt;
+	  else if (first_cst != const_elt)
+	    uniform_const_p = false;
+	}
+      else
+	uniform_const_p = false;
 
       shifts[i] = tree_log2 (cst);
     }
-  tree cur_op = add_shift (gsi, type, op0, shifts, LSHIFT_EXPR);
-  return cur_op;
+  if (perfect_pow2_p)
+    return add_shift (gsi, type, op0, shifts, LSHIFT_EXPR);
+  else if (uniform_const_p)
+    {
+      tree scalar_type = type;
+      gcc_assert (TREE_CODE (type) == VECTOR_TYPE);
+      scalar_type = TREE_TYPE (type);
+
+      // handle signed ints
+      bool cast_to_unsigned_p = !TYPE_OVERFLOW_WRAPS (scalar_type);
+      tree multtype = cast_to_unsigned_p
+	? unsigned_type_for (scalar_type) : scalar_type;
+      tree vectype = cast_to_unsigned_p ? unsigned_type_for (type) : type;
+
+      // estimate the scalar MULT cost by generating dummy rtx insns
+      machine_mode mode = TYPE_MODE (multtype);
+      rtx rop0 = gen_rtx_REG (mode, 0);
+      rtx rop1 = gen_rtx_REG (mode, 1);
+      rtx mult_rtx = gen_rtx_MULT (mode, rop0, rop1);
+      int max_cost = nunits * set_src_cost (mult_rtx, mode, true);
+
+      struct algorithm alg;
+      mult_variant variant;
+
+      bool possible = choose_mult_variant (TYPE_MODE (vectype), const_elt, &alg,
+					   &variant, max_cost);
+      if (!possible || !target_supports_mult_synth_alg (&alg, variant, vectype))
+	return NULL_TREE;
+      if (cast_to_unsigned_p)
+	{
+	  tree tmp_op = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, vectype, op0);
+	  op0 = tmp_op;
+	}
+      tree accumulator, tmp_var;
+      if (alg.op[0] == alg_zero)
+	accumulator = build_int_cst (vectype, 0);
+      else
+	accumulator = op0;
+
+      for (int i = 1; i < alg.ops; i++)
+	{
+	  for (unsigned int j = 0; j < nunits; j++)
+	    shifts[j] = alg.log[i];
+
+	  switch (alg.op[i])
+	    {
+	    case alg_shift:
+	      accumulator = add_shift (gsi, vectype, accumulator, shifts,
+				       LSHIFT_EXPR);
+	      break;
+	    case alg_add_t_m2:
+	       tmp_var = add_shift (gsi, vectype, op0, shifts, LSHIFT_EXPR);
+	      accumulator = gimplify_build2 (gsi, PLUS_EXPR, vectype, tmp_var,
+					    accumulator);
+	      break;
+	    case alg_sub_t_m2:
+	      tmp_var = add_shift (gsi, vectype, op0, shifts, LSHIFT_EXPR);
+	      accumulator = gimplify_build2 (gsi, MINUS_EXPR, vectype,
+					     accumulator, tmp_var);
+	      break;
+	    case alg_add_t2_m:
+	      tmp_var = add_shift (gsi, vectype, accumulator, shifts,
+				   LSHIFT_EXPR);
+	      accumulator = gimplify_build2 (gsi, PLUS_EXPR, vectype, tmp_var,
+					     op0);
+	      break;
+	    case alg_sub_t2_m:
+	      tmp_var = add_shift (gsi, vectype, accumulator, shifts,
+				   LSHIFT_EXPR);
+	      accumulator = gimplify_build2 (gsi, MINUS_EXPR, vectype,
+					     tmp_var, op0);
+	      break;
+	    case alg_add_factor:
+	      tmp_var = add_shift (gsi, vectype, accumulator, shifts,
+				   LSHIFT_EXPR);
+	      accumulator = gimplify_build2 (gsi, PLUS_EXPR, vectype,
+					     accumulator, tmp_var);
+	      break;
+	    case alg_sub_factor:
+	      tmp_var = add_shift (gsi, vectype, accumulator, shifts,
+				   LSHIFT_EXPR);
+	      accumulator = gimplify_build2 (gsi, MINUS_EXPR, vectype,
+					     accumulator, tmp_var);
+	      break;
+	    default:
+	      gcc_unreachable ();
+	    }
+	}
+      if (variant == negate_variant)
+	accumulator = gimplify_build1 (gsi, NEGATE_EXPR, vectype, accumulator);
+      else if (variant == add_variant)
+	accumulator = gimplify_build2 (gsi, PLUS_EXPR, vectype, accumulator,
+				       op0);
+
+      if (cast_to_unsigned_p)
+	accumulator = gimplify_build1 (gsi, VIEW_CONVERT_EXPR, vectype,
+				       accumulator);
+      return accumulator;
+    }
+  return NULL_TREE;
 }
 /* Try to expand integer vector division by constant using
    widening multiply, shifts and additions.  */
