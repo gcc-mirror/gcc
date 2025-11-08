@@ -1800,8 +1800,6 @@ static struct c_expr c_parser_binary_expression (c_parser *, struct c_expr *,
 						 tree);
 static struct c_expr c_parser_cast_expression (c_parser *, struct c_expr *);
 static struct c_expr c_parser_unary_expression (c_parser *);
-static inline struct c_expr c_parser_sizeof_expression (c_parser *);
-static inline struct c_expr c_parser_countof_expression (c_parser *);
 static struct c_expr c_parser_sizeof_or_countof_expression (c_parser *,
 							    enum rid);
 static struct c_expr c_parser_alignof_expression (c_parser *);
@@ -10665,69 +10663,54 @@ c_parser_unary_expression (c_parser *parser)
 	}
       return ret;
     case CPP_KEYWORD:
-      switch (c_parser_peek_token (parser)->keyword)
-	{
-	case RID_COUNTOF:
-	  return c_parser_countof_expression (parser);
-	case RID_SIZEOF:
-	  return c_parser_sizeof_expression (parser);
-	case RID_ALIGNOF:
-	  return c_parser_alignof_expression (parser);
-	case RID_BUILTIN_HAS_ATTRIBUTE:
-	  return c_parser_has_attribute_expression (parser);
-	case RID_EXTENSION:
-	  c_parser_consume_token (parser);
-	  ext = disable_extension_diagnostics ();
-	  ret = c_parser_cast_expression (parser, NULL);
-	  restore_extension_diagnostics (ext);
-	  return ret;
-	case RID_REALPART:
-	  c_parser_consume_token (parser);
-	  exp_loc = c_parser_peek_token (parser)->location;
-	  op = c_parser_cast_expression (parser, NULL);
-	  op = default_function_array_conversion (exp_loc, op);
-	  return parser_build_unary_op (op_loc, REALPART_EXPR, op);
-	case RID_IMAGPART:
-	  c_parser_consume_token (parser);
-	  exp_loc = c_parser_peek_token (parser)->location;
-	  op = c_parser_cast_expression (parser, NULL);
-	  op = default_function_array_conversion (exp_loc, op);
-	  return parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
-	case RID_TRANSACTION_ATOMIC:
-	case RID_TRANSACTION_RELAXED:
-	  return c_parser_transaction_expression (parser,
-	      c_parser_peek_token (parser)->keyword);
-	case RID_STATIC_ASSERT:
-	  c_parser_static_assert_declaration_no_semi (parser);
-	  pedwarn_c23 (op_loc, OPT_Wpedantic,
-		       "ISO C does not support static assertions in "
-		       "expressions before C2Y");
-	  ret.value = void_node;
-	  set_c_expr_source_range (&ret, op_loc, op_loc);
-	  ret.m_decimal = 0;
-	  return ret;
-	default:
-	  return c_parser_postfix_expression (parser);
-	}
+      {
+	enum rid rid = c_parser_peek_token (parser)->keyword;
+	switch (rid)
+	  {
+	  case RID_COUNTOF:
+	  case RID_SIZEOF:
+	    return c_parser_sizeof_or_countof_expression (parser, rid);
+	  case RID_ALIGNOF:
+	    return c_parser_alignof_expression (parser);
+	  case RID_BUILTIN_HAS_ATTRIBUTE:
+	    return c_parser_has_attribute_expression (parser);
+	  case RID_EXTENSION:
+	    c_parser_consume_token (parser);
+	    ext = disable_extension_diagnostics ();
+	    ret = c_parser_cast_expression (parser, NULL);
+	    restore_extension_diagnostics (ext);
+	    return ret;
+	  case RID_REALPART:
+	    c_parser_consume_token (parser);
+	    exp_loc = c_parser_peek_token (parser)->location;
+	    op = c_parser_cast_expression (parser, NULL);
+	    op = default_function_array_conversion (exp_loc, op);
+	    return parser_build_unary_op (op_loc, REALPART_EXPR, op);
+	  case RID_IMAGPART:
+	    c_parser_consume_token (parser);
+	    exp_loc = c_parser_peek_token (parser)->location;
+	    op = c_parser_cast_expression (parser, NULL);
+	    op = default_function_array_conversion (exp_loc, op);
+	    return parser_build_unary_op (op_loc, IMAGPART_EXPR, op);
+	  case RID_TRANSACTION_ATOMIC:
+	  case RID_TRANSACTION_RELAXED:
+	    return c_parser_transaction_expression (parser, rid);
+	  case RID_STATIC_ASSERT:
+	    c_parser_static_assert_declaration_no_semi (parser);
+	    pedwarn_c23 (op_loc, OPT_Wpedantic,
+			 "ISO C does not support static assertions in "
+			 "expressions before C2Y");
+	    ret.value = void_node;
+	    set_c_expr_source_range (&ret, op_loc, op_loc);
+	    ret.m_decimal = 0;
+	    return ret;
+	  default:
+	    return c_parser_postfix_expression (parser);
+	  }
+      }
     default:
       return c_parser_postfix_expression (parser);
     }
-}
-
-/* Parse a sizeof expression.  */
-
-static inline struct c_expr
-c_parser_sizeof_expression (c_parser *parser)
-{
-  return c_parser_sizeof_or_countof_expression (parser, RID_SIZEOF);
-}
-
-/* Parse a _Countof expression.  */
-
-static inline struct c_expr
-c_parser_countof_expression (c_parser *parser)
-{
-  return c_parser_sizeof_or_countof_expression (parser, RID_COUNTOF);
 }
 
 /* Parse a sizeof or _Countof expression.  */
