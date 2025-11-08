@@ -1,3 +1,8 @@
+2025-11-07  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122223
+	* config/arm/mve.md (@mve_vbicq_f<mode>): Fix operands order.
+
 2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
