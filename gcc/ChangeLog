@@ -1,3 +1,172 @@
+2025-11-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* gdbhooks.py (class AnaSupernodePrinter): New.
+	(class AnaExplodedNodePrinter): New.
+	(build_pretty_printer): Register the above.
+
+2025-11-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree.cc (build_call_nary): Remove decl.
+	Add template definition that uses std::initializer_list<tree>
+	and call build_call.
+	(build_call): New declaration.
+	* tree.h (build_call_nary): Remove.
+	(build_call): New function.
+
+2025-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Use const_1_operand for scale and
+	extend predicates.
+	* config/riscv/riscv-v.cc (expand_gather_scatter): Remove scale
+	and extension handling.
+
+2025-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-stmts.cc (vect_use_strided_gather_scatters_p):
+	Do not convert offset type.
+
+2025-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-data-refs.cc (struct gather_scatter_config):
+	Add scale.
+	(vect_gather_scatter_get_configs): Try various scales.
+	(vect_gather_scatter_fn_p): Add scale handling.
+	(vect_check_gather_scatter): Add scale parameter.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Ditto.
+	(vect_truncate_gather_scatter_offset): Ditto.
+	(vect_use_grouped_gather): Ditto.
+	(get_load_store_type): Ditto.
+	(vectorizable_store): Scale offset if necessary.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (struct vect_load_store_data): Add
+	supported_scale.
+	(vect_gather_scatter_fn_p): Add argument.
+
+2025-11-07  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-data-refs.cc (struct gather_scatter_config): New
+	struct to hold gather/scatter configurations.
+	(vect_gather_scatter_which_ifn): New function to determine which
+	IFN to use.
+	(vect_gather_scatter_get_configs): New function to enumerate all
+	target-supported configs.
+	(vect_gather_scatter_fn_p): Rework to use
+	vect_gather_scatter_get_configs and try sign-swapped offset.
+	(vect_check_gather_scatter): Use new supported offset vectype
+	argument.
+	* tree-vect-stmts.cc (check_load_store_for_partial_vectors):
+	Ditto.
+	(vect_truncate_gather_scatter_offset): Ditto.
+	(vect_use_grouped_gather): Ditto.
+	(get_load_store_type): Ditto.
+	(vectorizable_store): Convert to sign-swapped offset type if
+	needed.
+	(vectorizable_load): Ditto.
+	* tree-vectorizer.h (struct vect_load_store_data): Add
+	supported_offset_vectype.
+	(vect_gather_scatter_fn_p): Add argument.
+
+2025-11-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122588
+	* tree-ssa-forwprop.cc (optimize_unreachable): Don't touch
+	if the condition was already true or false.
+
+2025-11-07  David Faust  <david.faust@oracle.com>
+
+	PR target/122140
+	* config/bpf/bpf.cc (bpf_expand_cpymem): Fix off-by-one offset
+	in backwards loop.  Improve src and dest addrs used for the
+	branch condition.
+	(emit_move_loop): Improve emitted set insns and remove the
+	explict temporary register.
+
+2025-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122577
+	* tree-vect-stmts.cc (vectorizable_conversion): Allow conversions
+	from non-mode-precision types.
+
+2025-11-07  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Leverage usmul_widen_mult by bit_ior based
+	unsigned SAT_MUL pattern.
+
+2025-11-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*vwsll_sign_extend_<mode>): Add
+	pattern to combine vsext.vf2 and vslli.vi to vwsll.vi.
+
+2025-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122589
+	PR middle-end/122594
+	* gimple-iterator.cc (gsi_replace_with_seq): Instead of
+	removing the last stmt from the sequence with gsi_remove,
+	split it using gsi_split_seq_before.
+	(gsi_split_seq_before): Fix bogus documentation.
+
+2025-11-07  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/118328
+	* config/aarch64/aarch64.cc (handle_aarch64_vector_pcs_attribute):
+	Add handling for ARM_PCS_PRESERVE_NONE.
+	(aarch64_pcs_exclusions): New definition.
+	(aarch64_gnu_attributes): Add entry for preserve_none and add
+	aarch64_pcs_exclusions to aarch64_vector_pcs entry.
+	(aarch64_preserve_none_abi): New function.
+	(aarch64_fntype_abi): Add handling for preserve_none.
+	(aarch64_reg_save_mode): Add handling for ARM_PCS_PRESERVE_NONE.
+	(aarch64_hard_regno_call_part_clobbered): Add handling for
+	ARM_PCS_PRESERVE_NONE.
+	(num_pcs_arg_regs): New helper function.
+	(get_pcs_arg_reg): New helper function.
+	(aarch64_function_ok_for_sibcall): Add handling for ARM_PCS_PRESERVE_NONE.
+	(aarch64_layout_arg): Add preserve_none argument lauout..
+	(function_arg_preserve_none_regno_p): New helper function.
+	(aarch64_function_arg): Update to handle preserve_none.
+	(function_arg_preserve_none_regno_p): Update logic for preserve_none.
+	(aarch64_expand_builtin_va_start): Add preserve_none layout.
+	(aarch64_setup_incoming_varargs): Add preserve_none layout.
+	(aarch64_is_variant_pcs): Update for case of ARM_PCS_PRESERVE_NONE.
+	(aarch64_comp_type_attributes): Add preserve_none.
+	* config/aarch64/aarch64.h (NUM_PRESERVE_NONE_ARG_REGS): New macro.
+	(PRESERVE_NONE_REGISTERS): New macro.
+	(enum arm_pcs): Add ARM_PCS_PRESERVE_NONE.
+	* doc/extend.texi (preserve_none): Add docs for new attribute.
+
+2025-11-07  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*widen_mul_plus_vx_<mode>): Add
+	new pattern to combine the vwmaccu.vx.
+	* config/riscv/vector.md (*pred_widen_mul_plus_u_vx<mode>_undef):
+	Add undef define_insn for vmwaccu.vx emiting.
+	(@pred_widen_mul_plus_u_vx<mode>): Ditto.
+
+2025-11-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_sign_extend_if_subreg_prom_p): Determine if the
+	current operand	is SUBREG and if the source of SUBREG is
+	the sign-extended value.
+	(loongarch_expand_conditional_move): Optimize.
+
+2025-11-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_canonicalize_int_order_test): Support GT GTU LT
+	and LTU.
+	(loongarch_extend_comparands): Expand the scope of op1 from
+	0 to all immediate values.
+	* config/loongarch/loongarch.md
+	(*sge<u>_<X:mode><GPR:mode>): New template.
+
+2025-11-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_legitimize_move): Optimize.
+
 2025-11-06  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* doc/invoke.texi (AArch64 Options): Clean up description of

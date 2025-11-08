@@ -1,3 +1,83 @@
+2025-11-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122588
+	* gcc.c-torture/compile/pr122588-1.c: New test.
+	* gcc.dg/tree-ssa/pr122588-1.c: New test.
+
+2025-11-07  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR testsuite/122602
+	* gcc.dg/vect/complex/complex-operations-run.c: Move to...
+	* gcc.dg/vect/complex/vect-complex-operations-run.c: ...here.
+
+2025-11-07  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/class_wide6.ads, gnat.dg/class_wide6.adb: New test.
+	* gnat.dg/class_wide6_pkg.ads: New helper.
+
+2025-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122577
+	* gcc.dg/vect/vect-bool-3.c: New testcase.
+
+2025-11-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/pr121959-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121959-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121959-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121959-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121959-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121959-run-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr121959.h: New test.
+
+2025-11-07  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122589
+	PR middle-end/122594
+	* g++.dg/torture/pr122589.C: New testcase.
+
+2025-11-07  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/118328
+	* gcc.target/aarch64/preserve_none_1.c: New test.
+	* gcc.target/aarch64/preserve_none_mingw_1.c: New test.
+	* gcc.target/aarch64/preserve_none_2.c: New test.
+	* gcc.target/aarch64/preserve_none_3.c: New test.
+	* gcc.target/aarch64/preserve_none_4.c: New test.
+	* gcc.target/aarch64/preserve_none_5.c: New test.
+	* gcc.target/aarch64/preserve_none_6.c: New test.
+
+2025-11-07  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vwmaccu.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen.h: Add test helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_widen_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vwmaccu-run-1-u64.c: New test.
+
+2025-11-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend-4.c: New test.
+	* gcc.target/loongarch/sign-extend-5.c: New test.
+
+2025-11-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend-3.c: New test.
+
+2025-11-07  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/sign-extend-6.c: New test.
+
 2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/121628

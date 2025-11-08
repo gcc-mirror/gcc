@@ -1,3 +1,9 @@
+2025-11-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* checker-event.cc
+	(region_creation_event_allocation_size::print_desc): Fix missing
+	"else" leading to stray trailing "allocated here" text in events.
+
 2025-11-04  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/122544
