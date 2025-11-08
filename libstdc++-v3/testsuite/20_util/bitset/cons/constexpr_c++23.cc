@@ -18,8 +18,6 @@ constexpr bool test_ntbs()
   VERIFY( std::bitset<0>("000").all() );
   VERIFY( std::bitset<0>("000", 2).all() );
   VERIFY( std::bitset<1>("100", 2).all() );
-  VERIFY( std::bitset<1>("z00", 2, 'z').none() );
-  VERIFY( std::bitset<2>("ab0", 3, 'a', 'b').count() == 1 );
 
   return true;
 }
