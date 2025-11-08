@@ -17346,11 +17346,7 @@ module_state::read_cluster (unsigned snum)
 	}
 
     }
-  /* Look, function.cc's interface to cfun does too much for us, we
-     just need to restore the old value.  I do not want to go
-     redesigning that API right now.  */
-#undef cfun
-  cfun = old_cfun;
+  set_cfun (old_cfun);
   current_function_decl = old_cfd;
   comparing_dependent_aliases--;
 
@@ -20080,7 +20076,7 @@ post_load_processing ()
 	DECL_EXTERNAL (decl) = false;
     }
 
-  cfun = old_cfun;
+  set_cfun (old_cfun);
   current_function_decl = old_cfd;
 }
 
