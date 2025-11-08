@@ -4337,43 +4337,38 @@ package body Sem_Ch10 is
       ---------------------------------------
 
       procedure Check_Private_Limited_Withed_Unit (Item : Node_Id) is
-         Curr_Parent  : Node_Id;
          Child_Parent : Node_Id;
+         Curr_Parent  : Node_Id;
          Curr_Private : Boolean;
+         Priv_Child   : Node_Id;
 
       begin
-         --  Compilation unit of the parent of the withed library unit
+         --  Start with the compilation unit of the withed library unit
 
-         Child_Parent := Withed_Lib_Unit (Item);
+         Priv_Child := Withed_Lib_Unit (Item);
 
          --  If the child unit is a public child, then locate its nearest
-         --  private ancestor, if any, then Child_Parent will then be set to
+         --  private ancestor, if any. Child_Parent will then be set to
          --  the parent of that ancestor.
 
-         if not Private_Present (Withed_Lib_Unit (Item)) then
-            while Present (Child_Parent)
-              and then not Private_Present (Child_Parent)
-            loop
-               Child_Parent := Parent_Spec (Unit (Child_Parent));
-            end loop;
-
-            if No (Child_Parent) then
+         while not Private_Present (Priv_Child) loop
+            Priv_Child := Parent_Spec (Unit (Priv_Child));
+            if No (Priv_Child) then
                return;
             end if;
-         end if;
+         end loop;
 
-         Child_Parent := Parent_Spec (Unit (Child_Parent));
+         Child_Parent := Parent_Spec (Unit (Priv_Child));
 
          --  Traverse all the ancestors of the current compilation unit to
-         --  check if it is a descendant of named library unit.
+         --  check if it is a descendant of Child_Parent.
 
-         Curr_Parent := Parent (Item);
+         Curr_Parent := N;
          Curr_Private := Private_Present (Curr_Parent);
 
-         while Present (Parent_Spec (Unit (Curr_Parent)))
-           and then Curr_Parent /= Child_Parent
-         loop
+         while Curr_Parent /= Child_Parent loop
             Curr_Parent := Parent_Spec (Unit (Curr_Parent));
+            exit when No (Curr_Parent);
             Curr_Private := Curr_Private or else Private_Present (Curr_Parent);
          end loop;
 
@@ -4384,11 +4379,11 @@ package body Sem_Ch10 is
               ("\current unit must also have parent&!",
                Item, Defining_Unit_Name (Specification (Unit (Child_Parent))));
 
-         elsif Private_Present (Parent (Item))
-            or else Curr_Private
+         elsif Curr_Private
             or else Private_Present (Item)
-            or else Nkind (Unit (Parent (Item))) in
-                      N_Package_Body | N_Subprogram_Body | N_Subunit
+            or else Nkind (Unit (N)) in N_Package_Body | N_Subunit
+            or else (Nkind (Unit (N)) = N_Subprogram_Body
+                      and then not Acts_As_Spec (Parent (Unit (N))))
          then
             --  Current unit is private, of descendant of a private unit
 
