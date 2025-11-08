@@ -60,13 +60,13 @@ int ctz4 (unsigned long x)
   return table[(lsb * magic) >> 58];
 }
 
-/* { dg-final { scan-tree-dump-times {= \.CTZ} 4 "forwprop2" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
-/* { dg-final { scan-assembler-times "tzcntq\t" 1 { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
+/* { dg-final { scan-tree-dump-times {= \.CTZ} 4 "forwprop2" { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
+/* { dg-final { scan-assembler-times "tzcntq\t" 1 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-times "tzcntl\t" 3 { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
-/* { dg-final { scan-assembler-times "andl\t" 2 { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
+/* { dg-final { scan-assembler-times "andl\t" 2 { target { { i?86-*-* x86_64-*-* } && lp64 } } } } */
 /* { dg-final { scan-assembler-not "negq" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
-/* { dg-final { scan-assembler-not "imulq" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
-/* { dg-final { scan-assembler-not "shrq" { target { { i?86-*-* x86_64-*-* } && { ! { ia32 } } } } } } */
+/* { dg-final { scan-assembler-not "imulq" { target { { i?86-*-* x86_64-*-* } && { ! { x32 } } } } } } */
+/* { dg-final { scan-assembler-not "shrq" { target { { i?86-*-* x86_64-*-* } && { ! { x32 } } } } } } */
 
 /* { dg-final { scan-tree-dump-times {= \.CTZ} 4 "forwprop2" { target aarch64*-*-* } } } */
 /* { dg-final { scan-assembler-times "clz\t" 4 { target aarch64*-*-* } } } */
