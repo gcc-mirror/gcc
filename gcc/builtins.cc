@@ -7076,11 +7076,13 @@ expand_ifn_atomic_bit_test_and (gcall *call)
       tree tcall = gimple_call_arg (call, 3 + is_atomic);
       tree fndecl = gimple_call_addr_fndecl (tcall);
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree exp = build_call_nary (type, tcall, 2 + is_atomic, ptr,
-				  make_tree (type, val),
-				  is_atomic
-				  ? gimple_call_arg (call, 3)
-				  : integer_zero_node);
+      tree exp;
+      if (is_atomic)
+	exp = build_call_nary (type, tcall, 3,
+			       ptr, make_tree (type, val),
+			       gimple_call_arg (call, 3));
+      else
+	exp = build_call_nary (type, tcall, 2, ptr, make_tree (type, val));
       result = expand_builtin (exp, gen_reg_rtx (mode), NULL_RTX,
 			       mode, !lhs);
     }
@@ -7184,11 +7186,13 @@ expand_ifn_atomic_op_fetch_cmp_0 (gcall *call)
       tree tcall = gimple_call_arg (call, 3 + is_atomic);
       tree fndecl = gimple_call_addr_fndecl (tcall);
       tree type = TREE_TYPE (TREE_TYPE (fndecl));
-      tree exp = build_call_nary (type, tcall,
-				  2 + is_atomic, ptr, arg,
-				  is_atomic
-				  ? gimple_call_arg (call, 3)
-				  : integer_zero_node);
+      tree exp;
+      if (is_atomic)
+	exp = build_call_nary (type, tcall, 3,
+			       ptr, arg,
+			       gimple_call_arg (call, 3));
+      else
+	exp = build_call_nary (type, tcall, 2, ptr, arg);
       result = expand_builtin (exp, gen_reg_rtx (mode), NULL_RTX,
 			       mode, !lhs);
     }
