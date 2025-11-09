@@ -9,4 +9,4 @@
    usage(r14-6242-gd564198f960a2f).  */
 #include "apx-ndd-tls-1a.c"
 
-/* { dg-final { scan-assembler-times "addq\[ \t]+%r\[a-z0-9\]+, a@gottpoff\\(%rip\\), %r\[a-z0-9\]+" 1 { xfail lp64 } } } */
+/* { dg-final { scan-assembler-times "addq\[ \t]+%r\[a-z0-9\]+, a@gottpoff\\(%rip\\), %r\[a-z0-9\]+" 1 { xfail { ! ia32 } } } } */
