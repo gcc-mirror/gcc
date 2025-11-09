@@ -1456,16 +1456,17 @@ public:
 unsigned int
 pass_merge_phi::execute (function *fun)
 {
-  basic_block *worklist = XNEWVEC (basic_block, n_basic_blocks_for_fn (fun));
-  basic_block *current = worklist;
-  basic_block bb;
-
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Find all PHI nodes that we may be able to merge.  */
-  FOR_EACH_BB_FN (bb, fun)
+  bool changed = false;
+  unsigned n = last_basic_block_for_fn (fun);
+  for (unsigned i = NUM_FIXED_BLOCKS; i < n; i++)
     {
       basic_block dest;
+      basic_block bb = BASIC_BLOCK_FOR_FN (fun, i);
+      if (!bb)
+	continue;
 
       /* Look for a forwarder block with PHI nodes.  */
       if (!tree_forwarder_block_p (bb, true))
@@ -1481,14 +1482,10 @@ pass_merge_phi::execute (function *fun)
 	  || bb_has_abnormal_pred (bb))
 	continue;
 
-      if (!dominated_by_p (CDI_DOMINATORS, dest, bb))
-	{
-	  /* If BB does not dominate DEST, then the PHI nodes at
-	     DEST must be the only users of the results of the PHI
-	     nodes at BB.  */
-	  *current++ = bb;
-	}
-      else
+     /* If BB does not dominate DEST, then the PHI nodes at
+	DEST must be the only users of the results of the PHI
+	nodes at BB. So only check when BB dominates dest.  */
+      if (dominated_by_p (CDI_DOMINATORS, dest, bb))
 	{
 	  gphi_iterator gsi;
 	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
@@ -1521,19 +1518,11 @@ pass_merge_phi::execute (function *fun)
 
 	  /* If the loop above iterated through all the PHI nodes
 	     in BB, then we can merge the PHIs from BB into DEST.  */
-	  if (gsi_end_p (gsi))
-	    *current++ = bb;
+	  if (!gsi_end_p (gsi))
+	    continue;
 	}
-    }
-
-  /* Now let's drain WORKLIST.  */
-  bool changed = false;
-  while (current != worklist)
-    {
-      bb = *--current;
       changed |= remove_forwarder_block_with_phi (bb);
     }
-  free (worklist);
 
   /* Removing forwarder blocks can cause formerly irreducible loops
      to become reducible if we merged two entry blocks.  */
