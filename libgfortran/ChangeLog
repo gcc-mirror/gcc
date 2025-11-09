@@ -1,3 +1,10 @@
+2025-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* Makefile.in: Keep continuation indentation within 80 columns.
+	* aclocal.m4: Regenerate.
+	* libgfortran.h: Drop unused forward declaration.
+
 2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/121628

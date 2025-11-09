@@ -1,3 +1,18 @@
+2025-11-08  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/113338
+	* decl.cc (gfc_verify_c_interop_param): Allow further types of
+	dummy argument without the VALUE attribute as specified in
+	F2018 18.3.6 item (5).
+
+2025-11-08  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121628
+	* trans-array.cc (seen_derived_types): Move to file scope and
+	preserve/restore around generate_element_copy_wrapper.
+	* trans-intrinsic.cc (conv_intrinsic_atomic_op): Reuse
+	gfc_trans_force_lval when forcing addressable CAF temps.
+
 2025-11-06  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/121628

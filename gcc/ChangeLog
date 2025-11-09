@@ -1,3 +1,30 @@
+2025-11-08  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122126
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr): Add bound check.
+
+2025-11-08  Lulu Cheng  <chenglulu@loongson.cn>
+
+	PR target/122097
+	* config/loongarch/loongarch.cc
+	(loongarch_const_vector_same_bytes_p): Add processing for
+	floating-point vector data.
+
+2025-11-08  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122065
+	* tree-vect-generic.cc (target_supports_mult_synth_alg): Add helper to
+	check mult synth.
+	(expand_vector_mult): Optimize mult when const is uniform but not
+	power of 2.
+
+2025-11-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122599
+	* tree-scalar-evolution.cc (final_value_replacement_loop): Move
+	the removal of the phi until after the gimplification of the final
+	value expression.
+
 2025-11-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* gdbhooks.py (class AnaSupernodePrinter): New.

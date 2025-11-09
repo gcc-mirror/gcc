@@ -1,3 +1,12 @@
+2025-11-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/34374
+	* sem_ch10.adb (Check_Private_Limited_Withed_Unit): Use a separate
+	variable for the private child unit, streamline the loop locating
+	the nearest private ancestor, fix a too early termination of the
+	loop traversing the ancestor of the current unit, and use the same
+	privacy test as Check_Private_Child_Unit.
+
 2025-11-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/83188
