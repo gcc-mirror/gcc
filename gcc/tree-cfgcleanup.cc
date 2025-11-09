@@ -425,6 +425,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	return false;
   }
 
+  basic_block dest = single_succ_edge (bb)->dest;
+
   /* Now walk through the statements backward.  We can ignore labels,
      anything else means this is not a forwarder block.  */
   for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
@@ -434,7 +436,8 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
       switch (gimple_code (stmt))
 	{
 	case GIMPLE_LABEL:
-	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt))))
+	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt)))
+	      || EH_LANDING_PAD_NR (gimple_label_label (as_a <glabel *> (stmt))))
 	    return false;
 	  if (!optimize
 	      && (gimple_has_location (stmt)
@@ -455,12 +458,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 
   if (current_loops)
     {
-      basic_block dest;
       /* Protect loop headers.  */
       if (bb_loop_header_p (bb))
 	return false;
 
-      dest = EDGE_SUCC (bb, 0)->dest;
       /* Protect loop preheaders and latches if requested.  */
       if (dest->loop_father->header == dest)
 	{
@@ -581,15 +582,6 @@ remove_forwarder_block (basic_block bb)
   gimple *stmt;
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
-
-  /* If the destination block consists of a nonlocal label or is a
-     EH landing pad, do not merge it.  */
-  stmt = first_stmt (dest);
-  if (stmt)
-    if (glabel *label_stmt = dyn_cast <glabel *> (stmt))
-      if (DECL_NONLOCAL (gimple_label_label (label_stmt))
-	  || EH_LANDING_PAD_NR (gimple_label_label (label_stmt)) != 0)
-	return false;
 
   /* If there is an abnormal edge to basic block BB, but not into
      dest, problems might occur during removal of the phi node at out
@@ -1253,16 +1245,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 {
   edge succ = single_succ_edge (bb);
   basic_block dest = succ->dest;
-  gimple *label;
   basic_block dombb, domdest, dom;
-
-  /* If the destination block consists of a nonlocal label, do not
-     merge it.  */
-  label = first_stmt (dest);
-  if (label)
-    if (glabel *label_stmt = dyn_cast <glabel *> (label))
-      if (DECL_NONLOCAL (gimple_label_label (label_stmt)))
-	return false;
 
   /* Record BB's single pred in case we need to update the father
      loop's latch information later.  */
