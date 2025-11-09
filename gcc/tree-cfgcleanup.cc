@@ -456,6 +456,43 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	}
     }
 
+  /* If BB has PHIs and does not dominate DEST,
+     then the PHI nodes at DEST must be the only
+     users of the results of the PHI nodes at BB.
+     So only check when BB dominates dest.  */
+  if (!gimple_seq_empty_p (phi_nodes (bb))
+      && dominated_by_p (CDI_DOMINATORS, dest, bb))
+    {
+      gphi_iterator gsi;
+      unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
+
+      /* BB dominates DEST.  There may be many users of the PHI
+	 nodes in BB.  However, there is still a trivial case we
+	 can handle.  If the result of every PHI in BB is used
+	 only by a PHI in DEST, then we can trivially merge the
+	 PHI nodes from BB into DEST.  */
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  tree result = gimple_phi_result (phi);
+	  use_operand_p imm_use;
+	  gimple *use_stmt;
+
+	  /* If the PHI's result is never used, then we can just
+	     ignore it an.  */
+	  if (has_zero_uses (result))
+	    continue;
+
+	  /* Get the single use of the result of this PHI node.  */
+	  if (!single_imm_use (result, &imm_use, &use_stmt)
+	      || gimple_code (use_stmt) != GIMPLE_PHI
+	      || gimple_bb (use_stmt) != dest
+	      || gimple_phi_arg_def (use_stmt, dest_idx) != result)
+	    return false;
+	}
+    }
+
   if (current_loops)
     {
       /* Protect loop headers.  */
@@ -1247,6 +1284,14 @@ remove_forwarder_block_with_phi (basic_block bb)
   basic_block dest = succ->dest;
   basic_block dombb, domdest, dom;
 
+  /* We have to feed into another basic block with PHI
+     nodes.  */
+  if (gimple_seq_empty_p (phi_nodes (dest))
+      /* We don't want to deal with a basic block with
+	 abnormal edges.  */
+      || bb_has_abnormal_pred (bb))
+    return false;
+
   /* Record BB's single pred in case we need to update the father
      loop's latch information later.  */
   basic_block pred = NULL;
@@ -1429,65 +1474,14 @@ pass_merge_phi::execute (function *fun)
   unsigned n = last_basic_block_for_fn (fun);
   for (unsigned i = NUM_FIXED_BLOCKS; i < n; i++)
     {
-      basic_block dest;
       basic_block bb = BASIC_BLOCK_FOR_FN (fun, i);
       if (!bb)
 	continue;
 
       /* Look for a forwarder block with PHI nodes.  */
-      if (!tree_forwarder_block_p (bb, true))
-	continue;
-
-      dest = single_succ (bb);
-
-      /* We have to feed into another basic block with PHI
-	 nodes.  */
-      if (gimple_seq_empty_p (phi_nodes (dest))
-	  /* We don't want to deal with a basic block with
-	     abnormal edges.  */
-	  || bb_has_abnormal_pred (bb))
-	continue;
-
-     /* If BB does not dominate DEST, then the PHI nodes at
-	DEST must be the only users of the results of the PHI
-	nodes at BB. So only check when BB dominates dest.  */
-      if (dominated_by_p (CDI_DOMINATORS, dest, bb))
-	{
-	  gphi_iterator gsi;
-	  unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
-
-	  /* BB dominates DEST.  There may be many users of the PHI
-	     nodes in BB.  However, there is still a trivial case we
-	     can handle.  If the result of every PHI in BB is used
-	     only by a PHI in DEST, then we can trivially merge the
-	     PHI nodes from BB into DEST.  */
-	  for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	       gsi_next (&gsi))
-	    {
-	      gphi *phi = gsi.phi ();
-	      tree result = gimple_phi_result (phi);
-	      use_operand_p imm_use;
-	      gimple *use_stmt;
-
-	      /* If the PHI's result is never used, then we can just
-		 ignore it.  */
-	      if (has_zero_uses (result))
-		continue;
-
-	      /* Get the single use of the result of this PHI node.  */
-  	      if (!single_imm_use (result, &imm_use, &use_stmt)
-		  || gimple_code (use_stmt) != GIMPLE_PHI
-		  || gimple_bb (use_stmt) != dest
-		  || gimple_phi_arg_def (use_stmt, dest_idx) != result)
-		break;
-	    }
-
-	  /* If the loop above iterated through all the PHI nodes
-	     in BB, then we can merge the PHIs from BB into DEST.  */
-	  if (!gsi_end_p (gsi))
-	    continue;
-	}
-      changed |= remove_forwarder_block_with_phi (bb);
+      if (tree_forwarder_block_p (bb, true)
+	  && remove_forwarder_block_with_phi (bb))
+	changed = true;
     }
 
   /* Removing forwarder blocks can cause formerly irreducible loops
