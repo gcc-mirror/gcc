@@ -30,3 +30,4 @@ TEST_TERNARY_VX_SIGNED_0(T)
 /* { dg-final { scan-assembler-times {vnmsac.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vmadd.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vnmsub.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vmseq.vx} 1 } } */
