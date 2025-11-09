@@ -582,12 +582,6 @@ remove_forwarder_block (basic_block bb)
   edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
 
-  /* We check for infinite loops already in tree_forwarder_block_p.
-     However it may happen that the infinite loop is created
-     afterwards due to removal of forwarders.  */
-  if (dest == bb)
-    return false;
-
   /* If the destination block consists of a nonlocal label or is a
      EH landing pad, do not merge it.  */
   stmt = first_stmt (dest);
@@ -1261,17 +1255,6 @@ remove_forwarder_block_with_phi (basic_block bb)
   basic_block dest = succ->dest;
   gimple *label;
   basic_block dombb, domdest, dom;
-
-  /* We check for infinite loops already in tree_forwarder_block_p.
-     However it may happen that the infinite loop is created
-     afterwards due to removal of forwarders.  */
-  if (dest == bb)
-    return false;
-
-  /* Removal of forwarders may expose new natural loops and thus
-     a block may turn into a loop header.  */
-  if (current_loops && bb_loop_header_p (bb))
-    return false;
 
   /* If the destination block consists of a nonlocal label, do not
      merge it.  */
