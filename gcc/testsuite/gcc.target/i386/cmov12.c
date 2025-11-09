@@ -1,4 +1,4 @@
-/* { dg-do compile { target { ! ia32 } } } */
+/* { dg-do compile { target lp64 } } */
 /* { dg-options "-O2 -mavx2 -mtune=sapphirerapids" } */                             
 /* { dg-final { scan-assembler-times "cmov(\[lq\]\.)?g" 3 } } */
 
