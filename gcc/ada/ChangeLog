@@ -24,7 +24,7 @@
 2025-11-06  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/113350
-	PR ada/113551
+	PR ada/113351
 	* exp_ch2.adb (Expand_Renaming): Fix reference to Evaluate_Name.
 	* exp_ch8.adb (Expand_N_Subprogram_Renaming_Declaration): Call
 	Evaluate_Name to evaluate the name.
