@@ -53,9 +53,18 @@ TypeCheckExpr::Resolve (HIR::Expr &expr)
   if (resolver.infered == nullptr)
     return new TyTy::ErrorType (expr.get_mappings ().get_hirid ());
 
-  auto ref = expr.get_mappings ().get_hirid ();
-  resolver.infered->set_ref (ref);
+  if (resolver.infered->get_kind () != TyTy::TypeKind::CONST)
+    {
+      auto ref = expr.get_mappings ().get_hirid ();
+      resolver.infered->set_ref (ref);
+    }
   resolver.context->insert_type (expr.get_mappings (), resolver.infered);
+
+  if (auto fn = resolver.infered->try_as<const TyTy::FnType> ())
+    {
+      if (fn->is_syn_constant ())
+	resolver.infered = fn->get_return_type ();
+    }
 
   return resolver.infered;
 }
@@ -2358,7 +2367,12 @@ bool
 TypeCheckExpr::validate_arithmetic_type (
   const TyTy::BaseType *tyty, HIR::ArithmeticOrLogicalExpr::ExprType expr_type)
 {
-  const TyTy::BaseType *type = tyty->destructure ();
+  auto type = tyty->destructure ();
+  if (type->get_kind () == TyTy::TypeKind::CONST)
+    {
+      auto base_const = type->as_const_type ();
+      type = base_const->get_specified_type ();
+    }
 
   // https://doc.rust-lang.org/reference/expressions/operator-expr.html#arithmetic-and-logical-binary-operators
   // this will change later when traits are added

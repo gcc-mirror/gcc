@@ -391,8 +391,32 @@ TypeCheckImplItem::visit (HIR::ConstantItem &constant)
     TyTy::TyWithLocation (type, constant.get_type ().get_locus ()),
     TyTy::TyWithLocation (expr_type, constant.get_expr ().get_locus ()),
     constant.get_locus ());
-  context->insert_type (constant.get_mappings (), unified);
-  result = unified;
+
+  if (substitutions.empty ())
+    {
+      context->insert_type (constant.get_mappings (), unified);
+      result = unified;
+      return;
+    }
+
+  // special case when this is a generic constant
+  auto &nr_ctx
+    = Resolver2_0::ImmutableNameResolutionContext::get ().resolver ();
+  CanonicalPath canonical_path
+    = nr_ctx.to_canonical_path (constant.get_mappings ().get_nodeid ());
+  RustIdent ident{canonical_path, constant.get_locus ()};
+  auto fnType = new TyTy::FnType (
+    constant.get_mappings ().get_hirid (),
+    constant.get_mappings ().get_defid (),
+    constant.get_identifier ().as_string (), ident,
+    TyTy::FnType::FNTYPE_IS_SYN_CONST_FLAG, ABI::RUST, {}, unified,
+    std::move (substitutions),
+    TyTy::SubstitutionArgumentMappings::empty (
+      context->get_lifetime_resolver ().get_num_bound_regions ()),
+    {});
+
+  context->insert_type (constant.get_mappings (), fnType);
+  result = fnType;
 }
 
 void

@@ -109,6 +109,17 @@ CompileItem::visit (HIR::ConstantItem &constant)
   // canonical path
   Resolver::CanonicalPath canonical_path
     = nr_ctx.to_canonical_path (mappings.get_nodeid ());
+  if (constant_type->is<const TyTy::FnType> ())
+    {
+      if (concrete == nullptr)
+	return;
+
+      rust_assert (concrete->get_kind () == TyTy::TypeKind::FNDEF);
+      TyTy::FnType *concrete_fnty = static_cast<TyTy::FnType *> (concrete);
+
+      concrete_fnty->override_context ();
+      constant_type = expr_type = concrete_fnty->get_return_type ();
+    }
 
   ctx->push_const_context ();
   tree const_expr
