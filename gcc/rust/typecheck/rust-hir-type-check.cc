@@ -237,19 +237,20 @@ TraitItemReference::get_type_from_fn (/*const*/ HIR::TraitItemFunc &fn) const
 		      : Mutability::Mut;
 		rust_assert (self_param.has_lifetime ());
 
+		auto region = TyTy::Region::make_anonymous ();
 		auto maybe_region = context->lookup_and_resolve_lifetime (
 		  self_param.get_lifetime ());
-
-		if (!maybe_region.has_value ())
+		if (maybe_region.has_value ())
+		  region = maybe_region.value ();
+		else
 		  {
 		    rust_error_at (self_param.get_locus (),
 				   "failed to resolve lifetime");
-		    return get_error ();
 		  }
+
 		self_type = new TyTy::ReferenceType (
 		  self_param.get_mappings ().get_hirid (),
-		  TyTy::TyVar (self->get_ref ()), mutability,
-		  maybe_region.value ());
+		  TyTy::TyVar (self->get_ref ()), mutability, region);
 	      }
 	      break;
 

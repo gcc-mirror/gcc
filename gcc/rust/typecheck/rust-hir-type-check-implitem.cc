@@ -582,6 +582,8 @@ TypeCheckImplItemWithTrait::visit (HIR::Function &function)
   // normal resolution of the item
   TyTy::BaseType *lookup
     = TypeCheckImplItem::Resolve (parent, function, self, substitutions);
+  if (lookup == nullptr)
+    return;
 
   // map the impl item to the associated trait item
   const auto tref = trait_reference.get ();
