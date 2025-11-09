@@ -9791,8 +9791,8 @@ package body Sem_Ch4 is
          --  source if the original one is. Set entity and type, even though
          --  they may be overwritten during resolution if overloaded.
 
-         Set_Comes_From_Source (Subprog, Comes_From_Source (N));
-         Set_Comes_From_Source (Call_Node, Comes_From_Source (N));
+         Preserve_Comes_From_Source (Subprog, N);
+         Preserve_Comes_From_Source (Call_Node, N);
 
          if Nkind (N) = N_Selected_Component
            and then not Inside_A_Generic
@@ -9820,7 +9820,7 @@ package body Sem_Ch4 is
            and then Is_Access_Type (Etype (Obj))
          then
             Rewrite (First_Actual,
-              Make_Explicit_Dereference (Sloc (Obj), Obj));
+              Make_Explicit_Dereference (Sloc (Obj), Relocate_Node (Obj)));
             Analyze (First_Actual);
 
             --  If we need to introduce an explicit dereference, verify that
@@ -9832,11 +9832,12 @@ package body Sem_Ch4 is
                Error_Msg_NE
                  ("expect variable in call to&", Prefix (N), Entity (Subprog));
             end if;
+
          --  Conversely, if the formal is an access parameter and the object is
-         --  not an access type or a reference type (i.e. a type with the
+         --  neither an access type nor a reference type (i.e. a type with the
          --  Implicit_Dereference aspect specified), replace the actual with a
-         --  'Access reference. Its analysis will check that the object is
-         --  aliased.
+         --  'Access reference and give more specific error messages in common
+         --  illegal cases than Resolve_Attribute would.
 
          elsif Is_Access_Type (Formal_Type)
            and then not Is_Access_Type (Etype (Obj))
@@ -9846,6 +9847,17 @@ package body Sem_Ch4 is
                  not Is_Access_Type (Designated_Type (Etype
                        (Get_Reference_Discriminant (Etype (Obj))))))
          then
+            Rewrite (First_Actual,
+              Make_Attribute_Reference (Loc,
+                Attribute_Name => Name_Access,
+                Prefix => Relocate_Node (Obj)));
+
+            --  Treat the new actual as being in the source if the object is.
+            --  This is necessary when interface types are involved, see the
+            --  Expand_N_Attribute_Reference procedure.
+
+            Preserve_Comes_From_Source (First_Actual, Obj);
+
             --  A special case: A.all'Access is illegal if A is an access to a
             --  constant and the context requires an access to a variable.
 
@@ -9855,17 +9867,13 @@ package body Sem_Ch4 is
                  or else not Is_Variable (Obj)
                then
                   Error_Msg_NE
-                    ("actual for & must be a variable", Obj, Control);
+                    ("actual for & must be a variable",
+                     Prefix (First_Actual), Control);
                end if;
             end if;
 
-            Rewrite (First_Actual,
-              Make_Attribute_Reference (Loc,
-                Attribute_Name => Name_Access,
-                Prefix => Relocate_Node (Obj)));
-
-            --  If the object is not overloaded verify that taking access of
-            --  it is legal. Otherwise check is made during resolution.
+            --  If the object is not overloaded, verify that taking access of
+            --  it is legal. Otherwise the check is made during resolution.
 
             if not Is_Overloaded (Obj)
               and then not Is_Aliased_View (Obj)

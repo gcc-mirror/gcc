@@ -16148,6 +16148,12 @@ package body Sem_Util is
              (Nkind (Parent (Obj)) = N_Object_Renaming_Declaration
                and then Is_Return_Object (Defining_Entity (Parent (Obj))));
 
+      --  RM 4.1.5(6/3): A generalized reference denotes a view equivalent to
+      --  that of a dereference of the reference discriminant of the object.
+
+      elsif Nkind (Obj) = N_Function_Call then
+         return Has_Implicit_Dereference (Etype (Obj));
+
       elsif Nkind (Obj) = N_Slice then
          --  A slice of a bit-packed array is not considered aliased even
          --  for an extended access type because even extended access types
