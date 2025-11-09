@@ -307,7 +307,7 @@ int (*fp) (void) __attribute__ ((section (".init_array"))) = foo;
 	     && test $in_tree_ld_is_elf = yes; then
 	    gcc_cv_initfini_array=yes
 	  fi
-	elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+	elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x ; then
 	  case $target:$gas in
 	    *:yes)
 	      sh_flags='"a"'
@@ -505,7 +505,7 @@ AC_DEFUN([gcc_GAS_CHECK_FEATURE],
 [AC_REQUIRE([gcc_GAS_FLAGS])dnl
 AC_CACHE_CHECK([assembler for $1], [$2],
  [[$2]=no
-  if test x$gcc_cv_as != x; then
+  if test x"$gcc_cv_as" != x; then
     AS_ECHO([ifelse(m4_substr([$4],0,1),[$], "[$4]", '[$4]')]) > conftest.s
     if AC_TRY_COMMAND([$gcc_cv_as $gcc_cv_as_flags $3 -o conftest.o conftest.s >&AS_MESSAGE_LOG_FD])
     then

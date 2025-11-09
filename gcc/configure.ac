@@ -3031,7 +3031,7 @@ gcc_GAS_CHECK_FEATURE([working .subsection -1], gcc_cv_as_subsection_m1,,
 .subsection -1
 conftest_label2: .word 0
 .previous],
- [if test x$gcc_cv_nm != x; then
+ [if test x"$gcc_cv_nm" != x; then
     $gcc_cv_nm conftest.o | grep conftest_label1 > conftest.nm1
     $gcc_cv_nm conftest.o | grep conftest_label2 | sed -e 's/label2/label1/' > conftest.nm2
     if cmp conftest.nm1 conftest.nm2 > /dev/null 2>&1
@@ -3123,9 +3123,9 @@ bar:
 	ret
 	.size	bar, .-bar
 EOF
-    if test x$gcc_cv_as != x \
-       && test x$gcc_cv_ld != x \
-       && test x$gcc_cv_readelf != x \
+    if test x"$gcc_cv_as" != x \
+       && test x"$gcc_cv_ld" != x \
+       && test x"$gcc_cv_readelf" != x \
        && $gcc_cv_as -o conftest.o conftest.s > /dev/null 2>&1 \
        && $gcc_cv_ld -o conftest conftest.o > /dev/null 2>&1 \
        && $gcc_cv_readelf --relocs --wide conftest \
@@ -3264,7 +3264,7 @@ if test $in_tree_ld = yes ; then
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_ro_rw_mix=read-write
   fi
-elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x ; then
   echo '.section myfoosect, "a"' > conftest1.s
   echo '.section myfoosect, "aw"' > conftest2.s
   echo '.byte 1' >> conftest2.s
@@ -4210,7 +4210,7 @@ case $target_os in
 	else
 	  AC_MSG_ERROR([ld version is known to have broken secrel32 relocations, configure without --enable-tls or with --disable-tls to remove this error. See https://gcc.gnu.org/bugzilla/show_bug.cgi?id=80881 for more information.])
 	fi
-      elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x; then
+      elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x; then
 	echo '.text'          > conftest.s
 	echo 'foo: nop'      >> conftest.s
 	echo '.data'         >> conftest.s
@@ -5408,7 +5408,7 @@ x:
            && test $in_tree_ld_is_elf = yes; then
           gcc_cv_as_ld_jalr_reloc=yes
         fi
-      elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x; then
+      elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x; then
         echo '	.ent x' > conftest.s
         echo 'x:	lw $2,%got_disp(y)($3)' >> conftest.s
         echo '	lw $25,%call16(y)($28)' >> conftest.s
@@ -5445,9 +5445,9 @@ x:
 		 -o "$gcc_cv_gld_major_version" -gt 2; then
 	   gcc_cv_ld_mips_personality_relaxation=yes
 	 fi
-       elif test x$gcc_cv_as != x \
-       	    	 -a x$gcc_cv_ld != x \
-		 -a x$gcc_cv_readelf != x ; then
+       elif test x"$gcc_cv_as" != x \
+       	    	 -a x"$gcc_cv_ld" != x \
+		 -a x"$gcc_cv_readelf" != x ; then
 	 cat > conftest.s <<EOF
 	.cfi_startproc
 	.cfi_personality 0x80,indirect_ptr
@@ -5642,7 +5642,7 @@ case "$target" in
   amdgcn-* | gcn-*)
     AC_MSG_CHECKING(llvm assembler version)
     gcc_cv_as_version="unknown"
-    if test x$gcc_cv_as != x; then
+    if test x"$gcc_cv_as" != x; then
       gcc_cv_as_version=`$gcc_cv_as --version 2>&1 | sed -ne '/version/s/.* \([[0-9]]\)/\1/p' || echo error`
       case "$gcc_cv_as_version" in
 	13.0.[[1-9]]*) ;;          # 13.0.1+
@@ -6205,7 +6205,7 @@ if test $gcc_cv_ld_pie = yes ; then
     if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 25 -o "$gcc_cv_gld_major_version" -gt 2; then
       gcc_cv_ld_pie_copyreloc=yes
     fi
-  elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x ; then
+  elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x ; then
     # Check if linker supports -pie option with copy reloc
     case "$target" in
     i?86-*-linux* | x86_64-*-linux*)
@@ -6253,7 +6253,7 @@ if test $in_tree_ld = yes ; then
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_eh_gc_sections=yes
   fi
-elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x ; then
+elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x ; then
   cat > conftest.s <<EOF
 	.section	.text
 .globl _start
@@ -6334,7 +6334,7 @@ if test $in_tree_ld = yes ; then
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_eh_gc_sections_bug=yes
   fi
-elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_objdump != x -a x$gcc_cv_as_comdat_group = xyes; then
+elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_objdump" != x -a x$gcc_cv_as_comdat_group = xyes; then
   gcc_cv_ld_eh_gc_sections_bug=yes
   cat > conftest.s <<EOF
 	.section	.text
@@ -6704,7 +6704,7 @@ case "$target" in
 		-o "$gcc_cv_gld_major_version" -gt 2; then
         gcc_cv_ld_ppc_attr=yes
       fi
-    elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x ; then
+    elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x ; then
       # check that merging the long double .gnu_attribute doesn't warn
       cat > conftest1.s <<EOF
 	.gnu_attribute 4,1
@@ -6753,7 +6753,7 @@ case "$target:$tm_file" in
       if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 16 -o "$gcc_cv_gld_major_version" -gt 2; then
         gcc_cv_ld_no_dot_syms=yes
       fi
-    elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x ; then
+    elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x ; then
       cat > conftest1.s <<EOF
 	.text
 	bl .foo
@@ -6792,7 +6792,7 @@ EOF
       if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge 21 -o "$gcc_cv_gld_major_version" -gt 2; then
         gcc_cv_ld_large_toc=yes
       fi
-    elif test x$gcc_cv_as != x -a x$gcc_cv_ld != x ; then
+    elif test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x ; then
       cat > conftest.s <<EOF
 	.section ".tbss","awT",@nobits
 	.align 3
@@ -6817,7 +6817,7 @@ EOF
 
     AC_CACHE_CHECK(linker toc pointer alignment,
     gcc_cv_ld_toc_align,
-    [if test x$gcc_cv_as != x -a x$gcc_cv_ld != x -a x$gcc_cv_nm != x; then
+    [if test x"$gcc_cv_as" != x -a x"$gcc_cv_ld" != x -a x"$gcc_cv_nm" != x; then
       cat > conftest.s <<EOF
 	.global _start
 	.text
@@ -6847,7 +6847,7 @@ case "$target" in
     AC_CACHE_CHECK(linker large toc support,
     gcc_cv_ld_large_toc,
     [gcc_cv_ld_large_toc=no
-    if test x$gcc_cv_as != x ; then
+    if test x"$gcc_cv_as" != x ; then
       cat > conftest.s <<EOF
 	.toc
 LC..1:
