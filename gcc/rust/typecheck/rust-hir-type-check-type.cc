@@ -704,7 +704,6 @@ TypeCheckType::visit (HIR::ArrayType &type)
   TyTy::BaseType *expected_ty = nullptr;
   bool ok = context->lookup_builtin ("usize", &expected_ty);
   rust_assert (ok);
-  context->insert_type (type.get_size_expr ().get_mappings (), expected_ty);
 
   TyTy::BaseConstType *const_type = nullptr;
   if (capacity_type->get_kind () == TyTy::TypeKind::CONST)
@@ -745,7 +744,7 @@ TypeCheckType::visit (HIR::ArrayType &type)
   translated
     = new TyTy::ArrayType (type.get_mappings ().get_hirid (), type.get_locus (),
 			   TyTy::TyVar (
-			     const_type->as_base_type ()->get_ty_ref ()),
+			     const_type->as_base_type ()->get_ref ()),
 			   TyTy::TyVar (element_type->get_ref ()));
 }
 
