@@ -4114,6 +4114,7 @@ tree
 c_countof_type (location_t loc, tree type)
 {
   enum tree_code type_code;
+  tree value;
 
   type_code = TREE_CODE (type);
   if (type_code != ARRAY_TYPE)
@@ -4129,7 +4130,12 @@ c_countof_type (location_t loc, tree type)
       return error_mark_node;
     }
 
-  return array_type_nelts_top (type);
+  value = array_type_nelts_top (type);
+  /* VALUE will have the middle-end integer type sizetype.
+     However, we should really return a value of type `size_t',
+     which is just a typedef for an ordinary integer type.  */
+  value = fold_convert_loc (loc, size_type_node, value);
+  return value;
 }
 
 /* Handle C and C++ default attributes.  */

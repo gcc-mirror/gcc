@@ -122,3 +122,9 @@ const_expr(void)
   _Static_assert (_Countof (int [3][n]) == 3);
   _Static_assert (_Countof (int [n][3]) == 7); /* { dg-error "not constant" } */
 }
+
+void
+type(void)
+{
+  _Generic (_Countof (w), __typeof__ (sizeof 0): 0);
+}
