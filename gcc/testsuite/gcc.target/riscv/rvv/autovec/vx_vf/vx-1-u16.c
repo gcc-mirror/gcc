@@ -36,3 +36,4 @@ TEST_WIDEN_TERNARY_VX_UNSIGNED(T, NT)
 /* { dg-final { scan-assembler-not {vwaddu.wx} } } */
 /* { dg-final { scan-assembler-not {vwsubu.wx} } } */
 /* { dg-final { scan-assembler-not {vwmaccu.vx} } } */
+/* { dg-final { scan-assembler-times {vmseq.vx} 1 } } */
