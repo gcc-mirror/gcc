@@ -417,7 +417,7 @@
 	 VMVNQ_N))
   ]
   "TARGET_HAVE_MVE"
-  "<mve_insn>.i%#<V_sz_elem>\t%q0, %1"
+  "<mve_insn>.i%#<V_sz_elem>\t%q0, %<asm_const_size>1"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_<supf><mode>"))
   (set_attr "type" "mve_move")
 ])
@@ -1444,7 +1444,7 @@
 	 MVE_INT_N_BINARY_LOGIC))
   ]
   "TARGET_HAVE_MVE"
-  "<mve_insn>.i%#<V_sz_elem>	%q0, %2"
+  "<mve_insn>.i%#<V_sz_elem>	%q0, %<asm_const_size>2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_<supf><mode>"))
   (set_attr "type" "mve_move")
 ])
@@ -2335,7 +2335,7 @@
 	 VMVNQ_M_N))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %2"
+  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %<asm_const_size>2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_<supf><mode>"))
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
@@ -2353,7 +2353,7 @@
 	 MVE_INT_M_N_BINARY_LOGIC))
   ]
   "TARGET_HAVE_MVE"
-  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %2"
+  "vpst\;<mve_insn>t.i%#<V_sz_elem>\t%q0, %<asm_const_size>2"
  [(set (attr "mve_unpredicated_insn") (symbol_ref "CODE_FOR_mve_<mve_insn>q_n_<supf><mode>"))
   (set_attr "type" "mve_move")
    (set_attr "length""8")])
