@@ -95,8 +95,8 @@
 #undef override 			// { dg-warning "undefining keyword 'override'" "" { target c++26 } }
 #undef post
 #undef pre
-#undef replaceable_if_eligible 	// { dg-warning "undefining keyword 'replaceable_if_eligible'" "" { target c++26 } }
-#undef trivially_relocatable_if_eligible 	// { dg-warning "undefining keyword 'trivially_relocatable_if_eligible'" "" { target c++26 } }
+#undef replaceable_if_eligible
+#undef trivially_relocatable_if_eligible
 
 // [dcl.attr]
 #undef assume				// { dg-warning "undefining keyword 'assume'" "" { target c++26 } }

@@ -3,17 +3,6 @@
 // { dg-module-cmi {} }
 // { dg-skip-if "test assumes that structs have padding" { default_packed } }
 
-#if __cpp_trivial_relocatability < 202502L
-#define trivially_relocatable_if_eligible __trivially_relocatable_if_eligible
-#define replaceable_if_eligible __replaceable_if_eligible
-#endif
-
-struct A trivially_relocatable_if_eligible { A(A&&); };
-struct B replaceable_if_eligible { B(B&&); B& operator=(B&&); };
-struct C {};
-static_assert(__builtin_is_trivially_relocatable(C) && __builtin_is_replaceable(C), "");
-
-
 struct pr106381 {
   long l;
   char c = -1;

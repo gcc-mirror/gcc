@@ -2523,11 +2523,6 @@ struct GTY(()) lang_type {
   bool erroneous : 1;
   bool non_pod_aggregate : 1;
   bool non_aggregate_pod : 1;
-  bool trivially_relocatable : 1;
-  bool trivially_relocatable_computed : 1;
-
-  bool replaceable : 1;
-  bool replaceable_computed : 1;
 
   /* When adding a flag here, consider whether or not it ought to
      apply to a template instance if it applies to the template.  If
@@ -2538,7 +2533,7 @@ struct GTY(()) lang_type {
   /* There are some bits left to fill out a 32-bit word.  Keep track
      of this by updating the size of this bitfield whenever you add or
      remove a flag.  */
-  unsigned dummy : 30;
+  unsigned dummy : 2;
 
   tree primary_base;
   vec<tree_pair_s, va_gc> *vcall_indices;
@@ -2885,29 +2880,6 @@ struct GTY(()) lang_type {
    above (c++/120012).  This could also be a hash_set.  */
 #define CLASSTYPE_NON_AGGREGATE_POD(NODE) \
   (LANG_TYPE_CLASS_CHECK (NODE)->non_aggregate_pod)
-
-/* If CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED, true if this class is
-   trivially relocatable.
-   If !CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED, true if this class
-   is marked with trivially_relocatable_if_eligible conditional keyword.  */
-#define CLASSTYPE_TRIVIALLY_RELOCATABLE_BIT(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->trivially_relocatable)
-
-/* True if whether this class is trivially relocatable or not
-   has been computed already.  */
-#define CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->trivially_relocatable_computed)
-
-/* If CLASSTYPE_REPLACEABLE_COMPUTED, true if this class is replaceable.
-   If !CLASSTYPE_REPLACEABLE_COMPUTED, true if this class is marked with
-   replaceable_if_eligible conditional keyword.  */
-#define CLASSTYPE_REPLACEABLE_BIT(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->replaceable)
-
-/* True if whether this class is replaceable or not has been computed
-   already.  */
-#define CLASSTYPE_REPLACEABLE_COMPUTED(NODE) \
-  (LANG_TYPE_CLASS_CHECK (NODE)->replaceable_computed)
 
 /* Additional macros for inheritance information.  */
 
@@ -6577,9 +6549,7 @@ enum virt_specifier
   {
     VIRT_SPEC_UNSPECIFIED = 0x0,
     VIRT_SPEC_FINAL       = 0x1,
-    VIRT_SPEC_OVERRIDE    = 0x2,
-    VIRT_SPEC_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE = 0x4,
-    VIRT_SPEC_REPLACEABLE_IF_ELIGIBLE = 0x8
+    VIRT_SPEC_OVERRIDE    = 0x2
   };
 
 /* A type-qualifier, or bitmask therefore, using the VIRT_SPEC
@@ -8376,8 +8346,6 @@ extern bool pod_type_p				(const_tree);
 extern bool layout_pod_type_p			(const_tree);
 extern bool std_layout_type_p			(const_tree);
 extern bool trivial_type_p			(const_tree);
-extern bool trivially_relocatable_type_p	(tree);
-extern bool replaceable_type_p			(tree);
 extern bool implicit_lifetime_type_p		(tree);
 extern bool trivially_copyable_p		(const_tree);
 extern bool type_has_unique_obj_representations (const_tree);

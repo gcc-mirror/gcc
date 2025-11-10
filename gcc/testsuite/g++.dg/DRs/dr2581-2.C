@@ -94,7 +94,6 @@
 #define __cpp_template_parameters 202502L
 #define __cpp_template_template_args 201611L	// { dg-error "'__cpp_template_template_args' redefined" "" { target c++20 } }
 #define __cpp_threadsafe_static_init 200806L	// { dg-error "'__cpp_threadsafe_static_init' redefined" "" { target c++20 } }
-#define __cpp_trivial_relocatability 202502L	// { dg-error "'__cpp_trivial_relocatability' redefined" "" { target c++26 } }
 #define __cpp_trivial_union 202502L
 #define __cpp_unicode_characters 200704L	// { dg-error "'__cpp_unicode_characters' redefined" "" { target c++17 } }
 #define __cpp_unicode_literals 200710L		// { dg-error "'__cpp_unicode_literals' redefined" "" { target c++20 } }

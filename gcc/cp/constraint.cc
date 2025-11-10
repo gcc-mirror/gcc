@@ -3228,9 +3228,6 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
 	  explain_not_noexcept (call);
       }
       break;
-    case CPTK_IS_NOTHROW_RELOCATABLE:
-      inform (loc, "%qT is not nothrow relocatable", t1);
-      break;
     case CPTK_IS_OBJECT:
       inform (loc, "%qT is not an object type", t1);
       break;
@@ -3249,9 +3246,6 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
       break;
     case CPTK_IS_REFERENCE:
       inform (loc, "%qT is not a reference", t1);
-      break;
-    case CPTK_IS_REPLACEABLE:
-      inform (loc, "%qT is not replaceable", t1);
       break;
     case CPTK_IS_SAME:
       inform (loc, "%q#T is not the same as %q#T", t1, t2);
@@ -3283,9 +3277,6 @@ diagnose_trait_expr (location_t loc, tree expr, tree args)
     case CPTK_IS_TRIVIALLY_DESTRUCTIBLE:
       inform (loc, "%qT is not trivially destructible, because", t1);
       is_trivially_xible (BIT_NOT_EXPR, t1, NULL_TREE, /*explain=*/true);
-      break;
-    case CPTK_IS_TRIVIALLY_RELOCATABLE:
-      inform (loc, "%qT is not trivially relocatable", t1);
       break;
     case CPTK_IS_UNBOUNDED_ARRAY:
       inform (loc, "%qT is not an unbounded array", t1);

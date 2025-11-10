@@ -12708,17 +12708,7 @@ instantiate_class_template (tree type)
       determine_visibility (TYPE_MAIN_DECL (type));
     }
   if (CLASS_TYPE_P (type))
-    {
-      CLASSTYPE_FINAL (type) = CLASSTYPE_FINAL (pattern);
-      CLASSTYPE_TRIVIALLY_RELOCATABLE_BIT (type)
-	= CLASSTYPE_TRIVIALLY_RELOCATABLE_BIT (pattern);
-      CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED (type)
-	= CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED (pattern);
-      CLASSTYPE_REPLACEABLE_BIT (type)
-	= CLASSTYPE_REPLACEABLE_BIT (pattern);
-      CLASSTYPE_REPLACEABLE_COMPUTED (type)
-	= CLASSTYPE_REPLACEABLE_COMPUTED (pattern);
-    }
+    CLASSTYPE_FINAL (type) = CLASSTYPE_FINAL (pattern);
 
   pbinfo = TYPE_BINFO (pattern);
 

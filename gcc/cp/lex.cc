@@ -419,11 +419,7 @@ cxx_init (void)
       if (cxx_dialect >= cxx23)
 	cpp_warn (parse_in, "assume");
       if (cxx_dialect >= cxx26)
-	{
-	  cpp_warn (parse_in, "replaceable_if_eligible");
-	  cpp_warn (parse_in, "trivially_relocatable_if_eligible");
-	  cpp_warn (parse_in, "indeterminate");
-	}
+	cpp_warn (parse_in, "indeterminate");
     }
 
   if (c_common_init () == false)

@@ -95,8 +95,8 @@
 #define override 1			// { dg-warning "keyword 'override' defined as macro" "" { target c++26 } }
 #define post 1
 #define pre 1
-#define replaceable_if_eligible 1	// { dg-warning "keyword 'replaceable_if_eligible' defined as macro" "" { target c++26 } }
-#define trivially_relocatable_if_eligible 1	// { dg-warning "keyword 'trivially_relocatable_if_eligible' defined as macro" "" { target c++26 } }
+#define replaceable_if_eligible
+#define trivially_relocatable_if_eligible
 
 // [dcl.attr]
 #define assume 1			// { dg-warning "keyword 'assume' defined as macro" "" { target c++26 } }

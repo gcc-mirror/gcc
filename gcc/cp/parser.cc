@@ -28721,8 +28721,6 @@ cp_parser_class_specifier (cp_parser* parser)
 
    class-property-specifier:
      final
-     trivially_relocatable_if_eligible (C++26)
-     replaceable_if_eligible (C++26)
 
    Returns a bitmask representing the class-property-specifiers.  */
 
@@ -28755,38 +28753,6 @@ cp_parser_class_property_specifier_seq_opt (cp_parser *parser)
 	}
       else if (id_equal (token->u.value, "__final"))
 	virt_specifier = VIRT_SPEC_FINAL;
-      else if (id_equal (token->u.value, "trivially_relocatable_if_eligible"))
-	{
-	  if (cxx_dialect < cxx26)
-	    {
-	      /* Warn about the C++26 conditional keyword (but don't parse
-		 it).  */
-	      warning_at (token->location, OPT_Wc__26_compat,
-			  "identifier %qE is a conditional keyword in C++26",
-			  token->u.value);
-	      break;
-	    }
-	  virt_specifier = VIRT_SPEC_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE;
-	}
-      else if (id_equal (token->u.value,
-			 "__trivially_relocatable_if_eligible"))
-	virt_specifier = VIRT_SPEC_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE;
-      else if (id_equal (token->u.value, "replaceable_if_eligible"))
-	{
-	  if (cxx_dialect < cxx26)
-	    {
-	      /* Warn about the C++26 conditional keyword (but don't parse
-		 it).  */
-	      warning_at (token->location, OPT_Wc__26_compat,
-			  "identifier %qE is a conditional keyword in C++26",
-			  token->u.value);
-	      break;
-	    }
-	  virt_specifier = VIRT_SPEC_REPLACEABLE_IF_ELIGIBLE;
-	}
-      else if (id_equal (token->u.value,
-			 "__replaceable_if_eligible"))
-	virt_specifier = VIRT_SPEC_REPLACEABLE_IF_ELIGIBLE;
       else
 	break;
 
@@ -29342,16 +29308,6 @@ cp_parser_class_head (cp_parser* parser,
     DECL_SOURCE_LOCATION (TYPE_NAME (type)) = type_start_token->location;
   if (type && (virt_specifiers & VIRT_SPEC_FINAL))
     CLASSTYPE_FINAL (type) = 1;
-  if (type && (virt_specifiers & VIRT_SPEC_TRIVIALLY_RELOCATABLE_IF_ELIGIBLE))
-    {
-      gcc_assert (!CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED (type));
-      CLASSTYPE_TRIVIALLY_RELOCATABLE_BIT (type) = 1;
-    }
-  if (type && (virt_specifiers & VIRT_SPEC_REPLACEABLE_IF_ELIGIBLE))
-    {
-      gcc_assert (!CLASSTYPE_REPLACEABLE_COMPUTED (type));
-      CLASSTYPE_REPLACEABLE_BIT (type) = 1;
-    }
  out:
   parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
   return type;
