@@ -575,8 +575,8 @@
 
 (define_predicate "symbolic_pcrel_offset_operand"
   (and (match_code "plus")
-       (match_operand 0 "symbolic_pcrel_operand")
-       (match_operand 1 "const_int_operand")))
+       (match_test "symbolic_pcrel_operand (XEXP (op, 0), mode)")
+       (match_test "const_int_operand (XEXP (op, 1), mode)")))
 
 (define_predicate "mem_simple_ldst_operand"
   (match_code "mem")
