@@ -168,11 +168,12 @@ package body Exp_Ch5 is
    --  a procedure with an in-out parameter, and expanded as such.
 
    procedure Expand_Formal_Container_Loop (N : Node_Id);
-   --  Use the primitives specified in an Iterable aspect to expand a loop
-   --  over a so-called formal container, primarily for SPARK usage.
+   --  Use the primitives specified in an Iterable aspect to expand a loop.
+   --  The Iterable aspect is used by the SPARK formal containers, and can
+   --  also be used by user code.
 
    procedure Expand_Formal_Container_Element_Loop (N : Node_Id);
-   --  Same, for an iterator of the form " For E of C". In this case the
+   --  Same, for an iterator of the form "for E of C". In this case the
    --  iterator provides the name of the element, and the cursor is generated
    --  internally.
 
@@ -4549,10 +4550,15 @@ package body Exp_Ch5 is
             Make_Handled_Sequence_Of_Statements (Loc,
               Statements => New_List (New_Loop))));
 
-      --  The loop parameter is declared by an object declaration, but within
-      --  the loop we must prevent user assignments to it, so we analyze the
-      --  declaration and reset the entity kind, before analyzing the rest of
-      --  the loop.
+      --  The loop parameter is declared by an object declaration (Init_Decl),
+      --  but within the loop we must prevent user assignments to it, so we
+      --  analyze Init_Decl and reset the entity kind, before analyzing the
+      --  rest of the loop. First Preanalyze the block statement, to set its
+      --  Identifier, and then push that as the scope in which to analyze
+      --  Init_Decl.
+
+      Preanalyze (N);
+      Push_Scope (Entity (Identifier (N)));
 
       Analyze (Init_Decl);
       Init_Name := Defining_Identifier (Init_Decl);
@@ -4563,6 +4569,8 @@ package body Exp_Ch5 is
       Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma);
       Reinit_Field_To_Zero (Init_Name, F_SPARK_Pragma_Inherited);
       Mutate_Ekind (Init_Name, E_Loop_Parameter);
+
+      Pop_Scope;
 
       --  Wrap the block statements with the condition specified in the
       --  iterator filter when one is present.
@@ -4583,15 +4591,6 @@ package body Exp_Ch5 is
 
       Set_Assignment_OK (Name (Advance));
       Analyze (N);
-
-      --  Because we have to analyze the initial declaration of the loop
-      --  parameter multiple times its scope is incorrectly set at this point
-      --  to the one surrounding the block statement - so set the scope
-      --  manually to be the actual block statement, and indicate that it is
-      --  not visible after the block has been analyzed.
-
-      Set_Scope (Init_Name, Entity (Identifier (N)));
-      Set_Is_Immediately_Visible (Init_Name, False);
    end Expand_Formal_Container_Loop;
 
    ------------------------------------------

@@ -2727,8 +2727,6 @@ package body Exp_Ch7 is
          Obj_Ref            : Node_Id;
          Obj_Typ            : Entity_Id;
 
-      --  Start of processing for Process_Object_Declaration
-
       begin
          --  Handle the object type and the reference to the object. Note
          --  that objects having simple protected components or of a CW type
@@ -2788,18 +2786,6 @@ package body Exp_Ch7 is
                 Master_Node_Id, Obj_Id);
 
             Push_Scope (Scope (Obj_Id));
-
-            --  Avoid generating duplicate names for master nodes
-
-            if Ekind (Obj_Id) = E_Loop_Parameter
-              and then
-                Present (Current_Entity_In_Scope (Chars (Master_Node_Id)))
-            then
-               Set_Chars (Master_Node_Id,
-                 New_External_Name (Chars (Obj_Id),
-                   Suffix => "MN",
-                   Suffix_Index => -1));
-            end if;
 
             if not Has_Strict_Ctrl_Objs or else Count = 1 then
                Prepend_To (Decls, Master_Node_Decl);

@@ -1207,9 +1207,14 @@ package body Sem_Warn is
    begin
       --  No messages if warnings are suppressed, or if we have detected any
       --  real errors so far (this last check avoids junk messages resulting
-      --  from errors, e.g. a subunit that is not loaded).
+      --  from errors, e.g. a subunit that is not loaded). No messages if
+      --  we are in preanalysis (warnings will be detected properly later,
+      --  during analysis).
 
-      if Warning_Mode = Suppress or else Serious_Errors_Detected /= 0 then
+      if Warning_Mode = Suppress
+        or else Serious_Errors_Detected /= 0
+        or else not Full_Analysis
+      then
          return;
       end if;
 
