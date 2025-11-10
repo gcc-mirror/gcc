@@ -1272,7 +1272,6 @@ namespace std _GLIBCXX_VISIBILITY(default)
     {
       static constexpr strong_ordering value = __builtin_type_order(_Tp, _Up);
       using value_type = strong_ordering;
-      using type = type_order<_Tp, _Up>;
       constexpr operator value_type() const noexcept { return value; }
       constexpr value_type operator()() const noexcept { return value; }
     };
