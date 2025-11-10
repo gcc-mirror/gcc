@@ -1,3 +1,28 @@
+2025-11-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/apx-ndd-tls-1b.c: Change to xfail for ! ia32.
+
+2025-11-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/indirect-thunk-5.c: Drop x32 scan.
+	* gcc.target/i386/indirect-thunk-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-extern-6.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-5.c: Likewise.
+	* gcc.target/i386/indirect-thunk-inline-6.c: Likewise.
+
+2025-11-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/cmov12.c: Limit to lp64.
+
+2025-11-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.target/i386/shrink_wrap_1.c: Limit to lp64.
+
+2025-11-09  H.J. Lu  <hjl.tools@gmail.com>
+
+	* gcc.dg/pr90838.c: Adjust for x32
+
 2025-11-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/limited_with4.ads: Rename to...
