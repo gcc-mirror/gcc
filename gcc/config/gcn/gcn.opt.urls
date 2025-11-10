@@ -15,6 +15,9 @@ UrlSuffix(gcc/AMD-GCN-Options.html#index-mtune-1)
 mstack-size=
 UrlSuffix(gcc/AMD-GCN-Options.html#index-mstack-size)
 
+Wopenacc-dims
+UrlSuffix(gcc/AMD-GCN-Options.html#index-Wno-openacc-dims)
+
 mxnack=
 UrlSuffix(gcc/AMD-GCN-Options.html#index-mxnack)
 

@@ -192,6 +192,15 @@ UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-call-summaries)
 fanalyzer-undo-inlining
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-undo-inlining)
 
+fanalyzer-verbose-edges
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-verbose-edges)
+
+fanalyzer-verbose-state-changes
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-verbose-state-changes)
+
+fanalyzer-verbosity=
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-verbosity)
+
 fdump-analyzer
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer)
 
@@ -204,8 +213,23 @@ UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-callgraph)
 fdump-analyzer-exploded-graph
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-exploded-graph)
 
+fdump-analyzer-exploded-nodes
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-exploded-nodes)
+
+fdump-analyzer-exploded-nodes-2
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-exploded-nodes-2)
+
+fdump-analyzer-exploded-nodes-3
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-exploded-nodes-3)
+
 fdump-analyzer-exploded-paths
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-exploded-paths)
+
+fdump-analyzer-feasibility
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-feasibility)
+
+fdump-analyzer-infinite-loop
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-infinite-loop)
 
 fdump-analyzer-json
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fdump-analyzer-json)

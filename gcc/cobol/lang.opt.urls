@@ -19,6 +19,9 @@ LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffixed-form)
 ffree-form
 LangUrlSuffix_Fortran(gfortran/Fortran-Dialect-Options.html#index-ffree-form)
 
+preprocess
+UrlSuffix(gcc/Overall-Options.html#index-preprocess)
+
 iprefix
 UrlSuffix(gcc/Directory-Options.html#index-iprefix) LangUrlSuffix_D(gdc/Directory-Options.html#index-iprefix) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-iprefix)
 

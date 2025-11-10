@@ -16,6 +16,9 @@ UrlSuffix(gcc/Directory-Options.html#index-B) LangUrlSuffix_D(gdc/Directory-Opti
 L
 UrlSuffix(gcc/Directory-Options.html#index-L) LangUrlSuffix_D(gdc/Directory-Options.html#index-L)
 
+N
+UrlSuffix(gcc/Link-Options.html#index-N)
+
 O
 UrlSuffix(gcc/Optimize-Options.html#index-O)
 
@@ -36,10 +39,10 @@ UrlSuffix(gcc/Optimize-Options.html#index-Oz)
 ;   duplicate: 'gcc/Overall-Options.html#index-Q'
 
 Qn
-UrlSuffix(gcc/System-V-Options.html#index-Qn)
+UrlSuffix(gcc/Code-Gen-Options.html#index-Qn)
 
 Qy
-UrlSuffix(gcc/System-V-Options.html#index-Qy)
+UrlSuffix(gcc/Code-Gen-Options.html#index-Qy)
 
 ; skipping UrlSuffix for 'S' due to multiple URLs:
 ;   duplicate: 'gcc/Link-Options.html#index-S-1'
@@ -47,6 +50,24 @@ UrlSuffix(gcc/System-V-Options.html#index-Qy)
 
 T
 UrlSuffix(gcc/Link-Options.html#index-T)
+
+Tbss
+UrlSuffix(gcc/Link-Options.html#index-Tbss)
+
+Tbss=
+UrlSuffix(gcc/Link-Options.html#index-Tbss)
+
+Tdata
+UrlSuffix(gcc/Link-Options.html#index-Tdata)
+
+Tdata=
+UrlSuffix(gcc/Link-Options.html#index-Tdata)
+
+Ttext
+UrlSuffix(gcc/Link-Options.html#index-Ttext)
+
+Ttext=
+UrlSuffix(gcc/Link-Options.html#index-Ttext)
 
 ; skipping UrlSuffix for 'W' due to multiple URLs:
 ;   duplicate: 'gcc/Incompatibilities.html#index-W-3'
@@ -84,6 +105,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wattribute-alias)
 
 Wattribute-alias=
 UrlSuffix(gcc/Warning-Options.html#index-Wattribute-alias)
+
+Wcannot-profile
+UrlSuffix(gcc/Warning-Options.html#index-Wcannot-profile)
 
 Wcast-align
 UrlSuffix(gcc/Warning-Options.html#index-Wcast-align)
@@ -328,6 +352,9 @@ UrlSuffix(gcc/Link-Options.html#index-Xlinker)
 
 Xpreprocessor
 UrlSuffix(gcc/Preprocessor-Options.html#index-Xpreprocessor)
+
+Z
+UrlSuffix(gcc/Link-Options.html#index-Z)
 
 aux-info
 UrlSuffix(gcc/C-Dialect-Options.html#index-aux-info)
@@ -631,6 +658,9 @@ UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-show
 fdiagnostics-path-format=
 UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-path-format)
 
+fdiagnostics-plain-output
+UrlSuffix(gcc/Diagnostic-Message-Formatting-Options.html#index-fdiagnostics-plain-output)
+
 ftabstop=
 UrlSuffix(gcc/Preprocessor-Options.html#index-ftabstop)
 
@@ -678,6 +708,9 @@ UrlSuffix(gcc/Developer-Options.html#index-fdump-noaddr)
 
 freport-bug
 UrlSuffix(gcc/Developer-Options.html#index-freport-bug)
+
+fdump-internal-locations
+UrlSuffix(gcc/Developer-Options.html#index-fdump-internal-locations)
 
 fdump-passes
 UrlSuffix(gcc/Developer-Options.html#index-fdump-passes)
@@ -842,6 +875,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fif-conversion)
 fif-conversion2
 UrlSuffix(gcc/Optimize-Options.html#index-fif-conversion2)
 
+fstack-reuse=
+UrlSuffix(gcc/Code-Gen-Options.html#index-fstack-reuse)
+
 ftree-loop-if-convert
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-loop-if-convert)
 
@@ -865,6 +901,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-finline-functions-called-once)
 
 finline-limit=
 UrlSuffix(gcc/Optimize-Options.html#index-finline-limit)
+
+finline-atomics
+UrlSuffix(gcc/Optimize-Options.html#index-finline-atomics)
 
 finline-stringops
 UrlSuffix(gcc/Optimize-Options.html#index-finline-stringops)
@@ -916,6 +955,12 @@ UrlSuffix(gcc/Optimize-Options.html#index-fipa-pure-const)
 
 fipa-icf
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-icf)
+
+fipa-icf-functions
+UrlSuffix(gcc/Optimize-Options.html#index-fipa-icf-functions)
+
+fipa-icf-variables
+UrlSuffix(gcc/Optimize-Options.html#index-fipa-icf-variables)
 
 fipa-reference
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-reference)
@@ -1141,6 +1186,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-fpredictive-commoning)
 fprefetch-loop-arrays
 UrlSuffix(gcc/Optimize-Options.html#index-fprefetch-loop-arrays)
 
+fprofile
+UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile)
+
 fprofile-abs-path
 UrlSuffix(gcc/Instrumentation-Options.html#index-fprofile-abs-path)
 
@@ -1228,6 +1276,9 @@ UrlSuffix(gcc/Optimize-Options.html#index-flifetime-dse)
 
 flifetime-dse=
 UrlSuffix(gcc/Optimize-Options.html#index-flifetime-dse)
+
+flimit-function-alignment
+UrlSuffix(gcc/Optimize-Options.html#index-flimit-function-alignment)
 
 flive-patching
 UrlSuffix(gcc/Optimize-Options.html#index-flive-patching)
@@ -1649,6 +1700,9 @@ UrlSuffix(gcc/Debugging-Options.html#index-fno-var-tracking-assignments)
 fvar-tracking-assignments-toggle
 UrlSuffix(gcc/Developer-Options.html#index-fno-var-tracking-assignments-toggle)
 
+fvar-tracking-uninit
+UrlSuffix(gcc/Debugging-Options.html#index-fno-var-tracking-uninit)
+
 ftree-vectorize
 UrlSuffix(gcc/Optimize-Options.html#index-ftree-vectorize)
 
@@ -1754,6 +1808,9 @@ UrlSuffix(gcc/Debugging-Options.html#index-ginline-points)
 ginternal-reset-location-views
 UrlSuffix(gcc/Debugging-Options.html#index-ginternal-reset-location-views)
 
+gno-pubnames
+UrlSuffix(gcc/Debugging-Options.html#index-gno-pubnames)
+
 gpubnames
 UrlSuffix(gcc/Debugging-Options.html#index-gpubnames)
 
@@ -1798,6 +1855,9 @@ UrlSuffix(gcc/Directory-Options.html#index-iplugindir_003d)
 
 l
 UrlSuffix(gcc/Link-Options.html#index-l)
+
+n
+UrlSuffix(gcc/Link-Options.html#index-n)
 
 no-canonical-prefixes
 UrlSuffix(gcc/Directory-Options.html#index-no-canonical-prefixes)
@@ -1891,6 +1951,9 @@ UrlSuffix(gcc/Developer-Options.html#index-save-temps)
 save-temps=
 UrlSuffix(gcc/Developer-Options.html#index-save-temps)
 
+t
+UrlSuffix(gcc/Link-Options.html#index-t)
+
 time
 UrlSuffix(gcc/Developer-Options.html#index-time)
 
@@ -1978,4 +2041,7 @@ UrlSuffix(gcc/Link-Options.html#index-z)
 
 fipa-ra
 UrlSuffix(gcc/Optimize-Options.html#index-fipa-ra)
+
+fext-dce
+UrlSuffix(gcc/Optimize-Options.html#index-fext-dce)
 
