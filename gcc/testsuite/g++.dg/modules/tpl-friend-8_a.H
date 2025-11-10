@@ -7,3 +7,13 @@ namespace std {
     friend void f(A) { }
   };
 }
+
+namespace outer {
+  namespace inner {
+    inline namespace more_inner {
+      template<class T> struct B {
+	friend void g() {}
+      };
+    }
+  }
+}

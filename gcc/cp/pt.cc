@@ -11905,9 +11905,10 @@ tsubst_friend_function (tree decl, tree args)
 	 without necessarily having opened the enclosing namespace, so
 	 make sure the namespace is in the purview now too.  */
       if (modules_p ()
-	  && DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (new_friend))
-	  && TREE_CODE (DECL_CONTEXT (new_friend)) == NAMESPACE_DECL)
-	DECL_MODULE_PURVIEW_P (DECL_CONTEXT (new_friend)) = true;
+	  && DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (new_friend)))
+	for (tree ctx = DECL_CONTEXT (new_friend);
+	     TREE_CODE (ctx) == NAMESPACE_DECL; ctx = DECL_CONTEXT (ctx))
+	  DECL_MODULE_PURVIEW_P (ctx) = true;
     }
   else
     {
