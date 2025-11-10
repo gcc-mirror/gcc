@@ -624,7 +624,6 @@ remove_forwarder_block (basic_block bb)
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
   gimple *stmt;
-  edge_iterator ei;
   gimple_stmt_iterator gsi, gsi_to;
 
   /* If there is an abnormal edge to basic block BB, but not into
@@ -648,6 +647,7 @@ remove_forwarder_block (basic_block bb)
      phi node arguments match.  */
   if (!gimple_seq_empty_p (phi_nodes (dest)))
     {
+      edge_iterator ei;
       FOR_EACH_EDGE (e, ei, bb->preds)
 	{
 	  s = find_edge (e->src, dest);
@@ -665,7 +665,7 @@ remove_forwarder_block (basic_block bb)
   bool dest_single_pred_p = single_pred_p (dest);
 
   /* Redirect the edges.  */
-  for (ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
+  for (edge_iterator ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
       bitmap_set_bit (cfgcleanup_altered_bbs, e->src->index);
 
