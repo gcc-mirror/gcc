@@ -363,7 +363,15 @@ package body Ada.Containers.Bounded_Vectors is
                      New_Item  :        Element_Type)
    is
    begin
-      Insert (Container, Last_Index (Container) + 1, New_Item, 1);
+      if T_Check then
+         --  handle the general case
+         Insert (Container, Last_Index (Container) + 1, New_Item, 1);
+      else
+         --  The fast path.
+         --  The first (but not the second) statement may fail a check.
+         Container.Elements (To_Array_Index (Container.Last) + 1) := New_Item;
+         Container.Last := Container.Last + 1;
+      end if;
    end Append;
 
    --------------
