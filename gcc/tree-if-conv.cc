@@ -2245,6 +2245,14 @@ again:
   if (opnum == -1)
     return;
 
+  /* BIT_FIELD_REF and BIT_INSERT_EXPR can't be factored out for non-0 operands
+     as the other operands require constants. */
+  if ((arg1_op.code == BIT_FIELD_REF
+       || arg1_op.code == BIT_INSERT_EXPR)
+      && opnum != 0)
+    return;
+
+
   if (!types_compatible_p (TREE_TYPE (new_arg0), TREE_TYPE (new_arg1)))
     return;
   tree new_res = make_ssa_name (TREE_TYPE (new_arg0), NULL);
