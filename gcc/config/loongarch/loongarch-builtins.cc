@@ -3259,3 +3259,5 @@ loongarch_build_builtin_va_list (void)
 {
   return ptr_type_node;
 }
+
+#include "gt-loongarch-builtins.h"
