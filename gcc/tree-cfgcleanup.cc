@@ -1284,7 +1284,7 @@ cleanup_tree_cfg (unsigned ssa_update_flags)
 static bool
 remove_forwarder_block_with_phi (basic_block bb)
 {
-  edge succ = single_succ_edge (bb);
+  edge e, succ = single_succ_edge (bb);
   basic_block dest = succ->dest;
   basic_block dombb, domdest, dom;
 
@@ -1304,9 +1304,9 @@ remove_forwarder_block_with_phi (basic_block bb)
   bool dest_single_pred_p = single_pred_p (dest);
 
   /* Redirect each incoming edge to BB to DEST.  */
-  while (EDGE_COUNT (bb->preds) > 0)
+  for (edge_iterator ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
-      edge e = EDGE_PRED (bb, 0), s;
+      edge s;
       gphi_iterator gsi;
 
       s = find_edge (e->src, dest);
