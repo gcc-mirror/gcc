@@ -14231,8 +14231,8 @@ instantiating_tu_local_entity (tree decl)
     return false;
 
   tree origin = get_originating_module_decl (decl);
-  if (!DECL_LANG_SPECIFIC (origin)
-      || !DECL_MODULE_IMPORT_P (origin))
+  if (!DECL_LANG_SPECIFIC (STRIP_TEMPLATE (origin))
+      || !DECL_MODULE_IMPORT_P (STRIP_TEMPLATE (origin)))
     return false;
 
   /* Referencing TU-local entities from a header is generally OK.
