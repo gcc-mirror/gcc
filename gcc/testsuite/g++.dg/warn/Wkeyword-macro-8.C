@@ -104,9 +104,9 @@
 #undef deprecated			// { dg-warning "undefining keyword 'deprecated'" "" { target c++14 } }
 #undef fallthrough			// { dg-warning "undefining keyword 'fallthrough'" "" { target c++17 } }
 #undef indeterminate
-#undef likely				// { dg-warning "undefining keyword 'likely'" "" { target c++20 } }
+#undef likely
 #undef maybe_unused			// { dg-warning "undefining keyword 'maybe_unused'" "" { target c++17 } }
 #undef nodiscard			// { dg-warning "undefining keyword 'nodiscard'" "" { target c++17 } }
 #undef noreturn				// { dg-warning "undefining keyword 'noreturn'" "" { target c++11 } }
 #undef no_unique_address		// { dg-warning "undefining keyword 'no_unique_address'" "" { target c++20 } }
-#undef unlikely				// { dg-warning "undefining keyword 'unlikely'" "" { target c++20 } }
+#undef unlikely

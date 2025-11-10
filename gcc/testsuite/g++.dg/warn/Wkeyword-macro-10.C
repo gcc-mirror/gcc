@@ -17,7 +17,7 @@
 #undef inline				// { dg-warning "undefining keyword 'inline'" }
 #define inline __inline__ __attribute__((__always_inline__))	// { dg-warning "keyword 'inline' defined as macro" }
 #define likely(a) a
-#undef likely				// { dg-warning "undefining keyword 'likely'" "" { target c++20 } }
+#undef likely
 #define unlikely(a, b, c) a + b + c
 #define unlikely(a, b, c) a + b + c
-#undef unlikely				// { dg-warning "undefining keyword 'unlikely'" "" { target c++20 } }
+#undef unlikely

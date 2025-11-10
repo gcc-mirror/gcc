@@ -17,6 +17,6 @@
 #undef inline				// { dg-error "undefining keyword 'inline'" "" { target c++26 } }
 #define inline __inline__ __attribute__((__always_inline__))	// { dg-error "keyword 'inline' defined as macro" "" { target c++26 } }
 #define likely(a) a
-#undef likely				// { dg-error "undefining keyword 'likely'" "" { target c++26 } }
+#undef likely
 #define unlikely(a, b, c) a + b + c
 #define unlikely(a, b, c) a + b + c

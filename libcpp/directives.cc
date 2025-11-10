@@ -740,9 +740,14 @@ do_undef (cpp_reader *pfile)
 	  && !CPP_OPTION (pfile, suppress_builtin_macro_warnings)
 	  && cpp_keyword_p (node))
 	{
-	  if (CPP_OPTION (pfile, cpp_pedantic)
-	      && CPP_OPTION (pfile, cplusplus)
-	      && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
+	  if (CPP_OPTION (pfile, cplusplus)
+	      && (strcmp ((const char *) NODE_NAME (node), "likely") == 0
+		  || strcmp ((const char *) NODE_NAME (node),
+			     "unlikely") == 0))
+	    /* CWG3053: likely and unlikely can be undefined.  */;
+	  else if (CPP_OPTION (pfile, cpp_pedantic)
+		   && CPP_OPTION (pfile, cplusplus)
+		   && CPP_OPTION (pfile, lang) >= CLK_GNUCXX26)
 	    cpp_pedwarning (pfile, CPP_W_KEYWORD_MACRO,
 			    "undefining keyword %qs", NODE_NAME (node));
 	  else
