@@ -2061,6 +2061,14 @@
 			     (V2QI "v2qi")])
 (define_mode_attr MVE_vctp [(V16BI "8") (V8BI "16") (V4BI "32") (V2QI "64")])
 
+;; Assembly modifier for a const_int operand to narrow it to a
+;; specific mode.  For vector modes this is the element size.
+;; Currently only supports SI and HI.
+
+(define_mode_attr asm_const_size [(SI "") (HI "L")
+				  (V4SI "") (V2SI "")
+				  (V8HI "L") (V4HI "L")])
+
 ;;----------------------------------------------------------------------------
 ;; Code attributes
 ;;----------------------------------------------------------------------------
