@@ -2702,6 +2702,16 @@
   [(set_attr "type" "simd_shift")
    (set_attr "mode" "<MODE>")])
 
+(define_insn "lasx_xvbsrl_d_f"
+  [(set (match_operand:V4DF 0 "register_operand" "=f")
+	(unspec:V4DF [(match_operand:V4DF 1 "register_operand" "f")
+		      (match_operand 2 "const_uimm5_operand" "")]
+		      UNSPEC_LASX_XVBSRL_V))]
+  "ISA_HAS_LASX"
+  "xvbsrl.v\t%u0,%u1,%2"
+  [(set_attr "type" "simd_shift")
+   (set_attr "mode" "V4DF")])
+
 (define_insn "lasx_xvbsll_<lasxfmt>"
   [(set (match_operand:ILASX 0 "register_operand" "=f")
 	(unspec:ILASX [(match_operand:ILASX 1 "register_operand" "f")

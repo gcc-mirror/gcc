@@ -10092,7 +10092,7 @@ emit_reduc_half (rtx dest, rtx src, int i)
       if (i == 256)
 	tem = gen_lasx_xvpermi_d_v4df (dest, src, GEN_INT (0xe));
       else
-	tem = gen_lasx_xvpermi_d_v4df (dest, src, const1_rtx);
+	tem = gen_lasx_xvbsrl_d_f (dest, src, GEN_INT (0x8));
       break;
     case E_V32QImode:
     case E_V16HImode:
