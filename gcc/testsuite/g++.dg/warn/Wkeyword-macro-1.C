@@ -103,7 +103,7 @@
 #define carries_dependency 1
 #define deprecated 1			// { dg-error "keyword 'deprecated' defined as macro" "" { target c++26 } }
 #define fallthrough 1			// { dg-error "keyword 'fallthrough' defined as macro" "" { target c++26 } }
-#define indeterminate 1
+#define indeterminate 1			// { dg-error "keyword 'indeterminate' defined as macro" "" { target c++26 } }
 #define likely 1			// { dg-error "keyword 'likely' defined as macro" "" { target c++26 } }
 #define maybe_unused 1			// { dg-error "keyword 'maybe_unused' defined as macro" "" { target c++26 } }
 #define nodiscard 1			// { dg-error "keyword 'nodiscard' defined as macro" "" { target c++26 } }

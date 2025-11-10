@@ -422,6 +422,7 @@ cxx_init (void)
 	{
 	  cpp_warn (parse_in, "replaceable_if_eligible");
 	  cpp_warn (parse_in, "trivially_relocatable_if_eligible");
+	  cpp_warn (parse_in, "indeterminate");
 	}
     }
 

@@ -103,7 +103,7 @@
 #undef carries_dependency
 #undef deprecated			// { dg-error "undefining keyword 'deprecated'" "" { target c++26 } }
 #undef fallthrough			// { dg-error "undefining keyword 'fallthrough'" "" { target c++26 } }
-#undef indeterminate
+#undef indeterminate			// { dg-error "undefining keyword 'indeterminate'" "" { target c++26 } }
 #undef likely
 #undef maybe_unused			// { dg-error "undefining keyword 'maybe_unused'" "" { target c++26 } }
 #undef nodiscard			// { dg-error "undefining keyword 'nodiscard'" "" { target c++26 } }

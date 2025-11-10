@@ -103,7 +103,7 @@
 #undef carries_dependency		// { dg-warning "undefining keyword 'carries_dependency'" "" { target { c++11 && c++23_down } } }
 #undef deprecated			// { dg-warning "undefining keyword 'deprecated'" "" { target c++14 } }
 #undef fallthrough			// { dg-warning "undefining keyword 'fallthrough'" "" { target c++17 } }
-#undef indeterminate
+#undef indeterminate			// { dg-warning "undefining keyword 'indeterminate'" "" { target c++26 } }
 #undef likely
 #undef maybe_unused			// { dg-warning "undefining keyword 'maybe_unused'" "" { target c++17 } }
 #undef nodiscard			// { dg-warning "undefining keyword 'nodiscard'" "" { target c++17 } }
