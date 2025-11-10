@@ -1338,6 +1338,7 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports,
 		      bind = STAT_VISIBLE (bind);
 		  }
 
+		bind = ovl_skip_hidden (bind);
 		if (on_inst_path || visible)
 		  add_fns (bind);
 		else
