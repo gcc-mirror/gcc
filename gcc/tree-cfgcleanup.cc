@@ -719,23 +719,20 @@ remove_forwarder_block (basic_block bb)
   bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
 
   /* Update the dominators.  */
-  if (dom_info_available_p (CDI_DOMINATORS))
+  basic_block dom, dombb, domdest;
+
+  dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
+  domdest = get_immediate_dominator (CDI_DOMINATORS, dest);
+  if (domdest == bb)
     {
-      basic_block dom, dombb, domdest;
-
-      dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
-      domdest = get_immediate_dominator (CDI_DOMINATORS, dest);
-      if (domdest == bb)
-	{
-	  /* Shortcut to avoid calling (relatively expensive)
-	     nearest_common_dominator unless necessary.  */
-	  dom = dombb;
-	}
-      else
-	dom = nearest_common_dominator (CDI_DOMINATORS, domdest, dombb);
-
-      set_immediate_dominator (CDI_DOMINATORS, dest, dom);
+      /* Shortcut to avoid calling (relatively expensive)
+	 nearest_common_dominator unless necessary.  */
+      dom = dombb;
     }
+  else
+    dom = nearest_common_dominator (CDI_DOMINATORS, domdest, dombb);
+
+  set_immediate_dominator (CDI_DOMINATORS, dest, dom);
 
   /* Adjust latch infomation of BB's parent loop as otherwise
      the cfg hook has a hard time not to kill the loop.  */
