@@ -7858,10 +7858,7 @@ package body Exp_Ch3 is
 
          --  Ada 2005 (AI-318-02): If the initialization expression is a call
          --  to a build-in-place function, then access to the declared object
-         --  must be passed to the function. Currently we limit such functions
-         --  to those with constrained limited result subtypes, but eventually
-         --  plan to expand the allowed forms of functions that are treated as
-         --  build-in-place.
+         --  must be passed to the function.
 
          elsif Is_Build_In_Place_Function_Call (Expr_Q) then
             Make_Build_In_Place_Call_In_Object_Declaration (N, Expr_Q);

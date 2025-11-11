@@ -4486,21 +4486,6 @@ package body Sem_Res is
                   Set_Do_Range_Check (Expression (A));
                end if;
 
-            --  If the actual is a function call that returns a limited
-            --  unconstrained object that needs finalization, create a
-            --  transient scope for it, so that it can receive the proper
-            --  finalization list.
-
-            elsif Expander_Active
-              and then Nkind (A) = N_Function_Call
-              and then Is_Limited_Record (Etype (F))
-              and then not Is_Constrained (Etype (F))
-              and then (Needs_Finalization (Etype (F))
-                         or else Has_Task (Etype (F)))
-            then
-               Establish_Transient_Scope (A, Manage_Sec_Stack => False);
-               Resolve (A, Etype (F));
-
             --  A small optimization: if one of the actuals is a concatenation
             --  create a block around a procedure call to recover stack space.
             --  This alleviates stack usage when several procedure calls in
@@ -7063,10 +7048,11 @@ package body Sem_Res is
 
       --  b) Subprograms that are ignored ghost entities do not return anything
 
-      --  c) Calls to a build-in-place function, since such functions may
-      --  allocate their result directly in a target object, and cases where
-      --  the result does get allocated in the secondary stack are checked for
-      --  within the specialized Exp_Ch6 procedures for expanding those
+      --  c) Calls to a build-in-place function, since such functions allocate
+      --  their result directly in the target object or on the secondary stack,
+      --  and cases where the target object needs to be created and destroyed
+      --  on exit to the context, or the secondary stack is used, are checked
+      --  for within the specialized Exp_Ch6 procedures for expanding those
       --  build-in-place calls.
 
       --  d) Calls to inlinable expression functions do not use the secondary

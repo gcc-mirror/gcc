@@ -5713,38 +5713,13 @@ package body Exp_Ch6 is
 
       if Nkind (Call_Node) = N_Function_Call
         and then Needs_Finalization (Etype (Call_Node))
+        and then not Is_Build_In_Place_Function_Call (Call_Node)
+        and then (No (First_Formal (Subp))
+                   or else not
+                     Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
       then
-         if not Is_Build_In_Place_Function_Call (Call_Node)
-           and then
-             (No (First_Formal (Subp))
-               or else
-                 not Is_Concurrent_Record_Type (Etype (First_Formal (Subp))))
-         then
-            Expand_Ctrl_Function_Call
-              (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
-
-         --  Build-in-place function calls which appear in anonymous contexts
-         --  need a transient scope to ensure the proper finalization of the
-         --  intermediate result after its use.
-
-         elsif Is_Build_In_Place_Function_Call (Call_Node)
-           and then Nkind (Parent (Unqual_Conv (Call_Node))) in
-                      N_Attribute_Reference
-                    | N_Function_Call
-                    | N_Indexed_Component
-                    | N_Object_Renaming_Declaration
-                    | N_Procedure_Call_Statement
-                    | N_Selected_Component
-                    | N_Slice
-           and then
-             (Ekind (Current_Scope) /= E_Loop
-               or else Nkind (Parent (Call_Node)) /= N_Function_Call
-               or else not
-                 Is_Build_In_Place_Function_Call (Parent (Call_Node)))
-         then
-            Establish_Transient_Scope
-              (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
-         end if;
+         Expand_Ctrl_Function_Call
+           (Call_Node, Needs_Secondary_Stack (Etype (Call_Node)));
 
       --  Functions returning noncontrolled objects that may be subject to
       --  user-defined indexing also need special attention. The problem
@@ -9313,6 +9288,8 @@ package body Exp_Ch6 is
       Loc         : constant Source_Ptr := Sloc (Function_Call);
       Func_Call   : constant Node_Id    := Unqual_Conv (Function_Call);
       Function_Id : Entity_Id;
+      Known_Size  : Boolean;
+      Needs_Fin   : Boolean;
       Result_Subt : Entity_Id;
 
    begin
@@ -9339,11 +9316,12 @@ package body Exp_Ch6 is
       Warn_BIP (Func_Call);
 
       Result_Subt := Etype (Function_Id);
+      Known_Size := Caller_Known_Size (Func_Call, Result_Subt);
+      Needs_Fin := Needs_Finalization (Result_Subt);
 
       --  If the build-in-place function returns a controlled object, then the
-      --  object needs to be finalized immediately after the context. Since
-      --  this case produces a transient scope, the servicing finalizer needs
-      --  to name the returned object.
+      --  object needs to be finalized immediately after the context is exited,
+      --  which requires the creation of a transient scope and a named object.
 
       --  If the build-in-place function returns a definite subtype, then an
       --  object also needs to be created and an access value designating it
@@ -9357,9 +9335,12 @@ package body Exp_Ch6 is
       --  the expander using the appropriate mechanism in Make_Build_In_Place_
       --  Call_In_Object_Declaration.
 
-      if Needs_Finalization (Result_Subt)
-        or else Caller_Known_Size (Func_Call, Result_Subt)
-      then
+      if Needs_Fin or else Known_Size then
+         if Needs_Fin then
+            Establish_Transient_Scope
+              (Func_Call, Manage_Sec_Stack => not Known_Size);
+         end if;
+
          declare
             Temp_Id   : constant Entity_Id := Make_Temporary (Loc, 'R');
             Temp_Decl : constant Node_Id   :=
@@ -9399,6 +9380,8 @@ package body Exp_Ch6 is
 
          Add_Access_Actual_To_Build_In_Place_Call
            (Func_Call, Function_Id, Empty);
+
+         Establish_Transient_Scope (Func_Call, Manage_Sec_Stack => True);
 
          --  Mark the call as processed as a build-in-place call
 
