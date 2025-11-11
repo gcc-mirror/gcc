@@ -945,6 +945,7 @@ parse_format_list (st_parameter_dt *dtp, bool *seen_dd)
 	      goto finished;
 	    }
 	  tail->u.real.w = 0;
+	  tail->u.real.e = -1;
 
 	  /* Look for the dot seperator.  */
 	  u = format_lex (fmt);

@@ -14,12 +14,13 @@
       
       write (line,'(1pd24.15e6)',iostat=istat, iomsg=msg) 1.0d0, 1.234 ! { dg-warning "Period required" }
       if (istat.ne.0) STOP 3
-      if (line.ne."   1.000000000000000D+001.E+00") STOP 4
+      if (line.ne."   1.000000000000000D+001.E+00") STOP 2
 
       str = '(1pd0.15)'
       write (line,str,iostat=istat, iomsg=msg) 1.0d0
-      if (line.ne."1.000000000000000D+0") STOP 5
+      if (line.ne."1.000000000000000D+000") STOP 4
       read (*,str,iostat=istat, iomsg=msg) x
+      
       if (istat.ne.5006 .or. msg(1:10).ne."Zero width") STOP 6
       if (x.ne.555.25) STOP 7
       

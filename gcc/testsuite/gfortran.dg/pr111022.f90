@@ -60,13 +60,13 @@ program pr111022
   write(buffer,"(E0.3E0)") .6660_4
   if (buffer.ne."0.666E+0") stop 27
   write(buffer,"(E0.3)") .6660_4
-  if (buffer.ne."0.666E+0") stop 28
+  if (buffer.ne."0.666E+00") stop 28
   write(buffer,"(E0.1E0)") .6660_4
   if (buffer.ne."0.7E+0") stop 29
   write(buffer,"(E0.1)") .6660_4
-  if (buffer.ne."0.7E+0") stop 30
+  if (buffer.ne."0.7E+00") stop 30
   write(buffer,"(E0.5E0)") .6660_4
   if (buffer.ne."0.66600E+0") stop 31
   write(buffer,"(E0.5)") .6660_4
-  if (buffer.ne."0.66600E+0") stop 32
+  if (buffer.ne."0.66600E+00") stop 32
 end program pr111022
