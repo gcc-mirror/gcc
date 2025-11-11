@@ -233,9 +233,13 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	  else if (i == 2
 		   && gimple_assign_single_p (stmt)
 		   && num_ops == 2)
-	    gimplify_expr (&op, &pre, NULL,
-			   rhs_predicate_for (gimple_assign_lhs (stmt)),
-			   fb_rvalue);
+	    {
+	      if (gimple_clobber_p (stmt))
+		continue;
+	      gimplify_expr (&op, &pre, NULL,
+			     rhs_predicate_for (gimple_assign_lhs (stmt)),
+			     fb_rvalue);
+	    }
 	  else if (i == 2 && is_gimple_call (stmt))
 	    {
 	      if (TREE_CODE (op) == FUNCTION_DECL)
@@ -254,8 +258,9 @@ gimple_regimplify_operands (gimple *stmt, gimple_stmt_iterator *gsi_p)
 	{
 	  bool need_temp = false;
 
-	  if (gimple_assign_single_p (stmt)
-	      && num_ops == 2)
+	  if (gimple_clobber_p (stmt))
+	    ;
+	  else if (gimple_assign_single_p (stmt) && num_ops == 2)
 	    gimplify_expr (gimple_assign_rhs1_ptr (stmt), &pre, NULL,
 			   rhs_predicate_for (gimple_assign_lhs (stmt)),
 			   fb_rvalue);
