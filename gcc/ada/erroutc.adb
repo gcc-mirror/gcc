@@ -461,15 +461,16 @@ package body Erroutc is
 
         and then not Errors.Table (Cur_Msg).Msg_Cont
 
-        --  Don't delete if prev msg is warning and new msg is an error.
-        --  This is because we don't want a real error masked by a
-        --  warning. In all other cases (that is parse errors for the
-        --  same line that are not unconditional) we do delete the
-        --  message. This helps to avoid junk extra messages from
-        --  cascaded parsing errors
+        --  Don't delete if prev msg is warning or a non-serious-error and new
+        --  msg is an error. This is because we don't want a real error masked
+        --  by a warning. In all other cases (that is parse errors for the same
+        --  line that are not unconditional) we do delete the message. This
+        --  helps to avoid junk extra messages from cascaded parsing errors.
 
-        and then (Errors.Table (Prev_Msg).Kind not in Warning | Style
-                  or else Errors.Table (Cur_Msg).Kind in Warning | Style);
+        and then (Errors.Table (Prev_Msg).Kind
+                  not in Warning | Style | Non_Serious_Error
+                  or else Errors.Table (Cur_Msg).Kind
+                          in Warning | Style | Non_Serious_Error);
    end Is_Redundant_Error_Message;
 
    --------------------
