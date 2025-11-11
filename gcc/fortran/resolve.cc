@@ -12650,7 +12650,6 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 	{
 	  if (fa->shadow)
 	    {
-	      gfc_symbol *outer_sym;
 	      gfc_symtree *shadow_st;
 	      const char *shadow_name_str;
 	      char *outer_name;
