@@ -4253,7 +4253,8 @@ install-driver: installdirs xgcc$(exeext)
 	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(FULL_DRIVER_NAME) ); \
 	  fi; \
 	  if [ ! -f gcc-cross$(exeext) ] \
-	      && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ]; then \
+	      && [ "$(GCC_INSTALL_NAME)" != "$(GCC_TARGET_INSTALL_NAME)" ] \
+	      && [ "$(GCC_TARGET_INSTALL_NAME)$(exeext)" != "$(FULL_DRIVER_NAME)" ] ; then \
 	    rm -f $(DESTDIR)$(bindir)/$(target_noncanonical)-gcc-tmp$(exeext); \
 	    ( cd $(DESTDIR)$(bindir) && \
 	      $(LN) $(GCC_INSTALL_NAME)$(exeext) $(target_noncanonical)-gcc-tmp$(exeext) && \
