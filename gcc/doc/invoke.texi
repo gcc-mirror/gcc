@@ -38425,6 +38425,19 @@ As @code{fixits-v1}, but columns are expressed as display columns,
 as per @option{-fdiagnostics-column-unit=display}.
 @end table
 
+@vindex EXPERIMENTAL_SARIF_SOCKET
+@item EXPERIMENTAL_SARIF_SOCKET
+If @env{EXPERIMENTAL_SARIF_SOCKET} is set in the environment, then the
+compiler will attempt to connect to a UNIX domain stream socket with
+that name, and send an @code{OnSarifResult} JSON-RPC 2.0 notification to
+it for each diagnostic that occurs, where the value of the notification
+is a SARIF @code{result} object.
+
+The compiler will fail immediately if @env{EXPERIMENTAL_SARIF_SOCKET} is
+set and it cannot connect to it.
+
+This feature is experimental and subject to change or removal without
+notice.
 @end table
 
 @noindent

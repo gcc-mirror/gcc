@@ -55,6 +55,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "xml.h"
 #include "intl.h"
+#include <sys/un.h>
+#include <sys/socket.h>
 
 namespace diagnostics {
 
@@ -1917,7 +1919,8 @@ sarif_builder::emit_diagram (const diagram &d)
   m_cur_group_result->on_diagram (d, *this);
 }
 
-/* Implementation of "end_group_cb" for SARIF output.  */
+/* Implementation of "end_group_cb" for SARIF output.
+   Append the current sarifResult to results, and set it to nullptr.  */
 
 void
 sarif_builder::end_group ()
@@ -4011,7 +4014,7 @@ public:
   {
     /* No-op,  */
   }
-  void on_end_group () final override
+  void on_end_group () override
   {
     m_builder.end_group ();
   }
@@ -4121,6 +4124,93 @@ public:
 
 private:
   output_file m_output_file;
+};
+
+class sarif_socket_sink : public sarif_sink
+{
+public:
+  sarif_socket_sink (context &dc,
+		     const line_maps *line_maps,
+		     std::unique_ptr<sarif_serialization_format> serialization_format,
+		     const sarif_generation_options &sarif_gen_opts,
+		     int fd)
+  : sarif_sink (dc, line_maps,
+		std::move (serialization_format),
+		sarif_gen_opts),
+    m_fd (fd)
+  {
+  }
+  ~sarif_socket_sink ()
+  {
+    close (m_fd);
+  }
+  void dump_kind (FILE *out) const override
+  {
+    fprintf (out, "sarif_socket_sink: fd=%i", m_fd);
+  }
+  bool machine_readable_stderr_p () const final override
+  {
+    return false;
+  }
+
+  /* Rather than appending it to the results array, instead
+     send it to the output socket as a JSON-RPC 2.0 notification.  */
+  void on_end_group () final override
+  {
+    // TODO: what about buffering?
+
+    std::unique_ptr<sarif_result> result = m_builder.take_current_result ();
+    if (!result)
+      return;
+
+    auto notification = std::make_unique<json::object> ();
+    notification->set_string ("jsonrpc", "2.0");
+    notification->set_string ("method", "OnSarifResult");
+    {
+      auto params = std::make_unique<json::object> ();
+      params->set ("result", std::move (result));
+      notification->set ("params", std::move (params));
+    }
+
+    send_rpc_notification (*notification);
+  }
+
+private:
+  void
+  send_rpc_notification (const json::object &notification)
+  {
+    DIAGNOSTICS_LOG_SCOPE_PRINTF0 (m_context.get_logger (),
+				   "sarif_socket_sink::send_rpc_notification");
+    const bool formatted = false;
+    pretty_printer pp_content;
+    notification.print (&pp_content, formatted);
+    size_t content_length = strlen (pp_formatted_text (&pp_content));
+
+    pretty_printer pp_header;
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic push
+#  pragma GCC diagnostic ignored "-Wformat-diag"
+#endif
+    pp_printf (&pp_header, "Content-Length: %li\n\n", content_length);
+#if __GNUC__ >= 10
+#  pragma GCC diagnostic pop
+#endif
+    size_t header_length = strlen (pp_formatted_text (&pp_header));
+
+    size_t output_size = header_length + content_length;
+    char *buf = (char *)xmalloc (output_size);
+    memcpy (buf, pp_formatted_text (&pp_header), header_length);
+    memcpy (buf + header_length,
+	    pp_formatted_text (&pp_content),
+	    content_length);
+
+    /* TODO: should we attempt to handle partial writes here?  */
+    write (m_fd, buf, output_size);
+
+    free (buf);
+  }
+
+  int m_fd;
 };
 
 /* Print the start of an embedded link to PP, as per 3.11.6.  */
@@ -4446,6 +4536,47 @@ sarif_generation_options::dump (FILE *outfile, int indent) const
 			      "m_version",
 			      get_dump_string_for_sarif_version (m_version));
   DIAGNOSTICS_DUMPING_EMIT_BOOL_FIELD (m_state_graph);
+}
+
+void
+maybe_open_sarif_sink_for_socket (context &dc)
+{
+  gcc_assert (line_table);
+
+  const char * const env_var_name = "EXPERIMENTAL_SARIF_SOCKET";
+  const char * const socket_name = getenv (env_var_name);
+  if (!socket_name)
+    return;
+
+  int sfd = socket (AF_UNIX, SOCK_STREAM, 0);
+  if (sfd == -1)
+    fatal_error (UNKNOWN_LOCATION,
+		 "unable to create socket");
+
+  struct sockaddr_un addr;
+  memset (&addr, 0, sizeof (addr));
+  addr.sun_family = AF_UNIX;
+  strncpy (addr.sun_path, socket_name, sizeof (addr.sun_path) - 1);
+
+  if (connect (sfd, (struct sockaddr *)&addr, sizeof (addr)) == -1)
+    fatal_error (UNKNOWN_LOCATION,
+		 "unable to connect to %qs",
+		 socket_name);
+
+  /* TODO: should there be a way to specify other key/value
+     pairs here?  (as per -fdiagnostics-add-output, but as an
+     environment variable, perhaps).  */
+  sarif_generation_options sarif_gen_opts;
+  sarif_gen_opts.m_version = sarif_version::v2_1_0;
+
+  auto sink_ = std::make_unique<sarif_socket_sink>
+    (dc,
+     line_table,
+     std::make_unique <sarif_serialization_format_json> (true),
+     sarif_gen_opts,
+     sfd);
+  sink_->update_printer ();
+  dc.add_sink (std::move (sink_));
 }
 
 #if CHECKING_P

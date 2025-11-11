@@ -188,6 +188,9 @@ extern std::unique_ptr<sarif_edge>
 make_sarif_edge (const digraphs::edge &e,
 		 sarif_builder *builder);
 
+extern void
+maybe_open_sarif_sink_for_socket (context &ctxt);
+
 } // namespace diagnostics
 
 #endif /* ! GCC_DIAGNOSTICS_SARIF_SINK_H */

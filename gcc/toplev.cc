@@ -22,6 +22,7 @@ along with GCC; see the file COPYING3.  If not see
    in the proper order, and counts the time used by each.
    Error messages and low-level interface to malloc also handled here.  */
 
+#define INCLUDE_VECTOR
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
@@ -83,6 +84,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "omp-offload.h"
 #include "diagnostics/changes.h"
 #include "diagnostics/file-cache.h"
+#include "diagnostics/sarif-sink.h"
 #include "tree-pass.h"
 #include "dumpfile.h"
 #include "ipa-fnsummary.h"
@@ -2351,6 +2353,8 @@ toplev::main (int argc, char **argv)
 				     param_file_cache_lines);
 
   handle_common_deferred_options ();
+
+  diagnostics::maybe_open_sarif_sink_for_socket (*global_dc);
 
   init_local_tick ();
 
