@@ -3101,6 +3101,8 @@ typedef struct gfc_forall_iterator
 {
   gfc_expr *var, *start, *end, *stride;
   gfc_loop_annot annot;
+  /* index-name shadows a variable from outer scope.  */
+  bool shadow;
   struct gfc_forall_iterator *next;
 }
 gfc_forall_iterator;

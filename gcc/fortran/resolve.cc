@@ -6151,7 +6151,7 @@ gfc_resolve_ref (gfc_expr *expr)
 	    }
 
 	  /* The F08 standard requires(See R425, R431, R435, and in particular
-	     Note 6.7) that a PDT parameter reference be a scalar even if 
+	     Note 6.7) that a PDT parameter reference be a scalar even if
 	     the designator is an array."  */
 	  if (array_ref && last_pdt && last_pdt->attr.pdt_type
 	      && (ref->u.c.component->attr.pdt_kind
@@ -12251,11 +12251,10 @@ static void
 gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
 {
   int n;
+  gfc_symbol *forall_index;
 
   for (n = 0; n < nvar; n++)
     {
-      gfc_symbol *forall_index;
-
       forall_index = var_expr[n]->symtree->n.sym;
 
       /* Check whether the assignment target is one of the FORALL index
@@ -12269,8 +12268,12 @@ gfc_resolve_assign_in_forall (gfc_code *code, int nvar, gfc_expr **var_expr)
 	  /* If one of the FORALL index variables doesn't appear in the
 	     assignment variable, then there could be a many-to-one
 	     assignment.  Emit a warning rather than an error because the
-	     mask could be resolving this problem.  */
-	  if (!find_forall_index (code->expr1, forall_index, 0))
+	     mask could be resolving this problem.
+	     DO NOT emit this warning for DO CONCURRENT - reduction-like
+	     many-to-one assignments are semantically valid (formalized with
+	     the REDUCE locality-spec in Fortran 2023).  */
+	  if (!find_forall_index (code->expr1, forall_index, 0)
+	      && !gfc_do_concurrent_flag)
 	    gfc_warning (0, "The FORALL with index %qs is not used on the "
 			 "left side of the assignment at %L and so might "
 			 "cause multiple assignment to this object",
@@ -12390,7 +12393,7 @@ gfc_count_forall_iterators (gfc_code *code)
   int max_iters, sub_iters, current_iters;
   gfc_forall_iterator *fa;
 
-  gcc_assert(code->op == EXEC_FORALL);
+  gcc_assert (code->op == EXEC_FORALL || code->op == EXEC_DO_CONCURRENT);
   max_iters = 0;
   current_iters = 0;
 
@@ -12401,7 +12404,7 @@ gfc_count_forall_iterators (gfc_code *code)
 
   while (code)
     {
-      if (code->op == EXEC_FORALL)
+      if (code->op == EXEC_FORALL || code->op == EXEC_DO_CONCURRENT)
         {
           sub_iters = gfc_count_forall_iterators (code);
           if (sub_iters > max_iters)
@@ -12414,8 +12417,160 @@ gfc_count_forall_iterators (gfc_code *code)
 }
 
 
-/* Given a FORALL construct, first resolve the FORALL iterator, then call
-   gfc_resolve_forall_body to resolve the FORALL body.  */
+/* Given a FORALL construct.
+   1) Resolve the FORALL iterator.
+   2) Check for shadow index-name(s) and update code block.
+   3) call gfc_resolve_forall_body to resolve the FORALL body.  */
+
+/* Custom recursive expression walker that replaces symbols.
+   This ensures we visit ALL expressions including those in array subscripts.  */
+
+static void
+replace_in_expr_recursive (gfc_expr *expr, gfc_symbol *old_sym, gfc_symtree *new_st)
+{
+  if (!expr)
+    return;
+
+  /* Check if this is a variable reference to replace */
+  if (expr->expr_type == EXPR_VARIABLE && expr->symtree->n.sym == old_sym)
+    {
+      expr->symtree = new_st;
+      expr->ts = new_st->n.sym->ts;
+    }
+
+  /* Walk through reference chain (array subscripts, substrings, etc.) */
+  for (gfc_ref *ref = expr->ref; ref; ref = ref->next)
+    {
+      if (ref->type == REF_ARRAY)
+	{
+	  gfc_array_ref *ar = &ref->u.ar;
+	  for (int i = 0; i < ar->dimen; i++)
+	    {
+	      replace_in_expr_recursive (ar->start[i], old_sym, new_st);
+	      replace_in_expr_recursive (ar->end[i], old_sym, new_st);
+	      replace_in_expr_recursive (ar->stride[i], old_sym, new_st);
+	    }
+	}
+      else if (ref->type == REF_SUBSTRING)
+	{
+	  replace_in_expr_recursive (ref->u.ss.start, old_sym, new_st);
+	  replace_in_expr_recursive (ref->u.ss.end, old_sym, new_st);
+	}
+    }
+
+  /* Walk through sub-expressions based on expression type */
+  switch (expr->expr_type)
+    {
+    case EXPR_OP:
+      replace_in_expr_recursive (expr->value.op.op1, old_sym, new_st);
+      replace_in_expr_recursive (expr->value.op.op2, old_sym, new_st);
+      break;
+
+    case EXPR_FUNCTION:
+      for (gfc_actual_arglist *a = expr->value.function.actual; a; a = a->next)
+	replace_in_expr_recursive (a->expr, old_sym, new_st);
+      break;
+
+    case EXPR_ARRAY:
+    case EXPR_STRUCTURE:
+      for (gfc_constructor *c = gfc_constructor_first (expr->value.constructor);
+	   c; c = gfc_constructor_next (c))
+	{
+	  replace_in_expr_recursive (c->expr, old_sym, new_st);
+	  if (c->iterator)
+	    {
+	      replace_in_expr_recursive (c->iterator->start, old_sym, new_st);
+	      replace_in_expr_recursive (c->iterator->end, old_sym, new_st);
+	      replace_in_expr_recursive (c->iterator->step, old_sym, new_st);
+	    }
+	}
+      break;
+
+    default:
+      break;
+    }
+}
+
+
+/* Walk code tree and replace all variable references */
+
+static void
+replace_in_code_recursive (gfc_code *code, gfc_symbol *old_sym, gfc_symtree *new_st)
+{
+  if (!code)
+    return;
+
+  for (gfc_code *c = code; c; c = c->next)
+    {
+      /* Replace in expressions associated with this code node */
+      replace_in_expr_recursive (c->expr1, old_sym, new_st);
+      replace_in_expr_recursive (c->expr2, old_sym, new_st);
+      replace_in_expr_recursive (c->expr3, old_sym, new_st);
+      replace_in_expr_recursive (c->expr4, old_sym, new_st);
+
+      /* Handle special code types with additional expressions */
+      switch (c->op)
+	{
+	case EXEC_DO:
+	  if (c->ext.iterator)
+	    {
+	      replace_in_expr_recursive (c->ext.iterator->start, old_sym, new_st);
+	      replace_in_expr_recursive (c->ext.iterator->end, old_sym, new_st);
+	      replace_in_expr_recursive (c->ext.iterator->step, old_sym, new_st);
+	    }
+	  break;
+
+	case EXEC_CALL:
+	case EXEC_ASSIGN_CALL:
+	  for (gfc_actual_arglist *a = c->ext.actual; a; a = a->next)
+	    replace_in_expr_recursive (a->expr, old_sym, new_st);
+	  break;
+
+	case EXEC_SELECT:
+	  for (gfc_code *b = c->block; b; b = b->block)
+	    {
+	      for (gfc_case *cp = b->ext.block.case_list; cp; cp = cp->next)
+		{
+		  replace_in_expr_recursive (cp->low, old_sym, new_st);
+		  replace_in_expr_recursive (cp->high, old_sym, new_st);
+		}
+	      replace_in_code_recursive (b->next, old_sym, new_st);
+	    }
+	  break;
+
+	case EXEC_FORALL:
+	case EXEC_DO_CONCURRENT:
+	  for (gfc_forall_iterator *fa = c->ext.concur.forall_iterator; fa; fa = fa->next)
+	    {
+	      replace_in_expr_recursive (fa->start, old_sym, new_st);
+	      replace_in_expr_recursive (fa->end, old_sym, new_st);
+	      replace_in_expr_recursive (fa->stride, old_sym, new_st);
+	    }
+	  /* Don't recurse into nested FORALL/DO CONCURRENT bodies here,
+	     they'll be handled separately */
+	  break;
+
+	default:
+	  break;
+	}
+
+      /* Recurse into blocks */
+      if (c->block)
+	replace_in_code_recursive (c->block->next, old_sym, new_st);
+    }
+}
+
+
+/* Replace all references to outer_sym with shadow_st in the given code.  */
+
+static void
+gfc_replace_forall_variable (gfc_code **code_ptr, gfc_symbol *outer_sym,
+			      gfc_symtree *shadow_st)
+{
+  /* Use custom recursive walker to ensure we visit ALL expressions */
+  replace_in_code_recursive (*code_ptr, outer_sym, shadow_st);
+}
+
 
 static void
 gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
@@ -12425,14 +12580,21 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
   static int nvar = 0;
   int i, old_nvar, tmp;
   gfc_forall_iterator *fa;
+  bool shadow = false;
 
   old_nvar = nvar;
 
-  if (!gfc_notify_std (GFC_STD_F2018_OBS, "FORALL construct at %L", &code->loc))
+  /* Only warn about obsolescent FORALL, not DO CONCURRENT */
+  if (code->op == EXEC_FORALL
+      && !gfc_notify_std (GFC_STD_F2018_OBS, "FORALL construct at %L", &code->loc))
     return;
 
   /* Start to resolve a FORALL construct   */
-  if (forall_save == 0)
+  /* Allocate var_expr only at the truly outermost FORALL/DO CONCURRENT level.
+     forall_save==0 means we're not nested in a FORALL in the current scope,
+     but nvar==0 ensures we're not nested in a parent scope either (prevents
+     double allocation when FORALL is nested inside DO CONCURRENT).  */
+  if (forall_save == 0 && nvar == 0)
     {
       /* Count the total number of FORALL indices in the nested FORALL
          construct in order to allocate the VAR_EXPR with proper size.  */
@@ -12442,11 +12604,12 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
       var_expr = XCNEWVEC (gfc_expr *, total_var);
     }
 
-  /* The information about FORALL iterator, including FORALL indices start, end
-     and stride.  An outer FORALL indice cannot appear in start, end or stride.  */
+  /* The information about FORALL iterator, including FORALL indices start,
+     end and stride.  An outer FORALL indice cannot appear in start, end or
+     stride.  Check for a shadow index-name.  */
   for (fa = code->ext.concur.forall_iterator; fa; fa = fa->next)
     {
-      /* Fortran 20008: C738 (R753).  */
+      /* Fortran 2008: C738 (R753).  */
       if (fa->var->ref && fa->var->ref->type == REF_ARRAY)
 	{
 	  gfc_error ("FORALL index-name at %L must be a scalar variable "
@@ -12455,13 +12618,18 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 	}
 
       /* Check if any outer FORALL index name is the same as the current
-	 one.  */
+	 one.  Skip this check if the iterator is a shadow variable (from
+	 DO CONCURRENT type spec) which may not have a symtree yet.  */
       for (i = 0; i < nvar; i++)
 	{
-	  if (fa->var->symtree->n.sym == var_expr[i]->symtree->n.sym)
+	  if (fa->var && fa->var->symtree && var_expr[i] && var_expr[i]->symtree
+	      && fa->var->symtree->n.sym == var_expr[i]->symtree->n.sym)
 	    gfc_error ("An outer FORALL construct already has an index "
 			"with this name %L", &fa->var->where);
 	}
+
+      if (fa->shadow)
+	shadow = true;
 
       /* Record the current FORALL index.  */
       var_expr[nvar] = gfc_copy_expr (fa->var);
@@ -12470,6 +12638,48 @@ gfc_resolve_forall (gfc_code *code, gfc_namespace *ns, int forall_save)
 
       /* No memory leak.  */
       gcc_assert (nvar <= total_var);
+    }
+
+  /* Need to walk the code and replace references to the index-name with
+     references to the shadow index-name. This must be done BEFORE resolving
+     the body so that resolution uses the correct shadow variables.  */
+  if (shadow)
+    {
+      /* Walk the FORALL/DO CONCURRENT body and replace references to shadowed variables.  */
+      for (fa = code->ext.concur.forall_iterator; fa; fa = fa->next)
+	{
+	  if (fa->shadow)
+	    {
+	      gfc_symbol *outer_sym;
+	      gfc_symtree *shadow_st;
+	      const char *shadow_name_str;
+	      char *outer_name;
+
+	      /* fa->var now points to the shadow variable "_name".  */
+	      shadow_name_str = fa->var->symtree->name;
+	      shadow_st = fa->var->symtree;
+
+	      if (shadow_name_str[0] != '_')
+		gfc_internal_error ("Expected shadow variable name to start with _");
+
+	      outer_name = (char *) alloca (strlen (shadow_name_str));
+	      strcpy (outer_name, shadow_name_str + 1);
+
+	      /* Find the ITERATOR symbol in the current namespace.
+		 This is the local DO CONCURRENT variable that body expressions reference.  */
+	      gfc_symtree *iter_st = gfc_find_symtree (ns->sym_root, outer_name);
+
+	      if (!iter_st)
+		/* No iterator variable found - this shouldn't happen */
+		continue;
+
+	      gfc_symbol *iter_sym = iter_st->n.sym;
+
+	      /* Walk the FORALL/DO CONCURRENT body and replace all references.  */
+	      if (code->block && code->block->next)
+		gfc_replace_forall_variable (&code->block->next, iter_sym, shadow_st);
+	    }
+	}
     }
 
   /* Resolve the FORALL body.  */
@@ -13741,11 +13951,17 @@ gfc_resolve_code (gfc_code *code, gfc_namespace *ns)
       forall_save = forall_flag;
       do_concurrent_save = gfc_do_concurrent_flag;
 
-      if (code->op == EXEC_FORALL)
+      if (code->op == EXEC_FORALL || code->op == EXEC_DO_CONCURRENT)
 	{
-	  forall_flag = 1;
+	  if (code->op == EXEC_FORALL)
+	    forall_flag = 1;
+	  else if (code->op == EXEC_DO_CONCURRENT)
+	    gfc_do_concurrent_flag = 1;
 	  gfc_resolve_forall (code, ns, forall_save);
-	  forall_flag = 2;
+	  if (code->op == EXEC_FORALL)
+	    forall_flag = 2;
+	  else if (code->op == EXEC_DO_CONCURRENT)
+	    gfc_do_concurrent_flag = 2;
 	}
       else if (code->op == EXEC_OMP_METADIRECTIVE)
 	for (gfc_omp_variant *variant

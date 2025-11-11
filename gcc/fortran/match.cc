@@ -2608,7 +2608,64 @@ cleanup:
 }
 
 
-/* Match the header of a FORALL statement.  */
+/* Apply type-spec to iterator and create shadow variable if needed.  */
+
+static void
+apply_typespec_to_iterator (gfc_forall_iterator *iter, gfc_typespec *ts,
+			     locus *loc)
+{
+  char *name;
+  gfc_expr *v;
+  gfc_symtree *st;
+
+  /* When a type-spec is provided in DO CONCURRENT/FORALL, F2018 19.4(6)
+     requires the index-name to have scope limited to the construct,
+     shadowing any variable with the same name from outer scope.
+     If the index-name was not previously declared, we can simply set its
+     type.  Otherwise, create a shadow variable with "_" prefix.  */
+  iter->shadow = false;
+  v = iter->var;
+  if (v->ts.type == BT_UNKNOWN)
+    {
+      /* Variable not declared in outer scope - just set the type.  */
+      v->ts.type = v->symtree->n.sym->ts.type = BT_INTEGER;
+      v->ts.kind = v->symtree->n.sym->ts.kind = ts->kind;
+    }
+  else
+    {
+      /* Variable exists in outer scope - must create shadow to comply
+	 with F2018 19.4(6) scoping rules.  */
+      name = (char *) alloca (strlen (v->symtree->name) + 2);
+      strcpy (name, "_");
+      strcat (name, v->symtree->name);
+      if (gfc_get_sym_tree (name, NULL, &st, false) != 0)
+	gfc_internal_error ("Failed to create shadow variable symtree for "
+			    "DO CONCURRENT type-spec at %L", loc);
+
+      v = gfc_get_expr ();
+      v->where = gfc_current_locus;
+      v->expr_type = EXPR_VARIABLE;
+      v->ts.type = st->n.sym->ts.type = ts->type;
+      v->ts.kind = st->n.sym->ts.kind = ts->kind;
+      st->n.sym->forall_index = true;
+      v->symtree = st;
+      gfc_replace_expr (iter->var, v);
+      iter->shadow = true;
+    }
+
+  /* Convert iterator bounds to the specified type.  */
+  gfc_convert_type (iter->start, ts, 1);
+  gfc_convert_type (iter->end, ts, 1);
+  gfc_convert_type (iter->stride, ts, 1);
+}
+
+
+/* Match the header of a FORALL statement.  In F2008 and F2018, the form of
+   the header is:
+
+      ([ type-spec :: ] concurrent-control-list [, scalar-mask-expr ] )
+
+   where type-spec is INTEGER.  */
 
 static match
 match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
@@ -2616,6 +2673,9 @@ match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
   gfc_forall_iterator *head, *tail, *new_iter;
   gfc_expr *msk;
   match m;
+  gfc_typespec ts;
+  bool seen_ts = false;
+  locus loc;
 
   gfc_gobble_whitespace ();
 
@@ -2625,11 +2685,39 @@ match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
   if (gfc_match_char ('(') != MATCH_YES)
     return MATCH_NO;
 
+  /* Check for an optional type-spec.  */
+  gfc_clear_ts (&ts);
+  loc = gfc_current_locus;
+  m = gfc_match_type_spec (&ts);
+  if (m == MATCH_YES)
+    {
+      seen_ts = (gfc_match (" ::") == MATCH_YES);
+
+      if (seen_ts)
+	{
+	  if (!gfc_notify_std (GFC_STD_F2008, "FORALL or DO CONCURRENT "
+			       "construct includes type specification "
+			       "at %L", &loc))
+	    goto cleanup;
+
+	  if (ts.type != BT_INTEGER)
+	    {
+	      gfc_error ("Type-spec at %L must be an INTEGER type", &loc);
+	      goto cleanup;
+	    }
+	}
+    }
+  else if (m == MATCH_ERROR)
+    goto syntax;
+
   m = match_forall_iterator (&new_iter);
   if (m == MATCH_ERROR)
     goto cleanup;
   if (m == MATCH_NO)
     goto syntax;
+
+  if (seen_ts)
+    apply_typespec_to_iterator (new_iter, &ts, &loc);
 
   head = tail = new_iter;
 
@@ -2644,6 +2732,9 @@ match_forall_header (gfc_forall_iterator **phead, gfc_expr **mask)
 
       if (m == MATCH_YES)
 	{
+	  if (seen_ts)
+	    apply_typespec_to_iterator (new_iter, &ts, &loc);
+
 	  tail->next = new_iter;
 	  tail = new_iter;
 	  continue;
