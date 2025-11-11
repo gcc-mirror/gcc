@@ -14144,84 +14144,14 @@ riscv_get_raw_result_mode (int regno)
   return default_get_reg_raw_mode (regno);
 }
 
-/* Generate a REG rtx of Xmode from the given rtx and mode.
-   The rtx x can be REG (QI/HI/SI/DI) or const_int.
-   The machine_mode mode is the original mode from define pattern.
-   The rtx_code can be ZERO_EXTEND or SIGN_EXTEND.
-
-   If rtx is REG:
-
-   1.  If rtx Xmode, the RTX x will be returned directly.
-   2.  If rtx non-Xmode, the value extended into a new REG of Xmode will be
-       returned.
-
-   The scalar ALU like add don't support non-Xmode like QI/HI.  Then the
-   gen_lowpart will have problem here.  For example, when we would like
-   to add -1 (0xff if QImode) and 2 (0x2 if QImode).  The 0xff and 0x2 will
-   be loaded to register for adding.  Aka:
-
-   0xff + 0x2 = 0x101 instead of -1 + 2 = 1.
-
-   Thus we need to sign extend 0xff to 0xffffffffffffffff if Xmode is DImode
-   for correctness.  Similar the unsigned also need zero extend.
-
-   If rtx is const_int:
-
-   1.  A new REG rtx will be created to hold the value of const_int.
-
-   According to the gccint doc, the constants generated for modes with fewer
-   bits than in HOST_WIDE_INT must be sign extended to full width.  Thus there
-   will be two cases here, take QImode as example.
-
-   For .SAT_SUB (127, y) in QImode, we have (const_int 127) and one simple
-   mov from const_int to the new REG rtx is good enough here.
-
-   For .SAT_SUB (254, y) in QImode, we have (const_int -2) after define_expand.
-   Aka 0xfffffffffffffffe in Xmode of RV64 but we actually need 0xfe in Xmode
-   of RV64.  So we need to cleanup the highest 56 bits of the new REG rtx moved
-   from the (const_int -2).
-
-   Then the underlying expanding can perform the code generation based on
-   the REG rtx of Xmode, instead of taking care of these in expand func.  */
-
+/* Force X into an Xmode register.  */
 static rtx
 riscv_extend_to_xmode_reg (rtx x, machine_mode mode, enum rtx_code rcode)
 {
   gcc_assert (rcode == ZERO_EXTEND || rcode == SIGN_EXTEND);
 
-  rtx xmode_reg = gen_reg_rtx (Xmode);
-
-  if (CONST_INT_P (x))
-    {
-      if (mode == Xmode)
-	emit_move_insn (xmode_reg, x);
-      else if (rcode == ZERO_EXTEND)
-	{
-	  /* Combine deliberately does not simplify extensions of constants
-	     (long story).  So try to generate the zero extended constant
-	     efficiently.
-
-	     First extract the constant and mask off all the bits not in
-	     MODE.  */
-	  HOST_WIDE_INT val = INTVAL (x);
-	  val &= GET_MODE_MASK (mode);
-
-	  /* X may need synthesis, so do not blindly copy it.  */
-	  xmode_reg = force_reg (Xmode, gen_int_mode (val, Xmode));
-	}
-      else /* SIGN_EXTEND.  */
-	{
-	  rtx x_reg = gen_reg_rtx (mode);
-	  emit_move_insn (x_reg, x);
-	  riscv_emit_unary (rcode, xmode_reg, x_reg);
-	}
-    }
-  else if (mode == Xmode)
-    return x;
-  else
-    riscv_emit_unary (rcode, xmode_reg, x);
-
-  return xmode_reg;
+  rtx t = convert_modes (Xmode, mode, x, rcode == ZERO_EXTEND);
+  return force_reg (Xmode, t);
 }
 
 /* Implements the unsigned saturation add standard name usadd for int mode.
