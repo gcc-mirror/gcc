@@ -3022,6 +3022,15 @@ Here is a list of options that are @emph{only} for compiling C++ programs:
 
 @table @gcctabopt
 
+@opindex compile-std-module
+@item --compile-std-module
+Build the compiled module interfaces (@pxref{C++ Modules}) for the
+@samp{<bits/stdc++.h>} header unit and the @samp{std} and
+@samp{std.compat} modules before compiling any source files explicitly
+specified on the command line.  This is intended to be useful for
+building simple programs that use @samp{import std;} with a single
+command.
+
 @opindex fabi-version
 @item -fabi-version=@var{n}
 Use version @var{n} of the C++ ABI@.  The default is version 0.

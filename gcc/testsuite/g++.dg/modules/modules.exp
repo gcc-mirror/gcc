@@ -267,7 +267,8 @@ proc module-init { src } {
     set extra_tool_flags {}
 
     if { [llength $option_list]
-	 && [string match "*xtreme*" $src] } {
+	 && ( [string match "*xtreme*" $src]
+	      || [string match "*compile-std*" $src] ) } {
 	# Only run the xtreme tests once.
 	set option_list [lrange [lsort $option_list] end end]
     }

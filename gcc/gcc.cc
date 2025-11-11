@@ -3623,6 +3623,7 @@ struct infile
   struct compiler *incompiler;
   bool compiled;
   bool preprocessed;
+  bool artificial;
 };
 
 /* Also a vector of input files specified.  */
@@ -3826,10 +3827,11 @@ alloc_infile (void)
    infiles.  */
 
 static void
-add_infile (const char *name, const char *language)
+add_infile (const char *name, const char *language, bool art = false)
 {
   alloc_infile ();
   infiles[n_infiles].name = name;
+  infiles[n_infiles].artificial = art;
   infiles[n_infiles++].language = language;
 }
 
@@ -4998,7 +5000,8 @@ process_command (unsigned int decoded_options_count,
 #ifdef HAVE_TARGET_OBJECT_SUFFIX
 	  arg = convert_filename (arg, 0, access (arg, F_OK));
 #endif
-	  add_infile (arg, spec_lang);
+	  add_infile (arg, spec_lang,
+		      decoded_options[j].mask == CL_DRIVER);
 
 	  continue;
 	}
@@ -8983,6 +8986,10 @@ driver::prepare_infiles ()
 
       if (lang_n_infiles > 0 && compiler != input_file_compiler
 	  && infiles[i].language && infiles[i].language[0] != '*')
+	infiles[i].incompiler = compiler;
+      else if (infiles[i].artificial)
+	/* Leave lang_n_infiles alone so files added by the driver don't
+	   interfere with -c -o.  */
 	infiles[i].incompiler = compiler;
       else if (compiler)
 	{

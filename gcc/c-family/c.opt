@@ -45,6 +45,10 @@ C ObjC C++ ObjC++ Separate Alias(A) MissingArgError(assertion missing after %qs)
 -assert=
 C ObjC C++ ObjC++ Joined Alias(A) MissingArgError(assertion missing after %qs)
 
+-compile-std-module
+C++ ObjC++ Driver
+--compile-std-module	Compile module units for <bits/stdc++.h>, std, and std.compat.
+
 -comments
 C ObjC C++ ObjC++ Alias(C)
 

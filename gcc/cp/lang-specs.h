@@ -105,6 +105,24 @@ along with GCC; see the file COPYING3.  If not see
       "	         %{!o*:--output-pch %w%i.gch}%W{o*:--output-pch %w%*}}}}%{!S:%V}}"
       "}}}",
      CPLUSPLUS_CPP_SPEC, 0, 0},
+  /* Just for implementing --compile-std-module.  */
+  {"@c++-system-module",
+      "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)"
+      "  -fsearch-include-path=system}"
+      "%{!E:%{!M:%{!MM:"
+      "  %{save-temps*|no-integrated-cpp:cc1plus -E"
+      "    -fsearch-include-path=system"
+      "	   %(cpp_options) %2 -o %{save-temps*:%b.ii} %{!save-temps*:%g.ii} \n}"
+      "  cc1plus %{save-temps*|no-integrated-cpp:-fpreprocessed"
+      " 	   %{save-temps*:%b.ii} %{!save-temps*:%g.ii}}"
+      "  %{!save-temps*:%{!no-integrated-cpp:%(cpp_unique_options)"
+      "    -fsearch-include-path=system}}"
+      "  %(cc1_options) %2"
+      "  %{!fsyntax-only:"
+      "    %{fmodule-only:%{!S:-o %g.s%V}}"
+      "    %{!fmodule-only:%(invoke_as)}}"
+      "}}}",
+      CPLUSPLUS_CPP_SPEC, 0, 0},
   {"@c++",
       "%{E|M|MM:cc1plus -E %(cpp_options) %2 %(cpp_debug_options)}"
       "%{!E:%{!M:%{!MM:"

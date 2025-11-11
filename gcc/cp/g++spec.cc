@@ -131,6 +131,9 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
   /* By default, we don't add -lstdc++exp.  */
   bool need_experimental = false;
 
+  /* Whether to also compile module std.  */
+  bool std_module = false;
+
   /* True if we saw -static.  */
   int static_link = 0;
 
@@ -246,6 +249,10 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  which_library = (stdcxxlib_kind) decoded_options[i].value;
 	  break;
 
+	case OPT__compile_std_module:
+	  std_module = true;
+	  break;
+
 	case OPT_SPECIAL_input_file:
 	  {
 	    int len;
@@ -302,6 +309,7 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 
   /* Add one for shared_libgcc or extra static library.  */
   num_args = (argc + added + need_math + need_experimental
+	      + (std_module * 5)
 	      + (library > 0) * 4 + 1);
   /* For libc++, on most platforms, the ABI library (usually called libc++abi)
      is provided as a separate DSO, which we must also append.
@@ -336,6 +344,35 @@ lang_specific_driver (struct cl_decoded_option **in_decoded_options,
 	  --j;
 	  saw_libc = &decoded_options[i];
 	}
+
+      /* Insert --compile-std-module options before any -x or source files.  */
+      size_t opt = decoded_options[i].opt_index;
+      if (std_module
+	  && (opt == OPT__compile_std_module
+	      || opt == OPT_SPECIAL_input_file
+	      || opt == OPT_x))
+	{
+	  generate_option (OPT_x, "c++-system-header", 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	  generate_option_input_file ("bits/stdc++.h",
+				      &new_decoded_options[j]);
+	  /* Tell process_command that this file was added by the driver.  */
+	  new_decoded_options[j++].mask = CL_DRIVER;
+	  generate_option (OPT_x, "c++-system-module", 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	  generate_option_input_file ("bits/std.cc",
+				      &new_decoded_options[j]);
+	  new_decoded_options[j++].mask = CL_DRIVER;
+	  generate_option_input_file ("bits/std.compat.cc",
+				      &new_decoded_options[j]);
+	  new_decoded_options[j++].mask = CL_DRIVER;
+	  generate_option (OPT_x, "none", 1, CL_DRIVER,
+			   &new_decoded_options[j++]);
+	  new_decoded_options[j] = decoded_options[i];
+	  std_module = false;
+	}
+      if (opt == OPT__compile_std_module)
+	--j;
 
       /* Wrap foo.[chi] files in a language specification to
 	 force the gcc compiler driver to run cc1plus on them.  */
