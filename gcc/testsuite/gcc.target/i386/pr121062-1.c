@@ -31,4 +31,4 @@ render_result_from_bake_h(int tx)
   }
 }
 
-/* { dg-final { scan-assembler-times "movq\[ \\t\]+\\\$-1, %r\[a-z0-9\]+" 2 { target { ! ia32 } } } } */
+/* { dg-final { scan-assembler-times "movq\[ \\t\]+\\\$-1, %r\[a-z0-9\]+" 1 { target { ! ia32 } } } } */

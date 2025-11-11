@@ -11,8 +11,8 @@
    to change decisions in switch expansion which in turn can expose new
    jump threading opportunities.  Skip the later tests on aarch64.  */
 /* { dg-final { scan-tree-dump-not "Jumps threaded"  "dom3" { target { ! aarch64*-*-* } } } } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 8"  "thread2" { target { ! aarch64*-*-* } } } } */
-/* { dg-final { scan-tree-dump "Jumps threaded: 8"  "thread2" { target { aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 12"  "thread2" { target { ! aarch64*-*-* } } } } */
+/* { dg-final { scan-tree-dump "Jumps threaded: 12"  "thread2" { target { aarch64*-*-* } } } } */
 
 enum STATE {
   S0=0,

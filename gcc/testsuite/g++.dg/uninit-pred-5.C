@@ -41,7 +41,7 @@ public:
     edit_distance_t __trans_tmp_1;
     if (m_best_candidate) {
       size_t candidate_len = m_best_candidate_len;
-      __trans_tmp_1 = get_edit_distance_cutoff(candidate_len); // { dg-warning "may be used uninitialized" }
+      __trans_tmp_1 = get_edit_distance_cutoff(candidate_len); // { dg-bogus "may be used uninitialized" }
     }
     edit_distance_t cutoff = __trans_tmp_1;
     if (cutoff)

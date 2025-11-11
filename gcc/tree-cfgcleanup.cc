@@ -386,22 +386,23 @@ cleanup_control_flow_bb (basic_block bb)
    the entry block.  */
 
 static bool
-tree_forwarder_block_p (basic_block bb, bool phi_wanted)
+tree_forwarder_block_p (basic_block bb, bool must_have_phis)
 {
   gimple_stmt_iterator gsi;
   location_t locus;
 
   /* BB must have a single outgoing edge.  */
   if (!single_succ_p (bb)
-      /* If PHI_WANTED is false, BB must not have any PHI nodes.
-	 Otherwise, BB must have PHI nodes.  */
-      || gimple_seq_empty_p (phi_nodes (bb)) == phi_wanted
       /* BB may not be a predecessor of the exit block.  */
       || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
       /* Nor should this be an infinite loop.  */
       || single_succ (bb) == bb
       /* BB may not have an abnormal outgoing edge.  */
       || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
+    return false;
+
+  /* If MUST_HAVE_PHIS is true and we don't have any phis, return false. */
+  if (must_have_phis && gimple_seq_empty_p (phi_nodes (bb)))
     return false;
 
   gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -520,8 +521,10 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 		      || loops_state_satisfies_p
 		      	   (LOOPS_MAY_HAVE_MULTIPLE_LATCHES));
 	    }
+	  /* cleanup_tree_cfg_noloop just created the loop preheader, don't
+	     remove it if it has phis.  */
 	  else if (bb->loop_father == loop_outer (dest->loop_father))
-	    return !loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS);
+	    return gimple_seq_empty_p (phi_nodes (bb));
 	  /* Always preserve other edges into loop headers that are
 	     not simple latches or preheaders.  */
 	  return false;
@@ -625,6 +628,7 @@ remove_forwarder_block (basic_block bb)
   basic_block dest = succ->dest;
   gimple *stmt;
   gimple_stmt_iterator gsi, gsi_to;
+  bool has_phi = !gimple_seq_empty_p (phi_nodes (bb));
 
   /* If there is an abnormal edge to basic block BB, but not into
      dest, problems might occur during removal of the phi node at out
@@ -636,15 +640,24 @@ remove_forwarder_block (basic_block bb)
      does not like it.
 
      So if there is an abnormal edge to BB, proceed only if there is
-     no abnormal edge to DEST and there are no phi nodes in DEST.  */
+     no abnormal edge to DEST and there are no phi nodes in DEST.
+     If the BB has phi, we don't want to deal with abnormal edges either. */
   if (bb_has_abnormal_pred (bb)
       && (bb_has_abnormal_pred (dest)
-	  || !gimple_seq_empty_p (phi_nodes (dest))))
+	  || !gimple_seq_empty_p (phi_nodes (dest))
+	  || has_phi))
+    return false;
+
+  /* When we have a phi, we have to feed into another
+     basic block with PHI nodes.  */
+  if (has_phi && gimple_seq_empty_p (phi_nodes (dest)))
     return false;
 
   /* If there are phi nodes in DEST, and some of the blocks that are
      predecessors of BB are also predecessors of DEST, check that the
-     phi node arguments match.  */
+     phi node arguments match.
+     Otherwise we have to split the edge and that becomes
+     a "forwarder" again.  */
   if (!gimple_seq_empty_p (phi_nodes (dest)))
     {
       edge_iterator ei;
@@ -680,9 +693,21 @@ remove_forwarder_block (basic_block bb)
 
       if (s == e)
 	{
+	  /* If we merge the forwarder with phis into a loop header
+	     verify if we are creating another loop latch edge.
+	     If so, reset number of iteration information of the loop.  */
+	  if (has_phi
+	      && dest->loop_father
+	      && dest->loop_father->header == dest
+	      && dominated_by_p (CDI_DOMINATORS, e->src, dest))
+	    {
+	      dest->loop_father->any_upper_bound = false;
+	      dest->loop_father->any_likely_upper_bound = false;
+	      free_numbers_of_iterations_estimates (dest->loop_father);
+	    }
 	  /* Copy arguments for the phi nodes, since the edge was not
 	     here before.  */
-	  copy_phi_arg_into_existing_phi (succ, s);
+	  copy_phi_arg_into_existing_phi (succ, s, has_phi);
 	}
     }
 
