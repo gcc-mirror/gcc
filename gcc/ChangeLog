@@ -1,3 +1,24 @@
+2025-11-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-11-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118460
+	* config/arm/arm.md (movhfcc): Use expandable_comparison_operator.
+	(movsfcc, movdfcc): Likewise.
+
+2025-11-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-10-15  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118460
+	* config/arm/arm.cc (arm_canonicalize_comparison): For floating-
+	point comparisons, swap the operand order if that will be more
+	likely to produce a comparison that can be used with VSEL.
+	(arm_validize_comparison): Make sure that HFmode comparisons
+	are compatible with VSEL.
+
 2025-11-06  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
