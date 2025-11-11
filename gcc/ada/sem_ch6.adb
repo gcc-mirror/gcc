@@ -9077,6 +9077,17 @@ package body Sem_Ch6 is
       then
          Freeze_Extra_Formals (E);
          return;
+
+      elsif Ekind (Ref_E) in E_Subprogram_Type
+        and then Is_Itype (Ref_E)
+        and then Nkind (Associated_Node_For_Itype (Ref_E)) in
+                   N_Function_Specification
+                 | N_Procedure_Specification
+        and then Has_Foreign_Convention
+                   (Defining_Entity (Associated_Node_For_Itype (Ref_E)))
+      then
+         Freeze_Extra_Formals (E);
+         return;
       end if;
 
       --  If the subprogram is a predefined dispatching subprogram then don't
