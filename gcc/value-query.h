@@ -92,9 +92,10 @@ public:
 
 protected:
   bool get_tree_range (vrange &v, tree expr, gimple *stmt,
-		       basic_block bbentry = NULL, basic_block bbexit = NULL);
+		       basic_block bbentry = NULL, basic_block bbexit = NULL,
+		       edge e = NULL);
   bool invoke_range_of_expr (vrange &v, tree expr, gimple *stmt,
-			     basic_block bbentry, basic_block bbexit);
+			     basic_block bbentry, basic_block bbexit, edge e);
   bool get_arith_expr_range (vrange &r, tree expr, gimple *stmt);
   relation_oracle *m_relation;
   infer_range_oracle *m_infer;
