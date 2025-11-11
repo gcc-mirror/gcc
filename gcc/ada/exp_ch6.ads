@@ -67,18 +67,18 @@ package Exp_Ch6 is
       --  Present if result subtype is returned on the secondary stack or is
       --  tagged: in this case, this indicates whether the return object is
       --  allocated by the caller or callee, and if the callee, whether to
-      --  use the secondary stack, the global heap or a storage pool. Also
-      --  present if result type needs finalization.
+      --  use the secondary stack, the global heap or a storage pool.
 
       BIP_Storage_Pool,
       --  Present if result subtype is returned on the secondary stack or is
       --  tagged: in this case, if BIP_Alloc_Form = User_Storage_Pool, this
       --  is a pointer to the pool (of type Root_Storage_Pool_Ptr); otherwise
-      --  this is null. Also present if result type needs finalization.
+      --  this is null.
 
       BIP_Collection,
-      --  Present if result type needs finalization. Pointer to the collection
-      --  of the access type used by the caller.
+      --  Present if result type is returned on the secondary stack and needs
+      --  finalization, or is tagged. Pointer to the collection of the access
+      --  type used by the caller.
 
       BIP_Task_Master,
       --  Present if result type contains tasks. Master associated with
