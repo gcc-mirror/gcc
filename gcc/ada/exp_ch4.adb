@@ -8522,7 +8522,7 @@ package body Exp_Ch4 is
          --  Program_Error of objects of the outer type are compared using
          --  predefined equality.
 
-         if not Present (Get_User_Defined_Equality (Typl)) then
+         if No (Get_User_Defined_Equality (Typl)) then
             Warn_On_Abstract_Equality_For_Component
               (Component_Type (Typl), Comp => Empty);
          end if;
@@ -8612,7 +8612,7 @@ package body Exp_Ch4 is
          --  during analysis and resolution, and do not reach this code (but in
          --  many cases tagged equality comparisons do reach the code below).
 
-         if not Present (Get_User_Defined_Equality (Typl)) then
+         if No (Get_User_Defined_Equality (Typl)) then
             declare
                Comp : Entity_Id := First_Component (Typl);
             begin
@@ -14358,7 +14358,7 @@ package body Exp_Ch4 is
       --  First and Last attribute reference nodes, which end up as left and
       --  right operands of the optimized result.
 
-      Is_Zero : Boolean;
+      Is_Zero : Boolean := False; -- prevent junk warning
       --  True for comparison operand of zero
 
       Maybe_Superflat : Boolean;
@@ -14369,7 +14369,7 @@ package body Exp_Ch4 is
       --  is itself the length of an array with the same bounds as the array on
       --  the LHS, we can entirely optimize away the comparison.
 
-      Comp : Node_Id;
+      Comp : Node_Id := Empty; -- prevent junk warning
       --  Comparison operand, set only if Is_Zero is false
 
       Ent : array (Pos range 1 .. 2) of Entity_Id := (Empty, Empty);
@@ -15076,9 +15076,7 @@ package body Exp_Ch4 is
       Op1 : Node_Id;
       Op2 : Node_Id) return Boolean
    is
-      Target : Entity_Id;
-
-      function Is_Safe_Operand (Op : Node_Id) return Boolean;
+      function Is_Safe_Operand (Op : Node_Id; Tgt : Entity_Id) return Boolean;
       --  Operand is safe if it cannot overlap part of the target of the
       --  operation. If the operand and the target are identical, the operand
       --  is safe. The operand can be empty in the case of negation.
@@ -15102,7 +15100,8 @@ package body Exp_Ch4 is
       -- Is_Safe_Operand --
       ---------------------
 
-      function Is_Safe_Operand (Op : Node_Id) return Boolean is
+      function Is_Safe_Operand (Op : Node_Id; Tgt : Entity_Id) return Boolean
+      is
       begin
          if No (Op) then
             return True;
@@ -15116,10 +15115,10 @@ package body Exp_Ch4 is
          elsif Nkind (Op) = N_Slice then
             return
               Is_Unaliased (Prefix (Op))
-                and then Entity (Prefix (Op)) /= Target;
+                and then Entity (Prefix (Op)) /= Tgt;
 
          elsif Nkind (Op) = N_Op_Not then
-            return Is_Safe_Operand (Right_Opnd (Op));
+            return Is_Safe_Operand (Right_Opnd (Op), Tgt);
 
          else
             return False;
@@ -15144,8 +15143,8 @@ package body Exp_Ch4 is
          return False;
 
       else
-         Target := Entity (Lhs);
-         return Is_Safe_Operand (Op1) and then Is_Safe_Operand (Op2);
+         return Is_Safe_Operand (Op1, Entity (Lhs))
+           and then Is_Safe_Operand (Op2, Entity (Lhs));
       end if;
    end Safe_In_Place_Array_Op;
 
