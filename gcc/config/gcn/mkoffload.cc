@@ -661,17 +661,24 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
     }
   fprintf (cfile, "\n};\n\n");
 
+  /* Start a mkoffload_setup function to hold zero-or-more setup actions.  */
+  fprintf (cfile,
+	   "static void\n"
+	   "mkoffload_setup (void)\n"
+	   "{");
+
   /* Set the stack size if the user configured a value.  */
   if (gcn_stack_size)
     fprintf (cfile,
-	     "static __attribute__((constructor))\n"
-	     "void configure_stack_size (void)\n"
-	     "{\n"
+	     "\n"
+	     "  /* Pass through the -mstack-size compile-time option.  */\n"
 	     "  const char *val = getenv (\"GCN_STACK_SIZE\");\n"
 	     "  if (!val || val[0] == '\\0')\n"
-	     "    setenv (\"GCN_STACK_SIZE\", \"%d\", true);\n"
-	     "}\n\n",
+	     "    setenv (\"GCN_STACK_SIZE\", \"%d\", true);\n",
 	     gcn_stack_size);
+
+  /* End of mkoffload_setup function.  */
+  fprintf (cfile, "}\n\n");
 
   obstack_free (&fns_os, NULL);
   for (i = 0; i < dims_count; i++)
@@ -737,6 +744,7 @@ process_obj (const char *fname_in, FILE *cfile, uint32_t omp_requires)
 
   fprintf (cfile, "static __attribute__((constructor)) void init (void)\n"
 	   "{\n"
+	   "  mkoffload_setup ();\n"
 	   "  GOMP_offload_register_ver (%#x, __OFFLOAD_TABLE__,"
 	   " %d/*GCN*/, &gcn_data);\n"
 	   "};\n",
