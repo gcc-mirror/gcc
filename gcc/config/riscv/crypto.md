@@ -173,6 +173,40 @@
 				(zero_extend:SI (match_dup 2)))))]
   "operands[1] = gen_lowpart (SImode, operands[1]);")
 
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI (zero_extend:DI (match_operand:HI 1 "register_operand"))
+		(ashift:DI
+		  (sign_extend:DI (match_operand:HI 2 "register_operand"))
+		  (const_int 16))))]
+  "TARGET_ZBKB && TARGET_64BIT"
+  [(set (match_dup 0)
+	(sign_extend:DI (ior:SI (ashift:SI (match_dup 2) (const_int 16))
+				(zero_extend:SI (match_dup 1)))))]
+  "operands[2] = gen_lowpart (SImode, operands[2]);")
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI (sign_extend:DI
+		  (ashift:SI (match_operand:SI 1 "register_operand")
+			     (const_int 16)))
+		(zero_extend:DI (match_operand:HI 2 "register_operand"))))]
+  "TARGET_ZBKB && TARGET_64BIT"
+  [(set (match_dup 0)
+	(sign_extend:DI (ior:SI (ashift:SI (match_dup 1) (const_int 16))
+				(zero_extend:SI (match_dup 2)))))])
+
+(define_split
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI (zero_extend:DI (match_operand:HI 1 "register_operand"))
+		(sign_extend:DI
+		  (ashift:SI (match_operand:SI 2 "register_operand")
+			     (const_int 16)))))]
+  "TARGET_ZBKB && TARGET_64BIT"
+  [(set (match_dup 0)
+	(sign_extend:DI (ior:SI (ashift:SI (match_dup 2) (const_int 16))
+				(zero_extend:SI (match_dup 1)))))])
+
 ;; And this patches the result of the splitter above.
 (define_insn "*riscv_packw_2"
   [(set (match_operand:DI 0 "register_operand" "=r")
