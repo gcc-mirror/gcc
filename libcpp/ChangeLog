@@ -1,3 +1,27 @@
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* directives.cc: Implement CWG3053.
+	(do_undef): Don't pedwarn or warn about #undef likely or #undef
+	unlikely.
+
+2025-11-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* include/line-map.h: Add new member CMDLINE_LOCATION.
+	* lex.cc (get_location_for_byte_range_in_cur_line): Do not expand
+	the token location to include range information if token location
+	override was requested.
+	(warn_about_normalization): Likewise.
+	(_cpp_lex_direct): Likewise.
+	* pch.cc (struct saved_macro): New local struct.
+	(struct save_macro_data): Change DEFNS vector to hold saved_macro
+	rather than uchar*.
+	(save_macros): Adapt to remember the location information for each
+	saved macro in addition to the definition.
+	(cpp_prepare_state): Likewise.
+	(cpp_read_state): Use the saved location information to generate
+	proper locations for the restored macros.
+
 2025-10-13  Pierre Marie de Rodat  <derodat@adacore.com>
 
 	* init.cc (read_original_directory): Attempt to decode escape

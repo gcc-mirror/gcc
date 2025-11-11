@@ -1,3 +1,222 @@
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt.urls: Regenerated.
+	* config/dragonfly.opt.urls: Regenerated.
+	* config/freebsd.opt.urls: Regenerated.
+	* config/gcn/gcn.opt.urls: Regenerated.
+	* config/gnu-user.opt.urls: Regenerated.
+
+2025-11-10  Sam James  <sam@gentoo.org>
+
+	* acinclude.m4: Quote "$gcc_cv_nm" and friends.
+	* configure.ac: Ditto.
+	* configure: Regenerate.
+
+2025-11-10  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/122605
+	* builtins.cc (expand_ifn_atomic_bit_test_and): Split out the call to
+	build_call_nary into two different statements.
+	(expand_ifn_atomic_op_fetch_cmp_0): Likewise.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt: Clean up comments/documentation for -fident.
+	* doc/invoke.texi: Move -Qy/-Qn documentation from System V options
+	and combine with -fident/-fno-ident entry.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt: Add comments/documentation for -N, -Q, -S, -T,
+	-Tbss, -Tdata, -Ttext, -Z, -n, -Q, -s, -t, -z.
+	* doc/invoke.texi: Add documentation for -Tbss, -Tdata, -Ttext,
+	-N, -n, -t, -Z.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	PR rtl-optimization/120064
+	* doc/invoke.texi: Document -fconcepts-diagnostics-depth,
+	-Wdeprecated-copy-dtor, -Wformat-diag, -Wcannot-profile,
+	-fvar-tracking-uninit, -gno-pubnames, -finline-atomics,
+	-fext-dce, -fipa-icf-functions, -fipa-icf-variables,
+	-fprofile, -fdump-internal-locations, and -Wopenacc-dims.
+	Minor copy-editing and rearrangement of items in the option
+	summary lists.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/cppdiropts.texi: Document --include-directory,
+	--include-directory-after, --include-barrier, --include-prefix,
+	--include-with-prefix, --include-with-prefix-after,
+	--include-with-prefix-before, --no-standard-includes.
+	--embed-directory.
+	* doc/cppopts.texi: Document --define-macro, --undefine-macro,
+	--include, --imacros, --dependencies, --user-dependencies,
+	--print-missing-file-dependencies, --write-dependencies,
+	--write-user-dependencies, --comments, --comments-in-macros,
+	--no-line-commands, --traditional, --traditional-cpp,
+	--trigraphs, --trace-includes, --dump.
+	* doc/invoke.texi: Add missing long options to Option Summary.
+	Document --language, --compile, --assemble, --preprocess,
+	--output, --dumpbase, --dumpbase-ext, --dumpdir,
+	--verbose, --pass-exit-codes, --pipe, --specs, --ansi,
+	--no-warnings, --pedantic, --pedantic-errors, --all-warnings,
+	--extra-warnings, --debug, --optimize, --profile, -coverage,
+	--no-integrated-cpp, --for-assembler, --no-standard-libraries,
+	--entries, --pie, --static-pie, --static, --shared, --symbolic,
+	--for-linker, --force-link, --library-directory, --prefix,
+	--no-canonical-prefixes, --dump, --save-temps, --print-file-name,
+	--print-multi-directory, --print-multi-lib,
+	--print-multi-os-directory, --print-multiarch,
+	--print-prog-name, --print-libgcc-file-name, --print-search-dirs,
+	--print-sysroot, --print-sysroot-headers-suffix.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/cppopts.texi (-A): Restrict option documentation to the CPP
+	manual.  Also document the --assert form.
+	* doc/invoke.texi (Option Summary): Don't list the -A option.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary): Add missing entries,
+	also correct alphabetization and formatting of the C++ options.
+	(C++ Language Options): Fix some formatting issues.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt (fhelp, fhelp=, ftarget-help, fversion): Mark as
+	"Undocumented".
+	(fbounds-check): Update comments.
+	(flag-graphite, fsel-sched-reschedule-pipelined): Mark as
+	"Undocumented".
+	(fstack-limit): Add comment.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt (fhelp): Add RejectNegative.
+	(fhelp=): Likewise.
+	(ftarget-help): Likewise.
+	(fversion): Likewise.
+	(Wno-frame-larger-than): Likewise.
+	(Wno-larger-than): Likewise.
+	(Wno-stack-usage): Likewise.
+	(fdiagnostics-minimum-margin-width=): Likewise.
+	(flto-incremental=): Likewise.
+	(foffload=): Likewise.
+	(foffload-options=): Likewise.
+	(foffload-abi-host-opts=): Likewise.
+	(fpatchable-function-entry=): Likewise.
+	(gno-pubnames): Likewise.
+	(gpubnames): Likewise.
+	(ggnu-pubnames): Likewise.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* common.opt (ftree-lrs): Mark as "Ignore".
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/cppopts.texi (fcanonical-system-headers): Add @opindex.
+	* doc/invoke.texi (fdump-ada-spec-slim): Add @opindex.
+	(fcontract-semantic): Likewise.
+	(fdiagnostics-plain-output): Likewise.
+	(Wc11-c2x-compat): Likewise.
+	(Wvla-parameter): Likewise.
+	(fanalyzer-verbose-edges): Likewise.
+	(fanalyzer-verbose-state-changes): Likewise.
+	(fanalyzer-verbosity): Likewise.
+	(flimit-function-alignment): Likewise.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (fdump-analyzer-exploded-nodes): Correct
+	spelling of option in @opindex.
+	(fdump-analyzer-exploded-nodes-2): Likewise.
+	(fdump-analyzer-exploded-nodes-3): Likewise.
+	(fdump-analyzer-feasibility): Likewise.
+	(fdump-analyzer-infinite-loop): Likewise.
+	(fstack-reuse): Likewise.
+
+2025-11-10  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	* config/pru/pru.h (REG_CLASS_CONTENTS): Use unsigned integer
+	constants.
+
+2025-11-10  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/122415
+	* config/pru/pru-protos.h (pru_fixup_jump_address_operand):
+	Declare.
+	* config/pru/pru.cc (pru_fixup_jump_address_operand): New
+	function.
+	(pru_addr_space_legitimize_address): New function.
+	(TARGET_ADDR_SPACE_LEGITIMIZE_ADDRESS): Declare.
+	* config/pru/pru.md (call): Fixup the address operand.
+	(call_value): Ditto.
+	(sibcall): Ditto.
+	(sibcall_value): Ditto.
+
+2025-11-10  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (register_builtin_types): Make
+	SVE vector boolean type equivalent to GNU vectors.
+	* config/aarch64/aarch64-sve.md (extend<vpred><mode>2,
+	zero_extend<vpred><mode>2, trunc<mode><vpred>2, vec_cmp<mode><mode>):
+	New patterns to support additional operations on predicate modes.
+	* config/aarch64/aarch64.cc (aarch64_valid_vector_boolean_op): New.
+	(aarch64_invalid_unary_op): Consider vector bool types.
+	(aarch64_invalid_binary_op): Likewise.
+	(aarch64_convert_to_type): Define target hook and handle standard to
+	non-standard bool conversion.
+
+2025-11-10  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/118460
+	* config/arm/arm.md (movhfcc): Use expandable_comparison_operator.
+	(movsfcc, movdfcc): Likewise.
+
+2025-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR middle-end/121985
+	* tree-vect-loop-manip.cc (vect_gen_vector_loop_niters): Only
+	set niter_vector's range if step == 1.
+
+2025-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* optabs-query.cc (qimode_for_vec_perm): Check if QImode's
+	precision divides the inner mode's precision.
+
+2025-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-data-refs.cc (vect_gather_scatter_fn_p): Bail if
+	offset_vectype is NULL.
+
+2025-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-slp.cc (vect_load_perm_consecutive_p): New function.
+	(vect_lower_load_permutations): Use.
+	(vect_optimize_slp_pass::remove_redundant_permutations): Use.
+	* tree-vect-stmts.cc (has_consecutive_load_permutation): New
+	function that uses vect_load_perm_consecutive_p.
+	(get_load_store_type): Use.
+	(vectorizable_load): Reduce group size.
+	* tree-vectorizer.h (struct vect_load_store_data): Add
+	subchain_p.
+	(vect_load_perm_consecutive_p): Declare.
+
 2025-11-08  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	PR tree-optimization/122126

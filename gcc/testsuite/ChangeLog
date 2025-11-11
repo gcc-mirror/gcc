@@ -1,3 +1,106 @@
+2025-11-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122628
+	* g++.dg/modules/internal-18.C: New test.
+
+2025-11-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/tpl-friend-8_a.H: Add testcase.
+	* g++.dg/modules/tpl-friend-8_b.C: Add testcase.
+
+2025-11-10  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/122591
+	* gcc.dg/countof-compile.c (type): Test return type of _Countof.
+
+2025-11-10  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR target/122415
+	* gcc.target/pru/pr122415-1.c: New test.
+	* gcc.target/pru/pr122415-2.c: New test.
+
+2025-11-10  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general-c/svcount_1.c: Update message.
+
+2025-11-10  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* g++.dg/ext/sve-sizeless-1.C: Add new tests.
+	* g++.dg/ext/sve-sizeless-2.C: Add new tests.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_1.C: Add new tests.
+	* g++.target/aarch64/sve/acle/general-c++/gnu_vectors_2.C: Add new tests.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_1.c: Add new tests.
+	* gcc.target/aarch64/sve/acle/general-c/gnu_vectors_2.c: Add new tests.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-1.c: Add new tests.
+	* gcc.target/aarch64/sve/acle/general-c/sizeless-2.c : Add new tests.
+
+2025-11-10  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/cops_bool.c: New.
+
+2025-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr121985.c: New test.
+
+2025-11-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr118019-2.c:
+
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119064
+	* g++.dg/cpp26/feat-cxx26.C: Revert 2025-07-11 changes.
+	* g++.dg/DRs/dr2581-1.C (__cpp_trivial_relocatability): Remove test.
+	* g++.dg/DRs/dr2581-2.C (__cpp_trivial_relocatability): Likewise.
+	* g++.dg/warn/Wkeyword-macro-1.C: Don't expect any diagnostics on
+	#define or #undef of trivially_relocatable_if_eligible or
+	replaceable_if_eligible.
+	* g++.dg/warn/Wkeyword-macro-2.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-4.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-5.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-7.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-8.C: Likewise.
+	* g++.dg/cpp26/trivially-relocatable1.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable2.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable3.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable4.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable5.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable6.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable7.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable8.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable9.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable10.C: Remove.
+	* g++.dg/cpp26/trivially-relocatable11.C: Remove.
+	* g++.dg/modules/class-11_a.H: Remove trivial relocatability
+	related parts.
+	* g++.dg/modules/class-11_b.C: Likewise.
+
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Wkeyword-macro-1.C: Expect diagnostics on define/undef
+	of indeterminate.
+	* g++.dg/warn/Wkeyword-macro-2.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-4.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-5.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-7.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-8.C: Likewise.
+
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/warn/Wkeyword-macro-4.C: Don't diagnose for #undef likely
+	or #undef unlikely.
+	* g++.dg/warn/Wkeyword-macro-5.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-9.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-8.C: Likewise.
+	* g++.dg/warn/Wkeyword-macro-10.C: Likewise.
+
+2025-11-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* g++.dg/pch/line-map-3.C: Remove xfails.
+	* g++.dg/pch/line-map-4.C: New test.
+	* g++.dg/pch/line-map-4.Hs: New test.
+
 2025-11-09  H.J. Lu  <hjl.tools@gmail.com>
 
 	* gcc.target/i386/apx-ndd-tls-1b.c: Change to xfail for ! ia32.

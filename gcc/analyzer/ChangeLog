@@ -1,3 +1,13 @@
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* analyzer.opt.urls: Regenerated.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* analyzer.opt (fanalyzer-verbosity=): Add RejectNegative.
+
 2025-11-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* checker-event.cc

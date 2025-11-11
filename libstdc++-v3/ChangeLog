@@ -1,3 +1,9 @@
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* libsupc++/compare: Implement final wording of C++26 P3778R0 - Fix
+	for type_order template definition.
+	(std::type_order): Remove type member.
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

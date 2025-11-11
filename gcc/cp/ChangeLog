@@ -1,3 +1,55 @@
+2025-11-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122628
+	* module.cc (instantiating_tu_local_entity): Add missing
+	STRIP_TEMPLATEs.
+
+2025-11-10  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* pt.cc (tsubst_friend_function): Mark all parent namespaces as
+	purview if needed.
+
+2025-11-10  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* typeck.cc (cp_build_binary_op): Likewise.
+	* call.cc (build_conditional_expr): Support vector booleans.
+	* cvt.cc (ocp_convert): Call target hook to resolve conversion
+	between standard and non-standard booleans.
+
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119064
+	* cp-tree.h (struct lang_type): Revert 2025-07-11 changes.
+	(CLASSTYPE_TRIVIALLY_RELOCATABLE_BIT): Remove.
+	(CLASSTYPE_TRIVIALLY_RELOCATABLE_COMPUTED): Remove.
+	(CLASSTYPE_REPLACEABLE_BIT): Remove.
+	(CLASSTYPE_REPLACEABLE_COMPUTED): Remove.
+	(enum virt_specifier): Revert 2025-07-11 changes.
+	(trivially_relocatable_type_p): Remove.
+	(replaceable_type_p): Remove.
+	* cp-trait.def (IS_NOTHROW_RELOCATABLE): Remove.
+	(IS_REPLACEABLE): Remove.
+	(IS_TRIVIALLY_RELOCATABLE): Remove.
+	* parser.cc (cp_parser_class_specifier, cp_parser_class_head):
+	Revert 2025-07-11 changes.
+	* pt.cc (instantiate_class_template): Likewise.
+	* semantics.cc (trait_expr_value): Likewise.
+	(finish_trait_expr): Likewise.
+	* tree.cc (default_movable_type_p): Remove.
+	(union_with_no_declared_special_member_fns): Remove.
+	(trivially_relocatable_type_p): Remove.
+	(replaceable_type_p): Remove.
+	* constraint.cc (diagnose_trait_expr): Revert 2025-07-11 changes.
+	* module.cc (trees_out::lang_type_bools): Revert part of
+	2025-07-26 changes related to trivial relocatability.
+	(trees_in::lang_type_bools): Likewise.
+	* lex.cc (cxx_init): Don't call cpp_warn on
+	trivially_relocatable_if_eligible and replaceable_if_eligible.
+
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex.cc (cxx_init): For C++26 call cpp_warn on "indeterminate".
+
 2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/121574

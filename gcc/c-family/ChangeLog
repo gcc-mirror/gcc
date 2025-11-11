@@ -1,3 +1,61 @@
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* c.opt.urls: Regenerated.
+
+2025-11-10  Alejandro Colomar  <alx@kernel.org>
+
+	PR c/122591
+	* c-common.cc (c_countof_type): Convert return value to size_t.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* c.opt (fmodule-version-ignore): Mark as "Undocumented".
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* c.opt: (fdeps-format=): Add RejectNegative.
+	(fdeps-file=): Likewise.
+	(fdeps-target=): Likewise.
+	(Walloc-size-larger-than=): Likewise.
+	(Wno-alloc-size-larger-than): Likewise.
+	(Walloca-larger-than=): Likewise.
+	(Wno-alloca-larger-than): Likewise.
+	(Woverloaded-virtual=): Likewise.
+	(Wvla-larger-than=): Likewise.
+	(Wno-vla-larger-than): Likewise.
+	(fopenacc-dim=): Likewise.
+	(femit-struct-debug-baseonly): Likewise.
+	(femit-struct-debug-reduced): Likewise.
+	(femit-struct-debug-detailed=): Likewise.
+
+2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* c.opt (Wsynth): Mark as "Ignore".
+
+2025-11-10  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* c-common.cc (c_build_vec_convert): Support vector boolean
+	types for __builtin_convertvector ().
+
+2025-11-10  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119064
+	* c-cppbuiltin.cc (c_cpp_builtins): Revert 2025-07-11
+	changes.
+
+2025-11-10  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR preprocessor/105608
+	* c-opts.cc (c_finish_options): Set new member
+	line_table->cmdline_location.
+	* c-pch.cc (c_common_read_pch): Adapt linemap usage to changes in
+	libcpp pch.cc; it is now possible that the linemap is in a different
+	file after returning from cpp_read_state().
+
 2025-11-05  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/121574
