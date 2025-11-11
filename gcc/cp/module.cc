@@ -16298,6 +16298,9 @@ mangle_module (int mod, bool include_partition)
     /* Set when importing the primary module interface.  */
     imp = imp->parent;
 
+  /* Ensure this is actually a module unit.  */
+  gcc_checking_assert (imp);
+
   imp->mangle (include_partition);
 }
 
@@ -21781,6 +21784,41 @@ propagate_defining_module (tree decl, tree orig)
 	 failed, in which case there shouldn't already be an entry
 	 in the map.  */
       gcc_assert (!exists);
+    }
+}
+
+/* NEWDECL matched with OLDDECL, transfer defining module information
+   onto OLDDECL.  We've already validated attachment matches.  */
+
+void
+transfer_defining_module (tree olddecl, tree newdecl)
+{
+  if (!modules_p ())
+    return;
+
+  tree old_inner = STRIP_TEMPLATE (olddecl);
+  tree new_inner = STRIP_TEMPLATE (newdecl);
+
+  if (DECL_LANG_SPECIFIC (new_inner))
+    {
+      gcc_checking_assert (DECL_LANG_SPECIFIC (old_inner));
+      if (DECL_MODULE_PURVIEW_P (new_inner))
+	DECL_MODULE_PURVIEW_P (old_inner) = true;
+      if (!DECL_MODULE_IMPORT_P (new_inner))
+	DECL_MODULE_IMPORT_P (old_inner) = false;
+    }
+
+  if (tree *orig = imported_temploid_friends->get (newdecl))
+    {
+      tree &slot = imported_temploid_friends->get_or_insert (olddecl);
+      if (!slot)
+	slot = *orig;
+      else if (slot != *orig)
+	/* This can happen when multiple classes declare the same
+	   friend function (e.g. g++.dg/modules/tpl-friend-4);
+	   make sure we at least attach to the same module.  */
+	gcc_checking_assert (get_originating_module (slot)
+			     == get_originating_module (*orig));
     }
 }
 

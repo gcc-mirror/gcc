@@ -2595,6 +2595,9 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
   else
     DECL_ATTRIBUTES (olddecl) = DECL_ATTRIBUTES (newdecl);
 
+  /* Transfer purviewness and importingness to the old decl.  */
+  transfer_defining_module (olddecl, newdecl);
+
   if (TREE_CODE (newdecl) == TEMPLATE_DECL)
     {
       tree old_result = DECL_TEMPLATE_RESULT (olddecl);
@@ -2667,18 +2670,6 @@ duplicate_decls (tree newdecl, tree olddecl, bool hiding, bool was_hidden)
 
 	      merge_attribute_bits (new_result, old_result);
 	    }
-	}
-
-      /* Propagate purviewness and importingness as with
-	 set_instantiating_module, unless newdecl is a friend injection.  */
-      if (modules_p () && DECL_LANG_SPECIFIC (new_result)
-	  && !(TREE_CODE (new_result) == FUNCTION_DECL
-	       && DECL_UNIQUE_FRIEND_P (new_result)))
-	{
-	  if (DECL_MODULE_PURVIEW_P (new_result))
-	    DECL_MODULE_PURVIEW_P (old_result) = true;
-	  if (!DECL_MODULE_IMPORT_P (new_result))
-	    DECL_MODULE_IMPORT_P (old_result) = false;
 	}
 
       /* If the new declaration is a definition, update the file and
