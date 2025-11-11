@@ -386,7 +386,7 @@ cleanup_control_flow_bb (basic_block bb)
    the entry block.  */
 
 static bool
-tree_forwarder_block_p (basic_block bb, bool must_have_phis)
+tree_forwarder_block_p (basic_block bb)
 {
   gimple_stmt_iterator gsi;
   location_t locus;
@@ -399,10 +399,6 @@ tree_forwarder_block_p (basic_block bb, bool must_have_phis)
       || single_succ (bb) == bb
       /* BB may not have an abnormal outgoing edge.  */
       || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
-    return false;
-
-  /* If MUST_HAVE_PHIS is true and we don't have any phis, return false. */
-  if (must_have_phis && gimple_seq_empty_p (phi_nodes (bb)))
     return false;
 
   gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
@@ -622,7 +618,7 @@ move_debug_stmts_from_forwarder (basic_block src,
 /* Removes forwarder block BB.  Returns false if this failed.  */
 
 static bool
-remove_forwarder_block (basic_block bb)
+remove_forwarder_block (basic_block bb, bool can_split = false)
 {
   edge succ = single_succ_edge (bb), e, s;
   basic_block dest = succ->dest;
@@ -658,7 +654,8 @@ remove_forwarder_block (basic_block bb)
      phi node arguments match.
      Otherwise we have to split the edge and that becomes
      a "forwarder" again.  */
-  if (!gimple_seq_empty_p (phi_nodes (dest)))
+  if ((!can_split || !has_phi)
+      && !gimple_seq_empty_p (phi_nodes (dest)))
     {
       edge_iterator ei;
       FOR_EACH_EDGE (e, ei, bb->preds)
@@ -680,7 +677,17 @@ remove_forwarder_block (basic_block bb)
   /* Redirect the edges.  */
   for (edge_iterator ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
-      bitmap_set_bit (cfgcleanup_altered_bbs, e->src->index);
+      if (cfgcleanup_altered_bbs)
+	bitmap_set_bit (cfgcleanup_altered_bbs, e->src->index);
+      s = find_edge (e->src, dest);
+
+      /* See if we can split the edge if we already have an edge from src to dest.  */
+      if (can_split && has_phi)
+	/* PHI arguments are different.  Create a forwarder block by
+	   splitting E so that we can merge PHI arguments on E to
+	   DEST.  */
+	if (s && !phi_alternatives_equal (dest, s, succ))
+	  e = single_succ_edge (split_edge (e));
 
       if (e->flags & EDGE_ABNORMAL)
 	{
@@ -709,6 +716,8 @@ remove_forwarder_block (basic_block bb)
 	     here before.  */
 	  copy_phi_arg_into_existing_phi (succ, s, has_phi);
 	}
+      else
+	redirect_edge_var_map_clear (s);
     }
 
   /* Move nonlocal labels and computed goto targets as well as user
@@ -741,7 +750,8 @@ remove_forwarder_block (basic_block bb)
   move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p,
 				   pred, pred && single_succ_p (pred));
 
-  bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
+  if (cfgcleanup_altered_bbs)
+    bitmap_set_bit (cfgcleanup_altered_bbs, dest->index);
 
   /* Update the dominators.  */
   basic_block dom, dombb, domdest;
@@ -859,7 +869,7 @@ want_merge_blocks_p (basic_block bb1, basic_block bb2)
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
 {
-  if (tree_forwarder_block_p (bb, false)
+  if (tree_forwarder_block_p (bb)
       && remove_forwarder_block (bb))
     return true;
 
@@ -1303,106 +1313,6 @@ cleanup_tree_cfg (unsigned ssa_update_flags)
   return changed;
 }
 
-/* Tries to merge the PHI nodes at BB into those at BB's sole successor.
-   Returns true if successful.  */
-
-static bool
-remove_forwarder_block_with_phi (basic_block bb)
-{
-  edge e, succ = single_succ_edge (bb);
-  basic_block dest = succ->dest;
-  basic_block dombb, domdest, dom;
-
-  /* We have to feed into another basic block with PHI
-     nodes.  */
-  if (gimple_seq_empty_p (phi_nodes (dest))
-      /* We don't want to deal with a basic block with
-	 abnormal edges.  */
-      || bb_has_abnormal_pred (bb))
-    return false;
-
-  /* Record BB's single pred in case we need to update the father
-     loop's latch information later.  */
-  basic_block pred = NULL;
-  if (single_pred_p (bb))
-    pred = single_pred (bb);
-  bool dest_single_pred_p = single_pred_p (dest);
-
-  /* Redirect each incoming edge to BB to DEST.  */
-  for (edge_iterator ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
-    {
-      edge s;
-
-      s = find_edge (e->src, dest);
-      if (s)
-	{
-	  /* We already have an edge S from E->src to DEST.  If S and
-	     E->dest's sole successor edge have the same PHI arguments
-	     at DEST, redirect S to DEST.  */
-	  if (phi_alternatives_equal (dest, s, succ))
-	    {
-	      e = redirect_edge_and_branch (e, dest);
-	      redirect_edge_var_map_clear (e);
-	      continue;
-	    }
-
-	  /* PHI arguments are different.  Create a forwarder block by
-	     splitting E so that we can merge PHI arguments on E to
-	     DEST.  */
-	  e = single_succ_edge (split_edge (e));
-	}
-      else
-	{
-	  /* If we merge the forwarder into a loop header verify if we
-	     are creating another loop latch edge.  If so, reset
-	     number of iteration information of the loop.  */
-	  if (dest->loop_father->header == dest
-	      && dominated_by_p (CDI_DOMINATORS, e->src, dest))
-	    {
-	      dest->loop_father->any_upper_bound = false;
-	      dest->loop_father->any_likely_upper_bound = false;
-	      free_numbers_of_iterations_estimates (dest->loop_father);
-	    }
-	}
-
-      s = redirect_edge_and_branch (e, dest);
-
-      /* redirect_edge_and_branch must not create a new edge.  */
-      gcc_assert (s == e);
-      copy_phi_arg_into_existing_phi (succ, s, true);
-    }
-
-  /* Move debug statements.  Reset them if the destination does not
-     have a single predecessor.  */
-  move_debug_stmts_from_forwarder (bb, dest, dest_single_pred_p,
-				   pred, pred && single_succ_p (pred));
-
-  /* Update the dominators.  */
-  dombb = get_immediate_dominator (CDI_DOMINATORS, bb);
-  domdest = get_immediate_dominator (CDI_DOMINATORS, dest);
-  if (domdest == bb)
-    {
-      /* Shortcut to avoid calling (relatively expensive)
-	 nearest_common_dominator unless necessary.  */
-      dom = dombb;
-    }
-  else
-    dom = nearest_common_dominator (CDI_DOMINATORS, domdest, dombb);
-
-  set_immediate_dominator (CDI_DOMINATORS, dest, dom);
-
-  /* Adjust latch infomation of BB's parent loop as otherwise
-     the cfg hook has a hard time not to kill the loop.  */
-  if (current_loops && bb->loop_father->latch == bb)
-    bb->loop_father->latch = pred;
-
-  /* Remove BB since all of BB's incoming edges have been redirected
-     to DEST.  */
-  delete_basic_block (bb);
-
-  return true;
-}
-
 /* This pass merges PHI nodes if one feeds into another.  For example,
    suppose we have the following:
 
@@ -1471,8 +1381,8 @@ pass_merge_phi::execute (function *fun)
 	continue;
 
       /* Look for a forwarder block with PHI nodes.  */
-      if (tree_forwarder_block_p (bb, true)
-	  && remove_forwarder_block_with_phi (bb))
+      if (tree_forwarder_block_p (bb)
+	  && remove_forwarder_block (bb, true))
 	changed = true;
     }
 
