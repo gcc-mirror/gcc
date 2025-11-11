@@ -2940,6 +2940,16 @@ gcn_init_cumulative_args (CUMULATIVE_ARGS *cum /* Argument info to init */ ,
   if (!caller && cfun->machine->normal_function)
     gcn_detect_incoming_pointer_arg (fndecl);
 
+  if ((omp_requires_mask & (OMP_REQUIRES_UNIFIED_SHARED_MEMORY
+			    | OMP_REQUIRES_SELF_MAPS))
+      && gcn_devices[gcn_arch].xnack_default != HSACO_ATTR_UNSUPPORTED
+      && flag_xnack == HSACO_ATTR_OFF)
+    {
+      warning_at (UNKNOWN_LOCATION, 0,
+		  "Unified Shared Memory is enabled, but XNACK is disabled");
+      inform (UNKNOWN_LOCATION, "Try -foffload-options=-mxnack=any");
+    }
+
   reinit_regs ();
 }
 

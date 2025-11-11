@@ -38,6 +38,9 @@
 #include "configargs.h"  /* For configure_default_options.  */
 #include "multilib.h"  /* For multilib_options.  */
 
+#include "tree.h"	 /* Dependency of omp-general.h.  */
+#include "omp-general.h" /* For enum omp_requires.  */
+
 /* These probably won't (all) be in elf.h for a while.  */
 #undef  EM_AMDGPU
 #define EM_AMDGPU		0xe0;
@@ -441,10 +444,12 @@ copy_early_debug_info (const char *infile, const char *outfile)
    encoded as structured data.  */
 
 static void
-process_asm (FILE *in, FILE *out, FILE *cfile)
+process_asm (FILE *in, FILE *out, FILE *cfile, uint32_t omp_requires)
 {
   int fn_count = 0, var_count = 0, ind_fn_count = 0;
   int dims_count = 0, regcount_count = 0;
+  bool xnack_required = (omp_requires & (OMP_REQUIRES_UNIFIED_SHARED_MEMORY
+					 | OMP_REQUIRES_SELF_MAPS));
   struct obstack fns_os, dims_os, regcounts_os;
   obstack_init (&fns_os);
   obstack_init (&dims_os);
@@ -469,6 +474,7 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   fn_count += 2;
 
   char buf[1000];
+  char dummy;
   enum
     { IN_CODE,
       IN_METADATA,
@@ -549,7 +555,6 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	  }
 	}
 
-      char dummy;
       if (sscanf (buf, " .section .gnu.offload_vars%c", &dummy) > 0)
 	{
 	  state = IN_VARS;
@@ -615,11 +620,24 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
   struct oaccdims *dims = XOBFINISH (&dims_os, struct oaccdims *);
   struct regcount *regcounts = XOBFINISH (&regcounts_os, struct regcount *);
 
+  /* If the -mxnack setting has a definite value (not "any" or undefined), or
+     the program "requires unified_shared_memory" (in which case -mxnack might
+     be "any"), then we emit code to check the mode at runtime.  */
+  bool check_xnack = (TEST_XNACK_OFF (elf_flags)
+		      || TEST_XNACK_ON (elf_flags)
+		      || xnack_required);
+  if (TEST_XNACK_OFF (elf_flags) && xnack_required)
+    fatal_error (input_location,
+		 "conflicting settings; XNACK is forced off but Unified "
+		 "Shared Memory is on");
+
+  /* Start generating the C code.  */
   if (gcn_stack_size)
-    {
-      fprintf (cfile, "#include <stdlib.h>\n");
-      fprintf (cfile, "#include <stdbool.h>\n\n");
-    }
+    fprintf (cfile, "#include <stdbool.h>\n");
+  if (check_xnack)
+    fprintf (cfile, "#include <stdio.h>\n");
+  if (gcn_stack_size || check_xnack)
+    fprintf (cfile, "#include <stdlib.h>\n\n");
 
   fprintf (cfile, "static const int gcn_num_vars = %d;\n\n", var_count);
   fprintf (cfile, "static const int gcn_num_ind_funcs = %d;\n\n", ind_fn_count);
@@ -676,6 +694,25 @@ process_asm (FILE *in, FILE *out, FILE *cfile)
 	     "  if (!val || val[0] == '\\0')\n"
 	     "    setenv (\"GCN_STACK_SIZE\", \"%d\", true);\n",
 	     gcn_stack_size);
+
+  /* Emit a constructor function to set the HSA_XNACK environment variable.
+     This must be done before the ROCr runtime library is loaded.
+     We never override a user value (except empty string), but we do emit a
+     useful diagnostic in the wrong mode (the ROCr message is not good.  */
+  if (check_xnack)
+    fprintf (cfile,
+	     "\n"
+	     "  const char *xn_var = getenv (\"HSA_XNACK\");\n"
+	     "  if (!xn_var || xn_var[0] == '\\0')\n"
+	     "    setenv (\"HSA_XNACK\", \"%d\", true);\n"
+	     "  else if (%s)\n"
+	     "    fprintf (stderr, \"warning: HSA_XNACK=%%s is incompatible; "
+			   "the GPU kernel may revert to host fallback\\n\", "
+			   "xn_var);\n",
+	     xnack_required || TEST_XNACK_ON (elf_flags),
+	     (xnack_required || TEST_XNACK_ON (elf_flags)
+	      ? "xn_var[0] != '1' || xn_var[1] != '\\0'"
+	      : "xn_var[0] != '0' || xn_var[1] != '\\0'"));
 
   /* End of mkoffload_setup function.  */
   fprintf (cfile, "}\n\n");
@@ -1116,7 +1153,8 @@ main (int argc, char **argv)
 #define GCN_DEVICE(name, NAME, ELF, ISA, XNACK, SRAM, ...) \
     case ELF: XNACK; break;
 #define HSACO_ATTR_UNSUPPORTED SET_XNACK_UNSET (elf_flags)
-#define HSACO_ATTR_OFF SET_XNACK_OFF (elf_flags)
+#define HSACO_ATTR_OFF \
+      if (TEST_XNACK_UNSET (elf_flags)) SET_XNACK_OFF (elf_flags)
 #define HSACO_ATTR_ANY \
       if (TEST_XNACK_UNSET (elf_flags)) SET_XNACK_ANY (elf_flags)
 #include "gcn-devices.def"
@@ -1348,7 +1386,7 @@ main (int argc, char **argv)
       if (!out)
 	fatal_error (input_location, "cannot open %qs", gcn_s2_name);
 
-      process_asm (in, out, cfile);
+      process_asm (in, out, cfile, omp_requires);
 
       fclose (in);
       fclose (out);
