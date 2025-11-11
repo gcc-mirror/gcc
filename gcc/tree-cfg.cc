@@ -6791,10 +6791,12 @@ bb_part_of_region_p (basic_block bb, basic_block* bbs, unsigned n_region)
 
 
 /* For each PHI in BB, copy the argument associated with SRC_E to TGT_E.
-   Assuming the argument exists, just does not have a value.  */
+   Assuming the argument exists, just does not have a value.
+   If USE_MAP is true, then use the redirect edge var map of TGT_E
+   for the new arguments; clearing the map afterwards.  */
 
 void
-copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
+copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e, bool use_map)
 {
   int src_idx = src_e->dest_idx;
   int tgt_idx = tgt_e->dest_idx;
@@ -6810,9 +6812,33 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e)
       tree val = gimple_phi_arg_def (src_phi, src_idx);
       location_t locus = gimple_phi_arg_location (src_phi, src_idx);
 
+      if (use_map && TREE_CODE (val) == SSA_NAME)
+	{
+	  /* If DEF is one of the results of PHI nodes removed during
+	     redirection, replace it with the PHI argument that used
+	     to be on E.  */
+	  vec<edge_var_map> *head = redirect_edge_var_map_vector (tgt_e);
+	  size_t length = head ? head->length () : 0;
+	  for (size_t i = 0; i < length; i++)
+	    {
+	      edge_var_map *vm = &(*head)[i];
+	      tree old_arg = redirect_edge_var_map_result (vm);
+	      tree new_arg = redirect_edge_var_map_def (vm);
+
+	      if (val == old_arg)
+		{
+		  val = new_arg;
+		  locus = redirect_edge_var_map_location (vm);
+		  break;
+		}
+	    }
+	}
+
       SET_PHI_ARG_DEF (dest_phi, tgt_idx, val);
       gimple_phi_arg_set_location (dest_phi, tgt_idx, locus);
     }
+  if (use_map)
+    redirect_edge_var_map_clear (tgt_e);
 }
 
 /* Duplicates REGION consisting of N_REGION blocks.  The new blocks

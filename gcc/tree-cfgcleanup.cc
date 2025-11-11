@@ -1307,7 +1307,6 @@ remove_forwarder_block_with_phi (basic_block bb)
   for (edge_iterator ei = ei_start (bb->preds); (e = ei_safe_edge (ei)); )
     {
       edge s;
-      gphi_iterator gsi;
 
       s = find_edge (e->src, dest);
       if (s)
@@ -1345,43 +1344,7 @@ remove_forwarder_block_with_phi (basic_block bb)
 
       /* redirect_edge_and_branch must not create a new edge.  */
       gcc_assert (s == e);
-
-      /* Add to the PHI nodes at DEST each PHI argument removed at the
-	 destination of E.  */
-      for (gsi = gsi_start_phis (dest);
-	   !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  gphi *phi = gsi.phi ();
-	  tree def = gimple_phi_arg_def (phi, succ->dest_idx);
-	  location_t locus = gimple_phi_arg_location_from_edge (phi, succ);
-
-	  if (TREE_CODE (def) == SSA_NAME)
-	    {
-	      /* If DEF is one of the results of PHI nodes removed during
-		 redirection, replace it with the PHI argument that used
-		 to be on E.  */
-	      vec<edge_var_map> *head = redirect_edge_var_map_vector (e);
-	      size_t length = head ? head->length () : 0;
-	      for (size_t i = 0; i < length; i++)
-		{
-		  edge_var_map *vm = &(*head)[i];
-		  tree old_arg = redirect_edge_var_map_result (vm);
-		  tree new_arg = redirect_edge_var_map_def (vm);
-
-		  if (def == old_arg)
-		    {
-		      def = new_arg;
-		      locus = redirect_edge_var_map_location (vm);
-		      break;
-		    }
-		}
-	    }
-
-	  add_phi_arg (phi, def, s, locus);
-	}
-
-      redirect_edge_var_map_clear (e);
+      copy_phi_arg_into_existing_phi (succ, s, true);
     }
 
   /* Move debug statements.  Reset them if the destination does not
