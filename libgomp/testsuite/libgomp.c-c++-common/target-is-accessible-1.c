@@ -20,7 +20,7 @@ main ()
   if (!omp_target_is_accessible (p, sizeof (int), omp_initial_device))
     __builtin_abort ();
 
-  if (omp_target_is_accessible (p, sizeof (int), -5))
+  if (omp_target_is_accessible (p, sizeof (int), -6 /* omp_default_device - 1 */))
     __builtin_abort ();
 
   if (omp_target_is_accessible (p, sizeof (int), n + 1))

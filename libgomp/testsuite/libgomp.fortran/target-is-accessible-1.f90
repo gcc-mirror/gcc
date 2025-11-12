@@ -22,7 +22,7 @@ program main
   if (omp_target_is_accessible (p, c_sizeof (d), omp_initial_device) /= 1) &
     stop 3
 
-  if (omp_target_is_accessible (p, c_sizeof (d), -5) /= 0) &
+  if (omp_target_is_accessible (p, c_sizeof (d), -6) /= 0) &  ! -6 = omp_default_device - 1
     stop 4
 
   if (omp_target_is_accessible (p, c_sizeof (d), n + 1) /= 0) &
