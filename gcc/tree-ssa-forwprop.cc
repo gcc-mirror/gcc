@@ -4245,6 +4245,8 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
   use_operand_p use_p;
   imm_use_iterator iter;
   bool rewrite = true;
+  bool scalar_use = false;
+  bool unpack_use = false;
   auto_vec<gimple *, 8> bf_stmts;
   auto_vec<tree, 8> worklist;
   worklist.quick_push (lhs);
@@ -4278,6 +4280,8 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
 			 ???  Support VEC_UNPACK_FLOAT_{HI,LO}_EXPR.  */
 		      && INTEGRAL_TYPE_P (TREE_TYPE (use_rhs)))))
 	    {
+	      if (!VECTOR_TYPE_P (TREE_TYPE (gimple_assign_lhs (use_stmt))))
+		scalar_use = true;
 	      bf_stmts.safe_push (use_stmt);
 	      continue;
 	    }
@@ -4287,6 +4291,7 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
 		  || use_code == VEC_UNPACK_LO_EXPR)
 	      && use_rhs == lhs)
 	    {
+	      unpack_use = true;
 	      worklist.safe_push (gimple_assign_lhs (use_stmt));
 	      continue;
 	    }
@@ -4298,6 +4303,10 @@ optimize_vector_load (gimple_stmt_iterator *gsi)
     }
   while (!worklist.is_empty ());
 
+  rewrite = rewrite && (scalar_use
+			|| unpack_use
+			|| !can_implement_p (mov_optab,
+					     TYPE_MODE (TREE_TYPE (lhs))));
   if (!rewrite)
     {
       gsi_next (gsi);
