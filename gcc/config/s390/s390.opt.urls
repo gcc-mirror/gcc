@@ -51,6 +51,12 @@ UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-msoft-float-12)
 mstack-guard=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-guard)
 
+mstack-protector-guard=
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-protector-guard-4)
+
+mstack-protector-guard-record
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-protector-guard-record)
+
 mstack-size=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-size-2)
 

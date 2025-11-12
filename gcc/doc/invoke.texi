@@ -33866,6 +33866,20 @@ If both arguments are zero, hotpatching is disabled.
 
 This option can be overridden for individual functions with the
 @code{hotpatch} attribute.
+
+@opindex mstack-protector-guard
+@opindex mstack-protector-guard-record
+@item -mstack-protector-guard=@var{guard}
+@itemx -mstack-protector-guard-record
+Generate stack protection code using canary at @var{guard}.  Supported
+locations are @var{global} for a global canary or @var{tls} for a per-thread
+canary in the TLS block (the default).
+
+Option @option{-mstack-protector-guard-record} results in the generation of
+section @code{__stack_protector_loc} containing pointers to all instructions
+which load the address of the global guard.  Thus, this option has only an
+effect in conjunction with @option{-mstack-protector-guard=global}.  The
+intended use is for the Linux kernel.
 @end table
 
 @node SH Options
