@@ -425,6 +425,13 @@ tree_forwarder_block_p (basic_block bb, bool phi_wanted)
 	return false;
   }
 
+  /* If this bb has a single predecessor and that predecssor
+     has a single successor, this bb will be merged with the
+     predecessor so ignore it for removing of the forwarder block. */
+  if (single_pred_p (bb)
+      && single_succ_p (single_pred_edge (bb)->src))
+    return false;
+
   basic_block dest = single_succ_edge (bb)->dest;
 
   /* Now walk through the statements backward.  We can ignore labels,
