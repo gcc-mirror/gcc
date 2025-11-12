@@ -12290,12 +12290,14 @@ gfc_resolve_omp_context_selector (gfc_omp_set_selector *oss,
 		continue;
 	      }
 	    /* Device number must be conforming, which includes
-	       omp_initial_device (-1) and omp_invalid_device (-4).  */
+	       omp_initial_device (-1), omp_invalid_device (-4),
+	       and omp_default_device (-5).  */
 	    if (property_kind == OMP_TRAIT_PROPERTY_DEV_NUM_EXPR
 		&& otp->expr->expr_type == EXPR_CONSTANT
 		&& mpz_sgn (otp->expr->value.integer) < 0
 		&& mpz_cmp_si (otp->expr->value.integer, -1) != 0
-		&& mpz_cmp_si (otp->expr->value.integer, -4) != 0)
+		&& mpz_cmp_si (otp->expr->value.integer, -4) != 0
+		&& mpz_cmp_si (otp->expr->value.integer, -5) != 0)
 	      gfc_error ("property must be a conforming device number at %L",
 			 &otp->expr->where);
 	    break;

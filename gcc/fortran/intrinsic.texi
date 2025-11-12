@@ -16250,6 +16250,7 @@ The following scalar default-integer named constants:
 @table @asis
 @item @code{omp_initial_device}
 @item @code{omp_invalid_device}
+@item @code{omp_default_device}
 @end table
 
 

@@ -5,10 +5,12 @@
 int main()
 {
   const char **strs = (const char **) malloc (sizeof (char*) * (omp_get_num_devices () + 1));
-  for (int i = omp_invalid_device - 1; i <= omp_get_num_devices () + 1; i++)
+  for (int i = omp_default_device - 1; i <= omp_get_num_devices () + 1; i++)
     {
       const char *str = omp_get_uid_from_device (i);
       int dev = omp_get_device_from_uid (str);
+      if (i == omp_default_device)
+	i = omp_get_default_device ();
 // __builtin_printf("%i -> %s -> %d\n", i, str, dev);
       if (i < omp_initial_device || i > omp_get_num_devices ())
 	{

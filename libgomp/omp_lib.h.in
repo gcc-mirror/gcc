@@ -182,9 +182,10 @@
       parameter (omp_const_mem_space = 2)
       parameter (omp_high_bw_mem_space = 3)
       parameter (omp_low_lat_mem_space = 4)
-      integer omp_initial_device, omp_invalid_device
+      integer omp_initial_device, omp_invalid_device, omp_default_device
       parameter (omp_initial_device = -1)
       parameter (omp_invalid_device = -4)
+      parameter (omp_default_device = -5)
       integer (omp_interop_kind) omp_interop_none
       parameter (omp_interop_none = 0_omp_interop_kind)
       integer (omp_interop_fr_kind) omp_ifr_cuda

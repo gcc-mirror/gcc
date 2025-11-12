@@ -10,10 +10,13 @@ program main
 
   allocate(strs(0:omp_get_num_devices ()))
 
-  do i = omp_invalid_device - 1, omp_get_num_devices () + 1
+  do j = omp_default_device - 1, omp_get_num_devices () + 1
+    i = j
     str => omp_get_uid_from_device (i)
     dev = omp_get_device_from_uid (str)
 ! print *, i, str, dev
+    if (i == omp_default_device) &
+      i = omp_get_default_device ()
     if (i < omp_initial_device .or. i > omp_get_num_devices ()) then
       if (dev /= omp_invalid_device .or. associated(str)) &
         stop 1

@@ -176,6 +176,7 @@
                  parameter :: omp_low_lat_mem_space = 4
         integer, parameter :: omp_initial_device = -1
         integer, parameter :: omp_invalid_device = -4
+        integer, parameter :: omp_default_device = -5
         integer (omp_interop_kind), &
                  parameter :: omp_interop_none = 0_omp_interop_kind
         integer (omp_interop_fr_kind), parameter :: omp_ifr_cuda = 1

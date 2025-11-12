@@ -139,6 +139,14 @@ gomp_get_num_devices (void)
   return num_devices_openmp;
 }
 
+static int
+gomp_get_default_device ()
+{
+  gomp_init_targets_once ();
+  struct gomp_task_icv *icv = gomp_icv (false);
+  return icv->default_device_var;
+}
+
 static struct gomp_device_descr *
 resolve_device (int device_id, bool remapped)
 {
@@ -148,11 +156,7 @@ resolve_device (int device_id, bool remapped)
 
   if ((remapped && device_id == GOMP_DEVICE_ICV)
       || device_id == GOMP_DEVICE_DEFAULT_OMP_61)
-    {
-      struct gomp_task_icv *icv = gomp_icv (false);
-      device_id = icv->default_device_var;
-      remapped = false;
-    }
+    device_id = gomp_get_default_device ();
 
   if (device_id < 0)
     {
@@ -4653,6 +4657,9 @@ GOMP_teams4 (unsigned int num_teams_low, unsigned int num_teams_high,
 void *
 omp_target_alloc (size_t size, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ())
     return malloc (size);
@@ -4674,6 +4681,9 @@ omp_target_alloc (size_t size, int device_num)
 void
 omp_target_free (void *device_ptr, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ())
     {
@@ -4811,6 +4821,9 @@ gomp_page_locked_host_free (void *ptr)
 int
 omp_target_is_present (const void *ptr, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ())
     return 1;
@@ -4843,6 +4856,11 @@ omp_target_memcpy_check (int dst_device_num, int src_device_num,
 			 struct gomp_device_descr **dst_devicep,
 			 struct gomp_device_descr **src_devicep)
 {
+  if (dst_device_num == omp_default_device)
+    dst_device_num = gomp_get_default_device ();
+  if (src_device_num == omp_default_device)
+    src_device_num = gomp_get_default_device ();
+
   if (dst_device_num != gomp_get_num_devices ()
       /* Above gomp_get_num_devices has to be called unconditionally.  */
       && dst_device_num != omp_initial_device)
@@ -5323,6 +5341,9 @@ omp_target_memset_int (void *ptr, int val, size_t count,
 void*
 omp_target_memset (void *ptr, int val, size_t count, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   struct gomp_device_descr *devicep;
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ()
@@ -5359,6 +5380,9 @@ omp_target_memset_async (void *ptr, int val, size_t count, int device_num,
   unsigned flags = 0;
   int i;
 
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ()
       || (devicep = resolve_device (device_num, false)) == NULL
@@ -5387,6 +5411,9 @@ int
 omp_target_associate_ptr (const void *host_ptr, const void *device_ptr,
 			  size_t size, size_t device_offset, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ())
     return EINVAL;
@@ -5484,6 +5511,9 @@ omp_target_disassociate_ptr (const void *ptr, int device_num)
 void *
 omp_get_mapped_ptr (const void *ptr, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == omp_get_initial_device ())
     return (void *) ptr;
@@ -5520,6 +5550,9 @@ omp_get_mapped_ptr (const void *ptr, int device_num)
 int
 omp_target_is_accessible (const void *ptr, size_t size, int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ())
     return true;
@@ -5537,6 +5570,8 @@ int
 omp_pause_resource (omp_pause_resource_t kind, int device_num)
 {
   (void) kind;
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
   if (device_num == omp_initial_device
       || device_num == gomp_get_num_devices ())
     return gomp_pause_host ();
@@ -5847,6 +5882,9 @@ gomp_get_uid_for_device (struct gomp_device_descr *devicep, int device_num)
 const char *
 omp_get_uid_from_device (int device_num)
 {
+  if (device_num == omp_default_device)
+    device_num = gomp_get_default_device ();
+
   if (device_num < omp_initial_device || device_num > gomp_get_num_devices ())
     return NULL;
 
