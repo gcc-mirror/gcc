@@ -25,6 +25,9 @@
       AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON,
 			    EXPLICIT_OFF, FEATURE_STRING)
 
+      AARCH64_OPT_EXTENSION_ALIAS(NAME, IDENT, REQUIRES, EXPLICIT_ON,
+				  EXPLICIT_OFF, PREFER_OVER, FEATURE_STRING)
+
       AARCH64_FMV_FEATURE(NAME, FEAT_NAME, IDENT)
 
    - NAME is the name of the extension, represented as a string constant.
@@ -66,6 +69,10 @@
    - OPT_FLAGS is a list of feature IDENTS that should be enabled (along with
      their transitive dependencies) when the specified FMV feature is present.
 
+   - PREFER_OVER is a list of features that need to be present when emitting
+     the list of architecture feature options for the alias option to be
+     preferred instead.
+
    Where a feature is present as both an extension and a function
    multiversioning feature, and IDENT matches the FEAT_NAME suffix, then these
    can be listed here simultaneously using the macro:
@@ -86,6 +93,14 @@
 #ifndef AARCH64_OPT_EXTENSION
 #define AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON, \
 			      EXPLICIT_OFF, FEATURE_STRING)
+#endif
+
+#ifndef AARCH64_OPT_EXTENSION_ALIAS
+#define AARCH64_OPT_EXTENSION_ALIAS(NAME, IDENT, REQUIRES, EXPLICIT_ON, \
+				    EXPLICIT_OFF, PREFERRED_OVER, \
+				    FEATURE_STRING) \
+AARCH64_OPT_EXTENSION(NAME, IDENT, REQUIRES, EXPLICIT_ON, EXPLICIT_OFF, \
+		      FEATURE_STRING)
 #endif
 
 #ifndef AARCH64_FMV_FEATURE
@@ -134,11 +149,9 @@ AARCH64_FMV_FEATURE("aes", PMULL, (AES))
 
 /* +nocrypto disables AES, SHA2 and SM4, and anything that depends on them
    (such as SHA3 and the SVE2 crypto extensions).  */
-AARCH64_OPT_EXTENSION("crypto", CRYPTO, (AES, SHA2), (), (AES, SHA2, SM4),
-		      "aes pmull sha1 sha2")
+AARCH64_OPT_EXTENSION_ALIAS("crypto", CRYPTO, (AES, SHA2), (), (AES, SHA2, SM4),
+			    (AES, SHA2), "aes pmull sha1 sha2")
 
-/* Listing sha3 after crypto means we pass "+aes+sha3" to the assembler
-   instead of "+sha3+crypto".  */
 AARCH64_OPT_EXTENSION("sha3", SHA3, (SHA2), (), (), "sha3 sha512")
 
 /* +nofp16 disables an implicit F16FML, even though an implicit F16FML
@@ -291,4 +304,5 @@ AARCH64_OPT_EXTENSION("cpa", CPA, (), (), (), "")
 
 #undef AARCH64_OPT_FMV_EXTENSION
 #undef AARCH64_OPT_EXTENSION
+#undef AARCH64_OPT_EXTENSION_ALIAS
 #undef AARCH64_FMV_FEATURE

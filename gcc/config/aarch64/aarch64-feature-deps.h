@@ -66,12 +66,18 @@ get_enable (T1 i, Ts... args)
    files are in topological order.  */
 template<aarch64_feature> struct info;
 
+  constexpr auto alias_flags = aarch64_feature_flags (0)
+#define AARCH64_OPT_EXTENSION_ALIAS(A, IDENT, C, D, E, F, G) | AARCH64_FL_##IDENT
+#define AARCH64_OPT_EXTENSION(A, IDENT, C, D, E, F)
+#include "config/aarch64/aarch64-option-extensions.def"
+;
+
 #define HANDLE(IDENT, REQUIRES, EXPLICIT_ON)				\
   template<> struct info<aarch64_feature::IDENT> {			\
     static constexpr auto flag = AARCH64_FL_##IDENT;			\
     static constexpr auto enable = flag | get_enable REQUIRES;		\
-    static constexpr auto explicit_on                                   \
-      = (enable | get_enable EXPLICIT_ON) & ~AARCH64_FL_CRYPTO;         \
+    static constexpr auto explicit_on					\
+      = (enable | get_enable EXPLICIT_ON) & ~alias_flags;		\
   };									\
   constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::flag;	\
   constexpr aarch64_feature_flags info<aarch64_feature::IDENT>::enable;	\
@@ -116,11 +122,11 @@ get_flags_off (aarch64_feature_flags mask)
 #include "config/aarch64/aarch64-option-extensions.def"
 
 /* Define cpu_<NAME> variables for each CPU, giving the transitive
-   closure of all the features that the CPU supports.  The CRYPTO bit is just
-   an alias, so explicitly unset it for consistency.  */
+   closure of all the features that the CPU supports.  The alias flags are
+   explicitly unset for consistency.  */
 #define AARCH64_CORE(A, CORE_IDENT, C, ARCH_IDENT, FEATURES, F, G, H, I) \
   constexpr auto cpu_##CORE_IDENT \
-    = (ARCH_IDENT ().enable | get_enable FEATURES) & ~AARCH64_FL_CRYPTO;
+    = (ARCH_IDENT ().enable | get_enable FEATURES) & ~alias_flags;
 #include "config/aarch64/aarch64-cores.def"
 
 /* Define fmv_deps_<NAME> variables for each FMV feature, giving the transitive
@@ -129,7 +135,12 @@ get_flags_off (aarch64_feature_flags mask)
   constexpr auto fmv_deps_##FEAT_NAME = get_enable OPT_FLAGS;
 #include "config/aarch64/aarch64-option-extensions.def"
 
-
+#define AARCH64_OPT_EXTENSION_ALIAS(A, IDENT, OPT_FLAGS, D, E, \
+				    PREFER_FLAGS, G) \
+  constexpr auto alias_prefer_over_flags_##IDENT = get_flags PREFER_FLAGS;
+#define AARCH64_OPT_EXTENSION(A, IDENT, C, D, E, F) \
+  constexpr aarch64_feature_flags alias_prefer_over_flags_##IDENT = 0;
+#include "config/aarch64/aarch64-option-extensions.def"
 }
 }
 
