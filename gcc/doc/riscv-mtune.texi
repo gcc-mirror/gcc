@@ -56,4 +56,6 @@ particular CPU name.  Permissible values for this option are:
 
 @samp{mips-p8700},
 
+@samp{andes-25-series},
+
 and all valid options for @option{-mcpu=}.

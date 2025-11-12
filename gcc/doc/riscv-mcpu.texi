@@ -66,4 +66,18 @@ by particular CPU name. Permissible values for this option are:
 
 @samp{xiangshan-kunminghu},
 
-@samp{mips-p8700}.
+@samp{mips-p8700},
+
+@samp{andes-n22},
+
+@samp{andes-n25},
+
+@samp{andes-a25},
+
+@samp{andes-nx25},
+
+@samp{andes-ax25},
+
+@samp{andes-a27},
+
+@samp{andes-ax27}.

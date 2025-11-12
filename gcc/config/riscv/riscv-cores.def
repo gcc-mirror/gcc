@@ -53,6 +53,7 @@ RISCV_TUNE("xiangshan-kunminghu", xiangshan, generic_ooo_tune_info)
 RISCV_TUNE("generic-ooo", generic_ooo, generic_ooo_tune_info)
 RISCV_TUNE("size", generic, optimize_size_tune_info)
 RISCV_TUNE("mips-p8700", mips_p8700, mips_p8700_tune_info)
+RISCV_TUNE("andes-25-series", andes_25_series, andes_25_tune_info)
 
 #undef RISCV_TUNE
 
@@ -171,4 +172,13 @@ RISCV_CORE("xiangshan-kunminghu",   "rv64imafdcbvh_sdtrig_sha_shcounterenw_"
 
 RISCV_CORE("mips-p8700",      "rv64imfd_zicsr_zifencei_zalrsc_zba_zbb",
 			      "mips-p8700")
+
+RISCV_CORE("andes-n22",       "rv32imc_zicsr_zifencei_xandesperf",    "andes-25-series")
+RISCV_CORE("andes-n25",       "rv32imc_zicsr_zifencei_xandesperf",    "andes-25-series")
+RISCV_CORE("andes-a25",       "rv32imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
+RISCV_CORE("andes-nx25",      "rv64imc_zicsr_zifencei_xandesperf",    "andes-25-series")
+RISCV_CORE("andes-ax25",      "rv64imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
+RISCV_CORE("andes-a27",       "rv32imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
+RISCV_CORE("andes-ax27",      "rv64imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
+
 #undef RISCV_CORE
