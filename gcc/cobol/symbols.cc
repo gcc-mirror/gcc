@@ -1862,6 +1862,7 @@ symbols_update( size_t first, bool parsed_ok ) {
                    __func__,
                    3 + cbl_field_type_str(field->type),
                    (fmt_size_t)isym, field->name, field->data.capacity);
+          gcc_unreachable();
         }
       }
       return 0;
@@ -2187,12 +2188,9 @@ symbol_field_parent_set( cbl_field_t *field )
           return NULL;
         }
         prior->type = FldGroup;
-        prior->codeset.set();
-////        if( ! prior->codeset.set() ) { // maybe just ignore?
-//// Dubner sez: Ignore.  This was triggering with -finternal-ebcdic
-////          ERROR_FIELD(prior, "%qs is already National", prior->name);
-////          return NULL;
-////        }
+        if( ! prior->codeset.set() ) { // needs attention
+          dbgmsg("'%s' is already National", prior->name);
+        }
         field->attr |= numeric_group_attrs(prior);
       }
       // verify level 88 domain value
@@ -2249,6 +2247,8 @@ add_token( symbol_elem_t sym ) {
   sym.elem.special.token = keyword_tok(sym.elem.special.name);
   return sym;
 }
+
+const std::list<cbl_field_t> cdf_literalize();
 
 /*
  * When adding special registers, be sure to create the actual cblc_field_t
@@ -2455,6 +2455,14 @@ symbol_table_init(void) {
   table.nelem = p - table.elems;
   assert(table.nelem < table.capacity);
 
+  // Add any CDF values already defined as literals.
+  // After symbols are ready, the CDF adds them directly. 
+  const std::list<cbl_field_t> cdf_values = cdf_literalize();
+  table.nelem += cdf_values.size();
+  assert(table.nelem < table.capacity);
+  
+  p = std::transform(cdf_values.begin(), cdf_values.end(), p, elementize);
+  
   // Initialize symbol table.
   symbols = table;
 

@@ -30,6 +30,8 @@ if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la
 toolexeclib_DATA = libgcobol.spec
 
+libsubincludedir = $(libdir)/gcc/cobol/$(target_noncanonical)/$(gcc_version)
+
 ##
 ## 2.2.12 Automatic Dependency Tracking
 ## Automake generates code for automatic dependency tracking by default
@@ -43,18 +45,31 @@ libgcobol_la_SOURCES =				\
 	intrinsic.cc				\
 	io.cc					\
 	libgcobol.cc				\
-	posix/errno.cc				\
-	posix/localtime.cc			\
-	posix/stat.cc				\
+	posix/shim/errno.cc			\
+	posix/shim/localtime.cc			\
+	posix/shim/stat.cc			\
 	stringbin.cc				\
 	valconv.cc				\
 	xmlparse.cc
 
 libgcobol_la_LIBADD = -lxml2
 
+nobase_libsubinclude_HEADERS = 			\
+	posix/cpy/posix-errno.cbl		\
+	posix/cpy/statbuf.cpy			\
+	posix/udf/posix-exit.cbl		\
+	posix/udf/posix-localtime.cbl		\
+	posix/udf/posix-mkdir.cbl		\
+	posix/udf/posix-stat.cbl		\
+	posix/udf/posix-unlink.cbl		\
+	compat/lib/gnu/CBL_CHECK_FILE_EXIST.cbl	\
+	compat/lib/gnu/CBL_ALLOC_MEM.cbl	\
+	compat/lib/gnu/CBL_DELETE_FILE.cbl	\
+	compat/lib/gnu/CBL_FREE_MEM.cbl
+
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
-AM_CPPFLAGS = -I. -I$(srcdir) -I$(srcdir)/posix $(LIBQUADINCLUDE)
+AM_CPPFLAGS = -I. -I posix/shim $(LIBQUADINCLUDE)
 AM_CPPFLAGS += -I /usr/include/libxml2
 
 AM_CFLAGS = $(XCFLAGS)
@@ -73,7 +88,7 @@ endif
 libgcobol_la_LINK = $(CXXLINK) $(libgcobol_la_LDFLAGS)
 version_arg = -version-info $(LIBGCOBOL_VERSION)
 libgcobol_la_LDFLAGS = $(LTLDFLAGS) $(LIBQUADLIB) $(LTLIBICONV) \
-	$(extra_ldflags_libgcobol) $(LIBS) -lxml2 $(version_arg)
+	$(extra_ldflags_libgcobol) $(LIBS) $(version_arg)
 libgcobol_la_DEPENDENCIES = libgcobol.spec $(LIBQUADLIB_DEP)
 
 endif BUILD_LIBGCOBOL

@@ -5145,8 +5145,8 @@ parser_alphabet( const cbl_alphabet_t& alphabet )
 
     case custom_encoding_e:
       {
-#pragma message "Use program-id to disambiguate"
-      size_t alphabet_index = symbol_index(symbol_elem_of(&alphabet));
+#pragma message "Verify program-id is disambiguated"
+      size_t alphabet_index = symbol_unique_index(symbol_elem_of(&alphabet));
 
       unsigned char ach[256];
 
@@ -7166,7 +7166,6 @@ initialize_the_data()
           build_int_cst_type(INT, current_encoding(national_encoding_e)),
           NULL_TREE);
 
-  __gg__currency_signs = __gg__ct_currency_signs;
   // We initialize currency both at compile time and run time
   __gg__currency_sign_init();
   gg_call(VOID,
@@ -9911,8 +9910,8 @@ parser_file_add(struct cbl_file_t *file)
           __func__);
     }
 
-#pragma message "Use program-id to disambiguate"
-  size_t symbol_table_index = symbol_index(symbol_elem_of(file));
+#pragma message "Verify program-id is disambiguated"
+  size_t symbol_table_index = symbol_unique_index(symbol_elem_of(file));
 
   gg_call(VOID,
           "__gg__file_init",
@@ -14608,6 +14607,7 @@ void
 parser_exception_file( cbl_field_t *tgt, cbl_file_t *file)
   {
   Analyze();
+  RETURN_IF_PARSE_ONLY;
   gg_call(VOID,
           "__gg__func_exception_file",
           gg_get_address_of(tgt->var_decl_node),

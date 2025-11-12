@@ -2714,8 +2714,8 @@ numval_c( cblc_field_t *dest,
 
   char *currency_in_ascii;
 
-  char *currency_start;
-  char *currency_end;
+  const char *currency_start;
+  const char *currency_end;
   if( crcy )
     {
     converted = __gg__iconverter(crcy->encoding,
@@ -2736,7 +2736,7 @@ numval_c( cblc_field_t *dest,
   currency_start = currency_in_ascii;
   currency_end   = currency_start + strlen(currency_start);
 
-  char *pcurrency = currency_start;
+  const char *pcurrency = currency_start;
   // Trim off spaces from the currency:
   while( *pcurrency == ascii_space && pcurrency < currency_end )
     {

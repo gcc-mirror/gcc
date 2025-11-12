@@ -145,7 +145,7 @@ expand_picture(char *dest, const char *picture)
       *d++ = ch;
       }
 
-    if( __gg__currency_signs[ch] )
+    if( ! __gg__currency_signs[ch].empty() )
       {
       // We are going to be mapping ch to a string in the final result:
       prior_ch = ch;
@@ -160,8 +160,9 @@ expand_picture(char *dest, const char *picture)
 
   if( currency_symbol )
     {
-    size_t sign_length = strlen(__gg__currency_signs[currency_symbol]) - 1;
-    if( sign_length )
+    size_t sign_length = __gg__currency_signs[currency_symbol].size();
+    assert(0 < sign_length);    
+    if( --sign_length )
       {
       char *pcurrency = strchr(dest, currency_symbol);
       assert(pcurrency);
@@ -279,10 +280,10 @@ __gg__string_to_numeric_edited( char * const dest,
   for(int i=0; i<dlength; i++)
     {
     int ch = (unsigned int)dest[i] & 0xFF;
-    if( __gg__currency_signs[ch] )
+    if( ! __gg__currency_signs[ch].empty() )
       {
       currency_picture = ch;
-      currency_sign = __gg__currency_signs[ch];
+      currency_sign = __gg__currency_signs[ch].c_str();
       break;
       }
     }
@@ -1276,23 +1277,18 @@ __gg__string_to_alpha_edited(   char *dest,
   
 extern "C"
 void
-__gg__currency_sign_init()
+__gg__currency_sign_init() // This duplicates the constructor. 
   {
-  for(int symbol=0; symbol<256; symbol++)
-    {
-    if( __gg__currency_signs[symbol] )
-      {
-      free(__gg__currency_signs[symbol]);
-      __gg__currency_signs[symbol] = NULL;
-      }
-    }
+  for( auto str : __gg__currency_signs ) {
+    str.clear();
+  }
   }
 
 extern "C"
 void
 __gg__currency_sign(int symbol, const char *sign)
   {
-  __gg__currency_signs[symbol] = strdup(sign);
+  __gg__currency_signs[symbol] = sign;
   __gg__default_currency_sign = *sign;
   }
 

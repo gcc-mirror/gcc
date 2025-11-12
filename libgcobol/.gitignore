@@ -1,0 +1,8 @@
+compat/t/*
+!compat/t/Makefile
+!compat/t/*.cbl
+posix/bin/sizeofs
+posix/t/*
+!posix/t/Makefile
+!posix/t/*.cbl
+posix/udf/*.scr

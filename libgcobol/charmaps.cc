@@ -55,7 +55,7 @@ int __gg__decimal_separator    = ','  ;
 int __gg__quote_character      = '"'  ;
 int __gg__low_value_character  = 0x00 ;
 int __gg__high_value_character = 0xFF ;
-char **__gg__currency_signs           ;
+std::vector<std::string> __gg__currency_signs(256) ;
 int __gg__default_currency_sign;
 char *__gg__ct_currency_signs[256];  // Compile-time currency signs
 

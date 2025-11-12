@@ -461,13 +461,13 @@ struct program_state
   int rt_quote_character;
   int rt_low_value_character;
   int rt_high_value_character;
-  char *rt_currency_signs[256];
+  std::vector<std::string> rt_currency_signs;
   const unsigned short *rt_collation;  // Points to a table of 256 values;
   cbl_encoding_t rt_display_encoding;
   cbl_encoding_t rt_national_encoding;
   char *rt_program_name;
 
-  program_state()
+  program_state() : rt_currency_signs(256)
     {
     // IBM defaults to the \" QUOTE compiler option.  quote_character must
     // be set to \' when the APOST compiler option is in effect
@@ -486,15 +486,14 @@ struct program_state
 
     // Set all the currency_sign pointers to NULL:
 
-    memset(rt_currency_signs, 0, sizeof(rt_currency_signs));
-
     rt_display_encoding  = __gg__display_encoding;
     rt_national_encoding = __gg__national_encoding;
     rt_collation = __gg__one_to_one_values;
     rt_program_name = NULL;
     }
 
-  program_state(const program_state &ps)
+    program_state(const program_state &ps)
+      : rt_currency_signs(ps.rt_currency_signs)
     {
     rt_decimal_point        = ps.rt_decimal_point         ;
     rt_decimal_separator    = ps.rt_decimal_separator     ;
@@ -507,32 +506,7 @@ struct program_state
     rt_display_encoding     = ps.rt_display_encoding      ;
     rt_national_encoding    = ps.rt_national_encoding     ;
     rt_collation            = ps.rt_collation             ;
-
-    for( int i=0; i<256; i++ )
-      {
-      if( ps.rt_currency_signs[i] )
-        {
-        rt_currency_signs[i] = strdup(ps.rt_currency_signs[i]);
-        }
-      else
-        {
-        rt_currency_signs[i] = NULL;
-        }
-      }
-
-    rt_program_name                  = ps.rt_program_name                  ;
-    }
-
-  ~program_state()
-    {
-    for(int symbol=0; symbol<256; symbol++)
-      {
-      if( rt_currency_signs[symbol] )
-        {
-        free(rt_currency_signs[symbol]);
-        rt_currency_signs[symbol] = NULL;
-        }
-      }
+    rt_program_name         = ps.rt_program_name          ;
     }
   };
 
@@ -584,10 +558,10 @@ __gg__get_decimal_separator()
   }
 
 extern "C"
-char *
+const char *
 __gg__get_default_currency_string()
   {
-  return currency_signs(__gg__default_currency_sign);
+  return currency_signs(__gg__default_currency_sign).c_str();
   }
 
 extern "C"
@@ -8132,10 +8106,21 @@ __gg__inspect_format_2(int backward, size_t integers[])
   size_t        id1_s = __gg__treeplet_1s[cblc_index];
   cblc_index += 1;
 
+#if 0
+  fprintf(stderr, "%s:%d: '%.*s' id1_o %zu, id1_s %zu\n", __func__, __LINE__, 
+          int(id1_s), (char*)id1->data, id1_o, id1_s);
+#endif
+  
   // normalize it, according to the language specification.
   normalized_operand normalized_id_1
                                    = normalize_id(id1, id1_o, id1_s, id1->encoding);
-
+#if 0
+  fprintf(stderr, "%s:%d: normalized_id_1 '%s' offset %zu, length %zu\n", __func__, __LINE__, 
+          normalized_id_1.the_characters.c_str(),
+          normalized_id_1.offset, 
+          normalized_id_1.length );
+#endif
+  
   std::vector<comparand> comparands;
 
   // Pick up the count of operations:

@@ -572,7 +572,7 @@ REVERSED	{ return REVERSED; }
 RETURN		{ return RETURN; }
 RESTRICTED	{ return RESTRICTED; }
 
-RESUME		{
+RESUME		{ // RESUME is ISO syntax, not IBM.  
 		  if( ! dialect_ibm() ) return RESUME;
 		  yylval.string = xstrdup(yytext);
 		  return typed_name(yytext);

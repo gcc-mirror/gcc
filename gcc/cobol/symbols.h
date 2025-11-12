@@ -57,6 +57,17 @@ enum cbl_dialect_t {
   dialect_gnu_e = 0x04,
 };
 
+static inline const char *
+cbl_dialect_str(cbl_dialect_t dialect)  {
+  switch(dialect) {
+  case dialect_gcc_e: return "gcc";
+  case dialect_ibm_e: return "ibm";
+  case dialect_mf_e:  return "mf";
+  case dialect_gnu_e: return "gnu";
+  }
+  return "???";
+};
+
 // Dialects may be combined. 
 extern unsigned int cbl_dialects;
 void cobol_dialect_set( cbl_dialect_t dialect );
@@ -142,11 +153,6 @@ struct os_locale_t {
 const char * cbl_field_attr_str( cbl_field_attr_t attr );
 
 cbl_field_attr_t literal_attr( const char prefix[] );
-
-static inline bool
-is_working_storage(uint32_t attr) {
-  return 0 == (attr & (linkage_e | local_e));
-}
 
 int cbl_figconst_tok( const char *value );
 enum cbl_figconst_t cbl_figconst_of( const char *value );
@@ -391,6 +397,26 @@ struct cbl_field_data_t {
     return valify();
   }
 
+  // If initial (of Numeric Edited) has any length but capacity, adjust it.  
+  bool manhandle_initial() {
+    assert(capacity > 0);
+    assert(initial != nullptr);
+    if( capacity < strlen(initial) ) {
+      char *p = const_cast<char*>(initial);
+      p[capacity] = '\0';
+      return true;
+    }
+    if( strlen(initial) < capacity ) {
+      auto tgt = reinterpret_cast<char *>( xmalloc(capacity + 1) );
+      auto pend = tgt + capacity;
+      auto p = std::copy(initial, initial + strlen(initial), tgt);
+      std::fill(p, pend, 0x20);
+      p = pend - 1;
+      *p = '\0';
+      initial = tgt;
+    }
+    return false;
+  }
   bool initial_within_capacity() const {
     return initial[capacity] == '\0'
       ||   initial[capacity] == '!';
@@ -630,7 +656,7 @@ struct cbl_field_t {
                uint32_t level = 0, const cbl_name_t name = "", int line = 0 )
     : offset(0), type(type), usage(FldInvalid), attr(attr)
     , parent(0), our_index(0), level(level)
-    , line(line), file(0), data(data)
+    , line(line), name(""), file(0), data(data)
     , var_decl_node(nullptr), data_decl_node(nullptr)
   {
     gcc_assert(strlen(name) < sizeof this->name);
@@ -1539,15 +1565,6 @@ struct cbl_section_t {
     }
     gcc_unreachable();
   }
-  uint32_t attr() const {
-    switch(type) {
-    case file_sect_e:
-    case working_sect_e: return 0;
-    case linkage_sect_e: return linkage_e;
-    case local_sect_e:   return local_e;
-    }
-    gcc_unreachable();
-  }
 };
 
 struct cbl_locale_t {
@@ -2273,6 +2290,8 @@ struct cbl_until_addresses_t {
 
 size_t symbol_index(); // nth after first program symbol
 size_t symbol_index( const symbol_elem_t *e );
+size_t symbol_unique_index( const struct symbol_elem_t *e );
+
 struct symbol_elem_t * symbol_at( size_t index );
 
 struct cbl_options_t {

@@ -55,6 +55,9 @@
 /* Define to 1 if you have the `random_r' function. */
 #undef HAVE_RANDOM_R
 
+/* Define to 1 if you have the `xmlParseChunk' function. */
+#undef HAVE_SAX_XML_PARSER
+
 /* Define to 1 if you have the `setstate_r' function. */
 #undef HAVE_SETSTATE_R
 

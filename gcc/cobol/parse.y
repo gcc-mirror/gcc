@@ -2397,7 +2397,7 @@ config_paragraph:
         |       SOURCE_COMPUTER  '.' NAME '.'
         |       SOURCE_COMPUTER  '.' NAME with_debug '.'
         |       OBJECT_COMPUTER  '.' 
-        |       OBJECT_COMPUTER  '.' NAME[computer] collations '.'
+        |       OBJECT_COMPUTER  '.' NAME[computer] object_computer '.'
         |       REPOSITORY dot
         |       REPOSITORY dot repo_members '.'
                 ;
@@ -2528,7 +2528,7 @@ with_debug:     with DEBUGGING MODE {
                 }
                 ;
 
-collations:     %empty
+object_computer: %empty
         |       char_classification
         |       collating_sequence
         |       char_classification collating_sequence
@@ -4842,13 +4842,15 @@ value_clause:   VALUE all LITERAL[lit] {
                   }
                   if( $value != NULLS ) {
                     auto fig = constant_of(constant_index($value));
-                    current_field()->data.initial = fig->data.initial;
+                    cbl_field_t *field = current_field();
+                    field->data.initial = fig->data.initial;
                   }
                 }
         |       /* VALUE is */ NULLPTR
                 {
                     auto fig = constant_of(constant_index(NULLS));
-                    current_field()->data.initial = fig->data.initial;
+                    cbl_field_t *field = current_field();
+                    field->data.initial = fig->data.initial;
                 }
         |       VALUE error
                 {
@@ -4938,10 +4940,13 @@ any_length:     ANY LENGTH
                   if( field->attr & any_length_e ) {
                     error_msg(@1, "ANY LENGTH already set");
                   }
+                  const char *prog_name = current.program()->name;
+                  bool is_compat = 0 < compat_programs.count(prog_name);
                   if( ! (field->level == 1 &&
                          current_data_section == linkage_datasect_e &&
                          (1 < current.program_level() ||
-			      current.program()->is_function())) ) {
+			      current.program()->is_function() ||
+                              is_compat)) ) {
                     error_msg(@1, "ANY LENGTH valid only for 01 "
                             "in LINKAGE SECTION of a function or contained program");
                     YYERROR;
@@ -10338,11 +10343,13 @@ go_to:          GOTO labels[args]
 resume:         RESUME NEXT STATEMENT
                 {
                   statement_begin(@1, RESUME);
+                  if( dialect_proscribed( @1, dialect_ibm_e, "RESUME") ) YYERROR;
                   parser_clear_exception();
                 }
         |       RESUME label_1[tgt]
                 {
                   statement_begin(@1, RESUME);
+                  if( dialect_proscribed( @1, dialect_ibm_e, "RESUME") ) YYERROR;
                   parser_clear_exception();
 		  $tgt->used = @1.first_line;
                   parser_goto( cbl_refer_t(), 1, &$tgt );
@@ -10708,11 +10715,10 @@ function_udf:   FUNCTION_UDF '(' arg_list[args] ')' {
 		  const auto returning = cbl_field_of(symbol_at(L->returning));
                   $$ = new_temporary_clone(returning);
 		  $$->data.initial = returning->name; // user's name for the field
-                  cbl_field_attr_t call_attr
-                                 = (cbl_field_attr_t)(quoted_e|hex_encoded_e);
-                  cbl_field_t *name = new_literal(strlen(L->name),
-                                                  L->name,
-                                                  call_attr);
+
+                  // Pretend hex-encoded because that means use verbatim.
+                  auto attr = cbl_field_attr_t(quoted_e | hex_encoded_e);
+                  auto name = new_literal(strlen(L->name), L->name, attr);
                   ast_call( @1, name, $$, narg, args, NULL, NULL, true );
                 }
                 ;
@@ -12083,6 +12089,7 @@ void ast_call( const YYLTYPE& loc, cbl_refer_t name, const cbl_refer_t& returnin
                            name.field->data, 77 };
     called.attr |= name.field->attr;
     snprintf(called.name, sizeof(called.name), "_%s", name.field->data.initial);
+    called.attr |= name.field->attr;
     name.field = cbl_field_of(symbol_field_add(PROGRAM, &called));
     symbol_field_location(field_index(name.field), loc);
     parser_symbol_add(name.field);

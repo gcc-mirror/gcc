@@ -408,7 +408,6 @@ static void fatalError(void * CTX, const char * msg, ...)
 }
 
 #if 0
-
 static xmlEntityPtr getEntity(void * CTX,
                               const xmlChar * name)
 { SAYSO_DATAZ(name); }
@@ -618,6 +617,7 @@ xmlchar_of( const char input[] ) {
 static const char *
 xmlParserErrors_str( xmlParserErrors erc, const char name[] ) {
   const char *msg = "???";
+
   switch( erc ) {
   case XML_ERR_OK:
     msg = "Success";
@@ -675,7 +675,8 @@ static class context_t {
     /* Avoid a NULL entry.  */
     static const char * const ident = "unnamed_COBOL_program";
 #endif
-    // TODO: Program to set option in library via command-line and/or environment.
+    // TODO: Program to set option in library via command-line and/or
+    // environment.
     //       Library listens to program, not to the environment.
     openlog(ident, option, facility);
 
@@ -683,7 +684,9 @@ static class context_t {
   }
 
   void
-  push( cblc_field_t *input_field, size_t input_offset, size_t len, bool done ) {
+  push( const cblc_field_t *input_field,
+        size_t input_offset,
+        size_t len, bool done ) {
     if( ! ctxt ) {
       init();
     }
@@ -712,7 +715,6 @@ static class context_t {
     }
   }
 
-
  protected:
   void init() {
     const char *external_entities = nullptr;
@@ -724,7 +726,7 @@ static class context_t {
 } context;
 
 static int
-xml_push_parse( cblc_field_t *input_field,
+xml_push_parse(   const cblc_field_t *input_field,
                   size_t        input_offset,
                   size_t        len,
                   cblc_field_t *encoding __attribute__ ((unused)),

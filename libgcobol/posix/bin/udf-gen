@@ -1,0 +1,350 @@
+#! /usr/bin/python3
+
+# Copyright (c) Symas Corporation
+#
+# Redistribution and use in source and binary forms, with or without
+# modification, are permitted provided that the following conditions are
+# met:
+#
+# * Redistributions of source code must retain the above copyright
+#   notice, this list of conditions and the following disclaimer.
+# * Redistributions in binary form must reproduce the above
+#   copyright notice, this list of conditions and the following disclaimer
+#   in the documentation and/or other materials provided with the
+#   distribution.
+# * Neither the name of the Symas Corporation nor the names of its
+#   contributors may be used to endorse or promote products derived from
+#   this software without specific prior written permission.
+#
+# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+
+import sys, os, getopt, re, copy
+from pycparser import c_parser, c_generator, c_ast, parse_file
+
+def starify(param):
+    stars = ""
+    while( isinstance(param, c_ast.PtrDecl) ):
+        q = ' '.join(param.quals)
+        stars = '*' + ' '.join((stars, q))
+        param = param.type
+    if( isinstance(param.type, c_ast.PtrDecl) ):
+        (stars, param) = starify(param.type)
+    if( isinstance(param, c_ast.TypeDecl) ):
+        return (stars, param)
+    return (stars, param.type)
+
+def linkage_str( i, name, param ) -> str:
+    if name == 'execve':
+        param.show()
+    if( isinstance(param, c_ast.EllipsisParam) ):
+        return (None, None, '...') # COBOL syntax error: no variadic UDF
+
+    is_array = False;
+    node = param
+
+    if( isinstance(node, c_ast.Decl) ):
+        node = node.type
+
+    if( isinstance(node, c_ast.ArrayDecl) ):
+        is_array = True;
+        node = node.type
+
+    (stars, node) = starify(node)
+
+    if( isinstance(node, c_ast.TypeDecl) ):
+        level = 1
+        item_name = ''
+        picture = ''
+        usage = ''
+        if node.declname:
+            item_name = 'Lk-' + node.declname
+
+        if is_array: # ignore level
+            if stars:
+                usage = 'Usage POINTER'
+            output = '01 FILLER.\n              02 %s %s %s OCCURS 100' \
+                % (item_name, picture, usage)
+            return (None, None, output)
+
+        if( isinstance(node.type, c_ast.Struct) ):
+            stars = None
+
+        if isinstance(node.type, c_ast.IdentifierType):
+            ctype = node.type.names[-1]
+            if ctype == 'void':
+                if not stars and not item_name:
+                    return (None, None, None)
+            if ctype == 'char':
+                picture = 'X'
+                if stars[0] == '*':
+                    picture = 'X ANY LENGTH'
+            if ctype == 'int' or \
+               ctype == 'long' or \
+               ctype == 'mode_t' or \
+               ctype == 'off_t' or \
+               ctype == 'size_t':
+                picture = '9(8)'
+                usage = 'Usage COMP'
+                stars = None
+
+        output = "%02d %s" % (level, ' '.join((item_name, 'PIC ' + picture, usage)))
+        return (stars, item_name, output)
+
+    node.show()
+    return (None, None, '???')
+
+def using_str( i, name, param ) -> str:
+    item_name = ''
+    if( isinstance(param, c_ast.EllipsisParam) ):
+        return '...' # COBOL syntax error: no variadic UDF
+    node = param
+
+    if( isinstance(node, c_ast.Decl) ):
+        node = node.type
+
+    if( isinstance(node, c_ast.ArrayDecl) ):
+        node = node.type
+
+    (stars, node) = starify(node)
+
+    if( isinstance(node, c_ast.TypeDecl) ):
+        item_name = ''
+
+        if isinstance(node.type, c_ast.IdentifierType):
+            ctype = node.type.names[-1]
+            how = 'By Reference'
+            if ctype == 'int' or \
+               ctype == 'long' or \
+               ctype == 'mode_t' or \
+               ctype == 'off_t' or \
+               ctype == 'size_t':
+                how = 'By Value'
+        if node.declname:
+            item_name = '%s Lk-%s' % (how, node.declname)
+
+    return item_name
+
+def parameter_str( i, name, param ) -> str:
+    if( isinstance(param, c_ast.EllipsisParam) ):
+        return '...'
+
+    t = [0, 1, 2] # qual, type, name
+    is_array = False;
+    node = param
+
+    if( isinstance(node, c_ast.Decl) ):
+        node = node.type
+
+    if( isinstance(node, c_ast.ArrayDecl) ):
+        is_array = True;
+        node = node.type
+
+    (stars, node) = starify(node)
+
+    if( isinstance(node, c_ast.TypeDecl) ):
+        t[0] = ' '.join(node.quals)
+        item_name = ''
+        if node.declname:
+            item_name = 'Lk-' + node.declname
+        t[2] = ' '.join((stars, item_name))
+        if( node.declname == None ):
+            t[2] = ''
+        if( isinstance(node.type, c_ast.IdentifierType) ):
+            try:
+                t[1] = ' '.join(node.type.names)
+            except:
+                print("oops: node.type of %s is %s" % (name, str(node.type)))
+                return "could not parse %s arg[%d]" % (name, i)
+        if( isinstance(node.type, c_ast.Struct) ):
+            t[0] = ' '.join(node.quals)
+            t[1] = "struct " + node.type.name
+    if( isinstance(node, c_ast.ArrayDecl) ):
+        return parameter_str(i, name, node.type) + '[]'
+
+    try:
+        return ' '.join(t)
+    except:
+        print("oops: %s[%d]: {%s}" % (name, i, str(t)) )
+        param.show()
+
+class VisitPrototypes(c_ast.NodeVisitor):
+    def __init__(self):
+        self.done = set()
+
+    def type_of(self, node):
+        while( not isinstance(node.type, c_ast.TypeDecl) ):
+            node = node.type
+        return node.type.type.name
+
+    def visit_Decl(self, node):
+        name = node.name
+        if name in self.done:
+            return
+        self.done.add(name)
+
+        params = []
+        cbl_args = []
+        linkage_items = []
+        string_items = []
+        returns = '???'
+
+        if False and isinstance(node.type, c_ast.FuncDecl):
+            function_decl = node.type
+            print('Function: %s' % node.name)
+            if( node.type.args == None ):
+                print('  (no arguments)')
+            else:
+                for param_decl in node.type.args.params:
+                    if( isinstance(param_decl, c_ast.EllipsisParam) ):
+                        param_decl.show(offset=6)
+                        continue
+                    print('  Arg name: %s' % param_decl.name)
+                    print('  Type:')
+                    param_decl.type.show(offset=6)
+
+        if isinstance(node.type, c_ast.FuncDecl):
+            args = node.type.args
+            if isinstance(args, c_ast.ParamList):
+                #rint("params are %s (type %s)" % (str(args.params), type(args.params)))
+                if( args == None ):
+                    params.append('')
+                else:
+                    for (i, param) in enumerate(args.params):
+                        params.append(parameter_str(i, name, param))
+                        cbl_args.append(using_str(i, name, param))
+                        (stars, item, definition) = linkage_str(i, name, param)
+                        if definition:
+                            if stars:
+                                string_items.append(item)
+                            linkage_items.append(definition)
+
+            (stars, rets) = starify(node.type)
+
+            if isinstance(rets, c_ast.TypeDecl):
+                q =  ' '.join(rets.quals)
+                if( isinstance(rets.type, c_ast.Struct) ):
+                    t = "struct " + rets.type.name
+                else:
+                    t =  ' '.join(rets.type.names)
+                returns = ' '.join((q, t, stars))
+
+        if name == None:
+            return
+
+        # print the C version as a comment
+        cparams = [ x.replace('Lk-', '') for x in params ]
+        print( "      * %s %s(%s)"
+               % (returns, name, ', '.join(cparams)) )
+
+        # print the UDF
+        print( '        Identification Division.')
+        sname = name
+        if( sname[0] == '_' ):
+            sname = sname[1:]
+        print( '        Function-ID. posix-%s.' % sname)
+
+        print( '        Data Division.')
+        print( '        Linkage Section.')
+        print( '          77 Return-Value Binary-Long.')
+        for item  in linkage_items:
+            print( '          %s.' % item.strip())
+        args = ',\n             '.join(cbl_args)
+        args = 'using\n             %s\n            ' % args
+        print( '        Procedure Division %s Returning Return-Value.'
+               % args )
+        for item in string_items:
+            print( '          Inspect Backward %s ' % item +
+                   'Replacing Leading Space By Low-Value' )
+        using_args = ''
+        if args:
+            using_args = '%s' % args
+        print( '          Call "%s" %s Returning Return-Value.'
+               % (name, using_args) )
+        print( '          Goback.')
+        print( '        End Function posix-%s.' % sname)
+
+# Hard code a path to the fake includes
+# if not using cpp(1) environment variables.
+cpp_args = ['-I/home/jklowden/projects/3rd/pycparser/utils/fake_libc_include']
+
+for var in ('CPATH', 'C_INCLUDE_PATH'):
+    dir = os.getenv(var)
+    if dir:
+        cpp_args = ''
+
+def process(srcfile):
+    ast = parse_file(srcfile, use_cpp=True, cpp_args=cpp_args)
+    # print(c_generator.CGenerator().visit(ast))
+    v = VisitPrototypes()
+    v.visit(ast)
+
+__doc__ = """
+SYNOPSIS
+    udf-gen [-I include-path] [header-file ...]
+
+DESCRIPTION
+    For each C function declared in header-file,
+produce an ISO COBOL user-defined function definition to call it.
+If no filename is supplied, declarations are read from standard input.
+All output is written to standard output.
+
+    This Python script uses the PLY pycparser module,
+(http://www.dabeaz.com/ply/), which supplies a set of simplified "fake
+header files" to avoid parsing the (very complex) standard C header
+files.  These alost suffice for parsing the Posix function
+declarations in Section 2 of the manual.
+
+    Use the -I option or the cpp(1) environment variables to direct
+the preprocessor to use the fake header files instead of the system
+header files.
+
+LIMITATIONS
+    udf-gen does not recognize C struct parameters, such as used by stat(2).
+
+     No attempt has been made to define "magic" values, such as would
+be needed for example by chmod(2).
+"""
+
+def main( argv=None ):
+    global cpp_args
+    if argv is None:
+        argv = sys.argv
+    # parse command line options
+    try:
+        opts, args = getopt.getopt(sys.argv[1:], "D:hI:m:", ["help"])
+    except getopt.error as msg:
+        print(msg)
+        print("for help use --help")
+        sys.exit(2)
+
+    # process options
+    astfile = None
+
+    for opt, arg in opts:
+        if opt in ("-h", "--help"):
+            print(__doc__)
+            sys.exit(0)
+        if opt == '-D':
+            cpp_args.append('-D%s ' % arg)
+        if opt == '-I':
+            cpp_args[0] = '-I' + arg
+
+    # process arguments
+    if not args:
+        args = ('/dev/stdin',)
+
+    for arg in args:
+        process(arg)
+
+if __name__ == "__main__":
+    sys.exit(main())

@@ -259,6 +259,46 @@ void cdf_pop_dictionary() { cdf_directives.dictionary.pop(); }
 void cdf_pop_enabled_exceptions() { cdf_directives.enabled_exceptions.pop(); }
 void cdf_pop_source_format() { cdf_directives.source_format.pop(); }
 
+/*
+ * Construct a cbl_field_t from a CDF literal, to be installed in the symbol table.
+ */
+cbl_field_t
+cdf_literalize( const std::string& name, const cdfval_t& value ) {
+    cbl_field_t field;
+
+    if( value.is_numeric() ) {
+      auto initial = xasprintf("%ld", (long)value.as_number());
+      auto len = strlen(initial);
+      cbl_field_data_t data(len, len);
+      data.initial = initial;
+      data.valify();
+      field = cbl_field_t{ FldLiteralN, constant_e, data, 0, name.c_str()};
+    } else {
+      auto len = strlen(value.string);
+      cbl_field_data_t data(len, len);
+      data.initial = xstrdup(value.string);
+      field = cbl_field_t{ FldLiteralA, constant_e, data, 0, name.c_str() };
+      field.set_attr(quoted_e);
+    }
+    field.codeset.set();
+
+    return field;
+}
+
+const std::list<cbl_field_t> 
+cdf_literalize() {
+  std::list<cbl_field_t> fields;
+  auto dict = cdf_dictionary();
+  
+  for( auto elem : dict ) {
+    std::string name(elem.first);
+    const cdfval_t& value(elem.second);
+    
+    fields.push_back(cdf_literalize(name, value));    
+  }
+  return fields;
+}
+
 const char *
 symbol_type_str( enum symbol_type_t type )
 {
@@ -2087,6 +2127,19 @@ cobol_filename_restore() {
   const auto& input = input_filenames.top();
 
   linemap_add(line_table, LC_LEAVE, sysp, NULL, 0);
+}
+
+size_t
+symbol_unique_index( const struct symbol_elem_t *e ) {
+  assert(e);
+  size_t usym = symbol_index(e);
+#if READY_FOR_INODE
+  if( ! input_filenames.empty() ) {
+    size_t inode = input_filenames.top().inode;
+    usym = usym ^ inode;
+  }
+#endif
+  return usym;
 }
 
 static int first_line_minus_1 = 0;

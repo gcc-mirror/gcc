@@ -96,7 +96,7 @@ extern "C" void __gg__double_to_target( cblc_field_t *tgt,
                                         cbl_round_t rounded);
 extern "C" char __gg__get_decimal_separator();
 extern "C" char __gg__get_decimal_point();
-extern "C" char * __gg__get_default_currency_string();
+extern "C" const char * __gg__get_default_currency_string();
 
 struct cbl_timespec
   {

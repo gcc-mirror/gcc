@@ -1,0 +1,37 @@
+#include <stddef.h>
+#include <stdio.h>
+#include <stddef.h>
+#include <unistd.h>
+#define loff_t ssize_t
+#define socklen_t size_t
+#define fd_set struct fd_set
+#define id_t unsigned int
+// typedef int mqd_t;
+#define mqd_t int
+// typedef unsigned long int nfds_t;
+#define nfds_t unsigned long int
+
+#if 0
+typedef struct
+{
+  unsigned long int __val[(1024 / (8 * sizeof (unsigned long int)))];
+} __sigset_t;
+define struct py_sigset_t						\
+{									\
+  unsigned long int __val[(1024 / (8 * sizeof (unsigned long int)))];	\
+};
+#else
+#define kernel_sigset_t     sigset_t
+#define old_kernel_sigset_t sigset_t
+#endif
+
+#if 0
+typedef enum
+{
+  P_ALL,
+  P_PID,
+  P_PGID
+} idtype_t;
+#else
+#define idtype_t int
+#endif

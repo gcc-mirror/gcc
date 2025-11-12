@@ -111,6 +111,15 @@ extern int yydebug;
 
 #include <cstdarg>
 
+// These programs in libgcobol/compat are allowed to use ANY LENGTH even though
+// they look like top-level programs.
+static const std::set<std::string> compat_programs {
+  "CBL_ALLOC_MEM", 
+  "CBL_CHECK_FILE_EXIST", 
+  "CBL_DELETE_FILE", 
+  "CBL_FREE_MEM", 
+};
+
 const char *
 consistent_encoding_check( const YYLTYPE& loc, const char input[] ) {
   cbl_field_t faux = {};
@@ -180,6 +189,15 @@ has_clause( int data_clauses, data_clause_t clause ) {
   return clause == (data_clauses & clause);
 }
 
+static bool
+dialect_proscribed( const YYLTYPE& loc, cbl_dialect_t dialect, const char msg[] ) {
+  if( dialect == cbl_dialects ) {
+    error_msg(loc, "dialect %s does not allow syntax: %qs",
+              cbl_dialect_str(dialect), msg);
+    return true;
+  }
+  return false;
+}
 
 static bool
 is_cobol_charset( const char name[] ) {
@@ -2521,9 +2539,9 @@ intrinsic_call_2( cbl_field_t *tgt, int token, const cbl_refer_t *r1, cbl_refer_
     error_msg(args[n].loc, "invalid parameter '%s'", args[n].field->name);
     return false;
   }
-  const char *fund = intrinsic_cname(token);
-  if( !fund ) return false;
-  parser_intrinsic_call_2( tgt, fund, args[0], args[1] );
+  const char *func = intrinsic_cname(token);
+  if( !func ) return false;
+  parser_intrinsic_call_2( tgt, func, args[0], args[1] );
   return true;
 }
 
