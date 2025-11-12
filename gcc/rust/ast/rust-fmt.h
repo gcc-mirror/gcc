@@ -23,7 +23,6 @@
 #include "optional.h"
 
 // PR122498 "rust-enabled bootstrap is broken after r16-4897"
-#pragma GCC diagnostic push
 #pragma GCC diagnostic warning "-Warray-bounds"
 
 namespace Rust {
@@ -432,8 +431,5 @@ private:
 
 } // namespace Fmt
 } // namespace Rust
-
-// PR122498 "rust-enabled bootstrap is broken after r16-4897"
-#pragma GCC diagnostic push
 
 #endif // !RUST_FMT_H
