@@ -251,6 +251,9 @@ enum processor_flags
    && (s390_tune < PROCESSOR_2964_Z13 || (VAL) != const0_rtx)		\
    && (!CONST_INT_P (LEN) || INTVAL ((LEN)) > TARGET_SETMEM_PREFETCH_DISTANCE))
 
+#define TARGET_SP_GLOBAL_GUARD (s390_stack_protector_guard == SP_GLOBAL)
+#define TARGET_SP_TLS_GUARD    (s390_stack_protector_guard == SP_TLS)
+
 /* Run-time target specification.  */
 
 /* Defaults for option flags defined only on some subtargets.  */

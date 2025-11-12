@@ -53,4 +53,12 @@ enum indirect_branch {
   indirect_branch_thunk_inline,
   indirect_branch_thunk_extern
 };
+
+
+/* Where to get the canary for the stack protector.  */
+enum stack_protector_guard
+{
+  SP_TLS,       /* per-thread canary in TLS block */
+  SP_GLOBAL     /* global canary */
+};
 #endif
