@@ -4579,7 +4579,7 @@ maybe_open_sarif_sink_for_socket (context &dc)
   unique_fd sfd (socket (AF_UNIX, SOCK_STREAM, 0));
   if (sfd == -1)
     fatal_error (UNKNOWN_LOCATION,
-		 "unable to create socket");
+		 "unable to create socket: %m");
 
   struct sockaddr_un addr;
   memset (&addr, 0, sizeof (addr));
@@ -4588,7 +4588,7 @@ maybe_open_sarif_sink_for_socket (context &dc)
 
   if (connect (sfd, (struct sockaddr *)&addr, sizeof (addr)) == -1)
     fatal_error (UNKNOWN_LOCATION,
-		 "unable to connect to %qs",
+		 "unable to connect to %qs: %m",
 		 socket_name);
 
   /* TODO: should there be a way to specify other key/value
