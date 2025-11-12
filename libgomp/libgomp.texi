@@ -170,6 +170,7 @@ See also @ref{OpenMP Implementation Status}.
 * OpenMP 5.1:: Feature completion status to 5.1 specification
 * OpenMP 5.2:: Feature completion status to 5.2 specification
 * OpenMP 6.0:: Feature completion status to 6.0 specification
+* OpenMP Technical Report 14:: Feature completion status to first 6.1 preview
 @end menu
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
@@ -649,6 +650,39 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Update of the map-type decay for mapping and @code{declare_mapper}
       @tab N @tab
 @end multitable
+
+
+@node OpenMP Technical Report 14
+@section OpenMP Technical Report 14
+
+Technical Report (TR) 14 is the first preview for OpenMP 6.1.
+
+@unnumberedsubsec New features listed in Appendix B of the OpenMP specification
+@multitable @columnfractions .60 .10 .25
+@item The @code{depth} clause to @code{fuse} directive @tab N @tab
+@item The @code{attach} modifier to the @code{map} clause @tab N @tab
+@item The @code{dyn_groupprivate} clause and the
+      @code{omp_get_dyn_groupprivate_ptr}, @code{omp_get_dyn_groupprivate_size},
+      and @code{omp_get_dyn_groupprivate_size} routines @tab N @tab
+@item @code{begin declare_variant} directive in Fortran @tab N @tab
+@item @code{grid} and @code{tile} modifier to the @code{size} clause @tab N @tab
+@item New @code{flatten} loop-transforming directive @tab N @tab
+@item @code{scaled} modifier to @code{simdlen} clause @tab N @tab
+@item New @code{omp_default_device} identifier as conforming device number
+      @tab Y @tab
+@item Clarify when @code{omp_target_is_accessible} routine returns zero
+      @tab N @tab
+@end multitable
+
+@unnumberedsubsec Deprecated features, unless listed above
+@multitable @columnfractions .60 .10 .25
+@item Deprecation of conditional-update-capture structured block without a
+      capture statement @tab N @tab
+@end multitable
+
+@c @unnumberedsubsec Other new OpenMP 6.1 features
+@c @multitable @columnfractions .60 .10 .25
+@c @end multitable
 
 
 
