@@ -33,8 +33,11 @@ test(T v)
 {
   test_impl<T>(v);
   test_impl<const T>(v);
-  test_impl<volatile T>(v);
-  test_impl<const volatile T>(v);
+  if constexpr (std::atomic_ref<T>::is_always_lock_free)
+  {
+    test_impl<volatile T>(v);
+    test_impl<const volatile T>(v);
+  }
 }
 
 int main()

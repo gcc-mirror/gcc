@@ -24,8 +24,11 @@ void testAtomicRefAddressForCV()
 {
   testAtomicRefAddress<T>();
   testAtomicRefAddress<const T>();
-  testAtomicRefAddress<volatile T>();
-  testAtomicRefAddress<const volatile T>();
+  if constexpr (std::atomic_ref<T>::is_always_lock_free)
+  {
+    testAtomicRefAddress<volatile T>();
+    testAtomicRefAddress<const volatile T>();
+  }
 }
 
 int

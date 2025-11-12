@@ -20,61 +20,78 @@
 #include <atomic>
 #include <type_traits>
 
+template<typename T>
+concept is_supported
+  = !std::is_volatile_v<T>
+  || std::atomic_ref<std::remove_cv_t<T>>::is_always_lock_free;
+
 template <class T>
 void
 test_generic()
 {
-  using A = std::atomic_ref<T>;
-  static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_nothrow_copy_constructible_v<A> );
-  static_assert( std::is_trivially_destructible_v<A> );
-  static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
-  static_assert( !requires { typename A::difference_type; } );
-  static_assert( !std::is_copy_assignable_v<A> );
-  static_assert( !std::is_move_assignable_v<A> );
+  if constexpr (is_supported<T>)
+  {
+    using A = std::atomic_ref<T>;
+    static_assert( std::is_standard_layout_v<A> );
+    static_assert( std::is_nothrow_copy_constructible_v<A> );
+    static_assert( std::is_trivially_destructible_v<A> );
+    static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
+    static_assert( !requires { typename A::difference_type; } );
+    static_assert( !std::is_copy_assignable_v<A> );
+    static_assert( !std::is_move_assignable_v<A> );
+  }
 }
 
 template <class T>
 void
 test_integral()
 {
-  using A = std::atomic_ref<T>;
-  static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_nothrow_copy_constructible_v<A> );
-  static_assert( std::is_trivially_destructible_v<A> );
-  static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
-  static_assert( std::is_same_v<typename A::difference_type, typename A::value_type> );
-  static_assert( !std::is_copy_assignable_v<A> );
-  static_assert( !std::is_move_assignable_v<A> );
+  if constexpr (is_supported<T>)
+  {
+    using A = std::atomic_ref<T>;
+    static_assert( std::is_standard_layout_v<A> );
+    static_assert( std::is_nothrow_copy_constructible_v<A> );
+    static_assert( std::is_trivially_destructible_v<A> );
+    static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
+    static_assert( std::is_same_v<typename A::difference_type, typename A::value_type> );
+    static_assert( !std::is_copy_assignable_v<A> );
+    static_assert( !std::is_move_assignable_v<A> );
+  }
 }
 
 template <class T>
 void
 test_floating_point()
 {
-  using A = std::atomic_ref<T>;
-  static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_nothrow_copy_constructible_v<A> );
-  static_assert( std::is_trivially_destructible_v<A> );
-  static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
-  static_assert( std::is_same_v<typename A::difference_type, typename A::value_type> );
-  static_assert( !std::is_copy_assignable_v<A> );
-  static_assert( !std::is_move_assignable_v<A> );
+  if constexpr (is_supported<T>)
+  {
+    using A = std::atomic_ref<T>;
+    static_assert( std::is_standard_layout_v<A> );
+    static_assert( std::is_nothrow_copy_constructible_v<A> );
+    static_assert( std::is_trivially_destructible_v<A> );
+    static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
+    static_assert( std::is_same_v<typename A::difference_type, typename A::value_type> );
+    static_assert( !std::is_copy_assignable_v<A> );
+    static_assert( !std::is_move_assignable_v<A> );
+  }
 }
 
 template <class T>
 void
 test_pointer()
 {
-  using A = std::atomic_ref<T>;
-  static_assert( std::is_standard_layout_v<A> );
-  static_assert( std::is_nothrow_copy_constructible_v<A> );
-  static_assert( std::is_trivially_destructible_v<A> );
-  static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
-  static_assert( std::is_same_v<typename A::difference_type, std::ptrdiff_t> );
-  static_assert( std::is_nothrow_copy_constructible_v<A> );
-  static_assert( !std::is_copy_assignable_v<A> );
-  static_assert( !std::is_move_assignable_v<A> );
+  if constexpr (is_supported<T>)
+  {
+    using A = std::atomic_ref<T>;
+    static_assert( std::is_standard_layout_v<A> );
+    static_assert( std::is_nothrow_copy_constructible_v<A> );
+    static_assert( std::is_trivially_destructible_v<A> );
+    static_assert( std::is_same_v<typename A::value_type, std::remove_cv_t<T>> );
+    static_assert( std::is_same_v<typename A::difference_type, std::ptrdiff_t> );
+    static_assert( std::is_nothrow_copy_constructible_v<A> );
+    static_assert( !std::is_copy_assignable_v<A> );
+    static_assert( !std::is_move_assignable_v<A> );
+  }
 }
 
 int

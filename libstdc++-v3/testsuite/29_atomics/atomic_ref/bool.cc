@@ -21,12 +21,16 @@
 
 #include <atomic>
 #include <testsuite_hooks.h>
+#include <type_traits>
+
+template<typename T>
+using volatile_
+ = std::conditional_t<std::atomic_ref<T>::is_always_lock_free, volatile T, T>;
 
 void
 test01()
 {
   bool value;
-
   {
     const auto mo = std::memory_order_relaxed;
     std::atomic_ref<bool> a(value);
@@ -66,8 +70,8 @@ test02()
   std::atomic_ref<bool> a0(b);
   std::atomic_ref<bool> a1(b);
   std::atomic_ref<const bool> a1c(b);
-  std::atomic_ref<volatile bool> a1v(b);
-  std::atomic_ref<const volatile bool> a1cv(b);
+  std::atomic_ref<volatile_<bool>> a1v(b);
+  std::atomic_ref<volatile_<const bool>> a1cv(b);
   std::atomic_ref<bool> a2(a0);
   b = true;
   VERIFY( a1.load() );

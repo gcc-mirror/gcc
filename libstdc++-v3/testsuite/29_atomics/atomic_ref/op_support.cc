@@ -2,6 +2,11 @@
 
 #include <atomic>
 
+template<typename T>
+concept is_supported
+  = !std::is_volatile_v<T>
+  || std::atomic_ref<std::remove_cv_t<T>>::is_always_lock_free;
+
 template<class T> concept has_and = requires (T& a) { a &= false; };
 template<class T> concept has_or = requires (T& a) { a |= false; };
 template<class T> concept has_xor = requires (T& a) { a ^= false; };
@@ -16,53 +21,62 @@ template<typename T>
 void
 no_stores()
 {
-  static_assert( !HAS(a = t) );
-  static_assert( !HAS(a.store(t)) );
-  static_assert( !HAS(a.store(t, mo)) );
-  static_assert( !HAS(a.exchange(t)) );
-  static_assert( !HAS(a.exchange(t, mo)) );
+  if constexpr (is_supported<T>)
+  {
+    static_assert( !HAS(a = t) );
+    static_assert( !HAS(a.store(t)) );
+    static_assert( !HAS(a.store(t, mo)) );
+    static_assert( !HAS(a.exchange(t)) );
+    static_assert( !HAS(a.exchange(t, mo)) );
 
-  static_assert( !HAS(a.compare_exchange_weak(t, t)) );
-  static_assert( !HAS(a.compare_exchange_weak(t, t, mo)) );
-  static_assert( !HAS(a.compare_exchange_weak(t, t, mo, mo)) );
+    static_assert( !HAS(a.compare_exchange_weak(t, t)) );
+    static_assert( !HAS(a.compare_exchange_weak(t, t, mo)) );
+    static_assert( !HAS(a.compare_exchange_weak(t, t, mo, mo)) );
 
-  static_assert( !HAS(a.compare_exchange_strong(t, t)) );
-  static_assert( !HAS(a.compare_exchange_strong(t, t, mo)) );
-  static_assert( !HAS(a.compare_exchange_strong(t, t, mo, mo)) );
+    static_assert( !HAS(a.compare_exchange_strong(t, t)) );
+    static_assert( !HAS(a.compare_exchange_strong(t, t, mo)) );
+    static_assert( !HAS(a.compare_exchange_strong(t, t, mo, mo)) );
+  }
 }
 
 template<typename T>
 void
 no_additions()
 {
-  static_assert( !HAS(a++) );
-  static_assert( !HAS(++a) );
-  static_assert( !HAS(a += t) );
-  static_assert( !HAS(a.fetch_add(t)) );
-  static_assert( !HAS(a.fetch_add(t, mo)) );
+  if constexpr (is_supported<T>)
+  {
+    static_assert( !HAS(a++) );
+    static_assert( !HAS(++a) );
+    static_assert( !HAS(a += t) );
+    static_assert( !HAS(a.fetch_add(t)) );
+    static_assert( !HAS(a.fetch_add(t, mo)) );
 
-  static_assert( !HAS(a--) );
-  static_assert( !HAS(--a) );
-  static_assert( !HAS(a -= t) );
-  static_assert( !HAS(a.fetch_sub(t)) );
-  static_assert( !HAS(a.fetch_sub(t, mo)) );
+    static_assert( !HAS(a--) );
+    static_assert( !HAS(--a) );
+    static_assert( !HAS(a -= t) );
+    static_assert( !HAS(a.fetch_sub(t)) );
+    static_assert( !HAS(a.fetch_sub(t, mo)) );
+  }
 }
 
 template<typename T>
 void
 no_bitops()
 {
-  static_assert( !HAS(a &= t) );
-  static_assert( !HAS(a.fetch_and(t)) );
-  static_assert( !HAS(a.fetch_and(t, mo)) );
+  if constexpr (is_supported<T>)
+  {
+    static_assert( !HAS(a &= t) );
+    static_assert( !HAS(a.fetch_and(t)) );
+    static_assert( !HAS(a.fetch_and(t, mo)) );
 
-  static_assert( !HAS(a |= t) );
-  static_assert( !HAS(a.fetch_or(t)) );
-  static_assert( !HAS(a.fetch_or(t, mo)) );
+    static_assert( !HAS(a |= t) );
+    static_assert( !HAS(a.fetch_or(t)) );
+    static_assert( !HAS(a.fetch_or(t, mo)) );
 
-  static_assert( !HAS(a ^= t) );
-  static_assert( !HAS(a.fetch_xor(t)) );
-  static_assert( !HAS(a.fetch_xor(t, mo)) );
+    static_assert( !HAS(a ^= t) );
+    static_assert( !HAS(a.fetch_xor(t)) );
+    static_assert( !HAS(a.fetch_xor(t, mo)) );
+  }
 }
 
 template<typename T>

@@ -22,6 +22,11 @@
 #include <atomic>
 #include <limits.h>
 #include <testsuite_hooks.h>
+#include <type_traits>
+
+template<typename T>
+using volatile_
+ = std::conditional_t<std::atomic_ref<T>::is_always_lock_free, volatile T, T>;
 
 struct X
 {
@@ -109,8 +114,8 @@ test02()
   std::atomic_ref<X> a0(i);
   std::atomic_ref<X> a1(i);
   std::atomic_ref<const X> a1c(i);
-  std::atomic_ref<volatile X> a1v(i);
-  std::atomic_ref<const volatile X> a1cv(i);
+  std::atomic_ref<volatile_<X>> a1v(i);
+  std::atomic_ref<volatile_<const X>> a1cv(i);
   std::atomic_ref<X> a2(a0);
   a0 = 42;
   VERIFY( a1.load() == 42 );

@@ -21,6 +21,11 @@
 
 #include <atomic>
 #include <testsuite_hooks.h>
+#include <type_traits>
+
+template<typename T>
+using volatile_
+ = std::conditional_t<std::atomic_ref<T>::is_always_lock_free, volatile T, T>;
 
 void
 test01()
@@ -211,8 +216,8 @@ test03()
   std::atomic_ref<int*> a0(ptr);
   std::atomic_ref<int*> a1(ptr);
   std::atomic_ref<int* const> a1c(ptr);
-  std::atomic_ref<int* volatile> a1v(ptr);
-  std::atomic_ref<int* const volatile> a1cv(ptr);
+  std::atomic_ref<volatile_<int*>> a1v(ptr);
+  std::atomic_ref<volatile_<int* const>> a1cv(ptr);
   std::atomic_ref<int*> a2(a0);
   a0 = &i;
   VERIFY( a1 == &i );
