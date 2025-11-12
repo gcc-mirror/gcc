@@ -6276,6 +6276,9 @@ This option exists for use by GCC developers for debugging nested
 diagnostics, but may be of use to plugin authors.
 
 @opindex fdiagnostics-format
+@opindex fdiagnostics-format=text
+@opindex fdiagnostics-format=sarif-stderr
+@opindex fdiagnostics-format=sarif-file
 @item -fdiagnostics-format=@var{FORMAT}
 Select a different format for printing diagnostics.
 @var{FORMAT} is @samp{text}, @samp{sarif-stderr} or @samp{sarif-file}.
@@ -6286,6 +6289,8 @@ Using this option replaces any additional ``output sinks'' added by
 
 The default is @samp{text}.
 
+@cindex diagnostic output formats, sarif-stderr
+@cindex diagnostic output formats, sarif-file
 The @samp{sarif-stderr} and @samp{sarif-file} formats both emit
 diagnostics in SARIF Version 2.1.0 format, either to stderr, or to a file
 named @file{@var{source}.sarif}, respectively.
@@ -6312,6 +6317,7 @@ or be removed without notice.
 
 @table @gcctabopt
 
+@opindex fdiagnostics-add-output=text
 @item text
 Emit diagnostics to stderr using GCC's classic text output format.
 
@@ -6340,6 +6346,8 @@ This exists for use by GCC developers.
 
 @end table
 
+@cindex SARIF file output sink
+@opindex fdiagnostics-add-output=sarif
 @item sarif
 Emit diagnostics to a file in SARIF format.
 
@@ -6377,6 +6385,7 @@ information from @option{-fanalyzer} in the generated SARIF.
 
 @end table
 
+@opindex fdiagnostics-add-output=experimental-html
 @item experimental-html
 Emit diagnostics to a file in HTML format.  This scheme is experimental,
 and may go away in future GCC releases.  The keys and details of the output
