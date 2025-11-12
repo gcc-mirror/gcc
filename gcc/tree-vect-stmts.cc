@@ -5402,7 +5402,7 @@ vectorizable_conversion (vec_info *vinfo,
     }
 
   if (VECTOR_BOOLEAN_TYPE_P (vectype_out)
-      && !VECTOR_BOOLEAN_TYPE_P (vectype_in))
+      != VECTOR_BOOLEAN_TYPE_P (vectype_in))
     {
       if (dump_enabled_p ())
 	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,

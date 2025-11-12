@@ -5991,10 +5991,10 @@ vect_recog_bool_pattern (vec_info *vinfo,
   hash_set<gimple *> bool_stmts;
 
   if (CONVERT_EXPR_CODE_P (rhs_code)
-      || rhs_code == VIEW_CONVERT_EXPR)
+      || rhs_code == VIEW_CONVERT_EXPR
+      || rhs_code == FLOAT_EXPR)
     {
-      if (! INTEGRAL_TYPE_P (TREE_TYPE (lhs))
-	  || VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
+      if (VECT_SCALAR_BOOLEAN_TYPE_P (TREE_TYPE (lhs)))
 	return NULL;
       vectype = get_vectype_for_scalar_type (vinfo, TREE_TYPE (lhs));
 
@@ -6023,7 +6023,9 @@ vect_recog_bool_pattern (vec_info *vinfo,
 				  pattern_stmt, new_vectype);
 
 	  lhs = vect_recog_temp_ssa_var (TREE_TYPE (lhs), NULL);
-	  pattern_stmt = gimple_build_assign (lhs, CONVERT_EXPR, tmp);
+	  pattern_stmt
+	    = gimple_build_assign (lhs, (rhs_code == FLOAT_EXPR
+					 ? FLOAT_EXPR : CONVERT_EXPR), tmp);
 	}
 
       *type_out = vectype;
