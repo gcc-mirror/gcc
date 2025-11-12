@@ -6828,7 +6828,10 @@ copy_phi_arg_into_existing_phi (edge src_e, edge tgt_e, bool use_map)
 	      if (val == old_arg)
 		{
 		  val = new_arg;
-		  locus = redirect_edge_var_map_location (vm);
+		  location_t locus1 = redirect_edge_var_map_location (vm);
+		  /* Don't remove the location if we remap one does not have one.  */
+		  if (locus1 != UNKNOWN_LOCATION)
+		    locus = locus1;
 		  break;
 		}
 	    }
