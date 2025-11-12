@@ -11660,9 +11660,7 @@ tsubst_friend_function (tree decl, tree args)
 {
   tree new_friend;
 
-  if (TREE_CODE (decl) == FUNCTION_DECL
-      && DECL_TEMPLATE_INSTANTIATION (decl)
-      && TREE_CODE (DECL_TI_TEMPLATE (decl)) != TEMPLATE_DECL)
+  if (decl_specialization_friend_p (decl))
     /* This was a friend declared with an explicit template
        argument list, e.g.:
 

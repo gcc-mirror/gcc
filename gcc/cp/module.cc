@@ -11492,7 +11492,8 @@ trees_out::get_merge_kind (tree decl, depset *dep)
 	      }
 
 	    if (TREE_CODE (decl) == TEMPLATE_DECL
-		&& DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+		? DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl)
+		: decl_specialization_friend_p (decl))
 	      {
 		mk = MK_local_friend;
 		break;
@@ -11568,7 +11569,8 @@ trees_out::decl_container (tree decl)
 
   tree container = NULL_TREE;
   if (TREE_CODE (decl) == TEMPLATE_DECL
-      && DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl))
+      ? DECL_UNINSTANTIATED_TEMPLATE_FRIEND_P (decl)
+      : decl_specialization_friend_p (decl))
     container = DECL_CHAIN (decl);
   else
     container = CP_DECL_CONTEXT (decl);
@@ -11751,7 +11753,8 @@ trees_out::key_mergeable (int tag, merge_kind mk, tree decl, tree inner,
 
 	case MK_local_friend:
 	  {
-	    /* Find by index on the class's DECL_LIST  */
+	    /* Find by index on the class's DECL_LIST.  We set TREE_CHAIN to
+	       point to the class in push_template_decl or grokfndecl.  */
 	    unsigned ix = 0;
 	    for (tree decls = CLASSTYPE_DECL_LIST (TREE_CHAIN (decl));
 		 decls; decls = TREE_CHAIN (decls))

@@ -12097,6 +12097,11 @@ grokfndecl (tree ctype,
 	  gcc_assert (identifier_p (fns) || OVL_P (fns));
 	  DECL_TEMPLATE_INFO (decl) = build_template_info (fns, args);
 
+	  /* Remember the befriending class like push_template_decl does for
+	     template friends.  */
+	  gcc_checking_assert (!DECL_CHAIN (decl));
+	  DECL_CHAIN (decl) = current_scope ();
+
 	  for (t = TYPE_ARG_TYPES (TREE_TYPE (decl)); t; t = TREE_CHAIN (t))
 	    if (TREE_PURPOSE (t)
 		&& TREE_CODE (TREE_PURPOSE (t)) == DEFERRED_PARSE)
