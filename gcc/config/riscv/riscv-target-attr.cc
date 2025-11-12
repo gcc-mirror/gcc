@@ -371,6 +371,7 @@ riscv_process_target_str (string_slice args,
 
   std::unique_ptr<char[]> buf (new char[len+1]);
   char *str_to_check = buf.get ();
+  str_to_check[len] = '\0';
   strncpy (str_to_check, args.begin (), args.size ());
 
   /* Used to catch empty spaces between semi-colons i.e.
