@@ -479,7 +479,7 @@
 ;; Q registers and is equivalent to "simd".
 
 (define_enum "arches" [any rcpc8_4 fp fp_q base_simd nobase_simd
-		       simd nosimd sve fp16 sme])
+		       simd nosimd sve fp16 sme cssc])
 
 (define_enum_attr "arch" "arches" (const_string "any"))
 
@@ -550,6 +550,9 @@
 
 	(and (eq_attr "arch" "fp16")
 	     (match_test "TARGET_FP_F16INST"))
+
+	(and (eq_attr "arch" "cssc")
+	     (match_test "TARGET_CSSC"))
 
 	(and (eq_attr "arch" "sve")
 	     (match_test "TARGET_SVE"))
@@ -5711,18 +5714,13 @@
 ;; If TARGET_CSSC is not available, emit rbit and clz.
 
 (define_insn "ctz<mode>2"
-  [(set (match_operand:GPI 0 "register_operand" "=r")
-	(ctz:GPI (match_operand:GPI 1 "register_operand" "r")))]
+  [(set (match_operand:GPI 0 "register_operand")
+	(ctz:GPI (match_operand:GPI 1 "register_operand")))]
   ""
-  {
-    if (TARGET_CSSC)
-      return "ctz\\t%<w>0, %<w>1";
-    return "rbit\\t%<w>0, %<w>1\;clz\\t%<w>0, %<w>0";
+  {@ [ cons: =0, 1; attrs: type, arch, length ]
+     [ r , r; clz, cssc, 4 ] ctz\\t%<w>0, %<w>1
+     [ r , r; clz, *   , 8 ] rbit\\t%<w>0, %<w>1\;clz\\t%<w>0, %<w>0
   }
-  [(set_attr "type" "clz")
-   (set (attr "length") (if_then_else (match_test "TARGET_CSSC")
-				      (const_int 4) (const_int 8)))
-  ]
 )
 
 (define_insn "clrsb<mode>2"
