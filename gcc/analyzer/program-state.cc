@@ -1602,7 +1602,7 @@ static void
 log_set_of_svalues (logger *logger, const char *name,
 		    const svalue_set &set)
 {
-  logger->log (name);
+  logger->log ("%s", name);
   logger->inc_indent ();
   auto_vec<const svalue *> sval_vecs (set.elements ());
   for (svalue_set::iterator iter = set.begin ();
