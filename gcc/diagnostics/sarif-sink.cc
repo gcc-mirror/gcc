@@ -4126,6 +4126,38 @@ private:
   output_file m_output_file;
 };
 
+class unique_fd
+{
+public:
+  unique_fd () : m_ival (-1) {}
+  explicit unique_fd (int ival) : m_ival (ival) {}
+  unique_fd (const unique_fd &) = delete;
+  unique_fd (unique_fd &&other)
+  : m_ival (other.m_ival)
+  {
+    other.m_ival = -1;
+  }
+  ~unique_fd ()
+  {
+    if (m_ival != -1)
+      close (m_ival);
+  }
+  unique_fd &operator= (const unique_fd &other) = delete;
+  unique_fd &operator= (unique_fd &&other)
+  {
+    if (m_ival != -1)
+      close (m_ival);
+    m_ival = other.m_ival;
+    other.m_ival = -1;
+    return *this;
+  }
+
+  operator int () const { return m_ival; }
+
+private:
+  int m_ival;
+};
+
 class sarif_socket_sink : public sarif_sink
 {
 public:
@@ -4133,20 +4165,16 @@ public:
 		     const line_maps *line_maps,
 		     std::unique_ptr<sarif_serialization_format> serialization_format,
 		     const sarif_generation_options &sarif_gen_opts,
-		     int fd)
+		     unique_fd fd)
   : sarif_sink (dc, line_maps,
 		std::move (serialization_format),
 		sarif_gen_opts),
-    m_fd (fd)
+    m_fd (std::move (fd))
   {
-  }
-  ~sarif_socket_sink ()
-  {
-    close (m_fd);
   }
   void dump_kind (FILE *out) const override
   {
-    fprintf (out, "sarif_socket_sink: fd=%i", m_fd);
+    fprintf (out, "sarif_socket_sink: fd=%i", int (m_fd));
   }
   bool machine_readable_stderr_p () const final override
   {
@@ -4210,7 +4238,7 @@ private:
     free (buf);
   }
 
-  int m_fd;
+  unique_fd m_fd;
 };
 
 /* Print the start of an embedded link to PP, as per 3.11.6.  */
@@ -4548,7 +4576,7 @@ maybe_open_sarif_sink_for_socket (context &dc)
   if (!socket_name)
     return;
 
-  int sfd = socket (AF_UNIX, SOCK_STREAM, 0);
+  unique_fd sfd (socket (AF_UNIX, SOCK_STREAM, 0));
   if (sfd == -1)
     fatal_error (UNKNOWN_LOCATION,
 		 "unable to create socket");
@@ -4574,7 +4602,7 @@ maybe_open_sarif_sink_for_socket (context &dc)
      line_table,
      std::make_unique <sarif_serialization_format_json> (true),
      sarif_gen_opts,
-     sfd);
+     std::move (sfd));
   sink_->update_printer ();
   dc.add_sink (std::move (sink_));
 }
