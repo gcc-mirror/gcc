@@ -4276,8 +4276,9 @@ package body Exp_Ch7 is
    -- Establish_Transient_Scope --
    -------------------------------
 
-   --  This procedure is called each time a transient block has to be inserted
-   --  that is to say for each call to a function with unconstrained or tagged
+   --  This procedure is called when a transient scope has to be inserted in
+   --  the tree to manage the lifetime of temporaries created for a construct,
+   --  most notably for calls to functions with a controlled or unconstrained
    --  result. It creates a new scope on the scope stack in order to enclose
    --  all transient variables generated.
 

@@ -6400,21 +6400,10 @@ package body Exp_Aggr is
              Object_Definition   => New_Occurrence_Of (Typ, Loc));
          Set_No_Initialization (Tmp_Decl, True);
 
-         --  If we are within a loop, the temporary will be pushed on the
-         --  stack at each iteration. If the aggregate is the expression
-         --  for an allocator, it will be immediately copied to the heap
-         --  and can be reclaimed at once. We create a transient scope
-         --  around the aggregate for this purpose.
-
-         if Ekind (Current_Scope) = E_Loop
-           and then Nkind (Parent_Node) = N_Allocator
-         then
-            Establish_Transient_Scope (N, Manage_Sec_Stack => False);
-
          --  If the parent is an assignment for which no controlled actions
          --  should take place, prevent the temporary from being finalized.
 
-         elsif Nkind (Parent_Node) = N_Assignment_Statement
+         if Nkind (Parent_Node) = N_Assignment_Statement
            and then No_Ctrl_Actions (Parent_Node)
          then
             Mutate_Ekind (Tmp, E_Variable);
