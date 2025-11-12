@@ -18739,6 +18739,9 @@ comp_not_to_clear_mask_str_un (tree arg_type, int * regno,
       padding_bits_to_clear[max_reg]
 	|= padding_bits_to_clear_res[max_reg] & mask;
 
+      for (int i = *regno; i < max_reg; ++i)
+	not_to_clear_reg_mask |= HOST_WIDE_INT_1U << i;
+
       *regno = max_reg;
       *last_used_bit = max_bit;
     }
