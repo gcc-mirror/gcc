@@ -1753,6 +1753,20 @@ interpret_rhs_expr (class loop *loop, gimple *at_stmt,
       res = chrec_fold_plus (type, chrec1, chrec2);
       break;
 
+    case POINTER_DIFF_EXPR:
+      {
+	tree utype = unsigned_type_for (type);
+	chrec1 = analyze_scalar_evolution (loop, rhs1);
+	chrec2 = analyze_scalar_evolution (loop, rhs2);
+	chrec1 = chrec_convert (utype, chrec1, at_stmt);
+	chrec2 = chrec_convert (utype, chrec2, at_stmt);
+	chrec1 = instantiate_parameters (loop, chrec1);
+	chrec2 = instantiate_parameters (loop, chrec2);
+	res = chrec_fold_minus (utype, chrec1, chrec2);
+	res = chrec_convert (type, res, at_stmt);
+	break;
+      }
+
     case PLUS_EXPR:
       chrec1 = analyze_scalar_evolution (loop, rhs1);
       chrec2 = analyze_scalar_evolution (loop, rhs2);
