@@ -1,3 +1,50 @@
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/96255
+	* resolve.cc (gfc_resolve_forall): Delete outer_sym
+
+2025-11-11  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/90519
+	* trans-expr.cc (strip_parentheses): New helper function to strip
+	INTRINSIC_PARENTHESES operators from expressions.
+	(is_runtime_conformable): Use strip_parentheses to handle cases
+	like a = (a) when checking for self-assignment.
+	(gfc_trans_assignment_1): Strip parentheses before checking if
+	expr2 is a variable, ensuring deep_copy is enabled for cases like
+	a = (a). Also strip parentheses when checking for self-assignment
+	to avoid use-after-free in finalization.
+	(gfc_trans_scalar_assign): Add comment about parentheses handling.
+	* class.cc (generate_finalization_wrapper): Create separate result
+	symbol for finalizer wrapper functions instead of self-referencing
+	the procedure symbol, avoiding ICE in gimplify_call_expr.
+
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/96255
+	* gfortran.h (gfc_forall_iterator): Add bool shadow field.
+	* match.cc (apply_typespec_to_iterator): New helper function to
+	consolidate shadow variable creation logic.
+	(match_forall_header): Add type-spec parsing for DO CONCURRENT
+	and FORALL. Create shadow variables when type-spec differs from
+	outer scope. Replace duplicated code with apply_typespec_to_iterator.
+	* resolve.cc (replace_in_expr_recursive): New function to recursively
+	walk expressions and replace symbol references.
+	(replace_in_code_recursive): New function to recursively walk code
+	blocks and replace symbol references.
+	(gfc_replace_forall_variable): New entry point for shadow variable
+	substitution.
+	(gfc_resolve_assign_in_forall): Skip many-to-one assignment warning
+	for DO CONCURRENT.
+	(gfc_count_forall_iterators): Handle both EXEC_FORALL and
+	EXEC_DO_CONCURRENT with assertion.
+	(gfc_resolve_forall): Skip F2018 obsolescence warning for DO
+	CONCURRENT. Fix memory allocation check. Add NULL checks for shadow
+	variables. Implement shadow variable walker.
+	(gfc_resolve_code): Set gfc_do_concurrent_flag for DO CONCURRENT
+	constructs to enable constraint checking.
+
 2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR other/122243

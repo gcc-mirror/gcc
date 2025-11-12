@@ -1,3 +1,146 @@
+2025-11-11  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/90519
+	* gfortran.dg/finalizer_recursive_alloc_1.f90: New test for ICE fix.
+	* gfortran.dg/finalizer_recursive_alloc_2.f90: New execution test.
+	* gfortran.dg/finalizer_self_assign.f90: New test for self-assignment
+	including a = a, a = (a), and a = (((a))) cases using if/stop pattern.
+	* gfortran.dg/pr112459.f90: Update to expect 6 _final calls instead
+	of 12, reflecting corrected self-assignment behavior.
+
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+	    Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/96255
+	* gfortran.dg/do_concurrent_typespec_1.f90: New test covering all
+	shadowing scenarios: undeclared variable, same kind shadowing, and
+	different kind shadowing.
+
+2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/90374
+	PR libfortran/90374
+	* gfortran.dg/fmt_error_10.f: Update test case to pass.
+	* gfortran.dg/fmt_zero_width.f90: Likewise.
+	* gfortran.dg/pr111022.f90: Likewise.
+	* gfortran.dg/pr96436_4.f90: Likewise.
+	* gfortran.dg/pr96436_5.f90: Likewise.
+
+2025-11-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vmseq.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-u8.c: New test.
+
+2025-11-11  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vmseq.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmseq-run-1-i8.c: New test.
+
+2025-11-11  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* gcc.dg/match-shift-cmp-1.c: New test.
+	* gcc.dg/match-shift-cmp-2.c: Likewise.
+	* gcc.dg/match-shift-cmp-3.c: Likewise.
+	* gcc.dg/match-shift-cmp-4.c: Likewise.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* g++.target/loongarch/mv-symbols1.C: New test.
+	* g++.target/loongarch/mv-symbols2.C: New test.
+	* g++.target/loongarch/mv-symbols3.C: New test.
+	* g++.target/loongarch/mv-symbols4.C: New test.
+	* g++.target/loongarch/mv-symbols5.C: New test.
+	* g++.target/loongarch/mv-symbols6.C: New test.
+	* g++.target/loongarch/mvc-symbols1.C: New test.
+	* g++.target/loongarch/mvc-symbols2.C: New test.
+	* g++.target/loongarch/mvc-symbols3.C: New test.
+	* g++.target/loongarch/mvc-symbols4.C: New test.
+	* g++.target/loongarch/mvc-symbols5.C: New test.
+	* gcc.target/loongarch/attr-check-error-message1.c: New test.
+	* gcc.target/loongarch/attr-check-error-message2.c: New test.
+	* gcc.target/loongarch/attr-check-error-message3.c: New test.
+	* gcc.target/loongarch/attr-check-error-message4.c: New test.
+	* gcc.target/loongarch/attr-check-error-message5.c: New test.
+	* gcc.target/loongarch/attr-check-error-message6.c: New test.
+	* gcc.target/loongarch/attr-check-error-message7.c: New test.
+	* gcc.target/loongarch/attr-check-error-message8.c: New test.
+	* gcc.target/loongarch/attr-check-error-message9.c: New test.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/pragma-la64V1_1.c: New test.
+	* gcc.target/loongarch/pragma-la64V1_1-2.c: New test.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* gcc.target/loongarch/attr-check-error-message.c: Add tests.
+
+2025-11-11  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122629
+	* gcc.dg/torture/pr122629-1.c: New test.
+	* gcc.dg/torture/pr122629-2.c: New test.
+	* gcc.dg/tree-ssa/pr122629-1.c: New test.
+
+2025-11-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122446
+	* gcc.target/i386/amxbf16-asmintel-1.c: Modify dg-final to check intel
+	form.
+	* gcc.target/i386/amxcomplex-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp16-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxint8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxmovrs-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtf32-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtile-asmintel-1.c: Ditto.
+	* g++.target/i386/pr122446-1.C: New test.
+	* g++.target/i386/pr122446-amxavx512.C: Ditto.
+	* g++.target/i386/pr122446-amxbf16.C: Ditto.
+	* g++.target/i386/pr122446-amxcomplex.C: Ditto.
+	* g++.target/i386/pr122446-amxfp16.C: Ditto.
+	* g++.target/i386/pr122446-amxfp8.C: Ditto.
+	* g++.target/i386/pr122446-amxint8.C: Ditto.
+	* g++.target/i386/pr122446-amxmovrs.C: Ditto.
+	* g++.target/i386/pr122446-amxtf32.C: Ditto.
+	* g++.target/i386/pr122446-amxtile.C: Ditto.
+
 2025-11-10  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122628

@@ -1,3 +1,14 @@
+2025-11-11  Alejandro Colomar  <alx@kernel.org>
+
+	* c-warn.cc (warn_parms_array_mismatch): Split out body of
+	per-pair in parameter lists iteration into...
+	(warn_parm_array_mismatch): ...this new function.
+
+2025-11-11  Alejandro Colomar  <alx@kernel.org>
+
+	* c-warn.cc (warn_parms_array_mismatch): Reduce scope of local
+	variable.
+
 2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR other/122243

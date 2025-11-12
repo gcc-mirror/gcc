@@ -1,3 +1,8 @@
+2025-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/115970
+	* sarif-listener.py: New file.
+
 2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* gcc-changelog/git_commit.py (ignored_prefixes): Add

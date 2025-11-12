@@ -1,3 +1,13 @@
+2025-11-11  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (name_lookup::adl_namespace_fns): Also skip hidden
+	in the module case.
+
+2025-11-11  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::read_cluster): Use set_cfun.
+	(post_load_processing): Likewise.
+
 2025-11-10  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122628

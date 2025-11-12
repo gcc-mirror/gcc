@@ -1,3 +1,237 @@
+2025-11-11  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/mkoffload.cc (process_asm): Replace "configure_stack_size"
+	constructor with a new regular function, "mkoffload_setup".
+	(process_obj): Call mkoffload_setup from the "init" constructor.
+
+2025-11-11  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/115970
+	* diagnostics/sarif-sink.cc: Include <sys/un.h> and <sys/socket.h>.
+	(sarif_builder::end_group): Update comment.
+	(sarif_sink::on_end_group): Drop "final".
+	(class sarif_socket_sink): New subclass.
+	(maybe_open_sarif_sink_for_socket): New function.
+	* diagnostics/sarif-sink.h: (maybe_open_sarif_sink_for_socket):
+	New decl.
+	* doc/invoke.texi (EXPERIMENTAL_SARIF_SOCKET): Document new
+	environment variable.
+	* toplev.cc: Define INCLUDE_VECTOR. Add include of
+	"diagnostics/sarif-sink.h".
+	(toplev::main): Call
+	diagnostics::maybe_open_sarif_sink_for_socket.
+
+2025-11-11  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122587
+	* tree-vectorizer.cc (pass_vectorize::execute): Enable
+	ranger around analysis and code generation.
+
+2025-11-11  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-niter.cc (simplify_using_initial_conditions):
+	Use the active ranger to simplify boolean expressions.
+
+2025-11-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/crypto.md (packf splitters): Variant with
+	operands reversed.  Add variants with the ashift/sign extend
+	exchanged as well.
+
+2025-11-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_extend_to_xmode_reg): Simplify
+	by using convert_modes + force_reg.
+
+2025-11-11  Richard Biener  <rguenther@suse.de>
+
+	* gimple-range.cc (gimple_ranger::range_on_edge): Pass
+	the edge as 'edge' to get_tree_range.
+	(dom_ranger::range_on_edge): Likewise.
+
+2025-11-11  Andrew MacLeod  <amacleod@redhat.com>
+
+	* value-query.cc (range_query::invoke_range_of_expr): New
+	edge argument.  If set invoke range_on_edge.
+	(range_query::get_tree_range): Likewise and adjust.
+	* value-query.h (range_query::invoke_range_of_expr): New
+	edge argument.
+	(range_query::get_tree_range): Likewise.
+
+2025-11-11  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* match.pd: New patterns.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/extend.texi: Add description for LoongArch function
+	attributes.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_can_inline_p):
+	Do not inline when callee is versioned but caller is not.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_option_same_function_versions): Compare the target
+	attributes in two functions to determine which function’s
+	features get higher priority.
+	(TARGET_OPTION_SAME_FUNCTION_VERSIONS): Define.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-protos.h
+	(loongarch_parse_fmv_features): Modify the type of parameter.
+	(loongarch_compare_version_priority): Function declaration.
+	* config/loongarch/loongarch-target-attr.cc
+	(enum features_prio): Define LA_PRIO_MAX to indicate the
+	highest priority of supported attributes.
+	(loongarch_parse_fmv_features): Added handling of setting
+	priority in attribute string.
+	(loongarch_compare_version_priority): Likewise.
+	* config/loongarch/loongarch.cc
+	(loongarch_process_target_version_attr): Likewise.
+	(get_feature_mask_for_version): Likewise.
+	(loongarch_compare_version_priority): Delete.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_compare_version_priority): Returns true if DECL1
+	and DECL2 are versions of the same function.
+	(TARGET_COMPARE_VERSION_PRIORITY): Define.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/genopts/gen-evolution.awk:
+	* config/loongarch/loongarch-evol-attr.def: Regenerate.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_parse_fmv_features): Function declaration.
+	(get_feature_mask_for_version): Likewise.
+	* config/loongarch/loongarch-target-attr.cc
+	(enum features_prio): Defining the priority of features.
+	(struct loongarch_attribute_info): Add members about
+	features.
+	(LARCH_ATTR_MASK): Likewise.
+	(LARCH_ATTR_ENUM): Likewise.
+	(LARCH_ATTR_BOOL): Likewise.
+	(loongarch_parse_fmv_features): Parse a function
+	multiversioning feature string STR.
+	* config/loongarch/loongarch.cc
+	(get_suffixed_assembler_name): Return an identifier for the
+	base assembler name of a versioned function.
+	(get_feature_mask_for_version): Get the mask and priority of
+	features.
+	(add_condition_to_bb): Insert judgment statements for different
+	features functions.
+	(dispatch_function_versions): Generates the dispatch function for
+	multi-versioned functions.
+	(make_resolver_func): Make the resolver function decl to dispatch
+	the versions of a multi-versioned function.
+	(loongarch_generate_version_dispatcher_body): Generate the
+	dispatcher logic to invoke the right function version at run-time
+	for a given set of function versions.
+	(TARGET_GENERATE_VERSION_DISPATCHER_BODY): Define.
+	* common/config/loongarch/cpu-features.h: New file.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc (INCLUDE_STRING): Include.
+	(loongarch_mangle_decl_assembler_name): New function.
+	(TARGET_MANGLE_DECL_ASSEMBLER_NAME): Define.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_get_function_versions_dispatcher): New function.
+	(TARGET_GET_FUNCTION_VERSIONS_DISPATCHER): Define.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch.cc
+	(loongarch_process_target_version_attr): New function.
+	(loongarch_option_valid_version_attribute_p): New function.
+	(TARGET_OPTION_VALID_VERSION_ATTRIBUTE_P): Define.
+	* config/loongarch/loongarch.h
+	(TARGET_HAS_FMV_TARGET_ATTRIBUTE): Define it to 0.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/genopts/gen-evolution.awk: Output the
+	info needed for handling evolution features when parsing
+	the target pragma and attribute.
+	* config/loongarch/genopts/genstr.sh: Add support for
+	generating *.def files.
+	* config/loongarch/loongarch-target-attr.cc
+	(struct loongarch_attribute_info): Add structure member
+	record option mask.
+	(LARCH_ATTR_MASK): New macro.
+	(LARCH_ATTR_ENUM): Likewise.
+	(LARCH_ATTR_BOOL): Likewise.
+	(loongarch_handle_option): Support for new options.
+	(loongarch_process_one_target_attr): Added support for
+	the la64v1.1 extended instruction set.
+	* config/loongarch/t-loongarch: Generate loongarch-evol-attr.def.
+	* doc/extend.texi: Add new attribute description information.
+	* config/loongarch/loongarch-evol-attr.def: Generate.
+
+2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/loongarch-target-attr.cc
+	(loongarch_process_one_target_attr): Fix ICE.
+
+2025-11-11  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122629
+	* tree-if-conv.cc (factor_out_operators): Reject
+	BIT_FIELD_REF and BIT_INSERT_EXPR if operand other
+	than 0 is different.
+
+2025-11-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR lto/122620
+	* gimplify-me.cc (gimple_regimplify_operands): Don't try to regimplify
+	TREE_CLOBBER on rhs of gimple_clobber_p if it has gimple_reg_type.
+
+2025-11-11  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122446
+	* config/i386/amxavx512intrin.h (_tile_cvtrowps2bf16hi_internal):
+	Input register name by inline asm %c[...], and remove %% before tmm
+	from intel side.
+	(_tile_cvtrowps2bf16li_internal): Ditto.
+	* config/i386/amxbf16intrin.h (_tile_dpbf16ps_internal): Ditto
+	* config/i386/amxcomplexintrin.h (_tile_cmmimfp16ps_internal): Ditto
+	(_tile_cmmrlfp16ps_internal): Ditto
+	(_tile_cmmimfp16ps): Ditto
+	(_tile_cmmrlfp16ps): Ditto
+	* config/i386/amxfp16intrin.h (_tile_dpfp16ps_internal): Ditto
+	(_tile_dpfp16ps): Ditto
+	* config/i386/amxfp8intrin.h (_tile_dpbf8ps_internal): Ditto
+	(_tile_dpbhf8ps_internal): Ditto
+	(_tile_dphbf8ps_internal): Ditto
+	(_tile_dphf8ps_internal): Ditto
+	(_tile_dpbf8ps): Ditto
+	(_tile_dpbhf8ps): Ditto
+	(_tile_dphbf8ps): Ditto
+	(_tile_dphf8ps): Ditto
+	* config/i386/amxint8intrin.h (_tile_int8_dp_internal): Ditto
+	* config/i386/amxmovrsintrin.h (_tile_loaddrs_internal): Ditto
+	(_tile_loaddrst1_internal): Ditto
+	(_tile_loaddrs): Ditto
+	(_tile_loaddrst1): Ditto
+	* config/i386/amxtf32intrin.h (_tile_mmultf32ps_internal): Ditto
+	* config/i386/amxtileintrin.h (_tile_loadd): Ditto
+	(_tile_loadd_internal): Ditto
+	(_tile_stream_loadd): Ditto
+	(_tile_stream_loadd_internal): Ditto
+	(_tile_stored): Ditto
+	(_tile_stored_internal): Ditto
+	(_tile_zero): Ditto
+	(_tile_zero_internal): Ditto
+
 2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR other/122243
