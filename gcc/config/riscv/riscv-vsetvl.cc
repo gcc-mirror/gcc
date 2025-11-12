@@ -1176,7 +1176,7 @@ public:
     if (fault_first_load_p (insn->rtl ()))
       {
 	for (insn_info *i = insn->next_nondebug_insn ();
-	     i->bb () == insn->bb (); i = i->next_nondebug_insn ())
+	     i && i->bb () == insn->bb (); i = i->next_nondebug_insn ())
 	  {
 	    if (find_access (i->defs (), VL_REGNUM))
 	      break;
