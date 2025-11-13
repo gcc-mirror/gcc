@@ -1292,15 +1292,15 @@ package body Debug is
    --      display the source file name, the time stamp expected and
    --      the time stamp found.
 
+   subtype Dig  is Character range '1' .. '9';
+   subtype LLet is Character range 'a' .. 'z';
+   subtype ULet is Character range 'A' .. 'Z';
+
    --------------------
    -- Set_Debug_Flag --
    --------------------
 
    procedure Set_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig  is Character range '1' .. '9';
-      subtype LLet is Character range 'a' .. 'z';
-      subtype ULet is Character range 'A' .. 'Z';
-
    begin
       if C in Dig then
          case Dig (C) is
@@ -1443,10 +1443,6 @@ package body Debug is
    ---------------------------
 
    procedure Set_Dotted_Debug_Flag (C : Character; Val : Boolean := True) is
-      subtype Dig  is Character range '1' .. '9';
-      subtype LLet is Character range 'a' .. 'z';
-      subtype ULet is Character range 'A' .. 'Z';
-
    begin
       if C in Dig then
          case Dig (C) is
@@ -1592,10 +1588,6 @@ package body Debug is
      (C   : Character;
       Val : Boolean := True)
    is
-      subtype Dig  is Character range '1' .. '9';
-      subtype LLet is Character range 'a' .. 'z';
-      subtype ULet is Character range 'A' .. 'Z';
-
    begin
       if C in Dig then
          case Dig (C) is

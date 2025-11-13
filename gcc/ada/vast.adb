@@ -36,11 +36,14 @@ with System.Case_Util;
 with Atree;          use Atree;
 with Debug;
 with Einfo.Entities; use Einfo.Entities;
+--  with Errout;
+with Exp_Tss;
 with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Output;
+with Sem_Util;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;
 with Table;
@@ -64,9 +67,12 @@ package body VAST is
       Check_Sloc,
       Check_Analyzed,
       Check_Error_Nodes,
+      Check_FE_Only,
       Check_Sharing,
       Check_Parent_Present,
-      Check_Parent_Correct);
+      Check_Parent_Correct,
+      Check_Scope_Present,
+      Check_Scope_Correct);
 
    type Check_Status is
      --  Action in case of check failure:
@@ -79,10 +85,13 @@ package body VAST is
      (Check_Other => Enabled,
       Check_Sloc => Disabled,
       Check_Analyzed => Disabled,
-      Check_Error_Nodes => Print_And_Continue,
+      Check_Error_Nodes => Enabled,
+      Check_FE_Only => Disabled,
       Check_Sharing => Disabled,
-      Check_Parent_Present => Print_And_Continue,
-      Check_Parent_Correct => Disabled);
+      Check_Parent_Present => Disabled,
+      Check_Parent_Correct => Disabled,
+      Check_Scope_Present => Print_And_Continue,
+      Check_Scope_Correct => Print_And_Continue);
 --      others => Print_And_Continue);
 --      others => Enabled);
 --      others => Disabled);
@@ -109,6 +118,21 @@ package body VAST is
       Table_Increment      => 100,
       Table_Name           => "Node_Stack");
 
+   type Pass_Number is range 1 .. 2;
+   Pass : Pass_Number;
+
+   procedure VAST;
+   --  Called by VAST_If_Enabled to do all the checking
+
+   procedure Fail
+     (Check : Check_Enum := Check_Other;
+      Detail : String := "");
+   --  Print failure information if Check is not disabled. Called by Assert
+   --  when Condition is False and for other failures.
+
+   procedure Fail_Breakpoint (N : Node_Id) with Export;
+   --  Does nothing. Called by Fail; useful to set a breakpoint in gdb on this.
+
    procedure Assert
      (Condition : Boolean;
       Check : Check_Enum := Check_Other;
@@ -121,6 +145,11 @@ package body VAST is
 
    function Image (Kind : Node_Kind) return String is (To_Mixed (Kind'Img));
    function Image (Kind : Entity_Kind) return String is (To_Mixed (Kind'Img));
+   function Kind_Image (N : Node_Or_Entity_Id) return String is
+     (if Nkind (N) in N_Entity then Image (Ekind (N))
+      else Image (Nkind (N)));
+   function Node_Image (N : Node_Or_Entity_Id) return String is
+     (Kind_Image (N) & N'Img);
 
    procedure Put (S : String);
    procedure Put_Line (S : String);
@@ -147,6 +176,11 @@ package body VAST is
    procedure Do_Tree (N : Node_Id);
    --  Do VAST checking on a tree of nodes
 
+   function Is_FE_Only (Kind : Node_Kind) return Boolean;
+   --  True if nodes of this Kind can appear only in the front end. They should
+   --  be transformed into something else before calling the back end, or else
+   --  they can only appear in illegal code.
+
    function Has_Subtrees (N : Node_Id) return Boolean;
    --  True if N has one or more syntactic fields
 
@@ -156,8 +190,14 @@ package body VAST is
    procedure Do_List (L : List_Id);
    --  Call Do_Tree on the list elements
 
+   procedure Do_Node_Pass_2 (N : Node_Id);
+   --  Called by Do_Tree in the second pass
+
    procedure Do_Unit (U : Unit_Number_Type);
    --  Call Do_Tree on the root node of a compilation unit
+
+   function Is_On_Stack (Kind : Node_Kind) return Boolean;
+   --  True if there is at least one node on the stack with the specified Kind
 
    function Ancestor_Node (Count : Node_Stack_Count) return Node_Id;
    --  Nth ancestor on the Node_Stack. Ancestor_Node(0) is the current node,
@@ -166,19 +206,44 @@ package body VAST is
 
    function Top_Node return Node_Id is (Ancestor_Node (0));
 
-   type Node_Set is array (Node_Id range <>) of Boolean;
-   pragma Pack (Node_Set);
-   type Node_Set_Ptr is access all Node_Set;
-   procedure Free is new Ada.Unchecked_Deallocation (Node_Set, Node_Set_Ptr);
+   type Node_Info is record
+      Count : Nat := 0;
+      Prev_Parent : Node_Id := Empty;
+      In_Aspect : Boolean := False;
+   end record;
+   type Node_Info_Array is array (Node_Id range <>) of Node_Info;
+   type Node_Info_Array_Ptr is access all Node_Info_Array;
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Node_Info_Array, Node_Info_Array_Ptr);
 
-   Visited : Node_Set_Ptr;
-   --  Giant array of Booleans; Visited (N) is True if and only if we have
-   --  visited N in the tree walk. Used to detect incorrect sharing of subtrees
-   --  or (worse) cycles. We don't allocate the set on the stack, for fear of
-   --  Storage_Error.
+   Nodes_Info : Node_Info_Array_Ptr;
+   --  Nodes_Info (N).Prev_Parent is non-Empty if and only if the tree walk has
+   --  visited N. If non-Empty, it points to the most recent parent of N in the
+   --  tree walk; that is, the node that allowed us to get to N. Normally, each
+   --  reachable node is visited exactly once, and if the Parent pointers
+   --  aren't messed up, then Nodes_Info (N).Prev_Parent will be Parent (N).
+   --  (See below for the special case of the root compilation unit node.)
+   --
+   --  Used to detect incorrect sharing of subtrees or (worse) cycles. We don't
+   --  allocate this on the stack, for fear of Storage_Error.
+   --
+   --  Nodes_Info (N).Count is the number of ways N is reachable in the walk.
+   --  It should be 1 for all nodes except the root.
 
    function Get_Node_Field_Union is new
      Atree.Atree_Private_Part.Get_32_Bit_Field (Union_Id) with Inline;
+
+   function Has_Field (Kind : Node_Kind; F : Node_Field) return Boolean;
+   --  True if nodes of type Kind have field F
+
+   function Related_Chars (N : Node_Id) return Name_Id;
+   --  Return a Name_Id related to N that is worth printing when we print
+   --  information about N. Returns No_Name if there is no interesting Name_Id.
+   --  This is typically "Chars (N)" or "Chars (Defining_Identifier (N))" or
+   --  similar.
+
+   procedure Check_Scope (N : Node_Id);
+   --  Check that the Scope of N makes sense
 
    --------------
    -- To_Mixed --
@@ -213,6 +278,41 @@ package body VAST is
       end if;
    end Put_Line;
 
+   ---------------
+   -- Has_Field --
+   ---------------
+
+   function Has_Field (Kind : Node_Kind; F : Node_Field) return Boolean is
+      Fields : Node_Field_Array renames Node_Field_Table (Kind).all;
+   begin
+      for Index in Fields'Range loop
+         if Fields (Index) = F then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Has_Field;
+
+   -------------------
+   -- Related_Chars --
+   -------------------
+
+   function Related_Chars (N : Node_Id) return Name_Id is
+   begin
+      return Result : Name_Id := No_Name do
+         if Has_Field (Nkind (N), F_Chars) then
+            Result := Chars (N);
+         elsif Has_Field (Nkind (N), F_Defining_Identifier) then
+            Result := Related_Chars (Defining_Identifier (N));
+         elsif Has_Field (Nkind (N), F_Defining_Unit_Name) then
+            Result := Related_Chars (Defining_Unit_Name (N));
+         elsif Has_Field (Nkind (N), F_Specification) then
+            Result := Related_Chars (Specification (N));
+         end if;
+      end return;
+   end Related_Chars;
+
    --------------
    -- Put_Node --
    --------------
@@ -220,26 +320,21 @@ package body VAST is
    procedure Put_Node (N : Node_Id) is
    begin
       if Debug.Debug_Flag_Underscore_WW then
-         if Nkind (N) in N_Entity then
-            Put (Image (Ekind (N)));
-         else
-            Put (Image (Nkind (N)));
-         end if;
-
-         Put (N'Img & " ");
+         Put (Node_Image (N) & " ");
          Sinput.Write_Location (Sloc (N));
 
          if Comes_From_Source (N) then
             Put (" (s)");
          end if;
 
-         case Nkind (N) is
-            when N_Has_Chars =>
+         declare
+            Chars_To_Print : constant Name_Id := Related_Chars (N);
+         begin
+            if Present (Chars_To_Print) then
                Put (" ");
-               Write_Name_For_Debug (Chars (N), Quote => """");
-            when others => null;
-         end case;
-
+               Write_Name_For_Debug (Chars_To_Print, Quote => """");
+            end if;
+         end;
       end if;
    end Put_Node;
 
@@ -300,6 +395,21 @@ package body VAST is
       end loop;
    end Put_Node_Stack;
 
+   -----------------
+   -- Is_On_Stack --
+   -----------------
+
+   function Is_On_Stack (Kind : Node_Kind) return Boolean is
+   begin
+      for J in reverse Node_Stack.First .. Node_Stack.Last loop
+         if Nkind (Node_Stack.Table (J)) = Kind then
+            return True;
+         end if;
+      end loop;
+
+      return False;
+   end Is_On_Stack;
+
    -------------------
    -- Ancestor_Node --
    -------------------
@@ -309,11 +419,62 @@ package body VAST is
       return Node_Stack.Table (Node_Stack.Last - Count);
    end Ancestor_Node;
 
+   ---------------------
+   -- Fail_Breakpoint --
+   ---------------------
+
+   procedure Fail_Breakpoint (N : Node_Id) is
+   begin
+      null;
+   end Fail_Breakpoint;
+
+   ----------
+   -- Fail --
+   ----------
+
+   VAST_Failure : exception;
+
+   procedure Fail
+     (Check : Check_Enum := Check_Other;
+      Detail : String := "")
+   is
+      Part1 : constant String := "VAST fail";
+      Part2 : constant String :=
+        (if Check = Check_Other then ""
+         else ": " & To_Mixed (Check'Img));
+      Part3 : constant String :=
+        (if Detail = "" then "" else " -- " & Detail);
+      Message : constant String := Part1 & Part2 & Part3;
+      Save : constant Boolean := Debug.Debug_Flag_Underscore_WW;
+   begin
+      case Status (Check) is
+         when Disabled => null;
+         when Enabled | Print_And_Continue =>
+            Debug.Debug_Flag_Underscore_WW := True;
+            --  ????We should probably avoid changing the debug flag here
+            Put (Message & ": ");
+            Put_Node (Top_Node);
+            Put_Line ("");
+
+            Put ("VAST file: ");
+            Sinput.Write_Location (Sloc (Top_Node));
+            Put_Line ("");
+            Put_Node_Stack;
+
+            if Status (Check) = Enabled then
+               Put_Node_Stack;
+               raise VAST_Failure with Message;
+            end if;
+
+            Debug.Debug_Flag_Underscore_WW := Save;
+
+            Fail_Breakpoint (Ancestor_Node (0));
+      end case;
+   end Fail;
+
    ------------
    -- Assert --
    ------------
-
-   VAST_Failure : exception;
 
    procedure Assert
      (Condition : Boolean;
@@ -322,57 +483,53 @@ package body VAST is
    is
    begin
       if not Condition then
-         declare
-            Part1 : constant String := "VAST fail";
-            Part2 : constant String :=
-              (if Check = Check_Other then ""
-               else ": " & To_Mixed (Check'Img));
-            Part3 : constant String :=
-              (if Detail = "" then "" else " -- " & Detail);
-            Message : constant String := Part1 & Part2 & Part3;
-            Save : constant Boolean := Debug.Debug_Flag_Underscore_WW;
-         begin
-            case Status (Check) is
-               when Disabled => null;
-               when Enabled | Print_And_Continue =>
-                  Debug.Debug_Flag_Underscore_WW := True;
-                  --  ???We should probably avoid changing the debug flag here
-                  Put (Message & ": ");
-                  Put_Node (Top_Node);
-                  Put_Line ("");
-
-                  if Status (Check) = Enabled then
-                     Put_Node_Stack;
-                     raise VAST_Failure with Message;
-                  end if;
-
-                  Debug.Debug_Flag_Underscore_WW := Save;
-            end case;
-         end;
+         Fail (Check, Detail);
       end if;
    end Assert;
 
-   -------------
-   -- Do_Tree --
-   -------------
+   -----------------
+   -- Check_Scope --
+   -----------------
 
-   procedure Do_Tree (N : Node_Id) is
+   procedure Check_Scope (N : Node_Id) is
+      use Exp_Tss, Sem_Util;
    begin
-      Enter_Node (N);
+      if Present (Scope (N)) then
+         if False then -- ????
+            Assert (Enclosing_Declaration (Scope (N)) =
+                    Enclosing_Declaration (Enclosing_Declaration (N)),
+                    Check_Scope_Correct);
+         end if;
+      else
+         if Ekind (N) = E_Void then
+            --  ????These seem to be SW, PI, &c, and their params.
+            null;
+         elsif Ekind (N) = E_Procedure and then Is_TSS (N, TSS_Put_Image)
+         then
+            null; -- also PI
+         elsif Ekind (N) = E_Protected_Body then
+            null;
+         else
+            Fail (Check_Scope_Present);
+         end if;
+      end if;
+   end Check_Scope;
 
-      --  Skip the rest if empty. Check Sloc:
+   --------------------
+   -- Do_Node_Pass_2 --
+   --------------------
+
+   procedure Do_Node_Pass_2 (N : Node_Id) is
+   begin
+      --  Check Sloc:
 
       case Nkind (N) is
-         when N_Empty =>
-            Assert (No (Sloc (N)));
-            goto Done; -- -------------->
-            --  Don't do any further checks on Empty
-
          --  ???Some nodes, including exception handlers, have no Sloc;
          --  it's unclear why.
 
          when N_Exception_Handler =>
-            Assert (if Comes_From_Source (N) then Present (Sloc (N)));
+            Assert
+              ((if Comes_From_Source (N) then Present (Sloc (N))), Check_Sloc);
          when others =>
             Assert (Present (Sloc (N)), Check_Sloc);
       end case;
@@ -382,24 +539,21 @@ package body VAST is
 
       Assert (Analyzed (N), Check_Analyzed);
 
-      --  If we visit the same node more than once, then there are shared
-      --  nodes; the "tree" is not a tree:
-
-      Assert (not Visited (N), Check_Sharing);
-      Visited (N) := True;
-
       --  Misc checks based on node/entity kind:
 
       case Nkind (N) is
          when N_Unused_At_Start | N_Unused_At_End =>
-            Assert (False);
+            --  ????Can't get here, because Is_FE_Only. Also 'case' below.
+            Fail;
 
          when N_Error =>
             --  VAST doesn't do anything when Serious_Errors_Detected > 0 (at
             --  least for now), so we shouldn't encounter any N_Error nodes.
-            Assert (False, Check_Error_Nodes);
+            Fail (Check_Error_Nodes);
 
          when N_Entity =>
+            Check_Scope (N);
+
             case Ekind (N) is
                when others =>
                   null; -- more to be done here
@@ -416,7 +570,7 @@ package body VAST is
             raise Program_Error; -- can't get here
 
          when N_Error =>
-            Assert (False, Check_Error_Nodes);
+            Fail (Check_Error_Nodes);
             --  The error node has no parent, but we shouldn't even be seeing
             --  error nodes in VAST at all. See earlier "when N_Error".
 
@@ -440,10 +594,95 @@ package body VAST is
                Assert (Parent (N) = Ancestor_Node (1), Check_Parent_Correct);
             end if;
       end case;
+   end Do_Node_Pass_2;
 
-      Do_Subtrees (N);
+   -------------
+   -- Do_Tree --
+   -------------
 
+   procedure Do_Tree (N : Node_Id) is
+      Visited : constant Boolean := Present (Nodes_Info (N).Prev_Parent);
+   begin
+      if False and Nkind (N) = N_Aspect_Specification then
+         --  ????This cuts failures 453490/235214 = 1.9.
+         return;
+      end if;
+
+      if Pass = 1 then
+         Nodes_Info (N).Count := Nodes_Info (N).Count + 1;
+         --  ????Get rid of asserts:
+         pragma Assert
+           (if Nkind (N) not in N_Empty | N_Compilation_Unit then
+              Visited = (Nodes_Info (N).Count > 1));
+
+         if Is_On_Stack (N_Aspect_Specification) then
+            Nodes_Info (N).In_Aspect := True;
+         end if;
+      elsif Pass = 2 then
+         pragma Assert (Nodes_Info (N).Count > 0);
+      end if;
+
+      Enter_Node (N);
+
+      Assert (not Is_FE_Only (Nkind (N)), Check_FE_Only);
+      --  ????Also check for particular pragmas, etc.
+      --  And Ekind.
+
+      if Nkind (N) = N_Empty then
+         Assert (N = Empty);
+         Assert (No (Sloc (N)));
+         goto Done; -- -------------->
+         --  Don't do any further checks on Empty
+      end if;
+
+      --  If we visit the same node more than once, then there are shared
+      --  nodes; the "tree" is not a tree:
+      --  We know that the "extra formals" involve shared subtrees,
+      --  and that's probably unavoidable. See Expand_Call_Helper.
+      --  A lot of shared subtrees come from aspect specifications,
+      --  probably because they get turned into pragmas, and the
+      --  subtrees get placed inside the pragmas without removing
+      --  them from the original aspect specifications.
+
+      if Pass = 2 and then Nodes_Info (N).Count > 1 and then
+        not Nodes_Info (N).In_Aspect -- ????cuts failures by 1.9
+      then
+         declare
+            Count : constant String :=
+              (if Nodes_Info (N).Count = 2 then ""
+               else Nodes_Info (N).Count'Img & "par");
+            Aspect : constant String :=
+              (if Nodes_Info (N).In_Aspect then "{asp}" else "");
+         begin
+            Fail (Check_Sharing,
+                  "(prev-par=" &
+                  Node_Image (Nodes_Info (N).Prev_Parent) & ")" &
+                  Count & Aspect);
+            if Status (Check_Sharing) /= Disabled then
+               Output.Write_Line
+                 (Kind_Image (Ancestor_Node (1)) & "```" & Kind_Image (N));
+               Output.Write_Line ("");
+            end if;
+         end;
+      end if;
+
+      if Node_Stack.Last = 1 then
+         Nodes_Info (N).Prev_Parent := Ancestor_Node (0);
+         Assert (Nkind (N) = N_Compilation_Unit);
+         --  This is the root node. Set the parent to itself,
+         --  for no particular reason except to make it not Empty.
+      else
+         Nodes_Info (N).Prev_Parent := Ancestor_Node (1);
+      end if;
+
+      if not Visited then -- Don't walk it more than once
+         if Pass = 2 then
+            Do_Node_Pass_2 (N);
+         end if;
+         Do_Subtrees (N);
+      end if;
       <<Done>>
+
       Leave_Node (N);
    end Do_Tree;
 
@@ -455,7 +694,7 @@ package body VAST is
       Offsets : Traversed_Offset_Array renames
         Traversed_Fields (Nkind (N));
    begin
-      --  True if sentinel comes first
+      --  True if the first Offset is not the sentinel
       return Offsets (Offsets'First) /= No_Field_Offset;
    end Has_Subtrees;
 
@@ -559,14 +798,67 @@ package body VAST is
    ----------
 
    procedure VAST is
+   begin
+      Put_Line ("VAST");
+
+      --  Operating_Mode = Generate_Code implies there are no legality errors:
+
+      pragma Assert (Serious_Errors_Detected = 0);
+      --  ????pragma Assert (not Errout.Compilation_Errors);
+
+      Put_Line ("VAST checking" & Last_Unit'Img & " units");
+
+      declare
+         use Atree_Private_Part;
+         Last_Node : constant Node_Id := Node_Offsets.Last;
+      begin
+         pragma Assert (Nodes_Info = null);
+         Nodes_Info := new Node_Info_Array (Node_Id'First .. Last_Node);
+
+         --  Walk all nodes in all units doing Pass 1, and so on
+         --  for each Pass.
+
+         for P in Pass_Number loop
+            Pass := P;
+
+            Put_Line ("VAST Pass" & Pass'Img);
+            if Pass = 2 then -- ????Is this needed?
+               for Index in Nodes_Info'Range loop
+                  Nodes_Info (Index).Prev_Parent := Empty;
+               end loop;
+            end if;
+
+            for U in Main_Unit .. Last_Unit loop
+               --  Main_Unit is the one passed to the back end, but here we are
+               --  walking all the units.
+               Do_Unit (U);
+            end loop;
+         end loop;
+
+         --  We shouldn't have allocated any new nodes during VAST:
+
+         pragma Assert (Node_Offsets.Last = Last_Node);
+         Free (Nodes_Info);
+      end;
+
+      Put_Line ("VAST done.");
+   end VAST;
+
+   ---------------------
+   -- VAST_If_Enabled --
+   ---------------------
+
+   procedure VAST_If_Enabled is
+      --  This is the public entry point
+
       pragma Assert (Expander_Active = (Operating_Mode = Generate_Code));
       --  ???So why do we need both Operating_Mode and Expander_Active?
       use Debug;
    begin
       --  Do nothing if we're not calling the back end; the main point of VAST
-      --  is to protect against code-generation bugs. This includes the
-      --  case where legality errors were detected; the tree is known to be
-      --  malformed in some error cases.
+      --  is to protect against code-generation bugs. VAST is disabled if
+      --  legality errors were detected; the tree is known to be malformed
+      --  in some error cases. The -gnatc switch also disables VAST.
 
       if Operating_Mode /= Generate_Code then
          return;
@@ -575,46 +867,276 @@ package body VAST is
       --  If -gnatd_W (VAST in verbose mode) is enabled, then that should imply
       --  -gnatd_V (enable VAST).
 
-      if Debug_Flag_Underscore_WW then
+      if Debug_Flag_Underscore_WW or Force_Enable_VAST then
          Debug_Flag_Underscore_VV := True;
       end if;
 
       --  Do nothing if VAST is disabled
 
-      if not (Debug_Flag_Underscore_VV or Force_Enable_VAST) then
+      if not Debug_Flag_Underscore_VV then
          return;
       end if;
 
-      --  Turn off output unless verbose mode is enabled
+      VAST;
+   end VAST_If_Enabled;
 
-      Put_Line ("VAST");
+   ----------------
+   -- Is_FE_Only --
+   ----------------
 
-      --  Operating_Mode = Generate_Code implies there are no legality errors:
+   function Is_FE_Only (Kind : Node_Kind) return Boolean is
+      --  ????This is work in progress; see "?" marks below
+   begin
+      case Kind is
+         when N_Abortable_Part
+            | N_Abort_Statement
+            | N_Asynchronous_Select
+            | N_Compound_Statement
+            | N_Conditional_Entry_Call
+            | N_Continue_Statement
+            | N_Contract
+            | N_Delay_Alternative
+            | N_Delay_Until_Statement
+            | N_Delta_Constraint
+            | N_Entry_Call_Alternative
+            | N_Entry_Index_Specification
+            | N_Error
+            | N_Formal_Derived_Type_Definition
+            | N_Formal_Package_Declaration
+            | N_Goto_When_Statement
+            | N_Interpolated_String_Literal
+            | N_Iterated_Element_Association
+            | N_Mod_Clause
+            | N_Raise_When_Statement
+            | N_Return_When_Statement
+            | N_SCIL_Dispatching_Call
+            | N_SCIL_Dispatch_Table_Tag_Init
+            | N_SCIL_Membership_Test
+            | N_Timed_Entry_Call
+            | N_Triggering_Alternative
+            | N_Unused_At_End
+            | N_Unused_At_Start
+            => return True;
 
-      Assert (Serious_Errors_Detected = 0);
+         when N_Empty
+            | N_Delay_Relative_Statement -- ????not turned into rt call?
+            | N_Expression_Function
+            | N_Iterated_Component_Association -- ????
+            | N_Single_Protected_Declaration
+            | N_Accept_Alternative -- ????not turned into rt call?
+            | N_Accept_Statement -- ????not turned into rt call?
+            | N_Decimal_Fixed_Point_Definition
+            | N_Digits_Constraint
+            | N_Entry_Call_Statement -- ????not turned into rt call?
+            | N_Requeue_Statement -- ????not turned into rt call?
+            | N_Selective_Accept -- ????not turned into rt call?
+            | N_Terminate_Alternative -- ????not turned into rt call?
+            | N_Defining_Character_Literal
+            | N_Access_Function_Definition
+            | N_Formal_Discrete_Type_Definition
+            | N_Formal_Modular_Type_Definition
+            | N_Iterator_Specification
+            | N_Op_Expon
+            | N_Variant
+            | N_Variant_Part
+            | N_Access_Definition
+            | N_Access_Procedure_Definition
+            | N_Access_To_Object_Definition
+            | N_Aspect_Specification
+            | N_Case_Statement_Alternative
+            | N_Compilation_Unit_Aux
+            | N_Component_Clause
+            | N_Component_Declaration
+            | N_Component_Definition
+            | N_Component_List
+            | N_Constrained_Array_Definition
+            | N_Derived_Type_Definition
+            | N_Designator
+            | N_Discriminant_Association
+            | N_Discriminant_Specification
+            | N_Elsif_Part
+            | N_Enumeration_Type_Definition
+            | N_Floating_Point_Definition
+            | N_Formal_Concrete_Subprogram_Declaration
+            | N_Formal_Floating_Point_Definition
+            | N_Formal_Object_Declaration
+            | N_Formal_Private_Type_Definition
+            | N_Formal_Signed_Integer_Type_Definition
+            | N_Formal_Type_Declaration
+            | N_Generic_Association
+            | N_Index_Or_Discriminant_Constraint
+            | N_Iteration_Scheme
+            | N_Loop_Parameter_Specification
+            | N_Modular_Type_Definition
+            | N_Others_Choice
+            | N_Parameter_Association
+            | N_Parameter_Specification
+            | N_Quantified_Expression -- ????
+            | N_Range
+            | N_Range_Constraint
+            | N_Record_Definition
+            | N_Signed_Integer_Type_Definition
+            | N_Subtype_Indication
+            | N_Unconstrained_Array_Definition
+            | N_Pragma_Argument_Association
+            | N_Case_Expression
+            | N_Case_Expression_Alternative
+            | N_Delta_Aggregate -- ????
+            | N_Entry_Body_Formal_Part
+            | N_Entry_Declaration
+            | N_Extended_Return_Statement -- ????
+            | N_Formal_Abstract_Subprogram_Declaration
+            | N_Formal_Decimal_Fixed_Point_Definition
+            | N_Formal_Incomplete_Type_Definition
+            | N_Formal_Ordinary_Fixed_Point_Definition
+            | N_Ordinary_Fixed_Point_Definition
+            | N_Protected_Definition
+            | N_Raise_Expression
+            | N_Real_Range_Specification
+            | N_Target_Name -- ????
+            | N_Task_Definition
+            => return False;
+         --  ????
 
-      Put_Line ("VAST checking" & Last_Unit'Img & " units");
-
-      declare
-         use Atree_Private_Part;
-         Last_Node : constant Node_Id := Node_Offsets.Last;
-      begin
-         pragma Assert (Visited = null);
-         Visited := new Node_Set'(Node_Id'First .. Last_Node => False);
-
-         for U in Main_Unit .. Last_Unit loop
-            --  Main_Unit is the one passed to the back end, but here we are
-            --  walking all the units.
-            Do_Unit (U);
-         end loop;
-
-         --  We shouldn't have allocated any new nodes during VAST:
-
-         pragma Assert (Node_Offsets.Last = Last_Node);
-         Free (Visited);
-      end;
-
-      Put_Line ("VAST done.");
-   end VAST;
+         when N_Abstract_Subprogram_Declaration
+            | N_Aggregate
+            | N_Allocator
+            | N_And_Then
+            | N_Assignment_Statement
+            | N_At_Clause
+            | N_Attribute_Definition_Clause
+            | N_Attribute_Reference
+            | N_Block_Statement
+            | N_Call_Marker
+            | N_Case_Statement
+            | N_Character_Literal
+            | N_Code_Statement
+            | N_Compilation_Unit
+            | N_Component_Association
+            | N_Defining_Identifier
+            | N_Defining_Operator_Symbol
+            | N_Defining_Program_Unit_Name
+            | N_Entry_Body
+            | N_Enumeration_Representation_Clause
+            | N_Exception_Declaration
+            | N_Exception_Handler
+            | N_Exception_Renaming_Declaration
+            | N_Exit_Statement
+            | N_Expanded_Name
+            | N_Explicit_Dereference
+            | N_Expression_With_Actions
+            | N_Extension_Aggregate
+            | N_External_Initializer
+            | N_Free_Statement
+            | N_Freeze_Entity
+            | N_Freeze_Generic_Entity
+            | N_Full_Type_Declaration
+            | N_Function_Call
+            | N_Function_Instantiation
+            | N_Function_Specification
+            | N_Generic_Function_Renaming_Declaration
+            | N_Generic_Package_Declaration
+            | N_Generic_Package_Renaming_Declaration
+            | N_Generic_Procedure_Renaming_Declaration
+            | N_Generic_Subprogram_Declaration
+            | N_Goto_Statement
+            | N_Handled_Sequence_Of_Statements
+            | N_Identifier
+            | N_If_Expression
+            | N_If_Statement
+            | N_Implicit_Label_Declaration
+            | N_In
+            | N_Incomplete_Type_Declaration
+            | N_Indexed_Component
+            | N_Integer_Literal
+            | N_Itype_Reference
+            | N_Label
+            | N_Loop_Statement
+            | N_Not_In
+            | N_Null
+            | N_Null_Statement
+            | N_Number_Declaration
+            | N_Object_Declaration
+            | N_Object_Renaming_Declaration
+            | N_Op_Abs
+            | N_Op_Add
+            | N_Op_And
+            | N_Op_Concat
+            | N_Op_Divide
+            | N_Op_Eq
+            | N_Operator_Symbol
+            | N_Op_Ge
+            | N_Op_Gt
+            | N_Op_Le
+            | N_Op_Lt
+            | N_Op_Minus
+            | N_Op_Mod
+            | N_Op_Multiply
+            | N_Op_Ne
+            | N_Op_Not
+            | N_Op_Or
+            | N_Op_Plus
+            | N_Op_Rem
+            | N_Op_Rotate_Left
+            | N_Op_Rotate_Right
+            | N_Op_Shift_Left
+            | N_Op_Shift_Right
+            | N_Op_Shift_Right_Arithmetic
+            | N_Op_Subtract
+            | N_Op_Xor
+            | N_Or_Else
+            | N_Package_Body
+            | N_Package_Body_Stub
+            | N_Package_Declaration
+            | N_Package_Instantiation
+            | N_Package_Renaming_Declaration
+            | N_Package_Specification
+            | N_Pop_Constraint_Error_Label
+            | N_Pop_Program_Error_Label
+            | N_Pop_Storage_Error_Label
+            | N_Pragma
+            | N_Private_Extension_Declaration
+            | N_Private_Type_Declaration
+            | N_Procedure_Call_Statement
+            | N_Procedure_Instantiation
+            | N_Procedure_Specification
+            | N_Protected_Body
+            | N_Protected_Body_Stub
+            | N_Protected_Type_Declaration
+            | N_Push_Constraint_Error_Label
+            | N_Push_Program_Error_Label
+            | N_Push_Storage_Error_Label
+            | N_Qualified_Expression
+            | N_Raise_Constraint_Error
+            | N_Raise_Program_Error
+            | N_Raise_Statement
+            | N_Raise_Storage_Error
+            | N_Real_Literal
+            | N_Record_Representation_Clause
+            | N_Reference
+            | N_Selected_Component
+            | N_Simple_Return_Statement
+            | N_Single_Task_Declaration
+            | N_Slice
+            | N_String_Literal
+            | N_Subprogram_Body
+            | N_Subprogram_Body_Stub
+            | N_Subprogram_Declaration
+            | N_Subprogram_Renaming_Declaration
+            | N_Subtype_Declaration
+            | N_Subunit
+            | N_Task_Body
+            | N_Task_Body_Stub
+            | N_Task_Type_Declaration
+            | N_Type_Conversion
+            | N_Unchecked_Type_Conversion
+            | N_Use_Package_Clause
+            | N_Use_Type_Clause
+            | N_Validate_Unchecked_Conversion
+            | N_Variable_Reference_Marker
+            | N_With_Clause
+            => return False;
+      end case;
+   end Is_FE_Only;
 
 end VAST;

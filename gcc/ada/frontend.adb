@@ -69,7 +69,6 @@ with Sinput.L;       use Sinput.L;
 with SCIL_LL;
 with Tbuild;         use Tbuild;
 with Types;          use Types;
-with VAST;
 with Warnsw;         use Warnsw;
 
 procedure Frontend is
@@ -517,10 +516,6 @@ begin
       pragma Debug (Sem_SCIL.Check_SCIL_Nodes (Cunit (Main_Unit)));
       null;
    end if;
-
-   --  Verify the validity of the tree
-
-   VAST.VAST;
 
    --  Validate all the subprogram calls; this work will be done by VAST; in
    --  the meantime it is done to check extra formals and it can be disabled

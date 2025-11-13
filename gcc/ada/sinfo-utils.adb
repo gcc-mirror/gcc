@@ -183,6 +183,9 @@ package body Sinfo.Utils is
    --     break nnd if n = 12345
    --  and run gnat1 again from the beginning.
 
+   --  NOTE WELL: Make sure gdb is in Ada mode, because "n = 12345" is always
+   --  true in C mode.
+
    --  The other way is to set a breakpoint near the beginning (e.g. on
    --  gnat1drv), and run. Then set Watch_Node (nickname "ww") to 12345 in gdb:
    --     ww := 12345

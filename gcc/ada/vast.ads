@@ -28,6 +28,6 @@
 
 package VAST is
 
-   procedure VAST;
+   procedure VAST_If_Enabled;
 
 end VAST;

@@ -83,6 +83,7 @@ with Uname;          use Uname;
 with Urealp;
 with Usage;
 with Validsw;        use Validsw;
+with VAST;
 with Warnsw;         use Warnsw;
 
 with System.Assertions;
@@ -1450,6 +1451,10 @@ begin
             goto End_Of_Program;
          end if;
       end if;
+
+      --  Verify the validity of the tree (if enabled)
+
+      VAST.VAST_If_Enabled;
 
       --  In -gnatc mode we only do annotation if -gnatR is also set, or if
       --  -gnatwz is enabled (default setting) and there is an unchecked
