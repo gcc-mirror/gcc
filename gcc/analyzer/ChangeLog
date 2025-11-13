@@ -1,3 +1,8 @@
+2025-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* program-state.cc (log_set_of_svalues):  Avoid -Wformat-security
+	warning when logging name.
+
 2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR other/122243

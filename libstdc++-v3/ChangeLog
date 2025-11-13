@@ -1,3 +1,52 @@
+2025-11-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122425
+	* include/std/optional
+	(ranges::enable_borrowed_range<optional<_Tp&>>): Define.
+	* testsuite/20_util/optional/range.cc: Update tests.
+
+2025-11-12  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122396
+	* include/std/optional (__optional_ref_base): Define.
+	(std::optional<_Tp&>): Inherit from __optional_ref_base<_Tp>.
+	(optional<_Tp&>::iterator): Move to base class.
+	(optional<_Tp&>::begin, optional<_Tp&>::end): Use deduced return
+	type and constrain accordingly.
+	* testsuite/20_util/optional/range.cc: Add test for optional<T&>.
+
+2025-11-12  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/18_support/exception_ptr/62258.cc: Use
+	-Wno-deprecated-declarations instead of -Wno-deprecated.
+	* testsuite/18_support/uncaught_exception/14026.cc
+	* testsuite/20_util/headers/functional/synopsis.cc
+	* testsuite/20_util/is_literal_type/requirements/explicit_instantiation.cc
+	* testsuite/20_util/is_literal_type/requirements/typedefs.cc
+	* testsuite/20_util/is_literal_type/value.cc
+	* testsuite/20_util/is_pod/requirements/explicit_instantiation.cc
+	* testsuite/20_util/is_pod/requirements/typedefs.cc
+	* testsuite/20_util/is_pod/value.cc
+	* testsuite/20_util/shared_ptr/assign/auto_ptr.cc
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_neg.cc
+	* testsuite/20_util/shared_ptr/assign/auto_ptr_rvalue.cc
+	* testsuite/20_util/shared_ptr/atomic/1.cc
+	* testsuite/20_util/shared_ptr/atomic/2.cc
+	* testsuite/20_util/shared_ptr/atomic/3.cc
+	* testsuite/20_util/shared_ptr/cons/43820_neg.cc
+	* testsuite/20_util/shared_ptr/cons/auto_ptr.cc
+	* testsuite/20_util/shared_ptr/cons/auto_ptr_neg.cc
+	* testsuite/20_util/shared_ptr/creation/dr925.cc
+	* testsuite/20_util/unique_ptr/cons/auto_ptr.cc
+	* testsuite/20_util/unique_ptr/cons/auto_ptr_neg.cc
+	* testsuite/20_util/variable_templates_for_traits.cc
+	* testsuite/29_atomics/atomic/lwg3220.cc
+	* testsuite/experimental/type_traits/value.cc: Likewise.
+
+2025-11-12  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/lib/prune.exp: Sync with gcc prune.exp.
+
 2025-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* libsupc++/compare: Implement final wording of C++26 P3778R0 - Fix

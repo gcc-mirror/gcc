@@ -1,3 +1,16 @@
+2025-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/96255
+	* match.cc (apply_typespec_to_iterator): Call gfc_set_sym_referenced
+	for both new and shadow iterator symbols.
+
+2025-11-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/119677
+	* intrinsic.texi (OpenMP Modules): Add omp_default_device.
+	* openmp.cc (gfc_resolve_omp_context_selector): Accept
+	omp_default_device as conforming device number.
+
 2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/96255

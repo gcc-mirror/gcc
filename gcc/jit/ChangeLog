@@ -1,3 +1,9 @@
+2025-11-12  Antoni Boucher  <bouanto@zoho.com>
+
+	* jit-playback.cc: Support new function attributes.
+	* jit-recording.cc: Support new function attributes.
+	* libgccjit.h: Support new function attributes.
+
 2025-10-26  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* jit-recording.cc (recording::array_type::make_debug_string,

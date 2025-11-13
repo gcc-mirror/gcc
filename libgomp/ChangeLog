@@ -1,3 +1,32 @@
+2025-11-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/119677
+	* testsuite/libgomp.c-c++-common/target-is-accessible-1.c: Modify
+	test as -5 is now a conforming device number.
+	* testsuite/libgomp.fortran/target-is-accessible-1.f90: Likewise.
+
+2025-11-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Add TR14.
+
+2025-11-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR libgomp/119677
+	* omp.h.in (omp_default_device): New enum value.
+	* omp_lib.f90.in: New parameter.
+	* omp_lib.h.in: Likewise
+	* target.c (gomp_get_default_device): New. Split off from ...
+	(resolve_device): ... here; call it.
+	(omp_target_alloc, omp_target_free, omp_target_is_present,
+	omp_target_memcpy_check, omp_target_memset, omp_target_memset_async,
+	omp_target_associate_ptr, omp_get_mapped_ptr,
+	omp_target_is_accessible, omp_pause_resource,
+	omp_get_uid_from_device): Handle omp_default_device.
+	* testsuite/libgomp.c/device_uid.c: Likewise.
+	* testsuite/libgomp.fortran/device_uid.f90: Likewise.
+	* testsuite/libgomp.c-c++-common/omp-default-device.c: New test.
+	* testsuite/libgomp.fortran/omp-default-device.f90: New test.
+
 2025-11-05  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.c++/target-std__multimap-concurrent.C: Fix memory

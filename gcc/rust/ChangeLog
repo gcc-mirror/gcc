@@ -1,3 +1,14 @@
+2025-11-12  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* ast/rust-fmt.h: Simplify diagnostic avoidance.
+
+2025-11-12  Arthur Cohen  <arthur.cohen@embecosm.com>
+	    Thomas Schwinge  <tschwinge@gcc.gnu.org>
+
+	PR rust/122498
+	* ast/rust-fmt.h: Add -Warray-bounds pragma to avoid the issue during
+	bootstraps
+
 2025-10-30  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* ast/rust-ast-pointer-visitor.cc (PointerVisitor::visit):

@@ -1,3 +1,99 @@
+2025-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR diagnostics/115970
+	* diagnostics/sarif-sink.cc (maybe_open_sarif_sink_for_socket):
+	Add "%m" to error messages, so that we print the string form of
+	errno.
+
+2025-11-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* diagnostics/sarif-sink.cc (class unique_fd): New.
+	(sarif_socket_sink::sarif_socket_sink): Convert "fd" arg and m_fd
+	from int to unique_fd.
+	(~sarif_socket_sink): Drop.
+	(sarif_socket_sink::dump_kind): Update for m_fd becoming a
+	unique_fd.
+	(sarif_socket_sink::m_fd): Convert from "int" to "unique_fd".
+	(maybe_open_sarif_sink_for_socket): Likewise for "sfd".
+
+2025-11-12  Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add ampere1c.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document the above.
+
+2025-11-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/i386/i386.opt.urls: Regenerate.
+	* config/s390/s390.opt.urls: Ditto.
+	* doc/invoke.texi: Add documentation for
+	-mstack-protector-guard= and -mstack-protector-guard-record.
+
+2025-11-12  Arsen Arsenović  <arsen@aarsen.me>
+
+	* doc/invoke.texi (Diagnostic Message Formatting Options): Add
+	index entries for SARIF and HTML output formats.
+
+2025-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122653
+	* tree-scalar-evolution.cc (interpret_rhs_expr): Handle
+	POINTER_DIFF_EXPR.
+
+2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+	    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122175
+	* config/arm/iterators.md (asm_const_size): New mode attr.
+	* config/arm/mve.md (@mve_<mve_insn>q_n_<supf><mode>): Use it.
+
+2025-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/122539
+	* config/arm/arm.cc (comp_not_to_clear_mask_str_un): Skip partial
+	register clearing logic for FP_REGS.
+	(compute_not_to_clear_mask): Likewise.
+
+2025-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/122539
+	* config/arm/arm.cc (comp_not_to_clear_mask_str_un): Update
+	not_to_clear_reg_mask for union members.
+
+2025-11-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-opts.h (enum stack_protector_guard): Define
+	SP_TLS and SP_GLOBAL.
+	* config/s390/s390.h (TARGET_SP_GLOBAL_GUARD): Define predicate.
+	(TARGET_SP_TLS_GUARD): Define predicate.
+	* config/s390/s390.md (stack_protect_global_guard_addr<mode>):
+	New insn.
+	(stack_protect_set): Also deal with a global guard.
+	(stack_protect_test): Also deal with a global guard.
+	* config/s390/s390.opt (-mstack-protector-guard={global,tls}):
+	New option.
+	(-mstack-protector-guard-record) New option.
+
+2025-11-12  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122647
+	* tree-vect-stmts.cc (vectorizable_conversion): Fix guard on
+	bool to non-bool conversion.
+	* tree-vect-patterns.cc (vect_recog_bool_pattern): Also handle
+	FLOAT_EXPR from bool.
+
+2025-11-12  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/andes-25-series.md: New file.
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add andes-25-series.
+	(RISCV_CORE): Add Andes 25-series cpu list.
+	* config/riscv/riscv-opts.h
+	(enum riscv_microarchitecture_type): Add andes_25_series_.
+	* config/riscv/riscv.cc: Add andes_25_tune_info.
+	* config/riscv/riscv.md: Add andes_25.
+	* doc/riscv-mcpu.texi: Regenerated for Andes cpu list.
+	* doc/riscv-mtune.texi: Regenerated for andes-25-series.
+
 2025-11-11  Andrew Stubbs  <ams@baylibre.com>
 
 	* config/gcn/mkoffload.cc (process_asm): Replace "configure_stack_size"
