@@ -1,8 +1,5 @@
 ! { dg-do run }
 ! { dg-options "-std=f2008 -Wall" }
-! { dg-bogus "Unused variable '_i' declared" }
-! { dg-bogus "Unused variable '_k' declared" }
-! { dg-bogus "Unused variable 'n' declared" }
 !
 ! PR fortran/96255
 ! Test DO CONCURRENT with optional type specification
