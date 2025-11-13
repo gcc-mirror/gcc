@@ -3966,6 +3966,11 @@ final_value_replacement_loop (class loop *loop)
       gimple_seq stmts;
       def = force_gimple_operand (def, &stmts, false, NULL_TREE);
 
+      /* Propagate constants immediately, but leave an unused initialization
+	 around to avoid invalidating the SCEV cache.  */
+      if (CONSTANT_CLASS_P (def) && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rslt))
+	replace_uses_by (rslt, def);
+
       /* Remove the old phi after the gimplification to make sure the
 	 SSA name is defined by a statement so that fold_stmt during
 	 the gimplification does not crash. */
@@ -3973,11 +3978,6 @@ final_value_replacement_loop (class loop *loop)
       gassign *ass = gimple_build_assign (rslt, def);
       gimple_set_location (ass, loc);
       gimple_seq_add_stmt (&stmts, ass);
-
-      /* Propagate constants immediately, but leave an unused initialization
-	 around to avoid invalidating the SCEV cache.  */
-      if (CONSTANT_CLASS_P (def) && !SSA_NAME_OCCURS_IN_ABNORMAL_PHI (rslt))
-	replace_uses_by (rslt, def);
 
       /* If def's type has undefined overflow and there were folded
 	 casts, rewrite all stmts added for def into arithmetics
