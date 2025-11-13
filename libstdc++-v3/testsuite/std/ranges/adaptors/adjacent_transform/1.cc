@@ -113,6 +113,47 @@ test04()
   static_assert( requires { x | views::pairwise_transform(move_only{}); } );
 }
 
+template<size_t FuncSize, typename Fn>
+void
+test05(Fn f)
+{
+  int x[] = {1,2,3,4,5,6};
+  auto v = x | views::pairwise_transform(f);
+  static_assert(sizeof(v.begin()) == 2*sizeof(int*) + FuncSize);
+}
+
+void
+test05all()
+{
+  test05<0>(std::equal_to<>());
+  test05<0>(std::equal_to<>());
+  test05<0>(std::not_equal_to<>());
+  test05<0>(std::greater<>());
+  test05<0>(std::less<>());
+  test05<0>(std::greater_equal<>());
+  test05<0>(std::less_equal<>());
+
+  test05<0>(std::ranges::equal_to());
+  test05<0>(std::ranges::not_equal_to());
+  test05<0>(std::ranges::greater());
+  test05<0>(std::ranges::less());
+  test05<0>(std::ranges::greater_equal());
+  test05<0>(std::ranges::less_equal());
+
+  test05<0>(std::plus<>());
+  test05<0>(std::minus<>());
+  test05<0>(std::multiplies<>());
+  test05<0>(std::divides<>());
+  test05<0>(std::modulus<>());
+
+  test05<0>(std::logical_and<>());
+  test05<0>(std::logical_or<>());
+
+  test05<0>(std::bit_and<>());
+  test05<0>(std::bit_or<>());
+  test05<0>(std::bit_xor<>());
+}
+
 int
 main()
 {

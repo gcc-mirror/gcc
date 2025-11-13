@@ -286,6 +286,185 @@ namespace ranges
 	operator->() const noexcept
 	{ return std::__addressof(_M_value); }
       };
+
+      template<template<typename> class>
+	constexpr bool __is_std_op_template = false;
+
+      template<>
+	inline constexpr bool __is_std_op_template<std::equal_to> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::not_equal_to> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::greater> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::less> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::greater_equal> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::less_equal> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::plus> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::minus> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::multiplies> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::divides> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::modulus> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::negate> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::logical_and> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::logical_or> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::logical_not> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::bit_and> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::bit_or> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::bit_xor> = true;
+      template<>
+	inline constexpr bool __is_std_op_template<std::bit_not> = true;
+
+
+      template<typename _Fn>
+	constexpr bool __is_std_op_wrapper = false;
+
+      template<template<typename> class _Ft, typename _Tp>
+	constexpr bool __is_std_op_wrapper<_Ft<_Tp>>
+	  = __is_std_op_template<_Ft>;
+
+      namespace __func_handle
+      {
+	template<typename _Fn>
+	  struct _Inplace
+	  {
+	    _Inplace() = default;
+
+	    constexpr explicit
+	    _Inplace(_Fn __func) noexcept
+	    : _M_ptr(__func)
+	    { }
+
+	    template<typename... _Iters>
+	      constexpr decltype(auto)
+	      _M_call_deref(const _Iters&... __iters) const
+	      noexcept(noexcept(_M_ptr(*__iters...)))
+	      { return _M_ptr(*__iters...); }
+
+	    template<typename _DistType, typename... _Iters>
+	      constexpr decltype(auto)
+	      _M_call_subscript(const _DistType __n, const _Iters&... __iters) const
+	      noexcept(noexcept(_M_ptr(__iters[iter_difference_t<_Iters>(__n)]...)))
+	      { return _M_ptr(__iters[iter_difference_t<_Iters>(__n)]...); }
+
+	  private:
+	    [[no_unique_address]] _Fn _M_ptr = _Fn();
+	  };
+
+	template<typename _Fn>
+	  struct _InplaceMemPtr
+	  {
+	    _InplaceMemPtr() = default;
+
+	    constexpr explicit
+	    _InplaceMemPtr(_Fn __func) noexcept
+	    : _M_ptr(__func)
+	    {}
+
+	    template<typename... _Iters>
+	    constexpr decltype(auto)
+	      _M_call_deref(const _Iters&... __iters) const
+	      noexcept(noexcept(std::__invoke(_M_ptr, *__iters...)))
+	      { return std::__invoke(_M_ptr, *__iters...); }
+
+	    template<typename _DistType, typename... _Iters>
+	      constexpr decltype(auto)
+	      _M_call_subscript(const _DistType __n, const _Iters&... __iters) const
+	      noexcept(noexcept(std::__invoke(_M_ptr, __iters[iter_difference_t<_Iters>(__n)]...)))
+	      { return std::__invoke(_M_ptr, __iters[iter_difference_t<_Iters>(__n)]...); }
+
+	  private:
+	    _Fn _M_ptr = nullptr;
+	  };
+
+	template<typename _Fn>
+	  struct _ViaPointer
+	  {
+	    _ViaPointer() = default;
+
+	    constexpr explicit
+	    _ViaPointer(_Fn& __func) noexcept
+	    : _M_ptr(std::addressof(__func))
+	    { }
+
+	    template<typename _Un>
+	      requires (!is_const_v<_Un>) && is_same_v<const _Un, _Fn>
+	      constexpr
+	      _ViaPointer(_ViaPointer<_Un> __other) noexcept
+	      : _M_ptr(__other._M_ptr)
+	      { }
+
+	    template<typename... _Iters>
+	      constexpr decltype(auto)
+	      _M_call_deref(const _Iters&... __iters) const
+	      noexcept(noexcept((*_M_ptr)(*__iters...)))
+	      { return (*_M_ptr)(*__iters...); }
+
+	    template<typename _DistType, typename... _Iters>
+	      constexpr decltype(auto)
+	      _M_call_subscript(const _DistType __n, const _Iters&... __iters) const
+	      noexcept(noexcept((*_M_ptr)(__iters[iter_difference_t<_Iters>(__n)]...)))
+	      { return (*_M_ptr)(__iters[iter_difference_t<_Iters>(__n)]...); }
+
+	  private:
+	    _Fn* _M_ptr = nullptr;
+
+	    template<typename>
+	      friend struct _ViaPointer;
+	  };
+
+	template<typename _Fn>
+	  struct _StaticCall
+	  {
+	    _StaticCall() = default;
+
+	    constexpr explicit
+	    _StaticCall(const _Fn&) noexcept
+	    {}
+
+	    template<typename... _Iters>
+	     static constexpr decltype(auto)
+	      _M_call_deref(const _Iters&... __iters)
+	      noexcept(noexcept(_Fn::operator()(*__iters...)))
+	      { return _Fn::operator()(*__iters...); }
+
+	    template<typename _DistType, typename... _Iters>
+	      static constexpr decltype(auto)
+	      _M_call_subscript(_DistType __n, const _Iters&... __iters)
+	      noexcept(noexcept(_Fn::operator()(__iters[iter_difference_t<_Iters>(__n)]...)))
+	      { return _Fn::operator()(__iters[iter_difference_t<_Iters>(__n)]...); }
+	  };
+      } // __func_handle
+
+      template<typename _Fn, typename... _Iters>
+	using __func_handle_t = decltype([] {
+	  using _Fd = remove_cv_t<_Fn>;
+	  if constexpr (is_member_pointer_v<_Fd>)
+	    return __func_handle::_InplaceMemPtr<_Fd>();
+	  else if constexpr (is_function_v<remove_pointer_t<_Fd>>)
+	    return __func_handle::_Inplace<_Fd>();
+	  else if constexpr (__is_std_op_wrapper<_Fd>)
+	    return __func_handle::_Inplace<_Fd>();
+	  else if constexpr (requires (const _Iters&... __iters)
+			       { _Fd::operator()(*__iters...); })
+	    return __func_handle::_StaticCall<_Fd>();
+	  else
+	    return __func_handle::_ViaPointer<_Fn>();
+	}());
   } // namespace __detail
 
   /// A view that contains exactly one element.
@@ -1874,6 +2053,10 @@ namespace views::__adaptor
 	private:
 	  using _Parent = __detail::__maybe_const_t<_Const, transform_view>;
 	  using _Base = transform_view::_Base<_Const>;
+	  using _Base_iter = iterator_t<_Base>;
+	  using _Func_handle = __detail::__func_handle_t<
+				 __detail::__maybe_const_t<_Const, _Fp>,
+				 _Base_iter>;
 
 	  static auto
 	  _S_iter_concept()
@@ -1888,10 +2071,8 @@ namespace views::__adaptor
 	      return input_iterator_tag{};
 	  }
 
-	  using _Base_iter = iterator_t<_Base>;
-
 	  _Base_iter _M_current = _Base_iter();
-	  _Parent* _M_parent = nullptr;
+	  [[no_unique_address]] _Func_handle _M_fun;
 
 	public:
 	  using iterator_concept = decltype(_S_iter_concept());
@@ -1904,16 +2085,20 @@ namespace views::__adaptor
 	  _Iterator() requires default_initializable<_Base_iter> = default;
 
 	  constexpr
-	  _Iterator(_Parent* __parent, _Base_iter __current)
-	    : _M_current(std::move(__current)),
-	      _M_parent(__parent)
+	  _Iterator(_Func_handle __fun, _Base_iter __current)
+	    : _M_current(std::move(__current)), _M_fun(__fun)
 	  { }
+
+	  constexpr
+	  _Iterator(_Parent* __parent, _Base_iter __current)
+	    : _M_current(std::move(__current)), _M_fun(*__parent->_M_fun)
+	  {}
 
 	  constexpr
 	  _Iterator(_Iterator<!_Const> __i)
 	    requires _Const
 	      && convertible_to<iterator_t<_Vp>, _Base_iter>
-	    : _M_current(std::move(__i._M_current)), _M_parent(__i._M_parent)
+	    : _M_current(std::move(__i._M_current)), _M_fun(__i._M_fun)
 	  { }
 
 	  constexpr const _Base_iter&
@@ -1926,8 +2111,8 @@ namespace views::__adaptor
 
 	  constexpr decltype(auto)
 	  operator*() const
-	    noexcept(noexcept(std::__invoke(*_M_parent->_M_fun, *_M_current)))
-	  { return std::__invoke(*_M_parent->_M_fun, *_M_current); }
+	    noexcept(noexcept(_M_fun._M_call_deref(_M_current)))
+	  { return _M_fun._M_call_deref(_M_current); }
 
 	  constexpr _Iterator&
 	  operator++()
@@ -1980,7 +2165,7 @@ namespace views::__adaptor
 	  constexpr decltype(auto)
 	  operator[](difference_type __n) const
 	    requires random_access_range<_Base>
-	  { return std::__invoke(*_M_parent->_M_fun, _M_current[__n]); }
+	  { return _M_fun._M_call_subscript(__n, _M_current); }
 
 	  friend constexpr bool
 	  operator==(const _Iterator& __x, const _Iterator& __y)
@@ -2018,17 +2203,17 @@ namespace views::__adaptor
 	  friend constexpr _Iterator
 	  operator+(_Iterator __i, difference_type __n)
 	    requires random_access_range<_Base>
-	  { return {__i._M_parent, __i._M_current + __n}; }
+	  { return {__i._M_fun, __i._M_current + __n}; }
 
 	  friend constexpr _Iterator
 	  operator+(difference_type __n, _Iterator __i)
 	    requires random_access_range<_Base>
-	  { return {__i._M_parent, __i._M_current + __n}; }
+	  { return {__i._M_fun, __i._M_current + __n}; }
 
 	  friend constexpr _Iterator
 	  operator-(_Iterator __i, difference_type __n)
 	    requires random_access_range<_Base>
-	  { return {__i._M_parent, __i._M_current - __n}; }
+	  { return {__i._M_fun, __i._M_current - __n}; }
 
 	  // _GLIBCXX_RESOLVE_LIB_DEFECTS
 	  // 3483. transform_view::iterator's difference is overconstrained
@@ -5126,13 +5311,21 @@ namespace views::__adaptor
   class zip_transform_view<_Fp, _Vs...>::_Iterator : public __iter_cat<_Const>
   {
     using _Parent = __detail::__maybe_const_t<_Const, zip_transform_view>;
+    using _Fun_handle = __detail::__func_handle_t<
+			  __detail::__maybe_const_t<_Const, _Fp>,
+			  iterator_t<__detail::__maybe_const_t<_Const, _Vs>>...>;
 
-    _Parent* _M_parent = nullptr;
+    [[no_unique_address]] _Fun_handle _M_fun;
     __ziperator<_Const> _M_inner;
 
     constexpr
+    _Iterator(_Fun_handle __fun, __ziperator<_Const> __inner)
+      : _M_fun(__fun), _M_inner(std::move(__inner))
+    { }
+
+    constexpr
     _Iterator(_Parent& __parent, __ziperator<_Const> __inner)
-      : _M_parent(std::__addressof(__parent)), _M_inner(std::move(__inner))
+      : _M_fun(*__parent._M_fun), _M_inner(std::move(__inner))
     { }
 
     friend class zip_transform_view;
@@ -5150,14 +5343,14 @@ namespace views::__adaptor
     constexpr
     _Iterator(_Iterator<!_Const> __i)
       requires _Const && convertible_to<__ziperator<false>, __ziperator<_Const>>
-      : _M_parent(__i._M_parent), _M_inner(std::move(__i._M_inner))
+      : _M_fun(__i._M_fun), _M_inner(std::move(__i._M_inner))
     { }
 
     constexpr decltype(auto)
     operator*() const
     {
       return std::apply([&](const auto&... __iters) -> decltype(auto) {
-        return std::__invoke(*_M_parent->_M_fun, *__iters...);
+	return _M_fun._M_call_deref(__iters...);
       }, _M_inner._M_current);
     }
 
@@ -5213,7 +5406,7 @@ namespace views::__adaptor
     operator[](difference_type __n) const requires random_access_range<_Base<_Const>>
     {
       return std::apply([&]<typename... _Is>(const _Is&... __iters) -> decltype(auto) {
-        return std::__invoke(*_M_parent->_M_fun, __iters[iter_difference_t<_Is>(__n)]...);
+	return _M_fun._M_call_subscript(__n, __iters...);
       }, _M_inner._M_current);
     }
 
@@ -5230,17 +5423,17 @@ namespace views::__adaptor
     friend constexpr _Iterator
     operator+(const _Iterator& __i, difference_type __n)
       requires random_access_range<_Base<_Const>>
-    { return _Iterator(*__i._M_parent, __i._M_inner + __n); }
+    { return _Iterator(__i._M_fun, __i._M_inner + __n); }
 
     friend constexpr _Iterator
     operator+(difference_type __n, const _Iterator& __i)
       requires random_access_range<_Base<_Const>>
-    { return _Iterator(*__i._M_parent, __i._M_inner + __n); }
+    { return _Iterator(__i._M_fun, __i._M_inner + __n); }
 
     friend constexpr _Iterator
     operator-(const _Iterator& __i, difference_type __n)
       requires random_access_range<_Base<_Const>>
-    { return _Iterator(*__i._M_parent, __i._M_inner - __n); }
+    { return _Iterator(__i._M_fun, __i._M_inner - __n); }
 
     friend constexpr difference_type
     operator-(const _Iterator& __x, const _Iterator& __y)
@@ -5807,13 +6000,23 @@ namespace views::__adaptor
   {
     using _Parent = __detail::__maybe_const_t<_Const, adjacent_transform_view>;
     using _Base = __detail::__maybe_const_t<_Const, _Vp>;
+    using _Fun_handle = decltype([]<size_t... _Ids>(std::index_sequence<_Ids...>) {
+			   return __detail::__func_handle_t<
+				    __detail::__maybe_const_t<_Const, _Fp>,
+				    iterator_t<__detail::__maybe_const_t<(_Ids, _Const), _Vp>>...>();
+			}(make_index_sequence<_Nm>()));
 
-    _Parent* _M_parent = nullptr;
+    [[no_unique_address]] _Fun_handle _M_fun;
     _InnerIter<_Const> _M_inner;
 
     constexpr
+    _Iterator(_Fun_handle __fun, _InnerIter<_Const> __inner)
+      : _M_fun(__fun), _M_inner(std::move(__inner))
+    { }
+
+    constexpr
     _Iterator(_Parent& __parent, _InnerIter<_Const> __inner)
-      : _M_parent(std::__addressof(__parent)), _M_inner(std::move(__inner))
+      : _M_fun(*__parent._M_fun), _M_inner(std::move(__inner))
     { }
 
     static auto
@@ -5854,14 +6057,14 @@ namespace views::__adaptor
     constexpr
     _Iterator(_Iterator<!_Const> __i)
       requires _Const && convertible_to<_InnerIter<false>, _InnerIter<_Const>>
-      : _M_parent(__i._M_parent), _M_inner(std::move(__i._M_inner))
+      : _M_fun(__i._M_fun), _M_inner(std::move(__i._M_inner))
     { }
 
     constexpr decltype(auto)
     operator*() const
     {
       return std::apply([&](const auto&... __iters) -> decltype(auto) {
-        return std::__invoke(*_M_parent->_M_fun, *__iters...);
+	return _M_fun._M_call_deref(__iters...);
       }, _M_inner._M_current);
     }
 
@@ -5913,7 +6116,7 @@ namespace views::__adaptor
     operator[](difference_type __n) const requires random_access_range<_Base>
     {
       return std::apply([&](const auto&... __iters) -> decltype(auto) {
-        return std::__invoke(*_M_parent->_M_fun, __iters[__n]...);
+	return _M_fun._M_call_subscript(__n, __iters...);
       }, _M_inner._M_current);
     }
 
@@ -5950,17 +6153,17 @@ namespace views::__adaptor
     friend constexpr _Iterator
     operator+(const _Iterator& __i, difference_type __n)
       requires random_access_range<_Base>
-    { return _Iterator(*__i._M_parent, __i._M_inner + __n); }
+    { return _Iterator(__i._M_fun, __i._M_inner + __n); }
 
     friend constexpr _Iterator
     operator+(difference_type __n, const _Iterator& __i)
       requires random_access_range<_Base>
-    { return _Iterator(*__i._M_parent, __i._M_inner + __n); }
+    { return _Iterator(__i._M_fun, __i._M_inner + __n); }
 
     friend constexpr _Iterator
     operator-(const _Iterator& __i, difference_type __n)
       requires random_access_range<_Base>
-    { return _Iterator(*__i._M_parent, __i._M_inner - __n); }
+    { return _Iterator(__i._M_fun, __i._M_inner - __n); }
 
     friend constexpr difference_type
     operator-(const _Iterator& __x, const _Iterator& __y)
