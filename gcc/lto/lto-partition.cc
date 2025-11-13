@@ -548,8 +548,8 @@ split_partition_into_nodes (ltrans_partition part)
       toplevel_node *node = lsei_node (lsei);
 
       symtab_node *snode = dyn_cast <symtab_node*> (node);
-      if (snode->get_partitioning_class () != SYMBOL_PARTITION
-	  || symbol_partitioned_p (snode))
+      if (snode && (snode->get_partitioning_class () != SYMBOL_PARTITION
+		    || symbol_partitioned_p (snode)))
 	continue;
 
       ltrans_partition new_part = new_partition_no_push (part->name);
