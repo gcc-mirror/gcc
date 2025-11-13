@@ -2669,7 +2669,7 @@ additional @option{-fcf-protection} option.
 
 @item --enable-x86-64-mfentry
 @itemx --disable-x86-64-mfentry
-Enable @option {-mfentry} by default on x86-64 to put the profiling
+Enable @option{-mfentry} by default on x86-64 to put the profiling
 counter call, @code{__fentry__}, before the prologue so that @option{-pg}
 can be used with @option{-fshrink-wrap} which is enabled at @option{-O1}.
 This configure option is 64-bit only because @code{__fentry__} doesn't

@@ -15546,7 +15546,7 @@ Fortran 2008 and later
 @node UINT
 @section @code{UINT} -- Convert to @code{UNSIGNED} type
 @fnindex UINT
-@cindex, conversion, to unsigned
+@cindex conversion, to unsigned
 
 @table @asis
 @item @emph{Synopsis}:

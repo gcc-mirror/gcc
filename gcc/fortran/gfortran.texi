@@ -1839,7 +1839,7 @@ in free form; and the @code{c$}, @code{*$} and @code{!$} sentinels
 in fixed form, @command{gfortran} needs to be invoked with the
 @option{-fopenmp} option.  This option also arranges for automatic linking
 of the OpenMP runtime library.
-@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+@xref{Top,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
 
 The OpenMP Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{omp_lib} and in a form of
@@ -1900,7 +1900,7 @@ sentinels in free form; and the @code{c$}, @code{*$} and @code{!$}
 sentinels in fixed form, @command{gfortran} needs to be invoked with
 the @option{-fopenacc} option.  This option also arranges for automatic
 linking of the OpenACC runtime library.
-@xref{,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
+@xref{Top,,,libgomp,GNU Offloading and Multi Processing Runtime Library}.
 
 The OpenACC Fortran runtime library routines are provided both in a
 form of a Fortran 90 module named @code{openacc} and in a form of a
