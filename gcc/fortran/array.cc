@@ -1644,6 +1644,12 @@ check_constructor (gfc_constructor_base ctor, bool (*check_function) (gfc_expr *
       if (!e)
 	continue;
 
+      /* Allow procedures as potential target of a procedure pointer.  */
+      if (e->expr_type == EXPR_VARIABLE
+	  && e->ts.type == BT_PROCEDURE
+	  && e->symtree->n.sym->attr.flavor == FL_PROCEDURE)
+	continue;
+
       if (e->expr_type != EXPR_ARRAY)
 	{
 	  if (!(*check_function)(e))
