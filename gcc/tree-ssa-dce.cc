@@ -2399,7 +2399,15 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
 
       gimple *t = SSA_NAME_DEF_STMT (def);
       if (gimple_has_side_effects (t))
-	continue;
+	{
+	  if (gcall *call = dyn_cast <gcall *> (t))
+	    {
+	      gimple_call_set_lhs (call, NULL_TREE);
+	      update_stmt (call);
+	      release_ssa_name (def);
+	    }
+	  continue;
+	}
 
       /* The defining statement needs to be defining only this name.
 	 ASM is the only statement that can define more than one
