@@ -61,7 +61,7 @@ help_params = {x:y for x,y in help_params.items() if not target_specific(x)}
 
 # Find section in .texi manual with parameters
 texi = ([x.strip() for x in open(args.texi_file).readlines()])
-texi = dropwhile(lambda x: 'item --param' not in x, texi)
+texi = dropwhile(lambda x: 'itemx --param' not in x, texi)
 texi = takewhile(lambda x: '@node Instrumentation Options' not in x, texi)
 texi = list(texi)[1:]
 
