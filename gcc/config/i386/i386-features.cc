@@ -4810,6 +4810,9 @@ pass_x86_cse::x86_cse (void)
       df_process_deferred_rescans ();
     }
 
+  FOR_EACH_VEC_ELT (loads, i, load)
+    delete load;
+
   df_clear_flags (DF_DEFER_INSN_RESCAN);
 
   timevar_pop (TV_MACH_DEP);
