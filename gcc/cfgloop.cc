@@ -1805,9 +1805,10 @@ single_exit (const class loop *loop)
     return NULL;
 }
 
-/* Returns true when BB has an incoming edge exiting LOOP.  */
+/* Returns incoming edge when BB has an incoming edge exiting LOOP, else return
+   NULL.  */
 
-bool
+edge
 loop_exits_to_bb_p (class loop *loop, basic_block bb)
 {
   edge e;
@@ -1815,14 +1816,15 @@ loop_exits_to_bb_p (class loop *loop, basic_block bb)
 
   FOR_EACH_EDGE (e, ei, bb->preds)
     if (loop_exit_edge_p (loop, e))
-      return true;
+      return e;
 
-  return false;
+  return NULL;
 }
 
-/* Returns true when BB has an outgoing edge exiting LOOP.  */
+/* Returns outgoing edge when BB has an outgoing edge exiting LOOP, else return
+   NULL.  */
 
-bool
+edge
 loop_exits_from_bb_p (class loop *loop, basic_block bb)
 {
   edge e;
@@ -1830,9 +1832,9 @@ loop_exits_from_bb_p (class loop *loop, basic_block bb)
 
   FOR_EACH_EDGE (e, ei, bb->succs)
     if (loop_exit_edge_p (loop, e))
-      return true;
+      return e;
 
-  return false;
+  return NULL;
 }
 
 /* Return location corresponding to the loop control condition if possible.  */
