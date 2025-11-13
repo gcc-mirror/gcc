@@ -3534,9 +3534,10 @@ gcov-tool$(exeext): $(GCOV_TOOL_OBJS) $(LIBDEPS)
 stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(T_STDINT_GCC_H) $(USER_H) fixinc_list
 # Copy in the headers provided with gcc.
 #
-# The sed command gets just the last file name component;
-# this is necessary because VPATH could add a dirname.
-# Using basename would be simpler, but some systems don't have it.
+# If the sequence /././ appears somewhere after srcdir in a USER_H
+# name, install the header with the name after the marker, even if
+# that name involves subdirectories.  Otherwise, install it as the
+# basename (but some systems don't have the basename program).
 #
 # The touch command is here to workaround an AIX/Linux NFS bug.
 #
@@ -3547,10 +3548,20 @@ stmp-int-hdrs: $(STMP_FIXINC) $(T_GLIMITS_H) $(T_STDINT_GCC_H) $(USER_H) fixinc_
 	-if [ -d include-fixed ] ; then true; else mkdir include-fixed; chmod a+rx include-fixed; fi
 	for file in .. $(USER_H); do \
 	  if [ X$$file != X.. ]; then \
-	    realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`; \
+	    case $$file in \
+	      "$(srcdir)"*/././*) \
+		realfile=`echo $$file | sed -e 's|^.*/\./\./||'`; \
+		case $$realfile in \
+		  */*) \
+		    realdir=`echo $$realfile | sed -e 's|/[^/]*$$||'`; \
+		    $(install_sh) -d include/$$realdir;; \
+		esac;; \
+	      *) \
+		realfile=`echo $$file | sed -e 's|.*/\([^/]*\)$$|\1|'`;; \
+	    esac; \
 	    $(STAMP) include/$$realfile; \
 	    rm -f include/$$realfile; \
-	    cp $$file include; \
+	    cp $$file include/$$realfile; \
 	    chmod a+r include/$$realfile; \
 	  fi; \
 	done

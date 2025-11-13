@@ -1140,6 +1140,9 @@ case ${target} in
   extra_headers="${extra_headers} ../vxworks/math.h ../vxworks/complex.h"
   extra_headers="${extra_headers} ../vxworks/inttypes.h ../vxworks/setjmp.h"
 
+  # The /././ sequence marks the beginning of the install name.
+  extra_headers="${extra_headers} ../vxworks/././base/b_NULL.h"
+
   # We provide (a tailored version of) stdint.h
   tm_file="${tm_file} vxworks-stdint.h"
   use_gcc_stdint=provide
