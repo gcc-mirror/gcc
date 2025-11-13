@@ -1,3 +1,69 @@
+2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122175
+	* config/arm/iterators.md (asm_const_size): New mode attr.
+	* config/arm/mve.md (@mve_<mve_insn>q_n_<supf><mode>): Use it.
+
+2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122189
+	* config/arm/iterators.md (VxCIQ_carry, VxCIQ_M_carry, VxCQ_carry)
+	(VxCQ_M_carry): New iterators.
+	* config/arm/mve.md (get_fpscr_nzcvqc, set_fpscr_nzcvqc): Use
+	unspec instead of unspec_volatile.
+	(vadciq, vadciq_m, vadcq, vadcq_m): Use vfpcc in operation.  Use a
+	different unspec code for carry calcultation.
+	* config/arm/unspecs.md (VADCQ_U_carry, VADCQ_M_U_carry)
+	(VADCQ_S_carry, VADCQ_M_S_carry, VSBCIQ_U_carry ,VSBCIQ_S_carry
+	,VSBCIQ_M_U_carry ,VSBCIQ_M_S_carry ,VSBCQ_U_carry ,VSBCQ_S_carry
+	,VSBCQ_M_U_carry ,VSBCQ_M_S_carry ,VADCIQ_U_carry
+	,VADCIQ_M_U_carry ,VADCIQ_S_carry ,VADCIQ_M_S_carry): New unspec
+	codes.
+
+2025-11-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2025-11-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122446
+	* config/i386/amxavx512intrin.h (_tile_cvtrowps2bf16hi_internal):
+	Input register name by inline asm %c[...], and remove %% before tmm
+	from intel side.
+	(_tile_cvtrowps2bf16li_internal): Ditto.
+	* config/i386/amxbf16intrin.h (_tile_dpbf16ps_internal): Ditto
+	* config/i386/amxcomplexintrin.h (_tile_cmmimfp16ps_internal): Ditto
+	(_tile_cmmrlfp16ps_internal): Ditto
+	(_tile_cmmimfp16ps): Ditto
+	(_tile_cmmrlfp16ps): Ditto
+	* config/i386/amxfp16intrin.h (_tile_dpfp16ps_internal): Ditto
+	(_tile_dpfp16ps): Ditto
+	* config/i386/amxfp8intrin.h (_tile_dpbf8ps_internal): Ditto
+	(_tile_dpbhf8ps_internal): Ditto
+	(_tile_dphbf8ps_internal): Ditto
+	(_tile_dphf8ps_internal): Ditto
+	(_tile_dpbf8ps): Ditto
+	(_tile_dpbhf8ps): Ditto
+	(_tile_dphbf8ps): Ditto
+	(_tile_dphf8ps): Ditto
+	* config/i386/amxint8intrin.h (_tile_int8_dp_internal): Ditto
+	* config/i386/amxmovrsintrin.h (_tile_loaddrs_internal): Ditto
+	(_tile_loaddrst1_internal): Ditto
+	(_tile_loaddrs): Ditto
+	(_tile_loaddrst1): Ditto
+	* config/i386/amxtf32intrin.h (_tile_mmultf32ps_internal): Ditto
+	* config/i386/amxtileintrin.h (_tile_loadd): Ditto
+	(_tile_loadd_internal): Ditto
+	(_tile_stream_loadd): Ditto
+	(_tile_stream_loadd_internal): Ditto
+	(_tile_stored): Ditto
+	(_tile_stored_internal): Ditto
+	(_tile_zero): Ditto
+	(_tile_zero_internal): Ditto
+
 2025-11-11  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

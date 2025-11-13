@@ -1,3 +1,77 @@
+2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122175
+	* gcc.target/arm/mve/intrinsics/vbicq_m_n_s16.c: Adjust expected
+	output.
+	* gcc.target/arm/mve/intrinsics/vbicq_m_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vbicq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmvnq_m_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmvnq_m_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmvnq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmvnq_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmvnq_x_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vmvnq_x_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vorrq_m_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vorrq_m_n_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vorrq_n_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vorrq_n_u16.c: Likewise.
+
+2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+		    Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122175
+	* gcc.target/arm/mve/intrinsics/pr122175.c: New test.
+
+2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122189
+	* gcc.target/arm/mve/intrinsics/vadcq-check-carry.c: New test.
+	* gcc.target/arm/mve/intrinsics/vadcq_m_s32.c: Adjust instructions
+	order.
+	* gcc.target/arm/mve/intrinsics/vadcq_m_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vsbcq_m_u32.c: Likewise.
+	(cherry picked from commits
+	027205879733933ec991c230795da6c01ac50029 and
+	697ccadd7217316ea91ddd978ddc944e6df09522)
+
+2025-11-12  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/warn34.adb: New test.
+
+2025-11-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2025-11-12  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122446
+	* gcc.target/i386/amxbf16-asmintel-1.c: Modify dg-final to check intel
+	form.
+	* gcc.target/i386/amxcomplex-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp16-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxint8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxmovrs-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtf32-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtile-asmintel-1.c: Ditto.
+	* g++.target/i386/pr122446-1.C: New test.
+	* g++.target/i386/pr122446-amxavx512.C: Ditto.
+	* g++.target/i386/pr122446-amxbf16.C: Ditto.
+	* g++.target/i386/pr122446-amxcomplex.C: Ditto.
+	* g++.target/i386/pr122446-amxfp16.C: Ditto.
+	* g++.target/i386/pr122446-amxfp8.C: Ditto.
+	* g++.target/i386/pr122446-amxint8.C: Ditto.
+	* g++.target/i386/pr122446-amxmovrs.C: Ditto.
+	* g++.target/i386/pr122446-amxtf32.C: Ditto.
+	* g++.target/i386/pr122446-amxtile.C: Ditto.
+
 2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
 
 	Backported from master:
