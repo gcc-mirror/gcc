@@ -1830,7 +1830,7 @@ public:
     tree rhs_tuple = gimple_call_arg (f.call, 0);
     /* LMUL > 1 non-tuple vector types are not structure,
        we can't use __val[index] to set the subpart.  */
-    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (TREE_TYPE (rhs_tuple))))
+    if (!riscv_tuple_mode_p (TYPE_MODE (TREE_TYPE (rhs_tuple))))
       return NULL;
     tree index = gimple_call_arg (f.call, 1);
     tree rhs_vector = gimple_call_arg (f.call, 2);
@@ -1861,7 +1861,7 @@ public:
     if (!e.target)
       return NULL_RTX;
     rtx dest = expand_normal (CALL_EXPR_ARG (e.exp, 0));
-    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (dest)));
+    gcc_assert (riscv_vla_mode_p (GET_MODE (dest)));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 2));
     poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (src));
@@ -1884,7 +1884,7 @@ public:
     tree rhs_tuple = gimple_call_arg (f.call, 0);
     /* LMUL > 1 non-tuple vector types are not structure,
        we can't use __val[index] to get the subpart.  */
-    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (TREE_TYPE (rhs_tuple))))
+    if (!riscv_tuple_mode_p (TYPE_MODE (TREE_TYPE (rhs_tuple))))
       return NULL;
     tree index = gimple_call_arg (f.call, 1);
     tree field = tuple_type_field (TREE_TYPE (rhs_tuple));
@@ -1900,7 +1900,7 @@ public:
     if (!e.target)
       return NULL_RTX;
     rtx src = expand_normal (CALL_EXPR_ARG (e.exp, 0));
-    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (src)));
+    gcc_assert (riscv_vla_mode_p (GET_MODE (src)));
     rtx index = expand_normal (CALL_EXPR_ARG (e.exp, 1));
     poly_int64 offset = INTVAL (index) * GET_MODE_SIZE (GET_MODE (e.target));
     rtx subreg
@@ -1918,7 +1918,7 @@ public:
     tree lhs_type = TREE_TYPE (f.lhs);
     /* LMUL > 1 non-tuple vector types are not structure,
    we can't use __val[index] to set the subpart.  */
-    if (!riscv_v_ext_tuple_mode_p (TYPE_MODE (lhs_type)))
+    if (!riscv_tuple_mode_p (TYPE_MODE (lhs_type)))
       return NULL;
 
     /* Replace the call with a clobber of the result (to prevent it from
@@ -1949,7 +1949,7 @@ public:
   {
     if (!e.target)
       return NULL_RTX;
-    gcc_assert (riscv_v_ext_vector_mode_p (GET_MODE (e.target)));
+    gcc_assert (riscv_vla_mode_p (GET_MODE (e.target)));
     unsigned int nargs = call_expr_nargs (e.exp);
     for (unsigned int i = 0; i < nargs; i++)
       {

@@ -3679,7 +3679,7 @@ rvv_switcher::rvv_switcher (bool pollute_flags)
   memcpy (m_old_have_regs_of_mode, have_regs_of_mode,
 	  sizeof (have_regs_of_mode));
   for (int i = 0; i < NUM_MACHINE_MODES; ++i)
-    if (riscv_v_ext_vector_mode_p ((machine_mode) i))
+    if (riscv_vla_mode_p ((machine_mode) i))
       have_regs_of_mode[i] = true;
 
   /* Not necessary to adjust mode and register type if we don't pollute
@@ -3770,7 +3770,7 @@ register_builtin_type (vector_type_index type, tree eltype, machine_mode mode)
      Ideally, we should report error message more friendly instead of
      reporting "unknown" type. Support more friendly error message in
      the future.  */
-  if (!riscv_v_ext_vector_mode_p (mode))
+  if (!riscv_vla_mode_p (mode))
     return;
 
   tree vectype = build_vector_type_for_mode (eltype, mode);

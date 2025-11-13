@@ -67,7 +67,7 @@ imm_avl_p (machine_mode mode)
      registers.  Therefore divide the mode size by NF before checking if it is
      in range.  */
   int nf = 1;
-  if (riscv_v_ext_tuple_mode_p (mode))
+  if (riscv_tuple_mode_p (mode))
     nf = get_nf (mode);
 
   return nunits.is_constant ()
@@ -329,7 +329,7 @@ public:
     bool vls_p = false;
     if (m_vlmax_p)
       {
-	if (riscv_v_ext_vls_mode_p (vtype_mode))
+	if (riscv_vls_mode_p (vtype_mode))
 	  {
 	    /* VLS modes always set VSETVL by
 	       "vsetvl zero, rs1/imm".  */
@@ -1894,7 +1894,7 @@ legitimize_move (rtx dest, rtx *srcp)
       return true;
     }
 
-  if (riscv_v_ext_vls_mode_p (mode))
+  if (riscv_vls_mode_p (mode))
     {
       if (GET_MODE_NUNITS (mode).to_constant () <= 31)
 	{
@@ -2002,7 +2002,7 @@ get_vlmul (machine_mode mode)
   /* For VLS modes, the vlmul should be dynamically
      calculated since we need to adjust VLMUL according
      to TARGET_MIN_VLEN.  */
-  if (riscv_v_ext_vls_mode_p (mode))
+  if (riscv_vls_mode_p (mode))
     {
       int size = GET_MODE_BITSIZE (mode).to_constant ();
       int inner_size = GET_MODE_BITSIZE (GET_MODE_INNER (mode));
@@ -2063,7 +2063,7 @@ get_vlmul (machine_mode mode)
 rtx
 get_vlmax_rtx (machine_mode mode)
 {
-  gcc_assert (riscv_v_ext_vector_mode_p (mode));
+  gcc_assert (riscv_vla_mode_p (mode));
   return gen_int_mode (GET_MODE_NUNITS (mode), Pmode);
 }
 
@@ -2072,7 +2072,7 @@ unsigned int
 get_nf (machine_mode mode)
 {
   /* We don't allow non-tuple modes go through this function.  */
-  gcc_assert (riscv_v_ext_tuple_mode_p (mode));
+  gcc_assert (riscv_tuple_mode_p (mode));
   return mode_vtype_infos.nf[mode];
 }
 
@@ -2083,7 +2083,7 @@ machine_mode
 get_subpart_mode (machine_mode mode)
 {
   /* We don't allow non-tuple modes go through this function.  */
-  gcc_assert (riscv_v_ext_tuple_mode_p (mode));
+  gcc_assert (riscv_tuple_mode_p (mode));
   return mode_vtype_infos.subpart_mode[mode];
 }
 
@@ -2091,7 +2091,7 @@ get_subpart_mode (machine_mode mode)
 unsigned int
 get_ratio (machine_mode mode)
 {
-  if (riscv_v_ext_vls_mode_p (mode))
+  if (riscv_vls_mode_p (mode))
     {
       unsigned int sew = get_sew (mode);
       vlmul_type vlmul = get_vlmul (mode);
@@ -2168,11 +2168,12 @@ machine_mode
 get_mask_mode (machine_mode mode)
 {
   poly_int64 nunits = GET_MODE_NUNITS (mode);
-  if (riscv_v_ext_tuple_mode_p (mode))
+  if (riscv_tuple_mode_p (mode))
     {
       unsigned int nf = get_nf (mode);
       nunits = exact_div (nunits, nf);
     }
+
   return get_vector_mode (BImode, nunits).require ();
 }
 
@@ -2213,11 +2214,12 @@ get_vector_mode (scalar_mode inner_mode, poly_uint64 nunits)
   else
     mclass = MODE_VECTOR_INT;
   machine_mode mode;
+
   FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (inner_mode == GET_MODE_INNER (mode)
 	&& known_eq (nunits, GET_MODE_NUNITS (mode))
-	&& (riscv_v_ext_vector_mode_p (mode)
-	    || riscv_v_ext_vls_mode_p (mode)))
+	&& (riscv_vla_mode_p (mode)
+	    || riscv_vls_mode_p (mode)))
       return mode;
   return opt_machine_mode ();
 }
@@ -2234,7 +2236,7 @@ get_tuple_mode (machine_mode subpart_mode, unsigned int nf)
   FOR_EACH_MODE_IN_CLASS (mode, mclass)
     if (inner_mode == GET_MODE_INNER (mode)
 	&& known_eq (nunits, GET_MODE_NUNITS (mode))
-	&& riscv_v_ext_tuple_mode_p (mode)
+	&& riscv_tuple_mode_p (mode)
 	&& get_subpart_mode (mode) == subpart_mode)
       return mode;
   return opt_machine_mode ();
@@ -3056,11 +3058,11 @@ can_find_related_mode_p (machine_mode vector_mode, scalar_mode element_mode,
 {
   if (!autovec_use_vlmax_p ())
     return false;
-  if (riscv_v_ext_vector_mode_p (vector_mode)
+  if (riscv_vla_mode_p (vector_mode)
       && multiple_p (BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
-  if (riscv_v_ext_vls_mode_p (vector_mode)
+  if (riscv_vls_mode_p (vector_mode)
       && multiple_p ((TARGET_MIN_VLEN * TARGET_MAX_LMUL) / BITS_PER_UNIT,
 		     GET_MODE_SIZE (element_mode), nunits))
     return true;
@@ -5109,9 +5111,9 @@ expand_fold_extract_last (rtx *ops)
 bool
 cmp_lmul_le_one (machine_mode mode)
 {
-  if (riscv_v_ext_vector_mode_p (mode))
+  if (riscv_vla_mode_p (mode))
     return known_le (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
-  else if (riscv_v_ext_vls_mode_p (mode))
+  else if (riscv_vls_mode_p (mode))
     return known_le (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
   return false;
 }
@@ -5120,9 +5122,9 @@ cmp_lmul_le_one (machine_mode mode)
 bool
 cmp_lmul_gt_one (machine_mode mode)
 {
-  if (riscv_v_ext_vector_mode_p (mode))
+  if (riscv_vla_mode_p (mode))
     return known_gt (GET_MODE_SIZE (mode), BYTES_PER_RISCV_VECTOR);
-  else if (riscv_v_ext_vls_mode_p (mode))
+  else if (riscv_vls_mode_p (mode))
     return known_gt (GET_MODE_BITSIZE (mode), TARGET_MIN_VLEN);
   return false;
 }
@@ -5196,14 +5198,14 @@ cmp_lmul_gt_one (machine_mode mode)
    Then we can have the condition for VLS mode in fixed-vlmax, aka:
      PRECISION (VLSmode) < VLEN / (64 / PRECISION(VLS_inner_mode)).  */
 bool
-vls_mode_valid_p (machine_mode vls_mode, bool allow_up_to_lmul_8)
+vls_mode_valid_p (machine_mode mode, bool allow_up_to_lmul_8)
 {
   if (!TARGET_VECTOR || TARGET_XTHEADVECTOR)
     return false;
 
   if (rvv_vector_bits == RVV_VECTOR_BITS_SCALABLE)
     {
-      if (GET_MODE_CLASS (vls_mode) != MODE_VECTOR_BOOL)
+      if (GET_MODE_CLASS (mode) != MODE_VECTOR_BOOL)
 	return true;
       if (allow_up_to_lmul_8)
 	return true;
@@ -5216,16 +5218,16 @@ vls_mode_valid_p (machine_mode vls_mode, bool allow_up_to_lmul_8)
 	 with size = 128 bits, we will end up with multiple ICEs in
 	 middle-end generic codes.  */
       return !ordered_p (TARGET_MAX_LMUL * BITS_PER_RISCV_VECTOR,
-			 GET_MODE_PRECISION (vls_mode));
+			 GET_MODE_PRECISION (mode));
     }
 
   if (rvv_vector_bits == RVV_VECTOR_BITS_ZVL)
     {
-      machine_mode inner_mode = GET_MODE_INNER (vls_mode);
+      machine_mode inner_mode = GET_MODE_INNER (mode);
       int precision = GET_MODE_PRECISION (inner_mode).to_constant ();
       int min_vlmax_bitsize = TARGET_MIN_VLEN / (64 / precision);
 
-      return GET_MODE_PRECISION (vls_mode).to_constant () < min_vlmax_bitsize;
+      return GET_MODE_PRECISION (mode).to_constant () < min_vlmax_bitsize;
     }
 
   return false;

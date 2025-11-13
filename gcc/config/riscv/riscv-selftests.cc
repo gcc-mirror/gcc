@@ -258,7 +258,7 @@ run_const_vector_selftests (void)
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)
     {
-      if (riscv_v_ext_vector_mode_p (mode))
+      if (riscv_vla_mode_p (mode))
 	{
 	  for (const HOST_WIDE_INT &val : worklist)
 	    {
@@ -282,7 +282,7 @@ run_const_vector_selftests (void)
 
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_FLOAT)
     {
-      if (riscv_v_ext_vector_mode_p (mode))
+      if (riscv_vla_mode_p (mode))
 	{
 	  scalar_mode inner_mode = GET_MODE_INNER (mode);
 	  REAL_VALUE_TYPE f = REAL_VALUE_ATOF ("0.2928932", inner_mode);
@@ -303,7 +303,7 @@ run_const_vector_selftests (void)
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_BOOL)
     {
       /* Test vmset.m.  */
-      if (riscv_v_ext_vector_mode_p (mode))
+      if (riscv_vla_mode_p (mode))
 	{
 	  start_sequence ();
 	  rtx dest = gen_reg_rtx (mode);
@@ -330,7 +330,7 @@ run_broadcast_selftests (void)
 #define BROADCAST_TEST(MODE_CLASS)                                             \
   FOR_EACH_MODE_IN_CLASS (mode, MODE_VECTOR_INT)                               \
     {                                                                          \
-      if (riscv_v_ext_vector_mode_p (mode))                                    \
+      if (riscv_vla_mode_p (mode))					       \
 	{                                                                      \
 	  rtx_insn *insn;                                                      \
 	  rtx src;                                                             \

@@ -545,7 +545,7 @@ max_number_of_live_regs (loop_vec_info loop_vinfo, const basic_block bb,
     {
       machine_mode mode = TYPE_MODE (TREE_TYPE (t));
       if (!lookup_vector_type_attribute (TREE_TYPE (t))
-	  && !riscv_v_ext_vls_mode_p (mode))
+	  && !riscv_vls_mode_p (mode))
 	continue;
 
       gimple *def = SSA_NAME_DEF_STMT (t);
@@ -624,7 +624,7 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
 {
   gcc_assert (GET_MODE_BITSIZE (mode).is_constant ());
   int regno_alignment = riscv_get_v_regno_alignment (loop_vinfo->vector_mode);
-  if (riscv_v_ext_vls_mode_p (loop_vinfo->vector_mode))
+  if (riscv_vls_mode_p (loop_vinfo->vector_mode))
     return regno_alignment;
   else
     {
@@ -895,7 +895,7 @@ costs::costs (vec_info *vinfo, bool costing_for_scalar)
 {
   if (costing_for_scalar)
     m_cost_type = SCALAR_COST;
-  else if (riscv_v_ext_vector_mode_p (vinfo->vector_mode))
+  else if (riscv_vla_mode_p (vinfo->vector_mode))
     m_cost_type = VLA_VECTOR_COST;
   else
     m_cost_type = VLS_VECTOR_COST;
@@ -1043,7 +1043,7 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 			     " it has unexpected spills\n");
 	  return true;
 	}
-      else if (riscv_v_ext_vector_mode_p (other_loop_vinfo->vector_mode))
+      else if (riscv_vla_mode_p (other_loop_vinfo->vector_mode))
 	{
 	  if (LOOP_VINFO_NITERS_KNOWN_P (other_loop_vinfo))
 	    {
@@ -1137,43 +1137,43 @@ costs::adjust_stmt_cost (enum vect_cost_for_stmt kind, loop_vec_info loop,
 		  switch (group_size)
 		    {
 		    case 2:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_2;
 		      else
 			stmt_cost += costs->vls->segment_permute_2;
 		      break;
 		    case 3:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_3;
 		      else
 			stmt_cost += costs->vls->segment_permute_3;
 		      break;
 		    case 4:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_4;
 		      else
 			stmt_cost += costs->vls->segment_permute_4;
 		      break;
 		    case 5:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_5;
 		      else
 			stmt_cost += costs->vls->segment_permute_5;
 		      break;
 		    case 6:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_6;
 		      else
 			stmt_cost += costs->vls->segment_permute_6;
 		      break;
 		    case 7:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_7;
 		      else
 			stmt_cost += costs->vls->segment_permute_7;
 		      break;
 		    case 8:
-		      if (riscv_v_ext_vector_mode_p (loop->vector_mode))
+		      if (riscv_vla_mode_p (loop->vector_mode))
 			stmt_cost += costs->vla->segment_permute_8;
 		      else
 			stmt_cost += costs->vls->segment_permute_8;

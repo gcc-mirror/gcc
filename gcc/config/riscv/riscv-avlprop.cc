@@ -580,7 +580,7 @@ pass_avlprop::execute (function *fn)
 		 not all NF registers.  Therefore divide the mode size by NF
 		 to obtain the proper AVL.  */
 	      int nf = 1;
-	      if (riscv_v_ext_tuple_mode_p (vtype_mode))
+	      if (riscv_tuple_mode_p (vtype_mode))
 		nf = get_nf (vtype_mode);
 	      rtx new_avl = gen_int_mode
 	      (GET_MODE_NUNITS (vtype_mode).to_constant () / nf, Pmode);
