@@ -636,6 +636,7 @@ purge_all_uses (tree name, hash_set <tree> *killed_ssas)
   imm_use_iterator imm_iter;
   gimple *stmt;
   auto_vec <tree, 4> worklist;
+  auto_vec <gimple *, 4> kill_list;
 
   worklist.safe_push (name);
   while (!worklist.is_empty ())
@@ -664,10 +665,18 @@ purge_all_uses (tree name, hash_set <tree> *killed_ssas)
 	  if (!killed_ssas->add (lhs))
 	    {
 	      worklist.safe_push (lhs);
-	      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
-	      gsi_remove (&gsi, true);
+	      kill_list.safe_push (stmt);
 	    }
 	}
+    }
+
+  /* Remove stmts in reverse and afterwards to properly handle debug stmt
+     generation and to not interfere with immediate use iteration.  */
+  while (!kill_list.is_empty ())
+    {
+      stmt = kill_list.pop ();
+      gimple_stmt_iterator gsi = gsi_for_stmt (stmt);
+      gsi_remove (&gsi, true);
     }
 }
 
