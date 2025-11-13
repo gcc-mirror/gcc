@@ -5908,8 +5908,6 @@ package body Exp_Ch6 is
       Loc          : constant Source_Ptr := Sloc (N);
       Func_Id      : constant Entity_Id :=
                        Return_Applies_To (Return_Statement_Entity (N));
-      Is_BIP_Func  : constant Boolean   :=
-                       Is_Build_In_Place_Function (Func_Id);
       Ret_Obj_Id   : constant Entity_Id :=
                        First_Entity (Return_Statement_Entity (N));
       Ret_Obj_Decl : constant Node_Id   := Parent (Ret_Obj_Id);
@@ -6024,12 +6022,13 @@ package body Exp_Ch6 is
          --  master. But Move_Activation_Chain updates their master to be that
          --  of the caller, so they will not be terminated unless the return
          --  statement completes unsuccessfully due to exception, abort, goto,
-         --  or exit. As a formality, we test whether the function requires the
-         --  result to be built in place, though that's necessarily true for
-         --  the case of result types with task parts.
+         --  or exit. Note that we test that the function is both BIP and has
+         --  implicit task formal parameters, because not all functions whose
+         --  result type contains tasks have them (see Needs_BIP_Task_Actuals).
 
-         if Is_BIP_Func and then Has_Task (Ret_Typ) then
-
+         if Is_Build_In_Place_Function (Func_Id)
+           and then Needs_BIP_Task_Actuals (Func_Id)
+         then
             --  The return expression is an aggregate for a complex type which
             --  contains tasks. This particular case is left unexpanded since
             --  the regular expansion would insert all temporaries and
@@ -6042,7 +6041,7 @@ package body Exp_Ch6 is
             --  Do not move the activation chain if the return object does not
             --  contain tasks.
 
-            if Has_Task (Etype (Ret_Obj_Id)) then
+            if Might_Have_Tasks (Etype (Ret_Obj_Id)) then
                Append_To (Stmts, Move_Activation_Chain (Func_Id));
             end if;
          end if;
