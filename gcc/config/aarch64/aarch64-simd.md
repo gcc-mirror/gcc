@@ -9449,6 +9449,18 @@
   [(set_attr "type" "crypto_sha3")]
 )
 
+(define_insn "*eor3q<mode>4"
+  [(set (match_operand:ALLI 0 "register_operand" "=w")
+	(xor:ALLI
+	 (xor:ALLI
+	  (match_operand:ALLI 2 "register_operand" "w")
+	  (match_operand:ALLI 3 "register_operand" "w"))
+	 (match_operand:ALLI 1 "register_operand" "w")))]
+  "TARGET_SHA3 && reload_completed"
+  "eor3\\t%0.16b, %1.16b, %2.16b, %3.16b"
+  [(set_attr "type" "crypto_sha3")]
+)
+
 (define_insn "aarch64_rax1qv2di"
   [(set (match_operand:V2DI 0 "register_operand" "=w")
 	(xor:V2DI
