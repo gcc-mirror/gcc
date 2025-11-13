@@ -523,11 +523,6 @@ update_equiv (int regno)
 {
   rtx x;
 
-  /* If REGNO is beyond the length of the equivalence array structure,
-     then there's nothing to update.  */
-  if (regno >= ira_reg_equiv_len)
-    return;
-
   if ((x = ira_reg_equiv[regno].memory) != NULL_RTX)
     ira_reg_equiv[regno].memory
       = simplify_replace_fn_rtx (x, NULL_RTX, loc_equivalence_callback,
@@ -5404,6 +5399,10 @@ lra_constraints (bool first_p)
      some pseudos during elimination.  */
   lra_eliminate (false, first_p);
   auto_bitmap equiv_insn_bitmap (&reg_obstack);
+
+  /* Register elimination can create new pseudos via the addptr pattern,
+     so make sure the equivalency tables are resized appropriately.  */
+  ira_expand_reg_equiv ();
   for (i = FIRST_PSEUDO_REGISTER; i < new_regno_start; i++)
     if (lra_reg_info[i].nrefs != 0)
       {
