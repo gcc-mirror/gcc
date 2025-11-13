@@ -79,13 +79,19 @@ package System.Dwarf_Lines is
    procedure Enable_Cache (C : in out Dwarf_Context);
    --  Read symbol information to speed up Symbolic_Traceback.
 
+   type Display_Mode_Type is (Full, Subprg_Name_Only);
+   --  This type is used to configure how frames are displayed.
+   --  In Subprg_Name_Only mode, only the name of the subprogram is displayed
+   --  for a frame. In Full mode, additional information is displayed on top of
+   --  that.
+
    procedure Symbolic_Traceback
-     (Cin              : Dwarf_Context;
-      Traceback        : STE.Tracebacks_Array;
-      Suppress_Hex     : Boolean;
-      Subprg_Name_Only : Boolean;
-      Symbol_Found     : out Boolean;
-      Res              : in out System.Bounded_Strings.Bounded_String);
+     (Cin          : Dwarf_Context;
+      Traceback    : STE.Tracebacks_Array;
+      Suppress_Hex : Boolean;
+      Display_Mode : Display_Mode_Type;
+      Symbol_Found : out Boolean;
+      Res          : in out System.Bounded_Strings.Bounded_String);
    --  Generate a string for a traceback suitable for displaying to the user.
    --  If one or more symbols are found, Symbol_Found is set to True. This
    --  allows the caller to fall back to hexadecimal addresses.

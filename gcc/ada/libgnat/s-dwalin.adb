@@ -1915,7 +1915,7 @@ package body System.Dwarf_Lines is
      (Cin              : Dwarf_Context;
       Traceback        : STE.Tracebacks_Array;
       Suppress_Hex     : Boolean;
-      Subprg_Name_Only : Boolean;
+      Display_Mode     : Display_Mode_Type;
       Symbol_Found     : out Boolean;
       Res              : in out System.Bounded_Strings.Bounded_String)
    is
@@ -1954,7 +1954,7 @@ package body System.Dwarf_Lines is
 
          --  If we're not requested to suppress hex addresses, emit it now.
 
-         if not Suppress_Hex and then not Subprg_Name_Only then
+         if not Suppress_Hex and then Display_Mode = Full then
             Append_Address (Res, Addr_In_Traceback);
             Append (Res, ' ');
          end if;
@@ -2007,7 +2007,7 @@ package body System.Dwarf_Lines is
                   Append (Res, "???");
                end if;
 
-               if not Subprg_Name_Only then
+               if Display_Mode = Full then
                   Append (Res, " at ");
                   Append (Res, String (File_Name (1 .. Last)));
                   Append (Res, ':');
@@ -2023,7 +2023,7 @@ package body System.Dwarf_Lines is
                Append (Res, "???");
             end if;
 
-            if not Subprg_Name_Only then
+            if Display_Mode = Full then
                Append (Res, " at ???");
             end if;
          end if;
