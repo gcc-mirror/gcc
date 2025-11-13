@@ -6696,11 +6696,14 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 	  argse.want_pointer = 1;
 	  gfc_conv_expr (&argse, e);
 	  cond = fold_convert (TREE_TYPE (argse.expr), null_pointer_node);
-	  cond = fold_build2_loc (input_location, NE_EXPR,
-				  logical_type_node,
+	  cond = fold_build2_loc (input_location, NE_EXPR, logical_type_node,
 				  argse.expr, cond);
-	  vec_safe_push (optionalargs,
-			 fold_convert (boolean_type_node, cond));
+	  if (e->symtree->n.sym->attr.dummy)
+	    cond = fold_build2_loc (input_location, TRUTH_ANDIF_EXPR,
+				    logical_type_node,
+				    gfc_conv_expr_present (e->symtree->n.sym),
+				    cond);
+	  vec_safe_push (optionalargs, fold_convert (boolean_type_node, cond));
 	  /* Create "conditional temporary".  */
 	  conv_cond_temp (parmse, e, cond);
 	}
