@@ -1,5 +1,8 @@
 ! { dg-do run }
-! { dg-options "-std=f2008" }
+! { dg-options "-std=f2008 -Wall" }
+! { dg-bogus "Unused variable '_i' declared" }
+! { dg-bogus "Unused variable '_k' declared" }
+! { dg-bogus "Unused variable 'n' declared" }
 !
 ! PR fortran/96255
 ! Test DO CONCURRENT with optional type specification
@@ -28,8 +31,6 @@ program test_do_concurrent_typespec
   ! Test 4: Multiple iterators with mixed scenarios
   call test_multiple_iterators()
   test_count = test_count + 1
-
-  print *, "All", test_count, "tests passed"
 
 contains
 

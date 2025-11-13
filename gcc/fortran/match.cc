@@ -2630,6 +2630,7 @@ apply_typespec_to_iterator (gfc_forall_iterator *iter, gfc_typespec *ts,
       /* Variable not declared in outer scope - just set the type.  */
       v->ts.type = v->symtree->n.sym->ts.type = BT_INTEGER;
       v->ts.kind = v->symtree->n.sym->ts.kind = ts->kind;
+      gfc_set_sym_referenced (v->symtree->n.sym);
     }
   else
     {
@@ -2651,6 +2652,7 @@ apply_typespec_to_iterator (gfc_forall_iterator *iter, gfc_typespec *ts,
       v->symtree = st;
       gfc_replace_expr (iter->var, v);
       iter->shadow = true;
+      gfc_set_sym_referenced (st->n.sym);
     }
 
   /* Convert iterator bounds to the specified type.  */
