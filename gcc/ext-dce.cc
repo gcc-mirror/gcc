@@ -385,10 +385,86 @@ ext_dce_process_sets (rtx_insn *insn, rtx obj, bitmap live_tmp)
   return skipped_dest;
 }
 
-/* INSN has a sign/zero extended source inside SET that we will
-   try to turn into a SUBREG.  */
+/* INSN is a right shift and the second insn in a shift pair that is a
+   sign or zero extension (SET is the single set associated with INSN).  
+
+   Replace the source of SET with NEW_SRC which is a source register
+   from NEW_SRC_INSN (the left shift in the pair).  This is effectively
+   the same as the replacement we do for ZERO/SIGN extends on targets
+   that support those insns.  */
 static void
-ext_dce_try_optimize_insn (rtx_insn *insn, rtx set)
+ext_dce_try_optimize_rshift (rtx_insn *insn, rtx set, rtx new_src, rtx_insn *new_src_insn)
+{
+  /* If the modes are not the same or one is a hard register, then
+     conservatively do nothing.  */
+  if (GET_MODE (SET_SRC (set)) != GET_MODE (new_src)
+      || !REG_P (XEXP (SET_SRC (set), 0))
+      || !REG_P (new_src)
+      || REGNO (XEXP (SET_SRC (set), 0)) < FIRST_PSEUDO_REGISTER
+      || REGNO (new_src) < FIRST_PSEUDO_REGISTER)
+    return;
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Processing insn:\n");
+      dump_insn_slim (dump_file, insn);
+      fprintf (dump_file, "Trying to simplify pattern:\n");
+      print_rtl_single (dump_file, SET_SRC (set));
+    }
+
+  /* We decided to turn do the optimization but allow it to be rejected for
+     bisection purposes.  */
+  if (!dbg_cnt (::ext_dce))
+    {
+      if (dump_file)
+	fprintf (dump_file, "Rejected due to debug counter.\n");
+      return;
+    }
+
+  /* Replace SET_SRC (set) with NEW_SRC.  This changes the form of INSN, so
+     force rerecognition.  We also need to force DF to rescan INSN.  */
+  SET_SRC (set) = new_src;
+  INSN_CODE (insn) = -1;
+  df_insn_rescan (insn);
+
+  rtx new_pattern = PATTERN (insn);
+
+  /* Mark the destination as changed.  */
+  rtx x = SET_DEST (set);
+  while (SUBREG_P (x) || GET_CODE (x) == ZERO_EXTRACT)
+    x = XEXP (x, 0);
+  gcc_assert (REG_P (x));
+  bitmap_set_bit (changed_pseudos, REGNO (x));
+
+  if (dump_file)
+    {
+      fprintf (dump_file, "Successfully transformed to:\n");
+      print_rtl_single (dump_file, new_pattern);
+      fprintf (dump_file, "\n");
+    }
+
+  /* INSN may have a REG_EQUAL note indicating that the value was
+     sign or zero extended.  That note is no longer valid since we've
+     just removed the extension.  Just wipe the notes.  */
+  remove_reg_equal_equiv_notes (insn, false);
+
+  /* If NEW_SRC died in its prior location, then we need to remove the
+     death note and move it to the new location.  */
+  rtx note = find_regno_note (new_src_insn, REG_DEAD, REGNO (new_src));
+  if (note)
+    {
+      remove_note (new_src_insn, note);
+      add_reg_note (insn, REG_DEAD, new_src);
+    }
+}
+
+
+/* INSN has a sign/zero extended source inside SET that we will
+   try to turn into a SUBREG.  If NEW_SRC is non-null, use that
+   for the new source of INSN's set.  That scenario only happens
+   when we're optimizing a shift pair.  */
+static void
+ext_dce_try_optimize_extension (rtx_insn *insn, rtx set)
 {
   rtx src = SET_SRC (set);
   rtx inner = XEXP (src, 0);
@@ -712,7 +788,7 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		  /* DST_MASK could be zero if we had something in the SET
 		     that we couldn't handle.  */
 		  if (modify && !skipped_dest && (dst_mask & ~src_mask) == 0)
-		    ext_dce_try_optimize_insn (insn, x);
+		    ext_dce_try_optimize_extension (insn, x);
 
 		  /* Stripping the extension here just seems wrong on multiple
 		     levels.  It's source side handling, so it seems like it
@@ -723,6 +799,62 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 		  dst_mask &= src_mask;
 		  src = XEXP (src, 0);
 		  code = GET_CODE (src);
+		}
+
+	      /* Special case for (sub)targets that do not have extension
+		 insns (and thus use shifts).  We want to detect when we have
+		 a shift pair and treat the pair as-if was an extension.
+
+		 Key on the right shift and use (for now) simplistic tests
+		 to find the corresponding left shift.  */
+	      if ((code == LSHIFTRT || code == ASHIFTRT)
+		  && CONST_INT_P (XEXP (src, 1))
+		  && (INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 8
+		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 16
+		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 32))
+		{
+		  /* So we have a right shift that could correspond to
+		     the second in a pair impementing QI, HI or SI -> DI
+		     extension.  See if we can find the left shift.  For
+		     now, just look one real instruction back.  */
+		  rtx_insn *prev_insn = prev_nonnote_nondebug_insn_bb (insn);
+
+		  /* The previous insn must be a left shift by the same
+		     amount.  */
+		  rtx prev_set;
+		  if (prev_insn
+		      && (prev_set = single_set (prev_insn))
+		      /* The destination of the left shift must be the
+			 source of the right shift.  */
+		      && SET_DEST (prev_set) == XEXP (src, 0)
+		      && GET_CODE (SET_SRC (prev_set)) == ASHIFT
+		      && CONST_INT_P (XEXP (SET_SRC (prev_set), 1))
+		      /* The counts must match.  */
+		      && (INTVAL (XEXP (src, 1))
+			  == INTVAL (XEXP (SET_SRC (prev_set), 1))))
+		    {
+		      unsigned HOST_WIDE_INT src_mask = GET_MODE_BITSIZE (GET_MODE (src)).to_constant ();
+		      src_mask -= INTVAL (XEXP (src, 1));
+		      src_mask = (HOST_WIDE_INT_1U << src_mask) - 1;
+
+		      /* DST_MASK has been adjusted for INSN.  We need its original value.  */
+		      unsigned HOST_WIDE_INT tmp_mask = 0;
+		      for (int i = 0; i < 4; i++)
+			if (bitmap_bit_p (live_tmp, 4 * rn + i))
+			  tmp_mask |= mask_array[i];
+		      tmp_mask >>= bit;
+
+		      if (modify && !skipped_dest && (tmp_mask & ~src_mask) == 0)
+			{
+			  ext_dce_try_optimize_rshift (insn, x, XEXP (SET_SRC (prev_set), 0), prev_insn);
+
+			  /* These may not strictly be necessary, but we might as well try and be
+			     as accurate as possible.  The RHS is now a simple REG.  */
+			  dst_mask = src_mask;
+			  src = XEXP (SET_SRC (prev_set), 0);
+			  code = GET_CODE (src);
+			}
+		    }
 		}
 
 	      /* Optimization is done at this point.  We just want to make
