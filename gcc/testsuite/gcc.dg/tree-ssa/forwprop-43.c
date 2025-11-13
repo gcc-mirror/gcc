@@ -1,5 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -fdump-tree-forwprop1" } */
+/* { dg-require-effective-target stdint_types } */
+/* { dg-require-effective-target vect_int } */
 /* { dg-additional-options "-fgimple" } */
 
 #include <stdint.h>
