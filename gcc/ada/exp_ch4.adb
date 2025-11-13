@@ -5368,7 +5368,17 @@ package body Exp_Ch4 is
          --  When the alternative's expression involves controlled function
          --  calls, generated temporaries are chained on the corresponding
          --  list of actions. These temporaries need to be finalized after
-         --  the case expression is evaluated.
+         --  the case expression is evaluated. We first need to make them
+         --  explicit for build-in-place functions in anonymous contexts,
+         --  because calls to these do not go through Expand_Ctrl_Actions.
+
+         if Is_Build_In_Place_Function_Call (Expression (Alt))
+           and then not Optimize_Assignment_Stmt
+           and then not Optimize_Return_Stmt
+           and then not Optimize_Object_Decl
+         then
+            Make_Build_In_Place_Call_In_Anonymous_Context (Expression (Alt));
+         end if;
 
          Process_Transients_In_Expression (N, Actions (Alt));
 
@@ -6345,7 +6355,17 @@ package body Exp_Ch4 is
          --  When the "then" or "else" expressions involve controlled function
          --  calls, generated temporaries are chained on the corresponding list
          --  of actions. These temporaries need to be finalized after the if
-         --  expression is evaluated.
+         --  expression is evaluated. We first need to make them explicit for
+         --  build-in-place functions in anonymous contexts, because calls to
+         --  these do not go through Expand_Ctrl_Actions.
+
+         if Is_Build_In_Place_Function_Call (Thenx) then
+            Make_Build_In_Place_Call_In_Anonymous_Context (Thenx);
+         end if;
+
+         if Is_Build_In_Place_Function_Call (Elsex) then
+            Make_Build_In_Place_Call_In_Anonymous_Context (Elsex);
+         end if;
 
          Process_Transients_In_Expression (N, Then_Actions (N));
          Process_Transients_In_Expression (N, Else_Actions (N));
