@@ -670,7 +670,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	void
 	assign(_InputIterator __first, _InputIterator __last)
 	{
-	  typedef is_assignable<_Tp, decltype(*__first)> __assignable;
+	  typedef is_assignable<_Tp&, decltype(*__first)> __assignable;
 	  _M_assign(__first, __last, __assignable());
 	}
 
