@@ -449,6 +449,8 @@ public:
 
   LOOK_want want;  /* What kind of entity we want.  */
 
+  bool tentative;  /* The lookup is just to find additional decl-reachable
+		      entities in this TU during modules streaming.  */
   bool deduping; /* Full deduping is needed because using declarations
 		    are in play.  */
   vec<tree, va_heap, vl_embed> *scopes;
@@ -463,7 +465,7 @@ protected:
 public:
   name_lookup (tree n, LOOK_want w = LOOK_want::NORMAL)
   : name (n), value (NULL_TREE), type (NULL_TREE),
-    want (w),
+    want (w), tentative (false),
     deduping (false), scopes (NULL), previous (NULL)
   {
     preserve_state ();
@@ -601,6 +603,8 @@ name_lookup::preserve_state ()
 	      previous->scopes->quick_push (decl);
 	    }
 	}
+
+      tentative = previous->tentative;
 
       /* Unmark the outer partial lookup.  */
       if (previous->deduping)
@@ -1252,6 +1256,11 @@ name_lookup::adl_namespace_fns (tree scope, bitmap imports,
 	      add_fns (ovl_skip_hidden (MAYBE_STAT_DECL (bind)));
 	    }
 
+	  /* When doing tentative name lookup we only care about entities
+	     in the current TU.  */
+	  if (tentative)
+	    return;
+
 	  /* Scan the imported bindings.  */
 	  unsigned ix = BINDING_VECTOR_NUM_CLUSTERS (val);
 	  if (BINDING_VECTOR_SLOTS_PER_CLUSTER == BINDING_SLOTS_FIXED)
@@ -1484,7 +1493,12 @@ name_lookup::adl_class (tree type)
   if (found_p (type))
     return;
 
-  complete_type (type);
+  /* Don't instantiate if we don't have to so we don't unnecessarily error
+     on incomplete types during modules streaming.  This does however mean
+     we incorrectly miss some decl-reachable entities (PR c++/123235).  */
+  if (!tentative)
+    complete_type (type);
+
   adl_bases (type);
   mark_found (type);
 
@@ -1679,7 +1693,10 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
        first arg. */
     if (TYPE_P (arg))
       adl_type (arg);
-    else
+    /* When processing a module CMI we might get a type-dependent
+       argument: treat as a placeholder with no associated namespace
+       or entities.  */
+    else if (!tentative || !type_dependent_expression_p (arg))
       adl_expr (arg);
 
   if (vec_safe_length (scopes))
@@ -1690,10 +1707,11 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	dedup (true);
 
       /* First get the attached modules for each innermost non-inline
-	 namespace of an associated entity.  */
+	 namespace of an associated entity.  This isn't needed for
+	 tentative lookup, as we're only interested in the current TU.  */
       bitmap_obstack_initialize (NULL);
       hash_map<tree, bitmap> ns_mod_assocs;
-      if (modules_p ())
+      if (modules_p () && !tentative)
 	{
 	  for (tree scope : scopes)
 	    if (TYPE_P (scope))
@@ -1732,7 +1750,10 @@ name_lookup::search_adl (tree fns, vec<tree, va_gc> *args)
 	      adl_namespace_fns (scope, visible, inst_path,
 				 assocs ? *assocs : NULL);
 	    }
-	  else if (RECORD_OR_UNION_TYPE_P (scope))
+	  else if (RECORD_OR_UNION_TYPE_P (scope) && !tentative)
+	    /* We don't need to look at friends when searching for
+	       new decl-reachable entities as they will already be
+	       considered reachable by importers.  */
 	    adl_class_fns (scope);
 	}
 
@@ -1756,13 +1777,17 @@ static void consider_binding_level (tree name,
 
 /* ADL lookup of NAME.  FNS is the result of regular lookup, and we
    don't add duplicates to it.  ARGS is the vector of call
-   arguments (which will not be empty).  */
+   arguments (which will not be empty).  TENTATIVE is true when
+   this is early lookup only for the purpose of finding more
+   decl-reachable declarations.  */
 
 tree
-lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args)
+lookup_arg_dependent (tree name, tree fns, vec<tree, va_gc> *args,
+		      bool tentative/*=false*/)
 {
   auto_cond_timevar tv (TV_NAME_LOOKUP);
   name_lookup lookup (name);
+  lookup.tentative = tentative;
   return lookup.search_adl (fns, args);
 }
 

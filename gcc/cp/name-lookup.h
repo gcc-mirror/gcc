@@ -461,7 +461,8 @@ extern void push_decl_namespace (tree);
 extern void pop_decl_namespace (void);
 extern void do_namespace_alias (location_t, tree, tree);
 extern tree do_class_using_decl (tree, tree);
-extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *);
+extern tree lookup_arg_dependent (tree, tree, vec<tree, va_gc> *,
+				  bool tentative = false);
 extern tree search_anon_aggr (tree, tree, bool = false);
 extern tree get_class_binding_direct (tree, tree, bool want_type = false);
 extern tree get_class_binding (tree, tree, bool want_type = false);
