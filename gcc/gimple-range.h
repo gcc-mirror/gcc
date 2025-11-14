@@ -54,6 +54,7 @@ public:
   virtual bool range_on_edge (vrange &r, edge e, tree name) override;
   virtual bool range_on_entry (vrange &r, basic_block bb, tree name) override;
   virtual bool range_on_exit (vrange &r, basic_block bb, tree name) override;
+  virtual void update_range_info (tree, const vrange &) override;
   void export_global_ranges ();
   virtual void dump (FILE *f) override;
   void debug ();

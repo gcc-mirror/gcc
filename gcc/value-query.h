@@ -75,6 +75,8 @@ public:
   virtual bool range_on_entry (vrange &r, basic_block bb, tree expr);
   virtual bool range_on_exit (vrange &r, basic_block bb, tree expr);
 
+  virtual void update_range_info (tree name, const vrange &r);
+
   inline class relation_oracle &relation () const  { return *m_relation; }
   void create_relation_oracle (bool do_trans_p = true);
   void destroy_relation_oracle ();
@@ -105,7 +107,6 @@ protected:
   // This is an internal interface
   void share_query (range_query &q);
   bool m_shared_copy_p;
-
 };
 
 // Global ranges for SSA names using SSA_NAME_RANGE_INFO.

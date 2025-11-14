@@ -554,6 +554,18 @@ gimple_ranger::register_transitive_inferred_ranges (basic_block bb)
     }
 }
 
+// This is called to update ranger's concept of a global value for NAME
+// with range R by an outside entity.
+
+void
+gimple_ranger::update_range_info (tree name, const vrange &r)
+{
+  value_range current (TREE_TYPE (name));
+  m_cache.get_global_range (current, name);
+  if (current.intersect (r))
+    m_cache.set_global_range (name, current, true);
+}
+
 // This routine will export whatever global ranges are known to GCC
 // SSA_RANGE_NAME_INFO and SSA_NAME_PTR_INFO fields.
 

@@ -457,6 +457,8 @@ set_range_info (tree name, const vrange &r)
       tmp.dump (dump_file);
       fputc ('\n', dump_file);
     }
+  // Update the active query, if needed.
+  get_range_query (cfun)->update_range_info (name, r);
   return true;
 }
 

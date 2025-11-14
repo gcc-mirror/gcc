@@ -66,6 +66,12 @@ range_query::range_of_stmt (vrange &r, gimple *stmt, tree name)
   return false;
 }
 
+// Default for updating range info is to do nothing.
+void
+range_query::update_range_info (tree, const vrange &)
+{
+}
+
 // If the range of expr EXPR at STMT is a single value, return it.
 // Otherwise return NULL_TREE.
 
