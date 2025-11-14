@@ -44,6 +44,7 @@ public:
     , m_cpu_info (nullptr)
     , m_tune (nullptr)
     , m_priority (0)
+    , m_max_vect (false)
   {
   }
 
@@ -51,6 +52,7 @@ public:
   bool handle_cpu (const char *);
   bool handle_tune (const char *);
   bool handle_priority (const char *);
+  bool handle_max_vect (const char *);
 
   void update_settings (struct gcc_options *opts) const;
 private:
@@ -66,31 +68,35 @@ private:
   const  riscv_cpu_info *m_cpu_info;
   const char *m_tune;
   int m_priority;
+  bool m_max_vect;
 };
 }
 
 /* All the information needed to handle a target attribute.
    NAME is the name of the attribute.
-   HANDLER is the function that takes the attribute string as an argument.  */
+   HANDLER is the function that takes the attribute string as an argument.
+   REQUIRES_ARG indicates whether this attribute requires an argument value.  */
 
 struct riscv_attribute_info
 {
   const char *name;
   bool (riscv_target_attr_parser::*handler) (const char *);
+  bool requires_arg;
 };
 
 /* The target attributes that we support.  */
 
 static const struct riscv_attribute_info riscv_target_attrs[]
-  = {{"arch", &riscv_target_attr_parser::handle_arch},
-     {"cpu", &riscv_target_attr_parser::handle_cpu},
-     {"tune", &riscv_target_attr_parser::handle_tune},
-     {NULL, NULL}};
+  = {{"arch", &riscv_target_attr_parser::handle_arch, true},
+     {"cpu", &riscv_target_attr_parser::handle_cpu, true},
+     {"tune", &riscv_target_attr_parser::handle_tune, true},
+     {"max-vectorization", &riscv_target_attr_parser::handle_max_vect, false},
+     {NULL, NULL, false}};
 
 static const struct riscv_attribute_info riscv_target_version_attrs[]
-  = {{"arch", &riscv_target_attr_parser::handle_arch},
-     {"priority", &riscv_target_attr_parser::handle_priority},
-     {NULL, NULL}};
+  = {{"arch", &riscv_target_attr_parser::handle_arch, true},
+     {"priority", &riscv_target_attr_parser::handle_priority, true},
+     {NULL, NULL, false}};
 
 bool
 riscv_target_attr_parser::parse_arch (const char *str)
@@ -254,6 +260,17 @@ riscv_target_attr_parser::handle_priority (const char *str)
   return true;
 }
 
+/* Handle max-vectorization.  There are no further options, just
+   enable it.  */
+
+bool
+riscv_target_attr_parser::handle_max_vect (const char *str ATTRIBUTE_UNUSED)
+{
+  m_max_vect = true;
+
+  return true;
+}
+
 void
 riscv_target_attr_parser::update_settings (struct gcc_options *opts) const
 {
@@ -279,6 +296,9 @@ riscv_target_attr_parser::update_settings (struct gcc_options *opts) const
 
   if (m_priority)
     opts->x_riscv_fmv_priority = m_priority;
+
+  if (m_max_vect)
+    opts->x_riscv_max_vectorization = true;
 }
 
 /* Parse ARG_STR which contains the definition of one target attribute.
@@ -303,33 +323,50 @@ riscv_process_one_target_attr (char *arg_str,
   char *str_to_check = buf.get();
   strcpy (str_to_check, arg_str);
 
+  /* Split attribute name from argument (if present).  */
   char *arg = strchr (str_to_check, '=');
-
-  if (!arg)
+  if (arg)
     {
-      if (loc)
-	error_at (*loc, "attribute %<target(\"%s\")%> does not "
-		  "accept an argument", str_to_check);
-      return false;
+      *arg = '\0';
+      ++arg;
+      /* Check for empty argument after '='.  */
+      if (*arg == '\0')
+	{
+	  if (loc)
+	    error_at (*loc, "attribute %<target(\"%s\")%> has empty argument",
+		      str_to_check);
+	  return false;
+	}
     }
 
-  arg[0] = '\0';
-  ++arg;
-  for (const auto *attr = attrs;
-       attr->name;
-       ++attr)
+  /* Find matching attribute.  */
+  for (const auto *attr = attrs; attr->name; ++attr)
     {
-      /* If the names don't match up, or the user has given an argument
-	 to an attribute that doesn't accept one, or didn't give an argument
-	 to an attribute that expects one, fail to match.  */
-      if (strncmp (str_to_check, attr->name, strlen (attr->name)) != 0)
+      if (strcmp (str_to_check, attr->name) != 0)
 	continue;
+
+      /* Validate argument presence matches expectations.  */
+      if (attr->requires_arg && !arg)
+	{
+	  if (loc)
+	    error_at (*loc, "attribute %<target(\"%s\")%> expects "
+		      "an argument", str_to_check);
+	  return false;
+	}
+
+      if (!attr->requires_arg && arg)
+	{
+	  if (loc)
+	    error_at (*loc, "attribute %<target(\"%s\")%> does not "
+		      "accept an argument", str_to_check);
+	  return false;
+	}
 
       return (&attr_parser->*attr->handler) (arg);
     }
 
   if (loc)
-    error_at (*loc, "Got unknown attribute %<target(\"%s\")%>", str_to_check);
+    error_at (*loc, "unknown attribute %<target(\"%s\")%>", str_to_check);
   return false;
 }
 

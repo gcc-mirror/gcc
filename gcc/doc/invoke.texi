@@ -32163,6 +32163,12 @@ Do not or do generate unaligned vector memory accesses.  The default is set
 to off unless the processor we are optimizing for explicitly supports
 element-misaligned vector memory access.
 
+@item -mmax-vectorization
+@itemx -mno-max-vectorization
+Enable or disable an override to vectorizer cost model making vectorization
+always appear profitable.  Unlike @option{-fno-vect-cost-model} or
+@option{-fvect-cost-model=unlimited} this option does not turn off cost
+comparison between different vector modes.
 
 @opindex mcmodel=
 @opindex mcmodel=medlow

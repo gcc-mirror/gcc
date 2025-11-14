@@ -341,6 +341,10 @@ Target Undocumented RejectNegative Joined Enum(vsetvl_strategy) Var(vsetvl_strat
 Target Undocumented Uinteger Var(riscv_two_source_permutes) Init(0)
 -param=riscv-two-source-permutes Enable permutes with two source vectors.
 
+mmax-vectorization
+Target Var(riscv_max_vectorization) Save
+Override the scalar cost model such that vectorization is always profitable.
+
 Enum
 Name(stringop_strategy) Type(enum stringop_strategy_enum)
 Valid arguments to -mstringop-strategy=:

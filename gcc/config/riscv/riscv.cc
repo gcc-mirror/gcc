@@ -12225,6 +12225,12 @@ riscv_override_options_internal (struct gcc_options *opts)
   /* Convert -march and -mrvv-vector-bits to a chunks count.  */
   riscv_vector_chunks = riscv_convert_vector_chunks (opts);
 
+  /* Set scalar costing to a high value such that we always pick
+     vectorization.  Increase scalar costing by 100x.  */
+  if (opts->x_riscv_max_vectorization)
+    SET_OPTION_IF_UNSET (&global_options, &global_options_set,
+			 param_vect_scalar_cost_multiplier, 10000);
+
   if (opts->x_flag_cf_protection != CF_NONE)
     {
       if ((opts->x_flag_cf_protection & CF_RETURN) == CF_RETURN
