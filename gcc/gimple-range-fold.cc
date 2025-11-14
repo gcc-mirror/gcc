@@ -162,11 +162,10 @@ fur_stmt::query_relation (tree op1, tree op2)
   return m_query->relation ().query (m_stmt, op1, op2);
 }
 
-// Instantiate a stmt based fur_source with a GORI object.
+// Instantiate a stmt based fur_source with a GORI object and a ranger cache.
 
-
-fur_depend::fur_depend (gimple *s, range_query *q)
-  : fur_stmt (s, q)
+fur_depend::fur_depend (gimple *s, range_query *q, ranger_cache *c)
+  : fur_stmt (s, q), m_cache (c)
 {
   m_depend_p = true;
 }
@@ -177,6 +176,13 @@ void
 fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 {
   m_query->relation ().record (s, k, op1, op2);
+  // This new relation could cause different calculations, so mark the operands
+  // with a new timestamp, forcing recalculations.
+  if (m_cache)
+    {
+      m_cache->update_consumers (op1);
+      m_cache->update_consumers (op2);
+    }
 }
 
 // Register a relation on an edge if there is an oracle.
@@ -185,6 +191,13 @@ void
 fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
 {
   m_query->relation ().record (e, k, op1, op2);
+  // This new relation could cause different calculations, so mark the operands
+  // with a new timestamp, forcing recalculations.
+  if (m_cache)
+    {
+      m_cache->update_consumers (op1);
+      m_cache->update_consumers (op2);
+    }
 }
 
 // This version of fur_source will pick a range up from a list of ranges

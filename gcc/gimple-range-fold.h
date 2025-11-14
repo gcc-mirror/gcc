@@ -143,11 +143,13 @@ private:
 class fur_depend : public fur_stmt
 {
 public:
-  fur_depend (gimple *s, range_query *q = NULL);
+  fur_depend (gimple *s, range_query *q = NULL, class ranger_cache *c = NULL);
   virtual void register_relation (gimple *stmt, relation_kind k, tree op1,
 				  tree op2) override;
   virtual void register_relation (edge e, relation_kind k, tree op1,
 				  tree op2) override;
+private:
+  ranger_cache *m_cache;
 };
 
 

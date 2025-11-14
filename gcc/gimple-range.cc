@@ -278,7 +278,7 @@ bool
 gimple_ranger::fold_range_internal (vrange &r, gimple *s, tree name)
 {
   fold_using_range f;
-  fur_depend src (s, this);
+  fur_depend src (s, this, &m_cache);
   return f.fold_stmt (r, s, src, name);
 }
 

@@ -1108,6 +1108,15 @@ ranger_cache::get_global_range (vrange &r, tree name, bool &current_p)
   return had_global;
 }
 
+// Consumers of NAME that have already calculated values should recalculate.
+// Accomplished by updating the timestamp.
+
+void
+ranger_cache::update_consumers (tree name)
+{
+  m_temporal->set_timestamp (name);
+}
+
 //  Set the global range of NAME to R and give it a timestamp.
 
 void

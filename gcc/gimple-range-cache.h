@@ -111,6 +111,7 @@ public:
   bool get_global_range (vrange &r, tree name) const;
   bool get_global_range (vrange &r, tree name, bool &current_p);
   void set_global_range (tree name, const vrange &r, bool changed = true);
+  void update_consumers (tree name);
   range_query &const_query () { return m_globals; }
 
   void propagate_updated_value (tree name, basic_block bb);
