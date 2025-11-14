@@ -21811,17 +21811,18 @@ transfer_defining_module (tree olddecl, tree newdecl)
 	DECL_MODULE_IMPORT_P (old_inner) = false;
     }
 
-  if (tree *orig = imported_temploid_friends->get (newdecl))
+  if (tree *p = imported_temploid_friends->get (newdecl))
     {
+      tree orig = *p;
       tree &slot = imported_temploid_friends->get_or_insert (olddecl);
       if (!slot)
-	slot = *orig;
-      else if (slot != *orig)
+	slot = orig;
+      else if (slot != orig)
 	/* This can happen when multiple classes declare the same
 	   friend function (e.g. g++.dg/modules/tpl-friend-4);
 	   make sure we at least attach to the same module.  */
 	gcc_checking_assert (get_originating_module (slot)
-			     == get_originating_module (*orig));
+			     == get_originating_module (orig));
     }
 }
 
