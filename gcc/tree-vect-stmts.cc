@@ -5580,23 +5580,26 @@ vectorizable_conversion (vec_info *vinfo,
 	 truncate it to cvt_type and the do FLOAT_EXPR.  */
       else if (code == FLOAT_EXPR)
 	{
-	  wide_int op_min_value, op_max_value;
-	  tree def;
-	  /* ???  Merge ranges in case of more than one lane.  */
-	  if (SLP_TREE_LANES (slp_op0) != 1
-	      || !(def = vect_get_slp_scalar_def (slp_op0, 0))
-	      || !vect_get_range_info (def, &op_min_value, &op_max_value))
-	    goto unsupported;
+	  if (cost_vec)
+	    {
+	      wide_int op_min_value, op_max_value;
+	      tree def;
+
+	      /* ???  Merge ranges in case of more than one lane.  */
+	      if (SLP_TREE_LANES (slp_op0) != 1
+		  || !(def = vect_get_slp_scalar_def (slp_op0, 0))
+		  || !vect_get_range_info (def, &op_min_value, &op_max_value))
+		goto unsupported;
+
+	      if ((wi::min_precision (op_max_value, SIGNED)
+		   > GET_MODE_BITSIZE (lhs_mode))
+		  || (wi::min_precision (op_min_value, SIGNED)
+		      > GET_MODE_BITSIZE (lhs_mode)))
+		goto unsupported;
+	    }
 
 	  cvt_type
 	    = build_nonstandard_integer_type (GET_MODE_BITSIZE (lhs_mode), 0);
-	  if (cvt_type == NULL_TREE
-	      || (wi::min_precision (op_max_value, SIGNED)
-		  > TYPE_PRECISION (cvt_type))
-	      || (wi::min_precision (op_min_value, SIGNED)
-		  > TYPE_PRECISION (cvt_type)))
-	    goto unsupported;
-
 	  cvt_type = get_same_sized_vectype (cvt_type, vectype_out);
 	  if (cvt_type == NULL_TREE)
 	    goto unsupported;
