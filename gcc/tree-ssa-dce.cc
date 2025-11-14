@@ -2378,12 +2378,13 @@ simple_dce_from_worklist (bitmap worklist, bitmap need_eh_cleanup)
 	  if (gimple_code (def_stmt) != GIMPLE_PHI)
 	    continue;
 
-	  gimple *use_stmt;
 	  imm_use_iterator use_iter;
+	  use_operand_p use_p;
 	  bool canremove = true;
 
-	  FOR_EACH_IMM_USE_STMT (use_stmt, use_iter, def)
+	  FOR_EACH_IMM_USE_FAST (use_p, use_iter, def)
 	    {
+	      gimple *use_stmt = USE_STMT (use_p);
 	      /* Ignore debug statements. */
 	      if (is_gimple_debug (use_stmt))
 		continue;
