@@ -199,13 +199,9 @@ along with GCC; see the file COPYING3.  If not see
      %{ansi|std=c*|std=iso9899\\:199409:values-Xc.o%s; :values-Xa.o%s} \
      %{std=c90|std=gnu90:values-xpg4.o%s; :values-xpg6.o%s}}}"
 
-#if defined(HAVE_LD_PIE)
 #define STARTFILE_CRTBEGIN_SPEC "%{static:crtbegin.o%s; \
 				   shared|" PIE_SPEC ":crtbeginS.o%s; \
 				   :crtbegin.o%s}"
-#else
-#define STARTFILE_CRTBEGIN_SPEC	"crtbegin.o%s"
-#endif
 
 #if ENABLE_VTABLE_VERIFY
 #if SUPPORTS_INIT_PRIORITY
@@ -270,13 +266,9 @@ along with GCC; see the file COPYING3.  If not see
 			crti.o%s %(startfile_arch) %(startfile_crtbegin) \
 			%(startfile_vtv)"
 
-#if defined(HAVE_LD_PIE)
 #define ENDFILE_CRTEND_SPEC "%{static:crtend.o%s; \
 			       shared|" PIE_SPEC ":crtendS.o%s; \
 			       :crtend.o%s}"
-#else
-#define ENDFILE_CRTEND_SPEC "crtend.o%s"
-#endif
 
 #undef  ENDFILE_SPEC
 #define ENDFILE_SPEC \
@@ -414,23 +406,15 @@ along with GCC; see the file COPYING3.  If not see
 
 #ifdef USE_GLD
 /* GNU ld needs --eh-frame-hdr to create the required .eh_frame_hdr sections.  */
-#if defined(HAVE_LD_EH_FRAME_HDR)
 #define LINK_EH_SPEC "%{!static|static-pie:--eh-frame-hdr} "
-#endif /* HAVE_LD_EH_FRAME */
 #endif
 
-#if defined(HAVE_LD_PIE)
 #ifdef USE_GLD
 /* Assert -z text by default to match Solaris ld.  */
 #define LD_PIE_SPEC "-pie %{!mimpure-text:-z text}"
 #else
 /* Solaris ld needs -z type=pie instead of -pie.  */
 #define LD_PIE_SPEC "-z type=pie %{mimpure-text:-z textoff}"
-#endif
-#else
-/* Error out if some part of PIE support is missing.  */
-#define LINK_PIE_SPEC \
-  "%{no-pie:} %{pie:%e-pie is not supported in this configuration} "
 #endif
 
 /* collect2.cc can only parse GNU nm -n output.  Solaris nm needs -png to

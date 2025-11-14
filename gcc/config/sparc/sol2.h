@@ -308,15 +308,8 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 "
 
 #ifdef USE_GLD
-/* Since binutils 2.21, GNU ld supports new *_sol2 emulations to strictly
-   follow the Solaris 2 ABI.  Prefer them if present.  */
-#ifdef HAVE_LD_SOL2_EMULATION
 #define ARCH32_EMULATION "elf32_sparc_sol2"
 #define ARCH64_EMULATION "elf64_sparc_sol2"
-#else
-#define ARCH32_EMULATION "elf32_sparc"
-#define ARCH64_EMULATION "elf64_sparc"
-#endif
 #endif
 
 #define ARCH64_SUBDIR "sparcv9"

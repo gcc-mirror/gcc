@@ -91,15 +91,8 @@ along with GCC; see the file COPYING3.  If not see
 #define ARCH64_SUBDIR "amd64"
 
 #ifdef USE_GLD
-/* Since binutils 2.21, GNU ld supports new *_sol2 emulations to strictly
-   follow the Solaris 2 ABI.  Prefer them if present.  */
-#ifdef HAVE_LD_SOL2_EMULATION
 #define ARCH32_EMULATION "elf_i386_sol2"
 #define ARCH64_EMULATION "elf_x86_64_sol2"
-#else
-#define ARCH32_EMULATION "elf_i386"
-#define ARCH64_EMULATION "elf_x86_64"
-#endif
 #endif
 
 #define ENDFILE_ARCH_SPEC \

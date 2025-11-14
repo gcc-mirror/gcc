@@ -3166,6 +3166,19 @@ if test $in_tree_ld != yes ; then
     ld_vers_major=`expr "$ld_vers" : '\([0-9]*\)'`
     ld_vers_minor=`expr "$ld_vers" : '[0-9]*\.\([0-9]*\)'`
     ld_vers_patch=`expr "$ld_vers" : '[0-9]*\.[0-9]*\.\([0-9]*\)'`
+    case "${target}" in
+      *-*-solaris2*)
+	if test "$ld_vers_major" -gt 2; then
+	  :
+	elif test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -ge 30; then
+	  :
+	else
+changequote([,])dnl
+	  AC_MSG_ERROR([GNU ld 2.30 or later is required on Solaris (found GNU ld $ld_ver)])
+changequote(,)dnl
+	fi
+	;;
+    esac
   else
     case "${target}" in
       *-*-solaris2*)
@@ -3587,9 +3600,9 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SECTION_EXCLUDE,
 # Test if the assembler supports the section flag 'R' for specifying
 # section with SHF_GNU_RETAIN.
 case "${target}" in
-  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # Solaris may use GNU assembler with Solaris ld.  Even if GNU
   # assembler supports the section flag 'R', it doesn't mean that
-  # Solairs ld supports it.
+  # Solaris ld supports it.
   *-*-solaris2*)
     gcc_cv_as_shf_gnu_retain=no
     ;;
@@ -3607,9 +3620,9 @@ AC_DEFINE_UNQUOTED(HAVE_GAS_SHF_GNU_RETAIN,
 # Test if the assembler supports the section flag 'o' for specifying
 # section with link-order.
 case "${target}" in
-  # Solaris may use GNU assembler with Solairs ld.  Even if GNU
+  # Solaris may use GNU assembler with Solaris ld.  Even if GNU
   # assembler supports the section flag 'o', it doesn't mean that
-  # Solairs ld supports it.
+  # Solaris ld supports it.
   *-*-solaris2*)
     gcc_cv_as_section_link_order=no
     ;;
@@ -3711,21 +3724,8 @@ elif echo "$ld_ver" | grep GNU > /dev/null; then
 else
 changequote(,)dnl
   case "${target}" in
-    *-*-solaris2.1[1-9]*)
-      comdat_group=no
-      # Sun ld has COMDAT group support since Solaris 9, but it doesn't
-      # interoperate with GNU as until Solaris 11 build 130, i.e. ld
-      # version 1.688.
-      #
-      # If using Sun as for COMDAT group as emitted by GCC, one needs at
-      # least ld version 1.2267.
-      if test "$ld_vers_major" -gt 1; then
-        comdat_group=yes
-      elif test "x$gas_flag" = xyes && test "$ld_vers_minor" -ge 1688; then
-	comdat_group=yes
-      elif test "$ld_vers_minor" -ge 2267; then
-	comdat_group=yes
-      fi
+    *-*-solaris2*)
+      comdat_group=yes
       ;;
     *)
       # Assume linkers other than GNU ld don't support COMDAT group.
@@ -5002,12 +5002,11 @@ foo:	nop
     if test x$gas = xyes; then
       as_ix86_gas_32_opt="--32"
     fi
-    if echo "$ld_ver" | grep GNU > /dev/null; then
-      if $gcc_cv_ld -V 2>/dev/null | grep elf_i386_sol2 > /dev/null; then
-        ld_ix86_gld_32_opt="-melf_i386_sol2"
-      else
-        ld_ix86_gld_32_opt="-melf_i386"
-      fi
+    if test x$gnu_ld = xyes; then
+      case $target in
+	*-*-solaris2*) ld_ix86_gld_32_opt="-melf_i386_sol2" ;;
+	*)             ld_ix86_gld_32_opt="-melf_i386" ;;
+      esac
     fi
 
     gcc_GAS_CHECK_FEATURE([R_386_TLS_GD_PLT reloc],
@@ -5100,12 +5099,11 @@ _start:
 
     # Check if gas and gld support "addq %r23,foo@GOTTPOFF(%rip), %r15"
     # with R_X86_64_CODE_6_GOTTPOFF relocation.
-    if echo "$ld_ver" | grep GNU > /dev/null; then
-      if $gcc_cv_ld -V 2>/dev/null | grep elf_x86_64_sol2 > /dev/null; then
-        ld_ix86_gld_64_opt="-melf_x86_64_sol2"
-      else
-        ld_ix86_gld_64_opt="-melf_x86_64"
-      fi
+    if test x$gnu_ld = xyes; then
+      case $target in
+	*-*-solaris2*) ld_ix86_gld_64_opt="-melf_x86_64_sol2" ;;
+	*)             ld_ix86_gld_64_opt="-melf_x86_64" ;;
+      esac
     fi
     # Enforce 64-bit output with gas and gld.
     if test x$gas = xyes; then
@@ -6148,10 +6146,7 @@ elif test x$gcc_cv_ld != x; then
   else
     case "$target" in
       *-*-solaris2*)
-        # Sun ld has various bugs in .eh_frame_hdr support before version 1.2251.
-        if test "$ld_vers_major" -gt 1 || test "$ld_vers_minor" -ge 2251; then
-          gcc_cv_ld_eh_frame_hdr=yes
-        fi
+	gcc_cv_ld_eh_frame_hdr=yes
         ;;
     esac
   fi
@@ -6166,11 +6161,7 @@ AC_MSG_RESULT($gcc_cv_ld_eh_frame_hdr)
 AC_MSG_CHECKING(linker position independent executable support)
 gcc_cv_ld_pie=no
 if test $in_tree_ld = yes ; then
-  case "$target" in
-    # Full PIE support on Solaris was only introduced in gld 2.26.
-    *-*-solaris2*)  gcc_gld_pie_min_version=26 ;;
-    *) 		    gcc_gld_pie_min_version=15 ;;
-  esac
+  gcc_gld_pie_min_version=15
   if test "$gcc_cv_gld_major_version" -eq 2 -a "$gcc_cv_gld_minor_version" -ge "$gcc_gld_pie_min_version" -o "$gcc_cv_gld_major_version" -gt 2 \
      && test $in_tree_ld_is_elf = yes; then
     gcc_cv_ld_pie=yes
@@ -6179,21 +6170,11 @@ elif test x$gcc_cv_ld != x; then
   # Check if linker supports -pie option
   if $gcc_cv_ld --help 2>&1 | grep -- -pie > /dev/null; then
     gcc_cv_ld_pie=yes
-    case "$target" in
-      *-*-solaris2*)
-	if echo "$ld_ver" | grep GNU > /dev/null \
-	  && test "$ld_vers_major" -eq 2 -a "$ld_vers_minor" -lt 26; then
-	  gcc_cv_ld_pie=no
-	fi
-	;;
-    esac
   else
     case "$target" in
-      *-*-solaris2.1[[1-9]]*)
+      *-*-solaris2*)
 	# Solaris 11.3 added PIE support.
-	if $gcc_cv_ld -z help 2>&1 | grep -- type.*pie > /dev/null; then
-	  gcc_cv_ld_pie=yes
-	fi
+	gcc_cv_ld_pie=yes
 	;;
     esac
   fi
@@ -6392,12 +6373,8 @@ changequote(,)dnl
   case "${target}" in
     *-*-solaris2*)
       # Introduced in Solaris 11.2.
-      if $gcc_cv_ld --help 2>&1 | grep -- '-z compress-sections' > /dev/null; then
-        gcc_cv_ld_compress_debug=1
-        gcc_cv_ld_compress_debug_option="-z compress-sections"
-      else
-        gcc_cv_ld_compress_debug=0
-      fi
+      gcc_cv_ld_compress_debug=1
+      gcc_cv_ld_compress_debug_option="-z compress-sections"
       ;;
     *)
       # Assume linkers other than GNU ld don't support compessed debug
@@ -6647,21 +6624,12 @@ elif test x$gcc_cv_ld != x; then
       ;;
   esac
 fi
-# --as-needed/-z ignore can only be used if libgcc_s.so.1 uses
-# dl_iterate_phdr, i.e. since Solaris 11.
 case "$target" in
-  *-*-solaris2.1[[1-9]]*)
-    case "$target" in
-    i?86-*-* | x86_64-*-*)
-      if echo "$ld_ver" | grep GNU > /dev/null; then
-        # Doesn't work with gld on Solaris/x86 due to PR ld/12320.
-        gcc_cv_ld_as_needed=no
-      fi
-      ;;
-    esac
-    ;;
-  *-*-solaris2*)
-    gcc_cv_ld_as_needed=no
+  i?86-*-solaris2* | x86_64-*-solaris2*)
+    if echo "$ld_ver" | grep GNU > /dev/null; then
+      # Doesn't work with gld on Solaris/x86 due to PR ld/12320.
+      gcc_cv_ld_as_needed=no
+    fi
     ;;
 esac
 ])
@@ -6912,29 +6880,6 @@ if test x"$enable_linker_build_id" = xyes; then
   fi
 fi
 
-# In binutils 2.21, GNU ld gained support for new emulations fully
-# supporting the Solaris 2 ABI.  Detect their presence in the linker used.
-AC_CACHE_CHECK(linker *_sol2 emulation support,
-  gcc_cv_ld_sol2_emulation,
-  [gcc_cv_ld_sol2_emulation=no
-  if test $in_tree_ld = yes ; then
-    if test "$gcc_cv_gld_major_version" -eq 2 -a \
-       "$gcc_cv_gld_minor_version" -ge 21 -o \
-       "$gcc_cv_gld_major_version" -gt 2 \
-       && test $in_tree_ld_is_elf = yes; then
-      gcc_cv_ld_sol2_emulation=yes
-    fi
-  elif test x$gcc_cv_ld != x; then
-    if $gcc_cv_ld -V 2>/dev/null | sed -e '1,/Supported emulations/d;q' | \
-       grep _sol2 > /dev/null; then
-      gcc_cv_ld_sol2_emulation=yes
-    fi
-  fi])
-if test x"$gcc_cv_ld_sol2_emulation" = xyes; then
-  AC_DEFINE(HAVE_LD_SOL2_EMULATION, 1,
-  [Define if your linker supports the *_sol2 emulations.])
-fi
-
 AC_CACHE_CHECK(linker --sysroot support,
   gcc_cv_ld_sysroot,
   [gcc_cv_ld_sysroot=no
@@ -6951,37 +6896,6 @@ if test x"$gcc_cv_ld_sysroot" = xyes; then
   AC_DEFINE(HAVE_LD_SYSROOT, 1,
   [Define if your linker supports --sysroot.])
 fi	  
-
-case $target in
-*-*-solaris2*)
-  # Check for system-provided CRTs on Solaris 11.x and Solaris 12.
-  AC_CACHE_CHECK([system-provided CRTs on Solaris],
-    gcc_cv_solaris_crts,
-    [gcc_cv_solaris_crts=no
-     if test x$host != x$target; then
-       if test "x$with_sysroot" = xyes; then
-         target_sysroot="${test_exec_prefix}/${target_noncanonical}/sys-root"
-       else
-         target_sysroot="${with_sysroot}"
-       fi
-     fi
-     target_libdir="$target_sysroot/usr/lib"
-     # At the time they were added, gcrt1.o became a symlink for backwards
-     # compatibility on x86, while crt1.o was added on sparc, so check for that.
-     case $target in
-       i?86-*-solaris2* | x86_64-*-solaris2*)
-         if test -h "$target_libdir/gcrt1.o"; then gcc_cv_solaris_crts=yes; fi
-	 ;;
-       sparc*-*-solaris2*)
-         if test -f "$target_libdir/crt1.o"; then gcc_cv_solaris_crts=yes; fi
-	 ;;
-     esac])
-  ;;
-esac
-if test x$gcc_cv_solaris_crts = xyes; then
-  AC_DEFINE(HAVE_SOLARIS_CRTS, 1,
-  	    [Define if the system-provided CRTs are present on Solaris.])
-fi
 
 AC_ARG_ENABLE(libssp,
 [AS_HELP_STRING([--enable-libssp], [enable linking against libssp])],

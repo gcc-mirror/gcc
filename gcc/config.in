@@ -1888,12 +1888,6 @@
 #endif
 
 
-/* Define if your linker supports the *_sol2 emulations. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_LD_SOL2_EMULATION
-#endif
-
-
 /* Define if your linker supports -Bstatic/-Bdynamic or equivalent options. */
 #ifndef USED_FOR_TARGET
 #undef HAVE_LD_STATIC_DYNAMIC
@@ -2072,12 +2066,6 @@
 /* Define if <sys/signal.h> defines sighandler_t */
 #ifndef USED_FOR_TARGET
 #undef HAVE_SIGHANDLER_T
-#endif
-
-
-/* Define if the system-provided CRTs are present on Solaris. */
-#ifndef USED_FOR_TARGET
-#undef HAVE_SOLARIS_CRTS
 #endif
 
 
