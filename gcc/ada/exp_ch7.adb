@@ -428,13 +428,6 @@ package body Exp_Ch7 is
    --  does not contain the above constructs, the routine returns an empty
    --  list.
 
-   procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id);
-   --  N is a construct that contains a handled sequence of statements, Fin_Id
-   --  is the entity of a finalizer. Create an At_End handler that covers the
-   --  statements of N and calls Fin_Id. If the handled statement sequence has
-   --  an exception handler, the statements will be wrapped in a block to avoid
-   --  unwanted interaction with the new At_End handler.
-
    procedure Build_Record_Deep_Procs (Typ : Entity_Id);
    --  Build the deep Initialize/Adjust/Finalize for a record Typ with
    --  Has_Controlled_Component set and store them using the TSS mechanism.
@@ -2306,38 +2299,30 @@ package body Exp_Ch7 is
 
             Append_To (Decls, Fin_Spec);
 
-            --  When the finalizer acts solely as a cleanup routine, the body
-            --  is inserted right after the spec.
+            --  Manually freeze the spec. This is somewhat of a hack because a
+            --  subprogram is frozen when its body is seen and the freeze node
+            --  appears right before the body. However, in this case, the spec
+            --  must be frozen earlier since the At_End handler must be able to
+            --  call it.
+            --
+            --    declare
+            --       procedure Fin_Id;               --  Spec
+            --       [Fin_Id]                        --  Freeze node
+            --    begin
+            --       ...
+            --    at end
+            --       Fin_Id;                         --  At_End handler
+            --    end;
 
-            if Acts_As_Clean and not Has_Ctrl_Objs then
-               Insert_After (Fin_Spec, Fin_Body);
+            Ensure_Freeze_Node (Fin_Id);
+            Insert_After (Fin_Spec, Freeze_Node (Fin_Id));
+            Mutate_Ekind (Fin_Id, E_Procedure);
+            Freeze_Extra_Formals (Fin_Id);
+            Set_Is_Frozen (Fin_Id);
 
-            --  In other cases the body is inserted after the last statement
+            pragma Assert (Present (Stmts));
 
-            else
-               --  Manually freeze the spec. This is somewhat of a hack because
-               --  a subprogram is frozen when its body is seen and the freeze
-               --  node appears right before the body. However, in this case,
-               --  the spec must be frozen earlier since the At_End handler
-               --  must be able to call it.
-               --
-               --    declare
-               --       procedure Fin_Id;               --  Spec
-               --       [Fin_Id]                        --  Freeze node
-               --    begin
-               --       ...
-               --    at end
-               --       Fin_Id;                         --  At_End handler
-               --    end;
-
-               Ensure_Freeze_Node (Fin_Id);
-               Insert_After (Fin_Spec, Freeze_Node (Fin_Id));
-               Mutate_Ekind (Fin_Id, E_Procedure);
-               Freeze_Extra_Formals (Fin_Id);
-               Set_Is_Frozen (Fin_Id);
-
-               Append_To (Stmts, Fin_Body);
-            end if;
+            Append_To (Stmts, Fin_Body);
          end if;
 
          Analyze (Fin_Spec, Suppress => All_Checks);
@@ -3183,8 +3168,7 @@ package body Exp_Ch7 is
             Spec_Id := Defining_Identifier (Spec_Id);
          end if;
 
-      --  Accept statement, block, entry body, package body, protected body,
-      --  subprogram body or task body.
+      --  Block, entry body, package body, subprogram body or task body
 
       else
          Decls := Declarations (N);
@@ -3309,76 +3293,6 @@ package body Exp_Ch7 is
          Pop_Scope;
       end if;
    end Build_Finalizer;
-
-   --------------------------
-   -- Build_Finalizer_Call --
-   --------------------------
-
-   procedure Build_Finalizer_Call (N : Node_Id; Fin_Id : Entity_Id) is
-   begin
-      --  Do not perform this expansion in SPARK mode because we do not create
-      --  finalizers in the first place.
-
-      if GNATprove_Mode then
-         return;
-      end if;
-
-      --  If the construct to be cleaned up is a protected subprogram body, the
-      --  finalizer call needs to be associated with the block that wraps the
-      --  unprotected version of the subprogram. The following illustrates this
-      --  scenario:
-
-      --     procedure Prot_SubpP is
-      --        procedure finalizer is
-      --        begin
-      --           Service_Entries (Prot_Obj);
-      --           Abort_Undefer;
-      --        end finalizer;
-
-      --     begin
-      --        . . .
-      --        begin
-      --           Prot_SubpN (Prot_Obj);
-      --        at end
-      --           finalizer;
-      --        end;
-      --     end Prot_SubpP;
-
-      declare
-         Loc : constant Source_Ptr := Sloc (N);
-
-         Is_Protected_Subp_Body : constant Boolean :=
-           Nkind (N) = N_Subprogram_Body
-           and then Is_Protected_Subprogram_Body (N);
-         --  True if N is the protected version of a subprogram that belongs to
-         --  a protected type.
-
-         HSS : constant Node_Id :=
-           (if Is_Protected_Subp_Body
-             then Handled_Statement_Sequence
-               (Last (Statements (Handled_Statement_Sequence (N))))
-             else Handled_Statement_Sequence (N));
-
-         --  We attach the At_End_Proc to the HSS if this is an accept
-         --  statement or extended return statement. Also in the case of
-         --  a protected subprogram, because if Service_Entries raises an
-         --  exception, we do not lock the PO, so we also do not want to
-         --  unlock it.
-
-         Use_HSS : constant Boolean :=
-           Nkind (N) in N_Accept_Statement | N_Extended_Return_Statement
-           or else Is_Protected_Subp_Body;
-
-         At_End_Proc_Bearer : constant Node_Id := (if Use_HSS then HSS else N);
-      begin
-         pragma Assert (No (At_End_Proc (At_End_Proc_Bearer)));
-         Set_At_End_Proc (At_End_Proc_Bearer, New_Occurrence_Of (Fin_Id, Loc));
-         --  Attach reference to finalizer to tree, for LLVM use
-         Set_Parent (At_End_Proc (At_End_Proc_Bearer), At_End_Proc_Bearer);
-         Analyze (At_End_Proc (At_End_Proc_Bearer));
-         Expand_At_End_Handler (At_End_Proc_Bearer, Empty);
-      end;
-   end Build_Finalizer_Call;
 
    ---------------------
    -- Build_Late_Proc --
@@ -4898,7 +4812,12 @@ package body Exp_Ch7 is
             Fin_Id      => Fin_Id);
 
          if Present (Fin_Id) then
-            Build_Finalizer_Call (N, Fin_Id);
+            pragma Assert (No (At_End_Proc (N)));
+            Set_At_End_Proc (N, New_Occurrence_Of (Fin_Id, Sloc (N)));
+            --  Attach reference to finalizer to tree for LLVM
+            Set_Parent (At_End_Proc (N), N);
+            Analyze (At_End_Proc (N));
+            Expand_At_End_Handler (N, Empty);
          end if;
       end;
    end Expand_Cleanup_Actions;

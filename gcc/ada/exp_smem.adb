@@ -134,31 +134,18 @@ package body Exp_Smem is
    -------------------------------
 
    procedure Add_Shared_Var_Lock_Procs (N : Node_Id) is
+      Aft : constant List_Id    := New_List;
       Loc : constant Source_Ptr := Sloc (N);
       Obj : constant Entity_Id  := Entity (Expression (First_Actual (N)));
-      Vnm : String_Id;
-      Vid : Entity_Id;
-      Vde : Node_Id;
-      Aft : constant List_Id := New_List;
 
       In_Transient : constant Boolean := Scope_Is_Transient;
+      --  Whether we are already in a transient scope
 
-      function Build_Shared_Var_Lock_Call (RE : RE_Id) return Node_Id;
-      --  Return a procedure call statement for lock proc RTE
+      function Current_Scope return Int renames Scope_Stack.Last;
+      --  Return the index of the current scope
 
-      --------------------------------
-      -- Build_Shared_Var_Lock_Call --
-      --------------------------------
-
-      function Build_Shared_Var_Lock_Call (RE : RE_Id) return Node_Id is
-      begin
-         return
-           Make_Procedure_Call_Statement (Loc,
-             Name                   =>
-               New_Occurrence_Of (RTE (RE), Loc),
-             Parameter_Associations =>
-               New_List (New_Occurrence_Of (Vid, Loc)));
-      end Build_Shared_Var_Lock_Call;
+      Vid : Entity_Id;
+      Vnm : String_Id;
 
    --  Start of processing for Add_Shared_Var_Lock_Procs
 
@@ -176,53 +163,42 @@ package body Exp_Smem is
       --  If the lock/read/write/unlock actions for this object have already
       --  been emitted in the current scope, no need to perform them anew.
 
-      if In_Transient
-        and then Contains (Scope_Stack.Table (Scope_Stack.Last)
-                             .Locked_Shared_Objects,
-                           Obj)
-      then
-         return;
+      if In_Transient then
+         if Contains (Scope_Stack.Table (Current_Scope).Locked_Shared_Objects,
+                      Obj)
+         then
+            return;
+         end if;
+
+      else
+         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
       end if;
 
       Build_Full_Name (Obj, Vnm);
 
-      --  Declare a constant string to hold the name of the shared object.
-      --  Note that this must occur outside of the transient scope, as the
-      --  scope's finalizer needs to have access to this object. Also, it
-      --  appears that GIGI does not support elaborating string literal
-      --  subtypes in transient scopes.
+      --  Declare a constant string to hold the name of the shared object
 
       Vid := Make_Temporary (Loc, 'N', Obj);
-      Vde :=
+      Insert_Action (N,
         Make_Object_Declaration (Loc,
           Defining_Identifier => Vid,
           Constant_Present    => True,
           Object_Definition   => New_Occurrence_Of (Standard_String, Loc),
-          Expression          => Make_String_Literal (Loc, Vnm));
-
-      --  Already in a transient scope. Make sure that we insert Vde outside
-      --  that scope.
-
-      if In_Transient then
-         Insert_Before_And_Analyze (Node_To_Be_Wrapped, Vde);
-
-      --  Not in a transient scope yet: insert Vde as an action on N prior to
-      --  establishing one.
-
-      else
-         Insert_Action (N, Vde);
-         Establish_Transient_Scope (N, Manage_Sec_Stack => False);
-      end if;
+          Expression          => Make_String_Literal (Loc, Vnm)));
 
       --  Mark object as locked in the current (transient) scope
 
       Append_New_Elmt
-        (Obj,
-         To => Scope_Stack.Table (Scope_Stack.Last).Locked_Shared_Objects);
+        (Obj, Scope_Stack.Table (Current_Scope).Locked_Shared_Objects);
 
       --  First insert the Lock call before
 
-      Insert_Action (N, Build_Shared_Var_Lock_Call (RE_Shared_Var_Lock));
+      Insert_Action (N,
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_Shared_Var_Lock), Loc),
+          Parameter_Associations =>
+            New_List (New_Occurrence_Of (Vid, Loc))));
 
       --  Now, right after the Lock, insert a call to read the object
 
@@ -237,7 +213,12 @@ package body Exp_Smem is
 
       --  Finally insert the Unlock call
 
-      Append_To (Aft, Build_Shared_Var_Lock_Call (RE_Shared_Var_Unlock));
+      Append_To (Aft,
+        Make_Procedure_Call_Statement (Loc,
+          Name                   =>
+            New_Occurrence_Of (RTE (RE_Shared_Var_Unlock), Loc),
+          Parameter_Associations =>
+            New_List (New_Occurrence_Of (Vid, Loc))));
 
       --  Store cleanup actions in transient scope
 
