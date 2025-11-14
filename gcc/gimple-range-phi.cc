@@ -69,7 +69,8 @@ phi_group::phi_group (bitmap bm, irange &init_range, gimple *mod,
   gcc_checking_assert (!init_range.undefined_p ());
   gcc_checking_assert (!init_range.varying_p ());
 
-  m_modifier_op = is_modifier_p (mod, bm);
+  m_modifier_name = NULL_TREE;
+  m_modifier_op = is_modifier_p (mod, bm, &m_modifier_name);
   m_group = bm;
   m_vr = init_range;
   m_modifier = mod;
@@ -85,7 +86,7 @@ phi_group::phi_group (bitmap bm, irange &init_range, gimple *mod,
 // If it could be a modifier, return which operand position (1 or 2)
 // the phi member occurs in.
 unsigned
-phi_group::is_modifier_p (gimple *s, const bitmap bm)
+phi_group::is_modifier_p (gimple *s, const bitmap bm, tree *op)
 {
   if (!s)
     return 0;
@@ -96,9 +97,17 @@ phi_group::is_modifier_p (gimple *s, const bitmap bm)
       tree op2 = gimple_range_ssa_p (handler.operand2 ());
       // Also disallow modifiers that have 2 ssa-names.
       if (op1 && !op2 && bitmap_bit_p (bm, SSA_NAME_VERSION (op1)))
-	return 1;
+	{
+	  if (op)
+	    *op = op1;
+	  return 1;
+	}
       else if (op2 && !op1 && bitmap_bit_p (bm, SSA_NAME_VERSION (op2)))
-	return 2;
+	{
+	  if (op)
+	    *op = op2;
+	  return 2;
+	}
     }
   return 0;
 }
@@ -123,15 +132,26 @@ phi_group::calculate_using_modifier (range_query *q)
   const unsigned num_iter = 10;
   int_range_max nv;
   int_range_max iter_value = m_vr;
+  int_range_max iter_reach;
+  // Determie the maximum range of ITER reaching here.  Often a loop
+  // bound restricts the range reaching here.  Default to VARYING.
+  if (!m_modifier_name
+      || !q->range_of_expr (iter_reach, m_modifier_name, m_modifier))
+    iter_reach.set_varying (m_vr.type ());
   for (unsigned x = 0; x < num_iter; x++)
     {
       if (!fold_range (nv, m_modifier, iter_value, q))
 	break;
+      // Ensure nothing calculate is outside outside the reaching range.
+      nv.intersect (iter_reach);
       // If union does nothing, then we have convergence.
       if (!iter_value.union_ (nv))
 	{
 	  if (iter_value.varying_p ())
 	    break;
+	  // The last iteration Will reach the PHI node.
+	  fold_range (nv, m_modifier, iter_value, q);
+	  iter_value.union_ (nv);
 	  m_vr = iter_value;
 	  return true;
 	}
@@ -401,19 +421,19 @@ phi_analyzer::process_phi (gphi *phi, range_query &query)
 	}
     }
 
-  // If there are less than 2 names, just return.  This PHI may be included
-  // by another PHI, making it simple or a group of one will prevent a larger
-  // group from being formed.
-  if (phi_count < 2)
+  if (phi_count < 1)
     return;
+
   gcc_checking_assert (!bitmap_empty_p (m_current));
 
   phi_group *g = NULL;
+  gimple *mod = NULL;
+  bool valid = false;
+  signed init_idx = -1;
+  int_range_max init_sym;
   if (cycle_p)
     {
-      bool valid = true;
-      gimple *mod = NULL;
-      signed init_idx = -1;
+      valid = true;
       // At this point all the PHIs have been added to the bitmap.
       // the external list needs to be checked for initial values and modifiers.
       for (x = 0; x < m_num_extern; x++)
@@ -433,7 +453,6 @@ phi_analyzer::process_phi (gphi *phi, range_query &query)
 	    valid = false;
 	  init_idx = x;
 	}
-      int_range_max init_sym;
       // If there is an symbolic initializer as well, include it here.
       if (valid && init_idx != -1)
 	{
@@ -443,33 +462,42 @@ phi_analyzer::process_phi (gphi *phi, range_query &query)
 	  else
 	    valid = false;
 	}
-      if (valid && !init_range.varying_p () && !init_range.undefined_p ())
+    }
+  // If there are less than 2 names, .  This PHI may be included
+  // by another PHI, making it simple or a group of one will prevent a larger
+  // group from being formed.
+  // The exception will be pattern matching:
+  //   a_1 = a_2 OP X
+  //   a_2 = PHI <const, a_1>
+  if (phi_count == 1
+      && (m_num_extern != 1 || init_range.undefined_p () || !mod))
+    valid = false;
+  if (valid && !init_range.varying_p () && !init_range.undefined_p ())
+    {
+      // Try to create a group based on m_current. If a result comes back
+      // with a range that isn't varying, create the group.
+      phi_group cyc (m_current, init_range, mod, &query);
+      if (!cyc.range ().varying_p ())
 	{
-	  // Try to create a group based on m_current. If a result comes back
-	  // with a range that isn't varying, create the group.
-	  phi_group cyc (m_current, init_range, mod, &query);
-	  if (!cyc.range ().varying_p ())
+	  g = new phi_group (cyc);
+	  m_phi_groups.safe_push (g);
+	  if (dump_file && (dump_flags & TDF_DETAILS))
 	    {
-	      g = new phi_group (cyc);
-	      m_phi_groups.safe_push (g);
-	      if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file, "PHI ANALYZER : New ");
+	      g->dump (dump_file);
+	      fprintf (dump_file,"  Initial range was ");
+	      init_range.dump (dump_file);
+	      if (init_idx != -1)
 		{
-		  fprintf (dump_file, "PHI ANALYZER : New ");
-		  g->dump (dump_file);
-		  fprintf (dump_file,"  Initial range was ");
-		  init_range.dump (dump_file);
-		  if (init_idx != -1)
-		    {
-		      fprintf (dump_file, " including symbolic ");
-		      print_generic_expr (dump_file, m_external[init_idx],
-					  TDF_SLIM);
-		      fprintf (dump_file, " on edge %d->%d with range ",
-			       m_ext_edge[init_idx]->src->index,
-			       m_ext_edge[init_idx]->dest->index);
-		      init_sym.dump (dump_file);
-		    }
-		  fputc ('\n',dump_file);
+		  fprintf (dump_file, " including symbolic ");
+		  print_generic_expr (dump_file, m_external[init_idx],
+				      TDF_SLIM);
+		  fprintf (dump_file, " on edge %d->%d with range ",
+			   m_ext_edge[init_idx]->src->index,
+			   m_ext_edge[init_idx]->dest->index);
+		  init_sym.dump (dump_file);
 		}
+	      fputc ('\n',dump_file);
 	    }
 	}
     }

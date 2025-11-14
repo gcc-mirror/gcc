@@ -59,10 +59,11 @@ public:
 protected:
   bool calculate_using_modifier (range_query *q);
   bool refine_using_relation (relation_kind k);
-  static unsigned is_modifier_p (gimple *s, const bitmap bm);
+  static unsigned is_modifier_p (gimple *s, const bitmap bm, tree *op = NULL);
   bitmap m_group;
   gimple *m_modifier;     // Single stmt which modifies phi group.
   unsigned m_modifier_op; // Operand of group member in modifier stmt.
+  tree m_modifier_name;	  // Name of modifier operand ssa-name.
   int_range_max m_vr;
   friend class phi_analyzer;
 };
