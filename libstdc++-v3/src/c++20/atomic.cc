@@ -278,7 +278,7 @@ __wait_impl(const void* __addr, __wait_args_base& __args)
     set_wait_state(__addr, __args); // scoped_wait needs a __waitable_state
   scoped_wait s(__args);
   __platform_wait(__wait_addr, __args._M_old);
-  // We haven't loaded a new value so return false as first member:
+  // We haven't loaded a new value so return _M_has_val=false
   return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = false };
 #else
   waiter_lock l(__args);
@@ -452,20 +452,16 @@ __wait_until_impl(const void* __addr, __wait_args_base& __args,
   if (__args & __wait_flags::__track_contention)
     set_wait_state(__addr, __args);
   scoped_wait s(__args);
-  if (__platform_wait_until(__wait_addr, __args._M_old, __atime))
-    return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = false };
-  else
-    return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = true };
+  bool timeout = !__platform_wait_until(__wait_addr, __args._M_old, __atime);
+  return { ._M_val = __args._M_old, ._M_has_val = false, ._M_timeout = timeout };
 #else
   waiter_lock l(__args);
   __platform_wait_t __val;
   __atomic_load(__wait_addr, &__val, __args._M_order);
   if (__val == __args._M_old)
     {
-      if (__cond_wait_until(__state->_M_cv, __state->_M_mtx, __atime))
-	return { ._M_val = __val, ._M_has_val = false, ._M_timeout = false };
-      else
-	return { ._M_val = __val, ._M_has_val = false, ._M_timeout = true };
+      bool timeout = !__cond_wait_until(__state->_M_cv, __state->_M_mtx, __atime);
+      return { ._M_val = __val, ._M_has_val = false, ._M_timeout = timeout };
     }
   return { ._M_val = __val, ._M_has_val = true, ._M_timeout = false };
 #endif
