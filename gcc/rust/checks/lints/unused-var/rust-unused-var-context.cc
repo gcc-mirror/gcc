@@ -23,22 +23,15 @@ namespace Analysis {
 
 void
 UnusedVarContext::add_variable (HirId id)
-{
-  if (is_used.find (id) == is_used.end ())
-    is_used.insert ({id, false});
-}
 
-void
-UnusedVarContext::mark_used (HirId id)
 {
-  is_used[id] = true;
+  used_vars.emplace (id);
 }
 
 bool
 UnusedVarContext::is_variable_used (HirId id) const
 {
-  auto it = is_used.find (id);
-  return it != is_used.end () && it->second;
+  return used_vars.find (id) != used_vars.end ();
 }
 
 void
@@ -66,10 +59,9 @@ UnusedVarContext::as_string () const
 {
   std::stringstream ss;
   ss << "UnusedVarContext: ";
-  for (const auto &pair : is_used)
+  for (const auto &v : used_vars)
     {
-      ss << "HirId: " << pair.first << " Used: " << (pair.second ? "Yes" : "No")
-	 << "\n";
+      ss << "HirId: " << v << "\n";
     }
   return ss.str ();
 }

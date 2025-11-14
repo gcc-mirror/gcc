@@ -40,41 +40,24 @@ UnusedVarCollector::go (HIR::Crate &crate)
 }
 
 void
-UnusedVarCollector::visit (HIR::ConstantItem &item)
-{
-  unused_var_context.add_variable (item.get_mappings ().get_hirid ());
-  walk (item);
-}
-
-void
-UnusedVarCollector::visit (HIR::StaticItem &item)
-{
-  unused_var_context.add_variable (item.get_mappings ().get_hirid ());
-  walk (item);
-}
-
-void
-UnusedVarCollector::visit (HIR::IdentifierPattern &pattern)
-{
-  unused_var_context.add_variable (pattern.get_mappings ().get_hirid ());
-}
-
-void
 UnusedVarCollector::visit (HIR::PathInExpression &expr)
 {
   mark_path_used (expr);
+  walk (expr);
 }
 
 void
 UnusedVarCollector::visit (HIR::QualifiedPathInExpression &expr)
 {
   mark_path_used (expr);
+  walk (expr);
 }
 
 void
 UnusedVarCollector::visit (HIR::StructExprFieldIdentifier &ident)
 {
   mark_path_used (ident);
+  walk (ident);
 }
 void
 UnusedVarCollector::visit (HIR::AssignmentExpr &expr)

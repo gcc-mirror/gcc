@@ -42,9 +42,6 @@ private:
   using HIR::DefaultHIRVisitor::visit;
   virtual void visit (HIR::PathInExpression &expr) override;
   virtual void visit (HIR::StructExprFieldIdentifier &ident) override;
-  virtual void visit (HIR::ConstantItem &item) override;
-  virtual void visit (HIR::StaticItem &item) override;
-  virtual void visit (HIR::IdentifierPattern &pattern) override;
   virtual void visit (HIR::QualifiedPathInExpression &expr) override;
   virtual void visit (HIR::AssignmentExpr &expr) override;
 
@@ -59,7 +56,7 @@ private:
   template <typename T> void mark_path_used (T &path_expr)
   {
     auto def_id = get_def_id (path_expr);
-    unused_var_context.mark_used (def_id);
+    unused_var_context.add_variable (def_id);
     unused_var_context.remove_assign (def_id);
   }
 };

@@ -4,5 +4,5 @@
 pub trait Sized {}
 
 pub fn test<T> (a: usize) -> () {
-    // { dg-warning "unused name" "" { target *-*-* } .-1 }
+    // { dg-warning "unused variable .a." "" { target *-*-* } .-1 }
 }
