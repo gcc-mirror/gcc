@@ -757,6 +757,7 @@ static const struct riscv_tune_param andes_25_tune_info = {
   NULL,						/* function_align */
   NULL,						/* jump_align */
   NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
 };
 
 static bool riscv_avoid_shrink_wrapping_separate ();
