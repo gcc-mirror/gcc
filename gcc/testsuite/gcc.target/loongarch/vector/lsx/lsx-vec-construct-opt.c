@@ -20,14 +20,29 @@ vec_construct_v2i64 ()
   return res;
 }
 
-/* Only load the lowest 2 elements and directly copy them to high half-part,
-   reducing more vinsgr2vr.w.  */
-/* { dg-final { scan-assembler-times "v4i32:.*\tvreplvei\\.d.*v4i32" 1 } } */
+/* Load the lowest 2 elements and directly copy them to high half-part
+   by vldrepl.d.  */
+/* { dg-final { scan-assembler-times "v4i32:.*\tvldrepl\\.d.*v4i32" 1 } } */
 v4i32
 vec_construct_v4i32 ()
 {
   v4i32 res =
   { x_si[0], x_si[1], x_si[0], x_si[1]} 
+  ;
+  return res;
+}
+
+/* Load 2 elements of a vector simultaneously by vldrepl.d and shuffle by the
+   vshuf4i.w to avoid use vinsgr2vr.  */
+/* { dg-final { scan-assembler-times "v4i32_1:.*\tvldrepl\\.d.*v4i32_1" 1 } }
+ */
+/* { dg-final { scan-assembler-times "v4i32_1:.*\tvshuf4i\\.w.*v4i32_1" 1 } }
+ */
+v4i32
+vec_construct_v4i32_1 ()
+{
+  v4i32 res =
+  { x_si[0], x_si[1], x_si[0], x_si[0] }
   ;
   return res;
 }

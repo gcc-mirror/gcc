@@ -1614,6 +1614,39 @@
   [(set_attr "type" "simd_shf")
    (set_attr "mode" "<MODE>")])
 
+(define_insn_and_split "lsx_vshuf4i_mem_w_0"
+  [(set (match_operand:V4SI 0 "register_operand" "=f")
+       (vec_merge:V4SI
+         (vec_duplicate:V4SI
+           (mem:SI (match_operand:DI 1 "register_operand" "r")))
+         (vec_duplicate:V4SI
+           (mem:SI (plus:DI (match_dup 1) (const_int 4))))
+         (match_operand 2 "const_uimm4_operand" "")))]
+  "ISA_HAS_LSX"
+  "#"
+  "&& reload_completed"
+  [(const_int 0)]
+{
+  operands[0] = gen_rtx_REG (V2DImode, REGNO (operands[0]));
+  emit_insn (gen_lsx_vldrepl_d_insn_0 (operands[0], operands[1]));
+
+  operands[0] = gen_rtx_REG (V4SImode, REGNO (operands[0]));
+  rtx sel[4];
+  int op2 = INTVAL (operands[2]);
+  int mask = 1;
+
+  /* Convert imm to an selection.  */
+  for (int i = 0; i < 4; ++i)
+    {
+      sel[i] =  (op2 & mask) ? const0_rtx : const1_rtx;
+      mask = mask << 1;
+    }
+
+  rtx shuf4i_mask = gen_rtx_PARALLEL (V4SImode, gen_rtvec_v (4, sel));
+  emit_insn (gen_lsx_vshuf4i_w (operands[0], operands[0], shuf4i_mask));
+  DONE;
+})
+
 (define_insn "lsx_vsrar_<lsxfmt>"
   [(set (match_operand:ILSX 0 "register_operand" "=f")
 	(unspec:ILSX [(match_operand:ILSX 1 "register_operand" "f")
@@ -2535,6 +2568,35 @@
 }
   [(set_attr "type" "simd_load")
    (set_attr "mode" "<MODE>")
+   (set_attr "length" "4")])
+
+;; In 128-bits register, the template implements the load of identical
+;; consecutive SImode data into both the upper 64 bits and lower 64 bits.
+;; Operand[2] performs a vec_merge operation on two consecutive addresses
+;; SImode data items, and places the result in either the lower 64 bits or
+;; the upper 64 bits. When operand[3] is 0, the lower 64 bits are copied
+;; to the upper 64 bits; when operand[3] is 1, the upper 64 bits are copied
+;; to the lower 64 bits.
+
+(define_insn "lsx_vldrepl_merge_w_0"
+  [(set (match_operand:V4SI 0 "register_operand" "=f")
+       (unspec:V4SI
+         [(vec_merge:V4SI
+           (vec_duplicate:V4SI
+             (mem:SI (match_operand:DI 1 "register_operand" "r")))
+           (vec_duplicate:V4SI
+             (mem:SI (plus:DI (match_dup 1) (const_int 4))))
+           (match_operand 2 "const_uimm4_operand" ""))
+         (match_operand 3 "const_0_or_1_operand" "")]
+         UNSPEC_LSX_VREPLVEI_MIRROR))]
+  "ISA_HAS_LSX
+   && (INTVAL (operands[3]) ? (INTVAL (operands[2]) & 0xc) == 0x4
+			    : (INTVAL (operands[2]) & 0x3) == 0x1)"
+{
+  return "vldrepl.d\t%w0,%1,0";
+}
+  [(set_attr "type" "simd_load")
+   (set_attr "mode" "V4SI")
    (set_attr "length" "4")])
 
 ;; Offset store by sel
