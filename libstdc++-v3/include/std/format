@@ -845,7 +845,7 @@ namespace __format
 	  {
 	    // Encode fill char as multiple code units of type _CharT.
 	    const char32_t __arr[1]{ __fill_char };
-	    _Utf_view<_CharT, const char32_t(&)[1]> __v(__arr);
+	    _Utf_view<_CharT, span<const char32_t, 1>> __v(__arr);
 	    basic_string<_CharT> __padstr(__v.begin(), __v.end());
 	    __padding = __padstr;
 	    while (__l-- > 0)

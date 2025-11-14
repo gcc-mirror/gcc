@@ -7,6 +7,10 @@
 namespace uc = std::__unicode;
 using namespace std::string_view_literals;
 
+static_assert( std::ranges::view<uc::_Utf8_view<std::string_view>> );
+static_assert( std::ranges::view<uc::_Utf16_view<std::string_view>> );
+static_assert( std::ranges::view<uc::_Utf32_view<std::string_view>> );
+
 template<std::ranges::range View>
 constexpr void
 compare(View v, std::basic_string_view<std::ranges::range_value_t<View>> s)
@@ -87,18 +91,18 @@ test_illformed_utf16()
   compare(uc::_Utf16_view(s.substr(0, 1)), r);
   compare(uc::_Utf16_view(s.substr(1, 1)), r);
   std::array s2{ s[0], s[0] };
-  compare(uc::_Utf16_view(s2), u"\uFFFD\uFFFD"sv);
+  compare(uc::_Utf16_view(std::span(s2)), u"\uFFFD\uFFFD"sv);
   std::array s3{ s[0], s[0], s[1] };
-  compare(uc::_Utf16_view(s3), u"\uFFFD\N{CLOWN FACE}"sv);
+  compare(uc::_Utf16_view(std::span(s3)), u"\uFFFD\N{CLOWN FACE}"sv);
   std::array s4{ s[1], s[0] };
-  compare(uc::_Utf16_view(s4), u"\uFFFD\uFFFD"sv);
+  compare(uc::_Utf16_view(std::span(s4)), u"\uFFFD\uFFFD"sv);
   std::array s5{ s[1], s[0], s[1] };
-  compare(uc::_Utf16_view(s5), u"\uFFFD\N{CLOWN FACE}"sv);
+  compare(uc::_Utf16_view(std::span(s5)), u"\uFFFD\N{CLOWN FACE}"sv);
 
   std::array<char16_t, 2> s6{ 0xDC00, 0xDC01 };
-  compare(uc::_Utf16_view(s6), u"\uFFFD\uFFFD"sv);
+  compare(uc::_Utf16_view(std::span(s6)), u"\uFFFD\uFFFD"sv);
   std::array<char16_t, 2> s7{ 0xD7FF, 0xDC00 };
-  compare(uc::_Utf16_view(s7), u"\uD7FF\uFFFD"sv);
+  compare(uc::_Utf16_view(std::span(s7)), u"\uD7FF\uFFFD"sv);
 }
 
 constexpr void

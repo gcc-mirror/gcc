@@ -695,13 +695,14 @@ namespace __unicode
 	friend class _Utf_iterator;
     };
 
-  template<typename _ToFormat, ranges::input_range _Range>
+  template<typename _ToFormat, ranges::input_range _View>
+    requires ranges::view<_View>
     class _Utf_view
-    : public ranges::view_interface<_Utf_view<_ToFormat, _Range>>
+    : public ranges::view_interface<_Utf_view<_ToFormat, _View>>
     {
-      using _Iterator = _Utf_iterator<ranges::range_value_t<_Range>,
-				      _ToFormat, ranges::iterator_t<_Range>,
-				      ranges::sentinel_t<_Range>>;
+      using _Iterator = _Utf_iterator<ranges::range_value_t<_View>,
+				      _ToFormat, ranges::iterator_t<_View>,
+				      ranges::sentinel_t<_View>>;
 
       template<typename _Iter, typename _Sent>
 	constexpr auto
@@ -725,11 +726,11 @@ namespace __unicode
 	    return _Iterator(__last, __last);
 	}
 
-      _Range _M_base;
+      _View _M_base;
 
     public:
       constexpr explicit
-      _Utf_view(_Range&& __r) : _M_base(std::forward<_Range>(__r)) { }
+      _Utf_view(_View __r) : _M_base(std::move(__r)) { }
 
       constexpr auto begin()
       { return _M_begin(ranges::begin(_M_base), ranges::end(_M_base)); }
