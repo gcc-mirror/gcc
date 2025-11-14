@@ -1663,11 +1663,15 @@
   [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
+;; UNSPEC_LSX_VREPLVEI_MIRROR describes the mirror operation that copies
+;; the lower 64 bits of a 128-bit register to the upper 64 bits. It is only
+;; called when the high half-part is the same as the low.
+
 (define_insn "lsx_vreplvei_mirror_<lsxfmt_f>"
   [(set (match_operand:LSX 0 "register_operand" "=f")
 	(unspec: LSX [(match_operand:LSX 1 "register_operand" "f")
-				(match_operand 2 "const_<indeximm>_operand" "")]
-				UNSPEC_LSX_VREPLVEI_MIRROR))]
+		      (match_operand 2 "const_0_or_1_operand" "")]
+		      UNSPEC_LSX_VREPLVEI_MIRROR))]
   "ISA_HAS_LSX"
   "vreplvei.d\t%w0,%w1,%2"
   [(set_attr "type" "simd_splat")
