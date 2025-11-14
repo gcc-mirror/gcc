@@ -2058,19 +2058,6 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
     = (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
        && need_peeling_or_partial_vectors_p);
 
-  /* We set LOOP_VINFO_USING_SELECT_VL_P as true before loop vectorization
-     analysis that we don't know whether the loop is vectorized by partial
-     vectors (More details see tree-vect-loop-manip.cc).
-
-     However, SELECT_VL vectorizaton style should only applied on partial
-     vectorization since SELECT_VL is the GIMPLE IR that calculates the
-     number of elements to be process for each iteration.
-
-     After loop vectorization analysis, Clear LOOP_VINFO_USING_SELECT_VL_P
-     if it is not partial vectorized loop.  */
-  if (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo))
-    LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = false;
-
   return opt_result::success ();
 }
 
@@ -2340,10 +2327,18 @@ start_over:
 	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
     }
 
+  /* Decide whether this loop_vinfo should use partial vectors or peeling,
+     assuming that the loop will be used as a main loop.  We will redo
+     this analysis later if we instead decide to use the loop as an
+     epilogue loop.  */
+  ok = vect_determine_partial_vectors_and_peeling (loop_vinfo);
+  if (!ok)
+    return ok;
+
   /* If we're vectorizing a loop that uses length "controls" and
      can iterate more than once, we apply decrementing IV approach
      in loop control.  */
-  if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+  if (LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo)
       && LOOP_VINFO_PARTIAL_VECTORS_STYLE (loop_vinfo) == vect_partial_vectors_len
       && LOOP_VINFO_PARTIAL_LOAD_STORE_BIAS (loop_vinfo) == 0
       && !(LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
@@ -2434,14 +2429,6 @@ start_over:
 	      break;
 	    }
     }
-
-  /* Decide whether this loop_vinfo should use partial vectors or peeling,
-     assuming that the loop will be used as a main loop.  We will redo
-     this analysis later if we instead decide to use the loop as an
-     epilogue loop.  */
-  ok = vect_determine_partial_vectors_and_peeling (loop_vinfo);
-  if (!ok)
-    return ok;
 
   /* If we're vectorizing an epilogue loop, the vectorized loop either needs
      to be able to handle fewer than VF scalars, or needs to have a lower VF
