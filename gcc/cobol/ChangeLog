@@ -1,3 +1,28 @@
+2025-11-13  James K. Lowden  <jklowden@cobolworx.com>
+
+	* cdf.y: Install literals in symbol table.
+	* genapi.cc (parser_alphabet): Use std::string for currency.
+	(initialize_the_data): Rely on constructor.
+	(parser_file_add): Better #pragma message.
+	(parser_exception_file): Return early if not generating code.
+	* parse.y: Allow library programs to act as functions.
+	* parse_ante.h (dialect_proscribed): Standardize message.
+	(intrinsic_call_2): Correct s/fund/func/ misspelling.
+	* scan.l: Comment.
+	* symbols.cc (symbols_update): Add unreachable assertion.
+	(symbol_field_parent_set): Reduce error to debug message.
+	(cdf_literalize): Declare.
+	(symbol_table_init): Insert CDF constants as literals.
+	* symbols.h (cbl_dialect_str): Provide string values for enum.
+	(is_working_storage): Remove function.
+	(struct cbl_field_data_t): Add manhandle_initial for Numeric Edited.
+	(struct cbl_field_t): Initialize name to zeros.
+	(struct cbl_section_t): Delete unused attr() function.
+	(symbol_unique_index): Declare.
+	* token_names.h: Regenerate.
+	* util.cc (cdf_literalize): Construct a cbl_field_t from a CDF literal.
+	(symbol_unique_index): Supply "globally" unique number for a program.
+
 2025-11-10  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	PR other/122243

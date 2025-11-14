@@ -1,3 +1,145 @@
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch9.adb (Expand_N_Entry_Declaration): In the deferred case,
+	freeze immediately all the newly created entities.
+
+2025-11-13  Douglas B Rupp  <rupp@adacore.com>
+
+	* sigtramp-vxworks-target.h (REGNO_PC_OFFSET): Use 32 vice
+	96 with llvm/clang. (REGNO_G_REG_OFFSET): Remove parens on
+	operand. (REGNO_GR): Likewise.
+	* sigtramp-vxworks.c (__gnat_sigtramp): Define a macro for
+	__attribute__ optimize, which is empty of not available.
+	* raise-gcc.c (db): Define ATTRIBUTE_PRINTF_2 if not defined.
+
+2025-11-13  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb: Rewrite the spec and implementation of package
+	Cached_Attribute_Ops so that the saved value associated with a
+	type in a given map is not a single subprogram but instead a
+	set of subprograms. Thus, the correct generation of a second subprogram
+	for given type for use in some other context no longer causes the
+	first subprogram to be forgotten. This allows more reuse and,
+	in particular, allows reuse in the case where generating another
+	copy of the subprogram would result in a compilation failure.
+	Update Cached_Attribute_Ops clients correspondingly.
+
+2025-11-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Find_In_Enclosing_Context): Give up on declarations of
+	internal types.
+
+2025-11-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* treepr.adb (Print_End_Span): Print prefix, field name and line break.
+
+2025-11-13  Gary Dismukes  <dismukes@adacore.com>
+
+	* libgnat/a-cbdlli.ads: Add "limited" to partial view of reference types.
+	* libgnat/a-cbhama.ads: Likewise.
+	* libgnat/a-cbhase.ads: Likewise.
+	* libgnat/a-cbmutr.ads: Likewise.
+	* libgnat/a-cborma.ads: Likewise.
+	* libgnat/a-cborse.ads: Likewise.
+	* libgnat/a-cdlili.ads: Likewise.
+	* libgnat/a-cidlli.ads: Likewise.
+	* libgnat/a-cihama.ads: Likewise.
+	* libgnat/a-cihase.ads: Likewise.
+	* libgnat/a-cimutr.ads: Likewise.
+	* libgnat/a-ciorma.ads: Likewise.
+	* libgnat/a-ciormu.ads: Likewise.
+	* libgnat/a-ciorse.ads: Likewise.
+	* libgnat/a-cobove.ads: Likewise.
+	* libgnat/a-cohama.ads: Likewise.
+	* libgnat/a-cohase.ads: Likewise.
+	* libgnat/a-coinho.ads: Likewise.
+	* libgnat/a-coinho__shared.ads: Likewise.
+	* libgnat/a-coinve.ads: Likewise.
+	* libgnat/a-comutr.ads: Likewise.
+	* libgnat/a-convec.ads: Likewise.
+	* libgnat/a-coorma.ads: Likewise.
+	* libgnat/a-coormu.ads: Likewise.
+	* libgnat/a-coorse.ads: Likewise.
+	* sem_ch5.adb (Analyze_Assignment): Added code to resolve the target
+	object (LHS) as a complete context when there are target names ("@")
+	present in the expression of the assignment. Loop over interpretations,
+	removing any that have a limited type, and set the type (T1) to be the
+	type of the first nonlimited interpretation. Test for ambiguity by
+	calling Is_Ambiguous_Operand. Delay analysis of Rhs in the target-name
+	case. Replace existing test for generalized indexing with implicit
+	dereference in existing analysis code with test of Is_Limited_Type
+	along with calling Remove_Interp in the limited case.
+	* sem_res.adb (Is_Ambiguous_Operand): Condition the calls to
+	Report_Interpretation on Report_Errors being True.
+
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/29463
+	* sem_eval.adb (Fold_Uint): Use Universal_Integer as actual type
+	for a named number.
+	(Fold_Ureal): Likewise with Universal_Real.
+	* sem_res.adb (Resolve_Real_Literal): Test whether the literal is
+	a static expression instead of coming from source to give the error
+	prescribed by the RM 4.9(36/2) subclause.
+
+2025-11-13  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taspri__posix.ads (Suspension_Object): Add some
+	documentation.
+
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* einfo.ads (Alignment): Update description.
+
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_prag.adb (Analyze_Pragma) <Process_Suppress_Unsuppress>: For
+	Alignment_Check on a specific object with an address clause and no
+	alignment clause, toggle the Check_Address_Alignment flag present
+	on the address clause.
+
+2025-11-13  Marc Poulhiès  <poulhies@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst: Update
+	the list of junk names.
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst:
+	Likewise.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-11-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* libgnat/g-crc32.ads (CRC32): Annotate as pure and always terminating.
+	* libgnat/s-crc32.ads (CRC32): Annotate as pure and always terminating.
+
+2025-11-13  Piotr Trojanek  <trojanek@adacore.com>
+
+	* exp_util.adb (Get_Current_Value_Condition): Relax assertion about
+	rewritten ELSIF branch.
+
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_attributes.rst
+	(Maximum_Alignment): Fix description.
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst
+	(Alignment Clauses): Adjust accordingly.
+	* checks.adb (Apply_Address_Clause_Check): Remove incorrect test on
+	Maximum_Alignment.
+	* sem_ch13.adb (Analyze_Attribute_Definition_Clause): Minor tweak
+	in comment.
+	* ttypes.ads (Maximum_Alignment): Fix description.
+	* gnat_rm.texi: Regenerate.
+
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/gnat_rm/implementation_defined_pragmas.rst (Pragma Suppress):
+	Remove mention of range checks in the entry for alignment checks.
+	* gnat_rm.texi: Regenerate.
+
+2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* layout.adb (Set_Composite_Alignment): Fix typos and comments.
+
 2025-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/122640

@@ -1,6 +1,60 @@
 2025-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/96255
+	* gfortran.dg/do_concurrent_typespec_1.f90: Delete three
+	dg-bogus directives not needed.
+
+2025-11-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122646
+	* g++.dg/modules/friend-10_a.C: New test.
+	* g++.dg/modules/friend-10_b.C: New test.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122493
+	* gcc.target/i386/pr121062-1.c: Update count.
+	* gcc.dg/uninit-pred-7_a.c: xfail line 23.
+	* g++.dg/uninit-pred-5.C: Change dg-warning to dg-bogus.
+	* gcc.dg/tree-ssa/ssa-dom-thread-7.c: Update count of jump thread.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122637
+	* gcc.dg/torture/pr122637-1.c: New test.
+
+2025-11-13  Michal Jires  <mjires@suse.cz>
+
+	PR lto/122603
+	* gcc.dg/lto/pr122603_0.c: New test.
+
+2025-11-13  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* gcc.dg/tree-ssa/forwprop-43.c: Adjust.
+
+2025-11-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122627
+	* gcc.target/riscv/rvv/autovec/pr122627.c: New test.
+
+2025-11-13  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/kortest_ccz-1.c: New test.
+
+2025-11-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122551
+	* g++.dg/modules/tpl-friend-20_a.C: New test.
+	* g++.dg/modules/tpl-friend-20_b.C: New test.
+	* g++.dg/modules/tpl-friend-20_c.C: New test.
+
+2025-11-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/aarch64/eor3-opt.c: New test.
+
+2025-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/96255
 	* gfortran.dg/do_concurrent_typespec_1.f90: Update testcase to check
 	for bugus warnings.
 

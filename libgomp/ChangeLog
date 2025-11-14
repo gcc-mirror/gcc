@@ -1,3 +1,74 @@
+2025-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* allocator.c (ompx_gnu_max_predefined_alloc): Update to
+	ompx_gnu_managed_mem_alloc.
+	(_Static_assert): Fix assertion messages for allocators and add
+	new assertions for memspace constants.
+	(omp_max_predefined_mem_space): New define.
+	(ompx_gnu_min_predefined_mem_space): New define.
+	(ompx_gnu_max_predefined_mem_space): New define.
+	(MEMSPACE_ALLOC): Add check for non-standard memspaces.
+	(MEMSPACE_CALLOC): Likewise.
+	(MEMSPACE_REALLOC): Likewise.
+	(MEMSPACE_VALIDATE): Likewise.
+	(predefined_ompx_gnu_alloc_mapping): Add ompx_gnu_managed_mem_space.
+	(omp_init_allocator): Add ompx_gnu_managed_mem_space validation.
+	* config/gcn/allocator.c (gcn_memspace_alloc): Add check for
+	non-standard memspaces.
+	(gcn_memspace_calloc): Likewise.
+	(gcn_memspace_realloc): Likewise.
+	(gcn_memspace_validate): Update to validate standard vs non-standard
+	memspaces.
+	* config/linux/allocator.c (linux_memspace_alloc): Add managed
+	memory space handling.
+	(linux_memspace_calloc): Likewise.
+	(linux_memspace_free): Likewise.
+	(linux_memspace_realloc): Likewise (returns NULL for fallback).
+	* config/nvptx/allocator.c (nvptx_memspace_alloc): Add check for
+	non-standard memspaces.
+	(nvptx_memspace_calloc): Likewise.
+	(nvptx_memspace_realloc): Likewise.
+	(nvptx_memspace_validate): Update to validate standard vs non-standard
+	memspaces.
+	* env.c (parse_allocator): Add ompx_gnu_managed_mem_alloc,
+	ompx_gnu_managed_mem_space, and some static asserts so I don't forget
+	them again.
+	* libgomp-plugin.h (GOMP_OFFLOAD_managed_alloc): New declaration.
+	(GOMP_OFFLOAD_managed_free): New declaration.
+	* libgomp.h (gomp_managed_alloc): New declaration.
+	(gomp_managed_free): New declaration.
+	(struct gomp_device_descr): Add managed_alloc_func and
+	managed_free_func fields.
+	* libgomp.texi: Document ompx_gnu_managed_mem_alloc and
+	ompx_gnu_managed_mem_space, add C++ template documentation, and
+	describe NVPTX and AMD support.
+	* omp.h.in: Add ompx_gnu_managed_mem_space and
+	ompx_gnu_managed_mem_alloc enumerators, and gnu_managed_mem C++
+	allocator template.
+	* omp_lib.f90.in: Add Fortran bindings for new allocator and
+	memory space.
+	* omp_lib.h.in: Likewise.
+	* plugin/cuda-lib.def: Add cuMemAllocManaged.
+	* plugin/plugin-nvptx.c (nvptx_alloc): Add managed parameter to
+	support cuMemAllocManaged.
+	(GOMP_OFFLOAD_alloc): Move contents to ...
+	(cleanup_and_alloc): ... this new function, and add managed support.
+	(GOMP_OFFLOAD_managed_alloc): New function.
+	(GOMP_OFFLOAD_managed_free): New function.
+	* target.c (gomp_managed_alloc): New function.
+	(gomp_managed_free): New function.
+	(gomp_load_plugin_for_device): Load optional managed_alloc
+	and managed_free plugin APIs.
+	* testsuite/lib/libgomp.exp: Add check_effective_target_omp_managedmem.
+	* testsuite/libgomp.c++/alloc-managed-1.C: New test.
+	* testsuite/libgomp.c/alloc-managed-1.c: New test.
+	* testsuite/libgomp.c/alloc-managed-2.c: New test.
+	* testsuite/libgomp.c/alloc-managed-3.c: New test.
+	* testsuite/libgomp.c/alloc-managed-4.c: New test.
+	* testsuite/libgomp.fortran/alloc-managed-1.f90: New test.
+
 2025-11-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR libgomp/119677

@@ -1,3 +1,60 @@
+2025-11-13  James K. Lowden  <jklowden@cobolworx.com>
+
+	* Makefile.am: Move UDF-support to posix/shim, add install targets
+	* Makefile.in: Regenerate
+	* charmaps.cc (__gg__currency_signs): Use std::string.
+	* charmaps.h: Include string and vector headers.
+	(class charmap_t): Use std::string and vector for currency.
+	* config.h.in: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Check for libxml2.
+	* intrinsic.cc (numval_c): Constify.
+	* libgcobol.cc (struct program_state): Use std::string and vector.
+	(__gg__inspect_format_2): Add debug messages.
+	* libgcobol.h (__gg__get_default_currency_string): Constify.
+	* valconv.cc (expand_picture): Use std::string and vector.
+	(__gg__string_to_numeric_edited): Use std::string and vector.
+	(__gg__currency_sign_init): Use std::string and vector.
+	(__gg__currency_sign): Use std::string and vector.
+	* xmlparse.cc (xml_push_parse): Reformat.
+	* posix/stat.cc: Removed.
+	* posix/stat.h: Removed.
+	* .gitignore: New file.
+	* compat/README.md: New file.
+	* compat/lib/gnu/CBL_ALLOC_MEM.cbl: New file.
+	* compat/lib/gnu/CBL_CHECK_FILE_EXIST.cbl: New file.
+	* compat/lib/gnu/CBL_DELETE_FILE.cbl: New file.
+	* compat/lib/gnu/CBL_FREE_MEM.cbl: New file.
+	* compat/t/Makefile: New file.
+	* compat/t/smoke.cbl: New file.
+	* posix/README.md: New file.
+	* posix/bin/Makefile: New file for UDF-developer.
+	* posix/bin/headers: New file.
+	* posix/bin/scrape.awk: New file.
+	* posix/bin/sizeofs.c: New file.
+	* posix/bin/udf-gen: New file.
+	* posix/cpy/posix-errno.cbl: New file.
+	* posix/cpy/statbuf.cpy: New file.
+	* posix/cpy/tm.cpy: New file.
+	* posix/errno.cc: Removed.
+	* posix/localtime.cc: Removed.
+	* posix/shim/stat.cc: New file.
+	* posix/shim/stat.h: New file.
+	* posix/t/Makefile: New file.
+	* posix/t/errno.cbl: New file.
+	* posix/t/exit.cbl: New file.
+	* posix/t/localtime.cbl: New file.
+	* posix/t/stat.cbl: New file.
+	* posix/tm.h: Removed.
+	* posix/udf/posix-exit.cbl: New file.
+	* posix/udf/posix-localtime.cbl: New file.
+	* posix/udf/posix-mkdir.cbl: New file.
+	* posix/udf/posix-stat.cbl: New file.
+	* posix/udf/posix-unlink.cbl: New file.
+	* posix/shim/errno.cc: New file.
+	* posix/shim/localtime.cc: New file.
+	* posix/shim/tm.h: New file.
+
 2025-11-06  Robert Dubner  <rdubner@symas.com>
 	    James K. Lowden  <jklowden@cobolworx.com>
 

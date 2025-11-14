@@ -1,3 +1,12 @@
+2025-11-13  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122551
+	* cp-tree.h (transfer_defining_module): Declare.
+	* decl.cc (duplicate_decls): Call it for all decls.
+	Remove now unnecessary equivalent logic for templates.
+	* module.cc (mangle_module): Add assertion.
+	(transfer_defining_module): New function.
+
 2025-11-11  Jason Merrill  <jason@redhat.com>
 
 	* name-lookup.cc (name_lookup::adl_namespace_fns): Also skip hidden

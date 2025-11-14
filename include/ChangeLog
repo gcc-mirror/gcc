@@ -1,3 +1,14 @@
+2025-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* cuda/cuda.h (cuMemAllocManaged): Add declaration and related
+	CU_MEM_ATTACH_GLOBAL flag.
+	* gomp-constants.h (GOMP_OMPX_PREDEF_ALLOC_MAX): Update to 201.
+	(GOMP_OMP_PREDEF_MEMSPACE_MAX): New constant.
+	(GOMP_OMPX_PREDEF_MEMSPACE_MIN): New constant.
+	(GOMP_OMPX_PREDEF_MEMSPACE_MAX): New constant.
+
 2025-10-16  David Faust  <david.faust@oracle.com>
 
 	* dwarf2.def (DW_TAG_GNU_annotation): Add link to wiki page

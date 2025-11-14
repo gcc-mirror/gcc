@@ -1,3 +1,17 @@
+2025-11-13  Andrew Stubbs  <ams@codesourcery.com>
+	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
+	    Thomas Schwinge  <tschwinge@baylibre.com>
+
+	* openmp.cc (is_predefined_allocator): Use GOMP_OMP_PREDEF_ALLOC_MAX
+	and GOMP_OMPX_PREDEF_ALLOC_MIN/MAX instead of hardcoded values in the
+	comment.
+
+2025-11-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/122638
+	* gfortran.texi (OpenMP): Fix syntax.
+	* intrinsic.texi (UINT): Fix syntax.
+
 2025-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/96255

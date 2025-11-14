@@ -1,3 +1,9 @@
+2025-11-13  Filip Kastl  <fkastl@suse.cz>
+
+	* check-params-in-docs.py: Start parsing from
+	@itemx --param=@var{name}=@var{value} instead of
+	@item --param @var{name}=@var{value}.
+
 2025-11-12  Owen Avery  <powerboat9.gamer@gmail.com>
 
 	* gcc-changelog/git_commit.py (ignored_prefixes): Add

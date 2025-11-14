@@ -1,3 +1,45 @@
+2025-11-13  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122661
+	* include/bits/forward_list.h (forward_list::assign(I, I)): Fix
+	value category in is_assignable check.
+	* testsuite/23_containers/forward_list/modifiers/122661.cc:
+	New test.
+
+2025-11-13  Xavier Bonaventura  <xavibonaventura@gmail.com>
+
+	* testsuite/18_support/headers/csignal/macros.cc: Check for
+	SIG_IGN.
+
+2025-11-13  Xavier Bonaventura  <xavibonaventura@gmail.com>
+
+	* testsuite/18_support/headers/climits/values.cc: Check for
+	LLONG_MIN, LLONG_MAX, and ULLONG_MAX.
+
+2025-11-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/optional (__is_optional_ref): Define.
+	* include/std/ranges (_Take::operator(), _Drop::operator())
+	(_Reverse::operator()):	Handle optional<T> that are view.
+	(_AsConst::operator()): Handle optional<T&>.
+	* testsuite/20_util/optional/range.cc: New tests.
+
+2025-11-13  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/115402
+	PR libstdc++/122584
+	* testsuite/29_atomics/atomic_ref/address.cc: Guard test for
+	volatile with if constexpr.
+	* testsuite/29_atomics/atomic_ref/deduction.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/op_support.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/requirements.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/bool.cc: Use volatile_t alias.
+	* testsuite/29_atomics/atomic_ref/generic.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/integral.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/pointer.cc: Likewise.
+	* testsuite/29_atomics/atomic_ref/float.cc: Likewise, and remove
+	not discarding if constexpr.
+
 2025-11-12  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/122425

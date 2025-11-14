@@ -1,3 +1,9 @@
+2025-11-13  Michal Jires  <mjires@suse.cz>
+
+	PR lto/122603
+	* lto-partition.cc (split_partition_into_nodes): Null check for
+	possible asm_node.
+
 2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	PR lto/122515

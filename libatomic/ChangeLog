@@ -1,3 +1,17 @@
+2025-11-13  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.ac (ARCH_LOONGARCH): New AM_CONDITIONAL.
+	* Makefile.am (IFUNC_OPT): Separate the item from IFUNC_OPTIONS
+	to allow using multiple options for an ISA variant.
+	(libatomic_la_LIBADD): Add *_16_1_.lo for LoongArch.
+	(IFUNC_OPTIONS): Build *_16_1_.lo for LoongArch with -mlsx and
+	-mscq.
+	* configure: Regenerate.
+	* Makefile.in: Regenerate.
+	* configure.tgt (try_ifunc): Set to yes for LoongArch if the
+	compiler can produce lock-free 16B atomic with -mlsx -mscq.
+	* config/loongarch/host-config.h: Implement ifunc selector.
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

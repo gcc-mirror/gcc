@@ -1,3 +1,167 @@
+2025-11-13  Alexandre Oliva  <oliva@adacore.com>
+	    Olivier Hainque  <hainque@adacore.com>
+
+	* config/vxworks/base/b_NULL.h: New.
+	* config.gcc (extra_headers) <*-*-vxworks*>: Add it.
+	* Makefile.in (stmp-int-hdrs): Support /././ markers in USER_H
+	to mark the beginning of the install name.  Document.
+	* doc/sourcebuild.texi (Headers): Document /././ marker.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (tree_forwarder_block_p): Remove must argument.
+	(remove_forwarder_block): Add can_split
+	argument. Handle the splitting case (iff phis in bb).
+	(cleanup_tree_cfg_bb): Update argument to tree_forwarder_block_p.
+	(remove_forwarder_block_with_phi): Remove.
+	(pass_merge_phi::execute): Update argument to tree_forwarder_block_p
+	and call remove_forwarder_block instead of remove_forwarder_block_with_phi.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122493
+	* tree-cfgcleanup.cc (tree_forwarder_block_p): Change bool argument
+	to a must have phi and allow phis if it is false.
+	(remove_forwarder_block): Add support for merging of forwarder blocks
+	with phis.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfg.cc (copy_phi_arg_into_existing_phi): Use the original location
+	if the mapped location is unknown.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfg.cc (copy_phi_arg_into_existing_phi): New use_map argument.
+	* tree-cfg.h (copy_phi_arg_into_existing_phi): Update declaration.
+	* tree-cfgcleanup.cc (remove_forwarder_block_with_phi): Use
+	copy_phi_arg_into_existing_phi instead of inlining it.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (remove_forwarder_block): Move
+	variable declaration ei into for loop.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (remove_forwarder_block_with_phi): Use
+	edge iterator instead of while loop.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (remove_forwarder_block): Remove check
+	on the available dominator information.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (tree_forwarder_block_p): Reject bb which has a single
+	predecessor which has a single successor.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (pass_merge_phi::execute): Move
+	check for abnormal or no phis to remove_forwarder_block_with_phi
+	and the check on dominated to tree_forwarder_block_p.
+	(remove_forwarder_block_with_phi): here.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (remove_forwarder_block_with_phi): Remove check on non-local label.
+	(remove_forwarder_block): Remove check on non-label/eh landing pad.
+	(tree_forwarder_block_p): Add check on lable for an eh landing pad.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (remove_forwarder_block): Remove check for infinite loop.
+	(remove_forwarder_block_with_phi): Likewise. Also remove check for loop header.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (pass_merge_phi::execute): Remove worklist.
+
+2025-11-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	* ext-dce.cc (ext_dce_try_optimize_rshift): New function to optimize a
+	shift pair implementing a zero/sign extension.
+	(ext_dce_try_optimize_extension): Renamed from
+	ext_dce_try_optimize_insn.
+	(ext_dce_process_uses): Handle shift pairs implementing extensions.
+
+2025-11-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122637
+	* tree-scalar-evolution.cc (final_value_replacement_loop): Fix order
+	of gimplification and constant prop.
+
+2025-11-13  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122627
+	* lra-constraints.cc (update_equiv): Remove patch from last week
+	related to pr122321.
+	(lra_constraints): Expand the equivalence array after eliminations
+	are complete.
+
+2025-11-13  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure.ac (HAVE_AS_16B_ATOMIC): Define if the assembler
+	supports LSX and sc.q.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/loongarch/loongarch-opts.h (HAVE_AS_16B_ATOMIC):
+	Defined to 0 if undefined yet.
+	* config/loongarch/linux.h (HAVE_IFUNC_FOR_LIBATOMIC_16B):
+	Define as HAVE_AS_16B_ATOMIC && OPTION_GLIBC.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_16b_atomic_lock_free_p): New prototype.
+	* config/loongarch/loongarch.cc
+	(loongarch_16b_atomic_lock_free_p): Implement.
+	* config/loongarch/sync.md (atomic_storeti_lsx): Require
+	loongarch_16b_atomic_lock_free_p.
+	(atomic_storeti): Likewise.
+	(atomic_exchangeti_scq): Likewise.
+	(atomic_exchangeti): Likewise.
+	(atomic_compare_and_swapti): Likewise.
+	(atomic_fetch_<amop_ti_fetch>ti_scq): Likewise.
+	(atomic_fetch_<amop_ti_fetch>ti): Likewise.
+	(ALL_SC): Likewise for TImode.
+	(atomic_storeti_scq): Remove.
+
+2025-11-13  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-features.cc (pass_x86_cse::x86_cse): Delete
+	loads.
+
+2025-11-13  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR other/122638
+	* doc/install.texi (Configuration, --enable-x86-64-mfentry): Fix
+	typo.
+
+2025-11-13  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386.md (*ior<mode>_ccz_1): New define_insn.
+
+2025-11-13  Alice Carlotti  <alice.carlotti@arm.com>
+
+	* config/aarch64/driver-aarch64.cc
+	(host_detect_local_cpu): Extend feature string syntax.
+
+2025-11-13  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-dce.cc (simple_dce_from_worklist): For calls
+	with side-effects remove their LHS.
+
+2025-11-13  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* config/aarch64/aarch64-simd.md (*eor3q<mode>4): New insn to be used by
+	combine after reload to optimize any grouping of eor's that are using FP
+	registers for scalar modes.
+
+2025-11-13  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/riscv-target-attr.cc (riscv_process_target_str): Clean
+	the final byte of str_to_check.
+
 2025-11-12  David Malcolm  <dmalcolm@redhat.com>
 
 	PR diagnostics/115970
