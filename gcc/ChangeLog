@@ -1,3 +1,28 @@
+2025-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2025-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122446
+	* config/i386/amxbf16intrin.h (_tile_dpbf16ps_internal):
+	Input register name by inline asm %c[...], and remove %% before tmm
+	from intel side.
+	* config/i386/amxcomplexintrin.h (_tile_cmmimfp16ps_internal): Ditto
+	(_tile_cmmrlfp16ps_internal): Ditto
+	(_tile_cmmimfp16ps): Ditto
+	(_tile_cmmrlfp16ps): Ditto
+	* config/i386/amxfp16intrin.h (_tile_dpfp16ps_internal): Ditto
+	(_tile_dpfp16ps): Ditto
+	* config/i386/amxint8intrin.h (_tile_int8_dp_internal): Ditto
+	* config/i386/amxtileintrin.h (_tile_loadd): Ditto
+	(_tile_loadd_internal): Ditto
+	(_tile_stream_loadd): Ditto
+	(_tile_stream_loadd_internal): Ditto
+	(_tile_stored): Ditto
+	(_tile_stored_internal): Ditto
+	(_tile_zero): Ditto
+	(_tile_zero_internal): Ditto
+
 2025-11-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/122223

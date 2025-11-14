@@ -1,3 +1,22 @@
+2025-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	Backported from master:
+	2025-11-13  Hu, Lin1  <lin1.hu@intel.com>
+
+	PR target/122446
+	* gcc.target/i386/amxbf16-asmintel-1.c: Modify dg-final to check intel
+	form.
+	* gcc.target/i386/amxcomplex-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxfp16-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxint8-asmintel-1.c: Ditto.
+	* gcc.target/i386/amxtile-asmintel-1.c: Ditto.
+	* g++.target/i386/pr122446-1.C: New test.
+	* g++.target/i386/pr122446-amxbf16.C: Ditto.
+	* g++.target/i386/pr122446-amxcomplex.C: Ditto.
+	* g++.target/i386/pr122446-amxfp16.C: Ditto.
+	* g++.target/i386/pr122446-amxint8.C: Ditto.
+	* g++.target/i386/pr122446-amxtile.C: Ditto.
+
 2025-11-07  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	PR target/122223
