@@ -2167,12 +2167,10 @@ package body Sem_Ch13 is
                Pragma_Name                  : Name_Id) return Node_Id;
             --  This is a wrapper for Make_Pragma used for converting aspects
             --  to pragmas. It takes care of Sloc (set from Loc) and building
-            --  the pragma identifier from the given name. In addition the flag
-            --  Class_Present is set from the aspect node, as well as
-            --  Is_Ignored. This routine also sets the
-            --  From_Aspect_Specification in the resulting pragma node to True,
-            --  and sets Corresponding_Aspect to point to the aspect. The
-            --  resulting pragma is assigned to Aitem.
+            --  the pragma identifier from the given name. In addition
+            --  Class_Present and Is_Ignored are set from the aspect node.
+            --  This routine also sets From_Aspect_Specification to True,
+            --  and sets Corresponding_Aspect to point to the aspect.
 
             -------------------------------
             -- Analyze_Aspect_Convention --
@@ -4814,12 +4812,10 @@ package body Sem_Ch13 is
 
                when Aspect_Annotate | Aspect_GNAT_Annotate =>
                   declare
-                     Args  : List_Id;
-                     Pargs : List_Id;
-                     Arg   : Node_Id;
-
+                     Pargs : constant List_Id := New_List; -- pragma args
                   begin
-                     --  The argument can be a single identifier
+                     --  The argument can be a single identifier; add it to
+                     --  Pargs.
 
                      if Nkind (Expr) = N_Identifier then
 
@@ -4831,11 +4827,12 @@ package body Sem_Ch13 is
 
                         Set_Paren_Count (Expr, 0);
 
-                        --  Add the single item to the list
+                        Append_To (Pargs,
+                          Make_Pragma_Argument_Association (Sloc (Expr),
+                            Expression => Relocate_Node (Expr)));
 
-                        Args := New_List (Expr);
-
-                     --  Otherwise we must have an aggregate
+                     --  Otherwise we must have an aggregate; add all
+                     --  expressions to Pargs.
 
                      elsif Nkind (Expr) = N_Aggregate then
 
@@ -4854,9 +4851,16 @@ package body Sem_Ch13 is
                              ("redundant parentheses", Expr);
                         end if;
 
-                        --  List of arguments is list of aggregate expressions
-
-                        Args := Expressions (Expr);
+                        declare
+                           Arg : Node_Id := First (Expressions (Expr));
+                        begin
+                           while Present (Arg) loop
+                              Append_To (Pargs,
+                                Make_Pragma_Argument_Association (Sloc (Arg),
+                                  Expression => Relocate_Node (Arg)));
+                              Next (Arg);
+                           end loop;
+                        end;
 
                      --  Anything else is illegal
 
@@ -4864,17 +4868,6 @@ package body Sem_Ch13 is
                         Error_Msg_F ("wrong form for Annotate aspect", Expr);
                         goto Continue;
                      end if;
-
-                     --  Prepare pragma arguments
-
-                     Pargs := New_List;
-                     Arg := First (Args);
-                     while Present (Arg) loop
-                        Append_To (Pargs,
-                          Make_Pragma_Argument_Association (Sloc (Arg),
-                            Expression => Relocate_Node (Arg)));
-                        Next (Arg);
-                     end loop;
 
                      Append_To (Pargs,
                        Make_Pragma_Argument_Association (Sloc (Ent),

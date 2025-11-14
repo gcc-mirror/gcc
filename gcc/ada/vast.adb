@@ -88,7 +88,7 @@ package body VAST is
       Check_Error_Nodes => Enabled,
       Check_FE_Only => Disabled,
       Check_Sharing => Disabled,
-      Check_Parent_Present => Disabled,
+      Check_Parent_Present => Enabled,
       Check_Parent_Correct => Disabled,
       Check_Scope_Present => Print_And_Continue,
       Check_Scope_Correct => Print_And_Continue);

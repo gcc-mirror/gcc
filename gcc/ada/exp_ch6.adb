@@ -10558,8 +10558,9 @@ package body Exp_Ch6 is
 
                begin
                   pragma Assert (Check_BIP_Actuals (Call_Node, Subp));
-                    --  Build-in-place function calls return their result by
-                    --  reference.
+
+                  --  Build-in-place function calls return their result by
+                  --  reference.
 
                   pragma Assert (not Is_Build_In_Place_Function (Subp)
                     or else Returns_By_Ref (Subp));
