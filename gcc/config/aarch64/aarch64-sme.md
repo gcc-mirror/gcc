@@ -1055,7 +1055,7 @@
 	  [(match_operand:SVE_FULL 0 "register_operand" "w")
 	   (match_operand:DI       1 "const_int_operand")]
 	  UNSPEC_SME_WRITE))]
-  "TARGET_SME_LUTv2"
+  "TARGET_SME_LUTv2 && TARGET_STREAMING"
   "movt\tzt0 [%1, mul vl], %0"
 )
 
@@ -2774,6 +2774,6 @@
 	   (reg:DI SME_STATE_REGNUM)
 	   (match_operand:VNx32QI 1 "register_operand" "w")]
 	  UNSPEC_SME_LUTI_ZT))]
-  "TARGET_SME_LUTv2"
+  "TARGET_SME_LUTv2 && TARGET_STREAMING"
   "luti4\t%0, zt0, {%Z1 - %T1}"
 )
