@@ -18,4 +18,4 @@ int main() {
   }
 }
 
-/* { dg-final { scan-tree-dump-times "Global Exported: c_.*1, 1" 1 "evrp" } } */
+/* { dg-final { scan-tree-dump-not "if \\(c_"  "evrp" } } */

@@ -81,8 +81,7 @@ public:
   void dump (FILE *f);
 protected:
   phi_group *group (tree name) const;
-  void process_phi (gphi *phi);
-  range_query &m_global;
+  void process_phi (gphi *phi, range_query &query);
   vec<tree> m_work;
 
   bitmap m_simple;       // Processed, not part of a group.
@@ -92,16 +91,10 @@ protected:
   bitmap_obstack m_bitmaps;
 };
 
-// These are the APIs to start and stop a phi analyzerin a SCEV like manner.
-// There can only be one operating at any given time.
-// When initialized, a range-query if provided to do lookups of values for
-// PHIs and to evaluate modifier and initial value statements.
-// To avoid problems, this should be some form of constant query, like
-// global_range_query or better yet a const_query from a functioning ranger.
+// Invoke a phi analyzer.  It will process all the current PHI nodes and try
+// to form groups with initial values. Then export any ranges found
+// to set_range_info.  When finished, it will simply dispose of itself.
 
-bool phi_analysis_available_p ();
-phi_analyzer &phi_analysis ();
-void phi_analysis_initialize (range_query &);
-void phi_analysis_finalize ();
+void phi_analysis (range_query &q);
 
 #endif // GCC_SSA_RANGE_PHI_H

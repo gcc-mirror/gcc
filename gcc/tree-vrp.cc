@@ -1094,8 +1094,8 @@ execute_ranger_vrp (struct function *fun, bool final_p)
 
   set_all_edges_as_executable (fun);
   gimple_ranger *ranger = enable_ranger (fun, false);
+  phi_analysis (*ranger);
   rvrp_folder folder (ranger, final_p);
-  phi_analysis_initialize (ranger->const_query ());
   folder.substitute_and_fold ();
   // Ensure the cache in SCEV has been cleared before processing
   // globals to be removed.
@@ -1149,7 +1149,6 @@ execute_ranger_vrp (struct function *fun, bool final_p)
 	}
     }
 
-  phi_analysis_finalize ();
   disable_ranger (fun);
   scev_finalize ();
   loop_optimizer_finalize ();

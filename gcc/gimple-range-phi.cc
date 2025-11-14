@@ -37,41 +37,14 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-walk.h"
 #include "cfganal.h"
 
-// There can be only one running at a time.
-static phi_analyzer *phi_analysis_object = NULL;
-
-// Initialize a PHI analyzer with range query Q.
-
-void
-phi_analysis_initialize (range_query &q)
-{
-  gcc_checking_assert (!phi_analysis_object);
-  phi_analysis_object = new phi_analyzer (q);
-}
-
-// Terminate the current PHI analyzer.  if F is non-null, dump the tables
+// Invoke a phi analyzer.  It will process all the current PHI groups
+// and export any ranges found to set_range_info.
+// When finished, it will simply dispose of itself.
 
 void
-phi_analysis_finalize ()
+phi_analysis (range_query &q)
 {
-  gcc_checking_assert (phi_analysis_object);
-  delete phi_analysis_object;
-  phi_analysis_object = NULL;
-}
-
-// Return TRUE is there is a PHI analyzer operating.
-bool
-phi_analysis_available_p ()
-{
-  return phi_analysis_object != NULL;
-}
-
-// Return the phi analyzer object.
-
-phi_analyzer &phi_analysis ()
-{
-  gcc_checking_assert (phi_analysis_object);
-  return *phi_analysis_object;
+  phi_analyzer analyze (q);
 }
 
 // Initialize a phi_group from another group G.
@@ -254,16 +227,35 @@ phi_group::dump (FILE *f)
 
 // Construct a phi analyzer which uses range_query G to pick up values.
 
-phi_analyzer::phi_analyzer (range_query &g) : m_global (g), m_phi_groups (vNULL)
+phi_analyzer::phi_analyzer (range_query &query) : m_phi_groups (vNULL)
 {
   m_work.create (0);
   m_work.safe_grow (20);
 
   m_tab.create (0);
-//   m_tab.safe_grow_cleared (num_ssa_names + 100);
+  m_tab.safe_grow_cleared (num_ssa_names + 10);
+
   bitmap_obstack_initialize (&m_bitmaps);
   m_simple = BITMAP_ALLOC (&m_bitmaps);
   m_current = BITMAP_ALLOC (&m_bitmaps);
+
+  basic_block bb;
+  gphi_iterator gphi;
+
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "PHI ANALYZER : processing PHIS.\n");
+
+  // Process each PHI node to see if it belongs in a group with others.
+  // Then calculate an initial value for the group.
+  FOR_EACH_BB_FN (bb, cfun)
+    {
+      for (gphi = gsi_start_nonvirtual_phis (bb);
+	   !gsi_end_p (gphi);
+	   gsi_next_nonvirtual_phi (&gphi))
+	process_phi (gphi.phi (), query);
+    }
+  if (dump_file && (dump_flags & TDF_DETAILS))
+    fprintf (dump_file, "PHI ANALYZER : Finished processing PHIS.\n");
 }
 
 // Destruct a PHI analyzer.
@@ -308,35 +300,33 @@ phi_analyzer::operator[] (tree name)
     return NULL;
 
   unsigned v = SSA_NAME_VERSION (name);
-  // Already been processed and not part of a group.
-  if (bitmap_bit_p (m_simple, v))
+  if (v >= m_tab.length ())
     return NULL;
-
-  if (v >= m_tab.length () || !m_tab[v])
-    {
-      process_phi (as_a<gphi *> (SSA_NAME_DEF_STMT (name)));
-      if (bitmap_bit_p (m_simple, v))
-	return  NULL;
-     // If m_simple bit isn't set, and process_phi didn't allocated the table
-     // no group was created, so return NULL.
-     if (v >= m_tab.length ())
-      return NULL;
-    }
   return m_tab[v];
 }
 
-// Process phi node PHI to see if it is part of a group.
+// Process phi node PHI to see if it is part of a group.  Use QUERY
+// to deteremine ranges.
 
 void
-phi_analyzer::process_phi (gphi *phi)
+phi_analyzer::process_phi (gphi *phi, range_query &query)
 {
-  gcc_checking_assert (!group (gimple_phi_result (phi)));
+  tree def = gimple_phi_result (phi);
+  unsigned v = SSA_NAME_VERSION (def);
+
+  gcc_checking_assert (v < m_tab.length ());
+  // If this is already on a group, or identified as a simple phi, or
+  // not an irange, do not process it.
+  if (m_tab[v] || bitmap_bit_p (m_simple, v)
+      || !irange::supports_p (TREE_TYPE (def)))
+    return;
+
   bool cycle_p = true;
 
   // Start with the LHS of the PHI in the worklist.
   unsigned x;
   m_work.truncate (0);
-  m_work.safe_push (gimple_phi_result (phi));
+  m_work.safe_push (def);
   unsigned phi_count = 1;
   bitmap_clear (m_current);
 
@@ -447,7 +437,7 @@ phi_analyzer::process_phi (gphi *phi)
       // If there is an symbolic initializer as well, include it here.
       if (valid && init_idx != -1)
 	{
-	  if (m_global.range_on_edge (init_sym, m_ext_edge[init_idx],
+	  if (query.range_on_edge (init_sym, m_ext_edge[init_idx],
 				      m_external[init_idx]))
 	    init_range.union_ (init_sym);
 	  else
@@ -457,7 +447,7 @@ phi_analyzer::process_phi (gphi *phi)
 	{
 	  // Try to create a group based on m_current. If a result comes back
 	  // with a range that isn't varying, create the group.
-	  phi_group cyc (m_current, init_range, mod, &m_global);
+	  phi_group cyc (m_current, init_range, mod, &query);
 	  if (!cyc.range ().varying_p ())
 	    {
 	      g = new phi_group (cyc);
@@ -490,9 +480,6 @@ phi_analyzer::process_phi (gphi *phi)
       return;
     }
 
-  if (num_ssa_names >= m_tab.length ())
-    m_tab.safe_grow_cleared (num_ssa_names + 100);
-
   // Now set all entries in the group to this record.
   unsigned i;
   bitmap_iterator bi;
@@ -501,6 +488,8 @@ phi_analyzer::process_phi (gphi *phi)
       // Can't be in more than one group.
       gcc_checking_assert (m_tab[i] == NULL);
       m_tab[i] = g;
+      // Set the new range in the range query.
+      query.update_range_info (ssa_name (i), g->range ());
     }
   // Allocate a new bitmap for the next time as the original one is now part
   // of the new phi group.

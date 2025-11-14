@@ -1008,31 +1008,9 @@ fold_using_range::range_of_phi (vrange &r, gphi *phi, fur_source &src)
 	}
     }
 
-  // If PHI analysis is available, see if there is an iniital range.
-  if (phi_analysis_available_p ()
-      && irange::supports_p (TREE_TYPE (phi_def)))
-    {
-      phi_group *g = (phi_analysis())[phi_def];
-      if (g && !(g->range ().varying_p ()))
-	{
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, "PHI GROUP query for ");
-	      print_generic_expr (dump_file, phi_def, TDF_SLIM);
-	      fprintf (dump_file, " found : ");
-	      g->range ().dump (dump_file);
-	      fprintf (dump_file, " and adjusted original range from :");
-	      r.dump (dump_file);
-	    }
-	  r.intersect (g->range ());
-	  if (dump_file && (dump_flags & TDF_DETAILS))
-	    {
-	      fprintf (dump_file, " to :");
-	      r.dump (dump_file);
-	      fprintf (dump_file, "\n");
-	    }
-	}
-    }
+  // Incorporate any global value.  If a PHI analysis phase was run, there may
+  // be a restricted global range already.  Query the range with no context
+  // to get a global range.
 
   // If SCEV is available, query if this PHI has any known values.
   if (scev_initialized_p ()
