@@ -195,6 +195,7 @@ init_internal_fns ()
 #define check_ptrs_direct { 0, 0, false }
 #define crc_direct { 1, -1, true }
 #define reduc_sbool_direct { 0, 0, true }
+#define select_vl_direct { 2, 0, false }
 
 const direct_internal_fn_info direct_internal_fn_array[IFN_LAST + 1] = {
 #define DEF_INTERNAL_FN(CODE, FLAGS, FNSPEC) not_direct,
@@ -4183,6 +4184,9 @@ expand_reduc_sbool_optab_fn (internal_fn fn, gcall *stmt, direct_optab optab)
 #define expand_check_ptrs_optab_fn(FN, STMT, OPTAB) \
   expand_direct_optab_fn (FN, STMT, OPTAB, 4)
 
+#define expand_select_vl_optab_fn(FN, STMT, OPTAB) \
+  expand_convert_optab_fn (FN, STMT, OPTAB, 3)
+
 /* Expanders for optabs that can use expand_convert_optab_fn.  */
 
 #define expand_unary_convert_optab_fn(FN, STMT, OPTAB) \
@@ -4299,6 +4303,7 @@ multi_vector_optab_supported_p (convert_optab optab, tree_pair types,
 #define direct_vec_set_optab_supported_p direct_optab_supported_p
 #define direct_vec_extract_optab_supported_p convert_optab_supported_p
 #define direct_reduc_sbool_optab_supported_p direct_optab_supported_p
+#define direct_select_vl_optab_supported_p convert_optab_supported_p
 
 /* Return the optab used by internal function FN.  */
 

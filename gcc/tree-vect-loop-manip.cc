@@ -574,8 +574,10 @@ vect_set_loop_controls_directly (class loop *loop, loop_vec_info loop_vinfo,
 	{
 	  create_iv (nitems_total, MINUS_EXPR, step, NULL_TREE, loop, &incr_gsi,
 		     insert_after, &index_before_incr, &index_after_incr);
+	  tree vectype = build_zero_cst (rgc->type);
 	  tree len = gimple_build (header_seq, IFN_SELECT_VL, iv_type,
-				   index_before_incr, nitems_step);
+				   index_before_incr, nitems_step,
+				   vectype);
 	  gimple_seq_add_stmt (header_seq, gimple_build_assign (step, len));
 	}
       else

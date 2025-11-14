@@ -1335,10 +1335,11 @@
 ;; == SELECT_VL
 ;; =========================================================================
 
-(define_expand "select_vl<mode>"
+(define_expand "select_vl<V:mode><P:mode>"
   [(match_operand:P 0 "register_operand")
    (match_operand:P 1 "vector_length_operand")
-   (match_operand:P 2 "immediate_operand")]
+   (match_operand:P 2 "immediate_operand")
+   (match_operand:V 3)]
   "TARGET_VECTOR"
 {
   riscv_vector::expand_select_vl (operands);

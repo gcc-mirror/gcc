@@ -2420,13 +2420,22 @@ start_over:
   if (LOOP_VINFO_USING_DECREMENTING_IV_P (loop_vinfo))
     {
       tree iv_type = LOOP_VINFO_RGROUP_IV_TYPE (loop_vinfo);
-      if (direct_internal_fn_supported_p (IFN_SELECT_VL, iv_type,
-					  OPTIMIZE_FOR_SPEED)
-	  && LOOP_VINFO_LENS (loop_vinfo).length () == 1
+      if (LOOP_VINFO_LENS (loop_vinfo).length () == 1
 	  && LOOP_VINFO_LENS (loop_vinfo)[0].factor == 1
 	  && (!LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
 	      || !LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant ()))
 	LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = true;
+
+      if (LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
+	for (auto rgc : LOOP_VINFO_LENS (loop_vinfo))
+	  if (rgc.type
+	      && !direct_internal_fn_supported_p (IFN_SELECT_VL,
+						  rgc.type, iv_type,
+						  OPTIMIZE_FOR_SPEED))
+	    {
+	      LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo) = false;
+	      break;
+	    }
 
       /* If any of the SLP instances cover more than a single lane
 	 we cannot use .SELECT_VL at the moment, even if the number

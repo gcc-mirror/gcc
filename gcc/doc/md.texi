@@ -5273,13 +5273,14 @@ for (i = 1; i < operand3; i++)
   operand0[i] = operand0[i - 1] && (operand1 + i < operand2);
 @end smallexample
 
-@cindex @code{select_vl@var{m}} instruction pattern
-@item @code{select_vl@var{m}}
-Set operand 0 to the number of scalar iterations that should be handled
-by one iteration of a vector loop.  Operand 1 is the total number of
-scalar iterations that the loop needs to process and operand 2 is a
-maximum bound on the result (also known as the maximum ``vectorization
-factor'').
+@cindex @code{select_vl@var{m}@var{n}} instruction pattern
+@item @code{select_vl@var{m}@var{n}}
+Set operand 0 (of mode @var{n}) to the number of scalar iterations that
+should be handled by one iteration of a vector loop.  Operand 1 is the
+total number of scalar iterations that the loop needs to process and
+operand 2 is a maximum bound on the result (also known as the
+maximum ``vectorization factor'').  Operand 3 (of mode @var{m}) is
+a dummy parameter to pass the vector mode to be used.
 
 The maximum value of operand 0 is given by:
 @smallexample
@@ -5293,7 +5294,7 @@ this, it is generally not useful to define this instruction if it will
 always calculate the maximum value.
 
 This optab is only useful on targets that implement @samp{len_load_@var{m}}
-and/or @samp{len_store_@var{m}}.
+and/or @samp{len_store_@var{m}} or the associated @samp{_len} variants.
 
 @cindex @code{check_raw_ptrs@var{m}} instruction pattern
 @item @samp{check_raw_ptrs@var{m}}
