@@ -135,6 +135,10 @@
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), -16, 15)")))
 
+(define_predicate "const_uimm63_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 63)")))
+
 (define_predicate "const_imm10_operand"
   (and (match_code "const_int")
        (match_test "IMM10_OPERAND (INTVAL (op))")))

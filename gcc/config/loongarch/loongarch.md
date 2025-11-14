@@ -1637,6 +1637,65 @@
     operands[3] = tmp;
   })
 
+;; Optimize (a << imm1) | (b & imm2) to use bstrins.w instruction, both a and b
+;; should be 32bits, imm2 value should be equal to (1LL << imm1) - 1.
+;; For example: (a << 1) | (b & 1)
+;;     slli.w  $r12,$r12,1
+;;     andi    $r13,$r13,1
+;;     or  $r12,$r12,$r13
+;; Optimized to use bstrins.w instruction as below:
+;;     bstrins.w   $r13,$r12,31,1
+(define_insn_and_split "*bstrins_w_for_ior_ashift_and_extend"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(any_or_plus:DI
+	  (and:DI (match_operand:DI 1 "register_operand" "r")
+		  (match_operand:SI 2 "const_int_operand" "i"))
+	  (ashift:DI
+	    (sign_extract:DI
+	      (match_operand:DI 3 "register_operand" "r")
+	      (match_operand:SI 4 "const_uimm5_operand")
+	      (const_int 0))
+	    (match_operand:SI 5 "const_uimm5_operand"))))]
+  "TARGET_64BIT && loongarch_pre_reload_split ()
+   && !reg_overlap_mentioned_p (operands[0], operands[3])
+   && INTVAL (operands[2]) != 0 && INTVAL (operands[5]) != 0
+   && INTVAL (operands[2]) == (1LL << INTVAL (operands[5])) - 1
+   && INTVAL (operands[4]) + INTVAL (operands[5]) == 0x20"
+  "#"
+  "&& true"
+  [(const_int 0)]
+  {
+    emit_move_insn (operands[0], operands[1]);
+    rtx len = GEN_INT (32 - INTVAL (operands[5]));
+    rtx dest = gen_lowpart (SImode, operands[0]);
+    rtx op = gen_lowpart (SImode, operands[3]);
+    emit_insn (gen_insvsi (dest, len, operands[5], op));
+  })
+
+;; Optimize (a << imm1) | (b & imm2) to use bstrins.d instruction, the size of
+;; a and b are 8 bits, 16 bits or 64bits, imm2 value should be equal to
+;; (1LL << imm1) - 1.
+(define_insn_and_split "*bstrins_d_for_ior_ashift_and"
+  [(set (match_operand:DI 0 "register_operand" "=r")
+	(any_or_plus:DI
+	  (and:DI (match_operand:DI 1 "register_operand" "r")
+		  (match_operand:DI 2 "const_int_operand" "i"))
+	  (ashift:DI
+	      (match_operand:DI 3 "register_operand" "r")
+	      (match_operand:DI 4 "const_uimm63_operand"))))]
+  "TARGET_64BIT && loongarch_pre_reload_split ()
+   && !reg_overlap_mentioned_p (operands[0], operands[3])
+   && INTVAL (operands[2]) != 0 && INTVAL (operands[4]) != 0
+   && INTVAL (operands[2]) == (1LL << INTVAL (operands[4])) - 1"
+  "#"
+  "&& true"
+  [(set (match_dup 0) (match_dup 1))
+   (set (zero_extract:DI (match_dup 0) (match_dup 2) (match_dup 4))
+	(match_dup 3))]
+  {
+    operands[2] = GEN_INT (64 - INTVAL (operands[4]));
+  })
+
 (define_insn "and_load_zero_extend<mode>"
   [(set (match_operand:X 0 "register_operand" "=r,r,r,r,r,r")
 	(and:X (match_operand:X 1 "memory_operand" "%m,m,m,k,k,k")
