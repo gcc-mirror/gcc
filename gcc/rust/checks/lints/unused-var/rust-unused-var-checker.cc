@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unused-var-checker.h"
+#include "rust-hir-expr.h"
 #include "rust-hir-item.h"
 
 #include "options.h"
@@ -27,12 +28,12 @@ UnusedVarChecker::UnusedVarChecker ()
   : nr_context (
     Resolver2_0::ImmutableNameResolutionContext::get ().resolver ()),
     mappings (Analysis::Mappings::get ()),
-    unused_var_context (std::make_unique<UnusedVarContext> ())
+    unused_var_context (UnusedVarContext ())
 {}
 void
 UnusedVarChecker::go (HIR::Crate &crate)
 {
-  UnusedVarCollector collector (*unused_var_context);
+  UnusedVarCollector collector (unused_var_context);
   collector.go (crate);
   for (auto &item : crate.get_items ())
     item->accept_vis (*this);
@@ -43,9 +44,8 @@ UnusedVarChecker::visit (HIR::ConstantItem &item)
   std::string var_name = item.get_identifier ().as_string ();
   bool starts_with_under_score = var_name.compare (0, 1, "_") == 0;
   auto id = item.get_mappings ().get_hirid ();
-  if (!unused_var_context->is_variable_used (id) && !starts_with_under_score)
-    rust_warning_at (item.get_locus (), OPT_Wunused_variable,
-		     "unused name '%s'",
+  if (!unused_var_context.is_variable_used (id) && !starts_with_under_score)
+    rust_warning_at (item.get_locus (), OPT_Wunused_variable, "unused name %qs",
 		     item.get_identifier ().as_string ().c_str ());
 }
 
@@ -55,9 +55,8 @@ UnusedVarChecker::visit (HIR::StaticItem &item)
   std::string var_name = item.get_identifier ().as_string ();
   bool starts_with_under_score = var_name.compare (0, 1, "_") == 0;
   auto id = item.get_mappings ().get_hirid ();
-  if (!unused_var_context->is_variable_used (id) && !starts_with_under_score)
-    rust_warning_at (item.get_locus (), OPT_Wunused_variable,
-		     "unused name '%s'",
+  if (!unused_var_context.is_variable_used (id) && !starts_with_under_score)
+    rust_warning_at (item.get_locus (), OPT_Wunused_variable, "unused name %qs",
 		     item.get_identifier ().as_string ().c_str ());
 }
 
@@ -72,11 +71,27 @@ UnusedVarChecker::visit (HIR::IdentifierPattern &pattern)
   std::string var_name = pattern.get_identifier ().as_string ();
   bool starts_with_under_score = var_name.compare (0, 1, "_") == 0;
   auto id = pattern.get_mappings ().get_hirid ();
-  if (!unused_var_context->is_variable_used (id) && var_name != "self"
+  if (!unused_var_context.is_variable_used (id) && var_name != "self"
       && !starts_with_under_score)
     rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
-		     "unused name '%s'",
+		     "unused name %qs",
 		     pattern.get_identifier ().as_string ().c_str ());
+}
+void
+
+UnusedVarChecker::visit (HIR::AssignmentExpr &expr)
+
+{
+  const auto &lhs = expr.get_lhs ();
+  auto var_name = lhs.to_string ();
+  NodeId ast_node_id = lhs.get_mappings ().get_nodeid ();
+  NodeId def_id = nr_context.lookup (ast_node_id).value ();
+  HirId id = mappings.lookup_node_to_hir (def_id).value ();
+  if (unused_var_context.is_variable_assigned (id,
+					       lhs.get_mappings ().get_hirid ())
+      && !starts_with_under_score)
+    rust_warning_at (lhs.get_locus (), OPT_Wunused_variable,
+		     "unused assignment %qs", var_name.c_str ());
 }
 } // namespace Analysis
 } // namespace Rust

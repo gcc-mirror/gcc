@@ -17,11 +17,13 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-unused-var-collector.h"
+#include "rust-hir-expr.h"
 #include "rust-hir-full-decls.h"
 #include "rust-hir-item.h"
 #include "rust-hir-path.h"
 #include "rust-hir-pattern.h"
 #include "rust-immutable-name-resolution-context.h"
+#include "tree-check.h"
 
 namespace Rust {
 namespace Analysis {
@@ -54,8 +56,7 @@ UnusedVarCollector::visit (HIR::StaticItem &item)
 void
 UnusedVarCollector::visit (HIR::IdentifierPattern &pattern)
 {
-  auto id = pattern.get_mappings ().get_hirid ();
-  unused_var_context.add_variable (id);
+  unused_var_context.add_variable (pattern.get_mappings ().get_hirid ());
 }
 
 void
@@ -75,5 +76,15 @@ UnusedVarCollector::visit (HIR::StructExprFieldIdentifier &ident)
 {
   mark_path_used (ident);
 }
+void
+UnusedVarCollector::visit (HIR::AssignmentExpr &expr)
+{
+  auto def_id = get_def_id (expr.get_lhs ());
+  HirId id = expr.get_lhs ().get_mappings ().get_hirid ();
+  unused_var_context.add_assign (def_id, id);
+  visit_outer_attrs (expr);
+  expr.get_rhs ().accept_vis (*this);
+}
+
 } // namespace Analysis
 } // namespace Rust

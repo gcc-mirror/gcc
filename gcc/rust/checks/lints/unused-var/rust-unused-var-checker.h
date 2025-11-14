@@ -16,6 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include "rust-hir-expr.h"
 #include "rust-hir-item.h"
 #include "rust-hir-pattern.h"
 #include "rust-hir-visitor.h"
@@ -33,13 +34,14 @@ public:
 private:
   const Resolver2_0::NameResolutionContext &nr_context;
   Analysis::Mappings &mappings;
-  std::unique_ptr<UnusedVarContext> unused_var_context;
+  UnusedVarContext unused_var_context;
 
   using HIR::DefaultHIRVisitor::visit;
   virtual void visit (HIR::TraitItemFunc &decl) override;
   virtual void visit (HIR::ConstantItem &item) override;
   virtual void visit (HIR::StaticItem &item) override;
   virtual void visit (HIR::IdentifierPattern &identifier) override;
+  virtual void visit (HIR::AssignmentExpr &identifier) override;
 };
 } // namespace Analysis
 } // namespace Rust

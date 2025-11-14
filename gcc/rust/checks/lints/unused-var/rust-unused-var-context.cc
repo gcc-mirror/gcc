@@ -41,6 +41,26 @@ UnusedVarContext::is_variable_used (HirId id) const
   return it != is_used.end () && it->second;
 }
 
+void
+UnusedVarContext::add_assign (HirId id_def, HirId id)
+{
+  assigned_vars[id_def].push_back (id);
+}
+
+void
+UnusedVarContext::remove_assign (HirId id_def)
+{
+  if (assigned_vars.find (id_def) != assigned_vars.end ())
+    assigned_vars[id_def].pop_back ();
+}
+bool
+UnusedVarContext::is_variable_assigned (HirId id_def, HirId id)
+{
+  auto assigned_vec = assigned_vars[id_def];
+  return std::find (assigned_vec.begin (), assigned_vec.end (), id)
+	 != assigned_vec.end ();
+}
+
 std::string
 UnusedVarContext::as_string () const
 {

@@ -46,13 +46,21 @@ private:
   virtual void visit (HIR::StaticItem &item) override;
   virtual void visit (HIR::IdentifierPattern &pattern) override;
   virtual void visit (HIR::QualifiedPathInExpression &expr) override;
+  virtual void visit (HIR::AssignmentExpr &expr) override;
+
+  template <typename T> HirId get_def_id (T &path_expr)
+  {
+    NodeId ast_node_id = path_expr.get_mappings ().get_nodeid ();
+    NodeId id = nr_context.lookup (ast_node_id).value ();
+    HirId def_id = mappings.lookup_node_to_hir (id).value ();
+    return def_id;
+  }
 
   template <typename T> void mark_path_used (T &path_expr)
   {
-    NodeId ast_node_id = path_expr.get_mappings ().get_nodeid ();
-    NodeId def_id = nr_context.lookup (ast_node_id).value ();
-    HirId hir_id = mappings.lookup_node_to_hir (def_id).value ();
-    unused_var_context.mark_used (hir_id);
+    auto def_id = get_def_id (path_expr);
+    unused_var_context.mark_used (def_id);
+    unused_var_context.remove_assign (def_id);
   }
 };
 } // namespace Analysis

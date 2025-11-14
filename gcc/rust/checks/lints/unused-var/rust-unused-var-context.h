@@ -26,13 +26,17 @@ class UnusedVarContext
 public:
   void add_variable (HirId id);
   void mark_used (HirId id);
-
   bool is_variable_used (HirId id) const;
+
+  void add_assign (HirId id_def, HirId id);
+  void remove_assign (HirId id_def);
+  bool is_variable_assigned (HirId id_def, HirId id);
 
   std::string as_string () const;
 
 private:
   std::map<HirId, bool> is_used;
+  std::map<HirId, std::vector<HirId>> assigned_vars;
 };
 
 } // namespace Analysis
