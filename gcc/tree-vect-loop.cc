@@ -745,7 +745,6 @@ _loop_vec_info::_loop_vec_info (class loop *loop_in, vec_info_shared *shared)
     using_partial_vectors_p (false),
     using_decrementing_iv_p (false),
     using_select_vl_p (false),
-    epil_using_partial_vectors_p (false),
     allow_mutual_alignment (false),
     partial_load_store_bias (0),
     peeling_for_gaps (false),
@@ -1995,7 +1994,6 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
        In this case:
 
 	 LOOP_VINFO_USING_PARTIAL_VECTORS_P == true
-	 LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == false
 	 LOOP_VINFO_PEELING_FOR_NITER == false
 
    (2) Make LOOP_VINFO operate on full vectors and use an epilogue loop
@@ -2004,18 +2002,6 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 	 LOOP_VINFO_USING_PARTIAL_VECTORS_P == false
 	 LOOP_VINFO_PEELING_FOR_NITER == true
 
-       There are two choices:
-
-       (2a) Consider vectorizing the epilogue loop at the same VF as the
-	    main loop, but using partial vectors instead of full vectors.
-	    In this case:
-
-	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == true
-
-       (2b) Consider vectorizing the epilogue loop at lower VFs only.
-	    In this case:
-
-	      LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P == false
  */
 
 opt_result
@@ -2027,7 +2013,6 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
 
   /* Decide whether to vectorize the loop with partial vectors.  */
   LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
-  LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = false;
   if (LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
       && LOOP_VINFO_MUST_USE_PARTIAL_VECTORS_P (loop_vinfo))
     LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
@@ -2050,7 +2035,7 @@ vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
 	   || loop_vinfo->suggested_unroll_factor > 1)
 	  && !LOOP_VINFO_EPILOGUE_P (loop_vinfo)
 	  && !vect_known_niters_smaller_than_vf (loop_vinfo))
-	LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
+	;
       else
 	LOOP_VINFO_USING_PARTIAL_VECTORS_P (loop_vinfo) = true;
     }
