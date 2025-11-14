@@ -6087,6 +6087,16 @@ loongarch_block_move_straight (rtx dest, rtx src, HOST_WIDE_INT length,
   /* Allocate a buffer for the temporary registers.  */
   regs = XALLOCAVEC (rtx, num_reg);
 
+  /* Extract the base address what plus operation to promote the combine of
+     RTX.  */
+  if (GET_CODE (XEXP (dest, 0)) == PLUS)
+    {
+      unsigned int dest_align = MEM_ALIGN (dest);
+      rtx dest_reg = copy_addr_to_reg (XEXP (dest, 0));
+      dest = change_address (dest, BLKmode, dest_reg);
+      set_mem_align (dest, dest_align);
+    }
+
   for (delta_cur = delta, i = 0, offs = 0; offs < length; delta_cur /= 2)
     {
       mode = loongarch_mode_for_move_size (delta_cur);
