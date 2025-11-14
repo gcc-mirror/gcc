@@ -937,7 +937,7 @@ vect_min_prec_for_max_niters (loop_vec_info loop_vinfo, unsigned int factor)
 
 /* True if the loop needs peeling or partial vectors when vectorized.  */
 
-static bool
+bool
 vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 {
   unsigned HOST_WIDE_INT const_vf;
@@ -2004,7 +2004,7 @@ vect_get_datarefs_in_loop (loop_p loop, basic_block *bbs,
 
  */
 
-opt_result
+static opt_result
 vect_determine_partial_vectors_and_peeling (loop_vec_info loop_vinfo)
 {
   /* Determine whether there would be any scalar iterations left over.  */
