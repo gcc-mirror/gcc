@@ -1012,7 +1012,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CONTAINER
 	}
 #endif // HOSTED
 
-#ifdef __cpp_lib_bitset
+#ifdef __cpp_lib_bitset // C++ >= 23
       /**
        *  Use a subset of a string view.
        *  @param  __s  A `string_view` of a sequence of `0` and `1` characters.
