@@ -4653,6 +4653,9 @@
 	   UNSPEC_PCMP))]
   "operands[4] = GEN_INT (INTVAL (operands[3]) ^ 4);")
 
+(define_int_iterator UNSPEC_PCMP_ITER
+  [UNSPEC_PCMP UNSPEC_UNSIGNED_PCMP])
+
 (define_insn "*<avx512>_cmp<mode>3_and15"
   [(set (match_operand:QI 0 "register_operand" "=k")
 	(and:QI
@@ -4685,6 +4688,23 @@
    (set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])
 
+(define_insn "*<avx512>_eq<mode>3_and15"
+  [(set (match_operand:QI 0 "register_operand" "=k, k")
+	(and:QI
+	  (unspec:QI
+	    [(match_operand:VI48_AVX512VL_4 1 "nonimm_or_0_operand" "%v, v")
+	     (match_operand:VI48_AVX512VL_4 2 "nonimm_or_0_operand" "vm, C")
+	     (const_int 0)]
+	    UNSPEC_PCMP_ITER)
+	  (const_int 15)))]
+  "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "@
+   vpcmpeq<ssemodesuffix>\t{%2, %1, %0|%0, %1, %2}
+   vptestnm<ssemodesuffix>\t{%1, %1, %0|%0, %1, %1}"
+  [(set_attr "type" "ssecmp")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
 (define_insn "*<avx512>_cmp<mode>3_and3"
   [(set (match_operand:QI 0 "register_operand" "=k")
 	(and:QI
@@ -4714,6 +4734,23 @@
   "vpcmpuq\t{%3, %2, %1, %0|%0, %1, %2, %3}"
   [(set_attr "type" "ssecmp")
    (set_attr "length_immediate" "1")
+   (set_attr "prefix" "evex")
+   (set_attr "mode" "TI")])
+
+(define_insn "*avx512vl_eqv2di_and3"
+  [(set (match_operand:QI 0 "register_operand" "=k, k")
+	(and:QI
+	  (unspec:QI
+	    [(match_operand:V2DI 1 "nonimm_or_0_operand" "%v, v")
+	     (match_operand:V2DI 2 "nonimm_or_0_operand" "vm, C")
+	     (const_int 0)]
+	    UNSPEC_PCMP_ITER)
+	  (const_int 3)))]
+  "TARGET_AVX512F && !(MEM_P (operands[1]) && MEM_P (operands[2]))"
+  "@
+   vpcmpeqq\t{%2, %1, %0|%0, %1, %2}
+   vptestnmq\t{%1, %1, %0|%0, %1, %1}"
+  [(set_attr "type" "ssecmp")
    (set_attr "prefix" "evex")
    (set_attr "mode" "TI")])
 
@@ -4789,9 +4826,6 @@
    (set_attr "length_immediate" "1")
    (set_attr "prefix" "evex")
    (set_attr "mode" "<VI12_AVX512VL:sseinsnmode>")])
-
-(define_int_iterator UNSPEC_PCMP_ITER
-  [UNSPEC_PCMP UNSPEC_UNSIGNED_PCMP])
 
 (define_insn_and_split "*<avx512>_cmp<mode>3"
   [(set (match_operand:<avx512fmaskmode> 0 "register_operand")
