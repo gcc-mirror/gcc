@@ -1,3 +1,63 @@
+2025-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-08-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119275
+	* config/riscv/riscv.cc (riscv_legitimize_move): Avoid calling
+	gen_lowpart for cases where it'll fail.  Just use standard expander
+	paths for those cases.
+
+2025-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	Backported from master:
+	2025-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*sub<mode>_3):
+	Remove 'i' from operand 0 constraint.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/arm-mve-builtins-base.cc (enum which_scalar_shift): New.
+	(mve_function_scalar_shift): New.
+	(asrl, lsll): New.
+	* config/arm/arm-mve-builtins-base.def (asrl, lsll): New.
+	* config/arm/arm-mve-builtins-base.h (asrl, lsll): New.
+	* config/arm/arm_mve.h (asrl): Delete.
+	(lsll): Delete.
+	(__arm_asrl): Delete.
+	(__arm_lsll): Delete.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/arm-mve-builtins-shapes.cc (scalar_s64_shift): New.
+	(scalar_u64_shift): New.
+	* config/arm/arm-mve-builtins-shapes.h: Likewise.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/arm.md (ashldi3, ashrdi3): Force shift amount into
+	QImode.
+	* config/arm/constraints.md: Fix comment, Pg is valid in Thumb-2
+	state only.
+	* config/arm/mve.md (mve_asrl): Handle various shift amount ranges.
+	(mve_asrl_imm, mve_asrl_internal): New patterns.
+	(mve_lsll): Handle various shift amount ranges.
+	(mve_lsll_imm, mve_lsll_internal): New patterns.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/thumb2.md (thumb2_asrl, thumb2_lsll, thumb2_lsrl):
+	Move to ...
+	* config/arm/mve.md (mve_asrl, mve_lsll, mve_lsrl): ... here. Use
+	match_operand instead of match_dup.
+	* config/arm/arm.md (ashldi3, ashrdi3, lshrdi3): Remove useless
+	copy. Update for new prototype.
+
 2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

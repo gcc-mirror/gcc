@@ -1,3 +1,17 @@
+2025-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	Backported from master:
+	2025-08-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR target/119275
+	* gcc.target/riscv/pr119275.c: New test.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* gcc.target/arm/mve/intrinsics/asrl-various-ranges.c: New test.
+	* gcc.target/arm/mve/intrinsics/lsll-various-ranges.c: New test.
+
 2025-11-12  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:
