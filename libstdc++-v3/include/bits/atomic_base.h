@@ -1584,7 +1584,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       wait(value_type __old, memory_order __m = memory_order_seq_cst) const noexcept
       {
 	// TODO remove when volatile is supported
-	static_assert(!is_volatile_v<_Tp>, "atomics waits on volatile are not supported");
+	static_assert(!is_volatile_v<_Tp>,
+		      "atomic waits on volatile are not supported");
 	__atomic_impl::wait(_M_ptr, __old, __m);
       }
 #endif // __glibcxx_atomic_wait
@@ -1666,7 +1667,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       notify_one() const noexcept
       {
 	// TODO remove when volatile is supported
-	static_assert(!is_volatile_v<_Tp>, "atomics waits on volatile are not supported");
+	static_assert(!is_volatile_v<_Tp>,
+		      "atomic waits on volatile are not supported");
 	__atomic_impl::notify_one(this->_M_ptr);
       }
 
@@ -1674,7 +1676,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       notify_all() const noexcept
       {
 	// TODO remove when volatile is supported
-	static_assert(!is_volatile_v<_Tp>, "atomics waits on volatile are not supported");
+	static_assert(!is_volatile_v<_Tp>,
+		      "atomic waits on volatile are not supported");
 	__atomic_impl::notify_all(this->_M_ptr);
       }
 #endif // __glibcxx_atomic_wait
