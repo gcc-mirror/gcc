@@ -2310,7 +2310,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        && types_match (type, @0)
        && !POINTER_TYPE_P (TREE_TYPE (@0))
        && TREE_CODE (TREE_TYPE (@0)) != OFFSET_TYPE)
-   (bitop @0 (convert @1)))))
+   (bitop @0 (convert @1))))
+ /* Similar as above, but @0 has a widen type.  */
+ (simplify
+  (convert (bitop:cs@2 (convert:s @0) @1))
+   (if (GIMPLE
+	&& INTEGRAL_TYPE_P (type)
+	&& INTEGRAL_TYPE_P (TREE_TYPE (@0))
+	&& TREE_CODE (@1) != INTEGER_CST
+	&& tree_nop_conversion_p (type, TREE_TYPE (@2))
+	&& !POINTER_TYPE_P (TREE_TYPE (@0))
+	&& TREE_CODE (TREE_TYPE (@0)) != OFFSET_TYPE
+	&& TYPE_PRECISION (TREE_TYPE (@0)) > TYPE_PRECISION (type))
+   (bitop:type (convert @0) (convert @1)))))
 
 (for bitop (bit_and bit_ior)
      rbitop (bit_ior bit_and)
