@@ -12914,6 +12914,13 @@ trees_out::write_function_def (tree decl)
 		    && (get_importer_interface (decl)
 			!= importer_interface::external));
 
+      /* Make sure DECL_REALLY_EXTERN and DECL_INTERFACE_KNOWN are consistent
+	 on non-templates or we'll crash later in import_export_decl.  */
+      gcc_checking_assert (flags || DECL_INTERFACE_KNOWN (decl)
+			   || (DECL_LANG_SPECIFIC (decl)
+			       && DECL_TEMPLATE_INFO (decl)
+			       && uses_template_parms (DECL_TI_ARGS (decl))));
+
       if (f)
 	{
 	  flags |= 2;

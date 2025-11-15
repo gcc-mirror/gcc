@@ -26379,11 +26379,6 @@ mark_decl_instantiated (tree result, int extern_p)
 {
   SET_DECL_EXPLICIT_INSTANTIATION (result);
 
-  /* If this entity has already been written out, it's too late to
-     make any modifications.  */
-  if (TREE_ASM_WRITTEN (result))
-    return;
-
   /* consteval functions are never emitted.  */
   if (TREE_CODE (result) == FUNCTION_DECL
       && DECL_IMMEDIATE_FUNCTION_P (result))
