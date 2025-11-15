@@ -1372,10 +1372,10 @@ public:
 unsigned int
 pass_merge_phi::execute (function *fun)
 {
+  int forwarder_removed = 0;
   calculate_dominance_info (CDI_DOMINATORS);
 
   /* Find all PHI nodes that we may be able to merge.  */
-  bool changed = false;
   unsigned n = last_basic_block_for_fn (fun);
   for (unsigned i = NUM_FIXED_BLOCKS; i < n; i++)
     {
@@ -1386,15 +1386,17 @@ pass_merge_phi::execute (function *fun)
       /* Look for a forwarder block with PHI nodes.  */
       if (tree_forwarder_block_p (bb)
 	  && remove_forwarder_block (bb, true))
-	changed = true;
+	forwarder_removed++;
     }
 
   /* Removing forwarder blocks can cause formerly irreducible loops
      to become reducible if we merged two entry blocks.  */
-  if (changed
+  if (forwarder_removed != 0
       && current_loops)
     loops_state_set (LOOPS_NEED_FIXUP);
 
+  statistics_counter_event (fun, "Forwarder blocks removed",
+			    forwarder_removed);
   return 0;
 }
 
