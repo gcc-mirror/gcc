@@ -170,9 +170,9 @@ CompilePatternCheckExpr::visit (HIR::RangePattern &pattern)
   bool error_E0579 = false;
   if (TREE_CODE (upper) == REAL_CST)
     {
-      REAL_VALUE_TYPE upper_r = TREE_REAL_CST (upper);
-      REAL_VALUE_TYPE lower_r = TREE_REAL_CST (lower);
-      if (real_compare (GE_EXPR, &lower_r, &upper_r))
+      const REAL_VALUE_TYPE *upper_r = TREE_REAL_CST_PTR (upper);
+      const REAL_VALUE_TYPE *lower_r = TREE_REAL_CST_PTR (lower);
+      if (real_compare (GE_EXPR, lower_r, upper_r))
 	error_E0579 = true;
     }
   else if (TREE_CODE (upper) == INTEGER_CST)

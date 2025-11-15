@@ -1712,6 +1712,8 @@ CompileExpr::compile_float_literal (const HIR::LiteralExpr &expr,
       rust_error_at (expr.get_locus (), "bad number in literal");
       return error_mark_node;
     }
+  if (expr.is_negative ())
+    mpfr_neg (fval, fval, MPFR_RNDN);
 
   // taken from:
   // see go/gofrontend/expressions.cc:check_float_type
