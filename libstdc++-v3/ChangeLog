@@ -1,3 +1,50 @@
+2025-11-14  Tom Tromey  <tromey@adacore.com>
+
+	* python/libstdcxx/v6/printers.py (StdVectorPrinter._bounds):
+	New method.
+	(StdVectorPrinter.to_string): Use it.
+	(StdVectorPrinter.num_children): New method.
+	(StdStackOrQueuePrinter.num_children): New method.
+	(StdMapPrinter.num_children): New method.
+	(StdSetPrinter.num_children): New method.
+	(StdDequePrinter._size): New method.
+	(StdDequePrinter.to_string): Use it.
+	(StdDequePrinter.num_children): New method.
+	(Tr1UnorderedSetPrinter.num_children): New method.
+	(Tr1UnorderedMapPrinter.num_children): New method.
+	(StdSpanPrinter.num_children): New method.
+
+2025-11-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/unicode.h (_Utf_view): Rename the template parameter
+	from _Range to _View and constrain it with ranges::view.
+	(_Utf_view::_Utf_view): Accept by value instead of rvalue reference.
+	* include/std/format (__format::__write_padded): Replace _Utf_view
+	over const char32_t(&)[1] with span<const char32_t, 1>.
+	* testsuite/ext/unicode/view.cc: Add checks if specialization
+	of _Utf_view satisfy view. Wrap arrays into std::span before
+	constructing _Utf_view.
+
+2025-11-14  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/bitset: Add comment to feature test macro test.
+
+2025-11-14  Karpalo Toivonen  <arktinenkarpalo@gmail.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/121054
+	* include/std/bitset: Add string check to constructor.
+	* testsuite/20_util/bitset/121054.cc: New test.
+	* testsuite/20_util/bitset/cons/constexpr_c++23.cc: Fix.
+
+2025-11-14  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122032
+	* include/std/functional (std::bind_front<f>, std::bind_back<f>):
+	Define in terms of _Bind_front_t/_Bind_back_t.
+	* testsuite/20_util/function_objects/bind_back/nttp.cc: New tests.
+	* testsuite/20_util/function_objects/bind_front/nttp.cc: New tests.
+
 2025-11-13  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122661

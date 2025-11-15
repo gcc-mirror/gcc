@@ -1,3 +1,13 @@
+2025-11-14  Yuao Ma  <c8ef@outlook.com>
+
+	* trans-expr.cc (conv_dummy_value): Add check for NULL allocatable.
+
+2025-11-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117070
+	* array.cc (check_constructor): Allow procedures as potential
+	target of a procedure pointer.
+
 2025-11-13  Andrew Stubbs  <ams@codesourcery.com>
 	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
 	    Thomas Schwinge  <tschwinge@baylibre.com>

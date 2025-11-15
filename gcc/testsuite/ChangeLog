@@ -1,3 +1,84 @@
+2025-11-14  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/vsetvl/avl_single-37.c: Drop unnecessary output
+	test(s).
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-1.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-2.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-3.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-4.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-5.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-6.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-7.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-8.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-9.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-10.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-11.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-12.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-13.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-14.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-15.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-16.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-17.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-18.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-19.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-20.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-21.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-22.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-23.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-24.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-25.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-26.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-27.c: Likewise.
+	* gcc.target/riscv/rvv/vsetvl/vlmax_phi-28.c: Likewise.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/sqshl_check_shift.c: New test.
+	* gcc.target/arm/mve/intrinsics/srshr_check_shift.c: New test.
+	* gcc.target/arm/mve/intrinsics/uqshl_check_shift.c: New test.
+	* gcc.target/arm/mve/intrinsics/urshr_check_shift.c: New test.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/sqshll_check_shift.c: New test.
+	* gcc.target/arm/mve/intrinsics/srshrl_check_shift.c: New test.
+	* gcc.target/arm/mve/intrinsics/uqshll_check_shift.c: New test.
+	* gcc.target/arm/mve/intrinsics/urshrl_check_shift.c: New test.
+
+2025-11-14  Yuao Ma  <c8ef@outlook.com>
+
+	* gfortran.dg/value_optional_3.f90: New test.
+
+2025-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/122663
+	* g++.dg/torture/pr122663.C: New testcase.
+
+2025-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122573
+	* gcc.dg/vect/slp-58.c: New testcase.
+
+2025-11-14  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/117070
+	* gfortran.dg/proc_target_1.f90: New test.
+
+2025-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122680
+	* gcc.dg/vect/pr122680.c: New testcase.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* gcc.target/arm/mve/intrinsics/asrl-various-ranges.c: New test.
+	* gcc.target/arm/mve/intrinsics/lsll-various-ranges.c: New test.
+
+2025-11-14  zhaozhou  <zhaozhou@loongson.cn>
+
+	* gcc.target/loongarch/vec_reduc_half.c: New test.
+
 2025-11-13  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/96255

@@ -1,3 +1,229 @@
+2025-11-14  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/riscv.cc (andes_25_tune_info): Add prefer-agnostic.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (enum which_scalar_shift):
+	Add ss_SQRSHR, ss_SQSHL, ss_SRSHR, ss_UQRSHL, ss_UQSHL, and
+	ss_URSHR.
+	(mve_function_scalar_shift): Add support for ss_SQRSHR, ss_SQSHL,
+	ss_SRSHR, ss_UQRSHL, ss_UQSHL, and ss_URSHR.
+	(sqrshr, sqshl, srshr, uqrshl, uqshl, urshr): New.
+	* config/arm/arm-mve-builtins-base.def (sqrshr, sqshl, srshr)
+	(uqrshl, uqshl, urshr): New.
+	* config/arm/arm-mve-builtins-base.h (sqrshr, sqshl, srshr)
+	(uqrshl, uqshl, urshr): New.
+	* config/arm/arm-mve-builtins-shapes.cc (scalar_s32_shift): New.
+	(scalar_s32_shift_imm): New.
+	(scalar_u32_shift): New.
+	(scalar_u32_shift_imm): New.
+	* config/arm/arm-mve-builtins-shapes.h (scalar_s32_shift): New.
+	(scalar_s32_shift_imm): New.
+	(scalar_u32_shift): New.
+	(scalar_u32_shift_imm): New.
+	* config/arm/arm_mve.h (sqrshr): Delete.
+	(sqshl): Delete.
+	(srshr): Delete.
+	(uqrshl): Delete.
+	(uqshl): Delete.
+	(urshr): Delete.
+	(__arm_uqrshl): Delete.
+	(__arm_sqrshr): Delete.
+	(__arm_uqshl): Delete.
+	(__arm_urshr): Delete.
+	(__arm_sqshl): Delete.
+	(__arm_srshr): Delete.
+	* config/arm/mve.md (mve_sqshl_si, mve_srshr_si): Fix operand 1
+	mode.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (enum which_scalar_shift):
+	Add ss_SQSHLL, ss_SRSHRL, ss_UQSHLL, ss_URSHRL.
+	(mve_function_scalar_shift): Add support for ss_SQSHLL, ss_SRSHRL,
+	ss_UQSHLL, ss_URSHRL.
+	* config/arm/arm-mve-builtins-base.def (sqshll, srshrl, uqshll)
+	(urshrl): New.
+	* config/arm/arm-mve-builtins-base.h (sqshll, srshrl, uqshll)
+	(urshrl): New.
+	* config/arm/arm-mve-builtins-shapes.cc (scalar_s64_shift_imm)
+	(scalar_u64_shift_imm): New.
+	* config/arm/arm-mve-builtins-shapes.h (scalar_s64_shift_imm)
+	(scalar_u64_shift_imm): New.
+	* config/arm/arm_mve.h (sqshll): Delete.
+	(srshrl): Delete.
+	(uqshll): Delete.
+	(urshrl): Delete.
+	(__arm_uqshll): Delete.
+	(__arm_urshrl): Delete.
+	(__arm_srshrl): Delete.
+	(__arm_sqshll): Delete.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (enum which_scalar_shift):
+	Add ss_SQRSHRL, ss_SQRSHRL_SAT48.
+	(mve_function_scalar_shift): Add support for ss_SQRSHRL,
+	ss_SQRSHRL_SAT48.
+	(sqrshrl, sqrshrl_sat48): New.
+	* config/arm/arm-mve-builtins-base.def (sqrshrl, sqrshrl_sat48): New.
+	* config/arm/arm-mve-builtins-base.h (sqrshrl, sqrshrl_sat48): New.
+	* config/arm/arm_mve.h (sqrshrl): Delete.
+	(sqrshrl_sat48): Delete.
+	(__arm_sqrshrl): Delete.
+	(__arm_sqrshrl_sat48): Delete.
+	* config/arm/mve.md (mve_sqrshrl_sat<supf>_di): Add '@' prefix.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (enum which_scalar_shift):
+	Add ss_UQRSHLL, ss_UQRSHLL_SAT48.
+	(mve_function_scalar_shift): Add support for ss_UQRSHLL,
+	ss_UQRSHLL_SAT48.
+	* config/arm/arm-mve-builtins-base.def (uqrshll, uqrshll_sat48):
+	New.
+	* config/arm/arm-mve-builtins-base.h (uqrshll, uqrshll_sat48):
+	New.
+	* config/arm/arm_mve.h (uqrshll): Delete.
+	(uqrshll_sat48): Delete.
+	(__arm_uqrshll): Delete.
+	(__arm_uqrshll_sat48): Delete.
+	* config/arm/mve.md (mve_uqrshll_sat<supf>_di): Add '@' prefix.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (class mve_function_vpnot): New.
+	(vpnot): New.
+	* config/arm/arm-mve-builtins-base.def (vpnot): New.
+	* config/arm/arm-mve-builtins-base.h (vpnot): New.
+	* config/arm/arm-mve-builtins-shapes.cc (struct vpnot): New.
+	* config/arm/arm-mve-builtins-shapes.h (vpnot): New.
+	* config/arm/arm_mve.h (vpnot): Delete.
+	(__arm_vpnot): Delete.
+
+2025-11-14  Filip Kastl  <fkastl@suse.cz>
+
+	* doc/invoke.texi: Remove mention of switch-lower-slow-alg-max-cases.
+	* params.opt: Remove switch-lower-slow-alg-max-cases.
+
+2025-11-14  Uros Bizjak  <ubizjak@gmail.com>
+
+	* config/i386/i386.md (*sub<mode>_3):
+	Remove 'i' from operand 0 constraint.
+
+2025-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/122663
+	* ipa-param-manipulation.cc (purge_all_uses): Collect
+	stmts to remove and process that list in reverse.
+
+2025-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122573
+	* tree-vect-slp.cc (vect_build_slp_tree_1): Support
+	groups of invariant loads.
+	(vect_build_slp_tree_2): Likewise.
+	(vect_transform_slp_perm_load_1): Likewise.
+	* tree-vect-stmts.cc (vectorizable_load): Handle non-splat
+	SLP for invaraint loads.
+
+2025-11-14  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122680
+	* tree-vect-stmts.cc (vectorizable_conversion): Avoid range
+	queries during transform.
+
+2025-11-14  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR target/121458
+	PR target/121457
+	* configure.ac: Fix typos.
+	<*-*-solaris2*>: Require GNU ld 2.30.
+	(comdat_group) <*-*-solaris2.1[1-9]*>: Always set to yes.
+	(ld_ix86_gld_32_opt): Only use -melf_i386_sol2 for Solaris target.
+	(ld_ix86_gld_64_opt): Likewise with -melf_x86_64_sol.
+	(gcc_cv_ld_eh_frame_hdr) <*-*-solaris2*>: Likewise.
+	(gcc_cv_ld_pie) <*-*-solaris2*>: Remove special cases.
+	(gcc_cv_ld_compress_debug) <*-*-solaris2*>: Remove guard.
+	(gcc_cv_ld_as_needed): Simplify guard.
+	(gcc_cv_ld_sol2_emulation): Remove.
+	(gcc_cv_solaris_crts): Remove.
+	* configure: Regenerate.
+	* config.in: Regenerate.
+	* config/sol2.h (STARTFILE_CRTBEGIN_SPEC): Remove !HAVE_LD_PIE
+	support.
+	(ENDFILE_CRTEND_SPEC): Likewise.
+	(LD_PIE_SPEC): Likewise.
+	[USE_GLD] (LINK_EH_SPEC): Set unconditionally.
+	* config/i386/sol2.h [USE_GLD]: Remove !HAVE_LD_SOL2_EMULATION
+	support.
+	* config/sparc/sol2.h: Likewise.
+	* doc/install.texi (Specific, *-*-solaris2*): Update bundled gcc
+	versions.
+	Raise required binutils version.
+	Remove binutils 2.44 caveat.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/arm-mve-builtins-base.cc (enum which_scalar_shift): New.
+	(mve_function_scalar_shift): New.
+	(asrl, lsll): New.
+	* config/arm/arm-mve-builtins-base.def (asrl, lsll): New.
+	* config/arm/arm-mve-builtins-base.h (asrl, lsll): New.
+	* config/arm/arm_mve.h (asrl): Delete.
+	(lsll): Delete.
+	(__arm_asrl): Delete.
+	(__arm_lsll): Delete.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/arm-mve-builtins-shapes.cc (scalar_s64_shift): New.
+	(scalar_u64_shift): New.
+	* config/arm/arm-mve-builtins-shapes.h: Likewise.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/arm.md (ashldi3, ashrdi3): Force shift amount into
+	QImode.
+	* config/arm/constraints.md: Fix comment, Pg is valid in Thumb-2
+	state only.
+	* config/arm/mve.md (mve_asrl): Handle various shift amount ranges.
+	(mve_asrl_imm, mve_asrl_internal): New patterns.
+	(mve_lsll): Handle various shift amount ranges.
+	(mve_lsll_imm, mve_lsll_internal): New patterns.
+
+2025-11-14  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122216
+	* config/arm/thumb2.md (thumb2_asrl, thumb2_lsll, thumb2_lsrl):
+	Move to ...
+	* config/arm/mve.md (mve_asrl, mve_lsll, mve_lsrl): ... here. Use
+	match_operand instead of match_dup.
+	* config/arm/arm.md (ashldi3, ashrdi3, lshrdi3): Remove useless
+	copy. Update for new prototype.
+
+2025-11-14  Xi Ruoyao  <xry111@xry111.site>
+
+	* configure: Regenerate.
+
+2025-11-14  zhaozhou  <zhaozhou@loongson.cn>
+
+	* config/loongarch/lasx.md (lasx_xvbsrl_d_f): New template.
+	* config/loongarch/loongarch.cc (emit_reduc_half): Replace insn.
+
+2025-11-14  zhaozhou  <zhaozhou@loongson.cn>
+
+	* config/loongarch/predicates.md: Update ops.
+
+2025-11-14  zhaozhou  <zhaozhou@loongson.cn>
+
+	* config.gcc: Add target_gtfiles.
+	* config/loongarch/loongarch-builtins.cc: Add header file.
+
 2025-11-13  Alexandre Oliva  <oliva@adacore.com>
 	    Olivier Hainque  <hainque@adacore.com>
 
