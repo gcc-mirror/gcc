@@ -907,7 +907,8 @@ parse_replace_pairs( const char *stmt, const char *estmt, bool is_copy_stmt ) {
     dbgmsg( "%s:%d: %s: " HOST_SIZE_T_PRINT_UNSIGNED " pairs parsed from  '%.*s'",
             __func__, __LINE__,
             parsed.done() ? "done" : "not done",
-            (fmt_size_t)pairs.size(), parsed.stmt.size(), parsed.stmt.p );
+            (fmt_size_t)pairs.size(), parsed.stmt.size(),
+            parsed.stmt.size() ? parsed.stmt.p : "" );
     int i = 0;
     for( const auto& replace : pairs ) {
       dbgmsg("%s:%d:%4d: '%s' => '%s'", __func__, __LINE__,
