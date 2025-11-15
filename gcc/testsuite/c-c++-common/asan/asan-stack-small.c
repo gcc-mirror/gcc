@@ -1,8 +1,9 @@
 /* { dg-do run } */
 
-char *pa;
-char *pb;
-char *pc;
+char *volatile pa;
+char *volatile pb;
+char *volatile pc;
+typedef __UINTPTR_TYPE__ uintptr_t;
 
 void access (volatile char *ptr)
 {
@@ -22,7 +23,14 @@ int main (int argc, char **argv)
   access (pb);
   access (pc);
   // access 'b' here
-  access (pa + 32);
+  if ((uintptr_t) pb == (uintptr_t) pa + 32)
+    access (pa + 32);
+  else if ((uintptr_t) pb == (uintptr_t) pa - 32)
+    access (pa - 32);
+  else if ((uintptr_t) pb == (uintptr_t) pa + 64)
+    access (pa + 64);
+  else if ((uintptr_t) pb == (uintptr_t) pa - 64)
+    access (pa - 64);
 
   return 0;
 }
