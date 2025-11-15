@@ -2367,11 +2367,15 @@ private:
 
 struct GTY ((tag ("TOPLEVEL_ASM"))) asm_node: public toplevel_node {
   explicit asm_node (tree asm_str)
-    : toplevel_node (TOPLEVEL_ASM), asm_str (asm_str)
+    : toplevel_node (TOPLEVEL_ASM), asm_str (asm_str), symbols_referenced ()
   {}
   /* String for this asm node.  */
   tree asm_str;
+  /* Vector of referenced symbols used for LTO partitioning.
+     Not populated in flag_ltrans.  */
+  vec<symtab_node*> GTY ((skip)) symbols_referenced;
 };
+void analyze_toplevel_extended_asm (void);
 
 /* Report whether or not THIS symtab node is a function, aka cgraph_node.  */
 

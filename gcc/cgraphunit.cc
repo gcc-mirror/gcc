@@ -2583,6 +2583,8 @@ symbol_table::finalize_compilation_unit (void)
   if (flag_dump_passes)
     dump_passes ();
 
+  analyze_toplevel_extended_asm ();
+
   /* Gimplify and lower all functions, compute reachability and
      remove unreachable nodes.  */
   analyze_functions (/*first_time=*/true);

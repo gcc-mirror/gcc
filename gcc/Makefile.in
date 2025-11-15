@@ -1416,6 +1416,7 @@ OBJS = \
 	adjust-alignment.o \
 	alias.o \
 	alloc-pool.o \
+	asm-toplevel.o \
 	auto-inc-dec.o \
 	auto-profile.o \
 	bb-reorder.o \

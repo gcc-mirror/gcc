@@ -2998,6 +2998,7 @@ read_cgraph_and_symbols (unsigned nfiles, const char **fnames)
 	  symtab->dump (dump_file);
 	}
       lto_symtab_merge_symbols ();
+      analyze_toplevel_extended_asm ();
       /* Removal of unreachable symbols is needed to make verify_symtab to pass;
 	 we are still having duplicated comdat groups containing local statics.
 	 We could also just remove them while merging.  */
