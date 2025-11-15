@@ -13015,7 +13015,13 @@ trees_in::read_function_def (tree decl, tree maybe_template)
 	SET_DECL_FRIEND_CONTEXT (decl, context);
       if (cexpr.decl)
 	register_constexpr_fundef (cexpr);
-      post_process (pdata);
+
+      if (DECL_LOCAL_DECL_P (decl))
+	/* Block-scope OMP UDRs aren't real functions, and don't need a
+	   function structure to be allocated or to be expanded.  */
+	gcc_checking_assert (DECL_OMP_DECLARE_REDUCTION_P (decl));
+      else
+	post_process (pdata);
     }
   else if (maybe_dup)
     {

@@ -53737,10 +53737,7 @@ cp_parser_omp_declare_reduction (cp_parser *parser, cp_token *pragma_tok,
 	fndecl = push_template_decl (fndecl);
 
       if (block_scope)
-	{
-	  if (!processing_template_decl)
-	    pushdecl (fndecl);
-	}
+	pushdecl (fndecl);
       else if (current_class_type)
 	{
 	  if (cp == NULL)
