@@ -255,6 +255,8 @@ symtab_node::needed_p (void)
   /* If the user told us it is used, then it must be so.  */
   if (force_output)
     return true;
+  if (ref_by_asm)
+    return true;
 
   /* ABI forced symbols are needed when they are external.  */
   if (forced_by_abi && TREE_PUBLIC (decl))
@@ -1384,7 +1386,7 @@ analyze_functions (bool first_time)
 	  && TYPE_NEEDS_CONSTRUCTING (TREE_TYPE (node->decl))
 	  && DECL_EXTERNAL (node->decl))
 	TREE_READONLY (node->decl) = 0;
-      if (!node->aux && !node->referred_to_p ())
+      if (!node->aux && !node->referred_to_p () && !node->ref_by_asm)
 	{
 	  if (symtab->dump_file)
 	    fprintf (symtab->dump_file, " %s", node->dump_name ());

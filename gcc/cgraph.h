@@ -145,6 +145,7 @@ public:
       symver (false), analyzed (false), writeonly (false),
       refuse_visibility_changes (false), externally_visible (false),
       no_reorder (false), force_output (false), forced_by_abi (false),
+      ref_by_asm (false),
       unique_name (false), implicit_section (false), body_removed (false),
       semantic_interposition (flag_semantic_interposition),
       used_from_other_partition (false), in_other_partition (false),
@@ -593,6 +594,10 @@ public:
      exported.  Unlike FORCE_OUTPUT this flag gets cleared to symbols promoted
      to static and it does not inhibit optimization.  */
   unsigned forced_by_abi : 1;
+  /* Referenced from toplevel assembly.  Must not be removed.
+     Static symbol may be renamed.  Global symbol should not be renamed.
+     Unlike force_output, can be on declarations.  */
+  unsigned ref_by_asm : 1;
   /* True when the name is known to be unique and thus it does not need mangling.  */
   unsigned unique_name : 1;
   /* Specify whether the section was set by user or by
@@ -3437,6 +3442,7 @@ cgraph_node::only_called_directly_or_aliased_p (void)
 {
   gcc_assert (!inlined_to);
   return (!force_output && !address_taken
+	  && !ref_by_asm
 	  && !ifunc_resolver
 	  && !used_from_other_partition
 	  && !DECL_VIRTUAL_P (decl)
@@ -3457,7 +3463,7 @@ cgraph_node::can_remove_if_no_direct_calls_and_refs_p (void)
   if (DECL_EXTERNAL (decl))
     return true;
   /* When function is needed, we cannot remove it.  */
-  if (force_output || used_from_other_partition)
+  if (force_output || used_from_other_partition || ref_by_asm)
     return false;
   if (DECL_STATIC_CONSTRUCTOR (decl)
       || DECL_STATIC_DESTRUCTOR (decl))
@@ -3489,6 +3495,7 @@ varpool_node::can_remove_if_no_refs_p (void)
   if (DECL_EXTERNAL (decl))
     return true;
   return (!force_output && !used_from_other_partition
+	  && !ref_by_asm
 	  && ((DECL_COMDAT (decl)
 	       && !forced_by_abi
 	       && !used_from_object_file_p ())
@@ -3507,6 +3514,7 @@ varpool_node::all_refs_explicit_p ()
   return (definition
 	  && !externally_visible
 	  && !used_from_other_partition
+	  && !ref_by_asm
 	  && !force_output);
 }
 

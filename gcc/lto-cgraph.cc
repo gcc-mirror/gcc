@@ -533,6 +533,7 @@ lto_output_node (struct lto_simple_output_block *ob, struct cgraph_node *node,
   bp_pack_value (&bp, node->redefined_extern_inline, 1);
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->forced_by_abi, 1);
+  bp_pack_value (&bp, node->ref_by_asm, 1);
   bp_pack_value (&bp, node->unique_name, 1);
   bp_pack_value (&bp, node->body_removed, 1);
   bp_pack_value (&bp, node->semantic_interposition, 1);
@@ -620,6 +621,7 @@ lto_output_varpool_node (struct lto_simple_output_block *ob, varpool_node *node,
   bp_pack_value (&bp, node->no_reorder, 1);
   bp_pack_value (&bp, node->force_output, 1);
   bp_pack_value (&bp, node->forced_by_abi, 1);
+  bp_pack_value (&bp, node->ref_by_asm, 1);
   bp_pack_value (&bp, node->unique_name, 1);
   bp_pack_value (&bp,
 		 node->body_removed
@@ -1234,6 +1236,7 @@ input_overwrite_node (struct lto_file_decl_data *file_data,
   node->redefined_extern_inline = bp_unpack_value (bp, 1);
   node->force_output = bp_unpack_value (bp, 1);
   node->forced_by_abi = bp_unpack_value (bp, 1);
+  node->ref_by_asm = bp_unpack_value (bp, 1);
   node->unique_name = bp_unpack_value (bp, 1);
   node->body_removed = bp_unpack_value (bp, 1);
   node->semantic_interposition = bp_unpack_value (bp, 1);
@@ -1440,6 +1443,7 @@ input_varpool_node (struct lto_file_decl_data *file_data,
   node->no_reorder = bp_unpack_value (&bp, 1);
   node->force_output = bp_unpack_value (&bp, 1);
   node->forced_by_abi = bp_unpack_value (&bp, 1);
+  node->ref_by_asm = bp_unpack_value (&bp, 1);
   node->unique_name = bp_unpack_value (&bp, 1);
   node->body_removed = bp_unpack_value (&bp, 1);
   node->semantic_interposition = bp_unpack_value (&bp, 1);

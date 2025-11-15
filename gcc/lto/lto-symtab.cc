@@ -61,6 +61,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
     prevailing_node->mark_force_output ();
   if (node->forced_by_abi)
     prevailing_node->forced_by_abi = true;
+  prevailing_node->ref_by_asm |= node->ref_by_asm;
+
   if (node->address_taken)
     {
       gcc_assert (!prevailing_node->inlined_to);
@@ -121,6 +123,7 @@ lto_varpool_replace_node (varpool_node *vnode,
     prevailing_node->force_output = true;
   if (vnode->forced_by_abi)
     prevailing_node->forced_by_abi = true;
+  prevailing_node->ref_by_asm |= vnode->ref_by_asm;
 
   /* Be sure we can garbage collect the initializer.  */
   if (DECL_INITIAL (vnode->decl)

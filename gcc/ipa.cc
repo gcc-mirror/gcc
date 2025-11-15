@@ -310,6 +310,7 @@ bool
 symbol_table::remove_unreachable_nodes (FILE *file)
 {
   symtab_node *first = (symtab_node *) (void *) 1;
+  symtab_node *snode;
   struct cgraph_node *node, *next;
   varpool_node *vnode, *vnext;
   bool changed = false;
@@ -357,6 +358,12 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 	reachable.add (vnode);
 	enqueue_node (vnode, &first, &reachable);
       }
+
+  /* Declarations or symbols in other partitions are also needed if referenced
+     from asm.  */
+  FOR_EACH_SYMBOL (snode)
+    if (snode->ref_by_asm)
+      enqueue_node (snode, &first, &reachable);
 
   /* Perform reachability analysis.  */
   while (first != (symtab_node *) (void *) 1)

@@ -198,6 +198,8 @@ cgraph_externally_visible_p (struct cgraph_node *node,
   if (!TREE_PUBLIC (node->decl)
       || DECL_EXTERNAL (node->decl))
     return false;
+  if (node->ref_by_asm)
+    return true;
 
   /* Do not try to localize built-in functions yet.  One of problems is that we
      end up mangling their asm for WHOPR that makes it impossible to call them
@@ -269,6 +271,8 @@ varpool_node::externally_visible_p (void)
 
   if (!TREE_PUBLIC (decl))
     return false;
+  if (ref_by_asm)
+    return true;
 
   /* If linker counts on us, we must preserve the function.  */
   if (used_from_object_file_p ())

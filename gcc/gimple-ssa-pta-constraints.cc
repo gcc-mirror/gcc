@@ -3866,6 +3866,7 @@ refered_from_nonlocal_fn (struct cgraph_node *node, void *data)
 		  || DECL_EXTERNAL (node->decl)
 		  || TREE_PUBLIC (node->decl)
 		  || node->force_output
+		  || node->ref_by_asm
 		  || lookup_attribute ("noipa", DECL_ATTRIBUTES (node->decl)));
   return false;
 }
@@ -3878,6 +3879,7 @@ refered_from_nonlocal_var (struct varpool_node *node, void *data)
   *nonlocal_p |= (node->used_from_other_partition
 		  || DECL_EXTERNAL (node->decl)
 		  || TREE_PUBLIC (node->decl)
+		  || node->ref_by_asm
 		  || node->force_output);
   return false;
 }
@@ -3962,7 +3964,8 @@ ipa_create_global_variable_infos (void)
       bool nonlocal_p = (DECL_EXTERNAL (var->decl)
 			 || TREE_PUBLIC (var->decl)
 			 || var->used_from_other_partition
-			 || var->force_output);
+			 || var->force_output
+			 || var->ref_by_asm);
       var->call_for_symbol_and_aliases (refered_from_nonlocal_var,
 					&nonlocal_p, true);
       if (nonlocal_p)

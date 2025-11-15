@@ -262,6 +262,7 @@ ipa_comdats (void)
        user section names.  */
     else if (symbol->externally_visible
 	     || symbol->force_output
+	     || symbol->ref_by_asm
 	     || symbol->used_from_other_partition
 	     || TREE_THIS_VOLATILE (symbol->decl)
 	     || symbol->get_section ()

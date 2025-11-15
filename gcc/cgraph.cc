@@ -2844,6 +2844,7 @@ static bool
 cgraph_node_cannot_be_local_p_1 (cgraph_node *node, void *)
 {
   return !(!node->force_output
+	   && !node->ref_by_asm
 	   && !node->ifunc_resolver
 	   /* Limitation of gas requires us to output targets of symver aliases
 	      as global symbols.  This is binutils PR 25295.  */
@@ -4002,6 +4003,11 @@ cgraph_node::verify_node (void)
   if (inlined_to && force_output)
     {
       error ("inline clone is forced to output");
+      error_found = true;
+    }
+  if (inlined_to && ref_by_asm)
+    {
+      error ("inline clone is referenced by assembly");
       error_found = true;
     }
   if (symtab->state != LTO_STREAMING)
