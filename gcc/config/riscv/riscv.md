@@ -791,14 +791,8 @@
       rtx t6 = gen_reg_rtx (DImode);
 
       emit_insn (gen_addsi3_extended (t6, operands[1], operands[2]));
-      if (GET_CODE (operands[1]) != CONST_INT)
-	emit_insn (gen_extend_insn (t4, operands[1], DImode, SImode, 0));
-      else
-	t4 = operands[1];
-      if (GET_CODE (operands[2]) != CONST_INT)
-	emit_insn (gen_extend_insn (t5, operands[2], DImode, SImode, 0));
-      else
-	t5 = operands[2];
+      t4 = convert_modes (DImode, SImode, operands[1], false);
+      t5 = convert_modes (DImode, SImode, operands[2], false);
       emit_insn (gen_adddi3 (t3, t4, t5));
       rtx t7 = gen_lowpart (SImode, t6);
       SUBREG_PROMOTED_VAR_P (t7) = 1;
@@ -835,10 +829,7 @@
       rtx t3 = gen_reg_rtx (DImode);
       rtx t4 = gen_reg_rtx (DImode);
 
-      if (GET_CODE (operands[1]) != CONST_INT)
-	emit_insn (gen_extend_insn (t3, operands[1], DImode, SImode, 0));
-      else
-	t3 = operands[1];
+      t3 = convert_modes (DImode, SImode, operands[1], 0);
       emit_insn (gen_addsi3_extended (t4, operands[1], operands[2]));
       rtx t5 = gen_lowpart (SImode, t4);
       SUBREG_PROMOTED_VAR_P (t5) = 1;
@@ -982,14 +973,8 @@
       rtx t6 = gen_reg_rtx (DImode);
 
       emit_insn (gen_subsi3_extended (t6, operands[1], operands[2]));
-      if (GET_CODE (operands[1]) != CONST_INT)
-	emit_insn (gen_extend_insn (t4, operands[1], DImode, SImode, 0));
-      else
-	t4 = operands[1];
-      if (GET_CODE (operands[2]) != CONST_INT)
-	emit_insn (gen_extend_insn (t5, operands[2], DImode, SImode, 0));
-      else
-	t5 = operands[2];
+      t4 = convert_modes (DImode, SImode, operands[1], false);
+      t5 = convert_modes (DImode, SImode, operands[2], false);
       emit_insn (gen_subdi3 (t3, t4, t5));
       rtx t7 = gen_lowpart (SImode, t6);
       SUBREG_PROMOTED_VAR_P (t7) = 1;
@@ -1029,10 +1014,7 @@
       rtx t3 = gen_reg_rtx (DImode);
       rtx t4 = gen_reg_rtx (DImode);
 
-      if (GET_CODE (operands[1]) != CONST_INT)
-	emit_insn (gen_extend_insn (t3, operands[1], DImode, SImode, 0));
-      else
-	t3 = operands[1];
+      t3 = convert_modes (DImode, SImode, operands[1], false);
       emit_insn (gen_subsi3_extended (t4, operands[1], operands[2]));
       rtx t5 = gen_lowpart (SImode, t4);
       SUBREG_PROMOTED_VAR_P (t5) = 1;
@@ -1192,18 +1174,12 @@
       rtx t5 = gen_reg_rtx (DImode);
       rtx t6 = gen_reg_rtx (DImode);
 
-      if (GET_CODE (operands[1]) != CONST_INT)
-	emit_insn (gen_extend_insn (t4, operands[1], DImode, SImode, 0));
-      else
-	t4 = operands[1];
-      if (GET_CODE (operands[2]) != CONST_INT)
-	emit_insn (gen_extend_insn (t5, operands[2], DImode, SImode, 0));
-      else
-	t5 = operands[2];
+      t4 = convert_modes (DImode, SImode, operands[1], false);
+      t5 = convert_modes (DImode, SImode, operands[2], false);
       emit_insn (gen_muldi3 (t3, t4, t5));
 
       emit_move_insn (operands[0], gen_lowpart (SImode, t3));
-      emit_insn (gen_extend_insn (t6, operands[0], DImode, SImode, 0));
+      t6 = convert_modes (DImode, SImode, operands[0], false);
 
       riscv_expand_conditional_branch (operands[3], NE, t6, t3);
     }
@@ -1239,14 +1215,8 @@
       rtx t7 = gen_reg_rtx (DImode);
       rtx t8 = gen_reg_rtx (DImode);
 
-      if (GET_CODE (operands[1]) != CONST_INT)
-	emit_insn (gen_extend_insn (t3, operands[1], DImode, SImode, 0));
-      else
-	t3 = operands[1];
-      if (GET_CODE (operands[2]) != CONST_INT)
-	emit_insn (gen_extend_insn (t4, operands[2], DImode, SImode, 0));
-      else
-	t4 = operands[2];
+      t3 = convert_modes (DImode, SImode, operands[1], false);
+      t4 = convert_modes (DImode, SImode, operands[2], false);
 
       emit_insn (gen_ashldi3 (t5, t3, GEN_INT (32)));
       emit_insn (gen_ashldi3 (t6, t4, GEN_INT (32)));

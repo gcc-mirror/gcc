@@ -603,8 +603,7 @@
     {
       /* We don't have SI mode compare on RV64, so we need to make sure expected
 	 value is sign-extended.  */
-      rtx tmp0 = gen_reg_rtx (word_mode);
-      emit_insn (gen_extend_insn (tmp0, operands[3], word_mode, <MODE>mode, 0));
+      rtx tmp0 = convert_modes (word_mode, <MODE>mode, operands[3], false);
       operands[3] = gen_lowpart (<MODE>mode, tmp0);
     }
 
@@ -702,17 +701,8 @@
 							 operands[6],
 							 operands[7]));
 
-  rtx val = gen_reg_rtx (SImode);
-  if (operands[1] != const0_rtx)
-    emit_move_insn (val, gen_rtx_SIGN_EXTEND (SImode, operands[1]));
-  else
-    emit_move_insn (val, const0_rtx);
-
-  rtx exp = gen_reg_rtx (SImode);
-  if (operands[3] != const0_rtx)
-    emit_move_insn (exp, gen_rtx_SIGN_EXTEND (SImode, operands[3]));
-  else
-    emit_move_insn (exp, const0_rtx);
+  rtx val = convert_modes (SImode, <SHORT:MODE>mode, operands[1], false);
+  rtx exp = convert_modes (SImode, <SHORT:MODE>mode, operands[3], false);
 
   rtx compare = val;
   if (exp != const0_rtx)

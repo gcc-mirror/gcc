@@ -3756,8 +3756,7 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 	      /* The low-part must be zero-extended when ELEN == 32 and
 		 mode == 64.  */
 	      if (num == 2 && i == 0)
-		emit_insn (gen_extend_insn (int_reg, result, mode, smode,
-					    true));
+		int_reg = convert_modes (mode, smode, result, true);
 
 	      if (i == 1)
 		{
@@ -3804,6 +3803,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
 
       temp_reg = gen_reg_rtx (word_mode);
       zero_extend_p = (LOAD_EXTEND_OP (mode) == ZERO_EXTEND);
+      /* SRC is a MEM, so we can always extend it directly, so
+	 no need to indirect through convert_modes.  */
       emit_insn (gen_extend_insn (temp_reg, src, word_mode, mode,
 				  zero_extend_p));
       riscv_emit_move (dest, gen_lowpart (mode, temp_reg));
@@ -3858,9 +3859,8 @@ riscv_legitimize_move (machine_mode mode, rtx dest, rtx src)
     {
       rtx mask = force_reg (word_mode, gen_int_mode (-65536, word_mode));
       rtx temp = gen_reg_rtx (word_mode);
-      emit_insn (gen_extend_insn (temp,
-				  gen_lowpart (HImode, src),
-				  word_mode, HImode, 1));
+      temp = convert_modes (word_mode, HImode,
+			    gen_lowpart (HImode, src), true);
       if (word_mode == SImode)
 	emit_insn (gen_iorsi3 (temp, mask, temp));
       else
@@ -15826,7 +15826,8 @@ synthesize_and (rtx operands[3])
       if (tmode != VOIDmode)
 	{
 	  rtx tmp = gen_lowpart (tmode, operands[1]);
-	  emit_insn (gen_extend_insn (operands[0], tmp, word_mode, tmode, 1));
+	  emit_move_insn (operands[0], convert_modes (word_mode, tmode,
+						      tmp, true));
 	  return true;
 	}
     }
