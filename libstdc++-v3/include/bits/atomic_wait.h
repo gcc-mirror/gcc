@@ -45,35 +45,51 @@
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
+
   namespace __detail
   {
-#ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-#define _GLIBCXX_HAVE_PLATFORM_WAIT 1
+    // TODO: this needs to be false for types with padding, e.g. __int20.
+    // TODO: should this be true only for integral, enum, and pointer types?
+    template<typename _Tp>
+      concept __waitable
+	= is_scalar_v<_Tp> && __builtin_popcountg(sizeof(_Tp)) == 1
+	    && (sizeof(_Tp) <= sizeof(__UINT64_TYPE__));
+  }
+
+#if defined _GLIBCXX_HAVE_LINUX_FUTEX
+  namespace __detail
+  {
+    // Use futex syscall on int objects.
     using __platform_wait_t = int;
     inline constexpr size_t __platform_wait_alignment = 4;
+  }
+  // Defined to true for a subset of __waitable types which are statically
+  // known to definitely be able to use futex, not a proxy wait.
+  template<typename _Tp>
+    inline constexpr bool __platform_wait_uses_type
+      = __detail::__waitable<_Tp>
+	  && sizeof(_Tp) == sizeof(int) && alignof(_Tp) >= 4;
 #else
 // define _GLIBCX_HAVE_PLATFORM_WAIT and implement __platform_wait()
 // and __platform_notify() if there is a more efficient primitive supported
 // by the platform (e.g. __ulock_wait()/__ulock_wake()) which is better than
 // a mutex/condvar based wait.
+  namespace __detail
+  {
 # if ATOMIC_LONG_LOCK_FREE == 2
     using __platform_wait_t = unsigned long;
 # else
     using __platform_wait_t = unsigned int;
 # endif
     inline constexpr size_t __platform_wait_alignment
-      = __alignof__(__platform_wait_t);
-#endif
+      = sizeof(__platform_wait_t) < __alignof__(__platform_wait_t)
+	  ? __alignof__(__platform_wait_t) : sizeof(__platform_wait_t);
   } // namespace __detail
 
-  template<typename _Tp>
-    inline constexpr bool __platform_wait_uses_type
-#ifdef _GLIBCXX_HAVE_PLATFORM_WAIT
-      = is_scalar_v<_Tp>
-	&& ((sizeof(_Tp) == sizeof(__detail::__platform_wait_t))
-	&& (alignof(_Tp) >= __detail::__platform_wait_alignment));
-#else
-      = false;
+  // This must be false for the general case where we don't know of any
+  // futex-like syscall.
+  template<typename>
+    inline constexpr bool __platform_wait_uses_type = false;
 #endif
 
   namespace __detail
@@ -105,10 +121,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
       }
 
-    // lightweight std::optional<__platform_wait_t>
+    // Storage for up to 64 bits of value, should be considered opaque bits.
+    using __wait_value_type = __UINT64_TYPE__;
+
+    // lightweight std::optional<__wait_value_type>
     struct __wait_result_type
     {
-      __platform_wait_t _M_val;
+      __wait_value_type _M_val;
       unsigned char _M_has_val : 1; // _M_val value was loaded before return.
       unsigned char _M_timeout : 1; // Waiting function ended with timeout.
       unsigned char _M_unused : 6;  // padding
@@ -116,12 +135,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     enum class __wait_flags : __UINT_LEAST32_TYPE__
     {
-       __abi_version = 0,
-       __proxy_wait = 1,
+       __abi_version = 0x00000000,
+       // currently unused = 1,
        __track_contention = 2,
        __do_spin = 4,
        __spin_only = 8, // Ignored unless __do_spin is also set.
-       // __abi_version_mask = 0xffff0000,
+       // __abi_version_mask = 0xff000000,
     };
 
     [[__gnu__::__always_inline__]]
@@ -143,8 +162,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       __wait_flags _M_flags;
       int _M_order = __ATOMIC_ACQUIRE;
-      __platform_wait_t _M_old = 0;
+      __wait_value_type _M_old = 0;
       void* _M_wait_state = nullptr;
+      const void* _M_obj = nullptr;  // The address of the object to wait on.
+      unsigned char _M_obj_size = 0; // The size of that object.
 
       // Test whether _M_flags & __flags is non-zero.
       bool
@@ -162,53 +183,88 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	explicit
 	__wait_args(const _Tp* __addr, bool __bare_wait = false) noexcept
 	: __wait_args_base{ _S_flags_for(__addr, __bare_wait) }
-	{ }
+	{
+	  _M_obj = __addr; // Might be replaced by _M_setup_wait
+	  if constexpr (__waitable<_Tp>)
+	    // __wait_impl might be able to wait directly on __addr
+	    // instead of using a proxy, depending on its size.
+	    _M_obj_size = sizeof(_Tp);
+	}
 
       __wait_args(const __platform_wait_t* __addr, __platform_wait_t __old,
 		  int __order, bool __bare_wait = false) noexcept
-      : __wait_args_base{ _S_flags_for(__addr, __bare_wait), __order, __old }
-      { }
+      : __wait_args(__addr, __bare_wait)
+      {
+	_M_order = __order;
+	_M_old = __old;
+      }
 
       __wait_args(const __wait_args&) noexcept = default;
       __wait_args& operator=(const __wait_args&) noexcept = default;
 
-      template<typename _ValFn,
-	       typename _Tp = decay_t<decltype(std::declval<_ValFn&>()())>>
+      template<typename _Tp, typename _ValFn>
 	_Tp
-	_M_setup_wait(const void* __addr, _ValFn __vfn,
+	_M_setup_wait(const _Tp* __addr, _ValFn __vfn,
 		      __wait_result_type __res = {})
 	{
-	  if constexpr (__platform_wait_uses_type<_Tp>)
-	    {
-	      // If the wait is not proxied, the value we check when waiting
-	      // is the value of the atomic variable itself.
+	  static_assert(is_same_v<_Tp, decay_t<decltype(__vfn())>>);
 
-	      if (__res._M_has_val) // The previous wait loaded a recent value.
-		{
-		  _M_old = __res._M_val;
-		  return __builtin_bit_cast(_Tp, __res._M_val);
-		}
-	      else // Load the value from __vfn
-		{
-		  _Tp __val = __vfn();
-		  _M_old = __builtin_bit_cast(__platform_wait_t, __val);
-		  return __val;
-		}
-	    }
-	  else // It's a proxy wait and the proxy's _M_ver is used.
+	  if (__res._M_has_val) // A previous wait loaded a recent value.
 	    {
-	      if (__res._M_has_val) // The previous wait loaded a recent value.
-		_M_old = __res._M_val;
-	      else // Load _M_ver from the proxy (must happen before __vfn()).
-		_M_load_proxy_wait_val(__addr);
-	      return __vfn();
+	      _M_old = __res._M_val;
+	      if constexpr (!__platform_wait_uses_type<_Tp>)
+		{
+		  // __res._M_val might be the value of a proxy wait object,
+		  // not the value of *__addr. Call __vfn() to get new value.
+		  return __vfn();
+		}
+	      // Not a proxy wait, so the value in __res._M_val was loaded
+	      // from *__addr and we don't need to call __vfn().
+	      else if constexpr (sizeof(_Tp) == sizeof(__UINT32_TYPE__))
+		return __builtin_bit_cast(_Tp, (__UINT32_TYPE__)_M_old);
+	      else if constexpr (sizeof(_Tp) == sizeof(__UINT64_TYPE__))
+		return __builtin_bit_cast(_Tp, (__UINT64_TYPE__)_M_old);
+	      else
+		{
+		  static_assert(false); // Unsupported size
+		  return {};
+		}
 	    }
+
+	  if constexpr (!__platform_wait_uses_type<_Tp>)
+	    if (_M_setup_proxy_wait(__addr))
+	      {
+		// We will use a proxy wait for this object.
+		// The library has set _M_obj and _M_obj_size and _M_old.
+		// Call __vfn to load the current value from *__addr
+		// (which must happen after the call to _M_setup_proxy_wait).
+		return __vfn();
+	      }
+
+	  // We will use a futex-like operation to wait on this object,
+	  // and so can just load the value and store it into _M_old.
+	  auto __val = __vfn();
+	  // We have to consider various sizes, because a future libstdc++.so
+	  // might enable non-proxy waits for additional sizes.
+	  if constexpr (sizeof(_Tp) == sizeof(__UINT64_TYPE__))
+	    _M_old = __builtin_bit_cast(__UINT64_TYPE__, __val);
+	  else if constexpr (sizeof(_Tp) == sizeof(__UINT32_TYPE__))
+	    _M_old = __builtin_bit_cast(__UINT32_TYPE__, __val);
+	  else if constexpr (sizeof(_Tp) == sizeof(__UINT16_TYPE__))
+	    _M_old = __builtin_bit_cast(__UINT16_TYPE__, __val);
+	  else if constexpr (sizeof(_Tp) == sizeof(__UINT8_TYPE__))
+	    _M_old = __builtin_bit_cast(__UINT8_TYPE__, __val);
+	  else // _M_setup_proxy_wait should have returned true for this type!
+	    __glibcxx_assert(false);
+	  return __val;
 	}
 
     private:
-      // Populates _M_wait_state and _M_old from the proxy for __addr.
-      void
-      _M_load_proxy_wait_val(const void* __addr);
+      // Returns true if a proxy wait will be used for __addr, false otherwise.
+      // If true, _M_wait_state, _M_obj, _M_obj_size, and _M_old are set.
+      // If false, data members are unchanged.
+      bool
+      _M_setup_proxy_wait(const void* __addr);
 
       template<typename _Tp>
 	static constexpr __wait_flags
@@ -218,8 +274,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __wait_flags __res = __abi_version | __do_spin;
 	  if (!__bare_wait)
 	    __res |= __track_contention;
-	  if constexpr (!__platform_wait_uses_type<_Tp>)
-	    __res |= __proxy_wait;
 	  return __res;
 	}
     };
@@ -234,6 +288,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Wait on __addr while __pred(__vfn()) is false.
   // If __bare_wait is false, increment a counter while waiting.
   // For callers that keep their own count of waiters, use __bare_wait=true.
+  // The effect of __vfn() must be an atomic load from __addr and nothing else.
   template<typename _Tp, typename _Pred, typename _ValFn>
     void
     __atomic_wait_address(const _Tp* __addr, _Pred&& __pred, _ValFn&& __vfn,
@@ -255,9 +310,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 			  __detail::__platform_wait_t __old,
 			  int __order, bool __bare_wait = false)
   {
-#ifndef _GLIBCXX_HAVE_PLATFORM_WAIT
-    __glibcxx_assert(false); // This function can't be used for proxy wait.
-#endif
+    // This function must not be used if __wait_impl might use a proxy wait:
+    __glibcxx_assert(__platform_wait_uses_type<__detail::__platform_wait_t>);
+
     __detail::__wait_args __args{ __addr, __old, __order, __bare_wait };
     // C++26 will not ignore the return value here
     __detail::__wait_impl(__addr, __args);

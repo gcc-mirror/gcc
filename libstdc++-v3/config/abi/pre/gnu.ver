@@ -2553,7 +2553,7 @@ GLIBCXX_3.4.35 {
     _ZNSt8__detail11__wait_implEPKvRNS_16__wait_args_baseE;
     _ZNSt8__detail13__notify_implEPKvbRKNS_16__wait_args_baseE;
     _ZNSt8__detail17__wait_until_implEPKvRNS_16__wait_args_baseERKNSt6chrono8durationI[lx]St5ratioIL[lx]1EL[lx]1000000000EEEE;
-    _ZNSt8__detail11__wait_args22_M_load_proxy_wait_valEPKv;
+    _ZNSt8__detail11__wait_args19_M_setup_proxy_waitEPKv;
 
     # std::chrono::gps_clock::now, tai_clock::now
     _ZNSt6chrono9gps_clock3nowEv;
