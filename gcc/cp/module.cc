@@ -12848,8 +12848,10 @@ trees_in::read_var_def (tree decl, tree maybe_template)
 	  if (DECL_EXPLICIT_INSTANTIATION (decl)
 	      && !DECL_EXTERNAL (decl))
 	    setup_explicit_instantiation_definition_linkage (decl);
-	  /* Class static data members are handled in read_class_def.  */
-	  if (!DECL_CLASS_SCOPE_P (decl)
+	  /* Class non-template static members are handled in read_class_def.
+	     But still handle specialisations of member templates.  */
+	  if ((!DECL_CLASS_SCOPE_P (decl)
+	       || primary_template_specialization_p (decl))
 	      && (DECL_IMPLICIT_INSTANTIATION (decl)
 		  || (DECL_EXPLICIT_INSTANTIATION (decl)
 		      && !DECL_EXTERNAL (decl))))
