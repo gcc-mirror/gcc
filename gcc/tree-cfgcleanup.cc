@@ -519,11 +519,14 @@ tree_forwarder_block_p (basic_block bb)
 	    }
 	  /* cleanup_tree_cfg_noloop just created the loop preheader, don't
 	     remove it if it has phis.  */
-	  else if (bb->loop_father == loop_outer (dest->loop_father))
-	    return gimple_seq_empty_p (phi_nodes (bb));
-	  /* Always preserve other edges into loop headers that are
-	     not simple latches or preheaders.  */
-	  return false;
+	  else if (bb->loop_father == loop_outer (dest->loop_father)
+		   && gimple_seq_empty_p (phi_nodes (bb))
+		   && !loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
+	    ;
+	  else
+	    /* Always preserve other edges into loop headers that are
+	       not simple latches or preheaders.  */
+	    return false;
 	}
     }
 
