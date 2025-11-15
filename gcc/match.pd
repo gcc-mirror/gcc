@@ -3778,12 +3778,11 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	return lo | -!!hi;
       } while WT is uint128_t, uint64_t, uint32_t, uint16_t,
 	and T is uint64_t, uint32_t, uint16_t, uint8_t.  */
-   (convert1?
-    (bit_ior
-     (convert?
-      (negate
-       (convert (ne (convert2? (rshift @3 INTEGER_CST@2)) integer_zerop))))
-     (convert (usmul_widen_mult@3 @0 @1))))
+   (bit_ior:c
+    (convert?
+     (negate
+      (convert (ne (convert2? (rshift @3 INTEGER_CST@2)) integer_zerop))))
+    (convert (usmul_widen_mult@3 @0 @1)))
    (if (types_match (type, @0, @1))
     (with
      {
