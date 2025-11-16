@@ -179,7 +179,6 @@ extern void loongarch_expand_atomic_qihi (union loongarch_gen_fn_ptrs,
 extern void loongarch_expand_vector_group_init (rtx, rtx);
 extern void loongarch_expand_vector_init (rtx, rtx);
 extern void loongarch_expand_vec_unpack (rtx op[2], bool);
-extern void loongarch_expand_vec_perm (rtx, rtx, rtx, rtx);
 extern void loongarch_expand_vec_perm_1 (rtx[]);
 extern void loongarch_expand_vector_extract (rtx, rtx, int);
 extern void loongarch_expand_vector_reduc (rtx (*)(rtx, rtx, rtx), rtx, rtx);

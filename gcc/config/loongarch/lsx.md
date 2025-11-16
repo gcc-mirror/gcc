@@ -513,16 +513,19 @@
 })
 
 (define_expand "vec_perm<mode>"
- [(match_operand:LSX 0 "register_operand")
-  (match_operand:LSX 1 "register_operand")
-  (match_operand:LSX 2 "register_operand")
-  (match_operand:<VIMODE> 3 "register_operand")]
-  "ISA_HAS_LSX"
-{
-  loongarch_expand_vec_perm (operands[0], operands[1],
-			     operands[2], operands[3]);
-  DONE;
-})
+ [(set (match_dup 4)
+       (and:<VIMODE> (match_operand:<VIMODE> 3 "register_operand")
+		     (match_dup 5)))
+  (set (match_operand:LSX 0 "register_operand")
+       (unspec:LSX [(match_operand:LSX 2 "register_operand")
+                    (match_operand:LSX 1 "register_operand")
+                    (match_dup 4)]
+		   UNSPEC_SIMD_VSHUF))]
+ "ISA_HAS_LSX"
+ {
+   operands[4] = gen_reg_rtx (<VIMODE>mode);
+   operands[5] = gen_const_vec_duplicate (<VIMODE>mode, GEN_INT (0x1f));
+ })
 
 ;; Integer operations
 (define_insn "add<mode>3"
