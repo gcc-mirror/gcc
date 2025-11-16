@@ -9133,33 +9133,20 @@ loongarch_expand_vec_perm_1 (rtx operands[])
   switch (mode)
     {
     case E_V8SImode:
+    case E_V8SFmode:
       if (one_operand_shuffle)
 	{
-	  emit_insn (gen_lasx_xvperm_w (target, op0, mask));
+	  emit_insn (gen_lasx_xvperm (mode, target, op0, mask));
 	  if (target != operands[0])
 	    emit_move_insn (operands[0],
 			    gen_lowpart (GET_MODE (operands[0]), target));
 	}
       else
 	{
-	  t1 = gen_reg_rtx (V8SImode);
-	  t2 = gen_reg_rtx (V8SImode);
-	  emit_insn (gen_lasx_xvperm_w (t1, op0, mask));
-	  emit_insn (gen_lasx_xvperm_w (t2, op1, mask));
-	  goto merge_two;
-	}
-      return;
-
-    case E_V8SFmode:
-      mask = gen_lowpart (V8SImode, mask);
-      if (one_operand_shuffle)
-	emit_insn (gen_lasx_xvperm_w_f (target, op0, mask));
-      else
-	{
-	  t1 = gen_reg_rtx (V8SFmode);
-	  t2 = gen_reg_rtx (V8SFmode);
-	  emit_insn (gen_lasx_xvperm_w_f (t1, op0, mask));
-	  emit_insn (gen_lasx_xvperm_w_f (t2, op1, mask));
+	  t1 = gen_reg_rtx (mode);
+	  t2 = gen_reg_rtx (mode);
+	  emit_insn (gen_lasx_xvperm (mode, t1, op0, mask));
+	  emit_insn (gen_lasx_xvperm (mode, t2, op1, mask));
 	  goto merge_two;
 	}
       return;

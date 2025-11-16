@@ -469,8 +469,8 @@
   [(set_attr "type" "simd_splat")
    (set_attr "mode" "<MODE>")])
 
-;; xshuf.w
-(define_insn "lasx_xvperm_<lasxfmt_f_wd>"
+;; xvperm.w
+(define_insn "@lasx_xvperm_<lasxfmt_f_wd>"
   [(set (match_operand:LASX_W 0 "register_operand" "=f")
 	(unspec:LASX_W
 	  [(match_operand:LASX_W 1 "nonimmediate_operand" "f")
