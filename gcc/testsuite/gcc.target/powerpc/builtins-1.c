@@ -1035,4 +1035,4 @@ foo156 (vector unsigned short usa)
 /* { dg-final { scan-assembler-times {\mvmrglb\M} 3 } } */
 /* { dg-final { scan-assembler-times {\mvmrgew\M} 4 } } */
 /* { dg-final { scan-assembler-times {\mvsplth|xxsplth\M} 4 } } */
-/* { dg-final { scan-assembler-times {\mxxpermdi\M} 44 } } */
+/* { dg-final { scan-assembler-times {\mxxpermdi\M} 42 } } */
