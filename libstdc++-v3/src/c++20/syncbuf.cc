@@ -23,6 +23,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include <syncstream>
+#include <mutex>
 #include <bits/functional_hash.h>
 
 #if _GLIBCXX_HAS_GTHREADS
@@ -32,13 +33,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 mutex&
 __syncbuf_get_mutex(void* __t)
-  {
-    const unsigned char __mask = 0xf;
-    static mutex __m[__mask + 1];
+{
+  const unsigned char __mask = 0xf;
+  static mutex __m[__mask + 1];
 
-    auto __key = _Hash_impl::hash(__t) & __mask;
-    return __m[__key];
-  }
+  auto __key = _Hash_impl::hash(__t) & __mask;
+  return __m[__key];
+}
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
