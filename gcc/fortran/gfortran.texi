@@ -1186,7 +1186,6 @@ extensions.
 @menu
 * Extensions implemented in GNU Fortran::
 * Extensions not implemented in GNU Fortran::
-* Experimental features for future Fortran versions::
 @end menu
 
 
@@ -1242,6 +1241,7 @@ additional compatibility extensions along with those enabled by
 * Extended I/O specifiers::
 * Legacy PARAMETER statements::
 * Default exponents::
+* Unsigned integers::
 @end menu
 
 @node Old-style kind specifications
@@ -2535,6 +2535,145 @@ For compatibility, GNU Fortran supports a default exponent of zero in real
 constants with @option{-fdec}.  For example, @code{9e} would be
 interpreted as @code{9e0}, rather than an error.
 
+@menu
+* Unsigned integers::
+@end menu
+
+@node Unsigned integers
+@subsection Unsigned integers
+@cindex Unsigned integers
+If the @option{-funsigned} option is given, GNU Fortran supports
+unsigned integers according to
+@uref{https://j3-fortran.org/doc/year/24/24-116.txt, J3/24-116}.  The
+data type is called @code{UNSIGNED}.  For an unsigned type with @code{n}
+bits, it implements integer arithmetic modulo @code{2**n}, comparable
+to the @code{unsigned} data type in C.
+
+The data type has @code{KIND} numbers comparable to other Fortran data
+types, which can be selected via the @code{SELECTED_UNSIGNED_KIND}
+function.
+
+Mixed arithmetic, comparisons and assignment between @code{UNSIGNED}
+and other types are only possible via explicit conversion.  Conversion
+from @code{UNSIGNED} to other types is done via type conversion
+functions like @code{INT} or @code{REAL}. Conversion from other types
+to @code{UNSIGNED} is done via @code{UINT}. Unsigned variables cannot be
+used as index variables in @code{DO} loops or as array indices.
+
+Unsigned numbers have a trailing @code{u} as suffix, optionally followed
+by a @code{KIND} number separated by an underscore.
+
+Input and output can be done using the @samp{I}, @samp{B}, @samp{O}
+and @samp{Z} descriptors, plus unformatted I/O.
+
+Unsigned integers as implemented in gfortran are compatible with flang.
+
+Here is a small, somewhat contrived example of their use:
+@smallexample
+program main
+  use iso_fortran_env, only : uint64
+  unsigned(kind=uint64) :: v
+  v = huge(v) - 32u_uint64
+  print *,v
+end program main
+@end smallexample
+@noindent
+which outputs the number 18446744073709551583.
+
+Arithmetic operations work on unsigned integers, also for
+exponentiation.  As an extension to J3/24-116.txt, unary minus
+and exponentiation of unsigned integers are permitted unless
+@code{-pedantic} is in force.
+
+In intrinsic procedures, unsigned arguments are typically permitted
+for arguments for the data to be processed, analogous to the
+use of @code{REAL} arguments. Unsigned values are prohibited
+as index variables in @code{DO} loops and as array indices.
+
+Unsigned numbers can be read and written using list-directed,
+formatted and unformatted I/O.  For formatted I/O, the @samp{B},
+@samp{I}, @samp{O} and @samp{Z} descriptors are valid.  Negative
+values and values that would overflow are rejected with
+@code{-pedantic}.
+
+@code{SELECT CASE} is supported for unsigned integers.
+
+The following intrinsics take unsigned arguments:
+@itemize @bullet
+@item @code{BGE}, @pxref{BGE}
+@item @code{BGT}, @pxref{BGT}
+@item @code{BIT_SIZE}, @pxref{BIT_SIZE}
+@item @code{BLE}, @pxref{BLE}
+@item @code{BLT}, @pxref{BLT}
+@item @code{CMPLX}, @pxref{CMPLX}
+@item @code{CSHIFT}, @pxref{CSHIFT}
+@item @code{DIGITS}, @pxref{DIGITS}
+@item @code{DOT_PRODUCT}, @pxref{DOT_PRODUCT}
+@item @code{DSHIFTL}, @pxref{DSHIFTL}
+@item @code{DSHIFTR}, @pxref{DSHIFTR}
+@item @code{EOSHIFT}, @pxref{EOSHIFT}
+@item @code{FINDLOC}, @pxref{FINDLOC}
+@item @code{HUGE}, @pxref{HUGE}
+@item @code{IALL}, @pxref{IALL}
+@item @code{IAND}, @pxref{IAND}
+@item @code{IANY}, @pxref{IANY}
+@item @code{IBCLR}, @pxref{IBCLR}
+@item @code{IBITS}, @pxref{IBITS}
+@item @code{IBSET}, @pxref{IBSET}
+@item @code{IEOR}, @pxref{IEOR}
+@item @code{INT}, @pxref{INT}
+@item @code{IOR}, @pxref{IOR}
+@item @code{IPARITY}, @pxref{IPARITY}
+@item @code{ISHFT}, @pxref{ISHFT}
+@item @code{ISHFTC}, @pxref{ISHFTC}
+@item @code{MATMUL}, @pxref{MATMUL}
+@item @code{MAX}, @pxref{MAX}
+@item @code{MAXLOC}, @pxref{MAXLOC}
+@item @code{MAXVAL}, @pxref{MAXVAL}
+@item @code{MERGE}, @pxref{MERGE}
+@item @code{MERGE_BITS}, @pxref{MERGE_BITS}
+@item @code{MIN}, @pxref{MIN}
+@item @code{MINLOC}, @pxref{MINLOC}
+@item @code{MINVAL}, @pxref{MINVAL}
+@item @code{MOD}, @pxref{MOD}
+@item @code{MODULO}, @pxref{MODULO}
+@item @code{MVBITS}, @pxref{MVBITS}
+@item @code{NOT}, @pxref{NOT}
+@item @code{OUT_OF_RANGE}, @pxref{OUT_OF_RANGE}
+@item @code{PRODUCT}, @pxref{PRODUCT}
+@item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
+@item @code{RANGE}, @pxref{RANGE}
+@item @code{REAL}, @pxref{REAL}
+@item @code{SHIFTA}, @pxref{SHIFTA}
+@item @code{SHIFTL}, @pxref{SHIFTL}
+@item @code{SHIFTR}, @pxref{SHIFTR}
+@item @code{SUM}, @pxref{SUM}
+@item @code{TRANSPOSE}, @pxref{TRANSPOSE}
+@item @code{TRANSFER}, @pxref{TRANSFER}
+@end itemize
+
+The following intrinsics are enabled with @option{-funsigned}:
+@itemize @bullet
+@item @code{UINT}, @pxref{UINT}
+@item @code{UMASKL}, @pxref{UMASKL}
+@item @code{UMASKR}, @pxref{UMASKR}
+@item @code{SELECTED_UNSIGNED_KIND}, @pxref{SELECTED_UNSIGNED_KIND}
+@end itemize
+
+The following constants have been added to the intrinsic
+@code{ISO_C_BINDING} module: @code{c_unsigned},
+@code{c_unsigned_short}, @code{c_unsigned_char},
+@code{c_unsigned_long}, @code{c_unsigned_long_long},
+@code{c_uintmax_t}, @code{c_uint8_t}, @code{c_uint16_t},
+@code{c_uint32_t}, @code{c_uint64_t}, @code{c_uint128_t},
+@code{c_uint_fast8_t}, @code{c_uint_fast16_t}, @code{c_uint_fast32_t},
+@code{c_uint_fast64_t}, @code{c_uint_fast128_t},
+@code{c_uint_least8_t}, @code{c_uint_least16_t}, @code{c_uint_least32_t},
+@code{c_uint_least64_t} and @code{c_uint_least128_t}.
+
+The following constants have been added to the intrinsic
+@code{ISO_FORTRAN_ENV} module: @code{uint8}, @code{uint16},
+@code{uint32} and @code{uint64}.
 
 @node Extensions not implemented in GNU Fortran
 @section Extensions not implemented in GNU Fortran
@@ -2715,157 +2854,6 @@ descriptor occurred, use @code{INQUIRE} to get the file position,
 count the characters up to the next @code{NEW_LINE} and then start
 reading from the position marked previously.
 
-@node Experimental features for future Fortran versions
-@section Experimental features future Fortran versions
-@cindex Future Fortran versions
-
-GNU Fortran supports some experimental features that have been
-proposed and accepted by the J3 standards committee.  These
-exist to give users a chance to try them out, and to provide
-a reference implementation.
-
-As these features have not been included in the worklist for Fortran
-202Y by WG5, there is a chance that a version in any upcoming standard
-will differ from what GNU Fortran currently implements.  These
-features are therefore currently classified as an extension.
-
-@menu
-* Unsigned integers::
-@end menu
-
-@node Unsigned integers
-@subsection Unsigned integers
-@cindex Unsigned integers
-If the @option{-funsigned} option is given, GNU Fortran supports
-unsigned integers according to
-@uref{https://j3-fortran.org/doc/year/24/24-116.txt, J3/24-116}.  The
-data type is called @code{UNSIGNED}.  For an unsigned type with @code{n}
-bits, it implements integer arithmetic modulo @code{2**n}, comparable
-to the @code{unsigned} data type in C.
-
-The data type has @code{KIND} numbers comparable to other Fortran data
-types, which can be selected via the @code{SELECTED_UNSIGNED_KIND}
-function.
-
-Mixed arithmetic, comparisons and assignment between @code{UNSIGNED}
-and other types are only possible via explicit conversion.  Conversion
-from @code{UNSIGNED} to other types is done via type conversion
-functions like @code{INT} or @code{REAL}. Conversion from other types
-to @code{UNSIGNED} is done via @code{UINT}. Unsigned variables cannot be
-used as index variables in @code{DO} loops or as array indices.
-
-Unsigned numbers have a trailing @code{u} as suffix, optionally followed
-by a @code{KIND} number separated by an underscore.
-
-Input and output can be done using the @samp{I}, @samp{B}, @samp{O}
-and @samp{Z} descriptors, plus unformatted I/O.
-
-Here is a small, somewhat contrived example of their use:
-@smallexample
-program main
-  use iso_fortran_env, only : uint64
-  unsigned(kind=uint64) :: v
-  v = huge(v) - 32u_uint64
-  print *,v
-end program main
-@end smallexample
-@noindent
-which outputs the number 18446744073709551583.
-
-Arithmetic operations work on unsigned integers, also for
-exponentiation.  As an extension to J3/24-116.txt, unary minus
-and exponentiation of unsigned integers are permitted unless
-@code{-pedantic} is in force.
-
-In intrinsic procedures, unsigned arguments are typically permitted
-for arguments for the data to be processed, analogous to the
-use of @code{REAL} arguments. Unsigned values are prohibited
-as index variables in @code{DO} loops and as array indices.
-
-Unsigned numbers can be read and written using list-directed,
-formatted and unformatted I/O.  For formatted I/O, the @samp{B},
-@samp{I}, @samp{O} and @samp{Z} descriptors are valid.  Negative
-values and values that would overflow are rejected with
-@code{-pedantic}.
-
-@code{SELECT CASE} is supported for unsigned integers.
-
-The following intrinsics take unsigned arguments:
-@itemize @bullet
-@item @code{BGE}, @pxref{BGE}
-@item @code{BGT}, @pxref{BGT}
-@item @code{BIT_SIZE}, @pxref{BIT_SIZE}
-@item @code{BLE}, @pxref{BLE}
-@item @code{BLT}, @pxref{BLT}
-@item @code{CMPLX}, @pxref{CMPLX}
-@item @code{CSHIFT}, @pxref{CSHIFT}
-@item @code{DIGITS}, @pxref{DIGITS}
-@item @code{DOT_PRODUCT}, @pxref{DOT_PRODUCT}
-@item @code{DSHIFTL}, @pxref{DSHIFTL}
-@item @code{DSHIFTR}, @pxref{DSHIFTR}
-@item @code{EOSHIFT}, @pxref{EOSHIFT}
-@item @code{FINDLOC}, @pxref{FINDLOC}
-@item @code{HUGE}, @pxref{HUGE}
-@item @code{IALL}, @pxref{IALL}
-@item @code{IAND}, @pxref{IAND}
-@item @code{IANY}, @pxref{IANY}
-@item @code{IBCLR}, @pxref{IBCLR}
-@item @code{IBITS}, @pxref{IBITS}
-@item @code{IBSET}, @pxref{IBSET}
-@item @code{IEOR}, @pxref{IEOR}
-@item @code{INT}, @pxref{INT}
-@item @code{IOR}, @pxref{IOR}
-@item @code{IPARITY}, @pxref{IPARITY}
-@item @code{ISHFT}, @pxref{ISHFT}
-@item @code{ISHFTC}, @pxref{ISHFTC}
-@item @code{MATMUL}, @pxref{MATMUL}
-@item @code{MAX}, @pxref{MAX}
-@item @code{MAXLOC}, @pxref{MAXLOC}
-@item @code{MAXVAL}, @pxref{MAXVAL}
-@item @code{MERGE}, @pxref{MERGE}
-@item @code{MERGE_BITS}, @pxref{MERGE_BITS}
-@item @code{MIN}, @pxref{MIN}
-@item @code{MINLOC}, @pxref{MINLOC}
-@item @code{MINVAL}, @pxref{MINVAL}
-@item @code{MOD}, @pxref{MOD}
-@item @code{MODULO}, @pxref{MODULO}
-@item @code{MVBITS}, @pxref{MVBITS}
-@item @code{NOT}, @pxref{NOT}
-@item @code{OUT_OF_RANGE}, @pxref{OUT_OF_RANGE}
-@item @code{PRODUCT}, @pxref{PRODUCT}
-@item @code{RANDOM_NUMBER}, @pxref{RANDOM_NUMBER}
-@item @code{RANGE}, @pxref{RANGE}
-@item @code{REAL}, @pxref{REAL}
-@item @code{SHIFTA}, @pxref{SHIFTA}
-@item @code{SHIFTL}, @pxref{SHIFTL}
-@item @code{SHIFTR}, @pxref{SHIFTR}
-@item @code{SUM}, @pxref{SUM}
-@item @code{TRANSPOSE}, @pxref{TRANSPOSE}
-@item @code{TRANSFER}, @pxref{TRANSFER}
-@end itemize
-
-The following intrinsics are enabled with @option{-funsigned}:
-@itemize @bullet
-@item @code{UINT}, @pxref{UINT}
-@item @code{UMASKL}, @pxref{UMASKL}
-@item @code{UMASKR}, @pxref{UMASKR}
-@item @code{SELECTED_UNSIGNED_KIND}, @pxref{SELECTED_UNSIGNED_KIND}
-@end itemize
-
-The following constants have been added to the intrinsic
-@code{ISO_C_BINDING} module: @code{c_unsigned},
-@code{c_unsigned_short}, @code{c_unsigned_char},
-@code{c_unsigned_long}, @code{c_unsigned_long_long},
-@code{c_uintmax_t}, @code{c_uint8_t}, @code{c_uint16_t},
-@code{c_uint32_t}, @code{c_uint64_t}, @code{c_uint128_t},
-@code{c_uint_fast8_t}, @code{c_uint_fast16_t}, @code{c_uint_fast32_t},
-@code{c_uint_fast64_t}, @code{c_uint_fast128_t},
-@code{c_uint_least8_t}, @code{c_uint_least16_t}, @code{c_uint_least32_t},
-@code{c_uint_least64_t} and @code{c_uint_least128_t}.
-
-The following constants have been added to the intrinsic
-@code{ISO_FORTRAN_ENV} module: @code{uint8}, @code{uint16},
-@code{uint32} and @code{uint64}.
 
 @c ---------------------------------------------------------------------
 @c ---------------------------------------------------------------------
