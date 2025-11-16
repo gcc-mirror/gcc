@@ -59,13 +59,16 @@ struct queued_debug_insn_change
    value.  The OLDEST_REGNO field points to the head of the list, and
    the NEXT_REGNO field runs through the list.  The MODE field indicates
    what mode the data is known to be in; this field is VOIDmode when the
-   register is not known to contain valid data.  */
+   register is not known to contain valid data.  The FRAME_RELATED field
+   indicates if the instruction that updated this register is frame
+   related or not.  */
 
 struct value_data_entry
 {
   machine_mode mode;
   unsigned int oldest_regno;
   unsigned int next_regno;
+  bool frame_related;
   struct queued_debug_insn_change *debug_insn_changes;
 };
 
@@ -88,12 +91,13 @@ static void set_value_regno (unsigned, machine_mode, struct value_data *);
 static void init_value_data (struct value_data *);
 static void kill_clobbered_value (rtx, const_rtx, void *);
 static void kill_set_value (rtx, const_rtx, void *);
-static void copy_value (rtx, rtx, struct value_data *);
+static void copy_value (rtx, rtx, struct value_data *, bool frame_related);
 static bool mode_change_ok (machine_mode, machine_mode,
 			    unsigned int);
 static rtx maybe_mode_change (machine_mode, machine_mode,
 			      machine_mode, unsigned int, unsigned int);
-static rtx find_oldest_value_reg (enum reg_class, rtx, struct value_data *);
+static bool incompatible_frame_status (bool, bool);
+static rtx find_oldest_value_reg (enum reg_class, rtx, struct value_data *, bool frame_related);
 static bool replace_oldest_value_reg (rtx *, enum reg_class, rtx_insn *,
 				      struct value_data *);
 static bool replace_oldest_value_addr (rtx *, enum reg_class,
@@ -147,6 +151,7 @@ kill_value_one_regno (unsigned int regno, struct value_data *vd)
   vd->e[regno].mode = VOIDmode;
   vd->e[regno].oldest_regno = regno;
   vd->e[regno].next_regno = INVALID_REGNUM;
+  vd->e[regno].frame_related = false;
   if (vd->e[regno].debug_insn_changes)
     free_debug_insn_changes (vd, regno);
 
@@ -227,6 +232,7 @@ init_value_data (struct value_data *vd)
       vd->e[i].oldest_regno = i;
       vd->e[i].next_regno = INVALID_REGNUM;
       vd->e[i].debug_insn_changes = NULL;
+      vd->e[i].frame_related = false;
     }
   vd->max_value_regs = 0;
   vd->n_debug_insn_changes = 0;
@@ -248,6 +254,7 @@ struct kill_set_value_data
 {
   struct value_data *vd;
   rtx ignore_set_reg;
+  bool insn_is_frame_related;
 };
 
 /* Called through note_stores.  If X is set, not clobbered, kill its
@@ -264,7 +271,10 @@ kill_set_value (rtx x, const_rtx set, void *data)
     {
       kill_value (x, ksvd->vd);
       if (REG_P (x))
-	set_value_regno (REGNO (x), GET_MODE (x), ksvd->vd);
+	{
+	  set_value_regno (REGNO (x), GET_MODE (x), ksvd->vd);
+	  ksvd->vd->e[REGNO(x)].frame_related = ksvd->insn_is_frame_related;
+	}
     }
 }
 
@@ -283,6 +293,7 @@ kill_autoinc_value (rtx_insn *insn, struct value_data *vd)
 	  x = XEXP (x, 0);
 	  kill_value (x, vd);
 	  set_value_regno (REGNO (x), GET_MODE (x), vd);
+	  vd->e[REGNO(x)].frame_related = RTX_FRAME_RELATED_P (insn);
 	  iter.skip_subrtxes ();
 	}
     }
@@ -292,7 +303,7 @@ kill_autoinc_value (rtx_insn *insn, struct value_data *vd)
    to reflect that SRC contains an older copy of the shared value.  */
 
 static void
-copy_value (rtx dest, rtx src, struct value_data *vd)
+copy_value (rtx dest, rtx src, struct value_data *vd, bool frame_related)
 {
   unsigned int dr = REGNO (dest);
   unsigned int sr = REGNO (src);
@@ -391,6 +402,8 @@ copy_value (rtx dest, rtx src, struct value_data *vd)
     continue;
   vd->e[i].next_regno = dr;
 
+  vd->e[dr].frame_related = frame_related;
+
   if (flag_checking)
     validate_value_data (vd);
 }
@@ -455,12 +468,28 @@ maybe_mode_change (machine_mode orig_mode, machine_mode copy_mode,
   return NULL_RTX;
 }
 
+/* Copy propagation must not replace a value in a frame-related
+   instruction with one produced by a non–frame-related instruction.
+   Doing so may cause the DCE pass to delete the original frame-related
+   instruction, which would in turn produce incorrect DWARF information
+   (see PR122274).  TO_FRAME_RELATED indicates whether the destination
+   instruction receiving the propagated value is frame-related.
+   FROM_FRAME_RELATED indicates whether the instruction providing that
+   value is frame-related.
+   Return true if copy propagation is not permitted.  */
+
+static bool
+incompatible_frame_status (bool to_frame_related, bool from_frame_related)
+{
+  return to_frame_related && !from_frame_related;
+}
+
 /* Find the oldest copy of the value contained in REGNO that is in
    register class CL and has mode MODE.  If found, return an rtx
    of that oldest register, otherwise return NULL.  */
 
 static rtx
-find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
+find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd, bool frame_related)
 {
   unsigned int regno = REGNO (reg);
   machine_mode mode = GET_MODE (reg);
@@ -488,6 +517,9 @@ find_oldest_value_reg (enum reg_class cl, rtx reg, struct value_data *vd)
       if (!in_hard_reg_set_p (reg_class_contents[cl], mode, i))
 	continue;
 
+      if (incompatible_frame_status (frame_related, vd->e[i].frame_related))
+	continue;
+
       new_rtx = maybe_mode_change (oldmode, vd->e[regno].mode, mode, i, regno);
       if (new_rtx)
 	{
@@ -513,7 +545,7 @@ static bool
 replace_oldest_value_reg (rtx *loc, enum reg_class cl, rtx_insn *insn,
 			  struct value_data *vd)
 {
-  rtx new_rtx = find_oldest_value_reg (cl, *loc, vd);
+  rtx new_rtx = find_oldest_value_reg (cl, *loc, vd, RTX_FRAME_RELATED_P (insn));
   if (new_rtx && (!DEBUG_INSN_P (insn) || !skip_debug_insn_p))
     {
       if (DEBUG_INSN_P (insn))
@@ -807,9 +839,9 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	{
 	  unsigned int regno = REGNO (SET_SRC (set));
 	  rtx r1 = find_oldest_value_reg (REGNO_REG_CLASS (regno),
-					  SET_DEST (set), vd);
+					  SET_DEST (set), vd, false);
 	  rtx r2 = find_oldest_value_reg (REGNO_REG_CLASS (regno),
-					  SET_SRC (set), vd);
+					  SET_SRC (set), vd, false);
 	  if (rtx_equal_p (r1 ? r1 : SET_DEST (set), r2 ? r2 : SET_SRC (set)))
 	    {
 	      bool last = insn == BB_END (bb);
@@ -933,7 +965,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  if (REG_P (dest))
 	    {
 	      new_rtx = find_oldest_value_reg (REGNO_REG_CLASS (regno),
-					       src, vd);
+					       src, vd, RTX_FRAME_RELATED_P (insn));
 
 	      if (new_rtx && validate_change (insn, &SET_SRC (set), new_rtx, 0))
 		{
@@ -954,6 +986,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  for (i = vd->e[regno].oldest_regno; i != regno;
 	       i = vd->e[i].next_regno)
 	    {
+	      if (incompatible_frame_status (RTX_FRAME_RELATED_P (insn), vd->e[i].frame_related))
+		continue;
 	      new_rtx = maybe_mode_change (vd->e[i].mode, vd->e[regno].mode,
 				       mode, i, regno);
 	      if (new_rtx != NULL_RTX)
@@ -1082,6 +1116,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       ksvd.vd = vd;
       ksvd.ignore_set_reg = NULL_RTX;
+      ksvd.insn_is_frame_related = false;
 
       /* Clobber call-clobbered registers.  */
       if (CALL_P (insn))
@@ -1099,7 +1134,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 		  rtx dest = SET_DEST (x);
 		  kill_value (dest, vd);
 		  set_value_regno (REGNO (dest), GET_MODE (dest), vd);
-		  copy_value (dest, SET_SRC (x), vd);
+		  copy_value (dest, SET_SRC (x), vd, false);
 		  ksvd.ignore_set_reg = dest;
 		  set_regno = REGNO (dest);
 		  set_nregs = REG_NREGS (dest);
@@ -1147,6 +1182,8 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 
       if (!noop_p)
 	{
+	  ksvd.insn_is_frame_related = RTX_FRAME_RELATED_P (insn);
+
 	  /* Notice stores.  */
 	  note_stores (insn, kill_set_value, &ksvd);
 
@@ -1154,7 +1191,7 @@ copyprop_hardreg_forward_1 (basic_block bb, struct value_data *vd)
 	  if (copy_p)
 	    {
 	      df_insn_rescan (insn);
-	      copy_value (SET_DEST (set), SET_SRC (set), vd);
+	      copy_value (SET_DEST (set), SET_SRC (set), vd, RTX_FRAME_RELATED_P (insn));
 	    }
 	}
 
