@@ -5489,10 +5489,12 @@ simplify_const_binary_operation (enum rtx_code code, machine_mode mode,
       && code == VEC_CONCAT
       && (CONST_SCALAR_INT_P (op0)
 	  || CONST_FIXED_P (op0)
-	  || CONST_DOUBLE_AS_FLOAT_P (op0))
+	  || CONST_DOUBLE_AS_FLOAT_P (op0)
+	  || CONST_VECTOR_P (op0))
       && (CONST_SCALAR_INT_P (op1)
 	  || CONST_DOUBLE_AS_FLOAT_P (op1)
-	  || CONST_FIXED_P (op1)))
+	  || CONST_FIXED_P (op1)
+	  || CONST_VECTOR_P (op1)))
     {
       /* Both inputs have a constant number of elements, so the result
 	 must too.  */
