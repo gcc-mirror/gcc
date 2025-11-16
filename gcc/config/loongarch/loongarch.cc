@@ -9090,10 +9090,9 @@ loongarch_expand_vec_perm_1 (rtx operands[])
   rtx t1 = NULL;
   rtx t2 = NULL;
   rtx t3, t4, t5, t6, vt = NULL;
-  rtx vec[32] = {NULL};
   machine_mode mode = GET_MODE (op0);
   machine_mode maskmode = GET_MODE (mask);
-  int w, i;
+  int w;
 
   /* Number of elements in the vector.  */
   w = GET_MODE_NUNITS (mode);
@@ -9111,36 +9110,21 @@ loongarch_expand_vec_perm_1 (rtx operands[])
     {
       maskmode = mode = V8SImode;
       w = 8;
-      t1 = gen_reg_rtx (maskmode);
 
       /* Replicate the low bits of the V4DImode mask into V8SImode:
-	 mask = { A B C D }
-	 t1 = { A A B B C C D D }.  */
-      for (i = 0; i < w / 2; ++i)
-	vec[i*2 + 1] = vec[i*2] = GEN_INT (i * 2);
-      vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
-      vt = force_reg (maskmode, vt);
-      mask = gen_lowpart (maskmode, mask);
-      emit_insn (gen_lasx_xvperm_w (t1, mask, vt));
-
-      /* Multiply the shuffle indicies by two.  */
-      t1 = expand_simple_binop (maskmode, PLUS, t1, t1, t1, 1,
-				OPTAB_DIRECT);
-
-      /* Add one to the odd shuffle indicies:
-	 t1 = { A*2, A*2+1, B*2, B*2+1, ... }.  */
-      for (i = 0; i < w / 2; ++i)
-	{
-	  vec[i * 2] = const0_rtx;
-	  vec[i * 2 + 1] = const1_rtx;
-	}
-      vt = gen_rtx_CONST_VECTOR (maskmode, gen_rtvec_v (w, vec));
-      vt = validize_mem (force_const_mem (maskmode, vt));
-      t1 = expand_simple_binop (maskmode, PLUS, t1, vt, t1, 1,
-				OPTAB_DIRECT);
+	 mask = lasx_xvpackev_w (mask * 2, mask * 2 + 1)  */
+      t1 = expand_binop (V4DImode, add_optab, mask, mask, NULL_RTX,
+			 false, OPTAB_DIRECT);
+      t2 = gen_const_vec_duplicate (V4DImode, CONST1_RTX (DImode));
+      t2 = expand_binop (V4DImode, add_optab, t1, t2, NULL_RTX,
+			 true, OPTAB_DIRECT);
+      t1 = gen_lowpart (mode, t1);
+      t2 = gen_lowpart (mode, t2);
+      t3 = gen_reg_rtx (mode);
+      emit_insn (gen_lasx_xvpackev_w (t3, t1, t2));
 
       /* Continue as if V8SImode (resp.  V32QImode) was used initially.  */
-      operands[3] = mask = t1;
+      operands[3] = mask = t3;
       target = gen_reg_rtx (mode);
       op0 = gen_lowpart (mode, op0);
       op1 = gen_lowpart (mode, op1);
