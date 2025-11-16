@@ -378,7 +378,6 @@ cleanup_control_flow_bb (basic_block bb)
   return retval;
 }
 
-
 /* If all the PHI nodes in DEST have alternatives for E1 and E2 and
    those alternatives are equal in each of the PHI nodes, then return
    true, else return false.  */
@@ -517,7 +516,31 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
       && single_succ_p (single_pred_edge (bb)->src))
     return false;
 
+  bool has_phi = !gimple_seq_empty_p (phi_nodes (bb));
   basic_block dest = single_succ_edge (bb)->dest;
+
+  /* If there is an abnormal edge to basic block BB, but not into
+     dest, problems might occur during removal of the phi node at out
+     of ssa due to overlapping live ranges of registers.
+
+     If there is an abnormal edge in DEST, the problems would occur
+     anyway since cleanup_dead_labels would then merge the labels for
+     two different eh regions, and rest of exception handling code
+     does not like it.
+
+     So if there is an abnormal edge to BB, proceed only if there is
+     no abnormal edge to DEST and there are no phi nodes in DEST.
+     If the BB has phi, we don't want to deal with abnormal edges either. */
+  if (bb_has_abnormal_pred (bb)
+      && (bb_has_abnormal_pred (dest)
+	  || !gimple_seq_empty_p (phi_nodes (dest))
+	  || has_phi))
+    return false;
+
+  /* When we have a phi, we have to feed into another
+     basic block with PHI nodes.  */
+  if (has_phi && gimple_seq_empty_p (phi_nodes (dest)))
+    return false;
 
   /* Now walk through the statements backward.  We can ignore labels,
      anything else means this is not a forwarder block.  */
@@ -547,8 +570,6 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
 	  return false;
 	}
     }
-
-  bool has_phi = !gimple_seq_empty_p (phi_nodes (bb));
   /* If BB has PHIs and does not dominate DEST,
      then the PHI nodes at DEST must be the only
      users of the results of the PHI nodes at BB.
@@ -610,7 +631,7 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
 	  /* cleanup_tree_cfg_noloop just created the loop preheader, don't
 	     remove it if it has phis.  */
 	  else if (bb->loop_father == loop_outer (dest->loop_father)
-		   && gimple_seq_empty_p (phi_nodes (bb))
+		   && !has_phi
 		   && !loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
 	    ;
 	  else
@@ -623,29 +644,6 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
   edge succ = single_succ_edge (bb), e, s;
   gimple *stmt;
   gimple_stmt_iterator gsi_to;
-
-  /* If there is an abnormal edge to basic block BB, but not into
-     dest, problems might occur during removal of the phi node at out
-     of ssa due to overlapping live ranges of registers.
-
-     If there is an abnormal edge in DEST, the problems would occur
-     anyway since cleanup_dead_labels would then merge the labels for
-     two different eh regions, and rest of exception handling code
-     does not like it.
-
-     So if there is an abnormal edge to BB, proceed only if there is
-     no abnormal edge to DEST and there are no phi nodes in DEST.
-     If the BB has phi, we don't want to deal with abnormal edges either. */
-  if (bb_has_abnormal_pred (bb)
-      && (bb_has_abnormal_pred (dest)
-	  || !gimple_seq_empty_p (phi_nodes (dest))
-	  || has_phi))
-    return false;
-
-  /* When we have a phi, we have to feed into another
-     basic block with PHI nodes.  */
-  if (has_phi && gimple_seq_empty_p (phi_nodes (dest)))
-    return false;
 
   /* If there are phi nodes in DEST, and some of the blocks that are
      predecessors of BB are also predecessors of DEST, check that the
