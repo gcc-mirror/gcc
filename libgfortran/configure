@@ -637,6 +637,8 @@ am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
 get_gcc_base_ver
+HAVE_SANE_BUILTIN_CLZL_FALSE
+HAVE_SANE_BUILTIN_CLZL_TRUE
 HAVE_AVX128_FALSE
 HAVE_AVX128_TRUE
 tmake_file
@@ -2620,6 +2622,7 @@ as_fn_append ac_header_list " fpxcp.h"
 as_fn_append ac_header_list " pwd.h"
 as_fn_append ac_header_list " complex.h"
 as_fn_append ac_header_list " xlocale.h"
+as_fn_append ac_header_list " sys/mman.h"
 as_fn_append ac_func_list " getrusage"
 as_fn_append ac_func_list " times"
 as_fn_append ac_func_list " mkstemp"
@@ -2639,6 +2642,8 @@ as_fn_append ac_func_list " sleep"
 as_fn_append ac_func_list " ttyname"
 as_fn_append ac_func_list " sigaction"
 as_fn_append ac_func_list " waitpid"
+as_fn_append ac_func_list " mmap"
+as_fn_append ac_func_list " setenv"
 as_fn_append ac_func_list " alarm"
 as_fn_append ac_func_list " access"
 as_fn_append ac_func_list " fork"
@@ -13221,7 +13226,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13224 "configure"
+#line 13229 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -13327,7 +13332,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 13330 "configure"
+#line 13335 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -17115,6 +17120,8 @@ done
 
 
 
+
+
 inttype_headers=`echo inttypes.h sys/inttypes.h  | sed -e 's/,/ /g'`
 
 acx_cv_header_stdint=stddef.h
@@ -17604,6 +17611,10 @@ _ACEOF
 
 fi
 done
+
+
+
+
 
 
 
@@ -31812,6 +31823,57 @@ rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
   CFLAGS="$ac_save_CFLAGS"
 
 
+# Check if __builtin_clzl behaves (it doesn't on Msys2/ucrt64).
+
+  if test "$cross_compiling" = yes; then :
+  { { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "cannot run test program while cross compiling
+See \`config.log' for more details" "$LINENO" 5; }
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+      int main()
+      {
+	return __builtin_clzl(256) != 8;
+      }
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_run "$LINENO"; then :
+
+$as_echo "#define HAVE_SANE_BUILTIN_CLZL 1" >>confdefs.h
+
+     if true; then
+  HAVE_SANE_BUILTIN_CLZL_TRUE=
+  HAVE_SANE_BUILTIN_CLZL_FALSE='#'
+else
+  HAVE_SANE_BUILTIN_CLZL_TRUE='#'
+  HAVE_SANE_BUILTIN_CLZL_FALSE=
+fi
+
+else
+   if false; then
+  HAVE_SANE_BUILTIN_CLZL_TRUE=
+  HAVE_SANE_BUILTIN_CLZL_FALSE='#'
+else
+  HAVE_SANE_BUILTIN_CLZL_TRUE='#'
+  HAVE_SANE_BUILTIN_CLZL_FALSE=
+fi
+
+fi
+rm -f core *.core core.conftest.* gmon.out bb.out conftest$ac_exeext \
+  conftest.$ac_objext conftest.beam conftest.$ac_ext
+fi
+
+
+
 # Determine what GCC version number to use in filesystem paths.
 
   get_gcc_base_ver="cat"
@@ -32101,6 +32163,14 @@ Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 if test -z "${HAVE_AVX128_TRUE}" && test -z "${HAVE_AVX128_FALSE}"; then
   as_fn_error $? "conditional \"HAVE_AVX128\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_SANE_BUILTIN_CLZL_TRUE}" && test -z "${HAVE_SANE_BUILTIN_CLZL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_SANE_BUILTIN_CLZL\" was never defined.
+Usually this means the macro was only invoked conditionally." "$LINENO" 5
+fi
+if test -z "${HAVE_SANE_BUILTIN_CLZL_TRUE}" && test -z "${HAVE_SANE_BUILTIN_CLZL_FALSE}"; then
+  as_fn_error $? "conditional \"HAVE_SANE_BUILTIN_CLZL\" was never defined.
 Usually this means the macro was only invoked conditionally." "$LINENO" 5
 fi
 
