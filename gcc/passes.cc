@@ -2911,6 +2911,11 @@ ipa_write_summaries (void)
     if (vnode->need_lto_streaming)
       lto_set_symtab_encoder_in_partition (encoder, vnode);
 
+  asm_node *anode;
+  for (anode = symtab->first_asm_symbol (); anode;
+       anode = safe_as_a<asm_node*> (anode->next))
+    lto_set_symtab_encoder_in_partition (encoder, anode);
+
   ipa_write_summaries_1 (compute_ltrans_boundary (encoder),
 			 flag_generate_offload);
 

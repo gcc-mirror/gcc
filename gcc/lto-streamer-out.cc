@@ -2817,15 +2817,6 @@ lto_output (void)
   lto_symtab_encoder_t encoder = lto_get_out_decl_state ()->symtab_node_encoder;
   auto_vec<symtab_node *> symbols_to_copy;
 
-  if (!flag_wpa)
-    {
-      asm_node *anode;
-      for (anode = symtab->first_asm_symbol ();
-	   anode;
-	   anode = safe_as_a<asm_node*>(anode->next))
-	lto_set_symtab_encoder_in_partition (encoder, anode);
-    }
-
   create_order_remap (encoder);
 
   prune_offload_funcs ();

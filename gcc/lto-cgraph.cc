@@ -899,6 +899,24 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       lto_set_symtab_encoder_encode_initializer (encoder, vnode);
       create_references (encoder, vnode);
     }
+  for (lsei = lsei_start (in_encoder); !lsei_end_p (lsei); lsei_next (&lsei))
+    {
+      toplevel_node *tnode = lsei_node (lsei);
+      if (asm_node* node = dyn_cast <asm_node*> (tnode))
+	{
+	  symtab_node* ref;
+	  for (unsigned i = 0; node->symbols_referenced.iterate (i, &ref); i++)
+	    {
+	      if (!lto_symtab_encoder_in_partition_p (encoder, ref))
+		{
+		  if (cgraph_node* cref = dyn_cast <cgraph_node*> (ref))
+		    add_node_to (encoder, cref, false);
+		  else if (varpool_node *vref = dyn_cast <varpool_node *> (ref))
+		    lto_symtab_encoder_encode (encoder, vref);
+		}
+	    }
+	}
+    }
   /* Pickle in also the initializer of all referenced readonly variables
      to help folding.  Constant pool variables are not shared, so we must
      pickle those too.  */
