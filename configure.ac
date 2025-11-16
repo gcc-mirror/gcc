@@ -3049,8 +3049,7 @@ case "${target}" in
     md_exec_prefix=/dev/env/DJDIR/bin
     ;;
   *-*-hpux* | \
-  *-*-nto-qnx* | \
-  *-*-solaris2*)
+  *-*-nto-qnx*)
     md_exec_prefix=/usr/ccs/bin
     ;;
 esac

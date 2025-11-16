@@ -158,11 +158,6 @@ along with GCC; see the file COPYING3.  If not see
   "%{!symbolic:\
      %{p|pg:-ldl} -lc}"
 
-#ifndef CROSS_DIRECTORY_STRUCTURE
-#undef MD_EXEC_PREFIX
-#define MD_EXEC_PREFIX "/usr/ccs/bin/"
-#endif
-
 /* Enable constructor priorities if the configured linker supports it.  */
 #undef SUPPORTS_INIT_PRIORITY
 #define SUPPORTS_INIT_PRIORITY HAVE_INITFINI_ARRAY_SUPPORT

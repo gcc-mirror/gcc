@@ -66,7 +66,7 @@ foreach $file (@ARGV) {
 # columns.
 
 # The path to elfdump.
-my $elfdump = "/usr/ccs/bin/elfdump";
+my $elfdump = "/usr/bin/elfdump";
 
 if (-f $elfdump) {
     open ELFDUMP,$elfdump.' -s '.(join ' ',@OBJECTS).'|' or die $!;
