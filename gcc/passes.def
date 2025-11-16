@@ -157,10 +157,12 @@ along with GCC; see the file COPYING3.  If not see
   NEXT_PASS (pass_ipa_increase_alignment);
   NEXT_PASS (pass_ipa_tm);
   NEXT_PASS (pass_ipa_lower_emutls);
+  NEXT_PASS (pass_ipa_asm_lgen);
   TERMINATE_PASS_LIST (all_small_ipa_passes)
 
   INSERT_PASSES_AFTER (all_regular_ipa_passes)
   NEXT_PASS (pass_analyzer);
+  NEXT_PASS (pass_ipa_asm_wpa);
   NEXT_PASS (pass_ipa_odr);
   NEXT_PASS (pass_ipa_whole_program_visibility);
   NEXT_PASS (pass_ipa_profile);

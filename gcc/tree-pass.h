@@ -527,6 +527,8 @@ extern simple_ipa_opt_pass *make_pass_local_optimization_passes (gcc::context *c
 extern simple_ipa_opt_pass *make_pass_ipa_remove_symbols (gcc::context *ctxt);
 
 extern ipa_opt_pass_d *make_pass_analyzer (gcc::context *ctxt);
+extern ipa_opt_pass_d *make_pass_ipa_asm_lgen (gcc::context *ctxt);
+extern ipa_opt_pass_d *make_pass_ipa_asm_wpa (gcc::context *ctxt);
 extern ipa_opt_pass_d *make_pass_ipa_whole_program_visibility (gcc::context
 							       *ctxt);
 extern simple_ipa_opt_pass *make_pass_ipa_increase_alignment (gcc::context

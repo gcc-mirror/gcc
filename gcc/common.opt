@@ -2360,6 +2360,10 @@ flto-partition=
 Common Joined RejectNegative Enum(lto_partition_model) Var(flag_lto_partition) Init(LTO_PARTITION_BALANCED)
 Specify the algorithm to partition symbols and vars at linktime.
 
+flto-toplevel-asm-heuristics
+Common Var(flag_toplevel_asm_heuristics) Init(0)
+Enable heuristics to recognize symbol identifiers in toplevel (not extended) assembly and prevent their mangling/deletion.
+
 ; The initial value of -1 comes from Z_DEFAULT_COMPRESSION in zlib.h.
 flto-compression-level=
 Common Joined RejectNegative UInteger Var(flag_lto_compression_level) Init(-1) IntegerRange(0, 19)
