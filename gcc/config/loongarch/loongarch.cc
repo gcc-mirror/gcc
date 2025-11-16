@@ -9147,70 +9147,44 @@ loongarch_expand_vec_perm_1 (rtx operands[])
 	  t2 = gen_reg_rtx (mode);
 	  emit_insn (gen_lasx_xvperm (mode, t1, op0, mask));
 	  emit_insn (gen_lasx_xvperm (mode, t2, op1, mask));
-	  goto merge_two;
 	}
-      return;
+      break;
 
     case E_V16HImode:
-      if (one_operand_shuffle)
-	{
-	  t1 = gen_reg_rtx (V16HImode);
-	  t2 = gen_reg_rtx (V16HImode);
-	  emit_insn (gen_lasx_xvpermi_d_v16hi (t1, op0, GEN_INT (0x44)));
-	  emit_insn (gen_lasx_xvpermi_d_v16hi (t2, op0, GEN_INT (0xee)));
-	  emit_insn (gen_lasx_xvshuf_h (target, mask, t2, t1));
-	}
-      else
-	{
-	  t1 = gen_reg_rtx (V16HImode);
-	  t2 = gen_reg_rtx (V16HImode);
-	  t3 = gen_reg_rtx (V16HImode);
-	  t4 = gen_reg_rtx (V16HImode);
-	  t5 = gen_reg_rtx (V16HImode);
-	  t6 = gen_reg_rtx (V16HImode);
-	  emit_insn (gen_lasx_xvpermi_d_v16hi (t3, op0, GEN_INT (0x44)));
-	  emit_insn (gen_lasx_xvpermi_d_v16hi (t4, op0, GEN_INT (0xee)));
-	  emit_insn (gen_lasx_xvshuf_h (t1, mask, t4, t3));
-	  emit_insn (gen_lasx_xvpermi_d_v16hi (t5, op1, GEN_INT (0x44)));
-	  emit_insn (gen_lasx_xvpermi_d_v16hi (t6, op1, GEN_INT (0xee)));
-	  emit_insn (gen_lasx_xvshuf_h (t2, mask, t6, t5));
-	  goto merge_two;
-	}
-      return;
-
     case E_V32QImode:
       if (one_operand_shuffle)
 	{
-	  t1 = gen_reg_rtx (V32QImode);
-	  t2 = gen_reg_rtx (V32QImode);
-	  emit_insn (gen_lasx_xvpermi_d_v32qi (t1, op0, GEN_INT (0x44)));
-	  emit_insn (gen_lasx_xvpermi_d_v32qi (t2, op0, GEN_INT (0xee)));
-	  emit_insn (gen_lasx_xvshuf_b (target, t2, t1, mask));
+	  t1 = gen_reg_rtx (mode);
+	  t2 = gen_reg_rtx (mode);
+	  emit_insn (gen_lasx_xvpermi_d (mode, t1, op0, GEN_INT (0x44)));
+	  emit_insn (gen_lasx_xvpermi_d (mode, t2, op0, GEN_INT (0xee)));
+	  emit_insn (gen_simd_vshuf (mode, target, t2, t1, mask));
 	}
       else
 	{
-	  t1 = gen_reg_rtx (V32QImode);
-	  t2 = gen_reg_rtx (V32QImode);
-	  t3 = gen_reg_rtx (V32QImode);
-	  t4 = gen_reg_rtx (V32QImode);
-	  t5 = gen_reg_rtx (V32QImode);
-	  t6 = gen_reg_rtx (V32QImode);
-	  emit_insn (gen_lasx_xvpermi_d_v32qi (t3, op0, GEN_INT (0x44)));
-	  emit_insn (gen_lasx_xvpermi_d_v32qi (t4, op0, GEN_INT (0xee)));
-	  emit_insn (gen_lasx_xvshuf_b (t1, t4, t3, mask));
-	  emit_insn (gen_lasx_xvpermi_d_v32qi (t5, op1, GEN_INT (0x44)));
-	  emit_insn (gen_lasx_xvpermi_d_v32qi (t6, op1, GEN_INT (0xee)));
-	  emit_insn (gen_lasx_xvshuf_b (t2, t6, t5, mask));
-	  goto merge_two;
+	  t1 = gen_reg_rtx (mode);
+	  t2 = gen_reg_rtx (mode);
+	  t3 = gen_reg_rtx (mode);
+	  t4 = gen_reg_rtx (mode);
+	  t5 = gen_reg_rtx (mode);
+	  t6 = gen_reg_rtx (mode);
+	  emit_insn (gen_lasx_xvpermi_d (mode, t3, op0, GEN_INT (0x44)));
+	  emit_insn (gen_lasx_xvpermi_d (mode, t4, op0, GEN_INT (0xee)));
+	  emit_insn (gen_simd_vshuf (mode, t1, t4, t3, mask));
+	  emit_insn (gen_lasx_xvpermi_d (mode, t5, op1, GEN_INT (0x44)));
+	  emit_insn (gen_lasx_xvpermi_d (mode, t6, op1, GEN_INT (0xee)));
+	  emit_insn (gen_simd_vshuf (mode, t2, t6, t5, mask));
 	}
-      return;
+      break;
 
     default:
-      gcc_assert (GET_MODE_SIZE (mode) == 32);
+      gcc_unreachable ();
       break;
     }
 
-merge_two:
+  if (one_operand_shuffle)
+    return;
+
   /* Then merge them together.  The key is whether any given control
      element contained a bit set that indicates the second word.  */
   rtx xops[6];

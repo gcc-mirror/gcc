@@ -474,7 +474,7 @@
    (set_attr "mode" "<MODE>")])
 
 ;; xvpermi.d
-(define_insn "lasx_xvpermi_d_<LASX:mode>"
+(define_insn "@lasx_xvpermi_d_<LASX:mode>"
   [(set (match_operand:LASX 0 "register_operand" "=f")
 	  (unspec:LASX
 	    [(match_operand:LASX 1 "register_operand" "f")
