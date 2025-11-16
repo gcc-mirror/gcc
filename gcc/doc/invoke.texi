@@ -1002,7 +1002,7 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{C6X Options} (@ref{C6X Options})
 @gccoptlist{-mbig-endian  -mlittle-endian  -march=@var{cpu}
--msim  -msdata=@var{sdata-type}}
+-msim  -msdata=@var{sdata-type} -mdsbt -mlong-calls}
 
 @emph{CRIS Options} (@ref{CRIS Options})
 @gccoptlist{-mcpu=@var{cpu}  -march=@var{cpu}
@@ -26365,6 +26365,17 @@ addresses to access all data.  Put all initialized global and static
 data in the @code{.fardata} section, and all uninitialized data in the
 @code{.far} section.  Put all constant data into the @code{.const}
 section.
+
+@opindex mdsbt
+@opindex mno-dsbt
+@item -mdsbt
+Compile for the DSBT shared library ABI.  This option is required to
+compile with @option{-fpic} or @option{-fPIC}, and implies @option{-fpic}.
+
+@opindex mlong-calls
+@opindex mno-long-calls
+@item -mlong-calls
+Avoid generating PC-relative calls; use indirection instead.
 @end table
 
 @node CRIS Options
