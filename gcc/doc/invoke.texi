@@ -27714,6 +27714,7 @@ These options are defined specifically for the FR30 port.
 @table @gcctabopt
 
 @opindex msmall-model
+@opindex mno-small-model
 @item -msmall-model
 Use the small address space model.  This can produce smaller code, but
 it does assume that all symbolic values and addresses fit into a
