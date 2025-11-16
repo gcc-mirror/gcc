@@ -1,3 +1,13 @@
+2025-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_base.h: Tweak grammar of static assert
+	messages for unsupported atomic wait on volatile.
+
+2025-11-15  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++20/atomic.cc (__wait_impl): Fix outdated comment.
+	(__wait_until_impl): Simplify return statements.
+
 2025-11-14  Tom Tromey  <tromey@adacore.com>
 
 	* python/libstdcxx/v6/printers.py (StdVectorPrinter._bounds):

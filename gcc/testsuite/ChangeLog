@@ -1,3 +1,26 @@
+2025-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/asan/asan-stack-small.c (pa, pb, pc): Make these
+	vars volatile.
+	(uintptr_t): New typedef.
+	(main): Use access of b using pa pointer with offset depending on
+	how exactly the 3 variables are laid out in the frame.
+
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/using-33_a.C: New test.
+	* g++.dg/modules/using-33_b.C: New test.
+
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/friend-11_a.C: New test.
+	* g++.dg/modules/friend-11_b.C: New test.
+
+2025-11-15  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/cmpbr-4.c: New test.
+	* gcc.target/aarch64/cmpbr-5.c: New test.
+
 2025-11-14  Jeff Law  <jlaw@ventanamicro.com>
 
 	* gcc.target/riscv/rvv/vsetvl/avl_single-37.c: Drop unnecessary output

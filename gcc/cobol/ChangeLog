@@ -1,3 +1,10 @@
+2025-11-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR cobol/122691
+	* lexio.cc (parse_replace_pairs): Replace parsed.stmt.p with
+	parsed.stmt.size() ? parsed.stmt.p : "" in the last argument to
+	dbgmsg.
+
 2025-11-13  James K. Lowden  <jklowden@cobolworx.com>
 
 	* cdf.y: Install literals in symbol table.

@@ -1,3 +1,36 @@
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (trees_out::write_function_def): Check flag consistency.
+	* pt.cc (mark_decl_instantiated): Ignore TREE_ASM_WRITTEN.
+
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (module_state::read_config): Add complain parm.
+	(module_state::open_slurp): Split out...
+	(module_state::do_import): ...from here.
+	(module_state::read_initial): Move begin call to open_slurp.
+	(module_state::check_importable): New.
+	(maybe_translate_include): Call it.
+
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (transfer_defining_module): Dereference
+	pointer into hash_map before possible insertion.
+
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* name-lookup.cc (do_nonmember_using_decl): Handle hidden better.
+
+2025-11-15  Jason Merrill  <jason@redhat.com>
+
+	* decl.cc (grokfndecl): Set DECL_CHAIN of a friend f<>.
+	* module.cc (trees_out::get_merge_kind): Give it MK_local_friend.
+	(trees_out::decl_container): Its container is the befriender.
+	(trees_out::key_mergeable): Expand comment.
+	* cp-tree.h (decl_specialization_friend_p): New.
+	* friend.cc (do_friend): Use it.
+	* pt.cc (tsubst_friend_function): Likewise.
+
 2025-11-13  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122551

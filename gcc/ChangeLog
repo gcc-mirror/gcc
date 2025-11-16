@@ -1,3 +1,46 @@
+2025-11-15  Jason Xu  <bravejason@outlook.com>
+
+	* config.gcc (aarch64-*-mingw*): Set use_gcc_stdint to wrap.
+
+2025-11-15  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (risc_legitimize_move): Use convert_modes
+	rather than gen_extend_insn for most cases.
+	* config/riscv/riscv.md (addv<mode>4): Likewise.
+	(uaddv<mode>4, subv<mode>4, usubv<mode>4): Likewise.
+	(mulv<mode>4, umulv<mode>4): Likewise.
+	* config/riscv/sync.md (atomic_compare_and_swap<mode>): Likewise.
+
+2025-11-15  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (mov<GPF:mode><GPI:mode>cc): Delete.
+
+2025-11-15  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md(mov<ALLI_GPF:mode>cc): Use new predicate.
+	(mov<GPF:mode><GPI:mode>cc): Likewise.
+	(<neg_not_op><mode>cc): Likewise.
+	* config/aarch64/predicates.md (aarch64_comparison_operator_cc):
+	New predicate.
+
+2025-11-15  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (mov<ALLI_GPF:mode>): Delete
+	redundant check.
+	(mov<GPF:mode><GPI:mode>cc): Likewise.
+	(<neg_not_op><mode>cc): Likewise.
+
+2025-11-15  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md (mov<ALLI>cc): Merge with ...
+	(mov<ALLI>cc): ... this.
+	* config/aarch64/iterators.md(ALLI_GPF): New mode iterator.
+
+2025-11-15  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64.md(mov<GPF>cc): Accept MODE_CC
+	conditions directly; reject QI/HImode conditions.
+
 2025-11-14  Kuan-Lin Chen  <rufus@andestech.com>
 
 	* config/riscv/riscv.cc (andes_25_tune_info): Add prefer-agnostic.
