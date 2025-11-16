@@ -28,3 +28,4 @@ TEST_TERNARY_VX_SIGNED_0(T)
 /* { dg-final { scan-assembler-not {vmadd.vx} } } */
 /* { dg-final { scan-assembler-not {vnmsub.vx} } } */
 /* { dg-final { scan-assembler-not {vmseq.vx} } } */
+/* { dg-final { scan-assembler-not {vmsne.vx} } } */
