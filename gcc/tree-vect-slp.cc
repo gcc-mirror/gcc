@@ -9811,7 +9811,8 @@ vect_bb_vectorization_profitable_p (bb_vec_info bb_vinfo,
       while (si < li_scalar_costs.length ()
 	     && li_scalar_costs[si].first == sl);
       scalar_target_cost_data->finish_cost (nullptr);
-      scalar_cost = scalar_target_cost_data->body_cost ();
+      scalar_cost = (scalar_target_cost_data->body_cost ()
+		     * param_vect_scalar_cost_multiplier) / 100;
 
       /* Complete the target-specific vector cost calculation.  */
       class vector_costs *vect_target_cost_data = init_cost (bb_vinfo, false);
