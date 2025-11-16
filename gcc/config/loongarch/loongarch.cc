@@ -9095,10 +9095,13 @@ loongarch_expand_vec_perm_1 (rtx operands[])
   w = GET_MODE_NUNITS (mode);
 
   /* If we are using xvshuf.*, clamp the selector to avoid unpredictable
-     output.  */
-  if (maskmode != V8SImode && maskmode != V4DImode)
+     output; if we need to blend two shuf results for the final result,
+     also clamp it so we can use xvslei to generate the bitmask for
+     the blending.  */
+  if ((maskmode != V8SImode && maskmode != V4DImode)
+      || !one_operand_shuffle)
     {
-      rtx t = gen_const_vec_duplicate (maskmode, GEN_INT (0x1f));
+      rtx t = gen_const_vec_duplicate (maskmode, GEN_INT (2 * w - 1));
       mask = expand_binop (maskmode, and_optab, mask, t, NULL_RTX, false,
 			   OPTAB_DIRECT);
     }
@@ -9211,18 +9214,13 @@ merge_two:
   /* Then merge them together.  The key is whether any given control
      element contained a bit set that indicates the second word.  */
   rtx xops[6];
-  mask = operands[3];
-  vt = GEN_INT (w);
-  vt = gen_const_vec_duplicate (maskmode, vt);
-  vt = force_reg (maskmode, vt);
-  mask = expand_simple_binop (maskmode, AND, mask, vt,
-			      NULL_RTX, 0, OPTAB_DIRECT);
+  vt = gen_const_vec_duplicate (maskmode, GEN_INT (w - 1));
   if (GET_MODE (target) != mode)
     target = gen_reg_rtx (mode);
   xops[0] = target;
-  xops[1] = gen_lowpart (mode, t2);
-  xops[2] = gen_lowpart (mode, t1);
-  xops[3] = gen_rtx_EQ (maskmode, mask, vt);
+  xops[1] = gen_lowpart (mode, t1);
+  xops[2] = gen_lowpart (mode, t2);
+  xops[3] = gen_rtx_LEU (maskmode, mask, vt);
   xops[4] = mask;
   xops[5] = vt;
 
