@@ -1611,9 +1611,7 @@ package body Sem_Ch6 is
 
    procedure Analyze_Procedure_Call (N : Node_Id) is
       procedure Analyze_Call_And_Resolve;
-      --  Do Analyze and Resolve calls for procedure call. At the end, check
-      --  for illegal order dependence.
-      --  ??? where is the check for illegal order dependencies?
+      --  Do Analyze and Resolve for procedure call
 
       ------------------------------
       -- Analyze_Call_And_Resolve --
@@ -1621,12 +1619,8 @@ package body Sem_Ch6 is
 
       procedure Analyze_Call_And_Resolve is
       begin
-         if Nkind (N) = N_Procedure_Call_Statement then
-            Analyze_Call (N);
-            Resolve (N, Standard_Void_Type);
-         else
-            Analyze (N);
-         end if;
+         Analyze_Call (N);
+         Resolve (N, Standard_Void_Type);
       end Analyze_Call_And_Resolve;
 
       --  Local variables

@@ -1279,26 +1279,16 @@ package body Exp_Ch11 is
 
       --  Add cleanup actions if required. No cleanup actions are needed in
       --  thunks associated with interfaces, because they only displace the
-      --  pointer to the object. For extended return statements, we need
-      --  cleanup actions if the Handled_Statement_Sequence contains generated
-      --  objects of controlled types, for example. We do not want to clean up
-      --  the return object.
+      --  pointer to the object.
 
-      if Nkind (Parent (N)) not in N_Accept_Statement
-                                 | N_Extended_Return_Statement
-                                 | N_Package_Body
+      if Nkind (Parent (N)) not in N_Accept_Statement | N_Package_Body
         and then not Delay_Cleanups (Current_Scope)
         and then not Is_Thunk (Current_Scope)
       then
          Expand_Cleanup_Actions (Parent (N));
-
-      elsif Nkind (Parent (N)) = N_Extended_Return_Statement
-        and then Handled_Statement_Sequence (Parent (N)) = N
-        and then not Delay_Cleanups (Current_Scope)
-      then
-         pragma Assert (not Is_Thunk (Current_Scope));
-         Expand_Cleanup_Actions (Parent (N));
       end if;
+
+      --  Protect the Finally_Statements with abort defer/undefer
 
       if Present (Finally_Statements (N)) and then Abort_Allowed then
          if Exceptions_OK then
