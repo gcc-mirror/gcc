@@ -275,7 +275,7 @@ option_unspecified_p (diagnostics::option_id opt_id)
 namespace diagnostics {
 
 /* Compute the number of digits in the decimal representation of an integer.  */
-extern int num_digits (int);
+extern int num_digits (uint64_t);
 
 } // namespace diagnostics
 

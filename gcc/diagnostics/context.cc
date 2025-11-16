@@ -1592,11 +1592,10 @@ context::report_global_digraph (const lazily_created<digraphs::digraph> &ldg)
 /* Get the number of digits in the decimal representation of VALUE.  */
 
 int
-num_digits (int value)
+num_digits (uint64_t value)
 {
   /* Perhaps simpler to use log10 for this, but doing it this way avoids
      using floating point.  */
-  gcc_assert (value >= 0);
 
   if (value == 0)
     return 1;
@@ -2299,6 +2298,7 @@ test_num_digits ()
   ASSERT_EQ (7, num_digits (9999999));
   ASSERT_EQ (8, num_digits (10000000));
   ASSERT_EQ (8, num_digits (99999999));
+  ASSERT_EQ (20, num_digits (uint64_t (-1)));
 }
 
 /* Run all of the selftests within this file.

@@ -145,6 +145,7 @@ set plugin_test_list [list \
     { location_overflow_plugin.cc \
 	  location-overflow-test-1.c \
 	  location-overflow-test-2.c \
+	  location-overflow-test-3.c \
 	  location-overflow-test-pr83173.c \
 	  location-overflow-test-pr116047.c \
 	  location-overflow-test-pr120061.c } \

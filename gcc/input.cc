@@ -464,7 +464,7 @@ get_end_location (class line_maps *set, line_map_uint_t idx)
 static void
 write_digit (FILE *stream, int digit)
 {
-  fputc ('0' + (digit % 10), stream);
+  fputc ('0' + digit, stream);
 }
 
 /* Helper function for dump_location_info.
@@ -481,7 +481,7 @@ write_digit_row (FILE *stream, int indent,
   for (int column = 1; column < max_col; column++)
     {
       location_t column_loc = loc + (location_t (column) << map->m_range_bits);
-      write_digit (stream, column_loc / divisor);
+      write_digit (stream, (column_loc / divisor) % 10);
     }
   fprintf (stream, "\n");
 }
