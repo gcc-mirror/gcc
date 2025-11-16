@@ -378,160 +378,6 @@ cleanup_control_flow_bb (basic_block bb)
   return retval;
 }
 
-/* Return true if basic block BB does nothing except pass control
-   flow to another block and that we can safely insert a label at
-   the start of the successor block.
-
-   As a precondition, we require that BB be not equal to
-   the entry block.  */
-
-static bool
-tree_forwarder_block_p (basic_block bb)
-{
-  gimple_stmt_iterator gsi;
-  location_t locus;
-
-  /* BB must have a single outgoing edge.  */
-  if (!single_succ_p (bb)
-      /* BB may not be a predecessor of the exit block.  */
-      || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
-      /* Nor should this be an infinite loop.  */
-      || single_succ (bb) == bb
-      /* BB may not have an abnormal outgoing edge.  */
-      || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
-    return false;
-
-  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
-
-  locus = single_succ_edge (bb)->goto_locus;
-
-  /* There should not be an edge coming from entry, or an EH edge.  */
-  {
-    edge_iterator ei;
-    edge e;
-
-    FOR_EACH_EDGE (e, ei, bb->preds)
-      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
-	return false;
-      /* If goto_locus of any of the edges differs, prevent removing
-	 the forwarder block when not optimizing.  */
-      else if (!optimize
-	       && (LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
-		   || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
-	       && e->goto_locus != locus)
-	return false;
-  }
-
-  /* If this bb has a single predecessor and that predecssor
-     has a single successor, this bb will be merged with the
-     predecessor so ignore it for removing of the forwarder block. */
-  if (single_pred_p (bb)
-      && single_succ_p (single_pred_edge (bb)->src))
-    return false;
-
-  basic_block dest = single_succ_edge (bb)->dest;
-
-  /* Now walk through the statements backward.  We can ignore labels,
-     anything else means this is not a forwarder block.  */
-  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
-    {
-      gimple *stmt = gsi_stmt (gsi);
-
-      switch (gimple_code (stmt))
-	{
-	case GIMPLE_LABEL:
-	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt)))
-	      || EH_LANDING_PAD_NR (gimple_label_label (as_a <glabel *> (stmt))))
-	    return false;
-	  if (!optimize
-	      && (gimple_has_location (stmt)
-		  || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
-	      && gimple_location (stmt) != locus)
-	    return false;
-	  break;
-
-	  /* ??? For now, hope there's a corresponding debug
-	     assignment at the destination.  */
-	case GIMPLE_DEBUG:
-	  break;
-
-	default:
-	  return false;
-	}
-    }
-
-  /* If BB has PHIs and does not dominate DEST,
-     then the PHI nodes at DEST must be the only
-     users of the results of the PHI nodes at BB.
-     So only check when BB dominates dest.  */
-  if (!gimple_seq_empty_p (phi_nodes (bb))
-      && dominated_by_p (CDI_DOMINATORS, dest, bb))
-    {
-      gphi_iterator gsi;
-      unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
-
-      /* BB dominates DEST.  There may be many users of the PHI
-	 nodes in BB.  However, there is still a trivial case we
-	 can handle.  If the result of every PHI in BB is used
-	 only by a PHI in DEST, then we can trivially merge the
-	 PHI nodes from BB into DEST.  */
-      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
-	   gsi_next (&gsi))
-	{
-	  gphi *phi = gsi.phi ();
-	  tree result = gimple_phi_result (phi);
-	  use_operand_p imm_use;
-	  gimple *use_stmt;
-
-	  /* If the PHI's result is never used, then we can just
-	     ignore it an.  */
-	  if (has_zero_uses (result))
-	    continue;
-
-	  /* Get the single use of the result of this PHI node.  */
-	  if (!single_imm_use (result, &imm_use, &use_stmt)
-	      || gimple_code (use_stmt) != GIMPLE_PHI
-	      || gimple_bb (use_stmt) != dest
-	      || gimple_phi_arg_def (use_stmt, dest_idx) != result)
-	    return false;
-	}
-    }
-
-  if (current_loops)
-    {
-      /* Protect loop headers.  */
-      if (bb_loop_header_p (bb))
-	return false;
-
-      /* Protect loop preheaders and latches if requested.  */
-      if (dest->loop_father->header == dest)
-	{
-	  if (bb->loop_father == dest->loop_father)
-	    {
-	      if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
-		return false;
-	      /* If bb doesn't have a single predecessor we'd make this
-		 loop have multiple latches.  Don't do that if that
-		 would in turn require disambiguating them.  */
-	      return (single_pred_p (bb)
-		      || loops_state_satisfies_p
-		      	   (LOOPS_MAY_HAVE_MULTIPLE_LATCHES));
-	    }
-	  /* cleanup_tree_cfg_noloop just created the loop preheader, don't
-	     remove it if it has phis.  */
-	  else if (bb->loop_father == loop_outer (dest->loop_father)
-		   && gimple_seq_empty_p (phi_nodes (bb))
-		   && !loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
-	    ;
-	  else
-	    /* Always preserve other edges into loop headers that are
-	       not simple latches or preheaders.  */
-	    return false;
-	}
-    }
-
-  return true;
-}
 
 /* If all the PHI nodes in DEST have alternatives for E1 and E2 and
    those alternatives are equal in each of the PHI nodes, then return
@@ -618,16 +464,165 @@ move_debug_stmts_from_forwarder (basic_block src,
     }
 }
 
-/* Removes forwarder block BB.  Returns false if this failed.  */
+/* Return true if basic block BB does nothing except pass control
+   flow to another block and that we can safely insert a label at
+   the start of the successor block and was removed.
+
+   As a precondition, we require that BB be not equal to
+   the entry block.
+   If CAN_SPLIT is true, we can split the edge to have
+   another bb with with the phi.  */
 
 static bool
-remove_forwarder_block (basic_block bb, bool can_split = false)
+maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
 {
-  edge succ = single_succ_edge (bb), e, s;
-  basic_block dest = succ->dest;
-  gimple *stmt;
-  gimple_stmt_iterator gsi, gsi_to;
+  gimple_stmt_iterator gsi;
+  location_t locus;
+
+  /* BB must have a single outgoing edge.  */
+  if (!single_succ_p (bb)
+      /* BB may not be a predecessor of the exit block.  */
+      || single_succ (bb) == EXIT_BLOCK_PTR_FOR_FN (cfun)
+      /* Nor should this be an infinite loop.  */
+      || single_succ (bb) == bb
+      /* BB may not have an abnormal outgoing edge.  */
+      || (single_succ_edge (bb)->flags & EDGE_ABNORMAL))
+    return false;
+
+  gcc_checking_assert (bb != ENTRY_BLOCK_PTR_FOR_FN (cfun));
+
+  locus = single_succ_edge (bb)->goto_locus;
+
+  /* There should not be an edge coming from entry, or an EH edge.  */
+  {
+    edge_iterator ei;
+    edge e;
+
+    FOR_EACH_EDGE (e, ei, bb->preds)
+      if (e->src == ENTRY_BLOCK_PTR_FOR_FN (cfun) || (e->flags & EDGE_EH))
+	return false;
+      /* If goto_locus of any of the edges differs, prevent removing
+	 the forwarder block when not optimizing.  */
+      else if (!optimize
+	       && (LOCATION_LOCUS (e->goto_locus) != UNKNOWN_LOCATION
+		   || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	       && e->goto_locus != locus)
+	return false;
+  }
+
+  /* If this bb has a single predecessor and that predecssor
+     has a single successor, this bb will be merged with the
+     predecessor so ignore it for removing of the forwarder block. */
+  if (single_pred_p (bb)
+      && single_succ_p (single_pred_edge (bb)->src))
+    return false;
+
+  basic_block dest = single_succ_edge (bb)->dest;
+
+  /* Now walk through the statements backward.  We can ignore labels,
+     anything else means this is not a forwarder block.  */
+  for (gsi = gsi_last_bb (bb); !gsi_end_p (gsi); gsi_prev (&gsi))
+    {
+      gimple *stmt = gsi_stmt (gsi);
+
+      switch (gimple_code (stmt))
+	{
+	case GIMPLE_LABEL:
+	  if (DECL_NONLOCAL (gimple_label_label (as_a <glabel *> (stmt)))
+	      || EH_LANDING_PAD_NR (gimple_label_label (as_a <glabel *> (stmt))))
+	    return false;
+	  if (!optimize
+	      && (gimple_has_location (stmt)
+		  || LOCATION_LOCUS (locus) != UNKNOWN_LOCATION)
+	      && gimple_location (stmt) != locus)
+	    return false;
+	  break;
+
+	  /* ??? For now, hope there's a corresponding debug
+	     assignment at the destination.  */
+	case GIMPLE_DEBUG:
+	  break;
+
+	default:
+	  return false;
+	}
+    }
+
   bool has_phi = !gimple_seq_empty_p (phi_nodes (bb));
+  /* If BB has PHIs and does not dominate DEST,
+     then the PHI nodes at DEST must be the only
+     users of the results of the PHI nodes at BB.
+     So only check when BB dominates dest.  */
+  if (has_phi
+      && dominated_by_p (CDI_DOMINATORS, dest, bb))
+    {
+      gphi_iterator gsi;
+      unsigned int dest_idx = single_succ_edge (bb)->dest_idx;
+
+      /* BB dominates DEST.  There may be many users of the PHI
+	 nodes in BB.  However, there is still a trivial case we
+	 can handle.  If the result of every PHI in BB is used
+	 only by a PHI in DEST, then we can trivially merge the
+	 PHI nodes from BB into DEST.  */
+      for (gsi = gsi_start_phis (bb); !gsi_end_p (gsi);
+	   gsi_next (&gsi))
+	{
+	  gphi *phi = gsi.phi ();
+	  tree result = gimple_phi_result (phi);
+	  use_operand_p imm_use;
+	  gimple *use_stmt;
+
+	  /* If the PHI's result is never used, then we can just
+	     ignore it an.  */
+	  if (has_zero_uses (result))
+	    continue;
+
+	  /* Get the single use of the result of this PHI node.  */
+	  if (!single_imm_use (result, &imm_use, &use_stmt)
+	      || gimple_code (use_stmt) != GIMPLE_PHI
+	      || gimple_bb (use_stmt) != dest
+	      || gimple_phi_arg_def (use_stmt, dest_idx) != result)
+	    return false;
+	}
+    }
+
+  if (current_loops)
+    {
+      /* Protect loop headers.  */
+      if (bb_loop_header_p (bb))
+	return false;
+
+      /* Protect loop preheaders and latches if requested.  */
+      if (dest->loop_father->header == dest)
+	{
+	  if (bb->loop_father == dest->loop_father)
+	    {
+	      if (loops_state_satisfies_p (LOOPS_HAVE_SIMPLE_LATCHES))
+		return false;
+	      /* If bb doesn't have a single predecessor we'd make this
+		 loop have multiple latches.  Don't do that if that
+		 would in turn require disambiguating them.  */
+	      if (!single_pred_p (bb)
+		      && !loops_state_satisfies_p
+			   (LOOPS_MAY_HAVE_MULTIPLE_LATCHES))
+		return false;
+	    }
+	  /* cleanup_tree_cfg_noloop just created the loop preheader, don't
+	     remove it if it has phis.  */
+	  else if (bb->loop_father == loop_outer (dest->loop_father)
+		   && gimple_seq_empty_p (phi_nodes (bb))
+		   && !loops_state_satisfies_p (LOOPS_HAVE_PREHEADERS))
+	    ;
+	  else
+	    /* Always preserve other edges into loop headers that are
+	       not simple latches or preheaders.  */
+	    return false;
+	}
+    }
+
+  edge succ = single_succ_edge (bb), e, s;
+  gimple *stmt;
+  gimple_stmt_iterator gsi_to;
 
   /* If there is an abnormal edge to basic block BB, but not into
      dest, problems might occur during removal of the phi node at out
@@ -872,8 +867,7 @@ want_merge_blocks_p (basic_block bb1, basic_block bb2)
 static bool
 cleanup_tree_cfg_bb (basic_block bb)
 {
-  if (tree_forwarder_block_p (bb)
-      && remove_forwarder_block (bb))
+  if (maybe_remove_forwarder_block (bb))
     return true;
 
   /* If there is a merge opportunity with the predecessor
@@ -1384,8 +1378,7 @@ pass_merge_phi::execute (function *fun)
 	continue;
 
       /* Look for a forwarder block with PHI nodes.  */
-      if (tree_forwarder_block_p (bb)
-	  && remove_forwarder_block (bb, true))
+      if (maybe_remove_forwarder_block (bb, true))
 	forwarder_removed++;
     }
 
