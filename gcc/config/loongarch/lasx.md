@@ -44,8 +44,6 @@
   UNSPEC_LASX_XVREPL128VEI
   UNSPEC_LASX_XVSRAR
   UNSPEC_LASX_XVSRLR
-  UNSPEC_LASX_XVSHUF
-  UNSPEC_LASX_XVSHUF_B
   UNSPEC_LASX_BRANCH
   UNSPEC_LASX_BRANCH_V
 
@@ -134,12 +132,6 @@
 
 ;; Only used for copy256_{u,s}.w.
 (define_mode_iterator LASX_W    [V8SI V8SF])
-
-;; As ILASX but excludes V32QI.
-(define_mode_iterator ILASX_DWH [V4DI V8SI V16HI])
-
-;; As LASX but excludes V32QI.
-(define_mode_iterator LASX_DWH [V4DF V8SF V4DI V8SI V16HI])
 
 ;; As ILASX but excludes V4DI.
 (define_mode_iterator ILASX_WHB [V8SI V16HI V32QI])
@@ -2102,28 +2094,6 @@
   "xvssub.<lasxfmt_u>\t%u0,%u1,%u2"
   [(set_attr "type" "simd_int_arith")
    (set_attr "mode" "<MODE>")])
-
-(define_insn "@lasx_xvshuf_<lasxfmt_f>"
-  [(set (match_operand:LASX_DWH 0 "register_operand" "=f")
-	(unspec:LASX_DWH [(match_operand:<VIMODE> 1 "register_operand" "0")
-			  (match_operand:LASX_DWH 2 "register_operand" "f")
-			  (match_operand:LASX_DWH 3 "register_operand" "f")]
-			UNSPEC_LASX_XVSHUF))]
-  "ISA_HAS_LASX"
-  "xvshuf.<lasxfmt>\t%u0,%u2,%u3"
-  [(set_attr "type" "simd_sld")
-   (set_attr "mode" "<MODE>")])
-
-(define_insn "lasx_xvshuf_b"
-  [(set (match_operand:V32QI 0 "register_operand" "=f")
-	(unspec:V32QI [(match_operand:V32QI 1 "register_operand" "f")
-		       (match_operand:V32QI 2 "register_operand" "f")
-		       (match_operand:V32QI 3 "register_operand" "f")]
-		      UNSPEC_LASX_XVSHUF_B))]
-  "ISA_HAS_LASX"
-  "xvshuf.b\t%u0,%u1,%u2,%u3"
-  [(set_attr "type" "simd_sld")
-   (set_attr "mode" "V32QI")])
 
 (define_insn "lasx_xvreplve0_<lasxfmt_f>"
   [(set (match_operand:LASX 0 "register_operand" "=f")

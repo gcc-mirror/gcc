@@ -45,7 +45,6 @@
   UNSPEC_LSX_VSAT_U
   UNSPEC_LSX_VSRAR
   UNSPEC_LSX_VSRLR
-  UNSPEC_LSX_VSHUF
   UNSPEC_LSX_VEXTW_S
   UNSPEC_LSX_VEXTW_U
   UNSPEC_LSX_VSLLWIL_S
@@ -86,7 +85,6 @@
   UNSPEC_LSX_VSSRLN
   UNSPEC_LSX_VSSRLRN
   UNSPEC_LSX_VLDI
-  UNSPEC_LSX_VSHUF_B
   UNSPEC_LSX_VSTX
   UNSPEC_LSX_VEXTL_QU_DU
   UNSPEC_LSX_VSETEQZ_V
@@ -132,12 +130,6 @@
 
 ;; Only used for copy_{u,s}.w and vilvh.
 (define_mode_iterator LSX_W    [V4SI V4SF])
-
-;; As ILSX but excludes V16QI.
-(define_mode_iterator ILSX_DWH [V2DI V4SI V8HI])
-
-;; As LSX but excludes V16QI.
-(define_mode_iterator LSX_DWH  [V2DF V4SF V2DI V4SI V8HI])
 
 ;; As ILSX but excludes V2DI.
 (define_mode_iterator ILSX_WHB [V4SI V8HI V16QI])
@@ -531,18 +523,6 @@
 			     operands[2], operands[3]);
   DONE;
 })
-
-(define_insn "@lsx_vshuf_<lsxfmt_f>"
-  [(set (match_operand:LSX_DWH 0 "register_operand" "=f")
-	(unspec:LSX_DWH [(match_operand:<VIMODE> 1 "register_operand" "0")
-			 (match_operand:LSX_DWH 2 "register_operand" "f")
-			 (match_operand:LSX_DWH 3 "register_operand" "f")]
-			UNSPEC_LSX_VSHUF))]
-  "ISA_HAS_LSX"
-  "vshuf.<lsxfmt>\t%w0,%w2,%w3"
-  [(set_attr "type" "simd_sld")
-   (set_attr "mode" "<MODE>")])
-
 
 ;; Integer operations
 (define_insn "add<mode>3"
@@ -2667,17 +2647,6 @@
 }
   [(set_attr "type" "simd_load")
    (set_attr "mode" "V2DI")])
-
-(define_insn "lsx_vshuf_b"
-  [(set (match_operand:V16QI 0 "register_operand" "=f")
-	(unspec:V16QI [(match_operand:V16QI 1 "register_operand" "f")
-		       (match_operand:V16QI 2 "register_operand" "f")
-		       (match_operand:V16QI 3 "register_operand" "f")]
-		      UNSPEC_LSX_VSHUF_B))]
-  "ISA_HAS_LSX"
-  "vshuf.b\t%w0,%w1,%w2,%w3"
-  [(set_attr "type" "simd_shf")
-   (set_attr "mode" "V16QI")])
 
 (define_insn "lsx_vstx"
   [(set (mem:V16QI (plus:DI (match_operand:DI 1 "register_operand" "r")

@@ -18,10 +18,14 @@
 ;; <http://www.gnu.org/licenses/>.
 
 ;; Integer modes supported by LSX.
-(define_mode_iterator ILSX    [V2DI V4SI V8HI V16QI])
+(define_mode_iterator ILSX_DWH [V2DI V4SI V8HI])
+(define_mode_iterator ILSX     [ILSX_DWH V16QI])
+(define_mode_iterator LSX_DWH  [ILSX_DWH V2DF V4SF])
 
 ;; Integer modes supported by LASX.
-(define_mode_iterator ILASX   [V4DI V8SI V16HI V32QI])
+(define_mode_iterator ILASX_DWH [V4DI V8SI V16HI])
+(define_mode_iterator ILASX     [ILASX_DWH V32QI])
+(define_mode_iterator LASX_DWH  [ILASX_DWH V4DF V8SF])
 
 ;; Only integer modes smaller than a word.
 (define_mode_iterator ILSX_HB  [V8HI V16QI])
@@ -45,6 +49,10 @@
 ;; All integer modes smaller than a word.
 (define_mode_iterator IVEC_HB [(ILSX_HB "ISA_HAS_LSX")
 			       (ILASX_HB "ISA_HAS_LASX")])
+
+;; All modes longer than a byte
+(define_mode_iterator VEC_DWH [(LSX_DWH "ISA_HAS_LSX")
+			       (LASX_DWH "ISA_HAS_LASX")])
 
 ;; All FP modes available
 (define_mode_iterator FVEC    [(FLSX "ISA_HAS_LSX") (FLASX "ISA_HAS_LASX")])
@@ -255,7 +263,8 @@
    UNSPEC_SIMD_FRINTRZ
    UNSPEC_SIMD_FRINT
    UNSPEC_SIMD_FRINTRM
-   UNSPEC_SIMD_FRINTRNE])
+   UNSPEC_SIMD_FRINTRNE
+   UNSPEC_SIMD_VSHUF])
 
 (define_int_iterator SIMD_FRINT
   [UNSPEC_SIMD_FRINTRP
@@ -1106,6 +1115,66 @@
 }
   [(set_attr "type" "simd_logic,simd_bit,simd_logic")
    (set_attr "mode" "<MODE>")])
+
+(define_insn "@simd_vshuf_<mode>"
+  [(set (match_operand:QIVEC 0 "register_operand" "=f")
+	(unspec:QIVEC [(match_operand:QIVEC 1 "register_operand" "f")
+		       (match_operand:QIVEC 2 "register_operand" "f")
+		       (match_operand:QIVEC 3 "register_operand" "f")]
+		       UNSPEC_SIMD_VSHUF))]
+  ""
+  {
+    return "<x>vshuf.b\t%<wu>0,%<wu>1,%<wu>2,%<wu>3";
+  }
+  [(set_attr "type" "simd_sld")
+   (set_attr "mode" "<MODE>")])
+
+(define_insn "@simd_vshuf_<mode>"
+  [(set (match_operand:VEC_DWH 0 "register_operand" "=f")
+	(unspec:VEC_DWH [(match_operand:VEC_DWH 1 "register_operand" "f")
+			 (match_operand:VEC_DWH 2 "register_operand" "f")
+			 (match_operand:<VIMODE> 3 "register_operand" "0")]
+			UNSPEC_SIMD_VSHUF))]
+  ""
+  {
+    return "<x>vshuf.<simdfmt_as_i>\t%<wu>0,%<wu>1,%<wu>2";
+  }
+  [(set_attr "type" "simd_sld")
+   (set_attr "mode" "<MODE>")])
+
+;; Backward compatibility wrapper.  New code should use simd_vshuf
+;; directly instead: gen_simd_vshuf (mode, ...) can often significantly
+;; simplify the logic.
+(define_expand "<simd_isa>_<x>vshuf_<simdfmt><_f>"
+  [(match_operand:ALLVEC 0 "register_operand")
+   (match_operand 1 "register_operand")
+   (match_operand 2 "register_operand")
+   (match_operand 3 "register_operand")]
+  ""
+  {
+    rtx op0 = operands[0], op1, op2, op3;
+
+    switch (<MODE>mode)
+      {
+      case V32QImode:
+      case V16QImode:
+	op1 = operands[1];
+	op2 = operands[2];
+	op3 = operands[3];
+	break;
+      default:
+	op3 = operands[1];
+	op1 = operands[2];
+	op2 = operands[3];
+      }
+
+    gcc_assert (GET_MODE (op1) == <MODE>mode);
+    gcc_assert (GET_MODE (op2) == <MODE>mode);
+    gcc_assert (GET_MODE (op3) == <VIMODE>mode);
+
+    emit_insn (gen_simd_vshuf (<MODE>mode, op0, op1, op2, op3));
+    DONE;
+  })
 
 ; The LoongArch SX Instructions.
 (include "lsx.md")

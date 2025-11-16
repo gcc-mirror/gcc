@@ -8712,10 +8712,7 @@ loongarch_try_expand_lsx_vshuf_const (struct expand_vec_perm_d *d)
       rtx sel = force_reg (sel_mode,
 			   gen_rtx_CONST_VECTOR (sel_mode, sel_v));
 
-      if (d->vmode == E_V16QImode)
-	emit_insn (gen_lsx_vshuf_b (target, op1, op0, sel));
-      else
-	emit_insn (gen_lsx_vshuf (d->vmode, target, sel, op1, op0));
+      emit_insn (gen_simd_vshuf (d->vmode, target, op1, op0, sel));
 
       return true;
     }
@@ -9748,11 +9745,7 @@ expand_perm_const_end:
 	  rtx sel = force_reg (sel_mode,
 			       gen_rtx_CONST_VECTOR (sel_mode, sel_v));
 
-	  if (d->vmode == E_V32QImode)
-	    emit_insn (gen_lasx_xvshuf_b (target, op1, op0, sel));
-	  else
-	    emit_insn (gen_lasx_xvshuf (d->vmode, target, sel, op1, op0));
-
+	  emit_insn (gen_simd_vshuf (d->vmode, target, op1, op0, sel));
 	  return true;
 	}
     }
