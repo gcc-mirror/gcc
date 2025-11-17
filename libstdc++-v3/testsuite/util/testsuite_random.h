@@ -27,6 +27,7 @@
 #include <cmath>
 #include <initializer_list>
 #include <system_error>
+#include <random>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test

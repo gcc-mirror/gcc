@@ -26,14 +26,14 @@
 #ifndef _GLIBCXX_TESTSUITE_ALLOCATOR_H
 #define _GLIBCXX_TESTSUITE_ALLOCATOR_H
 
-#include <bits/move.h>
-#include <ext/pointer.h>
-#include <ext/alloc_traits.h>
-#include <testsuite_hooks.h>
 #if __cplusplus >= 201703L
 # include <memory_resource>
 # include <new>
 #endif
+#include <bits/move.h>
+#include <ext/pointer.h>
+#include <ext/alloc_traits.h>
+#include <testsuite_hooks.h>
 
 #if __cplusplus >= 201103L
 # include <unordered_map>

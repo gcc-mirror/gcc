@@ -15,6 +15,8 @@
 // with this library; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
+#include <cstddef>
+
 namespace greedy_ops
 {
   struct X

@@ -19,11 +19,12 @@
 // <http://www.gnu.org/licenses/>.
 //
 
-#include <string>
-#include <testsuite_hooks.h>
-
 #ifndef _TESTSUITE_ERROR_H
 #define _TESTSUITE_ERROR_H 1
+
+#include <string>
+#include <system_error>
+#include <testsuite_hooks.h>
 
 namespace __gnu_test
 {

@@ -22,14 +22,6 @@
 #ifndef _TESTSUITE_COMMON_TYPES_H
 #define _TESTSUITE_COMMON_TYPES_H 1
 
-#include <ext/typelist.h>
-
-#include <ext/new_allocator.h>
-#include <ext/malloc_allocator.h>
-#include <ext/mt_allocator.h>
-#include <ext/bitmap_allocator.h>
-#include <ext/pool_allocator.h>
-
 #include <algorithm>
 
 #include <vector>
@@ -52,6 +44,14 @@ namespace unord = std;
 #include <tr1/unordered_set>
 namespace unord = std::tr1;
 #endif
+
+#include <ext/typelist.h>
+
+#include <ext/new_allocator.h>
+#include <ext/malloc_allocator.h>
+#include <ext/mt_allocator.h>
+#include <ext/bitmap_allocator.h>
+#include <ext/pool_allocator.h>
 
 namespace __gnu_test
 {

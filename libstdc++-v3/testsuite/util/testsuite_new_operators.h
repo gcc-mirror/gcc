@@ -23,6 +23,7 @@
 #define _GLIBCXX_TESTSUITE_NEW_OPERATORS_H
 
 #include <new>
+#include <cstdlib>
 #include <testsuite_hooks.h>
 
 namespace __gnu_test
