@@ -23,7 +23,7 @@ Target Mask(SIM)
 Target the software simulator.
 
 mlra
-Target RejectNegative Ignore
+Target RejectNegative Ignore Undocumented
 Ignored, but preserved for backward compatibility.
 
 mnodiv

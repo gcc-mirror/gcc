@@ -1087,7 +1087,7 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-msmall-model  -mno-lsim}
 
 @emph{FT32 Options} (@ref{FT32 Options})
-@gccoptlist{-msim  -mlra  -mnodiv  -mft32b  -mcompress  -mnopm}
+@gccoptlist{-msim  -mnodiv  -mft32b  -mcompress  -mnopm}
 
 @emph{FRV Options} (@ref{FRV Options})
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64
@@ -27737,6 +27737,7 @@ These options are defined specifically for the FT32 port.
 @table @gcctabopt
 
 @opindex msim
+@opindex mno-sim
 @item -msim
 Specifies that the program will be run on the simulator.  This causes
 an alternate runtime startup and library to be linked.
@@ -27744,23 +27745,23 @@ You must not use this option when generating programs that will run on
 real hardware; you must provide your own runtime library for whatever
 I/O functions are needed.
 
-@opindex mlra
-@item -mlra
-Does nothing.  Preserved for backward compatibility.
-
 @opindex mnodiv
+@opindex mno-nodiv
 @item -mnodiv
 Do not use div and mod instructions.
 
 @opindex mft32b
+@opindex mno-ft32b
 @item -mft32b
 Enable use of the extended instructions of the FT32B processor.
 
 @opindex mcompress
+@opindex mno-compress
 @item -mcompress
 Compress all code using the Ft32B code compression scheme.
 
-@opindex  mnopm
+@opindex mnopm
+@opindex mno-nopm
 @item -mnopm
 Do not generate code that reads program memory.
 
