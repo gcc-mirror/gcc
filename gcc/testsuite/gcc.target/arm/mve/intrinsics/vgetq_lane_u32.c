@@ -1,10 +1,13 @@
-/* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=soft" } {""} } */
 /* { dg-require-effective-target arm_v8_1m_mve_ok } */
 /* { dg-add-options arm_v8_1m_mve } */
 /* { dg-additional-options "-O2" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include "arm_mve.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 uint32_t
 foo (uint32x4_t a)
@@ -43,3 +46,7 @@ foo1 (uint32x4_t a)
 ** )
 **	bx\tlr
 */
+
+#ifdef __cplusplus
+}
+#endif

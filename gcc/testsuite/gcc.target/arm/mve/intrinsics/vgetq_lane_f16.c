@@ -1,10 +1,13 @@
-/* { dg-skip-if "Incompatible float ABI" { *-*-* } { "-mfloat-abi=soft" } {""} } */
 /* { dg-require-effective-target arm_v8_1m_mve_fp_ok } */
 /* { dg-add-options arm_v8_1m_mve_fp } */
 /* { dg-additional-options "-O2" } */
 /* { dg-final { check-function-bodies "**" "" "" } } */
 
 #include "arm_mve.h"
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 float16_t
 foo (float16x8_t a)
@@ -45,3 +48,7 @@ foo1 (float16x8_t a)
 ** )
 **	bx\tlr
 */
+
+#ifdef __cplusplus
+}
+#endif
