@@ -3534,6 +3534,12 @@ fill_always_executed_in (void)
   bitmap_clear (contains_call);
   FOR_EACH_BB_FN (bb, cfun)
     {
+      if (loop_depth (bb->loop_father) == 0)
+	{
+	  /* Outside of loops we can skip scanning all stmts.  */
+	  bitmap_set_bit (contains_call, bb->index);
+	  continue;
+	}
       gimple_stmt_iterator gsi;
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
