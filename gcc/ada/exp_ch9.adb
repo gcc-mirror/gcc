@@ -243,6 +243,16 @@ package body Exp_Ch9 is
    --  cleanup handler that unlocks the object in all cases. For details,
    --  see Exp_Ch7.Expand_Cleanup_Actions.
 
+   procedure Build_Protected_Subprogram_Call_Cleanup
+     (Op_Spec   : Node_Id;
+      Conc_Typ  : Node_Id;
+      Loc       : Source_Ptr;
+      Stmts     : List_Id);
+   --  Append to Stmts the cleanups after a call to a protected subprogram
+   --  whose specification is Op_Spec. Conc_Typ is the concurrent type and Loc
+   --  the sloc for appended statements. The cleanup will either unlock the
+   --  protected object or serve pending entries.
+
    function Build_Renamed_Formal_Declaration
      (New_F          : Entity_Id;
       Formal         : Entity_Id;
@@ -423,6 +433,10 @@ package body Exp_Ch9 is
    --  its constituents. Context is the enclosing construct, Context_Id is
    --  the scope of Context_Id and Context_Decls is the declarative list of
    --  Context.
+
+   function First_Protected_Operation (D : List_Id) return Node_Id;
+   --  Given the declarations list for a protected body, find the
+   --  first protected operation body.
 
    function Index_Object (Spec_Id : Entity_Id) return Entity_Id;
    --  Given a subprogram identifier, return the entity which is associated
@@ -959,33 +973,6 @@ package body Exp_Ch9 is
    -----------------------------------
 
    procedure Build_Activation_Chain_Entity (N : Node_Id) is
-      function Has_Activation_Chain (Stmt : Node_Id) return Boolean;
-      --  Determine whether an extended return statement has activation chain
-
-      --------------------------
-      -- Has_Activation_Chain --
-      --------------------------
-
-      function Has_Activation_Chain (Stmt : Node_Id) return Boolean is
-         Decl : Node_Id;
-
-      begin
-         Decl := First (Return_Object_Declarations (Stmt));
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Object_Declaration
-              and then Chars (Defining_Identifier (Decl)) = Name_uChain
-            then
-               return True;
-            end if;
-
-            Next (Decl);
-         end loop;
-
-         return False;
-      end Has_Activation_Chain;
-
-      --  Local variables
-
       Context    : Node_Id;
       Context_Id : Entity_Id;
       Decls      : List_Id;
@@ -1010,19 +997,7 @@ package body Exp_Ch9 is
 
       --  If activation chain entity has not been declared already, create one
 
-      if Nkind (Context) = N_Extended_Return_Statement
-        or else No (Activation_Chain_Entity (Context))
-      then
-         --  Since extended return statements do not store the entity of the
-         --  chain, examine the return object declarations to avoid creating
-         --  a duplicate.
-
-         if Nkind (Context) = N_Extended_Return_Statement
-           and then Has_Activation_Chain (Context)
-         then
-            return;
-         end if;
-
+      if No (Activation_Chain_Entity (Context)) then
          declare
             Loc   : constant Source_Ptr := Sloc (Context);
             Chain : Entity_Id;
@@ -1031,18 +1006,7 @@ package body Exp_Ch9 is
          begin
             Chain := Make_Defining_Identifier (Sloc (N), Name_uChain);
 
-            --  Note: An extended return statement is not really a task
-            --  activator, but it does have an activation chain on which to
-            --  store the tasks temporarily. On successful return, the tasks
-            --  on this chain are moved to the chain passed in by the caller.
-            --  We do not build an Activation_Chain_Entity for an extended
-            --  return statement, because we do not want to build a call to
-            --  Activate_Tasks. Task activation is the responsibility of the
-            --  caller.
-
-            if Nkind (Context) /= N_Extended_Return_Statement then
-               Set_Activation_Chain_Entity (Context, Chain);
-            end if;
+            Set_Activation_Chain_Entity (Context, Chain);
 
             Decl :=
               Make_Object_Declaration (Loc,
@@ -1183,155 +1147,6 @@ package body Exp_Ch9 is
           Name                   => New_Occurrence_Of (E, Loc),
           Parameter_Associations => New_List (Concurrent_Ref (N)));
    end Build_Call_With_Task;
-
-   -----------------------------
-   -- Build_Class_Wide_Master --
-   -----------------------------
-
-   procedure Build_Class_Wide_Master (Typ : Entity_Id) is
-      Loc          : constant Source_Ptr := Sloc (Typ);
-      Master_Decl  : Node_Id;
-      Master_Id    : Entity_Id;
-      Master_Scope : Entity_Id;
-      Name_Id      : Node_Id;
-      Related_Node : Node_Id;
-      Ren_Decl     : Node_Id;
-
-   begin
-      --  No action needed if the run-time has no tasking support
-
-      if Global_No_Tasking then
-         return;
-      end if;
-
-      --  Find the declaration that created the access type, which is either a
-      --  type declaration, or an object declaration with an access definition,
-      --  in which case the type is anonymous.
-
-      if Is_Itype (Typ) then
-         Related_Node := Associated_Node_For_Itype (Typ);
-      else
-         Related_Node := Parent (Typ);
-      end if;
-
-      Master_Scope := Find_Master_Scope (Typ);
-
-      --  Nothing to do if the master scope already contains a _master entity.
-      --  The only exception to this is the following scenario:
-
-      --    Source_Scope
-      --       Transient_Scope_1
-      --          _master
-
-      --       Transient_Scope_2
-      --          use of master
-
-      --  In this case the source scope is marked as having the master entity
-      --  even though the actual declaration appears inside an inner scope. If
-      --  the second transient scope requires a _master, it cannot use the one
-      --  already declared because the entity is not visible.
-
-      Name_Id     := Make_Identifier (Loc, Name_uMaster);
-      Master_Decl := Empty;
-
-      if not Has_Master_Entity (Master_Scope)
-        or else No (Current_Entity_In_Scope (Name_Id))
-      then
-         declare
-            Ins_Nod : Node_Id;
-            Par_Nod : Node_Id;
-
-         begin
-            Master_Decl := Build_Master_Declaration (Loc);
-
-            --  Ensure that the master declaration is placed before its use
-
-            Ins_Nod := Find_Hook_Context (Related_Node);
-            while not Is_List_Member (Ins_Nod) loop
-               Ins_Nod := Parent (Ins_Nod);
-            end loop;
-
-            Par_Nod := Parent (List_Containing (Ins_Nod));
-
-            --  For internal blocks created by Wrap_Loop_Statement, Wrap_
-            --  Statements_In_Block, and Build_Abort_Undefer_Block, remember
-            --  that they have a task master entity declaration; required by
-            --  Build_Master_Entity to avoid creating another master entity,
-            --  and also ensures that subsequent calls to Find_Master_Scope
-            --  return this scope as the master scope of Typ.
-
-            if Is_Internal_Block (Par_Nod) then
-               Set_Has_Master_Entity (Entity (Identifier (Par_Nod)));
-
-            elsif Nkind (Par_Nod) = N_Handled_Sequence_Of_Statements
-              and then Is_Internal_Block (Parent (Par_Nod))
-            then
-               Set_Has_Master_Entity (Entity (Identifier (Parent (Par_Nod))));
-
-            --  Otherwise remember that this scope has an associated task
-            --  master entity declaration.
-
-            else
-               Set_Has_Master_Entity (Master_Scope);
-            end if;
-
-            Insert_Before (First (List_Containing (Ins_Nod)), Master_Decl);
-            Analyze (Master_Decl);
-
-            --  Mark the containing scope as a task master. Masters associated
-            --  with return statements are already marked at this stage (see
-            --  Analyze_Subprogram_Body).
-
-            if Ekind (Current_Scope) /= E_Return_Statement then
-               declare
-                  Par : Node_Id := Related_Node;
-
-               begin
-                  while Nkind (Par) /= N_Compilation_Unit loop
-                     Par := Parent (Par);
-
-                     --  If we fall off the top, we are at the outer level,
-                     --  and the environment task is our effective master,
-                     --  so nothing to mark.
-
-                     if Nkind (Par) in
-                          N_Block_Statement | N_Subprogram_Body | N_Task_Body
-                     then
-                        Set_Is_Task_Master (Par);
-                        exit;
-                     end if;
-                  end loop;
-               end;
-            end if;
-         end;
-      end if;
-
-      Master_Id :=
-        Make_Defining_Identifier (Loc, New_External_Name (Chars (Typ), 'M'));
-
-      --  Generate:
-      --    typeMnn renames _master;
-
-      Ren_Decl :=
-        Make_Object_Renaming_Declaration (Loc,
-          Defining_Identifier => Master_Id,
-          Subtype_Mark        => New_Occurrence_Of (Standard_Integer, Loc),
-          Name                => Name_Id);
-
-      --  If the master is declared locally, add the renaming declaration
-      --  immediately after it, to prevent access-before-elaboration in the
-      --  back-end.
-
-      if Present (Master_Decl) then
-         Insert_After (Master_Decl, Ren_Decl);
-         Analyze (Ren_Decl);
-
-      else
-         Insert_Action (Related_Node, Ren_Decl);
-      end if;
-
-      Set_Master_Id (Typ, Master_Id);
-   end Build_Class_Wide_Master;
 
    --------------------------------
    -- Build_Corresponding_Record --
@@ -3256,47 +3071,11 @@ package body Exp_Ch9 is
          Find_Enclosing_Context (Par, Context, Context_Id, Decls);
       end if;
 
-      --  When the enclosing context is a BIP function whose result type has
-      --  tasks, the function has an extra formal that is the master of the
-      --  tasks to be created by its returned object (that is, when its
-      --  enclosing context is a return statement). However, if the body of
-      --  the function creates tasks before its return statements, such tasks
-      --  need their own master.
+      pragma Assert (not Is_Finalizer (Context_Id));
 
-      if Has_Master_Entity (Context_Id)
-        and then Ekind (Context_Id) = E_Function
-        and then Is_Build_In_Place_Function (Context_Id)
-        and then Needs_BIP_Task_Actuals (Context_Id)
-      then
-         --  No need to add it again if previously added
+      --  Nothing to do if the context already has a master
 
-         declare
-            Master_Present : Boolean;
-
-         begin
-            --  Handle transient scopes
-
-            if Context_Id /= Current_Scope then
-               Push_Scope (Context_Id);
-               Master_Present :=
-                 Present (Current_Entity_In_Scope (Name_uMaster));
-               Pop_Scope;
-            else
-               Master_Present :=
-                 Present (Current_Entity_In_Scope (Name_uMaster));
-            end if;
-
-            if Master_Present then
-               return;
-            end if;
-         end;
-
-      --  Nothing to do if the context already has a master; internally built
-      --  finalizers don't need a master.
-
-      elsif Has_Master_Entity (Context_Id)
-        or else Is_Finalizer (Context_Id)
-      then
+      if Has_Master_Entity (Context_Id) then
          return;
       end if;
 
@@ -3319,26 +3098,15 @@ package body Exp_Ch9 is
          Analyze (Decl);
       end if;
 
-      --  Mark the enclosing scope and its associated construct as being task
-      --  masters.
-
       Set_Has_Master_Entity (Context_Id);
 
-      while Present (Context)
-        and then Nkind (Context) /= N_Compilation_Unit
-      loop
-         if Nkind (Context) in
-              N_Block_Statement | N_Subprogram_Body | N_Task_Body
-         then
-            Set_Is_Task_Master (Context);
-            exit;
+      --  Mark its associated construct as being a task master, but masters
+      --  associated with return statements are already marked at this stage
+      --  (see Analyze_Subprogram_Body_Helper).
 
-         elsif Nkind (Parent (Context)) = N_Subunit then
-            Context := Corresponding_Stub (Parent (Context));
-         end if;
-
-         Context := Parent (Context);
-      end loop;
+      if Nkind (Context) /= N_Extended_Return_Statement then
+         Mark_Construct_As_Task_Master (Context);
+      end if;
    end Build_Master_Entity;
 
    ---------------------------
@@ -4679,6 +4447,13 @@ package body Exp_Ch9 is
       if Nkind (Owner) = N_Package_Body then
          Owner := Unit_Declaration_Node (Corresponding_Spec (Owner));
       end if;
+
+      --  An extended return statement is not really a task activator, but it
+      --  does have an activation chain on which to store tasks temporarily.
+      --  On successful return, the tasks on this chain are moved to the chain
+      --  passed in by the caller.
+
+      pragma Assert (Nkind (Owner) /= N_Extended_Return_Statement);
 
       Chain := Activation_Chain_Entity (Owner);
 
@@ -13298,42 +13073,6 @@ package body Exp_Ch9 is
       pragma Assert (Present (Context_Decls));
    end Find_Enclosing_Context;
 
-   -----------------------
-   -- Find_Master_Scope --
-   -----------------------
-
-   function Find_Master_Scope (E : Entity_Id) return Entity_Id is
-      S : Entity_Id;
-
-   begin
-      --  In Ada 2005, the master is the innermost enclosing scope that is not
-      --  transient. If the enclosing block is the rewriting of a call or the
-      --  scope is an extended return statement this is valid master. The
-      --  master in an extended return is only used within the return, and is
-      --  subsequently overwritten in Move_Activation_Chain, but it must exist
-      --  now before that overwriting occurs.
-
-      S := Scope (E);
-
-      if Ada_Version >= Ada_2005 then
-         while Is_Internal (S) loop
-            if Nkind (Parent (S)) = N_Block_Statement
-              and then Has_Master_Entity (S)
-            then
-               exit;
-
-            elsif Ekind (S) = E_Return_Statement then
-               exit;
-
-            else
-               S := Scope (S);
-            end if;
-         end loop;
-      end if;
-
-      return S;
-   end Find_Master_Scope;
-
    -------------------------------
    -- First_Protected_Operation --
    -------------------------------
@@ -14649,6 +14388,32 @@ package body Exp_Ch9 is
                    Selector_Name => Make_Identifier (Loc, Name_uObject)),
                Attribute_Name => Name_Unchecked_Access)));
    end Make_Unlock_Statement;
+
+   -----------------------------------
+   -- Mark_Construct_As_Task_Master --
+   -----------------------------------
+
+   procedure Mark_Construct_As_Task_Master (N : Node_Id) is
+      Nod : Node_Id := N;
+
+   begin
+      --  If we fall off the top, we are at the outer level, and the
+      --  environment task is our effective master, so nothing to mark.
+
+      while Nkind (Nod) /= N_Compilation_Unit loop
+         if Nkind (Nod) in N_Block_Statement | N_Subprogram_Body | N_Task_Body
+         then
+            Set_Is_Task_Master (Nod);
+            exit;
+
+         elsif Nkind (Parent (Nod)) = N_Subunit then
+            Nod := Corresponding_Stub (Parent (Nod));
+
+         else
+            Nod := Parent (Nod);
+         end if;
+      end loop;
+   end Mark_Construct_As_Task_Master;
 
    ------------------------------
    -- Next_Protected_Operation --

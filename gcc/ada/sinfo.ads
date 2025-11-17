@@ -757,8 +757,8 @@ package Sinfo is
    --    When tasks are declared in the corresponding declarative region this
    --    entity is located by name (its name is always _Chain) and the declared
    --    tasks are added to the chain. Note that N_Extended_Return_Statement
-   --    does not have this attribute, although it does have an activation
-   --    chain. This chain is used to store the tasks temporarily, and is not
+   --    also has this attribute, although it is not really a task activator:
+   --    this chain is only used to store the tasks temporarily, and is not
    --    used for activating them. On successful completion of the return
    --    statement, the tasks are moved to the caller's chain, and the caller
    --    activates them.

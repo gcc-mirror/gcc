@@ -6684,7 +6684,8 @@ package body Exp_Ch3 is
          elsif not Is_Param_Block_Component_Type (Ptr_Typ)
            and then Is_Limited_Class_Wide_Type (Desig_Typ)
          then
-            Build_Class_Wide_Master (Ptr_Typ);
+            Build_Master_Entity (Ptr_Typ);
+            Build_Master_Renaming (Ptr_Typ);
          end if;
       end Build_Master;
 
@@ -7651,7 +7652,9 @@ package body Exp_Ch3 is
       --  If tasks are being declared, make sure we have an activation chain
       --  defined for the tasks (has no effect if we already have one), and
       --  also that a Master variable is established (and that the appropriate
-      --  enclosing construct is established as a task master).
+      --  enclosing construct is established as a task master). And also deal
+      --  with objects initialized with a call to a BIP function that has task
+      --  formal parameters.
 
       if Has_Task (Typ)
         or else Might_Have_Tasks (Typ)
@@ -7660,12 +7663,7 @@ package body Exp_Ch3 is
       then
          Build_Activation_Chain_Entity (N);
 
-         if Has_Task (Typ) then
-            Build_Master_Entity (Def_Id);
-
-         --  Handle objects initialized with BIP function calls
-
-         elsif Has_BIP_Init_Expr then
+         if Has_Task (Typ) or else Has_BIP_Init_Expr then
             Build_Master_Entity (Def_Id);
          end if;
       end if;

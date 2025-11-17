@@ -50,11 +50,6 @@ package Exp_Ch9 is
    --  Task_Id of the associated task as the parameter. The caller is
    --  responsible for analyzing and resolving the resulting tree.
 
-   procedure Build_Class_Wide_Master (Typ : Entity_Id);
-   --  Given an access-to-limited class-wide type or an access-to-limited
-   --  interface, ensure that the designated type has a _master and generate
-   --  a renaming of the said master to service the access type.
-
    function Build_Master_Declaration (Loc : Source_Ptr) return Node_Id;
    --  For targets supporting tasks, generate:
    --      _Master : constant Integer := Current_Master.all;
@@ -98,16 +93,6 @@ package Exp_Ch9 is
    --  subprogram, and Rec is the record corresponding to the protected object.
    --  External is False if the call is to another protected subprogram within
    --  the same object.
-
-   procedure Build_Protected_Subprogram_Call_Cleanup
-     (Op_Spec   : Node_Id;
-      Conc_Typ  : Node_Id;
-      Loc       : Source_Ptr;
-      Stmts     : List_Id);
-   --  Append to Stmts the cleanups after a call to a protected subprogram
-   --  whose specification is Op_Spec. Conc_Typ is the concurrent type and Loc
-   --  the sloc for appended statements. The cleanup will either unlock the
-   --  protected object or serve pending entries.
 
    procedure Build_Task_Activation_Call (N : Node_Id);
    --  This procedure is called for constructs that can be task activators,
@@ -185,8 +170,7 @@ package Exp_Ch9 is
      (Sloc  : Source_Ptr;
       Ent   : Entity_Id;
       Index : Node_Id;
-      Ttyp  : Entity_Id)
-      return  Node_Id;
+      Ttyp  : Entity_Id) return  Node_Id;
    --  Returns an expression to compute a task entry index given the name of
    --  the entry or entry family. For the case of a task entry family, the
    --  Index parameter contains the expression for the subscript. Ttyp is the
@@ -267,19 +251,6 @@ package Exp_Ch9 is
    --  Return the external version of a protected operation, which locks
    --  the object before invoking the internal protected subprogram body.
 
-   function Find_Master_Scope (E : Entity_Id) return Entity_Id;
-   --  When a type includes tasks, a master entity is created in the scope, to
-   --  be used by the runtime during activation. In general the master is the
-   --  immediate scope in which the type is declared, but in Ada 2005, in the
-   --  presence of synchronized classwide interfaces, the immediate scope of
-   --  an anonymous access type may be a transient scope, which has no run-time
-   --  presence. In this case, the scope of the master is the innermost scope
-   --  that comes from source.
-
-   function First_Protected_Operation (D : List_Id) return Node_Id;
-   --  Given the declarations list for a protected body, find the
-   --  first protected operation body.
-
    procedure Install_Private_Data_Declarations
      (Loc      : Source_Ptr;
       Spec_Id  : Entity_Id;
@@ -344,6 +315,10 @@ package Exp_Ch9 is
      (Protect_Rec : Entity_Id) return List_Id;
    --  Given the entity of the record type created for a protected type, build
    --  a list of statements needed for proper initialization of the object.
+
+   procedure Mark_Construct_As_Task_Master (N : Node_Id);
+   --  Mark the innermost N_Block_Statement, N_Subprogram_Body or N_Task_Body
+   --  that is either N or enclosing N as being a task master.
 
    function Next_Protected_Operation (N : Node_Id) return Node_Id;
    --  Given a protected operation node (a subprogram or entry body), find the

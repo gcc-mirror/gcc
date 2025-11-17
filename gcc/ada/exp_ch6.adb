@@ -9954,7 +9954,6 @@ package body Exp_Ch6 is
       Anon_Type := Create_Itype (E_Anonymous_Access_Type, Function_Call);
       Set_Directly_Designated_Type (Anon_Type, Etype (BIP_Func_Call));
       Set_Etype (Anon_Type, Anon_Type);
-      Build_Class_Wide_Master (Anon_Type);
 
       Tmp_Decl :=
         Make_Object_Declaration (Loc,
@@ -9977,6 +9976,9 @@ package body Exp_Ch6 is
       Expander_Mode_Save_And_Set (False);
       Insert_Action (Allocator, Tmp_Decl);
       Expander_Mode_Restore;
+
+      Build_Master_Entity (Anon_Type);
+      Build_Master_Renaming (Anon_Type);
 
       Make_Build_In_Place_Call_In_Allocator
         (Allocator     => Expression (Tmp_Decl),

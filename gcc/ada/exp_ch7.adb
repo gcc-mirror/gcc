@@ -5067,9 +5067,7 @@ package body Exp_Ch7 is
 
          --  Generate task activation call as last step of elaboration
 
-         if Present (Activation_Chain_Entity (N)) then
-            Build_Task_Activation_Call (N);
-         end if;
+         Build_Task_Activation_Call (N);
 
          --  Verify the run-time semantics of pragma Initial_Condition at the
          --  end of the private declarations when the package lacks a body.

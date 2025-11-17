@@ -1015,6 +1015,7 @@ begin -- Gen_IL.Gen.Gen_Nodes
    Cc (N_Extended_Return_Statement, N_Statement_Other_Than_Procedure_Call,
        (Sy (Return_Object_Declarations, List_Id),
         Sy (Handled_Statement_Sequence, Node_Id, Default_Empty),
+        Sm (Activation_Chain_Entity, Node_Id),
         Sm (Procedure_To_Call, Node_Id),
         Sm (Return_Statement_Entity, Node_Id),
         Sm (Storage_Pool, Node_Id)));
