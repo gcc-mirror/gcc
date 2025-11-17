@@ -1598,15 +1598,17 @@ export namespace std
   using std::u32streampos;
   using std::u8streampos;
   using std::wstreampos;
-  using std::basic_osyncstream;
-  using std::basic_syncbuf;
   using std::istreambuf_iterator;
   using std::ostreambuf_iterator;
+  using std::fpos;
+#ifdef __cpp_lib_syncbuf
+  using std::basic_osyncstream;
+  using std::basic_syncbuf;
   using std::osyncstream;
   using std::syncbuf;
   using std::wosyncstream;
   using std::wsyncbuf;
-  using std::fpos;
+#endif
 }
 
 // <iostream>
@@ -2176,9 +2178,11 @@ export namespace std
   using std::ostream;
   using std::wostream;
   using std::operator<<;
+#ifdef __cpp_lib_syncbuf
   using std::emit_on_flush;
   using std::noemit_on_flush;
   using std::flush_emit;
+#endif
 }
 
 // <print>
@@ -2619,11 +2623,13 @@ export namespace std
   using std::wsregex_token_iterator;
   namespace pmr
   {
+#if _GLIBCXX_USE_CXX11_ABI
     using std::pmr::cmatch;
     using std::pmr::match_results;
     using std::pmr::smatch;
     using std::pmr::wcmatch;
     using std::pmr::wsmatch;
+#endif
   }
 }
 
@@ -2849,12 +2855,14 @@ export namespace std
   using std::wstring;
   namespace pmr
   {
+#if _GLIBCXX_USE_CXX11_ABI
     using std::pmr::basic_string;
     using std::pmr::string;
     using std::pmr::u16string;
     using std::pmr::u32string;
     using std::pmr::u8string;
     using std::pmr::wstring;
+#endif
   }
   using std::hash;
 }
@@ -2899,6 +2907,7 @@ export namespace std
 // <syncstream>
 export namespace std
 {
+#ifdef __cpp_lib_syncbuf
   using std::basic_syncbuf;
   using std::swap;
   using std::basic_osyncstream;
@@ -2906,6 +2915,7 @@ export namespace std
   using std::syncbuf;
   using std::wosyncstream;
   using std::wsyncbuf;
+#endif
 }
 
 // 19.5 <system_error>
