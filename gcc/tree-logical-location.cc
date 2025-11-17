@@ -152,6 +152,8 @@ tree_logical_location_manager::get_parent (key k) const
     {
       if (!TYPE_CONTEXT (node))
 	return key ();
+      if (TREE_CODE (TYPE_CONTEXT (node)) == TRANSLATION_UNIT_DECL)
+	return key ();
       return key_from_tree (TYPE_CONTEXT (node));
     }
   return key ();
