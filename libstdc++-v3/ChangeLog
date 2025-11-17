@@ -1,3 +1,13 @@
+2025-11-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122698
+	* src/c++20/syncbuf.cc (__syncbuf_get_mutex): Include <mutex>.
+	Fix indentation of function body.
+
+2025-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* scripts/extract_symvers.pl: Remove ccs from elfdump path.
+
 2025-11-15  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/atomic_base.h: Tweak grammar of static assert

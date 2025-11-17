@@ -1,3 +1,9 @@
+2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122625
+	* module.cc (trees_in::read_var_def): Also track class-scope
+	primary template specialisations.
+
 2025-11-15  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (trees_out::write_function_def): Check flag consistency.

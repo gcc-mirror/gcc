@@ -1,3 +1,112 @@
+2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/121345
+	* gimple-range-phi.cc (phi_group::phi_group): Add modifier name.
+	(phi_group::is_modifier_p): Set modifier stmt operand name.
+	(phi_group::calculate_using_modifier): Bound the iteration range
+	by known global range.
+	(phi_analyzer::process_phi): Allow single PHIS if they meet certain
+	criteria.
+	* gimple-range-phi.h (m_modifier_name): New member.
+	(is_modifier_p): Adjust prototype.
+
+2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-fold.cc (fold_using_range::range_of_phi): Remove
+	the PHI analysis query.
+	* gimple-range-phi.cc (phi_analysis_object): Delete.
+	(phi_analysis_initialize): Delete.
+	(phi_analysis_finalize): Delete.
+	(phi_analysis_available_p): Delete.
+	(phi_analysis): Invoke a phi analyzer.
+	(phi_analyzer::phi_analyzer): Preprocess all phi nodes and set
+	global values for them in a query.
+	(phi_analyzer::process_phi): Use query, and export any inital
+	values found to the query.
+	* gimple-range-phi.h (m_global): Delete.
+	(phi_analysis_initialize): Delete.
+	(phi_analysis_finalize): Delete.
+	(phi_analysis_available_p): Delete.
+	(phi_analysis): Change prototype.
+	* tree-vrp.cc (execute_ranger_vrp): Call phi_analysis.
+
+2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range-cache.cc (ranger_cache::update_consumers): New.
+	* gimple-range-cache.h (update_consumers): New prototype.
+	* gimple-range-fold.cc (fur_depend::fur_depend): Add cache ptr.
+	(fur_depend::register_relation): call update_consumers.
+	* gimple-range-fold.h (fur_depend): Add a cache pointer.
+	* gimple-range.cc (gimple_ranger::fold_range_internal): Add cache ptr.
+
+2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gimple-range.cc (gimple_ranger::update_range_info): New.
+	* gimple-range.h (update_range_info): New prototype.
+	* tree-ssanames.cc (set_range_info): Update the range info for
+	the current range query.
+	* value-query.h (update_range_info): New prototype.
+	* value-query.cc (update_range_info): New default stub.
+
+2025-11-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (tree_forwarder_block_p): Restore check on
+	LOOPS_HAVE_PREHEADERS.
+
+2025-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (MD_EXEC_PREFIX): Remove.
+
+2025-11-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info):
+	Initialize can_use_partial_vectors_p to true.
+	(vect_determine_partial_vectors_and_peeling): Add masked_p
+	parameter and honor it.
+	(vect_analyze_loop_2): Pass through masked_p.
+	(vect_analyze_loop_1): Pass down masked_p.
+	(vect_analyze_loop): Simplify check on possible masking of
+	the epilog when there's no .WHILE_ULT.
+
+2025-11-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_determine_partial_vectors_and_peeling):
+	Remove resetting of LOOP_VINFO_USING_SELECT_VL_P.
+	(vect_analyze_loop_2): Decide on partial vectors before
+	deciding on decrementing IV or .SELECT_VL usage.
+
+2025-11-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (vect_determine_partial_vectors_and_peeling):
+	Remove.
+	(vect_need_peeling_or_partial_vectors_p): Declare.
+	* tree-vect-loop.cc (vect_determine_partial_vectors_and_peeling):
+	Make static.
+	(vect_need_peeling_or_partial_vectors_p): Export.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Do not call
+	vect_determine_partial_vectors_and_peeling but instead
+	re-compute LOOP_VINFO_PEELING_FOR_NITER using
+	vect_need_peeling_or_partial_vectors_p.
+
+2025-11-16  Richard Biener  <rguenther@suse.de>
+
+	* tree-vectorizer.h (_loop_vec_info::epil_using_partial_vectors_p):
+	Remove.
+	(LOOP_VINFO_EPIL_USING_PARTIAL_VECTORS_P): Likewise.
+	* tree-vect-loop.cc (_loop_vec_info::_loop_vec_info):
+	Do not initialize epil_using_partial_vectors_p.
+	(vect_determine_partial_vectors_and_peeling): Do not set it.
+
+2025-11-16  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* diagnostics/context.cc (num_digits): Change argument type from
+	`int' to `uint64_t'.
+	(test_num_digits): Add test for 64-bit argument.
+	* diagnostic.h (num_digits): Adjust prototype.
+	* input.cc (write_digit): Accept argument in range 0-9 instead of
+	an arbitrary int.
+	(write_digit_row): Adjust to change in write_digit().
+
 2025-11-15  Jason Xu  <bravejason@outlook.com>
 
 	* config.gcc (aarch64-*-mingw*): Set use_gcc_stdint to wrap.

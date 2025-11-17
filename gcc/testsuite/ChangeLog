@@ -1,3 +1,32 @@
+2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/121345
+	* g++.dg/pr121345.C: New.
+
+2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
+
+	* gcc.dg/pr102983.c: Adjust final check.
+
+2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122625
+	* g++.dg/modules/inst-7_a.C: New test.
+	* g++.dg/modules/inst-7_b.C: New test.
+
+2025-11-16  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* gcc.dg/plugin/location-overflow-test-3.c: New test.
+	* gcc.dg/plugin/plugin.exp: Add the new test.
+
+2025-11-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* g++.dg/tree-ssa/pr117123.C: un-xfail.
+
+2025-11-16  Sam James  <sam@gentoo.org>
+
+	* gcc.target/aarch64/crc-crc32-data16.c: Fix iteration
+	count to match testname.
+
 2025-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-c++-common/asan/asan-stack-small.c (pa, pb, pc): Make these
