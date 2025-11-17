@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -mlasx" } */
-/* { dg-final { scan-assembler "\tvrepli\\.b\t\\\$vr\[0-9\]+,-35" } } */
-/* { dg-final { scan-assembler "\txvrepli\\.b\t\\\$xr\[0-9\]+,-35" } } */
+/* { dg-final { scan-assembler "\tvldi\t\\\$vr\[0-9\]+,221" } } */
+/* { dg-final { scan-assembler "\txvldi\t\\\$xr\[0-9\]+,221" } } */
 
 int f __attribute__((vector_size (16)));
 int g __attribute__((vector_size (32)));

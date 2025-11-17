@@ -1977,8 +1977,170 @@ loongarch_check_vect_par_cnst_half (rtx op, machine_mode mode, bool high_p)
   return true;
 }
 
+/* VLDI or XVLDI instruction could have 13 bits imm part, this mask is used to
+   indicate the highest bit is 1.  */
+#define VLDI_NEG_MASK HOST_WIDE_INT_UC(0xFFFFFFFFFFFFF000)
+
+/* Return true if repeated value in vector for machine mode can be set by VLDI
+   or XVLDI instruction, the immediate value for VLDI or XVLDI will be put into
+   res.  */
+static bool
+loongarch_parse_vldi_const (rtx op, machine_mode mode,
+			    unsigned HOST_WIDE_INT *res)
+{
+  if (!loongarch_const_vector_same_val_p (op, mode))
+    return false;
+
+  rtx elem0 = CONST_VECTOR_ELT (op, 0);
+  if (!CONST_INT_P (elem0))
+    return false;
+
+  HOST_WIDE_INT value = INTVAL (elem0);
+  switch (mode)
+    {
+    case E_V16QImode:
+    case E_V32QImode:
+      {
+	*res = value & 0xFF;
+	return true;
+      }
+    case E_V8HImode:
+    case E_V16HImode:
+      {
+	if (value >= -512 && value <= 511)
+	  {
+	    *res = 0x400 | (value & 0x3FF);
+	    return true;
+	  }
+
+	uint16_t num = value & 0xFFFF;
+	/* 4'b0101:data={4{x[7:0],8'b0}}.  */
+	if ((num & 0xFF) == 0)
+	  {
+	    *res = VLDI_NEG_MASK | 0x500 | (num >> 8);
+	    return true;
+	  }
+	break;
+      }
+    case E_V4SImode:
+    case E_V8SImode:
+      {
+	if (value >= -512 && value <= 511)
+	  {
+	    *res = 0x800 | (value & 0x3FF);
+	    return true;
+	  }
+	uint32_t num = value & 0xFFFFFFFF;
+	/* 4'b0001:data={2{16'b0,x[7:0],8'b0}}.  */
+	if ((num & 0xFFFF00FF) == 0)
+	  {
+	    *res = VLDI_NEG_MASK | 0x100 | ((num >> 8) & 0xFF);
+	    return true;
+	  }
+
+	/* 4'b0010:data={2{8'b0,x[7:0],16'b0}}.  */
+	if ((num & 0xFF00FFFF) == 0)
+	  {
+	    *res = VLDI_NEG_MASK | 0x200 | ((num >> 16) & 0xFF);
+	    return true;
+	  }
+
+	/* 4'b0011:data={2{x[7:0],24'b0}}.  */
+	if ((num & 0xFFFFFF) == 0)
+	  {
+	    *res = VLDI_NEG_MASK | 0x300 | ((num >> 24) & 0xFF);
+	    return true;
+	  }
+
+	/* 4'b0110:data={2{16'b0,x[7:0],8'hFF}}.  */
+	if (num >> 16 == 0 && (num & 0xFF) == 0xFF)
+	  {
+	    *res = VLDI_NEG_MASK | 0x600 | ((num >> 8) & 0xFF);
+	    return true;
+	  }
+
+	/* 4'b0111:data={2{8'b0,x[7:0],16'hFFFF}}.  */
+	if (num >> 24 == 0 && (num & 0xFFFF) == 0xFFFF)
+	  {
+	    *res = VLDI_NEG_MASK | 0x700 | ((num >> 16) & 0xFF);
+	    return true;
+	  }
+
+	/* 4'b1010:data={2{x[7],~x[6],{5{x[6]}},x[5:0],19'b0}}.  */
+	uint32_t temp = (num >> 25) & 0x3F;
+	/* x[6] == 0, then ~x[6],{5{x[6]}} should be 0b10 0000,
+	   x[6] == 1, then ~x[6],{5{x[6]}} should be 0b01 1111.  */
+	if ((temp == 0x20 || temp == 0x1F) && (num & 0x7FFFF) == 0)
+	  {
+	    temp = ((num >> 19) & 0x7F) | ((num >> 24) & 0x80);
+	    *res = VLDI_NEG_MASK | 0xa00 | temp;
+	    return true;
+	  }
+	break;
+      }
+    case E_V2DImode:
+    case E_V4DImode:
+      {
+	if (value >= -512 && value <= 511)
+	  {
+	    *res = 0xC00 | (value & 0x3FF);
+	    return true;
+	  }
+
+	uint64_t num = value;
+	/* 4'b1001:data={{8{x[7]}},{8{x[6]}},{8{x[5]}},{8{x[4]}},{8{x[3]}},
+	   {8{x[2]}},{8{x[1]}},{8{x[0]}}}.  */
+	bool same_bit = true;
+	uint64_t temp = 0;
+	for (int i = 0; i < 8; i++)
+	  {
+	    uint8_t n = (num >> (i * 8)) & 0xFF;
+	    if (n != 0 && n != 0xFF)
+	      {
+		same_bit = false;
+		break;
+	      }
+
+	    if (n == 0xFF)
+	      temp = (1 << i) | temp;
+	  }
+	if (same_bit)
+	  {
+	    *res = VLDI_NEG_MASK | 0x900 | temp;
+	    return true;
+	  }
+
+	/* 4'b1011:data={32'b0,x[7],~x[6],{5{x[6]}},x[5:0],19'b0}.  */
+	temp = (num >> 25) & 0x3F;
+	if ((num & 0xFFFFFFFF) == num
+	    && (temp == 0x20 || temp == 0x1F)
+	    && (num & 0x7FFFF) == 0)
+	  {
+	    temp = ((num >> 19) & 0x7F) | ((num >> 24) & 0x80);
+	    *res = VLDI_NEG_MASK | 0xB00 | temp;
+	    return true;
+	  }
+
+	/* 4'b1100:data={x[7],~x[6],{8{x[6]}},x[5:0],48'b0}.  */
+	temp = (num >> 54) & 0x1FF;
+	if ((num & HOST_WIDE_INT_UC(0xFFFF000000000000)) == num
+	    && (temp == 0xFF || temp == 0x100))
+	  {
+	    temp = ((num >> 48) & 0x7F) | ((num >> 56) & 0x80);
+	    *res = VLDI_NEG_MASK | 0xC00 | temp;
+	    return true;
+	  }
+	break;
+      }
+    default:
+      break;
+    }
+
+  return false;
+}
+
 rtx
-loongarch_const_vector_vrepli (rtx x, machine_mode mode)
+loongarch_const_vector_vldi (rtx x, machine_mode mode)
 {
   int size = GET_MODE_SIZE (mode);
 
@@ -1992,8 +2154,11 @@ loongarch_const_vector_vrepli (rtx x, machine_mode mode)
 	mode_for_vector (elem_mode, size / GET_MODE_SIZE (elem_mode))
 	  .require ();
       rtx op = lowpart_subreg (new_mode, x, mode);
-      if (loongarch_const_vector_same_int_p (op, new_mode, -512, 511))
-	return op;
+
+      HOST_WIDE_INT res = 0;
+      if (loongarch_parse_vldi_const (op, new_mode,
+				      (unsigned HOST_WIDE_INT *)&res))
+	return GEN_INT (res);
     }
 
   return NULL_RTX;
@@ -2661,7 +2826,7 @@ loongarch_const_insns (rtx x)
     case CONST_VECTOR:
       if ((LSX_SUPPORTED_MODE_P (GET_MODE (x))
 	   || LASX_SUPPORTED_MODE_P (GET_MODE (x)))
-	  && loongarch_const_vector_vrepli (x, GET_MODE (x)))
+	  && loongarch_const_vector_vldi (x, GET_MODE (x)))
 	return 1;
       /* Fall through.  */
     case CONST_DOUBLE:
@@ -4920,7 +5085,7 @@ loongarch_split_vector_move_p (rtx dest, rtx src)
   /* Check for vector set to an immediate const vector with valid replicated
      element.  */
   if (FP_REG_RTX_P (dest)
-      && loongarch_const_vector_vrepli (src, GET_MODE (src)))
+      && loongarch_const_vector_vldi (src, GET_MODE (src)))
     return false;
 
   /* Check for vector load zero immediate.  */
@@ -5056,15 +5221,15 @@ loongarch_output_move (rtx *operands)
       && src_code == CONST_VECTOR
       && CONST_INT_P (CONST_VECTOR_ELT (src, 0)))
     {
-      operands[1] = loongarch_const_vector_vrepli (src, mode);
+      operands[1] = loongarch_const_vector_vldi (src, mode);
       gcc_assert (operands[1]);
 
       switch (GET_MODE_SIZE (mode))
 	{
 	case 16:
-	  return "vrepli.%v1\t%w0,%E1";
+	  return "vldi\t%w0,%1";
 	case 32:
-	  return "xvrepli.%v1\t%u0,%E1";
+	  return "xvldi\t%u0,%1";
 	default: gcc_unreachable ();
 	}
     }

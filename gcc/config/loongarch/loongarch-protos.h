@@ -124,7 +124,7 @@ extern bool loongarch_const_vector_shuffle_set_p (rtx, machine_mode);
 extern bool loongarch_const_vector_bitimm_set_p (rtx, machine_mode);
 extern bool loongarch_const_vector_bitimm_clr_p (rtx, machine_mode);
 extern bool loongarch_check_vect_par_cnst_half (rtx, machine_mode, bool);
-extern rtx loongarch_const_vector_vrepli (rtx, machine_mode);
+extern rtx loongarch_const_vector_vldi (rtx, machine_mode);
 extern rtx loongarch_lsx_vec_parallel_const_half (machine_mode, bool);
 extern rtx loongarch_gen_const_int_vector (machine_mode, HOST_WIDE_INT);
 extern enum reg_class loongarch_secondary_reload_class (enum reg_class,

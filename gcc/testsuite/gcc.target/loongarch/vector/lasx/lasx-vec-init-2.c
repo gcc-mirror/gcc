@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -fno-vect-cost-model -mlasx" } */
-/* { dg-final { scan-assembler-times "vld" 12 } } */
+/* { dg-final { scan-assembler-times "vld\t" 12 } } */
 
 
 typedef char v16qi __attribute__ ((vector_size (16)));

@@ -713,10 +713,10 @@
 /* { dg-final { scan-assembler-times "lsx_vfcmp_sune_d:.*vfcmp\\.sune\\.d.*lsx_vfcmp_sune_d" 1 } } */
 /* { dg-final { scan-assembler-times "lsx_vfcmp_sune_s:.*vfcmp\\.sune\\.s.*lsx_vfcmp_sune_s" 1 } } */
 /* { dg-final { scan-assembler-times "lsx_vfcmp_sun_s:.*vfcmp\\.sun\\.s.*lsx_vfcmp_sun_s" 1 } } */
-/* { dg-final { scan-assembler-times "lsx_vrepli_b:.*vrepli\\.b.*lsx_vrepli_b" 1 } } */
-/* { dg-final { scan-assembler-times "lsx_vrepli_d:.*vrepli\\.d.*lsx_vrepli_d" 1 } } */
-/* { dg-final { scan-assembler-times "lsx_vrepli_h:.*vrepli\\.h.*lsx_vrepli_h" 1 } } */
-/* { dg-final { scan-assembler-times "lsx_vrepli_w:.*vrepli\\.w.*lsx_vrepli_w" 1 } } */
+/* { dg-final { scan-assembler-times "lsx_vrepli_b:.*vldi.*lsx_vrepli_b" 1 } } */
+/* { dg-final { scan-assembler-times "lsx_vrepli_d:.*vldi.*lsx_vrepli_d" 1 } } */
+/* { dg-final { scan-assembler-times "lsx_vrepli_h:.*vldi.*lsx_vrepli_h" 1 } } */
+/* { dg-final { scan-assembler-times "lsx_vrepli_w:.*vldi.*lsx_vrepli_w" 1 } } */
 
 typedef signed char v16i8 __attribute__ ((vector_size (16), aligned (16)));
 typedef signed char v16i8_b __attribute__ ((vector_size (16), aligned (1)));
