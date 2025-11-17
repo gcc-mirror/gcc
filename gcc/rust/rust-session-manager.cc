@@ -873,7 +873,7 @@ Session::injection (AST::Crate &crate)
 
       // create "extern crate" item with the name
       std::unique_ptr<AST::ExternCrate> extern_crate (
-	new AST::ExternCrate (*it, AST::Visibility::create_error (),
+	new AST::ExternCrate (*it, AST::Visibility::create_private (),
 			      {std::move (attr)}, UNKNOWN_LOCATION));
 
       // insert at beginning

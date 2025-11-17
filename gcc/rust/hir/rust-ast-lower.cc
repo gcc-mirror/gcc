@@ -38,8 +38,6 @@ translate_visibility (const AST::Visibility &vis)
   // the AST vis is an error?
   // FIXME: We need to add a `create_private()` static function to the
   // AST::Visibility class and use it when the vis is empty in the parser...
-  if (vis.is_error ())
-    return Visibility::create_error ();
 
   switch (vis.get_vis_type ())
     {
@@ -57,7 +55,7 @@ translate_visibility (const AST::Visibility &vis)
       break;
     }
 
-  return Visibility::create_error ();
+  rust_unreachable ();
 }
 
 ASTLowering::ASTLowering (AST::Crate &astCrate) : astCrate (astCrate) {}

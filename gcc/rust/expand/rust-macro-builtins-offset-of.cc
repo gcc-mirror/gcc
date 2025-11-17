@@ -56,7 +56,7 @@ MacroBuiltin::offset_of_handler (location_t invoc_locus,
   parser.skip_token (COMMA);
 
   auto field_tok = parser.parse_identifier_or_keyword_token ();
-  auto invalid_field = !field_tok || !field_tok->should_have_str ();
+  auto invalid_field = !field_tok || !field_tok.value ()->should_have_str ();
 
   if (invalid_field)
     rust_error_at (invoc_locus, "could not parse field argument for %qs",
@@ -65,7 +65,7 @@ MacroBuiltin::offset_of_handler (location_t invoc_locus,
   if (!type || invalid_field)
     return tl::nullopt;
 
-  auto field = Identifier (field_tok->get_str ());
+  auto field = Identifier (field_tok.value ()->get_str ());
 
   // FIXME: Do we need to do anything to handle the optional comma at the end?
   parser.maybe_skip_token (COMMA);

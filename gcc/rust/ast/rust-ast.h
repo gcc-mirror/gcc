@@ -477,37 +477,20 @@ private:
   SimplePath in_path;
   location_t locus;
 
-  // should this store location info?
-
-public:
-  // Creates a Visibility - TODO make constructor protected or private?
   Visibility (VisType vis_type, SimplePath in_path, location_t locus)
     : vis_type (vis_type), in_path (std::move (in_path)), locus (locus)
   {}
 
+public:
   VisType get_vis_type () const { return vis_type; }
 
-  // Returns whether visibility is in an error state.
-  bool is_error () const
-  {
-    return vis_type == PUB_IN_PATH && in_path.is_empty ();
-  }
-
   // Returns whether a visibility has a path
-  bool has_path () const { return !is_error () && vis_type >= PUB_CRATE; }
+  bool has_path () const { return vis_type >= PUB_CRATE; }
 
   // Returns whether visibility is public or not.
-  bool is_public () const { return vis_type != PRIV && !is_error (); }
+  bool is_public () const { return vis_type != PRIV; }
 
   location_t get_locus () const { return locus; }
-
-  // empty?
-  // Creates an error visibility.
-  static Visibility create_error ()
-  {
-    return Visibility (PUB_IN_PATH, SimplePath::create_empty (),
-		       UNDEF_LOCATION);
-  }
 
   // Unique pointer custom clone function
   /*std::unique_ptr<Visibility> clone_visibility() const {

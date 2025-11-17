@@ -3490,7 +3490,9 @@ Module::load_items ()
 
   // we need to parse any possible inner attributes for this module
   inner_attrs = parser.parse_inner_attributes ();
-  auto parsed_items = parser.parse_items ();
+  auto parsed_items = parser.parse_items ().value_or (
+    std::vector<std::unique_ptr<AST::Item>>{});
+
   for (const auto &error : parser.get_errors ())
     error.emit ();
 
@@ -3705,8 +3707,8 @@ AttributeParser::is_end_meta_item_tok (TokenId id) const
 std::unique_ptr<MetaItem>
 AttributeParser::parse_path_meta_item ()
 {
-  SimplePath path = parser->parse_simple_path ();
-  if (path.is_empty ())
+  auto path = parser->parse_simple_path ();
+  if (!path)
     {
       rust_error_at (lexer->peek_token ()->get_locus (),
 		     "failed to parse simple path in attribute");
@@ -3721,7 +3723,7 @@ AttributeParser::parse_path_meta_item ()
 	  = parse_meta_item_seq ();
 
 	return std::unique_ptr<MetaItemSeq> (
-	  new MetaItemSeq (std::move (path), std::move (meta_items)));
+	  new MetaItemSeq (std::move (path.value ()), std::move (meta_items)));
       }
     case EQUAL:
       {
@@ -3735,12 +3737,12 @@ AttributeParser::parse_path_meta_item ()
 	  return nullptr;
 
 	return std::unique_ptr<MetaItemPathExpr> (
-	  new MetaItemPathExpr (std::move (path), std::move (expr)));
+	  new MetaItemPathExpr (std::move (path.value ()), std::move (expr)));
       }
     case COMMA:
       // just simple path
       return std::unique_ptr<MetaItemPath> (
-	new MetaItemPath (std::move (path)));
+	new MetaItemPath (std::move (path.value ())));
     default:
       rust_error_at (lexer->peek_token ()->get_locus (),
 		     "unrecognised token '%s' in meta item",

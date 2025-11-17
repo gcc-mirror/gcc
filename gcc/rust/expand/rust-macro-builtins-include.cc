@@ -248,7 +248,8 @@ MacroBuiltin::include_handler (location_t invoc_locus,
   std::vector<std::unique_ptr<AST::Item>> parsed_items{};
 
   if (is_semicoloned)
-    parsed_items = parser.parse_items ();
+    parsed_items = parser.parse_items ().value_or (
+      std::vector<std::unique_ptr<AST::Item>>{});
   else
     parsed_expr = parser.parse_expr ();
 

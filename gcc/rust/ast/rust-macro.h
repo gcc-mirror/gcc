@@ -529,7 +529,7 @@ public:
     return std::make_unique<MacroRulesDefinition> (
       MacroRulesDefinition (rule_name, delim_type, rules, outer_attrs, locus,
 			    AST::MacroRulesDefinition::MacroKind::MBE,
-			    AST::Visibility::create_error ()));
+			    AST::Visibility::create_private ()));
   }
 
   static std::unique_ptr<MacroRulesDefinition>

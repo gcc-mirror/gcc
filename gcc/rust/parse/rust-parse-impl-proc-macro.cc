@@ -21,7 +21,7 @@
 
 namespace Rust {
 
-template std::unique_ptr<AST::Item>
+template tl::expected<std::unique_ptr<AST::Item>, Parse::Error::Item>
 Parser<ProcMacroInvocLexer>::parse_item (bool);
 
 template std::unique_ptr<AST::Stmt>

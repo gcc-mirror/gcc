@@ -22,6 +22,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "rust-lex.h"
 #include "rust-ast-full.h"
 #include "rust-diagnostics.h"
+#include "rust-parse-error.h"
+#include "rust-parse-utils.h"
 
 #include "expected.h"
 
@@ -180,7 +182,8 @@ public:
 			  location_t loc = UNKNOWN_LOCATION);
 
   bool is_macro_rules_def (const_TokenPtr t);
-  std::unique_ptr<AST::Item> parse_item (bool called_from_statement);
+  tl::expected<std::unique_ptr<AST::Item>, Parse::Error::Item>
+  parse_item (bool called_from_statement);
   std::unique_ptr<AST::Pattern> parse_pattern ();
   std::unique_ptr<AST::Pattern> parse_pattern_no_alt ();
 
@@ -202,11 +205,14 @@ public:
   std::unique_ptr<AST::AssociatedItem> parse_trait_impl_item ();
   AST::PathInExpression parse_path_in_expression ();
   std::vector<std::unique_ptr<AST::LifetimeParam>> parse_lifetime_params ();
-  AST::Visibility parse_visibility ();
+  tl::expected<AST::Visibility, Parse::Error::Visibility> parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
-  std::unique_ptr<AST::Token> parse_identifier_or_keyword_token ();
-  std::unique_ptr<AST::TokenTree> parse_token_tree ();
-  std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, location_t>
+  tl::expected<std::unique_ptr<AST::Token>, Parse::Error::Token>
+  parse_identifier_or_keyword_token ();
+  tl::expected<std::unique_ptr<AST::TokenTree>, Parse::Error::TokenTree>
+  parse_token_tree ();
+
+  tl::expected<Parse::AttributeBody, Parse::Error::AttributeBody>
   parse_attribute_body ();
   AST::AttrVec parse_inner_attributes ();
   std::unique_ptr<AST::MacroInvocation>
@@ -232,18 +238,23 @@ private:
   void parse_statement_seq (bool (Parser::*done) ());
 
   // AST-related stuff - maybe move or something?
-  AST::Attribute parse_inner_attribute ();
-  AST::Attribute parse_outer_attribute ();
-  std::unique_ptr<AST::AttrInput> parse_attr_input ();
+  tl::expected<AST::Attribute, Parse::Error::Attribute>
+  parse_inner_attribute ();
+  tl::expected<AST::Attribute, Parse::Error::Attribute>
+  parse_outer_attribute ();
+  tl::expected<std::unique_ptr<AST::AttrInput>, Parse::Error::AttrInput>
+  parse_attr_input ();
   std::tuple<AST::SimplePath, std::unique_ptr<AST::AttrInput>, location_t>
   parse_doc_comment ();
 
   // Path-related
-  AST::SimplePath parse_simple_path ();
-  AST::SimplePathSegment parse_simple_path_segment (int base_peek = 0);
+  tl::expected<AST::SimplePath, Parse::Error::SimplePath> parse_simple_path ();
+  tl::expected<AST::SimplePathSegment, Parse::Error::SimplePathSegment>
+  parse_simple_path_segment (int base_peek = 0);
   AST::TypePath parse_type_path ();
   std::unique_ptr<AST::TypePathSegment> parse_type_path_segment ();
-  AST::PathIdentSegment parse_path_ident_segment ();
+  tl::expected<AST::PathIdentSegment, Parse::Error::PathIdentSegment>
+  parse_path_ident_segment ();
   tl::optional<AST::GenericArg> parse_generic_arg ();
   AST::GenericArgs parse_path_generic_args ();
   AST::GenericArgsBinding parse_generic_args_binding ();
@@ -260,7 +271,8 @@ private:
   AST::QualifiedPathInType parse_qualified_path_in_type ();
 
   // Token tree or macro related
-  AST::DelimTokenTree parse_delim_token_tree ();
+  tl::expected<AST::DelimTokenTree, Parse::Error::DelimTokenTree>
+  parse_delim_token_tree ();
   std::unique_ptr<AST::MacroRulesDefinition>
   parse_macro_rules_def (AST::AttrVec outer_attrs);
   std::unique_ptr<AST::MacroRulesDefinition>
@@ -742,7 +754,8 @@ public:
 
   // Parse items without parsing an entire crate. This function is the main
   // parsing loop of AST::Crate::parse_crate().
-  std::vector<std::unique_ptr<AST::Item>> parse_items ();
+  tl::expected<std::vector<std::unique_ptr<AST::Item>>, Parse::Error::Items>
+  parse_items ();
 
   // Main entry point for parser.
   std::unique_ptr<AST::Crate> parse_crate ();

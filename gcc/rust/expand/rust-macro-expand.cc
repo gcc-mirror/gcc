@@ -858,7 +858,9 @@ transcribe_many_items (Parser<MacroInvocLexer> &parser, TokenId &delimiter)
 {
   return parse_many (parser, delimiter, [&parser] () {
     auto item = parser.parse_item (true);
-    return AST::SingleASTNode (std::move (item));
+    if (!item)
+      return AST::SingleASTNode (std::unique_ptr<AST::Item> (nullptr));
+    return AST::SingleASTNode (std::move (item.value ()));
   });
 }
 
@@ -1191,9 +1193,9 @@ MacroExpander::parse_proc_macro_output (ProcMacro::TokenStream ts)
       while (lex.peek_token ()->get_id () != END_OF_FILE)
 	{
 	  auto result = parser.parse_item (false);
-	  if (result == nullptr)
+	  if (!result)
 	    break;
-	  nodes.emplace_back (std::move (result));
+	  nodes.emplace_back (std::move (result.value ()));
 	}
       break;
     case ContextType::STMT:
