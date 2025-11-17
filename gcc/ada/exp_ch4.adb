@@ -13436,7 +13436,7 @@ package body Exp_Ch4 is
 
          --  The master is the innermost enclosing non-transient construct
 
-         Insert_Action (Find_Hook_Context (Expr), Master_Node_Decl);
+         Insert_Action (Find_Master_Context (Expr), Master_Node_Decl);
 
          --  Propagate the relaxed finalization semantics
 
@@ -14896,7 +14896,7 @@ package body Exp_Ch4 is
          Loc    : constant Source_Ptr := Sloc (Obj_Decl);
          Obj_Id : constant Entity_Id  := Defining_Identifier (Obj_Decl);
 
-         Hook_Context : constant Node_Id := Find_Hook_Context (Expr);
+         Master_Context : constant Node_Id := Find_Master_Context (Expr);
          --  The node after which to insert deferred finalization actions. This
          --  is usually the innermost enclosing non-transient construct.
 
@@ -14938,7 +14938,7 @@ package body Exp_Ch4 is
          --  enclosing non-transient construct.
 
          else
-            Fin_Context := Hook_Context;
+            Fin_Context := Master_Context;
          end if;
 
          --  Create the declaration of the Master_Node for the object and
@@ -14948,7 +14948,7 @@ package body Exp_Ch4 is
          Master_Node_Id := Make_Temporary (Loc, 'N');
          Master_Node_Decl :=
            Make_Master_Node_Declaration (Loc, Master_Node_Id, Obj_Id);
-         Insert_Action (Hook_Context, Master_Node_Decl);
+         Insert_Action (Master_Context, Master_Node_Decl);
 
          --  Generate the attachment of the object to the Master_Node
 
@@ -14968,7 +14968,7 @@ package body Exp_Ch4 is
 
          --  Finalize the object after the context has been evaluated
 
-         --  Note that the node returned by Find_Hook_Context above may be an
+         --  Note that the node returned by Find_Master_Context above may be an
          --  operator, which is not a list member. We must locate the proper
          --  node in the tree after which to insert the finalization call.
 

@@ -6771,6 +6771,153 @@ package body Exp_Util is
       return Last_Init;
    end Find_Last_Init;
 
+   -------------------------
+   -- Find_Master_Context --
+   -------------------------
+
+   function Find_Master_Context (N : Node_Id) return Node_Id is
+      Par : Node_Id;
+      Top : Node_Id;
+
+      Wrapped_Node : Node_Id;
+      --  Note: if we are in a transient scope, we want to reuse it as the
+      --  context for inserting actions, if possible. But if N is itself
+      --  part of the stored actions of the current transient scope, then
+      --  we need to insert at the appropriate (inner) location in the list.
+
+   begin
+      --  When the node is inside a case/if expression, the lifetime of any
+      --  temporary controlled object is extended. Find a suitable insertion
+      --  node by locating the topmost case or if expressions.
+
+      if Within_Conditional_Expression (N) then
+         Par := N;
+         Top := N;
+         while Present (Par) loop
+            if Nkind (Original_Node (Par)) in N_Case_Expression
+                                            | N_If_Expression
+            then
+               Top := Par;
+
+            elsif Nkind (Par) in N_Case_Statement
+                               | N_If_Statement
+              and then From_Conditional_Expression (Par)
+            then
+               Top := Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  The topmost case or if expression is now recovered, but it may
+         --  still not be the correct place to add generated code. Climb to
+         --  find a parent that is part of a declarative or statement list,
+         --  and is not a list of actuals in a call.
+
+         Par := Top;
+         while Present (Par) loop
+            if Is_List_Member (Par)
+              and then Nkind (Par) not in N_Component_Association
+                                        | N_Discriminant_Association
+                                        | N_Parameter_Association
+                                        | N_Pragma_Argument_Association
+                                        | N_Aggregate
+                                        | N_Delta_Aggregate
+                                        | N_Extension_Aggregate
+                                        | N_Elsif_Part
+              and then Nkind (Parent (Par)) not in N_Function_Call
+                                                 | N_Procedure_Call_Statement
+                                                 | N_Entry_Call_Statement
+                                                 | N_Aggregate
+                                                 | N_Delta_Aggregate
+                                                 | N_Extension_Aggregate
+            then
+               return Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         return Par;
+
+      else
+         Par := N;
+         while Present (Par) loop
+
+            --  Keep climbing past various operators
+
+            if Nkind (Parent (Par)) in N_Op
+              or else Nkind (Parent (Par)) in N_And_Then | N_Or_Else
+            then
+               Par := Parent (Par);
+            else
+               exit;
+            end if;
+         end loop;
+
+         Top := Par;
+
+         --  The node may be located in a pragma in which case return the
+         --  pragma itself:
+
+         --    pragma Precondition (... and then Ctrl_Func_Call ...);
+
+         --  Similar case occurs when the node is related to an object
+         --  declaration or assignment:
+
+         --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
+
+         --  Another case to consider is when the node is part of a return
+         --  statement:
+
+         --    return ... and then Ctrl_Func_Call ...;
+
+         --  Another case is when the node acts as a formal in a procedure
+         --  call statement:
+
+         --    Proc (... and then Ctrl_Func_Call ...);
+
+         if Scope_Is_Transient then
+            Wrapped_Node := Node_To_Be_Wrapped;
+         else
+            Wrapped_Node := Empty;
+         end if;
+
+         while Present (Par) loop
+            if Par = Wrapped_Node
+              or else Nkind (Par) in N_Assignment_Statement
+                                   | N_Object_Declaration
+                                   | N_Pragma
+                                   | N_Procedure_Call_Statement
+                                   | N_Simple_Return_Statement
+            then
+               return Par;
+
+            --  Prevent the search from going too far
+
+            elsif Is_Body_Or_Package_Declaration (Par) then
+               exit;
+            end if;
+
+            Par := Parent (Par);
+         end loop;
+
+         --  Return the topmost short circuit operator
+
+         return Top;
+      end if;
+   end Find_Master_Context;
+
    ---------------------------
    -- Find_Optional_Prim_Op --
    ---------------------------
@@ -6976,156 +7123,6 @@ package body Exp_Util is
          return Find_Prim_Op (Typ, Nam);
       end if;
    end Find_Storage_Op;
-
-   -----------------------
-   -- Find_Hook_Context --
-   -----------------------
-
-   function Find_Hook_Context (N : Node_Id) return Node_Id is
-      Par : Node_Id;
-      Top : Node_Id;
-
-      Wrapped_Node : Node_Id;
-      --  Note: if we are in a transient scope, we want to reuse it as
-      --  the context for actions insertion, if possible. But if N is itself
-      --  part of the stored actions for the current transient scope,
-      --  then we need to insert at the appropriate (inner) location in
-      --  the not as an action on Node_To_Be_Wrapped.
-
-      In_Cond_Expr : constant Boolean := Within_Conditional_Expression (N);
-
-   begin
-      --  When the node is inside a case/if expression, the lifetime of any
-      --  temporary controlled object is extended. Find a suitable insertion
-      --  node by locating the topmost case or if expressions.
-
-      if In_Cond_Expr then
-         Par := N;
-         Top := N;
-         while Present (Par) loop
-            if Nkind (Original_Node (Par)) in N_Case_Expression
-                                            | N_If_Expression
-            then
-               Top := Par;
-
-            elsif Nkind (Par) in N_Case_Statement
-                               | N_If_Statement
-              and then From_Conditional_Expression (Par)
-            then
-               Top := Par;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         --  The topmost case or if expression is now recovered, but it may
-         --  still not be the correct place to add generated code. Climb to
-         --  find a parent that is part of a declarative or statement list,
-         --  and is not a list of actuals in a call.
-
-         Par := Top;
-         while Present (Par) loop
-            if Is_List_Member (Par)
-              and then Nkind (Par) not in N_Component_Association
-                                        | N_Discriminant_Association
-                                        | N_Parameter_Association
-                                        | N_Pragma_Argument_Association
-                                        | N_Aggregate
-                                        | N_Delta_Aggregate
-                                        | N_Extension_Aggregate
-                                        | N_Elsif_Part
-              and then Nkind (Parent (Par)) not in N_Function_Call
-                                                 | N_Procedure_Call_Statement
-                                                 | N_Entry_Call_Statement
-                                                 | N_Aggregate
-                                                 | N_Delta_Aggregate
-                                                 | N_Extension_Aggregate
-            then
-               return Par;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         return Par;
-
-      else
-         Par := N;
-         while Present (Par) loop
-
-            --  Keep climbing past various operators
-
-            if Nkind (Parent (Par)) in N_Op
-              or else Nkind (Parent (Par)) in N_And_Then | N_Or_Else
-            then
-               Par := Parent (Par);
-            else
-               exit;
-            end if;
-         end loop;
-
-         Top := Par;
-
-         --  The node may be located in a pragma in which case return the
-         --  pragma itself:
-
-         --    pragma Precondition (... and then Ctrl_Func_Call ...);
-
-         --  Similar case occurs when the node is related to an object
-         --  declaration or assignment:
-
-         --    Obj [: Some_Typ] := ... and then Ctrl_Func_Call ...;
-
-         --  Another case to consider is when the node is part of a return
-         --  statement:
-
-         --    return ... and then Ctrl_Func_Call ...;
-
-         --  Another case is when the node acts as a formal in a procedure
-         --  call statement:
-
-         --    Proc (... and then Ctrl_Func_Call ...);
-
-         if Scope_Is_Transient then
-            Wrapped_Node := Node_To_Be_Wrapped;
-         else
-            Wrapped_Node := Empty;
-         end if;
-
-         while Present (Par) loop
-            if Par = Wrapped_Node
-              or else Nkind (Par) in N_Assignment_Statement
-                                   | N_Object_Declaration
-                                   | N_Pragma
-                                   | N_Procedure_Call_Statement
-                                   | N_Simple_Return_Statement
-            then
-               return Par;
-
-            --  Prevent the search from going too far
-
-            elsif Is_Body_Or_Package_Declaration (Par) then
-               exit;
-            end if;
-
-            Par := Parent (Par);
-         end loop;
-
-         --  Return the topmost short circuit operator
-
-         return Top;
-      end if;
-   end Find_Hook_Context;
 
    -----------------------------------------
    -- Flag_Interface_Pointer_Displacement --
