@@ -8482,7 +8482,15 @@ package body Sem_Ch13 is
       if Etype (Expression (N)) = Any_Type then
          return;
       elsif not Is_RTE (Etype (Expression (N)), RE_Asm_Insn) then
-         Error_Msg_N ("incorrect type for code statement", N);
+
+         --  Only emit an error message when not running in Relaxed RM
+         --  Semantics. This enables GNATSAS' GNAT Warnings engine to work on
+         --  VADS codebases.
+
+         if not (Check_Semantics_Only_Mode and then Relaxed_RM_Semantics) then
+            Error_Msg_N ("incorrect type for code statement", N);
+         end if;
+
          return;
       end if;
 
