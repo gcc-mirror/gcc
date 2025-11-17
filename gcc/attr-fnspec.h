@@ -74,7 +74,7 @@ private:
   const unsigned int arg_desc_size = 2;
 
   /* Return start of specifier of arg i.  */
-  unsigned int arg_idx (int i)
+  unsigned int arg_idx (int i) const
   {
     return return_desc_size + arg_desc_size * i;
   }
@@ -106,14 +106,14 @@ public:
 
   /* Return true if fn spec is known.  */
   bool
-  known_p ()
+  known_p () const
   {
     return len;
   }
 
   /* Return true if arg I is specified.  */
   bool
-  arg_specified_p (unsigned int i)
+  arg_specified_p (unsigned int i) const
   {
     return len >= arg_idx (i + 1);
   }
@@ -121,7 +121,7 @@ public:
   /* True if the argument is not dereferenced recursively, thus only
      directly reachable memory is read or written.  */
   bool
-  arg_direct_p (unsigned int i)
+  arg_direct_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -131,7 +131,7 @@ public:
 
   /* True if argument is used.  */
   bool
-  arg_used_p (unsigned int i)
+  arg_used_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -140,7 +140,7 @@ public:
 
   /* True if memory reached by the argument is readonly (not clobbered).  */
   bool
-  arg_readonly_p (unsigned int i)
+  arg_readonly_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -149,7 +149,7 @@ public:
 
   /* True if memory reached by the argument is read (directly or indirectly)  */
   bool
-  arg_maybe_read_p (unsigned int i)
+  arg_maybe_read_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -160,7 +160,7 @@ public:
   /* True if memory reached by the argument is written.
      (directly or indirectly)  */
   bool
-  arg_maybe_written_p (unsigned int i)
+  arg_maybe_written_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -172,7 +172,7 @@ public:
   /* Return true if load of memory pointed to by argument I is bound
      by another argument.  In this case set ARG.  */
   bool
-  arg_max_access_size_given_by_arg_p (unsigned int i, unsigned int *arg)
+  arg_max_access_size_given_by_arg_p (unsigned int i, unsigned int *arg) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -188,7 +188,7 @@ public:
   /* Return true if the pointed-to type of the argument correspond to the
      size of the memory acccess.  */
   bool
-  arg_access_size_given_by_type_p (unsigned int i)
+  arg_access_size_given_by_type_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -199,7 +199,7 @@ public:
      pointed to by a different argument (as in memcpy).
      In this case set ARG.  */
   bool
-  arg_copied_to_arg_p (unsigned int i, unsigned int *arg)
+  arg_copied_to_arg_p (unsigned int i, unsigned int *arg) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -212,7 +212,7 @@ public:
 
   /* True if the argument does not escape.  */
   bool
-  arg_noescape_p (unsigned int i)
+  arg_noescape_p (unsigned int i) const
   {
     unsigned int idx = arg_idx (i);
     gcc_checking_assert (arg_specified_p (i));
@@ -224,7 +224,7 @@ public:
   /* Return true if function returns value of its parameter.  If ARG_NO is
      non-NULL return initialize it to the argument returned.  */
   bool
-  returns_arg (unsigned int *arg_no)
+  returns_arg (unsigned int *arg_no) const
   {
     if (str[0] >= '1' && str[0] <= '4')
       {
@@ -238,14 +238,14 @@ public:
   /* Nonzero if the return value does not alias with anything.  Functions
      with the malloc attribute have this set on their return value.  */
   bool
-  returns_noalias_p ()
+  returns_noalias_p () const
   {
     return str[0] == 'm';
   }
 
   /* Return true if all memory read by the function is specified by fnspec.  */
   bool
-  global_memory_read_p ()
+  global_memory_read_p () const
   {
     return str[1] != 'c' && str[1] != 'C';
   }
@@ -253,20 +253,20 @@ public:
   /* Return true if all memory written by the function
      is specified by fnspec.  */
   bool
-  global_memory_written_p ()
+  global_memory_written_p () const
   {
     return str[1] != 'c' && str[1] != 'C' && str[1] != 'p' && str[1] != 'P';
   }
 
   bool
-  errno_maybe_written_p ()
+  errno_maybe_written_p () const
   {
     return str[1] == 'C' || str[1] == 'P';
   }
 
   /* Return EAF flags for arg I.  */
   int
-  arg_eaf_flags (unsigned int i)
+  arg_eaf_flags (unsigned int i) const
   {
     int flags = 0;
 
@@ -292,7 +292,7 @@ public:
 
   /* Return the fnspec string.  */
   const char *
-  get_str ()
+  get_str () const
   {
     return str;
   }
