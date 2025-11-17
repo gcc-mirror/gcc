@@ -1,3 +1,17 @@
+2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122625
+	* g++.dg/modules/inst-7_a.C: New test.
+	* g++.dg/modules/inst-7_b.C: New test.
+
+2025-11-16  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* gcc.dg/plugin/location-overflow-test-3.c: New test.
+	* gcc.dg/plugin/plugin.exp: Add the new test.
+
 2025-11-14  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:

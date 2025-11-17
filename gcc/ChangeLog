@@ -1,3 +1,13 @@
+2025-11-16  Lewis Hyatt  <lhyatt@gmail.com>
+
+	* diagnostic.cc (num_digits): Change argument type from `int' to
+	`uint64_t'.
+	(test_num_digits): Add test for 64-bit argument.
+	* diagnostic.h (num_digits): Adjust prototype.
+	* input.cc (write_digit): Accept argument in range 0-9 instead of
+	an arbitrary int.
+	(write_digit_row): Adjust to change in write_digit().
+
 2025-11-14  Jeff Law  <jlaw@ventanamicro.com>
 
 	Backported from master:
