@@ -1042,10 +1042,10 @@ expand_complex_libcall (gimple_stmt_iterator *gsi, tree type, tree ar, tree ai,
 
   if (code == MULT_EXPR)
     bcode = ((enum built_in_function)
-	     (BUILT_IN_COMPLEX_MUL_MIN + mode - MIN_MODE_COMPLEX_FLOAT));
+	     (BUILT_IN_COMPLEX_MUL_MIN + (mode - MIN_MODE_COMPLEX_FLOAT)));
   else if (code == RDIV_EXPR)
     bcode = ((enum built_in_function)
-	     (BUILT_IN_COMPLEX_DIV_MIN + mode - MIN_MODE_COMPLEX_FLOAT));
+	     (BUILT_IN_COMPLEX_DIV_MIN + (mode - MIN_MODE_COMPLEX_FLOAT)));
   else
     gcc_unreachable ();
   fn = builtin_decl_explicit (bcode);

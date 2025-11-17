@@ -990,7 +990,7 @@ lto_tag_is_gimple_code_p (enum LTO_tags tag)
 {
   return (unsigned) tag >= LTO_first_gimple_tag
 	 && (unsigned) tag
-	    < LTO_first_gimple_tag + LAST_AND_UNUSED_GIMPLE_CODE;
+	    < (unsigned) LTO_first_gimple_tag + LAST_AND_UNUSED_GIMPLE_CODE;
 }
 
 

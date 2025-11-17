@@ -7793,45 +7793,53 @@ done:
     {
     case OMP_REQ_ATOMIC_MEM_ORDER_SEQ_CST:
       omp_requires_mask
-	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_SEQ_CST);
+	= (enum omp_requires) (omp_requires_mask
+			       | int (OMP_MEMORY_ORDER_SEQ_CST));
       break;
     case OMP_REQ_ATOMIC_MEM_ORDER_ACQ_REL:
       omp_requires_mask
-	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQ_REL);
+	= (enum omp_requires) (omp_requires_mask
+			       | int (OMP_MEMORY_ORDER_ACQ_REL));
       break;
     case OMP_REQ_ATOMIC_MEM_ORDER_ACQUIRE:
       omp_requires_mask
-	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_ACQUIRE);
+	= (enum omp_requires) (omp_requires_mask
+			       | int (OMP_MEMORY_ORDER_ACQUIRE));
       break;
     case OMP_REQ_ATOMIC_MEM_ORDER_RELAXED:
       omp_requires_mask
-	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELAXED);
+	= (enum omp_requires) (omp_requires_mask
+			       | int (OMP_MEMORY_ORDER_RELAXED));
       break;
     case OMP_REQ_ATOMIC_MEM_ORDER_RELEASE:
       omp_requires_mask
-	= (enum omp_requires) (omp_requires_mask | OMP_MEMORY_ORDER_RELEASE);
+	= (enum omp_requires) (omp_requires_mask
+			       | int (OMP_MEMORY_ORDER_RELEASE));
       break;
     }
 
   if (omp_target_seen)
     omp_requires_mask = (enum omp_requires) (omp_requires_mask
-					     | OMP_REQUIRES_TARGET_USED);
+					     | int (OMP_REQUIRES_TARGET_USED));
   if (omp_requires & OMP_REQ_REVERSE_OFFLOAD)
-    omp_requires_mask = (enum omp_requires) (omp_requires_mask
-					     | OMP_REQUIRES_REVERSE_OFFLOAD);
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask
+			     | int (OMP_REQUIRES_REVERSE_OFFLOAD));
   if (omp_requires & OMP_REQ_UNIFIED_ADDRESS)
-    omp_requires_mask = (enum omp_requires) (omp_requires_mask
-					     | OMP_REQUIRES_UNIFIED_ADDRESS);
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask
+			     | int (OMP_REQUIRES_UNIFIED_ADDRESS));
   if (omp_requires & OMP_REQ_UNIFIED_SHARED_MEMORY)
     omp_requires_mask
-	  = (enum omp_requires) (omp_requires_mask
-				 | OMP_REQUIRES_UNIFIED_SHARED_MEMORY);
+      = (enum omp_requires) (omp_requires_mask
+			     | int (OMP_REQUIRES_UNIFIED_SHARED_MEMORY));
   if (omp_requires & OMP_REQ_SELF_MAPS)
     omp_requires_mask
-	  = (enum omp_requires) (omp_requires_mask | OMP_REQUIRES_SELF_MAPS);
+      = (enum omp_requires) (omp_requires_mask | int (OMP_REQUIRES_SELF_MAPS));
   if (omp_requires & OMP_REQ_DYNAMIC_ALLOCATORS)
-    omp_requires_mask = (enum omp_requires) (omp_requires_mask
-					     | OMP_REQUIRES_DYNAMIC_ALLOCATORS);
+    omp_requires_mask
+      = (enum omp_requires) (omp_requires_mask
+			     | int (OMP_REQUIRES_DYNAMIC_ALLOCATORS));
   /* Do the parse tree dump.  */
   gfc_current_ns = flag_dump_fortran_original ? gfc_global_ns_list : NULL;
 

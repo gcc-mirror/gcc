@@ -110,7 +110,11 @@ public:
   /// Add whitespace word separator.  Multiple adjacent whitespace is fine.
   void Space ()
   {
+#if __cpp_unicode_characters >= 201411
+    Append ((char) u8' ');
+#else
     Append (Detail::S2C(u8" "));
+#endif
   }
 
 public:

@@ -32,7 +32,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Return true if both accesses are the same.  */
 bool
-modref_access_node::operator == (modref_access_node &a) const
+modref_access_node::operator == (const modref_access_node &a) const
 {
   if (parm_index != a.parm_index)
     return false;

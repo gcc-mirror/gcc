@@ -96,7 +96,7 @@ struct GTY(()) modref_access_node
   /* Dump range to debug OUT.  */
   void dump (FILE *out);
   /* Return true if both accesses are the same.  */
-  bool operator == (modref_access_node &a) const;
+  bool operator == (const modref_access_node &a) const;
   /* Return true if range info is useful.  */
   bool range_info_useful_p () const;
   /* Return tree corresponding to parameter of the range in STMT.  */

@@ -285,7 +285,7 @@ enum processor_features
 
 #define M_CPU_TYPE_START (BUILTIN_VENDOR_MAX)
 #define M_CPU_SUBTYPE_START \
-  (M_CPU_TYPE_START + BUILTIN_CPU_TYPE_MAX)
+  (M_CPU_TYPE_START + int (BUILTIN_CPU_TYPE_MAX))
 #define M_VENDOR(a) (a)
-#define M_CPU_TYPE(a) (M_CPU_TYPE_START + a)
+#define M_CPU_TYPE(a) (M_CPU_TYPE_START + int (a))
 #define M_CPU_SUBTYPE(a) (M_CPU_SUBTYPE_START + a)

@@ -2559,7 +2559,7 @@ gimple_omp_atomic_set_memory_order (gimple *g, enum omp_memory_order mo)
   if (gimple_code (g) != GIMPLE_OMP_ATOMIC_LOAD)
     GIMPLE_CHECK (g, GIMPLE_OMP_ATOMIC_STORE);
   g->subcode = ((g->subcode & ~GF_OMP_ATOMIC_MEMORY_ORDER)
-		| (mo & GF_OMP_ATOMIC_MEMORY_ORDER));
+		| (int (mo) & GF_OMP_ATOMIC_MEMORY_ORDER));
 }
 
 

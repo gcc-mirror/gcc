@@ -2270,20 +2270,20 @@ symbol_table_init(void) {
 
   // These should match the definitions in libgcobol/constants.cc
   static cbl_field_t constants[] = {
-    { FldAlphanumeric, space_value_e | constq | register_e,
+    { FldAlphanumeric, space_value_e | int(constq) | register_e,
       {1,1,0,0, " \0\xFF"}, 0, "SPACE" },
-    { FldAlphanumeric, space_value_e | constq | register_e,
+    { FldAlphanumeric, space_value_e | int(constq) | register_e,
       {1,1,0,0, " \0\xFF"}, 0, "SPACES" },
-    { FldAlphanumeric, low_value_e | constq | register_e,
+    { FldAlphanumeric, low_value_e | int(constq) | register_e,
       {1,1,0,0, "L\0\xFF"}, 0, "LOW_VALUES" },
-    { FldAlphanumeric, zero_value_e | constq | register_e,
+    { FldAlphanumeric, zero_value_e | int(constq) | register_e,
       {1,1,0,0, "0"}, 0, "ZEROS" },
-    { FldAlphanumeric, high_value_e | constq | register_e,
+    { FldAlphanumeric, high_value_e | int(constq) | register_e,
       {1,1,0,0, "H\0\xFF"}, 0, "HIGH_VALUES" },
     // IBM standard: QUOTE is a double-quote unless APOST compiler option
-    { FldAlphanumeric, quote_value_e | constq | register_e ,
+    { FldAlphanumeric, quote_value_e | int(constq) | register_e ,
       {1,1,0,0, "\"\0\xFF"}, 0, "QUOTES" },
-    { FldPointer, constq | register_e ,
+    { FldPointer, int(constq) | register_e ,
       {8,8,0,0, zeroes_for_null_pointer}, 0, "NULLS" },
     // IBM defines TALLY
     // 01  TALLY GLOBAL PICTURE 9(5) USAGE BINARY VALUE ZERO.
@@ -2421,9 +2421,9 @@ symbol_table_init(void) {
     { FldNumericBin5,    signable_e|register_e, {2,2,4,0, NULL}, 0, "RETURN-CODE" },
     { FldNumericBin5,    register_e, {2,2,4,0, NULL}, 0, "LINAGE-COUNTER" },
     { FldLiteralA,        register_e, {0,0,0,0, "/dev/stdin"}, 0, "_dev_stdin" },
-    { FldLiteralA, constq|register_e, {0,0,0,0, "/dev/stdout"}, 0, "_dev_stdout" },
-    { FldLiteralA, constq|register_e, {0,0,0,0, "/dev/stderr"}, 0, "_dev_stderr" },
-    { FldLiteralA, constq|register_e, {0,0,0,0, "/dev/null"},   0, "_dev_null" },
+    { FldLiteralA, int(constq)|register_e, {0,0,0,0, "/dev/stdout"}, 0, "_dev_stdout" },
+    { FldLiteralA, int(constq)|register_e, {0,0,0,0, "/dev/stderr"}, 0, "_dev_stderr" },
+    { FldLiteralA, int(constq)|register_e, {0,0,0,0, "/dev/null"},   0, "_dev_null" },
   };
 
   assert(table.nelem + COUNT_OF(special_registers) < table.capacity);
