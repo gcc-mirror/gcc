@@ -25,11 +25,11 @@ f2 (int *c, int *d, int *e, int *f)
       #pragma omp scan inclusive (b)				/* { dg-error "" } */
       d[i] = b;
     }
-  #pragma omp for reduction (inscan, +: e[:2])			/* { dg-error "'inscan' 'reduction' clause with array section" } */
+  #pragma omp for reduction (inscan, +: e[ :2])			/* { dg-error "'inscan' 'reduction' clause with array section" } */
   for (i = 0; i < 64; ++i)
     {
       { e[0] += c[i]; e[1] += c[i]; }
-      #pragma omp scan inclusive (a, e[:2])			/* { dg-error "" } */
+      #pragma omp scan inclusive (a, e[ :2])			/* { dg-error "" } */
       { d[i] = e[0]; f[i] = e[1]; }
     }
   #pragma omp for reduction (inscan, +: a) ordered		/* { dg-error "'ordered' clause specified together with 'inscan' 'reduction' clause" } */
@@ -91,7 +91,7 @@ f3 (int *c, int *d)
   }
   #pragma omp scope reduction (inscan, +: a)	/* { dg-error "'inscan' 'reduction' clause on 'scope' construct" } */
   ;
-  #pragma omp target parallel for reduction (inscan, +: a) map (c[:64], d[:64])	/* { dg-error "'inscan' 'reduction' clause on construct other than 'for', 'simd', 'for simd', 'parallel for', 'parallel for simd'" } */
+  #pragma omp target parallel for reduction (inscan, +: a) map (c[ :64], d[ :64])	/* { dg-error "'inscan' 'reduction' clause on construct other than 'for', 'simd', 'for simd', 'parallel for', 'parallel for simd'" } */
   for (i = 0; i < 64; i++)
     {
       d[i] = a;

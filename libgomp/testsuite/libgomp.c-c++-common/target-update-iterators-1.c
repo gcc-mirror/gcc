@@ -30,8 +30,8 @@ int main (void)
   int sum;
   int expected = mkarray (x);
 
-  #pragma omp target enter data map(to: x[:DIM1])
-  #pragma omp target enter data map(iterator(i=0:DIM1), to: x[i][:DIM2])
+  #pragma omp target enter data map(to: x[ :DIM1])
+  #pragma omp target enter data map(iterator(i=0:DIM1), to: x[i][ :DIM2])
   #pragma omp target map(from: sum)
     {
       sum = 0;
@@ -51,7 +51,7 @@ int main (void)
 	expected += x[i][j];
       }
 
-  #pragma omp target update to(iterator(i=0:DIM1): x[i][:DIM2])
+  #pragma omp target update to(iterator(i=0:DIM1): x[i][ :DIM2])
 
   #pragma omp target map(from: sum)
     {

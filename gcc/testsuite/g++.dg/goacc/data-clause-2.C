@@ -6,6 +6,10 @@
 
 /* See also corresponding OpenMP variant: '../gomp/map-2.C'.  */
 
+/* Array sections without spaces between [ and : or : and ] are incompatible
+   with C++26.  */
+/* { dg-skip-if "array sections vs. C++26" { c++26 } } */
+
 template <int N>
 void
 foo (int *p, int (*q)[10], int r[10], int s[10][10])

@@ -126,7 +126,7 @@ foo (int x, int *p, int *q, int px, omp_allocator_handle_t h, int fl)
 	if ((fl & 2) && (((uintptr_t) &i5) & 63) != 0)
 	  abort ();
       }
-    #pragma omp for reduction(+:p[2:px], q[:3], r2) allocate(h: p, q, r2)
+    #pragma omp for reduction(+:p[2:px], q[ :3], r2) allocate(h: p, q, r2)
     for (i = 0; i < 32; i++)
       {
 	p[2] += i;

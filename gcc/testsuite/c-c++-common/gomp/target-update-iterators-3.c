@@ -7,8 +7,8 @@
 
 void f (int ***x, float ***y, double **z)
 {
-  #pragma omp target update to (iterator(i=0:DIM1, j=0:DIM2): x[i][j][:DIM3], y[i][j][:DIM3])
-  #pragma omp target update from (iterator(i=0:DIM1): z[i][:DIM2])
+  #pragma omp target update to (iterator(i=0:DIM1, j=0:DIM2): x[i][j][ :DIM3], y[i][j][ :DIM3])
+  #pragma omp target update from (iterator(i=0:DIM1): z[i][ :DIM2])
 }
 
 /* { dg-final { scan-tree-dump-times "if \\(i <= 9\\) goto <D\.\[0-9\]+>; else goto <D\.\[0-9\]+>;" 2 "gimple" } } */

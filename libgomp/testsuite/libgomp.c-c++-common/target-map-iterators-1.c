@@ -34,7 +34,7 @@ int main (void)
   int expected = mkarray (x);
 
   #pragma omp target enter data map(to: x)
-  #pragma omp target map(iterator(i=0:DIM1), to: x[i][:DIM2]) \
+  #pragma omp target map(iterator(i=0:DIM1), to: x[i][ :DIM2]) \
 		     map(from: y)
     {
       y = 0;

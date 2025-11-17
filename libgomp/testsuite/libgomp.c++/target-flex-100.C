@@ -15,7 +15,7 @@ template<typename T, std::size_t Size>
 bool test_stack(T (&arr)[Size])
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       const std::size_t half_size = Size / 2;
@@ -79,7 +79,7 @@ template<typename T, std::size_t Size>
 bool test_queue(T (&arr)[Size])
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       const std::size_t half_size = Size / 2;
@@ -156,7 +156,7 @@ template<typename T, std::size_t Size>
 bool test_priority_queue(T (&arr)[Size], const T min_value, const T max_value)
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       typedef std::priority_queue<T, std::vector<T> > priority_queue_type;

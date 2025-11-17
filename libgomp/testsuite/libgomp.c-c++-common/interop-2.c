@@ -58,7 +58,7 @@ test_async (const int dev)
      As OpenMP_VV's Issue #863 shows, the overhead is high enough to
      fail even when only doing an atomic integer increment.  */
 
-  #pragma omp target device(dev) map(A) depend(out: A[:N]) nowait
+  #pragma omp target device(dev) map(A) depend(out: A[ :N]) nowait
   for (int i = 0; i < N; i++)
     #pragma omp atomic update
     A[i] += __builtin_sin (2*i*M_PI/N);
@@ -68,11 +68,11 @@ test_async (const int dev)
   if (obj1 == omp_interop_none)
     {
       // Same as below as 'nowait' is ignored.
-      #pragma omp interop destroy(obj1) depend(in: A[:N]) nowait
+      #pragma omp interop destroy(obj1) depend(in: A[ :N]) nowait
     }
   else
     {
-      #pragma omp interop destroy(obj1) depend(in: A[:N])
+      #pragma omp interop destroy(obj1) depend(in: A[ :N])
     }
 
   /* ... this code is only executed once the dependency as been fulfilled.  */
@@ -93,7 +93,7 @@ test_async (const int dev)
 
   /* Integer */
 
-  #pragma omp target device(dev) map(B) depend(out: B[:N]) nowait
+  #pragma omp target device(dev) map(B) depend(out: B[ :N]) nowait
   for (int i = 0; i < N; i++)
     #pragma omp atomic update
     B[i] += 42;
@@ -102,11 +102,11 @@ test_async (const int dev)
   if (obj2 == omp_interop_none)
     {
       // Same as below as 'nowait' is ignored.
-      #pragma omp interop use(obj2) depend(in: B[:N]) nowait
+      #pragma omp interop use(obj2) depend(in: B[ :N]) nowait
     }
   else
     {
-      #pragma omp interop use(obj2) depend(in: B[:N])
+      #pragma omp interop use(obj2) depend(in: B[ :N])
     }
 
   for (int i = 0; i < N; i++)

@@ -23,7 +23,7 @@ int main (void)
   t.s = (S *) malloc (sizeof (S));
   t.s->a = (int *) malloc (sizeof(int) * N);
 
-  #pragma omp target map(from: t.s->a[:N])
+  #pragma omp target map(from: t.s->a[ :N])
   {
     t.s->a[0] = 1;
   }

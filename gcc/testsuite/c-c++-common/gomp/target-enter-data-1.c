@@ -16,9 +16,9 @@ struct foo
 
 void func (struct foo *f, int n, int m)
 {
-  #pragma omp target enter data map (to: f->vectors[m][:n])
-  #pragma omp target enter data map (to: f->bars[n].vectors[:m])
-  #pragma omp target enter data map (to: f->bars[n].vectors[:f->bars[n].num_vectors])
+  #pragma omp target enter data map (to: f->vectors[m][ :n])
+  #pragma omp target enter data map (to: f->bars[n].vectors[ :m])
+  #pragma omp target enter data map (to: f->bars[n].vectors[ :f->bars[n].num_vectors])
 }
 
 /* { dg-final { scan-tree-dump-times {map\(struct:\*f \[len: 1\]\) map\(alloc:[a-z0-9\._]+->vectors \[len: 0\]\) map\(to:\*_[0-9]+ \[len: _[0-9]+\]\) map\(attach:[a-z0-9\._]+->vectors \[bias: [^\]]+\]\) map\(attach:\*_[0-9]+ \[bias: [^\]]+\]\)} 1 "gimple" } } */

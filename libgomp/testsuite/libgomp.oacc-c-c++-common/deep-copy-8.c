@@ -35,15 +35,15 @@ test (unsigned variant)
 
   for (k = 0; k < 16; k++)
     {
-#pragma acc enter data copyin(v.a, v.b[:n], v.c[:n], v.d[:n])
+#pragma acc enter data copyin(v.a, v.b[ :n], v.c[ :n], v.d[ :n])
 
 #pragma acc parallel loop
       for (i = 0; i < n; i++)
 	v.b[i] = v.a + i;
 
-#pragma acc exit data copyout(v.b[:n])
-#pragma acc exit data copyout(v.c[:n])
-#pragma acc exit data copyout(v.d[:n])
+#pragma acc exit data copyout(v.b[ :n])
+#pragma acc exit data copyout(v.c[ :n])
+#pragma acc exit data copyout(v.d[ :n])
 #pragma acc exit data copyout(v.a)
 
       for (i = 0; i < n; i++)

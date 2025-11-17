@@ -11,8 +11,8 @@ bool test(const T (&arr)[Size])
   bool ok;
   T out_2x_arr[Size];
   T out_shifted_arr[Size];
-  #pragma omp target map(from: ok, out_2x_arr[:Size], out_shifted_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_2x_arr[ :Size], out_shifted_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       std::vector<T> vec(Size);
       std::vector<T> mutated(Size);

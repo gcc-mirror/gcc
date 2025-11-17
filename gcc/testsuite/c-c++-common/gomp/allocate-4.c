@@ -9,7 +9,7 @@ foo (void)
   s[0]++;
 #pragma omp parallel reduction (+: s[2:2]) allocate(s)
   s[2]++;
-#pragma omp parallel reduction (+: p[:2]) allocate(p)
+#pragma omp parallel reduction (+: p[ :2]) allocate(p)
   p[0]++;
 #pragma omp parallel reduction (+: p[2:2]) allocate(p)
   p[2]++;
@@ -30,7 +30,7 @@ bar (void)
 #pragma omp teams distribute parallel for reduction (+: s[2:2]) allocate(s)
   for (i = 0; i < 64; i++)
     s[2]++;
-#pragma omp teams distribute parallel for reduction (+: p[:2]) allocate(p)
+#pragma omp teams distribute parallel for reduction (+: p[ :2]) allocate(p)
   for (i = 0; i < 64; i++)
     p[0]++;
 #pragma omp teams distribute parallel for reduction (+: p[2:2]) allocate(p)

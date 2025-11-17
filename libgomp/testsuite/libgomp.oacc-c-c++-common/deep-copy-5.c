@@ -13,7 +13,7 @@ sum_nodes (struct node *head)
 {
   int i = 0, sum = 0;
 
-#pragma acc parallel reduction(+:sum) present(head[:1])
+#pragma acc parallel reduction(+:sum) present(head[ :1])
   {
     for (; head != NULL; head = head->next)
       sum += head->val;

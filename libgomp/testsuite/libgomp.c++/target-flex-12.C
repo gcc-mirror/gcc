@@ -89,8 +89,8 @@ bool vector_test(const T (&arr)[Size])
   bool ok;
   T out_arr[Size];
   T out_mut_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size], out_mut_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_mut_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -121,8 +121,8 @@ bool deque_test(const T (&arr)[Size])
   bool ok;
   T out_arr[Size];
   T out_mut_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size], out_mut_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_mut_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -153,8 +153,8 @@ bool list_test(const T (&arr)[Size])
   bool ok;
   T out_arr[Size];
   T out_mut_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size], out_mut_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_mut_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -254,9 +254,9 @@ bool map_test(const std::pair<K, V> (&arr)[Size])
   std::size_t out_size;
   std::pair<K, V> out_pairs_mut[Size];
   std::size_t out_size_mut;
-  #pragma omp target map(from: ok, out_pairs[:Size], out_size, \
-			       out_pairs_mut[:Size], out_size_mut) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_pairs[ :Size], out_size, \
+			       out_pairs_mut[ :Size], out_size_mut) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -296,8 +296,8 @@ bool set_test(const T (&arr)[Size])
   /* Both sizes should be the same.  */
   T out_arr[Size];
   std::size_t out_size;
-  #pragma omp target map(from: ok, out_arr[:Size], out_size) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_size) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -382,8 +382,8 @@ bool multimap_test(const std::pair<K, V> (&arr)[Size])
   bool ok;
   std::pair<K, V> out_pairs[Size];
   std::pair<K, V> out_pairs_mut[Size];
-  #pragma omp target map(from: ok, out_pairs[:Size], out_pairs_mut[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_pairs[ :Size], out_pairs_mut[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -413,8 +413,8 @@ bool multiset_test(const T (&arr)[Size])
   std::multiset<T> reference_multiset(arr, arr + Size);
   bool ok;
   T out_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -442,8 +442,8 @@ bool array_test(const T (&arr)[Size])
   bool ok;
   T out_arr[Size];
   T out_mut_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size], out_mut_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_mut_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -482,8 +482,8 @@ bool forward_list_test(const T (&arr)[Size])
   bool ok;
   T out_arr[Size];
   T out_mut_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size], out_mut_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_mut_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -518,9 +518,9 @@ bool unordered_map_test(const std::pair<K, V> (&arr)[Size])
   std::size_t out_size;
   std::pair<K, V> out_pairs_mut[Size];
   std::size_t out_size_mut;
-  #pragma omp target map(from: ok, out_pairs[:Size], out_size, \
-			       out_pairs_mut[:Size], out_size_mut) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_pairs[ :Size], out_size, \
+			       out_pairs_mut[ :Size], out_size_mut) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -560,8 +560,8 @@ bool unordered_set_test(const T (&arr)[Size])
   /* Both sizes should be the same.  */
   T out_arr[Size];
   std::size_t out_size;
-  #pragma omp target map(from: ok, out_arr[:Size], out_size) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size], out_size) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -593,8 +593,8 @@ bool unordered_multimap_test(const std::pair<K, V> (&arr)[Size])
   bool ok;
   std::pair<K, V> out_pairs[Size];
   std::pair<K, V> out_pairs_mut[Size];
-  #pragma omp target map(from: ok, out_pairs[:Size], out_pairs_mut[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_pairs[ :Size], out_pairs_mut[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -624,8 +624,8 @@ bool unordered_multiset_test(const T (&arr)[Size])
   std::unordered_multiset<T> reference_multiset(arr, arr + Size);
   bool ok;
   T out_arr[Size];
-  #pragma omp target map(from: ok, out_arr[:Size]) \
-		     map(to: arr[:Size])
+  #pragma omp target map(from: ok, out_arr[ :Size]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {

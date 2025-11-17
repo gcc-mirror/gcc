@@ -23,7 +23,7 @@ int main (void)
   mkarray (x);
 
   #pragma omp target enter data map(alloc: x)
-  #pragma omp target map(iterator(i=0:DIM1), from: x[i][:DIM2]) \
+  #pragma omp target map(iterator(i=0:DIM1), from: x[i][ :DIM2]) \
 		     map(from: expected)
     {
       expected = 0;

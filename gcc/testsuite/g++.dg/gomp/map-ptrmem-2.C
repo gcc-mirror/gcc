@@ -20,7 +20,7 @@ main (int argc, char *argv[])
   for (int i = 0; i < 64; i++)
     (s->*ptrp)[i] = i;
 
-#pragma omp target map(s->*xp, s->*ptrp, (s->*ptrp)[:64])
+#pragma omp target map(s->*xp, s->*ptrp, (s->*ptrp)[ :64])
   /* { dg-message {sorry, unimplemented: pointer-to-member mapping '\*\(\(\(int\*\*\)s\) \+ \(\(sizetype\)ptrp\)\)' not supported} "" { target *-*-* } .-1 } */
   /* { dg-message {sorry, unimplemented: pointer-to-member mapping '\*\(\(\(int\*\)s\) \+ \(\(sizetype\)xp\)\)' not supported} "" { target *-*-* } .-2 } */
   /* { dg-message {sorry, unimplemented: pointer-to-member mapping '\*\(\*\(\(\(int\*\*\)s\) \+ \(\(sizetype\)ptrp\)\)\)' not supported} "" { target *-*-* } .-3 } */

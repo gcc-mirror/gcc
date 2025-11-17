@@ -30,7 +30,7 @@ foo0 ()
 
   memset (my_c.a.ptr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c.a.ptr, my_c.a.ptr[:10])
+  #pragma omp target map (my_c.a.ptr, my_c.a.ptr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c.a.ptr[i] = i;
@@ -41,7 +41,7 @@ foo0 ()
 
   memset (my_c.b.arr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c.b.arr[:10])
+  #pragma omp target map (my_c.b.arr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c.b.arr[i] = i;
@@ -81,7 +81,7 @@ foo ()
 
   memset (my_c.a.ptr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c.a.ptr, my_c.a.ptr[:10])
+  #pragma omp target map (my_c.a.ptr, my_c.a.ptr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c.a.ptr[i] = i;
@@ -92,7 +92,7 @@ foo ()
 
   memset (my_c.b.arr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c.b.arr[:10])
+  #pragma omp target map (my_c.b.arr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c.b.arr[i] = i;
@@ -116,7 +116,7 @@ bar ()
 
   memset (my_cref.a.ptr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_cref.a.ptr, my_cref.a.ptr[:10])
+  #pragma omp target map (my_cref.a.ptr, my_cref.a.ptr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_cref.a.ptr[i] = i;
@@ -127,7 +127,7 @@ bar ()
 
   memset (my_cref.b.arr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_cref.b.arr[:10])
+  #pragma omp target map (my_cref.b.arr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_cref.b.arr[i] = i;
@@ -157,7 +157,7 @@ foop0 ()
 
   memset (my_c->a->ptr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c->a, my_c->a[:1], my_c->a->ptr, my_c->a->ptr[:10])
+  #pragma omp target map (my_c->a, my_c->a[ :1], my_c->a->ptr, my_c->a->ptr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c->a->ptr[i] = i;
@@ -168,7 +168,7 @@ foop0 ()
 
   memset (my_c->b->arr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c->b, my_c->b[:1], my_c->b->arr[:10])
+  #pragma omp target map (my_c->b, my_c->b[ :1], my_c->b->arr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c->b->arr[i] = i;
@@ -200,7 +200,7 @@ foop ()
 
   memset (my_c->a->ptr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c->a, my_c->a[:1], my_c->a->ptr, my_c->a->ptr[:10])
+  #pragma omp target map (my_c->a, my_c->a[ :1], my_c->a->ptr, my_c->a->ptr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c->a->ptr[i] = i;
@@ -211,7 +211,7 @@ foop ()
 
   memset (my_c->b->arr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_c->b, my_c->b[:1], my_c->b->arr[:10])
+  #pragma omp target map (my_c->b, my_c->b[ :1], my_c->b->arr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_c->b->arr[i] = i;
@@ -237,8 +237,8 @@ barp ()
 
   memset (my_cref->a->ptr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_cref->a, my_cref->a[:1], my_cref->a->ptr, \
-			  my_cref->a->ptr[:10])
+  #pragma omp target map (my_cref->a, my_cref->a[ :1], my_cref->a->ptr, \
+			  my_cref->a->ptr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_cref->a->ptr[i] = i;
@@ -249,7 +249,7 @@ barp ()
 
   memset (my_cref->b->arr, 0, sizeof (int) * 10);
 
-  #pragma omp target map (my_cref->b, my_cref->b[:1], my_cref->b->arr[:10])
+  #pragma omp target map (my_cref->b, my_cref->b[ :1], my_cref->b->arr[ :10])
   {
     for (int i = 0; i < 10; i++)
       my_cref->b->arr[i] = i;

@@ -15,7 +15,7 @@ struct derived : public base {
     void do_work ()
     {
       int error = 0;
-      #pragma omp target map (tofrom: this[:1], error)
+      #pragma omp target map (tofrom: this[ :1], error)
       {
 	if (scalar != 42 || this->array[0] != 123 || array[4] != 555)
 	  error = 1;

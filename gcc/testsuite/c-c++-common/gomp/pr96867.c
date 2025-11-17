@@ -5,5 +5,5 @@ int *v;
 void
 foo (int x)
 {
-  #pragma omp target update to (x, v[:])	/* { dg-error "for pointer type length expression must be specified" } */
+  #pragma omp target update to (x, v[ : ])	/* { dg-error "for pointer type length expression must be specified" } */
 }

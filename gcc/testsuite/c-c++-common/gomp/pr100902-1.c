@@ -3,7 +3,7 @@
 void
 foo (int *ptr)
 {
-  #pragma omp target map (ptr, ptr[:4])
+  #pragma omp target map (ptr, ptr[ :4])
   #pragma omp parallel master
   ptr[0] = 1;
 }
@@ -11,7 +11,7 @@ foo (int *ptr)
 void
 bar (int *ptr)
 {
-  #pragma omp target parallel map (ptr[:4], ptr)
+  #pragma omp target parallel map (ptr[ :4], ptr)
   #pragma omp master
   ptr[0] = 1;
 }

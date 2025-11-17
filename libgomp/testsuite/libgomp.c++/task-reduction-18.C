@@ -62,10 +62,10 @@ foo (int n, S *c, S *d, S m[3], S *r, S o[4], S *p, S q[4][2])
 {
   int i;
   for (i = 0; i < 2; i++)
-    #pragma omp task in_reduction (+: a, c[:2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
-		     in_reduction (+: o[n:n*2], m[1], k[1:2][:], p[0], f[2:2]) \
-		     in_reduction (+: q[1:2][:], g[n:n*2], e[1], h[0], r[2:2]) \
-		     in_reduction (*: s[1:2], t[2:2][:])
+    #pragma omp task in_reduction (+: a, c[ :2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
+		     in_reduction (+: o[n:n*2], m[1], k[1:2][ : ], p[0], f[2:2]) \
+		     in_reduction (+: q[1:2][ : ], g[n:n*2], e[1], h[0], r[2:2]) \
+		     in_reduction (*: s[1:2], t[2:2][ : ])
     {
       a[0].s += 7;
       a[1].s += 17;
@@ -134,14 +134,14 @@ test (int n)
     {
       #pragma omp for reduction (task, +: a, c) reduction (task, *: b[2 * n:3 * n], d) \
 		      reduction (task, +: e[1], f[2:2], g[n:n*2], h[0], k[1:2][0:2]) \
-		      reduction (task, +: o[n:n*2], m[1], q[1:2][:], p[0], r[2:2]) \
-		      reduction (task, *: t[2:2][:], s[1:n + 1]) \
+		      reduction (task, +: o[n:n*2], m[1], q[1:2][ : ], p[0], r[2:2]) \
+		      reduction (task, *: t[2:2][ : ], s[1:n + 1]) \
 		      schedule (nonmonotonic: guided, 1)
       for (unsigned long long i = x; i < y; i += z)
 	#pragma omp task in_reduction (+: a, c) in_reduction (*: b[2 * n:3 * n], d) \
-			 in_reduction (+: o[n:n*2], q[1:2][:], p[0], m[1], r[2:2]) \
-			 in_reduction (+: g[n:n * 2], e[1], k[1:2][:], h[0], f[2:2]) \
-			 in_reduction (*: s[1:2], t[2:2][:])
+			 in_reduction (+: o[n:n*2], q[1:2][ : ], p[0], m[1], r[2:2]) \
+			 in_reduction (+: g[n:n * 2], e[1], k[1:2][ : ], h[0], f[2:2]) \
+			 in_reduction (*: s[1:2], t[2:2][ : ])
 	{
 	  int j;
 	  a[0].s += 2;
@@ -174,11 +174,11 @@ test (int n)
 	    if (b[z + 2].t != 5 && b[z + 2].t != 9)
 	      abort ();
 	  for (j = 0; j < 2; j++)
-	    #pragma omp task in_reduction (+: a, c[:2]) \
+	    #pragma omp task in_reduction (+: a, c[ :2]) \
 			     in_reduction (*: b[2 * n:3 * n], d[n - 1:n + 1]) \
-			     in_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][:2]) \
-			     in_reduction (+: m[1], r[2:2], o[n:n*2], p[0], q[1:2][:2]) \
-			     in_reduction (*: s[n:2], t[2:2][:])
+			     in_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][ :2]) \
+			     in_reduction (+: m[1], r[2:2], o[n:n*2], p[0], q[1:2][ :2]) \
+			     in_reduction (*: s[n:2], t[2:2][ : ])
 	    {
 	      m[1].s += 6;
 	      r[2].s += 7;

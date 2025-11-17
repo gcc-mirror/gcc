@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { c || c++23_down } } } */
 /* { dg-options "-fopenmp" } */
 
 extern int a[][10], a2[][10];

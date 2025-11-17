@@ -10,8 +10,8 @@ struct S {
 
 #define N 64
 
-#pragma omp declare mapper (S w) map(w.size, w.ptr, w.ptr[:w.size])
-#pragma omp declare mapper (foo:S w) map(to:w.size, w.ptr) map(w.ptr[:w.size])
+#pragma omp declare mapper (S w) map(w.size, w.ptr, w.ptr[ :w.size])
+#pragma omp declare mapper (foo:S w) map(to:w.size, w.ptr) map(w.ptr[ :w.size])
 
 int main (int argc, char *argv[])
 {
@@ -19,7 +19,7 @@ int main (int argc, char *argv[])
   s.ptr = new int[N];
   s.size = N;
 
-#pragma omp declare mapper (bar:S w) map(w.size, w.ptr, w.ptr[:w.size])
+#pragma omp declare mapper (bar:S w) map(w.size, w.ptr, w.ptr[ :w.size])
 
 #pragma omp target
   {

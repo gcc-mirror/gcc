@@ -1,3 +1,7 @@
+// Array sections without spaces between [ and : or : and ] are incompatible
+// with C++26.
+// { dg-skip-if "array sections vs. C++26" { c++26 } }
+
 template <typename T>
 void
 foo (T &x, T (&y)[4], T *&z, int &u, int (&v)[4], int *&w)

@@ -26,20 +26,20 @@ foo ()
   ;
 
   int z[3] = { 2, 5, 7 };
-  #pragma omp target data map(z[:3]) use_device_addr(z)
-    #pragma omp target has_device_addr(z[1:])
+  #pragma omp target data map(z[ :3]) use_device_addr(z)
+    #pragma omp target has_device_addr(z[1: ])
     ;
 
-  #pragma omp target data map(z[:3]) use_device_addr(z)
+  #pragma omp target data map(z[ :3]) use_device_addr(z)
     #pragma omp target has_device_addr(z[1])
     ;
 
-  #pragma omp target data map(z[:3]) use_device_addr(z)
+  #pragma omp target data map(z[ :3]) use_device_addr(z)
     #pragma omp target has_device_addr(z[1:2])
     ;
 
-  #pragma omp target data map(z[:3]) use_device_addr(z)
-    #pragma omp target has_device_addr(z[:2])
+  #pragma omp target data map(z[ :3]) use_device_addr(z)
+    #pragma omp target has_device_addr(z[ :2])
     ;
 
   int w[3][4];
@@ -48,7 +48,7 @@ foo ()
     ;
 
   #pragma omp target data map(w) use_device_addr(w)
-    #pragma omp target has_device_addr(w[:1][2:])
+    #pragma omp target has_device_addr(w[ :1][2: ])
     ;
 
   int u[0];

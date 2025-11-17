@@ -19,7 +19,7 @@
    - OMP_NUM_TEAMS(_DEV(_<dev-num>)) overrides it
      OMP_NUM_TEAMS_ALL overrides it
    - Number of teams is:
-     -> the value specific by num_teams([lower:]upper)
+     -> the value specific by num_teams([lower: ]upper)
 	with lower := upper if unspecified
      -> Otherwise, if nteams-var ICV > 0, #teams <= nteams-var ICV
      -> Otherwise, if nteams-var ICV <= 0, #teams > 1

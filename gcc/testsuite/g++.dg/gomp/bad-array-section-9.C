@@ -10,7 +10,7 @@ void foo()
 #pragma omp target map(arr1[arr2[4:5]:arr2[6:7]])
 // { dg-error {low bound 'arr2\[4:5\]' of array section does not have integral type} "" { target *-*-* } .-1 }
   { }
-#pragma omp target map(arr1[arr2[:1]:arr2[6:1]])
+#pragma omp target map(arr1[arr2[ :1]:arr2[6:1]])
 // { dg-error {low bound 'arr2\[:1\]' of array section does not have integral type} "" { target *-*-* } .-1 }
   { }
 #pragma omp target map(arr1[x:arr2[6:1]])
@@ -25,7 +25,7 @@ int main()
 #pragma omp target map(arr1[arr2[4:5]:arr2[6:7]])
 // { dg-error {low bound 'arr2\[4:5\]' of array section does not have integral type} "" { target *-*-* } .-1 }
   { }
-#pragma omp target map(arr1[arr2[:1]:arr2[6:1]])
+#pragma omp target map(arr1[arr2[ :1]:arr2[6:1]])
 // { dg-error {low bound 'arr2\[:1\]' of array section does not have integral type} "" { target *-*-* } .-1 }
   { }
 #pragma omp target map(arr1[x:arr2[6:1]])

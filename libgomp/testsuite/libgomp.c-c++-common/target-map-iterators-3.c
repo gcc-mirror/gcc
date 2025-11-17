@@ -42,8 +42,8 @@ int main (void)
   int expected = mkarrays (x, y);
 
   #pragma omp target enter data map(to: x, y)
-  #pragma omp target map(iterator(i=0:DIM1/4, j=0:4), to: x[f(i, j)][:DIM2]) \
-		     map(iterator(i=0:DIM1), to: y[i][:1]) \
+  #pragma omp target map(iterator(i=0:DIM1/4, j=0:4), to: x[f(i, j)][ :DIM2]) \
+		     map(iterator(i=0:DIM1), to: y[i][ :1]) \
 		     map(from: sum)
     {
       sum = 0;

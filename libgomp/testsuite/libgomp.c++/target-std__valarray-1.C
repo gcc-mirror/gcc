@@ -56,9 +56,9 @@ int main()
   size_t shiftData_i_size = shiftData_i.size();
 #pragma omp target \
   defaultmap(none) \
-  map(to: v1_i_data[:v1_i_size], v1_i_size, \
-          v2_i_data[:v2_i_size], v2_i_size, \
-          shiftData_i_data[:shiftData_i_size], shiftData_i_size)
+  map(to: v1_i_data[ :v1_i_size], v1_i_size, \
+          v2_i_data[ :v2_i_size], v2_i_size, \
+          shiftData_i_data[ :shiftData_i_size], shiftData_i_size)
   {
     /* Manually set up a buffer we can stream into, similar to 'cout << [...]', and print it at the end of region.  */
     std::stringbuf out_b;

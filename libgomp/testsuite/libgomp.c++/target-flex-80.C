@@ -21,7 +21,7 @@ bool test(const T (&arr)[Size])
 {
   bool ok;
   T out_arr[Size];
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       std::span span = {arr, Size};
       bool inner_ok = true;

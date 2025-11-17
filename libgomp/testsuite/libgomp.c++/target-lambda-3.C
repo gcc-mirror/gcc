@@ -52,12 +52,12 @@ void run (int dev)
 		     && omp_target_is_present (data2, dev));
   int val = 1;
   int &valref = val;
-  #pragma omp target enter data map(alloc: data1[:N], data2[:N]) device(dev)
+  #pragma omp target enter data map(alloc: data1[ :N], data2[ :N]) device(dev)
 
   omp_target_loop (0, N, [=](int i) { data1[i] = val; }, dev);
   omp_target_loop (0, N, [=](int i) { data2[i] = valref + 1; }, dev);
 
-  #pragma omp target update from(data1[:N], data2[:N]) device(dev)
+  #pragma omp target update from(data1[ :N], data2[ :N]) device(dev)
 
   for (int i = 0; i < N; i++)
     {
@@ -65,20 +65,20 @@ void run (int dev)
       if (data2[i] != 2) abort ();
     }
 
-  #pragma omp target exit data map(delete: data1[:N], data2[:N]) device(dev)
+  #pragma omp target exit data map(delete: data1[ :N], data2[ :N]) device(dev)
 
   int b = 8;
   S s = { 4, N, data1 };
   auto f = s.merge_data_func (data2, b, dev);
   if (f () ^ shared_mem) abort ();
 
-  #pragma omp target enter data map(to: data1[:N]) device(dev)
+  #pragma omp target enter data map(to: data1[ :N]) device(dev)
   if (f () ^ shared_mem) abort ();
 
-  #pragma omp target enter data map(to: data2[:N]) device(dev)
+  #pragma omp target enter data map(to: data2[ :N]) device(dev)
   if (!f ()) abort ();
 
-  #pragma omp target exit data map(from: data1[:N], data2[:N]) device(dev)
+  #pragma omp target exit data map(from: data1[ :N], data2[ :N]) device(dev)
 
   for (int i = 0; i < N; i++)
     {

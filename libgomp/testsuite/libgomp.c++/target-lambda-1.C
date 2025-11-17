@@ -56,12 +56,12 @@ int main (void)
 
   int val = 1;
   int &valref = val;
-  #pragma omp target enter data map(alloc: data1[:N], data2[:N])
+  #pragma omp target enter data map(alloc: data1[ :N], data2[ :N])
 
   omp_target_loop (0, N, [=](int i) { data1[i] = val; });
   omp_target_loop (0, N, [=](int i) { data2[i] = valref + 1; });
 
-  #pragma omp target update from(data1[:N], data2[:N])
+  #pragma omp target update from(data1[ :N], data2[ :N])
 
   for (int i = 0; i < N; i++)
     {
@@ -69,7 +69,7 @@ int main (void)
       if (data2[i] != 2) abort ();
     }
 
-  #pragma omp target exit data map(delete: data1[:N], data2[:N])
+  #pragma omp target exit data map(delete: data1[ :N], data2[ :N])
 
   int b = 8;
   S s = { 4, N, data1 };
@@ -77,13 +77,13 @@ int main (void)
 
   if (f ()) abort ();
 
-  #pragma omp target enter data map(to: data1[:N])
+  #pragma omp target enter data map(to: data1[ :N])
   if (f ()) abort ();
 
-  #pragma omp target enter data map(to: data2[:N])
+  #pragma omp target enter data map(to: data2[ :N])
   if (!f () && !shared_mem) abort ();
 
-  #pragma omp target exit data map(from: data1[:N], data2[:N])
+  #pragma omp target exit data map(from: data1[ :N], data2[ :N])
 
   if (!shared_mem)
   for (int i = 0; i < N; i++)

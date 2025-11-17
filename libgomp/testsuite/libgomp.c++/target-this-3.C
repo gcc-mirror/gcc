@@ -74,7 +74,7 @@ int main (void)
     if (ptr2[i] != 0)
       abort ();
 
-  #pragma omp target data map(ptr1[:N])
+  #pragma omp target data map(ptr1[ :N])
   mapped = s.set_ptr (val);
 
   if (!mapped)
@@ -87,7 +87,7 @@ int main (void)
     if (ptr1[i] != val)
       abort ();
 
-  #pragma omp target data map(ptr2[:N])
+  #pragma omp target data map(ptr2[ :N])
   mapped = s.set_refptr (val);
 
   if (!mapped)

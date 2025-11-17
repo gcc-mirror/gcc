@@ -13,7 +13,7 @@ struct Z {
 
 int main (int argc, char *argv[])
 {
-#pragma omp declare mapper (S v) map(v.size, v.ptr[:v.size]) // { dg-note "'#pragma omp declare mapper \\(S\\)' previously declared here" }
+#pragma omp declare mapper (S v) map(v.size, v.ptr[ :v.size]) // { dg-note "'#pragma omp declare mapper \\(S\\)' previously declared here" }
 
   /* This one's a duplicate.  */
 #pragma omp declare mapper (default: S v) map (to: v.size) map (v) // { dg-error "redeclaration of '#pragma omp declare mapper \\(S\\)'" }

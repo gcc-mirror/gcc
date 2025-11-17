@@ -14,7 +14,7 @@ sum_nodes (struct node *head)
 {
   int i = 0, sum = 0;
 
-#pragma acc parallel reduction(+:sum) present(head[:1])
+#pragma acc parallel reduction(+:sum) present(head[ :1])
   {
     for (; head != NULL; head = head->next)
       sum += head->val;
@@ -37,7 +37,7 @@ insert (struct node *head, int val)
   n->next = head->next;
   head->next = n;
 
-#pragma acc enter data copyin(n[:1])
+#pragma acc enter data copyin(n[ :1])
 #pragma acc enter data attach(head->next)
   if (n->next)
     {
@@ -57,7 +57,7 @@ destroy (struct node *head)
 	{
 #pragma acc exit data detach(n->next)
 	}
-#pragma acc exit data delete (n[:1])
+#pragma acc exit data delete (n[ :1])
       if (head->next)
 	{
 #pragma acc enter data attach(head->next)

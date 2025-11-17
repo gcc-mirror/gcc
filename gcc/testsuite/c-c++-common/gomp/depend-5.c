@@ -15,11 +15,11 @@ foo (void)
   ;
   #pragma omp task depend(out: d[2])
   ;
-  #pragma omp task depend(in: d[:])
+  #pragma omp task depend(in: d[ : ])
   ;
   #pragma omp task depend(in: d[2:2])
   ;
-  #pragma omp task depend(in: d[:2])
+  #pragma omp task depend(in: d[ :2])
   ;
   #pragma omp task depend(inout: d[1].b->c[2])
   ;

@@ -18,13 +18,13 @@ main (void)
   for (int i = 0; i < N; i++)
     a.ptr[i] = 0;
 
-  #pragma omp target enter data map(to: a.ptr[:N])
+  #pragma omp target enter data map(to: a.ptr[ :N])
 
-  #pragma omp target map(a, a.ptr[:0])
+  #pragma omp target map(a, a.ptr[ :0])
   for (int i = 0; i < N; i++)
     a.ptr[i] += 1;
 
-  #pragma omp target exit data map(from: a.ptr[:N])
+  #pragma omp target exit data map(from: a.ptr[ :N])
 
   for (int i = 0; i < N; i++)
     if (a.ptr[i] != 1)

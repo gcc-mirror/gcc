@@ -12,7 +12,7 @@ foo (int *&p, int *&q, int *&r, int n, int m)
     /* For zero length array sections, p points to the start of
        already mapped range, q to the end of it (with nothing mapped
        after it), and r does not point to an mapped range.  */
-    #pragma omp target map(alloc:p[:0]) map(to:q[:0]) map(from:r[:0]) private(i) map(from:err) firstprivate (s)
+    #pragma omp target map(alloc:p[ :0]) map(to:q[ :0]) map(from:r[ :0]) private(i) map(from:err) firstprivate (s)
     {
       err = 0;
       for (i = 0; i < 8; i++)
@@ -51,7 +51,7 @@ foo (int *&p, int *&q, int *&r, int n, int m)
       abort ();
     /* And zero-length array sections, though not known at compile
        time, behave the same.  */
-    #pragma omp target map(p[:n]) map(tofrom:q[:n]) map(alloc:r[:n]) private(i) map(from:err) firstprivate (s)
+    #pragma omp target map(p[ :n]) map(tofrom:q[ :n]) map(alloc:r[ :n]) private(i) map(from:err) firstprivate (s)
     {
       err = 0;
       for (i = 0; i < 8; i++)
@@ -71,7 +71,7 @@ foo (int *&p, int *&q, int *&r, int n, int m)
       abort ();
     /* Non-zero length array sections, though not known at compile,
        behave differently.  */
-    #pragma omp target map(p[:m]) map(tofrom:q[:m]) map(to:r[:m]) private(i) map(from:err)
+    #pragma omp target map(p[ :m]) map(tofrom:q[ :m]) map(to:r[ :m]) private(i) map(from:err)
     {
       err = 0;
       for (i = 0; i < 8; i++)
@@ -87,7 +87,7 @@ foo (int *&p, int *&q, int *&r, int n, int m)
       /* For zero length array sections, p points to the start of
 	 already mapped range, q points to the start of another one,
 	 and r to the end of the second one.  */
-      #pragma omp target map(to:p[:0]) map(from:q[:0]) map(tofrom:r[:0]) private(i) map(from:err)
+      #pragma omp target map(to:p[ :0]) map(from:q[ :0]) map(tofrom:r[ :0]) private(i) map(from:err)
       {
 	err = 0;
 	for (i = 0; i < 8; i++)
@@ -128,7 +128,7 @@ foo (int *&p, int *&q, int *&r, int n, int m)
 	abort ();
       /* And zero-length array sections, though not known at compile
 	 time, behave the same.  */
-      #pragma omp target map(p[:n]) map(alloc:q[:n]) map(from:r[:n]) private(i) map(from:err)
+      #pragma omp target map(p[ :n]) map(alloc:q[ :n]) map(from:r[ :n]) private(i) map(from:err)
       {
 	err = 0;
 	for (i = 0; i < 8; i++)
@@ -149,7 +149,7 @@ foo (int *&p, int *&q, int *&r, int n, int m)
 	abort ();
       /* Non-zero length array sections, though not known at compile,
 	 behave differently.  */
-      #pragma omp target map(p[:m]) map(alloc:q[:m]) map(tofrom:r[:m]) private(i) map(from:err)
+      #pragma omp target map(p[ :m]) map(alloc:q[ :m]) map(tofrom:r[ :m]) private(i) map(from:err)
       {
 	err = 0;
 	for (i = 0; i < 8; i++)

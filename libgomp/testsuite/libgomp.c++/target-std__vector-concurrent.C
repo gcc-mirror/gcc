@@ -38,7 +38,7 @@ int main (void)
 #endif
 
 #ifndef MEM_SHARED
-  #pragma omp target data map (to: data[:N]) map (alloc: vec)
+  #pragma omp target data map (to: data[ :N]) map (alloc: vec)
 #endif
     {
 #ifndef MEM_SHARED

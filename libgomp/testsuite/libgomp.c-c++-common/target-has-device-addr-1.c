@@ -26,29 +26,29 @@ main ()
     if (y[i] != i)
       __builtin_abort ();
 
-  #pragma omp target data map(y[:N]) use_device_addr(y)
-    #pragma omp target has_device_addr(y[:N])
+  #pragma omp target data map(y[ :N]) use_device_addr(y)
+    #pragma omp target has_device_addr(y[ :N])
       for (int i = 0; i < N; i++)
 	y[i] = i + 2;
   for (int i = 0; i < N; i++)
     if (y[i] != i + 2)
       __builtin_abort ();
 
-  #pragma omp target data map(y[:N]) use_device_addr(y)
+  #pragma omp target data map(y[ :N]) use_device_addr(y)
     #pragma omp target has_device_addr(y[24])
 	y[24] = 42;
   if (y[24] != 42)
     __builtin_abort ();
 
-  #pragma omp target data map(y[:N]) use_device_addr(y)
-    #pragma omp target has_device_addr(y[24:])
+  #pragma omp target data map(y[ :N]) use_device_addr(y)
+    #pragma omp target has_device_addr(y[24: ])
       for (int i = 24; i < N; i++)
 	y[i] = i + 3;
   for (int i = 24; i < N; i++)
     if (y[i] != i + 3)
       __builtin_abort ();
 
-  #pragma omp target data map(y[:N]) use_device_addr(y)
+  #pragma omp target data map(y[ :N]) use_device_addr(y)
     #pragma omp target has_device_addr(y[12:24])
       for (int i = 12; i < 24; i++)
 	y[i] = i + 4;

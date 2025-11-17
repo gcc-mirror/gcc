@@ -31,7 +31,7 @@ template<typename K, typename V, typename std::size_t Size>
 bool test_flat_map(std::pair<K, V> (&arr)[Size])
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -52,7 +52,7 @@ template<typename K, typename V, typename std::size_t Size>
 bool test_flat_multimap(std::pair<K, V> (&arr)[Size])
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -81,7 +81,7 @@ template<typename T, typename std::size_t Size>
 bool test_flat_set(T (&arr)[Size])
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {
@@ -102,7 +102,7 @@ template<typename T, typename std::size_t Size>
 bool test_flat_multiset(T (&arr)[Size])
 {
   bool ok;
-  #pragma omp target map(from: ok) map(to: arr[:Size])
+  #pragma omp target map(from: ok) map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {

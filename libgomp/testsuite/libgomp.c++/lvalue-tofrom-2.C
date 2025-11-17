@@ -23,7 +23,7 @@ void foo()
   for (int i = 0; i < aw.length; i++)
     aw.data[i] = i;
 
-#pragma omp target update from(aw.data[:aw.length])
+#pragma omp target update from(aw.data[ :aw.length])
 
 #pragma omp target exit data map(delete: aw.data, aw.length, \
 				 aw.data[0:aw.length])
@@ -54,7 +54,7 @@ main ()
   for (int i = 0; i < aw.length; i++)
     aw.data[i] = i;
 
-#pragma omp target update from(aw.data[:aw.length])
+#pragma omp target update from(aw.data[ :aw.length])
 
 #pragma omp target exit data map(delete: aw.data, aw.length, \
 				 aw.data[0:aw.length])

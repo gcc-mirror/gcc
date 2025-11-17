@@ -21,7 +21,7 @@ foo (S s, int (&t)[3], int z)
   }
   if (err) abort ();
   // But explicit zero length array section mapping does.
-  #pragma omp target map(from: err) map(tofrom: s.r[:0], t[:0])
+  #pragma omp target map(from: err) map(tofrom: s.r[ :0], t[ :0])
   {
     if (sep)
       /* Since OpenMP 5.2, if no matching mapped list it has been found,
@@ -32,7 +32,7 @@ foo (S s, int (&t)[3], int z)
   }
   if (err) abort ();
   // Similarly zero length array section, but unknown at compile time.
-  #pragma omp target map(from: err) map(tofrom: s.r[:z], t[:z])
+  #pragma omp target map(from: err) map(tofrom: s.r[ :z], t[ :z])
   {
     if (sep)
       /* Since OpenMP 5.2, if no matching mapped list it has been found,
@@ -44,13 +44,13 @@ foo (S s, int (&t)[3], int z)
   if (err) abort ();
   #pragma omp target enter data map (to: s.r, t)
   // But when already mapped, it binds to existing mappings.
-  #pragma omp target map(from: err) map(tofrom: s.r[:0], t[:0])
+  #pragma omp target map(from: err) map(tofrom: s.r[ :0], t[ :0])
   {
     err = t[0] != 1 || t[1] != 2 || t[2] != 3 || s.r[0] != 6 || s.r[1] != 7;
     sep = 0;
   }
   if (err) abort ();
-  #pragma omp target map(from: err) map(tofrom: s.r[:z], t[:z])
+  #pragma omp target map(from: err) map(tofrom: s.r[ :z], t[ :z])
   {
     err = t[0] != 1 || t[1] != 2 || t[2] != 3 || s.r[0] != 6 || s.r[1] != 7;
     sep = 0;

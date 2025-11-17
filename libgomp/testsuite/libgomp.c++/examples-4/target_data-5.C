@@ -33,7 +33,7 @@ void vec_mult_ref (float *&p, float *&v1, float *&v2, int n)
 
 void vec_mult (float *&p, float *&v1, float *&v2, int n)
 {
-  #pragma omp target map(to: v1[0:n], v2[:n]) map(from: p[0:n])
+  #pragma omp target map(to: v1[0:n], v2[ :n]) map(from: p[0:n])
     #pragma omp parallel for
       for (int i = 0; i < n; i++)
 	p[i] = v1[i] * v2[i];

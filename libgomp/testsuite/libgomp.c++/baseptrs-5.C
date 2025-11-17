@@ -35,8 +35,8 @@ main ()
   memset (my_c->a->ptr2, 0, sizeof (int) * 10);
 
   #pragma omp target map (my_c->a, \
-			  my_c->a->ptr, my_c->a->ptr[:10], \
-			  my_c->a->ptr2, my_c->a->ptr2[:10])
+			  my_c->a->ptr, my_c->a->ptr[ :10], \
+			  my_c->a->ptr2, my_c->a->ptr2[ :10])
   {
     for (int i = 0; i < 10; i++)
       {

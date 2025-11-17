@@ -33,7 +33,7 @@ int main (void)
   srand (time (NULL));
   init (data);
 
-  #pragma omp target data map (to: data[:N]) map (alloc: set)
+  #pragma omp target data map (to: data[ :N]) map (alloc: set)
     {
       #pragma omp target
 	{

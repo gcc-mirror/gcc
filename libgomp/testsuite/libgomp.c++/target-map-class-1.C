@@ -30,7 +30,7 @@ test_map_tofrom_class_heap ()
   int *array = new int[N];
   A *obj = new A (array, N);
 
-  #pragma omp target map(from: array[:N]) map(tofrom: obj[:1])
+  #pragma omp target map(from: array[ :N]) map(tofrom: obj[ :1])
     {
       int *tmp_h_array = obj->h_array;
       obj->h_array = array;
@@ -64,7 +64,7 @@ test_map_tofrom_class_stack ()
   int array[N];
   A obj(array, N);
 
-  #pragma omp target map(from: array[:N]) map(tofrom: obj)
+  #pragma omp target map(from: array[ :N]) map(tofrom: obj)
     {
       int *tmp_h_array = obj.h_array;
       obj.h_array = array;

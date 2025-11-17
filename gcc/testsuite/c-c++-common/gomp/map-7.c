@@ -9,12 +9,12 @@ foo (void)
   int always[N];
   int close;
 
-  #pragma omp target map(always[:N]) 
+  #pragma omp target map(always[ :N]) 
   ;
 
-  #pragma omp target map(close, always[:N]) 
+  #pragma omp target map(close, always[ :N]) 
   ;
 
-  #pragma omp target map(always[:N], close) 
+  #pragma omp target map(always[ :N], close) 
   ;
 }

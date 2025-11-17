@@ -18,8 +18,8 @@ void
 bar (T (&x)[])
 {
   x[0] = 24;
-  #pragma omp target data map(x[:2]) use_device_addr(x)
-    #pragma omp target has_device_addr(x[:2])
+  #pragma omp target data map(x[ :2]) use_device_addr(x)
+    #pragma omp target has_device_addr(x[ :2])
       x[0] = 42;
 
   if (x[0] != 42)

@@ -42,9 +42,9 @@ bool test(const T (&arr)[Size])
   T out_fwd_arr[Size];
   T out_first_half_arr[Size / 2];
   #pragma omp target defaultmap(none) \
-		     map(from: ok, out_rev_arr[:Size], out_fwd_arr[:Size], \
-			       out_first_half_arr[:Size / 2]) \
-		     map(to: arr[:Size])
+		     map(from: ok, out_rev_arr[ :Size], out_fwd_arr[ :Size], \
+			       out_first_half_arr[ :Size / 2]) \
+		     map(to: arr[ :Size])
     {
       bool inner_ok = true;
       {

@@ -5,6 +5,6 @@ int a[] = {};
 
 void foo()
 {
-  #pragma omp task depend(out: a[:])	/* { dg-error "zero length array section in .depend. clause" } */
+  #pragma omp task depend(out: a[ : ])	/* { dg-error "zero length array section in .depend. clause" } */
     {}
 }

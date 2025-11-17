@@ -6,6 +6,10 @@
 
 /* { dg-additional-options "-fopenmp" } for '#pragma omp threadprivate'.  */
 
+/* Array sections without spaces between [ and : or : and ] are incompatible
+   with C++26.  */
+/* { dg-skip-if "array sections vs. C++26" { c++26 } } */
+
 /* The current implementation doesn't restrict where a 'cache' directive may
    appear, so we don't make any special arrangements.  */
 

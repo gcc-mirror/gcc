@@ -7,7 +7,7 @@ foo (void)
 {
   int i;
   float f[3] = { 0.0f, 0.0f, 0.0f };
-#pragma omp parallel for default(none) reduction(+:f[:3])
+#pragma omp parallel for default(none) reduction(+:f[ :3])
   for (i = 0; i < 1000; i++)
     {
       int j;

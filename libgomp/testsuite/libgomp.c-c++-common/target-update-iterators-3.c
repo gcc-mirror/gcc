@@ -31,8 +31,8 @@ int main (void)
 
   mkarray (x);
 
-  #pragma omp target enter data map(alloc: x[:DIM1])
-  #pragma omp target enter data map(iterator(i=0:DIM1), to: x[i][:DIM2])
+  #pragma omp target enter data map(alloc: x[ :DIM1])
+  #pragma omp target enter data map(iterator(i=0:DIM1), to: x[i][ :DIM2])
 
   /* Update x on host.  */
   for (int i = 0; i < DIM1; i++)
@@ -43,7 +43,7 @@ int main (void)
       }
 
   /* Update a subset of x on target.  */
-  #pragma omp target update to(iterator(i=0:DIM1/2): x[f (i)][:DIM2])
+  #pragma omp target update to(iterator(i=0:DIM1/2): x[f (i)][ :DIM2])
 
   #pragma omp target map(from: sum)
     {

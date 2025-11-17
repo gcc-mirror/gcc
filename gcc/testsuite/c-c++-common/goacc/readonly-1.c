@@ -15,33 +15,33 @@ int main (void)
   int x[32], y[32];
   struct S s = {x, 0};
 
-  #pragma acc declare copyin(readonly: x/*[:32]*/, s/*.ptr[:16]*/) copyin(y/*[:32]*/)
+  #pragma acc declare copyin(readonly: x/*[ :32]*/, s/*.ptr[ :16]*/) copyin(y/*[ :32]*/)
 
-  #pragma acc parallel copyin(readonly: x[:32], s.ptr[:16]) copyin(y[:32])
+  #pragma acc parallel copyin(readonly: x[ :32], s.ptr[ :16]) copyin(y[ :32])
   {
-    #pragma acc cache (readonly: x[:32])
-    #pragma acc cache (y[:32])
+    #pragma acc cache (readonly: x[ :32])
+    #pragma acc cache (y[ :32])
   }
 
-  #pragma acc kernels copyin(readonly: x[:32], s.ptr[:16]) copyin(y[:32])
+  #pragma acc kernels copyin(readonly: x[ :32], s.ptr[ :16]) copyin(y[ :32])
   {
-    #pragma acc cache (readonly: x[:32])
-    #pragma acc cache (y[:32])
+    #pragma acc cache (readonly: x[ :32])
+    #pragma acc cache (y[ :32])
   }
 
-  #pragma acc serial copyin(readonly: x[:32], s.ptr[:16]) copyin(y[:32])
+  #pragma acc serial copyin(readonly: x[ :32], s.ptr[ :16]) copyin(y[ :32])
   {
-    #pragma acc cache (readonly: x[:32])
-    #pragma acc cache (y[:32])
+    #pragma acc cache (readonly: x[ :32])
+    #pragma acc cache (y[ :32])
   }
 
-  #pragma acc data copyin(readonly: x[:32], s.ptr[:16]) copyin(y[:32])
+  #pragma acc data copyin(readonly: x[ :32], s.ptr[ :16]) copyin(y[ :32])
   {
-    #pragma acc cache (readonly: x[:32])
-    #pragma acc cache (y[:32])
+    #pragma acc cache (readonly: x[ :32])
+    #pragma acc cache (y[ :32])
   }
 
-  #pragma acc enter data copyin(readonly: x[:32], s.ptr[:16]) copyin(y[:32])
+  #pragma acc enter data copyin(readonly: x[ :32], s.ptr[ :16]) copyin(y[ :32])
 
   return 0;
 }

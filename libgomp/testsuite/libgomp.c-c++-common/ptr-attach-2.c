@@ -18,10 +18,10 @@ void foo (struct L *l)
       l->m.num_blocks[i] = N;
     }
 
-  #pragma omp target enter data map(to:l[:1])
+  #pragma omp target enter data map(to:l[ :1])
   for (int i = 0; i < N; i++)
     {
-      #pragma omp target enter data map(to:l->m.blocks[i][:l->m.num_blocks[i]])
+      #pragma omp target enter data map(to:l->m.blocks[i][ :l->m.num_blocks[i]])
     }
 
   #pragma omp target
@@ -36,9 +36,9 @@ void foo (struct L *l)
 
   for (int i = 0; i < N; i++)
     {
-      #pragma omp target exit data map(from:l->m.blocks[i][:l->m.num_blocks[i]])
+      #pragma omp target exit data map(from:l->m.blocks[i][ :l->m.num_blocks[i]])
     }
-  #pragma omp target exit data map(from:l[:1])
+  #pragma omp target exit data map(from:l[ :1])
 
 
   for (int i = 0; i < N; i++)

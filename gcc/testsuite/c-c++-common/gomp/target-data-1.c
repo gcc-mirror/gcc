@@ -6,7 +6,7 @@ foo (void)
   int a[4] = { 1, 2, 3, 4 };
   int *p = &a[0];
   int x = 5;
-  #pragma omp target data map(to:p[:4])
+  #pragma omp target data map(to:p[ :4])
   #pragma omp target data use_device_ptr(p)
   #pragma omp target is_device_ptr(p)
   {

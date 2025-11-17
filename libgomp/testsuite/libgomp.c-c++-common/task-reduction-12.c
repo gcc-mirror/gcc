@@ -9,7 +9,7 @@ unsigned long int c[2] = { ~0UL, ~0UL };
 void
 bar (int i)
 {
-  #pragma omp task in_reduction (*: b[:3]) in_reduction (&: c[1:]) \
+  #pragma omp task in_reduction (*: b[ :3]) in_reduction (&: c[1: ]) \
 	      in_reduction (+: a)
   {
     a += 4;

@@ -2,7 +2,7 @@ __attribute__((noipa)) int
 foo (int *a, int *r3)
 {
   int r = 0, r2[2] = { 0, 0 }, i;
-  #pragma omp parallel loop default (none) reduction (+:r, r2[:2], r3[:2]) shared (a) lastprivate (i)
+  #pragma omp parallel loop default (none) reduction (+:r, r2[ :2], r3[ :2]) shared (a) lastprivate (i)
   for (i = 0; i < 1024; i++)
     {
       r += a[i];

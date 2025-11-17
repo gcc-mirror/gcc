@@ -34,7 +34,7 @@ int main (void)
   init (data, RAND_MAX);
 
 #ifndef MEM_SHARED
-  #pragma omp target enter data map (to: keys[:N], data[:N]) map (alloc: _map)
+  #pragma omp target enter data map (to: keys[ :N], data[ :N]) map (alloc: _map)
 #endif
 
   #pragma omp target

@@ -64,7 +64,7 @@ void f1 (void)
   f2 ();
 #pragma omp dispatch depend(inout: sp)
   f2 ();
-#pragma omp dispatch depend(inoutset: arr[:2])
+#pragma omp dispatch depend(inoutset: arr[ :2])
   f2 ();
 #pragma omp dispatch depend(out: arr)
   f2 ();

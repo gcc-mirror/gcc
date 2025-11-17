@@ -9,9 +9,9 @@ void f (int ***x, float ***y, double **z)
 {
   #pragma omp target \
       map(to: x, y) \
-      map(iterator(i=0:DIM1, j=0:DIM2), to: x[i][j][:DIM3], y[i][j][:DIM3]) \
+      map(iterator(i=0:DIM1, j=0:DIM2), to: x[i][j][ :DIM3], y[i][j][ :DIM3]) \
       map(from: z) \
-      map(iterator(i=0:DIM1), from: z[i][:DIM2])
+      map(iterator(i=0:DIM1), from: z[i][ :DIM2])
     ;
 }
 

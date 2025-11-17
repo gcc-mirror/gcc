@@ -33,7 +33,7 @@ int main (void)
   init (keys, KEY_MAX);
   init (data, RAND_MAX);
 
-  #pragma omp target enter data map (to: keys[:N], data[:N]) map (alloc: _map)
+  #pragma omp target enter data map (to: keys[ :N], data[ :N]) map (alloc: _map)
 
   #pragma omp target
     {

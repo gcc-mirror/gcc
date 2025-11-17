@@ -61,10 +61,10 @@ void
 foo (int n, S *c, S *d, S m[3], S *r, S o[4], S *p, S q[4][2])
 {
   int i;
-  #pragma omp taskloop in_reduction (+: a, c[:2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
-		       reduction (default, +: o[n:n*2], m[1], p[0]) in_reduction (+: k[1:2][:], f[2:2]) \
-		       reduction (+: q[1:2][:], r[2:2]) in_reduction (+: g[n:n*2], e[1], h[0]) \
-		       in_reduction (*: s[1:2], t[2:2][:])
+  #pragma omp taskloop in_reduction (+: a, c[ :2]) in_reduction (*: b[2 * n:3 * n], d[0:2]) \
+		       reduction (default, +: o[n:n*2], m[1], p[0]) in_reduction (+: k[1:2][ : ], f[2:2]) \
+		       reduction (+: q[1:2][ : ], r[2:2]) in_reduction (+: g[n:n*2], e[1], h[0]) \
+		       in_reduction (*: s[1:2], t[2:2][ : ])
   for (i = 0; i < 2; i++)
     {
       a[0].s += 7;
@@ -131,8 +131,8 @@ test (int n)
     int i;
     #pragma omp taskloop reduction (+: a, c) reduction (default, *: b[2 * n:3 * n], d) \
 			 reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][0:2]) \
-			 reduction (+: o[n:n*2], m[1], q[1:2][:], p[0], r[2:2]) \
-			 reduction (*: t[2:2][:], s[1:n + 1])
+			 reduction (+: o[n:n*2], m[1], q[1:2][ : ], p[0], r[2:2]) \
+			 reduction (*: t[2:2][ : ], s[1:n + 1])
     for (i = 0; i < 4; i++)
       {
 	int j;
@@ -165,11 +165,11 @@ test (int n)
 	for (int z = 0; z < 3; z++)
 	  if (b[z + 2].t != 5 && b[z + 2].t != 9)
 	    abort ();
-	#pragma omp taskloop in_reduction (+: a, c[:2]) \
+	#pragma omp taskloop in_reduction (+: a, c[ :2]) \
 			     in_reduction (*: b[2 * n:3 * n], d[n - 1:n + 1]) \
-			     in_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][:2]) \
-			     in_reduction (+: m[1], r[2:2], o[n:n*2], p[0], q[1:2][:2]) \
-			     in_reduction (*: s[n:2], t[2:2][:]) nogroup
+			     in_reduction (+: e[1], f[2:2], g[n:n*2], h[0], k[1:2][ :2]) \
+			     in_reduction (+: m[1], r[2:2], o[n:n*2], p[0], q[1:2][ :2]) \
+			     in_reduction (*: s[n:2], t[2:2][ : ]) nogroup
 	for (j = 0; j < 2; j++)
 	  {
 	    m[1].s += 6;

@@ -40,7 +40,7 @@ C::zero ()
 void
 C::do_operation ()
 {
-#pragma omp target map(arr, ptr, ptr[:100])
+#pragma omp target map(arr, ptr, ptr[ :100])
 #pragma omp teams distribute parallel for
   for (int i = 0; i < 100; i++)
     {
@@ -70,7 +70,7 @@ main (int argc, char *argv[])
 
   /* It might sort of make sense to be able to do this, but we don't support
      it for now.  */
-  #pragma omp target map(c.get_arr()[:100])
+  #pragma omp target map(c.get_arr()[ :100])
   /* { dg-message {sorry, unimplemented: unsupported map expression 'c\.C::get_arr\(\)\[0\]'} "" { target *-*-* } .-1 } */
   #pragma omp teams distribute parallel for
     for (int i = 0; i < 100; i++)
@@ -79,7 +79,7 @@ main (int argc, char *argv[])
   c.check (5, 5);
 
   /* Same for this.  */
-  #pragma omp target map(c.get_ptr(), c.get_ptr()[:100])
+  #pragma omp target map(c.get_ptr(), c.get_ptr()[ :100])
   /* { dg-message {sorry, unimplemented: unsupported map expression 'c\.C::get_ptr\(\)'} "" { target *-*-* } .-1 } */
   /* { dg-message {sorry, unimplemented: unsupported map expression '\* c\.C::get_ptr\(\)'} "" { target *-*-* } .-2 } */
   #pragma omp teams distribute parallel for

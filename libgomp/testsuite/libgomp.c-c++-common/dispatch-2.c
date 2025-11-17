@@ -53,7 +53,7 @@ int test (int n)
     }
 
   int f, last_dev = omp_get_num_devices () - 1;
-#pragma omp target data map(to: av[:n]) map(from: d_bv[:n]) device(last_dev) if (n == 1024)
+#pragma omp target data map(to: av[ :n]) map(from: d_bv[ :n]) device(last_dev) if (n == 1024)
   {
     #pragma omp dispatch nocontext(n > 1024) novariants(n < 1024) device(last_dev)
     f = foo (d_bv, av, n);

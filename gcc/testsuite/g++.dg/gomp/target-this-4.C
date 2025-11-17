@@ -80,7 +80,7 @@ int main (void)
     if (ptr2[i] != 0)
       abort ();
 
-  #pragma omp target data map(ptr1[:N], ptr2[:N])
+  #pragma omp target data map(ptr1[ :N], ptr2[ :N])
   {
     if (!p1 ())
       abort ();

@@ -13,9 +13,9 @@ struct U i;
 void
 foo (void)
 {
-  #pragma omp task depend(in: d[:2].b->c[2])	/* { dg-error "expected" } */
+  #pragma omp task depend(in: d[ :2].b->c[2])	/* { dg-error "expected" } */
   ;
-  #pragma omp task depend(inout: d[1:].b->c[2])	/* { dg-error "expected" } */
+  #pragma omp task depend(inout: d[1: ].b->c[2])	/* { dg-error "expected" } */
   ;
   #pragma omp task depend(out: d[0:1].a)	/* { dg-error "expected" } */
   ;

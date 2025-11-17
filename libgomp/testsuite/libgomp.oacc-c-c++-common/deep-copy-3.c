@@ -12,18 +12,18 @@ main ()
   for (i = 0; i < n; i++)
     a[i] = i+1;
 
-#pragma acc enter data copyin(a[:n]) create(b)
+#pragma acc enter data copyin(a[ :n]) create(b)
 
   b = a;
   acc_attach ((void **)&b);
 
-#pragma acc parallel loop present (b[:n])
+#pragma acc parallel loop present (b[ :n])
   for (i = 0; i < n; i++)
     b[i] = i+1;
 
   acc_detach ((void **)&b);
 
-#pragma acc exit data copyout(a[:n], b)
+#pragma acc exit data copyout(a[ :n], b)
 
   for (i = 0; i < 10; i++)
     assert (a[i] == b[i]);

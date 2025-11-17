@@ -32,7 +32,7 @@ fn2 (int x, double (&dr) [1024], double *&er)
   double *&ir = i;
   int j;
   fn1 (hr + 2 * x, ir + 2 * x, x);
-  #pragma omp target map(to: br[:x], cr[0:x], dr[x:x], er[x:x]) \
+  #pragma omp target map(to: br[ :x], cr[0:x], dr[x:x], er[x:x]) \
 		     map(to: fr[0:x], gr[0:x], hr[2 * x:x], ir[2 * x:x]) \
 		     map(tofrom: s)
     #pragma omp parallel for reduction(+:s)

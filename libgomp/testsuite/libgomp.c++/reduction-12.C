@@ -65,9 +65,9 @@ foo (A<int> (*&x)[3][N], M<int> *y, B<long> (&w)[1][N], int p1, long p2, long p3
   short (&b)[p7] = bb;
   for (int i = 0; i < p7; i++)
     bb[i] = -6;
-  #pragma omp parallel for reduction(+:x[-1:p1 + 1][:p2 + N - 2], z[t + N:p3]) \
+  #pragma omp parallel for reduction(+:x[-1:p1 + 1][ :p2 + N - 2], z[t + N:p3]) \
 			   reduction(*:y[-s:p4]) reduction(|:a[s + 3:p5 - N + 2]) \
-			   reduction(&:w[s + 1:p6 - 3 + N][t:p6]) reduction(maxb:b[N:])
+			   reduction(&:w[s + 1:p6 - 3 + N][t:p6]) reduction(maxb:b[N: ])
   for (int i = 0; i < 128; i++)
     {
       x[i / 64 - 1][i % 3][(i / 4) & 1].t += i;
@@ -118,9 +118,9 @@ template <int N>
 void
 S<N>::foo (int p1, long p2, long p3, int p4, int p5, long p6, short p7, int s, int t)
 {
-  #pragma omp parallel for reduction(+:x[-1:p1 + 1][:p2][0:N], z[t + N:p3 + N - 2]) \
+  #pragma omp parallel for reduction(+:x[-1:p1 + 1][ :p2][0:N], z[t + N:p3 + N - 2]) \
 			   reduction(*:y[-s:p4]) reduction(|:a[s + 3:p5]) \
-			   reduction(&:w[s + 1:p6 - 3 + N][t:p6]) reduction(maxb:b[N:])
+			   reduction(&:w[s + 1:p6 - 3 + N][t:p6]) reduction(maxb:b[N: ])
   for (int i = 0; i < 128; i++)
     {
       x[i / 64 - 1][i % 3][(i / 4) & 1].t += i;

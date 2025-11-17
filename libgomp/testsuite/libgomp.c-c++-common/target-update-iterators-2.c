@@ -26,8 +26,8 @@ int main (void)
 
   mkarray (x);
 
-  #pragma omp target enter data map(alloc: x[:DIM1])
-  #pragma omp target enter data map(iterator(i=0:DIM1), to: x[i][:DIM2])
+  #pragma omp target enter data map(alloc: x[ :DIM1])
+  #pragma omp target enter data map(iterator(i=0:DIM1), to: x[i][ :DIM2])
   #pragma omp target map(from: expected)
     {
       expected = 0;
@@ -47,7 +47,7 @@ int main (void)
   if (sum != 0)
     return 1;
 
-  #pragma omp target update from(iterator(i=0:DIM1): x[i][:DIM2])
+  #pragma omp target update from(iterator(i=0:DIM1): x[i][ :DIM2])
 
   /* Host copy should now be updated.  */
   sum = 0;

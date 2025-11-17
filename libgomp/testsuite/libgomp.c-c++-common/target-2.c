@@ -23,7 +23,7 @@ fn2 (int x)
   int i;
   fn1 (b, c, x);
   fn1 (e, d + x, x);
-  #pragma omp target map(to: b, c[:x], d[x:x], e) map(tofrom: s)
+  #pragma omp target map(to: b, c[ :x], d[x:x], e) map(tofrom: s)
     #pragma omp parallel for reduction(+:s)
       for (i = 0; i < x; i++)
 	s += b[i] * c[i] + d[x + i] + sizeof (b) - sizeof (c);
@@ -53,10 +53,10 @@ fn4 (int x)
   int i;
   fn1 (b, c, x);
   fn1 (e, d + x, x);
-  #pragma omp target data map(from: b, c[:x], d[x:x], e)
+  #pragma omp target data map(from: b, c[ :x], d[x:x], e)
     {
-      #pragma omp target update to(b, c[:x], d[x:x], e)
-      #pragma omp target map(c[:x], d[x:x], s)
+      #pragma omp target update to(b, c[ :x], d[x:x], e)
+      #pragma omp target map(c[ :x], d[x:x], s)
 	#pragma omp parallel for reduction(+:s)
 	  for (i = 0; i < x; i++)
 	    {

@@ -21,7 +21,7 @@ foo (int *&p, int (&s)[5], int &t, S &u, int n)
   }
   if (err)
     abort ();
-  #pragma omp target data map(to:q[:4])
+  #pragma omp target data map(to:q[ :4])
   #pragma omp target data use_device_ptr(p) map(from:err)
   #pragma omp target is_device_ptr(p) private(i) map(from:err)
   {
@@ -54,7 +54,7 @@ foo (int *&p, int (&s)[5], int &t, S &u, int n)
   }
   if (err)
     abort ();
-  #pragma omp target data map(to:s[:5])
+  #pragma omp target data map(to:s[ :5])
   #pragma omp target data use_device_addr(s) map(from:err)
   #pragma omp target is_device_ptr(s) private(i) map(from:err)
   {

@@ -39,7 +39,7 @@ int main (int argc, char *argv[])
 
 #pragma omp target map(to: p->b, p->b[0], p->c, p->c[0], p->b->c, p->b->c[0]) \
 		   map(to: p->b->c->ptr, p->c->ptr) \
-		   map(tofrom: p->b->c->ptr[:N], p->c->ptr[:N])
+		   map(tofrom: p->b->c->ptr[ :N], p->c->ptr[ :N])
   {
     for (int i = 0; i < N; i++)
       {

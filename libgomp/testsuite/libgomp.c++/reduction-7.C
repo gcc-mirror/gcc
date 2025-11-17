@@ -12,9 +12,9 @@ foo (int (*&x)[3][2], int *y, long (&w)[1][2], int p1, long p2, long p3, int p4,
 	b[i] = -6;
       a[i] = 0;
     }
-  #pragma omp parallel for reduction(+:x[0:p1 + 1][:p2], z[:p3]) \
-			   reduction(*:y[:p4]) reduction(|:a[:p5]) \
-			   reduction(&:w[0:p6 - 1][:p6]) reduction(max:b)
+  #pragma omp parallel for reduction(+:x[0:p1 + 1][ :p2], z[ :p3]) \
+			   reduction(*:y[ :p4]) reduction(|:a[ :p5]) \
+			   reduction(&:w[0:p6 - 1][ :p6]) reduction(max:b)
   for (int i = 0; i < 128; i++)
     {
       x[i / 64][i % 3][(i / 4) & 1] += i;
@@ -68,9 +68,9 @@ struct S
 void
 S::foo (int p1, long p2, long p3, int p4, int p5, long p6, short p7)
 {
-  #pragma omp parallel for reduction(+:x[0:p1 + 1][:p2], z[:p3]) \
-			   reduction(*:y[:p4]) reduction(|:a[:p5]) \
-			   reduction(&:w[0:p6 - 1][:p6]) reduction(max:b[0:p7])
+  #pragma omp parallel for reduction(+:x[0:p1 + 1][ :p2], z[ :p3]) \
+			   reduction(*:y[ :p4]) reduction(|:a[ :p5]) \
+			   reduction(&:w[0:p6 - 1][ :p6]) reduction(max:b[0:p7])
   for (int i = 0; i < 128; i++)
     {
       x[i / 64][i % 3][(i / 4) & 1] += i;

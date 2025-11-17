@@ -6,9 +6,9 @@ foo (int (*&x)[3][N], int *y, long (&w)[1][N])
 {
   unsigned long long a[9] = {};
   short b[5] = {};
-  #pragma omp parallel for reduction(+:x[0:N][:][0:N], z[:4]) \
-			   reduction(*:y[:3]) reduction(|:a[:4]) \
-			   reduction(&:w[0:][:N]) reduction(max:b)
+  #pragma omp parallel for reduction(+:x[0:N][ : ][0:N], z[ :4]) \
+			   reduction(*:y[ :3]) reduction(|:a[ :4]) \
+			   reduction(&:w[0: ][ :N]) reduction(max:b)
   for (int i = 0; i < 128; i++)
     {
       x[i / 64][i % 3][(i / 4) & 1] += i;
@@ -64,9 +64,9 @@ template <int N>
 void
 S<N>::foo ()
 {
-  #pragma omp parallel for reduction(+:x[0:N][:][0:N], z[:4]) \
-			   reduction(*:y[:3]) reduction(|:a[:4]) \
-			   reduction(&:w[0:][:N]) reduction(max:b)
+  #pragma omp parallel for reduction(+:x[0:N][ : ][0:N], z[ :4]) \
+			   reduction(*:y[ :3]) reduction(|:a[ :4]) \
+			   reduction(&:w[0: ][ :N]) reduction(max:b)
   for (int i = 0; i < 128; i++)
     {
       x[i / 64][i % 3][(i / 4) & 1] += i;

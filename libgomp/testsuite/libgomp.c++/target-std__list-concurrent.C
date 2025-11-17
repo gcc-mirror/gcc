@@ -44,7 +44,7 @@ int main (void)
 #endif
 
 #ifndef MEM_SHARED
-  #pragma omp target data map (to: data[:N]) map (alloc: _list)
+  #pragma omp target data map (to: data[ :N]) map (alloc: _list)
 #endif
     {
 #ifndef MEM_SHARED

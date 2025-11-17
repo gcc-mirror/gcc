@@ -20,7 +20,7 @@ int main (void)
 
   int *p = &s.b;
   int *q = &s.d;
-  #pragma omp target enter data map (alloc: p[:1], q[:1])
+  #pragma omp target enter data map (alloc: p[ :1], q[ :1])
 
   s.b = 88;
   s.d = 99;
@@ -36,7 +36,7 @@ int main (void)
 	abort ();
     }
 
-  #pragma omp target exit data map (from: q[:1])
+  #pragma omp target exit data map (from: q[ :1])
   if (d != id)
     {
       if (omp_target_is_present (&s, d))

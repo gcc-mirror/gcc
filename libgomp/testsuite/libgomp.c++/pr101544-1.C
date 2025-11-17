@@ -64,8 +64,8 @@ int main() {
   double* inptr = in.data();
   double* outptr = out.data();
 
-#pragma omp target teams distribute parallel for map(inptr[:10], outptr[:10]) is_device_ptr(devPtr)
-#pragma acc parallel loop copy(inptr[:10], outptr[:10]) deviceptr(devPtr)
+#pragma omp target teams distribute parallel for map(inptr[ :10], outptr[ :10]) is_device_ptr(devPtr)
+#pragma acc parallel loop copy(inptr[ :10], outptr[ :10]) deviceptr(devPtr)
   for(int i = 0; i < 10; i++) {
     outptr[i] = devPtr->sag(inptr[i], inptr[i]);
   }

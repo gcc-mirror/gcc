@@ -4,7 +4,7 @@ extern "C" void abort ();
 void
 bar (int *a, int *b, int *c, int (*d)[2], int (*e)[4], int *f, int *g, size_t n)
 {
-  #pragma omp task in_reduction (*: a[:n], b[3:n], c[n:n], d[0][:n], e[0][1:n], f[:n], g[1:n])
+  #pragma omp task in_reduction (*: a[ :n], b[3:n], c[n:n], d[0][ :n], e[0][1:n], f[ :n], g[1:n])
   {
     a[0] *= 12;
     a[1] *= 13;
@@ -43,10 +43,10 @@ foo (size_t n, void *x, void *y)
       f[i] = 1;
       g[i + 1] = 1;
     }
-  #pragma omp taskgroup task_reduction (*: a, b[3:n], c[n:n], d[0][:n], e[0][1:n], f, g[1:n])
+  #pragma omp taskgroup task_reduction (*: a, b[3:n], c[n:n], d[0][ :n], e[0][1:n], f, g[1:n])
   {
     bar (a, b, c, (int (*)[2]) d, (int (*)[4]) e, &f[0], &g[0], n);
-    #pragma omp task in_reduction (*: a, b[3:n], c[n:n], d[0][:n], e[0][1:n], f, g[1:n])
+    #pragma omp task in_reduction (*: a, b[3:n], c[n:n], d[0][ :n], e[0][1:n], f, g[1:n])
     {
       a[0] *= 2;
       a[1] *= 3;
@@ -98,10 +98,10 @@ baz (size_t n, void *x, void *y)
   {
     int (&f)[n] = fb;
     int (&g)[n * 2] = gb;
-    #pragma omp taskgroup task_reduction (*: a, b[3:n], c[n:n], d[0][:n], e[0][1:n], f, g[1:n])
+    #pragma omp taskgroup task_reduction (*: a, b[3:n], c[n:n], d[0][ :n], e[0][1:n], f, g[1:n])
     {
       bar (a, b, c, (int (*)[2]) d, (int (*)[4]) e, &f[0], &g[0], n);
-      #pragma omp task in_reduction (*: a, b[3:n], c[n:n], d[0][:n], e[0][1:n], f, g[1:n])
+      #pragma omp task in_reduction (*: a, b[3:n], c[n:n], d[0][ :n], e[0][1:n], f, g[1:n])
       {
 	a[0] *= 2;
 	a[1] *= 3;

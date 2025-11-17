@@ -90,7 +90,7 @@ foo (int &x, int &y, int &r, int &l, int (&l2)[4], int &l3, int &n, int *&p,
 	if ((fl & 1) && (((uintptr_t) &l2[0] | (uintptr_t) &l3) & 63) != 0)
 	  abort ();
       }
-    #pragma omp for reduction(+:p[2:px], q[:3], r2) allocate(h: p, q, r2)
+    #pragma omp for reduction(+:p[2:px], q[ :3], r2) allocate(h: p, q, r2)
     for (i = 0; i < 32; i++)
       {
 	p[2] += i;

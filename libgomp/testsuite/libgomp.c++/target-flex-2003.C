@@ -101,7 +101,7 @@ bool test_memcpy(int arg, const int *nums, std::size_t nums_size)
 {
   bool ok;
   Extendable2 e2_out;
-  #pragma omp target map(from: ok, e2_out) map(to: arg, nums[:nums_size], nums_size)
+  #pragma omp target map(from: ok, e2_out) map(to: arg, nums[ :nums_size], nums_size)
     {
       bool inner_ok = true;
       {

@@ -16,7 +16,7 @@ int main (void)
   unsigned char *p = (unsigned char *) &a;
   unsigned char *q = p + 2;
 
-  #pragma omp target enter data map (alloc:p[:1], q[:1])
+  #pragma omp target enter data map (alloc:p[ :1], q[ :1])
 
   if (d != id)
     {
@@ -40,7 +40,7 @@ int main (void)
 	abort ();
     }
 
-  #pragma omp target exit data map (from:q[:1])
+  #pragma omp target exit data map (from:q[ :1])
 
   if (d != id)
     {

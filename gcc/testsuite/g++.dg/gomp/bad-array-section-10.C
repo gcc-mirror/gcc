@@ -4,7 +4,7 @@ template<int C, int D>
 void foo()
 {
   int arr1[40];
-#pragma omp target map(arr1[4,C:])
+#pragma omp target map(arr1[4,C: ])
 // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_only } .-1 }
 // { dg-error "cannot use multidimensional subscript in OpenMP array section" "" { target c++23 } .-2 }
   { }
@@ -12,7 +12,7 @@ void foo()
 // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_only } .-1 }
 // { dg-error "cannot use multidimensional subscript in OpenMP array section" "" { target c++23 } .-2 }
   { }
-#pragma omp target map(arr1[:8,C,10])
+#pragma omp target map(arr1[ :8,C,10])
 // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_only } .-1 }
 // { dg-error "cannot use multidimensional subscript in OpenMP array section" "" { target c++23 } .-2 }
   { }
@@ -21,7 +21,7 @@ void foo()
 int main()
 {
   int arr1[40];
-#pragma omp target map(arr1[4,5:])
+#pragma omp target map(arr1[4,5: ])
 // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_only } .-1 }
 // { dg-error "cannot use multidimensional subscript in OpenMP array section" "" { target c++23 } .-2 }
   { }
@@ -29,7 +29,7 @@ int main()
 // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_only } .-1 }
 // { dg-error "cannot use multidimensional subscript in OpenMP array section" "" { target c++23 } .-2 }
   { }
-#pragma omp target map(arr1[:8,9,10])
+#pragma omp target map(arr1[ :8,9,10])
 // { dg-warning "top-level comma expression in array subscript is deprecated" "" { target c++20_only } .-1 }
 // { dg-error "cannot use multidimensional subscript in OpenMP array section" "" { target c++23 } .-2 }
   { }

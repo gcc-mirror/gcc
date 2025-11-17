@@ -24,7 +24,7 @@ int main (int argc, char *argv[])
 
   for (int i = 0; i < 10; i++)
     {
-#pragma omp target map(choose(&a, &b, i)->x[:10])
+#pragma omp target map(choose(&a, &b, i)->x[ :10])
 /* { dg-message {sorry, unimplemented: unsupported map expression 'choose\(\(& a\), \(& b\), i\)->S::x\[0\]'} "" { target *-*-* } .-1 } */
       for (int j = 0; j < 10; j++)
         choose (&a, &b, i)->x[j]++;

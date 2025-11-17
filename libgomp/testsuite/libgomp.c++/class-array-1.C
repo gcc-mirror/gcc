@@ -16,14 +16,14 @@ public:
 
   void incr_with_this (int c)
   {
-#pragma omp target map(this->array[:N])
+#pragma omp target map(this->array[ :N])
     for (int i = 0; i < N; i++)
       array[i] += c;
   }
 
   void incr_without_this (int c)
   {
-#pragma omp target map(array[:N])
+#pragma omp target map(array[ :N])
     for (int i = 0; i < N; i++)
       array[i] += c;
   }

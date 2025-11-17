@@ -34,7 +34,7 @@ bool test(Rn&& range)
   value_type *data = vec.data();
   std::size_t size = vec.size();
   bool ok;
-  #pragma omp target map(from: ok) map(tofrom: data[:size]) map(to: size)
+  #pragma omp target map(from: ok) map(tofrom: data[ :size]) map(to: size)
     {
       std::vector<value_type> orig = {data, data + size};
       std::span<value_type> span = {data, size};

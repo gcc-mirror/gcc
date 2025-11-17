@@ -6,13 +6,13 @@
 
 void f (int **x, int **y)
 {
-  #pragma omp target map(iterator(i=0:DIM1), to: x[i][:DIM2])
+  #pragma omp target map(iterator(i=0:DIM1), to: x[i][ :DIM2])
     ;
 
-  #pragma omp target map(iterator(i=0:DIM1), to: x[i][:DIM2], y[i][:DIM2])
+  #pragma omp target map(iterator(i=0:DIM1), to: x[i][ :DIM2], y[i][ :DIM2])
     ;
 
-  #pragma omp target map(iterator(i=0:DIM1), to: x[i][:DIM2] + 2) /* { dg-message "unsupported map expression" } */
+  #pragma omp target map(iterator(i=0:DIM1), to: x[i][ :DIM2] + 2) /* { dg-message "unsupported map expression" } */
     ;
 
   #pragma omp target map(iterator(i=0:DIM1), iterator(j=0:DIM2), to: x[i][j]) /* { dg-error "too many 'iterator' modifiers" } */

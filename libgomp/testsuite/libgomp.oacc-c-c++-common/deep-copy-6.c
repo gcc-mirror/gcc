@@ -24,7 +24,7 @@ main ()
     {
 #pragma acc data copy(v)
       {
-#pragma acc data copy(v.b[:n])
+#pragma acc data copy(v.b[ :n])
 	{
 	  for (i = 0; i < n; i++)
 	    {

@@ -31,7 +31,7 @@ main ()
       for (i = 0; i < n; i++)
 	v.b[i] = v.a + i;
 
-#pragma acc exit data copyout(v.b[:n]) finalize
+#pragma acc exit data copyout(v.b[ :n]) finalize
 #pragma acc exit data delete(v.a)
 
       for (i = 0; i < n; i++)

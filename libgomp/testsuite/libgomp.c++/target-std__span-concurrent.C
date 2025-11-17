@@ -35,7 +35,7 @@ int main (void)
   init (data);
 
 #ifndef MEM_SHARED
-  #pragma omp target enter data map (to: data[:N]) map (alloc: elements, span)
+  #pragma omp target enter data map (to: data[ :N]) map (alloc: elements, span)
 #endif
 
   #pragma omp target

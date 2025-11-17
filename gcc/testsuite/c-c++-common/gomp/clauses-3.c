@@ -17,9 +17,9 @@ main ()
   bar (&s.v.a);
   #pragma omp target map (s.v.a) map (always, to: s.u) map (s.x)
   ;
-  #pragma omp target map (s.s[0]) map (s.v.b[:3])
+  #pragma omp target map (s.s[0]) map (s.v.b[ :3])
   ;
-  #pragma omp target map (s.s[0]) map (s.v.b[:3])
+  #pragma omp target map (s.s[0]) map (s.v.b[ :3])
   baz (s.s);
   return 0;
 }

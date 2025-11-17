@@ -10,7 +10,7 @@ bool test_initializer_list(int arg)
   static constexpr std::size_t out_arr_size = 7;
   int out_arr[out_arr_size];
   bool ok;
-  #pragma omp target map(from: ok, out_arr[:out_arr_size]) map(to: arg)
+  #pragma omp target map(from: ok, out_arr[ :out_arr_size]) map(to: arg)
     {
       bool inner_ok = true;
       {

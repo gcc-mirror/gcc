@@ -21,7 +21,7 @@ int main (void)
   int *ptr = (int *) malloc (sizeof (int) * N);
   int *orig_ptr = ptr;
 
-  #pragma omp target map (ptr, ptr[:N])
+  #pragma omp target map (ptr, ptr[ :N])
   {
     for (int i = 0; i < N; i++)
       ptr[i] = N - i;
@@ -36,7 +36,7 @@ int main (void)
 
   S s = { 0 };
   s.ptr = ptr;
-  #pragma omp target map (s, s.ptr[:N])
+  #pragma omp target map (s, s.ptr[ :N])
   {
     for (int i = 0; i < N; i++)
       s.ptr[i] = i;
@@ -61,7 +61,7 @@ int main (void)
   for (int i = 0; i < N; i++)
     gp[i] = i - 1;
 
-  #pragma omp target map (gp[:N])
+  #pragma omp target map (gp[ :N])
   {
     for (int i = 0; i < N; i++)
       gp[i] += 1;

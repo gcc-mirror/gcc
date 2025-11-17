@@ -22,7 +22,7 @@ bool test(std::size_t arg)
   std::vector<int> vec(arg);
   int *data = vec.data();
   std::size_t size = vec.size();
-  #pragma omp target defaultmap(none) map(from: ok, midpoint_out) map(tofrom: data[:size]) map(to: arg, size)
+  #pragma omp target defaultmap(none) map(from: ok, midpoint_out) map(tofrom: data[ :size]) map(to: arg, size)
     {
       std::span span = {data, size};
       bool inner_ok = true;

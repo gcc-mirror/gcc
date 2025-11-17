@@ -65,11 +65,11 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(p.m.s2[:1])
-#pragma acc parallel loop copy(p.m.s2->e[:N])
+#pragma acc enter data copyin(p.m.s2[ :1])
+#pragma acc parallel loop copy(p.m.s2->e[ :N])
       for (int j = 0; j < N; j++)
 	p.m.s2->e[j]++;
-#pragma acc exit data delete(p.m.s2[:1])
+#pragma acc exit data delete(p.m.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -80,16 +80,16 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(p.m.s2[:1])
-#pragma acc enter data copyin(p.m.s2->f[:1])
-#pragma acc parallel loop copy(p.m.s2->f->a[:N]) copy(p.m.s2->f->c[:N])
+#pragma acc enter data copyin(p.m.s2[ :1])
+#pragma acc enter data copyin(p.m.s2->f[ :1])
+#pragma acc parallel loop copy(p.m.s2->f->a[ :N]) copy(p.m.s2->f->c[ :N])
 	for (int j = 0; j < N; j++)
 	  {
 	    p.m.s2->f->a[j]++;
 	    p.m.s2->f->c[j]++;
 	  }
-#pragma acc exit data delete(p.m.s2->f[:1])
-#pragma acc exit data delete(p.m.s2[:1])
+#pragma acc exit data delete(p.m.s2->f[ :1])
+#pragma acc exit data delete(p.m.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -100,10 +100,10 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(p.m.s2[:1]) copyin(p.n.s2[:1])
-#pragma acc enter data copyin(p.m.s2->f[:1]) copyin(p.n.s2->f[:1])
-#pragma acc parallel loop copy(p.m.s2->f->a[:N]) copy(p.m.s2->f->c[:N]) \
-			  copy(p.n.s2->f->a[:N]) copy(p.n.s2->f->c[:N])
+#pragma acc enter data copyin(p.m.s2[ :1]) copyin(p.n.s2[ :1])
+#pragma acc enter data copyin(p.m.s2->f[ :1]) copyin(p.n.s2->f[ :1])
+#pragma acc parallel loop copy(p.m.s2->f->a[ :N]) copy(p.m.s2->f->c[ :N]) \
+			  copy(p.n.s2->f->a[ :N]) copy(p.n.s2->f->c[ :N])
 	for (int j = 0; j < N; j++)
 	  {
 	    p.m.s2->f->a[j]++;
@@ -111,8 +111,8 @@ int main (int argc, char* argv[])
 	    p.n.s2->f->a[j]++;
 	    p.n.s2->f->c[j]++;
 	  }
-#pragma acc exit data delete(p.m.s2->f[:1]) delete(p.n.s2->f[:1])
-#pragma acc exit data delete(p.m.s2[:1]) delete(p.n.s2[:1])
+#pragma acc exit data delete(p.m.s2->f[ :1]) delete(p.n.s2->f[ :1])
+#pragma acc exit data delete(p.m.s2[ :1]) delete(p.n.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -124,19 +124,19 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(p.m.s2[:1]) copyin(p.n.s2[:1])
-#pragma acc enter data copyin(p.n.s2->e[:N]) copyin(p.n.s2->f[:1]) \
-		       copyin(p.m.s2->f[:1])
-#pragma acc parallel loop copy(p.m.s2->f->a[:N]) copy(p.n.s2->f->a[:N])
+#pragma acc enter data copyin(p.m.s2[ :1]) copyin(p.n.s2[ :1])
+#pragma acc enter data copyin(p.n.s2->e[ :N]) copyin(p.n.s2->f[ :1]) \
+		       copyin(p.m.s2->f[ :1])
+#pragma acc parallel loop copy(p.m.s2->f->a[ :N]) copy(p.n.s2->f->a[ :N])
 	for (int j = 0; j < N; j++)
 	  {
 	    p.m.s2->f->a[j]++;
 	    p.n.s2->f->a[j]++;
 	    p.n.s2->e[j]++;
 	  }
-#pragma acc exit data delete(p.m.s2->f[:1]) delete(p.n.s2->f[:1]) \
-		      copyout(p.n.s2->e[:N])
-#pragma acc exit data delete(p.m.s2[:1]) delete(p.n.s2[:1])
+#pragma acc exit data delete(p.m.s2->f[ :1]) delete(p.n.s2->f[ :1]) \
+		      copyout(p.n.s2->e[ :N])
+#pragma acc exit data delete(p.m.s2[ :1]) delete(p.n.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -148,11 +148,11 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(q->m.s2[:1])
-#pragma acc parallel loop copy(q->m.s2->e[:N])
+#pragma acc enter data copyin(q->m.s2[ :1])
+#pragma acc parallel loop copy(q->m.s2->e[ :N])
       for (int j = 0; j < N; j++)
 	q->m.s2->e[j]++;
-#pragma acc exit data delete(q->m.s2[:1])
+#pragma acc exit data delete(q->m.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -163,16 +163,16 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(q->m.s2[:1])
-#pragma acc enter data copyin(q->m.s2->f[:1])
-#pragma acc parallel loop copy(q->m.s2->f->a[:N]) copy(q->m.s2->f->c[:N])
+#pragma acc enter data copyin(q->m.s2[ :1])
+#pragma acc enter data copyin(q->m.s2->f[ :1])
+#pragma acc parallel loop copy(q->m.s2->f->a[ :N]) copy(q->m.s2->f->c[ :N])
 	for (int j = 0; j < N; j++)
 	  {
 	    q->m.s2->f->a[j]++;
 	    q->m.s2->f->c[j]++;
 	  }
-#pragma acc exit data delete(q->m.s2->f[:1])
-#pragma acc exit data delete(q->m.s2[:1])
+#pragma acc exit data delete(q->m.s2->f[ :1])
+#pragma acc exit data delete(q->m.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -183,10 +183,10 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(q->m.s2[:1]) copyin(q->n.s2[:1])
-#pragma acc enter data copyin(q->m.s2->f[:1]) copyin(q->n.s2->f[:1])
-#pragma acc parallel loop copy(q->m.s2->f->a[:N]) copy(q->m.s2->f->c[:N]) \
-			  copy(q->n.s2->f->a[:N]) copy(q->n.s2->f->c[:N])
+#pragma acc enter data copyin(q->m.s2[ :1]) copyin(q->n.s2[ :1])
+#pragma acc enter data copyin(q->m.s2->f[ :1]) copyin(q->n.s2->f[ :1])
+#pragma acc parallel loop copy(q->m.s2->f->a[ :N]) copy(q->m.s2->f->c[ :N]) \
+			  copy(q->n.s2->f->a[ :N]) copy(q->n.s2->f->c[ :N])
 	for (int j = 0; j < N; j++)
 	  {
 	    q->m.s2->f->a[j]++;
@@ -194,8 +194,8 @@ int main (int argc, char* argv[])
 	    q->n.s2->f->a[j]++;
 	    q->n.s2->f->c[j]++;
 	  }
-#pragma acc exit data delete(q->m.s2->f[:1]) delete(q->n.s2->f[:1])
-#pragma acc exit data delete(q->m.s2[:1]) delete(q->n.s2[:1])
+#pragma acc exit data delete(q->m.s2->f[ :1]) delete(q->n.s2->f[ :1])
+#pragma acc exit data delete(q->m.s2[ :1]) delete(q->n.s2[ :1])
     }
 
   for (i = 0; i < N; i++)
@@ -207,19 +207,19 @@ int main (int argc, char* argv[])
 
   for (int i = 0; i < 99; i++)
     {
-#pragma acc enter data copyin(q->m.s2[:1]) copyin(q->n.s2[:1])
-#pragma acc enter data copyin(q->n.s2->e[:N]) copyin(q->m.s2->f[:1]) \
-		       copyin(q->n.s2->f[:1])
-#pragma acc parallel loop copy(q->m.s2->f->a[:N]) copy(q->n.s2->f->a[:N])
+#pragma acc enter data copyin(q->m.s2[ :1]) copyin(q->n.s2[ :1])
+#pragma acc enter data copyin(q->n.s2->e[ :N]) copyin(q->m.s2->f[ :1]) \
+		       copyin(q->n.s2->f[ :1])
+#pragma acc parallel loop copy(q->m.s2->f->a[ :N]) copy(q->n.s2->f->a[ :N])
 	for (int j = 0; j < N; j++)
 	  {
 	    q->m.s2->f->a[j]++;
 	    q->n.s2->f->a[j]++;
 	    q->n.s2->e[j]++;
 	  }
-#pragma acc exit data delete(q->m.s2->f[:1]) delete(q->n.s2->f[:1]) \
-		      copyout(q->n.s2->e[:N])
-#pragma acc exit data delete(q->m.s2[:1]) delete(q->n.s2[:1])
+#pragma acc exit data delete(q->m.s2->f[ :1]) delete(q->n.s2->f[ :1]) \
+		      copyout(q->n.s2->e[ :N])
+#pragma acc exit data delete(q->m.s2[ :1]) delete(q->n.s2[ :1])
     }
 
   for (i = 0; i < N; i++)

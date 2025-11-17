@@ -6,7 +6,7 @@ struct S {
   foo ()
   {
     int res = 0;
-#pragma omp target map(size, ptr[:size], res) nowait
+#pragma omp target map(size, ptr[ :size], res) nowait
     res = ptr[size - 1];
 #pragma omp taskwait
     return res;
