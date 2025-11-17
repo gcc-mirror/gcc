@@ -1,5 +1,4 @@
 /* { dg-require-effective-target vect_int } */
-/* { dg-additional-options "-fno-early-inlining" } */
 
 #include <stdarg.h>
 #include "tree-vect.h"
@@ -11,7 +10,7 @@ short Y[N] __attribute__ ((__aligned__(__BIGGEST_ALIGNMENT__)));
 int result[N];
 
 /* short->int widening-mult */
-int
+int __attribute__((noipa))
 foo1(int len) {
   int i;
 

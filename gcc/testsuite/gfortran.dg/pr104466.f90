@@ -113,4 +113,4 @@
       END 
 
 ! { dg-final { scan-tree-dump-not ": dependent" "lim2" } }
-! { dg-final { scan-tree-dump "Moving statement\[\n\r\]_\[0-9\]+ = n" "lim2" } }
+! { dg-final { scan-tree-dump "Moving statement _\[0-9\]+ = n" "lim2" } }
