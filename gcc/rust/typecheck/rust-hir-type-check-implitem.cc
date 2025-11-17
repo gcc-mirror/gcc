@@ -519,6 +519,12 @@ TypeCheckImplItemWithTrait::visit (HIR::ConstantItem &constant)
 void
 TypeCheckImplItemWithTrait::visit (HIR::TypeAlias &type)
 {
+  auto binder_pin = context->push_lifetime_binder ();
+
+  if (type.has_generics ())
+    resolve_generic_params (HIR::Item::ItemKind::TypeAlias, type.get_locus (),
+			    type.get_generic_params (), substitutions);
+
   // normal resolution of the item
   TyTy::BaseType *lookup
     = TypeCheckImplItem::Resolve (parent, type, self, substitutions);

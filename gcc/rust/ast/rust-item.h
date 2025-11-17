@@ -2726,21 +2726,28 @@ class TraitItemType : public TraitItem
 
   Identifier name;
 
+  // Generic parameters for GATs (Generic Associated Types)
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
+
   // bool has_type_param_bounds;
   // TypeParamBounds type_param_bounds;
   std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
 
 public:
+  bool has_generics () const { return !generic_params.empty (); }
+
   // Returns whether trait item type has type param bounds.
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
   TraitItemType (Identifier name,
+		 std::vector<std::unique_ptr<GenericParam>> generic_params,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 		 std::vector<Attribute> outer_attrs, Visibility vis,
 		 location_t locus)
     : TraitItem (vis, locus), outer_attrs (std::move (outer_attrs)),
-      name (std::move (name)), type_param_bounds (std::move (type_param_bounds))
+      name (std::move (name)), generic_params (std::move (generic_params)),
+      type_param_bounds (std::move (type_param_bounds))
   {}
 
   // Copy constructor with vector clone
@@ -2749,6 +2756,9 @@ public:
       name (other.name)
   {
     node_id = other.node_id;
+    generic_params.reserve (other.generic_params.size ());
+    for (const auto &e : other.generic_params)
+      generic_params.push_back (e->clone_generic_param ());
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -2763,6 +2773,9 @@ public:
     locus = other.locus;
     node_id = other.node_id;
 
+    generic_params.reserve (other.generic_params.size ());
+    for (const auto &e : other.generic_params)
+      generic_params.push_back (e->clone_generic_param ());
     type_param_bounds.reserve (other.type_param_bounds.size ());
     for (const auto &e : other.type_param_bounds)
       type_param_bounds.push_back (e->clone_type_param_bound ());
@@ -2786,7 +2799,15 @@ public:
   std::vector<Attribute> &get_outer_attrs () { return outer_attrs; }
   const std::vector<Attribute> &get_outer_attrs () const { return outer_attrs; }
 
-  // TODO: mutable getter seems kinda dodgy
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
+  {
+    return generic_params;
+  }
+
   std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;

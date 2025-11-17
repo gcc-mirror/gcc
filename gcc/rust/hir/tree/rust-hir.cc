@@ -3582,6 +3582,18 @@ TraitItemType::as_string () const
 
   str += "\ntype " + name.as_string ();
 
+  if (has_generics ())
+    {
+      str += "<";
+      for (size_t i = 0; i < generic_params.size (); i++)
+	{
+	  if (i > 0)
+	    str += ", ";
+	  str += generic_params[i]->as_string ();
+	}
+      str += ">";
+    }
+
   str += "\n Type param bounds: ";
   if (!has_type_param_bounds ())
     {

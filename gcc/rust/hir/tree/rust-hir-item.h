@@ -2121,15 +2121,20 @@ class TraitItemType : public TraitItem
   AST::AttrVec outer_attrs;
 
   Identifier name;
+  // Generic parameters for GATs (Generic Associated Types)
+  std::vector<std::unique_ptr<GenericParam>> generic_params;
   std::vector<std::unique_ptr<TypeParamBound>>
     type_param_bounds; // inlined form
   location_t locus;
 
 public:
+  bool has_generics () const { return !generic_params.empty (); }
+
   // Returns whether trait item type has type param bounds.
   bool has_type_param_bounds () const { return !type_param_bounds.empty (); }
 
   TraitItemType (Analysis::NodeMapping mappings, Identifier name,
+		 std::vector<std::unique_ptr<GenericParam>> generic_params,
 		 std::vector<std::unique_ptr<TypeParamBound>> type_param_bounds,
 		 AST::AttrVec outer_attrs, location_t locus);
 
@@ -2151,6 +2156,15 @@ public:
   void accept_vis (HIRTraitItemVisitor &vis) override;
 
   Identifier get_name () const { return name; }
+
+  std::vector<std::unique_ptr<GenericParam>> &get_generic_params ()
+  {
+    return generic_params;
+  }
+  const std::vector<std::unique_ptr<GenericParam>> &get_generic_params () const
+  {
+    return generic_params;
+  }
 
   std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {

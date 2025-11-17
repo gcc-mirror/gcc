@@ -890,7 +890,7 @@ BaseType::is_concrete () const
 bool
 BaseType::has_substitutions_defined () const
 {
-  const TyTy::BaseType *x = destructure ();
+  const auto x = this;
   switch (x->get_kind ())
     {
     case INFER:

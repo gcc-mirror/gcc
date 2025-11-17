@@ -177,7 +177,6 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
   {
     return type_param_bounds;
@@ -250,7 +249,6 @@ public:
 
   bool is_dyn () const { return has_dyn; }
 
-  // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<TypeParamBound> > &get_type_param_bounds ()
   {
     return type_param_bounds;
@@ -463,7 +461,6 @@ public:
 
   void accept_vis (ASTVisitor &vis) override;
 
-  // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<Type> > &get_elems () { return elems; }
   const std::vector<std::unique_ptr<Type> > &get_elems () const
   {

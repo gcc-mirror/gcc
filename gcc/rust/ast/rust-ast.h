@@ -1891,7 +1891,6 @@ public:
   {
     parsed_items = std::move (new_items);
   }
-  // TODO: mutable getter seems kinda dodgy
   std::vector<std::unique_ptr<MetaItemInner>> &get_meta_items ()
   {
     return parsed_items;

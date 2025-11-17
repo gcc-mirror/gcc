@@ -55,11 +55,11 @@ ASTLowerImplItem::translate (AST::AssociatedItem &item, HirId parent_impl_id)
 void
 ASTLowerImplItem::visit (AST::TypeAlias &alias)
 {
-  std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+  std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
   HIR::WhereClause where_clause (std::move (where_clause_items));
   HIR::Visibility vis = translate_visibility (alias.get_visibility ());
 
-  std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+  std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
   if (alias.has_generics ())
     generic_params = lower_generic_params (alias.get_generic_params ());
 
@@ -110,7 +110,7 @@ void
 ASTLowerImplItem::visit (AST::Function &function)
 {
   // ignore for now and leave empty
-  std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+  std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
   for (auto &item : function.get_where_clause ().get_items ())
     {
       HIR::WhereClauseItem *i
@@ -124,7 +124,7 @@ ASTLowerImplItem::visit (AST::Function &function)
   HIR::Visibility vis = translate_visibility (function.get_visibility ());
 
   // need
-  std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+  std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
   if (function.has_generics ())
     {
       generic_params = lower_generic_params (function.get_generic_params ());
@@ -233,12 +233,12 @@ ASTLowerTraitItem::translate (AST::AssociatedItem &item)
 void
 ASTLowerTraitItem::visit (AST::Function &func)
 {
-  std::vector<std::unique_ptr<HIR::WhereClauseItem> > where_clause_items;
+  std::vector<std::unique_ptr<HIR::WhereClauseItem>> where_clause_items;
   HIR::WhereClause where_clause (std::move (where_clause_items));
   HIR::FunctionQualifiers qualifiers
     = lower_qualifiers (func.get_qualifiers ());
 
-  std::vector<std::unique_ptr<HIR::GenericParam> > generic_params;
+  std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
   if (func.has_generics ())
     generic_params = lower_generic_params (func.get_generic_params ());
 
@@ -342,7 +342,24 @@ ASTLowerTraitItem::visit (AST::ConstantItem &constant)
 void
 ASTLowerTraitItem::visit (AST::TraitItemType &type)
 {
-  std::vector<std::unique_ptr<HIR::TypeParamBound> > type_param_bounds;
+  // Lower generic parameters (for GATs)
+  std::vector<std::unique_ptr<HIR::GenericParam>> generic_params;
+  for (auto &param : type.get_generic_params ())
+    {
+      auto lowered_param = ASTLowerGenericParam::translate (*param.get ());
+      generic_params.push_back (
+	std::unique_ptr<HIR::GenericParam> (lowered_param));
+    }
+
+  // Lower type parameter bounds
+  std::vector<std::unique_ptr<HIR::TypeParamBound>> type_param_bounds;
+  for (auto &bound : type.get_type_param_bounds ())
+    {
+      auto lowered_bound = lower_bound (*bound.get ());
+      type_param_bounds.push_back (
+	std::unique_ptr<HIR::TypeParamBound> (lowered_bound));
+    }
+
   auto crate_num = mappings.get_current_crate ();
   Analysis::NodeMapping mapping (crate_num, type.get_node_id (),
 				 mappings.get_next_hir_id (crate_num),
@@ -350,6 +367,7 @@ ASTLowerTraitItem::visit (AST::TraitItemType &type)
 
   HIR::TraitItemType *trait_item
     = new HIR::TraitItemType (mapping, type.get_identifier (),
+			      std::move (generic_params),
 			      std::move (type_param_bounds),
 			      type.get_outer_attrs (), type.get_locus ());
   translated = trait_item;
