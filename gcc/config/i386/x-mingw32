@@ -21,6 +21,9 @@
 #
 local_includedir=$(libsubdir)/$(unlibsubdir)/..`echo $(exec_prefix) | sed -e 's|^$(prefix)||' -e 's|/[^/]*|/..|g'`/include
 
+# Add Windows socket library.
+LIBS += -lws2_32
+
 # On MinGW, we use "%IA64d" to print 64-bit integers, and the format-checking
 # code does not handle that, so we have to disable checking here.
 WERROR_FLAGS += -Wno-format

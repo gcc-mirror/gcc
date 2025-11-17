@@ -18,6 +18,13 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#ifdef __MINGW32__
+#include <winsock2.h>
+#include <afunix.h>
+#else
+#include <sys/un.h>
+#include <sys/socket.h>
+#endif
 
 #include "config.h"
 #define INCLUDE_LIST
@@ -55,8 +62,6 @@ along with GCC; see the file COPYING3.  If not see
 #include "backtrace.h"
 #include "xml.h"
 #include "intl.h"
-#include <sys/un.h>
-#include <sys/socket.h>
 
 namespace diagnostics {
 
