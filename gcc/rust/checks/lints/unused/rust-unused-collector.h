@@ -38,10 +38,18 @@ private:
   UnusedContext &unused_context;
 
   using HIR::DefaultHIRVisitor::visit;
+
+  // Unused var
   virtual void visit (HIR::PathInExpression &expr) override;
   virtual void visit (HIR::StructExprFieldIdentifier &ident) override;
   virtual void visit (HIR::QualifiedPathInExpression &expr) override;
+
+  // Unused assignments
   virtual void visit (HIR::AssignmentExpr &expr) override;
+
+  // Unused mut
+  virtual void visit (HIR::IdentifierPattern &pattern) override;
+  virtual void visit (HIR::StructPatternFieldIdent &pattern) override;
 
   template <typename T> HirId get_def_id (T &path_expr)
   {

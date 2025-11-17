@@ -58,14 +58,34 @@ UnusedCollector::visit (HIR::StructExprFieldIdentifier &ident)
   mark_path_used (ident);
   walk (ident);
 }
+
 void
 UnusedCollector::visit (HIR::AssignmentExpr &expr)
 {
   auto def_id = get_def_id (expr.get_lhs ());
   HirId id = expr.get_lhs ().get_mappings ().get_hirid ();
+  unused_context.remove_mut (def_id);
   unused_context.add_assign (def_id, id);
   visit_outer_attrs (expr);
   expr.get_rhs ().accept_vis (*this);
+}
+
+void
+UnusedCollector::visit (HIR::IdentifierPattern &pattern)
+{
+  if (pattern.is_mut ())
+    unused_context.add_mut (pattern.get_mappings ().get_hirid ());
+
+  walk (pattern);
+}
+
+void
+UnusedCollector::visit (HIR::StructPatternFieldIdent &pattern)
+{
+  if (pattern.is_mut ())
+    unused_context.add_mut (pattern.get_mappings ().get_hirid ());
+
+  walk (pattern);
 }
 
 } // namespace Analysis

@@ -76,6 +76,12 @@ UnusedChecker::visit (HIR::IdentifierPattern &pattern)
     rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
 		     "unused variable %qs",
 		     pattern.get_identifier ().as_string ().c_str ());
+
+  if (pattern.is_mut () && !unused_context.is_mut_used (id)
+      && var_name != Values::Keywords::SELF && var_name[0] != '_')
+    rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
+		     "unused mut %qs",
+		     pattern.get_identifier ().as_string ().c_str ());
 }
 void
 
@@ -92,5 +98,24 @@ UnusedChecker::visit (HIR::AssignmentExpr &expr)
     rust_warning_at (lhs.get_locus (), OPT_Wunused_variable,
 		     "unused assignment %qs", var_name.c_str ());
 }
+
+void
+UnusedChecker::visit (HIR::StructPatternFieldIdent &pattern)
+{
+  std::string var_name = pattern.get_identifier ().as_string ();
+  auto id = pattern.get_mappings ().get_hirid ();
+  if (!unused_context.is_variable_used (id)
+      && var_name != Values::Keywords::SELF && var_name[0] != '_')
+    rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
+		     "unused variable %qs",
+		     pattern.get_identifier ().as_string ().c_str ());
+
+  if (pattern.is_mut () && !unused_context.is_mut_used (id)
+      && var_name != Values::Keywords::SELF && var_name[0] != '_')
+    rust_warning_at (pattern.get_locus (), OPT_Wunused_variable,
+		     "unused mut %qs",
+		     pattern.get_identifier ().as_string ().c_str ());
+}
+
 } // namespace Analysis
 } // namespace Rust

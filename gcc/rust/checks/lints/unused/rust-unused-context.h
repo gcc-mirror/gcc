@@ -24,16 +24,24 @@ namespace Analysis {
 class UnusedContext
 {
 public:
+  // Unused var
   void add_variable (HirId id);
   bool is_variable_used (HirId id) const;
+
+  // Assigned var
   void add_assign (HirId id_def, HirId id);
   void remove_assign (HirId id_def);
   bool is_variable_assigned (HirId id_def, HirId id);
 
+  // Mutable var
+  void add_mut (HirId id);
+  void remove_mut (HirId id);
+  bool is_mut_used (HirId id) const;
   std::string as_string () const;
 
 private:
   std::unordered_set<HirId> used_vars;
+  std::unordered_set<HirId> mutable_vars;
   std::map<HirId, std::vector<HirId>> assigned_vars;
 };
 

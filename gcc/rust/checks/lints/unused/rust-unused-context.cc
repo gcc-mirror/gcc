@@ -46,12 +46,31 @@ UnusedContext::remove_assign (HirId id_def)
   if (assigned_vars.find (id_def) != assigned_vars.end ())
     assigned_vars[id_def].pop_back ();
 }
+
 bool
 UnusedContext::is_variable_assigned (HirId id_def, HirId id)
 {
   auto assigned_vec = assigned_vars[id_def];
   return std::find (assigned_vec.begin (), assigned_vec.end (), id)
 	 != assigned_vec.end ();
+}
+
+void
+UnusedContext::add_mut (HirId id)
+{
+  mutable_vars.emplace (id);
+}
+
+void
+UnusedContext::remove_mut (HirId id)
+{
+  mutable_vars.erase (id);
+}
+
+bool
+UnusedContext::is_mut_used (HirId id) const
+{
+  return mutable_vars.find (id) == mutable_vars.end ();
 }
 
 std::string
