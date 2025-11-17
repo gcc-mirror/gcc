@@ -40,3 +40,47 @@ struct posix_stat_t {
   cbl::time_t    psx_mtime;      /* Time of last modification */
   cbl::time_t    psx_ctime;      /* Time of last status change */
 };
+
+namespace cbl {
+
+  enum flags_t {
+    PSX_O_RDONLY    =        0,
+    PSX_O_WRONLY    =        1,
+    PSX_O_RDWR      =        2,
+    PSX_O_CREAT     =       64,
+    PSX_O_EXCL      =      128,
+    PSX_O_NOCTTY    =      256,
+    PSX_O_TRUNC     =      512,
+    PSX_O_APPEND    =     1024,
+    PSX_O_NONBLOCK  =     2048,
+    PSX_O_DSYNC     =     4096,
+    PSX_O_DIRECT    =    16384 ,
+    PSX_O_LARGEFILE =    32768,
+    PSX_O_DIRECTORY =    65536,
+    PSX_O_NOFOLLOW  =   131072,
+    PSX_O_NOATIME   =   262144,
+    PSX_O_CLOEXEC   =   524288,
+    PSX_O_SYNC      =  1052672,
+    PSX_O_PATH      =  2097152,
+    PSX_O_TMPFILE   =  4194304 + PSX_O_DIRECTORY,
+  };
+
+  enum open_mode_t {
+    PSX_S_IXOTH =    1,
+    PSX_S_IWOTH =    2,
+    PSX_S_IROTH =    4,
+    PSX_S_IRWXO =    7,
+    PSX_S_IXGRP =    8,
+    PSX_S_IWGRP =   16,
+    PSX_S_IRGRP =   32,
+    PSX_S_IRWXG =   56,
+    PSX_S_IXUSR =   64,
+    PSX_S_IWUSR =  128,
+    PSX_S_IRUSR =  256,
+    PSX_S_IRWXU =  448,
+    PSX_S_ISVTX =  512,
+    PSX_S_ISGID = 1024,
+    PSX_S_ISUID = 2048,
+  };
+
+};

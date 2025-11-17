@@ -663,7 +663,7 @@ static class context_t {
   const int priority;
  public:
   xmlParserCtxt * ctxt;
-  context_t() : ctxt(nullptr), priority(LOG_INFO) {
+  context_t() : priority(LOG_INFO), ctxt(nullptr) {
     const int option = LOG_PERROR, facility = LOG_USER;
 #if HAVE_DECL_PROGRAM_INVOCATION_SHORT_NAME
     /* Declared in errno.h, when available.  */

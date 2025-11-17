@@ -184,8 +184,8 @@ am__dirstamp = $(am__leading_dot)dirstamp
 @BUILD_LIBGCOBOL_TRUE@	intrinsic.lo io.lo libgcobol.lo \
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/errno.lo \
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/localtime.lo \
-@BUILD_LIBGCOBOL_TRUE@	posix/shim/stat.lo stringbin.lo \
-@BUILD_LIBGCOBOL_TRUE@	valconv.lo xmlparse.lo
+@BUILD_LIBGCOBOL_TRUE@	posix/shim/open.lo posix/shim/stat.lo \
+@BUILD_LIBGCOBOL_TRUE@	stringbin.lo valconv.lo xmlparse.lo
 libgcobol_la_OBJECTS = $(am_libgcobol_la_OBJECTS)
 @BUILD_LIBGCOBOL_TRUE@am_libgcobol_la_rpath = -rpath $(toolexeclibdir)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -236,11 +236,13 @@ DATA = $(toolexeclib_DATA)
 am__nobase_libsubinclude_HEADERS_DIST = posix/cpy/posix-errno.cbl \
 	posix/cpy/statbuf.cpy posix/udf/posix-exit.cbl \
 	posix/udf/posix-localtime.cbl posix/udf/posix-mkdir.cbl \
-	posix/udf/posix-stat.cbl posix/udf/posix-unlink.cbl \
-	compat/lib/gnu/CBL_CHECK_FILE_EXIST.cbl \
-	compat/lib/gnu/CBL_ALLOC_MEM.cbl \
-	compat/lib/gnu/CBL_DELETE_FILE.cbl \
-	compat/lib/gnu/CBL_FREE_MEM.cbl
+	posix/udf/posix-open.cbl posix/udf/posix-stat.cbl \
+	posix/udf/posix-unlink.cbl \
+	compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl \
+	compat/gnu/lib/CBL_ALLOC_MEM.cbl \
+	compat/gnu/lib/CBL_DELETE_FILE.cbl \
+	compat/gnu/lib/CBL_FREE_MEM.cbl \
+	compat/gnu/udf/stored-char-length.cbl
 HEADERS = $(nobase_libsubinclude_HEADERS)
 am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) \
 	$(LISP)config.h.in
@@ -335,6 +337,8 @@ PATH_SEPARATOR = @PATH_SEPARATOR@
 RANLIB = @RANLIB@
 SED = @SED@
 SET_MAKE = @SET_MAKE@
+
+# Standard autoconf-set variables.
 SHELL = @SHELL@
 SPEC_LIBGCOBOL_DEPS = @SPEC_LIBGCOBOL_DEPS@
 STRIP = @STRIP@
@@ -404,6 +408,7 @@ toolexeclibdir = @toolexeclibdir@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
+version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
 AUTOMAKE_OPTIONS = 1.8 foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
@@ -413,7 +418,8 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 # Skip the whole process if we are not building libgcobol.
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_LTLIBRARIES = libgcobol.la
 @BUILD_LIBGCOBOL_TRUE@toolexeclib_DATA = libgcobol.spec
-@BUILD_LIBGCOBOL_TRUE@libsubincludedir = $(libdir)/gcc/cobol/$(target_noncanonical)/$(gcc_version)
+@BUILD_LIBGCOBOL_TRUE@libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)/cobol
+@BUILD_LIBGCOBOL_TRUE@libsubincludedir = $(libsubdir)
 @BUILD_LIBGCOBOL_TRUE@libgcobol_la_SOURCES = \
 @BUILD_LIBGCOBOL_TRUE@	charmaps.cc				\
 @BUILD_LIBGCOBOL_TRUE@	constants.cc				\
@@ -424,6 +430,7 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	libgcobol.cc				\
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/errno.cc			\
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/localtime.cc			\
+@BUILD_LIBGCOBOL_TRUE@	posix/shim/open.cc			\
 @BUILD_LIBGCOBOL_TRUE@	posix/shim/stat.cc			\
 @BUILD_LIBGCOBOL_TRUE@	stringbin.cc				\
 @BUILD_LIBGCOBOL_TRUE@	valconv.cc				\
@@ -436,12 +443,14 @@ gcc_version := $(shell @get_gcc_base_ver@ $(top_srcdir)/../gcc/BASE-VER)
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-exit.cbl		\
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-localtime.cbl		\
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-mkdir.cbl		\
+@BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-open.cbl		\
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-stat.cbl		\
 @BUILD_LIBGCOBOL_TRUE@	posix/udf/posix-unlink.cbl		\
-@BUILD_LIBGCOBOL_TRUE@	compat/lib/gnu/CBL_CHECK_FILE_EXIST.cbl	\
-@BUILD_LIBGCOBOL_TRUE@	compat/lib/gnu/CBL_ALLOC_MEM.cbl	\
-@BUILD_LIBGCOBOL_TRUE@	compat/lib/gnu/CBL_DELETE_FILE.cbl	\
-@BUILD_LIBGCOBOL_TRUE@	compat/lib/gnu/CBL_FREE_MEM.cbl
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl	\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_ALLOC_MEM.cbl	\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_DELETE_FILE.cbl	\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/lib/CBL_FREE_MEM.cbl		\
+@BUILD_LIBGCOBOL_TRUE@	compat/gnu/udf/stored-char-length.cbl
 
 @BUILD_LIBGCOBOL_TRUE@WARN_CFLAGS = -W -Wall -Wwrite-strings
 @BUILD_LIBGCOBOL_TRUE@AM_CPPFLAGS = -I. -I posix/shim \
@@ -558,6 +567,8 @@ posix/shim/errno.lo: posix/shim/$(am__dirstamp) \
 	posix/shim/$(DEPDIR)/$(am__dirstamp)
 posix/shim/localtime.lo: posix/shim/$(am__dirstamp) \
 	posix/shim/$(DEPDIR)/$(am__dirstamp)
+posix/shim/open.lo: posix/shim/$(am__dirstamp) \
+	posix/shim/$(DEPDIR)/$(am__dirstamp)
 posix/shim/stat.lo: posix/shim/$(am__dirstamp) \
 	posix/shim/$(DEPDIR)/$(am__dirstamp)
 
@@ -584,6 +595,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/xmlparse.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/errno.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/localtime.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/open.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@posix/shim/$(DEPDIR)/stat.Plo@am__quote@
 
 .cc.o:

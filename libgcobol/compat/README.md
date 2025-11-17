@@ -15,7 +15,7 @@ Some of the functions defined here require runtime support from libgcobol.
 At the time of this writing, the functions of greatest concern are
 those that are defined by Rocket Software (formerly MicroFocus) and
 emulated by GnuCOBOL. Those are implemented in
-`gcc/cobol/compat/lib/gnu`.  Any calls they would otherwise make to
+`gcc/cobol/compat/gnu/lib`.  Any calls they would otherwise make to
 the C library are effected through COBOL POSIX bindings supplied by
 `gcc/cobol/posix/udf`.
 

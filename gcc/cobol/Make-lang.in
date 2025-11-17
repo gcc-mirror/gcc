@@ -301,8 +301,6 @@ cobol.install-common: installdirs
 	      $(LN) $(GCOBC_INSTALL_NAME)$(exeext) $(GCOBC_TARGET_INSTALL_NAME)$(exeext) ); \
 	  fi; \
 	fi
-	mkdir -p $(DESTDIR)$(datadir)/gcobol/udf
-	$(INSTALL_DATA) $(srcdir)/cobol/udf/*   $(DESTDIR)$(datadir)/gcobol/udf/
 
 cobol.install-man: installdirs
 	$(INSTALL_DATA) $(srcdir)/cobol/gcobol.1 $(DESTDIR)$(man1dir)/$(GCOBOL_INSTALL_NAME)$(man1ext)

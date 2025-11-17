@@ -19,6 +19,17 @@
 
 # Written de novo for libgcobol.
 
+# Standard autoconf-set variables.
+SHELL = @SHELL@
+srcdir = @srcdir@
+libdir = @libdir@
+build = @build@
+target = @target@
+prefix = @prefix@
+
+target_noncanonical = @target_noncanonical@
+version := $(shell @get_gcc_base_ver@ $(srcdir)/../gcc/BASE-VER)
+
 AUTOMAKE_OPTIONS = 1.8 foreign subdir-objects
 ACLOCAL_AMFLAGS = -I .. -I ../config
 
@@ -30,7 +41,8 @@ if BUILD_LIBGCOBOL
 toolexeclib_LTLIBRARIES  = libgcobol.la
 toolexeclib_DATA = libgcobol.spec
 
-libsubincludedir = $(libdir)/gcc/cobol/$(target_noncanonical)/$(gcc_version)
+libsubdir := $(libdir)/gcc/$(target_noncanonical)/$(version)$(MULTISUBDIR)/cobol
+libsubincludedir = $(libsubdir)
 
 ##
 ## 2.2.12 Automatic Dependency Tracking
@@ -54,7 +66,7 @@ libgcobol_la_SOURCES =				\
 
 libgcobol_la_LIBADD = -lxml2
 
-nobase_libsubinclude_HEADERS = 			\
+nobase_libsubinclude_HEADERS =			\
 	posix/cpy/posix-errno.cbl		\
 	posix/cpy/statbuf.cpy			\
 	posix/udf/posix-exit.cbl		\
@@ -62,10 +74,11 @@ nobase_libsubinclude_HEADERS = 			\
 	posix/udf/posix-mkdir.cbl		\
 	posix/udf/posix-stat.cbl		\
 	posix/udf/posix-unlink.cbl		\
-	compat/lib/gnu/CBL_CHECK_FILE_EXIST.cbl	\
-	compat/lib/gnu/CBL_ALLOC_MEM.cbl	\
-	compat/lib/gnu/CBL_DELETE_FILE.cbl	\
-	compat/lib/gnu/CBL_FREE_MEM.cbl
+	compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl	\
+	compat/gnu/lib/CBL_ALLOC_MEM.cbl	\
+	compat/gnu/lib/CBL_DELETE_FILE.cbl	\
+	compat/gnu/lib/CBL_FREE_MEM.cbl		\
+	compat/gnu/udf/stored-char-length.cbl
 
 WARN_CFLAGS = -W -Wall -Wwrite-strings
 
