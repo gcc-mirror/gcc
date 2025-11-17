@@ -10790,6 +10790,10 @@ resolve_assoc_var (gfc_symbol* sym, bool resolve_target)
   /* If the target is a good class object, so is the associate variable.  */
   if (sym->ts.type == BT_CLASS && gfc_expr_attr (target).class_ok)
     sym->attr.class_ok = 1;
+
+  /* If the target is a contiguous pointer, so is the associate variable.  */
+  if (gfc_expr_attr (target).pointer && gfc_expr_attr (target).contiguous)
+    sym->attr.contiguous = 1;
 }
 
 
