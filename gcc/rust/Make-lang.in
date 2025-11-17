@@ -200,9 +200,9 @@ GRS_OBJS = \
     rust/rust-const-checker.o \
     rust/rust-lint-marklive.o \
     rust/rust-lint-unused-var.o \
-    rust/rust-unused-var-checker.o \
-    rust/rust-unused-var-collector.o \
-    rust/rust-unused-var-context.o \
+    rust/rust-unused-checker.o \
+    rust/rust-unused-collector.o \
+    rust/rust-unused-context.o \
     rust/rust-readonly-check.o \
     rust/rust-hir-type-check-path.o \
     rust/rust-unsafe-checker.o \
@@ -435,7 +435,7 @@ RUST_INCLUDES = -I $(srcdir)/rust \
 	-I $(srcdir)/rust/typecheck \
 	-I $(srcdir)/rust/checks/lints \
 	-I $(srcdir)/rust/checks/errors \
-    -I $(srcdir)/rust/checks/lints/unused-var \
+    -I $(srcdir)/rust/checks/lints/unused \
 	-I $(srcdir)/rust/checks/errors/privacy \
 	-I $(srcdir)/rust/checks/errors/borrowck \
 	-I $(srcdir)/rust/checks/errors/feature \
@@ -506,8 +506,8 @@ rust/%.o: rust/checks/lints/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 
-# build unused variable checking pass files in rust folder
-rust/%.o: rust/checks/lints/unused-var/%.cc
+# build unused checking pass files in rust folder
+rust/%.o: rust/checks/lints/unused/%.cc
 	$(COMPILE) $(RUST_CXXFLAGS) $(RUST_INCLUDES) $<
 	$(POSTCOMPILE)
 

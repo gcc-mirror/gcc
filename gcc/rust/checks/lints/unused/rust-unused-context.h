@@ -21,7 +21,7 @@
 namespace Rust {
 namespace Analysis {
 
-class UnusedVarContext
+class UnusedContext
 {
 public:
   void add_variable (HirId id);

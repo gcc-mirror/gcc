@@ -16,38 +16,38 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-unused-var-context.h"
+#include "rust-unused-context.h"
 
 namespace Rust {
 namespace Analysis {
 
 void
-UnusedVarContext::add_variable (HirId id)
+UnusedContext::add_variable (HirId id)
 
 {
   used_vars.emplace (id);
 }
 
 bool
-UnusedVarContext::is_variable_used (HirId id) const
+UnusedContext::is_variable_used (HirId id) const
 {
   return used_vars.find (id) != used_vars.end ();
 }
 
 void
-UnusedVarContext::add_assign (HirId id_def, HirId id)
+UnusedContext::add_assign (HirId id_def, HirId id)
 {
   assigned_vars[id_def].push_back (id);
 }
 
 void
-UnusedVarContext::remove_assign (HirId id_def)
+UnusedContext::remove_assign (HirId id_def)
 {
   if (assigned_vars.find (id_def) != assigned_vars.end ())
     assigned_vars[id_def].pop_back ();
 }
 bool
-UnusedVarContext::is_variable_assigned (HirId id_def, HirId id)
+UnusedContext::is_variable_assigned (HirId id_def, HirId id)
 {
   auto assigned_vec = assigned_vars[id_def];
   return std::find (assigned_vec.begin (), assigned_vec.end (), id)
@@ -55,10 +55,10 @@ UnusedVarContext::is_variable_assigned (HirId id_def, HirId id)
 }
 
 std::string
-UnusedVarContext::as_string () const
+UnusedContext::as_string () const
 {
   std::stringstream ss;
-  ss << "UnusedVarContext: ";
+  ss << "UnusedContext: ";
   for (const auto &v : used_vars)
     {
       ss << "HirId: " << v << "\n";

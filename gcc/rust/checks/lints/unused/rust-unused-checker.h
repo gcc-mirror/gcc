@@ -20,21 +20,21 @@
 #include "rust-hir-item.h"
 #include "rust-hir-pattern.h"
 #include "rust-hir-visitor.h"
+#include "rust-unused-collector.h"
 #include "rust-immutable-name-resolution-context.h"
-#include "rust-unused-var-collector.h"
 
 namespace Rust {
 namespace Analysis {
-class UnusedVarChecker : public HIR::DefaultHIRVisitor
+class UnusedChecker : public HIR::DefaultHIRVisitor
 {
 public:
-  UnusedVarChecker ();
+  UnusedChecker ();
   void go (HIR::Crate &crate);
 
 private:
   const Resolver2_0::NameResolutionContext &nr_context;
   Analysis::Mappings &mappings;
-  UnusedVarContext unused_var_context;
+  UnusedContext unused_context;
 
   using HIR::DefaultHIRVisitor::visit;
   virtual void visit (HIR::TraitItemFunc &decl) override;

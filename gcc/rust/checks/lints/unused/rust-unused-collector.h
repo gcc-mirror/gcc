@@ -17,27 +17,25 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-hir-expr.h"
-#include "rust-hir-item.h"
 #include "rust-hir-path.h"
 #include "rust-hir-pattern.h"
 #include "rust-hir-visitor.h"
 #include "rust-mapping-common.h"
 #include "rust-name-resolution-context.h"
-#include "rust-unused-var-context.h"
-#include "rust-name-resolver.h"
+#include "rust-unused-context.h"
 
 namespace Rust {
 namespace Analysis {
-class UnusedVarCollector : public HIR::DefaultHIRVisitor
+class UnusedCollector : public HIR::DefaultHIRVisitor
 {
 public:
-  UnusedVarCollector (UnusedVarContext &context);
+  UnusedCollector (UnusedContext &context);
   void go (HIR::Crate &crate);
 
 private:
   const Resolver2_0::NameResolutionContext &nr_context;
   Analysis::Mappings &mappings;
-  UnusedVarContext &unused_var_context;
+  UnusedContext &unused_context;
 
   using HIR::DefaultHIRVisitor::visit;
   virtual void visit (HIR::PathInExpression &expr) override;
@@ -56,8 +54,8 @@ private:
   template <typename T> void mark_path_used (T &path_expr)
   {
     auto def_id = get_def_id (path_expr);
-    unused_var_context.add_variable (def_id);
-    unused_var_context.remove_assign (def_id);
+    unused_context.add_variable (def_id);
+    unused_context.remove_assign (def_id);
   }
 };
 } // namespace Analysis

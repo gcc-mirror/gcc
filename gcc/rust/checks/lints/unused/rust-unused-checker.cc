@@ -16,7 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-unused-var-checker.h"
+#include "rust-unused-checker.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-item.h"
 
@@ -25,23 +25,22 @@
 
 namespace Rust {
 namespace Analysis {
-UnusedVarChecker::UnusedVarChecker ()
+UnusedChecker::UnusedChecker ()
   : nr_context (
     Resolver2_0::ImmutableNameResolutionContext::get ().resolver ()),
-    mappings (Analysis::Mappings::get ()),
-    unused_var_context (UnusedVarContext ())
+    mappings (Analysis::Mappings::get ()), unused_context (UnusedContext ())
 {}
 void
-UnusedVarChecker::go (HIR::Crate &crate)
+UnusedChecker::go (HIR::Crate &crate)
 {
-  UnusedVarCollector collector (unused_var_context);
+  UnusedCollector collector (unused_context);
   collector.go (crate);
   for (auto &item : crate.get_items ())
     item->accept_vis (*this);
 }
 
 void
-UnusedVarChecker::visit (HIR::ConstantItem &item)
+UnusedChecker::visit (HIR::ConstantItem &item)
 {
   std::string var_name = item.get_identifier ().as_string ();
   auto id = item.get_mappings ().get_hirid ();
@@ -52,7 +51,7 @@ UnusedVarChecker::visit (HIR::ConstantItem &item)
 }
 
 void
-UnusedVarChecker::visit (HIR::StaticItem &item)
+UnusedChecker::visit (HIR::StaticItem &item)
 {
   std::string var_name = item.get_identifier ().as_string ();
   auto id = item.get_mappings ().get_hirid ();
@@ -63,12 +62,12 @@ UnusedVarChecker::visit (HIR::StaticItem &item)
 }
 
 void
-UnusedVarChecker::visit (HIR::TraitItemFunc &item)
+UnusedChecker::visit (HIR::TraitItemFunc &item)
 {
   // TODO: check trait item functions if they are not derived.
 }
 void
-UnusedVarChecker::visit (HIR::IdentifierPattern &pattern)
+UnusedChecker::visit (HIR::IdentifierPattern &pattern)
 {
   std::string var_name = pattern.get_identifier ().as_string ();
   auto id = pattern.get_mappings ().get_hirid ();
@@ -80,7 +79,7 @@ UnusedVarChecker::visit (HIR::IdentifierPattern &pattern)
 }
 void
 
-UnusedVarChecker::visit (HIR::AssignmentExpr &expr)
+UnusedChecker::visit (HIR::AssignmentExpr &expr)
 
 {
   const auto &lhs = expr.get_lhs ();

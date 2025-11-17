@@ -16,55 +16,54 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-unused-var-collector.h"
+#include "rust-unused-collector.h"
 #include "rust-hir-expr.h"
 #include "rust-hir-full-decls.h"
 #include "rust-hir-item.h"
 #include "rust-hir-path.h"
 #include "rust-hir-pattern.h"
 #include "rust-immutable-name-resolution-context.h"
-#include "tree-check.h"
 
 namespace Rust {
 namespace Analysis {
-UnusedVarCollector::UnusedVarCollector (UnusedVarContext &context)
+UnusedCollector::UnusedCollector (UnusedContext &context)
   : nr_context (
     Resolver2_0::ImmutableNameResolutionContext::get ().resolver ()),
-    mappings (Analysis::Mappings::get ()), unused_var_context (context)
+    mappings (Analysis::Mappings::get ()), unused_context (context)
 {}
 void
-UnusedVarCollector::go (HIR::Crate &crate)
+UnusedCollector::go (HIR::Crate &crate)
 {
   for (auto &item : crate.get_items ())
     item->accept_vis (*this);
 }
 
 void
-UnusedVarCollector::visit (HIR::PathInExpression &expr)
+UnusedCollector::visit (HIR::PathInExpression &expr)
 {
   mark_path_used (expr);
   walk (expr);
 }
 
 void
-UnusedVarCollector::visit (HIR::QualifiedPathInExpression &expr)
+UnusedCollector::visit (HIR::QualifiedPathInExpression &expr)
 {
   mark_path_used (expr);
   walk (expr);
 }
 
 void
-UnusedVarCollector::visit (HIR::StructExprFieldIdentifier &ident)
+UnusedCollector::visit (HIR::StructExprFieldIdentifier &ident)
 {
   mark_path_used (ident);
   walk (ident);
 }
 void
-UnusedVarCollector::visit (HIR::AssignmentExpr &expr)
+UnusedCollector::visit (HIR::AssignmentExpr &expr)
 {
   auto def_id = get_def_id (expr.get_lhs ());
   HirId id = expr.get_lhs ().get_mappings ().get_hirid ();
-  unused_var_context.add_assign (def_id, id);
+  unused_context.add_assign (def_id, id);
   visit_outer_attrs (expr);
   expr.get_rhs ().accept_vis (*this);
 }
