@@ -33103,6 +33103,11 @@ else
       # Introduced in Solaris 11.2.
       gcc_cv_ld_compress_debug=1
       gcc_cv_ld_compress_debug_option="-z compress-sections"
+      # Detect zstd debug section compression support.  Introduced in
+      # Solaris 11.4 SRU 90.
+      if $gcc_cv_ld --help 2>&1 | grep -- '-z compress-sections.*\<zstd\>' > /dev/null; then
+	gcc_cv_ld_compress_debug=2
+      fi
       ;;
     *)
       # Assume linkers other than GNU ld don't support compessed debug
