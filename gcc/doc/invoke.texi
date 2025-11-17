@@ -28060,7 +28060,9 @@ Use Bionic C library.  This is the default on
 @samp{*-*-linux-*android*} targets.
 
 @opindex mandroid
+@opindex mno-android
 @item -mandroid
+@itemx -mno-android
 Compile code compatible with Android platform.  This is the default on
 @samp{*-*-linux-*android*} targets.
 
@@ -28069,6 +28071,8 @@ When compiling, this option enables @option{-mbionic}, @option{-fPIC},
 this option makes the GCC driver pass Android-specific options to the linker.
 Finally, this option causes the preprocessor macro @code{__ANDROID__}
 to be defined.
+
+This option can be disabled completely with @option{-mno-android}.
 
 @opindex tno-android-cc
 @item -tno-android-cc
