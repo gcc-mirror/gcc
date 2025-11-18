@@ -169,8 +169,9 @@ filelist
 Driver RejectNegative Separate
 Supply a list of objects to be linked from a file, rather than the command line.
 
+; specs turn this into fapple-kext.
 findirect-virtual-calls
-Driver RejectNegative
+Driver RejectNegative Undocumented
 Used for generating code for some older kernel revisions.
 
 flat_namespace
@@ -189,8 +190,9 @@ framework
 Driver RejectNegative Separate
 -framework <name>	The linker should search for the framework <name> in the framework search path.
 
+; specs turn this into fapple-kext.
 fterminated-vtables
-Driver RejectNegative
+Driver RejectNegative Undocumented
 Used for generating code for some older kernel revisions.
 
 gfull
@@ -222,19 +224,19 @@ Driver RejectNegative
 Usually \"private extern\" (hidden) symbols are made local when linking, this command suppresses that such that they remain exported.
 
 multi_module
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete after 10.4) Multi modules are ignored at runtime since macOS 10.4.
 
 multiply_defined
-Driver RejectNegative Separate
+Driver RejectNegative Separate Undocumented
 (Obsolete after 10.4) -multiply_defined <treatment>	Provided a mechanism for warning about symbols defined in multiple dylibs.
 
 multiply_defined_unused
-Driver RejectNegative Separate
+Driver RejectNegative Separate Undocumented
 (Obsolete after 10.4) -multiply_defined_unused <treatment>	Provided a mechanism for warning about symbols defined in the current executable also being defined in linked dylibs.
 
 no_dead_strip_inits_and_terms
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete) Current linkers never dead-strip these items, so the option is not needed.
 
 nodefaultexport
@@ -246,40 +248,45 @@ Driver RejectNegative
 Do not add default run paths (for the compiler library directories) to executables, modules or dynamic libraries.
 
 nofixprebinding
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete after 10.3.9) Set MH_NOPREFIXBINDING, in an executable.
 
 nomultidefs
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete after 10.4)	Set MH_NOMULTIDEFS in an umbrella framework.
 
 noprebind
-Driver RejectNegative Negative(prebind)
+Driver RejectNegative Negative(prebind) Undocumented
 (Obsolete) LD_PREBIND is no longer supported.
 
 noseglinkedit
-Driver RejectNegative Negative(seglinkedit)
+Driver RejectNegative Negative(seglinkedit) Undocumented
 (Obsolete) This is the default.
 
 ObjC
 Driver RejectNegative
+Equivalent to -xobjective-c.
 
 ObjC++
 Driver RejectNegative
+Equivalent to -xobjective-c++.
 
+; This option is only used in STARTFILE_SPEC and has never been
+; documented since it was added in 2002, so it appears to be
+; intentionally undocumented.
 object
-Driver RejectNegative
+Driver RejectNegative Undocumented
 
 pagezero_size
 Driver RejectNegative Separate
 -pagezero_size <size>	Allows setting the page 0 size to 4kb when required.
 
 prebind
-Driver RejectNegative Negative(noprebind)
+Driver RejectNegative Negative(noprebind) Undocumented
 (Obsolete) LD_PREBIND is no longer supported.
 
 prebind_all_twolevel_modules
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete) LD_PREBIND is no longer supported.
 
 preload
@@ -287,7 +294,7 @@ Driver RejectNegative
 Produces a Mach-O file suitable for embedded/ROM use.
 
 private_bundle
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete) Allowed linking to proceed with \"-flat_namespace\" when a linked bundle contained a symbol also exported from the main executable.
 
 pthread
@@ -310,11 +317,11 @@ Driver RejectNegative Separate Args(3)
 -sectcreate <segname> <sectname> <file>	Create section <sectname> in segment <segname> from the contents of <file>.
 
 sectobjectsymbols
-Driver RejectNegative Separate Args(2)
+Driver RejectNegative Separate Args(2) Undocumented
 (Obsolete) -sectobjectsymbols <segname> <sectname>	Setting a local symbol at the start of a section is no longer supported.
 
 sectorder
-Driver RejectNegative Separate Args(3)
+Driver RejectNegative Separate Args(3) Undocumented
 (Obsolete) -sectorder <segname> <sectname> <orderfile>	Replaced by a more general option \"-order_file\".
 
 seg_addr_table
@@ -323,7 +330,7 @@ Driver RejectNegative Separate
 
 ; This is only usable by the ld_classic linker.
 seg_addr_table_filename
-Driver RejectNegative Separate
+Driver RejectNegative Separate Undocumented
 (Obsolete, ld_classic only) -seg_addr_table_filename <path>.
 
 seg1addr
@@ -336,11 +343,11 @@ Driver RejectNegative Separate Args(2)
 
 ; This is only usable by the ld_classic linker.
 segcreate
-Driver RejectNegative Separate Args(3)
+Driver RejectNegative Separate Args(3) Undocumented
 (Obsolete, ld_classic only) -sectcreate <segname> <sectname> <file>	Allowed creation of a section from a file.
 
 seglinkedit
-Driver RejectNegative Negative(noseglinkedit)
+Driver RejectNegative Negative(noseglinkedit) Undocumented
 (Obsolete) Object files with LINKEDIT sections are no longer supported.
 
 segprot
@@ -356,7 +363,7 @@ Driver RejectNegative Separate
 -segs_read_write_addr <address>	Specify that <address> is the base address address of the read-write segments of a dylib.
 
 single_module
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete)	This is the default.
 
 sub_library
@@ -405,12 +412,12 @@ Logs which symbol(s) caused an object to be loaded.
 
 ;(Obsolete, ignored)	Strip symbols starting with "L", this is the default.
 X
-Driver RejectNegative
+Driver RejectNegative Undocumented
 
 y
-Driver RejectNegative Joined
+Driver RejectNegative Joined Undocumented
 (Obsolete, ignored)	Old support similar to \"-whyload\".
 
 Mach
-Driver RejectNegative
+Driver RejectNegative Undocumented
 (Obsolete and unhandled by ld64, ignored)	ld should produce an executable (only handled by ld_classic).
