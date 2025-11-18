@@ -299,49 +299,19 @@ typedef _Complex float __attribute__((mode(IC))) _Complex_ibm128;
 @node Half-Precision
 @subsection Half-Precision Floating Point
 @cindex half-precision floating point
+@cindex @code{_Float16} data type
+
+GCC supports half-precision (16-bit) floating point on several targets.
+
+It is recommended that portable code use the @code{_Float16} type defined
+by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
+
+Some targets have peculiarities as follows.
+
 @cindex @code{__fp16} data type
-@cindex @code{__Float16} data type
-
-On ARM and AArch64 targets, GCC supports half-precision (16-bit) floating
-point via the @code{__fp16} type defined in the Arm C Language Extensions.
-On ARM systems, you must enable this type explicitly with the
-@option{-mfp16-format} command-line option in order to use it.
-On x86 targets with SSE2 enabled, GCC supports half-precision (16-bit)
-floating point via the @code{_Float16} type. For C++, x86 provides a builtin
-type named @code{_Float16} which contains same data format as C.
-
-ARM targets support two incompatible representations for half-precision
-floating-point values.  You must choose one of the representations and
-use it consistently in your program.
-
-Specifying @option{-mfp16-format=ieee} selects the IEEE 754-2008 format.
-This format can represent normalized values in the range of @math{2^{-14}} to 65504.
-There are 11 bits of significand precision, approximately 3
-decimal digits.
-
-Specifying @option{-mfp16-format=alternative} selects the ARM
-alternative format.  This representation is similar to the IEEE
-format, but does not support infinities or NaNs.  Instead, the range
-of exponents is extended, so that this format can represent normalized
-values in the range of @math{2^{-14}} to 131008.
-
-The GCC port for AArch64 only supports the IEEE 754-2008 format, and does
-not require use of the @option{-mfp16-format} command-line option.
-
-The @code{__fp16} type may only be used as an argument to intrinsics defined
-in @code{<arm_fp16.h>}, or as a storage format.  For purposes of
-arithmetic and other operations, @code{__fp16} values in C or C++
-expressions are automatically promoted to @code{float}.
-
-The ARM target provides hardware support for conversions between
-@code{__fp16} and @code{float} values
-as an extension to VFP and NEON (Advanced SIMD), and from ARMv8-A provides
-hardware support for conversions between @code{__fp16} and @code{double}
-values.  GCC generates code using these hardware instructions if you
-compile with options to select an FPU that provides them;
-for example, @option{-mfpu=neon-fp16 -mfloat-abi=softfp},
-in addition to the @option{-mfp16-format} option to select
-a half-precision format.
+On Arm and AArch64 targets, GCC supports half-precision (16-bit)
+floating point via the @code{__fp16} type defined in the Arm
+C-Language Extensions (ACLE).
 
 Language-level support for the @code{__fp16} data type is
 independent of whether GCC generates code using hardware floating-point
@@ -349,17 +319,77 @@ instructions.  In cases where hardware support is not specified, GCC
 implements conversions between @code{__fp16} and other types as library
 calls.
 
-It is recommended that portable code use the @code{_Float16} type defined
-by ISO/IEC TS 18661-3:2015.  @xref{Floating Types}.
+Arm targets support two mutually incompatible half-precision
+floating-point formats:
+
+@itemize @bullet
+@item
+A format that implements IEEE 754-2008 16-bit floating point types,
+enabled with the @option{-mfp16-format=ieee} command-line option; this
+format can represent normalized values in the range of @math{2^{-14}}
+to 65504.  There are 11 bits of significand precision, approximately 3
+decimal digits.
+
+@item
+An alternative format that sacrifices NaNs and infinity values, but
+has a larger range of values that can be represented: @math{2^{-14}}
+to 131008.  This is enabled with the
+@option{-mfp16-format=alternative} option.
+@end itemize
+
+You must choose one of the formats and use it consistently in your
+program.
+
+GCC only supports the @samp{alternative} format on implementations
+that support it in hardware; there is no support for conversions to
+and from this format using library functions.  Furthermore, you cannot
+link together code compiled with one format and code compiled for the
+other.  GCC also supports the @option{-mfp16-format=none} option,
+which disables all support for half-precision floating-point types.
+Code compiled with this option can be linked safely with code compiled
+for either format.
+
+The Arm architecture extension @code{FEAT_FP16} (enabled, for example,
+with @option{-march=armv8.2-a+fp16}, or
+@option{-march=armv8.1-m.main+mve.fp}) defines data processing
+instructions that only support the @samp{ieee} format.  The compiler
+rejects attempts to use the @samp{alternative} format when this
+architecture extension is enabled.
+
+Note that the ACLE has deprecated use of the @samp{alternative} format
+and recommends that only the @samp{ieee} format be used.
+
+The default is to compile with @option{-mfp16-format=ieee}.
+
+In C and C++ there are two related data types:
+@itemize @bullet
+@item
+
+@code{__fp16}, as defined by the Arm C-Language Extensions (ACLE).
+This can be used to hold either format;
+
+@item
+@code{_Float16}, which is defined by ISO/IEC TS 18661-3:2015.  This is
+only defined when the format selected is @samp{ieee}.
+@end itemize
+
+The GCC port for AArch64 only supports the IEEE 754-2008 format, and
+does not have the @option{-mfp16-format} command-line option.
+
+
+On x86 targets with SSE2 enabled, GCC supports half-precision (16-bit)
+floating point via the @code{_Float16} type.  For C++, x86 provides a
+builtin type named @code{_Float16} which contains same data format as C.
+
 
 On x86 targets with SSE2 enabled, without @option{-mavx512fp16},
-all operations will be emulated by software emulation and the @code{float}
+all operations are emulated by software emulation and the @code{float}
 instructions. The default behavior for @code{FLT_EVAL_METHOD} is to keep the
 intermediate result of the operation as 32-bit precision. This may lead to
 inconsistent behavior between software emulation and AVX512-FP16 instructions.
-Using @option{-fexcess-precision=16} will force round back after each operation.
+Using @option{-fexcess-precision=16} forces round back after each operation.
 
-Using @option{-mavx512fp16} will generate AVX512-FP16 instructions instead of
+Using @option{-mavx512fp16} generates AVX512-FP16 instructions instead of
 software emulation. The default behavior of @code{FLT_EVAL_METHOD} is to round
 after each operation. The same is true with @option{-fexcess-precision=standard}
 and @option{-mfpmath=sse}. If there is no @option{-mfpmath=sse},
