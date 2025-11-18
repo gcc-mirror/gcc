@@ -736,6 +736,33 @@ aarch64_merge_string_arguments (tree args, tree old_attr,
   return !use_old_attr;
 }
 
+/* Get the PCS for a strcut function and store the result to avoid needing to
+   do too many calls to fndecl_abi which can be expensive.  */
+
+static arm_pcs
+aarch64_function_abi (struct function *fun)
+{
+  gcc_assert (fun);
+  if (fun->machine->pcs == ARM_PCS_UNKNOWN)
+    fun->machine->pcs = arm_pcs (fndecl_abi (fun->decl).id ());
+
+  return fun->machine->pcs;
+}
+
+/* Get the PCS for a decl and store the result to avoid needing to do
+   too many calls to fndecl_abi which can be expensive.  */
+
+static arm_pcs
+aarch64_fndecl_abi (tree fn)
+{
+  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
+  struct function *fun = DECL_STRUCT_FUNCTION (fn);
+  if (!fun)
+    return arm_pcs (fndecl_abi (fn).id ());
+
+  return aarch64_function_abi (fun);
+}
+
 /* Check whether an 'aarch64_vector_pcs' attribute is valid.  */
 
 static tree
@@ -7996,8 +8023,7 @@ function_arg_preserve_none_regno_p (unsigned regno)
 bool
 aarch64_function_arg_regno_p (unsigned regno)
 {
-  enum arm_pcs pcs
-    = cfun ? (arm_pcs) fndecl_abi (cfun->decl).id () : ARM_PCS_AAPCS64;
+  enum arm_pcs pcs = cfun ? aarch64_function_abi (cfun) : ARM_PCS_AAPCS64;
 
   switch (pcs)
     {
@@ -10865,7 +10891,7 @@ aarch64_output_mi_thunk (FILE *file, tree thunk ATTRIBUTE_UNUSED,
   funexp = XEXP (DECL_RTL (function), 0);
   funexp = gen_rtx_MEM (FUNCTION_MODE, funexp);
   auto isa_mode = aarch64_fntype_isa_mode (TREE_TYPE (function));
-  auto pcs_variant = arm_pcs (fndecl_abi (function).id ());
+  auto pcs_variant = aarch64_fndecl_abi (function);
   bool ir = lookup_attribute ("indirect_return",
 			      TYPE_ATTRIBUTES (TREE_TYPE (function)));
   rtx callee_abi = aarch64_gen_callee_cookie (isa_mode, pcs_variant, ir);
@@ -19858,6 +19884,7 @@ aarch64_init_machine_status (void)
 {
   struct machine_function *machine;
   machine = ggc_cleared_alloc<machine_function> ();
+  machine->pcs = ARM_PCS_UNKNOWN;
   return machine;
 }
 
@@ -20013,6 +20040,11 @@ aarch64_set_current_function (tree fndecl)
     }
 
   aarch64_previous_fndecl = fndecl;
+
+  /* Initialize the PCS value to UNKNOWN.  */
+  if (fndecl && TREE_CODE (fndecl) == FUNCTION_DECL)
+    if (function *fn = DECL_STRUCT_FUNCTION (fndecl))
+      fn->machine->pcs = ARM_PCS_UNKNOWN;
 
   /* First set the target options.  */
   cl_target_option_restore (&global_options, &global_options_set,
@@ -25821,7 +25853,7 @@ static bool
 aarch64_is_variant_pcs (tree fndecl)
 {
   /* Check for ABIs that preserve more registers than usual.  */
-  arm_pcs pcs = (arm_pcs) fndecl_abi (fndecl).id ();
+  arm_pcs pcs = aarch64_fndecl_abi (fndecl);
   if (pcs == ARM_PCS_SIMD || pcs == ARM_PCS_SVE || pcs == ARM_PCS_PRESERVE_NONE)
     return true;
 

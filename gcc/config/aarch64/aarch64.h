@@ -989,6 +989,25 @@ extern enum aarch64_cpu aarch64_tune;
 
 #define DEFAULT_PCC_STRUCT_RETURN 0
 
+/* The set of available Procedure Call Stardards.  */
+
+enum arm_pcs
+{
+  ARM_PCS_AAPCS64,		/* Base standard AAPCS for 64 bit.  */
+  ARM_PCS_SIMD,			/* For aarch64_vector_pcs functions.  */
+  ARM_PCS_SVE,			/* For functions that pass or return
+				   values in SVE registers.  */
+  ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
+  ARM_PCS_PRESERVE_NONE,	/* PCS variant with no call-preserved
+				   registers except X29.  */
+  ARM_PCS_MS_VARIADIC,		/* PCS variant with no call-preserved
+				   differently.
+				   All composites are treated alike.
+				   SIMD and floating-point registers
+				   aren't used.  */
+  ARM_PCS_UNKNOWN
+};
+
 #if defined(HAVE_POLY_INT_H) && defined(GCC_VEC_H)
 struct GTY (()) aarch64_frame
 {
@@ -1159,6 +1178,9 @@ typedef struct GTY (()) machine_function
 
   /* During SEH output, this is non-null.  */
   struct seh_frame_state * GTY ((skip (""))) seh;
+
+  /* The Procedure Call Standard for the function.  */
+  enum arm_pcs pcs;
 } machine_function;
 #endif
 #endif
@@ -1175,26 +1197,6 @@ enum aarch64_abi_type
 #endif
 
 #define TARGET_ILP32	(aarch64_abi & AARCH64_ABI_ILP32)
-
-enum arm_pcs
-{
-  ARM_PCS_AAPCS64,		/* Base standard AAPCS for 64 bit.  */
-  ARM_PCS_SIMD,			/* For aarch64_vector_pcs functions.  */
-  ARM_PCS_SVE,			/* For functions that pass or return
-				   values in SVE registers.  */
-  ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
-  ARM_PCS_PRESERVE_NONE,	/* PCS variant with no call-preserved
-				   registers except X29.  */
-  ARM_PCS_MS_VARIADIC,	/* PCS variant with no call-preserved
-			   differently.
-			   All composites are treated alike.
-			   SIMD and floating-point registers
-			   aren't used.  */
-  ARM_PCS_UNKNOWN
-};
-
-
-
 
 /* We can't use machine_mode inside a generator file because it
    hasn't been created yet; we shouldn't be using any code that
