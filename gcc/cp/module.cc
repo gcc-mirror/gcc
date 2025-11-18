@@ -4941,8 +4941,13 @@ maybe_add_cmi_prefix (const char *to, size_t *len_p = NULL)
 static void
 create_dirs (char *path)
 {
+  char *base = path;
+  /* Skip past initial slashes of absolute path.  */
+  while (IS_DIR_SEPARATOR (*base))
+    base++;
+
   /* Try and create the missing directories.  */
-  for (char *base = path; *base; base++)
+  for (; *base; base++)
     if (IS_DIR_SEPARATOR (*base))
       {
 	char sep = *base;
