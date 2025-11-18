@@ -80,4 +80,6 @@ by particular CPU name. Permissible values for this option are:
 
 @samp{andes-a27},
 
-@samp{andes-ax27}.
+@samp{andes-ax27},
+
+@samp{spacemit-x60}.

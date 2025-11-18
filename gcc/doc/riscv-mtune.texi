@@ -50,6 +50,8 @@ particular CPU name.  Permissible values for this option are:
 
 @samp{xiangshan-kunminghu},
 
+@samp{spacemit-x60},
+
 @samp{generic-ooo},
 
 @samp{size},

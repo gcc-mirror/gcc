@@ -756,6 +756,30 @@ static const struct riscv_tune_param andes_25_tune_info = {
   NULL,						/* vector cost */
   NULL,						/* function_align */
   NULL,						/* jump_align */
+  NULL,						/* loop_align.  */
+  true,						/* prefer-agnostic.  */
+};
+
+static const struct riscv_tune_param spacemit_x60_tune_info= {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},	/* fp_mul */
+  {COSTS_N_INSNS (15), COSTS_N_INSNS (22)},	/* fp_div */
+  {COSTS_N_INSNS (3), COSTS_N_INSNS (6)},	/* int_mul */
+  {COSTS_N_INSNS (12), COSTS_N_INSNS (20)},	/* int_div */
+  2,						/* issue_rate */
+  3,						/* branch_cost */
+  5,						/* memory_cost */
+  6,						/* fmv_cost */
+  false,					/* slow_unaligned_access */
+  false,					/* vector_unaligned_access */
+  false,					/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
+  false,					/* use_zero_stride_load */
+  true,						/* speculative_sched_vsetvl */
+  RISCV_FUSE_NOTHING,				/* fusible_ops */
+  NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
   NULL,						/* loop_align */
   true,						/* prefer-agnostic.  */
 };

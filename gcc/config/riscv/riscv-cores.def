@@ -50,6 +50,7 @@ RISCV_TUNE("xt-c920", generic, generic_ooo_tune_info)
 RISCV_TUNE("xt-c920v2", generic, generic_ooo_tune_info)
 RISCV_TUNE("xiangshan-nanhu", xiangshan, xiangshan_nanhu_tune_info)
 RISCV_TUNE("xiangshan-kunminghu", xiangshan, generic_ooo_tune_info)
+RISCV_TUNE("spacemit-x60", spacemit_x60, spacemit_x60_tune_info)
 RISCV_TUNE("generic-ooo", generic_ooo, generic_ooo_tune_info)
 RISCV_TUNE("size", generic, optimize_size_tune_info)
 RISCV_TUNE("mips-p8700", mips_p8700, mips_p8700_tune_info)
@@ -180,5 +181,8 @@ RISCV_CORE("andes-nx25",      "rv64imc_zicsr_zifencei_xandesperf",    "andes-25-
 RISCV_CORE("andes-ax25",      "rv64imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
 RISCV_CORE("andes-a27",       "rv32imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
 RISCV_CORE("andes-ax27",      "rv64imafdc_zicsr_zifencei_xandesperf", "andes-25-series")
+RISCV_CORE("spacemit-x60",    "rv64imafdcv_zba_zbb_zbc_zbs_zicboz_zicond_"
+			      "zbkc_zfh_zvfh_zvkt_zvl256b_sscofpmf",
+			      "spacemit-x60")
 
 #undef RISCV_CORE
