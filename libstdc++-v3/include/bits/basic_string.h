@@ -269,8 +269,8 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       void
       _M_set_length(size_type __n)
       {
-	_M_length(__n);
 	traits_type::assign(_M_data()[__n], _CharT());
+	_M_length(__n);
       }
 
       _GLIBCXX20_CONSTEXPR
