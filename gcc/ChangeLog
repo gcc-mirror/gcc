@@ -1,3 +1,11 @@
+2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2025-08-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/121581
+	* doc/extend.texi (__builtin_object_size): Fix example.
+
 2025-11-12  Hu, Lin1  <lin1.hu@intel.com>
 
 	Backported from master:
