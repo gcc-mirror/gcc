@@ -6222,7 +6222,7 @@ package body Exp_Attr is
 
          --  For modular types, nothing to do (no overflow, since wraps)
 
-         elsif Is_Modular_Integer_Type (Ptyp) then
+         elsif Has_Modular_Operations (Ptyp) then
             null;
 
          --  For other types, if argument is marked as needing a range check or
@@ -7497,7 +7497,7 @@ package body Exp_Attr is
 
          --  For modular types, nothing to do (no overflow, since wraps)
 
-         elsif Is_Modular_Integer_Type (Ptyp) then
+         elsif Has_Modular_Operations (Ptyp) then
             null;
 
          --  For other types, if argument is marked as needing a range check or

@@ -5777,7 +5777,7 @@ package body Exp_Aggr is
                    Left_Opnd  => Duplicate_Subexpr_Move_Checks (Aggr_Lo),
                    Right_Opnd => Duplicate_Subexpr_Move_Checks (Aggr_Hi));
 
-            elsif Is_Signed_Integer_Type (Ind_Typ) then
+            elsif Has_Overflow_Operations (Ind_Typ) then
                Cond :=
                  Make_Op_Gt (Loc,
                    Left_Opnd  =>

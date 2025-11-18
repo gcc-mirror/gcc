@@ -18166,7 +18166,7 @@ package body Sem_Ch13 is
          elsif Ekind (E) = E_Function then
             return No (First_Formal (E))
               or else
-                (Is_Signed_Integer_Type (Etype (First_Formal (E)))
+                (Has_Overflow_Operations (Etype (First_Formal (E)))
                   and then No (Next_Formal (First_Formal (E))));
          else
             return False;

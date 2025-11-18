@@ -28172,7 +28172,9 @@ package body Sem_Prag is
                return;
 
             elsif not Is_Integer_Type (E)
-              or else Is_Modular_Integer_Type (E)
+              or else
+                (Is_Modular_Integer_Type (E)
+                   and then not Has_Unsigned_Base_Range_Aspect (Base_Type (E)))
             then
                Error_Pragma_Arg
                  ("cannot apply pragma %",
@@ -28211,7 +28213,10 @@ package body Sem_Prag is
                Set_First_Subtype_Link (Freeze_Node (Base_Type (E)), E);
                Set_Has_Delayed_Freeze (E);
 
-               Set_Has_Unsigned_Base_Range_Aspect (Base_Type (E));
+               --  Attribute Has_Unsigned_Base_Range_Aspect must have been
+               --  set by Unsigned_Base_Range_Type_Declaration or inherited
+               --  by Build_Derived_Numeric_Type.
+               pragma Assert (Has_Unsigned_Base_Range_Aspect (Base_Type (E)));
             end if;
          end Unsigned_Base_Range;
 

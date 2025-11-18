@@ -30738,7 +30738,7 @@ package body Sem_Util is
          --  of the same modular type, and (M1 and M2) = 0 was intended.
 
          if Expec_Type = Standard_Boolean
-           and then Is_Modular_Integer_Type (Found_Type)
+           and then Has_Modular_Operations (Found_Type)
            and then Nkind (Parent (Expr)) in N_Op_And | N_Op_Or | N_Op_Xor
            and then Nkind (Right_Opnd (Parent (Expr))) in N_Op_Compare
          then

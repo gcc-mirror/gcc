@@ -5532,9 +5532,7 @@ package body Checks is
          --  bound, because that means the result could wrap.
          --  Same applies for the lower bound if it is negative.
 
-         if Is_Modular_Integer_Type (Typ)
-           and then not Has_Unsigned_Base_Range_Aspect (Btyp)
-         then
+         if Has_Modular_Operations (Typ) then
             if Lor > Lo and then Hir <= Hbound then
                Lo := Lor;
             end if;
@@ -6263,11 +6261,9 @@ package body Checks is
       if Overflow_Checks_Suppressed (Etype (N)) then
          return;
 
-      --  Nothing to do for unsigned integer types, which do not overflow
+      --  Nothing to do for modular integer types, which do not overflow
 
-      elsif Is_Modular_Integer_Type (Typ)
-        and then not Has_Unsigned_Base_Range_Aspect (Typ)
-      then
+      elsif Has_Modular_Operations (Typ) then
          return;
       end if;
 
@@ -8158,9 +8154,7 @@ package body Checks is
 
       elsif Nkind (Expr) = N_Selected_Component
         and then Present (Component_Clause (Entity (Selector_Name (Expr))))
-        and then
-          (Is_Modular_Integer_Type (Typ)
-             and then not Has_Unsigned_Base_Range_Aspect (Base_Type (Typ)))
+        and then Has_Modular_Operations (Typ)
         and then Modulus (Typ) = 2 ** Esize (Entity (Selector_Name (Expr)))
       then
          return;

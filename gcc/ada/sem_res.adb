@@ -10118,7 +10118,7 @@ package body Sem_Res is
          Set_Etype (N, Any_Type);
          return;
 
-      elsif Is_Modular_Integer_Type (Typ)
+      elsif Has_Modular_Operations (Typ)
         and then Etype (Left_Opnd (N)) = Universal_Integer
         and then Etype (Right_Opnd (N)) = Universal_Integer
       then
@@ -12767,7 +12767,7 @@ package body Sem_Res is
         and then Nkind (N) = N_Op_Minus
         and then Nkind (R) = N_Integer_Literal
         and then Comes_From_Source (R)
-        and then Is_Modular_Integer_Type (B_Typ)
+        and then Has_Modular_Operations (B_Typ)
         and then Nkind (Parent (N)) not in N_Qualified_Expression
                                          | N_Type_Conversion
         and then Expr_Value (R) > Uint_1
@@ -13260,7 +13260,7 @@ package body Sem_Res is
             if Length = 1 then
                High_Bound := New_Copy_Tree (Low_Bound);
 
-            elsif Is_Signed_Integer_Type (Index_Type) then
+            elsif Has_Overflow_Operations (Index_Type) then
                High_Bound :=
                  Make_Op_Add (Loc,
                    Left_Opnd  => New_Copy_Tree (Low_Bound),

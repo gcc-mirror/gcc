@@ -666,7 +666,7 @@ package body Sem_Eval is
    is
    begin
       if (not Stat or else In_Inlined_Body)
-        and then Is_Signed_Integer_Type (Etype (N))
+        and then Has_Overflow_Operations (Etype (N))
       then
          declare
             BT : constant Entity_Id := Base_Type (Etype (N));
@@ -1494,8 +1494,8 @@ package body Sem_Eval is
                --  the types are not modular (e.g. X < X + 1 is False if X is
                --  the largest number).
 
-               if not Is_Modular_Integer_Type (Ltyp)
-                 and then not Is_Modular_Integer_Type (Rtyp)
+               if not Has_Modular_Operations (Ltyp)
+                 and then not Has_Modular_Operations (Rtyp)
                then
                   if Loffs < Roffs then
                      Diff.all := Roffs - Loffs;
@@ -2094,7 +2094,7 @@ package body Sem_Eval is
 
             --  Adjust the result by the modulus if the type is a modular type
 
-            if Is_Modular_Integer_Type (Ltype) then
+            if Has_Modular_Operations (Ltype) then
                Result := Result mod Modulus (Ltype);
             end if;
 
@@ -2826,7 +2826,7 @@ package body Sem_Eval is
 
       --  Modular integer literals must be in their base range
 
-      if Is_Modular_Integer_Type (Typ)
+      if Has_Modular_Operations (Typ)
         and then Is_Out_Of_Range (N, Base_Type (Typ), Assume_Valid => True)
       then
          Out_Of_Range (N);
@@ -2969,7 +2969,7 @@ package body Sem_Eval is
 
       --  Compile time evaluation of logical operation
 
-      if Is_Modular_Integer_Type (Etype (N)) then
+      if Has_Modular_Operations (Etype (N)) then
          Left_Int  := Expr_Value (Left);
          Right_Int := Expr_Value (Right);
 
@@ -3206,7 +3206,7 @@ package body Sem_Eval is
                      Result := Left_Int;
                   end if;
 
-                  if Is_Modular_Integer_Type (Etype (N)) then
+                  if Has_Modular_Operations (Etype (N)) then
                      Result := Result mod Modulus (Etype (N));
                   end if;
 
@@ -3277,7 +3277,7 @@ package body Sem_Eval is
          --  the original value. For a nonbinary modulus this is an arbitrary
          --  but consistent definition.
 
-         if Is_Modular_Integer_Type (Typ) then
+         if Has_Modular_Operations (Typ) then
             Fold_Uint (N, Modulus (Typ) - 1 - Rint, Stat);
          else pragma Assert (Is_Boolean_Type (Typ));
             Fold_Uint (N, Test (not Is_True (Rint)), Stat);
@@ -4388,7 +4388,7 @@ package body Sem_Eval is
                Result := Rint;
 
             elsif Nkind (N) = N_Op_Minus then
-               if Is_Modular_Integer_Type (Etype (N)) then
+               if Has_Modular_Operations (Etype (N)) then
                   Result := (-Rint) mod Modulus (Etype (N));
                else
                   Result := (-Rint);
@@ -5005,7 +5005,7 @@ package body Sem_Eval is
 
       declare
          Modulus : constant Uint :=
-           (if Is_Modular_Integer_Type (Typ) then Einfo.Entities.Modulus (Typ)
+           (if Has_Modular_Operations (Typ) then Einfo.Entities.Modulus (Typ)
             else Uint_2 ** RM_Size (Typ));
          Amount : constant Uint := UI_Min (Expr_Value (Right), RM_Size (Typ));
          --  Shift by an Amount greater than the size is all-zeros or all-ones.
@@ -5023,7 +5023,7 @@ package body Sem_Eval is
             Val := (Expr_Value (Left) * (Uint_2 ** Amount))
                      rem Modulus;
 
-            if Is_Modular_Integer_Type (Typ)
+            if Has_Modular_Operations (Typ)
               or else Val < Modulus / Uint_2
             then
                Fold_Uint (N, Val, Static => Static);
@@ -5062,10 +5062,10 @@ package body Sem_Eval is
             begin
                --  X / 2**Y if X if positive or a small enough modular integer
 
-               if (Is_Modular_Integer_Type (Typ)
+               if (Has_Modular_Operations (Typ)
                     and then Expr_Value (Left) < Modulus / Uint_2)
                  or else
-                   (not Is_Modular_Integer_Type (Typ)
+                   (not Has_Modular_Operations (Typ)
                      and then Expr_Value (Left) >= 0)
                then
                   Fold_Uint (N, Expr_Value (Left) / Two_Y, Static => Static);
@@ -5076,7 +5076,7 @@ package body Sem_Eval is
                elsif Two_Y > Modulus
                  or else Expr_Value (Left) = Uint_Minus_1
                then
-                  if Is_Modular_Integer_Type (Typ) then
+                  if Has_Modular_Operations (Typ) then
                      Fold_Uint (N, Modulus - Uint_1, Static => Static);
                   else
                      Fold_Uint (N, Uint_Minus_1, Static => Static);
@@ -5085,7 +5085,7 @@ package body Sem_Eval is
                --  Large modular integer, compute via multiply/divide the
                --  following: X >> Y + (1 << Y - 1) << (RM_Size - Y)
 
-               elsif Is_Modular_Integer_Type (Typ) then
+               elsif Has_Modular_Operations (Typ) then
                   Fold_Uint
                     (N,
                      (Expr_Value (Left)) / Two_Y
@@ -7207,7 +7207,7 @@ package body Sem_Eval is
       --   An expression of a formal modular type is not foldable because
       --   the modulus is unknown.
 
-      elsif Is_Modular_Integer_Type (Etype (Op1))
+      elsif Has_Modular_Operations (Etype (Op1))
         and then Is_Generic_Type (Etype (Op1))
       then
          Check_Non_Static_Context (Op1);
@@ -7283,7 +7283,7 @@ package body Sem_Eval is
 
       --  Exclude expressions of a generic modular type, as above
 
-      elsif Is_Modular_Integer_Type (Etype (Op1))
+      elsif Has_Modular_Operations (Etype (Op1))
         and then Is_Generic_Type (Etype (Op1))
       then
          Check_Non_Static_Context (Op1);
@@ -7305,7 +7305,7 @@ package body Sem_Eval is
          end if;
 
          if not Fold
-           and then not Is_Modular_Integer_Type (Etype (N))
+           and then not Has_Modular_Operations (Etype (N))
          then
             case Nkind (N) is
                when N_Op_And =>
@@ -7482,7 +7482,8 @@ package body Sem_Eval is
       --  size, then the source value must be in range. We exclude biased
       --  types, because they bizarrely can generate out of range values.
 
-      elsif Is_Signed_Integer_Type (Etype (N))
+      elsif (Is_Signed_Integer_Type (Etype (N))
+               and then Is_Signed_Integer_Type (Typ))
         and then Is_Known_Valid (Typ)
         and then Esize (Etype (N)) <= Esize (Typ)
         and then not Has_Biased_Representation (Etype (N))

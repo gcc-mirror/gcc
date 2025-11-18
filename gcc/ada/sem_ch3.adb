@@ -11313,9 +11313,8 @@ package body Sem_Ch3 is
       --  not. It is OK for the new bound we are creating, but not for
       --  the old one??? Still if it never happens, no problem.
 
-      --  This must be disabled on unsigned base range types because their
-      --  base type is a modular type, and their type is a signed integer
-      --  type.
+      --  This must be disabled on types with the unsigned base range aspect
+      --  to avoid reporting spurious errors.
 
       if not Has_Unsigned_Base_Range_Aspect (Base_Type (Par_T)) then
          Analyze_And_Resolve (Bound, Base_Type (Par_T));
@@ -24100,7 +24099,9 @@ package body Sem_Ch3 is
       Set_Scalar_Range   (Implicit_Base, Scalar_Range   (Base_Typ));
       Set_Modulus        (Implicit_Base, Modulus        (Base_Typ));
 
-      Mutate_Ekind           (T, E_Signed_Integer_Subtype);
+      Set_Has_Unsigned_Base_Range_Aspect (Implicit_Base);
+
+      Mutate_Ekind           (T, E_Modular_Integer_Subtype);
       Set_Etype              (T, Implicit_Base);
       Set_Size_Info          (T, Implicit_Base);
       Inherit_Rep_Item_Chain (T, Implicit_Base);

@@ -7713,7 +7713,7 @@ package body Freeze is
          elsif Is_Integer_Type (E) then
             Adjust_Esize_For_Alignment (E);
 
-            if Is_Modular_Integer_Type (E) then
+            if Has_Modular_Operations (E) then
                --  Standard_Address has been built with the assumption that its
                --  modulus was System_Address_Size, but this is not a universal
                --  property and may need to be corrected.

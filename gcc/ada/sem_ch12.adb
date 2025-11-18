@@ -15794,7 +15794,7 @@ package body Sem_Ch12 is
                Diagnose_Predicated_Actual;
 
             when N_Formal_Signed_Integer_Type_Definition =>
-               if not Is_Signed_Integer_Type (Act_T) then
+               if not Has_Overflow_Operations (Act_T) then
                   Error_Msg_NE
                     ("expect signed integer type in instantiation of&",
                      Actual, Gen_T);
@@ -15804,7 +15804,7 @@ package body Sem_Ch12 is
                Diagnose_Predicated_Actual;
 
             when N_Formal_Modular_Type_Definition =>
-               if not Is_Modular_Integer_Type (Act_T) then
+               if not Has_Modular_Operations (Act_T) then
                   Error_Msg_NE
                     ("expect modular type in instantiation of &",
                        Actual, Gen_T);
@@ -19230,13 +19230,13 @@ package body Sem_Ch12 is
             end if;
 
          when N_Formal_Signed_Integer_Type_Definition =>
-            if not Is_Integer_Type (Def_Sub) then
+            if not Has_Overflow_Operations (Def_Sub) then
                Error_Msg_NE ("default for& must be a discrete type",
                  Default, Formal);
             end if;
 
          when N_Formal_Modular_Type_Definition =>
-            if not Is_Modular_Integer_Type (Def_Sub) then
+            if not Has_Modular_Operations (Def_Sub) then
                Error_Msg_NE ("default for& must be a modular_integer Type",
                  Default, Formal);
             end if;

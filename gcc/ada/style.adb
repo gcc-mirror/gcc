@@ -152,7 +152,7 @@ package body Style is
 
                   --  Second OK case, modular types
 
-                  elsif Is_Modular_Integer_Type (Etype (Node)) then
+                  elsif Has_Modular_Operations (Etype (Node)) then
                      return;
 
                   --  Third OK case, array types

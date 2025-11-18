@@ -333,8 +333,7 @@ package body Einfo.Utils is
 
    function Is_Modular_Integer_Type             (Id : E) return B is
    begin
-      return Ekind (Id) in Modular_Integer_Kind
-        and then not Has_Unsigned_Base_Range_Aspect (Base_Type (Id));
+      return Ekind (Id) in Modular_Integer_Kind;
    end Is_Modular_Integer_Type;
 
    function Is_Named_Access_Type                (Id : E) return B is
@@ -394,10 +393,7 @@ package body Einfo.Utils is
 
    function Is_Signed_Integer_Type              (Id : E) return B is
    begin
-      return Ekind (Id) in Signed_Integer_Kind
-        or else
-          (Ekind (Id) in Modular_Integer_Kind
-             and then Has_Unsigned_Base_Range_Aspect (Base_Type (Id)));
+      return Ekind (Id) in Signed_Integer_Kind;
    end Is_Signed_Integer_Type;
 
    function Is_Subprogram                       (Id : E) return B is
@@ -1260,6 +1256,16 @@ package body Einfo.Utils is
         and then Present (Limited_View (Id));
    end Has_Limited_View;
 
+   ----------------------------
+   -- Has_Modular_Operations --
+   ----------------------------
+
+   function Has_Modular_Operations (Id : E) return B is
+   begin
+      return Is_Modular_Integer_Type (Id)
+        and then not Has_Unsigned_Base_Range_Aspect (Base_Type (Id));
+   end Has_Modular_Operations;
+
    --------------------------
    -- Has_Non_Limited_View --
    --------------------------
@@ -1348,6 +1354,17 @@ package body Einfo.Utils is
           and then Present (Constits)
           and then Nkind (Node (First_Elmt (Constits))) = N_Null;
    end Has_Null_Visible_Refinement;
+
+   -----------------------------
+   -- Has_Overflow_Operations --
+   -----------------------------
+
+   function Has_Overflow_Operations (Id : E) return B is
+   begin
+      return Is_Signed_Integer_Type (Id)
+        or else (Is_Modular_Integer_Type (Id)
+                   and then Has_Unsigned_Base_Range_Aspect (Base_Type (Id)));
+   end Has_Overflow_Operations;
 
    --------------------
    -- Has_Unmodified --

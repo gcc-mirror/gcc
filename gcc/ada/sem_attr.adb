@@ -2387,7 +2387,7 @@ package body Sem_Attr is
       begin
          Check_Type;
 
-         if not Is_Modular_Integer_Type (P_Type) then
+         if not Has_Modular_Operations (P_Type) then
             Error_Attr_P
               ("prefix of % attribute must be modular integer type");
          end if;
@@ -5778,7 +5778,7 @@ package body Sem_Attr is
          --  If not modular type, test for overflow check required
 
          else
-            if not Is_Modular_Integer_Type (P_Type)
+            if not Has_Modular_Operations (P_Type)
               and then not Range_Checks_Suppressed (P_Base_Type)
             then
                Enable_Range_Check (E1);
@@ -10221,7 +10221,7 @@ package body Sem_Attr is
 
          --  Modular integer case (wraps)
 
-         elsif Is_Modular_Integer_Type (P_Type) then
+         elsif Has_Modular_Operations (P_Type) then
             Fold_Uint (N, (Expr_Value (E1) - 1) mod Modulus (P_Type), Static);
 
          --  Other scalar cases
@@ -10611,7 +10611,7 @@ package body Sem_Attr is
 
          --  Modular integer case (wraps)
 
-         elsif Is_Modular_Integer_Type (P_Type) then
+         elsif Has_Modular_Operations (P_Type) then
             Fold_Uint (N, (Expr_Value (E1) + 1) mod Modulus (P_Type), Static);
 
          --  Other scalar cases
@@ -13146,8 +13146,8 @@ package body Sem_Attr is
 
                            when Name_Op_And | Name_Op_Or | Name_Op_Xor =>
                               --  No Boolean array operators in Standard
-                              return Is_Modular_Integer_Type (Accum_Typ)
-                                or else Is_Boolean_Type (Accum_Typ);
+                              return Is_Boolean_Type (Accum_Typ)
+                                or else Has_Modular_Operations (Accum_Typ);
 
                            when Name_Op_Concat =>
                               return Is_Array_Type (Accum_Typ)

@@ -455,7 +455,7 @@ package body Sem_Intr is
       --  For modular type, modulus must be 2**8, 2**16, 2**32, or 2**64.
       --  Don't apply to generic types, since we may not have a modulus value.
 
-      elsif Is_Modular_Integer_Type (Typ1)
+      elsif Has_Modular_Operations (Typ1)
         and then not Is_Generic_Type (Typ1)
         and then Modulus (Typ1) /= Uint_2 ** 8
         and then Modulus (Typ1) /= Uint_2 ** 16

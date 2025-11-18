@@ -1144,7 +1144,7 @@ package body Sem_Type is
       --  A boolean operation on integer literals is compatible with modular
       --  context.
 
-      elsif T2 = Any_Modular and then Is_Modular_Integer_Type (T1) then
+      elsif T2 = Any_Modular and then Has_Modular_Operations (T1) then
          return True;
 
       --  The actual type may be the result of a previous error
@@ -3375,7 +3375,7 @@ package body Sem_Type is
         or else (T1 = Universal_Real    and then Is_Real_Type (T2))
         or else (T1 = Universal_Fixed   and then Is_Fixed_Point_Type (T2))
         or else (T1 = Any_Fixed         and then Is_Fixed_Point_Type (T2))
-        or else (T1 = Any_Modular       and then Is_Modular_Integer_Type (T2))
+        or else (T1 = Any_Modular       and then Has_Modular_Operations (T2))
         or else (T1 = Any_Character     and then Is_Character_Type (T2))
         or else (T1 = Any_String        and then Is_String_Type (T2))
         or else (T1 = Any_Composite     and then Is_Aggregate_Type (T2))
@@ -3395,7 +3395,7 @@ package body Sem_Type is
         or else (T2 = Universal_Real    and then Is_Real_Type (T1))
         or else (T2 = Universal_Fixed   and then Is_Fixed_Point_Type (T1))
         or else (T2 = Any_Fixed         and then Is_Fixed_Point_Type (T1))
-        or else (T2 = Any_Modular       and then Is_Modular_Integer_Type (T1))
+        or else (T2 = Any_Modular       and then Has_Modular_Operations (T1))
         or else (T2 = Any_Character     and then Is_Character_Type (T1))
         or else (T2 = Any_String        and then Is_String_Type (T1))
         or else (T2 = Any_Composite     and then Is_Aggregate_Type (T1))
@@ -3562,7 +3562,7 @@ package body Sem_Type is
    function Valid_Boolean_Arg (T : Entity_Id) return Boolean is
    begin
       if Is_Boolean_Type (T)
-        or else Is_Modular_Integer_Type (T)
+        or else Has_Modular_Operations (T)
         or else T = Universal_Integer
         or else T = Any_Composite
         or else T = Raise_Type

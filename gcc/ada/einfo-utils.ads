@@ -186,11 +186,13 @@ package Einfo.Utils is
    function Has_Interrupt_Handler (Id : E) return B;
    function Has_Invariants (Id : E) return B;
    function Has_Limited_View (Id : E) return B;
+   function Has_Modular_Operations (Id : E) return B with Inline;
    function Has_Non_Limited_View (Id : E) return B with Inline;
    function Has_Non_Null_Abstract_State (Id : E) return B;
    function Has_Non_Null_Visible_Refinement (Id : E) return B;
    function Has_Null_Abstract_State (Id : E) return B;
    function Has_Null_Visible_Refinement (Id : E) return B;
+   function Has_Overflow_Operations (Id : E) return B with Inline;
    function Implementation_Base_Type (Id : E) return E;
    function Is_Boolean_Type (Id : E) return B with Inline;
    function Is_Constant_Object (Id : E) return B with Inline;
