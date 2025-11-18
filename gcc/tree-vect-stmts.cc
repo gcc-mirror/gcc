@@ -14047,9 +14047,9 @@ supportable_widening_operation (vec_info *vinfo,
 					    TYPE_UNSIGNED (prev_type));
 
       if (VECTOR_BOOLEAN_TYPE_P (intermediate_type)
-	  && VECTOR_BOOLEAN_TYPE_P (prev_type)
-	  && intermediate_mode == prev_mode
-	  && SCALAR_INT_MODE_P (prev_mode))
+	  && VECTOR_BOOLEAN_TYPE_P (wide_vectype)
+	  && intermediate_mode == TYPE_MODE (wide_vectype)
+	  && SCALAR_INT_MODE_P (intermediate_mode))
 	{
 	  /* If the input and result modes are the same, a different optab
 	     is needed where we pass in the number of units in vectype.  */
