@@ -7473,7 +7473,7 @@ The following sections present notes on the external ABI as
 presented by libgomp.  Only maintainers should need them.
 
 @menu
-* Implementing MASTER construct::
+* Implementing MASKED and MASTER construct::
 * Implementing CRITICAL construct::
 * Implementing ATOMIC construct::
 * Implementing FLUSH construct::
@@ -7491,16 +7491,19 @@ presented by libgomp.  Only maintainers should need them.
 @end menu
 
 
-@node Implementing MASTER construct
-@section Implementing MASTER construct
+@node Implementing MASKED and MASTER construct
+@section Implementing MASKED and MASTER construct
 
 @smallexample
-if (omp_get_thread_num () == 0)
+if (omp_get_thread_num () == thread_num)
   block
 @end smallexample
 
+Hereby, @var{thread_num} has the value of the argument to the @code{filter}
+clause or zero if not specified.
+
 Alternately, we generate two copies of the parallel subfunction
-and only include this in the version run by the primary thread.
+and only include this in the version run by the @var{thread_num} thread.
 Surely this is not worthwhile though...
 
 
