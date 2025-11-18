@@ -110,6 +110,9 @@ ix86_issue_rate (void)
     case PROCESSOR_PANTHERLAKE:
       return 6;
 
+    case PROCESSOR_NOVALAKE:
+      return 8;
+
     default:
       return 1;
     }

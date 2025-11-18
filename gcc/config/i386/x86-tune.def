@@ -602,7 +602,7 @@ DEF_TUNE (X86_TUNE_AVX128_OPTIMAL, "avx128_optimal", m_BDVER | m_BTVER2
 
 /* X86_TUNE_AVX256_OPTIMAL: Use 256-bit AVX instructions instead of 512-bit AVX
    instructions in the auto-vectorizer.  */
-DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_CORE_AVX512)
+DEF_TUNE (X86_TUNE_AVX256_OPTIMAL, "avx256_optimal", m_CORE_AVX512 | m_NOVALAKE)
 
 /* X86_TUNE_AVX256_AVOID_VEC_PERM: Avoid using 256-bit cross-lane
    vector permutation instructions in the auto-vectorizer.  */

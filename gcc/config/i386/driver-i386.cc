@@ -603,6 +603,9 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Diamond Rapids.  */
 		  if (has_feature (FEATURE_AMX_FP8))
 		    cpu = "diamondrapids";
+		  /* Assume Nova Lake.  */
+		  else if (has_feature (FEATURE_AVX10_2))
+		    cpu = "novalake";
 		  /* Assume Granite Rapids D.  */
 		  else if (has_feature (FEATURE_AMX_COMPLEX))
 		    cpu = "graniterapids-d";
@@ -643,9 +646,6 @@ const char *host_detect_local_cpu (int argc, const char **argv)
 		  /* Assume Clearwater Forest.  */
 		  if (has_feature (FEATURE_USER_MSR))
 		    cpu = "clearwaterforest";
-		  /* Assume Nova Lake.  */
-		  else if (has_feature (FEATURE_PREFETCHI))
-		    cpu = "novalake";
 		  else if (has_feature (FEATURE_SM3))
 		    {
 			if (has_feature (FEATURE_KL))
