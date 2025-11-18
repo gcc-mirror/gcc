@@ -6647,7 +6647,10 @@ vect_reduction_update_partial_vector_usage (loop_vec_info loop_vinfo,
 {
   enum vect_reduction_type reduc_type = VECT_REDUC_INFO_TYPE (reduc_info);
   internal_fn reduc_fn = VECT_REDUC_INFO_FN (reduc_info);
-  internal_fn cond_fn = get_conditional_internal_fn (code, type);
+  internal_fn cond_fn
+    = ((code.is_internal_fn ()
+	&& internal_fn_mask_index ((internal_fn)code) != -1)
+       ? (internal_fn)code : get_conditional_internal_fn (code, type));
 
   if (reduc_type != FOLD_LEFT_REDUCTION
       && !use_mask_by_cond_expr_p (code, cond_fn, vectype_in)
@@ -7871,7 +7874,10 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
   vec_num = vect_get_num_copies (loop_vinfo, SLP_TREE_CHILDREN (slp_node)[0]);
 
   code_helper code = canonicalize_code (op.code, op.type);
-  internal_fn cond_fn = get_conditional_internal_fn (code, op.type);
+  internal_fn cond_fn
+    = ((code.is_internal_fn ()
+	&& internal_fn_mask_index ((internal_fn)code) != -1)
+       ? (internal_fn)code : get_conditional_internal_fn (code, op.type));
 
   vec_loop_masks *masks = &LOOP_VINFO_MASKS (loop_vinfo);
   vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
@@ -8119,17 +8125,26 @@ vect_transform_reduction (loop_vec_info loop_vinfo,
 	     yet.  */
 	  gcc_assert (!lane_reducing);
 
-	  /* Make sure that the reduction accumulator is vop[0].  */
-	  if (reduc_index == 1)
-	    {
-	      gcc_assert (commutative_binary_op_p (code, op.type));
-	      std::swap (vop[0], vop[1]);
-	    }
 	  tree mask = vect_get_loop_mask (loop_vinfo, gsi, masks,
 					  vec_num, vectype_in,
 					  mask_index++);
-	  gcall *call = gimple_build_call_internal (cond_fn, 4, mask,
-						    vop[0], vop[1], vop[0]);
+	  gcall *call;
+	  if (code.is_internal_fn () && cond_fn_p)
+	    {
+	      gcc_assert (op.num_ops >= 3
+			  && internal_fn_mask_index (internal_fn (code)) == 0);
+	      vop[2] = vec_oprnds[2][i];
+	      mask = prepare_vec_mask (loop_vinfo, TREE_TYPE (mask),
+				       mask, vop[0], gsi);
+	      call = gimple_build_call_internal (cond_fn, 4, mask, vop[1],
+						 vop[2], vop[reduc_index]);
+	    }
+	  else
+	    {
+	      gcc_assert (code.is_tree_code ());
+	      call = gimple_build_call_internal (cond_fn, 4, mask, vop[0],
+						 vop[1], vop[reduc_index]);
+	    }
 	  new_temp = make_ssa_name (vec_dest, call);
 	  gimple_call_set_lhs (call, new_temp);
 	  gimple_call_set_nothrow (call, true);
