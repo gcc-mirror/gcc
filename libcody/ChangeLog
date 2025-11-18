@@ -1,3 +1,8 @@
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* cody.hh (MessageBuffer::Space): For C++14 or newer use
+	(char) u8' ' instead of Detail::S2C(u8" ").
+
 2023-06-15  Marek Polacek  <polacek@redhat.com>
 
 	* Makefile.in: Pass LD_PICFLAG to LDFLAGS.

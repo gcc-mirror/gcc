@@ -1,3 +1,30 @@
+2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122726
+	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(rename): Use __last_system_error to set errno accurately.
+	* testsuite/27_io/filesystem/operations/rename.cc: Test
+	error_code matches errc::no_such_file_or_directory.
+
+2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.cc.in [!__cpp_lib_syncbuf]: Disable exports for
+	<syncstream> contents when not defined.
+	[!_GLIBCXX_USE_CXX11_ABI]: Disable exports for pmr aliases in
+	<string> when not defined.
+
+2025-11-17  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/util/testsuite_allocator.h: Move importable headers up.
+	* testsuite/util/testsuite_common_types.h: Likewise.
+	* testsuite/util/testsuite_containers.h: Likewise.
+	* testsuite/util/testsuite_error.h: Move includes inside
+	include guard.
+	* testsuite/util/testsuite_greedy_ops.h: #include <cstddef>.
+	* testsuite/util/testsuite_iterators.h: #include <utility>.
+	* testsuite/util/testsuite_new_operators.h: #include <cstdlib>.
+	* testsuite/util/testsuite_random.h: #include <random>.
+
 2025-11-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122698

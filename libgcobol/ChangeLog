@@ -1,3 +1,27 @@
+2025-11-17  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/122702
+	* Makefile.am: Set libdir and libsubdir per libada example.
+	* Makefile.in: Regenerate.
+	* compat/README.md: Revise per new directory structure.
+	* compat/gnu/lib/CBL_ALLOC_MEM.cbl: Moved from compat/lib/gnu.
+	* compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl: Moved from compat/lib/gnu.
+	* compat/gnu/lib/CBL_DELETE_FILE.cbl: Moved from compat/lib/gnu.
+	* compat/gnu/lib/CBL_FREE_MEM.cbl: Moved from compat/lib/gnu.
+	* compat/gnu/udf/stored-char-length.cbl: New file.
+	* compat/lib/gnu/CBL_ALLOC_MEM.cbl: Moved to compat/gnu/lib.
+	* compat/lib/gnu/CBL_CHECK_FILE_EXIST.cbl: Moved to compat/gnu/lib.
+	* compat/lib/gnu/CBL_DELETE_FILE.cbl: Moved to compat/gnu/lib.
+	* compat/lib/gnu/CBL_FREE_MEM.cbl: Moved to compat/gnu/lib.
+	* posix/cpy/psx-open.cpy: New file.
+	* posix/shim/open.cc: New file.
+	* posix/shim/stat.h: Add mode & flag bits for open.cc
+	* posix/udf/posix-lseek.cbl: New file.
+	* posix/udf/posix-open.cbl: New file.
+	* posix/udf/posix-read.cbl: New file.
+	* posix/udf/posix-write.cbl: New file.
+	* xmlparse.cc: Quell context_t initialization-order warning.
+
 2025-11-13  James K. Lowden  <jklowden@cobolworx.com>
 
 	* Makefile.am: Move UDF-support to posix/shim, add install targets

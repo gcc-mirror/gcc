@@ -1,3 +1,222 @@
+2025-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122709
+	* gfortran.dg/select_contiguous.f90: New test.
+
+2025-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122626
+	* g++.dg/analyzer/malloc.C: Add sarif output to verify the fix for
+	PR analyzer/122626.
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/issue-4188.rs: New test.
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/const-generics-5.rs: New test.
+	* rust/execute/torture/const-generics-6.rs: New test.
+	* rust/execute/torture/const-generics-7.rs: New test.
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/const_generics_18.rs: New test.
+	* rust/compile/const_generics_19.rs: New test.
+	* rust/execute/torture/const-generics-3.rs: New test.
+	* rust/execute/torture/const-generics-4.rs: New test.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4212.rs:
+	* rust/compile/issue-4219.rs: New test.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4162.rs: New test.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4222.rs: New test.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4261.rs: New test.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4267.rs: New test.
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/execute/torture/const-generics-2.rs: New test.
+
+2025-11-17  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-3659.rs: New file.
+
+2025-11-17  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/issue-4242.rs: New file.
+	* rust/execute/torture/issue-4242.rs: New file.
+
+2025-11-17  vishruth-thimmaiah  <vishruththimmaiah@gmail.com>
+
+	* rust/compile/const_generics_17.rs: New test.
+	* rust/compile/generics14.rs: New test.
+
+2025-11-17  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/execute/torture/literalpattern_neg.rs: New file.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.fr>
+
+	* rust/compile/issue-3617.rs: New test.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr3079.C: New test.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr3061.C: New test.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr3045.C: New test.
+
+2025-11-17  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/slp-9.c: Use noipa function attribute, drop
+	-fno-early-inlining option.
+	* c-c++-common/restrict-2.c: Explicitly look for hoisted loads.
+	* gfortran.dg/pr104466.f90: Adjust.
+
+2025-11-17  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* gcc.target/aarch64/simd/usubl2.c: New test.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/goacc/cache-3-1.c: Add dg-skip-if for c++26.
+	* g++.dg/goacc/data-clause-2.C: Likewise.
+	* g++.dg/gomp/allocate-3.C: Likewise.
+	* c-c++-common/gomp/affinity-2.c: Use { c || c++23_down } effective
+	target.
+	* c-c++-common/goacc/cache-3-2.c: Replace [: in OpenMP or OpenACC
+	pragmas or attributes with [ : and :] with : ].
+	* c-c++-common/goacc/data-clause-1.c: Likewise.
+	* c-c++-common/goacc/data-clause-2.c: Likewise.
+	* c-c++-common/goacc/data-clause-duplicate-1.c: Likewise.
+	* c-c++-common/goacc/mdc-2.c: Likewise.
+	* c-c++-common/goacc/readonly-1.c: Likewise.
+	* c-c++-common/gomp/allocate-4.c: Likewise.
+	* c-c++-common/gomp/clauses-3.c: Likewise.
+	* c-c++-common/gomp/declare-mapper-3.c: Likewise.
+	* c-c++-common/gomp/depend-1.c: Likewise.
+	* c-c++-common/gomp/depend-2.c: Likewise.
+	* c-c++-common/gomp/depend-3.c: Likewise.
+	* c-c++-common/gomp/depend-4.c: Likewise.
+	* c-c++-common/gomp/depend-5.c: Likewise.
+	* c-c++-common/gomp/depend-6.c: Likewise.
+	* c-c++-common/gomp/dispatch-1.c: Likewise.
+	* c-c++-common/gomp/loop-5.c: Likewise.
+	* c-c++-common/gomp/map-1.c: Likewise.
+	* c-c++-common/gomp/map-2.c: Likewise.
+	* c-c++-common/gomp/map-4.c: Likewise.
+	* c-c++-common/gomp/map-7.c: Likewise.
+	* c-c++-common/gomp/pr100902-1.c: Likewise.
+	* c-c++-common/gomp/pr103642.c: Likewise.
+	* c-c++-common/gomp/pr120180-1.c: Likewise.
+	* c-c++-common/gomp/pr61486-1.c: Likewise.
+	* c-c++-common/gomp/pr81006.c: Likewise.
+	* c-c++-common/gomp/pr91920.c: Likewise.
+	* c-c++-common/gomp/pr96867.c: Likewise.
+	* c-c++-common/gomp/pr99928-16.c: Likewise.
+	* c-c++-common/gomp/reduction-1.c: Likewise.
+	* c-c++-common/gomp/scan-1.c: Likewise.
+	* c-c++-common/gomp/target-data-1.c: Likewise.
+	* c-c++-common/gomp/target-enter-data-1.c: Likewise.
+	* c-c++-common/gomp/target-has-device-addr-1.c: Likewise.
+	* c-c++-common/gomp/target-implicit-map-2.c: Likewise.
+	* c-c++-common/gomp/target-map-iterators-1.c: Likewise.
+	* c-c++-common/gomp/target-map-iterators-3.c: Likewise.
+	* c-c++-common/gomp/target-update-iterators-1.c: Likewise.
+	* c-c++-common/gomp/target-update-iterators-3.c: Likewise.
+	* g++.dg/goacc/cache-3-1.C: Likewise.
+	* g++.dg/goacc/cache-3-2.C: Likewise.
+	* g++.dg/goacc/data-clause-1.C: Likewise.
+	* g++.dg/goacc/mdc.C: Likewise.
+	* g++.dg/gomp/array-section-2.C: Likewise.
+	* g++.dg/gomp/bad-array-section-10.C: Likewise.
+	* g++.dg/gomp/bad-array-section-11.C: Likewise.
+	* g++.dg/gomp/bad-array-section-9.C: Likewise.
+	* g++.dg/gomp/declare-mapper-1.C: Likewise.
+	* g++.dg/gomp/declare-mapper-2.C: Likewise.
+	* g++.dg/gomp/depend-1.C: Likewise.
+	* g++.dg/gomp/depend-2.C: Likewise.
+	* g++.dg/gomp/ind-base-3.C: Likewise.
+	* g++.dg/gomp/map-1.C: Likewise.
+	* g++.dg/gomp/map-2.C: Likewise.
+	* g++.dg/gomp/map-ptrmem-1.C: Likewise.
+	* g++.dg/gomp/map-ptrmem-2.C: Likewise.
+	* g++.dg/gomp/member-array-2.C: Likewise.
+	* g++.dg/gomp/target-this-3.C: Likewise.
+	* g++.dg/gomp/target-this-4.C: Likewise.
+
+2025-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122573
+	* gcc.dg/vect/costmodel/x86_64/costmodel-pr122573.c: New testcase.
+
+2025-11-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u16.c: Add asm check
+	for vmsne.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add the helper
+	macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-u8.c: New test.
+
+2025-11-17  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vmsne.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsne-run-1-i8.c: New test.
+
 2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/121345

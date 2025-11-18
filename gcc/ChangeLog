@@ -1,3 +1,117 @@
+2025-11-17  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122626
+	* tree-logical-location.cc
+	(tree_logical_location_manager::get_parent): Return null when
+	TYPE_CONTEXT is a TRANSLATION_UNIT_DECL so that we don't fail
+	the assertion in assert_valid_tree.
+
+2025-11-17  Evgeny Karpov  <evgeny@kmaps.co>
+
+	PR diagnostics/122666
+	* config/i386/x-mingw32 (LIBS): Add -lws2_32
+	* diagnostics/sarif-sink.cc: Move sockets includes to before
+	config.h and support __MINGW32__.
+
+2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/97894
+	* attr-fnspec.h (attr_fnspec): arg_idx, known_p, arg_specified_p,
+	arg_direct_p,  arg_used_p, arg_readonly_p,
+	arg_maybe_read_p, arg_maybe_written_p,
+	arg_max_access_size_given_by_arg_p,
+	arg_access_size_given_by_type_p,
+	arg_copied_to_arg_p, arg_noescape_p, returns_arg,
+	returns_noalias_p, global_memory_read_p,
+	global_memory_written_p, errno_maybe_written_p, arg_eaf_flags,
+	and get_str as const methods.
+
+2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (maybe_remove_forwarder_block): Move a few
+	checks earlier.
+
+2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (tree_forwarder_block_p): Merge this and ...
+	(remove_forwarder_block): This into ...
+	(maybe_remove_forwarder_block): Here.
+	(cleanup_tree_cfg_bb): Call only maybe_remove_forwarder_block.
+	(pass_merge_phi::execute): Likewise.
+
+2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfgcleanup.cc (pass_merge_phi::execute): Add stats for the removed
+	blocks.
+
+2025-11-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122575
+	* simplify-rtx.cc (simplify_context::simplify_relational_operation_1):
+	Use correct mode for simplified IOR expression inside equality
+	conditional.
+
+2025-11-17  Xi Ruoyao  <xry111@xry111.site>
+
+	* simplify-rtx.cc (simplify_const_binary_operation): Simplify
+	VEC_CONCAT two constant vectors.
+
+2025-11-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.cc (move_computations_worker): Avoid newline
+	between 'Moving statement' and actual statement dump in dumpfile.
+
+2025-11-17  Richard Biener  <rguenther@suse.de>
+
+	* tree-ssa-loop-im.cc (fill_always_executed_in): Skip
+	blocks not in loops when looking for possibly not returning
+	calls.
+
+2025-11-17  Victor Do Nascimento  <vicdon01@ip-10-248-139-187.eu-west-1.compute.internal>
+
+	* cfgloop.cc (loop_exits_to_bb_p): Change return type.
+	(loop_exits_from_bb_p): Likewise.
+	* cfgloop.h: (loop_exits_to_bb_p): Likewise.
+	(loop_exits_from_bb_p): Likewise.
+
+2025-11-17  Alfie Richards  <alfie.richards@arm.com>
+
+	* doc/extend.texi: (ARM C Language Extensions (ACLE)) Update ACLE URL
+	and description.
+
+2025-11-17  Artemiy Volkov  <artemiy.volkov@arm.com>
+
+	* tree-ssa-forwprop.cc (optimize_vector_load): Inhibit
+	optimization when all uses are through subvectors without
+	extension.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-core.h (enum built_in_function): Avoid arithmetics or
+	bitwise operations between enumerators from different enums.
+	* lto-streamer.h (lto_tag_is_gimple_code_p): Likewise.
+	* gimple.h (gimple_omp_atomic_set_memory_order): Likewise.
+	* common/config/i386/i386-cpuinfo.h (M_CPU_SUBTYPE_START,
+	M_CPU_TYPE): Likewise.
+	* tree-complex.cc (expand_complex_libcall): Likewise.
+	* ipa-modref-tree.h (modref_access_node::operator ==): Change
+	argument type from modref_access_node & to
+	const modref_access_node &.
+	* ipa-modref-tree.cc (modref_access_node::operator ==): Likewise.
+
+2025-11-17  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122573
+	* config/i386/i386.cc (ix86_vector_costs::finish_cost): Avoid
+	using masked epilogues when an SSE epilogue would have a VF of one.
+
+2025-11-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_ld_compress_debug) <*-*-solaris2*>: Check
+	for zstd compression support.
+	* configure: Regenerate.
+	* doc/invoke.texi (Debugging Options, gz): Document zstd.
+
 2025-11-16  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/121345

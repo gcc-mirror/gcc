@@ -1,3 +1,20 @@
+2025-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122709
+	* resolve.cc (resolve_assoc_var): If the associate target is a
+	contiguous pointer, so is the associate variable.
+
+2025-11-17  Thomas Koenig  <tkoenig@gcc.gnu.org>
+
+	* gfortran.texi: Remove section "Experimental features for future
+	Fortran revisions". Move documentation of UNSIGNED into Extensions.
+	Mention flang compatibility.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* parse.cc (gfc_parse_file): Avoid arithmetics or
+	bitwise operations between enumerators from different enums.
+
 2025-11-14  Yuao Ma  <c8ef@outlook.com>
 
 	* trans-expr.cc (conv_dummy_value): Add check for NULL allocatable.

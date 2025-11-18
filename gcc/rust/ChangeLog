@@ -1,3 +1,104 @@
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItemWithTrait::visit): null guard
+	* typecheck/rust-hir-type-check.cc (TraitItemReference::get_type_from_fn): default to anon
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-item.cc (CompileItem::visit): support the synthetic function consts
+	* typecheck/rust-hir-type-check-expr.cc (TypeCheckExpr::Resolve): likewise
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItem::visit): create the synth
+	* typecheck/rust-tyty.h: new flag for synthetic constant
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): fix mappings
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* ast/rust-ast.cc (Attribute::is_derive):
+	Change is_derive method with its valid path.
+	* util/rust-attribute-values.h:
+	Delete redudant derive attribute.
+	* util/rust-attributes.cc (AttributeChecker::check_inner_attribute):
+	Helper method for check_inner_attributes
+	(AttributeChecker::check_inner_attributes):
+	Implement method for errors check.
+	* util/rust-attributes.h:
+	Add methods above in header.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* parse/rust-parse-impl.h(Parser<ManagedTokenSource>::parse_while_let_loop_expr):
+	Add check for missing pattern.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* ast/rust-ast.cc (MetaItemLitExpr::check_cfg_predicate): Make error.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* ast/rust-ast.cc (Attribute::check_cfg_predicate): add cfg path in condition
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* ast/rust-ast.cc (Attribute::check_cfg_predicate):
+	Make error.
+
+2025-11-17  Philip Herron  <herron.philip@googlemail.com>
+
+	* backend/rust-compile-resolve-path.cc: handle const param values
+	* typecheck/rust-hir-type-check-item.cc: generate const infer vars when required
+	* typecheck/rust-type-util.cc (unify_site_and): handle a null param cleanup
+	* typecheck/rust-tyty-util.cc (TyVar::get_implicit_const_infer_var): helper interface
+	* typecheck/rust-tyty-util.h: update header prototypes
+	* typecheck/rust-tyty.cc (BaseType::is_concrete): correctly handle const types
+	(ConstParamType::get_name): emit the specified type
+	(ConstParamType::is_equal): fix recursion loop
+	* typecheck/rust-unify.cc (UnifyRules::go): const infer vars need cleanup too
+	* typecheck/rust-unify.h: support base generics
+
+2025-11-17  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-pattern.cc(compilePatternCheckExpr::visit(RangePattern)):
+	Add E0579 check to ensure that lower bound is always below upper bound.
+
+2025-11-17  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-pattern.cc (compile_range_pattern_bound): Set litexpr
+	to negative if has_minus is present in the RangePatternBoundLiteral param.
+
+2025-11-17  vishruth-thimmaiah  <vishruththimmaiah@gmail.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_generic_params): Emit
+	an error when const generics with a default value is not
+	trailing.
+
+2025-11-17  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* parse/rust-parse-impl.h (parse_literal_or_range_pattern): Parse minus sign
+	properly for LiteralPattern.
+	* ast/rust-pattern.h (LiteralPattern): Add has_minus boolean for LiteralPattern.
+	* hir/tree/rust-hir-pattern.h (LiteralPattern): Ditto.
+	* ast/rust-pattern.cc (LiteralPattern::as_string): Update to include minus sign
+	if present.
+	* hir/tree/rust-hir.cc (LiteralPattern::as_string): Ditto.
+	* hir/rust-ast-lower-pattern.cc (visit(LiteralPattern)): Pass has_minus boolean
+	from AST to HIR.
+	* backend/rust-compile-pattern.cc (CompilePatternCheckExpr::visit(LiteralPattern)):
+	Compile litexpr as negative if minus sign is present.
+
+2025-11-17  Lucas Ly Ba  <lucas.ly-ba@outlook.fr>
+
+	* metadata/rust-export-metadata.cc (ExportContext::emit_macro):
+	Change method argument NodeId to AST::MacroRulesDefinition.
+	* metadata/rust-export-metadata.h:
+	Likewise.
+	* util/rust-hir-map.cc (Mappings::insert_exported_macro):
+	Insert AST::MacroRulesDefinition instead of NodeId.
+	* util/rust-hir-map.h:
+	Change methods declarations of exported macros.
+
 2025-11-12  Arthur Cohen  <arthur.cohen@embecosm.com>
 
 	* ast/rust-fmt.h: Simplify diagnostic avoidance.

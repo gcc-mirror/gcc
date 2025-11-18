@@ -1,3 +1,134 @@
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/allocate-1.C: Replace [: in OpenMP or OpenACC
+	pragmas or attributes with [ : and :] with : ].
+	* testsuite/libgomp.c++/baseptrs-3.C: Likewise.
+	* testsuite/libgomp.c++/baseptrs-5.C: Likewise.
+	* testsuite/libgomp.c++/class-array-1.C: Likewise.
+	* testsuite/libgomp.c++/examples-4/target_data-5.C: Likewise.
+	* testsuite/libgomp.c++/lvalue-tofrom-2.C: Likewise.
+	* testsuite/libgomp.c++/pr101544-1.C: Likewise.
+	* testsuite/libgomp.c++/pr108286.C: Likewise.
+	* testsuite/libgomp.c++/reduction-10.C: Likewise.
+	* testsuite/libgomp.c++/reduction-11.C: Likewise.
+	* testsuite/libgomp.c++/reduction-12.C: Likewise.
+	* testsuite/libgomp.c++/reduction-5.C: Likewise.
+	* testsuite/libgomp.c++/reduction-6.C: Likewise.
+	* testsuite/libgomp.c++/reduction-7.C: Likewise.
+	* testsuite/libgomp.c++/reduction-8.C: Likewise.
+	* testsuite/libgomp.c++/reduction-9.C: Likewise.
+	* testsuite/libgomp.c++/target-18.C: Likewise.
+	* testsuite/libgomp.c++/target-19.C: Likewise.
+	* testsuite/libgomp.c++/target-2.C: Likewise.
+	* testsuite/libgomp.c++/target-22.C: Likewise.
+	* testsuite/libgomp.c++/target-23.C: Likewise.
+	* testsuite/libgomp.c++/target-9.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-100.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-101.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-12.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-2003.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-30.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-300.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-32.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-33.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-41.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-60.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-61.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-62.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-80.C: Likewise.
+	* testsuite/libgomp.c++/target-flex-81.C: Likewise.
+	* testsuite/libgomp.c++/target-has-device-addr-7.C: Likewise.
+	* testsuite/libgomp.c++/target-in-reduction-1.C: Likewise.
+	* testsuite/libgomp.c++/target-in-reduction-2.C: Likewise.
+	* testsuite/libgomp.c++/target-lambda-1.C: Likewise.
+	* testsuite/libgomp.c++/target-lambda-3.C: Likewise.
+	* testsuite/libgomp.c++/target-map-class-1.C: Likewise.
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__bitset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multimap-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_multiset-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__flat_set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__map-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__multimap-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__multiset-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__set-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_map-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multimap-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_multiset-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__unordered_set-concurrent.C:
+	Likewise.
+	* testsuite/libgomp.c++/target-std__valarray-1.C: Likewise.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Likewise.
+	* testsuite/libgomp.c++/target-this-3.C: Likewise.
+	* testsuite/libgomp.c++/target-this-4.C: Likewise.
+	* testsuite/libgomp.c++/target-virtual-1.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-11.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-12.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-13.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-17.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-18.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-19.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-4.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-5.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-6.C: Likewise.
+	* testsuite/libgomp.c++/task-reduction-7.C: Likewise.
+	* testsuite/libgomp.c++/taskloop-reduction-2.C: Likewise.
+	* testsuite/libgomp.c++/taskloop-reduction-3.C: Likewise.
+	* testsuite/libgomp.c++/taskloop-reduction-4.C: Likewise.
+	* testsuite/libgomp.c-c++-common/allocate-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/allocate-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/baseptrs-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/dispatch-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/dispatch-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/interop-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/matrix-omp-target-teams-distribute-parallel-for-1.c:
+	Likewise.
+	* testsuite/libgomp.c-c++-common/ptr-attach-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/ptr-attach-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/refcount-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/struct-elem-4.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-has-device-addr-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-implicit-map-5.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-in-reduction-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-in-reduction-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-map-iterators-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-map-zlas-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-1.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/target-update-iterators-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-11.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-12.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-16.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-3.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-7.c: Likewise.
+	* testsuite/libgomp.c-c++-common/task-reduction-9.c: Likewise.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-2.c: Likewise.
+	* testsuite/libgomp.c-c++-common/teams-nteams-icv-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-1.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-16.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-3.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-4.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-5.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-6.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-7.c: Likewise.
+	* testsuite/libgomp.oacc-c-c++-common/deep-copy-8.c: Likewise.
+
 2025-11-13  Andrew Stubbs  <ams@codesourcery.com>
 	    Kwok Cheung Yeung  <kcyeung@baylibre.com>
 	    Thomas Schwinge  <tschwinge@baylibre.com>

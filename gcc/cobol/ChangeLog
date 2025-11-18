@@ -1,3 +1,13 @@
+2025-11-17  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/122702
+	* Make-lang.in: Move stored-char-length.cbl to libgcobol.
+
+2025-11-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* symbols.cc (symbol_table_init): Avoid arithmetics or
+	bitwise operations between enumerators from different enums.
+
 2025-11-15  Jakub Jelinek  <jakub@redhat.com>
 
 	PR cobol/122691
