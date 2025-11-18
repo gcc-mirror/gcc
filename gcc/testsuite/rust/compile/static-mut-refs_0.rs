@@ -5,7 +5,7 @@
 #[lang = "sized"]
 pub trait Sized {}
 
-static mut S: i32 = 0;
+pub static mut S: i32 = 0;
 
 pub unsafe fn f() {
     let _y = &S;

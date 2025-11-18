@@ -19,6 +19,7 @@
 #ifndef RUST_HIR_SCAN_DEADCODE
 #define RUST_HIR_SCAN_DEADCODE
 
+#include "options.h"
 #include "rust-hir-full-decls.h"
 #include "rust-hir-map.h"
 #include "rust-lint-marklive.h"
@@ -134,6 +135,34 @@ public:
   {
     for (auto &item : mod.get_items ())
       item->accept_vis (*this);
+  }
+
+  void visit (HIR::ConstantItem &item) override
+  {
+    if (!flag_unused_check_2_0)
+      return;
+    std::string var_name = item.get_identifier ().as_string ();
+    bool starts_with_under_score = var_name.at (0) == '_';
+    HirId hirId = item.get_mappings ().get_hirid ();
+    if (should_warn (hirId) && !item.get_visibility ().is_public ()
+	&& !starts_with_under_score)
+      rust_warning_at (item.get_locus (), OPT_Wunused_variable,
+		       "deadcode const item %qs",
+		       item.get_identifier ().as_string ().c_str ());
+  }
+
+  void visit (HIR::StaticItem &item) override
+  {
+    if (!flag_unused_check_2_0)
+      return;
+    std::string var_name = item.get_identifier ().as_string ();
+    bool starts_with_under_score = var_name.at (0) == '_';
+    HirId hirId = item.get_mappings ().get_hirid ();
+    if (should_warn (hirId) && !item.get_visibility ().is_public ()
+	&& !starts_with_under_score)
+      rust_warning_at (item.get_locus (), OPT_Wunused_variable,
+		       "deadcode static item %qs",
+		       item.get_identifier ().as_string ().c_str ());
   }
 
 private:

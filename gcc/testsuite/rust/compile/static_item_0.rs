@@ -3,4 +3,4 @@
 #![no_core]
 
 static TEST: usize = 1;
-// { dg-warning "unused variable .TEST." "" { target *-*-* } .-1 }
+// { dg-warning "deadcode static item .TEST." "" { target *-*-* } .-1 }
