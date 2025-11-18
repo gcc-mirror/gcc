@@ -6,8 +6,6 @@ struct A
   template<int> void foo();
 };
 
-template<int N, void (A::*)() = &A::foo<N> > struct B {};
+template<int N, void (A::*)() = &A::foo<N> > struct B {};  // { dg-error "not a member" }
 
-B<int> b; // { dg-error "type/value mismatch|expected a constant|invalid type" }
-
-// { dg-prune-output "(could not convert|no match)" }
+B<int> b; // { dg-error "type/value mismatch|invalid" }

@@ -17595,6 +17595,8 @@ tsubst_baselink (tree baselink, tree object_type,
       if (template_args)
 	template_args = tsubst_template_args (template_args, args,
 					      complain, in_decl);
+      if (template_args == error_mark_node)
+	return error_mark_node;
     }
 
   tree binfo_type = BINFO_TYPE (BASELINK_BINFO (baselink));

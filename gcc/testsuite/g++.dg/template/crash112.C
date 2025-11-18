@@ -9,9 +9,7 @@ template<void (A::*)()> struct B {};
 
 template<int> struct C
 {
-  B<&A::foo<int int> > b; // { dg-error "declaration|type" }
+  B<&A::foo<int int> > b; // { dg-error "declaration|not a member" }
 };
 
 C<0> c;
-
-// { dg-prune-output "could not convert" }
