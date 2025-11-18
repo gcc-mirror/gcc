@@ -1,5 +1,5 @@
 /* PR target/116815 */
-/* { dg-do run } */
+/* { dg-do run { target int32 } } */
 /* { dg-options "-O2" } */
 
 [[gnu::always_inline]]
