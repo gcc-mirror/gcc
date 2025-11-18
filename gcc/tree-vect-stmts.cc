@@ -4333,10 +4333,11 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     return false;
 
   unsigned int num_mask_args = 0;
-  if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
-    for (i = 0; i < nargs; i++)
-      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
-	num_mask_args++;
+  for (i = 0; i < bestn->simdclone->nargs; i++)
+    if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
+      num_mask_args++;
+  if (!SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+    gcc_assert (num_mask_args <= 1);
 
   for (i = 0; i < nargs; i++)
     {
@@ -4483,10 +4484,20 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_MASK:
 	      if (loop_vinfo
 		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-		vect_record_loop_mask (loop_vinfo,
-				       &LOOP_VINFO_MASKS (loop_vinfo),
-				       ncopies, vectype, op);
-
+		{
+		  tree arg_vectype;
+		  if (SCALAR_INT_MODE_P
+			(TYPE_MODE (bestn->simdclone->args[i].vector_type)))
+		    arg_vectype = build_truth_vector_type_for_mode
+			(exact_div (bestn->simdclone->simdlen, num_mask_args),
+			 TYPE_MODE (bestn->simdclone->args[i].vector_type));
+		  else
+		    arg_vectype = bestn->simdclone->args[i].vector_type;
+		  vect_record_loop_mask (loop_vinfo,
+					 &LOOP_VINFO_MASKS (loop_vinfo),
+					 ncopies * num_mask_args, arg_vectype,
+					 op);
+		}
 	      break;
 	    }
 	}
