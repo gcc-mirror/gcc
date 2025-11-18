@@ -1,7 +1,13 @@
-#ifndef TEST_MDSPAN_PADDED_TRAITS_H
-#define TEST_MDSPAN_PADDED_TRAITS_H
+#ifndef TEST_MDSPAN_LAYOUT_TRAITS_H
+#define TEST_MDSPAN_LAYOUT_TRAITS_H
 
 #include <algorithm>
+
+enum class PaddingSide
+{
+  Left,
+  Right
+};
 
 template<typename Layout>
   constexpr static bool is_left_padded = false;
@@ -26,6 +32,18 @@ template<typename Layout>
   is_padded_layout = is_left_padded<Layout> || is_right_padded<Layout>;
 
 #if __cplusplus > 202302L
+template<PaddingSide Side, typename Layout>
+  constexpr bool
+  is_same_padded;
+
+template<typename Layout>
+  constexpr bool
+  is_same_padded<PaddingSide::Left, Layout> = is_left_padded<Layout>;
+
+template<typename Layout>
+  constexpr bool
+  is_same_padded<PaddingSide::Right, Layout> = is_right_padded<Layout>;
+
 template<typename Extents>
   constexpr auto
   dynamic_extents_array(const Extents& exts)
@@ -35,12 +53,6 @@ template<typename Extents>
       ret[i] = exts.extent(i);
     return ret;
   }
-
-enum class PaddingSide
-{
-  Left,
-  Right
-};
 
 struct DeducePaddingSide
 {
@@ -58,7 +70,9 @@ struct DeducePaddingSide
     constexpr static PaddingSide
     from_typename()
     {
-      if constexpr (is_left_padded<Layout>)
+      if constexpr (std::same_as<Layout, std::layout_left>)
+	return PaddingSide::Left;
+      else if constexpr (is_left_padded<Layout>)
 	return PaddingSide::Left;
       else
 	return PaddingSide::Right;
@@ -84,8 +98,18 @@ template<>
 
     template<typename T, size_t N>
       constexpr static std::array<T, N>
-      make_array(const std::array<T, N>& expected)
-      { return expected; }
+      make_array(const std::array<T, N>& a)
+      { return a; }
+
+    template<typename... Indices>
+      constexpr static auto
+      make_indices(Indices... indices)
+      { return std::array{indices...}; }
+
+    template<typename... Ts>
+      constexpr static std::tuple<Ts...>
+      make_tuple(const std::tuple<Ts...>& tup)
+      { return tup; }
 
     template<typename Mapping>
       constexpr static auto
@@ -126,6 +150,25 @@ template<>
       {
 	std::ranges::reverse(a);
 	return a;
+      }
+
+    template<typename... Indices>
+      constexpr static auto
+      make_indices(Indices... indices)
+      { return make_array(std::array{indices...}); }
+
+    template<typename... Ts>
+      constexpr static auto
+      make_tuple(const std::tuple<Ts...>& tup)
+      {
+	constexpr size_t rank = sizeof...(Ts);
+	auto impl = [&]<size_t... I>(std::index_sequence<I...>)
+	{
+	  auto idx = [rank](size_t i) consteval
+	  { return rank - 1 - i; };
+	  return std::tuple<Ts...[idx(I)]...>{get<idx(I)>(tup)...};
+	};
+	return impl(std::make_index_sequence<rank>());
       }
 
     template<typename Mapping>

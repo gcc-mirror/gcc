@@ -345,7 +345,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   inline constexpr full_extent_t full_extent{};
 
   template<typename _OffsetType, typename _ExtentType, typename _StrideType>
-    struct strided_slice {
+    struct strided_slice
+    {
       static_assert(__is_standard_integer<_OffsetType>::value
 	|| __detail::__integral_constant_like<_OffsetType>);
       static_assert(__is_standard_integer<_ExtentType>::value
@@ -368,7 +369,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] _Mapping mapping = _Mapping();
       size_t offset{};
     };
-#endif
+#endif // __glibcxx_submdspan
 
   template<typename _IndexType, size_t... _Extents>
     class extents
@@ -553,7 +554,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __fwd_prod(const _Extents& __exts, size_t __begin, size_t __end) noexcept
       {
 	size_t __sta_prod = [__begin, __end] {
-	  span<const size_t> __sta_exts = __static_extents<_Extents>(__begin, __end);
+	  span<const size_t> __sta_exts
+	    = __static_extents<_Extents>(__begin, __end);
 	  size_t __ret = 1;
 	  for(auto __ext : __sta_exts)
 	    if (__ext != dynamic_extent)
@@ -769,7 +771,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     template<typename _Layout, typename _Mapping>
       concept __mapping_of =
-	is_same_v<typename _Layout::template mapping<typename _Mapping::extents_type>,
+	is_same_v<typename _Layout::template mapping<
+		    typename _Mapping::extents_type>,
 		  _Mapping>;
 
     template<template<size_t> typename _Layout, typename _Mapping>
@@ -804,6 +807,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     // A tag type to create internal ctors.
     class __internal_ctor
     { };
+
+    template<typename _Mapping>
+      constexpr typename _Mapping::index_type
+      __offset(const _Mapping& __m) noexcept
+      {
+	using _IndexType = typename _Mapping::index_type;
+	constexpr auto __rank = _Mapping::extents_type::rank();
+
+	if constexpr (__standardized_mapping<_Mapping>)
+	  return 0;
+	else if (__empty(__m.extents()))
+	  return 0;
+	else
+	  {
+	    auto __impl = [&__m]<size_t... _Counts>(index_sequence<_Counts...>)
+	      { return __m(((void) _Counts, _IndexType(0))...); };
+	    return __impl(make_index_sequence<__rank>());
+	  }
+      }
   }
 
   template<typename _Extents>
@@ -1135,25 +1157,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	bool_constant<_Mp::is_always_exhaustive()>::value;
 	bool_constant<_Mp::is_always_unique()>::value;
       };
-
-    template<typename _Mapping>
-      constexpr typename _Mapping::index_type
-      __offset(const _Mapping& __m) noexcept
-      {
-	using _IndexType = typename _Mapping::index_type;
-	constexpr auto __rank = _Mapping::extents_type::rank();
-
-	if constexpr (__standardized_mapping<_Mapping>)
-	  return 0;
-	else if (__empty(__m.extents()))
-	  return 0;
-	else
-	  {
-	    auto __impl = [&__m]<size_t... _Counts>(index_sequence<_Counts...>)
-	      { return __m(((void) _Counts, _IndexType(0))...); };
-	    return __impl(make_index_sequence<__rank>());
-	  }
-      }
 
     template<typename _Mapping, typename... _Indices>
       constexpr typename _Mapping::index_type

@@ -1,7 +1,7 @@
 // { dg-do run { target c++23 } }
 #include <mdspan>
 
-#include "padded_traits.h"
+#include "../layout_traits.h"
 #include <cstdint>
 #include <testsuite_hooks.h>
 

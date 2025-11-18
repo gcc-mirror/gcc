@@ -1,7 +1,7 @@
 // { dg-do compile { target c++26 } }
 #include <mdspan>
 
-#include "padded_traits.h"
+#include "../layout_traits.h"
 #include <cstdint>
 
 constexpr size_t dyn = std::dynamic_extent;

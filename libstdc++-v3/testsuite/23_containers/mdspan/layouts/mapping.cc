@@ -2,7 +2,7 @@
 #include <mdspan>
 
 #include "../int_like.h"
-#include "padded_traits.h"
+#include "../layout_traits.h"
 #include <cstdint>
 #include <testsuite_hooks.h>
 

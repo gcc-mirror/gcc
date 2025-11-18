@@ -3,7 +3,7 @@
 
 #include <cstdint>
 #include "../int_like.h"
-#include "padded_traits.h"
+#include "../layout_traits.h"
 #include <testsuite_hooks.h>
 
 constexpr size_t dyn = std::dynamic_extent;
