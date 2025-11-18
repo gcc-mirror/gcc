@@ -4005,11 +4005,11 @@ adds a @code{BTI J} instruction when BTI is enabled e.g. via
 Use this attribute to change the procedure call standard of the specified
 function to the preserve-none variant.
 
-The preserve-none ABI variant modifies the AAPCS such that has no callee-saved
-registers (including SIMD and floating-point registers). That is, with the
-exception of the stack register, link register (r30), and frame pointer (r29),
-all registers are caller saved, and can be used as scratch registers by the
-callee.
+The preserve-none ABI variant modifies the AAPCS such that it has no
+callee-saved registers (including SIMD and floating-point registers). That is,
+with the exception of the stack register, link register (r30), and frame pointer
+(r29), all registers are changed to caller saved, and can be used as scratch
+registers by the callee.
 
 Additionally, registers r20--r28, r0--r7, r10--r14, r9 and r15 are used for
 argument passing, in that order.  For Microsoft Windows targets
