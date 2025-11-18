@@ -59,6 +59,7 @@ libgcobol_la_SOURCES =				\
 	libgcobol.cc				\
 	posix/shim/errno.cc			\
 	posix/shim/localtime.cc			\
+	posix/shim/open.cc			\
 	posix/shim/stat.cc			\
 	stringbin.cc				\
 	valconv.cc				\
@@ -72,6 +73,7 @@ nobase_libsubinclude_HEADERS =			\
 	posix/udf/posix-exit.cbl		\
 	posix/udf/posix-localtime.cbl		\
 	posix/udf/posix-mkdir.cbl		\
+	posix/udf/posix-open.cbl		\
 	posix/udf/posix-stat.cbl		\
 	posix/udf/posix-unlink.cbl		\
 	compat/gnu/lib/CBL_CHECK_FILE_EXIST.cbl	\
