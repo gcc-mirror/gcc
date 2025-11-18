@@ -7,5 +7,5 @@ c Contributed by Ilya Enkovich <ienkovich@gcc.gnu.org>
 
       COMMON /FMCOM / X(80 000 000)
       CALL T(XX(A))
-      COMMON /FMCOM / XX(80 000 000) ! { dg-error "Unexpected COMMON" }
+      COMMON /FMCOM / XX(80 000 000) ! { dg-error "COMMON statement at \\(1\\) cannot appear after executable statements" }
       END

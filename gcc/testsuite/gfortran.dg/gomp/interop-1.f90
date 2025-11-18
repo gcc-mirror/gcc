@@ -19,7 +19,7 @@ end module m
 
 subroutine sub1  ! { dg-error "Program unit at .1. has OpenMP device constructs/routines but does not set !.OMP REQUIRES REVERSE_OFFLOAD but other program units do" }
   !$omp interop
-  integer :: y ! { dg-error "Unexpected data declaration statement" }
+  integer :: y ! { dg-error "data declaration statement at \\(1\\) cannot appear after executable statements" }
 end subroutine sub1
 
 program main

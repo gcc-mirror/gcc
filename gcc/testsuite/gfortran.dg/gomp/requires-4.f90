@@ -16,7 +16,7 @@ end
 
 subroutine foobar
 i = 5  ! < execution statement
-!$omp requires atomic_default_mem_order(seq_cst) ! { dg-error "Unexpected ..OMP REQUIRES statement" }
+!$omp requires atomic_default_mem_order(seq_cst) ! { dg-error "\\!\\$OMP REQUIRES statement at \\(1\\) cannot appear after executable statements" }
 end
 
 program main

@@ -7,7 +7,7 @@
       integer :: res
       integer i
       i = 0
-      !$acc routine  ! { dg-error "Unexpected \\\!\\\$ACC ROUTINE" }
+      !$acc routine  ! { dg-error "\\!\\$ACC ROUTINE statement at \\(1\\) cannot appear after executable statements" }
       if (x < 1) then
          res = 1
       else

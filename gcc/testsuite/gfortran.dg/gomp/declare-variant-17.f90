@@ -7,11 +7,11 @@ program main
 
   continue
 
-  !$omp declare variant (base: variant) match (construct={parallel})  ! { dg-error "Unexpected \\\!\\\$OMP DECLARE VARIANT statement at .1." }
+  !$omp declare variant (base: variant) match (construct={parallel})  ! { dg-error "\\!\\$OMP DECLARE VARIANT statement at \\(1\\) cannot appear after executable statements" }
 contains
   subroutine base ()
     continue
 
-    !$omp declare variant (variant) match (construct={parallel})  ! { dg-error "Unexpected \\\!\\\$OMP DECLARE VARIANT statement at .1." }
+    !$omp declare variant (variant) match (construct={parallel})  ! { dg-error "\\!\\$OMP DECLARE VARIANT statement at \\(1\\) cannot appear after executable statements" }
   end subroutine
 end program

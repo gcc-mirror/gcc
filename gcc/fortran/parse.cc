@@ -7132,6 +7132,15 @@ loop:
 	  accept_statement (st);
 	  goto done;
 
+	/* Specification statements cannot appear after executable statements.  */
+	case_decl:
+	case_omp_decl:
+	  gfc_error ("%s statement at %C cannot appear after executable statements",
+		     gfc_ascii_statement (st));
+	  reject_statement ();
+	  st = next_statement ();
+	  continue;
+
 	default:
 	  break;
 	}
