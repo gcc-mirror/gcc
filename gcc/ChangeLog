@@ -1,3 +1,19 @@
+2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2025-08-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/121581
+	* doc/extend.texi (__builtin_object_size): Fix example.
+
+2025-11-17  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122627
+	* lra-constraints.cc (update_equiv): Remove patch from last week
+	related to pr122321.
+	(lra_constraints): Expand the equivalence array after eliminations
+	are complete.
+
 2025-11-16  Lewis Hyatt  <lhyatt@gmail.com>
 
 	* diagnostic.cc (num_digits): Change argument type from `int' to

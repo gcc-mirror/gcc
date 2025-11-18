@@ -1,3 +1,13 @@
+2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++23/std.cc.in [!__cpp_lib_syncbuf]: Disable exports for
+	<syncstream> contents when not defined.
+	[!_GLIBCXX_USE_CXX11_ABI]: Disable exports for pmr aliases in
+	<string> when not defined.
+
 2025-11-14  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:
