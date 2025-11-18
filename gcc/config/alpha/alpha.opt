@@ -27,7 +27,7 @@ Target Mask(FPREGS)
 Use fp registers.
 
 mgas
-Target Ignore
+Target Ignore Undocumented
 Does nothing. Preserved for backward compatibility.
 
 mieee-conformant

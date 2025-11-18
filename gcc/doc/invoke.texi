@@ -1073,7 +1073,9 @@ Objective-C and Objective-C++ Dialects}.
 -mfloat-vax  -mfloat-ieee
 -mexplicit-relocs  -msmall-data  -mlarge-data
 -msmall-text  -mlarge-text
--mmemory-latency=@var{time}}
+-mmemory-latency=@var{time}
+-mtls-kernel  -mtls-size=@var{bitsize}
+-mlong-double-128  -mlong-double-64}
 
 @emph{eBPF Options} (@ref{eBPF Options})
 @gccoptlist{-mbig-endian -mlittle-endian
@@ -27540,6 +27542,24 @@ The compiler contains estimates of the number of clock cycles for
 Note that L3 is only valid for EV5.
 
 @end table
+
+@opindex mtls-kernel
+@opindex mno-tls-kernel
+@item -mtls-kernel
+Emit @code{rdval} instead of @code{rduniq} for thread pointer.
+
+@opindex mtls-size
+@item -mtls-size=@var{bitsize}
+Specify bit size of immediate TLS offsets.  Valid values for @var{bitsize}
+are 16, 32, and 64; it defaults to 32.
+
+@opindex mlong-double-128
+@opindex mlong-double-64
+@item -mlong-double-128
+@itemx -mlong-double-64
+Specify the size of the @code{long double} type.  Note that
+@option{-mlong-double-128} is incompatible with VAX floating point.
+
 @end table
 
 @node eBPF Options
