@@ -38640,12 +38640,6 @@ reverse is not implemented---textually redefining an entity that has
 been defined in an imported header-unit.  A redefinition error is
 emitted.
 
-@item Translation-Unit local referencing rules
-Papers p1815 (@uref{https://wg21.link/p1815}) and p2003
-(@uref{https://wg21.link/p2003}) add limitations on which entities an
-exported region may reference (for instance, the entities an exported
-template definition may reference).  These are not fully implemented.
-
 @item Standard Library Header Units
 The Standard Library is not provided as importable header units.  If
 you want to import such units, you must explicitly build them first.
@@ -38657,7 +38651,7 @@ affected by how you partition header files into header units.
 
 Modular compilation is @emph{not} enabled with just the
 @option{-std=c++20} option.  You must explicitly enable it with the
-@option{-fmodules-ts} option.  It is independent of the language
+@option{-fmodules} option.  It is independent of the language
 version selected, although in pre-C++20 versions, it is of course an
 extension.
 
