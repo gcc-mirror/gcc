@@ -208,10 +208,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     try_lock()
     {
       int __ret = __glibcxx_rwlock_trywrlock(&_M_rwlock);
-      if (__ret == EBUSY) return false;
-      // Errors not handled: EINVAL
+      if (__ret == 0)
+	return true;
+      if (__ret == EBUSY)
+	return false;
+      // Errors not handled: EINVAL, EDEADLK
       __glibcxx_assert(__ret == 0);
-      return true;
+      // try_lock() is not permitted to throw
+      return false;
     }
 
     void
@@ -522,13 +526,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 	int __ret = __glibcxx_rwlock_timedwrlock(&_M_rwlock, &__ts);
-	// On self-deadlock, we just fail to acquire the lock.  Technically,
-	// the program violated the precondition.
-	if (__ret == ETIMEDOUT || __ret == EDEADLK)
+	if (__ret == 0)
+	  return true;
+	if (__ret == ETIMEDOUT)
 	  return false;
-	// Errors not handled: EINVAL
+	// Errors not handled: EINVAL, EDEADLK
 	__glibcxx_assert(__ret == 0);
-	return true;
+	return false;
       }
 
 #ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
@@ -541,13 +545,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 	int __ret = pthread_rwlock_clockwrlock(&_M_rwlock, CLOCK_MONOTONIC,
 					       &__ts);
-	// On self-deadlock, we just fail to acquire the lock.  Technically,
-	// the program violated the precondition.
-	if (__ret == ETIMEDOUT || __ret == EDEADLK)
+	if (__ret == 0)
+	  return true;
+	if (__ret == ETIMEDOUT)
 	  return false;
-	// Errors not handled: EINVAL
+	// Errors not handled: EINVAL, EDEADLK
 	__glibcxx_assert(__ret == 0);
-	return true;
+	return false;
       }
 #endif
 
@@ -592,18 +596,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	// acquire the lock even if it would be logically free; however, this
 	// is allowed by the standard, and we made a "strong effort"
 	// (see C++14 30.4.1.4p26).
-	// For cases where the implementation detects a deadlock we
-	// intentionally block and timeout so that an early return isn't
-	// mistaken for a spurious failure, which might help users realise
-	// there is a deadlock.
 	do
 	  __ret = __glibcxx_rwlock_timedrdlock(&_M_rwlock, &__ts);
-	while (__ret == EAGAIN || __ret == EDEADLK);
+	while (__ret == EAGAIN);
+	if (__ret == 0)
+	  return true;
 	if (__ret == ETIMEDOUT)
 	  return false;
-	// Errors not handled: EINVAL
+	// Errors not handled: EINVAL, EDEADLK
 	__glibcxx_assert(__ret == 0);
-	return true;
+	return false;
       }
 
 #ifdef _GLIBCXX_USE_PTHREAD_RWLOCK_CLOCKLOCK
@@ -616,13 +618,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	struct timespec __ts = chrono::__to_timeout_timespec(__atime);
 	int __ret = pthread_rwlock_clockrdlock(&_M_rwlock, CLOCK_MONOTONIC,
 					       &__ts);
-	// On self-deadlock, we just fail to acquire the lock.  Technically,
-	// the program violated the precondition.
-	if (__ret == ETIMEDOUT || __ret == EDEADLK)
+	// On self-deadlock, if _GLIBCXX_ASSERTIONS is not defined, we just
+	// fail to acquire the lock.  Technically, the program violated the
+	// precondition.
+	if (__ret == 0)
+	  return true;
+	if (__ret == ETIMEDOUT)
 	  return false;
-	// Errors not handled: EINVAL
+	// Errors not handled: EINVAL, EDEADLK
 	__glibcxx_assert(__ret == 0);
-	return true;
+	return false;
       }
 #endif
 

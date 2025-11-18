@@ -23,6 +23,22 @@ namespace chrono = std::chrono;
 #define VERIFY_IN_NEW_THREAD(X) \
   (void) std::async(std::launch::async, [&] { VERIFY(X); })
 
+// Unfortunately POSIX says that pthread_rwlock_clockwrlock,
+// pthread_rwlock_clockrdlock, pthread_rwlock_timedwrlock and
+// pthread_rwlock_timedrdlock are allowed to deadlock rather than return
+// EDEADLK or just time out if the thread already has the associated lock. This
+// means that we can't enable the deadlock tests by default. The glibc
+// implementation does return EDEADLK and __shared_mutex_cv times out so we can
+// test both of them.
+#if (defined(__GLIBC__) || ! (_GLIBCXX_USE_PTHREAD_RWLOCK_T && _GTHREAD_USE_MUTEX_TIMEDLOCK)) \
+  && ! defined(_GLIBCXX_ASSERTIONS)
+#define DEADLOCK_VERIFY(X) \
+  VERIFY(X)
+#else
+#define DEADLOCK_VERIFY(X) \
+  do {} while(0)
+#endif
+
 template <typename Clock>
 void
 test_exclusive_absolute(chrono::nanoseconds offset)
@@ -30,6 +46,12 @@ test_exclusive_absolute(chrono::nanoseconds offset)
   std::shared_timed_mutex stm;
   chrono::time_point<Clock> tp(offset);
   VERIFY(stm.try_lock_until(tp));
+
+  // Trying to acquire the same long on the same thread
+  DEADLOCK_VERIFY(!stm.try_lock_until(tp));
+
+  // Check that false is returned on timeouts even if the implementation
+  // returned EDEADLK above by trying to lock on a different thread.
   VERIFY_IN_NEW_THREAD(!stm.try_lock_until(tp));
 }
 
@@ -43,6 +65,7 @@ test_shared_absolute(chrono::nanoseconds offset)
   stm.unlock_shared();
 
   VERIFY(stm.try_lock_for(chrono::seconds{10}));
+  DEADLOCK_VERIFY(!stm.try_lock_shared_until(tp));
   VERIFY_IN_NEW_THREAD(!stm.try_lock_shared_until(tp));
 }
 
@@ -56,6 +79,7 @@ test_exclusive_relative(chrono::nanoseconds offset)
   std::shared_timed_mutex stm;
   const auto d = -Clock::now().time_since_epoch() + offset;
   VERIFY(stm.try_lock_for(d));
+  DEADLOCK_VERIFY(!stm.try_lock_for(d));
   VERIFY_IN_NEW_THREAD(!stm.try_lock_for(d));
 }
 
@@ -69,6 +93,7 @@ test_shared_relative(chrono::nanoseconds offset)
   stm.unlock_shared();
   // Should complete immediately
   VERIFY(stm.try_lock_for(chrono::seconds{10}));
+  DEADLOCK_VERIFY(!stm.try_lock_shared_for(d));
   VERIFY_IN_NEW_THREAD(!stm.try_lock_shared_for(d));
 }
 
