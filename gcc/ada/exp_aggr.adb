@@ -32,7 +32,6 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
-with Expander;       use Expander;
 with Exp_Util;       use Exp_Util;
 with Exp_Ch3;        use Exp_Ch3;
 with Exp_Ch6;        use Exp_Ch6;
@@ -1604,7 +1603,6 @@ package body Exp_Aggr is
                  and then Is_Array_Type (Etype (N))
                  and then No (Next_Index (Index))
                then
-                  Expander_Mode_Save_And_Set (False);
                   Tcopy := New_Copy_Tree (Expr);
                   Set_Parent (Tcopy, N);
 
@@ -1614,9 +1612,10 @@ package body Exp_Aggr is
                      Comp_Typ := Corresponding_Mutably_Tagged_Type (Comp_Typ);
                   end if;
 
-                  --  For iterated_component_association analyze and resolve
-                  --  the expression with name of the index parameter visible.
-                  --  To manipulate scopes, we use entity of the implicit loop.
+                  --  For iterated_component_association (pre)analyze and
+                  --  resolve the expression with name of the index parameter
+                  --  visible. To manipulate scopes, we use entity of the
+                  --  implicit loop.
 
                   if Is_Iterated_Component then
                      declare
@@ -1625,18 +1624,16 @@ package body Exp_Aggr is
                      begin
                         Push_Scope (Scope (Index_Parameter));
                         Enter_Name (Index_Parameter);
-                        Analyze_And_Resolve (Tcopy, Comp_Typ);
+                        Preanalyze_And_Resolve (Tcopy, Comp_Typ);
                         End_Scope;
                      end;
 
-                  --  For ordinary component association, just analyze and
+                  --  For ordinary component association, just (pre)analyze and
                   --  resolve the expression.
 
                   else
-                     Analyze_And_Resolve (Tcopy, Comp_Typ);
+                     Preanalyze_And_Resolve (Tcopy, Comp_Typ);
                   end if;
-
-                  Expander_Mode_Restore;
                end if;
             end if;
 
