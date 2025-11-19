@@ -1998,8 +1998,8 @@ pass_wrestrict::check_call (gimple *call)
   /* DST, SRC, or DSTWR can also have the wrong type in a call to
      a function declared without a prototype.  Avoid checking such
      invalid calls.  */
-  if (TREE_CODE (TREE_TYPE (dst)) != POINTER_TYPE
-      || (src && TREE_CODE (TREE_TYPE (src)) != POINTER_TYPE)
+  if (!POINTER_TYPE_P (TREE_TYPE (dst))
+      || (src && !POINTER_TYPE_P (TREE_TYPE (src)))
       || (dstwr && !INTEGRAL_TYPE_P (TREE_TYPE (dstwr))))
     return;
 

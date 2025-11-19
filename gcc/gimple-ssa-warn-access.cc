@@ -554,7 +554,7 @@ maybe_warn_nonstring_arg (tree fndecl, GimpleOrTree exp)
       if (!argtype)
 	break;
 
-      if (TREE_CODE (argtype) != POINTER_TYPE)
+      if (!POINTER_TYPE_P (argtype))
 	continue;
 
       argtype = TREE_TYPE (argtype);

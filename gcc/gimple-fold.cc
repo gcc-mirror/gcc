@@ -1806,7 +1806,7 @@ get_range_strlen_tree (tree arg, bitmap visited, strlen_range_kind rkind,
 	     the size of the enclosing object minus the offset of
 	     the referenced subobject minus 1 (for the terminating nul).  */
 	  tree type = TREE_TYPE (base);
-	  if (TREE_CODE (type) == POINTER_TYPE
+	  if (POINTER_TYPE_P (type)
 	      || (TREE_CODE (base) != PARM_DECL && !VAR_P (base))
 	      || !(val = DECL_SIZE_UNIT (base)))
 	    val = build_all_ones_cst (size_type_node);

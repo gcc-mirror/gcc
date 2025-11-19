@@ -1997,7 +1997,7 @@ maybe_set_strlen_range (tree lhs, tree src, tree bound)
 		  if (tree size = DECL_SIZE_UNIT (base))
 		    if (size
 			&& TREE_CODE (size) == INTEGER_CST
-			&& TREE_CODE (TREE_TYPE (base)) != POINTER_TYPE)
+			&& !POINTER_TYPE_P (TREE_TYPE (base)))
 		      max = wi::to_wide (size);
 		}
 	    }
@@ -2792,7 +2792,7 @@ strlen_pass::handle_builtin_strncat (built_in_function)
 bool
 is_strlen_related_p (tree src, tree len)
 {
-  if (TREE_CODE (TREE_TYPE (len)) == POINTER_TYPE
+  if (POINTER_TYPE_P (TREE_TYPE (len))
       && operand_equal_p (src, len, 0))
     return true;
 
@@ -2853,7 +2853,7 @@ is_strlen_related_p (tree src, tree len)
   tree rhs1 = gimple_assign_rhs1 (lendef);
   tree rhstype = TREE_TYPE (rhs1);
 
-  if ((TREE_CODE (rhstype) == POINTER_TYPE && code == POINTER_PLUS_EXPR)
+  if ((POINTER_TYPE_P (rhstype) && code == POINTER_PLUS_EXPR)
       || (INTEGRAL_TYPE_P (rhstype)
 	  && (code == BIT_AND_EXPR
 	      || code == NOP_EXPR)))
@@ -5746,7 +5746,7 @@ strlen_pass::handle_assign (tree lhs, tree rhs, bool *zero_write)
 	{
 	  tree ref = TREE_OPERAND (lhs, i);
 	  type = TREE_TYPE (ref);
-	  if (TREE_CODE (type) == POINTER_TYPE)
+	  if (POINTER_TYPE_P (type))
 	    type = TREE_TYPE (type);
 	  if (TREE_CODE (type) == ARRAY_TYPE)
 	    type = TREE_TYPE (type);

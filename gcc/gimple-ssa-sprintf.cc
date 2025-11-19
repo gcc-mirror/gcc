@@ -1372,7 +1372,7 @@ format_integer (const directive &dir, tree arg, pointer_query &ptr_qry)
       return res;
     }
   else if (INTEGRAL_TYPE_P (TREE_TYPE (arg))
-	   || TREE_CODE (TREE_TYPE (arg)) == POINTER_TYPE)
+	   || POINTER_TYPE_P (TREE_TYPE (arg)))
     /* Determine the type of the provided non-constant argument.  */
     argtype = TREE_TYPE (arg);
   else
@@ -1434,7 +1434,7 @@ format_integer (const directive &dir, tree arg, pointer_query &ptr_qry)
 		{
 		  tree type = TREE_TYPE (gimple_assign_rhs1 (def));
 		  if (INTEGRAL_TYPE_P (type)
-		      || TREE_CODE (type) == POINTER_TYPE)
+		      || POINTER_TYPE_P (type))
 		    argtype = type;
 		}
 	    }
@@ -1443,7 +1443,7 @@ format_integer (const directive &dir, tree arg, pointer_query &ptr_qry)
 
   if (!argmin)
     {
-      if (TREE_CODE (argtype) == POINTER_TYPE)
+      if (POINTER_TYPE_P (argtype))
 	{
 	  argmin = build_int_cst (pointer_sized_int_node, 0);
 	  argmax = build_all_ones_cst (pointer_sized_int_node);
