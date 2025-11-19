@@ -9632,7 +9632,6 @@ vectorizable_load (vec_info *vinfo,
   tree msq = NULL_TREE, lsq;
   tree realignment_token = NULL_TREE;
   gphi *phi = NULL;
-  vec<tree> dr_chain = vNULL;
   bool grouped_load = false;
   stmt_vec_info first_stmt_info;
   stmt_vec_info first_stmt_info_for_drptr = NULL;
@@ -10428,7 +10427,6 @@ vectorizable_load (vec_info *vinfo,
 	{
 	  group_gap_adj = group_size - scalar_lanes;
 	}
-      dr_chain.create (vec_num);
 
       ref_type = get_group_alias_ptr_type (first_stmt_info);
     }
@@ -10763,6 +10761,8 @@ vectorizable_load (vec_info *vinfo,
   if (mat_gather_scatter_p (memory_access_type))
     {
       gcc_assert ((!grouped_load && !ls.slp_perm) || ls.ls_type);
+
+      auto_vec<tree> dr_chain (vec_num);
 
       /* If we pun the original vectype the loads as well as costing, length,
 	 etc. is performed with the new type.  After loading we VIEW_CONVERT
@@ -11261,6 +11261,7 @@ vectorizable_load (vec_info *vinfo,
 				       stmt_info, bump);
     }
 
+  auto_vec<tree> dr_chain;
   if (grouped_load || ls.slp_perm)
     dr_chain.create (vec_num);
 
@@ -11820,7 +11821,6 @@ vectorizable_load (vec_info *vinfo,
 						  nullptr, true);
 	  gcc_assert (ok && ls.n_perms == n_perms2);
 	}
-      dr_chain.release ();
     }
 
   if (costing_p)
