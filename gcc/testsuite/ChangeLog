@@ -1,3 +1,34 @@
+2025-11-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lib/lto.exp (lto-build-archive): New procedure.
+	(lto-execute-1): Use it.
+	(lto-link-and-maybe-run, lto-get-options-main): Handle ar-link.
+	* gcc.dg/lto/pr122515_0.c: New test case.
+	* gcc.dg/lto/pr122515_1.c: New file.
+	* gcc.dg/lto/pr122515_2.c: Likewise.
+	* gcc.dg/lto/pr122515_3.c: Likewise.
+	* gcc.dg/lto/pr122515_4.c: Likewise.
+	* gcc.dg/lto/pr122515_5.c: Likewise.
+	* gcc.dg/lto/pr122515_6.c: Likewise.
+	* gcc.dg/lto/pr122515_7.c: Likewise.
+	* gcc.dg/lto/pr122515_8.c: Likewise.
+	* gcc.dg/lto/pr122515_9.c: Likewise.
+
+2025-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122408
+	* gfortran.target/aarch64/pr122408_1.f90: New test.
+	* gfortran.target/aarch64/pr122408_2.f90: New test.
+
+2025-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122408
+	* gfortran.target/aarch64/aarch64.exp: New test.
+
 2025-11-12  Hu, Lin1  <lin1.hu@intel.com>
 
 	Backported from master:
