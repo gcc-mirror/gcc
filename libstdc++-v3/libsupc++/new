@@ -229,15 +229,16 @@ void* operator new[](std::size_t, void* __p)
   _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
 { return __p; }
 
+// Default placement versions of operator delete.
+_GLIBCXX_PLACEMENT_CONSTEXPR void operator delete  (void*, void*)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
+{ }
+_GLIBCXX_PLACEMENT_CONSTEXPR void operator delete[](void*, void*)
+  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
+{ }
+
 #undef _GLIBCXX_PLACEMENT_CONSTEXPR
 
-// Default placement versions of operator delete.
-inline void operator delete  (void*, void*)
-  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
-{ }
-inline void operator delete[](void*, void*)
-  _GLIBCXX_TXN_SAFE _GLIBCXX_USE_NOEXCEPT
-{ }
 //@}
 } // extern "C++"
 
