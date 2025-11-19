@@ -3688,7 +3688,8 @@ vectorizable_call (vec_info *vinfo,
     }
 
   int reduc_idx = SLP_TREE_REDUC_IDX (slp_node);
-  internal_fn cond_fn = get_conditional_internal_fn (ifn);
+  internal_fn cond_fn = (internal_fn_mask_index (ifn) != -1
+			 ? ifn : get_conditional_internal_fn (ifn));
   internal_fn cond_len_fn = get_len_internal_fn (ifn);
   int len_opno = internal_fn_len_index (cond_len_fn);
   vec_loop_masks *masks = (loop_vinfo ? &LOOP_VINFO_MASKS (loop_vinfo) : NULL);
@@ -3769,7 +3770,7 @@ vectorizable_call (vec_info *vinfo,
       else if (reduc_idx >= 0)
 	gcc_unreachable ();
     }
-  else if (masked_loop_p && reduc_idx >= 0)
+  else if (masked_loop_p && mask_opno == -1 && reduc_idx >= 0)
     {
       ifn = cond_fn;
       vect_nargs += 2;
@@ -3812,8 +3813,10 @@ vectorizable_call (vec_info *vinfo,
 	  FOR_EACH_VEC_ELT (vec_oprnds0, i, vec_oprnd0)
 	    {
 	      int varg = 0;
-	      if (masked_loop_p && reduc_idx >= 0)
+	      /* Add the mask if necessary.  */
+	      if (masked_loop_p && mask_opno == -1 && reduc_idx >= 0)
 		{
+		  gcc_assert (internal_fn_mask_index (ifn) == varg);
 		  unsigned int vec_num = vec_oprnds0.length ();
 		  vargs[varg++] = vect_get_loop_mask (loop_vinfo, gsi, masks,
 						      vec_num, vectype_out, i);
@@ -3824,8 +3827,12 @@ vectorizable_call (vec_info *vinfo,
 		  vec<tree> vec_oprndsk = vec_defs[k];
 		  vargs[varg++] = vec_oprndsk[i];
 		}
-	      if (masked_loop_p && reduc_idx >= 0)
-		vargs[varg++] = vargs[reduc_idx + 1];
+	      /* Add the else value if necessary.  */
+	      if (masked_loop_p && mask_opno == -1 && reduc_idx >= 0)
+		{
+		  gcc_assert (internal_fn_else_index (ifn) == varg);
+		  vargs[varg++] = vargs[reduc_idx + 1];
+		}
 	      if (clz_ctz_arg1)
 		vargs[varg++] = clz_ctz_arg1;
 
