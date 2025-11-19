@@ -648,7 +648,7 @@ in an Ada program.
 This guide assumes a basic familiarity with the Ada 95 language, as
 described in the International Standard ANSI/ISO/IEC-8652:1995, January
 1995.
-Reference manuals for Ada 95, Ada 2005, and Ada 2012 are included in
+Reference manuals for Ada 95, Ada 2005, Ada 2012 and Ada 2022 are included in
 the GNAT documentation package.
 
 @node Related Information,Conventions,What You Should Know before Reading This Guide,About This Guide
@@ -663,12 +663,13 @@ following documents:
 @itemize *
 
 @item 
-@cite{Ada 95 Reference Manual}, @cite{Ada 2005 Reference Manual}, and
-@cite{Ada 2012 Reference Manual}, which contain reference
-material for the several revisions of the Ada language standard.
+@cite{Ada 95 Reference Manual}, @cite{Ada 2005 Reference Manual},
+@cite{Ada 2012 Reference Manual},  and @cite{Ada 2022 Reference Manual},
+which contain reference material for the several revisions of the Ada language
+standard.
 
 @item 
-@cite{GNAT Reference_Manual}, which contains all reference material for the GNAT
+@cite{GNAT Reference Manual}, which contains all reference material for the GNAT
 implementation of Ada.
 
 @item 
@@ -682,11 +683,6 @@ main GNAT Studio features through examples.
 @item 
 @cite{Debugging with GDB},
 for all details on the use of the GNU source-level debugger.
-
-@item 
-@cite{GNU Emacs Manual},
-for full information on the extensible editor and programming
-environment Emacs.
 @end itemize
 
 @node Conventions,,Related Information,About This Guide

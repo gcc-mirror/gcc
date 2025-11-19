@@ -78,7 +78,7 @@ What You Should Know before Reading This Guide
 This guide assumes a basic familiarity with the Ada 95 language, as
 described in the International Standard ANSI/ISO/IEC-8652:1995, January
 1995.
-Reference manuals for Ada 95, Ada 2005, and Ada 2012 are included in
+Reference manuals for Ada 95, Ada 2005, Ada 2012 and Ada 2022 are included in
 the GNAT documentation package.
 
 
@@ -88,11 +88,12 @@ Related Information
 For further information about Ada and related tools, please refer to the
 following documents:
 
-* :title:`Ada 95 Reference Manual`, :title:`Ada 2005 Reference Manual`, and
-  :title:`Ada 2012 Reference Manual`, which contain reference
-  material for the several revisions of the Ada language standard.
+* :title:`Ada 95 Reference Manual`, :title:`Ada 2005 Reference Manual`,
+  :title:`Ada 2012 Reference Manual`,  and :title:`Ada 2022 Reference Manual`,
+  which contain reference material for the several revisions of the Ada language
+  standard.
 
-* :title:`GNAT Reference_Manual`, which contains all reference material for the GNAT
+* :title:`GNAT Reference Manual`, which contains all reference material for the GNAT
   implementation of Ada.
 
 * :title:`Using GNAT Studio`, which describes the GNAT Studio
@@ -103,11 +104,6 @@ following documents:
 
 * :title:`Debugging with GDB`,
   for all details on the use of the GNU source-level debugger.
-
-* :title:`GNU Emacs Manual`,
-  for full information on the extensible editor and programming
-  environment Emacs.
-
 
 Conventions
 ===========
@@ -133,9 +129,9 @@ in this guide:
 
 * Examples are described by text
 
-  ::
+  .. code-block:: text
 
-    and then shown this way.
+     and then shown this way.
 
 * Commands that you enter are shown as preceded by a prompt string
   comprising the ``$`` character followed by a space.
