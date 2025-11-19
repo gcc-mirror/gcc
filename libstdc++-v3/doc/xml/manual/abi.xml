@@ -283,6 +283,7 @@ compatible.
     <listitem><para>GCC 13.2.0: libstdc++.so.6.0.32</para></listitem>
     <listitem><para>GCC 14.1.0: libstdc++.so.6.0.33</para></listitem>
     <listitem><para>GCC 15.1.0: libstdc++.so.6.0.34</para></listitem>
+    <listitem><para>GCC 16.1.0: libstdc++.so.6.0.34</para></listitem>
     </itemizedlist>
     <para>
       Note 1: Error should be libstdc++.so.3.0.3.
@@ -363,6 +364,7 @@ compatible.
     <listitem><para>GCC 13.2.0: GLIBCXX_3.4.32, CXXABI_1.3.14</para></listitem>
     <listitem><para>GCC 14.1.0: GLIBCXX_3.4.33, CXXABI_1.3.15</para></listitem>
     <listitem><para>GCC 15.1.0: GLIBCXX_3.4.34, CXXABI_1.3.15 (CXXABI_1.3.16 for RISC-V only)</para></listitem>
+    <listitem><para>GCC 16.1.0: GLIBCXX_3.4.34, CXXABI_1.3.17</para></listitem>
 
     </itemizedlist>
     </listitem>
