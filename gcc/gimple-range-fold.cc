@@ -1252,11 +1252,15 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 						    class loop *l, gphi *phi,
 						    fur_source &src)
 {
+  static bool in_scev_call = false;
   gcc_checking_assert (TREE_CODE (name) == SSA_NAME);
+  // Avoid SCEV callbacks causing infinite recursion.
+  if (in_scev_call)
+    r.set_varying (TREE_TYPE (name));
   // SCEV currently invokes get_range_query () for values.  If the query
   // being passed in is not the same SCEV will use, do not invoke SCEV.
   // This can be remove if/when SCEV uses a passed in range-query.
-  if (src.query () != get_range_query (cfun))
+  else if (src.query () != get_range_query (cfun))
     {
       r.set_varying (TREE_TYPE (name));
       // Report the msmatch if SRC is not the global query.  The cache
@@ -1266,8 +1270,13 @@ fold_using_range::range_of_ssa_name_with_loop_info (vrange &r, tree name,
 	fprintf (dump_file,
 	  "fold_using-range:: SCEV not invoked due to mismatched queries\n");
     }
-  else if (!range_of_var_in_loop (r, name, l, phi, src.query ()))
-      r.set_varying (TREE_TYPE (name));
+  else
+    {
+      in_scev_call = true;
+      if (!range_of_var_in_loop (r, name, l, phi, src.query ()))
+	r.set_varying (TREE_TYPE (name));
+      in_scev_call = false;
+    }
 }
 
 // -----------------------------------------------------------------------
