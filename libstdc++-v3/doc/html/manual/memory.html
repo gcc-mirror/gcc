@@ -37,7 +37,7 @@
        </p><pre class="programlisting">
 	 T*    allocate   (size_type n, const void* hint = 0);
 	 void  deallocate (T* p, size_type n);
-       </pre><p>
+</pre><p>
 	 The <code class="varname">n</code> arguments in both those
 	 functions is a <span class="emphasis"><em>count</em></span> of the number of
 	 <span class="type">T</span>'s to allocate space for, <span class="emphasis"><em>not their
@@ -192,7 +192,7 @@
       Likewise, a debugging form of whichever allocator is currently in use:
     </p><pre class="programlisting">
     std::deque &lt;int, __gnu_cxx::debug_allocator&lt;std::allocator&lt;int&gt; &gt; &gt;  debug_deque;
-      </pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.custom"></a>Custom Allocators</h4></div></div></div><p>
+</pre></div><div class="section"><div class="titlepage"><div><div><h4 class="title"><a id="allocator.custom"></a>Custom Allocators</h4></div></div></div><p>
     Writing a portable C++ allocator would dictate that the interface
     would look much like the one specified for
     <code class="classname">allocator</code>. Additional member functions, but
@@ -336,19 +336,19 @@
 
 	function_taking_MyClass_pointer (ap.get());
     }
-   </pre><p>When an exception gets thrown, the instance of MyClass that's
+</pre><p>When an exception gets thrown, the instance of MyClass that's
       been created on the heap will be <code class="function">delete</code>'d as the stack is
       unwound past <code class="function">func()</code>.
    </p><p>Changing that code as follows is not <acronym class="acronym">AP</acronym>-friendly:
    </p><pre class="programlisting">
 	APMC  ap (new MyClass[22]);
-   </pre><p>You will get the same problems as you would without the use
+</pre><p>You will get the same problems as you would without the use
       of <acronym class="acronym">AP</acronym>:
    </p><pre class="programlisting">
 	char*  array = new char[10];       // array new...
 	...
 	delete array;                      // ...but single-object delete
-   </pre><p>
+</pre><p>
      AP cannot tell whether the pointer you've passed at creation points
       to one or many things.  If it points to many things, you are about
       to die.  AP is trivial to write, however, so you could write your
@@ -363,7 +363,7 @@
     {
 	My_Type (My_Type const&amp;);
     };
-   </pre><p>
+</pre><p>
      Note the const keyword; the object being copied shouldn't change.
      The template class <code class="code">auto_ptr</code> (called AP here) does not
      meet this requirement.  Creating a new AP by copying an existing
@@ -388,7 +388,7 @@
     {
 	std::vector&lt; std::auto_ptr&lt;int&gt; &gt;   vec_ap_int;
     }
-   </pre><p>
+</pre><p>
 Should you try this with the checks enabled, you will see an error.
    </p></div></div><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.util.memory.shared_ptr"></a>shared_ptr</h3></div></div></div><p>
 The shared_ptr class template stores a pointer, usually obtained via new,

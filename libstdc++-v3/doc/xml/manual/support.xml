@@ -100,7 +100,7 @@
     and defined as follows:
     </para>
 
-   <programlisting>
+<programlisting>
    template&lt;typename T&gt;
      struct class
      {
@@ -139,7 +139,7 @@
        static const bool tinyness_before;
        static const float_round_style round_style;
      };
-   </programlisting>
+</programlisting>
   </section>
 
   <section xml:id="std.support.types.null" xreflabel="NULL"><info><title>NULL</title></info>
@@ -327,7 +327,7 @@
      by registering a <quote>new-handler</quote>, because what
      <function>operator new</function> actually does is something like:
    </para>
-   <programlisting>
+<programlisting>
     while (true)
     {
       if (void* p = /* try to allocate memory */)
@@ -337,13 +337,13 @@
       else
         throw bad_alloc{};
     }
-   </programlisting>
+</programlisting>
    <para>
      This means you can influence what happens on allocation failure by
      writing your own new-handler and then registering it with
      <function>std::set_new_handler</function>:
    </para>
-   <programlisting>
+<programlisting>
    typedef void (*PFV)();
 
    static char*  safety;
@@ -366,7 +366,7 @@
        old_handler = set_new_handler (&amp;my_new_handler);
        ...
    }
-   </programlisting>
+</programlisting>
 
    <section xml:id="std.support.memory.notes" xreflabel="Dynamic Memory Notes"><info><title>Additional Notes</title></info>
 
@@ -549,9 +549,9 @@ int main(int argc)
      <filename class="headerfile">&lt;cstdlib&gt;</filename>, and call
    </para>
 
-   <programlisting>
+<programlisting>
      std::set_terminate(std::abort);
-   </programlisting>
+</programlisting>
 
    <para>
      After this, all calls to <function>terminate</function> will use

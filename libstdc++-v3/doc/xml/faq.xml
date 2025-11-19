@@ -813,7 +813,7 @@
     Executing a sequence like this would fail:
     </para>
 
-    <programlisting>
+<programlisting>
     #include &lt;fstream&gt;
     ...
     std::fstream  fs("a_file");
@@ -822,7 +822,7 @@
     // .
     fs.close();
     fs.open("a_new_file");
-    </programlisting>
+</programlisting>
 
     <para>
     All operations on the re-opened <varname>fs</varname> would fail, or at

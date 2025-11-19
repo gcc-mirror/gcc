@@ -33,7 +33,7 @@
     };
 
     extern std::ostream&amp; operator&lt;&lt; (std::ostream&amp;, MyClass&amp;);
-   </pre><p><span class="emphasis"><em><code class="filename">&lt;ios&gt;</code></em></span>
+</pre><p><span class="emphasis"><em><code class="filename">&lt;ios&gt;</code></em></span>
       declares the base classes for the entire I/O stream hierarchy,
       <code class="classname">std::ios_base</code> and <code class="classname">std::basic_ios&lt;charT&gt;</code>,
       the counting types <span class="type">std::streamoff</span> and <span class="type">std::streamsize</span>,
@@ -74,7 +74,7 @@
     {
        return os &lt;&lt; c.data1() &lt;&lt; c.data2();
     }
-   </pre><p>The <span class="type">std::istream</span> and <span class="type">std::ostream</span> classes
+</pre><p>The <span class="type">std::istream</span> and <span class="type">std::ostream</span> classes
       are the abstract parents of
       the various concrete implementations.  If you are only using the
       interfaces, then you only need to use the appropriate interface header.
@@ -111,7 +111,7 @@
 	// this is explained below
 	<span class="emphasis"><em>static ios_base::Init __foo;</em></span>    // not its real name
     }
-   </pre><p>Now, the runtime penalty mentioned previously:  the global objects
+</pre><p>Now, the runtime penalty mentioned previously:  the global objects
       must be initialized before any of your own code uses them; this is
       guaranteed by the standard.  Like any other global object, they must
       be initialized once and only once.  This is typically done with a

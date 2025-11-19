@@ -70,7 +70,7 @@
    </itemizedlist>
    <para>Here is a simple example of the two forms of <code>accumulate</code>.
    </para>
-   <programlisting>
+<programlisting>
    int   ar[50];
    int   someval = somefunction();
 
@@ -79,7 +79,7 @@
    int  sum       = std::accumulate(ar,ar+50,0);
    int  sum_stuff = std::accumulate(ar,ar+50,someval);
    int  product   = std::accumulate(ar,ar+50,1,std::multiplies&lt;int&gt;());
-   </programlisting>
+</programlisting>
    <para>The first call adds all the members of the array, using zero as an
       initial value for <code>sum</code>.  The second does the same, but uses
       <code>someval</code> as the starting value (thus, <code>sum_stuff == sum +
