@@ -926,7 +926,12 @@ remove_unused_locals (void)
 	      {
 		tree lhs = gimple_call_lhs (stmt);
 		tree base = get_base_address (lhs);
-		if (DECL_P (base) && !is_used_p (base))
+		if ((DECL_P (base) && !is_used_p (base))
+		    || (TREE_CODE (lhs) == MEM_REF
+			&& TREE_CODE (TREE_OPERAND (lhs, 0)) == SSA_NAME
+			&& SSA_NAME_IS_DEFAULT_DEF (TREE_OPERAND (lhs, 0))
+			&& (TREE_CODE (SSA_NAME_VAR (TREE_OPERAND (lhs, 0)))
+			    != PARM_DECL)))
 		  {
 		    unlink_stmt_vdef (stmt);
 		    gsi_remove (&gsi, true);
