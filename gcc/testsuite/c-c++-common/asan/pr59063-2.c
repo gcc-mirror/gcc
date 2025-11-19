@@ -1,4 +1,4 @@
-/* { dg-do run { target { *-*-linux* *-*-freebsd* } } } */
+/* { dg-do run { target { *-*-linux* *-*-freebsd* *-*-solaris2* } } } */
 /* { dg-options "-static-libasan" } */
 
 #include <time.h>

@@ -224,7 +224,7 @@ along with GCC; see the file COPYING3.  If not see
    in that case, and for executable link with --{,no-}whole-archive around
    it to force everything into the executable.  */
 
-#ifndef USE_GNU_LD
+#ifndef USE_GLD
 #define LD_WHOLE_ARCHIVE_OPTION "-z allextract"
 #define LD_NO_WHOLE_ARCHIVE_OPTION "-z defaultextract"
 #else
