@@ -1685,6 +1685,9 @@ UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dlld)
 fuse-ld=mold
 UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dmold)
 
+fuse-ld=wild
+UrlSuffix(gcc/Link-Options.html#index-fuse-ld_003dwild)
+
 fuse-linker-plugin
 UrlSuffix(gcc/Optimize-Options.html#index-fuse-linker-plugin)
 
