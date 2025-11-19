@@ -924,7 +924,7 @@ riscv_expand_block_move_scalar (rtx dest, rtx src, rtx length)
   unsigned HOST_WIDE_INT factor, align;
 
   if (riscv_memcpy_size_threshold >= 0
-      && hwi_length > riscv_memcpy_size_threshold)
+      && hwi_length > (unsigned HOST_WIDE_INT) riscv_memcpy_size_threshold)
     return false;
 
   if (riscv_slow_unaligned_access_p)
