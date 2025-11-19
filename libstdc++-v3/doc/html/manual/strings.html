@@ -47,7 +47,7 @@
      capital_s.resize(s.size());
      std::transform (s.begin(), s.end(), capital_s.begin(), ToUpper());
    }
-   </pre><p>
+</pre><p>
      <span class="emphasis"><em>Note</em></span> that these calls all
       involve the global C locale through the use of the C functions
       <code class="code">toupper</code>/<code class="code">tolower</code>.
@@ -82,7 +82,7 @@
    </p><pre class="programlisting">
      std::transform (s.begin(), s.end(), capital_s.begin(),
                      [](unsigned char c) { return std::tolower(c); });
-   </pre><p>Another common operation is trimming off excess whitespace.  Much
+</pre><p>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
       <code class="code">find</code> family.  These examples are broken into multiple
       statements for readability:
@@ -273,7 +273,7 @@ stringtok(Container &amp;container, string const &amp;in,
       to GCC 3.4 the following alternative can be used instead
    </p><pre class="programlisting">
       std::string(str.data(), str.size()).swap(str);
-   </pre><p>This is similar to the idiom for reducing
+</pre><p>This is similar to the idiom for reducing
       a <code class="code">vector</code>'s memory usage
       (see <a class="link" href="../faq.html#faq.size_equals_capacity" title="7.8.">this FAQ
       entry</a>) but the regular copy constructor cannot be used
@@ -347,7 +347,7 @@ stringtok(Container &amp;container, string const &amp;in,
 
    If you replace CString with string in the above function, the
    performance is O(n).
-   </pre><p>Joe Buck also pointed out some other things to keep in mind when
+</pre><p>Joe Buck also pointed out some other things to keep in mind when
       comparing CString and the Standard string class:
    </p><div class="itemizedlist"><ul class="itemizedlist" style="list-style-type: disc; "><li class="listitem"><p>CString permits access to its internal representation; coders
 	     who exploited that may have problems moving to <code class="code">string</code>.

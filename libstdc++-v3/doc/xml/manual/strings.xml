@@ -31,7 +31,7 @@
      This code will go through some iterations.  Here's a simple
      version:
    </para>
-   <programlisting>
+<programlisting>
    #include &lt;string&gt;
    #include &lt;algorithm&gt;
    #include &lt;cctype&gt;      // old &lt;ctype.h&gt;
@@ -62,7 +62,7 @@
      capital_s.resize(s.size());
      std::transform (s.begin(), s.end(), capital_s.begin(), ToUpper());
    }
-   </programlisting>
+</programlisting>
    <para>
      <emphasis>Note</emphasis> that these calls all
       involve the global C locale through the use of the C functions
@@ -87,7 +87,7 @@
       <!-- section 14.8.2.4 clause 16 in ISO 14882:1998  -->
       At minimum, you can write short wrappers like
    </para>
-   <programlisting>
+<programlisting>
    char toLower (char c)
    {
       // std::tolower(c) is undefined if c &lt; 0 so cast to unsigned char.
@@ -100,16 +100,16 @@
      which can perform the conversion to <code>unsigned char</code> and
      also ensure the single-argument form of <code>std::lower</code> is used:
    </para>
-   <programlisting>
+<programlisting>
      std::transform (s.begin(), s.end(), capital_s.begin(),
                      [](unsigned char c) { return std::tolower(c); });
-   </programlisting>
+</programlisting>
    <para>Another common operation is trimming off excess whitespace.  Much
       like transformations, this task is trivial with the use of string's
       <code>find</code> family.  These examples are broken into multiple
       statements for readability:
    </para>
-   <programlisting>
+<programlisting>
    std::string  str (" \t blah blah blah    \n ");
 
    // trim leading whitespace
@@ -138,7 +138,7 @@
       case-insensitive in the same way as the (common but nonstandard)
       C function stricmp()</quote>.
    </para>
-   <programlisting>
+<programlisting>
    ci_string s( "AbCdE" );
 
    // case insensitive
@@ -192,7 +192,7 @@
       type parameters, which take default arguments based on the character
       type (called <code>CharT</code> here):
    </para>
-   <programlisting>
+<programlisting>
       template &lt;typename CharT,
 		typename Traits = char_traits&lt;CharT&gt;,
 		typename Alloc = allocator&lt;CharT&gt; &gt;
@@ -205,7 +205,7 @@
       template is <emphasis>declared</emphasis> but not <emphasis>defined</emphasis>.
       That means there is only
    </para>
-   <programlisting>
+<programlisting>
       template &lt;typename CharT&gt;
 	struct char_traits
 	{
@@ -314,7 +314,7 @@ stringtok(Container &amp;container, string const &amp;in,
    </para>
 
 
-   <programlisting>
+<programlisting>
    std::list&lt;string&gt;  ls;
    stringtok (ls, " this  \t is\t\n  a test  ");
    for (std::list&lt;string&gt;const_iterator i = ls.begin();
@@ -324,7 +324,7 @@ stringtok(Container &amp;container, string const &amp;in,
    } </programlisting>
    <para>You would see this as output:
    </para>
-   <programlisting>
+<programlisting>
    :this:
    :is:
    :a:
@@ -358,9 +358,9 @@ stringtok(Container &amp;container, string const &amp;in,
    <para>This behaviour is suggested, but not required by the standard. Prior
       to GCC 3.4 the following alternative can be used instead
    </para>
-   <programlisting>
+<programlisting>
       std::string(str.data(), str.size()).swap(str);
-   </programlisting>
+</programlisting>
    <para>This is similar to the idiom for reducing
       a <code>vector</code>'s memory usage
       (see <link linkend="faq.size_equals_capacity">this FAQ
@@ -411,7 +411,7 @@ stringtok(Container &amp;container, string const &amp;in,
       streams seamlessly because they inherit from the iostream
       hierarchy.  An quick example:
    </para>
-   <programlisting>
+<programlisting>
    #include &lt;iostream&gt;
    #include &lt;string&gt;
    #include &lt;sstream&gt;
@@ -434,7 +434,7 @@ stringtok(Container &amp;container, string const &amp;in,
    <para>A serious problem with CString is a design bug in its memory
       allocation.  Specifically, quoting from that same message:
    </para>
-   <programlisting>
+<programlisting>
    CString suffers from a common programming error that results in
    poor performance.  Consider the following code:
 
@@ -455,7 +455,7 @@ stringtok(Container &amp;container, string const &amp;in,
 
    If you replace CString with string in the above function, the
    performance is O(n).
-   </programlisting>
+</programlisting>
    <para>Joe Buck also pointed out some other things to keep in mind when
       comparing CString and the Standard string class:
    </para>

@@ -111,7 +111,7 @@
       else
         throw bad_alloc{};
     }
-   </pre><p>
+</pre><p>
      This means you can influence what happens on allocation failure by
      writing your own new-handler and then registering it with
      <code class="function">std::set_new_handler</code>:
@@ -138,7 +138,7 @@
        old_handler = set_new_handler (&amp;my_new_handler);
        ...
    }
-   </pre><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.memory.notes"></a>Additional Notes</h3></div></div></div><p>
+</pre><div class="section"><div class="titlepage"><div><div><h3 class="title"><a id="std.support.memory.notes"></a>Additional Notes</h3></div></div></div><p>
      Remember that it is perfectly okay to <code class="function">delete</code> a
      null pointer!  Nothing happens, by definition.  That is not the
      same thing as deleting a pointer twice.
