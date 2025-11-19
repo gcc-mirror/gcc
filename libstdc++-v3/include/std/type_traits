@@ -4682,7 +4682,7 @@ template<typename _Ret, typename _Fn, typename... _Args>
       }
 
     constexpr
-    operator decltype(auto)() const noexcept
+    operator decltype(value)() const noexcept
     { return value; }
   };
 

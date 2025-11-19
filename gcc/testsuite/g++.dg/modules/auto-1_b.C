@@ -1,4 +1,4 @@
-// { dg-additional-options "-fmodules-ts -fno-module-lazy -fdump-lang-module-alias" }
+// { dg-options "-fmodules-ts -fno-module-lazy -fdump-lang-module-alias" }
 
 #include "auto-1.h"
 import "auto-1_a.H";

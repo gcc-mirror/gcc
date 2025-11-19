@@ -1,10 +1,11 @@
 // PR c++/84906
 // { dg-do compile { target c++14 } }
+// { dg-options "-Wpedantic" }
 
 extern "C" int puts(const char*);
 
 struct aa {
-  operator auto() {
+  operator auto() {		// { dg-warning "invalid use of 'auto' in conversion operator" }
     puts("auto");
     return false;
   }

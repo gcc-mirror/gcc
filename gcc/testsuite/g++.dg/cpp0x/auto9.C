@@ -15,8 +15,8 @@ const std::type_info &t2 = typeid (auto *);	// { dg-error "auto" }
 
 struct A
 {
-  operator auto ();				// { dg-error "auto" "" { target { ! c++14 } } }
-  operator auto *();				// { dg-error "auto" "" { target { ! c++14 } } }
+  operator auto ();				// { dg-error "auto" }
+  operator auto *();				// { dg-error "auto" }
 };
 
 struct A2

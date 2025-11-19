@@ -18779,9 +18779,14 @@ cp_parser_conversion_type_id (cp_parser* parser)
 	  error ("invalid use of %<auto%> in conversion operator");
 	  return error_mark_node;
 	}
-      else if (template_parm_scope_p ())
-	warning (0, "use of %<auto%> in member template "
-		 "conversion operator can never be deduced");
+      else
+	{
+	  pedwarn (input_location, OPT_Wpedantic,
+		   "invalid use of %<auto%> in conversion operator");
+	  if (template_parm_scope_p ())
+	    warning (0, "use of %<auto%> in member template "
+			"conversion operator can never be deduced");
+	}
     }
 
   return type_specified;
