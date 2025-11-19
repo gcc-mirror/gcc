@@ -1,3 +1,10 @@
+2025-11-18  Richard Biener  <rguenther@suse.de>
+	    Alex Coplan  <alex.coplan@arm.com>
+
+	PR tree-optimization/112469
+	PR tree-optimization/122724
+	* gcc.target/aarch64/sve/pr122724.c: New test.
+
 2025-11-13  Hu, Lin1  <lin1.hu@intel.com>
 
 	Backported from master:
