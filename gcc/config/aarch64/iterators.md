@@ -1820,6 +1820,18 @@
 			(VNx4SI  "v4si") (VNx4SF "v4sf")
 			(VNx2DI  "v2di") (VNx2DF "v2df")])
 
+;; Gives the mode of the 64-bit lowpart of an SVE vector.
+(define_mode_attr V64 [(VNx16QI "V8QI")
+			(VNx8HI  "V4HI") (VNx8HF "V4HF") (VNx8BF "V4BF")
+			(VNx4SI  "V2SI") (VNx4SF "V2SF")
+			(VNx2DI  "DI") (VNx2DF "DF")])
+
+;; ...and again in lower case.
+(define_mode_attr v64 [(VNx16QI "v8qi")
+			(VNx8HI  "v4hi") (VNx8HF "v4hf") (VNx8BF "v4bf")
+			(VNx4SI  "v2si") (VNx4SF "v2sf")
+			(VNx2DI  "di") (VNx2DF "df")])
+
 (define_mode_attr vnx [(V4SI "vnx4si") (V2DI "vnx2di")])
 
 ;; 64-bit container modes the inner or scalar source mode.

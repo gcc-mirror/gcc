@@ -46,6 +46,10 @@
   (and (match_code "const_int")
        (match_test "op == CONST0_RTX (mode)")))
 
+(define_predicate "const0_to_1_operand"
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (INTVAL (op), 0, 1)")))
+
 (define_predicate "const_0_to_7_operand"
   (and (match_code "const_int")
        (match_test "IN_RANGE (INTVAL (op), 0, 7)")))

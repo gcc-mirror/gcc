@@ -1,6 +1,7 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target aarch64_little_endian } */
 /* { dg-options "-O2 -march=armv8-a+sve" } */
+/* { dg-final { check-function-bodies "**" "" } } */
 
 #include <arm_neon_sve_bridge.h>
 
@@ -16,6 +17,11 @@ test_addressable ()
   return vmovl_s8 (vget_high_s8 (z));
 }
 
+/*
+** test_scalable_type:
+**	sxtl2	v0.8h, v0.16b
+**	ret
+*/
 int16x8_t
 test_scalable_type (svint8_t scalable)
 {
@@ -34,4 +40,5 @@ test_256b_type (int16x16_t foo)
   return vmovl_s16 ((int16x4_t) { foo[4], foo[5], foo[6], foo[7] });
 }
 
-/* { dg-final { scan-assembler-not {sxtl2\t} } } */
+/* { dg-final { scan-assembler-times {sxtl2\t} 1 } } */
+/* { dg-final { scan-assembler-times {sxtl\t} 3 } } */
