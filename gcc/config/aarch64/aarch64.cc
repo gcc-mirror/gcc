@@ -7656,11 +7656,11 @@ aarch64_layout_arg (cumulative_args_t pcum_v, const function_arg_info &arg)
 	}
 
       /* NREGS can be 0 when e.g. an empty structure is to be passed.
-	 A reg is still generated for it, but the caller should be smart
-	 enough not to use it.  */
-      if (nregs == 0
-	  || (nregs == 1 && !sve_p)
-	  || GET_MODE_CLASS (mode) == MODE_INT)
+	 In this situation the register should never be used, so assign
+	 NULL_RTX.  */
+      if (nregs == 0)
+	pcum->aapcs_reg = NULL_RTX;
+      else if ((nregs == 1 && !sve_p) || GET_MODE_CLASS (mode) == MODE_INT)
 	pcum->aapcs_reg
 	  = gen_rtx_REG (mode, get_pcs_arg_reg (pcum->pcs_variant, ncrn));
       else
@@ -7863,10 +7863,7 @@ aarch64_function_arg_advance (cumulative_args_t pcum_v,
       || pcum->pcs_variant == ARM_PCS_PRESERVE_NONE)
     {
       aarch64_layout_arg (pcum_v, arg);
-      gcc_assert ((pcum->aapcs_reg != NULL_RTX)
-		  != (pcum->aapcs_stack_words != 0));
-      if (pcum->aapcs_reg
-	  && aarch64_call_switches_pstate_sm (pcum->isa_mode))
+      if (pcum->aapcs_reg && aarch64_call_switches_pstate_sm (pcum->isa_mode))
 	aarch64_record_sme_mode_switch_args (pcum);
 
       pcum->aapcs_arg_processed = false;
