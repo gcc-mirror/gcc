@@ -53969,7 +53969,7 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     CXXFLAGS='-O0 -S'
 
     cat > conftest.$ac_ext << EOF
-#line 53943 "configure"
+#line 53972 "configure"
 #include <stddef.h>
 int main()
 {
