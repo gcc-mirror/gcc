@@ -295,7 +295,9 @@
 
 (define_predicate "low_bitmask_operand"
   (and (match_code "const_int")
-       (match_test "low_bitmask_len (mode, INTVAL (op)) > 12")
+       (ior
+	 (match_test "low_bitmask_len (mode, INTVAL (op)) > 12")
+	 (match_test "op == CONSTM1_RTX (GET_MODE (op))"))
        (match_test "!TARGET_32BIT_R")))
 
 (define_predicate "d_operand"
