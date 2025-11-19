@@ -185,19 +185,23 @@ enum ch_decision
   /* We want to copy.  */
   ch_win,
   /* We want to copy and we will eliminate loop exit.  */
-  ch_win_invariant_exit
+  ch_win_invariant_exit,
+  
 };
 
 /* Check whether we should duplicate HEADER of LOOP.  At most *LIMIT
    instructions should be duplicated, limit is decreased by the actual
-   amount.  */
+   amount.  In the case of *CANBE_NEVEREXECUTED, if there is a exit edge
+   of the HEADER that is most likely never executed then consider that
+   as invariant and continue. Set *CANBE_NEVEREXECUTED to false otherwise.  */
 
 static ch_decision
 should_duplicate_loop_header_p (basic_block header, class loop *loop,
 				gimple_ranger *ranger,
 				int *limit,
 				hash_set <edge> *invariant_exits,
-				hash_set <edge> *static_exits)
+				hash_set <edge> *static_exits,
+				bool *canbe_neverexecuted)
 {
   gimple_stmt_iterator bsi;
 
@@ -460,6 +464,34 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
 	}
       return ch_win_invariant_exit;
     }
+  if (!static_exit && *canbe_neverexecuted)
+    {
+      /* See if one of the edges are an exit edge that is probable
+         never executed.
+	 If so treat it as invariant exit win.  */
+      edge e;
+      edge_iterator ei;
+      bool hasone = false;
+      FOR_EACH_EDGE (e, ei, header->succs)
+	if (loop_exit_edge_p (loop, e)
+	    && (probably_never_executed_edge_p (cfun, e)
+		/* We want to rule out paths to noreturns but not
+		   low probabilities resulting from adjustments
+		   or combining.
+		   FIXME: once we have better quality tracking,
+		   make this more robust.  */
+		|| e->probability <= profile_probability::very_unlikely ()))
+	  {
+	    hasone = true;
+	    if (dump_file && (dump_flags & TDF_DETAILS))
+	      fprintf (dump_file,
+		       "    `never executed` exit %i->%i\n",
+		       e->src->index, e->dest->index);
+	  }
+      if (hasone)
+	return ch_win_invariant_exit;
+    }
+  *canbe_neverexecuted = false;
 
   /* If the static exit fully optimize out, it is win to "duplicate"
      it.
@@ -846,10 +878,12 @@ ch_base::copy_headers (function *fun)
       auto_vec <ch_decision, 32> decision;
       hash_set <edge> *invariant_exits = new hash_set <edge>;
       hash_set <edge> *static_exits = new hash_set <edge>;
+      bool canbe_neverexecuted = true;
       while ((ret = should_duplicate_loop_header_p (header, loop, ranger,
 						    &remaining_limit,
 						    invariant_exits,
-						    static_exits))
+						    static_exits,
+						    &canbe_neverexecuted))
 	     != ch_impossible)
 	{
 	  nheaders++;
