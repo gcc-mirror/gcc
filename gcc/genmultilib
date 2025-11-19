@@ -549,7 +549,7 @@ echo ""
 echo "static const char *multilib_options = \"${moptions}\";"
 
 # Finally output the disable flag if specified
-if [ "x${disable_multilib}" = xyes ]; then
+if [ "x${enable_multilib}" != xyes ]; then
   echo ""
   echo "#define DISABLE_MULTILIB  1"
 fi
