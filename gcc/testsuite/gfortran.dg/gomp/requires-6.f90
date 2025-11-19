@@ -10,5 +10,5 @@ end
 subroutine foobar
 !$omp atomic
  i = i + 5
-!$omp requires atomic_default_mem_order(acq_rel) ! { dg-error "\\!\\$OMP REQUIRES statement at \\(1\\) cannot appear after executable statements" }
+!$omp requires atomic_default_mem_order(acq_rel) ! { dg-error "\\!\\\$OMP REQUIRES statement at \\(1\\) cannot appear after executable statements" }
 end
