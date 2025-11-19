@@ -96,6 +96,10 @@ package body Exp_Ch3 is
    --  used for attachment of any actions required in its construction.
    --  It also supplies the source location used for the procedure.
 
+   procedure Build_Implicit_Copy_Constructor (N : Node_Id; Typ : Entity_Id);
+   --  Build default copy constructor. N is the type declaration node, and Typ
+   --  is the corresponding entity for the record type.
+
    function Build_Discriminant_Formals
      (Rec_Id : Entity_Id;
       Use_Dl : Boolean) return List_Id;
@@ -1751,6 +1755,217 @@ package body Exp_Ch3 is
          Copy_Discr_Checking_Funcs (N);
       end if;
    end Build_Or_Copy_Discr_Checking_Funcs;
+
+   -------------------------------------
+   -- Build_Implicit_Copy_Constructor --
+   -------------------------------------
+
+   procedure Build_Implicit_Copy_Constructor (N : Node_Id; Typ : Entity_Id) is
+      Loc     : constant Source_Ptr := Sloc (Typ);
+      Copy_Id : Entity_Id;
+
+      Comp_List, Comp_Decl : Node_Id;
+      Comp_Id, Comp_Typ    : Entity_Id;
+
+      Body_Stmts, Parameters, Aspect_Specs : List_Id;
+      Spec_Node, Stmt                      : Node_Id;
+      Self, From                           : Entity_Id;
+   begin
+      --  Only build copy constructor for user-defined non-limited tagged
+      --  record types that needs construction without having declared a copy
+      --  constructor already, or without having it explicitly removed. This
+      --  implicit copy needs to call first the parent's copy constructor (if
+      --  derived), second to copy field-by-field the components, and third to
+      --  call their respective copy constructors if necessary.
+
+      if not Comes_From_Source (N)
+        or else Is_Limited_Type (Typ)
+        or else not Is_Tagged_Type (Typ)
+        or else not Needs_Construction (Typ)
+        or else Has_Copy_Constructor (Typ, Allow_Removed => True)
+      then
+         return;
+      end if;
+
+      if Is_Derived_Type (Typ) then
+         Comp_List :=
+           Component_List (Record_Extension_Part (Type_Definition (N)));
+      else
+         Comp_List := Component_List (Type_Definition (N));
+      end if;
+
+      --  Here, there is still a possibility that an implicit copy constructor
+      --  is actually not needed.
+
+      declare
+         Found : Boolean := False;
+      begin
+         if Present (Comp_List) then
+            Comp_Decl := First_Non_Pragma (Component_Items (Comp_List));
+            while not Found and then Present (Comp_Decl) loop
+               Comp_Id := Defining_Identifier (Comp_Decl);
+               Comp_Typ := Etype (Comp_Id);
+               if Has_Copy_Constructor (Comp_Typ) then
+                  Found := True;
+               end if;
+               Next_Non_Pragma (Comp_Decl);
+            end loop;
+         end if;
+
+         --  If Found is false, then there is no component in the current type
+         --  with a copy constructor. If also the type is either not derived or
+         --  its parent has no copy constructor, then there is no need for a
+         --  copy constructor for the current type as its behavior would be
+         --  identical to the byte-wise copy provided by assignment.
+
+         if not Found
+           and then (if Is_Derived_Type (Typ)
+                      then not Has_Copy_Constructor (Parent_Subtype (Typ)))
+         then
+            return;
+         end if;
+      end;
+
+      Copy_Id :=
+        Make_Defining_Identifier (Loc,
+          Direct_Attribute_Definition_Name (Typ, Name_Constructor));
+      Mutate_Ekind (Copy_Id, E_Procedure);
+
+      if not Debug_Generated_Code then
+         Set_Debug_Info_Off (Copy_Id);
+      end if;
+
+      --  The copy constructor has the following profile:
+      --    procedure T'Constructor (Self : in out T; From : T);
+
+      Self := Make_Defining_Identifier (Loc, Name_Self);
+      From := Make_Defining_Identifier (Loc, Name_From);
+
+      Parameters := New_List (
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier => Self,
+          In_Present          => True,
+          Out_Present         => True,
+          Parameter_Type      => New_Occurrence_Of (Typ, Loc)),
+        Make_Parameter_Specification (Loc,
+          Defining_Identifier => From,
+          In_Present          => True,
+          Parameter_Type      => New_Occurrence_Of (Typ, Loc)));
+
+      --  The first thing to do in the implicit copy constructor is to copy
+      --  components field-by-field, the parent copy constructor call is
+      --  prepended later via the 'Super aspect.
+
+      Body_Stmts := New_List;
+      if Present (Comp_List) then
+         Comp_Decl := First_Non_Pragma (Component_Items (Comp_List));
+         while Present (Comp_Decl) loop
+            Comp_Id := Defining_Identifier (Comp_Decl);
+            Comp_Typ := Etype (Comp_Id);
+
+            if Chars (Comp_Id) not in Name_uParent | Name_uTag then
+               Stmt :=
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Selected_Component (Loc,
+                       Prefix        => New_Occurrence_Of (Self, Loc),
+                       Selector_Name => New_Occurrence_Of (Comp_Id, Loc)),
+                   Expression =>
+                     Make_Selected_Component (Loc,
+                       Prefix        => New_Occurrence_Of (From, Loc),
+                       Selector_Name => New_Occurrence_Of (Comp_Id, Loc)));
+               Set_Assignment_OK (Name (Stmt));
+               Set_No_Ctrl_Actions (Stmt);
+               Append_To (Body_Stmts, Stmt);
+            end if;
+
+            Next_Non_Pragma (Comp_Decl);
+         end loop;
+
+         --  Then, call the copy constructor for each component that needs
+         --  construction and has a copy constructor.
+
+         Comp_Decl := First_Non_Pragma (Component_Items (Comp_List));
+         while Present (Comp_Decl) loop
+            Comp_Id := Defining_Identifier (Comp_Decl);
+            Comp_Typ := Etype (Comp_Id);
+
+            --  For each component that has a copy constructor, generate:
+            --    Self.Comp_Id := Comp_Typ'Make (From.Comp_Id);
+
+            if Chars (Comp_Id) /= Name_uParent
+              and then Needs_Construction (Comp_Typ)
+              and then Has_Copy_Constructor (Comp_Typ)
+            then
+               Stmt :=
+                 Make_Assignment_Statement (Loc,
+                   Name       =>
+                     Make_Selected_Component (Loc,
+                       Prefix        => New_Occurrence_Of (Self, Loc),
+                       Selector_Name => New_Occurrence_Of (Comp_Id, Loc)),
+                   Expression =>
+                     Make_Attribute_Reference (Loc,
+                       Prefix         => New_Occurrence_Of (Comp_Typ, Loc),
+                       Attribute_Name => Name_Make,
+                       Expressions    => New_List (
+                         Make_Selected_Component (Loc,
+                           Prefix        => New_Occurrence_Of (From, Loc),
+                           Selector_Name =>
+                             New_Occurrence_Of (Comp_Id, Loc)))));
+               Set_Assignment_OK (Name (Stmt));
+               Append_To (Body_Stmts, Stmt);
+            end if;
+
+            --  Components that do not need construction or lack a copy
+            --  constructor are simply skipped since the expansion of a
+            --  constructor also takes care of default copies/initializations.
+
+            Next_Non_Pragma (Comp_Decl);
+         end loop;
+      end if;
+
+      --  Prepend the call to the parent's copy constructor if derived
+
+      if Is_Derived_Type (Typ)
+        and then Has_Copy_Constructor (Parent_Subtype (Typ))
+      then
+         Aspect_Specs := New_List
+           (Make_Aspect_Specification (Loc,
+              Identifier => Make_Identifier (Loc, Name_Super),
+              Expression =>
+                Make_Aggregate (Loc,
+                  Expressions => New_List (
+                    Make_Type_Conversion (Loc,
+                      Subtype_Mark =>
+                        New_Occurrence_Of (Parent_Subtype (Typ), Loc),
+                      Expression   => New_Occurrence_Of (From, Loc))),
+                  Is_Parenthesis_Aggregate => True,
+                  Is_Homogeneous_Aggregate => True)));
+      else
+         Aspect_Specs := No_List;
+      end if;
+
+      Spec_Node := New_Node (N_Procedure_Specification, Loc);
+      Set_Defining_Unit_Name (Spec_Node, Copy_Id);
+      Set_Parameter_Specifications (Spec_Node, Parameters);
+      Freeze_Extra_Formals (Copy_Id);
+
+      declare
+         Ignore : Node_Id;
+      begin
+         Ignore :=
+           Make_Subprogram_Body (Loc,
+             Specification => Spec_Node,
+             Aspect_Specifications => Aspect_Specs,
+             Handled_Statement_Sequence =>
+               Make_Handled_Sequence_Of_Statements (Loc, Body_Stmts));
+      end;
+
+      Set_Is_Public (Copy_Id, Is_Public (Typ));
+      Set_Is_Internal (Copy_Id);
+      Set_Is_Constructor (Copy_Id);
+      Set_Init_Proc (Typ, Copy_Id);
+   end Build_Implicit_Copy_Constructor;
 
    --------------------------------
    -- Build_Discriminant_Formals --
@@ -6518,6 +6733,7 @@ package body Exp_Ch3 is
         and then (Tagged_Type_Expansion or else not Is_Interface (Typ))
       then
          Build_Record_Init_Proc (Typ_Decl, Typ);
+         Build_Implicit_Copy_Constructor (Typ_Decl, Typ);
       end if;
 
       --  Create the body of TSS primitive Finalize_Address. This must be done
@@ -7615,17 +7831,39 @@ package body Exp_Ch3 is
          return;
       end if;
 
-      --  Expand objects with default constructors to have the 'Make
-      --  attribute.
+      --  Expand objects to use constructors if needed
 
       if Comes_From_Source (N)
-        and then No (Expr)
         and then Needs_Construction (Typ)
-        and then Has_Default_Constructor (Typ)
+
+      --  Don't expand copy constructor for objects initialized with aggregates
+
+        and then (if Present (Expr)
+                   then Nkind (Expr) not in N_Aggregate
+                                          | N_Delta_Aggregate
+                                          | N_Extension_Aggregate)
+
+      --  Don't expand copy constructor if a constructor was explicitly called
+
+        and then (if Present (Expr)
+                   then (Nkind (Original_Node (Expr)) /= N_Attribute_Reference
+                          or else Attribute_Name (Original_Node (Expr))
+                                    /= Name_Make))
       then
-         Expr := Make_Attribute_Reference (Loc,
-                   Attribute_Name => Name_Make,
-                   Prefix         => Object_Definition (N));
+         if No (Expr) then
+            Expr :=
+              Make_Attribute_Reference
+                (Loc,
+                 Attribute_Name => Name_Make,
+                 Prefix         => New_Occurrence_Of (Typ, Loc));
+         else
+            Expr :=
+              Make_Attribute_Reference
+                (Loc,
+                 Attribute_Name => Name_Make,
+                 Prefix         => New_Occurrence_Of (Typ, Loc),
+                 Expressions    => New_List (Expr));
+         end if;
          Set_Expression (N, Expr);
          Analyze_And_Resolve (Expr);
       end if;

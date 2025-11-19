@@ -5201,12 +5201,8 @@ package body Sem_Attr is
          Check_Type;
          Set_Etype (N, Etype (P));
 
-         if not Needs_Construction (Entity (P)) then
-            Error_Msg_NE ("no available constructor for&", N, Entity (P));
-         end if;
-
-         if Present (Expressions (N)) then
-            Expr := First (Expressions (N));
+         if Present (Exprs) then
+            Expr := First (Exprs);
             while Present (Expr) loop
                if Nkind (Expr) = N_Parameter_Association then
                   Analyze (Explicit_Actual_Parameter (Expr));
@@ -5216,6 +5212,12 @@ package body Sem_Attr is
 
                Next (Expr);
             end loop;
+
+            if not Is_Copy_Constructor_Call (N)
+              and then not Needs_Construction (Entity (P))
+            then
+               Error_Msg_NE ("no available constructor for&", N, Entity (P));
+            end if;
 
          elsif not Has_Default_Constructor (Entity (P)) then
             Error_Msg_NE ("no default constructor for&", N, Entity (P));

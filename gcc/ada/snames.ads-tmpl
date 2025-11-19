@@ -830,6 +830,7 @@ package Snames is
    Name_Exception_Raised               : constant Name_Id := N + $;
    Name_External_Name                  : constant Name_Id := N + $;
    Name_Form                           : constant Name_Id := N + $;
+   Name_From                           : constant Name_Id := N + $;
    Name_Gcc                            : constant Name_Id := N + $;
    Name_General                        : constant Name_Id := N + $;
    Name_Gnat                           : constant Name_Id := N + $;
@@ -897,6 +898,7 @@ package Snames is
    Name_Runtime                        : constant Name_Id := N + $;
    Name_SB                             : constant Name_Id := N + $;
    Name_Section                        : constant Name_Id := N + $;
+   Name_Self                           : constant Name_Id := N + $;
    Name_Semaphore                      : constant Name_Id := N + $;
    Name_Simple_Barriers                : constant Name_Id := N + $;
    Name_SPARK                          : constant Name_Id := N + $;

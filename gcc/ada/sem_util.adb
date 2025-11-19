@@ -11859,29 +11859,16 @@ package body Sem_Util is
    -- Has_Default_Constructor --
    -----------------------------
 
-   function Has_Default_Constructor (Typ : Entity_Id) return Boolean is
-      Cursor : Entity_Id;
+   function Has_Default_Constructor
+     (Typ : Entity_Id; Allow_Removed : Boolean := False) return Boolean
+   is
+      function No_Next_Formal (N : Entity_Id) return Boolean
+      is (No (Next_Formal (First_Formal (N))));
+
+      function Internal_Has_Default_Constructor
+      is new Has_Matching_Constructor (No_Next_Formal);
    begin
-      pragma Assert (Is_Type (Typ));
-      if not Needs_Construction (Typ) then
-         return False;
-      end if;
-
-      --  Iterate through all homonyms to find the default constructor
-
-      Cursor := Get_Name_Entity_Id
-                  (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
-      while Present (Cursor) loop
-         if Is_Constructor (Cursor)
-           and then No (Next_Formal (First_Formal (Cursor)))
-         then
-            return True;
-         end if;
-
-         Cursor := Homonym (Cursor);
-      end loop;
-
-      return False;
+      return Internal_Has_Default_Constructor (Typ, Allow_Removed);
    end Has_Default_Constructor;
 
    -------------------
@@ -12337,6 +12324,19 @@ package body Sem_Util is
       end if;
    end Has_Enabled_Property;
 
+   --------------------------
+   -- Has_Copy_Constructor --
+   --------------------------
+
+   function Has_Copy_Constructor
+     (Typ : Entity_Id; Allow_Removed : Boolean := False) return Boolean
+   is
+      function Internal_Has_Copy_Constructor
+      is new Has_Matching_Constructor (Is_Copy_Constructor);
+   begin
+      return Internal_Has_Copy_Constructor (Typ, Allow_Removed);
+   end Has_Copy_Constructor;
+
    -------------------------------------
    -- Has_Full_Default_Initialization --
    -------------------------------------
@@ -12635,6 +12635,40 @@ package body Sem_Util is
              Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Length)));
    end Has_Max_Queue_Length;
 
+   ------------------------------
+   -- Has_Matching_Constructor --
+   ------------------------------
+
+   function Has_Matching_Constructor
+     (Typ : Entity_Id; Allow_Removed : Boolean) return Boolean
+   is
+      Cursor : Entity_Id;
+   begin
+      pragma Assert (Is_Type (Typ));
+      if not Needs_Construction (Typ) then
+         return False;
+      end if;
+
+      --  Iterate through all constructors to find at least one constructor
+      --  that matches the given condition.
+
+      Cursor :=
+        Get_Name_Entity_Id
+          (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
+      while Present (Cursor) loop
+         if (if not Allow_Removed then not Is_Abstract_Subprogram (Cursor))
+           and then Is_Constructor (Cursor)
+           and then Condition (Cursor)
+         then
+            return True;
+         end if;
+
+         Cursor := Homonym (Cursor);
+      end loop;
+
+      return False;
+   end Has_Matching_Constructor;
+
    ---------------------------------
    -- Has_No_Obvious_Side_Effects --
    ---------------------------------
@@ -12762,6 +12796,80 @@ package body Sem_Util is
         and then Has_Aspect (Etype (Exp), Aspect_Aggregate)
         and then not Is_Record_Aggregate;
    end Is_Container_Aggregate;
+
+   -------------------------
+   -- Is_Copy_Constructor --
+   -------------------------
+
+   function Is_Copy_Constructor (Spec_Id : Entity_Id) return Boolean is
+   begin
+      if Is_Constructor (Spec_Id)
+        and then Present (Next_Formal (First_Formal (Spec_Id)))
+        and then Etype (Next_Formal (First_Formal (Spec_Id)))
+                   = Etype (First_Formal (Spec_Id))
+        and then Ekind (Next_Formal (First_Formal (Spec_Id)))
+                   = E_In_Parameter
+      then
+         --  More formals with default values are allowed afterwards
+
+         declare
+            All_Defaults : Boolean := True;
+            Formal       : Entity_Id :=
+              Next_Formal (Next_Formal (First_Formal (Spec_Id)));
+         begin
+            while Present (Formal) loop
+               if No (Default_Value (Formal)) then
+                  All_Defaults := False;
+                  exit;
+               end if;
+               Next_Formal (Formal);
+            end loop;
+
+            if All_Defaults then
+               return True;
+            end if;
+         end;
+      end if;
+
+      return False;
+   end Is_Copy_Constructor;
+
+   ------------------------------
+   -- Is_Copy_Constructor_Call --
+   ------------------------------
+
+   function Is_Copy_Constructor_Call (N : Node_Id) return Boolean is
+   begin
+      if Nkind (N) = N_Attribute_Reference
+        and then Is_Type (Entity (Prefix (N)))
+        and then Get_Attribute_Id (Attribute_Name (N)) = Attribute_Make
+        and then Present (Expressions (N))
+        and then Present (First (Expressions (N)))
+        and then No (Next (First (Expressions  (N))))
+      then
+         --  If the actual is a parameter association, the selector name must
+         --  be "From" and its type must be an ancestor of the underlying one.
+
+         if Nkind (First (Expressions (N))) = N_Parameter_Association then
+            return Chars (Selector_Name (First (Expressions (N)))) = Name_From
+              and then Is_Ancestor
+                         (Etype (Entity (Prefix (N))),
+                          Etype (Explicit_Actual_Parameter
+                                   (First (Expressions (N)))));
+
+         --  The actual must be an ancestor of the underlying type to be used
+         --  in a copy constructor call.
+
+         else
+            return Is_Ancestor
+                     (Etype (Entity (Prefix (N))),
+                      Etype (First (Expressions (N))));
+
+         end if;
+      else
+         return False;
+      end if;
+   end Is_Copy_Constructor_Call;
 
    -----------------------------
    -- Is_Extended_Access_Type --
@@ -21565,16 +21673,18 @@ package body Sem_Util is
 
    function Is_Suitable_Primitive (Subp_Id : Entity_Id) return Boolean is
    begin
-      --  The Default_Initial_Condition and invariant procedures must not be
-      --  treated as primitive operations even when they apply to a tagged
-      --  type. These routines must not act as targets of dispatching calls
-      --  because they already utilize class-wide-precondition semantics to
-      --  handle inheritance and overriding.
+      --  The Default_Initial_Condition, invariant, and constructor procedures
+      --  must not be treated as primitive operations even when they apply to a
+      --  tagged type. These routines must not act as targets of dispatching
+      --  calls because they already utilize class-wide-precondition semantics
+      --  to handle inheritance and overriding.
 
       if Ekind (Subp_Id) = E_Procedure
         and then (Is_DIC_Procedure (Subp_Id)
                     or else
-                  Is_Invariant_Procedure (Subp_Id))
+                  Is_Invariant_Procedure (Subp_Id)
+                    or else
+                  Is_Constructor (Subp_Id))
       then
          return False;
       end if;

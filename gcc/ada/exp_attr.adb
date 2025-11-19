@@ -5277,8 +5277,7 @@ package body Exp_Attr is
       when Attribute_Make =>
          declare
             Constructor_Params : List_Id := New_Copy_List (Expressions (N));
-            Constructor_Call   : Node_Id;
-            Constructor_EWA    : Node_Id;
+            Constructor_Rhs    : Node_Id;
             Result_Decl        : Node_Id;
             Result_Id          : constant Entity_Id :=
               Make_Temporary (Loc, 'D', N);
@@ -5299,31 +5298,49 @@ package body Exp_Attr is
             Mutate_Ekind (Result_Id, E_Variable);
             Set_Suppress_Initialization (Result_Id);
 
-            --  Build a prefixed-notation call
+            --  A call to the copy constructor can be a special case. Even if
+            --  no copy constructor is declared (both explicitly by the user or
+            --  implicitly by the compiler), the call needs to succeed. In this
+            --  case, we rewrite the call simply as its unique actual.
 
-            declare
-               Proc_Name : constant Node_Id :=
-                 Make_Selected_Component (Loc,
-                   Prefix        => New_Occurrence_Of (Result_Id, Loc),
-                   Selector_Name => Make_Identifier (Loc,
-                                      Direct_Attribute_Definition_Name
-                                        (Typ, Name_Constructor)));
-            begin
-               Set_Is_Prefixed_Call (Proc_Name);
+            if Is_Copy_Constructor_Call (N)
+              and then not Has_Copy_Constructor (Entity (Pref))
+            then
+               if Nkind (First (Exprs)) = N_Parameter_Association
+               then
+                  Constructor_Rhs :=
+                    Relocate_Node (Explicit_Actual_Parameter (First (Exprs)));
+               else
+                  Constructor_Rhs := Relocate_Node (First (Exprs));
+               end if;
 
-               Constructor_Call := Make_Procedure_Call_Statement (Loc,
-                 Parameter_Associations => Constructor_Params,
-                 Name                   => Proc_Name);
-            end;
+            --  Otherwise build a prefixed-notation call
 
-            Set_Is_Expanded_Constructor_Call (Constructor_Call, True);
+            else
+               declare
+                  Constructor_Name : constant Node_Id :=
+                    Make_Selected_Component (Loc,
+                      Prefix        => New_Occurrence_Of (Result_Id, Loc),
+                      Selector_Name => Make_Identifier (Loc,
+                                         Direct_Attribute_Definition_Name
+                                           (Typ, Name_Constructor)));
+                  Constructor_Call : Node_Id;
+               begin
+                  Set_Is_Prefixed_Call (Constructor_Name);
+                  Constructor_Call :=
+                    Make_Procedure_Call_Statement (Loc,
+                      Parameter_Associations => Constructor_Params,
+                      Name                   => Constructor_Name);
+                  Set_Is_Expanded_Constructor_Call (Constructor_Call, True);
 
-            Constructor_EWA :=
-              Make_Expression_With_Actions (Loc,
-                Actions => New_List (Result_Decl, Constructor_Call),
-                Expression => New_Occurrence_Of (Result_Id, Loc));
+                  Constructor_Rhs :=
+                    Make_Expression_With_Actions (Loc,
+                      Actions => New_List (Result_Decl, Constructor_Call),
+                      Expression => New_Occurrence_Of (Result_Id, Loc));
+               end;
+            end if;
 
-            Rewrite (N, Constructor_EWA);
+            Rewrite (N, Constructor_Rhs);
          end;
 
          Analyze_And_Resolve (N, Typ);

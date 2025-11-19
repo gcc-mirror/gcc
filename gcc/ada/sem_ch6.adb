@@ -11856,7 +11856,12 @@ package body Sem_Ch6 is
       begin
          Is_Primitive := False;
 
-         if not Comes_From_Source (S) then
+         --  Constructors are never primitive operations
+
+         if Is_Constructor (S) then
+            null;
+
+         elsif not Comes_From_Source (S) then
             if Present (Derived_Type) then
 
                --  Add an inherited primitive for an untagged derived type to

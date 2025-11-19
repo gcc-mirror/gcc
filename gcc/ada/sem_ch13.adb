@@ -5281,9 +5281,7 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-                  if Ekind (E) /= E_Subprogram_Body
-                    or else Nkind (Parent (E)) /= N_Procedure_Specification
-                  then
+                  if Nkind (N) /= N_Subprogram_Body then
                      Error_Msg_N ("Super must apply to a constructor body", N);
                   end if;
 

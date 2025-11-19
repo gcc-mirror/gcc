@@ -6493,26 +6493,18 @@ package body Exp_Ch6 is
                   end;
                end if;
 
-               --  Build a prefixed-notation call
-               declare
-                  Proc_Name : constant Node_Id :=
-                    Make_Selected_Component (Loc,
-                      Prefix        =>
-                        Make_Attribute_Reference (Loc,
-                          Prefix         => New_Occurrence_Of
-                                              (First_Formal (Spec_Id), Loc),
-                          Attribute_Name => Name_Super),
-                      Selector_Name =>
-                        Make_Identifier (Loc,
-                          Direct_Attribute_Definition_Name
-                            (Parent_Type, Name_Constructor)));
-               begin
-                  Set_Is_Prefixed_Call (Proc_Name);
-
-                  return Make_Procedure_Call_Statement (Loc,
-                           Name                   => Proc_Name,
-                           Parameter_Associations => Actual_Parameters);
-               end;
+               return Make_Assignment_Statement (Loc,
+                 Name       =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix         =>
+                       New_Occurrence_Of (First_Formal (Spec_Id), Loc),
+                     Attribute_Name => Name_Super),
+                 Expression =>
+                   Make_Attribute_Reference (Loc,
+                     Prefix         =>
+                       New_Occurrence_Of (Parent_Type, Loc),
+                     Attribute_Name => Name_Make,
+                     Expressions    => Actual_Parameters));
             end Make_Parent_Constructor_Call;
 
          begin
@@ -6522,12 +6514,9 @@ package body Exp_Ch6 is
                if Chars (Component) = Name_uTag then
                   null;
 
-               elsif Chars (Component) = Name_uParent then
-                  --  ??? Here is where we should be looking for a
-                  --  Super aspect specification in order to call the
-                  --  right constructor with the right parameters
-                  --  (as opposed to unconditionally calling the
-                  --  single-parameter constructor).
+               elsif Chars (Component) = Name_uParent
+                 and then Needs_Construction (Etype (Component))
+               then
                   Append_To (Init_List, Make_Parent_Constructor_Call
                                           (Parent_Type => Etype (Component)));
 
