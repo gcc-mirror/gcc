@@ -10276,18 +10276,11 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 	TREE_NO_WARNING (expr) = true;
       if (immediate_invocation_p (fn))
 	{
-	  tree obj_arg = NULL_TREE, exprimm = expr;
+	  tree obj_arg = NULL_TREE;
 	  if (DECL_CONSTRUCTOR_P (fn))
 	    obj_arg = first_arg;
-	  if (obj_arg
-	      && is_dummy_object (obj_arg)
-	      && !type_dependent_expression_p (obj_arg))
-	    {
-	      exprimm = build_cplus_new (DECL_CONTEXT (fn), expr, complain);
-	      obj_arg = NULL_TREE;
-	    }
 	  /* Look through *(const T *)&obj.  */
-	  else if (obj_arg && INDIRECT_REF_P (obj_arg))
+	  if (obj_arg && INDIRECT_REF_P (obj_arg))
 	    {
 	      tree addr = TREE_OPERAND (obj_arg, 0);
 	      STRIP_NOPS (addr);
@@ -10299,7 +10292,7 @@ build_over_call (struct z_candidate *cand, int flags, tsubst_flags_t complain)
 		    obj_arg = TREE_OPERAND (addr, 0);
 		}
 	    }
-	  fold_non_dependent_expr (exprimm, complain,
+	  fold_non_dependent_expr (expr, complain,
 				   /*manifestly_const_eval=*/true,
 				   obj_arg);
 	}
