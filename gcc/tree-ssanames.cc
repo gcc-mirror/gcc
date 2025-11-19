@@ -594,7 +594,7 @@ get_known_nonzero_bits_1 (const_tree name)
 }
 
 /* Return a wide_int with known non-zero bits in SSA_NAME
-   NAME, the constant for INTEGER_CST, or -1 if unknown.
+   NAME, the constant for INTEGER_CST, or 0 if unknown.
    In addition to what get_known_nonzero_bits_1 handles, this handles one
    level of BIT_IOR_EXPR, either as a def_stmt or tree directly.  */
 
