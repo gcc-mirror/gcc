@@ -666,7 +666,12 @@
 #undef __glibcxx_want_boyer_moore_searcher
 
 #if !defined(__cpp_lib_chrono)
-# if (__cplusplus >= 202002L) && _GLIBCXX_USE_CXX11_ABI && _GLIBCXX_HOSTED
+# if (__cplusplus >  202302L) && _GLIBCXX_USE_CXX11_ABI && _GLIBCXX_HOSTED
+#  define __glibcxx_chrono 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono)
+#   define __cpp_lib_chrono 202306L
+#  endif
+# elif (__cplusplus >= 202002L) && _GLIBCXX_USE_CXX11_ABI && _GLIBCXX_HOSTED
 #  define __glibcxx_chrono 201907L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono)
 #   define __cpp_lib_chrono 201907L
@@ -681,7 +686,11 @@
 #undef __glibcxx_want_chrono
 
 #if !defined(__cpp_lib_chrono_cxx20)
-# if (__cplusplus >= 202002L)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_chrono_cxx20 202306L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_cxx20)
+#  endif
+# elif (__cplusplus >= 202002L)
 #  define __glibcxx_chrono_cxx20 201800L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_chrono_cxx20)
 #  endif

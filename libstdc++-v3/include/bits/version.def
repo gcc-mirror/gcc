@@ -594,6 +594,12 @@ ftms = {
 ftms = {
   name = chrono;
   values = {
+    v = 202306;
+    cxxmin = 26;
+    hosted = yes;
+    cxx11abi = yes;
+  };
+  values = {
     v = 201907;
     cxxmin = 20;
     hosted = yes;
@@ -607,8 +613,13 @@ ftms = {
 };
 
 ftms = {
-  // Unofficial macro for C++20 chrono features supported for old string ABI.
+  // Unofficial macro for chrono features supported for old string ABI.
   name = chrono_cxx20;
+  values = {
+    v = 202306;
+    cxxmin = 26;
+    no_stdname = yes;
+  };
   values = {
     v = 201800;
     cxxmin = 20;
