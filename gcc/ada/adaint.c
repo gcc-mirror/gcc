@@ -179,6 +179,7 @@ extern "C" {
 #elif defined (__MINGW32__) || defined (__CYGWIN__)
 
 #include "mingw32.h"
+#include "share.h"
 
 /* Current code page and CCS encoding to use, set in rtinit.c.  */
 UINT __gnat_current_codepage;
@@ -940,7 +941,7 @@ __gnat_open_read (char *path, int fmode)
    TCHAR wpath[GNAT_MAX_PATH_LEN];
 
    S2WSC (wpath, path, GNAT_MAX_PATH_LEN);
-   fd = _topen (wpath, O_RDONLY | o_fmode, 0444);
+   fd = _tsopen (wpath, O_RDONLY | o_fmode, _SH_DENYNO, 0444);
  }
 #else
   fd = GNAT_OPEN (path, O_RDONLY | o_fmode);
