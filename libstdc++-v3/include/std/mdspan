@@ -378,6 +378,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       static_assert(
 	  (__mdspan::__valid_static_extent<_Extents, _IndexType> && ...),
 	  "Extents must either be dynamic or representable as IndexType");
+
+      using _Storage = __mdspan::_ExtentsStorage<
+	_IndexType, array<size_t, sizeof...(_Extents)>{_Extents...}>;
+      [[no_unique_address]] _Storage _M_exts;
+
     public:
       using index_type = _IndexType;
       using size_type = make_unsigned_t<index_type>;
@@ -487,15 +492,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
     private:
-      friend const array<size_t, rank()>&
-      __mdspan::__static_extents<extents>();
+      friend constexpr const array<size_t, rank()>&
+      __mdspan::__static_extents<extents>() noexcept;
 
-      friend span<const index_type>
-      __mdspan::__dynamic_extents<extents>(const extents&, size_t, size_t);
-
-      using _Storage = __mdspan::_ExtentsStorage<
-	_IndexType, array<size_t, sizeof...(_Extents)>{_Extents...}>;
-      [[no_unique_address]] _Storage _M_exts;
+      friend constexpr span<const index_type>
+      __mdspan::__dynamic_extents<extents>(const extents&, size_t, size_t)
+      noexcept;
 
       template<typename _OIndexType, size_t... _OExtents>
 	friend class extents;
@@ -1637,8 +1639,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	template<typename _OExtents>
 	  constexpr explicit
-	  _PaddedStorage(const typename _LayoutSame::mapping<_OExtents>&
-			 __other)
+	  _PaddedStorage(
+	      const typename _LayoutSame::template mapping<_OExtents>& __other)
 	  : _PaddedStorage(_Extents(__other.extents()))
 	  {
 	    constexpr size_t __stride_idx = _LayoutTraits::_S_stride_idx;
