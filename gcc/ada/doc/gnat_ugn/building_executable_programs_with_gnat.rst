@@ -3587,13 +3587,13 @@ of the pragma in the :title:`GNAT_Reference_manual`).
 :switch:`-gnatwp`
   *Activate warnings on ineffective pragma Inlines.*
 
-  This switch activates warnings for failure of front end inlining
-  (activated by :switch:`-gnatN`) to inline a particular call. There are
-  many reasons for not being able to inline a call, including most
-  commonly that the call is too complex to inline. The default is
-  that such warnings are not given.
-  Warnings on ineffective inlining by the gcc back end can be activated
-  separately, using the gcc switch -Winline.
+  This switch activates warnings for failure of cross-unit inlining
+  (activated by :switch:`-gnatn`) to inline calls to a subprogram.
+  There are many reasons for not being able to inline these calls,
+  including most commonly that the subprogram body is too complex
+  to inline. The default is that such warnings are not given.
+  Warnings on ineffective inlining (within units) by the back end
+  can be activated separately, using the -Winline switch.
 
 
 .. index:: -gnatwP  (gcc)

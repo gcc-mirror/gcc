@@ -562,9 +562,9 @@ begin
    Write_Line ("        .O*  turn off warnings for out parameters assigned " &
                                                   "but not read");
    Write_Line ("        p+   turn on warnings for ineffective pragma " &
-                                                  "Inline in frontend");
+                                                  "Inline");
    Write_Line ("        P*   turn off warnings for ineffective pragma " &
-                                                  "Inline in frontend");
+                                                  "Inline");
    Write_Line ("        .p+  turn on warnings for suspicious parameter " &
                                                   "order");
    Write_Line ("        .P*  turn off warnings for suspicious parameter " &

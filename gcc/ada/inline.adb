@@ -34,7 +34,6 @@ with Elists;         use Elists;
 with Errout;         use Errout;
 with Exp_Ch6;        use Exp_Ch6;
 with Exp_Ch7;        use Exp_Ch7;
-with Exp_Tss;        use Exp_Tss;
 with Exp_Util;       use Exp_Util;
 with Fname;          use Fname;
 with Fname.UF;       use Fname.UF;
@@ -286,10 +285,6 @@ package body Inline is
    pragma Inline (Get_Code_Unit_Entity);
    --  Return the entity node for the unit containing E. Always return the spec
    --  for a package.
-
-   function Has_Initialized_Type (E : Entity_Id) return Boolean;
-   --  If a candidate for inlining contains type declarations for types with
-   --  nontrivial initialization procedures, they are not worth inlining.
 
    function Has_Single_Return (N : Node_Id) return Boolean;
    --  In general we cannot inline functions that return unconstrained type.
@@ -758,14 +753,15 @@ package body Inline is
       --  an instance whose body will be analyzed anyway or the subprogram was
       --  generated as a body by the compiler (for example an initialization
       --  procedure) or its declaration was provided along with the body (for
-      --  example an expression function) and it does not declare types with
-      --  nontrivial initialization procedures.
+      --  example an expression function). Note that we need to test again the
+      --  Is_Inlined flag because Analyze_Subprogram_Body_Helper may have reset
+      --  it if the body contains excluded declarations or statements.
 
       if (Is_Inlined (Pack)
            or else Is_Generic_Instance (Pack)
            or else Nkind (Decl) = N_Subprogram_Body
            or else Present (Corresponding_Body (Decl)))
-        and then not Has_Initialized_Type (E)
+        and then Is_Inlined (E)
       then
          Register_Backend_Inlined_Subprogram (E);
 
@@ -4527,35 +4523,6 @@ package body Inline is
 
       return False;
    end Has_Excluded_Statement;
-
-   --------------------------
-   -- Has_Initialized_Type --
-   --------------------------
-
-   function Has_Initialized_Type (E : Entity_Id) return Boolean is
-      E_Body : constant Node_Id := Subprogram_Body (E);
-      Decl   : Node_Id;
-
-   begin
-      if No (E_Body) then -- imported subprogram
-         return False;
-
-      else
-         Decl := First (Declarations (E_Body));
-         while Present (Decl) loop
-            if Nkind (Decl) = N_Full_Type_Declaration
-              and then Comes_From_Source (Decl)
-              and then Present (Init_Proc (Defining_Identifier (Decl)))
-            then
-               return True;
-            end if;
-
-            Next (Decl);
-         end loop;
-      end if;
-
-      return False;
-   end Has_Initialized_Type;
 
    -----------------------
    -- Has_Single_Return --
