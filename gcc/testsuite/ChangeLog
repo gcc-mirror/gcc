@@ -1,3 +1,62 @@
+2025-11-18  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-11-17  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122709
+	* gfortran.dg/select_contiguous.f90: New test.
+
+2025-11-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/cmse/mainline/8m/hard/union-fp.c: New.
+	* gcc.target/arm/cmse/baseline/union-4.c: New.
+	* gcc.target/arm/cmse/mainline/8m/hard/union-4.c: New.
+	* gcc.target/arm/cmse/mainline/8m/soft/union-4.c: New.
+	* gcc.target/arm/cmse/mainline/8m/softfp/union-4.c: New.
+	* gcc.target/arm/cmse/union-4.x: New.
+
+2025-11-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.target/arm/cmse/union-3.x: New test.
+	* gcc.target/arm/cmse/baseline/union-3.c: New test.
+	* gcc.target/arm/cmse/mainline/8m/union-3.c: New test.
+	* gcc.target/arm/cmse/mainline/8_1m/union-3.c: New test.
+
+2025-11-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lib/lto.exp (lto-build-archive): New procedure.
+	(lto-execute-1): Use it.
+	(lto-link-and-maybe-run, lto-get-options-main): Handle ar-link.
+	* gcc.dg/lto/pr122515_0.c: New test case.
+	* gcc.dg/lto/pr122515_1.c: New file.
+	* gcc.dg/lto/pr122515_2.c: Likewise.
+	* gcc.dg/lto/pr122515_3.c: Likewise.
+	* gcc.dg/lto/pr122515_4.c: Likewise.
+	* gcc.dg/lto/pr122515_5.c: Likewise.
+	* gcc.dg/lto/pr122515_6.c: Likewise.
+	* gcc.dg/lto/pr122515_7.c: Likewise.
+	* gcc.dg/lto/pr122515_8.c: Likewise.
+	* gcc.dg/lto/pr122515_9.c: Likewise.
+
+2025-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121853
+	* gcc.target/aarch64/pr121853_1.c: New test.
+	* gcc.target/aarch64/pr121853_2.c: New test.
+
 2025-11-17  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/122627

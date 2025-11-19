@@ -1,3 +1,14 @@
+2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122726
+	* src/filesystem/ops-common.h [_GLIBCXX_FILESYSTEM_IS_WINDOWS]
+	(rename): Use __last_system_error to set errno accurately.
+	* testsuite/27_io/filesystem/operations/rename.cc: Test
+	error_code matches errc::no_such_file_or_directory.
+
 2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

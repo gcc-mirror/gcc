@@ -1,3 +1,49 @@
+2025-11-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/122539
+	* config/arm/arm.cc (comp_not_to_clear_mask_str_un): Skip partial
+	register clearing logic for FP_REGS.
+	(compute_not_to_clear_mask): Likewise.
+
+2025-11-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	Backported from master:
+	2025-11-12  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	PR target/122539
+	* config/arm/arm.cc (comp_not_to_clear_mask_str_un): Update
+	not_to_clear_reg_mask for union members.
+
+2025-11-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lto-wrapper.cc (debug_objcopy): Set type of INOFF to int64_t.
+	(run_gcc): Set type of FILE_OFFSET to int64_t.
+
+2025-11-18  Tamar Christina  <tamar.christina@arm.com>
+
+	Backported from master:
+	2025-10-31  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/121853
+	* config/aarch64/aarch64-simd.md (extendbfsf2): New.
+
+2025-11-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	Backported from master:
+	2025-09-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/121776
+	* tree-ssa-strlen.cc (strlen_pass::handle_builtin_memcmp): Create
+	unaligned types if the alignment of the pointers is less
+	than the alignment of the new type.
+
 2025-11-17  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	Backported from master:

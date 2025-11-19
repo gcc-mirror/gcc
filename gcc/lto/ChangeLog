@@ -1,3 +1,14 @@
+2025-11-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	Backported from master:
+	2025-11-04  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lto.h (lto_section_slot): Set type of START to off_t.
+	* lto-common.cc (lto_read_section_data): Adjust.
+	* lto-object.cc (lto_obj_file_open): Set type of OFFSET to
+	int64_t.
+
 2025-08-08  Release Manager
 
 	* GCC 15.2.0 released.
