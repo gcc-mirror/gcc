@@ -1,3 +1,74 @@
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_f16_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_f32_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s16_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s32_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s64_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_s8_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u16_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u32_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u64_bounds.c: New test.
+	* gcc.target/arm/mve/intrinsics/vsetq_lane_u8_bounds.c: New test.
+
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/117814
+	* gcc.target/arm/mve/intrinsics/pr117814-f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/pr117814-2-f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/pr117814-3-f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/pr117814-4-f16.c: New test.
+	* gcc.target/arm/mve/intrinsics/pr117814-f32.c: New test.
+	* gcc.target/arm/mve/intrinsics/pr117814-2-f32.c: New test.
+	* gcc.target/arm/mve/intrinsics/pr117814-3-f32.c: New test.
+	* gcc.target/arm/fp16-compile-none-1.c: Delete.
+	* g++.target/arm/mve/general-c++/nomve_fp_1.c: Fix expected error
+	message.
+	* lib/target-supports.exp
+	(check_effective_target_arm_v8_1m_mve_nofp_ok_nocache): New.
+	(check_effective_target_arm_v8_1m_mve_nofp_ok): New.
+	(add_options_for_arm_v8_1m_mve_nofp): New.
+
+2025-11-18  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32365
+	* gfortran.dg/common_22.f90: Update.
+	* gfortran.dg/common_24.f: Update.
+	* gfortran.dg/goacc/routine-1.f90: Update.
+	* gfortran.dg/goacc/routine-2.f90: Update.
+	* gfortran.dg/gomp/declare-variant-17.f90: Update.
+	* gfortran.dg/gomp/interop-1.f90: Update.
+	* gfortran.dg/gomp/order-2.f90: Update.
+	* gfortran.dg/gomp/pr78026.f03: Update.
+	* gfortran.dg/gomp/requires-4.f90: Update.
+	* gfortran.dg/gomp/requires-6.f90: Update.
+	* gfortran.dg/pr61669.f90: Update.
+	* gfortran.dg/spec_statement_in_exec.f90: New test exercises
+	data/common/namelist/OpenMP directives with -fopenmp.
+
+2025-11-18  Uros Bizjak  <ubizjak@gmail.com>
+
+	* gcc.dg/pr116815.c: Require target int32.
+
+2025-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122736
+	* gcc.target/i386/vect-pr122736.c: New testcase.
+
+2025-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122723
+	* gcc.dg/vect/vect-reduc-cond-add-1.c: New generic functional
+	testcase.
+	* gcc.target/i386/vect-epilogues-6.c: New testcase.
+	* gcc.target/i386/vect-epilogues-7.c: Likewise.
+	* gcc.target/i386/vect-epilogues-8.c: Likewise.
+	* gcc.target/i386/vect-epilogues-9.c: Likewise.
+
+2025-11-18  liuhongt  <hongtao.liu@intel.com>
+
+	* gcc.target/i386/avx512vl-pr103750-2.c: New test.
+
 2025-11-17  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/122709

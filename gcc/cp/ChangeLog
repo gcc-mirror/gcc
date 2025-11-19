@@ -1,3 +1,8 @@
+2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR c++/122677
+	* module.cc (create_dirs): Skip past any leading slashes.
+
 2025-11-16  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122625

@@ -1,3 +1,194 @@
+2025-11-18  Edwin Lu  <ewlu@rivosinc.com>
+
+	* config/riscv/riscv-string.cc (riscv_expand_block_move_scalar):
+	Add length check.
+	(expand_block_move): Ditto.
+	(expand_vec_setmem): Ditto.
+	* config/riscv/riscv.opt: Add param flags.
+
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm_mve.h (__ARM_mve_typeid): Delete.
+	(__ARM_mve_coerce): Delete.
+	(__ARM_mve_coerce_i_scalar): Delete.
+	(__ARM_mve_coerce_s8_ptr): Delete.
+	(__ARM_mve_coerce_u8_ptr): Delete.
+	(__ARM_mve_coerce_s16_ptr): Delete.
+	(__ARM_mve_coerce_u16_ptr): Delete.
+	(__ARM_mve_coerce_s32_ptr): Delete.
+	(__ARM_mve_coerce_u32_ptr): Delete.
+	(__ARM_mve_coerce_s64_ptr): Delete.
+	(__ARM_mve_coerce_u64_ptr): Delete.
+	(__ARM_mve_coerce_f_scalar): Delete.
+	(__ARM_mve_coerce_f16_ptr): Delete.
+	(__ARM_mve_coerce_f32_ptr): Delete.
+
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-shapes.cc (build_one): Add
+	which_overload parameter.
+	(inherent): Derive from overloaded_base<0>.  Add support for
+	overloaded version.
+	* config/arm/arm-mve-builtins-shapes.h (inherent): Update comment.
+	* config/arm/arm-mve-builtins.cc (add_unique_function): Add
+	support for new which_overload parameter.
+	(pop_and_resolve_to): New.
+	* config/arm/arm-mve-builtins.h (NONOVERLOADED_FORM)
+	(OVERLOADED_FORM): New.
+	(add_unique_function): Update prototype.
+	(pop_and_resolve_to): New prototype.
+	* config/arm/arm_mve.h (vuninitializedq): Delete.
+	(vuninitializedq_u8): Delete.
+	(vuninitializedq_u16): Delete.
+	(vuninitializedq_u32): Delete.
+	(vuninitializedq_u64): Delete.
+	(vuninitializedq_s8): Delete.
+	(vuninitializedq_s16): Delete.
+	(vuninitializedq_s32): Delete.
+	(vuninitializedq_s64): Delete.
+	(vuninitializedq_f16): Delete.
+	(vuninitializedq_f32): Delete.
+	(__arm_vuninitializedq): Delete.
+
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-mve-builtins-base.cc (class
+	mve_function_vset_vget_lane): New.
+	(vgetq_lane, vsetq_lane): New.
+	* config/arm/arm-mve-builtins-base.def (vgetq_lane, vsetq_lane):
+	New.
+	* config/arm/arm-mve-builtins-base.h (vgetq_lane, vsetq_lane):
+	New.
+	* config/arm/arm-mve-builtins-shapes.cc (struct getq_lane)
+	(setq_lane): New.
+	* config/arm/arm-mve-builtins-shapes.h (getq_lane, setq_lane):
+	New.
+	* config/arm/arm_mve.h (vsetq_lane): Delete.
+	(vgetq_lane): Delete.
+	(vsetq_lane_f16): Delete.
+	(vsetq_lane_f32): Delete.
+	(vsetq_lane_s16): Delete.
+	(vsetq_lane_s32): Delete.
+	(vsetq_lane_s8): Delete.
+	(vsetq_lane_s64): Delete.
+	(vsetq_lane_u8): Delete.
+	(vsetq_lane_u16): Delete.
+	(vsetq_lane_u32): Delete.
+	(vsetq_lane_u64): Delete.
+	(vgetq_lane_f16): Delete.
+	(vgetq_lane_f32): Delete.
+	(vgetq_lane_s16): Delete.
+	(vgetq_lane_s32): Delete.
+	(vgetq_lane_s8): Delete.
+	(vgetq_lane_s64): Delete.
+	(vgetq_lane_u8): Delete.
+	(vgetq_lane_u16): Delete.
+	(vgetq_lane_u32): Delete.
+	(vgetq_lane_u64): Delete.
+	(__ARM_NUM_LANES): Delete.
+	(__ARM_LANEQ): Delete.
+	(__ARM_CHECK_LANEQ): Delete.
+	(__arm_vsetq_lane_s16): Delete.
+	(__arm_vsetq_lane_s32): Delete.
+	(__arm_vsetq_lane_s8): Delete.
+	(__arm_vsetq_lane_s64): Delete.
+	(__arm_vsetq_lane_u8): Delete.
+	(__arm_vsetq_lane_u16): Delete.
+	(__arm_vsetq_lane_u32): Delete.
+	(__arm_vsetq_lane_u64): Delete.
+	(__arm_vgetq_lane_s16): Delete.
+	(__arm_vgetq_lane_s32): Delete.
+	(__arm_vgetq_lane_s8): Delete.
+	(__arm_vgetq_lane_s64): Delete.
+	(__arm_vgetq_lane_u8): Delete.
+	(__arm_vgetq_lane_u16): Delete.
+	(__arm_vgetq_lane_u32): Delete.
+	(__arm_vgetq_lane_u64): Delete.
+	(__arm_vsetq_lane_f16): Delete.
+	(__arm_vsetq_lane_f32): Delete.
+	(__arm_vgetq_lane_f16): Delete.
+	(__arm_vgetq_lane_f32): Delete.
+	(__arm_vsetq_lane): Delete.
+	(__arm_vgetq_lane): Delete.
+	* config/arm/mve.md (mve_vec_extract<mode><V_elem_l>): Add '@'
+	prefix.
+	(mve_vec_set<mode>_internal): Likewise.
+
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* doc/extend.texi (Half-precision Floating-point): __fp16 is now
+	always available on arm.  Move x86 paragraph closer to the rest of
+	the x86 information, and make it use present tense.
+
+2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/117814
+	* config/arm/arm-builtins.cc (arm_init_fp16_builtins): Always
+	register __fp16 type.
+	* config/arm/arm-mve-builtins.cc (register_builtin_tuple_types):
+	Remove special handling when TARGET_HAVE_MVE_FLOAT is false.
+	(register_vector_type): Likewise.
+	(register_builtin_tuple_types): Likewise.
+	* config/arm/arm-opts.h (arm_fp16_format_type): Add
+	ARM_FP16_FORMAT_DEFAULT.
+	* config/arm/arm.cc (arm_vector_mode_supported_p): Accept
+	floating-point vector modes even if TARGET_HAVE_MVE_FLOAT is
+	false.
+	(arm_option_reconfigure_globals): Apply ARM_FP16_FORMAT_NONE if
+	requested.
+	* config/arm/arm.opt (mfp16-format): Default to
+	ARM_FP16_FORMAT_DEFAULT.
+	* config/arm/arm_mve_types.h (float16_t, float32_t): Define
+	unconditionally.
+	* doc/sourcebuild.texi (ARM-specific attributes): Document
+	arm_v8_1m_mve_nofp_ok.
+
+2025-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122736
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Compute
+	num_mask_args for all mask modes.  Pass the mask vector
+	type to vect_record_loop_mask and adjust ncopies according
+	to the number of mask arguments.
+
+2025-11-18  Austin Law  <austinkylelaw@gmail.com>
+
+	* config/riscv/riscv-cores.def: Add RISCV_TUNE and RISCV_CORE entries
+	for the spacemit-x60 design.
+	* config/riscv/riscv-opts.h (riscv_microarchitecture_type): Add entry
+	for spacemit-x60 design.
+	* config/riscv/riscv.cc (spacemit_x60_tune_info): New tune structure
+	for the spacemit-x60 design.
+	* config/riscv/riscv.md (tune): Add spacemit_x60.
+	Include spacemit-x60.md.
+	* config/riscv/spacemit-x60.md: New file
+	* doc/riscv-mtune.texi: Regenerate.
+	* doc/riscv-mcpu.texi: Regenerate.
+
+2025-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122723
+	* tree-vect-loop.cc (vect_reduction_update_partial_vector_usage):
+	Handle incoming .COND_* operation.
+	(vect_transform_reduction): Likewise.  Handle .COND_*
+	operation when not using COND_EXPR masking in a masked loop.
+
+2025-11-18  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122723
+	* tree-vect-stmts.cc (supportable_widening_operation):
+	Correct optab to query in the multi-step case when it is
+	supposed to hit the sbool case.
+
+2025-11-18  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/103750
+	* config/i386/sse.md (*<avx512>_eq<mode>3_and15): New
+	define_insn.
+	(*avx512vl_eqv2di_and3): Ditto.
+	* config/i386/i386.md (*ior<mode>_ccz_1): Fix the typo in the
+	comments above.
+
 2025-11-17  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/122626

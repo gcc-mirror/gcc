@@ -1,3 +1,8 @@
+2025-11-18  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/122702
+	* Makefile.am: Include posix/udf/posix-open.cbl.
+
 2025-11-17  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/122702

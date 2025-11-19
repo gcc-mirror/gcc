@@ -1,3 +1,8 @@
+2025-11-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (The libgomp ABI): Update MASTER section by
+	also covering MASKED.
+
 2025-11-17  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/allocate-1.C: Replace [: in OpenMP or OpenACC

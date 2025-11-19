@@ -1,3 +1,20 @@
+2025-11-18  Mike Crowe  <mac@mcrowe.com>
+
+	* include/std/shared_mutex (try_lock, try_lock_until)
+	(try_lock_shared_until): Respond consistently to errors and
+	deadlocks.
+	* testsuite/30_threads/shared_timed_mutex/try_lock_until/116586.cc:
+	Test deadlock behaviour if possible.
+
+2025-11-18  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/121858
+	* include/bits/funcref_impl.h
+	(function_ref::function_ref(nontype<__fn>, _Up&&)): Handle.
+	reference_wrapper.
+	* testsuite/20_util/function_ref/call.cc: Call and update
+	test05(). Add new test06() for reference_wrapper.
+
 2025-11-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122726

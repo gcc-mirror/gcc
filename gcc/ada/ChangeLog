@@ -1,3 +1,186 @@
+2025-11-18  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* gcc-interface/decl.cc
+	(is_cplusplus_method,gnat_to_gnu_param,gnat_to_gnu_subprog_type):
+	Adjust Is_Constructor/Is_CPP_Constructor after renaming.
+
+2025-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/34290
+	* sem_ch4.adb (Try_Object_Operation.Complete_Object_Operation): Call
+	Preserve_Comes_From_Source to preserve the flag on nodes.  Relocate
+	the Obj node consistently.  Preserve the Comes_From_Source flag for
+	the case of an implicit 'Access reference and post the local errors
+	on the rewritten prefix consistently.
+	* sem_util.adb (Is_Aliased_View): Also return true for a generalized
+	reference to the result of a function call.
+
+2025-11-18  Javier Miranda  <miranda@adacore.com>
+
+	* exp_util.ads (Flag_Interface_Pointer_Displacement): New subprogram.
+	* exp_util.adb (Flag_Interface_Pointer_Displacement): Ditto.
+	* exp_attr.adb (Add_Implicit_Interface_Type_Conversion): Flag type
+	conversions internally added to displace the pointer to the object.
+	(Expand_N_Attribute_Reference): Ditto.
+	* exp_ch4.adb (Displace_Allocator_Pointer): Ditto.
+	* exp_ch6.adb (Expand_Simple_Function_Return): Ditto.
+	(Make_Build_In_Place_Call_In_Allocator): Ditto.
+	(Make_CPP_Constructor_Call_In_Allocator): Ditto.
+	* exp_disp.adb (Expand_Interface_Actuals): Ditto.
+	* exp_intr.adb (Expand_Dispatching_Constructor_Call): Ditto.
+	* sem_ch6.adb (Analyze_Function_Return): Ditto.
+	* sem_disp.adb (Propagate_Tag): Ditto.
+	* sem_res.adb (Resolve_Actuals): Ditto.
+	(Valid_Conversion): Rely on the new flag to handle the type conversion
+	as a conversion added to displace the pointer to the object. Factorize
+	code handling general and anonymous access types.
+	* sem_type.adb (Interface_Present_In_Ancestor): For concurrent types
+	add missing handling of class-wide types. Noticed working on this
+	issue.
+	* sinfo.ads (Is_Interface_Pointer_Displacement): Document this new flag.
+	* gen_il-fields.ads (Is_Interface_Pointer_Displacement): New flag.
+	* gen_il-gen-gen_nodes.adb (Is_Interface_Pointer_Displacement): New
+	flag on N_Type_Conversion nodes.
+	* gen_il-internals.adb (Image): Add Is_Interface_Pointer_Displacement
+	flag image.
+
+2025-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Analyze_Package_Instantiation): Streamline and move
+	code clearing Needs_Body after it is computed to ...
+	(Needs_Body_Instantiated): ...here.  Chain if-then constructs.
+
+2025-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Last_Overloaded): Fix typo.
+
+2025-11-18  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/111433
+	* sem_util.ads (Incomplete_Or_Partial_View): Add Partial_Only formal
+	parameter.
+	* sem_util.adb (Incomplete_Or_Partial_View): Likewise.  Do not look
+	for an incomplete view if it is set to True.
+	* sem_ch6.adb (Check_Conformance.Null_Exclusions_Match): Pass True
+	for Partial_Only in the call to Incomplete_Or_Partial_View.
+
+2025-11-18  Tonu Naks  <naks@adacore.com>
+
+	* doc/gnat_rm/obsolescent_features.rst: update PolyOrb reference
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-11-18  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* par-ch4.adb (P_Simple_Expression): Improve diagnostic.
+
+2025-11-18  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Procedure_Call_Levels): New function for
+	implementing the check.
+	* ghost.ads (Check_Procedure_Call_Levels): Likewise.
+	* sem_ch6.adb (Analyze_Procedure_Call): Check the levels after
+	the call has been resolved and the previous ghost region has
+	been restored.
+
+2025-11-18  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_util.adb (Is_Constructor_Procedure): Replace by Is_Constructor.
+	* sem_util.ads: Likewise.
+	* sem_ch6.adb (Analyze_Direct_Attribute_Definition): Set Is_Constructor.
+	* einfo.ads: Use Is_Constructor for Ada constructors, and
+	Is_CPP_Constructor for CPP constructors.
+	* exp_ch6.adb: Likewise.
+	* exp_disp.adb: Likewise.
+	* freeze.adb: Likewise.
+	* gen_il-fields.ads: Likewise.
+	* gen_il-gen-gen_entities.adb: Likewise.
+	* gen_il-internals.adb: Likewise.
+	* par-ch6.adb: Likewise.
+	* sem_prag.adb: Likewise.
+	* treepr.adb: Likewise.
+
+2025-11-18  Steve Baird  <baird@adacore.com>
+
+	* exp_attr.adb (Expand_N_Attribute_Reference): Ensure that
+	Build_Record_Or_Elementary_Input_Function and
+	Build_Record_Or_Elementary_Output_Procedure are only called
+	from within an instance of Build_And_Insert_Type_Attr_Subp.
+	In particular, the results returned by those 2 functions should
+	not be passed directly to Insert_Action. This is needed to
+	ensure that the newly-built subprogram is inserted at the correct
+	point in the tree.
+
+2025-11-18  Bob Duff  <duff@adacore.com>
+
+	* exp_ch4.adb (Warn_On_Abstract_Equality_For_Component):
+	Add additional information in the record-component case.
+
+2025-11-18  Viljar Indus  <indus@adacore.com>
+
+	* ghost.adb (Check_Valid_Ghost_Policy): Remove function.
+	(Ghost_Policy_In_Effect): Force the ghost policy to be always be
+	ignore inside ignored regions.
+	(Mark_And_Set_Ghost_Declaration): Likewise.
+
+2025-11-18  Steve Baird  <baird@adacore.com>
+
+	* exp_imgv.adb (Build_Enumeration_Image_Tables): If a
+	No_Dynamic_Sized_Objects restriction is in effect, then choose a large
+	value for Threshold so that no Lit_Hash function is generated.
+
+2025-11-18  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/s-taspri__mingw.ads (Suspension_Object): Remove.
+	(Private_Data): Revert unintentional removal.
+
+2025-11-18  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/a-sytaco.ads (Suspension_Object): Change components.
+	* libgnarl/a-sytaco.adb (Initialize, Finalize, Current_State,
+	Set_False, Set_True, Suspend_Until_True): New cross-platform version.
+	* libgnarl/s-taskin.ads (Task_States): New task state.
+	* libgnarl/s-tasini.adb (Locked_Abort_To_Level): Adapt to new state.
+	* libgnarl/s-taprop.ads (Is_Task_Context): New function Spec.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__dummy.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__linux.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__mingw.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__posix.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__qnx.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__rtems.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__solaris.adb (Is_Task_Context): New body.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taprop__vxworks.adb (Is_Task_Context): Remove spec.
+	(Initialize, Finalize, Current_State, Set_False, Set_True,
+	Suspend_Until_True): Remove.
+	* libgnarl/s-taspri__dummy.ads (Suspension_Object): Remove.
+	* libgnarl/s-taspri__lynxos.ads (Suspension_Object): Remove.
+	* libgnarl/s-taspri__mingw.ads (Suspension_Object): Remove.
+	* libgnarl/s-taspri__posix-noaltstack.ads (Suspension_Object):
+	Remove.
+	* libgnarl/s-taspri__posix.ads (Suspension_Object): Remove.
+	* libgnarl/s-taspri__solaris.ads (Suspension_Object): Remove.
+	* libgnarl/s-taspri__vxworks.ads (Suspension_Object): Remove.
+
+2025-11-18  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnarl/a-sytaco.ads (Suspension_Object): Use Finalizable aspect.
+
 2025-11-13  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch9.adb (Expand_N_Entry_Declaration): In the deferred case,
