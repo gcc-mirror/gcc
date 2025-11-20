@@ -5423,9 +5423,9 @@ Parser<ManagedTokenSource>::parse_match_arm ()
     }
 
   // parse match arm patterns - at least 1 is required
-  std::vector<std::unique_ptr<AST::Pattern>> match_arm_patterns
-    = parse_match_arm_patterns (RIGHT_CURLY);
-  if (match_arm_patterns.empty ())
+  std::unique_ptr<AST::Pattern> match_arm_pattern
+    = parse_match_arm_pattern (RIGHT_CURLY);
+  if (match_arm_pattern == nullptr)
     {
       Error error (lexer.peek_token ()->get_locus (),
 		   "failed to parse any patterns in match arm");
@@ -5459,7 +5459,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
   // DEBUG
   rust_debug ("successfully parsed match arm");
 
-  return AST::MatchArm (std::move (match_arm_patterns),
+  return AST::MatchArm (std::move (match_arm_pattern),
 			lexer.peek_token ()->get_locus (),
 			std::move (guard_expr), std::move (outer_attrs));
 }
@@ -5468,8 +5468,8 @@ Parser<ManagedTokenSource>::parse_match_arm ()
  * token that would exist after the patterns are done (e.g. '}' for match
  * expr, '=' for if let and while let). */
 template <typename ManagedTokenSource>
-std::vector<std::unique_ptr<AST::Pattern>>
-Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
+std::unique_ptr<AST::Pattern>
+Parser<ManagedTokenSource>::parse_match_arm_pattern (TokenId end_token_id)
 {
   // skip optional leading '|'
   if (lexer.peek_token ()->get_id () == PIPE)
@@ -5478,56 +5478,21 @@ Parser<ManagedTokenSource>::parse_match_arm_patterns (TokenId end_token_id)
    * If semantically different, I need a wrapped "match arm patterns" object
    * for this. */
 
-  std::vector<std::unique_ptr<AST::Pattern>> patterns;
+  std::unique_ptr<AST::Pattern> pattern;
 
   // quick break out if end_token_id
   if (lexer.peek_token ()->get_id () == end_token_id)
-    return patterns;
+    return pattern;
 
   // parse required pattern - if doesn't exist, return empty
   std::unique_ptr<AST::Pattern> initial_pattern = parse_pattern ();
   if (initial_pattern == nullptr)
     {
       // FIXME: should this be an error?
-      return patterns;
-    }
-  patterns.push_back (std::move (initial_pattern));
-
-  // DEBUG
-  rust_debug ("successfully parsed initial match arm pattern");
-
-  // parse new patterns as long as next char is '|'
-  const_TokenPtr t = lexer.peek_token ();
-  while (t->get_id () == PIPE)
-    {
-      // skip pipe token
-      lexer.skip_token ();
-
-      // break if hit end token id
-      if (lexer.peek_token ()->get_id () == end_token_id)
-	break;
-
-      // parse pattern
-      std::unique_ptr<AST::Pattern> pattern = parse_pattern ();
-      if (pattern == nullptr)
-	{
-	  // this is an error
-	  Error error (lexer.peek_token ()->get_locus (),
-		       "failed to parse pattern in match arm patterns");
-	  add_error (std::move (error));
-
-	  // skip somewhere?
-	  return {};
-	}
-
-      patterns.push_back (std::move (pattern));
-
-      t = lexer.peek_token ();
+      return pattern;
     }
 
-  patterns.shrink_to_fit ();
-
-  return patterns;
+  return initial_pattern;
 }
 
 // Parses a single parameter used in a closure definition.

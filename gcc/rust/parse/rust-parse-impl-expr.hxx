@@ -687,9 +687,9 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
   lexer.skip_token ();
 
   // parse match arm patterns (which are required)
-  std::vector<std::unique_ptr<AST::Pattern>> match_arm_patterns
-    = parse_match_arm_patterns (EQUAL);
-  if (match_arm_patterns.empty ())
+  std::unique_ptr<AST::Pattern> match_arm_pattern
+    = parse_match_arm_pattern (EQUAL);
+  if (match_arm_pattern == nullptr)
     {
       Error error (
 	lexer.peek_token ()->get_locus (),
@@ -740,7 +740,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
     {
       // single selection - end of if let expression
       return std::unique_ptr<AST::IfLetExpr> (
-	new AST::IfLetExpr (std::move (match_arm_patterns),
+	new AST::IfLetExpr (std::move (match_arm_pattern),
 			    std::move (scrutinee_expr), std::move (if_let_body),
 			    std::move (outer_attrs), locus));
     }
@@ -772,7 +772,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
 	      }
 
 	    return std::unique_ptr<AST::IfLetExprConseqElse> (
-	      new AST::IfLetExprConseqElse (std::move (match_arm_patterns),
+	      new AST::IfLetExprConseqElse (std::move (match_arm_pattern),
 					    std::move (scrutinee_expr),
 					    std::move (if_let_body),
 					    std::move (else_body),
@@ -800,7 +800,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
 
 		return std::unique_ptr<AST::IfLetExprConseqElse> (
 		  new AST::IfLetExprConseqElse (
-		    std::move (match_arm_patterns), std::move (scrutinee_expr),
+		    std::move (match_arm_pattern), std::move (scrutinee_expr),
 		    std::move (if_let_body), std::move (if_let_expr),
 		    std::move (outer_attrs), locus));
 	      }
@@ -821,7 +821,7 @@ Parser<ManagedTokenSource>::parse_if_let_expr (AST::AttrVec outer_attrs,
 
 		return std::unique_ptr<AST::IfLetExprConseqElse> (
 		  new AST::IfLetExprConseqElse (
-		    std::move (match_arm_patterns), std::move (scrutinee_expr),
+		    std::move (match_arm_pattern), std::move (scrutinee_expr),
 		    std::move (if_let_body), std::move (if_expr),
 		    std::move (outer_attrs), locus));
 	      }
@@ -983,10 +983,10 @@ Parser<ManagedTokenSource>::parse_while_let_loop_expr (
   lexer.skip_token ();
 
   // parse predicate patterns
-  std::vector<std::unique_ptr<AST::Pattern>> predicate_patterns
-    = parse_match_arm_patterns (EQUAL);
+  std::unique_ptr<AST::Pattern> predicate_pattern
+    = parse_match_arm_pattern (EQUAL);
   // ensure that there is at least 1 pattern
-  if (predicate_patterns.empty ())
+  if (predicate_pattern == nullptr)
     {
       Error error (lexer.peek_token ()->get_locus (),
 		   "should be at least 1 pattern");
@@ -1030,8 +1030,8 @@ Parser<ManagedTokenSource>::parse_while_let_loop_expr (
     }
 
   return std::unique_ptr<AST::WhileLetLoopExpr> (new AST::WhileLetLoopExpr (
-    std::move (predicate_patterns), std::move (predicate_expr),
-    std::move (body), locus, std::move (label), std::move (outer_attrs)));
+    std::move (predicate_pattern), std::move (predicate_expr), std::move (body),
+    locus, std::move (label), std::move (outer_attrs)));
 }
 
 /* Parses a "for" iterative loop. Label is not parsed and should be parsed via

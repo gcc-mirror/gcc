@@ -479,8 +479,7 @@ void
 DefaultHIRVisitor::walk (WhileLetLoopExpr &expr)
 {
   visit_outer_attrs (expr);
-  for (auto &pattern : expr.get_patterns ())
-    pattern->accept_vis (*this);
+  expr.get_pattern ()->accept_vis (*this);
   if (expr.has_loop_label ())
     visit_loop_label (expr.get_loop_label ());
   expr.get_cond ().accept_vis (*this);
@@ -506,8 +505,7 @@ void
 DefaultHIRVisitor::visit_match_arm (MatchArm &arm)
 {
   // visit_outer_attrs (arm);
-  for (auto &pattern : arm.get_patterns ())
-    pattern->accept_vis (*this);
+  arm.get_pattern ()->accept_vis (*this);
   if (arm.has_match_arm_guard ())
     arm.get_guard_expr ().accept_vis (*this);
 }

@@ -53,9 +53,9 @@ DesugarWhileLet::DesugarCtx::make_continue_arm (
 std::unique_ptr<Expr>
 DesugarWhileLet::desugar (WhileLetLoopExpr &expr)
 {
-  rust_assert (expr.get_patterns ().size () == 1);
+  rust_assert (expr.get_pattern () != nullptr);
 
-  auto pattern = expr.get_patterns ()[0]->clone_pattern ();
+  auto pattern = expr.get_pattern ()->clone_pattern ();
   auto body = expr.get_loop_block ().clone_block_expr ();
   auto scrutinee = expr.get_scrutinee_expr ().clone_expr ();
 

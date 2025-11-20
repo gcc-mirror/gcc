@@ -748,8 +748,7 @@ private:
   parse_match_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
   AST::MatchArm parse_match_arm ();
-  std::vector<std::unique_ptr<AST::Pattern>>
-  parse_match_arm_patterns (TokenId end_token_id);
+  std::unique_ptr<AST::Pattern> parse_match_arm_pattern (TokenId end_token_id);
   std::unique_ptr<AST::Expr> parse_labelled_loop_expr (const_TokenPtr tok,
 						       AST::AttrVec outer_attrs
 						       = AST::AttrVec ());

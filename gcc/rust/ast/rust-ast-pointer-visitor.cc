@@ -587,8 +587,7 @@ void
 PointerVisitor::visit (AST::WhileLetLoopExpr &expr)
 {
   visit_outer_attrs (expr);
-  for (auto &pattern : expr.get_patterns ())
-    reseat (pattern);
+  reseat (expr.get_pattern ());
 
   if (expr.has_loop_label ())
     visit (expr.get_loop_label ());
@@ -627,8 +626,7 @@ void
 PointerVisitor::visit (AST::IfLetExpr &expr)
 {
   visit_outer_attrs (expr);
-  for (auto &pattern : expr.get_patterns ())
-    reseat (pattern);
+  reseat (expr.get_pattern ());
   reseat (expr.get_value_expr_ptr ());
   visit (expr.get_if_block ());
 }
@@ -644,8 +642,7 @@ void
 PointerVisitor::visit (AST::MatchArm &arm)
 {
   visit_outer_attrs (arm);
-  for (auto &pattern : arm.get_patterns ())
-    reseat (pattern);
+  reseat (arm.get_pattern ());
   if (arm.has_match_arm_guard ())
     reseat (arm.get_guard_expr_ptr ());
 }

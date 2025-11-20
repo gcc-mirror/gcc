@@ -607,8 +607,7 @@ void
 DefaultASTVisitor::visit (AST::WhileLetLoopExpr &expr)
 {
   visit_outer_attrs (expr);
-  for (auto &pattern : expr.get_patterns ())
-    visit (pattern);
+  visit (expr.get_pattern ());
 
   if (expr.has_loop_label ())
     visit (expr.get_loop_label ());
@@ -647,8 +646,7 @@ void
 DefaultASTVisitor::visit (AST::IfLetExpr &expr)
 {
   visit_outer_attrs (expr);
-  for (auto &pattern : expr.get_patterns ())
-    visit (pattern);
+  visit (expr.get_pattern ());
   visit (expr.get_value_expr ());
   visit (expr.get_if_block ());
 }
@@ -664,8 +662,7 @@ void
 DefaultASTVisitor::visit (AST::MatchArm &arm)
 {
   visit_outer_attrs (arm);
-  for (auto &pattern : arm.get_patterns ())
-    visit (pattern);
+  visit (arm.get_pattern ());
   if (arm.has_match_arm_guard ())
     visit (arm.get_guard_expr ());
 }

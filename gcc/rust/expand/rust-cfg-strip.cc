@@ -1436,10 +1436,9 @@ CfgStrip::visit (AST::WhileLetLoopExpr &expr)
 
   AST::DefaultASTVisitor::visit (expr);
 
-  for (auto &pattern : expr.get_patterns ())
-    if (pattern->is_marked_for_strip ())
-      rust_error_at (pattern->get_locus (),
-		     "cannot strip pattern in this position");
+  if (expr.get_pattern ()->is_marked_for_strip ())
+    rust_error_at (expr.get_pattern ()->get_locus (),
+		   "cannot strip pattern in this position");
 
   // can't strip scrutinee expr itself, but can strip sub-expressions
   auto &scrutinee_expr = expr.get_scrutinee_expr ();
@@ -1566,10 +1565,9 @@ CfgStrip::visit (AST::IfLetExpr &expr)
 
   AST::DefaultASTVisitor::visit (expr);
 
-  for (auto &pattern : expr.get_patterns ())
-    if (pattern->is_marked_for_strip ())
-      rust_error_at (pattern->get_locus (),
-		     "cannot strip pattern in this position");
+  if (expr.get_pattern ()->is_marked_for_strip ())
+    rust_error_at (expr.get_pattern ()->get_locus (),
+		   "cannot strip pattern in this position");
 
   // can't strip value expr itself, but can strip sub-expressions
   auto &value_expr = expr.get_value_expr ();
@@ -1598,10 +1596,9 @@ CfgStrip::visit (AST::IfLetExprConseqElse &expr)
 
   AST::DefaultASTVisitor::visit (expr);
 
-  for (auto &pattern : expr.get_patterns ())
-    if (pattern->is_marked_for_strip ())
-      rust_error_at (pattern->get_locus (),
-		     "cannot strip pattern in this position");
+  if (expr.get_pattern ()->is_marked_for_strip ())
+    rust_error_at (expr.get_pattern ()->get_locus (),
+		   "cannot strip pattern in this position");
 
   // can't strip value expr itself, but can strip sub-expressions
   auto &value_expr = expr.get_value_expr ();
@@ -1668,10 +1665,9 @@ CfgStrip::visit (AST::MatchExpr &expr)
 	  continue;
 	}
 
-      for (auto &pattern : match_arm.get_patterns ())
-	if (pattern->is_marked_for_strip ())
-	  rust_error_at (pattern->get_locus (),
-			 "cannot strip pattern in this position");
+      if (match_arm.get_pattern ()->is_marked_for_strip ())
+	rust_error_at (match_arm.get_pattern ()->get_locus (),
+		       "cannot strip pattern in this position");
 
       /* assuming that guard expression cannot be stripped as
        * strictly speaking you would have to strip the whole guard to

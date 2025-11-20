@@ -2498,7 +2498,7 @@ protected:
 class WhileLetLoopExpr : public BaseLoopExpr
 {
   // MatchArmPatterns patterns;
-  std::vector<std::unique_ptr<Pattern>> match_arm_patterns; // inlined
+  std::unique_ptr<Pattern> match_arm_pattern; // inlined
   std::unique_ptr<Expr> condition;
 
 public:
@@ -2506,7 +2506,7 @@ public:
 
   // Constructor with a loop label
   WhileLetLoopExpr (Analysis::NodeMapping mappings,
-		    std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
+		    std::unique_ptr<Pattern> match_arm_pattern,
 		    std::unique_ptr<Expr> condition,
 		    std::unique_ptr<BlockExpr> loop_block, location_t locus,
 		    tl::optional<LoopLabel> loop_label,
@@ -2526,10 +2526,7 @@ public:
   void accept_vis (HIRExpressionVisitor &vis) override;
 
   Expr &get_cond () { return *condition; }
-  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
-  {
-    return match_arm_patterns;
-  }
+  std::unique_ptr<Pattern> &get_pattern () { return match_arm_pattern; }
 
 protected:
   /* Use covariance to implement clone function as returning this object rather
@@ -2671,7 +2668,7 @@ struct MatchArm
 {
 private:
   AST::AttrVec outer_attrs;
-  std::vector<std::unique_ptr<Pattern>> match_arm_patterns;
+  std::unique_ptr<Pattern> match_arm_pattern;
   std::unique_ptr<Expr> guard_expr;
   location_t locus;
 
@@ -2680,8 +2677,8 @@ public:
   bool has_match_arm_guard () const { return guard_expr != nullptr; }
 
   // Constructor for match arm with a guard expression
-  MatchArm (std::vector<std::unique_ptr<Pattern>> match_arm_patterns,
-	    location_t locus, std::unique_ptr<Expr> guard_expr = nullptr,
+  MatchArm (std::unique_ptr<Pattern> match_arm_pattern, location_t locus,
+	    std::unique_ptr<Expr> guard_expr = nullptr,
 	    AST::AttrVec outer_attrs = AST::AttrVec ());
 
   // Copy constructor with clone
@@ -2697,21 +2694,18 @@ public:
   MatchArm &operator= (MatchArm &&other) = default;
 
   // Returns whether match arm is in an error state.
-  bool is_error () const { return match_arm_patterns.empty (); }
+  bool is_error () const { return match_arm_pattern == nullptr; }
 
   // Creates a match arm in an error state.
   static MatchArm create_error ()
   {
     location_t locus = UNDEF_LOCATION;
-    return MatchArm (std::vector<std::unique_ptr<Pattern>> (), locus);
+    return MatchArm (nullptr, locus);
   }
 
   std::string to_string () const;
 
-  std::vector<std::unique_ptr<Pattern>> &get_patterns ()
-  {
-    return match_arm_patterns;
-  }
+  std::unique_ptr<Pattern> &get_pattern () { return match_arm_pattern; }
 
   Expr &get_guard_expr () { return *guard_expr; }
 

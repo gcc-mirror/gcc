@@ -366,7 +366,7 @@ Dump::do_matcharm (MatchArm &e)
   begin ("MatchArm");
   // FIXME Can't remember how to handle that. Let's see later.
   // do_outer_attrs(e);
-  visit_collection ("match_arm_patterns", e.get_patterns ());
+  visit_field ("match_arm_pattern", e.get_pattern ());
   if (e.has_match_arm_guard ())
     visit_field ("guard_expr", e.get_guard_expr ());
   end ("MatchArm");
@@ -1461,7 +1461,7 @@ Dump::visit (WhileLetLoopExpr &e)
   begin ("WhileLetLoopExpr");
   do_baseloopexpr (e);
 
-  visit_collection ("match_arm_patterns", e.get_patterns ());
+  visit_field ("match_arm_patterns", e.get_pattern ());
 
   visit_field ("condition", e.get_cond ());
 

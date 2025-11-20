@@ -1744,27 +1744,25 @@ TypeCheckExpr::visit (HIR::MatchExpr &expr)
     {
       // lets check the arms
       HIR::MatchArm &kase_arm = kase.get_arm ();
-      for (auto &pattern : kase_arm.get_patterns ())
+      auto &pattern = kase_arm.get_pattern ();
+      TyTy::BaseType *kase_arm_ty
+	= TypeCheckPattern::Resolve (*pattern, scrutinee_tyty);
+      if (kase_arm_ty->get_kind () == TyTy ::TypeKind::ERROR)
 	{
-	  TyTy::BaseType *kase_arm_ty
-	    = TypeCheckPattern::Resolve (*pattern, scrutinee_tyty);
-	  if (kase_arm_ty->get_kind () == TyTy ::TypeKind::ERROR)
-	    {
-	      saw_error = true;
-	      continue;
-	    }
+	  saw_error = true;
+	  continue;
+	}
 
-	  TyTy::BaseType *checked_kase = unify_site (
-	    expr.get_mappings ().get_hirid (),
-	    TyTy::TyWithLocation (scrutinee_tyty,
-				  expr.get_scrutinee_expr ().get_locus ()),
-	    TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
-	    expr.get_locus ());
-	  if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
-	    {
-	      saw_error = true;
-	      continue;
-	    }
+      TyTy::BaseType *checked_kase = unify_site (
+	expr.get_mappings ().get_hirid (),
+	TyTy::TyWithLocation (scrutinee_tyty,
+			      expr.get_scrutinee_expr ().get_locus ()),
+	TyTy::TyWithLocation (kase_arm_ty, pattern->get_locus ()),
+	expr.get_locus ());
+      if (checked_kase->get_kind () == TyTy::TypeKind::ERROR)
+	{
+	  saw_error = true;
+	  continue;
 	}
 
       // check the kase type

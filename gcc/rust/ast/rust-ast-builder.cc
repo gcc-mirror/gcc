@@ -484,10 +484,7 @@ Builder::match (std::unique_ptr<Expr> &&scrutinee,
 MatchArm
 Builder::match_arm (std::unique_ptr<Pattern> &&pattern)
 {
-  auto patterns = std::vector<std::unique_ptr<Pattern>> ();
-  patterns.emplace_back (std::move (pattern));
-
-  return MatchArm (std::move (patterns), loc);
+  return MatchArm (std::move (pattern), loc);
 }
 
 MatchCase

@@ -39,11 +39,7 @@ MatchArm
 make_match_arm (std::unique_ptr<Pattern> &&pattern)
 {
   auto loc = pattern->get_locus ();
-
-  auto patterns = std::vector<std::unique_ptr<Pattern>> ();
-  patterns.emplace_back (std::move (pattern));
-
-  return MatchArm (std::move (patterns), loc);
+  return MatchArm (std::move (pattern), loc);
 }
 
 MatchCase

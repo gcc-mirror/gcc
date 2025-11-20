@@ -93,8 +93,7 @@ Late::visit (AST::MatchArm &arm)
 
   ctx.bindings.enter (BindingSource::Match);
 
-  for (auto &pattern : arm.get_patterns ())
-    visit (pattern);
+  visit (arm.get_pattern ());
 
   ctx.bindings.exit ();
 
@@ -153,8 +152,7 @@ Late::visit (AST::WhileLetLoopExpr &while_let)
 
   ctx.bindings.enter (BindingSource::WhileLet);
 
-  for (auto &pattern : while_let.get_patterns ())
-    visit (pattern);
+  visit (while_let.get_pattern ());
 
   ctx.bindings.exit ();
 
