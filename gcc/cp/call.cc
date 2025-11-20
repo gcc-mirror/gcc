@@ -10143,11 +10143,19 @@ ref_conv_binds_to_temporary (tree type, tree expr, bool direct_init_p/*=false*/)
   const int flags = direct_init_p ? LOOKUP_NORMAL : LOOKUP_IMPLICIT;
   conversion *conv = implicit_conversion (type, TREE_TYPE (expr), expr,
 					  /*c_cast_p=*/false, flags, tf_none);
-  tristate ret (tristate::TS_UNKNOWN);
-  if (conv && !conv->bad_p)
-    ret = tristate (conv_binds_ref_to_temporary (conv));
+  if (!conv || conv->bad_p)
+    return tristate::unknown ();
 
-  return ret;
+  if (conv_binds_ref_to_temporary (conv))
+    {
+      /* Actually perform the conversion to check access control.  */
+      if (convert_like (conv, expr, tf_none) != error_mark_node)
+	return tristate (true);
+      else
+	return tristate::unknown ();
+    }
+
+  return tristate (false);
 }
 
 /* Call the trivial destructor for INSTANCE, which can be either an lvalue of
