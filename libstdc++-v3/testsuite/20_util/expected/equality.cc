@@ -28,19 +28,45 @@ test_eq()
   std::expected<int, int> e2;
   VERIFY(e2 == e2);
   VERIFY(e1 == e2);
+  VERIFY(e2 == e1);
   VERIFY(e1 != std::unexpected<int>(1));
+
   e1 = std::unexpected<int>(1);
   VERIFY(e1 == std::unexpected<int>(1));
   VERIFY(e1 != std::unexpected<int>(2));
   VERIFY(e1 != e2);
+  VERIFY(e2 != e1);
+  VERIFY(e1 != 1);
+
+  e2 = std::unexpected<int>(1);
+  VERIFY(e1 == e2);
+  VERIFY(e2 == e1);
+
+  e2 = std::unexpected<int>(2);
+  VERIFY(e1 != e2);
+  VERIFY(e2 != e1);
 
   std::expected<void, int> e3;
   VERIFY(e3 == e3);
   VERIFY(e3 != std::unexpected<int>(1));
+  std::expected<const void, long> e4;
+  VERIFY(e3 == e4);
+  VERIFY(e4 == e3);
+
   e3 = std::unexpected<int>(1);
   VERIFY(e3 == e3);
   VERIFY(e3 == std::unexpected<int>(1));
   VERIFY(e3 != std::unexpected<int>(2));
+  VERIFY(e3 != e4);
+  VERIFY(e4 != e3);
+
+  e4 = e3;
+  VERIFY(e3 == e4);
+  VERIFY(e4 == e3);
+
+  e4 = std::unexpected<int>(4);
+  VERIFY(e3 != e4);
+  VERIFY(e4 != e3);
 
   return true;
 }
