@@ -112,19 +112,16 @@ namespace std _GLIBCXX_VISIBILITY(default)
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc, typename _Predicate>
-    constexpr typename vector<_Tp, _Alloc>::size_type
-    erase_if(vector<_Tp, _Alloc>& __cont, _Predicate __pred)
+    constexpr typename _GLIBCXX_STD_C::vector<_Tp, _Alloc>::size_type
+    erase_if(_GLIBCXX_STD_C::vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
-      using namespace __gnu_cxx;
-      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __ucont = __cont;
       const auto __osz = __cont.size();
-      const auto __end = __ucont.end();
-      auto __removed = std::__remove_if(__ucont.begin(), __end,
+      const auto __end = __cont.end();
+      auto __removed = std::__remove_if(__cont.begin(), __end,
 					std::move(__pred));
       if (__removed != __end)
 	{
-	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
-		       __cont.end());
+	  __cont.erase(__removed, __end);
 	  return __osz - __cont.size();
 	}
 
@@ -133,8 +130,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Tp, typename _Alloc,
 	   typename _Up _GLIBCXX26_DEF_VAL_T(_Tp)>
-    constexpr typename vector<_Tp, _Alloc>::size_type
-    erase(vector<_Tp, _Alloc>& __cont, const _Up& __value)
+    constexpr typename _GLIBCXX_STD_C::vector<_Tp, _Alloc>::size_type
+    erase(_GLIBCXX_STD_C::vector<_Tp, _Alloc>& __cont, const _Up& __value)
     { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
 
 _GLIBCXX_END_NAMESPACE_VERSION
