@@ -18723,6 +18723,7 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 	{
 	  error ("underlying type %qT of %qT must be an integral type",
 		 underlying_type, enumtype);
+	  copy_type_enum (enumtype, integer_type_node);
 	  ENUM_UNDERLYING_TYPE (enumtype) = integer_type_node;
 	}
     }
