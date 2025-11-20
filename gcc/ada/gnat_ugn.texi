@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Nov 27, 2025
+GNAT User's Guide for Native Platforms , Dec 05, 2025
 
 AdaCore
 
@@ -14356,67 +14356,8 @@ This switch cancels the effect of a previous @code{gnatp} switch.
 This switch controls the mode used for computing intermediate
 arithmetic integer operations, and also enables overflow checking.
 For a full description of overflow mode and checking control, see
-the ‘Overflow Check Handling in GNAT’ appendix in this
+the @ref{fa,,Overflow Check Handling in GNAT} appendix in this
 User’s Guide.
-
-Overflow checks are always enabled by this switch. The argument
-controls the mode, using the codes
-
-
-@table @asis
-
-@item `1 = STRICT'
-
-In STRICT mode, intermediate operations are always done using the
-base type, and overflow checking ensures that the result is within
-the base type range.
-
-@item `2 = MINIMIZED'
-
-In MINIMIZED mode, overflows in intermediate operations are avoided
-where possible by using a larger integer type for the computation
-(typically @code{Long_Long_Integer}). Overflow checking ensures that
-the result fits in this larger integer type.
-
-@item `3 = ELIMINATED'
-
-In ELIMINATED mode, overflows in intermediate operations are avoided
-by using multi-precision arithmetic. In this case, overflow checking
-has no effect on intermediate operations (since overflow is impossible).
-@end table
-
-If two digits are present after @code{-gnato} then the first digit
-sets the mode for expressions outside assertions, and the second digit
-sets the mode for expressions within assertions. Here assertions is used
-in the technical sense (which includes for example precondition and
-postcondition expressions).
-
-If one digit is present, the corresponding mode is applicable to both
-expressions within and outside assertion expressions.
-
-If no digits are present, the default is to enable overflow checks
-and set STRICT mode for both kinds of expressions. This is compatible
-with the use of @code{-gnato} in previous versions of GNAT.
-
-@geindex Machine_Overflows
-
-Note that the @code{-gnato??} switch does not affect the code generated
-for any floating-point operations; it applies only to integer semantics.
-For floating-point, GNAT has the @code{Machine_Overflows}
-attribute set to @code{False} and the normal mode of operation is to
-generate IEEE NaN and infinite values on overflow or invalid operations
-(such as dividing 0.0 by 0.0).
-
-The reason that we distinguish overflow checking from other kinds of
-range constraint checking is that a failure of an overflow check, unlike
-for example the failure of a range check, can result in an incorrect
-value, but cannot cause random memory destruction (like an out of range
-subscript), or a wild jump (from an out of range case value). Overflow
-checking is also quite expensive in time and space, since in general it
-requires the use of double length arithmetic.
-
-Note again that the default is @code{-gnato11} (equivalent to @code{-gnato1}),
-so overflow checking is performed in STRICT mode by default.
 @end table
 
 @geindex -gnatE (gcc)
@@ -14463,7 +14404,7 @@ checks) or @code{Unsuppress} (to add back suppressed checks) pragmas in
 the program source.
 
 @node Using gcc for Syntax Checking,Using gcc for Semantic Checking,Run-Time Checks,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat id20}@anchor{fa}@anchor{gnat_ugn/building_executable_programs_with_gnat using-gcc-for-syntax-checking}@anchor{fb}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id20}@anchor{fb}@anchor{gnat_ugn/building_executable_programs_with_gnat using-gcc-for-syntax-checking}@anchor{fc}
 @subsection Using @code{gcc} for Syntax Checking
 
 
@@ -14520,7 +14461,7 @@ together. This is primarily used by the @code{gnatchop} utility
 @end table
 
 @node Using gcc for Semantic Checking,Compiling Different Versions of Ada,Using gcc for Syntax Checking,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat id21}@anchor{fc}@anchor{gnat_ugn/building_executable_programs_with_gnat using-gcc-for-semantic-checking}@anchor{fd}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id21}@anchor{fd}@anchor{gnat_ugn/building_executable_programs_with_gnat using-gcc-for-semantic-checking}@anchor{fe}
 @subsection Using @code{gcc} for Semantic Checking
 
 
@@ -14567,7 +14508,7 @@ and specifications where a separate body is present).
 @end table
 
 @node Compiling Different Versions of Ada,Character Set Control,Using gcc for Semantic Checking,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat compiling-different-versions-of-ada}@anchor{6}@anchor{gnat_ugn/building_executable_programs_with_gnat id22}@anchor{fe}
+@anchor{gnat_ugn/building_executable_programs_with_gnat compiling-different-versions-of-ada}@anchor{6}@anchor{gnat_ugn/building_executable_programs_with_gnat id22}@anchor{ff}
 @subsection Compiling Different Versions of Ada
 
 
@@ -14732,7 +14673,7 @@ extensions enabled by this switch, see the GNAT reference manual
 @end table
 
 @node Character Set Control,File Naming Control,Compiling Different Versions of Ada,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat character-set-control}@anchor{32}@anchor{gnat_ugn/building_executable_programs_with_gnat id23}@anchor{ff}
+@anchor{gnat_ugn/building_executable_programs_with_gnat character-set-control}@anchor{32}@anchor{gnat_ugn/building_executable_programs_with_gnat id23}@anchor{100}
 @subsection Character Set Control
 
 
@@ -14959,7 +14900,7 @@ comments are ended by an appropriate (CR, or CR/LF, or LF) line terminator.
 This is a common mode for many programs with foreign language comments.
 
 @node File Naming Control,Subprogram Inlining Control,Character Set Control,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat file-naming-control}@anchor{100}@anchor{gnat_ugn/building_executable_programs_with_gnat id24}@anchor{101}
+@anchor{gnat_ugn/building_executable_programs_with_gnat file-naming-control}@anchor{101}@anchor{gnat_ugn/building_executable_programs_with_gnat id24}@anchor{102}
 @subsection File Naming Control
 
 
@@ -14979,7 +14920,7 @@ For the source file naming rules, @ref{3c,,File Naming Rules}.
 @end table
 
 @node Subprogram Inlining Control,Auxiliary Output Control,File Naming Control,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat id25}@anchor{102}@anchor{gnat_ugn/building_executable_programs_with_gnat subprogram-inlining-control}@anchor{103}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id25}@anchor{103}@anchor{gnat_ugn/building_executable_programs_with_gnat subprogram-inlining-control}@anchor{104}
 @subsection Subprogram Inlining Control
 
 
@@ -15012,7 +14953,7 @@ If you specify this switch the compiler will access these bodies,
 creating an extra source dependency for the resulting object file, and
 where possible, the call will be inlined.
 For further details on when inlining is possible
-see @ref{104,,Inlining of Subprograms}.
+see @ref{105,,Inlining of Subprograms}.
 @end table
 
 @geindex -gnatN (gcc)
@@ -15032,7 +14973,7 @@ inlining, but that is no longer the case.
 @end table
 
 @node Auxiliary Output Control,Debugging Control,Subprogram Inlining Control,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat auxiliary-output-control}@anchor{105}@anchor{gnat_ugn/building_executable_programs_with_gnat id26}@anchor{106}
+@anchor{gnat_ugn/building_executable_programs_with_gnat auxiliary-output-control}@anchor{106}@anchor{gnat_ugn/building_executable_programs_with_gnat id26}@anchor{107}
 @subsection Auxiliary Output Control
 
 
@@ -15102,7 +15043,7 @@ An object file has been generated for every source file.
 @end table
 
 @node Debugging Control,Exception Handling Control,Auxiliary Output Control,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat debugging-control}@anchor{107}@anchor{gnat_ugn/building_executable_programs_with_gnat id27}@anchor{108}
+@anchor{gnat_ugn/building_executable_programs_with_gnat debugging-control}@anchor{108}@anchor{gnat_ugn/building_executable_programs_with_gnat id27}@anchor{109}
 @subsection Debugging Control
 
 
@@ -15455,7 +15396,7 @@ encodings for the rest.
 @end table
 
 @node Exception Handling Control,Units to Sources Mapping Files,Debugging Control,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat exception-handling-control}@anchor{109}@anchor{gnat_ugn/building_executable_programs_with_gnat id28}@anchor{10a}
+@anchor{gnat_ugn/building_executable_programs_with_gnat exception-handling-control}@anchor{10a}@anchor{gnat_ugn/building_executable_programs_with_gnat id28}@anchor{10b}
 @subsection Exception Handling Control
 
 
@@ -15527,7 +15468,7 @@ and @code{gnatbind}. Passing this option to @code{gnatmake}
 through the compilation and binding steps.
 
 @node Units to Sources Mapping Files,Code Generation Control,Exception Handling Control,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat id29}@anchor{10b}@anchor{gnat_ugn/building_executable_programs_with_gnat units-to-sources-mapping-files}@anchor{eb}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id29}@anchor{10c}@anchor{gnat_ugn/building_executable_programs_with_gnat units-to-sources-mapping-files}@anchor{eb}
 @subsection Units to Sources Mapping Files
 
 
@@ -15579,7 +15520,7 @@ mapping file and communicates it to the compiler using this switch.
 @end table
 
 @node Code Generation Control,,Units to Sources Mapping Files,Compiler Switches
-@anchor{gnat_ugn/building_executable_programs_with_gnat code-generation-control}@anchor{10c}@anchor{gnat_ugn/building_executable_programs_with_gnat id30}@anchor{10d}
+@anchor{gnat_ugn/building_executable_programs_with_gnat code-generation-control}@anchor{10d}@anchor{gnat_ugn/building_executable_programs_with_gnat id30}@anchor{10e}
 @subsection Code Generation Control
 
 
@@ -15608,7 +15549,7 @@ there is no point in using @code{-m} switches to improve performance
 unless you actually see a performance improvement.
 
 @node Linker Switches,Binding with gnatbind,Compiler Switches,Building Executable Programs with GNAT
-@anchor{gnat_ugn/building_executable_programs_with_gnat id31}@anchor{10e}@anchor{gnat_ugn/building_executable_programs_with_gnat linker-switches}@anchor{10f}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id31}@anchor{10f}@anchor{gnat_ugn/building_executable_programs_with_gnat linker-switches}@anchor{110}
 @section Linker Switches
 
 
@@ -15628,7 +15569,7 @@ platforms.
 @end table
 
 @node Binding with gnatbind,Linking with gnatlink,Linker Switches,Building Executable Programs with GNAT
-@anchor{gnat_ugn/building_executable_programs_with_gnat binding-with-gnatbind}@anchor{cb}@anchor{gnat_ugn/building_executable_programs_with_gnat id32}@anchor{110}
+@anchor{gnat_ugn/building_executable_programs_with_gnat binding-with-gnatbind}@anchor{cb}@anchor{gnat_ugn/building_executable_programs_with_gnat id32}@anchor{111}
 @section Binding with @code{gnatbind}
 
 
@@ -15679,7 +15620,7 @@ to be read by the @code{gnatlink} utility used to link the Ada application.
 @end menu
 
 @node Running gnatbind,Switches for gnatbind,,Binding with gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat id33}@anchor{111}@anchor{gnat_ugn/building_executable_programs_with_gnat running-gnatbind}@anchor{112}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id33}@anchor{112}@anchor{gnat_ugn/building_executable_programs_with_gnat running-gnatbind}@anchor{113}
 @subsection Running @code{gnatbind}
 
 
@@ -15764,7 +15705,7 @@ Ada code provided the @code{-g} switch is used for
 @code{gnatbind} and @code{gnatlink}.
 
 @node Switches for gnatbind,Command-Line Access,Running gnatbind,Binding with gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat id34}@anchor{113}@anchor{gnat_ugn/building_executable_programs_with_gnat switches-for-gnatbind}@anchor{114}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id34}@anchor{114}@anchor{gnat_ugn/building_executable_programs_with_gnat switches-for-gnatbind}@anchor{115}
 @subsection Switches for @code{gnatbind}
 
 
@@ -15959,7 +15900,7 @@ Currently the same as @code{-Ea}.
 
 @item @code{-f`elab-order'}
 
-Force elaboration order. For further details see @ref{115,,Elaboration Control}
+Force elaboration order. For further details see @ref{116,,Elaboration Control}
 and @ref{10,,Elaboration Order Handling in GNAT}.
 @end table
 
@@ -16008,7 +15949,7 @@ Legacy elaboration order model enabled. For further details see
 @item @code{-H32}
 
 Use 32-bit allocations for @code{__gnat_malloc} (and thus for access types).
-For further details see @ref{116,,Dynamic Allocation Control}.
+For further details see @ref{117,,Dynamic Allocation Control}.
 @end table
 
 @geindex -H64 (gnatbind)
@@ -16021,7 +15962,7 @@ For further details see @ref{116,,Dynamic Allocation Control}.
 @item @code{-H64}
 
 Use 64-bit allocations for @code{__gnat_malloc} (and thus for access types).
-For further details see @ref{116,,Dynamic Allocation Control}.
+For further details see @ref{117,,Dynamic Allocation Control}.
 
 @geindex -I (gnatbind)
 
@@ -16310,7 +16251,7 @@ Enable dynamic stack usage, with @code{n} results stored and displayed
 at program termination. A result is generated when a task
 terminates. Results that can’t be stored are displayed on the fly, at
 task termination. This option is currently not supported on Itanium
-platforms. (See @ref{117,,Dynamic Stack Usage Analysis} for details.)
+platforms. (See @ref{118,,Dynamic Stack Usage Analysis} for details.)
 
 @geindex -v (gnatbind)
 
@@ -16390,7 +16331,7 @@ no arguments.
 @end menu
 
 @node Consistency-Checking Modes,Binder Error Message Control,,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat consistency-checking-modes}@anchor{118}@anchor{gnat_ugn/building_executable_programs_with_gnat id35}@anchor{119}
+@anchor{gnat_ugn/building_executable_programs_with_gnat consistency-checking-modes}@anchor{119}@anchor{gnat_ugn/building_executable_programs_with_gnat id35}@anchor{11a}
 @subsubsection Consistency-Checking Modes
 
 
@@ -16444,7 +16385,7 @@ case the checking against sources has already been performed by
 @end table
 
 @node Binder Error Message Control,Elaboration Control,Consistency-Checking Modes,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat binder-error-message-control}@anchor{11a}@anchor{gnat_ugn/building_executable_programs_with_gnat id36}@anchor{11b}
+@anchor{gnat_ugn/building_executable_programs_with_gnat binder-error-message-control}@anchor{11b}@anchor{gnat_ugn/building_executable_programs_with_gnat id36}@anchor{11c}
 @subsubsection Binder Error Message Control
 
 
@@ -16554,7 +16495,7 @@ with extreme care.
 @end table
 
 @node Elaboration Control,Output Control,Binder Error Message Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat elaboration-control}@anchor{115}@anchor{gnat_ugn/building_executable_programs_with_gnat id37}@anchor{11c}
+@anchor{gnat_ugn/building_executable_programs_with_gnat elaboration-control}@anchor{116}@anchor{gnat_ugn/building_executable_programs_with_gnat id37}@anchor{11d}
 @subsubsection Elaboration Control
 
 
@@ -16639,7 +16580,7 @@ debugging/experimental use.
 @end table
 
 @node Output Control,Dynamic Allocation Control,Elaboration Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat id38}@anchor{11d}@anchor{gnat_ugn/building_executable_programs_with_gnat output-control}@anchor{11e}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id38}@anchor{11e}@anchor{gnat_ugn/building_executable_programs_with_gnat output-control}@anchor{11f}
 @subsubsection Output Control
 
 
@@ -16720,7 +16661,7 @@ be used to improve code generation in some cases.
 @end table
 
 @node Dynamic Allocation Control,Binding with Non-Ada Main Programs,Output Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat dynamic-allocation-control}@anchor{116}@anchor{gnat_ugn/building_executable_programs_with_gnat id39}@anchor{11f}
+@anchor{gnat_ugn/building_executable_programs_with_gnat dynamic-allocation-control}@anchor{117}@anchor{gnat_ugn/building_executable_programs_with_gnat id39}@anchor{120}
 @subsubsection Dynamic Allocation Control
 
 
@@ -16746,7 +16687,7 @@ unless explicitly overridden by a @code{'Size} clause on the access type.
 These switches are only effective on VMS platforms.
 
 @node Binding with Non-Ada Main Programs,Binding Programs with No Main Subprogram,Dynamic Allocation Control,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat binding-with-non-ada-main-programs}@anchor{7f}@anchor{gnat_ugn/building_executable_programs_with_gnat id40}@anchor{120}
+@anchor{gnat_ugn/building_executable_programs_with_gnat binding-with-non-ada-main-programs}@anchor{7f}@anchor{gnat_ugn/building_executable_programs_with_gnat id40}@anchor{121}
 @subsubsection Binding with Non-Ada Main Programs
 
 
@@ -16842,7 +16783,7 @@ side effect is that this could be the wrong mode for the foreign code
 where floating point computation could be broken after this call.
 
 @node Binding Programs with No Main Subprogram,,Binding with Non-Ada Main Programs,Switches for gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat binding-programs-with-no-main-subprogram}@anchor{121}@anchor{gnat_ugn/building_executable_programs_with_gnat id41}@anchor{122}
+@anchor{gnat_ugn/building_executable_programs_with_gnat binding-programs-with-no-main-subprogram}@anchor{122}@anchor{gnat_ugn/building_executable_programs_with_gnat id41}@anchor{123}
 @subsubsection Binding Programs with No Main Subprogram
 
 
@@ -16873,7 +16814,7 @@ the binder switch
 @end table
 
 @node Command-Line Access,Search Paths for gnatbind,Switches for gnatbind,Binding with gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat command-line-access}@anchor{123}@anchor{gnat_ugn/building_executable_programs_with_gnat id42}@anchor{124}
+@anchor{gnat_ugn/building_executable_programs_with_gnat command-line-access}@anchor{124}@anchor{gnat_ugn/building_executable_programs_with_gnat id42}@anchor{125}
 @subsection Command-Line Access
 
 
@@ -16903,7 +16844,7 @@ required, your main program must set @code{gnat_argc} and
 it.
 
 @node Search Paths for gnatbind,Examples of gnatbind Usage,Command-Line Access,Binding with gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat id43}@anchor{125}@anchor{gnat_ugn/building_executable_programs_with_gnat search-paths-for-gnatbind}@anchor{77}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id43}@anchor{126}@anchor{gnat_ugn/building_executable_programs_with_gnat search-paths-for-gnatbind}@anchor{77}
 @subsection Search Paths for @code{gnatbind}
 
 
@@ -17007,7 +16948,7 @@ in compiling sources from multiple directories. This can make
 development environments much more flexible.
 
 @node Examples of gnatbind Usage,,Search Paths for gnatbind,Binding with gnatbind
-@anchor{gnat_ugn/building_executable_programs_with_gnat examples-of-gnatbind-usage}@anchor{126}@anchor{gnat_ugn/building_executable_programs_with_gnat id44}@anchor{127}
+@anchor{gnat_ugn/building_executable_programs_with_gnat examples-of-gnatbind-usage}@anchor{127}@anchor{gnat_ugn/building_executable_programs_with_gnat id44}@anchor{128}
 @subsection Examples of @code{gnatbind} Usage
 
 
@@ -17036,7 +16977,7 @@ since gnatlink will not be able to find the generated file.
 @end quotation
 
 @node Linking with gnatlink,Using the GNU make Utility,Binding with gnatbind,Building Executable Programs with GNAT
-@anchor{gnat_ugn/building_executable_programs_with_gnat id45}@anchor{128}@anchor{gnat_ugn/building_executable_programs_with_gnat linking-with-gnatlink}@anchor{cc}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id45}@anchor{129}@anchor{gnat_ugn/building_executable_programs_with_gnat linking-with-gnatlink}@anchor{cc}
 @section Linking with @code{gnatlink}
 
 
@@ -17057,7 +16998,7 @@ generated by the @code{gnatbind} to determine this list.
 @end menu
 
 @node Running gnatlink,Switches for gnatlink,,Linking with gnatlink
-@anchor{gnat_ugn/building_executable_programs_with_gnat id46}@anchor{129}@anchor{gnat_ugn/building_executable_programs_with_gnat running-gnatlink}@anchor{12a}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id46}@anchor{12a}@anchor{gnat_ugn/building_executable_programs_with_gnat running-gnatlink}@anchor{12b}
 @subsection Running @code{gnatlink}
 
 
@@ -17116,8 +17057,8 @@ $ gnatlink my_prog -Wl,-Map,MAPFILE
 
 Using @code{linker options} it is possible to set the program stack and
 heap size.
-See @ref{12b,,Setting Stack Size from gnatlink} and
-@ref{12c,,Setting Heap Size from gnatlink}.
+See @ref{12c,,Setting Stack Size from gnatlink} and
+@ref{12d,,Setting Heap Size from gnatlink}.
 
 @code{gnatlink} determines the list of objects required by the Ada
 program and prepends them to the list of objects passed to the linker.
@@ -17126,7 +17067,7 @@ program and prepends them to the list of objects passed to the linker.
 presented to the linker.
 
 @node Switches for gnatlink,,Running gnatlink,Linking with gnatlink
-@anchor{gnat_ugn/building_executable_programs_with_gnat id47}@anchor{12d}@anchor{gnat_ugn/building_executable_programs_with_gnat switches-for-gnatlink}@anchor{12e}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id47}@anchor{12e}@anchor{gnat_ugn/building_executable_programs_with_gnat switches-for-gnatlink}@anchor{12f}
 @subsection Switches for @code{gnatlink}
 
 
@@ -17321,7 +17262,7 @@ switch.
 @end table
 
 @node Using the GNU make Utility,GNAT with the LLVM Back End,Linking with gnatlink,Building Executable Programs with GNAT
-@anchor{gnat_ugn/building_executable_programs_with_gnat id48}@anchor{12f}@anchor{gnat_ugn/building_executable_programs_with_gnat using-the-gnu-make-utility}@anchor{71}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id48}@anchor{130}@anchor{gnat_ugn/building_executable_programs_with_gnat using-the-gnu-make-utility}@anchor{71}
 @section Using the GNU @code{make} Utility
 
 
@@ -17346,7 +17287,7 @@ is the same, these examples use some advanced features found only in
 @end menu
 
 @node Using gnatmake in a Makefile,Automatically Creating a List of Directories,,Using the GNU make Utility
-@anchor{gnat_ugn/building_executable_programs_with_gnat id49}@anchor{130}@anchor{gnat_ugn/building_executable_programs_with_gnat using-gnatmake-in-a-makefile}@anchor{131}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id49}@anchor{131}@anchor{gnat_ugn/building_executable_programs_with_gnat using-gnatmake-in-a-makefile}@anchor{132}
 @subsection Using gnatmake in a Makefile
 
 
@@ -17365,7 +17306,7 @@ the appropriate directories.
 
 Note that you should also read the example on how to automatically
 create the list of directories
-(@ref{132,,Automatically Creating a List of Directories})
+(@ref{133,,Automatically Creating a List of Directories})
 which might help you in case your project has a lot of subdirectories.
 
 @example
@@ -17445,7 +17386,7 @@ clean::
 @end example
 
 @node Automatically Creating a List of Directories,Generating the Command Line Switches,Using gnatmake in a Makefile,Using the GNU make Utility
-@anchor{gnat_ugn/building_executable_programs_with_gnat automatically-creating-a-list-of-directories}@anchor{132}@anchor{gnat_ugn/building_executable_programs_with_gnat id50}@anchor{133}
+@anchor{gnat_ugn/building_executable_programs_with_gnat automatically-creating-a-list-of-directories}@anchor{133}@anchor{gnat_ugn/building_executable_programs_with_gnat id50}@anchor{134}
 @subsection Automatically Creating a List of Directories
 
 
@@ -17518,12 +17459,12 @@ DIRS := $@{shell find $@{ROOT_DIRECTORY@} -type d -print@}
 @end example
 
 @node Generating the Command Line Switches,Overcoming Command Line Length Limits,Automatically Creating a List of Directories,Using the GNU make Utility
-@anchor{gnat_ugn/building_executable_programs_with_gnat generating-the-command-line-switches}@anchor{134}@anchor{gnat_ugn/building_executable_programs_with_gnat id51}@anchor{135}
+@anchor{gnat_ugn/building_executable_programs_with_gnat generating-the-command-line-switches}@anchor{135}@anchor{gnat_ugn/building_executable_programs_with_gnat id51}@anchor{136}
 @subsection Generating the Command Line Switches
 
 
 Once you have created the list of directories as explained in the
-previous section (@ref{132,,Automatically Creating a List of Directories}),
+previous section (@ref{133,,Automatically Creating a List of Directories}),
 you can easily generate the command line arguments to pass to gnatmake.
 
 For the sake of completeness, this example assumes that the source path
@@ -17544,7 +17485,7 @@ all:
 @end example
 
 @node Overcoming Command Line Length Limits,,Generating the Command Line Switches,Using the GNU make Utility
-@anchor{gnat_ugn/building_executable_programs_with_gnat id52}@anchor{136}@anchor{gnat_ugn/building_executable_programs_with_gnat overcoming-command-line-length-limits}@anchor{137}
+@anchor{gnat_ugn/building_executable_programs_with_gnat id52}@anchor{137}@anchor{gnat_ugn/building_executable_programs_with_gnat overcoming-command-line-length-limits}@anchor{138}
 @subsection Overcoming Command Line Length Limits
 
 
@@ -17559,7 +17500,7 @@ even none on most systems).
 
 It assumes that you have created a list of directories in your Makefile,
 using one of the methods presented in
-@ref{132,,Automatically Creating a List of Directories}.
+@ref{133,,Automatically Creating a List of Directories}.
 For the sake of completeness, we assume that the object
 path (where the ALI files are found) is different from the sources patch.
 
@@ -17602,7 +17543,7 @@ all:
 @end example
 
 @node GNAT with the LLVM Back End,,Using the GNU make Utility,Building Executable Programs with GNAT
-@anchor{gnat_ugn/building_executable_programs_with_gnat gnat-with-the-llvm-back-end}@anchor{138}@anchor{gnat_ugn/building_executable_programs_with_gnat gnatllvm}@anchor{7}
+@anchor{gnat_ugn/building_executable_programs_with_gnat gnat-with-the-llvm-back-end}@anchor{139}@anchor{gnat_ugn/building_executable_programs_with_gnat gnatllvm}@anchor{7}
 @section GNAT with the LLVM Back End
 
 
@@ -17707,7 +17648,7 @@ GNAT.
 
 
 @node GNAT Utility Programs,GNAT and Program Execution,Building Executable Programs with GNAT,Top
-@anchor{gnat_ugn/gnat_utility_programs doc}@anchor{139}@anchor{gnat_ugn/gnat_utility_programs gnat-utility-programs}@anchor{c}@anchor{gnat_ugn/gnat_utility_programs id1}@anchor{13a}
+@anchor{gnat_ugn/gnat_utility_programs doc}@anchor{13a}@anchor{gnat_ugn/gnat_utility_programs gnat-utility-programs}@anchor{c}@anchor{gnat_ugn/gnat_utility_programs id1}@anchor{13b}
 @chapter GNAT Utility Programs
 
 
@@ -17718,10 +17659,10 @@ This chapter describes a number of utility programs:
 @itemize *
 
 @item 
-@ref{13b,,The File Cleanup Utility gnatclean}
+@ref{13c,,The File Cleanup Utility gnatclean}
 
 @item 
-@ref{13c,,The GNAT Library Browser gnatls}
+@ref{13d,,The GNAT Library Browser gnatls}
 @end itemize
 
 Other GNAT utilities are described elsewhere in this manual:
@@ -17749,7 +17690,7 @@ Other GNAT utilities are described elsewhere in this manual:
 @end menu
 
 @node The File Cleanup Utility gnatclean,The GNAT Library Browser gnatls,,GNAT Utility Programs
-@anchor{gnat_ugn/gnat_utility_programs id2}@anchor{13d}@anchor{gnat_ugn/gnat_utility_programs the-file-cleanup-utility-gnatclean}@anchor{13b}
+@anchor{gnat_ugn/gnat_utility_programs id2}@anchor{13e}@anchor{gnat_ugn/gnat_utility_programs the-file-cleanup-utility-gnatclean}@anchor{13c}
 @section The File Cleanup Utility @code{gnatclean}
 
 
@@ -17769,7 +17710,7 @@ generated files and executable files.
 @end menu
 
 @node Running gnatclean,Switches for gnatclean,,The File Cleanup Utility gnatclean
-@anchor{gnat_ugn/gnat_utility_programs id3}@anchor{13e}@anchor{gnat_ugn/gnat_utility_programs running-gnatclean}@anchor{13f}
+@anchor{gnat_ugn/gnat_utility_programs id3}@anchor{13f}@anchor{gnat_ugn/gnat_utility_programs running-gnatclean}@anchor{140}
 @subsection Running @code{gnatclean}
 
 
@@ -17793,7 +17734,7 @@ linker. In information-only mode, specified by switch
 normal mode, but doesn’t actually delete any files.
 
 @node Switches for gnatclean,,Running gnatclean,The File Cleanup Utility gnatclean
-@anchor{gnat_ugn/gnat_utility_programs id4}@anchor{140}@anchor{gnat_ugn/gnat_utility_programs switches-for-gnatclean}@anchor{141}
+@anchor{gnat_ugn/gnat_utility_programs id4}@anchor{141}@anchor{gnat_ugn/gnat_utility_programs switches-for-gnatclean}@anchor{142}
 @subsection Switches for @code{gnatclean}
 
 
@@ -17997,7 +17938,7 @@ where @code{gnatclean} was invoked.
 @end table
 
 @node The GNAT Library Browser gnatls,,The File Cleanup Utility gnatclean,GNAT Utility Programs
-@anchor{gnat_ugn/gnat_utility_programs id5}@anchor{142}@anchor{gnat_ugn/gnat_utility_programs the-gnat-library-browser-gnatls}@anchor{13c}
+@anchor{gnat_ugn/gnat_utility_programs id5}@anchor{143}@anchor{gnat_ugn/gnat_utility_programs the-gnat-library-browser-gnatls}@anchor{13d}
 @section The GNAT Library Browser @code{gnatls}
 
 
@@ -18018,7 +17959,7 @@ as well as various characteristics.
 @end menu
 
 @node Running gnatls,Switches for gnatls,,The GNAT Library Browser gnatls
-@anchor{gnat_ugn/gnat_utility_programs id6}@anchor{143}@anchor{gnat_ugn/gnat_utility_programs running-gnatls}@anchor{144}
+@anchor{gnat_ugn/gnat_utility_programs id6}@anchor{144}@anchor{gnat_ugn/gnat_utility_programs running-gnatls}@anchor{145}
 @subsection Running @code{gnatls}
 
 
@@ -18098,7 +18039,7 @@ version of the same source that has been modified.
 @end table
 
 @node Switches for gnatls,Example of gnatls Usage,Running gnatls,The GNAT Library Browser gnatls
-@anchor{gnat_ugn/gnat_utility_programs id7}@anchor{145}@anchor{gnat_ugn/gnat_utility_programs switches-for-gnatls}@anchor{146}
+@anchor{gnat_ugn/gnat_utility_programs id7}@anchor{146}@anchor{gnat_ugn/gnat_utility_programs switches-for-gnatls}@anchor{147}
 @subsection Switches for @code{gnatls}
 
 
@@ -18281,7 +18222,7 @@ by the user.
 @end table
 
 @node Example of gnatls Usage,,Switches for gnatls,The GNAT Library Browser gnatls
-@anchor{gnat_ugn/gnat_utility_programs example-of-gnatls-usage}@anchor{147}@anchor{gnat_ugn/gnat_utility_programs id8}@anchor{148}
+@anchor{gnat_ugn/gnat_utility_programs example-of-gnatls-usage}@anchor{148}@anchor{gnat_ugn/gnat_utility_programs id8}@anchor{149}
 @subsection Example of @code{gnatls} Usage
 
 
@@ -18367,7 +18308,7 @@ instr.ads
 @c -- Example: A |withing| unit has a |with| clause, it |withs| a |withed| unit
 
 @node GNAT and Program Execution,Platform-Specific Information,GNAT Utility Programs,Top
-@anchor{gnat_ugn/gnat_and_program_execution doc}@anchor{149}@anchor{gnat_ugn/gnat_and_program_execution gnat-and-program-execution}@anchor{d}@anchor{gnat_ugn/gnat_and_program_execution id1}@anchor{14a}
+@anchor{gnat_ugn/gnat_and_program_execution doc}@anchor{14a}@anchor{gnat_ugn/gnat_and_program_execution gnat-and-program-execution}@anchor{d}@anchor{gnat_ugn/gnat_and_program_execution id1}@anchor{14b}
 @chapter GNAT and Program Execution
 
 
@@ -18377,28 +18318,28 @@ This chapter covers several topics:
 @itemize *
 
 @item 
-@ref{14b,,Running and Debugging Ada Programs}
+@ref{14c,,Running and Debugging Ada Programs}
 
 @item 
-@ref{14c,,Profiling}
+@ref{14d,,Profiling}
 
 @item 
-@ref{14d,,Improving Performance}
+@ref{14e,,Improving Performance}
 
 @item 
-@ref{14e,,Overflow Check Handling in GNAT}
+@ref{14f,,Overflow Check Handling in GNAT}
 
 @item 
-@ref{14f,,Performing Dimensionality Analysis in GNAT}
+@ref{150,,Performing Dimensionality Analysis in GNAT}
 
 @item 
-@ref{150,,Stack Related Facilities}
+@ref{151,,Stack Related Facilities}
 
 @item 
-@ref{151,,Memory Management Issues}
+@ref{152,,Memory Management Issues}
 
 @item 
-@ref{152,,Sanitizers for Ada}
+@ref{153,,Sanitizers for Ada}
 @end itemize
 
 @menu
@@ -18414,7 +18355,7 @@ This chapter covers several topics:
 @end menu
 
 @node Running and Debugging Ada Programs,Profiling,,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id2}@anchor{14b}@anchor{gnat_ugn/gnat_and_program_execution running-and-debugging-ada-programs}@anchor{153}
+@anchor{gnat_ugn/gnat_and_program_execution id2}@anchor{14c}@anchor{gnat_ugn/gnat_and_program_execution running-and-debugging-ada-programs}@anchor{154}
 @section Running and Debugging Ada Programs
 
 
@@ -18468,7 +18409,7 @@ the incorrect user program.
 @end menu
 
 @node The GNAT Debugger GDB,Running GDB,,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id3}@anchor{154}@anchor{gnat_ugn/gnat_and_program_execution the-gnat-debugger-gdb}@anchor{155}
+@anchor{gnat_ugn/gnat_and_program_execution id3}@anchor{155}@anchor{gnat_ugn/gnat_and_program_execution the-gnat-debugger-gdb}@anchor{156}
 @subsection The GNAT Debugger GDB
 
 
@@ -18526,7 +18467,7 @@ the debugging information and can respond to user commands to inspect
 variables and more generally to report on the state of execution.
 
 @node Running GDB,Introduction to GDB Commands,The GNAT Debugger GDB,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id4}@anchor{156}@anchor{gnat_ugn/gnat_and_program_execution running-gdb}@anchor{157}
+@anchor{gnat_ugn/gnat_and_program_execution id4}@anchor{157}@anchor{gnat_ugn/gnat_and_program_execution running-gdb}@anchor{158}
 @subsection Running GDB
 
 
@@ -18553,7 +18494,7 @@ exactly as if the debugger were not present. The following section
 describes some of the additional commands that you can give to @code{GDB}.
 
 @node Introduction to GDB Commands,Using Ada Expressions,Running GDB,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id5}@anchor{158}@anchor{gnat_ugn/gnat_and_program_execution introduction-to-gdb-commands}@anchor{159}
+@anchor{gnat_ugn/gnat_and_program_execution id5}@anchor{159}@anchor{gnat_ugn/gnat_and_program_execution introduction-to-gdb-commands}@anchor{15a}
 @subsection Introduction to GDB Commands
 
 
@@ -18767,7 +18708,7 @@ characters need be typed to disambiguate the command (e.g., “br” for
 @code{breakpoint}).
 
 @node Using Ada Expressions,Calling User-Defined Subprograms,Introduction to GDB Commands,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id6}@anchor{15a}@anchor{gnat_ugn/gnat_and_program_execution using-ada-expressions}@anchor{15b}
+@anchor{gnat_ugn/gnat_and_program_execution id6}@anchor{15b}@anchor{gnat_ugn/gnat_and_program_execution using-ada-expressions}@anchor{15c}
 @subsection Using Ada Expressions
 
 
@@ -18805,7 +18746,7 @@ their packages, regardless of context. Where this causes ambiguity,
 For details on the supported Ada syntax, see @cite{Debugging with GDB}.
 
 @node Calling User-Defined Subprograms,Using the next Command in a Function,Using Ada Expressions,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution calling-user-defined-subprograms}@anchor{15c}@anchor{gnat_ugn/gnat_and_program_execution id7}@anchor{15d}
+@anchor{gnat_ugn/gnat_and_program_execution calling-user-defined-subprograms}@anchor{15d}@anchor{gnat_ugn/gnat_and_program_execution id7}@anchor{15e}
 @subsection Calling User-Defined Subprograms
 
 
@@ -18864,7 +18805,7 @@ elements directly from GDB, you can write a callable procedure that prints
 the elements in the format you desire.
 
 @node Using the next Command in a Function,Stopping When Ada Exceptions Are Raised,Calling User-Defined Subprograms,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id8}@anchor{15e}@anchor{gnat_ugn/gnat_and_program_execution using-the-next-command-in-a-function}@anchor{15f}
+@anchor{gnat_ugn/gnat_and_program_execution id8}@anchor{15f}@anchor{gnat_ugn/gnat_and_program_execution using-the-next-command-in-a-function}@anchor{160}
 @subsection Using the `next' Command in a Function
 
 
@@ -18887,7 +18828,7 @@ The value returned is always that from the first return statement
 that was stepped through.
 
 @node Stopping When Ada Exceptions Are Raised,Ada Tasks,Using the next Command in a Function,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id9}@anchor{160}@anchor{gnat_ugn/gnat_and_program_execution stopping-when-ada-exceptions-are-raised}@anchor{161}
+@anchor{gnat_ugn/gnat_and_program_execution id9}@anchor{161}@anchor{gnat_ugn/gnat_and_program_execution stopping-when-ada-exceptions-are-raised}@anchor{162}
 @subsection Stopping When Ada Exceptions Are Raised
 
 
@@ -18944,7 +18885,7 @@ argument, prints out only those exceptions whose name matches `regexp'.
 @geindex Tasks (in gdb)
 
 @node Ada Tasks,Debugging Generic Units,Stopping When Ada Exceptions Are Raised,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution ada-tasks}@anchor{162}@anchor{gnat_ugn/gnat_and_program_execution id10}@anchor{163}
+@anchor{gnat_ugn/gnat_and_program_execution ada-tasks}@anchor{163}@anchor{gnat_ugn/gnat_and_program_execution id10}@anchor{164}
 @subsection Ada Tasks
 
 
@@ -19031,7 +18972,7 @@ see @cite{Debugging with GDB}.
 @geindex Generics
 
 @node Debugging Generic Units,Remote Debugging with gdbserver,Ada Tasks,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution debugging-generic-units}@anchor{164}@anchor{gnat_ugn/gnat_and_program_execution id11}@anchor{165}
+@anchor{gnat_ugn/gnat_and_program_execution debugging-generic-units}@anchor{165}@anchor{gnat_ugn/gnat_and_program_execution id11}@anchor{166}
 @subsection Debugging Generic Units
 
 
@@ -19091,7 +19032,7 @@ variables, as you do for other units.
 @geindex Remote Debugging with gdbserver
 
 @node Remote Debugging with gdbserver,GNAT Abnormal Termination or Failure to Terminate,Debugging Generic Units,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id12}@anchor{166}@anchor{gnat_ugn/gnat_and_program_execution remote-debugging-with-gdbserver}@anchor{167}
+@anchor{gnat_ugn/gnat_and_program_execution id12}@anchor{167}@anchor{gnat_ugn/gnat_and_program_execution remote-debugging-with-gdbserver}@anchor{168}
 @subsection Remote Debugging with gdbserver
 
 
@@ -19150,7 +19091,7 @@ x86_64-linux.
 @geindex Abnormal Termination or Failure to Terminate
 
 @node GNAT Abnormal Termination or Failure to Terminate,Naming Conventions for GNAT Source Files,Remote Debugging with gdbserver,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution gnat-abnormal-termination-or-failure-to-terminate}@anchor{168}@anchor{gnat_ugn/gnat_and_program_execution id13}@anchor{169}
+@anchor{gnat_ugn/gnat_and_program_execution gnat-abnormal-termination-or-failure-to-terminate}@anchor{169}@anchor{gnat_ugn/gnat_and_program_execution id13}@anchor{16a}
 @subsection GNAT Abnormal Termination or Failure to Terminate
 
 
@@ -19205,7 +19146,7 @@ Finally, you can start
 @code{gdb} directly on the @code{gnat1} executable. @code{gnat1} is the
 front-end of GNAT and can be run independently (normally it is just
 called from @code{gcc}). You can use @code{gdb} on @code{gnat1} as you
-would on a C program (but @ref{155,,The GNAT Debugger GDB} for caveats). The
+would on a C program (but @ref{156,,The GNAT Debugger GDB} for caveats). The
 @code{where} command is the first line of attack; the variable
 @code{lineno} (seen by @code{print lineno}), used by the second phase of
 @code{gnat1} and by the @code{gcc} back end, indicates the source line at
@@ -19214,7 +19155,7 @@ the source file.
 @end itemize
 
 @node Naming Conventions for GNAT Source Files,Getting Internal Debugging Information,GNAT Abnormal Termination or Failure to Terminate,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id14}@anchor{16a}@anchor{gnat_ugn/gnat_and_program_execution naming-conventions-for-gnat-source-files}@anchor{16b}
+@anchor{gnat_ugn/gnat_and_program_execution id14}@anchor{16b}@anchor{gnat_ugn/gnat_and_program_execution naming-conventions-for-gnat-source-files}@anchor{16c}
 @subsection Naming Conventions for GNAT Source Files
 
 
@@ -19304,7 +19245,7 @@ the other @code{.c} files are modifications of common @code{gcc} files.
 @end itemize
 
 @node Getting Internal Debugging Information,Stack Traceback,Naming Conventions for GNAT Source Files,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution getting-internal-debugging-information}@anchor{16c}@anchor{gnat_ugn/gnat_and_program_execution id15}@anchor{16d}
+@anchor{gnat_ugn/gnat_and_program_execution getting-internal-debugging-information}@anchor{16d}@anchor{gnat_ugn/gnat_and_program_execution id15}@anchor{16e}
 @subsection Getting Internal Debugging Information
 
 
@@ -19332,7 +19273,7 @@ are replaced with run-time calls.
 @geindex stack unwinding
 
 @node Stack Traceback,Pretty-Printers for the GNAT runtime,Getting Internal Debugging Information,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id16}@anchor{16e}@anchor{gnat_ugn/gnat_and_program_execution stack-traceback}@anchor{16f}
+@anchor{gnat_ugn/gnat_and_program_execution id16}@anchor{16f}@anchor{gnat_ugn/gnat_and_program_execution stack-traceback}@anchor{170}
 @subsection Stack Traceback
 
 
@@ -19361,7 +19302,7 @@ is enabled and no exception is raised during program execution.
 @end menu
 
 @node Non-Symbolic Traceback,Symbolic Traceback,,Stack Traceback
-@anchor{gnat_ugn/gnat_and_program_execution id17}@anchor{170}@anchor{gnat_ugn/gnat_and_program_execution non-symbolic-traceback}@anchor{171}
+@anchor{gnat_ugn/gnat_and_program_execution id17}@anchor{171}@anchor{gnat_ugn/gnat_and_program_execution non-symbolic-traceback}@anchor{172}
 @subsubsection Non-Symbolic Traceback
 
 
@@ -19495,7 +19436,7 @@ $ addr2line -e stb -a -f -p --demangle=gnat 0x401373 0x40138b
 From this traceback, we can see that the exception was raised in @code{stb.adb}
 at line 5, which was reached from a procedure call in @code{stb.adb} at line
 10, and so on. @code{b~std.adb} is the binder file, which contains the
-call to the main program; @ref{112,,Running gnatbind}. The remaining entries are
+call to the main program; @ref{113,,Running gnatbind}. The remaining entries are
 assorted runtime routines. The output will vary from platform to platform.
 
 You can also use @code{GDB} with these traceback addresses to debug
@@ -19683,7 +19624,7 @@ addresses need to be specified in C format, with a leading ‘0x’).
 @geindex symbolic
 
 @node Symbolic Traceback,,Non-Symbolic Traceback,Stack Traceback
-@anchor{gnat_ugn/gnat_and_program_execution id18}@anchor{172}@anchor{gnat_ugn/gnat_and_program_execution symbolic-traceback}@anchor{173}
+@anchor{gnat_ugn/gnat_and_program_execution id18}@anchor{173}@anchor{gnat_ugn/gnat_and_program_execution symbolic-traceback}@anchor{174}
 @subsubsection Symbolic Traceback
 
 
@@ -19802,7 +19743,7 @@ traceback, which will also be printed if an unhandled exception
 terminates the program.
 
 @node Pretty-Printers for the GNAT runtime,,Stack Traceback,Running and Debugging Ada Programs
-@anchor{gnat_ugn/gnat_and_program_execution id19}@anchor{174}@anchor{gnat_ugn/gnat_and_program_execution pretty-printers-for-the-gnat-runtime}@anchor{175}
+@anchor{gnat_ugn/gnat_and_program_execution id19}@anchor{175}@anchor{gnat_ugn/gnat_and_program_execution pretty-printers-for-the-gnat-runtime}@anchor{176}
 @subsection Pretty-Printers for the GNAT runtime
 
 
@@ -19911,7 +19852,7 @@ for more information.
 @geindex Profiling
 
 @node Profiling,Improving Performance,Running and Debugging Ada Programs,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id20}@anchor{176}@anchor{gnat_ugn/gnat_and_program_execution profiling}@anchor{14c}
+@anchor{gnat_ugn/gnat_and_program_execution id20}@anchor{177}@anchor{gnat_ugn/gnat_and_program_execution profiling}@anchor{14d}
 @section Profiling
 
 
@@ -19927,7 +19868,7 @@ This section describes how to use the @code{gprof} profiler tool on Ada programs
 @end menu
 
 @node Profiling an Ada Program with gprof,,,Profiling
-@anchor{gnat_ugn/gnat_and_program_execution id21}@anchor{177}@anchor{gnat_ugn/gnat_and_program_execution profiling-an-ada-program-with-gprof}@anchor{178}
+@anchor{gnat_ugn/gnat_and_program_execution id21}@anchor{178}@anchor{gnat_ugn/gnat_and_program_execution profiling-an-ada-program-with-gprof}@anchor{179}
 @subsection Profiling an Ada Program with gprof
 
 
@@ -19982,7 +19923,7 @@ to interpret the results.
 @end menu
 
 @node Compilation for profiling,Program execution,,Profiling an Ada Program with gprof
-@anchor{gnat_ugn/gnat_and_program_execution compilation-for-profiling}@anchor{179}@anchor{gnat_ugn/gnat_and_program_execution id22}@anchor{17a}
+@anchor{gnat_ugn/gnat_and_program_execution compilation-for-profiling}@anchor{17a}@anchor{gnat_ugn/gnat_and_program_execution id22}@anchor{17b}
 @subsubsection Compilation for profiling
 
 
@@ -20013,7 +19954,7 @@ Note that on Windows, @code{gprof} does not support PIE. You should add
 the @code{-no-pie} switch to the linker flags to disable PIE.
 
 @node Program execution,Running gprof,Compilation for profiling,Profiling an Ada Program with gprof
-@anchor{gnat_ugn/gnat_and_program_execution id23}@anchor{17b}@anchor{gnat_ugn/gnat_and_program_execution program-execution}@anchor{17c}
+@anchor{gnat_ugn/gnat_and_program_execution id23}@anchor{17c}@anchor{gnat_ugn/gnat_and_program_execution program-execution}@anchor{17d}
 @subsubsection Program execution
 
 
@@ -20028,7 +19969,7 @@ generated in the directory where the program was launched from. If this file
 already exists, it will be overwritten by running the program.
 
 @node Running gprof,Interpretation of profiling results,Program execution,Profiling an Ada Program with gprof
-@anchor{gnat_ugn/gnat_and_program_execution id24}@anchor{17d}@anchor{gnat_ugn/gnat_and_program_execution running-gprof}@anchor{17e}
+@anchor{gnat_ugn/gnat_and_program_execution id24}@anchor{17e}@anchor{gnat_ugn/gnat_and_program_execution running-gprof}@anchor{17f}
 @subsubsection Running gprof
 
 
@@ -20140,7 +20081,7 @@ switch.
 @end table
 
 @node Interpretation of profiling results,,Running gprof,Profiling an Ada Program with gprof
-@anchor{gnat_ugn/gnat_and_program_execution id25}@anchor{17f}@anchor{gnat_ugn/gnat_and_program_execution interpretation-of-profiling-results}@anchor{180}
+@anchor{gnat_ugn/gnat_and_program_execution id25}@anchor{180}@anchor{gnat_ugn/gnat_and_program_execution interpretation-of-profiling-results}@anchor{181}
 @subsubsection Interpretation of profiling results
 
 
@@ -20157,7 +20098,7 @@ and the subprograms that it calls. It also provides an estimate of the time
 spent in each of those callers and called subprograms.
 
 @node Improving Performance,Overflow Check Handling in GNAT,Profiling,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id26}@anchor{14d}@anchor{gnat_ugn/gnat_and_program_execution improving-performance}@anchor{181}
+@anchor{gnat_ugn/gnat_and_program_execution id26}@anchor{14e}@anchor{gnat_ugn/gnat_and_program_execution improving-performance}@anchor{182}
 @section Improving Performance
 
 
@@ -20178,7 +20119,7 @@ which can reduce the size of program executables.
 @end menu
 
 @node Performance Considerations,Text_IO Suggestions,,Improving Performance
-@anchor{gnat_ugn/gnat_and_program_execution id27}@anchor{182}@anchor{gnat_ugn/gnat_and_program_execution performance-considerations}@anchor{183}
+@anchor{gnat_ugn/gnat_and_program_execution id27}@anchor{183}@anchor{gnat_ugn/gnat_and_program_execution performance-considerations}@anchor{184}
 @subsection Performance Considerations
 
 
@@ -20239,7 +20180,7 @@ some guidelines on debugging optimized code.
 @end menu
 
 @node Controlling Run-Time Checks,Use of Restrictions,,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution controlling-run-time-checks}@anchor{184}@anchor{gnat_ugn/gnat_and_program_execution id28}@anchor{185}
+@anchor{gnat_ugn/gnat_and_program_execution controlling-run-time-checks}@anchor{185}@anchor{gnat_ugn/gnat_and_program_execution id28}@anchor{186}
 @subsubsection Controlling Run-Time Checks
 
 
@@ -20291,7 +20232,7 @@ remove checks) or @code{pragma Unsuppress} (to add back suppressed
 checks) in your program source.
 
 @node Use of Restrictions,Optimization Levels,Controlling Run-Time Checks,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id29}@anchor{186}@anchor{gnat_ugn/gnat_and_program_execution use-of-restrictions}@anchor{187}
+@anchor{gnat_ugn/gnat_and_program_execution id29}@anchor{187}@anchor{gnat_ugn/gnat_and_program_execution use-of-restrictions}@anchor{188}
 @subsubsection Use of Restrictions
 
 
@@ -20327,7 +20268,7 @@ this, it also means you can write code without worrying about the
 possibility of an immediate abort at any point.
 
 @node Optimization Levels,Debugging Optimized Code,Use of Restrictions,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id30}@anchor{188}@anchor{gnat_ugn/gnat_and_program_execution optimization-levels}@anchor{f0}
+@anchor{gnat_ugn/gnat_and_program_execution id30}@anchor{189}@anchor{gnat_ugn/gnat_and_program_execution optimization-levels}@anchor{f0}
 @subsubsection Optimization Levels
 
 
@@ -20470,10 +20411,10 @@ levels.
 A note regarding the use of @code{-O3}: The use of this optimization level
 ought not to be automatically preferred over that of level @code{-O2},
 since it often results in larger executables which may run more slowly.
-See further discussion of this point in @ref{104,,Inlining of Subprograms}.
+See further discussion of this point in @ref{105,,Inlining of Subprograms}.
 
 @node Debugging Optimized Code,Inlining of Subprograms,Optimization Levels,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution debugging-optimized-code}@anchor{189}@anchor{gnat_ugn/gnat_and_program_execution id31}@anchor{18a}
+@anchor{gnat_ugn/gnat_and_program_execution debugging-optimized-code}@anchor{18a}@anchor{gnat_ugn/gnat_and_program_execution id31}@anchor{18b}
 @subsubsection Debugging Optimized Code
 
 
@@ -20601,7 +20542,7 @@ on the resulting executable,
 which removes both debugging information and global symbols.
 
 @node Inlining of Subprograms,Floating Point Operations,Debugging Optimized Code,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id32}@anchor{18b}@anchor{gnat_ugn/gnat_and_program_execution inlining-of-subprograms}@anchor{104}
+@anchor{gnat_ugn/gnat_and_program_execution id32}@anchor{18c}@anchor{gnat_ugn/gnat_and_program_execution inlining-of-subprograms}@anchor{105}
 @subsubsection Inlining of Subprograms
 
 
@@ -20745,7 +20686,7 @@ indeed you should use @code{-O3} only if tests show that it actually
 improves performance for your program.
 
 @node Floating Point Operations,Vectorization of loops,Inlining of Subprograms,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution floating-point-operations}@anchor{18c}@anchor{gnat_ugn/gnat_and_program_execution id33}@anchor{18d}
+@anchor{gnat_ugn/gnat_and_program_execution floating-point-operations}@anchor{18d}@anchor{gnat_ugn/gnat_and_program_execution id33}@anchor{18e}
 @subsubsection Floating Point Operations
 
 
@@ -20792,7 +20733,7 @@ Note that the ABI has the same form for both floating-point models,
 so you can mix units compiled with and without these switches.
 
 @node Vectorization of loops,Other Optimization Switches,Floating Point Operations,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id34}@anchor{18e}@anchor{gnat_ugn/gnat_and_program_execution vectorization-of-loops}@anchor{18f}
+@anchor{gnat_ugn/gnat_and_program_execution id34}@anchor{18f}@anchor{gnat_ugn/gnat_and_program_execution vectorization-of-loops}@anchor{190}
 @subsubsection Vectorization of loops
 
 
@@ -20948,7 +20889,7 @@ omit the non-vectorized version of the loop as well as the run-time test.
 This is also currently only supported by the GCC back end.
 
 @node Other Optimization Switches,Optimization and Strict Aliasing,Vectorization of loops,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id35}@anchor{190}@anchor{gnat_ugn/gnat_and_program_execution other-optimization-switches}@anchor{191}
+@anchor{gnat_ugn/gnat_and_program_execution id35}@anchor{191}@anchor{gnat_ugn/gnat_and_program_execution other-optimization-switches}@anchor{192}
 @subsubsection Other Optimization Switches
 
 
@@ -20965,7 +20906,7 @@ full details of these switches, see the `Submodel Options' section in
 the `Hardware Models and Configurations' chapter of @cite{Using the GNU Compiler Collection (GCC)}.
 
 @node Optimization and Strict Aliasing,Aliased Variables and Optimization,Other Optimization Switches,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id36}@anchor{192}@anchor{gnat_ugn/gnat_and_program_execution optimization-and-strict-aliasing}@anchor{e7}
+@anchor{gnat_ugn/gnat_and_program_execution id36}@anchor{193}@anchor{gnat_ugn/gnat_and_program_execution optimization-and-strict-aliasing}@anchor{e7}
 @subsubsection Optimization and Strict Aliasing
 
 
@@ -21259,7 +21200,7 @@ review any uses of unchecked conversion, particularly if you are
 getting the warnings described above.
 
 @node Aliased Variables and Optimization,Atomic Variables and Optimization,Optimization and Strict Aliasing,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution aliased-variables-and-optimization}@anchor{193}@anchor{gnat_ugn/gnat_and_program_execution id37}@anchor{194}
+@anchor{gnat_ugn/gnat_and_program_execution aliased-variables-and-optimization}@anchor{194}@anchor{gnat_ugn/gnat_and_program_execution id37}@anchor{195}
 @subsubsection Aliased Variables and Optimization
 
 
@@ -21319,7 +21260,7 @@ avoid code such as this if possible because it’s not portable and may not
 functin as you expect with all compilers.
 
 @node Atomic Variables and Optimization,Passive Task Optimization,Aliased Variables and Optimization,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution atomic-variables-and-optimization}@anchor{195}@anchor{gnat_ugn/gnat_and_program_execution id38}@anchor{196}
+@anchor{gnat_ugn/gnat_and_program_execution atomic-variables-and-optimization}@anchor{196}@anchor{gnat_ugn/gnat_and_program_execution id38}@anchor{197}
 @subsubsection Atomic Variables and Optimization
 
 
@@ -21400,7 +21341,7 @@ such synchronization code is not required, you may find it
 useful to disable it.
 
 @node Passive Task Optimization,,Atomic Variables and Optimization,Performance Considerations
-@anchor{gnat_ugn/gnat_and_program_execution id39}@anchor{197}@anchor{gnat_ugn/gnat_and_program_execution passive-task-optimization}@anchor{198}
+@anchor{gnat_ugn/gnat_and_program_execution id39}@anchor{198}@anchor{gnat_ugn/gnat_and_program_execution passive-task-optimization}@anchor{199}
 @subsubsection Passive Task Optimization
 
 
@@ -21445,7 +21386,7 @@ that typically clients of the tasks who call entries will not have
 to be modified, only the task definitions themselves.
 
 @node Text_IO Suggestions,Reducing Size of Executables with Unused Subprogram/Data Elimination,Performance Considerations,Improving Performance
-@anchor{gnat_ugn/gnat_and_program_execution id40}@anchor{199}@anchor{gnat_ugn/gnat_and_program_execution text-io-suggestions}@anchor{19a}
+@anchor{gnat_ugn/gnat_and_program_execution id40}@anchor{19a}@anchor{gnat_ugn/gnat_and_program_execution text-io-suggestions}@anchor{19b}
 @subsection @code{Text_IO} Suggestions
 
 
@@ -21468,7 +21409,7 @@ of the standard output file or change the standard output file to
 be buffered using @code{Interfaces.C_Streams.setvbuf}.
 
 @node Reducing Size of Executables with Unused Subprogram/Data Elimination,,Text_IO Suggestions,Improving Performance
-@anchor{gnat_ugn/gnat_and_program_execution id41}@anchor{19b}@anchor{gnat_ugn/gnat_and_program_execution reducing-size-of-executables-with-unused-subprogram-data-elimination}@anchor{19c}
+@anchor{gnat_ugn/gnat_and_program_execution id41}@anchor{19c}@anchor{gnat_ugn/gnat_and_program_execution reducing-size-of-executables-with-unused-subprogram-data-elimination}@anchor{19d}
 @subsection Reducing Size of Executables with Unused Subprogram/Data Elimination
 
 
@@ -21485,7 +21426,7 @@ your executable just by setting options at compilation time.
 @end menu
 
 @node About unused subprogram/data elimination,Compilation options,,Reducing Size of Executables with Unused Subprogram/Data Elimination
-@anchor{gnat_ugn/gnat_and_program_execution about-unused-subprogram-data-elimination}@anchor{19d}@anchor{gnat_ugn/gnat_and_program_execution id42}@anchor{19e}
+@anchor{gnat_ugn/gnat_and_program_execution about-unused-subprogram-data-elimination}@anchor{19e}@anchor{gnat_ugn/gnat_and_program_execution id42}@anchor{19f}
 @subsubsection About unused subprogram/data elimination
 
 
@@ -21499,7 +21440,7 @@ architecture and on all cross platforms using the ELF binary file format.
 In both cases, GNU binutils version 2.16 or later are required to enable it.
 
 @node Compilation options,Example of unused subprogram/data elimination,About unused subprogram/data elimination,Reducing Size of Executables with Unused Subprogram/Data Elimination
-@anchor{gnat_ugn/gnat_and_program_execution compilation-options}@anchor{19f}@anchor{gnat_ugn/gnat_and_program_execution id43}@anchor{1a0}
+@anchor{gnat_ugn/gnat_and_program_execution compilation-options}@anchor{1a0}@anchor{gnat_ugn/gnat_and_program_execution id43}@anchor{1a1}
 @subsubsection Compilation options
 
 
@@ -21540,7 +21481,7 @@ eliminate the unused code and data of the GNAT library from your
 executable.
 
 @node Example of unused subprogram/data elimination,,Compilation options,Reducing Size of Executables with Unused Subprogram/Data Elimination
-@anchor{gnat_ugn/gnat_and_program_execution example-of-unused-subprogram-data-elimination}@anchor{1a1}@anchor{gnat_ugn/gnat_and_program_execution id44}@anchor{1a2}
+@anchor{gnat_ugn/gnat_and_program_execution example-of-unused-subprogram-data-elimination}@anchor{1a2}@anchor{gnat_ugn/gnat_and_program_execution id44}@anchor{1a3}
 @subsubsection Example of unused subprogram/data elimination
 
 
@@ -21610,7 +21551,7 @@ appropriate switches.
 @geindex Checks (overflow)
 
 @node Overflow Check Handling in GNAT,Performing Dimensionality Analysis in GNAT,Improving Performance,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id45}@anchor{14e}@anchor{gnat_ugn/gnat_and_program_execution overflow-check-handling-in-gnat}@anchor{1a3}
+@anchor{gnat_ugn/gnat_and_program_execution id45}@anchor{14f}@anchor{gnat_ugn/gnat_and_program_execution overflow-check-handling-in-gnat}@anchor{fa}
 @section Overflow Check Handling in GNAT
 
 
@@ -22062,7 +22003,7 @@ platforms for which @code{Long_Long_Integer} is at least 64-bits (nearly all GNA
 platforms).
 
 @node Performing Dimensionality Analysis in GNAT,Stack Related Facilities,Overflow Check Handling in GNAT,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id51}@anchor{14f}@anchor{gnat_ugn/gnat_and_program_execution performing-dimensionality-analysis-in-gnat}@anchor{1ad}
+@anchor{gnat_ugn/gnat_and_program_execution id51}@anchor{150}@anchor{gnat_ugn/gnat_and_program_execution performing-dimensionality-analysis-in-gnat}@anchor{1ad}
 @section Performing Dimensionality Analysis in GNAT
 
 
@@ -22465,7 +22406,7 @@ package Mks_Numerics is new
 @end quotation
 
 @node Stack Related Facilities,Memory Management Issues,Performing Dimensionality Analysis in GNAT,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id52}@anchor{150}@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{1ae}
+@anchor{gnat_ugn/gnat_and_program_execution id52}@anchor{151}@anchor{gnat_ugn/gnat_and_program_execution stack-related-facilities}@anchor{1ae}
 @section Stack Related Facilities
 
 
@@ -22518,7 +22459,7 @@ If the space is exceeded, a @code{Storage_Error} exception is raised.
 
 For declared tasks, the default stack size is defined by the GNAT runtime,
 whose size may be modified at bind time through the @code{-d} bind switch
-(@ref{114,,Switches for gnatbind}). You can set task specific stack sizes using the
+(@ref{115,,Switches for gnatbind}). You can set task specific stack sizes using the
 @code{Storage_Size} pragma.
 
 For the environment task, the stack size is determined by the operating system.
@@ -22581,7 +22522,7 @@ consistent with that in the file documented above.
 This is not supported by the LLVM back end.
 
 @node Dynamic Stack Usage Analysis,,Static Stack Usage Analysis,Stack Related Facilities
-@anchor{gnat_ugn/gnat_and_program_execution dynamic-stack-usage-analysis}@anchor{117}@anchor{gnat_ugn/gnat_and_program_execution id55}@anchor{1b1}
+@anchor{gnat_ugn/gnat_and_program_execution dynamic-stack-usage-analysis}@anchor{118}@anchor{gnat_ugn/gnat_and_program_execution id55}@anchor{1b1}
 @subsection Dynamic Stack Usage Analysis
 
 
@@ -22666,7 +22607,7 @@ The package @code{GNAT.Task_Stack_Usage} provides facilities to get
 stack-usage reports at run time. See its body for the details.
 
 @node Memory Management Issues,Sanitizers for Ada,Stack Related Facilities,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id56}@anchor{151}@anchor{gnat_ugn/gnat_and_program_execution memory-management-issues}@anchor{1b2}
+@anchor{gnat_ugn/gnat_and_program_execution id56}@anchor{152}@anchor{gnat_ugn/gnat_and_program_execution memory-management-issues}@anchor{1b2}
 @section Memory Management Issues
 
 
@@ -22924,7 +22865,7 @@ Debug Pool info:
 
 
 @node Sanitizers for Ada,,Memory Management Issues,GNAT and Program Execution
-@anchor{gnat_ugn/gnat_and_program_execution id63}@anchor{152}@anchor{gnat_ugn/gnat_and_program_execution sanitizers-for-ada}@anchor{1b7}
+@anchor{gnat_ugn/gnat_and_program_execution id63}@anchor{153}@anchor{gnat_ugn/gnat_and_program_execution sanitizers-for-ada}@anchor{1b7}
 @section Sanitizers for Ada
 
 
@@ -25911,7 +25852,7 @@ Set a breakpoint inside the DLL
 
 At this stage, a breakpoint is set inside the DLL. From there on
 you can use standard @code{GDB} commands to debug the whole program
-(@ref{153,,Running and Debugging Ada Programs}).
+(@ref{154,,Running and Debugging Ada Programs}).
 
 @node Program Built with Foreign Tools and DLL Built with GCC/GNAT,,Program and DLL Both Built with GCC/GNAT,Debugging a DLL
 @anchor{gnat_ugn/platform_specific_information id40}@anchor{217}@anchor{gnat_ugn/platform_specific_information program-built-with-foreign-tools-and-dll-built-with-gcc-gnat}@anchor{218}
@@ -25998,7 +25939,7 @@ Continue the program.
 This runs the program until it reaches the breakpoint that you’ve
 set. From that point, you can use standard @code{GDB} commands to debug
 a program as described in
-(@ref{153,,Running and Debugging Ada Programs}).
+(@ref{154,,Running and Debugging Ada Programs}).
 @end itemize
 
 You can also debug the DLL by attaching @code{GDB} to a running process.
@@ -26068,10 +26009,10 @@ Continue process execution.
 This last step will resume the process execution and stop at
 the breakpoint we have set. From there you can use standard
 @code{GDB} commands to debug a program, as described in
-@ref{153,,Running and Debugging Ada Programs}.
+@ref{154,,Running and Debugging Ada Programs}.
 
 @node Setting Stack Size from gnatlink,Setting Heap Size from gnatlink,Debugging a DLL,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id41}@anchor{219}@anchor{gnat_ugn/platform_specific_information setting-stack-size-from-gnatlink}@anchor{12b}
+@anchor{gnat_ugn/platform_specific_information id41}@anchor{219}@anchor{gnat_ugn/platform_specific_information setting-stack-size-from-gnatlink}@anchor{12c}
 @subsubsection Setting Stack Size from @code{gnatlink}
 
 
@@ -26115,7 +26056,7 @@ because the comma is a separator for this switch.
 @end itemize
 
 @node Setting Heap Size from gnatlink,,Setting Stack Size from gnatlink,Mixed-Language Programming on Windows
-@anchor{gnat_ugn/platform_specific_information id42}@anchor{21a}@anchor{gnat_ugn/platform_specific_information setting-heap-size-from-gnatlink}@anchor{12c}
+@anchor{gnat_ugn/platform_specific_information id42}@anchor{21a}@anchor{gnat_ugn/platform_specific_information setting-heap-size-from-gnatlink}@anchor{12d}
 @subsubsection Setting Heap Size from @code{gnatlink}
 
 
@@ -30329,8 +30270,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d2}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d2}@w{                              }
 
 @c %**end of body
 @bye
