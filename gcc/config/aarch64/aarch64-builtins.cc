@@ -2519,6 +2519,39 @@ aarch64_general_init_builtins (void)
     handle_arm_acle_h ();
 }
 
+/* Function to initialize builtin variadic functions for aarch64-w64-mingw32.
+   In this target, variadic functions are handled differently.
+
+   Implements SUBTARGET_INIT_BULITINS.  */
+
+void
+aarch64_ms_variadic_abi_init_builtins (void)
+{
+  tree ms_va_ref;
+  tree fnvoid_va_end_ms;
+  tree fnvoid_va_start_ms;
+  tree fnvoid_va_copy_ms;
+  tree fnattr_ms = NULL_TREE;
+
+  fnattr_ms = build_tree_list (get_identifier ("ms_abi"), NULL_TREE);
+  ms_va_ref = build_reference_type (ms_va_list_type_node);
+
+  fnvoid_va_end_ms
+    = build_function_type_list (void_type_node, ms_va_ref, NULL_TREE);
+  fnvoid_va_start_ms
+    = build_varargs_function_type_list (void_type_node, ms_va_ref, NULL_TREE);
+  fnvoid_va_copy_ms
+    = build_function_type_list (void_type_node, ms_va_ref, ms_va_list_type_node,
+								NULL_TREE);
+
+  add_builtin_function ("__builtin_ms_va_start", fnvoid_va_start_ms,
+			BUILT_IN_VA_START, BUILT_IN_NORMAL, NULL, fnattr_ms);
+  add_builtin_function ("__builtin_ms_va_end", fnvoid_va_end_ms,
+			BUILT_IN_VA_END, BUILT_IN_NORMAL, NULL, fnattr_ms);
+  add_builtin_function ("__builtin_ms_va_copy", fnvoid_va_copy_ms,
+			BUILT_IN_VA_COPY, BUILT_IN_NORMAL, NULL, fnattr_ms);
+}
+
 /* Implement TARGET_BUILTIN_DECL for the AARCH64_BUILTIN_GENERAL group.  */
 tree
 aarch64_general_builtin_decl (unsigned code, bool)

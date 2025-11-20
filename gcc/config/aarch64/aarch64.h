@@ -1017,6 +1017,9 @@ struct GTY (()) aarch64_frame
      STACK_BOUNDARY.  */
   HOST_WIDE_INT saved_varargs_size;
 
+  /* The same as above except it is the original unaligned stack size.  */
+  HOST_WIDE_INT unaligned_saved_varargs_size;
+
   /* The number of bytes between the bottom of the static frame (the bottom
      of the outgoing arguments) and the bottom of the register save area.
      This value is always a multiple of STACK_BOUNDARY.  */
@@ -1182,6 +1185,11 @@ enum arm_pcs
   ARM_PCS_TLSDESC,		/* For targets of tlsdesc calls.  */
   ARM_PCS_PRESERVE_NONE,	/* PCS variant with no call-preserved
 				   registers except X29.  */
+  ARM_PCS_MS_VARIADIC,	/* PCS variant with no call-preserved
+			   differently.
+			   All composites are treated alike.
+			   SIMD and floating-point registers
+			   aren't used.  */
   ARM_PCS_UNKNOWN
 };
 
@@ -1564,6 +1572,9 @@ extern GTY(()) tree aarch64_fp16_ptr_type_node;
 /* Pointer to the user-visible __bf16 type.  __bf16 itself is generic
    bfloat16_type_node.  Defined in aarch64-builtins.cc.  */
 extern GTY(()) tree aarch64_bf16_ptr_type_node;
+
+/* Windows Arm64 variadic function call ABI specific va_list type node.  */
+extern GTY(()) tree ms_va_list_type_node;
 
 /* The generic unwind code in libgcc does not initialize the frame pointer.
    So in order to unwind a function using a frame pointer, the very first

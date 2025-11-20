@@ -205,7 +205,10 @@ still needed for compilation.  */
 
 #define SUBTARGET_ATTRIBUTE_TABLE \
   { "selectany", 0, 0, true, false, false, false, \
-    mingw_handle_selectany_attribute, NULL }
+    mingw_handle_selectany_attribute, NULL },     \
+  { "ms_abi", 0, 0, false, true, true, true,      \
+    aarch64_handle_ms_abi_attribute, NULL },      \
+  { "ms_abi va_list", 0, 0, false, false, false, false, NULL, NULL }
 
 #undef SUB_TARGET_RECORD_STUB
 #define SUB_TARGET_RECORD_STUB(NAME, DECL) mingw_pe_record_stub((NAME), \

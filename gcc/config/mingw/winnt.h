@@ -20,6 +20,7 @@ http://www.gnu.org/licenses/.  */
 
 #ifndef USED_FOR_TARGET
 
+extern tree aarch64_handle_ms_abi_attribute (tree *, tree, tree, int, bool *);
 extern tree mingw_handle_selectany_attribute (tree *, tree, tree, int, bool *);
 
 extern void mingw_pe_asm_named_section (const char *, unsigned int, tree);
