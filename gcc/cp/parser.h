@@ -233,6 +233,13 @@ struct cp_oacc_routine_data : cp_omp_declare_simd_data {
   tree clauses;
 };
 
+/* Helper data structure for parsing #pragma omp begin declare variant.  */
+struct GTY(()) omp_begin_declare_variant_map_entry {
+  tree variant;		/* The variant decl.  */
+  tree id;		/* Name of base function.  */
+  tree ctx;		/* The context selector associated with the variant.  */
+};
+
 /* The cp_parser structure represents the C++ parser.  */
 
 struct GTY(()) cp_parser {
@@ -458,6 +465,11 @@ struct GTY(()) cp_parser {
      outside that file.  */
   struct omp_metadirective_parse_data * GTY((skip))
     omp_metadirective_state;
+
+  /* Recorded information about functions in OpenMP "begin declare variant"
+     constructs that still need to be registered with their base functions.  */
+  vec<omp_begin_declare_variant_map_entry, va_gc> *
+    omp_begin_declare_variant_map;
 };
 
 /* In parser.cc  */

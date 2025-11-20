@@ -4602,8 +4602,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_INFORMATIONAL, false },
   { "begin", "declare", "target", PRAGMA_OMP_BEGIN,
     C_OMP_DIR_DECLARATIVE, false },
-  /* { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
-    C_OMP_DIR_DECLARATIVE, false }, */
+  { "begin", "declare", "variant", PRAGMA_OMP_BEGIN,
+    C_OMP_DIR_DECLARATIVE, false },
   /* 'begin metadirective' is not yet implemented; however,
      it is only applicable if an end-directive exists, but
      metadirectives are of limited use for declarative directives.  */
@@ -4637,8 +4637,8 @@ const struct c_omp_directive c_omp_directives[] = {
     C_OMP_DIR_INFORMATIONAL, false },
   { "end", "declare", "target", PRAGMA_OMP_END,
     C_OMP_DIR_DECLARATIVE, false },
-  /* { "end", "declare", "variant", PRAGMA_OMP_END,
-    C_OMP_DIR_DECLARATIVE, false }, */
+  { "end", "declare", "variant", PRAGMA_OMP_END,
+    C_OMP_DIR_DECLARATIVE, false },
   /* { "end", "metadirective", nullptr, PRAGMA_OMP_END,
     C_OMP_DIR_META, false },  */
   /* error with at(execution) is C_OMP_DIR_STANDALONE.  */

@@ -9075,6 +9075,21 @@ omp_declare_variant_finalize_one (tree decl, tree attr)
   if (idk == CP_ID_KIND_QUALIFIED)
     variant = finish_call_expr (variant, &args, /*disallow_virtual=*/true,
 				koenig_p, tf_warning_or_error);
+  else if (idk == CP_ID_KIND_NONE
+	   && TREE_CODE (variant) == FUNCTION_DECL
+	   && DECL_IOBJ_MEMBER_FUNCTION_P (variant)
+	   && CLASS_TYPE_P (DECL_CONTEXT (decl)))
+    {
+      tree saved_ccp = current_class_ptr;
+      tree saved_ccr = current_class_ref;
+      current_class_ptr = NULL_TREE;
+      current_class_ref = NULL_TREE;
+      inject_this_parameter (DECL_CONTEXT (decl), TYPE_UNQUALIFIED);
+      variant = finish_call_expr (variant, &args, /*disallow_virtual=*/false,
+				  koenig_p, tf_warning_or_error);
+      current_class_ptr = saved_ccp;
+      current_class_ref = saved_ccr;
+    }
   else
     variant = finish_call_expr (variant, &args, /*disallow_virtual=*/false,
 				koenig_p, tf_warning_or_error);
