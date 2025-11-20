@@ -344,11 +344,19 @@ bool
 callback_edge_useful_p (cgraph_edge *e)
 {
   gcc_checking_assert (e->callback);
-  /* If the edge is not pointing towards a clone, it is no longer useful as its
-     entire purpose is to produce clones of callbacks.  */
-  if (!e->callee->clone_of)
-    return false;
-  return true;
+  /* If the edge is pointing towards a clone, it is useful.  */
+  if (e->callee->clone_of)
+    return true;
+
+  /* If the callee has been produced by icf, the edge is useful, as it will be
+     used to for the redirection.  */
+  if (e->callee->icf_merged)
+    return true;
+
+  /* In case some future pass redirects edges, it should be added as a case
+     here.  */
+
+  return false;
 }
 
 /* Returns the number of arguments the callback function described by ATTR
