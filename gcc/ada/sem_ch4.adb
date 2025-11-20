@@ -6152,9 +6152,22 @@ package body Sem_Ch4 is
       then
          return;
 
-      else
-         --  Invalid prefix
+      --  Invalid prefix. If it is the dereference of a name, we give the same
+      --  error message as would be given if the dereference was implicit.
 
+      elsif Nkind (Pref) = N_Explicit_Dereference
+        and then Is_Entity_Name (Prefix (Pref))
+      then
+         Error_Msg_N
+           ("invalid prefix& in selected component", Prefix (Pref));
+
+         if Is_Incomplete_Type (Etype (Pref)) then
+            Error_Msg_N
+              ("\dereference must not be of an incomplete type "
+               & "(RM 3.10.1)", Prefix (Pref));
+         end if;
+
+      else
          Error_Msg_NE ("invalid prefix in selected component&", N, Sel);
       end if;
 

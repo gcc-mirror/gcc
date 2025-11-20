@@ -8585,8 +8585,7 @@ package body Sem_Ch8 is
                   if Ekind (P_Name) /= E_Function
                     and then not Is_Overloaded (P)
                   then
-                     Error_Msg_NE
-                       ("invalid prefix& in selected component", N, P_Name);
+                     Error_Msg_N ("invalid prefix& in selected component", P);
                      Diagnose_Call;
                      return;
 
@@ -8711,7 +8710,7 @@ package body Sem_Ch8 is
                   end if;
                end;
 
-               Error_Msg_N ("invalid prefix in selected component&", P);
+               Error_Msg_N ("invalid prefix& in selected component", P);
 
                if Is_Incomplete_Type (P_Type)
                  and then Is_Access_Type (Etype (P))
@@ -8722,7 +8721,7 @@ package body Sem_Ch8 is
                end if;
 
             else
-               Error_Msg_N ("invalid prefix in selected component", P);
+               Error_Msg_N ("invalid prefix& in selected component", P);
             end if;
          end if;
       else
