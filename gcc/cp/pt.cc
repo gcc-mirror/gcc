@@ -17500,6 +17500,15 @@ tsubst_baselink (tree baselink, tree object_type,
       bool maybe_incomplete = BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink);
       baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1,
 				  complain);
+      if (!baselink)
+	{
+	  if ((complain & tf_error)
+	      && constructor_name_p (name, qualifying_scope))
+	    error ("cannot call constructor %<%T::%D%> directly",
+		   qualifying_scope, name);
+	  return error_mark_node;
+	}
+
       if (maybe_incomplete)
 	{
 	  /* Filter out from the new lookup set those functions which didn't
@@ -17511,15 +17520,6 @@ tsubst_baselink (tree baselink, tree object_type,
 	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink),
 				   binfo_type);
 	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
-	}
-
-      if (!baselink)
-	{
-	  if ((complain & tf_error)
-	      && constructor_name_p (name, qualifying_scope))
-	    error ("cannot call constructor %<%T::%D%> directly",
-		   qualifying_scope, name);
-	  return error_mark_node;
 	}
 
       fns = BASELINK_FUNCTIONS (baselink);
