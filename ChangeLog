@@ -1,3 +1,7 @@
+2025-11-19  Martin Liska  <martin.liska@hey.com>
+
+	* MAINTAINERS: Add myself to write after approval (DSO).
+
 2025-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (md_exec_prefix): Don't set on Solaris.

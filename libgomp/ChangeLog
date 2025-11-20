@@ -1,3 +1,8 @@
+2025-11-19  Martin Liska  <martin.liska@hey.com>
+
+	* acinclude.m4:: Add detection for wild linker.
+	* configure: Regenerate.
+
 2025-11-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* libgomp.texi (The libgomp ABI): Update MASTER section by

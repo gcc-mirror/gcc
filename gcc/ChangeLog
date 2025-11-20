@@ -1,3 +1,121 @@
+2025-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/122756
+	* gimple-range-fold.cc (range_of_ssa_name_with_loop_info): Do
+	not invoke SCEV if already in a SCEV call.
+
+2025-11-19  Martin Liska  <martin.liska@hey.com>
+
+	* common.opt.urls: Include -fuse-ld=wild
+
+2025-11-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122754
+	* gimple-fold.cc (get_range_strlen_tree): Use POINTER_TYPE_P instead
+	of direct comparing to POINTER_TYPE.
+	* gimple-ssa-sprintf.cc (format_integer): Likewise.
+	* gimple-ssa-warn-access.cc (maybe_warn_nonstring_arg): Likewise.
+	* gimple-ssa-warn-restrict.cc (pass_wrestrict::check_call): Likewise.
+	* tree-ssa-strlen.cc (maybe_set_strlen_range): Likewise.
+	(is_strlen_related_p): Likewise.
+	(strlen_pass::handle_assign): Likewise.
+
+2025-11-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-dce.cc (simple_dce_from_worklist): Use FOR_EACH_IMM_USE_FAST instead of
+	FOR_EACH_IMM_USE_STMT.
+
+2025-11-19  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122763
+	* config/aarch64/aarch64.cc (aarch64_layout_arg): Return NULL_RTX for
+	arguments of size 0.
+	(aarch64_function_arg_advance): Remove assert.
+
+2025-11-19  Alfie Richards  <alfie.richards@arm.com>
+
+	* doc/extend.texi (preserve_none): Minor grammar fix.
+
+2025-11-19  Martin Liska  <martin.liska@hey.com>
+
+	* collect2.cc (main): Add wild linker to -fuse-ld.
+	* common.opt: Likewise.
+	* configure: Regenerate.
+	* configure.ac: Add detection for wild linker.
+	* doc/invoke.texi: Document -fuse-ld=wild.
+	* gcc.cc (driver_handle_option): Support -fuse-ld=wild.
+	* opts.cc (common_handle_option): Likewise.
+
+2025-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64-sve.md (vec_extract<mode><v128>,
+	vec_extract<mode><v64>): New.
+	* config/aarch64/iterators.md (V64, v64): New.
+	* config/aarch64/predicates.md (const0_to_1_operand): New.
+
+2025-11-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv-string.cc (riscv_expand_block_move_scalar):
+	Fix signed vs unsigned warning.
+
+2025-11-19  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_load): Make dr_chain
+	an auto_vec, move down to where we use it to avoid creating
+	it twice.
+
+2025-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122722
+	* tree-vect-slp.cc (vect_analyze_slp_reductions): New
+	function, split out from vect_analyze_slp.  Try SLP
+	sub-groups.
+	(vect_analyze_slp_reduction_group): New helper.
+
+2025-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122747
+	* tree-vect-stmts.cc (vectorizable_call): Handle reduction
+	operations that are already conditional.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* tree-ssanames.cc (get_known_nonzero_bits): Fix a pasto in
+	function comment, this function returns 0 if unknown rather
+	than -1.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122184
+	* tree-ssa-live.cc (remove_unused_locals): Drop .DEFERRED_INIT
+	calls with MEM_REF lhs based on uninitialized SSA_NAME.
+
+2025-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* genmultilib: Check $enable_multilib to define DISABLE_MULTILIB.
+
+2025-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h: Check USE_GLD instead of USE_GNU_LD.
+
+2025-11-19  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/119130
+	* config/rs6000/altivec.md (convert_4f32_8f16): Use same operand
+	order for both endian format.
+
+2025-11-19  Haochen Jiang  <haochen.jiang@intel.com>
+
+	* common/config/i386/i386-common.cc: Adjust to P_PROC_AVX10_1.
+	* config/i386/driver-i386.cc (host_detect_local_cpu):
+	Move Nova Lake to under AVX512 part.
+	* config/i386/i386.h (PTA_NOVALAKE): Add AVX10.1, AVX10.2,
+	APX_F and MOVRS.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Set to 8.
+	* config/i386/x86-tune.def (X86_TUNE_AVX256_OPTIMAL): Add Nova
+	Lake.
+	* doc/invoke.texi: Adjust documentation.
+
 2025-11-18  Edwin Lu  <ewlu@rivosinc.com>
 
 	* config/riscv/riscv-string.cc (riscv_expand_block_move_scalar):

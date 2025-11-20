@@ -1,3 +1,8 @@
+2025-11-19  Martin Liska  <martin.liska@hey.com>
+
+	* acinclude.m4: Add detection for wild linker.
+	* configure: Regenerate.
+
 2025-11-13  Xi Ruoyao  <xry111@xry111.site>
 
 	* configure.ac (ARCH_LOONGARCH): New AM_CONDITIONAL.

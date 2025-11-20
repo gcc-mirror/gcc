@@ -1,3 +1,118 @@
+2025-11-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/122756
+	* gcc.dg/pr122756.c: New.
+
+2025-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119580
+	* g++.dg/template/crash106.C: Adjust expected diagnostics.
+	* g++.dg/template/crash112.C: Likewise.
+	* g++.dg/template/dependent-args1.C: Likewise.
+	* g++.dg/cpp0x/pr119580.C: New test.
+
+2025-11-19  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122754
+	* g++.dg/tree-ssa/string-strlen-1.C: New test.
+
+2025-11-19  Alfie Richards  <alfie.richards@arm.com>
+
+	PR target/122763
+	* gcc.target/aarch64/pr122763.c: New test.
+
+2025-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* g++.dg/cpp0x/noexcept91.C: New test.
+
+2025-11-19  Tamar Christina  <tamar.christina@arm.com>
+
+	* gcc.target/aarch64/simd/fold_to_highpart_6.c: Update codegen.
+	* gcc.target/aarch64/sve/fold_to_highpart_1.c: New test.
+	* gcc.target/aarch64/sve/fold_to_highpart_2.c: New test.
+
+2025-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122722
+	* gcc.dg/vect/slp-reduc-14.c: New testcase.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/121519
+	* gcc.dg/pr121519.c: Add testcase for already fixed PR.
+
+2025-11-19  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_f16.c: Add missing
+	extern "C". Remove dg-skip-if.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_f32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u16.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u32.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u8.c: Likewise.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_s64.c: Likewise. Add
+	check-function-bodies.
+	* gcc.target/arm/mve/intrinsics/vgetq_lane_u64.c: Likewise.
+
+2025-11-19  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122747
+	* gcc.target/i386/vect-epilogues-10.c: New testcase.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/DRs/dr1670-1.C: New test.
+	* g++.dg/DRs/dr1670-2.C: New test.
+	* g++.dg/DRs/dr1670-3.C: New test.
+	* g++.dg/modules/auto-1_a.H: Use dg-options instead of
+	dg-additional-options.
+	* g++.dg/modules/auto-1_b.C: Likewise.
+	* g++.dg/cpp1y/auto-fn12.C: Likewise.
+	* g++.dg/cpp1y/auto-fn13.C: Add empty dg-options.
+	* g++.dg/cpp1y/auto-fn22.C: Likewise.
+	* g++.dg/cpp1y/constexpr-assert2.C: Likewise.
+	* g++.dg/cpp1y/auto-fn44.C: Add dg-options -Wpedantic and expect
+	further warnings.
+	* g++.dg/cpp1y/auto-fn50.C: Likewise.
+	* g++.dg/cpp0x/auto9.C: Expect two errors always rather than just
+	for C++11.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/122671
+	* g++.dg/cpp26/constexpr-eh17.C: New test.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122184
+	* g++.dg/opt/pr122184-1.C: New test.
+	* g++.dg/opt/pr122184-2.C: New test.
+
+2025-11-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* c-c++-common/asan/pr59063-2.c: Enable on Solaris.
+
+2025-11-19  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR target/119130
+	* gcc.target/powerpc/builtins-1-p9-runnable.c: Use same expected
+	results for both endian format.
+
+2025-11-19  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/32365
+	* gfortran.dg/goacc/routine-1.f90: Adjust dg-error format.
+	* gfortran.dg/goacc/routine-2.f90: Adjust dg-error format.
+	* gfortran.dg/gomp/declare-variant-17.f90: Adjust dg-error format.
+	* gfortran.dg/gomp/order-2.f90: Adjust dg-error format.
+	* gfortran.dg/gomp/pr78026.f03: Adjust dg-error format.
+	* gfortran.dg/gomp/requires-4.f90: Adjust dg-error format.
+	* gfortran.dg/gomp/requires-6.f90: Adjust dg-error format.
+
 2025-11-18  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	* gcc.target/arm/mve/intrinsics/vsetq_lane_f16_bounds.c: New test.

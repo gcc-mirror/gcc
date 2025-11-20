@@ -1,3 +1,22 @@
+2025-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119580
+	* pt.cc (tsubst_baselink): Return error_mark_node if
+	tsubst_template_args returned error_mark_node.
+
+2025-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* pt.cc (dependentish_scope_p): Return true for the current
+	instantiation from within an immediately parsed noexcept-spec.
+
+2025-11-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_conversion_type_id): Implement C++ DR1670
+	- auto as conversion-type-id.  Pedwarn on conversion operators
+	with placeholder return type.
+
 2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR c++/122677
