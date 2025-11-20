@@ -17627,19 +17627,6 @@ tsubst_baselink (tree baselink, tree object_type,
       bool maybe_incomplete = BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink);
       baselink = lookup_fnfields (qualifying_scope, name, /*protect=*/1,
 				  complain);
-      if (maybe_incomplete)
-	{
-	  /* Filter out from the new lookup set those functions which didn't
-	     appear in the original lookup set (in a less specialized form).
-	     This is needed to preserve the consistency of member lookup
-	     performed in an incomplete-class context, within which
-	     later-declared members ought to remain invisible.  */
-	  BASELINK_FUNCTIONS (baselink)
-	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink),
-				   binfo_type);
-	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
-	}
-
       if (!baselink)
 	{
 	  if (complain & tf_error)
@@ -17655,6 +17642,19 @@ tsubst_baselink (tree baselink, tree object_type,
 		       qualifying_scope, name);
 	    }
 	  return error_mark_node;
+	}
+
+      if (maybe_incomplete)
+	{
+	  /* Filter out from the new lookup set those functions which didn't
+	     appear in the original lookup set (in a less specialized form).
+	     This is needed to preserve the consistency of member lookup
+	     performed in an incomplete-class context, within which
+	     later-declared members ought to remain invisible.  */
+	  BASELINK_FUNCTIONS (baselink)
+	    = filter_memfn_lookup (fns, BASELINK_FUNCTIONS (baselink),
+				   binfo_type);
+	  BASELINK_FUNCTIONS_MAYBE_INCOMPLETE_P (baselink) = true;
 	}
 
       fns = BASELINK_FUNCTIONS (baselink);
