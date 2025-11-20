@@ -25782,7 +25782,7 @@ package body Sem_Prag is
             Add_Contract_Item (N, Spec_Id);
 
             --  A function with side effects cannot override a function without
-            --  side effects (SPARK RM 7.1.2(16)). Overriding checks are
+            --  side effects (SPARK RM 7.1.2(15)). Overriding checks are
             --  usually performed in New_Overloaded_Entity, however at
             --  that point the pragma has not been processed yet.
 
@@ -28592,7 +28592,7 @@ package body Sem_Prag is
             Analyze_If_Present (Pragma_SPARK_Mode);
 
             --  A volatile function cannot override a non-volatile function
-            --  (SPARK RM 7.1.2(15)). Overriding checks are usually performed
+            --  (SPARK RM 7.1.2(14)). Overriding checks are usually performed
             --  in New_Overloaded_Entity, however at that point the pragma has
             --  not been processed yet.
 
