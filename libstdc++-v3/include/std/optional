@@ -1855,8 +1855,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator==(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
     -> __optional_eq_t<_Tp, _Up>
     {
-      return static_cast<bool>(__lhs) == static_cast<bool>(__rhs)
-	     && (!__lhs || *__lhs == *__rhs);
+      if (__lhs.has_value() != __rhs.has_value())
+	return false;
+      if (!__lhs.has_value())
+	return true;
+      return *__lhs == *__rhs;
     }
 
   template<typename _Tp, typename _Up>
@@ -1864,8 +1867,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator!=(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
     -> __optional_ne_t<_Tp, _Up>
     {
-      return static_cast<bool>(__lhs) != static_cast<bool>(__rhs)
-	|| (static_cast<bool>(__lhs) && *__lhs != *__rhs);
+      if (__lhs.has_value() != __rhs.has_value())
+	return true;
+      if (!__lhs.has_value())
+	return false;
+      return *__lhs != *__rhs;
     }
 
   template<typename _Tp, typename _Up>
@@ -1873,7 +1879,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
     -> __optional_lt_t<_Tp, _Up>
     {
-      return static_cast<bool>(__rhs) && (!__lhs || *__lhs < *__rhs);
+      if (!__rhs.has_value())
+	return false;
+      if (!__lhs.has_value())
+	return true;
+      return *__lhs < *__rhs;
     }
 
   template<typename _Tp, typename _Up>
@@ -1881,7 +1891,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
     -> __optional_gt_t<_Tp, _Up>
     {
-      return static_cast<bool>(__lhs) && (!__rhs || *__lhs > *__rhs);
+      if (!__lhs.has_value())
+	return false;
+      if (!__rhs.has_value())
+	return true;
+      return *__lhs > *__rhs;
     }
 
   template<typename _Tp, typename _Up>
@@ -1889,7 +1903,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator<=(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
     -> __optional_le_t<_Tp, _Up>
     {
-      return !__lhs || (static_cast<bool>(__rhs) && *__lhs <= *__rhs);
+      if (!__lhs.has_value())
+	return true;
+      if (!__rhs.has_value())
+	return false;
+      return *__lhs <= *__rhs;
     }
 
   template<typename _Tp, typename _Up>
@@ -1897,7 +1915,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     operator>=(const optional<_Tp>& __lhs, const optional<_Up>& __rhs)
     -> __optional_ge_t<_Tp, _Up>
     {
-      return !__rhs || (static_cast<bool>(__lhs) && *__lhs >= *__rhs);
+      if (!__rhs.has_value())
+	return true;
+      if (!__lhs.has_value())
+	return false;
+      return *__lhs >= *__rhs;
     }
 
 #ifdef __cpp_lib_three_way_comparison
@@ -1994,84 +2016,132 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr auto
     operator== [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_eq_t<_Tp, _Up>
-    { return __lhs && *__lhs == __rhs; }
+    {
+      if (__lhs.has_value())
+	return *__lhs == __rhs;
+      return false;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
     operator== [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
     -> __optional_eq_t<_Tp, _Up>
-    { return __rhs && __lhs == *__rhs; }
+    {
+      if (__rhs.has_value())
+	return __lhs == *__rhs;
+      return false;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
     operator!= [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_ne_t<_Tp, _Up>
-    { return !__lhs || *__lhs != __rhs; }
+    {
+      if (__lhs.has_value())
+	return *__lhs != __rhs;
+      return true;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
     operator!= [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
     -> __optional_ne_t<_Tp, _Up>
-    { return !__rhs || __lhs != *__rhs; }
+    {
+      if (__rhs.has_value())
+	return __lhs != *__rhs;
+      return true;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
     operator< [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_lt_t<_Tp, _Up>
-    { return !__lhs || *__lhs < __rhs; }
+    {
+      if (__lhs.has_value())
+	return *__lhs < __rhs;
+      return true;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
     operator< [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
     -> __optional_lt_t<_Tp, _Up>
-    { return __rhs && __lhs < *__rhs; }
+    {
+      if (__rhs.has_value())
+	return __lhs < *__rhs;
+      return false;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
     operator> [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_gt_t<_Tp, _Up>
-    { return __lhs && *__lhs > __rhs; }
+    {
+      if (__lhs.has_value())
+	return *__lhs > __rhs;
+      return false;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
     operator> [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
     -> __optional_gt_t<_Tp, _Up>
-    { return !__rhs || __lhs > *__rhs; }
+    {
+      if (__rhs.has_value())
+	return __lhs > *__rhs;
+      return true;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
     operator<= [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_le_t<_Tp, _Up>
-    { return !__lhs || *__lhs <= __rhs; }
+    {
+      if (__lhs.has_value())
+	return *__lhs <= __rhs;
+      return true;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
     operator<= [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
     -> __optional_le_t<_Tp, _Up>
-    { return __rhs && __lhs <= *__rhs; }
+    {
+      if (__rhs.has_value())
+	return __lhs <= *__rhs;
+      return false;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Up)
     constexpr auto
     operator>= [[nodiscard]] (const optional<_Tp>& __lhs, const _Up& __rhs)
     -> __optional_ge_t<_Tp, _Up>
-    { return __lhs && *__lhs >= __rhs; }
+    {
+      if (__lhs.has_value())
+	return *__lhs >= __rhs;
+      return false;
+    }
 
   template<typename _Tp, typename _Up>
     _REQUIRES_NOT_OPTIONAL(_Tp)
     constexpr auto
     operator>= [[nodiscard]] (const _Tp& __lhs, const optional<_Up>& __rhs)
     -> __optional_ge_t<_Tp, _Up>
-    { return !__rhs || __lhs >= *__rhs; }
+    {
+      if (__rhs.has_value())
+	return __lhs >= *__rhs;
+      return true;
+    }
 
 #ifdef __cpp_lib_three_way_comparison
   // _GLIBCXX_RESOLVE_LIB_DEFECTS
