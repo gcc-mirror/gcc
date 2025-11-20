@@ -291,8 +291,9 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{omp_all_memory} reserved locator @tab Y @tab
 @item @emph{target_device trait} in OpenMP Context @tab Y
 @item @code{target_device} selector set in context selectors @tab Y @tab
-@item C/C++'s @code{declare variant} directive: elision support of
-      preprocessed code @tab N @tab
+@item C/C++'s delimited @code{declare variant} directive: support elision of
+      preprocessed code and interpret enclosed function definitions
+      as variant functions  @tab Y @tab
 @item @code{declare variant}: new clauses @code{adjust_args} and
       @code{append_args} @tab Y @tab
 @item @code{dispatch} construct @tab Y @tab
