@@ -885,9 +885,10 @@ cgraph_add_edge_to_call_site_hash (cgraph_edge *e)
       gcc_assert (edge->speculative || edge->has_callback);
       if (edge->has_callback)
 	/* If the slot is already occupied, then the hashed edge is the
-	   callback-carrying edge, which is desired behavior, so we can safely
-	   return.  */
-	gcc_checking_assert (edge == e);
+	   callback-carrying edge, which is desired behavior.  In some cases,
+	   the callback flag of E is not set yet and so the early exit above is
+	   not taken.  */
+	return;
       if (e->callee && (!e->prev_callee
 			|| !e->prev_callee->speculative
 			|| e->prev_callee->call_stmt != e->call_stmt))
