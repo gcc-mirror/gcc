@@ -1293,6 +1293,7 @@ aarch64-*-mingw*)
 	tm_file="${tm_file} mingw/winnt.h"
 	tm_file="${tm_file} mingw/winnt-dll.h"
 	tmake_file="${tmake_file} aarch64/t-aarch64"
+        native_system_header_dir=/mingw/include
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/mingw/winnt.cc"
 	target_gtfiles="$target_gtfiles \$(srcdir)/config/mingw/winnt-dll.cc"
 	extra_options="${extra_options} mingw/cygming.opt mingw/mingw.opt"
