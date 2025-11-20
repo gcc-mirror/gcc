@@ -607,7 +607,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       && (!flag_non_call_exceptions || tree_expr_nonzero_p (@1)))
   (if (TYPE_UNSIGNED (type))
    (convert (eq:boolean_type_node @1 { build_one_cst (type); }))
-   (if (!canonicalize_math_p ())
+   (if (fold_before_rtl_expansion_p ())
     (with { tree utype = unsigned_type_for (type); }
      (cond (le (plus (convert:utype @1) { build_one_cst (utype); })
 		{ build_int_cst (utype, 2); })
@@ -2682,7 +2682,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (convert (bit_and (bit_not @1) @0))))
 
 /* (m1 CMP m2) * d -> (m1 CMP m2) ? d : 0  */
-(if (!canonicalize_math_p ())
+(if (fold_before_rtl_expansion_p ())
  (for cmp (tcc_comparison)
   (simplify
    (mult:c (convert (cmp@0 @1 @2)) @3)
