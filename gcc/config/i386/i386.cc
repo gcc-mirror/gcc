@@ -25103,7 +25103,7 @@ i386_solaris_elf_named_section (const char *name, unsigned int flags,
       return;
     }
 
-#ifndef USE_GAS
+#if !HAVE_GNU_AS
   if (HAVE_COMDAT_GROUP && flags & SECTION_LINKONCE)
     {
       solaris_elf_asm_comdat_section (name, flags, decl);

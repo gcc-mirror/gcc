@@ -62,7 +62,7 @@ do {							\
 #undef  ASM_EXTRA_SPEC
 #define ASM_EXTRA_SPEC "%{milp32:-milp32} %{mlp64:-mlp64}"
 
-#ifndef USE_GAS
+#ifndef HAVE_GNU_AS
 #define AS_NEEDS_DASH_FOR_PIPED_INPUT
 #endif
 

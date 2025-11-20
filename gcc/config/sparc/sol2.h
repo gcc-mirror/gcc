@@ -64,7 +64,7 @@ along with GCC; see the file COPYING3.  If not see
 #define AS_SPARC32_FLAG ""
 #define AS_SPARC64_FLAG ""
 
-#ifndef USE_GAS
+#if !HAVE_GNU_AS
 #undef ASM_ARCH32_SPEC
 #define ASM_ARCH32_SPEC "-m32"
 #undef ASM_ARCH64_SPEC
@@ -307,7 +307,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 %{!mcpu*:%(asm_cpu_default)} \
 "
 
-#ifdef USE_GLD
+#if HAVE_GNU_LD
 #define ARCH32_EMULATION "elf32_sparc_sol2"
 #define ARCH64_EMULATION "elf64_sparc_sol2"
 #endif
@@ -326,7 +326,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Register the Solaris-specific #pragma directives.  */
 #define REGISTER_TARGET_PRAGMAS() solaris_register_pragmas ()
 
-#if defined(USE_GAS) && defined(HAVE_AS_TLS)
+#if HAVE_GNU_AS && defined(HAVE_AS_TLS)
 /* Use GNU extensions to TLS support.  */
 #undef TARGET_SUN_TLS
 #undef TARGET_GNU_TLS
@@ -405,7 +405,7 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
     }									\
   while (0)
 
-#ifndef USE_GAS
+#if !HAVE_GNU_AS
 /* This is how to output an assembler line that says to advance
    the location counter to a multiple of 2**LOG bytes using the
    NOP instruction as padding.  The filler pattern doesn't work
@@ -421,10 +421,10 @@ extern const char *host_detect_local_cpu (int argc, const char **argv);
 /* Sun as requires doublequoted section names on SPARC.  While GNU as
    supports that, too, we prefer the standard variant.  */
 #define SECTION_NAME_FORMAT	"\"%s\""
-#endif /* !USE_GAS */
+#endif /* !HAVE_GNU_AS */
 
 /* Undefine this so that attribute((init_priority)) works with GNU ld.  */
-#ifdef USE_GLD
+#if HAVE_GNU_LD
 #undef CTORS_SECTION_ASM_OP
 #undef DTORS_SECTION_ASM_OP
 #endif

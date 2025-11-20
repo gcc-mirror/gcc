@@ -60,7 +60,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* GNU as understands --32 and --64, but the native Solaris
    assembler requires -xarch=generic or -xarch=generic64 instead.  */
-#ifdef USE_GAS
+#if HAVE_GNU_AS
 #define ASM_CPU32_DEFAULT_SPEC "--32"
 #define ASM_CPU64_DEFAULT_SPEC "--64"
 #else
@@ -90,7 +90,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #define ARCH64_SUBDIR "amd64"
 
-#ifdef USE_GLD
+#if HAVE_GNU_LD
 #define ARCH32_EMULATION "elf_i386_sol2"
 #define ARCH64_EMULATION "elf_x86_64_sol2"
 #endif
@@ -149,7 +149,7 @@ along with GCC; see the file COPYING3.  If not see
       }							\
   } while (0)
 
-#ifndef USE_GAS
+#if !HAVE_GNU_AS
 /* The Sun assembler uses .tcomm for TLS common sections.  */
 #define TLS_COMMON_ASM_OP ".tcomm"
 
@@ -179,7 +179,7 @@ along with GCC; see the file COPYING3.  If not see
       ASM_OUTPUT_LABEL (FILE, NAME);				\
     }								\
   while (0)
-#endif /* !USE_GAS */
+#endif /* !HAVE_GNU_AS */
 
 /* As in sparc/sol2.h, override the default from i386/x86-64.h to work
    around Sun as TLS bug.  */
@@ -210,13 +210,13 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Sun as requires "h" flag for large sections, GNU as can do without, but
    accepts "l".  */
-#ifdef USE_GAS
+#if HAVE_GNU_AS
 #define MACH_DEP_SECTION_ASM_FLAG 'l'
 #else
 #define MACH_DEP_SECTION_ASM_FLAG 'h'
 #endif
 
-#ifndef USE_GAS
+#if !HAVE_GNU_AS
 /* Emit COMDAT group signature symbols for Sun as.  */
 #undef TARGET_ASM_FILE_END
 #define TARGET_ASM_FILE_END solaris_file_end
@@ -224,12 +224,12 @@ along with GCC; see the file COPYING3.  If not see
 
 /* Unlike GNU ld, Sun ld doesn't coalesce .ctors.N/.dtors.N sections, so
    inhibit their creation.  Also cf. sparc/sysv4.h.  */
-#ifndef USE_GLD
+#if !HAVE_GNU_LD
 #define CTORS_SECTION_ASM_OP	"\t.section\t.ctors, \"aw\""
 #define DTORS_SECTION_ASM_OP	"\t.section\t.dtors, \"aw\""
 #endif
 
-#ifndef USE_GAS
+#if !HAVE_GNU_AS
 #define LARGECOMM_SECTION_ASM_OP "\t.lbcomm\t"
 #endif
 
