@@ -164,6 +164,9 @@ vec<c_omp_declare_target_attr, va_gc> *current_omp_declare_target_attribute;
    we are in.  */
 vec<c_omp_begin_assumes_data, va_gc> *current_omp_begin_assumes;
 
+/* Vector of "omp begin/end declare variant" blocks we are in.  */
+vec<c_omp_declare_variant_attr, va_gc> *current_omp_declare_variant_attribute;
+
 /* Vector of loop names with C_DECL_LOOP_NAME or C_DECL_SWITCH_NAME marked
    LABEL_DECL as the last and canonical for each loop or switch.  */
 static vec<tree> loop_names;

@@ -286,6 +286,19 @@ struct GTY(()) omp_attribute_pragma_state
   unsigned int save_tokens_avail;
 };
 
+/* Holds data for deferred lookup of base functions for OpenMP
+   "begin declare variant", which are permitted to be declared after
+   the variant.  */
+struct GTY(()) omp_begin_declare_variant_map_entry {
+  tree variant;		/* The variant decl.  */
+  tree id;		/* Name of base function.  */
+  tree ctx;		/* The context selector associated with the variant.  */
+};
+vec<omp_begin_declare_variant_map_entry, va_gc> *omp_begin_declare_variant_map;
+
+static tree omp_start_variant_function (c_declarator *, tree);
+static void omp_finish_variant_function (tree, tree, tree);
+
 /* Return a pointer to the Nth token in PARSERs tokens_buf.  */
 
 c_token *
@@ -1521,6 +1534,55 @@ c_parser_skip_to_pragma_eol (c_parser *parser, bool error_if_not_eol = true)
   parser->error = false;
 }
 
+/* Skip tokens up to and including "#pragma omp end declare variant".
+   Properly handle nested "#pragma omp begin declare variant" pragmas.  */
+static void
+c_parser_skip_to_pragma_omp_end_declare_variant (c_parser *parser)
+{
+  for (int depth = 0; depth >= 0; )
+    {
+      c_token *token = c_parser_peek_token (parser);
+
+      switch (token->type)
+	{
+	case CPP_PRAGMA_EOL:
+	  if (!parser->in_pragma)
+	    break;
+	  /* FALLTHRU */
+	case CPP_EOF:
+	  /* If we've run out of tokens, stop.  */
+	  return;
+
+	case CPP_PRAGMA:
+	  if ((token->pragma_kind == PRAGMA_OMP_BEGIN
+	       || token->pragma_kind == PRAGMA_OMP_END)
+	      && c_parser_peek_nth_token (parser, 2)->type == CPP_NAME
+	      && c_parser_peek_nth_token (parser, 3)->type == CPP_NAME)
+	    {
+	      tree id1 = c_parser_peek_nth_token (parser, 2)->value;
+	      tree id2 = c_parser_peek_nth_token (parser, 3)->value;
+	      if (strcmp (IDENTIFIER_POINTER (id1), "declare") == 0
+		  && strcmp (IDENTIFIER_POINTER (id2), "variant") == 0)
+		{
+		  if (token->pragma_kind == PRAGMA_OMP_BEGIN)
+		    depth++;
+		  else
+		    depth--;
+		}
+	    }
+	  c_parser_consume_pragma (parser);
+	  c_parser_skip_to_pragma_eol (parser, false);
+	  continue;
+
+	default:
+	  break;
+	}
+
+      /* Consume the token.  */
+      c_parser_consume_token (parser);
+    }
+}
+
 /* Skip tokens until we have consumed an entire block, or until we
    have consumed a non-nested ';'.  */
 
@@ -2051,6 +2113,21 @@ c_parser_translation_unit (c_parser *parser)
 	error ("%qs without corresponding %qs",
 	       "#pragma omp begin assumes", "#pragma omp end assumes");
       vec_safe_truncate (current_omp_begin_assumes, 0);
+    }
+  if (vec_safe_length (current_omp_declare_variant_attribute))
+    {
+      if (!errorcount)
+	error ("%<omp begin declare variant%> without corresponding "
+	       "%<omp end declare variant%>");
+      vec_safe_truncate (current_omp_declare_variant_attribute, 0);
+    }
+  if (vec_safe_length (omp_begin_declare_variant_map))
+    {
+      unsigned int i;
+      omp_begin_declare_variant_map_entry *e;
+      FOR_EACH_VEC_ELT (*omp_begin_declare_variant_map, i, e)
+	omp_finish_variant_function (e->variant, e->id, e->ctx);
+      vec_safe_truncate (omp_begin_declare_variant_map, 0);
     }
 
 #if ENABLE_ANALYZER
@@ -3130,6 +3207,21 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
 	  pedwarn (here, OPT_Wpedantic, "ISO C forbids nested functions");
 	  c_push_function_context ();
 	}
+
+      /* If we're in an OpenMP "begin declare variant" block, the
+	 name in the declarator refers to the base function.  We need
+	 to save that and modify the declarator to have the mangled
+	 name for the variant function instead.  */
+      tree dv_base = NULL_TREE;
+      tree dv_ctx = NULL_TREE;
+      if (!vec_safe_is_empty (current_omp_declare_variant_attribute))
+	{
+	  c_omp_declare_variant_attr a
+	    = current_omp_declare_variant_attribute->last ();
+	  dv_ctx = copy_list (a.selector);
+	  dv_base = omp_start_variant_function (declarator, dv_ctx);
+	}
+
       if (!start_function (specs, declarator, all_prefix_attrs))
 	{
 	  /* At this point we've consumed:
@@ -3207,6 +3299,16 @@ c_parser_declaration_or_fndef (c_parser *parser, bool fndef_ok,
       DECL_STRUCT_FUNCTION (current_function_decl)->function_start_locus
 	= startloc;
       location_t endloc = startloc;
+      /* If this function was in a "begin declare variant" block,
+	 remember it.  We will associate it with the base function at
+	 the end of processing the translation unit, since it is permitted
+	 for the variant definition to appear before the base declaration.  */
+      if (dv_base && current_function_decl != error_mark_node)
+	{
+	  omp_begin_declare_variant_map_entry e
+	    = { current_function_decl, dv_base, dv_ctx };
+	  vec_safe_push (omp_begin_declare_variant_map, e);
+	}
 
       /* If the definition was marked with __RTL, use the RTL parser now,
 	 consuming the function body.  */
@@ -27445,6 +27547,20 @@ c_finish_omp_declare_variant (c_parser *parser, tree fndecl, tree parms)
 	    goto fail;
 	  ctx = omp_check_context_selector (match_loc, ctx,
 					    OMP_CTX_DECLARE_VARIANT);
+
+	  /* The OpenMP spec says the merging rules for enclosing
+	     "begin declare variant" contexts apply to "declare variant
+	     directives" -- the term it uses to refer to both directive
+	     forms.  */
+	  if (ctx != error_mark_node
+	      && !vec_safe_is_empty (current_omp_declare_variant_attribute))
+	    {
+	      c_omp_declare_variant_attr a
+		= current_omp_declare_variant_attribute->last ();
+	      tree outer_ctx = a.selector;
+	      ctx = omp_merge_context_selectors (match_loc, outer_ctx, ctx,
+						 OMP_CTX_DECLARE_VARIANT);
+	    }
 	}
       else if (ccode == adjust_args)
 	{
@@ -27862,6 +27978,90 @@ c_finish_omp_declare_simd (c_parser *parser, tree fndecl, tree parms,
     clauses[0].type = CPP_PRAGMA;
 }
 
+/* This is consistent with the C++ front end.  */
+
+#if !defined (NO_DOT_IN_LABEL)
+#define JOIN_STR "."
+#elif !defined (NO_DOLLAR_IN_LABEL)
+#define JOIN_STR "$"
+#else
+#define JOIN_STR "_"
+#endif
+
+/* Helper function for OpenMP "begin declare variant" directives.
+   Function definitions inside the construct need to have their names
+   mangled according to the context selector CTX.  The DECLARATOR is
+   modified in place to point to a new identifier; the original name of
+   the function is returned.  */
+static tree
+omp_start_variant_function (c_declarator *declarator, tree ctx)
+{
+  c_declarator *id = declarator;
+  while (id->kind != cdk_id)
+    {
+      id = id->declarator;
+      gcc_assert (id);
+    }
+  tree name = id->u.id.id;
+  id->u.id.id = omp_mangle_variant_name (name, ctx, JOIN_STR);
+  return name;
+}
+
+/* Helper function for OpenMP "begin declare variant" directives.  Now
+   that we have a DECL for the variant function, and BASE_NAME for the
+   base function, add an "omp declare variant base" attribute pointing
+   at CTX to the base decl, and an "omp declare variant variant"
+   attribute to the variant DECL.  */
+static void
+omp_finish_variant_function (tree decl, tree base_name, tree ctx)
+{
+  /* First look up BASE_NAME and ensure it matches DECL.  */
+  tree base_decl = lookup_name (base_name);
+  if (base_decl == error_mark_node)
+    base_decl = NULL_TREE;
+  if (!base_decl)
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"no declaration of base function %qs",
+		IDENTIFIER_POINTER (base_name));
+      return;
+    }
+
+  if (!comptypes (TREE_TYPE (decl), TREE_TYPE (base_decl)))
+    {
+      error_at (DECL_SOURCE_LOCATION (decl),
+		"variant function definition does not match "
+		"declaration of %qE", base_decl);
+      inform (DECL_SOURCE_LOCATION (base_decl),
+	      "%qE declared here", base_decl);
+      return;
+    }
+
+  /* Now set the attributes on the base and variant decls for the middle
+     end.  */
+  omp_check_for_duplicate_variant (DECL_SOURCE_LOCATION (decl),
+				   base_decl, ctx);
+  tree construct
+    = omp_get_context_selector_list (ctx, OMP_TRAIT_SET_CONSTRUCT);
+  omp_mark_declare_variant (DECL_SOURCE_LOCATION (decl), decl, construct);
+  tree attrs = DECL_ATTRIBUTES (base_decl);
+  tree match_loc_node
+    = maybe_wrap_with_location (integer_zero_node,
+				DECL_SOURCE_LOCATION (base_decl));
+  tree loc_node = tree_cons (match_loc_node, integer_zero_node,
+			     build_tree_list (match_loc_node,
+					      integer_zero_node));
+  attrs = tree_cons (get_identifier ("omp declare variant base"),
+		     tree_cons (decl, ctx, loc_node), attrs);
+  DECL_ATTRIBUTES (base_decl) = attrs;
+
+  /* Variant functions are essentially anonymous and cannot be referenced
+     outside the compilation unit.  */
+  TREE_PUBLIC (decl) = 0;
+  DECL_COMDAT (decl) = 0;
+}
+
+
 /* D should be C_TOKEN_VEC from omp::decl attribute.  If it contains
    a threadprivate, groupprivate, allocate or declare target directive,
    return true and parse it for DECL.  */
@@ -28094,7 +28294,9 @@ c_parser_omp_declare_target (c_parser *parser)
 /* OpenMP 5.1
    #pragma omp begin assumes clauses[optseq] new-line
 
-   #pragma omp begin declare target clauses[optseq] new-line  */
+   #pragma omp begin declare target clauses[optseq] new-line
+
+   #pragma omp begin declare variant match (context-selector) new-line  */
 
 #define OMP_BEGIN_DECLARE_TARGET_CLAUSE_MASK			\
 	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE_TYPE)	\
@@ -28134,10 +28336,76 @@ c_parser_omp_begin (c_parser *parser)
 					     indirect };
 	  vec_safe_push (current_omp_declare_target_attribute, attr);
 	}
+      else if (strcmp (p, "variant") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  const char *clause = "";
+	  matching_parens parens;
+	  location_t match_loc = c_parser_peek_token (parser)->location;
+	  if (c_parser_next_token_is (parser, CPP_COMMA))
+	    c_parser_consume_token (parser);
+	  if (c_parser_next_token_is (parser, CPP_NAME))
+	    {
+	      tree id = c_parser_peek_token (parser)->value;
+	      clause = IDENTIFIER_POINTER (id);
+	    }
+	  if (strcmp (clause, "match") != 0)
+	    {
+	      c_parser_error (parser, "expected %<match%>");
+	      c_parser_skip_to_pragma_eol (parser);
+	      return;
+	    }
+
+	  c_parser_consume_token (parser);
+
+	  if (!parens.require_open (parser))
+	    {
+	      c_parser_skip_to_pragma_eol (parser, false);
+	      return;
+	    }
+
+	  tree ctx =
+	    c_parser_omp_context_selector_specification (parser, NULL_TREE);
+	  if (ctx != error_mark_node)
+	    ctx = omp_check_context_selector (match_loc, ctx,
+					      OMP_CTX_BEGIN_DECLARE_VARIANT);
+
+	  if (ctx != error_mark_node
+	      && !vec_safe_is_empty (current_omp_declare_variant_attribute))
+	    {
+	      c_omp_declare_variant_attr a
+		= current_omp_declare_variant_attribute->last ();
+	      tree outer_ctx = a.selector;
+	      ctx = omp_merge_context_selectors (match_loc, outer_ctx, ctx,
+						 OMP_CTX_BEGIN_DECLARE_VARIANT);
+	    }
+
+	  if (ctx == error_mark_node
+	      || !omp_context_selector_matches (ctx, NULL_TREE, false, true))
+	    {
+	      /* The context is either invalid or cannot possibly match.
+		 In the latter case the spec says all code in the begin/end
+		 sequence will be elided.  In the former case we'll get bogus
+		 errors from trying to parse it without a valid context to
+		 use for name-mangling, so elide that too.  */
+	      c_parser_skip_to_pragma_eol (parser, false);
+	      c_parser_skip_to_pragma_omp_end_declare_variant (parser);
+	      return;
+	    }
+	  else
+	    {
+	      bool attr_syntax = parser->in_omp_attribute_pragma != NULL;
+	      c_omp_declare_variant_attr a = { attr_syntax, ctx };
+	      vec_safe_push (current_omp_declare_variant_attribute, a);
+	    }
+
+	  parens.require_close (parser);
+	  c_parser_skip_to_pragma_eol (parser);
+	}
       else
 	{
-	  c_parser_error (parser, "expected %<target%>");
-	  c_parser_skip_to_pragma_eol (parser);
+	  c_parser_error (parser, "expected %<target%> or %<variant%>");
+	  c_parser_skip_to_pragma_eol (parser, false);
 	}
     }
   else if (strcmp (p, "assumes") == 0)
@@ -28150,7 +28418,8 @@ c_parser_omp_begin (c_parser *parser)
     }
   else
     {
-      c_parser_error (parser, "expected %<declare target%> or %<assumes%>");
+      c_parser_error (parser, "expected %<declare target%>, "
+		      "%<declare variant%>, or %<assumes%>");
       c_parser_skip_to_pragma_eol (parser);
     }
 }
@@ -28159,7 +28428,8 @@ c_parser_omp_begin (c_parser *parser)
    #pragma omp end declare target
 
    OpenMP 5.1
-   #pragma omp end assumes  */
+   #pragma omp end assumes
+   #pragma omp end declare variant  */
 
 static void
 c_parser_omp_end (c_parser *parser)
@@ -28172,43 +28442,73 @@ c_parser_omp_end (c_parser *parser)
   if (strcmp (p, "declare") == 0)
     {
       c_parser_consume_token (parser);
-      if (c_parser_next_token_is (parser, CPP_NAME)
-	  && strcmp (IDENTIFIER_POINTER (c_parser_peek_token (parser)->value),
-		     "target") == 0)
-	c_parser_consume_token (parser);
+      p = "";
+      if (c_parser_next_token_is (parser, CPP_NAME))
+	p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (strcmp (p, "target") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  bool attr_syntax = parser->in_omp_attribute_pragma != NULL;
+	  c_parser_skip_to_pragma_eol (parser);
+	  if (!vec_safe_length (current_omp_declare_target_attribute))
+	    error_at (loc, "%<#pragma omp end declare target%> without "
+		      "corresponding %<#pragma omp declare target%> or "
+		      "%<#pragma omp begin declare target%>");
+	  else
+	    {
+	      c_omp_declare_target_attr
+		a = current_omp_declare_target_attribute->pop ();
+	      if (a.attr_syntax != attr_syntax)
+		{
+		  if (a.attr_syntax)
+		    error_at (loc,
+			      "%qs in attribute syntax terminated "
+			      "with %qs in pragma syntax",
+			      a.device_type >= 0 ? "begin declare target"
+						 : "declare target",
+			      "end declare target");
+		  else
+		    error_at (loc,
+			      "%qs in pragma syntax terminated "
+			      "with %qs in attribute syntax",
+			      a.device_type >= 0 ? "begin declare target"
+						 : "declare target",
+			      "end declare target");
+		}
+	    }
+	}
+      else if (strcmp (p, "variant") == 0)
+	{
+	  c_parser_consume_token (parser);
+	  bool attr_syntax = parser->in_omp_attribute_pragma != NULL;
+	  c_parser_skip_to_pragma_eol (parser);
+	  if (!vec_safe_length (current_omp_declare_variant_attribute))
+	    error_at (loc, "%<#pragma omp end declare variant%> without "
+		      "corresponding %<#pragma omp begin declare variant%>");
+	  else
+	    {
+	      c_omp_declare_variant_attr
+		a = current_omp_declare_variant_attribute->pop ();
+	      if (a.attr_syntax != attr_syntax)
+		{
+		  if (a.attr_syntax)
+		    error_at (loc,
+			      "%<begin declare variant%> in attribute syntax "
+			      "terminated with "
+			      "%<end declare variant%> in pragma syntax");
+		  else
+		    error_at (loc,
+			      "%<begin declare variant%> in pragma syntax "
+			      "terminated with "
+			      "%<end declare variant%> in attribute syntax");
+		}
+	    }
+	}
       else
 	{
-	  c_parser_error (parser, "expected %<target%>");
+	  c_parser_error (parser, "expected %<target%> or %<variant%>");
 	  c_parser_skip_to_pragma_eol (parser);
 	  return;
-	}
-      bool attr_syntax = parser->in_omp_attribute_pragma != NULL;
-      c_parser_skip_to_pragma_eol (parser);
-      if (!vec_safe_length (current_omp_declare_target_attribute))
-	error_at (loc, "%<#pragma omp end declare target%> without "
-		       "corresponding %<#pragma omp declare target%> or "
-		       "%<#pragma omp begin declare target%>");
-      else
-	{
-	  c_omp_declare_target_attr
-	    a = current_omp_declare_target_attribute->pop ();
-	  if (a.attr_syntax != attr_syntax)
-	    {
-	      if (a.attr_syntax)
-		error_at (loc,
-			  "%qs in attribute syntax terminated "
-			  "with %qs in pragma syntax",
-			  a.device_type >= 0 ? "begin declare target"
-					     : "declare target",
-			  "end declare target");
-	      else
-		error_at (loc,
-			  "%qs in pragma syntax terminated "
-			  "with %qs in attribute syntax",
-			  a.device_type >= 0 ? "begin declare target"
-					     : "declare target",
-			  "end declare target");
-	    }
 	}
     }
   else if (strcmp (p, "assumes") == 0)

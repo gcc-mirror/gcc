@@ -76,6 +76,11 @@ struct GTY(()) c_omp_begin_assumes_data {
   bool attr_syntax;
 };
 
+struct GTY(()) c_omp_declare_variant_attr {
+  bool attr_syntax;
+  tree selector;
+};
+
 /* If non-empty, implicit "omp declare target" attribute is added into the
    attribute lists.  */
 extern GTY(()) vec<c_omp_declare_target_attr, va_gc>
@@ -84,5 +89,8 @@ extern GTY(()) vec<c_omp_declare_target_attr, va_gc>
    #pragma omp end assumes (and how many times when nested).  */
 extern GTY(()) vec<c_omp_begin_assumes_data, va_gc>
   *current_omp_begin_assumes;
+/* And similarly for #pragma omp begin/end declare variant.  */
+extern GTY(()) vec<c_omp_declare_variant_attr, va_gc>
+  *current_omp_declare_variant_attribute;
 
 #endif /* ! GCC_C_LANG_H */
