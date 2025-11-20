@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2014-2020 Advanced Micro Devices Inc.  All rights reserved.
+// Copyright (C) 2014-2022 Advanced Micro Devices Inc.  All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person or organization
 // obtaining a copy of the software and accompanying documentation covered by
@@ -41,6 +41,115 @@
 extern "C" {
 #endif
 
+/** \addtogroup aql Architected Queuing Language
+ *  @{
+ */
+
+/**
+ * @brief A fixed-size type used to represent ::hsa_signal_condition_t constants.
+ */
+typedef uint32_t hsa_signal_condition32_t;
+
+/**
+ * @brief AMD vendor specific packet type.
+ */
+typedef enum {
+  /**
+   * Packet used by agents to delay processing of subsequent packets until a
+   * configurable condition is satisfied by an HSA signal.  Only kernel dispatch
+   * queues created from AMD GPU Agents support this packet.
+   */
+  HSA_AMD_PACKET_TYPE_BARRIER_VALUE = 2,
+} hsa_amd_packet_type_t;
+
+/**
+ * @brief A fixed-size type used to represent ::hsa_amd_packet_type_t constants.
+ */
+typedef uint8_t hsa_amd_packet_type8_t;
+
+/**
+ * @brief AMD vendor specific AQL packet header
+ */
+typedef struct hsa_amd_packet_header_s {
+  /**
+   * Packet header. Used to configure multiple packet parameters such as the
+   * packet type. The parameters are described by ::hsa_packet_header_t.
+   */
+  uint16_t header;
+
+  /**
+   *Format of the vendor specific packet.
+   */
+  hsa_amd_packet_type8_t AmdFormat;
+
+  /**
+   * Reserved. Must be 0.
+   */
+  uint8_t reserved;
+} hsa_amd_vendor_packet_header_t;
+
+/**
+ * @brief AMD barrier value packet.  Halts packet processing and waits for
+ * (signal_value & ::mask) ::cond ::value to be satisfied, where signal_value
+ * is the value of the signal ::signal.
+ */
+typedef struct hsa_amd_barrier_value_packet_s {
+  /**
+   * AMD vendor specific packet header.
+   */
+  hsa_amd_vendor_packet_header_t header;
+
+  /**
+   * Reserved. Must be 0.
+   */
+  uint32_t reserved0;
+
+  /**
+   * Dependent signal object. A signal with a handle value of 0 is
+   * allowed and is interpreted by the packet processor a satisfied
+   * dependency.
+   */
+  hsa_signal_t signal;
+
+  /**
+   * Value to compare against.
+   */
+  hsa_signal_value_t value;
+
+  /**
+   * Bit mask to be combined by bitwise AND with ::signal's value.
+   */
+  hsa_signal_value_t mask;
+
+  /**
+   * Comparison operation.  See ::hsa_signal_condition_t.
+   */
+  hsa_signal_condition32_t cond;
+
+  /**
+   * Reserved. Must be 0.
+   */
+  uint32_t reserved1;
+
+  /**
+   * Reserved. Must be 0.
+   */
+  uint64_t reserved2;
+
+  /**
+   * Reserved. Must be 0.
+   */
+  uint64_t reserved3;
+
+  /**
+   * Signal used to indicate completion of the job. The application can use the
+   * special signal handle 0 to indicate that no signal is used.
+   */
+  hsa_signal_t completion_signal;
+} hsa_amd_barrier_value_packet_t;
+
+/** @} */
+
 /**
  * @brief Enumeration constants added to ::hsa_status_t.
  *
@@ -61,6 +170,20 @@ enum {
    * Agent executed an invalid shader instruction.
    */
   HSA_STATUS_ERROR_ILLEGAL_INSTRUCTION = 42,
+
+  /**
+   * Agent attempted to access an inaccessible address.
+   * See hsa_amd_register_system_event_handler and
+   * HSA_AMD_GPU_MEMORY_FAULT_EVENT for more information on illegal accesses.
+   */
+  HSA_STATUS_ERROR_MEMORY_FAULT = 43,
+
+  /**
+   * The CU mask was successfully set but the mask attempted to enable a CU
+   * which was disabled for the process.  CUs disabled for the process remain
+   * disabled.
+   */
+  HSA_STATUS_CU_MASK_REDUCED = 44,
 };
 
 /**
@@ -480,6 +603,37 @@ hsa_status_t HSA_API hsa_amd_signal_create(hsa_signal_value_t initial_value, uin
                                            hsa_signal_t* signal);
 
 /**
+ * @brief Returns a pointer to the value of a signal.
+ *
+ * Use of this API does not modify the lifetime of ::signal and any
+ * hsa_signal_value_t retrieved by this API has lifetime equal to that of
+ * ::signal.
+ *
+ * This API is intended for partial interoperability with non-HSA compatible
+ * devices and should not be used where HSA interfaces are available.
+ *
+ * Use of the signal value must comply with use restritions of ::signal.
+ * Use may result in data races if the operations performed are not platform
+ * atomic.  Use with HSA_AMD_SIGNAL_AMD_GPU_ONLY or HSA_AMD_SIGNAL_IPC
+ * attributed signals is required.
+ *
+ * @param[in] Signal handle to extract the signal value pointer from.
+ *
+ * @param[out] Location where the extracted signal value pointer will be placed.
+ *
+ * @retval ::HSA_STATUS_SUCCESS The function has been executed successfully.
+ *
+ * @retval ::HSA_STATUS_ERROR_NOT_INITIALIZED The HSA runtime has not been
+ * initialized.
+ *
+ * @retval ::HSA_STATUS_ERROR_INVALID_SIGNAL signal is not a valid hsa_signal_t
+ *
+ * @retval ::HSA_STATUS_ERROR_INVALID_ARGUMENT value_ptr is NULL.
+ */
+hsa_status_t hsa_amd_signal_value_pointer(hsa_signal_t signal,
+                                          volatile hsa_signal_value_t** value_ptr);
+
+/**
  * @brief Asyncronous signal handler function type.
  *
  * @details Type definition of callback function to be used with
@@ -621,14 +775,54 @@ hsa_status_t HSA_API hsa_amd_image_get_info_max_dim(hsa_agent_t agent,
                                                     void* value);
 
 /**
- * @brief Set a CU affinity to specific queues within the process, this function
- * call is "atomic".
+ * @brief Set a queue's CU affinity mask.
+ *
+ * @details Enables the queue to run on only selected CUs.  The given mask is
+ * combined by bitwise AND with any device wide mask in HSA_CU_MASK before
+ * being applied.
+ * If num_cu_mask_count is 0 then the request is interpreted as a request to
+ * enable all CUs and no cu_mask array need be given.
  *
  * @param[in] queue A pointer to HSA queue.
  *
- * @param[in] num_cu_mask_count Size of CUMask bit array passed in.
+ * @param[in] num_cu_mask_count Size of CUMask bit array passed in, in bits.
  *
  * @param[in] cu_mask Bit-vector representing the CU mask.
+ *
+ * @retval ::HSA_STATUS_SUCCESS The function has been executed successfully.
+ *
+ * @retval ::HSA_STATUS_CU_MASK_REDUCED The function was successfully executed
+ * but the given mask attempted to enable a CU which was disabled by
+ * HSA_CU_MASK.  CUs disabled by HSA_CU_MASK remain disabled.
+ *
+ * @retval ::HSA_STATUS_ERROR_NOT_INITIALIZED The HSA runtime has not been
+ * initialized.
+ *
+ * @retval ::HSA_STATUS_ERROR_INVALID_QUEUE @p queue is NULL or invalid.
+ *
+ * @retval ::HSA_STATUS_ERROR_INVALID_ARGUMENT @p num_cu_mask_count is not
+ * a multiple of 32 or @p num_cu_mask_count is not 0 and cu_mask is NULL.
+ * Devices with work group processors must even-index contiguous pairwise
+ * CU enable e.g. 0x33(b'110011) is valid while 0x5(0x101) and 0x6(b'0110)
+ * are invalid.
+ *
+ */
+hsa_status_t HSA_API hsa_amd_queue_cu_set_mask(const hsa_queue_t* queue,
+                                               uint32_t num_cu_mask_count,
+                                               const uint32_t* cu_mask);
+
+/**
+ * @brief Retrieve a queue's CU affinity mask.
+ *
+ * @details Returns the first num_cu_mask_count bits of a queue's CU mask.
+ * Ensure that num_cu_mask_count is at least as large as
+ * HSA_AMD_AGENT_INFO_COMPUTE_UNIT_COUNT to retrieve the entire mask.
+ *
+ * @param[in] queue A pointer to HSA queue.
+ *
+ * @param[in] num_cu_mask_count Size of CUMask bit array passed in, in bits.
+ *
+ * @param[out] cu_mask Bit-vector representing the CU mask.
  *
  * @retval ::HSA_STATUS_SUCCESS The function has been executed successfully.
  *
@@ -637,15 +831,12 @@ hsa_status_t HSA_API hsa_amd_image_get_info_max_dim(hsa_agent_t agent,
  *
  * @retval ::HSA_STATUS_ERROR_INVALID_QUEUE @p queue is NULL or invalid.
  *
- * @retval ::HSA_STATUS_ERROR_INVALID_ARGUMENT @p num_cu_mask_count is not
- * multiple of 32 or @p cu_mask is NULL.
- *
- * @retval ::HSA_STATUS_ERROR failed to call thunk api
+ * @retval ::HSA_STATUS_ERROR_INVALID_ARGUMENT @p num_cu_mask_count is 0, not
+ * a multiple of 32 or @p cu_mask is NULL.
  *
  */
-hsa_status_t HSA_API hsa_amd_queue_cu_set_mask(const hsa_queue_t* queue,
-                                               uint32_t num_cu_mask_count,
-                                               const uint32_t* cu_mask);
+hsa_status_t HSA_API hsa_amd_queue_cu_get_mask(const hsa_queue_t* queue, uint32_t num_cu_mask_count,
+                                               uint32_t* cu_mask);
 
 /**
  * @brief Memory segments associated with a memory pool.
@@ -779,6 +970,24 @@ typedef enum {
 } hsa_amd_memory_pool_info_t;
 
 /**
+ * @brief Memory pool flag used to specify allocation directives
+ *
+ */
+typedef enum hsa_amd_memory_pool_flag_s {
+  /**
+   * Allocates memory that conforms to standard HSA memory consistency model
+   */
+  HSA_AMD_MEMORY_POOL_STANDARD_FLAG = 0,
+  /**
+   * Allocates fine grain memory type where memory ordering is per point to point
+   * connection. Atomic memory operations on these memory buffers are not
+   * guaranteed to be visible at system scope.
+   */
+  HSA_AMD_MEMORY_POOL_PCIE_FLAG = 1,
+
+} hsa_amd_memory_pool_flag_t;
+
+/**
  * @brief Get the current value of an attribute of a memory pool.
  *
  * @param[in] memory_pool A valid memory pool.
@@ -846,7 +1055,7 @@ hsa_status_t HSA_API hsa_amd_agent_iterate_memory_pools(
  * ::HSA_AMD_MEMORY_POOL_INFO_RUNTIME_ALLOC_GRANULE in @p memory_pool.
  *
  * @param[in] flags A bit-field that is used to specify allocation
- * directives. Reserved parameter, must be 0.
+ * directives.
  *
  * @param[out] ptr Pointer to the location where to store the base virtual
  * address of
@@ -903,6 +1112,8 @@ hsa_status_t HSA_API hsa_amd_memory_pool_free(void* ptr);
  *
  * @param[in] dst_agent Agent associated with the @p dst. The agent must be able to directly
  * access both the source and destination buffers in their current locations.
+ * May be zero in which case the runtime will attempt to discover the destination agent.
+ * Discovery may have variable and/or high latency.
  *
  * @param[in] src A valid pointer to the source of data to be copied. The source
  * buffer must not overlap with the destination buffer, otherwise the copy will succeed
@@ -910,6 +1121,8 @@ hsa_status_t HSA_API hsa_amd_memory_pool_free(void* ptr);
  *
  * @param[in] src_agent Agent associated with the @p src. The agent must be able to directly
  * access both the source and destination buffers in their current locations.
+ * May be zero in which case the runtime will attempt to discover the destination agent.
+ * Discovery may have variable and/or high latency.
  *
  * @param[in] size Number of bytes to copy. If @p size is 0, no copy is
  * performed and the function returns success. Copying a number of bytes larger
@@ -920,9 +1133,9 @@ hsa_status_t HSA_API hsa_amd_memory_pool_free(void* ptr);
  *
  * @param[in] dep_signals List of signals that must be waited on before the copy
  * operation starts. The copy will start after every signal has been observed with
- * the value 0. The dependent signal should not include completion signal from hsa_amd_memory_async_copy
- * operation to be issued in future as that can result in a deadlock. If @p num_dep_signals is 0, this
- * argument is ignored.
+ * the value 0. The dependent signal should not include completion signal from
+ * hsa_amd_memory_async_copy operation to be issued in future as that can result
+ * in a deadlock. If @p num_dep_signals is 0, this argument is ignored.
  *
  * @param[in] completion_signal Signal used to indicate completion of the copy
  * operation. When the copy operation is finished, the value of the signal is
@@ -937,7 +1150,7 @@ hsa_status_t HSA_API hsa_amd_memory_pool_free(void* ptr);
  * @retval ::HSA_STATUS_ERROR_NOT_INITIALIZED The HSA runtime has not been
  * initialized.
  *
- * @retval ::HSA_STATUS_ERROR_INVALID_AGENT The agent is invalid.
+ * @retval ::HSA_STATUS_ERROR_INVALID_AGENT An agent is invalid or no discovered agent has access.
  *
  * @retval ::HSA_STATUS_ERROR_INVALID_SIGNAL @p completion_signal is invalid.
  *
@@ -1576,6 +1789,12 @@ typedef struct hsa_amd_pointer_info_s {
   GPU boards) any such agent may be returned.
   */
   hsa_agent_t agentOwner;
+  /*
+  Contains a bitfield of hsa_amd_memory_pool_global_flag_t values.
+  Reports the effective global flags bitmask for the allocation.  This field is not meaningful if
+  the type of the allocation is HSA_EXT_POINTER_TYPE_UNKNOWN.
+  */
+  uint32_t global_flags;
 } hsa_amd_pointer_info_t;
 
 /**
@@ -1611,7 +1830,7 @@ typedef struct hsa_amd_pointer_info_s {
  *
  * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT NULL in @p ptr or @p info.
  */
-hsa_status_t HSA_API hsa_amd_pointer_info(void* ptr,
+hsa_status_t HSA_API hsa_amd_pointer_info(const void* ptr,
                                           hsa_amd_pointer_info_t* info,
                                           void* (*alloc)(size_t),
                                           uint32_t* num_agents_accessible,
@@ -1635,7 +1854,7 @@ hsa_status_t HSA_API hsa_amd_pointer_info(void* ptr,
  *
  * @retval HSA_STATUS_ERROR_INVALID_ARGUMENT @p ptr is not known to ROCr.
  */
-hsa_status_t HSA_API hsa_amd_pointer_info_set_userdata(void* ptr,
+hsa_status_t HSA_API hsa_amd_pointer_info_set_userdata(const void* ptr,
                                                        void* userdata);
 
 /**
@@ -1809,11 +2028,11 @@ typedef enum {
   // GPU attempted access to a host only page.
   HSA_AMD_MEMORY_FAULT_HOST_ONLY = 1 << 3,
   // DRAM ECC failure.
-  HSA_AMD_MEMORY_FAULT_DRAM_ECC = 1 << 4,
+  HSA_AMD_MEMORY_FAULT_DRAMECC = 1 << 4,
   // Can't determine the exact fault address.
   HSA_AMD_MEMORY_FAULT_IMPRECISE = 1 << 5,
   // SRAM ECC failure (ie registers, no fault address).
-  HSA_AMD_MEMORY_FAULT_SRAM_ECC = 1 << 6,
+  HSA_AMD_MEMORY_FAULT_SRAMECC = 1 << 6,
   // GPU reset following unspecified hang.
   HSA_AMD_MEMORY_FAULT_HANG = 1 << 31
 } hsa_amd_memory_fault_reason_t;
@@ -1969,6 +2188,181 @@ hsa_status_t HSA_API hsa_amd_register_deallocation_callback(void* ptr,
  */
 hsa_status_t HSA_API hsa_amd_deregister_deallocation_callback(void* ptr,
                                                       hsa_amd_deallocation_callback_t callback);
+
+typedef enum hsa_amd_svm_model_s {
+  /**
+   * Updates to memory with this attribute conform to HSA memory consistency
+   * model.
+   */
+  HSA_AMD_SVM_GLOBAL_FLAG_FINE_GRAINED = 0,
+  /**
+   * Writes to memory with this attribute can be performed by a single agent
+   * at a time.
+   */
+  HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED = 1,
+  /**
+   * Memory region queried contains subregions with both
+   * HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED and
+   * HSA_AMD_SVM_GLOBAL_FLAG_FINE_GRAINED attributes.
+   *
+   * This attribute can not be used in hsa_amd_svm_attributes_set.  It is a
+   * possible return from hsa_amd_svm_attributes_get indicating that the query
+   * region contains both coarse and fine grained memory.
+   */
+  HSA_AMD_SVM_GLOBAL_FLAG_INDETERMINATE = 2
+} hsa_amd_svm_model_t;
+
+typedef enum hsa_amd_svm_attribute_s {
+  // Memory model attribute.
+  // Type of this attribute is hsa_amd_svm_model_t.
+  HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG = 0,
+  // Marks the range read only.  This allows multiple physical copies to be
+  // placed local to each accessing device.
+  // Type of this attribute is bool.
+  HSA_AMD_SVM_ATTRIB_READ_ONLY = 1,
+  // Automatic migrations should attempt to keep the memory within the xgmi hive
+  // containing accessible agents.
+  // Type of this attribute is bool.
+  HSA_AMD_SVM_ATTRIB_HIVE_LOCAL = 2,
+  // Page granularity to migrate at once.  Page granularity is specified as
+  // log2(page_count).
+  // Type of this attribute is uint64_t.
+  HSA_AMD_SVM_ATTRIB_MIGRATION_GRANULARITY = 3,
+  // Physical location to prefer when automatic migration occurs.
+  // Set to the null agent handle (handle == 0) to indicate there
+  // is no preferred location.
+  // Type of this attribute is hsa_agent_t.
+  HSA_AMD_SVM_ATTRIB_PREFERRED_LOCATION = 4,
+  // This attribute can not be used in ::hsa_amd_svm_attributes_set (see
+  // ::hsa_amd_svm_prefetch_async).
+  // Queries the physical location of most recent prefetch command.
+  // If the prefetch location has not been set or is not uniform across the
+  // address range then returned hsa_agent_t::handle will be 0.
+  // Querying this attribute will return the destination agent of the most
+  // recent ::hsa_amd_svm_prefetch_async targeting the address range.  If
+  // multiple async prefetches have been issued targeting the region and the
+  // most recently issued prefetch has completed then the query will return
+  // the location of the most recently completed prefetch.
+  // Type of this attribute is hsa_agent_t.
+  HSA_AMD_SVM_ATTRIB_PREFETCH_LOCATION = 5,
+  // Optimizes with the anticipation that the majority of operations to the
+  // range will be read operations.
+  // Type of this attribute is bool.
+  HSA_AMD_SVM_ATTRIB_READ_MOSTLY = 6,
+  // Allows the execution on GPU.
+  // Type of this attribute is bool.
+  HSA_AMD_SVM_ATTRIB_GPU_EXEC = 7,
+  // This attribute can not be used in ::hsa_amd_svm_attributes_get.
+  // Enables an agent for access to the range.  Access may incur a page fault
+  // and associated memory migration.  Either this or
+  // HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE_IN_PLACE is required prior to SVM
+  // access if HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT is false.
+  // Type of this attribute is hsa_agent_t.
+  HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE = 0x200,
+  // This attribute can not be used in ::hsa_amd_svm_attributes_get.
+  // Enables an agent for access to the range without page faults.  Access
+  // will not incur a page fault and will not cause access based migration.
+  // and associated memory migration.  Either this or
+  // HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE is required prior to SVM access if
+  // HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT is false.
+  // Type of this attribute is hsa_agent_t.
+  HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE_IN_PLACE = 0x201,
+  // This attribute can not be used in ::hsa_amd_svm_attributes_get.
+  // Denies an agent access to the memory range.  Access will cause a terminal
+  // segfault.
+  // Type of this attribute is hsa_agent_t.
+  HSA_AMD_SVM_ATTRIB_AGENT_NO_ACCESS = 0x202,
+  // This attribute can not be used in ::hsa_amd_svm_attributes_set.
+  // Returns the access attribute associated with the agent.
+  // The agent to query must be set in the attribute value field.
+  // The attribute enum will be replaced with the agent's current access
+  // attribute for the address range.
+  // TODO: Clarify KFD return value for non-uniform access attribute.
+  // Type of this attribute is hsa_agent_t.
+  HSA_AMD_SVM_ATTRIB_ACCESS_QUERY = 0x203,
+} hsa_amd_svm_attribute_t;
+
+// List type for hsa_amd_svm_attributes_set/get. 
+typedef struct hsa_amd_svm_attribute_pair_s {
+  // hsa_amd_svm_attribute_t value.
+  uint64_t attribute;
+  // Attribute value.  Bit values should be interpreted according to the type
+  // given in the associated attribute description.
+  uint64_t value;
+} hsa_amd_svm_attribute_pair_t;
+
+/**
+ * @brief Sets SVM memory attributes.
+ *
+ * If HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT returns false then enabling
+ * access to an Agent via this API (setting HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE
+ * or HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE_IN_PLACE) is required prior to SVM
+ * memory access by that Agent.
+ *
+ * Attributes HSA_AMD_SVM_ATTRIB_ACCESS_QUERY and HSA_AMD_SVM_ATTRIB_PREFETCH_LOCATION
+ * may not be used with this API.
+ *
+ * @param[in] ptr Will be aligned down to nearest page boundary.
+ *
+ * @param[in] size Will be aligned up to nearest page boundary.
+ *
+ * @param[in] attribute_list List of attributes to set for the address range.
+ *
+ * @param[in] attribute_count Length of @p attribute_list.
+ */
+hsa_status_t hsa_amd_svm_attributes_set(void* ptr, size_t size,
+                                        hsa_amd_svm_attribute_pair_t* attribute_list,
+                                        size_t attribute_count);
+
+/**
+ * @brief Gets SVM memory attributes.
+ *
+ * Attributes HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE,
+ * HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE_IN_PLACE and
+ * HSA_AMD_SVM_ATTRIB_PREFETCH_LOCATION may not be used with this API.
+ *
+ * Note that attribute HSA_AMD_SVM_ATTRIB_ACCESS_QUERY takes as input an
+ * hsa_agent_t and returns the current access type through its attribute field.
+ *
+ * @param[in] ptr Will be aligned down to nearest page boundary.
+ *
+ * @param[in] size Will be aligned up to nearest page boundary.
+ *
+ * @param[in] attribute_list List of attributes to set for the address range.
+ *
+ * @param[in] attribute_count Length of @p attribute_list.
+ */
+hsa_status_t hsa_amd_svm_attributes_get(void* ptr, size_t size,
+                                        hsa_amd_svm_attribute_pair_t* attribute_list,
+                                        size_t attribute_count);
+
+/**
+ * @brief Asynchronously migrates memory to an agent.
+ *
+ * Schedules memory migration to @p agent when @p dep_signals have been observed equal to zero.
+ * @p completion_signal will decrement when the migration is complete.
+ *
+ * @param[in] ptr Will be aligned down to nearest page boundary.
+ *
+ * @param[in] size Will be aligned up to nearest page boundary.
+ *
+ * @param[in] agent Agent to migrate to.
+ *
+ * @param[in] num_dep_signals Number of dependent signals. Can be 0.
+ *
+ * @param[in] dep_signals List of signals that must be waited on before the migration
+ * operation starts. The migration will start after every signal has been observed with
+ * the value 0. If @p num_dep_signals is 0, this argument is ignored.
+ *
+ * @param[in] completion_signal Signal used to indicate completion of the migration
+ * operation. When the migration operation is finished, the value of the signal is
+ * decremented. The runtime indicates that an error has occurred during the copy
+ * operation by setting the value of the completion signal to a negative
+ * number. If no completion signal is required this handle may be null.
+ */
+hsa_status_t hsa_amd_svm_prefetch_async(void* ptr, size_t size, hsa_agent_t agent,
+                                        uint32_t num_dep_signals, const hsa_signal_t* dep_signals,
+                                        hsa_signal_t completion_signal);
 
 #ifdef __cplusplus
 }  // end extern "C" block

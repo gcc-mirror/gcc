@@ -1676,16 +1676,7 @@ gomp_thread_to_pthread_t (struct gomp_thread *thr)
 }
 #endif
 
-/* simple-allocator.c  */
-
-typedef struct gomp_simple_alloc_context *gomp_simple_alloc_ctx_p;
-
-gomp_simple_alloc_ctx_p gomp_simple_alloc_init_context ();
-void gomp_simple_alloc_register_memory (gomp_simple_alloc_ctx_p ctx,
-				        char *base, size_t size);
-void *gomp_simple_alloc (gomp_simple_alloc_ctx_p ctx, size_t size);
-void gomp_simple_free (gomp_simple_alloc_ctx_p ctx, void *addr);
-void *gomp_simple_realloc (gomp_simple_alloc_ctx_p ctx, void *addr,
-			   size_t newsize);
+/* simple-allocator.c has its prototypes in libgomp-plugin.h so it's
+   accessible from both.  */
 
 #endif /* LIBGOMP_H */

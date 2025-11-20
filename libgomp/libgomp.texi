@@ -7185,11 +7185,26 @@ The implementation remark:
       a performance boost for NVPTX offload code and also allows unlimited use
       of pinned memory regardless of the OS @code{ulimit}/@code{rlimit}
       settings.
-@item Managed memory allocated with the OpenMP
+@item Managed memory allocated on the host with the
       @code{ompx_gnu_managed_mem_alloc} allocator or in the
-      @code{ompx_gnu_managed_mem_space} is not currently supported for AMD GPU
-      devices; attempting to use it in an allocator will trigger the fall-back
-      trait.
+      @code{ompx_gnu_managed_mem_space} (both GNU extensions) allocate memory
+      equivalent to HIP Managed Memory, although @emph{not} actually allocated
+      using @code{hipMallocManaged}.  This memory is accessible by both the
+      host and the device at the same address, so it need not be mapped with
+      @code{map} clauses.  Instead, use the @code{is_device_ptr} clause or
+      @code{has_device_addr} clause to indicate that the pointer is already
+      accessible on the device.  The ROCm runtime will automatically handle
+      data migration between host and device as needed.  Not all AMD GPU
+      devices support this feature, and many that do require that
+      @code{-mxnack=on} is configured at compile time.  If managed memory is
+      not supported by the default device, as configured at the moment the
+      allocator is called, then the allocator will use the fall-back setting.
+      If the default device is configured differently when the memory is freed,
+      via @code{omp_free} or @code{omp_realloc}, the result may be undefined.
+      If the current device does not support Unified Shared Memory (or it is
+      not enabled with @code{HSA_XNACK=1}) then Managed Memory might still
+      work, but allocations may only be visible to a single device (whichever
+      was the default device when the @emph{first} allocation was made).
 @item The OpenMP routines @code{omp_target_memcpy_rect} and
       @code{omp_target_memcpy_rect_async} and the @code{target update}
       directive for non-contiguous list items use the 3D memory-copy function

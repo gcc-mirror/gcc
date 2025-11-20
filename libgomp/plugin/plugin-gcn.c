@@ -50,6 +50,8 @@
 #include "oacc-plugin.h"
 #include "oacc-int.h"
 #include <assert.h>
+#include <sys/mman.h>
+#include <unistd.h>
 
 /* Create hash-table for declare target's indirect clause on the host;
    see build-target-indirect-htab.h for details.  */
@@ -228,6 +230,9 @@ struct hsa_runtime_fn_info
      const hsa_dim3_t *range, hsa_agent_t copy_agent,
      hsa_amd_copy_direction_t dir, uint32_t num_dep_signals,
      const hsa_signal_t *dep_signals, hsa_signal_t completion_signal);
+  hsa_status_t (*hsa_amd_svm_attributes_set_fn)
+    (void* ptr, size_t size, hsa_amd_svm_attribute_pair_t* attribute_list,
+     size_t attribute_count);
 };
 
 /* As an HIP runtime is dlopened, following structure defines function
@@ -746,6 +751,24 @@ dump_hsa_system_info (void)
     }
   else
     GCN_WARNING ("HSA_SYSTEM_INFO_EXTENSIONS: FAILED\n");
+
+  bool svm_supported;
+  status = hsa_fns.hsa_system_get_info_fn
+    (HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED, &svm_supported);
+  if (status == HSA_STATUS_SUCCESS)
+    GCN_DEBUG ("HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED: %s\n",
+	       (svm_supported ? "TRUE" : "FALSE"));
+  else
+    GCN_WARNING ("HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED: FAILED\n");
+
+  bool svm_accessible;
+  status = hsa_fns.hsa_system_get_info_fn
+    (HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT, &svm_accessible);
+  if (status == HSA_STATUS_SUCCESS)
+    GCN_DEBUG ("HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT: %s\n",
+	       (svm_accessible ? "TRUE" : "FALSE"));
+  else
+    GCN_WARNING ("HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT: FAILED\n");
 }
 
 /* Dump information about the available hardware.  */
@@ -1470,6 +1493,7 @@ init_hsa_runtime_functions (void)
   DLSYM_OPT_FN (hsa_amd_memory_lock)
   DLSYM_OPT_FN (hsa_amd_memory_unlock)
   DLSYM_OPT_FN (hsa_amd_memory_async_copy_rect)
+  DLSYM_OPT_FN (hsa_amd_svm_attributes_set)
   return true;
 #undef DLSYM_OPT_FN
 #undef DLSYM_FN
@@ -2527,6 +2551,13 @@ isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image,
 	      "Consider using ROCR_VISIBLE_DEVICES to disable incompatible "
 	      "devices or run with LOADER_ENABLE_LOGGING=1 for more details.",
 	      device_isa_s, agent_isa_s, agent->device_id);
+  else if (strcmp (device_isa_s, agent_isa_s) == 0)
+    snprintf (msg, sizeof msg,
+	      "GCN code object features do not match for an unknown reason "
+	      "(device %d).\n"
+	      "Try to adjust the HSA_XNACK setting (perhaps?), or use\n"
+	      "ROCR_VISIBLE_DEVICES to disable incompatible devices.\n",
+	      agent->device_id);
   else
     snprintf (msg, sizeof msg,
 	      "GCN code object ISA '%s' is incompatible with GPU ISA '%s' "
@@ -3188,6 +3219,125 @@ wait_queue (struct goacc_asyncqueue *aq)
 }
 
 /* }}}  */
+/* {{{ Managed Memory
+
+   This implements an allocator equivalent to CUDA "Managed" memory, in which
+   the pages automatically migrate between host and device memory, as needed.
+   These allocations are visible from both the host and devices without the
+   need for explicit mappings.  However, OpenMP does need "is_device_ptr" or
+   "has_device_addr" to function properly.
+
+   There isn't a high-level HSA/ROCr API to allocate managed memory, so we
+   use regular memory and register it with the driver by setting it to
+   "coarse-grained" mode, and setting the "accessible by default" attribute
+   on devices where HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT isn't set
+   as standard (as it isn't on systems that don't support USM, or when
+   HSA_XNACK != 1).
+
+   This is in contrast to GOMP_OFFLOAD_alloc which allocates coarse-grained
+   *GPU memory*, which is not visible on the host.
+
+   It would be possible to register memory returned by malloc, but
+   experimentation shows that doing so causes memory faults within the HSA
+   runtime code.  Therefore, the Managed memory space is allocated as a
+   largish block and then subdivided via a custom allocator.  The "simple"
+   allocator is designed specifically to store its free-chain outside of
+   the registered pages so that allocation does not inadvertently cause
+   pages to migrate.
+
+   Note: if the user has multiple mismatched devices, and one or more do
+   not support USM (or XNACK is off), then each page of the Managed heap
+   could end up associated with a different device (by calling omp_alloc
+   before and after omp_set_default_device).  This issue remains
+   an *unhandled* edge-case, at present.  */
+
+gomp_simple_alloc_ctx_p managed_ctx = NULL;
+
+/* Initialize or extend the Managed memory space.  This is called whenever
+   allocation fails.  SIZE is the minimum size required for the failed
+   allocation to succeed; the function may choose a larger size.
+   Note that Linux lazy allocation means that the memory returned isn't
+   guaranteed to actually exist.  */
+
+static bool
+managed_heap_create (struct agent_info *agent, size_t size)
+{
+  static int lock = 0;
+  while (__atomic_exchange_n (&lock, 1, __ATOMIC_ACQUIRE) != 0)
+    ;
+
+  size_t default_size = 1L * 1024 * 1024 * 1024; /* 1GB */
+  if (size < default_size)
+    size = default_size;
+
+  /* Round up to a whole page.  */
+  int pagesize = getpagesize ();
+  int misalignment = size % pagesize;
+  if (misalignment > 0)
+    size += pagesize - misalignment;
+
+  /* Try to get contiguous memory, but it might not be possible.
+     The most recent previous allocation is at the head of the list.  */
+  static void *addrhint = NULL;
+  void *new_pages = mmap (addrhint, size, PROT_READ | PROT_WRITE,
+			  MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (!new_pages)
+    {
+      GCN_DEBUG ("Could not allocate Managed Memory heap.");
+      __atomic_store_n (&lock, 0, __ATOMIC_RELEASE);
+      return false;
+    }
+
+  /* Register the heap allocation as coarse grained, "Managed" memory.  */
+  struct hsa_amd_svm_attribute_pair_s attr = {
+    HSA_AMD_SVM_ATTRIB_GLOBAL_FLAG,
+    HSA_AMD_SVM_GLOBAL_FLAG_COARSE_GRAINED
+  };
+  hsa_status_t status = hsa_fns.hsa_amd_svm_attributes_set_fn (new_pages, size,
+							       &attr, 1);
+  if (status != HSA_STATUS_SUCCESS)
+    GOMP_PLUGIN_fatal ("Failed to allocate Unified Shared Memory;"
+		       " please update your drivers and/or kernel");
+
+  /* The HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE setting is required on devices
+     without default SVM.  */
+  static int svm_accessible = 0xff; /* Use 0xff as "undefined".  */
+  if (svm_accessible == 0xff)
+    {
+      status = hsa_fns.hsa_system_get_info_fn
+	(HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT, &svm_accessible);
+      if (status != HSA_STATUS_SUCCESS)
+	{
+	  GCN_DEBUG ("warning: failed to query "
+		     " HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT\n");
+	  svm_accessible = false;
+	}
+    }
+  if (svm_accessible == false)
+    {
+      struct hsa_amd_svm_attribute_pair_s attr2;
+      attr2.attribute = HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE;
+      attr2.value = agent->id.handle;
+      status = hsa_fns.hsa_amd_svm_attributes_set_fn (new_pages, size, &attr2,
+						      1);
+      if (status != HSA_STATUS_SUCCESS)
+	GOMP_PLUGIN_fatal ("Failed to allocate Unified Shared Memory;"
+			   " please update your drivers and/or kernel");
+    }
+
+  addrhint = new_pages + size;
+
+  /* Initialize a new Managed memory heap, or add the new memory into an
+     existing Managed memory heap.  */
+  if (!managed_ctx)
+    managed_ctx = gomp_simple_alloc_init_context ();
+  gomp_simple_alloc_register_memory (managed_ctx, new_pages, size);
+
+  __atomic_store_n (&lock, 0, __ATOMIC_RELEASE);
+  return true;
+}
+
+/* }}} */
 /* {{{ OpenACC support  */
 
 /* Execute an OpenACC kernel, synchronously or asynchronously.  */
@@ -5059,6 +5209,35 @@ GOMP_OFFLOAD_async_run (int device, void *tgt_fn, void *tgt_vars,
   queue_push_launch (agent->omp_async_queue, kernel, tgt_vars, kla);
   queue_push_callback (agent->omp_async_queue,
 		       GOMP_PLUGIN_target_task_completion, async_data);
+}
+
+/* Allocate memory suitable for Managed Memory.  */
+
+void *
+GOMP_OFFLOAD_managed_alloc (int device, size_t size)
+{
+  struct agent_info *agent = get_agent_info (device);
+  while (1)
+    {
+      void *result = gomp_simple_alloc (managed_ctx, size);
+      if (result)
+	return result;
+
+      /* Allocation failed.  Try again if we can create a new heap block.
+	 Note: it's possible another thread could get to the new memory
+	 first, so the while loop is necessary. */
+      if (!managed_heap_create (agent, size))
+	return NULL;
+    }
+}
+
+/* Free memory allocated via GOMP_OFFLOAD_managed_alloc.  */
+
+bool
+GOMP_OFFLOAD_managed_free (int device, void *ptr)
+{
+  gomp_simple_free (managed_ctx, ptr);
+  return true;
 }
 
 /* }}} */

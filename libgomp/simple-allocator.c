@@ -312,4 +312,5 @@ gomp_simple_realloc (gomp_simple_alloc_ctx_p ctx, void *addr, size_t newsize)
 /* Include the splay tree code inline, with the prefixes added.  */
 #define splay_tree_prefix simple_alloc
 #define splay_tree_c
+#define gomp_fatal GOMP_PLUGIN_fatal  /* So it links into a plugin.  */
 #include "splay-tree.h"

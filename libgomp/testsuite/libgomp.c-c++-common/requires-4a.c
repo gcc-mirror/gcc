@@ -3,6 +3,10 @@
 /* { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } } */
 /* { dg-additional-sources requires-4-aux.c } */
 
+/* GCC explicitly disables XNACK for gfx908 (and others) as the hardware
+   support is limited, which results in a diagnostic.  */
+/* { dg-excess-errors "Unified Shared Memory is enabled, but XNACK is disabled" { target offload_target_amdgcn } } */
+
 /* Same as requires-4.c, but uses heap memory for 'a'.  */
 
 /* Check no diagnostic by device-compiler's or host compiler's lto1.

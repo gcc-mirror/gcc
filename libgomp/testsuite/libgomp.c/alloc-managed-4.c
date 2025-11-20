@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-require-effective-target omp_managedmem } */
+/* { dg-additional-options -foffload-options=amdgcn-amdhsa=-mxnack=on { target offload_target_amdgcn_with_xnack } } */
 /* { dg-shouldfail "" } */
 /* { dg-output "libgomp: attempted to free managed memory at 0x\[0-9a-f\]+, but the default device is set to the host device" } */
 

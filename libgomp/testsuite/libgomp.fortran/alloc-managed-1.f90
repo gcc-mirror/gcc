@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-require-effective-target omp_managedmem }
+! { dg-additional-options -foffload-options=amdgcn-amdhsa=-mxnack=on { target offload_target_amdgcn_with_xnack } }
 
 ! Check that omp_alloc can allocate Managed Memory, and that host and target
 ! can see the data, at the same address, without a mapping.

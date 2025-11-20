@@ -729,5 +729,41 @@ proc check_effective_target_omp_managedmem { } {
     if { [check_effective_target_offload_device_nvptx] } {
 	return 1
     }
+
+    if { [libgomp_check_effective_target_offload_target "amdgcn"] } {
+	if [check_runtime_nocache managed_available_ {
+	    #include <omp.h>
+	    #include <stdlib.h>
+	    int main ()
+	    {
+	      const omp_alloctrait_t traits[] = {
+		  { omp_atk_fallback, omp_atv_null_fb }
+	      };
+	      omp_allocator_handle_t managed_no_fallback
+	         = omp_init_allocator (ompx_gnu_managed_mem_space, 1, traits);
+	      void *a = omp_alloc (16, managed_no_fallback);
+	      return a == NULL;
+	    }
+	} ] {
+	  return 1
+	}
+    }
+
+    return 0
+}
+
+# return 1 if -mxnack=on is accepted
+
+proc check_effective_target_offload_target_amdgcn_with_xnack { } {
+    if { [libgomp_check_effective_target_offload_target "amdgcn"] } {
+	return [check_no_compiler_messages amd_xnack_ executable {
+	   int main () {
+	     #pragma omp target
+	       ;
+	     return 0;
+	   }
+	} "-foffload-options=amdgcn-amdhsa=-mxnack=on" ]
+    }
+
     return 0
 }

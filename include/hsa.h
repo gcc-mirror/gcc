@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2014-2020 Advanced Micro Devices Inc.  All rights reserved.
+// Copyright (C) 2014-2022 Advanced Micro Devices Inc.  All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person or organization
 // obtaining a copy of the software and accompanying documentation covered by
@@ -467,7 +467,19 @@ typedef enum {
   * String containing the ROCr build identifier.
   */
   HSA_AMD_SYSTEM_INFO_BUILD_VERSION = 0x200,
-
+  /**
+  * Returns true if hsa_amd_svm_* APIs are supported by the driver.  The type of
+  * this attribute is bool.
+  */
+  HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED = 0x201,
+  // TODO: Should this be per Agent?
+  /**
+  * Returns true if all Agents have access to system allocated memory (such as
+  * that allocated by mmap, malloc, or new) by default.
+  * If false then system allocated memory may only be made SVM accessible to
+  * an Agent by declaration of accessibility with hsa_amd_svm_set_attributes.
+  * The type of this attribute is bool.
+  */
   HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT = 0x202
 } hsa_system_info_t;
 
@@ -986,8 +998,16 @@ typedef enum {
    * Minor version of the HSA runtime specification supported by the
    * agent. The type of this attribute is uint16_t.
    */
-  HSA_AGENT_INFO_VERSION_MINOR = 22
-
+  HSA_AGENT_INFO_VERSION_MINOR = 22,
+  /**
+   * This enum does not have a fixed underlying type, thus in C++ post D2338:
+   * If the enumeration type does not have a fixed underlying type, the value is
+   * unchanged if the original value is within the range of the enumeration
+   * values (9.7.1 [dcl.enum]), and otherwise, the behavior is
+   * undefined.
+   * Thus increase the range of this enum to encompass vendor extensions.
+   */
+  HSA_AGENT_INFO_LAST = INT32_MAX
 } hsa_agent_info_t;
 
 /**

@@ -1,6 +1,6 @@
 ////////////////////////////////////////////////////////////////////////////////
 //
-// Copyright (C) 2014-2020 Advanced Micro Devices Inc.  All rights reserved.
+// Copyright (C) 2014-2022 Advanced Micro Devices Inc.  All rights reserved.
 //
 // Permission is hereby granted, free of charge, to any person or organization
 // obtaining a copy of the software and accompanying documentation covered by
