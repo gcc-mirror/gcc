@@ -2066,7 +2066,8 @@ enclosed in a @code{subreg}.
 
 There are currently three supported types for the first operand of a
 @code{subreg}:
-@itemize
+
+@table @asis
 @item pseudo registers
 This is the most common case.  Most @code{subreg}s have pseudo
 @code{reg}s as their first operand.
@@ -2096,7 +2097,7 @@ It is seldom necessary to wrap hard registers in @code{subreg}s; such
 registers would normally reduce to a single @code{reg} rtx.  This use of
 @code{subreg}s is discouraged and may not be supported in the future.
 
-@end itemize
+@end table
 
 @code{subreg}s of @code{subreg}s are not supported.  Using
 @code{simplify_gen_subreg} is the recommended way to avoid this problem.
@@ -2123,7 +2124,7 @@ defined.
 
 The high-order bits of rvalues are defined in the following circumstances:
 
-@itemize
+@table @asis
 @item @code{subreg}s of @code{mem}
 When @var{m2} is smaller than a word, the macro @code{LOAD_EXTEND_OP},
 can control how the high-order bits are defined.
@@ -2134,7 +2135,7 @@ The upper bits are defined when @code{SUBREG_PROMOTED_VAR_P} is true.
 Such subregs usually represent local variables, register variables
 and parameter pseudo variables that have been promoted to a wider mode.
 
-@end itemize
+@end table
 
 @var{bytenum} is always zero for a paradoxical @code{subreg}, even on
 big-endian targets.
