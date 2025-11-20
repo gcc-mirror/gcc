@@ -127,29 +127,59 @@ phi_group::calculate_using_modifier (range_query *q)
   else
     return false;
 
-  // Examine modifier and run 10 iterations to see if it convergences.
+  // If we can resolve the range using relations, use that range.
+  if (refine_using_relation (k))
+    return true;
+
+  // Examine modifier and run iteration evaluations  to see if it convergences.
   // The constructor initilaized m_vr to the initial value already.
-  const unsigned num_iter = 10;
   int_range_max nv;
   int_range_max iter_value = m_vr;
   int_range_max iter_reach;
-  // Determie the maximum range of ITER reaching here.  Often a loop
-  // bound restricts the range reaching here.  Default to VARYING.
+
+  // Determine the maximum range of the var reaching here.  The back edge
+  // usually has a guard restircting the range. Default to VARYING.
   if (!m_modifier_name
       || !q->range_of_expr (iter_reach, m_modifier_name, m_modifier))
     iter_reach.set_varying (m_vr.type ());
+
+  // Iterative evaluation can be expensive, so heuristically :
+  //  - PLUS and MINUS are 98% of the cases, and usually handled well enough
+  //    by loop analysis, The exception is if the reaching range has multiple
+  //    subranges, those are often worth examining.
+  //  - All other operations (2%) are worth checking.
+  bool do_iterative = false;
+  if (gimple_code (m_modifier) == GIMPLE_ASSIGN)
+    switch (gimple_assign_rhs_code (m_modifier))
+      {
+	case PLUS_EXPR:
+	case MINUS_EXPR:
+	  if (iter_reach.num_pairs () > 1)
+	    do_iterative = true;
+	  break;
+	default:
+	  do_iterative = true;
+      }
+
+  // Limit iterations to 1 more than the number of bits.
+  unsigned num_iter;
+  if (do_iterative)
+    num_iter = TYPE_PRECISION (m_vr.type ()) + 1;
+  else
+    num_iter = 0;
+
   for (unsigned x = 0; x < num_iter; x++)
     {
       if (!fold_range (nv, m_modifier, iter_value, q))
 	break;
-      // Ensure nothing calculate is outside outside the reaching range.
+      // Ensure nothing calculated is outside outside the reaching range.
       nv.intersect (iter_reach);
       // If union does nothing, then we have convergence.
       if (!iter_value.union_ (nv))
 	{
 	  if (iter_value.varying_p ())
 	    break;
-	  // The last iteration Will reach the PHI node.
+	  // The last iteration Will also reach the PHI node, add it in.
 	  fold_range (nv, m_modifier, iter_value, q);
 	  iter_value.union_ (nv);
 	  m_vr = iter_value;
@@ -157,17 +187,13 @@ phi_group::calculate_using_modifier (range_query *q)
 	}
     }
 
-  // If we can resolve the range using relations, use that range.
-  if (refine_using_relation (k))
-    return true;
-
   // Never converged, so bail for now. we could examine the pattern
   // from m_initial to m_vr as an extension  Especially if we had a way
   // to project the actual number of iterations (SCEV?)
   //
   //  We can also try to identify "parallel" phis to get loop counts and
   //  determine the number of iterations of these parallel PHIs.
-  //
+
   return false;
 }
 
