@@ -305,7 +305,7 @@ extern machine_mode default_mode_for_floating_type (enum tree_index);
 extern HOST_WIDE_INT default_stack_clash_protection_alloca_probe_range (void);
 extern void default_select_early_remat_modes (sbitmap);
 extern tree default_preferred_else_value (unsigned, tree, unsigned, tree *);
-
+extern bool default_instruction_selection (function *, gimple_stmt_iterator *);
 extern bool default_have_speculation_safe_value (bool);
 extern bool speculation_safe_value_not_needed (bool);
 extern rtx default_speculation_safe_value (machine_mode, rtx, rtx, rtx);

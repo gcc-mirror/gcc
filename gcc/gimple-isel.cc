@@ -1357,6 +1357,9 @@ pass_gimple_isel::execute (struct function *fun)
     {
       for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
 	{
+	  /* Give the target first try at replacing the instruction.  */
+	  cfg_changed |= targetm.instruction_selection (fun, &gsi);
+
 	  /* Pre-expand VEC_COND_EXPRs to .VCOND* internal function
 	     calls mapping to supported optabs.  */
 	  gimple *g = gimple_expand_vec_cond_expr (&gsi);

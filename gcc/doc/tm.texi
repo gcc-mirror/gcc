@@ -6628,6 +6628,20 @@ like @code{cond_add@var{m}}.  The default implementation returns a zero
 constant of type @var{type}.
 @end deftypefn
 
+@deftypefn {Target Hook} bool TARGET_INSTRUCTION_SELECTION (function *@var{fun}, gimple_stmt_iterator *@var{gsi})
+This hook allows a target to perform custom instruction selection for an
+instruction or sequence of instructions before expand to allow expansion to
+generate more efficient code.
+
+@var{fun} is the current function being considered and @var{gsi} is the
+iterator pointing to the current instruction being optimized.  The default
+implementation does not do any rewriting and returns false.  The result of
+the function should be whether any changes were made to the CFG or not.  If a
+change was made then the @var{gsi} should be left at the same position as at
+the function start.  The caller is allowed to change the CFG at any point
+before the current statement @var{gsi} is pointing to but not afterwards.
+@end deftypefn
+
 @deftypefn {Target Hook} tree TARGET_GOACC_ADJUST_PRIVATE_DECL (location_t @var{loc}, tree @var{var}, int @var{level})
 This hook, if defined, is used by accelerator target back-ends to adjust
 OpenACC variable declarations that should be made private to the given

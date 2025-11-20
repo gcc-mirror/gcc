@@ -2138,6 +2138,23 @@ constant of type @var{type}.",
  default_preferred_else_value)
 
 DEFHOOK
+(instruction_selection,
+ "This hook allows a target to perform custom instruction selection for an\n\
+instruction or sequence of instructions before expand to allow expansion to\n\
+generate more efficient code.\n\
+\n\
+@var{fun} is the current function being considered and @var{gsi} is the\n\
+iterator pointing to the current instruction being optimized.  The default\n\
+implementation does not do any rewriting and returns false.  The result of\n\
+the function should be whether any changes were made to the CFG or not.  If a\n\
+change was made then the @var{gsi} should be left at the same position as at\n\
+the function start.  The caller is allowed to change the CFG at any point\n\
+before the current statement @var{gsi} is pointing to but not afterwards.",
+ bool,
+ (function *fun, gimple_stmt_iterator *gsi),
+ default_instruction_selection)
+
+DEFHOOK
 (record_offload_symbol,
  "Used when offloaded functions are seen in the compilation unit and no named\n\
 sections are available.  It is called once for each symbol that must be\n\

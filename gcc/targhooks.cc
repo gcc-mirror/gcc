@@ -2764,6 +2764,14 @@ default_preferred_else_value (unsigned, tree type, unsigned, tree *)
   return build_zero_cst (type);
 }
 
+/* The default implementation of TARGET_INSTRUCTION_SELECTION.  */
+
+bool
+default_instruction_selection (function *, gimple_stmt_iterator *)
+{
+  return false;
+}
+
 /* Default implementation of TARGET_HAVE_SPECULATION_SAFE_VALUE.  */
 bool
 default_have_speculation_safe_value (bool active ATTRIBUTE_UNUSED)
