@@ -16929,7 +16929,7 @@ package body Sem_Ch12 is
             Scope_Stack.Decrement_Last;
             S := Current_Scope;
          else
-            SE := (Is_Transient => False, others => <>);
+            SE.Is_Transient := False;
          end if;
 
          --  After child instantiation is complete, remove from scope stack the
