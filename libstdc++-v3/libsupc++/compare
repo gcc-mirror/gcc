@@ -573,10 +573,12 @@ namespace std _GLIBCXX_VISIBILITY(default)
   // [cmp.object], typename compare_three_way
   struct compare_three_way
   {
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wc++23-extensions" // static operator()
     template<typename _Tp, typename _Up>
       requires three_way_comparable_with<_Tp, _Up>
-      constexpr auto
-      operator() [[nodiscard]] (_Tp&& __t, _Up&& __u) const
+      static constexpr auto
+      operator() [[nodiscard]] (_Tp&& __t, _Up&& __u)
       noexcept(noexcept(std::declval<_Tp>() <=> std::declval<_Up>()))
       {
 	if constexpr (__detail::__3way_builtin_ptr_cmp<_Tp, _Up>)
@@ -592,6 +594,7 @@ namespace std _GLIBCXX_VISIBILITY(default)
 	else
 	  return static_cast<_Tp&&>(__t) <=> static_cast<_Up&&>(__u);
       }
+#pragma GCC diagnostic pop
 
     using is_transparent = void;
   };
