@@ -1,3 +1,38 @@
+2025-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122743
+	* doc/xml/manual/abi.xml: Add versions for GCC 15.
+	* doc/html/manual/abi.html: Regenerate.
+
+2025-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-11-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Remove unwanted whitespace inside
+	programlisting elements.
+	* doc/xml/manual/allocator.xml: Likewise.
+	* doc/xml/manual/auto_ptr.xml: Likewise.
+	* doc/xml/manual/backwards_compatibility.xml: Likewise.
+	* doc/xml/manual/build_hacking.xml: Likewise.
+	* doc/xml/manual/containers.xml: Likewise.
+	* doc/xml/manual/diagnostics.xml: Likewise.
+	* doc/xml/manual/extensions.xml: Likewise.
+	* doc/xml/manual/intro.xml: Likewise.
+	* doc/xml/manual/io.xml: Likewise.
+	* doc/xml/manual/iterators.xml: Likewise.
+	* doc/xml/manual/numerics.xml: Likewise.
+	* doc/xml/manual/policy_data_structures.xml: Likewise.
+	* doc/xml/manual/strings.xml: Likewise.
+	* doc/xml/manual/support.xml: Likewise.
+	* doc/xml/manual/test.xml: Likewise.
+	* doc/xml/manual/using.xml: Likewise.
+	* doc/xml/manual/utilities.xml: Likewise.
+	* doc/html/*: Regenerate.
+
 2025-11-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	Backported from master:

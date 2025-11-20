@@ -1,3 +1,14 @@
+2025-11-19  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-11-19  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119580
+	* g++.dg/template/crash106.C: Adjust expected diagnostics.
+	* g++.dg/template/crash112.C: Likewise.
+	* g++.dg/template/dependent-args1.C: Likewise.
+	* g++.dg/cpp0x/pr119580.C: New test.
+
 2025-11-18  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
