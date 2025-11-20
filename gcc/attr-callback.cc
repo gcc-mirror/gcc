@@ -83,6 +83,15 @@ callback_special_case_attr (tree decl)
   gcc_unreachable ();
 }
 
+/* Returns TRUE if the callee of E has a callback attribute.  */
+bool
+callback_edge_callee_has_attr (cgraph_edge *e)
+{
+  return lookup_attribute (CALLBACK_ATTR_IDENT,
+			   DECL_ATTRIBUTES (e->callee->decl))
+	 || callback_is_special_cased (e->callee->decl, e->call_stmt);
+}
+
 /* Given an instance of callback attribute, return the 0-based
    index of the called function in question.  */
 int

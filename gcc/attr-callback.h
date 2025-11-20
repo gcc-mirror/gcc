@@ -43,6 +43,9 @@ bool callback_is_special_cased (tree decl, gcall *stmt);
 /* Returns an attribute for a special cased function.  */
 tree callback_special_case_attr (tree decl);
 
+/* Returns TRUE if the callee of E has a callback attribute.  */
+bool callback_edge_callee_has_attr (cgraph_edge *e);
+
 /* Given an instance of callback attribute, return the 0-based
    index of the called function in question.  */
 int callback_get_fn_index (tree cb_attr);

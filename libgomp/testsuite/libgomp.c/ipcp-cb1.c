@@ -2,9 +2,8 @@
    This tests the underlying callback attribute and its related edges.  */
 
 /* { dg-do run } */
-/* { dg-options "-O3 -fopenmp -flto -std=gnu99 -fdump-ipa-cp-details" } */
+/* { dg-options "-O3 -fopenmp -std=gnu99 -fdump-ipa-cp-details" } */
 /* { dg-require-effective-target fopenmp } */
-/* { dg-require-effective-target lto } */
 
 int a[100];
 void test(int c) {
@@ -21,5 +20,5 @@ int main() {
   return a[5] - 5;
 }
 
-/* { dg-final { scan-wpa-ipa-dump "Creating a specialized node of test._omp_fn" "cp" } } */
-/* { dg-final { scan-wpa-ipa-dump "Aggregate replacements: 0\\\[0]=100\\(by_ref\\)" "cp" } } */
+/* { dg-final { scan-ipa-dump "Creating a specialized node of test._omp_fn" "cp" } } */
+/* { dg-final { scan-ipa-dump "Aggregate replacements: 0\\\[0]=100\\(by_ref\\)" "cp" } } */
