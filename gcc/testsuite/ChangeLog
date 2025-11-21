@@ -1,3 +1,27 @@
+2025-11-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	* gcc.target/riscv/pr113715.c: New test.
+	* gcc.target/riscv/rv32e_zcmp.c: Update expected output for
+	test_popretz.
+	* gcc.target/riscv/rv32i_zcmp.c: Likewise.
+
+2025-11-20  Pan Li  <pan2.li@intel.com>
+
+	PR target/122692
+	* g++.target/riscv/pr122692-run-1.C: New test.
+	* g++.target/riscv/pr122692-run-2.C: New test.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/122695
+	* gcc.target/loongarch/pr122695-1.c: New test.
+	* gcc.target/loongarch/pr122695-2.c: New test.
+
+2025-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120876
+	* g++.dg/parse/crash81.C: New test.
+
 2025-11-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/122756

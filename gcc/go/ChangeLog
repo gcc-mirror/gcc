@@ -1,3 +1,8 @@
+2025-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gospec.cc (lang_specific_driver) [TARGET_SOLARIS]: Replace
+	USE_GLD by HAVE_GNU_LD.
+
 2025-10-27  Richard Biener  <rguenther@suse.de>
 
 	PR middle-end/122325

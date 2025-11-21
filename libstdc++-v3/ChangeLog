@@ -1,3 +1,29 @@
+2025-11-20  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/vector (std::erase_if, std::erase): New overloads for
+	std::__debug::vector instances.
+	* include/std/vector (std::erase_if, std::erase): Make overloads specific
+	to normal std::vector implementation.
+	* testsuite/23_containers/vector/debug/erase.cc: New test case.
+	* testsuite/23_containers/vector/debug/invalidation/erase.cc: New test case.
+
+2025-11-20  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan: Improve formatting and placement.
+	* testsuite/23_containers/mdspan/int_like.h: Optionally,
+	add move- and copy-ctors.
+	* testsuite/23_containers/mdspan/layouts/padded_traits.h: Move to...
+	* testsuite/23_containers/mdspan/layout_traits.h: ...here.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: Fix include.
+	* testsuite/23_containers/mdspan/layouts/mapping.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded.cc: Ditto.
+	* testsuite/23_containers/mdspan/layouts/padded_neg.cc: Ditto.
+
+2025-11-20  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/18_support/headers/new/synopsis.cc: Add constexpr to
+	placement delete for C++26 and up.
+
 2025-11-19  Jonathan Wakely  <jwakely@redhat.com>
 
 	* doc/xml/manual/abi.xml: Add versions for GCC 16.

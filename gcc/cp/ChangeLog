@@ -1,3 +1,15 @@
+2025-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120876
+	* pt.cc (tsubst_baselink): Move maybe_incomplete handling after
+	!baselink handling.
+
+2025-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122540
+	* decl.cc (start_enum): When setting ENUM_UNDERLYING_TYPE
+	to integer_type_node during error recovery, also call copy_type_enum.
+
 2025-11-19  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/119580

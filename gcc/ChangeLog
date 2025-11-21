@@ -1,3 +1,142 @@
+2025-11-20  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/121345
+	* gimple-range-phi.cc (phi_group::calculate_using_modifier): Restore
+	performance loss by being more selective when iterating.
+
+2025-11-20  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-opt-popretz.cc: New file.
+	* config/riscv/riscv-passes.def: Insert pass_combine_popretz before
+	pass_shorten_branches.
+	* config/riscv/riscv-protos.h (make_pass_combine_popretz): New
+	declaration.
+	* config/riscv/t-riscv: Add riscv-opt-popretz.o build rule.
+	* config.gcc (riscv*): Add riscv-opt-popretz.o to extra_objs.
+
+2025-11-20  Pan Li  <pan2.li@intel.com>
+
+	PR target/122692
+	* config/riscv/riscv.cc (riscv_expand_ustrunc): Leverage
+	riscv_extend_to_xmode_reg to take care of src rtx.
+
+2025-11-20  Tamar Christina  <tamar.christina@arm.com>
+
+	* target.def (instruction_selection): New.
+	* doc/tm.texi.in: Document it.
+	* doc/tm.texi: Regenerate
+	* gimple-isel.cc (pass_gimple_isel::execute): Use it.
+	* targhooks.cc (default_instruction_selection): New.
+	* targhooks.h (default_instruction_selection): New.
+
+2025-11-20  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/122358
+	* cgraph.cc (cgraph_add_edge_to_call_site_hash): Add an early
+	return when the hashed edge is a callback-carrying edge.
+
+2025-11-20  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* doc/rtl.texi (Regs and Memory): Use @table instead of @itemize
+	for lists with named items.
+
+2025-11-20  Xinhui Yang  <cyan@cyano.uk>
+
+	PR bootstrap/105664
+	* Makefile.in (install-driver): detect name collision when
+	installing the driver program.
+
+2025-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/i386/sol2.h: Replace USE_GAS by HAVE_GNU_AS.
+	Replace USE_GLD by HAVE_GNU_LD.
+	* config/sol2.h: Likewise.
+	* config/sparc/sol2.h: Likewise.
+	* config/i386/i386.cc (i386_solaris_elf_named_section)
+	[TARGET_SOLARIS]: Replace USE_GAS by HAVE_GNU_AS.
+	* config/ia64/hpux.h: Likewise.
+	* config.gcc: Remove usegas.h, usegld.h.
+	* config/usegas.h: Remove.
+	* config/usegld.h: Remove
+
+2025-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (LINK_ARCH32_SPEC_BASE): Don't provide -YP
+	defaults.  Rename to ...
+	(LINK_ARCH_SPEC_BASE): ... this.
+	(LINK_ARCH32_SPEC): Remove.
+	(LINK_ARCH64_SPEC_BASE): Remove.
+	(LINK_ARCH64_SPEC): Rename to ...
+	(LINK_ARCH_SPEC_1): ... this.
+	[!USE_GLD]: Simplify map.below4G use.
+	(LINK_ARCH_ERROR_SPEC): New macro.
+	(LINK_ARCH32_SPEC): Remove.
+	(LINK_ARCH_DEFAULT_SPEC): Remove.
+	(LINK_ARCH_SPEC): Simplify using LINK_ARCH_ERROR_SPEC,
+	LINK_ARCH_SPEC_1.
+	(SUBTARGET_EXTRA_SPECS): Remove link_arch32, link_arch64
+	link_arch_default.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lsx.md (vec_perm<mode>): Expand directly with
+	RTL template.
+	* config/loongarch/loongarch-protos.h
+	(loongarch_expand_vec_perm): Delete.
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm):
+	Delete.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (lasx_xvpermi_d): Add "@".
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Use gen_lasx_xvpermi_d instead of
+	gen_lasx_xvpermi_d_{v32qi,v16hi} to deduplicate the logic.  Do
+	structrual programming instead of goto and label.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Clamp the selector using the twice of actual number of elements.
+	Compare the clamped selector with the element number to get the
+	blending mask.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (lasx_xvshuf_b): Remove.
+	(lasx_xvshuf_<lasxfmt_f): Remove.
+	(unspec): Remove UNSPEC_LASX_XVSHUF and UNSPEC_LASX_XVSHUF_B.
+	* config/loongarch/lsx.md (lsx_vshuf_b): Remove.
+	(lsx_vshuf_<lasxfmt_f): Remove.
+	(unspec): Remove UNSPEC_LSX_VSHUF and UNSPEC_LSX_VSHUF_B.
+	* config/loongarch/simd.md (unspec): Add UNSPEC_SIMD_VSHUF.
+	(@simd_vshuf): New define_insn.
+	(<simd_isa>_<x>vshuf_<simdfmt><_f>): New define_expand.
+	* config/loongarch/loongarch.cc
+	(loongarch_try_expand_lsx_vshuf_const): Call gen_simd_vshuf
+	instead of gen_lasx_xvshuf and gen_lasx_xvshuf_b.
+	(loongarch_expand_vec_perm_const): Likewise.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/lasx.md (lasx_xvperm_<lasxfmt_f_wd>): Add
+	"@" for gen_lasx_xvperm helper.
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Call gen_lasx_xvperm to unify V8SF and V8SI handling.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Use lasx_xvpackev_h (mask * 2, mask * 2 + 1) to "expand" the
+	V4DI selector to V8SI.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/122695
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Simplify and fix the logic preventing the xvshuf.* unpredictable
+	behavior.
+
 2025-11-19  Andrew MacLeod  <amacleod@redhat.com>
 
 	PR tree-optimization/122756
