@@ -805,7 +805,9 @@ struct GTY(()) cgraph_simd_clone_arg {
   /* For arg_type SIMD_CLONE_ARG_TYPE_LINEAR_*CONSTANT_STEP this is
      the constant linear step, if arg_type is
      SIMD_CLONE_ARG_TYPE_LINEAR_*VARIABLE_STEP, this is index of
-     the uniform argument holding the step, otherwise 0.  */
+     the uniform argument holding the step, otherwise 0.
+     For arg_type SIMD_CLONE_ARG_TYPE_MASK and a mask_mode that is
+     not VOIDmode, this is the number of mask arguments.  */
   HOST_WIDE_INT linear_step;
 };
 

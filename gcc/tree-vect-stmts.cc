@@ -4055,7 +4055,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   bb_vec_info bb_vinfo = dyn_cast <bb_vec_info> (vinfo);
   class loop *loop = loop_vinfo ? LOOP_VINFO_LOOP (loop_vinfo) : NULL;
   tree fndecl, new_temp;
-  int ncopies, j;
+  int j;
   auto_vec<simd_call_arg_info> arginfo;
   vec<tree> vargs = vNULL;
   size_t i, nargs;
@@ -4211,6 +4211,8 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  && TREE_CODE (op) == SSA_NAME)
 	vect_simd_lane_linear (op, loop, &thisarginfo);
 
+      if (!vectype)
+	vectype = thisarginfo.vectype;
       arginfo.quick_push (thisarginfo);
     }
 
@@ -4339,13 +4341,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   if (bestn == NULL)
     return false;
 
-  unsigned int num_mask_args = 0;
-  for (i = 0; i < bestn->simdclone->nargs; i++)
-    if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
-      num_mask_args++;
-  if (!SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
-    gcc_assert (num_mask_args <= 1);
-
   for (i = 0; i < nargs; i++)
     {
       if ((arginfo[i].dt == vect_constant_def
@@ -4403,7 +4398,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    {
 	      if (!SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype))
 		  || maybe_ne (exact_div (bestn->simdclone->simdlen,
-					  num_mask_args),
+					  bestn->simdclone->args[i].linear_step),
 			       TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 		{
 		  /* FORNOW we only have partial support for integer-type masks
@@ -4431,7 +4426,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   fndecl = bestn->decl;
   nunits = bestn->simdclone->simdlen;
-  ncopies = vector_unroll_factor (vf * group_size, nunits);
+  int ncopies = vector_unroll_factor (vf * group_size, nunits);
 
   /* If the function isn't const, only allow it in simd loops where user
      has asserted that at least nunits consecutive iterations can be
@@ -4439,6 +4434,11 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   if ((loop == NULL || maybe_lt ((unsigned) loop->safelen, nunits))
       && gimple_vuse (stmt))
     return false;
+
+  /* ncopies is the number of SIMD clone calls we create, since simdlen
+     is not necessarily matching nunits of the vector types used, track
+     that in ncopies_in.  */
+  int ncopies_in = vect_get_num_vectors (vf * group_size, vectype);
 
   /* Sanity check: make sure that at least one copy of the vectorized stmt
      needs to be generated.  */
@@ -4491,20 +4491,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_MASK:
 	      if (loop_vinfo
 		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-		{
-		  tree arg_vectype;
-		  if (SCALAR_INT_MODE_P
-			(TYPE_MODE (bestn->simdclone->args[i].vector_type)))
-		    arg_vectype = build_truth_vector_type_for_mode
-			(exact_div (bestn->simdclone->simdlen, num_mask_args),
-			 TYPE_MODE (bestn->simdclone->args[i].vector_type));
-		  else
-		    arg_vectype = bestn->simdclone->args[i].vector_type;
-		  vect_record_loop_mask (loop_vinfo,
-					 &LOOP_VINFO_MASKS (loop_vinfo),
-					 ncopies * num_mask_args, arg_vectype,
-					 op);
-		}
+		vect_record_loop_mask (loop_vinfo,
+				       &LOOP_VINFO_MASKS (loop_vinfo),
+				       ncopies_in, vectype, op);
 	      break;
 	    }
 	}
@@ -4694,7 +4683,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				= &LOOP_VINFO_MASKS (loop_vinfo);
 			      tree loop_mask
 				= vect_get_loop_mask (loop_vinfo, gsi,
-						      loop_masks, ncopies,
+						      loop_masks, ncopies_in,
 						      vectype, j);
 			      vec_oprnd0
 				= prepare_vec_mask (loop_vinfo,
@@ -4728,11 +4717,10 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	      else if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
 		{
 		  atype = bestn->simdclone->args[i].vector_type;
-		  /* Guess the number of lanes represented by atype.  */
 		  poly_uint64 atype_subparts
 		    = exact_div (bestn->simdclone->simdlen,
-				 num_mask_args);
-		  o = vector_unroll_factor (nunits, atype_subparts);
+				 bestn->simdclone->args[i].linear_step);
+		  o = bestn->simdclone->args[i].linear_step;
 		  for (m = j * o; m < (j + 1) * o; m++)
 		    {
 		      if (m == 0)
@@ -4756,7 +4744,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 				= &LOOP_VINFO_MASKS (loop_vinfo);
 			      tree loop_mask
 				= vect_get_loop_mask (loop_vinfo, gsi,
-						      loop_masks, ncopies,
+						      loop_masks, ncopies_in,
 						      vectype, j);
 			      vec_oprnd0
 				= prepare_vec_mask (loop_vinfo,
