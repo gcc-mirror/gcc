@@ -36,12 +36,12 @@ static RequestPair
   const requestTable[Detail::RC_HWM] =
   {
     // Same order as enum RequestCode
-    RequestPair {u8"HELLO", nullptr},
-    RequestPair {u8"MODULE-REPO", ModuleRepoRequest},
-    RequestPair {u8"MODULE-EXPORT", ModuleExportRequest},
-    RequestPair {u8"MODULE-IMPORT", ModuleImportRequest},
-    RequestPair {u8"MODULE-COMPILED", ModuleCompiledRequest},
-    RequestPair {u8"INCLUDE-TRANSLATE", IncludeTranslateRequest},
+    RequestPair {(const char *) u8"HELLO", nullptr},
+    RequestPair {(const char *) u8"MODULE-REPO", ModuleRepoRequest},
+    RequestPair {(const char *) u8"MODULE-EXPORT", ModuleExportRequest},
+    RequestPair {(const char *) u8"MODULE-IMPORT", ModuleImportRequest},
+    RequestPair {(const char *) u8"MODULE-COMPILED", ModuleCompiledRequest},
+    RequestPair {(const char *) u8"INCLUDE-TRANSLATE", IncludeTranslateRequest},
   };
 }
 
@@ -135,21 +135,21 @@ void Server::ProcessRequests (void)
 	  std::string msg;
 
 	  if (err > 0)
-	    msg = u8"error processing '";
+	    msg = (const char *) u8"error processing '";
 	  else if (ix >= Detail::RC_HWM)
-	    msg = u8"unrecognized '";
+	    msg = (const char *) u8"unrecognized '";
 	  else if (IsConnected () && ix == Detail::RC_CONNECT)
-	    msg = u8"already connected '";
+	    msg = (const char *) u8"already connected '";
 	  else if (!IsConnected () && ix != Detail::RC_CONNECT)
-	    msg = u8"not connected '";
+	    msg = (const char *) u8"not connected '";
 	  else
-	    msg = u8"malformed '";
+	    msg = (const char *) u8"malformed '";
 
 	  read.LexedLine (msg);
-	  msg.append (u8"'");
+	  msg.append ((const char *) u8"'");
 	  if (err > 0)
 	    {
-	      msg.append (u8" ");
+	      msg.append ((const char *) u8" ");
 	      msg.append (strerror (err));
 	    }
 	  resolver->ErrorResponse (this, std::move (msg));
@@ -176,7 +176,7 @@ Resolver *ConnectRequest (Server *s, Resolver *r,
     return nullptr;
 
   if (words.size () == 3)
-    words.emplace_back (u8"");
+    words.emplace_back ((const char *) u8"");
   unsigned version = ParseUnsigned (words[1]);
   if (version == ~0u)
     return nullptr;

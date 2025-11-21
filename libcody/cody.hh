@@ -47,12 +47,21 @@ namespace Detail  {
 
 // C++11 doesn't have utf8 character literals :(
 
+#if __cpp_char8_t >= 201811
+template<unsigned I>
+constexpr char S2C (char8_t const (&s)[I])
+{
+  static_assert (I == 2, "only single octet strings may be converted");
+  return s[0];
+}
+#else
 template<unsigned I>
 constexpr char S2C (char const (&s)[I])
 {
   static_assert (I == 2, "only single octet strings may be converted");
   return s[0];
 }
+#endif
 
 /// Internal buffering class.  Used to concatenate outgoing messages
 /// and Lex incoming ones.
@@ -110,11 +119,7 @@ public:
   /// Add whitespace word separator.  Multiple adjacent whitespace is fine.
   void Space ()
   {
-#if __cpp_unicode_characters >= 201411
-    Append ((char) u8' ');
-#else
     Append (Detail::S2C(u8" "));
-#endif
   }
 
 public:
@@ -127,6 +132,13 @@ public:
       Space ();
     Append (str, maybe_quote, len);
   }
+#if __cpp_char8_t >= 201811
+  void AppendWord (char8_t const *str, bool maybe_quote = false,
+		   size_t len = ~size_t (0))
+  {
+    AppendWord ((const char *) str, maybe_quote, len);
+  }
+#endif
   /// Add a word as with AppendWord
   /// @param str the string to append
   /// @param maybe_quote string might need quoting, as for Append
@@ -268,6 +280,12 @@ public:
     : string (s), cat (STRING), code (c)
   {
   }
+#if __cpp_char8_t >= 201811
+  Packet (unsigned c, const char8_t *s)
+    : string ((const char *) s), cat (STRING), code (c)
+  {
+  }
+#endif
   Packet (unsigned c, std::vector<std::string> &&v)
     : vector (std::move (v)), cat (VECTOR), code (c)
   {

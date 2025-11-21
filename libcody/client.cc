@@ -97,7 +97,7 @@ int Client::CommunicateWithServer ()
 
 static Packet CommunicationError (int err)
 {
-  std::string e {u8"communication error:"};
+  std::string e {(const char *) u8"communication error:"};
   e.append (strerror (err));
 
   return Packet (Client::PC_ERROR, std::move (e));
@@ -110,33 +110,34 @@ Packet Client::ProcessResponse (std::vector<std::string> &words,
     {
       if (e == EINVAL)
 	{
-	  std::string msg (u8"malformed string '");
+	  std::string msg ((const char *) u8"malformed string '");
 	  msg.append (words[0]);
-	  msg.append (u8"'");
+	  msg.append ((const char *) u8"'");
 	  return Packet (Client::PC_ERROR, std::move (msg));
 	}
       else
-	return Packet (Client::PC_ERROR, u8"missing response");
+	return Packet (Client::PC_ERROR, (const char *) u8"missing response");
     }
 
   Assert (!words.empty ());
-  if (words[0] == u8"ERROR")
+  if (words[0] == (const char *) u8"ERROR")
     return Packet (Client::PC_ERROR,
-		   words.size () == 2 ? words[1]: u8"malformed error response");
+		   words.size () == 2 ? words[1]
+		   : (const char *) u8"malformed error response");
 
   if (isLast && !read.IsAtEnd ())
     return Packet (Client::PC_ERROR,
-		   std::string (u8"unexpected extra response"));
+		   std::string ((const char *) u8"unexpected extra response"));
 
   Assert (code < Detail::RC_HWM);
   Packet result (responseTable[code] (words));
   result.SetRequest (code);
   if (result.GetCode () == Client::PC_ERROR && result.GetString ().empty ())
     {
-      std::string msg {u8"malformed response '"};
+      std::string msg {(const char *) u8"malformed response '"};
 
       read.LexedLine (msg);
-      msg.append (u8"'");
+      msg.append ((const char *) u8"'");
       result.GetString () = std::move (msg);
     }
   else if (result.GetCode () == Client::PC_CONNECT)
@@ -199,7 +200,7 @@ Packet Client::Connect (char const *agent, char const *ident,
 			  size_t alen, size_t ilen)
 {
   write.BeginLine ();
-  write.AppendWord (u8"HELLO");
+  write.AppendWord ((const char *) u8"HELLO");
   write.AppendInteger (Version);
   write.AppendWord (agent, true, alen);
   write.AppendWord (ident, true, ilen);
@@ -211,7 +212,8 @@ Packet Client::Connect (char const *agent, char const *ident,
 // HELLO $version $agent [$flags]
 Packet ConnectResponse (std::vector<std::string> &words)
 {
-  if (words[0] == u8"HELLO" && (words.size () == 3 || words.size () == 4))
+  if (words[0] == (const char *) u8"HELLO"
+      && (words.size () == 3 || words.size () == 4))
     {
       char *eptr;
       unsigned long val = strtoul (words[1].c_str (), &eptr, 10);
@@ -247,7 +249,7 @@ Packet Client::ModuleRepo ()
 // PATHNAME $dir | ERROR
 Packet PathnameResponse (std::vector<std::string> &words)
 {
-  if (words[0] == u8"PATHNAME" && words.size () == 2)
+  if (words[0] == (const char *) u8"PATHNAME" && words.size () == 2)
     return Packet (Client::PC_PATHNAME, std::move (words[1]));
 
   return Packet (Client::PC_ERROR, u8"");
@@ -256,7 +258,7 @@ Packet PathnameResponse (std::vector<std::string> &words)
 // OK or ERROR
 Packet OKResponse (std::vector<std::string> &words)
 {
-  if (words[0] == u8"OK")
+  if (words[0] == (const char *) u8"OK")
     return Packet (Client::PC_OK);
   else
     return Packet (Client::PC_ERROR,
@@ -319,11 +321,11 @@ Packet Client::IncludeTranslate (char const *include, Flags flags, size_t ilen)
 // PATHNAME $cmifile
 Packet IncludeTranslateResponse (std::vector<std::string> &words)
 {
-  if (words[0] == u8"BOOL" && words.size () == 2)
+  if (words[0] == (const char *) u8"BOOL" && words.size () == 2)
     {
-      if (words[1] == u8"FALSE")
-	return Packet (Client::PC_BOOL, 0);
-      else if (words[1] == u8"TRUE")
+      if (words[1] == (const char *) u8"FALSE")
+	return Packet (Client::PC_BOOL);
+      else if (words[1] == (const char *) u8"TRUE")
 	return Packet (Client::PC_BOOL, 1);
       else
 	return Packet (Client::PC_ERROR, u8"");
