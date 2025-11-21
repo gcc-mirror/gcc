@@ -331,10 +331,12 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
      can move the loads to the place of the ptr phi node.  */
   phi_inserted = false;
   changed = false;
+  auto_vec<gimple*> delayed_uses;
   FOR_EACH_IMM_USE_STMT (use_stmt, ui, ptr)
     {
       gimple *def_stmt;
       tree vuse;
+      bool delay = false;
 
       if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
 	calculate_dominance_info (CDI_POST_DOMINATORS);
@@ -344,7 +346,7 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
       if (canpossible_trap
 	  && !dominated_by_p (CDI_POST_DOMINATORS,
 			      bb, gimple_bb (use_stmt)))
-	continue;
+	delay = true;
 
       /* Check whether this is a load of *ptr.  */
       if (!(is_gimple_assign (use_stmt)
@@ -396,6 +398,9 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
          insert aggregate copies on the edges instead.  */
       if (!is_gimple_reg_type (TREE_TYPE (gimple_assign_lhs (use_stmt))))
 	{
+	  /* aggregate copies are too hard to handled if delayed.  */
+	  if (delay)
+	    goto next;
 	  if (!gimple_vdef (use_stmt))
 	    goto next;
 
@@ -450,10 +455,19 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
 
 	  changed = true;
 	}
-
+      /* Further replacements are easy, just make a copy out of the
+	 load.  */
+      else if (phi_inserted)
+	{
+	  gimple_assign_set_rhs1 (use_stmt, res);
+	  update_stmt (use_stmt);
+	  changed = true;
+	}
+      else if (delay)
+	delayed_uses.safe_push (use_stmt);
       /* Found a proper dereference.  Insert a phi node if this
 	 is the first load transformation.  */
-      else if (!phi_inserted)
+      else
 	{
 	  res = phiprop_insert_phi (bb, phi, use_stmt, phivn, n, dce_ssa_names);
 	  type = TREE_TYPE (res);
@@ -470,18 +484,19 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
 	  phi_inserted = true;
 	  changed = true;
 	}
-      else
-	{
-	  /* Further replacements are easy, just make a copy out of the
-	     load.  */
-	  gimple_assign_set_rhs1 (use_stmt, res);
-	  update_stmt (use_stmt);
-	  changed = true;
-	}
 
 next:;
       /* Continue searching for a proper dereference.  */
     }
+
+  /* Update the delayed uses if there is any
+     as now we know this is safe to do. */
+  if (phi_inserted)
+    for (auto use_stmt : delayed_uses)
+      {
+	gimple_assign_set_rhs1 (use_stmt, res);
+	update_stmt (use_stmt);
+      }
 
   return changed;
 }
