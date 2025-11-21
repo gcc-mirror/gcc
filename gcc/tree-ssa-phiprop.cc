@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "tree-ssa-loop.h"
 #include "tree-cfg.h"
 #include "tree-ssa-dce.h"
+#include "cfgloop.h"
 
 /* This pass propagates indirect loads through the PHI node for its
    address to make the load source possibly non-addressable and to
@@ -346,6 +347,17 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
       if (canpossible_trap
 	  && !dominated_by_p (CDI_POST_DOMINATORS,
 			      bb, gimple_bb (use_stmt)))
+	delay = true;
+
+      /* Amend the post-dominance check for SSA cycles, we need to
+	 make sure each PHI result value is dereferenced.
+	 We only want to delay this if we don't insert a phi.  */
+      if (!(gimple_bb (use_stmt) == bb
+	    || (!(bb->flags & BB_IRREDUCIBLE_LOOP)
+		&& !(gimple_bb (use_stmt)->flags & BB_IRREDUCIBLE_LOOP)
+		&& (bb->loop_father == gimple_bb (use_stmt)->loop_father
+		    || flow_loop_nested_p (bb->loop_father,
+					   gimple_bb (use_stmt)->loop_father)))))
 	delay = true;
 
       /* Check whether this is a load of *ptr.  */
