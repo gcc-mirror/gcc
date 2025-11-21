@@ -1319,9 +1319,6 @@
   (ior (match_operand 0 "nonimmediate_operand")
        (match_test "const_vec_duplicate_p (op)")))
 
-(define_predicate "const_vec_dup_operand"
-       (match_test "const_vec_duplicate_p (op)"))
-
 ;; Return true when OP is either register operand, or any
 ;; CONST_VECTOR.
 (define_predicate "reg_or_const_vector_operand"

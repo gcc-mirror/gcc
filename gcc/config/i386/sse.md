@@ -27293,24 +27293,6 @@
   DONE;
 })
 
-(define_expand "cond_<insn><mode>"
-  [(set (match_operand:VI1_AVX512VL 0 "register_operand")
-	(vec_merge:VI1_AVX512VL
-	  (any_shift:VI1_AVX512VL
-	    (match_operand:VI1_AVX512VL 2 "register_operand")
-	    (match_operand:VI1_AVX512VL 3 "const_vec_dup_operand"))
-	  (match_operand:VI1_AVX512VL 4 "nonimm_or_0_operand")
-	(match_operand:<avx512fmaskmode> 1 "register_operand")))]
-  "TARGET_GFNI && TARGET_AVX512F"
-{
-  rtx count = XVECEXP (operands[3], 0, 0);
-  rtx matrix = ix86_vgf2p8affine_shift_matrix (operands[0], count, <CODE>);
-  emit_insn (gen_vgf2p8affineqb_<mode>_mask (operands[0], operands[2], matrix,
-					     const0_rtx, operands[4],
-					     operands[1]));
-  DONE;
-})
-
 (define_expand "<insn><mode>3"
   [(set (match_operand:VI1_AVX512_3264 0 "register_operand")
 	(any_rotate:VI1_AVX512_3264
