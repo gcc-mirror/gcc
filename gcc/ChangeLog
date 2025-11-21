@@ -1,3 +1,30 @@
+2025-11-20  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-10-10  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122225
+	* tree-cfg.cc (verify_gimple_return): Look at DECL_RESULT
+	for DECL_BY_REFERENCE.
+
+2025-11-20  Richard Biener  <rguenther@suse.de>
+
+	Backported from master:
+	2025-10-30  Richard Biener  <rguenther@suse.de>
+
+	* config/i386/i386-options.cc (ix86_option_override_internal):
+	Fix check during opts->x_ix86_move_max initialization.
+
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/122695
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Simplify and fix the logic preventing the xvshuf.* unpredictable
+	behavior.
+
 2025-11-18  Andre Vieira  <andre.simoesdiasvieira@arm.com>
 
 	Backported from master:
