@@ -28,6 +28,10 @@
  *  Do not attempt to use it directly. @headername{regex}
  */
 
+#ifdef _GLIBCXX_DEBUG
+# include <ostream>
+#endif
+
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
