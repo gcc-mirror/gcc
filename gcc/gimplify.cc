@@ -2673,6 +2673,7 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	  gsi_next (gsi_p);
 	}
 
+      tree lab;
       /* Remember the last statement.  Skip labels that are of no interest
 	 to us.  */
       if (gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_LABEL)
@@ -2691,7 +2692,9 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
 	;
       else if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
 	       && gimple_code (gsi_stmt (*gsi_p)) == GIMPLE_GOTO
-	       && VACUOUS_INIT_LABEL_P (gimple_goto_dest (gsi_stmt (*gsi_p))))
+	       && (lab = gimple_goto_dest (gsi_stmt (*gsi_p)))
+	       && TREE_CODE (lab) == LABEL_DECL
+	       && VACUOUS_INIT_LABEL_P (lab))
 	;
       else if (!is_gimple_debug (gsi_stmt (*gsi_p)))
 	prev = gsi_stmt (*gsi_p);
@@ -2928,9 +2931,12 @@ expand_FALLTHROUGH_r (gimple_stmt_iterator *gsi_p, bool *handled_ops_p,
 
 	  gimple_stmt_iterator gsi2 = *gsi_p;
 	  stmt = gsi_stmt (gsi2);
+	  tree lab;
 	  if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
 	      && gimple_code (stmt) == GIMPLE_GOTO
-	      && VACUOUS_INIT_LABEL_P (gimple_goto_dest (stmt)))
+	      && (lab = gimple_goto_dest (stmt))
+	      && TREE_CODE (lab) == LABEL_DECL
+	      && VACUOUS_INIT_LABEL_P (lab))
 	    {
 	      /* Handle for C++ artificial -ftrivial-auto-var-init=
 		 sequences.  Those look like:
