@@ -1,4 +1,4 @@
-/* Test asynchronous, unstructed data regions, directives variant.  */
+/* Test asynchronous, unstructured data regions, directives variant.  */
 /* See also data-2-lib.c.  */
 
 #include <stdlib.h>
@@ -149,12 +149,15 @@ main (int argc, char **argv)
   for (int ii = 0; ii < N; ii++)
     e[ii] = a[ii] + b[ii] + c[ii] + d[ii];
 
-#pragma acc exit data copyout (a[0:N]) async (10)
+  /* The kernels above use `a', so wait for them to finish with it before
+     exiting that array.  */
+#pragma acc exit data copyout (a[0:N]) async (10) wait (11) wait (12) wait (13) wait (14)
 #pragma acc exit data copyout (b[0:N]) async (11)
 #pragma acc exit data copyout (c[0:N]) async (12)
 #pragma acc exit data copyout (d[0:N]) async (13)
 #pragma acc exit data copyout (e[0:N]) async (14)
-#pragma acc exit data delete (N) async (15)
+  /* As for `a`, same goes for `N'.  */
+#pragma acc exit data delete (N) async (15)  wait (11) wait (12) wait (13) wait (14)
 #pragma acc wait
 
   for (i = 0; i < N; i++)

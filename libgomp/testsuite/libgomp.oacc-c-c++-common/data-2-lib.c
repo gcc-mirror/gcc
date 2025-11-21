@@ -1,4 +1,4 @@
-/* Test asynchronous, unstructed data regions, runtime library variant.  */
+/* Test asynchronous, unstructured data regions, runtime library variant.  */
 /* See also data-2.c.  */
 
 #include <stdlib.h>
@@ -155,11 +155,23 @@ main (int argc, char **argv)
   for (int ii = 0; ii < N; ii++)
     e[ii] = a[ii] + b[ii] + c[ii] + d[ii];
 
+  /* The kernels above use `a', so wait for them to finish with it before
+     exiting that array.  */
+  acc_wait_async (11, 10);
+  acc_wait_async (12, 10);
+  acc_wait_async (13, 10);
+  acc_wait_async (14, 10);
   acc_copyout_async (a, nbytes, 10);
   acc_copyout_async (b, nbytes, 11);
   acc_copyout_async (c, nbytes, 12);
   acc_copyout_async (d, nbytes, 13);
   acc_copyout_async (e, nbytes, 14);
+
+  /* As for `a', same goes for `N'.  */
+  acc_wait_async (11, 15);
+  acc_wait_async (12, 15);
+  acc_wait_async (13, 15);
+  acc_wait_async (14, 15);
   acc_delete_async (&N, sizeof (int), 15);
   acc_wait_all ();
 
