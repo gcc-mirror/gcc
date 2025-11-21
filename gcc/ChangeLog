@@ -1,3 +1,13 @@
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/122695
+	* config/loongarch/loongarch.cc (loongarch_expand_vec_perm_1):
+	Simplify and fix the logic preventing the xvshuf.* unpredictable
+	behavior.
+
 2025-11-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:

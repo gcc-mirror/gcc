@@ -1,3 +1,12 @@
+2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	Backported from master:
+	2025-11-20  Xi Ruoyao  <xry111@xry111.site>
+
+	PR target/122695
+	* gcc.target/loongarch/pr122695-1.c: New test.
+	* gcc.target/loongarch/pr122695-2.c: New test.
+
 2025-11-18  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	Backported from master:
