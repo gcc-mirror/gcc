@@ -6286,15 +6286,15 @@ archs4x, archs4xd"
 
 (define_insn_and_split "*extvsi_n_0"
   [(set (match_operand:SI 0 "register_operand" "=r")
-	(sign_extract:SI (match_operand:SI 1 "register_operand" "0")
+	(sign_extract:SI (match_operand:SI 1 "register_operand" "r")
 			 (match_operand:QI 2 "const_int_operand")
 			 (const_int 0)))]
   "!TARGET_BARREL_SHIFTER
    && IN_RANGE (INTVAL (operands[2]), 2,
 		(optimize_insn_for_size_p () ? 28 : 30))"
   "#"
-  "&& 1"
-[(set (match_dup 0) (and:SI (match_dup 0) (match_dup 3)))
+  "&& reload_completed"
+[(set (match_dup 0) (and:SI (match_dup 1) (match_dup 3)))
  (set (match_dup 0) (xor:SI (match_dup 0) (match_dup 4)))
  (set (match_dup 0) (minus:SI (match_dup 0) (match_dup 4)))]
 {
