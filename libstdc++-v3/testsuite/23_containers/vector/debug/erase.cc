@@ -1,5 +1,4 @@
 // { dg-do run { target c++20 } }
-// { dg-add-options no_pch }
 // { dg-require-debug-mode "" }
 
 #include <vector>
