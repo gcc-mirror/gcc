@@ -73,22 +73,6 @@ OS portion of the triplet (the default), then nothing needs to be changed.
 that are required to allow the C++ library to work with your C library.
    </para>
 
-   <para>Several libstdc++ source files unconditionally define the macro
-<code>_POSIX_SOURCE</code>.  On many systems, defining this macro causes
-large portions of the C library header files to be eliminated
-at preprocessing time.  Therefore, you may have to <code>#undef</code> this
-macro, or define other macros (like <code>_LARGEFILE_SOURCE</code> or
-<code>__EXTENSIONS__</code>).  You won't know what macros to define or
-undefine at this point; you'll have to try compiling the library and
-seeing what goes wrong.  If you see errors about calling functions
-that have not been declared, look in your C library headers to see if
-the functions are declared there, and then figure out what macros you
-need to define.  You will need to add them to the
-<code>CPLUSPLUS_CPP_SPEC</code> macro in the GCC configuration file for your
-target.  It will not work to simply define these macros in
-<code>os_defines.h</code>.
-   </para>
-
    <para>At this time, there are a few libstdc++-specific macros which may be
 defined:
    </para>

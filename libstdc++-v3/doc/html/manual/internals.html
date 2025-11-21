@@ -41,20 +41,6 @@ OS portion of the triplet (the default), then nothing needs to be changed.
    </p><p>The first file to create in this directory, should be called
 <code class="code">os_defines.h</code>.  This file contains basic macro definitions
 that are required to allow the C++ library to work with your C library.
-   </p><p>Several libstdc++ source files unconditionally define the macro
-<code class="code">_POSIX_SOURCE</code>.  On many systems, defining this macro causes
-large portions of the C library header files to be eliminated
-at preprocessing time.  Therefore, you may have to <code class="code">#undef</code> this
-macro, or define other macros (like <code class="code">_LARGEFILE_SOURCE</code> or
-<code class="code">__EXTENSIONS__</code>).  You won't know what macros to define or
-undefine at this point; you'll have to try compiling the library and
-seeing what goes wrong.  If you see errors about calling functions
-that have not been declared, look in your C library headers to see if
-the functions are declared there, and then figure out what macros you
-need to define.  You will need to add them to the
-<code class="code">CPLUSPLUS_CPP_SPEC</code> macro in the GCC configuration file for your
-target.  It will not work to simply define these macros in
-<code class="code">os_defines.h</code>.
    </p><p>At this time, there are a few libstdc++-specific macros which may be
 defined:
    </p><p><code class="code">_GLIBCXX_USE_C99_CHECK</code> may be defined to 1 to check C99

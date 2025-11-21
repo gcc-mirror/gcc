@@ -432,26 +432,28 @@
     This has been fixed for libstdc++ releases greater than 3.0.3.
     </p></td></tr><tr class="question"><td align="left" valign="top"><a id="faq.predefined"></a><a id="q-predefined"></a><p><strong>4.3.</strong></p></td><td align="left" valign="top"><p>
       <code class="constant">_XOPEN_SOURCE</code> and <code class="constant">_GNU_SOURCE</code> are always defined?
-    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-predefined"></a></td><td align="left" valign="top"><p>On Solaris, <span class="command"><strong>g++</strong></span> (but not <span class="command"><strong>gcc</strong></span>)
+    </p></td></tr><tr class="answer"><td align="left" valign="top"><a id="a-predefined"></a></td><td align="left" valign="top"><p>On GNU/Linux, <span class="command"><strong>g++</strong></span> (but not <span class="command"><strong>gcc</strong></span>)
          always defines the preprocessor macro
-	 <code class="constant">_XOPEN_SOURCE</code>.  On GNU/Linux, the same happens
-         with <code class="constant">_GNU_SOURCE</code>.  (This is not an exhaustive list;
+	 <code class="constant">_GNU_SOURCE</code>.  On Solaris, the same happens
+         with <code class="constant">_XOPEN_SOURCE</code>.  (This is not an exhaustive list;
          other macros and other platforms are also affected.)
       </p><p>These macros are typically used in C library headers, guarding new
-         versions of functions from their older versions.  The C++98 standard
-         library includes the C standard library, but it requires the C90
-         version, which for backwards-compatibility reasons is often not the
-         default for many vendors.
-      </p><p>More to the point, the C++ standard requires behavior which is only
-         available on certain platforms after certain symbols are defined.
+         versions of functions from their older versions.  Historically,
+	 libstdc++ needed these macros to ensure that the headers provided by
+	 the C library declared all the functions that libstdc++ relies on.
+	 For example, functions for working with <code class="code">long long</code>,
+	 such as <code class="function">strtoll</code>, are needed by libstdc++ but
+	 were not part of the C90 standard.
+      </p><p>Additionally the C++ standard requires behavior which is only
+         available on certain platforms after certain macros are defined.
          Usually the issue involves I/O-related typedefs.  In order to
-         ensure correctness, the compiler simply predefines those symbols.
-      </p><p>Note that it's not enough to <code class="literal">#define</code> them only when the library is
-         being built (during installation).  Since we don't have an 'export'
-         keyword, much of the library exists as headers, which means that
-         the symbols must also be defined as your programs are parsed and
+         ensure correctness, the compiler simply predefines those macros.
+      </p><p>Note that it's not enough to <code class="literal">#define</code> them
+	 only when the library is being built (during installation).
+         Much of the library exists as headers, which means that
+         the macros must also be defined as your programs are parsed and
          compiled.
-      </p><p>To see which symbols are defined, look for
+      </p><p>To see which macros are defined, look for
          <code class="varname">CPLUSPLUS_CPP_SPEC</code> in
          the gcc config headers for your target (and try changing them to
          see what happens when building complicated code).  You can also run

@@ -551,31 +551,34 @@
       <constant>_XOPEN_SOURCE</constant> and <constant>_GNU_SOURCE</constant> are always defined?
     </para>
   </question>
+
   <answer xml:id="a-predefined">
-      <para>On Solaris, <command>g++</command> (but not <command>gcc</command>)
+      <para>On GNU/Linux, <command>g++</command> (but not <command>gcc</command>)
          always defines the preprocessor macro
-	 <constant>_XOPEN_SOURCE</constant>.  On GNU/Linux, the same happens
-         with <constant>_GNU_SOURCE</constant>.  (This is not an exhaustive list;
+	 <constant>_GNU_SOURCE</constant>.  On Solaris, the same happens
+         with <constant>_XOPEN_SOURCE</constant>.  (This is not an exhaustive list;
          other macros and other platforms are also affected.)
       </para>
       <para>These macros are typically used in C library headers, guarding new
-         versions of functions from their older versions.  The C++98 standard
-         library includes the C standard library, but it requires the C90
-         version, which for backwards-compatibility reasons is often not the
-         default for many vendors.
+         versions of functions from their older versions.  Historically,
+	 libstdc++ needed these macros to ensure that the headers provided by
+	 the C library declared all the functions that libstdc++ relies on.
+	 For example, functions for working with <code>long long</code>,
+	 such as <function>strtoll</function>, are needed by libstdc++ but
+	 were not part of the C90 standard.
       </para>
-      <para>More to the point, the C++ standard requires behavior which is only
-         available on certain platforms after certain symbols are defined.
+      <para>Additionally the C++ standard requires behavior which is only
+         available on certain platforms after certain macros are defined.
          Usually the issue involves I/O-related typedefs.  In order to
-         ensure correctness, the compiler simply predefines those symbols.
+         ensure correctness, the compiler simply predefines those macros.
       </para>
-      <para>Note that it's not enough to <literal>#define</literal> them only when the library is
-         being built (during installation).  Since we don't have an 'export'
-         keyword, much of the library exists as headers, which means that
-         the symbols must also be defined as your programs are parsed and
+      <para>Note that it's not enough to <literal>#define</literal> them
+	 only when the library is being built (during installation).
+         Much of the library exists as headers, which means that
+         the macros must also be defined as your programs are parsed and
          compiled.
       </para>
-      <para>To see which symbols are defined, look for
+      <para>To see which macros are defined, look for
          <varname>CPLUSPLUS_CPP_SPEC</varname> in
          the gcc config headers for your target (and try changing them to
          see what happens when building complicated code).  You can also run
