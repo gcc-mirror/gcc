@@ -477,6 +477,9 @@ build_data_member_initialization (tree t, vec<constructor_elt, va_gc> **vec)
       if (TREE_CODE (aggr) != COMPONENT_REF)
 	/* Normal member initialization.  */
 	member = TREE_OPERAND (member, 1);
+      else if (VAR_P (get_base_address (aggr)))
+	/* Initializing a local variable, don't add anything.  */
+	return true;
       else if (ANON_AGGR_TYPE_P (TREE_TYPE (aggr)))
 	/* Initializing a member of an anonymous union.  */
 	return build_anon_member_initialization (member, init, vec);
