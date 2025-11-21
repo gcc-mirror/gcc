@@ -4748,10 +4748,25 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		      else if (known_eq (atype_subparts,
 					 TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 			{
+			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
+			  if (loop_vinfo
+			      && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+			    {
+			      vec_loop_masks *loop_masks
+				= &LOOP_VINFO_MASKS (loop_vinfo);
+			      tree loop_mask
+				= vect_get_loop_mask (loop_vinfo, gsi,
+						      loop_masks, ncopies,
+						      vectype, j);
+			      vec_oprnd0
+				= prepare_vec_mask (loop_vinfo,
+						    TREE_TYPE (loop_mask),
+						    loop_mask, vec_oprnd0,
+						    gsi);
+			    }
 			  /* The vector mask argument matches the input
 			     in the number of lanes, but not necessarily
 			     in the mode.  */
-			  vec_oprnd0 = vec_oprnds[i][vec_oprnds_i[i]++];
 			  tree st = lang_hooks.types.type_for_mode
 				      (TYPE_MODE (TREE_TYPE (vec_oprnd0)), 1);
 			  vec_oprnd0 = build1 (VIEW_CONVERT_EXPR, st,
