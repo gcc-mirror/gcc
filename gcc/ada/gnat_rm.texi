@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT Reference Manual , Nov 18, 2025
+GNAT Reference Manual , Dec 05, 2025
 
 AdaCore
 
@@ -19606,7 +19606,7 @@ To get a feel for the difference, consider the following examples (note
 that in each case the base is @code{Short_Short_Integer} with a size of 8):
 
 
-@multitable {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxx} 
+@multitable {xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxx} {xxxxxxxxxxxxxxx} 
 @headitem
 
 Type or subtype declaration
@@ -19621,7 +19621,7 @@ Value_Size
 
 @item
 
-@code{type x1 is range 0 .. 5;}
+@code{type X1 is range 0 .. 5;}
 
 @tab
 
@@ -19633,8 +19633,8 @@ Value_Size
 
 @item
 
-@code{type x2 is range 0 .. 5;}
-@code{for x2'size use 12;}
+@code{type X2 is range 0 .. 5;
+for X2'Size use 12;}
 
 @tab
 
@@ -19646,7 +19646,7 @@ Value_Size
 
 @item
 
-@code{subtype x3 is x2 range 0 .. 3;}
+@code{subtype X3 is X2 range 0 .. 3;}
 
 @tab
 
@@ -19658,7 +19658,7 @@ Value_Size
 
 @item
 
-@code{subtype x4 is x2'base range 0 .. 10;}
+@code{subtype X4 is X2'Base range 0 .. 10;}
 
 @tab
 
@@ -19670,7 +19670,7 @@ Value_Size
 
 @item
 
-@code{dynamic : x2'Base range -64 .. +63;}
+@code{Dynamic : X2'Base range -64 .. +63;}
 
 @tab
 
@@ -19678,7 +19678,7 @@ Value_Size
 
 @item
 
-@code{subtype x5 is x2 range 0 .. dynamic;}
+@code{subtype X5 is X2 range 0 .. Dynamic;}
 
 @tab
 
@@ -19690,7 +19690,7 @@ Value_Size
 
 @item
 
-@code{subtype x6 is x2'base range 0 .. dynamic;}
+@code{subtype X6 is X2'Base range 0 .. Dynamic;}
 
 @tab
 
