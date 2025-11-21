@@ -3652,17 +3652,17 @@ implicitly_declare_fn (special_function_kind kind, tree type,
   return fn;
 }
 
-/* Mark an explicitly defaulted function FN as =deleted and warn.
+/* Maybe mark an explicitly defaulted function FN as =deleted and warn,
+   or emit an error, as per [dcl.fct.def.default].
    IMPLICIT_FN is the corresponding special member function that
-   would have been implicitly declared.  */
+   would have been implicitly declared.  We've already compared FN and
+   IMPLICIT_FN and they are not the same.  */
 
-void
+static void
 maybe_delete_defaulted_fn (tree fn, tree implicit_fn)
 {
-  if (DECL_ARTIFICIAL (fn) || !DECL_DEFAULTED_IN_CLASS_P (fn))
+  if (DECL_ARTIFICIAL (fn))
     return;
-
-  DECL_DELETED_FN (fn) = true;
 
   auto_diagnostic_group d;
   const special_function_kind kind = special_function_p (fn);
@@ -3670,30 +3670,30 @@ maybe_delete_defaulted_fn (tree fn, tree implicit_fn)
     = TREE_VALUE (DECL_XOBJ_MEMBER_FUNCTION_P (fn)
 		  ? TREE_CHAIN (TYPE_ARG_TYPES (TREE_TYPE (fn)))
 		  : FUNCTION_FIRST_USER_PARMTYPE (fn));
-  const bool illformed_p
-    /* [dcl.fct.def.default] "if F1 is an assignment operator"...  */
-    = (SFK_ASSIGN_P (kind)
+  if (/* [dcl.fct.def.default] "if F1 is an assignment operator"...  */
+      (SFK_ASSIGN_P (kind)
        /* "and the return type of F1 differs from the return type of F2"  */
        && (!same_type_p (TREE_TYPE (TREE_TYPE (fn)),
 			 TREE_TYPE (TREE_TYPE (implicit_fn)))
 	   /* "or F1's non-object parameter type is not a reference,
 	      the program is ill-formed"  */
-	   || !TYPE_REF_P (parmtype)));
-  /* Decide if we want to emit a pedwarn, error, or a warning.  */
-  enum diagnostics::kind diag_kind;
-  int opt;
-  if (illformed_p)
+	   || !TYPE_REF_P (parmtype)))
+      /* If F1 is *not* explicitly defaulted on its first declaration, the
+	 program is ill-formed.  */
+      || !DECL_DEFAULTED_IN_CLASS_P (fn))
     {
-      diag_kind = diagnostics::kind::error;
-      opt = 0;
+      error ("defaulted declaration %q+D does not match the expected "
+	     "signature", fn);
+      inform (DECL_SOURCE_LOCATION (fn), "expected signature: %qD",
+	      implicit_fn);
+      return;
     }
-  else
-    {
-      diag_kind = (cxx_dialect >= cxx20
-		   ? diagnostics::kind::warning
-		   : diagnostics::kind::pedwarn);
-      opt = OPT_Wdefaulted_function_deleted;
-    }
+
+  DECL_DELETED_FN (fn) = true;
+
+  const enum diagnostics::kind diag_kind = (cxx_dialect >= cxx20
+					    ? diagnostics::kind::warning
+					    : diagnostics::kind::pedwarn);
 
   /* Don't warn for template instantiations.  */
   if (DECL_TEMPLATE_INSTANTIATION (fn)
@@ -3726,7 +3726,8 @@ maybe_delete_defaulted_fn (tree fn, tree implicit_fn)
     default:
       gcc_unreachable ();
     }
-  if (emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn), opt, wmsg))
+  if (emit_diagnostic (diag_kind, DECL_SOURCE_LOCATION (fn),
+		       OPT_Wdefaulted_function_deleted, wmsg))
     inform (DECL_SOURCE_LOCATION (fn),
 	    "expected signature: %qD", implicit_fn);
 }
