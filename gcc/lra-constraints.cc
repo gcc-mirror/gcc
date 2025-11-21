@@ -4960,7 +4960,47 @@ curr_insn_transform (bool check_only_p)
 	  }
       lra_assert (done_p);
     }
+  int const_regno = -1;
+  rtx set;
+  rtx_insn *prev, *const_insn = NULL;
+  if (before != NULL_RTX && (prev = PREV_INSN (curr_insn)) != NULL_RTX
+      && (set = single_set (prev)) != NULL_RTX && CONSTANT_P (SET_SRC (set)))
+    {
+      rtx reg = SET_DEST (set);
+      if (GET_CODE (reg) == SUBREG)
+	reg = SUBREG_REG (reg);
+      /* Consider only reload insns as we don't want to change the order
+	 created by previous optimizations.  */
+      if (REG_P (reg) && (int) REGNO (reg) >= lra_new_regno_start
+	  && bitmap_bit_p (&lra_reg_info[REGNO (reg)].insn_bitmap,
+			   INSN_UID (curr_insn)))
+	{
+	  const_regno = REGNO (reg);
+	  const_insn = prev;
+	}
+    }
   lra_process_new_insns (curr_insn, before, after, "Inserting insn reload");
+  if (const_regno >= 0) {
+    bool move_p = true;
+    for (rtx_insn *insn = before; insn != curr_insn; insn = NEXT_INSN (insn))
+      if (bitmap_bit_p (&lra_reg_info[const_regno].insn_bitmap,
+			INSN_UID (insn)))
+	{
+	  move_p = false;
+	  break;
+	}
+    if (move_p)
+      {
+	reorder_insns_nobb (const_insn, const_insn, PREV_INSN (curr_insn));
+	if (lra_dump_file != NULL)
+	  {
+	    dump_insn_slim (lra_dump_file, const_insn);
+	    fprintf (lra_dump_file,
+		     "    to decrease reg pressure, it is moved before:\n");
+	    dump_insn_slim (lra_dump_file, curr_insn);
+	  }
+      }
+  }
   return change_p;
 }
 
