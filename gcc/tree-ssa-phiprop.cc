@@ -271,6 +271,7 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
     return false;
 
   tree up_vuse = NULL_TREE;
+  bool canpossible_trap = false;
   /* Check if we can "cheaply" dereference all phi arguments.  */
   FOR_EACH_PHI_ARG (arg_p, phi, i, SSA_OP_USE)
     {
@@ -289,7 +290,11 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
 	  arg = gimple_assign_rhs1 (def_stmt);
 	}
       if (TREE_CODE (arg) == ADDR_EXPR)
-	;
+	{
+	  tree decl = TREE_OPERAND (arg, 0);
+	  if (!canpossible_trap)
+	    canpossible_trap = tree_could_trap_p (decl);
+	}
       /* When we have an SSA name see if we previously encountered a
 	 dereference of it.  */
       else if (TREE_CODE (arg) == SSA_NAME
@@ -335,9 +340,10 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
 	calculate_dominance_info (CDI_POST_DOMINATORS);
 
       /* Only replace loads in blocks that post-dominate the PHI node.  That
-         makes sure we don't end up speculating loads.  */
-      if (!dominated_by_p (CDI_POST_DOMINATORS,
-			   bb, gimple_bb (use_stmt)))
+	 makes sure we don't end up speculating trapping loads.  */
+      if (canpossible_trap
+	  && !dominated_by_p (CDI_POST_DOMINATORS,
+			      bb, gimple_bb (use_stmt)))
 	continue;
 
       /* Check whether this is a load of *ptr.  */
