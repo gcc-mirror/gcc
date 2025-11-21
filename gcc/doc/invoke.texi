@@ -16334,7 +16334,7 @@ as a parameter of @code{free} call or compared with @code{NULL}.  If
 with @option{-fmalloc-dce=2} also comparisons with @code{NULL} pointer are
 considered safe to remove.
 
-The default is @option{-fmalloc-dce=2}.  See also @option{-fallocation-dce}. 
+The default is @option{-fmalloc-dce=2}.  See also @option{-fallocation-dce}.
 
 @opindex fmove-loop-invariants
 @item -fmove-loop-invariants
@@ -22665,7 +22665,7 @@ and the features that they enable by default:
 @item @samp{armv9.2-a} @tab Armv9.2-A @tab @samp{armv9.1-a}, @samp{+wfxt}, @samp{+xs}
 @item @samp{armv9.3-a} @tab Armv9.3-A @tab @samp{armv9.2-a}, @samp{+mops}
 @item @samp{armv9.4-a} @tab Armv9.4-A @tab @samp{armv9.3-a}, @samp{+sve2p1}
-@item @samp{armv9.5-a} @tab Armv9.4-A @tab @samp{armv9.4-a}, @samp{cpa}, @samp{+faminmax}, @samp{+lut}
+@item @samp{armv9.5-a} @tab Armv9.5-A @tab @samp{armv9.4-a}, @samp{cpa}, @samp{+faminmax}, @samp{+lut}
 @item @samp{armv8-r} @tab Armv8-R @tab @samp{armv8-r}
 @end multitable
 
