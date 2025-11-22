@@ -3447,8 +3447,18 @@ cp_fold (tree x, fold_flags_t flags)
 		|| id_equal (DECL_NAME (callee), "as_const")))
 	  {
 	    r = CALL_EXPR_ARG (x, 0);
-	    r = build_nop (TREE_TYPE (x), r);
-	    x = cp_fold (r, flags);
+	    /* These type-checks must be performed here, because invalid
+	       definitions of these functions could fail to ensure those and
+	       build_nop could misbehave.  See PR122185.  */
+	    if (id_equal (DECL_NAME (callee), "to_underlying")
+		? TREE_CODE (TREE_TYPE (r)) == ENUMERAL_TYPE
+		  && INTEGRAL_TYPE_P (TREE_TYPE (x))
+		: INDIRECT_TYPE_P (TREE_TYPE (x))
+		  && INDIRECT_TYPE_P (TREE_TYPE (r)))
+	      {
+		r = build_nop (TREE_TYPE (x), r);
+		x = cp_fold (r, flags);
+	      }
 	    break;
 	  }
 
