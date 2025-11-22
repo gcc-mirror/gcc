@@ -32900,6 +32900,8 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	type = tsubst (type, args, complain | tf_tst_ok, in_decl);
       tree decl = build_decl (loc, VAR_DECL, DECL_NAME (range_decl), type);
       DECL_ATTRIBUTES (decl) = DECL_ATTRIBUTES (range_decl);
+      TREE_USED (decl) |= TREE_USED (range_decl);
+      DECL_READ_P (decl) |= DECL_READ_P (range_decl);
       if (args)
 	apply_late_template_attributes (&decl, DECL_ATTRIBUTES (decl),
 					/*flags=*/0, args, complain,
@@ -32958,6 +32960,8 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	      DECL_ARTIFICIAL (this_decl) = 1;
 	      DECL_ATTRIBUTES (this_decl)
 		= DECL_ATTRIBUTES (TREE_VEC_ELT (v, i + 1));
+	      TREE_USED (this_decl) |= TREE_USED (TREE_VEC_ELT (v, i + 1));
+	      DECL_READ_P (this_decl) |= DECL_READ_P (TREE_VEC_ELT (v, i + 1));
 	      if (DECL_PACK_P (TREE_VEC_ELT (v, i + 1)))
 		{
 		  tree dtype = cxx_make_type (DECLTYPE_TYPE);
