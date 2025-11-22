@@ -9259,6 +9259,28 @@ make_namespace_finish (tree ns, tree *slot, bool from_import = false)
     add_using_namespace (NAMESPACE_LEVEL (ctx)->using_directives, ns);
 }
 
+/* NS is a possibly-imported namespace that is now needed for
+   a declaration.  Add it to the current TU's binding slot.  */
+
+void
+expose_existing_namespace (tree ns)
+{
+  if (!modules_p ())
+    return;
+
+  tree bind = *find_namespace_slot (CP_DECL_CONTEXT (ns), DECL_NAME (ns));
+  if (bind != ns)
+    {
+      auto &cluster = BINDING_VECTOR_CLUSTER (bind, 0);
+      binding_slot &slot = cluster.slots[BINDING_SLOT_CURRENT];
+      gcc_checking_assert (!(tree)slot || (tree)slot == ns);
+      slot = ns;
+    }
+
+  if (module_purview_p ())
+    DECL_MODULE_PURVIEW_P (ns) = true;
+}
+
 /* Push into the scope of the NAME namespace.  If NAME is NULL_TREE,
    then we enter an anonymous namespace.  If MAKE_INLINE is true, then
    we create an inline namespace (it is up to the caller to check upon
@@ -9340,25 +9362,9 @@ push_namespace (tree name, bool make_inline)
       /* DR2061.  NS might be a member of an inline namespace.  We
 	 need to push into those namespaces.  */
       if (modules_p ())
-	{
-	  for (tree parent, ctx = ns; ctx != current_namespace;
-	       ctx = parent)
-	    {
-	      parent = CP_DECL_CONTEXT (ctx);
-
-	      tree bind = *find_namespace_slot (parent, DECL_NAME (ctx), false);
-	      if (bind != ctx)
-		{
-		  auto &cluster = BINDING_VECTOR_CLUSTER (bind, 0);
-		  binding_slot &slot = cluster.slots[BINDING_SLOT_CURRENT];
-		  gcc_checking_assert (!(tree)slot || (tree)slot == ctx);
-		  slot = ctx;
-		}
-
-	      if (module_purview_p ())
-		DECL_MODULE_PURVIEW_P (ctx) = true;
-	    }
-	}
+	for (tree ctx = ns; ctx != current_namespace;
+	     ctx = CP_DECL_CONTEXT (ctx))
+	  expose_existing_namespace (ctx);
 
       count += push_inline_namespaces (CP_DECL_CONTEXT (ns));
       if (DECL_SOURCE_LOCATION (ns) == BUILTINS_LOCATION)

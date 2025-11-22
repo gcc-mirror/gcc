@@ -11899,14 +11899,13 @@ tsubst_friend_function (tree decl, tree args)
 	  new_friend = old_decl;
 	}
 
-      /* We've just introduced a namespace-scope function in the purview
-	 without necessarily having opened the enclosing namespace, so
-	 make sure the namespace is in the purview now too.  */
-      if (modules_p ()
-	  && DECL_MODULE_PURVIEW_P (STRIP_TEMPLATE (new_friend)))
+      /* We've just introduced a namespace-scope function without
+	 necessarily having opened the enclosing namespace, so
+	 make sure the namespace is declared in this TU as well.  */
+      if (modules_p ())
 	for (tree ctx = DECL_CONTEXT (new_friend);
 	     TREE_CODE (ctx) == NAMESPACE_DECL; ctx = DECL_CONTEXT (ctx))
-	  DECL_MODULE_PURVIEW_P (ctx) = true;
+	  expose_existing_namespace (ctx);
     }
   else
     {
