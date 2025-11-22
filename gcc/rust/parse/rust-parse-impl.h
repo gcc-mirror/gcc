@@ -1861,7 +1861,8 @@ Parser<ManagedTokenSource>::parse_macro_invocation_semi (
 
   t = lexer.peek_token ();
   // parse token trees until the initial delimiter token is found again
-  while (!token_id_matches_delims (t->get_id (), delim_type))
+  while (!token_id_matches_delims (t->get_id (), delim_type)
+	 && t->get_id () != END_OF_FILE)
     {
       std::unique_ptr<AST::TokenTree> tree = parse_token_tree ();
 
