@@ -26,6 +26,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "memmodel.h"
 #include "insn-config.h"
 #include "emit-rtl.h"
+#include "expr.h"
 #include "recog.h"
 #include "cfganal.h"
 #include "tree-pass.h"
@@ -421,13 +422,12 @@ ext_dce_try_optimize_rshift (rtx_insn *insn, rtx set, rtx new_src, rtx_insn *new
       return;
     }
 
-  /* Replace SET_SRC (set) with NEW_SRC.  This changes the form of INSN, so
-     force rerecognition.  We also need to force DF to rescan INSN.  */
-  SET_SRC (set) = new_src;
-  INSN_CODE (insn) = -1;
-  df_insn_rescan (insn);
-
-  rtx new_pattern = PATTERN (insn);
+  /* We're going to generate a fresh insn for the move, so put it
+     into a sequence that we can emit after the current insn.   */
+  start_sequence ();
+  emit_move_insn (SET_DEST (set), new_src);
+  rtx_insn *seq = end_sequence (); 
+  emit_insn_after (seq, insn);
 
   /* Mark the destination as changed.  */
   rtx x = SET_DEST (set);
@@ -439,14 +439,11 @@ ext_dce_try_optimize_rshift (rtx_insn *insn, rtx set, rtx new_src, rtx_insn *new
   if (dump_file)
     {
       fprintf (dump_file, "Successfully transformed to:\n");
-      print_rtl_single (dump_file, new_pattern);
+      print_rtl_single (dump_file, PATTERN (seq));
       fprintf (dump_file, "\n");
     }
 
-  /* INSN may have a REG_EQUAL note indicating that the value was
-     sign or zero extended.  That note is no longer valid since we've
-     just removed the extension.  Just wipe the notes.  */
-  remove_reg_equal_equiv_notes (insn, false);
+  delete_insn (insn);
 
   /* If NEW_SRC died in its prior location, then we need to remove the
      death note and move it to the new location.  */
