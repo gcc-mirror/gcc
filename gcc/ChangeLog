@@ -1,3 +1,9 @@
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* doc/invoke.texi (Optimize Options) <-fmalloc-dce>: Remove
+	trailing space.
+	(AArch64 Options) <-march>: Fix pasto.
+
 2025-11-20  Richard Biener  <rguenther@suse.de>
 
 	Backported from master:

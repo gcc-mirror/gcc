@@ -1,3 +1,26 @@
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Location): Do not output the final comma.
+	(List_Common_Type_Info): Adjust to above change.  Do not output
+	"??" for an unknown alignment.
+	(List_Entities): Do not output generic types.
+	(List_Object_Info): Adjust to above change.
+	(List_Subprogram_Info): Likewise.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_type.adb (Last_Overloaded): Fix typo.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/111433
+	* sem_util.ads (Incomplete_Or_Partial_View): Add Partial_Only formal
+	parameter.
+	* sem_util.adb (Incomplete_Or_Partial_View): Likewise.  Do not look
+	for an incomplete view if it is set to True.
+	* sem_ch6.adb (Check_Conformance.Null_Exclusions_Match): Pass True
+	for Partial_Only in the call to Incomplete_Or_Partial_View.
+
 2025-11-12  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/122640

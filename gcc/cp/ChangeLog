@@ -1,3 +1,11 @@
+2025-11-21  Marek Polacek  <polacek@redhat.com>
+
+	Backported from master:
+	2025-11-21  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/120529
+	* call.cc (ref_conv_binds_to_temporary): Don't ignore access control.
+
 2025-11-19  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
