@@ -1,3 +1,11 @@
+2025-11-21  LIU Hao  <lh_mouse@126.com>
+
+	PR target/122275
+	* config/i386/32/dfp-machine.h (DFP_GET_ROUNDMODE): Change `_frnd_orig` to
+	`unsigned short` for x87 control word.
+	(DFP_SET_ROUNDMODE): Manipulate the x87 control word as `unsigned short`,
+	and manipulate the MXCSR as `unsigned int`.
+
 2025-11-11  Lulu Cheng  <chenglulu@loongson.cn>
 
 	* config/loongarch/t-loongarch64: Add cpuinfo.c to LIB2ADD.

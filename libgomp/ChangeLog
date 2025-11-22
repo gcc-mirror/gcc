@@ -1,3 +1,18 @@
+2025-11-21  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/data-2-lib.c (explanatory
+	header): Fix typo.
+	(main): Insert waits on kernels reading 'a' into queue 10 before
+	exiting 'a', and waits on kernels reading 'N' into queue 15
+	before exiting 'N'.
+	* testsuite/libgomp.oacc-c-c++-common/data-2.c: Ditto.
+
+2025-11-21  Josef Melcr  <josef.melcr@suse.com>
+
+	* testsuite/libgomp.c/ipcp-cb-spec1.c: Remove LTO requirement.
+	* testsuite/libgomp.c/ipcp-cb-spec2.c: Likewise.
+	* testsuite/libgomp.c/ipcp-cb1.c: Likewise.
+
 2025-11-19  Martin Liska  <martin.liska@hey.com>
 
 	* acinclude.m4:: Add detection for wild linker.

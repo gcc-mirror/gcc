@@ -1,3 +1,44 @@
+2025-11-21  Yuao Ma  <c8ef@outlook.com>
+
+	* doc/html/manual/using_exceptions.html: Replace dead link.
+	* doc/xml/manual/using_exceptions.xml: Likewise.
+
+2025-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (expected::value_or): Use remove_cv_t for
+	the return type. Do not use static_cast for return statement.
+	Adjust static_assert conditions to match return statements.
+	* include/std/optional (optional::value_or): Likewise.
+	(optional<T&>::value_or): Likewise.
+
+2025-11-21  Yuao Ma  <c8ef@outlook.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (ignore): Add an overload for char.
+	* testsuite/27_io/basic_istream/ignore/char/93672.cc: Adjust
+	expected behaviour for C++26 mode.
+	* testsuite/27_io/basic_istream/ignore/char/4.cc: New test.
+
+2025-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* doc/xml/faq.xml: Refresh information on _GNU_SOURCE and
+	_XOPEN_SOURCE being predefined.
+	* doc/xml/manual/internals.xml: Remove outdated paragraph about
+	_POSIX_SOURCE in libstdc++ source files.
+	* doc/html/*: Regenerate.
+
+2025-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/regex_automaton.tcc [_GLIBCXX_DEBUG]: Include
+	<ostream> so that _State_base::_M_print etc. can use it.
+
+2025-11-21  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/23_containers/vector/debug/erase.cc: Remove no_pch
+	option.
+	* testsuite/23_containers/vector/debug/invalidation/erase.cc:
+	Likewise.
+
 2025-11-20  François Dumont  <frs.dumont@gmail.com>
 
 	* include/debug/vector (std::erase_if, std::erase): New overloads for

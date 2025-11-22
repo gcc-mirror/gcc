@@ -1,3 +1,91 @@
+2025-11-21  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Loop):
+	Preanalyze block with empty statements; then set
+	the statements later before doing Analyze of the
+	block.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_aggr.adb (Expand_Array_Aggregate): Remove obsolete call to
+	Establish_Transient_Scope for an allocator in a loop.
+	* exp_ch7.adb (Establish_Transient_Scope): Adjust description.
+
+2025-11-21  Piotr Trojanek  <trojanek@adacore.com>
+
+	* lib-xref.adb (Output_References): Put local array object on the heap.
+
+2025-11-21  Viljar Indus  <indus@adacore.com>
+
+	* erroutc.adb (Is_Redundant_Error_Message): Avoid non-serious errors
+	masking fatal errors.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.ads (BIP_Formal_Kind): Update description of some values.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Op_Eq): Use No instead of not Present.
+	(Optimize_Length_Comparison): Initialize Is_Zero and Comp variables.
+	(Safe_In_Place_Array_Op): Do not use local variable to pass data to
+	nested function Is_Safe_Operand.
+
+2025-11-21  Javier Miranda  <miranda@adacore.com>
+
+	* sem_ch6.adb (Create_Extra_Formals): Do not add extra formals to
+	anonymous access to subprogram types defined in the profile of
+	subprograms that have foreign convention.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch3.adb (Expand_N_Object_Declaration): Delete ancient comment.
+	* exp_ch6.adb (Expand_Call_Helper): Do not establish a transient
+	scope for build-in-place functions in anonymous contexts here...
+	(Make_Build_In_Place_Call_In_Anonymous_Context): ...but here instead.
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Range>: Remove obsolete
+	code dealing with transient scopes.
+	* sem_res.adb (Resolve_Actuals): Likewise.
+	(Resolve_Call): Adjust comment on the strategy for transient scopes.
+
+2025-11-21  Bob Duff  <duff@adacore.com>
+
+	* exp_ch5.adb (Expand_Formal_Container_Loop):
+	Analyze Init_Decl in the correct scope. Remove patch-up
+	code that was needed because we were using the wrong scope.
+	* exp_ch7.adb (Process_Object_Declaration):
+	Remove code to unique-ify the name of Master_Node_Id;
+	no longer needed because of change to exp_ch5.adb.
+	* sem_warn.adb (Check_References):
+	Suppress warnings during preanalysis, because we don't
+	have complete information yet; otherwise, the new Preanalyze
+	call in exp_ch5.adb generates bogus warnings.
+
+2025-11-21  Steve Baird  <baird@adacore.com>
+
+	* libgnat/a-cobove.adb
+	(Append): Add an equivalent fast path for the case where tampering
+	checks are suppressed.
+
+2025-11-21  Viljar Indus  <indus@adacore.com>
+
+	* freeze.adb (Freeze_Profile): Improve -gnatwx message.
+
+2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* repinfo.adb (List_Location): Do not output the final comma.
+	(List_Common_Type_Info): Adjust to above change.  Do not output
+	"??" for an unknown alignment.
+	(List_Entities): Do not output generic types.
+	(List_Object_Info): Adjust to above change.
+	(List_Subprogram_Info): Likewise.
+
+2025-11-21  Viljar Indus  <indus@adacore.com>
+
+	* sem_ch4.adb (Analyze_Call): ensure we generate a reference to the
+	non limited view of the return type to avoid scenarios where
+	the with-ed unit is not considered referenced.
+
 2025-11-18  Denis Mazzucato  <mazzucato@adacore.com>
 
 	* gcc-interface/decl.cc
