@@ -88,6 +88,7 @@ default_changelog_locations = {
 
 bug_components = {
     'ada',
+    'algol68',
     'analyzer',
     'boehm-gc',
     'bootstrap',
