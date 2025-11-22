@@ -2760,7 +2760,7 @@ extern int vect_slp_child_index_for_operand (const gimple *, int op, bool);
 extern tree prepare_vec_mask (loop_vec_info, tree, tree, tree,
 			      gimple_stmt_iterator *);
 extern tree vect_get_mask_load_else (int, tree);
-extern bool vect_load_perm_consecutive_p (slp_tree, unsigned = 0);
+extern bool vect_load_perm_consecutive_p (slp_tree, unsigned = UINT_MAX);
 
 /* In tree-vect-patterns.cc.  */
 extern void

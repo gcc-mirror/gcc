@@ -5375,19 +5375,22 @@ vllp_cmp (const void *a_, const void *b_)
 }
 
 /* Return whether if the load permutation of NODE is consecutive starting
-   from index START_IDX.  */
+   with value START_VAL in the first element.  If START_VAL is not given
+   the first element's value is used.  */
 
 bool
-vect_load_perm_consecutive_p (slp_tree node, unsigned start_idx)
+vect_load_perm_consecutive_p (slp_tree node, unsigned start_val)
 {
   load_permutation_t perm = SLP_TREE_LOAD_PERMUTATION (node);
 
-  if (!perm.exists () || perm.length () < start_idx)
+  if (!perm.exists () || !perm.length ())
     return false;
 
-  unsigned int start = perm[start_idx];
-  for (unsigned int i = start_idx + 1; i < perm.length (); i++)
-    if (perm[i] != start + (unsigned int)i)
+  if (start_val == UINT_MAX)
+    start_val = perm[0];
+
+  for (unsigned int i = 0; i < perm.length (); i++)
+    if (perm[i] != start_val + (unsigned int) i)
       return false;
 
   return true;
@@ -8002,7 +8005,7 @@ vect_optimize_slp_pass::remove_redundant_permutations ()
       else
 	{
 	  loop_vec_info loop_vinfo = as_a<loop_vec_info> (m_vinfo);
-	  bool this_load_permuted = !vect_load_perm_consecutive_p (node);
+	  bool this_load_permuted = !vect_load_perm_consecutive_p (node, 0);
 	  /* When this isn't a grouped access we know it's single element
 	     and contiguous.  */
 	  if (!STMT_VINFO_GROUPED_ACCESS (SLP_TREE_SCALAR_STMTS (node)[0]))
