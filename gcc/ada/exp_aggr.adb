@@ -3715,20 +3715,13 @@ package body Exp_Aggr is
    begin
       if Has_Default_Init_Comps (Aggr) then
          declare
-            Init_Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
+            Stmts : constant List_Id := Late_Expansion (Aggr, Typ, Occ);
 
          begin
             if Has_Task (Typ) then
-               declare
-                  Actions : constant List_Id := New_List;
-
-               begin
-                  Build_Task_Allocate_Block (Actions, Aggr, Init_Stmts);
-                  Insert_Actions (N, Actions);
-               end;
-
+               Insert_Actions (N, Build_Task_Allocate_Block (Aggr, Stmts));
             else
-               Insert_Actions (N, Init_Stmts);
+               Insert_Actions (N, Stmts);
             end if;
          end;
 

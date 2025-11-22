@@ -5023,15 +5023,9 @@ package body Exp_Ch4 is
                --  create a specific block to activate the created tasks.
 
                if Has_Task (Etyp) then
-                  declare
-                     Actions : constant List_Id := New_List;
-
-                  begin
-                     Build_Task_Allocate_Block
-                       (Actions, Relocate_Node (N), Init_Stmts);
-                     Insert_Actions (N, Actions, Suppress => All_Checks);
-                  end;
-
+                  Insert_Actions (N,
+                    Build_Task_Allocate_Block (N, Init_Stmts),
+                    Suppress => All_Checks);
                else
                   Insert_Actions (N, Init_Stmts, Suppress => All_Checks);
                end if;

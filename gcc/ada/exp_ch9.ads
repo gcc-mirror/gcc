@@ -103,13 +103,11 @@ package Exp_Ch9 is
    --  Activate_Tasks with this entity as the single parameter is inserted at
    --  the start of the statements of the activator.
 
-   procedure Build_Task_Allocate_Block
-     (Actions    : List_Id;
-      N          : Node_Id;
-      Init_Stmts : List_Id);
-   --  This routine is used in the case of allocators where the designated type
-   --  is a task or contains tasks. In this case, the normal initialize call
-   --  is replaced by:
+   function Build_Task_Allocate_Block
+     (N          : Node_Id;
+      Init_Stmts : List_Id) return List_Id;
+   --  This function is used for allocators where the designated type is a task
+   --  or contains tasks. In this case, the initialization call is replaced by:
    --
    --    blockname : label;
    --    blockname : declare
@@ -130,7 +128,7 @@ package Exp_Ch9 is
    --  to get the task or tasks created and initialized. The expunge call
    --  ensures that any tasks that get created but not activated due to an
    --  exception are properly expunged (it has no effect in the normal case).
-   --  The argument N is the allocator, and Args is the list of arguments for
+   --  The argument N is the allocator, and Init_Stmts is a list containing
    --  the initialization call, constructed by the caller, which uses the
    --  Master_Id of the access type as the _Master parameter, and _Chain
    --  (defined above) as the _Chain parameter.

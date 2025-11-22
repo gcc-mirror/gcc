@@ -4557,10 +4557,9 @@ package body Exp_Ch9 is
    -- Build_Task_Allocate_Block --
    -------------------------------
 
-   procedure Build_Task_Allocate_Block
-     (Actions    : List_Id;
-      N          : Node_Id;
-      Init_Stmts : List_Id)
+   function Build_Task_Allocate_Block
+     (N          : Node_Id;
+      Init_Stmts : List_Id) return List_Id
    is
       Loc    : constant Source_Ptr := Sloc (N);
       Chain  : constant Entity_Id  :=
@@ -4593,17 +4592,16 @@ package body Exp_Ch9 is
           Handled_Statement_Sequence =>
             Make_Handled_Sequence_Of_Statements (Loc, Init_Stmts),
 
-          Has_Created_Identifier => True,
+          Has_Created_Identifier   => True,
           Is_Task_Allocation_Block => True);
 
-      Append_To (Actions,
+      Set_Activation_Chain_Entity (Block, Chain);
+
+      return New_List (
         Make_Implicit_Label_Declaration (Loc,
           Defining_Identifier => Blkent,
-          Label_Construct     => Block));
-
-      Append_To (Actions, Block);
-
-      Set_Activation_Chain_Entity (Block, Chain);
+          Label_Construct     => Block),
+        Block);
    end Build_Task_Allocate_Block;
 
    -----------------------------------
