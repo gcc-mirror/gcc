@@ -1883,14 +1883,12 @@ layout_compatible_type_p (tree type1, tree type2)
   type2 = cp_build_qualified_type (type2, TYPE_UNQUALIFIED);
 
   if (TREE_CODE (type1) == ENUMERAL_TYPE)
-    return (tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2))
-	    && same_type_p (finish_underlying_type (type1),
-			    finish_underlying_type (type2)));
+    return same_type_p (finish_underlying_type (type1),
+			finish_underlying_type (type2));
 
   if (CLASS_TYPE_P (type1)
       && std_layout_type_p (type1)
-      && std_layout_type_p (type2)
-      && tree_int_cst_equal (TYPE_SIZE (type1), TYPE_SIZE (type2)))
+      && std_layout_type_p (type2))
     {
       tree field1 = TYPE_FIELDS (type1);
       tree field2 = TYPE_FIELDS (type2);
