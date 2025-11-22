@@ -14234,9 +14234,10 @@ instantiating_tu_local_entity (tree decl)
       return true;
     }
 
-  /* Currently, only TU-local variables and functions will be emitted
-     from named modules.  */
-  if (!VAR_OR_FUNCTION_DECL_P (decl))
+  /* Currently, only TU-local variables and functions, or possibly
+     templates thereof, will be emitted from named modules.  */
+  tree inner = STRIP_TEMPLATE (decl);
+  if (!VAR_OR_FUNCTION_DECL_P (inner))
     return false;
 
   /* From this point we will only be emitting warnings; if we're not
@@ -14249,16 +14250,15 @@ instantiating_tu_local_entity (tree decl)
   if (!is_tu_local_entity (decl))
     return false;
 
-  tree origin = get_originating_module_decl (decl);
-  if (!DECL_LANG_SPECIFIC (STRIP_TEMPLATE (origin))
-      || !DECL_MODULE_IMPORT_P (STRIP_TEMPLATE (origin)))
+  if (!DECL_LANG_SPECIFIC (inner)
+      || !DECL_MODULE_IMPORT_P (inner))
     return false;
 
   /* Referencing TU-local entities from a header is generally OK.
      We don't have an easy way to detect if this declaration came
      from a header via a separate named module, but we can just
      ignore that case for warning purposes.  */
-  unsigned index = import_entity_index (origin);
+  unsigned index = import_entity_index (decl);
   module_state *mod = import_entity_module (index);
   if (mod->is_header ())
     return false;
