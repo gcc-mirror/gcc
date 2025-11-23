@@ -4201,9 +4201,12 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
   poly_uint64 vf = loop_vinfo ? LOOP_VINFO_VECT_FACTOR (loop_vinfo) : 1;
   unsigned group_size = SLP_TREE_LANES (slp_node);
   unsigned int badness = 0;
+  unsigned int badness_inbranch = 0;
   struct cgraph_node *bestn = NULL;
+  struct cgraph_node *bestn_inbranch = NULL;
   if (!cost_vec)
-    bestn = cgraph_node::get (simd_clone_info[0]);
+    bestn = ((loop_vinfo && LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
+	     ? data.clone_inbranch : data.clone);
   else
     for (struct cgraph_node *n = node->simd_clones; n != NULL;
 	 n = n->simdclone->next_clone)
@@ -4334,13 +4337,18 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			SIMD_CLONE_ARG_TYPE_MASK);
 	    /* Penalize using a masked SIMD clone in a non-masked loop, that is
 	       not in a branch, as we'd have to construct an all-true mask.  */
-	    if (!loop_vinfo || !LOOP_VINFO_FULLY_MASKED_P (loop_vinfo))
-	      this_badness += 64;
+	    this_badness += 64;
 	  }
 	if (bestn == NULL || this_badness < badness)
 	  {
 	    bestn = n;
 	    badness = this_badness;
+	  }
+	if (n->simdclone->inbranch
+	    && (bestn_inbranch == NULL || this_badness < badness_inbranch))
+	  {
+	    bestn_inbranch = n;
+	    badness_inbranch = this_badness;
 	  }
       }
 
@@ -4377,6 +4385,17 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 			       "incompatible vector types for invariants\n");
 	    return false;
 	  }
+
+      if (!bestn_inbranch && loop_vinfo)
+	{
+	  if (dump_enabled_p ()
+	      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	    dump_printf_loc (MSG_NOTE, vect_location,
+			     "can't use a fully-masked loop because no"
+			     " masked simd clone was available.\n");
+	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	}
+
       /* When the original call is pure or const but the SIMD ABI dictates
 	 an aggregate return we will have to use a virtual definition and
 	 in a loop eventually even need to add a virtual PHI.  That's
@@ -4390,75 +4409,71 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	 so automagic virtual operand updating doesn't work.  */
       if (gimple_vuse (stmt))
 	vinfo->any_known_not_updated_vssa = true;
-      simd_clone_info.safe_push (bestn->decl);
-      for (i = 0; i < bestn->simdclone->nargs; i++)
+
+      data.clone = bestn;
+      data.clone_inbranch = bestn_inbranch;
+
+      simd_clone_info.safe_push (NULL_TREE);
+      for (i = 0;
+	   i < (bestn_inbranch ? bestn_inbranch : bestn)->simdclone->nargs; i++)
 	{
-	  switch (bestn->simdclone->args[i].arg_type)
+	  if (loop_vinfo
+	      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	      && (bestn_inbranch->simdclone->args[i].arg_type
+		  == SIMD_CLONE_ARG_TYPE_MASK))
 	    {
-	    default:
-	      continue;
-	    case SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP:
-	    case SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP:
-	      {
-		simd_clone_info.safe_grow_cleared (i * 3 + 1, true);
-		simd_clone_info.safe_push (arginfo[i].op);
-		tree lst = POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
-			   ? size_type_node : TREE_TYPE (arginfo[i].op);
-		tree ls = build_int_cst (lst, arginfo[i].linear_step);
-		simd_clone_info.safe_push (ls);
-		tree sll = arginfo[i].simd_lane_linear
-			   ? boolean_true_node : boolean_false_node;
-		simd_clone_info.safe_push (sll);
-	      }
-	      break;
-	    case SIMD_CLONE_ARG_TYPE_MASK:
-	      if (loop_vinfo
-		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
+	      if (masked_call_offset)
+		/* When there is an explicit mask we require the
+		   number of elements to match up.  */
+		vect_record_loop_mask (loop_vinfo,
+				       &LOOP_VINFO_MASKS (loop_vinfo),
+				       ncopies_in, vectype, NULL_TREE);
+	      else
 		{
-		  if (masked_call_offset)
-		    /* When there is an explicit mask we require the
-		       number of elements to match up.  */
-		    vect_record_loop_mask (loop_vinfo,
-					   &LOOP_VINFO_MASKS (loop_vinfo),
-					   ncopies_in, vectype, NULL_TREE);
+		  /* When there is no explicit mask on the call we have
+		     more relaxed requirements.  */
+		  tree masktype;
+		  poly_uint64 callee_nelements;
+		  if (SCALAR_INT_MODE_P (bestn_inbranch->simdclone->mask_mode))
+		    {
+		      callee_nelements
+			  = exact_div (bestn_inbranch->simdclone->simdlen,
+				       bestn_inbranch->simdclone->args[i].linear_step);
+		      masktype = get_related_vectype_for_scalar_type
+			  (vinfo->vector_mode, TREE_TYPE (vectype),
+			   callee_nelements);
+		    }
 		  else
 		    {
-		      /* When there is no explicit mask on the call we have
-			 more relaxed requirements.  */
-		      tree masktype;
-		      poly_uint64 callee_nelements;
-		      if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
-			{
-			  callee_nelements
-			    = exact_div (bestn->simdclone->simdlen,
-					 bestn->simdclone->args[i].linear_step);
-			  masktype = get_related_vectype_for_scalar_type
-			      (vinfo->vector_mode, TREE_TYPE (vectype),
-			       callee_nelements);
-			}
-		      else
-			{
-			  masktype = bestn->simdclone->args[i].vector_type;
-			  callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
-			}
-		      auto o = vector_unroll_factor (nunits, callee_nelements);
-		      vect_record_loop_mask (loop_vinfo,
-					     &LOOP_VINFO_MASKS (loop_vinfo),
-					     ncopies  * o, masktype, NULL_TREE);
+		      masktype = bestn_inbranch->simdclone->args[i].vector_type;
+		      callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
 		    }
+		  auto o = vector_unroll_factor (nunits, callee_nelements);
+		  vect_record_loop_mask (loop_vinfo,
+					 &LOOP_VINFO_MASKS (loop_vinfo),
+					 ncopies  * o, masktype, NULL_TREE);
 		}
-	      break;
 	    }
-	}
-
-      if (!bestn->simdclone->inbranch && loop_vinfo)
-	{
-	  if (dump_enabled_p ()
-	      && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-	    dump_printf_loc (MSG_NOTE, vect_location,
-			     "can't use a fully-masked loop because a"
-			     " non-masked simd clone was selected.\n");
-	  LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo) = false;
+	  else if ((bestn->simdclone->args[i].arg_type
+		    == SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP)
+		   || (bestn->simdclone->args[i].arg_type
+		       == SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP)
+		   || (bestn_inbranch
+		       && ((bestn_inbranch->simdclone->args[i].arg_type
+			    == SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP)
+			   || (bestn_inbranch->simdclone->args[i].arg_type
+			       == SIMD_CLONE_ARG_TYPE_LINEAR_REF_CONSTANT_STEP))))
+	    {
+	      simd_clone_info.safe_grow_cleared (i * 3 + 1, true);
+	      simd_clone_info.safe_push (arginfo[i].op);
+	      tree lst = (POINTER_TYPE_P (TREE_TYPE (arginfo[i].op))
+			  ? size_type_node : TREE_TYPE (arginfo[i].op));
+	      tree ls = build_int_cst (lst, arginfo[i].linear_step);
+	      simd_clone_info.safe_push (ls);
+	      tree sll = (arginfo[i].simd_lane_linear
+			  ? boolean_true_node : boolean_false_node);
+	      simd_clone_info.safe_push (sll);
+	    }
 	}
 
       SLP_TREE_TYPE (slp_node) = call_simd_clone_vec_info_type;

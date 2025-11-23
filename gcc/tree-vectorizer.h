@@ -265,8 +265,12 @@ struct vect_simd_clone_data : vect_data {
   vect_simd_clone_data () = default;
   vect_simd_clone_data (vect_simd_clone_data &&other) = default;
 
+  /* Selected SIMD clone and clone for in-branch.  */
+  cgraph_node *clone;
+  cgraph_node *clone_inbranch;
+
   /* Selected SIMD clone's function info.  First vector element
-     is SIMD clone's function decl, followed by a pair of trees (base + step)
+     is NULL_TREE, followed by a pair of trees (base + step)
      for linear arguments (pair of NULLs for other arguments).  */
   auto_vec<tree> simd_clone_info;
 };

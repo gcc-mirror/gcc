@@ -16,4 +16,4 @@ void foo (int n)
 }
 
 /* { dg-final { scan-tree-dump-not "MASK_LOAD" "vect" } } */
-/* { dg-final { scan-tree-dump "can't use a fully-masked loop because a non-masked simd clone was selected." "vect" { target x86_64-*-* } } } */
+/* { dg-final { scan-tree-dump "can't use a fully-masked loop because no masked simd clone was available" "vect" { target x86_64-*-* } } } */
