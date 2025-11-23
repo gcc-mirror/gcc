@@ -147,6 +147,24 @@ FeatureGate::check_may_dangle_attribute (
 }
 
 void
+FeatureGate::check_lang_item_attribute (
+  const std::vector<AST::Attribute> &attributes)
+{
+  for (const AST::Attribute &attr : attributes)
+    {
+      const auto &str_path = attr.get_path ().as_string ();
+      bool is_lang_item = str_path == Values::Attributes::LANG
+			  && attr.has_attr_input ()
+			  && attr.get_attr_input ().get_attr_input_type ()
+			       == AST::AttrInput::AttrInputType::LITERAL;
+
+      if (is_lang_item)
+	gate (Feature::Name::LANG_ITEMS, attr.get_locus (),
+	      "lang items are subject to change");
+    }
+}
+
+void
 FeatureGate::visit (AST::MacroRulesDefinition &rules_def)
 {
   check_rustc_attri (rules_def.get_outer_attrs ());
@@ -157,6 +175,8 @@ FeatureGate::visit (AST::Function &function)
 {
   if (!function.is_external ())
     check_rustc_attri (function.get_outer_attrs ());
+
+  check_lang_item_attribute (function.get_outer_attrs ());
 
   AST::DefaultASTVisitor::visit (function);
 }
@@ -186,6 +206,7 @@ FeatureGate::visit (AST::Trait &trait)
   if (trait.is_auto ())
     gate (Feature::Name::OPTIN_BUILTIN_TRAITS, trait.get_locus (),
 	  "auto traits are experimental and possibly buggy");
+  check_lang_item_attribute (trait.get_outer_attrs ());
   AST::DefaultASTVisitor::visit (trait);
 }
 
@@ -241,6 +262,34 @@ FeatureGate::visit (AST::UseTreeGlob &use)
   // At the moment, UseTrees do not have outer attributes, but they should. we
   // need to eventually gate `#[prelude_import]` on use-trees based on the
   // #[feature(prelude_import)]
+}
+
+void
+FeatureGate::visit (AST::StructStruct &struct_item)
+{
+  check_lang_item_attribute (struct_item.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (struct_item);
+}
+
+void
+FeatureGate::visit (AST::TraitItemType &trait_item_type)
+{
+  check_lang_item_attribute (trait_item_type.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (trait_item_type);
+}
+
+void
+FeatureGate::visit (AST::Enum &enum_item)
+{
+  check_lang_item_attribute (enum_item.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (enum_item);
+}
+
+void
+FeatureGate::visit (AST::EnumItem &enum_variant)
+{
+  check_lang_item_attribute (enum_variant.get_outer_attrs ());
+  AST::DefaultASTVisitor::visit (enum_variant);
 }
 
 } // namespace Rust
