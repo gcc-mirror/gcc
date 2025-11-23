@@ -36,12 +36,12 @@ int f2 (int x) { return -x; }
 /* Check that non-duplicate traits are collected from both inner and outer.  */
 
 #pragma omp begin declare variant match (device={kind("host")})
-#pragma omp begin declare variant match (device={arch("x86_64")})
+#pragma omp begin declare variant match (device={arch("x86")})
 int f3 (int x) { return -x; }
 #pragma omp end declare variant
 #pragma omp end declare variant
 /* { dg-final { scan-tree-dump "f3\\.ompvariant.*kind \\(.host.\\)" "gimple" } } */
-/* { dg-final { scan-tree-dump "f3\\.ompvariant.*arch \\(.x86_64.\\)" "gimple" } } */
+/* { dg-final { scan-tree-dump "f3\\.ompvariant.*arch \\(.x86.\\)" "gimple" } } */
 
 /* Check that traits for construct selectors merge as expected.  */
 
