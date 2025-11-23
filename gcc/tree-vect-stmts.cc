@@ -4262,10 +4262,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    switch (n->simdclone->args[i].arg_type)
 	      {
 	      case SIMD_CLONE_ARG_TYPE_VECTOR:
-		if (!useless_type_conversion_p
-			(n->simdclone->args[i].orig_type,
-			 TREE_TYPE (gimple_call_arg (stmt,
-						     i + masked_call_offset))))
+		if (VECTOR_BOOLEAN_TYPE_P (n->simdclone->args[i].vector_type))
+		  /* Vector mask arguments are not supported.  */
+		  i = -1;
+		else if (!useless_type_conversion_p
+			 (n->simdclone->args[i].orig_type,
+			  TREE_TYPE (gimple_call_arg (stmt,
+						      i + masked_call_offset))))
 		  i = -1;
 		else if (arginfo[i].dt == vect_constant_def
 			 || arginfo[i].dt == vect_external_def
@@ -4295,12 +4298,32 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		i = -1;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_MASK:
+		if (!SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+		    && n->simdclone->mask_mode != VOIDmode)
+		  i = -1;
 		/* While we can create a traditional data vector from
 		   an incoming integer mode mask we have no good way to
 		   force generate an integer mode mask from a traditional
 		   boolean vector input.  */
-		if (SCALAR_INT_MODE_P (n->simdclone->mask_mode)
-		    && !SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		else if (SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+			 && !SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
+		  i = -1;
+		else if (n->simdclone->mask_mode == VOIDmode
+			 /* FORNOW we only have partial support for vector-type
+			    masks that can't hold all of simdlen. */
+			 && (maybe_ne (TYPE_VECTOR_SUBPARTS (n->simdclone->args[i].vector_type),
+				       TYPE_VECTOR_SUBPARTS (arginfo[i].vectype))
+			     /* Verify we can compute the mask argument.  */
+			     || !expand_vec_cond_expr_p (n->simdclone->args[i].vector_type,
+							 arginfo[i].vectype)))
+		  i = -1;
+		else if (SCALAR_INT_MODE_P (n->simdclone->mask_mode)
+			 /* FORNOW we only have partial support for
+			    integer-type masks that represent the same number
+			    of lanes as the vectorized mask inputs.  */
+			 && maybe_ne (exact_div (n->simdclone->simdlen,
+						 n->simdclone->args[i].linear_step),
+				      TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
 		  i = -1;
 		else if (!SCALAR_INT_MODE_P (n->simdclone->mask_mode)
 			 && SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype)))
@@ -4340,89 +4363,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 
   if (bestn == NULL)
     return false;
-
-  for (i = 0; i < nargs; i++)
-    {
-      if ((arginfo[i].dt == vect_constant_def
-	   || arginfo[i].dt == vect_external_def)
-	  && bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR)
-	{
-	  tree arg_type = TREE_TYPE (gimple_call_arg (stmt,
-						      i + masked_call_offset));
-	  arginfo[i].vectype = get_vectype_for_scalar_type (vinfo, arg_type,
-							    slp_node);
-	  if (arginfo[i].vectype == NULL
-	      || !constant_multiple_p (bestn->simdclone->simdlen,
-				       TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
-	    return false;
-	}
-
-      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_VECTOR
-	  && VECTOR_BOOLEAN_TYPE_P (bestn->simdclone->args[i].vector_type))
-	{
-	  if (dump_enabled_p ())
-	    dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
-			     "vector mask arguments are not supported.\n");
-	  return false;
-	}
-
-      if (bestn->simdclone->args[i].arg_type == SIMD_CLONE_ARG_TYPE_MASK)
-	{
-	  tree clone_arg_vectype = bestn->simdclone->args[i].vector_type;
-	  if (bestn->simdclone->mask_mode == VOIDmode)
-	    {
-	      if (maybe_ne (TYPE_VECTOR_SUBPARTS (clone_arg_vectype),
-			    TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
-		{
-		  /* FORNOW we only have partial support for vector-type masks
-		     that can't hold all of simdlen. */
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				     vect_location,
-				     "in-branch vector clones are not yet"
-				     " supported for mismatched vector sizes.\n");
-		  return false;
-		}
-	      if (!expand_vec_cond_expr_p (clone_arg_vectype,
-					   arginfo[i].vectype))
-		{
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				     vect_location,
-				     "cannot compute mask argument for"
-				     " in-branch vector clones.\n");
-		  return false;
-		}
-	    }
-	  else if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
-	    {
-	      if (!SCALAR_INT_MODE_P (TYPE_MODE (arginfo[i].vectype))
-		  || maybe_ne (exact_div (bestn->simdclone->simdlen,
-					  bestn->simdclone->args[i].linear_step),
-			       TYPE_VECTOR_SUBPARTS (arginfo[i].vectype)))
-		{
-		  /* FORNOW we only have partial support for integer-type masks
-		     that represent the same number of lanes as the
-		     vectorized mask inputs. */
-		  if (dump_enabled_p ())
-		    dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				     vect_location,
-				     "in-branch vector clones are not yet "
-				     "supported for mismatched vector sizes.\n");
-		  return false;
-		}
-	    }
-	  else
-	    {
-	      if (dump_enabled_p ())
-		dump_printf_loc (MSG_MISSED_OPTIMIZATION,
-				 vect_location,
-				 "in-branch vector clones not supported"
-				 " on this target.\n");
-	      return false;
-	    }
-	}
-    }
 
   fndecl = bestn->decl;
   nunits = bestn->simdclone->simdlen;
