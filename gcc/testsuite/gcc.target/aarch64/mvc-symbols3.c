@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-require-ifunc "" } */
 
 __attribute__ ((target_clones ("default", "dotprod", "sve+sve2"))) int
 foo ();

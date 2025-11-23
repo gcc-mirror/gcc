@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-require-ifunc "" } */
 
 // FMV correctness with default declaration, and implementations of other
 // versions.

@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-ifunc "" } */
 /* { dg-options "-O0" } */
 
 int foo () {

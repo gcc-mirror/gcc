@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-ifunc "" } */
 
 /* Check there is no ICE.  */
 

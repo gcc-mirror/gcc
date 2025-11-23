@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-require-ifunc "" } */
 
 __attribute__ ((target_version ("default"))) int
 foo ()

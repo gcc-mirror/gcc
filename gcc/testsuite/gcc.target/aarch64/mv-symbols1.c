@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O0" } */
+/* { dg-require-ifunc "" } */
 
 // Basic case of fmv correctness with all functions and use in one TU.
 
