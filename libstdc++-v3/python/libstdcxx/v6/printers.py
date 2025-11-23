@@ -133,7 +133,11 @@ def lookup_templ_spec(templ, *args):
     """
     Lookup template specialization templ<args...>.
     """
-    t = '{}<{}>'.format(templ, ', '.join([str(a) for a in args]))
+    # Similar to PR67440, str(a) might contain unexpected type qualifiers.
+    t = '{}<{}>'.format(templ, ', '.join([ \
+            a.tag if isinstance(a, gdb.Type) and a.tag \
+            else str(a) \
+        for a in args]))
     try:
         return gdb.lookup_type(t)
     except gdb.error as e:
