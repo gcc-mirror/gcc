@@ -87,7 +87,7 @@ Target Mask(LONG_CALLS)
 Always generate long calls.
 
 mlra
-Target Var(pa_lra_p) Init(0)
+Target Var(pa_lra_p) Init(1)
 Use LRA instead of reload (transitional).
 
 mlong-load-store
