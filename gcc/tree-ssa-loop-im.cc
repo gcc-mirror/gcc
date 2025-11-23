@@ -3148,6 +3148,35 @@ ref_always_accessed_p (class loop *loop, im_mem_ref *ref, bool stored_p)
 			       ref_always_accessed (loop, stored_p));
 }
 
+/* Returns true if LOAD_REF and STORE_REF form a "self write" pattern
+   where the stored value comes from the loaded value via SSA.
+   Example: a[i] = a[0] is safe to hoist a[0] even when i==0.  */
+
+static bool
+is_self_write (im_mem_ref *load_ref, im_mem_ref *store_ref)
+{
+  /* Only handle the simple case with a single access per ref.
+     Bail out on multiple accesses to be conservative.  */
+  if (load_ref->accesses_in_loop.length () != 1
+      || store_ref->accesses_in_loop.length () != 1)
+    return false;
+
+  gimple *load_stmt = load_ref->accesses_in_loop[0].stmt;
+  gimple *store_stmt = store_ref->accesses_in_loop[0].stmt;
+
+  if (!is_gimple_assign (load_stmt) || !is_gimple_assign (store_stmt))
+    return false;
+
+  tree loaded_val = gimple_assign_lhs (load_stmt);
+  tree stored_val = gimple_assign_rhs1 (store_stmt);
+
+  if (TREE_CODE (loaded_val) != SSA_NAME || TREE_CODE (stored_val) != SSA_NAME)
+    return false;
+
+  /* Self write: stored value is the loaded value.  */
+  return stored_val == loaded_val;
+}
+
 /* Returns true if REF1 and REF2 are independent.  */
 
 static bool
@@ -3235,6 +3264,20 @@ ref_indep_loop_p (class loop *loop, im_mem_ref *ref, dep_kind kind)
 		      break;
 		    }
 		}
+	      /* For hoisting loads (lim_raw), allow "self write": the store
+		 writes back the loaded value.  Example: a[i] = a[0]
+		 is safe even when i==0 causes aliasing.  */
+	      else if (kind == lim_raw
+		       && ref->loaded && aref->stored
+		       && is_self_write (ref, aref))
+		{
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    fprintf (dump_file,
+			     "Dependency of refs %u and %u: "
+			     "independent (self write).\n",
+			     ref->id, aref->id);
+		}
+
 	      else if (!refs_independent_p (ref, aref, kind != sm_waw))
 		{
 		  indep_p = false;
