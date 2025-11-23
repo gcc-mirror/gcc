@@ -5764,10 +5764,21 @@ pa_print_operand (FILE *file, rtx x, int code)
 		   && GET_CODE (XEXP (XEXP (x, 0), 1)) == REG)
 	    {
 	      /* Because the REG_POINTER flag can get lost during reload,
-		 pa_legitimate_address_p canonicalizes the order of the
-		 index and base registers in the combined move patterns.  */
+		 we now defer creation of instructions with scaled and
+		 unscaled index addresses until after reload.  We require
+		 that the flag be set in the base register on targets
+		 that use space registers.  */
 	      rtx base = XEXP (XEXP (x, 0), 1);
 	      rtx index = XEXP (XEXP (x, 0), 0);
+
+	      /* Accept non-canonical register order.  */
+	      if (!TARGET_NO_SPACE_REGS && !REG_POINTER (base))
+		{
+		  rtx tmp = base;
+		  base = index;
+		  index = tmp;
+		  gcc_assert (REG_POINTER (base));
+		}
 
 	      fprintf (file, "%s(%s)",
 		       reg_names [REGNO (index)], reg_names [REGNO (base)]);
@@ -11001,12 +11012,15 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 
       if (!TARGET_DISABLE_INDEXING
 	  /* Currently, the REG_POINTER flag is not set in a variety
-	     of situations (e.g., call arguments and pointer arithmetic).
-	     As a result, we can't reliably determine when unscaled
-	     addresses are legitimate on targets that need space register
-	     selection.  */
-	  && TARGET_NO_SPACE_REGS
+	     of situations (e.g., call arguments and pointer arithmetic)
+	     and the flag can be lost during reload.  So, we only allow
+	     unscaled index addresses after reload.  We can accept either
+	     register order.  */
 	  && REG_P (index)
+	  && (TARGET_NO_SPACE_REGS
+	      || (reload_completed
+		  && ((REG_POINTER (base) && !REG_POINTER (index))
+		      || (!REG_POINTER (base) && REG_POINTER (index)))))
 	  && MODE_OK_FOR_UNSCALED_INDEXING_P (mode)
 	  && (strict ? STRICT_REG_OK_FOR_INDEX_P (index)
 		     : REG_OK_FOR_INDEX_P (index))
@@ -11015,13 +11029,10 @@ pa_legitimate_address_p (machine_mode mode, rtx x, bool strict, code_helper)
 	return true;
 
       if (!TARGET_DISABLE_INDEXING
-	  /* Only accept base operands with the REG_POINTER flag prior to
+	  /* Only accept base operands with the REG_POINTER flag after
 	     reload on targets with non-equivalent space registers.  */
 	  && (TARGET_NO_SPACE_REGS
-	      || reload_completed
-	      || ((lra_in_progress || reload_in_progress)
-		   && HARD_REGISTER_P (base))
-	      || REG_POINTER (base))
+	      || (reload_completed && REG_POINTER (base)))
 	  && GET_CODE (index) == MULT
 	  && REG_P (XEXP (index, 0))
 	  && GET_MODE (XEXP (index, 0)) == Pmode
