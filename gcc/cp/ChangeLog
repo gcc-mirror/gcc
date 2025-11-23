@@ -1,3 +1,107 @@
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122636
+	* module.cc (instantiating_tu_local_entity): Don't check
+	importingness of originating module decl; also check templates.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constraint.cc (diagnose_trait_expr):
+	<case CPTK_IS_POINTER_INTERCONVERTIBLE_BASE_OF>: Explain failure
+	with more detail.
+	* cp-tree.h (pointer_interconvertible_base_of_p): Add explain
+	parameter.
+	* semantics.cc (pointer_interconvertible_base_of_p): Explain why
+	not.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constraint.cc (diagnose_trait_expr)
+	<case CPTK_IS_LAYOUT_COMPATIBLE>: Explain why not.
+	* cp-tree.h (layout_compatible_type_p): Add explain parameter.
+	* typeck.cc (layout_compatible_type_p): Add explanations when
+	returning false.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constraint.cc (diagnose_trait_expr)
+	<case CPTK_HAS_UNIQUE_OBJ_REPRESENTATIONS>: Explain failure with
+	more detail.
+	* cp-tree.h (type_has_unique_obj_representations): Add explain
+	parameter.
+	* tree.cc (record_has_unique_obj_representations): Explain when
+	returning false.
+	(type_has_unique_obj_representations): Likewise.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* method.cc (destructible_expr): Add explanation when type is
+	neither class nor scalar.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constraint.cc (diagnose_trait_expr): Use t2's location for
+	is_base_of, is_pointer_interconvertible_base_of, and
+	is_virtual_base_of.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* constraint.cc (diagnose_trait_expr): Reset input_location.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* typeck.cc (layout_compatible_type_p): Do not check TYPE_SIZE.
+
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* cp-tree.h (struct cp_omp_declare_variant_attr): New.
+	(struct saved_scope): Add omp_declare_variant_attribute field.
+	* decl.cc (omp_declare_variant_finalize_one): Add logic to inject
+	"this" parameter for method calls.
+	* parser.cc (cp_parser_skip_to_pragma_omp_end_declare_variant): New.
+	(cp_parser_translation_unit): Handle leftover "begin declare variant"
+	functions.
+	(omp_start_variant_function): New.
+	(omp_finish_variant_function): New.
+	(omp_maybe_record_variant_base): New.
+	(cp_parser_init_declarator): Handle variant functions.
+	(cp_parser_class_specifier): Handle deferred lookup of base functions
+	when the entire class has been seen.
+	(cp_parser_member_declaration): Handle variant functions.
+	(cp_finish_omp_declare_variant): Merge context selectors if in
+	a "begin declare variant" block.
+	(cp_parser_omp_begin): Match "omp begin declare variant".  Adjust
+	error messages.
+	(cp_parser_omp_end): Match "omp end declare variant".
+	* parser.h (struct omp_begin_declare_variant_map_entry): New.
+	(struct cp_parser): Add omp_begin_declare_variant_map field.
+	* semantics.cc (finish_translation_unit): Detect unmatched
+	"omp begin declare variant".
+
+2025-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122788
+	* pt.cc (finish_expansion_stmt): Or in TREE_USED and DECL_READ_P
+	flags from range_decl to decl or from corresponding structured binding
+	to this_decl.
+
+2025-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122185
+	* cp-gimplify.cc (cp_fold) <case CALL_EXPR>: For -ffold-simple-inlines
+	restore check that both types are INDIRECT_TYPE_P, except for
+	"to_underlying" check that r has ENUMERAL_TYPE and x has
+	INTEGRAL_TYPE_P.
+
+2025-11-22  Daniele Sahebi  <daniele@mkryss.me>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122658
+	* call.cc (build_over_call): Don't call build_cplus_new in
+	template declarations.
+
 2025-11-21  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/120529

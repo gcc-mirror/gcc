@@ -1,3 +1,10 @@
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* c-omp.cc (c_omp_directives): Uncomment "begin declare variant"
+	and "end declare variant".
+
 2025-11-11  Alejandro Colomar  <alx@kernel.org>
 
 	* c-warn.cc (warn_parms_array_mismatch): Split out body of

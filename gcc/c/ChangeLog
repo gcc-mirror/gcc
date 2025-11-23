@@ -1,3 +1,24 @@
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Julian Brown  <julian@codesourcery.com>
+
+	* c-decl.cc (current_omp_declare_variant_attribute): Define.
+	* c-lang.h (struct c_omp_declare_variant_attr): Declare.
+	(current_omp_declare_variant_attribute): Declare.
+	* c-parser.cc (struct omp_begin_declare_variant_map_entry): New.
+	(omp_begin_declare_variant_map): New.
+	(c_parser_skip_to_pragma_omp_end_declare_variant): New.
+	(c_parser_translation_unit): Check for "omp begin declare variant"
+	with no matching "end".  Record base functions for variants.
+	(c_parser_declaration_or_fndef): Handle functions in "omp begin
+	declare variant" block.
+	(c_finish_omp_declare_variant): Merge context selectors with
+	surrounding "omp begin declare variant".
+	(JOIN_STR): Define.
+	(omp_start_variant_function): New.
+	(omp_finish_variant_function): New.
+	(c_parser_omp_begin): Handle "omp begin declare variant".
+	(c_parser_omp_end): Likewise.
+
 2025-11-10  Alejandro Colomar  <alx@kernel.org>
 
 	* c-parser.cc (c_parser_sizeof_expression): Remove function.

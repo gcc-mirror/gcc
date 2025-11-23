@@ -1,3 +1,54 @@
+2025-11-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122701
+	* ext-dce.cc (ext_dce_try_optimize_rshift): Emit a fresh reg->reg
+	copy rather than modifying the existing right shift.
+
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_context_selector_matches): Add an optional
+	bool argument for the code elision case.
+	* omp-general.h (omp_context_selector_matches): Likewise.
+
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* omp-general.cc (omp_mangle_variant_name): New.
+	(omp_check_for_duplicate_variant): New.
+	(omp_copy_trait_set): New.
+	(omp_trait_selectors_equivalent): New.
+	(omp_combine_trait_sets): New.
+	(omp_merge_context_selectors): New.
+	* omp-general.h (omp_mangle_variant_name): Declare.
+	(omp_check_for_duplicate_variant): Declare.
+	(omp_merge_context_selectors): Declare.
+
+2025-11-22  zhaozhou  <zhaozhou@loongson.cn>
+
+	* config/loongarch/loongarch.cc: Extract plus operation.
+
+2025-11-22  Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* config/loongarch/loongarch.md
+	(*bstrins_w_for_ior_ashift_and_extend): New template.
+	(*bstrins_d_for_ior_ashift_and): New template.
+	* config/loongarch/predicates.md (const_uimm63_operand): New
+	predicate.
+
+2025-11-22  zhaozhou  <zhaozhou@loongson.cn>
+
+	* config/loongarch/lsx.md (lsx_vshuf4i_mem_w_0): Add template.
+	(lsx_vldrepl_merge_w_0): Ditto.
+
+2025-11-22  Kees Cook  <kees@kernel.org>
+
+	* config/aarch64/aarch64-protos.h (aarch64_indirect_branch_asm):
+	Declare.
+	* config/aarch64/aarch64.cc (aarch64_indirect_branch_asm): New
+	function to generate indirect branch with SLS barrier.
+	* config/aarch64/aarch64.md (*sibcall_insn): Use
+	aarch64_indirect_branch_asm.
+	(*sibcall_value_insn): Likewise.
+
 2025-11-21  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/118358

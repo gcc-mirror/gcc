@@ -1,3 +1,100 @@
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122636
+	* g++.dg/modules/internal-19_a.C: New test.
+	* g++.dg/modules/internal-19_b.C: New test.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp2a/is-pointer-interconvertible-base-of2.C: New test.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp2a/is-layout-compatible4.C: New test.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp1z/has-unique-obj-representations5.C: New test.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/ext/is_destructible3.C: Add test for function type.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/ext/is_virtual_base_of_diagnostic2.C: Adjust
+	diagnostic.
+
+2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/cpp2a/is-layout-compatible3.C: Adjust expected results.
+
+2025-11-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122701
+	* gcc.dg/torture/pr122701.c: New test.
+
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/delim-declare-variant-1.c: New.
+	* c-c++-common/gomp/delim-declare-variant-2.c: New.
+	* c-c++-common/gomp/delim-declare-variant-3.c: New.
+	* c-c++-common/gomp/delim-declare-variant-4.c: New.
+	* c-c++-common/gomp/delim-declare-variant-5.c: New.
+	* c-c++-common/gomp/delim-declare-variant-6.c: New.
+	* c-c++-common/gomp/delim-declare-variant-7.c: New.
+	* c-c++-common/gomp/delim-declare-variant-8.c: New.
+	* c-c++-common/gomp/delim-declare-variant-9.c: New.
+
+2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
+	    Julian Brown  <julian@codesourcery.com>
+	    waffl3x  <waffl3x@baylibre.com>
+
+	* g++.dg/gomp/delim-declare-variant-1.C: New.
+	* g++.dg/gomp/delim-declare-variant-2.C: New.
+	* g++.dg/gomp/delim-declare-variant-3.C: New.
+	* g++.dg/gomp/delim-declare-variant-4.C: New.
+	* g++.dg/gomp/delim-declare-variant-5.C: New.
+	* g++.dg/gomp/delim-declare-variant-6.C: New.
+	* g++.dg/gomp/delim-declare-variant-7.C: New.
+	* g++.dg/gomp/delim-declare-variant-40.C: New.
+	* g++.dg/gomp/delim-declare-variant-41.C: New.
+	* g++.dg/gomp/delim-declare-variant-50.C: New.
+	* g++.dg/gomp/delim-declare-variant-51.C: New.
+	* g++.dg/gomp/delim-declare-variant-52.C: New.
+	* g++.dg/gomp/delim-declare-variant-70.C: New.
+	* g++.dg/gomp/delim-declare-variant-71.C: New.
+
+2025-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122788
+	* g++.dg/cpp26/expansion-stmt27.C: New test.
+
+2025-11-22  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122185
+	* g++.dg/cpp1z/pr122185.C: New test.
+
+2025-11-22  zhaozhou  <zhaozhou@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/lasx-struct-move.c: New test.
+
+2025-11-22  Deng Jianbo  <dengjianbo@loongson.cn>
+
+	* gcc.target/loongarch/bstrins-5.c: New test.
+	* gcc.target/loongarch/bstrins-6.c: New test.
+
+2025-11-22  zhaozhou  <zhaozhou@loongson.cn>
+
+	* gcc.target/loongarch/vector/lsx/lsx-vec-construct-opt.c:
+
+2025-11-22  Daniele Sahebi  <daniele@mkryss.me>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122658
+	* g++.dg/cpp2a/consteval42.C: New test.
+
 2025-11-21  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR target/118358

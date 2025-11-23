@@ -1,3 +1,7 @@
+2025-11-22  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc-changelog/git_commit.py: Add algol68.
+
 2025-11-16  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* make_sunver.pl ($elfdump): Remove ccs from path.
