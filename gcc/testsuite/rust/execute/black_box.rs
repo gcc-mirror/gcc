@@ -1,5 +1,5 @@
 /* { dg-output "Value is: 42\r*\n" } */
-#![feature(rustc_attrs)]
+#![feature(rustc_attrs, lang_items)]
 
 extern "C" {
     fn printf(s: *const i8, ...);

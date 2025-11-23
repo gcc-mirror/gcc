@@ -1,4 +1,4 @@
-#![feature(rustc_attrs)]
+#![feature(rustc_attrs, lang_items)]
 
 #[lang = "sized"]
 trait Sized {}

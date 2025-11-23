@@ -1,6 +1,8 @@
 /* { dg-output "parent123\r*\nchild\r*\n" } */
 // Testing generics passing with supertraits
 
+#![feature(lang_items)]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

@@ -1,5 +1,6 @@
 // { dg-options "-w" } Currently there are a lot of warnings produced from inside clone/copy
 // builtins
+#![feature(lang_items)]
 
 #[lang = "copy"]
 trait Copy {}

@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 pub use result::Result::{self, Err, Ok};
 
 #[lang = "sized"]

@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 mod core {
     mod marker {
         #[lang = "sized"]

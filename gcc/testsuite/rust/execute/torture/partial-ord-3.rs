@@ -1,7 +1,7 @@
 /* { dg-output "x == y\r*\nx > z\r*\nx < z\r*\nx >= y\r*\nx <= y\r*\n" } */
 /* { dg-options "-w" } */
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

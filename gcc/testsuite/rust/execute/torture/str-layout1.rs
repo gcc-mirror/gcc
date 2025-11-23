@@ -2,6 +2,7 @@
 // { dg-output "t1sz=5 t2sz=10\r*" }
 #![feature(intrinsics)]
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

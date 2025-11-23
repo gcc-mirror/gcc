@@ -1,6 +1,7 @@
 // { dg-options "-w" }
 // { dg-output "1\r*\n2\r*\n" }
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

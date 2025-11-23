@@ -1,5 +1,5 @@
 // { dg-options "-fdump-tree-gimple" }
-#![feature(rustc_attrs)]
+#![feature(rustc_attrs, lang_items)]
 
 #[lang = "sized"]
 pub trait Sized {}

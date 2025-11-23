@@ -1,5 +1,5 @@
 // { dg-additional-options "-w" }
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 extern "rust-intrinsic" {
     fn transmute<T, U>(value: T) -> U;

@@ -1,6 +1,7 @@
 /* { dg-output "a == b\r*\na != c\r*\n" }*/
 /* { dg-options "-w" } */
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

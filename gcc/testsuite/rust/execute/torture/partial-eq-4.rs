@@ -1,7 +1,7 @@
 /* { dg-output "a == b\r*\na != c\r*\n" }*/
 /* { dg-options "-w" } */
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

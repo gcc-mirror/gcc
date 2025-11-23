@@ -1,7 +1,7 @@
 // { dg-options "-w" }
 // { dg-output "less\r*\n" }
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

@@ -1,5 +1,6 @@
 // { dg-additional-options "-w" }
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

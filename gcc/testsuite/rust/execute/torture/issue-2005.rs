@@ -1,6 +1,6 @@
 // { dg-additional-options "-w" }
 /* { dg-output "WORKS\r?\n" } */
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

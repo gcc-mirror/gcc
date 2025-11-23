@@ -1,6 +1,6 @@
 // { dg-additional-options "-w" }
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

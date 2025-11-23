@@ -1,7 +1,7 @@
 // { dg-output "VALUE\r*\nVALUE\r*\n" }
 // { dg-set-compiler-env-var ENV_MACRO_TEST "VALUE" }
 
-#![feature(rustc_attrs)]
+#![feature(rustc_attrs, lang_items)]
 
 #[rustc_builtin_macro]
 macro_rules! option_env {

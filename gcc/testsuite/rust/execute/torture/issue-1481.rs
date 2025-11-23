@@ -1,5 +1,6 @@
 /* { dg-output "called Foo::print\\(\\)\r*" } */
 /* { dg-options "-w" } */
+#![feature(lang_items)]
 
 #[lang = "sized"]
 trait Sized {}

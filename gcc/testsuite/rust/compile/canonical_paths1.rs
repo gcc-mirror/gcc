@@ -1,4 +1,5 @@
 // { dg-additional-options "-w -fdump-tree-gimple -frust-crate=example" }
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

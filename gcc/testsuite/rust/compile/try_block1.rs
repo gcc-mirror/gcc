@@ -1,4 +1,5 @@
 // { dg-additional-options "-frust-edition=2018" }
+#![feature(lang_items)]
 
 #[lang = "sized"]
 trait Sized {}

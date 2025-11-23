@@ -1,6 +1,7 @@
 // { dg-additional-options "-frust-compile-until=compilation -frust-borrowcheck -fdiagnostics-show-caret -fdiagnostics-show-line-numbers" }
 // { dg-enable-nn-line-numbers "" }
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

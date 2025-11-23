@@ -1,4 +1,4 @@
-#![feature(rustc_attrs)]
+#![feature(rustc_attrs, lang_items)]
 
 #[rustc_builtin_macro]
 macro_rules! option_env {

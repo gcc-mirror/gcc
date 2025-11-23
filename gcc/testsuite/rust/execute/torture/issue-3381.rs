@@ -1,4 +1,6 @@
 /* { dg-output "Err: 15\r*\n" } */
+#![feature(lang_items)]
+
 #[lang = "sized"]
 trait Sized {}
 

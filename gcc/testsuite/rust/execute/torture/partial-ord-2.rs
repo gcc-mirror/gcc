@@ -1,6 +1,6 @@
 /* { dg-output "x == y\r*\nx > z\r*\n" }*/
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

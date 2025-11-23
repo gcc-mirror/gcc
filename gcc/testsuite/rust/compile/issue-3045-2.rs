@@ -1,4 +1,4 @@
-#![feature(dropck_eyepatch)]
+#![feature(dropck_eyepatch, lang_items)]
 #[allow(dead_code)]
 
 #[lang = "sized"]

@@ -3,6 +3,7 @@
 // There are errors about unused generic parameters, but we can't handle that yet.
 // Still, this code is invalid Rust.
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

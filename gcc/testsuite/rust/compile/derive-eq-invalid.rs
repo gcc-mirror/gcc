@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 mod core {
     mod cmp {
         #[lang = "eq"]

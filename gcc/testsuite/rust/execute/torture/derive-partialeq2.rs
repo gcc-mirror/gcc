@@ -1,6 +1,6 @@
 // { dg-output "true\r*\nfalse\r*\nfalse\r*\nfalse\r*\nfalse\r*\n" }
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 pub mod core {
     pub mod intrinsics {

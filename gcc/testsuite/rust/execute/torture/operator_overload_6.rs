@@ -1,4 +1,6 @@
 /* { dg-output "add_assign\r*\n3\r*\n" } */
+#![feature(lang_items)]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

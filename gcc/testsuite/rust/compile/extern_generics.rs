@@ -1,4 +1,5 @@
-#[lang="sized"]
+#![feature(lang_items)]
+#[lang = "sized"]
 trait Sized {}
 
 

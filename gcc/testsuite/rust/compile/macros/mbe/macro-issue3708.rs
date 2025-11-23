@@ -1,4 +1,5 @@
 // { dg-additional-options "-frust-compile-until=lowering" }
+#![feature(lang_items)]
 
 macro_rules! impl_fn_for_zst {
     ($(

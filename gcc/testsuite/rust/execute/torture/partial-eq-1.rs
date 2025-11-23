@@ -1,5 +1,6 @@
 /* { dg-output "a == b\r*\na != c\r*\n" }*/
 /* { dg-options "-w" } */
+#![feature(lang_items)]
 
 mod core {
     mod marker {

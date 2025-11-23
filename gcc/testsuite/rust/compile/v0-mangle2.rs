@@ -1,4 +1,5 @@
 // { dg-additional-options -frust-mangling=v0 }
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

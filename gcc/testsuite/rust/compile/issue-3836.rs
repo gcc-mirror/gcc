@@ -1,4 +1,6 @@
 // { dg-options "-w" }
+#![feature(lang_items)]
+
 mod core {
     mod option {
         pub enum Option<T> {

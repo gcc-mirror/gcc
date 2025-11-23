@@ -1,4 +1,6 @@
 /* { dg-output "less\r*" }*/
+#![feature(lang_items)]
+
 mod core {
     mod option {
         pub enum Option<T> {

@@ -2,6 +2,7 @@
 // { dg-output "slice_access=3\r*\n" }
 #![feature(intrinsics)]
 
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

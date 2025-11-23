@@ -1,7 +1,7 @@
 // { dg-additional-options "-w" }
 /* { dg-output "Foo A < B\r?\nFoo B < C\r?\nFoo C == C\r?\nBar x < y\r?\nBarFull s1 < s2\r?\n" } */
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

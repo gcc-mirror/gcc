@@ -1,5 +1,6 @@
 // { dg-additional-options "-frust-compile-until=typecheck" }
 // TODO: this should typecheck
+#![feature(lang_items)]
 
 #[lang = "sized"]
 trait Sized {}

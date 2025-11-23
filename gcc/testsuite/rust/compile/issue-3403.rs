@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 pub struct Foo {
     a: i32,
     // { dg-warning "field is never read" "" { target *-*-* } .-1 }

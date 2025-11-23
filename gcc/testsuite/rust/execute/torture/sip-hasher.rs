@@ -1,8 +1,7 @@
 // { dg-skip-if "" { *-*-* } { "-m32" } { "" } }
 // { dg-options "-w" }
 // { dg-output "Hash: 0x63d53fd2170bbb8c\r*\n" }
-#![feature(intrinsics)]
-#![feature(rustc_attrs)]
+#![feature(intrinsics, lang_items, rustc_attrs)]
 
 #[lang = "sized"]
 trait Sized {}

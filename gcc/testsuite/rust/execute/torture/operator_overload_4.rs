@@ -1,4 +1,6 @@
 /* { dg-output "neg\r*\n" } */
+#![feature(lang_items)]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }

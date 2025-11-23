@@ -1,4 +1,5 @@
 /* { dg-output "x == y\r*\nx > z\r*\n" }*/
+#![feature(lang_items)]
 #[lang = "sized"]
 pub trait Sized {}
 

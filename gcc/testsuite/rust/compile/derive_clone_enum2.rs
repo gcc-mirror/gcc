@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 #[lang = "clone"]
 trait Clone {
     pub fn clone(&self) -> Self;

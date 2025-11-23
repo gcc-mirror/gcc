@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 #[lang = "structural_peq"]
 pub trait StructuralPartialEq {
     // Empty.

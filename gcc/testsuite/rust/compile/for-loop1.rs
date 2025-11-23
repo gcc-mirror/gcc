@@ -1,5 +1,5 @@
 // { dg-output "loop\r*\nloop\r*\n" }
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 pub use option::Option::{self, None, Some};
 pub use result::Result::{self, Err, Ok};

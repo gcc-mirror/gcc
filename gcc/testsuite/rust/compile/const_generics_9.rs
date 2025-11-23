@@ -1,5 +1,5 @@
 // { dg-options "-w" }
-
+#![feature(lang_items)]
 #[lang = "sized"]
 trait Sized {}
 

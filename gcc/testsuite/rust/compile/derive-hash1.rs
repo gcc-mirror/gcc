@@ -1,4 +1,4 @@
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 #[lang = "sized"]
 trait Sized {}

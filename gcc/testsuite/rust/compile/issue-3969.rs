@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 #[lang = "sized"]
 pub trait Sized {
     // Empty.

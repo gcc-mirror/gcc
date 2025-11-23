@@ -1,5 +1,6 @@
 // this SEGVs in lowering for now
 // { dg-additional-options "-frust-compile-until=nameresolution" }
+#![feature(lang_items)]
 
 macro_rules! forward_ref_binop {
     (impl $imp:ident, $method:ident for $t:ty, $u:ty) => {

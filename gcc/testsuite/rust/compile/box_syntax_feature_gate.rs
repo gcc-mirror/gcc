@@ -1,4 +1,5 @@
 // { dg-options "-frust-compile-until=lowering" }
+#![feature(lang_items)]
 #[lang = "owned_box"]
 pub struct Box<T>;
 

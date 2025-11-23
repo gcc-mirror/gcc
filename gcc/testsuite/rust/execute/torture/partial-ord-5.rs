@@ -1,7 +1,7 @@
 /* { dg-output "a == b\r*\na != c\r*\na >= c\r*\na <= b\r*\na > c\r*\nc < b\r*\n" } */
 /* { dg-options "-w" } */
 
-#![feature(intrinsics)]
+#![feature(intrinsics, lang_items)]
 
 mod core {
     mod option {

@@ -1,4 +1,4 @@
-#![feature(negative_impls)]
+#![feature(negative_impls, lang_items)]
 
 #[lang = "copy"]
 trait Copy {}

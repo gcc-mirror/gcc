@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 // use self::Ordering::*;
 // use Ordering::*;
 

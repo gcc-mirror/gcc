@@ -1,3 +1,5 @@
+#![feature(lang_items)]
+
 #[derive(Default)]
 struct Foo { a: i32  }
 #[derive(Default)]

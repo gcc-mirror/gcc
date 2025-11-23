@@ -1,4 +1,6 @@
 /* { dg-output "S::f\r*\nT1::f\r*\nT2::f\r*\n" } */
+#![feature(lang_items)]
+
 extern "C" {
     fn printf(s: *const i8, ...);
 }
