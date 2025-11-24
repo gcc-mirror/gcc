@@ -2527,6 +2527,20 @@ package body Exp_Ch5 is
             end if;
 
             Apply_Predicate_Check (Rhs, Typ);
+
+            --  If the generation of the check required capturing a function
+            --  call to remove its side effects, and the assignment initially
+            --  was to be done without controlled actions, then change it to
+            --  be done without finalization only, in other words restore the
+            --  adjustment of the LHS, because the RHS is now a temporary that
+            --  will be finalized after the assignment is complete.
+
+            if No_Ctrl_Actions (N)
+              and then Is_Captured_Function_Call (Rhs)
+            then
+               Set_No_Ctrl_Actions (N, False);
+               Set_No_Finalize_Actions (N, True);
+            end if;
          end if;
       end if;
 
