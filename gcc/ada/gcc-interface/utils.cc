@@ -5425,6 +5425,11 @@ convert (tree type, tree expr)
 	    return fold_convert (type, expr);
 	}
 
+      if (TREE_CODE (expr) == INTEGER_CST)
+	return int_const_convert (type, expr,
+				  type == sizetype || type == bitsizetype
+				  ? -1 : !POINTER_TYPE_P (etype));
+
       /* ... fall through ... */
 
     case ENUMERAL_TYPE:

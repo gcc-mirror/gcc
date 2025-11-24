@@ -134,6 +134,7 @@ extern bool poly_int_binop (poly_wide_int &res, enum tree_code,
 			    const_tree, const_tree, signop,
 			    wi::overflow_type *);
 extern tree int_const_binop (enum tree_code, const_tree, const_tree, int = 1);
+extern tree int_const_convert (tree, const_tree, int = 1);
 #define build_fold_addr_expr(T)\
         build_fold_addr_expr_loc (UNKNOWN_LOCATION, (T))
 extern tree build_fold_addr_expr_loc (location_t, tree);

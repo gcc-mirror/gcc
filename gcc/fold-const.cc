@@ -2183,12 +2183,12 @@ size_diffop_loc (location_t loc, tree arg0, tree arg1)
 							     MINUS_EXPR,
 							     arg1, arg0)));
 }
-
-/* A subroutine of fold_convert_const handling conversions of an
-   INTEGER_CST to another integer type.  */
 
-static tree
-fold_convert_const_int_from_int (tree type, const_tree arg1)
+/* Convert integer constant ARG1 to TYPE, which is an integral or offset
+   or pointer type.  */
+
+tree
+int_const_convert (tree type, const_tree arg1, int overflowable)
 {
   /* Given an integer constant, make new constant with new type,
      appropriately sign-extended or truncated.  Use widest_int
@@ -2197,7 +2197,7 @@ fold_convert_const_int_from_int (tree type, const_tree arg1)
   unsigned prec = MAX (TYPE_PRECISION (arg1_type), TYPE_PRECISION (type));
   return force_fit_type (type, wide_int::from (wi::to_wide (arg1), prec,
 					       TYPE_SIGN (arg1_type)),
-			 !POINTER_TYPE_P (TREE_TYPE (arg1)),
+			 overflowable,
 			 TREE_OVERFLOW (arg1));
 }
 
@@ -2500,7 +2500,7 @@ fold_convert_const (enum tree_code code, tree type, tree arg1)
       || TREE_CODE (type) == OFFSET_TYPE)
     {
       if (TREE_CODE (arg1) == INTEGER_CST)
-	return fold_convert_const_int_from_int (type, arg1);
+	return int_const_convert (type, arg1, !POINTER_TYPE_P (arg_type));
       else if (TREE_CODE (arg1) == REAL_CST)
 	return fold_convert_const_int_from_real (code, type, arg1);
       else if (TREE_CODE (arg1) == FIXED_CST)
