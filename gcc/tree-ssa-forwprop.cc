@@ -1791,7 +1791,6 @@ do_simple_agr_dse (gassign *stmt, bool full_walk)
   /* Only handle clobbers of a full decl.  */
   if (!DECL_P (lhs))
     return;
-  clobber_kind kind = (clobber_kind)CLOBBER_KIND (gimple_assign_rhs1 (stmt));
   ao_ref_init (&read, lhs);
   tree vuse = gimple_vuse (stmt);
   unsigned limit = full_walk ? param_sccvn_max_alias_queries_per_access : 4;
@@ -1813,20 +1812,20 @@ do_simple_agr_dse (gassign *stmt, bool full_walk)
 	  basic_block ubb = gimple_bb (use_stmt);
 	  if (stmt == use_stmt)
 	    continue;
-	  /* If the use is the same kind of clobber for lhs,
+	  /* If the use is a clobber for lhs,
 	     then it can be safely skipped; this happens with eh
 	     and sometimes jump threading.  */
-	  if (gimple_clobber_p (use_stmt, kind)
+	  if (gimple_clobber_p (use_stmt)
 	      && lhs == gimple_assign_lhs (use_stmt))
 	    continue;
 	  /* If the use is a phi and it is single use then check if that single use
-	     is a clobber of the same kind and lhs is the same.  */
+	     is a clobber and lhs is the same.  */
 	  if (gphi *use_phi = dyn_cast<gphi*>(use_stmt))
 	    {
 	      use_operand_p ou;
 	      gimple *ostmt;
 	      if (single_imm_use (gimple_phi_result (use_phi), &ou, &ostmt)
-		  && gimple_clobber_p (ostmt, kind)
+		  && gimple_clobber_p (ostmt)
 	          && lhs == gimple_assign_lhs (ostmt))
 		continue;
 	      /* A phi node will never be dominating the clobber.  */

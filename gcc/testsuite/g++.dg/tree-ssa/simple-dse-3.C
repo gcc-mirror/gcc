@@ -20,9 +20,9 @@ void func3(int a)
   struct s1 p1 = pure1(a);
 }
 
-// { dg-final { scan-tree-dump "Removing dead call store stmt p1 =" "forwprop1" { xfail *-*-* } } }
+// { dg-final { scan-tree-dump "Removing dead call store stmt p1 =" "forwprop1"  } }
 // { dg-final { scan-tree-dump-not "Removing dead call store stmt v1 =" "forwprop1" } }
 // { dg-final { scan-tree-dump-not "Removing lhs of call stmt " "forwprop1" } }
-// { dg-final { scan-tree-dump-times "Removing dead call store stmt" 1 "forwprop1" { target { ! c++26 }  xfail *-*-* } } }
-// { dg-final { scan-tree-dump-times "Removing dead call store stmt" 2 "forwprop1" { target c++26  xfail *-*-* } } }
+// { dg-final { scan-tree-dump-times "Removing dead call store stmt" 1 "forwprop1" { target { ! c++26 } } } }
+// { dg-final { scan-tree-dump-times "Removing dead call store stmt" 2 "forwprop1" { target c++26  } } }
 
