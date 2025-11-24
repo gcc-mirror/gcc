@@ -41,3 +41,4 @@ TEST_WIDEN_TERNARY_VX_UNSIGNED(T, NT)
 /* { dg-final { scan-assembler-times {vwmaccu.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vmseq.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vmsne.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vmsltu.vx} 1 } } */

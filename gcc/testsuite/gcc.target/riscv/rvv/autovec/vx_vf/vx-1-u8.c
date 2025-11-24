@@ -28,3 +28,4 @@ TEST_TERNARY_VX_UNSIGNED_0(T)
 /* { dg-final { scan-assembler-times {vnmsub.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vmseq.vx} 1 } } */
 /* { dg-final { scan-assembler-times {vmsne.vx} 1 } } */
+/* { dg-final { scan-assembler-times {vmsltu.vx} 1 } } */
