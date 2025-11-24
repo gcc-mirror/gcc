@@ -1,3 +1,55 @@
+2025-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa64-linux.h (GLIBC_DYNAMIC_LINKER): Define.
+
+2025-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/113932
+	PR target/113933
+	* config/pa/pa.opt (mlra): Default to LRA instead of reload.
+
+2025-11-23  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.cc (pa_print_operand): Use REG_POINTER
+	flag to select base and index registers on targets with
+	non-equivalent space registers.
+	(pa_legitimate_address_p): Don't allow scaled and unscaled
+	indexed addresses until reload is complete.  Allow any
+	register order in unscaled addresses as long as the
+	REG_POINTER flag is correctly set/unset in the base/index
+	registers.
+	* config/pa/predicates.md (mem_operand): Remove code to
+	delay creating move insns with unscaled indexed addresses
+	until CSE is not expected.
+	(move_src_operand): Likewise.
+
+2025-11-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (1/x): Use fold_before_rtl_expansion_p.
+	(`(m1 CMP m2) * d`): Likewise.
+
+2025-11-23  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Remove unnecessary outer convert and add
+	c for the outer bit_ior.
+
+2025-11-23  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add simplfy to fold outer convert of bit_op
+	to inner captures.
+
+2025-11-23  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-split.cc (pass_split_functions::gate): Do not run when
+	flag_auto_profile.
+	(pass_feedback_split_functions::gate): Run when flag_auto_profile.
+
+2025-11-23  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* tree-ssa-loop-im.cc (is_self_write): New.
+	(ref_indep_loop_p): Allow hoisting when aliasing references
+	form a self write pattern.
+
 2025-11-22  Jeff Law  <jlaw@ventanamicro.com>
 
 	PR rtl-optimization/122701
