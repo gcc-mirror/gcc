@@ -860,6 +860,16 @@ extern int may_call_alloca;
    || REGNO (X) == FRAME_POINTER_REGNUM				\
    || REGNO (X) >= FIRST_PSEUDO_REGISTER))
 
+/* Nonzero if X and Y are hard regs that can be used as base
+   and index regs in an unscaled index address.  This is only
+   used after reload.  */
+#define REGS_OK_FOR_BASE_INDEX(X,Y) \
+  (REGNO (X) && REGNO (X) < 32					\
+   && REGNO (Y) && REGNO (Y) < 32				\
+   && (TARGET_NO_SPACE_REGS					\
+       || (REG_POINTER (X) && !REG_POINTER (Y))			\
+       || (!REG_POINTER (X) && REG_POINTER (Y))))
+
 /* Nonzero if X is a hard reg that can be used as an index.  */
 #define STRICT_REG_OK_FOR_INDEX_P(X) REGNO_OK_FOR_INDEX_P (REGNO (X))
 
