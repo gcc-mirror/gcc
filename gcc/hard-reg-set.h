@@ -197,6 +197,28 @@ hard_reg_set_popcount (const_hard_reg_set x)
   return popcount_hwi (x);
 }
 
+/* Return 0 if there aren't any differences between X and Y after the first
+   SKIP registers, or 1 + the register number of the lowest-numbered
+   difference, negated if it's set in Y.  The return value is suitable for
+   qsort.  */
+inline int
+hard_reg_set_first_diff (const_hard_reg_set x, const_hard_reg_set y,
+			 unsigned skip)
+{
+  if (skip >= UHOST_BITS_PER_WIDE_INT)
+    return 0;
+  const HARD_REG_ELT_TYPE full_mask = -1;
+  HARD_REG_ELT_TYPE mask = full_mask << skip;
+  HARD_REG_ELT_TYPE dif = (x ^ y) & mask;
+  if (dif == 0)
+    return 0;
+  int bit = ctz_hwi (dif);
+  int regp1 = bit + 1;
+  if (y & (HARD_CONST (1) << bit))
+    return -regp1;
+  return regp1;
+}
+
 #else
 
 inline void
@@ -268,6 +290,34 @@ hard_reg_set_popcount (const_hard_reg_set x)
   for (unsigned int i = 0; i < ARRAY_SIZE (x.elts); ++i)
     count += popcount_hwi (x.elts[i]);
   return count;
+}
+
+/* Return 0 if there aren't any differences between X and Y after the first
+   SKIP registers, or 1 + the register number of the lowest-numbered
+   difference, negated if it's set in Y.  The return value is suitable for
+   qsort.  */
+inline int
+hard_reg_set_first_diff (const_hard_reg_set x, const_hard_reg_set y,
+			 unsigned skip)
+{
+  const HARD_REG_ELT_TYPE full_mask = -1;
+  HARD_REG_ELT_TYPE mask = full_mask << (skip % UHOST_BITS_PER_WIDE_INT);
+  for (unsigned int i = skip / UHOST_BITS_PER_WIDE_INT;
+       i < ARRAY_SIZE (x.elts); ++i)
+    {
+      HARD_REG_ELT_TYPE dif = (x.elts[i] ^ y.elts[i]) & mask;
+      if (dif == 0)
+	{
+	  mask = full_mask;
+	  continue;
+	}
+      int bit = ctz_hwi (dif);
+      int regp1 = bit + 1 + i * UHOST_BITS_PER_WIDE_INT;
+      if (y.elts[i] & (HARD_CONST (1) << bit))
+	return -regp1;
+      return regp1;
+    }
+  return 0;
 }
 #endif
 

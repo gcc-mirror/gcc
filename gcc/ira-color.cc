@@ -310,7 +310,11 @@ allocno_hard_regs_compare (const void *v1p, const void *v2p)
     return 1;
   else if (hv2->cost < hv1->cost)
     return -1;
-  return SORTGT (allocno_hard_regs_hasher::hash(hv2), allocno_hard_regs_hasher::hash(hv1));
+
+  /* Break ties using the HARD_REG_SETs themselves.  Avoid influencing sorting
+     by such host features as word size and alignment, looking for the
+     lowest-numbered hard register difference.  */
+  return hard_reg_set_first_diff (hv1->set, hv2->set, 0);
 }
 
 
