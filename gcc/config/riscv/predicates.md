@@ -611,6 +611,9 @@
 (define_predicate "comparison_except_ge_operator"
   (match_code "eq,ne,le,leu,gt,gtu,lt,ltu"))
 
+(define_predicate "comparison_swappable_operator"
+  (match_code "gtu"))
+
 (define_predicate "ge_operator"
   (match_code "ge,geu"))
 

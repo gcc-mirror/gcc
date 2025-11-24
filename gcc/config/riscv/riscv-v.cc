@@ -5862,6 +5862,38 @@ expand_vx_binary_vec_vec_dup (rtx op_0, rtx op_1, rtx op_2,
   emit_vlmax_insn (icode, riscv_vector::BINARY_OP, ops);
 }
 
+static rtx_code
+get_swapped_cmp_rtx_code (rtx_code code)
+{
+  switch (code)
+    {
+    case GTU:
+      return LTU;
+    default:
+      gcc_unreachable ();
+    }
+}
+
+/* Expand the binary vx combine with the format like v2 = vec_dup(x) > v1.
+   Aka the first op comes from the vec_duplicate, and the second op is the vector
+   reg.  Unfortunately, the RVV vms* only form like v2 = v1 < vec_dup(x), so
+   we need to swap the op_1 and op_2, then emit the swapped(from gtu to ltu)
+   insn instead.  */
+
+void
+expand_vx_cmp_vec_dup_vec (rtx op_0, rtx op_1, rtx op_2, rtx_code code,
+			   machine_mode mode)
+{
+  machine_mode mask_mode = get_mask_mode (mode);
+  rtx_code swapped_code = get_swapped_cmp_rtx_code (code);
+
+  insn_code icode = code_for_pred_cmp_scalar (mode);
+  rtx cmp = gen_rtx_fmt_ee (swapped_code, mask_mode, op_2, op_1);
+  rtx ops[] = {op_0, cmp, op_2, op_1};
+
+  emit_vlmax_insn (icode, COMPARE_OP, ops);
+}
+
 /* Vectorize popcount by the Wilkes-Wheeler-Gill algorithm that libgcc uses as
    well.  */
 void

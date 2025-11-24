@@ -1976,6 +1976,36 @@
   }
   [(set_attr "type" "viwmuladd")])
 
+(define_insn_and_split "*pred_cmp_swapped<mode>_scalar"
+  [(set (match_operand:<VM>         0 "register_operand")
+	(if_then_else:<VM>
+	 (unspec:<VM>
+	   [(match_operand:<VM>     1 "vector_mask_operand")
+	    (match_operand          6 "vector_length_operand")
+	    (match_operand          7 "const_int_operand")
+	    (match_operand          8 "const_int_operand")
+	    (reg:SI VL_REGNUM)
+	    (reg:SI VTYPE_REGNUM)] UNSPEC_VPREDICATE)
+	 (match_operator:<VM>       3 "comparison_swappable_operator"
+	    [(vec_duplicate:V_VLSI
+	       (match_operand:<VEL> 4 "register_operand"))
+	     (match_operand:V_VLSI  5 "register_operand")])
+	 (unspec:<VM>
+	   [(match_operand:DI       2 "register_operand")] UNSPEC_VUNDEF)))]
+  "TARGET_VECTOR && can_create_pseudo_p ()"
+  "#"
+  "&& 1"
+  [(const_int 0)]
+  {
+    riscv_vector::expand_vx_cmp_vec_dup_vec (operands[0], operands[4],
+					     operands[5],
+					     GET_CODE (operands[3]),
+					     <MODE>mode);
+
+    DONE;
+  }
+  [(set_attr "type" "vicmp")])
+
 ;; =============================================================================
 ;; Combine vec_duplicate + op.vv to op.vf
 ;; Include
