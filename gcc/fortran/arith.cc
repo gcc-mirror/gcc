@@ -1565,6 +1565,8 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
 				  &op1->where);
 	  r->shape = gfc_copy_shape (op1->shape, op1->rank);
+	  if (c->expr->ts.type == BT_CHARACTER)
+	    r->ts.u.cl = c->expr->ts.u.cl;
 	}
       else
 	{
@@ -1572,6 +1574,8 @@ reduce_binary_ac (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	  r = gfc_get_array_expr (op1->ts.type, op1->ts.kind,
 				  &op1->where);
 	  r->shape = gfc_get_shape (op1->rank);
+	  if (op1->ts.type == BT_CHARACTER)
+	    r->ts.u.cl = op1->ts.u.cl;
 	}
       r->rank = op1->rank;
       r->corank = op1->corank;
@@ -1629,6 +1633,8 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
 				  &op2->where);
 	  r->shape = gfc_copy_shape (op2->shape, op2->rank);
+	  if (c->expr->ts.type == BT_CHARACTER)
+	    r->ts.u.cl = c->expr->ts.u.cl;
 	}
       else
 	{
@@ -1636,6 +1642,8 @@ reduce_binary_ca (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	  r = gfc_get_array_expr (op2->ts.type, op2->ts.kind,
 				  &op2->where);
 	  r->shape = gfc_get_shape (op2->rank);
+	  if (op2->ts.type == BT_CHARACTER)
+	    r->ts.u.cl = op2->ts.u.cl;
 	}
       r->rank = op2->rank;
       r->corank = op2->corank;
@@ -1697,11 +1705,15 @@ reduce_binary_aa (arith (*eval) (gfc_expr *, gfc_expr *, gfc_expr **),
 	{
 	  /* Handle zero-sized arrays.  */
 	  r = gfc_get_array_expr (op1->ts.type, op1->ts.kind, &op1->where);
+	  if (op1->ts.type == BT_CHARACTER)
+	    r->ts.u.cl = op1->ts.u.cl;
 	}
       else
 	{
 	  r = gfc_get_array_expr (c->expr->ts.type, c->expr->ts.kind,
 				  &op1->where);
+	  if (c->expr->ts.type == BT_CHARACTER)
+	    r->ts.u.cl = c->expr->ts.u.cl;
 	}
       r->shape = gfc_copy_shape (op1->shape, op1->rank);
       r->rank = op1->rank;
@@ -1920,6 +1932,29 @@ eval_intrinsic (gfc_intrinsic_op op,
 	 && (op2->expr_type != EXPR_ARRAY
 	     || !gfc_is_constant_expr (op2) || !gfc_expanded_ac (op2)))
     goto runtime;
+
+  /* For array constructors with explicit type-spec, ensure elements are
+     converted to the specified type before any operations.  This handles
+     cases like [integer :: ([1.0])] ** 2 where parentheses would otherwise
+     cause the type-spec to be lost during constant folding.  */
+  if (op1->expr_type == EXPR_ARRAY && op1->ts.type != BT_UNKNOWN)
+    gfc_check_constructor_type (op1);
+  if (op2 != NULL && op2->expr_type == EXPR_ARRAY && op2->ts.type != BT_UNKNOWN)
+    gfc_check_constructor_type (op2);
+
+  /* For CONCAT operations, also resolve character array constructors to
+     ensure elements are padded to the specified length before concatenation.
+     This ensures [character(16):: 'a','b'] // '|' pads to 16 chars first.  */
+  if (op == INTRINSIC_CONCAT)
+    {
+      if (op1->expr_type == EXPR_ARRAY && op1->ts.type == BT_CHARACTER
+	  && op1->ts.u.cl && op1->ts.u.cl->length_from_typespec)
+	gfc_resolve_character_array_constructor (op1);
+      if (op2 != NULL && op2->expr_type == EXPR_ARRAY
+	  && op2->ts.type == BT_CHARACTER
+	  && op2->ts.u.cl && op2->ts.u.cl->length_from_typespec)
+	gfc_resolve_character_array_constructor (op2);
+    }
 
   if (unary)
     rc = reduce_unary (eval.f2, op1, &result);
