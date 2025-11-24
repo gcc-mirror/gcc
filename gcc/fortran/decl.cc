@@ -4824,6 +4824,31 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	return m;
     }
 
+  /* This picks up function declarations with a PDT typespec. Since a
+     pdt_type has been generated, there is no more to do. Within the
+     function body, this type must be used for the typespec so that
+     the "being used before it is defined warning" does not arise.  */
+  if (ts->type == BT_DERIVED
+      && sym && sym->attr.pdt_type
+      && (gfc_current_state () == COMP_CONTAINS
+	  || (gfc_current_state () == COMP_FUNCTION
+	      && gfc_current_block ()->ts.type == BT_DERIVED
+	      && gfc_current_block ()->ts.u.derived == sym
+	      && !gfc_find_symtree (gfc_current_ns->sym_root,
+				    sym->name))))
+    {
+      if (gfc_current_state () == COMP_FUNCTION)
+	{
+	  gfc_symtree *pdt_st;
+	  pdt_st = gfc_new_symtree (&gfc_current_ns->sym_root,
+				    sym->name);
+	  pdt_st->n.sym = sym;
+	  sym->refs++;
+	}
+      ts->u.derived = sym;
+      return MATCH_YES;
+    }
+
   /* Defer association of the derived type until the end of the
      specification block.  However, if the derived type can be
      found, add it to the typespec.  */
@@ -4860,7 +4885,7 @@ gfc_match_decl_type_spec (gfc_typespec *ts, int implicit_flag)
 	dt_sym = gfc_find_dt_in_generic (sym);
 
       /* Host associated PDTs can get confused with their constructors
-	 because they ar instantiated in the template's namespace.  */
+	 because they are instantiated in the template's namespace.  */
       if (!dt_sym)
 	{
 	  if (gfc_find_symbol (dt_name, NULL, 1, &dt_sym))
