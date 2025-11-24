@@ -1224,6 +1224,17 @@ package body Inline is
          return;
       end if;
 
+      --  Do not inline ghost functions, because inlined functions are
+      --  difficult to detect and we must do it to reject exceptions propagated
+      --  from ghost calls to ordinary code.
+
+      if Ekind (Spec_Id) = E_Function
+        and then Is_Ghost_Entity (Spec_Id)
+      then
+         Cannot_Inline ("cannot inline & (ghost function)?", N, Spec_Id);
+         return;
+      end if;
+
       if Present (Handled_Statement_Sequence (N)) then
          if Present (Exception_Handlers (Handled_Statement_Sequence (N))) then
             Cannot_Inline
