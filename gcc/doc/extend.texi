@@ -5015,8 +5015,6 @@ from the code model of the callee function.
 Like attribute @code{target}, these options also reflect the behavior of
 similar command line options.
 
-Note that this attribute requires GLIBC2.38 and newer that support HWCAP.
-
 @code{string} can take the following values:
 
 @itemize @bullet

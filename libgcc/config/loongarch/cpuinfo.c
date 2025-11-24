@@ -73,6 +73,17 @@ __init_loongarch_features_resolver (void)
   if (CPUCFG3 & CPUCFG3_LD_SEQ_SA)
     setCPUFeature (FEAT_LD_SEQ_SA);
 
+/* The macros HWCAP_LOONGARCH_LSX and HWCAP_LOONGARCH_LASX are not defined
+   in glibc versions earlier than 2.38.  If these two macros are not defined,
+   define them with reference to asm/hwcap.h.  */
+#ifndef HWCAP_LOONGARCH_LSX
+#define HWCAP_LOONGARCH_LSX             (1 << 4)
+#endif
+
+#ifndef HWCAP_LOONGARCH_LASX
+#define HWCAP_LOONGARCH_LASX            (1 << 5)
+#endif
+
   /* LSX and LASX can be disabled/enabled by kernel: on some old kernel
      versions the vector context switch wasn't implemented and so they are
      always disabled, and on Linux >= 6.18-rc1 the user can pass simd=
