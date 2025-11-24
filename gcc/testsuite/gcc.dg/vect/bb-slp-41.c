@@ -59,4 +59,4 @@ int main ()
   return 0;
 
 }
-/* { dg-final { scan-tree-dump-not "vectorizing stmts using SLP" "slp1" } } */
+/* { dg-final { scan-tree-dump-not "vectorizable constructor" "slp1" } } */
