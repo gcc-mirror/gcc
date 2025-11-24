@@ -1842,10 +1842,57 @@ do_simple_agr_dse (gassign *stmt, bool full_walk)
 	    return;
 	}
       vuse = gimple_vuse (ostmt);
-
+      /* This is a call with an assignment to the clobber decl,
+	 remove the lhs or the whole stmt if it was pure/const. */
+      if (is_a <gcall*>(ostmt)
+	  && lhs == gimple_call_lhs (ostmt))
+	{
+	  /* Don't remove stores/statements that are needed for non-call
+	      eh to work.  */
+	  if (stmt_unremovable_because_of_non_call_eh_p (cfun, ostmt))
+	    return;
+	  /* If we delete a stmt that could throw, mark the block
+	     in to_purge to cleanup afterwards.  */
+	  if (stmt_could_throw_p (cfun, ostmt))
+	    bitmap_set_bit (to_purge, obb->index);
+	  int flags = gimple_call_flags (ostmt);
+	  if ((flags & (ECF_PURE|ECF_CONST|ECF_NOVOPS))
+	      && !(flags & (ECF_LOOPING_CONST_OR_PURE)))
+	    {
+	       gimple_stmt_iterator gsi = gsi_for_stmt (ostmt);
+	       if (dump_file && (dump_flags & TDF_DETAILS))
+		{
+		  fprintf (dump_file, "Removing dead call store stmt ");
+		  print_gimple_stmt (dump_file, ostmt, 0);
+		  fprintf (dump_file, "\n");
+		}
+	      unlink_stmt_vdef (ostmt);
+	      release_defs (ostmt);
+	      gsi_remove (&gsi, true);
+	      statistics_counter_event (cfun, "delete call dead store", 1);
+	      /* Only remove the first store previous statement. */
+	      return;
+	    }
+	  /* Make sure we do not remove a return slot we cannot reconstruct
+	     later.  */
+	  if (gimple_call_return_slot_opt_p (as_a <gcall *>(ostmt))
+	      && (TREE_ADDRESSABLE (TREE_TYPE (gimple_call_fntype (ostmt)))
+		  || !poly_int_tree_p
+		      (TYPE_SIZE (TREE_TYPE (gimple_call_fntype (ostmt))))))
+	    return;
+	  if (dump_file && (dump_flags & TDF_DETAILS))
+	    {
+	      fprintf (dump_file, "Removing lhs of call stmt ");
+	      print_gimple_stmt (dump_file, ostmt, 0);
+	      fprintf (dump_file, "\n");
+	    }
+	  gimple_call_set_lhs (ostmt, NULL_TREE);
+	  update_stmt (ostmt);
+	  statistics_counter_event (cfun, "removed lhs call", 1);
+	  return;
+	}
       /* This an assignment store to the clobbered decl,
-	 then maybe remove it. A call is not handled here as
-	 the rhs will not make a difference for SRA. */
+	 then maybe remove it. */
       if (is_a <gassign*>(ostmt)
 	  && gimple_store_p (ostmt)
 	  && !gimple_clobber_p (ostmt)
