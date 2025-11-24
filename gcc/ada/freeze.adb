@@ -932,10 +932,15 @@ package body Freeze is
          elsif Is_Record_Type (T) then
 
             --  A subtype of a variant record must not have non-static
-            --  discriminated components.
+            --  discriminants that influence the size. We don't do all that we
+            --  could to determine whether a non-static discriminant value can
+            --  make the size vary, but we handle the special case of unchecked
+            --  unions where all objects have the same size (see RM B.3.3
+            --  (14/2)).
 
             if T /= Base_Type (T)
               and then not Static_Discriminated_Components (T)
+              and then not Is_Unchecked_Union (T)
             then
                return False;
 
