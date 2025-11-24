@@ -19,7 +19,7 @@
 
 @copying
 @quotation
-GNAT User's Guide for Native Platforms , Dec 05, 2025
+GNAT User's Guide for Native Platforms , Jan 09, 2026
 
 AdaCore
 
@@ -8315,22 +8315,15 @@ If you attempt to compile any of these files, you will get one of the
 following error messages (where @code{fff} is the name of the file you
 compiled):
 
-@quotation
-
 @example
-cannot generate code for file `@w{`}fff`@w{`} (package spec)
-to check package spec, use -gnatc
+cannot generate code for file fff (package spec)
 
-cannot generate code for file `@w{`}fff`@w{`} (missing subunits)
-to check parent unit, use -gnatc
+cannot generate code for file fff (missing subunits)
 
-cannot generate code for file `@w{`}fff`@w{`} (subprogram spec)
-to check subprogram spec, use -gnatc
+cannot generate code for file fff (subprogram spec)
 
-cannot generate code for file `@w{`}fff`@w{`} (subunit)
-to check subunit, use -gnatc
+cannot generate code for file fff (subunit)
 @end example
-@end quotation
 
 As indicated by the above error messages, if you want to submit
 one of these files to the compiler to check for correct semantics
@@ -30270,8 +30263,8 @@ to permit their use in free software.
 
 @printindex ge
 
-@anchor{d2}@w{                              }
 @anchor{gnat_ugn/gnat_utility_programs switches-related-to-project-files}@w{                              }
+@anchor{d2}@w{                              }
 
 @c %**end of body
 @bye

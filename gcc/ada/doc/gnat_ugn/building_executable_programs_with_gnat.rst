@@ -957,22 +957,18 @@ compiled.
 .. index:: cannot generate code
 
 If you attempt to compile any of these files, you will get one of the
-following error messages (where ``fff`` is the name of the file you
+following error messages (where :file:`fff` is the name of the file you
 compiled):
 
-  ::
+.. code-block:: text
 
-    cannot generate code for file ``fff`` (package spec)
-    to check package spec, use -gnatc
+   cannot generate code for file fff (package spec)
 
-    cannot generate code for file ``fff`` (missing subunits)
-    to check parent unit, use -gnatc
+   cannot generate code for file fff (missing subunits)
 
-    cannot generate code for file ``fff`` (subprogram spec)
-    to check subprogram spec, use -gnatc
+   cannot generate code for file fff (subprogram spec)
 
-    cannot generate code for file ``fff`` (subunit)
-    to check subunit, use -gnatc
+   cannot generate code for file fff (subunit)
 
 
 As indicated by the above error messages, if you want to submit
