@@ -864,8 +864,12 @@ c_common_post_options (const char **pfilename)
 
   sanitize_cpp_opts ();
 
-  register_include_chains (parse_in, sysroot, iprefix, imultilib,
-			   std_inc, std_cxx_inc && c_dialect_cxx (), verbose);
+  /* Don't register include chains if under -fpreprocessed since we might not
+     have correct sysroot this mode, and this may cause file permssion
+     issue.  */
+  if (!cpp_opts->preprocessed)
+    register_include_chains (parse_in, sysroot, iprefix, imultilib,
+			     std_inc, std_cxx_inc && c_dialect_cxx (), verbose);
 
 #ifdef C_COMMON_OVERRIDE_OPTIONS
   /* Some machines may reject certain combinations of C
