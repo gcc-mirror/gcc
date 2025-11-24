@@ -804,11 +804,14 @@ ext_dce_process_uses (rtx_insn *insn, rtx obj,
 
 		 Key on the right shift and use (for now) simplistic tests
 		 to find the corresponding left shift.  */
+	      scalar_mode outer_mode;
 	      if ((code == LSHIFTRT || code == ASHIFTRT)
 		  && CONST_INT_P (XEXP (src, 1))
 		  && (INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 8
 		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 16
-		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 32))
+		      || INTVAL (XEXP (src, 1)) == BITS_PER_WORD - 32)
+		  && is_a <scalar_mode> (GET_MODE (src), &outer_mode)
+		  && GET_MODE_BITSIZE (outer_mode) <= HOST_BITS_PER_WIDE_INT)
 		{
 		  /* So we have a right shift that could correspond to
 		     the second in a pair impementing QI, HI or SI -> DI
