@@ -4159,7 +4159,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	gcc_assert (thisarginfo.vectype != NULL_TREE);
 
       /* For linear arguments, the analyze phase should have saved
-	 the base and step in {STMT_VINFO,SLP_TREE}_SIMD_CLONE_INFO.  */
+	 the base and step.  */
       if (!cost_vec
 	  && i * 3 + 4 <= simd_clone_info.length ()
 	  && simd_clone_info[i * 3 + 2])
@@ -4188,6 +4188,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	       && thisarginfo.dt != vect_constant_def
 	       && thisarginfo.dt != vect_external_def
 	       && loop_vinfo
+	       && SLP_TREE_LANES (slp_node) == 1
 	       && TREE_CODE (op) == SSA_NAME
 	       && simple_iv (loop, loop_containing_stmt (stmt), op,
 			     &iv, false)
@@ -4198,11 +4199,13 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	}
       else if ((thisarginfo.dt == vect_constant_def
 		|| thisarginfo.dt == vect_external_def)
+	       && SLP_TREE_LANES (slp_node) == 1
 	       && POINTER_TYPE_P (TREE_TYPE (op)))
 	thisarginfo.align = get_pointer_alignment (op) / BITS_PER_UNIT;
       /* Addresses of array elements indexed by GOMP_SIMD_LANE are
 	 linear too.  */
-      if (POINTER_TYPE_P (TREE_TYPE (op))
+      if (SLP_TREE_LANES (slp_node) == 1
+	  && POINTER_TYPE_P (TREE_TYPE (op))
 	  && !thisarginfo.linear_step
 	  && cost_vec
 	  && thisarginfo.dt != vect_constant_def
@@ -4276,8 +4279,9 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		  this_badness += 64;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_UNIFORM:
-		if (arginfo[i].dt != vect_constant_def
-		    && arginfo[i].dt != vect_external_def)
+		if ((arginfo[i].dt != vect_constant_def
+		     && arginfo[i].dt != vect_external_def)
+		    || SLP_TREE_LANES (slp_node) != 1)
 		  i = -1;
 		break;
 	      case SIMD_CLONE_ARG_TYPE_LINEAR_CONSTANT_STEP:
