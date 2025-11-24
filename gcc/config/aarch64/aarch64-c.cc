@@ -65,6 +65,11 @@ aarch64_define_unconditional_macros (cpp_reader *pfile)
 
   builtin_define_with_int_value ("__ARM_ARCH_PROFILE",
       TARGET_V8R ? 'R' : 'A');
+
+#if HAVE_AS_AEABI_BUILD_ATTRIBUTES
+  builtin_define_with_int_value ("__ARM_BUILDATTR64_FV", 'A');
+#endif
+
   builtin_define ("__ARM_FEATURE_CLZ");
   builtin_define ("__ARM_FEATURE_IDIV");
   builtin_define ("__ARM_FEATURE_UNALIGNED");
