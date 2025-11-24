@@ -138,7 +138,7 @@ procedure Gnatchop is
       --  Line number from GNAT output line
 
       Offset : File_Offset;
-      --  Offset name from GNAT output line
+      --  Offset from GNAT output line
 
       SR_Present : Boolean;
       --  Set True if SR parameter present
@@ -1319,8 +1319,7 @@ procedure Gnatchop is
       Success : Boolean;
       TS_Time : OS_Time;
 
-      BOM_Present : Boolean;
-      BOM         : BOM_Kind;
+      BOM : BOM_Kind;
       --  Record presence of UTF8 BOM in input
 
    begin
@@ -1347,7 +1346,6 @@ procedure Gnatchop is
       --  Test for presence of BOM
 
       Read_BOM (Buffer.all, BOM_Length, BOM, XML_Support => False);
-      BOM_Present := BOM /= Unknown;
 
       --  Only chop those units that come from this file
 
@@ -1357,7 +1355,7 @@ procedure Gnatchop is
               (Source    => Buffer,
                Num       => Unit_Number,
                TS_Time   => TS_Time,
-               Write_BOM => BOM_Present and then Unit_Number /= 1,
+               Write_BOM => BOM /= Unknown,
                Success   => Success);
             exit when not Success;
          end if;
@@ -1608,6 +1606,13 @@ procedure Gnatchop is
             String'Write
               (Stream_IO.Stream (File),
                Source.all (Source'First .. Source'First + BOM_Length - 1));
+
+            --  The BOM is part of the first unit so do not write it twice
+
+            if Num = 1 then
+               Info.Offset := Info.Offset + BOM_Length;
+               Length := Length - BOM_Length;
+            end if;
          end if;
 
          --  Prepend configuration pragmas if necessary
