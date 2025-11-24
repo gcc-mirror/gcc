@@ -442,7 +442,7 @@ class ListMethodsMatcher(gdb.xmethod.XMethodMatcher):
         if method is None or not method.enabled:
             return None
         val_type = class_type.template_argument(0)
-        node_type = gdb.lookup_type(str(class_type) + '::_Node').pointer()
+        node_type = gdb.lookup_type(str(class_type) + '::_Node_ptr')
         return method.worker_class(val_type, node_type)
 
 # Xmethods for std::vector
