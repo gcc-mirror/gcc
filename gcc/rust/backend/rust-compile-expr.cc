@@ -803,7 +803,18 @@ CompileExpr::visit (HIR::WhileLoopExpr &expr)
   ctx->add_statement (loop_begin_label_decl);
   ctx->push_loop_begin_label (loop_begin_label);
 
-  tree condition = CompileExpr::Compile (expr.get_predicate_expr (), ctx);
+  HIR::Expr &predicate = expr.get_predicate_expr ();
+  TyTy::BaseType *predicate_type = nullptr;
+  bool ok
+    = ctx->get_tyctx ()->lookup_type (predicate.get_mappings ().get_hirid (),
+				      &predicate_type);
+  rust_assert (ok && predicate_type != nullptr);
+  tree condition = CompileExpr::Compile (predicate, ctx);
+  if (predicate_type->get_kind () == TyTy::TypeKind::NEVER)
+    {
+      ctx->add_statement (condition);
+      condition = boolean_true_node;
+    }
   tree exit_condition = fold_build1_loc (expr.get_locus (), TRUTH_NOT_EXPR,
 					 boolean_type_node, condition);
   tree exit_expr = Backend::exit_expression (exit_condition, expr.get_locus ());

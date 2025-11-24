@@ -1550,18 +1550,25 @@ void
 TypeCheckExpr::visit (HIR::WhileLoopExpr &expr)
 {
   context->push_new_while_loop_context (expr.get_mappings ().get_hirid ());
-
-  TypeCheckExpr::Resolve (expr.get_predicate_expr ());
+  TyTy::BaseType *predicate_type
+    = TypeCheckExpr::Resolve (expr.get_predicate_expr ());
+  if (predicate_type->get_kind () != TyTy::TypeKind::BOOL
+      && predicate_type->get_kind () != TyTy::TypeKind::NEVER)
+    {
+      rust_error_at (expr.get_predicate_expr ().get_locus (),
+		     "expected boolean expression in %<while%> condition");
+      context->pop_loop_context ();
+      return;
+    }
   TyTy::BaseType *block_expr = TypeCheckExpr::Resolve (expr.get_loop_block ());
-
   if (!block_expr->is_unit ())
     {
       rust_error_at (expr.get_loop_block ().get_locus (),
 		     "expected %<()%> got %s",
 		     block_expr->as_string ().c_str ());
+      context->pop_loop_context ();
       return;
     }
-
   context->pop_loop_context ();
   infered = TyTy::TupleType::get_unit_type ();
 }
@@ -1611,7 +1618,6 @@ TypeCheckExpr::visit (HIR::ContinueExpr &expr)
 		     "%<continue%> outside of a loop");
       return;
     }
-
   infered = new TyTy::NeverType (expr.get_mappings ().get_hirid ());
 }
 
