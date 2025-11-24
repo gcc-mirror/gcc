@@ -556,6 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       ignore();
 
 #if __cplusplus > 202302L
+      [[__gnu__::__always_inline__]]
       __istream_type&
       ignore(streamsize __n, char __delim) requires same_as<_CharT, char>
       { return ignore(__n, traits_type::to_int_type(__delim)); }
