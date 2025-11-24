@@ -1,6 +1,6 @@
 // PR middle-end/116896
 // { dg-do compile { target c++20 } }
-// { dg-options "-O2 -masm=att -fno-stack-protector" }
+// { dg-options "-O2 -masm=att -fno-stack-protector -mtune=generic" }
 // { dg-final { scan-assembler-times "\tjp\t" 1 } }
 // { dg-final { scan-assembler-not "\tj\[^mp\]\[a-z\]*\t" } }
 // { dg-final { scan-assembler-times "\tsbb\[bl\]\t\\\$0, " 3 } }
