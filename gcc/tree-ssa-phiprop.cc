@@ -506,6 +506,9 @@ next:;
   if (phi_inserted)
     for (auto use_stmt : delayed_uses)
       {
+	/* The types must match of the inserted phi.  */
+	if (!types_compatible_p (type, TREE_TYPE (gimple_assign_lhs (use_stmt))))
+	  continue;
 	gimple_assign_set_rhs1 (use_stmt, res);
 	update_stmt (use_stmt);
       }
