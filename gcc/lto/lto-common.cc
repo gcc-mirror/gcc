@@ -2438,7 +2438,7 @@ lto_read_section_data (struct lto_file_decl_data *file_data,
 
   computed_offset = offset & ((off_t) page_mask);
   diff = offset - computed_offset;
-  if (len > (size_t) (SSIZE_MAX - diff))
+  if (len > (((size_t) -1) >> 1) - diff)
     {
       fatal_error (input_location, "Cannot map %s: section is too long",
 		   file_data->file_name);
