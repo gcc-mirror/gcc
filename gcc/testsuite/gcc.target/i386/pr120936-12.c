@@ -1,4 +1,4 @@
-/* { dg-do compile { target { fpic && lp64 } } } */
+/* { dg-do compile { target { { *-*-linux* && lp64 } && fpic } } } */
 /* { dg-options "-O2 -mcmodel=large -mrecord-mcount -pg -mno-fentry -fpic -fno-shrink-wrap" } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^(1|\t?\.)} } } */
