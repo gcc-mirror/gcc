@@ -2889,7 +2889,6 @@ package body Errout is
 
       Sarif_File_Name       : constant String :=
         Get_First_Main_File_Name & ".gnat.sarif";
-      Diagnostics_File_Name : constant String := "gnat_diagnostics.sarif";
 
       Printer : Erroutc.SARIF_Emitter.SARIF_Printer;
 
@@ -2995,28 +2994,6 @@ package body Errout is
          else
             Emit_Error_Msgs;
          end if;
-      end if;
-
-      if Debug_Flag_Underscore_EE then
-
-         --  Print the diagnostics repository to a file
-
-         System.OS_Lib.Delete_File (Diagnostics_File_Name, Dummy);
-         declare
-            Output_FD : constant System.OS_Lib.File_Descriptor :=
-              System.OS_Lib.Create_New_File
-                (Diagnostics_File_Name,
-                 Fmode => System.OS_Lib.Text);
-
-         begin
-            Set_Output (Output_FD);
-
-            Print_Diagnostic_Repository;
-
-            Set_Standard_Output;
-
-            System.OS_Lib.Close (Output_FD);
-         end;
       end if;
 
       --  Full source listing case

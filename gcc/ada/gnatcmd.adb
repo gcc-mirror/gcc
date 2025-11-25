@@ -24,11 +24,13 @@
 ------------------------------------------------------------------------------
 
 with Gnatvsn;
+with Errid;    use Errid;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Osint;    use Osint;
 with Output;   use Output;
 with Switch;   use Switch;
+with System.OS_Lib;
 with Table;
 with Usage;
 
@@ -46,6 +48,10 @@ procedure GNATCmd is
 
    Ada_Help_Switch : constant String := "--help-ada";
    --  Flag to display available build switches
+
+   Ada_Diagnostics_Switch : constant String := "--diagnostics";
+
+   Diagnostics_File_Name : constant String := "gnat_diagnostics.sarif";
 
    Error_Exit : exception;
    --  Raise this exception if error detected
@@ -113,6 +119,7 @@ procedure GNATCmd is
 
    My_Exit_Status : Exit_Status := Success;
    --  The exit status of the spawned tool
+   Dummy : Boolean;
 
    type Command_Entry is record
       Cname : String_Access;
@@ -346,6 +353,29 @@ begin
          then
             Keep_Temporary_Files := True;
             Command_Arg := Command_Arg + 1;
+
+         elsif Command_Arg <= Argument_Count
+           and then Argument (Command_Arg) = Ada_Diagnostics_Switch
+         then
+            --  Print the diagnostics repository to a file
+
+            System.OS_Lib.Delete_File (Diagnostics_File_Name, Dummy);
+            declare
+               Output_FD : constant System.OS_Lib.File_Descriptor :=
+                 System.OS_Lib.Create_New_File
+                   (Diagnostics_File_Name, Fmode => System.OS_Lib.Text);
+
+            begin
+               Set_Output (Output_FD);
+               Print_Diagnostic_Repository;
+               Set_Standard_Output;
+               System.OS_Lib.Close (Output_FD);
+            end;
+
+            Write_Line
+              ("gnat diagnostic information exported to "
+               & Diagnostics_File_Name);
+            Exit_Program (E_Success);
 
          elsif Command_Arg <= Argument_Count
            and then Argument (Command_Arg) = Ada_Help_Switch
