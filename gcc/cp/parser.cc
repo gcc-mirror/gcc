@@ -11964,21 +11964,7 @@ cp_parser_lambda_expression (cp_parser* parser,
   LAMBDA_EXPR_CONSTEVAL_BLOCK_P (lambda_expr) = consteval_block_p;
 
   if (cxx_dialect >= cxx20)
-    {
-      /* C++20 allows lambdas in unevaluated context, but one in the type of a
-	 non-type parameter is nonsensical.
-
-	 Distinguish a lambda in the parameter type from a lambda in the
-	 default argument by looking at local_variables_forbidden_p, which is
-	 only set in default arguments.  */
-      if (processing_template_parmlist && !parser->local_variables_forbidden_p)
-	{
-	  error_at (token->location,
-		    "lambda-expression in template parameter type");
-	  token->error_reported = true;
-	  ok = false;
-	}
-    }
+    /* C++20 allows lambdas in unevaluated context.  */;
   else if (cp_unevaluated_operand)
     {
       if (!token->error_reported)

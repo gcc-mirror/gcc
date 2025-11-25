@@ -1,6 +1,6 @@
 // PR c++/99478
 // { dg-do compile { target c++20 } }
 
-template <decltype ([] {})> auto f() {} // { dg-error "lambda" }
+template <decltype ([] {})> auto f() {}
 
-int main() { f<{}>(); }		// { dg-prune-output "no match" }
+int main() { f<{}>(); }
