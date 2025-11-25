@@ -7414,9 +7414,8 @@ build_bitint_type (unsigned HOST_WIDE_INT precision, int unsignedp)
   else
     fixup_signed_type (itype);
 
-  inchash::hash hstate;
-  inchash::add_expr (TYPE_MAX_VALUE (itype), hstate);
-  ret = type_hash_canon (hstate.end (), itype);
+  hashval_t hash = type_hash_canon_hash (itype);
+  ret = type_hash_canon (hash, itype);
   if (precision <= MAX_INT_CACHED_PREC)
     (*bitint_type_cache)[precision + unsignedp] = ret;
 
