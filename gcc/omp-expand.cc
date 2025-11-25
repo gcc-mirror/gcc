@@ -3299,7 +3299,7 @@ extract_omp_for_update_vars (struct omp_for_data *fd, tree *nonrect_bounds,
 	  if (DECL_P (v) && TREE_ADDRESSABLE (v))
 	    v = force_gimple_operand_gsi (&gsi, v, true, NULL_TREE,
 					  false, GSI_CONTINUE_LINKING);
-	  t = fold_build2 (fd->loops[i].cond_code, boolean_type_node, v, t);
+	  t = build2 (fd->loops[i].cond_code, boolean_type_node, v, t);
 	  stmt = gimple_build_cond_empty (t);
 	  gsi_insert_after (&gsi, stmt, GSI_CONTINUE_LINKING);
 	  if (walk_tree (gimple_cond_lhs_ptr (as_a <gcond *> (stmt)),
