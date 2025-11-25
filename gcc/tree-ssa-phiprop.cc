@@ -339,7 +339,8 @@ propagate_with_phi (basic_block bb, gphi *vphi, gphi *phi,
       tree vuse;
       bool delay = false;
 
-      if (!dom_info_available_p (cfun, CDI_POST_DOMINATORS))
+      if (canpossible_trap
+	  && !dom_info_available_p (cfun, CDI_POST_DOMINATORS))
 	calculate_dominance_info (CDI_POST_DOMINATORS);
 
       /* Only replace loads in blocks that post-dominate the PHI node.  That
