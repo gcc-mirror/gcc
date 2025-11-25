@@ -12664,6 +12664,39 @@ vectorizable_comparison (vec_info *vinfo,
   return true;
 }
 
+/* Check to see if the target supports any of the compare and branch optabs for
+   vectors with MODE as these would be required when expanding.  */
+static bool
+supports_vector_compare_and_branch (loop_vec_info loop_vinfo, machine_mode mode)
+{
+  bool masked_loop_p = LOOP_VINFO_FULLY_MASKED_P (loop_vinfo);
+  bool len_loop_p = LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo);
+
+  /* The vectorizer only produces vec_cbranch_any_optab directly.  So only
+     check for support for that or vec_cbranch_any_optab when masked.
+     We can't produce vcond_cbranch_any directly from the vectorizer as we
+     want to keep gimple_cond as the GIMPLE representation.  But we'll fold
+     it in expand.  For that reason we require a backend to support the
+     unconditional vector cbranch optab if they support the conditional one,
+     which is just an optimization on the unconditional one.  */
+  if (masked_loop_p
+      && direct_optab_handler (cond_vec_cbranch_any_optab, mode)
+		!= CODE_FOR_nothing)
+    return true;
+  else if (len_loop_p
+	   && direct_optab_handler (cond_len_vec_cbranch_any_optab, mode)
+		!= CODE_FOR_nothing)
+    return true;
+  else if (!masked_loop_p && !len_loop_p
+	   && direct_optab_handler (vec_cbranch_any_optab, mode)
+		!= CODE_FOR_nothing)
+    return true;
+
+  /* The target can implement cbranch to distinguish between boolean vector
+     types and data types if they don't have a different mode for both.  */
+  return direct_optab_handler (cbranch_optab, mode) != CODE_FOR_nothing;
+}
+
 /* Check to see if the current early break given in STMT_INFO is valid for
    vectorization.  */
 
@@ -12738,8 +12771,8 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
       tree tmp_type = build_vector_type (itype, TYPE_VECTOR_SUBPARTS (vectype));
       narrow_type = truth_type_for (tmp_type);
 
-      if (direct_optab_handler (cbranch_optab, TYPE_MODE (narrow_type))
-	  == CODE_FOR_nothing)
+      if (!supports_vector_compare_and_branch (loop_vinfo,
+					       TYPE_MODE (narrow_type)))
 	{
 	  if (dump_enabled_p ())
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
@@ -12754,7 +12787,7 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
   if (cost_vec)
     {
       if (!addhn_supported_p
-	  && direct_optab_handler (cbranch_optab, mode) == CODE_FOR_nothing)
+	  && !supports_vector_compare_and_branch (loop_vinfo, mode))
 	{
 	  if (dump_enabled_p ())
 	      dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
