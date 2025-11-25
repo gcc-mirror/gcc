@@ -29,6 +29,6 @@ union U
 volatile union U volatile_u;
 
 /* One annotation DIE may be shared by all three annotated types.  */
-/* { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_GNU_annotation" 1 } } */
-/* { dg-final { scan-assembler-times " DW_AT_name: \"btf_type_tag\"" 1 } } */
-/* { dg-final { scan-assembler-times " DW_AT_GNU_annotation" 3 } } */
+/* { dg-final { scan-assembler-times {(?n)DIE \(.*\) DW_TAG_GNU_annotation} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)( DW_AT_name: "btf_type_tag"|"btf_type_tag..".* DW_AT_name)} 1 } } */
+/* { dg-final { scan-assembler-times { DW_AT_GNU_annotation} 3 } } */

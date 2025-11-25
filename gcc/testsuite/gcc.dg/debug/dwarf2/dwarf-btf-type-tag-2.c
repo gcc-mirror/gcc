@@ -20,12 +20,12 @@ struct S * __tag1 __tag2 my_S;
 
 /* Only 2 DW_TAG_GNU_annotation DIEs should be generated, one each for "tag1"
    and "tag2", and they should be reused.  */
-/* { dg-final { scan-assembler-times "DIE \\(\[^\n\]*\\) DW_TAG_GNU_annotation" 2 } } */
-/* { dg-final { scan-assembler-times " DW_AT_name: \"btf_type_tag\"" 2 } } */
-/* { dg-final { scan-assembler-times " DW_AT_const_value: \"tag1\"" 1 } } */
-/* { dg-final { scan-assembler-times " DW_AT_const_value: \"tag2\"" 1 } } */
+/* { dg-final { scan-assembler-times {(?n)DIE \(.*\) DW_TAG_GNU_annotation} 2 } } */
+/* { dg-final { scan-assembler-times { DW_AT_name: "btf_type_tag"} 2 } } */
+/* { dg-final { scan-assembler-times {(?n)( DW_AT_const_value: "tag1"|"tag1..".* DW_AT_const_value)} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)( DW_AT_const_value: "tag2"|"tag2..".*DW_AT_const_value)} 1 } } */
 
 /* Each attribute-ed type shall refer via DW_AT_GNU_annotation to the
    appropriate annotation DIE, including the annotation DIE for "tag2" which
    is always chained to the DIE for "tag1" in this construction.  */
-/* { dg-final { scan-assembler-times " DW_AT_GNU_annotation" 5 } } */
+/* { dg-final { scan-assembler-times { DW_AT_GNU_annotation} 5 } } */

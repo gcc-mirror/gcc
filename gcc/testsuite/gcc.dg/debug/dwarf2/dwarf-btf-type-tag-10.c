@@ -16,5 +16,5 @@ foo (int *x, int *y)
 /* Ideally, verify that AT_GNU_annotation in the subprogram DIE refers to
    the decl_tag annotation DIE, and the AT_GNU_annotation in the return
    type refers to the type_tag...  */
-/* { dg-final { scan-assembler-times " DW_AT_name: \"btf_type_tag\"" 1 } } */
-/* { dg-final { scan-assembler-times " DW_AT_name: \"btf_decl_tag\"" 1 } } */
+/* { dg-final { scan-assembler-times {(?n)( DW_AT_name: "btf_type_tag"|"btf_type_tag..".*DW_AT_name)} 1 } } */
+/* { dg-final { scan-assembler-times {(?n)( DW_AT_name: "btf_decl_tag"|"btf_decl_tag..".*DW_AT_name)} 1 } } */
