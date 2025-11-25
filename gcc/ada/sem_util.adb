@@ -9251,7 +9251,10 @@ package body Sem_Util is
 
          --  Check for components
 
-         elsif Nkind (Expr) in N_Selected_Component | N_Indexed_Component then
+         elsif Nkind (Expr) in N_Indexed_Component
+                             | N_Selected_Component
+                             | N_Slice
+         then
             Expr := Prefix (Expr);
             Off  := True;
 
