@@ -16,11 +16,12 @@ main ()
 {
   volatile int j;
   int x = 5;
+  asm volatile ("" : "+r" (x));
   j = f1 (x);
+  asm volatile ("" : "+r" (x));
   return 0;
 }
 
 /* One debug source bind is generated for the parameter, and one to describe the
    sizes of a and b.  */
 /* { dg-final { scan-tree-dump-times " s=> i" 2 "optimized" } } */
-
