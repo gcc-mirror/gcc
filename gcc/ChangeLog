@@ -1,3 +1,12 @@
+2025-11-24  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2025-11-20  Pan Li  <pan2.li@intel.com>
+
+	PR target/122692
+	* config/riscv/riscv.cc (riscv_expand_ustrunc): Leverage
+	riscv_extend_to_xmode_reg to take care of src rtx.
+
 2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* doc/invoke.texi (Optimize Options) <-fmalloc-dce>: Remove

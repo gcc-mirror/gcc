@@ -1,3 +1,12 @@
+2025-11-24  Pan Li  <pan2.li@intel.com>
+
+	Backported from master:
+	2025-11-20  Pan Li  <pan2.li@intel.com>
+
+	PR target/122692
+	* g++.target/riscv/pr122692-run-1.C: New test.
+	* g++.target/riscv/pr122692-run-2.C: New test.
+
 2025-11-21  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
