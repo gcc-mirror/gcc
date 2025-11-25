@@ -22,7 +22,7 @@
 #undef __STDC__				// { dg-warning "undefining '__STDC__'" }
 #undef __STDC_MB_MIGHT_NEQ_WC__		// { dg-warning "undefining '__STDC_MB_MIGHT_NEQ_WC__'" "" { target c++11 } }
 #undef __STDC_VERSION__			// { dg-warning "undefining '__STDC_VERSION__'" "" { target c++11 } }
-#undef __STDC_ISO_10646__		// { dg-warning "undefining '__STDC_ISO_10646__'" }
+#undef __STDC_ISO_10646__		// { dg-warning "undefining '__STDC_ISO_10646__'" "" { xfail { ! *-*-linux* } } }
 #undef __STDCPP_THREADS__		// { dg-warning "undefining '__STDCPP_THREADS__'" "" { target c++11 } }
 #undef __STDCPP_STRICT_POINTER_SAFETY__	// { dg-warning "undefining '__STDCPP_STRICT_POINTER_SAFETY__'" "" { target { c++11 && c++20_down } } }
 #undef __cpp_aggregate_bases		// { dg-warning "undefining '__cpp_aggregate_bases'" "" { target c++20 } }

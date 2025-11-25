@@ -21,8 +21,9 @@
 #define __TIME__				// { dg-error "'__TIME__' redefined" }
 #define __STDC__				// { dg-error "'__STDC__' redefined" }
 #define __STDC_MB_MIGHT_NEQ_WC__		// { dg-warning "'__STDC_MB_MIGHT_NEQ_WC__' defined" "" { target c++11 } }
-#define __STDC_VERSION__			// { dg-warning "'__STDC_VERSION__' defined" "" { target c++11 } }
-#define __STDC_ISO_10646__			// { dg-error "'__STDC_ISO_10646__' redefined" }
+#define __STDC_VERSION__			// { dg-warning "'__STDC_VERSION__' defined" "" { target { c++11 && { ! *-*-solaris2* } } } }
+						// { dg-error "'__STDC_VERSION__' redefined" "" { target *-*-solaris2* } .-1 }
+#define __STDC_ISO_10646__			// { dg-error "'__STDC_ISO_10646__' redefined" "" { xfail { ! *-*-linux* } } }
 #define __STDCPP_THREADS__			// { dg-message "'__STDCPP_THREADS__' (?:re)?defined" "" { target c++11 } }
 #define __STDCPP_STRICT_POINTER_SAFETY__	// { dg-warning "'__STDCPP_STRICT_POINTER_SAFETY__' defined" "" { target { c++11 && c++20_down } } }
 #define __cpp_aggregate_bases 201603L		// { dg-error "'__cpp_aggregate_bases' redefined" "" { target c++20 } }
