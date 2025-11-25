@@ -295,7 +295,8 @@
 
 (define_predicate "low_bitmask_operand"
   (and (match_code "const_int")
-       (match_test "low_bitmask_len (mode, INTVAL (op)) > 12")))
+       (match_test "low_bitmask_len (mode, INTVAL (op)) > 12")
+       (match_test "!TARGET_32BIT_R")))
 
 (define_predicate "d_operand"
   (and (match_code "reg")
@@ -406,6 +407,7 @@
 
 (define_predicate "ins_zero_bitmask_operand"
   (and (match_code "const_int")
+       (match_test "!TARGET_32BIT_R")
        (match_test "low_bitmask_len (mode, \
 				     ~UINTVAL (op) | (~UINTVAL(op) - 1)) \
 		    > 0")
@@ -437,6 +439,10 @@
 
   if (offset != const0_rtx)
     return false;
+
+  /* TARGET_32BIT always support call30.  */
+  if (TARGET_32BIT)
+    return true;
 
   /* When compiling with '-mcmodel=medium -mexplicit-relocs'
      symbols are splited in loongarch_legitimize_call_address.

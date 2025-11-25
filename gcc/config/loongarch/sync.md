@@ -45,6 +45,10 @@
 ;; particular code.
 (define_code_attr amop [(ior "or") (xor "xor") (and "and") (plus "add")])
 
+;; For 32 bit.
+(define_code_attr atomic_optab_insn
+  [(plus "add.w") (ior "or") (xor "xor") (and "and")])
+
 ;; Memory barriers.
 
 (define_expand "mem_thread_fence"
@@ -260,16 +264,47 @@
   DONE;
 })
 
-(define_insn "atomic_<amop><mode>"
+(define_expand "atomic_<amop><mode>"
+  [(any_atomic:GPR (match_operand:GPR 0 "memory_operand")    ;; mem location
+		   (match_operand:GPR 1 "reg_or_0_operand")) ;; value for op
+   (match_operand:SI 2 "const_int_operand")]		     ;; model
+  ""
+{
+  if (TARGET_64BIT)
+    emit_insn (gen_la64_atomic_<amop><mode> (operands[0], operands[1], operands[2]));
+  else
+    emit_insn (gen_la32_atomic_<amop>si (operands[0], operands[1], operands[2]));
+  DONE;
+})
+
+(define_insn "la64_atomic_<amop><mode>"
   [(set (match_operand:GPR 0 "memory_operand" "+ZB")
 	(unspec_volatile:GPR
 	  [(any_atomic:GPR (match_dup 0)
 			   (match_operand:GPR 1 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 2 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  ""
+  "TARGET_64BIT"
   "am<amop>%A2.<size>\t$zero,%z1,%0"
   [(set (attr "length") (const_int 4))])
+
+(define_insn "la32_atomic_<amop>si"
+  [(set (match_operand:SI 0 "memory_operand" "+ZB")
+	(unspec_volatile:SI
+	  [(any_atomic:SI (match_dup 0)
+			   (match_operand:SI 1 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 2 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP))
+   (clobber (match_scratch:SI 3 "=&r"))]
+  "!TARGET_64BIT"
+{
+  return "1:\n\t"
+	 "ll.w\t%3,%0\n\t"
+	 "<atomic_optab_insn>\t%3,%z1,%3\n\t"
+	 "sc.w\t%3,%0\n\t"
+	 "beq\t$zero,%3,1b\n\t";
+}
+  [(set (attr "length") (const_int 16))])
 
 (define_insn "atomic_add<mode>"
   [(set (match_operand:SHORT 0 "memory_operand" "+ZB")
@@ -282,7 +317,23 @@
   "amadd%A2.<size>\t$zero,%z1,%0"
   [(set (attr "length") (const_int 4))])
 
-(define_insn "atomic_fetch_<amop><mode>"
+(define_expand "atomic_fetch_<amop><mode>"
+  [(match_operand:GPR 0 "register_operand")		     ;; old value at mem
+   (any_atomic:GPR (match_operand:GPR 1 "memory_operand")    ;; mem location
+		   (match_operand:GPR 2 "reg_or_0_operand")) ;; value for op
+   (match_operand:SI 3 "const_int_operand")]		     ;; model
+  ""
+  {
+    if (TARGET_64BIT)
+      emit_insn (gen_la64_atomic_fetch_<amop><mode> (operands[0], operands[1],
+						     operands[2], operands[3]));
+    else
+      emit_insn (gen_la32_atomic_fetch_<amop>si (operands[0], operands[1],
+						     operands[2], operands[3]));
+    DONE;
+  })
+
+(define_insn "la64_atomic_fetch_<amop><mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(match_operand:GPR 1 "memory_operand" "+ZB"))
    (set (match_dup 1)
@@ -291,9 +342,29 @@
 			   (match_operand:GPR 2 "reg_or_0_operand" "rJ"))
 	   (match_operand:SI 3 "const_int_operand")] ;; model
 	 UNSPEC_SYNC_OLD_OP))]
-  ""
+  "TARGET_64BIT"
   "am<amop>%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
+
+(define_insn "la32_atomic_fetch_<amop>si"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(match_operand:SI 1 "memory_operand" "+ZB"))
+   (set (match_dup 1)
+	(unspec_volatile:SI
+	  [(any_atomic:SI (match_dup 1)
+			   (match_operand:SI 2 "reg_or_0_operand" "rJ"))
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	 UNSPEC_SYNC_OLD_OP))
+   (clobber (match_scratch:SI 4 "=&r"))]
+  "!TARGET_64BIT"
+{
+  return "1:\n\t"
+	  "ll.w\t%0,%1\n\t"
+	  "<atomic_optab_insn>\t%4,%z2,%0\n\t"
+	  "sc.w\t%4,%1\n\t"
+	  "beq\t$zero,%4,1b\n\t";
+}
+  [(set (attr "length") (const_int 16))])
 
 (define_insn "atomic_fetch_nand_mask_inverted<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
@@ -305,14 +376,24 @@
 	  UNSPEC_SYNC_OLD_OP))
    (clobber (match_scratch:GPR 3 "=&r"))]
   ""
-  {
-    return "1:\\n\\t"
-	   "ll.<d>\\t%0,%1\\n\\t"
-	   "orn\\t%3,%2,%0\\n\\t"
-	   "sc.<d>\\t%3,%1\\n\\t"
-	   "beqz\\t%3,1b";
-  }
-  [(set (attr "length") (const_int 16))])
+{
+  output_asm_insn ("1:", operands);
+  output_asm_insn ("ll.<d>\t%0,%1", operands);
+  if (TARGET_32BIT_R)
+    {
+      output_asm_insn ("nor\t%3,%0,$zero", operands);
+      output_asm_insn ("or\t%3,%2,%3", operands);
+    }
+  else
+    output_asm_insn ("orn\t%3,%2,%0", operands);
+  output_asm_insn ("sc.<d>\t%3,%1", operands);
+  output_asm_insn ("beq\t%3,$zero,1b", operands);
+  return "";
+}
+  [(set (attr "length") (if_then_else
+			  (match_test "TARGET_32BIT_R")
+			  (const_int 20)
+			  (const_int 16)))])
 
 (define_mode_iterator ALL_SC [GPR (TI "loongarch_16b_atomic_lock_free_p ()")])
 (define_mode_attr _scq [(SI "") (DI "") (TI "_scq")])
@@ -338,7 +419,23 @@
     DONE;
   })
 
-(define_insn "atomic_exchange<mode>"
+(define_expand "atomic_exchange<mode>"
+  [(match_operand:GPR 0 "register_operand")  ;; old value at mem
+   (match_operand:GPR 1 "memory_operand")    ;; mem location
+   (match_operand:GPR 2 "register_operand")  ;; value for op
+   (match_operand:SI 3 "const_int_operand")] ;; model
+  ""
+  {
+    if (TARGET_64BIT)
+      emit_insn (gen_la64_atomic_exchange<mode> (operands[0], operands[1],
+						 operands[2], operands[3]));
+    else
+      emit_insn (gen_la32_atomic_exchangesi (operands[0], operands[1],
+						 operands[2], operands[3]));
+    DONE;
+  })
+
+(define_insn "la64_atomic_exchange<mode>"
   [(set (match_operand:GPR 0 "register_operand" "=&r")
 	(unspec_volatile:GPR
 	  [(match_operand:GPR 1 "memory_operand" "+ZB")
@@ -346,9 +443,28 @@
 	  UNSPEC_SYNC_EXCHANGE))
    (set (match_dup 1)
 	(match_operand:GPR 2 "register_operand" "r"))]
-  ""
+  "TARGET_64BIT"
   "amswap%A3.<size>\t%0,%z2,%1"
   [(set (attr "length") (const_int 4))])
+
+(define_insn "la32_atomic_exchangesi"
+  [(set (match_operand:SI 0 "register_operand" "=&r")
+	(unspec_volatile:SI
+	  [(match_operand:SI 1 "memory_operand" "+ZB")
+	   (match_operand:SI 3 "const_int_operand")] ;; model
+	  UNSPEC_SYNC_EXCHANGE))
+   (set (match_dup 1)
+	(match_operand:SI 2 "register_operand" "r"))
+   (clobber (match_scratch:SI 4 "=&r"))]
+  "!TARGET_64BIT"
+{
+  return "1:\n\t"
+	 "ll.w\t%0,%1\n\t"
+	 "or\t%4,$zero,%2\n\t"
+	 "sc.w\t%4,%1\n\t"
+	 "beq\t$zero,%4,1b\n\t";
+}
+  [(set (attr "length") (const_int 16))])
 
 (define_insn "atomic_exchangeti_scq"
   [(set (match_operand:TI 0 "register_operand" "=&r")
@@ -367,7 +483,7 @@
   output_asm_insn ("ld.d\t%t0,%b1,8", operands);
   output_asm_insn ("move\t%3,%z2", operands);
   output_asm_insn ("sc.q\t%3,%t2,%1", operands);
-  output_asm_insn ("beqz\t%3,1b", operands);
+  output_asm_insn ("beq\t%3,$zero,1b", operands);
 
   return "";
 }
@@ -430,7 +546,7 @@
 
   output_asm_insn ("or%i3\t%5,$zero,%3", operands);
   output_asm_insn ("sc.<size>\t%5,%1", operands);
-  output_asm_insn ("beqz\t%5,1b", operands);
+  output_asm_insn ("beq\t%5,$zero,1b", operands);
   output_asm_insn ("%T4b\t3f", operands);
   output_asm_insn ("2:", operands);
   output_asm_insn ("%G4", operands);
@@ -498,7 +614,7 @@
       emit_insn (gen_rtx_SET (compare, difference));
     }
 
-  if (word_mode != <MODE>mode)
+  if (word_mode != GET_MODE (compare))
     {
       rtx reg = gen_reg_rtx (word_mode);
       emit_insn (gen_rtx_SET (reg, gen_rtx_SIGN_EXTEND (word_mode, compare)));
@@ -515,7 +631,7 @@
    (any_bitwise (match_operand:SHORT 1 "memory_operand"   "+ZB") ;; memory
 		(match_operand:SHORT 2 "reg_or_0_operand" "rJ")) ;; val
    (match_operand:SI 3 "const_int_operand" "")]			 ;; model
-  ""
+  "TARGET_64BIT || TARGET_32BIT_S"
 {
   /* We have no QI/HImode bitwise atomics, so use the address LSBs to form
      a mask, then use an aligned SImode atomic.  */
@@ -642,26 +758,26 @@
 				    operands[3], operands[4], mod_f);
     }
 
-      rtx compare = operands[1];
-      if (operands[3] != const0_rtx)
-	{
-	  machine_mode mode = GET_MODE (operands[3]);
-	  rtx op1 = convert_modes (SImode, mode, operands[1], true);
-	  rtx op3 = convert_modes (SImode, mode, operands[3], true);
-	  rtx difference = gen_rtx_MINUS (SImode, op1, op3);
-	  compare = gen_reg_rtx (SImode);
-	  emit_insn (gen_rtx_SET (compare, difference));
-	}
+  rtx compare = operands[1];
+  if (operands[3] != const0_rtx)
+    {
+      machine_mode mode = GET_MODE (operands[3]);
+      rtx op1 = convert_modes (SImode, mode, operands[1], true);
+      rtx op3 = convert_modes (SImode, mode, operands[3], true);
+      rtx difference = gen_rtx_MINUS (SImode, op1, op3);
+      compare = gen_reg_rtx (SImode);
+      emit_insn (gen_rtx_SET (compare, difference));
+    }
 
-      if (word_mode != <MODE>mode)
-	{
-	  rtx reg = gen_reg_rtx (word_mode);
-	  emit_insn (gen_rtx_SET (reg, gen_rtx_SIGN_EXTEND (word_mode, compare)));
-	  compare = reg;
-	}
+  if (word_mode != GET_MODE (compare))
+    {
+      rtx reg = gen_reg_rtx (word_mode);
+      emit_insn (gen_rtx_SET (reg, gen_rtx_SIGN_EXTEND (word_mode, compare)));
+      compare = reg;
+    }
 
-      emit_insn (gen_rtx_SET (operands[0],
-			      gen_rtx_EQ (SImode, compare, const0_rtx)));
+  emit_insn (gen_rtx_SET (operands[0],
+			  gen_rtx_EQ (SImode, compare, const0_rtx)));
   DONE;
 })
 
@@ -716,7 +832,7 @@
   output_asm_insn ("sc.q\t%7,%t3,%1", operands);
 
   /* Check if sc.q has done the store.  */
-  output_asm_insn ("beqz\t%7,1b", operands);
+  output_asm_insn ("beq\t%7,$zero,1b", operands);
 
   /* Jump over the mod_f barrier if sc.q has succeeded.  */
   output_asm_insn ("%T4b\t3f", operands);
@@ -870,7 +986,7 @@
 	 "and\\t%7,%0,%z3\\n\\t"
 	 "or%i5\\t%7,%7,%5\\n\\t"
 	 "sc.<size>\\t%7,%1\\n\\t"
-	 "beqz\\t%7,1b\\n\\t";
+	 "beq\\t%7,$zero,1b\\n\\t";
 }
   [(set (attr "length") (const_int 20))])
 
@@ -967,7 +1083,7 @@
     }
 
   output_asm_insn ("sc.q\t%3,%4,%1", operands);
-  output_asm_insn ("beqz\t%3,1b", operands);
+  output_asm_insn ("beq\t%3,$zero,1b", operands);
 
   return "";
 }

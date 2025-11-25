@@ -133,6 +133,7 @@
   "A memory operand whose address is formed by a base register and (optionally scaled)
    index register."
   (and (match_code "mem")
+       (match_test "TARGET_64BIT")
        (match_test "loongarch_base_index_address_p (XEXP (op, 0), mode)")))
 
 (define_constraint "l"
