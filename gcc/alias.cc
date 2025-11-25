@@ -1099,7 +1099,7 @@ get_alias_set (tree t)
 		p = build_pointer_type (p);
 	      gcc_checking_assert (p == TYPE_MAIN_VARIANT (p));
 	      /* build_pointer_type should always return the canonical type.
-		 For LTO TYPE_CANOINCAL may be NULL, because we do not compute
+		 For LTO TYPE_CANONICAL may be NULL, because we do not compute
 		 them.  Be sure that frontends do not glob canonical types of
 		 pointers in unexpected way and that p == TYPE_CANONICAL (p)
 		 in all other cases.  */
