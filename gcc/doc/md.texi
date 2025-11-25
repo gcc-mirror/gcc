@@ -7665,7 +7665,67 @@ position of Operand 1 to test.  Operand 3 is the @code{code_label} to jump to.
 Conditional branch instruction combined with a compare instruction.
 Operand 0 is a comparison operator.  Operand 1 and operand 2 are the
 first and second operands of the comparison, respectively.  Operand 3
+is the @code{code_label} to jump to.  For vectors this optab is only used for
+comparisons of VECTOR_BOOLEAN_TYPE_P values and it never called for
+data-registers.  Data vector operands should use one of the patterns below
+instead.
+
+@cindex @code{vec_cbranch_any@var{mode}} instruction pattern
+@item @samp{vec_cbranch_any@var{mode}}
+Conditional branch instruction based on a vector compare that branches
+when at least one of the elementwise comparisons of the two input
+vectors is true.
+Operand 0 is a comparison operator.  Operand 1 and operand 2 are the
+first and second operands of the comparison, respectively.  Operand 3
 is the @code{code_label} to jump to.
+
+@cindex @code{vec_cbranch_all@var{mode}} instruction pattern
+@item @samp{vec_cbranch_all@var{mode}}
+Conditional branch instruction based on a vector compare that branches
+when all of the elementwise comparisons of the two input vectors is true.
+Operand 0 is a comparison operator.  Operand 1 and operand 2 are the
+first and second operands of the comparison, respectively.  Operand 3
+is the @code{code_label} to jump to.
+
+@cindex @code{cond_vec_cbranch_any@var{mode}} instruction pattern
+@item @samp{cond_vec_cbranch_any@var{mode}}
+Masked conditional branch instruction based on a vector compare that branches
+when at least one of the elementwise comparisons of the two input
+vectors is true.
+Operand 0 is a comparison operator.  Operand 1 is the mask operand.
+Operand 2 and operand 3 are the first and second operands of the comparison,
+respectively.  Operand 5 is the @code{code_label} to jump to.  Inactive lanes in
+the mask operand should not influence the decision to branch.
+
+@cindex @code{cond_vec_cbranch_all@var{mode}} instruction pattern
+@item @samp{cond_vec_cbranch_all@var{mode}}
+Masked conditional branch instruction based on a vector compare that branches
+when all of the elementwise comparisons of the two input vectors is true.
+Operand 0 is a comparison operator.  Operand 1 is the mask operand.
+Operand 2 and operand 3 are the first and second operands of the comparison,
+respectively.  Operand 5 is the @code{code_label} to jump to.  Inactive lanes in
+the mask operand should not influence the decision to branch.
+
+@cindex @code{cond_len_vec_cbranch_any@var{mode}} instruction pattern
+@item @samp{cond_len_vec_cbranch_any@var{mode}}
+Len based conditional branch instruction based on a vector compare that branches
+when at least one of the elementwise comparisons of the two input
+vectors is true.
+Operand 0 is a comparison operator.  Operand 1 is the mask operand.  Operand 2
+and operand 3 are the first and second operands of the comparison, respectively.
+Operand 4 is the len operand and Operand 5 is the bias operand.  Operand 6 is
+the @code{code_label} to jump to.  Inactive lanes in the mask operand should not
+influence the decision to branch.
+
+@cindex @code{cond_len_vec_cbranch_all@var{mode}} instruction pattern
+@item @samp{cond_len_vec_cbranch_all@var{mode}}
+Len based conditional branch instruction based on a vector compare that branches
+when all of the elementwise comparisons of the two input vectors is true.
+Operand 0 is a comparison operator.  Operand 1 is the mask operand.  Operand 2
+and operand 3 are the first and second operands of the comparison, respectively.
+Operand 4 is the len operand and Operand 5 is the bias operand.  Operand 6 is
+the @code{code_label} to jump to. Inactive lanes in the mask operand should not
+influence the decision to branch.
 
 @cindex @code{jump} instruction pattern
 @item @samp{jump}

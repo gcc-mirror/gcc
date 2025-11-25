@@ -48,6 +48,8 @@ along with GCC; see the file COPYING3.  If not see
 #include "langhooks.h"
 #include "gimple.h"
 #include "ssa.h"
+#include "tree-ssa-live.h"
+#include "tree-outof-ssa.h"
 
 static void prepare_float_lib_cmp (rtx, rtx, enum rtx_code, rtx *,
 				   machine_mode *);
@@ -4405,6 +4407,9 @@ can_vec_extract_var_idx_p (machine_mode vec_mode, machine_mode extr_mode)
 
    *PMODE is the mode of the inputs (in case they are const_int).
 
+   *OPTAB is the optab to check for OPTAB_DIRECT support.  Defaults to
+   cbranch_optab.
+
    This function performs all the setup necessary so that the caller only has
    to emit a single comparison insn.  This setup can involve doing a BLKmode
    comparison or emitting a library call to perform the comparison if no insn
@@ -4414,9 +4419,9 @@ can_vec_extract_var_idx_p (machine_mode vec_mode, machine_mode extr_mode)
    comparisons must have already been folded.  */
 
 static void
-prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
+prepare_cmp_insn (rtx x, rtx y, rtx *mask, enum rtx_code comparison, rtx size,
 		  int unsignedp, enum optab_methods methods,
-		  rtx *ptest, machine_mode *pmode)
+		  rtx *ptest, machine_mode *pmode, optab optab)
 {
   machine_mode mode = *pmode;
   rtx libfunc, test;
@@ -4534,7 +4539,7 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
   FOR_EACH_WIDER_MODE_FROM (cmp_mode, mode)
     {
       enum insn_code icode;
-      icode = optab_handler (cbranch_optab, cmp_mode);
+      icode = optab_handler (optab, cmp_mode);
       if (icode != CODE_FOR_nothing
 	  && insn_operand_matches (icode, 0, test))
 	{
@@ -4566,8 +4571,8 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
       /* Small trick if UNORDERED isn't implemented by the hardware.  */
       if (comparison == UNORDERED && rtx_equal_p (x, y))
 	{
-	  prepare_cmp_insn (x, y, UNLT, NULL_RTX, unsignedp, OPTAB_WIDEN,
-			    ptest, pmode);
+	  prepare_cmp_insn (x, y, mask, UNLT, NULL_RTX, unsignedp, OPTAB_WIDEN,
+			    ptest, pmode, optab);
 	  if (*ptest)
 	    return;
 	}
@@ -4618,8 +4623,8 @@ prepare_cmp_insn (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	}
 
       *pmode = ret_mode;
-      prepare_cmp_insn (x, y, comparison, NULL_RTX, unsignedp, methods,
-			ptest, pmode);
+      prepare_cmp_insn (x, y, mask, comparison, NULL_RTX, unsignedp, methods,
+			ptest, pmode, optab);
     }
 
   return;
@@ -4657,9 +4662,9 @@ prepare_operand (enum insn_code icode, rtx x, int opnum, machine_mode mode,
    we can do the branch.  */
 
 static void
-emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
-			  direct_optab cmp_optab, profile_probability prob,
-			  bool test_branch)
+emit_cmp_and_jump_insn_1 (rtx test, rtx cond, rtx len, rtx bias,
+			  machine_mode mode, rtx label, direct_optab cmp_optab,
+			  profile_probability prob, bool test_branch)
 {
   machine_mode optab_mode;
   enum mode_class mclass;
@@ -4672,8 +4677,20 @@ emit_cmp_and_jump_insn_1 (rtx test, machine_mode mode, rtx label,
 
   gcc_assert (icode != CODE_FOR_nothing);
   gcc_assert (test_branch || insn_operand_matches (icode, 0, test));
+  gcc_assert (cond == NULL_RTX || (cond != NULL_RTX && !test_branch));
   if (test_branch)
     insn = emit_jump_insn (GEN_FCN (icode) (XEXP (test, 0),
+					    XEXP (test, 1), label));
+  else if (len)
+    {
+      gcc_assert (cond);
+      gcc_assert (bias);
+      insn = emit_jump_insn (GEN_FCN (icode) (test, cond, XEXP (test, 0),
+					      XEXP (test, 1), len, bias,
+					      label));
+    }
+  else if (cond)
+    insn = emit_jump_insn (GEN_FCN (icode) (test, cond, XEXP (test, 0),
 					    XEXP (test, 1), label));
   else
     insn = emit_jump_insn (GEN_FCN (icode) (test, XEXP (test, 0),
@@ -4796,22 +4813,203 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
   if (unsignedp)
     comparison = unsigned_condition (comparison);
 
-  prepare_cmp_insn (op0, op1, comparison, size, unsignedp, OPTAB_LIB_WIDEN,
-		    &test, &mode);
+  /* cbranch is no longer preferred for vectors, so when using a vector mode
+     check vec_cbranch variants instead.  */
+  if (!VECTOR_MODE_P (GET_MODE (op0)))
+    prepare_cmp_insn (op0, op1, NULL, comparison, size, unsignedp,
+		      OPTAB_LIB_WIDEN, &test, &mode, cbranch_optab);
 
   /* Check if we're comparing a truth type with 0, and if so check if
      the target supports tbranch.  */
   machine_mode tmode = mode;
   direct_optab optab;
-  if (op1 == CONST0_RTX (GET_MODE (op1))
-      && validate_test_and_branch (val, &test, &tmode,
-				   &optab) != CODE_FOR_nothing)
+  if (op1 == CONST0_RTX (GET_MODE (op1)))
     {
-      emit_cmp_and_jump_insn_1 (test, tmode, label, optab, prob, true);
-      return;
+      if (!VECTOR_MODE_P (GET_MODE (op1))
+	  && validate_test_and_branch (val, &test, &tmode,
+				       &optab) != CODE_FOR_nothing)
+	{
+	  emit_cmp_and_jump_insn_1 (test, NULL_RTX, NULL_RTX, NULL_RTX, tmode,
+				    label, optab, prob, true);
+	  return;
+	}
+
+      /* If we are comparing equality with 0, check if VAL is another equality
+	 comparison and if the target supports it directly.  */
+      gimple *def_stmt = NULL;
+      if (val && TREE_CODE (val) == SSA_NAME
+	  && VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (val))
+	  && (comparison == NE || comparison == EQ)
+	  && (def_stmt = get_gimple_for_ssa_name (val)))
+	{
+	  tree masked_op = NULL_TREE;
+	  tree len_op = NULL_TREE;
+	  tree len_bias = NULL_TREE;
+	  /* First determine if the operation should be masked or unmasked.  */
+	  if (is_gimple_assign (def_stmt)
+	      && gimple_assign_rhs_code (def_stmt) == BIT_AND_EXPR)
+	    {
+	      /* See if one side if a comparison, if so use the other side as
+		 the mask.  */
+	      gimple *mask_def = NULL;
+	      tree rhs1 = gimple_assign_rhs1 (def_stmt);
+	      tree rhs2 = gimple_assign_rhs2 (def_stmt);
+	      if ((mask_def = get_gimple_for_ssa_name (rhs1))
+		  && is_gimple_assign (mask_def)
+		  && TREE_CODE_CLASS (gimple_assign_rhs_code (mask_def)))
+		masked_op = rhs2;
+	      else if ((mask_def = get_gimple_for_ssa_name (rhs2))
+		  && is_gimple_assign (mask_def)
+		  && TREE_CODE_CLASS (gimple_assign_rhs_code (mask_def)))
+		masked_op = rhs1;
+
+	      if (masked_op)
+		def_stmt = mask_def;
+	    }
+	    /* Else check to see if we're a LEN target.  */
+	  else if (is_gimple_call (def_stmt)
+		   && gimple_call_internal_p (def_stmt)
+		   && gimple_call_internal_fn (def_stmt) == IFN_VCOND_MASK_LEN)
+	    {
+	      /* Example to consume:
+
+		   a = _59 != vect__4.17_75;
+		   vcmp = .VCOND_MASK_LEN (a, { -1, ... }, { 0, ... }, _90, 0);
+		   if (vcmp != { 0, ... })
+
+		and transform into
+
+		   if (cond_len_vec_cbranch_any ({-1, ...}, a, _90, 0)).  */
+	      gcall *call = dyn_cast <gcall *> (def_stmt);
+	      tree true_branch = gimple_call_arg (call, 1);
+	      tree false_branch = gimple_call_arg (call, 2);
+	      if (integer_minus_onep (true_branch)
+		  && integer_zerop (false_branch))
+		{
+		  len_op = gimple_call_arg (call, 3);
+		  len_bias = gimple_call_arg (call, 4);
+		  tree arg0 = gimple_call_arg (call, 0);
+
+		  def_stmt = get_gimple_for_ssa_name (arg0);
+		}
+	    }
+
+	  enum insn_code icode;
+	  if (is_gimple_assign (def_stmt)
+	      && TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
+		   == tcc_comparison)
+	    {
+	      class expand_operand ops[5];
+	      rtx_insn *tmp = NULL;
+	      start_sequence ();
+	      rtx op0c = expand_normal (gimple_assign_rhs1 (def_stmt));
+	      rtx op1c = expand_normal (gimple_assign_rhs2 (def_stmt));
+	      machine_mode mode2 = GET_MODE (op0c);
+
+	      int nops = masked_op ? 3 : (len_op ? 5 : 2);
+	      int offset = masked_op || len_op ? 1 : 0;
+	      create_input_operand (&ops[offset + 0], op0c, mode2);
+	      create_input_operand (&ops[offset + 1], op1c, mode2);
+	      if (masked_op)
+		{
+		  rtx mask_op = expand_normal (masked_op);
+		  auto mask_mode = GET_MODE (mask_op);
+		  create_input_operand (&ops[0], mask_op, mask_mode);
+		}
+	      else if (len_op)
+		{
+		  rtx len_rtx = expand_normal (len_op);
+		  rtx len_bias_rtx = expand_normal (len_bias);
+		  tree lhs = gimple_get_lhs (def_stmt);
+		  auto mask_mode = TYPE_MODE (TREE_TYPE (lhs));
+		  create_input_operand (&ops[0], CONSTM1_RTX (mask_mode),
+					mask_mode);
+		  create_input_operand (&ops[3], len_rtx, GET_MODE (len_rtx));
+		  create_input_operand (&ops[4], len_bias_rtx,
+					GET_MODE (len_bias_rtx));
+		}
+
+	      int unsignedp2 = TYPE_UNSIGNED (TREE_TYPE (val));
+	      auto inner_code = gimple_assign_rhs_code (def_stmt);
+	      rtx test2 = NULL_RTX;
+
+	      enum rtx_code comparison2 = get_rtx_code (inner_code, unsignedp2);
+	      if (unsignedp2)
+		comparison2 = unsigned_condition (comparison2);
+	      if (comparison == NE)
+		optab = masked_op ? cond_vec_cbranch_any_optab
+				  : len_op ? cond_len_vec_cbranch_any_optab
+					   : vec_cbranch_any_optab;
+	      else
+		optab = masked_op ? cond_vec_cbranch_all_optab
+				  : len_op ? cond_len_vec_cbranch_all_optab
+					   : vec_cbranch_all_optab;
+
+	      if ((icode = optab_handler (optab, mode2))
+		  != CODE_FOR_nothing
+		  && maybe_legitimize_operands (icode, 1, nops, ops))
+		{
+		  test2 = gen_rtx_fmt_ee (comparison2, VOIDmode,
+					  ops[offset + 0].value,
+					  ops[offset + 1].value);
+		  if (insn_operand_matches (icode, 0, test2))
+		    {
+		      rtx mask
+			= (masked_op || len_op) ? ops[0].value : NULL_RTX;
+		      rtx len = len_op ? ops[3].value : NULL_RTX;
+		      rtx bias = len_op ? ops[4].value : NULL_RTX;
+		      emit_cmp_and_jump_insn_1 (test2, mask, len, bias, mode2,
+						label, optab, prob, false);
+		      tmp = get_insns ();
+		    }
+		}
+
+	      end_sequence ();
+	      if (tmp)
+		{
+		  emit_insn (tmp);
+		  return;
+		}
+	    }
+	}
     }
 
-  emit_cmp_and_jump_insn_1 (test, mode, label, cbranch_optab, prob, false);
+  /*  cbranch should only be used for VECTOR_BOOLEAN_TYPE_P values.   */
+  direct_optab base_optab = cbranch_optab;
+  if (VECTOR_MODE_P (GET_MODE (op0)))
+    {
+      /* If cbranch is provided, use it.  If we get here it means we have an
+	 instruction in between what created the boolean value and the gcond
+	 that is not a masking operation.  This can happen for instance during
+	 unrolling of early-break where we have an OR-reduction to reduce the
+	 masks.  In this case knowing we have a mask can let us generate better
+	 code.  If it's not there there then check the vector specific
+	 optabs.  */
+      if (optab_handler (cbranch_optab, mode) == CODE_FOR_nothing)
+	{
+	  if (comparison == NE)
+	    base_optab = vec_cbranch_any_optab;
+	  else
+	    base_optab = vec_cbranch_all_optab;
+
+	  prepare_cmp_insn (op0, op1, NULL, comparison, size, unsignedp,
+			    OPTAB_DIRECT, &test, &mode, base_optab);
+
+	  enum insn_code icode = optab_handler (base_optab, mode);
+
+	  /* If the new cbranch isn't supported, degrade back to old one.  */
+	  if (icode == CODE_FOR_nothing
+	      || !test
+	      || !insn_operand_matches (icode, 0, test))
+	    base_optab = cbranch_optab;
+	}
+
+      prepare_cmp_insn (op0, op1, NULL, comparison, size, unsignedp,
+			OPTAB_LIB_WIDEN, &test, &mode, base_optab);
+    }
+
+  emit_cmp_and_jump_insn_1 (test, NULL_RTX, NULL_RTX, NULL_RTX, mode, label,
+			    base_optab, prob, false);
 }
 
 /* Overloaded version of emit_cmp_and_jump_insns in which VAL is unknown.  */
@@ -5099,9 +5297,9 @@ emit_conditional_move (rtx target, struct rtx_comparison comp,
 	      else if (rtx_equal_p (orig_op1, op3))
 		op3p = XEXP (comparison, 1) = force_reg (cmpmode, orig_op1);
 	    }
-	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
+	  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1), NULL,
 			    GET_CODE (comparison), NULL_RTX, unsignedp,
-			    OPTAB_WIDEN, &comparison, &cmpmode);
+			    OPTAB_WIDEN, &comparison, &cmpmode, cbranch_optab);
 	  if (comparison)
 	    {
 	       rtx res = emit_conditional_move_1 (target, comparison,
@@ -5316,9 +5514,9 @@ emit_conditional_add (rtx target, enum rtx_code code, rtx op0, rtx op1,
 
   do_pending_stack_adjust ();
   last = get_last_insn ();
-  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1),
-                    GET_CODE (comparison), NULL_RTX, unsignedp, OPTAB_WIDEN,
-                    &comparison, &cmode);
+  prepare_cmp_insn (XEXP (comparison, 0), XEXP (comparison, 1), NULL,
+		    GET_CODE (comparison), NULL_RTX, unsignedp, OPTAB_WIDEN,
+		    &comparison, &cmode, cbranch_optab);
   if (comparison)
     {
       class expand_operand ops[4];
@@ -6132,8 +6330,8 @@ gen_cond_trap (enum rtx_code code, rtx op1, rtx op2, rtx tcode)
 
   do_pending_stack_adjust ();
   start_sequence ();
-  prepare_cmp_insn (op1, op2, code, NULL_RTX, false, OPTAB_DIRECT,
-		    &trap_rtx, &mode);
+  prepare_cmp_insn (op1, op2, NULL, code, NULL_RTX, false, OPTAB_DIRECT,
+		    &trap_rtx, &mode, cbranch_optab);
   if (!trap_rtx)
     insn = NULL;
   else
