@@ -1051,7 +1051,7 @@ loongarch_for_each_saved_reg (HOST_WIDE_INT sp_offset,
     if (BITSET_P (cfun->machine->frame.fmask, regno - FP_REG_FIRST))
       {
 	if (!cfun->machine->reg_is_wrapped_separately[regno])
-	  loongarch_save_restore_reg (word_mode, regno, offset, fn);
+	  loongarch_save_restore_reg (mode, regno, offset, fn);
 
 	offset -= GET_MODE_SIZE (mode);
       }
@@ -2289,6 +2289,9 @@ loongarch_symbolic_constant_p (rtx x, enum loongarch_symbol_type *symbol_type)
 bool
 loongarch_explicit_relocs_p (enum loongarch_symbol_type type)
 {
+  if (TARGET_32BIT)
+    return false;
+
   if (la_opt_explicit_relocs != EXPLICIT_RELOCS_AUTO)
     return la_opt_explicit_relocs == EXPLICIT_RELOCS_ALWAYS;
 
@@ -2445,7 +2448,9 @@ loongarch_valid_offset_p (rtx x, machine_mode mode)
      or check that X is a signed 16-bit number
      and offset 4 byte aligned.  */
   if (!(const_arith_operand (x, Pmode)
-	|| ((mode == E_SImode || mode == E_DImode)
+	/* FIXME: la32 atomic insns support 16-bit imm.  */
+	|| (TARGET_64BIT
+	    && (mode == E_SImode || mode == E_DImode)
 	    && const_imm16_operand (x, Pmode)
 	    && (loongarch_signed_immediate_p (INTVAL (x), 14, 2)))))
     return false;
@@ -2491,7 +2496,7 @@ static bool
 loongarch_valid_lo_sum_p (enum loongarch_symbol_type symbol_type,
 			  machine_mode mode, rtx x)
 {
-  int align, size;
+  int align, size, word_size;
 
   /* Check that symbols of type SYMBOL_TYPE can be used to access values
      of mode MODE.  */
@@ -2532,7 +2537,10 @@ loongarch_valid_lo_sum_p (enum loongarch_symbol_type symbol_type,
 
   /* We may need to split multiword moves, so make sure that each word
      can be accessed without inducing a carry.  */
-  if (size > BITS_PER_WORD
+  word_size = (GET_MODE_CLASS (mode) == MODE_FLOAT
+	       ? (UNITS_PER_HWFPVALUE * BITS_PER_UNIT)
+	       : BITS_PER_WORD);
+  if (size > word_size
       && (!TARGET_STRICT_ALIGN || size > align))
     return false;
 
@@ -2558,7 +2566,8 @@ loongarch_valid_index_p (struct loongarch_address_info *info, rtx x,
       && contains_reg_of_mode[GENERAL_REGS][GET_MODE (SUBREG_REG (index))])
     index = SUBREG_REG (index);
 
-  if (loongarch_valid_base_register_p (index, mode, strict_p))
+  /* LA32 does not provide LDX/STX.  */
+  if (TARGET_64BIT && loongarch_valid_base_register_p (index, mode, strict_p))
     {
       info->type = ADDRESS_REG_REG;
       info->offset = index;
@@ -3142,19 +3151,22 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 		{
 		  rtx call;
 
-		 if (HAVE_AS_SUPPORT_CALL36)
-		   call = gen_call_value_internal (v0, loongarch_tls_symbol,
-						   const0_rtx);
-		 else
-		   {
-		     rtx reg = gen_reg_rtx (Pmode);
-		     emit_insn (gen_pcalau12i (Pmode, reg,
-					       loongarch_tls_symbol));
-		     call = gen_call_value_internal_1 (Pmode, v0, reg,
-						       loongarch_tls_symbol,
-						       const0_rtx);
-		   }
-		 insn = emit_call_insn (call);
+		  /* Use call36 or call30.
+		    TARGET_32BIT always support call30.  */
+		  if ((TARGET_64BIT && HAVE_AS_SUPPORT_CALL36)
+		      || TARGET_32BIT)
+		    call = gen_call_value_internal (v0, loongarch_tls_symbol,
+						    const0_rtx);
+		  else
+		    {
+		      rtx reg = gen_reg_rtx (Pmode);
+		      emit_insn (gen_pcalau12i (Pmode, reg,
+						loongarch_tls_symbol));
+		      call = gen_call_value_internal_1 (Pmode, v0, reg,
+							loongarch_tls_symbol,
+							const0_rtx);
+		    }
+		  insn = emit_call_insn (call);
 		}
 	      else
 		{
@@ -3608,7 +3620,9 @@ loongarch_legitimize_address (rtx x, rtx oldx ATTRIBUTE_UNUSED,
   if (offset != 0)
     {
       /* Handle (plus (plus (mult (a) (mem_shadd_constant)) (fp)) (C)) case.  */
-      if (GET_CODE (base) == PLUS && mem_shadd_or_shadd_rtx_p (XEXP (base, 0))
+      if ((TARGET_64BIT || TARGET_32BIT_S)
+	  && GET_CODE (base) == PLUS
+	  && mem_shadd_or_shadd_rtx_p (XEXP (base, 0))
 	  && IMM12_OPERAND (offset))
 	{
 	  rtx index = XEXP (base, 0);
@@ -4899,12 +4913,41 @@ loongarch_split_move_p (rtx dest, rtx src)
 void
 loongarch_split_move (rtx dest, rtx src)
 {
+  rtx low_dest;
+
   gcc_checking_assert (loongarch_split_move_p (dest, src));
   if (LSX_SUPPORTED_MODE_P (GET_MODE (dest))
       || LASX_SUPPORTED_MODE_P (GET_MODE (dest)))
     loongarch_split_vector_move (dest, src);
+  else if (FP_REG_RTX_P (dest) || FP_REG_RTX_P (src))
+    {
+      if (TARGET_32BIT && GET_MODE (dest) == DImode)
+	emit_insn (gen_move_doubleword_2_di (dest, src));
+      else if (TARGET_32BIT && GET_MODE (dest) == DFmode)
+	emit_insn (gen_move_doubleword_2_df (dest, src));
+      else if (TARGET_64BIT && GET_MODE (dest) == TFmode)
+	emit_insn (gen_move_doubleword_2_tf (dest, src));
+      else
+	gcc_unreachable ();
+    }
   else
-    gcc_unreachable ();
+    {
+      /* The operation can be split into two normal moves.  Decide in
+	 which order to do them.  */
+      low_dest = loongarch_subword (dest, false);
+      if (REG_P (low_dest) && reg_overlap_mentioned_p (low_dest, src))
+	{
+	  loongarch_emit_move (loongarch_subword (dest, true),
+			       loongarch_subword (src, true));
+	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
+	}
+      else
+	{
+	  loongarch_emit_move (low_dest, loongarch_subword (src, false));
+	  loongarch_emit_move (loongarch_subword (dest, true),
+			       loongarch_subword (src, true));
+	}
+    }
 }
 
 /* Check if adding an integer constant value for a specific mode can be
@@ -5033,6 +5076,7 @@ loongarch_output_move_index (rtx x, machine_mode mode, bool ldr)
       }
     };
 
+  gcc_assert (TARGET_64BIT);
   return insn[ldr][index];
 }
 
@@ -5284,10 +5328,14 @@ loongarch_output_move (rtx *operands)
 	      /* Matching address type with a 12bit offset and
 		 ADDRESS_LO_SUM.  */
 	      if (const_arith_operand (offset, Pmode)
-		  || GET_CODE (offset) == LO_SUM)
+		  || GET_CODE (offset) == LO_SUM
+		  || GET_CODE (XEXP (dest, 0)) == REG)
 		return "st.w\t%z1,%0";
 	      else
-		return "stptr.w\t%z1,%0";
+		{
+		  gcc_assert (TARGET_64BIT);
+		  return "stptr.w\t%z1,%0";
+		}
 	    case 8:
 	      if (const_arith_operand (offset, Pmode)
 		  || GET_CODE (offset) == LO_SUM)
@@ -5329,10 +5377,14 @@ loongarch_output_move (rtx *operands)
 	      /* Matching address type with a 12bit offset and
 		 ADDRESS_LO_SUM.  */
 	      if (const_arith_operand (offset, Pmode)
-		  || GET_CODE (offset) == LO_SUM)
+		  || GET_CODE (offset) == LO_SUM
+		  || GET_CODE (XEXP (src, 0)) == REG)
 		return "ld.w\t%0,%1";
 	      else
-		return "ldptr.w\t%0,%1";
+		{
+		  gcc_assert (TARGET_64BIT);
+		  return "ldptr.w\t%0,%1";
+		}
 	    case 8:
 	      if (const_arith_operand (offset, Pmode)
 		  || GET_CODE (offset) == LO_SUM)
@@ -7840,7 +7892,8 @@ loongarch_output_equal_conditional_branch (rtx_insn *insn, rtx *operands,
 					   bool inverted_p)
 {
   const char *branch[2];
-  if (operands[3] == const0_rtx)
+  if ((TARGET_64BIT || TARGET_32BIT_S)
+      && operands[3] == const0_rtx)
     {
       branch[!inverted_p] = LARCH_BRANCH ("b%C1z", "%2,%0");
       branch[inverted_p] = LARCH_BRANCH ("b%N1z", "%2,%0");
@@ -8508,11 +8561,11 @@ loongarch_trampoline_init (rtx m_tramp, tree fndecl, rtx chain_value)
 
   /* Build up the code in TRAMPOLINE.  */
   i = 0;
-  /*pcaddi $static_chain,0
+  /*pcaddu12i $static_chain,0
     ld.[dw] $tmp,$static_chain,target_function_offset
     ld.[dw] $static_chain,$static_chain,static_chain_offset
     jirl $r0,$tmp,0  */
-  trampoline[i++] = OP (0x18000000 | (STATIC_CHAIN_REGNUM - GP_REG_FIRST));
+  trampoline[i++] = OP (0x1c000000 | (STATIC_CHAIN_REGNUM - GP_REG_FIRST));
   trampoline[i++] = OP ((ptr_mode == DImode ? 0x28c00000 : 0x28800000)
 			| 19 /* $t7  */
 			| ((STATIC_CHAIN_REGNUM - GP_REG_FIRST) << 5)
@@ -8721,11 +8774,9 @@ loongarch_get_separate_components (void)
 	/* We can wrap general registers saved at [sp, sp + 32768) using the
 	   ldptr/stptr instructions.  For large offsets a pseudo register
 	   might be needed which cannot be created during the shrink
-	   wrapping pass.
-
-	   TODO: This may need a revise when we add LA32 as ldptr.w is not
-	   guaranteed available by the manual.  */
-	if (offset < 32768)
+	   wrapping pass.  */
+	if ((TARGET_64BIT && IMM16_OPERAND (offset))
+	    || IMM12_OPERAND (offset))
 	  bitmap_set_bit (components, regno);
 
 	offset -= UNITS_PER_WORD;
@@ -11323,7 +11374,7 @@ static machine_mode
 loongarch_c_mode_for_floating_type (enum tree_index ti)
 {
   if (ti == TI_LONG_DOUBLE_TYPE)
-    return TARGET_64BIT ? TFmode : DFmode;
+    return TFmode;
   return default_mode_for_floating_type (ti);
 }
 
@@ -11393,6 +11444,10 @@ loongarch_c_mode_for_suffix (char suffix)
 bool
 loongarch_bitint_type_info (int n, struct bitint_info *info)
 {
+  /* LA32 not support BitInt.  */
+  if (TARGET_32BIT)
+    return false;
+
   if (n <= 8)
     info->limb_mode = QImode;
   else if (n <= 16)

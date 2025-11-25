@@ -358,6 +358,12 @@ config_target_isa:
 	  }
       }
 
+  /* TARGET_32BIT and TARGET_64BIT init at the end of this function,
+     can't use here.  */
+  if ((t.isa.base == ISA_BASE_LA32 || t.isa.base == ISA_BASE_LA32R)
+      && (t.isa.simd == ISA_EXT_SIMD_LSX || t.isa.simd == ISA_EXT_SIMD_LASX))
+    fatal_error (UNKNOWN_LOCATION, "SIMD is not supported on LA32");
+
   /* All SIMD extensions imply a 64-bit FPU:
      - silently adjust t.isa.fpu to "fpu64" if it is unconstrained.
      - warn if -msingle-float / -msoft-float is on,
@@ -557,7 +563,15 @@ fallback:
 
     case CMODEL_NORMAL:
     case CMODEL_MEDIUM:
+      break;
+
     case CMODEL_EXTREME:
+      if (t.isa.base == ISA_BASE_LA32 || t.isa.base == ISA_BASE_LA32R)
+	{
+	  warning (0, "%qs is not supported, now cmodel is set to %qs",
+		   loongarch_cmodel_strings[t.cmodel], "normal");
+	  t.cmodel = CMODEL_NORMAL;
+	}
       break;
 
     default:
@@ -570,6 +584,10 @@ fallback:
   /* Cleanup and return.  */
   obstack_free (&msg_obstack, NULL);
   *target = t;
+
+  /* TODO: mexplicit-relocs support for LA32.  */
+  if (TARGET_32BIT)
+    la_opt_explicit_relocs = EXPLICIT_RELOCS_NONE;
 }
 
 /* Returns the default ABI for the given instruction set.  */
@@ -1039,9 +1057,9 @@ loongarch_target_option_override (struct loongarch_target *target,
   if (!opts_set->x_la_addr_reg_reg_cost)
     opts->x_la_addr_reg_reg_cost = loongarch_cost->addr_reg_reg_cost;
 
-  /* other stuff */
-  if (ABI_LP64_P (target->abi.base))
-    opts->x_flag_pcc_struct_return = 0;
+  /* Enable -mstrict-align by default on LA32.  */
+  if (TARGET_32BIT && !(opts_set->x_target_flags & MASK_STRICT_ALIGN))
+    opts->x_target_flags |= MASK_STRICT_ALIGN;
 
   switch (target->cmodel)
     {
