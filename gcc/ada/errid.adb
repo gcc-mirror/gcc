@@ -23,10 +23,31 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with JSON_Utils; use JSON_Utils;
-with Output;     use Output;
+with Erroutc.SARIF_Emitter; use Erroutc.SARIF_Emitter;
 
 package body Errid is
+
+   Doc_Directory : constant String := "./error_codes";
+   Doc_Extension : constant String := ".md";
+
+   procedure Add_All_Diagnostic_Rules (Printer : in out SARIF_Printer);
+   --  Add all active Diagnostic_Id-s to the SARIF_Printer
+
+   procedure Add_All_Switch_Rules (Printer : in out SARIF_Printer);
+   --  Add all active Switch_Id-s to the SARIF_Printer
+
+   ----------------------------
+   -- Get_Documentation_File --
+   ----------------------------
+
+   function Get_Documentation_File (Id : Diagnostic_Id) return String is
+   begin
+      if Id = No_Diagnostic_Id then
+         return "";
+      else
+         return Doc_Directory & "/" & To_String (Id) & Doc_Extension;
+      end if;
+   end Get_Documentation_File;
 
    ---------------
    -- To_String --
@@ -41,94 +62,47 @@ package body Errid is
       end if;
    end To_String;
 
+   ------------------------------
+   -- Add_All_Diagnostic_Rules --
+   ------------------------------
+
+   procedure Add_All_Diagnostic_Rules (Printer : in out SARIF_Printer) is
+   begin
+      Printer.Diagnostics := Diagnostic_Id_Lists.Create;
+      for Id in Diagnostic_Id loop
+         if Id /= No_Diagnostic_Id then
+            Diagnostic_Id_Lists.Append (Printer.Diagnostics, Id);
+         end if;
+      end loop;
+   end Add_All_Diagnostic_Rules;
+
+   --------------------------
+   -- Add_All_Switch_Rules --
+   --------------------------
+
+   procedure Add_All_Switch_Rules (Printer : in out SARIF_Printer) is
+   begin
+      Printer.Switches := Switch_Id_Lists.Create;
+      for S in Switch_Id loop
+         if S /= No_Switch_Id then
+            Switch_Id_Lists.Append (Printer.Switches, S);
+         end if;
+      end loop;
+   end Add_All_Switch_Rules;
+
    ---------------------------------
    -- Print_Diagnostic_Repository --
    ---------------------------------
 
    procedure Print_Diagnostic_Repository is
-      First : Boolean := True;
+      Printer : SARIF_Printer;
    begin
-      Write_Char ('{');
-      Begin_Block;
-      NL_And_Indent;
+      Add_All_Diagnostic_Rules (Printer);
+      Add_All_Switch_Rules (Printer);
+      Printer.Report_Type := Repository_Report;
 
-      Write_Str ("""" & "Diagnostics" & """" & ": " & "[");
-      Begin_Block;
-
-      --  Avoid printing the first switch, which is a placeholder
-
-      for I in Diagnostic_Entries'First .. Diagnostic_Entries'Last loop
-
-         if First then
-            First := False;
-         else
-            Write_Char (',');
-         end if;
-
-         NL_And_Indent;
-
-         Write_Char ('{');
-         Begin_Block;
-         NL_And_Indent;
-
-         Write_String_Attribute ("Id", To_String (I));
-
-         Write_Char (',');
-         NL_And_Indent;
-
-         if Diagnostic_Entries (I).Human_Id /= null then
-            Write_String_Attribute ("Human_Id",
-                                     Diagnostic_Entries (I).Human_Id.all);
-         else
-            Write_String_Attribute ("Human_Id", "null");
-         end if;
-
-         Write_Char (',');
-         NL_And_Indent;
-
-         if Diagnostic_Entries (I).Status = Active then
-            Write_String_Attribute ("Status", "Active");
-         else
-            Write_String_Attribute ("Status", "Deprecated");
-         end if;
-
-         Write_Char (',');
-         NL_And_Indent;
-
-         if Diagnostic_Entries (I).Documentation /= null then
-            Write_String_Attribute ("Documentation",
-                                     Diagnostic_Entries (I).Documentation.all);
-         else
-            Write_String_Attribute ("Documentation", "null");
-         end if;
-
-         Write_Char (',');
-         NL_And_Indent;
-
-         if Diagnostic_Entries (I).Switch /= No_Switch_Id then
-            Write_Char (',');
-            NL_And_Indent;
-            Write_String_Attribute
-              ("Switch",
-               Get_Switch (Diagnostic_Entries (I).Switch).Human_Id.all);
-         else
-            Write_String_Attribute ("Switch", "null");
-         end if;
-
-         End_Block;
-         NL_And_Indent;
-         Write_Char ('}');
-      end loop;
-
-      End_Block;
-      NL_And_Indent;
-      Write_Char (']');
-
-      End_Block;
-      NL_And_Indent;
-      Write_Char ('}');
-
-      Write_Eol;
+      Print_SARIF_Report (Printer);
+      Free (Printer);
    end Print_Diagnostic_Repository;
 
 end Errid;

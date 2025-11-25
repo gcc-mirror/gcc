@@ -37,8 +37,7 @@ with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Erroutc;        use Erroutc;
 with Erroutc.Pretty_Emitter;
-with Erroutc.SARIF_Emitter;
-with Errsw;          use Errsw;
+with Erroutc.SARIF_Emitter; use Erroutc.SARIF_Emitter;
 with Gnatvsn;        use Gnatvsn;
 with Lib;            use Lib;
 with Opt;            use Opt;
@@ -95,6 +94,10 @@ package body Errout is
    -----------------------
    -- Local Subprograms --
    -----------------------
+
+   procedure Add_Unique_Diagnostics_And_Switches
+     (Printer : in out SARIF_Printer);
+   --  Fill the printer with the unique diagnostic and switch id.
 
    procedure Error_Msg_Internal
      (Msg        : String;
@@ -215,6 +218,92 @@ package body Errout is
    --    "?"     returns "??"
    --    " "     returns "?"
    --    other   trimmed, prefixed and suffixed with "?".
+
+   -----------------------------------------
+   -- Add_Unique_Diagnostics_And_Switches --
+   -----------------------------------------
+
+   procedure Add_Unique_Diagnostics_And_Switches
+     (Printer : in out SARIF_Printer)
+   is
+      E_Id  : Error_Msg_Id;
+      E_Obj : Error_Msg_Object;
+
+      procedure Insert_Diagnostic (D : Diagnostic_Id);
+      --  Insert a diagnostic to the printers diagnostic list by adding them in
+      --  the same order as they are defined (alphanumerically).
+
+      procedure Insert_Switch (S : Switch_Id);
+      --  Insert a switch to the printers swtiches list by adding them in
+      --  the same order as they are defined (alphanumerically).
+
+      -----------------------
+      -- Insert_Diagnostic --
+      -----------------------
+
+      procedure Insert_Diagnostic (D : Diagnostic_Id) is
+         use Diagnostic_Id_Lists;
+         It : Iterator := Iterate (Printer.Diagnostics);
+         El : Diagnostic_Id;
+      begin
+         while Has_Next (It) loop
+            Next (It, El);
+
+            if El = D then
+               return;
+            elsif El > D then
+               Insert_Before (Printer.Diagnostics, El, D);
+               return;
+            end if;
+         end loop;
+
+         Append (Printer.Diagnostics, D);
+      end Insert_Diagnostic;
+
+      -------------------
+      -- Insert_Switch --
+      -------------------
+
+      procedure Insert_Switch (S : Switch_Id) is
+         use Switch_Id_Lists;
+         It : Iterator := Iterate (Printer.Switches);
+         El : Switch_Id;
+      begin
+         --  Do not add a switch if the diagnostic was not using one
+
+         if S = No_Switch_Id then
+            return;
+         end if;
+
+         while Has_Next (It) loop
+            Next (It, El);
+
+            if El = S then
+               return;
+            elsif El > S then
+               Insert_Before (Printer.Switches, El, S);
+               return;
+            end if;
+         end loop;
+
+         Switch_Id_Lists.Append (Printer.Switches, S);
+      end Insert_Switch;
+
+      --  Start of processing for Add_Unique_Diagnostics_And_Switches
+
+   begin
+      Printer.Diagnostics := Diagnostic_Id_Lists.Create;
+      Printer.Switches := Switch_Id_Lists.Create;
+
+      E_Id := First_Error_Msg;
+      while E_Id /= No_Error_Msg loop
+         E_Obj := Errors.Table (E_Id);
+         Insert_Diagnostic (E_Obj.Id);
+         Insert_Switch (E_Obj.Switch);
+
+         Next_Error_Msg (E_Id);
+      end loop;
+   end Add_Unique_Diagnostics_And_Switches;
 
    -----------------------
    -- Change_Error_Text --
@@ -2800,8 +2889,9 @@ package body Errout is
 
       Sarif_File_Name       : constant String :=
         Get_First_Main_File_Name & ".gnat.sarif";
-      Switches_File_Name    : constant String := "gnat_switches.json";
-      Diagnostics_File_Name : constant String := "gnat_diagnostics.json";
+      Diagnostics_File_Name : constant String := "gnat_diagnostics.sarif";
+
+      Printer : Erroutc.SARIF_Emitter.SARIF_Printer;
 
       Dummy : Boolean;
 
@@ -2880,7 +2970,9 @@ package body Errout is
 
          if Opt.SARIF_Output then
             Set_Standard_Error;
-            Erroutc.SARIF_Emitter.Print_SARIF_Report;
+            Add_Unique_Diagnostics_And_Switches (Printer);
+            Print_SARIF_Report (Printer);
+            Free (Printer);
             Set_Standard_Output;
 
          elsif Opt.SARIF_File then
@@ -2890,10 +2982,11 @@ package body Errout is
                  constant System.OS_Lib.File_Descriptor :=
                  System.OS_Lib.Create_New_File
                    (Sarif_File_Name, Fmode => System.OS_Lib.Text);
-
             begin
                Set_Output (Output_FD);
-               Erroutc.SARIF_Emitter.Print_SARIF_Report;
+               Add_Unique_Diagnostics_And_Switches (Printer);
+               Print_SARIF_Report (Printer);
+               Free (Printer);
                Set_Standard_Output;
                System.OS_Lib.Close (Output_FD);
             end;
@@ -2905,24 +2998,6 @@ package body Errout is
       end if;
 
       if Debug_Flag_Underscore_EE then
-         --  Print the switch repository to a file
-
-         System.OS_Lib.Delete_File (Switches_File_Name, Dummy);
-         declare
-            Output_FD : constant System.OS_Lib.File_Descriptor :=
-              System.OS_Lib.Create_New_File
-                (Switches_File_Name,
-                 Fmode => System.OS_Lib.Text);
-
-         begin
-            Set_Output (Output_FD);
-
-            Print_Switch_Repository;
-
-            Set_Standard_Output;
-
-            System.OS_Lib.Close (Output_FD);
-         end;
 
          --  Print the diagnostics repository to a file
 

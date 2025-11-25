@@ -330,11 +330,12 @@ GNAT_ADA_OBJS =	\
  ada/elists.o	\
  ada/err_vars.o	\
  ada/errid.o \
+ ada/errid-diagnostic_repository.o \
+ ada/errid-switch_repository.o \
  ada/errout.o	\
  ada/erroutc.o	\
  ada/erroutc-pretty_emitter.o \
  ada/erroutc-sarif_emitter.o \
- ada/errsw.o \
  ada/eval_fat.o	\
  ada/exp_aggr.o	\
  ada/exp_spark.o	\
@@ -621,11 +622,12 @@ GNATBIND_OBJS = \
  ada/elists.o     \
  ada/err_vars.o   \
  ada/errid.o      \
+ ada/errid-diagnostic_repository.o \
+ ada/errid-switch_repository.o \
  ada/errout.o     \
  ada/erroutc.o    \
  ada/erroutc-sarif_emitter.o \
  ada/erroutc-pretty_emitter.o \
- ada/errsw.o      \
  ada/exit.o       \
  ada/final.o      \
  ada/fmap.o       \

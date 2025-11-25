@@ -23,9 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Types; use Types;
-with Errsw; use Errsw;
-
 package Errid is
 
    type Status_Type is
@@ -41,77 +38,106 @@ package Errid is
       GNAT0005,
       GNAT0006);
 
+   type Diagnostic_Id_Array is array (Positive range <>) of Diagnostic_Id;
+   type Diagnostic_Id_Array_Access is access Diagnostic_Id_Array;
+   type Switch_Id is (
+      No_Switch_Id,
+      gnatel,
+      gnatwb,
+      gnatwc,
+      gnatwd,
+      gnatwf,
+      gnatwg,
+      gnatwh,
+      gnatwi,
+      gnatwj,
+      gnatwk,
+      gnatwl,
+      gnatwm,
+      gnatwo,
+      gnatwp,
+      gnatwq,
+      gnatwr,
+      gnatwt,
+      gnatwu,
+      gnatwv,
+      gnatww,
+      gnatwx,
+      gnatwy,
+      gnatwz,
+      gnatw_dot_a,
+      gnatw_dot_b,
+      gnatw_dot_c,
+      gnatw_dot_f,
+      gnatw_dot_h,
+      gnatw_dot_i,
+      gnatw_dot_j,
+      gnatw_dot_k,
+      gnatw_dot_l,
+      gnatw_dot_m,
+      gnatw_dot_n,
+      gnatw_dot_o,
+      gnatw_dot_p,
+      gnatw_dot_q,
+      gnatw_dot_r,
+      gnatw_dot_s,
+      gnatw_dot_t,
+      gnatw_dot_u,
+      gnatw_dot_v,
+      gnatw_dot_w,
+      gnatw_dot_x,
+      gnatw_dot_y,
+      gnatw_dot_z,
+      gnatw_underscore_a,
+      gnatw_underscore_c,
+      gnatw_underscore_j,
+      gnatw_underscore_l,
+      gnatw_underscore_p,
+      gnatw_underscore_q,
+      gnatw_underscore_r,
+      gnatw_underscore_s,
+      gnaty,
+      gnatya,
+      gnatyb,
+      gnatyc,
+      gnatyd,
+      gnatye,
+      gnatyf,
+      gnatyh,
+      gnatyi,
+      gnatyk,
+      gnatyl,
+      gnatym,
+      gnatyn,
+      gnatyo,
+      gnatyp,
+      gnatyr,
+      gnatys,
+      gnatyu,
+      gnatyx,
+      gnatyz,
+      gnatyaa,
+      gnatybb,
+      gnatycc,
+      gnatydd,
+      gnatyii,
+      gnatyll,
+      gnatymm,
+      gnatyoo,
+      gnatyss,
+      gnatytt
+   );
+
+   subtype Active_Switch_Id is Switch_Id range gnatel .. gnatytt;
+
+   function Get_Documentation_File (Id : Diagnostic_Id) return String;
+   --  Return the location of the documentation file as a string.
+
    function To_String (Id : Diagnostic_Id) return String;
    --  Convert the diagnostic ID to a 4 character string padded with 0-s.
 
-   type Diagnostic_Entry_Type is record
-      Status : Status_Type := Active;
-
-      Human_Id : String_Ptr := null;
-      --  A human readable code for the diagnostic. If the diagnostic has a
-      --  switch with a human id then the human_id of the switch shall be used
-      --  in SARIF reports.
-
-      Documentation : String_Ptr := null;
-
-      Switch : Switch_Id := No_Switch_Id;
-      --  The switch that controls the diagnostic message.
-   end record;
-
-   type Diagnostics_Registry_Type is
-     array (Diagnostic_Id) of Diagnostic_Entry_Type;
-
-   --  Include the diagnostic entries for every diagnostic id.
-   --  The entries should include:
-   --  * Whether the diagnostic with this id is active or not
-   --  * The human-readable name for the diagnostic for SARIF reports
-   --  * The switch id for the diagnostic if the diagnostic is linked to any
-   --    compiler switch
-   --  * The documentation file for the diagnostic written in the MD format.
-   --    The documentation file should include:
-   --    - The diagnostic id
-   --    - A short description of the diagnostic
-   --    - A minimal example of the code that triggers the diagnostic
-   --    - An explanation of why the diagnostic was triggered
-   --    - A suggestion on how to fix the issue
-   --    - Optionally additional information
-   --    TODO: the mandatory fields for the documentation file could be changed
-
-   Diagnostic_Entries : constant Diagnostics_Registry_Type :=
-     (No_Diagnostic_Id => <>,
-      GNAT0001         =>
-        (Status        => Active,
-         Human_Id      => new String'("Default_Iterator_Not_Primitive_Error"),
-         Documentation => new String'("./error_codes/GNAT0001.md"),
-         Switch        => No_Switch_Id),
-      GNAT0002         =>
-        (Status        => Active,
-         Human_Id      =>
-           new String'("Invalid_Operand_Types_General_Error"),
-         Documentation => new String'("./error_codes/GNAT0007.md"),
-         Switch        => No_Switch_Id),
-      GNAT0003         =>
-        (Status        => Active,
-         Human_Id      =>
-           new String'("Pragma_No_Effect_With_Lock_Free_Warning"),
-         Documentation => new String'("./error_codes/GNAT0008.md"),
-         Switch        => No_Switch_Id),
-      GNAT0004         =>
-        (Status        => Active,
-         Human_Id      => new String'("End_Loop_Expected_Error"),
-         Documentation => new String'("./error_codes/GNAT0009.md"),
-         Switch        => No_Switch_Id),
-      GNAT0005         =>
-        (Status        => Active,
-         Human_Id      => new String'("Representation_Too_Late_Error"),
-         Documentation => new String'("./error_codes/GNAT0010.md"),
-         Switch        => No_Switch_Id),
-      GNAT0006         =>
-        (Status        => Active,
-         Human_Id      => new String'("Mixed_Container_Aggregate_Error"),
-         Documentation => new String'("./error_codes/GNAT0011.md"),
-         Switch        => No_Switch_Id));
-
    procedure Print_Diagnostic_Repository;
+   --  Print all of the Diagnostic_Id-s and Switch_Id-s as rules in the SARIF
+   --  format.
 
 end Errid;

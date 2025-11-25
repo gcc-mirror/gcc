@@ -27,7 +27,6 @@
 --  reporting packages, including Errout and Prj.Err.
 
 with Table;
-with Errsw; use Errsw;
 with Errid; use Errid;
 with Osint; use Osint;
 with Types; use Types;
@@ -419,13 +418,6 @@ package Erroutc is
    function Primary_Location (E : Error_Msg_Object) return Labeled_Span_Id;
    --  Returns the first Primary Labeled_Span associated with the error
    --  message. Otherwise it returns No_Labeled_Span.
-
-   function Get_Human_Id (E : Error_Msg_Object) return String_Ptr;
-   --  Returns a longer human readable name for the switch associated with the
-   --  error message.
-
-   function Get_Switch (E : Error_Msg_Object) return Switch_Type;
-   --  Returns the Switch information for the given error message
 
    function Get_Switch_Id (E : Error_Msg_Object) return Switch_Id;
    --  Returns the Switch information identifier for the given error message

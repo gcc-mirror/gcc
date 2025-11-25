@@ -23,7 +23,7 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Errid; use Errid;
+with Errid;    use Errid;
 with Namet.Sp; use Namet.Sp;
 with Stringt;  use Stringt;
 with Uintp;    use Uintp;

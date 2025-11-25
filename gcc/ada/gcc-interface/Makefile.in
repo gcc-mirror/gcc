@@ -331,7 +331,8 @@ GNATMAKE_OBJS = a-except.o ali.o ali-util.o aspects.o s-casuti.o alloc.o \
  uname.o urealp.o usage.o widechar.o warnsw.o \
  seinfo.o einfo-entities.o einfo-utils.o sinfo-nodes.o sinfo-utils.o \
  errid.o \
- errsw.o \
+ errid-diagnostic_repository.o \
+ errid-switch_repository.o \
  erroutc-pretty_emitter.o \
  erroutc-sarif_emitter.o \
  json_utils.o

@@ -34,6 +34,7 @@ with Casing;   use Casing;
 with Csets;    use Csets;
 with Debug;    use Debug;
 with Err_Vars; use Err_Vars;
+with Errid.Switch_Repository; use Errid.Switch_Repository;
 with Fname;    use Fname;
 with Namet;    use Namet;
 with Opt;      use Opt;
@@ -532,19 +533,6 @@ package body Erroutc is
       return No_Labeled_Span;
    end Primary_Location;
 
-   ------------------
-   -- Get_Human_Id --
-   ------------------
-
-   function Get_Human_Id (E : Error_Msg_Object) return String_Ptr is
-   begin
-      if E.Switch = No_Switch_Id then
-         return Diagnostic_Entries (E.Id).Human_Id;
-      else
-         return Get_Switch (E).Human_Id;
-      end if;
-   end Get_Human_Id;
-
    --------------------
    -- Get_Doc_Switch --
    --------------------
@@ -571,25 +559,12 @@ package body Erroutc is
                return "[enabled by default]";
             end if;
          else
-            declare
-               S : constant Switch_Type := Get_Switch (E);
-            begin
-               return "[-" & S.Short_Name.all & "]";
-            end;
+            return "[-" & Switches (E.Switch).Short_Name.all & "]";
          end if;
       end if;
 
       return "";
    end Get_Doc_Switch;
-
-   ----------------
-   -- Get_Switch --
-   ----------------
-
-   function Get_Switch (E : Error_Msg_Object) return Switch_Type is
-   begin
-      return Get_Switch (E.Switch);
-   end Get_Switch;
 
    -------------------
    -- Get_Switch_Id --

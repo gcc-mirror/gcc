@@ -27,7 +27,6 @@ with Atree;    use Atree;
 with Err_Vars; use Err_Vars;
 with Errid;    use Errid;
 with Erroutc;  use Erroutc;
-with Errsw;    use Errsw;
 with Namet;    use Namet;
 with Opt;      use Opt;
 with Output;   use Output;
