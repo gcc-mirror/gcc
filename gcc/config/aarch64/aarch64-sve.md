@@ -9803,7 +9803,8 @@
 ;; - PTEST
 ;; -------------------------------------------------------------------------
 
-;; Branch based on predicate equality or inequality.
+;; Branch based on predicate equality or inequality.  This allows PTEST to be
+;; combined with other flag setting instructions like ORR -> ORRS.
 (define_expand "cbranch<mode>4"
   [(set (pc)
 	(if_then_else
@@ -9832,8 +9833,78 @@
   }
 )
 
+;; Define vec_cbranch_any and vec_cbranch_all
+;; Branch based on predicate equality or inequality.
+(define_expand "<optab><mode>"
+  [(set (pc)
+	(unspec:PRED_ALL
+	  [(if_then_else
+	    (match_operator 0 "aarch64_equality_operator"
+	      [(match_operand:PRED_ALL 1 "register_operand")
+	       (match_operand:PRED_ALL 2 "aarch64_simd_reg_or_zero")])
+	    (label_ref (match_operand 3 ""))
+	    (pc))]
+	 CBRANCH_CMP))]
+  ""
+  {
+    rtx ptrue = force_reg (VNx16BImode, aarch64_ptrue_all (<data_bytes>));
+    rtx cast_ptrue = gen_lowpart (<MODE>mode, ptrue);
+    rtx ptrue_flag = gen_int_mode (SVE_KNOWN_PTRUE, SImode);
+    rtx pred;
+    if (operands[2] == CONST0_RTX (<MODE>mode))
+      pred = operands[1];
+    else
+      {
+	pred = gen_reg_rtx (<MODE>mode);
+	emit_insn (gen_aarch64_pred_xor<mode>_z (pred, cast_ptrue, operands[1],
+						 operands[2]));
+      }
+    emit_insn (gen_aarch64_ptest<mode> (ptrue, cast_ptrue, ptrue_flag, pred));
+
+    rtx cc_reg = gen_rtx_REG (CC_NZCmode, CC_REGNUM);
+    rtx cmp_reg = gen_rtx_<cbranch_op> (VOIDmode, cc_reg, const0_rtx);
+    emit_jump_insn (gen_aarch64_bcond (cmp_reg, cc_reg, operands[3]));
+    DONE;
+  }
+)
+
+;; Define cond_vec_cbranch_any and cond_vec_cbranch_all
+;; Vector comparison and branch for SVE Floating points types instructions.
+;; But only on EQ or NE comparisons, which allows us to use integer compares
+;; instead and about the ptest.
+(define_expand "<optab><mode>"
+  [(set (pc)
+	(unspec:SVE_I
+	  [(if_then_else
+	    (match_operator 0 "aarch64_comparison_operator"
+	      [(match_operand:<VPRED> 1 "register_operand")
+	       (match_operand:SVE_I 2 "register_operand")
+	       (match_operand:SVE_I 3 "aarch64_simd_reg_or_zero")])
+	    (label_ref (match_operand 4 ""))
+	    (pc))]
+	 COND_CBRANCH_CMP))]
+  ""
+{
+  auto code = GET_CODE (operands[0]);
+  rtx in1 = operands[2];
+  rtx in2 = operands[3];
+
+  rtx res = gen_reg_rtx (<VPRED>mode);
+  rtx gp = gen_lowpart (VNx16BImode, operands[1]);
+  rtx cast_gp = operands[1];
+  rtx flag = gen_int_mode (SVE_MAYBE_NOT_PTRUE, SImode);
+
+  emit_insn (gen_aarch64_pred_cmp_ptest (code, <MODE>mode, res, gp, in1, in2,
+					 cast_gp, flag, cast_gp, flag));
+
+  rtx cc_reg = gen_rtx_REG (CC_NZCmode, CC_REGNUM);
+  rtx cmp_reg = gen_rtx_<cbranch_op> (VOIDmode, cc_reg, const0_rtx);
+  emit_jump_insn (gen_aarch64_bcond (cmp_reg, cc_reg, operands[4]));
+  DONE;
+})
+
 ;; See "Description of UNSPEC_PTEST" above for details.
-(define_insn "aarch64_ptest<mode>"
+(define_insn "@aarch64_ptest<mode>"
   [(set (reg:CC_NZC CC_REGNUM)
 	(unspec:CC_NZC [(match_operand:VNx16BI 0 "register_operand" "Upa")
 			(match_operand 1)

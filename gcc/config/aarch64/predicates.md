@@ -481,6 +481,13 @@
 (define_special_predicate "aarch64_equality_operator"
   (match_code "eq,ne"))
 
+(define_special_predicate "aarch64_cbranch_compare_operation"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+	       ordered,unlt,unle,unge,ungt")
+{
+  return TARGET_SIMD;
+})
+
 (define_special_predicate "aarch64_carry_operation"
   (match_code "ltu,geu")
 {

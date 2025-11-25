@@ -1,13 +1,18 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2" } */
+/* { dg-options "-O3 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2 --param aarch64-autovec-preference=asimd-only" } */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
+
+#pragma GCC target "+sve"
+
 #define N 640
-int a[N] = {0};
-int b[N] = {0};
+float a[N] = {0};
+float b[N] = {0};
+
 /*
 ** f1:
 **	...
-**	cmpgt	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0
+**	fcmgt	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0.0
+**	ptest	p[0-9]+, p[0-9]+\.b
 **	b(\.?eq|\.none)	\.L[0-9]+
 **	...
 */
@@ -23,7 +28,8 @@ void f1 ()
 /*
 ** f2:
 **	...
-**	cmpge	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0
+**	fcmge	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0.0
+**	ptest	p[0-9]+, p[0-9]+\.b
 **	b(\.?eq|\.none)	\.L[0-9]+
 **	...
 */
@@ -39,7 +45,8 @@ void f2 ()
 /*
 ** f3:
 **	...
-**	cmpeq	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0
+**	fcmeq	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0.0
+**	ptest	p[0-9]+, p[0-9]+\.b
 **	b(\.?eq|\.none)	\.L[0-9]+
 **	...
 */
@@ -55,7 +62,8 @@ void f3 ()
 /*
 ** f4:
 **	...
-**	cmpne	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0
+**	fcmne	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0.0
+**	ptest	p[0-9]+, p[0-9]+\.b
 **	b(\.?eq|\.none)	\.L[0-9]+
 **	...
 */
@@ -71,7 +79,8 @@ void f4 ()
 /*
 ** f5:
 **	...
-**	cmplt	p[0-9]+.s, p7/z, z[0-9]+.s, #0
+**	fcmlt	p[0-9]+.s, p7/z, z[0-9]+.s, #0.0
+**	ptest	p[0-9]+, p[0-9]+\.b
 **	b(\.?eq|\.none)	.L[0-9]+
 **	...
 */
@@ -87,7 +96,8 @@ void f5 ()
 /*
 ** f6:
 **	...
-**	cmple	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0
+**	fcmle	p[0-9]+.s, p[0-9]+/z, z[0-9]+.s, #0.0
+**	ptest	p[0-9]+, p[0-9]+\.b
 **	b(\.?eq|\.none)	\.L[0-9]+
 **	...
 */

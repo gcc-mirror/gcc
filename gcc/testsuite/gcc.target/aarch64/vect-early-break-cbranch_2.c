@@ -1,6 +1,9 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2" } */
+/* { dg-options "-O3 -fno-schedule-insns -fno-reorder-blocks -fno-schedule-insns2 --param aarch64-autovec-preference=asimd-only" } */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } } } */
+
+#pragma GCC target "+sve"
+
 #define N 640
 int a[N] = {0};
 int b[N] = {0};
