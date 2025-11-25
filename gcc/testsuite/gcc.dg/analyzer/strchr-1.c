@@ -1,4 +1,3 @@
-#include <string.h>
 #include "analyzer-decls.h"
 
 const char* test_literal (int x)
@@ -14,28 +13,28 @@ const char* test_literal (int x)
   return p;
 }
 
-void test_2 (const char *s, int c)
+void test_2 (char *s, int c)
 {
   char *p = __builtin_strchr (s, c); /* { dg-message "when '__builtin_strchr' returns NULL" } */
   *p = 'A'; /* { dg-warning "dereference of NULL 'p'" "null deref" } */
 }
 
-void test_3 (const char *s, int c)
+void test_3 (char *s, int c)
 {
-  char *p = strchr (s, c); /* { dg-message "when 'strchr' returns NULL" } */
+  char *p = __builtin_strchr (s, c); /* { dg-message "when '__builtin_strchr' returns NULL" } */
   *p = 'A'; /* { dg-warning "dereference of NULL 'p'" "null deref" } */
 }
 
 void test_unterminated (int c)
 {
   char buf[3] = "abc";
-  strchr (buf, c); /* { dg-warning "stack-based buffer over-read" } */
-  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of 'strchr'..." "event" { target *-*-* } .-1 } */
+  __builtin_strchr (buf, c); /* { dg-warning "stack-based buffer over-read" } */
+  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of '__builtin_strchr'..." "event" { target *-*-* } .-1 } */
 }
 
 void test_uninitialized (int c)
 {
   char buf[16];
-  strchr (buf, c); /* { dg-warning "use of uninitialized value 'buf\\\[0\\\]'" } */
-  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of 'strchr'..." "event" { target *-*-* } .-1 } */
+  __builtin_strchr (buf, c); /* { dg-warning "use of uninitialized value 'buf\\\[0\\\]'" } */
+  /* { dg-message "while looking for null terminator for argument 1 \\('&buf'\\) of '__builtin_strchr'..." "event" { target *-*-* } .-1 } */
 }
