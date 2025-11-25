@@ -5757,49 +5757,111 @@ arith_overflowed_p (enum tree_code code, const_tree type,
   return wi::min_precision (wres, sign) > TYPE_PRECISION (type);
 }
 
-/* If IFN_{MASK,LEN,MASK_LEN}_LOAD/STORE call CALL is unconditional,
-   return a MEM_REF for the memory it references, otherwise return null.
-   VECTYPE is the type of the memory vector.  MASK_P indicates it's for
-   MASK if true, otherwise it's for LEN.  */
+/* Mask state for partial load/store operations (mask and length).  */
+enum mask_load_store_state {
+  MASK_ALL_INACTIVE,  /* All lanes/elements are inactive (can be elided).  */
+  MASK_ALL_ACTIVE,    /* All lanes/elements are active (unconditional).  */
+  MASK_UNKNOWN
+};
+
+/* Check the mask/length state of IFN_{MASK,LEN,MASK_LEN}_LOAD/STORE call CALL.
+   Returns whether all elements are active, all inactive, or mixed.
+   VECTYPE is the vector type of the operation.  */
+
+static enum mask_load_store_state
+partial_load_store_mask_state (gcall *call, tree vectype)
+{
+  internal_fn ifn = gimple_call_internal_fn (call);
+  int mask_index = internal_fn_mask_index (ifn);
+  int len_index = internal_fn_len_index (ifn);
+
+  /* Extract length and mask arguments up front.  */
+  tree len = len_index != -1 ? gimple_call_arg (call, len_index) : NULL_TREE;
+  tree bias = len ? gimple_call_arg (call, len_index + 1) : NULL_TREE;
+  tree mask = mask_index != -1 ? gimple_call_arg (call, mask_index) : NULL_TREE;
+
+  poly_int64 nelts = GET_MODE_NUNITS (TYPE_MODE (vectype));
+
+  poly_widest_int wlen = -1;
+  bool full_length_p = !len;  /* No length means full length.  */
+
+  /* Compute effective length.  */
+  if (len && poly_int_tree_p (len))
+    {
+      gcc_assert (TREE_CODE (bias) == INTEGER_CST);
+      wlen = wi::to_poly_widest (len) + wi::to_widest (bias);
+
+      if (known_eq (wlen, 0))
+	return MASK_ALL_INACTIVE;
+
+      if (known_eq (wlen, nelts))
+	full_length_p = true;
+      else
+	full_length_p = false;
+    }
+
+  /* Check mask for early return cases.  */
+  if (mask)
+    {
+      if (integer_zerop (mask))
+	return MASK_ALL_INACTIVE;
+
+      if (full_length_p && integer_all_onesp (mask))
+	return MASK_ALL_ACTIVE;
+    }
+  else if (full_length_p)
+    /* No mask and full length means all active.  */
+    return MASK_ALL_ACTIVE;
+
+  /* For VLA vectors, we can't do much more.  */
+  if (!nelts.is_constant ())
+    return MASK_UNKNOWN;
+
+  /* Same for VLS vectors with non-constant mask.  */
+  if (mask && TREE_CODE (mask) != VECTOR_CST)
+    return MASK_UNKNOWN;
+
+  /* Check VLS vector elements.  */
+  gcc_assert (wlen.is_constant ());
+
+  HOST_WIDE_INT active_len = wlen.to_constant ().to_shwi ();
+  if (active_len == -1)
+    active_len = nelts.to_constant ();
+
+  /* Check if all elements in the active range match the mask.  */
+  for (HOST_WIDE_INT i = 0; i < active_len; i++)
+    {
+      bool elt_active = !mask || !integer_zerop (vector_cst_elt (mask, i));
+      if (!elt_active)
+	{
+	  /* Found an inactive element.  Check if all are inactive.  */
+	  for (HOST_WIDE_INT j = 0; j < active_len; j++)
+	    if (!mask || !integer_zerop (vector_cst_elt (mask, j)))
+	      return MASK_UNKNOWN;  /* Mixed state.  */
+	  return MASK_ALL_INACTIVE;
+	}
+    }
+
+  /* All elements in active range are active.  */
+  return full_length_p ? MASK_ALL_ACTIVE : MASK_UNKNOWN;
+}
+
+
+/* If IFN_{MASK,LEN,MASK_LEN}_LOAD/STORE call CALL is unconditional
+   (all lanes active), return a MEM_REF for the memory it references.
+   Otherwise return NULL_TREE.  VECTYPE is the type of the memory vector.  */
 
 static tree
-gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
+gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype)
 {
+  /* Only fold if all lanes are active (unconditional).  */
+  if (partial_load_store_mask_state (call, vectype) != MASK_ALL_ACTIVE)
+    return NULL_TREE;
+
   tree ptr = gimple_call_arg (call, 0);
   tree alias_align = gimple_call_arg (call, 1);
   if (!tree_fits_uhwi_p (alias_align))
     return NULL_TREE;
-
-  if (mask_p)
-    {
-      tree mask = gimple_call_arg (call, 2);
-      if (!integer_all_onesp (mask))
-	return NULL_TREE;
-    }
-  else
-    {
-      internal_fn ifn = gimple_call_internal_fn (call);
-      int len_index = internal_fn_len_index (ifn);
-      tree basic_len = gimple_call_arg (call, len_index);
-      if (!poly_int_tree_p (basic_len))
-	return NULL_TREE;
-      tree bias = gimple_call_arg (call, len_index + 1);
-      gcc_assert (TREE_CODE (bias) == INTEGER_CST);
-      /* For LEN_LOAD/LEN_STORE/MASK_LEN_LOAD/MASK_LEN_STORE,
-	 we don't fold when (bias + len) != VF.  */
-      if (maybe_ne (wi::to_poly_widest (basic_len) + wi::to_widest (bias),
-		    GET_MODE_NUNITS (TYPE_MODE (vectype))))
-	return NULL_TREE;
-
-      /* For MASK_LEN_{LOAD,STORE}, we should also check whether
-	  the mask is all ones mask.  */
-      if (ifn == IFN_MASK_LEN_LOAD || ifn == IFN_MASK_LEN_STORE)
-	{
-	  tree mask = gimple_call_arg (call, internal_fn_mask_index (ifn));
-	  if (!integer_all_onesp (mask))
-	    return NULL_TREE;
-	}
-    }
 
   unsigned HOST_WIDE_INT align = tree_to_uhwi (alias_align);
   if (TYPE_ALIGN (vectype) != align)
@@ -5808,41 +5870,68 @@ gimple_fold_partial_load_store_mem_ref (gcall *call, tree vectype, bool mask_p)
   return fold_build2 (MEM_REF, vectype, ptr, offset);
 }
 
-/* Try to fold IFN_{MASK,LEN}_LOAD call CALL.  Return true on success.
-   MASK_P indicates it's for MASK if true, otherwise it's for LEN.  */
+/* Try to fold IFN_{MASK,LEN}_LOAD/STORE call CALL.  Return true on success.  */
 
 static bool
-gimple_fold_partial_load (gimple_stmt_iterator *gsi, gcall *call, bool mask_p)
-{
-  tree lhs = gimple_call_lhs (call);
-  if (!lhs)
-    return false;
-
-  if (tree rhs
-      = gimple_fold_partial_load_store_mem_ref (call, TREE_TYPE (lhs), mask_p))
-    {
-      gassign *new_stmt = gimple_build_assign (lhs, rhs);
-      gimple_set_location (new_stmt, gimple_location (call));
-      gimple_move_vops (new_stmt, call);
-      gsi_replace (gsi, new_stmt, false);
-      return true;
-    }
-  return false;
-}
-
-/* Try to fold IFN_{MASK,LEN}_STORE call CALL.  Return true on success.
-   MASK_P indicates it's for MASK if true, otherwise it's for LEN.  */
-
-static bool
-gimple_fold_partial_store (gimple_stmt_iterator *gsi, gcall *call,
-			   bool mask_p)
+gimple_fold_partial_load_store (gimple_stmt_iterator *gsi, gcall *call)
 {
   internal_fn ifn = gimple_call_internal_fn (call);
-  tree rhs = gimple_call_arg (call, internal_fn_stored_value_index (ifn));
-  if (tree lhs
-      = gimple_fold_partial_load_store_mem_ref (call, TREE_TYPE (rhs), mask_p))
+  tree lhs = gimple_call_lhs (call);
+  bool is_load = (lhs != NULL_TREE);
+  tree vectype;
+
+  if (is_load)
+    vectype = TREE_TYPE (lhs);
+  else
     {
-      gassign *new_stmt = gimple_build_assign (lhs, rhs);
+      tree rhs = gimple_call_arg (call, internal_fn_stored_value_index (ifn));
+      vectype = TREE_TYPE (rhs);
+    }
+
+  enum mask_load_store_state state
+    = partial_load_store_mask_state (call, vectype);
+
+  /* Handle all-inactive case.  */
+  if (state == MASK_ALL_INACTIVE)
+    {
+      if (is_load)
+	{
+	  /* Replace load with else value.  */
+	  int else_index = internal_fn_else_index (ifn);
+	  tree else_value = gimple_call_arg (call, else_index);
+	  gassign *new_stmt = gimple_build_assign (lhs, else_value);
+	  gimple_set_location (new_stmt, gimple_location (call));
+	  gsi_replace (gsi, new_stmt, false);
+	  return true;
+	}
+      else
+	{
+	  /* Remove inactive store altogether.  */
+	  unlink_stmt_vdef (call);
+	  release_defs (call);
+	  gsi_replace (gsi, gimple_build_nop (), true);
+	  return true;
+	}
+    }
+
+  /* We cannot simplify a gather/scatter or load/store lanes further.  */
+  if (internal_gather_scatter_fn_p (ifn)
+      || TREE_CODE (vectype) == ARRAY_TYPE)
+    return false;
+
+  /* Handle all-active case by folding to regular memory operation.  */
+  if (tree mem_ref = gimple_fold_partial_load_store_mem_ref (call, vectype))
+    {
+      gassign *new_stmt;
+      if (is_load)
+	new_stmt = gimple_build_assign (lhs, mem_ref);
+      else
+	{
+	  tree rhs
+	    = gimple_call_arg (call, internal_fn_stored_value_index (ifn));
+	  new_stmt = gimple_build_assign (mem_ref, rhs);
+	}
+
       gimple_set_location (new_stmt, gimple_location (call));
       gimple_move_vops (new_stmt, call);
       gsi_replace (gsi, new_stmt, false);
@@ -6075,19 +6164,21 @@ gimple_fold_call (gimple_stmt_iterator *gsi, bool inplace)
 	  cplx_result = true;
 	  uaddc_usubc = true;
 	  break;
-	case IFN_MASK_LOAD:
-	  changed |= gimple_fold_partial_load (gsi, stmt, true);
-	  break;
-	case IFN_MASK_STORE:
-	  changed |= gimple_fold_partial_store (gsi, stmt, true);
-	  break;
 	case IFN_LEN_LOAD:
+	case IFN_MASK_LOAD:
 	case IFN_MASK_LEN_LOAD:
-	  changed |= gimple_fold_partial_load (gsi, stmt, false);
-	  break;
+	case IFN_MASK_GATHER_LOAD:
+	case IFN_MASK_LEN_GATHER_LOAD:
+	case IFN_MASK_LOAD_LANES:
+	case IFN_MASK_LEN_LOAD_LANES:
 	case IFN_LEN_STORE:
+	case IFN_MASK_STORE:
 	case IFN_MASK_LEN_STORE:
-	  changed |= gimple_fold_partial_store (gsi, stmt, false);
+	case IFN_MASK_SCATTER_STORE:
+	case IFN_MASK_LEN_SCATTER_STORE:
+	case IFN_MASK_STORE_LANES:
+	case IFN_MASK_LEN_STORE_LANES:
+	  changed |= gimple_fold_partial_load_store (gsi, stmt);
 	  break;
 	default:
 	  break;

@@ -46,8 +46,5 @@ ALL_DATA (st2, x2_t)
 ALL_DATA (st3, x3_t)
 ALL_DATA (st4, x4_t)
 
-/* FIXME: Currently, st1/2/3/4 are not folded with a pfalse
-   predicate, which is the reason for the 48 missing cases below. Once
-   folding is implemented for these intrinsics, the sum should be 60.  */
-/* { dg-final { scan-assembler-times {\t.cfi_startproc\n\tret\n} 12 } } */
+/* { dg-final { scan-assembler-times {\t.cfi_startproc\n\tret\n} 60 } } */
 /* { dg-final { scan-assembler-times {\t.cfi_startproc\n} 60 } } */
