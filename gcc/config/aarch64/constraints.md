@@ -40,20 +40,20 @@
    veneer.")
 
 (define_register_constraint "w" "FP_REGS"
-  "Floating point and SIMD vector registers.")
+  "SVE/AdvSIMD/FP registers, V0 - V31.")
 
 (define_register_constraint "x" "FP_LO_REGS"
-  "Floating point and SIMD vector registers V0 - V15.")
+  "SVE/AdvSIMD/FP registers, V0 - V15.")
 
 (define_register_constraint "y" "FP_LO8_REGS"
-  "Floating point and SIMD vector registers V0 - V7.")
+  "SVE/AdvSIMD/FP  registers, V0 - V7.")
 
 (define_register_constraint "Uw2" "FP_REGS"
-  "Even floating point and SIMD vector registers."
+  "Even SVE/AdvSIMD/FP registers, V0, V2, ..., V30."
   "regno % 2 == 0")
 
 (define_register_constraint "Uw4" "FP_REGS"
-  "4-tuple-aligned floating point and SIMD vector registers."
+  "4-tuple-aligned SVE/AdvSIMD/FP registers, V0, V4, ..., V28."
   "regno % 4 == 0")
 
 (define_register_constraint "Uwd" "FP_REGS"
