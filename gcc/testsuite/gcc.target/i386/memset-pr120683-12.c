@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O2 -mno-sse -fasynchronous-unwind-tables -fdwarf2-cfi-asm -mmemset-strategy=unrolled_loop:256:noalign,libcall:-1:noalign" } */
+/* { dg-options "-O2 -mno-sse -mmemset-strategy=unrolled_loop:256:noalign,libcall:-1:noalign" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
 

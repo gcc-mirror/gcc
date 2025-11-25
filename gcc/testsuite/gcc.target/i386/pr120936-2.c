@@ -1,5 +1,6 @@
 /* { dg-do compile { target fpic } } */
 /* { dg-options "-O2 -pg -mno-fentry -fpic -fno-shrink-wrap" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^\t?\.} } } */
 

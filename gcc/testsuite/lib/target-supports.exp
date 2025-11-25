@@ -981,6 +981,18 @@ proc add_options_for_tls { flags } {
     return $flags
 }
 
+# Add to FLAGS all the target-specific flags needed to use check-function-bodies.
+
+proc add_options_for_check_function_bodies { flags } {
+    if { [istarget i?86-*-solaris2*] || [istarget x86_64-*-solaris2*] } {
+	# check-function-bodies relies on the .cfi_* directives, which are
+	# off on Solaris/x86 with as and ld.  Similarly it also expects
+	# the .LFB/.LFE labels, which aren't emitted for 32-bit.
+	return "-fdwarf2-cfi-asm -fasynchronous-unwind-tables $flags "
+    }
+    return $flags
+}
+
 # Return 1 if indirect jumps are supported, 0 otherwise.
 
 proc check_effective_target_indirect_jumps {} {

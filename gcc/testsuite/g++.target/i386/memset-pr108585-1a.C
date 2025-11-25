@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -march=x86-64 -std=c++20 -fasynchronous-unwind-tables -fdwarf2-cfi-asm -mno-stackrealign -fomit-frame-pointer -DUSE_CHAR" } */
+/* { dg-options "-O3 -march=x86-64 -std=c++20 -mno-stackrealign -fomit-frame-pointer -DUSE_CHAR" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target lp64 } {^\t?\.} } } */
 

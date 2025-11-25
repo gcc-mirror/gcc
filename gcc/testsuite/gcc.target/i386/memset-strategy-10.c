@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-Os -march=x86-64 -mstringop-strategy=vector_loop -fasynchronous-unwind-tables -fdwarf2-cfi-asm" } */
+/* { dg-options "-Os -march=x86-64 -mstringop-strategy=vector_loop" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target { ! ia32 } } {^\t?\.} } } */
 

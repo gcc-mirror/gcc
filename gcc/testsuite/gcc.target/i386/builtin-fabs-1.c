@@ -1,6 +1,7 @@
 /* PR target/122323 */
 /* { dg-do compile } */
 /* { dg-options "-O2 -mno-avx -msse2" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target { ! ia32 } } {^\t?\.} } } */
 

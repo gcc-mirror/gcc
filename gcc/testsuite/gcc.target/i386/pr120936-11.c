@@ -1,5 +1,6 @@
 /* { dg-do compile { target { fpic && lp64 } } } */
 /* { dg-options "-O2 -mrecord-mcount -mcmodel=large -pg -mno-fentry -fno-pic -fno-shrink-wrap" } */
+/* { dg-add-options check_function_bodies } */
 /* Keep labels and directives ('.cfi_startproc', '.cfi_endproc').  */
 /* { dg-final { check-function-bodies "**" "" "" { target "*-*-*" } {^(1|\t?\.)} } } */
 

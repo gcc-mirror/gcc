@@ -3379,6 +3379,10 @@ keyword}.
 Add the target-specific flags needed to enable functions to bind
 locally when using pic/PIC passes in the testsuite.
 
+@item check_function_bodies
+Add the target-specific flags needed to use
+@code{check-function-bodies} from @code{dg-final}.
+
 @item float@var{n}
 Add the target-specific flags needed to use the @code{_Float@var{n}} type.
 
