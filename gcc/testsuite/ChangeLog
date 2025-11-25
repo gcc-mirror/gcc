@@ -1,3 +1,86 @@
+2025-11-24  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* gcc.target/riscv/rvv/autovec/pr121582.c: New test.
+
+2025-11-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/122797
+	* gcc.dg/vect/pr122797.c: New test.
+
+2025-11-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/powerpc/builtins-1.c: Adjust test expectation.
+	* gcc.target/riscv/rvv/autovec/pr118019-3.c: New test.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116835
+	* gcc.dg/torture/pr116835.c: New test.
+	* gcc.dg/tree-ssa/phiprop-6.c: New test.
+	* gcc.dg/tree-ssa/phiprop-7.c: New test.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/60183
+	* gcc.dg/tree-ssa/phiprop-5.c: New test.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/60183
+	* gcc.dg/tree-ssa/phiprop-3.c: New test.
+	* gcc.dg/tree-ssa/phiprop-4.c: New test.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* g++.dg/tree-ssa/simple-dse-3.C: un-xfail.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122633
+	* g++.dg/tree-ssa/simple-dse-1.C: New test.
+	* g++.dg/tree-ssa/simple-dse-2.C: New test.
+	* g++.dg/tree-ssa/simple-dse-3.C: New test.
+	* g++.dg/tree-ssa/simple-dse-4.C: New test.
+
+2025-11-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119964
+	* g++.dg/cpp1y/defaulted1.C: New test.
+	* g++.dg/cpp1y/defaulted2.C: New test.
+
+2025-11-24  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	PR debug/121964
+	* g++.target/aarch64/dwarf-bit-stride-func.C: New test.
+	* g++.target/aarch64/dwarf-bit-stride-pragma.C: New test.
+	* g++.target/aarch64/dwarf-bit-stride-pragma-sme.C: New test.
+	* g++.target/aarch64/sve/dwarf-bit-stride.C: New test.
+	* gcc.target/aarch64/dwarf-bit-stride-func.c: New test.
+	* gcc.target/aarch64/dwarf-bit-stride-pragma.c: New test.
+	* gcc.target/aarch64/dwarf-bit-stride-pragma-sme.c: New test.
+	* gcc.target/aarch64/sve/dwarf-bit-stride.c: New test.
+
+2025-11-24  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122766
+	* gfortran.dg/pdt_69.f03: New test.
+
+2025-11-24  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/bb-slp-41.c: Adjust dump scan.
+
+2025-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/object_overflow6.adb: New test.
+
+2025-11-24  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/122503
+	* g++.target/i386/pr116896-1.C: Add -mtune=generic to
+	dg-options.
+	* gcc.target/i386/pr116896.c: Ditto.
+
 2025-11-23  Pan Li  <pan2.li@intel.com>
 
 	* gcc.dg/tree-ssa/bit_op_cvt.1.c: New test.

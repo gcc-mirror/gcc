@@ -1,3 +1,10 @@
+2025-11-24  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/119964
+	* cp-tree.h (maybe_delete_defaulted_fn): Remove.
+	* method.cc (maybe_delete_defaulted_fn): Make static.  Refactor.  If FN
+	is not explicitly defaulted on its first declaration, emit an error.
+
 2025-11-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122636

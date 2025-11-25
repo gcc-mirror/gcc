@@ -1,3 +1,37 @@
+2025-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/optional (operator==, operator!=, operator>)
+	(operator>, operator<=, operator>=): Do not use logical
+	&& and || with operands of unknown types.
+	* testsuite/20_util/optional/relops/lwg4370.cc: New test.
+
+2025-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/expected (operator==): Use implicit conversion to
+	bool and do not use logical && and || with operands of unknown
+	types. Add nodiscard attributes.
+	* testsuite/20_util/expected/equality.cc: Test some missing
+	cases which were not covered previously.
+	* testsuite/20_util/expected/lwg4366.cc: New test.
+
+2025-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* python/libstdcxx/v6/xmethods.py (ListMethodsMatcher.match):
+	Fix lookup for node type.
+
+2025-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122821
+	* python/libstdcxx/v6/xmethods.py (_versioned_namespace): Remove
+	global variable.
+	(is_specialization_of): Do not use _versioned_namespace. Add
+	__debug:: to regex.
+
+2025-11-24  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/istream (istream::ignore(streamsize, char)): Add
+	always_inline attribute.
+
 2025-11-21  Yuao Ma  <c8ef@outlook.com>
 
 	* doc/html/manual/using_exceptions.html: Replace dead link.

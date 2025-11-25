@@ -1,3 +1,15 @@
+2025-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/81106
+	* gnatchop.adb (Gnatchop): If present in the source file, output
+	the BOM at the start of every compilation unit.
+
+2025-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/33994
+	* gcc-interface/utils.cc (convert) <INTEGER_TYPE>: Call
+	int_const_convert if the expression is an integer constant.
+
 2025-11-21  Bob Duff  <duff@adacore.com>
 
 	* exp_ch5.adb (Expand_Formal_Container_Loop):

@@ -1,3 +1,149 @@
+2025-11-24  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/122767
+	* ira-color.cc (allocno_hard_regs_compare): Break ties
+	using...
+	* hard-reg-set.h (hard_reg_set_first_diff): ... this.  New
+	HARD_REG_SET API entry point.
+
+2025-11-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-slp.cc (vect_bb_vectorization_profitable_p):
+	Multiply scalar cost by vect-scalar-cost-multiplier.
+
+2025-11-24  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/autovec.md (select_vl<mode>): Rename to...
+	(select_vl<V:mode><P:mode>): ...this.
+	* doc/md.texi: Document new behavior.
+	* internal-fn.cc (select_vl_direct): Make
+	(expand_select_vl_optab_fn): Adjust for convert optab.
+	(direct_select_vl_optab_supported_p): Ditto.
+	* internal-fn.def (SELECT_VL): Ditto.
+	* optabs.def (OPTAB_CD): Add select_vl.
+	(OPTAB_D): Remove select_vl.
+	* tree-vect-loop-manip.cc (vect_set_loop_controls_directly):
+	Adjust for convert select_vl optab.
+	* tree-vect-loop.cc: Ditto.
+
+2025-11-24  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	* config/riscv/autovec.md: Use V_VLS_ZVFH for vec_set.
+	* config/riscv/riscv-modes.def (RVV_NF4_MODES): Add BF mdoes.
+	(ADJUST_PRECISION): Ditto.
+	(VECTOR_MODE_WITH_PREFIX): Ditto.
+	(VLS_MODES): Ditto.
+	* config/riscv/riscv-v.cc (can_be_broadcast_p): Add BF handling.
+	* config/riscv/riscv-vector-switch.def (VLS_ENTRY): Add BF
+	modes.
+	* config/riscv/riscv.md: Ditto.
+	* config/riscv/vector-iterators.md: Document modes.
+	* config/riscv/vector.md: Add BF modes.
+
+2025-11-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/122797
+	* tree-vect-slp.cc (vect_load_perm_consecutive_p): Check
+	permutation start at element 0 with value instead of starting
+	at a given element.
+	(vect_optimize_slp_pass::remove_redundant_permutations):
+	Use start value of 0.
+	* tree-vectorizer.h (vect_load_perm_consecutive_p): Set default
+	value to to UINT_MAX.
+
+2025-11-24  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-ssa-forwprop.cc (simplify_vector_constructor):
+	Allow nop conversions.
+
+2025-11-24  John David Anglin  <danglin@gcc.gnu.org>
+
+	* config/pa/pa.h (REGS_OK_FOR_BASE_INDEX): New define.
+	* config/pa/pa.md: Update peephole2 patterns for scaled/unscaled
+	indexed loads and stores.
+
+2025-11-24  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122826
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Only
+	use single-lane SLP for SIMD_CLONE_ARG_TYPE_UNIFORM
+	and SIMD_CLONE_ARG_TYPE_LINEAR_[REF_]CONSTANT_STEP.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+	    Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/116835
+	* tree-ssa-phiprop.cc (propagate_with_phi): Admend the
+	post-dom check to deal with ssa cycles.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/60183
+	* tree-ssa-phiprop.cc (propagate_with_phi): Delay the decision
+	of always rejecting proping into the loop until all are done.
+	if there was some delay stmts and a phi was created fill them in.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/60183
+	* tree-ssa-phiprop.cc (propagate_with_phi): Allow
+	known non-trapping loads to happen back into the
+	loop.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-forwprop.cc (do_simple_agr_dse): Allow
+	for mismatched clobbers.
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122633
+	* tree-ssa-forwprop.cc (do_simple_agr_dse): Remove
+	lhs of dead store for a call (or the whole call stmt).
+
+2025-11-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd (`(ptr_diff (ptr_plus @0 @2) (ptr_plus @1 @2))`): Move pattern
+	earlier to the other `(ptr_diff (ptr_plus) (ptr_plus))` pattern.
+
+2025-11-24  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Move
+	all SIMD clone validity checks to SIMD clone selection.
+	Remove late constant/external def vector type setting and
+	verification.
+
+2025-11-24  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122782
+	* ext-dce.cc (ext_dct_process_uses): Guard against undefined shifts
+	by properly checking modes on the input object.
+
+2025-11-24  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	PR debug/121964
+	* dwarf2out.cc (gen_array_type_die): Add DW_AT_bit_stride attribute
+	for array types based on element type bit precision for integer and
+	boolean element types.
+
+2025-11-24  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* machmode.def (VECTOR_BOOL_MODE): Fix comment.
+
+2025-11-24  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/33994
+	* fold-const.h (int_const_convert): New prototype.
+	* fold-const.cc (fold_convert_const_int_from_int): Rename to...
+	(int_const_convert): ...this, remove static keyword and add third
+	parameter OVERFLOWABLE.
+	(fold_convert_const): Call int_const_convert if ARG1 is an integer
+	constant.
+
+2025-11-24  Francois-Xavier Coudert  <fxcoudert@gcc.gnu.org>
+
+	* config.gcc (aarch64-*-mingw*): Set native_system_header_dir.
+
 2025-11-23  John David Anglin  <danglin@gcc.gnu.org>
 
 	* config/pa/pa64-linux.h (GLIBC_DYNAMIC_LINKER): Define.
