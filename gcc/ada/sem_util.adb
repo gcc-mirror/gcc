@@ -26639,6 +26639,71 @@ package body Sem_Util is
       Write_Eol;
    end Output_Name;
 
+   ---------------------
+   -- Overlaid_Entity --
+   ---------------------
+
+   function Overlaid_Entity (E : Entity_Id) return Entity_Id is
+      Address : Node_Id;
+
+   begin
+      if Ekind (E) in E_Constant | E_Variable then
+         Address := Address_Clause (E);
+      else
+         return Empty;
+      end if;
+
+      if Present (Address) then
+         declare
+            Expr : Node_Id := Expression (Address);
+
+         begin
+            --  Only support precisely address clauses of the form P'Address
+
+            if Nkind (Expr) = N_Attribute_Reference
+              and then Attribute_Name (Expr) = Name_Address
+            then
+               Expr := Prefix (Expr);
+
+            else
+               return Empty;
+            end if;
+
+            loop
+
+               --  Precisely supported addresses refer to part of objects
+
+               if Is_Entity_Name (Expr) then
+                  if Is_Object (Entity (Expr)) then
+                     return Entity (Expr);
+                  else
+                     return Empty;
+                  end if;
+
+               elsif Nkind (Expr) in N_Selected_Component
+                                   | N_Indexed_Component
+                                   | N_Explicit_Dereference
+               then
+                  Expr := Prefix (Expr);
+
+               --  Taking the address of a slice is only well-defined if the
+               --  components are aliased.
+
+               elsif Nkind (Expr) = N_Slice
+                 and then Has_Aliased_Components (Etype (Etype (Expr)))
+               then
+                  Expr := Prefix (Expr);
+
+               else
+                  return Empty;
+               end if;
+            end loop;
+         end;
+      else
+         return Empty;
+      end if;
+   end Overlaid_Entity;
+
    ------------------
    -- Param_Entity --
    ------------------
@@ -29648,32 +29713,24 @@ package body Sem_Util is
    ------------------------------
 
    function Ultimate_Overlaid_Entity (E : Entity_Id) return Entity_Id is
-      Address  : Node_Id;
-      Alias    : Entity_Id := E;
-      Offset   : Boolean;
-      Ovrl_Typ : Entity_Id;
+      Alias : Entity_Id := E;
 
    begin
-      --  Currently this routine is only called for stand-alone objects that
-      --  have been analysed, since the analysis of the Address aspect is often
-      --  delayed.
-
-      pragma Assert (Ekind (E) in E_Constant | E_Variable);
+      --  Currently this routine is only called for objects that have been
+      --  analysed, since the analysis of the Address aspect is often delayed.
 
       loop
-         Address := Address_Clause (Alias);
-         if Present (Address) then
-            Find_Overlaid_Entity (Address, Alias, Ovrl_Typ, Offset);
-            if Present (Alias) then
-               null;
-            else
+         declare
+            Address_Root : constant Entity_Id := Overlaid_Entity (Alias);
+         begin
+            if Present (Address_Root) then
+               Alias := Address_Root;
+            elsif Alias = E then
                return Empty;
+            else
+               return Alias;
             end if;
-         elsif Alias = E then
-            return Empty;
-         else
-            return Alias;
-         end if;
+         end;
       end loop;
    end Ultimate_Overlaid_Entity;
 

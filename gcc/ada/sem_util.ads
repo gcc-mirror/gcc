@@ -3431,12 +3431,20 @@ package Sem_Util is
    --  prevents the construction of a composite stream operation. If Op is
    --  specified we check only for the given stream operation.
 
+   function Overlaid_Entity (E : Entity_Id) return Entity_Id;
+   --  This function implements the definition of precisely supported address
+   --  clause in SPARK. If E has an address clause of the form P'Address, where
+   --  P is a part of an object, return the root object of P. Otherwise, return
+   --  Empty.
+   --
+   --  Subsidiary to the analysis of object overlays in SPARK.
+
    function Ultimate_Overlaid_Entity (E : Entity_Id) return Entity_Id;
-   --  If entity E is overlaying some other entity via an Address clause (which
-   --  possibly overlays yet another entity via its own Address clause), then
-   --  return the ultimate overlaid entity. If entity E is not overlaying any
-   --  other entity (or the overlaid entity cannot be determined statically),
-   --  then return Empty.
+   --  If entity E is overlaying some other entity via a precisely supported
+   --  Address clause (which possibly overlays yet another entity via its own
+   --  Address clause), then return the ultimate overlaid entity. If entity E
+   --  is not overlaying any other entity (or the overlaid entity cannot be
+   --  determined statically), then return Empty.
    --
    --  Subsidiary to the analysis of object overlays in SPARK.
 

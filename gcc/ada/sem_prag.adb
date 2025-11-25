@@ -1361,7 +1361,7 @@ package body Sem_Prag is
                               Ref      => Item);
                         end if;
 
-                     elsif Ekind (Item_Id) in E_Constant | E_Variable
+                     elsif Ekind (Item_Id) = E_Variable
                        and then Present (Ultimate_Overlaid_Entity (Item_Id))
                      then
                         SPARK_Msg_NE
@@ -3286,7 +3286,7 @@ package body Sem_Prag is
                elsif Is_Formal_Object (Item_Id) then
                   null;
 
-               elsif Ekind (Item_Id) in E_Constant | E_Variable
+               elsif Ekind (Item_Id) = E_Variable
                  and then Present (Ultimate_Overlaid_Entity (Item_Id))
                then
                   SPARK_Msg_NE
@@ -3910,7 +3910,7 @@ package body Sem_Prag is
                if Item_Id = Any_Id then
                   null;
 
-               elsif Ekind (Item_Id) in E_Constant | E_Variable
+               elsif Ekind (Item_Id) = E_Variable
                  and then Present (Ultimate_Overlaid_Entity (Item_Id))
                then
                   SPARK_Msg_NE
@@ -4062,7 +4062,7 @@ package body Sem_Prag is
                         end if;
                      end if;
 
-                     if Ekind (Input_Id) in E_Constant | E_Variable
+                     if Ekind (Input_Id) = E_Variable
                        and then Present (Ultimate_Overlaid_Entity (Input_Id))
                      then
                         SPARK_Msg_NE
