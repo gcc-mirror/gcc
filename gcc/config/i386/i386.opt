@@ -1290,11 +1290,11 @@ Support MMX, SSE, SSE2, SSE3, SSSE3, SSE4.1, SSE4.2, AVX and
 SM4 built-in functions and code generation.
 
 mgather
-Target Alias(mtune-ctrl=, use_gather, ^use_gather)
+Target Var(ix86_use_gather) Init(0) Optimization.
 Enable vectorization for gather instruction.
 
 mscatter
-Target Alias(mtune-ctrl=, use_scatter, ^use_scatter)
+Target Var(ix86_use_scatter) Init(0) Optimization
 Enable vectorization for scatter instruction.
 
 mapxf

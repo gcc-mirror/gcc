@@ -1837,6 +1837,21 @@ set_ix86_tune_features (struct gcc_options *opts,
     }
 
   parse_mtune_ctrl_str (opts, dump);
+
+  /* mgather/mscatter option would overwrite -mtune-crtl option.  */
+  if (OPTION_SET_P (ix86_use_gather))
+    {
+      ix86_tune_features[X86_TUNE_USE_GATHER_2PARTS] = ix86_use_gather;
+      ix86_tune_features[X86_TUNE_USE_GATHER_4PARTS] = ix86_use_gather;
+      ix86_tune_features[X86_TUNE_USE_GATHER_8PARTS] = ix86_use_gather;
+    }
+
+  if (OPTION_SET_P (ix86_use_scatter))
+    {
+      ix86_tune_features[X86_TUNE_USE_SCATTER_2PARTS] = ix86_use_scatter;
+      ix86_tune_features[X86_TUNE_USE_SCATTER_4PARTS] = ix86_use_scatter;
+      ix86_tune_features[X86_TUNE_USE_SCATTER_8PARTS] = ix86_use_scatter;
+    }
 }
 
 
