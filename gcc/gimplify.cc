@@ -4697,6 +4697,26 @@ gimplify_call_expr (tree *expr_p, gimple_seq *pre_p, fallback_t fallback)
 	      *expr_p = NULL_TREE;
 	      return GS_ALL_DONE;
 	    }
+	  else if (ifn == IFN_UBSAN_BOUNDS
+		   && nargs == 3
+		   && integer_onep (CALL_EXPR_ARG (*expr_p, 0)))
+	    {
+	      /* If first argument is one, add TYPE_MAX_VALUE (TYPE_DOMAIN (t))
+		 to 3rd argument and change first argument to 0.  This is
+		 done by ubsan_instrument_bounds so that we can use the
+		 max value from gimplify_type_sizes here instead of original
+		 expression for VLAs.  */
+	      tree type = TREE_TYPE (CALL_EXPR_ARG (*expr_p, 0));
+	      CALL_EXPR_ARG (*expr_p, 0) = build_int_cst (type, 0);
+	      gcc_assert (TREE_CODE (type) == POINTER_TYPE);
+	      type = TREE_TYPE (type);
+	      gcc_assert (TREE_CODE (type) == ARRAY_TYPE);
+	      tree maxv = TYPE_MAX_VALUE (TYPE_DOMAIN (type));
+	      gcc_assert (maxv);
+	      tree arg3 = CALL_EXPR_ARG (*expr_p, 2);
+	      CALL_EXPR_ARG (*expr_p, 2)
+		= fold_build2 (PLUS_EXPR, TREE_TYPE (arg3), maxv, arg3);
+	    }
 
 	  for (i = 0; i < nargs; i++)
 	    {

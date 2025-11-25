@@ -454,7 +454,7 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
 
   bound = fold_build2 (PLUS_EXPR, TREE_TYPE (bound), bound,
 		       build_int_cst (TREE_TYPE (bound),
-		       1 + ignore_off_by_one));
+				      1 + ignore_off_by_one));
 
   /* Detect flexible array members and suchlike, unless
      -fsanitize=bounds-strict.  */
@@ -541,8 +541,16 @@ ubsan_instrument_bounds (location_t loc, tree array, tree *index,
     return NULL_TREE;
 
   *index = save_expr (*index);
-  /* Create a "(T *) 0" tree node to describe the array type.  */
-  tree zero_with_type = build_int_cst (build_pointer_type (type), 0);
+  /* If TYPE is a VLA, use 1 instead of 0 as the first argument and
+     use just the addend to TYPE_MAX_VALUE (domain) as the third argument
+     temporarily, so that gimplification can use TYPE_MAX_VALUE (domain)
+     after gimplify_type_sizes.  See PR120052.  */
+  bool is_vla = (TYPE_MAX_VALUE (domain)
+		 && TREE_CODE (TYPE_MAX_VALUE (domain)) != INTEGER_CST);
+  if (is_vla)
+    bound = build_int_cst (TREE_TYPE (bound), 1 + ignore_off_by_one);
+  /* Create a "(T *) 0" (or 1) tree node to describe the array type.  */
+  tree zero_with_type = build_int_cst (build_pointer_type (type), is_vla);
   return build_call_expr_internal_loc (loc, IFN_UBSAN_BOUNDS,
 				       void_type_node, 3, zero_with_type,
 				       *index, bound);
