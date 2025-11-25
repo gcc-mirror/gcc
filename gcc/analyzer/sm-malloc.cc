@@ -1612,19 +1612,34 @@ public:
 
   bool emit (diagnostic_emission_context &ctxt) final override
   {
+    LOG_SCOPE (ctxt.get_logger ());
+    logger *logger = ctxt.get_logger ();
+
     /* Don't emit the warning if we can't show where the deref
        and the check occur.  */
     if (!m_deref_enode)
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: no deref enode");
+	return false;
+      }
     if (!m_check_enode)
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: no check enode");
+	return false;
+      }
     /* Only emit the warning for intraprocedural cases.  */
     const program_point &deref_point = m_deref_enode->get_point ();
     const program_point &check_point = m_check_enode->get_point ();
 
     if (!program_point::effectively_intraprocedural_p (deref_point,
 						       check_point))
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: not effectively intraprocedural");
+	return false;
+      }
 
     /* Reject the warning if the check occurs within a macro defintion.
        This avoids false positives for such code as:
@@ -1661,7 +1676,11 @@ public:
        a source of real bugs; see e.g. PR 77425.  */
     location_t check_loc = m_check_enode->get_point ().get_location ();
     if (linemap_location_from_macro_definition_p (line_table, check_loc))
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: check occurs within macro definition");
+	return false;
+      }
 
     /* Reject warning if the check is in a loop header within a
        macro expansion.  This rejects cases like:
@@ -1676,16 +1695,29 @@ public:
        would just be noise if we reported it.  */
     if (loop_header_p (m_check_enode->get_point ())
 	&& linemap_location_from_macro_expansion_p (line_table, check_loc))
-      return false;
+      {
+	if (logger)
+	  logger->log
+	    ("rejecting: check occurs in loop header macro expansion");
+	return false;
+      }
 
     /* Reject if m_deref_expr is sufficiently different from m_arg
        for cases where the dereference is spelled differently from
        the check, which is probably two different ways to get the
        same svalue, and thus not worth reporting.  */
     if (!m_deref_expr)
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: no deref_expr");
+	return false;
+      }
     if (!sufficiently_similar_p (m_deref_expr, m_arg))
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: not sufficiently similar to arg");
+	return false;
+      }
 
     /* Reject the warning if the deref's BB doesn't dominate that
        of the check, so that we don't warn e.g. for shared cleanup
@@ -1697,7 +1729,11 @@ public:
     if (!dominated_by_p (CDI_DOMINATORS,
 			 m_check_enode->get_supernode ()->m_bb,
 			 m_deref_enode->get_supernode ()->m_bb))
-      return false;
+      {
+	if (logger)
+	  logger->log ("rejecting: deref doesn't dominate the check");
+	return false;
+      }
 
     return ctxt.warn ("check of %qE for NULL after already"
 		      " dereferencing it",
