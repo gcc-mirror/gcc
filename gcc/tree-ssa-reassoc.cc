@@ -5268,6 +5268,9 @@ rewrite_expr_tree (gimple *stmt, enum tree_code rhs_code, unsigned int opindex,
 
       oe1 = ops[opindex];
       oe2 = ops[opindex + 1];
+      if (commutative_tree_code (rhs_code)
+	  && tree_swap_operands_p (oe1->op, oe2->op))
+	std::swap (oe1, oe2);
 
       if (rhs1 != oe1->op || rhs2 != oe2->op)
 	{

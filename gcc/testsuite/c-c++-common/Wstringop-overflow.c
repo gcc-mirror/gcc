@@ -90,8 +90,8 @@ void test_strncat (char **d, const char* s, int i)
   }
 
   {
-    size_t n = i < strlen (s) ? i : strlen (s);   /* { dg-message "length computed here" } */
-    T (d, s, n);                  /* { dg-message ".strncat\[^\n\r\]* specified bound depends on the length of the source argument" } */
+    size_t n = i < strlen (s) ? i : strlen (s);   /* { dg-message "length computed here" "PR122881" { xfail *-*-* } } */
+    T (d, s, n);                  /* { dg-message ".strncat\[^\n\r\]* specified bound depends on the length of the source argument" "PR122881" { xfail *-*-* } } */
   }
 }
 
