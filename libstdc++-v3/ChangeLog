@@ -1,3 +1,8 @@
+2025-11-25  Jonathan Wakely  <jwakely@redhat.com>
+
+	* acinclude.m4 (libtool_VERSION): Bump version.
+	* configure: Regenerate.
+
 2025-11-24  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/optional (operator==, operator!=, operator>)

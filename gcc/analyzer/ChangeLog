@@ -1,3 +1,9 @@
+2025-11-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* sm-malloc.cc (deref_before_check::emit): Add logging of the
+	various conditions for late-rejection of a
+	-Wanalyzer-deref-before-check warning.
+
 2025-11-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* program-state.cc (log_set_of_svalues):  Avoid -Wformat-security

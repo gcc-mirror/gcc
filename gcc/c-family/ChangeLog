@@ -1,3 +1,30 @@
+2025-11-25  Jason Merrill  <jason@redhat.com>
+
+	* c.opt: Add --compile-std-module.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120052
+	* c-ubsan.cc (ubsan_instrument_bounds): For VLAs use
+	1 instead of 0 as first IFN_UBSAN_BOUNDS argument and only
+	use the addend without TYPE_MAX_VALUE (TYPE_DOMAIN (type))
+	in the 3rd argument.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122624
+	* c-common.cc (c_common_get_alias_set): Fix up handling of BITINT_TYPE
+	and non-standard INTEGER_TYPEs.  For unsigned _BitInt(1) always return
+	-1.  For other unsigned types set TYPE_ALIAS_SET to get_alias_set of
+	corresponding signed type and return that.  For signed types check if
+	corresponding unsigned type has TYPE_ALIAS_SET_KNOWN_P and if so copy
+	its TYPE_ALIAS_SET and return that.
+
+2025-11-25  Kito Cheng  <kito.cheng@sifive.com>
+
+	* c-opts.cc (c_common_post_options): Skip register_include_chains
+	when cpp_opts->preprocessed is set.
+
 2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Julian Brown  <julian@codesourcery.com>
 	    waffl3x  <waffl3x@baylibre.com>

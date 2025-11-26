@@ -1,3 +1,12 @@
+2025-11-25  Frank Scheiner  <frank.scheiner@web.de>
+
+	* affinity-fmt.c: Make char *q a pointer to a const char.
+
+2025-11-25  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* testsuite/libgomp.oacc-c-c++-common/atomic_capture-3.c: Copy
+	changes in r11-3059-g8183ebcdc1c843 from atomic_capture-2.c.
+
 2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
 
 	* libgomp.texi (OpenMP 5.1): Update "begin declare variant" status.

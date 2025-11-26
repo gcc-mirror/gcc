@@ -1,3 +1,85 @@
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* configure.ac (gcc_cv_header_zstd_h): Save, restore CXXFLAGS,
+	LDFLAGS.
+	* configure: Regenerate.
+
+2025-11-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118974
+	* config/aarch64/aarch64-simd.md (xor<mode>3<vczle><vczbe>): Rename ...
+	(@xor<mode>3<vczle><vczbe>): .. to this.
+	(cbranch<mode>4): Update comments.
+	(<optab><mode>): New.
+	* config/aarch64/aarch64-sve.md (cbranch<mode>4): Update comment.
+	(<optab><mode>): New.
+	(aarch64_ptest<mode>): Rename to ...
+	(@aarch64_ptest<mode>): .. this.
+	* config/aarch64/iterators.md (UNSPEC_CMP_ALL, UNSPEC_CMP_ANY,
+	UNSPEC_COND_CMP_ALL, UNSPEC_COND_CMP_ANY): New.
+	(optabs): Add them.
+	(CBRANCH_CMP, COND_CBRANCH_CMP, cbranch_op): New.
+	* config/aarch64/predicates.md (aarch64_cbranch_compare_operation): New.
+
+2025-11-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118974
+	* tree-vect-stmts.cc (supports_vector_compare_and_branch): New.
+	(vectorizable_early_exit): Use it.
+
+2025-11-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118974
+	* optabs.def (vec_cbranch_any_optab, vec_cbranch_all_optab,
+	cond_vec_cbranch_any_optab, cond_vec_cbranch_all_optab,
+	cond_len_vec_cbranch_any_optab, cond_len_vec_cbranch_all_optab): New.
+	* doc/md.texi: Document them.
+	* optabs.cc (prepare_cmp_insn): Refactor to take optab to check for
+	instead of hardcoded cbranch and support mask and len.
+	(emit_cmp_and_jump_insn_1, emit_cmp_and_jump_insns): Implement them.
+	(emit_conditional_move, emit_conditional_add, gen_cond_trap): Update
+	after changing function signatures to support new optabs.
+
+2025-11-25  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi: Document --compile-std-module.
+	* gcc.cc (struct infile): Add artificial field.
+	(add_infile): Set it.
+	(driver::prepare_infiles): Check it.
+
+2025-11-25  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Modules): Remove TU-local caveat.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120052
+	* gimplify.cc (gimplify_call_expr): For IFN_UBSAN_BOUNDS
+	call with integer_onep first argument, change that argument
+	to 0 and add TYPE_MAX_VALUE (TYPE_DOMAIN (arr_type)) to
+	3rd argument before gimplification.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120564
+	* omp-expand.cc (extract_omp_for_update_vars): Use build2 instead of
+	fold_build2 to build argument for gimple_build_cond_empty.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	* alias.cc (get_alias_set): Fix comment typo, TYPE_CANOINCAL
+	-> TYPE_CANONICAL.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122624
+	* tree.cc (build_bitint_type): Use type_hash_canon_hash.
+
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* doc/sourcebuild.texi (Add Options): Document
+	check_function_bodies.
+
 2025-11-24  Alexandre Oliva  <oliva@adacore.com>
 
 	PR rtl-optimization/122767

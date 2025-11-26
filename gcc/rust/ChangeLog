@@ -1,3 +1,102 @@
+2025-11-25  Lúcio Boari Fleury  <lucboari@gmail.com>
+
+	* parse/rust-parse-impl.h: Add early exit condition to parsing loop.
+
+2025-11-25  Philip Herron  <herron.philip@googlemail.com>
+
+	* ast/rust-ast.cc (TraitItemType::as_string): add generic params
+	* ast/rust-ast.h: remove old comment
+	* ast/rust-item.h: add generic params to associated type
+	* ast/rust-type.h: remove old comment
+	* hir/rust-ast-lower-implitem.cc (ASTLowerTraitItem::visit): hir lowering for gat's
+	* hir/tree/rust-hir-item.cc (TraitItemType::TraitItemType): gat's on TraitItemType
+	(TraitItemType::operator=): preserve generic params
+	* hir/tree/rust-hir-item.h: likewise
+	* hir/tree/rust-hir.cc (TraitItemType::as_string): likewise
+	* parse/rust-parse-impl.h (Parser::parse_trait_type): hit the < and parse params
+	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItemWithTrait::visit): typecheck
+	* typecheck/rust-tyty.cc (BaseType::has_substitutions_defined): dont destructure
+
+2025-11-25  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* expand/rust-derive.cc (DeriveVisitor::derive):
+	Add check and error.
+
+2025-11-25  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* hir/rust-ast-lower-base.cc (ASTLoweringBase::handle_doc_item_attribute): Make error.
+
+2025-11-25  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* backend/rust-compile-expr.cc (compile_float_literal): Add is_negative
+	check to compile negative float literals properly.
+	* backend/rust-compile-pattern.cc (CompilePatternCheckExpr::visit(RangePattern)):
+	Minor optimization to E0579 checks to reduce memory copy.
+
+2025-11-25  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* checks/errors/feature/rust-feature-gate.cc
+	(FeatureGate::gate): Handle removal of Feature::create.
+	(FeatureGate::visit): Refer to AUTO_TRAITS as
+	OPTIN_BUILTIN_TRAITS.
+	* checks/errors/feature/rust-feature.cc (Feature::create):
+	Remove.
+	(Feature::feature_list): New static member variable.
+	(Feature::name_hash_map): Use "rust-feature-defs.h" to define.
+	(Feature::lookup): New member function definition.
+	* checks/errors/feature/rust-feature.h (Feature::State): Add
+	comments.
+	(Feature::Name): Use "rust-feature-defs.h" to define.
+	(Feature::as_string): Make const.
+	(Feature::name): Likewise.
+	(Feature::state): Likewise.
+	(Feature::issue): Likewise.
+	(Feature::description): Remove member function declaration.
+	(Feature::create): Remove static member function declaration.
+	(Feature::lookup): New member function declarations.
+	(Feature::Feature): Adjust arguments.
+	(Feature::m_rustc_since): Rename to...
+	(Feature::m_rust_since): ...here.
+	(Feature::m_description): Remove.
+	(Feature::m_reason): New member variable.
+	(Feature::feature_list): New static member variable.
+	* checks/errors/feature/rust-feature-defs.h: New file.
+	* checks/errors/feature/contrib/parse.y: New file.
+	* checks/errors/feature/contrib/scan.l: New file.
+	* checks/errors/feature/contrib/.gitignore: New file.
+	* checks/errors/feature/contrib/Makefile: New file.
+	* checks/errors/feature/contrib/fetch: New file.
+	* checks/errors/feature/contrib/regen: New file.
+	* checks/errors/feature/contrib/copyright-stub.h: New file.
+	* checks/errors/feature/contrib/README: New file.
+
+2025-11-25  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* ast/rust-ast.cc (Attribute::check_cfg_predicate): Make error when attribute has no input.
+
+2025-11-25  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Implicitly
+	convert LocalVariable to pointer to Bvariable.
+	* rust-backend.h (local_variable): Return LocalVariable.
+	(parameter_variable): Likewise.
+	(static_chain_variable): Likewise.
+	(temporary_variable): Likewise.
+	* rust-gcc.cc (local_variable): Likewise.
+	(parameter_variable): Likewise.
+	(static_chain_variable): Likewise.
+	(temporary_variable): Likewise.
+	(LocalVariable::get_tree): New function.
+	(LocalVariable::error_variable): Likewise.
+	* rust-gcc.h (class LocalVariable): New class.
+
+2025-11-25  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* expand/rust-macro-expand.cc (transcribe_expression): Check if
+	parser didn't fail.
+	(transcribe_type): Likewise.
+	(transcribe_pattern): Likewise.
+
 2025-11-17  Philip Herron  <herron.philip@googlemail.com>
 
 	* typecheck/rust-hir-type-check-implitem.cc (TypeCheckImplItemWithTrait::visit): null guard

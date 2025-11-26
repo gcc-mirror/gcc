@@ -1,3 +1,237 @@
+2025-11-25  Lúcio Boari Fleury  <lucboari@gmail.com>
+
+	* rust/compile/macros/mbe/macro-issue3608.rs: New Test. The test skips an issue at line 11
+
+2025-11-25  Philip Herron  <herron.philip@googlemail.com>
+
+	* rust/compile/gat1.rs: New test.
+	* rust/execute/torture/gat1.rs: New test.
+
+2025-11-25  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-3971.rs: New test.
+
+2025-11-25  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4226.rs: New test.
+
+2025-11-25  Yap Zhi Heng  <yapzhhg@gmail.com>
+
+	* rust/compile/e0579-neg-float-fail.rs: New file.
+	* rust/compile/e0579-neg-float.rs: New file.
+
+2025-11-25  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4262.rs: New test.
+
+2025-11-25  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* rust/compile/issue-4140-1.rs: Fixes test.
+	* rust/compile/issue-4140-2.rs: Likewise.
+
+2025-11-25  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* rust/compile/issue-4140-1.rs: New test.
+	* rust/compile/issue-4140-2.rs: Likewise.
+
+2025-11-25  David Malcolm  <dmalcolm@redhat.com>
+
+	* gcc.dg/analyzer/strchr-1.c: Drop include of <string.h>, and use
+	__builtin_strchr throughout rather than strchr to avoid const
+	correctness issues when the header implements strchr with a C23
+	const-preserving macro.  Drop "const" from two vars.
+
+2025-11-25  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/118974
+	* gcc.target/aarch64/sve/pr119351.c: Update codegen.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch.c: Likewise.
+	* gcc.target/aarch64/vect-early-break-cbranch.c: Likewise.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_2.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_3.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_4.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_5.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_7.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_8.c: New test.
+	* gcc.target/aarch64/vect-early-break-cbranch_2.c: New test.
+	* gcc.target/aarch64/vect-early-break-cbranch_3.c: New test.
+
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122699
+	* g++.dg/modules/tpl-friend-21_a.C: New test.
+	* g++.dg/modules/tpl-friend-21_b.C: New test.
+
+2025-11-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/Wstringop-overflow-47.c: Adjust warnings to allow for 32-bit
+	stores.
+
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122789
+	* g++.dg/modules/concept-12_a.C: New test.
+	* g++.dg/modules/concept-12_b.C: New test.
+
+2025-11-25  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/compile-std1.C: New test.
+	* g++.dg/modules/modules.exp: Only run it once.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120052
+	* c-c++-common/gomp/pr120052.c: New test.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/119931
+	* gcc.dg/vla-1.c (main): Hide x value from optimizers and use it after
+	the call as well.
+
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/DRs/dr2581-1.C (__STDC_ISO_10646__): xfail on non-Linux.
+	* g++.dg/DRs/dr2581-2.C: Likewise.
+	(__STDC_VERSION__): Expect error instead of warning on Solaris.
+
+2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120564
+	* c-c++-common/gomp/pr120564.c: New test.
+
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr120936-1.c: Restrict to *-*-linux*.
+	* gcc.target/i386/pr120936-2.c: Likewise.
+	* gcc.target/i386/pr120936-4.c: Likewise.
+	* gcc.target/i386/pr120936-5.c: Likewise.
+	* gcc.target/i386/pr120936-9.c: Likewise.
+	* gcc.target/i386/pr120936-11.c: Likewise.
+
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr120936-3.c: Restrict to *-*-linux*.
+	* gcc.target/i386/pr120936-6.c: Likewise.
+	* gcc.target/i386/pr120936-10.c: Likewise.
+	* gcc.target/i386/pr120936-12.c: Likewise.
+
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* lib/target-supports.exp (add_options_for_check_function_bodies):
+	New proc.
+	* g++.target/i386/cf_check-3.C: Add dg-add-options
+	check_function_bodies.
+	* g++.target/i386/cf_check-4.C: Likewise.
+	* gcc.target/i386/builtin-copysign-2.c: Likewise.
+	* gcc.target/i386/builtin-copysign-3.c: Likewise.
+	* gcc.target/i386/builtin-copysign-4.c: Likewise.
+	* gcc.target/i386/builtin-copysign-5.c: Likewise.
+	* gcc.target/i386/builtin-copysign-6.c: Likewise.
+	* gcc.target/i386/builtin-copysign-7.c: Likewise.
+	* gcc.target/i386/builtin-copysign-8a.c: Likewise.
+	* gcc.target/i386/builtin-copysign-8b.c: Likewise.
+	* gcc.target/i386/builtin-fabs-1.c: Likewise.
+	* gcc.target/i386/builtin-memmove-10.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-11c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-12.c: Likewise.
+	* gcc.target/i386/builtin-memmove-13.c: Likewise.
+	* gcc.target/i386/builtin-memmove-14.c: Likewise.
+	* gcc.target/i386/builtin-memmove-15.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-1d.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-2d.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-3c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-4c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5a.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5b.c: Likewise.
+	* gcc.target/i386/builtin-memmove-5c.c: Likewise.
+	* gcc.target/i386/builtin-memmove-6.c: Likewise.
+	* gcc.target/i386/builtin-memmove-7.c: Likewise.
+	* gcc.target/i386/builtin-memmove-8.c: Likewise.
+	* gcc.target/i386/builtin-memmove-9.c: Likewise.
+	* gcc.target/i386/cf_check-11.c: Likewise.
+	* gcc.target/i386/cf_check-7.c: Likewise.
+	* gcc.target/i386/pr120936-1.c: Likewise.
+	* gcc.target/i386/pr120936-11.c: Likewise.
+	* gcc.target/i386/pr120936-2.c: Likewise.
+	* gcc.target/i386/pr120936-4.c: Likewise.
+	* gcc.target/i386/pr120936-5.c: Likewise.
+	* gcc.target/i386/pr120936-9.c: Likewise.
+	* g++.target/i386/memset-pr101366-1.C: Switch to dg-add-options
+	check_function_bodies.
+	* g++.target/i386/memset-pr101366-2.C: Likewise.
+	* g++.target/i386/memset-pr108585-1a.C: Likewise.
+	* g++.target/i386/memset-pr108585-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1a.C: Likewise.
+	* g++.target/i386/memset-pr118276-1b.C: Likewise.
+	* g++.target/i386/memset-pr118276-1c.C: Likewise.
+	* gcc.target/i386/memcpy-pr120683-1.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-2.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-3.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-4.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-5.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-6.c: Likewise.
+	* gcc.target/i386/memcpy-pr120683-7.c: Likewise.
+	* gcc.target/i386/memcpy-strategy-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-1.c: Likewise.
+	* gcc.target/i386/memset-pr120683-10.c: Likewise.
+	* gcc.target/i386/memset-pr120683-11.c: Likewise.
+	* gcc.target/i386/memset-pr120683-12.c: Likewise.
+	* gcc.target/i386/memset-pr120683-13.c: Likewise.
+	* gcc.target/i386/memset-pr120683-14.c: Likewise.
+	* gcc.target/i386/memset-pr120683-15.c: Likewise.
+	* gcc.target/i386/memset-pr120683-16.c: Likewise.
+	* gcc.target/i386/memset-pr120683-17.c: Likewise.
+	* gcc.target/i386/memset-pr120683-18.c: Likewise.
+	* gcc.target/i386/memset-pr120683-19.c: Likewise.
+	* gcc.target/i386/memset-pr120683-2.c: Likewise.
+	* gcc.target/i386/memset-pr120683-20.c: Likewise.
+	* gcc.target/i386/memset-pr120683-21.c: Likewise.
+	* gcc.target/i386/memset-pr120683-22.c: Likewise.
+	* gcc.target/i386/memset-pr120683-23.c: Likewise.
+	* gcc.target/i386/memset-pr120683-3.c: Likewise.
+	* gcc.target/i386/memset-pr120683-4.c: Likewise.
+	* gcc.target/i386/memset-pr120683-5.c: Likewise.
+	* gcc.target/i386/memset-pr120683-6.c: Likewise.
+	* gcc.target/i386/memset-pr120683-7.c: Likewise.
+	* gcc.target/i386/memset-pr120683-8.c: Likewise.
+	* gcc.target/i386/memset-pr120683-9.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1a.c: Likewise.
+	* gcc.target/i386/memset-pr70308-1b.c: Likewise.
+	* gcc.target/i386/memset-strategy-10.c: Likewise.
+	* gcc.target/i386/memset-strategy-13.c: Likewise.
+	* gcc.target/i386/memset-strategy-25.c: Likewise.
+	* gcc.target/i386/memset-strategy-28.c: Likewise.
+	* gcc.target/i386/memset-strategy-29.c: Likewise.
+	* gcc.target/i386/memset-strategy-30.c: Likewise.
+	* gcc.target/i386/pr111673.c: Likewise.
+	* gcc.target/i386/pr82142a.c: Likewise.
+	* gcc.target/i386/pr82142b.c: Likewise.
+	* gcc.target/i386/pr92080-17.c: Likewise.
+
+2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/debug/dwarf2/dwarf-btf-decl-tag-1.c
+	(scan-assembler-times): Switch to brace quotes.
+	Allow for alternative assembler syntax.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-1.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-10.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-2.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-4.c: Likewise.
+	* gcc.dg/debug/dwarf2/dwarf-btf-type-tag-5.c: Likewise.
+
 2025-11-24  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	* gcc.target/riscv/rvv/autovec/pr121582.c: New test.

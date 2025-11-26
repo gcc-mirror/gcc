@@ -1,3 +1,8 @@
+2025-11-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
+
+	PR lto/122515
+	* lto-common.cc (lto_read_section_data): Avoid using SSIZE_MAX.
+
 2025-11-13  Michal Jires  <mjires@suse.cz>
 
 	PR lto/122603

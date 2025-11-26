@@ -1,3 +1,25 @@
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122699
+	* name-lookup.h (expose_existing_namespace): Declare.
+	* name-lookup.cc (expose_existing_namespace): New function.
+	(push_namespace): Call it.
+	* pt.cc (tsubst_friend_function): Likewise.
+
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122789
+	* module.cc (trees_out::core_vals): Treat REQUIRES_EXPR
+	specially and stream the chained decls of its first operand.
+	(trees_in::core_vals): Likewise.
+	(trees_out::tree_node): Check the PARM_DECLs we see are what we
+	expect.
+
+2025-11-25  Jason Merrill  <jason@redhat.com>
+
+	* lang-specs.h: Add @c++-system-module.
+	* g++spec.cc (lang_specific_driver): Handle --compile-std-module.
+
 2025-11-24  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/119964
