@@ -105,8 +105,6 @@ public:
 
   unsigned xlen () const {return m_xlen;};
 
-  const char *get_profile_name () const;
-
   riscv_subset_list *clone () const;
 
   static riscv_subset_list *parse (const char *, location_t *);

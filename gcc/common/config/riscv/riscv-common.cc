@@ -1404,47 +1404,6 @@ fail:
   return NULL;
 }
 
-/* Get the profile that best matches the current architecture string,
-   where best is defined as the most expansive profile.  */
-
-const char *
-riscv_subset_list::get_profile_name () const
-{
-  const char *best_profile = NULL;
-  int max_ext_count = -1;
-
-  for (int i = 0; riscv_profiles_table[i].profile_name != nullptr; ++i)
-    {
-      riscv_subset_list *subset_list = riscv_subset_list::parse (
-      riscv_profiles_table[i].profile_string, NULL);
-      if (!subset_list)
-	continue;
-      if (subset_list->xlen () == this->xlen ())
-	{
-	  int ext_count = 0;
-	  bool all_found = true;
-	  for (riscv_subset_t *p = subset_list->m_head; p != NULL;
-		p = p->next, ++ext_count)
-	    {
-	      if (!this->lookup (p->name.c_str (),
-			p->major_version,
-			p->minor_version))
-		{
-		  all_found = false;
-		  break;
-		}
-	    }
-	  if (all_found && ext_count > max_ext_count)
-	    {
-	      max_ext_count = ext_count;
-	      best_profile = riscv_profiles_table[i].profile_name;
-	    }
-	}
-      delete subset_list;
-    }
-  return best_profile;
-}
-
 /* Clone whole subset list.  */
 
 riscv_subset_list *
