@@ -274,9 +274,9 @@ c_common_init_options (unsigned int decoded_options_count,
 	  }
     }
 
-  /* Set C++ standard to C++17 if not specified on the command line.  */
+  /* Set C++ standard to C++20 if not specified on the command line.  */
   if (c_dialect_cxx ())
-    set_std_cxx17 (/*ISO*/false);
+    set_std_cxx20 (/*ISO*/false);
 
   global_dc->get_source_printing_options ().colorize_source_p = true;
 }

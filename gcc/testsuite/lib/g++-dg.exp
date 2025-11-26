@@ -78,7 +78,7 @@ proc g++-std-flags { test } {
 	    # The order of this list is significant: first $cxx_default,
 	    # then the oldest and newest, then others in rough order of
 	    # importance based on test coverage and usage.
-	    foreach ver { 17 98 26 11 20 14 23 } {
+	    foreach ver { 20 98 26 17 11 14 23 } {
 		set cmpver $ver
 		if { $ver == 98 } { set cmpver 03 }
 		if { [llength $std_list] < 3

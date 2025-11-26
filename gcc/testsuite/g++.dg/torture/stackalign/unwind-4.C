@@ -11,7 +11,7 @@ foo()
 	int i;
 	ALTER_REGS();
 	for (i=0; i < 10; i++)
-		g_a++;
+		g_a = g_a + 1;
 	throw g_a;
 }
 #endif

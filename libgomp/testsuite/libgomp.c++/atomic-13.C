@@ -17,17 +17,17 @@ bar ()
   T v, *p;
   p = &x;
   #pragma omp atomic update
-    p[foo (), 0] = 16 + 6 - p[foo (), 0];
+    p[(foo (), 0)] = 16 + 6 - p[(foo (), 0)];
   #pragma omp atomic read
     v = x;
   if (cnt != 2 || v != 16)
     abort ();
   #pragma omp atomic capture
-    v = p[foo () + foo (), 0] = p[foo () + foo (), 0] + 3;
+    v = p[(foo () + foo (), 0)] = p[(foo () + foo (), 0)] + 3;
   if (cnt != 6 || v != 19)
     abort ();
   #pragma omp atomic capture
-    v = p[foo (), 0] = 12 * 1 / 2 + (foo (), 0) + p[foo (), 0];
+    v = p[(foo (), 0)] = 12 * 1 / 2 + ((foo (), 0)) + p[(foo (), 0)];
   if (cnt != 9 || v != 25)
     abort ();
   #pragma omp atomic capture
@@ -48,7 +48,7 @@ bar ()
     abort ();
   #pragma omp atomic capture
     {
-      v = p[foo (), 0]; p[foo (), 0] = (foo (), 7) ? 13 : foo () + 6;
+      v = p[(foo (), 0)]; p[(foo (), 0)] = (foo (), 7) ? 13 : foo () + 6;
     }
   if (cnt != 19 || v != 1)
     abort ();

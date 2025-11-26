@@ -1,6 +1,6 @@
 // PR debug/94459
 // { dg-do compile { target c++14 } }
-// { dg-options "-g -dA" }
+// { dg-options "-g -dA -std=gnu++17" }
 
 template <typename T>
 struct S

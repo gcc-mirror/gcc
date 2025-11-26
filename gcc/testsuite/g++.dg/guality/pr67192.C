@@ -1,6 +1,6 @@
 /* PR debug/67192 */
 /* { dg-do run } */
-/* { dg-options "-x c++ -g -Wmisleading-indentation" } */
+/* { dg-options "-x c++ -g -Wmisleading-indentation -std=gnu++17" } */
 
 volatile int cnt = 0;
 

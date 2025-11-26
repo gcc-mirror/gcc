@@ -1,5 +1,5 @@
 /* Contributed by Nicola Pero <nicola.pero@meta-innovation.com>, November 2010.  */
-/* { dg-options "-fobjc-exceptions" } */
+/* { dg-options "-fobjc-exceptions -std=gnu++17" } */
 /* { dg-do compile } */
 // { dg-additional-options "-Wno-objc-root-class" }
 

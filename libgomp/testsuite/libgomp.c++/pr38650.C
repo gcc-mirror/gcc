@@ -1,5 +1,6 @@
 // PR c++/38650
 // { dg-do run }
+// { dg-additional-options "-std=gnu++17" }
 
 #include <cstdlib>
 

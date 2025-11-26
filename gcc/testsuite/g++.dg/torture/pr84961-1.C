@@ -1,5 +1,6 @@
 // PR c++/84961
 // { dg-do compile }
+// { dg-options "-std=gnu++17" }
 
 short a;
 volatile int b;

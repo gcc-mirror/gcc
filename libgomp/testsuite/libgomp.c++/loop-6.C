@@ -5,7 +5,8 @@ extern "C" void abort (void);
 volatile int count;
 static int test(void)
 {
-  return ++count > 0;
+  count = count + 1;
+  return count > 0;
 }
 
 int i;

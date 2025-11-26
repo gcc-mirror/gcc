@@ -16,7 +16,8 @@ int bar (int i)
   void *p = __builtin_alloca (i);
   asm volatile ("" : : "r" (i), "r" (p) : "memory");
   if (k) throw 6;
-  return ++l;
+  l = l + 1;
+  return l;
 }
 
 void foo ()

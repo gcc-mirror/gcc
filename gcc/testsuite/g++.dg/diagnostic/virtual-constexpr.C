@@ -1,6 +1,5 @@
 // { dg-options "-fdiagnostics-show-caret -pedantic-errors" }
-// { dg-do compile { target c++11 } }
-// { dg-skip-if "virtual constexpr" { *-*-* } { "-std=gnu++2a" } { "" } }
+// { dg-do compile { target { c++11 && c++17_down } } }
 
 struct S
 {

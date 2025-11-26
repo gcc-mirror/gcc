@@ -289,7 +289,7 @@ select an extended version of the C++ language explicitly with
 @option{-std=gnu++23} (for C++23 with GNU extensions).
 
 The default, if
-no C++ language dialect options are given, is @option{-std=gnu++17}.
+no C++ language dialect options are given, is @option{-std=gnu++20}.
 
 @section Objective-C and Objective-C++ Languages
 @cindex Objective-C

@@ -2627,21 +2627,21 @@ The name @samp{c++1z} is deprecated.
 @item gnu++17
 @itemx gnu++1z
 GNU dialect of @option{-std=c++17}.
-This is the default for C++ code.
 The name @samp{gnu++1z} is deprecated.
 
 @item c++20
 @itemx c++2a
 The 2020 ISO C++ standard plus amendments.
-Support is experimental, and could change in incompatible ways in
-future releases.
+C++20 modules support is still experimental and needs to be
+enabled with @option{-fmodules} option.
 The name @samp{c++2a} is deprecated.
 
 @item gnu++20
 @itemx gnu++2a
 GNU dialect of @option{-std=c++20}.
-Support is experimental, and could change in incompatible ways in
-future releases.
+This is the default for C++ code.
+C++20 modules support is still experimental and needs to be
+enabled with @option{-fmodules} option.
 The name @samp{gnu++2a} is deprecated.
 
 @item c++23
@@ -3398,7 +3398,9 @@ called.  If the handler returns, execution continues normally.
 
 @opindex fcoroutines
 @item -fcoroutines
-Enable support for the C++ coroutines extension (experimental).
+Enable support for the C++ coroutines extension.  With @option{-std=c++20}
+and above, coroutines are part of the language standard, so
+@option{-fcoroutines} defaults to on.
 
 @opindex fdiagnostics-all-candidates
 @item -fdiagnostics-all-candidates

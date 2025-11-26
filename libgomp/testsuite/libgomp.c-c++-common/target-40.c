@@ -10,7 +10,7 @@ volatile int v;
 #pragma omp declare target to (v)
 typedef void (*fnp1) (void);
 typedef fnp1 (*fnp2) (void);
-void f1 (void) { v++; }
+void f1 (void) { v += 1; }
 void f2 (void) { v += 4; }
 void f3 (void) { v += 16; f1 (); }
 fnp1 f4 (void) { v += 64; return f2; }

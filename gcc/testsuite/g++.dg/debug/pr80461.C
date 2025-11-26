@@ -30,7 +30,7 @@ bar ()
 {
   O q;
   A<P> f = q;
-  v++;
+  v = v + 1;
 }
 
 void

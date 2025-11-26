@@ -20,7 +20,7 @@ struct S
 
   auto merge_data_func (int *iptr, int &b)
   {
-    auto fn = [=](void) -> bool
+    auto fn = [=,this](void) -> bool
       {
 	bool mapped;
 	uintptr_t hostptr = (uintptr_t) ptr;
