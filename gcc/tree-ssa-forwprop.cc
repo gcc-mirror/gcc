@@ -4183,24 +4183,45 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  /* ???  We can see if we can safely convert to the original
 	     element type.  */
 	  converted_orig1 = conv_code != ERROR_MARK;
+	  tree target_type = converted_orig1 ? type : perm_type;
+	  tree nonconstant_for_splat = one_nonconstant;
+	  /* If there's a nop conversion between the target element type and
+	     the nonconstant's type, convert it.  */
+	  if (!useless_type_conversion_p (TREE_TYPE (target_type),
+					  TREE_TYPE (one_nonconstant)))
+	    nonconstant_for_splat
+	      = gimple_build (&stmts, NOP_EXPR, TREE_TYPE (target_type),
+			      one_nonconstant);
 	  orig[1] = gimple_build_vector_from_val (&stmts, UNKNOWN_LOCATION,
-						  converted_orig1
-						  ? type : perm_type,
-						  one_nonconstant);
+						  target_type,
+						  nonconstant_for_splat);
 	}
       else if (orig[1] == error_mark_node)
 	{
 	  /* ???  See if we can convert the vector to the original type.  */
 	  converted_orig1 = conv_code != ERROR_MARK;
 	  unsigned n = converted_orig1 ? nelts : refnelts;
-	  tree_vector_builder vec (converted_orig1
-				   ? type : perm_type, n, 1);
+	  tree target_type = converted_orig1 ? type : perm_type;
+	  tree_vector_builder vec (target_type, n, 1);
 	  for (unsigned i = 0; i < n; ++i)
 	    if (i < nelts && constants[i])
-	      vec.quick_push (constants[i]);
+	      {
+		tree constant = constants[i];
+		/* If there's a nop conversion, convert the constant.  */
+		if (!useless_type_conversion_p (TREE_TYPE (target_type),
+						TREE_TYPE (constant)))
+		  constant = fold_convert (TREE_TYPE (target_type), constant);
+		vec.quick_push (constant);
+	      }
 	    else
-	      /* ??? Push a don't-care value.  */
-	      vec.quick_push (one_constant);
+	      {
+		/* ??? Push a don't-care value.  */
+		tree constant = one_constant;
+		if (!useless_type_conversion_p (TREE_TYPE (target_type),
+						TREE_TYPE (constant)))
+		  constant = fold_convert (TREE_TYPE (target_type), constant);
+		vec.quick_push (constant);
+	      }
 	  orig[1] = vec.build ();
 	}
       tree blend_op2 = NULL_TREE;
@@ -4224,6 +4245,16 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	    return false;
 	  blend_op2 = vec_perm_indices_to_tree (mask_type, indices);
 	}
+
+      /* For a real orig[1] (no splat, constant etc.) we might need to
+	 nop-convert it.  Do so here.  */
+      if (orig[1] && orig[1] != error_mark_node
+	  && !useless_type_conversion_p (perm_type, TREE_TYPE (orig[1]))
+	  && tree_nop_conversion_p (TREE_TYPE (perm_type),
+				    TREE_TYPE (TREE_TYPE (orig[1]))))
+	orig[1] = gimple_build (&stmts, VIEW_CONVERT_EXPR, perm_type,
+				orig[1]);
+
       tree orig1_for_perm
 	= converted_orig1 ? build_zero_cst (perm_type) : orig[1];
       tree res = gimple_build (&stmts, VEC_PERM_EXPR, perm_type,
