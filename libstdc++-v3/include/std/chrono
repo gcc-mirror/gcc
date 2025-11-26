@@ -3401,8 +3401,8 @@ namespace __detail
 	 return chrono::__int_hash(chrono::__as_int(__vals)...);
        else
 	 {
-	   auto __packed = chrono::__pack_ints(chrono::__as_int(__vals)...);
-	   return chrono::__int_hash(__packed);
+	   auto __res = chrono::__pack_ints(chrono::__as_int(__vals)...);
+	   return chrono::__int_hash(__res);
 	 }
      }
  } // namespace chrono
