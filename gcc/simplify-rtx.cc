@@ -4193,6 +4193,13 @@ simplify_context::simplify_binary_operation_1 (rtx_code code,
 		 and no precision is lost.  */
 	      if (SUBREG_P (op0) && subreg_lowpart_p (op0)
 		  && GET_CODE (XEXP (op0, 0)) == LSHIFTRT
+		  /* simplify_subreg asserts the object being accessed is not
+		     VOIDmode or BLKmode.  We may have a REG_EQUAL note which
+		     is not simplified and the source operand is a constant,
+		     and thus VOIDmode.  Guard against that.  */
+		  && GET_MODE (XEXP (XEXP (op0, 0), 0)) != VOIDmode
+		  && GET_MODE (XEXP (XEXP (op0, 0), 0)) != BLKmode
+		  && !CONST_INT_P (XEXP (XEXP (op0, 0), 0))
 		  && CONST_INT_P (XEXP (XEXP (op0, 0), 1))
 		  && INTVAL (XEXP (XEXP (op0, 0), 1)) >= 0
 		  && INTVAL (XEXP (XEXP (op0, 0), 1)) < HOST_BITS_PER_WIDE_INT
