@@ -4895,7 +4895,8 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	    }
 
 	  enum insn_code icode;
-	  if (is_gimple_assign (def_stmt)
+	  if (def_stmt
+	      && is_gimple_assign (def_stmt)
 	      && TREE_CODE_CLASS (gimple_assign_rhs_code (def_stmt))
 		   == tcc_comparison)
 	    {
