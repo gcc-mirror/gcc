@@ -648,7 +648,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* Similar to above, but there could be an extra add/sub between
    successive multuiplications.  */
 (simplify
- (mult (plus:s (mult:s@4 @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+ (mult (plus:s@5 (mult:s@4 @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
  (with {
    bool overflowed = true;
    wi::overflow_type ovf1, ovf2;
@@ -661,7 +661,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
       int_range_max vr0;
       if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
-	  && get_global_range_query ()->range_of_expr (vr0, @4)
+	  && get_range_query (cfun)->range_of_expr (vr0, @4,
+						    gimple_match_ctx (@5))
 	  && !vr0.varying_p () && !vr0.undefined_p ())
 	{
 	  wide_int wmin0 = vr0.lower_bound ();
@@ -688,7 +689,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* Similar to above, but a multiplication between successive additions.  */
 (simplify
- (plus (mult:s (plus:s @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
+ (plus (mult:s (plus:s@4 @0 INTEGER_CST@1) INTEGER_CST@2) INTEGER_CST@3)
  (with {
    bool overflowed = true;
    wi::overflow_type ovf1;
@@ -702,7 +703,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
       int_range_max vr0;
       if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
-	  && get_global_range_query ()->range_of_expr (vr0, @0)
+	  && get_range_query (cfun)->range_of_expr (vr0, @0,
+						    gimple_match_ctx (@4))
 	  && !vr0.varying_p () && !vr0.undefined_p ())
 	{
 	  wide_int wmin0 = vr0.lower_bound ();
@@ -1016,15 +1018,17 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 (for div (trunc_div ceil_div floor_div round_div exact_div)
  /* Simplify (t * u) / u -> t.  */
  (simplify
-  (div (mult:c @0 @1) @1)
+  (div (mult:c@2 @0 @1) @1)
   (if (ANY_INTEGRAL_TYPE_P (type))
    (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
     @0
 #if GIMPLE
     (with {int_range_max vr0, vr1;}
      (if (INTEGRAL_TYPE_P (type)
-	  && get_range_query (cfun)->range_of_expr (vr0, @0)
-	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && get_range_query (cfun)->range_of_expr (vr0, @0,
+						    gimple_match_ctx (@2))
+	  && get_range_query (cfun)->range_of_expr (vr1, @1,
+						    gimple_match_ctx (@2))
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
       @0))
 #endif
@@ -1032,13 +1036,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
  /* Simplify (t * u) / v -> t * (u / v) if u is multiple of v.  */
  (simplify
-  (div (mult @0 INTEGER_CST@1) INTEGER_CST@2)
+  (div (mult@3 @0 INTEGER_CST@1) INTEGER_CST@2)
   (if (INTEGRAL_TYPE_P (type)
        && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
    (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
     (mult @0 (div! @1 @2))
     (with {int_range_max vr0, vr1;}
-     (if (get_range_query (cfun)->range_of_expr (vr0, @0)
+     (if (get_range_query (cfun)->range_of_expr (vr0, @0,
+						 gimple_match_ctx (@3))
 	  && get_range_query (cfun)->range_of_expr (vr1, @1)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
       (mult @0 (div! @1 @2))))
@@ -1046,14 +1051,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #endif
  /* Simplify (t * u) / (t * v) -> (u / v) if u is multiple of v.  */
  (simplify
-  (div (mult @0 INTEGER_CST@1) (mult @0 INTEGER_CST@2))
+  (div (mult@3 @0 INTEGER_CST@1) (mult @0 INTEGER_CST@2))
   (if (INTEGRAL_TYPE_P (type)
        && wi::multiple_of_p (wi::to_widest (@1), wi::to_widest (@2), SIGNED))
    (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
     (div @1 @2)
 #if GIMPLE
     (with {int_range_max vr0, vr1, vr2;}
-     (if (get_range_query (cfun)->range_of_expr (vr0, @0)
+     (if (get_range_query (cfun)->range_of_expr (vr0, @0,
+						 gimple_match_ctx (@3))
 	  && get_range_query (cfun)->range_of_expr (vr1, @1)
 	  && get_range_query (cfun)->range_of_expr (vr2, @2)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1)
@@ -1069,12 +1075,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (div (plus:c@4 @0 (mult:c@3 @1 @2)) @2)
   (with {int_range_max vr0, vr1, vr2, vr3, vr4;}
   (if (INTEGRAL_TYPE_P (type)
-       && get_range_query (cfun)->range_of_expr (vr1, @1)
-       && get_range_query (cfun)->range_of_expr (vr2, @2)
+       && get_range_query (cfun)->range_of_expr (vr1, @1,
+						 gimple_match_ctx (@3))
+       && get_range_query (cfun)->range_of_expr (vr2, @2,
+						 gimple_match_ctx (@3))
        /* "N*M" doesn't overflow.  */
        && range_op_handler (MULT_EXPR).overflow_free_p (vr1, vr2)
-       && get_range_query (cfun)->range_of_expr (vr0, @0)
-       && get_range_query (cfun)->range_of_expr (vr3, @3)
+       && get_range_query (cfun)->range_of_expr (vr0, @0,
+						 gimple_match_ctx (@4))
+       && get_range_query (cfun)->range_of_expr (vr3, @3,
+						 gimple_match_ctx (@4))
        /* "X+(N*M)" doesn't overflow.  */
        && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr3)
        && get_range_query (cfun)->range_of_expr (vr4, @4)
@@ -1090,12 +1100,16 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (div (minus@4 @0 (mult:c@3 @1 @2)) @2)
   (with {int_range_max vr0, vr1, vr2, vr3, vr4;}
   (if (INTEGRAL_TYPE_P (type)
-       && get_range_query (cfun)->range_of_expr (vr1, @1)
-       && get_range_query (cfun)->range_of_expr (vr2, @2)
+       && get_range_query (cfun)->range_of_expr (vr1, @1,
+						 gimple_match_ctx (@3))
+       && get_range_query (cfun)->range_of_expr (vr2, @2,
+						 gimple_match_ctx (@3))
        /* "N * M" doesn't overflow.  */
        && range_op_handler (MULT_EXPR).overflow_free_p (vr1, vr2)
-       && get_range_query (cfun)->range_of_expr (vr0, @0)
-       && get_range_query (cfun)->range_of_expr (vr3, @3)
+       && get_range_query (cfun)->range_of_expr (vr0, @0,
+						 gimple_match_ctx (@4))
+       && get_range_query (cfun)->range_of_expr (vr3, @3,
+						 gimple_match_ctx (@4))
        /* "X - (N*M)" doesn't overflow.  */
        && range_op_handler (MINUS_EXPR).overflow_free_p (vr0, vr3)
        && get_range_query (cfun)->range_of_expr (vr4, @4)
@@ -1124,7 +1138,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       int_range_max vr0, vr1, vr3;
     }
     (if (INTEGRAL_TYPE_P (type)
-	 && get_range_query (cfun)->range_of_expr (vr0, @0))
+	 && get_range_query (cfun)->range_of_expr (vr0, @0,
+						   gimple_match_ctx (@3)))
      (if (exact_mod (c)
 	  && get_range_query (cfun)->range_of_expr (vr1, @1)
 	  /* "X+C" doesn't overflow.  */
@@ -4451,7 +4466,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 /* ((T)(A)) + CST -> (T)(A + CST)  */
 #if GIMPLE
   (simplify
-   (plus (convert:s SSA_NAME@0) INTEGER_CST@1)
+   (plus (convert:s@2 SSA_NAME@0) INTEGER_CST@1)
     (if (TREE_CODE (TREE_TYPE (@0)) == INTEGER_TYPE
          && TREE_CODE (type) == INTEGER_TYPE
          && TYPE_PRECISION (type) > TYPE_PRECISION (TREE_TYPE (@0))
@@ -4469,7 +4484,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			    TYPE_SIGN (inner_type));
 
 	int_range_max vr;
-	if (get_global_range_query ()->range_of_expr (vr, @0)
+	if (get_range_query (cfun)->range_of_expr (vr, @0,
+						   gimple_match_ctx (@2))
 	    && !vr.varying_p () && !vr.undefined_p ())
           {
 	    wide_int wmin0 = vr.lower_bound ();
@@ -6540,14 +6556,14 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    This was originally done by two_value_replacement in phiopt (PR 88676).  */
 (for eqne (ne eq)
  (simplify
-  (cond (eqne SSA_NAME@0 INTEGER_CST@1) INTEGER_CST@2 INTEGER_CST@3)
+  (cond (eqne@4 SSA_NAME@0 INTEGER_CST@1) INTEGER_CST@2 INTEGER_CST@3)
   (if (INTEGRAL_TYPE_P (TREE_TYPE (@0))
        && INTEGRAL_TYPE_P (type)
        && (wi::to_widest (@2) + 1 == wi::to_widest (@3)
            || wi::to_widest (@2) == wi::to_widest (@3) + 1))
    (with {
      int_range_max r;
-     get_range_query (cfun)->range_of_expr (r, @0);
+     get_range_query (cfun)->range_of_expr (r, @0, gimple_match_ctx (@4));
      if (r.undefined_p ())
        r.set_varying (TREE_TYPE (@0));
 

@@ -427,4 +427,17 @@ bool directly_supported_p (code_helper, tree, tree,
 
 internal_fn get_conditional_internal_fn (code_helper, tree);
 
+/* If OP is a SSA_NAME with SSA_NAME_DEF_STMT in the IL, return that
+   stmt, otherwise NULL.  For use in range_of_expr calls.  */
+
+inline gimple *
+gimple_match_ctx (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME
+      && SSA_NAME_DEF_STMT (op)
+      && gimple_bb (SSA_NAME_DEF_STMT (op)))
+    return SSA_NAME_DEF_STMT (op);
+  return NULL;
+}
+
 #endif  /* GCC_GIMPLE_MATCH_H */
