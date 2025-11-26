@@ -4577,7 +4577,8 @@ gfc_check_pointer_assign (gfc_expr *lvalue, gfc_expr *rvalue,
       return false;
     }
 
-  if (lvalue->rank != rvalue->rank && !rank_remap)
+  if (lvalue->rank != rvalue->rank && !rank_remap
+      && !(rvalue->expr_type == EXPR_NULL && is_init_expr))
     {
       gfc_error ("Different ranks in pointer assignment at %L", &lvalue->where);
       return false;

@@ -3225,7 +3225,21 @@ gfc_free_symbol (gfc_symbol *&sym)
 
   gfc_free_formal_arglist (sym->formal);
 
-  gfc_free_namespace (sym->f2k_derived);
+  /* The pdt_type f2k_derived namespaces are copies of that of the pdt_template
+     and are only made if there are finalizers. The complete list of finalizers
+     is kept by the pdt_template and are freed with its f2k_derived.  */
+  if (!sym->attr.pdt_type)
+    gfc_free_namespace (sym->f2k_derived);
+  else if (sym->f2k_derived && sym->f2k_derived->finalizers)
+    {
+      gfc_finalizer *p, *q = NULL;
+      for (p = sym->f2k_derived->finalizers; p; p = q)
+	{
+	  q = p->next;
+	  free (p);
+	}
+      free (sym->f2k_derived);
+    }
 
   set_symbol_common_block (sym, NULL);
 

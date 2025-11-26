@@ -1958,6 +1958,7 @@ typedef struct gfc_symbol
 
   /* List of PDT parameter expressions  */
   struct gfc_actual_arglist *param_list;
+  struct gfc_symbol *template_sym;
 
   struct gfc_expr *value;	/* Parameter/Initializer value */
   gfc_array_spec *as;

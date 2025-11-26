@@ -15836,7 +15836,7 @@ check_formal:
 static bool
 gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 {
-  gfc_finalizer* list;
+  gfc_finalizer *list, *pdt_finalizers = NULL;
   gfc_finalizer** prev_link; /* For removing wrong entries from the list.  */
   bool result = true;
   bool seen_scalar = false;
@@ -15864,6 +15864,41 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
       if (finalizable)
 	*finalizable = false;
       return true;
+    }
+
+  /* If a PDT has finalizers, the pdt_type's f2k_derived is a copy of that of
+     the template. If the finalizers field has the same value, it needs to be
+     supplied with finalizers of the same pdt_type.  */
+  if (derived->attr.pdt_type
+      && derived->template_sym
+      && derived->template_sym->f2k_derived
+      && (pdt_finalizers = derived->template_sym->f2k_derived->finalizers)
+      && derived->f2k_derived->finalizers == pdt_finalizers)
+    {
+      gfc_finalizer *tmp = NULL;
+      derived->f2k_derived->finalizers = NULL;
+      prev_link = &derived->f2k_derived->finalizers;
+      for (list = pdt_finalizers; list; list = list->next)
+	{
+	  gfc_formal_arglist *args = gfc_sym_get_dummy_args (list->proc_sym);
+	  if (args->sym
+	      && args->sym->ts.type == BT_DERIVED
+	      && args->sym->ts.u.derived
+	      && !strcmp (args->sym->ts.u.derived->name, derived->name))
+	    {
+	      tmp = gfc_get_finalizer ();
+	      *tmp = *list;
+	      tmp->next = NULL;
+	      if (*prev_link)
+		{
+		  (*prev_link)->next = tmp;
+		  prev_link = &tmp;
+		}
+	      else
+		*prev_link = tmp;
+	      list->proc_tree = gfc_find_sym_in_symtree (list->proc_sym);
+	    }
+	}
     }
 
   /* Walk over the list of finalizer-procedures, check them, and if any one
@@ -15922,7 +15957,8 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 	}
 
       /* This argument must be of our type.  */
-      if (arg->ts.type != BT_DERIVED || arg->ts.u.derived != derived)
+      if (!derived->attr.pdt_template
+	  && (arg->ts.type != BT_DERIVED || arg->ts.u.derived != derived))
 	{
 	  gfc_error ("Argument of FINAL procedure at %L must be of type %qs",
 		     &arg->declared_at, derived->name);
@@ -15977,7 +16013,7 @@ gfc_resolve_finalizers (gfc_symbol* derived, bool *finalizable)
 	  /* Argument list might be empty; that is an error signalled earlier,
 	     but we nevertheless continued resolving.  */
 	  dummy_args = gfc_sym_get_dummy_args (i->proc_sym);
-	  if (dummy_args)
+	  if (dummy_args && !derived->attr.pdt_template)
 	    {
 	      gfc_symbol* i_arg = dummy_args->sym;
 	      const int i_rank = (i_arg->as ? i_arg->as->rank : 0);
@@ -16025,9 +16061,13 @@ error:
 		 " rank finalizer has been declared",
 		 derived->name, &derived->declared_at);
 
-  vtab = gfc_find_derived_vtab (derived);
-  c = vtab->ts.u.derived->components->next->next->next->next->next;
-  gfc_set_sym_referenced (c->initializer->symtree->n.sym);
+  if (!derived->attr.pdt_template)
+    {
+      vtab = gfc_find_derived_vtab (derived);
+      c = vtab->ts.u.derived->components->next->next->next->next->next;
+      if (c && c->initializer && c->initializer->symtree && c->initializer->symtree->n.sym)
+	gfc_set_sym_referenced (c->initializer->symtree->n.sym);
+    }
 
   if (finalizable)
     *finalizable = true;

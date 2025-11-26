@@ -4200,6 +4200,16 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   instance->attr.pdt_type = 1;
   instance->declared_at = gfc_current_locus;
 
+  /* In resolution, the finalizers are copied, according to the type of the
+     argument, to the instance finalizers. However, they are retained by the
+     template and procedures are freed there.  */
+  if (pdt->f2k_derived && pdt->f2k_derived->finalizers)
+    {
+      instance->f2k_derived = gfc_get_namespace (NULL, 0);
+      instance->template_sym = pdt;
+      *instance->f2k_derived = *pdt->f2k_derived;
+    }
+
   /* Add the components, replacing the parameters in all expressions
      with the expressions for their values in 'type_param_spec_list'.  */
   c1 = pdt->components;
