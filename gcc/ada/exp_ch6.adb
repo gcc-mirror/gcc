@@ -5920,6 +5920,12 @@ package body Exp_Ch6 is
 
       function Move_Activation_Chain (Func_Id : Entity_Id) return Node_Id is
       begin
+         --  Move_Activation_Chain is not universally available
+
+         if not RTE_Available (RE_Move_Activation_Chain) then
+            return Make_Null_Statement (Loc);
+         end if;
+
          return
            Make_Procedure_Call_Statement (Loc,
              Name                   =>
