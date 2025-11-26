@@ -4762,10 +4762,10 @@
 (define_insn_and_split "mve_asrl_imm"
   [(set (match_operand:DI 0 "arm_general_register_operand" "=r,r")
 	  (ashiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0,r")
-		       (match_operand:QI 2 "immediate_operand" "Pg,I")))]
+		       (match_operand:QI 2 "immediate_operand" "Pg,Ph")))]
   "TARGET_HAVE_MVE"
-  "asrl%?\\t%Q0, %R1, %2"
-  "&& !satisfies_constraint_Pg (operands[2])"
+  "asrl%?\\t%Q0, %R0, %2"
+  "&& satisfies_constraint_Ph (operands[2])"
   [(clobber (const_int 0))]
   "
   rtx amount = operands[2];
@@ -4781,30 +4781,36 @@
     }
 
   /* ival < 0 should have already been handled by mve_asrl. */
-  gcc_assert (ival > 32);
+  gcc_assert (ival >= 32);
 
-  /* Shift amount above immediate range (ival > 32).
-     out_hi gets the sign bit
-     out_lo gets in_hi << (ival - 32) or << 31 if ival >= 64.
-     If ival >= 64, the result is either 0 or -1, depending on the
-     input sign.  */
   rtx in_hi = gen_highpart (SImode, operands[1]);
   rtx out_lo = gen_lowpart (SImode, operands[0]);
   rtx out_hi = gen_highpart (SImode, operands[0]);
 
-  emit_insn (gen_rtx_SET (out_lo,
-			  gen_rtx_fmt_ee (ASHIFTRT,
-					  SImode,
-					  in_hi,
-					  GEN_INT (MIN (ival - 32,
-							31)))));
+  if (ival == 32)
+    /* out_hi gets the sign bit
+       out_lo gets in_hi.  */
+    emit_insn (gen_movsi (out_lo, in_hi));
+  else
+    /* Shift amount above immediate range (ival > 32).
+       out_hi gets the sign bit
+       out_lo gets in_hi << (ival - 32) or << 31 if ival >= 64.
+       If ival >= 64, the result is either 0 or -1, depending on the
+       input sign.  */
+    emit_insn (gen_rtx_SET (out_lo,
+			    gen_rtx_fmt_ee (ASHIFTRT,
+					    SImode,
+					    in_hi,
+					    GEN_INT (MIN (ival - 32,
+							  31)))));
+
   /* Copy sign bit, which is OK even if out_lo == in_hi.  */
   emit_insn (gen_rtx_SET (out_hi,
 			  gen_rtx_fmt_ee (ASHIFTRT,
 					  SImode,
 					  in_hi,
 					  GEN_INT (31))));
-	DONE;
+  DONE;
   "
   [(set_attr "predicable" "yes,yes")
    (set_attr "length" "4,8")])
@@ -4818,7 +4824,7 @@
 		       (match_dup 2))
 	  (ashift:DI (match_dup 1) (neg:QI (match_dup 2)))))]
   "TARGET_HAVE_MVE"
-  "asrl%?\\t%Q0, %R1, %2"
+  "asrl%?\\t%Q0, %R0, %2"
   [(set_attr "predicable" "yes")])
 
 ;; General pattern for lsll
@@ -4852,10 +4858,10 @@
 (define_insn_and_split "mve_lsll_imm"
   [(set (match_operand:DI 0 "arm_general_register_operand" "=r,r")
 	  (ashift:DI (match_operand:DI 1 "arm_general_register_operand" "0,r")
-		     (match_operand:QI 2 "immediate_operand" "Pg,I")))]
+		     (match_operand:QI 2 "immediate_operand" "Pg,Ph")))]
   "TARGET_HAVE_MVE"
-  "lsll%?\\t%Q0, %R1, %2"
-  "&& !satisfies_constraint_Pg (operands[2])"
+  "lsll%?\\t%Q0, %R0, %2"
+  "&& satisfies_constraint_Ph (operands[2])"
   [(clobber (const_int 0))]
   "
   rtx amount = operands[2];
@@ -4878,17 +4884,24 @@
     }
 
   /* ival < 0 should have already been handled by mve_asrl. */
-  gcc_assert (ival > 32);
+  gcc_assert (ival >= 32);
 
-  /* Shift amount above immediate range: 32 < ival < 64.  */
   rtx in_lo = gen_lowpart (SImode, operands[1]);
   rtx out_lo = gen_lowpart (SImode, operands[0]);
   rtx out_hi = gen_highpart (SImode, operands[0]);
-  emit_insn (gen_rtx_SET (out_hi,
-			  gen_rtx_fmt_ee (ASHIFT,
-					  SImode,
-					  in_lo,
-					  GEN_INT (ival - 32))));
+
+  if (ival == 32)
+    /* Shift by 32 is just a move.  */
+    emit_insn (gen_movsi (out_hi, in_lo));
+  else
+    /* Shift amount above immediate range: 32 < ival < 64.  */
+    emit_insn (gen_rtx_SET (out_hi,
+			    gen_rtx_fmt_ee (ASHIFT,
+					    SImode,
+					    in_lo,
+					    GEN_INT (ival - 32))));
+
+  /* Clear low 32 bits.  */
   emit_insn (gen_rtx_SET (out_lo, const0_rtx));
   DONE;
   "
@@ -4904,7 +4917,7 @@
 		     (match_dup 2))
 	  (lshiftrt:DI (match_dup 1) (neg:QI (match_dup 2)))))]
   "TARGET_HAVE_MVE"
-  "lsll%?\\t%Q0, %R1, %2"
+  "lsll%?\\t%Q0, %R0, %2"
   [(set_attr "predicable" "yes")])
 
 (define_insn "mve_lsrl"
@@ -4912,5 +4925,5 @@
 	(lshiftrt:DI (match_operand:DI 1 "arm_general_register_operand" "0")
 		     (match_operand:SI 2 "long_shift_imm" "Pg")))]
   "TARGET_HAVE_MVE"
-  "lsrl%?\\t%Q0, %R1, %2"
+  "lsrl%?\\t%Q0, %R0, %2"
   [(set_attr "predicable" "yes")])

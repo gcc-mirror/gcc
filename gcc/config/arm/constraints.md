@@ -35,8 +35,8 @@
 ;; in ARM/Thumb-2 state: Da, Db, Dc, Dd, Dn, DN, Dm, Dl, DL, Do, Dv, Dy, Di,
 ;;			 Dj, Ds, Dt, Dp, Dz, Tu, Te
 ;; in Thumb-1 state: Pa, Pb, Pc, Pd, Pe
-;; in Thumb-2 state: Ha, Pg, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Ra, Rb,
-;;		     Rd, Rf, Rg, Ri
+;; in Thumb-2 state: Ha, Pg, Ph, Pj, PJ, Ps, Pt, Pu, Pv, Pw, Px, Py, Pz, Ra,
+;;		     Rb, Rd, Rf, Rg, Ri
 
 ;; The following memory constraints have been used:
 ;; in ARM/Thumb-2 state: Uh, Ut, Uv, Un, Um, Us, Uo, Up, Uf, Ux, Ul, Uz
@@ -236,6 +236,11 @@
   "@internal In Thumb-2 state a constant in range 1 to 32"
   (and (match_code "const_int")
        (match_test "TARGET_THUMB2 && ival >= 1 && ival <= 32")))
+
+(define_constraint "Ph"
+  "@internal In Thumb-2 state a constant in range 32 to 255"
+  (and (match_code "const_int")
+       (match_test "TARGET_THUMB2 && ival >= 32 && ival <= 255")))
 
 (define_constraint "Ps"
   "@internal In Thumb-2 state a constant in the range -255 to +255"
