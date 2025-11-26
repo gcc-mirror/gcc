@@ -2136,6 +2136,14 @@ package body Sem_Ch13 is
             procedure Analyze_Aspect_Static;
             --  Ada 2022 (AI12-0075): Perform analysis of aspect Static
 
+            procedure Check_Constructor_Initialization_Expression
+              (Expr : Node_Id; Aspect_Name : String);
+            --  Check legality rules for an expression occurring as
+            --  an expression of a Super or Initialize aspect specification.
+            --  These expressions are evaluated before the constructed
+            --  object has been initialized and therefore shall not
+            --  reference that object.
+
             procedure Check_Expr_Is_OK_Static_Expression
               (Expr : Node_Id;
                Typ  : Entity_Id := Empty);
@@ -3289,6 +3297,44 @@ package body Sem_Ch13 is
                                "confirm parent value", Id);
                end if;
             end Analyze_Aspect_Yield;
+
+            -------------------------------------------------
+            -- Check_Constructor_Initialization_Expression --
+            -------------------------------------------------
+
+            procedure Check_Constructor_Initialization_Expression
+              (Expr : Node_Id; Aspect_Name : String)
+            is
+               First_Parameter : constant Entity_Id :=
+                 First_Entity (Corresponding_Spec (N));
+
+               --  Flag error if N refers to the forbidden entity
+               function Check_Node_For_Bad_Reference
+                 (N : Node_Id) return Traverse_Result;
+
+               ----------------------------------
+               -- Check_Node_For_Bad_Reference --
+               ----------------------------------
+
+               function Check_Node_For_Bad_Reference
+                 (N : Node_Id) return Traverse_Result is
+               begin
+                  if Nkind (N) = N_Identifier
+                    and then Entity (N) = First_Parameter
+                  then
+                     Error_Msg_N
+                       ("constructed object referenced in " &
+                       Aspect_Name & " aspect_specification", N);
+                  end if;
+
+                  return OK;
+               end Check_Node_For_Bad_Reference;
+
+               procedure Check_Tree_For_Bad_Reference is
+                 new Traverse_Proc (Check_Node_For_Bad_Reference);
+            begin
+               Check_Tree_For_Bad_Reference (Expr);
+            end Check_Constructor_Initialization_Expression;
 
             ----------------------------------------
             -- Check_Expr_Is_OK_Static_Expression --
@@ -4503,9 +4549,15 @@ package body Sem_Ch13 is
                   Aspect_Comp :=
                     First (Component_Associations (Expression (Aspect)));
                   while Present (Aspect_Comp) loop
-                     if Present (Expression (Aspect_Comp)) then
-                        Analyze (Expression (Aspect_Comp));
-                     end if;
+                     declare
+                        Expr : constant Node_Id := Expression (Aspect_Comp);
+                     begin
+                        if Present (Expr) then
+                           Analyze (Expr);
+                           Check_Constructor_Initialization_Expression
+                             (Expr, Aspect_Name => "Initialize");
+                        end if;
+                     end;
 
                      Next (Aspect_Comp);
                   end loop;
@@ -5270,6 +5322,10 @@ package body Sem_Ch13 is
                   --  on legality checking performed during expansion.
                   --  To reverse this decision, set this flag to False.
 
+                  procedure Check_Super_Arg
+                    (Expr : Node_Id; Aspect_Name : String := "Super")
+                    renames Check_Constructor_Initialization_Expression;
+
                begin
                   --  Error checking
 
@@ -5304,6 +5360,7 @@ package body Sem_Ch13 is
                         begin
                            while Present (Param_Expr) loop
                               Analyze (Param_Expr);
+                              Check_Super_Arg (Param_Expr);
                               Next (Param_Expr);
                            end loop;
 
@@ -5323,6 +5380,7 @@ package body Sem_Ch13 is
 
                   elsif Analyze_Parameter_Expressions then
                      Analyze (Expr);
+                     Check_Super_Arg (Expr);
                   end if;
                end Super;
 
