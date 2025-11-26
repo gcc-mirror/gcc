@@ -4902,8 +4902,10 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	      class expand_operand ops[5];
 	      rtx_insn *tmp = NULL;
 	      start_sequence ();
-	      rtx op0c = expand_normal (gimple_assign_rhs1 (def_stmt));
-	      rtx op1c = expand_normal (gimple_assign_rhs2 (def_stmt));
+	      tree t_op0 = gimple_assign_rhs1 (def_stmt);
+	      tree t_op1 = gimple_assign_rhs2 (def_stmt);
+	      rtx op0c = expand_normal (t_op0);
+	      rtx op1c = expand_normal (t_op1);
 	      machine_mode mode2 = GET_MODE (op0c);
 
 	      int nops = masked_op ? 3 : (len_op ? 5 : 2);
@@ -4929,7 +4931,7 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 					GET_MODE (len_bias_rtx));
 		}
 
-	      int unsignedp2 = TYPE_UNSIGNED (TREE_TYPE (val));
+	      int unsignedp2 = TYPE_UNSIGNED (TREE_TYPE (t_op0));
 	      auto inner_code = gimple_assign_rhs_code (def_stmt);
 	      rtx test2 = NULL_RTX;
 
