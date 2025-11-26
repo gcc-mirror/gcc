@@ -13567,6 +13567,7 @@ C and/or C++ standards, while others remain specific to GNU C.
 * Nested Functions::    Nested functions in GNU C.
 * Typeof::              @code{typeof}: referring to the type of an expression.
 * _Countof::            Determining the number of elements of arrays
+* _Maxof and _Minof::   The maximum and minimum representable values of a type.
 * Offsetof::            Special syntax for @code{offsetof}.
 * Alignment::           Determining the alignment of a function, type or variable.
 * Enum Extensions::     Forward declarations and specifying the underlying type.
@@ -14231,6 +14232,25 @@ For example:
 @smallexample
 _Countof (int [7][n++]);  // integer constant expression
 _Countof (int [n++][7]);  // run-time value; n++ is evaluated
+@end smallexample
+
+@node _Maxof and _Minof
+@subsection The maximum and minimum representable values of a type
+@findex _Maxof
+@findex _Minof
+
+The keywords @code{_Maxof} and @code{_Minof} determine
+the maximum and minimum representable values of an integer type.
+Their syntax is similar to @code{sizeof}.
+The operand must be
+a parenthesized integer type.
+The result of these operators is an integer constant expression
+of the same type as the operand.
+For example:
+
+@smallexample
+_Maxof (int);    // returns '(int) INT_MAX'
+_Minof (short);  // returns '(short) SHRT_MIN'
 @end smallexample
 
 @node Offsetof

@@ -4120,6 +4120,60 @@ c_expr_countof_type (location_t loc, struct c_type_name *t)
   return ret;
 }
 
+/* Return the result of maxof applied to T, a structure for the type
+   name passed to maxof (rather than the type itself).  LOC is the
+   location of the original expression.  */
+
+struct c_expr
+c_expr_maxof_type (location_t loc, struct c_type_name *t)
+{
+  tree type;
+  struct c_expr ret;
+  tree type_expr = NULL_TREE;
+  bool type_expr_const = true;
+  type = groktypename (t, &type_expr, &type_expr_const);
+  ret.value = c_maxof_type (loc, type);
+  c_last_sizeof_arg = type;
+  c_last_sizeof_loc = loc;
+  ret.original_code = MAXOF_EXPR;
+  ret.original_type = NULL;
+  ret.m_decimal = 0;
+  if (type == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+    }
+  pop_maybe_used (type != error_mark_node);
+  return ret;
+}
+
+/* Return the result of minof applied to T, a structure for the type
+   name passed to minof (rather than the type itself).  LOC is the
+   location of the original expression.  */
+
+struct c_expr
+c_expr_minof_type (location_t loc, struct c_type_name *t)
+{
+  tree type;
+  struct c_expr ret;
+  tree type_expr = NULL_TREE;
+  bool type_expr_const = true;
+  type = groktypename (t, &type_expr, &type_expr_const);
+  ret.value = c_minof_type (loc, type);
+  c_last_sizeof_arg = type;
+  c_last_sizeof_loc = loc;
+  ret.original_code = MINOF_EXPR;
+  ret.original_type = NULL;
+  ret.m_decimal = 0;
+  if (type == error_mark_node)
+    {
+      ret.value = error_mark_node;
+      ret.original_code = ERROR_MARK;
+    }
+  pop_maybe_used (type != error_mark_node);
+  return ret;
+}
+
 /* Build a function call to function FUNCTION with parameters PARAMS.
    The function call is at LOC.
    PARAMS is a list--a chain of TREE_LIST nodes--in which the

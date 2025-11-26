@@ -397,6 +397,8 @@ const struct c_common_resword c_common_reswords[] =
   { "_Alignas",		RID_ALIGNAS,   D_CONLY },
   { "_Alignof",		RID_ALIGNOF,   D_CONLY },
   { "_Countof",		RID_COUNTOF,   D_CONLY },
+  { "_Maxof",		RID_MAXOF,     D_CONLY },
+  { "_Minof",		RID_MINOF,     D_CONLY },
   { "_Atomic",		RID_ATOMIC,    D_CONLY },
   { "_BitInt",		RID_BITINT,    D_CONLY },
   { "_Bool",		RID_BOOL,      D_CONLY },
@@ -4162,6 +4164,48 @@ c_countof_type (location_t loc, tree type)
      which is just a typedef for an ordinary integer type.  */
   value = fold_convert_loc (loc, size_type_node, value);
   return value;
+}
+
+/* Implement the _Maxof operator:
+   Return the maximum representable value of an integer type.  */
+
+tree
+c_maxof_type (location_t loc, tree type)
+{
+  if (!INTEGRAL_TYPE_P (type))
+    {
+      error_at (loc, "invalid application of %<_Maxof%> to type %qT", type);
+      return error_mark_node;
+    }
+  if (!COMPLETE_TYPE_P (type))
+    {
+      error_at (loc, "invalid application of %<_Maxof%> to incomplete type %qT",
+		type);
+      return error_mark_node;
+    }
+
+  return TYPE_MAX_VALUE (type);
+}
+
+/* Implement the _Minof operator:
+   Return the minimum representable value of an integer type.  */
+
+tree
+c_minof_type (location_t loc, tree type)
+{
+  if (!INTEGRAL_TYPE_P (type))
+    {
+      error_at (loc, "invalid application of %<_Minof%> to type %qT", type);
+      return error_mark_node;
+    }
+  if (!COMPLETE_TYPE_P (type))
+    {
+      error_at (loc, "invalid application of %<_Minof%> to incomplete type %qT",
+		type);
+      return error_mark_node;
+    }
+
+  return TYPE_MIN_VALUE (type);
 }
 
 /* Handle C and C++ default attributes.  */

@@ -856,6 +856,8 @@ extern struct c_expr c_expr_sizeof_type (location_t, struct c_type_name *);
 extern struct c_expr c_expr_countof_expr (location_t, struct c_expr);
 extern struct c_expr c_expr_countof_type (location_t loc,
 					  struct c_type_name *);
+extern struct c_expr c_expr_maxof_type (location_t loc, struct c_type_name *);
+extern struct c_expr c_expr_minof_type (location_t loc, struct c_type_name *);
 extern struct c_expr parser_build_unary_op (location_t, enum tree_code,
     					    struct c_expr);
 extern struct c_expr parser_build_binary_op (location_t,

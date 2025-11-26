@@ -1865,6 +1865,7 @@ static struct c_expr c_parser_unary_expression (c_parser *);
 static struct c_expr c_parser_sizeof_or_countof_expression (c_parser *,
 							    enum rid);
 static struct c_expr c_parser_alignof_expression (c_parser *);
+static struct c_expr c_parser_maxof_or_minof_expression (c_parser *, enum rid);
 static struct c_expr c_parser_postfix_expression (c_parser *);
 static struct c_expr c_parser_postfix_expression_after_paren_type (c_parser *,
 								   struct c_declspecs *,
@@ -10642,6 +10643,8 @@ c_parser_cast_expression (c_parser *parser, struct c_expr *after)
    unary-expression:
      __alignof__ unary-expression
      __alignof__ ( type-name )
+     _Maxof ( type-name )
+     _Minof ( type-name )
      && identifier
 
    (C11 permits _Alignof with type names only.)
@@ -10774,6 +10777,9 @@ c_parser_unary_expression (c_parser *parser)
 	    return c_parser_sizeof_or_countof_expression (parser, rid);
 	  case RID_ALIGNOF:
 	    return c_parser_alignof_expression (parser);
+	  case RID_MAXOF:
+	  case RID_MINOF:
+	    return c_parser_maxof_or_minof_expression (parser, rid);
 	  case RID_BUILTIN_HAS_ATTRIBUTE:
 	    return c_parser_has_attribute_expression (parser);
 	  case RID_EXTENSION:
@@ -11015,6 +11021,67 @@ c_parser_alignof_expression (c_parser *parser)
       ret.m_decimal = 0;
       return ret;
     }
+}
+
+/* Parse a _Maxof or _Minof expression.  */
+
+static struct c_expr
+c_parser_maxof_or_minof_expression (c_parser *parser, enum rid rid)
+{
+  const char *op_name = (rid == RID_MAXOF) ? "_Maxof" : "_Minof";
+  struct c_expr result;
+  location_t expr_loc;
+  struct c_type_name *type_name;
+  matching_parens parens;
+  gcc_assert (c_parser_next_token_is_keyword (parser, rid));
+
+  location_t start;
+  location_t finish = UNKNOWN_LOCATION;
+
+  start = c_parser_peek_token (parser)->location;
+
+  pedwarn (start, OPT_Wpedantic, "ISO C does not support %qs", op_name);
+
+  c_parser_consume_token (parser);
+  c_inhibit_evaluation_warnings++;
+  if (!c_parser_next_token_is (parser, CPP_OPEN_PAREN))
+    {
+      c_parser_error (parser, "expected %<(%>");
+      goto fail;
+    }
+  parens.consume_open (parser);
+  expr_loc = c_parser_peek_token (parser)->location;
+  if (!c_token_starts_typename (c_parser_peek_token (parser)))
+    {
+      error_at (expr_loc, "invalid application of %qs to something not a type", op_name);
+      parens.skip_until_found_close (parser);
+      goto fail;
+    }
+  type_name = c_parser_type_name (parser, true);
+  if (type_name == NULL)
+    {
+      // c_parser_type_name() has already diagnosed the error.
+      parens.skip_until_found_close (parser);
+      goto fail;
+    }
+  parens.skip_until_found_close (parser);
+  finish = parser->tokens_buf[0].location;
+  if (type_name->specs->alignas_p)
+    error_at (type_name->specs->locations[cdw_alignas],
+	      "alignment specified for type name in %qs", op_name);
+  c_inhibit_evaluation_warnings--;
+  if (rid == RID_MAXOF)
+    result = c_expr_maxof_type (expr_loc, type_name);
+  else
+    result = c_expr_minof_type (expr_loc, type_name);
+  set_c_expr_source_range (&result, start, finish);
+  return result;
+fail:
+  c_inhibit_evaluation_warnings--;
+  result.set_error ();
+  result.original_code = ERROR_MARK;
+  result.original_type = NULL;
+  return result;
 }
 
 /* Parse the __builtin_has_attribute ([expr|type], attribute-spec)
