@@ -3727,12 +3727,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	= fold_build2 (MINUS_EXPR, TREE_TYPE (epilogue_niters),
 		       epilogue_niters,
 		       build_one_cst (TREE_TYPE (epilogue_niters)));
-
-      /* ???  During analysis phase this is computed wrongly, re-do it
-	 here.  */
-      LOOP_VINFO_PEELING_FOR_NITER (epilogue_vinfo)
-	= (!LOOP_VINFO_USING_PARTIAL_VECTORS_P (epilogue_vinfo)
-	   && vect_need_peeling_or_partial_vectors_p (epilogue_vinfo));
     }
 
   adjust_vec.release ();

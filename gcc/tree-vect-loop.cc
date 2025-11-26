@@ -937,7 +937,7 @@ vect_min_prec_for_max_niters (loop_vec_info loop_vinfo, unsigned int factor)
 
 /* True if the loop needs peeling or partial vectors when vectorized.  */
 
-bool
+static bool
 vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 {
   unsigned HOST_WIDE_INT const_vf;
@@ -949,19 +949,23 @@ vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
     th = LOOP_VINFO_COST_MODEL_THRESHOLD (LOOP_VINFO_ORIG_LOOP_INFO
 					  (loop_vinfo));
 
+  loop_vec_info main_loop_vinfo
+    = (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
+       ? LOOP_VINFO_MAIN_LOOP_INFO (loop_vinfo) : loop_vinfo);
   if (LOOP_VINFO_NITERS_KNOWN_P (loop_vinfo)
-      && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo) >= 0)
+      && LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo) >= 0)
     {
       /* Work out the (constant) number of iterations that need to be
 	 peeled for reasons other than niters.  */
-      unsigned int peel_niter = LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo);
+      unsigned int peel_niter
+	= LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo);
       if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
 	peel_niter += 1;
       if (!multiple_p (LOOP_VINFO_INT_NITERS (loop_vinfo) - peel_niter,
 		       LOOP_VINFO_VECT_FACTOR (loop_vinfo)))
 	return true;
     }
-  else if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+  else if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo)
       /* ??? When peeling for gaps but not alignment, we could
 	 try to check whether the (variable) niters is known to be
 	 VF * N + 1.  That's something of a niche case though.  */
