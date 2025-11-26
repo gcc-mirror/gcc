@@ -10,7 +10,6 @@ pub fn loopy()  {
             // { dg-error {failed to parse if body block expression in if expression} "" { target *-*-* } .-2 }
             // { dg-error {could not parse loop body in \(infinite\) loop expression} "" { target *-*-* } .-3 }
             // { dg-error {unrecognised token 'integer literal' for start of item} "" { target *-*-* } .-4 }
-            // { dg-error {failed to parse item in crate} "" { target *-*-* } .-5 }
         } else {
             break;
         }

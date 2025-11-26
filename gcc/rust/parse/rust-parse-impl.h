@@ -431,10 +431,6 @@ Parser<ManagedTokenSource>::parse_items ()
       std::unique_ptr<AST::Item> item = parse_item (false);
       if (item == nullptr)
 	{
-	  Error error (lexer.peek_token ()->get_locus (),
-		       "failed to parse item in crate");
-	  add_error (std::move (error));
-
 	  // TODO: should all items be cleared?
 	  items = std::vector<std::unique_ptr<AST::Item>> ();
 	  break;

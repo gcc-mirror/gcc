@@ -12,7 +12,6 @@ fn h(c: bool) {
         false => ()
         // { dg-error "exprwithoutblock requires comma after match case expression in match arm \\(if not final case\\)" "" { target *-*-* } .-1 }
         // { dg-error "unrecognised token .false. for start of item" "" { target *-*-* } .-2 }
-        // { dg-error "failed to parse item in crate" "" { target *-*-* } .-3 }
     };
 }
 

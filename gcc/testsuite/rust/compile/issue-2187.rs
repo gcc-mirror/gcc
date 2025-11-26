@@ -8,4 +8,3 @@ const D: &'static str = "
 ";
 ERROR_TIME
 // { dg-error "unrecognised token" "" { target *-*-* } .-1 }
-// { dg-error "failed to parse item in crate" "" { target *-*-* } .-2 }
