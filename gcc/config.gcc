@@ -4753,7 +4753,7 @@ case "${target}" in
 		;;
 
 	riscv*-*-*)
-		supported_defaults="abi arch tune riscv_attribute isa_spec tls cmodel"
+		supported_defaults="abi arch cpu tune riscv_attribute isa_spec tls cmodel"
 
 		case "${target}" in
 		riscv-* | riscv32*) xlen=32 ;;
