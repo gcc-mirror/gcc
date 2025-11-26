@@ -1,3 +1,17 @@
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122789
+	* g++.dg/modules/concept-12_a.C: New test.
+	* g++.dg/modules/concept-12_b.C: New test.
+
+2025-11-25  Andre Vieira  <andre.simoesdiasvieira@arm.com>
+
+	* gcc.dg/Wstringop-overflow-47.c: Adjust warnings to allow for 32-bit
+	stores.
+
 2025-11-24  Pan Li  <pan2.li@intel.com>
 
 	Backported from master:

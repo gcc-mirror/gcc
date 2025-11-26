@@ -1,3 +1,15 @@
+2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122789
+	* module.cc (trees_out::core_vals): Treat REQUIRES_EXPR
+	specially and stream the chained decls of its first operand.
+	(trees_in::core_vals): Likewise.
+	(trees_out::tree_node): Check the PARM_DECLs we see are what we
+	expect.
+
 2025-11-21  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:
