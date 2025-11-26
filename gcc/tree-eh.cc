@@ -517,6 +517,48 @@ replace_goto_queue_1 (gimple *stmt, struct leh_tf_state *tf,
 	}
       break;
 
+    case GIMPLE_ASM:
+      if (int n = gimple_asm_nlabels (as_a <gasm *> (stmt)))
+	{
+	  temp.g = stmt;
+	  gasm *asm_stmt = as_a <gasm *> (stmt);
+	  location_t loc = gimple_location (stmt);
+	  tree bypass_label = NULL_TREE;
+	  for (int i = 0; i < n; ++i)
+	    {
+	      tree elt = gimple_asm_label_op (asm_stmt, i);
+	      temp.tp = &TREE_VALUE (elt);
+	      seq = find_goto_replacement (tf, temp);
+	      if (!seq)
+		continue;
+	      if (gimple_seq_singleton_p (seq)
+		  && gimple_code (gimple_seq_first_stmt (seq)) == GIMPLE_GOTO)
+		{
+		  TREE_VALUE (elt)
+		    = gimple_goto_dest (gimple_seq_first_stmt (seq));
+		  continue;
+		}
+
+	      if (bypass_label == NULL_TREE)
+		{
+		  bypass_label = create_artificial_label (loc);
+		  gsi_insert_after (gsi, gimple_build_goto (bypass_label),
+				    GSI_CONTINUE_LINKING);
+		}
+
+	      tree label = create_artificial_label (loc);
+	      TREE_VALUE (elt) = label;
+	      gsi_insert_after (gsi, gimple_build_label (label),
+				GSI_CONTINUE_LINKING);
+	      gsi_insert_seq_after (gsi, gimple_seq_copy (seq),
+				    GSI_CONTINUE_LINKING);
+	    }
+	  if (bypass_label)
+	    gsi_insert_after (gsi, gimple_build_label (bypass_label),
+			      GSI_CONTINUE_LINKING);
+	}
+      break;
+
     case GIMPLE_COND:
       replace_goto_queue_cond_clause (gimple_op_ptr (stmt, 2), tf, gsi);
       replace_goto_queue_cond_clause (gimple_op_ptr (stmt, 3), tf, gsi);
@@ -685,10 +727,26 @@ maybe_record_in_goto_queue (struct leh_state *state, gimple *stmt)
 				    EXPR_LOCATION (*new_stmt.tp));
       }
       break;
+
     case GIMPLE_GOTO:
       new_stmt.g = stmt;
       record_in_goto_queue_label (tf, new_stmt, gimple_goto_dest (stmt),
 				  gimple_location (stmt));
+      break;
+
+    case GIMPLE_ASM:
+      if (int n = gimple_asm_nlabels (as_a <gasm *> (stmt)))
+	{
+	  new_stmt.g = stmt;
+	  gasm *asm_stmt = as_a <gasm *> (stmt);
+	  for (int i = 0; i < n; ++i)
+	    {
+	      tree elt = gimple_asm_label_op (asm_stmt, i);
+	      new_stmt.tp = &TREE_VALUE (elt);
+	      record_in_goto_queue_label (tf, new_stmt, TREE_VALUE (elt),
+					  gimple_location (stmt));
+	    }
+	}
       break;
 
     case GIMPLE_RETURN:
@@ -2082,6 +2140,7 @@ lower_eh_constructs_2 (struct leh_state *state, gimple_stmt_iterator *gsi)
     case GIMPLE_COND:
     case GIMPLE_GOTO:
     case GIMPLE_RETURN:
+    case GIMPLE_ASM:
       maybe_record_in_goto_queue (state, stmt);
       break;
 
