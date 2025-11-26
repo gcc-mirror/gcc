@@ -3,7 +3,7 @@
 ! { dg-require-effective-target tls }
 
 module crayptr2
-  integer :: e		! { dg-error "CRAY POINTEE attribute conflicts with THREADPRIVATE" }
+  integer :: e
   pointer (ip5, e)
 
 ! The standard is not very clear about this.
@@ -12,6 +12,6 @@ module crayptr2
 ! be if they are module variables.  But threadprivate pointees don't
 ! make any sense anyway.
 
-!$omp threadprivate (e)
+!$omp threadprivate (e)  ! { dg-error "CRAY POINTEE attribute conflicts with THREADPRIVATE" }
 
 end module crayptr2

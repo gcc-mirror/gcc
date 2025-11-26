@@ -2092,7 +2092,8 @@ enum ab_attribute
   AB_ARRAY_OUTER_DEPENDENCY, AB_MODULE_PROCEDURE, AB_OACC_DECLARE_CREATE,
   AB_OACC_DECLARE_COPYIN, AB_OACC_DECLARE_DEVICEPTR,
   AB_OACC_DECLARE_DEVICE_RESIDENT, AB_OACC_DECLARE_LINK,
-  AB_OMP_DECLARE_TARGET_LINK, AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
+  AB_OMP_DECLARE_TARGET_LINK, AB_OMP_DECLARE_TARGET_LOCAL,
+  AB_PDT_KIND, AB_PDT_LEN, AB_PDT_TYPE,
   AB_PDT_COMP, AB_PDT_TEMPLATE, AB_PDT_ARRAY, AB_PDT_STRING,
   AB_OACC_ROUTINE_LOP_GANG, AB_OACC_ROUTINE_LOP_WORKER,
   AB_OACC_ROUTINE_LOP_VECTOR, AB_OACC_ROUTINE_LOP_SEQ,
@@ -2102,7 +2103,7 @@ enum ab_attribute
   AB_OMP_REQ_MEM_ORDER_SEQ_CST, AB_OMP_REQ_MEM_ORDER_ACQ_REL,
   AB_OMP_REQ_MEM_ORDER_ACQUIRE, AB_OMP_REQ_MEM_ORDER_RELEASE,
   AB_OMP_REQ_MEM_ORDER_RELAXED, AB_OMP_DEVICE_TYPE_NOHOST,
-  AB_OMP_DEVICE_TYPE_HOST, AB_OMP_DEVICE_TYPE_ANY
+  AB_OMP_DEVICE_TYPE_HOST, AB_OMP_DEVICE_TYPE_ANY, AB_OMP_GROUPPRIVATE
 };
 
 static const mstring attr_bits[] =
@@ -2166,6 +2167,8 @@ static const mstring attr_bits[] =
     minit ("OACC_DECLARE_DEVICE_RESIDENT", AB_OACC_DECLARE_DEVICE_RESIDENT),
     minit ("OACC_DECLARE_LINK", AB_OACC_DECLARE_LINK),
     minit ("OMP_DECLARE_TARGET_LINK", AB_OMP_DECLARE_TARGET_LINK),
+    minit ("OMP_DECLARE_TARGET_LOCAL", AB_OMP_DECLARE_TARGET_LOCAL),
+    minit ("OMP_GROUPPRIVATE", AB_OMP_GROUPPRIVATE),
     minit ("PDT_KIND", AB_PDT_KIND),
     minit ("PDT_LEN", AB_PDT_LEN),
     minit ("PDT_TYPE", AB_PDT_TYPE),
@@ -2399,6 +2402,10 @@ mio_symbol_attribute (symbol_attribute *attr)
 	MIO_NAME (ab_attribute) (AB_OACC_DECLARE_LINK, attr_bits);
       if (attr->omp_declare_target_link)
 	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET_LINK, attr_bits);
+      if (attr->omp_declare_target_local)
+	MIO_NAME (ab_attribute) (AB_OMP_DECLARE_TARGET_LOCAL, attr_bits);
+      if (attr->omp_groupprivate)
+	MIO_NAME (ab_attribute) (AB_OMP_GROUPPRIVATE, attr_bits);
       if (attr->pdt_kind)
 	MIO_NAME (ab_attribute) (AB_PDT_KIND, attr_bits);
       if (attr->pdt_len)
@@ -2653,6 +2660,12 @@ mio_symbol_attribute (symbol_attribute *attr)
 	      break;
 	    case AB_OMP_DECLARE_TARGET_LINK:
 	      attr->omp_declare_target_link = 1;
+	      break;
+	    case AB_OMP_DECLARE_TARGET_LOCAL:
+	      attr->omp_declare_target_local = 1;
+	      break;
+	    case AB_OMP_GROUPPRIVATE:
+	      attr->omp_groupprivate = 1;
 	      break;
 	    case AB_ARRAY_OUTER_DEPENDENCY:
 	      attr->array_outer_dependency =1;
@@ -5268,6 +5281,8 @@ load_commons (void)
       if (flags & 2)
 	p->threadprivate = 1;
       p->omp_device_type = (gfc_omp_device_type) ((flags >> 2) & 3);
+      if ((flags >> 4) & 1)
+	p->omp_groupprivate = 1;
       p->use_assoc = 1;
 
       /* Get whether this was a bind(c) common or not.  */
@@ -6191,6 +6206,7 @@ write_common_0 (gfc_symtree *st, bool this_module)
       if (p->threadprivate)
 	flags |= 2;
       flags |= p->omp_device_type << 2;
+      flags |= p->omp_groupprivate << 4;
       mio_integer (&flags);
 
       /* Write out whether the common block is bind(c) or not.  */

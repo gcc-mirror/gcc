@@ -843,6 +843,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" VALUE", dumpfile);
   if (attr->volatile_)
     fputs (" VOLATILE", dumpfile);
+  if (attr->omp_groupprivate)
+    fputs (" GROUPPRIVATE", dumpfile);
   if (attr->threadprivate)
     fputs (" THREADPRIVATE", dumpfile);
   if (attr->temporary)
@@ -938,6 +940,8 @@ show_attr (symbol_attribute *attr, const char * module)
     fputs (" OMP-DECLARE-TARGET", dumpfile);
   if (attr->omp_declare_target_link)
     fputs (" OMP-DECLARE-TARGET-LINK", dumpfile);
+  if (attr->omp_declare_target_local)
+    fputs (" OMP-DECLARE-TARGET-LOCAL", dumpfile);
   if (attr->omp_declare_target_indirect)
     fputs (" OMP-DECLARE-TARGET-INDIRECT", dumpfile);
   if (attr->omp_device_type == OMP_DEVICE_TYPE_HOST)
@@ -2211,6 +2215,20 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     fputs (" DEPEND(source)", dumpfile);
   if (omp_clauses->doacross_source)
     fputs (" DOACROSS(source:)", dumpfile);
+  if (omp_clauses->dyn_groupprivate)
+    {
+      fputs (" DYN_GROUPPRIVATE(", dumpfile);
+      if (omp_clauses->fallback != OMP_FALLBACK_NONE)
+	fputs ("FALLBACK(", dumpfile);
+      if (omp_clauses->fallback == OMP_FALLBACK_ABORT)
+	fputs ("ABORT):", dumpfile);
+      else if (omp_clauses->fallback == OMP_FALLBACK_DEFAULT_MEM)
+	fputs ("DEFAULT_MEM):", dumpfile);
+      else if (omp_clauses->fallback == OMP_FALLBACK_NULL)
+	fputs ("NULL):", dumpfile);
+      show_expr (omp_clauses->dyn_groupprivate);
+      fputc (')', dumpfile);
+    }
   if (omp_clauses->capture)
     fputs (" CAPTURE", dumpfile);
   if (omp_clauses->depobj_update != OMP_DEPEND_UNSET)

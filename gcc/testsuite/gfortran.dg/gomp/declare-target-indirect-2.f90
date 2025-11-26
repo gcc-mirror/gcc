@@ -11,7 +11,7 @@ contains
   subroutine sub2
     !$omp declare target indirect (.false.) to (sub2)
   end subroutine
-  ! { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target\\\)\\\)\\\n.*\\\nvoid sub2" "gimple" } }
+  ! { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target \\(device_type\\(any\\)\\)\\\)\\\)\\\n.*\\\nvoid sub2" "gimple" } }
 
   subroutine sub3
     !$omp declare target indirect (.true.) to (sub3)
@@ -21,5 +21,5 @@ contains
   subroutine sub4
     !$omp declare target indirect (.false.) enter (sub4)
   end subroutine
-  ! { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target\\\)\\\)\\\n.*\\\nvoid sub4" "gimple" } }
+  ! { dg-final { scan-tree-dump "__attribute__\\\(\\\(omp declare target \\(device_type\\(any\\)\\)\\\)\\\)\\\n.*\\\nvoid sub4" "gimple" } }
 end module

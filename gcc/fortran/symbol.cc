@@ -458,8 +458,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
     *contiguous = "CONTIGUOUS", *generic = "GENERIC", *automatic = "AUTOMATIC",
     *pdt_len = "LEN", *pdt_kind = "KIND";
   static const char *threadprivate = "THREADPRIVATE";
+  static const char *omp_groupprivate = "OpenMP GROUPPRIVATE";
   static const char *omp_declare_target = "OMP DECLARE TARGET";
   static const char *omp_declare_target_link = "OMP DECLARE TARGET LINK";
+  static const char *omp_declare_target_local = "OMP DECLARE TARGET LOCAL";
   static const char *oacc_declare_copyin = "OACC DECLARE COPYIN";
   static const char *oacc_declare_create = "OACC DECLARE CREATE";
   static const char *oacc_declare_deviceptr = "OACC DECLARE DEVICEPTR";
@@ -553,8 +555,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (dummy, entry);
   conf (dummy, intrinsic);
   conf (dummy, threadprivate);
+  conf (dummy, omp_groupprivate);
   conf (dummy, omp_declare_target);
   conf (dummy, omp_declare_target_link);
+  conf (dummy, omp_declare_target_local);
   conf (pointer, target);
   conf (pointer, intrinsic);
   conf (pointer, elemental);
@@ -604,8 +608,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (in_equivalence, entry);
   conf (in_equivalence, allocatable);
   conf (in_equivalence, threadprivate);
+  conf (in_equivalence, omp_groupprivate);
   conf (in_equivalence, omp_declare_target);
   conf (in_equivalence, omp_declare_target_link);
+  conf (in_equivalence, omp_declare_target_local);
   conf (in_equivalence, oacc_declare_create);
   conf (in_equivalence, oacc_declare_copyin);
   conf (in_equivalence, oacc_declare_deviceptr);
@@ -616,6 +622,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (entry, result);
   conf (generic, result);
   conf (generic, omp_declare_target);
+  conf (generic, omp_declare_target_local);
   conf (generic, omp_declare_target_link);
 
   conf (function, subroutine);
@@ -661,8 +668,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
   conf (cray_pointee, in_common);
   conf (cray_pointee, in_equivalence);
   conf (cray_pointee, threadprivate);
+  conf (cray_pointee, omp_groupprivate);
   conf (cray_pointee, omp_declare_target);
   conf (cray_pointee, omp_declare_target_link);
+  conf (cray_pointee, omp_declare_target_local);
   conf (cray_pointee, oacc_declare_create);
   conf (cray_pointee, oacc_declare_copyin);
   conf (cray_pointee, oacc_declare_deviceptr);
@@ -720,9 +729,11 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
 
   conf (proc_pointer, abstract)
   conf (proc_pointer, omp_declare_target)
+  conf (proc_pointer, omp_declare_target_local)
   conf (proc_pointer, omp_declare_target_link)
 
   conf (entry, omp_declare_target)
+  conf (entry, omp_declare_target_local)
   conf (entry, omp_declare_target_link)
   conf (entry, oacc_declare_create)
   conf (entry, oacc_declare_copyin)
@@ -782,8 +793,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (function);
       conf2 (subroutine);
       conf2 (threadprivate);
+      conf2 (omp_groupprivate);
       conf2 (omp_declare_target);
       conf2 (omp_declare_target_link);
+      conf2 (omp_declare_target_local);
       conf2 (oacc_declare_create);
       conf2 (oacc_declare_copyin);
       conf2 (oacc_declare_deviceptr);
@@ -828,7 +841,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	  conf2 (dimension);
 	  conf2 (function);
 	  if (!attr->proc_pointer)
-	    conf2 (threadprivate);
+	    {
+	      conf2 (threadprivate);
+	      conf2 (omp_groupprivate);
+	    }
 	}
 
       /* Procedure pointers in COMMON blocks are allowed in F03,
@@ -836,6 +852,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
       if (!attr->proc_pointer || (gfc_option.allow_std & GFC_STD_F2008))
 	conf2 (in_common);
 
+      conf2 (omp_declare_target_local);
       conf2 (omp_declare_target_link);
 
       switch (attr->proc)
@@ -852,6 +869,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
 	case PROC_DUMMY:
 	  conf2 (result);
 	  conf2 (threadprivate);
+	  conf2 (omp_groupprivate);
 	  break;
 
 	default:
@@ -872,8 +890,10 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (function);
       conf2 (subroutine);
       conf2 (threadprivate);
+      conf2 (omp_groupprivate);
       conf2 (result);
       conf2 (omp_declare_target);
+      conf2 (omp_declare_target_local);
       conf2 (omp_declare_target_link);
       conf2 (oacc_declare_create);
       conf2 (oacc_declare_copyin);
@@ -905,6 +925,7 @@ gfc_check_conflict (symbol_attribute *attr, const char *name, locus *where)
       conf2 (volatile_);
       conf2 (asynchronous);
       conf2 (threadprivate);
+      conf2 (omp_groupprivate);
       conf2 (value);
       conf2 (codimension);
       conf2 (result);
@@ -1407,6 +1428,25 @@ gfc_add_asynchronous (symbol_attribute *attr, const char *name, locus *where)
 
 
 bool
+gfc_add_omp_groupprivate (symbol_attribute *attr, const char *name,
+			  locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return false;
+
+  if (attr->omp_groupprivate)
+    {
+      duplicate_attr ("OpenMP GROUPPRIVATE", where);
+      return false;
+    }
+
+  attr->omp_groupprivate = true;
+  return gfc_check_conflict (attr, name, where);
+}
+
+
+bool
 gfc_add_threadprivate (symbol_attribute *attr, const char *name, locus *where)
 {
 
@@ -1452,6 +1492,22 @@ gfc_add_omp_declare_target_link (symbol_attribute *attr, const char *name,
     return true;
 
   attr->omp_declare_target_link = 1;
+  return gfc_check_conflict (attr, name, where);
+}
+
+
+bool
+gfc_add_omp_declare_target_local (symbol_attribute *attr, const char *name,
+				  locus *where)
+{
+
+  if (check_used (attr, name, where))
+    return false;
+
+  if (attr->omp_declare_target_local)
+    return true;
+
+  attr->omp_declare_target_local = 1;
   return gfc_check_conflict (attr, name, where);
 }
 
@@ -2110,6 +2166,9 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
   if (src->asynchronous && !gfc_add_asynchronous (dest, NULL, where))
     goto fail;
+  if (src->omp_groupprivate
+      && !gfc_add_omp_groupprivate (dest, NULL, where))
+    goto fail;
   if (src->threadprivate
       && !gfc_add_threadprivate (dest, NULL, where))
     goto fail;
@@ -2118,6 +2177,9 @@ gfc_copy_attr (symbol_attribute *dest, symbol_attribute *src, locus *where)
     goto fail;
   if (src->omp_declare_target_link
       && !gfc_add_omp_declare_target_link (dest, NULL, where))
+    goto fail;
+  if (src->omp_declare_target_local
+      && !gfc_add_omp_declare_target_local (dest, NULL, where))
     goto fail;
   if (src->oacc_declare_create
       && !gfc_add_oacc_declare_create (dest, NULL, where))

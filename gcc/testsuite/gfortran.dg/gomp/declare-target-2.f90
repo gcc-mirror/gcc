@@ -24,7 +24,11 @@ module declare_target_2
   end interface
 end
 subroutine bar
+  !$omp declare target enter (q)	! { dg-error "isn.t SAVEd" }
+  !$omp declare target link (r)		! { dg-error "isn.t SAVEd" }
+  !$omp declare target local (s)	! { dg-error "isn.t SAVEd" }
   !$omp declare target link (baz)	! { dg-error "isn.t SAVEd" }
+  integer :: q, r, s
   call baz				! { dg-error "attribute conflicts" }
 end subroutine
 subroutine foo				! { dg-error "attribute conflicts" }

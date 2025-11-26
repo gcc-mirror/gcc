@@ -18714,17 +18714,30 @@ skip_interfaces:
     }
 
   /* Check threadprivate restrictions.  */
-  if (sym->attr.threadprivate
+  if ((sym->attr.threadprivate || sym->attr.omp_groupprivate)
       && !(sym->attr.save || sym->attr.data || sym->attr.in_common)
       && !(sym->ns->save_all && !sym->attr.automatic)
       && sym->module == NULL
       && (sym->ns->proc_name == NULL
 	  || (sym->ns->proc_name->attr.flavor != FL_MODULE
 	      && !sym->ns->proc_name->attr.is_main_program)))
-    gfc_error ("Threadprivate at %L isn't SAVEd", &sym->declared_at);
+    {
+      if (sym->attr.threadprivate)
+	gfc_error ("Threadprivate at %L isn't SAVEd", &sym->declared_at);
+      else
+	gfc_error ("OpenMP groupprivate variable %qs at %L must have the SAVE "
+		   "attribute", sym->name, &sym->declared_at);
+    }
+
+  if (sym->attr.omp_groupprivate && sym->value)
+    gfc_error ("!$OMP GROUPPRIVATE variable %qs at %L must not have an "
+	       "initializer", sym->name, &sym->declared_at);
 
   /* Check omp declare target restrictions.  */
-  if (sym->attr.omp_declare_target
+  if ((sym->attr.omp_declare_target
+       || sym->attr.omp_declare_target_link
+       || sym->attr.omp_declare_target_local)
+      && !sym->attr.omp_groupprivate  /* already warned.  */
       && sym->attr.flavor == FL_VARIABLE
       && !sym->attr.save
       && !(sym->ns->save_all && !sym->attr.automatic)

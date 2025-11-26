@@ -5645,6 +5645,7 @@ gfc_code_walker (gfc_code **c, walk_code_fn_t codefn, walk_expr_fn_t exprfn,
 		  WALK_SUBEXPR (co->ext.omp_clauses->num_tasks);
 		  WALK_SUBEXPR (co->ext.omp_clauses->priority);
 		  WALK_SUBEXPR (co->ext.omp_clauses->detach);
+		  WALK_SUBEXPR (co->ext.omp_clauses->dyn_groupprivate);
 		  WALK_SUBEXPR (co->ext.omp_clauses->novariants);
 		  WALK_SUBEXPR (co->ext.omp_clauses->nocontext);
 		  for (idx = 0; idx < ARRAY_SIZE (list_types); idx++)

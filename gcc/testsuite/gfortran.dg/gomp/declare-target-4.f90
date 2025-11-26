@@ -42,15 +42,14 @@ module mymod
   !$omp declare target to(a) device_type(nohost)
   !$omp declare target to(b) device_type(host)
   !$omp declare target to(c) device_type(any)
- ! Fails in ME with "Error: wrong number of arguments specified for 'omp declare target link' attribute"
- ! !$omp declare target link(e) device_type(nohost)
- ! !$omp declare target link(f) device_type(host)
- ! !$omp declare target link(g) device_type(any)
+ ! !$omp declare target link(e) device_type(nohost) ! -> invalid: only 'any' is permitted
+ ! !$omp declare target link(f) device_type(host) ! -> invalid: only 'any' is permitted
+ !$omp declare target link(g) device_type(any)
 
   !$omp declare target to(/block1/) device_type(nohost)
   !$omp declare target to(/block2/) device_type(host)
   !$omp declare target to(/block3/) device_type(any)
-  !$omp declare target link(/block4/) device_type(nohost)
+  ! !$omp declare target link(/block4/) device_type(nohost) ! -> invalid, link requires host or any
   !$omp declare target link(/block5/) device_type(host)
   !$omp declare target link(/block6/) device_type(any)
 contains

@@ -311,6 +311,7 @@ enum gfc_statement
   ST_OMP_TASKLOOP, ST_OMP_END_TASKLOOP, ST_OMP_SCAN, ST_OMP_DEPOBJ,
   ST_OMP_TASKLOOP_SIMD, ST_OMP_END_TASKLOOP_SIMD, ST_OMP_ORDERED_DEPEND,
   ST_OMP_REQUIRES, ST_PROCEDURE, ST_GENERIC, ST_CRITICAL, ST_END_CRITICAL,
+  ST_OMP_GROUPPRIVATE,
   ST_GET_FCN_CHARACTERISTICS, ST_LOCK, ST_UNLOCK, ST_EVENT_POST,
   ST_EVENT_WAIT, ST_FAIL_IMAGE, ST_FORM_TEAM, ST_CHANGE_TEAM,
   ST_END_TEAM, ST_SYNC_TEAM,  ST_OMP_PARALLEL_MASTER,
@@ -1042,8 +1043,10 @@ typedef struct
   /* Mentioned in OMP DECLARE TARGET.  */
   unsigned omp_declare_target:1;
   unsigned omp_declare_target_link:1;
+  unsigned omp_declare_target_local:1;
   unsigned omp_declare_target_indirect:1;
   ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
+  unsigned omp_groupprivate:1;
   unsigned omp_allocate:1;
 
   /* Mentioned in OACC DECLARE.  */
@@ -1488,6 +1491,7 @@ enum
   OMP_LIST_TASK_REDUCTION,
   OMP_LIST_DEVICE_RESIDENT,
   OMP_LIST_LINK,
+  OMP_LIST_LOCAL,
   OMP_LIST_USE_DEVICE,
   OMP_LIST_CACHE,
   OMP_LIST_IS_DEVICE_PTR,
@@ -1614,6 +1618,14 @@ enum gfc_omp_bind_type
   OMP_BIND_THREAD
 };
 
+enum gfc_omp_fallback
+{
+  OMP_FALLBACK_NONE,
+  OMP_FALLBACK_ABORT,
+  OMP_FALLBACK_DEFAULT_MEM,
+  OMP_FALLBACK_NULL
+};
+
 typedef struct gfc_omp_assumptions
 {
   int n_absent, n_contains;
@@ -1649,6 +1661,7 @@ typedef struct gfc_omp_clauses
   struct gfc_expr *detach;
   struct gfc_expr *depobj;
   struct gfc_expr *dist_chunk_size;
+  struct gfc_expr *dyn_groupprivate;
   struct gfc_expr *message;
   struct gfc_expr *novariants;
   struct gfc_expr *nocontext;
@@ -1681,6 +1694,7 @@ typedef struct gfc_omp_clauses
   ENUM_BITFIELD (gfc_omp_at_type) at:2;
   ENUM_BITFIELD (gfc_omp_severity_type) severity:2;
   ENUM_BITFIELD (gfc_omp_sched_kind) dist_sched_kind:3;
+  ENUM_BITFIELD (gfc_omp_fallback) fallback:2;
 
   /* OpenACC. */
   struct gfc_expr *async_expr;
@@ -2118,6 +2132,8 @@ typedef struct gfc_common_head
   char use_assoc, saved, threadprivate;
   unsigned char omp_declare_target : 1;
   unsigned char omp_declare_target_link : 1;
+  unsigned char omp_declare_target_local : 1;
+  unsigned char omp_groupprivate : 1;
   ENUM_BITFIELD (gfc_omp_device_type) omp_device_type:2;
   /* Provide sufficient space to hold "symbol.symbol.eq.1234567890".  */
   char name[2*GFC_MAX_SYMBOL_LEN + 1 + 14 + 1];
@@ -3717,6 +3733,9 @@ bool gfc_add_threadprivate (symbol_attribute *, const char *, locus *);
 bool gfc_add_omp_declare_target (symbol_attribute *, const char *, locus *);
 bool gfc_add_omp_declare_target_link (symbol_attribute *, const char *,
 				      locus *);
+bool gfc_add_omp_declare_target_local (symbol_attribute *, const char *,
+				       locus *);
+bool gfc_add_omp_groupprivate (symbol_attribute *, const char *, locus *);
 bool gfc_add_target (symbol_attribute *, locus *);
 bool gfc_add_dummy (symbol_attribute *, const char *, locus *);
 bool gfc_add_generic (symbol_attribute *, const char *, locus *);

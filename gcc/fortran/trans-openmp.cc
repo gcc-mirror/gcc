@@ -4180,7 +4180,9 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 		  tree type = TREE_TYPE (decl);
 		  if (n->sym->ts.type == BT_CHARACTER
 		      && n->sym->ts.deferred
-		      && n->sym->attr.omp_declare_target
+		      && (n->sym->attr.omp_declare_target
+			  || n->sym->attr.omp_declare_target_link
+			  || n->sym->attr.omp_declare_target_local)
 		      && (always_modifier || n->sym->attr.pointer)
 		      && op != EXEC_OMP_TARGET_EXIT_DATA
 		      && n->u.map.op != OMP_MAP_DELETE
@@ -5261,6 +5263,25 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_NUM_THREADS);
       OMP_CLAUSE_NUM_THREADS_EXPR (c) = num_threads;
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
+  if (clauses->dyn_groupprivate)
+    {
+      sorry_at (gfc_get_location (&where), "%<dyn_groupprivate%> clause");
+#if 0  /* FIXME: Handle it, including 'fallback(abort/default_mem/null)'  */
+      tree dyn_groupprivate;
+
+      gfc_init_se (&se, NULL);
+      gfc_conv_expr (&se, clauses->dyn_groupprivate);
+      gfc_add_block_to_block (block, &se.pre);
+      dyn_groupprivate = gfc_evaluate_now (se.expr, block);
+      gfc_add_block_to_block (block, &se.post);
+
+      c = build_omp_clause (gfc_get_location (&where),
+			    OMP_CLAUSE_DYN_GROUPPRIVATE);
+      OMP_CLAUSE_NUM_THREADS_EXPR (c) = num_threads;
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+#endif
     }
 
   chunk_size = NULL_TREE;

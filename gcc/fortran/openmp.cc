@@ -84,6 +84,7 @@ static const struct gfc_omp_directive gfc_omp_directives[] = {
   /* {"flatten", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLATTEN}, */
   {"flush", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLUSH},
   /* {"fuse", GFC_OMP_DIR_EXECUTABLE, ST_OMP_FLUSE}, */
+  {"groupprivate", GFC_OMP_DIR_DECLARATIVE, ST_OMP_GROUPPRIVATE},
   /* {"interchange", GFC_OMP_DIR_EXECUTABLE, ST_OMP_INTERCHANGE}, */
   {"interop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_INTEROP},
   {"loop", GFC_OMP_DIR_EXECUTABLE, ST_OMP_LOOP},
@@ -195,6 +196,7 @@ gfc_free_omp_clauses (gfc_omp_clauses *c)
   gfc_free_expr (c->num_teams_lower);
   gfc_free_expr (c->num_teams_upper);
   gfc_free_expr (c->device);
+  gfc_free_expr (c->dyn_groupprivate);
   gfc_free_expr (c->thread_limit);
   gfc_free_expr (c->dist_chunk_size);
   gfc_free_expr (c->grainsize);
@@ -1172,6 +1174,8 @@ enum omp_mask2
   OMP_CLAUSE_NOVARIANTS, /* OpenMP 5.1  */
   OMP_CLAUSE_NOCONTEXT, /* OpenMP 5.1  */
   OMP_CLAUSE_INTEROP, /* OpenMP 5.1  */
+  OMP_CLAUSE_LOCAL, /* OpenMP 6.0 */
+  OMP_CLAUSE_DYN_GROUPPRIVATE, /* OpenMP 6.1 */
   /* This must come last.  */
   OMP_MASK2_LAST
 };
@@ -3096,6 +3100,22 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      else
 		continue;
 	    }
+	  if ((mask & OMP_CLAUSE_DYN_GROUPPRIVATE)
+	      && gfc_match_dupl_check (!c->dyn_groupprivate,
+				       "dyn_groupprivate", true) == MATCH_YES)
+	    {
+	      if (gfc_match ("fallback ( abort ) : ") == MATCH_YES)
+		c->fallback = OMP_FALLBACK_ABORT;
+	      else if (gfc_match ("fallback ( default_mem ) : ") == MATCH_YES)
+		c->fallback = OMP_FALLBACK_DEFAULT_MEM;
+	      else if (gfc_match ("fallback ( null ) : ") == MATCH_YES)
+		c->fallback = OMP_FALLBACK_NULL;
+	      if (gfc_match_expr (&c->dyn_groupprivate) != MATCH_YES)
+		return MATCH_ERROR;
+	      if (gfc_match (" )") != MATCH_YES)
+		goto error;
+	      continue;
+	    }
 	  break;
 	case 'e':
 	  if ((mask & OMP_CLAUSE_ENTER))
@@ -3566,6 +3586,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		   && (gfc_match_omp_to_link ("link (",
 					      &c->lists[OMP_LIST_LINK])
 		       == MATCH_YES))
+	    continue;
+	  if ((mask & OMP_CLAUSE_LOCAL)
+	      && (gfc_match_omp_to_link ("local (", &c->lists[OMP_LIST_LOCAL])
+		  == MATCH_YES))
 	    continue;
 	  break;
 	case 'm':
@@ -5064,7 +5088,8 @@ cleanup:
    | OMP_CLAUSE_FIRSTPRIVATE | OMP_CLAUSE_DEFAULTMAP			\
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
    | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
-   | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS)
+   | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS		\
+   | OMP_CLAUSE_DYN_GROUPPRIVATE)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)
@@ -5092,7 +5117,7 @@ cleanup:
   (omp_mask (OMP_CLAUSE_THREADS) | OMP_CLAUSE_SIMD)
 #define OMP_DECLARE_TARGET_CLAUSES \
   (omp_mask (OMP_CLAUSE_ENTER) | OMP_CLAUSE_LINK | OMP_CLAUSE_DEVICE_TYPE \
-   | OMP_CLAUSE_TO | OMP_CLAUSE_INDIRECT)
+   | OMP_CLAUSE_TO | OMP_CLAUSE_INDIRECT | OMP_CLAUSE_LOCAL)
 #define OMP_ATOMIC_CLAUSES \
   (omp_mask (OMP_CLAUSE_ATOMIC) | OMP_CLAUSE_CAPTURE | OMP_CLAUSE_HINT	\
    | OMP_CLAUSE_MEMORDER | OMP_CLAUSE_COMPARE | OMP_CLAUSE_FAIL 	\
@@ -6113,7 +6138,7 @@ gfc_match_omp_declare_target (void)
   gfc_buffer_error (false);
 
   static const int to_enter_link_lists[]
-    = { OMP_LIST_TO, OMP_LIST_ENTER, OMP_LIST_LINK };
+    = { OMP_LIST_TO, OMP_LIST_ENTER, OMP_LIST_LINK, OMP_LIST_LOCAL };
   for (size_t listn = 0; listn < ARRAY_SIZE (to_enter_link_lists)
 			 && (list = to_enter_link_lists[listn], true); ++listn)
     for (n = c->lists[list]; n; n = n->next)
@@ -6122,6 +6147,8 @@ gfc_match_omp_declare_target (void)
       else if (n->u.common->head)
 	n->u.common->head->mark = 0;
 
+  if (c->device_type == OMP_DEVICE_TYPE_UNSET)
+    c->device_type = OMP_DEVICE_TYPE_ANY;
   for (size_t listn = 0; listn < ARRAY_SIZE (to_enter_link_lists)
 			 && (list = to_enter_link_lists[listn], true); ++listn)
     for (n = c->lists[list]; n; n = n->next)
@@ -6130,105 +6157,161 @@ gfc_match_omp_declare_target (void)
 	  if (n->sym->attr.in_common)
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L is an "
 			   "element of a COMMON block", &n->where);
+	  else if (n->sym->attr.omp_groupprivate && list != OMP_LIST_LOCAL)
+	    gfc_error_now ("List item %qs at %L not appear in the %qs clause "
+			   "as it was previously specified in a GROUPPRIVATE "
+			   "directive", n->sym->name, &n->where,
+			   list == OMP_LIST_LINK
+			   ? "link" : list == OMP_LIST_TO ? "to" : "enter");
 	  else if (n->sym->mark)
 	    gfc_error_now ("Variable at %L mentioned multiple times in "
 			   "clauses of the same OMP DECLARE TARGET directive",
 			   &n->where);
-	  else if (n->sym->attr.omp_declare_target
-		   && n->sym->attr.omp_declare_target_link
-		   && list != OMP_LIST_LINK)
+	  else if ((n->sym->attr.omp_declare_target_link
+		    || n->sym->attr.omp_declare_target_local)
+		   && list != OMP_LIST_LINK
+		   && list != OMP_LIST_LOCAL)
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
-			   "mentioned in LINK clause and later in %s clause",
-			   &n->where, list == OMP_LIST_TO ? "TO" : "ENTER");
+			   "mentioned in %s clause and later in %s clause",
+			   &n->where,
+			   n->sym->attr.omp_declare_target_link ? "LINK"
+								: "LOCAL",
+			   list == OMP_LIST_TO ? "TO" : "ENTER");
 	  else if (n->sym->attr.omp_declare_target
-		   && !n->sym->attr.omp_declare_target_link
-		   && list == OMP_LIST_LINK)
+		   && (list == OMP_LIST_LINK || list == OMP_LIST_LOCAL))
 	    gfc_error_now ("OMP DECLARE TARGET variable at %L previously "
 			   "mentioned in TO or ENTER clause and later in "
-			   "LINK clause", &n->where);
-	  else if (gfc_add_omp_declare_target (&n->sym->attr, n->sym->name,
-					       &n->sym->declared_at))
+			   "%s clause", &n->where,
+			   list == OMP_LIST_LINK ? "LINK" : "LOCAL");
+	  else
 	    {
+	      if (list == OMP_LIST_TO || list == OMP_LIST_ENTER)
+		gfc_add_omp_declare_target (&n->sym->attr, n->sym->name,
+					    &n->sym->declared_at);
 	      if (list == OMP_LIST_LINK)
 		gfc_add_omp_declare_target_link (&n->sym->attr, n->sym->name,
 						 &n->sym->declared_at);
+	      if (list == OMP_LIST_LOCAL)
+		gfc_add_omp_declare_target_local (&n->sym->attr, n->sym->name,
+						  &n->sym->declared_at);
 	    }
-	  if (c->device_type != OMP_DEVICE_TYPE_UNSET)
+	  if (n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+	      && n->sym->attr.omp_device_type != c->device_type)
 	    {
-	      if (n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
-		  && n->sym->attr.omp_device_type != c->device_type)
-		gfc_error_now ("List item %qs at %L set in previous OMP DECLARE "
-			       "TARGET directive to a different DEVICE_TYPE",
-			       n->sym->name, &n->where);
-	      n->sym->attr.omp_device_type = c->device_type;
+	      const char *dt = "any";
+	      if (n->sym->attr.omp_device_type == OMP_DEVICE_TYPE_NOHOST)
+		dt = "nohost";
+	      else if (n->sym->attr.omp_device_type == OMP_DEVICE_TYPE_HOST)
+		dt = "host";
+	      if (n->sym->attr.omp_groupprivate)
+		gfc_error_now ("List item %qs at %L set in previous OMP "
+			       "GROUPPRIVATE directive to the different "
+			       "DEVICE_TYPE %qs", n->sym->name, &n->where, dt);
+	      else
+		gfc_error_now ("List item %qs at %L set in previous OMP "
+			       "DECLARE TARGET directive to the different "
+			       "DEVICE_TYPE %qs", n->sym->name, &n->where, dt);
 	    }
-	  if (c->indirect)
+	  n->sym->attr.omp_device_type = c->device_type;
+	  if (c->indirect && c->device_type != OMP_DEVICE_TYPE_ANY)
 	    {
-	      if (n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
-		  && n->sym->attr.omp_device_type != OMP_DEVICE_TYPE_ANY)
-		gfc_error_now ("DEVICE_TYPE must be ANY when used with "
-			       "INDIRECT at %L", &n->where);
-	      n->sym->attr.omp_declare_target_indirect = c->indirect;
+	      gfc_error_now ("DEVICE_TYPE must be ANY when used with INDIRECT "
+			     "at %L", &n->where);
+	      c->indirect = 0;
 	    }
-
+	  n->sym->attr.omp_declare_target_indirect = c->indirect;
+	  if (list == OMP_LIST_LINK && c->device_type == OMP_DEVICE_TYPE_NOHOST)
+	    gfc_error_now ("List item %qs at %L set with NOHOST specified may "
+			   "not appear in a LINK clause", n->sym->name,
+			   &n->where);
 	  n->sym->mark = 1;
 	}
-      else if (n->u.common->omp_declare_target
-	       && n->u.common->omp_declare_target_link
-	       && list != OMP_LIST_LINK)
-	gfc_error_now ("OMP DECLARE TARGET COMMON at %L previously "
-		       "mentioned in LINK clause and later in %s clause",
-		       &n->where, list == OMP_LIST_TO ? "TO" : "ENTER");
-      else if (n->u.common->omp_declare_target
-	       && !n->u.common->omp_declare_target_link
-	       && list == OMP_LIST_LINK)
-	gfc_error_now ("OMP DECLARE TARGET COMMON at %L previously "
-		       "mentioned in TO or ENTER clause and later in "
-		       "LINK clause", &n->where);
-      else if (n->u.common->head && n->u.common->head->mark)
-	gfc_error_now ("COMMON at %L mentioned multiple times in "
-		       "clauses of the same OMP DECLARE TARGET directive",
-		       &n->where);
-      else
+      else  /* common block  */
 	{
-	  n->u.common->omp_declare_target = 1;
-	  n->u.common->omp_declare_target_link = (list == OMP_LIST_LINK);
+	  if (n->u.common->omp_groupprivate && list != OMP_LIST_LOCAL)
+	    gfc_error_now ("Common block %</%s/%> at %L not appear in the %qs "
+			   "clause as it was previously specified in a "
+			   "GROUPPRIVATE directive",
+			   n->u.common->name, &n->where,
+			   list == OMP_LIST_LINK
+			   ? "link" : list == OMP_LIST_TO ? "to" : "enter");
+	  else if (n->u.common->head && n->u.common->head->mark)
+	    gfc_error_now ("Common block %</%s/%> at %L mentioned multiple "
+			   "times in clauses of the same OMP DECLARE TARGET "
+			   "directive", n->u.common->name, &n->where);
+	  else if ((n->u.common->omp_declare_target_link
+		    || n->u.common->omp_declare_target_local)
+		   && list != OMP_LIST_LINK
+		   && list != OMP_LIST_LOCAL)
+	    gfc_error_now ("Common block %</%s/%> at %L previously mentioned "
+			   "in %s clause and later in %s clause",
+			   n->u.common->name, &n->where,
+			   n->u.common->omp_declare_target_link ? "LINK"
+								: "LOCAL",
+			   list == OMP_LIST_TO ? "TO" : "ENTER");
+	  else if (n->u.common->omp_declare_target
+		   && (list == OMP_LIST_LINK || list == OMP_LIST_LOCAL))
+	    gfc_error_now ("Common block %</%s/%> at %L previously mentioned "
+			   "in TO or ENTER clause and later in %s clause",
+			   n->u.common->name, &n->where,
+			   list == OMP_LIST_LINK ? "LINK" : "LOCAL");
 	  if (n->u.common->omp_device_type != OMP_DEVICE_TYPE_UNSET
 	      && n->u.common->omp_device_type != c->device_type)
-	    gfc_error_now ("COMMON at %L set in previous OMP DECLARE "
-			   "TARGET directive to a different DEVICE_TYPE",
-			   &n->where);
+	    {
+	      const char *dt = "any";
+	      if (n->u.common->omp_device_type == OMP_DEVICE_TYPE_NOHOST)
+		dt = "nohost";
+	      else if (n->u.common->omp_device_type == OMP_DEVICE_TYPE_HOST)
+		dt = "host";
+	      if (n->u.common->omp_groupprivate)
+		gfc_error_now ("Common block %</%s/%> at %L set in previous OMP "
+			       "GROUPPRIVATE directive to the different "
+			       "DEVICE_TYPE %qs", n->u.common->name, &n->where,
+				dt);
+	      else
+		gfc_error_now ("Common block %</%s/%> at %L set in previous OMP "
+			       "DECLARE TARGET directive to the different "
+			       "DEVICE_TYPE %qs", n->u.common->name, &n->where,
+				dt);
+	    }
 	  n->u.common->omp_device_type = c->device_type;
+
+	  if (c->indirect && c->device_type != OMP_DEVICE_TYPE_ANY)
+	    {
+	      gfc_error_now ("DEVICE_TYPE must be ANY when used with INDIRECT "
+			     "at %L", &n->where);
+	      c->indirect = 0;
+	    }
+	  if (list == OMP_LIST_LINK && c->device_type == OMP_DEVICE_TYPE_NOHOST)
+	    gfc_error_now ("Common block %</%s/%> at %L set with NOHOST "
+			   "specified may not appear in a LINK clause",
+			   n->u.common->name, &n->where);
+
+	  if (list == OMP_LIST_TO || list == OMP_LIST_ENTER)
+	    n->u.common->omp_declare_target = 1;
+	  if (list == OMP_LIST_LINK)
+	    n->u.common->omp_declare_target_link = 1;
+	  if (list == OMP_LIST_LOCAL)
+	    n->u.common->omp_declare_target_local = 1;
 
 	  for (s = n->u.common->head; s; s = s->common_next)
 	    {
 	      s->mark = 1;
-	      if (gfc_add_omp_declare_target (&s->attr, s->name,
-					      &s->declared_at))
-		{
-		  if (list == OMP_LIST_LINK)
-		    gfc_add_omp_declare_target_link (&s->attr, s->name,
-						     &s->declared_at);
-		}
-	      if (s->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
-		  && s->attr.omp_device_type != c->device_type)
-		gfc_error_now ("List item %qs at %L set in previous OMP DECLARE"
-			       " TARGET directive to a different DEVICE_TYPE",
-			       s->name, &n->where);
+	      if (list == OMP_LIST_TO || list == OMP_LIST_ENTER)
+		gfc_add_omp_declare_target (&s->attr, s->name, &n->where);
+	      if (list == OMP_LIST_LINK)
+		gfc_add_omp_declare_target_link (&s->attr, s->name, &n->where);
+	      if (list == OMP_LIST_LOCAL)
+		gfc_add_omp_declare_target_local (&s->attr, s->name, &n->where);
 	      s->attr.omp_device_type = c->device_type;
-
-	      if (c->indirect
-		  && s->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
-		  && s->attr.omp_device_type != OMP_DEVICE_TYPE_ANY)
-		gfc_error_now ("DEVICE_TYPE must be ANY when used with "
-			       "INDIRECT at %L", &n->where);
 	      s->attr.omp_declare_target_indirect = c->indirect;
 	    }
 	}
   if ((c->device_type || c->indirect)
       && !c->lists[OMP_LIST_ENTER]
       && !c->lists[OMP_LIST_TO]
-      && !c->lists[OMP_LIST_LINK])
+      && !c->lists[OMP_LIST_LINK]
+      && !c->lists[OMP_LIST_LOCAL])
     gfc_warning_now (OPT_Wopenmp,
 		     "OMP DECLARE TARGET directive at %L with only "
 		     "DEVICE_TYPE or INDIRECT clauses is ignored",
@@ -7108,32 +7191,44 @@ gfc_match_omp_metadirective (void)
   return match_omp_metadirective (false);
 }
 
-match
-gfc_match_omp_threadprivate (void)
+/* Match 'omp threadprivate' or 'omp groupprivate'.  */
+static match
+gfc_match_omp_thread_group_private (bool is_groupprivate)
 {
   locus old_loc;
   char n[GFC_MAX_SYMBOL_LEN+1];
   gfc_symbol *sym;
   match m;
   gfc_symtree *st;
+  struct sym_loc_t { gfc_symbol *sym; gfc_common_head *com; locus loc; };
+  auto_vec<sym_loc_t> syms;
 
   old_loc = gfc_current_locus;
 
-  m = gfc_match (" (");
+  m = gfc_match (" ( ");
   if (m != MATCH_YES)
     return m;
 
   for (;;)
     {
+      locus sym_loc = gfc_current_locus;
       m = gfc_match_symbol (&sym, 0);
       switch (m)
 	{
 	case MATCH_YES:
 	  if (sym->attr.in_common)
-	    gfc_error_now ("Threadprivate variable at %C is an element of "
-			   "a COMMON block");
-	  else if (!gfc_add_threadprivate (&sym->attr, sym->name, &sym->declared_at))
+	    gfc_error_now ("%qs variable at %L is an element of a COMMON block",
+			   is_groupprivate ? "groupprivate" : "threadprivate",
+			   &sym_loc);
+	  else if (!is_groupprivate
+		   && !gfc_add_threadprivate (&sym->attr, sym->name, &sym_loc))
 	    goto cleanup;
+	  else if (is_groupprivate)
+	    {
+	      if (!gfc_add_omp_groupprivate (&sym->attr, sym->name, &sym_loc))
+		goto cleanup;
+	      syms.safe_push ({sym, nullptr, sym_loc});
+	    }
 	  goto next_item;
 	case MATCH_NO:
 	  break;
@@ -7150,12 +7245,20 @@ gfc_match_omp_threadprivate (void)
       st = gfc_find_symtree (gfc_current_ns->common_root, n);
       if (st == NULL)
 	{
-	  gfc_error ("COMMON block /%s/ not found at %C", n);
+	  gfc_error ("COMMON block /%s/ not found at %L", n, &sym_loc);
 	  goto cleanup;
 	}
-      st->n.common->threadprivate = 1;
+      syms.safe_push ({nullptr, st->n.common, sym_loc});
+      if (is_groupprivate)
+	st->n.common->omp_groupprivate = 1;
+      else
+	st->n.common->threadprivate = 1;
       for (sym = st->n.common->head; sym; sym = sym->common_next)
-	if (!gfc_add_threadprivate (&sym->attr, sym->name, &sym->declared_at))
+	if (!is_groupprivate
+	    && !gfc_add_threadprivate (&sym->attr, sym->name, &sym_loc))
+	  goto cleanup;
+	else if (is_groupprivate
+		 && !gfc_add_omp_groupprivate (&sym->attr, sym->name, &sym_loc))
 	  goto cleanup;
 
     next_item:
@@ -7165,20 +7268,107 @@ gfc_match_omp_threadprivate (void)
 	goto syntax;
     }
 
+  if (is_groupprivate)
+    {
+      gfc_omp_clauses *c;
+      m = gfc_match_omp_clauses (&c, omp_mask (OMP_CLAUSE_DEVICE_TYPE));
+      if (m == MATCH_ERROR)
+	return MATCH_ERROR;
+
+      if (c->device_type == OMP_DEVICE_TYPE_UNSET)
+	c->device_type = OMP_DEVICE_TYPE_ANY;
+
+      for (size_t i = 0; i < syms.length (); i++)
+	if (syms[i].sym)
+	  {
+	    sym_loc_t &n = syms[i];
+	    if (n.sym->attr.in_common)
+	      gfc_error_now ("Variable %qs at %L is an element of a COMMON "
+			     "block", n.sym->name, &n.loc);
+	    else if (n.sym->attr.omp_declare_target
+		     || n.sym->attr.omp_declare_target_link)
+	      gfc_error_now ("List item %qs at %L implies OMP DECLARE TARGET "
+			     "with the LOCAL clause, but it has been specified"
+			     " with a different clause before",
+			     n.sym->name, &n.loc);
+	    if (n.sym->attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+		&& n.sym->attr.omp_device_type != c->device_type)
+	      {
+              const char *dt = "any";
+	      if (n.sym->attr.omp_device_type == OMP_DEVICE_TYPE_HOST)
+		dt = "host";
+	      else if (n.sym->attr.omp_device_type == OMP_DEVICE_TYPE_NOHOST)
+		dt = "nohost";
+	      gfc_error_now ("List item %qs at %L set in previous OMP DECLARE "
+			     "TARGET directive to the different DEVICE_TYPE %qs",
+			     n.sym->name, &n.loc, dt);
+	      }
+	    gfc_add_omp_declare_target_local (&n.sym->attr, n.sym->name,
+					      &n.loc);
+	    n.sym->attr.omp_device_type = c->device_type;
+	  }
+	else  /* Common block.  */
+	  {
+	    sym_loc_t &n = syms[i];
+	    if (n.com->omp_declare_target
+		|| n.com->omp_declare_target_link)
+	      gfc_error_now ("List item %</%s/%> at %L implies OMP DECLARE "
+			     "TARGET with the LOCAL clause, but it has been "
+			     "specified with a different clause before",
+			     n.com->name, &n.loc);
+	    if (n.com->omp_device_type != OMP_DEVICE_TYPE_UNSET
+		&& n.com->omp_device_type != c->device_type)
+	      {
+		const char *dt = "any";
+		if (n.com->omp_device_type == OMP_DEVICE_TYPE_HOST)
+		  dt = "host";
+		else if (n.com->omp_device_type == OMP_DEVICE_TYPE_NOHOST)
+		  dt = "nohost";
+		gfc_error_now ("List item %qs at %L set in previous OMP DECLARE"
+			       " TARGET directive to the different DEVICE_TYPE "
+			       "%qs", n.com->name, &n.loc, dt);
+	      }
+	    n.com->omp_declare_target_local = 1;
+	    n.com->omp_device_type = c->device_type;
+	    for (gfc_symbol *s = n.com->head; s; s = s->common_next)
+	      {
+		gfc_add_omp_declare_target_local (&s->attr, s->name, &n.loc);
+		s->attr.omp_device_type = c->device_type;
+	      }
+	  }
+      free (c);
+    }
+
   if (gfc_match_omp_eos () != MATCH_YES)
     {
-      gfc_error ("Unexpected junk after OMP THREADPRIVATE at %C");
+      gfc_error ("Unexpected junk after OMP %s at %C",
+		 is_groupprivate ? "GROUPPRIVATE" : "THREADPRIVATE");
       goto cleanup;
     }
 
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in !$OMP THREADPRIVATE list at %C");
+  gfc_error ("Syntax error in !$OMP %s list at %C",
+	     is_groupprivate ? "GROUPPRIVATE" : "THREADPRIVATE");
 
 cleanup:
   gfc_current_locus = old_loc;
   return MATCH_ERROR;
+}
+
+
+match
+gfc_match_omp_groupprivate (void)
+{
+  return gfc_match_omp_thread_group_private (true);
+}
+
+
+match
+gfc_match_omp_threadprivate (void)
+{
+  return gfc_match_omp_thread_group_private (false);
 }
 
 
@@ -8554,7 +8744,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	"TO", "FROM", "INCLUSIVE", "EXCLUSIVE",
 	"REDUCTION", "REDUCTION" /*inscan*/, "REDUCTION" /*task*/,
 	"IN_REDUCTION", "TASK_REDUCTION",
-	"DEVICE_RESIDENT", "LINK", "USE_DEVICE",
+	"DEVICE_RESIDENT", "LINK", "LOCAL", "USE_DEVICE",
 	"CACHE", "IS_DEVICE_PTR", "USE_DEVICE_PTR", "USE_DEVICE_ADDR",
 	"NONTEMPORAL", "ALLOCATE", "HAS_DEVICE_ADDR", "ENTER",
 	"USES_ALLOCATORS", "INIT", "USE", "DESTROY", "INTEROP", "ADJUST_ARGS" };
@@ -8761,6 +8951,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
     }
   if (omp_clauses->num_threads)
     resolve_positive_int_expr (omp_clauses->num_threads, "NUM_THREADS");
+  if (omp_clauses->dyn_groupprivate)
+    resolve_positive_int_expr (omp_clauses->dyn_groupprivate,
+			       "DYN_GROUPPRIVATE");
   if (omp_clauses->chunk_size)
     {
       gfc_expr *expr = omp_clauses->chunk_size;

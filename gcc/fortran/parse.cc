@@ -1195,6 +1195,9 @@ decode_omp_directive (void)
     case 'f':
       matcho ("flush", gfc_match_omp_flush, ST_OMP_FLUSH);
       break;
+    case 'g':
+      matchdo ("groupprivate", gfc_match_omp_groupprivate, ST_OMP_GROUPPRIVATE);
+      break;
     case 'i':
       matcho ("interop", gfc_match_omp_interop, ST_OMP_INTEROP);
       break;
@@ -1990,7 +1993,8 @@ next_statement (void)
 #define case_omp_decl case ST_OMP_THREADPRIVATE: case ST_OMP_DECLARE_SIMD: \
   case ST_OMP_DECLARE_TARGET: case ST_OMP_DECLARE_REDUCTION: \
   case ST_OMP_DECLARE_VARIANT: case ST_OMP_ALLOCATE: case ST_OMP_ASSUMES: \
-  case ST_OMP_REQUIRES: case ST_OACC_ROUTINE: case ST_OACC_DECLARE
+  case ST_OMP_REQUIRES: case ST_OMP_GROUPPRIVATE: \
+  case ST_OACC_ROUTINE: case ST_OACC_DECLARE
 
 /* OpenMP statements that are followed by a structured block.  */
 
@@ -2908,6 +2912,9 @@ gfc_ascii_statement (gfc_statement st, bool strip_sentinel)
       break;
     case ST_OMP_FLUSH:
       p = "!$OMP FLUSH";
+      break;
+    case ST_OMP_GROUPPRIVATE:
+      p = "!$OMP GROUPPRIVATE";
       break;
     case ST_OMP_INTEROP:
       p = "!$OMP INTEROP";
@@ -4437,6 +4444,7 @@ loop:
 	case ST_EQUIVALENCE:
 	case ST_IMPLICIT:
 	case ST_IMPLICIT_NONE:
+	case ST_OMP_GROUPPRIVATE:
 	case ST_OMP_THREADPRIVATE:
 	case ST_PARAMETER:
 	case ST_STRUCTURE_DECL:

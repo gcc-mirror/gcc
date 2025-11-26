@@ -1560,7 +1560,11 @@ add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
       clauses = c;
     }
 
-  if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET)
+  /* FIXME: 'declare_target_link' permits both any and host, but
+     will fail if one sets OMP_CLAUSE_DEVICE_TYPE_KIND.  */
+  if (sym_attr.omp_device_type != OMP_DEVICE_TYPE_UNSET
+      && !sym_attr.omp_declare_target_link
+      && !sym_attr.omp_declare_target_indirect /* implies 'any' */)
     {
       tree c = build_omp_clause (UNKNOWN_LOCATION, OMP_CLAUSE_DEVICE_TYPE);
       switch (sym_attr.omp_device_type)
@@ -1580,6 +1584,26 @@ add_attributes_to_decl (tree *decl_p, const gfc_symbol *sym)
       OMP_CLAUSE_CHAIN (c) = clauses;
       clauses = c;
     }
+
+  /* Also check trans-common.cc when updating/removing the following;
+     also update f95.c's gfc_gnu_attributes.
+     For the warning, see also OpenMP spec issue 4663.  */
+  if (sym_attr.omp_groupprivate && sym_attr.threadprivate)
+    {
+      /* Unset this flag; implicit 'declare target local(...)' remains.  */
+      sym_attr.omp_groupprivate = 0;
+      gfc_warning (OPT_Wopenmp,
+		   "Ignoring the %<groupprivate%> attribute for "
+		   "%<threadprivate%> variable %qs declared at %L",
+		   sym->name, &sym->declared_at);
+    }
+  if (sym_attr.omp_groupprivate)
+    gfc_error ("Sorry, OMP GROUPPRIVATE not implemented, "
+	       "used by %qs declared at %L", sym->name, &sym->declared_at);
+  else if (sym_attr.omp_declare_target_local)
+    /* Use 'else if' as groupprivate implies 'local'.  */
+    gfc_error ("Sorry, OMP DECLARE TARGET with LOCAL clause not implemented, "
+	       "used by %qs declared at %L", sym->name, &sym->declared_at);
 
   bool has_declare = true;
   if (sym_attr.omp_declare_target_link
