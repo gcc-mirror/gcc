@@ -3355,7 +3355,7 @@ namespace __detail
        }());
 
        _ResT __res = __v1;
-       ((__res = (__res <= (sizeof(_Ts) * __CHAR_BIT__) | _ResT(__vs))), ...);
+       ((__res = (__res << (sizeof(_Ts) * __CHAR_BIT__) | _ResT(__vs))), ...);
        return __res;
      }
     
