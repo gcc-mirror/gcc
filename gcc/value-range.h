@@ -145,7 +145,7 @@ public:
   bool unknown_p () const;
   unsigned get_precision () const;
   void union_ (const irange_bitmask &src);
-  void intersect (const irange_bitmask &src);
+  bool intersect (const irange_bitmask &src);
   bool operator== (const irange_bitmask &src) const;
   bool operator!= (const irange_bitmask &src) const { return !(*this == src); }
   void verify_mask () const;
@@ -247,20 +247,16 @@ irange_bitmask::union_ (const irange_bitmask &src)
     verify_mask ();
 }
 
-inline void
+// Return FALSE if the bitmask intersection is undefined.
+
+inline bool
 irange_bitmask::intersect (const irange_bitmask &src)
 {
   // If we have two known bits that are incompatible, the resulting
-  // bit is undefined.  It is unclear whether we should set the entire
-  // range to UNDEFINED, or just a subset of it.  For now, set the
-  // entire bitmask to unknown (VARYING).
+  // bit and therefore entire range is undefined.  Return FALSE.
   if (wi::bit_and (~(m_mask | src.m_mask),
 		   m_value ^ src.m_value) != 0)
-    {
-      unsigned prec = m_mask.get_precision ();
-      m_mask = wi::minus_one (prec);
-      m_value = wi::zero (prec);
-    }
+    return false;
   else
     {
       m_mask = m_mask & src.m_mask;
@@ -268,6 +264,7 @@ irange_bitmask::intersect (const irange_bitmask &src)
     }
   if (flag_checking)
     verify_mask ();
+  return true;
 }
 
 // An integer range without any storage.

@@ -3848,9 +3848,12 @@ operator_bitwise_and::op1_range (irange &r, tree type,
   // extraneous values thats are not convered by the mask.
   wide_int op1_value = lhs_bm.value () & ~op1_mask;
   irange_bitmask op1_bm (op1_value, op1_mask);
-  // INtersect this mask with anything already known about the value.
-  op1_bm.intersect (r.get_bitmask ());
-  r.update_bitmask (op1_bm);
+  // Intersect this mask with anything already known about the value.
+  // A return valueof false indicated the bitmask is an UNDEFINED range.
+  if (op1_bm.intersect (r.get_bitmask ()))
+    r.update_bitmask (op1_bm);
+  else
+    r.set_undefined ();
   return true;
 }
 

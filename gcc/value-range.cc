@@ -674,8 +674,10 @@ prange::intersect (const vrange &v)
 
   // Intersect all bitmasks: the old one, the new one, and the other operand's.
   irange_bitmask new_bitmask (m_type, m_min, m_max);
-  m_bitmask.intersect (new_bitmask);
-  m_bitmask.intersect (r.m_bitmask);
+  if (!m_bitmask.intersect (new_bitmask))
+    set_undefined ();
+  else if (!m_bitmask.intersect (r.m_bitmask))
+    set_undefined ();
   if (varying_compatible_p ())
     {
       set_varying (type ());
@@ -2528,10 +2530,9 @@ irange::get_bitmask () const
   irange_bitmask bm (type (), lower_bound (), upper_bound ());
   if (!m_bitmask.unknown_p ())
     {
-      bm.intersect (m_bitmask);
       // If the new intersection is unknown, it means there are inconstent
       // bits, so simply return the original bitmask.
-      if (bm.unknown_p ())
+      if (!bm.intersect (m_bitmask))
 	return m_bitmask;
     }
   return bm;
@@ -2572,7 +2573,11 @@ irange::intersect_bitmask (const irange &r)
 
   irange_bitmask bm = get_bitmask ();
   irange_bitmask save = bm;
-  bm.intersect (r.get_bitmask ());
+  if (!bm.intersect (r.get_bitmask ()))
+    {
+      set_undefined ();
+      return true;
+    }
 
   // If the new mask is the same, there is no change.
   if (m_bitmask == bm)
