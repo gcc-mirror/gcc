@@ -173,8 +173,18 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     using __count_type = __detail::__platform_wait_t;
 
-    static constexpr ptrdiff_t _S_max
-      = _Binary ? 1 : __gnu_cxx::__int_traits<__count_type>::__max;
+    static consteval ptrdiff_t
+    _S_calc_max()
+    {
+      if (_Binary)
+	return 1;
+      else if ((ptrdiff_t)__gnu_cxx::__int_traits<__count_type>::__max < 0)
+	return __gnu_cxx::__int_traits<ptrdiff_t>::__max;
+      else
+	return __gnu_cxx::__int_traits<__count_type>::__max;
+    }
+
+    static constexpr ptrdiff_t _S_max = _S_calc_max();
 
     constexpr explicit
     __platform_semaphore_impl(__count_type __count) noexcept
