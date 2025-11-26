@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-require-effective-target vect_simd_clones } */
-/* { dg-additional-options "-fopenmp-simd" } */
+/* { dg-additional-options "-fopenmp-simd -w" } */
 /* { dg-additional-options "-mavx512bw" { target avx512bw } } */
 
 #pragma omp declare simd simdlen(32) inbranch

@@ -1,5 +1,5 @@
 /* { dg-require-effective-target vect_simd_clones } */
-/* { dg-additional-options "-fopenmp-simd --param vect-partial-vector-usage=2" } */
+/* { dg-additional-options "-fopenmp-simd --param vect-partial-vector-usage=2 -w" } */
 /* { dg-additional-options "-mavx512f" { target avx512f_runtime } } */
 /* { dg-add-options ieee } */
 /* { dg-require-effective-target fenv_exceptions } */
