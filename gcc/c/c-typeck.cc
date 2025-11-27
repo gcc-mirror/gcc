@@ -610,9 +610,9 @@ c_type_tag (const_tree t)
     return NULL_TREE;
   if (TREE_CODE (name) == TYPE_DECL)
     {
-      /* A TYPE_DECL added by add_decl_expr.  */
-      gcc_checking_assert (!DECL_NAME (name));
-      return NULL_TREE;
+      if (!DECL_NAME (name))
+	return NULL_TREE;
+      name = DECL_NAME (name);
     }
   gcc_checking_assert (TREE_CODE (name) == IDENTIFIER_NODE);
   return name;
