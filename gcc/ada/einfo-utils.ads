@@ -551,6 +551,9 @@ package Einfo.Utils is
    --  Call [Set_]Is_Volatile_Type/Is_Volatile_Object as appropriate for the
    --  Ekind of Id.
 
+   function Can_Have_Formals (Id : Entity_Id) return Boolean;
+   --  A utility function to see whether the entity can have formals.
+
    function Convention
      (N : Entity_Id) return Convention_Id renames Basic_Convention;
    procedure Set_Convention (E : Entity_Id; Val : Convention_Id);

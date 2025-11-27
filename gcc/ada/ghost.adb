@@ -2334,13 +2334,14 @@ package body Ghost is
       --  we are not dealing with an expanded construct.
 
       if Present (Id)
+        and then Can_Have_Formals (Id)
         and then Comes_From_Source (N)
         and then Ghost_Config.Ghost_Mode /= None
       then
          Orig_Actual := First_Actual (N);
          Formal := First_Formal (Id);
 
-         while Present (Orig_Actual) loop
+         while Present (Orig_Actual) and then Present (Formal) loop
             --  Similarly to Mark_And_Set_Ghost_Procedure_Call we need to
             --  analyze the call argument first to get its level for this
             --  analysis.
