@@ -5014,7 +5014,7 @@ riscv_output_move (rtx dest, rtx src)
 	    if (TARGET_ZFHMIN || TARGET_ZFBFMIN)
 	      return "fmv.x.h\t%0,%1";
 	    /* Using fmv.x.s + sign-extend to emulate fmv.x.h.  */
-	    return "fmv.x.s\t%0,%1;slli\t%0,%0,16;srai\t%0,%0,16";
+	    return "fmv.x.s\t%0,%1\n\tslli\t%0,%0,16\n\tsrai\t%0,%0,16";
 	  case 4:
 	    return "fmv.x.s\t%0,%1";
 	  case 8:
