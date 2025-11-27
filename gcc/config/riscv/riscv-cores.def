@@ -56,6 +56,7 @@ RISCV_TUNE("size", generic, optimize_size_tune_info)
 RISCV_TUNE("mips-p8700", mips_p8700, mips_p8700_tune_info)
 RISCV_TUNE("andes-25-series", andes_25_series, andes_25_tune_info)
 RISCV_TUNE("andes-23-series", andes_23_series, andes_23_tune_info)
+RISCV_TUNE("andes-45-series", andes_45_series, andes_45_tune_info)
 
 #undef RISCV_TUNE
 
@@ -188,6 +189,11 @@ RISCV_CORE("andes-n225",      "rv32im_zicsr_zifencei_zca_zcb_zcmp_zcmt_"
 RISCV_CORE("andes-d23",       "rv32im_zicsr_zifencei_zicbop_zicbom_zicboz_"
 			      "zca_zcb_zcmp_zcmt_zba_zbb_zbc_zbs_xandesperf",
 			      "andes-23-series")
+RISCV_CORE("andes-n45",       "rv32imc_zicsr_zifencei_xandesperf",    "andes-45-series")
+RISCV_CORE("andes-nx45",      "rv64imc_zicsr_zifencei_xandesperf",    "andes-45-series")
+RISCV_CORE("andes-a45",       "rv32imafdc_zicsr_zifencei_xandesperf", "andes-45-series")
+RISCV_CORE("andes-ax45",      "rv64imafdc_zicsr_zifencei_xandesperf", "andes-45-series")
+
 RISCV_CORE("spacemit-x60",    "rv64imafdcv_zba_zbb_zbc_zbs_zicboz_zicond_"
 			      "zbkc_zfh_zvfh_zvkt_zvl256b_sscofpmf",
 			      "spacemit-x60")

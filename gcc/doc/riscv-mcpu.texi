@@ -86,4 +86,12 @@ by particular CPU name. Permissible values for this option are:
 
 @samp{andes-d23},
 
+@samp{andes-n45},
+
+@samp{andes-nx45},
+
+@samp{andes-a45},
+
+@samp{andes-ax45},
+
 @samp{spacemit-x60}.

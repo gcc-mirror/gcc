@@ -63,6 +63,7 @@ enum riscv_microarchitecture_type {
   tt_ascalon_d8,
   andes_25_series,
   andes_23_series,
+  andes_45_series,
   spacemit_x60,
 };
 extern enum riscv_microarchitecture_type riscv_microarchitecture;
