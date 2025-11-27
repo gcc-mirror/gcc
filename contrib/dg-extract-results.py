@@ -164,7 +164,7 @@ class Prog:
     def usage (self):
         name = sys.argv[0]
         sys.stderr.write ('Usage: ' + name
-                          + ''' [-t tool] [-l variant-list] [-L] log-or-sum-file ...
+                          + ''' [-t tool] [-l variant-list] [-L] [-f list-file] log-or-sum-file ...
 
     tool           The tool (e.g. g++, libffi) for which to create a
                    new test summary file.  If not specified then output
@@ -174,6 +174,12 @@ class Prog:
                    variants in the files for <tool>.
     sum-file       A test summary file with the format of those
                    created by runtest from DejaGnu.
+    list-file      A file listing the log-or-sum files to process, one
+                   per line.  Use "-" to read the list from standard
+                   input.  This avoids the command-line length limit
+                   when combining very many files.  May be given more
+                   than once, and may be mixed with log-or-sum-file
+                   arguments.
     If -L is used, merge *.log files instead of *.sum.  In this
     mode the exact order of lines may not be preserved, just different
     Running *.exp chunks should be in correct order.
@@ -189,18 +195,34 @@ class Prog:
     # Parse the command-line arguments.
     def parse_cmdline (self):
         try:
-            (options, self.files) = getopt.getopt (sys.argv[1:], 'l:t:L')
-            if len (self.files) == 0:
-                self.usage()
+            (options, self.files) = getopt.getopt (sys.argv[1:], 'l:t:Lf:')
             for (option, value) in options:
                 if option == '-l':
                     self.variations.append (value)
                 elif option == '-t':
                     self.tools.append (value)
+                elif option == '-f':
+                    self.read_file_list (value)
                 else:
                     self.do_sum = False
+            if len (self.files) == 0:
+                self.usage()
         except getopt.GetoptError as e:
             self.fatal (None, e.msg)
+
+    # Append the files listed in FILENAME, one per line, to self.files.
+    # FILENAME of "-" means read the list from standard input.  Blank
+    # lines are ignored.
+    def read_file_list (self, filename):
+        f = sys.stdin if filename == '-' else open (filename, 'r')
+        try:
+            for line in f:
+                line = line.strip()
+                if line:
+                    self.files.append (line)
+        finally:
+            if f is not sys.stdin:
+                f.close()
 
     # Try to parse time string TIME, returning an arbitrary time on failure.
     # Getting this right is just a nice-to-have so failures should be silent.

@@ -42,7 +42,7 @@ done
 
 usage() {
   cat <<EOF >&2
-Usage: $PROGNAME [-t tool] [-l variant-list] [-L] sum-file ...
+Usage: $PROGNAME [-t tool] [-l variant-list] [-L] [-f list-file] sum-file ...
 
     tool           The tool (e.g. g++, libffi) for which to create a
                    new test summary file.  If not specified then all
@@ -52,6 +52,11 @@ Usage: $PROGNAME [-t tool] [-l variant-list] [-L] sum-file ...
                    variants in the files for <tool>.
     sum-file       A test summary file with the format of those
                    created by runtest from DejaGnu.
+    list-file      A file listing the sum-files to process, one per line.
+                   Use "-" to read the list from standard input.  This
+                   avoids the command-line length limit when combining
+                   very many files.  May be given more than once, and
+                   may be mixed with sum-file arguments.
     If -L is used, merge *.log files instead of *.sum.  In this
     mode the exact order of lines may not be preserved, just different
     Running *.exp chunks should be in correct order.
@@ -69,17 +74,25 @@ msg() {
 VARIANTS=""
 TOOL=""
 MODE="sum"
+LIST_FILES=""
 
-while getopts "l:t:L" ARG; do
+while getopts "l:t:Lf:" ARG; do
   case $ARG in
   l)  VARIANTS="${VARIANTS} ${OPTARG}";;
   t)  test -z "$TOOL" || (msg "${PROGNAME}: only one tool can be specified"; exit 1);
       TOOL="${OPTARG}";;
   L)  MODE="log";;
+  f)  if test "${OPTARG}" = "-" ; then
+        LIST_FILES="${LIST_FILES} `cat`"
+      else
+        LIST_FILES="${LIST_FILES} `cat "${OPTARG}"`"
+      fi;;
   \?) usage; exit 0;;
   esac
 done
 shift `expr ${OPTIND} - 1`
+
+set -- ${LIST_FILES} "$@"
 
 if test $# -lt 1 ; then
   usage
