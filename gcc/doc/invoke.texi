@@ -215,7 +215,8 @@ in the following sections.
 
 @item C++ Language Options
 @xref{C++ Dialect Options,,Options Controlling C++ Dialect}.
-@gccoptlist{-fabi-compat-version=@var{n} -fabi-version=@var{n}
+@gccoptlist{--compile-std-module
+-fabi-compat-version=@var{n} -fabi-version=@var{n}
 -fno-access-control  -faligned-new=@r{[}@var{n}@r{]}
 -fno-assume-sane-operators-new-delete
 -fchar8_t  -fcheck-new
