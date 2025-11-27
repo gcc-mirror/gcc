@@ -178,7 +178,7 @@ check-compile: testsuite_files ${compile_script}
 
 # Runs the testsuite/performance tests.
 # Some of these tests create large (~75MB) files, allocate huge
-# ammounts of memory, or otherwise tie up machine resources. Thus,
+# amounts of memory, or otherwise tie up machine resources. Thus,
 # running this is off by default.
 # XXX Need to add dependency on libtestc++.a
 check_performance_script=${glibcxx_srcdir}/scripts/check_performance
