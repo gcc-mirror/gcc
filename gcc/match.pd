@@ -918,7 +918,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 
 /* X % -Y is the same as X % Y.  */
 (simplify
- (trunc_mod @0 (convert? (negate @1)))
+ (trunc_mod @0 (convert? (negate@2 @1)))
  (if (INTEGRAL_TYPE_P (type)
       && !TYPE_UNSIGNED (type)
       && !TYPE_OVERFLOW_TRAPS (type)
@@ -928,7 +928,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	 INT_MIN % -(-1) into invalid INT_MIN % -1.  */
       && (expr_not_equal_to (@0, wi::to_wide (TYPE_MIN_VALUE (type)))
 	  || expr_not_equal_to (@1, wi::minus_one (TYPE_PRECISION
-							(TREE_TYPE (@1))))))
+							(TREE_TYPE (@1))),
+				gimple_match_ctx (@2))))
   (trunc_mod @0 (convert @1))))
 
 /* X - (X / Y) * Y is the same as X % Y.  */
@@ -4695,7 +4696,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	|| TYPE_OVERFLOW_WRAPS (type)
 	|| (INTEGRAL_TYPE_P (type)
 	    && tree_expr_nonzero_p (@0)
-	    && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)))))
+	    && expr_not_equal_to (@0, wi::minus_one (TYPE_PRECISION (type)),
+				  gimple_match_ctx (@3))))
     (if (single_use (@3) || single_use (@4))
      /* If @1 +- @2 is constant require a hard single-use on either
 	original operand (but not on both).  */
@@ -4715,16 +4717,19 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	  || (INTEGRAL_TYPE_P (type)
 	      && ((tree_expr_nonzero_p (@0)
 		   && expr_not_equal_to (@0,
-				wi::minus_one (TYPE_PRECISION (type))))
+				wi::minus_one (TYPE_PRECISION (type)),
+				gimple_match_ctx (@3)))
 		  || (plusminus == PLUS_EXPR
 		      ? expr_not_equal_to (@2,
-			    wi::max_value (TYPE_PRECISION (type), SIGNED))
+			    wi::max_value (TYPE_PRECISION (type), SIGNED),
+			    gimple_match_ctx (@3))
 		      /* Let's ignore the @0 -1 and @2 min case.  */
 		      : (expr_not_equal_to (@2,
-			    wi::min_value (TYPE_PRECISION (type), SIGNED))
+			    wi::min_value (TYPE_PRECISION (type), SIGNED),
+			    gimple_match_ctx (@3))
 			 && expr_not_equal_to (@2,
 				wi::min_value (TYPE_PRECISION (type), SIGNED)
-				+ 1))))))
+				+ 1, gimple_match_ctx (@3)))))))
 	 && single_use (@3))
      (mult (plusminus { build_one_cst (type); } @2) @0)))
    (simplify
@@ -4739,11 +4744,13 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 	      && ((tree_expr_nonzero_p (@0)
 		   && (plusminus == MINUS_EXPR
 		       || expr_not_equal_to (@0,
-				wi::minus_one (TYPE_PRECISION (type)))))
+				wi::minus_one (TYPE_PRECISION (type)),
+				gimple_match_ctx (@3))))
 		  || expr_not_equal_to (@2,
 			(plusminus == PLUS_EXPR
 			 ? wi::max_value (TYPE_PRECISION (type), SIGNED)
-			 : wi::min_value (TYPE_PRECISION (type), SIGNED))))))
+			 : wi::min_value (TYPE_PRECISION (type), SIGNED)),
+			gimple_match_ctx (@3)))))
 	 && single_use (@3))
       (mult (plusminus @2 { build_one_cst (type); }) @0)))))
  /* (A * B) + (-C) -> (B - C/A) * A, if C is a multiple of A.  */
@@ -5344,7 +5351,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (prec == wi::to_wide (@1))
     (switch
      (if (expr_not_equal_to (@2, wi::uhwi (prec,
-					   TYPE_PRECISION (TREE_TYPE (@2)))))
+					   TYPE_PRECISION (TREE_TYPE (@2))),
+			     gimple_match_ctx (@3)))
       (orotate @0 @2))
      (if (single_use (@3)
 	  && pow2p_hwi (prec)

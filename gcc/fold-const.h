@@ -223,7 +223,7 @@ extern bool merge_ranges (int *, tree *, tree *, int, tree, tree, int,
 extern tree sign_bit_p (tree, const_tree);
 extern bool simple_condition_p (tree);
 extern tree exact_inverse (tree, tree);
-extern bool expr_not_equal_to (tree t, const wide_int &);
+extern bool expr_not_equal_to (tree t, const wide_int &, gimple * = NULL);
 extern tree const_unop (enum tree_code, tree, tree);
 extern tree vector_const_binop (enum tree_code, tree, tree,
 				tree (*) (enum tree_code, tree, tree));

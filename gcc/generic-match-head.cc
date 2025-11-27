@@ -203,3 +203,9 @@ bitwise_inverted_equal_p (tree expr1, tree expr2, bool &wascmp)
     }
   return false;
 }
+
+static inline gimple *
+gimple_match_ctx (tree)
+{
+  return NULL;
+}

@@ -10938,10 +10938,12 @@ tree_expr_nonzero_p (tree t)
   return ret;
 }
 
-/* Return true if T is known not to be equal to an integer W.  */
+/* Return true if T is known not to be equal to an integer W.
+   If STMT is specified, the check is if T on STMT is not equal
+   to W.  */
 
 bool
-expr_not_equal_to (tree t, const wide_int &w)
+expr_not_equal_to (tree t, const wide_int &w, gimple *stmt /* = NULL */)
 {
   int_range_max vr;
   switch (TREE_CODE (t))
@@ -10953,7 +10955,7 @@ expr_not_equal_to (tree t, const wide_int &w)
       if (!INTEGRAL_TYPE_P (TREE_TYPE (t)))
 	return false;
 
-      get_range_query (cfun)->range_of_expr (vr, t);
+      get_range_query (cfun)->range_of_expr (vr, t, stmt);
       if (!vr.undefined_p () && !vr.contains_p (w))
 	return true;
       /* If T has some known zero bits and W has any of those bits set,
