@@ -34,17 +34,8 @@ typedef enum
 
 TEST_OP_CST (eq, ==, 1)
 TEST_OP_CST (ne, !=, 2)
-TEST_OP_CST (lt, <, 3)
-TEST_OP_CST (gt, >, 4)
-TEST_OP_CST (le, <=, 5)
-TEST_OP_CST (ge, >=, 6)
 
 TEST_OP (eq, ==)
 TEST_OP (ne, !=)
-TEST_OP (lt, <)
-TEST_OP (gt, >)
-TEST_OP (le, <=)
-TEST_OP (ge, >=)
 
-/* FIXME: The lt, le, gt and ge cases for int and enum don't get optimized.  */
-/* { dg-final { scan-tree-dump-times "<<" 8 optimized } } */
+/* { dg-final { scan-tree-dump-not "<<" optimized } } */

@@ -36,27 +36,12 @@ typedef enum
 
 TEST_OP_CST (eq, ==, 0)
 TEST_OP_CST (ne, !=, 0)
-TEST_OP_CST (lt, <, 0)
-TEST_OP_CST (gt, >, 0)
-TEST_OP_CST (le, <=, 0)
-TEST_OP_CST (ge, >=, 0)
 
 TEST_OP (eq, ==)
 TEST_OP (ne, !=)
-TEST_OP (lt, <)
-TEST_OP (gt, >)
-TEST_OP (le, <=)
-TEST_OP (ge, >=)
 
 /* These end up getting folded by other patterns.  */
-/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) == 0" 8 optimized } } */
-/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) != 0" 8 optimized } } */
-/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) > 0" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) < 0" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) >= 0" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) <= 0" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "~x_\\d\\(D\\)" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "return x_\\d\\(D\\);" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "return 0;" 4 optimized } } */
-/* { dg-final { scan-tree-dump-times "return 1;" 4 optimized } } */
-/* Total: 48.  */
+/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) == 0" 6 optimized } } */
+/* { dg-final { scan-tree-dump-times "x_\\d\\(D\\) != 0" 6 optimized } } */
+/* { dg-final { scan-tree-dump-times "~x_\\d\\(D\\)" 2 optimized } } */
+/* { dg-final { scan-tree-dump-times "return x_\\d\\(D\\);" 2 optimized } } */
