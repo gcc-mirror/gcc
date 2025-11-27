@@ -1,3 +1,60 @@
+2025-11-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_attr): Handle OpenMP's 'local' clause
+	and the 'groupprivate' directive.
+	(show_omp_clauses): Handle dyn_groupprivate.
+	* frontend-passes.cc (gfc_code_walker): Walk dyn_groupprivate.
+	* gfortran.h (enum gfc_statement): Add ST_OMP_GROUPPRIVATE.
+	(enum gfc_omp_fallback, gfc_add_omp_groupprivate,
+	gfc_add_omp_declare_target_local): New.
+	* match.h (gfc_match_omp_groupprivate): New.
+	* module.cc (enum ab_attribute, mio_symbol_attribute, load_commons,
+	write_common_0): Handle 'groupprivate' + declare target's 'local'.
+	* openmp.cc (gfc_omp_directives): Add 'groupprivate'.
+	(gfc_free_omp_clauses): Free dyn_groupprivate.
+	(enum omp_mask2): Add OMP_CLAUSE_LOCAL and OMP_CLAUSE_DYN_GROUPPRIVATE.
+	(gfc_match_omp_clauses): Match them.
+	(OMP_TARGET_CLAUSES): Add OMP_CLAUSE_DYN_GROUPPRIVATE.
+	(OMP_DECLARE_TARGET_CLAUSES): Add OMP_CLAUSE_LOCAL.
+	(gfc_match_omp_declare_target): Handle groupprivate + fixes.
+	(gfc_match_omp_threadprivate): Code move to and calling now ...
+	(gfc_match_omp_thread_group_private): ... this new function.
+	Also handle groupprivate.
+	(gfc_match_omp_groupprivate): New.
+	(resolve_omp_clauses): Resolve dyn_groupprivate.
+	* parse.cc (decode_omp_directive): Match groupprivate.
+	(case_omp_decl, parse_spec, gfc_ascii_statement): Handle it.
+	* resolve.cc (resolve_symbol): Handle groupprivate.
+	* symbol.cc (gfc_check_conflict, gfc_copy_attr): Handle 'local'
+	and 'groupprivate'.
+	(gfc_add_omp_groupprivate, gfc_add_omp_declare_target_local): New.
+	* trans-common.cc (build_common_decl,
+	accumulate_equivalence_attributes): Print 'sorry' for
+	groupprivate and declare target's local.
+	* trans-decl.cc (add_attributes_to_decl): Likewise..
+	* trans-openmp.cc (gfc_trans_omp_clauses): Print 'sorry' for
+	dyn_groupprivate.
+	(fallback): Process declare target with link/local as
+	done for 'enter'.
+
+2025-11-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104650
+	* decl.cc (gfc_get_pdt_instance): If the PDT template has
+	finalizers, make a new f2k_derived namespace for this intance
+	and copy the template namespace into it. Set the instance
+	template_sym field to point to the template.
+	* expr.cc (gfc_check_pointer_assign): Allow array value pointer
+	lvalues to point to scalar null expressions in initialization.
+	* gfortran.h : Add the template_sym field to gfc_symbol.
+	* resolve.cc (gfc_resolve_finalizers): For a pdt_type, copy the
+	final subroutines with the same type argument into the pdt_type
+	finalizer list. Prevent final subroutine type checking and
+	creation of the vtab for pdt_templates.
+	* symbol.cc (gfc_free_symbol): Do not call gfc_free_namespace
+	for pdt_type with finalizers. Instead, free the finalizers and
+	the namespace.
+
 2025-11-24  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/122766

@@ -1,3 +1,9 @@
+2025-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/121325
+	* pt.cc (tsubst_tree_vec): New.
+	(tsubst_pack_index): Call it.
+
 2025-11-25  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122699

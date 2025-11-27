@@ -1,3 +1,20 @@
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* testsuite/libgomp.c++/atomic-12.C (main): Add ()s around array
+	reference index.
+	* testsuite/libgomp.c++/atomic-13.C: Likewise.
+	* testsuite/libgomp.c++/atomic-8.C: Likewise.
+	* testsuite/libgomp.c++/atomic-9.C: Likewise.
+	* testsuite/libgomp.c++/loop-6.C: Use count = count + 1;
+	return count > 0; instead of return ++count > 0;.
+	* testsuite/libgomp.c++/pr38650.C: Add -std=gnu++17.
+	* testsuite/libgomp.c++/target-lambda-1.C (merge_data_func):
+	Use [=,this] instead of just [=] in lambda captures.
+	* testsuite/libgomp.c-c++-common/target-40.c (f1): Use v += 1;
+	instead of v++;.
+	* testsuite/libgomp.c-c++-common/depend-iterator-2.c: Use v = v + 1;
+	instead of v++.
+
 2025-11-25  Frank Scheiner  <frank.scheiner@web.de>
 
 	* affinity-fmt.c: Make char *q a pointer to a const char.

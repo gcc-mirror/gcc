@@ -1,3 +1,191 @@
+2025-11-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2025-11-26  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	* gcc.target/riscv/predef-profiles-1.c: New test for __riscv_rvi20u64.
+	* gcc.target/riscv/predef-profiles-2.c: New test for __riscv_rvi20u32.
+	* gcc.target/riscv/predef-profiles-3.c: New test for __riscv_rva20u64.
+	* gcc.target/riscv/predef-profiles-4.c: New test for __riscv_rva22u64.
+	* gcc.target/riscv/predef-profiles-5.c: New test for __riscv_rva23u64.
+	* gcc.target/riscv/predef-profiles-6.c: New test for __riscv_rva23s64.
+	* gcc.target/riscv/predef-profiles-7.c: New test for __riscv_rvb23u64.
+	* gcc.target/riscv/predef-profiles-8.c: New test for __riscv_rvb23s64.
+
+2025-11-26  Alejandro Colomar  <alx@kernel.org>
+
+	* gcc.dg/maxof-bitint.c: New test.
+	* gcc.dg/maxof-bitint575.c: New test.
+	* gcc.dg/maxof-compile.c: New test.
+	* gcc.dg/maxof-pedantic-errors.c: New test.
+	* gcc.dg/maxof-pedantic.c: New test.
+
+2025-11-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122735
+	* gcc.dg/torture/pr122735.c: New test.
+
+2025-11-26  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/gomp/crayptr2.f90: Move dg-error line.
+	* gfortran.dg/gomp/declare-target-2.f90: Extend.
+	* gfortran.dg/gomp/declare-target-4.f90: Update comment,
+	enable one test.
+	* gfortran.dg/gomp/declare-target-5.f90: Update dg- wording,
+	add new test.
+	* gfortran.dg/gomp/declare-target-indirect-2.f90: Expect
+	'device_type(any)' in scan-tree-dump.
+	* gfortran.dg/gomp/declare-target-6.f90: New test.
+	* gfortran.dg/gomp/dyn_groupprivate-1.f90: New test.
+	* gfortran.dg/gomp/dyn_groupprivate-2.f90: New test.
+	* gfortran.dg/gomp/groupprivate-1.f90: New test.
+	* gfortran.dg/gomp/groupprivate-2.f90: New test.
+	* gfortran.dg/gomp/groupprivate-3.f90: New test.
+	* gfortran.dg/gomp/groupprivate-4.f90: New test.
+	* gfortran.dg/gomp/groupprivate-5.f90: New test.
+	* gfortran.dg/gomp/groupprivate-6.f90: New test.
+
+2025-11-26  Marek Polacek  <polacek@redhat.com>
+
+	PR c++/121325
+	* g++.dg/cpp26/pack-indexing18.C: New test.
+
+2025-11-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122867
+	* gcc.target/arm/cbz-range.c: New test.
+
+2025-11-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122861
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_10.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_11.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_12.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_13.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_14.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_15.c: New test.
+	* gcc.target/aarch64/sve/vect-early-break-cbranch_9.c: New test.
+	* gcc.target/aarch64/vect-early-break-cbranch_4.c: New test.
+	* gcc.target/aarch64/vect-early-break-cbranch_5.c: New test.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* lib/target-supports.exp: Set cxx_default to c++20 rather than
+	c++17.
+	* lib/g++-dg.exp (g++-std-flags): Reorder list to put 20 first
+	and 17 after 26.
+	* g++.dg/debug/pr80461.C (bar): Use v = v + 1; instead of ++v;.
+	* g++.dg/debug/pr94459.C: Add -std=gnu++17 to dg-options.
+	* g++.dg/diagnostic/virtual-constexpr.C: Remove dg-skip-if,
+	instead use { c++11 && c++17_down } effective target instead of
+	c++11.
+	* g++.dg/guality/pr67192.C: Add -std=gnu++17.
+	* g++.dg/torture/pr84961-1.C: Likewise.
+	* g++.dg/torture/pr84961-2.C: Likewise.
+	* g++.dg/torture/pr51482.C (anim_track_bez_wvect::tangent): Cast
+	key_class to int before multiplying it by float.
+	* g++.dg/torture/stackalign/unwind-4.C (foo): Use g_a = g_a + 1;
+	instead of g_a++;.
+	* g++.dg/tree-prof/partition1.C (bar): Use l = l + 1; return l;
+	instead of return ++l;.
+	* obj-c++.dg/exceptions-3.mm: Add -std=gnu++17.
+	* obj-c++.dg/exceptions-5.mm: Likewise.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122835
+	* gcc.dg/torture/pr122835.c: New test.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119683
+	* gcc.dg/tree-ssa/pr119683.c: New test.
+
+2025-11-26  Richard Biener  <rguenther@suse.de>
+
+	* gcc.dg/vect/vect-simd-clone-22.c: Add -w.
+	* gcc.dg/vect/vect-simd-clone-23.c: Likewise.
+
+2025-11-26  Soumya AR  <soumyaa@nvidia.com>
+
+	* gcc.target/aarch64/aarch64-json-tunings/aarch64-json-tunings.exp: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/boolean-1.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/boolean-1.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/boolean-2.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/boolean-2.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/empty-brackets.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/empty-brackets.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/empty.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/empty.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/enum-1.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/enum-1.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/enum-2.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/enum-2.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/integer-1.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/integer-1.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/integer-2.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/integer-2.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/integer-3.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/integer-3.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/string-1.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/string-1.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/string-2.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/string-2.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/test-all.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/test-all.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unidentified-key.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unidentified-key.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unsigned-1.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unsigned-1.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unsigned-2.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unsigned-2.json: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unsigned-3.c: New test.
+	* gcc.target/aarch64/aarch64-json-tunings/unsigned-3.json: New test.
+
+2025-11-26  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/104650
+	* gfortran.dg/pdt_70.f03: New test.
+
+2025-11-26  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	PR middle-end/116815
+	* gcc.target/aarch64/pr116815-1.c: New test.
+	* gcc.target/aarch64/pr116815-2.c: Likewise.
+	* gcc.target/aarch64/pr116815-3.c: Likewise.
+
+2025-11-26  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/sat/sat_arith.h: Add test helper macros.
+	* gcc.target/riscv/sat/sat_u_mul-8-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u16-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u16-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u32-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u32-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u8-from-u64.rv32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-8-u8-from-u64.rv64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u16-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u16-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u16-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u32-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u32-from-u64.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u64-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u8-from-u128.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u8-from-u16.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u8-from-u32.c: New test.
+	* gcc.target/riscv/sat/sat_u_mul-run-8-u8-from-u64.c: New test.
+
+2025-11-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122847
+	* gcc.dg/torture/pr122847-1.c: New test.
+
 2025-11-25  Lúcio Boari Fleury  <lucboari@gmail.com>
 
 	* rust/compile/macros/mbe/macro-issue3608.rs: New Test. The test skips an issue at line 11

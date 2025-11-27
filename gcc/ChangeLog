@@ -1,3 +1,199 @@
+2025-11-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	Revert:
+	2025-10-14  Zhongyao Chen  <chenzhongyao.hit@gmail.com>
+
+	* common/config/riscv/riscv-common.cc (riscv_subset_list::get_profile_name):
+	New function.
+	* config/riscv/riscv-c.cc (riscv_cpu_cpp_builtins): Define
+	profile macro if a profile is detected.
+	* config/riscv/riscv-subset.h (riscv_subset_list::get_profile_name): Declare.
+
+2025-11-26  Alejandro Colomar  <alx@kernel.org>
+
+	* doc/extend.texi (Syntax Extensions): Document _Maxof & _Minof.
+
+2025-11-26  Tamar Christina  <tamar.christina@arm.com>
+
+	* optabs.cc (emit_cmp_and_jump_insns): Check for non-single use.
+
+2025-11-26  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122735
+	* simplify-rtx.cc (simplify_binary_operation_1): When moving a SUBREG
+	from an outer expression to an inner operand, make sure to avoid
+	trying to create invalid SUBREGs.
+
+2025-11-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122867
+	* config/arm/arm.cc (arm_print_operand): Use %- to
+	emit LOCAL_LABEL_PREFIX.
+	(arm_print_operand_punct_valid_p): Allow %- for punct
+	and make %_ valid for all compilation variants.
+	* config/arm/thumb2.md (*thumb2_cbz): Handle very
+	large branch ranges that exceed the limit of b<cond>.
+	(*thumb2_cbnz): Likewise.
+
+2025-11-26  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/110571
+	* tree-vectorizer.h (vect_need_peeling_or_partial_vectors_p): Remove.
+	* tree-vect-loop.cc (vect_need_peeling_or_partial_vectors_p):
+	Fix when called on epilog loops.  Make static.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Do not
+	re-compute LOOP_VINFO_PEELING_FOR_NITER.
+
+2025-11-26  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122861
+	* optabs.cc (emit_cmp_and_jump_insns): Check argument instead of result.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/invoke.texi (gnu++17): Remove comment about the default.
+	(c++20): Remove note about experimental support, except add a note
+	that modules are still experimental and need to be enabled separately.
+	(gnu++20): Likewise.  Move here comment about the default.
+	(fcoroutines): Mention it is enabled by default for C++20 and later.
+	* doc/standards.texi: Document that the default for C++ is
+	-std=gnu++20.
+
+2025-11-26  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Handle
+	AVX512 masking for loop masked SIMD clone call.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/122835
+	* tree-eh.cc (replace_goto_queue_1): Handle GIMPLE_ASM.
+	(maybe_record_in_goto_queue): Likewise.
+	(lower_eh_constructs_2): Likewise.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119683
+	* gimple-match.h (gimple_match_ctx): New inline function.
+	* match.pd ((mult (plus:s (mult:s @0 @1) @2) @3)): Capture
+	PLUS, use get_range_query (cfun) instead of
+	get_global_range_query () and pass gimple_match_ctx (@5)
+	as 3rd argument to range_of_expr.
+	((plus (mult:s (plus:s @0 @1) @2) @3)): Similarly for MULT,
+	with @4 instead of @5.
+	((t * u) / u -> t): Similarly with @2 instead of @4.
+	((t * u) / v -> t * (u / v)): Capture MULT, pass gimple_match_ctx (@3)
+	as 3rd argument to range_of_expr.
+	((X + M*N) / N -> X / N + M): Pass gimple_match_ctx (@3) or
+	gimple_match_ctx (@4) as 3rd arg to some range_of_expr calls.
+	((X - M*N) / N -> X / N - M): Likewise.
+	((X + C) / N -> X / N + C / N): Similarly.
+	(((T)(A)) + CST -> (T)(A + CST)): Capture CONVERT, use
+	get_range_query (cfun) instead of get_global_range_query ()
+	and pass gimple_match_ctx (@2) as 3rd argument to range_of_expr.
+	(x_5 == cstN ? cst4 : cst3): Capture EQNE and pass
+	gimple_match_ctx (@4) as 3rd argument to range_of_expr.
+
+2025-11-26  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-json-tunings-parser.cc: Include
+	aarch64-json-tunings-parser-generated.inc.
+	* config/aarch64/aarch64-json-tunings-printer.cc: Include
+	aarch64-json-tunings-printer-generated.inc.
+	* config/aarch64/aarch64-opts.h (AARCH64_LDP_STP_POLICY): Use
+	aarch64-tuning-enums.def.
+	* config/aarch64/aarch64-protos.h (AARCH64_AUTOPREFETCH_MODE): Use
+	aarch64-tuning-enums.def.
+	* config/aarch64/t-aarch64: Invoke
+	aarch64-generate-json-tuning-routines.py if the schema is modified.
+	* config/aarch64/aarch64-generate-json-tuning-routines.py: New
+	maintenance script to generate JSON parser/printer routines.
+	* config/aarch64/aarch64-json-tunings-parser-generated.inc: New file.
+	* config/aarch64/aarch64-json-tunings-printer-generated.inc: New file.
+	* config/aarch64/aarch64-tuning-enums.def: New file.
+
+2025-11-26  Soumya AR  <soumyaa@nvidia.com>
+
+	* config.gcc: Add aarch64-json-tunings-parser.o.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal): Invoke
+	aarch64_load_tuning_params_from_json if -muser-provided-CPU= is
+	(aarch64_json_tunings_tests): Extern aarch64_json_tunings_tests().
+	(aarch64_run_selftests): Add aarch64_json_tunings_tests().
+	* config/aarch64/aarch64.opt: New option.
+	* config/aarch64/t-aarch64 (aarch64-json-tunings-parser.o): New define.
+	* config/aarch64/aarch64-json-schema.h: New file.
+	* config/aarch64/aarch64-json-tunings-parser.cc: New file.
+	* config/aarch64/aarch64-json-tunings-parser.h: New file.
+
+2025-11-26  Soumya AR  <soumyaa@nvidia.com>
+
+	* json.h (class object): Add get_map () method.
+	(is_a_helper<json::literal *>, is_a_helper<const json::literal *>):
+	New template specializations.
+
+2025-11-26  Soumya AR  <soumyaa@nvidia.com>
+
+	* config.gcc: Add aarch64-json-tunings-printer.o.
+	* config/aarch64/aarch64.cc (aarch64_override_options_internal): Invoke
+	aarch64_print_tune_params if -fdump-tuning-model= is specified.
+	* config/aarch64/aarch64.opt: New option.
+	* config/aarch64/t-aarch64 (aarch64-json-tunings-printer.o): New define.
+	* config/aarch64/aarch64-json-tunings-printer.cc: New file.
+	* config/aarch64/aarch64-json-tunings-printer.h: New file.
+
+2025-11-26  Soumya AR  <soumyaa@nvidia.com>
+
+	* config/aarch64/aarch64-protos.h
+	(struct scale_addr_mode_cost): Remove const from struct members.
+	(struct cpu_addrcost_table): Likewise.
+	(struct cpu_regmove_cost): Likewise.
+	(struct simd_vec_cost): Likewise.
+	(struct sve_vec_cost): Likewise.
+	(struct aarch64_base_vec_issue_info): Likewise.
+	(struct aarch64_simd_vec_issue_info): Likewise.
+	(struct aarch64_sve_vec_issue_info): Likewise.
+	(struct aarch64_vec_issue_info): Likewise.
+	(struct cpu_vector_cost): Likewise.
+	(struct cpu_branch_cost): Likewise.
+	(struct cpu_approx_modes): Likewise.
+	(struct cpu_prefetch_tune): Likewise.
+	* config/arm/aarch-common-protos.h
+	(struct alu_cost_table): Remove const from struct members.
+	(struct mult_cost_table): Likewise.
+	(struct mem_cost_table): Likewise.
+	(struct fp_cost_table): Likewise.
+	(struct vector_cost_table): Likewise.
+	(struct cpu_cost_table): Likewise.
+
+2025-11-26  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	PR middle-end/116815
+	* config/aarch64/aarch64.md
+	(*aarch64_plus_within_<optab><mode>3_<ovf_commutate>): New pattern.
+	(*aarch64_minus_within_<optab><mode>3): Likewise.
+	* config/aarch64/iterators.md (ovf_add_cmp): New code attribute.
+	(udf_sub_cmp): Likewise.
+	(UMAXMIN): New code iterator.
+	(ovf_commutate): New iterator.
+	(ovf_comm_opp): New int attribute.
+
+2025-11-26  Pan Li  <pan2.li@intel.com>
+
+	* match.pd: Add pattern for SAT_MUL form 7 include
+	mul and widen_mul.
+
+2025-11-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-phiprop.cc (propagate_with_phi): Only
+	calculate on demand post dom info when the new store
+	might trap.
+
+2025-11-26  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122847
+	* tree-ssa-phiprop.cc (propagate_with_phi): Add type
+	check for reuse of the phi for the delayed statements.
+
 2025-11-25  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* configure.ac (gcc_cv_header_zstd_h): Save, restore CXXFLAGS,

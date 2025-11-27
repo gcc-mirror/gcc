@@ -1,3 +1,55 @@
+2025-11-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/122864
+	* include/std/chrono (chrono::__pack_ints): Replace `<=`
+	with `<<`.
+
+2025-11-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/ranges (__detail::__is_std_op_template)
+	(__detail::__is_std_op_wrapper, __func_handle::_Inplace)
+	(__func_handle::_InplaceMemPtr, __func_handle::_ViaPointer)
+	(__func_handle::_StaticCall, __detail::__func_handle_t): Define.
+	(transform_view::_Iterator, zip_transform_view::_Iterator)
+	(adjacent_tranform_view::_Iterator): Replace pointer to view
+	(_M_parent) with pointer to functor (_M_fun). Update constructors
+	to construct _M_fun from *__parent->_M_fun. Define operator* and
+	operator[] in terms of _M_call_deref and _M_call_subscript.
+	* testsuite/std/ranges/adaptors/adjacent_transform/1.cc: New tests.
+	* testsuite/std/ranges/adaptors/transform.cc: New tests.
+	* testsuite/std/ranges/zip_transform/1.cc: New tests.
+
+2025-11-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/ranges_cmp.h (std::identity::operator()):
+	(ranges::equal_to:operator(), ranges::not_equal_to:operator())
+	(ranges::greater::operator(), ranges::greater_equal::operator())
+	(ranges::less::operator(), ranges::less_equal::operator()):
+	Declare as static.
+	* libsupc++/compare (std::compare_three_way::operator()):
+	Declare as static.
+
+2025-11-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/chrono (chrono::__hash): Rename __packed to
+	__res.
+
+2025-11-26  Tomasz Kamiński  <tkaminsk@redhat.com>
+	    Giuseppe D'Angelo  <giuseppe.dangelo@kdab.com>
+
+	PR libstdc++/110357
+	* include/bits/version.def (chrono, chrono_cxx20): Bump values.
+	* include/bits/version.h: Regenerate.
+	* include/std/chrono (__is_nothrow_copy_hashable)
+	(chrono::__pack_ints, chrono::__as_int, chrono::__int_hash)
+	(chrono::__hash): Define.
+	(std::hash): Define partial specialization for duration, time_point,
+	and zoned_time, and full specializations for calendar types and
+	leap_second.
+	(std::__is_fast_hash): Define partial specializations for duration,
+	time_point, zoned_time.
+	* testsuite/std/time/hash.cc: New test.
+
 2025-11-25  Jonathan Wakely  <jwakely@redhat.com>
 
 	* acinclude.m4 (libtool_VERSION): Bump version.

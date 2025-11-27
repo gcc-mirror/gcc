@@ -1,3 +1,12 @@
+2025-11-26  Alejandro Colomar  <alx@kernel.org>
+
+	* c-parser.cc (c_parser_maxof_or_minof_expression): New func.
+	(c_parser_unary_expression): Add RID_MAXOF & RID_MINOF cases.
+	* c-tree.h (c_expr_maxof_type): New prototype.
+	(c_expr_minof_type): New prototype.
+	* c-typeck.cc (c_expr_maxof_type): New function.
+	(c_expr_minof_type): New function.
+
 2025-11-22  Sandra Loosemore  <sloosemore@baylibre.com>
 	    Julian Brown  <julian@codesourcery.com>
 

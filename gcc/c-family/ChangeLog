@@ -1,3 +1,22 @@
+2025-11-26  Alejandro Colomar  <alx@kernel.org>
+
+	* c-common.cc (c_common_reswords): Add _Maxof & _Minof keywords.
+	(c_maxof_type, c_minof_type): New functions.
+	* c-common.def (MAXOF_EXPR, MINOF_EXPR): New trees.
+	* c-common.h (enum rid): Add RID_MAXOF & RID_MINOF constants.
+	(c_maxof_type, c_minof_type): New prototypes.
+
+2025-11-26  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-opts.cc (c_common_init_options): Call set_std_cxx20 rather than
+	set_std_cxx17.
+	* c.opt (std=c++2a): Change description to deprecated option wording.
+	(std=c++20): Remove experimental support part.
+	(std=c++2b): Change description to deprecated option wording.
+	(std=gnu++2a): Likewise.
+	(std=gnu++20): Remove experimental support part.
+	(std=gnu++2b): Change description to deprecated option wording.
+
 2025-11-25  Jason Merrill  <jason@redhat.com>
 
 	* c.opt: Add --compile-std-module.
