@@ -661,8 +661,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
       int_range_max vr0;
       if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
-	  && get_range_query (cfun)->range_of_expr (vr0, @4,
-						    gimple_match_ctx (@5))
+	  && gimple_match_range_of_expr (vr0, @4, @5)
 	  && !vr0.varying_p () && !vr0.undefined_p ())
 	{
 	  wide_int wmin0 = vr0.lower_bound ();
@@ -703,8 +702,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
       int_range_max vr0;
       if (ovf1 == wi::OVF_NONE && ovf2 == wi::OVF_NONE
-	  && get_range_query (cfun)->range_of_expr (vr0, @0,
-						    gimple_match_ctx (@4))
+	  && gimple_match_range_of_expr (vr0, @0, @4)
 	  && !vr0.varying_p () && !vr0.undefined_p ())
 	{
 	  wide_int wmin0 = vr0.lower_bound ();
@@ -1025,10 +1023,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 #if GIMPLE
     (with {int_range_max vr0, vr1;}
      (if (INTEGRAL_TYPE_P (type)
-	  && get_range_query (cfun)->range_of_expr (vr0, @0,
-						    gimple_match_ctx (@2))
-	  && get_range_query (cfun)->range_of_expr (vr1, @1,
-						    gimple_match_ctx (@2))
+	  && gimple_match_range_of_expr (vr0, @0, @2)
+	  && gimple_match_range_of_expr (vr1, @1, @2)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
       @0))
 #endif
@@ -1042,9 +1038,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
    (if (TYPE_OVERFLOW_UNDEFINED (type) && !TYPE_OVERFLOW_SANITIZED (type))
     (mult @0 (div! @1 @2))
     (with {int_range_max vr0, vr1;}
-     (if (get_range_query (cfun)->range_of_expr (vr0, @0,
-						 gimple_match_ctx (@3))
-	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+     (if (gimple_match_range_of_expr (vr0, @0, @3)
+	  && gimple_match_range_of_expr (vr1, @1)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1))
       (mult @0 (div! @1 @2))))
    )))
@@ -1058,10 +1053,9 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
     (div @1 @2)
 #if GIMPLE
     (with {int_range_max vr0, vr1, vr2;}
-     (if (get_range_query (cfun)->range_of_expr (vr0, @0,
-						 gimple_match_ctx (@3))
-	  && get_range_query (cfun)->range_of_expr (vr1, @1)
-	  && get_range_query (cfun)->range_of_expr (vr2, @2)
+     (if (gimple_match_range_of_expr (vr0, @0, @3)
+	  && gimple_match_range_of_expr (vr1, @1)
+	  && gimple_match_range_of_expr (vr2, @2)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr1)
 	  && range_op_handler (MULT_EXPR).overflow_free_p (vr0, vr2))
       (div @1 @2)))
@@ -1075,19 +1069,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (div (plus:c@4 @0 (mult:c@3 @1 @2)) @2)
   (with {int_range_max vr0, vr1, vr2, vr3, vr4;}
   (if (INTEGRAL_TYPE_P (type)
-       && get_range_query (cfun)->range_of_expr (vr1, @1,
-						 gimple_match_ctx (@3))
-       && get_range_query (cfun)->range_of_expr (vr2, @2,
-						 gimple_match_ctx (@3))
+       && gimple_match_range_of_expr (vr1, @1, @3)
+       && gimple_match_range_of_expr (vr2, @2, @3)
        /* "N*M" doesn't overflow.  */
        && range_op_handler (MULT_EXPR).overflow_free_p (vr1, vr2)
-       && get_range_query (cfun)->range_of_expr (vr0, @0,
-						 gimple_match_ctx (@4))
-       && get_range_query (cfun)->range_of_expr (vr3, @3,
-						 gimple_match_ctx (@4))
+       && gimple_match_range_of_expr (vr0, @0, @4)
+       && gimple_match_range_of_expr (vr3, @3, @4)
        /* "X+(N*M)" doesn't overflow.  */
        && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr3)
-       && get_range_query (cfun)->range_of_expr (vr4, @4)
+       && gimple_match_range_of_expr (vr4, @4)
        && !vr4.undefined_p ()
        /* "X+N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
@@ -1100,19 +1090,15 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
   (div (minus@4 @0 (mult:c@3 @1 @2)) @2)
   (with {int_range_max vr0, vr1, vr2, vr3, vr4;}
   (if (INTEGRAL_TYPE_P (type)
-       && get_range_query (cfun)->range_of_expr (vr1, @1,
-						 gimple_match_ctx (@3))
-       && get_range_query (cfun)->range_of_expr (vr2, @2,
-						 gimple_match_ctx (@3))
+       && gimple_match_range_of_expr (vr1, @1, @3)
+       && gimple_match_range_of_expr (vr2, @2, @3)
        /* "N * M" doesn't overflow.  */
        && range_op_handler (MULT_EXPR).overflow_free_p (vr1, vr2)
-       && get_range_query (cfun)->range_of_expr (vr0, @0,
-						 gimple_match_ctx (@4))
-       && get_range_query (cfun)->range_of_expr (vr3, @3,
-						 gimple_match_ctx (@4))
+       && gimple_match_range_of_expr (vr0, @0, @4)
+       && gimple_match_range_of_expr (vr3, @3, @4)
        /* "X - (N*M)" doesn't overflow.  */
        && range_op_handler (MINUS_EXPR).overflow_free_p (vr0, vr3)
-       && get_range_query (cfun)->range_of_expr (vr4, @4)
+       && gimple_match_range_of_expr (vr4, @4)
        && !vr4.undefined_p ()
        /* "X-N*M" is not with opposite sign as "X".  */
        && (TYPE_UNSIGNED (type)
@@ -1138,13 +1124,12 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
       int_range_max vr0, vr1, vr3;
     }
     (if (INTEGRAL_TYPE_P (type)
-	 && get_range_query (cfun)->range_of_expr (vr0, @0,
-						   gimple_match_ctx (@3)))
+	 && gimple_match_range_of_expr (vr0, @0, @3))
      (if (exact_mod (c)
-	  && get_range_query (cfun)->range_of_expr (vr1, @1)
+	  && gimple_match_range_of_expr (vr1, @1)
 	  /* "X+C" doesn't overflow.  */
 	  && range_op_handler (PLUS_EXPR).overflow_free_p (vr0, vr1)
-	  && get_range_query (cfun)->range_of_expr (vr3, @3)
+	  && gimple_match_range_of_expr (vr3, @3)
 	  && !vr3.undefined_p ()
 	  /* "X+C" and "X" are not of opposite sign.  */
 	  && (TYPE_UNSIGNED (type)
@@ -4484,8 +4469,7 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
 			    TYPE_SIGN (inner_type));
 
 	int_range_max vr;
-	if (get_range_query (cfun)->range_of_expr (vr, @0,
-						   gimple_match_ctx (@2))
+	if (gimple_match_range_of_expr (vr, @0, @2)
 	    && !vr.varying_p () && !vr.undefined_p ())
           {
 	    wide_int wmin0 = vr.lower_bound ();
@@ -6563,8 +6547,8 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
            || wi::to_widest (@2) == wi::to_widest (@3) + 1))
    (with {
      int_range_max r;
-     get_range_query (cfun)->range_of_expr (r, @0, gimple_match_ctx (@4));
-     if (r.undefined_p ())
+     if (!gimple_match_range_of_expr (r, @0, @4)
+	 || r.undefined_p ())
        r.set_varying (TREE_TYPE (@0));
 
      wide_int min = r.lower_bound ();

@@ -507,3 +507,29 @@ match_cond_with_binary_phi (gphi *phi, tree *true_arg, tree *false_arg)
 
   return cond;
 }
+
+/* If OP is a SSA_NAME with SSA_NAME_DEF_STMT in the IL, return that
+   stmt, otherwise NULL.  For use in range_of_expr calls.  */
+
+static inline gimple *
+gimple_match_ctx (tree op)
+{
+  if (TREE_CODE (op) == SSA_NAME
+      && SSA_NAME_DEF_STMT (op)
+      && gimple_bb (SSA_NAME_DEF_STMT (op)))
+    return SSA_NAME_DEF_STMT (op);
+  return NULL;
+}
+
+/* Helper to shorten range queries in match.pd.  R is the range to
+   be queried, OP tree on which it should be queried and CTX is some
+   capture on which gimple_match_ctx should be called, or NULL for
+   global range.  */
+
+static inline bool
+gimple_match_range_of_expr (vrange &r, tree op, tree ctx = NULL_TREE)
+{
+  return get_range_query (cfun)->range_of_expr (r, op,
+						ctx ? gimple_match_ctx (ctx)
+						: NULL);
+}
