@@ -2639,37 +2639,37 @@ void
 rust_input_source_test ()
 {
   // ASCII
-  std::string src = u8"_abcde\tXYZ\v\f";
+  std::string src = (const char *) u8"_abcde\tXYZ\v\f";
   std::vector<uint32_t> expected
-    = {'_', 'a', 'b', 'c', 'd', 'e', '\t', 'X', 'Y', 'Z', '\v', '\f'};
+    = {u'_', u'a', u'b', u'c', u'd', u'e', u'\t', u'X', u'Y', u'Z', u'\v', u'\f'};
   test_buffer_input_source (src, expected);
 
   // BOM
-  src = u8"\xef\xbb\xbfOK";
-  expected = {'O', 'K'};
+  src = (const char *) u8"\xef\xbb\xbfOK";
+  expected = {u'O', u'K'};
   test_buffer_input_source (src, expected);
 
   // Russian
-  src = u8"приве́т";
-  expected = {L'п',
-	      L'р',
-	      L'и',
-	      L'в',
+  src = (const char *) u8"приве́т";
+  expected = {u'п',
+	      u'р',
+	      u'и',
+	      u'в',
 	      0x0435 /* CYRILLIC SMALL LETTER IE е */,
 	      0x301 /* COMBINING ACUTE ACCENT ́ */,
-	      L'т'};
+	      u'т'};
   test_buffer_input_source (src, expected);
 
-  src = u8"❤️🦀";
+  src = (const char *) u8"❤️🦀";
   expected = {0x2764 /* HEAVY BLACK HEART */,
-	      0xfe0f /* VARIATION SELECTOR-16 */, L'🦀'};
+	      0xfe0f /* VARIATION SELECTOR-16 */, U'🦀'};
   test_buffer_input_source (src, expected);
 
-  src = u8"こんにちは";
-  expected = {L'こ', L'ん', L'に', L'ち', L'は'};
+  src = (const char *) u8"こんにちは";
+  expected = {u'こ', u'ん', u'に', u'ち', u'は'};
   test_file_input_source (src, expected);
 
-  src = u8"👮‍♂👩‍⚕";
+  src = (const char *) u8"👮‍♂👩‍⚕";
   expected
     = {0x1f46e /* POLICE OFFICER */,   0x200d /* ZERO WIDTH JOINER */,
        0x2642 /* MALE SIGN */,	       0x1f469 /* WOMAN */,
