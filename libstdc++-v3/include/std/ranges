@@ -346,23 +346,23 @@ namespace ranges
 
 	    constexpr explicit
 	    _Inplace(_Fn __func) noexcept
-	    : _M_ptr(__func)
+	    : _M_fn(__func)
 	    { }
 
 	    template<typename... _Iters>
 	      constexpr decltype(auto)
 	      _M_call_deref(const _Iters&... __iters) const
-	      noexcept(noexcept(_M_ptr(*__iters...)))
-	      { return _M_ptr(*__iters...); }
+	      noexcept(noexcept(_M_fn(*__iters...)))
+	      { return _M_fn(*__iters...); }
 
 	    template<typename _DistType, typename... _Iters>
 	      constexpr decltype(auto)
 	      _M_call_subscript(const _DistType __n, const _Iters&... __iters) const
-	      noexcept(noexcept(_M_ptr(__iters[iter_difference_t<_Iters>(__n)]...)))
-	      { return _M_ptr(__iters[iter_difference_t<_Iters>(__n)]...); }
+	      noexcept(noexcept(_M_fn(__iters[iter_difference_t<_Iters>(__n)]...)))
+	      { return _M_fn(__iters[iter_difference_t<_Iters>(__n)]...); }
 
 	  private:
-	    [[no_unique_address]] _Fn _M_ptr = _Fn();
+	    [[no_unique_address]] _Fn _M_fn = _Fn();
 	  };
 
 	template<typename _Fn>
@@ -448,23 +448,28 @@ namespace ranges
 	      noexcept(noexcept(_Fn::operator()(__iters[iter_difference_t<_Iters>(__n)]...)))
 	      { return _Fn::operator()(__iters[iter_difference_t<_Iters>(__n)]...); }
 	  };
+
+	  template<typename _Fn, typename... _Iters>
+	    consteval auto
+	    __select()
+	    {
+	      using _Fd = remove_cv_t<_Fn>;
+	      if constexpr (is_member_pointer_v<_Fd>)
+		return __func_handle::_InplaceMemPtr<_Fd>();
+	      else if constexpr (is_function_v<remove_pointer_t<_Fd>>)
+		return __func_handle::_Inplace<_Fd>();
+	      else if constexpr (__is_std_op_wrapper<_Fd>)
+	       return __func_handle::_Inplace<_Fd>();
+	     else if constexpr (requires (const _Iters&... __iters)
+				{ _Fd::operator()(*__iters...); })
+	       return __func_handle::_StaticCall<_Fd>();
+	     else
+	       return __func_handle::_ViaPointer<_Fn>();
+	   };
       } // __func_handle
 
       template<typename _Fn, typename... _Iters>
-	using __func_handle_t = decltype([] {
-	  using _Fd = remove_cv_t<_Fn>;
-	  if constexpr (is_member_pointer_v<_Fd>)
-	    return __func_handle::_InplaceMemPtr<_Fd>();
-	  else if constexpr (is_function_v<remove_pointer_t<_Fd>>)
-	    return __func_handle::_Inplace<_Fd>();
-	  else if constexpr (__is_std_op_wrapper<_Fd>)
-	    return __func_handle::_Inplace<_Fd>();
-	  else if constexpr (requires (const _Iters&... __iters)
-			       { _Fd::operator()(*__iters...); })
-	    return __func_handle::_StaticCall<_Fd>();
-	  else
-	    return __func_handle::_ViaPointer<_Fn>();
-	}());
+	using __func_handle_t = decltype(__func_handle::__select<_Fn, _Iters...>());
   } // namespace __detail
 
   /// A view that contains exactly one element.
