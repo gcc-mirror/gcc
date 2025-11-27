@@ -3137,7 +3137,7 @@ eval_binary_expression (const constexpr_ctx *ctx, tree t, bool lval,
 	{
 	  tree lmem = PTRMEM_CST_MEMBER (lhs);
 	  tree rmem = PTRMEM_CST_MEMBER (rhs);
-	  bool eq;
+	  bool eq = false;
 	  if (TREE_CODE (lmem) == TREE_CODE (rmem)
 	      && TREE_CODE (lmem) == FIELD_DECL
 	      && TREE_CODE (DECL_CONTEXT (lmem)) == UNION_TYPE
