@@ -358,7 +358,7 @@ struct MacroExpander
    *
    * @param parser Parser to use for matching
    * @param rep Repetition to try and match
-   * @param match_amount Reference in which to store the ammount of succesful
+   * @param match_amount Reference in which to store the amount of successful
    * and valid matches
    *
    * @param lo_bound Lower bound of the matcher. When specified, the matcher
