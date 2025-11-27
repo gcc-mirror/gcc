@@ -1449,7 +1449,7 @@ arm_init_cde_builtins (void)
 static void
 arm_init_mve_builtins (void)
 {
-  volatile unsigned int i, fcode = ARM_BUILTIN_MVE_PATTERN_START;
+  unsigned int i, fcode = ARM_BUILTIN_MVE_PATTERN_START;
 
   arm_init_simd_builtin_scalar_types ();
   arm_init_simd_builtin_types ();
