@@ -784,6 +784,31 @@ static const struct riscv_tune_param spacemit_x60_tune_info= {
   true,						/* prefer-agnostic.  */
 };
 
+/* Costs to use when optimizing for Andes 23 series.  */
+static const struct riscv_tune_param andes_23_tune_info = {
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},       /* fp_add */
+  {COSTS_N_INSNS (4), COSTS_N_INSNS (5)},       /* fp_mul */
+  {COSTS_N_INSNS (20), COSTS_N_INSNS (20)},     /* fp_div */
+  {COSTS_N_INSNS (2), COSTS_N_INSNS (2)},       /* int_mul */
+  {COSTS_N_INSNS (24), COSTS_N_INSNS (24)},     /* int_div */
+  2,						/* issue_rate */
+  3,						/* branch_cost */
+  3,						/* memory_cost */
+  8,						/* fmv_cost */
+  false,					/* slow_unaligned_access */
+  false,					/* vector_unaligned_access */
+  true,						/* use_divmod_expansion */
+  false,					/* overlap_op_by_pieces */
+  false,					/* use_zero_stride_load */
+  false,					/* speculative_sched_vsetvl */
+  RISCV_FUSE_NOTHING,				/* fusible_ops */
+  NULL,						/* vector cost */
+  NULL,						/* function_align */
+  NULL,						/* jump_align */
+  NULL,						/* loop_align */
+  true,						/* prefer-agnostic.  */
+};
+
 static bool riscv_avoid_shrink_wrapping_separate ();
 static tree riscv_handle_fndecl_attribute (tree *, tree, tree, int, bool *);
 static tree riscv_handle_type_attribute (tree *, tree, tree, int, bool *);
