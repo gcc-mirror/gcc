@@ -455,49 +455,6 @@ __cond_wait_until(__condvar& __cv, mutex& __mx,
   return __wait_clock_t::now() < __atime;
 }
 #endif // ! HAVE_PLATFORM_WAIT
-
-// Unlike __spin_impl, does not always return _M_has_val == true.
-// If the deadline has already passed then no fresh value is loaded.
-__wait_result_type
-__spin_until_impl(const __platform_wait_t* __addr,
-		  const __wait_args_base& __args,
-		  const __wait_clock_t::time_point& __deadline)
-{
-  using namespace literals::chrono_literals;
-
-  __wait_result_type __res{};
-  auto __t0 = __wait_clock_t::now();
-  auto __now = __t0;
-  for (; __now < __deadline; __now = __wait_clock_t::now())
-    {
-      auto __elapsed = __now - __t0;
-#ifndef _GLIBCXX_NO_SLEEP
-      if (__elapsed > 128ms)
-	this_thread::sleep_for(64ms);
-      else if (__elapsed > 64us)
-	this_thread::sleep_for(__elapsed / 2);
-      else
-#endif
-      if (__elapsed > 4us)
-	__thread_yield();
-      else
-	{
-	  __res = __detail::__spin_impl(__addr, __args);
-	  if (!__res._M_timeout)
-	    return __res;
-	}
-
-      __res._M_val = __atomic_load_n(__addr, __args._M_order);
-      __res._M_has_val = true;
-      if (__res._M_val != __args._M_old)
-	{
-	  __res._M_timeout = false;
-	  return __res;
-	}
-    }
-  __res._M_timeout = true;
-  return __res;
-}
 } // namespace
 
 __wait_result_type
@@ -509,10 +466,12 @@ __wait_until_impl([[maybe_unused]] const void* __addr, __wait_args_base& __args,
 
   if (__args & __wait_flags::__do_spin)
     {
-      auto __res = __detail::__spin_until_impl(__wait_addr, __args, __atime);
+      auto __res = __detail::__spin_impl(__wait_addr, __args);
       if (!__res._M_timeout)
 	return __res;
       if (__args & __wait_flags::__spin_only)
+	return __res;
+      if (__wait_clock_t::now() >= __atime)
 	return __res;
     }
 
