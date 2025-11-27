@@ -4047,7 +4047,6 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 {
   tree vec_dest;
   tree scalar_dest;
-  tree op;
   tree vec_oprnd0 = NULL_TREE;
   tree vectype;
   poly_uint64 nunits;
@@ -4121,6 +4120,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
     {
       simd_call_arg_info thisarginfo;
       affine_iv iv;
+      tree op;
 
       thisarginfo.linear_step = 0;
       thisarginfo.align = 0;
@@ -4435,9 +4435,39 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	    case SIMD_CLONE_ARG_TYPE_MASK:
 	      if (loop_vinfo
 		  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo))
-		vect_record_loop_mask (loop_vinfo,
-				       &LOOP_VINFO_MASKS (loop_vinfo),
-				       ncopies_in, vectype, op);
+		{
+		  if (masked_call_offset)
+		    /* When there is an explicit mask we require the
+		       number of elements to match up.  */
+		    vect_record_loop_mask (loop_vinfo,
+					   &LOOP_VINFO_MASKS (loop_vinfo),
+					   ncopies_in, vectype, NULL_TREE);
+		  else
+		    {
+		      /* When there is no explicit mask on the call we have
+			 more relaxed requirements.  */
+		      tree masktype;
+		      poly_uint64 callee_nelements;
+		      if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
+			{
+			  callee_nelements
+			    = exact_div (bestn->simdclone->simdlen,
+					 bestn->simdclone->args[i].linear_step);
+			  masktype = get_related_vectype_for_scalar_type
+			      (vinfo->vector_mode, TREE_TYPE (vectype),
+			       callee_nelements);
+			}
+		      else
+			{
+			  masktype = bestn->simdclone->args[i].vector_type;
+			  callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
+			}
+		      auto o = vector_unroll_factor (nunits, callee_nelements);
+		      vect_record_loop_mask (loop_vinfo,
+					     &LOOP_VINFO_MASKS (loop_vinfo),
+					     ncopies  * o, masktype, NULL_TREE);
+		    }
+		}
 	      break;
 	    }
 	}
@@ -4499,7 +4529,7 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	{
 	  unsigned int k, l, m, o;
 	  tree atype;
-	  op = gimple_call_arg (stmt, i + masked_call_offset);
+	  tree op = gimple_call_arg (stmt, i + masked_call_offset);
 	  switch (bestn->simdclone->args[i].arg_type)
 	    {
 	    case SIMD_CLONE_ARG_TYPE_VECTOR:
@@ -4818,12 +4848,20 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 	  gcc_assert (bestn->simdclone->args[mask_i].arg_type ==
 		      SIMD_CLONE_ARG_TYPE_MASK);
 
-	  tree masktype = bestn->simdclone->args[mask_i].vector_type;
+	  tree mask_argtype = bestn->simdclone->args[mask_i].vector_type;
+	  tree mask_vectype;
 	  if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
-	    callee_nelements = exact_div (bestn->simdclone->simdlen,
-					  bestn->simdclone->args[i].linear_step);
+	    {
+	      callee_nelements = exact_div (bestn->simdclone->simdlen,
+					    bestn->simdclone->args[i].linear_step);
+	      mask_vectype = get_related_vectype_for_scalar_type
+		  (vinfo->vector_mode, TREE_TYPE (vectype), callee_nelements);
+	    }
 	  else
-	    callee_nelements = TYPE_VECTOR_SUBPARTS (masktype);
+	    {
+	      mask_vectype = mask_argtype;
+	      callee_nelements = TYPE_VECTOR_SUBPARTS (mask_vectype);
+	    }
 	  o = vector_unroll_factor (nunits, callee_nelements);
 	  for (m = j * o; m < (j + 1) * o; m++)
 	    {
@@ -4831,10 +4869,11 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 		{
 		  vec_loop_masks *loop_masks = &LOOP_VINFO_MASKS (loop_vinfo);
 		  mask = vect_get_loop_mask (loop_vinfo, gsi, loop_masks,
-					     ncopies_in, vectype, j);
+					     ncopies * o, mask_vectype, m);
 		}
 	      else
-		mask = vect_build_all_ones_mask (vinfo, stmt_info, masktype);
+		mask = vect_build_all_ones_mask (vinfo, stmt_info,
+						 mask_argtype);
 
 	      gassign *new_stmt;
 	      if (SCALAR_INT_MODE_P (bestn->simdclone->mask_mode))
@@ -4852,23 +4891,18 @@ vectorizable_simd_clone_call (vec_info *vinfo, stmt_vec_info stmt_info,
 					     mask);
 		  gsi_insert_before (gsi, new_stmt, GSI_SAME_STMT);
 		  /* Then zero-extend to the mask mode.  */
-		  mask = fold_build1 (NOP_EXPR, masktype,
+		  mask = fold_build1 (NOP_EXPR, mask_argtype,
 				      gimple_get_lhs (new_stmt));
 		}
 	      else if (bestn->simdclone->mask_mode == VOIDmode)
-		{
-		  tree one = fold_convert (TREE_TYPE (masktype),
-					   integer_one_node);
-		  tree zero = fold_convert (TREE_TYPE (masktype),
-					    integer_zero_node);
-		  mask = build3 (VEC_COND_EXPR, masktype, mask,
-				 build_vector_from_val (masktype, one),
-				 build_vector_from_val (masktype, zero));
-		}
+		mask = build3 (VEC_COND_EXPR, mask_argtype, mask,
+			       build_one_cst (mask_argtype),
+			       build_zero_cst (mask_argtype));
 	      else
 		gcc_unreachable ();
 
-	      new_stmt = gimple_build_assign (make_ssa_name (masktype), mask);
+	      new_stmt = gimple_build_assign (make_ssa_name (mask_argtype),
+					      mask);
 	      vect_finish_stmt_generation (vinfo, stmt_info,
 					   new_stmt, gsi);
 	      mask = gimple_assign_lhs (new_stmt);
