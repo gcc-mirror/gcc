@@ -34,7 +34,7 @@ template<typename Container, int Iter>
 
 	//Search for random values that may or may not belong to the list.
 	for (int i = 0; i < 50; ++i)
-	  std::find(obj.begin(), obj.end(), rand() % 100001);
+	  (void) std::find(obj.begin(), obj.end(), rand() % 100001);
       
 	obj.sort();
       
