@@ -258,7 +258,7 @@ public:
   equiv_class (const equiv_class &other);
 
   hashval_t hash () const;
-  bool operator== (const equiv_class &other);
+  bool operator== (const equiv_class &other) const;
 
   void add (const svalue *sval);
   bool del (const svalue *sval);

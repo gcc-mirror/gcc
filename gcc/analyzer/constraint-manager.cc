@@ -1175,7 +1175,7 @@ equiv_class::hash () const
    meaningful.  */
 
 bool
-equiv_class::operator== (const equiv_class &other)
+equiv_class::operator== (const equiv_class &other) const
 {
   if (m_constant != other.m_constant)
     return false; // TODO: use tree equality here?
