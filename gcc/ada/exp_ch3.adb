@@ -5180,7 +5180,7 @@ package body Exp_Ch3 is
 
          while Present (Comp) loop
             if Present (User_Defined_Eq (Etype (Comp)))
-              and then not Is_Record_Type (Etype (Comp))
+              and then not Is_Record_Type (Underlying_Type (Etype (Comp)))
               and then not Is_Intrinsic_Subprogram
                              (User_Defined_Eq (Etype (Comp)))
             then
