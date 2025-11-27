@@ -5026,6 +5026,12 @@ vect_find_reusable_accumulator (loop_vec_info loop_vinfo,
   if (VECT_REDUC_INFO_TYPE (reduc_info) != TREE_CODE_REDUCTION)
     return false;
 
+  /* We are not set up to handle vector bools when they are not mapped
+     to vector integer data types.  */
+  if (VECTOR_BOOLEAN_TYPE_P (vectype)
+      && GET_MODE_CLASS (TYPE_MODE (vectype)) != MODE_VECTOR_INT)
+    return false;
+
   unsigned int num_phis = VECT_REDUC_INFO_INITIAL_VALUES (reduc_info).length ();
   auto_vec<tree, 16> main_loop_results (num_phis);
   auto_vec<tree, 16> initial_values (num_phis);
@@ -5126,6 +5132,9 @@ static tree
 vect_create_partial_epilog (tree vec_def, tree vectype, code_helper code,
 			    gimple_seq *seq)
 {
+  gcc_assert (!VECTOR_BOOLEAN_TYPE_P (TREE_TYPE (vec_def))
+	      || (GET_MODE_CLASS (TYPE_MODE (TREE_TYPE (vec_def)))
+		  == MODE_VECTOR_INT));
   unsigned nunits = TYPE_VECTOR_SUBPARTS (TREE_TYPE (vec_def)).to_constant ();
   unsigned nunits1 = TYPE_VECTOR_SUBPARTS (vectype).to_constant ();
   tree stype = TREE_TYPE (vectype);
