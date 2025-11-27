@@ -22,7 +22,6 @@
 #include "rust-system.h"
 #include "rust-location.h"
 #include "rust-hir-full-decls.h"
-#include "rust-tyty-bounds.h"
 #include "rust-tyty-region.h"
 #include "rust-ast.h"
 #include "optional.h"

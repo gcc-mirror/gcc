@@ -24,7 +24,6 @@
 #include "rust-common.h"
 #include "rust-identifier.h"
 #include "rust-abi.h"
-#include "rust-tyty-bounds.h"
 #include "rust-tyty-util.h"
 #include "rust-tyty-subst.h"
 #include "rust-tyty-region.h"
@@ -92,6 +91,127 @@ public:
 class TyVisitor;
 class TyConstVisitor;
 class BaseConstType;
+
+class TypeBoundPredicate : public SubstitutionRef
+{
+public:
+  TypeBoundPredicate (const Resolver::TraitReference &trait_reference,
+		      BoundPolarity polarity, location_t locus);
+
+  TypeBoundPredicate (DefId reference,
+		      std::vector<SubstitutionParamMapping> substitutions,
+		      BoundPolarity polarity, location_t locus);
+
+  TypeBoundPredicate (const TypeBoundPredicate &other);
+
+  virtual ~TypeBoundPredicate () {}
+
+  TypeBoundPredicate &operator= (const TypeBoundPredicate &other);
+
+  static TypeBoundPredicate error ();
+
+  std::string as_string () const;
+
+  std::string as_name () const;
+
+  const Resolver::TraitReference *get () const;
+
+  location_t get_locus () const { return locus; }
+
+  std::string get_name () const;
+
+  // check that this  is object-safe see:
+  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
+  bool is_object_safe (bool emit_error, location_t locus) const;
+
+  void apply_generic_arguments (HIR::GenericArgs *generic_args,
+				bool has_associated_self, bool is_super_trait);
+
+  void apply_argument_mappings (SubstitutionArgumentMappings &arguments,
+				bool is_super_trait);
+
+  bool contains_item (const std::string &search) const;
+
+  tl::optional<TypeBoundPredicateItem>
+  lookup_associated_item (const std::string &search) const;
+
+  tl::optional<TypeBoundPredicateItem>
+  lookup_associated_item (const Resolver::TraitItemReference *ref) const;
+
+  // WARNING THIS WILL ALWAYS RETURN NULLPTR
+  BaseType *
+  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
+
+  bool is_error () const;
+
+  bool requires_generic_args () const;
+
+  bool contains_associated_types () const;
+
+  DefId get_id () const { return reference; }
+
+  BoundPolarity get_polarity () const { return polarity; }
+
+  std::vector<TypeBoundPredicateItem> get_associated_type_items ();
+
+  size_t get_num_associated_bindings () const override final;
+
+  TypeBoundPredicateItem
+  lookup_associated_type (const std::string &search) override final;
+
+  bool is_equal (const TypeBoundPredicate &other) const;
+
+  bool validate_type_implements_super_traits (TyTy::BaseType &self,
+					      HIR::Type &impl_type,
+					      HIR::Type &trait) const;
+
+  bool validate_type_implements_this (TyTy::BaseType &self,
+				      HIR::Type &impl_type,
+				      HIR::Type &trait) const;
+
+private:
+  struct mark_is_error
+  {
+  };
+
+  TypeBoundPredicate (mark_is_error);
+
+  void get_trait_hierachy (
+    std::function<void (const Resolver::TraitReference &)> callback) const;
+
+  DefId reference;
+  location_t locus;
+  bool error_flag;
+  BoundPolarity polarity;
+  std::vector<TyTy::TypeBoundPredicate> super_traits;
+};
+
+class TypeBoundsMappings
+{
+protected:
+  TypeBoundsMappings (std::vector<TypeBoundPredicate> specified_bounds);
+
+public:
+  std::vector<TypeBoundPredicate> &get_specified_bounds ();
+
+  const std::vector<TypeBoundPredicate> &get_specified_bounds () const;
+
+  TypeBoundPredicate lookup_predicate (DefId id);
+
+  size_t num_specified_bounds () const;
+
+  std::string raw_bounds_as_string () const;
+
+  std::string bounds_as_string () const;
+
+  std::string raw_bounds_as_name () const;
+
+protected:
+  void add_bound (TypeBoundPredicate predicate);
+
+  std::vector<TypeBoundPredicate> specified_bounds;
+};
+
 class BaseType : public TypeBoundsMappings
 {
 public:
@@ -669,100 +789,6 @@ public:
 
 private:
   std::vector<TyVar> fields;
-};
-
-class TypeBoundPredicate : public SubstitutionRef
-{
-public:
-  TypeBoundPredicate (const Resolver::TraitReference &trait_reference,
-		      BoundPolarity polarity, location_t locus);
-
-  TypeBoundPredicate (DefId reference,
-		      std::vector<SubstitutionParamMapping> substitutions,
-		      BoundPolarity polarity, location_t locus);
-
-  TypeBoundPredicate (const TypeBoundPredicate &other);
-
-  virtual ~TypeBoundPredicate () {}
-
-  TypeBoundPredicate &operator= (const TypeBoundPredicate &other);
-
-  static TypeBoundPredicate error ();
-
-  std::string as_string () const;
-
-  std::string as_name () const;
-
-  const Resolver::TraitReference *get () const;
-
-  location_t get_locus () const { return locus; }
-
-  std::string get_name () const;
-
-  // check that this  is object-safe see:
-  // https://doc.rust-lang.org/reference/items/traits.html#object-safety
-  bool is_object_safe (bool emit_error, location_t locus) const;
-
-  void apply_generic_arguments (HIR::GenericArgs *generic_args,
-				bool has_associated_self, bool is_super_trait);
-
-  void apply_argument_mappings (SubstitutionArgumentMappings &arguments,
-				bool is_super_trait);
-
-  bool contains_item (const std::string &search) const;
-
-  tl::optional<TypeBoundPredicateItem>
-  lookup_associated_item (const std::string &search) const;
-
-  tl::optional<TypeBoundPredicateItem>
-  lookup_associated_item (const Resolver::TraitItemReference *ref) const;
-
-  // WARNING THIS WILL ALWAYS RETURN NULLPTR
-  BaseType *
-  handle_substitions (SubstitutionArgumentMappings &mappings) override final;
-
-  bool is_error () const;
-
-  bool requires_generic_args () const;
-
-  bool contains_associated_types () const;
-
-  DefId get_id () const { return reference; }
-
-  BoundPolarity get_polarity () const { return polarity; }
-
-  std::vector<TypeBoundPredicateItem> get_associated_type_items ();
-
-  size_t get_num_associated_bindings () const override final;
-
-  TypeBoundPredicateItem
-  lookup_associated_type (const std::string &search) override final;
-
-  bool is_equal (const TypeBoundPredicate &other) const;
-
-  bool validate_type_implements_super_traits (TyTy::BaseType &self,
-					      HIR::Type &impl_type,
-					      HIR::Type &trait) const;
-
-  bool validate_type_implements_this (TyTy::BaseType &self,
-				      HIR::Type &impl_type,
-				      HIR::Type &trait) const;
-
-private:
-  struct mark_is_error
-  {
-  };
-
-  TypeBoundPredicate (mark_is_error);
-
-  void get_trait_hierachy (
-    std::function<void (const Resolver::TraitReference &)> callback) const;
-
-  DefId reference;
-  location_t locus;
-  bool error_flag;
-  BoundPolarity polarity;
-  std::vector<TyTy::TypeBoundPredicate> super_traits;
 };
 
 class TypeBoundPredicateItem
