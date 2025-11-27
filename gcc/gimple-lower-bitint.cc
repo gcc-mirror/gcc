@@ -630,6 +630,8 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
 				      | ENCODE_QUAL_ADDR_SPACE (as));
       tree ptype = build_pointer_type (strip_array_types (TREE_TYPE (var)));
       unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
+      if (bitint_big_endian)
+	off += m_limb_size - tree_to_uhwi (TYPE_SIZE_UNIT (ltype));
       ret = build2 (MEM_REF, ltype,
 		    build_fold_addr_expr (var),
 		    build_int_cst (ptype, off));
@@ -641,12 +643,14 @@ bitint_large_huge::limb_access (tree type, tree var, tree idx, bool write_p,
       if (as != TYPE_ADDR_SPACE (ltype))
 	ltype = build_qualified_type (ltype, TYPE_QUALS (ltype)
 				      | ENCODE_QUAL_ADDR_SPACE (as));
+      unsigned HOST_WIDE_INT off = tree_to_uhwi (idx) * m_limb_size;
+      if (bitint_big_endian)
+	off += m_limb_size - tree_to_uhwi (TYPE_SIZE_UNIT (ltype));
       ret
 	= build2 (MEM_REF, ltype, unshare_expr (TREE_OPERAND (var, 0)),
 		  size_binop (PLUS_EXPR, TREE_OPERAND (var, 1),
 			      build_int_cst (TREE_TYPE (TREE_OPERAND (var, 1)),
-					     tree_to_uhwi (idx)
-					     * m_limb_size)));
+					     off)));
       TREE_THIS_VOLATILE (ret) = TREE_THIS_VOLATILE (var);
       TREE_SIDE_EFFECTS (ret) = TREE_SIDE_EFFECTS (var);
       TREE_THIS_NOTRAP (ret) = TREE_THIS_NOTRAP (var);
