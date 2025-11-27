@@ -35,8 +35,8 @@
 #include <bits/functional_hash.h>
 
 #ifdef _GLIBCXX_HAVE_LINUX_FUTEX
+# include <sys/syscall.h> // SYS_futex
 # include <unistd.h>
-# include <syscall.h>
 # include <sys/time.h> // timespec
 # define _GLIBCXX_HAVE_PLATFORM_WAIT 1
 #endif
@@ -50,56 +50,84 @@ namespace __detail
 {
 namespace
 {
-#ifdef _GLIBCXX_HAVE_LINUX_FUTEX
-  enum class __futex_wait_flags : int
-  {
-#ifdef _GLIBCXX_HAVE_LINUX_FUTEX_PRIVATE
-    __private_flag = 128,
-#else
-    __private_flag = 0,
-#endif
-    __wait = 0,
-    __wake = 1,
-    __wait_bitset = 9,
-    __wake_bitset = 10,
-    __wait_private = __wait | __private_flag,
-    __wake_private = __wake | __private_flag,
-    __wait_bitset_private = __wait_bitset | __private_flag,
-    __wake_bitset_private = __wake_bitset | __private_flag,
-    __bitset_match_any = -1
-  };
+#ifndef _GLIBCXX_HAVE_PLATFORM_WAIT
+
+  // If _GLIBCXX_HAVE_PLATFORM_WAIT is defined then the following three
+  // functions should be defined in terms of platform-specific wait/wake
+  // primitives. The `obj_size` parameter is the size in bytes of the object
+  // at `*addr` (used if the platform supports waiting on more than one size,
+  // in which case `addr` would be cast to a different type).
+
+  // Deleted definitions are here to give better errors if these functions
+  // are used when _GLIBCXX_HAVE_PLATFORM_WAIT is not defined.
+
+  // Wait until *addr != curr_val.
+  // Once a thread is waiting, it will not unblock and notice the value
+  // has changed unless explicitly notified using `__platform_notify`.
+  void
+  __platform_wait(const __platform_wait_t* addr,
+		  __platform_wait_t curr_val,
+		  int obj_size) = delete;
+
+  // Wake one thread that is waiting for `*addr` to change,
+  // or all waiting threads if `wake_all` is true.
+  void
+  __platform_notify(const __platform_wait_t* addr,
+		    bool wake_all,
+		    int obj_size) = delete;
+
+  // As `__platform_wait` but with timeout.
+  // Returns true if the wait ended before the timeout (which could be because
+  // the value changed and __platform_notify was called, but could be because
+  // the wait was interrupted by a signal, or just a spurious wake).
+  // Returns false if the timeout was reached.
+  bool
+  __platform_wait_until(const __platform_wait_t* addr,
+			__platform_wait_t curr_val,
+			__wait_clock_t::time_point timeout,
+			int obj_size) = delete;
+
+#elif defined _GLIBCXX_HAVE_LINUX_FUTEX
+
+  const int futex_private_flag = 128;
 
   void
   __platform_wait(const int* addr, int val, int /* obj_size */) noexcept
   {
-    if (syscall(SYS_futex, addr,
-		static_cast<int>(__futex_wait_flags::__wait_private),
-		val, nullptr))
+    const int futex_op_wait = 0;
+    const int futex_op_wait_private = futex_op_wait | futex_private_flag;
+
+    if (syscall(SYS_futex, addr, futex_op_wait_private, val, nullptr))
       if (errno != EAGAIN && errno != EINTR)
 	__throw_system_error(errno);
   }
 
   void
-  __platform_notify(const int* addr, bool all, int) noexcept
+  __platform_notify(const int* addr, bool all, int /* obj_size */) noexcept
   {
-    syscall(SYS_futex, addr,
-	    static_cast<int>(__futex_wait_flags::__wake_private),
-	    all ? INT_MAX : 1);
+    const int futex_op_wake = 1;
+    const int futex_op_wake_private = futex_op_wake | futex_private_flag;
+
+    syscall(SYS_futex, addr, futex_op_wake_private, all ? INT_MAX : 1);
   }
 
   // returns true if wait ended before timeout
   bool
-  __platform_wait_until(const __platform_wait_t* addr,
-			__platform_wait_t val,
-			const __wait_clock_t::time_point& __atime,
+  __platform_wait_until(const int* addr, int val,
+			const __wait_clock_t::time_point& abs_time,
 			int /* obj_size */) noexcept
   {
-    struct timespec timeout = chrono::__to_timeout_timespec(__atime);
+    // FUTEX_WAIT expects a relative timeout, so must use FUTEX_WAIT_BITSET
+    // for an absolute timeout.
+    const int futex_op_wait_bitset = 9;
+    const int futex_op_wait_bitset_private
+      = futex_op_wait_bitset | futex_private_flag;
+    const int futex_bitset_match_any = 0xffffffff;
 
-    if (syscall(SYS_futex, addr,
-		static_cast<int>(__futex_wait_flags::__wait_bitset_private),
-		val, &timeout, nullptr,
-		static_cast<int>(__futex_wait_flags::__bitset_match_any)))
+    struct timespec timeout = chrono::__to_timeout_timespec(abs_time);
+
+    if (syscall(SYS_futex, addr, futex_op_wait_bitset_private, val,
+		&timeout, nullptr, futex_bitset_match_any))
       {
 	if (errno == ETIMEDOUT)
 	  return false;
@@ -108,7 +136,7 @@ namespace
       }
     return true;
   }
-#endif // HAVE_LINUX_FUTEX
+#endif // HAVE_PLATFORM_WAIT
 
   // The state used by atomic waiting and notifying functions.
   struct __waitable_state
