@@ -42,12 +42,13 @@ test01()
     }
 }
 
-template<class Range, bool Const>
+template<class Range, bool Const, bool Constable = Const>
 void
 test02()
 {
   if constexpr (Const)
     {
+      static_assert(Constable);
       static_assert( ranges::constant_range<Range> );
       static_assert( std::same_as<ranges::const_iterator_t<Range>, ranges::iterator_t<Range>> );
       static_assert( std::same_as<ranges::const_sentinel_t<Range>, ranges::sentinel_t<Range>> );
@@ -64,9 +65,21 @@ test02()
       static_assert( !ranges::constant_range<Range> );
       using Wrapped = std::basic_const_iterator<ranges::iterator_t<Range>>;
 
-      static_assert( std::same_as<ranges::const_iterator_t<Range>, Wrapped> );
-      if constexpr (ranges::common_range<Range>)
-	static_assert( std::same_as<ranges::const_sentinel_t<Range>, Wrapped> );
+      if constexpr (Constable)
+	{
+	  // Verify LWG 3946 changes to const_iterator/sentinel_t (PR122842).
+	  static_assert( std::same_as<ranges::const_iterator_t<Range>,
+				      ranges::iterator_t<const Range>> );
+	  static_assert( std::same_as<ranges::const_sentinel_t<Range>,
+				      ranges::sentinel_t<const Range>> );
+	}
+      else
+	{
+	  static_assert( std::same_as<ranges::const_iterator_t<Range>, Wrapped> );
+	  if constexpr (ranges::common_range<Range>)
+	    static_assert( std::same_as<ranges::const_sentinel_t<Range>, Wrapped> );
+	}
+
       static_assert( std::same_as<ranges::range_const_reference_t<Range>,
 				 std::iter_reference_t<Wrapped>> );
 
@@ -138,13 +151,14 @@ main()
   test01<std::string_view::iterator, true>();
   test01<std::vector<bool>::const_iterator, true>();
 
-  test02<int[42], false>();
+  test02<int[42], false, true>();
   test02<test_input_range<int>, false>();
   test02<test_forward_range<int>, false>();
   test02<test_bidirectional_range<int>, false>();
   test02<test_random_access_range<int>, false>();
-  test02<std::array<int, 3>, false>();
-  test02<std::vector<bool>, false>();
+  test02<std::array<int, 3>, false, true>();
+  test02<std::vector<bool>, false, true>();
+  test02<std::string, false, true>();
 
   test02<const int[42], true>();
   test02<test_input_range<const int>, true>();
@@ -155,6 +169,7 @@ main()
   test02<const std::array<int, 3>, true>();
   test02<std::string_view, true>();
   test02<const std::vector<bool>, true>();
+  test02<const std::string, true>();
 
   test03();
   test04();
