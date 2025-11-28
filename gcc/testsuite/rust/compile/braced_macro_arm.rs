@@ -7,11 +7,9 @@ macro_rules! m {
 
 fn h(c: bool) {
     match c {
-        // { dg-error "failed to parse statement or expression in block expression" "" { target *-*-* } .-1 }
         true => m! {}
         false => ()
         // { dg-error "exprwithoutblock requires comma after match case expression in match arm \\(if not final case\\)" "" { target *-*-* } .-1 }
-        // { dg-error "unrecognised token .false. for start of item" "" { target *-*-* } .-2 }
     };
 }
 
