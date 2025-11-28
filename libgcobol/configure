@@ -17412,7 +17412,7 @@ fi
 
 
 # libgcobol soname version
-LIBGCOBOL_VERSION=1:0:0
+LIBGCOBOL_VERSION=2:0:0
 
 
 ## added, currently unused.

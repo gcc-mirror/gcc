@@ -184,7 +184,7 @@ AC_SEARCH_LIBS([malloc], [c])
 AC_SEARCH_LIBS([clock_gettime], [c rt])
 
 # libgcobol soname version
-LIBGCOBOL_VERSION=1:0:0
+LIBGCOBOL_VERSION=2:0:0
 AC_SUBST(LIBGCOBOL_VERSION)
 
 ## added, currently unused.
