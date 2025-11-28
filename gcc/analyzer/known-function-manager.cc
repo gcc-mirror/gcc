@@ -83,8 +83,8 @@ known_function_manager::add (enum internal_fn ifn,
 			     std::unique_ptr<known_function> kf)
 {
   gcc_assert (ifn < IFN_LAST);
-  delete m_combined_fns_arr[ifn + END_BUILTINS];
-  m_combined_fns_arr[ifn + END_BUILTINS] = kf.release ();
+  delete m_combined_fns_arr[ifn + int (END_BUILTINS)];
+  m_combined_fns_arr[ifn + int (END_BUILTINS)] = kf.release ();
 }
 
 /* Get any known_function for FNDECL for call CD.
@@ -137,7 +137,7 @@ const known_function *
 known_function_manager::get_internal_fn (enum internal_fn ifn) const
 {
   gcc_assert (ifn < IFN_LAST);
-  return m_combined_fns_arr[ifn + END_BUILTINS];
+  return m_combined_fns_arr[ifn + int (END_BUILTINS)];
 }
 
 /* Get any known_function for NAME, without type-checking.
