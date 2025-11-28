@@ -4854,13 +4854,15 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 	      gimple *mask_def = NULL;
 	      tree rhs1 = gimple_assign_rhs1 (def_stmt);
 	      tree rhs2 = gimple_assign_rhs2 (def_stmt);
-	      if ((mask_def = get_gimple_for_ssa_name (rhs1))
+	      if (TREE_CODE (rhs1) == SSA_NAME
+		  && (mask_def = get_gimple_for_ssa_name (rhs1))
 		  && is_gimple_assign (mask_def)
 		  && TREE_CODE_CLASS (gimple_assign_rhs_code (mask_def)))
 		masked_op = rhs2;
-	      else if ((mask_def = get_gimple_for_ssa_name (rhs2))
-		  && is_gimple_assign (mask_def)
-		  && TREE_CODE_CLASS (gimple_assign_rhs_code (mask_def)))
+	      else if (TREE_CODE (rhs2) == SSA_NAME
+		       && (mask_def = get_gimple_for_ssa_name (rhs2))
+		       && is_gimple_assign (mask_def)
+		       && TREE_CODE_CLASS (gimple_assign_rhs_code (mask_def)))
 		masked_op = rhs1;
 
 	      if (masked_op)
@@ -4890,7 +4892,8 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 		  len_bias = gimple_call_arg (call, 4);
 		  tree arg0 = gimple_call_arg (call, 0);
 
-		  def_stmt = get_gimple_for_ssa_name (arg0);
+		  if (TREE_CODE (arg0) == SSA_NAME)
+		    def_stmt = get_gimple_for_ssa_name (arg0);
 		}
 	    }
 
