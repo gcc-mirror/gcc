@@ -222,7 +222,8 @@ RISCV_EXT_DEFS = \
   $(srcdir)/config/riscv/riscv-ext-thead.def \
   $(srcdir)/config/riscv/riscv-ext-ventana.def \
   $(srcdir)/config/riscv/riscv-ext-mips.def \
-  $(srcdir)/config/riscv/riscv-ext-andes.def
+  $(srcdir)/config/riscv/riscv-ext-andes.def \
+  $(srcdir)/config/riscv/riscv-ext-spacemit.def
 
 $(srcdir)/config/riscv/riscv-ext.opt: $(RISCV_EXT_DEFS)
 

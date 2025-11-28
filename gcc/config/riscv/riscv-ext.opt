@@ -56,6 +56,9 @@ TargetVariable
 int riscv_xsf_subext
 
 TargetVariable
+int riscv_xsmt_subext
+
+TargetVariable
 int riscv_xthead_subext
 
 TargetVariable
@@ -466,4 +469,6 @@ Mask(XANDESVSINTLOAD) Var(riscv_xandes_subext)
 Mask(XANDESVPACKFPH) Var(riscv_xandes_subext)
 
 Mask(XANDESVDOT) Var(riscv_xandes_subext)
+
+Mask(XSMTVDOT) Var(riscv_xsmt_subext)
 

@@ -195,7 +195,7 @@ RISCV_CORE("andes-a45",       "rv32imafdc_zicsr_zifencei_xandesperf", "andes-45-
 RISCV_CORE("andes-ax45",      "rv64imafdc_zicsr_zifencei_xandesperf", "andes-45-series")
 
 RISCV_CORE("spacemit-x60",    "rv64imafdcv_zba_zbb_zbc_zbs_zicboz_zicond_"
-			      "zbkc_zfh_zvfh_zvkt_zvl256b_sscofpmf",
+			      "zbkc_zfh_zvfh_zvkt_zvl256b_sscofpmf_xsmtvdot",
 			      "spacemit-x60")
 
 #undef RISCV_CORE

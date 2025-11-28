@@ -746,4 +746,8 @@
 @tab 5.0
 @tab Andes vector dot product extension
 
+@item xsmtvdot
+@tab 1.0
+@tab SpacemiT vector dot product extension
+
 @end multitable
