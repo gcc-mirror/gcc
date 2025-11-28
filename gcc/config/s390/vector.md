@@ -3557,15 +3557,16 @@
 (define_expand "len_load_v16qi"
   [(match_operand:V16QI 0 "register_operand")
    (match_operand:V16QI 1 "memory_operand")
-   (match_operand:QI 2 "register_operand")
-   (match_operand:QI 3 "vll_bias_operand")
+   (match_operand:V16QI 2 "vll_else_operand")
+   (match_operand:QI 3 "register_operand")
+   (match_operand:QI 4 "vll_bias_operand")
   ]
   "TARGET_VX && TARGET_64BIT"
 {
   rtx mem = adjust_address (operands[1], BLKmode, 0);
 
   rtx len = gen_reg_rtx (SImode);
-  emit_move_insn (len, gen_rtx_ZERO_EXTEND (SImode, operands[2]));
+  emit_move_insn (len, gen_rtx_ZERO_EXTEND (SImode, operands[3]));
   emit_insn (gen_vllv16qi (operands[0], len, mem));
   DONE;
 })

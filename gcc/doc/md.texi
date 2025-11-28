@@ -5408,18 +5408,20 @@ This pattern is not allowed to @code{FAIL}.
 
 @cindex @code{len_load_@var{m}} instruction pattern
 @item @samp{len_load_@var{m}}
-Load (operand 2 + operand 3) elements from memory operand 1
-into vector register operand 0, setting the other elements of
-operand 0 to undefined values.  Operands 0 and 1 have mode @var{m},
-which must be a vector mode.  Operand 2 has whichever integer mode the
-target prefers.  Operand 3 conceptually has mode @code{QI}.
+Load (operand 3 + operand 4) elements from memory operand 1
+into vector register operand 0.  Operands 0 and 1 have mode @var{m},
+which must be a vector mode.  Operand 3 has whichever integer mode the
+target prefers.  Operand 2 (the “else value”) is of mode @var{m} and
+specifies which value is loaded for the remaining elements.  The predicate
+of operand 2 must only accept the else values that the target actually
+supports.  Operand 4 conceptually has mode @code{QI}.
 
-Operand 2 can be a variable or a constant amount.  Operand 3 specifies a
+Operand 3 can be a variable or a constant amount.  Operand 4 specifies a
 constant bias: it is either a constant 0 or a constant -1.  The predicate on
-operand 3 must only accept the bias values that the target actually supports.
+operand 4 must only accept the bias values that the target actually supports.
 GCC handles a bias of 0 more efficiently than a bias of -1.
 
-If (operand 2 + operand 3) exceeds the number of elements in mode
+If (operand 3 + operand 4) exceeds the number of elements in mode
 @var{m}, the behavior is undefined.
 
 If the target prefers the length to be measured in bytes rather than

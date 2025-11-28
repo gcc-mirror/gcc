@@ -5798,13 +5798,14 @@
 (define_expand "len_load_v16qi"
   [(match_operand:V16QI 0 "vlogical_operand")
    (match_operand:V16QI 1 "memory_operand")
-   (match_operand:QI 2 "gpc_reg_operand")
-   (match_operand:QI 3 "zero_constant")]
+   (match_operand:V16QI 2 "lxvl_else_operand")
+   (match_operand:QI 3 "gpc_reg_operand")
+   (match_operand:QI 4 "zero_constant")]
   "TARGET_P9_VECTOR && TARGET_64BIT"
 {
   rtx mem = XEXP (operands[1], 0);
   mem = force_reg (DImode, mem);
-  rtx len = gen_lowpart (DImode, operands[2]);
+  rtx len = gen_lowpart (DImode, operands[3]);
   emit_insn (gen_lxvl (operands[0], mem, len));
   DONE;
 })

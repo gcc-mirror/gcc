@@ -614,3 +614,8 @@
 (define_predicate "vll_bias_operand"
   (and (match_code "const_int")
        (match_test "op == CONSTM1_RTX (QImode)")))
+
+; Else operand for LEN_LOAD.
+(define_predicate "vll_else_operand"
+  (and (match_code "const_vector")
+       (match_test "op == CONST0_RTX (GET_MODE (op))")))

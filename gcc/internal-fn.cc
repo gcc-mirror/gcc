@@ -5006,6 +5006,7 @@ internal_fn_len_index (internal_fn fn)
   switch (fn)
     {
     case IFN_LEN_LOAD:
+      return 3;
     case IFN_LEN_STORE:
       return 2;
 
@@ -5069,6 +5070,9 @@ internal_fn_else_index (internal_fn fn)
     case IFN_COND_NOT:
     case IFN_COND_LEN_NEG:
     case IFN_COND_LEN_NOT:
+      return 2;
+
+    case IFN_LEN_LOAD:
       return 2;
 
     case IFN_COND_ADD:
@@ -5401,7 +5405,7 @@ internal_len_load_store_bias (internal_fn ifn, machine_mode mode)
 {
   optab optab = direct_internal_fn_optab (ifn);
   insn_code icode = direct_optab_handler (optab, mode);
-  int bias_no = 3;
+  int bias_idx = internal_fn_len_index (ifn) + 1;
 
   if (icode == CODE_FOR_nothing)
     {
@@ -5412,22 +5416,23 @@ internal_len_load_store_bias (internal_fn ifn, machine_mode mode)
 	{
 	  /* Try MASK_LEN_LOAD.  */
 	  optab = direct_internal_fn_optab (IFN_MASK_LEN_LOAD);
+	  bias_idx = internal_fn_len_index (IFN_MASK_LEN_LOAD) + 1;
 	}
       else
 	{
 	  /* Try MASK_LEN_STORE.  */
 	  optab = direct_internal_fn_optab (IFN_MASK_LEN_STORE);
+	  bias_idx = internal_fn_len_index (IFN_MASK_LEN_STORE) + 1;
 	}
       icode = convert_optab_handler (optab, mode, mask_mode);
-      bias_no = 4;
     }
 
   if (icode != CODE_FOR_nothing)
     {
       /* For now we only support biases of 0 or -1.  Try both of them.  */
-      if (insn_operand_matches (icode, bias_no, GEN_INT (0)))
+      if (insn_operand_matches (icode, bias_idx, GEN_INT (0)))
 	return 0;
-      if (insn_operand_matches (icode, bias_no, GEN_INT (-1)))
+      if (insn_operand_matches (icode, bias_idx, GEN_INT (-1)))
 	return -1;
     }
 

@@ -11392,10 +11392,18 @@ vectorizable_load (vec_info *vinfo,
 	      {
 		tree ptr = build_int_cst (ref_type, align * BITS_PER_UNIT);
 		gcall *call;
+
+		/* Need conversion if the vectype is punned by VnQI.  */
+		els_vectype = vectype;
+		if (vmode != new_vmode)
+		  els_vectype
+		    = build_vector_type_for_mode (unsigned_intQI_type_node,
+						  new_vmode);
+		vec_els = vect_get_mask_load_else (maskload_elsval,
+						   els_vectype);
+
 		if (partial_ifn == IFN_MASK_LEN_LOAD)
 		  {
-		    vec_els = vect_get_mask_load_else (maskload_elsval,
-						       vectype);
 		    if (type_mode_padding_p
 			&& maskload_elsval != MASK_LOAD_ELSE_ZERO)
 		      need_zeroing = true;
@@ -11405,9 +11413,10 @@ vectorizable_load (vec_info *vinfo,
 						       final_len, bias);
 		  }
 		else
-		  call = gimple_build_call_internal (IFN_LEN_LOAD, 4,
+		  call = gimple_build_call_internal (IFN_LEN_LOAD, 5,
 						     dataref_ptr, ptr,
-						     final_len, bias);
+						     vec_els, final_len,
+						     bias);
 		gimple_call_set_nothrow (call, true);
 		new_stmt = call;
 		data_ref = NULL_TREE;
