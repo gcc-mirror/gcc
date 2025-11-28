@@ -6617,6 +6617,22 @@ DEFINE_INT_AND_FLOAT_ROUND_FN (RINT)
        (convert (minus { arg; } (convert:type1 @0))))))))))
 #endif
 
+/* X & C1 ? (X + -C1) : (X | C1) -> X ^ C1
+   X & C1 ? (X & ~C1) : (X | C1) -> X ^ C1
+   when C1 has a single bit set.  */
+(for op (plus bit_and)
+ (simplify
+  (cond (ne (bit_and @0 INTEGER_CST@1) integer_zerop)
+	     (op @0 INTEGER_CST@2) (bit_ior @0 @1))
+   (with {
+     auto c1 = wi::to_wide (@1);
+     auto c2 = wi::to_wide (@2);
+    }
+    (if (wi::popcount (c1) == 1
+	  && ((op == PLUS_EXPR && wi::eq_p (wi::neg (c2), c1))
+	       || (op == BIT_AND_EXPR && wi::eq_p (wi::bit_not (c2), c1))))
+	  (bit_xor @0 @1)))))
+
 (simplify
  (convert (cond@0 @1 INTEGER_CST@2 INTEGER_CST@3))
  (if (INTEGRAL_TYPE_P (type)
