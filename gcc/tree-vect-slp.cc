@@ -4310,7 +4310,9 @@ vect_analyze_slp_reduc_chain (loop_vec_info vinfo,
 
       /* When this linearization didn't produce a chain see if stripping
 	 a wrapping sign conversion produces one.  */
-      if (scalar_stmts.length () == 1)
+      if (scalar_stmts.length () == 1
+	  && (code == PLUS_EXPR || code == MULT_EXPR || code == BIT_IOR_EXPR
+	      || code == BIT_AND_EXPR || code == BIT_XOR_EXPR))
 	{
 	  gimple *stmt = scalar_stmts[0]->stmt;
 	  if (!is_gimple_assign (stmt)
