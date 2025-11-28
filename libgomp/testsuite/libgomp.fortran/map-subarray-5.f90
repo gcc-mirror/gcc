@@ -50,5 +50,5 @@ end do
 end
 
 ! { dg-output "(\n|\r|\r\n)" { target offload_device_nonshared_as } }
-! { dg-output "libgomp: Mapped array elements must be the same .*(\n|\r|\r\n)+" { target offload_device_nonshared_as } }
+! { dg-output "libgomp: Mapped array elements must be the same or in increasing address order .*(\n|\r|\r\n)+" { target offload_device_nonshared_as } }
 ! { dg-shouldfail "" { offload_device_nonshared_as } }

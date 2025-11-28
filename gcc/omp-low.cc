@@ -13240,7 +13240,20 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 		unsigned HOST_WIDE_INT tkind2;
 		switch (OMP_CLAUSE_CODE (c))
 		  {
-		  case OMP_CLAUSE_MAP: tkind2 = OMP_CLAUSE_MAP_KIND (c); break;
+		  case OMP_CLAUSE_MAP:
+		    tkind2 = OMP_CLAUSE_MAP_KIND (c);
+		    if (OMP_CLAUSE_MAP_RUNTIME_IMPLICIT_P (c)
+			&& (((tkind2 & GOMP_MAP_FLAG_SPECIAL_BITS)
+			     & ~GOMP_MAP_IMPLICIT)
+			    == 0))
+		      {
+			/* If this is an implicit map, and the GOMP_MAP_IMPLICIT
+			   bits are not interfered by other special bit
+			   encodings, then turn the GOMP_IMPLICIT_BIT flag on
+			   for the runtime to see.  */
+			tkind2 |= GOMP_MAP_IMPLICIT;
+		      }
+		    break;
 		  case OMP_CLAUSE_FIRSTPRIVATE: tkind2 = GOMP_MAP_TO; break;
 		  case OMP_CLAUSE_TO: tkind2 = GOMP_MAP_TO; break;
 		  case OMP_CLAUSE_FROM: tkind2 = GOMP_MAP_FROM; break;

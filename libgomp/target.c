@@ -1665,14 +1665,14 @@ gomp_map_vars_internal (struct gomp_device_descr *devicep,
 	      case GOMP_MAP_STRUCT_UNORD:
 		if (sizes[i] > 1)
 		  {
-		    void *first = hostaddrs[i + 1];
 		    for (size_t j = i + 1; j < i + sizes[i]; j++)
-		      if (hostaddrs[j + 1] != first)
+		      if (hostaddrs[j + 1] < hostaddrs[j])
 			{
 			  gomp_mutex_unlock (&devicep->lock);
-			  gomp_fatal ("Mapped array elements must be the "
-				      "same (%p vs %p)", first,
-				      hostaddrs[j + 1]);
+			  gomp_fatal (
+			    "Mapped array elements must be the same or in "
+			    "increasing address order (got %p > %p)",
+			    hostaddrs[j], hostaddrs[j + 1]);
 			}
 		  }
 		/* Fallthrough.  */
