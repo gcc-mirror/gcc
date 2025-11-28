@@ -58,7 +58,7 @@ crc_symbolic_execution::is_used_outside_the_loop (tree def)
   return false;
 }
 
-/* Calculate value of the rhs operation of GS assigment statement
+/* Calculate value of the rhs operation of GS assignment statement
    and assign it to lhs variable.  */
 
 bool
