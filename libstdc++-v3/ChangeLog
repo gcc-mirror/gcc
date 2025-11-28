@@ -1,3 +1,80 @@
+2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/23_containers/sort_search/list.cc: Cast
+	results to void to suppress -Wunused-result warnings from
+	nodiscard functions.
+	* testsuite/performance/25_algorithms/equal_deque_iterators.cc:
+	Likewise.
+	* testsuite/performance/25_algorithms/search_n.cc: Likewise.
+
+2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/Makefile.am: Fix typo in comment.
+	* testsuite/Makefile.in: Regenerate.
+
+2025-11-27  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/ranges (__func_handle::__select): Named function
+	extracted from local lambda.
+	(__detail::__func_handle_t): Define using __func_handle::__select.
+	(__func_handle::_Inplace): Raname _M_ptr to _M_fn.
+
+2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/abi/pre/gnu.ver: Adjust exports.
+	* include/bits/atomic_timed_wait.h (_GLIBCXX_HAVE_PLATFORM_TIMED_WAIT):
+	Do not define this macro.
+	(__atomic_wait_address_until_v, __atomic_wait_address_for_v):
+	Adjust assertions to check that __platform_wait_uses_type is
+	true.
+	* include/bits/atomic_wait.h (__waitable): New concept.
+	(__platform_wait_uses_type): Different separately for platforms
+	with and without platform wait.
+	(_GLIBCXX_HAVE_PLATFORM_WAIT): Do not define this macro.
+	(__wait_value_type): New typedef.
+	(__wait_result_type): Change _M_val to __wait_value_type.
+	(__wait_flags): Remove __proxy_wait enumerator. Reduce range
+	reserved for ABI version by the commented-out value.
+	(__wait_args_base::_M_old): Change type to __wait_args_base.
+	(__wait_args_base::_M_obj, __wait_args_base::_M_obj_size): New
+	data members.
+	(__wait_args::__wait_args): Set _M_obj and _M_obj_size on
+	construction.
+	(__wait_args::_M_setup_wait): Change void* parameter to deduced
+	type. Adjust bit_cast to work for types of different sizes.
+	(__wait_args::_M_load_proxy_wait_val): Remove function, replace
+	with ...
+	(__wait_args::_M_setup_proxy_wait): New function.
+	(__wait_args::_S_flags_for): Do not set __proxy_wait flag.
+	(__atomic_wait_address_v): Adjust assertion to check that
+	__platform_wait_uses_type is true.
+	* src/c++20/atomic.cc (_GLIBCXX_HAVE_PLATFORM_WAIT): Define here
+	instead of in header. Check _GLIBCXX_HAVE_PLATFORM_WAIT instead
+	of _GLIBCXX_HAVE_PLATFORM_TIMED_WAIT.
+	(__platform_wait, __platform_notify, __platform_wait_until): Add
+	unused parameter for _M_obj_size.
+	(__spin_impl): Adjust for 64-bit __wait_args_base::_M_old.
+	(use_proxy_wait): New function.
+	(__wait_args::_M_load_proxy_wait_val): Replace with ...
+	(__wait_args::_M_setup_proxy_wait): New function. Call
+	use_proxy_wait to decide at runtime whether to wait on the
+	pointer directly instead of using a proxy. If a proxy is needed,
+	set _M_obj and _M_obj_size to refer to its _M_ver member. Adjust
+	for change to type of _M_old.
+	(__wait_impl): Wait on _M_obj unconditionally. Pass _M_obj_size
+	to __platform_wait.
+	(__notify_impl): Call use_proxy_wait to decide whether to notify
+	on the address parameter or a proxy
+	(__spin_until_impl): Adjust for change to type of _M_val.
+	(__wait_until_impl): Wait on _M_obj unconditionally. Pass
+	_M_obj_size to __platform_wait_until.
+
+2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/semaphore_base.h (__platform_semaphore::_S_max):
+	Limit to PTRDIFF_MAX to avoid negative values.
+	* testsuite/30_threads/semaphore/least_max_value.cc: New test.
+
 2025-11-26  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/122864

@@ -1,3 +1,47 @@
+2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/121506
+	* gcc.dg/pr121506.c: New test.
+
+2025-11-27  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* gcc.target/aarch64/build-attributes/build-attribute-define-nok.c: New test.
+	* gcc.target/aarch64/build-attributes/build-attribute-define-ok.c: New test.
+
+2025-11-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* gcc.target/aarch64/ffs.c: Improve test.
+
+2025-11-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* c-c++-common/Wstringop-overflow.c: Xfail, PR 122881.
+
+2025-11-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/122855
+	PR tree-optimization/122850
+	* gcc.dg/vect/pr122850.c: New test.
+	* gcc.dg/vect/pr122855.c: New test.
+
+2025-11-27  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/pr121959-run-1.c: Update
+	the reference for run test.
+
+2025-11-27  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	PR tree-optimization/122733
+	* gcc.dg/match-shift-cmp-1.c: Update test to only check
+	equality.
+	* gcc.dg/match-shift-cmp-2.c: Likewise.
+	* gcc.dg/match-shift-cmp-3.c: Likewise.
+	* gcc.dg/match-shift-cmp-4.c: Removed.
+
+2025-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122885
+	* gcc.dg/torture/pr122873.c: New testcase.
+
 2025-11-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

@@ -1,3 +1,9 @@
+2025-11-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* config/loongarch/cpuinfo.c (HWCAP_LOONGARCH_LSX): Define
+	it if it is not defined.
+	(HWCAP_LOONGARCH_LASX): Likewise.
+
 2025-11-21  LIU Hao  <lh_mouse@126.com>
 
 	PR target/122275

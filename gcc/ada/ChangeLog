@@ -1,3 +1,153 @@
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.adb (Expand_Actuals): Do not create activation chain and
+	master for build-in-place calls here but...
+	(Make_Build_In_Place_Call_In_Allocator): Use Unqual_Conv.
+	(Make_Build_In_Place_Call_In_Anonymous_Context): ...here instead.
+	Call Make_Build_In_Place_Call_In_Object_Declaration directly.
+	(Make_Build_In_Place_Iface_Call_In_Anonymous_Context): ...and here
+	instead.  Add missing rewriting of the call.
+
+2025-11-27  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_ugn/about_this_guide.rst: Minor fixes
+	* gnat_ugn.texi: Regenerate.
+
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/122574
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst (-gnatwp):
+	Replace reference to -gnatN with -gnatn and adjust accordingly.
+	* inline.adb: Remove clauses for Exp_Tss.
+	(Has_Initialized_Type): Delete.
+	(Add_Inlined_Subprogram): Test that the Is_Inlined flag is still set
+	on the subprogram.
+	* usage.adb (Usage): Adjust description of -gnatwp.
+	* gnat_ugn.texi: Regenerate.
+
+2025-11-27  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_ch5.adb: Skip check for assignment that doesn't come from source.
+
+2025-11-27  Ronan Desplanques  <desplanques@adacore.com>
+
+	* exp_aggr.adb (Gen_Loop): Only preanalyze expressions we know won't
+	evaluated.
+
+2025-11-27  Tom Tromey  <tromey@adacore.com>
+
+	* repinfo.adb (Visit): New procedure.
+	(List_GCC_Expression): Rewrite.
+	* repinfo.ads (Visit): New generic procedure.
+
+2025-11-27  Ghjuvan Lacambre  <lacambre@adacore.com>
+
+	* sem_ch13.adb (Analyze_Code_Statement): Do not emit error
+	message when only checking relaxed semantics.
+
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch7.adb (Build_Finalizer_Call): Delete.
+	(Build_Finalizer): Always insert the finalizer at the end of the
+	statement list in the non-package case.
+	(Expand_Cleanup_Actions): Attach the finalizer manually, if any.
+	* exp_smem.adb (Add_Shared_Var_Lock_Procs): Insert all the actions
+	directly in the transient scope.
+
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch11.adb (Expand_N_Handled_Sequence_Of_Statement): Merge the
+	eslif condition with the if condition for cleanup actions.
+	* sem_ch6.adb (Analyze_Procedure_Call.Analyze_Call_And_Resolve): Get
+	rid of if statement whose condition is always true.
+	* sinfo.ads (Finally_Statements): Document their purpose.
+
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gen_il-gen-gen_nodes.adb (N_Extended_Return_Statement): Add
+	Activation_Chain_Entity semantic field.
+	* exp_ch3.adb (Build_Master): Use Build_Master_{Entity,Renaming} in
+	all cases.
+	(Expand_N_Object_Declaration): Small tweak.
+	* exp_ch6.adb (Make_Build_In_Place_Iface_Call_In_Allocator): Use
+	Build_Master_{Entity,Renaming} to build the master.
+	* exp_ch7.adb (Expand_N_Package_Declaration): Do not guard the call
+	to Build_Task_Activation_Call for the sake of consistency.
+	* exp_ch9.ads (Build_Class_Wide_Master): Delete.
+	(Find_Master_Scope): Likewise.
+	(Build_Protected_Subprogram_Call_Cleanup): Move to...
+	(First_Protected_Operation): Move to...
+	(Mark_Construct_As_Task_Master): New procedure.
+	* exp_ch9.adb (Build_Protected_Subprogram_Call_Cleanup): ...here.
+	(First_Protected_Operation): ...here.
+	(Build_Activation_Chain_Entity): Streamline handling of extended
+	return statements.
+	(Build_Class_Wide_Master): Delete.
+	(Build_Master_Entity): Streamline handling of extended return
+	statements and call Mark_Construct_As_Task_Master on the context.
+	(Build_Task_Activation_Call): Assert that the owner is not an
+	extended return statement.
+	(Find_Master_Scope): Delete.
+	(Mark_Construct_As_Task_Master): New procedure.
+	* sem_ch3.adb (Access_Definition): Use Build_Master_{Entity,Renaming}
+	in all cases to build a master.
+	* sem_ch6.adb (Check_Anonymous_Return): Rename to...
+	(Check_Anonymous_Access_Return_With_Tasks): ...this.  At the end,
+	call Mark_Construct_As_Task_Master on the parent node.
+	(Analyze_Subprogram_Body_Helper): Adjust to above renaming.
+	(Create_Extra_Formals): Do not set Has_Master_Entity here.
+	* sinfo.ads (Activation_Chain_Entity): Adjust description.
+
+2025-11-27  Bob Duff  <duff@adacore.com>
+
+	* sem_ch13.adb (Aspect_Annotate): Avoid disturbing the tree of the
+	aspect.
+	* vast.adb: Enable Check_Parent_Present.
+	* exp_ch6.adb (Validate_Subprogram_Calls): Minor reformatting.
+
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch4.adb (Expand_N_Case_Expression): When not optimizing for a
+	specific context, call Make_Build_In_Place_Call_In_Anonymous_Context
+	on expressions of alternatives when they are calls to BIP functions.
+	(Expand_N_If_Expression): Likewise for the Then & Else expressions.
+
+2025-11-27  Bob Duff  <duff@adacore.com>
+
+	* frontend.adb: Move call to VAST from here...
+	* gnat1drv.adb: ...to here.
+	* vast.ads (VAST_If_Enabled): Rename main entry point of VAST from
+	VAST to VAST_If_Enabled.
+	* vast.adb: Miscellaneous improvements. Mostly debugging
+	improvements. Also enable Check_Error_Nodes. Also add checks:
+	Check_FE_Only, Check_Scope_Present, Check_Scope_Correct.
+	* debug.ads: Minor comment tweaks. The comment, "In the checks off
+	version of debug, the call to Set_Debug_Flag is always a null
+	operation." appears to be false, so is removed.
+	* debug.adb: Minor: Remove some code duplication.
+	* sinfo-utils.adb (nnd): Add comment warning about C vs. Ada
+	confusion.
+
+2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* exp_ch6.ads (Needs_BIP_Task_Actuals): Adjust description.
+	* exp_ch6.adb (Expand_N_Extended_Return_Statement): Move activation
+	chain for every build-in-place function with task formal parameters
+	when the type of the return object might have tasks.
+
+2025-11-27  Ronan Desplanques  <desplanques@adacore.com>
+
+	* libgnat/s-dwalin.ads (Display_Mode_Type): New enumerated type.
+	(Symbolic_Traceback): Use new type in profile.
+	* libgnat/s-dwalin.adb (Symbolic_Traceback): Use new type in profile
+	and adapt body.
+	* libgnat/s-trasym__dwarf.adb (Multi_Module_Symbolic_Traceback): Fix
+	wrong call in body of one overload. Use new type in profile. Adapt
+	body.
+	(Symbolic_Traceback, Symbolic_Traceback_No_Lock,
+	Module_Symbolic_Traceback): Use new type in profile and adapt body.
+	(Calling_Entity): Adapt body.
+
 2025-11-24  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/81106

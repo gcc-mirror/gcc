@@ -1,3 +1,9 @@
+2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/121506
+	* c-typeck.cc (c_type_tag): If TYPE_NAME is TYPE_DECL
+	with non-NULL DECL_NAME, return that.
+
 2025-11-26  Alejandro Colomar  <alx@kernel.org>
 
 	* c-parser.cc (c_parser_maxof_or_minof_expression): New func.

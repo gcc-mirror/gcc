@@ -1,3 +1,129 @@
+2025-11-27  Matthieu Longo  <matthieu.longo@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros): Define
+	__ARM_BUILDATTR64_FV when BA support is detected in GAS.
+
+2025-11-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.md (ctz<mode>2): Use compact syntax.
+
+2025-11-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/aarch64.md (ffs<mode>2): Use gen_ctz.
+	(ctz<mode>2): Model ctz as a single target instruction.
+
+2025-11-27  Wilco Dijkstra  <wilco.dijkstra@arm.com>
+
+	* config/aarch64/atomics.md (*dmb): Expand release fence into dmb ishld
+	and dmb ishst.
+
+2025-11-27  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-reassoc.cc (rewrite_expr_tree): Swap
+	oe1 and oe2 if commutative code and not in
+	canonical order.
+
+2025-11-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (AVR_MCUS): Add avr16la14, avr16la20,
+	avr16la28, avr16la32, avr32la14, avr32la20, avr32la28, avr32la32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-11-27  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/122855
+	PR tree-optimization/122850
+	* tree-ssa-forwprop.cc (simplify_vector_constructor): Nop
+	convert input if necessary.
+
+2025-11-27  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_init_cumulative_args): Emit a warning if the
+	-mxnack setting looks wrong.
+	* config/gcn/mkoffload.cc: Include tree.h and omp-general.h.
+	(process_asm): Add omp_requires parameter.
+	Emit HSA_XNACK code into mkoffload_setup, as required.
+	(main): Modify HSACO_ATTR_OFF to preserve user-set -mxnack.
+	Pass omp_requires to process_asm.
+
+2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122714
+	* gimple-lower-bitint.cc (bitint_large_huge::limb_access): Adjust
+	MEM_REFs offset for bitint_big_endian if ltype doesn't have the
+	same byte size as m_limb_type.
+
+2025-11-27  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Fix
+	recording of the mask type again.  Adjust placing of
+	mask arguments for non-masked calls.
+
+2025-11-27  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	PR tree-optimization/122733
+	* match.pd ((y << x) {<,<=,>,>=} x): Remove.
+	((y << x) {==,!=} x): Call constant_boolean_node instead of
+	build_one_cst/build_zero_cst and combine into one pattern.
+
+2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* fold-const.h (expr_not_equal_to): Add gimple * argument defaulted
+	to NULL.
+	* fold-const.cc (expr_not_equal_to): Likewise, pass it through to
+	range_of_expr.
+	* generic-match-head.cc (gimple_match_ctx): New static inline.
+	* match.pd (X % -Y -> X % Y): Capture NEGATE and pass
+	gimple_match_ctx (@2) as new 3rd argument to expr_not_equal_to.
+	((A * C) +- (B * C) -> (A+-B) * C): Pass gimple_match_ctx (@3)
+	as new 3rd argument to expr_not_equal_to.
+	(a rrotate (bitsize-b) -> a lrotate b): Likewise.
+
+2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/119683
+	* gimple-match.h (gimple_match_ctx): Move to ...
+	* gimple-match-head.cc (gimple_match_ctx): ... here.  Make static.
+	(gimple_match_range_of_expr): New static inline.
+	* match.pd ((mult (plus:s (mult:s @0 @1) @2) @3)): Use
+	gimple_match_range_of_expr.
+	((plus (mult:s (plus:s @0 @1) @2) @3)): Likewise.
+	((t * u) / u -> t): Likewise.
+	((t * u) / v -> t * (u / v)): Likewise.
+	((X + M*N) / N -> X / N + M): Likewise.
+	((X - M*N) / N -> X / N - M): Likewise.
+	((X + C) / N -> X / N + C / N): Likewise.
+	(((T)(A)) + CST -> (T)(A + CST)): Likewise
+	(x_5 == cstN ? cst4 : cst3): Likewise.  Do r.set_varying
+	even when gimple_match_range_of_expr failed.
+
+2025-11-27  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	* config/arm/arm-builtins.cc (arm_init_mve_builtins): Remove
+	volatile qualifier.
+
+2025-11-27  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122885
+	* tree-vect-loop.cc (vect_find_reusable_accumulator): Reject
+	mask vectors which do not use integer vector modes.
+	(vect_create_partial_epilog): Assert the same.
+
+2025-11-27  liuhongt  <hongtao.liu@intel.com>
+
+	* config/i386/i386-options.cc (set_ix86_tune_features): Set
+	gather/scatter tune if OPTION_SET_P.
+	* config/i386/i386.opt: Refactor mgather/mscatter.
+
+2025-11-27  Lulu Cheng  <chenglulu@loongson.cn>
+
+	* doc/extend.texi: Remove the incorrect prompt message.
+
+2025-11-27  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/invoke.texi (Option Summary) <C++ Langauge Options>:
+	Add --compile-std-module.
+
 2025-11-26  Jeff Law  <jlaw@ventanamicro.com>
 
 	Revert:

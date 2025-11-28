@@ -1,3 +1,18 @@
+2025-11-27  Jakub Jelinek  <jakub@redhat.com>
+
+	* lex/rust-lex.cc (rust_input_source_test): Cast char8_t string
+	literals to (const char *) to make it compilable with C++20.  Use
+	char16_t or char32_t character literals instead of ordinary
+	character literals or wide character literals in expected
+	initializers.
+
+2025-11-27  Arthur Cohen  <arthur.cohen@embecosm.com>
+
+	* typecheck/rust-tyty-subst.h: Remove now useless inclusion.
+	* typecheck/rust-tyty.h (class TypeBoundPredicate): New, moved from rust-tyty-bounds.h
+	(class TypeBoundsMappings): Likewise.
+	* typecheck/rust-tyty-bounds.h: Removed.
+
 2025-11-25  Lúcio Boari Fleury  <lucboari@gmail.com>
 
 	* parse/rust-parse-impl.h: Add early exit condition to parsing loop.
