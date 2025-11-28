@@ -1,3 +1,26 @@
+2025-11-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	Backported from master:
+	2025-11-27  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-mcus.def (AVR_MCUS): Add avr16la14, avr16la20,
+	avr16la28, avr16la32, avr32la14, avr32la20, avr32la28, avr32la32.
+	* doc/avr-mmcu.texi: Rebuild.
+
+2025-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-11-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122867
+	* config/arm/arm.cc (arm_print_operand): Use %- to
+	emit LOCAL_LABEL_PREFIX.
+	(arm_print_operand_punct_valid_p): Allow %- for punct
+	and make %_ valid for all compilation variants.
+	* config/arm/thumb2.md (*thumb2_cbz): Handle very
+	large branch ranges that exceed the limit of b<cond>.
+	(*thumb2_cbnz): Likewise.
+
 2025-11-20  Xi Ruoyao  <xry111@xry111.site>
 
 	Backported from master:
