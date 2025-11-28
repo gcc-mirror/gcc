@@ -180,12 +180,6 @@ cxx_get_alias_set (tree t)
        complete type.  */
     return get_alias_set (TYPE_CONTEXT (t));
 
-  /* Punt on PMFs until we canonicalize functions properly.  */
-  if (TYPE_PTRMEMFUNC_P (t)
-      || (INDIRECT_TYPE_P (t)
-	  && TYPE_PTRMEMFUNC_P (TREE_TYPE (t))))
-    return 0;
-
   return c_common_get_alias_set (t);
 }
 
