@@ -72,9 +72,9 @@ common /com4/ y,z
 allocatable :: q
 pointer :: b
 !$omp allocate (c, d) allocator (omp_pteam_mem_alloc)
-!$omp allocate (/com4/) allocator (omp_pteam_mem_alloc)
+!$omp allocate (/com4/) allocator (omp_low_lat_mem_alloc)
 !$omp allocate (c) allocator (omp_pteam_mem_alloc) ! { dg-error "Duplicated variable 'c' in !.OMP ALLOCATE" }
-!$omp allocate (/com4/) allocator (omp_pteam_mem_alloc) ! { dg-error "Duplicated common block '/com4/' in !.OMP ALLOCATE" }
+!$omp allocate (/com4/) allocator (omp_low_lat_mem_alloc) ! { dg-error "Duplicated common block '/com4/' in !.OMP ALLOCATE" }
 
 !$omp allocate(q,x)  ! { dg-error "Unexpected allocatable variable 'q' at .1. in declarative !.OMP ALLOCATE directive" }
 !$omp allocate(b,e)  ! { dg-error "Unexpected pointer variable 'b' at .1. in declarative !.OMP ALLOCATE directive" }

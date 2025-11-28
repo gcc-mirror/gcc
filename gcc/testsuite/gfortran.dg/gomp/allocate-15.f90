@@ -25,7 +25,7 @@ subroutine common
   use m
   integer :: a,b,c(5)
   common /my/ a,b,c  ! { dg-error "Sorry, !.OMP allocate for COMMON block variable 'my' at .1. not supported" }
-  !$omp allocate(/my/) allocator(omp_cgroup_mem_alloc)
+  !$omp allocate(/my/) allocator(omp_low_lat_mem_alloc)
 end
 
 integer function allocators() result(res)

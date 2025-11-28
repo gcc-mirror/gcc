@@ -8682,7 +8682,8 @@ gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
       if (n->sym->attr.in_common || n->sym->attr.save || n->sym->ns->save_all
 	  || (n->sym->ns->proc_name
 	      && (n->sym->ns->proc_name->attr.flavor == FL_PROGRAM
-		  || n->sym->ns->proc_name->attr.flavor == FL_MODULE)))
+		  || n->sym->ns->proc_name->attr.flavor == FL_MODULE
+		  || n->sym->ns->proc_name->attr.flavor == FL_BLOCK_DATA)))
 	{
 	  bool com = n->sym->attr.in_common;
 	  if (!n->u2.allocator)
@@ -8696,6 +8697,30 @@ gfc_resolve_omp_allocate (gfc_namespace *ns, gfc_omp_namelist *list)
 		       &n->u2.allocator->where, com ? "/" : "",
 		       com ? n->sym->common_head->name : n->sym->name,
 		       com ? "/" : "", &n->where);
+	  /* Only local static variables might use omp_cgroup_mem_alloc (6),
+	     omp_pteam_mem_alloc (7), or omp_thread_mem_alloc (8).  */
+	  else if ((!ns->proc_name
+		    || ns->proc_name->attr.flavor == FL_PROGRAM
+		    || ns->proc_name->attr.flavor == FL_BLOCK_DATA
+		    || ns->proc_name->attr.flavor == FL_MODULE
+		    || com)
+		   && mpz_cmp_si (n->u2.allocator->value.integer,
+				  6 /* cgroup */) >= 0
+		   && mpz_cmp_si (n->u2.allocator->value.integer,
+				  8 /* thread */) <= 0)
+	    {
+	      const char *alloc_name[] = {"omp_cgroup_mem_alloc",
+					  "omp_pteam_mem_alloc",
+					  "omp_thread_mem_alloc" };
+	      gfc_error ("Predefined allocator %qs in ALLOCATOR clause at %L, "
+			 "used for list item %<%s%s%s%> at %L, may only be used"
+			 " for local static variables",
+			 alloc_name[mpz_get_ui (n->u2.allocator->value.integer)
+				    - 6 /* cgroup */], &n->u2.allocator->where,
+			 com ? "/" : "",
+			 com ? n->sym->common_head->name : n->sym->name,
+			 com ? "/" : "", &n->where);
+	    }
 	  while (n->sym->attr.in_common && n->next && n->next->sym
 		 && n->sym->common_head == n->next->sym->common_head)
 	    n = n->next;
