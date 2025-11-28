@@ -3003,7 +3003,7 @@ loongarch_unspec_address_offset (rtx base, rtx offset,
 				 enum loongarch_symbol_type symbol_type)
 {
   base = gen_rtx_UNSPEC (Pmode, gen_rtvec (1, base),
-			 UNSPEC_ADDRESS_FIRST + symbol_type);
+			 UNSPEC_ADDRESS_FIRST + (int) symbol_type);
   if (offset != const0_rtx)
     base = gen_rtx_PLUS (Pmode, base, offset);
   return gen_rtx_CONST (Pmode, base);
@@ -3223,7 +3223,7 @@ loongarch_call_tls_get_addr (rtx sym, enum loongarch_symbol_type type, rtx v0)
 		  rtx sum = gen_rtx_UNSPEC (
 		    Pmode, gen_rtvec (1, loongarch_tls_symbol),
 		    UNSPEC_ADDRESS_FIRST
-		    + loongarch_classify_symbol (loongarch_tls_symbol));
+		    + (int) loongarch_classify_symbol (loongarch_tls_symbol));
 		  set_unique_reg_note (get_last_insn (), REG_EQUAL, sum);
 		}
 	      else
