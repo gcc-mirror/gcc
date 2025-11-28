@@ -686,9 +686,7 @@ opflags_overloaded_builtin_var[S390_OVERLOADED_BUILTIN_VAR_MAX + 1] =
 
 tree s390_builtin_types[BT_MAX];
 tree s390_builtin_fn_types[BT_FN_MAX];
-tree s390_builtin_decls[S390_BUILTIN_MAX +
-			S390_OVERLOADED_BUILTIN_MAX +
-			S390_OVERLOADED_BUILTIN_VAR_MAX];
+tree s390_builtin_decls[S390_ALL_BUILTIN_MAX];
 
 static enum insn_code const code_for_builtin[S390_BUILTIN_MAX + 1] = {
 #undef B_DEF
@@ -771,12 +769,12 @@ s390_init_builtins (void)
 			    ATTRS);
 #undef OB_DEF
 #define OB_DEF(NAME, FIRST_VAR_NAME, LAST_VAR_NAME, BFLAGS, FNTYPE)	\
-  if (s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] \
+  if (s390_builtin_decls[(int)S390_OVERLOADED_BUILTIN_##NAME + (int)S390_BUILTIN_MAX] \
       == NULL)								\
-    s390_builtin_decls[S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX] = \
+    s390_builtin_decls[(int)S390_OVERLOADED_BUILTIN_##NAME + (int)S390_BUILTIN_MAX] = \
       add_builtin_function ("__builtin_" #NAME,				\
 			    s390_builtin_fn_types[FNTYPE],		\
-			    S390_OVERLOADED_BUILTIN_##NAME + S390_BUILTIN_MAX, \
+			    (int)S390_OVERLOADED_BUILTIN_##NAME + (int)S390_BUILTIN_MAX, \
 			    BUILT_IN_MD,				\
 			    NULL,					\
 			    0);
