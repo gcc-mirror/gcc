@@ -525,11 +525,7 @@ namespace ranges
     using sentinel_t = decltype(ranges::end(std::declval<_Range&>()));
 
 #if __glibcxx_ranges_as_const // >= C++23
-  template<range _Range>
-    using const_iterator_t = const_iterator<iterator_t<_Range>>;
-
-  template<range _Range>
-    using const_sentinel_t = const_sentinel<sentinel_t<_Range>>;
+  // const_iterator_t and const_sentinel_t defined below.
 
   template<range _Range>
     using range_const_reference_t = iter_const_reference_t<iterator_t<_Range>>;
@@ -683,7 +679,7 @@ namespace ranges
 			    (ranges::begin(__access::__possibly_const_range(__t))); }
 	{
 	  auto& __r = __access::__possibly_const_range(__t);
-	  return const_iterator_t<decltype(__r)>(ranges::begin(__r));
+	  return const_iterator<decltype(ranges::begin(__r))>(ranges::begin(__r));
 	}
 #else
       template<typename _Tp>
@@ -711,7 +707,7 @@ namespace ranges
 			    (ranges::end(__access::__possibly_const_range(__t))); }
 	{
 	  auto& __r = __access::__possibly_const_range(__t);
-	  return const_sentinel_t<decltype(__r)>(ranges::end(__r));
+	  return const_sentinel<decltype(ranges::end(__r))>(ranges::end(__r));
 	}
 #else
       template<typename _Tp>
@@ -814,6 +810,16 @@ namespace ranges
     inline constexpr ranges::__access::_CREnd crend{};
     inline constexpr ranges::__access::_CData cdata{};
   }
+
+#if __glibcxx_ranges_as_const // >= C++23
+  // _GLIBCXX_RESOLVE_LIB_DEFECTS
+  // 3946. The definition of const_iterator_t should be reworked
+  template<range _Range>
+    using const_iterator_t = decltype(ranges::cbegin(std::declval<_Range&>()));
+
+  template<range _Range>
+    using const_sentinel_t = decltype(ranges::cend(std::declval<_Range&>()));
+#endif
 
   namespace __detail
   {
