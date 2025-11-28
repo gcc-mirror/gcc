@@ -529,7 +529,9 @@ gimple_match_ctx (tree op)
 static inline bool
 gimple_match_range_of_expr (vrange &r, tree op, tree ctx = NULL_TREE)
 {
-  return get_range_query (cfun)->range_of_expr (r, op,
-						ctx ? gimple_match_ctx (ctx)
-						: NULL);
+  if (!get_range_query (cfun)->range_of_expr (r, op,
+					      ctx ? gimple_match_ctx (ctx)
+					      : NULL))
+    return false;
+  return !r.undefined_p ();
 }
