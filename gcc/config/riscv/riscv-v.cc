@@ -1811,7 +1811,8 @@ expand_const_vector_onestep (rtx target, rvv_builder &builder)
   rtx dest = gen_reg_rtx (mode);
   insn_code icode = code_for_pred_mov (mode);
   rtx ops3[] = {dest, tmp3, tmp1};
-  emit_nonvlmax_insn (icode, __MASK_OP_TUMA | UNARY_OP_P, ops3, GEN_INT (n));
+  emit_nonvlmax_insn (icode, (unsigned) __MASK_OP_TUMA | UNARY_OP_P,
+		      ops3, GEN_INT (n));
 
   emit_move_insn (target, dest);
 }
@@ -5265,7 +5266,7 @@ emit_vec_cvt_x_f (rtx op_dest, rtx op_src, rtx mask,
 {
   insn_code icode = code_for_pred_fcvt_x_f (UNSPEC_VFCVT, vec_mode);
 
-  if (type & USE_VUNDEF_MERGE_P)
+  if (type & (insn_type) USE_VUNDEF_MERGE_P)
     {
       rtx cvt_x_ops[] = {op_dest, mask, op_src};
       emit_vlmax_insn (icode, type, cvt_x_ops);
@@ -5333,7 +5334,7 @@ emit_vec_cvt_x_f_rtz (rtx op_dest, rtx op_src, rtx mask,
 {
   insn_code icode = code_for_pred (FIX, vec_mode);
 
-  if (type & USE_VUNDEF_MERGE_P)
+  if (type & (insn_type) USE_VUNDEF_MERGE_P)
     {
       rtx cvt_x_ops[] = {op_dest, mask, op_src};
       emit_vlmax_insn (icode, type, cvt_x_ops);
