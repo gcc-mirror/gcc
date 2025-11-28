@@ -978,16 +978,7 @@ Parser<ManagedTokenSource>::parse_delim_token_tree ()
       std::unique_ptr<AST::TokenTree> tok_tree = parse_token_tree ();
 
       if (tok_tree == nullptr)
-	{
-	  // TODO: is this error handling appropriate?
-	  Error error (
-	    t->get_locus (),
-	    "failed to parse token tree in delimited token tree - found %qs",
-	    t->get_token_description ());
-	  add_error (std::move (error));
-
-	  return AST::DelimTokenTree::create_empty ();
-	}
+	return AST::DelimTokenTree::create_empty ();
 
       token_trees_in_tree.push_back (std::move (tok_tree));
 
@@ -1075,11 +1066,12 @@ Parser<ManagedTokenSource>::parse_token_tree ()
     case RIGHT_SQUARE:
     case RIGHT_CURLY:
       // error - should not be called when this a token
-      add_error (
-	Error (t->get_locus (),
-	       "unexpected closing delimiter %qs - token tree requires "
-	       "either paired delimiters or non-delimiter tokens",
-	       t->get_token_description ()));
+      add_error (Error (t->get_locus (), "unexpected closing delimiter %qs",
+			t->get_token_description ()));
+
+      add_error (Error (Error::Kind::Hint, t->get_locus (),
+			"token tree requires either paired delimiters or "
+			"non-delimiter tokens"));
 
       lexer.skip_token ();
       return nullptr;
