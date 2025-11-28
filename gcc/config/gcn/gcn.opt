@@ -22,11 +22,11 @@ HeaderInclude
 config/gcn/gcn-opts.h
 
 march=
-Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_GFX900)
+Target RejectNegative Negative(march=) Joined ToLower Enum(gpu_type) Var(gcn_arch) Init(PROCESSOR_GFX90A)
 Specify the name of the target GPU.
 
 mtune=
-Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_GFX900)
+Target RejectNegative Negative(mtune=) Joined ToLower Enum(gpu_type) Var(gcn_tune) Init(PROCESSOR_GFX90A)
 Specify the name of the target GPU.
 
 m32

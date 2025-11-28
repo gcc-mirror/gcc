@@ -4084,16 +4084,17 @@ supported ISAs as multilib; use @code{--with-multilib-list=} to tailor the built
 multilibs.  Note that mixing ISAs in the same binary is not supported and gives
 a linker error.
 
-By default, multilib support is built for @code{gfx900}, @code{gfx906},
-@code{gfx908}, @code{gfx90a}, @code{gfx90c}, @code{gfx1030}, @code{gfx1036},
-@code{gfx1100} and @code{gfx1103}.  The default multilib configuration
-requires LLVM 15 or newer.  LLVM 13.0.1 or LLVM 14 can be used by specifying
-a @code{--with-multilib-list=} that does not list any GFX 11 device nor
-@code{gfx1036}.  At least LLVM 16 is required for @code{gfx1150} and
-@code{gfx1151}, LLVM 18 for @code{gfx942}, LLVM 19 for the generic
+By default, multilib support is built for @code{gfx908}, @code{gfx90a},
 @code{gfx9-generic}, @code{gfx9-4-generic}, @code{gfx10-3-generic}, and
-@code{gfx11-generic} targets and for @code{gfx1152}, while LLVM 20 is required
-for @code{gfx950} and @code{gfx1153}.
+@code{gfx11-generic}, which covers all supported archs.  The default multilib
+configuration requires LLVM 19 or newer.  LLVM 13.0.1 or LLVM 14 can be used by
+specifying a @code{--with-multilib-list=} that only lists GFX9 or GFX10-3
+devices, while LLVM 15 is required for GFX 11 device and @code{gfx1036}.
+At least LLVM 16 is required for @code{gfx1150} and @code{gfx1151},
+LLVM 18 for @code{gfx942}, LLVM 19 for the generic @code{gfx9-generic},
+@code{gfx9-4-generic}, @code{gfx10-3-generic}, and @code{gfx11-generic}
+targets and for @code{gfx1152}, while LLVM 20 is required for
+@code{gfx950} and @code{gfx1153}.
 
 The supported ISA architectures are listed in the GCC manual. The generic
 ISA targets @code{gfx9-generic}, @code{gfx10-3-generic}, and

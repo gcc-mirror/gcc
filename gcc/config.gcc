@@ -4640,14 +4640,14 @@ case "${target}" in
 				exit 1
 			fi
 		done
-		[ "x$with_arch" = x ] && with_arch=gfx900
+		[ "x$with_arch" = x ] && with_arch=gfx90a
 
 		case "x${with_multilib_list}" in
 		x | xno)
 			TM_MULTILIB_CONFIG=
 			;;
 		xdefault | xyes)
-			TM_MULTILIB_CONFIG=`echo "gfx900,gfx906,gfx908,gfx90a,gfx90c,gfx1030,gfx1036,gfx1100,gfx1103" | sed "s/${with_arch},\?//;s/,$//"`
+			TM_MULTILIB_CONFIG=`echo "gfx908,gfx90a,gfx9-generic,gfx9-4-generic,gfx10-3-generic,gfx11-generic" | sed "s/${with_arch},\?//;s/,$//"`
 			;;
 		*)
 			TM_MULTILIB_CONFIG="${with_multilib_list}"
