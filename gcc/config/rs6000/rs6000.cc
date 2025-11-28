@@ -28490,7 +28490,7 @@ static inline built_in_function
 complex_multiply_builtin_code (machine_mode mode)
 {
   gcc_assert (IN_RANGE (mode, MIN_MODE_COMPLEX_FLOAT, MAX_MODE_COMPLEX_FLOAT));
-  int func = BUILT_IN_COMPLEX_MUL_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+  int func = BUILT_IN_COMPLEX_MUL_MIN + (mode - MIN_MODE_COMPLEX_FLOAT);
   return (built_in_function) func;
 }
 
@@ -28501,7 +28501,7 @@ static inline built_in_function
 complex_divide_builtin_code (machine_mode mode)
 {
   gcc_assert (IN_RANGE (mode, MIN_MODE_COMPLEX_FLOAT, MAX_MODE_COMPLEX_FLOAT));
-  int func = BUILT_IN_COMPLEX_DIV_MIN + mode - MIN_MODE_COMPLEX_FLOAT;
+  int func = BUILT_IN_COMPLEX_DIV_MIN + (mode - MIN_MODE_COMPLEX_FLOAT);
   return (built_in_function) func;
 }
 
