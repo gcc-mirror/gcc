@@ -7157,13 +7157,14 @@ The implementation remark:
       such that the next reverse offload region is only executed after the previous
       one returned.
 @item OpenMP code that has a @code{requires} directive with @code{self_maps} or
-      @code{unified_shared_memory} is only supported if all AMD GPUs have the
-      @code{HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT} property; for
-      discrete GPUs, this may require setting the @code{HSA_XNACK} environment
-      variable to @samp{1}; for systems with both an APU and a discrete GPU that
-      does not support XNACK, consider using @code{ROCR_VISIBLE_DEVICES} to
-      enable only the APU.  If not supported, all AMD GPU devices are removed
-      from the list of available devices (``host fallback'').
+      @code{unified_shared_memory} is only supported if @emph{all} the AMD GPUs
+      present have the @code{HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT}
+      property; some systems require the "xnack" feature enabled for this to be
+      true, in which case the runtime will attempt to set the @code{HSA_XNACK}
+      environment variable to @samp{1} automatically (user-set values are not
+      overridden, and the setting only affects the executable itself and any
+      child processes).  If any AMD GPU device is not supported, all AMD GPUs
+      are removed from the list of available devices (``host fallback'').
 @item The available stack size can be changed using the @code{GCN_STACK_SIZE}
       environment variable; the default is 32 kiB per thread.
 @item Low-latency memory (@code{omp_low_lat_mem_space}) is supported when the
