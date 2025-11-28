@@ -1,3 +1,11 @@
+2025-11-27  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-11-26  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122867
+	* gcc.target/arm/cbz-range.c: New test.
+
 2025-11-18  Richard Biener  <rguenther@suse.de>
 	    Alex Coplan  <alex.coplan@arm.com>
 
