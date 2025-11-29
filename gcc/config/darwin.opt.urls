@@ -3,6 +3,9 @@
 dependency-file
 UrlSuffix(gcc/Darwin-Options.html#index-dependency-file)
 
+fapple-kext
+UrlSuffix(gcc/Darwin-Options.html#index-fapple-kext)
+
 fconstant-cfstrings
 UrlSuffix(gcc/Darwin-Options.html#index-fconstant-cfstrings)
 
@@ -12,7 +15,14 @@ UrlSuffix(gcc/Darwin-Options.html#index-iframework)
 mconstant-cfstrings
 UrlSuffix(gcc/Darwin-Options.html#index-mconstant-cfstrings)
 
-; skipping UrlSuffix for 'mdynamic-no-pic' due to finding no URLs
+Wnonportable-cfstrings
+UrlSuffix(gcc/Darwin-Options.html#index-Wno-nonportable-cfstrings)
+
+matt-stubs
+UrlSuffix(gcc/Darwin-Options.html#index-matt-stubs)
+
+mdynamic-no-pic
+UrlSuffix(gcc/Darwin-Options.html#index-mdynamic-no-pic)
 
 mfix-and-continue
 UrlSuffix(gcc/Darwin-Options.html#index-mfix-and-continue)
@@ -26,14 +36,29 @@ UrlSuffix(gcc/Darwin-Options.html#index-mmacosx-version-min)
 mone-byte-bool
 UrlSuffix(gcc/Darwin-Options.html#index-mone-byte-bool)
 
+msymbol-stubs
+UrlSuffix(gcc/Darwin-Options.html#index-msymbol-stubs)
+
+mtarget-linker=
+UrlSuffix(gcc/Darwin-Options.html#index-mtarget-linker)
+
+mtarget-linker
+UrlSuffix(gcc/Darwin-Options.html#index-mtarget-linker)
+
 all_load
 UrlSuffix(gcc/Darwin-Options.html#index-all_005fload)
 
 allowable_client
 UrlSuffix(gcc/Darwin-Options.html#index-allowable_005fclient)
 
+arch
+UrlSuffix(gcc/Darwin-Options.html#index-arch)
+
 arch_errors_fatal
 UrlSuffix(gcc/Darwin-Options.html#index-arch_005ferrors_005ffatal)
+
+asm_macosx_version_min=
+UrlSuffix(gcc/Darwin-Options.html#index-asm_005fmacosx_005fversion_005fmin)
 
 bind_at_load
 UrlSuffix(gcc/Darwin-Options.html#index-bind_005fat_005fload)
@@ -59,6 +84,9 @@ UrlSuffix(gcc/Darwin-Options.html#index-dead_005fstrip)
 dylib_file
 UrlSuffix(gcc/Darwin-Options.html#index-dylib_005ffile)
 
+dylinker
+UrlSuffix(gcc/Darwin-Options.html#index-dylinker)
+
 dylinker_install_name
 UrlSuffix(gcc/Darwin-Options.html#index-dylinker_005finstall_005fname)
 
@@ -83,6 +111,9 @@ UrlSuffix(gcc/Darwin-Options.html#index-force_005fcpusubtype_005fALL)
 force_flat_namespace
 UrlSuffix(gcc/Darwin-Options.html#index-force_005fflat_005fnamespace)
 
+framework
+UrlSuffix(gcc/Darwin-Options.html#index-framework)
+
 gfull
 UrlSuffix(gcc/Darwin-Options.html#index-gfull)
 
@@ -104,44 +135,20 @@ UrlSuffix(gcc/Darwin-Options.html#index-install_005fname)
 keep_private_externs
 UrlSuffix(gcc/Darwin-Options.html#index-keep_005fprivate_005fexterns)
 
-multi_module
-UrlSuffix(gcc/Darwin-Options.html#index-multi_005fmodule)
-
-multiply_defined
-UrlSuffix(gcc/Darwin-Options.html#index-multiply_005fdefined)
-
-multiply_defined_unused
-UrlSuffix(gcc/Darwin-Options.html#index-multiply_005fdefined_005funused)
-
-no_dead_strip_inits_and_terms
-UrlSuffix(gcc/Darwin-Options.html#index-no_005fdead_005fstrip_005finits_005fand_005fterms)
+nodefaultexport
+UrlSuffix(gcc/Darwin-Options.html#index-nodefaultexport)
 
 nodefaultrpaths
 UrlSuffix(gcc/Darwin-Options.html#index-nodefaultrpaths)
 
-nofixprebinding
-UrlSuffix(gcc/Darwin-Options.html#index-nofixprebinding)
+ObjC
+UrlSuffix(gcc/Darwin-Options.html#index-ObjC)
 
-nomultidefs
-UrlSuffix(gcc/Darwin-Options.html#index-nomultidefs)
-
-noprebind
-UrlSuffix(gcc/Darwin-Options.html#index-noprebind)
-
-noseglinkedit
-UrlSuffix(gcc/Darwin-Options.html#index-noseglinkedit)
+ObjC++
+UrlSuffix(gcc/Darwin-Options.html#index-ObjC_002b_002b)
 
 pagezero_size
 UrlSuffix(gcc/Darwin-Options.html#index-pagezero_005fsize)
-
-prebind
-UrlSuffix(gcc/Darwin-Options.html#index-prebind)
-
-prebind_all_twolevel_modules
-UrlSuffix(gcc/Darwin-Options.html#index-prebind_005fall_005ftwolevel_005fmodules)
-
-private_bundle
-UrlSuffix(gcc/Darwin-Options.html#index-private_005fbundle)
 
 ; skipping UrlSuffix for 'pthread' due to multiple URLs:
 ;   duplicate: 'gcc/Link-Options.html#index-pthread-1'
@@ -159,26 +166,14 @@ UrlSuffix(gcc/Darwin-Options.html#index-sectalign)
 sectcreate
 UrlSuffix(gcc/Darwin-Options.html#index-sectcreate)
 
-sectobjectsymbols
-UrlSuffix(gcc/Darwin-Options.html#index-sectobjectsymbols)
-
-sectorder
-UrlSuffix(gcc/Darwin-Options.html#index-sectorder)
-
 seg_addr_table
 UrlSuffix(gcc/Darwin-Options.html#index-seg_005faddr_005ftable)
-
-seg_addr_table_filename
-UrlSuffix(gcc/Darwin-Options.html#index-seg_005faddr_005ftable_005ffilename)
 
 seg1addr
 UrlSuffix(gcc/Darwin-Options.html#index-seg1addr)
 
 segaddr
 UrlSuffix(gcc/Darwin-Options.html#index-segaddr)
-
-seglinkedit
-UrlSuffix(gcc/Darwin-Options.html#index-seglinkedit)
 
 segprot
 UrlSuffix(gcc/Darwin-Options.html#index-segprot)
@@ -189,9 +184,6 @@ UrlSuffix(gcc/Darwin-Options.html#index-segs_005fread_005fonly_005faddr)
 segs_read_write_addr
 UrlSuffix(gcc/Darwin-Options.html#index-segs_005fread_005fwrite_005faddr)
 
-single_module
-UrlSuffix(gcc/Darwin-Options.html#index-single_005fmodule)
-
 sub_library
 UrlSuffix(gcc/Darwin-Options.html#index-sub_005flibrary)
 
@@ -201,6 +193,9 @@ UrlSuffix(gcc/Darwin-Options.html#index-sub_005fumbrella)
 twolevel_namespace
 UrlSuffix(gcc/Darwin-Options.html#index-twolevel_005fnamespace)
 
+twolevel_namespace_hints
+UrlSuffix(gcc/Darwin-Options.html#index-twolevel_005fnamespace_005fhints)
+
 umbrella
 UrlSuffix(gcc/Darwin-Options.html#index-umbrella)
 
@@ -209,6 +204,9 @@ UrlSuffix(gcc/Darwin-Options.html#index-undefined)
 
 unexported_symbols_list
 UrlSuffix(gcc/Darwin-Options.html#index-unexported_005fsymbols_005flist)
+
+weak_framework
+UrlSuffix(gcc/Darwin-Options.html#index-weak_005fframework)
 
 weak_reference_mismatches
 UrlSuffix(gcc/Darwin-Options.html#index-weak_005freference_005fmismatches)

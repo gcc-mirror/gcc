@@ -70,7 +70,7 @@ mdiv
 UrlSuffix(gcc/M680x0-Options.html#index-mdiv-1)
 
 mhard-float
-UrlSuffix(gcc/M680x0-Options.html#index-mhard-float-2)
+UrlSuffix(gcc/M680x0-Options.html#index-mhard-float-1)
 
 ; skipping UrlSuffix for 'mid-shared-library' due to finding no URLs
 
@@ -96,7 +96,7 @@ mshort
 UrlSuffix(gcc/M680x0-Options.html#index-mshort)
 
 msoft-float
-UrlSuffix(gcc/M680x0-Options.html#index-msoft-float-6)
+UrlSuffix(gcc/M680x0-Options.html#index-msoft-float-5)
 
 mstrict-align
 UrlSuffix(gcc/M680x0-Options.html#index-mstrict-align-2)

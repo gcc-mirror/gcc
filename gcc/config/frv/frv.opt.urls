@@ -53,7 +53,7 @@ mgprel-ro
 UrlSuffix(gcc/FRV-Options.html#index-mgprel-ro)
 
 mhard-float
-UrlSuffix(gcc/FRV-Options.html#index-mhard-float-1)
+UrlSuffix(gcc/FRV-Options.html#index-mhard-float)
 
 minline-plt
 UrlSuffix(gcc/FRV-Options.html#index-minline-plt-1)
@@ -65,7 +65,7 @@ mlinked-fp
 UrlSuffix(gcc/FRV-Options.html#index-mlinked-fp)
 
 mlong-calls
-UrlSuffix(gcc/FRV-Options.html#index-mlong-calls-4)
+UrlSuffix(gcc/FRV-Options.html#index-mlong-calls-5)
 
 mmedia
 UrlSuffix(gcc/FRV-Options.html#index-mmedia)
@@ -92,7 +92,7 @@ mscc
 UrlSuffix(gcc/FRV-Options.html#index-mscc)
 
 msoft-float
-UrlSuffix(gcc/FRV-Options.html#index-msoft-float-3)
+UrlSuffix(gcc/FRV-Options.html#index-msoft-float-2)
 
 mTLS
 UrlSuffix(gcc/FRV-Options.html#index-mTLS)

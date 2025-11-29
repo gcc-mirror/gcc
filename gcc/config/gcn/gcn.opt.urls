@@ -12,8 +12,10 @@ UrlSuffix(gcc/AMD-GCN-Options.html#index-mtune-1)
 
 ; skipping UrlSuffix for 'mgomp' due to finding no URLs
 
-mstack-size=
-UrlSuffix(gcc/AMD-GCN-Options.html#index-mstack-size)
+; skipping UrlSuffix for 'mstack-size=' due to finding no URLs
+
+mgang-private-size=
+UrlSuffix(gcc/AMD-GCN-Options.html#index-mgang-private-size)
 
 Wopenacc-dims
 UrlSuffix(gcc/AMD-GCN-Options.html#index-Wno-openacc-dims)

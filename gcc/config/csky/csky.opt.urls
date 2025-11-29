@@ -9,20 +9,16 @@ UrlSuffix(gcc/C-SKY-Options.html#index-mcpu_003d-1)
 mbig-endian
 UrlSuffix(gcc/C-SKY-Options.html#index-mbig-endian-4)
 
-EB
-UrlSuffix(gcc/C-SKY-Options.html#index-EB-1)
+; skipping UrlSuffix for 'EB' due to finding no URLs
 
 mlittle-endian
 UrlSuffix(gcc/C-SKY-Options.html#index-mlittle-endian-4)
 
-EL
-UrlSuffix(gcc/C-SKY-Options.html#index-EL-1)
+; skipping UrlSuffix for 'EL' due to finding no URLs
 
-mhard-float
-UrlSuffix(gcc/C-SKY-Options.html#index-mhard-float)
+; skipping UrlSuffix for 'mhard-float' due to finding no URLs
 
-msoft-float
-UrlSuffix(gcc/C-SKY-Options.html#index-msoft-float-1)
+; skipping UrlSuffix for 'msoft-float' due to finding no URLs
 
 mfloat-abi=
 UrlSuffix(gcc/C-SKY-Options.html#index-mfloat-abi-1)
@@ -88,7 +84,7 @@ mconstpool
 UrlSuffix(gcc/C-SKY-Options.html#index-mconstpool)
 
 mstack-size
-UrlSuffix(gcc/C-SKY-Options.html#index-mstack-size-1)
+UrlSuffix(gcc/C-SKY-Options.html#index-mstack-size)
 
 mccrt
 UrlSuffix(gcc/C-SKY-Options.html#index-mccrt)

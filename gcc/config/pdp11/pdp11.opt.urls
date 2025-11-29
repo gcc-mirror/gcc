@@ -28,7 +28,7 @@ mint32
 UrlSuffix(gcc/PDP-11-Options.html#index-mint32-1)
 
 msoft-float
-UrlSuffix(gcc/PDP-11-Options.html#index-msoft-float-10)
+UrlSuffix(gcc/PDP-11-Options.html#index-msoft-float-9)
 
 msplit
 UrlSuffix(gcc/PDP-11-Options.html#index-msplit)
@@ -37,5 +37,5 @@ munix-asm
 UrlSuffix(gcc/PDP-11-Options.html#index-munix-asm)
 
 mlra
-UrlSuffix(gcc/PDP-11-Options.html#index-mlra-2)
+UrlSuffix(gcc/PDP-11-Options.html#index-mlra-1)
 

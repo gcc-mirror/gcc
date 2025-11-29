@@ -13,10 +13,10 @@ mlong-double-80
 UrlSuffix(gcc/x86-Options.html#index-mlong-double-80)
 
 mlong-double-64
-UrlSuffix(gcc/x86-Options.html#index-mlong-double-64-1)
+UrlSuffix(gcc/x86-Options.html#index-mlong-double-64-2)
 
 mlong-double-128
-UrlSuffix(gcc/x86-Options.html#index-mlong-double-128-1)
+UrlSuffix(gcc/x86-Options.html#index-mlong-double-128-2)
 
 maccumulate-outgoing-args
 UrlSuffix(gcc/x86-Options.html#index-maccumulate-outgoing-args-1)
@@ -57,7 +57,7 @@ UrlSuffix(gcc/x86-Options.html#index-mfp-ret-in-387)
 ;   duplicate: 'gcc/x86-Options.html#index-mfpmath-1'
 
 mhard-float
-UrlSuffix(gcc/x86-Options.html#index-mhard-float-11)
+UrlSuffix(gcc/x86-Options.html#index-mhard-float-10)
 
 mieee-fp
 UrlSuffix(gcc/x86-Options.html#index-mieee-fp)
@@ -120,7 +120,7 @@ mrtd
 UrlSuffix(gcc/x86-Options.html#index-mrtd-1)
 
 msoft-float
-UrlSuffix(gcc/x86-Options.html#index-msoft-float-16)
+UrlSuffix(gcc/x86-Options.html#index-msoft-float-15)
 
 msseregparm
 UrlSuffix(gcc/x86-Options.html#index-msseregparm)

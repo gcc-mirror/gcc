@@ -34,7 +34,7 @@ mlinker-opt
 UrlSuffix(gcc/HPPA-Options.html#index-mlinker-opt)
 
 mlong-calls
-UrlSuffix(gcc/HPPA-Options.html#index-mlong-calls-5)
+UrlSuffix(gcc/HPPA-Options.html#index-mlong-calls-6)
 
 ; skipping UrlSuffix for 'mlra' due to finding no URLs
 
@@ -63,7 +63,7 @@ mschedule=
 UrlSuffix(gcc/HPPA-Options.html#index-mschedule)
 
 msoft-float
-UrlSuffix(gcc/HPPA-Options.html#index-msoft-float-4)
+UrlSuffix(gcc/HPPA-Options.html#index-msoft-float-3)
 
 msoft-mult
 UrlSuffix(gcc/HPPA-Options.html#index-msoft-mult)

@@ -77,8 +77,14 @@ UrlSuffix(gcc/AArch64-Options.html#index-mearly-ra)
 msve-vector-bits=
 UrlSuffix(gcc/AArch64-Options.html#index-msve-vector-bits)
 
-mverbose-cost-dump
-UrlSuffix(gcc/AArch64-Options.html#index-mverbose-cost-dump)
+mautovec-preference=
+UrlSuffix(gcc/AArch64-Options.html#index-mautovec-preference)
+
+mmax-vectorization
+UrlSuffix(gcc/AArch64-Options.html#index-mmax-vectorization)
+
+mtrack-speculation
+UrlSuffix(gcc/AArch64-Options.html#index-mtrack-speculation)
 
 mearly-ldp-fusion
 UrlSuffix(gcc/AArch64-Options.html#index-mearly-ldp-fusion)
@@ -95,6 +101,6 @@ UrlSuffix(gcc/AArch64-Options.html#index-mstack-protector-guard-reg)
 mstack-protector-guard-offset=
 UrlSuffix(gcc/AArch64-Options.html#index-mstack-protector-guard-offset)
 
-Wexperimental-fmv-target
-UrlSuffix(gcc/AArch64-Options.html#index-Wexperimental-fmv-target)
+moutline-atomics
+UrlSuffix(gcc/AArch64-Options.html#index-moutline-atomics)
 

@@ -3,8 +3,7 @@
 msim
 UrlSuffix(gcc/FT32-Options.html#index-msim-3)
 
-mlra
-UrlSuffix(gcc/FT32-Options.html#index-mlra-1)
+; skipping UrlSuffix for 'mlra' due to finding no URLs
 
 mnodiv
 UrlSuffix(gcc/FT32-Options.html#index-mnodiv)

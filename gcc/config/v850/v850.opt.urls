@@ -18,7 +18,7 @@ mghs
 UrlSuffix(gcc/V850-Options.html#index-mghs)
 
 mlong-calls
-UrlSuffix(gcc/V850-Options.html#index-mlong-calls-7)
+UrlSuffix(gcc/V850-Options.html#index-mlong-calls-8)
 
 mprolog-function
 UrlSuffix(gcc/V850-Options.html#index-mprolog-function)
@@ -71,10 +71,10 @@ mlong-jumps
 UrlSuffix(gcc/V850-Options.html#index-mlong-jumps)
 
 msoft-float
-UrlSuffix(gcc/V850-Options.html#index-msoft-float-14)
+UrlSuffix(gcc/V850-Options.html#index-msoft-float-13)
 
 mhard-float
-UrlSuffix(gcc/V850-Options.html#index-mhard-float-9)
+UrlSuffix(gcc/V850-Options.html#index-mhard-float-8)
 
 mrh850-abi
 UrlSuffix(gcc/V850-Options.html#index-mrh850-abi)

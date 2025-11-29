@@ -10,10 +10,10 @@ mfpu
 UrlSuffix(gcc/Visium-Options.html#index-mfpu-5)
 
 mhard-float
-UrlSuffix(gcc/Visium-Options.html#index-mhard-float-10)
+UrlSuffix(gcc/Visium-Options.html#index-mhard-float-9)
 
 msoft-float
-UrlSuffix(gcc/Visium-Options.html#index-msoft-float-15)
+UrlSuffix(gcc/Visium-Options.html#index-msoft-float-14)
 
 mcpu=
 UrlSuffix(gcc/Visium-Options.html#index-mcpu-13)

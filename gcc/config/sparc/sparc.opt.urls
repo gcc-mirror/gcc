@@ -4,10 +4,10 @@ mfpu
 UrlSuffix(gcc/SPARC-Options.html#index-mfpu-4)
 
 mhard-float
-UrlSuffix(gcc/SPARC-Options.html#index-mhard-float-8)
+UrlSuffix(gcc/SPARC-Options.html#index-mhard-float-7)
 
 msoft-float
-UrlSuffix(gcc/SPARC-Options.html#index-msoft-float-13)
+UrlSuffix(gcc/SPARC-Options.html#index-msoft-float-12)
 
 mflat
 UrlSuffix(gcc/SPARC-Options.html#index-mflat)

@@ -9,6 +9,9 @@ UrlSuffix(gcc/CRIS-Options.html#index-metrax4)
 metrax100
 UrlSuffix(gcc/CRIS-Options.html#index-metrax100)
 
+mno-etrax100
+UrlSuffix(gcc/CRIS-Options.html#index-mno-etrax100)
+
 mpdebug
 UrlSuffix(gcc/CRIS-Options.html#index-mpdebug)
 
@@ -54,6 +57,12 @@ UrlSuffix(gcc/CRIS-Options.html#index-mprologue-epilogue)
 mno-prologue-epilogue
 UrlSuffix(gcc/CRIS-Options.html#index-mno-prologue-epilogue)
 
+mbest-lib-options
+UrlSuffix(gcc/CRIS-Options.html#index-mbest-lib-options)
+
+moverride-best-lib-options
+UrlSuffix(gcc/CRIS-Options.html#index-moverride-best-lib-options)
+
 mcpu=
 UrlSuffix(gcc/CRIS-Options.html#index-mcpu-3)
 
@@ -62,4 +71,13 @@ UrlSuffix(gcc/CRIS-Options.html#index-march-4)
 
 mtune=
 UrlSuffix(gcc/CRIS-Options.html#index-mtune-5)
+
+mtrap-using-break8
+UrlSuffix(gcc/CRIS-Options.html#index-mtrap-using-break8)
+
+mtrap-unaligned-atomic
+UrlSuffix(gcc/CRIS-Options.html#index-mtrap-unaligned-atomic)
+
+munaligned-atomic-may-use-library
+UrlSuffix(gcc/CRIS-Options.html#index-munaligned-atomic-may-use-library)
 

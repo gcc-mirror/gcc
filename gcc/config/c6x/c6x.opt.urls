@@ -11,7 +11,11 @@ UrlSuffix(gcc/C6X-Options.html#index-msim-1)
 
 ; skipping UrlSuffix for 'msdata=' due to finding no URLs
 
-; skipping UrlSuffix for 'mlong-calls' due to finding no URLs
+mdsbt
+UrlSuffix(gcc/C6X-Options.html#index-mdsbt)
+
+mlong-calls
+UrlSuffix(gcc/C6X-Options.html#index-mlong-calls-4)
 
 march=
 UrlSuffix(gcc/C6X-Options.html#index-march-3)

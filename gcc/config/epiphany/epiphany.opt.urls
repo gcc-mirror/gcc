@@ -21,6 +21,12 @@ UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-msoft-cmpsf)
 msplit-lohi
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-msplit-lohi)
 
+mpost-inc
+UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mpost-inc)
+
+mpost-modify
+UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mpost-modify)
+
 mstack-offset=
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mstack-offset)
 
@@ -30,13 +36,17 @@ UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mround-nearest)
 mlong-calls
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mlong-calls)
 
-; skipping UrlSuffix for 'mshort-calls' due to finding no URLs
+mshort-calls
+UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mshort-calls)
 
 msmall16
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-msmall16)
 
 mfp-mode=
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mfp-mode)
+
+mmay-round-for-trunc
+UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mmay-round-for-trunc)
 
 mvect-double
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mvect-double)
@@ -46,6 +56,9 @@ UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-max-vect-align)
 
 msplit-vecmove-early
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-msplit-vecmove-early)
+
+mfp-iarith
+UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-mfp-iarith)
 
 m1reg-
 UrlSuffix(gcc/Adapteva-Epiphany-Options.html#index-m1reg-)

@@ -1996,9 +1996,8 @@ UrlSuffix(gcc/Overall-Options.html#index-specs)
 specs=
 UrlSuffix(gcc/Overall-Options.html#index-specs)
 
-; skipping UrlSuffix for 'static' due to multiple URLs:
-;   duplicate: 'gcc/Darwin-Options.html#index-static-1'
-;   duplicate: 'gcc/Link-Options.html#index-static'
+static
+UrlSuffix(gcc/Link-Options.html#index-static)
 
 static-libgcc
 UrlSuffix(gcc/Link-Options.html#index-static-libgcc)

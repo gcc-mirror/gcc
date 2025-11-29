@@ -36,9 +36,6 @@ UrlSuffix(gcc/ARM-Options.html#index-mfloat-abi)
 mcmse
 UrlSuffix(gcc/ARM-Options.html#index-mcmse)
 
-mflip-thumb
-UrlSuffix(gcc/ARM-Options.html#index-mflip-thumb)
-
 mfp16-format=
 UrlSuffix(gcc/ARM-Options.html#index-mfp16-format)
 
@@ -94,12 +91,6 @@ UrlSuffix(gcc/ARM-Options.html#index-mtpcs-leaf-frame)
 mtune=
 UrlSuffix(gcc/ARM-Options.html#index-mtune-4)
 
-mprint-tune-info
-UrlSuffix(gcc/ARM-Options.html#index-mprint-tune-info)
-
-mverbose-cost-dump
-UrlSuffix(gcc/ARM-Options.html#index-mverbose-cost-dump-1)
-
 mword-relocations
 UrlSuffix(gcc/ARM-Options.html#index-mword-relocations)
 
@@ -114,9 +105,6 @@ UrlSuffix(gcc/ARM-Options.html#index-mfix-cmse-cve-2021-35465)
 
 munaligned-access
 UrlSuffix(gcc/ARM-Options.html#index-munaligned-access)
-
-mneon-for-64bits
-UrlSuffix(gcc/ARM-Options.html#index-mneon-for-64bits)
 
 mslow-flash-data
 UrlSuffix(gcc/ARM-Options.html#index-mslow-flash-data)

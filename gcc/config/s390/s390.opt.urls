@@ -22,16 +22,16 @@ mhard-dfp
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mhard-dfp-1)
 
 mhard-float
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mhard-float-7)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mhard-float-6)
 
 mhotpatch=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mhotpatch)
 
 mlong-double-128
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mlong-double-128)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mlong-double-128-1)
 
 mlong-double-64
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mlong-double-64)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mlong-double-64-1)
 
 mhtm
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mhtm-1)
@@ -46,7 +46,7 @@ msmall-exec
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-msmall-exec)
 
 msoft-float
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-msoft-float-12)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-msoft-float-11)
 
 mstack-guard=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-guard)
@@ -58,7 +58,9 @@ mstack-protector-guard-record
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-protector-guard-record)
 
 mstack-size=
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-size-2)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-size-1)
+
+; skipping UrlSuffix for 'mno-stack-size' due to finding no URLs
 
 mtune=
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mtune-14)
