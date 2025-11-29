@@ -1,3 +1,17 @@
+2025-11-28  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/122842
+	* include/bits/ranges_base.h (__access:_CBegin): Define in
+	terms of const_iterator directly, not const_iterator_t.
+	(__access::_CEnd): Likewise in terms of const_sentinel vs
+	const_sentinel_t.
+	(const_iterator_t): Move down definition and define in terms
+	of ranges::cbegin as per LWG 3946.
+	(const_sentinel_t): Likewise in terms of ranges::cend.
+	* testsuite/24_iterators/const_iterator/1.cc (test02): Correct
+	test for int[], std::array and std::vector.  Also test
+	std::string.
+
 2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* testsuite/performance/23_containers/sort_search/list.cc: Cast

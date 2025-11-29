@@ -1,3 +1,36 @@
+2025-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122844
+	* gcc.dg/vect/vect-pr122844.c: New testcase.
+
+2025-11-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c/122892
+	* gfortran.dg/gomp/allocate-15.f90: Use another allocator as
+	omp_{cgroup,pteam}_mem_alloc is invalid for non-local static vars.
+	* gfortran.dg/gomp/allocate-7.f90: Likewise.
+	* gfortran.dg/gomp/allocate-static-3.f90: New test.
+
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119969
+	* g++.dg/torture/pr119969.C: New test.
+
+2025-11-28  Mark Zhuang  <mark.zhuang@spacemit.com>
+
+	* gcc.target/riscv/predef-smt-1.c: New test.
+
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122733
+	* gcc.dg/match-shift-cmp-4.c: New test.
+	* gcc.dg/match-shift-cmp-5.c: New test.
+
+2025-11-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122890
+	* g++.target/aarch64/pr122890.C: New test.
+
 2025-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c/121506

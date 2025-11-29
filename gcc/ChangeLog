@@ -1,3 +1,139 @@
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/rs6000/rs6000.cc (complex_multiply_builtin_code):
+	Avoid arithmetics between enumerators from different enum types.
+	(complex_divide_builtin_code): Likewise.
+
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/loongarch/loongarch.cc (loongarch_unspec_address_offset):
+	Avoid arithmetics between enumerators from different enum types.
+	(loongarch_call_tls_get_addr): Likewise.
+
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/mips/mips.cc (mips_unspec_address_offset): Avoid
+	arithmetics between enumerators from different enum types.
+
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/riscv/riscv-v.cc (expand_const_vector_onestep): Avoid
+	bitwise ops between enumerators from different enum types.
+	(emit_vec_cvt_x_f): Likewise.
+	(emit_vec_cvt_x_f_rtz): Likewise.
+	* config/riscv/riscv.cc (riscv_unspec_address_offset): Avoid
+	arithmetics between enumerators from different enum types.
+
+2025-11-28  Sam James  <sam@gentoo.org>
+
+	* crc-verification.cc (crc_symbolic_execution::is_used_outside_the_loop):
+	Fix 'assignment' typo.
+
+2025-11-28  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/122686
+	* range-op.cc (operator_bitwise_and::op1_range): Check for
+	undefined bitmask.
+	* value-range.cc (prange::intersect): Handle undefined bitmask
+	intersection.
+	(irange::get_bitmask): Ditto.
+	(irange::intersect_bitmask): Ditto.
+	* value-range.h (irange_bitmask::intersect): Return false if the
+	result is UNDEFINED.
+
+2025-11-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	* config.gcc (amdgcn-*-*): Use gfx90a for 'with_arch'.
+	For TM_MULTILIB_CONFIG, replace specific archs by
+	gfx{9,9-4,10-3,11}-generic, keep gfx90{8,a}.
+	* config/gcn/gcn.opt (march=, mtune=): Use gfx90a.
+	* doc/install.texi (amdgcn): Update accordingly.
+
+2025-11-28  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-builtins.h
+	(S390_OVERLOADED_BUILTIN_VAR_OFFSET,S390_ALL_BUILTIN_MAX): Fix
+	enum arithmetic.
+	* config/s390/s390.cc (OB_DEF): Ditto.
+
+2025-11-28  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122844
+	* tree-vect-slp.cc (vect_analyze_slp_reduc_chain): Only
+	try stripping sign conversions around ops where this is valid.
+
+2025-11-28  Jim Lin  <jim@andestech.com>
+
+	* config/riscv/riscv.cc (riscv_output_move): Use \n\t instead
+	of semicolon to separate instructions in fmv.x.h emulation.
+
+2025-11-28  Charlie Jenkins  <charlie@rivosinc.com>
+
+	* config.gcc: Add cpu to supported configure options
+	* config/riscv/riscv.h (riscv_arch_help): Use --with-cpu during
+	compilation
+	* doc/install.texi: Mention in docs that --with-cpu is supported
+
+2025-11-28  Mark Zhuang  <mark.zhuang@spacemit.com>
+
+	* config/riscv/riscv-cores.def (RISCV_CORE): Add xsmtvdot to
+	spacemit-x60
+	* config/riscv/riscv-ext.def: Add xsmtvdot
+	* config/riscv/riscv-ext.opt: Ditto
+	* config/riscv/t-riscv: Ditto
+	* doc/riscv-ext.texi: Ditto
+	* config/riscv/riscv-ext-spacemit.def: Define xsmtvdot
+
+2025-11-28  Mark Zhuang  <mark.zhuang@spacemit.com>
+
+	* config/riscv/riscv-ext.opt: Generated file.
+
+2025-11-28  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add andes-45-sereis.
+	(RISCV_CORE): Add Andes 45 series cpu list.
+	* config/riscv/riscv-opts.h
+	(enum riscv_microarchitecture_type): Add andes_45_series.
+	* config/riscv/riscv.cc: Add andes_45_tune_info.
+	* config/riscv/riscv.md: Add andes_45.
+	* doc/riscv-mcpu.texi: Regenerated for Andes cpu list.
+	* doc/riscv-mtune.texi: Regenerated for andes-45-series.
+	* config/riscv/andes-45-series.md: New file.
+
+2025-11-28  Kuan-Lin Chen  <rufus@andestech.com>
+
+	* config/riscv/riscv-cores.def (RISCV_TUNE): Add andes-23-series.
+	(RISCV_CORE): Add Andes 23-series cpu list.
+	* config/riscv/riscv-opts.h
+	(enum riscv_microarchitecture_type): Add andes_23_series.
+	* config/riscv/riscv.cc: Add andes_23_tune_info.
+	* config/riscv/riscv.md: Add andes_23.
+	* doc/riscv-mcpu.texi: Regenerated for Andes cpu list.
+	* doc/riscv-mtune.texi: Regenerated for andes-23-series.
+	* config/riscv/andes-23-series.md: New file.
+
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122733
+	* gimple-match-head.cc (gimple_match_range_of_expr): Return false
+	even when range_of_expr returns true, but the range is undefined_p.
+	* match.pd ((mult (plus:s@5 (mult:s@4 @0 @1) @2) @3)): Remove
+	vr0.undefined_p () check.
+	((plus (mult:s@5 (plus:s@4 @0 @1) @2) @3)): Likewise.
+	((X + M*N) / N -> X / N + M): Remove vr4.undefined_p () check.
+	((X - M*N) / N -> X / N - M): Likewise.
+	((y << x) == x, (y << x) != x): Use convert2? instead of
+	nop_convert2? and test INTEGRAL_TYPE_P on TREE_TYPE (@0) rather than
+	TREE_TYPE (@1).
+	((y << x) {<,<=,>,>=} x): New simplification.
+	(((T)(A)) + CST -> (T)(A + CST)): Remove vr.undefined_p () check.
+	(x_5 == cstN ? cst4 : cst3): Remove r.undefined_p () check.
+
+2025-11-28  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122890
+	* optabs.cc (emit_cmp_and_jump_insns): Check for SSA Name.
+
 2025-11-27  Matthieu Longo  <matthieu.longo@arm.com>
 
 	* config/aarch64/aarch64-c.cc (aarch64_define_unconditional_macros): Define

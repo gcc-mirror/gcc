@@ -1,3 +1,10 @@
+2025-11-28  Tobias Burnus  <tburnus@baylibre.com>
+
+	PR c/122892
+	* openmp.cc (gfc_resolve_omp_allocate): Reject non-local
+	static variables with cgroup/pteam/thread allocators.
+	* parse.cc: Permit OMP ALLOCATE in BLOCK DATA.
+
 2025-11-26  Tobias Burnus  <tburnus@baylibre.com>
 
 	* dump-parse-tree.cc (show_attr): Handle OpenMP's 'local' clause

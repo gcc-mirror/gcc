@@ -1,3 +1,9 @@
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	* known-function-manager.cc (known_function_manager::add): Avoid
+	arithmetics between enumerators from different enum types.
+	(known_function_manager::get_internal_fn): Likewise.
+
 2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
 
 	* constraint-manager.cc (equiv_class::operator==): Add const

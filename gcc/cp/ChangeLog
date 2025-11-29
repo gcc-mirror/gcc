@@ -1,3 +1,9 @@
+2025-11-28  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/119969
+	* cp-objcp-common.cc (cxx_get_alias_set): Remove special cases
+	for TYPE_PTRMEMFUNC_P and INDIRECT_TYPE_P for TYPE_PTRMEMFUNC_P.
+
 2025-11-26  Marek Polacek  <polacek@redhat.com>
 
 	PR c++/121325
