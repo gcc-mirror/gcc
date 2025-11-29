@@ -1,3 +1,13 @@
+2025-11-28  Daniele Sahebi  <daniele@mkryss.me>
+
+	Backported from master:
+	2025-11-22  Daniele Sahebi  <daniele@mkryss.me>
+		    Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122658
+	* call.cc (build_over_call): Don't call build_cplus_new in
+	template declarations.
+
 2025-11-26  Marek Polacek  <polacek@redhat.com>
 
 	Backported from master:

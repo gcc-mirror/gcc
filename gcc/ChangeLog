@@ -1,3 +1,8 @@
+2025-11-28  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122126
+	* gimple-isel.cc (gimple_expand_vec_set_extract_expr): Add bound check.
+
 2025-11-27  Georg-Johann Lay  <avr@gjlay.de>
 
 	Backported from master:
