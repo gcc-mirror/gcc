@@ -1086,9 +1086,6 @@ Objective-C and Objective-C++ Dialects}.
 @emph{FR30 Options} (@ref{FR30 Options})
 @gccoptlist{-msmall-model  -mno-lsim}
 
-@emph{FT32 Options} (@ref{FT32 Options})
-@gccoptlist{-msim  -mnodiv  -mft32b  -mcompress  -mnopm}
-
 @emph{FRV Options} (@ref{FRV Options})
 @gccoptlist{-mgpr-32  -mgpr-64  -mfpr-32  -mfpr-64
 -mhard-float  -msoft-float
@@ -1102,6 +1099,9 @@ Objective-C and Objective-C++ Dialects}.
 -mtomcat-stats
 -mTLS  -mtls
 -mcpu=@var{cpu}}
+
+@emph{FT32 Options} (@ref{FT32 Options})
+@gccoptlist{-msim  -mnodiv  -mft32b  -mcompress  -mnopm}
 
 @emph{GNU/Linux Options} (@ref{GNU/Linux Options})
 @gccoptlist{-mglibc  -muclibc  -mmusl  -mbionic  -mandroid
@@ -22385,8 +22385,8 @@ platform.
 * DEC Alpha Options::
 * eBPF Options::
 * FR30 Options::
-* FT32 Options::
 * FRV Options::
+* FT32 Options::
 * GNU/Linux Options::
 * H8/300 Options::
 * HPPA Options::
@@ -27724,45 +27724,6 @@ command line.
 
 @end table
 
-@node FT32 Options
-@subsection FT32 Options
-@cindex FT32 Options
-
-These options are defined specifically for the FT32 port.
-
-@table @gcctabopt
-
-@opindex msim
-@opindex mno-sim
-@item -msim
-Specifies that the program will be run on the simulator.  This causes
-an alternate runtime startup and library to be linked.
-You must not use this option when generating programs that will run on
-real hardware; you must provide your own runtime library for whatever
-I/O functions are needed.
-
-@opindex mnodiv
-@opindex mno-nodiv
-@item -mnodiv
-Do not use div and mod instructions.
-
-@opindex mft32b
-@opindex mno-ft32b
-@item -mft32b
-Enable use of the extended instructions of the FT32B processor.
-
-@opindex mcompress
-@opindex mno-compress
-@item -mcompress
-Compress all code using the Ft32B code compression scheme.
-
-@opindex mnopm
-@opindex mno-nopm
-@item -mnopm
-Do not generate code that reads program memory.
-
-@end table
-
 @node FRV Options
 @subsection FRV Options
 @cindex FRV Options
@@ -28029,6 +27990,45 @@ Cause gas to print out tomcat statistics.
 Select the processor type for which to generate code.  Possible values are
 @samp{frv}, @samp{fr550}, @samp{tomcat}, @samp{fr500}, @samp{fr450},
 @samp{fr405}, @samp{fr400}, @samp{fr300} and @samp{simple}.
+
+@end table
+
+@node FT32 Options
+@subsection FT32 Options
+@cindex FT32 Options
+
+These options are defined specifically for the FT32 port.
+
+@table @gcctabopt
+
+@opindex msim
+@opindex mno-sim
+@item -msim
+Specifies that the program will be run on the simulator.  This causes
+an alternate runtime startup and library to be linked.
+You must not use this option when generating programs that will run on
+real hardware; you must provide your own runtime library for whatever
+I/O functions are needed.
+
+@opindex mnodiv
+@opindex mno-nodiv
+@item -mnodiv
+Do not use div and mod instructions.
+
+@opindex mft32b
+@opindex mno-ft32b
+@item -mft32b
+Enable use of the extended instructions of the FT32B processor.
+
+@opindex mcompress
+@opindex mno-compress
+@item -mcompress
+Compress all code using the Ft32B code compression scheme.
+
+@opindex mnopm
+@opindex mno-nopm
+@item -mnopm
+Do not generate code that reads program memory.
 
 @end table
 
