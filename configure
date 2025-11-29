@@ -620,6 +620,7 @@ AR_FOR_TARGET
 GM2_FOR_TARGET
 GDC_FOR_TARGET
 GOC_FOR_TARGET
+GA68_FOR_TARGET
 GFORTRAN_FOR_TARGET
 GCC_FOR_TARGET
 CXX_FOR_TARGET
@@ -633,6 +634,7 @@ GREP
 CPP
 PKG_CONFIG_PATH
 GDCFLAGS
+GA68FLAGS
 READELF
 OTOOL
 OBJDUMP
@@ -665,6 +667,7 @@ LDFLAGS_FOR_BUILD
 GNATMAKE_FOR_BUILD
 GDC_FOR_BUILD
 GOC_FOR_BUILD
+GA68_FOR_BUILD
 GFORTRAN_FOR_BUILD
 DSYMUTIL_FOR_BUILD
 DLLTOOL_FOR_BUILD
@@ -728,6 +731,7 @@ HAVE_CXX14
 do_compare
 CARGO
 GDC
+GA68
 GNATMAKE
 GNATBIND
 ac_ct_CXX
@@ -829,6 +833,7 @@ enable_libquadmath
 enable_libquadmath_support
 enable_libada
 enable_libgm2
+enable_libga68
 enable_libssp
 enable_libstdcxx
 enable_bootstrap
@@ -859,6 +864,7 @@ enable_host_shared
 enable_libgdiagnostics
 enable_stage1_languages
 enable_objc_gc
+enable_algol68_gc
 with_target_bdw_gc
 with_target_bdw_gc_include
 with_target_bdw_gc_lib
@@ -907,6 +913,7 @@ CC_FOR_TARGET
 CXX_FOR_TARGET
 GCC_FOR_TARGET
 GFORTRAN_FOR_TARGET
+GA68_FOR_TARGET
 GOC_FOR_TARGET
 GDC_FOR_TARGET
 GM2_FOR_TARGET
@@ -1576,6 +1583,7 @@ Optional Features:
                           disable libquadmath support for Fortran
   --enable-libada         build libada directory
   --enable-libgm2         build libgm2 directory
+  --enable-libga68        build libga68 directory
   --enable-libssp         build libssp directory
   --disable-libstdcxx     do not build libstdc++-v3 directory
   --enable-bootstrap      enable bootstrapping [yes if native build]
@@ -1599,6 +1607,8 @@ Optional Features:
                           Mostly useful for compiler development
   --enable-objc-gc        enable use of Boehm's garbage collector with the GNU
                           Objective-C runtime
+  --enable-algol68-gc     enable use of Boehm's garbage collector with the GNU
+                          Algol runtime
   --enable-vtable-verify  Enable vtable verification feature
   --enable-serial-[{host,target,build}-]configure
                           force sequential configuration of sub-packages for
@@ -1712,6 +1722,8 @@ Some influential environment variables:
               GCC for the target
   GFORTRAN_FOR_TARGET
               GFORTRAN for the target
+  GA68_FOR_TARGET
+              GA68 for the target
   GOC_FOR_TARGET
               GOC for the target
   GDC_FOR_TARGET
@@ -2916,6 +2928,7 @@ target_libraries="target-libgcc \
 		target-libgcobol \
 		target-libada \
 		target-libgm2 \
+                target-libga68 \
 		target-libgo \
 		target-libgrust \
 		target-libphobos \
@@ -3318,6 +3331,14 @@ fi
 if test "${ENABLE_LIBGM2}" != "yes" ; then
   noconfigdirs="$noconfigdirs gm2tools"
 fi
+
+# Check whether --enable-libga68 was given.
+if test "${enable_libga68+set}" = set; then :
+  enableval=$enable_libga68; ENABLE_LIBGA68=$enableval
+else
+  ENABLE_LIBGA68=yes
+fi
+
 
 # Check whether --enable-libssp was given.
 if test "${enable_libssp+set}" = set; then :
@@ -4301,6 +4322,7 @@ if test "${build}" != "${host}" ; then
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
   DSYMUTIL_FOR_BUILD=${DSYMUTIL_FOR_BUILD-dsymutil}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
+  GA68_FOR_BUILD=${GA68_FOR_BUILD-ga68}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   GDC_FOR_BUILD=${GDC_FOR_BUILD-gdc}
   GNATMAKE_FOR_BUILD=${GNATMAKE_FOR_BUILD-gnatmake}
@@ -4317,6 +4339,7 @@ else
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
   DSYMUTIL_FOR_BUILD="\$(DSYMUTIL)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
+  GA68_FOR_BUILD="\$(GA68)"
   GOC_FOR_BUILD="\$(GOC)"
   GDC_FOR_BUILD="\$(GDC)"
   GNATMAKE_FOR_BUILD="\$(GNATMAKE)"
@@ -5833,6 +5856,100 @@ if test "x$GNATBIND" != xno && test "x$GNATMAKE" != xno && test x$acx_cv_cc_gcc_
   have_gnat=yes
 else
   have_gnat=no
+fi
+
+
+
+if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}ga68", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ga68; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_GA68+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$GA68"; then
+  ac_cv_prog_GA68="$GA68" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GA68="${ac_tool_prefix}ga68"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GA68=$ac_cv_prog_GA68
+if test -n "$GA68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68" >&5
+$as_echo "$GA68" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_GA68"; then
+  ac_ct_GA68=$GA68
+  # Extract the first word of "ga68", so it can be a program name with args.
+set dummy ga68; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_GA68+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_GA68"; then
+  ac_cv_prog_ac_ct_GA68="$ac_ct_GA68" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_GA68="ga68"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_GA68=$ac_cv_prog_ac_ct_GA68
+if test -n "$ac_ct_GA68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GA68" >&5
+$as_echo "$ac_ct_GA68" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_ct_GA68" = x; then
+    GA68="no"
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    GA68=$ac_ct_GA68
+  fi
+else
+  GA68="$ac_cv_prog_GA68"
 fi
 
 
@@ -10383,6 +10500,11 @@ if test "${enable_objc_gc+set}" = set; then :
   enableval=$enable_objc_gc;
 fi
 
+# Check whether --enable-algol68-gc was given.
+if test "${enable_algol68_gc+set}" = set; then :
+  enableval=$enable_algol68_gc;
+fi
+
 
 # Check whether --with-target-bdw-gc was given.
 if test "${with_target_bdw_gc+set}" = set; then :
@@ -10402,22 +10524,23 @@ if test "${with_target_bdw_gc_lib+set}" = set; then :
 fi
 
 
-case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for bdw garbage collector" >&5
+case ,${enable_languages},:${enable_objc_gc}:${enable_algol68_gc} in
+  *,objc,*:yes:*|*,objc,*:auto:*|*,algol68,*:*:yes|*,algol68,*:*:auto)
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for bdw garbage collector" >&5
 $as_echo_n "checking for bdw garbage collector... " >&6; }
-  if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
-        { $as_echo "$as_me:${as_lineno-$LINENO}: result: using bdw-gc in default locations" >&5
+    if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
+            { $as_echo "$as_me:${as_lineno-$LINENO}: result: using bdw-gc in default locations" >&5
 $as_echo "using bdw-gc in default locations" >&6; }
-  else
-        if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
-      as_fn_error $? "found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing" "$LINENO" 5
-    elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
-      as_fn_error $? "found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing" "$LINENO" 5
     else
-      { $as_echo "$as_me:${as_lineno-$LINENO}: result: using paths configured with --with-target-bdw-gc options" >&5
+            if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
+        as_fn_error $? "found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing" "$LINENO" 5
+      elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
+        as_fn_error $? "found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing" "$LINENO" 5
+      else
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: using paths configured with --with-target-bdw-gc options" >&5
 $as_echo "using paths configured with --with-target-bdw-gc options" >&6; }
+      fi
     fi
-  fi
 esac
 
 # Disable libitm, libsanitizer, libvtv if we're not building C++
@@ -11727,6 +11850,7 @@ done
 
 
 # Build tools.
+
 
 
 
@@ -14266,6 +14390,9 @@ fi
 
 
 
+GA68FLAGS=${GA68FLAGS-${CFLAGS}}
+
+
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
 
 
@@ -15590,6 +15717,167 @@ if test -z "$ac_cv_prog_GFORTRAN_FOR_TARGET" ; then
   fi
 else
   GFORTRAN_FOR_TARGET="$ac_cv_prog_GFORTRAN_FOR_TARGET"
+fi
+
+
+
+if test -n "$GA68_FOR_TARGET"; then
+  ac_cv_prog_GA68_FOR_TARGET=$GA68_FOR_TARGET
+elif test -n "$ac_cv_prog_GA68_FOR_TARGET"; then
+  GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
+fi
+
+if test -n "$ac_cv_prog_GA68_FOR_TARGET"; then
+  for ncn_progname in ga68; do
+    # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_GA68_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$GA68_FOR_TARGET"; then
+  ac_cv_prog_GA68_FOR_TARGET="$GA68_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GA68_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
+if test -n "$GA68_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68_FOR_TARGET" >&5
+$as_echo "$GA68_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  done
+fi
+
+if test -z "$ac_cv_prog_GA68_FOR_TARGET" && test -n "$with_build_time_tools"; then
+  for ncn_progname in ga68; do
+    { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
+$as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
+    if test -x $with_build_time_tools/${ncn_progname}; then
+      ac_cv_prog_GA68_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+      break
+    else
+      { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+    fi
+  done
+fi
+
+if test -z "$ac_cv_prog_GA68_FOR_TARGET"; then
+  for ncn_progname in ga68; do
+    if test -n "$ncn_target_tool_prefix"; then
+      # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_GA68_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$GA68_FOR_TARGET"; then
+  ac_cv_prog_GA68_FOR_TARGET="$GA68_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GA68_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
+if test -n "$GA68_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68_FOR_TARGET" >&5
+$as_echo "$GA68_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    if test -z "$ac_cv_prog_GA68_FOR_TARGET" && test $build = $target ; then
+      # Extract the first word of "${ncn_progname}", so it can be a program name with args.
+set dummy ${ncn_progname}; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_GA68_FOR_TARGET+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$GA68_FOR_TARGET"; then
+  ac_cv_prog_GA68_FOR_TARGET="$GA68_FOR_TARGET" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_GA68_FOR_TARGET="${ncn_progname}"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
+if test -n "$GA68_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68_FOR_TARGET" >&5
+$as_echo "$GA68_FOR_TARGET" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+    fi
+    test -n "$ac_cv_prog_GA68_FOR_TARGET" && break
+  done
+fi
+
+if test -z "$ac_cv_prog_GA68_FOR_TARGET" ; then
+  set dummy ga68
+  if test $build = $target ; then
+    GA68_FOR_TARGET="$2"
+  else
+    GA68_FOR_TARGET="${ncn_target_tool_prefix}$2"
+  fi
+else
+  GA68_FOR_TARGET="$ac_cv_prog_GA68_FOR_TARGET"
 fi
 
 
@@ -20051,6 +20339,51 @@ $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
     GOC_FOR_TARGET='$(GOC)'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
+$as_echo "host tool" >&6; }
+  else
+    # We need a cross tool
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+fi
+
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target ga68" >&5
+$as_echo_n "checking where to find the target ga68... " >&6; }
+if test "x${build}" != "x${host}" ; then
+  if expr "x$GA68_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $GA68_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  else
+    # Canadian cross, just use what we found
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed" >&5
+$as_echo "pre-installed" >&6; }
+  fi
+else
+  ok=yes
+  case " ${configdirs} " in
+    *" gcc "*) ;;
+    *) ok=no ;;
+  esac
+  case ,${enable_languages}, in
+    *,algol68,*) ;;
+    *) ok=no ;;
+  esac
+  if test $ok = yes; then
+    # An in-tree tool is available and we can use it
+    GA68_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/ga68 -B$$r/$(HOST_SUBDIR)/gcc/'
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
+$as_echo "just compiled" >&6; }
+  elif expr "x$GA68_FOR_TARGET" : "x/" > /dev/null; then
+    # We already found the complete path
+    ac_dir=`dirname $GA68_FOR_TARGET`
+    { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
+$as_echo "pre-installed in $ac_dir" >&6; }
+  elif test "x$target" = "x$host"; then
+    # We can use an host tool
+    GA68_FOR_TARGET='$(GA68)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else

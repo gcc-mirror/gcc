@@ -434,6 +434,12 @@ else
   have_cargo=no
 fi])
 
+# Test for Algol 68
+AC_DEFUN([ACX_PROG_GA68],
+[AC_REQUIRE([AC_CHECK_TOOL_PREFIX])
+AC_REQUIRE([AC_PROG_CC])
+AC_CHECK_TOOL(GA68, ga68, no)])
+
 # Test for D.
 AC_DEFUN([ACX_PROG_GDC],
 [AC_REQUIRE([AC_CHECK_TOOL_PREFIX])

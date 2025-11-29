@@ -1,0 +1,287 @@
+# Make-lang.in -- Top level -*- makefile -*- fragment for GCC Algol 68
+# frontend.
+
+# Copyright (C) 2025 Free Software Foundation, Inc.
+
+# This file is NOT part of GCC.
+
+# GCC is free software; you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation; either version 3, or (at your option)
+# any later version.
+
+# GCC is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.	See the
+# GNU General Public License for more details.
+
+# You should have received a copy of the GNU General Public License
+# along with GCC; see the file COPYING3.  If not see
+# <http://www.gnu.org/licenses/>.
+
+# This file provides the language dependent support in the main Makefile.
+
+.PHONY: algol68
+
+# Installation name.
+
+A68_INSTALL_NAME = $(shell echo ga68|sed '$(program_transform_name)')
+A68_TARGET_INSTALL_NAME = $(target_noncanonical)-$(shell echo ga68|sed '$(program_transform_name)')
+
+# General hooks
+
+algol68: a681$(exeext)
+algol68.serial = a681$(exeext)
+
+.PHONY: algol68
+
+# Use maximal warnings for this front end.
+algol68-warn = $(STRICT_WARN)
+
+# First the driver, ga68.
+
+GA68_OBJS = \
+   $(GCC_OBJS) \
+   algol68/a68spec.o \
+   $(END)
+
+a68spec.o: $(srcdir)/algol68/a68spec.cc $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) \
+     $(CONFIG_H) opts.h
+	$(COMPILER) -c $(ALL_COMPILERFLAGS) $(ALL_CPPFLAGS) $(DRIVER_DEFINES) \
+                $(INCLUDES) $(srcdir)/algol68/a68spec.cc
+
+ga68$(exeext): $(GA68_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a $(LIBDEPS)
+	+$(LINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	  $(GA68_OBJS) $(EXTRA_GCC_OBJS) libcommon-target.a \
+	  $(EXTRA_GCC_LIBS) $(LIBS)
+
+# Now the compiler proper, a681.
+
+ALGOL68_OBJS = algol68/a68-lang.o \
+               algol68/a68-unistr.o \
+               algol68/a68-moids-diagnostics.o \
+               algol68/a68-moids-misc.o \
+               algol68/a68-moids-to-string.o \
+               algol68/a68-postulates.o \
+               algol68/a68-diagnostics.o \
+               algol68/a68-exports.o \
+               algol68/a68-imports.o \
+               algol68/a68-parser.o \
+               algol68/a68-parser-keywords.o \
+               algol68/a68-parser-bottom-up.o \
+               algol68/a68-parser-brackets.o \
+               algol68/a68-parser-debug.o \
+               algol68/a68-parser-extract.o \
+               algol68/a68-parser-modes.o \
+               algol68/a68-parser-moids-check.o \
+               algol68/a68-parser-moids-coerce.o \
+               algol68/a68-parser-moids-equivalence.o \
+               algol68/a68-parser-pragmat.o \
+               algol68/a68-parser-scanner.o \
+               algol68/a68-parser-scope.o \
+               algol68/a68-parser-serial-dsa.o \
+               algol68/a68-parser-taxes.o \
+               algol68/a68-parser-top-down.o \
+               algol68/a68-parser-victal.o \
+               algol68/a68-parser-prelude.o \
+               algol68/a68-low.o \
+               algol68/a68-low-builtins.o \
+               algol68/a68-low-clauses.o \
+               algol68/a68-low-coercions.o \
+               algol68/a68-low-decls.o \
+               algol68/a68-low-generator.o \
+               algol68/a68-low-misc.o \
+               algol68/a68-low-moids.o \
+               algol68/a68-low-multiples.o \
+               algol68/a68-low-refs.o \
+               algol68/a68-low-procs.o \
+               algol68/a68-low-structs.o \
+               algol68/a68-low-chars.o \
+               algol68/a68-low-strings.o \
+               algol68/a68-low-ints.o \
+               algol68/a68-low-bools.o \
+               algol68/a68-low-reals.o \
+               algol68/a68-low-complex.o \
+               algol68/a68-low-bits.o \
+               algol68/a68-low-posix.o \
+               algol68/a68-low-prelude.o \
+               algol68/a68-low-ranges.o \
+               algol68/a68-low-runtime.o \
+               algol68/a68-low-unions.o \
+               algol68/a68-low-units.o \
+               $(END)
+
+ALGOL68_ALL_OBJS = $(ALGOL68_OBJS)
+
+algol68_OBJS = $(ALGOL68_ALL_OBJS) algol68/a68spec.o
+
+a681$(exeext): $(ALGOL68_ALL_OBJS) attribs.o $(BACKEND) $(LIBDEPS) $(algol68.prev)
+	@$(call LINK_PROGRESS,$(INDEX.algol68),start)
+	+$(LLINKER) $(ALL_LINKERFLAGS) $(LDFLAGS) -o $@ \
+	      $(ALGOL68_OBJS) attribs.o $(BACKEND) $(LIBS) $(A681_LIBS) $(BACKENDLIBS)
+	@$(call LINK_PROGRESS,$(INDEX.algol68),end)
+
+algol68/tfspec.o: $(srcdir)/algol68/tfspec.c \
+                     $(SYSTEM_H) coretypes.h $(TM_H) $(GCC_H) $(CONFIG_H) $(TREE_H)
+
+# Documentation.
+
+A68_MANUAL_FILES =
+
+A68_MANUAL_FILES = \
+		algol68/ga68.texi \
+		$(gcc_docdir)/include/fdl.texi \
+		$(gcc_docdir)/include/gpl_v3.texi \
+		$(gcc_docdir)/include/gcc-common.texi \
+		gcc-vers.texi
+
+A68_INT_MANUAL_FILES = \
+		algol68/ga68-internals.texi \
+		$(gcc_docdir)/include/fdl.texi \
+		$(gcc_docdir)/include/gcc-common.texi \
+		gcc-vers.texi
+
+A68_TEXI_FILES = $(A68_MANUAL_FILES) $(A68_INT_MANUAL_FILES)
+
+doc/ga68.info: $(A68_MANUAL_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/ga68.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
+
+doc/ga68-internals.info: $(A68_INT_MANUAL_FILES)
+	if test "x$(BUILD_INFO)" = xinfo; then \
+	  rm -f doc/ga68-internals.info*; \
+	  $(MAKEINFO) $(MAKEINFOFLAGS) -I $(gcc_docdir) \
+		-I $(gcc_docdir)/include -o $@ $<; \
+	else true; fi
+
+doc/ga68.dvi: $(A68_MANUAL_FILES)
+	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+
+doc/ga68-internals.dvi: $(A68_INT_MANUAL_FILES)
+	$(TEXI2DVI) -I $(abs_docdir)/include -o $@ $<
+
+doc/ga68.pdf: $(A68_MANUAL_FILES)
+	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
+
+doc/ga68-internals.pdf: $(A68_INT_MANUAL_FILES)
+	$(TEXI2PDF) -I $(abs_docdir)/include -o $@ $<
+
+$(build_htmldir)/ga68/index.html: $(A68_MANUAL_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) $(MAKEINFO_TOC_INLINE_FLAG) \
+		-I $(gcc_docdir)/include -I $(srcdir)/d -o $(@D) $<
+
+$(build_htmldir)/ga68-internals/index.html: $(A68_INT_MANUAL_FILES)
+	$(mkinstalldirs) $(@D)
+	rm -f $(@D)/*
+	$(TEXI2HTML) $(MAKEINFO_TOC_INLINE_FLAG) \
+		-I $(gcc_docdir)/include -I $(srcdir)/d -o $(@D) $<
+
+.INTERMEDIATE: ga68.pod
+
+ga68.pod: algol68/ga68.texi
+	-$(TEXI2POD) -D ga68 < $< > $@
+
+# Build hooks.
+
+algol68.srcextra:
+
+algol68.all.cross: ga68$(exeext)
+algol68.start.encap: ga68$(exeect)
+algol68.rest.encap:
+algol68.info: doc/ga68.info doc/ga68-internals.info
+algol68.dvi: doc/ga68.dvi doc/ga68-internals.dvi
+algol68.pdf: doc/ga68.pdf doc/ga68-internals.pdf
+algol68.install-pdf:
+algol68.html: $(build_htmldir)/ga68/index.html $(build_htmldir)/ga68-internals/index.html
+algol68.man: doc/ga68.1
+algol68.srcinfo: doc/ga68.info doc/ga68-internals.info
+	-cp -p $^ $(srcdir)/doc
+algol68.srcinfo:
+algol68.srcman:
+algol68.srcman: doc/ga68.1
+	-cp -p $^ $(srcdir)/doc
+algol68.install-plugin:
+
+algol68.tags: force
+	cd $(srcdir)/algol68; etags -o TAGS.sub *.c *.h; \
+	etags --include TAGS.sub --include ../TAGS.sub
+
+lang_checks += check-algol68
+lang_checks_parallelized += check-algol68
+check_algol68_parallelize = 10
+
+selftest-algol68:
+
+#
+# Install hooks:
+
+algol68.install-common: installdirs
+	-rm -f $(DESTDIR)$(bindir)/$(A68_INSTALL_NAME)$(exeext)
+	$(INSTALL_PROGRAM) ga68$(exeext) $(DESTDIR)$(bindir)/$(A68_INSTALL_NAME)$(exeext)
+
+algol68.install-man: $(DESTDIR)$(man1dir)/$(A68_INSTALL_NAME)$(man1ext)
+
+$(DESTDIR)$(man1dir)/$(A68_INSTALL_NAME)$(man1ext): doc/ga68.1 installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+$(DESTDIR)$(man7dir)/%.7algol: doc/%.7algol installdirs
+	-rm -f $@
+	-$(INSTALL_DATA) $< $@
+	-chmod a-x $@
+
+algol68.install-info: $(DESTDIR)$(infodir)/ga68.info $(DESTDIR)$(infodir)/ga68-internals.info
+
+algol68.install-html: $(build_htmldir)/ga68 $(build_htmldir)/ga68-internals
+	@$(NORMAL_INSTALL)
+	test -z "$(htmldir)" || $(mkinstalldirs) "$(DESTDIR)$(htmldir)"
+	@for p in $(build_htmldir)/ga68; do \
+	  if test -f "$$p" || test -d "$$p"; then d=""; else d="$(srcdir)/"; fi; \
+	  f=$(html__strip_dir) \
+	  if test -d "$$d$$p"; then \
+	    echo " $(mkinstalldirs) '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(mkinstalldirs) "$(DESTDIR)$(htmldir)/$$f" || exit 1; \
+	    echo " $(INSTALL_DATA) '$$d$$p'/* '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p"/* "$(DESTDIR)$(htmldir)/$$f"; \
+	  else \
+	    echo " $(INSTALL_DATA) '$$d$$p' '$(DESTDIR)$(htmldir)/$$f'"; \
+	    $(INSTALL_DATA) "$$d$$p" "$(DESTDIR)$(htmldir)/$$f"; \
+	  fi; \
+	done
+
+algol68.uninstall:
+#
+# Clean hooks:
+# A lot of the ancillary files are deleted by the main makefile.
+# We just have to delete files specific to us.
+algol68.mostlyclean:
+	-rm -f algol68/*$(objext) algol68/xforward algol68/fflags
+	-rm -f algol68/*$(coverageexts)
+algol68.clean: algol68.mostlyclean
+algol68.distclean:
+	-rm -f algol68/Makefile algol68/Make-host algol68/Make-target
+	-rm -f algol68/config.status algol68/config.cache
+algol68.maintainer-clean:
+	-rm -f $(gcc_docdir)/*.7algol
+
+#
+# Stage hooks:
+
+algol68.stage1: stage1-start
+	-mv algol68/*$(objext) stage1/algol68
+algol68.stage2: stage2-start
+	-mv algol68/*$(objext) stage2/algol68
+algol68.stage3: stage3-start
+	-mv algol68/*$(objext) stage3/algol68
+algol68.stage4: stage4-start
+	-mv algol68/*$(objext) stage4/algol68
+algol68.stageprofile: stageprofile-start
+	-mv algol68/*$(objext) stageprofile/algol68
+algol68.stagefeedback: stagefeedback-start
+	-mv algol68/*$(objext) stagefeedback/algol68

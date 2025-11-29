@@ -166,6 +166,7 @@ target_libraries="target-libgcc \
 		target-libgcobol \
 		target-libada \
 		target-libgm2 \
+                target-libga68 \
 		target-libgo \
 		target-libgrust \
 		target-libphobos \
@@ -513,6 +514,11 @@ ENABLE_LIBGM2=no)
 if test "${ENABLE_LIBGM2}" != "yes" ; then
   noconfigdirs="$noconfigdirs gm2tools"
 fi
+
+AC_ARG_ENABLE(libga68,
+[AS_HELP_STRING([--enable-libga68], [build libga68 directory])],
+ENABLE_LIBGA68=$enableval,
+ENABLE_LIBGA68=yes)
 
 AC_ARG_ENABLE(libssp,
 [AS_HELP_STRING([--enable-libssp], [build libssp directory])],
@@ -1451,6 +1457,7 @@ if test "${build}" != "${host}" ; then
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
   DSYMUTIL_FOR_BUILD=${DSYMUTIL_FOR_BUILD-dsymutil}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
+  GA68_FOR_BUILD=${GA68_FOR_BUILD-ga68}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   GDC_FOR_BUILD=${GDC_FOR_BUILD-gdc}
   GNATMAKE_FOR_BUILD=${GNATMAKE_FOR_BUILD-gnatmake}
@@ -1467,6 +1474,7 @@ else
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
   DSYMUTIL_FOR_BUILD="\$(DSYMUTIL)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
+  GA68_FOR_BUILD="\$(GA68)"
   GOC_FOR_BUILD="\$(GOC)"
   GDC_FOR_BUILD="\$(GDC)"
   GNATMAKE_FOR_BUILD="\$(GNATMAKE)"
@@ -1520,6 +1528,7 @@ int main() {}])],
 fi
 
 ACX_PROG_GNAT
+ACX_PROG_GA68
 ACX_PROG_GDC
 ACX_PROG_CARGO
 ACX_PROG_CMP_IGNORE_INITIAL
@@ -2644,6 +2653,10 @@ AC_ARG_ENABLE(objc-gc,
 [AS_HELP_STRING([--enable-objc-gc],
 		[enable use of Boehm's garbage collector with the
 		 GNU Objective-C runtime])])
+AC_ARG_ENABLE(algol68-gc,
+[AS_HELP_STRING([--enable-algol68-gc],
+                [enable use of Boehm's garbage collector with the
+                 GNU Algol runtime])])
 AC_ARG_WITH([target-bdw-gc],
 [AS_HELP_STRING([--with-target-bdw-gc=PATHLIST],
 		[specify prefix directory for installed bdw-gc package.
@@ -2656,21 +2669,22 @@ AC_ARG_WITH([target-bdw-gc-lib],
 [AS_HELP_STRING([--with-target-bdw-gc-lib=PATHLIST],
 		[specify directories for installed bdw-gc library])])
 		  
-case ,${enable_languages},:${enable_objc_gc} in *,objc,*:yes|*,objc,*:auto)
-  AC_MSG_CHECKING([for bdw garbage collector])
-  if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
-    dnl no bdw-gw options, assume default locations
-    AC_MSG_RESULT([using bdw-gc in default locations])
-  else
-    dnl bdw-gw options, first error checking, complete checking in libobjc
-    if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
-      AC_MSG_ERROR([found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing])
-    elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
-      AC_MSG_ERROR([found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing])
+case ,${enable_languages},:${enable_objc_gc}:${enable_algol68_gc} in
+  *,objc,*:yes:*|*,objc,*:auto:*|*,algol68,*:*:yes|*,algol68,*:*:auto)
+    AC_MSG_CHECKING([for bdw garbage collector])
+    if test "x$with_target_bdw_gc$with_target_bdw_gc_include$with_target_bdw_gc_lib" = x; then
+      dnl no bdw-gw options, assume default locations
+      AC_MSG_RESULT([using bdw-gc in default locations])
     else
-      AC_MSG_RESULT([using paths configured with --with-target-bdw-gc options])
+      dnl bdw-gw options, first error checking, complete checking in libobjc and libga68
+      if test "x$with_target_bdw_gc_include" = x && test "x$with_target_bdw_gc_lib" != x; then
+        AC_MSG_ERROR([found --with-target-bdw-gc-lib but --with-target-bdw-gc-include missing])
+      elif test "x$with_target_bdw_gc_include" != x && test "x$with_target_bdw_gc_lib" = x; then
+        AC_MSG_ERROR([found --with-target-bdw-gc-include but --with-target-bdw-gc-lib missing])
+      else
+        AC_MSG_RESULT([using paths configured with --with-target-bdw-gc options])
+      fi
     fi
-  fi
 esac
 
 # Disable libitm, libsanitizer, libvtv if we're not building C++
@@ -3917,6 +3931,7 @@ AC_SUBST(CXX_FOR_BUILD)
 AC_SUBST(DLLTOOL_FOR_BUILD)
 AC_SUBST(DSYMUTIL_FOR_BUILD)
 AC_SUBST(GFORTRAN_FOR_BUILD)
+AC_SUBST(GA68_FOR_BUILD)
 AC_SUBST(GOC_FOR_BUILD)
 AC_SUBST(GDC_FOR_BUILD)
 AC_SUBST(GNATMAKE_FOR_BUILD)
@@ -4012,6 +4027,9 @@ AC_SUBST(CC)
 AC_SUBST(CXX)
 AC_SUBST(CFLAGS)
 AC_SUBST(CXXFLAGS)
+AC_SUBST(GA68)
+AC_SUBST(GA68FLAGS)
+GA68FLAGS=${GA68FLAGS-${CFLAGS}}
 AC_SUBST(GDC)
 AC_SUBST(GDCFLAGS)
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
@@ -4060,6 +4078,7 @@ NCN_STRICT_CHECK_TARGET_TOOLS(CC_FOR_TARGET, cc gcc)
 NCN_STRICT_CHECK_TARGET_TOOLS(CXX_FOR_TARGET, c++ g++ cxx gxx)
 NCN_STRICT_CHECK_TARGET_TOOLS(GCC_FOR_TARGET, gcc, ${CC_FOR_TARGET})
 NCN_STRICT_CHECK_TARGET_TOOLS(GFORTRAN_FOR_TARGET, gfortran)
+NCN_STRICT_CHECK_TARGET_TOOLS(GA68_FOR_TARGET, ga68)
 NCN_STRICT_CHECK_TARGET_TOOLS(GOC_FOR_TARGET, gccgo)
 NCN_STRICT_CHECK_TARGET_TOOLS(GDC_FOR_TARGET, gdc)
 NCN_STRICT_CHECK_TARGET_TOOLS(GM2_FOR_TARGET, gm2)
@@ -4111,6 +4130,8 @@ GCC_TARGET_TOOL(gfortran, GFORTRAN_FOR_TARGET, GFORTRAN,
 		[gcc/gfortran -B$$r/$(HOST_SUBDIR)/gcc/], fortran)
 GCC_TARGET_TOOL(gccgo, GOC_FOR_TARGET, GOC,
 		[gcc/gccgo -B$$r/$(HOST_SUBDIR)/gcc/], go)
+GCC_TARGET_TOOL(ga68, GA68_FOR_TARGET, GA68,
+                [gcc/ga68 -B$$r/$(HOST_SUBDIR)/gcc/], algol68)
 GCC_TARGET_TOOL(gdc, GDC_FOR_TARGET, GDC,
 		[gcc/gdc -B$$r/$(HOST_SUBDIR)/gcc/], d)
 GCC_TARGET_TOOL(gm2, GM2_FOR_TARGET, GM2,

@@ -160,6 +160,8 @@ BUILD_EXPORTS = \
 	CXX="$(CXX_FOR_BUILD)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS_FOR_BUILD)"; export CXXFLAGS; \
 	GFORTRAN="$(GFORTRAN_FOR_BUILD)"; export GFORTRAN; \
+	GA68="$(GA68_FOR_BUILD)"; export GA68; \
+	GA68FLAGS="$(GA68FLAGS_FOR_BUILD)"; export GA68FLAGS; \
 	GOC="$(GOC_FOR_BUILD)"; export GOC; \
 	GOCFLAGS="$(GOCFLAGS_FOR_BUILD)"; export GOCFLAGS; \
 	GDC="$(GDC_FOR_BUILD)"; export GDC; \
@@ -203,6 +205,7 @@ HOST_EXPORTS = \
 	CXX="$(CXX)"; export CXX; \
 	CXXFLAGS="$(CXXFLAGS)"; export CXXFLAGS; \
 	GFORTRAN="$(GFORTRAN)"; export GFORTRAN; \
+	GA68="$(GA68)"; export GA68; \
 	GOC="$(GOC)"; export GOC; \
 	GDC="$(GDC)"; export GDC; \
 	GM2="$(GM2)"; export GM2; \
@@ -278,6 +281,11 @@ POSTSTAGE1_HOST_EXPORTS = \
 	CC_FOR_BUILD="$$CC"; export CC_FOR_BUILD; \
 	$(POSTSTAGE1_CXX_EXPORT) \
 	$(LTO_EXPORTS) \
+	GA68="$$r/$(HOST_SUBDIR)/prev-gcc/ga68$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
+	  -B$(build_tooldir)/bin/ $(GA68FLAGS_FOR_TARGET) \
+	  -B$$r/prev-$(TARGET_SUBDIR)/libga68/.libs"; \
+	export GA68; \
+	GA68_FOR_BUILD="$$GA68"; export GA68_FOR_BUILD; \
 	GDC="$$r/$(HOST_SUBDIR)/prev-gcc/gdc$(exeext) -B$$r/$(HOST_SUBDIR)/prev-gcc/ \
 	  -B$(build_tooldir)/bin/ $(GDCFLAGS_FOR_TARGET) \
 	  -B$$r/prev-$(TARGET_SUBDIR)/libphobos/libdruntime/gcc \
@@ -310,6 +318,7 @@ BASE_TARGET_EXPORTS = \
 	CPPFLAGS="$(CPPFLAGS_FOR_TARGET)"; export CPPFLAGS; \
 	CXXFLAGS="$(CXXFLAGS_FOR_TARGET)"; export CXXFLAGS; \
 	GFORTRAN="$(GFORTRAN_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GFORTRAN; \
+	GA68="$(GA68_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GA68; \
 	GOC="$(GOC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GOC; \
 	GDC="$(GDC_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GDC; \
 	GM2="$(GM2_FOR_TARGET) $(XGCC_FLAGS_FOR_TARGET) $$TFLAGS"; export GM2; \
@@ -380,6 +389,7 @@ CXX_FOR_BUILD = @CXX_FOR_BUILD@
 DLLTOOL_FOR_BUILD = @DLLTOOL_FOR_BUILD@
 DSYMUTIL_FOR_BUILD = @DSYMUTIL_FOR_BUILD@
 GFORTRAN_FOR_BUILD = @GFORTRAN_FOR_BUILD@
+GA68_FOR_BUILD = @GA68_FOR_BUILD@
 GOC_FOR_BUILD = @GOC_FOR_BUILD@
 GDC_FOR_BUILD = @GDC_FOR_BUILD@
 GM2_FOR_BUILD = @GM2_FOR_BUILD@
@@ -443,6 +453,7 @@ STRIP = @STRIP@
 WINDRES = @WINDRES@
 WINDMC = @WINDMC@
 
+GA68 = @GA68@
 GDC = @GDC@
 GNATBIND = @GNATBIND@
 GNATMAKE = @GNATMAKE@
@@ -453,6 +464,7 @@ LIBCFLAGS = $(CFLAGS)
 CXXFLAGS = @CXXFLAGS@
 LIBCXXFLAGS = $(CXXFLAGS) -fno-implicit-templates
 GOCFLAGS = $(CFLAGS)
+GA68FLAGS = @GA68FLAGS@
 GDCFLAGS = @GDCFLAGS@
 GM2FLAGS = $(CFLAGS)
 
@@ -678,6 +690,7 @@ CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @CXX_FOR_TARGET@
 RAW_CXX_FOR_TARGET=$(STAGE_CC_WRAPPER) @RAW_CXX_FOR_TARGET@
 GFORTRAN_FOR_TARGET=$(STAGE_CC_WRAPPER) @GFORTRAN_FOR_TARGET@
 GOC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GOC_FOR_TARGET@
+GA68_FOR_TARGET=$(STAGE_CC_WRAPPER) @GA68_FOR_TARGET@
 GDC_FOR_TARGET=$(STAGE_CC_WRAPPER) @GDC_FOR_TARGET@
 GM2_FOR_TARGET=$(STAGE_CC_WRAPPER) @GM2_FOR_TARGET@
 DLLTOOL_FOR_TARGET=@DLLTOOL_FOR_TARGET@
@@ -707,6 +720,7 @@ LIBCXXFLAGS_FOR_TARGET = $(CXXFLAGS_FOR_TARGET) -fno-implicit-templates
 LDFLAGS_FOR_TARGET = @LDFLAGS_FOR_TARGET@
 GM2FLAGS_FOR_TARGET = -O2 -g
 GOCFLAGS_FOR_TARGET = -O2 -g
+GA68FLAGS_FOR_TARGET = -O2 -g
 GDCFLAGS_FOR_TARGET = -O2 -g
 
 FLAGS_FOR_TARGET = @FLAGS_FOR_TARGET@
@@ -732,7 +746,7 @@ all:
 
 # This is the list of directories that may be needed in RPATH_ENVVAR
 # so that programs built for the target machine work.
-TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libphobos)$(TARGET_LIB_PATH_libgm2)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
+TARGET_LIB_PATH = $(TARGET_LIB_PATH_libstdc++-v3)$(TARGET_LIB_PATH_libsanitizer)$(TARGET_LIB_PATH_libvtv)$(TARGET_LIB_PATH_libssp)$(TARGET_LIB_PATH_libphobos)$(TARGET_LIB_PATH_libgm2)$(TARGET_LIB_PATH_libga68)$(TARGET_LIB_PATH_libgomp)$(TARGET_LIB_PATH_libitm)$(TARGET_LIB_PATH_libatomic)$(HOST_LIB_PATH_gcc)
 
 @if target-libstdc++-v3
 TARGET_LIB_PATH_libstdc++-v3 = $$r/$(TARGET_SUBDIR)/libstdc++-v3/src/.libs:
@@ -757,6 +771,10 @@ TARGET_LIB_PATH_libphobos = $$r/$(TARGET_SUBDIR)/libphobos/src/.libs:
 @if target-libgm2
 TARGET_LIB_PATH_libgm2 = $$r/$(TARGET_SUBDIR)/libgm2/.libs:
 @endif target-libgm2
+
+@if target-libga68
+TARGET_LIB_PATH_libga68 = $$r/$(TARGET_SUBDIR)/libga68/.libs:
+@endif target-libga68
 
 @if target-libgomp
 TARGET_LIB_PATH_libgomp = $$r/$(TARGET_SUBDIR)/libgomp/.libs:
@@ -889,6 +907,8 @@ BASE_FLAGS_TO_PASS = \
 	"GNATMAKE=$(GNATMAKE)" \
 	"GDC=$(GDC)" \
 	"GDCFLAGS=$(GDCFLAGS)" \
+	"GA68=$(GA68)" \
+	"GA68FLAGS=$(GA68FLAGS)" \
 	"AR_FOR_TARGET=$(AR_FOR_TARGET)" \
 	"AS_FOR_TARGET=$(AS_FOR_TARGET)" \
 	"CC_FOR_TARGET=$(CC_FOR_TARGET)" \
@@ -903,6 +923,8 @@ BASE_FLAGS_TO_PASS = \
 	"GOCFLAGS_FOR_TARGET=$(GOCFLAGS_FOR_TARGET)" \
 	"GDC_FOR_TARGET=$(GDC_FOR_TARGET)" \
 	"GDCFLAGS_FOR_TARGET=$(GDCFLAGS_FOR_TARGET)" \
+	"GA68_FOR_TARGET=$(GA68_FOR_TARGET)" \
+	"GA68FLAGS_FOR_TARGET=$(GA68FLAGS_FOR_TARGET)" \
 	"GM2_FOR_TARGET=$(GM2_FOR_TARGET)" \
 	"GM2FLAGS_FOR_TARGET=$(GM2FLAGS_FOR_TARGET)" \
 	"LD_FOR_TARGET=$(LD_FOR_TARGET)" \
@@ -977,6 +999,7 @@ EXTRA_HOST_FLAGS = \
 	'DSYMUTIL=$(DSYMUTIL)' \
 	'GFORTRAN=$(GFORTRAN)' \
 	'GOC=$(GOC)' \
+	'GA68=$(GA68)' \
 	'GDC=$(GDC)' \
 	'GM2=$(GM2)' \
 	'LD=$(LD)' \
@@ -1005,6 +1028,7 @@ STAGE1_FLAGS_TO_PASS = \
 POSTSTAGE1_FLAGS_TO_PASS = \
 	CC="$${CC}" CC_FOR_BUILD="$${CC_FOR_BUILD}" \
 	CXX="$${CXX}" CXX_FOR_BUILD="$${CXX_FOR_BUILD}" \
+	GA68="$${GA68}" GA68_FOR_BUILD="$${GA68_FOR_BUILD}" \
 	GDC="$${GDC}" GDC_FOR_BUILD="$${GDC_FOR_BUILD}" \
 	GM2="$${GM2}" GM2_FOR_BUILD="$${GM2_FOR_BUILD}" \
 	GNATBIND="$${GNATBIND}" \
@@ -1040,6 +1064,8 @@ EXTRA_TARGET_FLAGS = \
 	'GFORTRAN=$$(GFORTRAN_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GOC=$$(GOC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GOCFLAGS=$$(GOCFLAGS_FOR_TARGET)' \
+	'GA68=$$(GA68_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
+	'GA68FLAGS=$$(GA68FLAGS_FOR_TARGET)' \
 	'GDC=$$(GDC_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
 	'GDCFLAGS=$$(GDCFLAGS_FOR_TARGET)' \
 	'GM2=$$(GM2_FOR_TARGET) $$(XGCC_FLAGS_FOR_TARGET) $$(TFLAGS)' \
@@ -1161,6 +1187,7 @@ configure-target:  \
     maybe-configure-target-rda \
     maybe-configure-target-libada \
     maybe-configure-target-libgm2 \
+    maybe-configure-target-libga68 \
     maybe-configure-target-libgomp \
     maybe-configure-target-libitm \
     maybe-configure-target-libatomic \
@@ -1361,6 +1388,7 @@ all-target: maybe-all-target-zlib
 all-target: maybe-all-target-rda
 all-target: maybe-all-target-libada
 all-target: maybe-all-target-libgm2
+all-target: maybe-all-target-libga68
 @if target-libgomp-no-bootstrap
 all-target: maybe-all-target-libgomp
 @endif target-libgomp-no-bootstrap
@@ -1464,6 +1492,7 @@ info-target: maybe-info-target-zlib
 info-target: maybe-info-target-rda
 info-target: maybe-info-target-libada
 info-target: maybe-info-target-libgm2
+info-target: maybe-info-target-libga68
 info-target: maybe-info-target-libgomp
 info-target: maybe-info-target-libitm
 info-target: maybe-info-target-libatomic
@@ -1558,6 +1587,7 @@ dvi-target: maybe-dvi-target-zlib
 dvi-target: maybe-dvi-target-rda
 dvi-target: maybe-dvi-target-libada
 dvi-target: maybe-dvi-target-libgm2
+dvi-target: maybe-dvi-target-libga68
 dvi-target: maybe-dvi-target-libgomp
 dvi-target: maybe-dvi-target-libitm
 dvi-target: maybe-dvi-target-libatomic
@@ -1652,6 +1682,7 @@ pdf-target: maybe-pdf-target-zlib
 pdf-target: maybe-pdf-target-rda
 pdf-target: maybe-pdf-target-libada
 pdf-target: maybe-pdf-target-libgm2
+pdf-target: maybe-pdf-target-libga68
 pdf-target: maybe-pdf-target-libgomp
 pdf-target: maybe-pdf-target-libitm
 pdf-target: maybe-pdf-target-libatomic
@@ -1746,6 +1777,7 @@ html-target: maybe-html-target-zlib
 html-target: maybe-html-target-rda
 html-target: maybe-html-target-libada
 html-target: maybe-html-target-libgm2
+html-target: maybe-html-target-libga68
 html-target: maybe-html-target-libgomp
 html-target: maybe-html-target-libitm
 html-target: maybe-html-target-libatomic
@@ -1840,6 +1872,7 @@ TAGS-target: maybe-TAGS-target-zlib
 TAGS-target: maybe-TAGS-target-rda
 TAGS-target: maybe-TAGS-target-libada
 TAGS-target: maybe-TAGS-target-libgm2
+TAGS-target: maybe-TAGS-target-libga68
 TAGS-target: maybe-TAGS-target-libgomp
 TAGS-target: maybe-TAGS-target-libitm
 TAGS-target: maybe-TAGS-target-libatomic
@@ -1934,6 +1967,7 @@ install-info-target: maybe-install-info-target-zlib
 install-info-target: maybe-install-info-target-rda
 install-info-target: maybe-install-info-target-libada
 install-info-target: maybe-install-info-target-libgm2
+install-info-target: maybe-install-info-target-libga68
 install-info-target: maybe-install-info-target-libgomp
 install-info-target: maybe-install-info-target-libitm
 install-info-target: maybe-install-info-target-libatomic
@@ -2028,6 +2062,7 @@ install-dvi-target: maybe-install-dvi-target-zlib
 install-dvi-target: maybe-install-dvi-target-rda
 install-dvi-target: maybe-install-dvi-target-libada
 install-dvi-target: maybe-install-dvi-target-libgm2
+install-dvi-target: maybe-install-dvi-target-libga68
 install-dvi-target: maybe-install-dvi-target-libgomp
 install-dvi-target: maybe-install-dvi-target-libitm
 install-dvi-target: maybe-install-dvi-target-libatomic
@@ -2122,6 +2157,7 @@ install-pdf-target: maybe-install-pdf-target-zlib
 install-pdf-target: maybe-install-pdf-target-rda
 install-pdf-target: maybe-install-pdf-target-libada
 install-pdf-target: maybe-install-pdf-target-libgm2
+install-pdf-target: maybe-install-pdf-target-libga68
 install-pdf-target: maybe-install-pdf-target-libgomp
 install-pdf-target: maybe-install-pdf-target-libitm
 install-pdf-target: maybe-install-pdf-target-libatomic
@@ -2216,6 +2252,7 @@ install-html-target: maybe-install-html-target-zlib
 install-html-target: maybe-install-html-target-rda
 install-html-target: maybe-install-html-target-libada
 install-html-target: maybe-install-html-target-libgm2
+install-html-target: maybe-install-html-target-libga68
 install-html-target: maybe-install-html-target-libgomp
 install-html-target: maybe-install-html-target-libitm
 install-html-target: maybe-install-html-target-libatomic
@@ -2310,6 +2347,7 @@ installcheck-target: maybe-installcheck-target-zlib
 installcheck-target: maybe-installcheck-target-rda
 installcheck-target: maybe-installcheck-target-libada
 installcheck-target: maybe-installcheck-target-libgm2
+installcheck-target: maybe-installcheck-target-libga68
 installcheck-target: maybe-installcheck-target-libgomp
 installcheck-target: maybe-installcheck-target-libitm
 installcheck-target: maybe-installcheck-target-libatomic
@@ -2404,6 +2442,7 @@ mostlyclean-target: maybe-mostlyclean-target-zlib
 mostlyclean-target: maybe-mostlyclean-target-rda
 mostlyclean-target: maybe-mostlyclean-target-libada
 mostlyclean-target: maybe-mostlyclean-target-libgm2
+mostlyclean-target: maybe-mostlyclean-target-libga68
 mostlyclean-target: maybe-mostlyclean-target-libgomp
 mostlyclean-target: maybe-mostlyclean-target-libitm
 mostlyclean-target: maybe-mostlyclean-target-libatomic
@@ -2498,6 +2537,7 @@ clean-target: maybe-clean-target-zlib
 clean-target: maybe-clean-target-rda
 clean-target: maybe-clean-target-libada
 clean-target: maybe-clean-target-libgm2
+clean-target: maybe-clean-target-libga68
 clean-target: maybe-clean-target-libgomp
 clean-target: maybe-clean-target-libitm
 clean-target: maybe-clean-target-libatomic
@@ -2592,6 +2632,7 @@ distclean-target: maybe-distclean-target-zlib
 distclean-target: maybe-distclean-target-rda
 distclean-target: maybe-distclean-target-libada
 distclean-target: maybe-distclean-target-libgm2
+distclean-target: maybe-distclean-target-libga68
 distclean-target: maybe-distclean-target-libgomp
 distclean-target: maybe-distclean-target-libitm
 distclean-target: maybe-distclean-target-libatomic
@@ -2686,6 +2727,7 @@ maintainer-clean-target: maybe-maintainer-clean-target-zlib
 maintainer-clean-target: maybe-maintainer-clean-target-rda
 maintainer-clean-target: maybe-maintainer-clean-target-libada
 maintainer-clean-target: maybe-maintainer-clean-target-libgm2
+maintainer-clean-target: maybe-maintainer-clean-target-libga68
 maintainer-clean-target: maybe-maintainer-clean-target-libgomp
 maintainer-clean-target: maybe-maintainer-clean-target-libitm
 maintainer-clean-target: maybe-maintainer-clean-target-libatomic
@@ -2838,6 +2880,7 @@ check-target:  \
     maybe-check-target-rda \
     maybe-check-target-libada \
     maybe-check-target-libgm2 \
+    maybe-check-target-libga68 \
     maybe-check-target-libgomp \
     maybe-check-target-libitm \
     maybe-check-target-libatomic \
@@ -3036,6 +3079,7 @@ install-target:  \
     maybe-install-target-rda \
     maybe-install-target-libada \
     maybe-install-target-libgm2 \
+    maybe-install-target-libga68 \
     maybe-install-target-libgomp \
     maybe-install-target-libitm \
     maybe-install-target-libatomic \
@@ -3150,6 +3194,7 @@ install-strip-target:  \
     maybe-install-strip-target-rda \
     maybe-install-strip-target-libada \
     maybe-install-strip-target-libgm2 \
+    maybe-install-strip-target-libga68 \
     maybe-install-strip-target-libgomp \
     maybe-install-strip-target-libitm \
     maybe-install-strip-target-libatomic \
@@ -60201,6 +60246,491 @@ maintainer-clean-target-libgm2:
 
 
 
+.PHONY: configure-target-libga68 maybe-configure-target-libga68
+maybe-configure-target-libga68:
+@if gcc-bootstrap
+configure-target-libga68: stage_current
+@endif gcc-bootstrap
+@if target-libga68
+maybe-configure-target-libga68: configure-target-libga68
+configure-target-libga68: 
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	echo "Checking multilib configuration for libga68..."; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libga68; \
+	$(CC_FOR_TARGET) --print-multi-lib > $(TARGET_SUBDIR)/libga68/multilib.tmp 2> /dev/null; \
+	if test -r $(TARGET_SUBDIR)/libga68/multilib.out; then \
+	  if cmp -s $(TARGET_SUBDIR)/libga68/multilib.tmp $(TARGET_SUBDIR)/libga68/multilib.out; then \
+	    rm -f $(TARGET_SUBDIR)/libga68/multilib.tmp; \
+	  else \
+	    rm -f $(TARGET_SUBDIR)/libga68/Makefile; \
+	    mv $(TARGET_SUBDIR)/libga68/multilib.tmp $(TARGET_SUBDIR)/libga68/multilib.out; \
+	  fi; \
+	else \
+	  mv $(TARGET_SUBDIR)/libga68/multilib.tmp $(TARGET_SUBDIR)/libga68/multilib.out; \
+	fi; \
+	test ! -f $(TARGET_SUBDIR)/libga68/Makefile || exit 0; \
+	$(SHELL) $(srcdir)/mkinstalldirs $(TARGET_SUBDIR)/libga68; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	echo Configuring in $(TARGET_SUBDIR)/libga68; \
+	cd "$(TARGET_SUBDIR)/libga68" || exit 1; \
+	case $(srcdir) in \
+	  /* | [A-Za-z]:[\\/]*) topdir=$(srcdir) ;; \
+	  *) topdir=`echo $(TARGET_SUBDIR)/libga68/ | \
+		sed -e 's,\./,,g' -e 's,[^/]*/,../,g' `$(srcdir) ;; \
+	esac; \
+	module_srcdir=libga68; \
+	rm -f no-such-file || : ; \
+	CONFIG_SITE=no-such-file $(SHELL) \
+	  $$s/$$module_srcdir/configure \
+	  --srcdir=$${topdir}/$$module_srcdir \
+	  $(TARGET_CONFIGARGS) --build=${build_alias} --host=${target_alias} \
+	  --target=${target_alias}  \
+	  || exit 1
+@endif target-libga68
+
+
+
+
+
+.PHONY: all-target-libga68 maybe-all-target-libga68
+maybe-all-target-libga68:
+@if gcc-bootstrap
+all-target-libga68: stage_current
+@endif gcc-bootstrap
+@if target-libga68
+TARGET-target-libga68=all
+maybe-all-target-libga68: all-target-libga68
+all-target-libga68: configure-target-libga68
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS)  \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) $(EXTRA_TARGET_FLAGS)   \
+		$(TARGET-target-libga68))
+@endif target-libga68
+
+
+
+
+
+.PHONY: check-target-libga68 maybe-check-target-libga68
+maybe-check-target-libga68:
+@if target-libga68
+maybe-check-target-libga68: check-target-libga68
+
+check-target-libga68:
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)   check)
+
+@endif target-libga68
+
+.PHONY: install-target-libga68 maybe-install-target-libga68
+maybe-install-target-libga68:
+@if target-libga68
+maybe-install-target-libga68: install-target-libga68
+
+install-target-libga68: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install)
+
+@endif target-libga68
+
+.PHONY: install-strip-target-libga68 maybe-install-strip-target-libga68
+maybe-install-strip-target-libga68:
+@if target-libga68
+maybe-install-strip-target-libga68: install-strip-target-libga68
+
+install-strip-target-libga68: installdirs
+	@: $(MAKE); $(unstage)
+	@r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(TARGET_FLAGS_TO_PASS)  install-strip)
+
+@endif target-libga68
+
+# Other targets (info, dvi, pdf, etc.)
+
+.PHONY: maybe-info-target-libga68 info-target-libga68
+maybe-info-target-libga68:
+@if target-libga68
+maybe-info-target-libga68: info-target-libga68
+
+info-target-libga68: \
+    configure-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing info in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           info) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-dvi-target-libga68 dvi-target-libga68
+maybe-dvi-target-libga68:
+@if target-libga68
+maybe-dvi-target-libga68: dvi-target-libga68
+
+dvi-target-libga68: \
+    configure-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing dvi in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           dvi) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-pdf-target-libga68 pdf-target-libga68
+maybe-pdf-target-libga68:
+@if target-libga68
+maybe-pdf-target-libga68: pdf-target-libga68
+
+pdf-target-libga68: \
+    configure-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing pdf in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           pdf) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-html-target-libga68 html-target-libga68
+maybe-html-target-libga68:
+@if target-libga68
+maybe-html-target-libga68: html-target-libga68
+
+html-target-libga68: \
+    configure-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing html in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           html) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-TAGS-target-libga68 TAGS-target-libga68
+maybe-TAGS-target-libga68:
+@if target-libga68
+maybe-TAGS-target-libga68: TAGS-target-libga68
+
+TAGS-target-libga68: \
+    configure-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing TAGS in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           TAGS) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-install-info-target-libga68 install-info-target-libga68
+maybe-install-info-target-libga68:
+@if target-libga68
+maybe-install-info-target-libga68: install-info-target-libga68
+
+install-info-target-libga68: \
+    configure-target-libga68 \
+    info-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-info in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-info) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-install-dvi-target-libga68 install-dvi-target-libga68
+maybe-install-dvi-target-libga68:
+@if target-libga68
+maybe-install-dvi-target-libga68: install-dvi-target-libga68
+
+install-dvi-target-libga68: \
+    configure-target-libga68 \
+    dvi-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-dvi in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-dvi) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-install-pdf-target-libga68 install-pdf-target-libga68
+maybe-install-pdf-target-libga68:
+@if target-libga68
+maybe-install-pdf-target-libga68: install-pdf-target-libga68
+
+install-pdf-target-libga68: \
+    configure-target-libga68 \
+    pdf-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-pdf in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-pdf) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-install-html-target-libga68 install-html-target-libga68
+maybe-install-html-target-libga68:
+@if target-libga68
+maybe-install-html-target-libga68: install-html-target-libga68
+
+install-html-target-libga68: \
+    configure-target-libga68 \
+    html-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing install-html in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           install-html) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-installcheck-target-libga68 installcheck-target-libga68
+maybe-installcheck-target-libga68:
+@if target-libga68
+maybe-installcheck-target-libga68: installcheck-target-libga68
+
+installcheck-target-libga68: \
+    configure-target-libga68 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing installcheck in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           installcheck) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-mostlyclean-target-libga68 mostlyclean-target-libga68
+maybe-mostlyclean-target-libga68:
+@if target-libga68
+maybe-mostlyclean-target-libga68: mostlyclean-target-libga68
+
+mostlyclean-target-libga68: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing mostlyclean in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           mostlyclean) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-clean-target-libga68 clean-target-libga68
+maybe-clean-target-libga68:
+@if target-libga68
+maybe-clean-target-libga68: clean-target-libga68
+
+clean-target-libga68: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing clean in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           clean) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-distclean-target-libga68 distclean-target-libga68
+maybe-distclean-target-libga68:
+@if target-libga68
+maybe-distclean-target-libga68: distclean-target-libga68
+
+distclean-target-libga68: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing distclean in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           distclean) \
+	  || exit 1
+
+@endif target-libga68
+
+.PHONY: maybe-maintainer-clean-target-libga68 maintainer-clean-target-libga68
+maybe-maintainer-clean-target-libga68:
+@if target-libga68
+maybe-maintainer-clean-target-libga68: maintainer-clean-target-libga68
+
+maintainer-clean-target-libga68: 
+	@: $(MAKE); $(unstage)
+	@[ -f $(TARGET_SUBDIR)/libga68/Makefile ] || exit 0; \
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(NORMAL_TARGET_EXPORTS) \
+	echo "Doing maintainer-clean in $(TARGET_SUBDIR)/libga68"; \
+	for flag in $(EXTRA_TARGET_FLAGS); do \
+	  eval `echo "$$flag" | sed -e "s|^\([^=]*\)=\(.*\)|\1='\2'; export \1|"`; \
+	done; \
+	(cd $(TARGET_SUBDIR)/libga68 && \
+	  $(MAKE) $(BASE_FLAGS_TO_PASS) "AR=$${AR}" "AS=$${AS}" \
+	          "CC=$${CC}" "CXX=$${CXX}" "LD=$${LD}" "NM=$${NM}" \
+	          "RANLIB=$${RANLIB}" \
+	          "DLLTOOL=$${DLLTOOL}" "WINDRES=$${WINDRES}" "WINDMC=$${WINDMC}" \
+	           maintainer-clean) \
+	  || exit 1
+
+@endif target-libga68
+
+
+
+
+
 .PHONY: configure-target-libgomp maybe-configure-target-libgomp
 maybe-configure-target-libgomp:
 @if gcc-bootstrap
@@ -64336,6 +64866,14 @@ check-gcc-cobol: gcc-site.exp
 	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-cobol);
 check-cobol: check-gcc-cobol check-target-libgcobol
 
+.PHONY: check-gcc-algol68 check-algol68
+check-gcc-algol68: gcc-site.exp
+	r=`${PWD_COMMAND}`; export r; \
+	s=`cd $(srcdir); ${PWD_COMMAND}`; export s; \
+	$(HOST_EXPORTS) \
+	(cd gcc && $(MAKE) $(GCC_FLAGS_TO_PASS) check-algol68);
+check-algol68: check-gcc-algol68 check-target-libga68
+
 
 # The gcc part of install-no-fixedincludes, which relies on an intimate
 # knowledge of how a number of gcc internal targets (inter)operate.  Delegate.
@@ -67877,6 +68415,7 @@ configure-stageautofeedback-target-zlib: maybe-all-stageautofeedback-gcc
 configure-target-rda: stage_last
 configure-target-libada: stage_last
 configure-target-libgm2: stage_last
+configure-target-libga68: stage_last
 configure-stage1-target-libgomp: maybe-all-stage1-gcc
 configure-stage2-target-libgomp: maybe-all-stage2-gcc
 configure-stage3-target-libgomp: maybe-all-stage3-gcc
@@ -67921,6 +68460,7 @@ configure-target-zlib: maybe-all-gcc
 configure-target-rda: maybe-all-gcc
 configure-target-libada: maybe-all-gcc
 configure-target-libgm2: maybe-all-gcc
+configure-target-libga68: maybe-all-gcc
 configure-target-libgomp: maybe-all-gcc
 configure-target-libitm: maybe-all-gcc
 configure-target-libatomic: maybe-all-gcc
@@ -69221,6 +69761,9 @@ all-target-libgm2: maybe-all-target-libatomic
 @unless target-libstdc++-v3-bootstrap
 configure-target-libgrust: maybe-all-target-libstdc++-v3
 @endunless target-libstdc++-v3-bootstrap
+@unless target-libstdc++-v3-bootstrap
+configure-target-libga68: maybe-all-target-libstdc++-v3
+@endunless target-libstdc++-v3-bootstrap
 @unless target-libbacktrace-bootstrap
 configure-target-libgfortran: maybe-all-target-libbacktrace
 @endunless target-libbacktrace-bootstrap
@@ -69284,6 +69827,7 @@ all-target-libgo: maybe-all-target-libatomic
 configure-target-libgm2: maybe-all-target-libstdc++-v3
 all-target-libgm2: maybe-all-target-libatomic
 configure-target-libgrust: maybe-all-target-libstdc++-v3
+configure-target-libga68: maybe-all-target-libstdc++-v3
 configure-target-newlib: maybe-all-binutils
 configure-target-newlib: maybe-all-ld
 configure-target-libgfortran: maybe-all-target-libbacktrace
@@ -69390,6 +69934,7 @@ configure-target-zlib: maybe-all-target-libgcc
 configure-target-rda: maybe-all-target-libgcc
 configure-target-libada: maybe-all-target-libgcc
 configure-target-libgm2: maybe-all-target-libgcc
+configure-target-libga68: maybe-all-target-libgcc
 configure-target-libgomp: maybe-all-target-libgcc
 configure-target-libitm: maybe-all-target-libgcc
 configure-target-libatomic: maybe-all-target-libgcc
@@ -69435,6 +69980,8 @@ configure-target-rda: maybe-all-target-newlib maybe-all-target-libgloss
 configure-target-libada: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgm2: maybe-all-target-newlib maybe-all-target-libgloss
+
+configure-target-libga68: maybe-all-target-newlib maybe-all-target-libgloss
 
 configure-target-libgomp: maybe-all-target-newlib maybe-all-target-libgloss
 
@@ -69533,6 +70080,7 @@ configure-target-zlib: maybe-all-target-libatomic
 configure-target-rda: maybe-all-target-libatomic
 configure-target-libada: maybe-all-target-libatomic
 configure-target-libgm2: maybe-all-target-libatomic
+configure-target-libga68: maybe-all-target-libatomic
 configure-target-libgomp: maybe-all-target-libatomic
 configure-target-libitm: maybe-all-target-libatomic
 configure-target-libgrust: maybe-all-target-libatomic
