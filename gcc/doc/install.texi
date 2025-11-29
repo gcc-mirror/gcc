@@ -2103,13 +2103,13 @@ their runtime libraries should be built.  For a list of valid values for
 grep ^language= */config-lang.in
 @end smallexample
 Currently, you can use any of the following:
-@code{all}, @code{default}, @code{ada}, @code{c}, @code{c++},
+@code{all}, @code{default}, @code{ada}, @code{algol68}, @code{c}, @code{c++},
 @code{cobol}, @code{d}, @code{fortran}, @code{go}, @code{jit},
 @code{lto}, @code{m2}, @code{objc}, @code{obj-c++}.
 Building the Ada compiler has special requirements, see below.
 If you do not pass this flag, or specify the option @code{default}, then the
 default languages available in the @file{gcc} sub-tree will be configured.
-Ada, COBOL, D, Go, Jit, Objective-C++ and Modula-2 are not default languages.
+Algol 68, Ada, COBOL, D, Go, Jit, Objective-C++ and Modula-2 are not default languages.
 LTO is not a
 default language, but is built by default because @option{--enable-lto} is
 enabled by default.  The other languages are default languages.  If
@@ -2912,6 +2912,41 @@ scripts.
 In order to avoid shell and @command{make} quoting issues for complex
 overrides, you can pass a setting for @env{CONFIG_SITE} and set
 variables in the site file.
+
+@subheading Algol 68-Specific Options
+
+The following options apply to the build of the Algol 68 runtime library.
+
+@table @code
+@item --enable-algol68-gc
+Specify that an additional variant of the GNU Algol 68 runtime library
+is built, using an external build of the Boehm-Demers-Weiser garbage
+collector (@uref{https://www.hboehm.info/gc/}).
+
+This library needs to be available for each multilib variant, unless
+configured with @option{--enable-objc-gc=@samp{auto}} in which case
+the build of the additional runtime library is skipped when not
+available and the build continues.
+
+@item --with-target-bdw-gc=@var{list}
+@itemx --with-target-bdw-gc-include=@var{list}
+@itemx --with-target-bdw-gc-lib=@var{list}
+Specify search directories for the garbage collector header files and
+libraries. @var{list} is a comma separated list of key value pairs of the
+form @samp{@var{multilibdir}=@var{path}}, where the default multilib key
+is named as @samp{.} (dot), or is omitted (e.g.@:
+@samp{--with-target-bdw-gc=/opt/bdw-gc,32=/opt-bdw-gc32}).
+
+The options @option{--with-target-bdw-gc-include} and
+@option{--with-target-bdw-gc-lib} must always be specified together
+for each multilib variant and they take precedence over
+@option{--with-target-bdw-gc}.  If @option{--with-target-bdw-gc-include}
+is missing values for a multilib, then the value for the default
+multilib is used (e.g.@: @samp{--with-target-bdw-gc-include=/opt/bdw-gc/include}
+@samp{--with-target-bdw-gc-lib=/opt/bdw-gc/lib64,32=/opt-bdw-gc/lib32}).
+If none of these options are specified, the library is assumed in
+default locations.
+@end table
 
 @subheading Objective-C-Specific Options
 

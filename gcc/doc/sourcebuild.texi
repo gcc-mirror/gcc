@@ -91,6 +91,9 @@ The Decimal Float support library.
 @item libffi
 The @code{libffi} library, used as part of the Go runtime library.
 
+@item libga68
+The Algol 68 runtime library.
+
 @item libgcc
 The GCC runtime library.
 
