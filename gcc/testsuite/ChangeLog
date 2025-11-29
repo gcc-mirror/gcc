@@ -1,3 +1,9 @@
+2025-11-28  Avinash Jayakar  <avinashd@linux.ibm.com>
+
+	PR tree-optimization/122126
+	* gcc.dg/pr122126_vextr.c: New test.
+	* gcc.dg/pr122126_vset.c: New test.
+
 2025-11-27  Richard Earnshaw  <rearnsha@arm.com>
 
 	Backported from master:
