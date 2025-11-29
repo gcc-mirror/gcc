@@ -77,10 +77,11 @@ const std::map<std::string, Feature::Name> Feature::name_hash_map = {
 tl::optional<Feature::Name>
 Feature::as_name (const std::string &name)
 {
-  if (Feature::name_hash_map.count (name))
-    return Feature::name_hash_map.at (name);
-
-  return tl::nullopt;
+  auto it = Feature::name_hash_map.find (name);
+  if (it == Feature::name_hash_map.end ())
+    return tl::nullopt;
+  else
+    return it->second;
 }
 
 tl::optional<std::reference_wrapper<const Feature>>

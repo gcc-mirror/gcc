@@ -30,7 +30,7 @@ set saved-dg-do-what-default ${dg-do-what-default}
 set dg-do-what-default "compile"
 set individual_timeout 600
 dg-additional-files [lsort [glob -nocomplain $srcdir/../../libgrust/rustc-lib/*]]
-dg-runtest $srcdir/../../libgrust/rustc-lib/core/src/lib.rs "-frust-edition=2018 -frust-crate=core -frust-compile-until=astvalidation -w" ""
+dg-runtest $srcdir/../../libgrust/rustc-lib/core/src/lib.rs "-frust-edition=2018 -frust-crate=core -frust-compile-until=nameresolution -w" ""
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.

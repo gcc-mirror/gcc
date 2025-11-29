@@ -993,6 +993,10 @@ public:
     return ident.as_string () + " = \"" + str + "\"";
   }
 
+  const Identifier &get_name () const { return ident; }
+
+  const std::string &get_value () const { return str; }
+
   void accept_vis (ASTVisitor &vis) override;
 
   // HACK: used to simplify parsing - creates a copy of this

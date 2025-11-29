@@ -59,7 +59,18 @@ private:
   check_may_dangle_attribute (const std::vector<AST::Attribute> &attributes);
   void
   check_lang_item_attribute (const std::vector<AST::Attribute> &attributes);
-  std::set<Feature::Name> valid_features;
+  void note_stability_attribute (const std::vector<AST::Attribute> &attributes);
+
+  std::set<Feature::Name> valid_lang_features;
+  std::map<std::string, location_t> valid_lib_features;
+
+  enum class Stability
+  {
+    STABLE,
+    UNSTABLE,
+  };
+
+  std::map<std::string, Stability> defined_lib_features;
 };
 } // namespace Rust
 #endif
