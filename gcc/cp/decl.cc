@@ -517,7 +517,8 @@ pop_labels (tree block)
   auto_vec<tree, 32> labels (named_labels->elements ());
   hash_table<named_label_hash>::iterator end (named_labels->end ());
 
-  if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+  if (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+      && !processing_template_decl)
     {
       for (decltype (end) iter (named_labels->begin ()); iter != end; ++iter)
 	{
@@ -3875,6 +3876,7 @@ decl_instrument_init_bypass_p (tree decl)
   tree type = TREE_TYPE (decl);
 
   return (flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && !processing_template_decl
 	  && type != error_mark_node
 	  && VAR_P (decl)
 	  && !TREE_STATIC (decl)
@@ -4357,7 +4359,9 @@ check_goto_1 (named_label_entry *ent, tree *declp)
 	  && ent->uses->binding_level == current_binding_level
 	  && ent->uses->names_in_scope == current_binding_level->names)
 	{
-	  if (declp && flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+	  if (declp
+	      && flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	      && !processing_template_decl)
 	    vec_safe_push (ent->uses->direct_goto,
 			   named_label_fwd_direct_goto { declp });
 	  return;
@@ -4371,7 +4375,9 @@ check_goto_1 (named_label_entry *ent, tree *declp)
       new_use->in_omp_scope = false;
       new_use->computed_goto = computed ? make_tree_vector () : nullptr;
       new_use->direct_goto = nullptr;
-      if (declp && flag_auto_var_init > AUTO_INIT_UNINITIALIZED)
+      if (declp
+	  && flag_auto_var_init > AUTO_INIT_UNINITIALIZED
+	  && !processing_template_decl)
 	vec_safe_push (new_use->direct_goto,
 		       named_label_fwd_direct_goto { declp });
 
