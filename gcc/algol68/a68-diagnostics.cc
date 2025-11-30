@@ -41,6 +41,15 @@
 #define A68_SCAN_ERROR 3
 #define A68_INFORM 4
 
+/* Auxiliary function used to grow an obstack by the contents of some given
+   string.  */
+
+static void
+obstack_append_str (obstack *b, const char *str)
+{
+  obstack_grow (b, str, strlen (str));
+}
+
 /* Give a diagnostic message.  */
 
 #if __GNUC__ >= 10
@@ -80,7 +89,7 @@ diagnostic (int sev, int opt,
   gcc_obstack_init (&b);
 
   if (t[0] == '*')
-    obstack_grow (&b, t + 1, strlen (t + 1));
+    obstack_append_str (&b, t + 1);
   else
     while (t[0] != '\0')
       {
@@ -88,18 +97,18 @@ diagnostic (int sev, int opt,
 	  {
             const char *nt = a68_attribute_name (ATTRIBUTE (p));
             if (t != NO_TEXT)
-              obstack_grow (&b, nt, strlen (nt));
+              obstack_append_str (&b, nt);
 	    else
-              obstack_grow (&b, "construct", strlen ("construct"));
+              obstack_append_str (&b, "construct");
           }
 	else if (t[0] == 'A')
 	  {
             enum a68_attribute att = (enum a68_attribute) va_arg (args, int);
             const char *nt = a68_attribute_name (att);
             if (nt != NO_TEXT)
-              obstack_grow (&b, nt, strlen (nt));
+              obstack_append_str (&b, nt);
 	    else
-              obstack_grow (&b, "construct", strlen ("construct"));
+              obstack_append_str (&b, "construct");
           }
 	else if (t[0] == 'B')
 	  {
@@ -109,12 +118,12 @@ diagnostic (int sev, int opt,
 	      {
 		const char *strop_keyword = a68_strop_keyword (TEXT (nt));
 
-		obstack_grow (&b, "%<", 2);
-		obstack_grow (&b, strop_keyword, strlen (strop_keyword));
-		obstack_grow (&b, "%>", 2);
+		obstack_append_str (&b, "%<");
+		obstack_append_str (&b, strop_keyword);
+		obstack_append_str (&b, "%>");
 	      }
 	    else
-              obstack_grow (&b, "keyword", strlen ("keyword"));
+              obstack_append_str (&b, "keyword");
           }
 	else if (t[0] == 'C')
 	  {
@@ -127,29 +136,28 @@ diagnostic (int sev, int opt,
 	      case SOFT: sort = "a soft"; break;
 	      case WEAK: sort = "a weak"; break;
 	      case MEEK: sort = "a meek"; break;
-	      case FIRM: sort = "a meek"; break;
+	      case FIRM: sort = "a firm"; break;
 	      case STRONG: sort = "a strong"; break;
 	      default:
 		gcc_unreachable ();
 	      }
 
-	    obstack_grow (&b, sort, strlen (sort));
+	    obstack_append_str (&b, sort);
           }
 	else if (t[0] == 'L')
 	  {
 	    LINE_T *a = va_arg (args, LINE_T *);
             gcc_assert (a != NO_LINE);
             if (NUMBER (a) == 0)
-              obstack_grow (&b, "in standard environment",
-			    strlen ("in standard environment"));
+              obstack_append_str (&b, "in standard environment");
 	    else if (p != NO_NODE && NUMBER (a) == LINE_NUMBER (p))
-	      obstack_grow (&b, "in this line", strlen ("in this line"));
+	      obstack_append_str (&b, "in this line");
 	    else
 	      {
-		char d[10];
-		if (snprintf (d, 10, "in line %d", NUMBER (a)) < 0)
+		char d[18];
+		if (snprintf (d, 18, "in line %d", NUMBER (a)) < 0)
 		  gcc_unreachable ();
-		obstack_grow (&b, d, strlen (d));
+		obstack_append_str (&b, d);
 	      }
           }
 	else if (t[0] == 'M')
@@ -171,9 +179,9 @@ diagnostic (int sev, int opt,
 	    else
 	      moidstr = a68_moid_to_string (moid, MOID_ERROR_WIDTH, p);
 
-	    obstack_grow (&b, "%<", 2);
-	    obstack_grow (&b, moidstr, strlen (moidstr));
-	    obstack_grow (&b, "%>", 2);
+	    obstack_append_str (&b, "%<");
+	    obstack_append_str (&b, moidstr);
+	    obstack_append_str (&b, "%>");
           }
 	else if (t[0] == 'O')
 	  {
@@ -181,7 +189,7 @@ diagnostic (int sev, int opt,
             if (moid == NO_MOID || moid == M_ERROR)
               moid = M_UNDEFINED;
             if (moid == M_VOID)
-              obstack_grow (&b, "UNION (VOID, ..)", strlen ("UNION (VOID, ..)"));
+              obstack_append_str (&b, "UNION (VOID, ..)");
 	    else if (IS (moid, SERIES_MODE))
 	      {
 		const char *moidstr = NULL;
@@ -190,12 +198,12 @@ diagnostic (int sev, int opt,
 		  moidstr = a68_moid_to_string (MOID (PACK (moid)), MOID_ERROR_WIDTH, p);
 		else
 		  moidstr = a68_moid_to_string (moid, MOID_ERROR_WIDTH, p);
-		obstack_grow (&b, moidstr, strlen (moidstr));
+		obstack_append_str (&b, moidstr);
 	      }
 	    else
 	      {
 		const char *moidstr = a68_moid_to_string (moid, MOID_ERROR_WIDTH, p);
-		obstack_grow (&b, moidstr, strlen (moidstr));
+		obstack_append_str (&b, moidstr);
 	      }
           }
 	else if (t[0] == 'S')
@@ -206,9 +214,9 @@ diagnostic (int sev, int opt,
 		char *sym = NCHAR_IN_LINE (p);
 		int n = 0, size = (int) strlen (txt);
 
-		obstack_grow (&b, "%<", 2);
+		obstack_append_str (&b, "%<");
 		if (txt[0] != sym[0] || (int) strlen (sym) < size)
-		  obstack_grow (&b, txt, strlen (txt));
+		  obstack_append_str (&b, txt);
 		else
 		  {
 		    while (n < size)
@@ -223,28 +231,28 @@ diagnostic (int sev, int opt,
 			sym++;
 		      }
 		  }
-		obstack_grow (&b, "%>", 2);
+		obstack_append_str (&b, "%>");
 	      }
 	    else
-	      obstack_grow (&b, "symbol", strlen ("symbol"));
+	      obstack_append_str (&b, "symbol");
           }
 	else if (t[0] == 'X')
 	  {
             enum a68_attribute att = (enum a68_attribute) (va_arg (args, int));
 	    const char *att_name = a68_attribute_name (att);
-	    obstack_grow (&b, att_name, strlen (att_name));
+	    obstack_append_str (&b, att_name);
           }
 	else if (t[0] == 'Y')
 	  {
             char *loc_string = va_arg (args, char *);
-	    obstack_grow (&b, loc_string, strlen (loc_string));
+	    obstack_append_str (&b, loc_string);
           }
 	else if (t[0] == 'Z')
 	  {
             char *str = va_arg (args, char *);
-	    obstack_grow (&b, "%<", 2);
-	    obstack_grow (&b, str, strlen (str));
-	    obstack_grow (&b, "%>", 2);
+	    obstack_append_str (&b, "%<");
+	    obstack_append_str (&b, str);
+	    obstack_append_str (&b, "%>");
           }
 	else
 	  obstack_1grow (&b, t[0]);
