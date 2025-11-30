@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-sources ISO_Fortran_binding_17.c }
 ! { dg-options "-fcheck=all" }
-! { dg-warning "command-line option '-fcheck=all' is valid for Fortran but not for C" "" { target *-*-* } 0 }
+! { dg-warning "command-line option '-fcheck=all' is valid for (\[a-zA-Z0-9]+/)*Fortran(/\[a-zA-Z0-9]+)* but not for C" "" { target *-*-* } 0 }
 !
 ! PR fortran/92470
 !

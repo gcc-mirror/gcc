@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-sources pr113338-c.c }
 ! { dg-additional-options "-Wno-error -O2 -std=f2018" }
-! { dg-warning "command-line option '-std=f2018' is valid for Fortran but not for C" "" { target *-*-* } 0 }
+! { dg-warning "command-line option '-std=f2018' is valid for (\[a-zA-Z0-9]+/)*Fortran(/\[a-zA-Z0-9]+)* but not for C" "" { target *-*-* } 0 }
 !
 ! PR fortran/113338 - F2018 extensions to interoperability of procedures
 

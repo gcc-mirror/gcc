@@ -1,7 +1,7 @@
 ! { dg-do run }
 ! { dg-additional-sources "allocate-errors-c.c dump-descriptors.c" }
 ! { dg-additional-options "-Wno-error -fcheck=all" }
-! { dg-warning "command-line option '-fcheck=all' is valid for Fortran but not for C" "" { target *-*-* } 0 }
+! { dg-warning "command-line option '-fcheck=all' is valid for (\[a-zA-Z0-9]+/)*Fortran(/\[a-zA-Z0-9]+)* but not for C" "" { target *-*-* } 0 }
 !
 ! This program tests that the CFI_allocate and CFI_deallocate functions
 ! properly detect invalid arguments.  All the interesting things happen

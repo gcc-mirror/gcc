@@ -2,7 +2,7 @@
 ! { dg-do run }
 ! { dg-additional-sources "setpointer-errors-c.c dump-descriptors.c" }
 ! { dg-additional-options "-Wno-error -fcheck=all" }
-! { dg-warning "command-line option '-fcheck=all' is valid for Fortran but not for C" "" { target *-*-* } 0 }
+! { dg-warning "command-line option '-fcheck=all' is valid for (\[a-zA-Z0-9]+/)*Fortran(/\[a-zA-Z0-9]+)* but not for C" "" { target *-*-* } 0 }
 !
 ! This program tests that the CFI_setpointer function properly detects
 ! invalid arguments.  All the interesting things happen in the 
