@@ -17086,8 +17086,9 @@ cp_parser_block_declaration (cp_parser *parser,
 
    If MAYBE_RANGE_FOR_DECL is not NULL, the pointed tree will be set to the
    parsed declaration if it is an uninitialized single declarator not followed
-   by a `;', or to error_mark_node otherwise. Either way, the trailing `;',
-   if present, will not be consumed.  */
+   by a `;', or to NULL_TREE when not followed by `:' or to error_mark_node
+   otherwise.  Either way, the trailing `;', if present, will not be
+   consumed.  */
 
 static void
 cp_parser_simple_declaration (cp_parser* parser,
@@ -17139,7 +17140,7 @@ cp_parser_simple_declaration (cp_parser* parser,
       && !decl_specifiers.any_specifiers_p)
     {
       cp_parser_error (parser, "expected declaration");
-      goto done;
+      goto error_out;
     }
 
   /* If the next two tokens are both identifiers, the code is
@@ -17155,7 +17156,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	 looking at a declaration.  */
       cp_parser_commit_to_tentative_parse (parser);
       /* Give up.  */
-      goto done;
+      goto error_out;
     }
 
   cp_parser_maybe_commit_to_declaration (parser, &decl_specifiers);
@@ -17180,11 +17181,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	if (token->type == CPP_SEMICOLON)
 	  goto finish;
 	else if (maybe_range_for_decl)
-	  {
-	    if (*maybe_range_for_decl == NULL_TREE)
-	      *maybe_range_for_decl = error_mark_node;
-	    goto finish;
-	  }
+	  goto finish;
 	/* Anything else is an error.  */
 	else
 	  {
@@ -17263,7 +17260,7 @@ cp_parser_simple_declaration (cp_parser* parser,
 	 statement is treated as a declaration-statement until proven
 	 otherwise.)  */
       if (cp_parser_error_occurred (parser))
-	goto done;
+	goto error_out;
 
       if (auto_specifier_p && cxx_dialect >= cxx14)
 	{
@@ -17401,6 +17398,9 @@ cp_parser_simple_declaration (cp_parser* parser,
       if (comma_loc != UNKNOWN_LOCATION)
 	error_at (comma_loc,
 		  "multiple declarations in range-based %<for%> loop");
+    error_out:
+      if (maybe_range_for_decl && *maybe_range_for_decl == NULL_TREE)
+	*maybe_range_for_decl = error_mark_node;
     }
 
  done:
