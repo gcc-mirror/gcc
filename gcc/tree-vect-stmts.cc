@@ -356,7 +356,6 @@ is_simple_and_all_uses_invariant (stmt_vec_info stmt_info,
    - it has uses outside the loop.
    - it has vdefs (it alters memory).
    - control stmts in the loop (except for the exit condition).
-   - it is an induction and we have multiple exits.
 
    CHECKME: what other side effects would the vectorizer allow?  */
 
@@ -416,26 +415,6 @@ vect_stmt_relevant_p (stmt_vec_info stmt_info, loop_vec_info loop_vinfo,
               *live_p = true;
 	    }
 	}
-    }
-
-  /* Check if it's a not live PHI and multiple exits.  In this case
-     there will be a usage later on after peeling which is needed for the
-     alternate exit.
-     ???  Unless the PHI was marked live because of early
-     break, which also needs the latch def live and vectorized.  */
-  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-      && is_a <gphi *> (stmt)
-      && gimple_bb (stmt) == LOOP_VINFO_LOOP (loop_vinfo)->header
-      && ((! VECTORIZABLE_CYCLE_DEF (STMT_VINFO_DEF_TYPE (stmt_info))
-	  && ! *live_p)
-	  || STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def))
-    {
-      if (dump_enabled_p ())
-	dump_printf_loc (MSG_NOTE, vect_location,
-			 "vec_stmt_relevant_p: PHI forced live for "
-			 "early break.\n");
-      LOOP_VINFO_EARLY_BREAKS_LIVE_IVS (loop_vinfo).safe_push (stmt_info);
-      *live_p = true;
     }
 
   if (*live_p && *relevant == vect_unused_in_scope
@@ -12985,17 +12964,12 @@ can_vectorize_live_stmts (vec_info *vinfo,
 			  bool vec_stmt_p,
 			  stmt_vector_for_cost *cost_vec)
 {
-  loop_vec_info loop_vinfo = dyn_cast <loop_vec_info> (vinfo);
   stmt_vec_info slp_stmt_info;
   unsigned int i;
   FOR_EACH_VEC_ELT (SLP_TREE_SCALAR_STMTS (slp_node), i, slp_stmt_info)
     {
       if (slp_stmt_info
-	  && (STMT_VINFO_LIVE_P (slp_stmt_info)
-	      || (loop_vinfo
-		  && LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-		  && STMT_VINFO_DEF_TYPE (slp_stmt_info)
-		  == vect_induction_def))
+	  && STMT_VINFO_LIVE_P (slp_stmt_info)
 	  && !vectorizable_live_operation (vinfo, slp_stmt_info, slp_node,
 					   slp_node_instance, i,
 					   vec_stmt_p, cost_vec))

@@ -20,6 +20,6 @@ foo (void)
 }
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* Peels using a scalar loop.  */
-/* { dg-final { scan-tree-dump-not "pfa_iv_offset" "vect" } } */
+/* Peels using fully masked loop.  */
+/* { dg-final { scan-tree-dump "misalignment for fully-masked loop" "vect" } } */
 /* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" } } */

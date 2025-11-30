@@ -8951,14 +8951,25 @@ vect_create_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 tree
 vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 			     tree skip_niters, tree step_expr,
-			     enum vect_induction_op_type induction_type)
+			     enum vect_induction_op_type induction_type,
+			     bool early_exit_p)
 {
-  gcc_assert (TREE_CODE (skip_niters) == INTEGER_CST);
+  gcc_assert (TREE_CODE (skip_niters) == INTEGER_CST || early_exit_p);
   tree type = TREE_TYPE (init_expr);
   unsigned prec = TYPE_PRECISION (type);
   switch (induction_type)
     {
+    /* neg inductions are typically not used for loop termination conditions but
+       are typically implemented as b = -b.  That is every scalar iteration b is
+       negated.  That means that for the initial value of b we will have to
+       determine whether the number of skipped iteration is a multiple of 2
+       because every 2 scalar iterations we are back at "b".  */
     case vect_step_op_neg:
+      /* For early exits the neg induction will always be the same value at the
+	 start of the iteration.  */
+      if (early_exit_p)
+	break;
+
       if (TREE_INT_CST_LOW (skip_niters) % 2)
 	init_expr = gimple_build (stmts, NEGATE_EXPR, type, init_expr);
       /* else no change.  */
@@ -8966,13 +8977,15 @@ vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 
     case vect_step_op_shr:
     case vect_step_op_shl:
-      skip_niters = gimple_convert (stmts, type, skip_niters);
-      step_expr = gimple_build (stmts, MULT_EXPR, type, step_expr, skip_niters);
+      skip_niters = fold_build1 (NOP_EXPR, type, skip_niters);
+      step_expr = fold_build1 (NOP_EXPR, type, step_expr);
+      step_expr = fold_build2 (MULT_EXPR, type, step_expr, skip_niters);
       /* When shift mount >= precision, need to avoid UD.
 	 In the original loop, there's no UD, and according to semantic,
 	 init_expr should be 0 for lshr, ashl, and >>= (prec - 1) for ashr.  */
-      if (!tree_fits_uhwi_p (step_expr)
+      if ((!tree_fits_uhwi_p (step_expr)
 	  || tree_to_uhwi (step_expr) >= prec)
+	  && !early_exit_p)
 	{
 	  if (induction_type == vect_step_op_shl
 	      || TYPE_UNSIGNED (type))
@@ -8983,13 +8996,19 @@ vect_peel_nonlinear_iv_init (gimple_seq* stmts, tree init_expr,
 				      wide_int_to_tree (type, prec - 1));
 	}
       else
-	init_expr = gimple_build (stmts, (induction_type == vect_step_op_shr
+	{
+	  init_expr = fold_build2 ((induction_type == vect_step_op_shr
 					  ? RSHIFT_EXPR : LSHIFT_EXPR),
-				  type, init_expr, step_expr);
+				    type, init_expr, step_expr);
+	  init_expr = force_gimple_operand (init_expr, stmts, false, NULL);
+	}
       break;
 
     case vect_step_op_mul:
       {
+	/* Due to UB we can't support vect_step_op_mul with early break for now.
+	   so assert and block.  */
+	gcc_assert (TREE_CODE (skip_niters) == INTEGER_CST);
 	tree utype = unsigned_type_for (type);
 	init_expr = gimple_convert (stmts, utype, init_expr);
 	wide_int skipn = wi::to_wide (skip_niters);
@@ -9073,9 +9092,7 @@ vect_update_nonlinear_iv (gimple_seq* stmts, tree vectype,
     case vect_step_op_mul:
       {
 	/* Use unsigned mult to avoid UD integer overflow.  */
-	tree uvectype
-	  = build_vector_type (unsigned_type_for (TREE_TYPE (vectype)),
-			       TYPE_VECTOR_SUBPARTS (vectype));
+	tree uvectype = unsigned_type_for (vectype);
 	vec_def = gimple_convert (stmts, uvectype, vec_def);
 	vec_step = gimple_convert (stmts, uvectype, vec_step);
 	vec_def = gimple_build (stmts, MULT_EXPR, uvectype,
@@ -9322,7 +9339,7 @@ vectorizable_nonlinear_induction (loop_vec_info loop_vinfo,
      to adjust the start value here.  */
   if (niters_skip != NULL_TREE)
     init_expr = vect_peel_nonlinear_iv_init (&stmts, init_expr, niters_skip,
-					     step_expr, induction_type);
+					     step_expr, induction_type, false);
 
   vec_init = vect_create_nonlinear_iv_init (&stmts, init_expr,
 					    step_expr, nunits, vectype,
@@ -9703,53 +9720,6 @@ vectorizable_induction (loop_vec_info loop_vinfo,
 				   LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo));
       peel_mul = gimple_build_vector_from_val (&init_stmts,
 					       step_vectype, peel_mul);
-
-      /* If early break then we have to create a new PHI which we can use as
-	 an offset to adjust the induction reduction in early exits.
-
-	 This is because when peeling for alignment using masking, the first
-	 few elements of the vector can be inactive.  As such if we find the
-	 entry in the first iteration we have adjust the starting point of
-	 the scalar code.
-
-	 We do this by creating a new scalar PHI that keeps track of whether
-	 we are the first iteration of the loop (with the additional masking)
-	 or whether we have taken a loop iteration already.
-
-	 The generated sequence:
-
-	 pre-header:
-	   bb1:
-	     i_1 = <number of leading inactive elements>
-
-	   header:
-	   bb2:
-	     i_2 = PHI <i_1(bb1), 0(latch)>
-	     …
-
-	   early-exit:
-	   bb3:
-	     i_3 = iv_step * i_2 + PHI<vector-iv>
-
-	 The first part of the adjustment to create i_1 and i_2 are done here
-	 and the last part creating i_3 is done in
-	 vectorizable_live_operations when the induction extraction is
-	 materialized.  */
-      if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
-	  && !LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo))
-	{
-	  auto skip_niters = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
-	  tree ty_skip_niters = TREE_TYPE (skip_niters);
-	  tree break_lhs_phi = vect_get_new_vect_var (ty_skip_niters,
-						      vect_scalar_var,
-						      "pfa_iv_offset");
-	  gphi *nphi = create_phi_node (break_lhs_phi, bb);
-	  add_phi_arg (nphi, skip_niters, pe, UNKNOWN_LOCATION);
-	  add_phi_arg (nphi, build_zero_cst (ty_skip_niters),
-		       loop_latch_edge (iv_loop), UNKNOWN_LOCATION);
-
-	  LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo) = PHI_RESULT (nphi);
-	}
     }
   tree step_mul = NULL_TREE;
   unsigned ivn;
@@ -10325,8 +10295,7 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 		 to the latch then we're restarting the iteration in the
 		 scalar loop.  So get the first live value.  */
 	      bool early_break_first_element_p
-		= (all_exits_as_early_p || !main_exit_edge)
-		   && STMT_VINFO_DEF_TYPE (stmt_info) == vect_induction_def;
+		= all_exits_as_early_p || !main_exit_edge;
 	      if (early_break_first_element_p)
 		{
 		  tmp_vec_lhs = vec_lhs0;
@@ -10335,52 +10304,13 @@ vectorizable_live_operation (vec_info *vinfo, stmt_vec_info stmt_info,
 
 	      gimple_stmt_iterator exit_gsi;
 	      tree new_tree
-		= vectorizable_live_operation_1 (loop_vinfo,
-						 e->dest, vectype,
-						 slp_node, bitsize,
-						 tmp_bitstart, tmp_vec_lhs,
-						 lhs_type, &exit_gsi);
+		  = vectorizable_live_operation_1 (loop_vinfo,
+						   e->dest, vectype,
+						   slp_node, bitsize,
+						   tmp_bitstart, tmp_vec_lhs,
+						   lhs_type, &exit_gsi);
 
 	      auto gsi = gsi_for_stmt (use_stmt);
-	      if (early_break_first_element_p
-		  && LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo))
-		{
-		  tree step_expr
-		    = STMT_VINFO_LOOP_PHI_EVOLUTION_PART (stmt_info);
-		  tree break_lhs_phi
-		    = LOOP_VINFO_MASK_NITERS_PFA_OFFSET (loop_vinfo);
-		  tree ty_skip_niters = TREE_TYPE (break_lhs_phi);
-		  gimple_seq iv_stmts = NULL;
-
-		  /* Now create the PHI for the outside loop usage to
-		     retrieve the value for the offset counter.  */
-		  tree rphi_step
-		    = gimple_convert (&iv_stmts, ty_skip_niters, step_expr);
-		  tree tmp2
-		    = gimple_build (&iv_stmts, MULT_EXPR,
-				    ty_skip_niters, rphi_step,
-				    break_lhs_phi);
-
-		  if (POINTER_TYPE_P (TREE_TYPE (new_tree)))
-		    {
-		      tmp2 = gimple_convert (&iv_stmts, sizetype, tmp2);
-		      tmp2 = gimple_build (&iv_stmts, POINTER_PLUS_EXPR,
-					   TREE_TYPE (new_tree), new_tree,
-					   tmp2);
-		    }
-		  else
-		    {
-		      tmp2 = gimple_convert (&iv_stmts, TREE_TYPE (new_tree),
-					     tmp2);
-		      tmp2 = gimple_build (&iv_stmts, PLUS_EXPR,
-					   TREE_TYPE (new_tree), new_tree,
-					   tmp2);
-		    }
-
-		  new_tree = tmp2;
-		  gsi_insert_seq_before (&exit_gsi, iv_stmts, GSI_SAME_STMT);
-		}
-
 	      tree lhs_phi = gimple_phi_result (use_stmt);
 	      remove_phi_node (&gsi, false);
 	      gimple *copy = gimple_build_assign (lhs_phi, new_tree);
@@ -11021,6 +10951,101 @@ move_early_exit_stmts (loop_vec_info loop_vinfo)
 	SET_PHI_ARG_DEF_ON_EDGE (phi, e, last_seen_vuse);
 }
 
+/* Generate adjustment code for early break scalar IVs filling in the value
+   we created earlier on for LOOP_VINFO_EARLY_BRK_NITERS_VAR.  */
+
+static void
+vect_update_ivs_after_vectorizer_for_early_breaks (loop_vec_info loop_vinfo)
+{
+  DUMP_VECT_SCOPE ("vect_update_ivs_after_vectorizer_for_early_breaks");
+
+  if (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+    return;
+
+  gcc_assert (LOOP_VINFO_EARLY_BRK_NITERS_VAR (loop_vinfo));
+
+  tree phi_var = LOOP_VINFO_EARLY_BRK_NITERS_VAR (loop_vinfo);
+  tree niters_skip = LOOP_VINFO_MASK_SKIP_NITERS (loop_vinfo);
+  poly_uint64 vf = LOOP_VINFO_VECT_FACTOR (loop_vinfo);
+  tree ty_var = TREE_TYPE (phi_var);
+  auto loop = LOOP_VINFO_LOOP (loop_vinfo);
+  tree induc_var = niters_skip ? copy_ssa_name (phi_var) : phi_var;
+
+  auto induction_phi = create_phi_node (induc_var, loop->header);
+  tree induc_def = PHI_RESULT (induction_phi);
+
+  /* Create the iv update inside the loop.  */
+  gimple_seq init_stmts = NULL;
+  gimple_seq stmts = NULL;
+  gimple_seq iv_stmts = NULL;
+  tree tree_vf = build_int_cst (ty_var, vf);
+
+  /* For loop len targets we have to use .SELECT_VL (ivtmp_33, VF); instead of
+     just += VF as the VF can change in between two loop iterations.  */
+  if (LOOP_VINFO_USING_SELECT_VL_P (loop_vinfo))
+    {
+      vec_loop_lens *lens = &LOOP_VINFO_LENS (loop_vinfo);
+      tree_vf = vect_get_loop_len (loop_vinfo, NULL, lens, 1,
+				   NULL_TREE, 0, 0);
+    }
+
+  tree iter_var;
+  if (POINTER_TYPE_P (ty_var))
+    {
+      tree offset = gimple_convert (&stmts, sizetype, tree_vf);
+      iter_var = gimple_build (&stmts, POINTER_PLUS_EXPR, ty_var, induc_def,
+			       gimple_convert (&stmts, sizetype, offset));
+    }
+  else
+    {
+      tree offset = gimple_convert (&stmts, ty_var, tree_vf);
+      iter_var = gimple_build (&stmts, PLUS_EXPR, ty_var, induc_def, offset);
+    }
+
+  tree init_var = build_zero_cst (ty_var);
+  if (niters_skip)
+    init_var = gimple_build (&init_stmts, MINUS_EXPR, ty_var, init_var,
+			     gimple_convert (&init_stmts, ty_var, niters_skip));
+
+  add_phi_arg (induction_phi, iter_var,
+	       loop_latch_edge (loop), UNKNOWN_LOCATION);
+  add_phi_arg (induction_phi, init_var,
+	       loop_preheader_edge (loop), UNKNOWN_LOCATION);
+
+  /* Find the first insertion point in the BB.  */
+  auto pe = loop_preheader_edge (loop);
+
+  /* If we've done any peeling, calculate the peeling adjustment needed to the
+     final IV.  */
+  if (niters_skip)
+    {
+      induc_def = gimple_build (&iv_stmts, MAX_EXPR, TREE_TYPE (induc_def),
+				induc_def,
+				build_zero_cst (TREE_TYPE (induc_def)));
+      auto stmt = gimple_build_assign (phi_var, induc_def);
+      gimple_seq_add_stmt_without_update (&iv_stmts, stmt);
+      basic_block exit_bb = NULL;
+      /* Identify the early exit merge block.  I wish we had stored this.  */
+      for (auto e : get_loop_exit_edges (loop))
+	if (e != LOOP_VINFO_IV_EXIT (loop_vinfo))
+	  {
+	    exit_bb = e->dest;
+	    break;
+	  }
+
+      gcc_assert (exit_bb);
+      auto exit_gsi = gsi_after_labels (exit_bb);
+      gsi_insert_seq_before (&exit_gsi, iv_stmts, GSI_SAME_STMT);
+  }
+  /* Write the init_stmts in the loop-preheader block.  */
+  auto psi = gsi_last_nondebug_bb (pe->src);
+  gsi_insert_seq_after (&psi, init_stmts, GSI_LAST_NEW_STMT);
+  /* Wite the adjustments in the header block.  */
+  basic_block bb = loop->header;
+  auto si = gsi_after_labels (bb);
+  gsi_insert_seq_before (&si, stmts, GSI_SAME_STMT);
+}
+
 /* Function vect_transform_loop.
 
    The analysis phase has determined that the loop is vectorizable.
@@ -11165,7 +11190,10 @@ vect_transform_loop (loop_vec_info loop_vinfo, gimple *loop_vectorized_call)
   /* Handle any code motion that we need to for early-break vectorization after
      we've done peeling but just before we start vectorizing.  */
   if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
-    move_early_exit_stmts (loop_vinfo);
+    {
+      vect_update_ivs_after_vectorizer_for_early_breaks (loop_vinfo);
+      move_early_exit_stmts (loop_vinfo);
+    }
 
   /* Remove existing clobber stmts and prefetches.  */
   for (i = 0; i < nbbs; i++)

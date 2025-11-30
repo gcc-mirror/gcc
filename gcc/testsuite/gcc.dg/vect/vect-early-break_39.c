@@ -23,5 +23,6 @@ unsigned test4(unsigned x, unsigned n)
  return ret;
 }
 
-/* cannot safely vectorize this due due to the group misalignment.  */
-/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 0 "vect" } } */
+/* AArch64 will scalarize the load and is able to vectorize it.  */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 1 "vect" { target aarch64*-*-* } } } */
+/* { dg-final { scan-tree-dump-times "vectorized 1 loops in function" 0 "vect" { target { ! aarch64*-*-* } } } } */

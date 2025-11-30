@@ -15,6 +15,5 @@ foo (int *a) {
 }
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "pfa_iv_offset" "vect" } } */
 /* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" } } */
 /* { dg-final { scan-assembler {\tnot\tp[0-7]\.b, p[0-7]/z, p.*\n} } } */

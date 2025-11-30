@@ -2161,6 +2161,16 @@ vect_can_peel_nonlinear_iv_p (loop_vec_info loop_vinfo,
       return false;
     }
 
+  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+      && induction_type == vect_step_op_mul)
+    {
+      if (dump_enabled_p ())
+	dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			 "Peeling for is not supported for nonlinear mult"
+			 " induction using partial vectorization.\n");
+      return false;
+    }
+
   /* Avoid compile time hog on vect_peel_nonlinear_iv_init.  */
   if (induction_type == vect_step_op_mul)
     {
@@ -2315,6 +2325,9 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
                   The phi args associated with the edge UPDATE_E in the bb
                   UPDATE_E->dest are updated accordingly.
 
+     - EARLY_EXIT_P - Indicates whether the exit is an early exit rather than
+		      the main latch exit.
+
      Assumption 1: Like the rest of the vectorizer, this function assumes
      a single loop exit that has a single predecessor.
 
@@ -2333,7 +2346,8 @@ vect_can_advance_ivs_p (loop_vec_info loop_vinfo)
 
 static void
 vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
-				  tree niters, edge update_e)
+				  tree niters, edge update_e,
+				  bool early_exit_p)
 {
   gphi_iterator gsi, gsi1;
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -2400,15 +2414,16 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
       else
 	ni = vect_peel_nonlinear_iv_init (&stmts, init_expr,
 					  niters, step_expr,
-					  induction_type);
+					  induction_type, early_exit_p);
 
       var = create_tmp_var (type, "tmp");
 
       gimple_seq new_stmts = NULL;
       ni_name = force_gimple_operand (ni, &new_stmts, false, var);
 
-      /* Exit_bb shouldn't be empty.  */
-      if (!gsi_end_p (last_gsi))
+      /* Exit_bb shouldn't be empty, but we also can't insert after a ctrl
+	 statements.  */
+      if (!gsi_end_p (last_gsi) && !is_ctrl_stmt (gsi_stmt (last_gsi)))
 	{
 	  gsi_insert_seq_after (&last_gsi, stmts, GSI_SAME_STMT);
 	  gsi_insert_seq_after (&last_gsi, new_stmts, GSI_SAME_STMT);
@@ -2419,8 +2434,15 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
 	  gsi_insert_seq_before (&last_gsi, new_stmts, GSI_SAME_STMT);
 	}
 
-      /* Fix phi expressions in the successor bb.  */
-      adjust_phi_and_debug_stmts (phi1, update_e, ni_name);
+      /* Fix phi expressions in all out of loop bb.  */
+      imm_use_iterator imm_iter;
+      gimple *use_stmt;
+      use_operand_p use_p;
+      tree ic_var = PHI_ARG_DEF_FROM_EDGE (phi1, update_e);
+      FOR_EACH_IMM_USE_STMT (use_stmt, imm_iter, ic_var)
+	if (!flow_bb_inside_loop_p (loop, gimple_bb (use_stmt)))
+	  FOR_EACH_IMM_USE_ON_STMT (use_p, imm_iter)
+	    SET_USE (use_p, ni_name);
     }
 }
 
@@ -3562,14 +3584,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	update_e = single_succ_edge (LOOP_VINFO_IV_EXIT (loop_vinfo)->dest);
 
-      /* If we have a peeled vector iteration, all exits are the same, leave it
-	 and so the main exit needs to be treated the same as the alternative
-	 exits in that we leave their updates to vectorizable_live_operations.
-	 */
-      if (!LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
-	vect_update_ivs_after_vectorizer (loop_vinfo, niters_vector_mult_vf,
-					  update_e);
-
       /* If we have a peeled vector iteration we will never skip the epilog loop
 	 and we can simplify the cfg a lot by not doing the edge split.  */
       if (skip_epilog
@@ -3624,6 +3638,41 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	    }
 	  scale_loop_profile (epilog, prob_epilog, -1);
 	}
+
+      /* If we have a peeled vector iteration, all exits are the same, leave it
+	 and so the main exit needs to be treated the same as the alternative
+	 exits in that we leave their updates to vectorizable_live_operations.
+	 */
+      tree vector_iters_vf = niters_vector_mult_vf;
+      if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+	{
+	  tree scal_iv_ty = signed_type_for (TREE_TYPE (vector_iters_vf));
+	  tree tmp_niters_vf = make_ssa_name (scal_iv_ty);
+	  basic_block exit_bb = NULL;
+	  edge update_e = NULL;
+
+	  /* Identify the early exit merge block.  I wish we had stored this.  */
+	  for (auto e : get_loop_exit_edges (loop))
+	    if (e != LOOP_VINFO_IV_EXIT (loop_vinfo))
+	      {
+		exit_bb = e->dest;
+		update_e = single_succ_edge (exit_bb);
+		break;
+	      }
+	  vect_update_ivs_after_vectorizer (loop_vinfo, tmp_niters_vf,
+					    update_e, true);
+
+	  if (LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo))
+	    vector_iters_vf = tmp_niters_vf;
+
+	  LOOP_VINFO_EARLY_BRK_NITERS_VAR (loop_vinfo) = tmp_niters_vf;
+	}
+
+	bool recalculate_peel_niters_init
+	  = LOOP_VINFO_EARLY_BREAKS_VECT_PEELED (loop_vinfo);
+	vect_update_ivs_after_vectorizer (loop_vinfo, vector_iters_vf,
+					  update_e,
+					  recalculate_peel_niters_init);
 
       /* Recalculate the dominators after adding the guard edge.  */
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))

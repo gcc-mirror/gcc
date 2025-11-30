@@ -1241,6 +1241,10 @@ public:
      happen.  */
   auto_vec<gimple*> early_break_vuses;
 
+  /* The IV adjustment value for inductions that needs to be materialized
+     inside the relavent exit blocks in order to adjust for early break.  */
+  tree early_break_niters_var;
+
   /* Record statements that are needed to be live for early break vectorization
      but may not have an LC PHI node materialized yet in the exits.  */
   auto_vec<stmt_vec_info> early_break_live_ivs;
@@ -1308,6 +1312,7 @@ public:
   (L)->early_break_live_ivs
 #define LOOP_VINFO_EARLY_BRK_DEST_BB(L)    (L)->early_break_dest_bb
 #define LOOP_VINFO_EARLY_BRK_VUSES(L)      (L)->early_break_vuses
+#define LOOP_VINFO_EARLY_BRK_NITERS_VAR(L) (L)->early_break_niters_var
 #define LOOP_VINFO_LOOP_CONDS(L)           (L)->conds
 #define LOOP_VINFO_LOOP_IV_COND(L)         (L)->loop_iv_cond
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
@@ -2716,7 +2721,8 @@ extern tree cse_and_gimplify_to_preheader (loop_vec_info, tree);
 
 /* Nonlinear induction.  */
 extern tree vect_peel_nonlinear_iv_init (gimple_seq*, tree, tree,
-					 tree, enum vect_induction_op_type);
+					 tree, enum vect_induction_op_type,
+					 bool);
 
 /* In tree-vect-slp.cc.  */
 extern void vect_slp_init (void);

@@ -20,5 +20,4 @@ foo (int start)
 }
 
 /* { dg-final { scan-tree-dump "LOOP VECTORIZED" "vect" } } */
-/* { dg-final { scan-tree-dump "pfa_iv_offset" "vect" } } */
 /* { dg-final { scan-tree-dump "Alignment of access forced using peeling" "vect" } } */
