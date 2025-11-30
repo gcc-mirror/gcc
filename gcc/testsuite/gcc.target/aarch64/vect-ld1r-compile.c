@@ -1,5 +1,6 @@
 /* { dg-do compile } */
-/* { dg-options "-O3 -fno-vect-cost-model" } */
+/* Adding -fno-tree-loop-distribute-patterns to present memset dtection.  */
+/* { dg-options "-O3 -fno-tree-loop-distribute-patterns -fno-vect-cost-model" } */
 
 #pragma GCC target "+nosve"
 

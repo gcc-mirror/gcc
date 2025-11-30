@@ -36,4 +36,4 @@ int main (int argc, char **argv)
   return 0;
 }
 
-/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops" "vect"} } */
