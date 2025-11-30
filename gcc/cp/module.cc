@@ -12936,6 +12936,9 @@ trees_out::write_function_def (tree decl)
 	 on non-templates or we'll crash later in import_export_decl.  */
       gcc_checking_assert (flags || DECL_INTERFACE_KNOWN (decl)
 			   || (DECL_LANG_SPECIFIC (decl)
+			       && DECL_LOCAL_DECL_P (decl)
+			       && DECL_OMP_DECLARE_REDUCTION_P (decl))
+			   || (DECL_LANG_SPECIFIC (decl)
 			       && DECL_TEMPLATE_INFO (decl)
 			       && uses_template_parms (DECL_TI_ARGS (decl))));
 
