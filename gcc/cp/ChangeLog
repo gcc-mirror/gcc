@@ -1,3 +1,29 @@
+2025-11-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* module.cc (trees_in::read_function_def): Don't call
+	post_process on OpenMP UDT reductions.
+	* parser.cc (cp_parser_omp_declare_reduction): Call push_decl
+	for block_scope, even when processing_template_decl.
+
+2025-11-29  Eczbek  <eczbek.void@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116952
+	* parser.cc (cp_parser_lambda_expression): Revert
+	r11-8166-ge1666ebd9ad31d change prohibiting lambda in non-type
+	parameter.
+
+2025-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122758
+	* decl.cc (pop_labels): Don't call adjust_backward_gotos if
+	processing_template_decl.
+	(decl_instrument_init_bypass_p): Always return false if
+	processing_template_decl.
+	(check_goto_1): Don't push anything to direct_goto vector
+	if processing_template_decl.
+
 2025-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/119969

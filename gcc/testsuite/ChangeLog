@@ -1,3 +1,22 @@
+2025-11-30  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	* g++.dg/modules/omp-4_a.C: New test.
+	* g++.dg/modules/omp-4_b.C: New test.
+
+2025-11-29  Eczbek  <eczbek.void@gmail.com>
+	    Jason Merrill  <jason@redhat.com>
+
+	PR c++/116952
+	* g++.dg/cpp2a/lambda-uneval14.C: Revise incorrect test.
+	* g++.dg/cpp2a/lambda-uneval29.C: New test.
+
+2025-11-29  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122758
+	* g++.dg/cpp26/erroneous5.C: New test.
+	* g++.dg/cpp26/erroneous6.C: New test.
+
 2025-11-28  Richard Biener  <rguenther@suse.de>
 
 	PR tree-optimization/122844

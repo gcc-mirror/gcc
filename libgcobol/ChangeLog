@@ -1,3 +1,9 @@
+2025-11-29  Richard Biener  <rguenther@suse.de>
+
+	PR cobol/122803
+	* configure.ac (LIBGCOBOL_VERSION): Bump to 2:0:0.
+	* configure: Re-generate.
+
 2025-11-18  James K. Lowden  <jklowden@cobolworx.com>
 
 	PR cobol/122702

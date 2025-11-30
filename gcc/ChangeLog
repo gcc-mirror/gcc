@@ -1,3 +1,234 @@
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* common.opt.urls: Regenerated.
+	* config/aarch64/aarch64.opt.urls: Regenerated.
+	* config/alpha/alpha.opt.urls: Regenerated.
+	* config/arm/arm.opt.urls: Regenerated.
+	* config/avr/avr.opt.urls: Regenerated.
+	* config/bpf/bpf.opt.urls: Regenerated.
+	* config/c6x/c6x.opt.urls: Regenerated.
+	* config/cris/cris.opt.urls: Regenerated.
+	* config/cris/elf.opt.urls: Regenerated.
+	* config/csky/csky.opt.urls: Regenerated.
+	* config/darwin.opt.urls: Regenerated.
+	* config/epiphany/epiphany.opt.urls: Regenerated.
+	* config/frv/frv.opt.urls: Regenerated.
+	* config/ft32/ft32.opt.urls: Regenerated.
+	* config/gcn/gcn.opt.urls: Regenerated.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/ia64/ia64.opt.urls: Regenerated.
+	* config/loongarch/loongarch.opt.urls: Regenerated.
+	* config/m68k/m68k.opt.urls: Regenerated.
+	* config/microblaze/microblaze.opt.urls: Regenerated.
+	* config/mips/mips.opt.urls: Regenerated.
+	* config/mmix/mmix.opt.urls: Regenerated.
+	* config/or1k/or1k.opt.urls: Regenerated.
+	* config/pa/pa.opt.urls: Regenerated.
+	* config/pdp11/pdp11.opt.urls: Regenerated.
+	* config/rs6000/rs6000.opt.urls: Regenerated.
+	* config/s390/s390.opt.urls: Regenerated.
+	* config/sparc/sparc.opt.urls: Regenerated.
+	* config/v850/v850.opt.urls: Regenerated.
+	* config/vax/vax.opt.urls: Regenerated.
+	* config/visium/visium.opt.urls: Regenerated.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* doc/invoke.texi (Options Summary): Switch ordering of FRV
+	and FT32.
+	(Submodel Options): Likewise in the menu and section ordering.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi: Document -mno-android.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/frv/frv.opt (mbranch-cost=): Mark as Undocumented.
+	(mcond-exec-insns=): Likewise.
+	(mcond-exec-tempss=): Likewise.
+	* doc/invoke.texi (Option Summary) <FRV Options>: Remove duplicate
+	positive/negative forms from the list.
+	(FRV Options): Combine documentation of positive/negative forms
+	where they were listed separately.  Add @opindex entries for
+	negative forms.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/ft32/ft32.opt (mlra): Mark obsolete option as Undocumented.
+	* doc/invoke.texi (Option Summary) <FT32 Options>: Remove -mlra.
+	(FT32 Options): Likewise.  Add @opindex entries for negative
+	option forms.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (FR30 Options): Add @opindex for -mno-small-model.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <eBPF Options>: Fix formatting
+	issues.  Remove redundant entry for -mno-co-re.
+	(eBPF Options): Add missing @opindex entries.  Combine documentation
+	for -mco-re and -mno-co-re.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/alpha/alpha.opt (mgas): Mark as Undocumented.
+	* doc/invoke.texi (Option Summary) <DEC Alpha Options>:  Add
+	-mtls-kernel, -mtls-size=, -mlong-double-128, and -mlong-double-64.
+	(DEC Alpha Options): Likewise.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/darwin.opt (findirect-virtual-calls): Mark as Undocumented.
+	(fterminated-vtables): Likewise.
+	(multi_module): Likewise.
+	(multiply_defined): Likewise.
+	(multiply_defined_unused): Likewise.
+	(no_dead_strip_inits_and_terms): Likewise.
+	(noprefixbinding): Likewise.
+	(nomultidefs): Likewise.
+	(noprebind): Likewise.
+	(noseglinkedit): Likewise.
+	(ObjC, ObjC++): Add documentation strings.
+	(object): Mark as Undocumented.
+	(prebind): Likewise.
+	(prebind_all_twolevel_modules): Likewise.
+	(private_bundle): Likewise.
+	(sectobjectsymbols): Likewise.
+	(sectorder): Likewise.
+	(seg_addr_table_filename): Likewise.
+	(segcreate): Likewise.
+	(seglinkedit): Likewise.
+	(single_module): Likewise.
+	(X): Likewise.
+	(y): Likewise.
+	(Mach): Likewise.
+	* doc/invoke.texi (Option Summary) <Darwin Options>: Improve
+	alphabetization of the list.  Remove obsolete/undocumented
+	options and add missing entries.
+	(Darwin Options): Add documentation for -arch, -dependency-file,
+	-fapple-kext, -matt-stubs, -fconstant-cfstrings, -mdynamic-no-pic,
+	-asm_macosx_version_min, -msymbol-stubs, -mtarget-linker,
+	-ObjC, -ObjC++, -Wnonportable-cfstrings.  Update the list
+	of options passed to the linker to remove obsolete options
+	and add missing ones; also move the block of @opindex entries
+	before the list items instead of putting it in the middle.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <Cygwin and MinGW Options>:
+	Correct spelling of -mthreads and add missing options.
+	(Cygwin and MinGW Options): Add @opindex for negative forms.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <C-SKY Options>: Remove
+	entries for "Undocumented" options -EB, -EL, -mhard-float,
+	-msoft-float, and nonexistent option -mcse-cc.
+	(C-SKY Options): Likewise.  Also remove references to "Undocumented"
+	option -mstm and uniformly index/document the -mno- forms for
+	consistency with other options in this section that already do so.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/cris/cris.opt (m32-bit, m16-bit, m8-bit): Remove
+	Undocumented property.
+	(m32bit, m8bit): Add Undocumented property.
+	* doc/invoke.texi (Option Summary) <CRIS Options>: Remove
+	obsolete -melf and -maout options from table, plus redundant
+	-mno-mul-bug-workaround.
+	(CRIS Options): Add @opindex for -mno- forms that didn't already
+	have one.  Remove obsolete -melf documentation.  Document
+	-mbest-lib-options, -moverride-best-lib-options,
+	-mtrap-using-break8, -mtrap-unaligned-atomic, and
+	-munaligned-atomic-may-use-library.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <C6X Options>: Add -mdbst
+	and -mlong-calls.
+	(C6X Options): Likewise.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <Blackfin Options>:
+	Remove redundant -mno- entries.
+	(Blackfin Options): Combine explicit -mno-* documentation
+	with that for the corresponding positive form of the option.
+	Add @opindex entries for the negative forms of options that
+	didn't already have one.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/arm/arm.opt (mapcs-reentrant): Mark as "Undocumented",
+	updatehelp string for internal documentation.
+	(mapcs-stack-check): Likewise update help string.
+	(mprint-tune-info, mneon-for-64bits): Mark as "Undocumented".
+	* doc/invoke.texi (Option Summary) <ARM Options>: Remove duplicate
+	entries for negative forms and entries for options that are
+	explicitly "Undocumented".  Add missing entry for
+	-mpic-data-is-text-relative.  Fix some formatting issues.
+	(ARM Options): Remove documentation for -mapcs-stack-check,
+	-mapcs-reentrant, -mflip-thumb, -mneon-for-64-bits,
+	-mprint-tune-info, and -mverbose-cost-dump.  Add index entries
+	for -mno- option forms.  Minor editing for clarity.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	PR target/122288
+	* config/gcn/gcn.opt (m32, m64, mgomp): Mark "Undocumented"
+	since these options don't actually do anything useful.
+	(flag_bypass_init_error, stack_size_opt, gang_size_opt): Correct
+	opt file syntax.
+	(mstack-size=): Mark "Undocumented" since it's obsolete.
+	* doc/invoke.texi (Option Summary) <AMD GCN Options>:
+	Remove obsolete options, add missing entries for
+	-mgang-private-size=, -msram-ecc=, and -mxnack=.
+	(AMD GCN Options): Likewise.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/epiphany/epiphany.opt (mlong-calls): Make it do something
+	useful.
+	(may-round-for-trunc): Make this undocumented option with a weird
+	name an alias for -mmay-round-for-trunc.
+	(mfp-iarith): Fix doc string.
+	* doc/invoke.texi (Option Summary) <Adapteva Epiphany Options>:
+	Add missing options.
+	(Adapteva Epiphany Options): Document negative forms also when
+	that is not the default, or where it's unclear.  Document
+	-may-round-for-trunc and -mfp-iarith.  Fix spelling of
+	-mpost-inc and -mpost-modify.
+
+2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/aarch64/aarch64.opt (Wexperimental-fmv-target): Mark
+	as "Undocumented".
+	* doc/invoke.texi (Option Summary) <AArch64 Options>: Don't
+	list "Undocumented" aarch64 options -mverbose-cost-dump or
+	-Wexperimental-fmv-target, or both positive and negative forms
+	of other options.  Add missing options.  Fix whitespace problems.
+	(AArch64 Options): Light copy-editing.  Add missing @opindex
+	entries	to match the documented options.  Undocument
+	-mverbose-cost-dump and -Wexperimental-fmv-target.
+
 2025-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/rs6000/rs6000.cc (complex_multiply_builtin_code):
