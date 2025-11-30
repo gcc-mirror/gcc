@@ -18,6 +18,9 @@ LangUrlSuffix_Algol68(ga68/Warnings-options.html#index-Wno-scope)
 Whidden-declarations
 LangUrlSuffix_Algol68(ga68/Warnings-options.html#index-Whidden-declarations)
 
+Whidden-declarations=
+LangUrlSuffix_Algol68(ga68/Warnings-options.html#index-Whidden-declarations)
+
 fbrackets
 LangUrlSuffix_Algol68(ga68/Dialect-options.html#index-fbrackets)
 
@@ -32,6 +35,9 @@ LangUrlSuffix_Algol68(ga68/Developer-options.html#index-fa68-dump-modes)
 
 fa68-dump-ast
 LangUrlSuffix_Algol68(ga68/Developer-options.html#index-fa68-dump-ast)
+
+fa68-dump-module-interfaces
+LangUrlSuffix_Algol68(ga68/Developer-options.html#index-fa68-dump-module-interfaces)
 
 static-libga68
 LangUrlSuffix_Algol68(ga68/Linking-options.html#index-static-libga68)

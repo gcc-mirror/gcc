@@ -10,7 +10,7 @@ Hf
 LangUrlSuffix_D(gdc/Code-Generation.html#index-Hf)
 
 I
-UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I)
+UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I) LangUrlSuffix_Algol68(ga68/Directory-options.html#index-I)
 
 J
 LangUrlSuffix_D(gdc/Directory-Options.html#index-J)
@@ -103,7 +103,7 @@ fall-instantiations
 LangUrlSuffix_D(gdc/Runtime-Options.html#index-fall-instantiations)
 
 fassert
-LangUrlSuffix_D(gdc/Runtime-Options.html#index-fassert)
+LangUrlSuffix_D(gdc/Runtime-Options.html#index-fassert) LangUrlSuffix_Algol68(ga68/Runtime-options.html#index-fassert)
 
 fbounds-check
 LangUrlSuffix_D(gdc/Runtime-Options.html#index-fbounds-check) LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fbounds-check)

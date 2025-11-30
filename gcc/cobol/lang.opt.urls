@@ -8,7 +8,7 @@ UrlSuffix(gcc/Preprocessor-Options.html#index-D-1)
 ;   duplicate: 'gcc/Overall-Options.html#index-E'
 
 I
-UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I)
+UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I) LangUrlSuffix_Algol68(ga68/Directory-options.html#index-I)
 
 M
 UrlSuffix(gcc/Preprocessor-Options.html#index-M) LangUrlSuffix_D(gdc/Code-Generation.html#index-M)

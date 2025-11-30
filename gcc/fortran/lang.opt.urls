@@ -17,7 +17,7 @@ H
 UrlSuffix(gcc/Preprocessor-Options.html#index-H) LangUrlSuffix_D(gdc/Code-Generation.html#index-H) LangUrlSuffix_Fortran(gfortran/Preprocessing-Options.html#index-H)
 
 I
-UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I)
+UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I) LangUrlSuffix_Algol68(ga68/Directory-options.html#index-I)
 
 J
 LangUrlSuffix_D(gdc/Directory-Options.html#index-J)
@@ -425,7 +425,7 @@ fcoarray=
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fcoarray)
 
 fcheck=
-LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fcheck)
+LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fcheck) LangUrlSuffix_Algol68(ga68/Runtime-options.html#index-fcheck)
 
 fsecond-underscore
 LangUrlSuffix_Fortran(gfortran/Code-Gen-Options.html#index-fsecond-underscore)
