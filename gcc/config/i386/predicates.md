@@ -1584,6 +1584,9 @@
 (define_predicate "add_comparison_operator"
   (match_code "geu,ltu"))
 
+(define_predicate "ieee_maxmin_comparison_operator"
+  (match_code "lt,gt"))
+
 ;; Return true if OP is a valid comparison operator in valid mode.
 (define_predicate "ix86_comparison_operator"
   (match_operand 0 "comparison_operator")

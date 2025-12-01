@@ -3338,10 +3338,10 @@
   [(set (match_operand:VFH 0 "register_operand")
 	(vec_merge:VFH
 	  (match_operand:VFH 1 "nonimmediate_operand")
-	  (match_operand:VFH 2 "nonimmediate_operand")
+	  (match_operand:VFH 2 "general_operand")
 	  (unspec:<avx512fmaskmode>
 	    [(match_operand:VFH 3 "nonimmediate_operand")
-	     (match_operand:VFH 4 "nonimmediate_operand")
+	     (match_operand:VFH 4 "general_operand")
 	     (match_operand:SI 5 "const_0_to_31_operand")]
 	     UNSPEC_PCMP)))]
   "TARGET_SSE && ix86_pre_reload_split ()
@@ -3352,19 +3352,21 @@
    && (INTVAL (operands[5]) == 1 || INTVAL (operands[5]) == 14)"
    "#"
    "&& 1"
-   [(const_int 0)]
+   [(set (match_dup 0) (match_dup 6))]
  {
    int u = UNSPEC_IEEE_MIN;
+   rtx tmp = operands[2];
    if ((INTVAL (operands[5]) == 1 && rtx_equal_p (operands[1], operands[4]))
 	|| (INTVAL (operands[5]) == 14 && rtx_equal_p (operands[1], operands[3])))
      u = UNSPEC_IEEE_MAX;
 
    if (MEM_P (operands[1]))
      operands[1] = force_reg (<MODE>mode, operands[1]);
-   rtvec v = gen_rtvec (2, operands[1], operands[2]);
-   rtx tmp = gen_rtx_UNSPEC (<MODE>mode, v, u);
-   emit_move_insn (operands[0], tmp);
-   DONE;
+
+  if (immediate_operand (operands[2], <MODE>mode))
+    tmp = force_reg (<MODE>mode, operands[2]);
+   rtvec v = gen_rtvec (2, operands[1], tmp);
+   operands[6] = gen_rtx_UNSPEC (<MODE>mode, v, u);
  })
 
 (define_insn_and_split "*minmax<mode>3_2"
@@ -3383,7 +3385,7 @@
 	   && rtx_equal_p (operands[2], operands[3])))"
    "#"
    "&& 1"
-   [(const_int 0)]
+   [(set (match_dup 0) (match_dup 5))]
  {
    int u = UNSPEC_IEEE_MIN;
    if (rtx_equal_p (operands[1], operands[3]))
@@ -3392,9 +3394,53 @@
    if (MEM_P (operands[2]))
      operands[2] = force_reg (<MODE>mode, operands[2]);
    rtvec v = gen_rtvec (2, operands[2], operands[1]);
-   rtx tmp = gen_rtx_UNSPEC (<MODE>mode, v, u);
-   emit_move_insn (operands[0], tmp);
-   DONE;
+   operands[5] = gen_rtx_UNSPEC (<MODE>mode, v, u);
+ })
+
+
+(define_insn_and_split "*minmax<mode>3_3"
+  [(set (match_operand:VF_128_256 0 "register_operand")
+	(and:VF_128_256
+	  (not:VF_128_256
+	    (match_operator:VF_128_256 1 "ieee_maxmin_comparison_operator"
+	     [(match_operand:VF_128_256 2 "nonimmediate_operand")
+	      (match_operand:VF_128_256 3 "const0_operand")]))
+	  (match_operand:VF_128_256 4 "nonimmediate_operand")))]
+  "TARGET_SSE && ix86_pre_reload_split ()
+   && rtx_equal_p (operands[2], operands[4])"
+   "#"
+   "&& 1"
+   [(set (match_dup 0) (match_dup 5))]
+ {
+   int u = UNSPEC_IEEE_MIN;
+   if (GET_CODE (operands[1]) == LT)
+     u = UNSPEC_IEEE_MAX;
+
+   rtx tmp = force_reg (<MODE>mode, operands[3]);
+   rtvec v = gen_rtvec (2, tmp, operands[2]);
+   operands[5] = gen_rtx_UNSPEC (<MODE>mode, v, u);
+ })
+
+(define_insn_and_split "*minmax<mode>3_4"
+  [(set (match_operand:VF_128_256 0 "register_operand")
+	(and:VF_128_256
+	  (match_operator:VF_128_256 1 "ieee_maxmin_comparison_operator"
+	    [(match_operand:VF_128_256 2 "nonimmediate_operand")
+	     (match_operand:VF_128_256 3 "const0_operand")])
+	  (match_operand:VF_128_256 4 "nonimmediate_operand")))]
+  "TARGET_SSE && ix86_pre_reload_split ()
+   && rtx_equal_p (operands[2], operands[4])"
+   "#"
+   "&& 1"
+   [(set (match_dup 0) (match_dup 5))]
+ {
+   int u = UNSPEC_IEEE_MIN;
+   if (GET_CODE (operands[1]) == GT)
+     u = UNSPEC_IEEE_MAX;
+
+   rtx tmp = force_reg (<MODE>mode, operands[3]);
+   rtvec v = gen_rtvec (2, operands[2], tmp);
+   operands[5] = gen_rtx_UNSPEC (<MODE>mode, v, u);
  })
 
 ;; These versions of the min/max patterns implement exactly the operations
