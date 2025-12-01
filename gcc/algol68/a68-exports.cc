@@ -22,6 +22,7 @@
 #include "config.h"
 #include "system.h"
 #include "coretypes.h"
+#include "memmodel.h"
 #include "tree.h"
 #include "target.h"
 #include "tm_p.h"
