@@ -2535,10 +2535,6 @@ For compatibility, GNU Fortran supports a default exponent of zero in real
 constants with @option{-fdec}.  For example, @code{9e} would be
 interpreted as @code{9e0}, rather than an error.
 
-@menu
-* Unsigned integers::
-@end menu
-
 @node Unsigned integers
 @subsection Unsigned integers
 @cindex Unsigned integers
