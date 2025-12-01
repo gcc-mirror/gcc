@@ -1,3 +1,7 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* lang.opt.urls: Regenerate.
+
 2025-11-28  Tobias Burnus  <tburnus@baylibre.com>
 
 	PR c/122892

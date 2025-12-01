@@ -1,3 +1,7 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* lang.opt.urls: Regenerate.
+
 2025-08-18  Indu Bhagat  <indu.bhagat@oracle.com>
 
 	* d-attribs.cc (d_handle_no_sanitize_attribute): Use

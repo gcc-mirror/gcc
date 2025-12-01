@@ -1,3 +1,10 @@
+2025-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122465
+	* parser.cc (cp_parser_simple_declaration): Adjust function comment.
+	Set *maybe_range_for_decl to error_mark_node instead of keeping it
+	NULL_TREE in error cases or when followed by CPP_COLON.
+
 2025-11-30  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119864

@@ -1,3 +1,745 @@
+2025-11-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* gcc.dg/vect/tsvc/vect-tsvc-s293.c: Remove xfail.
+	* gcc.target/aarch64/vect-ld1r-compile.c: Add
+	-fno-tree-loop-distribute-patterns to prevent memset detection.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR fortran/122923
+	* gfortran.dg/ISO_Fortran_binding_17.f90: Recognize language
+	list in warning regexp.
+	* gfortran.dg/c-interop/allocate-errors.f90: Likewise.
+	* gfortran.dg/c-interop/establish-errors.f90: Likewise.
+	* gfortran.dg/c-interop/pr113338.f90: Likewise.
+	* gfortran.dg/c-interop/section-errors.f90: Likewise.
+	* gfortran.dg/c-interop/select-errors.f90: Likewise.
+	* gfortran.dg/c-interop/setpointer-errors.f90: Likewise.
+
+2025-11-30  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122465
+	* g++.dg/cpp0x/pr122465.C: New test.
+
+2025-11-30  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/115120
+	PR tree-optimization/119577
+	PR tree-optimization/119860
+	* gcc.dg/vect/vect-early-break_39.c: Update.
+	* gcc.dg/vect/vect-early-break_139.c: New testcase.
+	* gcc.target/aarch64/sve/peel_ind_10.c: Update.
+	* gcc.target/aarch64/sve/peel_ind_11.c: Update.
+	* gcc.target/aarch64/sve/peel_ind_12.c: Update.
+	* gcc.target/aarch64/sve/peel_ind_5.c: Update.
+	* gcc.target/aarch64/sve/peel_ind_6.c: Update.
+	* gcc.target/aarch64/sve/peel_ind_7.c: Update.
+	* gcc.target/aarch64/sve/peel_ind_9.c: Update.
+	* gcc.target/aarch64/sve/pr119351.c
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/mcgt-1.3b.a68: New file.
+	* algol68/compile/mcgt-7.1.3a-bis.a68: Likewise.
+	* algol68/compile/mcgt-7.1.3a.a68: Likewise.
+	* algol68/execute/mcgt/execute.exp: Likewise.
+	* algol68/execute/mcgt/mcgt-1.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-1.3c.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.2.1a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.2.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.2.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.3b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.3c.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.3e.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.4.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.4.2b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.4.2c.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.4.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.6a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.6b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.7d.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.7e.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.8a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.8b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-2.9.1a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-3.5.1a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-3.5d.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-3.7.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-3.8.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-3.9.1b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.1.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.1.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.1.6a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.1.6b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.1.6c.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.2.6a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.2.6b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.2.6d.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.3.1a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.3.1b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-4.3.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-5.1.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-5.1.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-5.1.3c.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-5.1.5a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-6.2.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-6.2.2b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-6.2.2c.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.1.1a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.1.1b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.1.3a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.3.2a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.3.6a.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.3.6b.a68: Likewise.
+	* algol68/execute/mcgt/mcgt-7.5.3a.a68: Likewise.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/README.mcts: New file.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/compile/a68includes/goodbye-supper.a68
+	* algol68/compile/a68includes/goodbye.a68: Likewise.
+	* algol68/compile/a68includes/hello-supper.a68: Likewise.
+	* algol68/compile/a68includes/hello.a68: Likewise.
+	* algol68/compile/actual-bounds-expected-1.a68: Likewise.
+	* algol68/compile/actual-bounds-expected-2.a68: Likewise.
+	* algol68/compile/actual-bounds-expected-3.a68: Likewise.
+	* algol68/compile/balancing-1.a68: Likewise.
+	* algol68/compile/bold-nestable-comment-1.a68: Likewise.
+	* algol68/compile/bold-taggle-1.a68: Likewise.
+	* algol68/compile/brief-nestable-comment-1.a68: Likewise.
+	* algol68/compile/brief-nestable-comment-2.a68: Likewise.
+	* algol68/compile/char-break-1.a68: Likewise.
+	* algol68/compile/compile.exp: Likewise.
+	* algol68/compile/conditional-clause-1.a68: Likewise.
+	* algol68/compile/error-bold-taggle-1.a68: Likewise.
+	* algol68/compile/error-coercion-1.a68: Likewise.
+	* algol68/compile/error-coercion-2.a68: Likewise.
+	* algol68/compile/error-coercion-flex-1.a68: Likewise.
+	* algol68/compile/error-conformance-clause-1.a68: Likewise.
+	* algol68/compile/error-contraction-1.a68: Likewise.
+	* algol68/compile/error-contraction-2.a68: Likewise.
+	* algol68/compile/error-incestuous-union-1.a68: Likewise.
+	* algol68/compile/error-label-after-decl-1.a68: Likewise.
+	* algol68/compile/error-nestable-comments-1.a68: Likewise.
+	* algol68/compile/error-nested-comment-1.a68: Likewise.
+	* algol68/compile/error-no-bounds-allowed-1.a68: Likewise.
+	* algol68/compile/error-string-break-1.a68: Likewise.
+	* algol68/compile/error-string-break-2.a68: Likewise.
+	* algol68/compile/error-string-break-3.a68: Likewise.
+	* algol68/compile/error-string-break-4.a68: Likewise.
+	* algol68/compile/error-string-break-5.a68: Likewise.
+	* algol68/compile/error-string-break-6.a68: Likewise.
+	* algol68/compile/error-string-break-7.a68: Likewise.
+	* algol68/compile/error-supper-1.a68: Likewise.
+	* algol68/compile/error-supper-2.a68: Likewise.
+	* algol68/compile/error-supper-3.a68: Likewise.
+	* algol68/compile/error-supper-4.a68: Likewise.
+	* algol68/compile/error-supper-5.a68: Likewise.
+	* algol68/compile/error-supper-6.a68: Likewise.
+	* algol68/compile/error-underscore-in-mode-1.a68: Likewise.
+	* algol68/compile/error-underscore-in-tag-1.a68: Likewise.
+	* algol68/compile/error-upper-1.a68: Likewise.
+	* algol68/compile/error-widening-1.a68: Likewise.
+	* algol68/compile/error-widening-2.a68: Likewise.
+	* algol68/compile/error-widening-3.a68: Likewise.
+	* algol68/compile/error-widening-4.a68: Likewise.
+	* algol68/compile/error-widening-5.a68: Likewise.
+	* algol68/compile/error-widening-6.a68: Likewise.
+	* algol68/compile/error-widening-7.a68: Likewise.
+	* algol68/compile/error-widening-8.a68: Likewise.
+	* algol68/compile/error-widening-9.a68: Likewise.
+	* algol68/compile/hidden-operators-1.a68: Likewise.
+	* algol68/compile/implicit-widening-1.a68: Likewise.
+	* algol68/compile/include-supper.a68: Likewise.
+	* algol68/compile/include.a68: Likewise.
+	* algol68/compile/labeled-unit-1.a68: Likewise.
+	* algol68/compile/nested-comment-1.a68: Likewise.
+	* algol68/compile/nested-comment-2.a68: Likewise.
+	* algol68/compile/operators-firmly-related.a68: Likewise.
+	* algol68/compile/recursive-modes-1.a68: Likewise.
+	* algol68/compile/recursive-modes-2.a68: Likewise.
+	* algol68/compile/serial-clause-jump-1.a68: Likewise.
+	* algol68/compile/snobol.a68: Likewise.
+	* algol68/compile/supper-1.a68: Likewise.
+	* algol68/compile/supper-10.a68: Likewise.
+	* algol68/compile/supper-11.a68: Likewise.
+	* algol68/compile/supper-12.a68: Likewise.
+	* algol68/compile/supper-13.a68: Likewise.
+	* algol68/compile/supper-2.a68: Likewise.
+	* algol68/compile/supper-3.a68: Likewise.
+	* algol68/compile/supper-4.a68: Likewise.
+	* algol68/compile/supper-5.a68: Likewise.
+	* algol68/compile/supper-6.a68: Likewise.
+	* algol68/compile/supper-7.a68: Likewise.
+	* algol68/compile/supper-8.a68: Likewise.
+	* algol68/compile/supper-9.a68: Likewise.
+	* algol68/compile/uniting-1.a68: Likewise.
+	* algol68/compile/upper-1.a68: Likewise.
+	* algol68/compile/warning-scope-1.a68: Likewise.
+	* algol68/compile/warning-scope-2.a68: Likewise.
+	* algol68/compile/warning-scope-3.a68: Likewise.
+	* algol68/compile/warning-scope-4.a68: Likewise.
+	* algol68/compile/warning-scope-5.a68: Likewise.
+	* algol68/compile/warning-scope-6.a68: Likewise.
+	* algol68/compile/warning-scope-7.a68: Likewise.
+	* algol68/compile/warning-voiding-1.a68: Likewise.
+	* algol68/compile/warning-voiding-2.a68: Likewise.
+	* algol68/compile/error-compile-unknown-tag-1.a68: New file.
+	* algol68/compile/error-def-1.a68: New file.
+	* algol68/compile/error-mode-stropping-1.a68: New file.
+	* algol68/compile/error-mode-stropping-10.a68: New file.
+	* algol68/compile/error-mode-stropping-11.a68: New file.
+	* algol68/compile/error-mode-stropping-12.a68: New file.
+	* algol68/compile/error-mode-stropping-13.a68: New file.
+	* algol68/compile/error-mode-stropping-14.a68: New file.
+	* algol68/compile/error-mode-stropping-15.a68: New file.
+	* algol68/compile/error-mode-stropping-16.a68: New file.
+	* algol68/compile/error-mode-stropping-17.a68: New file.
+	* algol68/compile/error-mode-stropping-2.a68: New file.
+	* algol68/compile/error-mode-stropping-3.a68: New file.
+	* algol68/compile/error-mode-stropping-4.a68: New file.
+	* algol68/compile/error-mode-stropping-5.a68: New file.
+	* algol68/compile/error-mode-stropping-6.a68: New file.
+	* algol68/compile/error-mode-stropping-8.a68: New file.
+	* algol68/compile/error-mode-stropping-9.a68: New file.
+	* algol68/compile/error-module-coercions-1.a68: New file.
+	* algol68/compile/error-module-not-found-1.a68: New file.
+	* algol68/compile/error-module-ranges-1.a68: New file.
+	* algol68/compile/error-pragmat-1.a68: New file.
+	* algol68/compile/error-pragmat-access-1.a68: New file.
+	* algol68/compile/error-pragmat-access-2.a68: New file.
+	* algol68/compile/error-pub-loc-1.a68: New file.
+	* algol68/compile/error-pub-out-of-def-1.a68: New file.
+	* algol68/compile/error-pub-out-of-def-2.a68: New file.
+	* algol68/compile/error-string-break-8.a68: New file.
+	* algol68/compile/error-stropping-5.a68: New file.
+	* algol68/compile/error-stropping-6.a68: New file.
+	* algol68/compile/error-stropping-keyword-1.a68: New file.
+	* algol68/compile/error-stropping-keyword-2.a68: New file.
+	* algol68/compile/error-stropping-keyword-3.a68: New file.
+	* algol68/compile/error-stropping-keyword-4.a68: New file.
+	* algol68/compile/error-vacuum-1.a68: New file.
+	* algol68/compile/error-vacuum-2.a68: New file.
+	* algol68/compile/error-vacuum-3.a68: New file.
+	* algol68/compile/module-1.a68: New file.
+	* algol68/compile/module-2.a68: New file.
+	* algol68/compile/module-extracts-1.a68: New file.
+	* algol68/compile/module-mode-exports-1.a68: New file.
+	* algol68/compile/module-mode-exports-2.a68: New file.
+	* algol68/compile/module-mode-exports-3.a68: New file.
+	* algol68/compile/module-mode-exports-4.a68: New file.
+	* algol68/compile/module-mode-exports-5.a68: New file.
+	* algol68/compile/module-mode-exports-6.a68: New file.
+	* algol68/compile/module-mode-exports-7.a68: New file.
+	* algol68/compile/module-mode-exports-8.a68: New file.
+	* algol68/compile/module-mode-exports-9.a68: New file.
+	* algol68/compile/module-pub-1.a68: New file.
+	* algol68/compile/module-pub-mangling-1.a68: New file.
+	* algol68/compile/module-pub-mangling-10.a68: New file.
+	* algol68/compile/module-pub-mangling-11.a68: New file.
+	* algol68/compile/module-pub-mangling-12.a68: New file.
+	* algol68/compile/module-pub-mangling-13.a68: New file.
+	* algol68/compile/module-pub-mangling-14.a68: New file.
+	* algol68/compile/module-pub-mangling-15.a68: New file.
+	* algol68/compile/module-pub-mangling-16.a68: New file.
+	* algol68/compile/module-pub-mangling-17.a68: New file.
+	* algol68/compile/module-pub-mangling-18.a68: New file.
+	* algol68/compile/module-pub-mangling-19.a68: New file.
+	* algol68/compile/module-pub-mangling-2.a68: New file.
+	* algol68/compile/module-pub-mangling-20.a68: New file.
+	* algol68/compile/module-pub-mangling-21.a68: New file.
+	* algol68/compile/module-pub-mangling-22.a68: New file.
+	* algol68/compile/module-pub-mangling-3.a68: New file.
+	* algol68/compile/module-pub-mangling-4.a68: New file.
+	* algol68/compile/module-pub-mangling-5.a68: New file.
+	* algol68/compile/module-pub-mangling-6.a68: New file.
+	* algol68/compile/module-pub-mangling-7.a68: New file.
+	* algol68/compile/module-pub-mangling-8.a68: New file.
+	* algol68/compile/module-pub-mangling-9.a68: New file.
+	* algol68/compile/module-top-down-1.a68: New file.
+	* algol68/compile/modules/compile.exp: New file.
+	* algol68/compile/modules/module1.a68: New file.
+	* algol68/compile/modules/module2.a68: New file.
+	* algol68/compile/modules/module3.a68: New file.
+	* algol68/compile/modules/module4.a68: New file.
+	* algol68/compile/modules/module5.a68: New file.
+	* algol68/compile/modules/module6.a68: New file.
+	* algol68/compile/modules/module7.a68: New file.
+	* algol68/compile/modules/module8.a68: New file.
+	* algol68/compile/modules/module9.a68: New file.
+	* algol68/compile/modules/program-7.a68: New file.
+	* algol68/compile/modules/program-8.a68: New file.
+	* algol68/compile/modules/program-9.a68: New file.
+	* algol68/compile/modules/program-error-no-prio-1.a68: New file.
+	* algol68/compile/modules/program-error-outside-access-1.a68: New file.
+	* algol68/compile/modules/program-module-accesses-module-1.a68: New file.
+	* algol68/compile/modules/program-proc-arg-order-1.a68: New file.
+	* algol68/compile/warning-hidding-1.a68: New file.
+	* algol68/compile/warning-hidding-2.a68: New file.
+	* algol68/compile/warning-hidding-3.a68: New file.
+	* algol68/compile/warning-hidding-4.a68: New file.
+	* algol68/compile/warning-hidding-5.a68: New file.
+	* algol68/compile/warning-hidding-6.a68: New file.
+	* algol68/compile/warning-hidding-7.a68: New file.
+	* algol68/compile/warning-module-hidding-1.a68: New file.
+	* algol68/compile/warning-pub-loc-1.a68: New file.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/loop-7.a68: New file.
+	* algol68/execute/loop-8.a68: Likewise.
+	* algol68/execute/loop-9.a68: Likewise.
+	* algol68/execute/loop-overflow-underflow.a68: Likewise.
+	* algol68/execute/lt-int-1.a68: Likewise.
+	* algol68/execute/lt-string-stride-1.a68: Likewise.
+	* algol68/execute/lwb-1.a68: Likewise.
+	* algol68/execute/minus-int-1.a68: Likewise.
+	* algol68/execute/minusab-1.a68: Likewise.
+	* algol68/execute/minusab-2.a68: Likewise.
+	* algol68/execute/minusab-3.a68: Likewise.
+	* algol68/execute/minusab-4.a68: Likewise.
+	* algol68/execute/mod-int-1.a68: Likewise.
+	* algol68/execute/modab-1.a68: Likewise.
+	* algol68/execute/modab-2.a68: Likewise.
+	* algol68/execute/mode-indication-1.a68: Likewise.
+	* algol68/execute/mult-char-1.a68: Likewise.
+	* algol68/execute/mult-int-1.a68: Likewise.
+	* algol68/execute/mult-string-1.a68: Likewise.
+	* algol68/execute/mult-string-2.a68: Likewise.
+	* algol68/execute/mult-string-3.a68: Likewise.
+	* algol68/execute/mult-string-4.a68: Likewise.
+	* algol68/execute/multab-1.a68: Likewise.
+	* algol68/execute/multab-2.a68: Likewise.
+	* algol68/execute/multab-3.a68: Likewise.
+	* algol68/execute/mutual-recursion-1.a68: Likewise.
+	* algol68/execute/ne-bits-1.a68: Likewise.
+	* algol68/execute/ne-char-char-1.a68: Likewise.
+	* algol68/execute/ne-int-1.a68: Likewise.
+	* algol68/execute/ne-string-1.a68: Likewise.
+	* algol68/execute/neg-int-1.a68: Likewise.
+	* algol68/execute/not-bits-1.a68: Likewise.
+	* algol68/execute/odd-1.a68: Likewise.
+	* algol68/execute/op-1.a68: Likewise.
+	* algol68/execute/op-2.a68: Likewise.
+	* algol68/execute/op-3.a68: Likewise.
+	* algol68/execute/operator-declaration-1.a68: Likewise.
+	* algol68/execute/or-bits-1.a68: Likewise.
+	* algol68/execute/orf-1.a68: Likewise.
+	* algol68/execute/over-int-1.a68: Likewise.
+	* algol68/execute/overab-1.a68: Likewise.
+	* algol68/execute/overab-2.a68: Likewise.
+	* algol68/execute/particular-program-1.a68: Likewise.
+	* algol68/execute/plus-char-1.a68: Likewise.
+	* algol68/execute/plus-int-1.a68: Likewise.
+	* algol68/execute/plus-string-1.a68: Likewise.
+	* algol68/execute/plus-string-2.a68: Likewise.
+	* algol68/execute/plus-string-stride-1.a68: Likewise.
+	* algol68/execute/plusab-1.a68: Likewise.
+	* algol68/execute/plusab-2.a68: Likewise.
+	* algol68/execute/plusab-3.a68: Likewise.
+	* algol68/execute/plusab-4.a68: Likewise.
+	* algol68/execute/plusab-string-1.a68: Likewise.
+	* algol68/execute/plusto-char-1.a68: Likewise.
+	* algol68/execute/plusto-string-1.a68: Likewise.
+	* algol68/execute/posix-argc-argv-1.a68: Likewise.
+	* algol68/execute/posix-fopen-1.a68: Likewise.
+	* algol68/execute/posix-fputc-fputs-1.a68: Likewise.
+	* algol68/execute/posix-getenv-1.a68: Likewise.
+	* algol68/execute/posix-perror-1.a68: Likewise.
+	* algol68/execute/posix-putchar-1.a68: Likewise.
+	* algol68/execute/posix-stdinouterr-1.a68: Likewise.
+	* algol68/execute/posix-strerror-1.a68: Likewise.
+	* algol68/execute/posix-stride-1.a68: Likewise.
+	* algol68/execute/pow-int-1.a68: Likewise.
+	* algol68/execute/pow-real-1.a68: Likewise.
+	* algol68/execute/proc-1.a68: Likewise.
+	* algol68/execute/proc-10.a68: Likewise.
+	* algol68/execute/proc-12.a68: Likewise.
+	* algol68/execute/proc-13.a68: Likewise.
+	* algol68/execute/proc-14.a68: Likewise.
+	* algol68/execute/proc-15.a68: Likewise.
+	* algol68/execute/proc-16.a68: Likewise.
+	* algol68/execute/proc-17.a68: Likewise.
+	* algol68/execute/proc-18.a68: Likewise.
+	* algol68/execute/proc-19.a68: Likewise.
+	* algol68/execute/proc-2.a68: Likewise.
+	* algol68/execute/proc-20.a68: Likewise.
+	* algol68/execute/proc-21.a68: Likewise.
+	* algol68/execute/proc-22.a68: Likewise.
+	* algol68/execute/proc-23.a68: Likewise.
+	* algol68/execute/proc-25.a68: Likewise.
+	* algol68/execute/proc-26.a68: Likewise.
+	* algol68/execute/proc-27.a68: Likewise.
+	* algol68/execute/proc-28.a68: Likewise.
+	* algol68/execute/proc-29.a68: Likewise.
+	* algol68/execute/proc-3.a68: Likewise.
+	* algol68/execute/proc-4.a68: Likewise.
+	* algol68/execute/proc-5.a68: Likewise.
+	* algol68/execute/proc-6.a68: Likewise.
+	* algol68/execute/proc-7.a68: Likewise.
+	* algol68/execute/proc-8.a68: Likewise.
+	* algol68/execute/procedured-goto-1.a68: Likewise.
+	* algol68/execute/quine.a68: Likewise.
+	* algol68/execute/random-1.a68: Likewise.
+	* algol68/execute/re-im-1.a68: Likewise.
+	* algol68/execute/rela-string-1.a68: Likewise.
+	* algol68/execute/repr-1.a68: Likewise.
+	* algol68/execute/round-1.a68: Likewise.
+	* algol68/execute/row-display-1.a68: Likewise.
+	* algol68/execute/row-display-2.a68: Likewise.
+	* algol68/execute/row-display-3.a68: Likewise.
+	* algol68/execute/row-display-4.a68: Likewise.
+	* algol68/execute/row-display-5.a68: Likewise.
+	* algol68/execute/rowing-1.a68: Likewise.
+	* algol68/execute/rowing-10.a68: Likewise.
+	* algol68/execute/rowing-11.a68: Likewise.
+	* algol68/execute/rowing-12.a68: Likewise.
+	* algol68/execute/rowing-13.a68: Likewise.
+	* algol68/execute/rowing-2.a68: Likewise.
+	* algol68/execute/rowing-3.a68: Likewise.
+	* algol68/execute/rowing-4.a68: Likewise.
+	* algol68/execute/rowing-5.a68: Likewise.
+	* algol68/execute/rowing-6.a68: Likewise.
+	* algol68/execute/rowing-7.a68: Likewise.
+	* algol68/execute/rowing-8.a68: Likewise.
+	* algol68/execute/rowing-9.a68: Likewise.
+	* algol68/execute/selection-1.a68: Likewise.
+	* algol68/execute/selection-2.a68: Likewise.
+	* algol68/execute/selection-3.a68: Likewise.
+	* algol68/execute/selection-4.a68: Likewise.
+	* algol68/execute/selection-5.a68: Likewise.
+	* algol68/execute/selection-multiple-1.a68: Likewise.
+	* algol68/execute/selection-multiple-2.a68: Likewise.
+	* algol68/execute/serial-clause-1.a68: Likewise.
+	* algol68/execute/serial-clause-10.a68: Likewise.
+	* algol68/execute/serial-clause-2.a68: Likewise.
+	* algol68/execute/serial-clause-3.a68: Likewise.
+	* algol68/execute/serial-clause-4.a68: Likewise.
+	* algol68/execute/serial-clause-5.a68: Likewise.
+	* algol68/execute/serial-clause-6.a68: Likewise.
+	* algol68/execute/serial-clause-7.a68: Likewise.
+	* algol68/execute/serial-clause-8.a68: Likewise.
+	* algol68/execute/serial-clause-9.a68: Likewise.
+	* algol68/execute/serial-dsa-1.a68: Likewise.
+	* algol68/execute/serial-dsa-2.a68: Likewise.
+	* algol68/execute/serial-dsa-3.a68: Likewise.
+	* algol68/execute/serial-dsa-4.a68: Likewise.
+	* algol68/execute/serial-dsa-5.a68: Likewise.
+	* algol68/execute/serial-dsa-6.a68: Likewise.
+	* algol68/execute/sign-int-1.a68: Likewise.
+	* algol68/execute/sign-real-1.a68: Likewise.
+	* algol68/execute/sin-1.a68: Likewise.
+	* algol68/execute/skip-1.a68: Likewise.
+	* algol68/execute/skip-2.a68: Likewise.
+	* algol68/execute/skip-struct-1.a68: Likewise.
+	* algol68/execute/slice-indexing-1.a68: Likewise.
+	* algol68/execute/slice-indexing-2.a68: Likewise.
+	* algol68/execute/slice-indexing-3.a68: Likewise.
+	* algol68/execute/slice-indexing-4.a68: Likewise.
+	* algol68/execute/slice-indexing-5.a68: Likewise.
+	* algol68/execute/slice-indexing-6.a68: Likewise.
+	* algol68/execute/slice-indexing-7.a68: Likewise.
+	* algol68/execute/sqrt-1.a68: Likewise.
+	* algol68/execute/string-1.a68: Likewise.
+	* algol68/execute/string-2.a68: Likewise.
+	* algol68/execute/string-4.a68: Likewise.
+	* algol68/execute/string-break-1.a68: Likewise.
+	* algol68/execute/struct-self-1.a68: Likewise.
+	* algol68/execute/struct-self-2.a68: Likewise.
+	* algol68/execute/struct-self-3.a68: Likewise.
+	* algol68/execute/structure-display-1.a68: Likewise.
+	* algol68/execute/structure-display-2.a68: Likewise.
+	* algol68/execute/structure-display-3.a68: Likewise.
+	* algol68/execute/structure-display-4.a68: Likewise.
+	* algol68/execute/structure-display-5.a68: Likewise.
+	* algol68/execute/tan-1.a68: Likewise.
+	* algol68/execute/timesab-string-1.a68: Likewise.
+	* algol68/execute/trimmer-1.a68: Likewise.
+	* algol68/execute/trimmer-10.a68: Likewise.
+	* algol68/execute/trimmer-2.a68: Likewise.
+	* algol68/execute/trimmer-3.a68: Likewise.
+	* algol68/execute/trimmer-4.a68: Likewise.
+	* algol68/execute/trimmer-5.a68: Likewise.
+	* algol68/execute/trimmer-6.a68: Likewise.
+	* algol68/execute/trimmer-7.a68: Likewise.
+	* algol68/execute/trimmer-8.a68: Likewise.
+	* algol68/execute/trimmer-9.a68: Likewise.
+	* algol68/execute/trimmer-matrix-1.a68: Likewise.
+	* algol68/execute/trimmer-matrix-2.a68: Likewise.
+	* algol68/execute/trimmer-matrix-3.a68: Likewise.
+	* algol68/execute/trimmer-matrix-4.a68: Likewise.
+	* algol68/execute/trimmer-matrix-5.a68: Likewise.
+	* algol68/execute/trimmer-matrix-6.a68: Likewise.
+	* algol68/execute/trimmer-name-1.a68: Likewise.
+	* algol68/execute/undefined-1.a68: Likewise.
+	* algol68/execute/undefined-2.a68: Likewise.
+	* algol68/execute/undefined-3.a68: Likewise.
+	* algol68/execute/undefined-4.a68: Likewise.
+	* algol68/execute/undefined-5.a68: Likewise.
+	* algol68/execute/uniting-1.a68: Likewise.
+	* algol68/execute/uniting-2.a68: Likewise.
+	* algol68/execute/uniting-3.a68: Likewise.
+	* algol68/execute/uniting-4.a68: Likewise.
+	* algol68/execute/up-down-bits-1.a68: Likewise.
+	* algol68/execute/upb-1.a68: Likewise.
+	* algol68/execute/vacuum-1.a68: Likewise.
+	* algol68/execute/variable-declaration-1.a68: Likewise.
+	* algol68/execute/variable-declaration-2.a68: Likewise.
+	* algol68/execute/variable-declaration-3.a68: Likewise.
+	* algol68/execute/variable-declaration-4.a68: Likewise.
+	* algol68/execute/variable-declaration-5.a68: Likewise.
+	* algol68/execute/variable-declaration-6.a68: Likewise.
+	* algol68/execute/variable-declaration-heap-1.a68: Likewise.
+	* algol68/execute/variable-declaration-heap-2.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-1.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-2.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-3.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-4.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-5.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-6.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-7.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-8.a68: Likewise.
+	* algol68/execute/variable-declaration-multiple-9.a68: Likewise.
+	* algol68/execute/voiding-1.a68: Likewise.
+	* algol68/execute/widening-1.a68: Likewise.
+	* algol68/execute/widening-2.a68: Likewise.
+	* algol68/execute/widening-bits-1.a68: Likewise.
+	* algol68/execute/widening-bits-2.a68: Likewise.
+	* algol68/execute/widening-bits-3.a68: Likewise.
+	* algol68/execute/xor-bits-1.a68: Likewise.
+	* algol68/execute/environment-enquiries-8.a68: Likewise.
+	* algol68/execute/modules/README: New file.
+	* algol68/execute/modules/execute.exp: New file.
+	* algol68/execute/modules/module1.a68: New file.
+	* algol68/execute/modules/module10.a68: New file.
+	* algol68/execute/modules/module11.a68: New file.
+	* algol68/execute/modules/module12.a68: New file.
+	* algol68/execute/modules/module13.a68: New file.
+	* algol68/execute/modules/module14.a68: New file.
+	* algol68/execute/modules/module15.a68: New file.
+	* algol68/execute/modules/module16.a68: New file.
+	* algol68/execute/modules/module17.a68: New file.
+	* algol68/execute/modules/module3.a68: New file.
+	* algol68/execute/modules/module4.a68: New file.
+	* algol68/execute/modules/module5.a68: New file.
+	* algol68/execute/modules/module6.a68: New file.
+	* algol68/execute/modules/module7.a68: New file.
+	* algol68/execute/modules/module8.a68: New file.
+	* algol68/execute/modules/module9.a68: New file.
+	* algol68/execute/modules/program-1.a68: New file.
+	* algol68/execute/modules/program-10.a68: New file.
+	* algol68/execute/modules/program-11.a68: New file.
+	* algol68/execute/modules/program-12.a68: New file.
+	* algol68/execute/modules/program-15.a68: New file.
+	* algol68/execute/modules/program-16.a68: New file.
+	* algol68/execute/modules/program-17.a68: New file.
+	* algol68/execute/modules/program-2.a68: New file.
+	* algol68/execute/modules/program-3.a68: New file.
+	* algol68/execute/modules/program-4.a68: New file.
+	* algol68/execute/modules/program-5.a68: New file.
+	* algol68/execute/modules/program-6.a68: New file.
+	* algol68/execute/modules/program-7.a68: New file.
+	* algol68/execute/modules/program-8.a68: New file.
+	* algol68/execute/posix-lseek.a68: New file.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/abs-bits-1.a68: New file.
+	* algol68/execute/abs-bool-1.a68: Likewise.
+	* algol68/execute/abs-char-1.a68: Likewise.
+	* algol68/execute/abs-int-1.a68: Likewise.
+	* algol68/execute/abs-int-negative-1.a68: Likewise.
+	* algol68/execute/abs-int-negative-gnu-1.a68: Likewise.
+	* algol68/execute/acos-1.a68: Likewise.
+	* algol68/execute/affirm-int-1.a68: Likewise.
+	* algol68/execute/and-bits-1.a68: Likewise.
+	* algol68/execute/andf-1.a68: Likewise.
+	* algol68/execute/ascription-1.a68: Likewise.
+	* algol68/execute/asin-1.a68: Likewise.
+	* algol68/execute/assert-1.a68: Likewise.
+	* algol68/execute/assignation-char-1.a68: Likewise.
+	* algol68/execute/assignation-int-1.a68: Likewise.
+	* algol68/execute/assignation-int-2.a68: Likewise.
+	* algol68/execute/assignation-int-3.a68: Likewise.
+	* algol68/execute/assignation-int-4.a68: Likewise.
+	* algol68/execute/assignation-int-5.a68: Likewise.
+	* algol68/execute/assignation-multiple-1.a68: Likewise.
+	* algol68/execute/assignation-multiple-2.a68: Likewise.
+	* algol68/execute/assignation-struct-1.a68: Likewise.
+	* algol68/execute/assignation-struct-2.a68: Likewise.
+	* algol68/execute/atan-1.a68: Likewise.
+	* algol68/execute/balancing-1.a68: Likewise.
+	* algol68/execute/balancing-rows-1.a68: Likewise.
+	* algol68/execute/bin-1.a68: Likewise.
+	* algol68/execute/bin-negative-1.a68: Likewise.
+	* algol68/execute/bin-negative-gnu-1.a68: Likewise.
+	* algol68/execute/boolops-1.a68: Likewise.
+	* algol68/execute/call-1.a68: Likewise.
+	* algol68/execute/call-2.a68: Likewise.
+	* algol68/execute/case-clause-1.a68: Likewise.
+	* algol68/execute/case-clause-2.a68: Likewise.
+	* algol68/execute/case-clause-3.a68: Likewise.
+	* algol68/execute/case-clause-4.a68: Likewise.
+	* algol68/execute/closed-clause-1.a68: Likewise.
+	* algol68/execute/closed-clause-2.a68: Likewise.
+	* algol68/execute/collateral-clause-1.a68: Likewise.
+	* algol68/execute/collateral-clause-2.a68: Likewise.
+	* algol68/execute/collateral-clause-3.a68: Likewise.
+	* algol68/execute/collateral-clause-4.a68: Likewise.
+	* algol68/execute/collateral-clause-5.a68: Likewise.
+	* algol68/execute/collateral-clause-6.a68: Likewise.
+	* algol68/execute/completer-1.a68: Likewise.
+	* algol68/execute/completer-10.a68: Likewise.
+	* algol68/execute/completer-2.a68: Likewise.
+	* algol68/execute/completer-3.a68: Likewise.
+	* algol68/execute/completer-4.a68: Likewise.
+	* algol68/execute/completer-5.a68: Likewise.
+	* algol68/execute/completer-6.a68: Likewise.
+	* algol68/execute/completer-7.a68: Likewise.
+	* algol68/execute/completer-8.a68: Likewise.
+	* algol68/execute/completer-9.a68: Likewise.
+	* algol68/execute/cond-clause-1.a68: Likewise.
+	* algol68/execute/cond-clause-2.a68: Likewise.
+	* algol68/execute/cond-clause-3.a68: Likewise.
+	* algol68/execute/cond-clause-4.a68: Likewise.
+	* algol68/execute/cond-clause-5.a68: Likewise.
+	* algol68/execute/cond-clause-6.a68: Likewise.
+	* algol68/execute/cond-clause-7.a68: Likewise.
+	* algol68/execute/cond-clause-8.a68: Likewise.
+	* algol68/execute/cond-clause-9.a68: Likewise.
+	* algol68/execute/conformity-clause-1.a68: Likewise.
+	* algol68/execute/conformity-clause-2.a68: Likewise.
+	* algol68/execute/conformity-clause-3.a68: Likewise.
+	* algol68/execute/conformity-clause-4.a68: Likewise.
+	* algol68/execute/conformity-clause-5.a68: Likewise.
+	* algol68/execute/conformity-clause-6.a68: Likewise.
+	* algol68/execute/conformity-clause-7.a68: Likewise.
+	* algol68/execute/conformity-clause-8.a68: Likewise.
+	* algol68/execute/conformity-clause-9.a68: Likewise.
+	* algol68/execute/conj-1.a68: Likewise.
+	* algol68/execute/cos-1.a68: Likewise.
+	* algol68/execute/declarer-1.a68: Likewise.
+	* algol68/execute/declarer-2.a68: Likewise.
+	* algol68/execute/deprocedure-1.a68: Likewise.
+	* algol68/execute/deprocedure-2.a68: Likewise.
+	* algol68/execute/deref-1.a68: Likewise.
+	* algol68/execute/deref-2.a68: Likewise.
+	* algol68/execute/deref-3.a68: Likewise.
+	* algol68/execute/deref-4.a68: Likewise.
+	* algol68/execute/deref-5.a68: Likewise.
+	* algol68/execute/deref-6.a68: Likewise.
+	* algol68/execute/deref-7.a68: Likewise.
+	* algol68/execute/deref-8.a68: Likewise.
+	* algol68/execute/div-int-1.a68: Likewise.
+	* algol68/execute/divab-real-1.a68: Likewise.
+	* algol68/execute/elem-bits-1.a68: Likewise.
+	* algol68/execute/elems-1.a68: Likewise.
+	* algol68/execute/elems-2.a68: Likewise.
+	* algol68/execute/entier-1.a68: Likewise.
+	* algol68/execute/environment-enquiries-1.a68: Likewise.
+	* algol68/execute/environment-enquiries-2.a68: Likewise.
+	* algol68/execute/environment-enquiries-3.a68: Likewise.
+	* algol68/execute/environment-enquiries-4.a68: Likewise.
+	* algol68/execute/environment-enquiries-5.a68: Likewise.
+	* algol68/execute/environment-enquiries-6.a68: Likewise.
+	* algol68/execute/environment-enquiries-7.a68: Likewise.
+	* algol68/execute/environment-enquiries-8.a68: Likewise.
+	* algol68/execute/eq-bits-1.a68: Likewise.
+	* algol68/execute/eq-char-char-1.a68: Likewise.
+	* algol68/execute/eq-int-1.a68: Likewise.
+	* algol68/execute/eq-string-1.a68: Likewise.
+	* algol68/execute/eq-string-stride-1.a68: Likewise.
+	* algol68/execute/execute.exp: Likewise.
+	* algol68/execute/factorial-1.a68: Likewise.
+	* algol68/execute/flat-assignation-1.a68: Likewise.
+	* algol68/execute/flat-assignation-2.a68: Likewise.
+	* algol68/execute/flex-1.a68: Likewise.
+	* algol68/execute/flex-2.a68: Likewise.
+	* algol68/execute/flex-3.a68: Likewise.
+	* algol68/execute/flex-4.a68: Likewise.
+	* algol68/execute/flex-5.a68: Likewise.
+	* algol68/execute/formula-1.a68: Likewise.
+	* algol68/execute/formula-2.a68: Likewise.
+	* algol68/execute/fsize-1.a68: Likewise.
+	* algol68/execute/ge-int-1.a68: Likewise.
+	* algol68/execute/ge-string-stride-1.a68: Likewise.
+	* algol68/execute/gen-flex-1.a68: Likewise.
+	* algol68/execute/gen-heap-1.a68: Likewise.
+	* algol68/execute/gen-heap-2.a68: Likewise.
+	* algol68/execute/gen-heap-3.a68: Likewise.
+	* algol68/execute/gen-heap-bool-1.a68: Likewise.
+	* algol68/execute/gen-heap-int-1.a68: Likewise.
+	* algol68/execute/gen-heap-real-1.a68: Likewise.
+	* algol68/execute/gen-heap-struct-1.a68: Likewise.
+	* algol68/execute/gen-heap-struct-2.a68: Likewise.
+	* algol68/execute/gen-heap-struct-3.a68: Likewise.
+	* algol68/execute/gen-loc-1.a68: Likewise.
+	* algol68/execute/gen-loc-2.a68: Likewise.
+	* algol68/execute/gen-loc-3.a68: Likewise.
+	* algol68/execute/gen-loc-4.a68: Likewise.
+	* algol68/execute/gen-multiple-1.a68: Likewise.
+	* algol68/execute/gen-union-1.a68: Likewise.
+	* algol68/execute/gen-union-2.a68: Likewise.
+	* algol68/execute/gen-union-3.a68: Likewise.
+	* algol68/execute/goto-1.a68: Likewise.
+	* algol68/execute/goto-2.a68: Likewise.
+	* algol68/execute/goto-3.a68: Likewise.
+	* algol68/execute/goto-4.a68: Likewise.
+	* algol68/execute/goto-5.a68: Likewise.
+	* algol68/execute/gt-int-1.a68: Likewise.
+	* algol68/execute/gt-string-stride-1.a68: Likewise.
+	* algol68/execute/i-1.a68: Likewise.
+	* algol68/execute/i-2.a68: Likewise.
+	* algol68/execute/identification-1.a68: Likewise.
+	* algol68/execute/identification-2.a68: Likewise.
+	* algol68/execute/identity-declaration-1.a68: Likewise.
+	* algol68/execute/identity-declaration-2.a68: Likewise.
+	* algol68/execute/identity-declaration-3.a68: Likewise.
+	* algol68/execute/identity-declaration-4.a68: Likewise.
+	* algol68/execute/identity-declaration-5.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-1.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-2.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-3.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-5.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-empty-1.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-empty-2.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-empty-3.a68: Likewise.
+	* algol68/execute/identity-declaration-multiple-empty-4.a68: Likewise.
+	* algol68/execute/identity-declaration-struct-1.a68: Likewise.
+	* algol68/execute/infinity-1.a68: Likewise.
+	* algol68/execute/le-ge-bits-1.a68: Likewise.
+	* algol68/execute/le-int-1.a68: Likewise.
+	* algol68/execute/le-string-stride-1.a68: Likewise.
+	* algol68/execute/leng-shorten-bits-1.a68: Likewise.
+	* algol68/execute/leng-shorten-ints-1.a68: Likewise.
+	* algol68/execute/leng-shorten-reals-1.a68: Likewise.
+	* algol68/execute/lengths-shorths-1.a68: Likewise.
+	* algol68/execute/lisp-1.a68: Likewise.
+	* algol68/execute/lisp-2.a68: Likewise.
+	* algol68/execute/ln-1.a68: Likewise.
+	* algol68/execute/log-1.a68: Likewise.
+	* algol68/execute/loop-1.a68: Likewise.
+	* algol68/execute/loop-10.a68: Likewise.
+	* algol68/execute/loop-11.a68: Likewise.
+	* algol68/execute/loop-12.a68: Likewise.
+	* algol68/execute/loop-13.a68: Likewise.
+	* algol68/execute/loop-14.a68: Likewise.
+	* algol68/execute/loop-2.a68: Likewise.
+	* algol68/execute/loop-3.a68: Likewise.
+	* algol68/execute/loop-4.a68: Likewise.
+	* algol68/execute/loop-5.a68: Likewise.
+	* algol68/execute/loop-6.a68: Likewise.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* lib/algol68-dg.exp: New file.
+	* lib/algol68-torture.exp: Likewise.
+	* lib/algol68.exp: Likewise.
+
 2025-11-30  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/119864

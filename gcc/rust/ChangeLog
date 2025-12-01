@@ -1,3 +1,7 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* lang.opt.urls: Regenerate.
+
 2025-11-27  Jakub Jelinek  <jakub@redhat.com>
 
 	* lex/rust-lex.cc (rust_input_source_test): Cast char8_t string

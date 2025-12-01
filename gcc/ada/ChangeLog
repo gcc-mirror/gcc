@@ -1,3 +1,7 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc-interface/lang.opt.urls: Regenerate.
+
 2025-11-27  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* exp_ch6.adb (Expand_Actuals): Do not create activation chain and

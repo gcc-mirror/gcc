@@ -1,3 +1,7 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* lang.opt.urls: Regenerate.
+
 2025-11-20  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* gospec.cc (lang_specific_driver) [TARGET_SOLARIS]: Replace

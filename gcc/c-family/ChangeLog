@@ -1,3 +1,7 @@
+2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* c.opt.urls: Regenerate.
+
 2025-11-26  Alejandro Colomar  <alx@kernel.org>
 
 	* c-common.cc (c_common_reswords): Add _Maxof & _Minof keywords.

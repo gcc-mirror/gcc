@@ -1,3 +1,7 @@
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* acx.m4 (ACX_PROG_GA68): New defun.
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* clang-plugin.m4: Sync with binutils.

@@ -1,3 +1,8 @@
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* simple-object-mach-o.c
+	(simple_object_mach_o_segment): Handle non-LTO sections.
+
 2025-11-06  Peter Damianov  <peter0x44@disroot.org>
 
 	PR target/122472
