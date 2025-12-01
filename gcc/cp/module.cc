@@ -17639,7 +17639,16 @@ module_state::write_using_directives (elf_out *to, depset::hash &table,
 	  bool exported = DECL_MODULE_EXPORT_P (udir);
 	  tree target = USING_DECL_DECLS (udir);
 	  depset *target_dep = table.find_dependency (target);
-	  gcc_checking_assert (target_dep);
+
+	  /* An using-directive imported from a different module might not
+	     have been walked earlier (PR c++/122915).  But importers will
+	     be able to just refer to the decl in that module unless it was
+	     a partition anyway, so we don't have anything to do here.  */
+	  if (!target_dep || target_dep->is_import ())
+	    {
+	      gcc_checking_assert (DECL_MODULE_IMPORT_P (udir));
+	      continue;
+	    }
 
 	  dump () && dump ("Writing using-directive in %N for %N",
 			   parent, target);
@@ -17688,7 +17697,7 @@ module_state::read_using_directives (unsigned num)
 
       dump () && dump ("Read using-directive in %N for %N", parent, target);
       if (exported || is_module () || is_partition ())
-	add_using_namespace (parent, target);
+	add_imported_using_namespace (parent, target);
     }
 
   dump.outdent ();

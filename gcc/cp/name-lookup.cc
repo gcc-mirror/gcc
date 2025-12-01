@@ -9015,7 +9015,8 @@ pop_nested_namespace (tree ns)
    unqualified search.  */
 
 static void
-add_using_namespace (vec<tree, va_gc> *&usings, tree target)
+add_using_namespace (vec<tree, va_gc> *&usings, tree target,
+		     bool imported = false)
 {
   /* Find if this using already exists.  */
   tree old = NULL_TREE;
@@ -9032,15 +9033,18 @@ add_using_namespace (vec<tree, va_gc> *&usings, tree target)
     {
       decl = build_lang_decl (USING_DECL, NULL_TREE, NULL_TREE);
       USING_DECL_DECLS (decl) = target;
+      DECL_MODULE_IMPORT_P (decl) = imported;
     }
 
-  /* Update purviewness and exportedness in case that has changed.  */
+  /* Update module flags in case that has changed.  */
   if (modules_p ())
     {
       if (module_purview_p ())
 	DECL_MODULE_PURVIEW_P (decl) = true;
       if (module_exporting_p ())
 	DECL_MODULE_EXPORT_P (decl) = true;
+      if (!imported)
+	DECL_MODULE_IMPORT_P (decl) = false;
     }
 
   if (!old)
@@ -9048,13 +9052,14 @@ add_using_namespace (vec<tree, va_gc> *&usings, tree target)
 }
 
 /* Convenience overload for the above, taking the user as its first
-   parameter.  */
+   parameter, for use when importing a using-directive.  */
 
 void
-add_using_namespace (tree ns, tree target)
+add_imported_using_namespace (tree ns, tree target)
 {
   add_using_namespace (NAMESPACE_LEVEL (ns)->using_directives,
-		       ORIGINAL_NAMESPACE (target));
+		       ORIGINAL_NAMESPACE (target),
+		       /*imported=*/true);
 }
 
 /* Tell the debug system of a using directive.  */

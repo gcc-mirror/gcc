@@ -477,7 +477,6 @@ extern cxx_binding *outer_binding (tree, cxx_binding *, bool);
 extern void cp_emit_debug_info_for_using (tree, tree);
 
 extern void finish_nonmember_using_decl (tree scope, tree name);
-extern void add_using_namespace (tree, tree);
 extern void finish_using_directive (tree target, tree attribs);
 void push_local_extern_decl_alias (tree decl);
 extern tree pushdecl (tree, bool hiding = false);
@@ -508,6 +507,7 @@ extern bool set_module_binding (tree ctx, tree name, unsigned mod,
 				tree value, tree type, tree visible,
 				tree internal);
 extern void add_module_namespace_decl (tree ns, tree decl);
+extern void add_imported_using_namespace (tree, tree);
 
 enum WMB_Flags
 {
