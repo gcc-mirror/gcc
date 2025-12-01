@@ -1881,6 +1881,7 @@ export namespace std
   using std::full_extent_t;
   using std::full_extent;
   using std::submdspan_mapping_result;
+  using std::submdspan_canonicalize_slices;
 #endif
   // FIXME submdspan_extents, mdsubspan
 }

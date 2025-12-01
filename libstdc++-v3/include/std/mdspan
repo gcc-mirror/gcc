@@ -38,14 +38,19 @@
 #include <type_traits>
 #include <utility>
 
-#if __cplusplus > 202302L
-#include <bits/align.h>
-#endif
-
 #define __glibcxx_want_mdspan
 #define __glibcxx_want_aligned_accessor
 #define __glibcxx_want_submdspan
 #include <bits/version.h>
+
+#if __glibcxx_aligned_accessor
+#include <bits/align.h>
+#endif
+
+#if __glibcxx_submdspan
+#include <tuple>
+#endif
+
 
 #ifdef __glibcxx_mdspan
 
@@ -826,6 +831,41 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    return __impl(make_index_sequence<__rank>());
 	  }
       }
+
+#ifdef __glibcxx_submdspan
+    template<typename _Tp>
+      constexpr bool __is_strided_slice = false;
+
+    template<typename _OffsetType, typename _ExtentType, typename _StrideType>
+      constexpr bool __is_strided_slice<strided_slice<_OffsetType,
+	  _ExtentType, _StrideType>> = true;
+
+    template<typename _IndexType, typename _OIndexType>
+      consteval bool
+      __is_representable_integer(_OIndexType __value)
+      {
+	constexpr auto __min = __gnu_cxx::__int_traits<_IndexType>::__min;
+	constexpr auto __max = __gnu_cxx::__int_traits<_IndexType>::__max;
+	return std::cmp_less_equal(__min, __value)
+	    && std::cmp_less_equal(__value, __max);
+      }
+
+    template<typename _Tp>
+      constexpr bool __is_constant_wrapper = false;
+
+    template<_CwFixedValue _Xv, typename _Tp>
+      constexpr bool __is_constant_wrapper<constant_wrapper<_Xv, _Tp>>
+	= true;
+
+    template<size_t _Index, typename _Extents>
+      constexpr auto
+      __extract_extent(const _Extents& __exts)
+      {
+	using _IndexType = typename _Extents::index_type;
+	return extents<_IndexType, _Extents::static_extent(_Index)>{
+	  __exts.extent(_Index)};
+      }
+#endif // __glibcxx_submdspan
   }
 
   template<typename _Extents>
@@ -2497,6 +2537,149 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     -> mdspan<typename _AccessorType::element_type,
 	      typename _MappingType::extents_type,
 	      typename _MappingType::layout_type, _AccessorType>;
+
+#if __glibcxx_submdspan
+  namespace __mdspan
+  {
+    template<typename _IndexType, typename _Slice>
+      constexpr auto
+      __canonical_index(_Slice&& __slice)
+      {
+	if constexpr (__detail::__integral_constant_like<_Slice>)
+	  {
+	    static_assert(__is_representable_integer<_IndexType>(_Slice::value));
+	    static_assert(_Slice::value >= 0);
+	    return std::cw<_IndexType(_Slice::value)>;
+	  }
+	else
+	  return __mdspan::__index_type_cast<_IndexType>(std::move(__slice));
+      }
+
+    template<typename _IndexType, typename _Slice>
+      constexpr auto
+      __slice_cast(_Slice&& __slice)
+      {
+	using _SliceType = remove_cvref_t<_Slice>;
+	if constexpr (is_convertible_v<_SliceType, full_extent_t>)
+	  return static_cast<full_extent_t>(std::move(__slice));
+	else if constexpr (is_convertible_v<_SliceType, _IndexType>)
+	  return __mdspan::__canonical_index<_IndexType>(std::move(__slice));
+	else if constexpr (__is_strided_slice<_SliceType>)
+	  {
+	    auto __extent
+	      = __mdspan::__canonical_index<_IndexType>(std::move(__slice.extent));
+	    auto __offset
+	      = __mdspan::__canonical_index<_IndexType>(std::move(__slice.offset));
+	    if constexpr (is_same_v<decltype(__extent),
+				    constant_wrapper<_IndexType(0)>>)
+	      return strided_slice{
+		.offset = __offset,
+		.extent = __extent,
+		.stride = cw<_IndexType(1)>
+	      };
+	    else
+	      return strided_slice{
+		.offset = __offset,
+		.extent = __extent,
+		.stride
+		  = __mdspan::__canonical_index<_IndexType>(std::move(__slice.stride))
+	      };
+	  }
+	else
+	  {
+	    auto [__sbegin, __send] = std::move(__slice);
+	    auto __offset
+	      = __mdspan::__canonical_index<_IndexType>(std::move(__sbegin));
+	    auto __end
+	      = __mdspan::__canonical_index<_IndexType>(std::move(__send));
+	    return strided_slice{
+	      .offset = __offset,
+	      .extent = __mdspan::__canonical_index<_IndexType>(__end - __offset),
+	      .stride = cw<_IndexType(1)>
+	    };
+	  }
+      }
+
+    template<typename _IndexType, size_t _Extent, typename _OIndexType>
+      constexpr void
+      __check_valid_index(const extents<_IndexType, _Extent>& __ext,
+			   const _OIndexType& __idx)
+      {
+	if constexpr (__is_constant_wrapper<_OIndexType>
+		      && _Extent != dynamic_extent)
+	  {
+	    static_assert(_OIndexType::value >= 0);
+	    static_assert(std::cmp_less_equal(_OIndexType::value, _Extent));
+	  }
+	else
+	  __glibcxx_assert(__idx <= __ext.extent(0));
+      }
+
+    template<typename _IndexType, size_t _Extent, typename _Slice>
+      constexpr void
+      __check_valid_slice(const extents<_IndexType, _Extent>& __ext,
+			   const _Slice& __slice)
+      {
+	if constexpr (__is_strided_slice<_Slice>)
+	  {
+	    // DEVIATION: For empty slices, P3663r3 does not allow us to check
+	    // that this is less than or equal to the k-th extent (at runtime).
+	    // We're only allowed to check if __slice.offset, __slice.extent
+	    // are constant wrappers and __ext is a static extent.
+	    __mdspan::__check_valid_index(__ext, __slice.offset);
+	    __mdspan::__check_valid_index(__ext, __slice.extent);
+
+	    if constexpr (__is_constant_wrapper<typename _Slice::extent_type>
+			  && __is_constant_wrapper<typename _Slice::stride_type>)
+	      static_assert(_Slice::stride_type::value > 0);
+	    else
+	      __glibcxx_assert(__slice.extent == 0 || __slice.stride > 0);
+
+	    if constexpr (__is_constant_wrapper<typename _Slice::offset_type>
+		&& __is_constant_wrapper<typename _Slice::extent_type>
+		&& _Extent != dynamic_extent)
+	      static_assert(std::cmp_greater_equal(
+		  _Extent - _Slice::offset_type::value,
+		  _Slice::extent_type::value));
+	    else
+	      __glibcxx_assert(__ext.extent(0) - __slice.offset
+			       >= __slice.extent);
+	  }
+	else if constexpr (__is_constant_wrapper<_Slice>
+			   && _Extent != dynamic_extent)
+	  static_assert(std::cmp_less(_Slice::value, _Extent));
+	else if constexpr (convertible_to<_Slice, _IndexType>)
+	  __glibcxx_assert(__slice < __ext.extent(0));
+      }
+
+    template<typename _Extents, typename... _Slices>
+      constexpr void
+      __check_valid_slices(const _Extents& __exts, const _Slices&... __slices)
+      {
+	constexpr auto __rank = _Extents::rank();
+	auto __impl = [&]<size_t... _Is>(index_sequence<_Is...>)
+	{
+	  ((__mdspan::__check_valid_slice(__extract_extent<_Is>(__exts),
+					  __slices...[_Is])),...);
+	};
+	__impl(make_index_sequence<__rank>());
+      }
+  }
+
+  template<typename _IndexType, size_t... _Extents, typename... _RawSlices>
+    requires (sizeof...(_Extents) == sizeof...(_RawSlices))
+    constexpr auto
+    submdspan_canonicalize_slices(const extents<_IndexType, _Extents...>& __exts,
+				  _RawSlices... __raw_slices)
+    {
+      auto __impl = [&__exts](auto... __slices)
+      {
+	__mdspan::__check_valid_slices(__exts, __slices...);
+	return std::make_tuple(__slices...);
+      };
+      return __impl(__mdspan::__slice_cast<_IndexType>(__raw_slices)...);
+    }
+#endif // __glibcxx_submdspan
 
 _GLIBCXX_END_NAMESPACE_VERSION
 }
