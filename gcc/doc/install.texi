@@ -687,13 +687,14 @@ Please refer to the @uref{https://gcc.gnu.org/releases.html,,releases web page}
 for information on how to obtain GCC@.
 
 The source distribution includes the Ada, C, C++, Objective-C, COBOL
-(GCC 15 and later), D (GCC 9 and later), Fortran, Go, and Modula-2
-(GCC 13 and later) compilers, as well as runtime libraries for C++,
-Objective-C, COBOL, and Fortran.  For previous versions these were
-downloadable as separate components such as the core GCC distribution,
-which included the C language front end and shared components, and
-language-specific distributions including the language front end and
-the language runtime (where appropriate).
+(GCC 15 and later), D (GCC 9 and later), Fortran, Go, Modula-2 (GCC 13
+and later) and Algol 68 (GCC 16 and later, experimental) compilers, as
+well as runtime libraries for C++, Objective-C, COBOL, Fortran and
+Algol 68.  For previous versions these were downloadable as separate
+components such as the core GCC distribution, which included the C
+language front end and shared components, and language-specific
+distributions including the language front end and the language
+runtime (where appropriate).
 
 If you also intend to build binutils (either to upgrade an existing
 installation or for use in place of the corresponding tools of your
