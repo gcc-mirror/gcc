@@ -71,7 +71,15 @@ extern char ***_NSGetArgv(void);
 #  include <mach/mach_time.h>
 #  include <mach/vm_statistics.h>
 #  include <malloc/malloc.h>
-#  include <os/log.h>
+#  if defined(__has_builtin) && __has_builtin(__builtin_os_log_format)
+#    include <os/log.h>
+#  else
+     /* Without support for __builtin_os_log_format, fall back to the older
+        method.  */
+#    define OS_LOG_DEFAULT 0
+#    define os_log_error(A,B,C) \
+       asl_log(nullptr, nullptr, ASL_LEVEL_ERR, "%s", (C))
+#  endif
 #  include <pthread.h>
 #  include <pthread/introspection.h>
 #  include <sched.h>
@@ -869,19 +877,23 @@ void LogFullErrorReport(const char *buffer) {
   // When logging with os_log_error this will make it into the crash log.
   if (internal_strncmp(SanitizerToolName, "AddressSanitizer",
                        sizeof("AddressSanitizer") - 1) == 0)
-    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "Address Sanitizer reported a failure.");
+    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "%{public}s",
+                     "Address Sanitizer reported a failure.");
   else if (internal_strncmp(SanitizerToolName, "UndefinedBehaviorSanitizer",
                             sizeof("UndefinedBehaviorSanitizer") - 1) == 0)
-    SANITIZER_OS_LOG(OS_LOG_DEFAULT,
+    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "%{public}s",
                      "Undefined Behavior Sanitizer reported a failure.");
   else if (internal_strncmp(SanitizerToolName, "ThreadSanitizer",
                             sizeof("ThreadSanitizer") - 1) == 0)
-    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "Thread Sanitizer reported a failure.");
+    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "%{public}s",
+                     "Thread Sanitizer reported a failure.");
   else
-    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "Sanitizer tool reported a failure.");
+    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "%{public}s",
+                     "Sanitizer tool reported a failure.");
 
   if (common_flags()->log_to_syslog)
-    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "Consult syslog for more information.");
+    SANITIZER_OS_LOG(OS_LOG_DEFAULT, "%{public}s",
+                     "Consult syslog for more information.");
 
   // Log to syslog.
   // The logging on OS X may call pthread_create so we need the threading
@@ -951,6 +963,10 @@ void SignalContext::InitPcSpBp() {
   addr = (uptr)ptrauth_strip((void *)addr, 0);
   GetPcSpBp(context, &pc, &sp, &bp);
 }
+
+#ifndef KERN_DENIED
+#define KERN_DENIED 53
+#endif
 
 // ASan/TSan use mmap in a way that creates “deallocation gaps” which triggers
 // EXC_GUARD exceptions on macOS 10.15+ (XNU 19.0+).
