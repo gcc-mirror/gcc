@@ -3275,7 +3275,7 @@ static tree
 vect_get_data_ptr_increment (vec_info *vinfo, gimple_stmt_iterator *gsi,
 			     dr_vec_info *dr_info, tree aggr_type,
 			     vect_memory_access_type memory_access_type,
-			     vec_loop_lens *loop_lens = nullptr)
+			     vec_loop_lens *loop_lens)
 {
   if (memory_access_type == VMAT_INVARIANT)
     return size_zero_node;
@@ -7843,13 +7843,19 @@ vectorizable_scan_store (vec_info *vinfo, stmt_vec_info stmt_info,
 	perms[i] = vect_gen_perm_mask_checked (vectype, indices);
     }
 
+  vec_loop_lens *loop_lens
+    = (loop_vinfo && LOOP_VINFO_FULLY_WITH_LENGTH_P (loop_vinfo)
+       ? &LOOP_VINFO_LENS (loop_vinfo)
+       : NULL);
+
   tree vec_oprnd1 = NULL_TREE;
   tree vec_oprnd2 = NULL_TREE;
   tree vec_oprnd3 = NULL_TREE;
   tree dataref_ptr = DR_BASE_ADDRESS (dr_info->dr);
   tree dataref_offset = build_int_cst (ref_type, 0);
   tree bump = vect_get_data_ptr_increment (vinfo, gsi, dr_info,
-					   vectype, VMAT_CONTIGUOUS);
+					   vectype, VMAT_CONTIGUOUS,
+					   loop_lens);
   tree ldataref_ptr = NULL_TREE;
   tree orig = NULL_TREE;
   if (STMT_VINFO_SIMD_LANE_ACCESS_P (stmt_info) == 4 && !inscan_var_store)
