@@ -223,6 +223,15 @@ selftest-algol68:
 algol68.install-common: installdirs
 	-rm -f $(DESTDIR)$(bindir)/$(A68_INSTALL_NAME)$(exeext)
 	$(INSTALL_PROGRAM) ga68$(exeext) $(DESTDIR)$(bindir)/$(A68_INSTALL_NAME)$(exeext)
+	-if test -f a681$(exeext); then \
+	  if test -f ga68-cross$(exeext); then \
+	    :; \
+	  else \
+	    rm -f $(DESTDIR)$(bindir)/$(A68_TARGET_INSTALL_NAME)$(exeext); \
+	    ( cd $(DESTDIR)$(bindir) && \
+	      $(LN) $(A68_INSTALL_NAME)$(exeext) $(A68_TARGET_INSTALL_NAME)$(exeext) ); \
+	  fi; \
+	fi
 
 algol68.install-man: $(DESTDIR)$(man1dir)/$(A68_INSTALL_NAME)$(man1ext)
 
