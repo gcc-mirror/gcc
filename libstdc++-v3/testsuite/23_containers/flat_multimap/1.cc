@@ -232,6 +232,17 @@ test07()
   VERIFY( std::ranges::equal(m, (std::pair<int,int>[]){{3,4},{3,3}}) );
 }
 
+void
+test09()
+{
+  // PR libstdc++/122921 - The value_type of flat_map's iterator should be
+  // pair<Key, T> instead of pair<const Key, T>
+  using type = std::flat_multimap<int, int>;
+  using value_type = std::ranges::range_value_t<type>;
+  using value_type = type::value_type;
+  using value_type = std::pair<int, int>;
+}
+
 int
 main()
 {
@@ -245,4 +256,5 @@ main()
   test05();
   test06();
   test07();
+  test09();
 }
