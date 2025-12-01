@@ -17652,7 +17652,7 @@ module_state::write_using_directives (elf_out *to, depset::hash &table,
 	     have been walked earlier (PR c++/122915).  But importers will
 	     be able to just refer to the decl in that module unless it was
 	     a partition anyway, so we don't have anything to do here.  */
-	  if (!target_dep || target_dep->is_import ())
+	  if (!target_dep)
 	    {
 	      gcc_checking_assert (DECL_MODULE_IMPORT_P (udir));
 	      continue;
