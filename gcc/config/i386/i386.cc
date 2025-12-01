@@ -23767,9 +23767,15 @@ x86_print_call_or_nop (FILE *file, const char *target,
 		       const char *label)
 {
   if (flag_nop_mcount || !strcmp (target, "nop"))
-    /* 5 byte nop: nopl 0(%[re]ax,%[re]ax,1) */
-    fprintf (file, "%s" ASM_BYTE "0x0f, 0x1f, 0x44, 0x00, 0x00\n",
-	     label);
+    {
+      if (TARGET_16BIT)
+	/* 3 byte no-op: lea 0(%si), %si */
+	fprintf (file, "%s" ASM_BYTE "0x8d, 0x74, 0x00\n", label);
+      else
+	/* 5 byte nop: nopl 0(%[re]ax,%[re]ax,1) */
+	fprintf (file, "%s" ASM_BYTE "0x0f, 0x1f, 0x44, 0x00, 0x00\n",
+		 label);
+    }
   else if (!TARGET_PECOFF && flag_pic)
     {
       gcc_assert (flag_plt);

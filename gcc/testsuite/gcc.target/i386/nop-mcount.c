@@ -1,8 +1,9 @@
 /* Test -mnop-mcount */
 /* { dg-do compile { target { *-*-linux* && nonpic } } } */
 /* { dg-require-effective-target mfentry } */
-/* { dg-options "-Wno-old-style-definition -pg -mfentry -mrecord-mcount -mnop-mcount" } */
+/* { dg-options "-pg -mfentry -mrecord-mcount -mnop-mcount" } */
 /* { dg-final { scan-assembler-not "__fentry__" } } */
+/* { dg-final { scan-assembler-times "0x0f, 0x1f, 0x44, 0x00, 0x00" 3 } } */
 /* Origin: Andi Kleen */
 extern void foobar(char *);
 
@@ -18,8 +19,7 @@ void func2(void)
     foobar ("Hello world");
 }
 
-void func3(a)
-char *a;
+void func3(char *a)
 {
   foobar("Hello world");
 }
