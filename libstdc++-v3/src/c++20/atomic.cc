@@ -459,7 +459,7 @@ __cond_wait_until(__condvar& __cv, mutex& __mx,
 
 __wait_result_type
 __wait_until_impl([[maybe_unused]] const void* __addr, __wait_args_base& __args,
-		  const __wait_clock_t::duration& __time)
+		  const chrono::nanoseconds& __time)
 {
   const __wait_clock_t::time_point __atime(__time);
   auto* __wait_addr = static_cast<const __platform_wait_t*>(__args._M_obj);

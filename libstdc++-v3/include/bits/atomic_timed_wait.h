@@ -75,9 +75,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return chrono::ceil<__w_dur>(__atime);
       }
 
+    // This uses a nanoseconds duration for the timeout argument.
+    // For __abi_version=0 that is the time since the steady_clock's epoch.
+    // It's possible that in future we will add new __wait_flags constants
+    // to indicate that the timeout is the time since the system_clock epoch,
+    // or is a relative timeout not an absolute time.
     __wait_result_type
     __wait_until_impl(const void* __addr, __wait_args_base& __args,
-		      const __wait_clock_t::duration& __atime);
+		      const chrono::nanoseconds& __timeout);
 
     template<typename _Clock, typename _Dur>
       __wait_result_type
