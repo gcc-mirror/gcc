@@ -18760,7 +18760,11 @@ start_enum (tree name, tree enumtype, tree underlying_type,
 }
 
 /* Returns true if TYPE is an enum that uses an enumerator name for
-   linkage purposes.  */
+   linkage purposes at namespace scope.  The term is defined in [dcl.enum]/12
+   for all enums, not just those at namespace scope, but for backward ABI
+   compatibility we want to treat those not at namespace scope the old way
+   and e.g. mangle the class scope ones based on their position within the
+   class rather than the first enumerator.  */
 
 bool
 enum_with_enumerator_for_linkage_p (tree type)
@@ -18768,7 +18772,8 @@ enum_with_enumerator_for_linkage_p (tree type)
   return (cxx_dialect >= cxx20
 	  && UNSCOPED_ENUM_P (type)
 	  && TYPE_ANON_P (type)
-	  && TYPE_VALUES (type));
+	  && TYPE_VALUES (type)
+	  && TYPE_NAMESPACE_SCOPE_P (type));
 }
 
 /* After processing and defining all the values of an enumeration type,
