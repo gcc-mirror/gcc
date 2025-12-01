@@ -17570,15 +17570,21 @@ passed between C and Ada as simple as practical.
 GNAT LLVM currently provides limited support for debugging data. It
 provides full line number information for declarations and statements,
 but not sufficient debugging data to display all Ada data
-structures. GNAT LLVM outputs complete debugging data only for types
-with a direct equivalent in C, namely records without discriminants
-and constrained arrays whose dimensions are known at compile time. You
-will not be able to use @code{gdb} print commands to look at objects not
-of those types or to display components of those types. You can use
-low-level @code{gdb} commands that display memory to view such data
-provided you know how they’re laid out.  Debugging information may
-also be limited for bitfields (fields whose size and position
-aren’t on byte boundaries)
+structures. GNAT LLVM outputs complete debugging data only for a
+subset of types: scalar types; records whose field offsets are known
+at compile time, including discriminated records fitting this
+description; and arrays. Records that have a field whose size or
+offset is only known at run time do not yet have correct debugging
+data. You will not be able to use @code{gdb} print commands to look at
+objects not of those types or to display components of those
+types. You can use low-level @code{gdb} commands that display memory to
+view such data provided you know how they’re laid out.
+
+In some situations, a name in the source may not be available.
+Renamings are not currently emitted into the debugging data. When
+debugging a nested function, variables from enclosing scopes will not
+be available. You will have to examine those variables in their
+hosting frame.
 
 In addition, debugging information may be confusing if you have
 @code{out} parameters to subprograms. If you have a procedure with only
