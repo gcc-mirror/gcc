@@ -61,7 +61,7 @@ RISCV_PROFILE("rva23s64",     "rv64imafdcbv_zicsr_zicntr_zihpm_ziccif_ziccrse"
 				 "_zicbom_zicbop_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt_zihintntl"
 				 "_zicond_zimop_zcmop_zcb_zfa_zawrs_svbare_svade_ssccptr"
 				 "_sstvecd_sstvala_sscounterenw_svpbmt_svinval_svnapot_sstc"
-				 "_sscofpmf_ssnpm_ssu64xl_sha_supm")
+				 "_sscofpmf_ssnpm_ssu64xl_sha_supm_zifencei")
 
 /* RVB23 contains all mandatory base ISA for RVA22U64 and the new extension
    'zihintntl,zicond,zimop,zcmop,zfa,zawrs' as mandatory extensions.  */
@@ -77,6 +77,6 @@ RISCV_PROFILE("rvb23s64",     "rv64imafdcb_zicsr_zicntr_zihpm_ziccif_ziccrse"
 				 "_zicbom_zicbop_zicboz_zfhmin_zkt_zvfhmin_zvbb_zvkt"
 				 "_zihintntl_zicond_zimop_zcmop_zcb_zfa_zawrs_svbare_svade"
 				 "_ssccptr_sstvecd_sstvala_sscounterenw_svpbmt_svinval_svnapot"
-				 "_sstc_sscofpmf_ssu64xl_supm")
+				 "_sstc_sscofpmf_ssu64xl_supm_zifencei")
 
 #undef RISCV_PROFILE
