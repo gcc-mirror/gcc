@@ -3947,11 +3947,19 @@ ix86_emit_tls_call (rtx tls_set, x86_cse_kind kind, basic_block bb,
 		 (note 2 3 5 2 NOTE_INSN_FUNCTION_BEG)
 		 (debug_insn 5 2 16 2 (debug_marker) "x.c":6:3 -1 (nil))
 
+		 or a basic block with only deleted instructions:
+
+		 (code_label 348 23 349 45 3 (nil) [0 uses])
+		 (note 349 348 436 45 [bb 45] NOTE_INSN_BASIC_BLOCK)
+		 (note 436 349 362 45 NOTE_INSN_DELETED)
+
 	       */
 	      gcc_assert (DEBUG_INSN_P (insn)
 			  || (NOTE_P (insn)
 			      && ((NOTE_KIND (insn)
 				   == NOTE_INSN_FUNCTION_BEG)
+				  || (NOTE_KIND (insn)
+				      == NOTE_INSN_DELETED)
 				  || (NOTE_KIND (insn)
 				      == NOTE_INSN_BASIC_BLOCK))));
 	      insn = NULL;
