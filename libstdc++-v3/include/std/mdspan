@@ -865,6 +865,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return extents<_IndexType, _Extents::static_extent(_Index)>{
 	  __exts.extent(_Index)};
       }
+
+    template<typename _IndexType, typename... _Slices>
+      consteval auto
+      __subrank()
+      {
+	return (static_cast<size_t>(!convertible_to<_Slices, _IndexType>)
+		+ ... + 0);
+      }
+
+    template<typename _IndexType, typename... _Slices>
+      consteval auto
+      __inv_map_rank()
+      {
+	constexpr auto __rank = sizeof...(_Slices);
+	constexpr auto __sub_rank = __subrank<_IndexType, _Slices...>();
+	auto __map = std::array<size_t, __sub_rank>{};
+	auto __is_int_like = std::array<bool, __rank>{
+	  convertible_to<_Slices, _IndexType>...};
+
+	size_t __i = 0;
+	for (size_t __k = 0; __k < __rank; ++__k)
+	  if (!__is_int_like[__k])
+	    __map[__i++] = __k;
+	return __map;
+      }
 #endif // __glibcxx_submdspan
   }
 
@@ -2664,7 +2689,85 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	};
 	__impl(make_index_sequence<__rank>());
       }
+
+    template<typename _IndexType, size_t _Extent, typename _Slice>
+      consteval size_t
+      __static_slice_extent()
+      {
+	if constexpr (same_as<_Slice, full_extent_t>)
+	  return _Extent;
+	else if constexpr (same_as<_Slice, constant_wrapper<_IndexType(0)>>)
+	  return 0;
+	else if constexpr (__is_constant_wrapper<typename _Slice::extent_type>
+			&& __is_constant_wrapper<typename _Slice::stride_type>)
+	  return 1 + ((typename _Slice::extent_type{}) - 1)
+		   / (typename _Slice::stride_type{});
+	else
+	  return dynamic_extent;
+      }
+
+    template<size_t _K, typename _Extents, typename _Slice>
+      constexpr typename _Extents::index_type
+      __dynamic_slice_extent(const _Extents& __exts, _Slice __slice)
+      {
+	if constexpr (__is_strided_slice<_Slice>)
+	  return __slice.extent == 0 ? 0 : 1 + (__slice.extent - 1) / __slice.stride;
+	else
+	  return __exts.extent(_K);
+      }
+
+    template<typename _IndexType, size_t... _Extents, typename... _Slices>
+      requires (sizeof...(_Slices) == sizeof...(_Extents))
+      constexpr auto
+      __subextents(const extents<_IndexType, _Extents...>& __exts,
+		   _Slices... __slices)
+      {
+	constexpr auto __inv_map = __mdspan::__inv_map_rank<_IndexType, _Slices...>();
+	auto __impl = [&]<size_t... _Indices>(index_sequence<_Indices...>)
+	{
+	  using _SubExtents = extents<_IndexType,
+	      (__mdspan::__static_slice_extent<_IndexType,
+		 _Extents...[__inv_map[_Indices]],
+		 _Slices...[__inv_map[_Indices]]>())...>;
+	  if constexpr (_SubExtents::rank_dynamic() == 0)
+	    return _SubExtents{};
+	  else
+	    {
+	      using _StaticSubExtents = __mdspan::_StaticExtents<
+		__mdspan::__static_extents<_SubExtents>()>;
+	      auto __create = [&]<size_t... _Is>(index_sequence<_Is...>)
+	      {
+		constexpr auto __slice_idx = [__inv_map](size_t __i) consteval
+		{
+		  return __inv_map[_StaticSubExtents::_S_dynamic_index_inv(__i)];
+		};
+
+		return _SubExtents{
+		  (__mdspan::__dynamic_slice_extent<__slice_idx(_Is)>(
+		     __exts, __slices...[__slice_idx(_Is)]))...};
+	      };
+	      constexpr auto __dyn_subrank = _SubExtents::rank_dynamic();
+	      return __create(make_index_sequence<__dyn_subrank>());
+	    }
+	};
+
+	return __impl(make_index_sequence<__inv_map.size()>());
+      }
   }
+
+  template<typename _IndexType, size_t... _Extents, typename... _RawSlices>
+    requires (sizeof...(_RawSlices) == sizeof...(_Extents))
+    constexpr auto
+    submdspan_extents(const extents<_IndexType, _Extents...>& __exts,
+		      _RawSlices... __raw_slices)
+    {
+      auto __impl = [&__exts](auto... __slices)
+      {
+	__mdspan::__check_valid_slices(__exts, __slices...);
+	return __mdspan::__subextents(__exts, __slices...);
+      };
+      return __impl(__mdspan::__slice_cast<_IndexType>(__raw_slices)...);
+    }
 
   template<typename _IndexType, size_t... _Extents, typename... _RawSlices>
     requires (sizeof...(_Extents) == sizeof...(_RawSlices))

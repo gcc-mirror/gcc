@@ -69,4 +69,13 @@ using RValueInt = CustomIndexType<CustomIndexKind::RValue>;
 struct NotIntLike
 { };
 
+struct StructuralInt
+{
+  constexpr
+  operator int() const noexcept
+  { return value; }
+
+  int value;
+};
+
 #endif // TEST_MDSPAN_INT_LIKE_H
