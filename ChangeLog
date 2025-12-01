@@ -1,48 +1,7 @@
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
-	* Makefile.def (libga68): New module.
-	(configure-target-libga68): Likewise.
-	* Makefile.tpl (GA68): Define.
-	(GA68_FOR_BUILD): Likewise.
-	(GA68FLAGS): Likewise.
-	* configure.ac (--enable-libga68): New option.
-	(--enable-algol68-gc): Likewise.
-	(GA68): Subst.
-	(GA68FLAGS): Likewise.
-	Invoke ACX_PROG_GA68.
-	* configure: Regenerate.
-	* Makefile.in: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
 	* MAINTAINERS: Add Algol 68 subsystems.
 	* SECURITY.txt: add libga68 to list of libraries.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* libga68/config.h.in: Regenerate.
-	* libga68/configure: Likewise.
-	* libga68/Makefile.in: Likewise.
-	* libga68/aclocal.m4: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* libga68/Makefile.am: New file.
-	* libga68/configure.ac: Likewise.
-	* libga68/Makefile.in: Generate.
-	* libga68/aclocal.m4: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* libga68/README: New file.
-	* libga68/ga68-alloc.c: Likewise.
-	* libga68/ga68-error.c: Likewise.
-	* libga68/ga68-posix.c: Likewise.
-	* libga68/ga68-standenv.c: Likewise.
-	* libga68/ga68-unistr.c: Likewise.
-	* libga68/ga68.h: Likewise.
-	* libga68/libga68.c: Likewise.
-	* libga68/libga68.spec.in: Likewise.
 
 2025-11-20  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
 

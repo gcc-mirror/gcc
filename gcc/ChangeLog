@@ -1,11 +1,3 @@
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-diagnostics.cc (diagnostic): Copypasto "a meek"
-	should be "a firm".  Support printing line number for programs
-	longer than 9 lines.  Use obstack_append_str rather than
-	obstack_grow.
-	(obstack_append_str): New function.
-
 2025-11-30  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/115120
@@ -31,15 +23,9 @@
 	* tree-vectorizer.h (LOOP_VINFO_EARLY_BRK_NITERS_VAR): New.
 	(class loop_vec_info): Add early_break_niters_var.
 
-2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
-
-	* algol68/lang.opt.urls: Regenerate.
-
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* Makefile.in (OPT_URLS_HTML_DEPS): Add ga68/Option-Index.html.
-	* algol68/Make-lang.in: New file.
-	* algol68/config-lang.in: Likewise.
 
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
@@ -63,8 +49,6 @@
 
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
-	* algol68/lang.opt: New file.
-	* algol68/lang.opt.urls: Generate.
 	* common.opt: New option -static-libga68.
 	* common.opt.urls: Generate.
 	* gcc.cc: Handle OPT_static_libga68.
@@ -72,182 +56,18 @@
 
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
-	* algol68/ga68-internals.texi: New file.
-	* algol68/ga68.texi: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-moids.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-coercions.cc: New file.
-	* algol68/a68-low-generator.cc: Likewise.
-	* algol68/a68-low-units.cc: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-ranges.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-builtins.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-runtime.cc: New file.
-	* algol68/a68-low-runtime.def: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-clauses.cc: New file.
-	* algol68/a68-low-decls.cc: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-posix.cc: New file.
-	* algol68/a68-low-prelude.cc: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-multiples.cc: New file.
-	* algol68/a68-low-structs.cc: Likewise.
-	* algol68/a68-low-unions.cc: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low-bits.cc: New file.
-	* algol68/a68-low-bools.cc: Likewise.
-	* algol68/a68-low-chars.cc: Likewise.
-	* algol68/a68-low-complex.cc: Likewise.
-	* algol68/a68-low-ints.cc: Likewise.
-	* algol68/a68-low-procs.cc: Likewise.
-	* algol68/a68-low-reals.cc: Likewise.
-	* algol68/a68-low-refs.cc: Likewise.
-	* algol68/a68-low-strings.cc: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-low.cc: New file.
-	* algol68/a68-low-misc.cc: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-parser-pragmat.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-parser-serial-dsa.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-extract.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-parser-debug.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-scope.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-taxes.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-moids-diagnostics.cc: New file.
-	* algol68/a68-moids-misc.cc: New file.
-	* algol68/a68-moids-to-string.cc: New file.
-	* algol68/a68-parser-modes.cc: New file.
-	* algol68/a68-parser-moids-check.cc: New file.
-	* algol68/a68-parser-moids-coerce.cc: New file.
-	* algol68/a68-parser-moids-equivalence.cc: New file.
-	* algol68/a68-postulates.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-prelude.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-victal.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-bottom-up.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-brackets.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-top-down.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-keywords.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser-scanner.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-parser-attrs.def: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-parser.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-imports.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-exports.cc: New file.
-	* algol68/ga68-exports.pk: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-	    Marcel van der Veer  <algol68g@xs4all.nl>
-
-	* algol68/a68-diagnostics.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-unistr.c: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68-lang.cc: New file.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/a68spec.cc: New file.
-	* algol68/lang-specs.h: Likewise.
-
-2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
-
-	* algol68/README: New file.
-	* algol68/a68-tree.def: Likewise.
-	* algol68/a68-types.h: Likewise.
-	* algol68/a68.h: Likewise.
-	* algol68/ga68.vw: Likewise.
+	* Makefile.def (libga68): New module.
+	(configure-target-libga68): Likewise.
+	* Makefile.tpl (GA68): Define.
+	(GA68_FOR_BUILD): Likewise.
+	(GA68FLAGS): Likewise.
+	* configure.ac (--enable-libga68): New option.
+	(--enable-algol68-gc): Likewise.
+	(GA68): Subst.
+	(GA68FLAGS): Likewise.
+	Invoke ACX_PROG_GA68.
+	* configure: Regenerate.
+	* Makefile.in: Likewise.
 
 2025-11-29  Sandra Loosemore  <sloosemore@baylibre.com>
 

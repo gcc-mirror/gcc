@@ -1,0 +1,29 @@
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* Makefile.am: New file.
+	* configure.ac: Likewise.
+	* Makefile.in: Generate.
+	* aclocal.m4: Likewise.
+	* config.h.in: Regenerate.
+	* configure: Likewise.
+	* Makefile.in: Likewise.
+	* aclocal.m4: Likewise.
+
+2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* README: New file.
+	* ga68-alloc.c: Likewise.
+	* ga68-error.c: Likewise.
+	* ga68-posix.c: Likewise.
+	* ga68-standenv.c: Likewise.
+	* ga68-unistr.c: Likewise.
+	* ga68.h: Likewise.
+	* libga68.c: Likewise.
+	* libga68.spec.in: Likewise.
+
+
+Copyright (C) 2025 Free Software Foundation, Inc.
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved.
