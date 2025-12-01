@@ -633,7 +633,7 @@ copy_multiple_dimension_elems (size_t dim, size_t num_dimensions,
   tree element_type = TREE_TYPE (element_pointer_type);
   tree upb = a68_multiple_upper_bound (from, size_int (dim));
 
-  char *name = xasprintf ("r%ld%%", dim);
+  char *name = xasprintf ("r" HOST_SIZE_T_PRINT_DEC "%%", (fmt_size_t) dim);
   indexes[dim] = a68_lower_tmpvar (name, ssizetype,
 				   a68_multiple_lower_bound (from,
 							     size_int (dim)));
