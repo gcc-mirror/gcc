@@ -7524,6 +7524,12 @@ trees_out::lang_decl_vals (tree t)
 
 	WT (access);
       }
+      /* A friend template specialisation stashes its owning class on its
+	 DECL_CHAIN; we need to reconstruct this, but it needs to happen
+	 after we stream the template_info so readers can know this is such
+	 an entity.  */
+      if (decl_specialization_friend_p (t))
+	WT (t->common.chain);
       break;
 
     case lds_ns:  /* lang_decl_ns.  */
@@ -7593,6 +7599,8 @@ trees_in::lang_decl_vals (tree t)
     lds_min:
       RT (lang->u.min.template_info);
       RT (lang->u.min.access);
+      if (decl_specialization_friend_p (t))
+	RT (t->common.chain);
       break;
 
     case lds_ns:  /* lang_decl_ns.  */
