@@ -15298,6 +15298,18 @@ LDFLAGS="$cet_save_LDFLAGS"
 
 
 
+for ac_header in libgen.h
+do :
+  ac_fn_c_check_header_mongrel "$LINENO" "libgen.h" "ac_cv_header_libgen_h" "$ac_includes_default"
+if test "x$ac_cv_header_libgen_h" = xyes; then :
+  cat >>confdefs.h <<_ACEOF
+#define HAVE_LIBGEN_H 1
+_ACEOF
+
+fi
+
+done
+
 ac_fn_c_check_decl "$LINENO" "basename" "ac_cv_have_decl_basename" "$ac_includes_default"
 if test "x$ac_cv_have_decl_basename" = xyes; then :
   ac_have_decl=1
