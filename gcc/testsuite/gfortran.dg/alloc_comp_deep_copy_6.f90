@@ -1,6 +1,6 @@
 ! { dg-do run }
-! { dg-additional-options "-Wa,--noexecstack" { target { ! *-*-darwin* } } }
-! { dg-additional-options "-Wl,-z,noexecstack" { target { ! *-*-darwin* } } }
+! { dg-additional-options "-Wa,--noexecstack" { target gas } }
+! { dg-additional-options "-Wl,-z,noexecstack" { target gld } }
 !
 ! PR fortran/121628
 ! Test deep copy of recursive allocatable components with both data arrays
