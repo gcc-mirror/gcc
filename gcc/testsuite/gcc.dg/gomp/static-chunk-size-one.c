@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -O2 -fdump-tree-optimized -fno-tree-pre" } */
+/* { dg-options "-fopenmp -O2 -fdump-tree-optimized -fno-tree-pre -fno-tree-vectorize" } */
 
 int
 bar ()

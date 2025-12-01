@@ -23,5 +23,4 @@ unsigned test4(unsigned x)
  return ret;
 }
 
-/* SCEV can't currently analyze this loop bounds.  */
-/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" { xfail *-*-* } } } */
+/* { dg-final { scan-tree-dump "vectorized 1 loops in function" "vect" } } */
