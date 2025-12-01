@@ -20,7 +20,7 @@ class Test
 public:
   Test (void) { fprintf (stderr, "In Test::Test\n"); /* count(1) */ }
   ~Test (void) {
-   fprintf (stderr, "In Test::~Test\n"); /* count(1) { xfail *-*-dragonfly* } */
+   fprintf (stderr, "In Test::~Test\n"); /* count(1) { xfail *-*-dragonfly* *-*-solaris2* } */
   }
 } T1;
 
@@ -78,4 +78,4 @@ static void __attribute__ ((destructor ((65535)))) dtor_65535 ()
   fprintf (stderr, "in destructor((65535))\n"); /* count(1) */
 }
 
-/* { dg-final { run-gcov branches { -b pr16855-priority.C } { xfail *-*-dragonfly* } } } */
+/* { dg-final { run-gcov branches { -b pr16855-priority.C } { xfail *-*-dragonfly* *-*-solaris2* } } } */
