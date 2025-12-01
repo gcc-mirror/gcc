@@ -190,16 +190,6 @@ has_clause( int data_clauses, data_clause_t clause ) {
 }
 
 static bool
-dialect_proscribed( const YYLTYPE& loc, cbl_dialect_t dialect, const char msg[] ) {
-  if( dialect == cbl_dialects ) {
-    error_msg(loc, "dialect %s does not allow syntax: %qs",
-              cbl_dialect_str(dialect), msg);
-    return true;
-  }
-  return false;
-}
-
-static bool
 is_cobol_charset( const char name[] ) {
   auto eoname = name + strlen(name);
   auto ok = std::all_of( name, eoname,
@@ -2072,21 +2062,14 @@ static class current_t {
     parser_leave_section( programs.top().section );
     programs.pop();
 
-#if 0
-    if( programs.empty() ) {
-      // The default encoding can be changed only with -finternal-ebcdic, and
-      // remains in effect for all programs while the compiler runs.
-      // This comment here to remind us.  
-      default_encoding = prog_descr_t::encoding_t::encoding_base_t();
-    }
-#endif
     debugging_clients.clear();
     error_clients.clear();
     exception_clients.clear();
 
     if( ref ) {
-      yywarn("could not resolve paragraph (or section) '%s' at line %d",
-               ref->paragraph(), ref->line_number());
+      cbl_message(ParUnresolvedProcE,
+                  "could not resolve paragraph (or section) '%s' at line %d",
+                  ref->paragraph(), ref->line_number());
       // add string to indicate ambiguity error
       externals.insert(":ambiguous:");
     }
@@ -2227,11 +2210,10 @@ static class current_t {
   }
 
   void antecedent_dump() const {
-    if( ! yydebug ) return;
     if( ! antecedent_cache.operand ) {
-      yywarn( "Antecedent: none" );
+      dbgmsg( "Antecedent: none" );
     } else {
-      yywarn( "Antecedent: %c %s %s %c",
+      dbgmsg( "Antecedent: %c %s %s %c",
              antecedent_cache.invert? '!':' ',
              name_of(antecedent_cache.operand->field),
              relop_str(antecedent_cache.relop),
@@ -3139,8 +3121,7 @@ parser_move_carefully( const char */*F*/, int /*L*/,
       if( ! valid_move( tgt.field, src.field ) ) {
         if( src.field->type == FldPointer &&
             tgt.field->type == FldPointer ) {
-          if( dialect_mf() || dialect_gnu() ) return true;
-          dialect_error(src.loc, "MOVE POINTER", "mf");
+          dialect_ok(src.loc, MfMovePointer, "MOVE POINTER");
         }
         if( ! is_index ) {
           char ach[16];
@@ -3612,7 +3593,7 @@ goodnight_gracie() {
 
   if( !externals.empty() ) {
     for( const auto& name : externals ) {
-      yywarn("%s calls external symbol '%s'",
+      dbgmsg("%s calls external symbol '%s'",
             prog->name, name.c_str());
     }
     return false;

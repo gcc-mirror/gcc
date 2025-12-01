@@ -51,16 +51,19 @@ Enum
 Name(dialect_type) Type(int) UnknownError(Unrecognized COBOL dialect name: %qs)
 
 EnumValue
-Enum(dialect_type) String(gcc) Value(0x04) Canonical
+Enum(dialect_type) String(iso) Value(0x100)
 
 EnumValue
-Enum(dialect_type) String(ibm) Value(0x01)
+Enum(dialect_type) String(gcc) Value(0x01) Canonical
 
 EnumValue
-Enum(dialect_type) String(mf)  Value(0x02)
+Enum(dialect_type) String(ibm) Value(0x02)
 
 EnumValue
-Enum(dialect_type) String(gnu) Value(0x04)
+Enum(dialect_type) String(mf)  Value(0x04)
+
+EnumValue
+Enum(dialect_type) String(gnu) Value(0x08)
 
 fcobol-exceptions
 Cobol Joined Separate Var(cobol_exceptions)
@@ -69,6 +72,249 @@ Cobol Joined Separate Var(cobol_exceptions)
 copyext
 Cobol Joined Separate Var(cobol_copyext) Init(0)
 Define alternative implicit copybook filename extension
+
+;; warnings
+
+; Par78CdfDefinedW
+Wlevel-78-defined
+Cobol Warning Var(level_78_defined, 1) Init(1)
+Warn if CDF defines Level 78 constant
+
+; MfBinaryLongLong
+Wbinary-long-long
+Cobol Warning Var(binary_long_long, 1) Init(1)
+Warn if BINARY-LONG-LONG is used
+
+; MfCallGiving
+Wcall-giving
+Cobol Warning Var(call_giving, 1) Init(1)
+Warn if CALL ... GIVING is used
+
+; MfCdfDollar
+Wcdf-dollar
+Cobol Warning Var(cdf_dollar, 1) Init(1)
+Warn if CDF %<$IF%> is used
+
+; MfComp6
+Wcomp-6
+Cobol Warning Var(comp_6, 1) Init(1)
+Warn if COMPUTATIONAL-6 is used
+
+; MfCompX
+Wcomp-x
+Cobol Warning Var(comp_x, 1) Init(1)
+Warn if COMPUTATIONAL is used with PICTURE X
+
+; MfTrailing
+Winspect-trailing
+Cobol Warning Var(inspect_trailing, 1) Init(1)
+Warn if INSPECT ... TRAILING is used
+
+; MfLevel_1_Occurs
+Wlevel-1-occurs
+Cobol Warning Var(level_1_occurs, 1) Init(1)
+Warn if Level 01 is used with OCCURS
+
+; MfLevel78
+Wlevel-78
+Cobol Warning Var(level_78, 1) Init(1)
+Warn if Level 78 is used
+
+; MfMovePointer
+Wmove-pointer
+Cobol Warning Var(move_pointer, 1) Init(1)
+Warn if MOVE POINTER is used
+
+; MfReturningNum
+Wreturning-number
+Cobol Warning Var(returning_number, 1) Init(1)
+Warn if RETURNING <number> is used
+
+; MfUsageTypename
+Wusage-typename
+Cobol Warning Var(usage_typename, 1) Init(1)
+Warn if USAGE IS TYPENAME is used
+
+; ParNumstrW
+Wbad-numeric
+Cobol Warning Var(bad_numeric, 1) Init(1)
+Warn if numeric string is invalid
+
+; CdfParameterW
+Wcdf-invalid-parameter
+Cobol Warning Var(cdf_invalid_parameter, 1) Init(1)
+Warn if referenced CDF PARAMETER is not defined
+
+; CdfNotFoundW
+Wcdf-name-not-found
+Cobol Warning Var(cdf_name_not_found, 1) Init(1)
+Warn if referenced CDF name is not defined
+
+; LexInputN
+Wcopybook-found
+Cobol Warning Var(copybook_found, 1) Init(1)
+Print message when copybook is processed
+
+; EcUnknownW
+Wec-unknown
+Cobol Warning Var(ec_unknown, 1) Init(1)
+Warn if unimplemented/unknown exception condition is referenced
+
+; ParInfoI
+Wentry-convention
+Cobol Warning Var(entry_convention, 1) Init(1)
+Print message when ENTRY CONVENTION is specified
+
+; LexIncludeOkN
+Winclude-file-found
+Cobol Warning Var(include_file_found, 1) Init(1)
+Print message when include file is processed
+
+; ParLiteral2W
+Wliteral-concat
+Cobol Warning Var(literal_concat, 1) Init(1)
+Warn if concatenated literals use different encodings 
+
+; ParLocaleW
+Wlocale-error
+Cobol Warning Var(locale_error, 1) Init(1)
+Warn if locale(3) fails 
+
+; ParNoCorrespondingW
+Wmove-corresponding
+Cobol Warning Var(warn_corresponding, 1) Init(1) 
+Warn if COBOL MOVE has no corresponding fields.
+
+; ParLangInfoW
+Wnllanginfo-error
+Cobol Warning Var(nllanginfo_error, 1) Init(1)
+Warn if nlanglanginfo(3) fails 
+
+; IbmLengthOf
+Wlength-of
+Cobol Warning Var(cobol_length_of, 1) Init(1)
+Warn if LENGTH OF is used
+
+; IbmProcedurePointer
+Wprocedure-pointer
+Cobol Warning Var(procedure_pointer, 1) Init(1)
+Warn if PROCEDURE POINTER is used
+
+; IbmSectionSegmentW
+Wsegment
+Cobol Warning Var(cobol_segment, 1) Init(1)
+Warn if SECTION segments are used 
+
+; IsoResume
+Wcobol-resume
+Cobol Warning Var(cobol_resume, 1) Init(1)
+Warn if resume is used (instead of error for IBM)
+
+;; unimplemented syntax
+
+; SynApplyCommit
+Wapply-commit
+Cobol Warning Var(apply_commit, 1) Init(1)
+Warn if APPLY COMMIT is used 
+
+; SynHighOrderBit
+Whigh-order-bit
+Cobol Warning Var(high_order_bit, 1) Init(1)
+Warn if HIGH-ORDER-LEFT HIGH-ORDER-RIGHT is used 
+
+; SynFileCodeSet  
+Wfile-code-set
+Cobol Warning Var(file_code_set, 1) Init(1)
+Warn if FILE CODE SET is used 
+
+; SynRecordingMode
+Wrecording-mode
+Cobol Warning Var(recording_mode, 1) Init(1)
+Warn if RECORDING MODE is used 
+
+; SynSetLocaleTo
+Wset-locale-to
+Cobol Warning Var(set_locale_to, 1) Init(1)
+Warn if SET LOCALE ... TO is used 
+
+; SynSetToLocale
+Wset-to-locale
+Cobol Warning Var(set_to_locale, 1) Init(1)
+Warn if SET ... TO LOCALE is used 
+
+;; errors to warnings
+
+; LexLineE
+Wbad-line-directive
+Cobol Warning Var(bad_line_directive, 1) Init(1)
+Warn if a line directive is malformed (instead of error)
+
+; IbmEqualAssignE
+Wequal-assign
+Cobol Warning Var(equal_assign, 1) Init(1)
+Warn if EQUAL used as assignment operator (instead of error)
+
+; ParIconvE
+Wiconv-error
+Cobol Warning Var(iconv_error, 1) Init(1)
+Warn if iconv(3) cannot convert between encodings (instead of error)
+
+; LexIncludeE
+Winclude-file-not-found
+Cobol Warning Var(include_file_not_found, 1) Init(1)
+Warn if include file is not found (instead of error)
+
+; LexPreprocessE
+Wpreprocessor-error
+Cobol Warning Var(preprocessor_error, 1) Init(1)
+Warn if a preprocessor fails  (instead of error)
+
+; ParUnresolvedProcE
+Wprocedure-not-found
+Cobol Warning Var(procedure_not_found, 1) Init(1)
+Warn if a referenced procedure is not found (instead of error)
+
+; LexReplaceE
+Wreplace-error
+Cobol Warning Var(replace_error, 1) Init(1)
+Warn if REPLACE cannot be processed (instead of error)
+
+; IbmSectionRangeE
+Wsegment-error
+Cobol Warning Var(segment_error, 1) Init(1)
+Warn if a SEGMENT section is invalid (instead of error)
+
+; IbmSectionNegE
+Wsegment-negative
+Cobol Warning Var(segment_negative, 1) Init(1)
+Warn if a SEGMENT range is negative (instead of error)
+
+; LexIndicatorE
+Wstray-indicator
+Cobol Warning Var(stray_indicator, 1) Init(1)
+Warn if indicator column has no recognized meaning (instead of error)
+
+; LexSeparatorE
+Woperator-space
+Cobol Warning Var(operator_space, 1) Init(1)
+Warn if relational operator not followed by space (instead of error)
+
+; IbmEjectE
+Wcobol-eject
+Cobol Warning Var(cobol_eject, 1) Init(1)
+Warn if IBM-style EJECT is used (instead of error)
+
+; IbmStopNumber
+Wstop-number
+Cobol Warning Var(stop_number, 1) Init(1)
+Warn if IBM-style STOP <number> is used (instead of error)
+
+; IbmVolatileE
+Wcobol-volatile
+Cobol Warning Var(cobol_volatile, 1) Init(1)
+Warn if VOLATILE is used (instead of error if -dialect ibm)
+
+;; end error-suppression options
 
 fdefaultbyte
 Cobol RejectNegative Joined Separate UInteger Var(cobol_default_byte)

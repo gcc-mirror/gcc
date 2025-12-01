@@ -762,7 +762,9 @@ EVERY		{ return EVERY; }
 ERROR		{ return ERROR; }
 EVALUATE	{ return EVALUATE; }
 
-EQUALS?         { return '='; }
+EQUALS?         { ydflval.string = yylval.string = xstrdup(yytext);
+		  return '='; }
+
 ENVIRONMENT[[:blank:]]+DIVISION	{ return ENVIRONMENT_DIV; }
 
 ENTRY		{ return ENTRY; }
@@ -900,11 +902,7 @@ ACCESS		{ return ACCESS; }
 ACCEPT		{ return ACCEPT; }
 
 DELETE		{ return DELETE; }
-EJECT{DOTEOL}? {
-		  if( ! dialect_ibm() ) {
-		    dialect_error(yylloc, "EJECT is not ISO syntax,", "ibm");
-		  }
-		}
+EJECT{DOTEOL}?  { dialect_ok(yylloc, IbmEjectE, "EJECT"); }
 INSERTT		{ return INSERTT; }
 LABEL		{ return LABEL; }
 PROCESS		{ return PROCESS; }
@@ -1007,9 +1005,7 @@ USE({SPC}FOR)?		{ return USE; }
   BINARY-SHORT	  		{ return bcomputable(FldNumericBin5, 2); }
   BINARY-LONG	   		{ return bcomputable(FldNumericBin5, 4); }
   BINARY-DOUBLE			{ return bcomputable(FldNumericBin5, 8); }
-  BINARY-LONG-LONG		{ if( ! dialect_mf() ) {
-				    dialect_error(yylloc, yytext, "mf");
-				  }
+  BINARY-LONG-LONG		{ dialect_ok(yylloc, MfBinaryLongLong, "BINARY-LONG-LONG");
 				  return bcomputable(FldNumericBin5, 8);
 				}
 
@@ -1044,9 +1040,8 @@ USE({SPC}FOR)?		{ return USE; }
   PROGRAM-POINTER      	{ yylval.field_attr = prog_ptr_e; return POINTER; }
   POINTER           	{ yylval.field_attr = none_e;     return POINTER; }
 
-  PROCEDURE-POINTER    	{ if( dialect_gcc() ) {
-			    dialect_error(yylloc, yytext, "ibm or mf");
-			  }
+  PROCEDURE-POINTER    	{ 
+			  dialect_ok(yylloc, IbmProcedurePointer, yytext);
 			  yylval.field_attr = prog_ptr_e;
 			  return POINTER;  // return it anyway
 			}
@@ -1086,13 +1081,11 @@ USE({SPC}FOR)?		{ return USE; }
   DEPENDING		{ return DEPENDING; }
   DESCENDING		{ return DESCENDING; }
   DISPLAY		{ return DISPLAY; }
-  EJECT{DOTEOL}?  {
-		  if( ! dialect_ibm() ) {
-		    dialect_error(yylloc, "EJECT is not ISO syntax,", "ibm");
-		  }
-                  auto len = yyleng - 1;
-                  if( yytext[len] == '\f' ) myless(--len);
-		}
+  EJECT{DOTEOL}?  	{
+			  dialect_ok(yylloc, IbmEjectE, "EJECT"); 
+			  auto len = yyleng - 1;
+			  if( yytext[len] == '\f' ) myless(--len);
+			}
   EXTERNAL		{ return EXTERNAL; }
   FALSE			{ return FALSE_kw; }
   FROM			{ return FROM; }
@@ -1506,16 +1499,21 @@ USE({SPC}FOR)?		{ return USE; }
 <cdf_state,procedure_div>{
   (IS{SPC})?"<"         { return '<'; }
   (IS{SPC})?"<="        { return LE;  }
-  (IS{SPC})?"="         { return '='; }
+  (IS{SPC})?"="         { static char eq[] = "=";
+			  ydflval.string = yylval.string = eq;
+  			  return EQ; }
   (IS{SPC})?"<>"        { return NE;  }
   (IS{SPC})?">="        { return GE;  }
   (IS{SPC})?">"         { return '>'; }
 
-  {LESS_THAN} 				{ return '<'; }
+  {LESS_THAN} 		{ return '<'; }
   {LESS_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return LE; }
-  (IS{SPC})?EQUALS?({SPC}TO)?/[[:space:]]		{ return '='; }
+  (IS{SPC})?EQUALS?({SPC}TO)?/[[:space:]] {
+		  static char eq[] = "EQUAL";
+		  ydflval.string = yylval.string = eq;
+		  return EQ; }
   {GREATER_THAN}{SPC}{OR_EQUAL}/[[:space:]]	{ return GE; }
-  {GREATER_THAN}			{ return '>'; }
+  {GREATER_THAN}				{ return '>'; }
 
   {ISNT}{OSPC}">="        { verify_ws(yytext[yyleng - 3]); return '<'; }
   {ISNT}{OSPC}">"         { verify_ws(yytext[yyleng - 2]); return LE;  }
@@ -1992,7 +1990,8 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   {STRING}      { yy_pop_state();
                   yypush_buffer_state( yy_create_buffer(yyin, YY_BUF_SIZE) );
                   if( (yyin = cdftext::lex_open(yytext)) == NULL ) {
-                    yywarn("could not open BASIS file '%s'", yytext);
+                    cbl_message(yylloc, LexIncludeE,
+                                "could not open BASIS file '%s'", yytext);
                     yyterminate();
                   }
                 }
@@ -2003,7 +2002,8 @@ BASIS		{ yy_push_state(basis); return BASIS; }
 }
 
 <procedure_div>{
-   EQUALS?{OSPC}/[(] { return '='; }
+   EQUALS?{OSPC}/[(]	{ ydflval.string = yylval.string = xstrdup(yytext);
+		  	  return EQ; }
 
    {NAME}{OSPC}/[(] { /* If /{OSPC}, "dangerous trailing context" "*/
                   if( is_integer_token() ) return numstr_of(yytext);
@@ -2084,21 +2084,15 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   ^[ ]*>>{OBLANK}ELSE	 	{ return CDF_ELSE; }
   ^[ ]*>>{OBLANK}END-IF	 	{ return CDF_END_IF; }
 
-  ^[ ]*[$]{OBLANK}IF		{ if( ! dialect_mf() )  {
-				    dialect_error(yylloc,  yytext, "mf");
-				  }
+  ^[ ]*[$]{OBLANK}IF		{ dialect_ok(yylloc, MfCdfDollar, yytext); 
 				  yy_push_state(cdf_state); return CDF_IF; }
-  ^[ ]*[$]{OBLANK}ELSE	 	{ if( ! dialect_mf() )  {
-				    dialect_error(yylloc,  yytext, "mf");
-				  }
+  ^[ ]*[$]{OBLANK}ELSE	 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
 				  return CDF_ELSE; }
-  ^[ ]*[$]{OBLANK}END	 	{ if( ! dialect_mf() ) {
-				    dialect_error(yylloc,  yytext, "mf");
-				  }
+  ^[ ]*[$]{OBLANK}END	 	{ dialect_ok(yylloc, MfCdfDollar, yytext); 
 				  return CDF_END_IF; }
 
   ^[ ]*[$]{OBLANK}SET({SPC}CONSTANT)? {
-				  if( ! dialect_mf() ) dialect_error(yylloc, yytext, "mf");
+				  dialect_ok(yylloc, MfCdfDollar, yytext); 
 				  yy_push_state(cdf_state); return CDF_DEFINE; }
 
   ^[ ]*>>{OBLANK}EVALUATE		{ return CDF_EVALUATE; }
@@ -2293,7 +2287,8 @@ BASIS		{ yy_push_state(basis); return BASIS; }
   END-SUBTRACT	{ return END_SUBTRACT; }
   END-WRITE	{ return END_WRITE; }
   ENVIRONMENT	{ return ENVIRONMENT; }
-  EQUAL		{ return EQUAL; }
+  EQUAL		{ ydflval.string = yylval.string = xstrdup(yytext);
+		  return EQ; }
   ERROR		{ return ERROR; }
   EVALUATE	{ return EVALUATE; }
   EXCEPTION	{ return EXCEPTION; }

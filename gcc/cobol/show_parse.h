@@ -449,19 +449,15 @@ extern bool cursor_at_sol;
         do {                                                            \
         if(!a)                                                          \
             {                                                           \
-            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
-            gcc_unreachable();                                          \
-            abort();                                                    \
+            cbl_internal_error("%s: parameter %<" #a "%> is NULL", __func__); \
             }                                                           \
         if( !a->var_decl_node )                                         \
             {                                                           \
-            yywarn("%s: parameter %<" #a "%> is variable "              \
+            cbl_internal_error("%s: parameter %<" #a "%> is variable "              \
                    "%s<%s> with NULL %<var_decl_node%>",                \
                 __func__,                                               \
                 a->name,                                                \
                 cbl_field_type_str(a->type) );                          \
-            gcc_unreachable();                                          \
-            abort();                                                    \
             }                                                           \
         } while(0);
 
@@ -470,19 +466,15 @@ extern bool cursor_at_sol;
         do {                                                            \
         if(!a)                                                          \
             {                                                           \
-            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
-            gcc_unreachable();                                          \
-            abort();                                                    \
+            cbl_internal_error("%s: parameter %<" #a "%> is NULL", __func__);       \
             }                                                           \
         if( !a->var_decl_node && a->type != FldConditional && a->type != FldLiteralA) \
             {                                                           \
-            yywarn("%s: parameter %<" #a "%> is variable "               \
+            cbl_internal_error("%s: parameter %<" #a "%> is variable "               \
                    "%s<%s> with NULL %<var_decl_node%>",                \
                 __func__,                                               \
                 a->name,                                                \
                 cbl_field_type_str(a->type) );                          \
-            gcc_unreachable();                                          \
-            abort();                                                    \
             }                                                           \
         } while(0);
 
@@ -491,9 +483,7 @@ extern bool cursor_at_sol;
         do{                                                             \
         if(!a)                                                          \
             {                                                           \
-            yywarn("%s: parameter %<" #a "%> is NULL", __func__);       \
-            gcc_unreachable();                                          \
-            abort();                                                    \
+            cbl_internal_error("%s: parameter %<" #a "%> is NULL", __func__);       \
             }                                                           \
         }while(0);
 

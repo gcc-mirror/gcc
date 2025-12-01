@@ -359,7 +359,7 @@ class locale_tgt_t {
 			NUMED_CR  "NUMERIC-EDITED CR picture"
 			NUMED_DB  "NUMERIC-EDITED DB picture"
 %token  <number>        NINEDOT NINES NINEV PIC_P ONES
-%token  <string>        SPACES
+%token  <string>        SPACES EQ "EQUAL"
 %token  <literal>       LITERAL
 %token  <number>        END EOP
 %token  <string>        FILENAME
@@ -477,8 +477,8 @@ class locale_tgt_t {
 			DOWN DUPLICATES
 			DYNAMIC
 
-			E EBCDIC EC EGCS ENCODING ENTRY ENVIRONMENT EQUAL EVERY
-			EXAMINE EXHIBIT EXP EXP10 EXTEND EXTERNAL
+			E EBCDIC EC EGCS ENCODING ENTRY ENVIRONMENT 
+			EVERY EXAMINE EXHIBIT EXP EXP10 EXTEND EXTERNAL
 
 			EXCEPTION_FILE	     "EXCEPTION-FILE"
 			EXCEPTION_FILE_N     "EXCEPTION-FILE-N"
@@ -1130,7 +1130,7 @@ class locale_tgt_t {
                         DYNAMIC
 
                         E EBCDIC EC EGCS ELEMENT
-                        ENTRY ENVIRONMENT EQUAL ERROR EVERY
+                        ENTRY ENVIRONMENT ERROR EVERY
                         EXAMINE EXCEPTION EXHIBIT EXP EXP10 EXTEND EXTERNAL
 
                         EXCEPTION_FILE
@@ -1336,7 +1336,7 @@ class locale_tgt_t {
 %left  OR
 %left  AND
 %right  NOT
-%left '<' '>' '=' NE LE GE
+%left '<' '>' EQ NE LE GE
 %left '-' '+'
 %left '*' '/'
 %right POW
@@ -1658,21 +1658,25 @@ opt_round:      DEFAULT ROUNDED mode is rounded_type[type] {
                 }
                 ;
 opt_entry:      ENTRY_CONVENTION is COBOL {
-		  yywarn("ENTRY-CONVENTION IS COBOL, check");
+                 cbl_message(ParInfoI, "ENTRY-CONVENTION IS COBOL");
 		}
                 ;
 opt_binary:     FLOAT_BINARY default_kw is HIGH_ORDER_LEFT
 		{
-		  cbl_unimplementedw("HIGH-ORDER-LEFT was ignored");
+                  cbl_unimplementedw(SynHighOrderBit,
+                                     "HIGH-ORDER-LEFT was ignored");
 		  if( ! current.option_binary(cbl_options_t::high_order_left_e) ) {
-		    error_msg(@3, "unable to set %<HIGH_ORDER_LEFT%>");
+                      cbl_message(@3, SynHighOrderBit,
+                                  "unable to set %<HIGH_ORDER_LEFT%>");
 		  }
 		}
         |       FLOAT_BINARY default_kw is HIGH_ORDER_RIGHT[opt]
 		{
-		  cbl_unimplementedw("HIGH-ORDER-RIGHT was ignored");
+                    cbl_unimplementedw(SynHighOrderBit,
+                                       "HIGH-ORDER-RIGHT was ignored");
 		  if( ! current.option_binary(cbl_options_t::high_order_right_e) ) {
-		    error_msg(@opt, "unable to set HIGH-ORDER-RIGHT");
+                      cbl_message(@opt, SynHighOrderBit,
+                                  "unable to set HIGH-ORDER-RIGHT");
 		  }
 		}
                 ;
@@ -1681,30 +1685,38 @@ default_kw:     %empty
                 ;
 opt_decimal:    FLOAT_DECIMAL default_kw is HIGH_ORDER_LEFT[opt]
 		{
-		  cbl_unimplementedw("HIGH-ORDER-LEFT was ignored");
+		  cbl_unimplementedw(SynHighOrderBit,
+                                  "HIGH-ORDER-LEFT was ignored");
 		  if( ! current.option_decimal(cbl_options_t::high_order_left_e) ) {
-		    error_msg(@opt, "unable to set HIGH-ORDER-LEFT");
+		    cbl_message(@opt, SynHighOrderBit,
+                                "unable to set HIGH-ORDER-LEFT");
 		  }
 		}
         |       FLOAT_DECIMAL default_kw is HIGH_ORDER_RIGHT[opt]
 		{
-		  cbl_unimplementedw("HIGH-ORDER-RIGHT was ignored");
+		  cbl_unimplementedw(SynHighOrderBit,
+                                     "HIGH-ORDER-RIGHT was ignored");
 		  if( ! current.option_decimal(cbl_options_t::high_order_right_e) ) {
-		    error_msg(@opt, "unable to set HIGH-ORDER-RIGHT");
+		    cbl_message(@opt, SynHighOrderBit,
+                                  "unable to set HIGH-ORDER-RIGHT");
 		  }
 		}
         |       FLOAT_DECIMAL default_kw is BINARY_ENCODING[opt]
 		{
-		  cbl_unimplementedw("BINARY-ENCODING was ignored");
+		  cbl_unimplementedw(SynHighOrderBit,
+                                  "BINARY-ENCODING was ignored");
 		  if( ! current.option(cbl_options_t::binary_encoding_e) ) {
-		    error_msg(@opt, "unable to set BINARY-ENCODING option");
+		    cbl_message(@opt, SynHighOrderBit,
+                                  "unable to set BINARY-ENCODING option");
 		  }
 		}
         |       FLOAT_DECIMAL default_kw is DECIMAL_ENCODING[opt]
 		{
-		  cbl_unimplementedw("DECIMAL-ENCODING was ignored");
+		  cbl_unimplementedw(SynHighOrderBit,
+                                  "DECIMAL-ENCODING was ignored");
 		  if( ! current.option(cbl_options_t::decimal_encoding_e) ) {
-		    error_msg(@opt, "unable to set DECIMAL-ENCODING option");
+		    cbl_message(@opt, SynHighOrderBit,
+                                  "unable to set DECIMAL-ENCODING option");
 		  }
 		}
                 ;
@@ -1888,7 +1900,8 @@ io_control_clause:
                 }
         |       APPLY COMMIT on field_list
                 {
-                  cbl_unimplementedw("I-O-CONTROL APPLY COMMIT");
+                  cbl_unimplementedw(SynApplyCommit,
+                                     "I-O-CONTROL APPLY COMMIT ignored");
                 }
                 ;
 area:           %empty
@@ -3160,14 +3173,16 @@ fd_clause:      record_desc
                     error_msg(@NAME, "invalid RECORDING MODE '%s'", $NAME);
                     YYERROR;
                   }
-                  cbl_unimplementedw("RECORDING MODE was ignored, not defined by ISO 2023");
+                  cbl_unimplementedw(SynRecordingMode,
+                                     "RECORDING MODE ignored");
                 }
         |       VALUE OF fd_values
         |       CODESET is codeset_name[codeset] {
                   auto f = cbl_file_of(symbol_at(file_section_fd));
                   f->codeset = cbl_file_t::codeset_t($codeset.encoding,
                                                      $codeset.isym);
-                  cbl_unimplementedw("sorry, unimplemented CODE-SET");
+                  cbl_unimplementedw(SynFileCodeSet,
+                                     "sorry, unimplemented CODE-SET");
                 }
         |       CODESET for alphanational is codeset_name[codeset]
                 {
@@ -3758,24 +3773,23 @@ data_descr1:    level_name
 
         |       LEVEL78 NAME[name] VALUE is value78[data]
                 {
-                  if( ! (dialect_mf() || dialect_gnu()) ) {
-                    dialect_error(@1, "level 78", "mf or gnu");
-                    YYERROR;
-                  }
+                  dialect_ok(@1, MfLevel78, "LEVEL 78");
                   cbl_field_t field = { FldLiteralA, constant_e, *$data.data,
                                         78, $name, @name.first_line };
                   if( field.data.initial ) {
                     field.attr |= quoted_e;
                     field.codeset.set($data.encoding);
                     if( !cdf_value(field.name, field.data.initial) ) {
-                      yywarn("%s was defined by CDF", field.name);
+                      cbl_message(Par78CdfDefinedW,
+                                  "%s was defined by CDF", field.name);
                     }
                   } else {
                     field.type = FldLiteralN;
                     field.data.initial = string_of(field.data.value_of());
                     field.codeset.set($data.encoding);
                     if( !cdf_value(field.name, field.as_integer()) ) {
-                      yywarn("%s was defined by CDF", field.name);
+                      cbl_message(Par78CdfDefinedW,
+                                  "%s was defined by CDF", field.name);
                     }
                   }
                   if( ($$ = field_add(@name, &field)) == NULL ) {
@@ -4062,8 +4076,9 @@ literalism:     LITERAL { $$ = $1; }
 
                   if( $second.prefix[0] ) { strcpy(output.prefix, $second.prefix); }
                   if( ! $first.compatible_prefix($second) ) {
-                    yywarn("dissimilar literals, '%s' prevails",
-                          output.prefix);
+                    cbl_message(@$, ParLiteral2W,
+                                "dissimilar literals, '%s' prevails",
+                                output.prefix);
                   }
                 }
                 ;
@@ -4173,13 +4188,11 @@ data_clauses:   data_clause
                     if( field->is_binary_integer() && field->data.capacity == 4) {
                       auto redefined = symbol_redefines(field);
                       if( redefined && redefined->type == FldPointer ) {
-                        if( yydebug ) {
-                          yywarn("expanding %s size from %u bytes to %wd "
-				 "because it redefines %s with %<USAGE POINTER%>",
-                                field->name, field->size(),
-                                int_size_in_bytes(ptr_type_node),
-                                redefined->name);
-                        }
+                        dbgmsg("expanding %s size from %u bytes to %lu "
+			       "because it redefines %s with USAGE POINTER",
+                               field->name, field->size(),
+                               int_size_in_bytes(ptr_type_node),
+                               redefined->name);
                         field->embiggen();
                       }
                     }
@@ -4213,7 +4226,7 @@ data_clause:    any_length        { $$ = any_length_e; }
                   cbl_field_t *field = current_field();
                   switch( field->level ) {
                   case 1:
-		    if( dialect_mf() ) break;
+		    if( dialect_ok(@$, MfLevel_1_Occurs, "LEVEL 01 for OCCURS") ) break;
 		    __attribute__((fallthrough));
                   case 77:
                   case 88:
@@ -4336,7 +4349,7 @@ picture_clause: PIC signed nps[fore] nines nps[aft]
 
 		  if( field->type == FldNumericBin5 &&
 		      field->data.capacity == 0xFF  &&
-		      (dialect_gnu() || dialect_mf()) )
+		      dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE") )
 		  { // PIC X COMP-X or COMP-9
 		    if( ! field->has_attr(all_x_e) ) {
 		      error_msg(@2, "COMP PICTURE requires all X%'s or all 9%'s");
@@ -4568,22 +4581,15 @@ usage_clause1:  usage BIT
 		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
 			assert( field->data.digits == 0 );
 			assert( field->data.rdigits == 0 );
-		        if( (dialect_mf() || dialect_gnu()) ) {
-                          field->type = $comp.type;
-			  field->clear_attr(signable_e);
-		        } else {
-			  error_msg(@comp, "numeric USAGE invalid "
-				           "with Alphanumeric PICTURE");
-			  dialect_error(@1, "Alphanumeric COMP-5 or COMP-X", "mf or gnu");
-			  YYERROR;
-		        }
+		        dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
+
+                        field->type = $comp.type;
+			field->clear_attr(signable_e);
                         break;
 		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
 		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
 			  assert( field->data.digits == field->data.capacity );
-		          if( ! (dialect_mf() || dialect_gnu()) ) {
-				  dialect_error(@1, "COMP-X", "mf or gnu");
-		          }
+		          dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
 			}
                         field->type = $comp.type;
                         field->data.capacity = type_capacity(field->type,
@@ -4596,9 +4602,7 @@ usage_clause1:  usage BIT
 		  case FldPacked: // comp-6 is unsigned comp-3
 		    assert(! $comp.signable);  // else PACKED_DECIMAL from scanner
 		    field->attr |= separate_e;
-		    if( ! dialect_mf() ) {
-		      dialect_error(@1, "COMP-6", "mf");
-		    }
+                    dialect_ok(@2, MfComp6, "COMP-6");
                     if( field->type == FldNumericDisplay ) {// PICTURE before USAGE
                       infer = false;
                       assert(field->data.capacity > 0);
@@ -4649,22 +4653,14 @@ usage_clause1:  usage BIT
 		      case FldAlphanumeric:   // PIC X COMP-5 or COMP-X
 			assert( field->data.digits == 0 );
 			assert( field->data.rdigits == 0 );
-		        if( (dialect_mf() || dialect_gnu()) ) {
-                          field->type = $comp.type;
-			  field->clear_attr(signable_e);
-		        } else {
-			  error_msg(@comp, "numeric USAGE invalid "
-				           "with Alphanumeric PICTURE");
-			  dialect_error(@1, "Alphanumeric COMP-5 or COMP-X", "mf or gnu");
-			  YYERROR;
-		        }
+		        dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
+                        field->type = $comp.type;
+			field->clear_attr(signable_e);
                         break;
 		      case FldNumericDisplay: // PIC 9 COMP-5 or COMP-X
 		        if( $comp.capacity == 0xFF ) { // comp-x is a bit like comp-5
 			  assert( field->data.digits == field->data.capacity );
-		          if( ! (dialect_mf() || dialect_gnu()) ) {
-				  dialect_error(@1, "COMP-X", "mf or gnu");
-		          }
+                          dialect_ok(@2, MfCompX, "alphanumeric PICTURE with numeric USAGE");
 			}
                         field->type = $comp.type;
                         field->data.capacity = type_capacity(field->type,
@@ -4677,9 +4673,7 @@ usage_clause1:  usage BIT
 		  case FldPacked: // comp-6 is unsigned comp-3
 		    assert(! $comp.signable);  // else PACKED_DECIMAL from scanner
 		    field->attr |= separate_e;
-		    if( ! dialect_mf() ) {
-		      dialect_error(@1, "COMP-6", "mf");
-		    }
+                    dialect_ok(@2, MfComp6, "COMP-6");
                     if( field->type == FldNumericDisplay ) {// PICTURE before USAGE
                       infer = false;
                       assert(field->data.capacity > 0);
@@ -5074,10 +5068,7 @@ type_clause: TYPE to typename
                 }
         |       USAGE is typename
                 {
-                  if( ! dialect_mf() ) {
-                    dialect_error(@typename, "USAGE TYPENAME", "mf");
-                    YYERROR;
-                  }
+                  dialect_ok(@typename, MfUsageTypename, "USAGE TYPENAME");
                   cbl_field_t *field = current_field();
                   if( $typename ) {
                     const auto e = symbol_field_same_as(field, $typename);
@@ -5112,10 +5103,8 @@ typedef_clause: is TYPEDEF strong
 volatile_clause:
                 VOLATILE
                 {
-                  if( dialect_ibm() ) {
-                    yywarn("VOLATILE has no effect");
-                  } else {
-                    dialect_error(@1, "VOLATILE", "ibm");
+                  if( dialect_ok(@1, IbmVolatileE, "VOLATILE") ) {
+                    cbl_message(@1, IbmVolatileW, "VOLATILE has no effect");
                   }
                 }
                 ;
@@ -5272,10 +5261,9 @@ sentence:       statements  '.'
                   std::set<std::string> externals = current.end_program();
                   if( !externals.empty() ) {
                     for( const auto& name : externals ) {
-                      yywarn("%s calls external symbol '%s'",
+                      dbgmsg("%s calls external symbol '%s'",
                              prog->name, name.c_str());
                     }
-                    YYERROR;
                   }
                   // pointer still valid because name is in symbol table
                   ast_end_program(prog->name);
@@ -5692,9 +5680,10 @@ add_body:       sum TO rnames
                     corresponding_arith_fields( $sum->refers.front().field,
                                                 rhs.front().refer.field );
                     if( pairs.empty() ) {
-                      yywarn( "%s and %s have no corresponding fields",
-                                $sum->refers.front().field->name,
-                                rhs.front().refer.field->name );
+                      cbl_message( @$, ParNoCorrespondingW,
+                                   "%s and %s have no corresponding fields",
+                                   $sum->refers.front().field->name,
+                                   rhs.front().refer.field->name );
                     }
                   // First src/tgt elements are templates.
                   // Their subscripts apply to the correspondents.
@@ -5854,17 +5843,12 @@ compute_body:   rnames { statement_begin(@$, COMPUTE); } compute_expr[expr] {
                   $$.expr = $expr;
                 }
                 ;
-compute_expr:   '=' {
+compute_expr:   EQ {
+                  if( $1[0] == 'E' ) { // lexer found EQUALS keyword
+                    dialect_ok(@1, IbmEqualAssignE,
+                               "EQUAL as assignment operator" );
+                  }
                   current.compute_begin();
-                } expr {
-                  $$ = $expr;
-                }
-                ;
-	|	EQUAL {
-		  if( ! dialect_ibm() ) {
-		    dialect_error(@1, "EQUAL invalid as assignment operator", "ibm");
-		  }
-		  current.compute_begin();
                 } expr {
                   $$ = $expr;
                 }
@@ -6079,9 +6063,8 @@ end_program:    end_program1[end] '.'
                   std::set<std::string> externals = current.end_program();
                   if( !externals.empty() ) {
 		    for( const auto& name : externals ) {
-		      yywarn("%s calls external symbol '%s'", prog->name, name.c_str());
+		      dbgmsg("%s calls external symbol '%s'", prog->name, name.c_str());
 		    }
-                    YYERROR;
                   }
                   // pointer still valid because name is in symbol table
                   ast_end_program(prog->name);
@@ -6192,9 +6175,7 @@ exit_with:      %empty
                 }
 	|	RETURNING stop_status
                 {
-		  if( ! dialect_mf() ) {
-                    dialect_error(@2, "RETURNING <number>", "mf");
-		  }
+                  dialect_ok(@$, MfReturningNum, "RETURNING <number>");
                   $$ = $stop_status? $stop_status : new_reference(literally_one);
                 }
                 ;
@@ -7229,8 +7210,9 @@ move:           MOVE scalar TO move_tgts[tgts]
                   }
 
                   if( !move_corresponding(*$to, *$from) ) {
-                    yywarn( "%s and %s have no corresponding fields",
-                            $from->field->name, $to->field->name );
+                    cbl_message( @$, ParNoCorrespondingW,
+                                 "%s and %s have no corresponding fields",
+                                 $from->field->name, $to->field->name );
                   }
                 }
                 ;
@@ -7407,7 +7389,7 @@ arith_err:      SIZE_ERROR
 
 relop:          '<' { $$ = '<'; }
         |       LE  { $$ = LE;  }
-        |       '=' { $$ = '='; }
+        |       EQ { $$ = EQ; }
         |       NE  { $$ = NE;  }
         |       GE  { $$ = GE;  }
         |       '>' { $$ = '>'; }
@@ -7442,25 +7424,19 @@ num_value:      scalar // might actually be a string
         |       LENGTH_OF binary_type[size] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
 		  parser_set_numeric($$->field, $size);
 		}
         |       LENGTH_OF name[val] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
 		  parser_set_numeric($$->field, $val->data.capacity);
                 }
         |       LENGTH_OF name[val] subscripts[subs] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
                   if( 0 == dimensions($val) ) {
 		    cbl_refer_t r1($val);
 		    subscript_dimension_error( @subs, $subs->refers.size(), &r1 );
@@ -7488,7 +7464,7 @@ num_value:      scalar // might actually be a string
 /* cce_relexpr: cce_expr */
 /*      |       cce_relexpr '<' cce_expr { $$ = $1 <  $3; } */
 /*      |       cce_relexpr LE  cce_expr { $$ = $1 <= $3; } */
-/*      |       cce_relexpr '=' cce_expr { $$ = $1 == $3; } */
+/*      |       cce_relexpr EQ cce_expr { $$ = $1 == $3; } */
 /*      |       cce_relexpr NE  cce_expr { $$ = $1 != $3; } */
 /*      |       cce_relexpr GE  cce_expr { $$ = $1 >= $3; } */
 /*      |       cce_relexpr '>' cce_expr { $$ = $1 >  $3; } */
@@ -7553,23 +7529,19 @@ section_name:	NAME section_kw '.'
 
 section_kw:     SECTION
                 {
-                  if( $1 ) {
+                  if( $1 && dialect_ok(@1, IbmSectionSegmentW, "SECTION segment") ) {
+		    cbl_message(@1, IbmSectionSegmentW,
+                                "SECTION segment %qs was ignored", $1);
 		    if( *$1 == '-' ) {
-		      error_msg(@1, "SECTION segment %qs is negative", $1);
+                      cbl_message(@1, IbmSectionNegE,
+                                  "SECTION segment %qs is negative", $1);
                     } else {
-		      if( dialect_ibm() ) {
-			int sectno;
-			sscanf($1, "%d", &sectno);
-			if( ! (0 <= sectno && sectno <= 99) ) {
-			  error_msg(@1, "SECTION segment %qs must be 0-99", $1);
-			} else {
-			  if(false) { // stand-in for warning, someday.
-			    yywarn("SECTION segment %qs was ignored", $1);
-			  }
-			}
-		      } else {
-			cbl_unimplemented("SECTION segment %qs is not ISO syntax", $1);
-		      }
+                      int sectno;
+                      sscanf($1, "%d", &sectno);
+                      if( ! (0 <= sectno && sectno <= 99) ) {
+                        cbl_message(@1, IbmSectionRangeE,
+                                     "SECTION segment %qs must be 0-99", $1);
+		      } 
                     }
 		  }
                 }
@@ -7587,10 +7559,7 @@ stop:           STOP RUN exit_with
         |       STOP NUMSTR[status] // IBM syntax
                 {
                   statement_begin(@1, STOP);
-                  if( ! dialect_ibm() ) {
-                    dialect_error(@2, "STOP <number> is not ISO syntax,", "ibm");
-                    YYERROR;
-                  }
+                  dialect_ok(@2, IbmStopNumber, "STOP <number>");
                   cbl_refer_t status( new_literal($status.string, $status.radix) );
                   parser_see_stop_run( status, NULL );
                 }
@@ -7674,25 +7643,19 @@ signed_literal:     num_literal
         |       LENGTH_OF binary_type[size] {
                   location_set(@1);
                   $$ = new_tempnumeric(none_e);
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
                   parser_set_numeric($$, $size);
 		}
         |       LENGTH_OF name[val] {
                   location_set(@1);
                   $$ = new_tempnumeric(none_e);
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
                   parser_set_numeric($$, $val->data.capacity);
                 }
         |       LENGTH_OF name[val] subscripts[subs] {
                   location_set(@1);
                   $$ = new_tempnumeric(none_e);
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
                   if( 0 == dimensions($val) ) {
 		    cbl_refer_t r1($val);
 		    subscript_dimension_error( @subs, $subs->refers.size(), &r1 );
@@ -8198,9 +8161,10 @@ subtract_body:  sum FROM rnames
                     corresponding_arith_fields( $sum->refers.front().field,
                                                 rhs.front().refer.field );
                     if( pairs.empty() ) {
-                      yywarn( "%s and %s have no corresponding fields",
-                               $sum->refers.front().field->name,
-                               rhs.front().refer.field->name );
+                      cbl_message(ParNoCorrespondingW,
+                                  "%s and %s have no corresponding fields",
+                                  $sum->refers.front().field->name,
+                                  rhs.front().refer.field->name );
                     }
                   // First src/tgt elements are templates.
                   // Their subscripts apply to the correspondents.
@@ -8241,25 +8205,19 @@ varg1a:         ADDRESS OF scalar {
         |       LENGTH_OF binary_type[size] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
 		  parser_set_numeric($$->field, $size);
 		}
         |       LENGTH_OF name[val] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
 		  parser_set_numeric($$->field, $val->size());
 		}
         |       LENGTH_OF name[val] subscripts[subs] {
                   location_set(@1);
                   $$ = new cbl_refer_t( new_tempnumeric(none_e) );
-                  if( dialect_gcc() ) {
-		    dialect_error(@1, "LENGTH OF", "ibm");
-                  }
+		  dialect_ok(@1, IbmLengthOf, "LENGTH OF");
                   if( 0 == dimensions($val) ) {
 		    cbl_refer_t r1($val);
 		    subscript_dimension_error( @subs, $subs->refers.size(), &r1 );
@@ -8879,10 +8837,7 @@ start_body:     filename[file]
                   int size = key == 0 ? 0 : $file->keys[key - 1].size();
                   auto ksize = new_tempnumeric();
                   parser_set_numeric(ksize, size);
-                  if( yydebug ) {
-                    yywarn("START: key #%d '%s' has size %d",
-                          key, $key->name, size);
-                  }
+                  dbgmsg("START: key #%d '%s' has size %d", key, $key->name, size);
                   $$ = file_start_args.init(@file, $file);
                   parser_file_start( $file, relop_of($relop), key, ksize );
                 }
@@ -9069,7 +9024,8 @@ set:            SET set_tgts[tgts] TO set_operand[src]
                   default:
                     gcc_unreachable();
                   }
-                  cbl_unimplementedw("unimplemented: SET TO LOCALE");
+                  cbl_unimplementedw(SynSetToLocale,
+                                     "unimplemented: %<SET ... TO LOCALE%>");
                 }
                 ;
         |       SET set_tgts[tgts] UP BY num_operand[src]
@@ -9139,7 +9095,8 @@ set:            SET set_tgts[tgts] TO set_operand[src]
                   } else {
                     // do something $tgt->lc_categories()
                   }
-                  cbl_unimplementedw("unimplemented: SET LOCALE");
+                  cbl_unimplementedw(SynSetLocaleTo,
+                                     "unimplemented: %<SET LOCALE ... TO%>");
                 }
                 ;
 
@@ -9260,7 +9217,7 @@ search_1_cases: search_1_case
                         lookahead = keyword_str(yychar);
                       }
                     }
-                    yywarn("Just one case, lookahead is '%s'", lookahead);
+                    dbgmsg("Just one case, lookahead is '%s'", lookahead);
                   }
                 }
         |       search_1_cases search_1_case
@@ -9314,7 +9271,7 @@ search_stmts:   statements    %prec ADD
 search_terms:   search_term
         |       search_terms AND search_term
                 ;
-search_term:    scalar[key] '=' search_expr[sarg]
+search_term:    scalar[key] EQ search_expr[sarg]
                 {
                   if( $key->nsubscript() == 0 ) {
                     error_msg(@1, "no index for key");
@@ -9764,9 +9721,7 @@ tally_forth:    CHARACTERS insp_mtqual[q] scalar[next_tally]
         |       TRAILING tally_matches[q]
                 { $q->bound = bound_trailing_e;
                   $$ = $q;
-		  if( ! dialect_mf() ) {
-		    dialect_error(@1, "TRAILING", "mf");
-		  }
+                  dialect_ok(@1, MfTrailing, "TRAILING");
                 }
                 ;
 
@@ -9897,9 +9852,7 @@ first_leading:  FIRST      { $$ = bound_first_e; }
         |       ALL        { $$ = bound_all_e; }
         |       LEADING    { $$ = bound_leading_e; }
         |       TRAILING   { $$ = bound_trailing_e;
-		  if( ! dialect_mf() ) {
-		    dialect_error(@1, "TRAILING", "mf");
-		  }
+                  dialect_ok(@1, MfTrailing, "TRAILING");
 		}
                 ;
 
@@ -10089,9 +10042,7 @@ call_body:      ffi_name
                 ;
 call_returning:	RETURNING
 	|	GIVING {
-		  if( !dialect_mf() ) {
-		    dialect_error(@1, "CALL ... GIVING", "mf");
-		  }
+                  dialect_ok(@1, MfCallGiving, "CALL ... GIVING");
 		}
 		;
 
@@ -10343,13 +10294,13 @@ go_to:          GOTO labels[args]
 resume:         RESUME NEXT STATEMENT
                 {
                   statement_begin(@1, RESUME);
-                  if( dialect_proscribed( @1, dialect_ibm_e, "RESUME") ) YYERROR;
+                  dialect_not_ok( @1, IsoResume, "RESUME");
                   parser_clear_exception();
                 }
         |       RESUME label_1[tgt]
                 {
                   statement_begin(@1, RESUME);
-                  if( dialect_proscribed( @1, dialect_ibm_e, "RESUME") ) YYERROR;
+                  dialect_not_ok( @1, IsoResume, "RESUME");
                   parser_clear_exception();
 		  $tgt->used = @1.first_line;
                   parser_goto( cbl_refer_t(), 1, &$tgt );
@@ -12289,7 +12240,7 @@ relop_of(int token) {
   switch(token) {
   case '<': return lt_op;
   case LE:  return le_op;
-  case '=': return eq_op;
+  case EQ: return eq_op;
   case NE:  return ne_op;
   case GE:  return ge_op;
   case '>': return gt_op;
@@ -12322,7 +12273,7 @@ relop_debug_str(int token) {
   case 0:   return "zilch";
   case '<': return "<";
   case LE:  return "LE";
-  case '=': return "=";
+  case EQ: return "=";
   case NE:  return "NE";
   case GE:  return "GE";
   case '>': return ">";
@@ -12336,7 +12287,7 @@ token_of(enum relop_t op) {
   switch(op) {
   case lt_op: return '<';
   case le_op: return LE;
-  case eq_op: return '=';
+  case eq_op: return EQ;
   case ne_op: return NE;
   case ge_op: return GE;
   case gt_op: return '>';
@@ -12807,7 +12758,7 @@ struct stringify_src_t : public cbl_string_src_t {
 
  protected:
   static void dump_input( const cbl_refer_t& refer ) {
-    yywarn( "%s: %s", __func__, field_str(refer.field) );
+    dbgmsg( "%s: %s", __func__, field_str(refer.field) );
   }
 };
 
@@ -12817,13 +12768,13 @@ stringify( refer_collection_t *inputs,
            cbl_label_t  *on_error,
            cbl_label_t *not_error )
 {
-  std::vector <stringify_src_t> sources(inputs->lists.size());
-
   if( inputs->lists.back().marker == NULL ) {
     inputs->lists.back().marker = cbl_refer_t::empty();
   }
   assert( inputs->lists.back().marker );
-  std::copy( inputs->lists.begin(), inputs->lists.end(), sources.begin() );
+
+  std::vector <stringify_src_t> sources(inputs->lists.begin(), inputs->lists.end());
+
   parser_string( into, pointer, sources.size(), sources.data(), on_error, not_error );
 }
 
@@ -13114,7 +13065,7 @@ numstr2i( const char input[], radix_t radix ) {
   case boolean_e:
     for( const char *p = input; *p != '\0'; p++ ) {
       if( ssize_t(8 * sizeof(integer) - 1) < p - input ) {
-        yywarn("'%s' was accepted as %zu", input, integer);
+        dbgmsg("'%s' was accepted as %lu", input, (unsigned long)integer);
         break;
       }
       switch(*p) {
@@ -13124,7 +13075,7 @@ numstr2i( const char input[], radix_t radix ) {
           integer |= ((*p) == '0' ? 0 : 1);
           break;
       default:
-        yywarn("'%s' was accepted as %zu", input, integer);
+        dbgmsg("'%s' was accepted as %lu", input, (unsigned long)integer);
 	break;
       }
     }
@@ -13132,7 +13083,7 @@ numstr2i( const char input[], radix_t radix ) {
     return output;
   }
   if( erc == -1 ) {
-    yywarn("'%s' was accepted as %zu", input, integer);
+    cbl_message(ParNumstrW, "'%s' was accepted as %zu", input, integer);
   }
   return output;
 }
@@ -13843,6 +13794,7 @@ mode_syntax_only() {
 void
 cobol_dialect_set( cbl_dialect_t dialect ) {
   switch(dialect) {
+  case dialect_iso_e: 
   case dialect_gcc_e:
     break;
   case dialect_ibm_e:

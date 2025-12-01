@@ -76,15 +76,6 @@ ec_level( ec_type_t ec ) {
 }
 
 void
-cbl_enabled_exception_t::dump( int i ) const {
-  cbl_message(2, "cbl_enabled_exception_t: %2d  {%s, %s, %zu}",
-              i,
-              location? "location" : "    none",
-              ec_type_str(ec),
-              file );
-}
-
-void
 cbl_enabled_exceptions_t::dump() const {
   extern int yydebug;
   int debug = 1;

@@ -295,7 +295,7 @@ static class parsing_status_t : public std::stack<cdf_status_t> {
   void splat() const {
     int i=0;
     for( const auto& status : c ) {
-      yywarn( "%d %s", ++i, status.str() );
+      dbgmsg( "%d %s", ++i, status.str() );
     }
   }
 } parsing;
@@ -316,11 +316,9 @@ bool scanner_normal()  { return parsing.normal(); }
 
 void scanner_parsing( int token, bool tf ) {
   parsing.push( cdf_status_t(token, tf) );
-  if( yydebug ) {
-    yywarn("%s: parsing now %s, depth %zu",
-            keyword_str(token), boolalpha(parsing.on()), parsing.size());
-    parsing.splat();
-  }
+  dbgmsg("%s: parsing now %s, depth %zu",
+         keyword_str(token), boolalpha(parsing.on()), parsing.size());
+  parsing.splat();
 }
 void scanner_parsing_toggle() {
   if( parsing.empty() ) {
@@ -328,10 +326,8 @@ void scanner_parsing_toggle() {
     return;
   }
   parsing.top().toggle();
-  if( yydebug ) {
-    yywarn("%s: parsing now %s",
-            keyword_str(CDF_ELSE), boolalpha(parsing.on()));
-  }
+  dbgmsg("%s: parsing now %s",
+         keyword_str(CDF_ELSE), boolalpha(parsing.on()));
 }
 void scanner_parsing_pop() {
   if( parsing.empty() ) {
@@ -339,12 +335,10 @@ void scanner_parsing_pop() {
     return;
   }
   parsing.pop();
-  if( yydebug ) {
-    yywarn("%s: parsing now %s, depth %zu",
-            keyword_str(CDF_END_IF), boolalpha(parsing.on()),
-	   parsing.size());
-    parsing.splat();
-  }
+  dbgmsg("%s: parsing now %s, depth %zu",
+         keyword_str(CDF_END_IF), boolalpha(parsing.on()),
+         parsing.size());
+  parsing.splat();
 }
 
 
@@ -640,11 +634,9 @@ binary_integer_usage( const char name[]) {
 }
       
 static void
-verify_ws( const YYLTYPE& loc, const char input[], char ch ) {
+verify_ws( const YYLTYPE& loc, const char [] /* input[] */, char ch ) {
   if( ! fisspace(ch) ) {
-    if( ! (dialect_mf() || dialect_gnu()) ) {
-      dialect_error(loc, "separator space required in %qs", input);
-    }
+    dialect_ok(loc, LexSeparatorE, "missing separator space");
   }
 }
 #define verify_ws(C) verify_ws(yylloc, yytext, C)
@@ -676,7 +668,7 @@ level_of( const char input[] ) {
   if( input[0] == '0' ) input++;
 
   if( 1 != sscanf(input, "%u", &output) ) {
-    yywarn( "%s:%d: invalid level '%s'", __func__, __LINE__, input );
+    cbl_internal_error( "%s:%d: invalid level '%s'", __func__, __LINE__, input );
   }
 
   return output;
@@ -1221,7 +1213,7 @@ typed_name( const char name[] ) {
     return cbl_field_of(e)->level == 88? NAME88 : CLASS_NAME;
     break;
   default:
-    yywarn("%s:%d: invalid symbol type %s for symbol %qs",
+    cbl_internal_error("%s:%d: invalid symbol type %s for symbol %qs",
           __func__, __LINE__, cbl_field_type_str(type), name);
     return NAME;
   }
@@ -1253,8 +1245,14 @@ integer_of( const char input[], bool is_hex = false) {
   if( input[0] == '0' ) input++;
 
   if( 1 != sscanf(input, fmt, &output) ) {
-    yywarn( "%s:%d: invalid integer '%s'", __func__, __LINE__, input );
+    cbl_internal_error( "%s:%d: invalid integer '%s'", __func__, __LINE__, input );
   }
 
   return output;
 }
+
+
+
+
+
+

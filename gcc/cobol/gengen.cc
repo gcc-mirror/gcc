@@ -523,10 +523,9 @@ gg_find_field_in_struct(const tree base, const char *field_name)
 
   if( !field_decl )
     {
-    yywarn("Somebody asked for the field %s.%s, which does not exist",
+    cbl_internal_error("Somebody asked for the field %s.%s, which does not exist",
           IDENTIFIER_POINTER(DECL_NAME(base)),
           field_name);
-    gcc_unreachable();
     }
 
   return field_decl;
@@ -2153,17 +2152,15 @@ gg_printf(const char *format_string, ...)
     {
     if(nargs >= ARG_LIMIT)
       {
-      yywarn("You *must* be joking");
-      gcc_unreachable();
+      cbl_internal_error("You *must* be joking");
       }
 
     if( TREE_CODE(arg) >= NUM_TREE_CODES)
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
-                  "%<gg_printf()%> again");
-      gcc_unreachable();
+      cbl_internal_error("You forgot to put a %<NULL_TREE%> at the end of a "
+                         "%<gg_printf()%> again");
       }
 
     args[nargs++] = arg;
@@ -2208,8 +2205,7 @@ gg_fprintf(tree fd, int nargs, const char *format_string, ...)
     {
     if(argc >= ARG_LIMIT)
       {
-      yywarn("You *must* be joking");
-      gcc_unreachable();
+      cbl_internal_error("You *must* be joking");
       }
 
     args[argc++] = arg;
@@ -2587,9 +2583,8 @@ gg_define_function( tree return_type,
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
+      cbl_internal_error("You forgot to put a %<NULL_TREE%> at the end of a "
                   "%<gg_define_function()%> again");
-      gcc_unreachable();
       }
 
     const char *name = va_arg(params, const char *);
@@ -2599,8 +2594,7 @@ gg_define_function( tree return_type,
     nparams += 1;
     if(nparams > ARG_LIMIT)
       {
-      yywarn("%d parameters? Really? Are you insane?", ARG_LIMIT+1);
-      gcc_unreachable();
+      cbl_internal_error("%d parameters? Really? Are you insane?", ARG_LIMIT+1);
       }
     }
   va_end(params);
@@ -2748,9 +2742,8 @@ gg_get_function_decl(tree return_type, const char *funcname, ...)
       {
       // Warning:  This test is not completely reliable, because a garbage
       // byte could have a valid TREE_CODE.  But it does help.
-      yywarn("You forgot to put a %<NULL_TREE%> at the end of a "
+      cbl_internal_error("You forgot to put a %<NULL_TREE%> at the end of a "
             "%<gg_define_function()%> again");
-      gcc_unreachable();
       }
 
     const char *name = va_arg(params, const char *);
@@ -2760,9 +2753,8 @@ gg_get_function_decl(tree return_type, const char *funcname, ...)
     nparams += 1;
     if(nparams > ARG_LIMIT)
       {
-      yywarn("%d parameters? Really? Are you insane?",
+      cbl_internal_error("%d parameters? Really? Are you insane?",
                   ARG_LIMIT+1);
-      gcc_unreachable();
       }
     }
   va_end(params);
@@ -3040,8 +3032,7 @@ gg_call_expr(tree return_type, const char *function_name, ...)
     {
     if(nargs >= ARG_LIMIT)
       {
-      yywarn("You *must* be joking");
-      gcc_unreachable();
+      cbl_internal_error("You *must* be joking");
       }
 
     tree arg = va_arg(ap, tree);
@@ -3096,8 +3087,7 @@ gg_call(tree return_type, const char *function_name,  ...)
     {
     if(nargs >= ARG_LIMIT)
       {
-      yywarn("You *must* be joking");
-      gcc_unreachable();
+      cbl_internal_error("You *must* be joking");
       }
 
     tree arg = va_arg(ap, tree);

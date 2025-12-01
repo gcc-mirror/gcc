@@ -51,20 +51,28 @@
 extern const char *numed_message;
 
 enum cbl_dialect_t {
-  dialect_gcc_e = 0x00,
-  dialect_ibm_e = 0x01,
-  dialect_mf_e  = 0x02,
-  dialect_gnu_e = 0x04,
+  dialect_iso_e = 0x00,
+  dialect_gcc_e = 0x01,
+  dialect_ibm_e = 0x02,
+  dialect_mf_e  = 0x04,
+  dialect_gnu_e = 0x08,
 };
 
 static inline const char *
 cbl_dialect_str(cbl_dialect_t dialect)  {
   switch(dialect) {
+  case dialect_iso_e: return "iso";
   case dialect_gcc_e: return "gcc";
   case dialect_ibm_e: return "ibm";
   case dialect_mf_e:  return "mf";
   case dialect_gnu_e: return "gnu";
   }
+
+  switch(size_t(dialect)) {
+  case dialect_mf_e | dialect_gnu_e:  return "mf or gnu";
+  case dialect_ibm_e | dialect_mf_e | dialect_gnu_e:  return "ibm or mf or gnu";
+  }
+  
   return "???";
 };
 
@@ -85,6 +93,15 @@ static inline bool dialect_mf() {
 static inline bool dialect_gnu() {
   return dialect_gnu_e  == (cbl_dialects & dialect_gnu_e );
 }
+
+static inline bool dialect_has( cbl_dialect_t dialect) {
+  return 0 < (cbl_dialects & dialect);
+}
+
+#ifdef GCC_DIAGNOSTIC_H
+bool cbl_diagnostic_kind( cbl_diag_id_t id, diagnostics::kind kind );
+bool cbl_dialect_kind( cbl_dialect_t dialect, diagnostics::kind kind );
+#endif
 
 enum cbl_gcobol_feature_t {
   feature_gcc_e = 0x00,
@@ -1715,9 +1732,9 @@ struct cbl_alphabet_t {
   }
 
   void dump() const {
-    yywarn("%qs: %s, %<%c%> to %<%c%> (low 0x%x, high 0x%x)",
-          name, encoding_str(encoding),
-          low_index, last_index, low_index, high_index);
+    dbgmsg("%s: '%s', '%c' to '%c' (low 0x%x, high 0x%x)",
+           name, encoding_str(encoding),
+           low_index, last_index, low_index, high_index);
     if( encoding == custom_encoding_e ) {
       fprintf(stderr, "\t"
                "  0   1   2   3   4   5   6   7"

@@ -1,4 +1,4 @@
-.ds lang COBOL
+ .ds lang COBOL
 .ds gcobol GCC\ \*[lang]\ Front-end
 .ds isostd ISO/IEC 1989:2023
 .Dd \& February 2025
@@ -31,12 +31,58 @@
 .Op Fl preprocess Ar preprocess-filter
 .Op Fl fflex-debug
 .Op Fl fyacc-debug
+.\" warnings
+.Op Fl Wno-apply-commit
+.Op Fl Wno-file-code-set
+.Op Fl Wno-high-order-bit
+.Op Fl Wno-bad-line-directive
+.Op Fl Wno-bad-numeric
+.Op Fl Wno-binary-long-long
+.Op Fl Wno-call-giving
+.Op Fl Wno-cdf-dollar
+.Op Fl Wno-cdf-invalid-parameter
+.Op Fl Wno-cdf-name-not-found
+.Op Fl Wno-cobol-eject
+.Op Fl Wno-cobol-resume
+.Op Fl Wno-cobol-volatile
+.Op Fl Wno-comp-6
+.Op Fl Wno-comp-x
+.Op Fl Wno-copybook-found
+.Op Fl Wno-ec-unknown
+.Op Fl Wno-entry-convention
+.Op Fl Wno-iconv-error
+.Op Fl Wno-include-file-found
+.Op Fl Wno-include-file-not-found
+.Op Fl Wno-inspect-trailing
+.Op Fl Wno-length-of
+.Op Fl Wno-level-1-occurs
+.Op Fl Wno-level-78
+.Op Fl Wno-level-78-defined
+.Op Fl Wno-literal-concat
+.Op Fl Wno-locale-error
+.Op Fl Wno-move-corresponding
+.Op Fl Wno-move-pointer
+.Op Fl Wno-nllanginfo-error
+.Op Fl Wno-operator-space
+.Op Fl Wno-preprocessor-error
+.Op Fl Wno-procedure-not-found
+.Op Fl Wno-procedure-pointer
+.Op Fl Wno-replace-error
+.Op Fl Wno-returning-number
+.Op Fl Wno-segment-error
+.Op Fl Wno-segment-negative
+.Op Fl Wno-stop-number
+.Op Fl Wno-stray-indicator
+.Op Fl Wno-usage-typename
+.Op Fl Wno-recording-mode
+.Op Fl Wno-set-locale-to
+.Op Fl Wno-set-to-locale
 .Ar filename Op ...
 .
 .Sh DESCRIPTION
 .Nm
-compiles \*[lang] source code to object code, and optionally produces an
-executable binary or shared object.  As a GCC component, it accepts
+compiles \*[lang] source code to object code, and optionally produces
+an executable binary or shared object.  As a GCC component, it accepts
 all options that affect code-generation and linking.  Options specific
 to \*[lang] are listed below.
 .Bl -tag -width "\0\0debug"
@@ -283,30 +329,66 @@ because its value is determined at run time.
 By default,
 .Nm
 accepts \*[lang] syntax as defined by \*[isostd], with some
-extensions for backward compatibility with COBOL-85.  To make the
-compiler more generally useful, some additional syntax is supported by
-this option.
-.Pp
-The value of
+extensions for backward compatibility with COBOL-85.  Additional syntax is supported with this option. The value of
 .Ar dialect-name
 may be
-.Bl -tag -compact
+.Bl -tag
 .It ibm
-to indicate IBM COBOL 6.3 syntax, specifically
-.D1 STOP <number>.
-.It gnu
-to indicate GnuCOBOL syntax
-.It mf
-to indicate MicroFocus syntax, specifically
-.Sy LEVEL 78
-constants.
+to indicate IBM COBOL 6.4 syntax:
+.Bl -bullet -compact
+.It
+.Sy EJECT
+.It
+.Sy EQUAL
+as assignment operator
+.It
+.Sy "LENGTH OF"
+.It
+.Sy "PROCEDURE POINTER"
+.It
+.Sy SECTION
+segment
+.It
+.Sy STOP
+<number>
+.It
+.Sy VOLATILE
 .El
-.Pp
-Only a few such non-standard constructs are accepted, and
-.Nm
-makes no claim to emulate other compilers.  But to the extent that a
-feature is popular but nonstandard, this option provides a way to
-support it, or add it.
+.It gnu
+to indicate GnuCOBOL syntax, generally compatible with MicroFocus.
+.It mf
+to indicate MicroFocus syntax:
+.Bl -bullet -compact
+.It
+.Sy BINARY-LONG-LONG
+.It
+.Sy CALL ... GIVING
+.It
+.Sy CDF \[Do]IF
+.It
+.Sy COMPUTATIONAL-6
+.It
+.Sy COMPUTATIONAL
+used with
+.Sy PICTURE X
+.It
+.Sy INSPECT ... TRAILING
+.It
+.Sy OCCURS
+at
+.Sy "LEVEL 01"
+.It
+.Sy LEVEL 78
+constants
+.It
+.Sy MOVE POINTER
+.It
+.Sy RETURNING
+<number>
+.It
+.Sy USAGE IS TYPENAME
+.El
+.El
 .
 .It Fl include Ar filename
 Process
@@ -371,13 +453,117 @@ The
 should return a zero exit status, indicating success.  If it returns a
 nonzero exit status, an error is reported and the compiler is not
 invoked.
-.
 .It Fl fflex-debug Ns Li , Fl fyacc-debug
 produce messages useful for compiler development.  The
 .Fl fflex-debug
 option prints the tokenized input stream.  The
 .Fl fyacc-debug
 option shows the shift and reduce actions taken by the parser.
+.El
+.Ss Diagnostic Messages
+.Pp
+Many warning options can be used to convert error messages to
+warnings, or to suppress messages related to \*[lang] dialects. The
+user may mix and match. A group of features may be enabled by
+indicating a dialect (or more than one dialect) and individual
+features may be enabled as a warning, or error, or suppressed.
+.Bl -tag -width Wno-cdf-name-not-found\0\0 -compact
+.It Fl Wno-apply-commit
+Warn if APPLY COMMIT is used.
+.It Fl Wno-bad-line-directive
+Warn if malformed %<#line%> directive is encountered.
+.It Fl Wno-binary-long-long
+Warn if BINARY-LONG-LONG is used.
+.It Fl Wno-call_giving
+Warn if CALL ... GIVING is used.
+.It Fl Wno-cdf-dollar
+Warn if CDF \[Do]IF is used.
+.It Fl Wno-comp-6
+Warn if COMPUTATIONAL-6 is used.
+.It Fl Wno-comp-x
+Warn if COMPUTATIONAL is used with PICTURE X.
+.It Fl Wno-file-code-set
+Warn if FILE CODE SET is used.
+.It Fl Wno-inspect-trailing
+Warn if INSPECT ... TRAILING is used.
+.It Fl Wno-level-1-occurs
+Warn if Level 01 is used with OCCURS.
+.It Fl Wno-level-78-defined
+Warn if CDF defines Level 78 constant.
+.It Fl Wno-move-pointer
+Warn if MOVE POINTER is used.
+.It Fl Wno-returning-number
+Warn if RETURNING <number> is used.
+.It Fl Wno-usage-typename
+Warn if USAGE IS TYPENAME is used.
+.It Fl Wno-bad-numeric
+Warn if numeric string is invalid.
+.It Fl Wno-cdf-invalid-parameter
+Warn if referenced CDF PARAMETER is not defined.
+.It Fl Wno-cdf-name-not-found
+Warn if referenced CDF name is not defined.
+.It Fl Wno-cobol-eject
+Warn if IBM-style EJECT is used (instead of error).
+.It Fl Wno-cobol-resume
+Warn if ISO RESUME is used with \-dialect ibm (instead of error).
+.It Fl Wno-cobol-volatile
+Warn if VOLATILE is used (instead of error if -dialect ibm).
+.It Fl Wno-copybook-found
+Print message when copybook is processed.
+.It Fl Wno-ec-unknown
+Warn if unimplemented/unknown exception condition is referenced.
+.It Fl Wno-entry-convention
+Print message when ENTRY CONVENTION is specified.
+.It Fl Wno-high-order-bit
+Warn if HIGH-ORDER-LEFT HIGH-ORDER-RIGHT is used.
+.It Fl Wno-include-file-found
+Print message when include file is processed.
+.It Fl Wno-length-of
+Warn if LENGTH OF is used.
+.It Fl Wno-level-78
+Warn if Level 78 is used.
+.It Fl Wno-literal-concat
+Warn if concatenated literals use different encodings.
+.It Fl Wno-locale-error
+Warn if locale(3) fails.
+.It Fl Wno-move-corresponding
+Warn if COBOL MOVE has no corresponding fields.
+.It Fl Wno-nllanginfo-error
+Warn if nlanglanginfo(3) fails.
+.It Fl Wno-recording-mode
+Warn if RECORDING MODE is used.
+.It Fl Wno-segment
+Warn if SECTION segments are used.
+.It Fl Wno-set-locale-to
+Warn if SET LOCALE ... TO is used.
+.It Fl Wno-set-to-locale
+Warn if SET ... TO LOCALE is used.
+.
+`.\" convert errors to warnings
+Warn if a line directive is malformed (instead of error).
+.It Fl Wno-iconv-error
+Warn if iconv(3) cannot convert between encodings (instead of error).
+.It Fl Wno-include-file-not-found
+Warn if include file is not found (instead of error).
+.It Fl Wno-operator-space
+Warn if relational operator not followed by space (instead of error).
+.It Fl Wno-preprocessor-error
+Warn if a preprocessor fails  (instead of error).
+.It Fl Wno-procedure-pointer
+Warn if PROCEDURE POINTER is used.
+.It Fl Wno-procedure-not-found
+Warn if a referenced procedure is not found (instead of error).
+.It Fl Wno-replace-error
+Warn if REPLACE cannot be processed (instead of error).
+.It Fl Wno-segment-error
+Warn if a SEGMENT section is invalid (instead of error).
+.It Fl Wno-segment-negative
+Warn if a SEGMENT range is negative (instead of error).
+.It Fl Wno-stop-number
+Warn if IBM-style STOP <number> is used (instead of error).
+.It Fl Wno-stray-indicator
+Warn if indicator column has no recognized meaning (instead of error).
+
 .El
 .
 .Sh COMPILATION SCENARIOS

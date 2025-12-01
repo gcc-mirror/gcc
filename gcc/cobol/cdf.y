@@ -201,7 +201,7 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 %type	<cdfarg>	namelit name_any name_one
 %type	<string>	name subscript subscripts inof
 %token <boolean>  BOOL
-%token <number>  FEATURE 366  NUMBER 303  EXCEPTION_NAME 280    "EXCEPTION NAME"
+%token <number>  FEATURE 367  NUMBER 304  EXCEPTION_NAME 280    "EXCEPTION NAME"
 
 %type	<cdfval>	cdf_expr
 %type	<cdfval>	cdf_relexpr cdf_reloper cdf_and cdf_bool_expr
@@ -213,52 +213,52 @@ apply_cdf_turn( const exception_turn_t& turn ) {
 
 %type   <number>        cdf_stackable
 
-%token BY 487
-%token COPY 363
-%token CDF_DISPLAY 385    ">>DISPLAY"
+%token BY 488
+%token COPY 364
+%token CDF_DISPLAY 386    ">>DISPLAY"
 %token IN 606
 %token NAME 286
-%token NUMSTR 305    "numeric literal"
+%token NUMSTR 306    "numeric literal"
 %token OF 687
 %token PSEUDOTEXT 723
 %token REPLACING 745
-%token LITERAL 298
-%token SUPPRESS 377
+%token LITERAL 299
+%token SUPPRESS 378
 
-%token LSUB 368    "("
-%token SUBSCRIPT 376  RSUB 373    ")"
+%token LSUB 369    "("
+%token SUBSCRIPT 377  RSUB 374    ")"
 
-%token CDF_DEFINE 384    ">>DEFINE"
-%token CDF_IF 386    ">>IF"
-%token CDF_ELSE 387    ">>ELSE"
-%token CDF_END_IF 388    ">>END-IF"
-%token CDF_EVALUATE 389    ">>EVALUATE"
-%token CDF_WHEN 390    ">>WHEN"
-%token CDF_END_EVALUATE 391    ">>END-EVALUATE"
+%token CDF_DEFINE 385    ">>DEFINE"
+%token CDF_IF 387    ">>IF"
+%token CDF_ELSE 388    ">>ELSE"
+%token CDF_END_IF 389    ">>END-IF"
+%token CDF_EVALUATE 390    ">>EVALUATE"
+%token CDF_WHEN 391    ">>WHEN"
+%token CDF_END_EVALUATE 392    ">>END-EVALUATE"
 
-%token ALL 451
-%token CALL_CONVENTION 392    ">>CALL-CONVENTION"
-%token COBOL_WORDS 381    ">>COBOL-WORDS"
-%token CDF_PUSH 395    ">>PUSH"
-%token CDF_POP 396    ">>POP"
-%token SOURCE_FORMAT 397    ">>SOURCE FORMAT"
+%token ALL 452
+%token CALL_CONVENTION 393    ">>CALL-CONVENTION"
+%token COBOL_WORDS 382    ">>COBOL-WORDS"
+%token CDF_PUSH 396    ">>PUSH"
+%token CDF_POP 397    ">>POP"
+%token SOURCE_FORMAT 398    ">>SOURCE FORMAT"
 
-%token AS 469  CONSTANT 362  DEFINED 364
+%token AS 470  CONSTANT 363  DEFINED 365
 %type	<boolean>	     DEFINED
-%token OTHER 699  PARAMETER_kw 369    "PARAMETER"
-%token OFF 688  OVERRIDE 370
+%token OTHER 699  PARAMETER_kw 370    "PARAMETER"
+%token OFF 688  OVERRIDE 371
 %token THRU 950
 %token TRUE_kw 815    "True"
 
-%token CALL_COBOL 393    "CALL"
-%token CALL_VERBATIM 394    "CALL (as C)"
+%token CALL_COBOL 394    "CALL"
+%token CALL_VERBATIM 395    "CALL (as C)"
 
-%token TURN 817  CHECKING 497  LOCATION 650  ON 690  WITH 844
+%token TURN 817  CHECKING 498  LOCATION 650  ON 690  WITH 844
 
 %left OR 951
 %left AND 952
 %right NOT 953
-%left '<'  '>'  '='  NE 954  LE 955  GE 956
+%left '<'  '>'  EQ 298    "EQUAL"  NE 954  LE 955  GE 956
 %left '-'  '+'
 %left '*'  '/'
 %right NEG 958
@@ -362,7 +362,7 @@ cdf_define:	CDF_DEFINE cdf_constant NAME as cdf_expr[value] override
                   }
 
 		}
-	|	CDF_DEFINE cdf_constant NAME '=' cdf_expr[value] override
+	|	CDF_DEFINE cdf_constant NAME EQ cdf_expr[value] override
 		{  /* accept, but as error */
 		  if( scanner_parsing() ) {
 		    error_msg(@NAME, "CDF error: %s = value invalid", $NAME);
@@ -382,8 +382,9 @@ cdf_define:	CDF_DEFINE cdf_constant NAME as cdf_expr[value] override
 		 */
 		{
 		  if( 0 == cdf_dictionary().count($NAME) ) {
-		    yywarn("CDF: '%s' is defined AS PARAMETER "
-			    "but was not defined", $NAME);
+                    cbl_message(@NAME, CdfParameterW,
+                                "CDF: '%s' is defined AS PARAMETER "
+                                "but was not defined", $NAME);
 		  }
 		}
 	|	CDF_DEFINE FEATURE as ON {
@@ -563,7 +564,7 @@ cdf_reloper:	    cdf_relexpr
 
 cdf_relexpr:	cdf_relexpr '<' cdf_expr { $$ = $1(@1) <  $3(@3); }
 	|	cdf_relexpr LE  cdf_expr { $$ = $1(@1) <= $3(@3); }
-	|	cdf_relexpr '=' cdf_expr {
+	|	cdf_relexpr EQ cdf_expr {
 		  $$ = cdfval_t(false);
 		  if( ( $1.string &&  $3.string) ||
 		      (!$1.string && !$3.string) )
@@ -612,7 +613,8 @@ cdf_factor:     NAME {
 		    $$ = that->second;
 		  } else {
 		    if( ! scanner_parsing() ) {
-		      yywarn("CDF skipping: no such variable '%s' (ignored)", $1);
+		      cbl_message(CdfNotFoundW,
+                                  "CDF skipping: no such variable '%s'", $1);
 		    } else {
 		      error_msg(@NAME, "CDF error: no such variable '%s'", $1);
 		    }

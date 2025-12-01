@@ -1318,7 +1318,7 @@ static struct symbol_elem_t *
 
   switch( group->level ) {
   case 1: case 77:
-    if( dialect_mf() && is_table(group) ) {
+    if( is_table(group) ) {
       size_t elem_size = std::max(group->data.memsize, group->data.memsize);
       group->data.memsize = elem_size * group->occurs.ntimes();
     }
@@ -1783,7 +1783,7 @@ symbols_update( size_t first, bool parsed_ok ) {
       break;
     case 1:
       pend = calculate_capacity(p);
-      if( dialect_mf() && is_table(field) ) {
+      if( is_table(field) ) {
         if( field->data.memsize < field->size() ) {
           field->data.memsize = field->size();
         }
@@ -3858,7 +3858,9 @@ cbl_field_t::internalize() {
   iconv_t cd = tocodes[toname];
 
   if (cd == (iconv_t)-1) {
-    yywarn("failed %<iconv_open%> tocode = %qs fromcode = %qs", tocode, fromcode);
+    cbl_message(ParIconvE,
+                "failed %<iconv_open%> tocode = %qs fromcode = %qs",
+                tocode, fromcode);
   }
 
   if( fromcode == tocode || has_attr(hex_encoded_e) ) {

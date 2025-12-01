@@ -100,7 +100,7 @@ get_current_dir_name ()
 unsigned long
 gb4( size_t input ) {
   if( input != static_cast<unsigned long>(input) ) {
-    yywarn("size too large to print: %lx:%lx",
+    dbgmsg("size too large to print: %lx:%lx",
 	   (unsigned long)(input >> (4 * sizeof(unsigned long))),
 	   static_cast<unsigned long>(input));
   }
@@ -2147,6 +2147,9 @@ static location_t token_location_minus_1 = 0;
 static location_t token_location = 0;
 
 location_t current_token_location() { return token_location; }
+location_t current_token_location(const location_t& loc) {
+  return token_location = loc;
+}
 location_t current_location_minus_one() { return token_location_minus_1; }
 void current_location_minus_one_clear()
   {
@@ -2360,18 +2363,6 @@ yyerror( const char gmsgid[], ... ) {
   global_dc->end_group();
 }
 
-bool
-yywarn( const char gmsgid[], ... ) {
-  verify_format(gmsgid);
-  auto_diagnostic_group d;
-  va_list ap;
-  va_start (ap, gmsgid);
-  auto ret = emit_diagnostic_valist( diagnostics::kind::warning, token_location,
-                                     option_zero, gmsgid, &ap );
-  va_end (ap);
-  return ret;
-}
-
 /*
  * Sometimes during parsing an error is noticed late. This message refers back
  * to an arbitrary file and line number.
@@ -2430,9 +2421,11 @@ cobol_fileline_set( const char line[] ) {
     *filename = xstrndup(line + pmatch[2].rm_so, matched_length(pmatch[2]));
   int fileline;
 
-  if( 1 != sscanf(line_str, "%d", &fileline) )
-    yywarn("could not parse line number %s from %<#line%> directive", line_str);
-
+  if( 1 != sscanf(line_str, "%d", &fileline) ) {
+    cbl_message(LexLineE,
+                "could not parse line number %s from %<#line%> directive",
+                line_str);
+  }
   input_file_t input_file( filename, ino_t(0), fileline ); // constructor sets inode
 
   if( input_filenames.empty() ) {
@@ -2525,11 +2518,11 @@ cobol_parse_files (int nfile, const char **files)
 {
   const char * opaque = setlocale(LC_CTYPE, "");
   if( ! opaque ) {
-    yywarn("setlocale: unable to initialize LOCALE");
+    cbl_message(ParLocaleW, "setlocale: unable to initialize LOCALE");
   } else {
     char *codeset = nl_langinfo(CODESET);
     if( ! codeset ) {
-      yywarn("%<nl_langinfo%> failed after %<setlocale()%> succeeded");
+      cbl_message(ParLangInfoW, "%<nl_langinfo%> failed after %<setlocale()%> succeeded");
     } else {
       os_locale.codeset = codeset;
     }
@@ -2540,20 +2533,6 @@ cobol_parse_files (int nfile, const char **files)
     parse_file (files[i]);
   }
 }
-
-/*  Outputs the formatted string onto the file descriptor */
-
-void
-cbl_message(int fd, const char *format_string, ...)
-  {
-  va_list ap;
-  va_start(ap, format_string);
-  char *ostring = xvasprintf(format_string, ap);
-  va_end(ap);
-  write(fd, ostring, strlen(ostring));
-  write(fd, "\n", 1);
-  free(ostring);
-  }
 
 /*  Uses the GCC internal_error () to output the formatted string.  Processing
     ends with a stack trace  */
@@ -2571,15 +2550,30 @@ cbl_internal_error(const char *gmsgid, ...) {
   //        // doesn't cause a warning.
 }
 
+diagnostics::kind cbl_diagnostic_kind( cbl_diag_id_t id );
+const char *    cbl_diagnostic_option( cbl_diag_id_t id );
+
 void
-cbl_unimplementedw(const char *gmsgid, ...) {
+cbl_unimplementedw(cbl_diag_id_t id, const char *gmsgid, ...) {
   verify_format(gmsgid);
   auto_diagnostic_group d;
+  const char *option;
+  char *msg = nullptr;
+
+  diagnostics::kind kind = cbl_diagnostic_kind(id);
+  if( kind == diagnostics::kind::ignored ) return;
+
+  if( (option = cbl_diagnostic_option(id)) != nullptr ) {
+    msg = xasprintf("%s [%s]", gmsgid, option);
+    gmsgid = msg;
+  }
+ 
   va_list ap;
+
   va_start(ap, gmsgid);
-  emit_diagnostic_valist( diagnostics::kind::warning,
-			  token_location, option_zero, gmsgid, &ap );
+  emit_diagnostic_valist( kind, token_location, option_zero, gmsgid, &ap );
   va_end(ap);
+  free(msg);
 }
 
 void
@@ -2635,6 +2629,13 @@ cbl_errx(const char *gmsgid, ...) {
   va_end(ap);
   }
 
+/*
+ * For a function that uses host *printf, %zu or %td or %wu are not ok, sadly.
+ * not all supported host arches support those.  So, for *printf family one
+ * needs to use macros like HOST_WIDE_INT_PRINT_DEC (for HOST_WIDE_INT
+ * argument), or HOST_SIZE_T_PRINT_UNSIGNED (for size_t, with casts to
+ * (fmt_size_t)).
+ */
 void
 dbgmsg(const char *msg, ...) {
   if( yy_flex_debug || yydebug ) {
@@ -2645,12 +2646,6 @@ dbgmsg(const char *msg, ...) {
      fprintf(stderr, "\n");
     va_end(ap);
   }
-}
-
-void
-dialect_error( const YYLTYPE& loc, const char term[], const char dialect[] ) {
-  error_msg(loc, "%s is not ISO syntax, requires %<-dialect %s%>",
-           term, dialect);
 }
 
 bool fisdigit(int c)

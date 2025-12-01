@@ -681,7 +681,8 @@ parse_replacing_term( const char *stmt, const char *estmt ) {
     }
     if( extraneous_replacing ) {
       update_yylloc( cm[0], cm[8] );
-      yywarn("syntax error: invalid '%.*s'", cm[8].length(), cm[8].first);
+      cbl_message(LexReplaceE, "syntax error: invalid '%.*s'",
+                  cm[8].length(), cm[8].first);
       output.matched = false;
       return output;
     }
@@ -797,11 +798,11 @@ parse_replacing_pair( const char *stmt, const char *estmt ) {
       }
     }
     if( pair.stmt.p ) {
-      yywarn("CDF syntax error '%.*s'", (int)pair.stmt.size(), pair.stmt.p);
+      cbl_message(LexReplaceE, "LEX syntax error '%.*s'", (int)pair.stmt.size(), pair.stmt.p);
     }
     else {
       // This eliminated a compiler warning about "format-overflow"
-      yywarn("CDF syntax error");
+      cbl_message(LexReplaceE, "LEX syntax error");
     }
     pair.stmt = span_t(size_t(0), stmt);
     pair.replace = replace_t();
@@ -1466,7 +1467,8 @@ preprocess_filter_add( const char input[] ) {
 
   auto filename = find_filter(filter.c_str());
   if( !filename ) {
-    yywarn("preprocessor '%s/%s' not found", getcwd(NULL, 0), filter.c_str());
+    cbl_message(LexPreprocessE, "preprocessor '%s/%s' not found",
+                getcwd(NULL, 0), filter.c_str());
     return false;
   }
   preprocessor_filters.push_back( std::make_pair(xstrdup(filename), options) );
@@ -1477,22 +1479,22 @@ void
 cdftext::echo_input( int input, const char filename[] ) {
   int fd;
   if( -1 == (fd = dup(input)) ) {
-      yywarn( "could not open preprocessed file %s to echo to standard output",
-               filename );
+      cbl_message(LexPreprocessE, "could not open preprocessed file "
+                                 "%s to echo to standard output", filename );
       return;
   }
 
   auto mfile = map_file(fd);
 
   if( -1 == write(STDOUT_FILENO, mfile.data, mfile.size()) ) {
-    yywarn( "could not write preprocessed file %s to standard output",
+    cbl_message(LexPreprocessE, "could not write preprocessed file %s to standard output",
           filename );
   }
   if( -1 == munmap(mfile.data, mfile.size()) ) {
-    yywarn( "could not release mapped file" );
+    cbl_message(LexPreprocessE, "could not release mapped file" );
   }
   if( -1 == close(fd) ) {
-    yywarn( "could not close mapped file" );
+    cbl_message(LexPreprocessE, "could not close mapped file" );
   }
 }
 
@@ -1515,7 +1517,7 @@ cdftext::lex_open( const char filename[] ) {
   // Process any files supplied by the -include command-line option.
   for( auto name : included_files ) {
     if( -1 == (input = open(name, O_RDONLY)) ) {
-      yyerrorvl(1, "", "cannot open -include file %s", name);
+      cbl_message(LexIncludeE, "cannot open %<-include%> file %qs", name);
       continue;
     }
     cobol_filename(name, inode_of(input));
@@ -1569,7 +1571,7 @@ cdftext::lex_open( const char filename[] ) {
       }
       int erc;
       if( -1 == (erc = execv(filter, argv.data())) ) {
-        yywarn("could not execute %s", filter);
+        cbl_message(LexPreprocessE, "could not execute %s", filter);
       }
       _exit(erc);
     }
@@ -1588,7 +1590,7 @@ cdftext::lex_open( const char filename[] ) {
              filter, status);
       }
     }
-    yywarn( "applied %s", filter );
+    cbl_message(LexIncludeOkN, "applied %s", filter );
   }
 
   return fdopen( output, "r");
@@ -1604,7 +1606,7 @@ cdftext::open_input( const char filename[] ) {
   verbose_file_reader = NULL != getenv("GCOBOL_TEMPDIR");
 
   if( verbose_file_reader ) {
-    yywarn("verbose: opening %s for input", filename);
+    cbl_message(LexInputN, "verbose: opening %s for input", filename);
   }
   return fd;
 }

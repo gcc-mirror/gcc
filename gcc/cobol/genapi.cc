@@ -4002,12 +4002,11 @@ public:
       dangling.insert(index_of(label));
     }
   }
-  bool lay( const cbl_label_t *label ) {
+  void lay( const cbl_label_t *label ) {
     auto ok = lain.insert(index_of(label));
     if( ok.second ) {
       dangling.erase(index_of(label));
     }
-    return true;
   }
   bool vet() const { // be always agreeable, for now.
     return dangling.empty();
@@ -8222,17 +8221,7 @@ parser_label_label(struct cbl_label_t *label)
 
   CHECK_LABEL(label);
 
-#if 1
-  // At the present time, label_verify.lay is returning true, so I edited
-  // out the if( !... ) to quiet cppcheck
   label_verify.lay(label);
-#else
-  if( ! label_verify.lay(label) )
-    {
-    yywarn("%s: label %qs already exists", __func__, label->name);
-    gcc_unreachable();
-    }
-#endif
 
   if(strcmp(label->name, "_end_declaratives") == 0 )
     {

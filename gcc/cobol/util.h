@@ -31,8 +31,6 @@
 #ifndef _UTIL_H_
 #define _UTIL_H_
 
-void cbl_message(int fd, const char *format_string, ...)
-  ATTRIBUTE_PRINTF_2;
 [[noreturn]] void cbl_internal_error(const char *format_string, ...)
   ATTRIBUTE_GCOBOL_DIAG(1, 2);
 
