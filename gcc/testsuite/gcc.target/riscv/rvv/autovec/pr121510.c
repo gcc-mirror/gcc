@@ -8,7 +8,7 @@ void print_bfloat() {
     long j;
     union {
       _Float16 x;
-      char b[]
+      char b[];
     } u;
     j = 0;
     for (; j < sizeof 0; j++)

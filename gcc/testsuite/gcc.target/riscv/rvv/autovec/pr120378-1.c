@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-march=rv64gcv -mabi=lp64d -O3" } */
+/* { dg-options "-march=rv64gcv -mabi=lp64d -O3 -fdump-tree-optimized" } */
 
 #include <stdint.h>
 

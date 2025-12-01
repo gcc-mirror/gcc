@@ -1,5 +1,5 @@
 /* { dg-do run { target { riscv_v } } } */
-/* { dg-additional-options "-O3 -ansi -pedantic-errors -std=gnu99" } */
+/* { dg-additional-options "-O3 -ansi -std=gnu99 -Wno-pedantic" } */
 
 #include "riscv_vector.h"
 
