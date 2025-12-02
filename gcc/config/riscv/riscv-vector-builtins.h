@@ -435,7 +435,7 @@ private:
   tree get_attributes (const function_instance &);
 
   registered_function &add_function (const function_instance &, const char *,
-				     tree, tree, bool, const char *,
+				     tree, tree, const char *,
 				     const vec<tree> &, enum required_ext,
 				     bool);
 
