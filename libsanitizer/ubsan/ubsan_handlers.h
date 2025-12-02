@@ -90,6 +90,9 @@ struct OutOfBoundsData {
 /// \brief Handle an array index out of bounds error.
 RECOVERABLE(out_of_bounds, OutOfBoundsData *Data, ValueHandle Index)
 
+/// \brief Handle an local object access out of bounds error.
+RECOVERABLE(local_out_of_bounds)
+
 struct UnreachableData {
   SourceLocation Loc;
 };
@@ -217,19 +220,11 @@ enum CFITypeCheckKind : unsigned char {
   CFITCK_VMFCall,
 };
 
-struct CFIBadIcallData {
-  SourceLocation Loc;
-  const TypeDescriptor &Type;
-};
-
 struct CFICheckFailData {
   CFITypeCheckKind CheckKind;
   SourceLocation Loc;
   const TypeDescriptor &Type;
 };
-
-/// \brief Handle control flow integrity failure for indirect function calls.
-RECOVERABLE(cfi_bad_icall, CFIBadIcallData *Data, ValueHandle Function)
 
 /// \brief Handle control flow integrity failures.
 RECOVERABLE(cfi_check_fail, CFICheckFailData *Data, ValueHandle Function,

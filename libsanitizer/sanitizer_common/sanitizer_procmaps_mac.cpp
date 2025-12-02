@@ -20,18 +20,21 @@
 #include <mach/mach.h>
 
 // These are not available in older macOS SDKs.
-#ifndef CPU_SUBTYPE_X86_64_H
-#define CPU_SUBTYPE_X86_64_H  ((cpu_subtype_t)8)   /* Haswell */
-#endif
-#ifndef CPU_SUBTYPE_ARM_V7S
-#define CPU_SUBTYPE_ARM_V7S   ((cpu_subtype_t)11)  /* Swift */
-#endif
-#ifndef CPU_SUBTYPE_ARM_V7K
-#define CPU_SUBTYPE_ARM_V7K   ((cpu_subtype_t)12)
-#endif
-#ifndef CPU_TYPE_ARM64
-#define CPU_TYPE_ARM64        (CPU_TYPE_ARM | CPU_ARCH_ABI64)
-#endif
+#  ifndef CPU_SUBTYPE_X86_64_H
+#    define CPU_SUBTYPE_X86_64_H ((cpu_subtype_t)8) /* Haswell */
+#  endif
+#  ifndef CPU_SUBTYPE_ARM_V7S
+#    define CPU_SUBTYPE_ARM_V7S ((cpu_subtype_t)11) /* Swift */
+#  endif
+#  ifndef CPU_SUBTYPE_ARM_V7K
+#    define CPU_SUBTYPE_ARM_V7K ((cpu_subtype_t)12)
+#  endif
+#  ifndef CPU_TYPE_ARM64
+#    define CPU_TYPE_ARM64 (CPU_TYPE_ARM | CPU_ARCH_ABI64)
+#  endif
+#  ifndef CPU_SUBTYPE_ARM64E
+#    define CPU_SUBTYPE_ARM64E ((cpu_subtype_t)2)
+#  endif
 
 namespace __sanitizer {
 
@@ -42,7 +45,6 @@ struct MemoryMappedSegmentData {
   const char *current_load_cmd_addr;
   u32 lc_type;
   uptr base_virt_addr;
-  uptr addr_mask;
 };
 
 template <typename Section>
@@ -51,10 +53,58 @@ static void NextSectionLoad(LoadedModule *module, MemoryMappedSegmentData *data,
   const Section *sc = (const Section *)data->current_load_cmd_addr;
   data->current_load_cmd_addr += sizeof(Section);
 
-  uptr sec_start = (sc->addr & data->addr_mask) + data->base_virt_addr;
+  uptr sec_start = sc->addr + data->base_virt_addr;
   uptr sec_end = sec_start + sc->size;
   module->addAddressRange(sec_start, sec_end, /*executable=*/false, isWritable,
                           sc->sectname);
+}
+
+static bool VerifyMemoryMapping(MemoryMappingLayout* mapping) {
+  InternalMmapVector<LoadedModule> modules;
+  modules.reserve(128);  // matches DumpProcessMap
+  mapping->DumpListOfModules(&modules);
+
+  InternalMmapVector<LoadedModule::AddressRange> segments;
+  for (uptr i = 0; i < modules.size(); ++i) {
+    for (auto& range : modules[i].ranges()) {
+      segments.push_back(range);
+    }
+  }
+
+  // Verify that none of the segments overlap:
+  // 1. Sort the segments by the start address
+  // 2. Check that every segment starts after the previous one ends.
+  Sort(segments.data(), segments.size(),
+       [](LoadedModule::AddressRange& a, LoadedModule::AddressRange& b) {
+         return a.beg < b.beg;
+       });
+
+  // To avoid spam, we only print the report message once-per-process.
+  static bool invalid_module_map_reported = false;
+  bool well_formed = true;
+
+  for (size_t i = 1; i < segments.size(); i++) {
+    uptr cur_start = segments[i].beg;
+    uptr prev_end = segments[i - 1].end;
+    if (cur_start < prev_end) {
+      well_formed = false;
+      VReport(2, "Overlapping mappings: %s start = %p, %s end = %p\n",
+              segments[i].name, (void*)cur_start, segments[i - 1].name,
+              (void*)prev_end);
+      if (!invalid_module_map_reported) {
+        Report(
+            "WARN: Invalid dyld module map detected. This is most likely a bug "
+            "in the sanitizer.\n");
+        Report("WARN: Backtraces may be unreliable.\n");
+        invalid_module_map_reported = true;
+      }
+    }
+  }
+
+  for (auto& m : modules) m.clear();
+
+  mapping->Reset();
+  return well_formed;
 }
 
 void MemoryMappedSegment::AddAddressRanges(LoadedModule *module) {
@@ -82,6 +132,7 @@ void MemoryMappedSegment::AddAddressRanges(LoadedModule *module) {
 
 MemoryMappingLayout::MemoryMappingLayout(bool cache_enabled) {
   Reset();
+  VerifyMemoryMapping(this);
 }
 
 MemoryMappingLayout::~MemoryMappingLayout() {
@@ -146,13 +197,8 @@ static bool IsDyldHdr(const mach_header *hdr) {
 // until we hit a Mach header matching dyld instead. These recurse
 // calls are expensive, but the first memory map generation occurs
 // early in the process, when dyld is one of the only images loaded,
-// so it will be hit after only a few iterations.  These assumptions don't
-// hold on macOS 13+ anymore (dyld itself has moved into the shared cache).
-
-// FIXME: Unfortunately, the upstream revised version to deal with macOS 13+
-// is incompatible with GCC and also uses APIs not available on earlier
-// systems which we support; backed out for now.
-
+// so it will be hit after only a few iterations.  These assumptions don't hold
+// on macOS 13+ anymore (dyld itself has moved into the shared cache).
 static mach_header *GetDyldImageHeaderViaVMRegion() {
   vm_address_t address = 0;
 
@@ -176,17 +222,65 @@ static mach_header *GetDyldImageHeaderViaVMRegion() {
   }
 }
 
+extern "C" {
+struct dyld_shared_cache_dylib_text_info {
+  uint64_t version;  // current version 2
+  // following fields all exist in version 1
+  uint64_t loadAddressUnslid;
+  uint64_t textSegmentSize;
+  uuid_t dylibUuid;
+  const char *path;  // pointer invalid at end of iterations
+  // following fields all exist in version 2
+  uint64_t textSegmentOffset;  // offset from start of cache
+};
+typedef struct dyld_shared_cache_dylib_text_info
+    dyld_shared_cache_dylib_text_info;
+
+extern bool _dyld_get_shared_cache_uuid(uuid_t uuid);
+extern const void *_dyld_get_shared_cache_range(size_t *length);
+extern intptr_t _dyld_get_image_slide(const struct mach_header* mh);
+extern int dyld_shared_cache_iterate_text(
+    const uuid_t cacheUuid,
+    void (^callback)(const dyld_shared_cache_dylib_text_info *info));
+}  // extern "C"
+
+static mach_header *GetDyldImageHeaderViaSharedCache() {
+  uuid_t uuid;
+  bool hasCache = _dyld_get_shared_cache_uuid(uuid);
+  if (!hasCache)
+    return nullptr;
+
+  size_t cacheLength;
+  __block uptr cacheStart = (uptr)_dyld_get_shared_cache_range(&cacheLength);
+  CHECK(cacheStart && cacheLength);
+
+  __block mach_header *dyldHdr = nullptr;
+  int res = dyld_shared_cache_iterate_text(
+      uuid, ^(const dyld_shared_cache_dylib_text_info *info) {
+        CHECK_GE(info->version, 2);
+        mach_header *hdr =
+            (mach_header *)(cacheStart + info->textSegmentOffset);
+        if (IsDyldHdr(hdr))
+          dyldHdr = hdr;
+      });
+  CHECK_EQ(res, 0);
+
+  return dyldHdr;
+}
+
 const mach_header *get_dyld_hdr() {
   if (!dyld_hdr) {
     // On macOS 13+, dyld itself has moved into the shared cache.  Looking it up
     // via vm_region_recurse_64() causes spins/hangs/crashes.
-    // FIXME: find a way to do this compatible with GCC.
     if (GetMacosAlignedVersion() >= MacosVersion(13, 0)) {
+      dyld_hdr = GetDyldImageHeaderViaSharedCache();
+      if (!dyld_hdr) {
         VReport(1,
-                "looking up the dyld image header in the shared cache on "
-                "macOS 13+ is not yet supported.  Falling back to "
+                "Failed to lookup the dyld image header in the shared cache on "
+                "macOS 13+ (or no shared cache in use).  Falling back to "
                 "lookup via vm_region_recurse_64().\n");
         dyld_hdr = GetDyldImageHeaderViaVMRegion();
+      }
     } else {
       dyld_hdr = GetDyldImageHeaderViaVMRegion();
     }
@@ -213,23 +307,21 @@ static bool NextSegmentLoad(MemoryMappedSegment *segment,
   layout_data->current_load_cmd_count--;
   if (((const load_command *)lc)->cmd == kLCSegment) {
     const SegmentCommand* sc = (const SegmentCommand *)lc;
-    uptr base_virt_addr, addr_mask;
-    if (layout_data->current_image == kDyldImageIdx) {
-      base_virt_addr = (uptr)get_dyld_hdr();
-      // vmaddr is masked with 0xfffff because on macOS versions < 10.12,
-      // it contains an absolute address rather than an offset for dyld.
-      // To make matters even more complicated, this absolute address
-      // isn't actually the absolute segment address, but the offset portion
-      // of the address is accurate when combined with the dyld base address,
-      // and the mask will give just this offset.
-      addr_mask = 0xfffff;
-    } else {
-      base_virt_addr =
-          (uptr)_dyld_get_image_vmaddr_slide(layout_data->current_image);
-      addr_mask = ~0;
+    if (internal_strcmp(sc->segname, "__LINKEDIT") == 0) {
+      // The LINKEDIT sections are for internal linker use, and may alias
+      // with the LINKEDIT section for other modules. (If we included them,
+      // our memory map would contain overlappping sections.)
+      return false;
     }
 
-    segment->start = (sc->vmaddr & addr_mask) + base_virt_addr;
+    uptr base_virt_addr;
+    if (layout_data->current_image == kDyldImageIdx)
+      base_virt_addr = (uptr)_dyld_get_image_slide(get_dyld_hdr());
+    else
+      base_virt_addr =
+          (uptr)_dyld_get_image_vmaddr_slide(layout_data->current_image);
+
+    segment->start = sc->vmaddr + base_virt_addr;
     segment->end = segment->start + sc->vmsize;
     // Most callers don't need section information, so only fill this struct
     // when required.
@@ -239,9 +331,9 @@ static bool NextSegmentLoad(MemoryMappedSegment *segment,
           (const char *)lc + sizeof(SegmentCommand);
       seg_data->lc_type = kLCSegment;
       seg_data->base_virt_addr = base_virt_addr;
-      seg_data->addr_mask = addr_mask;
       internal_strncpy(seg_data->name, sc->segname,
                        ARRAY_SIZE(seg_data->name));
+      seg_data->name[ARRAY_SIZE(seg_data->name) - 1] = 0;
     }
 
     // Return the initial protection.
@@ -255,6 +347,7 @@ static bool NextSegmentLoad(MemoryMappedSegment *segment,
                             ? kDyldPath
                             : _dyld_get_image_name(layout_data->current_image);
       internal_strncpy(segment->filename, src, segment->filename_size);
+      segment->filename[segment->filename_size - 1] = 0;
     }
     segment->arch = layout_data->current_arch;
     internal_memcpy(segment->uuid, layout_data->current_uuid, kModuleUUIDSize);
@@ -269,18 +362,26 @@ ModuleArch ModuleArchFromCpuType(cpu_type_t cputype, cpu_subtype_t cpusubtype) {
     case CPU_TYPE_I386:
       return kModuleArchI386;
     case CPU_TYPE_X86_64:
-      if (cpusubtype == CPU_SUBTYPE_X86_64_ALL) return kModuleArchX86_64;
-      if (cpusubtype == CPU_SUBTYPE_X86_64_H) return kModuleArchX86_64H;
+      if (cpusubtype == CPU_SUBTYPE_X86_64_ALL)
+        return kModuleArchX86_64;
+      if (cpusubtype == CPU_SUBTYPE_X86_64_H)
+        return kModuleArchX86_64H;
       CHECK(0 && "Invalid subtype of x86_64");
       return kModuleArchUnknown;
     case CPU_TYPE_ARM:
-      if (cpusubtype == CPU_SUBTYPE_ARM_V6) return kModuleArchARMV6;
-      if (cpusubtype == CPU_SUBTYPE_ARM_V7) return kModuleArchARMV7;
-      if (cpusubtype == CPU_SUBTYPE_ARM_V7S) return kModuleArchARMV7S;
-      if (cpusubtype == CPU_SUBTYPE_ARM_V7K) return kModuleArchARMV7K;
+      if (cpusubtype == CPU_SUBTYPE_ARM_V6)
+        return kModuleArchARMV6;
+      if (cpusubtype == CPU_SUBTYPE_ARM_V7)
+        return kModuleArchARMV7;
+      if (cpusubtype == CPU_SUBTYPE_ARM_V7S)
+        return kModuleArchARMV7S;
+      if (cpusubtype == CPU_SUBTYPE_ARM_V7K)
+        return kModuleArchARMV7K;
       CHECK(0 && "Invalid subtype of ARM");
       return kModuleArchUnknown;
     case CPU_TYPE_ARM64:
+      if (cpusubtype == CPU_SUBTYPE_ARM64E)
+        return kModuleArchARM64E;
       return kModuleArchARM64;
     default:
       CHECK(0 && "Invalid CPU type");
@@ -292,9 +393,22 @@ static const load_command *NextCommand(const load_command *lc) {
   return (const load_command *)((const char *)lc + lc->cmdsize);
 }
 
-static void FindUUID(const load_command *first_lc, u8 *uuid_output) {
-  for (const load_command *lc = first_lc; lc->cmd != 0; lc = NextCommand(lc)) {
-    if (lc->cmd != LC_UUID) continue;
+#  ifdef MH_MAGIC_64
+static constexpr size_t header_size = sizeof(mach_header_64);
+#  else
+static constexpr size_t header_size = sizeof(mach_header);
+#  endif
+
+static void FindUUID(const load_command *first_lc, const mach_header *hdr,
+                     u8 *uuid_output) {
+  uint32_t curcmd = 0;
+  for (const load_command *lc = first_lc; curcmd < hdr->ncmds;
+       curcmd++, lc = NextCommand(lc)) {
+    CHECK_LT((const char *)lc,
+             (const char *)hdr + header_size + hdr->sizeofcmds);
+
+    if (lc->cmd != LC_UUID)
+      continue;
 
     const uuid_command *uuid_lc = (const uuid_command *)lc;
     const uint8_t *uuid = &uuid_lc->uuid[0];
@@ -303,9 +417,16 @@ static void FindUUID(const load_command *first_lc, u8 *uuid_output) {
   }
 }
 
-static bool IsModuleInstrumented(const load_command *first_lc) {
-  for (const load_command *lc = first_lc; lc->cmd != 0; lc = NextCommand(lc)) {
-    if (lc->cmd != LC_LOAD_DYLIB) continue;
+static bool IsModuleInstrumented(const load_command *first_lc,
+                                 const mach_header *hdr) {
+  uint32_t curcmd = 0;
+  for (const load_command *lc = first_lc; curcmd < hdr->ncmds;
+       curcmd++, lc = NextCommand(lc)) {
+    CHECK_LT((const char *)lc,
+             (const char *)hdr + header_size + hdr->sizeofcmds);
+
+    if (lc->cmd != LC_LOAD_DYLIB)
+      continue;
 
     const dylib_command *dylib_lc = (const dylib_command *)lc;
     uint32_t dylib_name_offset = dylib_lc->dylib.name.offset;
@@ -351,10 +472,10 @@ bool MemoryMappingLayout::Next(MemoryMappedSegment *segment) {
           continue;
         }
       }
-      FindUUID((const load_command *)data_.current_load_cmd_addr,
+      FindUUID((const load_command *)data_.current_load_cmd_addr, hdr,
                data_.current_uuid);
       data_.current_instrumented = IsModuleInstrumented(
-          (const load_command *)data_.current_load_cmd_addr);
+          (const load_command *)data_.current_load_cmd_addr, hdr);
     }
 
     while (data_.current_load_cmd_count > 0) {

@@ -71,12 +71,7 @@ void InitializePlatformInterceptors();
 #if ASAN_HAS_EXCEPTIONS && !SANITIZER_SOLARIS && !SANITIZER_NETBSD && \
     (!SANITIZER_WINDOWS || (defined(__MINGW32__) && defined(__i386__)))
 # define ASAN_INTERCEPT___CXA_THROW 1
-# if ! defined(ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION) \
-     || ASAN_HAS_CXA_RETHROW_PRIMARY_EXCEPTION
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
-# else
-#   define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 0
-# endif
+# define ASAN_INTERCEPT___CXA_RETHROW_PRIMARY_EXCEPTION 1
 # if defined(_GLIBCXX_SJLJ_EXCEPTIONS) || (SANITIZER_IOS && defined(__arm__))
 #  define ASAN_INTERCEPT__UNWIND_SJLJ_RAISEEXCEPTION 1
 # else
@@ -134,6 +129,7 @@ DECLARE_REAL(char*, strchr, const char *str, int c)
 DECLARE_REAL(SIZE_T, strlen, const char *s)
 DECLARE_REAL(char*, strncpy, char *to, const char *from, SIZE_T size)
 DECLARE_REAL(SIZE_T, strnlen, const char *s, SIZE_T maxlen)
+DECLARE_REAL(SIZE_T, wcsnlen, const wchar_t* s, SIZE_T maxlen)
 DECLARE_REAL(char*, strstr, const char *s1, const char *s2)
 
 #  if !SANITIZER_APPLE
