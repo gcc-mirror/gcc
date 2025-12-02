@@ -9,6 +9,12 @@
 	* a68-exports.cc: Include memmodel.h.
 	* a68-imports.cc: Likeswise.
 
+2025-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	* a68-low-multiples.cc (copy_multiple_dimension_elems): Use
+	HOST_SIZE_T_PRINT_DEC in xasprintf format string and cast to
+	fmt_size_t.
+
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-diagnostics.cc (diagnostic): Copypasto "a meek"
