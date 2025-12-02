@@ -41,9 +41,17 @@ static bool FrameIsInternal(const SymbolizedStack *frame) {
     return true;
   if (file && internal_strstr(file, "\\compiler-rt\\lib\\"))
     return true;
+  if (file && internal_strstr(file, "\\libsanitizer\\"))
+    return true;
   if (module && (internal_strstr(module, "libclang_rt.")))
     return true;
   if (module && (internal_strstr(module, "clang_rt.")))
+    return true;
+  if (module && (internal_strstr(module, "libtsan.")
+		 || internal_strstr(module, "libhwasan.")
+		 || internal_strstr(module, "liblsan.")
+		 || internal_strstr(module, "libasan.")
+		 || internal_strstr(module, "libubsan.")))
     return true;
   return false;
 }
