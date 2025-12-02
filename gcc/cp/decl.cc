@@ -6981,6 +6981,7 @@ check_array_designated_initializer (constructor_elt *ce,
 	{
 	  error ("name %qD used in a GNU-style designated "
 		 "initializer for an array", ce->index);
+	  ce->index = error_mark_node;
 	  return false;
 	}
 
