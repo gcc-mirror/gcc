@@ -89,24 +89,26 @@ fur_source::query_relation (tree op1 ATTRIBUTE_UNUSED,
   return VREL_VARYING;
 }
 
-// Default registers nothing.
+// Default registers nothing and returns false meaning nothing changed.
 
-void
+bool
 fur_source::register_relation (gimple *s ATTRIBUTE_UNUSED,
 			       relation_kind k ATTRIBUTE_UNUSED,
 			       tree op1 ATTRIBUTE_UNUSED,
 			       tree op2 ATTRIBUTE_UNUSED)
 {
+  return false;
 }
 
-// Default registers nothing.
+// Default registers nothing and returns false meaning nothing changed.
 
-void
+bool
 fur_source::register_relation (edge e ATTRIBUTE_UNUSED,
 			       relation_kind k ATTRIBUTE_UNUSED,
 			       tree op1 ATTRIBUTE_UNUSED,
 			       tree op2 ATTRIBUTE_UNUSED)
 {
+  return false;
 }
 
 // Get the value of EXPR on edge m_edge.
@@ -170,12 +172,15 @@ fur_depend::fur_depend (gimple *s, range_query *q, ranger_cache *c)
   m_depend_p = true;
 }
 
-// Register a relation on a stmt if there is an oracle.
+// Register a relation on a stmt if there is an oracle.  Return false if
+// no new relation is registered.
 
-void
+bool
 fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
 {
-  m_query->relation ().record (s, k, op1, op2);
+  if (!m_query->relation ().record (s, k, op1, op2))
+    return false;
+
   // This new relation could cause different calculations, so mark the operands
   // with a new timestamp, forcing recalculations.
   if (m_cache)
@@ -183,14 +188,18 @@ fur_depend::register_relation (gimple *s, relation_kind k, tree op1, tree op2)
       m_cache->update_consumers (op1);
       m_cache->update_consumers (op2);
     }
+  return true;
 }
 
-// Register a relation on an edge if there is an oracle.
+// Register a relation on an edge if there is an oracle.  Return false if
+// no new relation is registered.
 
-void
+bool
 fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
 {
-  m_query->relation ().record (e, k, op1, op2);
+  if (!m_query->relation ().record (e, k, op1, op2))
+    return false;
+
   // This new relation could cause different calculations, so mark the operands
   // with a new timestamp, forcing recalculations.
   if (m_cache)
@@ -198,6 +207,7 @@ fur_depend::register_relation (edge e, relation_kind k, tree op1, tree op2)
       m_cache->update_consumers (op1);
       m_cache->update_consumers (op2);
     }
+  return true;
 }
 
 // This version of fur_source will pick a range up from a list of ranges
@@ -400,9 +410,9 @@ class fur_relation : public fur_stmt
 {
 public:
   fur_relation (gimple *s, range_query *q = NULL);
-  virtual void register_relation (gimple *stmt, relation_kind k, tree op1,
+  virtual bool register_relation (gimple *stmt, relation_kind k, tree op1,
 				  tree op2);
-  virtual void register_relation (edge e, relation_kind k, tree op1,
+  virtual bool register_relation (edge e, relation_kind k, tree op1,
 				  tree op2);
   relation_trio trio() const;
 private:
@@ -423,15 +433,18 @@ fur_relation::trio () const
 }
 
 // Don't support edges, but avoid a compiler warning by providing the routine.
+// Return false indicating nothing has changed.
 
-void
+bool
 fur_relation::register_relation (edge, relation_kind, tree, tree)
 {
+  return false;
 }
 
-// Register relation K between OP1 and OP2 on STMT.
+// Register relation K between OP1 and OP2 on STMT.  Return false if there
+// is no relation.
 
-void
+bool
 fur_relation::register_relation (gimple *stmt, relation_kind k, tree op1,
 				 tree op2)
 {
@@ -475,6 +488,8 @@ fur_relation::register_relation (gimple *stmt, relation_kind k, tree op1,
       else if (op2 == a1 && op1 == a2)
 	op1_op2 = relation_swap (k);
     }
+  return def_op1 == VREL_VARYING && def_op2 == VREL_VARYING
+	 && op1_op2 == VREL_VARYING;
 }
 
 // Return the relation trio for stmt S using query Q.

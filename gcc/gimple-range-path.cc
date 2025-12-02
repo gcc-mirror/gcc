@@ -615,8 +615,8 @@ class jt_fur_source : public fur_depend
 public:
   jt_fur_source (gimple *s, path_range_query *, const vec<basic_block> &);
   relation_kind query_relation (tree op1, tree op2) override;
-  void register_relation (gimple *, relation_kind, tree op1, tree op2) override;
-  void register_relation (edge, relation_kind, tree op1, tree op2) override;
+  bool register_relation (gimple *, relation_kind, tree op1, tree op2) override;
+  bool register_relation (edge, relation_kind, tree op1, tree op2) override;
 private:
   basic_block m_entry;
 };
@@ -631,20 +631,22 @@ jt_fur_source::jt_fur_source (gimple *s,
   m_entry = path[path.length () - 1];
 }
 
-// Ignore statement and register relation on entry to path.
+// Ignore statement and register relation on entry to path.  Return false if
+// no new relation is registered.
 
-void
+bool
 jt_fur_source::register_relation (gimple *, relation_kind k, tree op1, tree op2)
 {
-  m_query->relation ().record (m_entry, k, op1, op2);
+  return m_query->relation ().record (m_entry, k, op1, op2);
 }
 
-// Ignore edge and register relation on entry to path.
+// Ignore edge and register relation on entry to path.  Return false if no
+// new relation is registered.
 
-void
+bool
 jt_fur_source::register_relation (edge, relation_kind k, tree op1, tree op2)
 {
-  m_query->relation ().record (m_entry, k, op1, op2);
+  return m_query->relation ().record (m_entry, k, op1, op2);
 }
 
 relation_kind
