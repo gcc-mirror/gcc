@@ -342,8 +342,8 @@ struct hard_reg_set_iterator
 
 #define HARD_REG_ELT_BITS UHOST_BITS_PER_WIDE_INT
 
-/* The implementation of the iterator functions is fully analogous to
-   the bitmap iterators.  */
+/* The implementation of the iterator functions is a simplified version of
+   those of bitmap iterators.  */
 inline void
 hard_reg_set_iter_init (hard_reg_set_iterator *iter, const_hard_reg_set set,
                         unsigned min, unsigned *regno)
@@ -360,11 +360,8 @@ hard_reg_set_iter_init (hard_reg_set_iterator *iter, const_hard_reg_set set,
     {
       iter->bits = iter->pelt[iter->word_no];
       iter->bits >>= min % HARD_REG_ELT_BITS;
-
-      /* This is required for correct search of the next bit.  */
-      min += !iter->bits;
+      *regno = min;
     }
-  *regno = min;
 }
 
 inline bool
@@ -378,37 +375,34 @@ hard_reg_set_iter_set (hard_reg_set_iterator *iter, unsigned *regno)
 
       if (iter->bits)
         {
-          /* Find the correct bit and return it.  */
-          while (!(iter->bits & 1))
-            {
-              iter->bits >>= 1;
-              *regno += 1;
-            }
+	  unsigned skip = ctz_hwi (iter->bits);
+	  iter->bits >>= skip;
+	  *regno += skip;
           return (*regno < FIRST_PSEUDO_REGISTER);
         }
-
-      /* Round to the beginning of the next word.  */
-      *regno = (*regno + HARD_REG_ELT_BITS - 1);
-      *regno -= *regno % HARD_REG_ELT_BITS;
 
       /* Find the next non-zero word.  */
       while (++iter->word_no < iter->length)
         {
           iter->bits = iter->pelt[iter->word_no];
           if (iter->bits)
-            break;
-          *regno += HARD_REG_ELT_BITS;
+	    {
+	      *regno = iter->word_no * HARD_REG_ELT_BITS;
+	      break;
+	    }
         }
     }
 }
 
 inline void
-hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *regno)
+hard_reg_set_iter_next (hard_reg_set_iterator *iter, unsigned *)
 {
-  iter->bits >>= 1;
-  *regno += 1;
+  /* Only clear the bit, so that we skip it in iter_set.  */
+  iter->bits &= ~ HARD_CONST (1);
 }
 
+/* SET must not change throughout the iteration.
+   REGNUM (and ITER) may only be changed by the iteration functions.  */
 #define EXECUTE_IF_SET_IN_HARD_REG_SET(SET, MIN, REGNUM, ITER)          \
   for (hard_reg_set_iter_init (&(ITER), (SET), (MIN), &(REGNUM));       \
        hard_reg_set_iter_set (&(ITER), &(REGNUM));                      \
