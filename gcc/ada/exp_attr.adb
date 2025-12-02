@@ -8717,6 +8717,7 @@ package body Exp_Attr is
          | Attribute_Definite
          | Attribute_Delta
          | Attribute_Denorm
+         | Attribute_Destructor
          | Attribute_Digits
          | Attribute_Emax
          | Attribute_Enabled

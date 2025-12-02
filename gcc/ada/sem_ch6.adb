@@ -5280,11 +5280,35 @@ package body Sem_Ch6 is
       -----------------------------------------
 
       procedure Analyze_Direct_Attribute_Definition (Designator : Entity_Id) is
+         function Can_Be_Destructor_Of
+           (E : Entity_Id; T : Entity_Id) return Boolean;
+         --  Returns whether E can be declared the destructor of T
+
+         --------------------------
+         -- Can_Be_Destructor_Of --
+         --------------------------
+
+         function Can_Be_Destructor_Of
+           (E : Entity_Id; T : Entity_Id) return Boolean is
+         begin
+            return
+              Ekind (E) = E_Procedure
+              and then Scope (E) = Scope (T)
+              and then Present (First_Formal (E))
+              and then Ekind (First_Formal (E)) = E_In_Out_Parameter
+              and then Etype (First_Formal (E)) = T
+              and then No (Next_Formal (First_Formal (E)));
+         end Can_Be_Destructor_Of;
+
+         --  Local variables
+
          Att_N    : constant Node_Id := Original_Node (N);
          Prefix_E : constant Entity_Id :=
            Get_Name_Entity_Id (Chars (Prefix (Defining_Unit_Name (Att_N))));
          Att_Name : constant Name_Id :=
            Attribute_Name (Defining_Unit_Name (Att_N));
+
+         --  Start of processing for Analyze_Direct_Attribute_Definition
       begin
          pragma Assert (N /= Att_N);
 
@@ -5341,7 +5365,7 @@ package body Sem_Ch6 is
                     ("& must be defined before freezing#", Designator);
 
                elsif Parent_Kind (Enclosing_Package_Or_Subprogram (Designator))
-                       /= N_Package_Specification
+                 /= N_Package_Specification
                then
                   Error_Msg_N
                     ("& is required to be a primitive operation", Designator);
@@ -5351,7 +5375,40 @@ package body Sem_Ch6 is
                   Set_Is_Constructor (Designator);
                end if;
 
-            when others =>
+            when Name_Destructor  =>
+               if Parent_Kind (N) not in N_Subprogram_Declaration then
+                  return;
+               elsif not Is_Record_Type (Prefix_E) then
+                  Error_Msg_N
+                    ("destructors can only be specified for record types",
+                     Designator);
+                  return;
+               elsif not Can_Be_Destructor_Of (Designator, Prefix_E) then
+                  Error_Msg_N
+                    ("destructor must be local procedure whose only formal "
+                     & "parameter has mode `IN OUT` and is of the type the "
+                     & "destructor is for",
+                     Designator);
+               elsif Is_Frozen (Prefix_E)
+                 or else Current_Scope /= Scope (Prefix_E)
+               then
+                  Error_Msg_Sloc := Sloc (Freeze_Node (Prefix_E));
+                  Error_Msg_N
+                    ("& must be defined before freezing#", Designator);
+
+               elsif Parent_Kind (Enclosing_Package_Or_Subprogram (Designator))
+                 /= N_Package_Specification
+               then
+                  Error_Msg_N
+                    ("& is required to be a primitive operation", Designator);
+
+               else
+                  Set_Has_Destructor (Prefix_E);
+                  Set_Is_Controlled_Active (Prefix_E);
+                  Set_Destructor (Prefix_E, Designator);
+               end if;
+
+            when others           =>
                null;
 
          end case;

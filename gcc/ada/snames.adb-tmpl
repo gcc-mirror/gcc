@@ -418,7 +418,8 @@ package body Snames is
 
    function Is_Direct_Attribute_Definition_Name (N : Name_Id) return Boolean is
    begin
-      return Is_Attribute_Name (N) and then N = Name_Constructor;
+      return
+        Is_Attribute_Name (N) and then N in Name_Constructor | Name_Destructor;
    end Is_Direct_Attribute_Definition_Name;
 
    ------------------------------

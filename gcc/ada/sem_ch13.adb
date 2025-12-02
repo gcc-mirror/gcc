@@ -4940,20 +4940,6 @@ package body Sem_Ch13 is
                      goto Continue;
                   end if;
 
-               when Aspect_Destructor =>
-                  if not All_Extensions_Allowed then
-                     Error_Msg_Name_1 := Nam;
-                     Error_Msg_GNAT_Extension ("aspect %", Loc);
-                     goto Continue;
-
-                  elsif not Is_Type (E) then
-                     Error_Msg_N ("can only be specified for a type", Aspect);
-                     goto Continue;
-                  end if;
-
-                  Set_Has_Destructor (E);
-                  Set_Is_Controlled_Active (E);
-
                when Aspect_Storage_Model_Type =>
                   if not All_Extensions_Allowed then
                      Error_Msg_Name_1 := Nam;
@@ -11742,8 +11728,7 @@ package body Sem_Ch13 is
       --  name, so we need to verify that one of these interpretations is
       --  the one available at the freeze point.
 
-      elsif A_Id in Aspect_Destructor
-                  | Aspect_Input
+      elsif A_Id in Aspect_Input
                   | Aspect_Output
                   | Aspect_Read
                   | Aspect_Write
@@ -12197,67 +12182,6 @@ package body Sem_Ch13 is
 
          when Aspect_Designated_Storage_Model =>
             Analyze (Expression (ASN));
-            return;
-
-         when Aspect_Destructor =>
-            if not Is_Record_Type (Entity (ASN)) then
-               Error_Msg_N
-                 ("aspect Destructor can only be specified for a "
-                  & "record type",
-                  ASN);
-               return;
-            end if;
-
-            Set_Has_Destructor (Entity (ASN));
-            Set_Is_Controlled_Active (Entity (ASN));
-
-            Analyze (Expression (ASN));
-
-            if not Resolve_Finalization_Procedure
-                     (Expression (ASN), Entity (ASN))
-            then
-               Error_Msg_N
-                 ("destructor must be local procedure whose only formal "
-                  & "parameter has mode `IN OUT` and is of the type the "
-                  & "destructor is for",
-                  Expression (ASN));
-            end if;
-
-            Set_Is_Destructor (Entity (Expression (ASN)));
-
-            declare
-               Proc  : constant Entity_Id := Entity (Expression (ASN));
-               Overr : constant Opt_N_Entity_Id :=
-                 Overridden_Inherited_Operation (Proc);
-               Orig  : constant Entity_Id :=
-                 (if Present (Overr) then Overr else Proc);
-
-               Decl : constant Node_Id :=
-                 Parent
-                   (if Nkind (Parent (Orig)) = N_Procedure_Specification
-                    then Parent (Orig)
-                    else Orig);
-
-               Encl : constant Node_Id := Parent (Decl);
-
-               Is_Private : constant Boolean :=
-                 Nkind (Encl) = N_Package_Specification
-                 and then Is_List_Member (Decl)
-                 and then List_Containing (Decl) = Private_Declarations (Encl);
-
-            begin
-
-               if Has_Private_Declaration (Entity (ASN))
-                 and then not Aspect_On_Partial_View (ASN)
-                 and then not Is_Private
-               then
-                  Error_Msg_N
-                    ("aspect Destructor on full view cannot denote public "
-                     & "primitive",
-                     ASN);
-               end if;
-            end;
-
             return;
 
          when Aspect_Storage_Model_Type =>

@@ -919,6 +919,13 @@ package Einfo is
 --       incomplete type, and the full type is available, then this full type
 --       is returned instead of the incomplete type.
 
+--    Destructor
+--       Defined in all types and subtypes entities. For record type entities
+--       that have destructors (in the strict sense, i.e., have destructors of
+--       their own and do not just descend from types with destructors), set to
+--       the procedure entity for the destructor. For other entities, set to
+--       Empty.
+
 --    DIC_Procedure (synthesized)
 --       Defined in all type entities. Set for a private type and its full view
 --       when the type is subject to pragma Default_Initial_Condition (DIC), or
@@ -2600,10 +2607,6 @@ package Einfo is
 --    Is_Descendant_Of_Address
 --       Defined in all entities. True if the entity is type System.Address,
 --       or (recursively) a subtype or derived type of System.Address.
-
---    Is_Destructor
---       Defined in procedure entities. True if the procedure is denoted by the
---       Destructor aspect on some type.
 
 --    Is_DIC_Procedure
 --       Defined in functions and procedures. Set for a generated procedure
@@ -6014,7 +6017,6 @@ package Einfo is
    --    Is_Constructor
    --    Is_CPP_Constructor
    --    Is_CUDA_Kernel
-   --    Is_Destructor                        (non-generic case only)
    --    Is_DIC_Procedure                     (non-generic case only)
    --    Is_Elaboration_Checks_OK_Id
    --    Is_Elaboration_Warnings_OK_Id

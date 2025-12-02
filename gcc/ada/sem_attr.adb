@@ -4194,6 +4194,13 @@ package body Sem_Attr is
 
          Set_Etype (N, Universal_Integer);
 
+      ----------------
+      -- Destructor --
+      ----------------
+
+      when Attribute_Destructor =>
+         Error_Attr_P ("attribute% can only be used to define destructors");
+
       ------------
       -- Digits --
       ------------
@@ -11183,6 +11190,7 @@ package body Sem_Attr is
          | Attribute_Default_Bit_Order
          | Attribute_Default_Scalar_Storage_Order
          | Attribute_Deref
+         | Attribute_Destructor
          | Attribute_Elaborated
          | Attribute_Elab_Body
          | Attribute_Elab_Spec

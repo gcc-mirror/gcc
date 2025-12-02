@@ -7666,13 +7666,10 @@ package body Exp_Ch7 is
             end;
 
             declare
-               ASN : constant Opt_N_Aspect_Specification_Id :=
-                 Get_Rep_Item (Typ, Name_Destructor, False);
-
+               Proc : constant Entity_Id := Destructor (Typ);
                Stmt : Node_Id;
-               Proc : Entity_Id;
             begin
-               if Present (ASN) then
+               if Present (Proc) then
                   --  Generate:
                   --    begin
                   --       <Destructor_Proc> (V);
@@ -7686,7 +7683,6 @@ package body Exp_Ch7 is
                   --          end if;
                   --    end;
 
-                  Proc := Entity (Expression (ASN));
                   Stmt :=
                     Make_Procedure_Call_Statement
                       (Loc,
