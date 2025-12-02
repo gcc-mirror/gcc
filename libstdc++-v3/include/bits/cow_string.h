@@ -2919,6 +2919,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       { return basic_string(*this,
 			    _M_check(__pos, "basic_string::substr"), __n); }
 
+#ifdef __glibcxx_string_subview // >= C++26
+      /**
+       *  @brief  Get a subview.
+       *  @param __pos  Index of first character (default 0).
+       *  @param __n  Number of characters in subview (default remainder).
+       *  @return  The subview.
+       *  @throw  std::out_of_range  If __pos > size().
+       *
+       *  Construct and return a subview using the `__n` characters starting at
+       *  `__pos`.  If the string is too short, use the remainder of the
+       *  characters.  If `__pos` is beyond the end of the string, out_of_range
+       *  is thrown.
+      */
+      [[nodiscard]]
+      constexpr basic_string_view<_CharT, _Traits>
+      subview(size_type __pos = 0, size_type __n = npos) const
+      { return __sv_type(*this).subview(__pos, __n); }
+#endif
+
       /**
        *  @brief  Compare to a string.
        *  @param __str  String to compare against.

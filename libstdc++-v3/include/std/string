@@ -63,6 +63,7 @@
 #define __glibcxx_want_erase_if
 #define __glibcxx_want_nonmember_container_access
 #define __glibcxx_want_string_resize_and_overwrite
+#define __glibcxx_want_string_subview
 #define __glibcxx_want_string_udls
 #define __glibcxx_want_to_string
 #include <bits/version.h>
