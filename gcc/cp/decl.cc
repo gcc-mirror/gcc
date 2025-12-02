@@ -8654,8 +8654,15 @@ make_rtl_for_nonlocal_decl (tree decl, tree init, const char* asmspec)
 	 placed in a particular register.  */
       if (VAR_P (decl) && DECL_REGISTER (decl))
 	{
-	  set_user_assembler_name (decl, asmspec);
-	  DECL_HARD_REGISTER (decl) = 1;
+	  if (TREE_ADDRESSABLE (decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "address of explicit register variable %qD requested",
+		      decl);
+	  else
+	    {
+	      set_user_assembler_name (decl, asmspec);
+	      DECL_HARD_REGISTER (decl) = 1;
+	    }
 	}
       else
 	{
@@ -9656,8 +9663,15 @@ cp_finish_decl (tree decl, tree init, bool init_const_expr_p,
 
       if (VAR_P (decl) && DECL_REGISTER (decl) && asmspec)
 	{
-	  set_user_assembler_name (decl, asmspec);
-	  DECL_HARD_REGISTER (decl) = 1;
+	  if (TREE_ADDRESSABLE (decl))
+	    error_at (DECL_SOURCE_LOCATION (decl),
+		      "address of explicit register variable %qD requested",
+		      decl);
+	  else
+	    {
+	      set_user_assembler_name (decl, asmspec);
+	      DECL_HARD_REGISTER (decl) = 1;
+	    }
 	}
       return;
     }
