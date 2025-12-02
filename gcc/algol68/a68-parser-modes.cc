@@ -1202,10 +1202,9 @@ compute_derived_modes (MODULE_T *mod)
 
 	  for (; s != NO_PACK; FORWARD (s))
 	    {
-	      PACK_T *t = NEXT (s);
 	      bool x = true;
 
-	      for (t = NEXT (s); t != NO_PACK && x; FORWARD (t))
+	      for (PACK_T *t = NEXT (s); t != NO_PACK && x; FORWARD (t))
 		{
 		  if (TEXT (s) == TEXT (t))
 		    {

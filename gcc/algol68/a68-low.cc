@@ -1479,7 +1479,6 @@ a68_lower_tree (NODE_T *p, LOW_CTX_T ctx)
     case PACKET:
       res = lower_packet (p, ctx);
       break;
-      break;
     case PRELUDE_PACKET:
       res = lower_prelude_packet (p, ctx);
       break;

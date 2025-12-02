@@ -58,9 +58,7 @@
 static bool
 serial_clause_dsa (NODE_T *p)
 {
-  NODE_T *s = NEXT (SUB (p));
-
-  for (s = p; SUB (s) &&  IS (s, SERIAL_CLAUSE); s = SUB (s))
+  for (NODE_T *s = p; SUB (s) &&  IS (s, SERIAL_CLAUSE); s = SUB (s))
     {
       if (DYNAMIC_STACK_ALLOCS (s))
 	return true;
