@@ -3196,7 +3196,6 @@ inline_functions_by_afdo (struct cgraph_node *node, bool *speculative_calls)
 	remove_afdo_speculative_target (e);
       inline_call (e, true, NULL, NULL, false);
       inlined |= inline_functions_by_afdo (e->callee, speculative_calls);
-      inlined = true;
     }
 
   if (inlined && !node->inlined_to)
