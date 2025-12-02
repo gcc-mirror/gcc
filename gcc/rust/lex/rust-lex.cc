@@ -2640,8 +2640,8 @@ rust_input_source_test ()
 {
   // ASCII
   std::string src = (const char *) u8"_abcde\tXYZ\v\f";
-  std::vector<uint32_t> expected
-    = {u'_', u'a', u'b', u'c', u'd', u'e', u'\t', u'X', u'Y', u'Z', u'\v', u'\f'};
+  std::vector<uint32_t> expected = {u'_',  u'a', u'b', u'c', u'd',  u'e',
+				    u'\t', u'X', u'Y', u'Z', u'\v', u'\f'};
   test_buffer_input_source (src, expected);
 
   // BOM
