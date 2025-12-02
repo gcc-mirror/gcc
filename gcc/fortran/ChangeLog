@@ -1,3 +1,27 @@
+2025-12-01  Christopher Albert  <albert@tugraz.at>
+	    Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/107721
+	PR fortran/102417
+	* arith.cc (eval_intrinsic): Call gfc_check_constructor_type on
+	array constructor operands with explicit type-spec to ensure
+	element type conversion before operations.  Resolve character
+	array constructors before CONCAT operations.
+	(reduce_binary_ac, reduce_binary_ca, reduce_binary_aa): Preserve
+	character length info in result arrays.
+	* array.cc (check_constructor_type): Simplify non-constant
+	expressions before type checking to handle parenthesized elements.
+	Handle nested character array constructors with explicit type-spec
+	when outer constructor has no type-spec.
+	(gfc_resolve_character_array_constructor): Recursively propagate
+	type-spec to nested array constructors.  If the nested constructor
+	has an explicit type-spec, resolve it first before propagating
+	the outer type-spec.
+
+2025-12-01  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.texi (Default exponents): Remove spurious @menu entry.
+
 2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* lang.opt.urls: Regenerate.

@@ -1,3 +1,95 @@
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* gcc.target/mips/madd-10.c: New test.
+	* gcc.target/mips/maddu-5.c: New test.
+	* gcc.target/mips/msub-9.c: New test.
+	* gcc.target/mips/msubu-5.c: New test.
+
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* gcc.target/mips/bswap-7.c: New test.
+
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* gcc.target/mips/max-1.c: New test.
+	* gcc.target/mips/min-1.c: New test.
+
+2025-12-02  Saurabh Jha  <saurabh.jha@arm.com>
+	    Radek Barton  <radek.barton@microsoft.com>
+
+	* gcc.target/aarch64/mingw/variadic_hfa.c: New test.
+	* gcc.target/aarch64/mingw/variadic_hva.c: New test.
+	* gcc.target/aarch64/mingw/variadic_int.c: New test.
+
+2025-12-02  Saurabh Jha  <saurabh.jha@arm.com>
+	    Radek Barton  <radek.barton@microsoft.com>
+	    Martin Vejbora  <mvejbora@microsoft.com>
+
+	* gcc.target/aarch64/mingw/mingw.exp: New test.
+	* gcc.target/aarch64/mingw/long_double_size.c: New test.
+
+2025-12-02  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* lib/scanasm.exp: Add support for mingw targets.
+
+2025-12-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/modules/friend-12_a.C: New test.
+	* g++.dg/modules/friend-12_b.C: New test.
+
+2025-12-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122915
+	* g++.dg/modules/namespace-16_a.C: New test.
+	* g++.dg/modules/namespace-16_b.C: New test.
+	* g++.dg/modules/namespace-16_c.C: New test.
+	* g++.dg/modules/namespace-16_d.C: New test.
+
+2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122858
+	* gcc.target/arm/mve/pr122858.c: New test.
+
+2025-12-01  Christopher Albert  <albert@tugraz.at>
+	    Harald Anlauf  <anlauf@gcc.gnu.org>
+
+	PR fortran/107721
+	PR fortran/102417
+	* gfortran.dg/array_constructor_typespec_1.f90: New test.
+
+2025-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122905
+	* g++.dg/lto/pr122905.h: New file.
+	* g++.dg/lto/pr122905_0.C: New test.
+	* g++.dg/lto/pr122905_1.C: New test.
+
+2025-12-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/122652
+	* gcc.target/riscv/rvv/base/pr122652.c: New test.
+
+2025-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR testsuite/122596
+	* gfortran.dg/alloc_comp_deep_copy_5.f90: Restrict
+	-Wa,--noexecstack, -Wl,-z,noexecstack to gas, gld.
+	* gfortran.dg/alloc_comp_deep_copy_6.f90: Likewise.
+
+2025-12-01  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/81337
+	PR c++/52477
+	* g++.dg/gcov/pr16855.C (Test::~Test): xfail on *-*-solaris2*
+	(dg-final): Likewise.
+	* g++.dg/gcov/pr16855-priority.C (Test::~Test): Likewise.
+	(dg-final): Likewise.
+
+2025-12-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122906
+	* g++.target/i386/pr122906-1.C: New test.
+
 2025-11-30  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* gcc.dg/vect/tsvc/vect-tsvc-s293.c: Remove xfail.

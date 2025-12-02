@@ -1,3 +1,61 @@
+2025-12-01  Andrew Stubbs  <ams@baylibre.com>
+
+	* libgomp.texi (AMD GCN): Mention HSA_XNACK is set automatically.
+
+2025-12-01  Andrew Stubbs  <ams@baylibre.com>
+
+	* Makefile.in: Regenerate.
+	* libgomp-plugin.h (gomp_simple_alloc_init_context): New prototype.
+	(gomp_simple_alloc_register_memory): New prototype.
+	(gomp_simple_alloc): New prototype.
+	(gomp_simple_free): New prototype.
+	(gomp_simple_realloc): New prototype.
+	* libgomp.h (gomp_simple_alloc_init_context): Move to libgomp-plugin.h.
+	(gomp_simple_alloc_register_memory): Likewise.
+	(gomp_simple_alloc): Likewise.
+	(gomp_simple_free): Likewise.
+	(gomp_simple_realloc): Likewise.
+	* libgomp.texi: Update AMD managed memory description.
+	* plugin/Makefrag.am (libgomp_plugin_gcn_la_SOURCES): Add
+	simple-allocator.c and plugin/mutex.c.
+	* plugin/plugin-gcn.c: Include sys/mman.h and unistd.h.
+	(struct hsa_runtime_fn_info): Add hsa_amd_svm_attributes_set_fn.
+	(dump_hsa_system_info): Add HSA_AMD_SYSTEM_INFO_SVM_SUPPORTED and
+	HSA_AMD_SYSTEM_INFO_SVM_ACCESSIBLE_BY_DEFAULT to the GCN_DEBUG output.
+	(init_hsa_runtime_functions): Add hsa_amd_svm_attributes_set.
+	(isa_matches_agent): Add a new error message for the case where the
+	ISA doesn't match but the name does.
+	(managed_ctx): New variable.
+	(managed_heap_create): New function.
+	(GOMP_OFFLOAD_managed_alloc): Likewise.
+	(GOMP_OFFLOAD_managed_free): Likewise.
+	* simple-allocator.c (gomp_fatal): New macro.
+	* testsuite/lib/libgomp.exp (check_effective_target_omp_managedmem):
+	Add amdgcn support checker.
+	(check_effective_target_offload_target_amdgcn_with_xnack): New.
+	* testsuite/libgomp.c-c++-common/requires-4.c: Ignore xnack warning.
+	* testsuite/libgomp.c-c++-common/requires-4a.c: Ignore xnack warning.
+	* testsuite/libgomp.c-c++-common/requires-5.c: Ignore xnack warning.
+	* testsuite/libgomp.c++/alloc-managed-1.C: Add -mxnack=on, if needed.
+	* testsuite/libgomp.c/alloc-managed-1.c: Likewise.
+	* testsuite/libgomp.c/alloc-managed-2.c: Likewise.
+	* testsuite/libgomp.c/alloc-managed-3.c: Likewise.
+	* testsuite/libgomp.c/alloc-managed-4.c: Likewise.
+	* testsuite/libgomp.fortran/alloc-managed-1.f90: Likewise.
+	* plugin/mutex.c: New file.
+
+2025-12-01  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* target.c (gomp_map_vars_internal): Allow struct mapping from different
+	containing array elements as long as adresses are in increasing order.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-2.c: Adjust
+	dg-output.
+	* testsuite/libgomp.c-c++-common/map-arrayofstruct-3.c: Likewise.
+	* testsuite/libgomp.fortran/map-subarray-5.f90: Likewise.
+	* testsuite/libgomp.fortran/map-subarray-10.f90: New test.
+	* testsuite/libgomp.fortran/map-subarray-9.f90: New test.
+
 2025-11-26  Jakub Jelinek  <jakub@redhat.com>
 
 	* testsuite/libgomp.c++/atomic-12.C (main): Add ()s around array

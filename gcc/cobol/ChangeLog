@@ -1,3 +1,79 @@
+2025-12-01  James K. Lowden  <jklowden@cobolworx.com>
+
+	PR cobol/119329
+	PR cobol/119331
+	PR cobol/120786
+	* Make-lang.in: Add cobol/messages.o to cobol1 sources.
+	* cbldiag.h (yywarn): Remove function.
+	(struct cbl_loc_t): Introduce new location type independent of Bison.
+	(enum cbl_diag_id_t): Enumerate diagnostic messages.
+	(cbl_message): New function.
+	(dialect_ok): Test for dialect, emit standard message.
+	(dialect_not_ok): Emit standard message if syntax excluded by dialect.
+	(dialect_error): Remove function.
+	(cbl_unimplementedw): Use cbl_diag_id_t.
+	(cbl_unimplemented): Whitespace.
+	* cdf.y: Update token values.
+	* cobol1.cc (enable_exceptions): Use cbl_message.
+	(cobol_warning): Declare function.
+	(cobol_langhook_handle_option): Add 44 new warning options.
+	(cobol_langhook_type_for_mode): Remove function.
+	* except.cc (cbl_enabled_exception_t::dump): Remove function.
+	* exceptg.h (class exception_turn_t): Use cbl_diag_id_t.
+	* gcobol.1: Document dialect syntax and new warning options.
+	* genapi.cc (parser_label_label): Remove unused warning.
+	* gengen.cc (gg_find_field_in_struct): Use cbl_internal_error.
+	(gg_printf): Same.
+	(gg_fprintf): Same.
+	(gg_define_function): Same.
+	(gg_get_function_decl): Same.
+	(gg_call_expr): Same.
+	(gg_call): Same.
+	* lang-specs.h: Add warning options.
+	* lang.opt: Add ISO dialect and options.
+	* lexio.cc (parse_replacing_term): Use cbl_message.
+	(parse_replacing_pair): Same.
+	(preprocess_filter_add): Same.
+	(cdftext::echo_input): Same.
+	(cdftext::lex_open): Same.
+	(cdftext::open_input): Same.
+	* messages.cc: New file implements cbl_message.
+	* parse.y: Use cbl_message.
+	* parse_ante.h (dialect_proscribed): Remove function.
+	(parser_move_carefully): Use dialect_ok.
+	(goodnight_gracie): Convert warning to debug message.
+	* scan.l: Use dialect_ok.
+	* scan_ante.h (scanner_parsing): Use cbl_diag_id_t.
+	(scanner_parsing_toggle): Same.
+	(scanner_parsing_pop): Same.
+	(verify_ws): Same.
+	(level_of): Same.
+	(typed_name): Same.
+	(integer_of): Same.
+	* scan_post.h (datetime_format_of): Use cbl_internal_error.
+	(prelex): Emit only debug messages.
+	* show_parse.h: Use cbl_internal_error.
+	* symbols.cc (symbols_update): Remove dialect test because parser's problem.
+	(cbl_field_t::internalize): Use cbl_message.
+	* symbols.h (enum cbl_dialect_t): Add ISO to cbl_dialect_t.
+	(cbl_dialect_str): Recognize ISO dialect.
+	(dialect_has): New function.
+	(cbl_diagnostic_kind): New function.
+	(cbl_dialect_kind): New function.
+	(struct cbl_alphabet_t): Emit only debug message.
+	* token_names.h: Regenerate.
+	* util.cc (gb4): Emit only debug message.
+	(current_token_location): Add overload to set token_location.
+	(yywarn): Remove function.
+	(cobol_fileline_set): Use cbl_message.
+	(cobol_parse_files): Same.
+	(cbl_message): New diagnostic message function uses cbl_diag_id_t.
+	(cbl_diagnostic_kind): New function.
+	(cbl_diagnostic_option): New function.
+	(cbl_unimplementedw): Use cbl_diag_id_t.
+	(dialect_error): Remove function.
+	* util.h (cbl_message): Remove obsolete prototype for cbl_message.
+
 2025-11-30  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	* lang.opt.urls: Regenerate.

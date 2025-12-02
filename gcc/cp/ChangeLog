@@ -1,3 +1,36 @@
+2025-12-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (trees_out::lang_decl_vals): Stream DECL_CHAIN for
+	decl_specialization_friend_p functions.
+	(trees_in::lang_decl_vals): Likewise.
+
+2025-12-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122915
+	* module.cc (module_state::write_using_directives): Don't emit
+	imported using-directives.
+	(module_state::read_using_directives): Rename
+	add_using_namespace to add_imported_using_namespace.
+	* name-lookup.cc (add_using_namespace): Handle imported
+	using-directives.
+	(add_imported_using_namespace): Rename to match new
+	functionality.
+	* name-lookup.h (add_using_namespace): Rename to...
+	(add_imported_using_namespace): ...this.
+
+2025-12-01  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/119864
+	PR c++/122939
+	* module.cc (trees_out::write_function_def): Don't crash on
+	OMP used-defined type reduction function definitions.
+
+2025-12-01  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122905
+	* decl.cc (enum_with_enumerator_for_linkage_p): Only return true
+	for namespace scope types.
+
 2025-11-30  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/122465

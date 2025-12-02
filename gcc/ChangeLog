@@ -1,3 +1,182 @@
+2025-12-02  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-inline.cc (inline_functions_by_afdo): Remove resetting bool inlined.
+
+2025-12-02  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR target/122912
+	* config/aarch64/t-aarch64 (TM_H): Add aarch64-tuning-enums.def.
+
+2025-12-02  Alexandre Oliva  <oliva@adacore.com>
+
+	* hard-reg-set.h (hard_reg_set_iter_init): Drop unnecessary
+	increment of min.
+	(hard_reg_set_iter_set): Use ctz_hwi, and compute
+	word-advanced regno from word_no.
+	(hard_reg_set_iter_next): Only clear the cached LSB.
+
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* config/mips/mips.h (ISA_HAS_MADD_MSUB): Include allegrex.
+	* config/mips/mips.md: Tweak mul_acc_si/mul_sub_si to make it
+	work when MUL3 is not available.
+
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* config/mips/mips.h (ISA_HAS_WSBW): Defined a new macro.
+	* config/mips/mips.md (bswapsi2): Add new instruction.
+	(wsbwsi2): Replace with expand to support both wsbw and wsbh.
+
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* config/mips/mips.h (ISA_HAS_MIN_MAX): Defined a new macro.
+	* config/mips/mips.md (sminsi3): Defined a new instruction.
+	(smaxsi3): Defined a new instruction.
+
+2025-12-02  David Guillen Fandos  <david@davidgf.net>
+
+	* config/mips/mips-cpus.def (MIPS_CPU): Added a new CPU.
+	* config/mips/mips-tables.opt: Regenerated table.
+	* config/mips/mips.cc: Added cost table for the new CPU.
+	* config/mips/mips.h (TARGET_ALLEGREX): Defined a new macro.
+	(TUNE_ALLEGREX): Defined a new macro.
+	(ISA_HAS_CONDMOVE): Added Allegrex CPU to the list.
+	(ISA_HAS_LDC1_SDC1): Exclude Allegrex from the list.
+	(ISA_HAS_COND_TRAP): Exclude Allegrex from the list.
+	(ISA_HAS_COND_TRAPI): Exclude Allegrex from the list.
+	(ISA_HAS_CLZ_CLO): Added Allegrex CPU to the list.
+	(ISA_HAS_ROR): Added Allegrex CPU to the list.
+	(ISA_HAS_WSBH): Added Allegrex CPU to the list.
+	(ISA_HAS_SEB_SEH): Added Allegrex CPU to the list.
+	(ISA_HAS_EXT_INS): Added Allegrex CPU to the list.
+	(ISA_HAS_XFER_DELAY): Exclude Allegrex from the list.
+	(ISA_HAS_HILO_INTERLOCKS): Added Allegrex CPU to the list.
+	* config/mips/mips.md: Added Allegrex CPU as a new processor.
+	* doc/invoke.texi: Documented Allegrex as a new arch
+
+2025-12-02  Saurabh Jha  <saurabh.jha@arm.com>
+	    Radek Barton  <radek.barton@microsoft.com>
+
+	* config.gcc: Add new Makefile fragment and new object file.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_ms_variadic_abi_init_builtins): Initialize builtin
+	variadic functions for aarch64-w64-mingw32.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_ms_variadic_abi_init_builtins): Initialize builtin
+	variadic functions for aarch64-w64-mingw32.
+	* config/aarch64/aarch64.cc
+	(handle_aarch64_vector_pcs_attribute): Add support for
+	ARM_PCS_MS_VARIADIC.
+	(aarch64_ms_variadic_abi): Return descriptor to variadic
+	function call ABI for aarch64-w64-mingw32 target.
+	(aarch64_fntype_abi): Add support for variadic functions for
+	aarch64-w64-mingw32 target.
+	(aarch64_reg_save_mode): Add support for ARM_PCS_MS_VARIADIC.
+	(num_pcs_arg_regs): Add support for ARM_PCS_MS_VARIADIC.
+	(get_pcs_arg_reg): Add support for ARM_PCS_MS_VARIADIC.
+	(aarch64_arg_size): Returns size of argument.
+	(aarch64_ms_variadic_abi_layout_arg): aarch64-w64-mingw32
+	specific support for variadic ABI.
+	(aarch64_layout_arg): Add support for ARM_PCS_MS_VARIADIC.
+	(aarch64_function_arg): Implement TARGET_FUNCTION_ARG.
+	(aarch64_function_arg_advance): Add support for
+	ARM_PCS_MS_VARIADIC.
+	(aarch64_function_arg_regno_p): Add support for
+	ARM_PCS_MS_VARIADIC.
+	(aarch64_init_builtins): Add support for TARGET_AARCH64_MS_ABI.
+	(aarch64_ms_variadic_abi_build_builtin_va_list): Setup va_list
+	for aarch64-w64-mingw32.
+	(aarch64_build_builtin_va_list): Add support for
+	TARGET_AARCH64_MS_ABI.
+	(aarch64_ms_variadic_abi_expand_builtin_va_start): Implement
+	TARGET_BUILD_BUILTIN_VA_START.
+	(aarch64_setup_incoming_varargs): Implement
+	TARGET_SETUP_INCOMING_VARARGS.
+	(aarch64_mangle_type): Implement TARGET_MANGLE_TYPE.
+	(aarch64_variadic_abi_strict_argument_naming): Implement
+	TARGET_STRICT_ARGUMENT_NAMING.
+	* config/aarch64/aarch64.h
+	(aarch64_frame): Add new field
+	unaligned_saved_varargs_size.
+	(enum arm_pcs): Add new enum option
+	ARM_PCS_MS_VARIADIC.
+	* config/aarch64/cygming.h
+	(SUBTARGET_ATTRIBUTE_TABLE): Add support for ms_abi.
+	* config/mingw/winnt.cc
+	(aarch64_handle_ms_abi_attribute): Handle ms_abi attribue.
+	* config/mingw/winnt.h
+	(aarch64_handle_ms_abi_attribute): Handle ms_abi attribute.
+	* config/aarch64/aarch64-abi-ms-protos.h:
+	(aarch64_arg_partial_bytes): Declare.
+	(aarch64_ms_variadic_abi_canonical_va_list_type): Declare.
+	(aarch64_ms_variadic_abi_enum_va_list): Declare.
+	(aarch64_ms_variadic_abi_fn_abi_va_list): Implement
+	TARGET_FN_ABI_VA_LIST.
+	* config/aarch64/aarch64-abi-ms.cc:
+	(aarch64_arg_partial_bytes): Implement TARGET_ARG_PARTIAL_BYTES.
+	(aarch64_ms_variadic_abi_canonical_va_list_type): Implement
+	TARGET_CANONICAL_VA_LIST_TYPE.
+	(aarch64_ms_variadic_abi_enum_va_list): Implement
+	TARGET_ENUM_VA_LIST_P.
+	(aarch64_ms_variadic_abi_fn_abi_va_list): Implement
+	TARGET_FN_ABI_VA_LIST.
+	* config/aarch64/t-aarch64-mingw: New Makefile fragment.
+
+2025-12-02  Saurabh Jha  <saurabh.jha@arm.com>
+	    Radek Barton  <radek.barton@microsoft.com>
+	    Martin Vejbora  <mvejbora@microsoft.com>
+
+	* config/aarch64/aarch64-abi-ms.h
+	(TARGET_LONG_DOUBLE_128): Set this to 0.
+	* config/aarch64/aarch64.cc
+	(aarch64_scalar_mode_supported_p): Make long double 64 bits.
+	(aarch64_c_mode_for_floating_type): Return true for TFmode.
+	* config/aarch64/aarch64.h
+	(TARGET_LONG_DOUBLE_128): Set this to 1.
+
+2025-12-02  Saurabh Jha  <saurabh.jha@arm.com>
+
+	* config/aarch64/aarch64-abi-ms.h
+	(ASM_COMMENT_START): Specify start of comment.
+	(ASM_OUTPUT_TYPE_DIRECTIVE): Moved from aarch64-coff.h.
+	(ASM_DECLARE_FUNCTION_SIZE): Specify end of function as comment.
+	* config/aarch64/aarch64-coff.h
+	(ASM_OUTPUT_TYPE_DIRECTIVE): Moved to aarch64-abi-ms.h.
+	(ASM_DECLARE_FUNCTION_SIZE): Moved to aarch64-abi-ms.h.
+
+2025-12-01  Peter Bergner  <bergner@tenstorrent.com>
+
+	PR target/122942
+	* config/riscv/riscv-profiles.def (rva23s64): Add zifencei.
+	(rvb23s64): Likewise.
+
+2025-12-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* doc/install.texi (Downloading the source): Mention Algol 68.
+
+2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122858
+	* config/arm/constraints.md (Ph): New constraint.
+	* config/arm/mve.md (mve_asrl_imm, mve_lsll_imm): Fix constraints
+	of operand 1 and handle 32 as special shift amount.
+
+2025-12-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/122652
+	* config/riscv/riscv-vsetvl.cc: Add nullptr check.
+
+2025-12-01  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* omp-low.cc (lower_omp_target): Set GOMP_MAP_IMPLICIT flag.
+
+2025-12-01  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122906
+	* config/i386/i386-features.cc (ix86_emit_tls_call): Emit the
+	TLS call after deleted instructions.
+
 2025-11-30  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/115120
