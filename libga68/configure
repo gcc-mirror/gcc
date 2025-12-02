@@ -669,6 +669,8 @@ LIBTOOL
 RANLIB
 NM
 AR
+A68FLAGS
+A68
 am__fastdepCCAS_FALSE
 am__fastdepCCAS_TRUE
 CCASDEPMODE
@@ -1495,6 +1497,8 @@ Some influential environment variables:
   CPP         C preprocessor
   CCAS        assembler compiler command (defaults to CC)
   CCASFLAGS   assembler compiler flags (defaults to CFLAGS)
+  A68         Algol 68 compiler command
+  A68FLAGS    Algol 68 compiler flags
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -5680,6 +5684,230 @@ else
   am__fastdepCCAS_FALSE=
 fi
 
+
+ac_ext=a68
+ac_compile='$A68 -c $A68FLAGS conftest.$ac_ext >&5'
+ac_link='$A68 -o conftest$ac_exeext $A68FLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=yes
+if test -n "$ac_tool_prefix"; then
+  # Extract the first word of "${ac_tool_prefix}ga68", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ga68; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_A68+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$A68"; then
+  ac_cv_prog_A68="$A68" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_A68="${ac_tool_prefix}ga68"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+A68=$ac_cv_prog_A68
+if test -n "$A68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68" >&5
+$as_echo "$A68" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+if test -z "$ac_cv_prog_A68"; then
+  ac_ct_A68=$A68
+  # Extract the first word of "ga68", so it can be a program name with args.
+set dummy ga68; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_ac_ct_A68+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$ac_ct_A68"; then
+  ac_cv_prog_ac_ct_A68="$ac_ct_A68" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_ac_ct_A68="ga68"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+ac_ct_A68=$ac_cv_prog_ac_ct_A68
+if test -n "$ac_ct_A68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_A68" >&5
+$as_echo "$ac_ct_A68" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+  if test "x$ac_ct_A68" = x; then
+    A68=""
+  else
+    case $cross_compiling:$ac_tool_warned in
+yes:)
+{ $as_echo "$as_me:${as_lineno-$LINENO}: WARNING: using cross tools not prefixed with host triplet" >&5
+$as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
+ac_tool_warned=yes ;;
+esac
+    A68=$ac_ct_A68
+  fi
+else
+  A68="$ac_cv_prog_A68"
+fi
+
+if test -z "$A68"; then
+  if test -n "$ac_tool_prefix"; then
+    # Extract the first word of "${ac_tool_prefix}ga68", so it can be a program name with args.
+set dummy ${ac_tool_prefix}ga68; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_A68+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$A68"; then
+  ac_cv_prog_A68="$A68" # Let the user override the test.
+else
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    ac_cv_prog_A68="$ac_tool_prefix}ga68"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+fi
+fi
+A68=$ac_cv_prog_A68
+if test -n "$A68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68" >&5
+$as_echo "$A68" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+  fi
+fi
+if test -z "$A68"; then
+  # Extract the first word of "ga68", so it can be a program name with args.
+set dummy ga68; ac_word=$2
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
+$as_echo_n "checking for $ac_word... " >&6; }
+if ${ac_cv_prog_A68+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  if test -n "$A68"; then
+  ac_cv_prog_A68="$A68" # Let the user override the test.
+else
+  ac_prog_rejected=no
+as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
+for as_dir in $PATH
+do
+  IFS=$as_save_IFS
+  test -z "$as_dir" && as_dir=.
+    for ac_exec_ext in '' $ac_executable_extensions; do
+  if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
+    if test "$as_dir/$ac_word$ac_exec_ext" = "false"; then
+       ac_prog_rejected=yes
+       continue
+     fi
+    ac_cv_prog_A68="ga68"
+    $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
+    break 2
+  fi
+done
+  done
+IFS=$as_save_IFS
+
+if test $ac_prog_rejected = yes; then
+  # We found a bogon in the path, so make sure we never use it.
+  set dummy $ac_cv_prog_A68
+  shift
+  if test $# != 0; then
+    # We chose a different compiler from the bogus one.
+    # However, it has the same basename, so the bogon will be chosen
+    # first if we set A68 to just the basename; use the full file name.
+    shift
+    ac_cv_prog_A68="$as_dir/$ac_word${1+' '}$@"
+  fi
+fi
+fi
+fi
+A68=$ac_cv_prog_A68
+if test -n "$A68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68" >&5
+$as_echo "$A68" >&6; }
+else
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+fi
+
+
+fi
+
+
+# Provide some information about the compiler.
+$as_echo "$as_me:${as_lineno-$LINENO}: checking for Algol 68 compiler version" >&5
+set X $ac_compile
+ac_compiler=$2
+{ { ac_try="$ac_compiler --version >&5"
+case "(($ac_try" in
+  *\"* | *\`* | *\\*) ac_try_echo=\$ac_try;;
+  *) ac_try_echo=$ac_try;;
+esac
+eval ac_try_echo="\"\$as_me:${as_lineno-$LINENO}: $ac_try_echo\""
+$as_echo "$ac_try_echo"; } >&5
+  (eval "$ac_compiler --version >&5") 2>conftest.err
+  ac_status=$?
+  if test -s conftest.err; then
+    sed '10a\
+... rest of stderr output deleted ...
+         10q' conftest.err >conftest.er1
+    cat conftest.er1 >&5
+  fi
+  rm -f conftest.er1 conftest.err
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }
+A68FLAGS="-g -O2"
+ac_ext=c
+ac_cpp='$CPP $CPPFLAGS'
+ac_compile='$CC -c $CFLAGS $CPPFLAGS conftest.$ac_ext >&5'
+ac_link='$CC -o conftest$ac_exeext $CFLAGS $CPPFLAGS $LDFLAGS conftest.$ac_ext $LIBS >&5'
+ac_compiler_gnu=$ac_cv_c_compiler_gnu
 
 
 
@@ -12601,7 +12829,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12604 "configure"
+#line 12832 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -12707,7 +12935,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 12710 "configure"
+#line 12938 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H

@@ -620,7 +620,7 @@ AR_FOR_TARGET
 GM2_FOR_TARGET
 GDC_FOR_TARGET
 GOC_FOR_TARGET
-GA68_FOR_TARGET
+A68_FOR_TARGET
 GFORTRAN_FOR_TARGET
 GCC_FOR_TARGET
 CXX_FOR_TARGET
@@ -634,7 +634,7 @@ GREP
 CPP
 PKG_CONFIG_PATH
 GDCFLAGS
-GA68FLAGS
+A68FLAGS
 READELF
 OTOOL
 OBJDUMP
@@ -667,7 +667,7 @@ LDFLAGS_FOR_BUILD
 GNATMAKE_FOR_BUILD
 GDC_FOR_BUILD
 GOC_FOR_BUILD
-GA68_FOR_BUILD
+A68_FOR_BUILD
 GFORTRAN_FOR_BUILD
 DSYMUTIL_FOR_BUILD
 DLLTOOL_FOR_BUILD
@@ -731,7 +731,7 @@ HAVE_CXX14
 do_compare
 CARGO
 GDC
-GA68
+A68
 GNATMAKE
 GNATBIND
 ac_ct_CXX
@@ -913,7 +913,7 @@ CC_FOR_TARGET
 CXX_FOR_TARGET
 GCC_FOR_TARGET
 GFORTRAN_FOR_TARGET
-GA68_FOR_TARGET
+A68_FOR_TARGET
 GOC_FOR_TARGET
 GDC_FOR_TARGET
 GM2_FOR_TARGET
@@ -1722,8 +1722,8 @@ Some influential environment variables:
               GCC for the target
   GFORTRAN_FOR_TARGET
               GFORTRAN for the target
-  GA68_FOR_TARGET
-              GA68 for the target
+  A68_FOR_TARGET
+              A68 for the target
   GOC_FOR_TARGET
               GOC for the target
   GDC_FOR_TARGET
@@ -4322,7 +4322,7 @@ if test "${build}" != "${host}" ; then
   DLLTOOL_FOR_BUILD=${DLLTOOL_FOR_BUILD-dlltool}
   DSYMUTIL_FOR_BUILD=${DSYMUTIL_FOR_BUILD-dsymutil}
   GFORTRAN_FOR_BUILD=${GFORTRAN_FOR_BUILD-gfortran}
-  GA68_FOR_BUILD=${GA68_FOR_BUILD-ga68}
+  A68_FOR_BUILD=${A68_FOR_BUILD-ga68}
   GOC_FOR_BUILD=${GOC_FOR_BUILD-gccgo}
   GDC_FOR_BUILD=${GDC_FOR_BUILD-gdc}
   GNATMAKE_FOR_BUILD=${GNATMAKE_FOR_BUILD-gnatmake}
@@ -4339,7 +4339,7 @@ else
   DLLTOOL_FOR_BUILD="\$(DLLTOOL)"
   DSYMUTIL_FOR_BUILD="\$(DSYMUTIL)"
   GFORTRAN_FOR_BUILD="\$(GFORTRAN)"
-  GA68_FOR_BUILD="\$(GA68)"
+  A68_FOR_BUILD="\$(A68)"
   GOC_FOR_BUILD="\$(GOC)"
   GDC_FOR_BUILD="\$(GDC)"
   GNATMAKE_FOR_BUILD="\$(GNATMAKE)"
@@ -5865,11 +5865,11 @@ if test -n "$ac_tool_prefix"; then
 set dummy ${ac_tool_prefix}ga68; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GA68+:} false; then :
+if ${ac_cv_prog_A68+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$GA68"; then
-  ac_cv_prog_GA68="$GA68" # Let the user override the test.
+  if test -n "$A68"; then
+  ac_cv_prog_A68="$A68" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -5878,7 +5878,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GA68="${ac_tool_prefix}ga68"
+    ac_cv_prog_A68="${ac_tool_prefix}ga68"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -5888,10 +5888,10 @@ IFS=$as_save_IFS
 
 fi
 fi
-GA68=$ac_cv_prog_GA68
-if test -n "$GA68"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68" >&5
-$as_echo "$GA68" >&6; }
+A68=$ac_cv_prog_A68
+if test -n "$A68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68" >&5
+$as_echo "$A68" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -5899,17 +5899,17 @@ fi
 
 
 fi
-if test -z "$ac_cv_prog_GA68"; then
-  ac_ct_GA68=$GA68
+if test -z "$ac_cv_prog_A68"; then
+  ac_ct_A68=$A68
   # Extract the first word of "ga68", so it can be a program name with args.
 set dummy ga68; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_ac_ct_GA68+:} false; then :
+if ${ac_cv_prog_ac_ct_A68+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$ac_ct_GA68"; then
-  ac_cv_prog_ac_ct_GA68="$ac_ct_GA68" # Let the user override the test.
+  if test -n "$ac_ct_A68"; then
+  ac_cv_prog_ac_ct_A68="$ac_ct_A68" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -5918,7 +5918,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_ac_ct_GA68="ga68"
+    ac_cv_prog_ac_ct_A68="ga68"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -5928,17 +5928,17 @@ IFS=$as_save_IFS
 
 fi
 fi
-ac_ct_GA68=$ac_cv_prog_ac_ct_GA68
-if test -n "$ac_ct_GA68"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_GA68" >&5
-$as_echo "$ac_ct_GA68" >&6; }
+ac_ct_A68=$ac_cv_prog_ac_ct_A68
+if test -n "$ac_ct_A68"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $ac_ct_A68" >&5
+$as_echo "$ac_ct_A68" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
 fi
 
-  if test "x$ac_ct_GA68" = x; then
-    GA68="no"
+  if test "x$ac_ct_A68" = x; then
+    A68="no"
   else
     case $cross_compiling:$ac_tool_warned in
 yes:)
@@ -5946,10 +5946,10 @@ yes:)
 $as_echo "$as_me: WARNING: using cross tools not prefixed with host triplet" >&2;}
 ac_tool_warned=yes ;;
 esac
-    GA68=$ac_ct_GA68
+    A68=$ac_ct_A68
   fi
 else
-  GA68="$ac_cv_prog_GA68"
+  A68="$ac_cv_prog_A68"
 fi
 
 
@@ -14479,7 +14479,7 @@ fi
 
 
 
-GA68FLAGS=${GA68FLAGS-${CFLAGS}}
+A68FLAGS=${A68FLAGS-${CFLAGS}}
 
 
 GDCFLAGS=${GDCFLAGS-${CFLAGS}}
@@ -15810,23 +15810,23 @@ fi
 
 
 
-if test -n "$GA68_FOR_TARGET"; then
-  ac_cv_prog_GA68_FOR_TARGET=$GA68_FOR_TARGET
-elif test -n "$ac_cv_prog_GA68_FOR_TARGET"; then
-  GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
+if test -n "$A68_FOR_TARGET"; then
+  ac_cv_prog_A68_FOR_TARGET=$A68_FOR_TARGET
+elif test -n "$ac_cv_prog_A68_FOR_TARGET"; then
+  A68_FOR_TARGET=$ac_cv_prog_A68_FOR_TARGET
 fi
 
-if test -n "$ac_cv_prog_GA68_FOR_TARGET"; then
+if test -n "$ac_cv_prog_A68_FOR_TARGET"; then
   for ncn_progname in ga68; do
     # Extract the first word of "${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_progname}; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GA68_FOR_TARGET+:} false; then :
+if ${ac_cv_prog_A68_FOR_TARGET+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$GA68_FOR_TARGET"; then
-  ac_cv_prog_GA68_FOR_TARGET="$GA68_FOR_TARGET" # Let the user override the test.
+  if test -n "$A68_FOR_TARGET"; then
+  ac_cv_prog_A68_FOR_TARGET="$A68_FOR_TARGET" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -15835,7 +15835,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GA68_FOR_TARGET="${ncn_progname}"
+    ac_cv_prog_A68_FOR_TARGET="${ncn_progname}"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -15845,10 +15845,10 @@ IFS=$as_save_IFS
 
 fi
 fi
-GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
-if test -n "$GA68_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68_FOR_TARGET" >&5
-$as_echo "$GA68_FOR_TARGET" >&6; }
+A68_FOR_TARGET=$ac_cv_prog_A68_FOR_TARGET
+if test -n "$A68_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68_FOR_TARGET" >&5
+$as_echo "$A68_FOR_TARGET" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -15858,12 +15858,12 @@ fi
   done
 fi
 
-if test -z "$ac_cv_prog_GA68_FOR_TARGET" && test -n "$with_build_time_tools"; then
+if test -z "$ac_cv_prog_A68_FOR_TARGET" && test -n "$with_build_time_tools"; then
   for ncn_progname in ga68; do
     { $as_echo "$as_me:${as_lineno-$LINENO}: checking for ${ncn_progname} in $with_build_time_tools" >&5
 $as_echo_n "checking for ${ncn_progname} in $with_build_time_tools... " >&6; }
     if test -x $with_build_time_tools/${ncn_progname}; then
-      ac_cv_prog_GA68_FOR_TARGET=$with_build_time_tools/${ncn_progname}
+      ac_cv_prog_A68_FOR_TARGET=$with_build_time_tools/${ncn_progname}
       { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
 $as_echo "yes" >&6; }
       break
@@ -15874,18 +15874,18 @@ $as_echo "no" >&6; }
   done
 fi
 
-if test -z "$ac_cv_prog_GA68_FOR_TARGET"; then
+if test -z "$ac_cv_prog_A68_FOR_TARGET"; then
   for ncn_progname in ga68; do
     if test -n "$ncn_target_tool_prefix"; then
       # Extract the first word of "${ncn_target_tool_prefix}${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_target_tool_prefix}${ncn_progname}; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GA68_FOR_TARGET+:} false; then :
+if ${ac_cv_prog_A68_FOR_TARGET+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$GA68_FOR_TARGET"; then
-  ac_cv_prog_GA68_FOR_TARGET="$GA68_FOR_TARGET" # Let the user override the test.
+  if test -n "$A68_FOR_TARGET"; then
+  ac_cv_prog_A68_FOR_TARGET="$A68_FOR_TARGET" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -15894,7 +15894,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GA68_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
+    ac_cv_prog_A68_FOR_TARGET="${ncn_target_tool_prefix}${ncn_progname}"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -15904,10 +15904,10 @@ IFS=$as_save_IFS
 
 fi
 fi
-GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
-if test -n "$GA68_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68_FOR_TARGET" >&5
-$as_echo "$GA68_FOR_TARGET" >&6; }
+A68_FOR_TARGET=$ac_cv_prog_A68_FOR_TARGET
+if test -n "$A68_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68_FOR_TARGET" >&5
+$as_echo "$A68_FOR_TARGET" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -15915,16 +15915,16 @@ fi
 
 
     fi
-    if test -z "$ac_cv_prog_GA68_FOR_TARGET" && test $build = $target ; then
+    if test -z "$ac_cv_prog_A68_FOR_TARGET" && test $build = $target ; then
       # Extract the first word of "${ncn_progname}", so it can be a program name with args.
 set dummy ${ncn_progname}; ac_word=$2
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for $ac_word" >&5
 $as_echo_n "checking for $ac_word... " >&6; }
-if ${ac_cv_prog_GA68_FOR_TARGET+:} false; then :
+if ${ac_cv_prog_A68_FOR_TARGET+:} false; then :
   $as_echo_n "(cached) " >&6
 else
-  if test -n "$GA68_FOR_TARGET"; then
-  ac_cv_prog_GA68_FOR_TARGET="$GA68_FOR_TARGET" # Let the user override the test.
+  if test -n "$A68_FOR_TARGET"; then
+  ac_cv_prog_A68_FOR_TARGET="$A68_FOR_TARGET" # Let the user override the test.
 else
 as_save_IFS=$IFS; IFS=$PATH_SEPARATOR
 for as_dir in $PATH
@@ -15933,7 +15933,7 @@ do
   test -z "$as_dir" && as_dir=.
     for ac_exec_ext in '' $ac_executable_extensions; do
   if as_fn_executable_p "$as_dir/$ac_word$ac_exec_ext"; then
-    ac_cv_prog_GA68_FOR_TARGET="${ncn_progname}"
+    ac_cv_prog_A68_FOR_TARGET="${ncn_progname}"
     $as_echo "$as_me:${as_lineno-$LINENO}: found $as_dir/$ac_word$ac_exec_ext" >&5
     break 2
   fi
@@ -15943,10 +15943,10 @@ IFS=$as_save_IFS
 
 fi
 fi
-GA68_FOR_TARGET=$ac_cv_prog_GA68_FOR_TARGET
-if test -n "$GA68_FOR_TARGET"; then
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $GA68_FOR_TARGET" >&5
-$as_echo "$GA68_FOR_TARGET" >&6; }
+A68_FOR_TARGET=$ac_cv_prog_A68_FOR_TARGET
+if test -n "$A68_FOR_TARGET"; then
+  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $A68_FOR_TARGET" >&5
+$as_echo "$A68_FOR_TARGET" >&6; }
 else
   { $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
 $as_echo "no" >&6; }
@@ -15954,19 +15954,19 @@ fi
 
 
     fi
-    test -n "$ac_cv_prog_GA68_FOR_TARGET" && break
+    test -n "$ac_cv_prog_A68_FOR_TARGET" && break
   done
 fi
 
-if test -z "$ac_cv_prog_GA68_FOR_TARGET" ; then
+if test -z "$ac_cv_prog_A68_FOR_TARGET" ; then
   set dummy ga68
   if test $build = $target ; then
-    GA68_FOR_TARGET="$2"
+    A68_FOR_TARGET="$2"
   else
-    GA68_FOR_TARGET="${ncn_target_tool_prefix}$2"
+    A68_FOR_TARGET="${ncn_target_tool_prefix}$2"
   fi
 else
-  GA68_FOR_TARGET="$ac_cv_prog_GA68_FOR_TARGET"
+  A68_FOR_TARGET="$ac_cv_prog_A68_FOR_TARGET"
 fi
 
 
@@ -20440,9 +20440,9 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking where to find the target ga68" >&5
 $as_echo_n "checking where to find the target ga68... " >&6; }
 if test "x${build}" != "x${host}" ; then
-  if expr "x$GA68_FOR_TARGET" : "x/" > /dev/null; then
+  if expr "x$A68_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    ac_dir=`dirname $GA68_FOR_TARGET`
+    ac_dir=`dirname $A68_FOR_TARGET`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
 $as_echo "pre-installed in $ac_dir" >&6; }
   else
@@ -20462,17 +20462,17 @@ else
   esac
   if test $ok = yes; then
     # An in-tree tool is available and we can use it
-    GA68_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/ga68 -B$$r/$(HOST_SUBDIR)/gcc/'
+    A68_FOR_TARGET='$$r/$(HOST_SUBDIR)/gcc/ga68 -B$$r/$(HOST_SUBDIR)/gcc/'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: just compiled" >&5
 $as_echo "just compiled" >&6; }
-  elif expr "x$GA68_FOR_TARGET" : "x/" > /dev/null; then
+  elif expr "x$A68_FOR_TARGET" : "x/" > /dev/null; then
     # We already found the complete path
-    ac_dir=`dirname $GA68_FOR_TARGET`
+    ac_dir=`dirname $A68_FOR_TARGET`
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: pre-installed in $ac_dir" >&5
 $as_echo "pre-installed in $ac_dir" >&6; }
   elif test "x$target" = "x$host"; then
     # We can use an host tool
-    GA68_FOR_TARGET='$(GA68)'
+    A68_FOR_TARGET='$(A68)'
     { $as_echo "$as_me:${as_lineno-$LINENO}: result: host tool" >&5
 $as_echo "host tool" >&6; }
   else

@@ -314,8 +314,8 @@ flags_to_pass = { flag= GNATBIND ; };
 flags_to_pass = { flag= GNATMAKE ; };
 flags_to_pass = { flag= GDC ; };
 flags_to_pass = { flag= GDCFLAGS ; };
-flags_to_pass = { flag= GA68 ; };
-flags_to_pass = { flag= GA68FLAGS ; };
+flags_to_pass = { flag= A68 ; };
+flags_to_pass = { flag= A68FLAGS ; };
 
 // Target tools
 flags_to_pass = { flag= AR_FOR_TARGET ; };
@@ -332,8 +332,8 @@ flags_to_pass = { flag= GOC_FOR_TARGET ; };
 flags_to_pass = { flag= GOCFLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GDC_FOR_TARGET ; };
 flags_to_pass = { flag= GDCFLAGS_FOR_TARGET ; };
-flags_to_pass = { flag= GA68_FOR_TARGET ; };
-flags_to_pass = { flag= GA68FLAGS_FOR_TARGET ; };
+flags_to_pass = { flag= A68_FOR_TARGET ; };
+flags_to_pass = { flag= A68FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= GM2_FOR_TARGET ; };
 flags_to_pass = { flag= GM2FLAGS_FOR_TARGET ; };
 flags_to_pass = { flag= LD_FOR_TARGET ; };

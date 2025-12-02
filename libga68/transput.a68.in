@@ -1,0 +1,279 @@
+{ Process this file with sppp.awk  }
+
+{ transput.a68.in - Standard transput.
+
+  Copyright (C) 2025 Jose E. Marchesi
+
+  GCC is free software; you can redistribute it and/or modify it under
+  the terms of the GNU General Public License as published by the Free
+  Software Foundation; either version 3, or (at your option) any later
+  version.
+
+  GCC is distributed in the hope that it will be useful, but WITHOUT
+  ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+  or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public
+  License for more details.
+
+  Under Section 7 of GPL version 3, you are granted additional
+  permissions described in the GCC Runtime Library Exception, version
+  3.1, as published by the Free Software Foundation.
+
+  You should have received a copy of the GNU General Public License
+  and a copy of the GCC Runtime Library Exception along with this
+  program; see the files COPYING3 and COPYING.RUNTIME respectively.
+  If not, see <http://www.gnu.org/licenses/>. }
+
+module Transput =
+def
+    { 10.3.2.1. Conversion routines.  }
+
+    mode Number = union (
+                     {iter L {short short} {short} {} {long} {long long}}
+                     {L} int
+                     {reti {,}}
+                     ,
+                     {iter L {} {long} {long long}}
+                     {L} real
+                     {reti {,}}
+                  );
+
+    pub proc whole = (Number v, int width) string:
+       case v in
+          {iter L  {short short}  {short}  {} {long}  {long long}}
+          {iter L_ {short_short_} {short_} {} {long_} {long_long_}}
+          ({L} int x):
+             (int length := ABS width - (x < {L} 0 OR width > 0 | 1 | 0),
+                            {L} int n := ABS x;
+              if width = 0
+              then {L} int m := n; length := 0;
+                   while m %:= {L} 10; length +:= 1; m /= {L} 0
+                   do ~ od
+              fi;
+              string s := subwhole (n, length);
+              if length = 0 OR char_in_string (errorchar, loc int, s)
+              then ABS width * errorchar
+              else (x < {L} 0 | "-" |: width > 0 | "+" | "") +=: s;
+                   (width /= 0 | (ABS width - UPB s) * " " +=: s);
+                   s
+              fi),
+          ({L} real x): fixed (x, width, 0)
+          {reti {,}}
+       esac;
+
+    pub proc fixed = (Number v, int width, after) string:
+       case v in
+          {iter L {} {long} {long long}}
+          ({L} real x):
+             if int length := ABS width - (x < {L} 0 OR width > 0 | 1 | 0);
+                after >= 0 AND (length > after OR width = 0)
+             then {L} real y = ABS x;
+                  if width = 0
+                  then length := (after = 0 | 1 | 0);
+                       while y + {L} .5 * {L} .1 ** after >= {L} 10 ** length
+                       do length +:= 1 od;
+                       length +:= (after = 0 | 0 | after + 1)
+                  fi;
+                  string s := subfixed (y, length, after);
+                  if ~char_in_string (errorchar, loc int, s)
+                  then (length > UPB s AND y < {L} 1.0 | "0" +=: s);
+                       (x < {L} 0 | "-" |: width > 0 | "+" | "") +=: s;
+                       (width /= 0 | (ABS width - UPB s) * " " +=: s);
+                       s
+                  elif after > 0
+                  then fixed (v, width, after - 1)
+                  else ABS width * errorchar
+                  fi
+             else { XXX undefined } skip; ABS width * errorchar
+             fi,
+          ({L} int x): fixed ({L} real (x), width, after)
+          {reti {,}}
+       esac;
+
+    pub proc float = (Number v, int width, after, exp) string:
+        case v in
+           {iter L  {} {long}  {long long}}
+           {iter L_ {} {long_} {long_long_}}
+           ({L} real x):
+              if int before = ABS width - ABS exp - (after /= 0 | after+1 | 0) - 2;
+                 SIGN before + SIGN after > 0
+              then string s, {L} real y := ABS x, int p := 0;
+                   {L_}standardize (y, before, after, p);
+                   s := fixed (SIGN (x * y), SIGN width * (ABS width - ABS exp - 1),
+                               after) + "*^" + whole (p, exp);
+                   if exp = 0 OR char_in_string (errorchar, loc int, s)
+                   then float (x, width, (after /= 0 | after-1 | 0),
+                               (exp > 0 | exp+1 | exp-1))
+                   else s
+                   fi
+              else { XXX undefined } skip; ABS width * errorchar
+              fi,
+           ({L} int x): float ({L} real (x), width, after, exp)
+           {reti {,}}
+        esac;
+
+    { Returns a string of maximum length `width' containing a decimal
+      representation of the positive integer `v'. }
+
+    proc subwhole = (Number v, int width) string:
+       case v in
+          {iter L {short short} {short} {} {long}    {long long}}
+          {iter S {LENG LENG}   {LENG}  {} {SHORTEN} {SHORTEN SHORTEN}}
+          ({L} int x):
+             begin string s, {L} int n := x;
+                   while dig_char ({S} (n MOD {L} 10)) +=: s;
+                         n %:= {L} 10; n /= {L} 0
+                   do ~ od;
+                   (UPB s > width | width * errorchar | s)
+             end
+          {reti {,}}
+       esac;
+
+    { Returns a string of maximum length `width' containing a rounded
+      decimal representation of the positive real number `v'; if
+      `after' is greater than zero, this string contains a decimal
+      point followed by `after' digits. }
+
+    proc subfixed = (Number v, int width, after) string:
+       case v in
+          {iter L {} {long}    {long long}}
+          {iter K {} {LENG}    {LENG LENG}}
+          {iter S {} {SHORTEN} {SHORTEN SHORTEN}}
+          ({L} real x):
+             begin string s, int before := 0;
+                   {L} real y := x + {L} .5 * {L} .1 ** after;
+                   proc choosedig = (ref {L} real y) char:
+                      dig_char ((int c := {S} ENTIER (y *:= {L} 10.0); (c > 9 | c := 9);
+                                 y -:= {K} c; c));
+                   while y >= {L} 10.0 ** before do before +:= 1 od;
+                   y /:= {L} 10.0 ** before;
+                   to before do s +:= choosedig (y) od;
+                   (after > 0 | s +:= ".");
+                   to after do s +:= choosedig (y) od;
+                   (UPB s > width | width * errorchar | s)
+             end
+           {reti {,}}
+       esac;
+
+    { Adjusts the value of `y' so that it may be transput according to
+      the format $ n(before)d, n(after)d $; `p' is set so that y * 10
+      ** p is equal to the original value of `y'.  }
+
+    {iter L  {} {long}  {long long}}
+    {iter L_ {} {long_} {long_long_}}
+    proc {L_}standardize = (ref {L} real y, int before, after, ref int p) void:
+    begin
+          {L} real g = {L} 10.0 ** before; {L} real h = g * {L} .1;
+          while y >= g do y *:= {L} .1; p +:= 1 od;
+          (y /= {L} 0.0 | while y  < h do y *:= {L} 10.0; p -:= 1 od);
+          (y + {L} .5 * {L} .1 ** after >= g | y := h; p +:= 1)
+    end;
+    {reti}
+
+    proc dig_char = (int x) char: "0123456789abcdef"[x+1];
+
+    { Returns true if the absolute value of the result is
+      <= L max int }
+
+    {iter L  {short short}     {short}   {} {long} {long long}}
+    {iter K  {SHORTEN SHORTEN} {SHORTEN} {} {LENG} {LENG LENG}}
+    {iter L_ {short_short_} {short_} {} {long_}   {long_long_}}
+    proc string_to_{L_}int = (string s, int radix, ref {L} int i) bool:
+     begin
+          {L} int lr = {K} radix; bool safe := true;
+          {L} int n := {L} 0, {L} int m = {L_}max_int % lr;
+          {L} int m1 = {L_}max_int - m * lr;
+          for i from 2 to UPB s
+          while {L} int dig = {K} char_dig (s[i]);
+                safe := n < m OR n = m AND dig <= m1
+          do n := n * lr + dig od;
+          if safe then i := (s[1] = "+" | n | -n); true else false fi
+    end;
+    {reti}
+
+    { Returns true if the absolute value of the result is <= L max
+      real.  }
+
+    {iter L  {} {long}  {long long}}
+    {iter K  {} {LENG}  {LENG LENG}}
+    {iter S  {} {SHORTEN} {SHORTEN SHORTEN}}
+    {iter L_ {} {long_} {long_long_}}
+    pub proc string_to_{L_}real = (string s, ref {L} real r) bool:
+    begin
+          int e := UPB s + 1;
+          char_in_string ("^" { XXX unicode 10^ }, e, s);
+          int p := e; char_in_string (".", p, s);
+          int j := 1, length := 0, {L} real x := {L} 0.0;
+          { Skip leading zeroes:  }
+          for i from 2 to e - 1
+          while s[i] = "0" OR s[i] = "." OR s[i] = "_."
+          do j := i od;
+          for i from j + 1 to e - 1 while length < {L_}real_width
+          do
+             if s[i] /= "."
+             then x := x * {L} 10.0 + {K} char_dig (s[j:=i]); length +:= 1
+             fi { all significant digits converted.  }
+          od;
+          { Set preliminary exponent:  }
+          int exp := (p > j | p - j - 1 | p - j), expart := 0;
+          { Convert exponent part: }
+          bool safe := if e < UPB s
+                       then {L} int tmp := {K} expart;
+                            bool b = string_to_{L_}int (s[e+1:], 10, tmp);
+                            expart = {S} tmp;
+                            b
+                       else true
+                       fi;
+          { Prepare a representation of L max real to compare with the L
+                real value to be delivered: }
+          {L} real max_stag := {L_}max_real, int max_exp := 0;
+          {L_}standardize (max_stag, length, 0, max_exp); exp +:= expart;
+          if ~safe OR (exp > max_exp OR exp = max_exp AND x > max_stag)
+          then false
+          else r := (s[1] = "+" | x | -x) * {L} 10.0 ** exp; true
+          fi
+    end;
+    {reti}
+
+    proc char_dig = (char x) int:
+       (x = "." | 0 | int i; char_in_string (x,i,"0123456789abcdef"); i-1);
+
+    pub proc char_in_string = (char c, ref int i, string s) bool:
+    begin bool found := false;
+          for k from LWB s to UPB s while ~found
+          do (c = s[k] | i := k; found := true) od;
+          found
+    end;
+
+    { The smallest integral value such that `L max int' may be
+      converted without error using the pattern n(L int width)d }
+
+    {iter L  {} {long}  {long long}}
+    {iter L_ {} {long_} {long_long_}}
+    pub int {L_}int_width =
+       (int c := 1; while {L} 10 ** (c - 1) < {L} .1 * {L_}max_int do c +:= 1 od;
+        c);
+    {reti}
+
+    { The smallest integral value such that different string are
+      produced by conversion of `1.0' and of `1.0 + L small real'
+      using the pattern d .n(L real width - 1)d  }
+
+    {iter L  {} {long} {long long}}
+    {iter L_ {} {long_} {long_long_}}
+    {iter S  {} {SHORTEN} {SHORTEN SHORTEN}}
+    pub int {L_}real_width = 1 - {S} ENTIER ({L_}ln ({L_}small_real) / {L_}ln ({L} 10));
+    {reti}
+
+    { The smallest integral value such that `L max real' may be
+      converted without error using the pattern
+      d .n(L real width - 1)d e n(L exp with)d }
+
+    {iter L  {} {long} {long long}}
+    {iter L_ {} {long_} {long_long_}}
+    {iter S  {} {SHORTEN} {SHORTEN SHORTEN}}
+    pub int {L_}exp_width =
+       1 + {S} ENTIER ({L_}ln ({L_}ln ({L_}max_real) / {L_}ln ({L} 10)) / {L_}ln ({L} 10));
+    {reti}
+
+    skip
+fed

@@ -128,7 +128,7 @@ am__aclocal_m4_deps = $(top_srcdir)/../config/acx.m4 \
 	$(top_srcdir)/../libtool.m4 $(top_srcdir)/../ltoptions.m4 \
 	$(top_srcdir)/../ltsugar.m4 $(top_srcdir)/../ltversion.m4 \
 	$(top_srcdir)/../lt~obsolete.m4 $(top_srcdir)/acinclude.m4 \
-	$(top_srcdir)/configure.ac
+	$(top_srcdir)/m4/autoconf.m4 $(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(top_srcdir)/configure \
@@ -246,6 +246,8 @@ ETAGS = etags
 CTAGS = ctags
 CSCOPE = cscope
 AM_RECURSIVE_TARGETS = cscope
+A68 = @A68@
+A68FLAGS = @A68FLAGS@
 ACLOCAL = @ACLOCAL@
 AMTAR = @AMTAR@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
@@ -465,8 +467,7 @@ libga68_la_SOURCES = libga68.c \
                      ga68-posix.c \
                      ga68-alloc.c \
                      ga68-error.c \
-                     ga68-standenv.c \
-                     ga68.h
+                     ga68-standenv.c
 
 libga68_la_LIBTOOLFLAGS = 
 libga68_la_CFLAGS = $(LIBGA68_GCFLAGS) $(LIBGA68_BOEHM_GC_INCLUDES)
@@ -474,18 +475,24 @@ libga68_la_LDFLAGS = -version-info `grep -v '^\#' $(srcdir)/libtool-version` \
 		     $(version_arg) $(lt_host_flags) $(extra_darwin_ldflags_libga68)
 
 libga68_la_DEPENDENCIES = libga68.spec $(version_dep)
-libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS)
+libga68_la_LIBADD = $(LIBGA68_BOEHM_GC_LIBS) transput.lo
+
+# Rules to build the Algol 68 code in the library.
+LTA68COMPILE = $(LIBTOOL) --tag=A68 $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) \
+	--mode=compile $(A68) $(AM_A68FLAGS)
+
+BUILT_SOURCES = transput.a68
 MULTISRCTOP = 
 MULTIBUILDTOP = 
 MULTIDIRS = 
 MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
-all: config.h
+all: $(BUILT_SOURCES) config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .a68 .c .lo .o .obj
 am--refresh: Makefile
 	@:
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.am $(top_srcdir)/../multilib.am $(am__configure_deps)
@@ -741,13 +748,15 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 	-rm -f cscope.out cscope.in.out cscope.po.out cscope.files
 check-am: all-am
-check: check-am
+check: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) check-am
 all-am: Makefile $(LTLIBRARIES) $(DATA) config.h all-local
 installdirs:
 	for dir in "$(DESTDIR)$(toolexeclibdir)" "$(DESTDIR)$(toolexeclibdir)"; do \
 	  test -z "$$dir" || $(MKDIR_P) "$$dir"; \
 	done
-install: install-am
+install: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) install-am
 install-exec: install-exec-am
 install-data: install-data-am
 uninstall: uninstall-am
@@ -777,6 +786,7 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libtool clean-local \
@@ -854,7 +864,7 @@ ps-am:
 uninstall-am: uninstall-toolexeclibDATA \
 	uninstall-toolexeclibLTLIBRARIES
 
-.MAKE: all install-am install-strip
+.MAKE: all check install install-am install-strip
 
 .PHONY: CTAGS GTAGS TAGS all all-am all-local am--refresh check \
 	check-am clean clean-cscope clean-generic clean-libtool \
@@ -883,6 +893,15 @@ uninstall-am: uninstall-toolexeclibDATA \
 @LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	  $(srcdir)/ga68.map \
 @LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	  $(libga68_la_OBJECTS) $(libga68_la_LIBADD) \
 @LIBGA68_USE_SYMVER_SUN_TRUE@@LIBGA68_USE_SYMVER_TRUE@	> $@ || (rm -f $@ ; exit 1)
+
+.a68.o:
+	$(A68) -o $@ $(A68FLAGS) -c $<
+
+.a68.lo:
+	$(LTA68COMPILE) $(A68FLAGS) $(MULTIFLAGS) -c -o $@ $<
+
+transput.a68 : transput.a68.in
+	$(AWK) -f $(srcdir)/sppp.awk $< > $@
 
 # target overrides
 -include $(tmake_file)

@@ -1,0 +1,5 @@
+access Transput
+begin int pos;
+      assert (char_in_string ("o", pos, "foo"));
+      assert (pos = 2)
+end
