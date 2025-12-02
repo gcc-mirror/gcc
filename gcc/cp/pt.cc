@@ -8646,6 +8646,19 @@ maybe_convert_nontype_argument (tree type, tree arg, bool force)
   return arg;
 }
 
+/* True if we need an IMPLICIT_CONV_EXPR for converting EXPR to TYPE, possibly
+   in a FORCED context (i.e. alias or concept).  */
+
+static bool
+dependent_implict_conv_p (tree type, tree expr, bool forced)
+{
+  return (dependent_type_p (type) || type_dependent_expression_p (expr)
+	  || (forced
+	      && !(same_type_ignoring_top_level_qualifiers_p
+		   (TREE_TYPE (expr), type))
+	      && value_dependent_expression_p (expr)));
+}
+
 /* Convert the indicated template ARG as necessary to match the
    indicated template PARM.  Returns the converted ARG, or
    error_mark_node if the conversion was unsuccessful.  Error and
@@ -8926,12 +8939,7 @@ convert_template_argument (tree parm,
 	  && same_type_p (TREE_TYPE (orig_arg), t))
 	orig_arg = TREE_OPERAND (orig_arg, 0);
 
-      if (!uses_template_parms (t)
-	  && !type_dependent_expression_p (orig_arg)
-	  && !(force_conv
-	       && !(same_type_ignoring_top_level_qualifiers_p
-		    (TREE_TYPE (orig_arg), t))
-	       && value_dependent_expression_p (orig_arg)))
+      if (!dependent_implict_conv_p (t, orig_arg, force_conv))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
@@ -21031,7 +21039,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 	tree expr = RECUR (TREE_OPERAND (t, 0));
-	if (dependent_type_p (type) || type_dependent_expression_p (expr))
+	if (dependent_implict_conv_p (type, expr,
+				      IMPLICIT_CONV_EXPR_FORCED (t)))
 	  {
 	    retval = copy_node (t);
 	    TREE_TYPE (retval) = type;
@@ -32147,10 +32156,18 @@ do_auto_deduction (tree type, tree init, tree auto_node,
 	 initializer_list.  */
       if (CONSTRUCTOR_ELTS (init))
 	for (constructor_elt &elt : CONSTRUCTOR_ELTS (init))
-	  elt.value = resolve_nondeduced_context (elt.value, complain);
+	  {
+	    elt.value = resolve_nondeduced_context (elt.value, complain);
+	    if (!mark_single_function (elt.value, complain))
+	      return error_mark_node;
+	  }
     }
   else if (init)
-    init = resolve_nondeduced_context (init, complain);
+    {
+      init = resolve_nondeduced_context (init, complain);
+      if (!mark_single_function (init, complain))
+	return error_mark_node;
+    }
 
   /* In C++23, we must deduce the type to int&& for code like
        decltype(auto) f(int&& x) { return (x); }
