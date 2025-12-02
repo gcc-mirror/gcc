@@ -1932,31 +1932,36 @@ pa_emit_move_sequence (rtx *operands, machine_mode mode, rtx scratch_reg)
 
   /* We can only handle indexed addresses in the destination operand
      of floating point stores.  Thus, we need to break out indexed
-     addresses from the destination operand.  */
-  if (GET_CODE (operand0) == MEM && IS_INDEX_ADDR_P (XEXP (operand0, 0)))
+     addresses from the destination operand.  We also need to break
+     out REG+D addresses with large offsets.  */
+  if (MEM_P (operand0)
+      && (IS_INDEX_ADDR_P (XEXP (operand0, 0))
+	  || (GET_CODE (XEXP (operand0, 0)) == PLUS
+	      && REG_P (XEXP (XEXP (operand0, 0), 0))
+	      && CONST_INT_P (XEXP (XEXP (operand0, 0), 1))
+	      && !INT_14_BITS (XEXP (XEXP (operand0, 0), 1)))))
     {
-      gcc_assert (can_create_pseudo_p ());
-
       tem = copy_to_mode_reg (Pmode, XEXP (operand0, 0));
       operand0 = replace_equiv_address (operand0, tem);
     }
 
   /* On targets with non-equivalent space registers, break out unscaled
-     indexed addresses from the source operand before the final CSE.
+     indexed addresses from the source operand before reload is completed.
      We have to do this because the REG_POINTER flag is not correctly
-     carried through various optimization passes and CSE may substitute
-     a pseudo without the pointer set for one with the pointer set.  As
-     a result, we loose various opportunities to create insns with
-     unscaled indexed addresses.  */
-  if (!TARGET_NO_SPACE_REGS
-      && !cse_not_expected
-      && GET_CODE (operand1) == MEM
+     carried through various optimization passes.  We also need to break
+     out REG+D addresses with large offsets.  */
+  if (MEM_P (operand1)
       && GET_CODE (XEXP (operand1, 0)) == PLUS
       && REG_P (XEXP (XEXP (operand1, 0), 0))
-      && REG_P (XEXP (XEXP (operand1, 0), 1)))
-    operand1
-      = replace_equiv_address (operand1,
-			       copy_to_mode_reg (Pmode, XEXP (operand1, 0)));
+      && ((!TARGET_NO_SPACE_REGS
+	   && !reload_completed
+	   && REG_P (XEXP (XEXP (operand1, 0), 1)))
+	  || (CONST_INT_P (XEXP (XEXP (operand1, 0), 1))
+	      && !INT_14_BITS (XEXP (XEXP (operand1, 0), 1)))))
+    {
+      tem = copy_to_mode_reg (Pmode, XEXP (operand1, 0));
+      operand1 = replace_equiv_address (operand1, tem);
+    }
 
   if (scratch_reg
       && reload_in_progress
