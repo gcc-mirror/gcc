@@ -4158,6 +4158,14 @@ package body Sem_Ch6 is
             Style.Body_With_No_Spec (N);
          end if;
 
+         --  Subprograms defined with direct attribute definitions must always
+         --  have separate specs.
+         if Nkind (Defining_Unit_Name (Original_Node (Body_Spec)))
+           = N_Attribute_Reference
+         then
+            Error_Msg_N ("subprogram must have a spec", N);
+         end if;
+
          --  First set Acts_As_Spec if appropriate
 
          if Nkind (N) /= N_Subprogram_Body_Stub then
