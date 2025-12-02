@@ -1,3 +1,15 @@
+2025-12-02  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-12-01  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/122921
+	* include/std/flat_map (_Flat_map_impl::_Iterator::value_type):
+	Remove const from key_type to make consistent with the
+	container's value_type.
+	* testsuite/23_containers/flat_map/1.cc (test09): New test.
+	* testsuite/23_containers/flat_multimap/1.cc (test09): New test.
+
 2025-11-28  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:

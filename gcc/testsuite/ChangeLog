@@ -1,3 +1,21 @@
+2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122858
+	* gcc.target/arm/mve/pr122858.c: New test.
+
+2025-12-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-05-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/110796
+	PR target/118446
+	* gcc.target/arm/armv8_2-fp16-arith-1.c: Adjust due to no-longer
+	emitting VCMPE when -ffast-math..
+
 2025-11-28  Daniele Sahebi  <daniele@mkryss.me>
 
 	Backported from master:

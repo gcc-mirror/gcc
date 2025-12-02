@@ -1,3 +1,25 @@
+2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	Backported from master:
+	2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
+
+	PR target/122858
+	* config/arm/constraints.md (Ph): New constraint.
+	* config/arm/mve.md (mve_asrl_imm, mve_lsll_imm): Fix constraints
+	of operand 1 and handle 32 as special shift amount.
+
+2025-12-01  Richard Earnshaw  <rearnsha@arm.com>
+
+	Backported from master:
+	2025-05-07  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/110796
+	PR target/118446
+	* config/arm/arm.h (REVERSIBLE_CC_MODE): FP modes are only
+	reversible if flag_finite_math_only.
+	* config/arm/arm.cc (arm_select_cc_mode): Return CCFPmode for all
+	FP comparisons if flag_finite_math_only.
+
 2025-11-28  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	PR tree-optimization/122126
