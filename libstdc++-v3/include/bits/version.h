@@ -2170,6 +2170,16 @@
 #endif /* !defined(__cpp_lib_string_resize_and_overwrite) */
 #undef __glibcxx_want_string_resize_and_overwrite
 
+#if !defined(__cpp_lib_string_subview)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_string_subview 202506L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_string_subview)
+#   define __cpp_lib_string_subview 202506L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_string_subview) */
+#undef __glibcxx_want_string_subview
+
 #if !defined(__cpp_lib_to_underlying)
 # if (__cplusplus >= 202100L)
 #  define __glibcxx_to_underlying 202102L

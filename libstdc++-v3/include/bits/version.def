@@ -1946,6 +1946,14 @@ ftms = {
 };
 
 ftms = {
+  name = string_subview;
+  values = {
+    v = 202506;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = to_underlying;
   values = {
     v = 202102;

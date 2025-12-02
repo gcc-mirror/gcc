@@ -40,9 +40,10 @@
 #define __glibcxx_want_constexpr_char_traits
 #define __glibcxx_want_constexpr_string_view
 #define __glibcxx_want_freestanding_string_view
-#define __glibcxx_want_string_view
 #define __glibcxx_want_starts_ends_with
 #define __glibcxx_want_string_contains
+#define __glibcxx_want_string_subview
+#define __glibcxx_want_string_view
 #include <bits/version.h>
 
 #if __cplusplus >= 201703L
@@ -341,6 +342,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	const size_type __rlen = std::min<size_t>(__n, _M_len - __pos);
 	return basic_string_view{_M_str + __pos, __rlen};
       }
+
+#ifdef __glibcxx_string_subview // >= C++26
+      [[nodiscard]]
+      constexpr basic_string_view
+      subview(size_type __pos = 0, size_type __n = npos) const
+      { return substr(__pos, __n); }
+#endif
 
       [[nodiscard]]
       constexpr int
