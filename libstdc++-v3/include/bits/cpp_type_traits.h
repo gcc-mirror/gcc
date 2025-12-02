@@ -518,6 +518,13 @@ __INT_N(__int128)
     struct __memcpyable_integer<volatile _Tp>
     { enum { __width = 0 }; };
 
+  // Assigning an integer to bool needs to convert all non-zero values to true
+  // so it is not a memcpyable integer.
+  // __memcpyable<bool*, bool*> is still true though.
+  template<>
+    struct __memcpyable_integer<bool>
+    { enum { __width = 0 }; };
+
   // Specializations for __intNN types with padding bits.
 #if defined __GLIBCXX_TYPE_INT_N_0 && __GLIBCXX_BITSIZE_INT_N_0 % __CHAR_BIT__
   __extension__
