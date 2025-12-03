@@ -142,43 +142,6 @@ enum binding_powers
   LBP_LOWEST = 0
 };
 
-/* Returns whether the token can start a type (i.e. there is a valid type
- * beginning with the token). */
-inline bool
-can_tok_start_type (TokenId id)
-{
-  switch (id)
-    {
-    case EXCLAM:
-    case LEFT_SQUARE:
-    case LEFT_ANGLE:
-    case UNDERSCORE:
-    case ASTERISK:
-    case AMP:
-    case LIFETIME:
-    case IDENTIFIER:
-    case SUPER:
-    case SELF:
-    case SELF_ALIAS:
-    case CRATE:
-    case DOLLAR_SIGN:
-    case SCOPE_RESOLUTION:
-    case LEFT_PAREN:
-    case FOR:
-    case ASYNC:
-    case CONST:
-    case UNSAFE:
-    case EXTERN_KW:
-    case FN_KW:
-    case IMPL:
-    case DYN:
-    case QUESTION_MARK:
-      return true;
-    default:
-      return false;
-    }
-}
-
 /* HACK-y special handling for skipping a right angle token at the end of
  * generic arguments.
  * Currently, this replaces the "current token" with one that is identical
@@ -12319,7 +12282,7 @@ Parser<ManagedTokenSource>::null_denotation_path (
 			   && (lexer.peek_token (2)->get_id () == COMMA
 			       || (lexer.peek_token (2)->get_id () == COLON
 				   && (lexer.peek_token (4)->get_id () == COMMA
-				       || !can_tok_start_type (
+				       || !Parse::Utils::can_tok_start_type (
 					 lexer.peek_token (3)->get_id ()))));
 
 	/* definitely not a block:

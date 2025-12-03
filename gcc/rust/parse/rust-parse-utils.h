@@ -82,6 +82,43 @@ is_right_angle_tok (TokenId id)
     }
 }
 
+/* Returns whether the token can start a type (i.e. there is a valid type
+ * beginning with the token). */
+inline bool
+can_tok_start_type (TokenId id)
+{
+  switch (id)
+    {
+    case EXCLAM:
+    case LEFT_SQUARE:
+    case LEFT_ANGLE:
+    case UNDERSCORE:
+    case ASTERISK:
+    case AMP:
+    case LIFETIME:
+    case IDENTIFIER:
+    case SUPER:
+    case SELF:
+    case SELF_ALIAS:
+    case CRATE:
+    case DOLLAR_SIGN:
+    case SCOPE_RESOLUTION:
+    case LEFT_PAREN:
+    case FOR:
+    case ASYNC:
+    case CONST:
+    case UNSAFE:
+    case EXTERN_KW:
+    case FN_KW:
+    case IMPL:
+    case DYN:
+    case QUESTION_MARK:
+      return true;
+    default:
+      return false;
+    }
+}
+
 } // namespace Utils
 
 } // namespace Parse
