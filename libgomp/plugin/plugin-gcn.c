@@ -1776,6 +1776,22 @@ isa_code(const char *isa) {
   return EF_AMDGPU_MACH_UNSUPPORTED;
 }
 
+/* Returns the code which is used in the GCN object code to identify the
+   generic ISA that corresponds to a specific ISA.  */
+
+static gcn_isa
+generic_isa_code (int isa) {
+  switch(isa)
+    {
+#define EF_AMDGPU_MACH_AMDGCN_NONE 0
+#define GCN_DEVICE(name, NAME, ELF, GCCISA, XNACK, SRAM, WAVE64, CUMODE, \
+		   VGPRS, CO, ARCH, GENERIC_ISA, ...) \
+    case ELF: return EF_AMDGPU_MACH_AMDGCN_ ## GENERIC_ISA;
+#include "../../gcc/config/gcn/gcn-devices.def"
+    }
+  return 0;
+}
+
 /* CDNA2 devices have twice as many VGPRs compared to older devices.  */
 
 static int
@@ -2551,7 +2567,9 @@ isa_matches_agent (struct agent_info *agent, Elf64_Ehdr *image,
 	      "Consider using ROCR_VISIBLE_DEVICES to disable incompatible "
 	      "devices or run with LOADER_ENABLE_LOGGING=1 for more details.",
 	      device_isa_s, agent_isa_s, agent->device_id);
-  else if (strcmp (device_isa_s, agent_isa_s) == 0)
+  else if (strcmp (device_isa_s, agent_isa_s) == 0
+	   || (elf_gcn_isa_is_generic (image)
+	       && generic_isa_code (agent->device_isa) == isa_field))
     snprintf (msg, sizeof msg,
 	      "GCN code object features do not match for an unknown reason "
 	      "(device %d).\n"

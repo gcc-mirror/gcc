@@ -758,7 +758,7 @@ proc check_effective_target_omp_managedmem { } {
 
 proc check_effective_target_offload_target_amdgcn_with_xnack { } {
     if { [libgomp_check_effective_target_offload_target "amdgcn"] } {
-	return [check_no_compiler_messages amd_xnack_ executable {
+	return [check_runtime amd_xnack_ {
 	   int main () {
 	     #pragma omp target
 	       ;
