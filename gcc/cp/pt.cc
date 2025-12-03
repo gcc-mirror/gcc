@@ -8650,7 +8650,7 @@ maybe_convert_nontype_argument (tree type, tree arg, bool force)
    in a FORCED context (i.e. alias or concept).  */
 
 static bool
-dependent_implict_conv_p (tree type, tree expr, bool forced)
+dependent_implicit_conv_p (tree type, tree expr, bool forced)
 {
   return (dependent_type_p (type) || type_dependent_expression_p (expr)
 	  || (forced
@@ -8939,7 +8939,7 @@ convert_template_argument (tree parm,
 	  && same_type_p (TREE_TYPE (orig_arg), t))
 	orig_arg = TREE_OPERAND (orig_arg, 0);
 
-      if (!dependent_implict_conv_p (t, orig_arg, force_conv))
+      if (!dependent_implicit_conv_p (t, orig_arg, force_conv))
 	/* We used to call digest_init here.  However, digest_init
 	   will report errors, which we don't want when complain
 	   is zero.  More importantly, digest_init will try too
@@ -21039,8 +21039,8 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	if (type == error_mark_node)
 	  RETURN (error_mark_node);
 	tree expr = RECUR (TREE_OPERAND (t, 0));
-	if (dependent_implict_conv_p (type, expr,
-				      IMPLICIT_CONV_EXPR_FORCED (t)))
+	if (dependent_implicit_conv_p (type, expr,
+				       IMPLICIT_CONV_EXPR_FORCED (t)))
 	  {
 	    retval = copy_node (t);
 	    TREE_TYPE (retval) = type;
