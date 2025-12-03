@@ -358,11 +358,6 @@ ifeq ($(strip $(filter-out x86_64 linux-gnux32%, $(target_cpu) $(target_os))),)
   endif
 endif
 
-# The SuSE PowerPC64/Linux compiler is actually a 32-bit PowerPC compiler
-ifeq ($(strip $(filter-out powerpc64 suse linux%, $(target_cpu) $(target_vendor) $(target_os))),)
-  target_cpu:=powerpc
-endif
-
 # Configuration of host tools
 
 # Under linux, host tools need to be linked with -ldl
