@@ -1074,7 +1074,7 @@ void
 switch_conversion::build_arrays ()
 {
   tree arr_index_type;
-  tree tidx, sub, utype, tidxtype;
+  tree tidx, uidx, sub, utype, tidxtype;
   gimple *stmt;
   gimple_stmt_iterator gsi;
   gphi_iterator gpi;
@@ -1099,18 +1099,24 @@ switch_conversion::build_arrays ()
     tidxtype = utype;
 
   arr_index_type = build_index_type (m_range_size);
-  tidx = make_ssa_name (tidxtype);
+  uidx = make_ssa_name (utype);
   sub = fold_build2_loc (loc, MINUS_EXPR, utype,
 			 fold_convert_loc (loc, utype, m_index_expr),
 			 fold_convert_loc (loc, utype, m_range_min));
-  sub = fold_convert (tidxtype, sub);
   sub = force_gimple_operand_gsi (&gsi, sub,
 				  false, NULL, true, GSI_SAME_STMT);
-  stmt = gimple_build_assign (tidx, sub);
+  stmt = gimple_build_assign (uidx, sub);
 
   gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
-  update_stmt (stmt);
   m_arr_ref_first = stmt;
+
+  tidx = uidx;
+  if (tidxtype != utype)
+    {
+      tidx = make_ssa_name (tidxtype);
+      stmt = gimple_build_assign (tidx, NOP_EXPR, uidx);
+      gsi_insert_before (&gsi, stmt, GSI_SAME_STMT);
+    }
 
   for (gpi = gsi_start_phis (m_final_bb), i = 0;
        !gsi_end_p (gpi); gsi_next (&gpi))
