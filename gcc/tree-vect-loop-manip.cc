@@ -3580,7 +3580,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       /* Update IVs of original loop as if they were advanced by
 	 niters_vector_mult_vf steps.  */
       gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));
-      update_e = skip_vector ? e : loop_preheader_edge (epilog);
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	update_e = single_succ_edge (LOOP_VINFO_IV_EXIT (loop_vinfo)->dest);
 
@@ -3638,6 +3637,11 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	    }
 	  scale_loop_profile (epilog, prob_epilog, -1);
 	}
+
+      /* Identify the right foward edge for the non-early-break case which must
+	 be done after splitting the epilog edge.  */
+      if (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
+	update_e = skip_vector ? e : loop_preheader_edge (epilog);
 
       /* If we have a peeled vector iteration, all exits are the same, leave it
 	 and so the main exit needs to be treated the same as the alternative
