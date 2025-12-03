@@ -96,4 +96,8 @@
 // See libstdc++/94268
 #define _GLIBCXX_BUFSIZ 4096
 
+// Use functions to access thread-local variables from a different module.
+// Windows does not support exporting thread-local data.
+#define _GLIBCXX_NO_EXTERN_THREAD_LOCAL 1
+
 #endif

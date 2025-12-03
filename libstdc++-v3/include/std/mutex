@@ -817,8 +817,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 # ifdef _GLIBCXX_HAVE_TLS
   // If TLS is available use thread-local state for the type-erased callable
   // that is being run by std::call_once in the current thread.
+#  ifdef _GLIBCXX_NO_EXTERN_THREAD_LOCAL
+
+  void*&
+  __get_once_callable() noexcept;
+
+  std::add_lvalue_reference<void (*)()>::type
+  __get_once_call() noexcept;
+
+  // These macros mean that all the code below uses the same syntax:
+#define __once_callable __get_once_callable()
+#define __once_call __get_once_call()
+
+#  else // ! _GLIBCXX_NO_EXTERN_THREAD_LOCAL
+
   extern __thread void* __once_callable;
   extern __thread void (*__once_call)();
+
+#  endif // ! _GLIBCXX_NO_EXTERN_THREAD_LOCAL
 
   // RAII type to set up state for pthread_once call.
   struct once_flag::_Prepare_execution
@@ -843,6 +859,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     _Prepare_execution(const _Prepare_execution&) = delete;
     _Prepare_execution& operator=(const _Prepare_execution&) = delete;
   };
+
+#undef __once_callable
+#undef __once_call
 
 # else
   // Without TLS use a global std::mutex and store the callable in a
