@@ -1,3 +1,33 @@
+2025-12-02  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/122656
+	* gcc.target/riscv/rvv/base/pr122656-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr122656-2.c: New test.`
+
+2025-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122860
+	* g++.dg/ext/pr122860.C: New test.
+
+2025-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122836
+	* g++.dg/ext/pr122836.C: New test.
+
+2025-12-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122171
+	PR c++/112632
+	* g++.dg/cpp0x/alias-decl-conv1.C: New test.
+
+2025-12-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122868
+	* gcc.dg/vect/vect-early-break_140-pr122868_1.c: New test.
+	* gcc.dg/vect/vect-early-break_140-pr122868_2.c: New test.
+	* gcc.dg/vect/vect-early-break_140-pr122868_3.c: New test.
+	* gcc.dg/vect/vect-early-break_140-pr122868_4.c: New test.
+
 2025-12-02  David Guillen Fandos  <david@davidgf.net>
 
 	* gcc.target/mips/madd-10.c: New test.

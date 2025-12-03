@@ -1,3 +1,30 @@
+2025-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122860
+	* decl.cc (make_rtl_for_nonlocal_decl): Diagnose taking address
+	of a hard register decl in its initializer.
+	(cp_finish_decl): Likewise.
+
+2025-12-02  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122836
+	* decl.cc (check_array_designated_initializer): Change ce->index to
+	error_mark_node after emitting an error for it.
+
+2025-12-02  Jason Merrill  <jason@redhat.com>
+
+	PR c++/122171
+	PR c++/112632
+	* pt.cc (dependent_implict_conv_p): Split out...
+	(convert_template_argument): ...from here.
+	(tsubst_expr) [IMPLICIT_CONV_EXPR]: Use it.
+	(do_auto_deduction): Call mark_single_function.
+
+2025-12-02  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* module.cc (module_state::write_using_directives): Correct
+	condition.
+
 2025-12-01  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* module.cc (trees_out::lang_decl_vals): Stream DECL_CHAIN for

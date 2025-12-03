@@ -1,3 +1,11 @@
+2025-12-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR algol68/122954
+	* a68-low-clauses.cc (serial_clause_dsa): Avoid redundant
+	initialization.
+	* a68-parser-modes.cc (compute_derived_modes): Likewise.
+	* a68-low.cc (a68_lower_tree): Remove redundant break.
+
 2025-12-01  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR algol68/122944

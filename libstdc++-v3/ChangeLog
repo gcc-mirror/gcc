@@ -1,3 +1,21 @@
+2025-12-02  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (submdspan_extents): New function.
+	* src/c++23/std.cc.in: Add submdspan_extents.
+	* testsuite/23_containers/mdspan/int_like.h: Add StructuralInt.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_extents.cc: New test.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_extents_neg.cc: New test.
+
+2025-12-02  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (submdspan_canonicalize_slices): New
+	function.
+	* src/c++23/std.cc.in (submdspan_canonicalize_slices): Add.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_canonicalize_slices.cc: New test.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_canonicalize_slices_neg.cc: New test.
+
 2025-12-01  Patrick Palka  <ppalka@redhat.com>
 
 	PR libstdc++/122921

@@ -1,3 +1,42 @@
+2025-12-02  John David Anglin  <danglin@gcc.gnu.org>
+
+	PR target/122874
+	* config/pa/pa.cc (pa_emit_move_sequence): Break out large
+	REG+D addresses from MEM operands.  Also, don't allow
+	unscaled indexed source operands till reload completes.
+
+2025-12-02  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/122656
+	* config/riscv/riscv-vector-builtins-bases.cc: Use
+	use_contiguous_load for vlsegff.
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_exact_insn):
+	Only add rounding mode operand if insn requires it and number of
+	arguments is < required.
+	(function_expander::use_ternop_insn): Ditto.
+	(function_expander::use_widen_ternop_insn): Ditto.
+	* config/riscv/vector.md: Use vector-mode source operand.
+
+2025-12-02  Kito Cheng  <kito.cheng@sifive.com>
+
+	* config/riscv/riscv-vector-builtins.cc
+	(function_builder::add_function): Remove placeholder_p parameter.
+	(function_builder::add_unique_function): Update call.
+	(function_builder::add_overloaded_function): Likewise.
+	* config/riscv/riscv-vector-builtins.h
+	(function_builder::add_function): Update declaration.
+
+2025-12-02  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* tree-vect-stmts.cc (vectorizable_scan_store): Pass loop_lens
+	to vect_get_data_ptr_increment.
+
+2025-12-02  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122868
+	* tree-vect-stmts.cc (vectorizable_load): Don't hoist loop invariant
+	conditional loads unless in header.
+
 2025-12-02  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	* ipa-inline.cc (inline_functions_by_afdo): Remove resetting bool inlined.
