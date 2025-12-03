@@ -146,7 +146,7 @@ It looks different from literature pseudocode for two main reasons:
 	      if (__current == __end_node)
 		__current = 0;
 	      auto __expect = __old_phase;
-	      __atomic_phase_ref_t __phase(__state[__current]
+	      __atomic_phase_ref_t __phase(&__state[__current]
 					      .__tickets[__round]);
 	      if (__current == __last_node && (__current_expected & 1))
 		{
@@ -198,7 +198,7 @@ It looks different from literature pseudocode for two main reasons:
 
 	std::hash<std::thread::id> __hasher;
 	size_t __current = __hasher(std::this_thread::get_id());
-	__atomic_phase_ref_t __phase(_M_phase);
+	__atomic_phase_ref_t __phase(&_M_phase);
 	const auto __old_phase = __phase.load(memory_order_relaxed);
 	const auto __cur = static_cast<unsigned char>(__old_phase);
 
@@ -230,7 +230,7 @@ It looks different from literature pseudocode for two main reasons:
       void
       wait(arrival_token&& __old_phase) const
       {
-	__atomic_phase_const_ref_t __phase(_M_phase);
+	__atomic_phase_const_ref_t __phase(&_M_phase);
 	__phase.wait(__old_phase, memory_order_acquire);
       }
 

@@ -1766,14 +1766,31 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     struct atomic_ref : __atomic_ref<_Tp>
     {
       explicit
-      atomic_ref(_Tp& __t) noexcept : __atomic_ref<_Tp>(__t)
-      { }
+      atomic_ref(_Tp& __t) noexcept
+      : __atomic_ref<_Tp>(std::addressof(__t))
+      {
+	__glibcxx_assert(((__UINTPTR_TYPE__)this->_M_ptr % this->required_alignment) == 0);
+      }
+
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4472. std::atomic_ref<const T> can be constructed from temporaries
+      explicit
+      atomic_ref(_Tp&&) = delete;
+
+      template<typename _Up>
+	requires is_convertible_v<_Up(*)[1], _Tp(*)[1]>
+	atomic_ref(atomic_ref<_Up> __other) noexcept
+	: __atomic_ref<_Tp>(__other._M_ptr)
+	{ }
 
       atomic_ref& operator=(const atomic_ref&) = delete;
 
       atomic_ref(const atomic_ref&) = default;
 
       using __atomic_ref<_Tp>::operator=;
+
+      template<typename>
+	friend struct atomic_ref;
     };
 #endif // __cpp_lib_atomic_ref
 

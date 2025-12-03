@@ -1561,11 +1561,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_ref_base& operator=(const __atomic_ref_base&) = delete;
 
       explicit
-      __atomic_ref_base(const _Tp& __t)
-	: _M_ptr(const_cast<_Tp*>(std::addressof(__t)))
-      {
-	__glibcxx_assert(((__UINTPTR_TYPE__)_M_ptr % required_alignment) == 0);
-      }
+      __atomic_ref_base(const _Tp* __ptr) noexcept
+      : _M_ptr(const_cast<_Tp*>(__ptr))
+      { }
 
       __atomic_ref_base(const __atomic_ref_base&) noexcept = default;
 
@@ -1607,7 +1605,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using value_type = typename __atomic_ref_base<const _Tp>::value_type;
 
       explicit
-      __atomic_ref_base(_Tp& __t) : __atomic_ref_base<const _Tp>(__t)
+      __atomic_ref_base(_Tp* __ptr) noexcept
+      : __atomic_ref_base<const _Tp>(__ptr)
       { }
 
       value_type

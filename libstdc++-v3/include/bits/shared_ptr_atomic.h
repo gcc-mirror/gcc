@@ -421,7 +421,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	~_Atomic_count()
 	{
-	  auto __val = _AtomicRef(_M_val).load(memory_order_relaxed);
+	  auto __val = _AtomicRef(&_M_val).load(memory_order_relaxed);
 	  _GLIBCXX_TSAN_MUTEX_DESTROY(&_M_val);
 	  __glibcxx_assert(!(__val & _S_lock_bit));
 	  if (auto __pi = reinterpret_cast<pointer>(__val))
@@ -443,7 +443,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{
 	  // To acquire the lock we flip the LSB from 0 to 1.
 
-	  _AtomicRef __aref(_M_val);
+	  _AtomicRef __aref(&_M_val);
 	  auto __current = __aref.load(memory_order_relaxed);
 	  while (__current & _S_lock_bit)
 	    {
@@ -476,7 +476,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	unlock(memory_order __o) const noexcept
 	{
 	  _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(&_M_val);
-	  _AtomicRef(_M_val).fetch_sub(1, __o);
+	  _AtomicRef(&_M_val).fetch_sub(1, __o);
 	  _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(&_M_val);
 	}
 
@@ -489,7 +489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    __o = memory_order_release;
 	  auto __x = reinterpret_cast<uintptr_t>(__c._M_pi);
 	  _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(&_M_val);
-	  __x = _AtomicRef(_M_val).exchange(__x, __o);
+	  __x = _AtomicRef(&_M_val).exchange(__x, __o);
 	  _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(&_M_val);
 	  __c._M_pi = reinterpret_cast<pointer>(__x & ~_S_lock_bit);
 	}
@@ -502,7 +502,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  auto __old_ptr = __ptr;
 	  _GLIBCXX_TSAN_MUTEX_PRE_UNLOCK(&_M_val);
 	  uintptr_t __old_pi 
-	    = _AtomicRef(_M_val).fetch_sub(1, memory_order_relaxed) - 1u;
+	    = _AtomicRef(&_M_val).fetch_sub(1, memory_order_relaxed) - 1u;
 	  _GLIBCXX_TSAN_MUTEX_POST_UNLOCK(&_M_val);
 
   	  // Ensure that the correct value of _M_ptr is visible after locking,
@@ -528,14 +528,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 		// wake up if either of the values changed
 		return __new_pi != __old_pi || __new_ptr != __old_ptr;
 	      },
-	    [__o, this] { return _AtomicRef(_M_val).load(__o); });
+	    [__o, this] { return _AtomicRef(&_M_val).load(__o); });
 	}
 
 	void
 	notify_one() noexcept
 	{
 	  _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(&_M_val);
-	  _AtomicRef(_M_val).notify_one();
+	  _AtomicRef(&_M_val).notify_one();
 	  _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(&_M_val);
 	}
 
@@ -543,7 +543,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	notify_all() noexcept
 	{
 	  _GLIBCXX_TSAN_MUTEX_PRE_SIGNAL(&_M_val);
-	  _AtomicRef(_M_val).notify_all();
+	  _AtomicRef(&_M_val).notify_all();
 	  _GLIBCXX_TSAN_MUTEX_POST_SIGNAL(&_M_val);
 	}
 #endif
