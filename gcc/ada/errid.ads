@@ -36,7 +36,10 @@ package Errid is
       GNAT0003,
       GNAT0004,
       GNAT0005,
-      GNAT0006);
+      GNAT0006,
+      GNAT0007,
+      GNAT0008,
+      GNAT0009);
 
    type Diagnostic_Id_Array is array (Positive range <>) of Diagnostic_Id;
    type Diagnostic_Id_Array_Access is access Diagnostic_Id_Array;

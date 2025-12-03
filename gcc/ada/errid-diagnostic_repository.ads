@@ -82,5 +82,17 @@ package Errid.Diagnostic_Repository is
       GNAT0006         =>
         (Status   => Active,
          Human_Id => new String'("Mixed_Container_Aggregate_Error"),
-         Switch   => No_Switch_Id));
+         Switch   => No_Switch_Id),
+     GNAT0007         =>
+        (Status   => Active,
+         Human_Id => new String'("Volatile_Not_Modifed_Warning"),
+         Switch   => gnatwk),
+     GNAT0008         =>
+        (Status   => Active,
+         Human_Id => new String'("Variable_Not_Modifed_Warning"),
+         Switch   => gnatwk),
+     GNAT0009         =>
+        (Status   => Active,
+         Human_Id => new String'("In_Out_Not_Modifed_Warning"),
+         Switch   => gnatwk));
 end Errid.Diagnostic_Repository;

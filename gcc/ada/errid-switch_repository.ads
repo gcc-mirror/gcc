@@ -120,7 +120,8 @@ package Errid.Switch_Repository is
          Short_Name        => new String'("gnatwk"),
          Description       => null,
          Documentation_Url => null,
-         Diagnostics       => null),
+         Diagnostics       =>
+           new Diagnostic_Id_Array'(GNAT0007, GNAT0008, GNAT0009)),
       gnatwl             =>
         (Human_Id          => new String'("Elab_Warnings"),
          Status            => Active,

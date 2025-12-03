@@ -28,6 +28,7 @@ with Atree;          use Atree;
 with Debug;          use Debug;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
+with Errid;          use Errid;
 with Errout;         use Errout;
 with Exp_Code;       use Exp_Code;
 with Lib;            use Lib;
@@ -1310,7 +1311,9 @@ package body Sem_Warn is
                   then
                      Error_Msg_N
                        ("?k?& is not modified, consider pragma Export for "
-                        & "volatile variable!", E1);
+                        & "volatile variable!",
+                        E1,
+                        GNAT0007);
 
                   --  Another special case, Exception_Occurrence, this catches
                   --  the case of exception choice (and a bit more too, but not
@@ -1330,7 +1333,8 @@ package body Sem_Warn is
                   then
                      Error_Msg_N -- CODEFIX
                        ("?k?& is not modified, could be declared constant!",
-                        E1);
+                        E1,
+                        GNAT0008);
                   end if;
 
                --  Other cases of a variable or parameter never set in source
@@ -3102,7 +3106,9 @@ package body Sem_Warn is
                if not Is_Trivial_Subprogram (Scope (E1)) then
                   if Warn_On_Constant then
                      Error_Msg_N
-                       ("?k?formal parameter & is not modified!", E1);
+                       ("?k?formal parameter & is not modified!",
+                        E1,
+                        GNAT0009);
                      Error_Msg_N
                        ("\?k?mode could be IN instead of `IN OUT`!", E1);
 
