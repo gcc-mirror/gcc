@@ -553,7 +553,7 @@ proc handle-dg-regexps { text } {
 
 	# Escape newlines in $rexp so that we can print them in
 	# pass/fail results.
-	set escaped_regex [string map {"\n" "\\n"} $rexp]
+	set escaped_regex [string map {"\n" "\\n" "\r" "\\r"} $rexp]
 	verbose "escaped_regex: ${escaped_regex}" 4
 
 	set title "$testname_with_flags dg-regexp $linenum"
