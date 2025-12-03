@@ -419,12 +419,31 @@ init_live_reload_and_inheritance_pseudos (void)
   for (p = 0; p < lra_live_max_point; p++)
     bitmap_initialize (&live_reload_and_inheritance_pseudos[p],
 		       &live_reload_and_inheritance_pseudos_bitmap_obstack);
+  if ((unsigned) (max_regno - lra_constraint_new_regno_start)	
+      >= (1U << lra_max_pseudos_points_log2_considered_for_preferences)
+      /  (lra_live_max_point + 1))
+    return;
+  bitmap_head start_points;
+  bitmap_initialize (&start_points,
+		     &live_hard_reg_pseudos_bitmap_obstack);
+  for (i = lra_constraint_new_regno_start; i < max_regno; i++)
+    for (r = lra_reg_info[i].live_ranges; r != NULL; r = r->next)
+      bitmap_set_bit (&start_points, r->start);
   for (i = lra_constraint_new_regno_start; i < max_regno; i++)
     {
       for (r = lra_reg_info[i].live_ranges; r != NULL; r = r->next)
-	for (p = r->start; p <= r->finish; p++)
-	  bitmap_set_bit (&live_reload_and_inheritance_pseudos[p], i);
+	{
+	  bitmap_iterator bi;
+	  unsigned p;
+	  EXECUTE_IF_SET_IN_BITMAP (&start_points, r->start, p, bi)
+	    {
+	      if (p > (unsigned) r->finish)
+		break;
+	      bitmap_set_bit (&live_reload_and_inheritance_pseudos[p], i);
+	    }
+	}
     }
+  bitmap_clear (&start_points);
 }
 
 /* Finalize data about living reload pseudos at any given program

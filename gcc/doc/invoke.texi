@@ -17878,6 +17878,14 @@ uses for scheduling a loop.
 The max number of reload pseudos which are considered during
 spilling a non-reload pseudo.
 
+@item lra-max-pseudos-points-log2-considered-for-preferences
+The maximum @code{log2(number of reload pseudos * number of
+program points)} threshold when preferences for other reload pseudos
+are still considered. Taking these preferences into account helps to
+improve register allocation. However, for very large functions, a
+large value can result in significant compilation time and memory
+consumption. The default value is 30.
+
 @item max-pow-sqrt-depth
 Maximum depth of sqrt chains to use when synthesizing exponentiation
 by a real constant.
