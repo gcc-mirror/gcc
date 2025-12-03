@@ -3982,8 +3982,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   if (gfc_current_state () == COMP_DERIVED
       && !(gfc_state_stack->previous
 	   && gfc_state_stack->previous->state == COMP_DERIVED)
-      && gfc_current_block ()->attr.pdt_template
-      && !strcmp (gfc_current_block ()->name, (*sym)->name))
+      && gfc_current_block ()->attr.pdt_template)
     {
       if (ext_param_list)
 	*ext_param_list = gfc_copy_actual_arglist (param_list);
@@ -4447,7 +4446,25 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
 	  type_param_spec_list = old_param_spec_list;
 
 	  if (!(c2->attr.pointer || c2->attr.allocatable))
-	    c2->initializer = gfc_default_initializer (&c2->ts);
+	    {
+	      if (!c1->initializer
+		  || c1->initializer->expr_type != EXPR_FUNCTION)
+		c2->initializer = gfc_default_initializer (&c2->ts);
+	      else
+		{
+		  gfc_symtree *s;
+		  c2->initializer = gfc_copy_expr (c1->initializer);
+		  s = gfc_find_symtree (pdt->ns->sym_root,
+				gfc_dt_lower_string (c2->ts.u.derived->name));
+		  if (s)
+		    c2->initializer->symtree = s;
+		  c2->initializer->ts = c2->ts;
+		  if (!s)
+		    gfc_insert_parameter_exprs (c2->initializer,
+						type_param_spec_list);
+		  gfc_simplify_expr (params->expr, 1);
+		}
+	    }
 
 	  if (c2->attr.allocatable)
 	    instance->attr.alloc_comp = 1;

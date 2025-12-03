@@ -4173,11 +4173,21 @@ gfc_match_rvalue (gfc_expr **result)
 		  symtree->n.sym->ts.type = BT_DERIVED;
 		}
 
-	      /* Append the type_params and the component_values.  */
-	      for (tmp = ctr_arglist; tmp && tmp->next;)
-		tmp = tmp->next;
-	      tmp->next = actual_arglist;
-	      actual_arglist = ctr_arglist;
+	      if (type_spec_list)
+		{
+		  /* Append the type_params and the component_values.  */
+		  for (tmp = ctr_arglist; tmp && tmp->next;)
+		    tmp = tmp->next;
+		  tmp->next = actual_arglist;
+		  actual_arglist = ctr_arglist;
+		  tmp = actual_arglist;
+		  /* Can now add all the component names.  */
+		  for (c = pdt_sym->components; c && tmp; c = c->next)
+		    {
+		      tmp->name = c->name;
+		      tmp = tmp->next;
+		    }
+		}
 	    }
 	}
 

@@ -4566,7 +4566,8 @@ gfc_trans_vla_type_sizes (gfc_symbol *sym, stmtblock_t *body)
    and using trans_assignment to do the work. Set dealloc to false
    if no deallocation prior the assignment is needed.  */
 void
-gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
+gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc,
+		     bool pdt_ok)
 {
   gfc_expr *e;
   tree tmp;
@@ -4575,7 +4576,8 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
   gcc_assert (block);
 
   /* Initialization of PDTs is done elsewhere.  */
-  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type
+      && !pdt_ok)
     return;
 
   gcc_assert (!sym->attr.allocatable);
@@ -4591,6 +4593,28 @@ gfc_init_default_dt (gfc_symbol * sym, stmtblock_t * block, bool dealloc)
     }
   gfc_add_expr_to_block (block, tmp);
   gfc_free_expr (e);
+}
+
+
+/* Initialize a PDT, when all the components have an initializer.  */
+static void
+gfc_init_default_pdt (gfc_symbol *sym, stmtblock_t *block, bool dealloc)
+{
+  /* Allowed in the case where all the components have initializers and
+     there are no LEN components.  */
+  if (sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_type)
+    {
+      gfc_component *c = sym->ts.u.derived->components;
+      if (!dealloc || !sym->value || sym->value->expr_type != EXPR_STRUCTURE)
+	return;
+      for (; c; c = c->next)
+	if (c->attr.pdt_len || !c->initializer)
+	  return;
+    }
+  else
+    return;
+  gfc_init_default_dt (sym, block, dealloc, true);
+  return;
 }
 
 
@@ -4984,6 +5008,9 @@ gfc_trans_deferred_vars (gfc_symbol * proc_sym, gfc_wrapped_block * block)
 					       sym->param_list);
 		  gfc_add_expr_to_block (&tmpblock, tmp);
 		}
+
+	      if (is_pdt_type)
+		gfc_init_default_pdt (sym, &tmpblock, true);
 
 	      if (!sym->attr.result && !sym->ts.u.derived->attr.alloc_comp)
 		tmp = gfc_deallocate_pdt_comp (sym->ts.u.derived,

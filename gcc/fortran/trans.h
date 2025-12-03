@@ -666,7 +666,8 @@ tree gfc_get_symbol_decl (gfc_symbol *);
 tree gfc_conv_initializer (gfc_expr *, gfc_typespec *, tree, bool, bool, bool);
 
 /* Assign a default initializer to a derived type.  */
-void gfc_init_default_dt (gfc_symbol *, stmtblock_t *, bool);
+void gfc_init_default_dt (gfc_symbol *, stmtblock_t *, bool,
+			  bool pdt_ok = false);
 
 /* Substitute a temporary variable in place of the real one.  */
 void gfc_shadow_sym (gfc_symbol *, tree, gfc_saved_var *);
