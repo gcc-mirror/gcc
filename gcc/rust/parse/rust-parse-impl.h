@@ -179,23 +179,6 @@ can_tok_start_type (TokenId id)
     }
 }
 
-/* Returns whether the token id is (or is likely to be) a right angle bracket.
- * i.e. '>', '>>', '>=' and '>>=' tokens. */
-inline bool
-is_right_angle_tok (TokenId id)
-{
-  switch (id)
-    {
-    case RIGHT_ANGLE:
-    case RIGHT_SHIFT:
-    case GREATER_OR_EQUAL:
-    case RIGHT_SHIFT_EQ:
-      return true;
-    default:
-      return false;
-    }
-}
-
 /* HACK-y special handling for skipping a right angle token at the end of
  * generic arguments.
  * Currently, this replaces the "current token" with one that is identical
@@ -3072,7 +3055,7 @@ Parser<ManagedTokenSource>::parse_generic_params_in_angles ()
   rust_debug ("skipped left angle in generic param");
 
   std::vector<std::unique_ptr<AST::GenericParam>> generic_params
-    = parse_generic_params (is_right_angle_tok);
+    = parse_generic_params (Parse::Utils::is_right_angle_tok);
 
   // DEBUG:
   rust_debug ("finished parsing actual generic params (i.e. inside angles)");
@@ -3936,7 +3919,7 @@ Parser<ManagedTokenSource>::parse_for_lifetimes ()
 
   /* cannot specify end token due to parsing problems with '>' tokens being
    * nested */
-  params = parse_lifetime_params_objs (is_right_angle_tok);
+  params = parse_lifetime_params_objs (Parse::Utils::is_right_angle_tok);
 
   if (!skip_generics_right_angle ())
     {
@@ -6414,7 +6397,7 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 
   const_TokenPtr t = lexer.peek_token ();
   location_t locus = t->get_locus ();
-  while (!is_right_angle_tok (t->get_id ()))
+  while (!Parse::Utils::is_right_angle_tok (t->get_id ()))
     {
       auto lifetime = parse_lifetime (false);
       if (!lifetime)
@@ -6441,7 +6424,7 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 
   // TODO: think of better control structure
   t = lexer.peek_token ();
-  while (!is_right_angle_tok (t->get_id ()))
+  while (!Parse::Utils::is_right_angle_tok (t->get_id ()))
     {
       // FIXME: Is it fine to break if there is one binding? Can't there be
       // bindings in between types?
@@ -6473,7 +6456,7 @@ Parser<ManagedTokenSource>::parse_path_generic_args ()
 
   // TODO: think of better control structure
   t = lexer.peek_token ();
-  while (!is_right_angle_tok (t->get_id ()))
+  while (!Parse::Utils::is_right_angle_tok (t->get_id ()))
     {
       AST::GenericArgsBinding binding = parse_generic_args_binding ();
       if (binding.is_error ())

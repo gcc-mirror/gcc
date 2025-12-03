@@ -65,6 +65,23 @@ is_simple_path_segment (TokenId id)
     }
 }
 
+/* Returns whether the token id is (or is likely to be) a right angle bracket.
+ * i.e. '>', '>>', '>=' and '>>=' tokens. */
+inline bool
+is_right_angle_tok (TokenId id)
+{
+  switch (id)
+    {
+    case RIGHT_ANGLE:
+    case RIGHT_SHIFT:
+    case GREATER_OR_EQUAL:
+    case RIGHT_SHIFT_EQ:
+      return true;
+    default:
+      return false;
+    }
+}
+
 } // namespace Utils
 
 } // namespace Parse
