@@ -3086,13 +3086,13 @@ simplify_using_initial_conditions (class loop *loop, tree expr)
     return expr;
 
   value_range expr_range (TREE_TYPE (expr));
+  tree val;
   if (TREE_TYPE (expr) == boolean_type_node
       && get_range_query (cfun)->range_on_edge (expr_range,
 						loop_preheader_edge (loop),
 						expr)
-      && !expr_range.undefined_p ()
-      && !expr_range.varying_p ())
-    return expr_range.nonzero_p () ? boolean_true_node : boolean_false_node;
+      && expr_range.singleton_p (&val))
+    return val;
 
   backup = expanded = expand_simple_operations (expr);
 
