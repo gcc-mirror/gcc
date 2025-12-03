@@ -1288,7 +1288,6 @@ a68_lower_collateral_clause (NODE_T *p ATTRIBUTE_UNUSED,
 	      // XXX should we make a copy of the sub_multiple_elements here?
 	      // We DO need to iterate slicing, because of strides: if
 	      // the sub_multiple is a trimmer.
-	      sub_multiple_elements = sub_multiple_elements;
 	      tree sub_multiple_elements_type = TREE_TYPE (sub_multiple_elements);
 	      tree sub_multiple_num_elems = a68_multiple_num_elems (sub_multiple);
 	      tree sub_multiple_element_type = TREE_TYPE (sub_multiple_elements_type);
