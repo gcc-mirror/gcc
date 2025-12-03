@@ -29,9 +29,6 @@
 
 #include "a68.h"
 
-typedef struct TUPLE_T TUPLE_T;
-typedef struct SCOPE_T SCOPE_T;
-
 struct TUPLE_T
 {
   int level;
@@ -44,6 +41,11 @@ struct SCOPE_T
   TUPLE_T tuple;
   SCOPE_T *next;
 };
+
+constexpr TUPLE_T *NO_TUPLE = nullptr;
+constexpr SCOPE_T *NO_SCOPE = nullptr;
+
+#define TUPLE(p) ((p)->tuple)
 
 enum { NOT_TRANSIENT = 0, TRANSIENT };
 

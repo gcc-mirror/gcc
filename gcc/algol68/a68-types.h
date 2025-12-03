@@ -75,61 +75,38 @@ enum a68_tree_index
 
 typedef char BUFFER[BUFFER_SIZE + 1];
 
-typedef struct MODES_T MODES_T;
-typedef struct NODE_T NODE_T;
-typedef struct MODE_CACHE_T MODE_CACHE_T;
-typedef struct MOID_T MOID_T;
-typedef struct GINFO_T GINFO_T;
-typedef struct KEYWORD_T KEYWORD_T;
-typedef struct LINE_T LINE_T;
-typedef struct NODE_INFO_T NODE_INFO_T;
-typedef struct PACK_T PACK_T;
-typedef struct SOID_T SOID_T;
-typedef struct TABLE_T TABLE_T;
-typedef struct TAG_T TAG_T;
-typedef struct TOKEN_T TOKEN_T;
-typedef struct ORIGIN_T ORIGIN_T;
-typedef struct POSTULATE_T POSTULATE_T;
-typedef struct OPTIONS_T OPTIONS_T;
-typedef struct PARSER_T PARSER_T;
-typedef struct MODULE_T MODULE_T;
-typedef struct EXTRACT_T EXTRACT_T;
-typedef struct MOIF_T MOIF_T;
-typedef struct A68_T A68_T;
+struct MODES_T;
+struct NODE_T;
+struct MODE_CACHE_T;
+struct MOID_T;
+struct GINFO_T;
+struct KEYWORD_T;
+struct LINE_T;
+struct NODE_INFO_T;
+struct PACK_T;
+struct SOID_T;
+struct TABLE_T;
+struct TAG_T;
+struct TOKEN_T;
+struct ORIGIN_T;
+struct POSTULATE_T;
+struct OPTIONS_T;
+struct PARSER_T;
+struct MODULE_T;
+struct EXTRACT_T;
+struct MOIF_T;
+struct A68_T;
 
-#define NO_A68_REF ((A68_REF *) 0)
-#define NO_ARRAY ((A68_ARRAY *) 0)
-#define NO_BOOK ((BOOK_T *) 0)
-#define NO_BOOL ((bool *) 0)
-#define NO_BYTE ((BYTE_T *) 0)
-#define NO_CONSTANT ((void *) 0)
-#define NO_DEC ((DEC_T *) 0)
-#define NO_EDLIN ((EDLIN_T *) 0)
-#define NO_FILE ((FILE *) 0)
-#define NO_FORMAT ((A68_FORMAT *) 0)
-#define NO_GINFO ((GINFO_T *) 0)
-#define NO_GPROC ((void (*) (NODE_T *)) 0)
-#define NO_HANDLE ((A68_HANDLE *) 0)
-#define NO_INT ((int *) 0)
-#define NO_JMP_BUF ((jmp_buf *) 0)
-#define NO_KEYWORD ((KEYWORD_T *) 0)
-#define NO_NINFO ((NODE_INFO_T *) 0)
-#define NO_NOTE ((void (*) (NODE_T *)) 0)
-#define NO_OPTION_LIST ((OPTION_LIST_T *) 0)
-#define NO_PACK ((PACK_T *) 0)
-#define NO_PPROC ((PROP_T (*) (NODE_T *)) 0)
-#define NO_PROCEDURE ((A68_PROCEDURE *) 0)
-#define NO_REAL ((REAL_T *) 0)
-#define NO_REFINEMENT ((REFINEMENT_T *) 0)
-#define NO_REGMATCH ((regmatch_t *) 0)
-#define NO_SCOPE ((SCOPE_T *) 0)
-#define NO_SOID ((SOID_T *) 0)
-#define NO_STREAM NO_FILE
-#define NO_TEXT ((char *) 0)
-#define NO_TICK ((bool *) 0)
-#define NO_TOKEN ((TOKEN_T *) 0)
-#define NO_TUPLE ((A68_TUPLE *) 0)
-#define NO_VAR (0)
+constexpr GINFO_T *NO_GINFO = nullptr;
+constexpr KEYWORD_T *NO_KEYWORD = nullptr;
+constexpr NODE_INFO_T *NO_NINFO = nullptr;
+constexpr void (*NO_NOTE) (NODE_T *) = nullptr;
+constexpr PACK_T *NO_PACK = nullptr;
+constexpr SOID_T *NO_SOID = nullptr;
+constexpr char *NO_TEXT = nullptr;
+constexpr bool *NO_TICK = nullptr;
+constexpr TOKEN_T *NO_TOKEN = nullptr;
+#define NO_VAR nullptr
 
 /* A STATUS_MASK_T is a word of flags denoting states.
 
@@ -1123,7 +1100,6 @@ struct GTY(()) A68_T
 #define TRANSIENT(p) ((p)->transient)
 #define TREE_LISTING_SAFE(p) ((p)->tree_listing_safe)
 #define TRIM(p) ((p)->trim)
-#define TUPLE(p) ((p)->tuple)
 #define UNIT(p) ((p)->unit)
 #define USE(p) ((p)->use)
 #define VALUE(p) ((p)->value)
