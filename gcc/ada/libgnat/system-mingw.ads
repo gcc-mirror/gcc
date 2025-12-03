@@ -191,16 +191,15 @@ private
    --  pragma Task_Dispatching_Policy (FIFO_Within_Priorities).
 
    Underlying_Priorities : constant Priorities_Mapping :=
-     (Priority'First     => -15,  --  Thread_Priority_Idle
-      1  ..  6           =>  -2,  --  Thread_Priority_Lowest
-      7  .. 12           =>  -1,  --  Thread_Priority_Below_Normal
-      13 .. 14           =>   0,  --  Thread_Priority_Normal
-      Default_Priority   =>   0,  --  Thread_Priority_Normal
-      16 .. 18           =>   0,  --  Thread_Priority_Normal
-      19 .. 24           =>   1,  --  Thread_Priority_Above_Normal
-      25 .. 29           =>   2,  --  Thread_Priority_Highest
-      Priority'Last      =>   2,  --  Thread_Priority_Highest
-      Interrupt_Priority =>  15); --  Thread_Priority_Time_Critical
+     (Priority'First ..
+      Default_Priority - 3    => -15,  --  Thread_Priority_Idle
+      Default_Priority - 2    => -2,   --  Thread_Priority_Lowest
+      Default_Priority - 1    => -1,   --  Thread_Priority_Below_Normal
+      Default_Priority        => 0,    --  Thread_Priority_Normal
+      Default_Priority + 1    => 1,    --  Thread_Priority_Above_Normal
+      Default_Priority + 2 ..
+      Priority'Last           => 2,    --  Thread_Priority_Highest
+      Interrupt_Priority      => 15);  --  Thread_Priority_Time_Critical
    --  The non FIFO mapping preserves the standard 31 priorities of the Ada
    --  model, but maps them using compression onto the 7 priority levels
    --  available in NT when pragma Task_Dispatching_Policy is unspecified.
