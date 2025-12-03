@@ -839,6 +839,8 @@ package Rtsfind is
      RE_Bignum_In_LLI_Range,             -- System.Bignums
      RE_To_Bignum,                       -- System.Bignums
      RE_From_Bignum,                     -- System.Bignums
+     RE_LLU_To_Bignum,                   -- System.Bignums
+     RE_LLU_From_Bignum,                 -- System.Bignums
 
      RE_Val_2,                           -- System.Bitfields
      RE_Copy_Bitfield,                   -- System.Bitfields
@@ -2497,6 +2499,8 @@ package Rtsfind is
      RE_Bignum_In_LLI_Range              => System_Bignums,
      RE_To_Bignum                        => System_Bignums,
      RE_From_Bignum                      => System_Bignums,
+     RE_LLU_To_Bignum                    => System_Bignums,
+     RE_LLU_From_Bignum                  => System_Bignums,
 
      RE_Val_2                            => System_Bitfields,
      RE_Copy_Bitfield                    => System_Bitfields,

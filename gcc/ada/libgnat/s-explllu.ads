@@ -45,5 +45,11 @@ is
    function Exp_Long_Long_Long_Unsigned is
      new Exponu (Long_Long_Long_Unsigned);
    pragma Pure_Function (Exp_Long_Long_Long_Unsigned);
+   --  Return the power of ``Left`` by ``Right`` where ``Left`` is a
+   --  Long_Long_Long_Unsigned.
+   --
+   --  This function is implemented using the standard logarithmic approach:
+   --  ``Right`` gets shifted right testing successive low order bits, and
+   --  ``Left`` is raised to the next power of 2.
 
 end System.Exp_LLLU;

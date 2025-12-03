@@ -326,11 +326,12 @@ package body Checks is
    --  Called by Apply_{Length,Range}_Checks to rewrite the tree with the
    --  Constraint_Error node.
 
-   function Is_Signed_Integer_Arithmetic_Op (N : Node_Id) return Boolean;
-   --  Returns True if node N is for an arithmetic operation with signed
-   --  integer operands. This includes unary and binary operators (including
-   --  comparison operators), and also if and case expression nodes which
-   --  yield a value of a signed integer type.
+   function Is_Overflow_Arithmetic_Op (N : Node_Id) return Boolean;
+   --  Returns True if node N is for an arithmetic operation with operands
+   --  that have overflow operations. This includes unary and binary operators
+   --  (including comparison operators), and also if and case expression nodes
+   --  which yield a value of a signed integer type or a modular type that has
+   --  the Unsigned_Base_Range aspect.
    --  These are the kinds of nodes for which special handling applies in
    --  MINIMIZED or ELIMINATED overflow checking mode.
 
@@ -759,7 +760,7 @@ package body Checks is
       --  overflow checking mode set to MINIMIZED or ELIMINATED).
 
       if Overflow_Check_Mode = Strict
-        or else not Is_Signed_Integer_Arithmetic_Op (N)
+        or else not Is_Overflow_Arithmetic_Op (N)
       then
          Apply_Arithmetic_Overflow_Strict (N);
 
@@ -847,7 +848,7 @@ package body Checks is
       --  sure not to generate the arithmetic overflow check in these cases
       --  (Exp_Ch4 would have a hard time removing them once generated).
 
-      if Is_Signed_Integer_Type (Typ)
+      if Has_Overflow_Operations (Typ)
         and then Nkind (Parent (N)) = N_Type_Conversion
       then
          Conversion_Optimization : declare
@@ -1128,13 +1129,15 @@ package body Checks is
    ----------------------------------------------------
 
    procedure Apply_Arithmetic_Overflow_Minimized_Eliminated (Op : Node_Id) is
-      pragma Assert (Is_Signed_Integer_Arithmetic_Op (Op));
+      pragma Assert (Is_Overflow_Arithmetic_Op (Op));
 
       Loc : constant Source_Ptr := Sloc (Op);
       P   : constant Node_Id    := Parent (Op);
 
-      LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
-      --  Operands and results are of this type when we convert
+      LL_Type : Entity_Id;
+      --  Operands and results are of this type when we perform convertion:
+      --  Long_Long_Integer or Long_Long_Unsigned (when the type of the
+      --  result has the Unsigned_Base_Range aspect).
 
       Result_Type : constant Entity_Id := Etype (Op);
       --  Original result type
@@ -1156,7 +1159,7 @@ package body Checks is
       --  this node will be processed during the downwards recursion that
       --  is part of the processing in Minimize_Eliminate_Overflows).
 
-      if Is_Signed_Integer_Arithmetic_Op (P)
+      if Is_Overflow_Arithmetic_Op (P)
         or else Nkind (P) in N_Membership_Test
         or else Nkind (P) in N_Op_Compare
 
@@ -1176,7 +1179,7 @@ package body Checks is
          --  Similarly, if these expressions are nested, we should go on.
 
          if Nkind (P) in N_If_Expression | N_Case_Expression
-           and then not Is_Signed_Integer_Arithmetic_Op (Parent (P))
+           and then not Is_Overflow_Arithmetic_Op (Parent (P))
          then
             null;
          elsif Nkind (P) in N_If_Expression | N_Case_Expression
@@ -1196,6 +1199,14 @@ package body Checks is
       --  Bignum).
 
       Minimize_Eliminate_Overflows (Op, Lo, Hi, Top_Level => True);
+
+      --  Initialize type of operands and results when we convert
+
+      if Has_Unsigned_Base_Range_Aspect (Base_Type (Result_Type)) then
+         LL_Type := Base_Type (Standard_Long_Long_Unsigned);
+      else
+         LL_Type := Base_Type (Standard_Long_Long_Integer);
+      end if;
 
       --  That call may but does not necessarily change the result type of Op.
       --  It is the job of this routine to undo such changes, so that at the
@@ -1248,7 +1259,7 @@ package body Checks is
             Rtype : Entity_Id;
 
          begin
-            RHS := Convert_From_Bignum (Op);
+            RHS := Convert_From_Bignum (Op, Result_Type);
 
             if Nkind (P) /= N_Type_Conversion then
                Convert_To_And_Rewrite (Result_Type, RHS);
@@ -1260,7 +1271,7 @@ package body Checks is
                --  looked at later ???
 
             else
-               Rtype := LLIB;
+               Rtype := LL_Type;
             end if;
 
             Insert_Before
@@ -1279,13 +1290,14 @@ package body Checks is
             Analyze_And_Resolve (Op);
          end;
 
-      --  Here we know the result is Long_Long_Integer'Base, or that it has
-      --  been rewritten because the parent operation is a conversion. See
-      --  Apply_Arithmetic_Overflow_Strict.Conversion_Optimization.
+      --  Here we know the result is Long_Long_[Integer|Unsigned]'Base,
+      --  or that it has been rewritten because the parent operation is
+      --  a conversion.
+      --  See Apply_Arithmetic_Overflow_Strict.Conversion_Optimization.
 
       else
-         pragma Assert
-           (Etype (Op) = LLIB or else Nkind (Parent (Op)) = N_Type_Conversion);
+         pragma Assert (Etype (Op) = LL_Type
+           or else Nkind (Parent (Op)) = N_Type_Conversion);
 
          --  All we need to do here is to convert the result to the proper
          --  result type. As explained above for the Bignum case, we can
@@ -1813,7 +1825,7 @@ package body Checks is
       --  ensure that any needed overflow/division checks are properly applied.
 
       if Mode in Minimized_Or_Eliminated
-        and then Is_Signed_Integer_Type (Typ)
+        and then Has_Overflow_Operations (Typ)
       then
          Apply_Arithmetic_Overflow_Minimized_Eliminated (N);
          return;
@@ -4727,8 +4739,8 @@ package body Checks is
             --  giant useless bounds. Basically the number of bits in the
             --  result is the number of bits in the base multiplied by the
             --  value of the exponent. If this is big enough that the result
-            --  definitely won't fit in Long_Long_Integer, return immediately
-            --  and avoid computing giant bounds.
+            --  definitely won't fit in Long_Long_[Integer|Unsigned], return
+            --  immediately and avoid computing giant bounds.
 
             --  The comparison here is approximate, but conservative, it
             --  only clicks on cases that are sure to exceed the bounds.
@@ -4954,18 +4966,27 @@ package body Checks is
    -- Convert_From_Bignum --
    -------------------------
 
-   function Convert_From_Bignum (N : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (N);
+   function Convert_From_Bignum
+     (N           : Node_Id;
+      Result_Type : Entity_Id) return Node_Id
+   is
+      Loc     : constant Source_Ptr := Sloc (N);
+      Func_Id : Entity_Id;
 
    begin
       pragma Assert (Is_RTE (Etype (N), RE_Bignum));
 
       --  Construct call From Bignum
 
+      if Has_Unsigned_Base_Range_Aspect (Base_Type (Result_Type)) then
+         Func_Id := RTE (RE_LLU_From_Bignum);
+      else
+         Func_Id := RTE (RE_From_Bignum);
+      end if;
+
       return
         Make_Function_Call (Loc,
-          Name                   =>
-            New_Occurrence_Of (RTE (RE_From_Bignum), Loc),
+          Name                   => New_Occurrence_Of (Func_Id, Loc),
           Parameter_Associations => New_List (Relocate_Node (N)));
    end Convert_From_Bignum;
 
@@ -4974,25 +4995,40 @@ package body Checks is
    -----------------------
 
    function Convert_To_Bignum (N : Node_Id) return Node_Id is
-      Loc : constant Source_Ptr := Sloc (N);
+      Loc     : constant Source_Ptr := Sloc (N);
+      Typ     : constant Entity_Id := Etype (N);
+      LL_Type : Entity_Id;
+      Func_Id : Entity_Id;
 
    begin
       --  Nothing to do if Bignum already except call Relocate_Node
 
-      if Is_RTE (Etype (N), RE_Bignum) then
+      if Is_RTE (Typ, RE_Bignum) then
          return Relocate_Node (N);
 
-      --  Otherwise construct call to To_Bignum, converting the operand to the
-      --  required Long_Long_Integer form.
+      --  Otherwise construct call to To_Bignum, converting the operand to
+      --  the required Long_Long_[Integer|Unsigned] form.
 
       else
-         pragma Assert (Is_Signed_Integer_Type (Etype (N)));
+         pragma Assert (Has_Overflow_Operations (Typ)
+           or else Base_Type (Typ) = Base_Type (Standard_Long_Long_Unsigned));
+
+         if Has_Unsigned_Base_Range_Aspect (Base_Type (Typ))
+           or else Base_Type (Typ) = Base_Type (Standard_Long_Long_Unsigned)
+         then
+            LL_Type := Base_Type (RTE (RE_Long_Long_Unsigned));
+            Func_Id := RTE (RE_LLU_To_Bignum);
+         else
+            LL_Type := Base_Type (Standard_Long_Long_Integer);
+            Func_Id := RTE (RE_To_Bignum);
+         end if;
+
          return
            Make_Function_Call (Loc,
              Name                   =>
-               New_Occurrence_Of (RTE (RE_To_Bignum), Loc),
+               New_Occurrence_Of (Func_Id, Loc),
              Parameter_Associations => New_List (
-               Convert_To (Standard_Long_Long_Integer, Relocate_Node (N))));
+               Convert_To (LL_Type, Relocate_Node (N))));
       end if;
    end Convert_To_Bignum;
 
@@ -8363,11 +8399,11 @@ package body Checks is
       end;
    end Insert_Valid_Check;
 
-   -------------------------------------
-   -- Is_Signed_Integer_Arithmetic_Op --
-   -------------------------------------
+   -------------------------------
+   -- Is_Overflow_Arithmetic_Op --
+   -------------------------------
 
-   function Is_Signed_Integer_Arithmetic_Op (N : Node_Id) return Boolean is
+   function Is_Overflow_Arithmetic_Op (N : Node_Id) return Boolean is
    begin
       case Nkind (N) is
          when N_Op_Abs
@@ -8381,20 +8417,20 @@ package body Checks is
             | N_Op_Rem
             | N_Op_Subtract
          =>
-            return Is_Signed_Integer_Type (Etype (N));
+            return Has_Overflow_Operations (Etype (N));
 
          when N_Op_Compare =>
-            return Is_Signed_Integer_Type (Etype (Left_Opnd (N)));
+            return Has_Overflow_Operations (Etype (Left_Opnd (N)));
 
          when N_Case_Expression
             | N_If_Expression
          =>
-            return Is_Signed_Integer_Type (Etype (N));
+            return Has_Overflow_Operations (Etype (N));
 
          when others =>
             return False;
       end case;
-   end Is_Signed_Integer_Arithmetic_Op;
+   end Is_Overflow_Arithmetic_Op;
 
    ----------------------------------
    -- Install_Null_Excluding_Check --
@@ -8952,9 +8988,9 @@ package body Checks is
    --  This is a recursive routine that is called at the top of an expression
    --  tree to properly process overflow checking for a whole subtree by making
    --  recursive calls to process operands. This processing may involve the use
-   --  of bignum or long long integer arithmetic, which will change the types
-   --  of operands and results. That's why we can't do this bottom up (since
-   --  it would interfere with semantic analysis).
+   --  of bignum or long long [integer|unsigned] arithmetic, which will change
+   --  the types of operands and results. That's why we can't do this bottom up
+   --  (since it would interfere with semantic analysis).
 
    --  What happens is that if MINIMIZED/ELIMINATED mode is in effect then
    --  the operator expansion routines, as well as the expansion routines for
@@ -8985,8 +9021,9 @@ package body Checks is
       Top_Level : Boolean)
    is
       Rtyp : constant Entity_Id := Etype (N);
-      pragma Assert (Is_Signed_Integer_Type (Rtyp));
-      --  Result type, must be a signed integer type
+      pragma Assert (Has_Overflow_Operations (Rtyp));
+      --  Result type, must be a signed type or a modular type that has the
+      --  Unsigned_Base_Range aspect.
 
       Check_Mode : constant Overflow_Mode_Type := Overflow_Check_Mode;
       pragma Assert (Check_Mode in Minimized_Or_Eliminated);
@@ -9000,12 +9037,14 @@ package body Checks is
       Lhi : Uint := No_Uint;  -- initialize to prevent warning
       --  Ranges of values for left operand (operator case)
 
-      LLIB : constant Entity_Id := Base_Type (Standard_Long_Long_Integer);
-      --  Operands and results are of this type when we convert
+      LL_Type : Entity_Id;
+      --  Operands and results are of this type when we perform convertion:
+      --  Long_Long_Integer or Long_Long_Unsigned (when the type of the
+      --  result has the Unsigned_Base_Range aspect).
 
-      LLLo : constant Uint := Intval (Type_Low_Bound  (LLIB));
-      LLHi : constant Uint := Intval (Type_High_Bound (LLIB));
-      --  Bounds of Long_Long_Integer
+      LLLo : Uint;
+      LLHi : Uint;
+      --  Bounds of LL_Type
 
       Binary : constant Boolean := Nkind (N) in N_Binary_Op;
       --  Indicates binary operator case
@@ -9019,10 +9058,11 @@ package body Checks is
       --  doing the operation in Bignum mode (or in the case of a case or if
       --  expression, converting all the dependent expressions to Bignum).
 
-      Long_Long_Integer_Operands : Boolean;
+      Long_Long_Operands : Boolean;
       --  Set True if one or more operands is already of type Long_Long_Integer
-      --  which means that if the result is known to be in the result type
-      --  range, then we must convert such operands back to the result type.
+      --  or Long_Long_Unsigned (which means that if the result is known to be
+      --  in the result type range). Then we must convert such operands back to
+      --  the result type.
 
       procedure Reanalyze (Typ : Entity_Id; Suppress : Boolean := False);
       --  This is called when we have modified the node and we therefore need
@@ -9158,9 +9198,20 @@ package body Checks is
       Lo := No_Uint;
       Hi := No_Uint;
 
-      --  Case where we do not have a signed integer arithmetic operation
+      --  Initialize type of operands and results when we perform conversion
 
-      if not Is_Signed_Integer_Arithmetic_Op (N) then
+      if Has_Unsigned_Base_Range_Aspect (Base_Type (Rtyp)) then
+         LL_Type := Base_Type (Standard_Long_Long_Unsigned);
+      else
+         LL_Type := Base_Type (Standard_Long_Long_Integer);
+      end if;
+
+      LLLo := Intval (Type_Low_Bound  (LL_Type));
+      LLHi := Intval (Type_High_Bound (LL_Type));
+
+      --  Case where we do not have an overflow arithmetic operation
+
+      if not Is_Overflow_Arithmetic_Op (N) then
 
          --  Use the normal Determine_Range routine to get the range. We
          --  don't require operands to be valid, invalid values may result in
@@ -9205,8 +9256,8 @@ package body Checks is
             if No (Rlo) then
                Bignum_Operands := True;
             else
-               Long_Long_Integer_Operands :=
-                 Etype (Then_DE) = LLIB or else Etype (Else_DE) = LLIB;
+               Long_Long_Operands :=
+                 Etype (Then_DE) = LL_Type or else Etype (Else_DE) = LL_Type;
 
                Min (Lo, Rlo);
                Max (Hi, Rhi);
@@ -9228,29 +9279,29 @@ package body Checks is
 
                Reanalyze (RTE (RE_Bignum), Suppress => True);
 
-            --  If we have no Long_Long_Integer operands, then we are in result
-            --  range, since it means that none of our operands felt the need
-            --  to worry about overflow (otherwise it would have already been
-            --  converted to long long integer or bignum). We reexpand to
-            --  complete the expansion of the if expression (but we do not
-            --  need to reanalyze).
+            --  If we have no Long_Long_[Integer|Unsigned] operands, then we
+            --  are in result range, since it means that none of our operands
+            --  felt the need to worry about overflow (otherwise it would have
+            --  already been converted to Long_Long_[Integer|Unsigned] or
+            --  bignum). We reexpand to complete the expansion of the if
+            --  expression (but we do not need to reanalyze).
 
-            elsif not Long_Long_Integer_Operands then
+            elsif not Long_Long_Operands then
                Set_Do_Overflow_Check (N, False);
                Reexpand;
 
-            --  Otherwise convert us to long long integer mode. Note that we
-            --  don't need any further overflow checking at this level.
+            --  Otherwise convert us to long long [integer|unsigned] mode. Note
+            --  that we don't need any further overflow checking at this level.
 
             else
-               Convert_To_And_Rewrite (LLIB, Then_DE);
-               Convert_To_And_Rewrite (LLIB, Else_DE);
-               Set_Etype (N, LLIB);
+               Convert_To_And_Rewrite (LL_Type, Then_DE);
+               Convert_To_And_Rewrite (LL_Type, Else_DE);
+               Set_Etype (N, LL_Type);
 
                --  Now reanalyze with overflow checks off
 
                Set_Do_Overflow_Check (N, False);
-               Reanalyze (LLIB, Suppress => True);
+               Reanalyze (LL_Type, Suppress => True);
             end if;
          end;
 
@@ -9260,7 +9311,7 @@ package body Checks is
 
       elsif Nkind (N) = N_Case_Expression then
          Bignum_Operands := False;
-         Long_Long_Integer_Operands := False;
+         Long_Long_Operands := False;
 
          declare
             Alt : Node_Id;
@@ -9279,28 +9330,31 @@ package body Checks is
 
                   if No (Lo) then
                      Bignum_Operands := True;
-                  elsif Etype (Aexp) = LLIB then
-                     Long_Long_Integer_Operands := True;
+                  elsif Etype (Aexp) = LL_Type then
+                     Long_Long_Operands := True;
                   end if;
                end;
 
                Next (Alt);
             end loop;
 
-            --  If we have no bignum or long long integer operands, it means
-            --  that none of our dependent expressions could raise overflow.
+            --  If we have no bignum or long long [integer|unsigned] operands,
+            --  it means that none of our dependent expressions could raise
+            --  overflow.
+
             --  In this case, we simply return with no changes except for
             --  resetting the overflow flag, since we are done with overflow
             --  checks for this node. We will reexpand to get the needed
             --  expansion for the case expression, but we do not need to
             --  reanalyze, since nothing has changed.
 
-            if not (Bignum_Operands or Long_Long_Integer_Operands) then
+            if not (Bignum_Operands or Long_Long_Operands) then
                Set_Do_Overflow_Check (N, False);
                Reexpand (Suppress => True);
 
             --  Otherwise we are going to rebuild the case expression using
-            --  either bignum or long long integer operands throughout.
+            --  either bignum or long long [integer|unsigned] operands
+            --  throughout.
 
             else
                declare
@@ -9316,8 +9370,8 @@ package body Checks is
                         New_Exp := Convert_To_Bignum (Expression (Alt));
                         Rtype   := RTE (RE_Bignum);
                      else
-                        New_Exp := Convert_To (LLIB, Expression (Alt));
-                        Rtype   := LLIB;
+                        New_Exp := Convert_To (LL_Type, Expression (Alt));
+                        Rtype   := LL_Type;
                      end if;
 
                      Append_To (New_Alts,
@@ -9354,11 +9408,11 @@ package body Checks is
            (Left_Opnd (N), Llo, Lhi, Top_Level => False);
       end if;
 
-      --  Record if we have Long_Long_Integer operands
+      --  Record if we have Long_Long_[Integer|Unsigned] operands
 
-      Long_Long_Integer_Operands :=
-        Etype (Right_Opnd (N)) = LLIB
-          or else (Binary and then Etype (Left_Opnd (N)) = LLIB);
+      Long_Long_Operands :=
+        Etype (Right_Opnd (N)) = LL_Type
+          or else (Binary and then Etype (Left_Opnd (N)) = LL_Type);
 
       --  If either operand is a bignum, then result will be a bignum and we
       --  don't need to do any range analysis. As previously discussed we could
@@ -9380,15 +9434,19 @@ package body Checks is
       end if;
 
       --  Here for the case where we have not rewritten anything (no bignum
-      --  operands or long long integer operands), and we know the result.
+      --  operands or Long_Long_[Integer|Unsigned] operands), and we know
+      --  the result.
+
       --  If we know we are in the result range, and we do not have Bignum
-      --  operands or Long_Long_Integer operands, we can just reexpand with
-      --  overflow checks turned off (since we know we cannot have overflow).
+      --  operands or Long_Long_[Integer|Unsigned] operands, we can just
+      --  reexpand with overflow checks turned off (since we know we cannot
+      --  have overflow).
+
       --  As always the reexpansion is required to complete expansion of the
       --  operator, but we do not need to reanalyze, and we prevent recursion
       --  by suppressing the check.
 
-      if not (Bignum_Operands or Long_Long_Integer_Operands)
+      if not (Bignum_Operands or Long_Long_Operands)
         and then In_Result_Range
       then
          Set_Do_Overflow_Check (N, False);
@@ -9396,22 +9454,24 @@ package body Checks is
          return;
 
       --  Here we know that we are not in the result range, and in the general
-      --  case we will move into either the Bignum or Long_Long_Integer domain
-      --  to compute the result. However, there is one exception. If we are
-      --  at the top level, and we do not have Bignum or Long_Long_Integer
-      --  operands, we will have to immediately convert the result back to
-      --  the result type, so there is no point in Bignum/Long_Long_Integer
-      --  fiddling.
+      --  case we will move into either the Long_Long_[Integer|Unsigned] or
+      --  Bignum domain to compute the result. However, there is one exception.
+      --  If we are at the top level, and we do not have Long_Long_[Integer|
+      --  Unsigned] or Bignum operands, we will have to immediately convert
+      --  the result back to the result type, so there is no point in
+      --  Long_Long_[Integer|Unsigned]/Bignum fiddling.
 
       elsif Top_Level
-        and then not (Bignum_Operands or Long_Long_Integer_Operands)
+        and then not (Bignum_Operands or Long_Long_Operands)
 
         --  One further refinement. If we are at the top level, but our parent
-        --  is a type conversion, then go into bignum or long long integer node
-        --  since the result will be converted to that type directly without
-        --  going through the result type, and we may avoid an overflow. This
-        --  is the case for example of Long_Long_Integer (A ** 4), where A is
-        --  of type Integer, and the result A ** 4 fits in Long_Long_Integer
+        --  is a type conversion, then go into bignum or long long [integer|
+        --  unsigned] node since the result will be converted to that type
+        --  directly without going through the result type, and we may avoid
+        --  an overflow.
+
+        --  This is the case for example of Long_Long_Integer (A ** 4), where A
+        --  is of type Integer, and the result A ** 4 fits in Long_Long_Integer
         --  but does not fit in Integer.
 
         and then Nkind (Parent (N)) /= N_Type_Conversion
@@ -9431,8 +9491,9 @@ package body Checks is
 
       --  Cases where we do the operation in Bignum mode. This happens either
       --  because one of our operands is in Bignum mode already, or because
-      --  the computed bounds are outside the bounds of Long_Long_Integer,
-      --  which in some cases can be indicated by Hi and Lo being No_Uint.
+      --  the computed bounds are outside the bounds of Long_Long_[Integer|
+      --  Unsigned], which in some cases can be indicated by Hi and Lo being
+      --  No_Uint.
 
       --  Note: we could do better here and in some cases switch back from
       --  Bignum mode to normal mode, e.g. big mod 2 must be in the range
@@ -9441,9 +9502,10 @@ package body Checks is
 
       elsif No (Lo) or else Lo < LLLo or else Hi > LLHi then
 
-         --  OK, we are definitely outside the range of Long_Long_Integer. The
-         --  question is whether to move to Bignum mode, or stay in the domain
-         --  of Long_Long_Integer, signalling that an overflow check is needed.
+         --  OK, we are definitely outside the range of Long_Long_[Integer|
+         --  Unsigned]. The question is whether to move to Bignum mode, or
+         --  stay in the domain of Long_Long_[Integer|Unsigned], signalling
+         --  that an overflow check is needed.
 
          --  Obviously in MINIMIZED mode we stay with LLI, since we are not in
          --  the Bignum business. In ELIMINATED mode, we will normally move
@@ -9461,9 +9523,10 @@ package body Checks is
                Enable_Overflow_Check (N);
             end if;
 
-            --  The result now has to be in Long_Long_Integer mode, so adjust
-            --  the possible range to reflect this. Note these calls also
-            --  change No_Uint values from the top level case to LLI bounds.
+            --  The result now has to be in Long_Long_[Integer|Unsigned] mode,
+            --  so adjust the possible range to reflect this. Note these calls
+            --  also change No_Uint values from the top level case to LL_Type
+            --  bounds.
 
             Max (Lo, LLLo);
             Min (Hi, LLHi);
@@ -9542,39 +9605,42 @@ package body Checks is
             end;
          end if;
 
-      --  Otherwise we are in range of Long_Long_Integer, so no overflow
-      --  check is required, at least not yet.
+      --  Otherwise we are in range of Long_Long_[Integer|Unsigned], so no
+      --  overflow check is required, at least not yet.
 
       else
          Set_Do_Overflow_Check (N, False);
       end if;
 
       --  Here we are not in Bignum territory, but we may have long long
-      --  integer operands that need special handling. First a special check:
-      --  If an exponentiation operator exponent is of type Long_Long_Integer,
-      --  it means we converted it to prevent overflow, but exponentiation
-      --  requires a Natural right operand, so convert it back to Natural.
-      --  This conversion may raise an exception which is fine.
+      --  [integer|unsigned] operands that need special handling.
 
-      if Nkind (N) = N_Op_Expon and then Etype (Right_Opnd (N)) = LLIB then
+      --  First a special check: If an exponentiation operator exponent is of
+      --  type Long_Long_[Integer|Unsigned] it means we converted it to prevent
+      --  overflow, but exponentiation requires a Natural right operand, so
+      --  convert it back to Natural. This conversion may raise an exception
+      --  which is fine.
+
+      if Nkind (N) = N_Op_Expon and then Etype (Right_Opnd (N)) = LL_Type then
          Convert_To_And_Rewrite (Standard_Natural, Right_Opnd (N));
       end if;
 
-      --  Here we will do the operation in Long_Long_Integer. We do this even
-      --  if we know an overflow check is required, better to do this in long
-      --  long integer mode, since we are less likely to overflow.
+      --  Here we will do the operation in Long_Long_[Integer|Unsigned]. We do
+      --  this even if we know an overflow check is required, better to do this
+      --  in long long [integer|unsigned] mode, since we are less likely to
+      --  overflow.
 
-      --  Convert right or only operand to Long_Long_Integer, except that
-      --  we do not touch the exponentiation right operand.
+      --  Convert right or only operand to Long_Long_[Integer|Unsigned], except
+      --  that we do not touch the exponentiation right operand.
 
       if Nkind (N) /= N_Op_Expon then
-         Convert_To_And_Rewrite (LLIB, Right_Opnd (N));
+         Convert_To_And_Rewrite (LL_Type, Right_Opnd (N));
       end if;
 
-      --  Convert left operand to Long_Long_Integer for binary case
+      --  Convert left operand to Long_Long_[Integer|Unsigned] for binary case
 
       if Binary then
-         Convert_To_And_Rewrite (LLIB, Left_Opnd (N));
+         Convert_To_And_Rewrite (LL_Type, Left_Opnd (N));
       end if;
 
       --  Reset node to unanalyzed
@@ -9603,9 +9669,9 @@ package body Checks is
          Scope_Suppress.Overflow_Mode_Assertions := Strict;
 
          if not Do_Overflow_Check (N) then
-            Reanalyze (LLIB, Suppress => True);
+            Reanalyze (LL_Type, Suppress => True);
          else
-            Reanalyze (LLIB);
+            Reanalyze (LL_Type);
          end if;
 
          Scope_Suppress.Overflow_Mode_General    := SG;

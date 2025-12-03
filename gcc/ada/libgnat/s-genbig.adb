@@ -1132,6 +1132,16 @@ package body System.Generic_Bignums is
       return Unsigned_64 (Unsigned_128'(From_Bignum (X)));
    end From_Bignum;
 
+   function From_Bignum (X : Bignum) return Long_Long_Unsigned is
+   begin
+      return Long_Long_Unsigned (Unsigned_128'(From_Bignum (X)));
+   end From_Bignum;
+
+   function From_Bignum (X : Bignum) return Long_Long_Long_Unsigned is
+   begin
+      return Long_Long_Long_Unsigned (Unsigned_128'(From_Bignum (X)));
+   end From_Bignum;
+
    -------------------------
    -- Bignum_In_LLI_Range --
    -------------------------
@@ -1294,6 +1304,16 @@ package body System.Generic_Bignums is
    end To_Bignum;
 
    function To_Bignum (X : Unsigned_64) return Big_Integer is
+   begin
+      return To_Bignum (Unsigned_128 (X));
+   end To_Bignum;
+
+   function To_Bignum (X : Long_Long_Unsigned) return Big_Integer is
+   begin
+      return To_Bignum (Unsigned_128 (X));
+   end To_Bignum;
+
+   function To_Bignum (X : Long_Long_Long_Unsigned) return Big_Integer is
    begin
       return To_Bignum (Unsigned_128 (X));
    end To_Bignum;

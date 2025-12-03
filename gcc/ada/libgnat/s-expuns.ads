@@ -51,7 +51,5 @@ is
    --  This function is implemented using the standard logarithmic approach:
    --  ``Right`` gets shifted right testing successive low order bits, and
    --  ``Left`` is raised to the next power of 2.
-   --
-   --  In case of overflow, Constraint_Error is raised.
 
 end System.Exp_Uns;

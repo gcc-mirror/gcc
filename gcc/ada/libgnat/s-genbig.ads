@@ -35,6 +35,7 @@
 
 with Interfaces;
 with System.Shared_Bignums;
+with System.Unsigned_Types;
 
 generic
    type Big_Integer is private;
@@ -53,7 +54,11 @@ generic
 package System.Generic_Bignums is
    pragma Preelaborate;
 
+   package SU renames System.Unsigned_Types;
+
    subtype Bignum is Shared_Bignums.Bignum;
+   subtype Long_Long_Unsigned is SU.Long_Long_Unsigned;
+   subtype Long_Long_Long_Unsigned is SU.Long_Long_Long_Unsigned;
 
    --  Note that this package never shares an allocated Big_Integer value, so
    --  so for example for X + 0, a copy of X is returned, not X itself.
@@ -101,8 +106,16 @@ package System.Generic_Bignums is
    --  Convert Long_Long_Integer to a big integer. No exception can be raised
    --  for any input argument.
 
+   function To_Bignum (X : Long_Long_Unsigned) return Big_Integer;
+   --  Convert Long_Long_Unsigned to a big integer. No exception can be raised
+   --  for any input argument.
+
    function To_Bignum (X : Long_Long_Long_Integer) return Big_Integer;
    --  Convert Long_Long_Long_Integer to a big integer. No exception can be
+   --  raised.
+
+   function To_Bignum (X : Long_Long_Long_Unsigned) return Big_Integer;
+   --  Convert Long_Long_Long_Unsigned to a big integer. No exception can be
    --  raised.
 
    function To_Bignum (X : Interfaces.Unsigned_64) return Big_Integer;
@@ -117,9 +130,17 @@ package System.Generic_Bignums is
    --  Convert Bignum to Long_Long_Integer. Constraint_Error raised with
    --  appropriate message if value is out of range of Long_Long_Integer.
 
+   function From_Bignum (X : Bignum) return Long_Long_Unsigned;
+   --  Convert Bignum to Long_Long_Unsigned. Constraint_Error raised with
+   --  appropriate message if value is out of range of Long_Long_Unsigned.
+
    function From_Bignum (X : Bignum) return Long_Long_Long_Integer;
    --  Convert Bignum to Long_Long_Long_Integer. Constraint_Error raised with
    --  appropriate message if value is out of range of Long_Long_Long_Integer.
+
+   function From_Bignum (X : Bignum) return Long_Long_Long_Unsigned;
+   --  Convert Bignum to Long_Long_Long_Unsigned. Constraint_Error raised with
+   --  appropriate message if value is out of range of Long_Long_Long_Unsigned.
 
    function From_Bignum (X : Bignum) return Interfaces.Unsigned_64;
    --  Convert Bignum to Unsigned_64. Constraint_Error raised with

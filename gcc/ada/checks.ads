@@ -294,16 +294,21 @@ package Checks is
    --  that compares discriminants of the expression with discriminants of the
    --  type. Also used directly for membership tests (see Exp_Ch4.Expand_N_In).
 
-   function Convert_From_Bignum (N : Node_Id) return Node_Id;
+   function Convert_From_Bignum
+     (N           : Node_Id;
+      Result_Type : Entity_Id) return Node_Id;
    --  Returns result of converting node N from Bignum. The returned value is
    --  not analyzed, the caller takes responsibility for this. Node N must be
-   --  a subexpression node of type Bignum. The result is Long_Long_Integer.
+   --  a subexpression node of type Bignum. The result is Long_Long_Unsigned
+   --  if Result_Type has aspect Unsigned_Base_Range; otherwise the result is
+   --  Long_Long_Integer.
 
    function Convert_To_Bignum (N : Node_Id) return Node_Id;
    --  Returns result of converting node N to Bignum. The returned value is not
    --  analyzed, the caller takes responsibility for this. Node N must be a
-   --  subexpression node of a signed integer type or Bignum type (if it is
-   --  already a Bignum, the returned value is Relocate_Node (N)).
+   --  subexpression node of a Bignum type, a signed integer type, a long long
+   --  [integer | unsigned] type, or a type with the Unsigned_Base_Range aspect
+   --  (if it is already a Bignum, the returned value is Relocate_Node (N)).
 
    procedure Determine_Range
      (N            : Node_Id;

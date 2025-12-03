@@ -37,11 +37,16 @@
 --  because the rtsfind mechanism is not ready to handle instantiations.
 
 with System.Shared_Bignums;
+with System.Unsigned_Types;
 
 package System.Bignums is
    pragma Preelaborate;
 
+   package SU renames System.Unsigned_Types;
+
    subtype Bignum is System.Shared_Bignums.Bignum;
+   subtype Long_Long_Unsigned is SU.Long_Long_Unsigned;
+   subtype Long_Long_Long_Unsigned is SU.Long_Long_Long_Unsigned;
 
    function Big_Add (X, Y : Bignum) return Bignum;  --  "+"
    function Big_Sub (X, Y : Bignum) return Bignum;  --  "-"
@@ -76,6 +81,14 @@ package System.Bignums is
    function From_Bignum (X : Bignum) return Long_Long_Integer;
    --  Convert Bignum to Long_Long_Integer. Constraint_Error raised with
    --  appropriate message if value is out of range of Long_Long_Integer.
+
+   function LLU_To_Bignum (X : Long_Long_Unsigned) return Bignum;
+   --  Convert Long_Long_Unsigned to Bignum. No exception can be raised for any
+   --  input argument.
+
+   function LLU_From_Bignum (X : Bignum) return Long_Long_Unsigned;
+   --  Convert Bignum to Long_Long_Unsigned. Constraint_Error raised with
+   --  appropriate message if value is out of range of Long_Long_Unsigned.
 
 private
 

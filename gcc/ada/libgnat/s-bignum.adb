@@ -145,4 +145,10 @@ package body System.Bignums is
    function From_Bignum (X : Bignum) return Long_Long_Integer
      renames Sec_Stack_Bignums.From_Bignum;
 
+   function LLU_To_Bignum (X : Long_Long_Unsigned) return Bignum
+     renames Sec_Stack_Bignums.To_Bignum;
+
+   function LLU_From_Bignum (X : Bignum) return Long_Long_Unsigned
+     renames Sec_Stack_Bignums.From_Bignum;
+
 end System.Bignums;
