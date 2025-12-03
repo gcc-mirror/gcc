@@ -5,7 +5,7 @@
 
 /* GCC explicitly disables XNACK for gfx908 (and others) as the hardware
    support is limited, which results in a diagnostic.  */
-/* { dg-excess-errors "Unified Shared Memory is enabled, but XNACK is disabled" { target offload_target_amdgcn } } */
+/* { dg-xfail-if "Unified Shared Memory is enabled, but XNACK is disabled" { offload_target_amdgcn } "-foffload=-march=gfx908" } */
 
 /* Same as requires-4.c, but uses heap memory for 'a'.  */
 

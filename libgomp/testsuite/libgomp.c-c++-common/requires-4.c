@@ -5,7 +5,7 @@
 
 /* GCC explicitly disables XNACK for gfx908 (and others) as the hardware
    support is limited, which results in a diagnostic.  */
-/* { dg-excess-errors "Unified Shared Memory is enabled, but XNACK is disabled" { target offload_target_amdgcn } } */
+/* { dg-xfail-if "gfx908 xnack broken" { offload_target_amdgcn } "-foffload=-march=gfx908" } */
 
 /* Check no diagnostic by device-compiler's or host compiler's lto1.
    Other file uses: 'requires reverse_offload', but that's inactive as
