@@ -383,7 +383,7 @@ lto_1_to_1_map (void)
     }
 
   struct asm_node *anode;
-  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+  for (anode = symtab->first_asm_symbol (); anode; anode = safe_as_a<asm_node*>(anode->next))
     node_into_file_partition (anode, pmap);
 
   create_partition_if_empty ();
@@ -406,7 +406,7 @@ create_asm_partition (void)
   if (anode)
     {
       ltrans_partition partition = new_partition ("asm_nodes");
-      for (; anode; anode = anode->next)
+      for (; anode; anode = safe_as_a<asm_node*>(anode->next))
 	add_symbol_to_partition (partition, anode);
     }
 }

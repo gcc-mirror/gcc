@@ -1210,8 +1210,8 @@ analyze_functions (bool first_time)
 
       /* First identify the trivially needed symbols.  */
       for (node = symtab->first_symbol ();
-	   node != first_analyzed
-	   && node != first_analyzed_var; node = node->next)
+	   node != first_analyzed && node != first_analyzed_var;
+	   node = safe_as_a<symtab_node *>(node->next))
 	{
 	  /* Convert COMDAT group designators to IDENTIFIER_NODEs.  */
 	  node->get_comdat_group_id ();
@@ -1373,7 +1373,7 @@ analyze_functions (bool first_time)
        node != first_handled
        && node != first_handled_var; node = next)
     {
-      next = node->next;
+      next = safe_as_a<symtab_node *>(node->next);
       /* For symbols declared locally we clear TREE_READONLY when emitting
 	 the constructor (if one is needed).  For external declarations we can
 	 not safely assume that the type is readonly because we may be called
@@ -1428,7 +1428,7 @@ analyze_functions (bool first_time)
 	}
       node->aux = NULL;
     }
-  for (;node; node = node->next)
+  for (;node; node = safe_as_a<symtab_node *>(node->next))
     node->aux = NULL;
   first_analyzed = symtab->first_function ();
   first_analyzed_var = symtab->first_variable ();
@@ -2203,7 +2203,8 @@ output_in_order (void)
 	&& !DECL_HAS_VALUE_EXPR_P (vnode->decl))
       nodes.safe_push (cgraph_order_sort (vnode));
 
-  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+  for (anode = symtab->first_asm_symbol (); anode;
+       anode = safe_as_a<asm_node*>(anode->next))
     nodes.safe_push (cgraph_order_sort (anode));
 
   /* Sort nodes by order.  */

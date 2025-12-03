@@ -2828,7 +2828,9 @@ lto_output (void)
   if (!flag_wpa)
     {
       asm_node *anode;
-      for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+      for (anode = symtab->first_asm_symbol ();
+	   anode;
+	   anode = safe_as_a<asm_node*>(anode->next))
 	lto_set_symtab_encoder_in_partition (encoder, anode);
     }
 

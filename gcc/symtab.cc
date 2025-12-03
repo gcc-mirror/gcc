@@ -1485,7 +1485,9 @@ symtab_node::verify_symtab_nodes (void)
   hash_map<tree, symtab_node *> comdat_head_map (251);
   asm_node *anode;
 
-  for (anode = symtab->first_asm_symbol (); anode; anode = anode->next)
+  for (anode = symtab->first_asm_symbol ();
+       anode;
+       anode = safe_as_a<asm_node*>(anode->next))
     if (anode->order < 0 || anode->order >= symtab->order)
        {
 	  error ("invalid order in asm node %i", anode->order);

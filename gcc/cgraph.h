@@ -107,7 +107,9 @@ enum symbol_partitioning_class
 
 /* Base of all toplevel entries.
    Inherited by symtab_node and asm_node.  */
-struct GTY ((desc ("%h.type"), tag ("TOPLEVEL_BASE"))) toplevel_node {
+struct GTY ((desc ("%h.type"), tag ("TOPLEVEL_BASE"),
+	    chain_next("%h.next"),
+	    chain_prev("%h.previous"))) toplevel_node {
   /* Constructor.  */
   explicit toplevel_node (toplevel_type t)
     : lto_file_data (NULL), order (-1), type (t)
@@ -115,6 +117,10 @@ struct GTY ((desc ("%h.type"), tag ("TOPLEVEL_BASE"))) toplevel_node {
 
   /* File stream where this node is being written to.  */
   struct lto_file_decl_data * lto_file_data;
+
+  /* Linked list of toplevel entries.  */
+  toplevel_node *next = nullptr;
+  toplevel_node *previous = nullptr;
 
   /* Ordering of all cgraph nodes.  */
   int order;
@@ -125,8 +131,7 @@ struct GTY ((desc ("%h.type"), tag ("TOPLEVEL_BASE"))) toplevel_node {
 
 /* Base of all entries in the symbol table.
    The symtab_node is inherited by cgraph and varpol nodes.  */
-struct GTY ((tag ("SYMTAB_SYMBOL"),
-	    chain_next ("%h.next"), chain_prev ("%h.previous")))
+struct GTY ((tag ("SYMTAB_SYMBOL")))
   symtab_node: public toplevel_node
 {
 public:
@@ -632,10 +637,6 @@ public:
 
   /* Declaration representing the symbol.  */
   tree decl;
-
-  /* Linked list of symbol table entries starting with symtab_nodes.  */
-  symtab_node *next;
-  symtab_node *previous;
 
   /* Linked list of symbols with the same asm name.  There may be multiple
      entries for single symbol name during LTO, because symbols are renamed
@@ -2243,10 +2244,8 @@ private:
 
 struct GTY ((tag ("TOPLEVEL_ASM"))) asm_node: public toplevel_node {
   explicit asm_node (tree asm_str)
-    : toplevel_node (TOPLEVEL_ASM), next (NULL), asm_str (asm_str)
+    : toplevel_node (TOPLEVEL_ASM), asm_str (asm_str)
   {}
-  /* Next asm node.  */
-  asm_node *next;
   /* String for this asm node.  */
   tree asm_str;
 };
@@ -2867,9 +2866,9 @@ symtab_node::get_alias_target_tree ()
 inline symtab_node *
 symtab_node::next_defined_symbol (void)
 {
-  symtab_node *node1 = next;
+  symtab_node *node1 = safe_as_a<symtab_node *>(next);
 
-  for (; node1; node1 = node1->next)
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     if (node1->definition)
       return node1;
 
@@ -2997,7 +2996,7 @@ symbol_table::unregister (symtab_node *node)
   if (node->previous)
     node->previous->next = node->next;
   else
-    nodes = node->next;
+    nodes = safe_as_a<symtab_node *>(node->next);
 
   if (node->next)
     node->next->previous = node->previous;
@@ -3026,7 +3025,8 @@ symbol_table::first_symbol (void)
 
 /* Walk all symbols.  */
 #define FOR_EACH_SYMBOL(node) \
-   for ((node) = symtab->first_symbol (); (node); (node) = (node)->next)
+   for ((node) = symtab->first_symbol (); (node); \
+	(node) = safe_as_a<symtab_node *>((node)->next))
 
 /* Return first static symbol with definition.  */
 inline symtab_node *
@@ -3034,7 +3034,8 @@ symbol_table::first_defined_symbol (void)
 {
   symtab_node *node;
 
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node;
+       node = safe_as_a<symtab_node *>(node->next))
     if (node->definition)
       return node;
 
@@ -3051,7 +3052,7 @@ inline varpool_node *
 symbol_table::first_variable (void)
 {
   symtab_node *node;
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node; node = safe_as_a<symtab_node *>(node->next))
     if (varpool_node *vnode = dyn_cast <varpool_node *> (node))
       return vnode;
   return NULL;
@@ -3061,8 +3062,8 @@ symbol_table::first_variable (void)
 inline varpool_node *
 symbol_table::next_variable (varpool_node *node)
 {
-  symtab_node *node1 = node->next;
-  for (; node1; node1 = node1->next)
+  symtab_node *node1 = safe_as_a<symtab_node *>(node->next);
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     if (varpool_node *vnode1 = dyn_cast <varpool_node *> (node1))
       return vnode1;
   return NULL;
@@ -3078,7 +3079,7 @@ inline varpool_node *
 symbol_table::first_static_initializer (void)
 {
   symtab_node *node;
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node; node = safe_as_a<symtab_node *>(node->next))
     {
       varpool_node *vnode = dyn_cast <varpool_node *> (node);
       if (vnode && DECL_INITIAL (node->decl))
@@ -3091,8 +3092,8 @@ symbol_table::first_static_initializer (void)
 inline varpool_node *
 symbol_table::next_static_initializer (varpool_node *node)
 {
-  symtab_node *node1 = node->next;
-  for (; node1; node1 = node1->next)
+  symtab_node *node1 = safe_as_a<symtab_node *>(node->next);
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     {
       varpool_node *vnode1 = dyn_cast <varpool_node *> (node1);
       if (vnode1 && DECL_INITIAL (node1->decl))
@@ -3111,7 +3112,7 @@ inline varpool_node *
 symbol_table::first_defined_variable (void)
 {
   symtab_node *node;
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node; node = safe_as_a<symtab_node *>(node->next))
     {
       varpool_node *vnode = dyn_cast <varpool_node *> (node);
       if (vnode && vnode->definition)
@@ -3124,8 +3125,8 @@ symbol_table::first_defined_variable (void)
 inline varpool_node *
 symbol_table::next_defined_variable (varpool_node *node)
 {
-  symtab_node *node1 = node->next;
-  for (; node1; node1 = node1->next)
+  symtab_node *node1 = safe_as_a<symtab_node *>(node->next);
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     {
       varpool_node *vnode1 = dyn_cast <varpool_node *> (node1);
       if (vnode1 && vnode1->definition)
@@ -3143,7 +3144,7 @@ inline cgraph_node *
 symbol_table::first_defined_function (void)
 {
   symtab_node *node;
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node; node = safe_as_a<symtab_node *>(node->next))
     {
       cgraph_node *cn = dyn_cast <cgraph_node *> (node);
       if (cn && cn->definition)
@@ -3156,8 +3157,8 @@ symbol_table::first_defined_function (void)
 inline cgraph_node *
 symbol_table::next_defined_function (cgraph_node *node)
 {
-  symtab_node *node1 = node->next;
-  for (; node1; node1 = node1->next)
+  symtab_node *node1 = safe_as_a<symtab_node *>(node->next);
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     {
       cgraph_node *cn1 = dyn_cast <cgraph_node *> (node1);
       if (cn1 && cn1->definition)
@@ -3176,7 +3177,7 @@ inline cgraph_node *
 symbol_table::first_function (void)
 {
   symtab_node *node;
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node; node = safe_as_a<symtab_node *>(node->next))
     if (cgraph_node *cn = dyn_cast <cgraph_node *> (node))
       return cn;
   return NULL;
@@ -3186,8 +3187,8 @@ symbol_table::first_function (void)
 inline cgraph_node *
 symbol_table::next_function (cgraph_node *node)
 {
-  symtab_node *node1 = node->next;
-  for (; node1; node1 = node1->next)
+  symtab_node *node1 = safe_as_a<symtab_node *>(node->next);
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     if (cgraph_node *cn1 = dyn_cast <cgraph_node *> (node1))
       return cn1;
   return NULL;
@@ -3198,7 +3199,7 @@ inline cgraph_node *
 symbol_table::first_function_with_gimple_body (void)
 {
   symtab_node *node;
-  for (node = nodes; node; node = node->next)
+  for (node = nodes; node; node = safe_as_a<symtab_node *>(node->next))
     {
       cgraph_node *cn = dyn_cast <cgraph_node *> (node);
       if (cn && cn->has_gimple_body_p ())
@@ -3211,8 +3212,8 @@ symbol_table::first_function_with_gimple_body (void)
 inline cgraph_node *
 symbol_table::next_function_with_gimple_body (cgraph_node *node)
 {
-  symtab_node *node1 = node->next;
-  for (; node1; node1 = node1->next)
+  symtab_node *node1 = safe_as_a<symtab_node *>(node->next);
+  for (; node1; node1 = safe_as_a<symtab_node *>(node1->next))
     {
       cgraph_node *cn1 = dyn_cast <cgraph_node *> (node1);
       if (cn1 && cn1->has_gimple_body_p ())
