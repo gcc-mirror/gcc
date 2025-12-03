@@ -27,7 +27,7 @@ namespace AST {
 class DeriveHash : DeriveVisitor
 {
 public:
-  DeriveHash (location_t loc);
+  DeriveHash (location_t loc, Builder::Source item_source);
 
   std::unique_ptr<Item> go (Item &item);
 

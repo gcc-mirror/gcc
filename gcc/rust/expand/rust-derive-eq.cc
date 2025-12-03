@@ -30,10 +30,12 @@ namespace AST {
 static TypePath
 get_eq_trait_path (Builder &builder)
 {
-  return builder.type_path ({"core", "cmp", "Eq"}, true);
+  return builder.type_path ({builder.get_path_start (), "cmp", "Eq"}, true);
 }
 
-DeriveEq::DeriveEq (location_t loc) : DeriveVisitor (loc) {}
+DeriveEq::DeriveEq (location_t loc, Builder::Source item_source)
+  : DeriveVisitor (loc, item_source)
+{}
 
 std::vector<std::unique_ptr<AST::Item>>
 DeriveEq::go (Item &item)

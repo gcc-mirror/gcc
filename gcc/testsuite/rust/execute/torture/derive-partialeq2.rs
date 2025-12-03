@@ -1,21 +1,17 @@
 // { dg-output "true\r*\nfalse\r*\nfalse\r*\nfalse\r*\nfalse\r*\n" }
 #![feature(no_core)]
 #![no_core]
-
-
 #![feature(intrinsics, lang_items)]
 
-pub mod core {
-    pub mod intrinsics {
-        #[lang = "discriminant_kind"]
-        pub trait DiscriminantKind {
-            #[lang = "discriminant_type"]
-            type Discriminant;
-        }
+pub mod intrinsics {
+    #[lang = "discriminant_kind"]
+    pub trait DiscriminantKind {
+        #[lang = "discriminant_type"]
+        type Discriminant;
+    }
 
-        extern "rust-intrinsic" {
-            pub fn discriminant_value<T>(v: &T) -> <T as DiscriminantKind>::Discriminant;
-        }
+    extern "rust-intrinsic" {
+        pub fn discriminant_value<T>(v: &T) -> <T as DiscriminantKind>::Discriminant;
     }
 }
 

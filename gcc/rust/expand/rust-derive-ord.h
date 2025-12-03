@@ -59,7 +59,7 @@ public:
       return "PartialOrd";
   }
 
-  DeriveOrd (Ordering ordering, location_t loc);
+  DeriveOrd (Ordering ordering, location_t loc, Builder::Source item_source);
 
   std::unique_ptr<Item> go (Item &item);
 

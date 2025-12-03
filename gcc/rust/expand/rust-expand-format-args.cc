@@ -35,11 +35,13 @@ static std::unique_ptr<AST::Expr>
 format_arg (const AST::Builder &builder, std::unique_ptr<AST::Expr> &&to_format,
 	    const std::string &trait)
 {
-  auto formatter_fn = std::unique_ptr<AST::Expr> (new AST::PathInExpression (
-    builder.path_in_expression ({"core", "fmt", trait, "fmt"})));
+  auto formatter_fn = std::unique_ptr<AST::Expr> (
+    new AST::PathInExpression (builder.path_in_expression (
+      {builder.get_path_start (), "fmt", trait, "fmt"})));
 
-  auto path = std::unique_ptr<AST::Expr> (new AST::PathInExpression (
-    builder.path_in_expression ({"core", "fmt", "ArgumentV1", "new"})));
+  auto path = std::unique_ptr<AST::Expr> (
+    new AST::PathInExpression (builder.path_in_expression (
+      {builder.get_path_start (), "fmt", "ArgumentV1", "new"})));
 
   auto args = std::vector<std::unique_ptr<AST::Expr>> ();
   args.emplace_back (std::move (to_format));
@@ -70,7 +72,10 @@ expand_format_args (AST::FormatArgs &fmt,
 		    std::vector<std::unique_ptr<AST::Token>> &&tokens)
 {
   auto loc = fmt.get_locus ();
-  auto builder = AST::Builder (loc);
+  // FIXME: This needs to be aware of the crate in which we are expanding it.
+  // Expanding format_args!() within core needs to use paths that start with
+  // `crate::`, not `core::`
+  auto builder = AST::Builder (loc, AST::Builder::Source::InCore);
   auto &arguments = fmt.get_arguments ();
 
   auto static_pieces = std::vector<std::unique_ptr<AST::Expr>> ();
@@ -122,8 +127,9 @@ expand_format_args (AST::FormatArgs &fmt,
   auto pieces = builder.ref (builder.array (std::move (static_pieces)));
   auto args_slice = builder.ref (builder.array (std::move (args_array)));
 
-  auto final_path = std::make_unique<AST::PathInExpression> (
-    builder.path_in_expression ({"core", "fmt", "Arguments", "new_v1"}));
+  auto final_path
+    = std::make_unique<AST::PathInExpression> (builder.path_in_expression (
+      {builder.get_path_start (), "fmt", "Arguments", "new_v1"}));
   auto final_args = std::vector<std::unique_ptr<AST::Expr>> ();
   final_args.emplace_back (std::move (pieces));
   final_args.emplace_back (std::move (args_slice));

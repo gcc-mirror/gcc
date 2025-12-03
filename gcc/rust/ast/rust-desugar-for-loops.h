@@ -71,14 +71,16 @@ namespace AST {
 class DesugarForLoops
 {
 public:
-  static void go (std::unique_ptr<Expr> &ptr);
+  static void go (std::unique_ptr<Expr> &ptr, Builder::Source node_source);
 
 private:
   DesugarForLoops ();
 
   struct DesugarCtx
   {
-    DesugarCtx (location_t loc) : builder (Builder (loc)), loc (loc) {}
+    DesugarCtx (location_t loc, Builder::Source node_source)
+      : builder (Builder (loc, node_source)), loc (loc)
+    {}
 
     Builder builder;
     location_t loc;
@@ -92,7 +94,8 @@ private:
     constexpr static const char *result_id = "#result";
   };
 
-  std::unique_ptr<Expr> desugar (ForLoopExpr &expr);
+  std::unique_ptr<Expr> desugar (ForLoopExpr &expr,
+				 Builder::Source node_source);
 };
 
 } // namespace AST

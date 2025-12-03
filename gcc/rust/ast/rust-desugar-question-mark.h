@@ -20,6 +20,7 @@
 #define RUST_DESUGAR_QUESTION_MARK
 
 #include "rust-expr.h"
+#include "rust-ast-builder.h"
 
 namespace Rust {
 namespace AST {
@@ -57,12 +58,13 @@ namespace AST {
 class DesugarQuestionMark
 {
 public:
-  static void go (std::unique_ptr<Expr> &ptr);
+  static void go (std::unique_ptr<Expr> &ptr, Builder::Source node_source);
 
 private:
   DesugarQuestionMark ();
 
-  std::unique_ptr<Expr> desugar (ErrorPropagationExpr &);
+  std::unique_ptr<Expr> desugar (ErrorPropagationExpr &,
+				 Builder::Source node_source);
 };
 
 } // namespace AST

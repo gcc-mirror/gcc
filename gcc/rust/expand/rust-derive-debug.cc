@@ -24,8 +24,8 @@
 namespace Rust {
 namespace AST {
 
-DeriveDebug::DeriveDebug (location_t loc)
-  : DeriveVisitor (loc), expanded (nullptr)
+DeriveDebug::DeriveDebug (location_t loc, Builder::Source item_source)
+  : DeriveVisitor (loc, item_source), expanded (nullptr)
 {}
 
 std::unique_ptr<Item>
@@ -54,11 +54,11 @@ DeriveDebug::stub_debug_fn ()
 
   auto self = builder.self_ref_param ();
 
-  auto return_type
-    = ptrify (builder.type_path ({"core", "fmt", "Result"}, true));
+  auto return_type = ptrify (
+    builder.type_path ({builder.get_path_start (), "fmt", "Result"}, true));
 
-  auto mut_fmt_type_inner
-    = ptrify (builder.type_path ({"core", "fmt", "Formatter"}, true));
+  auto mut_fmt_type_inner = ptrify (
+    builder.type_path ({builder.get_path_start (), "fmt", "Formatter"}, true));
 
   auto mut_fmt_type
     = builder.reference_type (std::move (mut_fmt_type_inner), true);
@@ -82,7 +82,8 @@ DeriveDebug::stub_derive_impl (
   auto trait_items = vec (stub_debug_fn ());
 
   auto debug = [this] () {
-    return builder.type_path ({"core", "fmt", "Debug"}, true);
+    return builder.type_path ({builder.get_path_start (), "fmt", "Debug"},
+			      true);
   };
   auto generics = setup_impl_generics (name, type_generics, [&, this] () {
     return builder.trait_bound (debug ());

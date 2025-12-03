@@ -30,7 +30,7 @@ namespace AST {
 class DeriveDefault : DeriveVisitor
 {
 public:
-  DeriveDefault (location_t loc);
+  DeriveDefault (location_t loc, Builder::Source item_source);
 
   std::unique_ptr<Item> go (Item &);
 

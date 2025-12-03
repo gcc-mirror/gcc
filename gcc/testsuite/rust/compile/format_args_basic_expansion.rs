@@ -1,6 +1,5 @@
 #![feature(no_core)]
 #![no_core]
-
 #![feature(rustc_attrs, lang_items)]
 
 #[rustc_builtin_macro]
@@ -11,35 +10,33 @@ macro_rules! format_args {
 #[lang = "sized"]
 trait Sized {}
 
-pub mod core {
-    pub mod fmt {
-        pub struct Formatter;
-        pub struct Result;
+pub mod fmt {
+    pub struct Formatter;
+    pub struct Result;
 
-        pub struct Arguments<'a>;
+    pub struct Arguments<'a>;
 
-        impl<'a> Arguments<'a> {
-            pub fn new_v1(_: &'a [&'static str], _: &'a [ArgumentV1<'a>]) -> Arguments<'a> {
-                Arguments
-            }
+    impl<'a> Arguments<'a> {
+        pub fn new_v1(_: &'a [&'static str], _: &'a [ArgumentV1<'a>]) -> Arguments<'a> {
+            Arguments
         }
+    }
 
-        pub struct ArgumentV1<'a>;
+    pub struct ArgumentV1<'a>;
 
-        impl<'a> ArgumentV1<'a> {
-            pub fn new<'b, T>(_: &'b T, _: fn(&T, &mut Formatter) -> Result) -> ArgumentV1 {
-                ArgumentV1
-            }
+    impl<'a> ArgumentV1<'a> {
+        pub fn new<'b, T>(_: &'b T, _: fn(&T, &mut Formatter) -> Result) -> ArgumentV1 {
+            ArgumentV1
         }
+    }
 
-        pub trait Display {
-            fn fmt(&self, _: &mut Formatter) -> Result;
-        }
+    pub trait Display {
+        fn fmt(&self, _: &mut Formatter) -> Result;
+    }
 
-        impl Display for i32 {
-            fn fmt(&self, _: &mut Formatter) -> Result {
-                Result
-            }
+    impl Display for i32 {
+        fn fmt(&self, _: &mut Formatter) -> Result {
+            Result
         }
     }
 }

@@ -39,10 +39,11 @@ public:
    * which all need to be integrated to the existing AST
    */
   static std::vector<std::unique_ptr<Item>>
-  derive (Item &item, const Attribute &derive, BuiltinMacro to_derive);
+  derive (Item &item, const Attribute &derive, BuiltinMacro to_derive,
+	  Builder::Source item_source);
 
 protected:
-  DeriveVisitor (location_t loc);
+  DeriveVisitor (location_t loc, Builder::Source item_source);
 
   location_t loc;
   Builder builder;

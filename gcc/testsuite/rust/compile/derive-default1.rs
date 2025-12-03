@@ -3,29 +3,37 @@
 #![no_core]
 
 #[derive(Default)]
-struct Foo { _a: i32, _b: i64, _c: u8 }
+struct Foo {
+    _a: i32,
+    _b: i64,
+    _c: u8,
+}
 
 #[lang = "sized"]
 pub trait Sized {}
 
-mod core {
-    mod default {
-        use crate::Sized;
+mod default {
+    use crate::Sized;
 
-        trait Default: Sized {
-            fn default() -> Self;
+    trait Default: Sized {
+        fn default() -> Self;
+    }
+
+    impl Default for i32 {
+        fn default() -> Self {
+            0
         }
+    }
 
-        impl Default for i32 {
-            fn default() -> Self { 0 }
+    impl Default for i64 {
+        fn default() -> Self {
+            27
         }
+    }
 
-        impl Default for i64 {
-            fn default() -> Self { 27 }
-        }
-
-        impl Default for u8 {
-            fn default() -> Self { 18 }
+    impl Default for u8 {
+        fn default() -> Self {
+            18
         }
     }
 }

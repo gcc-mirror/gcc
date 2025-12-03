@@ -25,8 +25,8 @@
 namespace Rust {
 namespace AST {
 
-DeriveDefault::DeriveDefault (location_t loc)
-  : DeriveVisitor (loc), expanded (nullptr)
+DeriveDefault::DeriveDefault (location_t loc, Builder::Source item_source)
+  : DeriveVisitor (loc, item_source), expanded (nullptr)
 {}
 
 std::unique_ptr<Item>
@@ -42,7 +42,9 @@ DeriveDefault::go (Item &item)
 std::unique_ptr<Expr>
 DeriveDefault::default_call (std::unique_ptr<Type> &&type)
 {
-  auto default_trait = builder.type_path ({"core", "default", "Default"}, true);
+  auto default_trait
+    = builder.type_path ({builder.get_path_start (), "default", "Default"},
+			 true);
 
   auto default_fn
     = builder.qualified_path_in_expression (std::move (type), default_trait,
@@ -70,7 +72,8 @@ DeriveDefault::default_impl (
   const std::vector<std::unique_ptr<GenericParam>> &type_generics)
 {
   auto default_path = [this] () {
-    return builder.type_path ({"core", "default", "Default"}, true);
+    return builder.type_path ({builder.get_path_start (), "default", "Default"},
+			      true);
   };
 
   auto trait_items = vec (std::move (default_fn));

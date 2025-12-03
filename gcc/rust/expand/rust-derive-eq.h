@@ -29,7 +29,7 @@ namespace AST {
 class DeriveEq : DeriveVisitor
 {
 public:
-  DeriveEq (location_t loc);
+  DeriveEq (location_t loc, Builder::Source item_source);
 
   std::vector<std::unique_ptr<Item>> go (Item &item);
 

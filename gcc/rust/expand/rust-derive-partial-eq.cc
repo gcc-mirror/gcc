@@ -27,7 +27,9 @@
 
 namespace Rust {
 namespace AST {
-DerivePartialEq::DerivePartialEq (location_t loc) : DeriveVisitor (loc) {}
+DerivePartialEq::DerivePartialEq (location_t loc, Builder::Source item_source)
+  : DeriveVisitor (loc, item_source)
+{}
 
 std::vector<std::unique_ptr<AST::Item>>
 DerivePartialEq::go (Item &item)

@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-desugar-question-mark.h"
-#include "rust-ast-builder.h"
 
 namespace Rust {
 namespace AST {
@@ -25,12 +24,13 @@ namespace AST {
 DesugarQuestionMark::DesugarQuestionMark () {}
 
 void
-DesugarQuestionMark::go (std::unique_ptr<Expr> &ptr)
+DesugarQuestionMark::go (std::unique_ptr<Expr> &ptr,
+			 Builder::Source node_source)
 {
   rust_assert (ptr->get_expr_kind () == Expr::Kind::ErrorPropagation);
 
   auto original = static_cast<ErrorPropagationExpr &> (*ptr);
-  auto desugared = DesugarQuestionMark ().desugar (original);
+  auto desugared = DesugarQuestionMark ().desugar (original, node_source);
 
   ptr = std::move (desugared);
 }
@@ -99,9 +99,10 @@ err_case (Builder &builder)
 }
 
 std::unique_ptr<Expr>
-DesugarQuestionMark::desugar (ErrorPropagationExpr &expr)
+DesugarQuestionMark::desugar (ErrorPropagationExpr &expr,
+			      Builder::Source node_source)
 {
-  auto builder = Builder (expr.get_locus ());
+  auto builder = Builder (expr.get_locus (), node_source);
 
   // Try::into_result(<expr>)
   auto try_into = std::make_unique<PathInExpression> (

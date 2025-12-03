@@ -547,7 +547,8 @@ std::unique_ptr<Stmt>
 Builder::discriminant_value (std::string binding_name, std::string instance)
 {
   auto intrinsic = ptrify (
-    path_in_expression ({"core", "intrinsics", "discriminant_value"}, true));
+    path_in_expression ({get_path_start (), "intrinsics", "discriminant_value"},
+			true));
 
   return let (identifier_pattern (binding_name), nullptr,
 	      call (std::move (intrinsic), identifier (instance)));

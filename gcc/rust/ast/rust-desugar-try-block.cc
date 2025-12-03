@@ -17,7 +17,6 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-desugar-try-block.h"
-#include "rust-ast-builder.h"
 #include "rust-expr.h"
 
 namespace Rust {
@@ -26,20 +25,20 @@ namespace AST {
 DesugarTryBlock::DesugarTryBlock () {}
 
 void
-DesugarTryBlock::go (std::unique_ptr<Expr> &ptr)
+DesugarTryBlock::go (std::unique_ptr<Expr> &ptr, Builder::Source node_source)
 {
   rust_assert (ptr->get_expr_kind () == Expr::Kind::Try);
 
   auto original = static_cast<TryExpr &> (*ptr);
-  auto desugared = DesugarTryBlock ().desugar (original);
+  auto desugared = DesugarTryBlock ().desugar (original, node_source);
 
   ptr = std::move (desugared);
 }
 
 std::unique_ptr<Expr>
-DesugarTryBlock::desugar (TryExpr &expr)
+DesugarTryBlock::desugar (TryExpr &expr, Builder::Source node_source)
 {
-  auto builder = Builder (expr.get_locus ());
+  auto builder = Builder (expr.get_locus (), node_source);
   auto &block = expr.get_block_expr ();
 
   if (block.has_statements ())

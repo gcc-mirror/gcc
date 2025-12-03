@@ -24,7 +24,8 @@
 #include "rust-ast.h"
 #include "rust-item.h"
 #include "rust-operators.h"
-#include <initializer_list>
+#include "options.h"
+#include "rust-system.h"
 
 namespace Rust {
 namespace AST {
@@ -80,7 +81,20 @@ ptrify (T value)
 class Builder
 {
 public:
-  Builder (location_t loc) : loc (loc) {}
+  /**
+   * Are we building AST nodes for paths within `core`, or any other crate? This
+   * affects the leading path segment when constructing canonical paths, and is
+   * especially important when deriving items.
+   */
+  enum class Source
+  {
+    InCore,
+    Any,
+  };
+
+  Builder (location_t loc, Source item_source)
+    : loc (loc), item_source (item_source)
+  {}
 
   /* Create an expression statement from an expression */
   std::unique_ptr<Stmt> statementify (std::unique_ptr<Expr> &&value,
@@ -336,10 +350,30 @@ public:
   /* Location of the generated AST nodes */
   location_t loc;
 
-private:
-  /* Some constexpr helpers for some of the builders */
-  static constexpr std::initializer_list<const char *> discriminant_value_path
-    = {"core", "intrinsics", "discriminant_value"};
+  /* The source in which we are creating AST nodes */
+  Builder::Source item_source;
+
+  static Builder::Source get_item_source (const AST::Crate &crate)
+  {
+    for (const auto &attr : crate.inner_attrs)
+      if (attr.as_string () == "no_core")
+	return Source::InCore;
+
+    return Source::Any;
+  }
+
+  const char *get_path_start () const
+  {
+    switch (item_source)
+      {
+      case Builder::Source::InCore:
+	return "crate";
+      case Builder::Source::Any:
+	return "core";
+      default:
+	rust_unreachable ();
+      }
+  }
 };
 
 } // namespace AST

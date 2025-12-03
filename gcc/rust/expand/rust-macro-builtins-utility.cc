@@ -274,7 +274,7 @@ MacroBuiltin::option_env_handler (location_t invoc_locus,
   parser.skip_token (last_token_id);
 
   auto env_value = getenv (lit_expr->as_string ().c_str ());
-  AST::Builder b (invoc_locus);
+  AST::Builder b (invoc_locus, AST::Builder::Source::Any);
 
   if (env_value == nullptr)
     {

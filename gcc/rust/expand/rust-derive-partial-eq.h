@@ -29,7 +29,7 @@ namespace AST {
 class DerivePartialEq : DeriveVisitor
 {
 public:
-  DerivePartialEq (location_t loc);
+  DerivePartialEq (location_t loc, Builder::Source item_source);
 
   std::vector<std::unique_ptr<Item>> go (Item &item);
 

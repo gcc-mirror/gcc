@@ -47,7 +47,7 @@ MacroBuiltin::assert_handler (location_t invoc_locus,
 
   // don't need to expand macros -- panic! will handle it
 
-  AST::Builder b (invoc_locus);
+  AST::Builder b (invoc_locus, AST::Builder::Source::Any);
 
   std::vector<std::unique_ptr<AST::TokenTree>> panic_tree;
   const_TokenPtr open = Token::make (TokenId::LEFT_PAREN, invoc_locus);

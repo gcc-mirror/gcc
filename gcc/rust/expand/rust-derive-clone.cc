@@ -101,8 +101,8 @@ DeriveClone::clone_impl (
 			     std::move (generics.impl));
 }
 
-DeriveClone::DeriveClone (location_t loc)
-  : DeriveVisitor (loc), expanded (nullptr)
+DeriveClone::DeriveClone (location_t loc, Builder::Source item_source)
+  : DeriveVisitor (loc, item_source), expanded (nullptr)
 {}
 
 std::unique_ptr<AST::Item>

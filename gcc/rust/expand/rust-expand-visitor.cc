@@ -47,11 +47,16 @@ ExpandVisitor::go (AST::Crate &crate)
 
 static std::vector<std::unique_ptr<AST::Item>>
 builtin_derive_item (AST::Item &item, const AST::Attribute &derive,
-		     BuiltinMacro to_derive)
+		     BuiltinMacro to_derive, MacroExpander &expander)
 {
-  auto items = AST::DeriveVisitor::derive (item, derive, to_derive);
+  auto item_source = AST::Builder::get_item_source (expander.crate);
+
+  auto items
+    = AST::DeriveVisitor::derive (item, derive, to_derive, item_source);
+
   for (auto &item : items)
     Analysis::Mappings::get ().add_derived_node (item->get_node_id ());
+
   return items;
 }
 
@@ -198,7 +203,8 @@ ExpandVisitor::expand_inner_items (
 			{
 			  auto new_items
 			    = builtin_derive_item (item, current,
-						   maybe_builtin.value ());
+						   maybe_builtin.value (),
+						   expander);
 
 			  for (auto &&new_item : new_items)
 			    it = items.insert (it, std::move (new_item));
@@ -284,7 +290,8 @@ ExpandVisitor::expand_inner_stmts (AST::BlockExpr &expr)
 			{
 			  auto new_items
 			    = builtin_derive_item (item, current,
-						   maybe_builtin.value ());
+						   maybe_builtin.value (),
+						   expander);
 
 			  // this inserts the derive *before* the item - is it a
 			  // problem?

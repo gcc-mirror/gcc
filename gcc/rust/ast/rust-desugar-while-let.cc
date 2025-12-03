@@ -51,7 +51,7 @@ DesugarWhileLet::DesugarCtx::make_continue_arm (
 }
 
 std::unique_ptr<Expr>
-DesugarWhileLet::desugar (WhileLetLoopExpr &expr)
+DesugarWhileLet::desugar (WhileLetLoopExpr &expr, Builder::Source node_source)
 {
   rust_assert (expr.get_pattern () != nullptr);
 
@@ -59,7 +59,7 @@ DesugarWhileLet::desugar (WhileLetLoopExpr &expr)
   auto body = expr.get_loop_block ().clone_block_expr ();
   auto scrutinee = expr.get_scrutinee_expr ().clone_expr ();
 
-  auto ctx = DesugarCtx (expr.get_locus ());
+  auto ctx = DesugarCtx (expr.get_locus (), node_source);
 
   // _ => break,
   auto break_arm = ctx.make_break_arm ();
@@ -86,7 +86,7 @@ DesugarWhileLet::desugar (WhileLetLoopExpr &expr)
 }
 
 void
-DesugarWhileLet::go (std::unique_ptr<Expr> &ptr)
+DesugarWhileLet::go (std::unique_ptr<Expr> &ptr, Builder::Source node_source)
 {
   rust_assert (ptr->get_expr_kind () == Expr::Kind::Loop);
 
@@ -95,7 +95,7 @@ DesugarWhileLet::go (std::unique_ptr<Expr> &ptr)
   rust_assert (loop.get_loop_kind () == BaseLoopExpr::Kind::WhileLet);
 
   auto &while_let = static_cast<WhileLetLoopExpr &> (loop);
-  auto desugared = DesugarWhileLet ().desugar (while_let);
+  auto desugared = DesugarWhileLet ().desugar (while_let, node_source);
 
   ptr = std::move (desugared);
 }

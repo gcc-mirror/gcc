@@ -17,6 +17,7 @@
 // <http://www.gnu.org/licenses/>.
 
 #include "rust-expression-yeast.h"
+#include "rust-ast-builder.h"
 #include "rust-ast-visitor.h"
 #include "rust-desugar-question-mark.h"
 #include "rust-desugar-try-block.h"
@@ -30,6 +31,8 @@ namespace AST {
 void
 ExpressionYeast::go (AST::Crate &crate)
 {
+  current_crate = crate;
+
   PointerVisitor::visit (crate);
 }
 
@@ -37,14 +40,15 @@ void
 ExpressionYeast::dispatch_loops (std::unique_ptr<Expr> &loop_expr)
 {
   auto &loop = static_cast<BaseLoopExpr &> (*loop_expr.get ());
+  auto node_source = Builder::get_item_source (current_crate.value ());
 
   switch (loop.get_loop_kind ())
     {
     case BaseLoopExpr::Kind::For:
-      DesugarForLoops::go (loop_expr);
+      DesugarForLoops::go (loop_expr, node_source);
       break;
     case BaseLoopExpr::Kind::WhileLet:
-      DesugarWhileLet::go (loop_expr);
+      DesugarWhileLet::go (loop_expr, node_source);
       break;
     default:
       break;
@@ -54,13 +58,15 @@ ExpressionYeast::dispatch_loops (std::unique_ptr<Expr> &loop_expr)
 void
 ExpressionYeast::reseat (std::unique_ptr<Expr> &expr)
 {
+  auto node_source = Builder::get_item_source (current_crate.value ());
+
   switch (expr->get_expr_kind ())
     {
     case Expr::Kind::ErrorPropagation:
-      DesugarQuestionMark::go (expr);
+      DesugarQuestionMark::go (expr, node_source);
       break;
     case Expr::Kind::Try:
-      DesugarTryBlock::go (expr);
+      DesugarTryBlock::go (expr, node_source);
       break;
     case Expr::Kind::Loop:
       dispatch_loops (expr);

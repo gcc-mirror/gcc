@@ -30,13 +30,13 @@
 namespace Rust {
 namespace AST {
 
-DeriveVisitor::DeriveVisitor (location_t loc)
-  : loc (loc), builder (Builder (loc))
+DeriveVisitor::DeriveVisitor (location_t loc, Builder::Source item_source)
+  : loc (loc), builder (Builder (loc, item_source))
 {}
 
 std::vector<std::unique_ptr<Item>>
 DeriveVisitor::derive (Item &item, const Attribute &attr,
-		       BuiltinMacro to_derive)
+		       BuiltinMacro to_derive, Builder::Source item_source)
 {
   auto loc = attr.get_locus ();
 
@@ -53,27 +53,29 @@ DeriveVisitor::derive (Item &item, const Attribute &attr,
   switch (to_derive)
     {
     case BuiltinMacro::Clone:
-      return vec (DeriveClone (loc).go (item));
+      return vec (DeriveClone (loc, item_source).go (item));
     case BuiltinMacro::Copy:
-      return vec (DeriveCopy (loc).go (item));
+      return vec (DeriveCopy (loc, item_source).go (item));
     case BuiltinMacro::Debug:
       rust_warning_at (
 	loc, 0,
 	"derive(Debug) is not fully implemented yet and has no effect - only a "
 	"stub implementation will be generated");
-      return vec (DeriveDebug (loc).go (item));
+      return vec (DeriveDebug (loc, item_source).go (item));
     case BuiltinMacro::Default:
-      return vec (DeriveDefault (loc).go (item));
+      return vec (DeriveDefault (loc, item_source).go (item));
     case BuiltinMacro::Eq:
-      return DeriveEq (loc).go (item);
+      return DeriveEq (loc, item_source).go (item);
     case BuiltinMacro::PartialEq:
-      return DerivePartialEq (loc).go (item);
+      return DerivePartialEq (loc, item_source).go (item);
     case BuiltinMacro::Hash:
-      return vec (DeriveHash (loc).go (item));
+      return vec (DeriveHash (loc, item_source).go (item));
     case BuiltinMacro::Ord:
-      return vec (DeriveOrd (DeriveOrd::Ordering::Total, loc).go (item));
+      return vec (
+	DeriveOrd (DeriveOrd::Ordering::Total, loc, item_source).go (item));
     case BuiltinMacro::PartialOrd:
-      return vec (DeriveOrd (DeriveOrd::Ordering::Partial, loc).go (item));
+      return vec (
+	DeriveOrd (DeriveOrd::Ordering::Partial, loc, item_source).go (item));
     case BuiltinMacro::RustcEncodable:
     case BuiltinMacro::RustcDecodable:
       rust_sorry_at (loc, "derive(%s) is not yet implemented",

@@ -69,9 +69,9 @@ DesugarForLoops::DesugarCtx::make_continue_arm ()
 }
 
 std::unique_ptr<Expr>
-DesugarForLoops::desugar (ForLoopExpr &expr)
+DesugarForLoops::desugar (ForLoopExpr &expr, Builder::Source node_source)
 {
-  auto ctx = DesugarCtx (expr.get_locus ());
+  auto ctx = DesugarCtx (expr.get_locus (), node_source);
 
   auto into_iter = std::make_unique<PathInExpression> (
     ctx.builder.path_in_expression (LangItem::Kind::INTOITER_INTOITER));
@@ -141,7 +141,7 @@ DesugarForLoops::desugar (ForLoopExpr &expr)
 }
 
 void
-DesugarForLoops::go (std::unique_ptr<Expr> &ptr)
+DesugarForLoops::go (std::unique_ptr<Expr> &ptr, Builder::Source node_source)
 {
   rust_assert (ptr->get_expr_kind () == Expr::Kind::Loop);
 
@@ -150,7 +150,7 @@ DesugarForLoops::go (std::unique_ptr<Expr> &ptr)
   rust_assert (loop.get_loop_kind () == BaseLoopExpr::Kind::For);
 
   auto &for_loop = static_cast<ForLoopExpr &> (loop);
-  auto desugared = DesugarForLoops ().desugar (for_loop);
+  auto desugared = DesugarForLoops ().desugar (for_loop, node_source);
 
   ptr = std::move (desugared);
 }
