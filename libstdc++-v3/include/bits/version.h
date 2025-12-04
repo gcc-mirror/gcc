@@ -985,9 +985,9 @@
 
 #if !defined(__cpp_lib_concepts)
 # if (__cplusplus >= 202002L) && (__cpp_concepts >= 201907L)
-#  define __glibcxx_concepts 202002L
+#  define __glibcxx_concepts 202207L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_concepts)
-#   define __cpp_lib_concepts 202002L
+#   define __cpp_lib_concepts 202207L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_concepts) */

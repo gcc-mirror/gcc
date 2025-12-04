@@ -296,6 +296,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { { !static_cast<_Tp&&>(__t) } -> __boolean_testable_impl; };
   } // namespace __detail
 
+  // [concept.comparisoncommontype], helpers for comparison common types
+  namespace __detail
+  {
+    template<typename _Tp, typename _Up,
+	     typename _Cref = common_reference_t<const _Tp&, const _Up&>>
+      concept __comparison_common_type_with_impl
+	= same_as<common_reference_t<const _Tp&, const _Up&>,
+		  common_reference_t<const _Up&, const _Tp&>>
+	    && requires {
+	      requires convertible_to<const _Tp&, const _Cref&>
+		|| convertible_to<_Tp, const _Cref&>;
+	      requires convertible_to<const _Up&, const _Cref&>
+		|| convertible_to<_Up, const _Cref&>;
+	    };
+
+    template<typename _Tp, typename _Up>
+      concept __comparison_common_type_with
+	= __comparison_common_type_with_impl<remove_cvref_t<_Tp>,
+					     remove_cvref_t<_Up>>;
+  } // namespace __detail
+
   // [concept.equalitycomparable], concept equality_comparable
 
   namespace __detail
@@ -316,7 +337,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Tp, typename _Up>
     concept equality_comparable_with
       = equality_comparable<_Tp> && equality_comparable<_Up>
-      && common_reference_with<__detail::__cref<_Tp>, __detail::__cref<_Up>>
+      && __detail::__comparison_common_type_with<_Tp, _Up>
       && equality_comparable<common_reference_t<__detail::__cref<_Tp>,
 						__detail::__cref<_Up>>>
       && __detail::__weakly_eq_cmp_with<_Tp, _Up>;

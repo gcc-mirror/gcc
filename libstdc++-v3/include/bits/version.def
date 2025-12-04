@@ -879,8 +879,12 @@ ftms = {
 
 ftms = {
   name = concepts;
+  // 201806 P0898R3 Standard Library Concepts
+  // 201907 P1754R1 Rename concepts to standard_case for C++20
+  // 202002 P1964R2 Wording for boolean-testable
+  // 202207 P2404R3 Move-only types for equality_comparable_with, etc.
   values = {
-    v = 202002;
+    v = 202207;
     cxxmin = 20;
     extra_cond = "__cpp_concepts >= 201907L";
   };

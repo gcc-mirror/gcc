@@ -34,6 +34,7 @@
 #pragma GCC system_header
 #endif
 
+#define __glibcxx_want_concepts
 #define __glibcxx_want_three_way_comparison
 #define __glibcxx_want_type_order
 #include <bits/version.h>
@@ -499,10 +500,8 @@ namespace std _GLIBCXX_VISIBILITY(default)
 
   template<typename _Tp, typename _Up, typename _Cat = partial_ordering>
     concept three_way_comparable_with
-      = three_way_comparable<_Tp, _Cat>
-      && three_way_comparable<_Up, _Cat>
-      && common_reference_with<const remove_reference_t<_Tp>&,
-			       const remove_reference_t<_Up>&>
+      = three_way_comparable<_Tp, _Cat> && three_way_comparable<_Up, _Cat>
+      && __detail::__comparison_common_type_with<_Tp, _Up>
       && three_way_comparable<
 	  common_reference_t<const remove_reference_t<_Tp>&,
 			     const remove_reference_t<_Up>&>, _Cat>
