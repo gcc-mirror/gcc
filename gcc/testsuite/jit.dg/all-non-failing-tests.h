@@ -145,8 +145,8 @@
 #undef create_code
 #undef verify_code
 
-/* test-cold-attribute.c: This can't be in the testcases array as it needs
-   the `-O2` flag.  */
+/* test-cold-attribute.c: This can't be in the testcases array as it needs a
+   specific optimization flag.  */
 
 /* test-constants.c */
 #define create_code create_code_constants

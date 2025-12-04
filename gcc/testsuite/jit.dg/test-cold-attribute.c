@@ -8,8 +8,8 @@
 #define TEST_ESCHEWS_SET_OPTIONS
 static void set_options (gcc_jit_context *ctxt, const char *argv0)
 {
-  // Set "-O2".
-  gcc_jit_context_set_int_option(ctxt, GCC_JIT_INT_OPTION_OPTIMIZATION_LEVEL, 2);
+  // Set "-Oz".
+  gcc_jit_context_add_command_line_option (ctxt, "-Oz");
 }
 
 #define TEST_COMPILING_TO_FILE
