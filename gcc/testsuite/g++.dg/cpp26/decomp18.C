@@ -1,6 +1,8 @@
 // P1061R10 - Structured Bindings can introduce a Pack
 // { dg-do run { target c++11 } }
 // { dg-options "" }
+// { dg-add-options tls }
+// { dg-require-effective-target tls_runtime }
 
 struct S { int a, b, c; };
 namespace std {
