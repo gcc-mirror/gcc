@@ -16,7 +16,7 @@
 // along with GCC; see the file COPYING3.  If not see
 // <http://www.gnu.org/licenses/>.
 
-#include "rust-parse-impl.h"
+#include "rust-parse-impl.hxx"
 #include "rust-macro-invoc-lexer.h"
 
 namespace Rust {
