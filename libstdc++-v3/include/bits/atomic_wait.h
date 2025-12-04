@@ -118,7 +118,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __atomic_eq(const _Tp& __a, const _Tp& __b)
       {
 	// TODO make this do the correct padding bit ignoring comparison
-	return __builtin_memcmp(&__a, &__b, sizeof(_Tp)) == 0;
+	return __builtin_memcmp(std::addressof(__a), std::addressof(__b),
+				sizeof(_Tp)) == 0;
       }
 
     // Storage for up to 64 bits of value, should be considered opaque bits.
