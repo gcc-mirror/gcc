@@ -2370,6 +2370,7 @@ private:
     DB_REF_PURVIEW_BIT,		/* Refers to a purview TU-local entity.  */
     DB_EXPOSE_GLOBAL_BIT,	/* Exposes a GMF TU-local entity.  */
     DB_EXPOSE_PURVIEW_BIT,	/* Exposes a purview TU-local entity.  */
+    DB_IGNORED_EXPOSURE_BIT,	/* Only seen where exposures are ignored.  */
     DB_IMPORTED_BIT,		/* An imported entity.  */
     DB_UNREACHED_BIT,		/* A yet-to-be reached entity.  */
     DB_MAYBE_RECURSIVE_BIT,	/* An entity maybe in a recursive cluster.  */
@@ -2490,6 +2491,10 @@ public:
   {
     return (get_flag_bit<DB_EXPOSE_PURVIEW_BIT> ()
 	    || (strict && get_flag_bit <DB_EXPOSE_GLOBAL_BIT> ()));
+  }
+  bool is_ignored_exposure_context () const
+  {
+    return get_flag_bit<DB_IGNORED_EXPOSURE_BIT> ();
   }
 
 public:
@@ -2625,7 +2630,9 @@ public:
     unsigned section;	     /* When writing out, the section.  */
     bool reached_unreached;  /* We reached an unreached entity.  */
     bool writing_merge_key;  /* We're writing merge key information.  */
-    bool ignore_tu_local;    /* In a context where referencing a TU-local
+
+  private:
+    bool ignore_exposure;    /* In a context where referencing a TU-local
 				entity is not an exposure.  */
 
   private:
@@ -2646,7 +2653,7 @@ public:
     hash (size_t size, hash *c = NULL)
       : parent (size), chain (c), current (NULL), section (0),
 	reached_unreached (false), writing_merge_key (false),
-	ignore_tu_local (false)
+	ignore_exposure (false)
     {
       worklist.create (size);
       dep_adl_entity_list.create (16);
@@ -2661,6 +2668,15 @@ public:
     bool is_key_order () const
     {
       return chain != NULL;
+    }
+
+  public:
+    /* Returns a temporary override that will additionally consider this
+       to be a context where exposures of TU-local entities are ignored
+       if COND is true.  */
+    temp_override<bool> ignore_exposure_if (bool cond)
+    {
+      return make_temp_override (ignore_exposure, ignore_exposure || cond);
     }
 
   private:
@@ -8519,20 +8535,30 @@ trees_out::decl_value (tree decl, depset *dep)
 
   if (DECL_LANG_SPECIFIC (inner)
       && DECL_MODULE_KEYED_DECLS_P (inner)
-      && !is_key_order ())
+      && streaming_p ())
     {
-      /* Stream the keyed entities.  */
+      /* Stream the keyed entities.  There may be keyed entities that we
+	 choose not to stream, such as a lambda in a non-inline variable's
+	 initializer, so don't build dependencies for them here; any deps
+	 we need should be acquired during write_definition (possibly
+	 indirectly).  */
       auto *attach_vec = keyed_table->get (inner);
       unsigned num = attach_vec->length ();
-      if (streaming_p ())
-	u (num);
+      u (num);
       for (unsigned ix = 0; ix != num; ix++)
 	{
 	  tree attached = (*attach_vec)[ix];
+	  if (attached)
+	    {
+	      tree ti = TYPE_TEMPLATE_INFO (TREE_TYPE (attached));
+	      if (!dep_hash->find_dependency (attached)
+		  && !(ti && dep_hash->find_dependency (TI_TEMPLATE (ti))))
+		attached = NULL_TREE;
+	    }
+
 	  tree_node (attached);
-	  if (streaming_p ())
-	    dump (dumper::MERGE)
-	      && dump ("Written %d[%u] attached decl %N", tag, ix, attached);
+	  dump (dumper::MERGE)
+	    && dump ("Written %d[%u] attached decl %N", tag, ix, attached);
 	}
     }
 
@@ -8844,7 +8870,17 @@ trees_in::decl_value ()
 	  if (is_new)
 	    set.quick_push (attached);
 	  else if (set[ix] != attached)
-	    set_overrun ();
+	    {
+	      if (!set[ix] || !attached)
+		/* One import left a hole for a lambda dep we chose not
+		   to stream, but another import chose to stream that lambda.
+		   Let's not error here: hopefully we'll complain later in
+		   is_matching_decl about whatever caused us to make a
+		   different decision.  */
+		;
+	      else
+		set_overrun ();
+	    }
 	}
     }
 
@@ -12948,8 +12984,7 @@ trees_out::write_function_def (tree decl)
        is ignored for determining exposures.  This should only matter
        for templates (we don't emit the bodies of non-inline functions
        to begin with).  */
-    auto ovr = make_temp_override (dep_hash->ignore_tu_local,
-				   !DECL_DECLARED_INLINE_P (decl));
+    auto ovr = dep_hash->ignore_exposure_if (!DECL_DECLARED_INLINE_P (decl));
     tree_node (DECL_INITIAL (decl));
     tree_node (DECL_SAVED_TREE (decl));
   }
@@ -13087,8 +13122,8 @@ trees_out::write_var_def (tree decl)
 {
   /* The initializer of a non-inline variable or variable template is
      ignored for determining exposures.  */
-  auto ovr = make_temp_override (dep_hash->ignore_tu_local,
-				 VAR_P (decl) && !DECL_INLINE_VAR_P (decl));
+  auto ovr = dep_hash->ignore_exposure_if (VAR_P (decl)
+					   && !DECL_INLINE_VAR_P (decl));
 
   tree init = DECL_INITIAL (decl);
   tree_node (init);
@@ -13287,7 +13322,7 @@ trees_out::write_class_def (tree defn)
       {
 	/* Friend declarations in class definitions are ignored when
 	   determining exposures.  */
-	auto ovr = make_temp_override (dep_hash->ignore_tu_local, true);
+	auto ovr = dep_hash->ignore_exposure_if (true);
 
 	/* Write the friend classes.  */
 	tree_list (CLASSTYPE_FRIEND_CLASSES (type), false);
@@ -14446,6 +14481,9 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
 	  gcc_checking_assert ((*eslot)->get_entity_kind () == EK_REDIRECT
 			       && !(*eslot)->deps.length ());
 
+      if (ignore_exposure)
+	dep->set_flag_bit<DB_IGNORED_EXPOSURE_BIT> ();
+
       if (ek != EK_USING)
 	{
 	  tree not_tmpl = STRIP_TEMPLATE (decl);
@@ -14569,6 +14607,8 @@ depset::hash::make_dependency (tree decl, entity_kind ek)
       if (!dep->is_import ())
 	worklist.safe_push (dep);
     }
+  else if (!ignore_exposure)
+    dep->clear_flag_bit<DB_IGNORED_EXPOSURE_BIT> ();
 
   dump (dumper::DEPEND)
     && dump ("%s on %s %C:%N found",
@@ -14627,7 +14667,7 @@ depset::hash::add_dependency (depset *dep)
       else
 	current->set_flag_bit<DB_REF_GLOBAL_BIT> ();
 
-      if (!ignore_tu_local && !is_exposure_of_member_type (current, dep))
+      if (!ignore_exposure && !is_exposure_of_member_type (current, dep))
 	{
 	  if (dep->is_tu_local ())
 	    current->set_flag_bit<DB_EXPOSE_PURVIEW_BIT> ();
@@ -15428,6 +15468,8 @@ depset::hash::find_dependencies (module_state *module)
 		      add_namespace_context (item, ns);
 		    }
 
+		  auto ovr = make_temp_override
+		    (ignore_exposure, item->is_ignored_exposure_context ());
 		  walker.decl_value (decl, current);
 		  if (current->has_defn ())
 		    walker.write_definition (decl, current->refs_tu_local ());

@@ -66,8 +66,9 @@ V* expose_v;  // { dg-error "exposes TU-local entity" }
 static auto internal_lambda = []{ internal_f(); };  // OK
 auto expose_lambda = internal_lambda;  // { dg-error "exposes TU-local entity" }
 
+// This is OK because we ignore exposures in an initializer.
 int not_in_tu_local
-  = ([]{ internal_f(); }(),  // { dg-error "exposes TU-local entity" }
+  = ([]{ internal_f(); }(),  // { dg-bogus "exposes TU-local entity" }
      0);
 
 

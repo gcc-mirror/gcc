@@ -4,11 +4,22 @@
 
 module;
 
-static inline int x  // { dg-error "TU-local" }
-		     // { dg-message "exposed elsewhere" "" { target *-*-* } .-1 }
-  = []{ return 1; }();  // { dg-message "internal" }
+namespace {
+  struct InternalX {};  // { dg-message "internal" }
+  // Only used by '::y', so should be discarded and not complain
+  struct InternalY {};  // { dg-bogus "" }
+}
 
-static inline int y = []{ return 2; }();  // { dg-bogus "" }
+static inline int x() { // { dg-error "TU-local" }
+		        // { dg-message "exposed elsewhere" "" { target *-*-* } .-1 }
+  InternalX x;
+  return 1;
+}
+
+static inline int y() {  // { dg-bogus "" }
+  InternalY y;
+  return 2;
+}
 
 namespace {
   struct S {};
@@ -38,7 +49,7 @@ void test_usage() {
 }
 
 inline void expose() {  // { dg-warning "exposes TU-local" }
-  int result = x;
+  int result = x();
 }
 
 // Internal linkage types always hard error
