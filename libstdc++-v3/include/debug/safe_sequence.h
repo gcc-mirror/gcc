@@ -136,14 +136,11 @@ namespace __gnu_debug
     : public _Safe_sequence<_Sequence>
     {
     public:
-      _GLIBCXX20_CONSTEXPR _Safe_node_sequence&
-      operator=(const _Safe_node_sequence&) _GLIBCXX_NOEXCEPT
-      {
-	_M_invalidate_all();
-	return *this;
-      }
-
 #if __cplusplus >= 201103L
+    _Safe_node_sequence() = default;
+    _Safe_node_sequence(_Safe_node_sequence&&) = default;
+    _Safe_node_sequence(_Safe_node_sequence const&) = default;
+
     _GLIBCXX20_CONSTEXPR _Safe_node_sequence&
     operator=(_Safe_node_sequence&& __x) noexcept
     {
@@ -152,6 +149,13 @@ namespace __gnu_debug
       return *this;
     }
 #endif
+
+    _GLIBCXX20_CONSTEXPR _Safe_node_sequence&
+    operator=(const _Safe_node_sequence&) _GLIBCXX_NOEXCEPT
+    {
+      _M_invalidate_all();
+      return *this;
+    }
 
     protected:
       _GLIBCXX20_CONSTEXPR void
