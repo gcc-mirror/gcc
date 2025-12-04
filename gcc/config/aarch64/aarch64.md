@@ -4740,7 +4740,7 @@
    ;; data
    (match_operand:ALLI 2 "register_operand" "r")
    ;; polynomial without leading 1
-   (match_operand:ALLX 3)]
+   (match_operand:ALLX 3 "const_int_operand")]
   ""
   {
     /* If the polynomial is the same as the polynomial of crc32c* instruction,
@@ -4779,7 +4779,7 @@
    ;; data
    (match_operand:ALLI 2 "register_operand" "r")
    ;; polynomial without leading 1
-   (match_operand:ALLX 3)]
+   (match_operand:ALLX 3 "const_int_operand")]
   "TARGET_AES && <ALLI:sizen> <= <ALLX:sizen>"
   {
     aarch64_expand_crc_using_pmull (<ALLX:MODE>mode, <ALLI:MODE>mode,
