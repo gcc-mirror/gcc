@@ -285,6 +285,9 @@ def check_GNU_style_file(file, format):
         # Skip testsuite files
         if 'testsuite' in t or t.endswith('.py'):
             continue
+        # Libstdc++ does not use GNU style
+        if t.startswith('libstdc++-v3/'):
+            continue
 
         for hunk in pfile:
             delta = 0
