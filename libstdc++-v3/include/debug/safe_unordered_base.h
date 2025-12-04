@@ -162,6 +162,12 @@ namespace __gnu_debug
     : _Safe_unordered_container_base()
     { this->_M_swap(__x); }
 
+    _Safe_unordered_container_base&
+    operator=(_Safe_unordered_container_base const&) = default;
+    
+    _Safe_unordered_container_base&
+    operator=(_Safe_unordered_container_base&&) = default;
+
     /** Notify all iterators that reference this container that the
 	container is being destroyed. */
     ~_Safe_unordered_container_base() noexcept
