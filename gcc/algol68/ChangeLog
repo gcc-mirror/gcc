@@ -1,3 +1,61 @@
+2025-12-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR algol68/122954
+	* a68-types.h (NO_A68_REF): Delete.
+	(NO_ARRAY): Likewise.
+	(NO_BOOK): Likewise.
+	(NO_BOOL): Likewise.
+	(NO_BYTE): Likewise.
+	(NO_CONSTANT): Likewise.
+	(NO_DEC): Likewise.
+	(NO_EDLIN): Likewise.
+	(NO_FILE): Likewise.
+	(NO_FORMAT): Likewise.
+	(NO_GPROC): Likewise.
+	(NO_HANDLE): Likewise.
+	(NO_INT): Likewise.
+	(NO_JMP_BUF): Likewise.
+	(NO_SCOPE): Moved to a68-parser-scope.cc.
+	(NO_TUPLE): Likewise.
+	(TUPLE): Likewise.
+	(NO_GINFO): Converted from macro to contexpr.
+	(NO_KEYWORD): Likewise.
+	(NO_NINFO): Likewise.
+	(NO_PACK): Likewise.
+	(NO_SOID): Likewise.
+	(NO_TOKEN): Likewise.
+	(NO_NOTE): Likewise.
+	(MODES_T): Turned from typedef to forward declaration.
+	(NODE_T): Likewise.
+	(MODE_CACHE_T): Likewise.
+	(MOID_T): Likewise.
+	(GINFO_T): Likewise.
+	(KEYWORD_T): Likewise.
+	(LINE_T): Likewise.
+	(NODE_INFO_T): Likewise.
+	(PACK_T): Likewise.
+	(SOID_T): Likewise.
+	(TABLE_T): Likewise.
+	(TAG_T): Likewise.
+	(TOKEN_T): Likewise.
+	(ORIGIN_T): Likewise.
+	(POSTULATE_T): Likewise.
+	(OPTIONS_T): Likewise.
+	(PARSER_T): Likewise.
+	(MODULE_T): Likewise.
+	(EXTRACT_T): Likewise.
+	(MOIF_T): Likewise.
+	(A68_T): Likewise.
+	* a68-parser-scope.cc (NO_TUPLE): Moved from a68-types.h
+	(NO_SCOPE): Likewise.
+	(TUPLE): Likewise.
+
+2025-12-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR algol68/122966
+	* a68-low-clauses.cc (a68_lower_collateral_clause): Remove
+	self-assignment.
+
 2025-12-02  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR algol68/122954

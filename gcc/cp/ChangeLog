@@ -1,3 +1,8 @@
+2025-12-03  Jason Merrill  <jason@redhat.com>
+
+	* pt.cc (dependent_implict_conv_p): Rename to...
+	(dependent_implicit_conv_p): ...this.
+
 2025-12-02  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/122860

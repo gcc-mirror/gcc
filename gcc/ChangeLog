@@ -1,3 +1,87 @@
+2025-12-03  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/85072
+	* lra-assigns.cc (init_live_reload_and_inheritance_pseudos):
+	Improve calculation of live_reload_and_inheritance_pseudos and set
+	a constraint to do this.
+	* params.opt
+	(lra-max-pseudos-points-log2-considered-for-preferences): New.
+	* doc/invoke.texi
+	(lra-max-pseudos-points-log2-considered-for-preferences): Document
+	it.
+
+2025-12-03  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR tree-optimization/122934
+	* tree-ssa-loop-niter.cc (simplify_using_initial_conditions): Use
+	singleton_p predicate even with boolean ranges.
+
+2025-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122943
+	* tree-switch-conversion.cc (switch_conversion::build_arrays):
+	Always gimplify subtraction in utype without cast to tidxtype
+	and set m_arr_ref_first to the last stmt of that.  Remove unneeded
+	update_stmt call.  If tidxtype is not utype, append after that stmt
+	cast to tidxtype and set tidx to the lhs of that cast.
+
+2025-12-03  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/122898
+	* gimple-range-fold.cc (fur_source::register_relation): Return a bool;
+	(fur_depend::register_relation): Ditto.
+	(fur_relation::register_relation): Ditto.
+	* gimple-range-fold.h (fur_source::register_relation): Adjust prototype.
+	(fur_depend::register_relation): Ditto.
+	* gimple-range-path.cc (jt_fur_source::register_relation): Return bool.
+	* value-relation.cc (equiv_oracle::add_partial_equiv): Return a bool.
+	(equiv_oracle::record): Return a bool.
+	(relation_oracle::record): Return a bool.
+	(dom_oracle::record): Return a bool.
+	(dom_oracle::set_one_relation): Remove some debug output.
+	(path_oracle::equiv_set): Return a bool.
+	(path_oracle::register_equiv): Return a bool.
+	(path_oracle::record): Return a bool.
+	* value-relation.h (relation_oracle::record): Adjust prototype.
+	(equiv_oracle::add_partial_equiv): Ditto
+	(equiv_oracle::record): Ditto.
+	(dom_oracle::record): Ditto.
+	(path_oracle::equiv_set): Ditto.
+	(path_oracle::register_equiv): Ditto.
+	(path_oracle::record): Ditto.
+
+2025-12-03  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR algol68/122964
+	* dwarf2out.cc (gen_compile_unit_die): Set LVERSION to 1978 for
+	Algol 68 and add dwarf_version >= 5 to guard.
+
+2025-12-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122969
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer): handle
+	non-ssa name IV var args.
+
+2025-12-03  Mathias Krause  <minipli@grsecurity.net>
+
+	* config/i386/i386.cc (x86_print_call_or_nop): Fix 16-bit NOP
+	generation.
+
+2025-12-03  Tamar Christina  <tamar.christina@arm.com>
+
+	PR middle-end/122959
+	* tree-vect-loop-manip.cc (vect_do_peeling): Delay setting update_e.
+
+2025-12-03  liuhongt  <hongtao.liu@intel.com>
+
+	PR target/71921
+	* config/i386/predicates.md (ieee_maxmin_comparison_operator):
+	New predicator.
+	* config/i386/sse.md (*minmax<mode>3_3): New define_insn_and_split.
+	(*minmax<mode>3_4): Ditto.
+	(*minmax<mode>3_1): Extend operands[2]/operands[4] to handle
+	immediate_operand.
+
 2025-12-02  John David Anglin  <danglin@gcc.gnu.org>
 
 	PR target/122874

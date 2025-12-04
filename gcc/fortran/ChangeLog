@@ -1,3 +1,21 @@
+2025-12-03  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103371
+	* decl.cc (gfc_get_pdt_instance): Remove the requirement that
+	PDT components be of the same type as the enclosing type. Apply
+	initializers other than the default to PDT components.
+	* primary.cc (gfc_match_rvalue): Make combination of the two
+	actual_arglists conditional on 'type_spec_list' having been
+	seen as well together with applying component names to all the
+	arguments.
+	* trans-decl.cc (gfc_init_default_dt): Add 'pdt_ok' to the args
+	and use it to signal that a PDT can be default initialized.
+	(gfc_init_default_pdt): New function to check that a pdt is OK
+	for default intialization before calling gfc_init_default_dt.
+	(gfc_trans_deferred_vars): Use gfc_init_default_pdt.
+	* trans.h: Add bool 'pdt_ok' to prototype with defaul value of
+	false.
+
 2025-12-01  Christopher Albert  <albert@tugraz.at>
 	    Harald Anlauf  <anlauf@gcc.gnu.org>
 

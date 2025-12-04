@@ -1,3 +1,8 @@
+2025-12-03  Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/lib/libgomp.exp (libgomp_target_compile): Don't use
+	additional sources if there are no primary sources.
+
 2025-12-01  Andrew Stubbs  <ams@baylibre.com>
 
 	* libgomp.texi (AMD GCN): Mention HSA_XNACK is set automatically.

@@ -1,3 +1,100 @@
+2025-12-03  Vladimir Bespalov  <vlad.bespalov@jetstreamsoft.com>
+
+	PR libstdc++/122812
+	* python/libstdcxx/v6/printers.py (lookup_templ_spec): Use
+	gdb.Type.tag if present.
+
+2025-12-03  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/basic_string.h: Add subview.
+	* include/bits/cow_string.h: Add subview.
+	* include/std/string: Add FTM.
+	* testsuite/21_strings/basic_string/operations/subview/char.cc: New test.
+	* testsuite/21_strings/basic_string/operations/subview/wchar_t.cc: New test.
+
+2025-12-03  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/version.def: Add string_subview FTM.
+	* include/bits/version.h: Regenerate.
+	* include/std/string_view: Add subview.
+	* testsuite/21_strings/basic_string_view/operations/subview/char.cc: New test.
+	* testsuite/21_strings/basic_string_view/operations/subview/wchar_t.cc: New test.
+
+2025-12-03  François Dumont  <frs.dumont@gmail.com>
+
+	* include/Makefile.am (debug_headers): Add inplace_vector.
+	* include/Makefile.in: Regenerate.
+	* include/debug/functions.h (__check_valid_range): Add C++20 constexpr.
+	* include/debug/helper_functions.h (__valid_range): Likewise.
+	* include/debug/inplace_vector: New.
+	* include/debug/safe_base.h (~_Safe_sequence_base()): Add C++11 noexcept.
+	(_Safe_sequence_base::operator=(const _Safe_sequence_base&)): New.
+	(_Safe_sequence_base::operator=(_Safe_sequence_base&&)): New.
+	(_Safe_sequence_base::_M_invalidate_all): Add C++20 constexpr.
+	* include/debug/safe_container.h
+	(_Safe_container<>::operator=(const _Safe_container<>&)): Implement using
+	_Safe_sequence_base same operator.
+	* include/debug/safe_iterator.h (__valid_range): Add C++20 constexpr.
+	* include/debug/safe_sequence.h
+	(_Not_equal_to(const _Type&)): Add C++20 constexpr.
+	(_Equal_to(const _Type&)): Add C++20 constexpr.
+	(_After_nth_from(const difference_type&, const _Iterator&)): Add C++20 constexpr.
+	(_Safe_sequence<>::_M_invalidate_if): Add C++20 constexpr.
+	(_Safe_node_sequence::operator=(const _Safe_node_sequence&)): New.
+	(_Safe_node_sequence::operator=(_Safe_node_sequence&&)): New.
+	(_Safe_node_sequence<>::_M_invalidate_all()): Add C++20 constexpr.
+	* include/debug/safe_sequence.tcc
+	(_Safe_sequence<>::_M_invalidate_if): Add C++20 constexpr.
+	* include/std/inplace_vector [_GLIBCXX_DEBUG](std::inplace_vector<>): Move
+	implementation into __cxx1998 namespace.
+	(erase, erase_if): Limit to non-debug inplace_vector<>, cleanup code.
+	[_GLIBCXX_DEBUG]: Add include <debug/inplace_vector>.
+	* testsuite/23_containers/inplace_vector/cons/1.cc: Adapt, skip several
+	is_trivially_xxx checks when in _GLIBCXX_DEBUG mode.
+	* testsuite/23_containers/inplace_vector/copy.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/move.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/debug/assign1_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/assign2_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/assign3_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/assign4_backtrace_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/assign4_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/construct1_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/construct2_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/construct3_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/construct4_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/debug_functions.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/erase.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/insert1_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/insert2_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/insert3_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/insert4_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/insert5_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/insert7_neg.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/1.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/2.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/3.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/4.cc: New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/append_range.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/erase.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/pop_back.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/push_back.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/swap.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/try_append_range.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/try_emplace_back.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/try_push_back.cc:
+	New test case.
+	* testsuite/23_containers/inplace_vector/debug/invalidation/unchecked_emplace_back.cc:
+	New test case.
+	* testsuite/util/debug/checks.h: Avoid using _GLIBCXX_DEBUG containers in test
+	implementations.
+
 2025-12-02  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	PR libstdc++/110352
