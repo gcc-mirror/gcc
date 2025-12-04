@@ -231,6 +231,13 @@
 #ifndef __ARM_FEATURE_SME2p2
 #error Foo
 #endif
+#pragma GCC target "+nothing+sve2+sme-mop4"
+#ifndef __ARM_FEATURE_SME_MOP4
+#error "__ARM_FEATURE_SME_MOP4 not defined"
+#endif
+#ifndef __ARM_FEATURE_SME2
+#error "__ARM_FEATURE_SME2 not defined"
+#endif
 
 #pragma GCC target "branch-protection=standard"
 #ifndef __ARM_FEATURE_BTI_DEFAULT

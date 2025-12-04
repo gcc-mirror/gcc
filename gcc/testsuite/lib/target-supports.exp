@@ -13101,7 +13101,7 @@ set exts {
     "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1" "sme2p2"
     "sme2p3"
     "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma" "sve-bfscale" "sme-lutv2"
-    "ssve-fexpa" "ssve-bitperm" "ssve-aes"
+    "ssve-fexpa" "ssve-bitperm" "ssve-aes" "sme-mop4"
 }
 
 foreach { aarch64_ext } $exts {

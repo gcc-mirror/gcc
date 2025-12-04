@@ -511,6 +511,8 @@ constexpr auto AARCH64_FL_DEFAULT_ISA_MODE ATTRIBUTE_UNUSED
    elements are enabled through +sme-lutv2.  */
 #define TARGET_SME_LUTv2 AARCH64_HAVE_ISA (SME_LUTv2)
 
+#define TARGET_SME_MOP4 (AARCH64_HAVE_ISA (SME_MOP4) && TARGET_STREAMING)
+
 /* Prefer different predicate registers for the output of a predicated
    operation over re-using an existing input predicate.  */
 #define TARGET_SVE_PRED_CLOBBER (TARGET_SVE \
