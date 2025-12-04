@@ -931,6 +931,7 @@ enum reg_class
   POINTER_REGS,
   FP_LO8_REGS,
   FP_LO_REGS,
+  FP_HI_REGS,
   FP_REGS,
   POINTER_AND_FP_REGS,
   PR_LO_REGS,
@@ -958,6 +959,7 @@ enum reg_class
   "POINTER_REGS",				\
   "FP_LO8_REGS",				\
   "FP_LO_REGS",					\
+  "FP_HI_REGS",					\
   "FP_REGS",					\
   "POINTER_AND_FP_REGS",			\
   "PR_LO_REGS",					\
@@ -982,6 +984,7 @@ enum reg_class
   { 0xffffffff, 0x00000000, 0x00000003 },	/* POINTER_REGS */	\
   { 0x00000000, 0x000000ff, 0x00000000 },       /* FP_LO8_REGS  */	\
   { 0x00000000, 0x0000ffff, 0x00000000 },       /* FP_LO_REGS  */	\
+  { 0x00000000, 0xffff0000, 0x00000000 },       /* FP_HI_REGS */	\
   { 0x00000000, 0xffffffff, 0x00000000 },       /* FP_REGS  */		\
   { 0xffffffff, 0xffffffff, 0x00000003 },	/* POINTER_AND_FP_REGS */\
   { 0x00000000, 0x00000000, 0x00000ff0 },	/* PR_LO_REGS */	\

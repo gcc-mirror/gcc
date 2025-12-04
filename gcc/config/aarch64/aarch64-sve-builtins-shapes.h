@@ -173,6 +173,7 @@ namespace aarch64_acle
     extern const function_shape *const luti4_lane_zt;
     extern const function_shape *const luti4_zt;
     extern const function_shape *const mmla;
+    extern const function_shape *const mop4;
     extern const function_shape *const pattern_pred;
     extern const function_shape *const pmov_from_vector;
     extern const function_shape *const pmov_from_vector_lane;

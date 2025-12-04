@@ -508,6 +508,58 @@ public:
   }
 };
 
+class sme_mop4 : public read_write_za<unspec_based_function_base>
+{
+private:
+  unspec m_unspec_for_suint;
+  unspec m_unspec_for_usint;
+
+public:
+  using parent = read_write_za<unspec_based_function_base>;
+
+  constexpr sme_mop4 (unspec unspec_for_sint, unspec unspec_for_uint,
+		      unspec unspec_for_fp, unspec unspec_for_suint,
+		      unspec unspec_for_usint)
+    : parent (unspec_for_sint, unspec_for_uint,
+	      unspec_for_fp, unspec_for_fp, 1),
+      m_unspec_for_suint (unspec_for_suint),
+      m_unspec_for_usint (unspec_for_usint)
+  {}
+
+  rtx expand (function_expander &e) const override
+  {
+    machine_mode za_mode = e.vector_mode (0);
+    machine_mode v1_mode = e.tuple_mode (1);
+    machine_mode v2_mode = e.tuple_mode (1);
+
+    switch (e.mode_suffix_id)
+      {
+      case MODE_1x1:
+	break;
+      case MODE_1x2:
+	v2_mode = targetm.array_mode (v2_mode, 2).require ();
+	break;
+      case MODE_2x1:
+	v1_mode = targetm.array_mode (v1_mode, 2).require ();
+	break;
+      case MODE_2x2:
+	v1_mode = targetm.array_mode (v1_mode, 2).require ();
+	v2_mode = targetm.array_mode (v2_mode, 2).require ();
+	break;
+      default:
+	gcc_unreachable ();
+      }
+
+    unspec unspec = (e.type_suffix (1).unsigned_p == e.type_suffix (2).unsigned_p)
+		   ? unspec_for (e)
+		   : (e.type_suffix (1).unsigned_p ? m_unspec_for_usint
+						   : m_unspec_for_suint);
+
+    insn_code icode = code_for_aarch64_mop4 (unspec, za_mode, v1_mode, v2_mode);
+    return e.use_exact_insn (icode);
+  }
+};
+
 using sme_2mode_function
   = sme_2mode_function_t<code_for_aarch64_sme, code_for_aarch64_sme_single>;
 

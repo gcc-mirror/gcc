@@ -2456,6 +2456,7 @@ aarch64_hard_regno_nregs (unsigned regno, machine_mode mode)
     case FP_REGS:
     case FP_LO_REGS:
     case FP_LO8_REGS:
+    case FP_HI_REGS:
       {
 	unsigned int vec_flags = aarch64_classify_vector_mode (mode);
 	if (vec_flags & VEC_SVE_DATA)
@@ -14293,6 +14294,7 @@ aarch64_class_max_nregs (reg_class_t regclass, machine_mode mode)
     case FP_REGS:
     case FP_LO_REGS:
     case FP_LO8_REGS:
+    case FP_HI_REGS:
       vec_flags = aarch64_classify_vector_mode (mode);
       if ((vec_flags & VEC_SVE_DATA)
 	  && constant_multiple_p (GET_MODE_SIZE (mode),

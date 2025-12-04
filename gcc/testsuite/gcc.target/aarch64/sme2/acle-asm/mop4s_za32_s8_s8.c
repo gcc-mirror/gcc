@@ -1,0 +1,87 @@
+/* { dg-do assemble { target aarch64_asm_sme-mop4_ok } } */
+/* { dg-do compile { target { ! aarch64_asm_sme-mop4_ok } } } */
+/* { dg-final { check-function-bodies "**" "" "-DCHECK_ASM" } }  */
+
+#pragma GCC target "+sve2,+sme-mop4"
+#include <arm_sme.h>
+#include "test_sme2_acle.h"
+
+/*
+** mop4s_1x1_za32_s8_s8_0:
+**	...
+**	smop4s	za0\.s, z0\.b, z30\.b
+**	ret
+*/
+TEST_UNIFORM_ZA (mop4s_1x1_za32_s8_s8_0, svint8_t,
+		 svmop4s_1x1_za32_s8_s8 (0, z0, z1),
+		 svmop4s_za32 (0, z0, z1));
+
+/*
+** mop4s_1x1_za32_s8_s8_3:
+**	...
+**	smop4s	za3\.s, z0\.b, z30\.b
+**	ret
+*/
+TEST_UNIFORM_ZA (mop4s_1x1_za32_s8_s8_3, svint8_t,
+		 svmop4s_1x1_za32_s8_s8 (3, z0, z1),
+		 svmop4s_za32 (3, z0, z1));
+
+/*
+** mop4s_1x2_za32_s8_s8_0:
+**	...
+**	smop4s	za0\.s, z0\.b, {z30\.b - z31\.b}
+**	ret
+*/
+TEST_DUAL_ZA (mop4s_1x2_za32_s8_s8_0, svint8_t, svint8x2_t,
+	      svmop4s_1x2_za32_s8_s8 (0, z0, z4),
+	      svmop4s_za32 (0, z0, z4));
+
+/*
+** mop4s_1x2_za32_s8_s8_3:
+**	...
+**	smop4s	za3\.s, z0\.b, {z30\.b - z31\.b}
+**	ret
+*/
+TEST_DUAL_ZA (mop4s_1x2_za32_s8_s8_3, svint8_t, svint8x2_t,
+	      svmop4s_1x2_za32_s8_s8 (3, z0, z4),
+	      svmop4s_za32 (3, z0, z4));
+
+/*
+** mop4s_2x1_za32_s8_s8_0:
+**	...
+**	smop4s	za0\.s, {z0\.b - z1\.b}, z30\.b
+**	ret
+*/
+TEST_DUAL_ZA (mop4s_2x1_za32_s8_s8_0, svint8x2_t, svint8_t,
+	      svmop4s_2x1_za32_s8_s8 (0, z0, z4),
+	      svmop4s_za32 (0, z0, z4));
+
+/*
+** mop4s_2x1_za32_s8_s8_3:
+**	...
+**	smop4s	za3\.s, {z0\.b - z1\.b}, z30\.b
+**	ret
+*/
+TEST_DUAL_ZA (mop4s_2x1_za32_s8_s8_3, svint8x2_t, svint8_t,
+	      svmop4s_2x1_za32_s8_s8 (3, z0, z4),
+	      svmop4s_za32 (3, z0, z4));
+
+/*
+** mop4s_2x2_za32_s8_s8_0:
+**	...
+**	smop4s	za0\.s, {z0\.b - z1\.b}, {z30\.b - z31\.b}
+**	ret
+*/
+TEST_UNIFORM_ZA (mop4s_2x2_za32_s8_s8_0, svint8x2_t,
+		 svmop4s_2x2_za32_s8_s8 (0, z0, z1),
+		 svmop4s_za32 (0, z0, z1));
+
+/*
+** mop4s_2x2_za32_s8_s8_3:
+**	...
+**	smop4s	za3\.s, {z0\.b - z1\.b}, {z30\.b - z31\.b}
+**	ret
+*/
+TEST_UNIFORM_ZA (mop4s_2x2_za32_s8_s8_3, svint8x2_t,
+		 svmop4s_2x2_za32_s8_s8 (3, z0, z1),
+		 svmop4s_za32 (3, z0, z1));

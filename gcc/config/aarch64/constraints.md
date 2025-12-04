@@ -48,6 +48,17 @@
 (define_register_constraint "y" "FP_LO8_REGS"
   "SVE/AdvSIMD/FP  registers, V0 - V7.")
 
+(define_register_constraint "z" "FP_HI_REGS"
+  "SVE/AdvSIMD/FP registers, V16 - V31.")
+
+(define_register_constraint "Ux2" "FP_LO_REGS"
+  "Even SVE/AdvSIMD/FP registers, V0, V2, ..., V14."
+  "regno % 2 == 0")
+
+(define_register_constraint "Uz2" "FP_HI_REGS"
+  "Even SVE/AdvSIMD/FP registers, V16, V18, ..., V30."
+  "regno % 2 == 0")
+
 (define_register_constraint "Uw2" "FP_REGS"
   "Even SVE/AdvSIMD/FP registers, V0, V2, ..., V30."
   "regno % 2 == 0")

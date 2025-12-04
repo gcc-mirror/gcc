@@ -1814,6 +1814,55 @@
   "<optab>\tza%0.s, %1/m, %2/m, %3.s, %4.s"
 )
 
+;; _za32_s16_s16
+;; _za32_u16_u16
+(define_insn "@aarch64_mop4_<optab><VNx4SI_ONLY:mode><SVE_FULL_HIx12:mode><SVE_FULL_HIx12_2:mode>"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_HIx12   1 "aligned_register_operand" "Ux2")
+	   (match_operand:SVE_FULL_HIx12_2 2 "aligned_register_operand" "Uz2")]
+	  SME_INT_MOP4))]
+  "TARGET_SME_MOP4"
+  "<optab>\tza%0.<VNx4SI_ONLY:Vetype>, %1<SVE_FULL_HIx12:z_suffix>, %2<SVE_FULL_HIx12_2:z_suffix>"
+)
+
+;; _za32_s8_s8
+;; _za32_u8_u8
+;; _za32_s8_u8
+;; _za32_u8_s8
+(define_insn "@aarch64_mop4_<optab><VNx4SI_ONLY:mode><SVE_FULL_BIx12:mode><SVE_FULL_BIx12_2:mode>"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_BIx12   1 "aligned_register_operand" "Ux2")
+	   (match_operand:SVE_FULL_BIx12_2 2 "aligned_register_operand" "Uz2")]
+	  SME_INT_MOP4))]
+  "TARGET_SME_MOP4"
+  "<optab>\tza%0.<VNx4SI_ONLY:Vetype>, %1<SVE_FULL_BIx12:z_suffix>, %2<SVE_FULL_BIx12_2:z_suffix>"
+)
+
+;; _za64_s16_s16 (only if __ARM_FEATURE_SME_I16I64 != 0)
+;; _za64_u16_u16 (only if __ARM_FEATURE_SME_I16I64 != 0)
+;; _za64_s16_u16 (only if __ARM_FEATURE_SME_I16I64 != 0)
+;; _za64_u16_s16 (only if __ARM_FEATURE_SME_I16I64 != 0)
+(define_insn "@aarch64_mop4_<optab><VNx2DI_ONLY:Vetype><SVE_FULL_HIx12:mode><SVE_FULL_HIx12_2:mode>"
+  [(set (reg:VNx2DI_ONLY ZA_REGNUM)
+	(unspec:VNx2DI_ONLY
+	  [(reg:VNx2DI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_HIx12   1 "aligned_register_operand" "Ux2")
+	   (match_operand:SVE_FULL_HIx12_2 2 "aligned_register_operand" "Uz2")]
+	  SME_INT_MOP4))]
+  "TARGET_SME_MOP4 && TARGET_SME_I16I64"
+  "<optab>\tza%0.<VNx2DI_ONLY:Vetype>, %1<SVE_FULL_HIx12:z_suffix>, %2<SVE_FULL_HIx12_2:z_suffix>"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP] Dot product
 ;; -------------------------------------------------------------------------
@@ -2689,6 +2738,16 @@
 ;; - FMOPS
 ;; - FMOPA (SME_F8F16)
 ;; - FMOPA (SME_F8F32)
+;; - BFMOP4A (SME_B16B16)
+;; - BFMOP4S (SME_B16B16)
+;; - UMOP4A (SME_MOP4)
+;; - UMOP4S (SME_MOP4)
+;; - SMOP4A (SME_MOP4)
+;; - SMOP4S (SME_MOP4)
+;; - SUMOP4A (SME_MOP4)
+;; - USMOP4S (SME_MOP4)
+;; - FMOP4A (SME_MOP4)
+;; - FMOP4S (SME_MOP4)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sme_<optab><mode><mode>"
@@ -2735,6 +2794,80 @@
 	  SME_FP_MOP))]
   "TARGET_STREAMING"
   "<optab>\tza%0.<SME_ZA_F8F16_32:Vetype>, %1/m, %2/m, %3.b, %4.b"
+)
+
+;; _za16_f16_f16 (only if __ARM_FEATURE_SME_F16F16 != 0)
+;; _za32_f16_f16
+(define_insn "@aarch64_mop4_<optab><SME_MOP4_F16:mode><SVE_FULL_HF_NO_BFx12:mode><SVE_FULL_HF_NO_BFx12_2:mode>"
+  [(set (reg:SME_MOP4_F16 ZA_REGNUM)
+	(unspec:SME_MOP4_F16
+	  [(reg:SME_MOP4_F16 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_HF_NO_BFx12   1 "aligned_register_operand" "Ux2")
+	   (match_operand:SVE_FULL_HF_NO_BFx12_2 2 "aligned_register_operand" "Uz2")]
+	  SME_FP_MOP4))]
+  "TARGET_SME_MOP4"
+  "<optab>\tza%0.<SME_MOP4_F16:Vetype>, %1<SVE_FULL_HF_NO_BFx12:z_suffix>, %2<SVE_FULL_HF_NO_BFx12_2:z_suffix>"
+)
+
+;; _za16_bf16_bf16 (only if __ARM_FEATURE_SME_B16B16 != 0)
+;; _za32_bf16_bf16
+(define_insn "@aarch64_mop4_<optab><SME_MOP4_BF16:mode><SVE_FULL_BFx12:mode><SVE_FULL_BFx12_2:mode>"
+  [(set (reg:SME_MOP4_BF16 ZA_REGNUM)
+	(unspec:SME_MOP4_BF16
+	  [(reg:SME_MOP4_BF16 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_BFx12   1 "aligned_register_operand" "Ux2")
+	   (match_operand:SVE_FULL_BFx12_2 2 "aligned_register_operand" "Uz2")]
+	  SME_FP_MOP4))]
+  "TARGET_SME_MOP4"
+  "b<optab>\tza%0.<SME_MOP4_BF16:Vetype>, %1<SVE_FULL_BFx12:z_suffix>, %2<SVE_FULL_BFx12_2:z_suffix>"
+)
+
+;; _za32_f32_f32
+(define_insn "@aarch64_mop4_<optab><VNx4SI_ONLY:mode><SVE_FULL_SFx12:mode><SVE_FULL_SFx12_2:mode>"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_SFx12   1 "aligned_register_operand" "Ux2")
+	   (match_operand:SVE_FULL_SFx12_2 2 "aligned_register_operand" "Uz2")]
+	  SME_FP_MOP4))]
+  "TARGET_SME_MOP4"
+  "<optab>\tza%0.<VNx4SI_ONLY:Vetype>, %1<SVE_FULL_SFx12:z_suffix>, %2<SVE_FULL_SFx12_2:z_suffix>"
+)
+
+;; _za64_f64_f64   (only if __ARM_FEATURE_SME_F64F64 != 0)
+(define_insn "@aarch64_mop4_<optab><VNx2DI_ONLY:mode><SVE_FULL_DFx12:mode><SVE_FULL_DFx12_2:mode>"
+  [(set (reg:VNx2DI_ONLY ZA_REGNUM)
+	(unspec:VNx2DI_ONLY
+	  [(reg:VNx2DI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_DFx12   1 "register_operand" "Ux2")
+	   (match_operand:SVE_FULL_DFx12_2 2 "register_operand" "Uz2")]
+	  SME_FP_MOP4))]
+  "TARGET_SME_MOP4 && TARGET_SME_F64F64"
+  "<optab>\tza%0.<VNx2DI_ONLY:Vetype>, %1<SVE_FULL_DFx12:z_suffix>, %2<SVE_FULL_DFx12_2:z_suffix>"
+)
+
+;; _za16_mf8_mf8_fpm (only if __ARM_FEATURE_SME_F8F16 != 0)
+;; _za32_mf8_mf8_fpm (only if __ARM_FEATURE_SME_F8F32 != 0)
+(define_insn "@aarch64_mop4_<optab><SME_ZA_MF8:mode><SVE_FULL_BIx12:mode><SVE_FULL_BIx12_2:mode>"
+  [(set (reg:SME_ZA_MF8 ZA_REGNUM)
+	(unspec:SME_ZA_MF8
+	  [(reg:SME_ZA_MF8 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:SVE_FULL_BIx12   1 "register_operand" "Ux2")
+	   (match_operand:SVE_FULL_BIx12_2 2 "register_operand" "Uz2")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_MOP4))]
+  "TARGET_SME_MOP4"
+  "<optab>\tza%0.<SME_ZA_MF8:Vetype>, %1<SVE_FULL_BIx12:z_suffix>, %2<SVE_FULL_BIx12_2:z_suffix>"
 )
 
 ;; =========================================================================

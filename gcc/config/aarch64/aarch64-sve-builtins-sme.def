@@ -313,6 +313,73 @@ DEF_SME_ZA_FUNCTION_GS_FPM (svmla, binary_za_slice_opt_single, za_s_mf8, vg1x24,
 DEF_SME_ZA_FUNCTION_GS_FPM (svmopa, binary_za_m, za_s_mf8, none, za_m, set)
 #undef REQUIRED_EXTENSIONS
 
+// All svmop4a functions also have `_1x2`, `2x1` and `2x2` variants, and all
+// functions except `mf8_mf8` have `svmop4s` variants.
+
+// svmop4a[_1x1]_za32[_f32_f32]
+// svmop4a[_1x1]_za32[_f16_f16]
+// svmop4a[_1x1]_za32[_bf16_bf16]
+// svmop4a[_1x1]_za32[_s16_s16]
+// svmop4a[_1x1]_za32[_u16_u16]
+// svmop4a[_1x1]_za32[_s8_s8]
+// svmop4a[_1x1]_za32[_u8_u8]
+// svmop4a[_1x1]_za32[_s8_u8]
+// svmop4a[_1x1]_za32[_u8_s8]
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4)
+DEF_SME_ZA_FUNCTION_GS (svmop4a, mop4, mop4_base, none, none)
+DEF_SME_ZA_FUNCTION_GS (svmop4s, mop4, mop4_base, none, none)
+#undef REQUIRED_EXTENSIONS
+
+// svmop4a[_1x1]_za16[_f16_f16] (only if __ARM_FEATURE_SME_F16F16 != 0)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4 \
+					  | AARCH64_FL_SME_F16F16)
+DEF_SME_ZA_FUNCTION_GS (svmop4a, mop4, mop4_f16f16, none, none)
+DEF_SME_ZA_FUNCTION_GS (svmop4s, mop4, mop4_f16f16, none, none)
+#undef REQUIRED_EXTENSIONS
+
+// svmop4a[_1x1]_za16[_bf16_bf16] (only if __ARM_FEATURE_SME_B16B16 != 0)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4 \
+					  | AARCH64_FL_SME_B16B16)
+DEF_SME_ZA_FUNCTION_GS (svmop4a, mop4, mop4_b16b16, none, none)
+DEF_SME_ZA_FUNCTION_GS (svmop4s, mop4, mop4_b16b16, none, none)
+#undef REQUIRED_EXTENSIONS
+
+// svmop4a[_1x1]_za64[_f64_f64] (only if __ARM_FEATURE_SME_F64F64 != 0)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4 \
+					  | AARCH64_FL_SME_F64F64)
+DEF_SME_ZA_FUNCTION_GS (svmop4a, mop4, mop4_f64f64, none, none)
+DEF_SME_ZA_FUNCTION_GS (svmop4s, mop4, mop4_f64f64, none, none)
+#undef REQUIRED_EXTENSIONS
+
+// svmop4a[_1x1]_za64[_s16_s16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+// svmop4a[_1x1]_za64[_u16_u16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+// svmop4a[_1x1]_za64[_s16_u16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+// svmop4a[_1x1]_za64[_u16_s16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4 \
+					  | AARCH64_FL_SME_I16I64)
+DEF_SME_ZA_FUNCTION_GS (svmop4a, mop4, mop4_i16i64, none, none)
+DEF_SME_ZA_FUNCTION_GS (svmop4s, mop4, mop4_i16i64, none, none)
+#undef REQUIRED_EXTENSIONS
+
+// svmop4a[_1x1]_za16[_mf8_mf8]_fpm (only if __ARM_FEATURE_SME_F8F16 != 0)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4 \
+					  | AARCH64_FL_SME_F8F16)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmop4a, mop4, mop4_f8f16, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
+// svmop4a[_1x1]_za32[_mf8_mf8]_fpm (only if __ARM_FEATURE_SME_F8F32 != 0)
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME2 \
+					  | AARCH64_FL_SME_MOP4 \
+					  | AARCH64_FL_SME_F8F32)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmop4a, mop4, mop4_f8f32, none, none, set)
+#undef REQUIRED_EXTENSIONS
+
 #undef DEF_SME_ZA_FUNCTION
 #undef DEF_SME_ZA_FUNCTION_GS
 #undef DEF_SME_ZA_FUNCTION_GS_FPM

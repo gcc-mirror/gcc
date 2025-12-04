@@ -51,6 +51,8 @@ namespace aarch64_acle
     extern const function_base *const svmla_lane_za;
     extern const function_base *const svmls_za;
     extern const function_base *const svmls_lane_za;
+    extern const function_base *const svmop4a_za;
+    extern const function_base *const svmop4s_za;
     extern const function_base *const svmopa_za;
     extern const function_base *const svmops_za;
     extern const function_base *const svread_za;

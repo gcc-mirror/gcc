@@ -3464,6 +3464,51 @@ SHAPE (luti4_lane_zt);
 using luti4_zt_def = luti_zt_base<4>;
 SHAPE (luti4_zt);
 
+struct mop4_def : public overloaded_base<1>
+{
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "_,su64,v1,v2", group, MODE_1x1);
+    build_all (b, "_,su64,v1,u2", group, MODE_1x2);
+    build_all (b, "_,su64,u1,v2", group, MODE_2x1);
+    build_all (b, "_,su64,u1,u2", group, MODE_2x2);
+  }
+
+  tree resolve (function_resolver &r) const override
+  {
+    mode_suffix_index mode = MODE_1x1;
+    sve_type type1;
+    sve_type type2;
+
+    if (!r.check_num_arguments (3 + (r.fpm_mode == FPM_set))
+	|| !r.require_scalar_type (0, "uint64_t")
+	|| !r.require_integer_immediate (0)
+	|| !(type1 = r.infer_sve_type (1))
+	|| !(type2 = r.infer_sve_type (2)))
+      return error_mark_node;
+
+    if (type1.num_vectors == 1 && type2.num_vectors == 1)
+      mode = MODE_1x1;
+    else if (type1.num_vectors == 1 && type2.num_vectors == 2)
+      mode = MODE_1x2;
+    else if (type1.num_vectors == 2 && type2.num_vectors == 1)
+      mode = MODE_2x1;
+    else if (type1.num_vectors == 2 && type2.num_vectors == 2)
+      mode = MODE_2x2;
+
+    return r.resolve_to (mode, r.type_suffix_ids[0], type1.type, type2.type,
+			 GROUP_none);
+  }
+
+  bool check (function_checker &c) const override
+  {
+    return c.require_immediate_range (0, 0, c.num_za_tiles () - 1);
+  }
+};
+SHAPE (mop4);
+
 /* svbool_t svfoo(enum svpattern).  */
 struct pattern_pred_def : public nonoverloaded_base
 {

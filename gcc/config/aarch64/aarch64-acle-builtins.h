@@ -1815,6 +1815,56 @@ function_expander::result_mode () const
 #define TYPES_mop_i16i64_unsigned(S, D, T) \
   D (za64, u16)
 
+// svmop4a[_1x1]_za32[_f32]
+// svmop4a[_1x1]_za32[_f16_f16]
+// svmop4a[_1x1]_za32[_bf16_bf16]
+// svmop4a[_1x1]_za32[_s16_s16]
+// svmop4a[_1x1]_za32[_u16_u16]
+// svmop4a[_1x1]_za32[_s8_s8]
+// svmop4a[_1x1]_za32[_u8_u8]
+// svmop4a[_1x1]_za32[_s8_u8]
+// svmop4a[_1x1]_za32[_u8_s8]
+#define TYPES_mop4_base(S, D, T) \
+  T (za32, f32, f32), \
+  T (za32, f16, f16), \
+  T (za32, bf16, bf16), \
+  T (za32, s16, s16), \
+  T (za32, u16, u16), \
+  T (za32, s8, s8), \
+  T (za32, u8, u8), \
+  T (za32, s8, u8), \
+  T (za32, u8, s8)
+
+// svmop4a[_1x1]_za16[_bf16_bf16] (only if __ARM_FEATURE_SME_B16B16 != 0)
+#define TYPES_mop4_b16b16(S, D, T) \
+  T (za16, bf16, bf16)
+
+// svmop4a[_1x1]_za16[_mf8_mf8]_fpm (only if __ARM_FEATURE_SME_F8F16 != 0)
+#define TYPES_mop4_f8f16(S, D, T) \
+  T (za16, mf8, mf8)
+
+// svmop4a[_1x1]_za32[_mf8_mf8]_fpm (only if __ARM_FEATURE_SME_F8F32 != 0)
+#define TYPES_mop4_f8f32(S, D, T) \
+  T (za32, mf8, mf8)
+
+// svmop4a[_1x1]_za16[_f16_f16] (only if __ARM_FEATURE_SME_F16F16 != 0)
+#define TYPES_mop4_f16f16(S, D, T) \
+  T (za16, f16, f16)
+
+// svmop4a[_1x1]_za64[_f64_f64] (only if __ARM_FEATURE_SME_F64F64 != 0)
+#define TYPES_mop4_f64f64(S, D, T) \
+  T (za64, f64, f64)
+
+// svmop4a[_1x1]_za64[_s16_s16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+// svmop4a[_1x1]_za64[_u16_u16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+// svmop4a[_1x1]_za64[_s16_u16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+// svmop4a[_1x1]_za64[_u16_s16] (only if __ARM_FEATURE_SME_I16I64 != 0)
+#define TYPES_mop4_i16i64(S, D, T) \
+  T (za64, s16, s16), \
+  T (za64, u16, u16), \
+  T (za64, s16, u16), \
+  T (za64, u16, s16)
+
 /* _za.  */
 #define TYPES_za(S, D, T) \
   S (za)
@@ -2107,6 +2157,13 @@ DEF_SVE_TYPES_ARRAY (mop_base_unsigned);
 DEF_SVE_TYPES_ARRAY (mop_i16i64);
 DEF_SVE_TYPES_ARRAY (mop_i16i64_signed);
 DEF_SVE_TYPES_ARRAY (mop_i16i64_unsigned);
+DEF_SVE_TYPES_ARRAY (mop4_f16f16);
+DEF_SVE_TYPES_ARRAY (mop4_b16b16);
+DEF_SVE_TYPES_ARRAY (mop4_base);
+DEF_SVE_TYPES_ARRAY (mop4_f64f64);
+DEF_SVE_TYPES_ARRAY (mop4_i16i64);
+DEF_SVE_TYPES_ARRAY (mop4_f8f16);
+DEF_SVE_TYPES_ARRAY (mop4_f8f32);
 DEF_SVE_TYPES_ARRAY (za);
 
 DEF_SVE_TYPES_ARRAY (b_float);
