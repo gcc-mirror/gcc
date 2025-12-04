@@ -1,4 +1,4 @@
-/* { dg-do compile { target s390*-*-* x86_64-*-* } } */
+/* { dg-do compile { target { s390*-*-* || { x86_64-*-* && lp64 } } } } */
 /* { dg-options "-O2" } */
 
 /* Ensure that if the reload register for operand 2 is resued for operand 3,
