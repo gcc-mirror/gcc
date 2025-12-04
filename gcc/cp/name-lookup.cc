@@ -3791,7 +3791,9 @@ maybe_record_mergeable_decl (tree *slot, tree name, tree decl)
     (slot, name, is_attached ? BINDING_SLOT_PARTITION : BINDING_SLOT_GLOBAL,
      true);
 
-  if (!is_attached)
+  /* A namespace is always global module so there's no need to mark
+     the current binding slot as such.  */
+  if (!is_attached && TREE_CODE (decl) != NAMESPACE_DECL)
     {
       binding_slot &orig
 	= BINDING_VECTOR_CLUSTER (*slot, 0).slots[BINDING_SLOT_CURRENT];
