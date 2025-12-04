@@ -667,10 +667,14 @@ fold_using_range::fold_stmt (vrange &r, gimple *s, fur_source &src, tree name)
   if (!name)
     name = gimple_get_lhs (s);
 
-  // Process addresses.
-  if (gimple_code (s) == GIMPLE_ASSIGN
-      && gimple_assign_rhs_code (s) == ADDR_EXPR)
-    return range_of_address (as_a <prange> (r), s, src);
+  // Process addresses and loads from static constructors.
+  if (gimple_code (s) == GIMPLE_ASSIGN)
+    {
+      if (gimple_assign_rhs_code (s) == ADDR_EXPR)
+	return range_of_address (as_a <prange> (r), s, src);
+      if (range_from_readonly_var (r, s))
+	return true;
+    }
 
   gimple_range_op_handler handler (s);
   if (handler)
@@ -917,6 +921,195 @@ fold_using_range::range_of_address (prange &r, gimple *stmt, fur_source &src)
   // Otherwise return varying.
   r.set_varying (TREE_TYPE (gimple_assign_rhs1 (stmt)));
   return true;
+}
+
+/* If TYPE is a pointer, return false.  Otherwise, add zero of TYPE (which must
+   be an integer) to R and return true.  */
+
+static bool
+range_from_missing_constructor_part (vrange &r, tree type)
+{
+  if (POINTER_TYPE_P (type))
+    return false;
+  gcc_checking_assert (irange::supports_p (type));
+  wide_int zero = wi::zero (TYPE_PRECISION (type));
+  r.union_ (int_range<1> (type, zero, zero));
+  return true;
+}
+
+// One step of fold_using_range::range_from_readonly_var.  Process expressions
+// in COMPS which together load a value of TYPE, from index I to 0 according to
+// the corresponding static initializer in CST which should be either a scalar
+// invariant or a constructor.  Currently TYPE must be either a pointer or an
+// integer.  If TYPE is a pointer, return true if all potentially loaded values
+// are known not to be zero and false if any of them can be zero.  Otherwise
+// return true if it is possible to add all constants which can be loaded from
+// CST (which must be storable to TYPE) to R and do so.
+// TODO: Add support for franges.
+
+static bool
+range_from_readonly_load (vrange &r, tree type, tree cst,
+			  const vec <tree> &comps, unsigned i)
+{
+  if (i == 0)
+    {
+      if (!useless_type_conversion_p (type, TREE_TYPE (cst)))
+	return false;
+
+      if (POINTER_TYPE_P (type))
+	{
+	  bool strict_overflow_p;
+	  return tree_single_nonzero_warnv_p (cst, &strict_overflow_p);
+	}
+
+      if (TREE_CODE (cst) != INTEGER_CST)
+	return false;
+
+      wide_int wi_cst = wi::to_wide (cst);
+      r.union_ (int_range<1> (type, wi_cst, wi_cst));
+      return true;
+    }
+  /* TODO: Perhaps handle RAW_DATA_CST too.  */
+  if (TREE_CODE (cst) != CONSTRUCTOR)
+    return false;
+
+  i--;
+  tree expr = comps[i];
+  unsigned ix;
+  tree index, val;
+
+  if (TREE_CODE (expr) == COMPONENT_REF)
+    {
+      tree ref_fld = TREE_OPERAND (expr, 1);
+      FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (cst), ix, index, val)
+	{
+	  if (index != ref_fld)
+	    continue;
+	  return range_from_readonly_load (r, type, val, comps, i);
+	}
+      if (TREE_CODE (TREE_TYPE (cst)) == RECORD_TYPE)
+	return range_from_missing_constructor_part (r, type);
+      else
+	/* Missing constructor of a union field just isn't like other missing
+	   constructor parts.  */
+	return false;
+    }
+
+  gcc_assert (TREE_CODE (expr) == ARRAY_REF);
+  tree op1 = TREE_OPERAND (expr, 1);
+
+  if (TREE_CODE (op1) == INTEGER_CST)
+    {
+      unsigned ctor_idx;
+      val = get_array_ctor_element_at_index (cst, wi::to_offset (op1),
+					     &ctor_idx);
+      if (!val)
+	{
+	  if (ctor_idx < CONSTRUCTOR_NELTS (cst))
+	    return false;
+	  return range_from_missing_constructor_part (r, type);
+	}
+      return range_from_readonly_load (r, type, val, comps, i);
+    }
+
+  tree arr_type = TREE_TYPE (cst);
+  tree domain = TYPE_DOMAIN (arr_type);
+  if (!TYPE_MIN_VALUE (domain)
+      || !TYPE_MAX_VALUE (domain)
+      || !tree_fits_uhwi_p (TYPE_MIN_VALUE (domain))
+      || !tree_fits_uhwi_p (TYPE_MAX_VALUE (domain)))
+    return false;
+  unsigned HOST_WIDE_INT needed_count
+    = (tree_to_uhwi (TYPE_MAX_VALUE (domain))
+       - tree_to_uhwi (TYPE_MIN_VALUE (domain)) + 1);
+  if (CONSTRUCTOR_NELTS (cst) < needed_count)
+    {
+      if (!range_from_missing_constructor_part (r, type))
+	return false;
+    }
+
+  FOR_EACH_CONSTRUCTOR_ELT (CONSTRUCTOR_ELTS (cst), ix, index, val)
+    {
+      /* TODO: If the array index in the expr is an SSA_NAME with a known
+	 range, we could use just values loaded from the corresponding array
+	 elements.  */
+      if (!range_from_readonly_load (r, type, val, comps, i))
+	return false;
+    }
+
+  return true;
+}
+
+// Attempt to calculate the range of value loaded by STMT (which must be an
+// assignment) if it is a load from a read-only aggregate variable.  If
+// successful, return true and set the discovered range in R.  Otherwise return
+// false and leave R untouched.
+
+bool
+fold_using_range::range_from_readonly_var (vrange &r, gimple *stmt)
+{
+  gcc_checking_assert (gimple_code (stmt) == GIMPLE_ASSIGN);
+  tree type = TREE_TYPE (gimple_assign_lhs (stmt));
+  /* TODO: Add support for frange.  */
+  if (!irange::supports_p (type)
+      && !prange::supports_p (type))
+    return false;
+
+  unsigned HOST_WIDE_INT limit = param_vrp_cstload_limit;
+  if (!limit)
+    return false;
+
+  tree t = gimple_assign_rhs1 (stmt);
+  if (!tree_fits_uhwi_p (TYPE_SIZE_UNIT (TREE_TYPE (t))))
+    return false;
+  limit *= tree_to_uhwi (TYPE_SIZE_UNIT (TREE_TYPE (t)));
+
+  unsigned count = 0;
+  while (TREE_CODE (t) == ARRAY_REF
+	 || TREE_CODE (t) == COMPONENT_REF)
+    {
+      count++;
+      t = TREE_OPERAND (t, 0);
+    }
+  if (!count
+      || (TREE_CODE (t) != VAR_DECL
+	  && TREE_CODE (t) != CONST_DECL))
+    return false;
+
+  if (!tree_fits_uhwi_p (DECL_SIZE_UNIT (t))
+      || tree_to_uhwi (DECL_SIZE_UNIT (t)) > limit)
+    return false;
+
+  /* TODO: We perhaps should try to handle at least some cases when the
+     declaration is wrapped in a MEM_REF, but we need to be careful to look at
+     the right part of the constructor then.  */
+  tree ctor = ctor_for_folding (t);
+  if (!ctor
+      || TREE_CODE (ctor) != CONSTRUCTOR)
+    return false;
+
+  t = gimple_assign_rhs1 (stmt);
+  auto_vec <tree, 4> comps;
+  comps.safe_grow (count, true);
+  int i = 0;
+  while (TREE_CODE (t) == ARRAY_REF
+	 || TREE_CODE (t) == COMPONENT_REF)
+    {
+      comps[i] = t;
+      t = TREE_OPERAND (t, 0);
+      i++;
+    }
+
+  value_range tmp (type);
+  bool res = range_from_readonly_load (tmp, type, ctor, comps, count);
+  if (res)
+    {
+      if (POINTER_TYPE_P (type))
+	r.set_nonzero (type);
+      else
+	r = tmp;
+    }
+  return res;
 }
 
 // Calculate a range for phi statement S and return it in R.

@@ -1277,6 +1277,10 @@ The scaling multiplier as a percentage to apply to all scalar loop costing when 
 Common Joined UInteger Var(param_vrp_block_limit) Init(150000) Optimization Param
 Maximum number of basic blocks before VRP switches to a fast model with less memory requirements.
 
+-param=vrp-cstload-limit=
+Common Joined UInteger Var(param_vrp_cstload_limit) Init(32) IntegerRange(0, 255) Optimization Param
+Maximum number of steps when inferring a value range from a load from a constant aggregate.
+
 -param=vrp-sparse-threshold=
 Common Joined UInteger Var(param_vrp_sparse_threshold) Init(3000) Optimization Param
 Maximum number of basic blocks before VRP uses a sparse bitmap cache.

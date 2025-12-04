@@ -17842,6 +17842,9 @@ Increasing the cost multiplier will make vector loops more profitable.
 @item vrp-block-limit
 Maximum number of basic blocks before VRP switches to a lower memory algorithm.
 
+@item vrp-cstload-limit
+Maximum number of steps when inferring a value range from a load from a constant aggregate.
+
 @item vrp-sparse-threshold
 Maximum number of basic blocks before VRP uses a sparse bitmap cache.
 
