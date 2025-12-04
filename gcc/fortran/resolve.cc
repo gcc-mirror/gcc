@@ -17349,6 +17349,7 @@ skip_interfaces:
 
   /* F2008, C530.  */
   if (sym->attr.contiguous
+      && !sym->attr.associate_var
       && (!class_attr.dimension
 	  || (as->type != AS_ASSUMED_SHAPE && as->type != AS_ASSUMED_RANK
 	      && !class_attr.pointer)))
