@@ -217,7 +217,7 @@ class BracesOnSeparateLineCheck:
                 line[:m.start(2)] + error_string(m.group(2)) + line[m.end(2):],
                 'braces should be on a separate line', m.start(2))
 
-class TrailinigOperatorCheck:
+class TrailingOperatorCheck:
     def __init__(self):
         regex = r'^\s.*(([^a-zA-Z_]\*)|([-%<=&|^?])|([^*]/)|([^:][+]))$'
         self.re = re.compile(regex)
@@ -272,7 +272,7 @@ def check_GNU_style_file(file, format):
         SentenceSeparatorCheck(), SentenceEndOfCommentCheck(),
         SentenceDotEndCheck(), FunctionParenthesisCheck(),
         SquareBracketCheck(), ClosingParenthesisCheck(),
-        BracesOnSeparateLineCheck(), TrailinigOperatorCheck(),
+        BracesOnSeparateLineCheck(), TrailingOperatorCheck(),
         SpacesAndTabsMixedCheck()]
     errors = []
 
