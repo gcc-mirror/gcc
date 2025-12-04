@@ -2775,9 +2775,13 @@ gfc_new_file (void)
 
   if (gfc_cpp_enabled ())
     {
-      gfc_cpp_preprocess (gfc_source_file);
-      if (!gfc_cpp_preprocess_only ())
-	load_file (gfc_cpp_temporary_file (), gfc_source_file, true);
+      if (gfc_cpp_preprocess (gfc_source_file))
+	{
+	  if (!gfc_cpp_preprocess_only ())
+	    load_file (gfc_cpp_temporary_file (), gfc_source_file, true);
+	}
+      else
+	load_file (gfc_source_file, NULL, true);
     }
   else
     load_file (gfc_source_file, NULL, true);

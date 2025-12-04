@@ -647,6 +647,10 @@ invoke the preprocessor on any file, use @option{-cpp}, to disable
 preprocessing on files where the preprocessor is run automatically, use
 @option{-nocpp}.
 
+When compiling a preprocessed file, use @option{-fpreprocessed}
+(@pxref{Preprocessor Options,,Options Controlling the Preprocessor,gcc,
+Using the GNU Compiler Collection (GCC)}).  This skips the C preprocessor.
+
 If a preprocessed file includes another file with the Fortran @code{INCLUDE}
 statement, the included file is not preprocessed.  To preprocess included
 files, use the equivalent preprocessor statement @code{#include}.

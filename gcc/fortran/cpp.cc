@@ -679,6 +679,13 @@ gfc_cpp_preprocess (const char *source_file)
   if (!gfc_cpp_enabled ())
     return false;
 
+  if (gfc_option.flag_preprocessed)
+    {
+      if (gfc_cpp_preprocess_only ())
+	gfc_fatal_error ("%<-E%> is not supported with %<-fpreprocessed%>");
+      return false;
+    }
+
   cpp_change_file (cpp_in, LC_RENAME, source_file);
 
   if (cpp_option->traditional)

@@ -274,7 +274,7 @@ gfc_be_parse_file (void)
 static bool
 gfc_init (void)
 {
-  if (!gfc_cpp_enabled ())
+  if (!gfc_cpp_enabled () || gfc_option.flag_preprocessed)
     {
       linemap_add (line_table, LC_ENTER, false, gfc_source_file, 1);
       linemap_add (line_table, LC_RENAME, false, special_fname_builtin (), 0);
@@ -285,7 +285,7 @@ gfc_init (void)
   gfc_init_decl_processing ();
   gfc_static_ctors = NULL_TREE;
 
-  if (gfc_cpp_enabled ())
+  if (gfc_cpp_enabled () && !gfc_option.flag_preprocessed)
     gfc_cpp_init ();
 
   gfc_init_1 ();
