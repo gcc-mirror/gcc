@@ -39,9 +39,6 @@
 #include <bits/ptr_traits.h>	// to_address
 #include <bits/ranges_cmp.h>	// identity, ranges::less
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic" // __int128
-
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
@@ -1032,6 +1029,5 @@ namespace ranges
 #endif // C++20 library concepts
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#pragma GCC diagnostic pop
 #endif // C++20
 #endif // _ITERATOR_CONCEPTS_H
