@@ -1280,7 +1280,9 @@ Objective-C and Objective-C++ Dialects}.
 -mctor-dtor  -mrelax}
 
 @emph{Nvidia PTX Options} (@ref{Nvidia PTX Options})
-@gccoptlist{-m64  -mmainkernel  -moptimize}
+@gccoptlist{-m64  -march=@var{arch}  -misa=@var{arch}  -march-map=@var{arch}
+-mptx=@var{version}
+-mmainkernel  -moptimize  -msoft-stack  -muniform-simt  -mgomp}
 
 @emph{OpenRISC Options} (@ref{OpenRISC Options})
 @gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div
@@ -31515,7 +31517,7 @@ This option sets the value of the preprocessor macro
 @item -misa=@var{architecture-string}
 Alias of @option{-march=}.
 
-@opindex march
+@opindex march-map
 @item -march-map=@var{architecture-string}
 Select the closest available @option{-march=} value that is not more
 capable.  For instance, for @option{-march-map=sm_50} select
@@ -31546,9 +31548,11 @@ Link in code for a __main kernel.  This is for stand-alone instead of
 offloading execution.
 
 @opindex moptimize
+@opindex mno-optimize
 @item -moptimize
-Apply partitioned execution optimizations.  This is the default when any
-level of optimization is selected.
+@itemx -mno-optimize
+Enable/disable partitioned execution optimizations.  This option is enabled by
+default when any level of optimization is selected.
 
 @opindex msoft-stack
 @opindex mno-soft-stack
@@ -31574,11 +31578,15 @@ of testing the compiler; to generate code suitable for linking into programs
 using OpenMP offloading, use option @option{-mgomp}.
 
 @opindex muniform-simt
+@opindex mno-uniform-simt
 @item -muniform-simt
-Switch to code generation variant that allows to execute all threads in each
+@itemx -mno-uniform-simt
+Enable/disable code generation variant that allows execution of
+all threads in each
 warp, while maintaining memory state and side effects as if only one thread
 in each warp was active outside of OpenMP SIMD regions.  All atomic operations
-and calls to runtime (malloc, free, vprintf) are conditionally executed (iff
+and calls to runtime (@code{malloc}, @code{free}, @code{vprintf})
+are conditionally executed (iff
 current lane index equals the master lane index), and the register being
 assigned is copied via a shuffle instruction from the master lane.  Outside of
 SIMD regions lane 0 is the master; inside, each thread sees itself as the
@@ -31588,9 +31596,12 @@ regions).  Each thread can bitwise-and the bitmask at position @code{tid.y}
 with current lane index to compute the master lane index.
 
 @opindex mgomp
+@opindex mno-gomp
 @item -mgomp
-Generate code for use in OpenMP offloading: enables @option{-msoft-stack} and
-@option{-muniform-simt} options, and selects corresponding multilib variant.
+@itemx -mno-gomp
+Enable/disable generation of code for use in OpenMP offloading.
+@option{-mgomp} enables @option{-msoft-stack} and
+@option{-muniform-simt} options, and selects a corresponding multilib variant.
 
 @end table
 
