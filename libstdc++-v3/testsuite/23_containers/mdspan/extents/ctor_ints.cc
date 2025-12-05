@@ -16,6 +16,13 @@ static_assert(!std::is_constructible_v<std::extents<int, 1, dyn, 3>, int, int>);
 // Not constructible from non integer-like objects.
 static_assert(!std::is_constructible_v<std::extents<int, 1>, int, A>);
 
+#ifdef __SIZEOF_INT128__
+static_assert(std::is_constructible_v<std::extents<__int128, 1, 2>,
+				      __int128, unsigned __int128>);
+static_assert(std::is_constructible_v<std::extents<unsigned __int128, 1, 2>,
+				      unsigned int, int>);
+#endif
+
 // No implicit conversion from integer-like objects.
 template<typename Extent, typename... OExtents>
   constexpr bool

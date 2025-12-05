@@ -48,7 +48,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // or is_signed, digits10, max_digits10, or max_exponent10 for floats.
 
   // Unlike __is_integer (and std::is_integral) this trait is true for
-  // non-standard built-in integer types such as __int128 and __int20.
+  // non-standard built-in integer types such as __int20.
   template<typename _Tp>
     struct __is_integer_nonstrict
     : public std::__is_integer<_Tp>

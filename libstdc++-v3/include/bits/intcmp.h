@@ -49,8 +49,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr bool
     cmp_equal(_Tp __t, _Up __u) noexcept
     {
-      static_assert(__is_standard_integer<_Tp>::value);
-      static_assert(__is_standard_integer<_Up>::value);
+      static_assert(__is_signed_or_unsigned_integer<_Tp>::value);
+      static_assert(__is_signed_or_unsigned_integer<_Up>::value);
 
       if constexpr (is_signed_v<_Tp> == is_signed_v<_Up>)
 	return __t == __u;
@@ -69,8 +69,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr bool
     cmp_less(_Tp __t, _Up __u) noexcept
     {
-      static_assert(__is_standard_integer<_Tp>::value);
-      static_assert(__is_standard_integer<_Up>::value);
+      static_assert(__is_signed_or_unsigned_integer<_Tp>::value);
+      static_assert(__is_signed_or_unsigned_integer<_Up>::value);
 
       if constexpr (is_signed_v<_Tp> == is_signed_v<_Up>)
 	return __t < __u;
@@ -99,8 +99,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr bool
     in_range(_Tp __t) noexcept
     {
-      static_assert(__is_standard_integer<_Res>::value);
-      static_assert(__is_standard_integer<_Tp>::value);
+      static_assert(__is_signed_or_unsigned_integer<_Res>::value);
+      static_assert(__is_signed_or_unsigned_integer<_Tp>::value);
       using __gnu_cxx::__int_traits;
 
       if constexpr (is_signed_v<_Tp> == is_signed_v<_Res>)

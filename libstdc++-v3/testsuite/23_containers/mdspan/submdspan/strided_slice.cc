@@ -34,6 +34,9 @@ test_all()
   test_initializers(0, 1, 2);
   test_initializers(std::integral_constant<short, 0>{}, size_t{1}, std::cw<2>);
   test_initializers(-1, 2, 2);
+#ifdef __SIZEOF_INT128__
+  test_initializers((__int128)1, (unsigned __int128)-2, std::cw<(__int128)3>);
+#endif
   return true;
 }
 

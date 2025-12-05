@@ -554,10 +554,10 @@ namespace __detail
 
 } // namespace __detail
 
-  /// std::from_chars for integral types.
+  /// std::from_chars for integer types.
   template<typename _Tp,
-	   enable_if_t<__or_<__is_standard_integer<_Tp>,
-			     is_same<char, remove_cv_t<_Tp>>>::value, int> = 0>
+	   enable_if_t<__or_<__is_signed_or_unsigned_integer<_Tp>,
+			     is_same<char, _Tp>>::value, int> = 0>
     _GLIBCXX23_CONSTEXPR from_chars_result
     from_chars(const char* __first, const char* __last, _Tp& __value,
 	       int __base = 10)

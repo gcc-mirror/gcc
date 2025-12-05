@@ -44,10 +44,8 @@
 // [iterator.concept.winc]) that are one bit wider than the widest supported
 // integer type.
 //
-// The set of integer types we consider includes __int128 and unsigned __int128
-// (when they exist), even though they are really integer types only in GNU
-// mode.  This is to obtain a consistent ABI for these integer-class types
-// across strict mode and GNU mode.
+// The set of integer types we consider includes the extended integer types
+// __int128 and unsigned __int128 (when they exist).
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

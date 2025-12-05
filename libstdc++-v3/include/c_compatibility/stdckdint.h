@@ -40,15 +40,6 @@
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)
 {
 #endif
-/// @cond undocumented
-namespace __detail
-{
-  template<typename _Tp>
-    concept __cv_unqual_signed_or_unsigned_integer_type
-      = std::same_as<_Tp, std::remove_cv_t<_Tp>>
-	  && std::__is_standard_integer<_Tp>::value;
-}
-/// @endcond
 
 /** Checked integer arithmetic
  *
@@ -71,10 +62,9 @@ template<typename _Tp1, typename _Tp2, typename _Tp3>
   inline bool
   ckd_add(_Tp1* __result, _Tp2 __a, _Tp3 __b)
   {
-    using __gnu_cxx::__detail::__cv_unqual_signed_or_unsigned_integer_type;
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp1>);
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp2>);
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp3>);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp1>::value);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp2>::value);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp3>::value);
     return __builtin_add_overflow(__a, __b, __result);
   }
 
@@ -82,10 +72,9 @@ template<typename _Tp1, typename _Tp2, typename _Tp3>
   inline bool
   ckd_sub(_Tp1* __result, _Tp2 __a, _Tp3 __b)
   {
-    using __gnu_cxx::__detail::__cv_unqual_signed_or_unsigned_integer_type;
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp1>);
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp2>);
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp3>);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp1>::value);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp2>::value);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp3>::value);
     return __builtin_sub_overflow(__a, __b, __result);
   }
 
@@ -93,15 +82,14 @@ template<typename _Tp1, typename _Tp2, typename _Tp3>
   inline bool
   ckd_mul(_Tp1* __result, _Tp2 __a, _Tp3 __b)
   {
-    using __gnu_cxx::__detail::__cv_unqual_signed_or_unsigned_integer_type;
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp1>);
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp2>);
-    static_assert(__cv_unqual_signed_or_unsigned_integer_type<_Tp3>);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp1>::value);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp2>::value);
+    static_assert(std::__is_signed_or_unsigned_integer<_Tp3>::value);
     return __builtin_mul_overflow(__a, __b, __result);
   }
 /// @}
 #ifndef _GLIBCXX_DOXYGEN
-}
+} // namespace __gnu_cxx
 
 using __gnu_cxx::ckd_add;
 using __gnu_cxx::ckd_sub;

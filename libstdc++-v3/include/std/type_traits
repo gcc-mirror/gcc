@@ -826,7 +826,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // Check if a type is one of the signed integer types.
   __extension__
   template<typename _Tp>
-    using __is_signed_integer = __is_one_of<__remove_cv_t<_Tp>,
+    using __is_signed_integer = __is_one_of<_Tp,
 	  signed char, signed short, signed int, signed long,
 	  signed long long
 #if defined(__GLIBCXX_TYPE_INT_N_0)
@@ -841,12 +841,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if defined(__GLIBCXX_TYPE_INT_N_3)
 	  , signed __GLIBCXX_TYPE_INT_N_3
 #endif
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+	  , signed __int128
+#endif
 	  >;
 
   // Check if a type is one of the unsigned integer types.
   __extension__
   template<typename _Tp>
-    using __is_unsigned_integer = __is_one_of<__remove_cv_t<_Tp>,
+    using __is_unsigned_integer = __is_one_of<_Tp,
 	  unsigned char, unsigned short, unsigned int, unsigned long,
 	  unsigned long long
 #if defined(__GLIBCXX_TYPE_INT_N_0)
@@ -861,11 +864,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 #if defined(__GLIBCXX_TYPE_INT_N_3)
 	  , unsigned __GLIBCXX_TYPE_INT_N_3
 #endif
+#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
+	  , unsigned __int128
+#endif
 	  >;
 
   // Check if a type is one of the signed or unsigned integer types.
+  // i.e. an integral type except bool, char, wchar_t, and charN_t.
   template<typename _Tp>
-    using __is_standard_integer
+    using __is_signed_or_unsigned_integer
       = __or_<__is_signed_integer<_Tp>, __is_unsigned_integer<_Tp>>;
 
   // __void_t (std::void_t for C++11)
