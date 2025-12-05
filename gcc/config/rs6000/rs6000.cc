@@ -23454,6 +23454,14 @@ rs6000_emit_parity (rtx dst, rtx src)
 
   tmp = gen_reg_rtx (mode);
 
+  /* Use ISA 2.06 insn popcntd if we can. */
+  if (mode == DImode && TARGET_POPCNTD)
+    {
+      emit_insn (gen_popcntddi2 (tmp, src));
+      emit_insn (gen_anddi3 (dst, tmp, const1_rtx));
+      return;
+    }
+
   /* Use the PPC ISA 2.05 prtyw/prtyd instruction if we can.  */
   if (TARGET_CMPB)
     {
