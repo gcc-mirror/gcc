@@ -5700,8 +5700,6 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
   if (mode == VOIDmode)
     mode = GET_MODE (*op1);
 
-  maxval = (HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
-
   /* For floating-point comparisons, prefer >= and > over <= and < since
      the former are supported by VSEL on some architectures.  Only do this
      if both operands are registers.  */
@@ -5717,6 +5715,13 @@ arm_canonicalize_comparison (int *code, rtx *op0, rtx *op1,
       *code = (int) swap_condition ((rtx_code)*code);
       return;
     }
+
+  /* Everything below assumes an integer mode.  */
+  if (GET_MODE_CLASS (mode) != MODE_INT
+      || GET_MODE_BITSIZE (mode) > HOST_BITS_PER_WIDE_INT)
+    return;
+
+  maxval = (HOST_WIDE_INT_1U << (GET_MODE_BITSIZE (mode) - 1)) - 1;
 
   /* For DImode, we have GE/LT/GEU/LTU comparisons (with cmp/sbc).  In
      ARM mode we can also use cmp/cmpeq for GTU/LEU.  GT/LE must be
