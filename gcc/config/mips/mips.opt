@@ -478,7 +478,7 @@ Target Var(TARGET_FRAME_GROWS_DOWNWARDS) Init(1) Undocumented
 Change the behaviour to grow the frame downwards.
 
 noasmopt
-Driver
+Driver Undocumented
 
 mload-store-pairs
 Target Var(TARGET_LOAD_STORE_PAIRS) Init(1)

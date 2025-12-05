@@ -1209,64 +1209,39 @@ Objective-C and Objective-C++ Dialects}.
 -mxl-prefetch  -mpic-data-is-text-relative}
 
 @emph{MIPS Options} (@ref{MIPS Options})
-@gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch}
+@gccoptlist{-EL  -EB  -mel  -meb  -march=@var{arch}  -mtune=@var{arch}
 -mips1  -mips2  -mips3  -mips4  -mips32  -mips32r2  -mips32r3  -mips32r5
 -mips32r6  -mips64  -mips64r2  -mips64r3  -mips64r5  -mips64r6
--mips16  -mno-mips16  -mflip-mips16
--minterlink-compressed  -mno-interlink-compressed
--minterlink-mips16  -mno-interlink-mips16
--mabi=@var{abi}  -mabicalls  -mno-abicalls
--mshared  -mno-shared  -mplt  -mno-plt  -mxgot  -mno-xgot
+-mips16  -mmips16e2  -mflip-mips16
+-minterlink-compressed  -minterlink-mips16
+-mabi=@var{abi}  -mabicalls  -mshared  -mplt  -mxgot
 -mgp32  -mgp64  -mfp32  -mfpxx  -mfp64  -mhard-float  -msoft-float
--mno-float  -msingle-float  -mdouble-float
--modd-spreg  -mno-odd-spreg
+-mno-float  -msingle-float  -mdouble-float  -modd-spreg
 -mabs=@var{mode}  -mnan=@var{encoding}
--mdsp  -mno-dsp  -mdspr2  -mno-dspr2
--mmcu  -mmno-mcu
--meva  -mno-eva
--mvirt  -mno-virt
--mxpa  -mno-xpa
--mcrc  -mno-crc
--mginv  -mno-ginv
--mmicromips  -mno-micromips
--mmsa  -mno-msa
--mloongson-mmi  -mno-loongson-mmi
--mloongson-ext  -mno-loongson-ext
--mloongson-ext2  -mno-loongson-ext2
+-mdsp  -mdspr2  -mmcu  -meva  -mvirt  -mxpa  -mcrc  -mginv
+-mmicromips  -mmsa
+-mloongson-mmi  -mloongson-ext  -mloongson-ext2
 -mfpu=@var{fpu-type}
--msmartmips  -mno-smartmips
--mpaired-single  -mno-paired-single  -mdmx  -mno-mdmx
--mips3d  -mno-mips3d  -mmt  -mno-mt  -mllsc  -mno-llsc
--mlong64  -mlong32  -msym32  -mno-sym32
--G@var{num}  -mlocal-sdata  -mno-local-sdata
--mextern-sdata  -mno-extern-sdata  -mgpopt  -mno-gopt
--membedded-data  -mno-embedded-data
--muninit-const-in-rodata  -mno-uninit-const-in-rodata
+-msmartmips  -mpaired-single  -mdmx  -mips3d  -mmt  -mllsc
+-mlong64  -mlong32  -msym32
+-G@var{num}  -mno-local-sdata  -mno-extern-sdata  -mno-gopt
+-membedded-data  -muninit-const-in-rodata
 -mcode-readable=@var{setting}
--msplit-addresses  -mno-split-addresses
--mexplicit-relocs  -mno-explicit-relocs
--mexplicit-relocs=@var{release}
--mcheck-zero-division  -mno-check-zero-division
--mdivide-traps  -mdivide-breaks
--mload-store-pairs  -mno-load-store-pairs
--mstrict-align  -mno-strict-align
--mno-unaligned-access  -munaligned-access
--mmemcpy  -mno-memcpy  -mlong-calls  -mno-long-calls
--mmad  -mno-mad  -mimadd  -mno-imadd  -mfused-madd  -mno-fused-madd  -nocpp
--mfix-24k  -mno-fix-24k
--mfix-r4000  -mno-fix-r4000  -mfix-r4400  -mno-fix-r4400
--mfix-r5900  -mno-fix-r5900
--mfix-r10000  -mno-fix-r10000  -mfix-rm7000  -mno-fix-rm7000
--mfix-vr4120  -mno-fix-vr4120
--mfix-vr4130  -mno-fix-vr4130  -mfix-sb1  -mno-fix-sb1
+-msplit-addresses  -mexplicit-relocs  -mexplicit-relocs=@var{release}
+-mno-check-zero-division  -mdivide-traps  -mdivide-breaks
+-mno-load-store-pairs
+-mstrict-align  -mno-unaligned-access
+-mmemcpy  -mlong-calls
+-mmad  -mimadd  -mno-fused-madd  -nocpp
+-mfix-24k  -mfix-r4000  -mfix-r4400  -mfix-r5900
+-mfix-r10000  -mfix-rm7000  -mfix-vr4120  -mfix-vr4130  -mfix-sb1
+-mfix4300  -mr10k-cache-barrier=@var{setting}
 -mflush-func=@var{func}  -mno-flush-func
--mbranch-cost=@var{num}  -mbranch-likely  -mno-branch-likely
+-mbranch-cost=@var{num}  -mbranch-likely
 -mcompact-branches=@var{policy}
--mfp-exceptions  -mno-fp-exceptions
--mvr4130-align  -mno-vr4130-align  -msynci  -mno-synci
--mlxc1-sxc1  -mno-lxc1-sxc1  -mmadd4  -mno-madd4
--mrelax-pic-calls  -mno-relax-pic-calls  -mmcount-ra-address
--mframe-header-opt  -mno-frame-header-opt}
+-mno-fp-exceptions  -mvr4130-align  -msynci  -mno-lxc1-sxc1  -mno-madd4
+-mno-relax-pic-calls  -mmcount-ra-address
+-mframe-header-opt}
 
 @emph{MMIX Options} (@ref{MMIX Options})
 @gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu
@@ -29851,11 +29826,16 @@ text address instead of GOT since PC-relative addressing is not supported.
 @table @gcctabopt
 
 @opindex EB
+@opindex meb
+@opindex mno-el
 @item -EB
+@itemx -meb
 Generate big-endian code.
 
 @opindex EL
+@opindex mel
 @item -EL
+@itemx -mel
 Generate little-endian code.  This is the default for @samp{mips*el-*-*}
 configurations.
 
@@ -30023,7 +30003,9 @@ Use (do not use) the MIPS16e2 ASE.  This option modifies the behavior
 of the @option{-mips16} option such that it targets the MIPS16e2 ASE@.
 
 @opindex mflip-mips16
+@opindex mno-flip-mips16
 @item -mflip-mips16
+@itemx -mflip-mips16
 Generate MIPS16 code on alternating functions.  This option is provided
 for regression testing of mixed MIPS16/non-MIPS16 code generation, and is
 not intended for ordinary use in compiling user code.
@@ -30097,6 +30079,8 @@ Generate (do not generate) code that is suitable for SVR4-style
 dynamic objects.  @option{-mabicalls} is the default for SVR4-based
 systems.
 
+@opindex mshared
+@opindex mno-shared
 @item -mshared
 @itemx -mno-shared
 Generate (do not generate) code that is fully position-independent,
@@ -30377,6 +30361,12 @@ Use (do not use) the MIPS Cyclic Redundancy Check (CRC) instructions.
 @itemx -mno-ginv
 Use (do not use) the MIPS Global INValidate (GINV) instructions.
 
+@opindex mmsa
+@opindex mno-msa
+@item -mmsa
+@itemx -mno-msa
+Use (do not use) the MIPS MSA extension instructions.
+
 @opindex mloongson-mmi
 @opindex mno-loongson-mmi
 @item -mloongson-mmi
@@ -30592,10 +30582,11 @@ to support bonding.
 @itemx -munaligned-access
 @itemx -mno-unaligned-access
 Disable (enable) direct unaligned access for MIPS Release 6.
-MIPSr6 requires load/store unaligned-access support, by hardware or
-trap&emulate.  So @option{-mstrict-align} may be needed by kernel.  The
+MIPSr6 requires load/store unaligned-access support, either by hardware or
+by trapping and emulation.  In the latter case @option{-mstrict-align}
+may be needed by the operating system kernel.  The
 options @option{-munaligned-access} and @option{-mno-unaligned-access}
-are obsoleted, and only for backward-compatible.
+are obsolete, and only provided for backward compatibility.
 
 @opindex mmemcpy
 @opindex mno-memcpy
@@ -30704,6 +30695,7 @@ branch-likely instructions.  @option{-mfix-r10000} is the default when
 otherwise.
 
 @opindex mfix-r5900
+@opindex mno-fix-r5900
 @item -mfix-r5900
 @itemx -mno-fix-r5900
 Do not attempt to schedule the preceding instruction into the delay slot
@@ -30714,12 +30706,14 @@ execute only once or twice, due to a hardware bug in the R5900 chip.  The
 workaround is implemented by the assembler rather than by GCC@.
 
 @opindex mfix-rm7000
+@opindex mno-fix-rm7000
 @item -mfix-rm7000
 @itemx -mno-fix-rm7000
 Work around the RM7000 @code{dmult}/@code{dmultu} errata.  The
 workarounds are implemented by the assembler rather than by GCC@.
 
 @opindex mfix-vr4120
+@opindex mno-fix-vr4120
 @item -mfix-vr4120
 @itemx -mno-fix-vr4120
 Work around certain VR4120 errata:
@@ -30738,7 +30732,9 @@ Other VR4120 errata require a NOP to be inserted between certain pairs of
 instructions.  These errata are handled by the assembler, not by GCC itself.
 
 @opindex mfix-vr4130
+@opindex mno-fix-vr4130
 @item -mfix-vr4130
+@itemx -mno-fix-vr4130
 Work around the VR4130 @code{mflo}/@code{mfhi} errata.  The
 workarounds are implemented by the assembler rather than by GCC,
 although GCC avoids using @code{mflo} and @code{mfhi} if the
@@ -30746,11 +30742,19 @@ VR4130 @code{macc}, @code{macchi}, @code{dmacc} and @code{dmacchi}
 instructions are available instead.
 
 @opindex mfix-sb1
+@opindex mno-fix-sb1
 @item -mfix-sb1
 @itemx -mno-fix-sb1
 Work around certain SB-1 CPU core errata.
 (This flag currently works around the SB-1 revision 2
 ``F1'' and ``F2'' floating-point errata.)
+
+@opindex mfix4300
+@opindex mno-fix4300
+@item -mfix4300
+@itemx -mno-fix4300
+Work around a bug in early VR4300 silicon that causes multiplies with
+certain operands to corrupt immediately following multiplies.
 
 @opindex mr10k-cache-barrier
 @item -mr10k-cache-barrier=@var{setting}
@@ -30856,27 +30860,28 @@ and MIPS64 architectures specifically deprecate their use.
 @item -mcompact-branches=never
 @itemx -mcompact-branches=optimal
 @itemx -mcompact-branches=always
-These options control which form of branches will be generated.  The
+These options control which form of branches are generated.  The
 default is @option{-mcompact-branches=optimal}.
 
 The @option{-mcompact-branches=never} option ensures that compact branch
-instructions will never be generated.
+instructions are never generated.
 
 The @option{-mcompact-branches=always} option ensures that a compact
-branch instruction will be generated if available for MIPS Release 6 onwards.
+branch instruction is generated if available for MIPS Release 6 onwards.
 If a compact branch instruction is not available (or pre-R6),
-a delay slot form of the branch will be used instead.
+a delay slot form of the branch is used instead.
 
-If it is used for MIPS16/microMIPS targets, it will be just ignored now.
+If it is used for MIPS16/microMIPS targets, it is just ignored now.
 The behavior for MIPS16/microMIPS may change in future,
 since they do have some compact branch instructions.
 
-The @option{-mcompact-branches=optimal} option will cause a delay slot
+The @option{-mcompact-branches=optimal} option causes a delay slot
 branch to be used if one is available in the current ISA and the delay
 slot is successfully filled.  If the delay slot is not filled, a compact
-branch will be chosen if one is available.
+branch is chosen if one is available.
 
 @opindex mfp-exceptions
+@opindex mno-fp-exceptions
 @item -mfp-exceptions
 @itemx -mno-fp-exceptions
 Specifies whether FP exceptions are enabled.  This affects how
@@ -30901,6 +30906,7 @@ It normally makes code faster, but at the expense of making it bigger.
 It is enabled by default at optimization level @option{-O3}.
 
 @opindex msynci
+@opindex mno-synci
 @item -msynci
 @itemx -mno-synci
 Enable (disable) generation of @code{synci} instructions on
@@ -30917,6 +30923,7 @@ does not invalidate the instruction caches on all cores and may lead
 to undefined behavior.
 
 @opindex mrelax-pic-calls
+@opindex mno-relax-pic-calls
 @item -mrelax-pic-calls
 @itemx -mno-relax-pic-calls
 Try to turn PIC calls that are normally dispatched via register
@@ -30951,23 +30958,26 @@ if @var{ra-address} is nonnull.
 The default is @option{-mno-mcount-ra-address}.
 
 @opindex mframe-header-opt
+@opindex mno-frame-header-opt
 @item -mframe-header-opt
 @itemx -mno-frame-header-opt
 Enable (disable) frame header optimization in the o32 ABI.  When using the
-o32 ABI, calling functions will allocate 16 bytes on the stack for the called
+o32 ABI, calling functions allocates 16 bytes on the stack for the called
 function to write out register arguments.  When enabled, this optimization
-will suppress the allocation of the frame header if it can be determined that
+suppresses the allocation of the frame header if it can be determined that
 it is unused.
 
 This optimization is off by default at all optimization levels.
 
 @opindex mlxc1-sxc1
+@opindex mno-lxc1-sxc1
 @item -mlxc1-sxc1
 @itemx -mno-lxc1-sxc1
 When applicable, enable (disable) the generation of @code{lwxc1},
 @code{swxc1}, @code{ldxc1}, @code{sdxc1} instructions.  Enabled by default.
 
 @opindex mmadd4
+@opindex mno-madd4
 @item -mmadd4
 @itemx -mno-madd4
 When applicable, enable (disable) the generation of 4-operand @code{madd.s},
