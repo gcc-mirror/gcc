@@ -1194,10 +1194,10 @@ Objective-C and Objective-C++ Dialects}.
 -mxgot  -mlong-jump-table-offsets}
 
 @emph{MCore Options} (@ref{MCore Options})
-@gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates
--mno-relax-immediates  -mwide-bitfields  -mno-wide-bitfields
--m4byte-functions  -mno-4byte-functions  -mcallgraph-data
--mno-callgraph-data  -mslow-bytes  -mno-slow-bytes  -mno-lsim
+@gccoptlist{-mhardlit  -mdiv  -mrelax-immediates
+-mwide-bitfields
+-m4byte-functions  -mcallgraph-data
+-mslow-bytes  -mno-lsim
 -mlittle-endian  -mbig-endian  -m210  -m340  -mstack-increment}
 
 @emph{MicroBlaze Options} (@ref{MicroBlaze Options})
@@ -29686,13 +29686,17 @@ Prefer word access when reading byte quantities.
 @opindex mbig-endian
 @item -mlittle-endian
 @itemx -mbig-endian
-Generate code for a little-endian target.
+Generate code for a little- or big-endian target, respectively.  The
+default is big-endian.  Little-endian code is supported only
+with @option{-m340}.
 
 @opindex m210
-@opindex m340
 @item -m210
-@itemx -m340
 Generate code for the 210 processor.
+
+@opindex m340
+@item -m340
+Generate code for the 340 processor.
 
 @opindex mno-lsim
 @item -mno-lsim
