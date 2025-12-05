@@ -1251,10 +1251,10 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{MN10300 Options} (@ref{MN10300 Options})
 @gccoptlist{-mmult-bug  -mno-mult-bug
--mno-am33  -mam33  -mam33-2  -mam34
+-mam33  -mam33-2  -mam34
 -mtune=@var{cpu-type}
--mreturn-pointer-on-d0
--mno-crt0  -mrelax  -mliw  -msetlb}
+-mno-return-pointer-on-d0
+-mno-crt0  -mrelax  -mno-liw  -mno-setlb}
 
 @emph{Moxie Options} (@ref{Moxie Options})
 @gccoptlist{-meb  -mel  -mmul.x  -mno-crt0}
@@ -31079,31 +31079,32 @@ These @option{-m} options are defined for Matsushita MN10300 architectures:
 
 @table @gcctabopt
 @opindex mmult-bug
-@item -mmult-bug
-Generate code to avoid bugs in the multiply instructions for the MN10300
-processors.  This is the default.
-
 @opindex mno-mult-bug
-@item -mno-mult-bug
-Do not generate code to avoid bugs in the multiply instructions for the
-MN10300 processors.
+@item -mmult-bug
+@itemx -mno-mult-bug
+When enabled, generate code to avoid bugs in the multiply instructions
+for the MN10300 processors.  This is the default.
 
 @opindex mam33
-@item -mam33
-Generate code using features specific to the AM33 processor.
-
 @opindex mno-am33
-@item -mno-am33
-Do not generate code using features specific to the AM33 processor.  This
-is the default.
+@item -mam33
+@itemx -mno-am33
+Generate code using features specific to the AM33 processor.
+The default is @option{-mno-am33}.
 
 @opindex mam33-2
+@opindex mno-am33-2
 @item -mam33-2
+@itemx -mno-am33-2
 Generate code using features specific to the AM33/2.0 processor.
+The default is @option{-mno-am33-2}.
 
 @opindex mam34
+@opindex mno-am34
 @item -mam34
+@itemx -mno-am34
 Generate code using features specific to the AM34 processor.
+The default is @option{-mno-am34}.
 
 @opindex mtune
 @item -mtune=@var{cpu-type}
@@ -31113,7 +31114,9 @@ type.  The CPU type must be one of @samp{mn10300}, @samp{am33},
 @samp{am33-2} or @samp{am34}.
 
 @opindex mreturn-pointer-on-d0
+@opindex mno-return-pointer-on-d0
 @item -mreturn-pointer-on-d0
+@itemx -mno-return-pointer-on-d0
 When generating a function that returns a pointer, return the pointer
 in both @code{a0} and @code{d0}.  Otherwise, the pointer is returned
 only in @code{a0}, and attempts to call such functions without a prototype
@@ -31133,28 +31136,24 @@ has an effect when used on the command line for the final link step.
 This option makes symbolic debugging impossible.
 
 @opindex mliw
-@item -mliw
-Allow the compiler to generate @emph{Long Instruction Word}
-instructions if the target is the @samp{AM33} or later.  This is the
-default.  This option defines the preprocessor macro @code{__LIW__}.
-
 @opindex mno-liw
-@item -mno-liw
-Do not allow the compiler to generate @emph{Long Instruction Word}
-instructions.  This option defines the preprocessor macro
-@code{__NO_LIW__}.
+@item -mliw
+@itemx -mno-liw
+Allow the compiler to generate @emph{Long Instruction Word}
+instructions if the target is the @samp{AM33} or later.  This option is
+enabled by default.
+@option{-mliw} defines the preprocessor macro @code{__LIW__};
+@option{-mno-liw} defines the preprocessor macro @code{__NO_LIW__}.
 
 @opindex msetlb
-@item -msetlb
-Allow the compiler to generate the @emph{SETLB} and @emph{Lcc}
-instructions if the target is the @samp{AM33} or later.  This is the
-default.  This option defines the preprocessor macro @code{__SETLB__}.
-
 @opindex mno-setlb
-@item -mno-setlb
-Do not allow the compiler to generate @emph{SETLB} or @emph{Lcc}
-instructions.  This option defines the preprocessor macro
-@code{__NO_SETLB__}.
+@item -msetlb
+@itemx -mno-setlb
+Allow the compiler to generate the @emph{SETLB} and @emph{Lcc}
+instructions if the target is the @samp{AM33} or later.  This option is
+enabled by default.
+@option{-msetlb} defines the preprocessor macro @code{__SETLB__};
+@option{-mno-setlb} defines the preprocessor macro @code{__NO_SETLB__}.
 
 @end table
 
@@ -31174,8 +31173,10 @@ configurations.
 Generate little-endian code.
 
 @opindex mmul.x
+@opindex mno-mul.x
 @item -mmul.x
-Generate mul.x and umul.x instructions.  This is the default for
+@itemx -mno-mul.x
+Generate mul.x and umul.x instructions.  This option is enabled by default for
 @samp{moxiebox-*-*} configurations.
 
 @opindex mno-crt0
