@@ -1056,6 +1056,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _Not_fn(_Not_fn&& __fn) = default;
       ~_Not_fn() = default;
 
+#if _GLIBCXX_EXPLICIT_THIS_PARAMETER
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wc++23-extensions" // deducing this
+      template<typename _Self, typename... _Args>
+      _GLIBCXX20_CONSTEXPR
+      decltype(_S_not<__inv_res_t<__like_t<_Self, _Fn>, _Args...>>())
+      operator()(this _Self&& __self, _Args&&... __args)
+      noexcept(__is_nothrow_invocable<__like_t<_Self, _Fn>, _Args...>::value
+	       && noexcept(_S_not<__inv_res_t<__like_t<_Self, _Fn>, _Args...>>()))
+      {
+	return !std::__invoke(__like_t<_Self, _Not_fn>(__self)._M_fn,
+			      std::forward<_Args>(__args)...);
+      }
+# pragma GCC diagnostic pop
+#else
       // Macro to define operator() with given cv-qualifiers ref-qualifiers,
       // forwarding _M_fn and the function arguments with the same qualifiers,
       // and deducing the return type and exception-specification.
@@ -1081,6 +1096,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       _GLIBCXX_NOT_FN_CALL_OP( && )
       _GLIBCXX_NOT_FN_CALL_OP( const && )
 #undef _GLIBCXX_NOT_FN_CALL_OP
+#endif
 
     private:
       _Fn _M_fn;
