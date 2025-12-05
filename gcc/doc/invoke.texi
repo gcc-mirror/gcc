@@ -1151,22 +1151,21 @@ Objective-C and Objective-C++ Dialects}.
 -msign-extend-enabled  -muser-enabled}
 
 @emph{LoongArch Options} (@ref{LoongArch Options})
-@gccoptlist{-march=@var{arch-type}  -mtune=@var{tune-type} -mabi=@var{base-abi-type}
--mfpu=@var{fpu-type} -msimd=@var{simd-type}
--msoft-float -msingle-float -mdouble-float -mlsx -mno-lsx -mlasx -mno-lasx
--mbranch-cost=@var{n} -maddr-reg-reg-cost=@var{n}  -mcheck-zero-division
--mno-check-zero-division -mbreak-code=@var{code}
--mcond-move-int  -mno-cond-move-int
--mcond-move-float  -mno-cond-move-float
--memcpy  -mno-memcpy -mstrict-align -mno-strict-align -G @var{num}
+@gccoptlist{-march=@var{arch-type}  -mtune=@var{tune-type}  -mabi=@var{base-abi-type}
+-mfpu=@var{fpu-type}  -msimd=@var{simd-type}
+-msoft-float  -msingle-float  -mdouble-float  -mlsx  -mlasx
+-mbranch-cost=@var{n}  -maddr-reg-reg-cost=@var{n}  -mcheck-zero-division
+-mbreak-code=@var{code}
+-mcond-move-int  -mcond-move-float
+-memcpy  -mstrict-align  -G @var{num}
 -mmax-inline-memcpy-size=@var{n}
--mexplicit-relocs=@var{style} -mexplicit-relocs -mno-explicit-relocs
--mdirect-extern-access -mno-direct-extern-access
--mcmodel=@var{code-model} -mrelax -mpass-mrelax-to-as
--mrecip  -mrecip=@var{opt} -mfrecipe -mno-frecipe -mdiv32 -mno-div32
--mlam-bh -mno-lam-bh -mlamcas -mno-lamcas -mld-seq-sa -mno-ld-seq-sa
--mscq -mno-scq -mtls-dialect=@var{opt}
--mannotate-tablejump -mno-annotate-tablejump}
+-mexplicit-relocs=@var{style}  -mexplicit-relocs  -mno-explicit-relocs
+-mdirect-extern-access
+-mcmodel=@var{code-model}  -mrelax  -mpass-mrelax-to-as
+-mrecip  -mrecip=@var{opt}  -mfrecipe  -mdiv32
+-mlam-bh  -mlamcas  -mld-seq-sa
+-mscq  -mtls-dialect=@var{opt}
+-mannotate-tablejump}
 
 @emph{M32C Options} (@ref{M32C Options})
 @gccoptlist{-mcpu=@var{cpu}  -msim  -memregs=@var{number}}
@@ -28755,7 +28754,7 @@ No LoongArch SIMD instruction may be generated.
 
 @opindex msoft-float
 @item -msoft-float
-Force @option{-mfpu=none} and prevents the use of floating-point
+Force @option{-mfpu=none} and prevent the use of floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
@@ -28771,18 +28770,22 @@ Force @option{-mfpu=64} and allow the use of 32/64-bit floating-point
 registers for parameter passing.  This option may change the target
 ABI.
 
-@opindex ml[a]sx
+@opindex mlasx
+@opindex mno-lasx
+@opindex mlsx
+@opindex mno-lsx
 @item -mlasx
 @itemx -mno-lasx
 @item -mlsx
 @itemx -mno-lsx
 Incrementally adjust the scope of the SIMD extensions (none / LSX / LASX)
 that can be used by the compiler for code generation.  Enabling LASX with
-@option{mlasx} automatically enables LSX, and diabling LSX with @option{mno-lsx}
+@option{-mlasx} automatically enables LSX,
+and disabling LSX with @option{-mno-lsx}
 automatically disables LASX.  These driver-only options act upon the final
-@option{msimd} configuration state and make incremental changes in the order
+@option{-msimd} configuration state and make incremental changes in the order
 they appear on the GCC driver's command line, deriving the final / canonicalized
-@option{msimd} option that is passed to the compiler proper.
+@option{-msimd} option that is passed to the compiler proper.
 
 @opindex mbranch-cost
 @item -mbranch-cost=@var{n}
@@ -28793,6 +28796,7 @@ Set the cost of branches to roughly @var{n} instructions.
 Set the cost of ADDRESS_REG_REG to the value calculated by @var{n}.
 
 @opindex mcheck-zero-division
+@opindex mno-check-zero-division
 @item -mcheck-zero-division
 @itemx -mno-check-zero-divison
 Trap (do not trap) on integer division by zero.  The default is
@@ -28811,18 +28815,21 @@ or greater than 32767.  The default is -1, meaning to use the
 @code{amswap.w} instruction.
 
 @opindex mcond-move-int
+@opindex mno-cond-move-int
 @item -mcond-move-int
 @itemx -mno-cond-move-int
 Conditional moves for integral data in general-purpose registers
 are enabled (disabled).  The default is @option{-mcond-move-int}.
 
 @opindex mcond-move-float
+@opindex mno-cond-move-float
 @item -mcond-move-float
 @itemx -mno-cond-move-float
 Conditional moves for floating-point registers are enabled (disabled).
 The default is @option{-mcond-move-float}.
 
 @opindex mmemcpy
+@opindex mno-memcpy
 @item -mmemcpy
 @itemx -mno-memcpy
 Force (do not force) the use of @code{memcpy} for non-trivial block moves.
@@ -28833,6 +28840,7 @@ behavior if explicitly specified, regardless of the order these options on
 the command line.
 
 @opindex mstrict-align
+@opindex mno-strict-align
 @item -mstrict-align
 @itemx -mno-strict-align
 Avoid or allow generating memory accesses that may not be aligned on a natural
@@ -28873,15 +28881,21 @@ The @option{-mcmodel=extreme} option is incompatible with @option{-fplt}
 and/or @option{-mexplicit-relocs=none}.
 @end table
 
+@opindex mexplicit-relocs
+@opindex mno-explicit-relocs
 @item -mexplicit-relocs=@var{style}
+@itemx -mexplicit-relocs
+@itemx -mno-explicit-relocs
 Set when to use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
 limit instruction scheduling but allow linker relaxation.
-with @option{-mexplicit-relocs=none} the assembler macros are always used,
-with @option{-mexplicit-relocs=always} the assembler relocation operators
-are always used, with @option{-mexplicit-relocs=auto} the compiler will
-use the relocation operators where the linker relaxation is impossible to
-improve the code quality, and macros elsewhere.  The default
+With @option{-mexplicit-relocs=none}, the assembler macros are always used;
+with @option{-mexplicit-relocs=always}, the assembler relocation operators
+are always used; and with @option{-mexplicit-relocs=auto} the compiler uses
+the relocation operators where linker relaxation is impossible to
+improve the code quality, and macros elsewhere.
+
+The default
 value for the option is determined with the assembler capability detected
 during GCC build-time and the setting of @option{-mrelax}:
 @option{-mexplicit-relocs=none} if the assembler does not support
@@ -28891,22 +28905,18 @@ operators but @option{-mrelax} is not enabled,
 @option{-mexplicit-relocs=auto} if the assembler supports relocation
 operators and @option{-mrelax} is enabled.
 
-@opindex mexplicit-relocs
-@item -mexplicit-relocs
-An alias of @option{-mexplicit-relocs=always} for backward compatibility.
-
-@opindex mno-explicit-relocs
-@item -mno-explicit-relocs
-An alias of @option{-mexplicit-relocs=none} for backward compatibility.
+For backward compatibility, @option{-mexplicit-relocs} is equivalent to
+@option{-mexplicit-relocs=always}, while @option{-mno-explicit-relocs} is
+equivalent to @option{-mexplicit-relocs=none}.
 
 @opindex mdirect-extern-access
 @item -mdirect-extern-access
 @itemx -mno-direct-extern-access
-Do not use or use GOT to access external symbols.  The default is
-@option{-mno-direct-extern-access}: GOT is used for external symbols with
+Control use of the GOT to access external symbols.  The default is
+@option{-mno-direct-extern-access}: the GOT is used for external symbols with
 default visibility, but not used for other external symbols.
 
-With @option{-mdirect-extern-access}, GOT is not used and all external
+With @option{-mdirect-extern-access}, the GOT is not used and all external
 symbols are PC-relatively addressed.  It is @strong{only} suitable for
 environments where no dynamic link is performed, like firmwares, OS
 kernels, executables linked with @option{-static} or @option{-static-pie}.
@@ -28949,7 +28959,7 @@ These instructions are generated only when @option{-funsafe-math-optimizations}
 is enabled together with @option{-ffinite-math-only} and
 @option{-fno-trapping-math}.
 This option is off by default. Before you can use this option, you must sure the
-target CPU supports frecipe and frsqrte instructions.
+target CPU supports the @code{frecipe} and @code{frsqrte} instructions.
 Note that while the throughput of the sequence is higher than the throughput of
 the non-reciprocal instruction, the precision of the sequence can be decreased
 by up to 2 ulp (i.e. the inverse of 1.0 equals 0.99999994).
@@ -28997,31 +29007,33 @@ all of the reciprocal approximations, except for scalar square root.
 @item -mfrecipe
 @itemx -mno-frecipe
 Use (do not use) @code{frecipe.@{s/d@}} and @code{frsqrte.@{s/d@}}
-instructions.  When build with @option{-march=la664}, it is enabled by default.
-The default is @option{-mno-frecipe}.
+instructions.  When compiling with @option{-march=la664},
+it is enabled by default.  Otherwise the default is @option{-mno-frecipe}.
 
 @opindex mdiv32
 @opindex mno-div32
 @item -mdiv32
 @itemx -mno-div32
 Use (do not use) @code{div.w[u]} and @code{mod.w[u]} instructions with input
-not sign-extended.  When build with @option{-march=la664}, it is enabled by
-default.  The default is @option{-mno-div32}.
+not sign-extended.  When compiling with @option{-march=la664}, it is enabled by
+default.  Otherwise the default is @option{-mno-div32}.
 
 @opindex mlam-bh
 @opindex mno-lam-bh
 @item -mlam-bh
 @itemx -mno-lam-bh
-Use (do not use) @code{am@{swap/add@}[_db].@{b/h@}} instructions.  When build
-with @option{-march=la664}, it is enabled by default.  The default is
-@option{-mno-lam-bh}.
+Use (do not use) @code{am@{swap/add@}[_db].@{b/h@}} instructions.
+When compiling
+with @option{-march=la664}, it is enabled by default.  Otherwise
+the default is @option{-mno-lam-bh}.
 
 @opindex mlamcas
 @opindex mno-lamcas
 @item -mlamcas
 @itemx -mno-lamcas
-Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.  When build with
-@option{-march=la664}, it is enabled by default.  The default is
+Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.
+When compiling with
+@option{-march=la664}, it is enabled by default.  Otherwise the default is
 @option{-mno-lamcas}.
 
 @opindex mld-seq-sa
@@ -29029,7 +29041,8 @@ Use (do not use) @code{amcas[_db].@{b/h/w/d@}} instructions.  When build with
 @item -mld-seq-sa
 @itemx -mno-ld-seq-sa
 Whether a same-address load-load barrier (@code{dbar 0x700}) is needed.  When
-build with @option{-march=la664}, it is enabled by default.  The default is
+compiling with @option{-march=la664}, it is enabled by default.
+Otherwise the default is
 @option{-mno-ld-seq-sa}, the load-load barrier is needed.
 
 @opindex mscq
@@ -29042,8 +29055,8 @@ The default is @option{-mscq} if the machine type specified with
 
 @opindex mtls-dialect
 @item -mtls-dialect=@var{opt}
-This option controls which tls dialect may be used for general dynamic and
-local dynamic TLS models.
+This option controls which TLS dialect may be used for general dynamic and
+local dynamic TLS models.  The @var{opt} argument can be one of:
 
 @table @samp
 @item trad
@@ -29061,13 +29074,13 @@ Create an annotation section @code{.discard.tablejump_annotate} to
 correlate the @code{jirl} instruction and the jump table when a jump
 table is used to optimize the @code{switch} statement.  Some external
 tools, for example @file{objtool} of the Linux kernel building system,
-need the annotation to analysis the control flow.  The default is
+need the annotation to analyze the control flow.  The default is
 @option{-mno-annotate-tablejump}.
 
 @item --param loongarch-vect-unroll-limit=@var{n}
-The vectorizer will use available tuning information to determine whether it
+The vectorizer uses available tuning information to determine whether it
 would be beneficial to unroll the main vectorized loop and by how much.  This
-parameter set's the upper bound of how much the vectorizer will unroll the main
+parameter sets the upper bound of how much the vectorizer unrolls the main
 loop.  The default value is six.
 
 @end table
