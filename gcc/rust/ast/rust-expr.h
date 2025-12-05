@@ -294,15 +294,7 @@ public:
     return MetaItem::ItemKind::PathExpr;
   }
 
-  // There are two Locations in MetaItemPathExpr (path and expr),
-  //  we have no idea use which of them, just simply return UNKNOWN_LOCATION
-  //  now.
-  // Maybe we will figure out when we really need the location in the future.
-  location_t get_locus () const override
-  {
-    rust_unreachable ();
-    return UNKNOWN_LOCATION;
-  }
+  location_t get_locus () const override { return path.get_locus (); }
 
   void accept_vis (ASTVisitor &vis) override;
 
