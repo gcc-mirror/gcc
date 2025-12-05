@@ -1271,12 +1271,8 @@ Objective-C and Objective-C++ Dialects}.
 @emph{NDS32 Options} (@ref{NDS32 Options})
 @gccoptlist{-mbig-endian  -mlittle-endian
 -mreduced-regs  -mfull-regs
--mcmov  -mno-cmov
--mext-perf  -mno-ext-perf
--mext-perf2  -mno-ext-perf2
--mext-string  -mno-ext-string
--mv3push  -mno-v3push
--m16bit  -mno-16bit
+-mcmov  -mext-perf  -mext-perf2
+-mext-string  -mv3push  -m16bit
 -misr-vector-size=@var{num}
 -mcache-block-size=@var{num}
 -march=@var{arch}
@@ -31408,52 +31404,40 @@ Use reduced-set registers for register allocation.
 Use full-set registers for register allocation.
 
 @opindex mcmov
-@item -mcmov
-Generate conditional move instructions.
-
 @opindex mno-cmov
-@item -mno-cmov
-Do not generate conditional move instructions.
+@item -mcmov
+@itemx -mno-cmov
+Enable/disable generation of conditional move instructions.
 
 @opindex mext-perf
-@item -mext-perf
-Generate performance extension instructions.
-
 @opindex mno-ext-perf
-@item -mno-ext-perf
-Do not generate performance extension instructions.
+@item -mext-perf
+@itemx -mno-ext-perf
+Enable/disable generation of performance extension instructions.
 
 @opindex mext-perf2
-@item -mext-perf2
-Generate performance extension 2 instructions.
-
 @opindex mno-ext-perf2
-@item -mno-ext-perf2
-Do not generate performance extension 2 instructions.
+@item -mext-perf2
+@itemx -mno-ext-perf2
+Enable/disable generation of performance extension 2 instructions.
 
 @opindex mext-string
-@item -mext-string
-Generate string extension instructions.
-
 @opindex mno-ext-string
-@item -mno-ext-string
-Do not generate string extension instructions.
+@item -mext-string
+@itemx -mno-ext-string
+Enable/disable generation of string extension instructions.
 
 @opindex mv3push
-@item -mv3push
-Generate v3 push25/pop25 instructions.
-
 @opindex mno-v3push
-@item -mno-v3push
-Do not generate v3 push25/pop25 instructions.
+@item -mv3push
+@itemx -mno-v3push
+Enable/disable generation of v3 push25/pop25 instructions.
 
 @opindex m16-bit
-@item -m16-bit
-Generate 16-bit instructions.
-
 @opindex mno-16-bit
-@item -mno-16-bit
-Do not generate 16-bit instructions.
+@item -m16-bit
+@itemx -mno-16-bit
+Enable/disable generation of 16-bit instructions.
 
 @opindex misr-vector-size
 @item -misr-vector-size=@var{num}
@@ -31484,12 +31468,16 @@ All the text and data segments can be within 4GB addressing space.
 @end table
 
 @opindex mctor-dtor
+@opindex mno-ctor-dtor
 @item -mctor-dtor
-Enable constructor/destructor feature.
+@itemx -mno-ctor-dtor
+Enable/disable constructor/destructor feature.
 
 @opindex mrelax
+@opindex mno-relax
 @item -mrelax
-Guide linker to relax instructions.
+@itemx -mno-relax
+Enable/disable linker option to relax instructions.
 
 @end table
 
