@@ -28618,22 +28618,27 @@ These @option{-m} options are defined for the LatticeMico32 architecture:
 
 @table @gcctabopt
 @opindex mbarrel-shift-enabled
+@opindex mno-barrel-shift-enabled
 @item -mbarrel-shift-enabled
 Enable barrel-shift instructions.
 
 @opindex mdivide-enabled
+@opindex mno-divide-enabled
 @item -mdivide-enabled
 Enable divide and modulus instructions.
 
-@opindex multiply-enabled
+@opindex mmultiply-enabled
+@opindex mno-multiply-enabled
 @item -mmultiply-enabled
 Enable multiply instructions.
 
 @opindex msign-extend-enabled
+@opindex mno-sign-extend-enabled
 @item -msign-extend-enabled
 Enable sign extend instructions.
 
 @opindex muser-enabled
+@opindex mno-user-enabled
 @item -muser-enabled
 Enable user-defined instructions.
 
