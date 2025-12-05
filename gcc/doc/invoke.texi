@@ -1301,7 +1301,7 @@ See RS/6000 and PowerPC Options.
 
 @emph{PRU Options} (@ref{PRU Options})
 @gccoptlist{-mmcu=@var{mcu}  -minrt  -mno-relax  -mloop
--mmul -mfillzero -mabi=@var{variant}}
+-mmul  -mfillzero  -mabi=@var{variant}}
 
 @emph{RISC-V Options} (@ref{RISC-V Options})
 @gccoptlist{-mbranch-cost=@var{N-instruction}
@@ -31796,16 +31796,16 @@ are removed.
 This option disables support for static initializers and constructors.
 Beware that the compiler could still generate code with static initializers
 and constructors.  It is up to the programmer to ensure that the source
-program will not use those features.
+program does not use those features.
 
-The minimal startup code would not pass @code{argc} and @code{argv} arguments
+The minimal startup code does not pass @code{argc} and @code{argv} arguments
 to @code{main}, so the latter must be declared as @code{int main (void)}.
 This is already the norm for most firmware projects.
 
 @opindex mmcu
 @item -mmcu=@var{mcu}
-Specify the PRU hardware variant to use.  A correspondingly named
-spec file would be loaded, passing the memory region sizes to
+Specify the PRU hardware variant to use.  A correspondingly-named
+spec file is loaded, passing the memory region sizes to
 the linker and defining hardware-specific C macros.
 
 Newlib provides only the @code{sim} spec, intended for running
@@ -31819,21 +31819,27 @@ Make GCC pass the @option{--no-relax} command-line option to the linker
 instead of the @option{--relax} option.
 
 @opindex mloop
+@opindex mno-loop
 @item -mloop
+@itemx -mno-loop
 Allow (or do not allow) GCC to use the LOOP instruction.
 
 @opindex mmul
+@opindex mno-mul
 @item -mmul
+@itemx -mno-mul
 Allow (or do not allow) GCC to use the PRU multiplier unit.
 
 @opindex mfillzero
+@opindex mno-fillzero
 @item -mfillzero
+@itemx -mno-fillzero
 Allow (or do not allow) GCC to use the FILL and ZERO instructions.
 
 @opindex mabi
 @item -mabi=@var{variant}
 Specify the ABI variant to output code for.  @option{-mabi=ti} selects the
-unmodified TI ABI while @option{-mabi=gnu} selects a GNU variant that copes
+unmodified TI ABI, while @option{-mabi=gnu} selects a GNU variant that copes
 more naturally with certain GCC assumptions.  These are the differences:
 
 @table @samp
@@ -31849,7 +31855,8 @@ GNU always passes and expects a valid return value pointer.
 
 @item Size Of Struct Containing Bit-fields
 TI ABI mandates that struct size is determined by the bit-field type, if it
-contains any.  Whereas GNU allocates the smallest amount of bytes which would
+contains any.  On the other hand,
+GNU allocates the smallest amount of bytes which would
 fit the bit-field.
 
 For example, TI ABI reserves 4 bytes for this struct, whereas GNU reserves
@@ -31864,7 +31871,7 @@ TI ABI mandates that volatile bit-fields are accessed using their type.
 In contrast, GNU ABI uses the smallest integer type fitting the bit-field.
 
 For example, TI ABI requires a single load of 4 bytes for the
-following bit-field.  Whereas GNU generates a load of 1 byte:
+following bit-field.  GNU generates a load of 1 byte:
 
 @smallexample
 struct S @{ volatile int i:1; @};
