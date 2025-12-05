@@ -125,7 +125,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_bound_args(__make_bound_args<_BoundArgs...>(std::forward<_Args>(__args)...))
 	{ static_assert(sizeof...(_Args) == sizeof...(_BoundArgs)); }
 
-#if __cpp_explicit_this_parameter
+#if _GLIBCXX_EXPLICIT_THIS_PARAMETER
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wc++23-extensions" // deducing this
       template<typename _Self, typename... _CallArgs>
 	constexpr _Result_t<_Self, _CallArgs...>
 	operator()(this _Self&& __self, _CallArgs&&... __call_args)
@@ -134,6 +136,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _S_call(__like_t<_Self, _Binder>(__self),
 			 std::forward<_CallArgs>(__call_args)...);
 	}
+# pragma GCC diagnostic pop
 #else
       template<typename... _CallArgs>
 	requires true
