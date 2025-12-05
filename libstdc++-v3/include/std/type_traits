@@ -41,6 +41,7 @@
 
 #define __glibcxx_want_bool_constant
 #define __glibcxx_want_bounded_array_traits
+#define __glibcxx_want_common_reference
 #define __glibcxx_want_has_unique_object_representations
 #define __glibcxx_want_integral_constant_callable
 #define __glibcxx_want_is_aggregate
@@ -4128,6 +4129,12 @@ template<typename _Ret, typename _Fn, typename... _Args>
   template<typename _Tp1, typename _Tp2>
     requires is_reference_v<_Tp1> && is_reference_v<_Tp2>
       && requires { typename __common_ref<_Tp1, _Tp2>; }
+#if __cpp_lib_common_reference // C++ >= 20
+      && is_convertible_v<add_pointer_t<_Tp1>,
+			  add_pointer_t<__common_ref<_Tp1, _Tp2>>>
+      && is_convertible_v<add_pointer_t<_Tp2>,
+			  add_pointer_t<__common_ref<_Tp1, _Tp2>>>
+#endif
     struct __common_reference_impl<_Tp1, _Tp2, 1>
     { using type = __common_ref<_Tp1, _Tp2>; };
 
