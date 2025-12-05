@@ -1285,7 +1285,7 @@ Objective-C and Objective-C++ Dialects}.
 -mmainkernel  -moptimize  -msoft-stack  -muniform-simt  -mgomp}
 
 @emph{OpenRISC Options} (@ref{OpenRISC Options})
-@gccoptlist{-mboard=@var{name}  -mnewlib  -mhard-mul  -mhard-div
+@gccoptlist{-mboard=@var{name}  -mhard-mul  -mhard-div
 -msoft-mul  -msoft-div
 -msoft-float  -mhard-float  -mdouble-float -munordered-float
 -mcmov  -mror  -mrori  -msext  -msfimm  -mshftimm
@@ -31615,13 +31615,8 @@ These options are defined for OpenRISC:
 
 @opindex mboard
 @item -mboard=@var{name}
-Configure a board specific runtime.  This will be passed to the linker for
+Configure a board specific runtime.  This is passed to the linker for
 newlib board library linking.  The default is @code{or1ksim}.
-
-@opindex mnewlib
-@item -mnewlib
-This option is ignored; it is for compatibility purposes only.  This used to
-select linker and preprocessor options for use with newlib.
 
 @opindex msoft-div
 @opindex mhard-div
@@ -31645,6 +31640,7 @@ Select software or hardware for floating point operations.
 The default is software.
 
 @opindex mdouble-float
+@opindex mno-double-float
 @item -mdouble-float
 When @option{-mhard-float} is selected, enables generation of double-precision
 floating point instructions.  By default functions from @file{libgcc} are used
@@ -31660,7 +31656,7 @@ compare and set flag operations.
 @opindex mcmov
 @item -mcmov
 Enable generation of conditional move (@code{l.cmov}) instructions.  By
-default the equivalent will be generated using set and branch.
+default the equivalents are generated using set and branch.
 
 @opindex mror
 @item -mror
@@ -31681,13 +31677,13 @@ memory loads are used to perform sign extension.
 @opindex msfimm
 @item -msfimm
 Enable generation of compare and set flag with immediate (@code{l.sf*i})
-instructions.  By default extra instructions will be generated to store the
+instructions.  By default extra instructions are generated to store the
 immediate to a register first.
 
 @opindex mshftimm
 @item -mshftimm
 Enable generation of shift with immediate (@code{l.srai}, @code{l.srli},
-@code{l.slli}) instructions.  By default extra instructions will be generated
+@code{l.slli}) instructions.  By default extra instructions are generated
 to store the immediate to a register first.
 
 @opindex mcmodel=

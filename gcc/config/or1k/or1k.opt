@@ -85,7 +85,7 @@ Enum(or1k_cmodel_type) String(large) Value(CMODEL_LARGE)
 mcmov
 Target RejectNegative Mask(CMOV)
 Enable generation of conditional move (l.cmov) instructions.  By default the
-equivalent will be generated using set and branch.
+equivalents are generated using set and branch.
 
 mror
 Target RejectNegative Mask(ROR)
@@ -106,11 +106,11 @@ loads are used to perform sign extension.
 msfimm
 Target RejectNegative Mask(SFIMM)
 Enable generation of compare and set flag with immediate (l.sf*i) instructions.
-By default extra instructions will be generated to store the immediate to a
+By default extra instructions are generated to store the immediate to a
 register first.
 
 mshftimm
 Target RejectNegative Mask(SHFTIMM)
 Enable generation of shift with immediate (l.srai, l.srli, l.slli) instructions.
-By default extra instructions will be generated to store the immediate to a
+By default extra instructions are generated to store the immediate to a
 register first.
