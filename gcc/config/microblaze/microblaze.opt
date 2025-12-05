@@ -21,19 +21,19 @@
 ; <http://www.gnu.org/licenses/>.  */
 
 Zxl-mode-bootstrap
-Driver
+Driver Undocumented
 
 Zxl-mode-executable
-Driver
+Driver Undocumented
 
 Zxl-mode-novectors
-Driver
+Driver Undocumented
 
 Zxl-mode-xilkernel
-Driver
+Driver Undocumented
 
 Zxl-mode-xmdstub
-Driver
+Driver Undocumented
 
 msoft-float
 Target RejectNegative Mask(SOFT_FLOAT)
@@ -84,7 +84,7 @@ Target Mask(PATTERN_COMPARE)
 Use pattern compare instructions.
 
 mxl-stack-check
-Target Mask(STACK_CHECK) Warn(%qs is deprecated; use -fstack-check)
+Target Mask(STACK_CHECK) Warn(%qs is deprecated; use -fstack-check) Undocumented
 Check for stack overflow at runtime.
 
 mxl-gp-opt
@@ -92,7 +92,7 @@ Target Mask(XLGPOPT)
 Use GP relative sdata/sbss sections.
 
 mno-clearbss
-Target RejectNegative Var(flag_zero_initialized_in_bss, 0) Warn(%qs is deprecated; use -fno-zero-initialized-in-bss)
+Target RejectNegative Var(flag_zero_initialized_in_bss, 0) Warn(%qs is deprecated; use -fno-zero-initialized-in-bss) Undocumented
 Clear the BSS to zero and place zero initialized in BSS.
 
 mxl-multiply-high
@@ -109,19 +109,19 @@ Use hardware floating point square root instruction.
 
 mxl-mode-executable
 Target Mask(XL_MODE_EXECUTABLE)
-Description for mxl-mode-executable.
+Build application as normal executable.
 
 mxl-mode-xmdstub
 Target Mask(XL_MODE_XMDSTUB)
-Description for mxl-mode-xmdstub.
+Build application for use with xmdstub debug agent.
 
 mxl-mode-bootstrap
 Target Mask(XL_MODE_BOOTSTRAP)
-Description for mxl-mode-bootstrap.
+Build application to be loaded using a bootloader.
 
 mxl-mode-novectors
 Target Mask(XL_MODE_NOVECTORS)
-Description for mxl-mode-novectors.
+Build application without any of the MicroBlaze vectors.
 
 mxl-prefetch
 Target Mask(PREFETCH)
@@ -132,4 +132,4 @@ Target Mask(PIC_DATA_TEXT_REL)
 Data referenced by offset from start of text instead of GOT (with -fPIC/-fPIE).
 
 mxl-mode-xilkernel
-Target
+Target Undocumented

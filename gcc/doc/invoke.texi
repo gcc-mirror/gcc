@@ -1203,10 +1203,10 @@ Objective-C and Objective-C++ Dialects}.
 @emph{MicroBlaze Options} (@ref{MicroBlaze Options})
 @gccoptlist{-msoft-float  -mhard-float  -msmall-divides  -mcpu=@var{cpu}
 -mmemcpy  -mxl-soft-mul  -mxl-soft-div  -mxl-barrel-shift
--mxl-pattern-compare  -mxl-stack-check  -mxl-gp-opt  -mno-clearbss
+-mxl-pattern-compare  -mxl-gp-opt
 -mxl-multiply-high  -mxl-float-convert  -mxl-float-sqrt
 -mbig-endian  -mlittle-endian  -mxl-reorder  -mxl-mode-@var{app-model}
--mpic-data-is-text-relative}
+-mxl-prefetch  -mpic-data-is-text-relative}
 
 @emph{MIPS Options} (@ref{MIPS Options})
 @gccoptlist{-EL  -EB  -march=@var{arch}  -mtune=@var{arch}
@@ -29728,12 +29728,9 @@ Use software emulation for floating point (default).
 Use hardware floating-point instructions.
 
 @opindex mmemcpy
+@opindex mno-memcpy
 @item -mmemcpy
 Do not optimize block moves, use @code{memcpy}.
-
-@opindex mno-clearbss
-@item -mno-clearbss
-This option is deprecated.  Use @option{-fno-zero-initialized-in-bss} instead.
 
 @opindex mcpu=
 @item -mcpu=@var{cpu-type}
@@ -29744,42 +29741,49 @@ where @var{X} is a major version, @var{YY} is the minor version, and
 @samp{v4.00.b}, @samp{v5.00.a}, @samp{v5.00.b}, @samp{v6.00.a}.
 
 @opindex mxl-soft-mul
+@opindex mno-xl-soft-mul
 @item -mxl-soft-mul
-Use software multiply emulation (default).
+@itemx -mno-xl-soft-mul
+Use software multiply emulation.  This is enabled by default.
 
 @opindex mxl-soft-div
+@opindex mno-xl-soft-div
 @item -mxl-soft-div
-Use software emulation for divides (default).
+@itemx -mno-xl-soft-div
+Use software emulation for divides.  This is enabled by default.
 
 @opindex mxl-barrel-shift
+@opindex mno-xl-barrel-shift
 @item -mxl-barrel-shift
 Use the hardware barrel shifter.
 
 @opindex mxl-pattern-compare
+@opindex mno-xl-pattern-compare
 @item -mxl-pattern-compare
 Use pattern compare instructions.
 
 @opindex msmall-divides
+@opindex mno-small-divides
 @item -msmall-divides
 Use table lookup optimization for small signed integer divisions.
 
-@opindex mxl-stack-check
-@item -mxl-stack-check
-This option is deprecated.  Use @option{-fstack-check} instead.
-
 @opindex mxl-gp-opt
+@opindex mno-xl-gp-opt
 @item -mxl-gp-opt
 Use GP-relative @code{.sdata}/@code{.sbss} sections.
 
 @opindex mxl-multiply-high
+@opindex mno-xl-multiply-high
 @item -mxl-multiply-high
 Use multiply high instructions for high part of 32x32 multiply.
 
 @opindex mxl-float-convert
+@opindex mno-xl-float-convert
 @item -mxl-float-convert
 Use hardware floating-point conversion instructions.
 
 @opindex mxl-float-sqrt
+@opindex mno-xl-float-sqrt
 @item -mxl-float-sqrt
 Use hardware floating-point square root instruction.
 
@@ -29795,6 +29799,14 @@ Generate code for a little-endian target.
 @item -mxl-reorder
 Use reorder instructions (swap and byte reversed load/store).
 
+@opindex mxl-mode-executable
+@opindex mno-xl-mode-executable
+@opindex mxl-mode-xmdstub
+@opindex mno-xl-mode-xmdstub
+@opindex mxl-mode-bootstrap
+@opindex mno-xl-mode-bootstrap
+@opindex mxl-mode-novectors
+@opindex mno-xl-mode-novectors
 @item -mxl-mode-@var{app-model}
 Select application model @var{app-model}.  Valid models are
 @table @samp
@@ -29818,10 +29830,13 @@ MicroBlaze vectors. This option may be useful for applications running
 within a monitoring application. This model uses @file{crt3.o} as a startup file.
 @end table
 
-Option @option{-xl-mode-@var{app-model}} is a deprecated alias for
-@option{-mxl-mode-@var{app-model}}.
+@opindex mxl-prefetch
+@opindex mno-xl-prefetch
+@item -mxl-prefetch
+Enable insertion of prefetch (@code{wic}) instructions at call sites.
 
 @opindex mpic-data-is-text-relative
+@opindex mno-pic-data-is-text-relative
 @item -mpic-data-is-text-relative
 Assume that the displacement between the text and data segments is fixed
 at static link time.  This allows data to be referenced by offset from start of
