@@ -10722,7 +10722,7 @@ for more information about the @code{target} attribute and the attribute
 syntax.
 
 The @code{#pragma GCC target} pragma is presently implemented for
-x86, ARM, AArch64, PowerPC, and S/390 targets only.
+x86, ARM, AArch64, PowerPC, RISC-V, and S/390 targets only.
 
 @cindex pragma GCC optimize
 @item #pragma GCC optimize (@var{string}, @dots{})

@@ -12462,6 +12462,39 @@ riscv_option_restore (struct gcc_options *opts,
 
 static GTY (()) tree riscv_previous_fndecl;
 
+/* Reset the previous function declaration.  */
+
+void
+riscv_reset_previous_fndecl (void)
+{
+  riscv_previous_fndecl = NULL;
+}
+
+/* Implement TARGET_OPTION_SAVE.  */
+
+static void
+riscv_option_save (struct cl_target_option *ptr,
+		   struct gcc_options *opts,
+		   struct gcc_options * /* opts_set */)
+{
+  ptr->x_riscv_arch_string = opts->x_riscv_arch_string;
+  ptr->x_riscv_tune_string = opts->x_riscv_tune_string;
+  ptr->x_riscv_cpu_string = opts->x_riscv_cpu_string;
+}
+
+/* Implement TARGET_OPTION_PRINT.  */
+
+static void
+riscv_option_print (FILE *file, int indent, struct cl_target_option *ptr)
+{
+  fprintf (file, "%*sarch = %s\n", indent, "",
+	   ptr->x_riscv_arch_string ? ptr->x_riscv_arch_string : "default");
+  fprintf (file, "%*stune = %s\n", indent, "",
+	   ptr->x_riscv_tune_string ? ptr->x_riscv_tune_string : "default");
+  if (ptr->x_riscv_cpu_string)
+    fprintf (file, "%*scpu = %s\n", indent, "", ptr->x_riscv_cpu_string);
+}
+
 /* Implement TARGET_CONDITIONAL_REGISTER_USAGE.  */
 
 static void
@@ -12798,7 +12831,7 @@ riscv_get_interrupt_type (tree decl)
 /* Implement `TARGET_SET_CURRENT_FUNCTION'.  Unpack the codegen decisions
    like tuning and ISA features from the DECL_FUNCTION_SPECIFIC_TARGET
    of the function, if such exists.  This function may be called multiple
-   times on a single function so use aarch64_previous_fndecl to avoid
+   times on a single function so use riscv_previous_fndecl to avoid
    setting up identical state.  */
 
 /* Sanity checking for above function attributes.  */
@@ -16309,8 +16342,14 @@ riscv_prefetch_offset_address_p (rtx x, machine_mode mode)
 #undef TARGET_OPTION_OVERRIDE
 #define TARGET_OPTION_OVERRIDE riscv_option_override
 
+#undef TARGET_OPTION_SAVE
+#define TARGET_OPTION_SAVE riscv_option_save
+
 #undef TARGET_OPTION_RESTORE
 #define TARGET_OPTION_RESTORE riscv_option_restore
+
+#undef TARGET_OPTION_PRINT
+#define TARGET_OPTION_PRINT riscv_option_print
 
 #undef TARGET_OPTION_VALID_ATTRIBUTE_P
 #define TARGET_OPTION_VALID_ATTRIBUTE_P riscv_option_valid_attribute_p

@@ -489,6 +489,17 @@ riscv_option_valid_attribute_p (tree fndecl, tree, tree args, int)
   return ret;
 }
 
+/* Public wrapper for pragma processing.
+   Parse ARGS (a TREE_LIST of target attributes) and update global_options.
+   This is used by #pragma GCC target.  */
+
+bool
+riscv_process_target_attr_for_pragma (tree args)
+{
+  location_t loc = UNKNOWN_LOCATION;
+  return riscv_process_target_attr (args, &loc, riscv_target_attrs);
+}
+
 /* Parse the tree in ARGS that contains the target_version attribute
    information and update the global target options space.  If LOC is nonnull,
    report diagnostics against *LOC, otherwise remain silent.  */
