@@ -1259,7 +1259,9 @@ namespace views::__adaptor
 
       // Invoke _Adaptor with arguments __r, _M_args... according to the
       // value category of this _Partial object.
-#if __cpp_explicit_this_parameter
+#if _GLIBCXX_EXPLICIT_THIS_PARAMETER
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wc++23-extensions" // deducing this
       template<typename _Self, typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, __like_t<_Self, _Args>...>
 	constexpr auto
@@ -1268,6 +1270,7 @@ namespace views::__adaptor
 	  return _Binder::_S_call(__like_t<_Self, _Partial>(__self)._M_binder,
 				  std::forward<_Range>(__r));
 	}
+# pragma GCC diagnostic pop
 #else
       template<typename _Range>
 	requires __adaptor_invocable<_Adaptor, _Range, const _Args&...>
@@ -1336,7 +1339,9 @@ namespace views::__adaptor
 
       // Invoke _M_rhs(_M_lhs(__r)) according to the value category of this
       // range adaptor closure object.
-#if __cpp_explicit_this_parameter
+#if _GLIBCXX_EXPLICIT_THIS_PARAMETER
+# pragma GCC diagnostic push
+# pragma GCC diagnostic ignored "-Wc++23-extensions" // deducing this
       template<typename _Self, typename _Range>
 	requires __pipe_invocable<__like_t<_Self, _Lhs>, __like_t<_Self, _Rhs>, _Range>
 	constexpr auto
@@ -1346,6 +1351,7 @@ namespace views::__adaptor
 		  (__like_t<_Self, _Pipe>(__self)._M_lhs
 		   (std::forward<_Range>(__r))));
 	}
+# pragma GCC diagnostic pop
 #else
       template<typename _Range>
 	requires __pipe_invocable<const _Lhs&, const _Rhs&, _Range>
