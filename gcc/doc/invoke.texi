@@ -1186,12 +1186,12 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-march=@var{arch}  -mcpu=@var{cpu}  -mtune=@var{tune}
 -m68000  -m68020  -m68020-40  -m68020-60  -m68030  -m68040
 -m68060  -mcpu32  -m5200  -m5206e  -m528x  -m5307  -m5407
--mcfv4e  -mbitfield  -mno-bitfield  -mc68000  -mc68020
--mnobitfield  -mrtd  -mno-rtd  -mdiv  -mno-div  -mshort
--mno-short  -mhard-float  -m68881  -msoft-float  -mpcrel
--malign-int  -mstrict-align  -msep-data  -mno-sep-data
--mshared-library-id=n  -mid-shared-library  -mno-id-shared-library
--mxgot  -mno-xgot  -mlong-jump-table-offsets}
+-mcfv4e  -mbitfield  -mc68000  -mc68020
+-mrtd  -mdiv  -mshort
+-mhard-float  -m68881  -msoft-float  -mpcrel
+-malign-int  -mstrict-align  -msep-data
+-mshared-library-id=@var{n}  -mid-shared-library
+-mxgot  -mlong-jump-table-offsets}
 
 @emph{MCore Options} (@ref{MCore Options})
 @gccoptlist{-mhardlit  -mno-hardlit  -mdiv  -mno-div  -mrelax-immediates
@@ -29485,31 +29485,30 @@ example, the default is ``off'' for @option{-mcpu=5206} and ``on'' for
 GCC defines the macro @code{__mcfhwdiv__} when this option is enabled.
 
 @opindex mshort
+@opindex mno-short
 @item -mshort
+@itemx -mno-short
 Consider type @code{int} to be 16 bits wide, like @code{short int}.
 Additionally, parameters passed on the stack are also aligned to a
 16-bit boundary even on targets whose API mandates promotion to 32-bit.
-
-@opindex mno-short
-@item -mno-short
-Do not consider type @code{int} to be 16 bits wide.  This is the default.
-
-@opindex mnobitfield
-@opindex mno-bitfield
-@item -mnobitfield
-@itemx -mno-bitfield
-Do not use the bit-field instructions.  The @option{-m68000}, @option{-mcpu32}
-and @option{-m5200} options imply @w{@option{-mnobitfield}}.
+This option is disabled by default.
 
 @opindex mbitfield
+@opindex mno-bitfield
+@opindex mnobitfield
 @item -mbitfield
-Do use the bit-field instructions.  The @option{-m68020} option implies
-@option{-mbitfield}.  This is the default if you use a configuration
-designed for a 68020.
+@itemx -mno-bitfield
+@itemx -mnobitfield
+Control use of the bit-field instructions.
+The @option{-m68000}, @option{-mcpu32}
+and @option{-m5200} options imply @w{@option{-mnobitfield}};
+the @option{-m68020} option implies @option{-mbitfield}.
 
 @opindex mrtd
+@opindex mno-rtd
 @item -mrtd
-Use a different function-calling convention, in which functions
+@itemx -mno-rtd
+Control use of a different function-calling convention, in which functions
 that take a fixed number of arguments return with the @code{rtd}
 instruction, which pops their arguments while returning.  This
 saves one instruction in the caller since there is no need to pop
@@ -29561,26 +29560,32 @@ not presently supported with @option{-mpcrel}, though this could be supported fo
 Do not (do) assume that unaligned memory references are handled by
 the system.
 
+@opindex msep-data
+@opindex mno-sep-data
 @item -msep-data
-Generate code that allows the data segment to be located in a different
+@itemx -mno-sep-data
+With @option{-msep-data},
+generate code that allows the data segment to be located in a different
 area of memory from the text segment.  This allows for execute-in-place in
 an environment without virtual memory management.  This option implies
 @option{-fPIC}.
 
-@item -mno-sep-data
-Generate code that assumes that the data segment follows the text segment.
-This is the default.
+This option is disabled by default; GCC
+generates code that assumes that the data segment follows the text segment.
 
+@opindex mid-shared-library
+@opindex mno-id-shared-libary
 @item -mid-shared-library
-Generate code that supports shared libraries via the library ID method.
+@itemx -mno-id-shared-library
+If enabled, generate code that supports shared libraries via the
+library ID method.
 This allows for execute-in-place and shared libraries in an environment
 without virtual memory management.  This option implies @option{-fPIC}.
 
-@item -mno-id-shared-library
-Generate code that doesn't assume ID-based shared libraries are being used.
-This is the default.
+This option is disabled by default.
 
-@item -mshared-library-id=n
+@opindex mshared-library-id
+@item -mshared-library-id=@var{n}
 Specifies the identification number of the ID-based shared library being
 compiled.  Specifying a value of 0 generates more compact code; specifying
 other values forces the allocation of that number to the current
