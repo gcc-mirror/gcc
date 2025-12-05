@@ -1,4 +1,5 @@
 /* { dg-compile } */
+/* { dg-require-effective-target int128 } */
 /* { dg-additional-options "-mapxf" { target { { i?86-*-* x86_64-*-* } && { ! ia32 } } } } */
 /* PR middle-end/99782 */
 
