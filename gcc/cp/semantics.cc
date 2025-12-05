@@ -8356,6 +8356,7 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_NUM_THREADS:
 	case OMP_CLAUSE_NUM_GANGS:
 	case OMP_CLAUSE_NUM_WORKERS:
+	case OMP_CLAUSE_DYN_GROUPPRIVATE:
 	case OMP_CLAUSE_VECTOR_LENGTH:
 	  t = OMP_CLAUSE_OPERAND (c, 0);
 	  if (t == error_mark_node)
@@ -8389,7 +8390,8 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      if (!processing_template_decl)
 		{
 		  t = maybe_constant_value (t);
-		  if (TREE_CODE (t) == INTEGER_CST
+		  if (OMP_CLAUSE_CODE (c) != OMP_CLAUSE_DYN_GROUPPRIVATE
+		      && TREE_CODE (t) == INTEGER_CST
 		      && tree_int_cst_sgn (t) != 1)
 		    {
 		      switch (OMP_CLAUSE_CODE (c))
@@ -8417,6 +8419,15 @@ finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 				      [OMP_CLAUSE_CODE (c)]);
 			}
 		      t = integer_one_node;
+		    }
+		  else if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DYN_GROUPPRIVATE
+			   && TREE_CODE (t) == INTEGER_CST
+			   && tree_int_cst_sgn (t) < 0)
+		    {
+		      warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wopenmp,
+				  "%<dyn_groupprivate%> value must be "
+				  "non-negative");
+		      t = integer_zero_node;
 		    }
 		  t = fold_build_cleanup_point_expr (TREE_TYPE (t), t);
 		}

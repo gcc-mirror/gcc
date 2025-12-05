@@ -1327,6 +1327,27 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       pp_right_paren (pp);
       break;
 
+    case OMP_CLAUSE_DYN_GROUPPRIVATE:
+      pp_string (pp, "dyn_groupprivate(");
+      switch (OMP_CLAUSE_DYN_GROUPPRIVATE_KIND (clause))
+	{
+	case OMP_CLAUSE_FALLBACK_ABORT:
+	  pp_string (pp, "fallback(abort):");
+	  break;
+	case OMP_CLAUSE_FALLBACK_DEFAULT_MEM:
+	  pp_string (pp, "fallback(default_mem):");
+	  break;
+	case OMP_CLAUSE_FALLBACK_NULL:
+	  pp_string (pp, "fallback(null):");
+	  break;
+	case OMP_CLAUSE_FALLBACK_UNSPECIFIED:
+	  break;
+	}
+      dump_generic_node (pp, OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (clause),
+			 spc, flags, false);
+      pp_right_paren (pp);
+      break;
+
     case OMP_CLAUSE_SAFELEN:
       pp_string (pp, "safelen(");
       dump_generic_node (pp, OMP_CLAUSE_SAFELEN_EXPR (clause),

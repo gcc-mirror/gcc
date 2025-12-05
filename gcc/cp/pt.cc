@@ -18214,6 +18214,7 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	case OMP_CLAUSE_ASYNC:
 	case OMP_CLAUSE_WAIT:
 	case OMP_CLAUSE_DETACH:
+	case OMP_CLAUSE_DYN_GROUPPRIVATE:
 	  OMP_CLAUSE_OPERAND (nc, 0)
 	    = tsubst_stmt (OMP_CLAUSE_OPERAND (oc, 0), args, complain, in_decl);
 	  break;

@@ -398,6 +398,7 @@ unsigned const char omp_clause_num_ops[] =
   0, /* OMP_CLAUSE_NOHOST */
   1, /* OMP_CLAUSE_NOVARIANTS */
   1, /* OMP_CLAUSE_NOCONTEXT */
+  1, /* OMP_CLAUSE_DYN_GROUPPRIVATE  */
 };
 
 const char * const omp_clause_code_name[] =
@@ -501,6 +502,7 @@ const char * const omp_clause_code_name[] =
   "nohost",
   "novariants",
   "nocontext",
+  "dyn_groupprivate",
 };
 
 /* Unless specific to OpenACC, we tend to internally maintain OpenMP-centric

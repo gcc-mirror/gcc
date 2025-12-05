@@ -14881,6 +14881,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_DESTROY:
 	  break;
 
+	case OMP_CLAUSE_DYN_GROUPPRIVATE:
+	  remove = true;
+	  sorry_at (OMP_CLAUSE_LOCATION (c),"%<dyn_groupprivate%> clause");
+	  break;
+
 	case OMP_CLAUSE_ORDER:
 	  ctx->order_concurrent = true;
 	  break;

@@ -596,6 +596,8 @@ enum omp_clause_code {
   /* OpenMP clause: nocontext (scalar-expression).  */
   OMP_CLAUSE_NOCONTEXT,
 
+  /* OpenMP clause: dyn_groupprivate ( [fallback (...)] : integer-expression).  */
+  OMP_CLAUSE_DYN_GROUPPRIVATE,
 };
 
 #undef DEFTREESTRUCT
@@ -654,6 +656,14 @@ enum omp_clause_bind_kind {
   OMP_CLAUSE_BIND_PARALLEL,
   OMP_CLAUSE_BIND_THREAD
 };
+
+enum omp_clause_fallback_kind {
+  OMP_CLAUSE_FALLBACK_UNSPECIFIED,
+  OMP_CLAUSE_FALLBACK_ABORT,
+  OMP_CLAUSE_FALLBACK_DEFAULT_MEM,
+  OMP_CLAUSE_FALLBACK_NULL
+};
+
 
 /* memory-order-clause on OpenMP atomic/flush constructs or
    argument of atomic_default_mem_order clause.  */
@@ -1747,6 +1757,7 @@ struct GTY(()) tree_omp_clause {
     enum omp_clause_defaultmap_kind defaultmap_kind;
     enum omp_clause_bind_kind      bind_kind;
     enum omp_clause_device_type_kind device_type_kind;
+    enum omp_clause_fallback_kind fallback_kind;
   } GTY ((skip)) subcode;
 
   /* The gimplification of OMP_CLAUSE_REDUCTION_{INIT,MERGE} for omp-low's

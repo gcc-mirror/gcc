@@ -8977,8 +8977,8 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
   if (omp_clauses->num_threads)
     resolve_positive_int_expr (omp_clauses->num_threads, "NUM_THREADS");
   if (omp_clauses->dyn_groupprivate)
-    resolve_positive_int_expr (omp_clauses->dyn_groupprivate,
-			       "DYN_GROUPPRIVATE");
+    resolve_nonnegative_int_expr (omp_clauses->dyn_groupprivate,
+				  "DYN_GROUPPRIVATE");
   if (omp_clauses->chunk_size)
     {
       gfc_expr *expr = omp_clauses->chunk_size;

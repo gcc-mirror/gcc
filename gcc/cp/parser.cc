@@ -40047,6 +40047,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_DIST_SCHEDULE;
 	  else if (!strcmp ("doacross", p))
 	    result = PRAGMA_OMP_CLAUSE_DOACROSS;
+	  else if (!strcmp ("dyn_groupprivate", p))
+	    result = PRAGMA_OMP_CLAUSE_DYN_GROUPPRIVATE;
 	  break;
 	case 'e':
 	  if (!strcmp ("enter", p))
@@ -43743,6 +43745,91 @@ cp_parser_omp_clause_from_to (cp_parser *parser, enum omp_clause_code kind,
   return nl;
 }
 
+/* OpenMP 6.1:
+   dyn_groupprivate ( [fallback-modifier : ] integer-expression )
+
+   fallback-modifier
+      fallback( abort | default_mem | null )  */
+
+static tree
+cp_parser_omp_clause_dyn_groupprivate (cp_parser *parser, tree list,
+				       location_t location)
+{
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  enum omp_clause_fallback_kind kind = OMP_CLAUSE_FALLBACK_UNSPECIFIED;
+
+  size_t n;
+  if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+      && (cp_lexer_nth_token_is (parser->lexer, 2, CPP_COLON)
+	  || (cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN)
+	      && (n = cp_parser_skip_balanced_tokens (parser, 2)) != 3
+	      && cp_lexer_nth_token_is (parser->lexer, n, CPP_COLON))))
+    {
+      tree id = cp_lexer_peek_token (parser->lexer)->u.value;
+      if (strcmp (IDENTIFIER_POINTER (id), "fallback") != 0)
+	{
+	  cp_parser_error (parser, "expected %<fallback%> modifier");
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
+	}
+      cp_lexer_consume_token (parser->lexer);
+      if (!cp_parser_require (parser, CPP_OPEN_PAREN, RT_OPEN_PAREN))
+	return list;
+      const char *p = "";
+      if (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+	{
+	  id = cp_lexer_peek_token (parser->lexer)->u.value;
+	  p = IDENTIFIER_POINTER (id);
+	}
+      if (strcmp (p, "abort") == 0)
+	kind = OMP_CLAUSE_FALLBACK_ABORT;
+      else if (strcmp (p, "default_mem") == 0)
+	kind = OMP_CLAUSE_FALLBACK_DEFAULT_MEM;
+      else if (strcmp (p, "null") == 0)
+	kind = OMP_CLAUSE_FALLBACK_NULL;
+      else
+	{
+	  cp_parser_error (parser, "expected %<abort%>, %<default_mem%>, or "
+				   "%<null%> as fallback mode");
+	  cp_parser_skip_to_closing_parenthesis (parser,
+						 /*recovering=*/true,
+						 /*or_comma=*/false,
+						 /*consume_paren=*/true);
+	  return list;
+	}
+      cp_lexer_consume_token (parser->lexer);
+      if (!cp_parser_require (parser, CPP_CLOSE_PAREN, RT_CLOSE_PAREN))
+	return list;
+      if (!cp_parser_require (parser, CPP_COLON, RT_COLON))
+	return list;
+    }
+
+  tree size = cp_parser_assignment_expression (parser);
+
+  if (size == error_mark_node
+      || !parens.require_close (parser))
+    cp_parser_skip_to_closing_parenthesis (parser, /*recovering=*/true,
+					   /*or_comma=*/false,
+					   /*consume_paren=*/true);
+
+  check_no_duplicate_clause (list, OMP_CLAUSE_DYN_GROUPPRIVATE,
+			     "dyn_groupprivate", location);
+
+  tree c = build_omp_clause (location, OMP_CLAUSE_DYN_GROUPPRIVATE);
+  OMP_CLAUSE_DYN_GROUPPRIVATE_KIND (c) = kind;
+  OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR (c) = size;
+  OMP_CLAUSE_CHAIN (c) = list;
+  list = c;
+
+  return list;
+}
+
 /* OpenMP 4.0:
    map ( map-kind : variable-list )
    map ( variable-list )
@@ -45351,6 +45438,11 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	  clauses = cp_parser_omp_var_list (parser, OMP_CLAUSE_DESTROY,
 					    clauses);
 	  c_name = "destroy";
+	  break;
+	case PRAGMA_OMP_CLAUSE_DYN_GROUPPRIVATE:
+	  clauses = cp_parser_omp_clause_dyn_groupprivate (parser, clauses,
+							   token->location);
+	  c_name = "dyn_groupprivate";
 	  break;
 	case PRAGMA_OMP_CLAUSE_INIT:
 	  {
@@ -50230,19 +50322,20 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
      structured-block  */
 
 #define OMP_TARGET_CLAUSE_MASK					\
-	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)		\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
+	( (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULTMAP)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEPEND)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEVICE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DYN_GROUPPRIVATE) \
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR) \
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IF)		\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_FIRSTPRIVATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_DEFAULTMAP)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_ALLOCATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IN_REDUCTION)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_IS_DEVICE_PTR)\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_HAS_DEVICE_ADDR))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT))
 
 static bool
 cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,

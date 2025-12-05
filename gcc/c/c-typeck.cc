@@ -17879,6 +17879,7 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	case OMP_CLAUSE_FINAL:
 	case OMP_CLAUSE_DEVICE:
 	case OMP_CLAUSE_DIST_SCHEDULE:
+	case OMP_CLAUSE_DYN_GROUPPRIVATE:
 	case OMP_CLAUSE_PARALLEL:
 	case OMP_CLAUSE_FOR:
 	case OMP_CLAUSE_SECTIONS:
