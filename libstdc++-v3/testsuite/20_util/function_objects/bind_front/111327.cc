@@ -50,4 +50,4 @@ int main() {
   std::move(std::as_const(g2))();
 }
 
-// { dg-error "no type named 'type' in 'std::__conditional_t<false, std::invoke_result<" "" { target *-*-* } 0}
+// { dg-error "no type named 'type' in 'std::__conditional_t<false, std::invoke_result<" "" { target *-*-* } 0 }
