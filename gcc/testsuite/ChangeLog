@@ -1,3 +1,39 @@
+2025-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122776
+	* gcc.dg/vect/vect-simd-clone-24.c: New testcase.
+	* gcc.dg/gomp/pr110485.c: Adjust.
+
+2025-12-04  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-1.c: New test.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-2.c: Likewise.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-3.c: Likewise.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-4.c: Likewise.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-5.c: Likewise.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-6.c: Likewise.
+	* gcc.dg/tree-ssa/vrp-from-cst-agg-7.c: Likewise.
+	* gcc.dg/ipa/vrp-from-cst-agg-1.c: Likewise.
+
+2025-12-04  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/asm-hard-reg-9.c: Restrict to lp64 x86_64.
+
+2025-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122991
+	* gcc.dg/pr122991.c: New test.
+
+2025-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122983
+	* g++.dg/cpp26/decomp18.C: Add dg-add-options tls and
+	dg-require-effective-target tls_runtime directives.
+
+2025-12-04  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.dg/asm-hard-reg-9.c: New test.
+
 2025-12-03  Joseph Myers  <josmyers@redhat.com>
 
 	* lib/gcc-defs.exp (handle-dg-regexps): Also escape \r in output.

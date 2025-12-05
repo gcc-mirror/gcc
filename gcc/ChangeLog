@@ -1,3 +1,51 @@
+2025-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122991
+	* config/aarch64/aarch64.md (crc_rev<ALLI:mode><ALLX:mode>4,
+	crc<ALLI:mode><ALLX:mode>4): Use const_int_operand predicate for
+	the last operand.
+
+2025-12-04  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/122776
+	* tree-vectorizer.h (vect_simd_clone_data::clone,
+	vect_simd_clone_data::clone_inbranch): New fields for
+	the two selected clones.
+	* tree-vect-stmts.cc (vectorizable_simd_clone_call): Record
+	both a possibly notinbranch and a inbranch clone.  Delay
+	the choice between both to code generation based on
+	LOOP_VINFO_FULLY_MASKED_P.
+
+2025-12-04  Martin Jambor  <mjambor@suse.cz>
+
+	* gimple-range-fold.h (class fold_using_range): New member
+	function range_from_readonly_var.
+	* gimple-range-fold.cc (fold_using_range::fold_stmt): Call
+	range_from_readonly_var on assignments.
+	(range_from_missing_constructor_part): New function.
+	(range_from_readonly_load): Likewise.
+	(fold_using_range::range_from_readonly_var): Likewise.
+	* params.opt (param_vrp_cstload_limit): New.
+	* doc/invoke.texi (vrp-cstload-limit): Likewise.
+
+2025-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122991
+	* config/i386/i386.md (crc_rev<SWI124:mode>si4): Use const_int_operand
+	predicate for the last input argument.
+
+2025-12-04  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* lra-constraints.cc (get_reload_reg): Honor exclude start regs
+	while reusing reloads.
+
+2025-12-04  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	Revert:
+	2025-12-02  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	* ipa-inline.cc (inline_functions_by_afdo): Remove resetting bool inlined.
+
 2025-12-03  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/85072

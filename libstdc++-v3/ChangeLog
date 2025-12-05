@@ -1,3 +1,35 @@
+2025-12-04  François Dumont  <frs.dumont@gmail.com>
+
+	* include/debug/deque
+	(std::erase_if<>(std::__debug::deque<>&, _Pred)): New.
+	(std::erase<>(std::__debug::deque<>&, const _Up&)): New.
+	* include/std/deque (std::erase_if(std::deque<>&, _Pred)): Remove
+	_GLIBCXX_DEBUG code.
+	* testsuite/23_containers/deque/debug/erase.cc: New test case.
+	* testsuite/23_containers/deque/debug/invalidation/erase.cc: New test case.
+
+2025-12-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/debug/safe_unordered_base.h
+	(_Safe_unordered_container_base::operator=): Define as
+	defaulted, inherit behavior of _Safe_sequence_base.
+
+2025-12-04  Luc Grosheintz  <luc.grosheintz@gmail.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/std/mdspan (layout_left): Apply LWG4272.
+	(layout_right, layout_left_padded, layout_right_padded): Ditto.
+	* testsuite/23_containers/mdspan/layouts/ctors.cc: Add
+	test to check ctor uniformity at rank == 0. Update test
+	for new behavior.
+	* testsuite/23_containers/mdspan/layouts/padded.cc: Update test
+	for new behavior.
+
+2025-12-04  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/debug/safe_sequence.h
+	(_Safe_node_sequence::_Safe_node_sequence): Define as defaulted.
+
 2025-12-03  Vladimir Bespalov  <vlad.bespalov@jetstreamsoft.com>
 
 	PR libstdc++/122812
