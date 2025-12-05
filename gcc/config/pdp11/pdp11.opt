@@ -23,11 +23,11 @@ Target RejectNegative
 Generate code for an 11/10.
 
 m40
-Target Mask(40)
+Target Mask(40) RejectNegative
 Generate code for an 11/40.
 
 m45
-Target Mask(45)
+Target Mask(45) RejectNegative
 Generate code for an 11/45.
 
 mac0

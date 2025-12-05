@@ -1292,8 +1292,8 @@ Objective-C and Objective-C++ Dialects}.
 -mcmodel=@var{code-model}}
 
 @emph{PDP-11 Options} (@ref{PDP-11 Options})
-@gccoptlist{-mfpu  -msoft-float  -mac0  -mno-ac0  -m40  -m45  -m10
--mint32  -mno-int16  -mint16  -mno-int32
+@gccoptlist{-mfpu  -msoft-float  -mac0  -m40  -m45  -m10
+-mint32  -mint16
 -msplit  -munix-asm  -mdec-asm  -mgnu-asm  -mlra}
 
 @emph{PowerPC Options}
@@ -31710,23 +31710,24 @@ These options are defined for the PDP-11:
 @opindex mfpu
 @item -mfpu
 Use hardware FPP floating point.  This is the default.  (FIS floating
-point on the PDP-11/40 is not supported.)  Implies -m45.
+point on the PDP-11/40 is not supported.)  Implies @option{-m45}.
 
 @opindex msoft-float
 @item -msoft-float
 Do not use hardware floating point.
 
 @opindex mac0
-@item -mac0
-Return floating-point results in ac0 (fr0 in Unix assembler syntax).
-
 @opindex mno-ac0
-@item -mno-ac0
-Return floating-point results in memory.  This is the default.
+@item -mac0
+@itemx -mno-ac0
+With @option{-mac0}, return floating-point results in ac0
+(fr0 in Unix assembler syntax).  The default, @option{-mno-ac0}, is
+to return floating-point results in memory.
 
 @opindex m40
 @item -m40
-Generate code for a PDP-11/40.  Implies -msoft-float -mno-split.
+Generate code for a PDP-11/40.
+Implies @option{-msoft-float} @option{-mno-split}.
 
 @opindex m45
 @item -m45
@@ -31734,7 +31735,8 @@ Generate code for a PDP-11/45.  This is the default.
 
 @opindex m10
 @item -m10
-Generate code for a PDP-11/10.  Implies -msoft-float -mno-split.
+Generate code for a PDP-11/10.
+Implies @option{-msoft-float} @option{-mno-split}.
 
 @opindex mint16
 @opindex mno-int32
@@ -31749,8 +31751,9 @@ Use 16-bit @code{int}.  This is the default.
 Use 32-bit @code{int}.
 
 @opindex msplit
+@opindex mno-split
 @item -msplit
-Target has split instruction and data space.  Implies -m45.
+Target has split instruction and data space.  Implies @option{-m45}.
 
 @opindex munix-asm
 @item -munix-asm
@@ -31765,6 +31768,7 @@ Use DEC assembler syntax.
 Use GNU assembler syntax.  This is the default.
 
 @opindex mlra
+@opindex mno-lra
 @item -mlra
 Use the new LRA register allocator.  By default, the old ``reload''
 allocator is used.
