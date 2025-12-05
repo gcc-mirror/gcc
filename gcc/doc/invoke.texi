@@ -29099,6 +29099,7 @@ Select the CPU for which code is generated.  @var{name} may be one of
 the M32C/80 series.
 
 @opindex msim
+@opindex mno-sim
 @item -msim
 Specifies that the program will be run on the simulator.  This causes
 an alternate runtime library to be linked in which supports, for
