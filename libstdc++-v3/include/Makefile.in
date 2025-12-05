@@ -492,6 +492,7 @@ bits_freestanding = \
 	${bits_srcdir}/enable_special_members.h \
 	${bits_srcdir}/functexcept.h \
 	${bits_srcdir}/functional_hash.h \
+	${bits_srcdir}/intcmp.h \
 	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/iterator_concepts.h \
 	${bits_srcdir}/max_size_type.h \

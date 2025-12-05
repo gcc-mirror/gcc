@@ -41,7 +41,7 @@
 #ifdef __cpp_lib_latch // C++ >= 20 && atomic_wait
 #include <bits/atomic_base.h>
 #include <ext/numeric_traits.h>
-#include <utility> // cmp_equal, cmp_less_equal, etc.
+#include <bits/intcmp.h> // cmp_equal, cmp_less_equal, etc.
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
