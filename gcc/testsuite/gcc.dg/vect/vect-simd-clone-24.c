@@ -2,7 +2,7 @@
 /* { dg-skip-if "" { *-*-* } { "-flto" } { "" } } */
 /* { dg-require-effective-target vect_simd_clones } */
 /* { dg-additional-options "-fopenmp-simd --param vect-partial-vector-usage=1 -fdump-tree-dce6 -w" } */
-/* { dg-additional-options "-mavx512f" { target avx512f } } */
+/* { dg-additional-options "-mavx512f -mprefer-vector-width=512" { target avx512f } } */
 
 #pragma omp declare simd simdlen(16)
 int __attribute__((const)) baz (int x);
