@@ -1529,7 +1529,8 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 	    {
 	      /* __MEM '<' type-name [ ',' number ] '>'
 	               '(' [ '(' type-name ')' ] unary-expression
-		           [ '+' number ] ')'  */
+			   [ '+' number ]
+			   [ ',' number ':' number ] ')'  */
 	      location_t loc = c_parser_peek_token (parser)->location;
 	      c_parser_consume_token (parser);
 	      tree type = c_parser_gimple_typespec (parser);
@@ -1539,6 +1540,8 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 	      step.value = NULL_TREE;
 	      index.value = NULL_TREE;
 	      index2.value = NULL_TREE;
+	      unsigned short clique = 0;
+	      unsigned short base = 0;
 	      if (c_parser_require (parser, CPP_OPEN_PAREN, "expected %<(%>"))
 		{
 		  tree alias_type = NULL_TREE;
@@ -1620,6 +1623,27 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 				  "expected constant step for %<__MEM%> "
 				  "operand");
 		    }
+		  if (c_parser_next_token_is (parser, CPP_COMMA))
+		    {
+		      struct c_expr cl, ba;
+		      c_parser_consume_token (parser);
+		      cl = c_parser_gimple_postfix_expression (parser);
+		      if (c_parser_require (parser,
+					    CPP_COLON, "expected %<:%>"))
+			{
+			  ba = c_parser_gimple_postfix_expression (parser);
+			  if (!tree_fits_uhwi_p (cl.value)
+			      || !tree_fits_uhwi_p (ba.value)
+			      || compare_tree_int (cl.value,
+						   (clique = tree_to_uhwi
+								(cl.value)))
+			      || compare_tree_int (ba.value,
+						   (base = tree_to_uhwi
+								 (ba.value))))
+			    error_at (cl.get_start (),
+				      "invalid clique/base pair");
+			}
+		    }
 		  c_parser_skip_until_found (parser, CPP_CLOSE_PAREN,
 					     "expected %<)%>");
 		}
@@ -1635,6 +1659,12 @@ c_parser_gimple_postfix_expression (gimple_parser &parser)
 	      else
 		expr.value = build2_loc (loc, MEM_REF,
 					 type, ptr.value, alias_off.value);
+	      if (clique != 0)
+		{
+		  cfun->last_clique = MAX (cfun->last_clique, clique);
+		  MR_DEPENDENCE_CLIQUE (expr.value) = clique;
+		  MR_DEPENDENCE_BASE (expr.value) = base;
+		}
 	      break;
 	    }
 	  else if (strcmp (IDENTIFIER_POINTER (id), "__VIEW_CONVERT") == 0)

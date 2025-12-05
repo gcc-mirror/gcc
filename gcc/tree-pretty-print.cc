@@ -2004,6 +2004,13 @@ dump_mem_ref (pretty_printer *pp, tree node, int spc, dump_flags_t flags)
 				 spc, flags | TDF_SLIM, false);
 	    }
 	}
+      if (MR_DEPENDENCE_CLIQUE (node) != 0)
+	{
+	  pp_string (pp, ", ");
+	  pp_decimal_int (pp, MR_DEPENDENCE_CLIQUE (node));
+	  pp_colon (pp);
+	  pp_decimal_int (pp, MR_DEPENDENCE_BASE (node));
+	}
       pp_right_paren (pp);
     }
   else if (TREE_CODE (node) == MEM_REF
