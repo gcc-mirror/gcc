@@ -23,7 +23,7 @@ N = 1024
 end
 
 ! { dg-final { scan-tree-dump-times "#pragma omp target dyn_groupprivate\\(1024\\)" 1 "original" } }
-! { dg-final { scan-tree-dump-times "#pragma omp target dyn_groupprivate\\(D.4680\\)" 1 "original" } }
+! { dg-final { scan-tree-dump-times "#pragma omp target dyn_groupprivate\\(D\\.\[0-9\]+\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target dyn_groupprivate\\(fallback\\(abort\\):n\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target dyn_groupprivate\\(fallback\\(null\\):n\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target dyn_groupprivate\\(fallback\\(default_mem\\):n\\)" 1 "original" } }
