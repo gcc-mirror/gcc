@@ -942,6 +942,9 @@ vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 {
   unsigned HOST_WIDE_INT const_vf;
 
+  if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
+    return true;
+
   loop_vec_info main_loop_vinfo
     = (LOOP_VINFO_EPILOGUE_P (loop_vinfo)
        ? LOOP_VINFO_MAIN_LOOP_INFO (loop_vinfo) : loop_vinfo);
@@ -952,14 +955,11 @@ vect_need_peeling_or_partial_vectors_p (loop_vec_info loop_vinfo)
 	 peeled for reasons other than niters.  */
       unsigned int peel_niter
 	= LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo);
-      if (LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo))
-	peel_niter += 1;
       return !multiple_p (LOOP_VINFO_INT_NITERS (loop_vinfo) - peel_niter,
 			  LOOP_VINFO_VECT_FACTOR (loop_vinfo));
     }
 
   if (!LOOP_VINFO_PEELING_FOR_ALIGNMENT (main_loop_vinfo)
-      && !LOOP_VINFO_PEELING_FOR_GAPS (loop_vinfo)
       && LOOP_VINFO_VECT_FACTOR (loop_vinfo).is_constant (&const_vf))
     {
       /* When the number of iterations is a multiple of the vectorization
