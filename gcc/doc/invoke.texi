@@ -926,20 +926,20 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-mbarrel-shifter  -mjli-always
 -mcpu=@var{cpu}  -mA6  -mARC600  -mA7  -mARC700
 -mdpfp  -mdpfp-compact  -mdpfp-fast  -mno-dpfp-lrsr
--mea  -mno-mpy  -mmul32x16  -mmul64  -matomic
+-mea  -mmul32x16  -mmul64  -matomic
 -mnorm  -mspfp  -mspfp-compact  -mspfp-fast  -msimd  -msoft-float  -mswap
--mcrc  -mdsp-packa  -mdvbf  -mlock  -mmac-d16  -mmac-24  -mrtsc  -mswape
--mtelephony  -mxy  -misize  -mannotate-align  -marclinux  -marclinux_prof
+-mlock  -mswape
+-mxy  -misize  -marclinux  -marclinux_prof
 -mlong-calls  -mmedium-calls  -msdata  -mirq-ctrl-saved
 -mrgf-banked-regs  -mlpc-width=@var{width}  -G @var{num}
 -mvolatile-cache  -mtp-regno=@var{regno}
--malign-call  -mauto-modify-reg  -mbbit-peephole  -mno-brcc
--mcase-vector-pcrel  -mcompact-casesi  -mno-cond-exec  -mearly-cbranchsi
--mexpand-adddi  -mindexed-loads  -mlra  -mlra-priority-none
+-mauto-modify-reg  -mno-brcc
+-mcase-vector-pcrel  -mno-cond-exec  -mearly-cbranchsi
+-mindexed-loads  -mlra-priority-none
 -mlra-priority-compact -mlra-priority-noncompact  -mmillicode
--mmixed-code  -mq-class  -mRcq  -mRcw  -msize-level=@var{level}
+-msize-level=@var{level}
 -mtune=@var{cpu}  -mmultcost=@var{num}  -mcode-density-frame
--munalign-prob-threshold=@var{probability}  -mmpy-option=@var{multo}
+-mmpy-option=@var{multo}
 -mdiv-rem  -mcode-density  -mll64  -mfpu=@var{fpu}  -mrf16  -mbranch-index}
 
 @emph{ARM Options} (@ref{ARM Options})
@@ -23498,11 +23498,13 @@ is being compiled:
 @table @gcctabopt
 
 @opindex mbarrel-shifter
+@opindex mno-barrel-shifter
 @item -mbarrel-shifter
 Generate instructions supported by barrel shifter.  This is the default
 unless @option{-mcpu=ARC601} or @samp{-mcpu=ARCEM} is in effect.
 
 @opindex mjli-always
+@opindex mno-mjli-always
 @item -mjli-always
 Force to call a function using jli_s instruction.  This option is
 valid only for ARCv2 architecture.
@@ -23607,61 +23609,68 @@ set.
 @end table
 
 @opindex mdpfp
+@opindex mno-dpfp
 @opindex mdpfp-compact
+@opindex mno-dpfp-compact
 @item -mdpfp
 @itemx -mdpfp-compact
 Generate double-precision FPX instructions, tuned for the compact
 implementation.
 
 @opindex mdpfp-fast
+@opindex mno-dpfp-fast
 @item -mdpfp-fast
 Generate double-precision FPX instructions, tuned for the fast
 implementation.
 
 @opindex mno-dpfp-lrsr
+@opindex mdpfp-lrsr
 @item -mno-dpfp-lrsr
-Disable @code{lr} and @code{sr} instructions from using FPX extension
-aux registers.
+@itemx -mdpfp-lrsr
+Control whether @code{lr} and @code{sr} instructions use FPX extension
+aux registers.  This is enabled by default.
 
 @opindex mea
+@opindex mno-ea
 @item -mea
 Generate extended arithmetic instructions.  Currently only
 @code{divaw}, @code{adds}, @code{subs}, and @code{sat16} are
 supported.  Only valid for @option{-mcpu=ARC700}.
 
-@opindex mno-mpy
-@opindex mmpy
-@item -mno-mpy
-Do not generate @code{mpy}-family instructions for ARC700.  This option is
-deprecated.
-
 @opindex mmul32x16
+@opindex mno-mul32x16
 @item -mmul32x16
 Generate 32x16-bit multiply and multiply-accumulate instructions.
 
 @opindex mmul64
+@opindex mno-mul64
 @item -mmul64
 Generate @code{mul64} and @code{mulu64} instructions.
 Only valid for @option{-mcpu=ARC600}.
 
 @opindex mnorm
+@opindex mno-norm
 @item -mnorm
 Generate @code{norm} instructions.  This is the default if @option{-mcpu=ARC700}
 is in effect.
 
 @opindex mspfp
+@opindex mno-spfp
 @opindex mspfp-compact
+@opindex mno-spfp-compact
 @item -mspfp
 @itemx -mspfp-compact
 Generate single-precision FPX instructions, tuned for the compact
 implementation.
 
 @opindex mspfp-fast
+@opindex mno-spfp-fast
 @item -mspfp-fast
 Generate single-precision FPX instructions, tuned for the fast
 implementation.
 
 @opindex msimd
+@opindex mno-simd
 @item -msimd
 Enable generation of ARC SIMD instructions via target-specific
 builtins.  Only valid for @option{-mcpu=ARC700}.
@@ -23675,25 +23684,31 @@ can overridden by FPX options; @option{-mspfp}, @option{-mspfp-compact}, or
 @option{-mdpfp-compact}, or @option{-mdpfp-fast} for double precision.
 
 @opindex mswap
+@opindex mno-swap
 @item -mswap
 Generate @code{swap} instructions.
 
 @opindex matomic
+@opindex mno-atomic
 @item -matomic
 This enables use of the locked load/store conditional extension to implement
 atomic memory built-in functions.  Not available for ARC 6xx or ARC
 EM cores.
 
 @opindex mdiv-rem
+@opindex mno-div-rem
 @item -mdiv-rem
 Enable @code{div} and @code{rem} instructions for ARCv2 cores.
 
 @opindex mcode-density
+@opindex mno-code-density
 @item -mcode-density
+@itemx -mno-code-density
 Enable code density instructions for ARC EM.
 This option is on by default for ARC HS.
 
 @opindex mll64
+@opindex mno-ll64
 @item -mll64
 Enable double load/store operations for ARC HS cores.
 
@@ -23864,12 +23879,14 @@ loop mechanism for various needs.  This option defines macro
 @code{__ARC_LPC_WIDTH__} with the value of @var{width}.
 
 @opindex mrf16
+@opindex mno-rf16
 @item -mrf16
 This option instructs the compiler to generate code for a 16-entry
 register file.  This option defines the @code{__ARC_RF16__}
 preprocessor macro.
 
 @opindex mbranch-index
+@opindex mno-branch-index
 @item -mbranch-index
 Enable use of @code{bi} or @code{bih} instructions to implement jump
 tables.
@@ -23882,56 +23899,25 @@ define preprocessor macro symbols.
 @c Flags used by the assembler, but for which we define preprocessor
 @c macro symbols as well.
 @table @gcctabopt
-@opindex mdsp-packa
-@item -mdsp-packa
-Passed down to the assembler to enable the DSP Pack A extensions.
-Also sets the preprocessor symbol @code{__Xdsp_packa}.  This option is
-deprecated.
-
-@opindex mdvbf
-@item -mdvbf
-Passed down to the assembler to enable the dual Viterbi butterfly
-extension.  Also sets the preprocessor symbol @code{__Xdvbf}.  This
-option is deprecated.
 
 @c ARC700 4.10 extension instruction
 @opindex mlock
+@opindex mno-lock
 @item -mlock
 Passed down to the assembler to enable the locked load/store
 conditional extension.  Also sets the preprocessor symbol
 @code{__Xlock}.
 
-@opindex mmac-d16
-@item -mmac-d16
-Passed down to the assembler.  Also sets the preprocessor symbol
-@code{__Xxmac_d16}.  This option is deprecated.
-
-@opindex mmac-24
-@item -mmac-24
-Passed down to the assembler.  Also sets the preprocessor symbol
-@code{__Xxmac_24}.  This option is deprecated.
-
-@c ARC700 4.10 extension instruction
-@opindex mrtsc
-@item -mrtsc
-Passed down to the assembler to enable the 64-bit time-stamp counter
-extension instruction.  Also sets the preprocessor symbol
-@code{__Xrtsc}.  This option is deprecated.
-
 @c ARC700 4.10 extension instruction
 @opindex mswape
+@opindex mno-swape
 @item -mswape
 Passed down to the assembler to enable the swap byte ordering
 extension instruction.  Also sets the preprocessor symbol
 @code{__Xswape}.
 
-@opindex mtelephony
-@item -mtelephony
-Passed down to the assembler to enable dual- and single-operand
-instructions for telephony.  Also sets the preprocessor symbol
-@code{__Xtelephony}.  This option is deprecated.
-
 @opindex mxy
+@opindex mno-xy
 @item -mxy
 Passed down to the assembler to enable the XY memory extension.  Also
 sets the preprocessor symbol @code{__Xxy}.
@@ -23943,12 +23929,9 @@ The following options control how the assembly code is annotated:
 @c Assembly annotation options
 @table @gcctabopt
 @opindex misize
+@opindex mno-isize
 @item -misize
 Annotate assembler instructions with estimated addresses.
-
-@opindex mannotate-align
-@item -mannotate-align
-Does nothing.  Preserved for backward compatibility.
 
 @end table
 
@@ -23957,14 +23940,18 @@ The following options are passed through to the linker:
 @c options passed through to the linker
 @table @gcctabopt
 @opindex marclinux
+@opindex mno-arclinux
 @item -marclinux
+@itemx -mno-arclinux
 Passed through to the linker, to specify use of the @code{arclinux} emulation.
 This option is enabled by default in tool chains built for
 @w{@code{arc-linux-uclibc}} and @w{@code{arceb-linux-uclibc}} targets
 when profiling is not requested.
 
 @opindex marclinux_prof
+@opindex mno-arclinux_prof
 @item -marclinux_prof
+@itemx -mno-arclinux_prof
 Passed through to the linker, to specify use of the
 @code{arclinux_prof} emulation.  This option is enabled by default in
 tool chains built for @w{@code{arc-linux-uclibc}} and
@@ -23977,12 +23964,15 @@ The following options control the semantics of generated code:
 @c semantically relevant code generation options
 @table @gcctabopt
 @opindex mlong-calls
+@opindex mno-long-calls
 @item -mlong-calls
 Generate calls as register indirect calls, thus providing access
 to the full 32-bit address range.
 
 @opindex mmedium-calls
+@opindex mno-medium-calls
 @item -mmedium-calls
+@itemx -mno-medium-calls
 Don't use less than 25-bit addressing range for calls, which is the
 offset available for an unconditional branch-and-link
 instruction.  Conditional execution of function calls is suppressed, to
@@ -24005,48 +23995,41 @@ built for @w{@code{arc-linux-uclibc}} and @w{@code{arceb-linux-uclibc}}
 targets.
 
 @opindex mvolatile-cache
-@item -mvolatile-cache
-Use ordinarily cached memory accesses for volatile references.  This is the
-default.
-
 @opindex mno-volatile-cache
-@opindex mvolatile-cache
-@item -mno-volatile-cache
-Enable cache bypass for volatile references.
+@item -mvolatile-cache
+@itemx -mno-volatile-cache
+
+Control how volatile references are accessed.
+The default is @option{-mvolatile-cache}, which uses ordinary
+cached memory accesses for volatile references.
+Use @option{-mno-volatile-cache} to
+enable cache bypass for volatile references.
 
 @end table
 
 The following options fine tune code generation:
 @c code generation tuning options
 @table @gcctabopt
-@opindex malign-call
-@item -malign-call
-Does nothing.  Preserved for backward compatibility.
-
 @opindex mauto-modify-reg
+@opindex mno-auto-modify-reg
 @item -mauto-modify-reg
 Enable the use of pre/post modify with register displacement.
 
-@opindex mbbit-peephole
-@item -mbbit-peephole
-Does nothing.  Preserved for backward compatibility.
-
 @opindex mno-brcc
+@opindex mbrcc
 @item -mno-brcc
-This option disables a target-specific pass in @file{arc_reorg} to
-generate compare-and-branch (@code{br@var{cc}}) instructions.
+@itemx -mbrcc
+This option controls a target-specific pass in @file{arc_reorg} to
+generate compare-and-branch (@code{br@var{cc}}) instructions, which
+is enabled by default.
 It has no effect on
 generation of these instructions driven by the combiner pass.
 
 @opindex mcase-vector-pcrel
+@opindex mno-case-vector-pcrel
 @item -mcase-vector-pcrel
 Use PC-relative switch case tables to enable case table shortening.
 This is the default for @option{-Os}.
-
-@opindex mcompact-casesi
-@item -mcompact-casesi
-Enable compact @code{casesi} pattern.  This is the default for @option{-Os},
-and only available for ARCv1 cores.  This option is deprecated.
 
 @opindex mno-cond-exec
 @item -mno-cond-exec
@@ -24066,23 +24049,16 @@ offset range because they are conditionalized, you should consider using
 @option{-mmedium-calls} instead.
 
 @opindex mearly-cbranchsi
+@opindex mno-early-cbranchsi
 @item -mearly-cbranchsi
 Enable pre-reload use of the @code{cbranchsi} pattern.
 
-@opindex mexpand-adddi
-@item -mexpand-adddi
-Expand @code{adddi3} and @code{subdi3} at RTL generation time into
-@code{add.f}, @code{adc} etc.  This option is deprecated.
-
 @opindex mindexed-loads
+@opindex mno-indexed-loads
 @item -mindexed-loads
 Enable the use of indexed loads.  This can be problematic because some
 optimizers then assume that indexed stores exist, which is not
 the case.
-
-@opindex mlra
-@item -mlra
-Does nothing.  Preserved for backward compatibility.
 
 @opindex mlra-priority-none
 @item -mlra-priority-none
@@ -24097,6 +24073,7 @@ Indicate target register priority for r0..r3 / r12..r15.
 Reduce target register priority for r0..r3 / r12..r15.
 
 @opindex mmillicode
+@opindex mno-millicode
 @item -mmillicode
 When optimizing for size (using @option{-Os}), prologues and epilogues
 that have to save or restore a large number of registers are often
@@ -24107,27 +24084,11 @@ nonstandard way, this option is provided to turn on or off millicode
 call generation.
 
 @opindex mcode-density-frame
+@opindex mno-code-density-frame
 @item -mcode-density-frame
 This option enable the compiler to emit @code{enter} and @code{leave}
 instructions.  These instructions are only valid for CPUs with
 code-density feature.
-
-@opindex mmixed-code
-@item -mmixed-code
-Does nothing.  Preserved for backward compatibility.
-
-@opindex mq-class
-@item -mq-class
-Ths option is deprecated.  Enable @samp{q} instruction alternatives.
-This is the default for @option{-Os}.
-
-@opindex mRcq
-@item -mRcq
-Does nothing.  Preserved for backward compatibility.
-
-@opindex mRcw
-@item -mRcw
-Does nothing.  Preserved for backward compatibility.
 
 @opindex msize-level
 @item -msize-level=@var{level}
@@ -24190,86 +24151,6 @@ Tune for ARC4x release 3.10a.
 @item -mmultcost=@var{num}
 Cost to assume for a multiply instruction, with @samp{4} being equal to a
 normal instruction.
-
-@opindex munalign-prob-threshold
-@item -munalign-prob-threshold=@var{probability}
-Does nothing.  Preserved for backward compatibility.
-
-@end table
-
-The following options are maintained for backward compatibility, but
-are now deprecated and will be removed in a future release:
-
-@c Deprecated options
-@table @gcctabopt
-
-@opindex margonaut
-@item -margonaut
-Obsolete FPX.
-
-@opindex mbig-endian
-@opindex EB
-@item -mbig-endian
-@itemx -EB
-Compile code for big-endian targets.  Use of these options is now
-deprecated.  Big-endian code is supported by configuring GCC to build
-@w{@code{arceb-elf32}} and @w{@code{arceb-linux-uclibc}} targets,
-for which big endian is the default.
-
-@opindex mlittle-endian
-@opindex EL
-@item -mlittle-endian
-@itemx -EL
-Compile code for little-endian targets.  Use of these options is now
-deprecated.  Little-endian code is supported by configuring GCC to build
-@w{@code{arc-elf32}} and @w{@code{arc-linux-uclibc}} targets,
-for which little endian is the default.
-
-@opindex mbarrel_shifter
-@item -mbarrel_shifter
-Replaced by @option{-mbarrel-shifter}.
-
-@opindex mdpfp_compact
-@item -mdpfp_compact
-Replaced by @option{-mdpfp-compact}.
-
-@opindex mdpfp_fast
-@item -mdpfp_fast
-Replaced by @option{-mdpfp-fast}.
-
-@opindex mdsp_packa
-@item -mdsp_packa
-Replaced by @option{-mdsp-packa}.
-
-@opindex mEA
-@item -mEA
-Replaced by @option{-mea}.
-
-@opindex mmac_24
-@item -mmac_24
-Replaced by @option{-mmac-24}.
-
-@opindex mmac_d16
-@item -mmac_d16
-Replaced by @option{-mmac-d16}.
-
-@opindex mspfp_compact
-@item -mspfp_compact
-Replaced by @option{-mspfp-compact}.
-
-@opindex mspfp_fast
-@item -mspfp_fast
-Replaced by @option{-mspfp-fast}.
-
-@opindex mtune
-@item -mtune=@var{cpu}
-Values @samp{arc600}, @samp{arc601}, @samp{arc700} and
-@samp{arc700-xmac} for @var{cpu} are replaced by @samp{ARC600},
-@samp{ARC601}, @samp{ARC700} and @samp{ARC700-xmac} respectively.
-
-@opindex multcost
-@item -multcost=@var{num}
-Replaced by @option{-mmultcost}.
 
 @end table
 

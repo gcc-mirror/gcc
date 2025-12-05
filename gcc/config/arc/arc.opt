@@ -21,12 +21,14 @@
 HeaderInclude
 config/arc/arc-opts.h
 
+; Formerly documented as deprecated; use configure options instead.
 mbig-endian
-Target RejectNegative Mask(BIG_ENDIAN)
+Target RejectNegative Mask(BIG_ENDIAN) Undocumented
 Compile code for big endian mode.
 
+; Formerly documented as deprecated; use configure options instead.
 mlittle-endian
-Target RejectNegative InverseMask(BIG_ENDIAN)
+Target RejectNegative InverseMask(BIG_ENDIAN) Undocumented
 Compile code for little endian mode.  This is the default.
 
 mno-cond-exec
@@ -136,7 +138,7 @@ Target Mask(CODE_DENSITY)
 Enable code density instructions for ARCv2.
 
 mmixed-code
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 ; We use an explict definition for the negative form because that is the
@@ -166,7 +168,7 @@ Target Mask(MUL64_SET)
 Generate mul64 and mulu64 instructions.
 
 mno-mpy
-Target Mask(NOMPY_SET) Warn(%qs is deprecated)
+Target Mask(NOMPY_SET) Undocumented Warn(%qs is deprecated)
 Do not generate mpy instructions for ARC700.
 
 mea
@@ -205,8 +207,9 @@ mspfp-fast
 Target Mask(SPFP_FAST_SET)
 FPX: Generate Single Precision FPX (fast) instructions.
 
+; Formerly documented as deprecated, "obsolete FPX"
 margonaut
-Target Mask(ARGONAUT_SET)
+Target Mask(ARGONAUT_SET) Undocumented
 FPX: Enable Argonaut ARC CPU Double Precision Floating Point extensions.
 
 mdpfp
@@ -292,7 +295,7 @@ Target Mask(MULMAC_32BY16_SET)
 Generate 32x16 multiply and mac instructions.
 
 munalign-prob-threshold=
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 mmedium-calls
@@ -300,20 +303,20 @@ Target Var(TARGET_MEDIUM_CALLS) Init(TARGET_MMEDIUM_CALLS_DEFAULT)
 Don't use less than 25 bit addressing range for calls.
 
 mannotate-align
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 malign-call
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 mRcq
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 
 mRcw
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 
@@ -322,7 +325,7 @@ Target Var(TARGET_EARLY_CBRANCHSI)
 Enable pre-reload use of cbranchsi pattern.
 
 mbbit-peephole
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 mcase-vector-pcrel
@@ -330,30 +333,30 @@ Target Var(TARGET_CASE_VECTOR_PC_RELATIVE)
 Use pc-relative switch case tables - this enables case table shortening.
 
 mcompact-casesi
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Enable compact casesi pattern.
 
 mq-class
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Enable 'q' instruction alternatives.
 
 mexpand-adddi
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Expand adddi3 and subdi3 at rtl generation time into add.f / adc etc.
 
 
 ; Flags used by the assembler, but for which we define preprocessor
 ; macro symbols as well.
 mcrc
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Enable variable polynomial CRC extension.
 
 mdsp-packa
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Enable DSP 3.1 Pack A extensions.
 
 mdvbf
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Enable dual viterbi butterfly extension.
 
 mmac-d16
@@ -363,7 +366,7 @@ mmac-24
 Target Undocumented Warn(%qs is deprecated)
 
 mtelephony
-Target RejectNegative Warn(%qs is deprecated)
+Target RejectNegative Undocumented Warn(%qs is deprecated)
 Enable Dual and Single Operand Instructions for Telephony.
 
 mxy
@@ -380,15 +383,17 @@ Target
 Enable swap byte ordering extension instruction.
 
 mrtsc
-Target Warn(%qs is deprecated)
+Target Undocumented Warn(%qs is deprecated)
 Enable 64-bit Time-Stamp Counter extension instruction.
 
+; Formerly documented as deprecated.
 EB
-Target
+Target Undocumented
 Pass -EB option through to linker.
 
+; Formerly documented as deprecated.
 EL
-Target
+Target Undocumented
 Pass -EL option through to linker.
 
 marclinux
@@ -399,9 +404,8 @@ marclinux_prof
 Target
 Pass -marclinux_prof option through to linker.
 
-;; lra is still unproven for ARC, so allow to fall back to reload with -mno-lra.
 mlra
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 mlra-priority-none
@@ -419,10 +423,11 @@ Reduce priority for r0..r3 / r12..r15 with TARGET_REGISTER_PRIORITY.
 ; backward-compatibility aliases, translated by DRIVER_SELF_SPECS
 
 mEA
-Target
+Target Undocumented
 
 multcost=
-Target RejectNegative Joined
+Target RejectNegative Joined Undocumented
+
 
 matomic
 Target Mask(ATOMIC)
