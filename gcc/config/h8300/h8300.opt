@@ -61,6 +61,8 @@ malign-300
 Target RejectNegative Mask(ALIGN_300)
 Use H8/300 alignment rules.
 
+; FIXME: -mexr and -mno-exr should be merged or both marked RejectNegative.
+; As things stand now, -mno-exr is ambiguous.
 mexr
 Target Mask(EXR)
 Push extended registers on stack in monitor functions.

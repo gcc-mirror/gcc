@@ -1108,7 +1108,8 @@ Objective-C and Objective-C++ Dialects}.
 -tno-android-cc  -tno-android-ld}
 
 @emph{H8/300 Options} (@ref{H8/300 Options})
-@gccoptlist{-mrelax  -mh  -ms  -mn  -mexr  -mno-exr  -mint32  -malign-300}
+@gccoptlist{-mrelax  -mh  -ms  -mn  -msx  -ms2600
+-mquickcall  -mslowbyte  -mexr  -mint32  -malign-300}
 
 @emph{HPPA Options} (@ref{HPPA Options})
 @gccoptlist{-march=@var{architecture-type}
@@ -28009,34 +28010,47 @@ linker option @option{-relax}.  @xref{H8/300,, @code{ld} and the H8/300,
 ld, Using ld}, for a fuller description.
 
 @opindex mh
+@opindex mno-h
 @item -mh
 Generate code for the H8/300H@.
 
 @opindex ms
+@opindex mno-s
 @item -ms
 Generate code for the H8S@.
 
 @opindex mn
+@opindex mno-n
 @item -mn
 Generate code for the H8S and H8/300H in the normal mode.  This switch
-must be used either with @option{-mh} or @option{-ms}.
+must be used with either @option{-mh} or @option{-ms}.
+
+@opindex msx
+@opindex mno-sx
+@item -msx
+Generate H8SX code.
 
 @opindex ms2600
+@opindex mno-s2600
 @item -ms2600
 Generate code for the H8S/2600.  This switch must be used with @option{-ms}.
 
-@opindex mexr
-@item -mexr
-Extended registers are stored on stack before execution of function
-with monitor attribute. Default option is @option{-mexr}.
-This option is valid only for H8S targets.
+@opindex mquickcall
+@opindex mno-quickcall
+@item -mquickcall
+Use registers for argument passing.
 
-@opindex mno-exr
+@opindex mslowbyte
+@item -mslowbyte
+Consider access to byte-sized memory slow.
+
 @opindex mexr
-@item -mno-exr
-Extended registers are not stored on stack before execution of function
-with monitor attribute. Default option is @option{-mno-exr}.
-This option is valid only for H8S targets.
+@opindex mno-exr
+@item -mexr
+@itemx -mno-exr
+Store extended registers on the stack before execution of functions
+with the @code{monitor} attribute (@pxref{H8/300 Function Attributes}).
+The default is @option{-mexr}.  This option is valid only for H8S targets.
 
 @opindex mint32
 @item -mint32
