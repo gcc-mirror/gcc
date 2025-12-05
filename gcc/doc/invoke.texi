@@ -1173,7 +1173,7 @@ Objective-C and Objective-C++ Dialects}.
 @emph{M32R/D Options} (@ref{M32R/D Options})
 @gccoptlist{-m32r2  -m32rx  -m32r
 -mdebug
--malign-loops  -mno-align-loops
+-malign-loops
 -missue-rate=@var{number}
 -mbranch-cost=@var{number}
 -mmodel=@var{code-size-model-type}
@@ -29138,6 +29138,7 @@ Generate code for the M32R/X@.
 @item -m32r
 Generate code for the M32R@.  This is the default.
 
+@opindex mmodel
 @opindex mmodel=small
 @item -mmodel=small
 Assume all objects live in the lower 16MB of memory (so that their addresses
@@ -29162,6 +29163,7 @@ assume subroutines may not be reachable with the @code{bl} instruction
 (the compiler generates the much slower @code{seth/add3/jl}
 instruction sequence).
 
+@opindex msdata
 @opindex msdata=none
 @item -msdata=none
 Disable use of the small data area.  Variables are put into
@@ -29203,24 +29205,22 @@ Makes the M32R-specific code in the compiler display some statistics
 that might help in debugging programs.
 
 @opindex malign-loops
-@item -malign-loops
-Align all loops to a 32-byte boundary.
-
 @opindex mno-align-loops
-@item -mno-align-loops
-Do not enforce a 32-byte alignment for loops.  This is the default.
+@item -malign-loops
+@itemx -mno-align-loops
+Align all loops to a 32-byte boundary.  This option is disabled by default.
 
-@opindex missue-rate=@var{number}
+@opindex missue-rate
 @item -missue-rate=@var{number}
 Issue @var{number} instructions per cycle.  @var{number} can only be 1
 or 2.
 
-@opindex mbranch-cost=@var{number}
+@opindex mbranch-cost
 @item -mbranch-cost=@var{number}
 @var{number} can only be 1 or 2.  If it is 1 then branches are
 preferred over conditional code, if it is 2, then the opposite applies.
 
-@opindex mflush-trap=@var{number}
+@opindex mflush-trap
 @item -mflush-trap=@var{number}
 Specifies the trap number to use to flush the cache.  The default is
 12.  Valid numbers are between 0 and 15 inclusive.
@@ -29229,7 +29229,7 @@ Specifies the trap number to use to flush the cache.  The default is
 @item -mno-flush-trap
 Specifies that the cache cannot be flushed by using a trap.
 
-@opindex mflush-func=@var{name}
+@opindex mflush-func
 @item -mflush-func=@var{name}
 Specifies the name of the operating system function to call to flush
 the cache.  The default is @samp{_flush_cache}, but a function call
