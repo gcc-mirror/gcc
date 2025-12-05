@@ -1244,10 +1244,10 @@ Objective-C and Objective-C++ Dialects}.
 -mframe-header-opt}
 
 @emph{MMIX Options} (@ref{MMIX Options})
-@gccoptlist{-mlibfuncs  -mno-libfuncs  -mepsilon  -mno-epsilon  -mabi=gnu
--mabi=mmixware  -mzero-extend  -mknuthdiv  -mtoplevel-symbols
--melf  -mbranch-predict  -mno-branch-predict  -mbase-addresses
--mno-base-addresses  -msingle-exit  -mno-single-exit}
+@gccoptlist{-mlibfuncs  -mepsilon  -mabi=gnu  -mabi=mmixware
+-mzero-extend  -mknuthdiv  -mtoplevel-symbols
+-melf  -mbranch-predict  -mbase-addresses
+-msingle-exit}
 
 @emph{MN10300 Options} (@ref{MN10300 Options})
 @gccoptlist{-mmult-bug  -mno-mult-bug
