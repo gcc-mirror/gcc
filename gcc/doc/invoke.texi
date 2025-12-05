@@ -1260,11 +1260,13 @@ Objective-C and Objective-C++ Dialects}.
 @gccoptlist{-meb  -mel  -mmul.x  -mno-crt0}
 
 @emph{MSP430 Options} (@ref{MSP430 Options})
-@gccoptlist{-msim  -masm-hex  -mmcu=  -mcpu=  -mlarge  -msmall  -mrelax
--mwarn-mcu
--mcode-region=  -mdata-region=
--msilicon-errata=  -msilicon-errata-warn=
--mhwmult=  -minrt  -mtiny-printf  -mmax-inline-shift=}
+@gccoptlist{-msim  -masm-hex  -mmcu=@var{name}  -mlarge  -msmall  -mrelax
+-mwarn-mcu  -mwarn-devices-csv
+-mcode-region=@var{where}  -mdata-region=@var{where}
+-muse-lower-region-prefix
+-msilicon-errata=@var{name}@r{[},@var{name}@dots{}@r{]}
+-msilicon-errata-warn=@var{name}@r{[},@var{name}@dots{}@r{]}
+-mhwmult=@var{type}  -minrt  -mtiny-printf  -mmax-inline-shift=@var{n}}
 
 @emph{NDS32 Options} (@ref{NDS32 Options})
 @gccoptlist{-mbig-endian  -mlittle-endian
@@ -31194,13 +31196,14 @@ These options are defined for the MSP430:
 @table @gcctabopt
 
 @opindex masm-hex
+@opindex mno-asm-hex
 @item -masm-hex
 Force assembly output to always use hex constants.  Normally such
 constants are signed decimals, but this option is available for
 testsuite and/or aesthetic purposes.
 
 @opindex mmcu=
-@item -mmcu=
+@item -mmcu=@var{name}
 Select the MCU to target.  This is used to create a C preprocessor
 symbol based upon the MCU name, converted to upper case and pre- and
 post-fixed with @samp{__}.  This in turn is used by the
@@ -31220,36 +31223,37 @@ command line defines the C preprocessor symbol @code{__XXX__} and
 cause the linker to search for a script called @file{xxx.ld}.
 
 The ISA and hardware multiply supported for the different MCUs is hard-coded
-into GCC.  However, an external @samp{devices.csv} file can be used to
+into GCC.  However, an external @file{devices.csv} file can be used to
 extend device support beyond those that have been hard-coded.
 
-GCC searches for the @samp{devices.csv} file using the following methods in the
+GCC searches for the @file{devices.csv} file using the following methods in the
 given precedence order, where the first method takes precedence over the
 second which takes precedence over the third.
 
 @table @asis
-@item Include path specified with @code{-I} and @code{-L}
-@samp{devices.csv} is searched for in each of the directories specified by
+@item Include path specified with @option{-I} and @option{-L}
+@file{devices.csv} is searched for in each of the directories specified by
 include paths and linker library search paths.
-@item Path specified by the environment variable @samp{MSP430_GCC_INCLUDE_DIR}
+@item Path specified by the environment variable @env{MSP430_GCC_INCLUDE_DIR}
 Define the value of the global environment variable
-@samp{MSP430_GCC_INCLUDE_DIR}
-to the full path to the directory containing devices.csv, and GCC will search
-this directory for devices.csv.  If devices.csv is found, this directory is
+@env{MSP430_GCC_INCLUDE_DIR}
+to the full path to the directory containing @file{devices.csv},
+and GCC will search
+this directory for @file{devices.csv}.
+If @file{devices.csv} is found, this directory is
 also registered as an include path and linker library path.  Header files
 and linker scripts in this directory can therefore be used without manually
-specifying @code{-I} and @code{-L} on the command line.
-@item The @samp{msp430-elf@{,bare@}/include/devices} directory
-Finally, GCC examines @samp{msp430-elf@{,bare@}/include/devices} from the
+specifying @option{-I} and @option{-L} on the command line.
+@item The @file{msp430-elf@{,bare@}/include/devices} directory
+Finally, GCC examines @file{msp430-elf@{,bare@}/include/devices} from the
 toolchain root directory.  This directory does not exist in a default
-installation, but if the user has created it and copied @samp{devices.csv}
+installation, but if you have created it and copied @file{devices.csv}
 there, then the MCU data is read.  As above, this directory is
 also registered as an include path and linker library path.
 
 @end table
-If none of the above search methods find @samp{devices.csv}, then the
+If none of the above search methods find @file{devices.csv}, then the
 hard-coded MCU data is used.
-
 
 @opindex mwarn-mcu
 @opindex mno-warn-mcu
@@ -31261,13 +31265,8 @@ MCU name specified by the @option{-mmcu} option and the ISA set by the
 @option{-mhwmult} option.  It also toggles warnings about unrecognized
 MCU names.  This option is on by default.
 
-@opindex mcpu=
-@item -mcpu=
-Specifies the ISA to use.  Accepted values are @samp{msp430},
-@samp{msp430x} and @samp{msp430xv2}.  This option is deprecated.  The
-@option{-mmcu=} option should be used to select the ISA.
-
 @opindex msim
+@opindex -mno-sim
 @item -msim
 Link to the simulator runtime libraries and linker script.  Overrides
 any scripts that would be selected by the @option{-mmcu=} option.
@@ -31281,22 +31280,24 @@ Use large-model addressing (20-bit pointers, 20-bit @code{size_t}).
 Use small-model addressing (16-bit pointers, 16-bit @code{size_t}).
 
 @opindex mrelax
+@opindex mno-relax
 @item -mrelax
 This option is passed to the assembler and linker, and allows the
 linker to perform certain optimizations that cannot be done until
 the final link.
 
-@opindex mhwmult=
-@item mhwmult=
+@opindex mhwmult
+@item mhwmult=@var{type}
 Describes the type of hardware multiply supported by the target.
-Accepted values are @samp{none} for no hardware multiply, @samp{16bit}
+Accepted values for @var{type} are @samp{none} for no hardware multiply,
+@samp{16bit}
 for the original 16-bit-only multiply supported by early MCUs.
 @samp{32bit} for the 16/32-bit multiply supported by later MCUs and
 @samp{f5series} for the 16/32-bit multiply supported by F5-series MCUs.
 A value of @samp{auto} can also be given.  This tells GCC to deduce
 the hardware multiply support based upon the MCU name provided by the
 @option{-mmcu} option.  If no @option{-mmcu} option is specified or if
-the MCU name is not recognized then no hardware multiply support is
+the MCU name is not recognized, then no hardware multiply support is
 assumed.  @code{auto} is the default setting.
 
 Hardware multiplies are normally performed by calling a library
@@ -31310,27 +31311,28 @@ them safe to use inside interrupt handlers as well as in normal code.
 
 @opindex minrt
 @item -minrt
-Enable the use of a minimum runtime environment - no static
+Enable the use of a minimum runtime environment without support for static
 initializers or constructors.  This is intended for memory-constrained
 devices.  The compiler includes special symbols in some objects
 that tell the linker and runtime which code fragments are required.
 
 @opindex mtiny-printf
+@opindex mno-tiny-printf
 @item -mtiny-printf
 Enable reduced code size @code{printf} and @code{puts} library functions.
 The @samp{tiny} implementations of these functions are not reentrant, so
 must be used with caution in multi-threaded applications.
 
-Support for streams has been removed and the string to be printed will
-always be sent to stdout via the @code{write} syscall.  The string is not
+Support for streams has been removed and the string to be printed are
+always sent to stdout via the @code{write} syscall.  The string is not
 buffered before it is sent to write.
 
 This option requires Newlib Nano IO, so GCC must be configured with
 @samp{--enable-newlib-nano-formatted-io}.
 
 @opindex mmax-inline-shift=
-@item -mmax-inline-shift=
-This option takes an integer between 0 and 64 inclusive, and sets
+@item -mmax-inline-shift=@var{n}
+This option takes an integer @var{n} between 0 and 64 inclusive, and sets
 the maximum number of inline shift instructions which should be emitted to
 perform a shift operation by a constant amount.  When this value needs to be
 exceeded, an mspabi helper function is used instead.  The default value is 4.
@@ -31343,32 +31345,40 @@ this option is divided by 2 and the resulting value used instead.
 
 @opindex mcode-region
 @opindex mdata-region
-@item -mcode-region=
-@itemx -mdata-region=
+@item -mcode-region=@var{where}
+@itemx -mdata-region=@var{where}
 These options tell the compiler where to place functions and data that
 do not have one of the @code{lower}, @code{upper}, @code{either} or
-@code{section} attributes.  Possible values are @code{lower},
-@code{upper}, @code{either} or @code{any}.  The first three behave
-like the corresponding attribute.  The fourth possible value -
-@code{any} - is the default.  It leaves placement entirely up to the
+@code{section} attributes.  Possible values for @var{where} are @samp{lower},
+@samp{upper}, @samp{either} or @samp{any}.  The first three behave
+like the corresponding attribute.  The fourth possible value,
+@samp{any}, is the default.  It leaves placement entirely up to the
 linker script and how it assigns the standard sections
 (@code{.text}, @code{.data}, etc) to the memory regions.
 
+@opindex muse-lower-region-prefix
+@opindex mno-use-lower-region-prefix
+@item -muse-lower-region-prefix
+Add the @samp{.lower} prefix to section names when compiling with
+@option{-mcode-region=lower} or @option{-mdata-region=lower}.  Disabled
+by default.
+
 @opindex msilicon-errata
-@item -msilicon-errata=
+@item -msilicon-errata=@var{name}@r{[},@var{name}@dots{}@r{]}
 This option passes on a request to assembler to enable the fixes for
-the named silicon errata.
+the named silicon errata.  Refer to the assembler documentation for details.
 
 @opindex msilicon-errata-warn
-@item -msilicon-errata-warn=
+@item -msilicon-errata-warn=@var{name}@r{[},@var{name}@dots{}@r{]}
 This option passes on a request to the assembler to enable warning
-messages when a silicon errata might need to be applied.
+messages when a named silicon errata might need to be applied.  Refer to the
+assembler documentation for details.
 
 @opindex mwarn-devices-csv
 @opindex mno-warn-devices-csv
 @item -mwarn-devices-csv
 @itemx -mno-warn-devices-csv
-Warn if @samp{devices.csv} is not found or there are problem parsing it
+Warn if @file{devices.csv} is not found or there are problems parsing it
 (default: on).
 
 @end table
