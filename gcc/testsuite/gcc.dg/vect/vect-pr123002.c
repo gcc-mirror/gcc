@@ -2,7 +2,7 @@
 
 #include "tree-vect.h"
 
-static unsigned int const enc_table_32[8][3] = {
+unsigned int enc_table_32[8][3] = {
     {513735U, 77223048U, 437087610U },
     {0U,      78508U,    646269101U },
     {0U,      0U,        11997U,    },
