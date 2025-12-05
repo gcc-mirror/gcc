@@ -457,6 +457,40 @@ _GLIBCXX_MEM_FN_TRAITS(&& noexcept, false_type, true_type)
 
   /// @}
 
+#if __glibcxx_common_reference_wrapper // C++ >= 20
+  namespace __detail
+  {
+    template<typename _Tp>
+      constexpr bool __is_ref_wrapper = false;
+
+    template<typename _Tp>
+      constexpr bool __is_ref_wrapper<reference_wrapper<_Tp>> = true;
+
+    template<typename _Rp, typename _Tp, typename _RQual, typename _TQual>
+      concept __ref_wrap_common_reference_exists_with = __is_ref_wrapper<_Rp>
+	&& requires { typename common_reference_t<typename _Rp::type&, _TQual>; }
+	&& convertible_to<_RQual, common_reference_t<typename _Rp::type&, _TQual>>;
+  } // namespace __detail
+
+  template<typename _Rp, typename _Tp,
+	   template<typename> class _RQual, template<typename> class _TQual>
+    requires __detail::__ref_wrap_common_reference_exists_with<_Rp, _Tp,
+							       _RQual<_Rp>, _TQual<_Tp>>
+      && (!__detail::__ref_wrap_common_reference_exists_with<_Tp, _Rp,
+							     _TQual<_Tp>, _RQual<_Rp>>)
+  struct basic_common_reference<_Rp, _Tp, _RQual, _TQual>
+  { using type = common_reference_t<typename _Rp::type&, _TQual<_Tp>>; };
+
+  template<typename _Tp, typename _Rp,
+	   template<typename> class _TQual, template<typename> class _RQual>
+    requires __detail::__ref_wrap_common_reference_exists_with<_Rp, _Tp,
+							       _RQual<_Rp>, _TQual<_Tp>>
+      && (!__detail::__ref_wrap_common_reference_exists_with<_Tp, _Rp,
+							     _TQual<_Tp>, _RQual<_Rp>>)
+  struct basic_common_reference<_Tp, _Rp, _TQual, _RQual>
+  { using type = common_reference_t<typename _Rp::type&, _TQual<_Tp>>; };
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 

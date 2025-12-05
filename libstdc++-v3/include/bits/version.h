@@ -2040,6 +2040,16 @@
 #endif /* !defined(__cpp_lib_common_reference) && defined(__glibcxx_want_common_reference) */
 #undef __glibcxx_want_common_reference
 
+#if !defined(__cpp_lib_common_reference_wrapper)
+# if (__cplusplus >= 202002L)
+#  define __glibcxx_common_reference_wrapper 202302L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_common_reference_wrapper)
+#   define __cpp_lib_common_reference_wrapper 202302L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_common_reference_wrapper) && defined(__glibcxx_want_common_reference_wrapper) */
+#undef __glibcxx_want_common_reference_wrapper
+
 #if !defined(__cpp_lib_formatters)
 # if (__cplusplus >= 202100L) && _GLIBCXX_HOSTED
 #  define __glibcxx_formatters 202302L

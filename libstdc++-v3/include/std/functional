@@ -64,6 +64,7 @@
 #define __glibcxx_want_not_fn
 #define __glibcxx_want_ranges
 #define __glibcxx_want_reference_wrapper
+#define __glibcxx_want_common_reference_wrapper
 #define __glibcxx_want_transparent_operators
 #include <bits/version.h>
 
