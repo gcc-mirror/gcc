@@ -289,7 +289,6 @@ extern int __gthread_cond_wait_recursive (__gthread_cond_t *cond,
 
 #include <limits.h>
 #include <time.h>
-#include <tickLib.h>
 #include <sysLib.h>
 #include <version.h>
 
