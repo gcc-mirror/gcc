@@ -1126,8 +1126,8 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{IA-64 Options} (@ref{IA-64 Options})
 @gccoptlist{-mbig-endian  -mlittle-endian  -mgnu-as  -mgnu-ld  -mno-pic
--mvolatile-asm-stop  -mregister-names  -msdata  -mno-sdata
--mconstant-gp  -mauto-pic  -mfused-madd
+-mvolatile-asm-stop  -mregister-names  -msdata
+-mconstant-gp  -mauto-pic
 -minline-float-divide-min-latency
 -minline-float-divide-max-throughput
 -mno-inline-float-divide
@@ -1142,7 +1142,6 @@ Objective-C and Objective-C++ Dialects}.
 -msched-br-data-spec  -msched-ar-data-spec  -msched-control-spec
 -msched-br-in-data-spec  -msched-ar-in-data-spec  -msched-in-control-spec
 -msched-spec-ldc  -msched-spec-control-ldc
--msched-prefer-non-data-spec-insns  -msched-prefer-non-control-spec-insns
 -msched-stop-bits-after-every-cycle  -msched-count-spec-in-critical-path
 -msel-sched-dont-check-control-spec  -msched-fp-mem-deps-zero-cost
 -msched-max-memory-insns-hard-limit  -msched-max-memory-insns=@var{max-insns}}
@@ -28451,13 +28450,6 @@ using the maximum throughput algorithm.
 @item -mno-inline-sqrt
 Do not generate inline code for @code{sqrt}.
 
-@opindex mfused-madd
-@opindex mno-fused-madd
-@item -mfused-madd
-@itemx -mno-fused-madd
-Do (don't) generate code that uses the fused multiply/add or multiply/subtract
-instructions.  The default is to use these instructions.
-
 @opindex mno-dwarf2-asm
 @opindex mdwarf2-asm
 @item -mno-dwarf2-asm
@@ -28556,24 +28548,6 @@ are dependent on the control speculative loads.
 This is effective only with @option{-msched-control-spec} enabled.
 The default setting is enabled.
 
-@opindex mno-sched-prefer-non-data-spec-insns
-@opindex msched-prefer-non-data-spec-insns
-@item -mno-sched-prefer-non-data-spec-insns
-@itemx -msched-prefer-non-data-spec-insns
-If enabled, data-speculative instructions are chosen for schedule
-only if there are no other choices at the moment.  This makes
-the use of the data speculation much more conservative.
-The default setting is disabled.
-
-@opindex mno-sched-prefer-non-control-spec-insns
-@opindex msched-prefer-non-control-spec-insns
-@item -mno-sched-prefer-non-control-spec-insns
-@itemx -msched-prefer-non-control-spec-insns
-If enabled, control-speculative instructions are chosen for schedule
-only if there are no other choices at the moment.  This makes
-the use of the control speculation much more conservative.
-The default setting is disabled.
-
 @opindex mno-sched-count-spec-in-critical-path
 @opindex msched-count-spec-in-critical-path
 @item -mno-sched-count-spec-in-critical-path
@@ -28584,26 +28558,36 @@ speculation a bit more conservative.
 The default setting is disabled.
 
 @opindex msched-spec-ldc
+@opindex mno-sched-spec-ldc
 @item -msched-spec-ldc
+@itemx -mno-sched-spec-ldc
 Use a simple data speculation check.  This option is on by default.
 
-@opindex msched-spec-ldc
+@opindex msched-spec-control-ldc
+@opindex mno-sched-spec-control-ldc
 @item -msched-control-spec-ldc
+@itemx -mno-sched-control-spec-ldc
 Use a simple check for control speculation.  This option is on by default.
 
 @opindex msched-stop-bits-after-every-cycle
+@opindex mno-sched-stop-bits-after-every-cycle
 @item -msched-stop-bits-after-every-cycle
+@itemx -mno-sched-stop-bits-after-every-cycle
 Place a stop bit after every cycle when scheduling.  This option is on
 by default.
 
 @opindex msched-fp-mem-deps-zero-cost
+@opindex mno-sched-fp-mem-deps-zero-cost
 @item -msched-fp-mem-deps-zero-cost
+@itemx -mno-sched-fp-mem-deps-zero-cost
 Assume that floating-point stores and loads are not likely to cause a conflict
 when placed into the same instruction group.  This option is disabled by
 default.
 
 @opindex msel-sched-dont-check-control-spec
+@opindex mno-sel-sched-dont-check-control-spec
 @item -msel-sched-dont-check-control-spec
+@itemx -mno-sel-sched-dont-check-control-spec
 Generate checks for control speculation in selective scheduling.
 This flag is disabled by default.
 
@@ -28615,7 +28599,9 @@ instruction group. Frequently useful to prevent cache bank conflicts.
 The default value is 1.
 
 @opindex msched-max-memory-insns-hard-limit
+@opindex mno-sched-max-memory-insns-hard-limit
 @item -msched-max-memory-insns-hard-limit
+@itemx -mno-sched-max-memory-insns-hard-limit
 Makes the limit specified by @option{msched-max-memory-insns} a hard limit,
 disallowing more than that number in an instruction group.
 Otherwise, the limit is ``soft'', meaning that non-memory operations

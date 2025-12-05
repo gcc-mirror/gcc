@@ -164,10 +164,10 @@ Target Var(mflag_sched_spec_control_ldc) Init(0)
 Use simple data speculation check for control speculation.
 
 msched-prefer-non-data-spec-insns
-Target WarnRemoved
+Target WarnRemoved Undocumented
 
 msched-prefer-non-control-spec-insns
-Target WarnRemoved
+Target WarnRemoved Undocumented
 
 msched-count-spec-in-critical-path
 Target Var(mflag_sched_count_spec_in_critical_path) Init(0)
