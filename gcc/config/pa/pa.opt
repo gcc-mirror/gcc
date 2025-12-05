@@ -42,7 +42,7 @@ Target Var(TARGET_ATOMIC_LIBCALLS) Init(1)
 Generate libcalls for atomic loads and stores when sync libcalls are disabled.
 
 mbig-switch
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 mcaller-copies
@@ -74,7 +74,7 @@ Target Mask(GAS)
 Assume code will be assembled by GAS.
 
 mjump-in-delay
-Target Ignore
+Target Ignore Undocumented
 Does nothing.  Preserved for backward compatibility.
 
 ;; Not used by gcc
@@ -87,7 +87,7 @@ Target Mask(LONG_CALLS)
 Always generate long calls.
 
 mlra
-Target Var(pa_lra_p) Init(1)
+Target Var(pa_lra_p) Init(1) Undocumented
 Use LRA instead of reload (transitional).
 
 mlong-load-store
@@ -95,7 +95,7 @@ Target Mask(LONG_LOAD_STORE)
 Emit long load/store sequences.
 
 mnosnake
-Target RejectNegative
+Target RejectNegative Undocumented
 Generate PA1.0 code.
 
 mno-space-regs
@@ -156,7 +156,7 @@ Target Mask(SOFT_MULT)
 Use software integer multiplication.
 
 msnake
-Target RejectNegative
+Target RejectNegative Undocumented
 Generate PA1.1 code.
 
 mspace-regs

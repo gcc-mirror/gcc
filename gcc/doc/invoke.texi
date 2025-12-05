@@ -1113,18 +1113,15 @@ Objective-C and Objective-C++ Dialects}.
 
 @emph{HPPA Options} (@ref{HPPA Options})
 @gccoptlist{-march=@var{architecture-type}
--matomic-libcalls  -mbig-switch
+-mno-atomic-libcalls
 -mcaller-copies  -mdisable-fpregs  -mdisable-indexing
 -mordered  -mfast-indirect-calls  -mgas  -mgnu-ld   -mhp-ld
 -mfixed-range=@var{register-range}
--mcoherent-ldcw -mjump-in-delay  -mlinker-opt  -mlong-calls
--mlong-load-store  -mno-atomic-libcalls  -mno-disable-fpregs
--mno-disable-indexing  -mno-fast-indirect-calls  -mno-gas
--mno-jump-in-delay  -mno-long-load-store
--mno-portable-runtime  -mno-soft-float
+-mcoherent-ldcw  -mlinker-opt  -mlong-calls
+-mlong-load-store
 -mno-space-regs  -msoft-float  -mpa-risc-1-0
 -mpa-risc-1-1  -mpa-risc-2-0  -mportable-runtime
--mschedule=@var{cpu-type}  -mspace-regs  -msoft-mult  -msio  -mwsio
+-mschedule=@var{cpu-type}  -msoft-mult  -msio  -mwsio
 -munix=@var{unix-std}  -nolibdld  -static  -threads}
 
 @emph{IA-64 Options} (@ref{IA-64 Options})
@@ -28088,11 +28085,13 @@ other way around.
 @item -mpa-risc-1-0
 @itemx -mpa-risc-1-1
 @itemx -mpa-risc-2-0
-Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0} respectively.
+Synonyms for @option{-march=1.0}, @option{-march=1.1}, and @option{-march=2.0},
+respectively.
 
 @opindex matomic-libcalls
 @opindex mno-atomic-libcalls
 @item -matomic-libcalls
+@itemx -mno-atomic-libcalls
 Generate libcalls for atomic loads and stores when sync libcalls are disabled.
 This option is enabled by default.  It only affects the generation of
 atomic libcalls by the HPPA backend.
@@ -28113,11 +28112,8 @@ This option generates @code{__atomic_exchange} calls for atomic stores.
 It also provides special handling for atomic DImode accesses on 32-bit
 targets.
 
-@opindex mbig-switch
-@item -mbig-switch
-Does nothing.  Preserved for backward compatibility.
-
 @opindex mcaller-copies
+@opindex mno-caller-copies
 @item -mcaller-copies
 The caller copies function arguments passed by hidden reference.  This
 option should be used with care as it is not compatible with the default
@@ -28126,19 +28122,23 @@ passed by hidden reference and the option provides better compatibility
 with OpenMP.
 
 @opindex mcoherent-ldcw
+@opindex mno-coherent-ldcw
 @item -mcoherent-ldcw
 Use ldcw/ldcd coherent cache-control hint.
 
 @opindex mdisable-fpregs
+@opindex -mno-disable-fpregs
 @item -mdisable-fpregs
-Disable floating-point registers.  Equivalent to @code{-msoft-float}.
+Disable floating-point registers.  Equivalent to @option{-msoft-float}.
 
 @opindex mdisable-indexing
+@opindex mno-disable-indexing
 @item -mdisable-indexing
 Prevent the compiler from using indexing address modes.  This avoids some
 rather obscure problems when compiling MIG generated code under MACH@.
 
 @opindex mfast-indirect-calls
+@opindex mno-fast-indirect-calls
 @item -mfast-indirect-calls
 Generate code that assumes calls never cross space boundaries.  This
 allows GCC to emit code that performs faster indirect calls.
@@ -28155,6 +28155,7 @@ two registers separated by a dash.  Multiple register ranges can be
 specified separated by a comma.
 
 @opindex mgas
+@opindex -mno-gas
 @item -mgas
 Enable the use of assembler directives only GAS understands.
 
@@ -28201,7 +28202,7 @@ long calls only when the distance from the call site to the beginning
 of the function or translation unit, as the case may be, exceeds a
 predefined limit set by the branch type being used.  The limits for
 normal calls are 7,600,000 and 240,000 bytes, respectively for the
-PA 2.0 and PA 1.X architectures.  Sibcalls are always limited at
+PA 2.0 and PA 1.X architectures.  Sibling calls are always limited at
 240,000 bytes.
 
 Distances are measured from the beginning of functions when using the
@@ -28215,20 +28216,17 @@ particularly when partial linking is used to build the application.
 
 The types of long calls used depends on the capabilities of the
 assembler and linker, and the type of code being generated.  The
-impact on systems that support long absolute calls, and long pic
-symbol-difference or pc-relative calls should be relatively small.
-However, an indirect call is used on 32-bit ELF systems in pic code
+impact on systems that support long absolute calls, and long PIC
+symbol-difference or PC-relative calls should be relatively small.
+However, an indirect call is used on 32-bit ELF systems in PIC code
 and it is quite long.
 
 @opindex mlong-load-store
+@opindex mno-long-load-store
 @item -mlong-load-store
 Generate 3-instruction load and store sequences as sometimes required by
 the HP-UX 10 linker.  This is equivalent to the @samp{+k} option to
 the HP compilers.
-
-@opindex mjump-in-delay
-@item -mjump-in-delay
-This option is ignored and provided for compatibility purposes only.
 
 @opindex mno-space-regs
 @opindex mspace-regs
@@ -28239,10 +28237,12 @@ GCC to generate faster indirect calls and use unscaled index address modes.
 Such code is suitable for level 0 PA systems and kernels.
 
 @opindex mordered
+@opindex mno-ordered
 @item -mordered
 Assume memory references are ordered and barriers are not needed.
 
 @opindex mportable-runtime
+@opindex mno-portable-runtime
 @item -mportable-runtime
 Use the portable calling conventions proposed by HP for ELF systems.
 
@@ -28256,13 +28256,17 @@ proper scheduling option for your machine.  The default scheduling is
 @samp{8000}.
 
 @opindex msio
+@opindex mwsio
 @item -msio
-Generate the predefine, @code{_SIO}, for server IO@.  The default is
+@itemx -mwsio
+The @option{-msio} generates the predefine, @code{_SIO}, for server IO@.
+The default is
 @option{-mwsio}.  This generates the predefines, @code{__hp9000s700},
 @code{__hp9000s700__} and @code{_WSIO}, for workstation IO@.  These
 options are available under HP-UX and HI-UX@.
 
 @opindex msoft-float
+@opindex mno-soft-float
 @item -msoft-float
 Generate output containing library calls for floating point.
 @strong{Warning:} the requisite libraries are not available for all HPPA
@@ -28278,6 +28282,7 @@ library that comes with GCC, with @option{-msoft-float} in order for
 this to work.
 
 @opindex msoft-mult
+@opindex mno-soft-mult
 @item -msoft-mult
 Use software integer multiplication.
 
@@ -28311,18 +28316,18 @@ as appropriate.  Most GNU software doesn't provide this capability.
 
 @opindex nolibdld
 @item -nolibdld
-Suppress the generation of link options to search libdld.sl when the
+Suppress the generation of link options to search @file{libdld.sl} when the
 @option{-static} option is specified on HP-UX 10 and later.
 
 @opindex static
 @item -static
-The HP-UX implementation of setlocale in libc has a dependency on
-libdld.sl.  There isn't an archive version of libdld.sl.  Thus,
+The HP-UX C library implementation of @code{setlocale} has a dependency on
+@file{libdld.sl}.  There isn't an archive version of @file{libdld.sl}.  Thus,
 when the @option{-static} option is specified, special link options
 are needed to resolve this dependency.
 
 On HP-UX 10 and later, the GCC driver adds the necessary options to
-link with libdld.sl when the @option{-static} option is specified.
+link with @file{libdld.sl} when the @option{-static} option is specified.
 This causes the resulting binary to be dynamic.  On the 64-bit port,
 the linkers generate dynamic binaries by default in any case.  The
 @option{-nolibdld} option can be used to prevent the GCC driver from
