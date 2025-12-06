@@ -2377,7 +2377,11 @@ reorder_basic_blocks_software_trace_cache (void)
   FREE (bbd);
 }
 
-/* Order edges by execution frequency, higher first.  */
+/* Order edges by execution frequency, higher first.
+   Return:
+       1 iff frequency (VE1) < frequency (VE2)
+       0 iff frequency (VE1) == frequency (VE2)
+       -1 iff frequency (VE1) > frequency (VE2)  */
 
 static int
 edge_order (const void *ve1, const void *ve2)
@@ -2392,7 +2396,12 @@ edge_order (const void *ve1, const void *ve2)
   gcov_type gc1 = c1.initialized_p () ? c1.to_gcov_type () : 0;
   gcov_type gc2 = c2.initialized_p () ? c2.to_gcov_type () : 0;
   gcov_type m = MAX (gc1, gc2);
-  return (m == gc1) - (m == gc2);
+  int low_to_high_cmp = (m == gc1) - (m == gc2);
+  /* gcc_stablesort sorts values in low-to-high order.  But edges should
+     be sorted in the opposite order - with highest execution frequency first.
+     So return an inverted comparison to trick gcc_stablesort into
+     performing a reversed sorting order.  */
+  return -1 * low_to_high_cmp;
 }
 
 /* Reorder basic blocks using the "simple" algorithm.  This tries to
