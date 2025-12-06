@@ -967,10 +967,8 @@ decl_attributes (tree *node, tree attributes, int flags,
 	  for (a = find_same_attribute (attr, old_attrs);
 	       a != NULL_TREE;
 	       a = find_same_attribute (attr, TREE_CHAIN (a)))
-	    {
-	      if (simple_cst_equal (TREE_VALUE (a), args) == 1)
-		break;
-	    }
+	    if (attribute_value_equal (a, attr))
+	      break;
 
 	  if (a == NULL_TREE)
 	    {
