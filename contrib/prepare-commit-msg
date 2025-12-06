@@ -78,4 +78,9 @@ else
     tee="cat"
 fi
 
-git $cmd --default-prefix | $tee | git gcc-mklog -c "$COMMIT_MSG_FILE"
+# Use --default-prefix if supported
+if git diff --help | grep -q "\-\-default-prefix" 2>/dev/null; then
+    cmd="$cmd --default-prefix"
+fi
+
+git $cmd | $tee | git gcc-mklog -c "$COMMIT_MSG_FILE"
