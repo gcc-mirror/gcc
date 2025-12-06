@@ -1415,8 +1415,13 @@ execute_cleanup_cfg_post_optimizing (void)
     }
   maybe_remove_unreachable_handlers ();
   cleanup_dead_labels ();
-  if (group_case_labels ())
-    todo |= TODO_cleanup_cfg;
+  if (group_case_labels () && cleanup_tree_cfg ())
+    todo |= TODO_update_ssa;
+
+  /* When optimizing undo the merging of forwarder blocks
+     that phis for better out of ssa expansion.  */
+  if (optimize)
+    make_forwarders_with_degenerate_phis (cfun);
 
   basic_block bb = single_succ (ENTRY_BLOCK_PTR_FOR_FN (cfun));
   gimple_stmt_iterator gsi = gsi_start_nondebug_after_labels_bb (bb);
