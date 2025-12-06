@@ -13204,32 +13204,6 @@ package body Sem_Attr is
                   return;
                end if;
 
-               --  If the Accum_Typ is an unconstrained array then a
-               --  Constraint_Error will be raised at runtime as most
-               --  computations will change its length type during the
-               --  reduction execution, RM 4.5.10(25/5). For instance, this is
-               --  the case with: [...]'Reduce ("&", ...). When the expression
-               --  yields non-empty strings, the reduction repeatedly executes
-               --  the following assignment:
-               --    Acc := Expr (I) & Acc;
-               --  which will raise a Constraint_Error since the number of
-               --  elements is increasing.
-
-               if not Is_Numeric_Type (Base_Type (Accum_Typ))
-                 and then not Is_Constrained (Accum_Typ)
-               then
-                  declare
-                     Discard : Node_Id;
-                     pragma Unreferenced (Discard);
-                  begin
-                     Discard := Compile_Time_Constraint_Error
-                                  (Reducer_N,
-                                   "potential length mismatch!!??",
-                                   Accum_Typ);
-                     return;
-                  end;
-               end if;
-
                --  If no error has been posted and the accumulation type is
                --  constrained, then the resolution of the reducer can start.
 
@@ -13311,6 +13285,33 @@ package body Sem_Attr is
                if Is_Limited_Type (Accum_Typ) then
                   Error_Msg_N
                     ("accumulated subtype of Reduce must be nonlimited", N);
+
+               --  If the Accum_Typ is an unconstrained array and the reducer
+               --  subprogram is a function then a Constraint_Error will be
+               --  raised at runtime as most computations will change its
+               --  length type during the reduction execution, RM 4.5.10(25/5).
+               --  For instance, this is the case with:
+               --    [...]'Reduce ("&", ...)
+               --  When the expression yields non-empty strings, the reduction
+               --  repeatedly executes the following assignment:
+               --    Acc := Expr (I) & Acc;
+               --  which will raise a Constraint_Error since the number of
+               --  elements is increasing.
+
+               elsif Nkind (Reducer_E) /= N_Attribute_Reference
+                 and then Ekind (Reducer_E) = E_Function
+                 and then not Is_Numeric_Type (Base_Type (Accum_Typ))
+                 and then not Is_Constrained (Accum_Typ)
+               then
+                  declare
+                     Discard : Node_Id;
+                     pragma Unreferenced (Discard);
+                  begin
+                     Discard := Compile_Time_Constraint_Error
+                                  (Reducer_N,
+                                   "potential length mismatch!!??",
+                                   Accum_Typ);
+                  end;
                end if;
 
                --  Complete the resolution of the reduction expression by
