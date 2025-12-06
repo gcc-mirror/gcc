@@ -2954,6 +2954,7 @@ private:
   vec<tree> back_refs;		/* Back references.  */
   duplicate_hash_map *duplicates;	/* Map from existings to duplicate.  */
   vec<post_process_data> post_decls;	/* Decls to post process.  */
+  vec<tree> post_types;		/* Types to post process.  */
   unsigned unused;		/* Inhibit any interior TREE_USED
 				   marking.  */
 
@@ -3058,11 +3059,22 @@ public:
   {
     return post_decls;
   }
+  /* Return the types to postprocess.  */
+  const vec<tree>& post_process_type ()
+  {
+    return post_types;
+  }
 private:
   /* Register DATA for postprocessing.  */
   void post_process (post_process_data data)
   {
     post_decls.safe_push (data);
+  }
+  /* Register TYPE for postprocessing.  */
+  void post_process_type (tree type)
+  {
+    gcc_checking_assert (TYPE_P (type));
+    post_types.safe_push (type);
   }
 
 private:
@@ -3076,6 +3088,7 @@ trees_in::trees_in (module_state *state)
   duplicates = NULL;
   back_refs.create (500);
   post_decls.create (0);
+  post_types.create (0);
 }
 
 trees_in::~trees_in ()
@@ -3083,6 +3096,7 @@ trees_in::~trees_in ()
   delete (duplicates);
   back_refs.release ();
   post_decls.release ();
+  post_types.release ();
 }
 
 /* Tree stream writer.  */
@@ -10203,10 +10217,23 @@ trees_in::tree_node (bool is_use)
 
 	  case ARRAY_TYPE:
 	    {
+	      tree elt_type = res;
 	      tree domain = tree_node ();
 	      int dep = u ();
 	      if (!get_overrun ())
-		res = build_cplus_array_type (res, domain, dep);
+		{
+		  res = build_cplus_array_type (elt_type, domain, dep);
+		  /* If we're an array of an incomplete imported type,
+		     save it for post-processing so that we can attempt
+		     to complete the type later if it will get a
+		     definition later in the cluster.  */
+		  if (!dep
+		      && !COMPLETE_TYPE_P (elt_type)
+		      && CLASS_TYPE_P (elt_type)
+		      && DECL_LANG_SPECIFIC (TYPE_NAME (elt_type))
+		      && DECL_MODULE_IMPORT_P (TYPE_NAME (elt_type)))
+		    post_process_type (res);
+		}
 	    }
 	    break;
 
@@ -16839,7 +16866,13 @@ module_state::read_cluster (unsigned snum)
 	      && DECL_NOT_REALLY_EXTERN (decl))
 	    DECL_EXTERNAL (decl) = false;
 	}
-
+    }
+  for (const tree& type : sec.post_process_type ())
+    {
+      /* Attempt to complete an array type now in case its element type
+	 had a definition streamed later in the cluster.  */
+      gcc_checking_assert (TREE_CODE (type) == ARRAY_TYPE);
+      complete_type (type);
     }
   /* Look, function.cc's interface to cfun does too much for us, we
      just need to restore the old value.  I do not want to go
