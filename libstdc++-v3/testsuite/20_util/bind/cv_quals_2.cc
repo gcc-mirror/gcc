@@ -44,6 +44,9 @@ void test01()
 		       // { dg-error "no match" "" { target c++20 } 43 }
 }
 
+// Ignore the reasons for deduction/substitution failure in the headers.
+// { dg-prune-output "no type named 'type' in 'struct std::enable_if<false" }
+
 int main()
 {
   test01();
