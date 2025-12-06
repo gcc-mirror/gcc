@@ -1344,6 +1344,7 @@ gfc_match_array_constructor (gfc_expr **result)
   match m;
   const char *end_delim;
   bool seen_ts;
+  gfc_namespace *old_ns = gfc_current_ns;
 
   head = NULL;
   seen_ts = false;
@@ -1368,6 +1369,8 @@ gfc_match_array_constructor (gfc_expr **result)
   /* Try to match an optional "type-spec ::"  */
   gfc_clear_ts (&ts);
   m = gfc_match_type_spec (&ts);
+  gfc_current_ns = old_ns;
+
   if (m == MATCH_YES)
     {
       seen_ts = (gfc_match (" ::") == MATCH_YES);
