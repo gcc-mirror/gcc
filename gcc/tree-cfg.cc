@@ -10344,6 +10344,13 @@ make_forwarders_with_degenerate_phis (function *fn)
 			  (PHI_ARG_DEF_FROM_EDGE (vphi, args[j].first));
 		    }
 		  free_dominance_info (fn, CDI_DOMINATORS);
+		  if (dump_file && (dump_flags & TDF_DETAILS))
+		    {
+		      fprintf (dump_file, "New forwarder block for edge ");
+		      fprintf (dump_file, "%d -> %d.\n",
+			       args[start].first->src->index,
+			       args[start].first->dest->index);
+		    }
 		  basic_block forwarder = split_edge (args[start].first);
 		  profile_count count = profile_count::zero ();
 		  bool irr = false;
