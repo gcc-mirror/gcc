@@ -12386,7 +12386,8 @@ tsubst_attribute (tree t, tree *decl_p, tree args,
      pass it through tsubst.  Attributes like mode, format,
      cleanup and several target specific attributes expect it
      unmodified.  */
-  else if (attribute_takes_identifier_p (get_attribute_name (t)))
+  else if (get_attribute_namespace (t) == gnu_identifier
+	   && attribute_takes_identifier_p (get_attribute_name (t)))
     {
       tree chain
 	= tsubst_expr (TREE_CHAIN (val), args, complain, in_decl);

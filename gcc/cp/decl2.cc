@@ -1468,7 +1468,8 @@ is_late_template_attribute (tree attr, tree decl)
 {
   tree name = get_attribute_name (attr);
   tree args = TREE_VALUE (attr);
-  const struct attribute_spec *spec = lookup_attribute_spec (name);
+  const struct attribute_spec *spec
+    = lookup_attribute_spec (TREE_PURPOSE (attr));
   tree arg;
 
   if (!spec)
@@ -1512,7 +1513,9 @@ is_late_template_attribute (tree attr, tree decl)
 	 second and following arguments.  Attributes like mode, format,
 	 cleanup and several target specific attributes aren't late
 	 just because they have an IDENTIFIER_NODE as first argument.  */
-      if (arg == args && attribute_takes_identifier_p (name)
+      if (arg == args
+	  && get_attribute_namespace (attr) == gnu_identifier
+	  && attribute_takes_identifier_p (name)
 	  && identifier_p (t))
 	continue;
 
