@@ -573,14 +573,20 @@ export namespace std
   using std::atomic_flag;
   using std::atomic_flag_clear;
   using std::atomic_flag_clear_explicit;
+#if __cpp_lib_atomic_wait
   using std::atomic_flag_notify_all;
   using std::atomic_flag_notify_one;
+#endif
+#if __cpp_lib_atomic_flag_test
   using std::atomic_flag_test;
   using std::atomic_flag_test_and_set;
   using std::atomic_flag_test_and_set_explicit;
   using std::atomic_flag_test_explicit;
+#endif
+#if __cpp_lib_atomic_wait
   using std::atomic_flag_wait;
   using std::atomic_flag_wait_explicit;
+#endif
   using std::atomic_init;
   using std::atomic_int;
   using std::atomic_int16_t;
@@ -602,8 +608,10 @@ export namespace std
   using std::atomic_load;
   using std::atomic_load_explicit;
   using std::atomic_long;
+#if __cpp_lib_atomic_wait
   using std::atomic_notify_all;
   using std::atomic_notify_one;
+#endif
   using std::atomic_ptrdiff_t;
   using std::atomic_ref;
   using std::atomic_schar;
@@ -638,8 +646,10 @@ export namespace std
   using std::atomic_unsigned_lock_free;
 #endif
   using std::atomic_ushort;
+#if __cpp_lib_atomic_wait
   using std::atomic_wait;
   using std::atomic_wait_explicit;
+#endif
   using std::atomic_wchar_t;
   using std::kill_dependency;
   using std::memory_order;
@@ -997,6 +1007,7 @@ export namespace std
 }
 
 // 33.7 <condition_variable>
+#if _GLIBCXX_HAS_GTHREADS
 export namespace std
 {
   using std::condition_variable;
@@ -1004,6 +1015,7 @@ export namespace std
   using std::cv_status;
   using std::notify_all_at_thread_exit;
 }
+#endif
 
 // 17.12.2 <coroutine>
 #if __cpp_lib_coroutine
@@ -1762,10 +1774,12 @@ export namespace std
 }
 
 // <latch>
+#if __cpp_lib_latch
 export namespace std
 {
   using std::latch;
 }
+#endif
 
 // 17.3.3 <limits> [limits.syn]
 export namespace std
@@ -2037,7 +2051,9 @@ export namespace std::pmr
   using std::pmr::polymorphic_allocator;
   using std::pmr::pool_options;
   using std::pmr::set_default_resource;
+#if _GLIBCXX_HAS_GTHREADS
   using std::pmr::synchronized_pool_resource;
+#endif
   using std::pmr::unsynchronized_pool_resource;
 }
 
@@ -2051,13 +2067,19 @@ export namespace std
   using std::defer_lock_t;
   using std::lock;
   using std::lock_guard;
+#if _GLIBCXX_HAS_GTHREADS
   using std::mutex;
+#endif
   using std::once_flag;
+#if _GLIBCXX_HAS_GTHREADS
   using std::recursive_mutex;
   using std::recursive_timed_mutex;
+#endif
   using std::scoped_lock;
   using std::swap;
+#if _GLIBCXX_HAS_GTHREADS
   using std::timed_mutex;
+#endif
   using std::try_lock;
   using std::try_to_lock;
   using std::try_to_lock_t;
@@ -2645,11 +2667,13 @@ export namespace std
 }
 
 // <semaphore>
+#if __cpp_lib_semaphore
 export namespace std
 {
   using std::binary_semaphore;
   using std::counting_semaphore;
 }
+#endif
 
 // <set>
 export namespace std
@@ -2671,8 +2695,10 @@ export namespace std
 export namespace std
 {
   using std::shared_lock;
+#if _GLIBCXX_HAS_GTHREADS
   using std::shared_mutex;
   using std::shared_timed_mutex;
+#endif
   using std::swap;
 }
 
@@ -2957,7 +2983,9 @@ export namespace std
 {
   using std::swap;
   using std::thread;
+#if __cpp_lib_jthread
   using std::jthread;
+#endif
   namespace this_thread
   {
     using std::this_thread::get_id;
