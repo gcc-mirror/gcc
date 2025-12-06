@@ -1840,8 +1840,19 @@ riscv_symbolic_constant_p (rtx x, enum riscv_symbol_type *symbol_type)
   /* Nonzero offsets are only valid for references that don't use the GOT.  */
   switch (*symbol_type)
     {
-    case SYMBOL_ABSOLUTE:
     case SYMBOL_PCREL:
+      /* In 64-bit mode, PC-relative offsets with ranges beyond +/-1GiB are
+	 more likely than not to end up out of range for an auipc instruction
+	 randomly-placed within the 2GB range usable by medany, and such
+	 offsets are quite unlikely to come up by chance, so be conservative
+	 and separate the offset for them when in 64-bit mode, where they don't
+	 wrap around.  */
+      if (TARGET_64BIT)
+	return sext_hwi (INTVAL (offset), 30) == INTVAL (offset);
+
+      /* Fall through.  */
+
+    case SYMBOL_ABSOLUTE:
     case SYMBOL_TLS_LE:
       /* GAS rejects offsets outside the range [-2^31, 2^31-1].  */
       return sext_hwi (INTVAL (offset), 32) == INTVAL (offset);
