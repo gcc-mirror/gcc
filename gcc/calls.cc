@@ -3579,7 +3579,8 @@ expand_call (tree exp, rtx target, int ignore)
 		      && check_sibcall_argument_overlap (before_arg,
 							 &args[i], true)))
 		sibcall_failure = true;
-	      }
+	      gcc_checking_assert (!args[i].stack || argblock);
+	    }
 
 	  if (args[i].stack)
 	    call_fusage
@@ -3675,6 +3676,32 @@ expand_call (tree exp, rtx target, int ignore)
           && !ACCUMULATE_OUTGOING_ARGS
 	  && !must_preallocate && reg_parm_stack_space > 0)
 	anti_adjust_stack (GEN_INT (reg_parm_stack_space));
+
+      /* Cover pushed arguments with call usage, so that cselib knows to
+	 invalidate the stores in them at the call insn.  */
+      if (pass == 1 && !argblock
+	  && (maybe_ne (adjusted_args_size.constant, 0)
+	      || adjusted_args_size.var))
+	{
+	  rtx addr = virtual_outgoing_args_rtx;
+	  poly_int64 size = adjusted_args_size.constant;
+	  if (!STACK_GROWS_DOWNWARD)
+	    {
+	      if (adjusted_args_size.var)
+		/* ??? We can't compute the exact base address.  */
+		addr = gen_rtx_PLUS (GET_MODE (addr), addr,
+				     gen_rtx_SCRATCH (GET_MODE (addr)));
+	      else
+		addr = plus_constant (GET_MODE (addr), addr, -size);
+	    }
+	  rtx fu = gen_rtx_MEM (BLKmode, addr);
+	  if (adjusted_args_size.var == 0)
+	    set_mem_size (fu, size);
+	  call_fusage
+	    = gen_rtx_EXPR_LIST (BLKmode,
+				 gen_rtx_USE (VOIDmode, fu),
+				 call_fusage);
+	}
 
       /* Pass the function the address in which to return a
 	 structure value.  */
