@@ -5842,6 +5842,20 @@ read_module (void)
 		  || startswith (name, "__vtype_")))
 	    p = name;
 
+	  /* Include pdt_types if their associated pdt_template is in a
+	     USE, ONLY list.  */
+	  if (p == NULL && name[0] == 'P'
+	      && startswith (name, "Pdt")
+	      && module_list)
+	    {
+	      gfc_use_list *ml = module_list;
+	      for (; ml; ml = ml->next)
+		if (ml->rename
+		    && !strncmp (&name[3], ml->rename->use_name,
+				 strlen (ml->rename->use_name)))
+		  p = name;
+	    }
+
 	  /* Skip symtree nodes not in an ONLY clause, unless there
 	     is an existing symtree loaded from another USE statement.  */
 	  if (p == NULL)

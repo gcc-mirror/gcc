@@ -3969,6 +3969,7 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
   gfc_expr *kind_expr;
   gfc_component *c1, *c2;
   match m;
+  gfc_symtree *s = NULL;
 
   type_param_spec_list = NULL;
 
@@ -4178,10 +4179,29 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       goto error_return;
     }
 
+  /* If we are in an interface body, the instance will not have been imported.
+     Make sure that it is imported implicitly.  */
+  s = gfc_find_symtree (gfc_current_ns->sym_root, pdt->name);
+  if (gfc_current_ns->proc_name
+      && gfc_current_ns->proc_name->attr.if_source == IFSRC_IFBODY
+      && s && s->import_only && pdt->attr.imported)
+    {
+      s = gfc_find_symtree (gfc_current_ns->sym_root, instance->name);
+      if (!s)
+	{
+	  gfc_get_sym_tree (instance->name, gfc_current_ns, &s, false,
+			    &gfc_current_locus);
+	  s->n.sym = instance;
+	}
+      s->n.sym->attr.imported = 1;
+      s->import_only = 1;
+    }
+
   m = MATCH_YES;
 
   if (instance->attr.flavor == FL_DERIVED
-      && instance->attr.pdt_type)
+      && instance->attr.pdt_type
+      && instance->components)
     {
       instance->refs++;
       if (ext_param_list)
