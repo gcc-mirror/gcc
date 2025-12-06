@@ -1,3 +1,74 @@
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+	    Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/120446
+	* include/bits/refwrap.h (__detail::__is_ref_wrapper):
+	Define as per P2655R3 for C++20.
+	(__detail::__ref_wrap_common_reference_exists_with): Likewise.
+	(basic_common_reference): Define partial specializations using
+	the above as per P2655R3 for C++20.
+	* include/bits/version.def (common_reference_wrapper): New.
+	* include/bits/version.h: Regenerate.
+	* include/std/functional (__glibcxx_want_common_reference_wrapper):
+	Define.
+	* testsuite/20_util/reference_wrapper/p2655r3.cc: New test.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120446
+	* include/bits/version.def (common_reference): New.
+	* include/bits/version.h: Regenerate.
+	* include/std/type_traits (__glibcxx_want_common_reference):
+	Define.
+	(__common_reference_impl<T1, T2, 1>): Add pointer convertibility
+	constraints as per P2655R3.
+	* testsuite/20_util/common_reference/p2655r3.cc: New test.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120446
+	* include/std/type_traits (__common_reference_impl): Rewrite
+	partial specializations to use requires-clause instead of
+	an additional void_t template parameter.  Consolidate the
+	partial specializations corresponding to bullet 1.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	* testsuite/20_util/function_objects/bind_front/111327.cc:
+	Add missing space before } ending a dg-error directive.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/111550
+	* include/std/ranges (views::__adaptor::_Partial::operator())
+	[_GLIBCXX_EXPLICIT_THIS_PARAMETER]: Also use deducing this
+	in C++20 mode when possible.
+	(views::__adaptor::_Pipe::Operator())
+	[_GLIBCXX_EXPLICIT_THIS_PARAMETER]: Likewise.
+	* testsuite/std/ranges/adaptors/take.cc (test07): New test.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/111327
+	* include/bits/binders.h (_Binder::operator())
+	[_GLIBCXX_EXPLICIT_THIS_PARAMETER]: Also use deducing this in
+	C++20 mode when possible.
+	* testsuite/20_util/function_objects/bind_front/111327.cc:
+	Expect error inside header even in C++20 mode.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/111327
+	* include/std/functional (_Not_fn::operator())
+	[_GLIBCXX_EXPLICIT_THIS_PARAMETER]: Define as a single
+	overload using deducing this.
+	* testsuite/20_util/function_objects/not_fn/111327.cc: Extend test.
+
+2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	* include/bits/c++config (_GLIBCXX_EXPLICIT_THIS_PARAMETER):
+	New.
+
 2025-12-04  François Dumont  <frs.dumont@gmail.com>
 
 	* include/debug/deque

@@ -1,3 +1,91 @@
+2025-12-05  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/122215
+	* ira-color.cc (improve_allocation): Use register filter for all
+	loop on hard regs.
+
+2025-12-05  Richard Earnshaw  <rearnsha@arm.com>
+
+	PR target/122999
+	* config/arm/arm.cc (arm_canonicalize_comparison): Defer
+	initializing maxval until we know we are dealing with an
+	integer mode.
+
+2025-12-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-vect-loop.cc (vect_need_peeling_or_partial_vectors_p):
+	When peeling for gaps we always need an epilog.
+
+2025-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/120939
+	* tree-vect-loop.cc (vect_need_peeling_or_partial_vectors_p):
+	Remove eliding an epilogue based on not computed
+	LOOP_VINFO_COST_MODEL_THRESHOLD and estimated max stmt executions.
+
+2025-12-05  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123002
+	* tree-vectorizer.h (supportable_widening_operation): Remove
+	vinfo and stmt_info parameters, add flag to indicate whether
+	the context would allow OP_{EVEN,ODD}.
+	* tree-vect-patterns.cc (vect_recog_abd_pattern): Adjust
+	and pass false.
+	(vect_recog_widen_op_pattern): Likewise.
+	(vect_recog_widen_abd_pattern): Likewise.
+	* tree-vect-stmts.cc (vectorizable_conversion): Move
+	even/odd validity check here, from supportable_widening_operation.
+	Adjust it to be conservative.
+	(supportable_widening_operation): Get flag whether even/odd
+	is OK to use and remove then unused parameters and code.
+
+2025-12-05  Richard Biener  <rguenther@suse.de>
+
+	* tree-pretty-print.cc (dump_mem_ref): Dump clique : base
+	specifier for MEM_REF and TARGET_MEM_REF when dumping
+	GIMPLE format.
+
+2025-12-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle
+	OMP_CLAUSE_DYN_GROUPPRIVATE by printing 'sorry, unimplemented'.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_DYN_GROUPPRIVATE.
+	(enum omp_clause_fallback_kind): New.
+	(struct tree_omp_clause): Add fallback_kind union member.
+	* tree-nested.cc (convert_nonlocal_omp_clauses,
+	convert_local_omp_clauses): Handle OMP_CLAUSE_DYN_GROUPPRIVATE.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Add
+	OMP_CLAUSE_DYN_GROUPPRIVATE.
+	* tree-pretty-print.cc (dump_omp_clause): Handle
+	OMP_CLAUSE_DYN_GROUPPRIVATE.
+	* tree.h (OMP_CLAUSE_DYN_GROUPPRIVATE_EXPR,
+	OMP_CLAUSE_DYN_GROUPPRIVATE_KIND): New #define.
+
+2025-12-05  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/99782
+	* config/i386/i386-expand.cc (ix86_gen_ccmp_next): Move the check
+	for mode earlier before expand_operands.
+	* config/aarch64/aarch64.cc (aarch64_gen_ccmp_next): Likewise.
+
+2025-12-05  Daniel Barboza  <dbarboza@ventanamicro.com>
+	    Jeff Law  <jlaw@ventanamicro.com>
+
+	* match.pd (`x & c ? (x - c) | (x | c)`): New pattern.
+	(`x & c ? (x & ~c) | (x | c)`): Likewise.
+
+2025-12-05  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/autovec-opt.md (*pred_cmp_swapped<mode>_scalar):
+	Add new pattern to match vec_dup > vec for vmsltu.
+	* config/riscv/predicates.md (comparison_swappable_operator):
+	Add new iterator for above pattern
+	* config/riscv/riscv-protos.h (expand_vx_cmp_vec_dup_vec): Add
+	new func to emit vmsltu.vx.
+	* config/riscv/riscv-v.cc (get_swapped_cmp_rtx_code): Add new
+	func to convert cmp code to swapped, like gtu to ltu.
+	(expand_vx_cmp_vec_dup_vec): Add new func decl.
+
 2025-12-04  Jakub Jelinek  <jakub@redhat.com>
 
 	PR target/122991

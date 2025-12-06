@@ -1,3 +1,119 @@
+2025-12-05  Javier Miranda  <miranda@adacore.com>
+
+	* einfo.ads (Has_Unsigned_Base_Range_Aspect): Update documentation.
+	(Has_Modular_Operations): New synthesized predicate.
+	(Has_Overflow_Operations): New synthesized predicate.
+	* einfo-utils.ads (Has_Modular_Operations): New function.
+	(Has_Overflow_Operations): New function.
+	* einfo-utils.adb (Is_Modular_Integer_Type): Undo previous patch.
+	(Is_Signed_Integer_Type): Undo previous patch.
+	(Has_Modular_Operations): New function.
+	(Has_Overflow_Operations): New function.
+	* checks.adb (Determine_Range): Replace selected occurrences of calls to
+	Is_Modular_Integer_Type by calls to Has_Modular_Operations, and calls to
+	Is_Signed_Integer_Type by calls to Has Overflow_Operations.
+	(Enable_Range_Check): Ditto.
+	(Insert_Valid_Check): Ditto.
+	* exp_aggr.adb (Others_Check): Ditto.
+	* exp_attr.adb (Expand_N_Attribute_Reference [Attribute_Pred,
+	Attribute_Succ]): Ditto.
+	* exp_ch4.adb (Expand_Compare_Minimize_Eliminate_Overflow): Ditto.
+	(Size_In_Storage_Elements): Ditto.
+	(Expand_N_Op_Abs): Ditto.
+	(Expand_N_Op_Expon): Ditto.
+	(Expand_N_Op_Minus): Ditto.
+	(Expand_N_Op_Multiply): Ditto.
+	(Expand_N_Op_Subtract): Ditto.
+	* freeze.adb (Freeze_Entity): Ditto.
+	* sem_aggr.adb (Report_Null_Array_Constraint_Error): Ditto plus
+	report specific error for index with unsigned_base_range aspect.
+	* sem_attr.adb (Check_Modular_Integer_Type): Ditto.
+	(Analyze_Attribute [Attribute_Pred, Attribute_Succ, Attribute_
+	Range_Length, Attribute_Small, Attribute_Reduce]): Ditto.
+	* sem_ch12.adb (Instantiate_Type): Ditto.
+	(Validate_Formal_Type_Default): Ditto.
+	* sem_ch13.adb (Valid_Empty): Ditto.
+	* sem_ch2.adb (Analyze_Integer_Literal): Ditto.
+	* sem_ch3.adb (Unsigned_Base_Range_Type_Declaration): Set attribute
+	Has_Unsigned_Base_Range_Aspect on the implicit base, and set Etype
+	of its first subtype E_Modular_Integer_Subtype.
+	* sem_ch4.adb (Analyze_Call): Ditto.
+	* sem_eval.adb (Check_Non_Static_Context_For_Overflow): Ditto.
+	(Eval_Arithmetic_Op): Ditto.
+	(Eval_Integer_Literal): Ditto.
+	(Eval_Logical_Op): Ditto.
+	(Eval_Op_Expon): Ditto.
+	(Eval_Op_Not): Ditto.
+	(Eval_Unary_Op): Ditto.
+	(Fold_Shift): Ditto.
+	(Test_Expression_Is_Foldable): Ditto.
+	* sem_intr.adb (Check_Shift): Ditto.
+	* sem_prag.adb (Analyze_Pragma [Pragma_Unsigned_Base_Range]): Add
+	assertion.
+	* sem_res.adb (Resolve_Logical_Op): Ditto.
+	(Resolve_Unary_Op): Ditto.
+	(Set_String_Literal_Subtype): Ditto.
+	* sem_type.adb (Covers): Ditto.
+	(Specific_Type): Ditto.
+	(Valid_Boolean_Arg): Ditto.
+	* sem_util.adb (Wrong_Type): Ditto
+	* style.adb (Check_Boolean_Operator): Ditto.
+
+2025-12-05  Ronan Desplanques  <desplanques@adacore.com>
+
+	* doc/gnat_rm/representation_clauses_and_pragmas.rst: Improve table.
+	* gnat_rm.texi: Regenerate.
+	* gnat_ugn.texi: Regenerate.
+
+2025-12-05  Viljar Indus  <indus@adacore.com>
+
+	* sem_util.adb (Get_Cursor_Type): use the
+	specific type for classwide container checks.
+
+2025-12-05  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* sem_ch12.adb (Remove_Parent): Only set the Is_Transient component
+	of the local scope stack entry.
+
+2025-12-05  Marc Poulhiès  <poulhies@adacore.com>
+
+	* doc/gnat_ugn/building_executable_programs_with_gnat.rst
+	(-gnato??): Remove redundant/confusing doc on floating-point
+	overflow.
+	* gnat_ugn.texi: Regenerate.
+
+2025-12-05  Tonu Naks  <naks@adacore.com>
+
+	* adaint.c: use the _tsopen macro when opening RO file
+
+2025-12-05  Denis Mazzucato  <mazzucato@adacore.com>
+
+	* sem_attr.adb
+	(Analyze_Attribute): Set the type of the attribute expression only when
+	not ambiguous (it will later be resolved correctly). Emit an error in
+	case the type is limited.
+	(Resolve_Attribute): Emit an error if the reducer has no entity.
+	(Get_Value_Subtype): Try to resolve the Value_Subtype of the aggregate
+	expression, and if it succeeds, set the candidate reducer subprogram.
+	(Is_Reducer_Subprogram): Check whether the selected candidate has a
+	proper reducer profile.
+	(Make_Array_Type): Return simple array type to resolve the array
+	aggregate against it.
+	(Resolve_Attribute): Reimplement the resolution of Reduce attribute,
+	including its prefix.
+	* sem_res.adb (Resolve_Declare_Expression): Save and restore variables
+	that may be hidden by the local declaration. Only setting the new
+	entities is problematic when dealing with copied trees where the ref is
+	lost (eg. when resolving array aggregates).
+	* exp_attr.adb (Expand_N_Attribute_Reference): Remove tricks to resolve
+	the reducer in case of faulty resolution as not needed anymore.
+
+2025-12-05  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR ada/115305
+	* Makefile.rtl: Use s-oslock__darwin instead of the Posix version.
+	* libgnat/s-oslock__darwin.ads: New file.
+
 2025-12-03  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/122960

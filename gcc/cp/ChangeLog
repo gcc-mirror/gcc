@@ -1,3 +1,13 @@
+2025-12-05  Tobias Burnus  <tburnus@baylibre.com>
+
+	* pt.cc (tsubst_omp_clauses): Handle OMP_CLAUSE_DYN_GROUPPRIVATE.
+	* semantics.cc (finish_omp_clauses): Likewise.
+	* parser.cc (cp_parser_omp_clause_dyn_groupprivate): New.
+	(cp_parser_omp_clause_name, cp_parser_omp_all_clauses):
+	Handle 'dyn_groupprivate' clause.
+	(OMP_TARGET_CLAUSE_MASK): Add PRAGMA_OMP_CLAUSE_DYN_GROUPPRIVATE;
+	sort clauses alphabetically.
+
 2025-12-03  Jason Merrill  <jason@redhat.com>
 
 	* pt.cc (dependent_implict_conv_p): Rename to...
