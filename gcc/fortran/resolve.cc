@@ -9799,8 +9799,10 @@ done_errmsg:
       /* Resolving the expr3 in the loop over all objects to allocate would
 	 execute loop invariant code for each loop item.  Therefore do it just
 	 once here.  */
+      mpz_t nelem;
       if (code->expr3 && code->expr3->mold
-	  && code->expr3->ts.type == BT_DERIVED)
+	  && code->expr3->ts.type == BT_DERIVED
+	  && !(code->expr3->ref && gfc_array_size (code->expr3, &nelem)))
 	{
 	  /* Default initialization via MOLD (non-polymorphic).  */
 	  gfc_expr *rhs = gfc_default_initializer (&code->expr3->ts);
