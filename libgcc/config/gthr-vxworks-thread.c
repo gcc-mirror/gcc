@@ -29,9 +29,9 @@ see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 
 #include "gthr.h"
 
-typedef STATUS (* ENTRYPTR) (int);
-
 #if __GTHREADS_CXX0X
+
+typedef void *__gthread_entry_point_t (void *);
 
 #include <taskLib.h>
 #include <stdlib.h>
@@ -258,9 +258,14 @@ __gthread_self (void)
   return __local_tcb;
 }
 
+/* VxWorks taskCreate adaptor to __gthread_create conventions.  */
 static int
-__task_wrapper (__gthread_t tcb, ENTRYPTR __func, _Vx_usr_arg_t __args)
+__task_wrapper (_Vx_usr_arg_t tcb_, _Vx_usr_arg_t func_, _Vx_usr_arg_t args_)
 {
+  __gthread_t tcb = (__gthread_t) tcb_;
+  __gthread_entry_point_t *func = (__gthread_entry_point_t *) func_;
+  void *args = (void *) args_;
+
   if (!tcb)
     return ERROR;
 
@@ -268,9 +273,9 @@ __task_wrapper (__gthread_t tcb, ENTRYPTR __func, _Vx_usr_arg_t __args)
 
   /* We use this variable to avoid memory leaks in the case where
      the underlying function throws an exception.  */
-  __attribute__ ((cleanup (__delete_gthread_tcb))) __gthread_t __tmp = tcb;
+  __attribute__ ((cleanup (__delete_gthread_tcb))) __gthread_t tmp = tcb;
 
-  void *return_value = (void *) __func (__args);
+  void *return_value = func (args);
   tcb->return_value = return_value;
 
   /* Call the destructors.  */
@@ -291,7 +296,7 @@ __task_wrapper (__gthread_t tcb, ENTRYPTR __func, _Vx_usr_arg_t __args)
 /* Proper gthreads API.  */
 
 int
-__gthread_create (__gthread_t * __threadid, void *(*__func) (void *),
+__gthread_create (__gthread_t * __threadid, __gthread_entry_point_t __func,
 		  void *__args)
 {
   if (!__threadid)
