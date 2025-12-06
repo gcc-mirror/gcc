@@ -2261,6 +2261,32 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       && !sym->attr.select_rank_temporary)
     inferred_type = true;
 
+  /* Try to resolve a typebound generic procedure so that the associate name
+     has a chance to get a type before being used in a second, nested associate
+     statement. Note that a copy is used for resolution so that failure does
+     not result in a mutilated selector expression further down the line.  */
+  if (tgt_expr && !sym->assoc->dangling
+      && tgt_expr->ts.type == BT_UNKNOWN
+      && tgt_expr->symtree
+      && tgt_expr->symtree->n.sym
+      && gfc_expr_attr (tgt_expr).generic
+      && ((sym->ts.type == BT_DERIVED && sym->ts.u.derived->attr.pdt_template)
+	  || (sym->ts.type == BT_CLASS
+	      && CLASS_DATA (sym)->ts.u.derived->attr.pdt_template)))
+    {
+	gfc_expr *cpy = gfc_copy_expr (tgt_expr);
+	if (gfc_resolve_expr (cpy)
+	    && cpy->ts.type != BT_UNKNOWN)
+	  {
+	    gfc_replace_expr (tgt_expr, cpy);
+	    sym->ts = tgt_expr->ts;
+	  }
+	else
+	  gfc_free_expr (cpy);
+	if (gfc_expr_attr (tgt_expr).generic)
+	  inferred_type = true;
+    }
+
   /* For associate names, we may not yet know whether they are arrays or not.
      If the selector expression is unambiguously an array; eg. a full array
      or an array section, then the associate name must be an array and we can
@@ -2492,6 +2518,20 @@ gfc_match_varspec (gfc_expr *primary, int equiv_flag, bool sub_flag,
       else if (inquiry && (sym->ts.type == BT_DERIVED && inferred_type)
 	       && !gfc_find_derived_types (sym, gfc_current_ns, name))
 	primary->ts.type = BT_UNKNOWN;
+
+      /* Otherwise try resolving a copy of a component call. If it succeeds,
+	 use that for the selector expression.  */
+      else if (tgt_expr && tgt_expr->expr_type == EXPR_COMPCALL)
+	  {
+	     gfc_expr *cpy = gfc_copy_expr (tgt_expr);
+	     if (gfc_resolve_expr (cpy))
+		{
+		  gfc_replace_expr (tgt_expr, cpy);
+		  sym->ts = tgt_expr->ts;
+		}
+	      else
+		gfc_free_expr (cpy);
+	  }
 
       /* An inquiry reference might determine the type, otherwise we have an
 	 error.  */
