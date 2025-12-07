@@ -1914,6 +1914,9 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
        && val_new == prec)
       || (ifnnew == IFN_POPCOUNT && ifn == IFN_CTZ))
     {
+      if (vect_is_reduction (stmt_vinfo))
+	return NULL;
+
       /* .CTZ (X) = PREC - .CLZ ((X - 1) & ~X)
 	 .CTZ (X) = .POPCOUNT ((X - 1) & ~X).  */
       if (ifnnew == IFN_CLZ)
@@ -1952,6 +1955,9 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
     }
   else if (ifnnew == IFN_CLZ)
     {
+      if (vect_is_reduction (stmt_vinfo))
+	return NULL;
+
       /* .CTZ (X) = (PREC - 1) - .CLZ (X & -X)
 	 .FFS (X) = PREC - .CLZ (X & -X).  */
       sub = prec - (ifn == IFN_CTZ);
@@ -1971,6 +1977,9 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
     }
   else if (ifnnew == IFN_POPCOUNT)
     {
+      if (vect_is_reduction (stmt_vinfo))
+	return NULL;
+
       /* .CTZ (X) = PREC - .POPCOUNT (X | -X)
 	 .FFS (X) = (PREC + 1) - .POPCOUNT (X | -X).  */
       sub = prec + (ifn == IFN_FFS);
@@ -1993,6 +2002,11 @@ vect_recog_ctz_ffs_pattern (vec_info *vinfo, stmt_vec_info stmt_vinfo,
       /* .FFS (X) = .CTZ (X) + 1.  */
       add = 1;
       val_cmp++;
+
+      if (vect_is_reduction (stmt_vinfo)
+	  && defined_at_zero
+	  && (!defined_at_zero_new || val != val_cmp))
+	return NULL;
     }
 
   /* Create B = .IFNNEW (A).  */
