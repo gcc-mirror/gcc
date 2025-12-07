@@ -1,3 +1,9 @@
+2025-12-06  Iain Sandoe  <iain@sandoe.co.uk>
+
+	PR ada/115305
+	* Makefile.rtl: Use s-oslock__darwin instead of the Posix version.
+	* libgnat/s-oslock__darwin.ads: New file.
+
 2025-11-21  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* repinfo.adb (List_Location): Do not output the final comma.
