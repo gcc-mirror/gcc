@@ -2510,7 +2510,7 @@ vague_linkage_p (tree decl)
       || (TREE_CODE (decl) == FUNCTION_DECL
 	  && DECL_DECLARED_INLINE_P (decl))
       || (DECL_LANG_SPECIFIC (decl)
-	  && DECL_TEMPLATE_INSTANTIATION (decl))
+	  && DECL_TEMPLOID_INSTANTIATION (decl))
       || (VAR_P (decl) && DECL_INLINE_VAR_P (decl)))
     return true;
   else if (DECL_FUNCTION_SCOPE_P (decl))
@@ -5850,8 +5850,7 @@ c_parse_final_cleanups (void)
 	  && !(header_module_p ()
 	       && (DECL_DEFAULTED_FN (decl) || decl_tls_wrapper_p (decl)))
 	  /* Don't complain if the template was defined.  */
-	  && !((DECL_TEMPLATE_INSTANTIATION (decl)
-		|| DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (decl))
+	  && !(DECL_TEMPLOID_INSTANTIATION (decl)
 	       && DECL_INITIAL (DECL_TEMPLATE_RESULT
 				(template_for_substitution (decl))))
 	  && warning_at (DECL_SOURCE_LOCATION (decl), 0,

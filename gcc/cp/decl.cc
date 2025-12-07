@@ -19761,7 +19761,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	}
     }
 
-  bool honor_interface = (!DECL_TEMPLATE_INSTANTIATION (decl1)
+  bool honor_interface = (!DECL_TEMPLOID_INSTANTIATION (decl1)
 			  /* Implicitly-defined methods (like the
 			     destructor for a class in which no destructor
 			     is explicitly declared) must not be defined
@@ -19792,7 +19792,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
   else if (!finfo->interface_unknown && honor_interface)
     {
       if (DECL_DECLARED_INLINE_P (decl1)
-	  || DECL_TEMPLATE_INSTANTIATION (decl1))
+	  || DECL_TEMPLOID_INSTANTIATION (decl1))
 	{
 	  DECL_EXTERNAL (decl1)
 	    = (finfo->interface_only
@@ -19834,7 +19834,7 @@ start_preparsed_function (tree decl1, tree attrs, int flags)
 	DECL_EXTERNAL (decl1) = 0;
 
       if ((DECL_DECLARED_INLINE_P (decl1)
-	   || DECL_TEMPLATE_INSTANTIATION (decl1))
+	   || DECL_TEMPLOID_INSTANTIATION (decl1))
 	  && ! DECL_INTERFACE_KNOWN (decl1))
 	DECL_DEFER_OUTPUT (decl1) = 1;
       else

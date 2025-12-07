@@ -11657,7 +11657,7 @@ non_templated_friend_p (tree t)
 	 template <class T> friend A<T>::f(); */
       tree tmpl = TI_TEMPLATE (ti);
       tree primary = DECL_PRIMARY_TEMPLATE (tmpl);
-      return (primary && primary != tmpl);
+      return ((primary || DECL_NAMESPACE_SCOPE_P (t)) && primary != tmpl);
     }
   else
     return false;
