@@ -12919,7 +12919,7 @@ package body Sem_Attr is
 
                   --  Where the context is augmented with the iteration
                   --  variable I of the right type, and Init_Var of type
-                  --  Accum_Subtype. If the Reducer has both procedure and
+                  --  Accum_Typ. If the Reducer has both procedure and
                   --  function interpretations with the proper reducer profile
                   --  an ambiguity error is emitted. Note that, this could be a
                   --  false positive as the two may coexist without ambiguity
@@ -13204,7 +13204,7 @@ package body Sem_Attr is
                   return;
                end if;
 
-               --  If no error has been posted and the accumulation type is
+               --  If no error has been posted and the accumulator type is
                --  constrained, then the resolution of the reducer can start.
 
                if Nkind (Reducer_N) = N_Attribute_Reference then
@@ -13252,44 +13252,50 @@ package body Sem_Attr is
                   end if;
                end if;
 
-               --  After resolving the reducer, determine the correct
-               --  Accum_Subtype: if the reducer is an attribute (Min or Max),
-               --  then the prefix type is the accumulation type.
+               --  After resolving the reducer, determine Accum_Typ: if the
+               --  reducer is an attribute (Min or Max), then its prefix is
+               --  the accumulator type.
 
                if Nkind (Reducer_E) = N_Attribute_Reference then
-                  Accum_Typ := Etype (Prefix (Reducer_E));
+                  Accum_Typ := Entity (Prefix (Reducer_E));
 
-               --  If an operator from standard, then the type of its first
-               --  formal woudl be Any_Type, in this case we make sure we don't
-               --  use an universal type to avoid resolution problems later on.
+               --  If the reducer is an operator from Standard, then the type
+               --  of its first operand would be Any_Type. In this case, make
+               --  sure we do not have an universal type to avoid resolution
+               --  problems later on, and use the base type of numeric types
+               --  to avoid spurious subtype mismatches for the initial value.
 
-               elsif Ekind (Reducer_E) = E_Operator
-                 or else Scope (Reducer_E) = Standard_Standard
-               then
+               elsif Scope (Reducer_E) = Standard_Standard then
                   if Accum_Typ = Universal_Integer then
                      Accum_Typ := Standard_Integer;
                   elsif Accum_Typ = Universal_Real then
                      Accum_Typ := Standard_Float;
+                  elsif Is_Numeric_Type (Accum_Typ) then
+                     Accum_Typ := Base_Type (Accum_Typ);
                   end if;
 
-               --  Otherwise, the Accum_Subtype is the subtype of the first
-               --  formal of the reducer subprogram RM 4.5.10(19/5).
+               --  Otherwise, Accum_Typ is the subtype of the first formal
+               --  of the reducer subprogram (RM 4.5.10(19/5)).
+
+               elsif Ekind (Reducer_E) = E_Operator then
+                  Accum_Typ := Etype (Left_Opnd (Reducer_E));
 
                else
                   Accum_Typ := Etype (First_Formal (Reducer_E));
                end if;
+
                Set_Etype (N, Accum_Typ);
 
-               --  Accumulation type must be nonlimited, RM 4.5.10(8/5)
+               --  The accumulator type must be nonlimited (RM 4.5.10(8/5))
 
                if Is_Limited_Type (Accum_Typ) then
                   Error_Msg_N
-                    ("accumulated subtype of Reduce must be nonlimited", N);
+                    ("type of reduction expression must be nonlimited", N);
 
-               --  If the Accum_Typ is an unconstrained array and the reducer
+               --  If Accum_Typ is an unconstrained array and the reducer
                --  subprogram is a function then a Constraint_Error will be
-               --  raised at runtime as most computations will change its
-               --  length type during the reduction execution, RM 4.5.10(25/5).
+               --  raised at run time, as most computations will change its
+               --  length during the reduction execution (RM 4.5.10(25/5)).
                --  For instance, this is the case with:
                --    [...]'Reduce ("&", ...)
                --  When the expression yields non-empty strings, the reduction
@@ -13300,7 +13306,7 @@ package body Sem_Attr is
 
                elsif Nkind (Reducer_E) /= N_Attribute_Reference
                  and then Ekind (Reducer_E) = E_Function
-                 and then not Is_Numeric_Type (Base_Type (Accum_Typ))
+                 and then not Is_Numeric_Type (Accum_Typ)
                  and then not Is_Constrained (Accum_Typ)
                then
                   declare
@@ -13318,6 +13324,7 @@ package body Sem_Attr is
                --  resolving the initial expression and array aggregate.
 
                Resolve (Init_Value_Expr, Accum_Typ);
+
                if Nkind (P) = N_Aggregate then
                   Resolve_Aggregate (P,
                     Make_Array_Type (Index => Standard_Positive,
