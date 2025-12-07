@@ -6301,6 +6301,9 @@ mark_single_function (tree expr, tsubst_flags_t complain)
   expr = maybe_undo_parenthesized_ref (expr);
   expr = tree_strip_any_location_wrapper (expr);
 
+  if (expr == error_mark_node)
+    return false;
+
   if (is_overloaded_fn (expr) == 1
       && !mark_used (expr, complain)
       && !(complain & tf_error))
@@ -6343,6 +6346,9 @@ fn_template_being_defined (tree decl)
 bool
 mark_used (tree decl, tsubst_flags_t complain /* = tf_warning_or_error */)
 {
+  if (decl == error_mark_node)
+    return false;
+
   /* If we're just testing conversions or resolving overloads, we
      don't want any permanent effects like forcing functions to be
      output or instantiating templates.  */

@@ -12,7 +12,7 @@ foo ()
   template for (int x : { 1, })		// { dg-warning "'template for' only available with" "" { target c++23_down } }
     ;
   for (int x : { , })			// { dg-error "expected primary-expression before ',' token" }
-    ;					// { dg-error "unable to deduce" "" { target *-*-* } .-1 }
+    ;
   template for (int x : { , })		// { dg-warning "'template for' only available with" "" { target c++23_down } }
     ;					// { dg-error "expected primary-expression before ',' token" "" { target *-*-* } .-1 }
 }

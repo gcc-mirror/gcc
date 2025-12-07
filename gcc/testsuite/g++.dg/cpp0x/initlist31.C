@@ -9,5 +9,5 @@ void f() {
   auto y =
   {
     string(Equation()) // { dg-error "12:'Equation' was not declared" }
-  }; // { dg-error "unable to deduce" }
+  };
 }
