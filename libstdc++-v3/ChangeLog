@@ -1,3 +1,29 @@
+2025-12-06  Jason Merrill  <jason@redhat.com>
+
+	* src/c++23/std.cc.in: Add more #if.
+
+2025-12-06  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/80564
+	* include/std/functional (__cv_like): New.
+	(_Bind::_Res_type): Don't define when not needed.
+	(_Bind::__dependent): Likewise.
+	(_Bind::_Res_type_cv): Likewise.
+	(_Bind::operator()) [_GLIBCXX_EXPLICIT_THIS_PARAMETER]:
+	Define as two instead of four overloads using deducing
+	this.
+	* testsuite/20_util/bind/cv_quals_2.cc: Ignore SFINAE
+	diagnostics inside headers.
+	* testsuite/20_util/bind/ref_neg.cc: Likewise.
+	* testsuite/20_util/bind/80564.cc: New test.
+
+2025-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__detail::__atomic_eq): Use
+	std::addressof instead of &.
+	* include/std/atomic (atomic::wait, atomic::notify_one)
+	(atomic::notify_all): Likewise.
+
 2025-12-05  Patrick Palka  <ppalka@redhat.com>
 	    Tomasz Kamiński  <tkaminsk@redhat.com>
 

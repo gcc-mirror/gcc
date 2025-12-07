@@ -1,3 +1,50 @@
+2025-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/122947
+	* gcc.dg/pr122947.c: New.
+
+2025-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/91420
+	* gcc.target/riscv/pr91420.c: New.
+
+2025-12-06  Jeff Law  <jlaw@ventanamicro.com>
+
+	PR rtl-optimization/122675
+	* gcc.target/riscv/pr122675-1.c: Adjust expected output.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/103414
+	* gfortran.dg/pdt_76.f03: New test.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122693
+	* gfortran.dg/pdt_75.f03: New test.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122670
+	* gfortran.dg/pdt_74.f03: New test.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122669
+	* gfortran.dg/pdt_73.f03: New test.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122578
+	* gfortran.dg/pdt_72.f03: New test.
+
+2025-12-06  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR rtl-optimization/122675
+	* gcc.target/aarch64/pr122675-1.c: New test.
+	* gcc.target/i386/pr122675-1.c: New test.
+	* gcc.target/riscv/pr122675-1.c: New test.
+
 2025-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	PR middle-end/99782

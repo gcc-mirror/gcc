@@ -1,3 +1,26 @@
+2025-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR rtl-optimization/122947
+	* calls.cc (expand_call): Add stack function usage in
+	non-ACCUMULATE_OUTGOING_ARGS configurations.
+
+2025-12-06  Alexandre Oliva  <oliva@adacore.com>
+
+	PR target/91420
+	* config/riscv/riscv.cc (riscv_symbolic_constant_p): Require
+	offsets smaller than +/- 1GiB for PCREL symbols.
+
+2025-12-06  Jakub Jelinek  <jakub@redhat.com>
+
+	* attribs.cc (decl_attributes): Use attribute_value_equal to
+	compare attribute values instead of simple_cst_equal.
+
+2025-12-06  Dimitar Dimitrov  <dimitar@dinux.eu>
+
+	PR rtl-optimization/122675
+	* bb-reorder.cc (edge_order): Fix BB edge ordering to be
+	descending.
+
 2025-12-05  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/122215

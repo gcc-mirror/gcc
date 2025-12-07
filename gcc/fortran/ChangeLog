@@ -1,3 +1,34 @@
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122693
+	* array.cc (gfc_match_array_constructor): Stash and restore
+	gfc_current_ns after the call to 'gfc_match_type_spec'.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122670
+	* decl.cc (gfc_get_pdt_instance): Ensure that, in an interface
+	body, PDT instances imported implicitly if the template has
+	been explicitly imported.
+	* module.cc (read_module): If a PDT template appears in a use
+	only statement, implicitly add the instances as well.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122669
+	* resolve.cc (resolve_allocate_deallocate): Mold expressions
+	with an array reference and a constant size must be resolved
+	for each allocate object.
+
+2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/122578
+	* primary.cc (gfc_match_varspec): Try to resolve a typebound
+	generic procedure selector expression to provide the associate
+	name with a type. Also, resolve component calls. In both cases,
+	make a copy of the selector expression to guard against changes
+	made by gfc_resolve_expr.
+
 2025-12-05  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/122977
