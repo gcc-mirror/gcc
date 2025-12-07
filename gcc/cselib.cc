@@ -3459,12 +3459,11 @@ cselib_finish (void)
   next_uid = 0;
 }
 
-/* Dump the cselib_val *X to FILE *OUT.  */
+/* Dump the cselib_val V to FILE *OUT.  */
 
 int
-dump_cselib_val (cselib_val **x, FILE *out)
+dump_cselib_val (cselib_val *v, FILE *out)
 {
-  cselib_val *v = *x;
   bool need_lf = true;
 
   print_inline_rtx (out, v->val_rtx, 0);
@@ -3533,15 +3532,27 @@ dump_cselib_val (cselib_val **x, FILE *out)
   return 1;
 }
 
+/* Dump the cselib_val *X to FILE *OUT.  */
+
+static int
+dump_cselib_val_ptr (cselib_val **x, FILE *out)
+{
+  cselib_val *v = *x;
+  return dump_cselib_val (v, out);
+}
+
 /* Dump to OUT everything in the CSELIB table.  */
 
 void
 dump_cselib_table (FILE *out)
 {
   fprintf (out, "cselib hash table:\n");
-  cselib_hash_table->traverse <FILE *, dump_cselib_val> (out);
-  fprintf (out, "cselib preserved hash table:\n");
-  cselib_preserved_hash_table->traverse <FILE *, dump_cselib_val> (out);
+  cselib_hash_table->traverse <FILE *, dump_cselib_val_ptr> (out);
+  if (cselib_preserved_hash_table)
+    {
+      fprintf (out, "cselib preserved hash table:\n");
+      cselib_preserved_hash_table->traverse <FILE *, dump_cselib_val_ptr> (out);
+    }
   if (first_containing_mem != &dummy_val)
     {
       fputs ("first mem ", out);
