@@ -2334,9 +2334,6 @@ register_known_functions (known_function_manager &kfm,
     kfm.add ("__builtin_strlen", std::make_unique<kf_strlen> ());
     kfm.add ("strstr", std::make_unique<kf_strstr> ());
     kfm.add ("__builtin_strstr", std::make_unique<kf_strstr> ());
-
-    register_atomic_builtins (kfm);
-    register_varargs_builtins (kfm);
   }
 
   /* Known POSIX functions, and some non-standard extensions.  */
