@@ -2335,6 +2335,16 @@ _cpp_get_file_name (_cpp_file *file)
   return file->name;
 }
 
+/* Get the path associated with the _cpp_file F.  The path includes
+   the base name from the include directive and the directory it was
+   found in via the search path.  */
+
+const char *
+_cpp_get_file_path (_cpp_file *f)
+{
+  return f->path;
+}
+
 /* Inteface to file statistics record in _cpp_file structure. */
 struct stat *
 _cpp_get_file_stat (_cpp_file *file)
@@ -2572,24 +2582,6 @@ validate_pch (cpp_reader *pfile, _cpp_file *file, const char *pchname)
 
   file->path = saved_path;
   return valid;
-}
-
-/* Get the path associated with the _cpp_file F.  The path includes
-   the base name from the include directive and the directory it was
-   found in via the search path.  */
-
-const char *
-cpp_get_path (struct _cpp_file *f)
-{
-  return f->path;
-}
-
-/* Get the directory associated with the _cpp_file F.  */
-
-cpp_dir *
-cpp_get_dir (struct _cpp_file *f)
-{
-  return f->dir;
 }
 
 /* Get the cpp_buffer currently associated with the cpp_reader
