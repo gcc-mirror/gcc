@@ -1899,8 +1899,8 @@ export namespace std
   using std::submdspan_mapping_result;
   using std::submdspan_canonicalize_slices;
   using std::submdspan_extents;
+  using std::submdspan;
 #endif
-  // FIXME mdsubspan
 }
 #endif
 

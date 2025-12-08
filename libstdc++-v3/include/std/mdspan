@@ -374,6 +374,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       [[no_unique_address]] _Mapping mapping = _Mapping();
       size_t offset{};
     };
+
+  template<typename _Tp>
+    constexpr bool __is_submdspan_mapping_result = false;
+
+  template<typename _Mapping>
+    constexpr bool __is_submdspan_mapping_result<submdspan_mapping_result<_Mapping>> = true;
+
+  template<typename _Mapping>
+    concept __submdspan_mapping_result = __is_submdspan_mapping_result<_Mapping>;
+
 #endif // __glibcxx_submdspan
 
   template<typename _IndexType, size_t... _Extents>
@@ -587,6 +597,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    size_t __sta_prod = __fwd_partial_prods<__sta_exts>[__r];
 	    return __extents_prod(__exts, __sta_prod, 0, __r);
 	  }
+      }
+
+    template<typename _IndexType, size_t _Nm>
+      consteval _IndexType
+      __fwd_prod(span<const _IndexType, _Nm> __values)
+      {
+	_IndexType __ret = 1;
+	for(auto __value : __values)
+	  __ret *= __value;
+	return __ret;
       }
 
     // Preconditions: _r < _Extents::rank()
@@ -866,6 +886,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  __exts.extent(_Index)};
       }
 
+    template<typename _Slice, typename _IndexType>
+      concept __acceptable_slice_type = same_as<_Slice, full_extent_t>
+	  || same_as<_Slice, _IndexType> || __is_constant_wrapper<_Slice>
+	  || __is_strided_slice<_Slice>;
+
     template<typename _IndexType, typename... _Slices>
       consteval auto
       __subrank()
@@ -889,6 +914,443 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  if (!__is_int_like[__k])
 	    __map[__i++] = __k;
 	return __map;
+      }
+
+    template<typename _Slice>
+      constexpr auto
+      __slice_begin(_Slice __slice)
+      {
+	if constexpr (same_as<_Slice, full_extent_t>)
+	  return 0;
+	else if constexpr (__is_strided_slice<_Slice>)
+	  return __slice.offset;
+	else
+	  return __slice; // collapsing slice
+      }
+
+    template<typename _Mapping, typename... _Slices>
+      constexpr size_t
+      __suboffset(const _Mapping& __mapping, const _Slices&... __slices)
+      {
+	using _IndexType = typename _Mapping::index_type;
+	auto __any_past_the_end = [&]<size_t... _Is>(index_sequence<_Is...>)
+	{
+	  auto __is_past_the_end = [](const auto& __slice, const auto& __ext)
+	  {
+	    using _Slice = remove_cvref_t<decltype(__slice)>;
+	    if constexpr (is_convertible_v<_Slice, _IndexType>)
+	      return false;
+	    else if constexpr (same_as<_Slice, full_extent_t>
+		&& __ext.static_extent(0) != 0
+		&& __ext.static_extent(0) != dynamic_extent)
+	      return false;
+	    else
+	      return __mdspan::__slice_begin(__slice) == __ext.extent(0);
+	  };
+
+	  const auto& __exts = __mapping.extents();
+	  return ((__is_past_the_end(__slices...[_Is],
+				     __mdspan::__extract_extent<_Is>(__exts))) || ...);
+	};
+
+	if constexpr ((same_as<_Slices, full_extent_t> && ...))
+	  return __mdspan::__offset(__mapping);
+
+	if (__any_past_the_end(std::make_index_sequence<sizeof...(__slices)>()))
+	  return __mapping.required_span_size();
+	return __mapping(__mdspan::__slice_begin(__slices)...);
+      }
+
+    template<typename _IndexType, size_t _Extent, typename _Slice>
+      consteval size_t
+      __static_slice_extent()
+      {
+	if constexpr (same_as<_Slice, full_extent_t>)
+	  return _Extent;
+	else if constexpr (same_as<_Slice, constant_wrapper<_IndexType(0)>>)
+	  return 0;
+	else if constexpr (__is_constant_wrapper<typename _Slice::extent_type>
+			&& __is_constant_wrapper<typename _Slice::stride_type>)
+	  return 1 + ((typename _Slice::extent_type{}) - 1)
+		   / (typename _Slice::stride_type{});
+	else
+	  return dynamic_extent;
+      }
+
+    template<size_t _K, typename _Extents, typename _Slice>
+      constexpr typename _Extents::index_type
+      __dynamic_slice_extent(const _Extents& __exts, _Slice __slice)
+      {
+	if constexpr (__is_strided_slice<_Slice>)
+	  return __slice.extent == 0 ? 0 : 1 + (__slice.extent - 1) / __slice.stride;
+	else
+	  return __exts.extent(_K);
+      }
+
+    template<typename _IndexType, size_t... _Extents, typename... _Slices>
+      requires (sizeof...(_Slices) == sizeof...(_Extents))
+      constexpr auto
+      __subextents(const extents<_IndexType, _Extents...>& __exts,
+		   _Slices... __slices)
+      {
+	constexpr auto __inv_map = __mdspan::__inv_map_rank<_IndexType, _Slices...>();
+	auto __impl = [&]<size_t... _Indices>(std::index_sequence<_Indices...>)
+	{
+	  using _SubExts = extents<_IndexType,
+	      __mdspan::__static_slice_extent<_IndexType,
+		 _Extents...[__inv_map[_Indices]],
+		 _Slices...[__inv_map[_Indices]]>()...>;
+	  if constexpr (_SubExts::rank_dynamic() == 0)
+	    return _SubExts{};
+	  else
+	    {
+	      using _StaticSubExtents = __mdspan::_StaticExtents<
+		__mdspan::__static_extents<_SubExts>()>;
+	      auto __create = [&]<size_t... _Is>(std::index_sequence<_Is...>)
+	      {
+		constexpr auto __slice_idx = [__inv_map](size_t __i) consteval
+		{
+		  return __inv_map[_StaticSubExtents::_S_dynamic_index_inv(__i)];
+		};
+
+		return _SubExts{__mdspan::__dynamic_slice_extent<__slice_idx(_Is)>(
+		     __exts, __slices...[__slice_idx(_Is)])...};
+	      };
+	      constexpr auto __dyn_subrank = _SubExts::rank_dynamic();
+	      return __create(std::make_index_sequence<__dyn_subrank>());
+	    }
+	};
+
+	return __impl(std::make_index_sequence<__inv_map.size()>());
+      }
+
+    enum class _LayoutSide
+    {
+      __left,
+      __right,
+      __unknown
+    };
+
+    template<typename _Mapping>
+      consteval _LayoutSide
+      __mapping_side()
+      {
+	if constexpr (__is_left_padded_mapping<_Mapping>
+	    || __mapping_of<layout_left, _Mapping>)
+	  return _LayoutSide::__left;
+	if constexpr (__is_right_padded_mapping<_Mapping>
+	    || __mapping_of<layout_right, _Mapping>)
+	  return _LayoutSide::__right;
+	else
+	  return _LayoutSide::__unknown;
+      }
+
+    template<_LayoutSide _Side, size_t _Rank>
+      struct _StridesTrait
+      {
+	static constexpr const _LayoutSide _S_side = _Side;
+
+	static constexpr size_t
+	_S_idx(size_t __k) noexcept
+	{
+	  if constexpr (_Side == _LayoutSide::__left)
+	    return __k;
+	  else
+	    return _Rank - 1 - __k;
+	}
+
+	// Unifies the formulas for computing strides for padded and unpadded
+	// layouts.
+	template<typename _Mapping>
+	  static constexpr typename _Mapping::index_type
+	  _S_padded_extent(const _Mapping& __mapping, size_t __k)
+	  {
+	    if (__k == 0)
+	      return __mapping.stride(_S_idx(1));
+	    else
+	      return __mapping.extents().extent(_S_idx(__k));
+	  }
+
+	template<typename _IndexType, typename... _Slices>
+	  static consteval auto
+	  _S_inv_map()
+	  {
+	    static_assert(_Side != _LayoutSide::__unknown);
+	    auto __impl = [&]<size_t... _Is>(std::index_sequence<_Is...>)
+	    {
+	      return __mdspan::__inv_map_rank<_IndexType, _Slices...[_S_idx(_Is)]...>();
+	    };
+	    return __impl(std::make_index_sequence<_Rank>());
+	  }
+      };
+
+    template<typename _SubExts, typename _Mapping, typename... _Slices>
+      constexpr auto
+      __substrides_generic(const _Mapping& __mapping, const _Slices&... __slices)
+      {
+	using _IndexType = typename _Mapping::index_type;
+	if constexpr (_SubExts::rank() == 0)
+	  return array<_IndexType, _SubExts::rank()>{};
+	else
+	  {
+	    auto __stride = [&__mapping](size_t __k, auto __slice) -> _IndexType
+	    {
+	      if constexpr (__is_strided_slice<decltype(__slice)>)
+		if (__slice.stride < __slice.extent)
+		  return __mapping.stride(__k) * __slice.stride;
+	      return __mapping.stride(__k);
+	    };
+
+	    auto __impl = [&]<size_t... _Is>(std::index_sequence<_Is...>)
+	    {
+	      constexpr auto __inv_map
+		= __mdspan::__inv_map_rank<_IndexType, _Slices...>();
+	      return array<_IndexType, _SubExts::rank()>{
+		__stride(__inv_map[_Is], __slices...[__inv_map[_Is]])...};
+	    };
+	    return __impl(std::make_index_sequence<_SubExts::rank()>());
+	  }
+      };
+
+    template<typename _SubExts, typename _Mapping, typename... _Slices>
+      constexpr auto
+      __substrides_standardized(const _Mapping& __mapping,
+			       const _Slices&... __slices)
+      {
+	using _IndexType = typename _Mapping::index_type;
+	using _Trait = _StridesTrait<__mapping_side<_Mapping>(),
+				     _Mapping::extents_type::rank()>;
+	using _SubTrait = _StridesTrait<__mapping_side<_Mapping>(), _SubExts::rank()>;
+
+	constexpr size_t __sub_rank = _SubExts::rank();
+
+	std::array<_IndexType, __sub_rank> __ret;
+	if constexpr (__sub_rank > 0)
+	  {
+	    constexpr auto __inv_map
+	      = _Trait::template _S_inv_map<_IndexType, _Slices...>();
+	    auto __loop = [&]<size_t... _Ks>(std::index_sequence<_Ks...>)
+	    {
+	      size_t __i0 = 0;
+	      size_t __stride = 1;
+	      auto __body = [&](size_t __k, auto __slice)
+	      {
+		for (size_t __i = __i0; __i < __inv_map[__k]; ++__i)
+		  __stride *= _Trait::_S_padded_extent(__mapping, __i);
+
+		size_t __krev = _SubTrait::_S_idx(__k);
+		if constexpr (__is_strided_slice<decltype(__slice)>)
+		  {
+		    if (__slice.stride < __slice.extent)
+		      __ret[__krev] = __stride * __slice.stride;
+		    else
+		      __ret[__krev] = __stride;
+		  }
+		else
+		  __ret[__krev] = __stride;
+
+		__i0 = __inv_map[__k];
+	      };
+
+	      ((__body(_Ks, __slices...[_Trait::_S_idx(__inv_map[_Ks])])),...);
+	    };
+	    __loop(std::make_index_sequence<__sub_rank>());
+	  }
+	return __ret;
+      }
+
+
+    template<typename _SubExts, typename _Mapping, typename... _Slices>
+      constexpr auto
+      __substrides(const _Mapping& __mapping, const _Slices&... __slices)
+      {
+	if constexpr (__mdspan::__mapping_side<_Mapping>() == _LayoutSide::__unknown)
+	  return __mdspan::__substrides_generic<_SubExts>(__mapping, __slices...);
+	else
+	  return __mdspan::__substrides_standardized<_SubExts>(__mapping, __slices...);
+      }
+
+    template<typename _Slice>
+      concept __is_unit_stride_slice = (__mdspan::__is_strided_slice<_Slice>
+	  && __mdspan::__is_constant_wrapper<typename _Slice::stride_type>
+	  && _Slice::stride_type::value == 1)
+	|| std::same_as<_Slice, full_extent_t>;
+
+    // These are (forced) exclusive categories:
+    //  - full & collapsing: obvious,
+    //  - unit_strided_slice: strided_slice{a, b, cw<1>}, but not `full`,
+    //  - strided_slice: strided_slice{a, b, c} with c != cw<1>.
+    enum class _SliceKind
+    {
+      __strided_slice,
+      __unit_strided_slice,
+      __full,
+      __collapsing
+    };
+
+    template<typename _Slice>
+      consteval _SliceKind
+      __make_slice_kind()
+      {
+	if constexpr (std::same_as<_Slice, full_extent_t>)
+	  return _SliceKind::__full;
+	else if constexpr (__mdspan::__is_strided_slice<_Slice>)
+	  {
+	    if constexpr (__mdspan::__is_unit_stride_slice<_Slice>)
+	      return _SliceKind::__unit_strided_slice;
+	    else
+	      return _SliceKind::__strided_slice;
+	  }
+	else
+	  return _SliceKind::__collapsing;
+      }
+
+    template<typename... _Slices>
+      consteval array<_SliceKind, sizeof...(_Slices)>
+      __make_slice_kind_array()
+      {
+	return array<_SliceKind, sizeof...(_Slices)>{
+	  __mdspan::__make_slice_kind<_Slices>()...};
+      }
+
+    //                   __block_size - 1
+    // [full, ..., full, unit_slice    , *]
+    consteval bool
+    __is_block(span<const _SliceKind> __slice_kinds, size_t __block_size)
+    {
+      if (__block_size == 0)
+	return false;
+
+      if (__block_size > __slice_kinds.size())
+	return false;
+
+      for (size_t __i = 0; __i < __block_size - 1; ++__i)
+	if (__slice_kinds[__i] != _SliceKind::__full)
+	  return false;
+
+      auto __last = __slice_kinds[__block_size - 1];
+      return __last == _SliceKind::__full
+	  || __last == _SliceKind::__unit_strided_slice;
+    }
+
+    //                         __u              __u + __sub_rank-2
+    // [unit_slice, i, ..., k, full, ..., full, unit_slice, *]
+    static consteval size_t
+    __padded_block_begin_generic(span<const _SliceKind> __slice_kinds,
+				 size_t __sub_rank)
+    {
+      if (__slice_kinds[0] != _SliceKind::__full
+	  && __slice_kinds[0] != _SliceKind::__unit_strided_slice)
+	return dynamic_extent;
+      else if (__slice_kinds.size() == 1)
+	return dynamic_extent;
+      else
+	{
+	  size_t __u = 1;
+	  while(__u < __slice_kinds.size()
+		&& __slice_kinds[__u] == _SliceKind::__collapsing)
+	    ++__u;
+
+	  if (__mdspan::__is_block(__slice_kinds.subspan(__u), __sub_rank -1))
+	    return __u;
+	  return dynamic_extent;
+	}
+    }
+
+    template<_LayoutSide _Side, size_t _Nm>
+      static consteval size_t
+      __padded_block_begin(span<const _SliceKind, _Nm> __slice_kinds, size_t __sub_rank)
+      {
+	if constexpr (_Side == _LayoutSide::__left)
+	  return __mdspan::__padded_block_begin_generic(__slice_kinds, __sub_rank);
+	else
+	  {
+	    std::array<_SliceKind, _Nm> __rev_slices;
+	    for(size_t __i = 0; __i < _Nm; ++__i)
+	      __rev_slices[__i] = __slice_kinds[_Nm - 1 - __i];
+	    auto __rev_slice_kinds = span<const _SliceKind>(__rev_slices);
+
+	    auto __u = __mdspan::__padded_block_begin_generic(__rev_slice_kinds,
+							      __sub_rank);
+	    return __u == dynamic_extent ? dynamic_extent : _Nm - 1 - __u;
+	  }
+      }
+
+    template<_LayoutSide _Side>
+      struct _SubMdspanMapping;
+
+    template<>
+      struct _SubMdspanMapping<_LayoutSide::__left>
+      {
+	using _Layout = layout_left;
+	template<size_t _Pad> using _PaddedLayout = layout_left_padded<_Pad>;
+
+	template<typename _Mapping, size_t _Us>
+	  static consteval size_t
+	  _S_pad()
+	  {
+	    using _Extents = typename _Mapping::extents_type;
+	    constexpr auto __sta_exts = __mdspan::__static_extents<_Extents>(0, _Us);
+	    if constexpr (!__mdspan::__all_static(__sta_exts))
+	      return dynamic_extent;
+	    else
+	      return __mdspan::__fwd_prod(__sta_exts);
+	  }
+
+	template<size_t _Nm>
+	  static consteval bool
+	  _S_is_unpadded_submdspan(span<const _SliceKind, _Nm> __slice_kinds, size_t __sub_rank)
+	  { return __mdspan::__is_block(__slice_kinds, __sub_rank); }
+      };
+
+    template<typename _Mapping>
+      constexpr auto
+      __submdspan_mapping_impl(const _Mapping& __mapping)
+      { return submdspan_mapping_result{__mapping, 0}; }
+
+    template<typename _Mapping, typename... _Slices>
+      requires (sizeof...(_Slices) > 0)
+      constexpr auto
+      __submdspan_mapping_impl(const _Mapping& __mapping, _Slices... __slices)
+      {
+	using _IndexType = typename _Mapping::index_type;
+	static_assert((__acceptable_slice_type<_Slices, _IndexType> && ...));
+
+	constexpr auto __side = __mdspan::__mapping_side<_Mapping>();
+	constexpr auto __rank = sizeof...(_Slices);
+	using _Trait = _SubMdspanMapping<__side>;
+	using _SliceView = span<const _SliceKind, __rank>;
+
+	constexpr auto __slice_kinds = __mdspan::__make_slice_kind_array<_Slices...>();
+	auto __offset = __mdspan::__suboffset(__mapping, __slices...);
+	auto __sub_exts = __mdspan::__subextents(__mapping.extents(), __slices...);
+	using _SubExts = decltype(__sub_exts);
+	constexpr auto __sub_rank = _SubExts::rank();
+	if constexpr (__sub_rank == 0)
+	  return submdspan_mapping_result{
+	    typename _Trait::_Layout::mapping(__sub_exts), __offset};
+	else if constexpr (_Trait::_S_is_unpadded_submdspan(
+	      _SliceView(__slice_kinds), __sub_rank))
+	  return submdspan_mapping_result{
+	    typename _Trait::_Layout::mapping(__sub_exts), __offset};
+	else if constexpr (
+	    constexpr auto __u = __padded_block_begin<__side>(
+		_SliceView(__slice_kinds), __sub_rank);
+	    __u != dynamic_extent)
+	  {
+	    constexpr auto __pad = _Trait::template _S_pad<_Mapping, __u>();
+	    using _Layout = typename _Trait::template _PaddedLayout<__pad>;
+	    return submdspan_mapping_result{
+	      typename _Layout::mapping(__sub_exts, __mapping.stride(__u)),
+	      __offset};
+	  }
+	else
+	  {
+	    auto __sub_strides
+	      = __mdspan::__substrides<_SubExts>(__mapping, __slices...);
+	    return submdspan_mapping_result{
+	      layout_stride::mapping(__sub_exts, __sub_strides),  __offset};
+	  }
       }
 #endif // __glibcxx_submdspan
   }
@@ -1031,6 +1493,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    "The size of OtherExtents must be representable as index_type");
 	  __glibcxx_assert(__mdspan::__is_representable_extents(_M_extents));
 	}
+
+#if __glibcxx_submdspan
+      template<typename... _Slices>
+	requires (extents_type::rank() == sizeof...(_Slices))
+	friend constexpr auto
+	submdspan_mapping(const mapping& __mapping, _Slices... __slices)
+	{ return __mdspan::__submdspan_mapping_impl(__mapping, __slices...); }
+#endif // __glibcxx_submdspan
 
 	[[no_unique_address]] extents_type _M_extents{};
     };
@@ -2700,68 +3170,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	__impl(make_index_sequence<__rank>());
       }
 
-    template<typename _IndexType, size_t _Extent, typename _Slice>
-      consteval size_t
-      __static_slice_extent()
-      {
-	if constexpr (same_as<_Slice, full_extent_t>)
-	  return _Extent;
-	else if constexpr (same_as<_Slice, constant_wrapper<_IndexType(0)>>)
-	  return 0;
-	else if constexpr (__is_constant_wrapper<typename _Slice::extent_type>
-			&& __is_constant_wrapper<typename _Slice::stride_type>)
-	  return 1 + ((typename _Slice::extent_type{}) - 1)
-		   / (typename _Slice::stride_type{});
-	else
-	  return dynamic_extent;
-      }
+    template<typename _Slice>
+      using __full_extent_t = std::full_extent_t;
 
-    template<size_t _K, typename _Extents, typename _Slice>
-      constexpr typename _Extents::index_type
-      __dynamic_slice_extent(const _Extents& __exts, _Slice __slice)
-      {
-	if constexpr (__is_strided_slice<_Slice>)
-	  return __slice.extent == 0 ? 0 : 1 + (__slice.extent - 1) / __slice.stride;
-	else
-	  return __exts.extent(_K);
-      }
+    // Enables ADL-only calls from submdspan.
+    void submdspan_mapping() = delete;
 
-    template<typename _IndexType, size_t... _Extents, typename... _Slices>
-      requires (sizeof...(_Slices) == sizeof...(_Extents))
+    template<typename _Mapping, typename... _Slices>
+      concept __sliceable_mapping = requires(const _Mapping __m, _Slices... __slices)
+      {
+	{ submdspan_mapping(__m, __slices...) } -> __submdspan_mapping_result;
+      };
+
+    template<typename _Mapping, typename... _Slices>
       constexpr auto
-      __subextents(const extents<_IndexType, _Extents...>& __exts,
-		   _Slices... __slices)
+      __submapping(const _Mapping& __mapping, _Slices... __slices)
       {
-	constexpr auto __inv_map = __mdspan::__inv_map_rank<_IndexType, _Slices...>();
-	auto __impl = [&]<size_t... _Indices>(index_sequence<_Indices...>)
-	{
-	  using _SubExtents = extents<_IndexType,
-	      (__mdspan::__static_slice_extent<_IndexType,
-		 _Extents...[__inv_map[_Indices]],
-		 _Slices...[__inv_map[_Indices]]>())...>;
-	  if constexpr (_SubExtents::rank_dynamic() == 0)
-	    return _SubExtents{};
-	  else
-	    {
-	      using _StaticSubExtents = __mdspan::_StaticExtents<
-		__mdspan::__static_extents<_SubExtents>()>;
-	      auto __create = [&]<size_t... _Is>(index_sequence<_Is...>)
-	      {
-		constexpr auto __slice_idx = [__inv_map](size_t __i) consteval
-		{
-		  return __inv_map[_StaticSubExtents::_S_dynamic_index_inv(__i)];
-		};
-
-		return _SubExtents{
-		  (__mdspan::__dynamic_slice_extent<__slice_idx(_Is)>(
-		     __exts, __slices...[__slice_idx(_Is)]))...};
-	      };
-	      constexpr auto __dyn_subrank = _SubExtents::rank_dynamic();
-	      return __create(make_index_sequence<__dyn_subrank>());
-	    }
-	};
-
-	return __impl(make_index_sequence<__inv_map.size()>());
+	__mdspan::__check_valid_slices(__mapping.extents(), __slices...);
+	return submdspan_mapping(__mapping, __slices...);
       }
   }
 
@@ -2791,6 +3217,25 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::make_tuple(__slices...);
       };
       return __impl(__mdspan::__slice_cast<_IndexType>(__raw_slices)...);
+    }
+
+  template<typename _ElementType, typename _Extents, typename _Layout,
+	   typename _Accessor, typename... _RawSlices>
+    requires (sizeof...(_RawSlices) == _Extents::rank()
+	&& __mdspan::__sliceable_mapping<typename _Layout::mapping<_Extents>,
+	                                 __mdspan::__full_extent_t<_RawSlices>...>)
+    constexpr auto
+    submdspan(
+	const mdspan<_ElementType, _Extents, _Layout, _Accessor>& __md,
+	_RawSlices... __raw_slices)
+    {
+      using _IndexType = typename _Extents::index_type;
+      auto [__mapping, __offset] = __mdspan::__submapping(
+	__md.mapping(), __mdspan::__slice_cast<_IndexType>(__raw_slices)...);
+      return std::mdspan(
+	       __md.accessor().offset(__md.data_handle(), __offset),
+	       std::move(__mapping),
+	       typename _Accessor::offset_policy(__md.accessor()));
     }
 #endif // __glibcxx_submdspan
 
