@@ -87,6 +87,8 @@ template<>
   {
     using layout_same = std::layout_left;
     using layout_other = std::layout_right;
+    template<size_t PaddingValue>
+      using layout_same_padded = std::layout_left_padded<PaddingValue>;
 
     template<typename Extents>
       using extents_type = Extents;
@@ -126,6 +128,8 @@ template<>
   struct LayoutTraits<PaddingSide::Right>
   {
     using layout_same = std::layout_right;
+    template<size_t PaddingValue>
+      using layout_same_padded = std::layout_right_padded<PaddingValue>;
     using layout_other = std::layout_left;
 
     template<typename IndexType, size_t... Extents>

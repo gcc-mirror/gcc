@@ -812,6 +812,10 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     template<typename _Mapping>
       constexpr bool __is_right_padded_mapping = __padded_mapping_of<
 	layout_right_padded, _Mapping>;
+
+    template<typename _Mapping>
+      constexpr bool __is_padded_mapping = __is_left_padded_mapping<_Mapping>
+        || __is_right_padded_mapping<_Mapping>;
 #endif
 
     template<typename _PaddedMapping>
@@ -1276,11 +1280,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       }
 
-    template<_LayoutSide _Side>
+    template<_LayoutSide _Side, bool _Padded>
       struct _SubMdspanMapping;
 
     template<>
-      struct _SubMdspanMapping<_LayoutSide::__left>
+      struct _SubMdspanMapping<_LayoutSide::__left, false>
       {
 	using _Layout = layout_left;
 	template<size_t _Pad> using _PaddedLayout = layout_left_padded<_Pad>;
@@ -1304,7 +1308,42 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       };
 
     template<>
-      struct _SubMdspanMapping<_LayoutSide::__right>
+      struct _SubMdspanMapping<_LayoutSide::__left, true>
+      {
+	using _Layout = layout_left;
+	template<size_t _Pad> using _PaddedLayout = layout_left_padded<_Pad>;
+
+	template<typename _Mapping, size_t _Us>
+	  static consteval size_t
+	  _S_pad()
+	  {
+	    using _Extents = typename _Mapping::extents_type;
+	    constexpr auto __sta_exts
+	      = __mdspan::__static_extents<_Extents>(1, _Us);
+	    constexpr auto __sta_padstride
+	      = __mdspan::__get_static_stride<_Mapping>();
+	    if constexpr (__sta_padstride == dynamic_extent
+			  || !__mdspan::__all_static(__sta_exts))
+	      return dynamic_extent;
+	    else
+	      return __sta_padstride * __mdspan::__fwd_prod(__sta_exts);
+	  }
+
+	template<size_t _Nm>
+	  static consteval bool
+	  _S_is_unpadded_submdspan(span<const _SliceKind, _Nm> __slice_kinds,
+				   size_t __sub_rank)
+	  {
+	    if (__sub_rank == 1)
+	      return __slice_kinds[0] == _SliceKind::__unit_strided_slice
+		|| __slice_kinds[0] == _SliceKind::__full;
+	    else
+	      return false;
+	  }
+      };
+
+    template<>
+      struct _SubMdspanMapping<_LayoutSide::__right, false>
       {
 	using _Layout = layout_right;
 	template<size_t _Pad> using _PaddedLayout = layout_right_padded<_Pad>;
@@ -1350,7 +1389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
 	constexpr auto __side = __mdspan::__mapping_side<_Mapping>();
 	constexpr auto __rank = sizeof...(_Slices);
-	using _Trait = _SubMdspanMapping<__side>;
+	using _Trait = _SubMdspanMapping<__side, __is_padded_mapping<_Mapping>>;
 	using _SliceView = span<const _SliceKind, __rank>;
 
 	constexpr auto __slice_kinds = __mdspan::__make_slice_kind_array<_Slices...>();
@@ -2558,6 +2597,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  operator==(const mapping& __self, const _LeftpadMapping& __other)
 	  noexcept
 	  { return __self._M_storage._M_equal(__other); }
+
+      private:
+#if __glibcxx_submdspan
+	template<typename... _Slices>
+	  requires (extents_type::rank() == sizeof...(_Slices))
+	  friend constexpr auto
+	  submdspan_mapping(const mapping& __mapping, _Slices... __slices)
+	  { return __mdspan::__submdspan_mapping_impl(__mapping, __slices...); }
+#endif // __glibcxx_submdspan
       };
 
   template<size_t _PaddingValue>
