@@ -4900,7 +4900,8 @@
 	   (match_operand:SI 3 "<cmp_imm_predicate>")]
 	  UNSPEC_PCMP_ITER))]
   "TARGET_AVX512F && ix86_pre_reload_split ()
-   && rtx_equal_p (operands[1], operands[2])"
+   && rtx_equal_p (operands[1], operands[2])
+   && (!MEM_P (operands[1]) || !MEM_VOLATILE_P (operands[1]))"
   "#"
   "&& 1"
   [(set (match_dup 0) (match_dup 4))]
