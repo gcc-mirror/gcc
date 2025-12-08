@@ -4928,11 +4928,16 @@ emit_cmp_and_jump_insns (rtx x, rtx y, enum rtx_code comparison, rtx size,
 		  rtx len_bias_rtx = expand_normal (len_bias);
 		  tree lhs = gimple_get_lhs (def_stmt);
 		  auto mask_mode = TYPE_MODE (TREE_TYPE (lhs));
+		  /* ??? We could use something like internal_fn's
+		     add_mask_else_and_len_args here.  Currently it
+		     only supports a fixed, consecutive order of
+		     mask and len, though.  */
 		  create_input_operand (&ops[0], CONSTM1_RTX (mask_mode),
 					mask_mode);
-		  create_input_operand (&ops[3], len_rtx, GET_MODE (len_rtx));
-		  create_input_operand (&ops[4], len_bias_rtx,
-					GET_MODE (len_bias_rtx));
+		  create_convert_operand_from
+		    (&ops[3], len_rtx, TYPE_MODE (TREE_TYPE (len_op)),
+		     TYPE_UNSIGNED (TREE_TYPE (len_op)));
+		  create_input_operand (&ops[4], len_bias_rtx, QImode);
 		}
 
 	      int unsignedp2 = TYPE_UNSIGNED (TREE_TYPE (t_op0));
