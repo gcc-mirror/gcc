@@ -229,6 +229,11 @@ AARCH64_CORE("grace", grace, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, SVE2_AES
 AARCH64_CORE("neoverse-v3", neoversev3, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE), neoversev3, 0x41, 0xd84, -1)
 AARCH64_CORE("neoverse-v3ae", neoversev3ae, cortexa57, V9_2A, (SVE2_BITPERM, RNG, LS64, MEMTAG, PROFILE), neoversev3ae, 0x41, 0xd83, -1)
 
+AARCH64_CORE("c1-nano", c1nano, cortexa53, V9_3A, (MEMTAG, SVE2_BITPERM, F16FML, SME2, RCPC3), cortexa53, 0x41, 0xd8a, -1)
+AARCH64_CORE("c1-pro", c1pro, cortexa57, V9_3A, (MEMTAG, SVE2_BITPERM, F16FML, PROFILE, SME2, RCPC3), neoversen3, 0x41, 0xd8b, -1)
+AARCH64_CORE("c1-premium", c1premium, cortexa57, V9_3A, (MEMTAG, SVE2_BITPERM, F16FML, PROFILE, SME2, RCPC3), neoversev3, 0x41, 0xd90, -1)
+AARCH64_CORE("c1-ultra", c1ultra, cortexa57, V9_3A, (MEMTAG, SVE2_BITPERM, F16FML, PROFILE, SME2, RCPC3), cortexx925, 0x41, 0xd8c, -1)
+
 AARCH64_CORE("demeter", demeter, cortexa57, V9A, (I8MM, BF16, SVE2_BITPERM, RNG, MEMTAG, PROFILE), neoversev2, 0x41, 0xd4f, -1)
 
 /* NVIDIA ('N') cores. */
