@@ -22562,6 +22562,11 @@ tsubst_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	 in response to the saved STMT_IS_FULL_EXPR_P setting.  */
       gcc_unreachable ();
 
+    case TARGET_EXPR:
+      /* TARGET_EXPR represents temporary objects and should not appear in
+	 templated trees.  */
+      gcc_unreachable ();
+
     case OFFSET_REF:
       {
 	/* We should only get here for an OFFSET_REF like A::m; a .* in a
