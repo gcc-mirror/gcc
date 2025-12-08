@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options " " }
 ! PR18082 - Compiler would get stuck in loop, whilst treating
 ! the assignments.
 ! Test is one of PR cases.

@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options " " }
 ! PR 97799 - this used to segfault intermittently.
 ! Test case by George Hockney.
       PROGRAM MAIN

@@ -187,7 +187,7 @@ Program Cds_Principal
    Type(Uef_Vector)                                    :: Cds_Mod_Les_materiaux
    Type (Cds_Materiau_Acier_EC)                        :: acier_ec
    Class (Cds_Materiau), pointer                       :: pt_materiau
-   Character *(8)                                      :: nom_materiau
+   Character(len=8)                                    :: nom_materiau
 !-------------------------------------------------------------------------------------------------
       CaLL  Cds_Mod_Les_materiaux%Add (acier_ec)
       nom_materiau = "12345678"
@@ -199,7 +199,7 @@ Function Get_Pt_Materiau_nom (vecteur, nom_materiau)
     !   Fonction :
     !--------------------
      ! Parametres en entree
-    Character *(8), Intent (in)        :: nom_materiau
+    Character(len=8), Intent (in)        :: nom_materiau
     Type (Uef_Vector)          , Intent (inout)     :: vecteur
 
     ! Parametres en sortie

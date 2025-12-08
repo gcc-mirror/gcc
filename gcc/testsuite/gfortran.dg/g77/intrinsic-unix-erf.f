@@ -1,4 +1,5 @@
 c { dg-do run }
+c { dg-options " " }
 c  intrinsic-unix-erf.f
 c
 c Test Bessel function intrinsics.  

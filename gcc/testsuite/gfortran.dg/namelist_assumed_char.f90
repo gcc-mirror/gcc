@@ -8,7 +8,7 @@
 ! Add -std=f95, add bar()
 !
 subroutine foo(c)
-  character*(*) c
+  character*(*) c   ! { dg-warning "Old-style character length" }
   namelist /abc/ c  ! { dg-error "nonconstant character length in namelist" }
 end subroutine
 

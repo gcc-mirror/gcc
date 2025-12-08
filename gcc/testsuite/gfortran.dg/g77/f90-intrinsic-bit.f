@@ -1,4 +1,5 @@
 c { dg-do run }
+c { dg-options " " }
 c  f90-intrinsic-bit.f
 c
 c Test Fortran 90 

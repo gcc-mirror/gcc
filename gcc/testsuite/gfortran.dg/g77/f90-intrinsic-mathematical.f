@@ -1,4 +1,5 @@
 c { dg-do run }
+c { dg-options " " }
 c  f90-intrinsic-mathematical.f
 c
 c Test Fortran 90 intrinsic mathematical functions - Section 13.10.3 and

@@ -1217,6 +1217,10 @@ match_char_length (gfc_expr **expr, bool *deferred, bool obsolescent_check)
       goto syntax;
     }
 
+  if (obsolescent_check
+      && !gfc_notify_std (GFC_STD_F95_OBS, "Old-style character length at %C"))
+    return MATCH_ERROR;
+
   return MATCH_YES;
 
 syntax:

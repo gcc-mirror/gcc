@@ -1,4 +1,5 @@
 c { dg-do run }
+c { dg-options " " }
 c  f90-intrinsic-numeric.f
 c
 c Test Fortran 90 intrinsic numeric functions - Section 13.10.2 and 13.13 

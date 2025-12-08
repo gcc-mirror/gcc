@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-options " " }
 ! Tests the fix for PR27900, in which an ICE would be caused because
 ! the actual argument LEN had no type.
 !

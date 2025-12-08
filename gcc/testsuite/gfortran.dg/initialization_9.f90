@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-options " " }
 !
 ! PR fortran/31639
 ! Contributed by Martin Michlmayr <tbm AT cyrius DOT com>
