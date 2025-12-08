@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-mavx2 -O2" } */
+/* { dg-options "-mavx2 -O2 -fno-fuse-ops-with-volatile-access" } */
 /* { dg-final { scan-assembler "vpcmpgtq\[ \\t\]+\[^\n\]*%ymm\[0-9\]" } } */
 
 #include <immintrin.h>
