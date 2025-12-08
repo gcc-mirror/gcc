@@ -4159,12 +4159,18 @@ static bool
 ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
 			   rtx cmp_op1, rtx if_true, rtx if_false)
 {
-  machine_mode mode;
+  machine_mode mode = GET_MODE (dest);
   bool is_min;
   rtx tmp;
 
   if (code == LT)
     ;
+  else if (code == LE && !HONOR_NANS (mode))
+    {
+      /* We can swap LE to GE and then invert to LT.  */
+      std::swap (cmp_op0, cmp_op1);
+      std::swap (if_true, if_false);
+    }
   else if (code == UNGE)
     std::swap (if_true, if_false);
   else
@@ -4177,7 +4183,6 @@ ix86_expand_sse_fp_minmax (rtx dest, enum rtx_code code, rtx cmp_op0,
   else
     return false;
 
-  mode = GET_MODE (dest);
   if (immediate_operand (if_false, mode))
     if_false = force_reg (mode, if_false);
   if (immediate_operand (if_true, mode))
