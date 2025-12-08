@@ -42,6 +42,7 @@ if test -f site.exp; then
     exit 1
 fi
 
+libiconv=-liconv
 while true; do
   case "$1" in
   --with-testsuite=*) testsuite=`echo "$1" | sed 's/[^=]*=//'`; shift;;
@@ -51,6 +52,10 @@ while true; do
   --with-gcc=*) GCC_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-g++=*) GXX_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-gfortran=*) GFORTRAN_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-alt-cc=*) ALT_CC_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-alt-cxx=*) ALT_CXX_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-compat-options=*) COMPAT_OPTIONS=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-libiconv=*) libiconv=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --without-gcc) GCC_UNDER_TEST=no; shift;;
   --without-g++) GXX_UNDER_TEST=no; shift;;
   --without-gfortran) GFORTRAN_UNDER_TEST=no; shift;;
@@ -78,6 +83,10 @@ Supported arguments:
 --with-gcc=/some/dir/bin/gcc  use specified gcc program [gcc]
 --with-g++=/some/dir/bin/g++  use specified g++ program [g++]
 --with-gfortran=/some/dir/bin/gfortran  use specified gfortran program [gfortran]
+--with-alt-cc=/some/compiler  use specified alternative compiler in compat tests
+--with-alt-cxx=/some/compiler use specified alternative compiler in compat tests
+--with-compat-options=opts    use specified COMPAT_OPTIONS in compat tests
+--with-libiconv=linker-args   use given arguments to link with iconv [-liconv]
 --without-gcc                 do not run gcc testsuite
 --without-g++                 do not run g++ testsuite
 --without-gfortran            do not run gfortran testsuite
@@ -108,6 +117,7 @@ cat >site.exp <<EOF
 set rootme "."
 set tmpdir "${tmpdir-`${PWDCMD-pwd}`}"
 set srcdir "${testsuite-${srcdir}/gcc/testsuite}"
+set libiconv "$libiconv"
 set CFLAGS ""
 set CXXFLAGS ""
 set GCC_UNDER_TEST "${GCC_UNDER_TEST-${prefix}${prefix+/bin/}gcc}"
@@ -122,6 +132,15 @@ EOF
 if test x${target} != x; then
   echo "set target_triplet $target" >> site.exp
   echo "set target_alias $target" >> site.exp
+fi
+if test x"$ALT_CC_UNDER_TEST" != x; then
+  echo "set ALT_CC_UNDER_TEST \"${ALT_CC_UNDER_TEST}\"" >> site.exp
+fi
+if test x"$ALT_CXX_UNDER_TEST" != x; then
+  echo "set ALT_CXX_UNDER_TEST \"${ALT_CXX_UNDER_TEST}\"" >> site.exp
+fi
+if test x"$COMPAT_OPTIONS" != x; then
+  echo "set COMPAT_OPTIONS \"${COMPAT_OPTIONS}\"" >> site.exp
 fi
 
 test x"${GCC_UNDER_TEST}" = x"no" || runtest --tool gcc ${1+"$@"}
