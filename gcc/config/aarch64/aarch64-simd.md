@@ -3544,10 +3544,10 @@
       rtx reduc = gen_lowpart (V4SImode, tmp);
       rtx res = gen_reg_rtx (V4SImode);
       emit_insn (gen_aarch64_uminpv4si (res, reduc, reduc));
-      emit_move_insn (tmp, gen_lowpart (<MODE>mode, res));
+      tmp = gen_lowpart (<MODE>mode, res);
     }
-  rtx val = gen_reg_rtx (DImode);
-  emit_move_insn (val, gen_lowpart (DImode, tmp));
+
+  rtx val = force_lowpart_subreg (DImode, tmp, <MODE>mode);
   rtx cc_reg = aarch64_gen_compare_reg (EQ, val, constm1_rtx);
   rtx cmp = gen_rtx_fmt_ee (EQ, SImode, cc_reg, constm1_rtx);
   rtx tmp2 = gen_reg_rtx (SImode);
@@ -3607,10 +3607,10 @@
       rtx reduc = gen_lowpart (V4SImode, tmp);
       rtx res = gen_reg_rtx (V4SImode);
       emit_insn (gen_aarch64_umaxpv4si (res, reduc, reduc));
-      emit_move_insn (tmp, gen_lowpart (<MODE>mode, res));
+      tmp = gen_lowpart (<MODE>mode, res);
     }
-  rtx val = gen_reg_rtx (DImode);
-  emit_move_insn (val, gen_lowpart (DImode, tmp));
+
+  rtx val = force_lowpart_subreg (DImode, tmp, <MODE>mode);
   rtx cc_reg = aarch64_gen_compare_reg (NE, val, const0_rtx);
   rtx cmp = gen_rtx_fmt_ee (NE, SImode, cc_reg, const0_rtx);
   rtx tmp2 = gen_reg_rtx (SImode);
