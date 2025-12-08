@@ -26397,7 +26397,20 @@ ix86_vector_costs::add_stmt_cost (int count, vect_cost_for_stmt kind,
 				(TREE_OPERAND (gimple_assign_rhs1 (def), 0))))))
 	    {
 	      if (fp)
-		m_num_sse_needed[where]++;
+		{
+		  /* Scalar FP values residing in x87 registers need to be
+		     spilled and reloaded.  */
+		  auto mode2 = TYPE_MODE (TREE_TYPE (op));
+		  if (IS_STACK_MODE (mode2))
+		    {
+		      int cost
+			= (ix86_cost->hard_register.fp_store[mode2 == SFmode
+							     ? 0 : 1]
+			   + ix86_cost->sse_load[sse_store_index (mode2)]);
+		      stmt_cost += COSTS_N_INSNS (cost) / 2;
+		    }
+		  m_num_sse_needed[where]++;
+		}
 	      else
 		{
 		  m_num_gpr_needed[where]++;
