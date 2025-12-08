@@ -627,9 +627,12 @@ process_asm (FILE *in, FILE *out, FILE *cfile, uint32_t omp_requires)
 		      || TEST_XNACK_ON (elf_flags)
 		      || xnack_required);
   if (TEST_XNACK_OFF (elf_flags) && xnack_required)
-    fatal_error (input_location,
-		 "conflicting settings; XNACK is forced off but Unified "
-		 "Shared Memory is on");
+    {
+      warning (input_location,
+	       "conflicting settings; XNACK is forced off but Unified "
+	       "Shared Memory is required");
+      xnack_required = 0;
+    }
 
   /* Start generating the C code.  */
   if (gcn_stack_size)

@@ -4,6 +4,7 @@
    and for not mapping the stack variables 'A' and 'B' (not mapped
    but accessible -> USM makes this tested feature even more important.)  */
 
+/* { dg-require-effective-target omp_usm } */
 #pragma omp requires unified_shared_memory
 
 /* Ensure that defaultmap(default : pointer) uses correct OpenMP 5.2

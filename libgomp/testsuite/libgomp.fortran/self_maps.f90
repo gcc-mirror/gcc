@@ -1,4 +1,5 @@
 ! Basic test whether self_maps work
+! { dg-require-effective-target omp_usm }
 
 module m
   !$omp requires self_maps

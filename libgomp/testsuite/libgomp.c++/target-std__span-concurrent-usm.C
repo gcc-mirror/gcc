@@ -1,4 +1,5 @@
 // { dg-additional-options "-std=c++20" }
+/* { dg-require-effective-target omp_usm } */
 
 #pragma omp requires unified_shared_memory self_maps
 

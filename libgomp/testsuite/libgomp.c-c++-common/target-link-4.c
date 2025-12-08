@@ -3,6 +3,7 @@
 #include <stdint.h>
 #include <omp.h>
 
+/* { dg-require-effective-target omp_usm } */
 #pragma omp requires self_maps
 
 int A[3] = {-3,-4,-5};

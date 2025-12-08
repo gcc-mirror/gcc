@@ -725,6 +725,29 @@ int main() {
 } } "-lhipblas" ]
 }
 
+# return 1 if OpenMP Unified Shared Memory is supported by offload devices
+
+proc check_effective_target_omp_usm { } {
+    if { [check_effective_target_offload_device_nvptx] 
+         || [check_effective_target_offload_target_amdgcn] } {
+	if [check_runtime usm_available_ {
+	    #include <omp.h>
+	    #pragma omp requires unified_shared_memory
+	    int main ()
+	    {
+	      int a;
+	      #pragma omp target map(from: a)
+		a = omp_is_initial_device ();
+	      return a;
+	    }
+	} ] {
+	  return 1
+	}
+    }
+
+    return 0
+}
+
 # return 1 if OpenMP Device Managed Memory is supported
 
 proc check_effective_target_omp_managedmem { } {
