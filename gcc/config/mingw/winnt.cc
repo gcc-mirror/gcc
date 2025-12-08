@@ -446,8 +446,11 @@ mingw_pe_unique_section (tree decl, int reloc)
     prefix = ".text$";
   else if (decl_readonly_section (decl, reloc))
     prefix = ".rdata$";
+  /* Note that we need two dollar signs for TLS sections
+     because they need to be ASCII-sorted before .tls$ZZZ
+     to be properly laid out by the GNU linker.  */
   else if (DECL_THREAD_LOCAL_P (decl))
-    prefix = ".tls$";
+    prefix = ".tls$$";
   else
     prefix = ".data$";
   len = strlen (name) + strlen (prefix);
@@ -522,9 +525,6 @@ mingw_pe_asm_named_section (const char *name, unsigned int flags,
     *f++ = 'e';
 #endif
 
-  if (strcmp (name, ".tls$") == 0)
-    *f++ = 'd';
-
   if ((flags & (SECTION_CODE | SECTION_WRITE)) == 0)
     /* readonly data */
     {
@@ -533,6 +533,8 @@ mingw_pe_asm_named_section (const char *name, unsigned int flags,
     }
   else
     {
+      if (startswith (name, ".tls$"))
+        *f++ = 'd';
       if (flags & SECTION_CODE)
         *f++ = 'x';
       if (flags & SECTION_WRITE)
