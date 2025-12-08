@@ -4404,7 +4404,8 @@ cgraph_node::verify_node (void)
 	    }
 
 	  if (e->has_callback
-	      && !callback_is_special_cased (e->callee->decl, e->call_stmt))
+	      && !callback_is_special_cased (e->callee->decl, e->call_stmt)
+	      && !fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
 	    {
 	      int ncallbacks = 0;
 	      int nfound_edges = 0;
@@ -4430,6 +4431,16 @@ cgraph_node::verify_node (void)
 			 nfound_edges);
 		}
 	    }
+
+	  if (e->has_callback
+	      && fndecl_built_in_p (e->callee->decl, BUILT_IN_UNREACHABLE))
+	    for (cgraph_edge *cbe = e->first_callback_edge (); cbe;
+		 cbe = cbe->next_callback_edge ())
+	      if (!fndecl_built_in_p (cbe->callee->decl, BUILT_IN_UNREACHABLE))
+		error ("callback-carrying edge is pointing towards "
+		       "__builtin_unreachable, but its callback edge %s -> %s "
+		       "is not",
+		       cbe->caller->name (), cbe->callee->name ());
 
 	  if (!e->aux && !e->speculative && !e->callback && !e->has_callback)
 	    {
