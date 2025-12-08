@@ -1515,9 +1515,10 @@ cgraph_edge::resolve_speculation (cgraph_edge *edge, tree callee_decl)
     e2 = edge;
   ref = e2->speculative_call_target_ref ();
   edge = edge->speculative_call_indirect_edge ();
+  symtab_node *callee;
   if (!callee_decl
-      || !ref->referred->semantically_equivalent_p
-	   (symtab_node::get (callee_decl)))
+      || !(callee = symtab_node::get (callee_decl))
+      || !ref->referred->semantically_equivalent_p (callee))
     {
       if (dump_file)
 	{
