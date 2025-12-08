@@ -1696,8 +1696,12 @@ cgraph_edge::redirect_callee (cgraph_node *n)
       old_ref->remove_reference ();
       ipa_ref *new_ref = caller->create_reference (n, IPA_REF_ADDR, call_stmt);
       new_ref->lto_stmt_uid = lto_stmt_uid;
-      if (!old_callee->referred_to_p ())
+      /* If the last reference to OLD_CALLEE has been redirected, unset
+	 address_taken.  old_ref is only used as a placeholder when looking for
+	 a different reference.  */
+      if (!old_callee->iterate_referring (0, old_ref))
 	old_callee->address_taken = 0;
+      n->mark_address_taken ();
     }
 
   if (!inline_failed)

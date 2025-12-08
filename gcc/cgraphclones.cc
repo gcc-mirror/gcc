@@ -176,7 +176,9 @@ set_new_clone_decl_and_node_flags (cgraph_node *new_node)
   DECL_IS_REPLACEABLE_OPERATOR (new_node->decl) = 0;
 
   new_node->externally_visible = 0;
-  new_node->local = 1;
+  /* Clones of callbacks might have their address taken, and thus cannot be
+     local.  */
+  new_node->local = !new_node->address_taken;
   new_node->lowered = true;
   new_node->semantic_interposition = 0;
 }
