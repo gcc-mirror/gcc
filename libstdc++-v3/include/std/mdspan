@@ -1928,6 +1928,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
     private:
+#if __glibcxx_submdspan
+      template<typename... _Slices>
+	requires (extents_type::rank() == sizeof...(_Slices))
+	friend constexpr auto
+	submdspan_mapping(const mapping& __mapping, _Slices... __slices)
+	{
+	  if constexpr (sizeof...(_Slices) == 0)
+	    return submdspan_mapping_result{__mapping, 0};
+	  else
+	    {
+	      auto __offset = __mdspan::__suboffset(__mapping, __slices...);
+	      auto __sub_exts = __mdspan::__subextents(__mapping.extents(), __slices...);
+	      auto __sub_strides
+		= __mdspan::__substrides<decltype(__sub_exts)>(__mapping, __slices...);
+	      return submdspan_mapping_result{
+		layout_stride::mapping(__sub_exts, __sub_strides), __offset};
+	    }
+	}
+#endif
+
       using _Strides = typename __array_traits<index_type,
 					       extents_type::rank()>::_Type;
       [[no_unique_address]] extents_type _M_extents;

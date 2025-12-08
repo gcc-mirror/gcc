@@ -123,6 +123,21 @@ template<typename Layout>
     return true;
   }
 
+constexpr bool
+test_layout_stride_return_types()
+{
+  auto exts = std::extents(3, 5);
+  auto m = std::layout_stride::mapping(exts, std::array{2, 12});
+
+  using index_type = decltype(exts)::index_type;
+  auto s1 = std::strided_slice{index_type(2), index_type(2),
+			       std::cw<index_type(2)>};
+  auto result = submdspan_mapping(m, index_type(1), s1);
+  using layout_type = decltype(result.mapping)::layout_type;
+  static_assert(std::same_as<layout_type, std::layout_stride>);
+  return true;
+}
+
 int
 main()
 {
@@ -131,6 +146,9 @@ main()
 
   test_layout_unpadded_return_types<std::layout_right>();
   static_assert(test_layout_unpadded_return_types<std::layout_right>());
+
+  test_layout_stride_return_types();
+  static_assert(test_layout_stride_return_types());
 
   test_layout_unpadded_padding_value<std::layout_left>();
   static_assert(test_layout_unpadded_padding_value<std::layout_left>());
