@@ -9153,6 +9153,40 @@ package body Sem_Util is
       raise Program_Error;
    end Find_Loop_In_Conditional_Block;
 
+   -------------------------------
+   -- Find_Matching_Constructor --
+   -------------------------------
+
+   function Find_Matching_Constructor
+     (Typ : Entity_Id; Allow_Removed : Boolean) return Entity_Id
+   is
+      Cursor : Entity_Id;
+   begin
+      pragma Assert (Is_Type (Typ));
+      if not Needs_Construction (Typ) then
+         return Empty;
+      end if;
+
+      --  Iterate through all constructors to find at least one constructor
+      --  that matches the given condition.
+
+      Cursor :=
+        Get_Name_Entity_Id
+          (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
+      while Present (Cursor) loop
+         if (if not Allow_Removed then not Is_Abstract_Subprogram (Cursor))
+           and then Is_Constructor (Cursor)
+           and then Condition (Cursor)
+         then
+            return Cursor;
+         end if;
+
+         Cursor := Homonym (Cursor);
+      end loop;
+
+      return Empty;
+   end Find_Matching_Constructor;
+
    --------------------------
    -- Find_Overlaid_Entity --
    --------------------------
@@ -11819,6 +11853,19 @@ package body Sem_Util is
         Has_Compatible_Alignment_Internal (Obj, Expr, Layout_Done, Unknown);
    end Has_Compatible_Alignment;
 
+   --------------------------
+   -- Has_Copy_Constructor --
+   --------------------------
+
+   function Has_Copy_Constructor
+     (Typ : Entity_Id; Allow_Removed : Boolean := False) return Boolean
+   is
+      function Find_Copy_Constructor
+      is new Find_Matching_Constructor (Is_Copy_Constructor);
+   begin
+      return Present (Find_Copy_Constructor (Typ, Allow_Removed));
+   end Has_Copy_Constructor;
+
    ----------------------
    -- Has_Declarations --
    ----------------------
@@ -11846,22 +11893,6 @@ package body Sem_Util is
        and then Present (Discriminant_Default_Value
                            (First_Discriminant (Typ)));
    end Has_Defaulted_Discriminants;
-
-   -----------------------------
-   -- Has_Default_Constructor --
-   -----------------------------
-
-   function Has_Default_Constructor
-     (Typ : Entity_Id; Allow_Removed : Boolean := False) return Boolean
-   is
-      function No_Next_Formal (N : Entity_Id) return Boolean
-      is (No (Next_Formal (First_Formal (N))));
-
-      function Internal_Has_Default_Constructor
-      is new Has_Matching_Constructor (No_Next_Formal);
-   begin
-      return Internal_Has_Default_Constructor (Typ, Allow_Removed);
-   end Has_Default_Constructor;
 
    -------------------
    -- Has_Denormals --
@@ -12316,18 +12347,18 @@ package body Sem_Util is
       end if;
    end Has_Enabled_Property;
 
-   --------------------------
-   -- Has_Copy_Constructor --
-   --------------------------
+   ------------------------------
+   -- Has_Explicit_Constructor --
+   ------------------------------
 
-   function Has_Copy_Constructor
+   function Has_Explicit_Constructor
      (Typ : Entity_Id; Allow_Removed : Boolean := False) return Boolean
    is
-      function Internal_Has_Copy_Constructor
-      is new Has_Matching_Constructor (Is_Copy_Constructor);
+      function Find_Explicit_Constructor
+      is new Find_Matching_Constructor (Comes_From_Source);
    begin
-      return Internal_Has_Copy_Constructor (Typ, Allow_Removed);
-   end Has_Copy_Constructor;
+      return Present (Find_Explicit_Constructor (Typ, Allow_Removed));
+   end Has_Explicit_Constructor;
 
    -------------------------------------
    -- Has_Full_Default_Initialization --
@@ -12627,40 +12658,6 @@ package body Sem_Util is
              Present (Get_Pragma (Id, Pragma_Max_Entry_Queue_Length)));
    end Has_Max_Queue_Length;
 
-   ------------------------------
-   -- Has_Matching_Constructor --
-   ------------------------------
-
-   function Has_Matching_Constructor
-     (Typ : Entity_Id; Allow_Removed : Boolean) return Boolean
-   is
-      Cursor : Entity_Id;
-   begin
-      pragma Assert (Is_Type (Typ));
-      if not Needs_Construction (Typ) then
-         return False;
-      end if;
-
-      --  Iterate through all constructors to find at least one constructor
-      --  that matches the given condition.
-
-      Cursor :=
-        Get_Name_Entity_Id
-          (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
-      while Present (Cursor) loop
-         if (if not Allow_Removed then not Is_Abstract_Subprogram (Cursor))
-           and then Is_Constructor (Cursor)
-           and then Condition (Cursor)
-         then
-            return True;
-         end if;
-
-         Cursor := Homonym (Cursor);
-      end loop;
-
-      return False;
-   end Has_Matching_Constructor;
-
    ---------------------------------
    -- Has_No_Obvious_Side_Effects --
    ---------------------------------
@@ -12805,24 +12802,18 @@ package body Sem_Util is
          --  More formals with default values are allowed afterwards
 
          declare
-            All_Defaults : Boolean := True;
-            Formal       : Entity_Id :=
+            Formal : Entity_Id :=
               Next_Formal (Next_Formal (First_Formal (Spec_Id)));
          begin
             while Present (Formal) loop
                if No (Default_Value (Formal)) then
-                  All_Defaults := False;
-                  exit;
+                  return False;
                end if;
                Next_Formal (Formal);
             end loop;
-
-            if All_Defaults then
-               return True;
-            end if;
          end;
+         return True;
       end if;
-
       return False;
    end Is_Copy_Constructor;
 
@@ -12918,6 +12909,19 @@ package body Sem_Util is
       return
         Is_Ignored (N) and then not GNATprove_Mode and then not CodePeer_Mode;
    end Is_Ignored_In_Codegen;
+
+   -----------------------------------
+   -- Has_Parameterless_Constructor --
+   -----------------------------------
+
+   function Has_Parameterless_Constructor
+     (Typ : Entity_Id; Allow_Removed : Boolean := False) return Boolean
+   is
+      function Find_Default_Constructor
+      is new Find_Matching_Constructor (Is_Parameterless_Constructor);
+   begin
+      return Present (Find_Default_Constructor (Typ, Allow_Removed));
+   end Has_Parameterless_Constructor;
 
    ---------------------------------
    -- Side_Effect_Free_Statements --
@@ -13197,6 +13201,31 @@ package body Sem_Util is
         Present (Constits)
           and then Nkind (Node (First_Elmt (Constits))) = N_Null;
    end Has_Null_Refinement;
+
+   ----------------------------------
+   -- Is_Parameterless_Constructor --
+   ----------------------------------
+
+   function Is_Parameterless_Constructor
+     (Spec_Id : Entity_Id) return Boolean is
+   begin
+      if Is_Constructor (Spec_Id) then
+         --  More formals with default values are allowed afterwards
+
+         declare
+            Formal : Entity_Id := Next_Formal (First_Formal (Spec_Id));
+         begin
+            while Present (Formal) loop
+               if No (Default_Value (Formal)) then
+                  return False;
+               end if;
+               Next_Formal (Formal);
+            end loop;
+         end;
+         return True;
+      end if;
+      return False;
+   end Is_Parameterless_Constructor;
 
    ------------------------------------------
    -- Has_Nonstatic_Class_Wide_Pre_Or_Post --

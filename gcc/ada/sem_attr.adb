@@ -5296,14 +5296,34 @@ package body Sem_Attr is
                Next (Expr);
             end loop;
 
-            if not Is_Copy_Constructor_Call (N)
-              and then not Needs_Construction (Entity (P))
-            then
+            if not Needs_Construction (Entity (P)) then
                Error_Msg_NE ("no available constructor for&", N, Entity (P));
             end if;
 
-         elsif not Has_Default_Constructor (Entity (P)) then
-            Error_Msg_NE ("no default constructor for&", N, Entity (P));
+         elsif not Needs_Construction (Entity (P))
+           or else not Has_Parameterless_Constructor (Entity (P))
+         then
+            Error_Msg_NE ("no parameterless constructor for&", N, Entity (P));
+
+            --  In case the parameterless constructor was explicitly removed, a
+            --  more specific error message is provided.
+
+            if Has_Parameterless_Constructor (Entity (P),
+                                              Allow_Removed => True)
+            then
+               declare
+                  function Find_Parameterless_Constructor
+                  is new Find_Matching_Constructor
+                           (Is_Parameterless_Constructor);
+
+                  Removed_Parameterless : constant Entity_Id :=
+                    Find_Parameterless_Constructor (Entity (P),
+                                                    Allow_Removed => True);
+               begin
+                  Error_Msg_NE ("//explicitly removed at#",
+                                N, Removed_Parameterless);
+               end;
+            end if;
          end if;
       end;
 

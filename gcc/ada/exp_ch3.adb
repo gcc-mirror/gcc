@@ -384,6 +384,10 @@ package body Exp_Ch3 is
    --  Freeze entities of all predefined primitive operations. This is needed
    --  because the bodies of these operations do not normally do any freezing.
 
+   function Constructor_Freeze (Typ : Entity_Id) return List_Id;
+   --  Freeze all constructors of the type Tag_Typ. Otherwise, constructors
+   --  would not be available at freeze point.
+
    --------------------------
    -- Adjust_Discriminants --
    --------------------------
@@ -1389,6 +1393,19 @@ package body Exp_Ch3 is
          --  is imported or not.
 
          if not Restriction_Active (No_Default_Initialization) then
+            --  If the type requires construction and the object being
+            --  initialized is an allocator that comes from source, then use
+            --  the parameterless constructor.
+
+            if Nkind (N) = N_Allocator
+              and then Comes_From_Source (N)
+              and then Needs_Construction (Typ)
+            then
+               return
+                 Make_Attribute_Reference (Loc,
+                   Prefix         => New_Occurrence_Of (Typ, Loc),
+                   Attribute_Name => Name_Make);
+            end if;
 
             --  If the values of the components are compile-time known, use
             --  their prebuilt aggregate form directly.
@@ -3398,40 +3415,6 @@ package body Exp_Ch3 is
          if Parent_Subtype_Renaming_Discrims then
             Append_List_To (Body_Stmts, Build_Init_Call_Thru (Parameters));
 
-         elsif Needs_Construction (Rec_Type) then
-            if Has_Default_Constructor (Rec_Type) then
-               --  The 'Make attribute reference (with no arguments) will
-               --  generate a call to the one-parameter constructor procedure.
-
-               Append_To (Body_Stmts,
-                 Make_Assignment_Statement (Loc,
-                   Name       => New_Occurrence_Of
-                     (Defining_Identifier (First (Parameters)), Loc),
-                   Expression => Make_Attribute_Reference (Loc,
-                     Prefix         => New_Occurrence_Of (Rec_Type, Loc),
-                     Attribute_Name => Name_Make)));
-            else
-               --  No constructor procedure with an appropriate profile
-               --  is available, so raise Program_Error.
-               --
-               --  We could instead do nothing here, since the absence of a
-               --  one-parameter constructor procedure should trigger other
-               --  legality checks which should statically ensure that
-               --  the init proc we are constructing here will never be
-               --  called. So a bit of "belt and suspenders" here.
-               --  If this raise statement is ever executed, that probably
-               --  means that some compile-time legality check is not
-               --  implemented, and that the program should have instead
-               --  failed to compile.
-               --  Because this raise statement should never be executed, it
-               --  seems ok to pass in a dubious Reason parameter instead of
-               --  declaring a new RT_Exception_Code value.
-
-               Append_To (Body_Stmts,
-                          Make_Raise_Program_Error (Loc,
-                            Reason => PE_Explicit_Raise));
-            end if;
-
          elsif Nkind (Type_Definition (N)) = N_Record_Definition then
             Build_Discriminant_Assignments (Body_Stmts);
 
@@ -4024,7 +4007,7 @@ package body Exp_Ch3 is
                --  attribute.
 
                elsif Needs_Construction (Typ)
-                 and then Has_Default_Constructor (Typ)
+                 and then Has_Parameterless_Constructor (Typ)
                then
                   Set_Expression (Decl,
                     Make_Attribute_Reference (Loc,
@@ -6685,6 +6668,10 @@ package body Exp_Ch3 is
          Build_Untagged_Record_Equality (Typ);
       end if;
 
+      --  Freeze constructors as predefined operations
+
+      Append_Freeze_Actions (Typ, Constructor_Freeze (Typ));
+
       --  Before building the record initialization procedure, if we are
       --  dealing with a concurrent record value type, then we must go through
       --  the discriminants, exchanging discriminals between the concurrent
@@ -7801,7 +7788,7 @@ package body Exp_Ch3 is
       if No (Expr)
         and then Constant_Present (N)
         and then (not Needs_Construction (Typ)
-                   or else not Has_Default_Constructor (Typ))
+                   or else not Has_Parameterless_Constructor (Typ))
       then
          return;
       end if;
@@ -13152,6 +13139,36 @@ package body Exp_Ch3 is
 
       return Res;
    end Predefined_Primitive_Freeze;
+
+   ------------------------
+   -- Constructor_Freeze --
+   ------------------------
+
+   function Constructor_Freeze (Typ : Entity_Id) return List_Id is
+      Res     : constant List_Id := New_List;
+      Cursor  : Entity_Id;
+      Frnodes : List_Id;
+
+   begin
+      if not Needs_Construction (Typ) then
+         return No_List;
+      end if;
+
+      Cursor :=
+        Get_Name_Entity_Id
+          (Direct_Attribute_Definition_Name (Typ, Name_Constructor));
+      while Present (Cursor) loop
+         Frnodes := Freeze_Entity (Cursor, Typ);
+
+         if Present (Frnodes) then
+            Append_List_To (Res, Frnodes);
+         end if;
+
+         Cursor := Homonym (Cursor);
+      end loop;
+
+      return Res;
+   end Constructor_Freeze;
 
    -------------------------
    -- Stream_Operation_OK --
