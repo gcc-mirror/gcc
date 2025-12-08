@@ -2986,6 +2986,83 @@
   }
 )
 
+;; Implement cond_len_vec_cbranch_any and cond_len_vec_cbranch_all
+;; Vector comparison with length and mask, then branch for integer types.
+(define_expand "<cbranch_optab><mode>"
+  [(set (pc)
+	(unspec:V_VLSI
+	  [(if_then_else
+	    (match_operator 0 "riscv_cbranch_comparison_operator"
+	      [(match_operand:<VM> 1 "register_operand")
+	       (match_operand:V_VLSI 2 "register_operand")
+	       (match_operand:V_VLSI 3 "nonmemory_operand")
+	       (match_operand 4 "autovec_length_operand")
+	       (match_operand 5 "const_0_operand")])
+	    (label_ref (match_operand 6 ""))
+	    (pc))]
+	 COND_LEN_CBRANCH_CMP))]
+  "TARGET_VECTOR"
+{
+  rtx_code code = GET_CODE (operands[0]);
+  rtx mask = gen_reg_rtx (<VM>mode);
+
+  /* Generate the masked comparison.  */
+  rtx maskoff = CONST0_RTX (<VM>mode);
+  riscv_vector::expand_vec_cmp (mask, code, operands[2], operands[3],
+				operands[1], maskoff);
+
+  /* Use vcpop to count the number of active elements.  */
+  rtx count = gen_reg_rtx (Pmode);
+  rtx cpop_ops[] = {count, mask};
+  riscv_vector::emit_vlmax_insn (code_for_pred_popcount (<VM>mode, Pmode),
+				 riscv_vector::CPOP_OP, cpop_ops);
+
+  /* Branch based on whether count is zero or non-zero.  */
+  riscv_expand_conditional_branch (operands[6], <cbranch_op>, count,
+				   const0_rtx);
+  DONE;
+})
+
+;; Floating-point version with length and mask
+(define_expand "<cbranch_optab><mode>"
+  [(set (pc)
+	(unspec:V_VLSF
+	  [(if_then_else
+	    (match_operator 0 "riscv_cbranch_comparison_operator"
+	      [(match_operand:<VM> 1 "register_operand")
+	       (match_operand:V_VLSF 2 "register_operand")
+	       (match_operand:V_VLSF 3 "register_operand")
+	       (match_operand 4 "autovec_length_operand")
+	       (match_operand 5 "const_0_operand")])
+	    (label_ref (match_operand 6 ""))
+	    (pc))]
+	 COND_LEN_CBRANCH_CMP))]
+  "TARGET_VECTOR"
+{
+  rtx_code code = GET_CODE (operands[0]);
+  rtx mask = gen_reg_rtx (<VM>mode);
+
+  rtx tmp = gen_reg_rtx (<VM>mode);
+  riscv_vector::expand_vec_cmp_float (tmp, code, operands[2], operands[3],
+				      false);
+
+  /* Combine with the incoming mask using AND.  */
+  rtx ops[] = {mask, operands[1], tmp};
+  riscv_vector::emit_vlmax_insn (code_for_pred (AND, <VM>mode),
+				 riscv_vector::BINARY_MASK_OP, ops);
+
+  /* Use vcpop to count the number of active elements.  */
+  rtx count = gen_reg_rtx (Pmode);
+  rtx cpop_ops[] = {count, mask};
+  riscv_vector::emit_vlmax_insn (code_for_pred_popcount (<VM>mode, Pmode),
+				 riscv_vector::CPOP_OP, cpop_ops);
+
+  /* Branch based on whether count is zero or non-zero.  */
+  riscv_expand_conditional_branch (operands[6], <cbranch_op>, count,
+				   const0_rtx);
+  DONE;
+})
+
 ;; -------------------------------------------------------------------------
 ;; - vrol.vv vror.vv
 ;; -------------------------------------------------------------------------

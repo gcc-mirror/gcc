@@ -617,6 +617,13 @@
 (define_predicate "ge_operator"
   (match_code "ge,geu"))
 
+(define_special_predicate "riscv_cbranch_comparison_operator"
+  (match_code "eq,ne,le,lt,ge,gt,geu,gtu,leu,ltu,unordered,
+	       ordered,unlt,unle,unge,ungt")
+{
+  return TARGET_VECTOR;
+})
+
 ;; pmode_reg_or_uimm5_operand can be used by vsll.vx/vsrl.vx/vsra.vx instructions
 ;; It is *not* equivalent to vector_length_operand due to the vector_length_operand
 ;; needing to conditionalize some behavior on XTHEADVECTOR.
