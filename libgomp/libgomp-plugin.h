@@ -173,6 +173,7 @@ extern void *GOMP_OFFLOAD_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_free (int, void *);
 extern void *GOMP_OFFLOAD_managed_alloc (int, size_t);
 extern bool GOMP_OFFLOAD_managed_free (int, void *);
+extern int GOMP_OFFLOAD_is_accessible_ptr (int, const void *, size_t);
 extern bool GOMP_OFFLOAD_page_locked_host_alloc (void **, size_t);
 extern bool GOMP_OFFLOAD_page_locked_host_free (void *);
 extern bool GOMP_OFFLOAD_dev2host (int, void *, const void *, size_t);

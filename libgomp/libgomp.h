@@ -1425,6 +1425,7 @@ struct gomp_device_descr
   __typeof (GOMP_OFFLOAD_free) *free_func;
   __typeof (GOMP_OFFLOAD_managed_alloc) *managed_alloc_func;
   __typeof (GOMP_OFFLOAD_managed_free) *managed_free_func;
+  __typeof (GOMP_OFFLOAD_is_accessible_ptr) *is_accessible_ptr_func;
   __typeof (GOMP_OFFLOAD_page_locked_host_alloc) *page_locked_host_alloc_func;
   __typeof (GOMP_OFFLOAD_page_locked_host_free) *page_locked_host_free_func;
   __typeof (GOMP_OFFLOAD_dev2host) *dev2host_func;

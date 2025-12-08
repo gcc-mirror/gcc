@@ -353,6 +353,8 @@ struct ptx_device
 
 static struct ptx_device **ptx_devices;
 
+static bool using_usm = false;
+
 /* "Native" GPU thread stack size.  */
 static unsigned native_gpu_thread_stack_size = 0;
 
@@ -1343,15 +1345,20 @@ GOMP_OFFLOAD_get_num_devices (unsigned int omp_requires_mask)
   if (num_devices > 0
       && (omp_requires_mask
 	  & (GOMP_REQUIRES_UNIFIED_SHARED_MEMORY | GOMP_REQUIRES_SELF_MAPS)))
-    for (int dev = 0; dev < num_devices; dev++)
-      {
-	int pi;
-	CUresult r;
-	r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
-			       CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS, dev);
-	if (r != CUDA_SUCCESS || pi == 0)
-	  return -1;
-      }
+    {
+      for (int dev = 0; dev < num_devices; dev++)
+	{
+	  int pi;
+	  CUresult r;
+	  r = CUDA_CALL_NOCHECK (cuDeviceGetAttribute, &pi,
+				 CU_DEVICE_ATTRIBUTE_PAGEABLE_MEMORY_ACCESS,
+				 dev);
+	  if (r != CUDA_SUCCESS || pi == 0)
+	    return -1;
+	}
+
+      using_usm = true;
+    }
   return num_devices;
 }
 
@@ -1904,6 +1911,50 @@ bool
 GOMP_OFFLOAD_managed_free (int ord, void *ptr)
 {
   return GOMP_OFFLOAD_free (ord, ptr);
+}
+
+int
+GOMP_OFFLOAD_is_accessible_ptr (int ord,
+				const void *ptr, size_t size)
+{
+  /* USM implies access.  */
+  if (using_usm)
+    return 1;
+
+  struct ptx_device *ptx_dev = ptx_devices[ord];
+  CUcontext old_ctx;
+  CUDA_CALL_ERET (false, cuCtxPushCurrent, ptx_dev->ctx);
+
+  /* The Cuda API does not permit testing a whole range, so we test each
+     4K page within the range.  If any page is inaccessible return false.  */
+  const void *p = ptr;
+  int result = 1;  /* All pages accessible.  */
+  do
+    {
+      CUmemorytype mem_type;
+      CUresult res = CUDA_CALL_NOCHECK (cuPointerGetAttribute, &mem_type,
+					CU_POINTER_ATTRIBUTE_MEMORY_TYPE,
+					(CUdeviceptr)p);
+      if (res != CUDA_SUCCESS)
+	/* Memory is not registered, and therefore not accessible.  */
+	result = 0;
+
+      switch (mem_type)
+	{
+	case CU_MEMORYTYPE_HOST:
+	case CU_MEMORYTYPE_UNIFIED:
+	case CU_MEMORYTYPE_DEVICE:
+	  break;
+	case CU_MEMORYTYPE_ARRAY:
+	default:
+	  result = 0;  /* This page isn't accessible.  */
+	}
+
+      p = (void*)(((uintptr_t)p + 4096) & ~0xfffUL);
+    } while (result && p < ptr + size);
+
+  CUDA_CALL_ASSERT (cuCtxPopCurrent, &old_ctx);
+  return result;
 }
 
 bool

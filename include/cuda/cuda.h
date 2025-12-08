@@ -143,6 +143,13 @@ typedef enum {
   CU_MEMORYTYPE_UNIFIED = 0x04
 } CUmemorytype;
 
+typedef enum {
+  CU_POINTER_ATTRIBUTE_CONTEXT = 0x01,
+  CU_POINTER_ATTRIBUTE_MEMORY_TYPE = 0x02,
+  CU_POINTER_ATTRIBUTE_DEVICE_POINTER = 0x03,
+  CU_POINTER_ATTRIBUTE_HOST_POINTER = 0x04
+} CUpointer_attribute;
+
 typedef struct {
   size_t srcXInBytes, srcY;
   CUmemorytype srcMemoryType;
@@ -300,6 +307,8 @@ CUresult cuModuleGetGlobal (CUdeviceptr *, size_t *, CUmodule, const char *);
 CUresult cuModuleLoad (CUmodule *, const char *);
 CUresult cuModuleLoadData (CUmodule *, const void *);
 CUresult cuModuleUnload (CUmodule);
+CUresult cuPointerGetAttribute (CUmemorytype *, CUpointer_attribute,
+				CUdeviceptr);
 CUresult cuOccupancyMaxPotentialBlockSize(int *, int *, CUfunction,
 					  CUoccupancyB2DSize, size_t, int);
 typedef void (*CUstreamCallback)(CUstream, CUresult, void *);

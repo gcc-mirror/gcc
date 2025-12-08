@@ -5590,6 +5590,9 @@ omp_get_mapped_ptr (const void *ptr, int device_num)
 int
 omp_target_is_accessible (const void *ptr, size_t size, int device_num)
 {
+  if (ptr == NULL || size == 0)
+    return false;
+
   if (device_num == omp_default_device)
     device_num = gomp_get_default_device ();
 
@@ -5601,9 +5604,19 @@ omp_target_is_accessible (const void *ptr, size_t size, int device_num)
   if (devicep == NULL)
     return false;
 
-  /* TODO: Unified shared memory must be handled when available.  */
+  /* Managed memory (or other device feature).
+     is_accessible_ptr may, in future, report more than simply true or false,
+     but we can assume that positive responses are accessible, and
+     zero/negative responses are inaccessible.  */
+  if (devicep->is_accessible_ptr_func)
+    return (devicep->is_accessible_ptr_func (devicep->target_id, ptr, size)
+	    > 0);
 
-  return devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM;
+  /* Unified shared memory (or true shared memory).  */
+  if (devicep->capabilities & GOMP_OFFLOAD_CAP_SHARED_MEM)
+    return true;
+
+  return false;
 }
 
 int
@@ -6009,6 +6022,7 @@ gomp_load_plugin_for_device (struct gomp_device_descr *device,
   DLSYM (free);
   DLSYM_OPT (managed_alloc, managed_alloc);
   DLSYM_OPT (managed_free, managed_free);
+  DLSYM_OPT (is_accessible_ptr, is_accessible_ptr);
   DLSYM_OPT (page_locked_host_alloc, page_locked_host_alloc);
   DLSYM_OPT (page_locked_host_free, page_locked_host_free);
   DLSYM (dev2host);

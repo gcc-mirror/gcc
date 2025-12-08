@@ -2172,13 +2172,17 @@ and extending @var{size} bytes, is accessibly on the device specified by
 @var{device_num}.  If so, it returns a nonzero value and otherwise zero.
 
 The address given by @var{ptr} is interpreted to be in the address space of
-the device and @var{size} must be positive.
+the device and @var{size} must be positive.  NULL pointers and zero-length
+ranges always return zero.
 
 Note that GCC's current implementation assumes that @var{ptr} is a valid host
-pointer. Therefore, all addresses given by @var{ptr} are assumed to be
-accessible on the initial device. And, to err on the safe side, this memory
-is only available on a non-host device that can access all host memory
-([uniform] shared memory access).
+pointer. Therefore, all non-NULL addresses given by @var{ptr} are assumed to be
+accessible on the initial device.  The address is only reported as accessible
+on non-host devices if this is @emph{known} to be the case, or if the device
+reports that all memory is accessible (i.e. [unified] shared memory access).
+If the runtime is uncertain it may report accessible memory as inaccessible.
+For a memory range to be reported accessible, the whole range must be known to
+be accessible.
 
 Running this routine in a @code{target} region except on the initial device
 is not supported.

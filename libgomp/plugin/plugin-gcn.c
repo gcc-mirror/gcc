@@ -233,6 +233,12 @@ struct hsa_runtime_fn_info
   hsa_status_t (*hsa_amd_svm_attributes_set_fn)
     (void* ptr, size_t size, hsa_amd_svm_attribute_pair_t* attribute_list,
      size_t attribute_count);
+  hsa_status_t (*hsa_amd_svm_attributes_get_fn)
+    (void* ptr, size_t size, hsa_amd_svm_attribute_pair_t* attribute_list,
+     size_t attribute_count);
+  hsa_status_t (*hsa_amd_pointer_info_fn)
+    (const void *, hsa_amd_pointer_info_t *, void *(*)(size_t),
+     uint32_t *, hsa_agent_t **); 
 };
 
 /* As an HIP runtime is dlopened, following structure defines function
@@ -1494,6 +1500,8 @@ init_hsa_runtime_functions (void)
   DLSYM_OPT_FN (hsa_amd_memory_unlock)
   DLSYM_OPT_FN (hsa_amd_memory_async_copy_rect)
   DLSYM_OPT_FN (hsa_amd_svm_attributes_set)
+  DLSYM_OPT_FN (hsa_amd_svm_attributes_get)
+  DLSYM_OPT_FN (hsa_amd_pointer_info)
   return true;
 #undef DLSYM_OPT_FN
 #undef DLSYM_FN
@@ -5256,6 +5264,109 @@ GOMP_OFFLOAD_managed_free (int device, void *ptr)
 {
   gomp_simple_free (managed_ctx, ptr);
   return true;
+}
+
+enum accessible {
+  UNKNOWN,
+  INACCESSIBLE,
+  ACCESSIBLE
+};
+
+/* Is a host memory address accessible on the given device?
+   Returns UNKNOWN if the memory isn't registered, or if it isn't a valid host
+   pointer.  */
+
+static enum accessible
+host_memory_is_accessible (hsa_agent_t agent, const void *ptr, size_t size)
+{
+  if (!hsa_fns.hsa_amd_svm_attributes_get_fn)
+    return UNKNOWN;
+
+  /* The HSA API doesn't seem to report for the whole range given, so we call
+     once for each page the range straddles.  */
+  const void *p = ptr;
+  size_t remaining = size;
+  do
+    {
+      /* Note: the access query returns in the attribute field.  */
+      struct hsa_amd_svm_attribute_pair_s attr = {
+	HSA_AMD_SVM_ATTRIB_ACCESS_QUERY, agent.handle
+      };
+      hsa_status_t status = hsa_fns.hsa_amd_svm_attributes_get_fn ((void*)p,
+								   remaining,
+								   &attr, 1);
+      if (status != HSA_STATUS_SUCCESS)
+	/* This happens when the memory isn't registered with ROCr at all.  */
+	return UNKNOWN;
+
+      switch (attr.attribute)
+	{
+	case HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE:
+	case HSA_AMD_SVM_ATTRIB_AGENT_ACCESSIBLE_IN_PLACE:
+	  break;
+	case HSA_AMD_SVM_ATTRIB_AGENT_NO_ACCESS:
+	default:
+	  return INACCESSIBLE;
+	}
+
+      p = (void*)(((uintptr_t)p + 4096) & ~0xfffUL);
+      remaining = size - ((uintptr_t)p - (uintptr_t)ptr);
+    } while (p < ptr + size);
+
+  /* All pages were accessible.  */
+  return ACCESSIBLE;
+}
+
+/* Is a device memory address accessible on the given device?
+   Returns UNKNOWN if it isn't a valid device address.  Returns INACCESSIBLE if
+   the pointer is valid, but not the whole range, or if it refers to the wrong
+   device.  */
+
+static enum accessible
+device_memory_is_accessible (hsa_agent_t agent, const void *ptr, size_t size)
+{
+  if (!hsa_fns.hsa_amd_pointer_info_fn)
+    return UNKNOWN;
+
+  hsa_amd_pointer_info_t info;
+  uint32_t nagents;
+  hsa_agent_t *agents;
+  info.size = sizeof (hsa_amd_pointer_info_t);
+
+  hsa_status_t status = hsa_fns.hsa_amd_pointer_info_fn (ptr, &info, NULL,
+							 &nagents, &agents); 
+  if (status != HSA_STATUS_SUCCESS
+      || info.type == HSA_EXT_POINTER_TYPE_UNKNOWN)
+    return UNKNOWN;
+
+  if (agent.handle == info.agentOwner.handle)
+    return (info.sizeInBytes >= size ? ACCESSIBLE : INACCESSIBLE);
+
+  for (unsigned i = 0; i < nagents; i++)
+    {
+      if (agent.handle == agents[0].handle)
+	return (info.sizeInBytes >= size ? ACCESSIBLE : INACCESSIBLE); 
+    }
+
+  return INACCESSIBLE;
+}
+
+/* Backend implementation for omp_target_is_accessible.  */
+
+int
+GOMP_OFFLOAD_is_accessible_ptr (int device, const void *ptr, size_t size)
+{
+  if (!init_hsa_context (false)
+      || device < 0 || device > hsa_context.agent_count)
+    return 0;
+
+  struct agent_info *agent = get_agent_info (device);
+
+  enum accessible result;
+  result = host_memory_is_accessible (agent->id, ptr, size);
+  if (result == UNKNOWN)
+    result = device_memory_is_accessible (agent->id, ptr, size);
+  return result == ACCESSIBLE;
 }
 
 /* }}} */
