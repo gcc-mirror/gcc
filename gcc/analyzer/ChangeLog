@@ -1,3 +1,8 @@
+2025-12-07  David Malcolm  <dmalcolm@redhat.com>
+
+	* kf.cc (register_known_functions): Remove duplicate calls to
+	register_atomic_builtins and register_varargs_builtins.
+
 2025-11-28  Jakub Jelinek  <jakub@redhat.com>
 
 	* known-function-manager.cc (known_function_manager::add): Avoid

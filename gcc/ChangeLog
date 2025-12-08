@@ -1,3 +1,26 @@
+2025-12-07  Jason Merrill  <jason@redhat.com>
+
+	* config/darwin-c.cc (find_subframework_header): Use
+	_cpp_get_file_*.
+
+2025-12-07  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122343
+	* common.opt: Add -ffuse-ops-with-volatile-access.
+	* common.opt.urls: Regenerated.
+	* recog.cc (general_operand): Allow volatile memory reference if
+	-ffuse-ops-with-volatile-access is enabled.
+	* simplify-rtx.cc (simplify_binary_operation_1): Keep PLUS for 2
+	volatile memory references.
+	* doc/invoke.texi: Document -ffuse-ops-with-volatile-access.
+
+2025-12-07  Alexandre Oliva  <oliva@adacore.com>
+
+	* cselib.cc (dump_cselib_val): Split out of and rename to...
+	(dump_cselib_val_ptr): ... this.
+	(dump_cselib_table): Adjust.  Skip cselib_preserved_hash_table
+	when not allocated.
+
 2025-12-06  Alexandre Oliva  <oliva@adacore.com>
 
 	PR rtl-optimization/122947

@@ -1,3 +1,13 @@
+2025-12-07  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (cpp_get_path, cpp_get_dir): Remove.
+	(_cpp_get_file_path, _cpp_get_file_name, _cpp_get_file_stat)
+	(_cpp_get_file_dir): Move prototypes from...
+	* internal.h: ...here.
+	* files.cc (_cpp_get_file_path): Rename from...
+	(cpp_get_path): ...this.
+	(cpp_get_dir): Remove.
+
 2025-11-10  Jakub Jelinek  <jakub@redhat.com>
 
 	* directives.cc: Implement CWG3053.
