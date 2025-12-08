@@ -1303,6 +1303,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  { return __mdspan::__is_block(__slice_kinds, __sub_rank); }
       };
 
+    template<>
+      struct _SubMdspanMapping<_LayoutSide::__right>
+      {
+	using _Layout = layout_right;
+	template<size_t _Pad> using _PaddedLayout = layout_right_padded<_Pad>;
+
+	template<typename _Mapping, size_t _Us>
+	  static consteval size_t
+	  _S_pad()
+	  {
+	    using _Extents = typename _Mapping::extents_type;
+	    constexpr auto __rank = _Extents::rank();
+	    constexpr auto __sta_exts
+	      = __mdspan::__static_extents<_Extents>(_Us + 1, __rank);
+	    if constexpr (!__mdspan::__all_static(__sta_exts))
+	      return dynamic_extent;
+	    else
+	      return __fwd_prod(__sta_exts);
+	  }
+
+	template<size_t _Nm>
+	  static consteval bool
+	  _S_is_unpadded_submdspan(span<const _SliceKind, _Nm> __slice_kinds,
+				   size_t __sub_rank)
+	  {
+	    auto __rev_slice_kinds = array<_SliceKind, _Nm>{};
+	    for(size_t __i = 0; __i < _Nm; ++__i)
+	      __rev_slice_kinds[__i] = __slice_kinds[_Nm - 1 - __i];
+	    return __mdspan::__is_block(span(__rev_slice_kinds), __sub_rank);
+	  }
+      };
+
     template<typename _Mapping>
       constexpr auto
       __submdspan_mapping_impl(const _Mapping& __mapping)
@@ -1677,6 +1709,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    "The size of OtherExtents must be representable as index_type");
 	  __glibcxx_assert(__mdspan::__is_representable_extents(_M_extents));
 	}
+
+#if __glibcxx_submdspan
+      template<typename... _Slices>
+	requires (extents_type::rank() == sizeof...(_Slices))
+	friend constexpr auto
+	submdspan_mapping(const mapping& __mapping, _Slices... __slices)
+	{ return __mdspan::__submdspan_mapping_impl(__mapping, __slices...); }
+#endif // __glibcxx_submdspan
 
 	[[no_unique_address]] extents_type _M_extents{};
     };

@@ -24,6 +24,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_int_under<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_int_under<std::layout_right>());  // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -33,6 +34,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_int_over<std::layout_left>());    // { dg-error "expansion of" }
+static_assert(test_int_over<std::layout_right>());   // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -42,6 +44,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_tuple_under<std::layout_left>());     // { dg-error "expansion of" }
+static_assert(test_tuple_under<std::layout_right>());    // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -51,6 +54,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_tuple_reversed<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_tuple_reversed<std::layout_right>());  // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -60,6 +64,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_tuple_over<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_tuple_over<std::layout_right>());  // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -69,6 +74,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_strided_slice_zero<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_strided_slice_zero<std::layout_right>());  // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -78,6 +84,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_strided_slice_offset_under<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_strided_slice_offset_under<std::layout_right>());  // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -87,6 +94,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_strided_slice_offset_over<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_strided_slice_offset_over<std::layout_right>());  // { dg-error "expansion of" }
 
 template<typename Layout>
   constexpr bool
@@ -96,6 +104,7 @@ template<typename Layout>
     return true;
   }
 static_assert(test_strided_slice_extent_over<std::layout_left>());   // { dg-error "expansion of" }
+static_assert(test_strided_slice_extent_over<std::layout_right>());  // { dg-error "expansion of" }
 
 // { dg-prune-output "static assertion failed" }
 // { dg-prune-output "__glibcxx_assert_fail" }

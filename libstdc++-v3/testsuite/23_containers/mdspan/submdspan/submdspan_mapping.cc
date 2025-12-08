@@ -129,8 +129,14 @@ main()
   test_layout_unpadded_return_types<std::layout_left>();
   static_assert(test_layout_unpadded_return_types<std::layout_left>());
 
+  test_layout_unpadded_return_types<std::layout_right>();
+  static_assert(test_layout_unpadded_return_types<std::layout_right>());
+
   test_layout_unpadded_padding_value<std::layout_left>();
   static_assert(test_layout_unpadded_padding_value<std::layout_left>());
+
+  test_layout_unpadded_padding_value<std::layout_right>();
+  static_assert(test_layout_unpadded_padding_value<std::layout_right>());
   return 0;
 }
 
