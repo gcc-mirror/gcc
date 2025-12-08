@@ -1094,17 +1094,17 @@ ftms = {
   name = padded_layouts;
   no_stdname = true; // internal
   values = {
-    v = 1;
+    v = 202403;
     cxxmin = 26;
   };
 };
 
 ftms = {
   name = submdspan;
-  no_stdname = true; // TODO: change once complete
   values = {
-    v = 1;
+    v = 202411;
     cxxmin = 26;
+    extra_cond = "__glibcxx_constant_wrapper >= 202506L";
   };
 };
 

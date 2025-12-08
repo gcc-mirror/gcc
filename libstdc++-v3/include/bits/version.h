@@ -1214,7 +1214,7 @@
 
 #if !defined(__cpp_lib_padded_layouts)
 # if (__cplusplus >  202302L)
-#  define __glibcxx_padded_layouts 1L
+#  define __glibcxx_padded_layouts 202403L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_padded_layouts)
 #  endif
 # endif
@@ -1222,9 +1222,10 @@
 #undef __glibcxx_want_padded_layouts
 
 #if !defined(__cpp_lib_submdspan)
-# if (__cplusplus >  202302L)
-#  define __glibcxx_submdspan 1L
+# if (__cplusplus >  202302L) && (__glibcxx_constant_wrapper >= 202506L)
+#  define __glibcxx_submdspan 202411L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_submdspan)
+#   define __cpp_lib_submdspan 202411L
 #  endif
 # endif
 #endif /* !defined(__cpp_lib_submdspan) */
