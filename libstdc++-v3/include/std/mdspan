@@ -1374,6 +1374,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  }
       };
 
+    template<>
+      struct _SubMdspanMapping<_LayoutSide::__right, true>
+      {
+	using _Layout = layout_right;
+	template<size_t _Pad> using _PaddedLayout = layout_right_padded<_Pad>;
+
+	template<typename _Mapping, size_t _Us>
+	  static consteval size_t
+	  _S_pad()
+	  {
+	    using _Extents = typename _Mapping::extents_type;
+	    constexpr auto __rank = _Extents::rank();
+	    constexpr auto __sta_exts
+	      = __mdspan::__static_extents<_Extents>(_Us + 1, __rank - 1);
+	    constexpr auto __sta_padstride
+	      = __mdspan::__get_static_stride<_Mapping>();
+	    if constexpr (__sta_padstride == dynamic_extent
+			  || !__mdspan::__all_static(__sta_exts))
+	      return dynamic_extent;
+	    else
+	      return __sta_padstride * __mdspan::__fwd_prod(__sta_exts);
+	  }
+
+	template<size_t _Nm>
+	  static consteval bool
+	  _S_is_unpadded_submdspan(span<const _SliceKind, _Nm> __slice_kinds,
+				   size_t __sub_rank)
+	  {
+	    if (__sub_rank == 1)
+	      return __slice_kinds[_Nm - 1] == _SliceKind::__unit_strided_slice
+		|| __slice_kinds[_Nm - 1] == _SliceKind::__full;
+	    else
+	      return false;
+	  }
+      };
+
+
     template<typename _Mapping>
       constexpr auto
       __submdspan_mapping_impl(const _Mapping& __mapping)
@@ -2775,6 +2812,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  operator==(const mapping& __self, const _RightPaddedMapping& __other)
 	  noexcept
 	  { return __self._M_storage._M_equal(__other); }
+
+#if __glibcxx_submdspan
+      private:
+	template<typename... _Slices>
+	  requires (extents_type::rank() == sizeof...(_Slices))
+	  friend constexpr auto
+	  submdspan_mapping(const mapping& __mapping, _Slices... __slices)
+	  { return __mdspan::__submdspan_mapping_impl(__mapping, __slices...); }
+#endif // __glibcxx_submdspan
       };
 #endif // __glibcxx_padded_layouts
 

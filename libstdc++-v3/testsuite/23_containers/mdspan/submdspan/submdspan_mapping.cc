@@ -290,6 +290,10 @@ main()
   test_return_types_padded_all<std::layout_left_padded<2>>();
   test_return_types_padded_all<std::layout_left_padded<dyn>>();
 
+  test_return_types_padded_all<std::layout_right_padded<1>>();
+  test_return_types_padded_all<std::layout_right_padded<2>>();
+  test_return_types_padded_all<std::layout_right_padded<dyn>>();
+
   test_layout_stride_return_types();
   static_assert(test_layout_stride_return_types());
   return 0;
