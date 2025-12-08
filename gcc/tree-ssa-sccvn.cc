@@ -2527,7 +2527,10 @@ vn_nary_build_or_lookup_1 (gimple_match_op *res_op, bool insert,
   else
     {
       tree val = vn_lookup_simplify_result (res_op);
-      if (!val && insert)
+      /* ???  In weird cases we can end up with internal-fn calls,
+	 but this isn't expected so throw the result away.  See
+	 PR123040 for an example.  */
+      if (!val && insert && res_op->code.is_tree_code ())
 	{
 	  gimple_seq stmts = NULL;
 	  result = maybe_push_res_to_seq (res_op, &stmts);
