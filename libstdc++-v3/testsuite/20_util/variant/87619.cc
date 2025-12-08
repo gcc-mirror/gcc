@@ -16,6 +16,7 @@
 // <http://www.gnu.org/licenses/>.
 
 // { dg-do compile { target c++17 } }
+// { dg-options "-ftemplate-depth=270" }
 
 #include <variant>
 #include <utility>
@@ -23,6 +24,7 @@
 
 template<std::size_t I>
 struct S {
+ ~S() {}
 };
 
 template <std::size_t... Is>

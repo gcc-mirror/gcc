@@ -393,8 +393,8 @@ namespace __variant
 	_Variadic_union(in_place_index_t<_Np>, _Args&&...) = delete;
     };
 
-  template<bool __trivially_destructible, typename _First, typename... _Rest>
-    union _Variadic_union<__trivially_destructible, _First, _Rest...>
+  template<typename _First, typename... _Rest>
+    union _Variadic_union<true, _First, _Rest...>
     {
       constexpr _Variadic_union() : _M_rest() { }
 
@@ -410,24 +410,40 @@ namespace __variant
 	: _M_rest(in_place_index<_Np-1>, std::forward<_Args>(__args)...)
 	{ }
 
-#if __cpp_lib_variant >= 202106L
+      _Uninitialized<_First> _M_first;
+      _Variadic_union<true, _Rest...> _M_rest;
+    };
+
+  template<typename _First, typename... _Rest>
+    union _Variadic_union<false, _First, _Rest...>
+    {
+      constexpr _Variadic_union() : _M_rest() { }
+
+      template<typename... _Args>
+	constexpr
+	_Variadic_union(in_place_index_t<0>, _Args&&... __args)
+	: _M_first(in_place_index<0>, std::forward<_Args>(__args)...)
+	{ }
+
+      template<size_t _Np, typename... _Args>
+	constexpr
+	_Variadic_union(in_place_index_t<_Np>, _Args&&... __args)
+	: _M_rest(in_place_index<_Np-1>, std::forward<_Args>(__args)...)
+	{ }
+
       _Variadic_union(const _Variadic_union&) = default;
       _Variadic_union(_Variadic_union&&) = default;
       _Variadic_union& operator=(const _Variadic_union&) = default;
       _Variadic_union& operator=(_Variadic_union&&) = default;
 
-      ~_Variadic_union() = default;
-
       // If any alternative type is not trivially destructible then we need a
       // user-provided destructor that does nothing. The active alternative
       // will be destroyed by _Variant_storage::_M_reset() instead of here.
-      constexpr ~_Variadic_union()
-	requires (!__trivially_destructible)
+      _GLIBCXX20_CONSTEXPR ~_Variadic_union()
       { }
-#endif
 
       _Uninitialized<_First> _M_first;
-      _Variadic_union<__trivially_destructible, _Rest...> _M_rest;
+      _Variadic_union<(is_trivially_destructible_v<_Rest> && ...), _Rest...> _M_rest;
     };
 
   // _Never_valueless_alt is true for variant alternatives that can
