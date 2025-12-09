@@ -14920,7 +14920,7 @@ case $d_thread_model in
     # TODO: These targets need porting.
     dce|mipssde|rtems|tpf|vxworks)
 	    DCFG_THREAD_MODEL="Single" ;;
-    *)	    as_fn_error "Thread implementation '$d_thread_model' not recognised" "$LINENO" 5 ;;
+    *)	    as_fn_error $? "Thread implementation '$d_thread_model' not recognised" "$LINENO" 5 ;;
 esac
 
 

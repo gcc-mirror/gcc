@@ -16330,11 +16330,29 @@ $as_echo "$enable_libstdcxx_pch" >&6; }
 
 
 
-  { $as_echo "$as_me:${as_lineno-$LINENO}: checking for thread model used by GCC" >&5
-$as_echo_n "checking for thread model used by GCC... " >&6; }
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  { $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
-$as_echo "$target_thread_file" >&6; }
+# Specify the threading model for this GCC runtime library
+# Pass with no value to take from compiler's metadata
+# Pass with a value to specify a thread package
+# 'single' means single threaded -- without threads.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for the threading model used by GCC" >&5
+$as_echo_n "checking for the threading model used by GCC... " >&6; }
+if ${gcc_cv_target_thread_file+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  # Set new cache variable
+  gcc_cv_target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_target_thread_file" >&5
+$as_echo "$gcc_cv_target_thread_file" >&6; }
+# Set variable name (not prefixed enough to be a good cache variable
+# name) traditionally used for this purpose, to avoid having to change
+# a bunch of configure scripts.
+target_thread_file="$gcc_cv_target_thread_file"
+
+
+
 
 case $target_thread_file in
     aix)	thread_header=config/rs6000/gthr-aix.h ;;
@@ -16349,6 +16367,9 @@ case $target_thread_file in
     vxworks)	thread_header=config/gthr-vxworks.h ;;
     win32)	thread_header=config/i386/gthr-win32.h ;;
     mcf)	thread_header=config/i386/gthr-mcf.h ;;
+    *)
+        as_fn_error $? "No known header for threading model '$target_thread_file'." "$LINENO" 5
+        ;;
 esac
 
 
@@ -16422,7 +16443,7 @@ $as_echo "$glibcxx_cv_atomic_word" >&6; }
     # Fake what AC_TRY_COMPILE does.
 
     cat > conftest.$ac_ext << EOF
-#line 16425 "configure"
+#line 16446 "configure"
 #include "${glibcxx_srcdir}/config/$atomic_word_dir/atomic_word.h"
 int main()
 {
@@ -16568,7 +16589,7 @@ $as_echo "mutex" >&6; }
   # unnecessary for this test.
 
     cat > conftest.$ac_ext << EOF
-#line 16571 "configure"
+#line 16592 "configure"
 int main()
 {
   _Decimal32 d1;
@@ -16610,7 +16631,7 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   # unnecessary for this test.
 
   cat > conftest.$ac_ext << EOF
-#line 16613 "configure"
+#line 16634 "configure"
 template<typename T1, typename T2>
   struct same
   { typedef T2 type; };
@@ -52252,6 +52273,7 @@ done
 
 # For gthread support.  Depends on GLIBCXX_ENABLE_SYMVERS.
 
+
    # Check whether --enable-libstdcxx-threads was given.
 if test "${enable_libstdcxx_threads+set}" = set; then :
   enableval=$enable_libstdcxx_threads;
@@ -52281,7 +52303,6 @@ ac_compiler_gnu=$ac_cv_cxx_compiler_gnu
   CXXFLAGS="$CXXFLAGS -fno-exceptions \
 	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
 
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   case $target_thread_file in
     posix)
       CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"
@@ -53969,7 +53990,7 @@ $as_echo "$glibcxx_cv_libbacktrace_atomics" >&6; }
     CXXFLAGS='-O0 -S'
 
     cat > conftest.$ac_ext << EOF
-#line 53972 "configure"
+#line 53993 "configure"
 #include <stddef.h>
 int main()
 {

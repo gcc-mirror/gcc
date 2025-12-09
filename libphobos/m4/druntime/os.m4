@@ -32,7 +32,7 @@ case $1 in
     # TODO: These targets need porting.
     dce|mipssde|rtems|tpf|vxworks)
 	    DCFG_THREAD_MODEL="Single" ;;
-    *)	    as_fn_error "Thread implementation '$1' not recognised" "$LINENO" 5 ;;
+    *)	    AC_MSG_ERROR([Thread implementation '$1' not recognised]) ;;
 esac
 AC_SUBST(DCFG_THREAD_MODEL)
 ])

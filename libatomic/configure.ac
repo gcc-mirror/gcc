@@ -177,9 +177,7 @@ libtool_VERSION=3:0:2
 AC_SUBST(libtool_VERSION)
 
 # Check for used threading-model
-AC_MSG_CHECKING([for thread model used by GCC])
-target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-AC_MSG_RESULT([$target_thread_file])
+GCC_AC_THREAD_MODEL
 
 case "$target" in
  *aarch64*)

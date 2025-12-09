@@ -4193,9 +4193,7 @@ dnl Substs:
 dnl  thread_header
 dnl
 AC_DEFUN([GLIBCXX_ENABLE_THREADS], [
-  AC_MSG_CHECKING([for thread model used by GCC])
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
-  AC_MSG_RESULT([$target_thread_file])
+  AC_REQUIRE([GCC_AC_THREAD_MODEL])
   GCC_AC_THREAD_HEADER([$target_thread_file])
 ])
 
@@ -4208,6 +4206,7 @@ dnl
 dnl GLIBCXX_ENABLE_SYMVERS must be done before this.
 dnl
 AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
+  AC_REQUIRE([GCC_AC_THREAD_MODEL])
   GLIBCXX_ENABLE(libstdcxx-threads,auto,,[enable C++11 threads support])
 
   if test x$enable_libstdcxx_threads = xauto ||
@@ -4220,7 +4219,6 @@ AC_DEFUN([GLIBCXX_CHECK_GTHREADS], [
   CXXFLAGS="$CXXFLAGS -fno-exceptions \
 	-I${toplevel_srcdir}/libgcc -I${toplevel_builddir}/libgcc"
 
-  target_thread_file=`$CXX -v 2>&1 | sed -n 's/^Thread model: //p'`
   case $target_thread_file in
     posix)
       CXXFLAGS="$CXXFLAGS -DSUPPORTS_WEAK -DGTHREAD_USE_WEAK -D_PTHREADS"

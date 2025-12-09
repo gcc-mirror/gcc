@@ -12254,11 +12254,28 @@ libtool_VERSION=3:0:2
 
 
 # Check for used threading-model
-{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for thread model used by GCC" >&5
-$as_echo_n "checking for thread model used by GCC... " >&6; }
-target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
-{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $target_thread_file" >&5
-$as_echo "$target_thread_file" >&6; }
+
+# Specify the threading model for this GCC runtime library
+# Pass with no value to take from compiler's metadata
+# Pass with a value to specify a thread package
+# 'single' means single threaded -- without threads.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for the threading model used by GCC" >&5
+$as_echo_n "checking for the threading model used by GCC... " >&6; }
+if ${gcc_cv_target_thread_file+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+
+  # Set new cache variable
+  gcc_cv_target_thread_file=`$CC -v 2>&1 | sed -n 's/^Thread model: //p'`
+
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $gcc_cv_target_thread_file" >&5
+$as_echo "$gcc_cv_target_thread_file" >&6; }
+# Set variable name (not prefixed enough to be a good cache variable
+# name) traditionally used for this purpose, to avoid having to change
+# a bunch of configure scripts.
+target_thread_file="$gcc_cv_target_thread_file"
+
 
 case "$target" in
  *aarch64*)
