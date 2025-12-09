@@ -328,6 +328,8 @@ Session::handle_cfg_option (std::string &input)
 bool
 Session::enable_dump (std::string arg)
 {
+  const std::string INTERNAL_DUMP_OPTION_TEXT = "internal";
+
   if (arg.empty ())
     {
       rust_error_at (
@@ -383,21 +385,23 @@ Session::enable_dump (std::string arg)
     {
       options.enable_dump_option (CompileOptions::BIR_DUMP);
     }
-  else if (!arg.compare (0, 8, "internal"))
+  else if (!arg.compare (0, INTERNAL_DUMP_OPTION_TEXT.size (),
+			 INTERNAL_DUMP_OPTION_TEXT))
     {
-      if (arg.size () == 8)
+      if (arg.size () == INTERNAL_DUMP_OPTION_TEXT.size ())
 	{
 	  options.enable_dump_option (CompileOptions::INTERNAL_DUMP);
 	}
       else
 	{
-	  if (arg[8] != ':')
+	  if (arg[INTERNAL_DUMP_OPTION_TEXT.size ()] != ':')
 	    {
-	      rust_error_at (UNDEF_LOCATION,
-			     "%qs malformated to specify Node to ignore when "
-			     "dumping internal comment put a "
-			     "%qs then all the Nodes separated by comma",
-			     arg.c_str (), ":");
+	      rust_error_at (UNDEF_LOCATION, "bad format for %qs",
+			     arg.c_str ());
+	      rust_inform (UNDEF_LOCATION,
+			   "to specify the nodes to ignore when "
+			   "dumping their description put a "
+			   "%<:%> then all the Nodes separated by comma");
 	      return false;
 	    }
 	  handle_excluded_node (arg);
@@ -409,9 +413,9 @@ Session::enable_dump (std::string arg)
       rust_error_at (
 	UNDEF_LOCATION,
 	"dump option %qs was unrecognised. choose %<lex%>, %<ast-pretty%>, "
-	"%<register_plugins%>, %<injection%>, "
-	"%<expansion%>, %<resolution%>, %<target_options%>, %<hir%>, "
-	"%<hir-pretty%>, or %<all%>",
+	"%<internal[:ignore1,ignore2,...]%>, %<register_plugins%>, "
+	"%<injection%>, %<expansion%>, %<resolution%>, %<target_options%>, "
+	"%<hir%>, %<hir-pretty%>, or %<all%>",
 	arg.c_str ());
       return false;
     }
@@ -424,9 +428,9 @@ Session::enable_dump (std::string arg)
 void
 Session::handle_excluded_node (std::string arg)
 {
-  const int size_node_string = 50;
-  std::istringstream blist_str (
-    arg.substr (arg.find (":") + 1, size_node_string));
+  size_t colon = arg.find (":");
+  size_t suffix_size = arg.size () - colon;
+  std::istringstream blist_str (arg.substr (colon + 1, suffix_size));
   std::string token;
   while (std::getline (blist_str, token, ','))
     {
