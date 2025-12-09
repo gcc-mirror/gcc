@@ -1353,6 +1353,7 @@ destroy_loop (class loop *loop)
   redirect_edge_pred (exit, src);
   exit->flags &= ~(EDGE_TRUE_VALUE|EDGE_FALSE_VALUE);
   exit->flags |= EDGE_FALLTHRU;
+  exit->probability = profile_probability::always ();
   cancel_loop_tree (loop);
   rescan_loop_exit (exit, false, true);
 
