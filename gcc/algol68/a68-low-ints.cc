@@ -109,6 +109,7 @@ tree
 a68_int_sign (tree val)
 {
   tree zero = build_int_cst (TREE_TYPE (val), 0);
+  val = save_expr (val);
   return fold_build3 (COND_EXPR,
 		      a68_int_type,
 		      fold_build2 (EQ_EXPR, integer_type_node, val, zero),

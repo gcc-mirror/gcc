@@ -1,0 +1,4 @@
+begin proc fixed = (int v, int width, after) string: skip;
+      real x = 2, y = 3;
+      fixed (SIGN (x * y), 0, 0)
+end

@@ -165,6 +165,7 @@ tree
 a68_real_sign (tree val)
 {
   tree zero = build_real (TREE_TYPE (val), dconst0);
+  val = save_expr (val);
   return fold_build3 (COND_EXPR,
 		      a68_int_type,
 		      build2 (EQ_EXPR, integer_type_node, val, zero),
