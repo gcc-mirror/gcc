@@ -5318,7 +5318,7 @@ EOF
 
     AC_MSG_CHECKING([for atomic builtins for libbacktrace])
     if AC_TRY_EVAL(ac_compile); then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
+      if grep -E '__atomic_|__sync_' conftest.s >/dev/null 2>&1 ; then
 	glibcxx_cv_libbacktrace_atomics=no
       else
 	glibcxx_cv_libbacktrace_atomics=yes

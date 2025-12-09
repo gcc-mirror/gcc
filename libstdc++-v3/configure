@@ -54172,7 +54172,7 @@ $as_echo_n "checking for atomic builtins for libbacktrace... " >&6; }
   ac_status=$?
   $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
   test $ac_status = 0; }; then
-      if grep __atomic_ conftest.s >/dev/null 2>&1 ; then
+      if grep -E '__atomic_|__sync_' conftest.s >/dev/null 2>&1 ; then
 	glibcxx_cv_libbacktrace_atomics=no
       else
 	glibcxx_cv_libbacktrace_atomics=yes
