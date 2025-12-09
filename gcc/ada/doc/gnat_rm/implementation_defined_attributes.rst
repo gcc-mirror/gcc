@@ -449,6 +449,43 @@ that there are full range checks, to ensure that the result is in range.
 This attribute is primarily intended for use in implementation of the
 input-output functions for fixed-point values.
 
+Attribute From_Address
+======================
+.. index:: From_Address
+
+The prefix of this attribute must be a general access-to-array type (or
+subtype); the attribute takes a System.Address argument and possibly some
+additional arguments (described below) and yields a value of the given
+access type that designates an array object located at the given address.
+In the case of a non-null array this means that the given address is the
+address of the first element of the array object (not the address of any sort
+of bounds descriptor). This allows associating bounds with an address that is,
+for example, passed in from C code.
+
+If the designated array subtype is unconstrained (which is the usual case),
+then for each dimension (in order) the attribute takes either one or two
+additional arguments of the corresponding index type - one if the index
+subtype is a fixed lower bound subtype, two (low bound first) otherwise.
+In this case, the access type shall be an extended access type (see the
+description of the Extended_Access aspect). These additional arguments
+specify the bounds of the designated array object.
+
+If the designated array subtype is constrained then no additional arguments
+are provided and the bounds of the designated object are those of the
+designated subtype.
+
+Roughly speaking, My_Access_Type'From_Address (Addr, Lo, Hi) is equivalent to a
+declare expression:
+
+.. code-block:: ada
+
+   (declare
+      Obj : aliased Designated_Array_Type (Lo .. Hi)
+        with Import, Address => Addr;
+   begin
+      My_Access_Type'(Obj'Unchecked_Access)
+   end)
+
 Attribute From_Any
 ==================
 .. index:: From_Any

@@ -1090,6 +1090,7 @@ package Snames is
    Name_Copy_Sign                      : constant Name_Id := N + $;
    Name_Floor                          : constant Name_Id := N + $;
    Name_Fraction                       : constant Name_Id := N + $;
+   Name_From_Address                   : constant Name_Id := N + $; -- GNAT
    Name_From_Any                       : constant Name_Id := N + $; -- GNAT
    Name_Image                          : constant Name_Id := N + $;
    Name_Img                            : constant Name_Id := N + $; -- GNAT
@@ -1633,6 +1634,7 @@ package Snames is
       Attribute_Copy_Sign,
       Attribute_Floor,
       Attribute_Fraction,
+      Attribute_From_Address,
       Attribute_From_Any,
       Attribute_Image,
       Attribute_Img,

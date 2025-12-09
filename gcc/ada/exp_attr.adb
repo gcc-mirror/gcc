@@ -4416,6 +4416,131 @@ package body Exp_Attr is
       when Attribute_Fraction =>
          Expand_Fpt_Attribute_R (N);
 
+      ------------------
+      -- From_Address --
+      ------------------
+
+      when Attribute_From_Address =>
+         declare
+            --  Rewrite attribute reference as Expression_With_Actions:
+            --
+            --    declare
+            --      subtype S is Designated_Array_Type (<bounds>);
+            --      Obj : aliased S;
+            --      pragma Import (Convention => Ada, Entity => Obj);
+            --      for Obj'Address use <address>;
+            --    begin
+            --      Access_Type'(Obj'Unchecked_Access);
+            --    end;
+            --
+            --  If Designated_Array_Type is already constrained, then
+            --  the subtype declaration is omitted and D_A_T is referenced
+            --  instead. [An earlier attempt that used aspect_specification
+            --  syntax instead ran into problems.]
+
+            Access_Type : constant Entity_Id := Etype (N);
+
+            Designated_Array_Subtype : constant Entity_Id :=
+              Designated_Type (Access_Type);
+
+            Constraints   : constant List_Id := New_List;
+            Actions       : constant List_Id := New_List;
+            Subtype_Decl  : Node_Id;
+            Object_Decl   : Node_Id;
+            Import_Pragma : Node_Id;
+            Address_ADC   : Node_Id; -- ADC = attribute_definition_clause
+
+            function Object_Name return Node_Id is
+              (New_Occurrence_Of (Defining_Identifier (Object_Decl), Loc));
+         begin
+            if Is_Constrained (Designated_Array_Subtype) then
+               --  No need to declare a new subtype; bounds come from the
+               --  already-declared Designated_Array_Subtype.
+               --  Later tests for Present (Subtype_Decl) are testing
+               --  which path through this if-statement was taken.
+               Subtype_Decl := Empty;
+            else
+               declare
+                  --  Skip the first argument, which is the address
+                  Bound_Arg : Node_Id := Next (First (Expressions (N)));
+                  Index     : Node_Id :=
+                    First_Index (Designated_Array_Subtype);
+                  Lo, Hi    : Node_Id;
+               begin
+                  for Dim in 1 .. Number_Dimensions (Designated_Array_Subtype)
+                  loop
+                     if Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index)) then
+                        Lo := New_Copy_Tree (Type_Low_Bound (Etype (Index)));
+                     else
+                        Lo := New_Copy_Tree (Bound_Arg);
+                        Next (Bound_Arg);
+                     end if;
+                     Hi := New_Copy_Tree (Bound_Arg);
+                     Append (Make_Range (Loc, Lo, Hi), Constraints);
+                     Next (Bound_Arg);
+                     Next_Index (Index);
+                  end loop;
+               end;
+
+               Subtype_Decl :=
+                 Make_Subtype_Declaration (Loc,
+                   Defining_Identifier =>
+                     Make_Temporary (Loc, 'S', Related_Node => N),
+                   Subtype_Indication  =>
+                     Make_Subtype_Indication (Loc,
+                       Subtype_Mark => New_Occurrence_Of
+                                         (Designated_Array_Subtype, Loc),
+                       Constraint   =>
+                          Make_Index_Or_Discriminant_Constraint
+                            (Loc, Constraints)));
+            end if;
+
+            Object_Decl :=
+              Make_Object_Declaration (Loc,
+                Defining_Identifier =>
+                  Make_Temporary (Loc, 'V', Related_Node => N),
+                  Object_Definition =>
+                    New_Occurrence_Of
+                      ((if Present (Subtype_Decl)
+                        then Defining_Identifier (Subtype_Decl)
+                        else Designated_Array_Subtype), Loc),
+                  Aliased_Present => True);
+
+            Import_Pragma :=
+              Make_Pragma (Loc,
+                Name_Import,
+                New_List (Make_Pragma_Argument_Association (Loc,
+                            Chars => Name_Convention,
+                            Expression => Make_Identifier (Loc, Name_Ada)),
+                          Make_Pragma_Argument_Association (Loc,
+                            Chars => Name_Entity,
+                            Expression => Object_Name)));
+
+            Address_ADC :=
+              Make_Attribute_Definition_Clause (Loc,
+                Name => Object_Name,
+                Chars => Name_Address,
+                Expression => New_Copy_Tree (First (Expressions (N))));
+
+            if Present (Subtype_Decl) then
+               Append (Subtype_Decl, Actions);
+            end if;
+            Append (Object_Decl, Actions);
+            Append (Import_Pragma, Actions);
+            Append (Address_ADC, Actions);
+
+            Rewrite (N, Make_Expression_With_Actions (Loc,
+              Actions => Actions,
+              Expression =>
+                Make_Qualified_Expression (Loc,
+                  Subtype_Mark => New_Occurrence_Of (Access_Type, Loc),
+                  Expression => Make_Attribute_Reference (Loc,
+                                  Prefix => Object_Name,
+                                  Attribute_Name => Name_Unchecked_Access))));
+
+            Analyze_And_Resolve (N, Access_Type);
+         end;
+
       --------------
       -- From_Any --
       --------------

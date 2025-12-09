@@ -3323,6 +3323,13 @@ package body Sem_Attr is
          E1 := Empty;
          E2 := Empty;
 
+      elsif Aname = Name_From_Address then
+         --  Number and types of expected arguments depends on prefix type,
+         --  so analyze arguments later.
+
+         E1 := Empty;
+         E2 := Empty;
+
       elsif Aname /= Name_Make then
          E1 := First (Exprs);
 
@@ -4489,6 +4496,84 @@ package body Sem_Attr is
       --------------
 
       --  Shares processing with Ceiling attribute
+
+      ------------------
+      -- From_Address --
+      ------------------
+
+      when Attribute_From_Address =>
+         Set_Etype (N, P_Base_Type);
+
+         if not Is_Type (Entity (P))
+           or else Ekind (P_Base_Type) /= E_General_Access_Type
+           or else not Is_Array_Type (Designated_Type (P_Base_Type))
+         then
+            Error_Attr
+              ("attribute % must apply to general access-to-array type", P);
+         end if;
+
+         declare
+            Array_Subtype : constant Entity_Id :=
+              Designated_Type (P_Base_Type);
+
+            Arg : Node_Id := First (Exprs);
+
+            procedure Analyze_Next_Arg
+              (Arg : in out Node_Id; Typ : Entity_Id);
+            --  Analyze an actual parameter
+
+            ----------------------
+            -- Analyze_Next_Arg --
+            ----------------------
+
+            procedure Analyze_Next_Arg
+              (Arg : in out Node_Id; Typ : Entity_Id)
+            is
+
+            begin
+               if No (Arg) then
+                  Error_Attr ("missing argument for % attribute", N);
+               else
+                  --  Base_Type call needed to deal with null ranges
+                  Analyze_And_Resolve (Arg, Base_Type (Typ));
+                  Next (Arg);
+               end if;
+            end Analyze_Next_Arg;
+         begin
+            --  First parameter is of type Address. If designated subtype is
+            --  unconstrained, then subsequent parameters are of the
+            --  index subtypes (usually 2 per dimension, for low and high,
+            --  but low is omitted in the fixed-lower-bound case).
+            --  No subsequent parameters if designated subtype is constrained.
+
+            Analyze_Next_Arg (Arg, RTE (RE_Address));
+            if not Is_Constrained (Array_Subtype) then
+               if not Is_Extended_Access_Type (P_Base_Type) then
+                  --  For the unconstrained case (where bounds need to be
+                  --  stored as part of the access value), the access type
+                  --  is required to be an extended access type.
+                  Error_Attr
+                    ("attribute % must apply to an extended access type"
+                     & " because designated subtype is unconstrained", P);
+               end if;
+
+               declare
+                  Index : Node_Id := First_Index (Array_Subtype);
+               begin
+                  for Dim in 1 .. Number_Dimensions (Array_Subtype) loop
+                     if not Is_Fixed_Lower_Bound_Index_Subtype (Etype (Index))
+                     then
+                        Analyze_Next_Arg (Arg, Etype (Index)); --  low bound
+                     end if;
+                     Analyze_Next_Arg (Arg, Etype (Index)); --  high bound
+                     Next_Index (Index);
+                  end loop;
+               end;
+            end if;
+            if Present (Arg) then
+               Error_Attr ("too many arguments for % attribute", N);
+            end if;
+         end;
 
       --------------
       -- From_Any --
@@ -11159,7 +11244,8 @@ package body Sem_Attr is
 
       --  The following attributes denote functions that cannot be folded
 
-      when Attribute_From_Any
+      when Attribute_From_Address
+         | Attribute_From_Any
          | Attribute_To_Any
          | Attribute_TypeCode
       =>
