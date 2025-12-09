@@ -1,3 +1,13 @@
+2025-12-08  Joseph Myers  <josmyers@redhat.com>
+
+	* test_installed (--with-alt-cc=, --with-alt-cxx=)
+	(--with-compat-options=, --with-libiconv=): New options.
+
+2025-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* check_GNU_style_lib.py (check_GNU_style_file): Do not check
+	libstdc++ files.
+
 2025-12-06  Mark Zhuang  <mark.zhuang@spacemit.com>
 
 	* prepare-commit-msg: check --default-prefix

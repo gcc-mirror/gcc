@@ -1,3 +1,9 @@
+2025-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123037
+	* rtinit.c [__MINGW32__]: Include <stdlib.h> and not <windows.h>.
+	* rtfinal.c [__MINGW32__]: Do not include <windows.h>.
+
 2025-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/115349

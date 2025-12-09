@@ -1,3 +1,71 @@
+2025-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122946
+	* include/bits/version.def (concepts): Set value to 202207.
+	* include/bits/version.h: Regenerate.
+	* include/std/concepts (__comparison_common_type_with_impl)
+	(__comparison_common_type_with): New helper concepts.
+	(equality_comparable_with): Use __comparison_common_type_with.
+	* libsupc++/compare (three_way_comparable_with): Likewise.
+	(__glibcxx_want_concepts): Define to get __cpp_lib_concepts
+	here.
+	* testsuite/std/concepts/concepts.compare/move_only.cc: New
+	test.
+
+2025-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/intcmp.h: Replace all uses of
+	__is_standard_integer with __is_signed_or_unsigned_integer.
+	* include/bits/max_size_type.h: Fix outdated comment.
+	* include/bits/sat_arith.h: Replace all uses of
+	__is_standard_integer with __is_signed_or_unsigned_integer.
+	* include/c_compatibility/stdckdint.h: Replace all uses of the
+	__cv_unqual_signed_or_unsigned_integer_type concept with
+	__is_signed_or_unsigned_integer.
+	(__cv_unqual_signed_or_unsigned_integer_type): Remove.
+	* include/ext/numeric_traits.h: Fix outdated comment.
+	* include/std/charconv (from_chars): Replace use of
+	__is_standard_integer with __is_signed_or_unsigned_integer.
+	Do not enable for cv-qualified char.
+	* include/std/mdspan: Likewise.
+	* include/std/type_traits (__is_unsigned_integer): Include
+	unsigned __int128 in type list.
+	(__is_signed_integer): Include signed __int128 in type list.
+	(__is_standard_integer): Rename to ...
+	(__is_signed_or_unsigned_integer): ... this.
+	* testsuite/23_containers/mdspan/extents/ctor_ints.cc: Test
+	with 128-bit integers.
+	* testsuite/23_containers/mdspan/submdspan/strided_slice.cc:
+	Likewise.
+	* testsuite/20_util/integer_comparisons/extended.cc: New test.
+	* testsuite/26_numerics/saturation/extended.cc: New test.
+	* testsuite/26_numerics/stdckdint/extended.cc: New test.
+
+2025-12-08  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/112591
+	* include/std/variant (_Variadic_union): Separate specializations for
+	for union of only trivially destructible types (true as first template
+	argument). Unconditionally define destructor for _Variadic_union<false,
+	_First, _Rest...>.
+	* testsuite/20_util/variant/87619.cc: Add limit for the template depth.
+	* testsuite/20_util/variant/112591.cc: New test.
+
+2025-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/iterator_concepts.h: Remove diagnostic pragmas.
+
+2025-12-08  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/Makefile.am: Add new header.
+	* include/Makefile.in: Regenerate.
+	* include/std/latch: Include <bits/intcmp.h> instead of
+	<utility>.
+	* include/std/utility: Include <bits/intcmp.h>.
+	(cmp_equal, cmp_not_equal, cmp_less, cmp_greater)
+	(cmp_less_equal, cmp_greater_equal, in_range): Move to ...
+	* include/bits/intcmp.h: New file.
+
 2025-12-06  Jason Merrill  <jason@redhat.com>
 
 	* src/c++23/std.cc.in: Add more #if.

@@ -1,3 +1,12 @@
+2025-12-08  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/123025
+	* decl.cc (match_char_length): Add a check for the
+	obsolete '*' style of character declarations in the
+	alternate branch of checking so we dont miss two
+	use cases:
+
 2025-12-06  Paul Thomas  <pault@gcc.gnu.org>
 
 	PR fortran/122693

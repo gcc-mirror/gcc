@@ -1,3 +1,79 @@
+2025-12-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/46555
+	* tree-cfgcleanup.cc (execute_cleanup_cfg_post_optimizing):
+	Don't set todo to include cleanupcfg; do it manually.
+	Call make_forwarders_with_degenerate_phis if optimizing.
+
+2025-12-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-cfg.cc (make_forwarders_with_degenerate_phis): Add debug
+	dump.
+
+2025-12-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* tree-ssa-dce.cc (sort_phi_args): Move to tree-cfg.cc.
+	(make_forwarders_with_degenerate_phis): Move to tree-cfg.cc.
+	(perform_tree_ssa_dce): Update for the updated return type
+	of make_forwarders_with_degenerate_phis.
+	* tree-cfg.cc (sort_phi_args): Moved from tree-ssa-dce.cc.
+	(make_forwarders_with_degenerate_phis): Moved from tree-ssa-dce.cc.
+	Update return type to bool and return true if an edge was split.
+	* tree-cfg.h (make_forwarders_with_degenerate_phis): New decl.
+
+2025-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/80881
+	* config/mingw/winnt.cc (mingw_pe_unique_section): Put two dollar
+	signs for TLS sections after the prefix.
+	(mingw_pe_asm_named_section): Deal with all TLS sections uniformly.
+
+2025-12-08  Ezra Sitorus  <Ezra.Sitorus@arm.com>
+
+	* config/aarch64/aarch64-cores.def (AARCH64_CORE): Add C1-Nano,
+	C1-Pro, C1-Premium and C1-Ultra.
+	* config/aarch64/aarch64-tune.md: Regenerate.
+	* doc/invoke.texi: Document C1 cores.
+
+2025-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123040
+	* tree-ssa-sccvn.cc (vn_nary_build_or_lookup_1): Only insert
+	nary results.
+
+2025-12-08  Josef Melcr  <josef.melcr@suse.com>
+
+	PR ipa/122798
+	* cgraph.cc (cgraph_edge::redirect_callee): Use
+	iterate_referring instead of referred_to_p.
+	* cgraphclones.cc (set_new_clone_decl_and_node_flags): Set local
+	to true iff the node does not have its address taken.
+
+2025-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123038
+	* tree-vect-patterns.cc (vect_recog_ctz_ffs_pattern): Reject
+	pattern for reductions when the call argument is used multiple
+	times.
+
+2025-12-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/123026
+	* config/aarch64/aarch64-simd.md (reduc_sbool_ior_scal_<mode>,
+	reduc_sbool_and_scal_<mode>): Fix tmp operands[1] override.
+
+2025-12-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122868
+	* tree-vect-stmts.cc (vectorizable_load): Move check for invariant loads
+	down into the loop.
+
+2025-12-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122343
+	* config/i386/sse.md (*<avx512>_cmp<mode>3_dup_op): Don't allow
+	2 volatile memory references.
+
 2025-12-07  Jason Merrill  <jason@redhat.com>
 
 	* config/darwin-c.cc (find_subframework_header): Use

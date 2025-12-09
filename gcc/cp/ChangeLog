@@ -1,3 +1,13 @@
+2025-12-08  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	* pt.cc (tsubst_expr): Add TARGET_EXPR case with explanatory
+	comment and gcc_unreachable.
+
+2025-12-08  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/119343
+	* pt.cc (resolve_nondeduced_context): Remove mark_used call.
+
 2025-12-06  Jakub Jelinek  <jakub@redhat.com>
 
 	* decl2.cc (is_late_template_attribute): Call lookup_attribute_spec

@@ -1,3 +1,58 @@
+2025-12-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/46555
+	* gcc.dg/tree-ssa/pr46555.c: New test.
+
+2025-12-08  Harald Anlauf  <anlauf@gmx.de>
+	    Steven G. Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/123025
+	* gfortran.dg/assumed_charlen_dummy.f90: These tests failed
+	with the change because of the default -pedantic option
+	used by the dg.exp mechanisms. Overide this default.
+	* gfortran.dg/automatic_char_len_1.f90: Ditto.
+	* gfortran.dg/entry_23.f: Ditto.
+	* gfortran.dg/finalize_59.f90: Dito.
+	* gfortran.dg/g77/f90-intrinsic-bit.f: Ditto.
+	* gfortran.dg/g77/f90-intrinsic-mathematical.f: Ditto.
+	* gfortran.dg/g77/f90-intrinsic-numeric.f: Ditto.
+	* gfortran.dg/g77/intrinsic-unix-bessel.f: Ditto.
+	* gfortran.dg/g77/intrinsic-unix-erf.f: Ditto.
+	* gfortran.dg/initialization_9.f90: Ditto.
+	* gfortran.dg/intrinsic_actual_4.f90: Ditto.
+	* gfortran.dg/namelist_assumed_char.f90: Ditto.
+	* gfortran.dg/pr15140.f90: Ditto.
+
+2025-12-08  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/119343
+	* g++.dg/template/sfinae-deleted-pr119343.C: New test.
+
+2025-12-08  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tls/data-sections-1.c: New test.
+
+2025-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123040
+	* g++.dg/torture/pr123040.C: New testcase.
+
+2025-12-08  Richard Biener  <rguenther@suse.de>
+
+	PR tree-optimization/123038
+	* gcc.dg/vect/pr123038.c: New testcase.
+
+2025-12-08  Tamar Christina  <tamar.christina@arm.com>
+
+	PR target/123026
+	* gcc.target/aarch64/pr123026.c: New test.
+
+2025-12-08  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122343
+	* gcc.target/i386/avx2-vpcmpgtq-1.c: Compile with
+	-fno-fuse-ops-with-volatile-access.
+
 2025-12-07  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/reduce3.adb: New test.
