@@ -9774,6 +9774,13 @@ finish_struct (location_t loc, tree t, tree fieldlist, tree attributes,
 	  unsigned HOST_WIDE_INT width
 	    = tree_to_uhwi (DECL_INITIAL (field));
 	  tree type = TREE_TYPE (field);
+	  if (VECTOR_TYPE_P (type))
+	    {
+	      error_at (DECL_SOURCE_LOCATION (field),
+			"bit-field %qD has invalid type", field);
+	      type = TREE_TYPE (type);
+	      TREE_TYPE (field) = type;
+	    }
 	  if (width != TYPE_PRECISION (type))
 	    {
 	      if (TREE_CODE (type) == BITINT_TYPE
