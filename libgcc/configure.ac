@@ -258,6 +258,20 @@ AC_CACHE_CHECK([whether fixed-point is supported], [libgcc_cv_fixed_point],
 fixed_point=$libgcc_cv_fixed_point
 AC_SUBST(fixed_point)
 
+# Check whether the compiler defines __PIE__ by default, so -fno-PIE is needed.
+AC_CACHE_CHECK([whether the compiler defines __PIE__], [libgcc_cv_no_pie_cflags],
+  [AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM([[
+#ifdef __PIE__
+#error __PIE__ defined
+#endif
+     ]], [[]])],
+     [libgcc_cv_no_pie_cflags=''],
+     [libgcc_cv_no_pie_cflags='-fno-PIE'])])
+
+NO_PIE_CFLAGS=$libgcc_cv_no_pie_cflags
+AC_SUBST([NO_PIE_CFLAGS])
+
 # For platforms with the unwind ABI which includes an unwind library,
 # libunwind, we can choose to use the system libunwind.
 # config.gcc also contains tests of with_system_libunwind.

@@ -7765,7 +7765,6 @@ if test x$enable_default_pie = xyes ; then
   AC_DEFINE(ENABLE_DEFAULT_PIE, 1,
       [Define if your target supports default PIE and it is enabled.])
 fi
-AC_SUBST([enable_default_pie])
 
 # Check if -fno-PIE works.
 AC_CACHE_CHECK([for -fno-PIE option],

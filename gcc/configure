@@ -635,7 +635,6 @@ LIBOBJS
 CET_HOST_FLAGS
 LD_PICFLAG
 PICFLAG
-enable_default_pie
 libgccjit_version
 enable_host_bind_now
 LIBGDIAGNOSTICS
@@ -21877,7 +21876,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21880 "configure"
+#line 21879 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -21983,7 +21982,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 21986 "configure"
+#line 21985 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -34938,7 +34937,6 @@ if test x$enable_default_pie = xyes ; then
 $as_echo "#define ENABLE_DEFAULT_PIE 1" >>confdefs.h
 
 fi
-
 
 # Check if -fno-PIE works.
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for -fno-PIE option" >&5

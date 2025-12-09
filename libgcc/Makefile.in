@@ -298,6 +298,8 @@ override CFLAGS := $(filter-out -fprofile-generate -fprofile-use,$(CFLAGS))
 INTERNAL_CFLAGS = $(CFLAGS) $(LIBGCC2_CFLAGS) $(HOST_LIBGCC2_CFLAGS) \
 		  $(INCLUDES) @set_have_cc_tls@ @set_use_emutls@
 
+NO_PIE_CFLAGS = @NO_PIE_CFLAGS@
+
 # Options to use when compiling crtbegin/end.
 CRTSTUFF_CFLAGS = -O2 $(GCC_CFLAGS) $(INCLUDES) $(MULTILIB_CFLAGS) -g0 \
   $(NO_PIE_CFLAGS) -finhibit-size-directive -fno-inline -fno-exceptions \

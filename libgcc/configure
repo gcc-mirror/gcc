@@ -610,6 +610,7 @@ accel_dir_suffix
 use_tm_clone_registry
 force_explicit_eh_registry
 CET_FLAGS
+NO_PIE_CFLAGS
 fixed_point
 enable_decimal_float
 decimal_float
@@ -4834,6 +4835,40 @@ fi
 { $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_fixed_point" >&5
 $as_echo "$libgcc_cv_fixed_point" >&6; }
 fixed_point=$libgcc_cv_fixed_point
+
+
+# Check whether the compiler defines __PIE__ by default, so -fno-PIE is needed.
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking whether the compiler defines __PIE__" >&5
+$as_echo_n "checking whether the compiler defines __PIE__... " >&6; }
+if ${libgcc_cv_no_pie_cflags+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+
+#ifdef __PIE__
+#error __PIE__ defined
+#endif
+
+int
+main ()
+{
+
+  ;
+  return 0;
+}
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_no_pie_cflags=''
+else
+  libgcc_cv_no_pie_cflags='-fno-PIE'
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_no_pie_cflags" >&5
+$as_echo "$libgcc_cv_no_pie_cflags" >&6; }
+
+NO_PIE_CFLAGS=$libgcc_cv_no_pie_cflags
 
 
 # For platforms with the unwind ABI which includes an unwind library,
