@@ -100,34 +100,36 @@ TokenCollector::decrement_indentation ()
 void
 TokenCollector::comment (std::string comment)
 {
-  tokens.emplace_back (comment);
+  tokens.emplace_back (CollectItem::make_comment (comment));
 }
 
 void
-TokenCollector::begin_internal_comment (std::string comment)
+TokenCollector::begin_describe_node (const std::string &node_name)
 {
-  std::string symbol_begin ("(");
+  const std::string symbol_begin ("(");
 
-  tokens.push_back ({comment + symbol_begin, CollectItem::Comment::Internal});
+  tokens.emplace_back (
+    CollectItem::make_node_description (node_name + symbol_begin));
 }
 
 void
-TokenCollector::end_internal_comment (std::string comment)
+TokenCollector::end_describe_node (const std::string &node_name)
 {
-  std::string symbol_end (")!");
+  const std::string symbol_end (")!");
 
-  tokens.push_back ({symbol_end + comment, CollectItem::Comment::Internal});
+  tokens.push_back (
+    CollectItem::make_node_description (symbol_end + node_name));
 }
 
 void
-TokenCollector::internal_comment (std::string node_name,
-				  std::function<void ()> visitor)
+TokenCollector::describe_node (const std::string &node_name,
+			       std::function<void ()> visitor)
 {
-  begin_internal_comment (node_name);
+  begin_describe_node (node_name);
 
   visitor ();
 
-  end_internal_comment (node_name);
+  end_describe_node (node_name);
 }
 
 void
@@ -139,7 +141,7 @@ TokenCollector::visit (Visitable &v)
 void
 TokenCollector::visit (FunctionParam &param)
 {
-  internal_comment (std::string ("FunctionParam"), [this, &param] () {
+  describe_node (std::string ("FunctionParam"), [this, &param] () {
     visit_items_as_lines (param.get_outer_attrs ());
     if (!param.is_variadic ())
       {
@@ -162,7 +164,7 @@ TokenCollector::visit (FunctionParam &param)
 void
 TokenCollector::visit (VariadicParam &param)
 {
-  internal_comment (std::string ("VariadicParam"), [this, &param] () {
+  describe_node (std::string ("VariadicParam"), [this, &param] () {
     if (param.has_pattern ())
       {
 	visit (param.get_pattern ());
@@ -175,7 +177,7 @@ TokenCollector::visit (VariadicParam &param)
 void
 TokenCollector::visit (Attribute &attrib)
 {
-  internal_comment (std::string ("Attribute"), [this, &attrib] () {
+  describe_node (std::string ("Attribute"), [this, &attrib] () {
     push (Rust::Token::make (HASH, attrib.get_locus ()));
     if (attrib.is_inner_attribute ())
       push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
@@ -214,14 +216,12 @@ TokenCollector::visit (Attribute &attrib)
       }
     push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
   });
-
-  end_internal_comment ("Attribute");
 }
 
 void
 TokenCollector::visit (SimplePath &path)
 {
-  internal_comment (std::string ("SimplePath"), [this, &path] () {
+  describe_node (std::string ("SimplePath"), [this, &path] () {
     if (path.has_opening_scope_resolution ())
       {
 	push (Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
@@ -233,7 +233,7 @@ TokenCollector::visit (SimplePath &path)
 void
 TokenCollector::visit (SimplePathSegment &segment)
 {
-  internal_comment (std::string ("SimplePathSegment"), [this, &segment] () {
+  describe_node (std::string ("SimplePathSegment"), [this, &segment] () {
     auto name = segment.get_segment_name ();
     if (segment.is_crate_path_seg ())
       {
@@ -262,7 +262,7 @@ TokenCollector::visit (SimplePathSegment &segment)
 void
 TokenCollector::visit (Visibility &vis)
 {
-  internal_comment (std::string ("Visibility"), [this, &vis] () {
+  describe_node (std::string ("Visibility"), [this, &vis] () {
     switch (vis.get_vis_type ())
       {
       case Visibility::PUB:
@@ -302,7 +302,7 @@ TokenCollector::visit (Visibility &vis)
 void
 TokenCollector::visit (std::vector<std::unique_ptr<GenericParam>> &params)
 {
-  internal_comment (std::string ("GenericParam"), [this, &params] () {
+  describe_node (std::string ("GenericParam"), [this, &params] () {
     push (Rust::Token::make (LEFT_ANGLE, UNDEF_LOCATION));
     visit_items_joined_by_separator (params, COMMA);
     push (Rust::Token::make (RIGHT_ANGLE, UNDEF_LOCATION));
@@ -312,7 +312,7 @@ TokenCollector::visit (std::vector<std::unique_ptr<GenericParam>> &params)
 void
 TokenCollector::visit (TupleField &field)
 {
-  internal_comment (std::string ("TupleField"), [this, &field] () {
+  describe_node (std::string ("TupleField"), [this, &field] () {
     for (auto attr : field.get_outer_attrs ())
       {
 	visit (attr);
@@ -325,7 +325,7 @@ TokenCollector::visit (TupleField &field)
 void
 TokenCollector::visit (StructField &field)
 {
-  internal_comment (std::string ("StructField"), [this, &field] () {
+  describe_node (std::string ("StructField"), [this, &field] () {
     for (auto attr : field.get_outer_attrs ())
       {
 	visit (attr);
@@ -341,7 +341,7 @@ TokenCollector::visit (StructField &field)
 void
 TokenCollector::visit (std::vector<LifetimeParam> &for_lifetimes)
 {
-  internal_comment (std::string ("LifetimeParam"), [this, &for_lifetimes] () {
+  describe_node (std::string ("LifetimeParam"), [this, &for_lifetimes] () {
     push (Rust::Token::make (FOR, UNDEF_LOCATION));
     push (Rust::Token::make (LEFT_ANGLE, UNDEF_LOCATION));
     visit_items_joined_by_separator (for_lifetimes, COMMA);
@@ -355,7 +355,7 @@ TokenCollector::visit (FunctionQualifiers &qualifiers)
   // Syntax:
   //    `const`? `async`? `unsafe`? (`extern` Abi?)?
   //    unsafe? (extern Abi?)?
-  internal_comment (std::string ("FunctionQualifiers"), [this, &qualifiers] () {
+  describe_node (std::string ("FunctionQualifiers"), [this, &qualifiers] () {
     if (qualifiers.is_async ())
       push (Rust::Token::make (ASYNC, qualifiers.get_locus ()));
     if (qualifiers.is_const ())
@@ -380,7 +380,7 @@ TokenCollector::visit (MaybeNamedParam &param)
   // Syntax:
   //     OuterAttribute* ( ( IDENTIFIER | _ ) : )? Type
 
-  internal_comment (std::string ("MaybeNamedParam"), [this, &param] () {
+  describe_node (std::string ("MaybeNamedParam"), [this, &param] () {
     for (auto attr : param.get_outer_attrs ())
       {
 	visit (attr);
@@ -459,7 +459,7 @@ TokenCollector::visit (Token &tok)
 void
 TokenCollector::visit (DelimTokenTree &delim_tok_tree)
 {
-  internal_comment (std::string ("DelimTokenTree"), [this, &delim_tok_tree] () {
+  describe_node (std::string ("DelimTokenTree"), [this, &delim_tok_tree] () {
     for (auto &token : delim_tok_tree.to_token_stream ())
       {
 	visit (token);
@@ -470,19 +470,19 @@ TokenCollector::visit (DelimTokenTree &delim_tok_tree)
 void
 TokenCollector::visit (AttrInputMetaItemContainer &container)
 {
-  internal_comment (std::string ("AttrInputMetaItemContainer"),
-		    [this, &container] () {
-		      for (auto &item : container.get_items ())
-			{
-			  visit (item);
-			}
-		    });
+  describe_node (std::string ("AttrInputMetaItemContainer"),
+		 [this, &container] () {
+		   for (auto &item : container.get_items ())
+		     {
+		       visit (item);
+		     }
+		 });
 }
 
 void
 TokenCollector::visit (IdentifierExpr &ident_expr)
 {
-  internal_comment (std::string ("IdentifierExpr"), [this, &ident_expr] () {
+  describe_node (std::string ("IdentifierExpr"), [this, &ident_expr] () {
     auto ident = ident_expr.get_ident ().as_string ();
     push (Rust::Token::make_identifier (ident_expr.get_locus (),
 					std::move (ident)));
@@ -498,7 +498,7 @@ TokenCollector::visit (Lifetime &lifetime)
   // 	| 'static
   // 	| '_
 
-  internal_comment (std::string ("Lifetime"), [this, &lifetime] () {
+  describe_node (std::string ("Lifetime"), [this, &lifetime] () {
     auto name = lifetime.get_lifetime_name ();
     switch (lifetime.get_lifetime_type ())
       {
@@ -527,7 +527,7 @@ TokenCollector::visit (LifetimeParam &lifetime_param)
   //   ( Lifetime + )* Lifetime?
 
   // TODO what to do with outer attr? They are not mentioned in the reference.
-  internal_comment (std::string ("LifetimeParam"), [this, &lifetime_param] () {
+  describe_node (std::string ("LifetimeParam"), [this, &lifetime_param] () {
     visit_items_as_lines (lifetime_param.get_outer_attrs ());
     auto lifetime = lifetime_param.get_lifetime ();
     visit (lifetime);
@@ -548,7 +548,7 @@ TokenCollector::visit (ConstGenericParam &param)
 {
   // Syntax:
   // const IDENTIFIER : Type ( = Block | IDENTIFIER | -?LITERAL )?
-  internal_comment (std::string ("ConstGenericParam"), [this, &param] () {
+  describe_node (std::string ("ConstGenericParam"), [this, &param] () {
     visit_items_as_lines (param.get_outer_attrs ());
     push (Rust::Token::make (CONST, param.get_locus ()));
     auto id = param.get_name ().as_string ();
@@ -567,7 +567,7 @@ TokenCollector::visit (ConstGenericParam &param)
 void
 TokenCollector::visit (PathExprSegment &segment)
 {
-  internal_comment (std::string ("PathExprSegment"), [this, &segment] () {
+  describe_node (std::string ("PathExprSegment"), [this, &segment] () {
     visit (segment.get_ident_segment ());
     if (segment.has_generic_args ())
       {
@@ -604,7 +604,7 @@ TokenCollector::visit (PathExprSegment &segment)
 void
 TokenCollector::visit (PathInExpression &path)
 {
-  internal_comment (std::string ("PathInExpression"), [this, &path] () {
+  describe_node (std::string ("PathInExpression"), [this, &path] () {
     if (path.is_lang_item ())
       {
 	push (Rust::Token::make (TokenId::HASH, path.get_locus ()));
@@ -630,7 +630,7 @@ TokenCollector::visit (TypePathSegment &segment)
 {
   // Syntax:
   //    PathIdentSegment
-  internal_comment (std::string ("TypePathSegment"), [this, &segment] () {
+  describe_node (std::string ("TypePathSegment"), [this, &segment] () {
     auto locus = segment.is_lang_item ()
 		   ? segment.get_locus ()
 		   : segment.get_ident_segment ().get_locus ();
@@ -649,8 +649,7 @@ TokenCollector::visit (TypePathSegmentGeneric &segment)
   // GenericArgs :
   //    `<` `>`
   //    | `<` ( GenericArg `,` )* GenericArg `,`? `>`
-  internal_comment (std::string ("TypePathSegmentGeneric"), [this,
-							     &segment] () {
+  describe_node (std::string ("TypePathSegmentGeneric"), [this, &segment] () {
     auto ident_segment = segment.get_ident_segment ();
     auto id = ident_segment.as_string ();
     push (Rust::Token::make_identifier (ident_segment.get_locus (),
@@ -690,7 +689,7 @@ TokenCollector::visit (GenericArgsBinding &binding)
 {
   // Syntax:
   //    IDENTIFIER `=` Type
-  internal_comment (std::string ("GenericArgsBinding"), [this, &binding] () {
+  describe_node (std::string ("GenericArgsBinding"), [this, &binding] () {
     auto identifier = binding.get_identifier ().as_string ();
     push (Rust::Token::make_identifier (binding.get_locus (),
 					std::move (identifier)));
@@ -705,7 +704,7 @@ TokenCollector::visit (GenericArg &arg)
 {
   // `GenericArg` implements `accept_vis` but it is not useful for this case
   // as it ignores unresolved cases (`Kind::Either`).
-  internal_comment (std::string ("GenericArg"), [this, &arg] () {
+  describe_node (std::string ("GenericArg"), [this, &arg] () {
     switch (arg.get_kind ())
       {
       case GenericArg::Kind::Const:
@@ -730,8 +729,7 @@ TokenCollector::visit (TypePathSegmentFunction &segment)
 {
   // Syntax:
   //   PathIdentSegment `::`? (TypePathFn)?
-  internal_comment (std::string ("TypePathSegmentFunction"), [this,
-							      &segment] () {
+  describe_node (std::string ("TypePathSegmentFunction"), [this, &segment] () {
     auto ident_segment = segment.get_ident_segment ();
     auto id = ident_segment.as_string ();
     push (Rust::Token::make_identifier (ident_segment.get_locus (),
@@ -752,7 +750,7 @@ TokenCollector::visit (TypePathFunction &type_path_fn)
   //   `(` TypePathFnInputs? `)` (`->` Type)?
   // TypePathFnInputs :
   //   Type (`,` Type)* `,`?
-  internal_comment (std::string ("TypePathFunction"), [this, &type_path_fn] () {
+  describe_node (std::string ("TypePathFunction"), [this, &type_path_fn] () {
     push (Rust::Token::make (LEFT_PAREN, type_path_fn.get_locus ()));
     if (type_path_fn.has_inputs ())
       visit_items_joined_by_separator (type_path_fn.get_params (), COMMA);
@@ -771,7 +769,7 @@ TokenCollector::visit (TypePath &path)
 {
   // Syntax:
   //    `::`? TypePathSegment (`::` TypePathSegment)*
-  internal_comment (std::string ("TypePath"), [this, &path] () {
+  describe_node (std::string ("TypePath"), [this, &path] () {
     if (path.has_opening_scope_resolution_op ())
       push (Rust::Token::make (SCOPE_RESOLUTION, path.get_locus ()));
 
@@ -782,7 +780,7 @@ TokenCollector::visit (TypePath &path)
 void
 TokenCollector::visit (PathIdentSegment &segment)
 {
-  internal_comment (std::string ("PathIdentSegment"), [this, &segment] () {
+  describe_node (std::string ("PathIdentSegment"), [this, &segment] () {
     if (segment.is_super_path_seg ())
       {
 	push (Rust::Token::make (SUPER, segment.get_locus ()));
@@ -811,8 +809,7 @@ TokenCollector::visit (PathIdentSegment &segment)
 void
 TokenCollector::visit (QualifiedPathInExpression &path)
 {
-  internal_comment (std::string ("QualifiedPathInExpression"), [this,
-								&path] () {
+  describe_node (std::string ("QualifiedPathInExpression"), [this, &path] () {
     visit (path.get_qualified_path_type ());
     for (auto &segment : path.get_segments ())
       {
@@ -825,7 +822,7 @@ TokenCollector::visit (QualifiedPathInExpression &path)
 void
 TokenCollector::visit (QualifiedPathType &path)
 {
-  internal_comment (std::string ("QualifiedPathType"), [this, &path] () {
+  describe_node (std::string ("QualifiedPathType"), [this, &path] () {
     push (Rust::Token::make (LEFT_ANGLE, path.get_locus ()));
     visit (path.get_type ());
     if (path.has_as_clause ())
@@ -840,7 +837,7 @@ TokenCollector::visit (QualifiedPathType &path)
 void
 TokenCollector::visit (QualifiedPathInType &path)
 {
-  internal_comment (std::string ("QualifiedPathInType"), [this, &path] () {
+  describe_node (std::string ("QualifiedPathInType"), [this, &path] () {
     visit (path.get_qualified_path_type ());
 
     push (Rust::Token::make (SCOPE_RESOLUTION, UNDEF_LOCATION));
@@ -904,7 +901,7 @@ TokenCollector::visit (Literal &lit, location_t locus)
 void
 TokenCollector::visit (LiteralExpr &expr)
 {
-  internal_comment (std::string ("LiteralExpr"), [this, &expr] () {
+  describe_node (std::string ("LiteralExpr"), [this, &expr] () {
     auto lit = expr.get_literal ();
     visit (lit, expr.get_locus ());
   });
@@ -913,7 +910,7 @@ TokenCollector::visit (LiteralExpr &expr)
 void
 TokenCollector::visit (AttrInputLiteral &literal)
 {
-  internal_comment (std::string ("AttrInputLiteral"), [this, &literal] () {
+  describe_node (std::string ("AttrInputLiteral"), [this, &literal] () {
     push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
     visit (literal.get_literal ());
   });
@@ -922,7 +919,7 @@ TokenCollector::visit (AttrInputLiteral &literal)
 void
 TokenCollector::visit (AttrInputMacro &macro)
 {
-  internal_comment (std::string ("AttrInputMacro"), [this, &macro] () {
+  describe_node (std::string ("AttrInputMacro"), [this, &macro] () {
     push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
     visit (macro.get_macro ());
   });
@@ -931,7 +928,7 @@ TokenCollector::visit (AttrInputMacro &macro)
 void
 TokenCollector::visit (MetaItemLitExpr &item)
 {
-  internal_comment (std::string ("MetaItemLitExpr"), [this, &item] () {
+  describe_node (std::string ("MetaItemLitExpr"), [this, &item] () {
     auto lit = item.get_literal ();
     visit (lit);
   });
@@ -940,7 +937,7 @@ TokenCollector::visit (MetaItemLitExpr &item)
 void
 TokenCollector::visit (MetaItemPathExpr &item)
 {
-  internal_comment (std::string ("MetaItemPathLit"), [this, &item] () {
+  describe_node (std::string ("MetaItemPathLit"), [this, &item] () {
     auto &path = item.get_path ();
     auto &expr = item.get_expr ();
     visit (path);
@@ -952,7 +949,7 @@ TokenCollector::visit (MetaItemPathExpr &item)
 void
 TokenCollector::visit (BorrowExpr &expr)
 {
-  internal_comment (std::string ("BorrowExpr"), [this, &expr] () {
+  describe_node (std::string ("BorrowExpr"), [this, &expr] () {
     push (Rust::Token::make (AMP, expr.get_locus ()));
     if (expr.get_is_double_borrow ())
       push (Rust::Token::make (AMP, UNDEF_LOCATION));
@@ -995,7 +992,7 @@ TokenCollector::visit (BorrowExpr &expr)
 void
 TokenCollector::visit (DereferenceExpr &expr)
 {
-  internal_comment (std::string ("DereferenceExpr"), [this, &expr] () {
+  describe_node (std::string ("DereferenceExpr"), [this, &expr] () {
     push (Rust::Token::make (ASTERISK, expr.get_locus ()));
     visit (expr.get_dereferenced_expr ());
   });
@@ -1004,7 +1001,7 @@ TokenCollector::visit (DereferenceExpr &expr)
 void
 TokenCollector::visit (ErrorPropagationExpr &expr)
 {
-  internal_comment (std::string ("ErrorPropagationExpr"), [this, &expr] () {
+  describe_node (std::string ("ErrorPropagationExpr"), [this, &expr] () {
     visit (expr.get_propagating_expr ());
     push (Rust::Token::make (QUESTION_MARK, expr.get_locus ()));
   });
@@ -1013,7 +1010,7 @@ TokenCollector::visit (ErrorPropagationExpr &expr)
 void
 TokenCollector::visit (NegationExpr &expr)
 {
-  internal_comment (std::string ("NegationExpr"), [this, &expr] () {
+  describe_node (std::string ("NegationExpr"), [this, &expr] () {
     switch (expr.get_expr_type ())
       {
       case NegationOperator::NEGATE:
@@ -1030,7 +1027,7 @@ TokenCollector::visit (NegationExpr &expr)
 void
 TokenCollector::visit (ArithmeticOrLogicalExpr &expr)
 {
-  internal_comment (std::string ("ArithmeticOrLogicalExpr"), [this, &expr] () {
+  describe_node (std::string ("ArithmeticOrLogicalExpr"), [this, &expr] () {
     visit (expr.get_left_expr ());
     switch (expr.get_expr_type ())
       {
@@ -1082,7 +1079,7 @@ TokenCollector::visit (ArithmeticOrLogicalExpr &expr)
 void
 TokenCollector::visit (ComparisonExpr &expr)
 {
-  internal_comment (std::string ("ComparisonExpr"), [this, &expr] () {
+  describe_node (std::string ("ComparisonExpr"), [this, &expr] () {
     visit (expr.get_left_expr ());
 
     switch (expr.get_expr_type ())
@@ -1114,7 +1111,7 @@ TokenCollector::visit (ComparisonExpr &expr)
 void
 TokenCollector::visit (LazyBooleanExpr &expr)
 {
-  internal_comment (std::string ("LazyBooleanExpr"), [this, &expr] () {
+  describe_node (std::string ("LazyBooleanExpr"), [this, &expr] () {
     visit (expr.get_left_expr ());
 
     switch (expr.get_expr_type ())
@@ -1134,7 +1131,7 @@ TokenCollector::visit (LazyBooleanExpr &expr)
 void
 TokenCollector::visit (TypeCastExpr &expr)
 {
-  internal_comment (std::string ("TypeCastExpr"), [this, &expr] () {
+  describe_node (std::string ("TypeCastExpr"), [this, &expr] () {
     visit (expr.get_casted_expr ());
     push (Rust::Token::make (AS, expr.get_locus ()));
     visit (expr.get_type_to_cast_to ());
@@ -1144,7 +1141,7 @@ TokenCollector::visit (TypeCastExpr &expr)
 void
 TokenCollector::visit (AssignmentExpr &expr)
 {
-  internal_comment (std::string ("AssignementExpr"), [this, &expr] () {
+  describe_node (std::string ("AssignementExpr"), [this, &expr] () {
     expr.visit_lhs (*this);
     push (Rust::Token::make (EQUAL, expr.get_locus ()));
     expr.visit_rhs (*this);
@@ -1154,7 +1151,7 @@ TokenCollector::visit (AssignmentExpr &expr)
 void
 TokenCollector::visit (CompoundAssignmentExpr &expr)
 {
-  internal_comment (std::string ("CompoundAssignmentExpr"), [this, &expr] () {
+  describe_node (std::string ("CompoundAssignmentExpr"), [this, &expr] () {
     visit (expr.get_left_expr ());
 
     switch (expr.get_expr_type ())
@@ -1197,7 +1194,7 @@ TokenCollector::visit (CompoundAssignmentExpr &expr)
 void
 TokenCollector::visit (GroupedExpr &expr)
 {
-  internal_comment (std::string ("GroupedExpr"), [this, &expr] () {
+  describe_node (std::string ("GroupedExpr"), [this, &expr] () {
     push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
     visit (expr.get_expr_in_parens ());
     push (Rust::Token::make (RIGHT_PAREN, expr.get_locus ()));
@@ -1207,7 +1204,7 @@ TokenCollector::visit (GroupedExpr &expr)
 void
 TokenCollector::visit (ArrayElemsValues &elems)
 {
-  internal_comment (std::string ("ArraysElemValues"), [this, &elems] () {
+  describe_node (std::string ("ArraysElemValues"), [this, &elems] () {
     visit_items_joined_by_separator (elems.get_values (), COMMA);
   });
 }
@@ -1215,7 +1212,7 @@ TokenCollector::visit (ArrayElemsValues &elems)
 void
 TokenCollector::visit (ArrayElemsCopied &elems)
 {
-  internal_comment (std::string ("ArrayElemsCopied"), [this, &elems] () {
+  describe_node (std::string ("ArrayElemsCopied"), [this, &elems] () {
     visit (elems.get_elem_to_copy ());
     push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
     visit (elems.get_num_copies ());
@@ -1225,7 +1222,7 @@ TokenCollector::visit (ArrayElemsCopied &elems)
 void
 TokenCollector::visit (ArrayExpr &expr)
 {
-  internal_comment (std::string ("ArrayExpr"), [this, &expr] () {
+  describe_node (std::string ("ArrayExpr"), [this, &expr] () {
     push (Rust::Token::make (LEFT_SQUARE, expr.get_locus ()));
     visit (expr.get_array_elems ());
     push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
@@ -1235,7 +1232,7 @@ TokenCollector::visit (ArrayExpr &expr)
 void
 TokenCollector::visit (ArrayIndexExpr &expr)
 {
-  internal_comment (std::string ("ArrayIndexExpr"), [this, &expr] () {
+  describe_node (std::string ("ArrayIndexExpr"), [this, &expr] () {
     visit (expr.get_array_expr ());
     push (Rust::Token::make (LEFT_SQUARE, expr.get_locus ()));
     visit (expr.get_index_expr ());
@@ -1246,7 +1243,7 @@ TokenCollector::visit (ArrayIndexExpr &expr)
 void
 TokenCollector::visit (TupleExpr &expr)
 {
-  internal_comment (std::string ("TupleExpr"), [this, &expr] () {
+  describe_node (std::string ("TupleExpr"), [this, &expr] () {
     visit_items_as_lines (expr.get_outer_attrs ());
     push (Rust::Token::make (LEFT_PAREN, expr.get_locus ()));
     visit_items_joined_by_separator (expr.get_tuple_elems (), COMMA);
@@ -1257,7 +1254,7 @@ TokenCollector::visit (TupleExpr &expr)
 void
 TokenCollector::visit (TupleIndexExpr &expr)
 {
-  internal_comment (std::string ("TupleIndexExpr"), [this, &expr] () {
+  describe_node (std::string ("TupleIndexExpr"), [this, &expr] () {
     visit (expr.get_tuple_expr ());
     push (Rust::Token::make (DOT, expr.get_locus ()));
     push (Rust::Token::make_int (UNDEF_LOCATION,
@@ -1268,15 +1265,14 @@ TokenCollector::visit (TupleIndexExpr &expr)
 void
 TokenCollector::visit (StructExprStruct &expr)
 {
-  internal_comment (std::string ("StructExprStruct"),
-		    [this, &expr] () { visit (expr.get_struct_name ()); });
+  describe_node (std::string ("StructExprStruct"),
+		 [this, &expr] () { visit (expr.get_struct_name ()); });
 }
 
 void
 TokenCollector::visit (StructExprFieldIdentifier &expr)
 {
-  internal_comment (std::string ("StructExprFieldIdentifier"), [this,
-								&expr] () {
+  describe_node (std::string ("StructExprFieldIdentifier"), [this, &expr] () {
     visit_items_as_lines (expr.get_outer_attrs ());
     auto id = expr.get_field_name ().as_string ();
     push (Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
@@ -1286,8 +1282,8 @@ TokenCollector::visit (StructExprFieldIdentifier &expr)
 void
 TokenCollector::visit (StructExprFieldIdentifierValue &expr)
 {
-  internal_comment (std::string ("StructExprFieldIdentifierValue"), [this,
-								     &expr] () {
+  describe_node (std::string ("StructExprFieldIdentifierValue"), [this,
+								  &expr] () {
     visit_items_as_lines (expr.get_outer_attrs ());
     auto id = expr.get_field_name ();
     push (Rust::Token::make_identifier (expr.get_locus (), std::move (id)));
@@ -1299,8 +1295,7 @@ TokenCollector::visit (StructExprFieldIdentifierValue &expr)
 void
 TokenCollector::visit (StructExprFieldIndexValue &expr)
 {
-  internal_comment (std::string ("StructExprFieldIndexValue"), [this,
-								&expr] () {
+  describe_node (std::string ("StructExprFieldIndexValue"), [this, &expr] () {
     visit_items_as_lines (expr.get_outer_attrs ());
     push (Rust::Token::make_int (expr.get_locus (),
 				 std::to_string (expr.get_index ())));
@@ -1312,7 +1307,7 @@ TokenCollector::visit (StructExprFieldIndexValue &expr)
 void
 TokenCollector::visit (StructBase &base)
 {
-  internal_comment (std::string ("StructBase"), [this, &base] () {
+  describe_node (std::string ("StructBase"), [this, &base] () {
     push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
     visit (base.get_base_struct ());
   });
@@ -1321,7 +1316,7 @@ TokenCollector::visit (StructBase &base)
 void
 TokenCollector::visit (StructExprStructFields &expr)
 {
-  internal_comment (std::string ("StructExprStructFields"), [this, &expr] () {
+  describe_node (std::string ("StructExprStructFields"), [this, &expr] () {
     visit (expr.get_struct_name ());
     push (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
     visit_items_joined_by_separator (expr.get_fields (), COMMA);
@@ -1348,7 +1343,7 @@ TokenCollector::visit (StructExprStructBase &)
 void
 TokenCollector::visit (CallExpr &expr)
 {
-  internal_comment (std::string ("CallExpr"), [this, &expr] () {
+  describe_node (std::string ("CallExpr"), [this, &expr] () {
     visit (expr.get_function_expr ());
 
     push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
@@ -1362,7 +1357,7 @@ TokenCollector::visit (CallExpr &expr)
 void
 TokenCollector::visit (MethodCallExpr &expr)
 {
-  internal_comment (std::string ("MethodCallExpr"), [this, &expr] () {
+  describe_node (std::string ("MethodCallExpr"), [this, &expr] () {
     visit (expr.get_receiver_expr ());
     push (Rust::Token::make (DOT, expr.get_locus ()));
     visit (expr.get_method_name ());
@@ -1376,7 +1371,7 @@ TokenCollector::visit (MethodCallExpr &expr)
 void
 TokenCollector::visit (FieldAccessExpr &expr)
 {
-  internal_comment (std::string ("FieldAccessExpr"), [this, &expr] () {
+  describe_node (std::string ("FieldAccessExpr"), [this, &expr] () {
     visit (expr.get_receiver_expr ());
     push (Rust::Token::make (DOT, expr.get_locus ()));
     auto field_name = expr.get_field_name ().as_string ();
@@ -1388,7 +1383,7 @@ TokenCollector::visit (FieldAccessExpr &expr)
 void
 TokenCollector::visit (ClosureParam &param)
 {
-  internal_comment (std::string ("ClosureParam"), [this, &param] () {
+  describe_node (std::string ("ClosureParam"), [this, &param] () {
     visit_items_as_lines (param.get_outer_attrs ());
     visit (param.get_pattern ());
     if (param.has_type_given ())
@@ -1402,7 +1397,7 @@ TokenCollector::visit (ClosureParam &param)
 void
 TokenCollector::visit_closure_common (ClosureExpr &expr)
 {
-  internal_comment (std::string ("ClosureExpr"), [this, &expr] () {
+  describe_node (std::string ("ClosureExpr"), [this, &expr] () {
     if (expr.get_has_move ())
       {
 	push (Rust::Token::make (MOVE, expr.get_locus ()));
@@ -1416,7 +1411,7 @@ TokenCollector::visit_closure_common (ClosureExpr &expr)
 void
 TokenCollector::visit (ClosureExprInner &expr)
 {
-  internal_comment (std::string ("ClosureExprInner"), [this, &expr] () {
+  describe_node (std::string ("ClosureExprInner"), [this, &expr] () {
     visit_closure_common (expr);
     visit (expr.get_definition_expr ());
   });
@@ -1425,7 +1420,7 @@ TokenCollector::visit (ClosureExprInner &expr)
 void
 TokenCollector::visit (BlockExpr &expr)
 {
-  internal_comment (std::string ("BlockExpr"), [this, &expr] () {
+  describe_node (std::string ("BlockExpr"), [this, &expr] () {
     visit_items_as_lines (expr.get_outer_attrs ());
     push (Rust::Token::make (LEFT_CURLY, expr.get_locus ()));
     newline ();
@@ -1473,7 +1468,7 @@ TokenCollector::visit (ConstBlock &expr)
 void
 TokenCollector::visit (ClosureExprInnerTyped &expr)
 {
-  internal_comment (std::string ("ClosureExprInnerTyped"), [this, &expr] () {
+  describe_node (std::string ("ClosureExprInnerTyped"), [this, &expr] () {
     visit_closure_common (expr);
     push (Rust::Token::make (RETURN_TYPE, expr.get_locus ()));
     visit (expr.get_return_type ());
@@ -1485,7 +1480,7 @@ TokenCollector::visit (ClosureExprInnerTyped &expr)
 void
 TokenCollector::visit (ContinueExpr &expr)
 {
-  internal_comment (std::string ("ContinueExpr"), [this, &expr] () {
+  describe_node (std::string ("ContinueExpr"), [this, &expr] () {
     push (Rust::Token::make (CONTINUE, expr.get_locus ()));
     if (expr.has_label ())
       visit (expr.get_label_unchecked ());
@@ -1495,7 +1490,7 @@ TokenCollector::visit (ContinueExpr &expr)
 void
 TokenCollector::visit (BreakExpr &expr)
 {
-  internal_comment (std::string ("BreakExpr"), [this, &expr] () {
+  describe_node (std::string ("BreakExpr"), [this, &expr] () {
     push (Rust::Token::make (BREAK, expr.get_locus ()));
     if (expr.has_label ())
       visit (expr.get_label_unchecked ());
@@ -1507,7 +1502,7 @@ TokenCollector::visit (BreakExpr &expr)
 void
 TokenCollector::visit (RangeFromToExpr &expr)
 {
-  internal_comment (std::string ("RangeFromToExpr"), [this, &expr] () {
+  describe_node (std::string ("RangeFromToExpr"), [this, &expr] () {
     visit (expr.get_from_expr ());
     push (Rust::Token::make (DOT_DOT, expr.get_locus ()));
     visit (expr.get_to_expr ());
@@ -1517,7 +1512,7 @@ TokenCollector::visit (RangeFromToExpr &expr)
 void
 TokenCollector::visit (RangeFromExpr &expr)
 {
-  internal_comment (std::string ("RangeFromExpr"), [this, &expr] () {
+  describe_node (std::string ("RangeFromExpr"), [this, &expr] () {
     visit (expr.get_from_expr ());
     push (Rust::Token::make (DOT_DOT, expr.get_locus ()));
   });
@@ -1526,7 +1521,7 @@ TokenCollector::visit (RangeFromExpr &expr)
 void
 TokenCollector::visit (RangeToExpr &expr)
 {
-  internal_comment (std::string ("RangeToExpr"), [this, &expr] () {
+  describe_node (std::string ("RangeToExpr"), [this, &expr] () {
     push (Rust::Token::make (DOT_DOT, expr.get_locus ()));
     visit (expr.get_to_expr ());
   });
@@ -1535,7 +1530,7 @@ TokenCollector::visit (RangeToExpr &expr)
 void
 TokenCollector::visit (RangeFullExpr &expr)
 {
-  internal_comment (std::string ("RangeFullExpr"), [this, &expr] () {
+  describe_node (std::string ("RangeFullExpr"), [this, &expr] () {
     push (Rust::Token::make (DOT_DOT, expr.get_locus ()));
   });
 }
@@ -1543,7 +1538,7 @@ TokenCollector::visit (RangeFullExpr &expr)
 void
 TokenCollector::visit (RangeFromToInclExpr &expr)
 {
-  internal_comment (std::string ("RangeFromToInclExpr"), [this, &expr] () {
+  describe_node (std::string ("RangeFromToInclExpr"), [this, &expr] () {
     visit (expr.get_from_expr ());
     push (Rust::Token::make (DOT_DOT_EQ, expr.get_locus ()));
     visit (expr.get_to_expr ());
@@ -1553,7 +1548,7 @@ TokenCollector::visit (RangeFromToInclExpr &expr)
 void
 TokenCollector::visit (RangeToInclExpr &expr)
 {
-  internal_comment (std::string ("RangeToInclExpr"), [this, &expr] () {
+  describe_node (std::string ("RangeToInclExpr"), [this, &expr] () {
     push (Rust::Token::make (DOT_DOT_EQ, expr.get_locus ()));
     visit (expr.get_to_expr ());
   });
@@ -1562,7 +1557,7 @@ TokenCollector::visit (RangeToInclExpr &expr)
 void
 TokenCollector::visit (BoxExpr &expr)
 {
-  internal_comment (std::string ("BoxExpr"), [this, &expr] () {
+  describe_node (std::string ("BoxExpr"), [this, &expr] () {
     push (Rust::Token::make (BOX, expr.get_locus ()));
     visit (expr.get_boxed_expr ());
   });
@@ -1571,7 +1566,7 @@ TokenCollector::visit (BoxExpr &expr)
 void
 TokenCollector::visit (ReturnExpr &expr)
 {
-  internal_comment (std::string ("ReturnExpr"), [this, &expr] () {
+  describe_node (std::string ("ReturnExpr"), [this, &expr] () {
     push (Rust::Token::make (RETURN_KW, expr.get_locus ()));
     if (expr.has_returned_expr ())
       visit (expr.get_returned_expr ());
@@ -1588,7 +1583,7 @@ TokenCollector::visit (TryExpr &expr)
 void
 TokenCollector::visit (UnsafeBlockExpr &expr)
 {
-  internal_comment (std::string ("UnsafeBlockExpr"), [this, &expr] () {
+  describe_node (std::string ("UnsafeBlockExpr"), [this, &expr] () {
     push (Rust::Token::make (UNSAFE, expr.get_locus ()));
     visit (expr.get_block_expr ());
   });
@@ -1597,7 +1592,7 @@ TokenCollector::visit (UnsafeBlockExpr &expr)
 void
 TokenCollector::visit (LoopLabel &label)
 {
-  internal_comment (std::string ("LoopLabel"), [this, &label] () {
+  describe_node (std::string ("LoopLabel"), [this, &label] () {
     visit (label.get_lifetime ());
     push (Rust::Token::make (COLON, label.get_locus ()));
   });
@@ -1606,7 +1601,7 @@ TokenCollector::visit (LoopLabel &label)
 void
 TokenCollector::visit_loop_common (BaseLoopExpr &expr)
 {
-  internal_comment (std::string ("BaseLoopExpr"), [this, &expr] () {
+  describe_node (std::string ("BaseLoopExpr"), [this, &expr] () {
     if (expr.has_loop_label ())
       visit (expr.get_loop_label ());
   });
@@ -1615,7 +1610,7 @@ TokenCollector::visit_loop_common (BaseLoopExpr &expr)
 void
 TokenCollector::visit (LoopExpr &expr)
 {
-  internal_comment (std::string ("LoopExpr"), [this, &expr] () {
+  describe_node (std::string ("LoopExpr"), [this, &expr] () {
     visit_loop_common (expr);
     push (Rust::Token::make (LOOP, expr.get_locus ()));
     visit (expr.get_loop_block ());
@@ -1625,7 +1620,7 @@ TokenCollector::visit (LoopExpr &expr)
 void
 TokenCollector::visit (WhileLoopExpr &expr)
 {
-  internal_comment (std::string ("WhileLoopExpr"), [this, &expr] () {
+  describe_node (std::string ("WhileLoopExpr"), [this, &expr] () {
     visit_loop_common (expr);
     push (Rust::Token::make (WHILE, expr.get_locus ()));
     visit (expr.get_predicate_expr ());
@@ -1636,7 +1631,7 @@ TokenCollector::visit (WhileLoopExpr &expr)
 void
 TokenCollector::visit (WhileLetLoopExpr &expr)
 {
-  internal_comment (std::string ("WhileLetLoopExpr"), [this, &expr] () {
+  describe_node (std::string ("WhileLetLoopExpr"), [this, &expr] () {
     visit_loop_common (expr);
     push (Rust::Token::make (WHILE, expr.get_locus ()));
     push (Rust::Token::make (LET, UNDEF_LOCATION));
@@ -1654,7 +1649,7 @@ TokenCollector::visit (WhileLetLoopExpr &expr)
 void
 TokenCollector::visit (ForLoopExpr &expr)
 {
-  internal_comment (std::string ("ForLoopExpr"), [this, &expr] () {
+  describe_node (std::string ("ForLoopExpr"), [this, &expr] () {
     visit_loop_common (expr);
     push (Rust::Token::make (FOR, expr.get_locus ()));
     visit (expr.get_pattern ());
@@ -1667,7 +1662,7 @@ TokenCollector::visit (ForLoopExpr &expr)
 void
 TokenCollector::visit (IfExpr &expr)
 {
-  internal_comment (std::string ("IfExpr"), [this, &expr] () {
+  describe_node (std::string ("IfExpr"), [this, &expr] () {
     push (Rust::Token::make (IF, expr.get_locus ()));
 
     visit (expr.get_condition_expr ());
@@ -1678,7 +1673,7 @@ TokenCollector::visit (IfExpr &expr)
 void
 TokenCollector::visit (IfExprConseqElse &expr)
 {
-  internal_comment (std::string ("IfExprConseqElse"), [this, &expr] () {
+  describe_node (std::string ("IfExprConseqElse"), [this, &expr] () {
     visit (static_cast<IfExpr &> (expr));
     indentation ();
     push (Rust::Token::make (ELSE, expr.get_locus ()));
@@ -1689,7 +1684,7 @@ TokenCollector::visit (IfExprConseqElse &expr)
 void
 TokenCollector::visit (IfLetExpr &expr)
 {
-  internal_comment (std::string ("IfLetExpr"), [this, &expr] () {
+  describe_node (std::string ("IfLetExpr"), [this, &expr] () {
     push (Rust::Token::make (IF, expr.get_locus ()));
     push (Rust::Token::make (LET, UNDEF_LOCATION));
     for (auto &pattern : expr.get_patterns ())
@@ -1705,7 +1700,7 @@ TokenCollector::visit (IfLetExpr &expr)
 void
 TokenCollector::visit (IfLetExprConseqElse &expr)
 {
-  internal_comment (std::string ("IfLetExprConseqElse"), [this, &expr] () {
+  describe_node (std::string ("IfLetExprConseqElse"), [this, &expr] () {
     visit (static_cast<IfLetExpr &> (expr));
     indentation ();
     push (Rust::Token::make (ELSE, expr.get_locus ()));
@@ -1716,7 +1711,7 @@ TokenCollector::visit (IfLetExprConseqElse &expr)
 void
 TokenCollector::visit (MatchArm &arm)
 {
-  internal_comment (std::string ("MatchArm"), [this, &arm] () {
+  describe_node (std::string ("MatchArm"), [this, &arm] () {
     visit_items_as_lines (arm.get_outer_attrs ());
     for (auto &pattern : arm.get_patterns ())
       {
@@ -1733,7 +1728,7 @@ TokenCollector::visit (MatchArm &arm)
 void
 TokenCollector::visit (MatchCase &match_case)
 {
-  internal_comment (std::string ("MatchCase"), [this, &match_case] () {
+  describe_node (std::string ("MatchCase"), [this, &match_case] () {
     indentation ();
     visit (match_case.get_arm ());
     push (Rust::Token::make (MATCH_ARROW, UNDEF_LOCATION));
@@ -1747,7 +1742,7 @@ TokenCollector::visit (MatchCase &match_case)
 void
 TokenCollector::visit (MatchExpr &expr)
 {
-  internal_comment (std::string ("MatchExpr"), [this, &expr] () {
+  describe_node (std::string ("MatchExpr"), [this, &expr] () {
     push (Rust::Token::make (MATCH_KW, expr.get_locus ()));
     visit (expr.get_scrutinee_expr ());
     push (Rust::Token::make (LEFT_CURLY, UNDEF_LOCATION));
@@ -1767,7 +1762,7 @@ TokenCollector::visit (MatchExpr &expr)
 void
 TokenCollector::visit (AwaitExpr &expr)
 {
-  internal_comment (std::string ("AwaitExpr"), [this, &expr] () {
+  describe_node (std::string ("AwaitExpr"), [this, &expr] () {
     visit (expr.get_awaited_expr ());
     push (Rust::Token::make (DOT, expr.get_locus ()));
     // TODO: Check status of await keyword (Context dependant ?)
@@ -1779,7 +1774,7 @@ TokenCollector::visit (AwaitExpr &expr)
 void
 TokenCollector::visit (AsyncBlockExpr &expr)
 {
-  internal_comment (std::string ("AsyncBlockExpr"), [this, &expr] () {
+  describe_node (std::string ("AsyncBlockExpr"), [this, &expr] () {
     push (Rust::Token::make (ASYNC, expr.get_locus ()));
     if (expr.get_has_move ())
       push (Rust::Token::make (MOVE, UNDEF_LOCATION));
@@ -1929,7 +1924,7 @@ TokenCollector::visit (TypeParam &param)
   //    IDENTIFIER( : TypeParamBounds? )? ( = Type )?
   // TypeParamBounds :
   //    TypeParamBound ( + TypeParamBound )* +?
-  internal_comment (std::string ("TypeParam"), [this, &param] () {
+  describe_node (std::string ("TypeParam"), [this, &param] () {
     visit_items_as_lines (param.get_outer_attrs ());
     auto id = param.get_type_representation ().as_string ();
     push (Rust::Token::make_identifier (param.get_locus (), std::move (id)));
@@ -1954,7 +1949,7 @@ TokenCollector::visit (WhereClause &rule)
   // WhereClauseItem :
   // 	LifetimeWhereClauseItem
   //  	| TypeBoundWhereClauseItem
-  internal_comment (std::string ("WhereClause"), [this, &rule] () {
+  describe_node (std::string ("WhereClause"), [this, &rule] () {
     push (Rust::Token::make (WHERE, UNDEF_LOCATION));
     newline ();
     increment_indentation ();
@@ -1971,7 +1966,7 @@ TokenCollector::visit (LifetimeWhereClauseItem &item)
   // LifetimeBounds :
   //   ( Lifetime + )* Lifetime?
 
-  internal_comment (std::string ("LifetimeWhereClauseItem"), [this, &item] () {
+  describe_node (std::string ("LifetimeWhereClauseItem"), [this, &item] () {
     visit (item.get_lifetime ());
     push (Rust::Token::make (COLON, UNDEF_LOCATION));
     visit_items_joined_by_separator (item.get_lifetime_bounds (), PLUS);
@@ -1988,7 +1983,7 @@ TokenCollector::visit (TypeBoundWhereClauseItem &item)
   // TypeParamBound :
   //    Lifetime | TraitBound
 
-  internal_comment (std::string ("TypeBoundWhereClauseItem"), [this, &item] () {
+  describe_node (std::string ("TypeBoundWhereClauseItem"), [this, &item] () {
     if (item.has_for_lifetimes ())
       visit (item.get_for_lifetimes ());
 
@@ -2008,7 +2003,7 @@ TokenCollector::visit (Module &module)
   //	  InnerAttribute*
   //	  Item*
   //	}
-  internal_comment (std::string ("Module"), [this, &module] () {
+  describe_node (std::string ("Module"), [this, &module] () {
     visit_items_as_lines (module.get_outer_attrs ());
     visit (module.get_visibility ());
     auto name = module.get_name ().as_string ();
@@ -2040,7 +2035,7 @@ TokenCollector::visit (Module &module)
 void
 TokenCollector::visit (ExternCrate &crate)
 {
-  internal_comment (std::string ("ExternCrate"), [this, &crate] () {
+  describe_node (std::string ("ExternCrate"), [this, &crate] () {
     visit_items_as_lines (crate.get_outer_attrs ());
     push (Rust::Token::make (EXTERN_KW, crate.get_locus ()));
     push (Rust::Token::make (CRATE, UNDEF_LOCATION));
@@ -2061,7 +2056,7 @@ TokenCollector::visit (ExternCrate &crate)
 void
 TokenCollector::visit (UseTreeGlob &use_tree)
 {
-  internal_comment (std::string ("UseTreeGlob"), [this, &use_tree] () {
+  describe_node (std::string ("UseTreeGlob"), [this, &use_tree] () {
     switch (use_tree.get_glob_type ())
       {
       case UseTreeGlob::PathType::PATH_PREFIXED:
@@ -2084,7 +2079,7 @@ TokenCollector::visit (UseTreeGlob &use_tree)
 void
 TokenCollector::visit (UseTreeList &use_tree)
 {
-  internal_comment (std::string ("UseTreeList"), [this, &use_tree] () {
+  describe_node (std::string ("UseTreeList"), [this, &use_tree] () {
     switch (use_tree.get_path_type ())
       {
       case UseTreeList::PathType::PATH_PREFIXED:
@@ -2114,7 +2109,7 @@ TokenCollector::visit (UseTreeList &use_tree)
 void
 TokenCollector::visit (UseTreeRebind &use_tree)
 {
-  internal_comment (std::string ("UseTreeRebind"), [this, &use_tree] () {
+  describe_node (std::string ("UseTreeRebind"), [this, &use_tree] () {
     auto path = use_tree.get_path ();
     visit (path);
     switch (use_tree.get_new_bind_type ())
@@ -2140,7 +2135,7 @@ TokenCollector::visit (UseTreeRebind &use_tree)
 void
 TokenCollector::visit (UseDeclaration &decl)
 {
-  internal_comment (std::string ("UseDeclaration"), [this, &decl] () {
+  describe_node (std::string ("UseDeclaration"), [this, &decl] () {
     visit_items_as_lines (decl.get_outer_attrs ());
     push (Rust::Token::make (USE, decl.get_locus ()));
     visit (*decl.get_tree ());
@@ -2157,7 +2152,7 @@ TokenCollector::visit (Function &function)
   //      ( FunctionParameters? )
   //      FunctionReturnType? WhereClause?
   //      ( BlockExpression | ; )
-  internal_comment (std::string ("Function"), [this, &function] () {
+  describe_node (std::string ("Function"), [this, &function] () {
     visit_items_as_lines (function.get_outer_attrs ());
 
     visit (function.get_visibility ());
@@ -2199,7 +2194,7 @@ TokenCollector::visit (TypeAlias &type_alias)
   // Visibility? type IDENTIFIER GenericParams? WhereClause? = Type;
 
   // Note: Associated types are handled by `AST::TraitItemType`.
-  internal_comment (std::string ("TypeAlias"), [this, &type_alias] () {
+  describe_node (std::string ("TypeAlias"), [this, &type_alias] () {
     visit_items_as_lines (type_alias.get_outer_attrs ());
     if (type_alias.has_visibility ())
       visit (type_alias.get_visibility ());
@@ -2223,7 +2218,7 @@ TokenCollector::visit (TypeAlias &type_alias)
 void
 TokenCollector::visit (StructStruct &struct_item)
 {
-  internal_comment (std::string ("StructStruct"), [this, &struct_item] () {
+  describe_node (std::string ("StructStruct"), [this, &struct_item] () {
     visit_items_as_lines (struct_item.get_outer_attrs ());
     if (struct_item.has_visibility ())
       visit (struct_item.get_visibility ());
@@ -2250,7 +2245,7 @@ TokenCollector::visit (StructStruct &struct_item)
 void
 TokenCollector::visit (TupleStruct &tuple_struct)
 {
-  internal_comment (std::string ("TupleStruct"), [this, &tuple_struct] () {
+  describe_node (std::string ("TupleStruct"), [this, &tuple_struct] () {
     visit_items_as_lines (tuple_struct.get_outer_attrs ());
     auto struct_name = tuple_struct.get_identifier ().as_string ();
     push (Rust::Token::make (STRUCT_KW, tuple_struct.get_locus ()));
@@ -2272,7 +2267,7 @@ TokenCollector::visit (TupleStruct &tuple_struct)
 void
 TokenCollector::visit (EnumItem &item)
 {
-  internal_comment (std::string ("EnumItem"), [this, &item] () {
+  describe_node (std::string ("EnumItem"), [this, &item] () {
     visit_items_as_lines (item.get_outer_attrs ());
     auto id = item.get_identifier ().as_string ();
     push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
@@ -2282,7 +2277,7 @@ TokenCollector::visit (EnumItem &item)
 void
 TokenCollector::visit (EnumItemTuple &item)
 {
-  internal_comment (std::string ("EnumItemTuple"), [this, &item] () {
+  describe_node (std::string ("EnumItemTuple"), [this, &item] () {
     auto id = item.get_identifier ().as_string ();
     push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
     push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
@@ -2294,7 +2289,7 @@ TokenCollector::visit (EnumItemTuple &item)
 void
 TokenCollector::visit (EnumItemStruct &item)
 {
-  internal_comment (std::string ("EnumItemStruct"), [this, &item] () {
+  describe_node (std::string ("EnumItemStruct"), [this, &item] () {
     auto id = item.get_identifier ().as_string ();
     push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
     visit_items_as_block (item.get_struct_fields (),
@@ -2305,7 +2300,7 @@ TokenCollector::visit (EnumItemStruct &item)
 void
 TokenCollector::visit (EnumItemDiscriminant &item)
 {
-  internal_comment (std::string ("EnumItemDiscriminant"), [this, &item] () {
+  describe_node (std::string ("EnumItemDiscriminant"), [this, &item] () {
     auto id = item.get_identifier ().as_string ();
     push (Rust::Token::make_identifier (item.get_locus (), std::move (id)));
     push (Rust::Token::make (EQUAL, UNDEF_LOCATION));
@@ -2316,7 +2311,7 @@ TokenCollector::visit (EnumItemDiscriminant &item)
 void
 TokenCollector::visit (Enum &enumeration)
 {
-  internal_comment (std::string ("Enum"), [this, &enumeration] () {
+  describe_node (std::string ("Enum"), [this, &enumeration] () {
     visit_items_as_lines (enumeration.get_outer_attrs ());
     if (enumeration.has_visibility ())
       visit (enumeration.get_visibility ());
@@ -2337,7 +2332,7 @@ TokenCollector::visit (Enum &enumeration)
 void
 TokenCollector::visit (Union &union_item)
 {
-  internal_comment (std::string ("Union"), [this, &union_item] () {
+  describe_node (std::string ("Union"), [this, &union_item] () {
     visit_items_as_lines (union_item.get_outer_attrs ());
     auto id = union_item.get_identifier ().as_string ();
     push (Rust::Token::make_identifier (union_item.get_locus (),
@@ -2358,7 +2353,7 @@ TokenCollector::visit (Union &union_item)
 void
 TokenCollector::visit (ConstantItem &item)
 {
-  internal_comment (std::string ("ConstantItem"), [this, &item] () {
+  describe_node (std::string ("ConstantItem"), [this, &item] () {
     visit_items_as_lines (item.get_outer_attrs ());
     push (Rust::Token::make (CONST, item.get_locus ()));
     if (item.is_unnamed ())
@@ -2383,7 +2378,7 @@ TokenCollector::visit (ConstantItem &item)
 void
 TokenCollector::visit (StaticItem &item)
 {
-  internal_comment (std::string ("StaticItem"), [this, &item] () {
+  describe_node (std::string ("StaticItem"), [this, &item] () {
     visit_items_as_lines (item.get_outer_attrs ());
     push (Rust::Token::make (STATIC_KW, item.get_locus ()));
     if (item.is_mutable ())
@@ -2429,7 +2424,7 @@ TokenCollector::visit_function_common (std::unique_ptr<Type> &return_type,
 void
 TokenCollector::visit (SelfParam &param)
 {
-  internal_comment (std::string ("SelfParam"), [this, &param] () {
+  describe_node (std::string ("SelfParam"), [this, &param] () {
     if (param.get_has_ref ())
       {
 	push (Rust::Token::make (AMP, UNDEF_LOCATION));
@@ -2453,7 +2448,7 @@ TokenCollector::visit (SelfParam &param)
 void
 TokenCollector::visit (TraitItemType &item)
 {
-  internal_comment (std::string ("TraitItemType"), [this, &item] () {
+  describe_node (std::string ("TraitItemType"), [this, &item] () {
     visit_items_as_lines (item.get_outer_attrs ());
     auto id = item.get_identifier ().as_string ();
     indentation ();
@@ -2468,7 +2463,7 @@ TokenCollector::visit (TraitItemType &item)
 void
 TokenCollector::visit (Trait &trait)
 {
-  internal_comment (std::string ("Trait"), [this, &trait] () {
+  describe_node (std::string ("Trait"), [this, &trait] () {
     for (auto &attr : trait.get_outer_attrs ())
       {
 	visit (attr);
@@ -2491,7 +2486,7 @@ TokenCollector::visit (Trait &trait)
 void
 TokenCollector::visit (InherentImpl &impl)
 {
-  internal_comment (std::string ("InherentImpl"), [this, &impl] () {
+  describe_node (std::string ("InherentImpl"), [this, &impl] () {
     visit_items_as_lines (impl.get_outer_attrs ());
     push (Rust::Token::make (IMPL, impl.get_locus ()));
     visit (impl.get_generic_params ());
@@ -2510,7 +2505,7 @@ TokenCollector::visit (InherentImpl &impl)
 void
 TokenCollector::visit (TraitImpl &impl)
 {
-  internal_comment (std::string ("TraitImpl"), [this, &impl] () {
+  describe_node (std::string ("TraitImpl"), [this, &impl] () {
     visit_items_as_lines (impl.get_outer_attrs ());
     push (Rust::Token::make (IMPL, impl.get_locus ()));
     visit (impl.get_generic_params ());
@@ -2529,7 +2524,7 @@ TokenCollector::visit (TraitImpl &impl)
 void
 TokenCollector::visit (ExternalTypeItem &type)
 {
-  internal_comment (std::string ("ExternalTypeItem"), [this, &type] () {
+  describe_node (std::string ("ExternalTypeItem"), [this, &type] () {
     visit (type.get_visibility ());
 
     auto id = type.get_identifier ().as_string ();
@@ -2543,7 +2538,7 @@ TokenCollector::visit (ExternalTypeItem &type)
 void
 TokenCollector::visit (ExternalStaticItem &item)
 {
-  internal_comment (std::string ("ExternalStaticItem"), [this, &item] () {
+  describe_node (std::string ("ExternalStaticItem"), [this, &item] () {
     auto id = item.get_identifier ().as_string ();
     visit_items_as_lines (item.get_outer_attrs ());
     if (item.has_visibility ())
@@ -2563,7 +2558,7 @@ TokenCollector::visit (ExternalStaticItem &item)
 void
 TokenCollector::visit (ExternBlock &block)
 {
-  internal_comment (std::string ("ExternBlock"), [this, &block] () {
+  describe_node (std::string ("ExternBlock"), [this, &block] () {
     visit_items_as_lines (block.get_outer_attrs ());
     push (Rust::Token::make (EXTERN_KW, block.get_locus ()));
 
@@ -2596,7 +2591,7 @@ get_delimiters (DelimType delim)
 void
 TokenCollector::visit (MacroMatchFragment &match)
 {
-  internal_comment (std::string ("MacroMatchFragment"), [this, &match] () {
+  describe_node (std::string ("MacroMatchFragment"), [this, &match] () {
     auto id = match.get_ident ().as_string ();
     auto frag_spec = match.get_frag_spec ().as_string ();
     push (Rust::Token::make (DOLLAR_SIGN, UNDEF_LOCATION));
@@ -2609,8 +2604,7 @@ TokenCollector::visit (MacroMatchFragment &match)
 void
 TokenCollector::visit (MacroMatchRepetition &repetition)
 {
-  internal_comment (std::string ("MacroMatchRepetition"), [this,
-							   &repetition] () {
+  describe_node (std::string ("MacroMatchRepetition"), [this, &repetition] () {
     push (Rust::Token::make (DOLLAR_SIGN, UNDEF_LOCATION));
     push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
 
@@ -2646,7 +2640,7 @@ TokenCollector::visit (MacroMatchRepetition &repetition)
 void
 TokenCollector::visit (MacroMatcher &matcher)
 {
-  internal_comment (std::string ("MacroMatcher"), [this, &matcher] () {
+  describe_node (std::string ("MacroMatcher"), [this, &matcher] () {
     auto delimiters = get_delimiters (matcher.get_delim_type ());
 
     push (Rust::Token::make (delimiters.first, UNDEF_LOCATION));
@@ -2663,7 +2657,7 @@ TokenCollector::visit (MacroMatcher &matcher)
 void
 TokenCollector::visit (MacroRule &rule)
 {
-  internal_comment (std::string ("MacroRule"), [this, &rule] () {
+  describe_node (std::string ("MacroRule"), [this, &rule] () {
     visit (rule.get_matcher ());
     push (Rust::Token::make (MATCH_ARROW, rule.get_locus ()));
     visit (rule.get_transcriber ().get_token_tree ());
@@ -2673,8 +2667,7 @@ TokenCollector::visit (MacroRule &rule)
 void
 TokenCollector::visit (MacroRulesDefinition &rules_def)
 {
-  internal_comment (std::string ("MacroRulesDefinition"), [this,
-							   &rules_def] () {
+  describe_node (std::string ("MacroRulesDefinition"), [this, &rules_def] () {
     for (auto &outer_attr : rules_def.get_outer_attrs ())
       visit (outer_attr);
 
@@ -2694,7 +2687,7 @@ TokenCollector::visit (MacroRulesDefinition &rules_def)
 void
 TokenCollector::visit (MacroInvocation &invocation)
 {
-  internal_comment (std::string ("MacroInvocation"), [this, &invocation] () {
+  describe_node (std::string ("MacroInvocation"), [this, &invocation] () {
     auto data = invocation.get_invoc_data ();
     visit (data.get_path ());
     push (Rust::Token::make (EXCLAM, UNDEF_LOCATION));
@@ -2707,7 +2700,7 @@ TokenCollector::visit (MacroInvocation &invocation)
 void
 TokenCollector::visit (MetaItemPath &item)
 {
-  internal_comment (std::string ("MetaItemPath"), [this, &item] () {
+  describe_node (std::string ("MetaItemPath"), [this, &item] () {
     auto path = item.to_path_item ();
     visit (path);
   });
@@ -2716,7 +2709,7 @@ TokenCollector::visit (MetaItemPath &item)
 void
 TokenCollector::visit (MetaItemSeq &item)
 {
-  internal_comment (std::string ("MetaItemSeq"), [this, &item] () {
+  describe_node (std::string ("MetaItemSeq"), [this, &item] () {
     visit (item.get_path ());
     // TODO: Double check this, there is probably a mistake.
     push (Rust::Token::make (LEFT_PAREN, UNDEF_LOCATION));
@@ -2728,7 +2721,7 @@ TokenCollector::visit (MetaItemSeq &item)
 void
 TokenCollector::visit (MetaWord &word)
 {
-  internal_comment (std::string ("MetaWord"), [this, &word] () {
+  describe_node (std::string ("MetaWord"), [this, &word] () {
     auto id = word.get_ident ().as_string ();
 
     push (Rust::Token::make_identifier (word.get_locus (), std::move (id)));
@@ -2738,7 +2731,7 @@ TokenCollector::visit (MetaWord &word)
 void
 TokenCollector::visit (MetaNameValueStr &name)
 {
-  internal_comment (std::string ("MetaNameValueStr"), [this, &name] () {
+  describe_node (std::string ("MetaNameValueStr"), [this, &name] () {
     auto pair = name.get_name_value_pair ();
     auto id = std::get<0> (pair).as_string ();
     auto value = std::get<1> (pair);
@@ -2754,7 +2747,7 @@ TokenCollector::visit (MetaNameValueStr &name)
 void
 TokenCollector::visit (MetaListPaths &list)
 {
-  internal_comment (std::string ("MetaListPath"), [this, &list] () {
+  describe_node (std::string ("MetaListPath"), [this, &list] () {
     auto id = list.get_ident ().as_string ();
 
     push (Rust::Token::make_identifier (list.get_locus (), std::move (id)));
@@ -2769,7 +2762,7 @@ TokenCollector::visit (MetaListPaths &list)
 void
 TokenCollector::visit (MetaListNameValueStr &list)
 {
-  internal_comment (std::string ("MetaListNameValueStr"), [this, &list] () {
+  describe_node (std::string ("MetaListNameValueStr"), [this, &list] () {
     auto id = list.get_ident ().as_string ();
 
     push (Rust::Token::make_identifier (list.get_locus (), std::move (id)));
@@ -2785,7 +2778,7 @@ TokenCollector::visit (MetaListNameValueStr &list)
 void
 TokenCollector::visit (LiteralPattern &pattern)
 {
-  internal_comment (std::string ("LiteralPattern"), [this, &pattern] () {
+  describe_node (std::string ("LiteralPattern"), [this, &pattern] () {
     visit (pattern.get_literal (), pattern.get_locus ());
   });
 }
@@ -2793,7 +2786,7 @@ TokenCollector::visit (LiteralPattern &pattern)
 void
 TokenCollector::visit (IdentifierPattern &pattern)
 {
-  internal_comment (std::string ("IdentifierPattern"), [this, &pattern] () {
+  describe_node (std::string ("IdentifierPattern"), [this, &pattern] () {
     if (pattern.get_is_ref ())
       {
 	push (Rust::Token::make (REF, pattern.get_locus ()));
@@ -2817,7 +2810,7 @@ TokenCollector::visit (IdentifierPattern &pattern)
 void
 TokenCollector::visit (WildcardPattern &pattern)
 {
-  internal_comment (std::string ("WildcardPattern"), [this, &pattern] () {
+  describe_node (std::string ("WildcardPattern"), [this, &pattern] () {
     push (Rust::Token::make (UNDERSCORE, pattern.get_locus ()));
   });
 }
@@ -2825,7 +2818,7 @@ TokenCollector::visit (WildcardPattern &pattern)
 void
 TokenCollector::visit (RestPattern &pattern)
 {
-  internal_comment (std::string ("RestPattern"), [this, &pattern] () {
+  describe_node (std::string ("RestPattern"), [this, &pattern] () {
     push (Rust::Token::make (DOT_DOT, pattern.get_locus ()));
   });
 }
@@ -2835,8 +2828,7 @@ TokenCollector::visit (RestPattern &pattern)
 void
 TokenCollector::visit (RangePatternBoundLiteral &pattern)
 {
-  internal_comment (std::string ("RangePatternBoundLiteral"), [this,
-							       &pattern] () {
+  describe_node (std::string ("RangePatternBoundLiteral"), [this, &pattern] () {
     if (pattern.get_has_minus ())
       {
 	push (Rust::Token::make (MINUS, pattern.get_locus ()));
@@ -2849,23 +2841,23 @@ TokenCollector::visit (RangePatternBoundLiteral &pattern)
 void
 TokenCollector::visit (RangePatternBoundPath &pattern)
 {
-  internal_comment (std::string ("RangePatternBoundPath"),
-		    [this, &pattern] () { visit (pattern.get_path ()); });
+  describe_node (std::string ("RangePatternBoundPath"),
+		 [this, &pattern] () { visit (pattern.get_path ()); });
 }
 
 void
 TokenCollector::visit (RangePatternBoundQualPath &pattern)
 {
-  internal_comment (std::string ("RangePatternBoundQualPath"),
-		    [this, &pattern] () {
-		      visit (pattern.get_qualified_path ());
-		    });
+  describe_node (std::string ("RangePatternBoundQualPath"),
+		 [this, &pattern] () {
+		   visit (pattern.get_qualified_path ());
+		 });
 }
 
 void
 TokenCollector::visit (RangePattern &pattern)
 {
-  internal_comment (std::string ("RangePattern"), [this, &pattern] () {
+  describe_node (std::string ("RangePattern"), [this, &pattern] () {
     if (pattern.get_has_lower_bound () && pattern.get_has_upper_bound ())
       {
 	visit (pattern.get_lower_bound ());
@@ -2892,7 +2884,7 @@ void
 TokenCollector::visit (ReferencePattern &pattern)
 
 {
-  internal_comment (std::string ("ReferencePattern"), [this, &pattern] () {
+  describe_node (std::string ("ReferencePattern"), [this, &pattern] () {
     if (pattern.is_double_reference ())
       {
 	push (Rust::Token::make (LOGICAL_AND, pattern.get_locus ()));
@@ -2916,8 +2908,8 @@ TokenCollector::visit (ReferencePattern &pattern)
 void
 TokenCollector::visit (StructPatternFieldTuplePat &pattern)
 {
-  internal_comment (std::string ("StructPatternFieldTuplePat"), [this,
-								 &pattern] () {
+  describe_node (std::string ("StructPatternFieldTuplePat"), [this,
+							      &pattern] () {
     visit_items_as_lines (pattern.get_outer_attrs ());
     push (Rust::Token::make_int (pattern.get_locus (),
 				 std::to_string (pattern.get_index ())));
@@ -2929,8 +2921,8 @@ TokenCollector::visit (StructPatternFieldTuplePat &pattern)
 void
 TokenCollector::visit (StructPatternFieldIdentPat &pattern)
 {
-  internal_comment (std::string ("StructPatternFieldIdentPat"), [this,
-								 &pattern] () {
+  describe_node (std::string ("StructPatternFieldIdentPat"), [this,
+							      &pattern] () {
     visit_items_as_lines (pattern.get_outer_attrs ());
 
     auto id = pattern.get_identifier ().as_string ();
@@ -2945,8 +2937,7 @@ TokenCollector::visit (StructPatternFieldIdentPat &pattern)
 void
 TokenCollector::visit (StructPatternFieldIdent &pattern)
 {
-  internal_comment (std::string ("StructPatternFieldIdent"), [this,
-							      &pattern] () {
+  describe_node (std::string ("StructPatternFieldIdent"), [this, &pattern] () {
     visit_items_as_lines (pattern.get_outer_attrs ());
     if (pattern.is_ref ())
       push (Rust::Token::make (REF, UNDEF_LOCATION));
@@ -2961,7 +2952,7 @@ TokenCollector::visit (StructPatternFieldIdent &pattern)
 void
 TokenCollector::visit (StructPattern &pattern)
 {
-  internal_comment (std::string ("StructPattern"), [this, &pattern] () {
+  describe_node (std::string ("StructPattern"), [this, &pattern] () {
     visit (pattern.get_path ());
     push (Rust::Token::make (LEFT_CURLY, pattern.get_locus ()));
     auto elems = pattern.get_struct_pattern_elems ();
@@ -2988,16 +2979,15 @@ TokenCollector::visit (StructPattern &pattern)
 void
 TokenCollector::visit (TupleStructItemsNoRest &pattern)
 {
-  internal_comment (std::string ("TupleStructItemsNoRange"),
-		    [this, &pattern] () {
-		      visit_items_joined_by_separator (pattern.get_patterns ());
-		    });
+  describe_node (std::string ("TupleStructItemsNoRange"), [this, &pattern] () {
+    visit_items_joined_by_separator (pattern.get_patterns ());
+  });
 }
 
 void
 TokenCollector::visit (TupleStructItemsHasRest &pattern)
 {
-  internal_comment (std::string ("TupleStructItemsRange"), [this, &pattern] () {
+  describe_node (std::string ("TupleStructItemsRange"), [this, &pattern] () {
     for (auto &lower : pattern.get_lower_patterns ())
       {
 	visit (lower);
@@ -3013,7 +3003,7 @@ TokenCollector::visit (TupleStructItemsHasRest &pattern)
 void
 TokenCollector::visit (TupleStructPattern &pattern)
 {
-  internal_comment (std::string ("TupleStructPattern"), [this, &pattern] () {
+  describe_node (std::string ("TupleStructPattern"), [this, &pattern] () {
     visit (pattern.get_path ());
     push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
     visit (pattern.get_items ());
@@ -3028,8 +3018,8 @@ TokenCollector::visit (TupleStructPattern &pattern)
 void
 TokenCollector::visit (TuplePatternItemsNoRest &pattern)
 {
-  internal_comment (std::string ("TuplePatternItemsMultiple"), [this,
-								&pattern] () {
+  describe_node (std::string ("TuplePatternItemsMultiple"), [this,
+							     &pattern] () {
     visit_items_joined_by_separator (pattern.get_patterns (), COMMA);
   });
 }
@@ -3037,24 +3027,23 @@ TokenCollector::visit (TuplePatternItemsNoRest &pattern)
 void
 TokenCollector::visit (TuplePatternItemsHasRest &pattern)
 {
-  internal_comment (std::string ("TuplePatternItemsRanged"),
-		    [this, &pattern] () {
-		      for (auto &lower : pattern.get_lower_patterns ())
-			{
-			  visit (lower);
-			}
-		      push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
-		      for (auto &upper : pattern.get_lower_patterns ())
-			{
-			  visit (upper);
-			}
-		    });
+  describe_node (std::string ("TuplePatternItemsRanged"), [this, &pattern] () {
+    for (auto &lower : pattern.get_lower_patterns ())
+      {
+	visit (lower);
+      }
+    push (Rust::Token::make (DOT_DOT, UNDEF_LOCATION));
+    for (auto &upper : pattern.get_lower_patterns ())
+      {
+	visit (upper);
+      }
+  });
 }
 
 void
 TokenCollector::visit (TuplePattern &pattern)
 {
-  internal_comment (std::string ("TuplePattern"), [this, &pattern] () {
+  describe_node (std::string ("TuplePattern"), [this, &pattern] () {
     push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
     visit (pattern.get_items ());
     push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
@@ -3064,7 +3053,7 @@ TokenCollector::visit (TuplePattern &pattern)
 void
 TokenCollector::visit (GroupedPattern &pattern)
 {
-  internal_comment (std::string ("GroupedPattern"), [this, &pattern] () {
+  describe_node (std::string ("GroupedPattern"), [this, &pattern] () {
     push (Rust::Token::make (LEFT_PAREN, pattern.get_locus ()));
     visit (pattern.get_pattern_in_parens ());
     push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
@@ -3098,7 +3087,7 @@ TokenCollector::visit (SlicePatternItemsHasRest &items)
 void
 TokenCollector::visit (SlicePattern &pattern)
 {
-  internal_comment (std::string ("SlicePattern"), [this, &pattern] () {
+  describe_node (std::string ("SlicePattern"), [this, &pattern] () {
     push (Rust::Token::make (LEFT_SQUARE, pattern.get_locus ()));
     visit (pattern.get_items ());
     push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
@@ -3108,7 +3097,7 @@ TokenCollector::visit (SlicePattern &pattern)
 void
 TokenCollector::visit (AltPattern &pattern)
 {
-  internal_comment (std::string ("AltPattern"), [this, &pattern] () {
+  describe_node (std::string ("AltPattern"), [this, &pattern] () {
     visit_items_joined_by_separator (pattern.get_alts (), PIPE);
   });
 }
@@ -3121,7 +3110,7 @@ TokenCollector::visit (EmptyStmt &)
 void
 TokenCollector::visit (LetStmt &stmt)
 {
-  internal_comment (std::string ("LetStmt"), [this, &stmt] () {
+  describe_node (std::string ("LetStmt"), [this, &stmt] () {
     push (Rust::Token::make (LET, stmt.get_locus ()));
     auto &pattern = stmt.get_pattern ();
     visit (pattern);
@@ -3157,7 +3146,7 @@ TokenCollector::visit (LetStmt &stmt)
 void
 TokenCollector::visit (ExprStmt &stmt)
 {
-  internal_comment (std::string ("ExprStmt"), [this, &stmt] () {
+  describe_node (std::string ("ExprStmt"), [this, &stmt] () {
     visit (stmt.get_expr ());
 
     if (stmt.is_semicolon_followed ())
@@ -3172,7 +3161,7 @@ TokenCollector::visit (TraitBound &bound)
   // Syntax:
   //      ?? ForLifetimes? TypePath
   //   | ( ?? ForLifetimes? TypePath )
-  internal_comment (std::string ("TraitBound"), [this, &bound] () {
+  describe_node (std::string ("TraitBound"), [this, &bound] () {
     if (bound.has_opening_question_mark ())
       push (Rust::Token::make (QUESTION_MARK, bound.get_locus ()));
 
@@ -3190,7 +3179,7 @@ TokenCollector::visit (ImplTraitType &type)
   //    impl TypeParamBounds
   // TypeParamBounds :
   //    TypeParamBound ( + TypeParamBound )* +?
-  internal_comment (std::string ("ImplTraitType"), [this, &type] () {
+  describe_node (std::string ("ImplTraitType"), [this, &type] () {
     push (Rust::Token::make (IMPL, type.get_locus ()));
     visit_items_joined_by_separator (type.get_type_param_bounds (), PLUS);
   });
@@ -3203,7 +3192,7 @@ TokenCollector::visit (TraitObjectType &type)
   //   dyn? TypeParamBounds
   // TypeParamBounds :
   //   TypeParamBound ( + TypeParamBound )* +?
-  internal_comment (std::string ("TraiObjectType"), [this, &type] () {
+  describe_node (std::string ("TraiObjectType"), [this, &type] () {
     if (type.is_dyn ())
       push (Rust::Token::make (DYN, type.get_locus ()));
     visit_items_joined_by_separator (type.get_type_param_bounds (), PLUS);
@@ -3215,7 +3204,7 @@ TokenCollector::visit (ParenthesisedType &type)
 {
   // Syntax:
   //    ( Type )
-  internal_comment (std::string ("ParenthesisedType"), [this, &type] () {
+  describe_node (std::string ("ParenthesisedType"), [this, &type] () {
     push (Rust::Token::make (LEFT_PAREN, type.get_locus ()));
     visit (type.get_type_in_parens ());
     push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
@@ -3228,7 +3217,7 @@ TokenCollector::visit (ImplTraitTypeOneBound &type)
   // Syntax:
   //    impl TraitBound
 
-  internal_comment (std::string ("ImplTraitTypeOneBound"), [this, &type] () {
+  describe_node (std::string ("ImplTraitTypeOneBound"), [this, &type] () {
     push (Rust::Token::make (IMPL, type.get_locus ()));
     visit (type.get_trait_bound ());
   });
@@ -3239,7 +3228,7 @@ TokenCollector::visit (TraitObjectTypeOneBound &type)
 {
   // Syntax:
   //    dyn? TraitBound
-  internal_comment (std::string ("TraitObjectTypeOneBound"), [this, &type] () {
+  describe_node (std::string ("TraitObjectTypeOneBound"), [this, &type] () {
     if (type.is_dyn ())
       push (Rust::Token::make (DYN, type.get_locus ()));
     visit (type.get_trait_bound ());
@@ -3253,7 +3242,7 @@ TokenCollector::visit (TupleType &type)
   //   ( )
   //   | ( ( Type , )+ Type? )
 
-  internal_comment (std::string ("TupleType"), [this, &type] () {
+  describe_node (std::string ("TupleType"), [this, &type] () {
     push (Rust::Token::make (LEFT_PAREN, type.get_locus ()));
     visit_items_joined_by_separator (type.get_elems (), COMMA);
     push (Rust::Token::make (RIGHT_PAREN, UNDEF_LOCATION));
@@ -3266,7 +3255,7 @@ TokenCollector::visit (NeverType &type)
   // Syntax:
   //  !
 
-  internal_comment (std::string ("NeverType"), [this, &type] () {
+  describe_node (std::string ("NeverType"), [this, &type] () {
     push (Rust::Token::make (EXCLAM, type.get_locus ()));
   });
 }
@@ -3276,7 +3265,7 @@ TokenCollector::visit (RawPointerType &type)
 {
   // Syntax:
   //    * ( mut | const ) TypeNoBounds
-  internal_comment (std::string ("RawPointerType"), [this, &type] () {
+  describe_node (std::string ("RawPointerType"), [this, &type] () {
     push (Rust::Token::make (ASTERISK, type.get_locus ()));
     if (type.get_pointer_type () == RawPointerType::MUT)
       push (Rust::Token::make (MUT, UNDEF_LOCATION));
@@ -3292,7 +3281,7 @@ TokenCollector::visit (ReferenceType &type)
 {
   // Syntax:
   //    & Lifetime? mut? TypeNoBounds
-  internal_comment (std::string ("ReferenceType"), [this, &type] () {
+  describe_node (std::string ("ReferenceType"), [this, &type] () {
     push (Rust::Token::make (AMP, type.get_locus ()));
 
     if (type.has_lifetime ())
@@ -3312,7 +3301,7 @@ TokenCollector::visit (ArrayType &type)
 {
   // Syntax:
   //    [type Type ; Expression ]
-  internal_comment (std::string ("ArrayType"), [this, &type] () {
+  describe_node (std::string ("ArrayType"), [this, &type] () {
     push (Rust::Token::make (LEFT_SQUARE, type.get_locus ()));
     visit (type.get_elem_type ());
     push (Rust::Token::make (SEMICOLON, UNDEF_LOCATION));
@@ -3327,7 +3316,7 @@ TokenCollector::visit (SliceType &type)
   // Syntax:
   //    [type Type ]
 
-  internal_comment (std::string ("SliceType"), [this, &type] () {
+  describe_node (std::string ("SliceType"), [this, &type] () {
     push (Rust::Token::make (LEFT_SQUARE, type.get_locus ()));
     visit (type.get_elem_type ());
     push (Rust::Token::make (RIGHT_SQUARE, UNDEF_LOCATION));
@@ -3339,7 +3328,7 @@ TokenCollector::visit (InferredType &type)
 {
   // Syntax:
   //    _
-  internal_comment (std::string ("InferredType"), [this, &type] () {
+  describe_node (std::string ("InferredType"), [this, &type] () {
     push (Rust::Token::make (UNDERSCORE, type.get_locus ()));
   });
 }
@@ -3364,7 +3353,7 @@ TokenCollector::visit (BareFunctionType &type)
   //
   //    MaybeNamedFunctionParametersVariadic :
   //      ( MaybeNamedParam , )* MaybeNamedParam , OuterAttribute* ...
-  internal_comment (std::string ("BareFunctionType"), [this, &type] () {
+  describe_node (std::string ("BareFunctionType"), [this, &type] () {
     if (type.has_for_lifetimes ())
       visit (type.get_for_lifetimes ());
 

@@ -35,24 +35,29 @@ public:
   {
     Comment,
     InternalComment,
+    NodeDescription,
     Newline,
     Indentation,
     Token,
   };
 
-  enum class Comment
-  {
-    Regular,
-    Internal,
-  };
-
   CollectItem (TokenPtr token) : token (token), kind (Kind::Token) {}
-  CollectItem (std::string comment, Comment type = Comment::Regular)
-    : comment (comment),
-      kind (type == Comment::Internal ? Kind::InternalComment : Kind::Comment)
-  {}
   CollectItem (Kind kind) : kind (kind) { rust_assert (kind != Kind::Token); }
   CollectItem (size_t level) : indent_level (level), kind (Kind::Indentation) {}
+
+  static CollectItem make_internal_comment (const std::string &internal_comment)
+  {
+    return CollectItem (internal_comment, Kind::InternalComment);
+  }
+
+  static CollectItem make_comment (const std::string &comment)
+  {
+    return CollectItem (comment, Kind::Comment);
+  }
+  static CollectItem make_node_description (const std::string &node_description)
+  {
+    return CollectItem (node_description, Kind::NodeDescription);
+  }
 
   Kind get_kind () { return kind; }
 
@@ -80,9 +85,18 @@ public:
     return comment;
   }
 
+  std::string get_node_description ()
+  {
+    rust_assert (kind == Kind::NodeDescription);
+    return comment;
+  }
+
   bool is_debug () { return debug; }
 
 private:
+  CollectItem (std::string comment, Kind kind) : comment (comment), kind (kind)
+  {}
+
   TokenPtr token;
   std::string comment;
   size_t indent_level;
@@ -184,7 +198,8 @@ private:
       }
   }
 
-  void internal_comment (std::string node_name, std::function<void ()> visitor);
+  void describe_node (const std::string &node_name,
+		      std::function<void ()> visitor);
 
   void trailing_comma ();
   void newline ();
@@ -192,8 +207,8 @@ private:
   void increment_indentation ();
   void decrement_indentation ();
   void comment (std::string comment);
-  void begin_internal_comment (std::string internalcomment);
-  void end_internal_comment (std::string internalcomment);
+  void begin_describe_node (const std::string &node_name);
+  void end_describe_node (const std::string &node_name);
   /**
    * Visit common items of functions: Parameters, return type, block
    */
