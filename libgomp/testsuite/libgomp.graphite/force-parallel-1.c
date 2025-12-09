@@ -2,7 +2,7 @@ void abort (void);
 
 int x[10000000];
 
-void parloop (int N)
+void __attribute__((noipa)) parloop (int N)
 {
   int i;
 
