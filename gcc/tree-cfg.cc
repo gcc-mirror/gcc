@@ -10352,7 +10352,7 @@ make_forwarders_with_degenerate_phis (function *fn)
 			       args[start].first->dest->index);
 		    }
 		  basic_block forwarder = split_edge (args[start].first);
-		  profile_count count = profile_count::zero ();
+		  profile_count count = forwarder->count;
 		  bool irr = false;
 		  for (unsigned j = start + 1; j < i; ++j)
 		    {
