@@ -40,7 +40,9 @@ SHLIB_LINK = \
 	  -Wl,-bE:@shlib_map_file@ -o shr.o \
 	  @multilib_flags@ @shlib_objs@ -lc \
 	  `case @multilib_dir@ in \
-	  *pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
+	  *pthread*) \
+	    TARGET_SYSTEM_ROOT=\`$(CC) -print-sysroot\`; \
+	    echo -L$$TARGET_SYSTEM_ROOT/usr/lib/threads -lpthreads -lc_r $$TARGET_SYSTEM_ROOT/usr/lib/libc.a ;; \
 	  *) echo -lc ;; esac` ; \
 	  rm -f tmp-@shlib_base_name@.a ; \
 	  $(AR_CREATE_FOR_TARGET) tmp-@shlib_base_name@.a shr.o ; \
@@ -53,7 +55,9 @@ SHLIB_LINK = \
 	  -Wl,-bE:@shlib_map_file@ -o $$shr.o \
 	  @multilib_flags@ @shlib_objs@ -lc \
 	  `case @multilib_dir@ in \
-	  *pthread*) echo -L$(TARGET_SYSTEM_ROOT)/usr/lib/threads -lpthreads -lc_r $(TARGET_SYSTEM_ROOT)/usr/lib/libc.a ;; \
+	  *pthread*) \
+	    TARGET_SYSTEM_ROOT=\`$(CC) -print-sysroot\`; \
+	    echo -L$$TARGET_SYSTEM_ROOT/usr/lib/threads -lpthreads -lc_r $$TARGET_SYSTEM_ROOT/usr/lib/libc.a ;; \
 	  *) echo -lc ;; esac` ; \
 	  $(STRIP_FOR_TARGET) -X32_64 -e $$shr.o ; \
 	  { echo "\#! $(SHLIB_SONAME)($$shr.o)" ; \
