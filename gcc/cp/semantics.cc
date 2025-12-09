@@ -5537,9 +5537,7 @@ expand_or_defer_fn_1 (tree fn)
      of the compilation.  Until that point, we do not want the back
      end to output them -- but we do want it to see the bodies of
      these functions so that it can inline them as appropriate.  */
-  if (DECL_DECLARED_INLINE_P (fn)
-      || DECL_IMPLICIT_INSTANTIATION (fn)
-      || DECL_FRIEND_PSEUDO_TEMPLATE_INSTANTIATION (fn))
+  if (DECL_DECLARED_INLINE_P (fn) || DECL_IMPLICIT_INSTANTIATION (fn))
     {
       if (DECL_INTERFACE_KNOWN (fn))
 	/* We've already made a decision as to how this function will
