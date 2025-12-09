@@ -3187,7 +3187,7 @@ build_access_with_size_for_counted_by (location_t loc, tree ref,
   tree first_param = is_fam
 		     ? c_fully_fold (array_to_pointer_conversion (loc, ref),
 				     false, NULL)
-		     : ref;
+		     : c_fully_fold (ref, false, NULL);
   tree second_param
     = c_fully_fold (counted_by_ref, false, NULL);
   tree third_param = build_int_cst (c_build_pointer_type (counted_by_type), 0);
