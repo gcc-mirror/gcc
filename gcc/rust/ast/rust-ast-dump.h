@@ -32,8 +32,27 @@ namespace AST {
 class Dump
 {
 public:
+  struct Configuration
+  {
+    enum class InternalComment
+    {
+      Dump,
+      Hide,
+    } dump_internal_comments;
+    enum class NodeDescription
+    {
+      Dump,
+      Hide,
+    } dump_node_description;
+    enum class Comment
+    {
+      Dump,
+      Hide,
+    } dump_comments;
+  };
+
   Dump (std::ostream &stream);
-  Dump (std::ostream &stream, bool print_internal,
+  Dump (std::ostream &stream, Configuration configuration,
 	std::set<std::string> excluded_node);
 
   /**
@@ -62,7 +81,8 @@ public:
 	    }
 	    break;
 	  case AST::CollectItem::Kind::Comment:
-	    stream << " /* " << item.get_comment () << " */ ";
+	    if (configuration.dump_comments == Configuration::Comment::Dump)
+	      stream << " /* " << item.get_comment () << " */ ";
 	    break;
 	  case AST::CollectItem::Kind::Indentation:
 	    for (size_t i = 0; i < item.get_indent_level (); i++)
@@ -74,21 +94,30 @@ public:
 	    stream << "\n";
 	    previous = nullptr;
 	    break;
-	  case AST::CollectItem::Kind::InternalComment:
-	    if (print_internal)
+	  case AST::CollectItem::Kind::BeginNodeDescription:
+	    if (configuration.dump_node_description
+		== Configuration::NodeDescription::Dump)
 	      {
-		bool is_excluded = false;
-		std::string comment = item.get_internal_comment ();
-		for (auto &node : excluded_node)
-		  {
-		    if (comment.find (node) != std::string::npos)
-		      {
-			is_excluded = true;
-			break;
-		      }
-		  }
-		if (!is_excluded)
+		std::string comment = item.get_node_description ();
+		if (excluded_node.find (comment) == excluded_node.end ())
 		  stream << " /* " << comment << " */ ";
+	      }
+	    break;
+	  case AST::CollectItem::Kind::EndNodeDescription:
+	    if (configuration.dump_node_description
+		== Configuration::NodeDescription::Dump)
+	      {
+		std::string comment = item.get_node_description ();
+		if (excluded_node.find (comment) == excluded_node.end ())
+		  stream << " /* !" << comment << " */ ";
+	      }
+	    break;
+	  case AST::CollectItem::Kind::InternalComment:
+	    if (configuration.dump_internal_comments
+		== Configuration::InternalComment::Dump)
+	      {
+		std::string comment = item.get_internal_comment ();
+		stream << " /* " << comment << " */ ";
 	      }
 	    break;
 	  default:
@@ -103,7 +132,7 @@ public:
 private:
   std::ostream &stream;
   Indent indentation;
-  bool print_internal;
+  Configuration configuration;
   std::set<std::string> excluded_node;
 
   static bool require_spacing (TokenPtr previous, TokenPtr current);

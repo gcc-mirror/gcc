@@ -1081,7 +1081,14 @@ Session::dump_ast_pretty_internal (AST::Crate &crate) const
 
   std::set<std::string> str_tmp = options.get_excluded ();
 
-  AST::Dump (out, true, str_tmp).go (crate);
+  AST::Dump (out,
+	     AST::Dump::Configuration{
+	       AST::Dump::Configuration::InternalComment::Dump,
+	       AST::Dump::Configuration::NodeDescription::Dump,
+	       AST::Dump::Configuration::Comment::Dump,
+	     },
+	     str_tmp)
+    .go (crate);
 
   out.close ();
 }

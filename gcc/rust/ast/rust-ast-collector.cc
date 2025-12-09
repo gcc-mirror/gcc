@@ -104,32 +104,14 @@ TokenCollector::comment (std::string comment)
 }
 
 void
-TokenCollector::begin_describe_node (const std::string &node_name)
-{
-  const std::string symbol_begin ("(");
-
-  tokens.emplace_back (
-    CollectItem::make_node_description (node_name + symbol_begin));
-}
-
-void
-TokenCollector::end_describe_node (const std::string &node_name)
-{
-  const std::string symbol_end (")!");
-
-  tokens.push_back (
-    CollectItem::make_node_description (symbol_end + node_name));
-}
-
-void
 TokenCollector::describe_node (const std::string &node_name,
 			       std::function<void ()> visitor)
 {
-  begin_describe_node (node_name);
+  tokens.emplace_back (CollectItem::make_begin_node_description (node_name));
 
   visitor ();
 
-  end_describe_node (node_name);
+  tokens.push_back (CollectItem::make_end_node_description (node_name));
 }
 
 void

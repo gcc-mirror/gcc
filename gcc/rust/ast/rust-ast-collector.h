@@ -35,7 +35,8 @@ public:
   {
     Comment,
     InternalComment,
-    NodeDescription,
+    BeginNodeDescription,
+    EndNodeDescription,
     Newline,
     Indentation,
     Token,
@@ -54,9 +55,17 @@ public:
   {
     return CollectItem (comment, Kind::Comment);
   }
-  static CollectItem make_node_description (const std::string &node_description)
+
+  static CollectItem
+  make_begin_node_description (const std::string &node_description)
   {
-    return CollectItem (node_description, Kind::NodeDescription);
+    return CollectItem (node_description, Kind::BeginNodeDescription);
+  }
+
+  static CollectItem
+  make_end_node_description (const std::string &node_description)
+  {
+    return CollectItem (node_description, Kind::EndNodeDescription);
   }
 
   Kind get_kind () { return kind; }
@@ -87,7 +96,8 @@ public:
 
   std::string get_node_description ()
   {
-    rust_assert (kind == Kind::NodeDescription);
+    rust_assert (kind == Kind::BeginNodeDescription
+		 || kind == Kind::EndNodeDescription);
     return comment;
   }
 
@@ -207,8 +217,6 @@ private:
   void increment_indentation ();
   void decrement_indentation ();
   void comment (std::string comment);
-  void begin_describe_node (const std::string &node_name);
-  void end_describe_node (const std::string &node_name);
   /**
    * Visit common items of functions: Parameters, return type, block
    */
