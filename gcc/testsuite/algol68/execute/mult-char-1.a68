@@ -1,5 +1,8 @@
 # { dg-options "-fstropping=upper" }  #
 BEGIN ASSERT ("a" * 3 = "aaa");
       ASSERT ("" * 1 = "");
-      ASSERT ("x" * 0 = "x")
+      ASSERT ("x" * 0 = "x");
+      ASSERT (3 * "a" = "aaa");
+      ASSERT (1 * "" = "");
+      ASSERT (0 * "x" = "x")
 END

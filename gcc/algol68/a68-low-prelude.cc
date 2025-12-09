@@ -944,7 +944,7 @@ a68_lower_char_mult3 (NODE_T *p, LOW_CTX_T ctx)
 
   if (MOID (n1) == M_INT)
     {
-      gcc_assert (MOID (n2) == M_STRING || MOID (n2) == M_ROW_CHAR);
+      gcc_assert (MOID (n2) == M_CHAR);
       return a68_string_mult (a68_string_from_char (a68_lower_tree (n2, ctx)),
 			      a68_lower_tree (n1, ctx));
     }
