@@ -96,6 +96,8 @@ UrlSuffix(gcc/RISC-V-Options.html#index-minline-strncmp)
 minline-strlen
 UrlSuffix(gcc/RISC-V-Options.html#index-minline-strlen)
 
+; skipping UrlSuffix for 'mmax-vectorization' due to finding no URLs
+
 ; skipping UrlSuffix for 'mtls-dialect=' due to finding no URLs
 
 mfence-tso
