@@ -80,6 +80,7 @@ __rdtimel_w (void)
   return __rdtime;
 }
 
+#ifdef __loongarch_hard_float
 /* Assembly instruction format:	rj, fcsr.  */
 /* Data types in instruction templates:  USI, UQI.  */
 #define __movfcsr2gr(/*ui5*/ _1) __builtin_loongarch_movfcsr2gr ((_1));
@@ -88,14 +89,16 @@ __rdtimel_w (void)
 /* Data types in instruction templates:  VOID, UQI, USI.  */
 #define __movgr2fcsr(/*ui5*/ _1, _2) \
   __builtin_loongarch_movgr2fcsr ((_1), _2);
+#endif
 
-#if defined __loongarch64
+#if __loongarch_grlen == 64
 /* Assembly instruction format:	ui5, rj, si12.  */
 /* Data types in instruction templates:  VOID, USI, UDI, SI.  */
 #define __cacop_d(/*ui5*/ _1, /*unsigned long int*/ _2, /*si12*/ _3) \
   __builtin_loongarch_cacop_d ((_1), (_2), (_3))
-#else
-#error "Unsupported ABI."
+#elif __loongarch_grlen == 32
+#define __cacop_w(/*ui5*/ _1, /*unsigned long int*/ _2, /*si12*/ _3) \
+  __builtin_loongarch_cacop_w ((_1), (_2), (_3))
 #endif
 
 /* Assembly instruction format:	rd, rj.  */
@@ -127,24 +130,21 @@ __asrtgt_d (long int _1, long int _2)
 }
 #endif
 
-#if defined __loongarch64
+#if __loongarch_grlen == 64
 /* Assembly instruction format:	rd, rj, ui5.  */
 /* Data types in instruction templates:  DI, DI, UQI.  */
 #define __lddir_d(/*long int*/ _1, /*ui5*/ _2) \
   __builtin_loongarch_lddir_d ((_1), (_2))
-#else
-#error "Unsupported ABI."
 #endif
 
-#if defined __loongarch64
+#if __loongarch_grlen == 64
 /* Assembly instruction format:	rj, ui5.  */
 /* Data types in instruction templates:  VOID, DI, UQI.  */
 #define __ldpte_d(/*long int*/ _1, /*ui5*/ _2) \
   __builtin_loongarch_ldpte_d ((_1), (_2))
-#else
-#error "Unsupported ABI."
 #endif
 
+#ifdef __loongarch64
 /* Assembly instruction format:	rd, rj, rk.  */
 /* Data types in instruction templates:  SI, QI, SI.  */
 extern __inline int
@@ -172,7 +172,6 @@ __crc_w_w_w (int _1, int _2)
   return __builtin_loongarch_crc_w_w_w (_1, _2);
 }
 
-#ifdef __loongarch64
 /* Assembly instruction format:	rd, rj, rk.  */
 /* Data types in instruction templates:  SI, DI, SI.  */
 extern __inline int
@@ -181,7 +180,6 @@ __crc_w_d_w (long int _1, int _2)
 {
   return __builtin_loongarch_crc_w_d_w (_1, _2);
 }
-#endif
 
 /* Assembly instruction format:	rd, rj, rk.  */
 /* Data types in instruction templates:  SI, QI, SI.  */
@@ -210,7 +208,6 @@ __crcc_w_w_w (int _1, int _2)
   return __builtin_loongarch_crcc_w_w_w (_1, _2);
 }
 
-#ifdef __loongarch64
 /* Assembly instruction format:	rd, rj, rk.  */
 /* Data types in instruction templates:  SI, DI, SI.  */
 extern __inline int
