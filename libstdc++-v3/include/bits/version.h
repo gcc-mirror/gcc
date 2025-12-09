@@ -2038,7 +2038,7 @@
 #   define __cpp_lib_common_reference 202302L
 #  endif
 # endif
-#endif /* !defined(__cpp_lib_common_reference) && defined(__glibcxx_want_common_reference) */
+#endif /* !defined(__cpp_lib_common_reference) */
 #undef __glibcxx_want_common_reference
 
 #if !defined(__cpp_lib_common_reference_wrapper)
@@ -2048,7 +2048,7 @@
 #   define __cpp_lib_common_reference_wrapper 202302L
 #  endif
 # endif
-#endif /* !defined(__cpp_lib_common_reference_wrapper) && defined(__glibcxx_want_common_reference_wrapper) */
+#endif /* !defined(__cpp_lib_common_reference_wrapper) */
 #undef __glibcxx_want_common_reference_wrapper
 
 #if !defined(__cpp_lib_formatters)
