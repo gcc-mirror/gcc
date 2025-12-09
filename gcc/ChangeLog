@@ -1,3 +1,45 @@
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-04  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/122991
+	* config/aarch64/aarch64.md (crc_rev<ALLI:mode><ALLX:mode>4,
+	crc<ALLI:mode><ALLX:mode>4): Use const_int_operand predicate for
+	the last operand.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-03  Jakub Jelinek  <jakub@redhat.com>
+
+	PR tree-optimization/122943
+	* tree-switch-conversion.cc (switch_conversion::build_arrays):
+	Always gimplify subtraction in utype without cast to tidxtype
+	and set m_arr_ref_first to the last stmt of that.  Remove unneeded
+	update_stmt call.  If tidxtype is not utype, append after that stmt
+	cast to tidxtype and set tidx to the lhs of that cast.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120052
+	* gimplify.cc (gimplify_call_expr): For IFN_UBSAN_BOUNDS
+	call with integer_onep first argument, change that argument
+	to 0 and add TYPE_MAX_VALUE (TYPE_DOMAIN (arr_type)) to
+	3rd argument before gimplification.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-25  Jakub Jelinek  <jakub@redhat.com>
+
+	PR middle-end/120564
+	* omp-expand.cc (extract_omp_for_update_vars): Use build2 instead of
+	fold_build2 to build argument for gimple_build_cond_empty.
+
 2025-12-01  Christophe Lyon  <christophe.lyon@linaro.org>
 
 	Backported from master:

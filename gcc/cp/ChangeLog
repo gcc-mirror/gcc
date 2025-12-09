@@ -1,3 +1,22 @@
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-21  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/121445
+	* constexpr.cc (build_data_member_initialization): Just return
+	false if member is COMPONENT_REF of COMPONENT_REF with
+	VAR_P get_base_address.
+
+2025-12-08  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-11-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/120876
+	* pt.cc (tsubst_baselink): Move maybe_incomplete handling after
+	!baselink handling.
+
 2025-11-28  Daniele Sahebi  <daniele@mkryss.me>
 
 	Backported from master:
