@@ -1,3 +1,14 @@
+2025-12-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-12-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122977
+	* expr.cc (gfc_is_simply_contiguous): For an associate variable
+	check whether the associate target is contiguous.
+	* resolve.cc (resolve_symbol): Skip array type check for an
+	associate variable when	the target has the contiguous attribute.
+
 2025-11-18  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:

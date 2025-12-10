@@ -1,3 +1,18 @@
+2025-12-09  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	Backported from master:
+	2025-12-02  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/122656
+	* config/riscv/riscv-vector-builtins-bases.cc: Use
+	use_contiguous_load for vlsegff.
+	* config/riscv/riscv-vector-builtins.cc (function_expander::use_exact_insn):
+	Only add rounding mode operand if insn requires it and number of
+	arguments is < required.
+	(function_expander::use_ternop_insn): Ditto.
+	(function_expander::use_widen_ternop_insn): Ditto.
+	* config/riscv/vector.md: Use vector-mode source operand.
+
 2025-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

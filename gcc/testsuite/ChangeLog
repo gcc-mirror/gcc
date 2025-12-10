@@ -1,3 +1,20 @@
+2025-12-09  Harald Anlauf  <anlauf@gmx.de>
+
+	Backported from master:
+	2025-12-05  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/122977
+	* gfortran.dg/contiguous_16.f90: New test.
+
+2025-12-09  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	Backported from master:
+	2025-12-02  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR target/122656
+	* gcc.target/riscv/rvv/base/pr122656-1.c: New test.
+	* gcc.target/riscv/rvv/base/pr122656-2.c: New test.`
+
 2025-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:
