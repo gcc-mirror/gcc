@@ -1,3 +1,8 @@
+2025-12-09  John Ericson  <git@johnericson.me>
+
+	* configure: Regenerate.
+	* m4/druntime/os.m4: Use AC_MSG_ERROR, not private as_fn_error
+
 2025-11-03  Sam James  <sam@gentoo.org>
 
 	* configure: Regenerate.

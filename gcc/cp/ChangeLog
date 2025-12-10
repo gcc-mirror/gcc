@@ -1,3 +1,28 @@
+2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Revert:
+	2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122819
+	* decl.cc (start_preparsed_function): Use
+	DECL_TEMPLOID_INSTANTIATION instead of
+	DECL_TEMPLATE_INSTANTIATION to check vague linkage.
+	* decl2.cc (vague_linkage_p): Likewise.
+	(c_parse_final_cleanups): Simplify condition.
+	* semantics.cc (expand_or_defer_fn_1): Also check for temploid
+	friend functions.
+
+2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122819
+	* decl.cc (start_preparsed_function): Use
+	DECL_TEMPLOID_INSTANTIATION instead of
+	DECL_TEMPLATE_INSTANTIATION to check vague linkage.
+	* decl2.cc (vague_linkage_p): Likewise.
+	(c_parse_final_cleanups): Simplify condition.
+	* semantics.cc (expand_or_defer_fn_1): Also check for temploid
+	friend functions.
+
 2025-12-08  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
 
 	* pt.cc (tsubst_expr): Add TARGET_EXPR case with explanatory

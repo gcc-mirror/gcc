@@ -1,3 +1,125 @@
+2025-12-09  John Ericson  <git@JohnEricson.me>
+
+	* Makefile.in: No longer include TARGET_SYSTEM_ROOT in
+	libgcc.mvars.
+
+2025-12-09  John Ericson  <git@JohnEricson.me>
+
+	* Makefile.in:: Remove NO_PIE_CFLAGS logic, since it is now in
+	libgcc.
+	* configure: Regenerate.
+	* configure.ac: Remove the enable_default_pie substitution, since
+	libgcc now has its own logic.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/123074
+	* tree-vect-loop.cc: Reset LOOP_VINFO_USING_SELECT_VL_P.
+
+2025-12-09  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/predicates.md: Append operator lt to
+	the comparison_swappable_operator.
+	* config/riscv/riscv-v.cc (get_swapped_cmp_rtx_code): Add
+	swappable operator lt handing.
+
+2025-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/121230
+	* config/i386/i386.cc (ix86_vector_costs::add_stmt_cost):
+	With FP mode and 387 math cost spill/reload.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv.opt.urls:  Regenerate.
+
+2025-12-09  Andrew Stubbs  <ams@baylibre.com>
+
+	* config/gcn/gcn.cc (gcn_init_cumulative_args): Only warn once.
+	Use "required" instead of "enabled" in the warning.
+	* config/gcn/mkoffload.cc (process_asm): Warn, don't error.
+	Use "required" instead of "on" in the warning.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/122635
+	* gimple-fold.cc (enum mask_load_store_state): New enum.
+	(gimple_fold_partial_load_store_mem_ref): Only fold
+	"all active" loads/stores.
+	(partial_load_store_mask_state): New function to compute mask
+	state.
+	(gimple_fold_partial_load): Remove.
+	(gimple_fold_partial_load_store): New function.
+	(gimple_fold_partial_store): Remove.
+	(gimple_fold_call): Use new function.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/rs6000/predicates.md (lxvl_else_operand): New
+	predicate.
+	* config/rs6000/vsx.md: Add else operand.
+	* config/s390/predicates.md (vll_else_operand): New predicate.
+	* config/s390/vector.md: Add else operand.
+	* doc/md.texi: Document else operand.
+	* internal-fn.cc (internal_fn_len_index): Adjust IFN_LEN_LOAD.
+	(internal_fn_else_index): Add IFN_LEN_LOAD.
+	* optabs-tree.cc (target_supports_len_load_store_p): Get else
+	value for len_load.
+	* tree-vect-stmts.cc (vectorizable_load): Pun the else value
+	type.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-target-attr.cc (riscv_target_attr_parser::handle_max_vect):
+	New parser entry.
+	(riscv_target_attr_parser::update_settings): Set max-vect
+	option.
+	(riscv_process_one_target_attr): Change null-arg handling.
+	* config/riscv/riscv.cc (riscv_override_options_internal): Set
+	max-vect option.
+	* config/riscv/riscv.opt: Add -mmax-vectorization option.
+	* doc/extend.texi: Document new option.
+	* doc/invoke.texi: Ditto.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/123022
+	* config/riscv/vector.md: Add mode_idx attribute.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115325
+	* config/riscv/riscv-c.cc (riscv_pragma_target_parse): New
+	function.
+	(riscv_register_pragmas): Register riscv_pragma_target_parse.
+	* config/riscv/riscv-protos.h (riscv_process_target_attr_for_pragma):
+	Declare.
+	(riscv_reset_previous_fndecl): Ditto.
+	* config/riscv/riscv-target-attr.cc (riscv_process_target_attr_for_pragma):
+	New function.
+	* config/riscv/riscv.cc (riscv_reset_previous_fndecl): Reset.
+	(riscv_option_save): New function.
+	(riscv_option_print): Ditto.
+	(riscv_get_interrupt_type): Adjust docs.
+	(TARGET_OPTION_SAVE): Implement.
+	(TARGET_OPTION_PRINT): Ditto.
+	* doc/extend.texi: Document that riscv can do target pragams.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (reduc_sbool_and_scal_<mode>): New
+	expander.
+	(reduc_sbool_ior_scal_<mode>): Ditto.
+	(reduc_sbool_xor_scal_<mode>): Ditto.
+	* config/riscv/riscv-protos.h (expand_mask_reduction): Declare.
+	* config/riscv/riscv-v.cc (expand_mask_reduction): New function.
+
+2025-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/123027
+	* config/i386/i386-expand.cc (ix86_expand_sse_fp_minmax):
+	With !HONOR_NANS we can handle LE by swapping and inverting.
+
 2025-12-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/46555

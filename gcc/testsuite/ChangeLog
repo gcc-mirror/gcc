@@ -1,3 +1,113 @@
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/123074
+	* gcc.target/riscv/rvv/rvv.exp: Include *.C.
+	* gcc.target/riscv/rvv/autovec/pr123074.C: New test.
+
+2025-12-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/122982
+	* gcc.dg/pointer-counted-by-pr122982.c: New test.
+
+2025-12-09  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i16.c: Add asm check
+	for vmslt.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-i8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmslt-run-1-i16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmslt-run-1-i32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmslt-run-1-i64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmslt-run-1-i8.c: New test.
+
+2025-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/121230
+	* gcc.target/i386/pr121230.c: New testcase.
+
+2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Revert:
+	2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122819
+	* g++.dg/modules/tpl-friend-22.C: New test.
+
+2025-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/123018
+	* gcc.dg/pr123018.c: New test.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/122635
+	* gcc.target/aarch64/sve/pfalse-store.c: Expect more elided
+	stores.
+	* gcc.target/riscv/rvv/autovec/pr122635-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr122635-2.c: New test.
+	* gcc.target/powerpc/p9-vec-length-epil-8.c: Expect two lxvl
+	less.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/max-vect-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/max-vect-2.c: New test.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/123022
+	* gcc.target/riscv/rvv/autovec/pr123022-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123022.c: New test.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/115325
+	* gcc.target/riscv/pragma-target-1.c: New test.
+	* gcc.target/riscv/pragma-target-2.c: New test.
+
+2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-1-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-1.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-2-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-3-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-4-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-5-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-5.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-6-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-6.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-7-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-7.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-8-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/reduc/reduc-bool-8.c: New test.
+
+2025-12-09  Richard Biener  <rguenther@suse.de>
+
+	PR target/123027
+	* gcc.target/i386/pr123027.c: New testcase.
+	* gcc.dg/torture/pr123027.c: Likewise.
+
+2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122819
+	* g++.dg/modules/tpl-friend-22.C: New test.
+
 2025-12-08  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/46555

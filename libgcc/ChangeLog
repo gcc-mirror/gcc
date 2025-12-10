@@ -1,3 +1,22 @@
+2025-12-09  John Ericson  <git@JohnEricson.me>
+
+	* config/rs6000/t-slibgcc-aix: Instead of using a
+	TARGET_SYSTEM_ROOT make variable, just define a shell variable
+	as part of the rule and use that.
+
+2025-12-09  John Ericson  <git@JohnEricson.me>
+
+	* Makefile.in: Define NO_PIE_CFLAGS make variable via autoconf
+	substitution.
+	* configure: Regenerate.
+	* configure.ac: New configure check to define NO_PIE_CFLAGS
+	using the algorithm Andrew asked for in the linked mail.
+
+2025-12-09  John Ericson  <git@johnericson.me>
+
+	* configure: Regenerate.
+	* configure.ac: Use GCC_AC_THREAD_MODEL instead of hand-rolled
+
 2025-11-27  Lulu Cheng  <chenglulu@loongson.cn>
 
 	* config/loongarch/cpuinfo.c (HWCAP_LOONGARCH_LSX): Define

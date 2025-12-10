@@ -1,3 +1,14 @@
+2025-12-09  Qing Zhao  <qing.zhao@oracle.com>
+
+	PR c/122982
+	* c-typeck.cc (build_access_with_size_for_counted_by): Call
+	c_fully_fold on the first parameter.
+
+2025-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/123018
+	* c-decl.cc (finish_struct): Diagnose bit-fields with vector type.
+
 2025-12-05  Richard Biener  <rguenther@suse.de>
 
 	* gimple-parser.cc (c_parser_gimple_postfix_expression):

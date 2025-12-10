@@ -1,3 +1,11 @@
+2025-12-09  John Ericson  <git@johnericson.me>
+
+	* Makefile.in: Regenerate.
+	* aclocal.m4: Regenerate.
+	* configure: Regenerate.
+	* configure.ac: Use GCC_AC_THREAD_MODEL instead of hand-rolled
+	* testsuite/Makefile.in: Regenerate.
+
 2025-11-19  Martin Liska  <martin.liska@hey.com>
 
 	* acinclude.m4: Add detection for wild linker.

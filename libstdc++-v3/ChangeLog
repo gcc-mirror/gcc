@@ -1,3 +1,101 @@
+2025-12-09  John Ericson  <git@johnericson.me>
+
+	* acinclude.m4: Use GCC_AC_THREAD_MODEL instead, via AC_REQUIRE
+	* configure: Regenerate.
+
+2025-12-09  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.h: Regenerate.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/bits/version.def (padded_layouts): Set to 202403.
+	(submdspan): Set to 202411 add dependency.
+	* include/bits/version.h: Regenerate.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan
+	(__mdspan::_SubMdspanMapping<_LayoutSide::__right, true>): Define.
+	(layout_right_padded::submdspan_mapping): New friend function.
+	* testsuite/23_containers/mdspan/submdspan/selections/right_padded.cc:
+	Instantiate tests for layout_right_padded.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_mapping.cc:
+	Ditto.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (__mdspan::__is_padded_mapping): Define.
+	(__mdspan::_SubMdspanMapping): Add _Padded template parameter.
+	(__mdspan::_SubMdspanMapping<_LayoutSide::__left, true>): Define.
+	(__mdspan::__submdspan_mapping_impl): Updated _Trait alias.
+	(layout_left_padded::submdspan_mapping): New friend method.
+	* testsuite/23_containers/mdspan/layout_traits.h
+	(LayoutTraits::layout_same_padded): New template type alias.
+	* testsuite/23_containers/mdspan/submdspan/selections/left_padded.cc:
+	Instantiate tests for layout_left_padded.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_mapping.cc:
+	Ditto.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (layout_stride::mapping::submdspan_mapping): New
+	friend function.
+	* testsuite/23_containers/mdspan/submdspan/selections/stride.cc:
+	Instantiate tests for layout_stride.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_neg.cc:
+	Ditto.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_mapping.cc:
+	Add tests for layout_stride.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan
+	(__mdspan::_SubMdspanMapping<_LayoutSide::__right>): Define.
+	(layout_right::mapping::submdspan_mapping): New friend function.
+	* testsuite/23_containers/mdspan/submdspan/selections/right.cc:
+	Instantiate tests for layout_right.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_mapping.cc:
+	Ditto.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_neg.cc:
+	Ditto.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	PR libstdc++/110352
+	* include/std/mdspan (__mdspan::__is_submdspan_mapping_result)
+	(__mdspan::__submdspan_mapping_result, __mdspan::__fwd_prod)
+	(__mdspan::__acceptable_slice_type, __mdspan::__slice_begin)
+	(__mdspan::__suboffset, __mdspan::_LayoutSide, __mdspan::__mapping_side)
+	(__mdspan::_StridesTrait, __mdspan::__substrides_generic)
+	(__mdspan::__substrides_standardized, __mdspan::__substrides)
+	(__mdspan::__is_unit_stride_slice, __mdspan::_SliceKind)
+	(__mdspan::__make_slice_kind, __mdspan::__make_slice_kind_array)
+	(__mdspan::__is_block, __mdspan::__padded_block_begin_generic)
+	(__mdspan::__padded_block_begin, __mpdspan::_SubMdspanMapping)
+	(__mdspan::__submdspan_mapping_impl): Define.
+	(__mdspan::__dynamic_slice_extent, __mdspan::__static_slice_extent)
+	(__mdspan::__subextents): Move earlier in the file.
+	(layout_left::mapping::submdspan_mapping, __mdspan::__sliceable_mapping)
+	(__mdspan::__submapping, submdspan): Define.
+	* src/c++23/std.cc.in: Add submdspan.
+	* testsuite/23_containers/mdspan/submdspan/generic.cc: New test.
+	* testsuite/23_containers/mdspan/submdspan/selections/left.cc:
+	Instantiate selection tests for layout_left.
+	* testsuite/23_containers/mdspan/submdspan/selections/testcases.h: Generic
+	tests different selections.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_mapping.cc: New test.
+	* testsuite/23_containers/mdspan/submdspan/submdspan_neg.cc: New test.
+
+2025-12-09  Luc Grosheintz  <luc.grosheintz@gmail.com>
+
+	* include/std/mdspan (_ExtentsStorage::_M_dynamic_extents):
+	Create span from pointer + size, not begin and end iterators.
+
 2025-12-08  Jonathan Wakely  <jwakely@redhat.com>
 
 	PR libstdc++/122946
