@@ -8960,7 +8960,7 @@ package body Exp_Attr is
          then
             Set_Actual_Designated_Subtype (Pref, Get_Actual_Subtype (Pref));
 
-         --  If Size was applied to a slice of a bit-packed array, we rewrite
+         --  If Size is applied to a slice of a bit-packed array, we rewrite
          --  it into the product of Length and Component_Size. We need to do so
          --  because bit-packed arrays are represented internally as arrays of
          --  System.Unsigned_Types.Packed_Byte for code generation purposes so
@@ -8975,6 +8975,27 @@ package body Exp_Attr is
                 Make_Attribute_Reference (Loc,
                   Prefix         => Duplicate_Subexpr (Pref, Name_Req => True),
                   Attribute_Name => Name_Component_Size)));
+            Analyze_And_Resolve (N, Typ);
+
+         --  If Size is applied to a formal parameter that has got a dynamic
+         --  indication of its constrained status, return the "constrained"
+         --  size if the status is True, that is to say the size based on the
+         --  constraints of the actual, and the "unconstrained" size if the
+         --  status is False, that is to say the Object_Size of the type.
+
+         elsif Is_Entity_Name (Pref)
+           and then Is_Formal (Entity (Pref))
+           and then Present (Extra_Constrained (Entity (Pref)))
+         then
+            Rewrite (N,
+              Make_If_Expression (Loc,
+                Expressions => New_List (
+                  New_Occurrence_Of (Extra_Constrained (Entity (Pref)), Loc),
+                  Relocate_Node (N),
+                  Make_Attribute_Reference (Loc,
+                    Prefix         => New_Occurrence_Of (Etype (Pref), Loc),
+                    Attribute_Name => Name_Object_Size))));
+            Set_Analyzed (Next (First (Expressions (N))));
             Analyze_And_Resolve (N, Typ);
          end if;
 
