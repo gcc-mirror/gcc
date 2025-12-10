@@ -24,7 +24,7 @@ end module m
 module m2
   use iso_fortran_env
   type t2
-    type(lock_type), allocatable :: x ! { dg-error "Allocatable component x at .1. of type LOCK_TYPE must have a codimension" }
+    type(lock_type), allocatable :: x
   end type t2
 end module m2
 

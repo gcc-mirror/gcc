@@ -3675,11 +3675,8 @@ check_component (gfc_symbol *sym, gfc_component *c, gfc_component **lockp,
                "of type LOCK_TYPE, which must have a codimension or be a "
                "subcomponent of a coarray", c->name, &c->loc);
 
-  if (lock_type && allocatable && !coarray)
-    gfc_error ("Allocatable component %s at %L of type LOCK_TYPE must have "
-               "a codimension", c->name, &c->loc);
-  else if (lock_type && allocatable && c->ts.type == BT_DERIVED
-           && c->ts.u.derived->attr.lock_comp)
+  if (lock_type && allocatable && !coarray && c->ts.type == BT_DERIVED
+      && c->ts.u.derived->attr.lock_comp)
     gfc_error ("Allocatable component %s at %L must have a codimension as "
                "it has a noncoarray subcomponent of type LOCK_TYPE",
                c->name, &c->loc);
