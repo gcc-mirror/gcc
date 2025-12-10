@@ -54,6 +54,43 @@ global module_cmis
 
 set DEFAULT_REPO "gcm.cache"
 
+# Return the pathname for <HNAME>.
+# On failure this will return garbage that results in the understandable
+# FAIL: g++.dg/modules/compile-std1.C module-cmi <bits/stdcx++.h> (gcm.cache/,/ader_path1095619.C:1:10: fatal error: bits/stdcx++.h: No such file or directory.gcm)
+# ??? it would be nice to have a simple --print-include-name flag.
+proc host_header_path {hname} {
+    global tool
+    set src header_path[pid].C
+    set f [open $src "w"]
+    puts $f "#include <$hname>"
+    close $f
+    set opts [list "additional_flags=-H" "additional_flags=-fdirectives-only"]
+    set lines [${tool}_target_compile $src /dev/null preprocess $opts]
+    file delete $f
+    # The first line of the -H output is ". /path/to/hname"
+    set newline_idx [expr {[string first "\n" $lines] - 1}]
+    set path [string range $lines 2 $newline_idx]
+    verbose "header_path: $path" 1
+    return $path
+}
+
+# Return the pathname CMI munged like the compiler.
+proc munge_cmi {cmi} {
+    if { [string index $cmi 0] == "/" } {
+	set cmi [string range $cmi 1 end]
+    } else {
+	set cmi ",/$cmi"
+    }
+    set path [file split $cmi]
+    # subst /../ -> /,,/
+    # sadly tcl 8.5 does not have lmap
+    set rplac {}
+    foreach elt $path {lappend rplac [expr {$elt == ".." ? ",," : $elt}]}
+    set cmi [file join {*}$rplac]
+    verbose "munge_cmi: $cmi" 1
+    return $cmi
+}
+
 # Register the module name this produces.
 # dg-module-cmi !?=?NAME WHEN?
 # dg-module-cmi !?{} - header unit
@@ -83,18 +120,11 @@ proc dg-module-cmi { args } {
 	if { $name == "" } {
 	    # get the source file name.  ick!
 	    upvar prog srcname
-	    set cmi "$srcname.gcm"
-	    if { [string index $cmi 0] == "/" } {
-		set cmi [string range $cmi 1 end]
-	    } else {
-		set cmi ",/$cmi"
-	    }
-	    set path [file split $cmi]
-	    # subst /../ -> /,,/
-	    # sadly tcl 8.5 does not have lmap
-	    set rplac {}
-	    foreach elt $path {lappend rplac [expr {$elt == ".." ? ",," : $elt}]}
-	    set cmi [file join {*}$rplac]
+	    set cmi [munge_cmi "$srcname.gcm"]
+	} elseif { [string index $name 0] == "<"
+		   && [string index $name end] == ">" } {
+	    set header "[regsub {<(.*)>} $name {\1}]"
+	    set cmi [munge_cmi "[host_header_path $header].gcm"]
 	} else {
 	    set cmi "[regsub : $name -].gcm"
 	}

@@ -1,5 +1,8 @@
 // { dg-additional-options "-fmodules --compile-std-module -g -O" }
 // { dg-do compile { target c++20 } }
+// { dg-module-cmi std }
+// { dg-module-cmi std.compat }
+// { dg-module-cmi <bits/stdc++.h> }
 
 import <bits/stdc++.h>;
 import std;
