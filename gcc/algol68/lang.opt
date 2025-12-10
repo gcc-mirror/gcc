@@ -28,6 +28,10 @@ I
 Algol68 Joined Separate
 ; Documented in c-family/c.opt
 
+L
+Algol68 Joined Separate
+; Not documented
+
 Wextensions
 Algol68 Warning Var(warn_algol68_extensions) LangEnabledBy(Algol68, Wextra)
 Warn for usage of non-portable extensions of Algol 68.
