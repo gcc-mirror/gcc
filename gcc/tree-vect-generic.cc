@@ -627,7 +627,7 @@ expand_vector_mult (gimple_stmt_iterator *gsi, tree type, tree op0,
 	}
       tree accumulator, tmp_var;
       if (alg.op[0] == alg_zero)
-	accumulator = build_int_cst (vectype, 0);
+	accumulator = build_zero_cst (vectype);
       else
 	accumulator = op0;
 
