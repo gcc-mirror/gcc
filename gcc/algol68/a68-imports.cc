@@ -240,29 +240,9 @@ static char *
 a68_try_packet_in_directory (const std::string &filename, size_t *psize)
 {
   std::string found_filename = filename;
-  int fd = open (found_filename.c_str(), O_RDONLY | O_BINARY);
-
-  if (fd >= 0)
-    {
-      struct stat s;
-      if (fstat (fd, &s) >= 0 && S_ISDIR (s.st_mode))
-	{
-	  close (fd);
-	  fd = -1;
-	  errno = EISDIR;
-	}
-    }
-
+  int fd = a68_try_suffixes (&found_filename);
   if (fd < 0)
-    {
-      if (errno != ENOENT && errno != EISDIR)
-	a68_warning (NO_NODE, 0, "cannot open file Z for imports",
-		     filename.c_str ());
-
-      fd = a68_try_suffixes (&found_filename);
-      if (fd < 0)
-	return NULL;
-    }
+    return NULL;
 
   /* The export data may not be in this file.  */
   char *exports = a68_find_export_data (found_filename, fd, psize);
@@ -291,7 +271,8 @@ a68_try_packet_in_directory (const std::string &filename, size_t *psize)
    When FILENAME does start with ./ or ../, we use RELATIVE_IMPORT_PATH as a
    prefix.
 
-   When FILENAME does not exist, we try modifying FILENAME to find the file.
+   When FILENAME does not exist, we try
+   modifying FILENAME to find the file.
    We use the first of these which exists:
 
    - We append ".m68".
@@ -357,7 +338,7 @@ a68_get_packet_exports (const std::string &filename,
     {
       for (std::string path : A68_IMPORT_PATHS)
 	{
-	  if (path.empty () && path[path.size () - 1] != '/')
+	  if (!path.empty () && path[path.size () - 1] != '/')
 	    path += '/';
 	  path += fn;
 	  exports = a68_try_packet_in_directory (path, psize);
