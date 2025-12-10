@@ -2459,7 +2459,34 @@ package body Exp_Ch4 is
                    Parameter_Associations => New_List (L_Exp, R_Exp));
             end;
 
+         --  Composite equality not available for the type
+
          else
+            --  Under Ada83 and Ada95, search for user-defined equality and
+            --  report a warning if found since it will not be called.
+
+            if Ada_Version <= Ada_95
+              and then Warn_On_Ignored_Equality
+            then
+               declare
+                  Elmt : Elmt_Id;
+
+               begin
+                  Elmt := First_Elmt (Direct_Primitive_Operations (Full_Type));
+                  while Present (Elmt) loop
+                     if Is_User_Defined_Equality (Node (Elmt)) then
+                        Warn_On_Ignored_Equality_Operator
+                          (Typ      => Outer_Type,
+                           Comp_Typ => Full_Type,
+                           Loc      => Sloc (Node (Elmt)));
+                        exit;
+                     end if;
+
+                     Next_Elmt (Elmt);
+                  end loop;
+               end;
+            end if;
+
             return Expand_Record_Equality (Nod, Full_Type, Lhs, Rhs);
          end if;
 
