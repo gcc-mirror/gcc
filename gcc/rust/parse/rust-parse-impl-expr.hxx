@@ -98,7 +98,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
 /* Parse an anonymous const expression. This can be a regular const expression
  * or an underscore for deferred const inference */
 template <typename ManagedTokenSource>
-tl::expected<AST::AnonConst, AnonConstError>
+tl::expected<AST::AnonConst, Parse::Error::AnonConst>
 Parser<ManagedTokenSource>::parse_anon_const ()
 {
   auto current = lexer.peek_token ();
@@ -111,7 +111,7 @@ Parser<ManagedTokenSource>::parse_anon_const ()
   auto expr = parse_expr ();
 
   if (!expr)
-    return tl::make_unexpected (AnonConstError::InvalidSizeExpr);
+    return tl::make_unexpected (Parse::Error::AnonConst::InvalidSizeExpr);
 
   return AST::AnonConst (std::move (expr), locus);
 }
@@ -1106,33 +1106,34 @@ std::unique_ptr<AST::Expr>
 Parser<ManagedTokenSource>::parse_labelled_loop_expr (const_TokenPtr tok,
 						      AST::AttrVec outer_attrs)
 {
-  /* TODO: decide whether it should not work if there is no label, or parse it
-   * with no label at the moment, I will make it not work with no label
-   * because that's the implication. */
-
-  if (tok->get_id () != LIFETIME)
-    {
-      Error error (tok->get_locus (),
-		   "expected lifetime in labelled loop expr (to parse loop "
-		   "label) - found %qs",
-		   tok->get_token_description ());
-      add_error (std::move (error));
-
-      // skip?
-      return nullptr;
-    }
-
   // parse loop label (required)
-  // TODO: Convert this return type to tl::expected instead of tl::optional
   auto parsed_label = parse_loop_label (tok);
   if (!parsed_label)
     {
-      Error error (lexer.peek_token ()->get_locus (),
-		   "failed to parse loop label in labelled loop expr");
-      add_error (std::move (error));
+      /* TODO: decide whether it should not work if there is no label, or parse
+       * it with no label at the moment, I will make it not work with no label
+       * because that's the implication. */
 
-      // skip?
-      return nullptr;
+      if (parsed_label.error ().kind
+	  == Parse::Error::LoopLabel::Kind::NOT_LOOP_LABEL)
+	{
+	  Error error (tok->get_locus (),
+		       "expected lifetime in labelled loop expr (to parse loop "
+		       "label) - found %qs",
+		       tok->get_token_description ());
+	  add_error (std::move (error));
+	  return nullptr;
+	}
+
+      else
+	{
+	  Error error (lexer.peek_token ()->get_locus (),
+		       "failed to parse loop label in labelled loop expr");
+	  add_error (std::move (error));
+
+	  // skip?
+	  return nullptr;
+	}
     }
 
   auto label = parsed_label

@@ -1588,7 +1588,7 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
   auto initial_param = parse_self_param ();
 
   if (!initial_param.has_value ()
-      && initial_param.error () != ParseSelfError::NOT_SELF)
+      && initial_param.error ().kind != Parse::Error::Self::Kind::NOT_SELF)
     return nullptr;
 
   if (initial_param.has_value () && lexer.peek_token ()->get_id () == COMMA)
@@ -2138,7 +2138,7 @@ Parser<ManagedTokenSource>::parse_non_ptr_sequence (
 
 /* Parses a single lifetime generic parameter (not including comma). */
 template <typename ManagedTokenSource>
-tl::expected<AST::LifetimeParam, ParseLifetimeParamError>
+tl::expected<AST::LifetimeParam, Parse::Error::LifetimeParam>
 Parser<ManagedTokenSource>::parse_lifetime_param ()
 {
   // parse outer attributes, which are optional and may not exist
@@ -2149,7 +2149,7 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
   if (lifetime_tok->get_id () != LIFETIME)
     {
       // if lifetime is missing, must not be a lifetime param, so return error
-      return tl::make_unexpected<ParseLifetimeParamError> ({});
+      return tl::make_unexpected<Parse::Error::LifetimeParam> ({});
     }
   lexer.skip_token ();
   AST::Lifetime lifetime (AST::Lifetime::NAMED, lifetime_tok->get_str (),
@@ -2827,7 +2827,7 @@ Parser<ManagedTokenSource>::parse_lifetime_bounds (EndTokenPred is_end_token)
 /* Parses a lifetime token (named, 'static, or '_). Also handles lifetime not
  * existing. */
 template <typename ManagedTokenSource>
-tl::expected<AST::Lifetime, ParseLifetimeError>
+tl::expected<AST::Lifetime, Parse::Error::Lifetime>
 Parser<ManagedTokenSource>::parse_lifetime (bool allow_elided)
 {
   const_TokenPtr lifetime_tok = lexer.peek_token ();
@@ -2839,7 +2839,7 @@ Parser<ManagedTokenSource>::parse_lifetime (bool allow_elided)
 	}
       else
 	{
-	  return tl::make_unexpected<ParseLifetimeError> ({});
+	  return tl::make_unexpected<Parse::Error::Lifetime> ({});
 	}
     }
   lexer.skip_token ();
@@ -4286,7 +4286,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
   auto initial_param = parse_self_param ();
 
   if (!initial_param.has_value ()
-      && initial_param.error () != ParseSelfError::NOT_SELF)
+      && initial_param.error ().kind != Parse::Error::Self::Kind::NOT_SELF)
     return nullptr;
 
   /* FIXME: ensure that self param doesn't accidently consume tokens for a
@@ -4487,7 +4487,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   auto initial_param = parse_self_param ();
 
   if (!initial_param.has_value ()
-      && initial_param.error () != ParseSelfError::NOT_SELF)
+      && initial_param.error ().kind != Parse::Error::Self::Kind::NOT_SELF)
     return nullptr;
 
   // FIXME: ensure that self param doesn't accidently consume tokens for a
@@ -5132,7 +5132,7 @@ Parser<ManagedTokenSource>::parse_generic_args_binding ()
 
 // Parses a self param. Also handles self param not existing.
 template <typename ManagedTokenSource>
-tl::expected<std::unique_ptr<AST::Param>, ParseSelfError>
+tl::expected<std::unique_ptr<AST::Param>, Parse::Error::Self>
 Parser<ManagedTokenSource>::parse_self_param ()
 {
   bool has_reference = false;
@@ -5156,7 +5156,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	{
 	  rust_error_at (lexer.peek_token ()->get_locus (),
 			 "cannot pass %<self%> by raw pointer");
-	  return tl::make_unexpected (ParseSelfError::SELF_PTR);
+	  return Parse::Error::Self::make_self_raw_pointer ();
 	}
     }
 
@@ -5177,7 +5177,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
       is_self = true;
 
   if (!is_self)
-    return tl::make_unexpected (ParseSelfError::NOT_SELF);
+    return Parse::Error::Self::make_not_self ();
 
   // test if self is a reference parameter
   if (lexer.peek_token ()->get_id () == AMP)
@@ -5200,7 +5200,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	      add_error (std::move (error));
 
 	      // skip after somewhere?
-	      return tl::make_unexpected (ParseSelfError::PARSING);
+	      return Parse::Error::Self::make_parsing_error ();
 	    }
 	}
     }
@@ -5218,7 +5218,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
   if (self_tok->get_id () != SELF)
     {
       // skip after somewhere?
-      return tl::make_unexpected (ParseSelfError::NOT_SELF);
+      return Parse::Error::Self::make_not_self ();
     }
   lexer.skip_token ();
 
@@ -5237,7 +5237,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	  add_error (std::move (error));
 
 	  // skip after somewhere?
-	  return tl::make_unexpected (ParseSelfError::PARSING);
+	  return Parse::Error::Self::make_parsing_error ();
 	}
     }
 
@@ -5250,7 +5250,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
       add_error (std::move (error));
 
       // skip after somewhere?
-      return tl::make_unexpected (ParseSelfError::PARSING);
+      return Parse::Error::Self::make_parsing_error ();
     }
 
   if (has_reference)
@@ -5379,15 +5379,14 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 
 // Parses a loop label used in loop expressions.
 template <typename ManagedTokenSource>
-tl::expected<AST::LoopLabel, ParseLoopLabelError>
+tl::expected<AST::LoopLabel, Parse::Error::LoopLabel>
 Parser<ManagedTokenSource>::parse_loop_label (const_TokenPtr tok)
 {
   // parse lifetime - if doesn't exist, assume no label
   if (tok->get_id () != LIFETIME)
     {
       // not necessarily an error
-      return tl::unexpected<ParseLoopLabelError> (
-	ParseLoopLabelError::NOT_LOOP_LABEL);
+      return Parse::Error::LoopLabel::make_not_loop_label ();
     }
   /* FIXME: check for named lifetime requirement here? or check in semantic
    * analysis phase? */
@@ -5396,11 +5395,10 @@ Parser<ManagedTokenSource>::parse_loop_label (const_TokenPtr tok)
   if (!skip_token (COLON))
     {
       // skip somewhere?
-      return tl::unexpected<ParseLoopLabelError> (
-	ParseLoopLabelError::MISSING_COLON);
+      Parse::Error::LoopLabel::make_missing_colon ();
     }
 
-  return tl::expected<AST::LoopLabel, ParseLoopLabelError> (
+  return tl::expected<AST::LoopLabel, Parse::Error::LoopLabel> (
     AST::LoopLabel (std::move (label), tok->get_locus ()));
 }
 

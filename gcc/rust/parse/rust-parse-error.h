@@ -319,6 +319,72 @@ private:
   Visibility (Kind kind) : kind (kind) {}
 };
 
+class LifetimeParam
+{
+};
+
+class Lifetime
+{
+};
+
+enum class AnonConst
+{
+  InvalidSizeExpr,
+};
+
+struct LoopLabel
+{
+  static tl::expected<AST::LoopLabel, LoopLabel> make_not_loop_label ()
+  {
+    return tl::unexpected<LoopLabel> (LoopLabel (Kind::NOT_LOOP_LABEL));
+  }
+
+  static tl::expected<AST::LoopLabel, LoopLabel> make_missing_colon ()
+  {
+    return tl::unexpected<LoopLabel> (LoopLabel (Kind::MISSING_COLON));
+  }
+
+  enum class Kind
+  {
+    // Not an hard error
+    NOT_LOOP_LABEL,
+    // Hard error
+    MISSING_COLON,
+  } kind;
+
+private:
+  LoopLabel (Kind kind) : kind (kind) {}
+};
+
+struct Self
+{
+  static tl::expected<std::unique_ptr<AST::Param>, Self>
+  make_self_raw_pointer ()
+  {
+    return tl::unexpected<Self> (Self (Kind::SELF_RAW_PTR));
+  }
+
+  static tl::expected<std::unique_ptr<AST::Param>, Self> make_not_self ()
+  {
+    return tl::unexpected<Self> (Self (Kind::NOT_SELF));
+  }
+
+  static tl::expected<std::unique_ptr<AST::Param>, Self> make_parsing_error ()
+  {
+    return tl::unexpected<Self> (Self (Kind::PARSING));
+  }
+
+  enum class Kind
+  {
+    SELF_RAW_PTR,
+    PARSING,
+    NOT_SELF,
+  } kind;
+
+private:
+  Self (Kind kind) : kind (kind) {}
+};
+
 } // namespace Error
 } // namespace Parse
 } // namespace Rust
