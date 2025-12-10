@@ -730,9 +730,11 @@ public:
   rtx use_contiguous_prefetch_insn (insn_code);
   rtx use_contiguous_store_insn (insn_code);
 
-  rtx map_to_rtx_codes (rtx_code, rtx_code, unspec, unspec,
+  rtx map_to_rtx_codes (rtx_code, rtx_code, unspec = UNSPEC_NONE,
+			unspec = UNSPEC_NONE,
 			unsigned int = DEFAULT_MERGE_ARGNO);
-  rtx map_to_unspecs (unspec, unspec, unspec, unsigned int = DEFAULT_MERGE_ARGNO);
+  rtx map_to_unspecs (unspec, unspec = UNSPEC_NONE, unspec = UNSPEC_NONE,
+		      unsigned int = DEFAULT_MERGE_ARGNO);
 
   /* The function call expression.  */
   tree call_expr;

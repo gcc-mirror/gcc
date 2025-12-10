@@ -268,8 +268,8 @@ class unspec_based_function_base : public function_base
 {
 public:
   constexpr unspec_based_function_base (unspec unspec_for_sint,
-					unspec unspec_for_uint,
-					unspec unspec_for_fp,
+					unspec unspec_for_uint = UNSPEC_NONE,
+					unspec unspec_for_fp = UNSPEC_NONE,
 					unspec unspec_for_mfp8 = UNSPEC_NONE,
 					unsigned int suffix_index = 0)
     : m_unspec_for_sint (unspec_for_sint),
@@ -431,8 +431,9 @@ class sme_1mode_function : public read_write_za<unspec_based_function_base>
 public:
   using parent = read_write_za<unspec_based_function_base>;
 
-  constexpr sme_1mode_function (unspec unspec_for_sint, unspec unspec_for_uint,
-				unspec unspec_for_fp)
+  constexpr sme_1mode_function (unspec unspec_for_sint,
+				unspec unspec_for_uint = UNSPEC_NONE,
+				unspec unspec_for_fp = UNSPEC_NONE)
     : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, UNSPEC_NONE, 1)
   {}
 
@@ -461,10 +462,11 @@ class sme_2mode_function_t : public read_write_za<unspec_based_function_base>
 public:
   using parent = read_write_za<unspec_based_function_base>;
 
-  constexpr sme_2mode_function_t (unspec unspec_for_sint, unspec unspec_for_uint,
-				  unspec unspec_for_fp, unspec unspec_for_mfp8 = UNSPEC_NONE)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, unspec_for_mfp8,
-	      1)
+  constexpr sme_2mode_function_t (unspec unspec_for_sint,
+				  unspec unspec_for_uint = UNSPEC_NONE,
+				  unspec unspec_for_fp = UNSPEC_NONE,
+				  unspec unspec_for_mfp8 = UNSPEC_NONE)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, unspec_for_mfp8, 1)
   {}
 
   rtx
@@ -693,8 +695,10 @@ public:
 class integer_conversion : public function_base
 {
 public:
-  constexpr integer_conversion (unspec unspec_for_sint, unspec unspec_for_sintu,
-				unspec unspec_for_uint, unspec unspec_for_uints)
+  constexpr integer_conversion (unspec unspec_for_sint,
+				unspec unspec_for_sintu = UNSPEC_NONE,
+				unspec unspec_for_uint = UNSPEC_NONE,
+				unspec unspec_for_uints = UNSPEC_NONE)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_sintu (unspec_for_sintu),
       m_unspec_for_uint (unspec_for_uint),
@@ -741,8 +745,9 @@ public:
       m_unspec_for_fp (unspec)
   {}
 
-  constexpr reduction (unspec unspec_for_sint, unspec unspec_for_uint,
-		       unspec unspec_for_fp)
+  constexpr reduction (unspec unspec_for_sint,
+		       unspec unspec_for_uint,
+		       unspec unspec_for_fp = UNSPEC_NONE)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
       m_unspec_for_fp (unspec_for_fp)
@@ -789,7 +794,7 @@ public:
     if (aarch64_simd_shift_imm_p (shift, elem_mode, m_code == ASHIFT))
       {
 	e.args.last () = shift;
-	return e.map_to_rtx_codes (m_code, m_code, UNSPEC_NONE, UNSPEC_NONE);
+	return e.map_to_rtx_codes (m_code, m_code);
       }
 
     if (e.pred == PRED_x)

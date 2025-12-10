@@ -616,13 +616,13 @@ FUNCTION (arm_in_streaming_mode, arm_in_streaming_mode_impl, )
 FUNCTION (svadd_za, sme_1mode_function, (UNSPEC_SME_ADD, UNSPEC_SME_ADD,
 					 UNSPEC_SME_FADD))
 FUNCTION (svadd_write_za, sme_1mode_function, (UNSPEC_SME_ADD_WRITE,
-					       UNSPEC_SME_ADD_WRITE, UNSPEC_NONE))
+					       UNSPEC_SME_ADD_WRITE))
 FUNCTION (svaddha_za, sme_1mode_function, (UNSPEC_SME_ADDHA,
-					   UNSPEC_SME_ADDHA, UNSPEC_NONE))
+					   UNSPEC_SME_ADDHA))
 FUNCTION (svaddva_za, sme_1mode_function, (UNSPEC_SME_ADDVA,
-					  UNSPEC_SME_ADDVA, UNSPEC_NONE))
-FUNCTION (svbmopa_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_BMOPA, UNSPEC_NONE))
-FUNCTION (svbmops_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_BMOPS, UNSPEC_NONE))
+					  UNSPEC_SME_ADDVA))
+FUNCTION (svbmopa_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_BMOPA))
+FUNCTION (svbmops_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_BMOPS))
 FUNCTION (svcntsb, svcnts_bhwd_impl, (VNx16QImode))
 FUNCTION (svcntsd, svcnts_bhwd_impl, (VNx2DImode))
 FUNCTION (svcntsh, svcnts_bhwd_impl, (VNx8HImode))
@@ -669,20 +669,18 @@ FUNCTION (svstr_zt, svstr_zt_impl, )
 FUNCTION (svsub_za, sme_1mode_function, (UNSPEC_SME_SUB, UNSPEC_SME_SUB,
 					 UNSPEC_SME_FSUB))
 FUNCTION (svsub_write_za, sme_1mode_function, (UNSPEC_SME_SUB_WRITE,
-					       UNSPEC_SME_SUB_WRITE, UNSPEC_NONE))
+					       UNSPEC_SME_SUB_WRITE))
 FUNCTION (svsudot_za, svsudot_za_impl,)
-FUNCTION (svsudot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUDOT, UNSPEC_NONE, UNSPEC_NONE))
-FUNCTION (svsuvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUVDOT,
-						      UNSPEC_NONE, UNSPEC_NONE))
-FUNCTION (svsumopa_za, sme_2mode_function, (UNSPEC_SME_SUMOPA, UNSPEC_NONE, UNSPEC_NONE))
-FUNCTION (svsumops_za, sme_2mode_function, (UNSPEC_SME_SUMOPS, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svsudot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUDOT))
+FUNCTION (svsuvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUVDOT))
+FUNCTION (svsumopa_za, sme_2mode_function, (UNSPEC_SME_SUMOPA))
+FUNCTION (svsumops_za, sme_2mode_function, (UNSPEC_SME_SUMOPS))
 FUNCTION (svundef_za, svundef_za_impl, )
-FUNCTION (svusdot_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USDOT, UNSPEC_NONE))
-FUNCTION (svusdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USDOT, UNSPEC_NONE))
-FUNCTION (svusvdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USVDOT,
-						      UNSPEC_NONE))
-FUNCTION (svusmopa_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USMOPA, UNSPEC_NONE))
-FUNCTION (svusmops_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USMOPS, UNSPEC_NONE))
+FUNCTION (svusdot_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USDOT))
+FUNCTION (svusdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USDOT))
+FUNCTION (svusvdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USVDOT))
+FUNCTION (svusmopa_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USMOPA))
+FUNCTION (svusmops_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USMOPS))
 FUNCTION (svvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SVDOT,
 						    UNSPEC_SME_UVDOT,
 						    UNSPEC_SME_FVDOT,

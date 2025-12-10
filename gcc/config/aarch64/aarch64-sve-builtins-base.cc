@@ -308,7 +308,7 @@ public:
       {
 	machine_mode mode = GET_MODE_INNER (e.vector_mode (0));
 	e.args[2] = simplify_unary_operation (NOT, mode, e.args[2], mode);
-	return e.map_to_rtx_codes (AND, AND, UNSPEC_NONE, UNSPEC_NONE);
+	return e.map_to_rtx_codes (AND, AND);
       }
 
     if (e.type_suffix_ids[0] == TYPE_SUFFIX_b)
@@ -424,7 +424,7 @@ public:
     else
       {
 	unspec cmla = unspec_cmla (rot);
-	return e.map_to_unspecs (cmla, cmla, UNSPEC_NONE);
+	return e.map_to_unspecs (cmla, cmla);
       }
   }
 };
@@ -2484,7 +2484,7 @@ public:
 class svnot_impl : public rtx_code_function
 {
 public:
-  constexpr svnot_impl () : rtx_code_function (NOT, NOT, UNSPEC_NONE) {}
+  constexpr svnot_impl () : rtx_code_function (NOT, NOT) {}
 
   rtx
   expand (function_expander &e) const override
@@ -3252,7 +3252,7 @@ public:
     /* Canonicalize subtractions of constants to additions.  */
     machine_mode mode = e.vector_mode (0);
     if (e.try_negating_argument (2, mode))
-      return e.map_to_rtx_codes (PLUS, PLUS, UNSPEC_COND_FADD, UNSPEC_NONE);
+      return e.map_to_rtx_codes (PLUS, PLUS, UNSPEC_COND_FADD);
 
     return rtx_code_function::expand (e);
   }
@@ -3558,7 +3558,7 @@ FUNCTION (svand, rtx_code_function, (AND, AND))
 FUNCTION (svandv, svandv_impl,)
 FUNCTION (svasr, rtx_code_function, (ASHIFTRT, ASHIFTRT))
 FUNCTION (svasr_wide, shift_wide, (ASHIFTRT, UNSPEC_ASHIFTRT_WIDE))
-FUNCTION (svasrd, unspec_based_function, (UNSPEC_ASRD, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svasrd, unspec_based_function, (UNSPEC_ASRD))
 FUNCTION (svbfdot, fixed_insn_function, (CODE_FOR_aarch64_sve_bfdotvnx4sf))
 FUNCTION (svbfdot_lane, fixed_insn_function,
 	  (CODE_FOR_aarch64_sve_bfdot_lanevnx4sf))
@@ -3627,7 +3627,7 @@ FUNCTION (svdup, svdup_impl,)
 FUNCTION (svdup_lane, svdup_lane_impl,)
 FUNCTION (svdupq, svdupq_impl,)
 FUNCTION (svdupq_lane, svdupq_lane_impl,)
-FUNCTION (sveor, rtx_code_function, (XOR, XOR, UNSPEC_NONE))
+FUNCTION (sveor, rtx_code_function, (XOR, XOR))
 FUNCTION (sveorv, sveorv_impl,)
 FUNCTION (svexpa, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FEXPA))
 FUNCTION (svexpand, svexpand_impl,)
@@ -3711,7 +3711,7 @@ FUNCTION (svmsb, svmsb_impl,)
 FUNCTION (svmul, svmul_impl,)
 FUNCTION (svmul_lane, CODE_FOR_MODE0 (aarch64_mul_lane),)
 FUNCTION (svmulh, unspec_based_function, (UNSPEC_SMUL_HIGHPART,
-					  UNSPEC_UMUL_HIGHPART, UNSPEC_NONE))
+					  UNSPEC_UMUL_HIGHPART))
 FUNCTION (svmulx, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FMULX))
 FUNCTION (svnand, svnand_impl,)
 FUNCTION (svneg, quiet<rtx_code_function>, (NEG, NEG, UNSPEC_COND_FNEG))
@@ -3740,7 +3740,7 @@ FUNCTION (svptest_first, svptest_impl, (LT))
 FUNCTION (svptest_last, svptest_impl, (LTU))
 FUNCTION (svptrue, svptrue_impl,)
 FUNCTION (svptrue_pat, svptrue_pat_impl,)
-FUNCTION (svqadd, rtx_code_function, (SS_PLUS, US_PLUS, UNSPEC_NONE))
+FUNCTION (svqadd, rtx_code_function, (SS_PLUS, US_PLUS))
 FUNCTION (svqdecb, svqdec_bhwd_impl, (QImode))
 FUNCTION (svqdecb_pat, svqdec_bhwd_impl, (QImode))
 FUNCTION (svqdecd, svqdec_bhwd_impl, (DImode))
@@ -3759,17 +3759,17 @@ FUNCTION (svqinch_pat, svqinc_bhwd_impl, (HImode))
 FUNCTION (svqincp, svqdecp_svqincp_impl, (SS_PLUS, US_PLUS))
 FUNCTION (svqincw, svqinc_bhwd_impl, (SImode))
 FUNCTION (svqincw_pat, svqinc_bhwd_impl, (SImode))
-FUNCTION (svqsub, rtx_code_function, (SS_MINUS, US_MINUS, UNSPEC_NONE))
-FUNCTION (svrbit, rtx_code_function, (BITREVERSE, BITREVERSE, UNSPEC_NONE))
+FUNCTION (svqsub, rtx_code_function, (SS_MINUS, US_MINUS))
+FUNCTION (svrbit, rtx_code_function, (BITREVERSE, BITREVERSE))
 FUNCTION (svrdffr, svrdffr_impl,)
 FUNCTION (svrecpe, unspec_based_function, (UNSPEC_NONE, UNSPEC_URECPE, UNSPEC_FRECPE))
 FUNCTION (svrecps, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FRECPS))
 FUNCTION (svrecpx, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FRECPX))
 FUNCTION (svreinterpret, svreinterpret_impl,)
 FUNCTION (svrev, svrev_impl,)
-FUNCTION (svrevb, unspec_based_function, (UNSPEC_REVB, UNSPEC_REVB, UNSPEC_NONE))
-FUNCTION (svrevh, unspec_based_function, (UNSPEC_REVH, UNSPEC_REVH, UNSPEC_NONE))
-FUNCTION (svrevw, unspec_based_function, (UNSPEC_REVW, UNSPEC_REVW, UNSPEC_NONE))
+FUNCTION (svrevb, unspec_based_function, (UNSPEC_REVB, UNSPEC_REVB))
+FUNCTION (svrevh, unspec_based_function, (UNSPEC_REVH, UNSPEC_REVH))
+FUNCTION (svrevw, unspec_based_function, (UNSPEC_REVW, UNSPEC_REVW))
 FUNCTION (svrinta, svrint_impl, (round_optab, UNSPEC_COND_FRINTA))
 FUNCTION (svrinti, svrint_impl, (nearbyint_optab, UNSPEC_COND_FRINTI))
 FUNCTION (svrintm, svrint_impl, (floor_optab, UNSPEC_COND_FRINTM))
@@ -3802,7 +3802,7 @@ FUNCTION (svstnt1, svstnt1_impl,)
 FUNCTION (svsub, svsub_impl,)
 FUNCTION (svsubr, rtx_code_function_rotated, (MINUS, MINUS, UNSPEC_COND_FSUB))
 FUNCTION (svsudot, svusdot_impl, (true))
-FUNCTION (svsudot_lane, svdotprod_lane_impl, (UNSPEC_SUDOT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svsudot_lane, svdotprod_lane_impl, (UNSPEC_SUDOT))
 FUNCTION (svtbl, quiet<unspec_based_uncond_function>, (UNSPEC_TBL, UNSPEC_TBL,
 						       UNSPEC_TBL))
 FUNCTION (svtmad, CODE_FOR_MODE0 (aarch64_sve_tmad),)
@@ -3821,8 +3821,8 @@ FUNCTION (svundef4, svundef_impl, (4))
 FUNCTION (svunpkhi, svunpk_impl, (true))
 FUNCTION (svunpklo, svunpk_impl, (false))
 FUNCTION (svusdot, svusdot_impl, (false))
-FUNCTION (svusdot_lane, svdotprod_lane_impl, (UNSPEC_USDOT, UNSPEC_NONE, UNSPEC_NONE))
-FUNCTION (svusmmla, unspec_based_add_function, (UNSPEC_USMATMUL, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svusdot_lane, svdotprod_lane_impl, (UNSPEC_USDOT))
+FUNCTION (svusmmla, unspec_based_add_function, (UNSPEC_USMATMUL))
 FUNCTION (svuzp1, svuzp_impl, (0))
 FUNCTION (svuzp1q, unspec_based_function, (UNSPEC_UZP1Q, UNSPEC_UZP1Q,
 					   UNSPEC_UZP1Q))
