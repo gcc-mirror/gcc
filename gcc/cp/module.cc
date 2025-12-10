@@ -22541,11 +22541,66 @@ void module_state::set_filename (const Cody::Packet &packet)
     }
 }
 
+/* The list of importable headers from C++ Table 24.  */
+
+static const char *
+importable_headers[] =
+  {
+    "algorithm", "any", "array", "atomic",
+    "barrier", "bit", "bitset",
+    "charconv", "chrono", "compare", "complex", "concepts",
+    "condition_variable", "contracts", "coroutine",
+    "debugging", "deque",
+    "exception", "execution", "expected",
+    "filesystem", "flat_map", "flat_set", "format", "forward_list",
+    "fstream", "functional", "future",
+    "generator",
+    "hazard_pointer", "hive",
+    "initializer_list", "inplace_vector", "iomanip", "ios", "iosfwd",
+    "iostream", "istream", "iterator",
+    "latch", "limits", "linalg", "list", "locale",
+    "map", "mdspan", "memory", "memory_resource", "meta", "mutex",
+    "new", "numbers", "numeric",
+    "optional", "ostream",
+    "print",
+    "queue",
+    "random", "ranges", "ratio", "rcu", "regex",
+    "scoped_allocator", "semaphore", "set", "shared_mutex", "simd",
+    "source_location", "span", "spanstream", "sstream", "stack", "stacktrace",
+    "stdexcept", "stdfloat", "stop_token", "streambuf", "string",
+    "string_view", "syncstream", "system_error",
+    "text_encoding", "thread", "tuple", "type_traits", "typeindex", "typeinfo",
+    "unordered_map", "unordered_set",
+    "utility",
+    "valarray", "variant", "vector", "version"
+  };
+
+/* True iff <name> is listed as an importable standard header.  */
+
+static bool
+is_importable_header (const char *name)
+{
+  unsigned lo = 0;
+  unsigned hi = ARRAY_SIZE (importable_headers);
+  while (hi > lo)
+    {
+      unsigned mid = (lo + hi)/2;
+      int cmp = strcmp (name, importable_headers[mid]);
+      if (cmp > 0)
+	lo = mid + 1;
+      else if (cmp < 0)
+	hi = mid;
+      else
+	return true;
+    }
+  return false;
+}
+
 /* Figure out whether to treat HEADER as an include or an import.  */
 
 static char *
 maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
-			 const char *path)
+			 _cpp_file *file, bool angle, const char **alternate)
 {
   if (!modules_p ())
     {
@@ -22553,6 +22608,8 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
       cpp_get_callbacks (reader)->translate_include = NULL;
       return nullptr;
     }
+
+  const char *path = _cpp_get_file_path (file);
 
   dump.push (NULL);
 
@@ -22598,6 +22655,28 @@ maybe_translate_include (cpp_reader *reader, line_maps *lmaps, location_t loc,
     for (unsigned ix = note_includes->length (); !note && ix--;)
       if (!strcmp ((*note_includes)[ix], path))
 	note = true;
+
+  /* Maybe try importing a different header instead.  */
+  if (alternate && translate == xlate_kind::unknown)
+    {
+      const char *fname = _cpp_get_file_name (file);
+      /* Redirect importable <name> to <bits/stdc++.h>.  */
+      /* ??? Generalize to use a .json.  */
+      expanded_location eloc = expand_location (loc);
+      if (angle && is_importable_header (fname)
+	  /* Exclude <version> which often goes with import std.  */
+	  && strcmp (fname, "version") != 0
+	  /* Don't redirect #includes between headers under the same include
+	     path directory (i.e. between library headers); if the import
+	     brings in the current file we then get redefinition errors.  */
+	  && !strstr (eloc.file, _cpp_get_file_dir (file)->name)
+	  /* ??? These are needed when running a toolchain from the build
+	     directory, because libsupc++ headers aren't linked into
+	     libstdc++-v3/include with the other headers.  */
+	  && !strstr (eloc.file, "libstdc++-v3/include")
+	  && !strstr (eloc.file, "libsupc++"))
+	*alternate = "bits/stdc++.h";
+    }
 
   if (note)
     inform (loc, translate == xlate_kind::import

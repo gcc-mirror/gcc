@@ -860,7 +860,8 @@ struct cpp_callbacks
   /* Maybe translate a #include into something else.  Return a
      cpp_buffer containing the translation if translating.  */
   char *(*translate_include) (cpp_reader *, line_maps *, location_t,
-			      const char *path);
+			      _cpp_file *file, bool angle_brackets,
+			      const char **alternate);
 };
 
 #ifdef VMS

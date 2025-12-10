@@ -211,6 +211,7 @@ static bool validate_pch (cpp_reader *, _cpp_file *file, const char *pchname);
 static int pchf_save_compare (const void *e1, const void *e2);
 static int pchf_compare (const void *d_p, const void *e_p);
 static bool check_file_against_entries (cpp_reader *, _cpp_file *, bool);
+static void _cpp_post_stack_file (cpp_reader *, _cpp_file *, include_type, bool);
 
 /* Given a filename in FILE->PATH, with the empty string interpreted
    as <stdin>, open it.
@@ -954,88 +955,92 @@ bool
 _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
 		 location_t loc)
 {
-  if (is_known_idempotent_file (pfile, file, type == IT_IMPORT))
+  int sysp = 0;
+
+  /* Not a header unit, and we know it.  */
+  file->header_unit = -1;
+
+  if (!read_file (pfile, file, loc))
     return false;
 
-  int sysp = 0;
-  char *buf = nullptr;
+  if (!has_unique_contents (pfile, file, type == IT_IMPORT, loc))
+    return false;
 
-  /* Check C++ module include translation.  */
-  if (!file->header_unit && type < IT_HEADER_HWM
-      /* Do not include translate include-next.  */
-      && type != IT_INCLUDE_NEXT
-      && pfile->cb.translate_include)
-    buf = (pfile->cb.translate_include
-	   (pfile, pfile->line_table, loc, file->path));
+  if (pfile->buffer && file->dir)
+    sysp = MAX (pfile->buffer->sysp, file->dir->sysp);
 
-  if (buf)
+  /* Add the file to the dependencies on its first inclusion.  */
+  if (CPP_OPTION (pfile, deps.style) > (sysp != 0)
+      && !file->stack_count
+      && file->path[0]
+      && !(pfile->main_file == file
+	   && CPP_OPTION (pfile, deps.ignore_main_file)))
+    deps_add_dep (pfile->deps, file->path);
+
+  /* Clear buffer_valid since _cpp_clean_line messes it up.  */
+  file->buffer_valid = false;
+  file->stack_count++;
+
+  /* Stack the buffer.  */
+  cpp_buffer *buffer
+    = cpp_push_buffer (pfile, file->buffer, file->st.st_size,
+		       CPP_OPTION (pfile, preprocessed)
+		       && !CPP_OPTION (pfile, directives_only));
+  buffer->file = file;
+  buffer->sysp = sysp;
+  buffer->to_free = file->buffer_start;
+
+  /* Initialize controlling macro state.  */
+  pfile->mi_valid = true;
+  pfile->mi_cmacro = 0;
+
+  _cpp_post_stack_file (pfile, file, type, sysp);
+  return true;
+}
+
+/* Like _cpp_stack_file, but for a file that's been replaced by the contents of
+   BUF.  Used for C++ modules include -> import translation.  */
+
+static bool
+_cpp_stack_translated_file (cpp_reader *pfile, _cpp_file *file,
+			    char *buf, include_type type)
+{
+  /* We don't increment the line number at the end of a buffer,
+     because we don't usually need that location (we're popping an
+     include file).  However in this case we do want to do the
+     increment.  So push a writable buffer of two newlines to acheive
+     that.  (We also need an extra newline, so this looks like a regular
+     file, which we do that to to make sure we don't fall off the end in the
+     middle of a line.  */
+  if (type != IT_CMDLINE)
     {
-      /* We don't increment the line number at the end of a buffer,
-	 because we don't usually need that location (we're popping an
-	 include file).  However in this case we do want to do the
-	 increment.  So push a writable buffer of two newlines to acheive
-	 that.  (We also need an extra newline, so this looks like a regular
-	 file, which we do that to to make sure we don't fall off the end in the
-	 middle of a line.  */
-      if (type != IT_CMDLINE)
-	{
-	  static uchar newlines[] = "\n\n\n";
-	  cpp_push_buffer (pfile, newlines, 2, true);
-	}
-
-      size_t len = strlen (buf);
-      buf[len] = '\n'; /* See above  */
-      cpp_buffer *buffer
-	= cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
-			   len, true);
-      buffer->to_free = buffer->buf;
-      if (type == IT_CMDLINE)
-	/* Tell _cpp_pop_buffer to change files.  */
-	buffer->file = file;
-
-      file->header_unit = +1;
-      _cpp_mark_file_once_only (pfile, file);
-    }
-  else
-    {
-      /* Not a header unit, and we know it.  */
-      file->header_unit = -1;
-
-      if (!read_file (pfile, file, loc))
-	return false;
-
-      if (!has_unique_contents (pfile, file, type == IT_IMPORT, loc))
-	return false;
-
-      if (pfile->buffer && file->dir)
-	sysp = MAX (pfile->buffer->sysp, file->dir->sysp);
-
-      /* Add the file to the dependencies on its first inclusion.  */
-      if (CPP_OPTION (pfile, deps.style) > (sysp != 0)
-	  && !file->stack_count
-	  && file->path[0]
-	  && !(pfile->main_file == file
-	       && CPP_OPTION (pfile, deps.ignore_main_file)))
-	deps_add_dep (pfile->deps, file->path);
-
-      /* Clear buffer_valid since _cpp_clean_line messes it up.  */
-      file->buffer_valid = false;
-      file->stack_count++;
-
-      /* Stack the buffer.  */
-      cpp_buffer *buffer
-	= cpp_push_buffer (pfile, file->buffer, file->st.st_size,
-			   CPP_OPTION (pfile, preprocessed)
-			   && !CPP_OPTION (pfile, directives_only));
-      buffer->file = file;
-      buffer->sysp = sysp;
-      buffer->to_free = file->buffer_start;
-
-      /* Initialize controlling macro state.  */
-      pfile->mi_valid = true;
-      pfile->mi_cmacro = 0;
+      static uchar newlines[] = "\n\n\n";
+      cpp_push_buffer (pfile, newlines, 2, true);
     }
 
+  size_t len = strlen (buf);
+  buf[len] = '\n'; /* See above  */
+  cpp_buffer *buffer
+    = cpp_push_buffer (pfile, reinterpret_cast<unsigned char *> (buf),
+		       len, true);
+  buffer->to_free = buffer->buf;
+  if (type == IT_CMDLINE)
+    /* Tell _cpp_pop_buffer to change files.  */
+    buffer->file = file;
+
+  file->header_unit = +1;
+  _cpp_mark_file_once_only (pfile, file);
+
+  _cpp_post_stack_file (pfile, file, type, false);
+  return true;
+}
+
+/* The common epilogue of _cpp_stack_file and _cpp_stack_translated_file.  */
+
+static void
+_cpp_post_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
+		      bool sysp)
+{
   /* In the case of a normal #include, we're now at the start of the
      line *following* the #include.  A separate location_t for this
      location makes no sense, until we do the LC_LEAVE.
@@ -1070,8 +1075,6 @@ _cpp_stack_file (cpp_reader *pfile, _cpp_file *file, include_type type,
       linenum_type line = SOURCE_LINE (map, pfile->line_table->highest_line);
       linemap_line_start (pfile->line_table, line - 1, 0);
     }
-
-  return true;
 }
 
 /* Mark FILE to be included once only.  */
@@ -1171,7 +1174,37 @@ _cpp_stack_include (cpp_reader *pfile, const char *fname, int angle_brackets,
   if (type == IT_DEFAULT && file == NULL)
     return false;
 
-  return _cpp_stack_file (pfile, file, type, loc);
+  if (is_known_idempotent_file (pfile, file, type == IT_IMPORT))
+    return false;
+
+  /* Check C++ module include translation.  */
+  char *buf = nullptr;
+  if (!file->header_unit && type < IT_DEFAULT
+      /* Do not include translate include-next.  */
+      && type != IT_INCLUDE_NEXT
+      && pfile->cb.translate_include)
+    {
+      const char *aname = nullptr;
+      buf = (pfile->cb.translate_include
+	     (pfile, pfile->line_table, loc, file,
+	      angle_brackets, &aname));
+      if (!buf && aname)
+	{
+	  _cpp_file *afile = _cpp_find_file (pfile, aname, dir, angle_brackets,
+					     _cpp_FFK_NORMAL, loc);
+	  if (afile && !afile->header_unit)
+	    buf = (pfile->cb.translate_include
+		   (pfile, pfile->line_table, loc,
+		    afile, angle_brackets, nullptr));
+	  if (buf)
+	    file = afile;
+	}
+    }
+
+  if (buf)
+    return _cpp_stack_translated_file (pfile, file, buf, type);
+  else
+    return _cpp_stack_file (pfile, file, type, loc);
 }
 
 /* NAME is a header file name, find the _cpp_file, if any.  */

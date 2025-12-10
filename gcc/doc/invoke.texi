@@ -38780,13 +38780,6 @@ reverse is not implemented---textually redefining an entity that has
 been defined in an imported header-unit.  A redefinition error is
 emitted.
 
-@item Standard Library Header Units
-The Standard Library is not provided as importable header units.  If
-you want to import such units, you must explicitly build them first.
-If you do not do this with care, you may have multiple declarations,
-which the module machinery must merge---compiler resource usage can be
-affected by how you partition header files into header units.
-
 @end table
 
 Modular compilation is @emph{not} enabled with just the
@@ -38848,6 +38841,14 @@ g++ -fmodules -include bits/stdc++.h mycode.C
 and any standard library #includes in mycode.C will be skipped,
 because the import brought in the whole library.  This can be a simple
 way to use modules to speed up compilation without any code changes.
+
+But for the standard library in particular this is unnecessary: if a
+header unit has been built for the libstdc++ @samp{bits/stdc++.h}
+header, the compiler will translate an @samp{#include} of any
+importable standard library header into an import of that header unit,
+speeding up compilation without needing to specify @samp{-include}.
+Note that the @samp{bits/stdc++.h} header unit is also built by the
+@option{--compile-std-module} option.
 
 The @option{-fmodule-only} option disables generation of the
 associated object file for compiling a module interface.  Only the CMI
