@@ -385,6 +385,23 @@ private:
   Self (Kind kind) : kind (kind) {}
 };
 
+struct BlockExpr
+{
+  static tl::expected<std::unique_ptr<AST::BlockExpr>, BlockExpr>
+  make_malformed ()
+  {
+    return tl::unexpected<BlockExpr> (BlockExpr (Kind::MALFORMED));
+  }
+
+  enum class Kind
+  {
+    MALFORMED,
+  } kind;
+
+private:
+  BlockExpr (Kind kind) : kind (kind) {}
+};
+
 } // namespace Error
 } // namespace Parse
 } // namespace Rust

@@ -1627,10 +1627,10 @@ Parser<ManagedTokenSource>::parse_function (AST::Visibility vis,
     lexer.skip_token ();
   else
     {
-      std::unique_ptr<AST::BlockExpr> block_expr = parse_block_expr ();
-      if (block_expr == nullptr)
+      auto block_expr = parse_block_expr ();
+      if (!block_expr)
 	return nullptr;
-      body = std::move (block_expr);
+      body = std::move (block_expr.value ());
     }
 
   return std::unique_ptr<AST::Function> (
@@ -4338,7 +4338,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
     {
       auto result = parse_block_expr ();
 
-      if (result == nullptr)
+      if (!result)
 	{
 	  Error error (
 	    lexer.peek_token ()->get_locus (),
@@ -4349,7 +4349,7 @@ Parser<ManagedTokenSource>::parse_inherent_impl_function_or_method (
 	  skip_after_end_block ();
 	  return nullptr;
 	}
-      body = std::move (result);
+      body = std::move (result.value ());
     }
 
   return std::unique_ptr<AST::Function> (
@@ -4576,7 +4576,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
   else
     {
       auto result = parse_block_expr ();
-      if (result == nullptr)
+      if (!result)
 	{
 	  Error error (lexer.peek_token ()->get_locus (),
 		       "could not parse definition in trait impl %s definition",
@@ -4586,7 +4586,7 @@ Parser<ManagedTokenSource>::parse_trait_impl_function_or_method (
 	  skip_after_end_block ();
 	  return nullptr;
 	}
-      body = std::move (result);
+      body = std::move (result.value ());
     }
 
   return std::unique_ptr<AST::Function> (
@@ -4890,7 +4890,13 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
 
   tl::optional<std::unique_ptr<AST::Expr>> else_expr = tl::nullopt;
   if (maybe_skip_token (ELSE))
-    else_expr = parse_block_expr ();
+    {
+      auto block_expr = parse_block_expr ();
+      if (block_expr)
+	else_expr = tl::optional{std::move (block_expr.value ())};
+      else
+	else_expr = tl::nullopt;
+    }
 
   if (restrictions.consume_semi)
     {
@@ -4956,7 +4962,7 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 						  tok->get_locus ());
       }
     case LEFT_CURLY:
-      expr = parse_block_expr ();
+      expr = parse_block_expr ().value ();
       break;
     case MINUS:
     case STRING_LITERAL:

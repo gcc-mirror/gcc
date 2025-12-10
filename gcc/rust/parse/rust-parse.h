@@ -244,7 +244,7 @@ public:
   std::unique_ptr<AST::LiteralExpr> parse_literal_expr (AST::AttrVec outer_attrs
 							= AST::AttrVec ());
 
-  std::unique_ptr<AST::BlockExpr>
+  tl::expected<std::unique_ptr<AST::BlockExpr>, Parse::Error::BlockExpr>
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
