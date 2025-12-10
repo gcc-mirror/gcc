@@ -277,6 +277,97 @@ check_doc_attribute (const AST::Attribute &attribute)
     }
 }
 
+static void
+check_deprecated_attribute (const AST::Attribute &attribute)
+{
+  const auto &input = attribute.get_attr_input ();
+
+  if (input.get_attr_input_type () != AST::AttrInput::META_ITEM)
+    return;
+
+  auto &meta = static_cast<const AST::AttrInputMetaItemContainer &> (input);
+
+  for (auto &current : meta.get_items ())
+    {
+      switch (current->get_kind ())
+	{
+	case AST::MetaItemInner::Kind::MetaItem:
+	  {
+	    auto *meta_item = static_cast<AST::MetaItem *> (current.get ());
+
+	    switch (meta_item->get_item_kind ())
+	      {
+	      case AST::MetaItem::ItemKind::NameValueStr:
+		{
+		  auto *nv = static_cast<AST::MetaNameValueStr *> (meta_item);
+
+		  const std::string key = nv->get_name ().as_string ();
+
+		  if (key != "since" && key != "note")
+		    {
+		      rust_error_at (nv->get_locus (), "unknown meta item %qs",
+				     key.c_str ());
+		      rust_inform (nv->get_locus (),
+				   "expected one of %<since%>, %<note%>");
+		    }
+		}
+		break;
+
+	      case AST::MetaItem::ItemKind::Path:
+		{
+		  // #[deprecated(a,a)]
+		  auto *p = static_cast<AST::MetaItemPath *> (meta_item);
+
+		  std::string ident = p->get_path ().as_string ();
+
+		  rust_error_at (p->get_locus (), "unknown meta item %qs",
+				 ident.c_str ());
+		  rust_inform (p->get_locus (),
+			       "expected one of %<since%>, %<note%>");
+		}
+		break;
+
+	      case AST::MetaItem::ItemKind::Word:
+		{
+		  // #[deprecated("a")]
+		  auto *w = static_cast<AST::MetaWord *> (meta_item);
+
+		  rust_error_at (
+		    w->get_locus (),
+		    "item in %<deprecated%> must be a key/value pair");
+		}
+		break;
+
+	      case AST::MetaItem::ItemKind::PathExpr:
+		{
+		  // #[deprecated(since=a)]
+		  auto *px = static_cast<AST::MetaItemPathExpr *> (meta_item);
+
+		  rust_error_at (
+		    px->get_locus (),
+		    "expected unsuffixed literal or identifier, found %qs",
+		    px->get_expr ().as_string ().c_str ());
+		}
+		break;
+
+	      case AST::MetaItem::ItemKind::Seq:
+	      case AST::MetaItem::ItemKind::ListPaths:
+	      case AST::MetaItem::ItemKind::ListNameValueStr:
+	      default:
+		gcc_unreachable ();
+		break;
+	      }
+	  }
+	  break;
+
+	case AST::MetaItemInner::Kind::LitExpr:
+	default:
+	  gcc_unreachable ();
+	  break;
+	}
+    }
+}
+
 static bool
 is_proc_macro_type (const AST::Attribute &attribute)
 {
@@ -370,6 +461,8 @@ AttributeChecker::check_attribute (const AST::Attribute &attribute)
   // and costly
   if (result.name == Attrs::DOC)
     check_doc_attribute (attribute);
+  else if (result.name == Attrs::DEPRECATED)
+    check_deprecated_attribute (attribute);
 }
 
 void
