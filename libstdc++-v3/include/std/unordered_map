@@ -80,35 +80,30 @@ _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
 #endif // C++17
 
-#if __cplusplus > 201703L
+#ifdef __cpp_lib_erase_if // C++ >= 20 && HOSTED
 namespace std _GLIBCXX_VISIBILITY(default)
 {
 _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Key, typename _Tp, typename _Hash, typename _CPred,
 	   typename _Alloc, typename _Predicate>
-    inline typename unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>::size_type
-    erase_if(unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>& __cont,
+    inline typename _GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash,
+						  _CPred, _Alloc>::size_type
+    erase_if(_GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash,
+					   _CPred, _Alloc>& __cont,
 	     _Predicate __pred)
-    {
-      _GLIBCXX_STD_C::unordered_map<_Key, _Tp, _Hash, _CPred, _Alloc>&
-	__ucont = __cont;
-      return __detail::__erase_nodes_if(__cont, __ucont, __pred);
-    }
+    { return __detail::__erase_nodes_if(__cont, __cont, __pred); }
 
   template<typename _Key, typename _Tp, typename _Hash, typename _CPred,
 	   typename _Alloc, typename _Predicate>
-    inline typename unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>::
-		    size_type
-    erase_if(unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>& __cont,
+    inline typename _GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash,
+						      _CPred, _Alloc>::size_type
+    erase_if(_GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash,
+						_CPred, _Alloc>& __cont,
 	     _Predicate __pred)
-    {
-      _GLIBCXX_STD_C::unordered_multimap<_Key, _Tp, _Hash, _CPred, _Alloc>&
-	__ucont = __cont;
-      return __detail::__erase_nodes_if(__cont, __ucont, __pred);
-    }
+    { return __detail::__erase_nodes_if(__cont, __cont, __pred); }
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace std
-#endif // C++20
+#endif // __cpp_lib_erase_if
 
 #endif // C++11
 

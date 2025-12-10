@@ -1331,6 +1331,26 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : __is_fast_hash<hash<std::basic_string<_CharT>>>
     { };
 
+#ifdef __glibcxx_erase_if // C++ >= 20 && HOSTED
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _Predicate>
+    constexpr typename __gnu_debug::basic_string<_CharT,
+						 _Traits, _Alloc>::size_type
+    erase_if(__gnu_debug::basic_string<_CharT, _Traits, _Alloc>& __cont,
+	     _Predicate __pred)
+    {
+      return __detail::__erase_if(__cont, __cont._M_base(), std::move(__pred));
+    }
+
+  template<typename _CharT, typename _Traits, typename _Alloc,
+	   typename _Up _GLIBCXX26_DEF_VAL_T(_CharT)>
+    constexpr typename __gnu_debug::basic_string<_CharT,
+						 _Traits, _Alloc>::size_type
+    erase(__gnu_debug::basic_string<_CharT, _Traits, _Alloc>& __cont,
+	  const _Up& __value)
+    { return std::erase_if(__cont, __gnu_cxx::__ops::__equal_to(__value)); }
+#endif // __glibcxx_erase_if
+
 _GLIBCXX_END_NAMESPACE_VERSION
 }
 #endif /* C++11 */

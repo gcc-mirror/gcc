@@ -35,6 +35,7 @@
 #endif
 
 #include <bits/c++config.h>
+#include <bits/stl_algobase.h>
 
 // Used by C++17 containers and Library Fundamentals v2 headers.
 #if __cplusplus >= 201402L
@@ -44,6 +45,27 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   namespace __detail
   {
+    template<typename _Container, typename _UnsafeContainer,
+	     typename _Predicate>
+      _GLIBCXX20_CONSTEXPR
+      typename _Container::size_type
+      __erase_if(_Container& __cont, _UnsafeContainer& __ucont,
+		 _Predicate __pred)
+      {
+	const auto __osz = __ucont.size();
+	const auto __end = __ucont.end();
+	auto __removed = std::__remove_if(__ucont.begin(), __end,
+					  std::move(__pred));
+	if (__removed != __end)
+	  {
+	    __cont.erase(__niter_wrap(__cont.cbegin(), __removed),
+			 __cont.cend());
+	    return __osz - __ucont.size();
+	  }
+
+	return 0;
+      }
+
     template<typename _Container, typename _UnsafeContainer,
 	     typename _Predicate>
       typename _Container::size_type

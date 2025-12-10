@@ -1031,6 +1031,27 @@ namespace __debug
     { __lhs.swap(__rhs); }
 
 } // namespace __debug
+
+#ifdef __glibcxx_erase_if // C++ >= 20 && HOSTED
+_GLIBCXX_BEGIN_NAMESPACE_VERSION
+  template<typename _Tp, typename _Alloc, typename _Predicate>
+    inline typename __debug::list<_Tp, _Alloc>::size_type
+    erase_if(__debug::list<_Tp, _Alloc>& __cont, _Predicate __pred)
+    { return __cont.remove_if(__pred); }
+
+  template<typename _Tp, typename _Alloc,
+	   typename _Up _GLIBCXX26_DEF_VAL_T(_Tp)>
+    inline typename __debug::list<_Tp, _Alloc>::size_type
+    erase(__debug::list<_Tp, _Alloc>& __cont, const _Up& __value)
+    {
+      // _GLIBCXX_RESOLVE_LIB_DEFECTS
+      // 4135. helper lambda of std::erase for list should specify return type
+      return std::erase_if(__cont, [&](const auto& __elem) -> bool {
+	  return __elem == __value;
+      });
+    }
+_GLIBCXX_END_NAMESPACE_VERSION
+#endif // __glibcxx_erase_if
 } // namespace std
 
 namespace __gnu_debug

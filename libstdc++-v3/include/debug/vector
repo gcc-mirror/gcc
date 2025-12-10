@@ -1043,19 +1043,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     constexpr typename __debug::vector<_Tp, _Alloc>::size_type
     erase_if(__debug::vector<_Tp, _Alloc>& __cont, _Predicate __pred)
     {
-      _GLIBCXX_STD_C::vector<_Tp, _Alloc>& __unsafe_cont = __cont;
-      const auto __osz = __cont.size();
-      const auto __end = __unsafe_cont.end();
-      auto __removed = std::__remove_if(__unsafe_cont.begin(), __end,
-					std::move(__pred));
-      if (__removed != __end)
-	{
-	  __cont.erase(__niter_wrap(__cont.begin(), __removed),
-		       __cont.end());
-	  return __osz - __cont.size();
-	}
-
-      return 0;
+      return __detail::__erase_if(__cont, __cont._M_base(), std::move(__pred));
     }
 
   template<typename _Tp, typename _Alloc, typename _Up = _Tp>

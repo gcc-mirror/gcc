@@ -46,6 +46,7 @@
 #include <bits/stl_construct.h>
 #include <bits/stl_uninitialized.h>
 #include <bits/stl_algo.h> // rotate
+#include <bits/erase_if.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {
@@ -1339,17 +1340,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 	     _Predicate __pred)
     {
       if constexpr (_Nm != 0)
-	{
-	  const auto __osz = __cont.size();
-	  const auto __end = __cont.end();
-	  auto __removed = std::__remove_if(__cont.begin(), __end,
-					    std::move(__pred));
-	  if (__removed != __end)
-	    {
-	      __cont.erase(__removed, __end);
-	      return __osz - __cont.size();
-	    }
-	}
+	return __detail::__erase_if(__cont, __cont, std::move(__pred));
 
       return 0;
     }
