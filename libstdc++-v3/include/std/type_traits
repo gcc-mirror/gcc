@@ -348,78 +348,102 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     : public true_type { };
 
   /// @cond undocumented
+
+  // Every integral type is either one of the character types, one of the
+  // signed integer types, one of the unsigned integer types, or bool,
+  // or a cv-qualified version of one of those types ([basic.fundamental]).
+  // For now we only need to distinguish the signed/unsigned integer types.
+  enum class _Integer_kind { _None, _Signed, _Unsigned };
+
   template<typename>
     struct __is_integral_helper
-    : public false_type { };
+    : public false_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 
   template<>
     struct __is_integral_helper<bool>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 
   template<>
     struct __is_integral_helper<char>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 
   template<>
     struct __is_integral_helper<signed char>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   template<>
     struct __is_integral_helper<unsigned char>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 
   // We want is_integral<wchar_t> to be true (and make_signed/unsigned to work)
   // even when libc doesn't provide working <wchar.h> and related functions,
   // so don't check _GLIBCXX_USE_WCHAR_T here.
   template<>
     struct __is_integral_helper<wchar_t>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 
 #ifdef _GLIBCXX_USE_CHAR8_T
   template<>
     struct __is_integral_helper<char8_t>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 #endif
 
   template<>
     struct __is_integral_helper<char16_t>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 
   template<>
     struct __is_integral_helper<char32_t>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_None; };
 
   template<>
     struct __is_integral_helper<short>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   template<>
     struct __is_integral_helper<unsigned short>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 
   template<>
     struct __is_integral_helper<int>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   template<>
     struct __is_integral_helper<unsigned int>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 
   template<>
     struct __is_integral_helper<long>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   template<>
     struct __is_integral_helper<unsigned long>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 
   template<>
     struct __is_integral_helper<long long>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   template<>
     struct __is_integral_helper<unsigned long long>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 
   // Conditionalizing on __STRICT_ANSI__ here will break any port that
   // uses one of these types for size_t.
@@ -427,58 +451,87 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_0>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_0>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_1)
   __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_1>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_1>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_2)
   __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_2>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_2>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 #endif
 #if defined(__GLIBCXX_TYPE_INT_N_3)
   __extension__
   template<>
     struct __is_integral_helper<__GLIBCXX_TYPE_INT_N_3>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   __extension__
   template<>
     struct __is_integral_helper<unsigned __GLIBCXX_TYPE_INT_N_3>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 #endif
 
 #if defined __SIZEOF_INT128__ && defined __STRICT_ANSI__
   __extension__
   template<>
     struct __is_integral_helper<__int128>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Signed; };
 
   __extension__
   template<>
     struct __is_integral_helper<unsigned __int128>
-    : public true_type { };
+    : public true_type
+    { static constexpr auto _S_kind = _Integer_kind::_Unsigned; };
 #endif
+
+  // Check if a type is one of the signed integer types.
+  template<typename _Tp>
+    using __is_signed_integer
+      = __bool_constant<__is_integral_helper<_Tp>::_S_kind
+			  == _Integer_kind::_Signed>;
+
+  // Check if a type is one of the unsigned integer types.
+  template<typename _Tp>
+    using __is_unsigned_integer
+      = __bool_constant<__is_integral_helper<_Tp>::_S_kind
+			  == _Integer_kind::_Unsigned>;
+
+  // Check if a type is one of the signed or unsigned integer types.
+  // i.e. an integral type except bool, char, wchar_t, and charN_t.
+  template<typename _Tp>
+    using __is_signed_or_unsigned_integer
+      = __bool_constant<__is_integral_helper<_Tp>::_S_kind
+			  != _Integer_kind::_None>;
 
   /// @endcond
 
@@ -822,58 +875,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   /// @cond undocumented
   template<typename _Tp, typename... _Types>
     using __is_one_of = __or_<is_same<_Tp, _Types>...>;
-
-  // Check if a type is one of the signed integer types.
-  __extension__
-  template<typename _Tp>
-    using __is_signed_integer = __is_one_of<_Tp,
-	  signed char, signed short, signed int, signed long,
-	  signed long long
-#if defined(__GLIBCXX_TYPE_INT_N_0)
-	  , signed __GLIBCXX_TYPE_INT_N_0
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_1)
-	  , signed __GLIBCXX_TYPE_INT_N_1
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_2)
-	  , signed __GLIBCXX_TYPE_INT_N_2
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_3)
-	  , signed __GLIBCXX_TYPE_INT_N_3
-#endif
-#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-	  , signed __int128
-#endif
-	  >;
-
-  // Check if a type is one of the unsigned integer types.
-  __extension__
-  template<typename _Tp>
-    using __is_unsigned_integer = __is_one_of<_Tp,
-	  unsigned char, unsigned short, unsigned int, unsigned long,
-	  unsigned long long
-#if defined(__GLIBCXX_TYPE_INT_N_0)
-	  , unsigned __GLIBCXX_TYPE_INT_N_0
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_1)
-	  , unsigned __GLIBCXX_TYPE_INT_N_1
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_2)
-	  , unsigned __GLIBCXX_TYPE_INT_N_2
-#endif
-#if defined(__GLIBCXX_TYPE_INT_N_3)
-	  , unsigned __GLIBCXX_TYPE_INT_N_3
-#endif
-#if defined __STRICT_ANSI__ && defined __SIZEOF_INT128__
-	  , unsigned __int128
-#endif
-	  >;
-
-  // Check if a type is one of the signed or unsigned integer types.
-  // i.e. an integral type except bool, char, wchar_t, and charN_t.
-  template<typename _Tp>
-    using __is_signed_or_unsigned_integer
-      = __or_<__is_signed_integer<_Tp>, __is_unsigned_integer<_Tp>>;
 
   // __void_t (std::void_t for C++11)
   template<typename...> using __void_t = void;
