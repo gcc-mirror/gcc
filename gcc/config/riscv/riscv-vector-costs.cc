@@ -258,6 +258,14 @@ get_biggest_mode (machine_mode mode1, machine_mode mode2)
   return mode1_size >= mode2_size ? mode1 : mode2;
 }
 
+static machine_mode
+get_smallest_mode (machine_mode mode1, machine_mode mode2)
+{
+  unsigned int mode1_size = GET_MODE_BITSIZE (mode1).to_constant ();
+  unsigned int mode2_size = GET_MODE_BITSIZE (mode2).to_constant ();
+  return mode1_size <= mode2_size ? mode1 : mode2;
+}
+
 /* Return true if OP is invariant.  */
 
 static bool
@@ -361,9 +369,11 @@ machine_mode
 costs::compute_local_live_ranges (
   loop_vec_info loop_vinfo,
   const hash_map<basic_block, vec<stmt_point>> &program_points_per_bb,
-  hash_map<basic_block, hash_map<tree, pair>> &live_ranges_per_bb)
+  hash_map<basic_block, hash_map<tree, pair>> &live_ranges_per_bb,
+  machine_mode *smallest_mode_out)
 {
   machine_mode biggest_mode = QImode;
+  machine_mode smallest_mode = TImode;
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   if (!program_points_per_bb.is_empty ())
     {
@@ -394,8 +404,12 @@ costs::compute_local_live_ranges (
 	      if (variable_vectorized_p (loop, program_point.stmt_info,
 					 *node, lhs, true))
 		{
-		  biggest_mode = get_biggest_mode (biggest_mode,
-						   TYPE_MODE (TREE_TYPE (lhs)));
+		  biggest_mode
+		    = get_biggest_mode (biggest_mode,
+					TYPE_MODE (TREE_TYPE (lhs)));
+		  smallest_mode
+		    = get_smallest_mode (smallest_mode,
+					 TYPE_MODE (TREE_TYPE (lhs)));
 		  bool existed_p = false;
 		  pair &live_range
 		    = live_ranges->get_or_insert (lhs, &existed_p);
@@ -415,6 +429,9 @@ costs::compute_local_live_ranges (
 		      biggest_mode
 			= get_biggest_mode (biggest_mode,
 					    TYPE_MODE (TREE_TYPE (var)));
+		      smallest_mode
+			= get_smallest_mode (smallest_mode,
+					     TYPE_MODE (TREE_TYPE (var)));
 		      bool existed_p = false;
 		      pair &live_range
 			= live_ranges->get_or_insert (var, &existed_p);
@@ -445,6 +462,8 @@ costs::compute_local_live_ranges (
 				  (*r).second = MAX (point, (*r).second);
 				  biggest_mode = get_biggest_mode (
 				    biggest_mode, TYPE_MODE (TREE_TYPE (arg)));
+				  smallest_mode = get_smallest_mode (
+				    smallest_mode, TYPE_MODE (TREE_TYPE (arg)));
 				}
 			    }
 			  else
@@ -464,8 +483,14 @@ costs::compute_local_live_ranges (
 	}
     }
   if (dump_enabled_p ())
-    dump_printf_loc (MSG_NOTE, vect_location, "Biggest mode = %s\n",
-		     GET_MODE_NAME (biggest_mode));
+    {
+      dump_printf_loc (MSG_NOTE, vect_location, "Biggest mode = %s\n",
+		       GET_MODE_NAME (biggest_mode));
+      dump_printf_loc (MSG_NOTE, vect_location, "Smallest mode = %s\n",
+		       GET_MODE_NAME (smallest_mode));
+    }
+  if (smallest_mode_out)
+    *smallest_mode_out = smallest_mode;
   return biggest_mode;
 }
 
@@ -637,6 +662,25 @@ compute_estimated_lmul (loop_vec_info loop_vinfo, machine_mode mode)
 	return estimated_lmul;
     }
   return 0;
+}
+
+/* Compute LMUL based on the ratio of biggest to smallest type size.
+   This is used for RVV_CONV_DYNAMIC.  */
+static int
+compute_lmul_from_conversion_ratio (machine_mode biggest_mode,
+				    machine_mode smallest_mode)
+{
+  gcc_assert (GET_MODE_BITSIZE (biggest_mode).is_constant ());
+  gcc_assert (GET_MODE_BITSIZE (smallest_mode).is_constant ());
+
+  unsigned int biggest_size = GET_MODE_BITSIZE (biggest_mode).to_constant ();
+  unsigned int smallest_size = GET_MODE_BITSIZE (smallest_mode).to_constant ();
+
+  int lmul = biggest_size / smallest_size;
+  lmul = std::min (lmul, (int) RVV_M8);
+  lmul = std::max (lmul, (int) RVV_M1);
+
+  return lmul;
 }
 
 /* Update the live ranges according PHI.
@@ -825,56 +869,37 @@ costs::update_local_live_ranges (
     }
 }
 
-/* Compute the maximum live V_REGS.  */
-bool
-costs::has_unexpected_spills_p (loop_vec_info loop_vinfo)
+/* Helper to compute live ranges, modes, and LMUL.  */
+void
+costs::compute_live_ranges_and_lmul (loop_vec_info loop_vinfo,
+  hash_map<basic_block, vec<stmt_point>> &program_points_per_bb,
+  hash_map<basic_block, hash_map<tree, pair>> &live_ranges_per_bb,
+  machine_mode &biggest_mode, machine_mode &smallest_mode, int &lmul)
 {
-  /* Compute local program points.
-     It's a fast and effective computation.  */
-  hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
   compute_local_program_points (loop_vinfo, program_points_per_bb);
 
-  /* Compute local live ranges.  */
-  hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
-  machine_mode biggest_mode
-    = compute_local_live_ranges (loop_vinfo, program_points_per_bb,
-				 live_ranges_per_bb);
+  smallest_mode = TImode;
+  biggest_mode = compute_local_live_ranges (loop_vinfo, program_points_per_bb,
+					    live_ranges_per_bb, &smallest_mode);
 
-  /* Update live ranges according to PHI.  */
   update_local_live_ranges (loop_vinfo, program_points_per_bb,
 			    live_ranges_per_bb, &biggest_mode);
 
-  int lmul = compute_estimated_lmul (loop_vinfo, biggest_mode);
+  if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    lmul = compute_lmul_from_conversion_ratio (biggest_mode, smallest_mode);
+  else
+    lmul = compute_estimated_lmul (loop_vinfo, biggest_mode);
+
   gcc_assert (lmul <= RVV_M8);
-  /* TODO: We calculate the maximum live vars base on current STMTS
-     sequence.  We can support live range shrink if it can give us
-     big improvement in the future.  */
-  if (lmul > RVV_M1)
-    {
-      if (!live_ranges_per_bb.is_empty ())
-	{
-	  unsigned int max_nregs = 0;
-	  for (hash_map<basic_block, hash_map<tree, pair>>::iterator iter
-	       = live_ranges_per_bb.begin ();
-	       iter != live_ranges_per_bb.end (); ++iter)
-	    {
-	      basic_block bb = (*iter).first;
-	      unsigned int max_point
-		= (*program_points_per_bb.get (bb)).length () + 1;
-	      if ((*iter).second.is_empty ())
-		continue;
-	      /* We prefer larger LMUL unless it causes register spillings. */
-	      unsigned int nregs
-		= max_number_of_live_regs (loop_vinfo, bb, (*iter).second,
-					   max_point, biggest_mode, lmul);
-	      if (nregs > max_nregs)
-		max_nregs = nregs;
-	    }
-	  live_ranges_per_bb.empty ();
-	  if (max_nregs > V_REG_NUM)
-	    return true;
-	}
-    }
+}
+
+/* Helper to clean up live range data structures.  */
+void
+costs::cleanup_live_range_data (hash_map<basic_block, vec<stmt_point>>
+				&program_points_per_bb,
+				hash_map<basic_block, hash_map<tree, pair>>
+				&live_ranges_per_bb)
+{
   if (!program_points_per_bb.is_empty ())
     {
       for (hash_map<basic_block, vec<stmt_point>>::iterator iter
@@ -887,7 +912,72 @@ costs::has_unexpected_spills_p (loop_vec_info loop_vinfo)
 	}
       program_points_per_bb.empty ();
     }
-  return false;
+  live_ranges_per_bb.empty ();
+}
+
+/* Compute LMUL for RVV_CONV_DYNAMIC mode based on conversion ratio.  */
+void
+costs::compute_conversion_dynamic_lmul (loop_vec_info loop_vinfo)
+{
+  hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
+  hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
+  machine_mode biggest_mode, smallest_mode;
+  int lmul;
+
+  compute_live_ranges_and_lmul (loop_vinfo, program_points_per_bb,
+				live_ranges_per_bb, biggest_mode,
+				smallest_mode, lmul);
+
+  /* Store the computed LMUL and biggest mode for later comparison
+     in cost model.  */
+  m_computed_lmul_from_conv = lmul;
+  m_biggest_mode_for_conv = biggest_mode;
+
+  cleanup_live_range_data (program_points_per_bb, live_ranges_per_bb);
+}
+
+/* Compute the maximum live V_REGS and check for unexpected spills.  */
+bool
+costs::has_unexpected_spills_p (loop_vec_info loop_vinfo)
+{
+  hash_map<basic_block, vec<stmt_point>> program_points_per_bb;
+  hash_map<basic_block, hash_map<tree, pair>> live_ranges_per_bb;
+  machine_mode biggest_mode, smallest_mode;
+  int lmul;
+
+  compute_live_ranges_and_lmul (loop_vinfo, program_points_per_bb,
+				live_ranges_per_bb, biggest_mode,
+				smallest_mode, lmul);
+
+  /* TODO: We calculate the maximum live vars base on current STMTS
+     sequence.  We can support live range shrink if it can give us
+     big improvement in the future.  */
+  bool has_spills = false;
+  if (lmul > RVV_M1 && !live_ranges_per_bb.is_empty ())
+    {
+      unsigned int max_nregs = 0;
+      for (hash_map<basic_block, hash_map<tree, pair>>::iterator iter
+	   = live_ranges_per_bb.begin ();
+	   iter != live_ranges_per_bb.end (); ++iter)
+	{
+	  basic_block bb = (*iter).first;
+	  unsigned int max_point
+	    = (*program_points_per_bb.get (bb)).length () + 1;
+	  if ((*iter).second.is_empty ())
+	    continue;
+	  /* We prefer larger LMUL unless it causes register spillings.  */
+	  unsigned int nregs
+	    = max_number_of_live_regs (loop_vinfo, bb, (*iter).second,
+				       max_point, biggest_mode, lmul);
+	  if (nregs > max_nregs)
+	    max_nregs = nregs;
+	}
+      if (max_nregs > V_REG_NUM)
+	has_spills = true;
+    }
+
+  cleanup_live_range_data (program_points_per_bb, live_ranges_per_bb);
+  return has_spills;
 }
 
 costs::costs (vec_info *vinfo, bool costing_for_scalar)
@@ -937,6 +1027,8 @@ costs::record_potential_unexpected_spills (loop_vec_info loop_vinfo)
       if (!post_dom_available_p)
 	free_dominance_info (CDI_POST_DOMINATORS);
     }
+  else if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    compute_conversion_dynamic_lmul (loop_vinfo);
 }
 
 /* Decide whether to use the unrolling heuristic described above
@@ -1031,6 +1123,50 @@ costs::better_main_loop_than_p (const vector_costs *uncast_other) const
 			     "Preferring VLS loop because"
 			     " it can be unrolled\n");
 	  return other_prefer_unrolled;
+	}
+    }
+  else if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    {
+      if (this->m_computed_lmul_from_conv > 0
+	  && other->m_computed_lmul_from_conv > 0
+	  && this->m_biggest_mode_for_conv != VOIDmode)
+	{
+	  int this_vf = vect_vf_for_cost (this_loop_vinfo);
+	  int other_vf = vect_vf_for_cost (other_loop_vinfo);
+
+	  /* Get element size from the biggest mode.  */
+	  unsigned int element_bits
+	    = GET_MODE_BITSIZE (this->m_biggest_mode_for_conv).to_constant ();
+
+	  /* Estimate LMUL from VF * element_size / MIN_VLEN.  */
+	  int this_lmul = (this_vf * element_bits) / TARGET_MIN_VLEN;
+	  int other_lmul = (other_vf * element_bits) / TARGET_MIN_VLEN;
+
+	  /* Clamp to valid LMUL range.  */
+	  this_lmul = MAX (1, MIN (this_lmul, 8));
+	  other_lmul = MAX (1, MIN (other_lmul, 8));
+
+	  int target_lmul = this->m_computed_lmul_from_conv;
+
+	  /* Prefer the LMUL that exactly matches our computed ratio.  */
+	  if (this_lmul == target_lmul && other_lmul != target_lmul)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Preferring LMUL=%d loop because it matches"
+				 " conversion ratio (other LMUL=%d)\n",
+				 this_lmul, other_lmul);
+	      return true;
+	    }
+	  else if (this_lmul != target_lmul && other_lmul == target_lmul)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_NOTE, vect_location,
+				 "Preferring other LMUL=%d loop because it"
+				 " matches conversion ratio"
+				 " (this LMUL=%d)\n", other_lmul, this_lmul);
+	      return false;
+	    }
 	}
     }
   else if (rvv_max_lmul == RVV_DYNAMIC)

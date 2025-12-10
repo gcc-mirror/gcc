@@ -313,6 +313,9 @@ Enum(rvv_max_lmul) String(m8) Value(RVV_M8)
 EnumValue
 Enum(rvv_max_lmul) String(dynamic) Value(RVV_DYNAMIC)
 
+EnumValue
+Enum(rvv_max_lmul) String(conv-dynamic) Value(RVV_CONV_DYNAMIC)
+
 mrvv-max-lmul=
 Target RejectNegative Joined Enum(rvv_max_lmul) Var(rvv_max_lmul) Init(RVV_M1)
 -mrvv-max-lmul=<string>	Set the RVV LMUL of auto-vectorization.

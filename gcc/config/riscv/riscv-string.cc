@@ -1089,13 +1089,17 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
   if (!TARGET_VECTOR || !(stringop_strategy & STRATEGY_VECTOR))
     return false;
 
+  int max_lmul = TARGET_MAX_LMUL;
+  if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    max_lmul = RVV_M1;
+
   if (CONST_INT_P (length_in))
     {
       HOST_WIDE_INT length = INTVAL (length_in);
 
       /* If the VLEN and preferred LMUL allow the entire block to be copied in
 	 one go then no loop is needed.  */
-      if (known_le (length, BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL))
+      if (known_le (length, BYTES_PER_RISCV_VECTOR * max_lmul))
 	{
 	  need_loop = false;
 
@@ -1130,10 +1134,10 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
 	  poly_int64 nunits;
 
 	  if (need_loop)
-	    per_iter = BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL;
+	    per_iter = BYTES_PER_RISCV_VECTOR * max_lmul;
 	  else
 	    per_iter = length;
-	  /* BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL may not be divisible by
+	  /* BYTES_PER_RISCV_VECTOR * MAX_LMUL may not be divisible by
 	     this potential_ew.  */
 	  if (!multiple_p (per_iter, potential_ew, &nunits))
 	    continue;
@@ -1164,7 +1168,7 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
 		 pointless.
 		 Still, by choosing a lower LMUL factor that still allows
 		 an entire transfer, we can reduce register pressure.  */
-	      for (unsigned lmul = 1; lmul < TARGET_MAX_LMUL; lmul <<= 1)
+	      for (int lmul = 1; lmul < max_lmul; lmul <<= 1)
 		if (known_le (length * BITS_PER_UNIT, TARGET_MIN_VLEN * lmul)
 		    && multiple_p (BYTES_PER_RISCV_VECTOR * lmul, potential_ew,
 				   &mode_units)
@@ -1177,9 +1181,9 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
 	  if (vmode != VOIDmode)
 	    break;
 
-	  /* BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL will at least be divisible
+	  /* BYTES_PER_RISCV_VECTOR * MAX_LMUL will at least be divisible
 	     by potential_ew 1, so this should succeed eventually.  */
-	  if (multiple_p (BYTES_PER_RISCV_VECTOR * TARGET_MAX_LMUL,
+	  if (multiple_p (BYTES_PER_RISCV_VECTOR * max_lmul,
 			  potential_ew, &mode_units)
 	      && riscv_vector::get_vector_mode (elem_mode,
 						mode_units).exists (&vmode))
@@ -1195,7 +1199,7 @@ use_vector_stringop_p (struct stringop_info &info, HOST_WIDE_INT max_ew,
     }
   else
     {
-      gcc_assert (get_lmul_mode (QImode, TARGET_MAX_LMUL).exists (&vmode));
+      gcc_assert (get_lmul_mode (QImode, max_lmul).exists (&vmode));
     }
 
   /* A memcpy libcall in the worst case takes 3 instructions to prepare the
@@ -1356,6 +1360,8 @@ expand_rawmemchr (machine_mode mode, rtx dst, rtx haystack, rtx needle,
 
   unsigned int isize = GET_MODE_SIZE (mode).to_constant ();
   int lmul = TARGET_MAX_LMUL;
+  if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    lmul = RVV_M1;
   poly_int64 nunits = exact_div (BYTES_PER_RISCV_VECTOR * lmul, isize);
 
   machine_mode vmode;
@@ -1455,6 +1461,8 @@ expand_strcmp (rtx result, rtx src1, rtx src2, rtx nbytes,
   machine_mode mode = E_QImode;
   unsigned int isize = GET_MODE_SIZE (mode).to_constant ();
   int lmul = TARGET_MAX_LMUL;
+  if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+    lmul = RVV_M1;
   poly_int64 nunits = exact_div (BYTES_PER_RISCV_VECTOR * lmul, isize);
 
   machine_mode vmode;
@@ -1606,7 +1614,9 @@ check_vectorise_memory_operation (rtx length_in, HOST_WIDE_INT &lmul_out)
   if (rvv_max_lmul != RVV_DYNAMIC)
     {
       lmul_out = TARGET_MAX_LMUL;
-      return (length <= ((TARGET_MAX_LMUL * TARGET_MIN_VLEN) / 8));
+      if (rvv_max_lmul == RVV_CONV_DYNAMIC)
+	lmul_out = RVV_M1;
+      return (length <= ((lmul_out * TARGET_MIN_VLEN) / 8));
     }
 
   /* Find smallest lmul large enough for entire op.  */
