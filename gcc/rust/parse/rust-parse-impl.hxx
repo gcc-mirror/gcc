@@ -1749,9 +1749,10 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	auto lifetime = parse_lifetime (false);
 	if (!lifetime)
 	  {
-	    rust_error_at (
-	      token->get_locus (),
-	      "failed to parse lifetime in generic parameter list");
+	    Error error (token->get_locus (),
+			 "failed to parse lifetime in generic parameter list");
+	    add_error (std::move (error));
+
 	    return nullptr;
 	  }
 
@@ -1794,9 +1795,11 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 	    type = parse_type ();
 	    if (!type)
 	      {
-		rust_error_at (
+		Error error (
 		  lexer.peek_token ()->get_locus (),
 		  "failed to parse type in type param in generic params");
+		add_error (std::move (error));
+
 		return nullptr;
 	      }
 	  }
@@ -1830,11 +1833,13 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
 
 	    if (!default_expr)
 	      {
-		rust_error_at (tok->get_locus (),
-			       "invalid token for start of default value for "
-			       "const generic parameter: expected %<block%>, "
-			       "%<identifier%> or %<literal%>, got %qs",
-			       token_id_to_str (tok->get_id ()));
+		Error error (tok->get_locus (),
+			     "invalid token for start of default value for "
+			     "const generic parameter: expected %<block%>, "
+			     "%<identifier%> or %<literal%>, got %qs",
+			     token_id_to_str (tok->get_id ()));
+
+		add_error (std::move (error));
 		return nullptr;
 	      }
 
@@ -1854,9 +1859,11 @@ Parser<ManagedTokenSource>::parse_generic_param (EndTokenPred is_end_token)
       }
     default:
       // FIXME: Can we clean this last call with a method call?
-      rust_error_at (token->get_locus (),
-		     "unexpected token when parsing generic parameters: %qs",
-		     token->as_string ().c_str ());
+      Error error (token->get_locus (),
+		   "unexpected token when parsing generic parameters: %qs",
+		   token->as_string ().c_str ());
+      add_error (std::move (error));
+
       return nullptr;
     }
 
@@ -5154,8 +5161,9 @@ Parser<ManagedTokenSource>::parse_self_param ()
 	  break;
       if (i == s.size ())
 	{
-	  rust_error_at (lexer.peek_token ()->get_locus (),
-			 "cannot pass %<self%> by raw pointer");
+	  Error error (lexer.peek_token ()->get_locus (),
+		       "cannot pass %<self%> by raw pointer");
+	  add_error (std::move (error));
 	  return Parse::Error::Self::make_self_raw_pointer ();
 	}
     }
@@ -5242,7 +5250,7 @@ Parser<ManagedTokenSource>::parse_self_param ()
     }
 
   // ensure that cannot have both type and reference
-  if (type != nullptr && has_reference)
+  if (type && has_reference)
     {
       Error error (
 	lexer.peek_token ()->get_locus (),
