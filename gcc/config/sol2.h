@@ -41,6 +41,12 @@ along with GCC; see the file COPYING3.  If not see
 #undef WINT_TYPE_SIZE
 #define WINT_TYPE_SIZE 32
 
+/* Same for pid_t.  See SCD 2.4.2, p. 6P-12, Figure 6-59 (64-bit).  There's
+   no corresponding 32-bit definition, but this is what Solaris 8
+   <sys/types.h> uses.  */
+
+#define PID_TYPE (TARGET_64BIT ? "int" : "long int")
+
 #define SIG_ATOMIC_TYPE "int"
 
 /* ??? This definition of int8_t follows the system header but does
