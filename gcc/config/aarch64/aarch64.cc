@@ -7265,7 +7265,7 @@ aarch64_replace_reg_mode (rtx x, machine_mode mode)
 /* Return the SVE REV[BHW] unspec for reversing quantities of mode MODE
    stored in wider integer containers.  */
 
-static unsigned int
+static unspec
 aarch64_sve_rev_unspec (machine_mode mode)
 {
   switch (GET_MODE_UNIT_SIZE (mode))
@@ -7292,7 +7292,7 @@ aarch64_split_sve_subreg_move (rtx dest, rtx ptrue, rtx src)
       < GET_MODE_UNIT_SIZE (mode_with_narrower_elts))
     std::swap (mode_with_wider_elts, mode_with_narrower_elts);
 
-  unsigned int unspec = aarch64_sve_rev_unspec (mode_with_narrower_elts);
+  unspec unspec = aarch64_sve_rev_unspec (mode_with_narrower_elts);
   machine_mode pred_mode = aarch64_sve_pred_mode (mode_with_wider_elts);
 
   /* Get the operands in the appropriate modes and emit the instruction.  */
@@ -9615,7 +9615,7 @@ aarch_pac_insn_p (rtx x)
       rtx sub = *iter;
       if (sub && GET_CODE (sub) == UNSPEC)
 	{
-	  int unspec_val = XINT (sub, 1);
+	  unspec unspec_val = (unspec) XINT (sub, 1);
 	  switch (unspec_val)
 	    {
 	    case UNSPEC_PACIASP:
@@ -28342,7 +28342,7 @@ aarch64_evpc_hvla (struct expand_vec_perm_d *d)
       return false;
 
   /* Used once we have verified that we can use UNSPEC to do the operation.  */
-  auto use_binary = [&](int unspec) -> bool
+  auto use_binary = [&](unspec unspec) -> bool
     {
       if (!d->testing_p)
 	{

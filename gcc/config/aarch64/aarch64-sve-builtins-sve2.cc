@@ -51,7 +51,7 @@ using namespace aarch64_acle;
 namespace {
 
 /* Return the UNSPEC_CDOT* unspec for rotation amount ROT.  */
-static int
+static unspec
 unspec_cdot (int rot)
 {
   switch (rot)
@@ -65,7 +65,7 @@ unspec_cdot (int rot)
 }
 
 /* Return the UNSPEC_SQRDCMLAH* unspec for rotation amount ROT.  */
-static int
+static unspec
 unspec_sqrdcmlah (int rot)
 {
   switch (rot)
@@ -224,7 +224,7 @@ public:
 class svcvt_fp8_impl : public function_base
 {
 public:
-  constexpr svcvt_fp8_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svcvt_fp8_impl (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -233,7 +233,7 @@ public:
     return e.use_exact_insn (icode);
   }
 
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svcvtn_impl : public function_base
@@ -480,7 +480,7 @@ public:
 class svmatch_svnmatch_impl : public function_base
 {
 public:
-  constexpr svmatch_svnmatch_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svmatch_svnmatch_impl (unspec unspec) : m_unspec (unspec) {}
   gimple *
   fold (gimple_folder &f) const override
   {
@@ -499,7 +499,7 @@ public:
 						    e.vector_mode (0)));
   }
 
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* Implements both svmovlb and svmovlt; the unspec parameters decide
@@ -583,9 +583,9 @@ public:
     /* Convert the rotation amount into a specific unspec.  */
     int rot = INTVAL (e.args.pop ());
     if (rot == 90)
-      return e.map_to_unspecs (UNSPEC_SQCADD90, -1, -1);
+      return e.map_to_unspecs (UNSPEC_SQCADD90, UNSPEC_NONE, UNSPEC_NONE);
     if (rot == 270)
-      return e.map_to_unspecs (UNSPEC_SQCADD270, -1, -1);
+      return e.map_to_unspecs (UNSPEC_SQCADD270, UNSPEC_NONE, UNSPEC_NONE);
     gcc_unreachable ();
   }
 };
@@ -620,7 +620,7 @@ class svqrshl_impl : public unspec_based_function
 {
 public:
   constexpr svqrshl_impl ()
-    : unspec_based_function (UNSPEC_SQRSHL, UNSPEC_UQRSHL, -1) {}
+    : unspec_based_function (UNSPEC_SQRSHL, UNSPEC_UQRSHL, UNSPEC_NONE) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -656,7 +656,7 @@ class svqshl_impl : public unspec_based_function
 {
 public:
   constexpr svqshl_impl ()
-    : unspec_based_function (UNSPEC_SQSHL, UNSPEC_UQSHL, -1) {}
+    : unspec_based_function (UNSPEC_SQSHL, UNSPEC_UQSHL, UNSPEC_NONE) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -693,7 +693,7 @@ class svrshl_impl : public unspec_based_function
 {
 public:
   constexpr svrshl_impl ()
-    : unspec_based_function (UNSPEC_SRSHL, UNSPEC_URSHL, -1) {}
+    : unspec_based_function (UNSPEC_SRSHL, UNSPEC_URSHL, UNSPEC_NONE) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -743,8 +743,8 @@ public:
     machine_mode mode = e.vector_mode (0);
     if (e.pred == PRED_x
 	&& aarch64_sve_sqadd_sqsub_immediate_p (mode, e.args[2], false))
-      return e.map_to_rtx_codes (UNKNOWN, US_PLUS, -1, -1);
-    return e.map_to_unspecs (-1, UNSPEC_USQADD, -1);
+      return e.map_to_rtx_codes (UNKNOWN, US_PLUS, UNSPEC_NONE, UNSPEC_NONE);
+    return e.map_to_unspecs (UNSPEC_NONE, UNSPEC_USQADD, UNSPEC_NONE);
   }
 };
 
@@ -916,7 +916,7 @@ public:
     if (e.pred == PRED_x
 	&& aarch64_sve_arith_immediate_p (mode, e.args[2], false))
       return e.use_unpred_insn (code_for_aarch64_sve_suqadd_const (mode));
-    return e.map_to_unspecs (UNSPEC_SUQADD, -1, -1);
+    return e.map_to_unspecs (UNSPEC_SUQADD, UNSPEC_NONE, UNSPEC_NONE);
   }
 };
 
@@ -953,7 +953,7 @@ public:
 class svwhilerw_svwhilewr_impl : public full_width_access
 {
 public:
-  constexpr svwhilerw_svwhilewr_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svwhilerw_svwhilewr_impl (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -965,7 +965,7 @@ public:
     return e.use_exact_insn (icode);
   }
 
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* Implements svzipq1 and svzipq2.  */
@@ -1015,7 +1015,7 @@ public:
 class faminmaximpl : public function_base
 {
 public:
-  constexpr faminmaximpl (int cond_unspec, int uncond_unspec)
+  constexpr faminmaximpl (unspec cond_unspec, unspec uncond_unspec)
     : m_cond_unspec (cond_unspec), m_uncond_unspec (uncond_unspec) {}
 
   rtx
@@ -1043,8 +1043,8 @@ public:
 
   /* The unspecs for the conditional and unconditional instructions,
      respectively.  */
-  int m_cond_unspec;
-  int m_uncond_unspec;
+  unspec m_cond_unspec;
+  unspec m_uncond_unspec;
 };
 
 } /* end anonymous namespace */
@@ -1053,41 +1053,41 @@ namespace aarch64_acle {
 
 FUNCTION (svaba, svaba_impl,)
 FUNCTION (svabalb, unspec_based_add_function, (UNSPEC_SABDLB,
-					       UNSPEC_UABDLB, -1))
+					       UNSPEC_UABDLB, UNSPEC_NONE))
 FUNCTION (svabalt, unspec_based_add_function, (UNSPEC_SABDLT,
-					       UNSPEC_UABDLT, -1))
-FUNCTION (svabdlb, unspec_based_function, (UNSPEC_SABDLB, UNSPEC_UABDLB, -1))
-FUNCTION (svabdlt, unspec_based_function, (UNSPEC_SABDLT, UNSPEC_UABDLT, -1))
-FUNCTION (svadalp, unspec_based_function, (UNSPEC_SADALP, UNSPEC_UADALP, -1))
-FUNCTION (svadclb, unspec_based_function, (-1, UNSPEC_ADCLB, -1))
-FUNCTION (svadclt, unspec_based_function, (-1, UNSPEC_ADCLT, -1))
-FUNCTION (svaddhnb, unspec_based_function, (UNSPEC_ADDHNB, UNSPEC_ADDHNB, -1))
-FUNCTION (svaddhnt, unspec_based_function, (UNSPEC_ADDHNT, UNSPEC_ADDHNT, -1))
-FUNCTION (svaddlb, unspec_based_function, (UNSPEC_SADDLB, UNSPEC_UADDLB, -1))
-FUNCTION (svaddlbt, unspec_based_function, (UNSPEC_SADDLBT, -1, -1))
-FUNCTION (svaddlt, unspec_based_function, (UNSPEC_SADDLT, UNSPEC_UADDLT, -1))
+					       UNSPEC_UABDLT, UNSPEC_NONE))
+FUNCTION (svabdlb, unspec_based_function, (UNSPEC_SABDLB, UNSPEC_UABDLB, UNSPEC_NONE))
+FUNCTION (svabdlt, unspec_based_function, (UNSPEC_SABDLT, UNSPEC_UABDLT, UNSPEC_NONE))
+FUNCTION (svadalp, unspec_based_function, (UNSPEC_SADALP, UNSPEC_UADALP, UNSPEC_NONE))
+FUNCTION (svadclb, unspec_based_function, (UNSPEC_NONE, UNSPEC_ADCLB, UNSPEC_NONE))
+FUNCTION (svadclt, unspec_based_function, (UNSPEC_NONE, UNSPEC_ADCLT, UNSPEC_NONE))
+FUNCTION (svaddhnb, unspec_based_function, (UNSPEC_ADDHNB, UNSPEC_ADDHNB, UNSPEC_NONE))
+FUNCTION (svaddhnt, unspec_based_function, (UNSPEC_ADDHNT, UNSPEC_ADDHNT, UNSPEC_NONE))
+FUNCTION (svaddlb, unspec_based_function, (UNSPEC_SADDLB, UNSPEC_UADDLB, UNSPEC_NONE))
+FUNCTION (svaddlbt, unspec_based_function, (UNSPEC_SADDLBT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svaddlt, unspec_based_function, (UNSPEC_SADDLT, UNSPEC_UADDLT, UNSPEC_NONE))
 FUNCTION (svaddp, unspec_based_pred_function, (UNSPEC_ADDP, UNSPEC_ADDP,
 					       UNSPEC_FADDP))
 FUNCTION (svaddqv, reduction, (UNSPEC_ADDQV, UNSPEC_ADDQV, UNSPEC_FADDQV))
-FUNCTION (svaddwb, unspec_based_function, (UNSPEC_SADDWB, UNSPEC_UADDWB, -1))
-FUNCTION (svaddwt, unspec_based_function, (UNSPEC_SADDWT, UNSPEC_UADDWT, -1))
+FUNCTION (svaddwb, unspec_based_function, (UNSPEC_SADDWB, UNSPEC_UADDWB, UNSPEC_NONE))
+FUNCTION (svaddwt, unspec_based_function, (UNSPEC_SADDWT, UNSPEC_UADDWT, UNSPEC_NONE))
 FUNCTION (svaesd, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesd))
 FUNCTION (svaese, fixed_insn_function, (CODE_FOR_aarch64_sve2_aese))
 FUNCTION (svaesimc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesimc))
 FUNCTION (svaesmc, fixed_insn_function, (CODE_FOR_aarch64_sve2_aesmc))
 FUNCTION (svamax, faminmaximpl, (UNSPEC_COND_FAMAX, UNSPEC_FAMAX))
 FUNCTION (svamin, faminmaximpl, (UNSPEC_COND_FAMIN, UNSPEC_FAMIN))
-FUNCTION (svandqv, reduction, (UNSPEC_ANDQV, UNSPEC_ANDQV, -1))
+FUNCTION (svandqv, reduction, (UNSPEC_ANDQV, UNSPEC_ANDQV, UNSPEC_NONE))
 FUNCTION (svbcax, CODE_FOR_MODE0 (aarch64_sve2_bcax),)
-FUNCTION (svbdep, unspec_based_function, (UNSPEC_BDEP, UNSPEC_BDEP, -1))
-FUNCTION (svbext, unspec_based_function, (UNSPEC_BEXT, UNSPEC_BEXT, -1))
+FUNCTION (svbdep, unspec_based_function, (UNSPEC_BDEP, UNSPEC_BDEP, UNSPEC_NONE))
+FUNCTION (svbext, unspec_based_function, (UNSPEC_BEXT, UNSPEC_BEXT, UNSPEC_NONE))
 FUNCTION (svbfmlslb, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmlslbvnx4sf))
 FUNCTION (svbfmlslb_lane, fixed_insn_function,
 	  (CODE_FOR_aarch64_sve_bfmlslb_lanevnx4sf))
 FUNCTION (svbfmlslt, fixed_insn_function, (CODE_FOR_aarch64_sve_bfmlsltvnx4sf))
 FUNCTION (svbfmlslt_lane, fixed_insn_function,
 	  (CODE_FOR_aarch64_sve_bfmlslt_lanevnx4sf))
-FUNCTION (svbgrp, unspec_based_function, (UNSPEC_BGRP, UNSPEC_BGRP, -1))
+FUNCTION (svbgrp, unspec_based_function, (UNSPEC_BGRP, UNSPEC_BGRP, UNSPEC_NONE))
 FUNCTION (svbsl, CODE_FOR_MODE0 (aarch64_sve2_bsl),)
 FUNCTION (svbsl1n, CODE_FOR_MODE0 (aarch64_sve2_bsl1n),)
 FUNCTION (svbsl2n, CODE_FOR_MODE0 (aarch64_sve2_bsl2n),)
@@ -1101,26 +1101,26 @@ FUNCTION (svcvtl1, svcvt_fp8_impl, (UNSPEC_F1CVTL))
 FUNCTION (svcvtl2, svcvt_fp8_impl, (UNSPEC_F2CVTL))
 FUNCTION (svcvtlt1, svcvt_fp8_impl, (UNSPEC_F1CVTLT))
 FUNCTION (svcvtlt2, svcvt_fp8_impl, (UNSPEC_F2CVTLT))
-FUNCTION (svcvtlt, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTLT))
+FUNCTION (svcvtlt, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FCVTLT))
 FUNCTION (svcvtn, svcvtn_impl,)
 FUNCTION (svcvtnb, fixed_insn_function, (CODE_FOR_aarch64_sve2_fp8_cvtnbvnx16qi))
-FUNCTION (svcvtx, unspec_based_function, (-1, -1, UNSPEC_COND_FCVTX))
+FUNCTION (svcvtx, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FCVTX))
 FUNCTION (svcvtxnt, NARROWING_TOP_CONVERT1 (aarch64_sve2_cvtxnt),)
 FUNCTION (svcvtt, svcvtt_impl,)
 FUNCTION (svcvtb, svcvtb_impl,)
 FUNCTION (svdup_laneq, svdup_laneq_impl,)
 FUNCTION (sveor3, CODE_FOR_MODE0 (aarch64_sve2_eor3),)
-FUNCTION (sveorbt, unspec_based_function, (UNSPEC_EORBT, UNSPEC_EORBT, -1))
-FUNCTION (sveorqv, reduction, (UNSPEC_EORQV, UNSPEC_EORQV, -1))
-FUNCTION (sveortb, unspec_based_function, (UNSPEC_EORTB, UNSPEC_EORTB, -1))
+FUNCTION (sveorbt, unspec_based_function, (UNSPEC_EORBT, UNSPEC_EORBT, UNSPEC_NONE))
+FUNCTION (sveorqv, reduction, (UNSPEC_EORQV, UNSPEC_EORQV, UNSPEC_NONE))
+FUNCTION (sveortb, unspec_based_function, (UNSPEC_EORTB, UNSPEC_EORTB, UNSPEC_NONE))
 FUNCTION (svextq, svextq_impl,)
 FUNCTION (svfirstp, svfirst_lastp_impl, (true))
-FUNCTION (svhadd, unspec_based_function, (UNSPEC_SHADD, UNSPEC_UHADD, -1))
-FUNCTION (svhsub, unspec_based_function, (UNSPEC_SHSUB, UNSPEC_UHSUB, -1))
+FUNCTION (svhadd, unspec_based_function, (UNSPEC_SHADD, UNSPEC_UHADD, UNSPEC_NONE))
+FUNCTION (svhsub, unspec_based_function, (UNSPEC_SHSUB, UNSPEC_UHSUB, UNSPEC_NONE))
 FUNCTION (svhistcnt, CODE_FOR_MODE0 (aarch64_sve2_histcnt),)
 FUNCTION (svhistseg, CODE_FOR_MODE0 (aarch64_sve2_histseg),)
 FUNCTION (svhsubr, unspec_based_function_rotated, (UNSPEC_SHSUB,
-						   UNSPEC_UHSUB, -1))
+						   UNSPEC_UHSUB, UNSPEC_NONE))
 FUNCTION (svlastp, svfirst_lastp_impl, (false))
 FUNCTION (svld1q_gather, svld1q_gather_impl,)
 FUNCTION (svld1udq, svld1uxq_impl, (VNx1DImode))
@@ -1135,15 +1135,15 @@ FUNCTION (svldnt1sw_gather, svldnt1_gather_extend_impl, (TYPE_SUFFIX_s32))
 FUNCTION (svldnt1ub_gather, svldnt1_gather_extend_impl, (TYPE_SUFFIX_u8))
 FUNCTION (svldnt1uh_gather, svldnt1_gather_extend_impl, (TYPE_SUFFIX_u16))
 FUNCTION (svldnt1uw_gather, svldnt1_gather_extend_impl, (TYPE_SUFFIX_u32))
-FUNCTION (svlogb, unspec_based_function, (-1, -1, UNSPEC_COND_FLOGB))
+FUNCTION (svlogb, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FLOGB))
 FUNCTION (svmatch, svmatch_svnmatch_impl, (UNSPEC_MATCH))
-FUNCTION (svmaxnmp, unspec_based_pred_function, (-1, -1, UNSPEC_FMAXNMP))
-FUNCTION (svmaxnmqv, reduction, (-1, -1, UNSPEC_FMAXNMQV))
+FUNCTION (svmaxnmp, unspec_based_pred_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMAXNMP))
+FUNCTION (svmaxnmqv, reduction, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMAXNMQV))
 FUNCTION (svmaxp, unspec_based_pred_function, (UNSPEC_SMAXP, UNSPEC_UMAXP,
 					       UNSPEC_FMAXP))
 FUNCTION (svmaxqv, reduction, (UNSPEC_SMAXQV, UNSPEC_UMAXQV, UNSPEC_FMAXQV))
-FUNCTION (svminnmp, unspec_based_pred_function, (-1, -1, UNSPEC_FMINNMP))
-FUNCTION (svminnmqv, reduction, (-1, -1, UNSPEC_FMINNMQV))
+FUNCTION (svminnmp, unspec_based_pred_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMINNMP))
+FUNCTION (svminnmqv, reduction, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMINNMQV))
 FUNCTION (svminp, unspec_based_pred_function, (UNSPEC_SMINP, UNSPEC_UMINP,
 					       UNSPEC_FMINP))
 FUNCTION (svminqv, reduction, (UNSPEC_SMINQV, UNSPEC_UMINQV, UNSPEC_FMINQV))
@@ -1154,21 +1154,21 @@ FUNCTION (svmlalb, unspec_based_mla_function,
 	  (UNSPEC_SMULLB, UNSPEC_UMULLB, UNSPEC_FMLALB,
 	   UNSPEC_FMLALB_FP8))
 FUNCTION (svmlallbb_lane, unspec_based_mla_lane_function,
-	  (-1, -1, -1, UNSPEC_FMLALLBB_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLBB_FP8))
 FUNCTION (svmlallbb, unspec_based_mla_function,
-	  (-1, -1, -1, UNSPEC_FMLALLBB_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLBB_FP8))
 FUNCTION (svmlallbt_lane, unspec_based_mla_lane_function,
-	  (-1, -1, -1, UNSPEC_FMLALLBT_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLBT_FP8))
 FUNCTION (svmlallbt, unspec_based_mla_function,
-	  (-1, -1, -1, UNSPEC_FMLALLBT_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLBT_FP8))
 FUNCTION (svmlalltb_lane, unspec_based_mla_lane_function,
-	  (-1, -1, -1, UNSPEC_FMLALLTB_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLTB_FP8))
 FUNCTION (svmlalltb, unspec_based_mla_function,
-	  (-1, -1, -1, UNSPEC_FMLALLTB_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLTB_FP8))
 FUNCTION (svmlalltt_lane, unspec_based_mla_lane_function,
-	  (-1, -1, -1, UNSPEC_FMLALLTT_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLTT_FP8))
 FUNCTION (svmlalltt, unspec_based_mla_function,
-	  (-1, -1, -1, UNSPEC_FMLALLTT_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FMLALLTT_FP8))
 FUNCTION (svmlalt_lane, unspec_based_mla_lane_function,
 	  (UNSPEC_SMULLT, UNSPEC_UMULLT, UNSPEC_FMLALT,
 	   UNSPEC_FMLALT_FP8))
@@ -1185,125 +1185,125 @@ FUNCTION (svmlslt, unspec_based_mls_function, (UNSPEC_SMULLT,
 FUNCTION (svmlslt_lane, unspec_based_mls_lane_function, (UNSPEC_SMULLT,
 							 UNSPEC_UMULLT,
 							 UNSPEC_FMLSLT))
-FUNCTION (svmovlb, svmovl_lb_impl, (UNSPEC_SSHLLB, UNSPEC_USHLLB, -1))
-FUNCTION (svmovlt, svmovl_lb_impl, (UNSPEC_SSHLLT, UNSPEC_USHLLT, -1))
-FUNCTION (svmullb, unspec_based_function, (UNSPEC_SMULLB, UNSPEC_UMULLB, -1))
+FUNCTION (svmovlb, svmovl_lb_impl, (UNSPEC_SSHLLB, UNSPEC_USHLLB, UNSPEC_NONE))
+FUNCTION (svmovlt, svmovl_lb_impl, (UNSPEC_SSHLLT, UNSPEC_USHLLT, UNSPEC_NONE))
+FUNCTION (svmullb, unspec_based_function, (UNSPEC_SMULLB, UNSPEC_UMULLB, UNSPEC_NONE))
 FUNCTION (svmullb_lane, unspec_based_lane_function, (UNSPEC_SMULLB,
-						     UNSPEC_UMULLB, -1))
-FUNCTION (svmullt, unspec_based_function, (UNSPEC_SMULLT, UNSPEC_UMULLT, -1))
+						     UNSPEC_UMULLB, UNSPEC_NONE))
+FUNCTION (svmullt, unspec_based_function, (UNSPEC_SMULLT, UNSPEC_UMULLT, UNSPEC_NONE))
 FUNCTION (svmullt_lane, unspec_based_lane_function, (UNSPEC_SMULLT,
-						     UNSPEC_UMULLT, -1))
+						     UNSPEC_UMULLT, UNSPEC_NONE))
 FUNCTION (svnbsl, CODE_FOR_MODE0 (aarch64_sve2_nbsl),)
 FUNCTION (svnmatch, svmatch_svnmatch_impl, (UNSPEC_NMATCH))
-FUNCTION (svorqv, reduction, (UNSPEC_ORQV, UNSPEC_ORQV, -1))
+FUNCTION (svorqv, reduction, (UNSPEC_ORQV, UNSPEC_ORQV, UNSPEC_NONE))
 FUNCTION (svpext_lane, svpext_lane_impl,)
 FUNCTION (svpmov, svpmov_impl,)
 FUNCTION (svpmov_lane, svpmov_lane_impl,)
 FUNCTION (svpmul, CODE_FOR_MODE0 (aarch64_sve2_pmul),)
-FUNCTION (svpmullb, unspec_based_function, (-1, UNSPEC_PMULLB, -1))
-FUNCTION (svpmullb_pair, unspec_based_function, (-1, UNSPEC_PMULLB_PAIR, -1))
-FUNCTION (svpmullt, unspec_based_function, (-1, UNSPEC_PMULLT, -1))
-FUNCTION (svpmullt_pair, unspec_based_function, (-1, UNSPEC_PMULLT_PAIR, -1))
+FUNCTION (svpmullb, unspec_based_function, (UNSPEC_NONE, UNSPEC_PMULLB, UNSPEC_NONE))
+FUNCTION (svpmullb_pair, unspec_based_function, (UNSPEC_NONE, UNSPEC_PMULLB_PAIR, UNSPEC_NONE))
+FUNCTION (svpmullt, unspec_based_function, (UNSPEC_NONE, UNSPEC_PMULLT, UNSPEC_NONE))
+FUNCTION (svpmullt_pair, unspec_based_function, (UNSPEC_NONE, UNSPEC_PMULLT_PAIR, UNSPEC_NONE))
 FUNCTION (svpsel_lane, svpsel_lane_impl,)
-FUNCTION (svqabs, rtx_code_function, (SS_ABS, UNKNOWN, UNKNOWN))
+FUNCTION (svqabs, rtx_code_function, (SS_ABS, UNKNOWN, UNSPEC_NONE))
 FUNCTION (svqcadd, svqcadd_impl,)
 FUNCTION (svqcvt, integer_conversion, (UNSPEC_SQCVT, UNSPEC_SQCVTU,
-				       UNSPEC_UQCVT, -1))
+				       UNSPEC_UQCVT, UNSPEC_NONE))
 FUNCTION (svqcvtn, integer_conversion, (UNSPEC_SQCVTN, UNSPEC_SQCVTUN,
-					UNSPEC_UQCVTN, -1))
-FUNCTION (svqdmlalb, unspec_based_qadd_function, (UNSPEC_SQDMULLB, -1, -1))
+					UNSPEC_UQCVTN, UNSPEC_NONE))
+FUNCTION (svqdmlalb, unspec_based_qadd_function, (UNSPEC_SQDMULLB, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqdmlalb_lane, unspec_based_qadd_lane_function, (UNSPEC_SQDMULLB,
-							    -1, -1))
-FUNCTION (svqdmlalbt, unspec_based_qadd_function, (UNSPEC_SQDMULLBT, -1, -1))
-FUNCTION (svqdmlalt, unspec_based_qadd_function, (UNSPEC_SQDMULLT, -1, -1))
+							    UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmlalbt, unspec_based_qadd_function, (UNSPEC_SQDMULLBT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmlalt, unspec_based_qadd_function, (UNSPEC_SQDMULLT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqdmlalt_lane, unspec_based_qadd_lane_function, (UNSPEC_SQDMULLT,
-							    -1, -1))
-FUNCTION (svqdmlslb, unspec_based_qsub_function, (UNSPEC_SQDMULLB, -1, -1))
+							    UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmlslb, unspec_based_qsub_function, (UNSPEC_SQDMULLB, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqdmlslb_lane, unspec_based_qsub_lane_function, (UNSPEC_SQDMULLB,
-							    -1, -1))
-FUNCTION (svqdmlslbt, unspec_based_qsub_function, (UNSPEC_SQDMULLBT, -1, -1))
-FUNCTION (svqdmlslt, unspec_based_qsub_function, (UNSPEC_SQDMULLT, -1, -1))
+							    UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmlslbt, unspec_based_qsub_function, (UNSPEC_SQDMULLBT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmlslt, unspec_based_qsub_function, (UNSPEC_SQDMULLT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqdmlslt_lane, unspec_based_qsub_lane_function, (UNSPEC_SQDMULLT,
-							    -1, -1))
-FUNCTION (svqdmulh, unspec_based_function, (UNSPEC_SQDMULH, -1, -1))
-FUNCTION (svqdmulh_lane, unspec_based_lane_function, (UNSPEC_SQDMULH, -1, -1))
-FUNCTION (svqdmullb, unspec_based_function, (UNSPEC_SQDMULLB, -1, -1))
+							    UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmulh, unspec_based_function, (UNSPEC_SQDMULH, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmulh_lane, unspec_based_lane_function, (UNSPEC_SQDMULH, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmullb, unspec_based_function, (UNSPEC_SQDMULLB, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqdmullb_lane, unspec_based_lane_function, (UNSPEC_SQDMULLB,
-						       -1, -1))
-FUNCTION (svqdmullt, unspec_based_function, (UNSPEC_SQDMULLT, -1, -1))
+						       UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqdmullt, unspec_based_function, (UNSPEC_SQDMULLT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqdmullt_lane, unspec_based_lane_function, (UNSPEC_SQDMULLT,
-						       -1, -1))
-FUNCTION (svqneg, rtx_code_function, (SS_NEG, UNKNOWN, UNKNOWN))
+						       UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqneg, rtx_code_function, (SS_NEG, UNKNOWN, UNSPEC_NONE))
 FUNCTION (svqrdcmlah, svqrdcmlah_impl,)
 FUNCTION (svqrdcmlah_lane, svqrdcmlah_lane_impl,)
-FUNCTION (svqrdmlah, unspec_based_function, (UNSPEC_SQRDMLAH, -1, -1))
+FUNCTION (svqrdmlah, unspec_based_function, (UNSPEC_SQRDMLAH, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqrdmlah_lane, unspec_based_lane_function, (UNSPEC_SQRDMLAH,
-						       -1, -1))
-FUNCTION (svqrdmlsh, unspec_based_function, (UNSPEC_SQRDMLSH, -1, -1))
+						       UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqrdmlsh, unspec_based_function, (UNSPEC_SQRDMLSH, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqrdmlsh_lane, unspec_based_lane_function, (UNSPEC_SQRDMLSH,
-						       -1, -1))
-FUNCTION (svqrdmulh, unspec_based_function, (UNSPEC_SQRDMULH, -1, -1))
+						       UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqrdmulh, unspec_based_function, (UNSPEC_SQRDMULH, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqrdmulh_lane, unspec_based_lane_function, (UNSPEC_SQRDMULH,
-						       -1, -1))
+						       UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqrshl, svqrshl_impl,)
 FUNCTION (svqrshr, unspec_based_uncond_function, (UNSPEC_SQRSHR,
-						  UNSPEC_UQRSHR, -1, -1, 1))
+						  UNSPEC_UQRSHR, UNSPEC_NONE, UNSPEC_NONE, 1))
 FUNCTION (svqrshrn, unspec_based_uncond_function, (UNSPEC_SQRSHRN,
-						   UNSPEC_UQRSHRN, -1, -1, 1))
+						   UNSPEC_UQRSHRN, UNSPEC_NONE, UNSPEC_NONE, 1))
 FUNCTION (svqrshrnb, unspec_based_function, (UNSPEC_SQRSHRNB,
-					     UNSPEC_UQRSHRNB, -1))
+					     UNSPEC_UQRSHRNB, UNSPEC_NONE))
 FUNCTION (svqrshrnt, unspec_based_function, (UNSPEC_SQRSHRNT,
-					     UNSPEC_UQRSHRNT, -1))
-FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, -1, -1, -1, 1))
-FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, -1, -1, -1, 1))
-FUNCTION (svqrshrunb, unspec_based_function, (UNSPEC_SQRSHRUNB, -1, -1))
-FUNCTION (svqrshrunt, unspec_based_function, (UNSPEC_SQRSHRUNT, -1, -1))
+					     UNSPEC_UQRSHRNT, UNSPEC_NONE))
+FUNCTION (svqrshru, unspec_based_uncond_function, (UNSPEC_SQRSHRU, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, 1))
+FUNCTION (svqrshrun, unspec_based_uncond_function, (UNSPEC_SQRSHRUN, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, 1))
+FUNCTION (svqrshrunb, unspec_based_function, (UNSPEC_SQRSHRUNB, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqrshrunt, unspec_based_function, (UNSPEC_SQRSHRUNT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqshl, svqshl_impl,)
-FUNCTION (svqshlu, unspec_based_function, (UNSPEC_SQSHLU, -1, -1))
+FUNCTION (svqshlu, unspec_based_function, (UNSPEC_SQSHLU, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svqshrnb, unspec_based_function, (UNSPEC_SQSHRNB,
-					    UNSPEC_UQSHRNB, -1))
+					    UNSPEC_UQSHRNB, UNSPEC_NONE))
 FUNCTION (svqshrnt, unspec_based_function, (UNSPEC_SQSHRNT,
-					    UNSPEC_UQSHRNT, -1))
-FUNCTION (svqshrunb, unspec_based_function, (UNSPEC_SQSHRUNB, -1, -1))
-FUNCTION (svqshrunt, unspec_based_function, (UNSPEC_SQSHRUNT, -1, -1))
-FUNCTION (svqsubr, rtx_code_function_rotated, (SS_MINUS, US_MINUS, -1))
-FUNCTION (svqxtnb, unspec_based_function, (UNSPEC_SQXTNB, UNSPEC_UQXTNB, -1))
-FUNCTION (svqxtnt, unspec_based_function, (UNSPEC_SQXTNT, UNSPEC_UQXTNT, -1))
-FUNCTION (svqxtunb, unspec_based_function, (UNSPEC_SQXTUNB, -1, -1))
-FUNCTION (svqxtunt, unspec_based_function, (UNSPEC_SQXTUNT, -1, -1))
+					    UNSPEC_UQSHRNT, UNSPEC_NONE))
+FUNCTION (svqshrunb, unspec_based_function, (UNSPEC_SQSHRUNB, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqshrunt, unspec_based_function, (UNSPEC_SQSHRUNT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqsubr, rtx_code_function_rotated, (SS_MINUS, US_MINUS, UNSPEC_NONE))
+FUNCTION (svqxtnb, unspec_based_function, (UNSPEC_SQXTNB, UNSPEC_UQXTNB, UNSPEC_NONE))
+FUNCTION (svqxtnt, unspec_based_function, (UNSPEC_SQXTNT, UNSPEC_UQXTNT, UNSPEC_NONE))
+FUNCTION (svqxtunb, unspec_based_function, (UNSPEC_SQXTUNB, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svqxtunt, unspec_based_function, (UNSPEC_SQXTUNT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svraddhnb, unspec_based_function, (UNSPEC_RADDHNB,
-					     UNSPEC_RADDHNB, -1))
+					     UNSPEC_RADDHNB, UNSPEC_NONE))
 FUNCTION (svraddhnt, unspec_based_function, (UNSPEC_RADDHNT,
-					     UNSPEC_RADDHNT, -1))
+					     UNSPEC_RADDHNT, UNSPEC_NONE))
 FUNCTION (svrax1, fixed_insn_function, (CODE_FOR_aarch64_sve2_rax1))
 FUNCTION (svrevd, unspec_based_function, (UNSPEC_REVD, UNSPEC_REVD,
 					  UNSPEC_REVD))
-FUNCTION (svrhadd, unspec_based_function, (UNSPEC_SRHADD, UNSPEC_URHADD, -1))
-FUNCTION (svrint32x, unspec_based_function, (-1, -1, UNSPEC_FRINT32X))
-FUNCTION (svrint32z, unspec_based_function, (-1, -1, UNSPEC_FRINT32Z))
-FUNCTION (svrint64x, unspec_based_function, (-1, -1, UNSPEC_FRINT64X))
-FUNCTION (svrint64z, unspec_based_function, (-1, -1, UNSPEC_FRINT64Z))
+FUNCTION (svrhadd, unspec_based_function, (UNSPEC_SRHADD, UNSPEC_URHADD, UNSPEC_NONE))
+FUNCTION (svrint32x, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FRINT32X))
+FUNCTION (svrint32z, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FRINT32Z))
+FUNCTION (svrint64x, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FRINT64X))
+FUNCTION (svrint64z, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FRINT64Z))
 FUNCTION (svrshl, svrshl_impl,)
-FUNCTION (svrshr, unspec_based_function, (UNSPEC_SRSHR, UNSPEC_URSHR, -1))
-FUNCTION (svrshrnb, unspec_based_function, (UNSPEC_RSHRNB, UNSPEC_RSHRNB, -1))
-FUNCTION (svrshrnt, unspec_based_function, (UNSPEC_RSHRNT, UNSPEC_RSHRNT, -1))
-FUNCTION (svrsra, unspec_based_add_function, (UNSPEC_SRSHR, UNSPEC_URSHR, -1))
+FUNCTION (svrshr, unspec_based_function, (UNSPEC_SRSHR, UNSPEC_URSHR, UNSPEC_NONE))
+FUNCTION (svrshrnb, unspec_based_function, (UNSPEC_RSHRNB, UNSPEC_RSHRNB, UNSPEC_NONE))
+FUNCTION (svrshrnt, unspec_based_function, (UNSPEC_RSHRNT, UNSPEC_RSHRNT, UNSPEC_NONE))
+FUNCTION (svrsra, unspec_based_add_function, (UNSPEC_SRSHR, UNSPEC_URSHR, UNSPEC_NONE))
 FUNCTION (svrsubhnb, unspec_based_function, (UNSPEC_RSUBHNB,
-					     UNSPEC_RSUBHNB, -1))
+					     UNSPEC_RSUBHNB, UNSPEC_NONE))
 FUNCTION (svrsubhnt, unspec_based_function, (UNSPEC_RSUBHNT,
-					     UNSPEC_RSUBHNT, -1))
-FUNCTION (svsbclb, unspec_based_function, (-1, UNSPEC_SBCLB, -1))
-FUNCTION (svsbclt, unspec_based_function, (-1, UNSPEC_SBCLT, -1))
-FUNCTION (svshllb, unspec_based_function, (UNSPEC_SSHLLB, UNSPEC_USHLLB, -1))
-FUNCTION (svshllt, unspec_based_function, (UNSPEC_SSHLLT, UNSPEC_USHLLT, -1))
-FUNCTION (svshrnb, unspec_based_function, (UNSPEC_SHRNB, UNSPEC_SHRNB, -1))
-FUNCTION (svshrnt, unspec_based_function, (UNSPEC_SHRNT, UNSPEC_SHRNT, -1))
-FUNCTION (svsli, unspec_based_function, (UNSPEC_SLI, UNSPEC_SLI, -1))
+					     UNSPEC_RSUBHNT, UNSPEC_NONE))
+FUNCTION (svsbclb, unspec_based_function, (UNSPEC_NONE, UNSPEC_SBCLB, UNSPEC_NONE))
+FUNCTION (svsbclt, unspec_based_function, (UNSPEC_NONE, UNSPEC_SBCLT, UNSPEC_NONE))
+FUNCTION (svshllb, unspec_based_function, (UNSPEC_SSHLLB, UNSPEC_USHLLB, UNSPEC_NONE))
+FUNCTION (svshllt, unspec_based_function, (UNSPEC_SSHLLT, UNSPEC_USHLLT, UNSPEC_NONE))
+FUNCTION (svshrnb, unspec_based_function, (UNSPEC_SHRNB, UNSPEC_SHRNB, UNSPEC_NONE))
+FUNCTION (svshrnt, unspec_based_function, (UNSPEC_SHRNT, UNSPEC_SHRNT, UNSPEC_NONE))
+FUNCTION (svsli, unspec_based_function, (UNSPEC_SLI, UNSPEC_SLI, UNSPEC_NONE))
 FUNCTION (svsm4e, fixed_insn_function, (CODE_FOR_aarch64_sve2_sm4e))
 FUNCTION (svsm4ekey, fixed_insn_function, (CODE_FOR_aarch64_sve2_sm4ekey))
 FUNCTION (svsqadd, svsqadd_impl,)
 FUNCTION (svsra, svsra_impl,)
-FUNCTION (svsri, unspec_based_function, (UNSPEC_SRI, UNSPEC_SRI, -1))
+FUNCTION (svsri, unspec_based_function, (UNSPEC_SRI, UNSPEC_SRI, UNSPEC_NONE))
 FUNCTION (svst1dq, svst1xq_impl, (VNx1DImode))
 FUNCTION (svst1q_scatter, svst1q_scatter_impl,)
 FUNCTION (svst1wq, svst1xq_impl, (VNx1SImode))
@@ -1314,14 +1314,14 @@ FUNCTION (svstnt1_scatter, svstnt1_scatter_impl,)
 FUNCTION (svstnt1b_scatter, svstnt1_scatter_truncate_impl, (QImode))
 FUNCTION (svstnt1h_scatter, svstnt1_scatter_truncate_impl, (HImode))
 FUNCTION (svstnt1w_scatter, svstnt1_scatter_truncate_impl, (SImode))
-FUNCTION (svsubhnb, unspec_based_function, (UNSPEC_SUBHNB, UNSPEC_SUBHNB, -1))
-FUNCTION (svsubhnt, unspec_based_function, (UNSPEC_SUBHNT, UNSPEC_SUBHNT, -1))
-FUNCTION (svsublb, unspec_based_function, (UNSPEC_SSUBLB, UNSPEC_USUBLB, -1))
-FUNCTION (svsublbt, unspec_based_function, (UNSPEC_SSUBLBT, -1, -1))
-FUNCTION (svsublt, unspec_based_function, (UNSPEC_SSUBLT, UNSPEC_USUBLT, -1))
-FUNCTION (svsubltb, unspec_based_function, (UNSPEC_SSUBLTB, -1, -1))
-FUNCTION (svsubwb, unspec_based_function, (UNSPEC_SSUBWB, UNSPEC_USUBWB, -1))
-FUNCTION (svsubwt, unspec_based_function, (UNSPEC_SSUBWT, UNSPEC_USUBWT, -1))
+FUNCTION (svsubhnb, unspec_based_function, (UNSPEC_SUBHNB, UNSPEC_SUBHNB, UNSPEC_NONE))
+FUNCTION (svsubhnt, unspec_based_function, (UNSPEC_SUBHNT, UNSPEC_SUBHNT, UNSPEC_NONE))
+FUNCTION (svsublb, unspec_based_function, (UNSPEC_SSUBLB, UNSPEC_USUBLB, UNSPEC_NONE))
+FUNCTION (svsublbt, unspec_based_function, (UNSPEC_SSUBLBT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svsublt, unspec_based_function, (UNSPEC_SSUBLT, UNSPEC_USUBLT, UNSPEC_NONE))
+FUNCTION (svsubltb, unspec_based_function, (UNSPEC_SSUBLTB, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svsubwb, unspec_based_function, (UNSPEC_SSUBWB, UNSPEC_USUBWB, UNSPEC_NONE))
+FUNCTION (svsubwt, unspec_based_function, (UNSPEC_SSUBWT, UNSPEC_USUBWT, UNSPEC_NONE))
 FUNCTION (svtbl2, svtbl2_impl,)
 FUNCTION (svtblq, quiet<unspec_based_uncond_function>, (UNSPEC_TBLQ,
 							UNSPEC_TBLQ,

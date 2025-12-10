@@ -60,7 +60,7 @@ public:
 class read_write_za_base : public function_base
 {
 public:
-  constexpr read_write_za_base (int unspec) : m_unspec (unspec) {}
+  constexpr read_write_za_base (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -73,7 +73,7 @@ public:
     return e.use_exact_insn (icode);
   }
 
-  int m_unspec;
+  unspec m_unspec;
 };
 
 using load_za_base = add_call_properties<load_store_za_zt0_base,
@@ -176,7 +176,7 @@ expand_ldr_str_zt0 (function_expander &e, insn_code icode)
    IS_LOAD is true if E is a load, false if it is a store.  */
 
 static rtx
-expand_ld1_st1 (function_expander &e, int unspec, bool is_load)
+expand_ld1_st1 (function_expander &e, unspec unspec, bool is_load)
 {
   bool is_vnum = has_in_range_vnum_arg (e, e.vector_mode (0), 4);
   auto icode = (is_vnum
@@ -298,7 +298,7 @@ public:
 class svld1_za_impl : public load_za_base
 {
 public:
-  constexpr svld1_za_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svld1_za_impl (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -306,7 +306,7 @@ public:
     return expand_ld1_st1 (e, m_unspec, true);
   }
 
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svldr_za_impl : public load_za_base
@@ -404,7 +404,7 @@ using svreadz_za_tile_impl = add_call_properties<read_write_za_base,
 class svst1_za_impl : public store_za_base
 {
 public:
-  constexpr svst1_za_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svst1_za_impl (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -412,7 +412,7 @@ public:
     return expand_ld1_st1 (e, m_unspec, false);
   }
 
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svstr_za_impl : public store_za_base
@@ -616,13 +616,13 @@ FUNCTION (arm_in_streaming_mode, arm_in_streaming_mode_impl, )
 FUNCTION (svadd_za, sme_1mode_function, (UNSPEC_SME_ADD, UNSPEC_SME_ADD,
 					 UNSPEC_SME_FADD))
 FUNCTION (svadd_write_za, sme_1mode_function, (UNSPEC_SME_ADD_WRITE,
-					       UNSPEC_SME_ADD_WRITE, -1))
+					       UNSPEC_SME_ADD_WRITE, UNSPEC_NONE))
 FUNCTION (svaddha_za, sme_1mode_function, (UNSPEC_SME_ADDHA,
-					   UNSPEC_SME_ADDHA, -1))
+					   UNSPEC_SME_ADDHA, UNSPEC_NONE))
 FUNCTION (svaddva_za, sme_1mode_function, (UNSPEC_SME_ADDVA,
-					  UNSPEC_SME_ADDVA, -1))
-FUNCTION (svbmopa_za, sme_2mode_function, (-1, UNSPEC_SME_BMOPA, -1))
-FUNCTION (svbmops_za, sme_2mode_function, (-1, UNSPEC_SME_BMOPS, -1))
+					  UNSPEC_SME_ADDVA, UNSPEC_NONE))
+FUNCTION (svbmopa_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_BMOPA, UNSPEC_NONE))
+FUNCTION (svbmops_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_BMOPS, UNSPEC_NONE))
 FUNCTION (svcntsb, svcnts_bhwd_impl, (VNx16QImode))
 FUNCTION (svcntsd, svcnts_bhwd_impl, (VNx2DImode))
 FUNCTION (svcntsh, svcnts_bhwd_impl, (VNx8HImode))
@@ -669,28 +669,28 @@ FUNCTION (svstr_zt, svstr_zt_impl, )
 FUNCTION (svsub_za, sme_1mode_function, (UNSPEC_SME_SUB, UNSPEC_SME_SUB,
 					 UNSPEC_SME_FSUB))
 FUNCTION (svsub_write_za, sme_1mode_function, (UNSPEC_SME_SUB_WRITE,
-					       UNSPEC_SME_SUB_WRITE, -1))
+					       UNSPEC_SME_SUB_WRITE, UNSPEC_NONE))
 FUNCTION (svsudot_za, svsudot_za_impl,)
-FUNCTION (svsudot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUDOT, -1, -1))
+FUNCTION (svsudot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUDOT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svsuvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SUVDOT,
-						      -1, -1))
-FUNCTION (svsumopa_za, sme_2mode_function, (UNSPEC_SME_SUMOPA, -1, -1))
-FUNCTION (svsumops_za, sme_2mode_function, (UNSPEC_SME_SUMOPS, -1, -1))
+						      UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svsumopa_za, sme_2mode_function, (UNSPEC_SME_SUMOPA, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svsumops_za, sme_2mode_function, (UNSPEC_SME_SUMOPS, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svundef_za, svundef_za_impl, )
-FUNCTION (svusdot_za, sme_2mode_function, (-1, UNSPEC_SME_USDOT, -1))
-FUNCTION (svusdot_lane_za, sme_2mode_lane_function, (-1, UNSPEC_SME_USDOT, -1))
-FUNCTION (svusvdot_lane_za, sme_2mode_lane_function, (-1, UNSPEC_SME_USVDOT,
-						      -1))
-FUNCTION (svusmopa_za, sme_2mode_function, (-1, UNSPEC_SME_USMOPA, -1))
-FUNCTION (svusmops_za, sme_2mode_function, (-1, UNSPEC_SME_USMOPS, -1))
+FUNCTION (svusdot_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USDOT, UNSPEC_NONE))
+FUNCTION (svusdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USDOT, UNSPEC_NONE))
+FUNCTION (svusvdot_lane_za, sme_2mode_lane_function, (UNSPEC_NONE, UNSPEC_SME_USVDOT,
+						      UNSPEC_NONE))
+FUNCTION (svusmopa_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USMOPA, UNSPEC_NONE))
+FUNCTION (svusmops_za, sme_2mode_function, (UNSPEC_NONE, UNSPEC_SME_USMOPS, UNSPEC_NONE))
 FUNCTION (svvdot_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SVDOT,
 						    UNSPEC_SME_UVDOT,
 						    UNSPEC_SME_FVDOT,
 						    UNSPEC_SME_FVDOT_FP8))
 FUNCTION (svvdotb_lane_za, svvdot_half_impl,
-	  (-1, -1, -1, UNSPEC_SME_FVDOTB_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_SME_FVDOTB_FP8))
 FUNCTION (svvdott_lane_za, svvdot_half_impl,
-	  (-1, -1, -1, UNSPEC_SME_FVDOTT_FP8))
+	  (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_NONE, UNSPEC_SME_FVDOTT_FP8))
 FUNCTION (svwrite_za, svwrite_za_impl,)
 FUNCTION (svwrite_hor_za, svwrite_za_tile_impl, (UNSPEC_SME_WRITE_HOR))
 FUNCTION (svwrite_ver_za, svwrite_za_tile_impl, (UNSPEC_SME_WRITE_VER))

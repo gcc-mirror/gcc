@@ -73,7 +73,7 @@ is_undef (tree val)
 }
 
 /* Return the UNSPEC_CMLA* unspec for rotation amount ROT.  */
-static int
+static unspec
 unspec_cmla (int rot)
 {
   switch (rot)
@@ -87,7 +87,7 @@ unspec_cmla (int rot)
 }
 
 /* Return the UNSPEC_FCMLA* unspec for rotation amount ROT.  */
-static int
+static unspec
 unspec_fcmla (int rot)
 {
   switch (rot)
@@ -101,7 +101,7 @@ unspec_fcmla (int rot)
 }
 
 /* Return the UNSPEC_COND_FCMLA* unspec for rotation amount ROT.  */
-static int
+static unspec
 unspec_cond_fcmla (int rot)
 {
   switch (rot)
@@ -137,7 +137,7 @@ expand_mad (function_expander &e,
 /* Expand a call to svmla_lane or svmls_lane using floating-point unspec
    UNSPEC.  */
 static rtx
-expand_mla_mls_lane (function_expander &e, int unspec)
+expand_mla_mls_lane (function_expander &e, unspec unspec)
 {
   /* Put the operands in the normal (fma ...) order, with the accumulator
      last.  This fits naturally since that's also the unprinted operand
@@ -199,7 +199,7 @@ public:
 class svac_impl : public function_base
 {
 public:
-  constexpr svac_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svac_impl (unspec unspec) : m_unspec (unspec) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -220,7 +220,7 @@ public:
   }
 
   /* The unspec code for the underlying comparison.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svadda_impl : public function_base
@@ -308,7 +308,7 @@ public:
       {
 	machine_mode mode = GET_MODE_INNER (e.vector_mode (0));
 	e.args[2] = simplify_unary_operation (NOT, mode, e.args[2], mode);
-	return e.map_to_rtx_codes (AND, AND, -1, -1);
+	return e.map_to_rtx_codes (AND, AND, UNSPEC_NONE, UNSPEC_NONE);
       }
 
     if (e.type_suffix_ids[0] == TYPE_SUFFIX_b)
@@ -328,7 +328,7 @@ public:
 class svbrk_binary_impl : public function_base
 {
 public:
-  constexpr svbrk_binary_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svbrk_binary_impl (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -337,14 +337,14 @@ public:
   }
 
   /* The unspec code associated with the operation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* Implements svbrka and svbrkb.  */
 class svbrk_unary_impl : public function_base
 {
 public:
-  constexpr svbrk_unary_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svbrk_unary_impl (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -353,7 +353,7 @@ public:
   }
 
   /* The unspec code associated with the operation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svcadd_impl : public function_base
@@ -378,7 +378,7 @@ public:
 class svclast_impl : public quiet<function_base>
 {
 public:
-  constexpr svclast_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svclast_impl (unspec unspec) : m_unspec (unspec) {}
 
   gimple *
   fold (gimple_folder &f) const override
@@ -403,7 +403,7 @@ public:
   }
 
   /* The unspec code associated with the operation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svcmla_impl : public function_base
@@ -419,12 +419,12 @@ public:
 	/* Make the operand order the same as the one used by the fma optabs,
 	   with the accumulator last.  */
 	e.rotate_inputs_left (1, 4);
-	return e.map_to_unspecs (-1, -1, unspec_cond_fcmla (rot), 3);
+	return e.map_to_unspecs (UNSPEC_NONE, UNSPEC_NONE, unspec_cond_fcmla (rot), 3);
       }
     else
       {
-	int cmla = unspec_cmla (rot);
-	return e.map_to_unspecs (cmla, cmla, -1);
+	unspec cmla = unspec_cmla (rot);
+	return e.map_to_unspecs (cmla, cmla, UNSPEC_NONE);
       }
   }
 };
@@ -458,7 +458,7 @@ public:
 class svcmp_impl : public function_base
 {
 public:
-  constexpr svcmp_impl (tree_code code, int unspec_for_fp)
+  constexpr svcmp_impl (tree_code code, unspec unspec_for_fp)
     : m_code (code), m_unspec_for_fp (unspec_for_fp) {}
 
   gimple *
@@ -509,15 +509,15 @@ public:
   tree_code m_code;
 
   /* The unspec code to use for floating-point comparisons.  */
-  int m_unspec_for_fp;
+  unspec m_unspec_for_fp;
 };
 
 /* Implements svcmp<cc>_wide.  */
 class svcmp_wide_impl : public function_base
 {
 public:
-  constexpr svcmp_wide_impl (tree_code code, int unspec_for_sint,
-			     int unspec_for_uint)
+  constexpr svcmp_wide_impl (tree_code code, unspec unspec_for_sint,
+			     unspec unspec_for_uint)
     : m_code (code), m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint) {}
 
@@ -552,7 +552,7 @@ public:
 	return e.use_exact_insn (icode);
       }
 
-    int unspec = (unsigned_p ? m_unspec_for_uint : m_unspec_for_sint);
+    unspec unspec = (unsigned_p ? m_unspec_for_uint : m_unspec_for_sint);
     return e.use_exact_insn (code_for_aarch64_pred_cmp_wide (unspec, mode));
   }
 
@@ -561,8 +561,8 @@ public:
 
   /* The unspec codes for signed and unsigned wide comparisons
      respectively.  */
-  int m_unspec_for_sint;
-  int m_unspec_for_uint;
+  unspec m_unspec_for_sint;
+  unspec m_unspec_for_uint;
 };
 
 class svcmpuo_impl : public quiet<function_base>
@@ -822,9 +822,9 @@ public:
        the source mode before the destination mode.  */
     if (e.type_suffix (1).integer_p)
       {
-	int unspec = (e.type_suffix (1).unsigned_p
-		      ? UNSPEC_COND_UCVTF
-		      : UNSPEC_COND_SCVTF);
+	unspec unspec = (e.type_suffix (1).unsigned_p
+			   ? UNSPEC_COND_UCVTF
+						      : UNSPEC_COND_SCVTF);
 	if (e.type_suffix (0).element_bytes <= e.type_suffix (1).element_bytes)
 	  icode = (e.pred == PRED_x
 		   ? code_for_aarch64_sve_nonextend (unspec, mode1, mode0)
@@ -836,9 +836,9 @@ public:
       }
     else
       {
-	int unspec = (!e.type_suffix (0).integer_p ? UNSPEC_COND_FCVT
-		      : e.type_suffix (0).unsigned_p ? UNSPEC_COND_FCVTZU
-		      : UNSPEC_COND_FCVTZS);
+	unspec unspec = (!e.type_suffix (0).integer_p ? UNSPEC_COND_FCVT
+			 : e.type_suffix (0).unsigned_p ? UNSPEC_COND_FCVTZU
+							: UNSPEC_COND_FCVTZS);
 	if (e.type_suffix (0).element_bytes >= e.type_suffix (1).element_bytes)
 	  icode = (e.pred == PRED_x
 		   ? code_for_aarch64_sve_nontrunc (unspec, mode1, mode0)
@@ -991,7 +991,7 @@ public:
 	/* Use the same ordering as the dot_prod_optab, with the
 	   accumulator last.  */
 	e.rotate_inputs_left (0, 4);
-	int unspec = unspec_for (e);
+	unspec unspec = unspec_for (e);
 	if (unspec == UNSPEC_FDOT)
 	  icode = CODE_FOR_aarch64_fdot_prod_lanevnx4sfvnx8hf;
 	else
@@ -1347,7 +1347,7 @@ public:
 	     with an extra argument on the end.  Take the inactive elements
 	     from this extra argument.  */
 	  e.rotate_inputs_left (0, 4);
-	return e.map_to_rtx_codes (AND, AND, -1, -1, 3);
+	return e.map_to_rtx_codes (AND, AND, UNSPEC_NONE, UNSPEC_NONE, 3);
       }
 
     machine_mode wide_mode = e.vector_mode (0);
@@ -1559,7 +1559,7 @@ public:
 class svlast_impl : public quiet<function_base>
 {
 public:
-  constexpr svlast_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svlast_impl (unspec unspec) : m_unspec (unspec) {}
 
   bool is_lasta () const { return m_unspec == UNSPEC_LASTA; }
   bool is_lastb () const { return m_unspec == UNSPEC_LASTB; }
@@ -1689,7 +1689,7 @@ public:
   }
 
   /* The unspec code associated with the operation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svld1_impl : public full_width_access
@@ -2062,7 +2062,7 @@ public:
 class svldxf1_impl : public full_width_access
 {
 public:
-  constexpr svldxf1_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svldxf1_impl (unspec unspec) : m_unspec (unspec) {}
 
   unsigned int
   call_properties (const function_instance &) const override
@@ -2082,14 +2082,14 @@ public:
   }
 
   /* The unspec associated with the load.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* Implements extending contiguous forms of svldff1 and svldnf1.  */
 class svldxf1_extend_impl : public extending_load
 {
 public:
-  constexpr svldxf1_extend_impl (type_suffix_index memory_type, int unspec)
+  constexpr svldxf1_extend_impl (type_suffix_index memory_type, unspec unspec)
     : extending_load (memory_type), m_unspec (unspec) {}
 
   unsigned int
@@ -2112,7 +2112,7 @@ public:
   }
 
   /* The unspec associated with the load.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 class svlen_impl : public quiet<function_base>
@@ -2484,7 +2484,7 @@ public:
 class svnot_impl : public rtx_code_function
 {
 public:
-  constexpr svnot_impl () : rtx_code_function (NOT, NOT, -1) {}
+  constexpr svnot_impl () : rtx_code_function (NOT, NOT, UNSPEC_NONE) {}
 
   rtx
   expand (function_expander &e) const override
@@ -2549,7 +2549,7 @@ public:
 class svpfirst_svpnext_impl : public function_base
 {
 public:
-  constexpr svpfirst_svpnext_impl (int unspec) : m_unspec (unspec) {}
+  constexpr svpfirst_svpnext_impl (unspec unspec) : m_unspec (unspec) {}
   gimple *
   fold (gimple_folder &f) const override
   {
@@ -2570,7 +2570,7 @@ public:
   }
 
   /* The unspec associated with the operation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* Implements contiguous forms of svprf[bhwd].  */
@@ -2944,7 +2944,7 @@ public:
 class svrint_impl : public function_base
 {
 public:
-  constexpr svrint_impl (optab_tag optab, int cond_unspec)
+  constexpr svrint_impl (optab_tag optab, unspec cond_unspec)
     : m_optab (optab), m_cond_unspec (cond_unspec)
   {}
 
@@ -2956,11 +2956,11 @@ public:
 	auto icode = direct_optab_handler (m_optab, e.tuple_mode (0));
 	return e.use_exact_insn (icode);
       }
-    return e.map_to_unspecs (-1, -1, m_cond_unspec);
+    return e.map_to_unspecs (UNSPEC_NONE, UNSPEC_NONE, m_cond_unspec);
   }
 
   optab_tag m_optab;
-  int m_cond_unspec;
+  unspec m_cond_unspec;
 };
 
 class svsel_impl : public quiet<function_base>
@@ -3252,7 +3252,7 @@ public:
     /* Canonicalize subtractions of constants to additions.  */
     machine_mode mode = e.vector_mode (0);
     if (e.try_negating_argument (2, mode))
-      return e.map_to_rtx_codes (PLUS, PLUS, UNSPEC_COND_FADD, -1);
+      return e.map_to_rtx_codes (PLUS, PLUS, UNSPEC_COND_FADD, UNSPEC_NONE);
 
     return rtx_code_function::expand (e);
   }
@@ -3324,14 +3324,14 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = GET_MODE (e.args[0]);
-    unsigned int unpacku = m_high_p ? UNSPEC_UNPACKUHI : UNSPEC_UNPACKULO;
-    unsigned int unpacks = m_high_p ? UNSPEC_UNPACKSHI : UNSPEC_UNPACKSLO;
+    unspec unpacku = m_high_p ? UNSPEC_UNPACKUHI : UNSPEC_UNPACKULO;
+    unspec unpacks = m_high_p ? UNSPEC_UNPACKSHI : UNSPEC_UNPACKSLO;
     insn_code icode;
     if (GET_MODE_CLASS (mode) == MODE_VECTOR_BOOL)
       icode = code_for_aarch64_sve_punpk_acle (unpacku);
     else
       {
-	int unspec = e.type_suffix (0).unsigned_p ? unpacku : unpacks;
+	unspec unspec = e.type_suffix (0).unsigned_p ? unpacku : unpacks;
 	icode = code_for_aarch64_sve_unpk (unspec, unspec, mode);
       }
     return e.use_exact_insn (icode);
@@ -3396,7 +3396,7 @@ public:
 class svwhilelx_impl : public while_comparison
 {
 public:
-  constexpr svwhilelx_impl (int unspec_for_sint, int unspec_for_uint, bool eq_p)
+  constexpr svwhilelx_impl (unspec unspec_for_sint, unspec unspec_for_uint, bool eq_p)
     : while_comparison (unspec_for_sint, unspec_for_uint), m_eq_p (eq_p)
   {}
 
@@ -3525,7 +3525,7 @@ public:
   expand (function_expander &e) const override
   {
     if (vectors_per_tuple (e) == 1)
-      return e.map_to_unspecs (-1, -1, UNSPEC_COND_FSCALE);
+      return e.map_to_unspecs (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FSCALE);
     else
       {
 	machine_mode mode = GET_MODE (e.args[0]);
@@ -3558,7 +3558,7 @@ FUNCTION (svand, rtx_code_function, (AND, AND))
 FUNCTION (svandv, svandv_impl,)
 FUNCTION (svasr, rtx_code_function, (ASHIFTRT, ASHIFTRT))
 FUNCTION (svasr_wide, shift_wide, (ASHIFTRT, UNSPEC_ASHIFTRT_WIDE))
-FUNCTION (svasrd, unspec_based_function, (UNSPEC_ASRD, -1, -1))
+FUNCTION (svasrd, unspec_based_function, (UNSPEC_ASRD, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svbfdot, fixed_insn_function, (CODE_FOR_aarch64_sve_bfdotvnx4sf))
 FUNCTION (svbfdot_lane, fixed_insn_function,
 	  (CODE_FOR_aarch64_sve_bfdot_lanevnx4sf))
@@ -3627,9 +3627,9 @@ FUNCTION (svdup, svdup_impl,)
 FUNCTION (svdup_lane, svdup_lane_impl,)
 FUNCTION (svdupq, svdupq_impl,)
 FUNCTION (svdupq_lane, svdupq_lane_impl,)
-FUNCTION (sveor, rtx_code_function, (XOR, XOR, -1))
+FUNCTION (sveor, rtx_code_function, (XOR, XOR, UNSPEC_NONE))
 FUNCTION (sveorv, sveorv_impl,)
-FUNCTION (svexpa, unspec_based_function, (-1, -1, UNSPEC_FEXPA))
+FUNCTION (svexpa, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FEXPA))
 FUNCTION (svexpand, svexpand_impl,)
 FUNCTION (svext, QUIET_CODE_FOR_MODE0 (aarch64_sve_ext),)
 FUNCTION (svextb, svext_bhw_impl, (QImode))
@@ -3711,14 +3711,14 @@ FUNCTION (svmsb, svmsb_impl,)
 FUNCTION (svmul, svmul_impl,)
 FUNCTION (svmul_lane, CODE_FOR_MODE0 (aarch64_mul_lane),)
 FUNCTION (svmulh, unspec_based_function, (UNSPEC_SMUL_HIGHPART,
-					  UNSPEC_UMUL_HIGHPART, -1))
-FUNCTION (svmulx, unspec_based_function, (-1, -1, UNSPEC_COND_FMULX))
+					  UNSPEC_UMUL_HIGHPART, UNSPEC_NONE))
+FUNCTION (svmulx, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FMULX))
 FUNCTION (svnand, svnand_impl,)
 FUNCTION (svneg, quiet<rtx_code_function>, (NEG, NEG, UNSPEC_COND_FNEG))
-FUNCTION (svnmad, unspec_based_function, (-1, -1, UNSPEC_COND_FNMLA))
-FUNCTION (svnmla, unspec_based_function_rotated, (-1, -1, UNSPEC_COND_FNMLA))
-FUNCTION (svnmls, unspec_based_function_rotated, (-1, -1, UNSPEC_COND_FNMLS))
-FUNCTION (svnmsb, unspec_based_function, (-1, -1, UNSPEC_COND_FNMLS))
+FUNCTION (svnmad, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FNMLA))
+FUNCTION (svnmla, unspec_based_function_rotated, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FNMLA))
+FUNCTION (svnmls, unspec_based_function_rotated, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FNMLS))
+FUNCTION (svnmsb, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FNMLS))
 FUNCTION (svnor, svnor_impl,)
 FUNCTION (svnot, svnot_impl,)
 FUNCTION (svorn, svorn_impl,)
@@ -3740,7 +3740,7 @@ FUNCTION (svptest_first, svptest_impl, (LT))
 FUNCTION (svptest_last, svptest_impl, (LTU))
 FUNCTION (svptrue, svptrue_impl,)
 FUNCTION (svptrue_pat, svptrue_pat_impl,)
-FUNCTION (svqadd, rtx_code_function, (SS_PLUS, US_PLUS, -1))
+FUNCTION (svqadd, rtx_code_function, (SS_PLUS, US_PLUS, UNSPEC_NONE))
 FUNCTION (svqdecb, svqdec_bhwd_impl, (QImode))
 FUNCTION (svqdecb_pat, svqdec_bhwd_impl, (QImode))
 FUNCTION (svqdecd, svqdec_bhwd_impl, (DImode))
@@ -3759,17 +3759,17 @@ FUNCTION (svqinch_pat, svqinc_bhwd_impl, (HImode))
 FUNCTION (svqincp, svqdecp_svqincp_impl, (SS_PLUS, US_PLUS))
 FUNCTION (svqincw, svqinc_bhwd_impl, (SImode))
 FUNCTION (svqincw_pat, svqinc_bhwd_impl, (SImode))
-FUNCTION (svqsub, rtx_code_function, (SS_MINUS, US_MINUS, -1))
-FUNCTION (svrbit, rtx_code_function, (BITREVERSE, BITREVERSE, -1))
+FUNCTION (svqsub, rtx_code_function, (SS_MINUS, US_MINUS, UNSPEC_NONE))
+FUNCTION (svrbit, rtx_code_function, (BITREVERSE, BITREVERSE, UNSPEC_NONE))
 FUNCTION (svrdffr, svrdffr_impl,)
-FUNCTION (svrecpe, unspec_based_function, (-1, UNSPEC_URECPE, UNSPEC_FRECPE))
-FUNCTION (svrecps, unspec_based_function, (-1, -1, UNSPEC_FRECPS))
-FUNCTION (svrecpx, unspec_based_function, (-1, -1, UNSPEC_COND_FRECPX))
+FUNCTION (svrecpe, unspec_based_function, (UNSPEC_NONE, UNSPEC_URECPE, UNSPEC_FRECPE))
+FUNCTION (svrecps, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FRECPS))
+FUNCTION (svrecpx, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_COND_FRECPX))
 FUNCTION (svreinterpret, svreinterpret_impl,)
 FUNCTION (svrev, svrev_impl,)
-FUNCTION (svrevb, unspec_based_function, (UNSPEC_REVB, UNSPEC_REVB, -1))
-FUNCTION (svrevh, unspec_based_function, (UNSPEC_REVH, UNSPEC_REVH, -1))
-FUNCTION (svrevw, unspec_based_function, (UNSPEC_REVW, UNSPEC_REVW, -1))
+FUNCTION (svrevb, unspec_based_function, (UNSPEC_REVB, UNSPEC_REVB, UNSPEC_NONE))
+FUNCTION (svrevh, unspec_based_function, (UNSPEC_REVH, UNSPEC_REVH, UNSPEC_NONE))
+FUNCTION (svrevw, unspec_based_function, (UNSPEC_REVW, UNSPEC_REVW, UNSPEC_NONE))
 FUNCTION (svrinta, svrint_impl, (round_optab, UNSPEC_COND_FRINTA))
 FUNCTION (svrinti, svrint_impl, (nearbyint_optab, UNSPEC_COND_FRINTI))
 FUNCTION (svrintm, svrint_impl, (floor_optab, UNSPEC_COND_FRINTM))
@@ -3777,8 +3777,8 @@ FUNCTION (svrintn, svrint_impl, (roundeven_optab, UNSPEC_COND_FRINTN))
 FUNCTION (svrintp, svrint_impl, (ceil_optab, UNSPEC_COND_FRINTP))
 FUNCTION (svrintx, svrint_impl, (rint_optab, UNSPEC_COND_FRINTX))
 FUNCTION (svrintz, svrint_impl, (btrunc_optab, UNSPEC_COND_FRINTZ))
-FUNCTION (svrsqrte, unspec_based_function, (-1, UNSPEC_RSQRTE, UNSPEC_RSQRTE))
-FUNCTION (svrsqrts, unspec_based_function, (-1, -1, UNSPEC_RSQRTS))
+FUNCTION (svrsqrte, unspec_based_function, (UNSPEC_NONE, UNSPEC_RSQRTE, UNSPEC_RSQRTE))
+FUNCTION (svrsqrts, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_RSQRTS))
 FUNCTION (svscale, svscale_impl,)
 FUNCTION (svsel, svsel_impl,)
 FUNCTION (svset2, svset_impl, (2))
@@ -3802,7 +3802,7 @@ FUNCTION (svstnt1, svstnt1_impl,)
 FUNCTION (svsub, svsub_impl,)
 FUNCTION (svsubr, rtx_code_function_rotated, (MINUS, MINUS, UNSPEC_COND_FSUB))
 FUNCTION (svsudot, svusdot_impl, (true))
-FUNCTION (svsudot_lane, svdotprod_lane_impl, (UNSPEC_SUDOT, -1, -1))
+FUNCTION (svsudot_lane, svdotprod_lane_impl, (UNSPEC_SUDOT, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svtbl, quiet<unspec_based_uncond_function>, (UNSPEC_TBL, UNSPEC_TBL,
 						       UNSPEC_TBL))
 FUNCTION (svtmad, CODE_FOR_MODE0 (aarch64_sve_tmad),)
@@ -3812,8 +3812,8 @@ FUNCTION (svtrn1q, unspec_based_function, (UNSPEC_TRN1Q, UNSPEC_TRN1Q,
 FUNCTION (svtrn2, svtrn_impl, (1))
 FUNCTION (svtrn2q, unspec_based_function, (UNSPEC_TRN2Q, UNSPEC_TRN2Q,
 					   UNSPEC_TRN2Q))
-FUNCTION (svtsmul, unspec_based_function, (-1, -1, UNSPEC_FTSMUL))
-FUNCTION (svtssel, unspec_based_function, (-1, -1, UNSPEC_FTSSEL))
+FUNCTION (svtsmul, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FTSMUL))
+FUNCTION (svtssel, unspec_based_function, (UNSPEC_NONE, UNSPEC_NONE, UNSPEC_FTSSEL))
 FUNCTION (svundef, svundef_impl, (1))
 FUNCTION (svundef2, svundef_impl, (2))
 FUNCTION (svundef3, svundef_impl, (3))
@@ -3821,8 +3821,8 @@ FUNCTION (svundef4, svundef_impl, (4))
 FUNCTION (svunpkhi, svunpk_impl, (true))
 FUNCTION (svunpklo, svunpk_impl, (false))
 FUNCTION (svusdot, svusdot_impl, (false))
-FUNCTION (svusdot_lane, svdotprod_lane_impl, (UNSPEC_USDOT, -1, -1))
-FUNCTION (svusmmla, unspec_based_add_function, (UNSPEC_USMATMUL, -1, -1))
+FUNCTION (svusdot_lane, svdotprod_lane_impl, (UNSPEC_USDOT, UNSPEC_NONE, UNSPEC_NONE))
+FUNCTION (svusmmla, unspec_based_add_function, (UNSPEC_USMATMUL, UNSPEC_NONE, UNSPEC_NONE))
 FUNCTION (svuzp1, svuzp_impl, (0))
 FUNCTION (svuzp1q, unspec_based_function, (UNSPEC_UZP1Q, UNSPEC_UZP1Q,
 					   UNSPEC_UZP1Q))

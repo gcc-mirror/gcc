@@ -3762,8 +3762,8 @@ function_expander::use_contiguous_store_insn (insn_code icode)
 rtx
 function_expander::map_to_rtx_codes (rtx_code code_for_sint,
 				     rtx_code code_for_uint,
-				     int unspec_for_cond_fp,
-				     int unspec_for_uncond_fp,
+				     unspec unspec_for_cond_fp,
+				     unspec unspec_for_uncond_fp,
 				     unsigned int merge_argno)
 {
   machine_mode mode = tuple_mode (0);
@@ -3839,13 +3839,13 @@ function_expander::map_to_rtx_codes (rtx_code code_for_sint,
    MERGE_ARGNO is the argument that provides the values of inactive lanes for
    _m functions, or DEFAULT_MERGE_ARGNO if we should apply the usual rules.  */
 rtx
-function_expander::map_to_unspecs (int unspec_for_sint, int unspec_for_uint,
-				   int unspec_for_fp, unsigned int merge_argno)
+function_expander::map_to_unspecs (unspec unspec_for_sint, unspec unspec_for_uint,
+				   unspec unspec_for_fp, unsigned int merge_argno)
 {
   machine_mode mode = tuple_mode (0);
-  int unspec = (!type_suffix (0).integer_p ? unspec_for_fp
-		: type_suffix (0).unsigned_p ? unspec_for_uint
-		: unspec_for_sint);
+  unspec unspec = (!type_suffix (0).integer_p ? unspec_for_fp
+		   : type_suffix (0).unsigned_p ? unspec_for_uint
+						: unspec_for_sint);
 
   if (mode_suffix_id == MODE_single)
     {

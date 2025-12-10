@@ -1499,7 +1499,7 @@ struct aarch64_pragma_builtins_data
   const char *name;
   aarch64_builtin_signatures signature;
   simd_type types[4];
-  int unspec;
+  enum unspec unspec;
   aarch64_required_extensions required_extensions;
   unsigned int flags;
 };
@@ -3829,7 +3829,7 @@ aarch64_pack_into_v128s (expand_operand *op)
 /* UNSPEC is a high unspec, indicated by "2" in mnemonics and "_high" in
    intrinsic names.  Return the equivalent low unspec.  */
 static int
-aarch64_get_low_unspec (int unspec)
+aarch64_get_low_unspec (unspec unspec)
 {
   switch (unspec)
     {
@@ -3850,7 +3850,7 @@ aarch64_get_low_unspec (int unspec)
    UNSPEC is either UNSPEC_TBL or UNSPEC_TBX.  The inputs must already be in
    registers.  */
 static rtx
-aarch64_expand_tbl_tbx (vec<rtx> &inputs, int unspec, machine_mode mode)
+aarch64_expand_tbl_tbx (vec<rtx> &inputs, unspec unspec, machine_mode mode)
 {
   rtx result = gen_reg_rtx (mode);
   rtvec vec = gen_rtvec_v (inputs.length (), inputs.address ());
@@ -3863,7 +3863,7 @@ aarch64_expand_tbl_tbx (vec<rtx> &inputs, int unspec, machine_mode mode)
 
    UNSPEC is either UNSPEC_TBL or UNSPEC_TBX.  */
 static rtx
-aarch64_expand_tbl_tbx (vec<expand_operand> &ops, int unspec)
+aarch64_expand_tbl_tbx (vec<expand_operand> &ops, unspec unspec)
 {
   for (unsigned int i = 1; i < ops.length (); ++i)
     ops[i].value = force_reg (ops[i].mode, ops[i].value);
@@ -4011,6 +4011,8 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 	 with 128-bit inputs are only provided as a convenience; the upper
 	 halves don't actually matter.  */
       aarch64_convert_to_v64 (&ops[1]);
+      break;
+    default:
       break;
     }
 
@@ -4197,7 +4199,7 @@ aarch64_expand_pragma_builtin (tree exp, rtx target,
 /* Expand an expression EXP as fpsr or fpcr setter (depending on
    UNSPEC) using MODE.  */
 static void
-aarch64_expand_fpsr_fpcr_setter (int unspec, machine_mode mode, tree exp)
+aarch64_expand_fpsr_fpcr_setter (unspecv unspec, machine_mode mode, tree exp)
 {
   tree arg = CALL_EXPR_ARG (exp, 0);
   rtx op = force_reg (mode, expand_normal (arg));

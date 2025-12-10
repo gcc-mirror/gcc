@@ -223,6 +223,7 @@
 )
 
 (define_c_enum "unspec" [
+    UNSPEC_NONE ;; Sentinel value for invalid or missing unspecs
     UNSPEC_AUTIA1716
     UNSPEC_AUTIB1716
     UNSPEC_AUTIASP

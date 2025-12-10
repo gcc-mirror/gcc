@@ -203,8 +203,8 @@ class rtx_code_function_base : public function_base
 public:
   constexpr rtx_code_function_base (rtx_code code_for_sint,
 				    rtx_code code_for_uint,
-				    int unspec_for_cond_fp = -1,
-				    int unspec_for_uncond_fp = -1)
+				    unspec unspec_for_cond_fp = UNSPEC_NONE,
+				    unspec unspec_for_uncond_fp = UNSPEC_NONE)
     : m_code_for_sint (code_for_sint), m_code_for_uint (code_for_uint),
       m_unspec_for_cond_fp (unspec_for_cond_fp),
       m_unspec_for_uncond_fp (unspec_for_uncond_fp) {}
@@ -216,11 +216,11 @@ public:
 
   /* The UNSPEC_COND_* to use for floating-point operations.  Can be -1
      for functions that only operate on integers.  */
-  int m_unspec_for_cond_fp;
+  unspec m_unspec_for_cond_fp;
 
   /* The UNSPEC_* to use for unpredicated floating-point operations.
      Can be -1 if there is no such operation.  */
-  int m_unspec_for_uncond_fp;
+  unspec m_unspec_for_uncond_fp;
 };
 
 /* A function_base for functions that have an associated rtx code.
@@ -267,10 +267,10 @@ public:
 class unspec_based_function_base : public function_base
 {
 public:
-  constexpr unspec_based_function_base (int unspec_for_sint,
-					int unspec_for_uint,
-					int unspec_for_fp,
-					int unspec_for_mfp8 = -1,
+  constexpr unspec_based_function_base (unspec unspec_for_sint,
+					unspec unspec_for_uint,
+					unspec unspec_for_fp,
+					unspec unspec_for_mfp8 = UNSPEC_NONE,
 					unsigned int suffix_index = 0)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
@@ -280,7 +280,7 @@ public:
   {}
 
   /* Return the unspec code to use for INSTANCE, based on type suffix 0.  */
-  int
+  unspec
   unspec_for (const function_instance &instance) const
   {
     if (instance.fpm_mode == FPM_set)
@@ -294,10 +294,10 @@ public:
 
   /* The unspec code associated with signed-integer, unsigned-integer
      and floating-point operations respectively.  */
-  int m_unspec_for_sint;
-  int m_unspec_for_uint;
-  int m_unspec_for_fp;
-  int m_unspec_for_mfp8;
+  unspec m_unspec_for_sint;
+  unspec m_unspec_for_uint;
+  unspec m_unspec_for_fp;
+  unspec m_unspec_for_mfp8;
 
   /* Which type suffix is used to choose between the unspecs.  */
   unsigned int m_suffix_index;
@@ -402,7 +402,7 @@ typedef unspec_based_function_exact_insn<code_for_aarch64_sve_sub_lane>
 class cond_or_uncond_unspec_function : public function_base
 {
 public:
-  constexpr cond_or_uncond_unspec_function (int cond_unspec, int uncond_unspec)
+  constexpr cond_or_uncond_unspec_function (unspec cond_unspec, unspec uncond_unspec)
     : m_cond_unspec (cond_unspec), m_uncond_unspec (uncond_unspec) {}
 
   rtx
@@ -421,8 +421,8 @@ public:
 
   /* The unspecs for the conditional and unconditional instructions,
      respectively.  */
-  int m_cond_unspec;
-  int m_uncond_unspec;
+  unspec m_cond_unspec;
+  unspec m_uncond_unspec;
 };
 
 /* General SME unspec-based functions, parameterized on the vector mode.  */
@@ -431,9 +431,9 @@ class sme_1mode_function : public read_write_za<unspec_based_function_base>
 public:
   using parent = read_write_za<unspec_based_function_base>;
 
-  constexpr sme_1mode_function (int unspec_for_sint, int unspec_for_uint,
-				int unspec_for_fp)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, -1, 1)
+  constexpr sme_1mode_function (unspec unspec_for_sint, unspec unspec_for_uint,
+				unspec unspec_for_fp)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, UNSPEC_NONE, 1)
   {}
 
   rtx
@@ -461,8 +461,8 @@ class sme_2mode_function_t : public read_write_za<unspec_based_function_base>
 public:
   using parent = read_write_za<unspec_based_function_base>;
 
-  constexpr sme_2mode_function_t (int unspec_for_sint, int unspec_for_uint,
-				  int unspec_for_fp, int unspec_for_mfp8 = -1)
+  constexpr sme_2mode_function_t (unspec unspec_for_sint, unspec unspec_for_uint,
+				  unspec unspec_for_fp, unspec unspec_for_mfp8 = UNSPEC_NONE)
     : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, unspec_for_mfp8,
 	      1)
   {}
@@ -488,8 +488,8 @@ class svvdot_half_impl : public read_write_za<unspec_based_function_base>
 public:
   using parent = read_write_za<unspec_based_function_base>;
 
-  constexpr svvdot_half_impl (int unspec_for_sint, int unspec_for_uint,
-			      int unspec_for_fp, int unspec_for_mfp8)
+  constexpr svvdot_half_impl (unspec unspec_for_sint, unspec unspec_for_uint,
+			      unspec unspec_for_fp, unspec unspec_for_mfp8)
     : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, unspec_for_mfp8,
 	      1)
   {}
@@ -519,7 +519,7 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    int unspec = unspec_for (e);
+    unspec unspec = unspec_for (e);
     insn_code icode;
     if (e.type_suffix (m_suffix_index).float_p
 	&& e.fpm_mode != FPM_set)
@@ -550,7 +550,7 @@ public:
   rtx
   expand (function_expander &e) const override
   {
-    int unspec = unspec_for (e);
+    unspec unspec = unspec_for (e);
     insn_code icode;
     if (e.type_suffix (m_suffix_index).float_p
 	&& e.fpm_mode != FPM_set)
@@ -644,7 +644,7 @@ public:
 class binary_permute : public permute
 {
 public:
-  constexpr binary_permute (int unspec) : m_unspec (unspec) {}
+  constexpr binary_permute (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -657,7 +657,7 @@ public:
   }
 
   /* The unspec code associated with the operation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* A function that implements a x2 or x4 permute instruction.  Both forms
@@ -666,7 +666,7 @@ public:
 class multireg_permute : public function_base
 {
 public:
-  constexpr multireg_permute (int unspec) : m_unspec (unspec) {}
+  constexpr multireg_permute (unspec unspec) : m_unspec (unspec) {}
 
   rtx
   expand (function_expander &e) const override
@@ -684,7 +684,7 @@ public:
   }
 
   /* The unspec associated with the permutation.  */
-  int m_unspec;
+  unspec m_unspec;
 };
 
 /* A function that has two type integer type suffixes, which might agree
@@ -693,8 +693,8 @@ public:
 class integer_conversion : public function_base
 {
 public:
-  constexpr integer_conversion (int unspec_for_sint, int unspec_for_sintu,
-				int unspec_for_uint, int unspec_for_uints)
+  constexpr integer_conversion (unspec unspec_for_sint, unspec unspec_for_sintu,
+				unspec unspec_for_uint, unspec unspec_for_uints)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_sintu (unspec_for_sintu),
       m_unspec_for_uint (unspec_for_uint),
@@ -706,7 +706,7 @@ public:
   {
     machine_mode mode0 = e.vector_mode (0);
     machine_mode mode1 = GET_MODE (e.args[0]);
-    int unspec;
+    unspec unspec;
     if (e.type_suffix (0).unsigned_p == e.type_suffix (1).unsigned_p)
       unspec = (e.type_suffix (0).unsigned_p
 		? m_unspec_for_uint
@@ -719,30 +719,30 @@ public:
   }
 
   /* The unspec for signed -> signed.  */
-  int m_unspec_for_sint;
+  unspec m_unspec_for_sint;
 
   /* The unspec for signed -> unsigned.  */
-  int m_unspec_for_sintu;
+  unspec m_unspec_for_sintu;
 
   /* The unspec for unsigned -> signed.  */
-  int m_unspec_for_uint;
+  unspec m_unspec_for_uint;
 
   /* The unspec for unsigned -> unsigned.  */
-  int m_unspec_for_uints;
+  unspec m_unspec_for_uints;
 };
 
 /* A function_base for functions that reduce a vector to a scalar.  */
 class reduction : public function_base
 {
 public:
-  constexpr reduction (int unspec)
+  constexpr reduction (unspec unspec)
     : m_unspec_for_sint (unspec),
       m_unspec_for_uint (unspec),
       m_unspec_for_fp (unspec)
   {}
 
-  constexpr reduction (int unspec_for_sint, int unspec_for_uint,
-		       int unspec_for_fp)
+  constexpr reduction (unspec unspec_for_sint, unspec unspec_for_uint,
+		       unspec unspec_for_fp)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint),
       m_unspec_for_fp (unspec_for_fp)
@@ -752,9 +752,9 @@ public:
   expand (function_expander &e) const override
   {
     machine_mode mode = e.vector_mode (0);
-    int unspec = (!e.type_suffix (0).integer_p ? m_unspec_for_fp
-		  : e.type_suffix (0).unsigned_p ? m_unspec_for_uint
-		  : m_unspec_for_sint);
+    unspec unspec = (!e.type_suffix (0).integer_p ? m_unspec_for_fp
+		     : e.type_suffix (0).unsigned_p ? m_unspec_for_uint
+						    : m_unspec_for_sint);
     /* There's no distinction between SADDV and UADDV for 64-bit elements;
        the signed versions only exist for narrower elements.  */
     if (GET_MODE_UNIT_BITSIZE (mode) == 64 && unspec == UNSPEC_SADDV)
@@ -764,9 +764,9 @@ public:
 
   /* The unspec code associated with signed-integer, unsigned-integer
      and floating-point operations respectively.  */
-  int m_unspec_for_sint;
-  int m_unspec_for_uint;
-  int m_unspec_for_fp;
+  unspec m_unspec_for_sint;
+  unspec m_unspec_for_uint;
+  unspec m_unspec_for_fp;
 };
 
 /* A function_base for functions that shift narrower-than-64-bit values
@@ -789,7 +789,7 @@ public:
     if (aarch64_simd_shift_imm_p (shift, elem_mode, m_code == ASHIFT))
       {
 	e.args.last () = shift;
-	return e.map_to_rtx_codes (m_code, m_code, -1, -1);
+	return e.map_to_rtx_codes (m_code, m_code, UNSPEC_NONE, UNSPEC_NONE);
       }
 
     if (e.pred == PRED_x)
@@ -832,7 +832,7 @@ public:
 class while_comparison : public function_base
 {
 public:
-  constexpr while_comparison (int unspec_for_sint, int unspec_for_uint)
+  constexpr while_comparison (unspec unspec_for_sint, unspec unspec_for_uint)
     : m_unspec_for_sint (unspec_for_sint),
       m_unspec_for_uint (unspec_for_uint)
   {}
@@ -842,7 +842,7 @@ public:
   {
     /* Suffix 0 determines the predicate mode, suffix 1 determines the
        scalar mode and signedness.  */
-    int unspec = (e.type_suffix (1).unsigned_p
+    unspec unspec = (e.type_suffix (1).unsigned_p
 		  ? m_unspec_for_uint
 		  : m_unspec_for_sint);
     if (e.vectors_per_tuple () > 1)
@@ -866,8 +866,8 @@ public:
 
   /* The unspec codes associated with signed and unsigned operations
      respectively.  */
-  int m_unspec_for_sint;
-  int m_unspec_for_uint;
+  unspec m_unspec_for_sint;
+  unspec m_unspec_for_uint;
 };
 
 template<insn_code (*CODE_FOR_MODE) (machine_mode), unsigned int N>
