@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O3 -march=x86-64-v3" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 #include <immintrin.h>
 
 __m256i

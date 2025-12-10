@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-O2 -msse2 -mno-avx2 -mno-avx512vl" } */
+/* { dg-additional-options "-fno-PIE" { target ia32 } } */
 
 #define N 4
 
