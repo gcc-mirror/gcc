@@ -7514,7 +7514,11 @@ loongarch_modes_tieable_p (machine_mode mode1, machine_mode mode2)
 	  || (GET_MODE_CLASS(mode1) == MODE_FLOAT
 	      && GET_MODE_CLASS(mode2) == MODE_INT)
 	  || (GET_MODE_CLASS(mode2) == MODE_FLOAT
-	      && GET_MODE_CLASS(mode1) == MODE_INT));
+	      && GET_MODE_CLASS(mode1) == MODE_INT)
+	  || (GET_MODE_CLASS (mode1) == MODE_VECTOR_INT
+	      && GET_MODE_CLASS (mode2) == MODE_VECTOR_INT)
+	  || (GET_MODE_CLASS (mode1) == MODE_VECTOR_FLOAT
+	      &&  GET_MODE_CLASS (mode2) == MODE_VECTOR_FLOAT));
 }
 
 /* Implement TARGET_PREFERRED_RELOAD_CLASS.  */

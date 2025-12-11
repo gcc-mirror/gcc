@@ -6,7 +6,7 @@
 
 /*
 **foo1_lo:
-**	vld	(\$vr[0-9]+),\$r4,0
+**	xvld	(\$xr[0-9]+),\$r4,0
 **	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
@@ -33,7 +33,7 @@ foo1_hi (__m256 x)
 
 /*
 **foo2_lo:
-**	vld	(\$vr[0-9]+),\$r4,0
+**	xvld	(\$xr[0-9]+),\$r4,0
 **	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
@@ -60,7 +60,7 @@ foo2_hi (__m256d x)
 
 /*
 **foo3_lo:
-**	vld	(\$vr[0-9]+),\$r4,0
+**	xvld	(\$xr[0-9]+),\$r4,0
 **	vpickve2gr.du	\$r4,(\$vr[0-9]+),0
 **	vpickve2gr.du	\$r5,(\$vr[0-9]+),1
 **	jr	\$r1
