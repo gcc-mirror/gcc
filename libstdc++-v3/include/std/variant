@@ -211,7 +211,7 @@ namespace __variant
     __as(const std::variant<_Types...>&& __v) noexcept
     { return std::move(__v); }
 
-#if __cpp_lib_variant < 202106L
+#if (__cpp_lib_variant < 202106L) && defined(_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI)
   template<typename _Type, bool = std::is_trivially_destructible_v<_Type>>
     struct _Uninitialized;
 #else
@@ -230,7 +230,7 @@ namespace __variant
 	: _M_storage(std::forward<_Args>(__args)...)
 	{ }
 
-#if __cpp_lib_variant < 202106L
+#if (__cpp_lib_variant < 202106L) && defined(_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI)
       constexpr const _Type& _M_get() const & noexcept
       { return _M_storage; }
 
@@ -247,10 +247,9 @@ namespace __variant
       _Type _M_storage;
     };
 
-#if __cpp_lib_variant < 202106L
+#if (__cpp_lib_variant < 202106L) && defined(_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI)
   // This partial specialization is used for non-trivially destructible types
-  // in C++17, so that _Uninitialized<T> is trivially destructible and can be
-  // used as a union member in _Variadic_union.
+  // in C++17.
   template<typename _Type>
     struct _Uninitialized<_Type, false>
     {
@@ -291,7 +290,7 @@ namespace __variant
 	return __variant::__get_n<_Np - 3>(
 		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
     }
-#else
+#else // !_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI
   template<size_t _Np, typename _Union>
     constexpr auto&&
     __get_n(_Union&& __u) noexcept
@@ -306,7 +305,7 @@ namespace __variant
 	return __variant::__get_n<_Np - 3>(
 		 std::forward<_Union>(__u)._M_rest._M_rest._M_rest);
     }
-#endif
+#endif // !_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI
 
   // Returns the typed storage for __v.
   template<size_t _Np, typename _Variant>

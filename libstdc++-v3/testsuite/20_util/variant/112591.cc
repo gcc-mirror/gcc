@@ -4,6 +4,15 @@
 #include <testsuite_hooks.h>
 
 struct NonEmpty { int x; };
+struct NonTrivial
+{
+  constexpr NonTrivial() : x(0) {}
+  constexpr NonTrivial(int p) : x(p) {}
+  ~NonTrivial() {}
+
+  int x;
+};
+
 struct TrivialEmpty {};
 struct NonTrivialEmpty { ~NonTrivialEmpty() {} };
 
@@ -23,10 +32,11 @@ bool testAlias()
 int main()
 {
   VERIFY( !testAlias<NonEmpty>() );
+  VERIFY( !testAlias<NonTrivial>() );
   VERIFY( !testAlias<TrivialEmpty>() );
-#if __cplusplus >= 202002L  
+#if (__cplusplus >= 202002L) || !defined(_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI)
   VERIFY( !testAlias<NonTrivialEmpty>() );
-#else  
-  VERIFY( testAlias<NonTrivialEmpty>() );
+#else
+  VERIFY(  testAlias<NonTrivialEmpty>() );
 #endif
 }
