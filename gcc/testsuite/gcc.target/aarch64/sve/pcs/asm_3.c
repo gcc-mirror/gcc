@@ -6,11 +6,13 @@
 #define ASM_FUNCTION(NAME, RET_TYPE, ARG_TYPE, INSN) \
 extern RET_TYPE NAME (svbool_t, ARG_TYPE);	\
   asm(						\
-"	.type	" #NAME ", %function\n"		\
-#NAME ":\n"					\
+"	.type	%cc0,	%%function\n"		\
+"	.globl	%cc0\n"				\
+"%cc0:\n"					\
 "	" INSN "\n"				\
 "	ret\n"					\
-"	.size	" #NAME ", .-" #NAME "\n"	\
+"	.size   %cc0, .-%cc0\n"			\
+: :":"(NAME ) \
 )
 
 ASM_FUNCTION (u8_callee, svuint8_t, svuint8x2_t,
