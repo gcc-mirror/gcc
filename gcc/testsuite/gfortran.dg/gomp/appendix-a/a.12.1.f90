@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-additional-options "-Wno-deprecated-openmp" }
       SUBROUTINE A12( X, XOLD, N, TOL )
       REAL X(*), XOLD(*), TOL
       INTEGER N

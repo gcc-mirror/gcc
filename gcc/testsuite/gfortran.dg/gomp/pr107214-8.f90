@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 integer, allocatable :: x
 integer, pointer :: y
 
@@ -13,6 +13,7 @@ integer, pointer :: y
 !$omp end target
 
 !$omp target firstprivate(y) is_device_ptr(y)  ! { dg-error "Symbol 'y' present on multiple clauses" }
+
 !$omp end target
 
 end

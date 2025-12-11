@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 extern void bar(int);
 
 void foo (void)
@@ -14,7 +14,7 @@ void foo (void)
   }
 
   /* Yes, this is legal -- structured-block contains statement contains
-     openmp-construct contains master-construct.  */
+     openmp-construct contains masked-construct.  */
   #pragma omp master
   #pragma omp master
   #pragma omp master

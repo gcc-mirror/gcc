@@ -1,5 +1,5 @@
 ! { dg-additional-options "-cpp" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine f1
   !$omp cancel parallel			! { dg-error "orphaned" }
   !$omp cancel do			! { dg-error "orphaned" }

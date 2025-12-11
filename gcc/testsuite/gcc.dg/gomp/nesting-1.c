@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
+/* { dg-options "-fopenmp -Wno-deprecated-openmp" } */
 
 void
 f1 (void)

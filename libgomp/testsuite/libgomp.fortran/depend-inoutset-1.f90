@@ -1,5 +1,5 @@
 ! { dg-additional-sources my-usleep.c }
-! { dg-additional-options -Wno-complain-wrong-lang }
+! { dg-additional-options "-Wno-complain-wrong-lang -Wno-deprecated-openmp" }
 
 program main
   use omp_lib

@@ -1,5 +1,5 @@
 /* PR c/85696 */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #ifndef __cplusplus
 void
 foo (int n, int a[][n])

@@ -1,6 +1,6 @@
 /* PR middle-end/99928 */
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int
 foo (void)
 {

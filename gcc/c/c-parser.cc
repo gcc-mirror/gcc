@@ -20801,7 +20801,12 @@ c_parser_omp_clause_proc_bind (c_parser *parser, tree list)
       if (strcmp ("primary", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_PRIMARY;
       else if (strcmp ("master", p) == 0)
+      {
+	warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	  "%<master%> affinity deprecated since OpenMP 5.1, "
+	  "use %<primary%>");
 	kind = OMP_CLAUSE_PROC_BIND_MASTER;
+      }
       else if (strcmp ("close", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_CLOSE;
       else if (strcmp ("spread", p) == 0)
@@ -25419,6 +25424,8 @@ c_parser_omp_master (location_t loc, c_parser *parser,
 		     char *p_name, omp_clause_mask mask, tree *cclauses,
 		     bool *if_p)
 {
+  warning_at (loc, OPT_Wdeprecated_openmp,
+    "%<master%> construct deprecated since OpenMP 5.1, use %<masked%>");
   tree block, clauses, ret;
 
   strcat (p_name, " master");
@@ -30708,7 +30715,7 @@ c_parser_transaction (c_parser *parser, enum rid keyword)
   if (flag_tm)
     stmt = c_finish_transaction (loc, stmt, this_in);
   else
-    error_at (loc, 
+    error_at (loc,
 	      keyword == RID_TRANSACTION_ATOMIC
 	      ? G_("%<__transaction_atomic%> without transactional memory "
 		   "support enabled")

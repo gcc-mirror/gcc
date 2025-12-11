@@ -1687,7 +1687,7 @@ c_cpp_builtins (cpp_reader *pfile)
     cpp_define (pfile, "_OPENACC=201711");
 
   if (flag_openmp)
-    cpp_define (pfile, "_OPENMP=201511");
+    cpp_define (pfile, "_OPENMP=202111");
 
   for (i = 0; i < NUM_INT_N_ENTS; i ++)
     if (int_n_enabled_p[i])

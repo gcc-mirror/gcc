@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdio.h>
 extern float average (float, float, float);
 void

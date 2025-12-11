@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 typedef __PTRDIFF_TYPE__ ptrdiff_t;
 extern "C" void abort ();

@@ -7,21 +7,22 @@ subroutine test(b,c,d)
 
   integer, target :: a(5)
 
-  !$omp target is_device_ptr(a) ! Valid since OpenMP 5.1
+  !$omp target is_device_ptr(a) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use HAS_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
+
   !$omp end target
 
-  !$omp target is_device_ptr(b) ! Valid since OpenMP 5.1
+  !$omp target is_device_ptr(b) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use HAS_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
   !$omp end target
 
-  !$omp target is_device_ptr(c) ! Valid since OpenMP 5.1
+  !$omp target is_device_ptr(c) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use HAS_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
   !$omp end target
 
-  !$omp target is_device_ptr(d) ! Valid since OpenMP 5.1
+  !$omp target is_device_ptr(d) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use HAS_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
   !$omp end target
 
   !$omp target data map(a) use_device_addr(a)  ! Should be okay
   !$omp end target data
 
-  !$omp target data map(c) use_device_ptr(c)  ! Should be okay
+  !$omp target data map(c) use_device_ptr(c)  ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use USE_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
   !$omp end target data
 end subroutine test

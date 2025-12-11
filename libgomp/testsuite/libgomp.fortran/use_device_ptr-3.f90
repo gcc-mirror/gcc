@@ -1,5 +1,5 @@
 ! PR fortran/98858
-!
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Assumed-size array with use_device_ptr()
 !
 program test_use_device_ptr

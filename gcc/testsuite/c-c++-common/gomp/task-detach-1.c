@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
+/* { dg-options "-fopenmp -Wno-deprecated-openmp" } */
 
 typedef enum omp_event_handle_t
 {

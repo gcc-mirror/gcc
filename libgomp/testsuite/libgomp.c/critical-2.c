@@ -1,4 +1,5 @@
 // { dg-do run }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 // Test several constructs within a parallel.  At one point in development,
 // the critical directive clobbered the shared clause of the parallel.
 

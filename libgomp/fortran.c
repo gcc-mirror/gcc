@@ -48,11 +48,8 @@ ialias_redirect (omp_test_nest_lock)
 # endif
 ialias_redirect (omp_set_dynamic)
 ialias_redirect (omp_get_dynamic)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 ialias_redirect (omp_set_nested)
 ialias_redirect (omp_get_nested)
-#pragma GCC diagnostic pop
 ialias_redirect (omp_set_num_threads)
 ialias_redirect (omp_in_parallel)
 ialias_redirect (omp_get_max_threads)
@@ -296,8 +293,6 @@ omp_set_dynamic_8_ (const int64_t *set)
   omp_set_dynamic (!!*set);
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 void
 omp_set_nested_ (const int32_t *set)
 {
@@ -309,7 +304,6 @@ omp_set_nested_8_ (const int64_t *set)
 {
   omp_set_nested (!!*set);
 }
-#pragma GCC diagnostic pop
 
 void
 omp_set_num_threads_ (const int32_t *set)
@@ -329,14 +323,11 @@ omp_get_dynamic_ (void)
   return omp_get_dynamic ();
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 int32_t
 omp_get_nested_ (void)
 {
   return omp_get_nested ();
 }
-#pragma GCC diagnostic pop
 
 int32_t
 omp_in_parallel_ (void)

@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 extern "C" void abort ();
 
 int a = 18;

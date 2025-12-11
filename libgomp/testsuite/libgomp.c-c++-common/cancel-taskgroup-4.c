@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-set-target-env-var OMP_CANCELLATION "true" } */
+/* { dg-additional-options "-Wno-deprecated-openmp" } */
 
 #include <stdlib.h>
 #include <unistd.h>

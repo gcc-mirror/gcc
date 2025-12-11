@@ -1,4 +1,4 @@
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-fdump-tree-original -Wno-deprecated-openmp" }
 program main
   use omp_lib
   implicit none (type, external)

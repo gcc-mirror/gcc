@@ -1,4 +1,4 @@
-// { dg-additional-options "-Wno-volatile" }
+// { dg-additional-options "-Wno-volatile -Wno-deprecated-openmp" }
 
 int arr[64], arr2[64];
 struct S { int a[4]; } k;

@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 typedef __SIZE_TYPE__ size_t;
 extern void abort (void);
 

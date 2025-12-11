@@ -1,6 +1,6 @@
 /* PR middle-end/99928 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -fdump-tree-gimple" } */
+/* { dg-options "-fopenmp -fdump-tree-gimple -Wno-deprecated-openmp" } */
 
 int j00a, j00b, j01a, j01b, j02a, j02b, j03a, j03b;
 int j06a, j06b, j07a, j07b, j08a, j08b, j09a, j09b, j10a, j10b;

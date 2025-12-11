@@ -74,7 +74,7 @@
       parameter (omp_lock_hint_nonspeculative = 4)
       parameter (omp_sync_hint_speculative = 8)
       parameter (omp_lock_hint_speculative = 8)
-      parameter (openmp_version = 201511)
+      parameter (openmp_version = 202111)
       integer omp_pause_resource_kind
       parameter (omp_pause_resource_kind = 4)
       integer (omp_pause_resource_kind) omp_pause_soft

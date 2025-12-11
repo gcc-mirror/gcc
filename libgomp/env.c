@@ -1777,7 +1777,7 @@ omp_display_env (int verbose)
 
   fputs ("\nOPENMP DISPLAY ENVIRONMENT BEGIN\n", stderr);
 
-  fputs ("  _OPENMP = '201511'\n", stderr);
+  fputs ("  _OPENMP = '202111'\n", stderr);
 
   fprintf (stderr, "  [host] OMP_DYNAMIC = '%s'\n",
 	   none->icvs.dyn_var ? "TRUE" : "FALSE");

@@ -1,9 +1,9 @@
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-fdump-tree-original -Wno-deprecated-openmp" }
   implicit none
   integer :: k, p, s, r, nth, t, f
   logical(kind=2) l2
   !$omp threadprivate (t)
-  
+
   external bar
   !$omp parallel master default(none) private (k)
     call bar (k)

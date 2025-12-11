@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target c++11 }
-// { dg-additional-options "-g" }
+// { dg-additional-options "-g -Wno-deprecated-openmp" }
 
 int main()
 {

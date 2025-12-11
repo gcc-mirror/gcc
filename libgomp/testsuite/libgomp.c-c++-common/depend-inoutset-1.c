@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 #include <omp.h>
 #include <stdlib.h>
 #include <unistd.h>

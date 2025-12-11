@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fno-openmp-simd -fdump-tree-original -O2" }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 
 include 'openmp-simd-1.f90'
 

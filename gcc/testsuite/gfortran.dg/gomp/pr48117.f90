@@ -1,7 +1,7 @@
 ! PR fortran/48117
 ! { dg-do compile }
 ! { dg-options "-O2 -fopenmp" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine foo(x)
   character(len=*), optional :: x
   character(len=80) :: v

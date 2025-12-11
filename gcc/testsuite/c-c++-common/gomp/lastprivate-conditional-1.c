@@ -1,4 +1,5 @@
-void
+// { dg-additional-options "-Wno-deprecated-openmp" }
+  void
 foo (int *p)
 {
   int a = -1, b = -1, c = -1, d = -1, e = -1, f = -1, g = -1, h = -1;

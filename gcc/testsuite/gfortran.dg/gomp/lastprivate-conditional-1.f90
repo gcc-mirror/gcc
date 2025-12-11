@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine foo (p)
   implicit none
   logical :: p(:)

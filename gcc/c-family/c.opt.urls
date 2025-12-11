@@ -322,6 +322,9 @@ UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-literal-operato
 Wdeprecated-non-prototype
 UrlSuffix(gcc/Warning-Options.html#index-Wdeprecated-non-prototype)
 
+Wdeprecated-openmp
+UrlSuffix(gcc/Warning-Options.html#index-Wdeprecated-openmp) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wdeprecated-openmp)
+
 Wdeprecated-variadic-comma-omission
 UrlSuffix(gcc/C_002b_002b-Dialect-Options.html#index-Wdeprecated-variadic-comma-omission)
 

@@ -1,4 +1,4 @@
-/* { dg-additional-options "-Wno-deprecated-declarations" } */
+/* { dg-additional-options "-Wno-deprecated-openmp" } */
 
 #include <stdlib.h>
 #include <omp.h>
@@ -46,11 +46,11 @@ main (void)
   if (omp_get_dynamic ())
     abort ();
 
-  omp_set_nested (1);
-  if (! omp_get_nested ())
+  omp_set_nested (1); // { dg-warning "'omp_set_nested' is deprecated \\\[-Wdeprecated-declarations\\\]" }
+  if (! omp_get_nested ()) // { dg-warning "'omp_get_nested' is deprecated \\\[-Wdeprecated-declarations\\\]" }
     abort ();
-  omp_set_nested (0);
-  if (omp_get_nested ())
+  omp_set_nested (0); // { dg-warning "'omp_set_nested' is deprecated \\\[-Wdeprecated-declarations\\\]" }
+  if (omp_get_nested ()) // { dg-warning "'omp_get_nested' is deprecated \\\[-Wdeprecated-declarations\\\]" }
     abort ();
 
   omp_set_num_threads (5);

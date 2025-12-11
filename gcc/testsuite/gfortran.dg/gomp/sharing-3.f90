@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine foo (vara, varb, varc, vard, n)
   integer :: n, vara(n), varb(*), varc(:), vard(6), vare(6)
   vare(:) = 0

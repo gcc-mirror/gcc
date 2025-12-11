@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine sub1
 !$omp do
 outer: do i = 1, 5

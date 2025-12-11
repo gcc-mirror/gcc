@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 void
 foo (int &x, int *&y, int n, int v)
 {

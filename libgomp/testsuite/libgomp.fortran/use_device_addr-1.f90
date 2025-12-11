@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Comprehensive run-time test for use_device_addr
 !
 ! Differs from use_device_addr-2.f90 by using a 8-byte variable (c_double)
@@ -77,7 +78,6 @@ contains
       real(c_double), target :: from_r(:), to_r(:)
       ! The extra function is needed as is_device_ptr
       ! requires non-value, non-pointer dummy arguments
-
       !$omp target is_device_ptr(from_r, to_r)
       call copy3_scalar_int(from_r(1), to_r(1))
       !$omp end target

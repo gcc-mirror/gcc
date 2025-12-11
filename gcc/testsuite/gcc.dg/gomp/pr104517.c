@@ -1,6 +1,6 @@
 /* PR debug/104517 */
 /* { dg-do compile } */
-/* { dg-options "-O1 -fcompare-debug -fopenmp -fno-tree-ter -save-temps" } */
+/* { dg-options "-O1 -fcompare-debug -fopenmp -fno-tree-ter -save-temps -Wno-deprecated-openmp" } */
 
 typedef enum omp_allocator_handle_t
 {

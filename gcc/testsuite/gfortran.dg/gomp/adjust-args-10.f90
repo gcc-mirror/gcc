@@ -85,7 +85,7 @@ program main
 
   ! Note: We don't add  'use_device_addr(B)' here;
   ! if we do, it will fail with an illegal memory access (why?).
-  !$omp target data use_device_ptr(p)
+  !$omp target data use_device_ptr(p) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use USE_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
     call sub(p, B)
     call sub(C, B)  ! C is not mapped -> 'from' ptr == NULL
   !$omp end target data

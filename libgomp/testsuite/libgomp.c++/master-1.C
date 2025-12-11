@@ -1,5 +1,6 @@
 // PR c++/24734
 // { dg-do run }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 extern "C" void abort ();
 int i;

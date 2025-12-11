@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 typedef enum omp_allocator_handle_t
 #if __cplusplus >= 201103L
 : __UINTPTR_TYPE__
@@ -24,7 +25,7 @@ void test0 ()
   #ifndef __cplusplus
     _Static_assert (_Alignof(A1) == _Alignof(B1), "wrong alignment");
   #elif __cplusplus >= 201103L
-     static_assert (alignof(A1) == alignof(B1), "wrong alignment"); 
+     static_assert (alignof(A1) == alignof(B1), "wrong alignment");
   #endif
 }
 

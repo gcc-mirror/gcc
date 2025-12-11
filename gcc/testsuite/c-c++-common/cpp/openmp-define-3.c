@@ -6,6 +6,6 @@
 # error _OPENMP not defined
 #endif
 
-#if _OPENMP != 201511
+#if _OPENMP != 202111
 # error _OPENMP defined to wrong value
 #endif

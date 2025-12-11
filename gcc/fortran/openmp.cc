@@ -4019,7 +4019,12 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 	      if (gfc_match ("primary )") == MATCH_YES)
 		c->proc_bind = OMP_PROC_BIND_PRIMARY;
 	      else if (gfc_match ("master )") == MATCH_YES)
-		c->proc_bind = OMP_PROC_BIND_MASTER;
+		{
+		  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> affinity "
+		    "policy at %C deprecated since OpenMP 5.1, use "
+		    "%<primary%>");
+		  c->proc_bind = OMP_PROC_BIND_MASTER;
+		}
 	      else if (gfc_match ("spread )") == MATCH_YES)
 		c->proc_bind = OMP_PROC_BIND_SPREAD;
 	      else if (gfc_match ("close )") == MATCH_YES)
@@ -7425,12 +7430,16 @@ gfc_match_omp_parallel_masked_taskloop_simd (void)
 match
 gfc_match_omp_parallel_master (void)
 {
+  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
+    " since OpenMP 5.1, use %<masked%>");
   return match_omp (EXEC_OMP_PARALLEL_MASTER, OMP_PARALLEL_CLAUSES);
 }
 
 match
 gfc_match_omp_parallel_master_taskloop (void)
 {
+  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
+    " since OpenMP 5.1, use %<masked%>");
   return match_omp (EXEC_OMP_PARALLEL_MASTER_TASKLOOP,
 		    (OMP_PARALLEL_CLAUSES | OMP_TASKLOOP_CLAUSES)
 		    & ~(omp_mask (OMP_CLAUSE_IN_REDUCTION)));
@@ -7439,6 +7448,8 @@ gfc_match_omp_parallel_master_taskloop (void)
 match
 gfc_match_omp_parallel_master_taskloop_simd (void)
 {
+  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
+    " since OpenMP 5.1, use %<masked%>");
   return match_omp (EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD,
 		    (OMP_PARALLEL_CLAUSES | OMP_TASKLOOP_CLAUSES
 		     | OMP_SIMD_CLAUSES)
@@ -8022,6 +8033,8 @@ gfc_match_omp_masked_taskloop_simd (void)
 match
 gfc_match_omp_master (void)
 {
+  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
+    " since OpenMP 5.1, use %<masked%>");
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP MASTER statement at %C");
@@ -8035,12 +8048,16 @@ gfc_match_omp_master (void)
 match
 gfc_match_omp_master_taskloop (void)
 {
+  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
+    " since OpenMP 5.1, use %<masked%>");
   return match_omp (EXEC_OMP_MASTER_TASKLOOP, OMP_TASKLOOP_CLAUSES);
 }
 
 match
 gfc_match_omp_master_taskloop_simd (void)
 {
+  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
+    " since OpenMP 5.1, use %<masked%>");
   return match_omp (EXEC_OMP_MASTER_TASKLOOP_SIMD,
 		    OMP_TASKLOOP_CLAUSES | OMP_SIMD_CLAUSES);
 }
@@ -9991,6 +10008,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  {
 		    /* For TARGET, non-C_PTR are deprecated and handled as
 		       has_device_addr.  */
+		    gfc_warning (OPT_Wdeprecated_openmp, "Non-C_PTR type "
+		      "argument at %L is deprecated, use HAS_DEVICE_ADDR",
+		      &n->where);
 		    gfc_omp_namelist *n2 = n;
 		    n = n->next;
 		    if (last)
@@ -10017,6 +10037,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		if (n->sym->ts.type != BT_DERIVED
 		    || !n->sym->ts.u.derived->ts.is_iso_c)
 		  {
+		    gfc_warning (OPT_Wdeprecated_openmp, "Non-C_PTR type "
+		      "argument at %L is deprecated, use USE_DEVICE_ADDR",
+		      &n->where);
 		    n = n->next;
 		    if (last)
 		      last->next = n;

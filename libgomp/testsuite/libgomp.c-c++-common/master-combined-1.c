@@ -3,6 +3,7 @@
 /* { dg-additional-options "-std=c99" { target c } } */
 /* { dg-additional-options "-msse2" { target sse2_runtime } } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 #include <omp.h>
 #include <stdlib.h>

@@ -1,6 +1,6 @@
 /* PR middle-end/99928 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -fdump-tree-gimple" } */
+/* { dg-options "-fopenmp -fdump-tree-gimple -Wno-deprecated-openmp" } */
 
 int f00, f01, f02, f03, f04, f05, f06, f07, f08, f09;
 int f12, f13, f14, f15, f16, f17, f18, f19;

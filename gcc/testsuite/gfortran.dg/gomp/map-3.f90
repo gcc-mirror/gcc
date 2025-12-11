@@ -1,4 +1,4 @@
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-fdump-tree-original -Wno-deprecated-openmp" }
 
 subroutine bar
 integer, target :: x, x2
@@ -25,9 +25,10 @@ call foo3(y)
 !$omp end target data
 
 !$omp target data map(z) use_device_ptr(z)
+
 call foo3(z)
 !$omp end target data
-end 
+end
 
 ! { dg-final { scan-tree-dump-times "#pragma omp target enter data map\\(to:x\\)" 1 "original" } }
 ! { dg-final { scan-tree-dump-times "#pragma omp target data map\\(always,to:x\\)" 1 "original" } }

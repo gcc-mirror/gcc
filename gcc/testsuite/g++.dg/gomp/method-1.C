@@ -1,6 +1,6 @@
 /* PR c++/24513 */
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct S
 {
   void foo (int *p)

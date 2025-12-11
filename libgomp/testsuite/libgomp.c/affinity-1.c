@@ -17,8 +17,7 @@
 
 /* { dg-do run } */
 /* { dg-set-target-env-var OMP_PROC_BIND "false" } */
-/* { dg-additional-options "-Wno-deprecated-declarations" } */
-/* { dg-additional-options "-DINTERPOSE_GETAFFINITY -DDO_FORK -ldl -Wno-deprecated-declarations" { target *-*-linux* } } */
+/* { dg-additional-options "-DINTERPOSE_GETAFFINITY -DDO_FORK -ldl -Wno-deprecated-declarations -Wno-deprecated-openmp" { target *-*-linux* } } */
 
 #ifndef _GNU_SOURCE
 #define _GNU_SOURCE

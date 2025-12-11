@@ -1,7 +1,7 @@
-! { dg-additional-options "-fdump-tree-original" }
+! { dg-additional-options "-fdump-tree-original -Wno-deprecated-openmp" }
 !
 ! Since OpenMP 5.1, non-TYPE(c_ptr) arguments to is_device_ptr
-! map to has_device_ptr - check this!
+! map to has_device_addr - check this!
 !
 ! PR fortran/105318
 !
@@ -73,7 +73,7 @@ contains
     if (false_) then
       !$omp target device(omp_invalid_device)
       !$omp end target
-    end if 
+    end if
   end subroutine
 
 end module m

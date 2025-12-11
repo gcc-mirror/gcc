@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 use omp_lib
   call test_master
   call test_critical
@@ -14,14 +15,14 @@ contains
 !$omp master
     i = .true.
     j = omp_get_thread_num () .eq. 0
-!$omp endmaster
+!$omp end master
 !$omp end parallel
     if (.not. (i .or. j)) stop 1
   end subroutine test_master
 
   subroutine test_critical_1 (i, j)
     integer :: i, j
-!$omp critical(critical_foo) 
+!$omp critical(critical_foo)
     i = i + 1
 !$omp end critical (critical_foo)
 !$omp critical

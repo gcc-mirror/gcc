@@ -53,8 +53,6 @@ omp_get_dynamic (void)
   return icv->dyn_var;
 }
 
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 void
 omp_set_nested (int val)
 {
@@ -72,7 +70,6 @@ omp_get_nested (void)
   return (icv->max_active_levels_var > 1
 	  && icv->max_active_levels_var > omp_get_active_level ());
 }
-#pragma GCC diagnostic pop
 
 void
 omp_set_schedule (omp_sched_t kind, int chunk_size)
@@ -235,11 +232,8 @@ omp_get_default_allocator (void)
 
 ialias (omp_set_dynamic)
 ialias (omp_get_dynamic)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
 ialias (omp_set_nested)
 ialias (omp_get_nested)
-#pragma GCC diagnostic pop
 ialias (omp_set_num_threads)
 ialias (omp_set_schedule)
 ialias (omp_get_schedule)

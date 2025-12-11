@@ -1,5 +1,5 @@
 /* PR c/100902 */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void
 foo (int *ptr)
 {

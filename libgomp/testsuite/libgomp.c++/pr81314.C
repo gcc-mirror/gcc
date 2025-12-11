@@ -1,5 +1,6 @@
 // PR c++/81314
 // { dg-do link }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 template <int N>
 struct S {

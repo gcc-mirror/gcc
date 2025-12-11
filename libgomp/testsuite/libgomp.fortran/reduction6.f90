@@ -1,5 +1,5 @@
 ! { dg-do run }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
   integer, dimension (6, 6) :: a
   character (36) :: c
   integer nthreads

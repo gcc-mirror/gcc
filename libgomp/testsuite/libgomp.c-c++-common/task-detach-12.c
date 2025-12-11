@@ -1,5 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-fopenmp" } */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 #include <omp.h>
 

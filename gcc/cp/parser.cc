@@ -8198,7 +8198,7 @@ cp_parser_postfix_expression (cp_parser *parser, bool address_p, bool cast_p,
 		      error_at (loc, "call to %<__builtin_operator_new%> "
 				     "does not select replaceable global "
 				     "allocation function");
-		    else 
+		    else
 		      error_at (loc, "call to %<__builtin_operator_delete%> "
 				     "does not select replaceable global "
 				     "deallocation function");
@@ -11694,7 +11694,7 @@ cp_parser_builtin_c23_va_start (cp_parser *parser)
   if (TREE_CODE (ret) == CALL_EXPR)
     SET_EXPR_LOCATION (ret, combined_loc);
   return cp_expr (ret, combined_loc);
-}	  
+}
 
 /* Parse __builtin_offsetof.
 
@@ -44290,7 +44290,12 @@ cp_parser_omp_clause_proc_bind (cp_parser *parser, tree list,
       if (strcmp ("primary", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_PRIMARY;
       else if (strcmp ("master", p) == 0)
+      {
+	warning_at (location, OPT_Wdeprecated_openmp,
+	  "%<master%> affinity deprecated since OpenMP 5.1, "
+	  "use %<primary%>");
 	kind = OMP_CLAUSE_PROC_BIND_MASTER;
+      }
       else if (strcmp ("close", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_CLOSE;
       else if (strcmp ("spread", p) == 0)
@@ -49006,6 +49011,8 @@ cp_parser_omp_master (cp_parser *parser, cp_token *pragma_tok,
   tree clauses, sb, ret;
   unsigned int save;
   location_t loc = cp_lexer_peek_token (parser->lexer)->location;
+  warning_at (loc, OPT_Wdeprecated_openmp,
+    "%<master%> construct deprecated since OpenMP 5.1, use %<masked%>");
 
   strcat (p_name, " master");
 

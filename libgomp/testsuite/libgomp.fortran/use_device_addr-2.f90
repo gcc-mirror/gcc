@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Comprehensive run-time test for use_device_addr
 !
 ! Differs from use_device_addr-1.f90 by using a 4-byte variable (c_float)

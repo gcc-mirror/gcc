@@ -1,5 +1,5 @@
 /* { dg-do run } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <omp.h>
 extern void abort ();
 

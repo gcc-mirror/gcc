@@ -1,7 +1,7 @@
 ! PR middle-end/99928
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   implicit none
   integer :: l00, l01, l02, l03, l04, l07, l08, l09
@@ -39,19 +39,19 @@ subroutine bar ()
   do i = 1, 64
     l02 = i
   end do
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l03\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l03\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l03\\)" "gimple" } } ! FIXME. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l03\\)" "gimple" } } ! FIXME. 
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l03\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l03\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l03\\)" "gimple" } } ! FIXME.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l03\\)" "gimple" } } ! FIXME.
   !$omp parallel do firstprivate (l03) lastprivate (l03) default(none)
   do i = 1, 64
     l03 = i
   end do
   !$omp end parallel do
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l04\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l04\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l04\\)" "gimple" } } ! FIXME. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l04\\)" "gimple" } } ! FIXME. 
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l04\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l04\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l04\\)" "gimple" } } ! FIXME.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l04\\)" "gimple" } } ! FIXME.
   ! { dg-final { scan-tree-dump-not "omp simd\[^\n\r]*firstprivate\\(l04\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l04\\)" "gimple" } }
   !$omp parallel do simd firstprivate (l04) lastprivate (l04) default(none)
@@ -83,7 +83,7 @@ subroutine bar ()
   ! FIXME: OpenMP 5.0/5.1 broken here, conceptually it should be shared on parallel and
   ! firstprivate+lastprivate on sections, in GCC implementation we put firstprivate+lastprivate
   ! on parallel for historic reasons, but OpenMP 5.0/5.1 mistakenly say firstprivate
-  ! should be on parallel and lastprivate on sections. 
+  ! should be on parallel and lastprivate on sections.
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l07\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l07\\)" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp sections\[^\n\r]*firstprivate\\(l07\\)" "gimple" } }
@@ -97,10 +97,10 @@ subroutine bar ()
   !$omp end parallel sections
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l08" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l08\\)" "gimple" } }
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l08\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } ! FIXME. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l08\\)" "gimple" } } ! FIXME. 
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l08\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l08\\)" "gimple" } } ! FIXME.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l08\\)" "gimple" } } ! FIXME.
   !$omp target parallel do firstprivate (l08) lastprivate (l08) default(none) defaultmap(none)
   do i = 1, 64
     l08 = i
@@ -108,10 +108,10 @@ subroutine bar ()
   !$omp end target parallel do
   ! { dg-final { scan-tree-dump "omp target\[^\n\r]*map\\(tofrom:l09" "gimple" } }
   ! { dg-final { scan-tree-dump-not "omp target\[^\n\r]*firstprivate\\(l09\\)" "gimple" } }
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l09\\)" "gimple" } } ! FIXME: This should be on for instead. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } ! FIXME. 
-  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l09\\)" "gimple" } } ! FIXME. 
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump "omp parallel\[^\n\r]*lastprivate\\(l09\\)" "gimple" } } ! FIXME: This should be on for instead.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*firstprivate\\(l09\\)" "gimple" } } ! FIXME.
+  ! { dg-final { scan-tree-dump-not "omp for\[^\n\r]*lastprivate\\(l09\\)" "gimple" } } ! FIXME.
   ! { dg-final { scan-tree-dump-not "omp simd\[^\n\r]*firstprivate\\(l09\\)" "gimple" } }
   ! { dg-final { scan-tree-dump "omp simd\[^\n\r]*lastprivate\\(l09\\)" "gimple" } }
   !$omp target parallel do simd firstprivate (l09) lastprivate (l09) default(none) defaultmap(none)

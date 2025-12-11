@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module omp_lib_kinds
   use iso_c_binding, only: c_int, c_intptr_t
   implicit none

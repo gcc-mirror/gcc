@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-std=c99" { target c } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp -Wunknown-pragmas" }
 typedef enum omp_allocator_handle_t
 #if __cplusplus >= 201103L
 : __UINTPTR_TYPE__
@@ -362,7 +362,7 @@ bar (int d, int m, int i1, int i2, int i3, int p, int *idp, int hda, int s,
   for (int i = 0; i < 64; i++)
     ll++;
   #pragma omp taskgroup task_reduction (+:r2) allocate (r2)
-  #pragma omp mastked taskloop \
+  #pragma omp masked taskloop \
     private (p) firstprivate (f) lastprivate (l) shared (s) default(shared) num_tasks (nta) collapse(1) untied if(i1) final(fi) mergeable priority (pp) \
     reduction(default, +:r) in_reduction(+:r2) filter (d)
   for (int i = 0; i < 64; i++)

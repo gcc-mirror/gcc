@@ -1,4 +1,5 @@
 /* { dg-do run } */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 extern void abort (void);
 

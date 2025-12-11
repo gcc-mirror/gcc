@@ -1,5 +1,3 @@
-/* { dg-additional-options "-Wno-deprecated-declarations" } */
-
 #include <omp.h>
 #include <stdlib.h>
 
@@ -7,7 +5,7 @@ int
 main ()
 {
   omp_set_dynamic (0);
-  omp_set_nested (1);
+  omp_set_nested (1); // { dg-warning "'omp_set_nested' is deprecated \\\[-Wdeprecated-declarations\\\]" }
   #pragma omp teams thread_limit (2)
   {
     #pragma omp distribute dist_schedule(static,1)

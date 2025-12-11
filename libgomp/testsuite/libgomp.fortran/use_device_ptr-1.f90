@@ -1,5 +1,5 @@
 ! { dg-do run }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module target_procs
   use iso_c_binding
   implicit none (type, external)

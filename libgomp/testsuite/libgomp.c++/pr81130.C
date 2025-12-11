@@ -1,5 +1,6 @@
 // PR c++/81130
 // { dg-do run }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 struct A
 {

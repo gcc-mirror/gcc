@@ -1,5 +1,5 @@
 /* PR libgomp/104385 */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <unistd.h>
 
 int

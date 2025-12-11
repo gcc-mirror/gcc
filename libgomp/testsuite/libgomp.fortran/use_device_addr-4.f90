@@ -1,5 +1,5 @@
 ! { dg-do run }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Comprehensive run-time test for use_device_addr
 !
 ! Tests array with array descriptor

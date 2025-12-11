@@ -1,5 +1,6 @@
 // { dg-do run }
 // { dg-require-effective-target tls_runtime }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 #include <omp.h>
 #include <assert.h>

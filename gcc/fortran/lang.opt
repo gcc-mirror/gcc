@@ -237,6 +237,10 @@ Wconversion-extra
 Fortran Var(warn_conversion_extra) Warning
 Warn about most implicit conversions.
 
+Wdeprecated-openmp
+Fortran Var(warn_deprecated_openmp) Warning Init(1)
+; Documented in C
+
 Wdo-subscript
 Fortran Var(warn_do_subscript) Warning LangEnabledBy(Fortran,Wextra)
 Warn about possibly incorrect subscripts in do loops.

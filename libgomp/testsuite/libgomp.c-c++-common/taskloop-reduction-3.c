@@ -3,6 +3,7 @@
 /* { dg-additional-options "-std=c99" { target c } } */
 /* { dg-additional-options "-msse2" { target sse2_runtime } } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 #define N 1024
 long int u[N], m, n;

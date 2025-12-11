@@ -392,6 +392,7 @@ Objective-C and Objective-C++ Dialects}.
 -Wdangling-else  -Wdangling-pointer  -Wdangling-pointer=@var{n}
 -Wdate-time
 -Wno-deprecated  -Wno-deprecated-declarations  -Wno-designated-init
+-Wno-deprecated-openmp
 -Wdisabled-optimization
 -Wno-discarded-array-qualifiers  -Wno-discarded-qualifiers
 -Wno-div-by-zero  -Wdouble-promotion
@@ -10997,6 +10998,11 @@ Do not warn about uses of functions (@pxref{Function Attributes}),
 variables (@pxref{Variable Attributes}), and types (@pxref{Type
 Attributes}) marked as deprecated by using the @code{deprecated}
 attribute.
+
+@opindex Wno-deprecated-openmp
+@opindex Wdeprecated-openmp
+@item -Wno-deprecated-openmp
+Do not warn about deprecated OpenMP code.
 
 @opindex Wno-overflow
 @opindex Woverflow

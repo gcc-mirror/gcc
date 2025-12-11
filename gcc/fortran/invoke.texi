@@ -149,9 +149,9 @@ by type.  Explanations are in the following sections.
 and warnings}.
 @gccoptlist{-Waliasing -Wall -Wampersand -Warray-bounds
 -Wc-binding-type -Wcharacter-truncation -Wconversion
--Wdo-subscript -Wfunction-elimination -Wimplicit-interface
--Wimplicit-procedure -Wintrinsic-shadow -Wuse-without-only
--Wintrinsics-std -Wline-truncation -Wno-align-commons
+-Wno-deprecated-openmp -Wdo-subscript -Wfunction-elimination
+-Wimplicit-interface -Wimplicit-procedure -Wintrinsic-shadow
+-Wuse-without-only -Wintrinsics-std -Wline-truncation -Wno-align-commons
 -Wno-overwrite-recursive -Wno-tabs -Wreal-q-constant -Wsurprising
 -Wunderflow -Wunused-parameter -Wrealloc-lhs -Wrealloc-lhs-all
 -Wfrontend-loop-interchange -Wtarget-lifetime -fmax-errors=@var{n}
@@ -1068,6 +1068,11 @@ the expression after conversion. Implied by @option{-Wall}.
 @item -Wconversion-extra
 Warn about implicit conversions between different types and kinds. This
 option does @emph{not} imply @option{-Wconversion}.
+
+@opindex Wdeprecated-openmp
+@cindex warnings
+@item -Wdeprecated-openmp
+Warn for usage of deprecated OpenMP code.
 
 @opindex Wexternal-argument-mismatch
 @cindex warnings, argument mismatch

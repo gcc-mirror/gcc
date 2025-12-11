@@ -1,6 +1,6 @@
 // PR c++/24734
 // { dg-do compile }
-// { dg-options "-fopenmp -fdump-tree-gimple" }
+// { dg-options "-fopenmp -fdump-tree-gimple -Wno-deprecated-openmp" }
 
 int i;
 

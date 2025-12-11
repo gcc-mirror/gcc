@@ -1,6 +1,6 @@
 // PR c++/36308
 // { dg-do run }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <omp.h>
 #include <assert.h>
 

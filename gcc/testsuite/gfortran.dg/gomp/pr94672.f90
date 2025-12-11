@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 SUBROUTINE foo(n,array)
     IMPLICIT NONE
     INTEGER, INTENT (IN) :: n

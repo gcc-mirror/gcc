@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-require-effective-target tls_runtime }
+! { dg-additional-options "-Wno-deprecated-openmp" }
   integer, pointer, save :: thr(:)
 !$omp threadprivate (thr)
   integer, target :: s(3), t(3), u(3)

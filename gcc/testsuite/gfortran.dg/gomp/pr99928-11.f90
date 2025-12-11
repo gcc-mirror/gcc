@@ -1,7 +1,7 @@
 ! PR middle-end/99928
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   implicit none
   integer :: r00, r01, r02
@@ -30,6 +30,6 @@ subroutine bar ()
     r02 = r02 + 1
   end do
   ! FIXME: We don't support in_reduction clause on target yet, once we do, should
-  ! add testcase coverage for all combined/composite constructs with target as leaf construct. 
+  ! add testcase coverage for all combined/composite constructs with target as leaf construct.
 end
 end module m

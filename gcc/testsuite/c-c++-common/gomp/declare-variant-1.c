@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int foo (int, int, int *);
 int bar (int, int, int *);
 int foobar (int, int, int *);
@@ -43,7 +44,7 @@ corge (void)
   for (i = 0; i < 3; i++)
     waldo (7);
   #pragma omp parallel
-  #pragma omp master    
+  #pragma omp master
   waldo (8);
 }
 

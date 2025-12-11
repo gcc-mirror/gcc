@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-options "-fcray-pointer" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
   use omp_lib
   integer :: a, b, c, p
   logical :: l

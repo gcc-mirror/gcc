@@ -91,6 +91,9 @@ UrlSuffix(gcc/Warning-Options.html#index-Wconversion) LangUrlSuffix_Fortran(gfor
 Wconversion-extra
 LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wconversion-extra)
 
+Wdeprecated-openmp
+UrlSuffix(gcc/Warning-Options.html#index-Wdeprecated-openmp) LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wdeprecated-openmp)
+
 Wdo-subscript
 LangUrlSuffix_Fortran(gfortran/Error-and-Warning-Options.html#index-Wdo-subscript)
 

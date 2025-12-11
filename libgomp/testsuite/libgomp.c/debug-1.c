@@ -1,6 +1,7 @@
 /* PR debug/36617 */
 /* { dg-do run } */
 /* { dg-options "-g -O0" } */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 int
 f1 (void)

@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Test whether use_device_ptr properly handles OPTIONAL arguments
 ! (Only case of present arguments is tested)
 program test_it

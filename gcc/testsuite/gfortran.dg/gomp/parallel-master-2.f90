@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
   use iso_c_binding, only: c_intptr_t
   implicit none (external, type)
   integer, parameter :: omp_event_handle_kind = c_intptr_t
@@ -6,4 +7,4 @@
     !$omp task detach (x) ! { dg-error "'x' not specified in enclosing 'parallel'" }
     !$omp end task
   !$omp end parallel master
-end 
+end

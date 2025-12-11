@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module mymod
   implicit none (type, external)
   integer, target :: var(0:5) = [0,1,2,3,4,5]

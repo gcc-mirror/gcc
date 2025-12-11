@@ -1,6 +1,5 @@
 ! { dg-do run }
-! { dg-additional-options "-Wno-deprecated-declarations" }
-
+! { dg-additional-options "-Wno-deprecated-declarations -Wno-deprecated-openmp" }
   use omp_lib
 
   double precision :: d, e

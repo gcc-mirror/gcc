@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void f0 (void);
 void f1 (void);
 #pragma omp declare variant	/* { dg-error "expected '\\(' before end of line" } */

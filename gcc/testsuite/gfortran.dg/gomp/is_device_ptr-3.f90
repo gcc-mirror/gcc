@@ -2,7 +2,6 @@
 
 ! { dg-do compile }
 ! { dg-additional-options "-fdump-tree-gimple" }
-
 program main
   use iso_c_binding
   implicit none
@@ -14,8 +13,8 @@ contains
   subroutine foo (a, b)
     integer, target :: a, b
 
-    !$omp target data map(a, b) use_device_ptr(a, b)
-      !$omp target is_device_ptr(a, b)
+    !$omp target data map(a, b) use_device_ptr(a, b) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use USE_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
+      !$omp target is_device_ptr(a, b) ! { dg-warning "Non-C_PTR type argument at \\(1\\) is deprecated, use HAS_DEVICE_ADDR \\\[-Wdeprecated-openmp\\\]" }
         a = 42
       !$omp end target
     !$omp end target data

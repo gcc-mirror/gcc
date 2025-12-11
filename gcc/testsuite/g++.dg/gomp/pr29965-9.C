@@ -3,7 +3,7 @@
 // This is invalid code, but we don't emit diagnostics for it, nevertheless
 // we test that we don't ICE on it.
 // { dg-do compile }
-// { dg-options "-O2 -fopenmp" }
+// { dg-options "-O2 -fopenmp -Wno-deprecated-openmp" }
 
 void
 foo1 ()

@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 typedef enum omp_allocator_handle_t
 : __UINTPTR_TYPE__
 {

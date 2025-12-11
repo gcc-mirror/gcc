@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   use iso_c_binding, only: c_loc
   implicit none (type, external)
@@ -36,7 +37,7 @@ subroutine f2 (a)
       do j = 0, 63
         a(64 * i + j) = i + j
       end do
-    end do    
+    end do
 end
 
 subroutine f3 (a)

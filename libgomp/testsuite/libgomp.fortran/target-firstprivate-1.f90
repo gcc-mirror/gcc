@@ -1,5 +1,5 @@
 ! PR fortran/104949
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 implicit none (type,external)
 integer, allocatable :: A(:)
 A = [1,2,3,4,5,6]

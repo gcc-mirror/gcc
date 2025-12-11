@@ -1,4 +1,5 @@
 ! { dg-do run }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Check whether absent optional arguments are properly
 ! handled with use_device_{addr,ptr}.
 program main

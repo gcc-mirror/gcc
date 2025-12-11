@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-declarations -Wno-deprecated-openmp" }
 extern void abort (void);
 
 int

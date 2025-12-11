@@ -1,6 +1,6 @@
 /* PR middle-end/35818 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp" } */
+/* { dg-options "-fopenmp -Wno-deprecated-openmp" } */
 
 extern int a[];
 

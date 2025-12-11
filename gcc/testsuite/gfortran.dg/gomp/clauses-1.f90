@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   use iso_c_binding, only: c_intptr_t
   implicit none (external, type)

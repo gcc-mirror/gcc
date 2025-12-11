@@ -1,6 +1,6 @@
 /* PR middle-end/85956 */
 /* { dg-do compile } */
-/* { dg-additional-options "-O2 -Wall" } */
+/* { dg-additional-options "-O2 -Wall -Wno-deprecated-openmp" } */
 
 void
 foo (int n, void *p)

@@ -1,4 +1,5 @@
 /* PR middle-end/101167 */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 extern
 #ifdef __cplusplus

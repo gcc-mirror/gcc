@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 extern "C" void abort ();
 
 struct S { S (); S (unsigned long long int, int); ~S (); static int cnt1, cnt2, cnt3; unsigned long long int s; int t; };

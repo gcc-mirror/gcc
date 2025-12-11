@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 extern "C" void abort ();
 int arr[64], arr2[64], arr3[64];
 

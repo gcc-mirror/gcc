@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 #ifdef __cplusplus
 extern "C"
 #endif

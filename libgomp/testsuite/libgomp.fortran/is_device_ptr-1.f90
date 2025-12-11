@@ -1,5 +1,4 @@
-! { dg-additional-options "-fdump-tree-original" }
-
+! { dg-additional-options "-fdump-tree-original -Wno-deprecated-openmp" }
 ! PR fortran/98476
 
 program abc

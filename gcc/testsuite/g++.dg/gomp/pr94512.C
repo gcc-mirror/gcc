@@ -1,5 +1,5 @@
 // PR c++/94512
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void
 foo ();
 

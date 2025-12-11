@@ -1,6 +1,6 @@
 /* PR c++/98187 */
 /* { dg-do compile } */
-/* { dg-options "-fopenmp-simd -O2 -fdump-tree-gimple" } */
+/* { dg-options "-fopenmp-simd -O2 -fdump-tree-gimple -Wno-deprecated-openmp" } */
 /* { dg-final { scan-tree-dump-times "#pragma omp simd" 17 "gimple" } } */
 
 void

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-std=c99" { target c } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 typedef enum omp_allocator_handle_t
 #if __cplusplus >= 201103L
 : __UINTPTR_TYPE__
@@ -30,7 +30,7 @@ omp_lock_hint_nonspeculative = omp_sync_hint_nonspeculative,
 omp_sync_hint_speculative = 0x8,
 omp_lock_hint_speculative = omp_sync_hint_speculative
 } omp_sync_hint_t;
-  
+
 typedef struct __attribute__((__aligned__ (sizeof (void *)))) omp_depend_t {
   char __omp_depend_t__[2 * sizeof (void *)];
 } omp_depend_t;

@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module target1
   interface
     subroutine dosomething (a, n, m)

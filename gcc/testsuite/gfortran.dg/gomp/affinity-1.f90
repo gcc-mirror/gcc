@@ -1,5 +1,7 @@
-  integer :: i, j
-  integer, dimension (10, 10) :: a
+! { dg-additional-options "-Wno-deprecated-openmp" }
+
+integer :: i, j
+integer, dimension (10, 10) :: a
 !$omp parallel do default(none)proc_bind(master)shared(a)
   do i = 1, 10
     j = 4

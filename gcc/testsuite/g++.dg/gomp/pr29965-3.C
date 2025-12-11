@@ -1,7 +1,7 @@
 // PR middle-end/29965
 // Test that OpenMP construct bodies which never return don't cause ICEs.
 // { dg-do compile }
-// { dg-options "-O2 -fopenmp" }
+// { dg-options "-O2 -fopenmp -Wno-deprecated-openmp" }
 
 extern void baz () __attribute__ ((noreturn));
 

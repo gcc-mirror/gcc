@@ -1,5 +1,5 @@
 ! { dg-do run }
-!
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Test user_device_ptr nested within another parallel
 ! construct
 !

@@ -1,5 +1,5 @@
-C { dg-do run }
-
+! { dg-do run }
+! { dg-additional-options "-Wno-deprecated-openmp" }
       INCLUDE "omp_lib.h"
 
       DOUBLE PRECISION :: D, E

@@ -685,6 +685,10 @@ Wdeprecated-non-prototype
 C ObjC Var(warn_deprecated_non_prototype) Init(-1) Warning
 Warn about calls with arguments to functions declared without parameters.
 
+Wdeprecated-openmp
+C ObjC C++ ObjC++ Warning Var(warn_deprecated_openmp) Init(1)
+Warn about deprecated OpenMP code.
+
 Wdeprecated-variadic-comma-omission
 C++ ObjC++ Var(warn_deprecated_variadic_comma_omission) Warning
 Warn about deprecated omission of comma before ... in varargs function declaration.

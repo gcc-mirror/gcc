@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-options "-fopenmp -fdump-tree-ompexp" } */
+/* { dg-options "-fopenmp -fdump-tree-ompexp -Wno-deprecated-openmp" } */
 
 extern void bar(int);
 

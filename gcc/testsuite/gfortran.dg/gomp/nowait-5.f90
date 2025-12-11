@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Cross check that it is accepted without nowait
 subroutine bar()
 implicit none

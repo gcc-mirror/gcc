@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void foo (void);
 int v;
 #ifdef __cplusplus

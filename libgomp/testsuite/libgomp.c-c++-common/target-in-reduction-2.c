@@ -1,3 +1,5 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
+
 struct S { int a, b, c[2]; };
 #pragma omp declare reduction (+: struct S : (omp_out.a += omp_in.a, omp_out.b += omp_in.b)) \
   initializer (omp_priv = { 0, 0, { 0, 0 } })

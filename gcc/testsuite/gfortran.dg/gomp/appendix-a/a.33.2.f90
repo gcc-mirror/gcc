@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
       REAL FUNCTION READ_NEXT()
         REAL, POINTER :: TMP
 !$OMP SINGLE
