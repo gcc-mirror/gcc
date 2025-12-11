@@ -1495,8 +1495,9 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
     rop = OMP_REDUCTION_TIMES;
   else if (gfc_match_char ('-') == MATCH_YES)
     {
-      gfc_warning (OPT_Wdeprecated_openmp, "%<-%> operator at %C "
-	"for reductions deprecated in OpenMP 5.2");
+      gfc_warning (OPT_Wdeprecated_openmp,
+		   "%<-%> operator at %C for reductions deprecated in "
+		   "OpenMP 5.2");
       rop = OMP_REDUCTION_MINUS;
     }
   else if (gfc_match (".and.") == MATCH_YES)
@@ -1858,10 +1859,11 @@ gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
       if (!has_modifiers)
 	{
 	  if (gfc_match ("( %S ) ", &p->u2.traits_sym) == MATCH_YES)
-	    gfc_warning (OPT_Wdeprecated_openmp, "The specification of "
-	      "arguments to %<uses_allocators%> at %L where each item is of "
-	      "the form %<allocator(traits)%> is deprecated since OpenMP 5.2",
-	      &p->where);
+	    gfc_warning (OPT_Wdeprecated_openmp,
+			 "The specification of arguments to "
+			 "%<uses_allocators%> at %L where each item is of "
+			 "the form %<allocator(traits)%> is deprecated since "
+			 "OpenMP 5.2", &p->where);
 	}
       else if (gfc_peek_ascii_char () == '(')
 	{
@@ -2918,9 +2920,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      goto error;
 		    }
 		  if (is_depend)
-		    gfc_warning (OPT_Wdeprecated_openmp, "%<source%> "
-		      "modifier with %<depend%> clause at %L deprecated "
-		      "since OpenMP 5.2, use with %<doacross%>", &old_loc);
+		    gfc_warning (OPT_Wdeprecated_openmp,
+				 "%<source%> modifier with %<depend%> clause "
+				 "at %L deprecated since OpenMP 5.2, use with "
+				 "%<doacross%>", &old_loc);
 		  c->doacross_source = true;
 		  c->depend_source = is_depend;
 		  continue;
@@ -2945,10 +2948,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		      goto error;
 		    }
 		  if (is_depend)
-		    gfc_warning (OPT_Wdeprecated_openmp, "%<sink%> "
-		      "modifier with %<depend%> clause at %L "
-		      "deprecated since OpenMP 5.2, use with %<doacross%>",
-		      &old_loc);
+		    gfc_warning (OPT_Wdeprecated_openmp,
+				 "%<sink%> modifier with %<depend%> clause at "
+				 "%L deprecated since OpenMP 5.2, use with "
+				 "%<doacross%>", &old_loc);
 		  m = gfc_match_omp_doacross_sink (&c->lists[OMP_LIST_DEPEND],
 						   is_depend);
 		  if (m == MATCH_YES)
@@ -3462,9 +3465,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      if (old_linear_modifier)
 		gfc_warning (OPT_Wdeprecated_openmp,
-		  "Specification of the list items as arguments to the "
-		  "modifiers at %L is deprecated since OpenMP 5.2",
-		  &saved_loc);
+			     "Specification of the list items as arguments to "
+			     "the modifiers at %L is deprecated since "
+			     "OpenMP 5.2", &saved_loc);
 	      if (linear_op != OMP_LINEAR_DEFAULT)
 		{
 		  if (gfc_match (" :") == MATCH_YES)
@@ -3651,9 +3654,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		    break;
 		  if (gfc_match (", ") != MATCH_YES)
 		    gfc_warning (OPT_Wdeprecated_openmp,
-		      "The specification of modifiers without comma "
-		      "separators for the %<map%> clause at %C has "
-		      "been deprecated since OpenMP 5.2");
+				 "The specification of modifiers without "
+				 "comma separators for the %<map%> clause "
+				 "at %C has been deprecated since "
+				 "OpenMP 5.2");
 		}
 
 	      gfc_omp_map_op map_op = OMP_MAP_TOFROM;
@@ -4049,9 +4053,9 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		c->proc_bind = OMP_PROC_BIND_PRIMARY;
 	      else if (gfc_match ("master )") == MATCH_YES)
 		{
-		  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> affinity "
-		    "policy at %C deprecated since OpenMP 5.1, use "
-		    "%<primary%>");
+		  gfc_warning (OPT_Wdeprecated_openmp,
+			       "%<master%> affinity policy at %C deprecated "
+			       "since OpenMP 5.1, use %<primary%>");
 		  c->proc_bind = OMP_PROC_BIND_MASTER;
 		}
 	      else if (gfc_match ("spread )") == MATCH_YES)
@@ -4317,9 +4321,10 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		goto error;
 	      if (m == MATCH_YES)
 		{
-		  gfc_warning (OPT_Wdeprecated_openmp, "%<to%> clause with "
-		    "%<declare target%> at %L deprecated since OpenMP 5.2, "
-		    "use %<enter%>", &old_loc);
+		  gfc_warning (OPT_Wdeprecated_openmp,
+			       "%<to%> clause with %<declare target%> at %L "
+			       "deprecated since OpenMP 5.2, use %<enter%>",
+			       &old_loc);
 		  continue;
 		}
 	    }
@@ -7094,8 +7099,8 @@ match_omp_metadirective (bool begin_p)
 	{
 	  default_p = true;
 	  gfc_warning (OPT_Wdeprecated_openmp,
-	    "%<default%> clause with metadirective at %L "
-	    "deprecated since OpenMP 5.2", &variant_locus);
+		       "%<default%> clause with metadirective at %L "
+		       "deprecated since OpenMP 5.2", &variant_locus);
 	}
       else if (gfc_match ("otherwise ( ") == MATCH_YES)
 	default_p = true;
@@ -7468,16 +7473,18 @@ gfc_match_omp_parallel_masked_taskloop_simd (void)
 match
 gfc_match_omp_parallel_master (void)
 {
-  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
-    " since OpenMP 5.1, use %<masked%>");
+  gfc_warning (OPT_Wdeprecated_openmp,
+	       "%<master%> construct at %C deprecated since OpenMP 5.1, use "
+	       "%<masked%>");
   return match_omp (EXEC_OMP_PARALLEL_MASTER, OMP_PARALLEL_CLAUSES);
 }
 
 match
 gfc_match_omp_parallel_master_taskloop (void)
 {
-  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
-    " since OpenMP 5.1, use %<masked%>");
+  gfc_warning (OPT_Wdeprecated_openmp,
+	       "%<master%> construct at %C deprecated since OpenMP 5.1, "
+	       "use %<masked%>");
   return match_omp (EXEC_OMP_PARALLEL_MASTER_TASKLOOP,
 		    (OMP_PARALLEL_CLAUSES | OMP_TASKLOOP_CLAUSES)
 		    & ~(omp_mask (OMP_CLAUSE_IN_REDUCTION)));
@@ -7486,8 +7493,9 @@ gfc_match_omp_parallel_master_taskloop (void)
 match
 gfc_match_omp_parallel_master_taskloop_simd (void)
 {
-  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
-    " since OpenMP 5.1, use %<masked%>");
+  gfc_warning (OPT_Wdeprecated_openmp,
+	       "%<master%> construct at %C deprecated since OpenMP 5.1, "
+	       "use %<masked%>");
   return match_omp (EXEC_OMP_PARALLEL_MASTER_TASKLOOP_SIMD,
 		    (OMP_PARALLEL_CLAUSES | OMP_TASKLOOP_CLAUSES
 		     | OMP_SIMD_CLAUSES)
@@ -8071,8 +8079,9 @@ gfc_match_omp_masked_taskloop_simd (void)
 match
 gfc_match_omp_master (void)
 {
-  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
-    " since OpenMP 5.1, use %<masked%>");
+  gfc_warning (OPT_Wdeprecated_openmp,
+	       "%<master%> construct at %C deprecated since OpenMP 5.1, "
+	       "use %<masked%>");
   if (gfc_match_omp_eos () != MATCH_YES)
     {
       gfc_error ("Unexpected junk after $OMP MASTER statement at %C");
@@ -8086,16 +8095,18 @@ gfc_match_omp_master (void)
 match
 gfc_match_omp_master_taskloop (void)
 {
-  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
-    " since OpenMP 5.1, use %<masked%>");
+  gfc_warning (OPT_Wdeprecated_openmp,
+	       "%<master%> construct at %C deprecated since OpenMP 5.1, "
+	       "use %<masked%>");
   return match_omp (EXEC_OMP_MASTER_TASKLOOP, OMP_TASKLOOP_CLAUSES);
 }
 
 match
 gfc_match_omp_master_taskloop_simd (void)
 {
-  gfc_warning (OPT_Wdeprecated_openmp, "%<master%> construct at %C deprecated"
-    " since OpenMP 5.1, use %<masked%>");
+  gfc_warning (OPT_Wdeprecated_openmp,
+	       "%<master%> construct at %C deprecated since OpenMP 5.1, use "
+	       "%<masked%>");
   return match_omp (EXEC_OMP_MASTER_TASKLOOP_SIMD,
 		    OMP_TASKLOOP_CLAUSES | OMP_SIMD_CLAUSES);
 }
@@ -9454,10 +9465,10 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 	{
 	  if (code->op == EXEC_OMP_ALLOCATE)
 	    gfc_warning (OPT_Wdeprecated_openmp,
-	      "The use of one or more %<allocate%> directives with "
-	      "an associated %<allocate%> statement at %L is "
-	      "deprecated since OpenMP 5.2, use an %<allocators%> "
-	      "directive", &code->loc);
+			 "The use of one or more %<allocate%> directives with "
+			 "an associated %<allocate%> statement at %L is "
+			 "deprecated since OpenMP 5.2, use an %<allocators%> "
+			 "directive", &code->loc);
 	  gfc_alloc *a;
 	  gfc_omp_namelist *n_null = NULL;
 	  bool missing_allocator = false;
@@ -10052,9 +10063,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		  {
 		    /* For TARGET, non-C_PTR are deprecated and handled as
 		       has_device_addr.  */
-		    gfc_warning (OPT_Wdeprecated_openmp, "Non-C_PTR type "
-		      "argument at %L is deprecated, use HAS_DEVICE_ADDR",
-		      &n->where);
+		    gfc_warning (OPT_Wdeprecated_openmp,
+				 "Non-C_PTR type argument at %L is deprecated, "
+				 "use HAS_DEVICE_ADDR", &n->where);
 		    gfc_omp_namelist *n2 = n;
 		    n = n->next;
 		    if (last)
@@ -10081,9 +10092,9 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 		if (n->sym->ts.type != BT_DERIVED
 		    || !n->sym->ts.u.derived->ts.is_iso_c)
 		  {
-		    gfc_warning (OPT_Wdeprecated_openmp, "Non-C_PTR type "
-		      "argument at %L is deprecated, use USE_DEVICE_ADDR",
-		      &n->where);
+		    gfc_warning (OPT_Wdeprecated_openmp,
+				 "Non-C_PTR type argument at %L is "
+				 "deprecated, use USE_DEVICE_ADDR", &n->where);
 		    n = n->next;
 		    if (last)
 		      last->next = n;

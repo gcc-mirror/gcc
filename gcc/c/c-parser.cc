@@ -18850,8 +18850,9 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	  break;
 	case CPP_MINUS:
 	  warning_at (c_parser_peek_token (parser)->location,
-	    OPT_Wdeprecated_openmp,
-	    "%<-%> operator for reductions deprecated in OpenMP 5.2");
+		      OPT_Wdeprecated_openmp,
+		      "%<-%> operator for reductions deprecated in "
+		      "OpenMP 5.2");
 	  code = MINUS_EXPR;
 	  break;
 	case CPP_AND:
@@ -19601,8 +19602,8 @@ c_parser_omp_clause_linear (c_parser *parser, tree list)
       if (kind != OMP_CLAUSE_LINEAR_DEFAULT)
 	{
 	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
-	    "specifying the list items as arguments to the modifiers is "
-	    "deprecated since OpenMP 5.2");
+		      "specifying the list items as arguments to the "
+		      "modifiers is deprecated since OpenMP 5.2");
 	  old_linear_modifier = true;
 	  c_parser_consume_token (parser);
 	  c_parser_consume_token (parser);
@@ -20141,15 +20142,15 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
       else if (strcmp ("sink", p) == 0)
 	{
 	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
-	    "%<sink%> modifier with %<depend%> clause deprecated since "
-	    "OpenMP 5.2, use with %<doacross%>");
+		      "%<sink%> modifier with %<depend%> clause deprecated "
+		      "since OpenMP 5.2, use with %<doacross%>");
 	  dkind = OMP_CLAUSE_DOACROSS_SINK;
 	}
       else if (strcmp ("source", p) == 0)
 	{
 	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
-	    "%<source%> modifier with %<depend%> clause deprecated since "
-	    "OpenMP 5.2, use with %<doacross%>");
+		      "%<source%> modifier with %<depend%> clause deprecated "
+		      "since OpenMP 5.2, use with %<doacross%>");
 	  dkind = OMP_CLAUSE_DOACROSS_SOURCE;
 	}
       else
@@ -20583,8 +20584,8 @@ c_parser_omp_clause_map (c_parser *parser, tree list, bool declare_mapper_p)
       ++num_identifiers;
       if (num_identifiers - 1 != num_commas)
 	warning_at (clause_loc, OPT_Wdeprecated_openmp,
-	  "%<map%> clause modifiers without comma separation is deprecated "
-	  "since OpenMP 5.2");
+		    "%<map%> clause modifiers without comma separation is "
+		    "deprecated since OpenMP 5.2");
     }
 
   if (c_parser_next_token_is (parser, CPP_NAME)
@@ -20827,12 +20828,12 @@ c_parser_omp_clause_proc_bind (c_parser *parser, tree list)
       if (strcmp ("primary", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_PRIMARY;
       else if (strcmp ("master", p) == 0)
-      {
-	warning_at (clause_loc, OPT_Wdeprecated_openmp,
-	  "%<master%> affinity deprecated since OpenMP 5.1, "
-	  "use %<primary%>");
-	kind = OMP_CLAUSE_PROC_BIND_MASTER;
-      }
+	{
+	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+		      "%<master%> affinity deprecated since OpenMP 5.1, "
+		      "use %<primary%>");
+	  kind = OMP_CLAUSE_PROC_BIND_MASTER;
+	}
       else if (strcmp ("close", p) == 0)
 	kind = OMP_CLAUSE_PROC_BIND_CLOSE;
       else if (strcmp ("spread", p) == 0)
@@ -25451,7 +25452,8 @@ c_parser_omp_master (location_t loc, c_parser *parser,
 		     bool *if_p)
 {
   warning_at (loc, OPT_Wdeprecated_openmp,
-    "%<master%> construct deprecated since OpenMP 5.1, use %<masked%>");
+	      "%<master%> construct deprecated since OpenMP 5.1, use "
+	      "%<masked%>");
   tree block, clauses, ret;
 
   strcat (p_name, " master");
@@ -28384,9 +28386,10 @@ c_parser_omp_declare_target (c_parser *parser)
   else
     {
       warning_at (c_parser_peek_token (parser)->location,
-	OPT_Wdeprecated_openmp,
-	"use of %<omp declare target%> as a synonym for %<omp begin declare "
-	"target%> has been deprecated since OpenMP 5.2");
+		  OPT_Wdeprecated_openmp,
+		  "use of %<omp declare target%> as a synonym for "
+		  "%<omp begin declare target%> has been deprecated since "
+		  "OpenMP 5.2");
       bool attr_syntax = parser->in_omp_attribute_pragma != NULL;
       c_parser_skip_to_pragma_eol (parser);
       c_omp_declare_target_attr attr = { attr_syntax, -1, 0 };
@@ -28397,8 +28400,9 @@ c_parser_omp_declare_target (c_parser *parser)
     {
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER && OMP_CLAUSE_ENTER_TO (c))
 	warning_at (c_parser_peek_token (parser)->location,
-	  OPT_Wdeprecated_openmp, "%<to%> clause with %<declare target%> "
-	  "deprecated since OpenMP 5.2, use %<enter%>");
+		    OPT_Wdeprecated_openmp,
+		    "%<to%> clause with %<declare target%> deprecated since "
+		    "OpenMP 5.2, use %<enter%>");
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
@@ -30206,8 +30210,8 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
       if (strcmp (p, "default") == 0)
 	warning_at (pragma_loc, OPT_Wdeprecated_openmp,
-	  "%<default%> clause on metadirectives deprecated since "
-	  "OpenMP 5.2, use %<otherwise%>");
+		    "%<default%> clause on metadirectives deprecated since "
+		    "OpenMP 5.2, use %<otherwise%>");
       c_parser_consume_token (parser);
       bool default_p
 	= strcmp (p, "default") == 0 || strcmp (p, "otherwise") == 0;
