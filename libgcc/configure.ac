@@ -530,6 +530,18 @@ case ${host} in
 esac
 AC_SUBST(solaris_ld_v2_maps)
 
+case ${host} in
+loongarch32*-*-*)
+  tmake_file="${tmake_file} loongarch/t-crtstuff-la32"
+  ;;
+esac
+
+case ${host} in
+loongarch64*-*-*)
+  tmake_file="${tmake_file} loongarch/t-crtstuff-la64"
+  ;;
+esac
+
 # Check if xtensa target is configured for windowed ABI and thus needs to use
 # custom unwind code.
 # This is after config.host so we can augment tmake_file.
