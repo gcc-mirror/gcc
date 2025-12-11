@@ -36,13 +36,16 @@ with System.Case_Util;
 with Atree;          use Atree;
 with Debug;
 with Einfo.Entities; use Einfo.Entities;
---  with Errout;
+with Einfo.Utils; use Einfo.Utils;
+with Errout;
+with Exp_Ch6;
 with Exp_Tss;
 with Lib;            use Lib;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Opt;            use Opt;
 with Output;
+with Sem_Aux;
 with Sem_Util;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;
@@ -81,6 +84,7 @@ package body VAST is
       Print_And_Continue); -- Print a message
 
    pragma Warnings (Off, "Status*could be declared constant");
+   --  Status is variable so we can modify it in gdb, for example
    Status : array (Check_Enum) of Check_Status :=
      (Check_Other => Enabled,
       Check_Sloc => Disabled,
@@ -138,6 +142,8 @@ package body VAST is
       Check : Check_Enum := Check_Other;
       Detail : String := "");
    --  Check that the Condition is True. Status determines action on failure.
+   --  Note: This procedure is used to detect errors in the tree, whereas
+   --  pragma Assert is used to detect errors in VAST itself.
 
    function To_Mixed (A : String) return String;
    --  Copied from System.Case_Util; old versions of that package do not have
@@ -244,6 +250,11 @@ package body VAST is
 
    procedure Check_Scope (N : Node_Id);
    --  Check that the Scope of N makes sense
+
+   procedure Validate_Subprogram_Calls (N : Node_Id);
+   --  Check that the number of actuals (including extra actuals) of all calls
+   --  within N match their corresponding formals; check also that the names
+   --  of BIP extra actuals and formals match.
 
    --------------
    -- To_Mixed --
@@ -521,7 +532,7 @@ package body VAST is
 
    procedure Do_Node_Pass_2 (N : Node_Id) is
    begin
-      --  Check Sloc:
+      --  Check Sloc
 
       case Nkind (N) is
          --  ???Some nodes, including exception handlers, have no Sloc;
@@ -535,11 +546,11 @@ package body VAST is
       end case;
 
       --  All reachable nodes should have been analyzed by the time we get
-      --  here:
+      --  here.
 
       Assert (Analyzed (N), Check_Analyzed);
 
-      --  Misc checks based on node/entity kind:
+      --  Misc checks based on node/entity kind
 
       case Nkind (N) is
          when N_Unused_At_Start | N_Unused_At_End =>
@@ -563,7 +574,7 @@ package body VAST is
             null; -- more to be done here
       end case;
 
-      --  Check that N has a Parent, except in certain cases:
+      --  Check that N has a Parent, except in certain cases
 
       case Nkind (N) is
          when N_Empty =>
@@ -768,11 +779,10 @@ package body VAST is
       Msg : constant String :=
         "VAST for unit" & U'Img & " " & U_Name_S & Predef & Is_Main;
 
-      Is_Preprocessing_Dependency : constant Boolean :=
-        U_Name = No_Unit_Name;
+      Is_Preprocessing_Dependency : constant Boolean := U_Name = No_Unit_Name;
       --  True if this is a bogus unit added by Add_Preprocessing_Dependency.
-      --  ???Not sure what that's about, but these units have no name and
-      --  no associated tree, so we had better not try to walk those trees.
+      --  These units have no name and no associated tree; we had better not
+      --  try to walk nonexistent trees.
 
       Root : constant Node_Id := Cunit (U);
    begin
@@ -801,10 +811,10 @@ package body VAST is
    begin
       Put_Line ("VAST");
 
-      --  Operating_Mode = Generate_Code implies there are no legality errors:
+      --  Operating_Mode = Generate_Code implies there are no legality errors
 
       pragma Assert (Serious_Errors_Detected = 0);
-      --  ????pragma Assert (not Errout.Compilation_Errors);
+      pragma Assert (not Errout.Compilation_Errors);
 
       Put_Line ("VAST checking" & Last_Unit'Img & " units");
 
@@ -835,7 +845,12 @@ package body VAST is
             end loop;
          end loop;
 
-         --  We shouldn't have allocated any new nodes during VAST:
+         --  Validate subprogram calls; check "extra formals". This works only
+         --  for the main unit.
+
+         Validate_Subprogram_Calls (Cunit (Main_Unit));
+
+         --  We shouldn't have allocated any new nodes during VAST
 
          pragma Assert (Node_Offsets.Last = Last_Node);
          Free (Nodes_Info);
@@ -879,6 +894,158 @@ package body VAST is
 
       VAST;
    end VAST_If_Enabled;
+
+   -------------------------------
+   -- Validate_Subprogram_Calls --
+   -------------------------------
+
+   procedure Validate_Subprogram_Calls (N : Node_Id) is
+      use Sem_Aux, Sem_Util;
+
+      function Process_Node (Nod : Node_Id) return Traverse_Result;
+      --  Function to traverse the subtree of N using Traverse_Proc.
+
+      ------------------
+      -- Process_Node --
+      ------------------
+
+      function Process_Node (Nod : Node_Id) return Traverse_Result is
+      begin
+         case Nkind (Nod) is
+            when N_Entry_Call_Statement
+               | N_Procedure_Call_Statement
+               | N_Function_Call
+            =>
+               declare
+                  Call_Node : Node_Id renames Nod;
+                  Subp      : constant Entity_Id := Get_Called_Entity (Nod);
+
+               begin
+                  pragma Assert (Exp_Ch6.Check_BIP_Actuals (Call_Node, Subp));
+
+                  --  Build-in-place function calls return their result by
+                  --  reference.
+
+                  pragma Assert (not Exp_Ch6.Is_Build_In_Place_Function (Subp)
+                    or else Returns_By_Ref (Subp));
+               end;
+
+            --  Skip generic bodies
+
+            when N_Package_Body =>
+               if Ekind (Unique_Defining_Entity (Nod)) = E_Generic_Package then
+                  return Skip;
+               end if;
+
+            when N_Subprogram_Body =>
+               if Ekind (Unique_Defining_Entity (Nod)) in E_Generic_Function
+                                                        | E_Generic_Procedure
+               then
+                  return Skip;
+               end if;
+
+            --  Nodes we want to ignore
+
+            --  Skip calls placed in the full declaration of record types since
+            --  the call will be performed by their Init Proc; for example,
+            --  calls initializing default values of discriminants or calls
+            --  providing the initial value of record type components. Other
+            --  full type declarations are processed because they may have
+            --  calls that must be checked. For example:
+
+            --    type T is array (1 .. Some_Function_Call (...)) of Some_Type;
+
+            --  ??? More work needed here to handle the following case:
+
+            --    type Rec is record
+            --       F : String (1 .. <some complicated expression>);
+            --    end record;
+
+            when N_Full_Type_Declaration =>
+               if Is_Record_Type (Defining_Entity (Nod)) then
+                  return Skip;
+               end if;
+
+            --  Skip calls placed in unexpanded initialization expressions
+
+            when N_Object_Declaration =>
+               if No_Initialization (Nod) then
+                  return Skip;
+               end if;
+
+            --  Skip calls placed in subprogram specifications since function
+            --  calls initializing default parameter values will be processed
+            --  when the call to the subprogram is found (if the default actual
+            --  parameter is required), and calls found in aspects will be
+            --  processed when their corresponding pragma is found, or in the
+            --  specific case of class-wide pre-/postconditions, when their
+            --  helpers are found.
+
+            when N_Procedure_Specification
+               | N_Function_Specification
+            =>
+               return Skip;
+
+            when N_Abstract_Subprogram_Declaration
+               | N_Aspect_Specification
+               | N_At_Clause
+               | N_Call_Marker
+               | N_Empty
+               | N_Enumeration_Representation_Clause
+               | N_Enumeration_Type_Definition
+               | N_Function_Instantiation
+               | N_Freeze_Generic_Entity
+               | N_Generic_Function_Renaming_Declaration
+               | N_Generic_Package_Renaming_Declaration
+               | N_Generic_Procedure_Renaming_Declaration
+               | N_Generic_Package_Declaration
+               | N_Generic_Subprogram_Declaration
+               | N_Itype_Reference
+               | N_Number_Declaration
+               | N_Package_Instantiation
+               | N_Package_Renaming_Declaration
+               | N_Pragma
+               | N_Procedure_Instantiation
+               | N_Protected_Type_Declaration
+               | N_Record_Representation_Clause
+               | N_Validate_Unchecked_Conversion
+               | N_Variable_Reference_Marker
+               | N_Use_Package_Clause
+               | N_Use_Type_Clause
+               | N_With_Clause
+            =>
+               return Skip;
+
+            when others =>
+               null;
+         end case;
+
+         return OK;
+      end Process_Node;
+
+      procedure Check_Calls is new Traverse_Proc (Process_Node);
+
+   --  Start of processing for Validate_Subprogram_Calls
+
+   begin
+      --  No action if we are not generating code (including if we have
+      --  errors).
+
+      if Operating_Mode /= Generate_Code then
+         return;
+      end if;
+
+      pragma Assert (Serious_Errors_Detected = 0);
+
+      --  Do not attempt to verify the return type in CodePeer_Mode
+      --  as CodePeer_Mode is missing some expansion code that
+      --  results in trees that would be considered malformed for
+      --  GCC but aren't for GNAT2SCIL.
+
+      if not CodePeer_Mode then
+         Check_Calls (N);
+      end if;
+   end Validate_Subprogram_Calls;
 
    ----------------
    -- Is_FE_Only --

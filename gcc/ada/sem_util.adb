@@ -8320,18 +8320,11 @@ package body Sem_Util is
                Error_Msg_N ("\generic units cannot be overloaded", Def_Id);
             end if;
 
-            --  If entity is in standard, then we are in trouble, because it
-            --  means that we have a library package with a duplicated name.
-            --  That's hard to recover from, so abort.
+            --  Abort for duplicated root library unit, which is hard to
+            --  recover from.
 
             if S = Standard_Standard then
                raise Unrecoverable_Error;
-
-            --  Otherwise we continue with the declaration. Having two
-            --  identical declarations should not cause us too much trouble.
-
-            else
-               null;
             end if;
          end if;
       end if;

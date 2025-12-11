@@ -163,42 +163,54 @@ package body Scans is
       return Name_Find (Name);
    end Keyword_Name;
 
-   ------------------------
-   -- Restore_Scan_State --
-   ------------------------
-
-   procedure Restore_Scan_State (Saved_State : Saved_Scan_State) is
-   begin
-      Scan_Ptr                 := Saved_State.Save_Scan_Ptr;
-      Token                    := Saved_State.Save_Token;
-      Token_Ptr                := Saved_State.Save_Token_Ptr;
-      Current_Line_Start       := Saved_State.Save_Current_Line_Start;
-      Start_Column             := Saved_State.Save_Start_Column;
-      Checksum                 := Saved_State.Save_Checksum;
-      First_Non_Blank_Location := Saved_State.Save_First_Non_Blank_Location;
-      Token_Node               := Saved_State.Save_Token_Node;
-      Token_Name               := Saved_State.Save_Token_Name;
-      Prev_Token               := Saved_State.Save_Prev_Token;
-      Prev_Token_Ptr           := Saved_State.Save_Prev_Token_Ptr;
-   end Restore_Scan_State;
-
    ---------------------
    -- Save_Scan_State --
    ---------------------
 
    procedure Save_Scan_State (Saved_State : out Saved_Scan_State) is
    begin
-      Saved_State.Save_Scan_Ptr                 := Scan_Ptr;
-      Saved_State.Save_Token                    := Token;
-      Saved_State.Save_Token_Ptr                := Token_Ptr;
-      Saved_State.Save_Current_Line_Start       := Current_Line_Start;
-      Saved_State.Save_Start_Column             := Start_Column;
-      Saved_State.Save_Checksum                 := Checksum;
+      Saved_State.Save_Scan_Ptr := Scan_Ptr;
+      Saved_State.Save_Token := Token;
+      Saved_State.Save_Token_Ptr := Token_Ptr;
+      Saved_State.Save_Current_Line_Start := Current_Line_Start;
+      Saved_State.Save_Start_Column := Start_Column;
+      Saved_State.Save_Checksum := Checksum;
       Saved_State.Save_First_Non_Blank_Location := First_Non_Blank_Location;
-      Saved_State.Save_Token_Node               := Token_Node;
-      Saved_State.Save_Token_Name               := Token_Name;
-      Saved_State.Save_Prev_Token               := Prev_Token;
-      Saved_State.Save_Prev_Token_Ptr           := Prev_Token_Ptr;
+
+      --  Check that we're not saving a bogus Token_Node
+
+      pragma Assert
+        ((Token_Node /= Empty) = (Token in Token_Class_Lit_Or_Name));
+      Saved_State.Save_Token_Node := Token_Node;
+
+      Saved_State.Save_Token_Name := Token_Name;
+      Saved_State.Save_Prev_Token := Prev_Token;
+      Saved_State.Save_Prev_Token_Ptr := Prev_Token_Ptr;
    end Save_Scan_State;
+
+   ------------------------
+   -- Restore_Scan_State --
+   ------------------------
+
+   --  use Output, VAST, Atree;
+
+   procedure Restore_Scan_State (Saved_State : Saved_Scan_State) is
+   begin
+      Scan_Ptr := Saved_State.Save_Scan_Ptr;
+      Token := Saved_State.Save_Token;
+      Token_Ptr := Saved_State.Save_Token_Ptr;
+      Current_Line_Start := Saved_State.Save_Current_Line_Start;
+      Start_Column := Saved_State.Save_Start_Column;
+      Checksum := Saved_State.Save_Checksum;
+      First_Non_Blank_Location := Saved_State.Save_First_Non_Blank_Location;
+
+      Token_Node := Saved_State.Save_Token_Node;
+      pragma Assert
+        ((Token_Node /= Empty) = (Token in Token_Class_Lit_Or_Name));
+
+      Token_Name := Saved_State.Save_Token_Name;
+      Prev_Token := Saved_State.Save_Prev_Token;
+      Prev_Token_Ptr := Saved_State.Save_Prev_Token_Ptr;
+   end Restore_Scan_State;
 
 end Scans;

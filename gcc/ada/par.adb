@@ -177,7 +177,7 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
    --  do not set SIS_Entry_Active, because the Import means there is no body.
    --  Set False at the start of P_Subprogram, set True when an Import aspect
    --  specification is seen, and used when P_Subprogram finds a subprogram
-   --  declaration.  This is necessary because the aspects are parsed before
+   --  declaration. This is necessary because the aspects are parsed before
    --  we know we have a subprogram declaration.
 
    SIS_Labl : Node_Id;
@@ -794,11 +794,9 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
       function Init_Expr_Opt (P : Boolean := False) return Node_Id;
       --  If an initialization expression is present (:= expression), then
-      --  it is scanned out and returned, otherwise Empty is returned if no
-      --  initialization expression is present. This procedure also handles
-      --  certain common error cases cleanly. The parameter P indicates if
-      --  a right paren can follow the expression (default = no right paren
-      --  allowed).
+      --  it is scanned out and returned; otherwise Empty is returned. This
+      --  procedure also handles certain common error cases. P=True indicates
+      --  that a right paren can follow the expression.
 
       procedure Skip_Declaration (S : List_Id);
       --  Used when scanning statements to skip past a misplaced declaration
@@ -1317,11 +1315,10 @@ function Par (Configuration_Pragmas : Boolean) return List_Id is
 
    package Util is
       function Bad_Spelling_Of (T : Token_Type) return Boolean;
-      --  This function is called in an error situation. It checks if the
-      --  current token is an identifier whose name is a plausible bad
-      --  spelling of the given keyword token, and if so, issues an error
-      --  message, sets Token from T, and returns True. Otherwise Token is
-      --  unchanged, and False is returned.
+      --  This function is called in an error situation. Returns True if the
+      --  current token is an identifier whose name is a plausible misspelling
+      --  of the given keyword token. In the True case, sets Token to T, and
+      --  Token_Node becomes invalid.
 
       procedure Check_Bad_Layout;
       --  Check for bad indentation in RM checking mode. Used for statements

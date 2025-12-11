@@ -4694,7 +4694,7 @@ package Einfo is
 --       if the type would normally require initialization. Set by use of
 --       pragma Suppress_Initialization and also for internal entities where
 --       we know that no initialization is required. For example, enumeration
---       image table entities set it.
+--       image table entities set it. This is unrelated to pragma Import.
 
 --    Suppress_Style_Checks
 --       Defined in all entities. Suppresses any style checks specifically

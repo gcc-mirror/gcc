@@ -197,7 +197,7 @@ package body Ch13 is
    function Get_Aspect_Specifications (Semicolon : Boolean) return List_Id is
       A_Id    : Aspect_Id;
       Aspect  : Node_Id;
-      Aspects : List_Id := Empty_List;
+      Aspects : constant List_Id := Empty_List;
       OK      : Boolean;
 
       Opt : Boolean;
@@ -215,7 +215,6 @@ package body Ch13 is
       end if;
 
       Scan; -- past WITH (or possible WHEN after error)
-      Aspects := Empty_List;
 
       --  Loop to scan aspects
 
@@ -497,23 +496,19 @@ package body Ch13 is
                   end if;
                end if;
 
-               --  Note if inside Depends or Refined_Depends aspect
+               --  Set some aspect-dependent flags
 
-               if A_Id = Aspect_Depends
-                 or else A_Id = Aspect_Refined_Depends
-               then
-                  Inside_Depends := True;
-               elsif A_Id = Aspect_Abstract_State then
-                  Inside_Abstract_State := True;
-               end if;
+               case A_Id is
+                  when Aspect_Depends | Aspect_Refined_Depends =>
+                     Inside_Depends := True;
+                  when Aspect_Abstract_State =>
+                     Inside_Abstract_State := True;
+                  when Aspect_Import =>
+                     SIS_Aspect_Import_Seen := True;
+                     --  This matters only while parsing a subprogram.
 
-               --  Note that we have seen an Import aspect specification.
-               --  This matters only while parsing a subprogram.
-
-               if A_Id = Aspect_Import then
-                  SIS_Aspect_Import_Seen := True;
-                  --  Should do it only for subprograms
-               end if;
+                  when others => null;
+               end case;
 
                --  Parse the aspect definition depending on the expected
                --  argument kind.

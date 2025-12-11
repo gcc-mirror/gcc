@@ -188,7 +188,7 @@ package body Debug is
    --  d_U  Disable prepending messages with "error:".
    --  d_V  Enable VAST (verifications on the expanded tree)
    --  d_W  Enable VAST in verbose mode
-   --  d_X  Disable assertions to check matching of extra formals
+   --  d_X
    --  d_Y
    --  d_Z
 
@@ -1074,10 +1074,6 @@ package body Debug is
 
    --  d_W  Same as d_V, but also prints lots of tracing/debugging output
    --       as it walks the tree.
-
-   --  d_X  Disable assertions to check matching of extra formals; switch added
-   --       temporarily to disable these checks until this work is complete if
-   --       they cause unexpected assertion failures.
 
    --  d1   Error messages have node numbers where possible. Normally error
    --       messages have only source locations. This option is useful when

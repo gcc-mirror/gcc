@@ -411,9 +411,9 @@ package Scans is
    --  is stored in Start_Column).
 
    Token_Node : Node_Id := Empty;
-   --  Node table Id for the current token. This is set only if the current
-   --  token is one for which the scanner constructs a node (i.e. it is an
-   --  identifier, operator symbol, or literal). For other token types,
+   --  Node_Id for the current token. This is set only if the current token is
+   --  one for which the scanner constructs a node (i.e. it is an identifier,
+   --  operator symbol, literal, or target name). For other token types,
    --  Token_Node is undefined.
 
    Token_Name : Name_Id := No_Name;

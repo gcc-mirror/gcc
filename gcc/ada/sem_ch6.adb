@@ -9804,8 +9804,7 @@ package body Sem_Ch6 is
       --       formals (see exp_ch9.Build_Wrapper_Specs) which will be
       --       checked later.
 
-      if Debug_Flag_Underscore_XX
-        or else not Expander_Active
+      if not Expander_Active
         or else
           (Is_Predefined_Dispatching_Operation (E)
              and then (not Has_Reliable_Extra_Formals (E)
@@ -9889,16 +9888,11 @@ package body Sem_Ch6 is
       Has_Extra_Formals : Boolean := False;
 
    begin
-      --  No check required if explicitly disabled
-
-      if Debug_Flag_Underscore_XX then
-         return True;
-
       --  No check required if expansion is disabled because extra
       --  formals are only generated when we are generating code.
       --  See Create_Extra_Formals.
 
-      elsif not Expander_Active then
+      if not Expander_Active then
          return True;
       end if;
 

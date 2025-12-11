@@ -316,10 +316,12 @@ package Exp_Ch6 is
    --  to reference the secondary dispatch table of an interface; otherwise
    --  return Empty.
 
-   procedure Validate_Subprogram_Calls (N : Node_Id);
-   --  Check that the number of actuals (including extra actuals) of calls in
-   --  the subtree N match their corresponding formals; check also that the
-   --  names of BIP extra actuals and formals match.
+   function Check_BIP_Actuals
+     (Subp_Call : Node_Id;
+      Subp_Id   : Entity_Id) return Boolean;
+   --  Given a subprogram call to the given subprogram return True if the
+   --  names of BIP extra actual and formal parameters match, and the number
+   --  of actuals (including extra actuals) matches the number of formals.
 
 private
    pragma Inline (Is_Build_In_Place_Return_Object);

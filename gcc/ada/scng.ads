@@ -35,8 +35,7 @@ generic
    with procedure Post_Scan;
    --  Procedure called by Scan for the following tokens: Tok_Char_Literal,
    --  Tok_Identifier, Tok_Real_Literal, Tok_Real_Literal, Tok_Integer_Literal,
-   --  Tok_String_Literal, Tok_Operator_Symbol, and Tok_Vertical_Bar. Used to
-   --  build Token_Node and also check for obsolescent features.
+   --  Tok_String_Literal, Tok_Operator_Symbol, and Tok_Vertical_Bar.
 
    with procedure Error_Msg (Msg : String; Flag_Location : Source_Ptr);
    --  Output a message at specified location

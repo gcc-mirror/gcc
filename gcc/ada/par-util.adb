@@ -55,96 +55,108 @@ package body Util is
    ---------------------
 
    function Bad_Spelling_Of (T : Token_Type) return Boolean is
-      Tname : constant String := Token_Type'Image (T);
-      --  Characters of token name
 
-      S : String (1 .. Tname'Last - 4);
-      --  Characters of token name folded to lower case, omitting TOK_ at start
+      function Bad_Spelling_Helper return Boolean;
+      --  This does all the work, except setting of Token and Token_Node
 
-      M1 : String (1 .. 42) := "incorrect spelling of keyword ************";
-      M2 : String (1 .. 44) := "illegal abbreviation of keyword ************";
-      --  Buffers used to construct error message
+      function Bad_Spelling_Helper return Boolean is
+         Tname : constant String := Token_Type'Image (T);
+         --  Characters of token name
 
-      P1 : constant := 30;
-      P2 : constant := 32;
-      --  Starting subscripts in M1, M2 for keyword name
+         S : String (1 .. Tname'Last - 4);
+         --  Characters of token name folded to lower case, omitting TOK_ at
+         --  start.
 
-      SL : constant Natural := S'Length;
-      --  Length of expected token name excluding TOK_ at start
+         M1 : String (1 .. 42) := "incorrect spelling of keyword ************";
+         M2 : String (1 .. 44) :=
+           "illegal abbreviation of keyword ************";
+         --  Buffers used to construct error message
+
+         P1 : constant := 30;
+         P2 : constant := 32;
+         --  Starting subscripts in M1, M2 for keyword name
+
+         SL : constant Natural := S'Length;
+         --  Length of expected token name excluding TOK_ at start
+
+      begin
+         if Token /= Tok_Identifier then
+            return False;
+         end if;
+
+         for J in S'Range loop
+            S (J) := Fold_Lower (Tname (J + 4));
+         end loop;
+
+         Get_Name_String (Token_Name);
+
+         --  A special check for case of PROGRAM used for PROCEDURE
+
+         if T = Tok_Procedure
+           and then Name_Len = 7
+           and then Name_Buffer (1 .. 7) = "program"
+         then
+            Error_Msg_SC -- CODEFIX
+              ("PROCEDURE expected");
+            return True;
+
+         --  A special check for an illegal abbreviation
+
+         elsif Name_Len < S'Length
+           and then Name_Len >= 4
+           and then Name_Buffer (1 .. Name_Len) = S (1 .. Name_Len)
+         then
+            for J in 1 .. S'Last loop
+               M2 (P2 + J - 1) := Fold_Upper (S (J));
+            end loop;
+
+            Error_Msg_SC (M2 (1 .. P2 - 1 + S'Last));
+            return True;
+         end if;
+
+         --  Now we go into the full circuit to check for a misspelling
+
+         --  Never consider something a misspelling if either the actual or
+         --  expected string is less than 3 characters (before this check we
+         --  used to consider i to be a misspelled if in some cases).
+
+         if SL < 3 or else Name_Len < 3 then
+            return False;
+
+         --  Special case: prefix matches, i.e. the leading characters of the
+         --  token that we have exactly match the required keyword. If there
+         --  are at least two characters left over, assume that we have a case
+         --  of two keywords joined together which should not be joined.
+
+         elsif Name_Len > SL + 1
+           and then S = Name_Buffer (1 .. SL)
+         then
+            Scan_Ptr := Token_Ptr + S'Length;
+            Error_Msg_S ("|missing space");
+            return True;
+         end if;
+
+         if Is_Bad_Spelling_Of (Name_Buffer (1 .. Name_Len), S) then
+            for J in 1 .. S'Last loop
+               M1 (P1 + J - 1) := Fold_Upper (S (J));
+            end loop;
+
+            Error_Msg_SC -- CODFIX
+              (M1 (1 .. P1 - 1 + S'Last));
+            return True;
+
+         else
+            return False;
+         end if;
+      end Bad_Spelling_Helper;
 
    begin
-      if Token /= Tok_Identifier then
-         return False;
-      end if;
-
-      for J in S'Range loop
-         S (J) := Fold_Lower (Tname (J + 4));
-      end loop;
-
-      Get_Name_String (Token_Name);
-
-      --  A special check for case of PROGRAM used for PROCEDURE
-
-      if T = Tok_Procedure
-        and then Name_Len = 7
-        and then Name_Buffer (1 .. 7) = "program"
-      then
-         Error_Msg_SC -- CODEFIX
-           ("PROCEDURE expected");
-         Token := T;
-         return True;
-
-      --  A special check for an illegal abbreviation
-
-      elsif Name_Len < S'Length
-        and then Name_Len >= 4
-        and then Name_Buffer (1 .. Name_Len) = S (1 .. Name_Len)
-      then
-         for J in 1 .. S'Last loop
-            M2 (P2 + J - 1) := Fold_Upper (S (J));
-         end loop;
-
-         Error_Msg_SC (M2 (1 .. P2 - 1 + S'Last));
-         Token := T;
-         return True;
-      end if;
-
-      --  Now we go into the full circuit to check for a misspelling
-
-      --  Never consider something a misspelling if either the actual or
-      --  expected string is less than 3 characters (before this check we
-      --  used to consider i to be a misspelled if in some cases).
-
-      if SL < 3 or else Name_Len < 3 then
-         return False;
-
-      --  Special case: prefix matches, i.e. the leading characters of the
-      --  token that we have exactly match the required keyword. If there
-      --  are at least two characters left over, assume that we have a case
-      --  of two keywords joined together which should not be joined.
-
-      elsif Name_Len > SL + 1
-        and then S = Name_Buffer (1 .. SL)
-      then
-         Scan_Ptr := Token_Ptr + S'Length;
-         Error_Msg_S ("|missing space");
-         Token := T;
-         return True;
-      end if;
-
-      if Is_Bad_Spelling_Of (Name_Buffer (1 .. Name_Len), S) then
-         for J in 1 .. S'Last loop
-            M1 (P1 + J - 1) := Fold_Upper (S (J));
-         end loop;
-
-         Error_Msg_SC -- CODFIX
-           (M1 (1 .. P1 - 1 + S'Last));
-         Token := T;
-         return True;
-
-      else
-         return False;
-      end if;
+      return Result : constant Boolean := Bad_Spelling_Helper do
+         if Result then
+            Token := T;
+            Token_Node := Empty;
+         end if;
+      end return;
    end Bad_Spelling_Of;
 
    ----------------------

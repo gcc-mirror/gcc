@@ -48,16 +48,15 @@ package Scn is
    --  keyword or an identifier. See also package Casing.
 
    procedure Post_Scan;
-   --  Create nodes for tokens: Char_Literal, Identifier, Real_Literal,
-   --  Integer_Literal, String_Literal and Operator_Symbol.
+   --  Sets Token_Node as specified in Scans.
+   --  Also checks for obsolescent features.
 
    procedure Scan_Reserved_Identifier (Force_Msg : Boolean);
-   --  This procedure is called to convert the current token, which the caller
-   --  has checked is for a reserved word, to an equivalent identifier. This is
-   --  of course only used in error situations where the parser can detect that
-   --  a reserved word is being used as an identifier. An appropriate error
-   --  message, pointing to the token, is also issued if either this is the
-   --  first occurrence of misuse of this identifier, or if Force_Msg is True.
+   --  Converts the current token, which is a reserved word, to an equivalent
+   --  identifier. This is used only in error situations where the parser can
+   --  detect that a reserved word is being used as an identifier. An error
+   --  message pointing to the token is also issued if either this is the first
+   --  occurrence of misuse of this identifier, or if Force_Msg is True.
 
    -------------
    -- Scanner --

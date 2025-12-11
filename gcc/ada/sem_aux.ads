@@ -271,9 +271,8 @@ package Sem_Aux is
 
    function Initialization_Suppressed (Typ : Entity_Id) return Boolean;
    pragma Inline (Initialization_Suppressed);
-   --  Returns True if initialization should be suppressed for the given type
-   --  or subtype. This is true if Suppress_Initialization is set either for
-   --  the subtype itself, or for the corresponding base type.
+   --  True if Suppress_Initialization is set either for Typ or for its base
+   --  type. This is unrelated to pragma Import.
 
    function Is_Body (N : Node_Id) return Boolean with Inline;
    --  Determine whether an arbitrary node denotes a body

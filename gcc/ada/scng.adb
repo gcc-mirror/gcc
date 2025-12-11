@@ -295,15 +295,15 @@ package body Scng is
       --  This is the procedure for scanning out numeric literals. On entry,
       --  Scan_Ptr points to the digit that starts the numeric literal (the
       --  checksum for this character has not been accumulated yet). On return
-      --  Scan_Ptr points past the last character of the numeric literal, Token
-      --  and Token_Node are set appropriately, and the checksum is updated.
+      --  Scan_Ptr points past the last character of the numeric literal, and
+      --  the checksum is updated.
 
       procedure Slit;
       --  This is the procedure for scanning out string literals. On entry,
       --  Scan_Ptr points to the opening string quote (the checksum for this
       --  character has not been accumulated yet). On return Scan_Ptr points
-      --  past the closing quote of the string literal, Token and Token_Node
-      --  are set appropriately, and the checksum is updated.
+      --  past the closing quote of the string literal, and the checksum is
+      --  updated.
 
       procedure Skip_Other_Format_Characters;
       --  Skips past any "other format" category characters at the current
@@ -825,10 +825,7 @@ package body Scng is
          --  Procedure used to distinguish between string and operator symbol.
          --  On entry the string has been scanned out, and its characters start
          --  at Token_Ptr and end one character before Scan_Ptr. On exit Token
-         --  is set to Tok_String_Literal/Tok_Operator_Symbol as appropriate,
-         --  and Token_Node is appropriately initialized. In addition, in the
-         --  operator symbol case, Token_Name is appropriately set, and the
-         --  flags [Wide_]Wide_Character_Found are set appropriately.
+         --  is set to Tok_String_Literal/Tok_Operator_Symbol as appropriate.
 
          ---------------------------
          -- Error_Bad_String_Char --
@@ -1297,6 +1294,7 @@ package body Scng is
    begin
       Prev_Token := Token;
       Prev_Token_Ptr := Token_Ptr;
+      Token_Node := Empty;
       Token_Name := Error_Name;
 
       if Inside_Interpolated_String_Literal

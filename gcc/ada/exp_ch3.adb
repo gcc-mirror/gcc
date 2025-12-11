@@ -6397,9 +6397,7 @@ package body Exp_Ch3 is
 
                else
                   pragma Assert
-                    (Extra_Formals_Match_OK
-                      (E     => Subp,
-                       Ref_E => Ovr_Subp));
+                    (Extra_Formals_Match_OK (E => Subp, Ref_E => Ovr_Subp));
                end if;
             end if;
 

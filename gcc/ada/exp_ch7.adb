@@ -8476,10 +8476,6 @@ package body Exp_Ch7 is
       then
          Utyp := Underlying_Type (Root_Type (Base_Type (Typ)));
          Ref  := Unchecked_Convert_To (Utyp, Ref);
-
-         --  The following is to prevent problems with UC see 1.156 RH ???
-
-         Set_Assignment_OK (Ref);
       end if;
 
       --  If the underlying_type is a subtype, then we are dealing with the

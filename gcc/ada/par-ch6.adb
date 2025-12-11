@@ -1514,8 +1514,8 @@ package body Ch6 is
                Append (Def_Ids, P_Defining_Identifier (C_Comma_Colon));
             end loop Ident_Loop;
 
-            --  Fall through the loop on encountering a colon, or deciding
-            --  that there is a missing colon.
+            --  We exited from the above loop upon encountering a colon or
+            --  deciding that there is a missing colon.
 
             T_Colon;
 
