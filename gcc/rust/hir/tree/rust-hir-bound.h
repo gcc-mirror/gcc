@@ -44,7 +44,7 @@ public:
   {}
 
   // Returns true if the lifetime is in an error state.
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 

@@ -1130,7 +1130,7 @@ Session::dump_hir (HIR::Crate &crate) const
       return;
     }
 
-  out << crate.as_string ();
+  out << crate.to_string ();
   out.close ();
 }
 

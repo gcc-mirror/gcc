@@ -56,7 +56,7 @@ public:
 
     if (is_query_mode && compiler.reference == error_mark_node)
       rust_internal_error_at (ref_locus, "failed to compile trait item: %s",
-			      item->as_string ().c_str ());
+			      item->to_string ().c_str ());
 
     return compiler.reference;
   }

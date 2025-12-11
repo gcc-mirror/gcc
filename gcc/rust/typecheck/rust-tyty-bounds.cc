@@ -883,14 +883,14 @@ TypeBoundPredicate::validate_type_implements_super_traits (
 	    = "required by this bound in: " + ptref.get_name ();
 	  std::string fixit2 = "the trait " + sptref.get_name ()
 			       + " is not implemented for "
-			       + impl_type.as_string ();
+			       + impl_type.to_string ();
 
 	  rich_location r (line_table, trait.get_locus ());
 	  r.add_fixit_insert_after (super.get_locus (), fixit1.c_str ());
 	  r.add_fixit_insert_after (trait.get_locus (), fixit2.c_str ());
 	  rust_error_at (r, ErrorCode::E0277,
 			 "the trait bound %<%s: %s%> is not satisfied",
-			 impl_type.as_string ().c_str (),
+			 impl_type.to_string ().c_str (),
 			 sptref.get_name ().c_str ());
 
 	  return false;

@@ -65,7 +65,7 @@ public:
 
   BaseKind get_hir_kind () override { return Node::BaseKind::ITEM; }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   /* Adds crate names to the vector passed by reference, if it can
    * (polymorphism). */
@@ -130,7 +130,9 @@ public:
 
   TypeParam &operator= (TypeParam &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_debug_string () const override;
+
+  std::string to_string () const override;
 
   location_t get_locus () const override final { return locus; }
 
@@ -177,7 +179,7 @@ public:
     return std::unique_ptr<WhereClauseItem> (clone_where_clause_item_impl ());
   }
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
 
   virtual void accept_vis (HIRFullVisitor &vis) = 0;
 
@@ -207,7 +209,7 @@ public:
       mappings (std::move (mappings))
   {}
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   location_t get_locus () const { return locus; }
 
@@ -270,7 +272,7 @@ public:
 
   location_t get_locus () const { return locus; }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -342,7 +344,7 @@ public:
   // Returns whether the WhereClause has no items.
   bool is_empty () const { return where_clause_items.empty (); }
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   std::vector<std::unique_ptr<WhereClauseItem>> &get_items ()
   {
@@ -406,7 +408,7 @@ public:
 
   Lifetime &get_lifetime () { return lifetime.value (); }
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   location_t get_locus () const { return locus; }
 
@@ -444,7 +446,7 @@ public:
       unsafety (unsafety), has_extern (has_extern), abi (abi)
   {}
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   Const get_const_status () const { return const_status; }
 
@@ -479,7 +481,7 @@ public:
   FunctionParam (FunctionParam &&other) = default;
   FunctionParam &operator= (FunctionParam &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   location_t get_locus () const { return locus; }
 
@@ -531,7 +533,7 @@ public:
   Visibility &get_visibility () { return visibility; }
   const Visibility &get_visibility () const { return visibility; }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 };
 
 // Rust module item - abstract base class
@@ -543,7 +545,7 @@ class Module : public VisItem, public WithInnerAttrs
   std::vector<std::unique_ptr<Item>> items;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether the module has items in its body.
   bool has_items () const { return !items.empty (); }
@@ -609,7 +611,7 @@ class ExternCrate : public VisItem
       "extern crate foo"
       "extern crate std as cool_std"  */
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether extern crate declaration has an as clause.
   bool has_as_clause () const { return !as_clause_name.empty (); }
@@ -673,7 +675,7 @@ public:
     return std::unique_ptr<UseTree> (clone_use_tree_impl ());
   }
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
 
   location_t get_locus () const { return locus; }
 
@@ -720,7 +722,7 @@ public:
   PathType get_glob_type () { return glob_type; }
   AST::SimplePath get_path () { return path; };
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -801,7 +803,7 @@ public:
   // Returns whether has inner tree elements.
   bool has_trees () const { return !trees.empty (); }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -856,7 +858,7 @@ public:
   // Returns whether has identifier (or, rather, is allowed to).
   bool has_identifier () const { return bind_type == IDENTIFIER; }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -880,7 +882,7 @@ class UseDeclaration : public VisItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   UseDeclaration (Analysis::NodeMapping mappings,
 		  std::unique_ptr<UseTree> use_tree, Visibility visibility,
@@ -962,7 +964,7 @@ class Function : public VisItem, public ImplItem
   Defaultness defaultness;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether function has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
@@ -1091,7 +1093,7 @@ class TypeAlias : public VisItem, public ImplItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether type alias has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
@@ -1175,7 +1177,7 @@ protected:
 class Struct : public VisItem
 {
 protected:
-  // protected to enable access by derived classes - allows better as_string
+  // protected to enable access by derived classes - allows better to_string
   Identifier struct_name;
 
   // bool has_generics;
@@ -1287,7 +1289,7 @@ public:
   StructField (StructField &&other) = default;
   StructField &operator= (StructField &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   Identifier get_field_name () const { return field_name; }
 
@@ -1307,7 +1309,7 @@ public:
   std::vector<StructField> fields;
   bool is_unit;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Mega-constructor with all possible fields
   StructStruct (Analysis::NodeMapping mappings, std::vector<StructField> fields,
@@ -1403,7 +1405,7 @@ public:
   // Returns whether tuple field is in an error state.
   bool is_error () const { return field_type == nullptr; }
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   Analysis::NodeMapping get_mappings () const { return mappings; }
 
@@ -1421,7 +1423,7 @@ class TupleStruct : public Struct
   std::vector<TupleField> fields;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Mega-constructor with all possible fields
   TupleStruct (Analysis::NodeMapping mappings, std::vector<TupleField> fields,
@@ -1481,7 +1483,7 @@ public:
     return std::unique_ptr<EnumItem> (clone_item_impl ());
   }
 
-  virtual std::string as_string () const override;
+  virtual std::string to_string () const override;
   virtual EnumItemKind get_enum_item_kind () const { return Named; };
 
   // not pure virtual as not abstract
@@ -1518,7 +1520,7 @@ public:
 		 std::vector<TupleField> tuple_fields, AST::AttrVec outer_attrs,
 		 location_t locus);
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1552,7 +1554,7 @@ public:
 		  std::vector<StructField> struct_fields,
 		  AST::AttrVec outer_attrs, location_t locus);
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1592,7 +1594,7 @@ public:
     return EnumItemKind::Discriminant;
   }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRStmtVisitor &vis) override;
@@ -1629,7 +1631,7 @@ class Enum : public VisItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether "enum" has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
@@ -1710,7 +1712,7 @@ class Union : public VisItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether union has generic params.
   bool has_generics () const { return !generic_params.empty (); }
@@ -1766,7 +1768,7 @@ class ConstantItem : public VisItem, public ImplItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   ConstantItem (Analysis::NodeMapping mappings, Identifier ident,
 		Visibility vis, std::unique_ptr<Type> type,
@@ -1852,7 +1854,7 @@ class StaticItem : public VisItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   StaticItem (Analysis::NodeMapping mappings, Identifier name, Mutability mut,
 	      std::unique_ptr<Type> type, std::unique_ptr<Expr> expr,
@@ -1934,7 +1936,7 @@ public:
   TraitFunctionDecl (TraitFunctionDecl &&other) = default;
   TraitFunctionDecl &operator= (TraitFunctionDecl &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   // Returns whether function decl has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
@@ -1998,7 +2000,7 @@ public:
   TraitItemFunc (TraitItemFunc &&other) = default;
   TraitItemFunc &operator= (TraitItemFunc &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   location_t get_locus () const { return locus; }
 
@@ -2064,7 +2066,7 @@ public:
   TraitItemConst (TraitItemConst &&other) = default;
   TraitItemConst &operator= (TraitItemConst &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   location_t get_locus () const { return locus; }
 
@@ -2148,7 +2150,7 @@ public:
   TraitItemType (TraitItemType &&other) = default;
   TraitItemType &operator= (TraitItemType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   location_t get_locus () const { return locus; }
 
@@ -2209,7 +2211,7 @@ class Trait : public VisItem
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether trait has generic parameters.
   bool has_generics () const { return !generic_params.empty (); }
@@ -2313,7 +2315,7 @@ public:
   ImplBlock (ImplBlock &&other) = default;
   ImplBlock &operator= (ImplBlock &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether inherent impl block has inherent impl items.
   bool has_impl_items () const { return !impl_items.empty (); }
@@ -2405,7 +2407,12 @@ public:
     return std::unique_ptr<ExternalItem> (clone_external_item_impl ());
   }
 
-  virtual std::string as_string () const;
+  virtual std::string to_string () const;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + mappings.as_string ();
+  }
 
   location_t get_locus () const { return locus; }
 
@@ -2459,7 +2466,7 @@ public:
   ExternalStaticItem (ExternalStaticItem &&other) = default;
   ExternalStaticItem &operator= (ExternalStaticItem &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExternalItemVisitor &vis) override;
@@ -2507,7 +2514,7 @@ public:
   NamedFunctionParam (NamedFunctionParam &&other) = default;
   NamedFunctionParam &operator= (NamedFunctionParam &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   Identifier get_param_name () const { return name; }
 
@@ -2569,7 +2576,7 @@ public:
   ExternalFunctionItem (ExternalFunctionItem &&other) = default;
   ExternalFunctionItem &operator= (ExternalFunctionItem &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExternalItemVisitor &vis) override;
@@ -2611,7 +2618,7 @@ public:
   ExternalTypeItem &operator= (ExternalTypeItem &&other) = default;
   ExternalTypeItem &operator= (ExternalTypeItem const &other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRExternalItemVisitor &vis) override;
@@ -2635,7 +2642,7 @@ class ExternBlock : public VisItem, public WithInnerAttrs
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Returns whether extern block has extern items.
   bool has_extern_items () const { return !extern_items.empty (); }

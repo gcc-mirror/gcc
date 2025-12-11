@@ -78,7 +78,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
   HIR::PathExprSegment &item_seg = expr.get_segments ().at (0);
   HIR::PathIdentSegment item_seg_identifier = item_seg.get_segment ();
   tl::optional<TyTy::TypeBoundPredicateItem> item
-    = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
+    = specified_bound.lookup_associated_item (item_seg_identifier.to_string ());
   if (!item.has_value ())
     {
       rust_error_at (item_seg.get_locus (), "unknown associated item");
@@ -99,7 +99,7 @@ TypeCheckExpr::visit (HIR::QualifiedPathInExpression &expr)
 	   associated_impl_trait->get_impl_block ()->get_impl_items ())
 	{
 	  bool found = i->get_impl_item_name ().compare (
-			 item_seg_identifier.as_string ())
+			 item_seg_identifier.to_string ())
 		       == 0;
 	  if (found)
 	    {
@@ -284,7 +284,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
 	  rust_error_at (seg.get_locus (), "456 reverse lookup failure");
 	  rust_debug_loc (seg.get_locus (),
 			  "failure with [%s] mappings [%s] ref_node_id [%u]",
-			  seg.as_string ().c_str (),
+			  seg.to_string ().c_str (),
 			  seg.get_mappings ().as_string ().c_str (),
 			  ref_node_id);
 
@@ -296,7 +296,7 @@ TypeCheckExpr::resolve_root_path (HIR::PathInExpression &expr, size_t *offset,
       auto seg_is_crate = mappings.is_local_hirid_crate (ref);
       auto seg_is_pattern = mappings.lookup_hir_pattern (ref).has_value ();
       auto seg_is_self = is_root && !have_more_segments
-			 && seg.get_segment ().as_string () == "self";
+			 && seg.get_segment ().to_string () == "self";
       if (seg_is_module || seg_is_crate)
 	{
 	  // A::B::C::this_is_a_module::D::E::F

@@ -1545,9 +1545,9 @@ OffsetOf::clone_expr_without_block_impl () const
 }
 
 std::string
-OffsetOf::as_string () const
+OffsetOf::to_string () const
 {
-  return "OffsetOf(" + type->as_string () + ", " + field.as_string () + ")";
+  return "OffsetOf(" + type->to_string () + ", " + field.as_string () + ")";
 }
 
 void

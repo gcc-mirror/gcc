@@ -131,7 +131,7 @@ MethodResolver::assemble_inherent_impl_candidates (
 	return true;
 
       bool name_matches = func->get_function_name ().as_string ().compare (
-			    segment_name.as_string ())
+			    segment_name.to_string ())
 			  == 0;
       if (!name_matches)
 	return true;
@@ -215,7 +215,7 @@ MethodResolver::assemble_trait_impl_candidates (
 	  continue;
 
 	bool name_matches = func->get_function_name ().as_string ().compare (
-			      segment_name.as_string ())
+			      segment_name.to_string ())
 			    == 0;
 	if (!name_matches)
 	  continue;
@@ -271,7 +271,7 @@ MethodResolver::assemble_trait_impl_candidates (
     rust_assert (!trait_ref->is_error ());
 
     auto item_ref
-      = trait_ref->lookup_trait_item (segment_name.as_string (),
+      = trait_ref->lookup_trait_item (segment_name.to_string (),
 				      TraitItemReference::TraitItemType::FN);
     if (item_ref->is_error ())
       return true;
@@ -424,7 +424,7 @@ MethodResolver::select (TyTy::BaseType &receiver)
 {
   rust_debug ("MethodResolver::select reciever=[%s] path=[%s]",
 	      receiver.debug_str ().c_str (),
-	      segment_name.as_string ().c_str ());
+	      segment_name.to_string ().c_str ());
 
   // Assemble candidates
   std::vector<impl_item_candidate> inherent_impl_fns
@@ -472,7 +472,7 @@ MethodResolver::get_predicate_items (
   for (auto &bound : specified_bounds)
     {
       tl::optional<TyTy::TypeBoundPredicateItem> lookup
-	= bound.lookup_associated_item (segment_name.as_string ());
+	= bound.lookup_associated_item (segment_name.to_string ());
       if (!lookup.has_value ())
 	continue;
 

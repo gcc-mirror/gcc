@@ -45,7 +45,12 @@ public:
 
   BaseKind get_hir_kind () override final { return TYPE; }
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + mappings.as_string ();
+  }
 
   /* HACK: convert to trait bound. Virtual method overriden by classes that
    * enable this. */

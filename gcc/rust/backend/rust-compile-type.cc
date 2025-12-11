@@ -244,7 +244,7 @@ TyTyResolveCompile::visit (const TyTy::FnType &type)
       auto compiled_param_type
 	= TyTyResolveCompile::compile (ctx, param_tyty, trait_object_mode);
 
-      parameters.emplace_back (param_pair.get_pattern ().as_string (),
+      parameters.emplace_back (param_pair.get_pattern ().to_string (),
 			       compiled_param_type,
 			       ctx->get_mappings ().lookup_location (
 				 param_tyty->get_ref ()));

@@ -19,6 +19,7 @@
 #include "rust-hir-type-check-pattern.h"
 #include "rust-hir-pattern.h"
 #include "rust-hir-type-check-expr.h"
+#include "rust-token.h"
 #include "rust-type-util.h"
 #include "rust-immutable-name-resolution-context.h"
 #include "rust-tyty.h"
@@ -90,7 +91,7 @@ TypeCheckPattern::visit (HIR::PathInExpression &pattern)
 	      for (size_t i = 0; i < pattern.get_segments ().size (); i++)
 		{
 		  HIR::PathExprSegment &seg = pattern.get_segments ().at (i);
-		  path_buf += seg.as_string ();
+		  path_buf += seg.to_string ();
 		  if (i != pattern.get_segments ().size () - 1)
 		    path_buf += "::";
 		}
@@ -543,7 +544,7 @@ TypeCheckPattern::visit (HIR::StructPattern &pattern)
 		auto first_elem
 		  = struct_pattern_elems.get_struct_pattern_fields ()
 		      .at (0)
-		      ->as_string ();
+		      ->to_string ();
 		rust_error_at (pattern.get_locus (),
 			       "%qs cannot be used in union patterns",
 			       first_elem.c_str ());

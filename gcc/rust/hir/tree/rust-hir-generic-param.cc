@@ -54,6 +54,61 @@ LifetimeParam::operator= (LifetimeParam const &other)
   return *this;
 }
 
+std::string
+LifetimeParam::to_debug_string () const
+{
+  std::string result = "LifetimeParam";
+  result += "\nOuter attributes: ";
+  if (outer_attrs.empty ())
+    {
+      result += "\nnone";
+    }
+  else
+    {
+      for (const auto &attr : outer_attrs)
+	{
+	  result += "\n" + attr.as_string ();
+	}
+    }
+  result += lifetime.to_string ();
+  if (!lifetime_bounds.empty ())
+    {
+      result += ": ";
+      for (size_t i = 0; i < lifetime_bounds.size (); ++i)
+	{
+	  if (i > 0)
+	    result += " + ";
+	  result += lifetime_bounds[i].to_string ();
+	}
+    }
+  return result;
+}
+
+std::string
+LifetimeParam::to_string () const
+{
+  std::string result;
+  if (!outer_attrs.empty ())
+    {
+      for (const auto &attr : outer_attrs)
+	{
+	  result += attr.as_string () + "\n";
+	}
+    }
+  result += lifetime.to_string ();
+  if (!lifetime_bounds.empty ())
+    {
+      result += ": ";
+      for (size_t i = 0; i < lifetime_bounds.size (); ++i)
+	{
+	  if (i > 0)
+	    result += " + ";
+	  result += lifetime_bounds[i].to_string ();
+	}
+    }
+  return result;
+}
+
 ConstGenericParam::ConstGenericParam (std::string name,
 				      std::unique_ptr<Type> type,
 				      std::unique_ptr<Expr> default_expression,
@@ -77,12 +132,40 @@ ConstGenericParam::ConstGenericParam (const ConstGenericParam &other)
 }
 
 std::string
-ConstGenericParam::as_string () const
+ConstGenericParam::to_debug_string () const
 {
-  auto result = "ConstGenericParam: " + name + " : " + type->as_string ();
+  std::string result = "ConstGenericParam:\n";
+  result += "Outer attributes: ";
+  if (outer_attrs.empty ())
+    {
+      result += "\nnone";
+    }
+  else
+    {
+      for (const auto &attr : outer_attrs)
+	{
+	  result += "\n" + attr.as_string ();
+	}
+    }
+  result += "\nconst " + name + ": " + type->to_string ();
 
   if (default_expression)
-    result += " = " + default_expression->as_string ();
+    result += " = " + default_expression->to_string ();
+
+  return result;
+}
+
+std::string
+ConstGenericParam::to_string () const
+{
+  std::string result;
+  if (!outer_attrs.empty ())
+    for (const auto &attr : outer_attrs)
+      result += attr.as_string () + "\n";
+  result = "const " + name + ": " + type->to_string ();
+
+  if (default_expression)
+    result += " = " + default_expression->to_string ();
 
   return result;
 }

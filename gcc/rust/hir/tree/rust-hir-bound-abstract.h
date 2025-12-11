@@ -46,7 +46,7 @@ public:
     return std::unique_ptr<TypeParamBound> (clone_type_param_bound_impl ());
   }
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
 
   virtual Analysis::NodeMapping get_mappings () const = 0;
 

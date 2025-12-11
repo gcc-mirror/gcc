@@ -43,7 +43,12 @@ public:
 
   virtual ~Stmt () {}
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + mappings.as_string ();
+  }
 
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
 
@@ -70,7 +75,7 @@ class EmptyStmt : public Stmt
   location_t locus;
 
 public:
-  std::string as_string () const override { return std::string (1, ';'); }
+  std::string to_string () const override { return ";"; }
 
   EmptyStmt (Analysis::NodeMapping mappings, location_t locus)
     : Stmt (std::move (mappings)), locus (locus)
@@ -117,7 +122,7 @@ public:
   // Returns whether let statement has a diverging else expression.
   bool has_else_expr () const { return else_expr.has_value (); }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   LetStmt (Analysis::NodeMapping mappings,
 	   std::unique_ptr<Pattern> variables_pattern,
@@ -207,7 +212,7 @@ public:
   ExprStmt (Analysis::NodeMapping mappings, std::unique_ptr<Expr> expr,
 	    location_t locus);
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   location_t get_locus () const override final { return locus; }
 

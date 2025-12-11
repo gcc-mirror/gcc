@@ -138,7 +138,7 @@ TypeCheckType::visit (HIR::TupleType &tuple)
 void
 TypeCheckType::visit (HIR::TypePath &path)
 {
-  rust_debug ("{ARTHUR}: Path visited: %s", path.as_string ().c_str ());
+  rust_debug ("{ARTHUR}: Path visited: %s", path.to_string ().c_str ());
 
   // this can happen so we need to look up the root then resolve the
   // remaining segments if possible
@@ -215,11 +215,11 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
   HIR::TypePathSegment &item_seg = path.get_associated_segment ();
   HIR::PathIdentSegment item_seg_identifier = item_seg.get_ident_segment ();
   tl::optional<TyTy::TypeBoundPredicateItem> item
-    = specified_bound.lookup_associated_item (item_seg_identifier.as_string ());
+    = specified_bound.lookup_associated_item (item_seg_identifier.to_string ());
   if (!item.has_value ())
     {
       std::string item_seg_ident_name, rich_msg;
-      item_seg_ident_name = qual_path_type.get_trait ().as_string ();
+      item_seg_ident_name = qual_path_type.get_trait ().to_string ();
       rich_msg = "not found in `" + item_seg_ident_name + "`";
 
       rich_location richloc (line_table, item_seg.get_locus ());
@@ -227,7 +227,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 
       rust_error_at (richloc, ErrorCode::E0576,
 		     "cannot find associated type %qs in trait %qs",
-		     item_seg_identifier.as_string ().c_str (),
+		     item_seg_identifier.to_string ().c_str (),
 		     item_seg_ident_name.c_str ());
       return;
     }
@@ -251,7 +251,7 @@ TypeCheckType::visit (HIR::QualifiedPathInType &path)
 	       associated_impl_trait->get_impl_block ()->get_impl_items ())
 	    {
 	      bool found = i->get_impl_item_name ().compare (
-			     item_seg_identifier.as_string ())
+			     item_seg_identifier.to_string ())
 			   == 0;
 	      if (found)
 		{
@@ -359,20 +359,20 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	    {
 	      rust_error_at (seg->get_locus (),
 			     "unknown reference for resolved name: %qs",
-			     seg->as_string ().c_str ());
+			     seg->to_string ().c_str ());
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
 	    }
 	  else if (root_tyty == nullptr)
 	    {
 	      rust_error_at (seg->get_locus (),
 			     "unknown reference for resolved name: %qs",
-			     seg->as_string ().c_str ());
+			     seg->to_string ().c_str ());
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
 	    }
 	  return root_tyty;
 	}
 
-      if (seg->is_ident_only () && seg->as_string () == "Self")
+      if (seg->is_ident_only () && seg->to_string () == "Self")
 	*wasBigSelf = true;
 
       // node back to HIR
@@ -385,7 +385,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	      rust_debug_loc (
 		seg->get_locus (),
 		"failure with [%s] mappings [%s] ref_node_id [%u]",
-		seg->as_string ().c_str (),
+		seg->to_string ().c_str (),
 		seg->get_mappings ().as_string ().c_str (), ref_node_id);
 
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
@@ -423,7 +423,7 @@ TypeCheckType::resolve_root_path (HIR::TypePath &path, size_t *offset,
 	    {
 	      rust_error_at (seg->get_locus (),
 			     "failed to resolve type path segment: %qs",
-			     seg->as_string ().c_str ());
+			     seg->to_string ().c_str ());
 	      return new TyTy::ErrorType (path.get_mappings ().get_hirid ());
 	    }
 
@@ -556,7 +556,7 @@ TypeCheckType::resolve_segments (
 	  TypeCheckBlockContextItem ctx = context->block_context ().peek ();
 	  TyTy::BaseType *lookup = nullptr;
 	  selfResolveOk
-	    = resolve_associated_type (seg->as_string (), ctx, &lookup);
+	    = resolve_associated_type (seg->to_string (), ctx, &lookup);
 	  if (selfResolveOk)
 	    {
 	      prev_segment = tyseg;
@@ -1120,7 +1120,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
       // FIXME
       rust_error_at (UNDEF_LOCATION,
 		     "Failed to lookup type reference for node: %s",
-		     binding_type_path.as_string ().c_str ());
+		     binding_type_path.to_string ().c_str ());
       return;
     }
 
@@ -1133,7 +1133,7 @@ ResolveWhereClauseItem::visit (HIR::TypeBoundWhereClauseItem &item)
 	{
 	  rust_error_at (mappings.lookup_location (*hid),
 			 "Failed to resolve where-clause binding type: %s",
-			 binding_type_path.as_string ().c_str ());
+			 binding_type_path.to_string ().c_str ());
 	  return;
 	}
 

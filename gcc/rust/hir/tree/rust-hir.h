@@ -69,7 +69,12 @@ public:
     return std::unique_ptr<TraitItem> (clone_trait_item_impl ());
   }
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + mappings.as_string ();
+  }
 
   virtual void accept_vis (HIRTraitItemVisitor &vis) = 0;
 
@@ -106,7 +111,12 @@ public:
     return std::unique_ptr<ImplItem> (clone_inherent_impl_item_impl ());
   }
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + get_impl_mappings ().as_string ();
+  }
 
   virtual void accept_vis (HIRImplVisitor &vis) = 0;
   virtual void accept_vis (HIRStmtVisitor &vis) = 0;
@@ -152,7 +162,9 @@ public:
   Crate &operator= (Crate &&other) = default;
 
   // Get crate representation as string (e.g. for debugging).
-  std::string as_string () const;
+  std::string to_string () const;
+
+  std::string to_debug_string () const;
 
   const Analysis::NodeMapping &get_mappings () const { return mappings; }
   std::vector<std::unique_ptr<Item>> &get_items () { return items; }

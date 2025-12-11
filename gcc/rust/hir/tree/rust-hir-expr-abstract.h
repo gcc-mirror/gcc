@@ -88,7 +88,12 @@ public:
   }
 
   // TODO: make pure virtual if move out outer attributes to derived classes
-  virtual std::string as_string () const;
+  virtual std::string to_string () const;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + mappings.as_string ();
+  }
 
   virtual ~Expr () {}
 

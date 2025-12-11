@@ -208,7 +208,7 @@ void
 PathProbeType::visit (HIR::TypeAlias &alias)
 {
   Identifier name = alias.get_new_type_name ();
-  if (search.as_string ().compare (name.as_string ()) == 0)
+  if (search.to_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = alias.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -228,7 +228,7 @@ void
 PathProbeType::visit (HIR::ConstantItem &constant)
 {
   Identifier name = constant.get_identifier ();
-  if (search.as_string ().compare (name.as_string ()) == 0)
+  if (search.to_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = constant.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -248,7 +248,7 @@ void
 PathProbeType::visit (HIR::Function &function)
 {
   Identifier name = function.get_function_name ();
-  if (search.as_string ().compare (name.as_string ()) == 0)
+  if (search.to_string ().compare (name.as_string ()) == 0)
     {
       HirId tyid = function.get_mappings ().get_hirid ();
       TyTy::BaseType *ty = nullptr;
@@ -271,7 +271,7 @@ PathProbeType::process_enum_item_for_candiates (const TyTy::ADTType *adt)
     return;
 
   TyTy::VariantDef *v;
-  if (!adt->lookup_variant (search.as_string (), &v))
+  if (!adt->lookup_variant (search.to_string (), &v))
     return;
 
   PathProbeCandidate::EnumItemCandidate enum_item_candidate{adt, v};
@@ -317,7 +317,7 @@ PathProbeType::process_associated_trait_for_candidates (
   bool ignore_mandatory_trait_items)
 {
   const TraitItemReference *trait_item_ref = nullptr;
-  if (!trait_ref->lookup_trait_item (search.as_string (), &trait_item_ref))
+  if (!trait_ref->lookup_trait_item (search.to_string (), &trait_item_ref))
     return;
 
   bool trait_item_needs_implementation = !trait_item_ref->is_optional ();
@@ -367,7 +367,7 @@ PathProbeType::process_predicate_for_candidates (
   const TraitReference *trait_ref = predicate.get ();
 
   tl::optional<TyTy::TypeBoundPredicateItem> item
-    = predicate.lookup_associated_item (search.as_string ());
+    = predicate.lookup_associated_item (search.to_string ());
   if (!item.has_value ())
     return;
 

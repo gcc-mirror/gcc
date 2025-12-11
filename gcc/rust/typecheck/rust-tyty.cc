@@ -1653,7 +1653,7 @@ VariantDef::as_string () const
 {
   if (type == VariantType::NUM)
     return identifier
-	   + (has_discriminant () ? " = " + get_discriminant ().as_string ()
+	   + (has_discriminant () ? " = " + get_discriminant ().to_string ()
 				  : "");
 
   std::string buffer;
@@ -2099,7 +2099,7 @@ FnType::as_string () const
     {
       auto &pattern = param.get_pattern ();
       auto ty = param.get_type ();
-      params_str += pattern.as_string () + " " + ty->as_string ();
+      params_str += pattern.to_string () + " " + ty->as_string ();
       params_str += ",";
     }
 

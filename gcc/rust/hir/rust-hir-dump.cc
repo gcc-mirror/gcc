@@ -298,7 +298,7 @@ Dump::do_vis_item (VisItem &e)
   do_item (e);
   std::string str = "none";
   if (e.has_visibility ())
-    str = e.get_visibility ().as_string ();
+    str = e.get_visibility ().to_string ();
   put_field ("visibility", str);
 }
 
@@ -326,7 +326,7 @@ Dump::do_pathpattern (PathPattern &e)
   std::string str = "";
 
   for (const auto &segment : e.get_segments ())
-    str += segment.as_string () + ", ";
+    str += segment.to_string () + ", ";
 
   put_field ("segments", str);
 }
@@ -399,7 +399,7 @@ Dump::do_typepathsegment (TypePathSegment &e)
   if (e.is_lang_item ())
     put_field ("ident_segment", LangItem::PrettyString (e.get_lang_item ()));
   else
-    put_field ("ident_segment", e.get_ident_segment ().as_string ());
+    put_field ("ident_segment", e.get_ident_segment ().to_string ());
 }
 
 void
@@ -474,7 +474,7 @@ Dump::do_baseloopexpr (BaseLoopExpr &e)
   if (!e.has_loop_label ())
     put_field ("label", "none");
   else
-    put_field ("label", e.get_loop_label ().as_string ());
+    put_field ("label", e.get_loop_label ().to_string ());
 
   visit_field ("loop_block", e.get_loop_block ());
 }
@@ -489,7 +489,7 @@ Dump::do_struct (Struct &e)
   if (!e.has_where_clause ())
     put_field ("where_clause", "none");
   else
-    put_field ("where clause", e.get_where_clause ().as_string ());
+    put_field ("where clause", e.get_where_clause ().to_string ());
 }
 
 void
@@ -522,7 +522,7 @@ void
 Dump::do_traitfunctiondecl (TraitFunctionDecl &e)
 {
   begin ("TraitFunctionDecl");
-  put_field ("qualifiers", e.get_qualifiers ().as_string ());
+  put_field ("qualifiers", e.get_qualifiers ().to_string ());
   put_field ("function_name", e.get_function_name ().as_string ());
   visit_collection ("generic_params", e.get_generic_params ());
 
@@ -542,12 +542,12 @@ Dump::do_traitfunctiondecl (TraitFunctionDecl &e)
     put_field ("return_type", "none");
 
   if (e.has_where_clause ())
-    put_field ("where_clause", e.get_where_clause ().as_string ());
+    put_field ("where_clause", e.get_where_clause ().to_string ());
   else
     put_field ("where_clause", "none");
 
   if (e.is_method ())
-    put_field ("self", e.get_self_unchecked ().as_string ());
+    put_field ("self", e.get_self_unchecked ().to_string ());
 
   end ("TraitFunctionDecl");
 }
@@ -562,7 +562,7 @@ Dump::do_externalitem (ExternalItem &e)
 
   std::string str = "none";
   if (e.has_visibility ())
-    str = e.get_visibility ().as_string ();
+    str = e.get_visibility ().to_string ();
   put_field ("visibility", str);
   put_field ("item_name", e.get_item_name ().as_string ());
 }
@@ -606,7 +606,7 @@ Dump::do_tuplefield (TupleField &e)
 
   std::string str = "none";
   if (e.has_visibility ())
-    str = e.get_visibility ().as_string ();
+    str = e.get_visibility ().to_string ();
   put_field ("visibility", str);
 
   visit_field ("field_type", e.get_field_type ());
@@ -621,7 +621,7 @@ Dump::do_structfield (StructField &e)
 
   std::string str = "none";
   if (e.has_visibility ())
-    str = e.get_visibility ().as_string ();
+    str = e.get_visibility ().to_string ();
   put_field ("visibility", str);
   put_field ("field_name", e.get_field_name ().as_string ());
   visit_field ("field_type", e.get_field_type ());
@@ -721,7 +721,7 @@ void
 Dump::visit (LifetimeParam &lifetimeparam)
 {
   begin ("Lifetimeparam");
-  put (lifetimeparam.as_string ());
+  put (lifetimeparam.to_debug_string ());
   end ("Lifetimeparam");
 }
 
@@ -1191,7 +1191,7 @@ Dump::visit (StructExprStructFields &e)
   if (!e.has_struct_base ())
     put_field ("struct_base", "none");
   else
-    put_field ("struct_base", e.get_struct_base ().as_string ());
+    put_field ("struct_base", e.get_struct_base ().to_string ());
 
   end ("StructExprStructFields");
 }
@@ -1202,7 +1202,7 @@ Dump::visit (StructExprStructBase &e)
   begin ("StructExprStructBase");
   do_structexprstruct (e);
 
-  put_field ("struct_base", e.get_struct_base ().as_string ());
+  put_field ("struct_base", e.get_struct_base ().to_string ());
 
   end ("StructExprStructBase");
 }
@@ -1226,7 +1226,7 @@ Dump::visit (MethodCallExpr &e)
   do_expr (e);
 
   visit_field ("receiver", e.get_receiver ());
-  put_field ("method_name", e.get_method_name ().as_string ());
+  put_field ("method_name", e.get_method_name ().to_string ());
   visit_collection ("params", e.get_arguments ());
 
   end ("MethodCallExpr");
@@ -1286,7 +1286,7 @@ Dump::visit (BlockExpr &e)
   put_field ("tail_reachable", std::to_string (e.is_tail_reachable ()));
 
   if (e.has_label ())
-    put_field ("label", e.get_label ().as_string ());
+    put_field ("label", e.get_label ().to_string ());
 
   visit_collection ("statements", e.get_statements ());
 
@@ -1327,7 +1327,7 @@ Dump::visit (ContinueExpr &e)
   begin ("ContinueExpr");
 
   if (e.has_label ())
-    put_field ("label", e.get_label ().as_string ());
+    put_field ("label", e.get_label ().to_string ());
   else
     put_field ("label", "none");
 
@@ -1341,7 +1341,7 @@ Dump::visit (BreakExpr &e)
   std::string str ("break ");
 
   if (e.has_label ())
-    put_field ("label", e.get_label ().as_string ());
+    put_field ("label", e.get_label ().to_string ());
   else
     put_field ("label", "none");
 
@@ -1610,7 +1610,7 @@ Dump::visit (OffsetOf &e)
 {
   begin ("OffsetOf");
 
-  put_field ("type", e.get_type ().as_string ());
+  put_field ("type", e.get_type ().to_debug_string ());
   put_field ("field", e.get_field ());
 
   end ("OffsetOf");
@@ -1778,7 +1778,7 @@ Dump::visit (Function &e)
   begin ("Function");
   do_vis_item (e);
 
-  put_field ("function_qualifiers", e.get_qualifiers ().as_string ());
+  put_field ("function_qualifiers", e.get_qualifiers ().to_string ());
 
   visit_collection ("generic_params", e.get_generic_params ());
 
@@ -1802,11 +1802,11 @@ Dump::visit (Function &e)
   if (!e.has_where_clause ())
     put_field ("where_clause", "none");
   else
-    put_field ("where clause", e.get_where_clause ().as_string ());
+    put_field ("where clause", e.get_where_clause ().to_string ());
 
   visit_field ("function_body", e.get_definition ());
   if (e.is_method ())
-    put_field ("self", e.get_self_param_unchecked ().as_string ());
+    put_field ("self", e.get_self_param_unchecked ().to_string ());
 
   end ("Function");
 }
@@ -1825,9 +1825,9 @@ Dump::visit (TypeAlias &e)
   if (!e.has_where_clause ())
     put_field ("where_clause", "none");
   else
-    put_field ("where clause", e.get_where_clause ().as_string ());
+    put_field ("where clause", e.get_where_clause ().to_string ());
 
-  put_field ("type", e.get_type_aliased ().as_string ());
+  put_field ("type", e.get_type_aliased ().to_debug_string ());
 
   end ("TypeAlias");
 }
@@ -1951,7 +1951,7 @@ Dump::visit (Enum &e)
 
   std::string str = "none";
   if (e.has_where_clause ())
-    str = e.get_where_clause ().as_string ();
+    str = e.get_where_clause ().to_string ();
   put_field ("where clause", str);
 
   visit_collection ("items", e.get_variants ());
@@ -1969,7 +1969,7 @@ Dump::visit (Union &e)
 
   std::string str;
   if (e.has_where_clause ())
-    str = e.get_where_clause ().as_string ();
+    str = e.get_where_clause ().to_string ();
   else
     str = "none";
   put_field ("where clause", str);
@@ -1989,7 +1989,7 @@ Dump::visit (Union &e)
 
 	  std::string str = "none";
 	  if (elt.has_visibility ())
-	    str = elt.get_visibility ().as_string ();
+	    str = elt.get_visibility ().to_string ();
 	  put_field ("visibility", str);
 	  put_field ("field_name", elt.get_field_name ().as_string ());
 	  visit_field ("field_type", elt.get_field_type ());
@@ -2077,7 +2077,7 @@ Dump::visit (Trait &e)
 
   std::string str;
   if (e.has_where_clause ())
-    str = e.get_where_clause ().as_string ();
+    str = e.get_where_clause ().to_string ();
   else
     str = "none";
   put_field ("where clause", str);
@@ -2099,7 +2099,7 @@ Dump::visit (ImplBlock &e)
 
   std::string str;
   if (e.has_where_clause ())
-    str = e.get_where_clause ().as_string ();
+    str = e.get_where_clause ().to_string ();
   else
     str = "none";
   put_field ("where clause", str);
@@ -2122,7 +2122,7 @@ Dump::visit (ExternalStaticItem &e)
 
   std::string str = "none";
   if (e.has_visibility ())
-    str = e.get_visibility ().as_string ();
+    str = e.get_visibility ().to_string ();
   put_field ("visibility", str);
   //
 
@@ -2225,7 +2225,7 @@ void
 Dump::visit (RangePatternBoundPath &e)
 {
   begin ("RangePatternBoundPath");
-  put_field ("path", e.get_path ().as_string ());
+  put_field ("path", e.get_path ().to_string ());
   end ("RangePatternBoundPath");
 }
 
@@ -2242,8 +2242,8 @@ Dump::visit (RangePattern &e)
 {
   begin ("RangePattern");
   do_mappings (e.get_mappings ());
-  put_field ("lower", e.get_lower_bound ().as_string ());
-  put_field ("upper", e.get_upper_bound ().as_string ());
+  put_field ("lower", e.get_lower_bound ().to_string ());
+  put_field ("upper", e.get_upper_bound ().to_string ());
   put_field ("has_ellipsis_syntax",
 	     std::to_string (e.get_has_ellipsis_syntax ()));
   end ("RangePattern");
@@ -2255,7 +2255,7 @@ Dump::visit (ReferencePattern &e)
   begin ("ReferencePattern");
   do_mappings (e.get_mappings ());
   put_field ("mut", std::to_string (e.is_mut ()));
-  put_field ("pattern", e.get_referenced_pattern ().as_string ());
+  put_field ("pattern", e.get_referenced_pattern ().to_debug_string ());
   end ("ReferencePattern");
 }
 
@@ -2267,7 +2267,7 @@ Dump::visit (StructPatternFieldTuplePat &e)
   auto oa = e.get_outer_attrs ();
   do_outer_attrs (oa);
   put_field ("index", std::to_string (e.get_index ()));
-  put_field ("tuple_pattern", e.get_tuple_pattern ().as_string ());
+  put_field ("tuple_pattern", e.get_tuple_pattern ().to_string ());
   end ("StructPatternFieldTuplePat");
 }
 
@@ -2301,7 +2301,7 @@ Dump::visit (StructPattern &e)
   begin ("StructPattern");
 
   visit_field ("path", e.get_path ());
-  put_field ("elems", e.get_struct_pattern_elems ().as_string ());
+  put_field ("elems", e.get_struct_pattern_elems ().to_string ());
 
   end ("StructPattern");
 }
@@ -2329,7 +2329,7 @@ Dump::visit (TupleStructPattern &e)
   begin ("TupleStructPattern");
   do_mappings (e.get_mappings ());
 
-  put_field ("path", e.get_path ().as_string ());
+  put_field ("path", e.get_path ().to_string ());
 
   visit_field ("items", e.get_items ());
 
@@ -2476,7 +2476,7 @@ Dump::visit (ParenthesisedType &e)
 {
   begin ("ParenthesisedType");
   do_type (e);
-  put_field ("type_in_parens", e.get_type_in_parens ().as_string ());
+  put_field ("type_in_parens", e.get_type_in_parens ().to_debug_string ());
   end ("ParenthesisedType");
 }
 
@@ -2503,7 +2503,7 @@ Dump::visit (RawPointerType &e)
   begin ("RawPointerType");
   do_type (e);
   put_field ("mut", Rust::enum_to_str (e.get_mut ()));
-  put_field ("type", e.get_type ().as_string ());
+  put_field ("type", e.get_type ().to_debug_string ());
   end ("RawPointerType");
 }
 
@@ -2512,9 +2512,9 @@ Dump::visit (ReferenceType &e)
 {
   begin ("ReferenceType");
   do_type (e);
-  put_field ("lifetime", e.get_lifetime ().as_string ());
+  put_field ("lifetime", e.get_lifetime ().to_string ());
   put_field ("mut", enum_to_str (e.get_mut ()));
-  put_field ("type", e.get_base_type ().as_string ());
+  put_field ("type", e.get_base_type ().to_debug_string ());
   end ("ReferenceType");
 }
 
@@ -2553,7 +2553,7 @@ Dump::visit (BareFunctionType &e)
 
   visit_collection ("for_lifetimes", e.get_for_lifetimes ());
 
-  put_field ("function_qualifiers", e.get_function_qualifiers ().as_string ());
+  put_field ("function_qualifiers", e.get_function_qualifiers ().to_string ());
 
   if (e.get_function_params ().empty ())
     {

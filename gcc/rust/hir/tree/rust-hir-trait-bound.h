@@ -51,7 +51,9 @@ public:
       type_path (std::move (type_path)), locus (locus), mappings (mapping)
   {}
 
-  std::string as_string () const override;
+  std::string to_string () const override;
+
+  std::string to_debug_string () const;
 
   location_t get_locus () const override final { return locus; }
 

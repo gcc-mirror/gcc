@@ -61,7 +61,12 @@ public:
 
   virtual ~Pattern () {}
 
-  virtual std::string as_string () const = 0;
+  virtual std::string to_string () const = 0;
+
+  std::string to_debug_string () const
+  {
+    return to_string () + get_mappings ().as_string ();
+  }
 
   virtual void accept_vis (HIRPatternVisitor &vis) = 0;
 

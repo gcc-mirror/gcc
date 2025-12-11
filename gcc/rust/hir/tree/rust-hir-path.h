@@ -57,7 +57,7 @@ public:
   // Returns whether PathIdentSegment is in an error state.
   bool is_error () const { return segment_name.empty (); }
 
-  std::string as_string () const { return segment_name; }
+  std::string to_string () const { return segment_name; }
 };
 
 // A binding of an identifier to a type used in generic arguments in paths
@@ -99,7 +99,7 @@ public:
   GenericArgsBinding (GenericArgsBinding &&other) = default;
   GenericArgsBinding &operator= (GenericArgsBinding &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   Identifier &get_identifier () { return identifier; }
   const Identifier &get_identifier () const { return identifier; }
@@ -180,7 +180,7 @@ public:
 
   bool is_empty () const;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   std::vector<Lifetime> &get_lifetime_args () { return lifetime_args; }
   const std::vector<Lifetime> &get_lifetime_args () const
@@ -220,7 +220,7 @@ public:
   PathExprSegment (PathExprSegment &&other) = default;
   PathExprSegment &operator= (PathExprSegment &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   location_t get_locus () const { return locus; }
 
@@ -280,7 +280,7 @@ public:
     return segments.size () == 1;
   }
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void iterate_path_segments (std::function<bool (PathExprSegment &)> cb);
 
@@ -339,7 +339,7 @@ class PathInExpression : public PathPattern, public PathExpr
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   // Constructor
   PathInExpression (Analysis::NodeMapping mappings,
@@ -459,10 +459,10 @@ public:
   TypePathSegment (Analysis::NodeMapping mappings, std::string segment_name,
 		   bool has_separating_scope_resolution, location_t locus);
 
-  virtual std::string as_string () const
+  virtual std::string to_string () const
   {
     if (ident_segment)
-      return ident_segment->as_string ();
+      return ident_segment->to_string ();
 
     return LangItem::PrettyString (*lang_item);
   }
@@ -536,7 +536,7 @@ public:
 			  std::vector<ConstGenericArg> const_args,
 			  location_t locus);
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
 
@@ -583,7 +583,7 @@ public:
   TypePathFunction (TypePathFunction &&other) = default;
   TypePathFunction &operator= (TypePathFunction &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   const std::vector<std::unique_ptr<Type> > &get_params () const
   {
@@ -613,7 +613,7 @@ public:
 			   bool has_separating_scope_resolution,
 			   TypePathFunction function_path, location_t locus);
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   bool is_ident_only () const override { return false; }
 
@@ -683,7 +683,7 @@ public:
   TypePath (TypePath &&other) = default;
   TypePath &operator= (TypePath &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   /* Converts TypePath to SimplePath if possible (i.e. no generic or function
    * arguments). Otherwise returns an empty SimplePath. */
@@ -733,7 +733,7 @@ public:
   // Returns whether the qualified path type has a rebind as clause.
   bool has_as_clause () const { return trait != nullptr; }
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   location_t get_locus () const { return locus; }
 
@@ -767,7 +767,7 @@ class QualifiedPathInExpression : public PathPattern, public PathExpr
   location_t locus;
 
 public:
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   QualifiedPathInExpression (Analysis::NodeMapping mappings,
 			     QualifiedPathType qual_path_type,
@@ -855,7 +855,7 @@ public:
   QualifiedPathInType (QualifiedPathInType &&other) = default;
   QualifiedPathInType &operator= (QualifiedPathInType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;

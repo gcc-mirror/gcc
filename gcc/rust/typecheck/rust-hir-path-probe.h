@@ -164,12 +164,12 @@ public:
     for (auto &c : candidates)
       r.add_range (c.locus);
 
-    std::string rich_msg = "multiple " + query.as_string () + " found";
+    std::string rich_msg = "multiple " + query.to_string () + " found";
     r.add_fixit_replace (rich_msg.c_str ());
 
     rust_error_at (r, ErrorCode::E0034,
 		   "multiple applicable items in scope for: %qs",
-		   query.as_string ().c_str ());
+		   query.to_string ().c_str ());
   }
 };
 

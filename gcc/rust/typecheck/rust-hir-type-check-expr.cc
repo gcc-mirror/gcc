@@ -1293,7 +1293,7 @@ emit_ambiguous_resolution_error (HIR::MethodCallExpr &expr,
 {
   rich_location r (line_table, expr.get_method_name ().get_locus ());
   std::string rich_msg = "multiple "
-			 + expr.get_method_name ().get_segment ().as_string ()
+			 + expr.get_method_name ().get_segment ().to_string ()
 			 + " found";
 
   // We have to filter out default candidates
@@ -1304,7 +1304,7 @@ emit_ambiguous_resolution_error (HIR::MethodCallExpr &expr,
   r.add_fixit_replace (rich_msg.c_str ());
 
   rust_error_at (r, ErrorCode::E0592, "duplicate definitions with name %qs",
-		 expr.get_method_name ().get_segment ().as_string ().c_str ());
+		 expr.get_method_name ().get_segment ().to_string ().c_str ());
 }
 
 // We are allowed to have multiple candidates if they are all specializable
@@ -1380,7 +1380,7 @@ TypeCheckExpr::visit (HIR::MethodCallExpr &expr)
       rust_error_at (
 	richloc, ErrorCode::E0599,
 	"no method named %qs found in the current scope",
-	expr.get_method_name ().get_segment ().as_string ().c_str ());
+	expr.get_method_name ().get_segment ().to_string ().c_str ());
       return;
     }
 
@@ -2253,7 +2253,7 @@ TypeCheckExpr::resolve_fn_trait_call (HIR::CallExpr &expr,
 
       rust_error_at (
 	r, "multiple candidates found for function trait method call %qs",
-	method_name.as_string ().c_str ());
+	method_name.to_string ().c_str ());
       return false;
     }
 

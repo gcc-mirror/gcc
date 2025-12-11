@@ -57,7 +57,7 @@ public:
   ImplTraitType (ImplTraitType &&other) = default;
   ImplTraitType &operator= (ImplTraitType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
   std::vector<std::unique_ptr<TypeParamBound>> &get_type_param_bounds ()
   {
     return type_param_bounds;
@@ -96,7 +96,7 @@ public:
   TraitObjectType (TraitObjectType &&other) = default;
   TraitObjectType &operator= (TraitObjectType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
   bool get_has_dyn () { return has_dyn; }
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -150,9 +150,9 @@ public:
   ParenthesisedType (ParenthesisedType &&other) = default;
   ParenthesisedType &operator= (ParenthesisedType &&other) = default;
 
-  std::string as_string () const override
+  std::string to_string () const override
   {
-    return "(" + type_in_parens->as_string () + ")";
+    return "(" + type_in_parens->to_string () + ")";
   }
 
   // Creates a trait bound (clone of this one's trait bound) - HACK
@@ -187,7 +187,7 @@ public:
   TupleType (TupleType &&other) = default;
   TupleType &operator= (TupleType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -228,7 +228,7 @@ protected:
 public:
   NeverType (Analysis::NodeMapping mappings, location_t locus);
 
-  std::string as_string () const override { return "! (never type)"; }
+  std::string to_string () const override { return "! (never type)"; }
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -256,7 +256,7 @@ public:
   RawPointerType (RawPointerType &&other) = default;
   RawPointerType &operator= (RawPointerType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -318,7 +318,7 @@ public:
   ReferenceType (ReferenceType &&other) = default;
   ReferenceType &operator= (ReferenceType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -367,7 +367,7 @@ public:
   ArrayType (ArrayType &&other) = default;
   ArrayType &operator= (ArrayType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -410,7 +410,7 @@ public:
   SliceType (SliceType &&other) = default;
   SliceType &operator= (SliceType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -453,7 +453,7 @@ protected:
 public:
   InferredType (Analysis::NodeMapping mappings, location_t locus);
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;
@@ -494,7 +494,7 @@ public:
   MaybeNamedParam (MaybeNamedParam &&other) = default;
   MaybeNamedParam &operator= (MaybeNamedParam &&other) = default;
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   // Returns whether the param is in an error state.
   bool is_error () const { return param_type == nullptr; }
@@ -553,7 +553,7 @@ public:
   BareFunctionType (BareFunctionType &&other) = default;
   BareFunctionType &operator= (BareFunctionType &&other) = default;
 
-  std::string as_string () const override;
+  std::string to_string () const override;
 
   void accept_vis (HIRFullVisitor &vis) override;
   void accept_vis (HIRTypeVisitor &vis) override;

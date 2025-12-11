@@ -72,7 +72,7 @@ public:
     return path;
   }
 
-  std::string as_string () const;
+  std::string to_string () const;
 
   location_t get_locus () const { return locus; }
 };
