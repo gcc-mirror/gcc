@@ -1352,6 +1352,14 @@ ftms = {
 };
 
 ftms = {
+  name = constexpr_flat_set;
+  values = {
+    v = 202502;
+    cxxmin = 26;
+  };
+};
+
+ftms = {
   name = constexpr_string;
   values = {
     v = 201907;

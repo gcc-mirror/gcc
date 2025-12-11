@@ -13,6 +13,7 @@
 #include <testsuite_hooks.h>
 
 template<template<typename> class KeyContainer>
+constexpr
 void
 test01()
 {
@@ -56,6 +57,7 @@ test01()
   VERIFY( m_copy == m );
 }
 
+constexpr
 void
 test02()
 {
@@ -82,6 +84,7 @@ test02()
   VERIFY( m.count(3) == 1 );
 }
 
+constexpr
 void
 test03()
 {
@@ -110,6 +113,7 @@ test03()
   VERIFY( std::ranges::equal(m, (int[]){5}) );
 }
 
+constexpr
 void
 test04()
 {
@@ -136,6 +140,7 @@ test04()
   VERIFY( std::move(m5).extract().get_allocator().get_personality() == 44 );
 }
 
+constexpr
 void
 test05()
 {
@@ -144,6 +149,7 @@ test05()
   VERIFY( std::ranges::equal(m, (int[]){1, 2, 3, 4, 5}) );
 }
 
+constexpr
 void
 test06()
 {
@@ -171,25 +177,25 @@ struct NoCatIterator {
   using difference_type = int;
   using value_type = int;
 
-  NoCatIterator() : v(0) {}
-  NoCatIterator(int x) : v(x) {}
+  constexpr NoCatIterator() : v(0) {}
+  constexpr NoCatIterator(int x) : v(x) {}
 
-  int operator*() const
+  constexpr int operator*() const
   { return v; }
 
-  NoCatIterator& operator++()
+  constexpr NoCatIterator& operator++()
   {
     ++v;
     return *this;
   }
 
-  NoCatIterator operator++(int)
+  constexpr NoCatIterator operator++(int)
   {
     ++v;
     return NoCatIterator(v-1);
   }
 
-  bool operator==(const NoCatIterator& rhs) const
+  constexpr bool operator==(const NoCatIterator& rhs) const
   { return v == rhs.v; }
 
 private:
@@ -204,7 +210,9 @@ struct std::iterator_traits<NoCatIterator> {
   // no iterator_category, happens also for common_iterator
 };
 
-void test07()
+constexpr
+void
+test07()
 {
   std::flat_set<int> s;
   std::flat_set<int, std::less<int>, NoInsertRange<int>> s2;
@@ -229,25 +237,36 @@ void test07()
 #endif
 }
 
+constexpr
 void
 test08()
 {
   // PR libstdc++/119620 -- flat_set::emplace always constructs element on the stack
-  static int copy_counter;
+  int copy_counter = 0;
+
   struct A {
-    A() { }
-    A(const A&) { ++copy_counter; }
-    A& operator=(const A&) { ++copy_counter; return *this; }
-    auto operator<=>(const A&) const = default;
+    int *counter;
+    constexpr A(int &c) : counter(&c) {}
+
+    constexpr A(const A &other) : counter(other.counter) { ++(*counter); }
+
+    constexpr A &operator=(const A &other) {
+      counter = other.counter;
+      ++(*counter);
+      return *this;
+    }
+
+    constexpr auto operator<=>(const A &) const = default;
   };
   std::flat_set<A> s;
-  A a;
+  A a(copy_counter);
   s.emplace(a);
   VERIFY( copy_counter == 1 );
   s.emplace(a);
   VERIFY( copy_counter == 1 );
 }
 
+constexpr
 void
 test09()
 {
@@ -258,8 +277,8 @@ test09()
   VERIFY( std::ranges::equal(s, (int[]){2,4}) );
 }
 
-int
-main()
+void
+test()
 {
   test01<std::vector>();
   test01<std::deque>();
@@ -271,4 +290,31 @@ main()
   test07();
   test08();
   test09();
+}
+
+constexpr
+bool
+test_constexpr()
+{
+  test01<std::vector>();
+  test02();
+  test03();
+  test04();
+  test06();
+  test07();
+  test08();
+  test09();
+  return true;
+}
+
+int
+main()
+{
+  test();
+#if __cplusplus > 202302L
+  static_assert(test_constexpr());
+#if __cpp_lib_constexpr_flat_set != 202502L
+#error "Feature-test macro __cpp_lib_constexpr_flat_set has wrong value in <flat_set>"
+#endif
+#endif
 }
