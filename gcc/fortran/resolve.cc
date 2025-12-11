@@ -17628,6 +17628,22 @@ resolve_fl_derived (gfc_symbol *sym)
       gfc_component *data = gfc_find_component (sym, "_data", true, true, NULL);
       gfc_component *vptr = gfc_find_component (sym, "_vptr", true, true, NULL);
 
+      if (data->ts.u.derived->attr.pdt_template)
+	{
+	  match m;
+	  m = gfc_get_pdt_instance (sym->param_list, &data->ts.u.derived,
+				    &data->param_list);
+	  if (m != MATCH_YES
+	      || !gfc_build_class_symbol (&sym->ts, &sym->attr, &sym->as))
+	    {
+	      gfc_error ("Failed to build PDT class component at %L",
+			 &sym->declared_at);
+	      return false;
+	    }
+	  data = gfc_find_component (sym, "_data", true, true, NULL);
+	  vptr = gfc_find_component (sym, "_vptr", true, true, NULL);
+	}
+
       /* Nothing more to do for unlimited polymorphic entities.  */
       if (data->ts.u.derived->attr.unlimited_polymorphic)
 	{
@@ -17639,7 +17655,7 @@ resolve_fl_derived (gfc_symbol *sym)
 	  gfc_symbol *vtab = gfc_find_derived_vtab (data->ts.u.derived);
 	  gcc_assert (vtab);
 	  vptr->ts.u.derived = vtab->ts.u.derived;
-	  if (!resolve_fl_derived0 (vptr->ts.u.derived))
+	  if (vptr->ts.u.derived && !resolve_fl_derived0 (vptr->ts.u.derived))
 	    return false;
 	}
     }

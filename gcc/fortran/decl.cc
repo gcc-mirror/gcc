@@ -4027,6 +4027,11 @@ gfc_get_pdt_instance (gfc_actual_arglist *param_list, gfc_symbol **sym,
       if (!pdt->attr.use_assoc && !c1)
 	goto error_return;
 
+      /* Resolution PDT class components of derived types are handled here.
+	 They can arrive without a parameter list and no KIND parameters.  */
+      if (!param_list && (!c1->attr.pdt_kind && !c1->initializer))
+	continue;
+
       kind_expr = NULL;
       if (!name_seen)
 	{
