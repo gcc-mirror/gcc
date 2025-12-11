@@ -172,7 +172,7 @@ libatomic_la_OBJECTS = $(am_libatomic_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
 am__v_lt_0 = --silent
-am__v_lt_1 =
+am__v_lt_1 = 
 libatomic_la_LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(libatomic_la_LDFLAGS) $(LDFLAGS) -o $@
@@ -193,11 +193,11 @@ am__v_P_1 = :
 AM_V_GEN = $(am__v_GEN_@AM_V@)
 am__v_GEN_ = $(am__v_GEN_@AM_DEFAULT_V@)
 am__v_GEN_0 = @echo "  GEN     " $@;
-am__v_GEN_1 =
+am__v_GEN_1 = 
 AM_V_at = $(am__v_at_@AM_V@)
 am__v_at_ = $(am__v_at_@AM_DEFAULT_V@)
 am__v_at_0 = @
-am__v_at_1 =
+am__v_at_1 = 
 depcomp = $(SHELL) $(top_srcdir)/../depcomp
 am__depfiles_maybe = depfiles
 am__mv = mv -f
@@ -210,7 +210,7 @@ LTCPPASCOMPILE = $(LIBTOOL) $(AM_V_lt) $(AM_LIBTOOLFLAGS) \
 AM_V_CPPAS = $(am__v_CPPAS_@AM_V@)
 am__v_CPPAS_ = $(am__v_CPPAS_@AM_DEFAULT_V@)
 am__v_CPPAS_0 = @echo "  CPPAS   " $@;
-am__v_CPPAS_1 =
+am__v_CPPAS_1 = 
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
@@ -220,7 +220,7 @@ LTCOMPILE = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CC = $(am__v_CC_@AM_V@)
 am__v_CC_ = $(am__v_CC_@AM_DEFAULT_V@)
 am__v_CC_0 = @echo "  CC      " $@;
-am__v_CC_1 =
+am__v_CC_1 = 
 CCLD = $(CC)
 LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 	$(LIBTOOLFLAGS) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
@@ -228,7 +228,7 @@ LINK = $(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) \
 AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
-am__v_CCLD_1 =
+am__v_CCLD_1 = 
 SOURCES = $(libatomic_la_SOURCES) $(EXTRA_libatomic_la_SOURCES) \
 	$(libatomic_convenience_la_SOURCES)
 RECURSIVE_TARGETS = all-recursive check-recursive cscopelist-recursive \
@@ -423,10 +423,10 @@ AM_CCASFLAGS = $(XCFLAGS)
 AM_LDFLAGS = $(XLDFLAGS) $(SECTION_LDFLAGS) $(OPT_LDFLAGS)
 toolexeclib_LTLIBRARIES = libatomic.la
 noinst_LTLIBRARIES = libatomic_convenience.la
-@LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libatomic_version_script =
+@LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libatomic_version_script = 
 @LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_script = -Wl,--version-script,$(top_srcdir)/libatomic.map
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_script = -Wl,-M,libatomic.map-sun
-@LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libatomic_version_dep =
+@LIBAT_BUILD_VERSIONED_SHLIB_FALSE@libatomic_version_dep = 
 @LIBAT_BUILD_VERSIONED_SHLIB_GNU_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = $(top_srcdir)/libatomic.map
 @LIBAT_BUILD_VERSIONED_SHLIB_SUN_TRUE@@LIBAT_BUILD_VERSIONED_SHLIB_TRUE@libatomic_version_dep = libatomic.map-sun
 libatomic_version_info = -version-info $(libtool_VERSION)
@@ -444,7 +444,7 @@ libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 @PARTIAL_VXWORKS_FALSE@SIZEOBJS = load store cas exch fadd fsub fand fior fxor fnand tas
 @PARTIAL_VXWORKS_FALSE@EXTRA_libatomic_la_SOURCES = $(addsuffix _n.c,$(SIZEOBJS))
 @PARTIAL_VXWORKS_FALSE@libatomic_la_DEPENDENCIES = $(libatomic_la_LIBADD) $(libatomic_version_dep)
-@PARTIAL_VXWORKS_FALSE@empty =
+@PARTIAL_VXWORKS_FALSE@empty = 
 @PARTIAL_VXWORKS_FALSE@space = $(empty) $(empty)
 @PARTIAL_VXWORKS_FALSE@PAT_SPLIT = $(subst _,$(space),$(*F))
 @PARTIAL_VXWORKS_FALSE@PAT_BASE = $(word 1,$(PAT_SPLIT))
@@ -453,7 +453,7 @@ libatomic_la_LDFLAGS = $(libatomic_version_info) $(libatomic_version_script) \
 @PARTIAL_VXWORKS_FALSE@IFUNC_DEF = -DIFUNC_ALT=$(PAT_S)
 @PARTIAL_VXWORKS_FALSE@IFUNC_OPT = $(subst |,$(space),$(word $(PAT_S),$(IFUNC_OPTIONS)))
 @PARTIAL_VXWORKS_FALSE@@AMDEP_TRUE@M_DEPS = -MT $@ -MD -MP -MF $(DEPDIR)/$(@F).Ppo
-@PARTIAL_VXWORKS_FALSE@@AMDEP_FALSE@M_DEPS =
+@PARTIAL_VXWORKS_FALSE@@AMDEP_FALSE@M_DEPS = 
 @PARTIAL_VXWORKS_FALSE@M_SIZE = -DN=$(PAT_N)
 @PARTIAL_VXWORKS_FALSE@M_IFUNC = $(if $(PAT_S),$(IFUNC_DEF) $(IFUNC_OPT))
 @PARTIAL_VXWORKS_FALSE@M_FILE = $(PAT_BASE)_n.c
@@ -486,10 +486,10 @@ libatomic_convenience_la_LIBADD = $(libatomic_la_LIBADD)
 # built after libatomic, which makes RPATH insecure. Removing libatomic.la
 # from $gcc_objdir seems to fix the issue.
 gcc_objdir = `pwd`/$(MULTIBUILDTOP)../../gcc/
-MULTISRCTOP =
-MULTIBUILDTOP =
-MULTIDIRS =
-MULTISUBDIR =
+MULTISRCTOP = 
+MULTIBUILDTOP = 
+MULTIDIRS = 
+MULTISUBDIR = 
 MULTIDO = true
 MULTICLEAN = true
 all: auto-config.h
@@ -539,7 +539,7 @@ auto-config.h: stamp-h1
 stamp-h1: $(srcdir)/auto-config.h.in $(top_builddir)/config.status
 	@rm -f stamp-h1
 	cd $(top_builddir) && $(SHELL) ./config.status auto-config.h
-$(srcdir)/auto-config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
+$(srcdir)/auto-config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps) 
 	($(am__cd) $(top_srcdir) && $(AUTOHEADER))
 	rm -f stamp-h1
 	touch $@
@@ -593,10 +593,10 @@ clean-toolexeclibLTLIBRARIES:
 	  rm -f $${locs}; \
 	}
 
-libatomic.la: $(libatomic_la_OBJECTS) $(libatomic_la_DEPENDENCIES) $(EXTRA_libatomic_la_DEPENDENCIES)
+libatomic.la: $(libatomic_la_OBJECTS) $(libatomic_la_DEPENDENCIES) $(EXTRA_libatomic_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libatomic_la_LINK) -rpath $(toolexeclibdir) $(libatomic_la_OBJECTS) $(libatomic_la_LIBADD) $(LIBS)
 
-libatomic_convenience.la: $(libatomic_convenience_la_OBJECTS) $(libatomic_convenience_la_DEPENDENCIES) $(EXTRA_libatomic_convenience_la_DEPENDENCIES)
+libatomic_convenience.la: $(libatomic_convenience_la_OBJECTS) $(libatomic_convenience_la_DEPENDENCIES) $(EXTRA_libatomic_convenience_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(LINK)  $(libatomic_convenience_la_OBJECTS) $(libatomic_convenience_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
