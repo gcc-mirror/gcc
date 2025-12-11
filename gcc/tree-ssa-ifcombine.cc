@@ -834,16 +834,18 @@ ifcombine_ifandif (basic_block inner_cond_bb, bool inner_inv,
 
       /* Do it.  */
       gsi = gsi_for_stmt (inner_cond);
-      t = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
-		       build_int_cst (TREE_TYPE (name1), 1), bit1);
-      t2 = fold_build2 (LSHIFT_EXPR, TREE_TYPE (name1),
-		        build_int_cst (TREE_TYPE (name1), 1), bit2);
-      t = fold_build2 (BIT_IOR_EXPR, TREE_TYPE (name1), t, t2);
-      t = force_gimple_operand_gsi (&gsi, t, true, NULL_TREE,
-				    true, GSI_SAME_STMT);
-      t2 = fold_build2 (BIT_AND_EXPR, TREE_TYPE (name1), name1, t);
-      t2 = force_gimple_operand_gsi (&gsi, t2, true, NULL_TREE,
-				     true, GSI_SAME_STMT);
+      location_t loc1 = gimple_location (inner_cond);
+      location_t loc2 = gimple_location (outer_cond);
+      t = gimple_build (&gsi, true, GSI_SAME_STMT, loc1, LSHIFT_EXPR,
+			TREE_TYPE (name1),
+			build_int_cst (TREE_TYPE (name1), 1), bit1);
+      t2 = gimple_build (&gsi, true, GSI_SAME_STMT, loc2, LSHIFT_EXPR,
+			 TREE_TYPE (name1),
+			 build_int_cst (TREE_TYPE (name1), 1), bit2);
+      t = gimple_build (&gsi, true, GSI_SAME_STMT, loc1, BIT_IOR_EXPR,
+			TREE_TYPE (name1), t, t2);
+      t2 = gimple_build (&gsi, true, GSI_SAME_STMT, loc1, BIT_AND_EXPR,
+			 TREE_TYPE (name1), name1, t);
 
       t = fold_build2 (EQ_EXPR, boolean_type_node, t2, t);
 
