@@ -228,7 +228,7 @@ abstract_virtuals_error (tree decl, tree type, abstract_class_use use,
 	     "class type %qT", type);
       break;
     default:
-      error ("cannot allocate an object of abstract type %qT", type);
+      error ("cannot construct an object of abstract type %qT", type);
     }
 
   /* Only go through this once.  */
@@ -238,13 +238,14 @@ abstract_virtuals_error (tree decl, tree type, abstract_class_use use,
       tree fn;
 
       inform (DECL_SOURCE_LOCATION (TYPE_MAIN_DECL (type)),
-	      "  because the following virtual functions are pure within %qT:",
+	      "because the following virtual functions are pure within %qT:",
 	      type);
 
+      auto_diagnostic_nesting_level adnl;
       FOR_EACH_VEC_ELT (*pure, ix, fn)
 	if (! DECL_CLONED_FUNCTION_P (fn)
 	    || DECL_COMPLETE_DESTRUCTOR_P (fn))
-	  inform (DECL_SOURCE_LOCATION (fn), "    %#qD", fn);
+	  inform (DECL_SOURCE_LOCATION (fn), "%#qD", fn);
 
       /* Now truncate the vector.  This leaves it non-null, so we know
 	 there are pure virtuals, but empty so we don't list them out

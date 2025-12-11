@@ -24,6 +24,12 @@ static_assert(is_constructible<A, int, int>::value, "");  // { dg-error "assert"
 // { dg-message "'A' is not constructible from 'int, int', because" "" { target *-*-* } .-1 }
 // { dg-error "no matching function for call to" "" { target *-*-* } .-2 }
 
+struct V {  // { dg-message "following virtual functions are pure" }
+  virtual void foo() = 0;  // { dg-message "" }
+};
+static_assert(is_constructible<V>::value, "");  // { dg-error "assert" }
+// { dg-error "object of abstract type" "" { target *-*-* } .-1 }
+
 template <typename T, typename... Args>
 struct is_nothrow_constructible {
   static constexpr bool value = __is_nothrow_constructible(T, Args...);

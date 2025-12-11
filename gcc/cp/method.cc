@@ -2274,7 +2274,7 @@ constructible_expr (tree to, tree from, bool explain)
   const int len = TREE_VEC_LENGTH (from);
   if (CLASS_TYPE_P (to))
     {
-      if (ABSTRACT_CLASS_TYPE_P (to))
+      if (abstract_virtuals_error (NULL_TREE, to, complain))
 	return error_mark_node;
       tree ctype = to;
       vec<tree, va_gc> *args = NULL;
