@@ -2305,8 +2305,8 @@ match_derived_type_spec (gfc_typespec *ts)
    the implicit_flag is not needed, so it was removed. Derived types are
    identified by their name alone.  */
 
-match
-gfc_match_type_spec (gfc_typespec *ts)
+static match
+match_type_spec (gfc_typespec *ts)
 {
   match m;
   locus old_locus;
@@ -2512,6 +2512,17 @@ kind_selector:
   if (m == MATCH_NO)
     m = MATCH_YES;
 
+  return m;
+}
+
+
+match
+gfc_match_type_spec (gfc_typespec *ts)
+{
+  match m;
+  gfc_namespace *old_ns = gfc_current_ns;
+  m = match_type_spec (ts);
+  gfc_current_ns = old_ns;
   return m;
 }
 
@@ -7941,7 +7952,9 @@ gfc_match_type_is (void)
   return MATCH_YES;
 
 syntax:
-  gfc_error ("Syntax error in TYPE IS specification at %C");
+
+  if (!gfc_error_check ())
+    gfc_error ("Syntax error in TYPE IS specification at %C");
 
 cleanup:
   if (c != NULL)
