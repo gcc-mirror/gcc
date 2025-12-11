@@ -2630,7 +2630,7 @@ build_functional_cast_1 (location_t loc, tree exp, tree parms,
       t = build_min (CAST_EXPR, type, parms);
       /* We don't know if it will or will not have side effects.  */
       TREE_SIDE_EFFECTS (t) = 1;
-      return t;
+      return convert_from_reference (t);
     }
 
   if (! MAYBE_CLASS_TYPE_P (type))
