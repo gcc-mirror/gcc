@@ -35,7 +35,7 @@ Richard Biener                                  <rguenther@suse.de>
 Richard Earnshaw                                <richard.earnshaw@arm.com>
 Jakub Jelinek                                   <jakub@redhat.com>
 Richard Kenner                                  <kenner@nyu.edu>
-Jeff Law                                        <jlaw@ventanamicro.com>
+Jeff Law                                        <jefflaw@qti.qualcomm.com>
 Michael Meissner                                <gnu@the-meissners.org>
 Jason Merrill                                   <jason@redhat.com>
 David S. Miller                                 <davem@redhat.com>
@@ -932,6 +932,7 @@ Pengxuan Zheng                  pzheng          <pengxuan.zheng@oss.qualcomm.com
 Juzhe Zhong                     -               <juzhe.zhong@rivai.ai>
 Roman Zhuykov                   zhroma          <zhroma@ispras.ru>
 Jon Ziegler                     jonz            <jonz@apple.com>
+Raphael Zinsly                  -               <rzinsly@qti.qualcomm.com>
 Roman Zippel                    zippel          <zippel@linux-m68k.org>
 Claudiu Zissulescu              claziss         <claziss@gmail.com>
 Josef Zlomek                    zlomek          <josef.zlomek@email.cz>
@@ -951,17 +952,21 @@ information.
 
 
 Soumya AR                                       <soumyaa@nvidia.com>
+Daniel Barboza                                  <dbarboza@qti.qualcomm.com>
+Daniel Barboza                                  <dbarboza@ventanamicro.com>
 Peter Bergner                                   <bergner@tenstorrent.com>
 Dhruv Chawla                                    <dhruvc@nvidia.com>
 Juergen Christ                                  <jchrist@linux.ibm.com>
 Giuseppe D'Angelo                               <giuseppe.dangelo@kdab.com>
 Robin Dapp                                      <rdapp.gcc@gmail.com>
+Robin Dapp                                      <rdapp@qti.qualcomm.com>
 Robin Dapp                                      <rdapp@ventanamicro.com>
 Aldy Hernandez                                  <aldy@quesejoda.com>
 Michal Jires                                    <mjires@suse.cz>
 Matthias Kretz                                  <m.kretz@gsi.de>
 Prathamesh Kulkarni                             <prathameshk@nvidia.com>
 Tim Lange                                       <mail@tim-lange.me>
+Jeff Law                                        <jefflaw@qti.qualcomm.com>
 Jeff Law                                        <jeffreyalaw@gmail.com>
 Jeff Law                                        <jlaw@tachyum.com>
 Jeff Law                                        <jlaw@ventanamicro.com>
@@ -971,6 +976,8 @@ Yuao Ma                                         <yuao@gcc.gnu.org>
 Matthew Malcomson                               <mmalcomson@nvidia.com>
 Immad Mir                                       <mir@sourceware.org>
 Gaius Mulley                                    <gaiusmod2@gmail.com>
+Shreya Munnangi                                 <smunnang@qti.qualcomm.com>
+Shreya Munnangi                                 <smunnangi1@ventanamicro.com>
 Szabolcs Nagy                                   <nsz@gcc.gnu.org>
 Mikael Pettersson                               <mikpelinux@gmail.com>
 Andrew Pinski                                   <andrew.pinski@oss.qualcomm.com>
@@ -994,3 +1001,5 @@ Alexander Westbrooks                            <alexanderw@gcc.gnu.org>
 Chung-Ju Wu                                     <jasonwucj@gmail.com>
 Pengxuan Zheng                                  <pengxuan.zheng@oss.qualcomm.com>
 Pengxuan Zheng                                  <quic_pzheng@quicinc.com>
+Raphael Zinsly                                  <rzinsly@qti.qualcomm.com>
+Raphael Zinsly                                  <rzinsly@ventanamicro.com>
