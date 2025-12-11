@@ -1517,6 +1517,11 @@ static const struct compiler default_compilers[] =
 #endif
    , 0, 0, 0},
 
+#ifndef EXTRA_DEFAULT_COMPILERS
+#define EXTRA_DEFAULT_COMPILERS
+#endif
+  EXTRA_DEFAULT_COMPILERS
+
 #include "specs.h"
   /* Mark end of table.  */
   {0, 0, 0, 0, 0}

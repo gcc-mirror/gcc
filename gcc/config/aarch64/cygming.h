@@ -254,4 +254,18 @@ still needed for compilation.  */
 #undef  TARGET_ASM_LTO_END
 #define TARGET_ASM_LTO_END mingw_pe_asm_lto_end
 
+/* Support for Windows resource files.  */
+#define EXTRA_DEFAULT_COMPILERS \
+  {".rc", "@windres-rc", 0, 0, 0}, \
+  {"@windres-rc", \
+   "%{!E:%{!M:%{!MM:windres -J rc -O coff -F pe-aarch64 \
+      %{I*:-I%*} %{D*:-D%*} %{U*:-U%*} \
+      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
+   0, 0, 0}, \
+  {".res", "@windres-res", 0, 0, 0}, \
+  {"@windres-res", \
+   "%{!E:%{!M:%{!MM:windres -J res -O coff -F pe-aarch64 \
+      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
+   0, 0, 0},
+
 #endif

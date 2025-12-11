@@ -474,3 +474,27 @@ do {						\
   (ix86_cmodel == CM_LARGE_PIC || ix86_cmodel == CM_MEDIUM_PIC)
 
 #define HAVE_64BIT_POINTERS TARGET_64BIT_DEFAULT
+
+/* Support for Windows resource files.  */
+#if TARGET_64BIT_DEFAULT
+#define WINDRES_FORMAT_SPEC \
+      "%{m32:-F pe-i386;m64|!m32:-F pe-x86-64} "
+#else
+#define WINDRES_FORMAT_SPEC \
+      "%{m64:-F pe-x86-64;m32|!m64:-F pe-i386} "
+#endif
+
+#define EXTRA_DEFAULT_COMPILERS \
+  {".rc", "@windres-rc", 0, 0, 0}, \
+  {"@windres-rc", \
+   "%{!E:%{!M:%{!MM:windres -J rc -O coff " \
+      WINDRES_FORMAT_SPEC \
+      "%{I*:-I%*} %{D*:-D%*} %{U*:-U%*} \
+      %{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
+   0, 0, 0}, \
+  {".res", "@windres-res", 0, 0, 0}, \
+  {"@windres-res", \
+   "%{!E:%{!M:%{!MM:windres -J res -O coff " \
+      WINDRES_FORMAT_SPEC \
+      "%{c:%W{o*}%{!o*:-o %w%b%O}}%{!c:-o %d%w%u%O} %i}}}", \
+   0, 0, 0},
