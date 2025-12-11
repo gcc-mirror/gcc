@@ -1011,7 +1011,8 @@ package body Exp_Put_Image is
                --  use the first copy instead.
 
                Partial_View := Incomplete_Or_Partial_View
-                                 (Defining_Identifier (Type_Decl));
+                                 (Defining_Identifier (Type_Decl),
+                                  Partial_Only => True);
 
                pragma Assert (Ekind (Partial_View) in
                               E_Private_Type
