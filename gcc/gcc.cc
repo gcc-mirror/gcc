@@ -3097,6 +3097,11 @@ find_a_program (const char *name)
     return xstrdup (DEFAULT_DSYMUTIL);
 #endif
 
+#ifdef DEFAULT_WINDRES
+  if (! strcmp (name, "windres") && access (DEFAULT_WINDRES, X_OK) == 0)
+    return xstrdup (DEFAULT_WINDRES);
+#endif
+
   return find_a_file (&exec_prefixes, name, X_OK, false);
 }
 

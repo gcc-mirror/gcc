@@ -95,6 +95,12 @@
 #endif
 
 
+/* Define to enable the use of a default windres. */
+#ifndef USED_FOR_TARGET
+#undef DEFAULT_WINDRES
+#endif
+
+
 /* The default for -fdiagnostics-color option */
 #ifndef USED_FOR_TARGET
 #undef DIAGNOSTICS_COLOR_DEFAULT

@@ -441,6 +441,29 @@ else
   AC_MSG_RESULT(no)
 fi
 
+# --------------------
+# Find default windres
+# --------------------
+
+AC_ARG_WITH(windres,
+[AS_HELP_STRING([--with-windres], [arrange to use the specified windres (full pathname)])],
+DEFAULT_WINDRES="$with_windres")
+if test x"${DEFAULT_WINDRES+set}" = x"set"; then
+  if test ! -x "$DEFAULT_WINDRES"; then
+    AC_MSG_ERROR([cannot execute: $DEFAULT_WINDRES: check --with-windres or env. var. DEFAULT_WINDRES])
+  fi
+  AC_DEFINE_UNQUOTED(DEFAULT_WINDRES,"$DEFAULT_WINDRES",
+	[Define to enable the use of a default windres.])
+fi
+
+AC_MSG_CHECKING([whether a default windres was specified])
+if test x"${DEFAULT_WINDRES+set}" = x"set"; then
+  AC_MSG_RESULT([yes ($DEFAULT_WINDRES)])
+else
+  AC_MSG_RESULT(no)
+fi
+
+
 # ---------------
 # Find C compiler
 # ---------------
