@@ -1,3 +1,11 @@
+2025-12-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-12-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/122652
+	* config/riscv/riscv-vsetvl.cc: Add nullptr check.
+
 2025-12-09  Robin Dapp  <rdapp.gcc@gmail.com>
 
 	Backported from master:

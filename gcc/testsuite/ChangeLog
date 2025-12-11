@@ -1,3 +1,11 @@
+2025-12-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-12-01  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/122652
+	* gcc.target/riscv/rvv/base/pr122652.c: New test.
+
 2025-12-09  Harald Anlauf  <anlauf@gmx.de>
 
 	Backported from master:
