@@ -1,5 +1,5 @@
 // PR c++/100872
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 template <int N, typename T>
 struct S {
   #pragma omp declare simd aligned(a : N * 2) aligned(b) linear(ref(b): N)

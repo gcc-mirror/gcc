@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target device_type (any)		/* { dg-error "directive with only 'device_type' or 'indirect' clauses" } */
 
 void f1 (void) {}

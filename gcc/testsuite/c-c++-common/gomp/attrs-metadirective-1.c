@@ -1,6 +1,6 @@
 /* { dg-do compile { target { c || c++11 } } } */
 /* { dg-options "-fopenmp -std=c23" { target { c } } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 100
 
 void
@@ -26,7 +26,7 @@ f (int a[], int b[], int c[])
       otherwise (teams loop)
       when (device={arch("nvptx")}: parallel loop))]] /* { dg-error "'otherwise' or 'default' clause must appear last" } */
     for (i = 0; i < N; i++) c[i] = a[i] * b[i];
-  
+
   [[omp::directive (metadirective
       when (device={arch("nvptx")} parallel loop) /* { dg-error "expected ':' before 'parallel'" } */
       default (teams loop))]]

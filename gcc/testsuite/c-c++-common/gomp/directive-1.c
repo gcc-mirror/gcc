@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int thr;
 #pragma omp threadprivate, (thr)		/* { dg-error "expected '\\\(' before ',' token" } */
 						/* { dg-error "expected end of line before ',' token" "" { target c++ } .-1 } */

@@ -1,6 +1,6 @@
 // { dg-additional-options -std=c++20 }
 // { dg-output-file target-std__valarray-1.output }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <valarray>
 #include <ostream>
 #include <sstream>

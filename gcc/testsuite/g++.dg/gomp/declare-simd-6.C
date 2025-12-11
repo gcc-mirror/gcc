@@ -1,7 +1,7 @@
 // PR c++/71257
 // { dg-do compile }
 // { dg-options "-fopenmp-simd" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct S { int a; };
 #pragma omp declare simd linear(val(a):2)
 int f1 (int &a);

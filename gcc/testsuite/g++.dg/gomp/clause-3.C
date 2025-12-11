@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-require-effective-target tls }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define p parallel
 
 extern void bar (void);

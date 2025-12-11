@@ -1,7 +1,7 @@
 /* { dg-do run }  */
 /* { dg-additional-options "-foffload-options=nvptx-none=-misa=sm_35" { target { offload_target_nvptx } } } */
 /* { dg-additional-sources reverse-offload-1-aux.c } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Check that reverse offload works in particular:
    - no code is generated on the device side (i.e. no
      implicit declare target of called functions and no

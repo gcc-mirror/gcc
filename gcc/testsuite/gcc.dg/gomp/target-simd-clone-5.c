@@ -1,14 +1,14 @@
 /* { dg-options "-fopenmp -O2" } */
 /* { dg-additional-options "-fopenmp-target-simd-clone=any -fdump-ipa-simdclone-details" } */
 
-/* Test that simd clones are not generated for functions with 
+/* Test that simd clones are not generated for functions with
    "declare target" but unsuitable arguments.  */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct s {
   int a;
   int b;
 };
-  
+
 #pragma omp declare target
 __attribute__ ((__noinline__)) int addit (struct s x)
 {

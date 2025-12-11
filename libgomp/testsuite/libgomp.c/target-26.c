@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 extern void abort (void);
 #pragma omp declare target
 int a[4] = { 2, 3, 4, 5 }, *b;

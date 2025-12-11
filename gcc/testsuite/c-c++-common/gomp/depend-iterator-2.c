@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int a, b[64];
 struct S { int c; } *d, *e;
 struct T;

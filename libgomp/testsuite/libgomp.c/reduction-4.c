@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <omp.h>
 #include <stdlib.h>
 
@@ -11,7 +12,7 @@ main (void)
     if (i != 0 || k != 0 || l != 0)
 #pragma omp atomic
       j |= 1;
-  
+
     if (omp_get_num_threads () != 4)
 #pragma omp atomic
       j |= 2;

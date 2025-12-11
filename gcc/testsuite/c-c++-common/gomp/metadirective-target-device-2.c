@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-optimized" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* In configurations without offloading configured, we can resolve many
    instances of the target_device context selector at gimplification time
    instead of waiting until late resolution.  */

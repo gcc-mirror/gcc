@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-foffload=disable -fdump-tree-optimized" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 static void
@@ -27,13 +27,13 @@ static void doit (transform_fn *f, int n, double *a, double s)
   check (n, a, s);
 }
 
-/* Check various combinations for enforcing correct ordering of 
+/* Check various combinations for enforcing correct ordering of
    construct matches.  */
 static void
 f1 (int n, double* a, double s)
 {
 #pragma omp target teams
-#pragma omp parallel  
+#pragma omp parallel
 #pragma omp metadirective					\
   when (construct={target}					\
 	: for)							\

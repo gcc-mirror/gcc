@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <omp.h>
 #include <stdlib.h>
 #include <unistd.h>
@@ -7,7 +8,7 @@ test (int ifval)
 {
   int a[8], b[8], i;
   omp_depend_t d1, d2;
-  #pragma omp depobj (d1) depend(inout: omp_all_memory) 
+  #pragma omp depobj (d1) depend(inout: omp_all_memory)
   #pragma omp depobj (d2) depend(out: omp_all_memory)
   for (i = 0; i < 8; i++)
     {
@@ -99,7 +100,7 @@ test (int ifval)
       b[0] = 6 * i + 57;
       for (i = 1; i < 8; ++i)
 	{
-	  if (b[i] != 4 * i - 7) 
+	  if (b[i] != 4 * i - 7)
 	    abort ();
 	  b[i] = 6 * i + 57;
 	}

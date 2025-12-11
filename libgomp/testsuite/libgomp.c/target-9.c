@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-options "-O1 -ftree-parallelize-loops=0" } */
 /* { dg-additional-options "-flto" { target lto } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 #define N 123456

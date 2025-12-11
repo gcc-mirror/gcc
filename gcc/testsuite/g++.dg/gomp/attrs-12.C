@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 #pragma omp declare target
 [[omp::directive (declare target)]];

@@ -1,7 +1,7 @@
 /* { dg-do compile }  */
 /* { dg-additional-options "-foffload=disable -fdump-tree-optimized" } */
 /* { dg-additional-options "-DDEVICE_ARCH=x86_64 -DDEVICE_ISA=sse -msse" { target { x86 && lp64 } } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 static void
@@ -53,7 +53,7 @@ f2 (int n, double* a, double s)
     a[i] = a[i] * s;
 }
 
-/* Check arch.  Either DEVICE_ARCH is defined by command-line option, 
+/* Check arch.  Either DEVICE_ARCH is defined by command-line option,
    or we know it is not x86_64.  */
 #ifdef DEVICE_ARCH
 static void

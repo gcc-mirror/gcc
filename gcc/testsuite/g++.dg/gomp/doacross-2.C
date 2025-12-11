@@ -1,6 +1,6 @@
 // PR c++/100957
 // { dg-do compile }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct S {
   S ()
   {

@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* PR middle-end/86660 */
 
 #pragma omp declare target

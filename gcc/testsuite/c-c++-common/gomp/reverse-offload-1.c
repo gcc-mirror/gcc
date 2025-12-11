@@ -5,7 +5,7 @@
 /* { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target\\)\\)\[\n\r\]*int called_in_target1" 1 "omplower" } }  */
 /* { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target\\)\\)\[\n\r\]*int called_in_target2" 1 "omplower" } }  */
 /* { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare target\\)\\)\[\n\r\]*void tg_fn" 1 "omplower" } }  */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp requires reverse_offload
 
 extern int add_3 (int);

@@ -1,6 +1,6 @@
 /* { dg-options "-fopenmp -O2" } */
 /* { dg-additional-options "-fopenmp-target-simd-clone=any -fdump-ipa-simdclone-details" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Test that host simd clones are not generated for functions with the nohost
    "declare target" clause.  */
 

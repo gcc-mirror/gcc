@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-additional-options "-DCHUNKSZ=5000" { target { ! run_expensive_tests } } } */
 /* { dg-additional-options "-DCHUNKSZ=1000" { target run_expensive_tests } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 #define EPS 0.00001

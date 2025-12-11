@@ -1,4 +1,5 @@
 // See also '../libgomp.oacc-c++/pr96835-1.C'.
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #ifndef ALWAYS_INLINE
 # define ALWAYS_INLINE
 #endif

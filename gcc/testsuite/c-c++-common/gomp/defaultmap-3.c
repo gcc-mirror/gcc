@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct S { int s; };
 void foo (char *);
 void bar (int, char *, struct S, int *);

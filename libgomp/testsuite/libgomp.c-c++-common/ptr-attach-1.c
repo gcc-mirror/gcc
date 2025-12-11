@@ -8,7 +8,7 @@ struct S
 };
 typedef struct S S;
 
-#pragma omp declare target
+#pragma omp declare target // { dg-warning "use of 'omp declare target' as a synonym for 'omp begin declare target' has been deprecated since OpenMP 5.2 \\\[-Wdeprecated-openmp\\\]" }
 int *gp;
 #pragma omp end declare target
 

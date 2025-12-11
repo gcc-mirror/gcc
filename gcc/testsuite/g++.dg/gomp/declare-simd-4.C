@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare simd linear(p:1) linear(q:-1) linear(s:-3)
 int
 f1 (int *p, int *q, short *s)

@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* { dg-additional-sources "target-same-name-1-a.c target-same-name-1-b.c" } */
 /* PR middle-end/104285 */
 

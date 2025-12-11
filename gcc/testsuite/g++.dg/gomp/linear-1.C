@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fopenmp" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int i;
 
 #pragma omp declare simd linear (ref (x) : 1) linear (uval (y) : 2)

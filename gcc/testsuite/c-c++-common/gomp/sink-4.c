@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -fdump-tree-omplower" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Test that we adjust pointer offsets for sink variables
    correctly.  */
 

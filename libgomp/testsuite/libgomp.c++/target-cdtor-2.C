@@ -4,7 +4,7 @@
 
 /* { dg-additional-options -fdump-tree-optimized-raw-asmname }
    { dg-additional-options -foffload-options=-fdump-tree-optimized-raw-asmname } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <omp.h>
 #include <vector>
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -fdump-tree-omplower" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Test depend(sink) clause folding.  */
 
 int i,j,k, N;

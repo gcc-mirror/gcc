@@ -1,5 +1,5 @@
 // { dg-skip-if "c++98 does not support attributes" { c++98_only } }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 [[omp::decl (declare target, indirect(1))]] // { dg-error "directive with only 'device_type' or 'indirect' clause" }
 int f (void) { return 5; }
 

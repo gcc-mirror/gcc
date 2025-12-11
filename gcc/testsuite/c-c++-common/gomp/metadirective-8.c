@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 256
 
 void

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-original" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 100
 
 void

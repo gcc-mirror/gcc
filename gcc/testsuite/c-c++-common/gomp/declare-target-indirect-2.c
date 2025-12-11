@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -fdump-tree-gimple" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp begin declare target indirect
 void fn1 (void) { }
 #pragma omp end declare target

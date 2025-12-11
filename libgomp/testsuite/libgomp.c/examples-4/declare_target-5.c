@@ -1,7 +1,7 @@
 /* { dg-do run { target vect_simd_clones } } */
 /* { dg-additional-options "-msse2" { target sse2_runtime } } */
 /* { dg-additional-options "-mavx" { target avx_runtime } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 #define EPS 0.00001

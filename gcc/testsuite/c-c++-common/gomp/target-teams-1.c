@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int v = 6;
 void bar (int);
 void bar2 (int, long *, long *);

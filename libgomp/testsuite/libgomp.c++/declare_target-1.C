@@ -1,6 +1,7 @@
 // { dg-do run }
 // { dg-require-effective-target offload_device_shared_as }
-
+// { dg-additional-options "-Wno-deprecated-declarations" }
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 struct typeX

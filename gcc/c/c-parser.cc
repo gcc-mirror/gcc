@@ -18849,6 +18849,9 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	  code = MULT_EXPR;
 	  break;
 	case CPP_MINUS:
+	  warning_at (c_parser_peek_token (parser)->location,
+	    OPT_Wdeprecated_openmp,
+	    "%<-%> operator for reductions deprecated in OpenMP 5.2");
 	  code = MINUS_EXPR;
 	  break;
 	case CPP_AND:
@@ -19597,6 +19600,9 @@ c_parser_omp_clause_linear (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_LINEAR_DEFAULT;
       if (kind != OMP_CLAUSE_LINEAR_DEFAULT)
 	{
+	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	    "specifying the list items as arguments to the modifiers is "
+	    "deprecated since OpenMP 5.2");
 	  old_linear_modifier = true;
 	  c_parser_consume_token (parser);
 	  c_parser_consume_token (parser);
@@ -20133,9 +20139,19 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
       else if (strcmp ("depobj", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_DEPOBJ;
       else if (strcmp ("sink", p) == 0)
-	dkind = OMP_CLAUSE_DOACROSS_SINK;
+	{
+	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	    "%<sink%> modifier with %<depend%> clause deprecated since "
+	    "OpenMP 5.2, use with %<doacross%>");
+	  dkind = OMP_CLAUSE_DOACROSS_SINK;
+	}
       else if (strcmp ("source", p) == 0)
-	dkind = OMP_CLAUSE_DOACROSS_SOURCE;
+	{
+	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	    "%<source%> modifier with %<depend%> clause deprecated since "
+	    "OpenMP 5.2, use with %<doacross%>");
+	  dkind = OMP_CLAUSE_DOACROSS_SOURCE;
+	}
       else
 	goto invalid_kind;
       break;
@@ -20435,6 +20451,8 @@ c_parser_omp_clause_map (c_parser *parser, tree list, bool declare_mapper_p)
   int close_modifier = 0;
   int present_modifier = 0;
   int mapper_modifier = 0;
+  int num_commas = 0;
+  int num_identifiers = 0;
   tree mapper_name = NULL_TREE;
   tree iterators = NULL_TREE;
   for (int pos = 1; pos < map_kind_pos; ++pos)
@@ -20443,6 +20461,9 @@ c_parser_omp_clause_map (c_parser *parser, tree list, bool declare_mapper_p)
 
       if (tok->type == CPP_COMMA)
 	{
+	  ++num_commas;
+	  if (num_commas > num_identifiers)
+	    c_parser_error (parser, "illegal comma");
 	  c_parser_consume_token (parser);
 	  continue;
 	}
@@ -20559,6 +20580,11 @@ c_parser_omp_clause_map (c_parser *parser, tree list, bool declare_mapper_p)
 	  parens.skip_until_found_close (parser);
 	  return list;
 	}
+      ++num_identifiers;
+      if (num_identifiers - 1 != num_commas)
+	warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	  "%<map%> clause modifiers without comma separation is deprecated "
+	  "since OpenMP 5.2");
     }
 
   if (c_parser_next_token_is (parser, CPP_NAME)
@@ -28357,6 +28383,10 @@ c_parser_omp_declare_target (c_parser *parser)
     }
   else
     {
+      warning_at (c_parser_peek_token (parser)->location,
+	OPT_Wdeprecated_openmp,
+	"use of %<omp declare target%> as a synonym for %<omp begin declare "
+	"target%> has been deprecated since OpenMP 5.2");
       bool attr_syntax = parser->in_omp_attribute_pragma != NULL;
       c_parser_skip_to_pragma_eol (parser);
       c_omp_declare_target_attr attr = { attr_syntax, -1, 0 };
@@ -28365,6 +28395,10 @@ c_parser_omp_declare_target (c_parser *parser)
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER && OMP_CLAUSE_ENTER_TO (c))
+	warning_at (c_parser_peek_token (parser)->location,
+	  OPT_Wdeprecated_openmp, "%<to%> clause with %<declare target%> "
+	  "deprecated since OpenMP 5.2, use %<enter%>");
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
@@ -30170,6 +30204,10 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
 
       location_t match_loc = c_parser_peek_token (parser)->location;
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if (strcmp (p, "default") == 0)
+	warning_at (pragma_loc, OPT_Wdeprecated_openmp,
+	  "%<default%> clause on metadirectives deprecated since "
+	  "OpenMP 5.2, use %<otherwise%>");
       c_parser_consume_token (parser);
       bool default_p
 	= strcmp (p, "default") == 0 || strcmp (p, "otherwise") == 0;

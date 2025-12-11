@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-original" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void
 foo (void)
 {
@@ -29,13 +29,13 @@ foo (void)
   ; /* { dg-error "'map' clause with map-type modifier other than 'always', 'close', 'iterator', 'mapper' or 'present' before 'a'" "" { target c } .-1 }  */
 
 
-  #pragma omp target map (close a) /* { dg-error "'close' undeclared" "" { target c } } */ 
-  /* { dg-error "'close' was not declared in this scope" "" { target c++ } .-1 } */ 
+  #pragma omp target map (close a) /* { dg-error "'close' undeclared" "" { target c } } */
+  /* { dg-error "'close' was not declared in this scope" "" { target c++ } .-1 } */
   /* { dg-error "expected '\\)' before 'a'" "" { target *-*-* } .-2 } */
   ;
 
   #pragma omp target map (always a) /* { dg-error "'always' undeclared" "" { target c } } */
-  /* { dg-error "'always' was not declared in this scope" "" { target c++ } .-1 } */ 
+  /* { dg-error "'always' was not declared in this scope" "" { target c++ } .-1 } */
   /* { dg-error "expected '\\)' before 'a'" "" { target *-*-* } .-2 } */
   ;
 
@@ -141,10 +141,10 @@ foo (void)
   #pragma omp target exit data map(present,always,close,delete: a) map(close,present,always,release:b) map(always close present,from:b1)
 
   int close = 0;
-  #pragma omp target map (close) 
+  #pragma omp target map (close)
   ;
 
-  #pragma omp target map (close a) /* { dg-error "expected '\\)' before 'a'" } */ 
+  #pragma omp target map (close a) /* { dg-error "expected '\\)' before 'a'" } */
   ;
 
   int always = 0;

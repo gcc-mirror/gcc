@@ -1,6 +1,6 @@
 /* PR tree-optimization/85063 */
 /* { dg-additional-options "-ftree-switch-conversion" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 #pragma omp declare target

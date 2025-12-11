@@ -2,7 +2,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-std=gnu99" { target c } } */
 /* { dg-additional-options "-std=gnu++11" { target c++ } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void foo (const char *, const char *);
 #pragma omp declare target to (foo)
 

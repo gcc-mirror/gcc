@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 typedef struct __attribute__((__aligned__ (sizeof (void *)))) omp_depend_t {
   char __omp_depend_t__[2 * sizeof (void *)];
 } omp_depend_t;

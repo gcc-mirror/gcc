@@ -1,5 +1,5 @@
 /* PR c++/91987 */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int bar (void);
 void baz (int *);
 #pragma omp declare target to (baz)

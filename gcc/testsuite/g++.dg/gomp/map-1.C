@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Test 'map' clause diagnostics.  */
 
 /* See also corresponding OpenMP C/C++ variant: '../../c-c++-common/gomp/map-1.c'.  */

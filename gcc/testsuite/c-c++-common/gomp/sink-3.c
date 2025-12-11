@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Test that we can handle multiple undeclared sink variables
    gracefully.  */
 

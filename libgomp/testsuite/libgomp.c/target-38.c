@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define A(n) n##0, n##1, n##2, n##3, n##4, n##5, n##6, n##7, n##8, n##9
 #define B(n) A(n##0), A(n##1), A(n##2), A(n##3), A(n##4), A(n##5), A(n##6), A(n##7), A(n##8), A(n##9)
 

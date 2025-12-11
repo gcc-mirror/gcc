@@ -1,7 +1,7 @@
 /* { dg-do compile { target { c || c++11 } } } */
 /* { dg-options "-fopenmp -std=c23" { target { c } } } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 100
 
 void
@@ -9,7 +9,7 @@ f (int x[], int y[], int z[])
 {
   int i;
 
-  [[omp::sequence (directive (target map(to: x, y) map(from: z)),  /* { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_nvptx } }  */ 
+  [[omp::sequence (directive (target map(to: x, y) map(from: z)),  /* { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_nvptx } }  */
 		   directive (metadirective
 			      when (device={arch("nvptx")}: teams loop)
 			      default (parallel loop)))]]

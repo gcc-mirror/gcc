@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-/* { dg-additional-options "-fdump-tree-gimple" } */
+/* { dg-additional-options "-fdump-tree-gimple -Wno-deprecated-openmp" } */
 
 #define N 100
 
@@ -8,7 +8,7 @@ f (int x[], int y[], int z[])
 {
   int i;
 
-  #pragma omp target map(to: x, y) map(from: z)  /* { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_nvptx } }  */ 
+  #pragma omp target map(to: x, y) map(from: z)  /* { dg-bogus "'target' construct with nested 'teams' construct contains directives outside of the 'teams' construct" "PR118694" { xfail offload_nvptx } }  */
     #pragma omp metadirective \
 	when (device={arch("nvptx")}: teams loop) \
 	default (parallel loop)

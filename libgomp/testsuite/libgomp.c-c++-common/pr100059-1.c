@@ -1,5 +1,5 @@
 /* Based on sollve_vv's tests/5.0/declare_target/test_nested_declare_target.c.  */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 1024
 int a[N], b[N], c[N];  
 int i = 0;

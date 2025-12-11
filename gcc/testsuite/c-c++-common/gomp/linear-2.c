@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int i;
 
 #pragma omp declare simd linear (x : val, step (1)) linear (y : step (2))

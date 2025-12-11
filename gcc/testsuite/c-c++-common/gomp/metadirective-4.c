@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-original" } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 100
 
 #pragma omp declare target

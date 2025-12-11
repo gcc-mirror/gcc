@@ -1,6 +1,6 @@
 /* { dg-do run } */
 /* { dg-options "-O0" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 extern void abort (void);
 volatile int v;
 #pragma omp declare target to (v)

@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fopenmp" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 template <typename T>
 struct S { T a; };

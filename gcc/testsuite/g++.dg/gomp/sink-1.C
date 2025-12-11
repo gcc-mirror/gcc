@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void bar (int, int, int);
 
 template<typename T>

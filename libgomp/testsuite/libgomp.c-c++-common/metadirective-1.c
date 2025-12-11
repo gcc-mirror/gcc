@@ -1,6 +1,6 @@
 /* { dg-do run { target { ! offload_target_nvptx } } } */
 /* { dg-do compile { target offload_target_nvptx } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 100
 
 void

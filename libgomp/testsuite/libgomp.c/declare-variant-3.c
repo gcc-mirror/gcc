@@ -1,6 +1,6 @@
 /* { dg-additional-options -DOFFLOAD_DEVICE_NVPTX { target offload_device_nvptx } } */
 /* { dg-additional-options {-fdump-tree-optimized -foffload-options=-fdump-tree-optimized} } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include "declare-variant-3.h"
 
 /* { dg-final { scan-tree-dump "= f \\(\\);" "optimized" } }

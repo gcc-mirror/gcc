@@ -1,5 +1,5 @@
 /* Offloaded 'constructor' and 'destructor' functions.  */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <omp.h>
 
 #pragma omp declare target

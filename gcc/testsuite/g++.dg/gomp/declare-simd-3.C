@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fopenmp -ffat-lto-objects" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare simd uniform(b) linear(c, d) linear(uval(e)) linear(ref(f))
 int f1 (int a, int b, int c, int &d, int &e, int &f)
 {

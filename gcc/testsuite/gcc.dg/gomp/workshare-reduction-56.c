@@ -7,7 +7,7 @@
 /* { dg-final { scan-tree-dump-times "__builtin_GOMP_loop_ull_static_next " 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_GOMP_workshare_task_reduction_unregister \\(0\\)" 1 "optimized" } } */
 /* { dg-final { scan-tree-dump-times "__builtin_GOMP_parallel " 1 "optimized" } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 unsigned long long int j;
 void bar (unsigned long long int *);
 

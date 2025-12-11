@@ -6,7 +6,7 @@
 /* { dg-final { scan-tree-dump-not "firstprivate\\\(var\[123]\\\)" "gimple" } } */
 /* { dg-final { scan-tree-dump-not ".omp_data_arr.\[0-9]*.var" "omplower" } } */
 /* { dg-final { scan-tree-dump-not ".omp_data_i->var" "omplower" } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void
 foo (void)
 {

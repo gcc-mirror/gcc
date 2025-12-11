@@ -1,8 +1,8 @@
 /* { dg-options "-fopenmp -O2" } */
 /* { dg-additional-options "-fopenmp-target-simd-clone=any -fdump-ipa-simdclone-details" } */
-
-/* Test that simd clones are not generated for functions with 
-   "declare target" but that call possibly side-effecting functions 
+// { dg-additional-options "-Wno-deprecated-openmp" }
+/* Test that simd clones are not generated for functions with
+   "declare target" but that call possibly side-effecting functions
    in the body.  */
 
 extern int f (int);

@@ -1,5 +1,5 @@
 /* { dg-do run } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 extern int v;
 #pragma omp end declare target

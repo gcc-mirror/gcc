@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-options "-fopenmp" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 void f1 (int);
 void f1 (double);

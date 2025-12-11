@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -Wunknown-pragmas -Werror" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 extern void bark (void);
 int i,j,k;
 int array[555];

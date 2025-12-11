@@ -1,6 +1,6 @@
 // { dg-do run }
 // { dg-additional-options "-std=c++20" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <cmath>
 #include <numbers>
 

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-fdump-tree-gimple" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void f01 (void);
 #pragma omp declare variant (f01) match (user={condition(6 == 7)},implementation={vendor(gnu)})
 void f02 (void);

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 extern int a;
 #pragma omp begin declare target
 #pragma omp declare target to (a)

@@ -3,6 +3,7 @@
 /* { dg-additional-options "-DEXPENSIVE" { target run_expensive_tests } } */
 
 /* { dg-additional-options -Wuninitialized } */
+// { dg-additional-options "-Wno-deprecated-openmp" }
 
 #include <assert.h>
 

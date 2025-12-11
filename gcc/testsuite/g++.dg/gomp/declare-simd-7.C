@@ -1,7 +1,7 @@
 // PR middle-end/78025
 // { dg-do compile }
 // { dg-additional-options "-O2" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct S { S (); ~S (); };
 
 int bar1 (int, int, float &, S &, int *, int, int &, int &, int &, int &, int &);

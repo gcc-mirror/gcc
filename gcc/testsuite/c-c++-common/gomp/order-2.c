@@ -1,4 +1,5 @@
-void
+// { dg-additional-options "-Wno-deprecated-openmp" }
+  void
 f1 (int *a)
 {
   int i;

@@ -26,7 +26,7 @@
 // { dg-final { only_for_offload_target amdgcn-amdhsa scan-offload-tree-dump "v1\\._x = 5;" "optimized" { target offload_target_amdgcn } } }
 // { dg-final { only_for_offload_target nvptx-none scan-offload-tree-dump-not "omp_initial_device;" "optimized" { target offload_target_nvptx } } }
 // { dg-final { only_for_offload_target nvptx-none scan-offload-tree-dump "v1\\._x = 5;" "optimized" { target offload_target_nvptx } } }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <cassert>
 #include <omp.h>
 

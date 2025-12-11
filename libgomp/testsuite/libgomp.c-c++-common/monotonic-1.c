@@ -226,14 +226,14 @@ main ()
 	    n = 1;
 	    c++;
 	  }
-	#pragma omp ordered depend(source)
+	#pragma omp ordered depend(source) // { dg-warning "'source' modifier with 'depend' clause deprecated since OpenMP 5.2, use with 'doacross' \\\[-Wdeprecated-openmp\\\]" }
 	if (MONOTONIC_UNDEF > 0)
 	  {
-	    #pragma omp ordered depend(sink: i)
+	    #pragma omp ordered depend(sink: i) // { dg-warning "'sink' modifier with 'depend' clause deprecated since OpenMP 5.2, use with 'doacross' \\\[-Wdeprecated-openmp\\\]" }
 	  }
 	else
 	  {
-	    #pragma omp ordered depend(sink: i - 1)
+	    #pragma omp ordered depend(sink: i - 1) // { dg-warning "'sink' modifier with 'depend' clause deprecated since OpenMP 5.2, use with 'doacross' \\\[-Wdeprecated-openmp\\\]" }
 	  }
 	l = i;
       }

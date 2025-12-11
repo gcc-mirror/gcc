@@ -42164,7 +42164,12 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
     {
     case CPP_PLUS: code = PLUS_EXPR; break;
     case CPP_MULT: code = MULT_EXPR; break;
-    case CPP_MINUS: code = MINUS_EXPR; break;
+    case CPP_MINUS:
+      warning_at (cp_lexer_peek_token (parser->lexer)->location,
+	OPT_Wdeprecated_openmp,
+	"%<-%> operator for reductions deprecated in OpenMP 5.2");
+      code = MINUS_EXPR;
+      break;
     case CPP_AND: code = BIT_AND_EXPR; break;
     case CPP_XOR: code = BIT_XOR_EXPR; break;
     case CPP_OR: code = BIT_IOR_EXPR; break;
@@ -42860,6 +42865,10 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
 	{
 	  cp_lexer_consume_token (parser->lexer);
 	  old_linear_modifier = true;
+	  warning_at (cp_lexer_peek_token (parser->lexer)->location,
+	    OPT_Wdeprecated_openmp,
+	    "specifying the list items as arguments to the modifiers is "
+	    "deprecated since OpenMP 5.2");
 	}
       else
 	kind = OMP_CLAUSE_LINEAR_DEFAULT;
@@ -43469,9 +43478,19 @@ cp_parser_omp_clause_depend (cp_parser *parser, tree list, location_t loc)
       else if (strcmp ("depobj", p) == 0)
 	kind = OMP_CLAUSE_DEPEND_DEPOBJ;
       else if (strcmp ("sink", p) == 0)
-	dkind = OMP_CLAUSE_DOACROSS_SINK;
+	{
+	  warning_at (loc, OPT_Wdeprecated_openmp,
+	    "%<sink%> modifier with %<depend%> clause deprecated since "
+	    "OpenMP 5.2, use with %<doacross%>");
+	  dkind = OMP_CLAUSE_DOACROSS_SINK;
+	}
       else if (strcmp ("source", p) == 0)
-	dkind = OMP_CLAUSE_DOACROSS_SOURCE;
+	{
+	  warning_at (loc, OPT_Wdeprecated_openmp,
+	    "%<source%> modifier with %<depend%> clause deprecated since "
+	    "OpenMP 5.2, use with %<doacross%>");
+	  dkind = OMP_CLAUSE_DOACROSS_SOURCE;
+	}
       else
 	goto invalid_kind;
       break;
@@ -43852,6 +43871,7 @@ cp_parser_omp_clause_dyn_groupprivate (cp_parser *parser, tree list,
 static tree
 cp_parser_omp_clause_map (cp_parser *parser, tree list, bool declare_mapper_p)
 {
+  location_t clause_loc = cp_lexer_peek_token (parser->lexer)->location;
   tree nlist, c;
   enum gomp_map_kind kind = declare_mapper_p ? GOMP_MAP_UNSET : GOMP_MAP_TOFROM;
 
@@ -43899,6 +43919,8 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, bool declare_mapper_p)
   bool close_modifier = false;
   bool present_modifier = false;
   bool mapper_modifier = false;
+  int num_commas = 0;
+  int num_identifiers = 0;
   tree mapper_name = NULL_TREE;
   tree iterators = NULL_TREE;
   for (int pos = 1; pos < map_kind_pos; ++pos)
@@ -43906,6 +43928,9 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, bool declare_mapper_p)
       cp_token *tok = cp_lexer_peek_token (parser->lexer);
       if (tok->type == CPP_COMMA)
 	{
+	  ++num_commas;
+	  if (num_commas > num_identifiers)
+	    cp_parser_error (parser, "illegal comma");
 	  cp_lexer_consume_token (parser->lexer);
 	  continue;
 	}
@@ -44049,6 +44074,11 @@ cp_parser_omp_clause_map (cp_parser *parser, tree list, bool declare_mapper_p)
 						 /*consume_paren=*/true);
 	  return list;
 	}
+      ++num_identifiers;
+      if (num_identifiers - 1 != num_commas)
+	warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	  "%<map%> clause modifiers without comma separation is "
+	  "deprecated since OpenMP 5.2");
     }
 
   if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
@@ -52748,6 +52778,10 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     }
   else
     {
+      warning_at (cp_lexer_peek_token (parser->lexer)->location,
+	OPT_Wdeprecated_openmp,
+	"use of %<omp declare target%> as a synonym for %<omp begin declare "
+	"target%> has been deprecated since OpenMP 5.2");
       cp_omp_declare_target_attr a
 	= { parser->lexer->in_omp_attribute_pragma, -1, false };
       vec_safe_push (scope_chain->omp_declare_target_attribute, a);
@@ -52756,6 +52790,10 @@ cp_parser_omp_declare_target (cp_parser *parser, cp_token *pragma_tok)
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
+      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER && OMP_CLAUSE_ENTER_TO (c))
+	warning_at (OMP_CLAUSE_LOCATION (c), OPT_Wdeprecated_openmp,
+	  "%<to%> clause with %<declare target%> deprecated since "
+	  "OpenMP 5.2, use %<enter%>");
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
@@ -53176,6 +53214,10 @@ cp_parser_omp_metadirective (cp_parser *parser, cp_token *pragma_tok,
       location_t match_loc = cp_lexer_peek_token (parser->lexer)->location;
       const char *p
 	= IDENTIFIER_POINTER (cp_lexer_peek_token (parser->lexer)->u.value);
+      if (strcmp (p, "default") == 0)
+	warning_at (match_loc, OPT_Wdeprecated_openmp,
+	  "%<default%> clause on metadirectives deprecated since "
+	  "OpenMP 5.2, use %<otherwise%>");
       cp_lexer_consume_token (parser->lexer);
       bool default_p
 	= strcmp (p, "default") == 0 || strcmp (p, "otherwise") == 0;

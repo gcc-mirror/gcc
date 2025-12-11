@@ -1,5 +1,5 @@
 /* Minimized from for-5.c.  */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdio.h>
 #include <stdlib.h>
 

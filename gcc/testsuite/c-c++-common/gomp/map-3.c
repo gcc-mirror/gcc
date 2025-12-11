@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 struct S { int i : 1; int j : 4; long long k : 25; };
 void bar (struct S, int);
 #pragma omp declare target to (bar)

@@ -1,5 +1,5 @@
 /* PR middle-end/87649 */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void
 foo (void)
 {

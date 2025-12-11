@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -std=c23" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 #pragma omp declare target
 [[omp::directive (declare target)]];

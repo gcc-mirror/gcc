@@ -1,6 +1,6 @@
 /* { dg-do compile { target c++11 } } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 constexpr int step (int x) { return x; }
 constexpr int val = 1;
 constexpr int ref = 2;

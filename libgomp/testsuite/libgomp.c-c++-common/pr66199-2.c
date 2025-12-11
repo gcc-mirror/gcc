@@ -1,6 +1,6 @@
 /* PR middle-end/66199 */
 /* { dg-do run } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 int u[1024], v[1024], w[1024];
 #pragma omp end declare target

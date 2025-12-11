@@ -1,6 +1,6 @@
 /* { dg-do compile { target { c || c++11 } } } */
 /* { dg-options "-fopenmp -std=c23" { target { c } } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #define N 100
 
 int

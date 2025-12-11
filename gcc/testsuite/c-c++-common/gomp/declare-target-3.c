@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 int a[] = { 1, 2, 3 };
 extern int b[];			/* { dg-error "'b' in declare target directive does not have mappable type" } */

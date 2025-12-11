@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* This test case checks that the inner metadirective is accepted as intervening
    code since it resolves to 'omp nothing'.  */
 

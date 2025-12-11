@@ -1,7 +1,7 @@
 /* { dg-options "-fopenmp -O2" } */
 /* { dg-additional-options "-fdump-ipa-simdclone-details" } */
-
-/* Test that host simd clones are not generated for functions with 
+// { dg-additional-options "-Wno-deprecated-openmp" }
+/* Test that host simd clones are not generated for functions with
    "declare target" by default at -O2.  */
 
 #pragma omp declare target

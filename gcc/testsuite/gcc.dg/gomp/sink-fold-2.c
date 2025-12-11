@@ -1,5 +1,5 @@
 /* { dg-do compile } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int i,j, N;
 
 extern void bar();

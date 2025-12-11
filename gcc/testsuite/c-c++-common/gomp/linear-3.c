@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int step (int);
 int val;
 #pragma omp declare simd linear (val (x) : step (1))	/* { dg-error "is neither constant nor a parameter" } */

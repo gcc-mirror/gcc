@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void f1 (void) {}
 void f2 (void);
 #pragma omp declare target to (f1) device_type (any) to (f2)

@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fopenmp -fdump-tree-omplower" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 /* Test that we fold sink offsets correctly while taking into account
    pointer sizes.  */
 

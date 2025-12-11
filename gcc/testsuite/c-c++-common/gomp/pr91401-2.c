@@ -1,3 +1,4 @@
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #pragma omp declare target
 void f0 (void);
 

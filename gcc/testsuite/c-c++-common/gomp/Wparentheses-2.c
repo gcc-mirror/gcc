@@ -1,5 +1,5 @@
 /* PR c/70436 */
-/* { dg-additional-options "-Wparentheses" } */
+/* { dg-additional-options "-Wparentheses -Wno-deprecated-openmp" } */
 
 int a, b, c;
 void bar (void);

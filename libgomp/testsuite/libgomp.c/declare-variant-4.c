@@ -1,6 +1,6 @@
 /* { dg-additional-options -DOFFLOAD_DEVICE_GCN { target offload_device_gcn } } */
 /* { dg-additional-options {-fdump-tree-optimized -foffload-options=-fdump-tree-optimized} } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include "declare-variant-4.h"
 
 /* { dg-final { scan-tree-dump "= f \\(\\);" "optimized" } }

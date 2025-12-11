@@ -1,7 +1,7 @@
 /* { dg-do compile } */
 /* { dg-additional-options "-foffload=disable -fdump-tree-gimple" } */
 /* { dg-additional-options "-mavx512bw" { target { i?86-*-* x86_64-*-* } } } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #undef i386
 void f01 (void);
 #pragma omp declare variant (f01) match (device={isa(avx512f,avx512bw)})

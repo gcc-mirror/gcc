@@ -1,5 +1,5 @@
 /* PR middle-end/98205 */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 void baz (int) __attribute__((noreturn));
 
 void

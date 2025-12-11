@@ -1,6 +1,6 @@
 // { dg-do compile { target c++11 } }
 // { dg-options "-fopenmp" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int i;
 
 #pragma omp declare simd linear (x : ref, step (1)) linear (y : step (2), uval)

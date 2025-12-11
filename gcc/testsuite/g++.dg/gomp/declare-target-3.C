@@ -1,6 +1,6 @@
 // { dg-do compile }
 // { dg-additional-options "-fdump-tree-gimple" }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 // Test implicit marking of declare target to.
 
 int foo () { return 1; }

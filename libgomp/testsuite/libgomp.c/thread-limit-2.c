@@ -1,7 +1,7 @@
 /* { dg-do run } */
 /* { dg-set-target-env-var OMP_THREAD_LIMIT "9" } */
 /* { dg-additional-options "-Wno-deprecated-declarations" } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 #include <unistd.h>
 #include <omp.h>

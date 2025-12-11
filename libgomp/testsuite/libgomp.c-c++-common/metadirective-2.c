@@ -1,5 +1,5 @@
 /* { dg-do run } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <math.h>
 
 #define N 100

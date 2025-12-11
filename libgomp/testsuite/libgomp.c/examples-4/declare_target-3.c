@@ -1,5 +1,5 @@
 /* { dg-do run } */
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 #include <stdlib.h>
 
 #define EPS 0.000001

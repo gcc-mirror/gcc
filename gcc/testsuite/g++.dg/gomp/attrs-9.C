@@ -1,5 +1,5 @@
 // { dg-do compile { target c++11 } }
-
+// { dg-additional-options "-Wno-deprecated-openmp" }
 int n1 = 0, n2 = 42;
 [[omp::sequence (directive (requires, atomic_default_mem_order (seq_cst)))]];
 [[omp::directive (declare reduction (plus: int: omp_out += omp_in) initializer (omp_priv = 0))]];
