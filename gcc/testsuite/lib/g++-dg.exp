@@ -92,6 +92,7 @@ proc g++-std-flags { test } {
 	set option_list { }
 	foreach x $std_list {
 	    if { $x eq "impcx" } then { set x "26 -fimplicit-constexpr" }
+	    if { $x eq "modules" } then { set x "26 -fmodules -flang-info-include-translate" }
 	    lappend option_list "${std_prefix}$x"
 	}
     } else {

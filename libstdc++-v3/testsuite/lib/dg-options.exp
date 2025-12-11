@@ -290,7 +290,7 @@ proc add_options_for_no_pch { flags } {
     # Remove any inclusion of bits/stdc++.h from the options.
     regsub -all -- "-include bits/stdc...h" $flags "" flags
     # This forces any generated and possibly included PCH to be invalid.
-    return "$flags -D__GLIBCXX__=99999999"
+    return "$flags -fno-modules -D__GLIBCXX__=99999999"
 }
 
 # Add to FLAGS all the target-specific flags needed for networking.

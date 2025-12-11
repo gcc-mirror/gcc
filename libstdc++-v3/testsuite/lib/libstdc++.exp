@@ -496,10 +496,16 @@ if [info exists env(GLIBCXX_TESTSUITE_STDS)] {
     set v3_std_list [split $env(GLIBCXX_TESTSUITE_STDS) ","]
 }
 
+# Allow adjusting which -std we test with -fmodules.
+if ![info exists v3_modules_std] {
+    set v3_modules_std "26"
+}
+
 # Modified dg-runtest that runs tests in multiple standard modes,
 # unless they specifically specify one standard.
 proc v3-dg-runtest { testcases flags default-extra-flags } {
     global runtests
+    global v3_modules_std
 
     foreach test $testcases {
 	# If we're only testing specific files and this isn't one of them, skip it.
@@ -546,6 +552,7 @@ proc v3-dg-runtest { testcases flags default-extra-flags } {
 	    set option_list { }
 	    foreach x $std_list {
 		if { $x eq "impcx" } then { set x "26 -fimplicit-constexpr" }
+		if { $x eq "modules" } then { set x "$v3_modules_std -fmodules -flang-info-include-translate" }
 		lappend option_list "${std_prefix}$x"
 	    }
 	} else {
@@ -739,6 +746,7 @@ proc v3_target_compile_as_c { source dest type options } {
 proc v3-build_support { } {
     global env
     global srcdir
+    global blddir
     global v3-wchar_t
     global v3-threads
     global v3-symver
@@ -748,6 +756,7 @@ proc v3-build_support { } {
     set v3-wchar_t 0
     set v3-threads 0
     set v3-symver 0
+    set v3-modules 0
     set libtest_objs ""
 
     set config_src "config.cc"
@@ -785,6 +794,37 @@ proc v3-build_support { } {
 		remote_download "host" "$lang/LC_MESSAGES/libstdc++.mo" "$lang/LC_MESSAGES/libstdc++.mo"
 	    }
 	}
+    }
+
+    global v3_std_list
+    global v3_modules_std
+    if { "modules" in $v3_std_list } {
+	verbose -log "modules testing requested"
+	set v3-modules 1
+    }
+
+    # If we're doing modules testing, compile module std, std.compat, and the
+    # bits/stdc++.h header unit.
+    if { ${v3-modules} == 1 } {
+	set std_file "$blddir/include/bits/std.cc"
+	set std_compat_file "$blddir/include/bits/std.compat.cc"
+
+	if { ([v3_target_compile bits/stdc++.h /dev/null object \
+		   [list "additional_flags=-std=gnu++$v3_modules_std -fmodules -g -w -fsearch-include-path"]]
+	      != "") } {
+	    error "could not compile bits/stdc++.h"
+	}
+	if { ([v3_target_compile $std_file std.o object \
+		   [list "additional_flags=-std=gnu++$v3_modules_std -fmodules -g -w"]]
+	      != "") } {
+	    error "could not compile std.cc"
+	}
+	if { ([v3_target_compile $std_compat_file std.compat.o object \
+		   [list "additional_flags=-std=gnu++$v3_modules_std -fmodules -g -w"]]
+	      != "") } {
+	    error "could not compile std.compat.cc"
+	}
+	append libtest_objs "std.o std.compat.o "
     }
 
     # Build the support objects.

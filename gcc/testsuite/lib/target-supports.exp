@@ -12348,6 +12348,10 @@ proc check_effective_target_implicit_constexpr { } {
     return [check-flags { "" { } { -fimplicit-constexpr } }]
 }
 
+proc check_effective_target_modules { } {
+    return [check-flags { "" { } { -fmodules } }]
+}
+
 # Return 1 if expensive testcases should be run.
 
 proc check_effective_target_run_expensive_tests { } {

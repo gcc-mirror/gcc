@@ -247,7 +247,7 @@ check-performance-parallel: testsuite_files_performance ${performance_script}
 # By adding these files here, automake will remove them for 'make clean'
 CLEANFILES = *.txt *.tst *.exe core* filebuf_* tmp* ostream_* *.log *.sum \
 	     testsuite_* site.exp abi_check baseline_symbols *TEST* *.dat \
-	     *.ii *.s *.o *.cc *.x *.a *.so *.xml *.raw *.out *.gdb
+	     *.ii *.s *.o *.cc *.x *.a *.so *.xml *.raw *.out *.gdb gcm.cache
 
 # To remove directories.
 clean-local:
