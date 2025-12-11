@@ -619,6 +619,9 @@ extern GTY(()) tree x86_mfence;
 #define DEFAULT_TLS_SEG_REG \
   (TARGET_64BIT ? ADDR_SPACE_SEG_FS : ADDR_SPACE_SEG_GS)
 
+/* The default TLS segment offset used by target.  */
+#define DEFAULT_TLS_SEG_OFFSET 0
+
 /* Subtargets may reset this to 1 in order to enable 96-bit long double
    with the rounding mode forced to 53 bits.  */
 #define TARGET_96_ROUND_53_LONG_DOUBLE 0

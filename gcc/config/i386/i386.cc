@@ -12454,7 +12454,6 @@ get_thread_pointer (machine_mode tp_mode, bool to_reg)
 
 static GTY(()) rtx ix86_tls_index_symbol;
 
-#if TARGET_WIN32_TLS
 static rtx
 ix86_tls_index (void)
 {
@@ -12462,11 +12461,13 @@ ix86_tls_index (void)
     ix86_tls_index_symbol = gen_rtx_SYMBOL_REF (SImode, "_tls_index");
 
   if (flag_pic)
-    return gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (Pmode, gen_rtvec (1, ix86_tls_index_symbol), UNSPEC_PCREL));
+    return gen_rtx_CONST (Pmode,
+			  gen_rtx_UNSPEC (Pmode,
+					  gen_rtvec (1, ix86_tls_index_symbol),
+					  UNSPEC_PCREL));
   else
     return ix86_tls_index_symbol;
 }
-#endif
 
 /* Construct the SYMBOL_REF for the tls_get_addr function.  */
 
@@ -12548,26 +12549,33 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
   machine_mode tp_mode = Pmode;
   int type;
 
-#if TARGET_WIN32_TLS
-  off = gen_const_mem (SImode, ix86_tls_index ());
-  set_mem_alias_set (off, GOT_ALIAS_SET);
+  /* Windows implements a single form of TLS.  */
+  if (TARGET_WIN32_TLS)
+    {
+      /* Load the 32-bit index.  */
+      rtx ind = gen_const_mem (SImode, ix86_tls_index ());
+      set_mem_alias_set (ind, GOT_ALIAS_SET);
+      if (TARGET_64BIT)
+	ind = convert_to_mode (Pmode, ind, 1);
+      ind = force_reg (Pmode, ind);
 
-  tp = gen_const_mem (Pmode, GEN_INT (TARGET_64BIT ? 88 : 44));
-  set_mem_addr_space (tp, DEFAULT_TLS_SEG_REG);
+      /* Add it to the thread pointer and load the base.  */
+      tp = get_thread_pointer (Pmode, true);
+      rtx addr = gen_rtx_PLUS (Pmode, tp,
+			       gen_rtx_MULT (Pmode, ind,
+					     GEN_INT (UNITS_PER_WORD)));
+      base = gen_const_mem (Pmode, addr);
+      set_mem_alias_set (base, GOT_ALIAS_SET);
 
-  if (TARGET_64BIT)
-    off = convert_to_mode (Pmode, off, 1);
+      /* Add the 32-bit section-relative offset to the base.  */
+      base = force_reg (Pmode, base);
+      off = gen_rtx_CONST (Pmode,
+			   gen_rtx_UNSPEC (SImode,
+					   gen_rtvec (1, x),
+					   UNSPEC_SECREL32));
+      return gen_rtx_PLUS (Pmode, base, off);
+    }
 
-  base = force_reg (Pmode, off);
-  tp = copy_to_mode_reg (Pmode, tp);
-
-  tp = gen_const_mem (Pmode, gen_rtx_PLUS (Pmode, tp, gen_rtx_MULT (Pmode, base, GEN_INT (UNITS_PER_WORD))));
-  set_mem_alias_set (tp, GOT_ALIAS_SET);
-
-  base = force_reg (Pmode, tp);
-
-  return gen_rtx_PLUS (Pmode, base, gen_rtx_CONST (Pmode, gen_rtx_UNSPEC (SImode, gen_rtvec (1, x), UNSPEC_SECREL32)));
-#else
   /* Fall back to global dynamic model if tool chain cannot support local
      dynamic.  */
   if (TARGET_SUN_TLS && !TARGET_64BIT
@@ -12790,7 +12798,6 @@ legitimize_tls_address (rtx x, enum tls_model model, bool for_mov)
     }
 
   return dest;
-#endif
 }
 
 /* Return true if the TLS address requires insn using integer registers.

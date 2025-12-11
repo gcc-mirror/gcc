@@ -543,12 +543,12 @@
   /* Rule out relocations that translate into 64bit constants.  */
   if (TARGET_64BIT && GET_CODE (op) == CONST)
     {
-      op = XEXP (op, 0);
-      if (GET_CODE (op) == PLUS && CONST_INT_P (XEXP (op, 1)))
-	op = XEXP (op, 0);
-      if (GET_CODE (op) == UNSPEC
-	  && (XINT (op, 1) == UNSPEC_GOTOFF
-	      || XINT (op, 1) == UNSPEC_GOT))
+      rtx tmp = XEXP (op, 0);
+      if (GET_CODE (tmp) == PLUS && CONST_INT_P (XEXP (tmp, 1)))
+	tmp = XEXP (tmp, 0);
+      if (GET_CODE (tmp) == UNSPEC
+	  && (XINT (tmp, 1) == UNSPEC_GOTOFF
+	      || XINT (tmp, 1) == UNSPEC_GOT))
 	return false;
     }
 
@@ -578,6 +578,7 @@
 	  || (GET_CODE (op) == UNSPEC
 	      && (XINT (op, 1) == UNSPEC_GOT
 		  || XINT (op, 1) == UNSPEC_GOTOFF
+		  || XINT (op, 1) == UNSPEC_SECREL32
 		  || XINT (op, 1) == UNSPEC_PCREL
 		  || XINT (op, 1) == UNSPEC_GOTPCREL)))
 	return true;
@@ -589,9 +590,10 @@
       if (SYMBOL_REF_P (op)
 	  || LABEL_REF_P (op))
 	return true;
-      /* Only @GOTOFF gets offsets.  */
+      /* Only @GOTOFF and @SECREL32 get offsets.  */
       if (GET_CODE (op) != UNSPEC
-	  || XINT (op, 1) != UNSPEC_GOTOFF)
+	  || (XINT (op, 1) != UNSPEC_GOTOFF
+	      && XINT (op, 1) != UNSPEC_SECREL32))
 	return false;
 
       op = XVECEXP (op, 0, 0);
@@ -1901,7 +1903,7 @@
 {
   int nelt = XVECLEN (op, 0);
   int elt, i;
-  
+
   if (nelt < 2)
     return false;
 
