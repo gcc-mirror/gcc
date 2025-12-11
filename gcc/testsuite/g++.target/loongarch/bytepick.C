@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { loongarch64*-*-* } } } */
 /* { dg-options "-O2 -mabi=lp64d" } */
 /* { dg-final { scan-assembler-times "bytepick.w\t\\\$r4,\\\$r5,\\\$r4" 3 } } */
 /* { dg-final { scan-assembler-times "bytepick.d\t\\\$r4,\\\$r5,\\\$r4" 7 } } */

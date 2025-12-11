@@ -1,4 +1,4 @@
-/* { dg-do compile } */
+/* { dg-do compile { target { loongarch64*-*-* } } } */
 /* { dg-options "-mabi=lp64d -O2 -mexplicit-relocs -mcmodel=normal -fdump-rtl-expand -fno-stack-protector" } */
 /* { dg-final { scan-rtl-dump-times "mem/u" 2 "expand" } } */
 

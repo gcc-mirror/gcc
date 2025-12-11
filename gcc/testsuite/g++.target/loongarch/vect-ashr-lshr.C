@@ -1,5 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-mlasx -O2" } */
+/* { dg-require-effective-target loongarch_asx } */
 /* { dg-final { scan-assembler-times "vsrli.b" 2 } } */
 /* { dg-final { scan-assembler-times "vsrli.h" 2 } } */
 /* { dg-final { scan-assembler-times "vsrli.w" 2 } } */

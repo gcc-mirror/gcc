@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target hard_float } */
 
 long double
 test (long double xx)

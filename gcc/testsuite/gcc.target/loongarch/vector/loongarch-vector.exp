@@ -36,10 +36,14 @@ dg-init
 # If the target hardware supports LSX, the default action is "run", otherwise
 # just "compile".
 set saved-dg-do-what-default ${dg-do-what-default}
-if {[check_effective_target_loongarch_sx_hw]} then {
-  set dg-do-what-default run
+if [check_effective_target_loongarch_sx] { # If compiler support vector
+  if {[check_effective_target_loongarch_sx_hw]} then { # If hardware support vector
+    set dg-do-what-default run
+  } else {
+    set dg-do-what-default compile
+  }
 } else {
-  set dg-do-what-default compile
+  return 0
 }
 
 #Main loop.
@@ -54,10 +58,14 @@ dg-init
 # just "compile".
 
 set saved-dg-do-what-default ${dg-do-what-default}
-if {[check_effective_target_loongarch_asx_hw]} then {
-  set dg-do-what-default run
+if [check_effective_target_loongarch_asx] { # If compiler support vector
+  if {[check_effective_target_loongarch_asx_hw]} then { # If hardware support vector
+    set dg-do-what-default run
+  } else {
+    set dg-do-what-default compile
+  }
 } else {
-  set dg-do-what-default compile
+  return 0
 }
 
 dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/lasx/*.\[cS\]]] \

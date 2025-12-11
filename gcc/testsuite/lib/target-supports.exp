@@ -4366,7 +4366,8 @@ proc add_options_for_bfloat16 { flags } {
 
 proc check_effective_target_scalar_all_fma { } {
     if { [istarget aarch64*-*-*]
-	 || [istarget loongarch*-*-*]} {
+	 || ([istarget loongarch*-*-*]
+	     && [check_effective_target_hard_float])} {
 	return 1
     }
     return 0
@@ -4563,7 +4564,8 @@ proc check_effective_target_vect_cmdline_needed { } {
 	     || ([istarget arm*-*-*] && [check_effective_target_arm_neon])
 	     || [istarget aarch64*-*-*]
 	     || [istarget amdgcn*-*-*]
-	     || [istarget riscv*-*-*]} {
+	     || [istarget riscv*-*-*]
+	     || [istarget loongarch*-*-*]} {
 	    return 0
 	} else {
 	    return 1
@@ -12542,13 +12544,17 @@ proc check_vect_support_and_set_flags { } {
 	    return 0
         }
     } elseif [istarget loongarch*-*-*] {
-      # Set the default vectorization option to "-mlsx" due to the problem
-      # of non-aligned memory access when using 256-bit vectorization.
-      lappend DEFAULT_VECTCFLAGS "-mdouble-float" "-mlsx"
-      if [check_effective_target_loongarch_sx_hw] {
-	  set dg-do-what-default run
+      if [check_effective_target_loongarch_sx] { # If compiler support vector
+	# Set the default vectorization option to "-mlsx" due to the problem
+	# of non-aligned memory access when using 256-bit vectorization.
+	lappend DEFAULT_VECTCFLAGS "-mdouble-float" "-mlsx"
+	if [check_effective_target_loongarch_sx_hw] { # If hardware support vector
+	    set dg-do-what-default run
+	} else {
+	    set dg-do-what-default compile
+	}
       } else {
-	  set dg-do-what-default compile
+	return 0
       }
     } else {
 	return 0
