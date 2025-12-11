@@ -37,7 +37,7 @@
 #include <vector>
 #include <string>
 #include <istream>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <bits/stl_algo.h>	// For fill
 #include <bits/cxxabi_forced.h>
 

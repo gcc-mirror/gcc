@@ -9,4 +9,5 @@ int sumVector() {
     }
     return sum;
 }
-// { dg-final { scan-tree-dump-not "delete" "optimized" } }
+// For C++26 delete appears in ~bad_array() and ~bad_array_new_length() dtors.
+// { dg-final { scan-tree-dump-not "delete" "optimized" { target c++23_down } } }

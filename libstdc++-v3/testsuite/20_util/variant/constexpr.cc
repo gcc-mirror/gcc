@@ -11,6 +11,9 @@
 # error "Feature test macro for variant has wrong value for C++20 in <variant>"
 #endif
 
+#if __cpp_lib_constexpr_exceptions >= 202502L
+#include <string>
+#endif
 #include <testsuite_hooks.h>
 
 
@@ -50,6 +53,39 @@ test_assign()
 }
 
 static_assert( test_assign() );
+
+#if __cpp_lib_constexpr_exceptions >= 202502L
+constexpr bool test_get()
+{
+  VERIFY(std::get<1>(std::variant<int, std::string>("a")) == "a");
+  VERIFY(std::get<std::string>(std::variant<int, std::string>("a")) == "a");
+  {
+    try
+      {
+	std::get<0>(std::variant<int, std::string>("a"));
+      }
+    catch (const std::bad_variant_access& x)
+      {
+	long c = x.what()[0];
+	VERIFY( c == x.what()[0] );
+      }
+  }
+  {
+    try
+      {
+	std::get<int>(std::variant<int, std::string>("a"));
+      }
+    catch (const std::bad_variant_access& x)
+      {
+	long c = x.what()[0];
+	VERIFY( c == x.what()[0] );
+      }
+  }
+  return true;
+}
+
+static_assert (test_get() );
+#endif
 
 constexpr bool
 test_emplace()

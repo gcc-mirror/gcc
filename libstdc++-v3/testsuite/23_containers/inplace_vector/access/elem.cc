@@ -14,12 +14,11 @@ test_out_of_capacity()
   std::inplace_vector<T, N> v;
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   try
   {
@@ -82,12 +81,11 @@ test_access()
   VERIFY( e4a == T(5) );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   try
   {

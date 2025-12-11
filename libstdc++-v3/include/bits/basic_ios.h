@@ -34,6 +34,7 @@
 #pragma GCC system_header
 #endif
 
+#include <bits/functexcept.h>
 #include <bits/localefwd.h>
 #include <bits/locale_classes.h>
 #include <bits/locale_facets.h>

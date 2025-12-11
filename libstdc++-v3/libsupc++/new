@@ -47,6 +47,7 @@
 #define __glibcxx_want_destroying_delete
 #define __glibcxx_want_constexpr_new
 #include <bits/version.h>
+#include <bits/new_except.h> // std::bad_alloc, std::bad_array_new_length
 
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++11-extensions" // scoped enum
@@ -57,63 +58,6 @@ extern "C++" {
 
 namespace std 
 {
-  /**
-   *  @brief  Exception possibly thrown by @c new.
-   *  @ingroup exceptions
-   *
-   *  @c bad_alloc (or classes derived from it) is used to report allocation
-   *  errors from the throwing forms of @c new.  */
-  class bad_alloc : public exception
-  {
-  public:
-    _GLIBCXX26_CONSTEXPR bad_alloc() throw() { }
-
-#if __cplusplus >= 201103L
-    _GLIBCXX26_CONSTEXPR bad_alloc(const bad_alloc&) = default;
-    _GLIBCXX26_CONSTEXPR bad_alloc& operator=(const bad_alloc&) = default;
-#endif
-
-#if __cplusplus >= 202400L
-    constexpr virtual ~bad_alloc() noexcept {}
-
-    constexpr virtual const char* what() const noexcept
-    {
-      return "std::bad_alloc";
-    }
-#else
-    // This declaration is not useless:
-    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
-    virtual ~bad_alloc() throw();
-
-    // See comment in eh_exception.cc.
-    virtual const char* what() const throw();
-#endif
-  };
-
-#if __cplusplus >= 201103L
-  class bad_array_new_length : public bad_alloc
-  {
-  public:
-    _GLIBCXX26_CONSTEXPR bad_array_new_length() throw() { }
-
-#if __cplusplus >= 202400L
-    constexpr virtual ~bad_array_new_length() noexcept {}
-
-    constexpr virtual const char* what() const noexcept
-    {
-      return "std::bad_array_new_length";
-    }
-#else
-    // This declaration is not useless:
-    // http://gcc.gnu.org/onlinedocs/gcc-3.0.2/gcc_6.html#SEC118
-    virtual ~bad_array_new_length() throw();
-
-    // See comment in eh_exception.cc.
-    virtual const char* what() const throw();
-#endif
-  };
-#endif
-
 #if __cpp_aligned_new
   enum class align_val_t: size_t {};
 #endif

@@ -126,17 +126,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     __cow_string();
     __cow_string(const std::string& s);
+    __cow_string(const char*);
     __cow_string(const char*, size_t n);
     __cow_string(const __cow_string&) noexcept;
     __cow_string& operator=(const __cow_string&) noexcept;
     ~__cow_string();
     __cow_string(__cow_string&&) noexcept;
     __cow_string& operator=(__cow_string&&) noexcept;
+    const char* c_str() const noexcept;
   };
 
   __cow_string::__cow_string() : _M_str() { }
 
   __cow_string::__cow_string(const std::string& s) : _M_str(s) { }
+
+  __cow_string::__cow_string(const char* s) : _M_str(s) { }
 
   __cow_string::__cow_string(const char* s, size_t n) : _M_str(s, n) { }
 
@@ -160,6 +164,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   {
     _M_str = std::move(s._M_str);
     return *this;
+  }
+
+  const char*
+  __cow_string::c_str() const noexcept
+  {
+    return _M_str.c_str();
   }
 
   static_assert(sizeof(__cow_string) == sizeof(std::string),

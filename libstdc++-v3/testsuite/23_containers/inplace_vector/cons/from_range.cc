@@ -41,12 +41,11 @@ do_test_it()
   VERIFY( eq<T>(v4, {a, 4}) );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   bounds = typename It::ContainerType(a, a+9);
   try
@@ -104,12 +103,11 @@ do_test_r()
   VERIFY( eq<T>(v4, {a, 4}) );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
   
   try
   {

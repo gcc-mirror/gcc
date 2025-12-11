@@ -25,7 +25,7 @@
 
 #include <stdarg.h>
 #include <stddef.h>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 
 namespace __gnu_cxx {
 

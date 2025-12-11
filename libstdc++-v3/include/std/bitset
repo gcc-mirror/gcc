@@ -46,8 +46,8 @@
 #pragma GCC system_header
 #endif
 
-#include <bits/functexcept.h>   // For invalid_argument, out_of_range,
-                                // overflow_error
+#include <bits/stdexcept_throw.h> // For invalid_argument, out_of_range,
+				  // overflow_error
 #include <bits/stl_algobase.h>  // For std::fill
 
 #if _GLIBCXX_HOSTED

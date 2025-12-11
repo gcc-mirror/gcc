@@ -56,7 +56,7 @@
 #ifndef _STL_MAP_H
 #define _STL_MAP_H 1
 
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <bits/concept_check.h>
 #if __cplusplus >= 201103L
 #include <initializer_list>

@@ -38,6 +38,7 @@
 #ifdef __glibcxx_inplace_vector // C++ >= 26
 #include <compare>
 #include <initializer_list>
+#include <bits/stdexcept_throw.h>
 #include <bits/range_access.h>
 #include <bits/ranges_base.h> // borrowed_iterator_t, __detail::__container_compatible_range
 #include <bits/ranges_util.h> // subrange

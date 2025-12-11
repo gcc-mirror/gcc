@@ -24,7 +24,6 @@
 
 #include <stdexcept>
 #include <bits/regex_error.h>
-#include <bits/functexcept.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)
 {

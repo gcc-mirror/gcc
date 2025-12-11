@@ -34,6 +34,7 @@
 #endif
 
 #include <bits/requires_hosted.h> // TR1
+#include <bits/stdexcept_throw.h>
 
 #include <cmath>
 

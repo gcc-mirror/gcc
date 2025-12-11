@@ -442,7 +442,7 @@ extern const char *omp_get_uid_from_device (int) __GOMP_NOTHROW;
 #if __cplusplus >= 201103L
 
 /* std::__throw_bad_alloc and std::__throw_bad_array_new_length.  */
-#include <bits/functexcept.h>
+#include <bits/new_throw.h>
 
 namespace omp
 {

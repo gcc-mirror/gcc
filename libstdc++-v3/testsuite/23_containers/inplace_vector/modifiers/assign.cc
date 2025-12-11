@@ -60,12 +60,11 @@ test_assign_empty_it()
   VERIFY( v.empty() );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   static_assert(N < 9);
 
@@ -136,12 +135,11 @@ test_assign_empty_other()
   VERIFY( v.empty() );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   static_assert(N < 9);
 

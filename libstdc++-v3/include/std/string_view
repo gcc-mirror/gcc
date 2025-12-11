@@ -49,7 +49,10 @@
 #if __cplusplus >= 201703L
 
 #include <bits/char_traits.h>
-#include <bits/functexcept.h>
+#ifndef __glibcxx_exc_in_string
+#define __glibcxx_exc_in_string 2
+#include <bits/stdexcept_throw.h>
+#endif
 #include <bits/functional_hash.h>
 #include <bits/range_access.h>
 #include <bits/stl_algobase.h>
@@ -918,6 +921,14 @@ _GLIBCXX_END_NAMESPACE_VERSION
 
 #include <bits/string_view.tcc>
 
+#if __glibcxx_exc_in_string == 2
+#undef __glibcxx_exc_in_string
+#if (_GLIBCXX_HOSTED && __cpp_exceptions && __cplusplus > 202302L \
+     && __cpp_constexpr_exceptions >= 202411L)
+#include <bits/stdexcept_throw.h>
+#endif
+#endif
+
 #endif // __cplusplus <= 201402L
 
-#endif // _GLIBCXX_EXPERIMENTAL_STRING_VIEW
+#endif // _GLIBCXX_STRING_VIEW

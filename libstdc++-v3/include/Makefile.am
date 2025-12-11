@@ -137,6 +137,8 @@ bits_freestanding = \
 	${bits_srcdir}/intcmp.h \
 	${bits_srcdir}/invoke.h \
 	${bits_srcdir}/iterator_concepts.h \
+	${bits_srcdir}/new_except.h \
+	${bits_srcdir}/new_throw.h \
 	${bits_srcdir}/max_size_type.h \
 	${bits_srcdir}/memoryfwd.h \
 	${bits_srcdir}/monostate.h \
@@ -155,6 +157,10 @@ bits_freestanding = \
 	${bits_srcdir}/ranges_util.h \
 	${bits_srcdir}/refwrap.h \
 	${bits_srcdir}/sat_arith.h \
+	${bits_srcdir}/stdexcept_except.h \
+	${bits_srcdir}/stdexcept_throw.h \
+	${bits_srcdir}/stdexcept_throwdef.h \
+	${bits_srcdir}/stdexcept_throwfwd.h \
 	${bits_srcdir}/stl_algo.h \
 	${bits_srcdir}/stl_algobase.h \
 	${bits_srcdir}/stl_construct.h \

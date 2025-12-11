@@ -32,7 +32,7 @@
 
 #include <bits/c++config.h>
 #include <new>
-#include <bits/functexcept.h>
+#include <bits/new_throw.h>
 #include <bits/move.h>
 #if __cplusplus >= 201103L
 #include <type_traits>

@@ -38,6 +38,7 @@
 #pragma GCC system_header
 #endif
 
+#include <bits/functexcept.h>
 #include <bits/localefwd.h>
 #include <string>
 #include <ext/atomicity.h>

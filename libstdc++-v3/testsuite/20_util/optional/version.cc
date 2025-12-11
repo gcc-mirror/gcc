@@ -29,11 +29,18 @@
 # elif __cpp_lib_optional_range_support != 202406L
 #  error "Feature test macro for optional range support has wrong value for C++26 in <version>"
 # endif
+
+# ifndef __cpp_lib_constexpr_exceptions
+#  error "Feature test macro for constexpr_exceptions is missing in <version>"
+# elif __cpp_lib_constexpr_exceptions < 202502L
+#  error "Feature test macro for constexpr_exceptions has wrong value in <version>"
+# endif
 #endif
 
 #undef __cpp_lib_optional
 #undef __cpp_lib_freestanding_optional
 #undef __cpp_lib_optional_range_support
+#undef __cpp_lib_constexpr_exceptions
 #include <optional>
 
 #if __cplusplus >= 202302L
@@ -50,5 +57,11 @@
 # endif
 # if __cpp_lib_optional_range_support != 202406L
 #  error "Feature test macro for optional range support has wrong value for C++26 in <optional>"
+# endif
+
+# ifndef __cpp_lib_constexpr_exceptions
+#  error "Feature test macro for constexpr_exceptions is missing in <optional>"
+# elif __cpp_lib_constexpr_exceptions < 202502L
+#  error "Feature test macro for constexpr_exceptions has wrong value in <optional>"
 # endif
 #endif

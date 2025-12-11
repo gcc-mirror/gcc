@@ -45,7 +45,7 @@
 #include <bits/requires_hosted.h> // GNU extensions are currently omitted
 
 #include <stdexcept>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <ext/alloc_traits.h>
 
 namespace __gnu_cxx _GLIBCXX_VISIBILITY(default)

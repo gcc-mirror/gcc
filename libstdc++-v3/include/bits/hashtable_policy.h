@@ -32,6 +32,7 @@
 #define _HASHTABLE_POLICY_H 1
 
 #include <tuple>		// for std::tuple, std::forward_as_tuple
+#include <bits/stdexcept_throw.h>
 #include <bits/functional_hash.h> // for __is_fast_hash
 #include <bits/stl_algobase.h>	// for std::min
 #include <bits/stl_pair.h>	// for std::pair

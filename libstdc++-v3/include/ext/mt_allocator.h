@@ -33,7 +33,7 @@
 
 #include <new>
 #include <cstdlib>
-#include <bits/functexcept.h>
+#include <bits/new_throw.h>
 #include <ext/atomicity.h>
 #include <bits/move.h>
 #if __cplusplus >= 201103L

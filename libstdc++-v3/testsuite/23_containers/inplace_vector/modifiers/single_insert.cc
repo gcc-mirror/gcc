@@ -48,12 +48,11 @@ test_add_to_full()
   VERIFY( eq<T>(v, {a, N}) );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   try
   {

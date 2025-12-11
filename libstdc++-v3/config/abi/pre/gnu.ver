@@ -2576,6 +2576,16 @@ GLIBCXX_3.4.35 {
     _ZN11__gnu_debug25_Safe_local_iterator_base16_M_attach_singleEPKNS_30_Safe_unordered_container_baseEb;
     _ZNK11__gnu_debug30_Safe_unordered_container_base13_M_detach_allEv;
     _ZNK11__gnu_debug30_Safe_unordered_container_base7_M_swapERKS0_;
+
+    # std::__cow_string
+    _ZNSt12__cow_stringC2EPKc;
+    _ZNSt12__cow_stringC2EPKc[jmy];
+    _ZNSt12__cow_stringC2ERKS_;
+    _ZNSt12__cow_stringC2EOS_;
+    _ZNSt12__cow_stringD2Ev;
+    _ZNSt12__cow_stringaSERKS_;
+    _ZNSt12__cow_stringaSEOS_;
+    _ZNKSt12__cow_string5c_strEv;
 } GLIBCXX_3.4.34;
 
 # Symbols in the support library (libsupc++) have their own tag.

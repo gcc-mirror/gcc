@@ -19,8 +19,17 @@
 #endif
 #endif
 
+#if __cplusplus > 202302L
+#ifndef __cpp_lib_constexpr_exceptions
+# error "Feature test macro for constexpr_exceptions is missing in <version>"
+#elif __cpp_lib_constexpr_exceptions < 202502L
+# error "Feature test macro for constexpr_exceptions has wrong value in <version>"
+#endif
+#endif
+
 #undef __cpp_lib_variant
 #undef __cpp_lib_freestanding_variant
+#undef __cpp_lib_constexpr_exceptions
 #include <variant>
 
 #if __cplusplus >= 202302L
@@ -28,5 +37,13 @@
 # error "Feature test macro for freestanding std::variant is missing in <variant>"
 #elif __cpp_lib_freestanding_variant < 202311L
 # error "Feature test macro for freestanding std::variant has wrong value in <variant>"
+#endif
+#endif
+
+#if __cplusplus > 202302L
+#ifndef __cpp_lib_constexpr_exceptions
+# error "Feature test macro for constexpr_exceptions is missing in <variant>"
+#elif __cpp_lib_constexpr_exceptions < 202502L
+# error "Feature test macro for constexpr_exceptions has wrong value in <variant>"
 #endif
 #endif

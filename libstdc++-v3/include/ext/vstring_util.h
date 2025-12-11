@@ -39,7 +39,7 @@
 #include <ext/vstring_fwd.h>
 #include <debug/debug.h>
 #include <bits/stl_function.h>  // For less
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <bits/localefwd.h>
 #include <bits/ostream_insert.h>
 #include <bits/stl_iterator.h>

@@ -9,4 +9,5 @@ T vat1(std::vector<T> v1) {
 // This should compile to empty function; check that no size of
 // vector is determined and there is no allocation
 // { dg-final { scan-tree-dump-not "_M_start" "optimized" } }
-// { dg-final { scan-tree-dump-not "delete" "optimized" } }
+// For C++26 delete appears in ~bad_array() and ~bad_array_new_length() dtors.
+// { dg-final { scan-tree-dump-not "delete" "optimized" { target c++23_down } } }

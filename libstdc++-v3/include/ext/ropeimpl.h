@@ -42,7 +42,7 @@
 
 #include <cstdio>
 #include <ostream>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 
 #include <ext/algorithm> // For copy_n and lexicographical_compare_3way
 #include <ext/memory> // For uninitialized_copy_n

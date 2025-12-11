@@ -57,4 +57,5 @@ struct c7 {
 void foo7(){
     std::vector<c7> vi = {c7(),c7(),c7()};
 }
-// { dg-final { scan-tree-dump-not "delete" "optimized" } }
+// For C++26 delete appears in ~bad_array() and ~bad_array_new_length() dtors.
+// { dg-final { scan-tree-dump-not "delete" "optimized" { target c++23_down } } }

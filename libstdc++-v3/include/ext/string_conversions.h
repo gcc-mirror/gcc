@@ -41,7 +41,7 @@
 
 #include <bits/c++config.h>
 #include <ext/numeric_traits.h>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <cstdlib>
 #include <cwchar>
 #include <cstdio>

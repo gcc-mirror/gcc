@@ -56,11 +56,6 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   // [format.formatter], formatter
   template<typename _Tp, typename _CharT = char> struct formatter;
 
-/// @cond undocumented
-  [[noreturn]]
-  inline void
-  __throw_format_error(const char* __what);
-
 namespace __format
 {
 #ifdef _GLIBCXX_USE_WCHAR_T

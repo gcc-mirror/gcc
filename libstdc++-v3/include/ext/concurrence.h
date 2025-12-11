@@ -35,7 +35,7 @@
 
 #include <exception>
 #include <bits/gthr.h>
-#include <bits/functexcept.h>
+#include <bits/exception_defines.h>
 #include <bits/cpp_type_traits.h>
 #include <ext/type_traits.h>
 

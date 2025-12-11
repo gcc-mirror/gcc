@@ -38,6 +38,7 @@
 #define __glibcxx_want_format
 #define __glibcxx_want_format_ranges
 #define __glibcxx_want_format_uchar
+#define __glibcxx_want_constexpr_exceptions
 #include <bits/version.h>
 
 #ifdef __cpp_lib_format // C++ >= 20 && HOSTED
@@ -219,12 +220,20 @@ namespace __format
       formatter& operator=(const formatter&) = delete;
     };
 
+#if __cpp_lib_constexpr_exceptions >= 202502L
+#define _GLIBCXX_CONSTEXPR_FORMAT_ERROR constexpr
+#else
+#define _GLIBCXX_CONSTEXPR_FORMAT_ERROR
+#endif
+
   // [format.error], class format_error
   class format_error : public runtime_error
   {
   public:
-    explicit format_error(const string& __what) : runtime_error(__what) { }
-    explicit format_error(const char* __what) : runtime_error(__what) { }
+    _GLIBCXX_CONSTEXPR_FORMAT_ERROR explicit format_error(const string& __what)
+    : runtime_error(__what) { }
+    _GLIBCXX_CONSTEXPR_FORMAT_ERROR explicit format_error(const char* __what)
+    : runtime_error(__what) { }
   };
 
   /// @cond undocumented
@@ -232,6 +241,8 @@ namespace __format
   inline void
   __throw_format_error(const char* __what)
   { _GLIBCXX_THROW_OR_ABORT(format_error(__what)); }
+
+#undef _GLIBCXX_CONSTEXPR_FORMAT_ERROR
 
 namespace __format
 {

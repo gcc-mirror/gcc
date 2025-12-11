@@ -45,7 +45,6 @@
 
 #include <bits/alloc_traits.h>
 #include <bits/allocator.h>
-#include <bits/functexcept.h>
 #include <bits/std_mutex.h>
 
 namespace std _GLIBCXX_VISIBILITY(default)

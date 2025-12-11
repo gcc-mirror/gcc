@@ -38,7 +38,7 @@
 #include <limits.h>
 #include <utility>
 #include <stdlib.h>
-#include <bits/functexcept.h>
+#include <bits/exception_defines.h>
 
 namespace __gnu_pbds
 {

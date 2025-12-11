@@ -30,6 +30,7 @@
 #include <system_error>
 #include <cerrno>
 #include <cxxabi_forced.h>
+#include <bits/functexcept.h>
 
 #ifndef _GLIBCXX_USE_NANOSLEEP
 # ifdef _GLIBCXX_HAVE_SLEEP

@@ -45,7 +45,6 @@
 #include <cstdlib>
 #include <cstring>
 #include <locale.h>
-#include <bits/functexcept.h>
 #if _GLIBCXX_HAVE_XLOCALE_H
 # include <xlocale.h>
 #endif

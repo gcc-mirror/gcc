@@ -166,10 +166,9 @@ test_n()
   VERIFY( z0.begin() == z0.end() );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if not consteval {
+#endif
     try
     {
       std::inplace_vector<int, 2> ct(3);
@@ -188,7 +187,9 @@ test_n()
     {
     }
 
+#ifndef __cpp_lib_constexpr_exceptions
   }
+#endif
 #endif
 
 #ifdef __cpp_lib_constexpr_inplace_vector
@@ -243,10 +244,9 @@ test_n_val()
   VERIFY( z0.begin() == z0.end() );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if not consteval {
+#endif
     try
     {
       std::inplace_vector<int, 2> ct(3, 11);
@@ -264,7 +264,9 @@ test_n_val()
     catch (std::bad_alloc const&)
     {
     }
+#ifndef __cpp_lib_constexpr_exceptions
   }
+#endif
 #endif
 
 #ifdef __cpp_lib_constexpr_inplace_vector
@@ -319,10 +321,9 @@ test_initializer_list()
   VERIFY( z0.begin() == z0.end() );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if not consteval {
+#endif
     try
     {
       std::inplace_vector<int, 2> ct{11, 22, 33};
@@ -340,7 +341,9 @@ test_initializer_list()
     catch (std::bad_alloc const&)
     {
     }
+#ifndef __cpp_lib_constexpr_exceptions
   }
+#endif
 #endif
 
 #ifdef __cpp_lib_constexpr_inplace_vector

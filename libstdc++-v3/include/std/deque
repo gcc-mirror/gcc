@@ -61,6 +61,7 @@
 
 #include <bits/requires_hosted.h> // containers are hosted only
 
+#include <bits/stdexcept_throw.h>
 #include <bits/stl_algobase.h>
 #include <bits/allocator.h>
 #include <bits/stl_construct.h>

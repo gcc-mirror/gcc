@@ -38,7 +38,7 @@
 
 #include <new>				// operator new(size_t, void*)
 #include <cstddef>			// size_t, max_align_t, byte
-#include <bits/functexcept.h>		// __throw_bad_array_new_length
+#include <bits/new_throw.h>		// __throw_bad_array_new_length
 #include <bits/uses_allocator.h>	// allocator_arg_t, __use_alloc
 #include <bits/uses_allocator_args.h>	// uninitialized_construct_using_alloc
 #include <ext/numeric_traits.h>		// __int_traits

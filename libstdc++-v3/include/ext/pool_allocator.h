@@ -47,7 +47,7 @@
 #include <bits/c++config.h>
 #include <cstdlib>
 #include <new>
-#include <bits/functexcept.h>
+#include <bits/new_throw.h>
 #include <ext/atomicity.h>
 #include <ext/concurrence.h>
 #include <bits/move.h>

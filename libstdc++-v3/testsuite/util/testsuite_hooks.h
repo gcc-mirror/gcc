@@ -44,7 +44,7 @@
 #define _GLIBCXX_TESTSUITE_HOOKS_H
 
 #include <bits/c++config.h>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <ctime>
 #include <stdio.h>
 

@@ -57,7 +57,7 @@
 #define _STL_VECTOR_H 1
 
 #include <bits/stl_iterator_base_funcs.h>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <bits/concept_check.h>
 #if __cplusplus >= 201103L
 #include <initializer_list>

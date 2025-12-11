@@ -41,7 +41,7 @@
 #include <initializer_list>
 
 #include <type_traits>
-#include <bits/functexcept.h>
+#include <bits/stdexcept_throw.h>
 #include <bits/stl_algobase.h>
 #include <bits/range_access.h> // std::begin, std::end etc.
 #include <bits/utility.h>      // std::index_sequence, std::tuple_size

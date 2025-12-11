@@ -40,6 +40,7 @@
 # error include <cmath> and define __STDCPP_WANT_MATH_SPEC_FUNCS__
 #endif
 
+#include <bits/stdexcept_throw.h>
 #include <bits/stl_algobase.h>
 #include <limits>
 #include <type_traits>

@@ -77,7 +77,10 @@ test_value()
   return true;
 }
 
-void
+#if __cpp_lib_constexpr_exceptions >= 202502L
+constexpr
+#endif
+bool
 test_value_throw()
 {
   std::expected<int, int> e1 = std::unexpected(9);
@@ -87,6 +90,8 @@ test_value_throw()
     VERIFY( false );
   } catch (const std::bad_expected_access<int>& e) {
     VERIFY( e.error() == 9 );
+    long c = e.what()[0];
+    VERIFY( c == e.what()[0] );
   }
   try {
     std::move(e1).value();
@@ -122,6 +127,7 @@ test_value_throw()
   } catch (const std::bad_expected_access<int>& e) {
     VERIFY( e.error() == 8 );
   }
+  return true;
 }
 
 constexpr bool
@@ -218,6 +224,9 @@ int main()
   test_has_value();
   static_assert( test_value() );
   test_value();
+#if __cpp_lib_constexpr_exceptions >= 202502L
+  static_assert( test_value_throw() );
+#endif
   test_value_throw();
   static_assert( test_error() );
   test_error();

@@ -20,7 +20,6 @@
 // see the files COPYING3 and COPYING.RUNTIME respectively.  If not, see
 // <http://www.gnu.org/licenses/>.
 
-#include <bits/functexcept.h>
 #include <cstdlib>
 #include <exception>
 #include <stdexcept>

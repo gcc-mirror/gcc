@@ -105,12 +105,11 @@ test_add_to_full_it()
   VERIFY( rit4.base() == a+2 );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   try
   {
@@ -191,12 +190,11 @@ test_add_to_full_other()
   VERIFY( it == v.begin() );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   v = std::inplace_vector<T, N>(std::from_range, std::span(a, a+N));
   try
@@ -249,12 +247,11 @@ test_append_range()
   VERIFY( eq<T>(v, {a, 15}) );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   try
   {
@@ -313,12 +310,11 @@ test_insert_range()
   VERIFY( it == v.begin() + 5 );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   const bool seg = std::ranges::sized_range<Range> || std::ranges::forward_range<Range>;
   auto vc = v;
@@ -390,12 +386,11 @@ test_insert_iterators()
   VERIFY( it == v.begin() + 5 );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   const bool seg = std::forward_iterator<It>;
   auto vc = v;
@@ -457,12 +452,11 @@ test_insert_initializer_list()
   VERIFY( it == v.begin() + 5 );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   std::initializer_list<T> il
   = {T(0), T(1), T(2), T(3), T(4), T(5), T(6), T(7), T(8), T(9)};
@@ -520,12 +514,11 @@ test_insert_repeated()
   VERIFY( it == v.begin() + 5 );
 
 #ifdef __cpp_exceptions
-#ifdef __cpp_lib_constexpr_exceptions
-#error remove the consteval check
-#endif
+#ifndef __cpp_lib_constexpr_exceptions
   if consteval {
     return;
   }
+#endif
 
   try
   {

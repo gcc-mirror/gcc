@@ -38,6 +38,7 @@
 #define __glibcxx_want_optional
 #define __glibcxx_want_optional_range_support
 #define __glibcxx_want_constrained_equality
+#define __glibcxx_want_constexpr_exceptions
 #include <bits/version.h>
 
 #ifdef __cpp_lib_optional // C++ >= 17
@@ -106,12 +107,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     bad_optional_access() = default;
     virtual ~bad_optional_access() = default;
 
+#if __cpp_lib_constexpr_exceptions >= 202502L
+    constexpr
+#endif
     const char* what() const noexcept override
     { return "bad optional access"; }
   };
 
   // XXX Does not belong here.
-  [[__noreturn__]] inline void
+  [[__noreturn__]]
+#if __cpp_lib_constexpr_exceptions >= 202502L
+  constexpr
+#else
+  inline
+#endif
+  void
   __throw_bad_optional_access()
   { _GLIBCXX_THROW_OR_ABORT(bad_optional_access()); }
 

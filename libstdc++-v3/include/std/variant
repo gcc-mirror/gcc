@@ -36,6 +36,7 @@
 #define __glibcxx_want_freestanding_variant
 #define __glibcxx_want_variant
 #define __glibcxx_want_constrained_equality
+#define __glibcxx_want_constexpr_exceptions
 #include <bits/version.h>
 
 #ifdef __cpp_lib_variant // C++ >= 17
@@ -1410,24 +1411,33 @@ namespace __detail::__variant
 		   && (is_swappable_v<_Types> && ...))>
     swap(variant<_Types...>&, variant<_Types...>&) = delete;
 
-  [[noreturn]] void __throw_bad_variant_access(unsigned);
+#if __cpp_lib_constexpr_exceptions >= 202502L
+#define _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS constexpr
+#else
+#define _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS
+#endif
+  [[noreturn]] _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS void
+  __throw_bad_variant_access(unsigned);
 
   class bad_variant_access : public exception
   {
   public:
-    bad_variant_access() noexcept { }
+    _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS bad_variant_access() noexcept { }
 
-    const char* what() const noexcept override
+    _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS const char* what()
+    const noexcept override
     { return _M_reason; }
 
   private:
     // Must only be called with a string literal
+    _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS
     bad_variant_access(const char* __reason) noexcept : _M_reason(__reason) { }
 
     // Must point to a string with static storage duration:
     const char* _M_reason = "bad variant access";
 
-    friend void __throw_bad_variant_access([[maybe_unused]] unsigned __n)
+    friend _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS void
+    __throw_bad_variant_access([[maybe_unused]] unsigned __n)
     {
       [[maybe_unused]] static constexpr const char* __reasons[] = {
 	"std::get: wrong index for variant",
@@ -1437,6 +1447,7 @@ namespace __detail::__variant
       };
       _GLIBCXX_THROW_OR_ABORT(bad_variant_access(__reasons[__n % 4u]));
     }
+#undef _GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS
   };
 
   template<typename... _Types>

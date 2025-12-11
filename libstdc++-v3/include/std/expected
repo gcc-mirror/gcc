@@ -36,6 +36,7 @@
 #define __glibcxx_want_expected
 #define __glibcxx_want_freestanding_expected
 #define __glibcxx_want_constrained_equality
+#define __glibcxx_want_constexpr_exceptions
 #include <bits/version.h>
 
 #ifdef __cpp_lib_expected // C++ >= 23 && __cpp_concepts >= 202002L
@@ -77,21 +78,32 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Er>
     class bad_expected_access;
 
+#if __cpp_lib_constexpr_exceptions >= 202502L
+#define _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS constexpr
+#else
+#define _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS
+#endif
+
   template<>
     class bad_expected_access<void> : public exception
     {
     protected:
-      bad_expected_access() noexcept { }
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS bad_expected_access() noexcept { }
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS
       bad_expected_access(const bad_expected_access&) noexcept = default;
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS
       bad_expected_access(bad_expected_access&&) noexcept = default;
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS
       bad_expected_access& operator=(const bad_expected_access&) noexcept = default;
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS
       bad_expected_access& operator=(bad_expected_access&&) noexcept = default;
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS
       ~bad_expected_access() = default;
 
     public:
 
       [[nodiscard]]
-      const char*
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS const char*
       what() const noexcept override
       { return "bad access to std::expected without expected value"; }
     };
@@ -99,28 +111,28 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _Er>
     class bad_expected_access : public bad_expected_access<void> {
     public:
-      explicit
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS explicit
       bad_expected_access(_Er __e) : _M_unex(std::move(__e)) { }
 
       // XXX const char* what() const noexcept override;
 
       [[nodiscard]]
-      _Er&
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS _Er&
       error() & noexcept
       { return _M_unex; }
 
       [[nodiscard]]
-      const _Er&
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS const _Er&
       error() const & noexcept
       { return _M_unex; }
 
       [[nodiscard]]
-      _Er&&
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS _Er&&
       error() && noexcept
       { return std::move(_M_unex); }
 
       [[nodiscard]]
-      const _Er&&
+      _GLIBCXX_CONSTEXPR_BAD_EXPECTED_ACCESS const _Er&&
       error() const && noexcept
       { return std::move(_M_unex); }
 
