@@ -2566,7 +2566,7 @@ maybe_add_nop_after_section_switch (void)
 		}
 
 	      /* We visit only labels from cold section.  We should never hit
-		 begining of the insn stream here.  */
+		 beginning of the insn stream here.  */
 	      insn = PREV_INSN (insn);
 	    }
 	}

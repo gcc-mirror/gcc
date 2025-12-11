@@ -615,7 +615,7 @@ BEGIN
          (* We need to create top level error message first.  *)
          tinfo^.error := NewError (tinfo^.token) ;
          (* The parameters to MetaString4 in buildError4 must match the order
-            of paramters passed to ParameterTypeCompatible.  *)
+            of parameters passed to ParameterTypeCompatible.  *)
          s := MetaString4 (tinfo^.format,
                            tinfo^.procedure,
                            tinfo^.formal, tinfo^.actual,

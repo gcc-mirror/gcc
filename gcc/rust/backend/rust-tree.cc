@@ -4882,7 +4882,7 @@ fold_builtin_source_location (location_t loc)
 	    }
 	  else if (strcmp (n, "_M_function_name") == 0)
 	    {
-	      const char *name = "todo: add funciton name here";
+	      const char *name = "todo: add function name here";
 
 	      // if (current_function_decl)
 	      // name = cxx_printable_name (current_function_decl, 2);

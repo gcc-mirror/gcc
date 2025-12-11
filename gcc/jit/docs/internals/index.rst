@@ -358,7 +358,7 @@ in your email (along with the host triple that the tests were run on).
 
 A good patch should contain the information listed in the
 gcc contribution guide linked to above; for a ``jit`` patch, the patch
-shold contain:
+should contain:
 
   * the code itself (for example, a new API entrypoint will typically
     touch ``libgccjit.h`` and ``.c``, along with support code in

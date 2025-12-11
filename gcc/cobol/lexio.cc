@@ -1682,9 +1682,9 @@ cdftext::map_file( int fd ) {
 bool lexio_dialect_mf();
 
 /*
- * A valid sequence area is 6 digits or blanks at the begining of the line that
- * contains PROGRAM-ID. Return NULL if no valid sequence area, else return
- * pointer to BOL.
+ * A valid sequence area is 6 digits or blanks at the beginning of the line
+ * that contains PROGRAM-ID. Return NULL if no valid sequence area, else
+ * return pointer to BOL.
  */
 static const char *
 valid_sequence_area( const char *data, const char *eodata ) {

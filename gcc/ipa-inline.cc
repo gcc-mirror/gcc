@@ -1971,7 +1971,7 @@ speculation_useful_p (struct cgraph_edge *e, bool anticipate_inlining)
 
   gcc_assert (e->speculative && !e->indirect_unknown_callee);
 
-  /* Even if calll statement is not hot, we can still have useful speculation
+  /* Even if call statement is not hot, we can still have useful speculation
      in cases where a lot of time is spent is callee.
      Do not check maybe_hot_p.  */
   if (!e->count.nonzero_p ())

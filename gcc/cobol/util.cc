@@ -2288,7 +2288,7 @@ class temp_loc_t {
  * this is where we are.
  *
  * Because we can't reliably instantiate it as a forward-declared template
- * function, and because the paramters are variadic, we can't use a template
+ * function, and because the parameters are variadic, we can't use a template
  * function or call one.  So, a macro.
  */
 

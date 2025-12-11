@@ -252,7 +252,7 @@ Late::visit (AST::SelfParam &param)
 
   DefaultResolver::visit (param);
   // FIXME: this location should be a bit off
-  // ex: would point to the begining of "mut self" instead of the "self"
+  // ex: would point to the beginning of "mut self" instead of the "self"
   std::ignore = ctx.values.insert (Identifier ("self", param.get_locus ()),
 				   param.get_node_id ());
 }

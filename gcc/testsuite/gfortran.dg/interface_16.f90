@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! This tests the fix for PR32634, in which the generic interface
 ! in foo_pr_mod was given the original rather than the local name.
-! This meant that the original name had to be used in the calll
+! This meant that the original name had to be used in the call
 ! in foo_sub.
 !
 ! Contributed by Salvatore Filippone <salvatore.filippone@uniroma2.it>

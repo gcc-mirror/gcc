@@ -7887,7 +7887,7 @@ out:
 }
 
 /* This routine reads lines from IN file, adds C++ style comments
-   at the begining of each line and writes result into OUT.  */
+   at the beginning of each line and writes result into OUT.  */
 
 static void
 insert_comments (const char *file_in, const char *file_out)

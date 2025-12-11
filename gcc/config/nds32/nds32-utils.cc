@@ -41,7 +41,7 @@
 namespace nds32 {
 
 /* Get the rtx in the PATTERN field of an insn.  If INSN is not an insn,
-   the funciton doesn't change anything and returns it directly.  */
+   the function doesn't change anything and returns it directly.  */
 rtx
 extract_pattern_from_insn (rtx insn)
 {

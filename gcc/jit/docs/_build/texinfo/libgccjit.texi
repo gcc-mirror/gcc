@@ -16418,7 +16418,7 @@ in your email (along with the host triple that the tests were run on).
 
 A good patch should contain the information listed in the
 gcc contribution guide linked to above; for a @code{jit} patch, the patch
-shold contain:
+should contain:
 
 @quotation
 

@@ -55,7 +55,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "gimple-pretty-print.h"
 #include "output.h"
 
-/* The following routines implements AutoFDO optimization.
+/* The following routines implement AutoFDO optimization.
 
    This optimization uses sampling profiles to annotate basic block counts
    and uses heuristics to estimate branch probabilities.
@@ -87,7 +87,7 @@ along with GCC; see the file COPYING3.  If not see
    Phase 3: During early optimization.
      AFDO inline + value profile transformation.
      This happens during early optimization.
-     During early inlning AFDO inliner is executed which
+     During early inlining AFDO inliner is executed which
      uses autofdo_source_profile to find if a callsite is:
         * inlined in the profiled binary.
         * callee body is hot in the profiling run.
@@ -95,9 +95,9 @@ along with GCC; see the file COPYING3.  If not see
      regardless of the code growth.
 
      Performing this early has benefit of doing early optimizations
-     before read IPA passe and getting more "context sensitivity" of
+     before read IPA passes and getting more "context sensitivity" of
      the profile read.  Profile of inlined functions may differ
-     significantly form one inline instance to another and from the
+     significantly from one inline instance to another and from the
      offline version.
 
      This is controlled by -fauto-profile-inlining and is independent
@@ -113,7 +113,7 @@ along with GCC; see the file COPYING3.  If not see
         * Annotate basic block count
         * Estimate branch probability
 	* Use earlier static profile to fill in the gaps
-	  if AFDO profile is ambigous
+	  if AFDO profile is ambiguous
 
    After the above 5 phases, all profile is readily annotated on the GCC IR.
    AutoFDO tries to reuse all FDO infrastructure as much as possible to make
@@ -126,14 +126,14 @@ along with GCC; see the file COPYING3.  If not see
 
 /* profile counts determined by AFDO smaller than afdo_hot_bb_threshold are
    considered cols.  */
-gcov_type afdo_hot_bb_threshod = -1;
+gcov_type afdo_hot_bb_threshold = -1;
 
 /* Return true if COUNT is possibly hot.  */
 bool
 maybe_hot_afdo_count_p (profile_count count)
 {
   gcc_checking_assert (count.ipa ().initialized_p ());
-  return count.ipa ().to_gcov_type () >= afdo_hot_bb_threshod;
+  return count.ipa ().to_gcov_type () >= afdo_hot_bb_threshold;
 }
 
 /* Return true if location of STMT may be expressed by debug info.  */
@@ -319,12 +319,12 @@ public:
 						    tree decl,
 						    location_t location) const;
 
-  /* Merge profile of clones.  Note that cloning hasnt been performed when
+  /* Merge profile of clones.  Note that cloning hasn't been performed when
      we annotate the CFG (at this stage).  */
   void merge (function_instance *other,
 	      vec <function_instance *> &new_functions);
 
-  /* Look for inline instancs that was not realized and
+  /* Look for inline instances that was not realized and
      remove them while possibly merging them to offline variants.  */
   void offline_if_not_realized (vec <function_instance *> &new_functions);
 
@@ -603,7 +603,7 @@ static gcov_summary *afdo_profile_info;
 
 /* Scaling factor for afdo data.  Compared to normal profile
    AFDO profile counts are much lower, depending on sampling
-   frequency.  We scale data up to reudce effects of roundoff
+   frequency.  We scale data up to reduce effects of roundoff
    errors.  */
 
 static gcov_type afdo_count_scale = 1;
@@ -612,9 +612,9 @@ static gcov_type afdo_count_scale = 1;
 
 
 /* Return the original name of NAME: strip the suffix that starts
-   with '.' for names that are generetad after auto-profile pass.
+   with '.' for names that are generated after auto-profile pass.
    This is to match profiled names with the names in the IR at this stage.
-   Note that we only have to strip sufix and not in the middle.
+   Note that we only have to strip suffix and not in the middle.
    Caller is responsible for freeing RET.  */
 
 static char *
@@ -973,7 +973,7 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
 	  dump_printf_loc (MSG_NOTE | MSG_PRIORITY_INTERNALS,
 			   dump_user_location_t::from_location_t (location),
 			   "auto-profile has mismatched function name %s"
-			   " insteed of %s at loc %i:%i",
+			   " instead of %s at loc %i:%i",
 			   afdo_string_table->get_name (iter.first.second),
 			   raw_symbol_name (decl),
 			   lineno >> 16,
@@ -983,8 +983,8 @@ function_instance::get_function_instance_by_decl (unsigned lineno,
   return NULL;
 }
 
-/* Merge profile of OTHER to THIS.  Note that cloning hasnt been performed when
-   we annotate the CFG (at this stage).  */
+/* Merge profile of OTHER to THIS.  Note that cloning hasn't been performed
+   when we annotate the CFG (at this stage).  */
 
 void
 function_instance::merge (function_instance *other,
@@ -1017,8 +1017,8 @@ function_instance::merge (function_instance *other,
 		f->dump_inline_stack (dump_file);
 		fprintf (dump_file, "\n");
 	      }
-	    /* We already merged outer part of the function acounting
-	       the inlined calll; compensate.  */
+	    /* We already merged outer part of the function accounting
+	       the inlined call; compensate.  */
 	    for (function_instance *s = this; s; s = s->inlined_to ())
 	      {
 		s->total_count_ -= f->total_count ();
@@ -1026,7 +1026,7 @@ function_instance::merge (function_instance *other,
 	      }
 	    other->callsites.erase (iter);
 	    function_instance::offline (f, new_functions);
-	    /* Start from begining as merging might have offlined
+	    /* Start from beginning as merging might have offlined
 	       some functions in the case of recursive inlining.  */
 	    iter = other->callsites.begin ();
 	  }
@@ -1164,7 +1164,7 @@ function_instance::offline_if_in_set (name_index_set &seen,
 	  }
 	iter = callsites.erase (iter);
 	function_instance::offline (f, new_functions);
-	/* Start from begining as merging might have offlined
+	/* Start from beginning as merging might have offlined
 	   some functions in the case of recursive inlining.  */
 	iter = callsites.begin ();
       }
@@ -1176,7 +1176,7 @@ function_instance::offline_if_in_set (name_index_set &seen,
 }
 
 /* Try to check if inlined_fn can correspond to a call of function N.
-   Return non-zero if it correspons and 2 if renaming was done.  */
+   Return non-zero if it corresponds and 2 if renaming was done.  */
 
 static int
 match_with_target (cgraph_node *n,
@@ -1554,7 +1554,7 @@ function_instance::match (cgraph_node *node,
 			  if (warning (OPT_Wauto_profile,
 				       "function contains two calls of the same"
 				       " relative location +%i,"
-				       " discrimnator %i,"
+				       " discriminator %i,"
 				       " that leads to lost auto-profile",
 				       loc >> 16,
 				       loc & 65535))
@@ -1980,7 +1980,7 @@ function_instance::remove_icall_target (tree fn, gcall *stmt)
 
 /* Offline all functions not defined in the current unit.
    We will not be able to early inline them.
-   Doint so early will get VPT decisions more realistic.  */
+   Doing so early will get VPT decisions more realistic.  */
 
 void
 autofdo_source_profile::offline_external_functions ()
@@ -2002,7 +2002,7 @@ autofdo_source_profile::offline_external_functions ()
 	{
 	  free (n2);
 	  /* Watch for duplicate entries.
-	     This seems to happen in practice and may be useful to distingush
+	     This seems to happen in practice and may be useful to distinguish
 	     multiple static symbols of the same name, but we do not realy
 	     have a way to differentiate them in get_name lookup.  */
 	  int index = afdo_string_table->get_index (n1);
@@ -2017,7 +2017,7 @@ autofdo_source_profile::offline_external_functions ()
 	  continue;
 	}
       if (dump_file)
-	fprintf (dump_file, "Adding rename removing clone suffxes %s -> %s\n",
+	fprintf (dump_file, "Adding rename removing clone suffixes %s -> %s\n",
 		 n1, n2);
       int index = afdo_string_table->get_index (n2);
       if (index != -1)
@@ -2084,7 +2084,7 @@ autofdo_source_profile::offline_external_functions ()
   for (auto iter : to_symbol_name)
     {
       /* In case dwarf name was duplicated and later renamed,
-	 handle both.  No more than one hop shold be needed.  */
+	 handle both.  No more than one hop should be needed.  */
       int *newn = to_symbol_name.get (iter.second);
       if (newn)
 	iter.second = *newn;
@@ -2107,7 +2107,7 @@ autofdo_source_profile::offline_external_functions ()
      that were not inlined.  */
   vec <function_instance *>&fns = duplicate_functions_;
   auto_vec <function_instance *, 20>fns2;
-  /* Poppulate worklist with all functions to process.  Processing
+  /* Populate worklist with all functions to process.  Processing
      may introduce new functions by offlining.  */
   for (auto const &iter : map_)
     {
@@ -2257,7 +2257,7 @@ void
 autofdo_source_profile::offline_unrealized_inlines ()
 {
   auto_vec <function_instance *>fns;
-  /* Poppulate worklist with all functions to process.  Processing
+  /* Populate worklist with all functions to process.  Processing
      may introduce new functions by offlining.  */
   for (auto const &iter : map_)
     {
@@ -2477,7 +2477,7 @@ autofdo_source_profile::update_inlined_ind_target (gcall *stmt,
   if (LOCATION_LOCUS (gimple_location (stmt)) == cfun->function_end_locus)
     {
       if (dump_file)
-	fprintf (dump_file, " bad locus (funciton end)\n");
+	fprintf (dump_file, " bad locus (function end)\n");
       return false;
     }
 
@@ -2635,8 +2635,8 @@ autofdo_source_profile::read ()
       function_instance *s = function_instance::read_function_instance (
           &stack, gcov_read_counter ());
       int fun_id = s->name ();
-      /* If function_instace with get_original_name (without the clone
-	 suffix) exixts, merge the function instances.  */
+      /* If function_instance with get_original_name (without the clone
+	 suffix) exits, merge the function instances.  */
       if (map_.count (fun_id) == 0)
 	map_[fun_id] = s;
       else
@@ -2652,11 +2652,11 @@ autofdo_source_profile::read ()
       = MAX (((gcov_type)1 << (profile_count::n_bits - 10))
 	     / afdo_profile_info->sum_max, 1);
   afdo_profile_info->cutoff *= afdo_count_scale;
-  afdo_hot_bb_threshod
+  afdo_hot_bb_threshold
     = hot_frac
       ? afdo_profile_info->sum_max * afdo_count_scale / hot_frac
       : (gcov_type)profile_count::max_count;
-  set_hot_bb_threshold (afdo_hot_bb_threshod);
+  set_hot_bb_threshold (afdo_hot_bb_threshold);
   if (dump_file)
     fprintf (dump_file, "Max count in profile %" PRIu64 "\n"
 			"Setting scale %" PRIu64 "\n"
@@ -2667,7 +2667,7 @@ autofdo_source_profile::read ()
 	     (int64_t)afdo_count_scale,
 	     (int64_t)(afdo_profile_info->sum_max * afdo_count_scale),
 	     (int64_t)afdo_profile_info->cutoff,
-	     (int64_t)afdo_hot_bb_threshod);
+	     (int64_t)afdo_hot_bb_threshold);
   afdo_profile_info->sum_max *= afdo_count_scale;
   return true;
 }
@@ -2706,7 +2706,7 @@ autofdo_source_profile::get_function_instance_by_inline_stack (
 			       (stack[i].location),
 			      "auto-profile has no inlined function instance "
 			      "for inlined call of %s at relative "
-			      " locaction +%i, discriminator %i\n",
+			      " location +%i, discriminator %i\n",
 			     raw_symbol_name (stack[i - 1].decl),
 			     stack[i].afdo_loc >> 16,
 			     stack[i].afdo_loc & 65535);
@@ -3187,7 +3187,7 @@ afdo_propagate_edge (bool is_succ, bb_set *annotated_bb)
 		 "unknown edges %i, known count ",
 		 bb->index,
 		 is_bb_annotated (bb, *annotated_bb) ? "(annotated)" : "",
-		 is_succ ? "succesors" : "predecessors", num_edges,
+		 is_succ ? "successors" : "predecessors", num_edges,
 		 num_unknown_edges);
 	total_known_count.dump (dump_file);
 	fprintf (dump_file, " bb count ");
@@ -3396,7 +3396,7 @@ afdo_propagate_circuit (const bb_set &annotated_bb)
 }
 
 /* Propagate the basic block count and edge count on the control flow
-   graph. We do the propagation iteratively until stablize.  */
+   graph.  We do the propagation iteratively until stabilize.  */
 
 static void
 afdo_propagate (bb_set *annotated_bb)
@@ -3453,7 +3453,7 @@ cmp (const void *a, const void *b)
 
 struct scale
 {
-  /* Scale descired.  */
+  /* Scale desired.  */
   sreal scale;
   /* Weight for averaging computed from execution count of the edge
      scale originates from.  */
@@ -3739,7 +3739,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 		 boundary = true;
 		 if (dump_file)
 		   {
-		     fprintf (dump_file, "    Annotated predecesor %i "
+		     fprintf (dump_file, "    Annotated predecessor %i "
 			      "with count ", e->src->index);
 		     e->src->count.dump (dump_file);
 		     fprintf (dump_file, " edge count using static profile ");
@@ -3791,7 +3791,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 		   continue;
 		 if (dump_file)
 		   fprintf (dump_file,
-			    "    edge %i->%i has annotated sucessor; count ",
+			    "    edge %i->%i has annotated successor; count ",
 			    b->index, e->dest->index);
 		 add_scale (&scales, annotated_count, e->count ());
 	       }
@@ -3800,7 +3800,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 
        /* If we failed to find annotated entry or exit edge,
 	  look for exit edges and scale profile so the dest
-	  BB get all flow it needs.  This is inprecise because
+	  BB get all flow it needs.  This is imprecise because
 	  the edge is not annotated and thus BB has more than
 	  one such predecessor.  */
        if (!scales.length ())
@@ -3815,7 +3815,7 @@ afdo_adjust_guessed_profile (bb_set *annotated_bb)
 		       annotated_count -= AFDO_EINFO (e2)->get_count ();
 		   if (dump_file)
 		     fprintf (dump_file,
-			      "    edge %i->%i has annotated sucessor;"
+			      "    edge %i->%i has annotated successor;"
 			      " upper bound count ",
 			      b->index, e->dest->index);
 		   add_scale (&scales, annotated_count, e->count ());
@@ -4138,7 +4138,7 @@ afdo_annotate_cfg (void)
   free_dominance_info (CDI_POST_DOMINATORS);
 }
 
-/* Use AutoFDO profile to annoate the control flow graph.
+/* Use AutoFDO profile to annotate the control flow graph.
    Return the todo flag.  */
 
 static unsigned int

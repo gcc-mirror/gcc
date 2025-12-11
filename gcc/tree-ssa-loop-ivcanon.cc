@@ -1539,7 +1539,7 @@ tree_unroll_loops_completely (bool may_increase_size, bool unroll_outer, bool cu
 
   estimate_numbers_of_iterations (cfun);
 
-  /* Mark all innermost loop at the begining.  */
+  /* Mark all innermost loop at the beginning.  */
   for (auto loop : loops_list (cfun, LI_FROM_INNERMOST))
     {
       if (!loop->inner)

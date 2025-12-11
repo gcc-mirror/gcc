@@ -11548,7 +11548,7 @@ vectorizable_slp_permutation_1 (vec_info *vinfo, gimple_stmt_iterator *gsi,
       return 0;
     }
 
-  /* Set REPEATING_P to true if the permutations are cylical wrt UNPACK_FACTOR
+  /* Set REPEATING_P to true if the permutations are cyclical wrt UNPACK_FACTOR
      and if we can generate the vectors in a vector-length agnostic way.
      This requires UNPACK_STEP == NUNITS / UNPACK_FACTOR to be known at
      compile time.
