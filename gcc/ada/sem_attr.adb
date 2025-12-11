@@ -12047,15 +12047,6 @@ package body Sem_Attr is
 
                             or else Nkind (Associated_Node_For_Itype (Btyp)) =
                                                         N_Object_Declaration)
-
-                 --  Verify that static checking is OK (namely that we aren't
-                 --  in a specific context requiring dynamic checks on
-                 --  expicitly aliased parameters), and then check the level.
-
-                 --  Otherwise a check will be generated later when the return
-                 --  statement gets expanded.
-
-                 and then not Is_Special_Aliased_Formal_Access (N)
                  and then
                    Static_Accessibility_Level (N, Zero_On_Dynamic_Level) >
                      Deepest_Type_Access_Level (Btyp)

@@ -3734,6 +3734,19 @@ package body Sem_Res is
       procedure Check_Aliased_Parameter is
          Nominal_Subt : Entity_Id;
 
+         procedure Accessibility_Error (S : String);
+         --  Give an error about the accessibility level of the actual
+
+         -------------------------
+         -- Accessibility_Error --
+         -------------------------
+
+         procedure Accessibility_Error (S : String) is
+         begin
+            Error_Msg_NE ("actual for aliased formal& has wrong accessibility"
+                          & " in " & S & " (RM 6.4.1(6.4))", A, F);
+         end Accessibility_Error;
+
       begin
          if Is_Aliased (F) then
             if Is_Tagged_Type (A_Typ) then
@@ -3769,24 +3782,43 @@ package body Sem_Res is
                              & "aliased object", A, F);
             end if;
 
-            if Ekind (Nam) = E_Procedure then
+            --  RM 6.4.1(6.4): In a function call, the accessibility level of
+            --  the actual object for each explicitly aliased parameter shall
+            --  not be statically deeper than the accessibility level of the
+            --  master of the call.
+
+            --  AI12-0402: The master of the function call for a function
+            --  whose result type is a scalar or named access type is always
+            --  the innermost master invoking the function.
+
+            if Ekind (Etype (Nam)) = E_Void
+              or else (Ada_Version >= Ada_2022
+                        and then (Is_Scalar_Type (Etype (Nam))
+                                   or else Is_Named_Access_Type (Etype (Nam))))
+            then
                null;
 
-            elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type then
-               if Nkind (Parent (N)) = N_Type_Conversion
-                 and then Type_Access_Level (Etype (Parent (N)))
-                            < Static_Accessibility_Level (A, Object_Decl_Level)
-               then
-                  Error_Msg_N ("aliased actual has wrong accessibility", A);
-               end if;
+            elsif Ekind (Etype (Nam)) = E_Anonymous_Access_Type
+              and then Nkind (Parent (N)) = N_Type_Conversion
+              and then Type_Access_Level (Etype (Parent (N)))
+                         < Static_Accessibility_Level (A, Object_Decl_Level)
+            then
+               Accessibility_Error ("conversion");
 
             elsif Nkind (Parent (N)) = N_Qualified_Expression
               and then Nkind (Parent (Parent (N))) = N_Allocator
               and then Type_Access_Level (Etype (Parent (Parent (N))))
                          < Static_Accessibility_Level (A, Object_Decl_Level)
             then
-               Error_Msg_N
-                 ("aliased actual in allocator has wrong accessibility", A);
+               Accessibility_Error ("allocator");
+
+            elsif In_Return_Value (N)
+              and then Comes_From_Source (N)
+              and then Subprogram_Access_Level (Current_Subprogram)
+                         < Static_Accessibility_Level
+                            (A, Object_Decl_Level, In_Return_Context => True)
+            then
+               Accessibility_Error ("return");
             end if;
          end if;
       end Check_Aliased_Parameter;
@@ -14515,13 +14547,17 @@ package body Sem_Res is
             --  Check if the operand is deeper than the target type, taking
             --  care to avoid the case where we are converting a result of a
             --  function returning an anonymous access type since the "master
-            --  of the call" would be target type of the conversion unless
-            --  the target type is anonymous access as well - see RM 3.10.2
-            --  (10.3/3).
+            --  of the call" would be target type of the conversion, unless
+            --  the target type is anonymous access as well (RM 3.10.2(10.3)).
 
             --  Note that when the restriction No_Dynamic_Accessibility_Checks
-            --  is in effect wei also want to proceed with the conversion check
+            --  is in effect we also want to proceed with the conversion check
             --  described above.
+
+            --  Moreover, in the latter case, if the function call defines the
+            --  result of the enclosing function, the master of the call is the
+            --  master of the call to the enclosing function (RM 3.10.2(10.3),
+            --  3.10.2(14) and 3.10.2(10.5)).
 
             elsif Type_Access_Level (Opnd_Type, Assoc_Ent => Operand)
                     > Deepest_Type_Access_Level (Target_Type)
@@ -14529,10 +14565,8 @@ package body Sem_Res is
                           /= N_Function_Specification
                         or else Ekind (Target_Type) in Anonymous_Access_Kind
                         or else No_Dynamic_Accessibility_Checks_Enabled (N))
-
-              --  Check we are not in a return value ???
-
-              and then (not In_Return_Value (N)
+              and then (Nkind (Operand) /= N_Function_Call
+                         or else not In_Return_Value (N)
                          or else
                            Nkind (Associated_Node_For_Itype (Target_Type))
                              = N_Component_Declaration)

@@ -217,9 +217,13 @@ package body Accessibility is
             then
                return Scope_Depth (Enclosing_Subprogram (Node_Par));
 
-            --  Statements are counted as masters
+            --  Non-package bodies and statements are counted as masters
 
-            elsif Is_Master (Node_Par) then
+            elsif Nkind (Node_Par) in N_Entry_Body
+                                    | N_Subprogram_Body
+                                    | N_Task_Body
+              or else Is_Statement (Node_Par)
+            then
                Master_Lvl_Modifier := Master_Lvl_Modifier + 1;
 
             end if;
@@ -313,36 +317,37 @@ package body Accessibility is
                end if;
             end if;
 
-            if Nkind (N) = N_Function_Call then
-               --  Dynamic checks are generated when we are within a return
-               --  value or we are in a function call within an anonymous
-               --  access discriminant constraint of a return object (signified
-               --  by In_Return_Context) on the side of the callee.
+            --  Dynamic checks are generated when we are within a return
+            --  value or we are in a function call within an anonymous
+            --  access discriminant constraint of a return object (signified
+            --  by In_Return_Context) on the side of the callee.
 
-               --  So, in this case, return accessibility level of the
-               --  enclosing subprogram.
+            if Nkind (N) = N_Function_Call
+              and then (In_Return_Value (N) or else In_Return_Context)
+            then
+               declare
+                  Extra_Formal : constant Entity_Id :=
+                    Extra_Accessibility_Of_Result (Current_Subprogram);
 
-               if In_Return_Value (N)
-                 or else In_Return_Context
-               then
-                  if Present (Extra_Accessibility_Of_Result
-                                (Current_Subprogram))
-                  then
-                     --  If a function is passed an extra "level of the
-                     --  master of the call" parameter and that function
-                     --  returns a call to another such function (or
-                     --  possibly to the same function, in the case of a
-                     --  recursive call), then that parameter should be
-                     --  "passed along".
+               begin
+                  --  If a function is passed an extra "level of the
+                  --  master of the call" parameter and that function
+                  --  returns a call to another such function (or
+                  --  possibly to the same function, in the case of a
+                  --  recursive call), then that parameter should be
+                  --  "passed along".
 
-                     return New_Occurrence_Of
-                              (Extra_Accessibility_Of_Result
-                                (Current_Subprogram), Loc);
+                  if Present (Extra_Formal) and then Level = Dynamic_Level then
+                     return New_Occurrence_Of (Extra_Formal, Loc);
+
+                  --  Otherwise, return accessibility level of the enclosing
+                  --  subprogram.
+
                   else
                      return Make_Level_Literal
                               (Subprogram_Access_Level (Current_Subprogram));
                   end if;
-               end if;
+               end;
             end if;
 
             --  When the call is being dereferenced the level is that of the
@@ -561,15 +566,20 @@ package body Accessibility is
          --  means we are near the end of our recursive traversal.
 
          when N_Defining_Identifier =>
-            --  A dynamic check is performed on the side of the callee when we
-            --  are within a return statement, so return a library-level
-            --  accessibility level to null out checks on the side of the
-            --  caller.
+            --  RM 3.10.2(21.1/5): Notwithstanding other rules [in 3.10.2],
+            --  the accessibility level of an entity that is tied to that of
+            --  an explicitly aliased formal parameter of an enclosing function
+            --  is considered (both statically and dynamically) to be the same
+            --  as that of an entity whose accessibility level is tied to that
+            --  of the return object of that function.
+
+            --  This means that no checks are needed for an explicitly aliased
+            --  formal parameter in a return context and we return the library
+            --  level to null them out there.
 
             if Is_Explicitly_Aliased (E)
-              and then (In_Return_Context
-                         or else (Level /= Dynamic_Level
-                                   and then In_Return_Value (Expr)))
+              and then Scope (E) = Current_Subprogram
+              and then (In_Return_Value (Expr) or else In_Return_Context)
             then
                return Make_Level_Literal (Scope_Depth (Standard_Standard));
 
@@ -812,8 +822,7 @@ package body Accessibility is
                --  So, in this case, return a library accessibility level to
                --  null out the check on the side of the caller.
 
-               if (In_Return_Value (E)
-                    or else In_Return_Context)
+               if (In_Return_Value (E) or else In_Return_Context)
                  and then Level /= Dynamic_Level
                then
                   return Make_Level_Literal
@@ -1931,38 +1940,6 @@ package body Accessibility is
       end loop;
       return Nkind (Par) in N_Subprogram_Call;
    end Is_Anonymous_Access_Actual;
-
-   --------------------------------------
-   -- Is_Special_Aliased_Formal_Access --
-   --------------------------------------
-
-   function Is_Special_Aliased_Formal_Access
-     (Exp               : Node_Id;
-      In_Return_Context : Boolean := False) return Boolean
-   is
-      Scop : constant Entity_Id := Current_Subprogram;
-   begin
-      --  Verify the expression is an access reference to 'Access within a
-      --  return statement as this is the only time an explicitly aliased
-      --  formal has different semantics.
-
-      if Nkind (Exp) /= N_Attribute_Reference
-        or else Get_Attribute_Id (Attribute_Name (Exp)) /= Attribute_Access
-        or else not (In_Return_Value (Exp)
-                      or else In_Return_Context)
-        or else not Needs_Result_Accessibility_Level (Scop)
-      then
-         return False;
-      end if;
-
-      --  Check if the prefix of the reference is indeed an explicitly aliased
-      --  formal parameter for the function Scop. Additionally, we must check
-      --  that Scop returns an anonymous access type, otherwise the special
-      --  rules dictating a need for a dynamic check are not in effect.
-
-      return Is_Entity_Name (Prefix (Exp))
-               and then Is_Explicitly_Aliased (Entity (Prefix (Exp)));
-   end Is_Special_Aliased_Formal_Access;
 
    --------------------------------------
    -- Needs_Result_Accessibility_Level --

@@ -4958,7 +4958,9 @@ package body Exp_Ch4 is
                     and then Ekind (Current_Scope) = E_Function
                     and then
                       Ekind (Etype (Current_Scope)) = E_General_Access_Type
-                    and then In_Return_Value (N)
+                    and then Nkind (Parent (N)) = N_Type_Conversion
+                    and then
+                      Nkind (Parent (Parent (N))) = N_Simple_Return_Statement
                   then
                      Set_Master_Id (PtrT, Master_Id (Etype (Current_Scope)));
 
@@ -12146,9 +12148,9 @@ package body Exp_Ch4 is
          --  Apply an accessibility check when the conversion operand is an
          --  access parameter (or a renaming thereof), unless conversion was
          --  expanded from an Unchecked_ or Unrestricted_Access attribute,
-         --  or for the actual of a class-wide interface parameter. Note that
-         --  other checks may still need to be applied below (such as tagged
-         --  type checks).
+         --  or for the actual of a tagged type parameter in a synthesized
+         --  subprogram call. Note that other checks may still need to be
+         --  applied below (such as tagged type checks).
 
          elsif Is_Entity_Name (Operand_Acc)
            and then Has_Extra_Accessibility (Entity (Operand_Acc))
@@ -12157,12 +12159,11 @@ package body Exp_Ch4 is
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
            and then not No_Dynamic_Accessibility_Checks_Enabled (N)
          then
-            if not Comes_From_Source (N)
-              and then Nkind (Parent (N)) in N_Function_Call
-                                           | N_Parameter_Association
-                                           | N_Procedure_Call_Statement
-              and then Is_Interface (Designated_Type (Target_Type))
-              and then Is_Class_Wide_Type (Designated_Type (Target_Type))
+            if Nkind (Parent (N)) in N_Function_Call
+                                   | N_Parameter_Association
+                                   | N_Procedure_Call_Statement
+              and then not Comes_From_Source (Parent (N))
+              and then Is_Tagged_Type (Designated_Type (Target_Type))
             then
                null;
 

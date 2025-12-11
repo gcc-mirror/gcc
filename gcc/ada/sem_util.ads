@@ -1747,10 +1747,17 @@ package Sem_Util is
    function In_Quantified_Expression (N : Node_Id) return Boolean;
    --  Returns true if the expression N occurs within a quantified expression
 
-   function In_Return_Value (Expr : Node_Id) return Boolean;
-   --  Returns true if the expression Expr occurs within a simple return
-   --  statement or is part of an assignment to the return object in an
-   --  extended return statement.
+   function In_Return_Value (Exp : Node_Id) return Boolean;
+   --  Returns true if expression Exp occurs within a simple return statement
+   --  or within the declaration of the return object in an extended return
+   --  statement.
+
+   --  This predicate is intended to be used for accessibility purposes and
+   --  thus implements the criterion defined by RM 10.3.2(10.5/5): Exp must
+   --  either define the result of the enclosing function, in other words be
+   --  an operative constituent of the return value, or else must be part of
+   --  the return value and have its accessibility level tied to that of the
+   --  result of the enclosing function.
 
    function In_Reverse_Storage_Order_Object (N : Node_Id) return Boolean;
    --  Returns True if N denotes a component or subcomponent in a record or
@@ -2301,9 +2308,6 @@ package Sem_Util is
    function Is_Local_Variable_Reference (Expr : Node_Id) return Boolean;
    --  Determines whether Expr is a reference to a variable or formal parameter
    --  of mode OUT or IN OUT of the current enclosing subprogram.
-
-   function Is_Master (N : Node_Id) return Boolean;
-   --  Determine if the given node N constitutes a finalization master
 
    function Is_Name_Reference (N : Node_Id) return Boolean;
    --  Determine whether arbitrary node N is a reference to a name. This is

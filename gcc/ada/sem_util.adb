@@ -12759,9 +12759,9 @@ package body Sem_Util is
    function Is_Explicitly_Aliased (N : Node_Id) return Boolean is
    begin
       return Is_Formal (N)
-               and then Present (Parent (N))
-               and then Nkind (Parent (N)) = N_Parameter_Specification
-               and then Aliased_Present (Parent (N));
+        and then Present (Parent (N))
+        and then Nkind (Parent (N)) = N_Parameter_Specification
+        and then Aliased_Present (Parent (N));
    end Is_Explicitly_Aliased;
 
    ----------------------------
@@ -14741,6 +14741,173 @@ package body Sem_Util is
       end loop;
    end In_Quantified_Expression;
 
+   ---------------------
+   -- In_Return_Value --
+   ---------------------
+
+   function In_Return_Value (Exp : Node_Id) return Boolean is
+      Prev : Node_Id := Exp;
+      P    : Node_Id := Parent (Exp);
+      --  P and Prev will be used for traversing the AST, while maintaining an
+      --  invariant that P = Parent (Prev).
+
+      In_Component   : Boolean := False;
+      --  Whether Exp occurs within a component reference
+
+      In_Dereference : Boolean := False;
+      --  Whether Exp occurs within a dereference
+
+      function Exp_Defines_Or_Is_Tied_To_Return_Value return Boolean is
+        (not In_Component
+          and then not In_Dereference
+
+          --  RM 3.10.2(14.5/3): Within a return statement, the accessibility
+          --  level of the anonymous access type of an access result is that
+          --  of the master of the call.
+
+          and then
+            (Nkind (Prev) /= N_Attribute_Reference
+              or else
+                Ekind (Etype (Current_Subprogram)) = E_Anonymous_Access_Type));
+      --  Whether Exp defines or is tied to the return value
+
+   --  Start of processing for In_Return_Value
+
+   begin
+      --  Move through parent nodes to determine if Expr contributes to the
+      --  return value of the current subprogram.
+
+      Parent_Loop : while Present (P) loop
+
+         case Nkind (P) is
+            --  A return expression is obviously a return value
+
+            when N_Simple_Return_Statement =>
+               return Exp_Defines_Or_Is_Tied_To_Return_Value;
+
+            --  A return object obviously contains a return value
+
+            when N_Object_Declaration =>
+               return Is_Return_Object (Defining_Identifier (P))
+                 and then Exp_Defines_Or_Is_Tied_To_Return_Value;
+
+            --  An allocator is not a return value unless specially built
+
+            when N_Allocator =>
+               return For_Special_Return_Object (P)
+                 and then Exp_Defines_Or_Is_Tied_To_Return_Value;
+
+            --  Check if we are the actual of an explicitly aliased parameter
+            --  of a function call. This specific case seems to be missing in
+            --  the RM 10.3.2(10.5/5) rule, but is necessary to propagate the
+            --  master of the call down the chain of nested function calls.
+
+            when N_Function_Call => declare
+               Subp : constant Node_Id := Name (P);
+
+               A   : Node_Id;
+               F   : Node_Id;
+               Nam : Entity_Id;
+
+            begin
+               exit Parent_Loop when Prev = Subp;
+
+               if Ekind (Etype (Subp)) = E_Subprogram_Type then
+                  Nam := Etype (Subp);
+               elsif Is_Entity_Name (Subp) then
+                  Nam := Entity (Subp);
+               else
+                  exit Parent_Loop;
+               end if;
+
+               F := First_Formal (Nam);
+               A := First_Actual (P);
+
+               while Present (F) loop
+                  exit Parent_Loop when No (A);
+
+                  if A = Prev
+                    or else (Nkind (Prev) = N_Parameter_Association
+                              and then A = Explicit_Actual_Parameter (Prev))
+                  then
+                     if Is_Aliased (F) then
+                        exit;
+                     else
+                        exit Parent_Loop;
+                     end if;
+                  end if;
+
+                  Next_Formal (F);
+                  Next_Actual (A);
+               end loop;
+
+               --  The actual should have been seen
+
+               pragma Assert (Present (F));
+            end;
+
+            --  Operators do not have explicitly aliased operands
+
+            when N_Op =>
+               exit Parent_Loop;
+
+            --  Ignore ranges as they don't contribute to the return value
+
+            when N_Range =>
+               exit Parent_Loop;
+
+            --  Accept operative constituents
+
+            when N_Case_Expression =>
+               exit Parent_Loop when Prev = Expression (P);
+
+            when N_If_Expression =>
+               exit Parent_Loop when Prev = First (Expressions (P));
+
+            when N_Case_Expression_Alternative
+               | N_Qualified_Expression
+               | N_Type_Conversion
+               | N_Unchecked_Type_Conversion
+            =>
+               null;
+
+            --  Record whether we are in a component
+
+            when N_Indexed_Component
+               | N_Selected_Component
+               | N_Slice
+            =>
+               In_Component := True;
+
+            --  Record whether we are in a dereference
+
+            when N_Explicit_Dereference =>
+               In_Dereference := True;
+
+            when N_Attribute_Reference =>
+               exit Parent_Loop when Attribute_Name (P) /= Name_Access;
+
+               --  'Access kills a previous component or dereference
+
+               In_Component := False;
+               In_Dereference := False;
+
+            when others =>
+               --  Prevent the search from going too far
+
+               exit Parent_Loop when Is_Statement (P)
+                 or else Is_Body_Or_Package_Declaration (P);
+         end case;
+
+         --  Iterate up to the next parent, keeping track of the previous one
+
+         Prev := P;
+         P := Parent (P);
+      end loop Parent_Loop;
+
+      return False;
+   end In_Return_Value;
+
    -------------------------------------
    -- In_Reverse_Storage_Order_Object --
    -------------------------------------
@@ -14893,107 +15060,6 @@ package body Sem_Util is
 
       return False;
    end In_Subtree;
-
-   ---------------------
-   -- In_Return_Value --
-   ---------------------
-
-   function In_Return_Value (Expr : Node_Id) return Boolean is
-      Par              : Node_Id;
-      Prev_Par         : Node_Id;
-      Pre              : Node_Id;
-      In_Function_Call : Boolean := False;
-
-   begin
-      --  Move through parent nodes to determine if Expr contributes to the
-      --  return value of the current subprogram.
-
-      Par      := Expr;
-      Prev_Par := Empty;
-      while Present (Par) loop
-
-         case Nkind (Par) is
-            --  Ignore ranges and they don't contribute to the result
-
-            when N_Range =>
-               return False;
-
-            --  An object declaration whose parent is an extended return
-            --  statement is a return object.
-
-            when N_Object_Declaration =>
-               if Present (Parent (Par))
-                 and then Nkind (Parent (Par)) = N_Extended_Return_Statement
-               then
-                  return True;
-               end if;
-
-            --  We hit a simple return statement, so we know we are in one
-
-            when N_Simple_Return_Statement =>
-               return True;
-
-            --  Only include one nexting level of function calls
-
-            when N_Function_Call =>
-               if not In_Function_Call then
-                  In_Function_Call := True;
-
-                  --  When the function return type has implicit dereference
-                  --  specified we know it cannot directly contribute to the
-                  --  return value.
-
-                  if Present (Etype (Par))
-                    and then Has_Implicit_Dereference
-                               (Get_Full_View (Etype (Par)))
-                  then
-                     return False;
-                  end if;
-               else
-                  return False;
-               end if;
-
-            --  Check if we are on the right-hand side of an assignment
-            --  statement to a return object.
-
-            --  This is not specified in the RM ???
-
-            when N_Assignment_Statement =>
-               if Prev_Par = Name (Par) then
-                  return False;
-               end if;
-
-               Pre := Name (Par);
-               while Present (Pre) loop
-                  if Is_Entity_Name (Pre)
-                    and then Is_Return_Object (Entity (Pre))
-                  then
-                     return True;
-                  end if;
-
-                  exit when Nkind (Pre) not in N_Selected_Component
-                                             | N_Indexed_Component
-                                             | N_Slice;
-
-                  Pre := Prefix (Pre);
-               end loop;
-
-            --  Otherwise, we hit a master which was not relevant
-
-            when others =>
-               if Is_Master (Par) then
-                  return False;
-               end if;
-         end case;
-
-         --  Iterate up to the next parent, keeping track of the previous one
-
-         Prev_Par := Par;
-         Par      := Parent (Par);
-      end loop;
-
-      return False;
-   end In_Return_Value;
 
    -----------------------------------------
    -- In_Statement_Condition_With_Actions --
@@ -18991,62 +19057,6 @@ package body Sem_Util is
          end;
       end if;
    end Is_Local_Variable_Reference;
-
-   ---------------
-   -- Is_Master --
-   ---------------
-
-   function Is_Master (N : Node_Id) return Boolean is
-      Disable_Subexpression_Masters : constant Boolean := True;
-
-   begin
-      if Nkind (N) in N_Subprogram_Body | N_Task_Body | N_Entry_Body
-        or else Is_Statement (N)
-      then
-         return True;
-      end if;
-
-      --  We avoid returning True when the master is a subexpression described
-      --  in RM 7.6.1(3/2) for the proposes of accessibility level calculation
-      --  in Accessibility_Level_Helper.Innermost_Master_Scope_Depth ???
-
-      if not Disable_Subexpression_Masters
-        and then Nkind (N) in N_Subexpr
-      then
-         declare
-            Par : Node_Id := N;
-
-            subtype N_Simple_Statement_Other_Than_Simple_Return
-              is Node_Kind with Static_Predicate =>
-                N_Simple_Statement_Other_Than_Simple_Return
-                  in N_Abort_Statement
-                   | N_Assignment_Statement
-                   | N_Code_Statement
-                   | N_Delay_Statement
-                   | N_Entry_Call_Statement
-                   | N_Free_Statement
-                   | N_Goto_Statement
-                   | N_Null_Statement
-                   | N_Raise_Statement
-                   | N_Requeue_Statement
-                   | N_Exit_Statement
-                   | N_Procedure_Call_Statement;
-         begin
-            while Present (Par) loop
-               Par := Parent (Par);
-               if Nkind (Par) in N_Subexpr |
-                 N_Simple_Statement_Other_Than_Simple_Return
-               then
-                  return False;
-               end if;
-            end loop;
-
-            return True;
-         end;
-      end if;
-
-      return False;
-   end Is_Master;
 
    -----------------------
    -- Is_Name_Reference --

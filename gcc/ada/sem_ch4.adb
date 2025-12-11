@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Accessibility;  use Accessibility;
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Debug;          use Debug;
@@ -1535,51 +1534,6 @@ package body Sem_Ch4 is
          else
             Remove_Abstract_Operations (N);
          end if;
-      end if;
-
-      --  Check the accessibility level for actuals for explicitly aliased
-      --  formals when a function call appears within a return statement.
-      --  This is only checked if the enclosing subprogram Comes_From_Source,
-      --  to avoid issuing errors on calls occurring in wrapper subprograms
-      --  (for example, where the call is part of an expression of an aspect
-      --  associated with a wrapper, such as Pre'Class).
-
-      if Nkind (N) = N_Function_Call
-        and then Comes_From_Source (N)
-        and then Present (Nam_Ent)
-        and then In_Return_Value (N)
-        and then Comes_From_Source (Current_Subprogram)
-      then
-         declare
-            Form : Node_Id;
-            Act  : Node_Id;
-         begin
-            Act  := First_Actual (N);
-            Form := First_Formal (Nam_Ent);
-
-            while Present (Form) and then Present (Act) loop
-               --  Check whether the formal is aliased and if the accessibility
-               --  level of the actual is deeper than the accessibility level
-               --  of the enclosing subprogram to which the current return
-               --  statement applies.
-
-               --  Should we be checking Is_Entity_Name on Act? Won't this miss
-               --  other cases ???
-
-               if Is_Explicitly_Aliased (Form)
-                 and then Is_Entity_Name (Act)
-                 and then Static_Accessibility_Level
-                            (Act, Zero_On_Dynamic_Level)
-                              > Subprogram_Access_Level (Current_Subprogram)
-               then
-                  Error_Msg_N ("actual for explicitly aliased formal is too"
-                                & " short lived", Act);
-               end if;
-
-               Next_Formal (Form);
-               Next_Actual (Act);
-            end loop;
-         end;
       end if;
 
       if Ada_Version >= Ada_2012 then
