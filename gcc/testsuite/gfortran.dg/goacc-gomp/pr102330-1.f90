@@ -3,7 +3,7 @@
 ! { dg-additional-options --param=openacc-privatization=noisy }
 
 subroutine r1
-  !$omp master taskloop simd
+  !$omp masked taskloop simd
   do i = 1, 8
   end do
   !$acc parallel loop ! { dg-line l_compute1 }

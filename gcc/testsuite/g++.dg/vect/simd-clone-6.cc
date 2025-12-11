@@ -10,7 +10,7 @@ struct S { int a; };
 int c[N], e[N], f[N];
 S d[N];
 
-#pragma omp declare simd linear(ref(b, c) : 1)
+#pragma omp declare simd linear(b, c : ref, step (1))
 int
 foo (int a, S &b, int &c)
 {

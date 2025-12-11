@@ -42165,9 +42165,10 @@ cp_parser_omp_clause_reduction (cp_parser *parser, enum omp_clause_code kind,
     case CPP_PLUS: code = PLUS_EXPR; break;
     case CPP_MULT: code = MULT_EXPR; break;
     case CPP_MINUS:
-      warning_at (cp_lexer_peek_token (parser->lexer)->location,
-		  OPT_Wdeprecated_openmp,
-		  "%<-%> operator for reductions deprecated in OpenMP 5.2");
+      if (is_omp)
+	warning_at (cp_lexer_peek_token (parser->lexer)->location,
+		    OPT_Wdeprecated_openmp,
+		    "%<-%> operator for reductions deprecated in OpenMP 5.2");
       code = MINUS_EXPR;
       break;
     case CPP_AND: code = BIT_AND_EXPR; break;

@@ -1,3 +1,5 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
+
 module m
  implicit none
  integer :: ii

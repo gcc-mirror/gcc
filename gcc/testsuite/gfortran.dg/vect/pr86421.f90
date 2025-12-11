@@ -9,7 +9,7 @@ contains
   subroutine foo(x, y, z)
     real :: x
     integer :: y, z
-    !$omp declare simd linear(ref(x)) linear(val(y)) linear(uval(z))
+    !$omp declare simd linear(x : ref) linear(y : val) linear(z : uval)
     x = x + y
     z = z + 1
   end subroutine

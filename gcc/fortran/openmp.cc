@@ -1495,9 +1495,10 @@ gfc_match_omp_clause_reduction (char pc, gfc_omp_clauses *c, bool openacc,
     rop = OMP_REDUCTION_TIMES;
   else if (gfc_match_char ('-') == MATCH_YES)
     {
-      gfc_warning (OPT_Wdeprecated_openmp,
-		   "%<-%> operator at %C for reductions deprecated in "
-		   "OpenMP 5.2");
+      if (!openacc)
+	gfc_warning (OPT_Wdeprecated_openmp,
+		     "%<-%> operator at %C for reductions deprecated in "
+		     "OpenMP 5.2");
       rop = OMP_REDUCTION_MINUS;
     }
   else if (gfc_match (".and.") == MATCH_YES)
