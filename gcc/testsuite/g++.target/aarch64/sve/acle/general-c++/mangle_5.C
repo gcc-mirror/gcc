@@ -1,3 +1,7 @@
+// { dg-options "-Wno-volatile" }
+// Disable warning about volatile qualifier on function arguments as they are
+// deprecated in C++20.
+
 typedef const __SVInt8_t foo;
 typedef volatile foo bar;
 
