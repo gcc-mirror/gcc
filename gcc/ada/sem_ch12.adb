@@ -7090,7 +7090,10 @@ package body Sem_Ch12 is
            and then Convention (Gen_Unit) /= Convention_Intrinsic
          then
             Set_Convention (Act_Decl_Id, Convention (Gen_Unit));
+            Set_Convention (Anon_Id,     Convention (Gen_Unit));
+
             Set_Is_Exported (Act_Decl_Id, Is_Exported (Gen_Unit));
+            Set_Is_Exported (Anon_Id,     Is_Exported (Gen_Unit));
          end if;
 
          Generate_Definition (Act_Decl_Id);
