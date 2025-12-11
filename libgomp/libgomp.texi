@@ -175,7 +175,7 @@ See also @ref{OpenMP Implementation Status}.
 
 The @code{_OPENMP} preprocessor macro and Fortran's @code{openmp_version}
 parameter, provided by @code{omp_lib.h} and the @code{omp_lib} module, have
-the value @code{201511} (i.e. OpenMP 4.5).
+the value @code{202111} (i.e. OpenMP 5.2).
 
 @node OpenMP 4.5
 @section OpenMP 4.5
@@ -401,31 +401,31 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item Deprecation of no-argument @code{destroy} clause on @code{depobj}
       @tab N/A @tab undeprecated in OpenMP 6
 @item @code{linear} clause syntax changes and @code{step} modifier @tab Y @tab
-@item Deprecation of minus operator for reductions @tab N @tab
-@item Deprecation of separating @code{map} modifiers without comma @tab N @tab
+@item Deprecation of minus operator for reductions @tab Y @tab
+@item Deprecation of separating @code{map} modifiers without comma @tab Y @tab
 @item @code{declare mapper} with iterator and @code{present} modifiers
       @tab N @tab
 @item If a matching mapped list item is not found in the data environment, the
       pointer retains its original value @tab Y @tab
 @item New @code{enter} clause as alias for @code{to} on declare target directive
       @tab Y @tab
-@item Deprecation of @code{to} clause on declare target directive @tab N @tab
+@item Deprecation of @code{to} clause on declare target directive @tab Y @tab
 @item Extended list of directives permitted in Fortran pure procedures
       @tab Y @tab
 @item New @code{allocators} directive for Fortran @tab Y @tab
 @item Deprecation of @code{allocate} directive for Fortran
-      allocatables/pointers @tab N @tab
+      allocatables/pointers @tab Y @tab
 @item Optional paired @code{end} directive with @code{dispatch} @tab Y @tab
 @item New @code{memspace} and @code{traits} modifiers for @code{uses_allocators}
       @tab N @tab
 @item Deprecation of traits array following the allocator_handle expression in
-      @code{uses_allocators} @tab N @tab
+      @code{uses_allocators} @tab Y @tab
 @item New @code{otherwise} clause as alias for @code{default} on metadirectives
       @tab Y @tab
-@item Deprecation of @code{default} clause on metadirectives @tab N
+@item Deprecation of @code{default} clause on metadirectives @tab Y
       @tab Both @code{otherwise} and @code{default} are accepted
       without diagnostics.
-@item Deprecation of delimited form of @code{declare target} @tab N @tab
+@item Deprecation of delimited form of @code{declare target} @tab Y @tab
 @item Reproducible semantics changed for @code{order(concurrent)} @tab N @tab
 @item @code{allocate} and @code{firstprivate} clauses on @code{scope}
       @tab Y @tab
@@ -435,7 +435,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item New @code{doacross} clause as alias for @code{depend} with
       @code{source}/@code{sink} modifier @tab Y @tab
 @item Deprecation of @code{depend} with @code{source}/@code{sink} modifier
-      @tab N @tab
+      @tab Y @tab
 @item @code{omp_cur_iteration} keyword @tab Y @tab
 @end multitable
 
@@ -1365,8 +1365,9 @@ They have C linkage and do not throw exceptions.
 This functions returns the currently active thread affinity policy, which is
 set via @env{OMP_PROC_BIND}.  Possible values are @code{omp_proc_bind_false},
 @code{omp_proc_bind_true}, @code{omp_proc_bind_primary},
-@code{omp_proc_bind_master}, @code{omp_proc_bind_close} and @code{omp_proc_bind_spread},
-where @code{omp_proc_bind_master} is an alias for @code{omp_proc_bind_primary}.
+@code{omp_proc_bind_master}, @code{omp_proc_bind_close}
+and @code{omp_proc_bind_spread}, where @code{omp_proc_bind_master} is a
+deprecated alias for @code{omp_proc_bind_primary}.
 
 @item @emph{C/C++}:
 @multitable @columnfractions .20 .80
@@ -4004,7 +4005,7 @@ are only printed when @var{verbose} set to @code{true}.
 
 @smallexample
 OPENMP DISPLAY ENVIRONMENT BEGIN
-  _OPENMP = '201511'
+  _OPENMP = '202111'
   [host] OMP_DYNAMIC = 'FALSE'
   [host] OMP_NESTED = 'FALSE'
   [all] OMP_CANCELLATION = 'FALSE'
@@ -4429,14 +4430,14 @@ When a list with more than value is specified, it also affects the
 Specifies whether threads may be moved between processors.  If set to
 @code{TRUE}, OpenMP threads should not be moved; if set to @code{FALSE}
 they may be moved.  Alternatively, a comma separated list with the
-values @code{PRIMARY}, @code{MASTER}, @code{CLOSE} and @code{SPREAD} can
-be used to specify the thread affinity policy for the corresponding nesting
-level.  With @code{PRIMARY} and @code{MASTER} the worker threads are in the
-same place partition as the primary thread.  With @code{CLOSE} those are
-kept close to the primary thread in contiguous place partitions.  And
-with @code{SPREAD} a sparse distribution
-across the place partitions is used.  Specifying more than one item in the
-list automatically enables nesting by default.
+values @code{PRIMARY}, @code{MASTER} (deprecated since OpenMP 5.1),
+@code{CLOSE} and @code{SPREAD} can be used to specify the thread affinity
+policy for the corresponding nesting level.  With @code{PRIMARY} and
+@code{MASTER} the worker threads are in the same place partition as the
+primary thread. With @code{CLOSE} those are kept close to the primary
+thread in contiguous place partitions.  And with @code{SPREAD} a sparse
+distribution across the place partitions is used.  Specifying more than
+one item in the list automatically enables nesting by default.
 
 When a list is specified, it also affects the @var{max-active-levels-var} ICV
 as described in @ref{OMP_MAX_ACTIVE_LEVELS}.

@@ -16238,7 +16238,7 @@ named constants:
 @code{OMP_LIB} provides the scalar default-integer
 named constant @code{openmp_version} with a value of the form
 @var{yyyymm}, where @code{yyyy} is the year and @var{mm} the month
-of the OpenMP version; for OpenMP v4.5 the value is @code{201511}.
+of the OpenMP version; for OpenMP v5.2 the value is @code{202111}.
 
 The following derived type:
 
@@ -16271,7 +16271,7 @@ kind @code{omp_proc_bind_kind}:
 @item @code{omp_proc_bind_false}
 @item @code{omp_proc_bind_true}
 @item @code{omp_proc_bind_primary}
-@item @code{omp_proc_bind_master}
+@item @code{omp_proc_bind_master} (deprecated)
 @item @code{omp_proc_bind_close}
 @item @code{omp_proc_bind_spread}
 @end table

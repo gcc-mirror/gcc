@@ -1825,9 +1825,9 @@ architectures, including Unix and Microsoft Windows platforms.
 It consists of a set of compiler directives, library routines,
 and environment variables that influence run-time behavior.
 
-GNU Fortran implements all of the @uref{https://openmp.org/specifications/,
-OpenMP Application Program Interface v4.5}, and many features from later
-versions of the OpenMP specification.
+GNU Fortran implements most of the @uref{https://openmp.org/specifications/,
+OpenMP Application Program Interface v5.2}, with some omissions and
+additional features from later versions.
 @xref{OpenMP Implementation Status,,,libgomp,
 GNU Offloading and Multi Processing Runtime Library},
 for more details about currently supported OpenMP features.
