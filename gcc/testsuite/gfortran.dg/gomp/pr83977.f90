@@ -1,6 +1,6 @@
 ! PR middle-end/83977
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 integer function foo (a, b)
    integer :: a, b
 !$omp declare simd uniform(b) linear(ref(a):b)

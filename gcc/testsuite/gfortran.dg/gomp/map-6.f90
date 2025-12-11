@@ -1,5 +1,5 @@
 ! { dg-additional-options "-fdump-tree-original" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 implicit none
 
 integer :: a, b, b1, b2, b3, b4, b5, b6

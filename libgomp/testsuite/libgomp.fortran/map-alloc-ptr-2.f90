@@ -1,5 +1,5 @@
 ! { dg-do run }
-! 
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! PR fortran/96668
 
 module m

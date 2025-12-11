@@ -1,5 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-O2 -fopenmp -fdump-tree-optimized" }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop(?:_ull)?_doacross_start \[^\n\r]*, (?:2147483649|-2147483647), 0, " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_loop_end " 1 "optimized" } }
 ! { dg-final { scan-tree-dump-times "__builtin_GOMP_doacross(?:_ull)?_post " 1 "optimized" } }

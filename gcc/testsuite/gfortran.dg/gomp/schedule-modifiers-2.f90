@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine foo
   integer :: i
   !$omp do schedule (nonmonotonic: static, 2)

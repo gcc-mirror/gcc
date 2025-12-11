@@ -1,9 +1,10 @@
 ! { dg-additional-options "-fopenmp-allocators -fdump-tree-original" }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   use omp_lib
   use iso_c_binding, only: c_intptr_t
   implicit none (type,external)
-  integer(omp_allocator_handle_kind) :: handle  
+  integer(omp_allocator_handle_kind) :: handle
   integer(c_intptr_t) :: iptr
 end module m
 

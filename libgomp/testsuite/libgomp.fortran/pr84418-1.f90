@@ -20,7 +20,7 @@
 contains
   real function foo (x, y)
     real :: x, y
-    !$omp declare simd linear (ref (x, y))
+    !$omp declare simd linear (ref (x, y)) ! { dg-warning "Specification of the list items as arguments to the modifiers at \\(1\\) is deprecated since OpenMP 5.2 \\\[-Wdeprecated-openmp\\\]" }
     foo = x + y
   end function
 end

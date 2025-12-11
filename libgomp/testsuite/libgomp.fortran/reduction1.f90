@@ -77,7 +77,7 @@
   cnt = -1
 
 !$omp parallel num_threads (3) private (n) reduction (.or.:v) &
-!$omp & reduction (-:i, ia, r, ra, d, da, c, ca)
+!$omp & reduction (-:i, ia, r, ra, d, da, c, ca) ! { dg-warning "'-' operator at \\(1\\) for reductions deprecated in OpenMP 5.2 \\\[-Wdeprecated-openmp\\\]" }
 !$ if (i .ne. 0 .or. any (ia .ne. 0)) v = .true.
 !$ if (r .ne. 0 .or. any (ra .ne. 0)) v = .true.
 !$ if (d .ne. 0 .or. any (da .ne. 0)) v = .true.

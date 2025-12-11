@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fdump-tree-original" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   implicit none (type, external)
 

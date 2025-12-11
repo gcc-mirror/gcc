@@ -1,5 +1,5 @@
 ! { dg-do run }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
 contains
   integer function foo ()

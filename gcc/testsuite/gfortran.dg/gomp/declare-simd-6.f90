@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-additional-options "-fdump-tree-gimple" }
-!
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! PR fortran/106566
 !
 ! { dg-final { scan-tree-dump-times "__attribute__\\(\\(omp declare simd \\(linear\\(ref\\(0\\):4\\) simdlen\\(8\\)\\)\\)\\)" 2 "gimple" } }

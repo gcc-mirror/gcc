@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-additional-options "-fdump-tree-original" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine f1
   !$omp declare target device_type (any)  ! { dg-warning "OMP DECLARE TARGET directive at .1. with only DEVICE_TYPE or INDIRECT clauses is ignored" }
 end subroutine

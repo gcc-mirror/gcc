@@ -1,5 +1,6 @@
 ! { dg-additional-options "-fopenmp-allocators" }
 ! { dg-additional-options "-fdump-tree-omplower" }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 program main
   use iso_c_binding
   use omp_lib

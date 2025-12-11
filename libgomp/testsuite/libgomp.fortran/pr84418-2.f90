@@ -3,7 +3,7 @@
 ! { dg-options "-fno-inline" }
 ! { dg-additional-options "-msse2" { target sse2_runtime } }
 ! { dg-additional-options "-mavx" { target avx_runtime } }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
   type p
     integer :: i, j
   end type
@@ -25,7 +25,7 @@
   do i = 1, 1024
     if (c(i).ne.(6 * i)) stop 1
   end do
-contains  
+contains
   function foo (x, y)
     type (p) :: x
     integer :: y(4), foo

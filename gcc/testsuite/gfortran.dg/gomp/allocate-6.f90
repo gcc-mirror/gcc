@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module my_omp_lib
   use iso_c_binding, only: c_intptr_t
   !use omp_lib

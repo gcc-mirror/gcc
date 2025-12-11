@@ -1,7 +1,7 @@
 ! { dg-do compile }
 ! { dg-additional-options "-cpp -foffload=disable -fdump-tree-gimple" }
 ! { dg-additional-options "-mavx512bw" { target { i?86-*-* x86_64-*-* } } }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 #undef i386
 
 program main

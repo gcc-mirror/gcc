@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m2
   implicit none (type, external)
 

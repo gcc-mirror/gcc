@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 ! Minimal test for valid code:
 ! - predefined allocators do not need any special treatment in uses_allocators
 !   (as 'requires dynamic_allocators' is the default).

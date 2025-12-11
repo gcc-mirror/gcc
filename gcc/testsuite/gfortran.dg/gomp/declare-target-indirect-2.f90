@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-options "-fopenmp -fdump-tree-gimple" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
 contains
   subroutine sub1

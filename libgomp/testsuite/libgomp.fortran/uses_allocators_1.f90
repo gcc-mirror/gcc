@@ -1,4 +1,5 @@
 ! { dg-do compile }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 
 subroutine test
   use omp_lib

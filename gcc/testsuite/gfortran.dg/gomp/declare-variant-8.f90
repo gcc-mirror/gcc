@@ -1,6 +1,6 @@
 ! { dg-do compile }
 ! { dg-additional-options "-fdump-tree-gimple" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 program main
   !$omp requires atomic_default_mem_order(seq_cst)
   !$omp declare target to (test3)

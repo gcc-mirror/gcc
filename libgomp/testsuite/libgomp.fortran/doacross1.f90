@@ -1,5 +1,5 @@
 ! { dg-do run }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
   integer, parameter :: N = 256
   integer, save :: a(N), b(N / 16, 8, 4), c(N / 32, 8, 8)
   integer, save, volatile :: d, e

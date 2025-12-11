@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module declare_target_1
   !$omp declare target to (var_1, var_4) link (var_2, var_3) &
   !$omp & link (var_5) to (var_6)

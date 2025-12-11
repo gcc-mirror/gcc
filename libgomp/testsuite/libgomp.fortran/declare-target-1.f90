@@ -1,6 +1,6 @@
 ! { dg-do run }
 ! { dg-additional-sources declare-target-2.f90 }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module declare_target_1_mod
   integer :: var_x, var_y, var_z
   !$omp declare target(var_x)

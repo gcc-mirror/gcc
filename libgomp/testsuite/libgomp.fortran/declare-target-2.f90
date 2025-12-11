@@ -2,7 +2,6 @@
 ! file compiled together with declare-target-1.f90
 ! to verify inter-CU module handling of omp declare target.
 ! { dg-do compile { target { lp64 && { ! lp64 } } } }
-
 subroutine foo
   use declare_target_1_mod
 

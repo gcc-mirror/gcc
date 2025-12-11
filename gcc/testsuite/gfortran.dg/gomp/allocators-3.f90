@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine f
   integer, allocatable :: A1, A2, B(:), C
   !$omp declare target

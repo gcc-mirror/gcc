@@ -1,5 +1,5 @@
 ! { dg-additional-options "-fdump-tree-omplower -fdump-tree-original" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine foo
   implicit none
   integer :: a, b, b1

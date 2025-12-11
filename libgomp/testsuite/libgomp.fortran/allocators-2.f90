@@ -1,4 +1,5 @@
 ! { dg-additional-options "-fopenmp-allocators" }
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module m
   implicit none (type, external)
   type t

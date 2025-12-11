@@ -1,3 +1,4 @@
+! { dg-additional-options "-Wno-deprecated-openmp" }
 subroutine f1 (a)
   integer :: a(*)
   integer i

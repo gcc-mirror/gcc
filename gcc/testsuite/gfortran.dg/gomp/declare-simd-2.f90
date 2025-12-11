@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 function f1 (a, b, c, d, e, f)
   integer, value :: a, b, c
   integer :: d, e, f, f1

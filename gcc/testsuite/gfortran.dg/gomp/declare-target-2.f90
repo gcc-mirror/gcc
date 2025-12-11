@@ -1,5 +1,5 @@
 ! { dg-do compile }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 module declare_target_2
   !$omp declare target to (a) link (a)	! { dg-error "mentioned multiple times in clauses of the same OMP DECLARE TARGET directive" }
   !$omp declare target (b)

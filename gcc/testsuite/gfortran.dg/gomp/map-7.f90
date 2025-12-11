@@ -1,5 +1,5 @@
 ! { dg-additional-options "-fdump-tree-original" }
-
+! { dg-additional-options "-Wno-deprecated-openmp" }
 implicit none
 
 integer :: a, b, close, always, to, present
