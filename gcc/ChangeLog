@@ -1,3 +1,25 @@
+2025-12-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* config/i386/i386.md (lea peephole2): Add 3 new variants.
+
+2025-12-10  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/123069
+	* tree-vect-generic.cc (expand_vector_mult): Use
+	build_zero_cst (vectype) instead of build_int_cst (vectype, 0).
+
+2025-12-10  Jason Merrill  <jason@redhat.com>
+
+	* doc/invoke.texi (C++ Modules): Remove standard library header
+	units from missing pieces, mention importable header redirection.
+
+2025-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* config/sol2.h (PID_TYPE): Define.
+	* doc/tm.texi.in (Type Layout): Document PID_TYPE.
+	* doc/tm.texi: Regenerate.
+
 2025-12-09  John Ericson  <git@JohnEricson.me>
 
 	* Makefile.in: No longer include TARGET_SYSTEM_ROOT in

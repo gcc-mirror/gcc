@@ -1,3 +1,21 @@
+2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* lang.opt: Add entry for OPT_L.
+
+2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-imports.cc (a68_try_packet_in_directory): do not try
+	extensionless packet files.
+
+2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-low-ints.cc (a68_int_sign): Avoid gimplifying val twice.
+	* a68-low-reals.cc (a68_real_sign): Likewise.
+
+2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-low-prelude.cc (a68_lower_char_mult3): Fix asserts.
+
 2025-12-06  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR algol68/123007

@@ -1,3 +1,9 @@
+2025-12-10  Jason Merrill  <jason@redhat.com>
+
+	* module.cc (maybe_translate_include): Suggest <bits/stdc++.h>
+	as an alternate for importable standard library headers.
+	(importable_headers, is_importable_header): New.
+
 2025-12-09  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	Revert:

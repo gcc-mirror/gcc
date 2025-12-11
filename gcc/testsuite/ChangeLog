@@ -1,3 +1,55 @@
+2025-12-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.target/i386/lea-3.c: Add -fno-PIE.
+	* gcc.target/i386/lea-4.c: New, with -fPIE.
+
+2025-12-10  Alexandre Oliva  <oliva@adacore.com>
+
+	* gcc.dg/sibcall-12.c: Add -fno-PIE on ia32.
+	* gcc.target/i386/pr106060-2.c: Likewise.
+	* gcc.target/i386/pr106060-3.c: Likewise.
+	* gcc.target/i386/vect-shiftv4qi.c: Likewise.
+
+2025-12-10  Jakub Jelinek  <jakub@redhat.com>
+	    Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/123069
+	* gcc.c-torture/compile/pr123069.c: New test.
+
+2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/sign-int-2.a68: New test.
+	* algol68/execute/sign-real-2.a68: Likewise.
+
+2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/mult-char-1.a68: Cover int*char cases.
+
+2025-12-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/compile-std1.C: Test <vector> translation.
+
+2025-12-10  Jason Merrill  <jason@redhat.com>
+
+	* g++.dg/modules/compile-std1.C: Add dg-module-cmi lines.
+	* g++.dg/modules/modules.exp (host_header_path): New.
+	(munge_cmi): Factor out...
+	(dg-module-cmi): ...from here.
+
+2025-12-10  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr123074.C: Move to...
+	* g++.target/riscv/rvv/autovec/pr123074.C: ...here.
+	* gcc.target/riscv/rvv/rvv.exp: Remove 'C'.
+
+2025-12-10  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* g++.dg/lookup/extern-c-redecl3.C (pid_t): Define.
+	Use it for fork return type.
+	terms of __builtin_fork.
+	* g++.dg/pid_t-1.C: New test.
+	* gcc.dg/pid_t-1.c: Likewise.
+
 2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
 
 	PR tree-optimization/123074

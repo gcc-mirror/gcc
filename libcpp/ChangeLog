@@ -1,3 +1,12 @@
+2025-12-10  Jason Merrill  <jason@redhat.com>
+
+	* include/cpplib.h (struct cpp_callbacks): Replace 'path' parameter
+	with file, angle_brackets, and alternate name.
+	(cpp_get_name): Declare.
+	* files.cc (cpp_get_name): New.
+	(_cpp_stack_include, _cpp_post_stack_file, _cpp_stack_file)
+	(_cpp_stack_translated_file): Refactor, try alternate file.
+
 2025-12-07  Jason Merrill  <jason@redhat.com>
 
 	* include/cpplib.h (cpp_get_path, cpp_get_dir): Remove.
