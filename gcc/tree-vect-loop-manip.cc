@@ -2353,6 +2353,16 @@ vect_update_ivs_after_vectorizer (loop_vec_info loop_vinfo,
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   basic_block update_bb = update_e->dest;
   basic_block exit_bb = update_e->src;
+  /* Check to see if this is an empty loop pre-header block.  If it exists
+     we need to use the edge from that block -> loop header for updates but
+     must use the original exit_bb to add any new adjustment because there
+     can be a skip_epilog edge bypassing the epilog and so the loop pre-header
+     too.  */
+  if (empty_block_p (update_bb) && single_succ_p (update_bb))
+    {
+      update_e = single_succ_edge (update_bb);
+      update_bb = update_e->dest;
+    }
   gimple_stmt_iterator last_gsi = gsi_last_bb (exit_bb);
 
   for (gsi = gsi_start_phis (loop->header), gsi1 = gsi_start_phis (update_bb);
@@ -3585,6 +3595,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       /* Update IVs of original loop as if they were advanced by
 	 niters_vector_mult_vf steps.  */
       gcc_checking_assert (vect_can_advance_ivs_p (loop_vinfo));
+      update_e = skip_vector ? e : loop_preheader_edge (epilog);
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	update_e = single_succ_edge (LOOP_VINFO_IV_EXIT (loop_vinfo)->dest);
 
@@ -3604,6 +3615,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 					   skip_vector ? anchor : guard_bb,
 					   prob_epilog.invert (),
 					   irred_flag);
+
 	  doms.safe_push (guard_to);
 	  if (vect_epilogues)
 	    epilogue_vinfo->skip_this_loop_edge = guard_e;
@@ -3643,11 +3655,6 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  scale_loop_profile (epilog, prob_epilog, -1);
 	}
 
-      /* Identify the right foward edge for the non-early-break case which must
-	 be done after splitting the epilog edge.  */
-      if (!LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
-	update_e = skip_vector ? e : loop_preheader_edge (epilog);
-
       /* If we have a peeled vector iteration, all exits are the same, leave it
 	 and so the main exit needs to be treated the same as the alternative
 	 exits in that we leave their updates to vectorizable_live_operations.
@@ -3658,16 +3665,16 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
 	  tree scal_iv_ty = signed_type_for (TREE_TYPE (vector_iters_vf));
 	  tree tmp_niters_vf = make_ssa_name (scal_iv_ty);
 	  basic_block exit_bb = NULL;
-	  edge update_e = NULL;
 
 	  /* Identify the early exit merge block.  I wish we had stored this.  */
 	  for (auto e : get_loop_exit_edges (loop))
 	    if (e != LOOP_VINFO_IV_EXIT (loop_vinfo))
 	      {
 		exit_bb = e->dest;
-		update_e = single_succ_edge (exit_bb);
 		break;
 	      }
+
+	  edge update_e = single_succ_edge (exit_bb);
 	  vect_update_ivs_after_vectorizer (loop_vinfo, tmp_niters_vf,
 					    update_e, true);
 
