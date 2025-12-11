@@ -6195,8 +6195,8 @@ loongarch_adjust_block_mem (rtx mem, HOST_WIDE_INT length, rtx *loop_reg,
    the memory regions do not overlap.  */
 
 static void
-loongarch_block_move_loop (rtx dest, rtx src, HOST_WIDE_INT length,
-			   HOST_WIDE_INT align)
+loongarch_block_move_loop (rtx dest, rtx src, unsigned HOST_WIDE_INT length,
+			   unsigned HOST_WIDE_INT align)
 {
   rtx_code_label *label;
   rtx src_reg, dest_reg, final_src, test;
@@ -6252,11 +6252,11 @@ loongarch_expand_block_move (rtx dest, rtx src, rtx r_length, rtx r_align)
   if (!CONST_INT_P (r_length))
     return false;
 
-  HOST_WIDE_INT length = INTVAL (r_length);
-  if (length > la_max_inline_memcpy_size)
+  unsigned HOST_WIDE_INT length = UINTVAL (r_length);
+  if (length > (unsigned HOST_WIDE_INT) la_max_inline_memcpy_size)
     return false;
 
-  HOST_WIDE_INT align = INTVAL (r_align);
+  unsigned HOST_WIDE_INT align = UINTVAL (r_align);
 
   if (!TARGET_STRICT_ALIGN || align > LARCH_MAX_MOVE_PER_INSN)
     align = LARCH_MAX_MOVE_PER_INSN;
