@@ -104,13 +104,16 @@ EOF
   *) break;;
   esac
 done
-  
+
+# Determine the source directory to find config.sub, whether or not
+# that is also used to locate the testsuite sources.
+file=$0
+while [ -h $file ]; do
+  file=`ls -l $file | sed s/'.* -> '//`
+done
+top_srcdir=`CDPATH=. && cd \`echo "$file" | sed 's,/*[^/]*$,,;s,^$,.,'\`/.. >/dev/null && ${PWDCMD-pwd}`
 if test x"${testsuite+set}" != x"set" && test x"${srcdir+set}" != x"set"; then
-  file=$0
-  while [ -h $file ]; do
-    file=`ls -l $file | sed s/'.* -> '//`
-  done
-  srcdir=`CDPATH=. && cd \`echo "$file" | sed 's,/*[^/]*$,,;s,^$,.,'\`/.. >/dev/null && ${PWDCMD-pwd}`
+  srcdir=$top_srcdir
 fi
 
 cat >site.exp <<EOF
@@ -130,7 +133,8 @@ set HOSTCFLAGS ""
 set HOSTCXXFLAGS ""
 EOF
 if test x${target} != x; then
-  echo "set target_triplet $target" >> site.exp
+  target_canonical=`$top_srcdir/config.sub $target`
+  echo "set target_triplet $target_canonical" >> site.exp
   echo "set target_alias $target" >> site.exp
 fi
 if test x"$ALT_CC_UNDER_TEST" != x; then
