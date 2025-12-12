@@ -15,7 +15,7 @@ hide_long (long x)
   return x;
 }
   
-long int test_2 (long int x)
+void test_2 (long int x)
 {
   __analyzer_eval (labs (hide_long (42)) == 42); /* { dg-warning "TRUE" } */
   __analyzer_eval (labs (hide_long (-17)) == 17); /* { dg-warning "TRUE" } */

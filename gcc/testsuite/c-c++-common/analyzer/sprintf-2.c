@@ -3,7 +3,8 @@
 
 extern int
 sprintf(char* dst, const char* fmt, ...)
-  __attribute__((__nothrow__));
+  __attribute__((__nothrow__))
+  __attribute__((nonnull (1, 2)));
 
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 

@@ -47,11 +47,11 @@ void test (void)
 	{
 	default:
 	case 0:
-	  *pp = malloc (16);  /* { dg-warning "leak" "" { xfail *-*-* } } */
-	  // TODO: xfail
+	  *pp = malloc (16);  /* { dg-warning "leak" } */ 
 	  break;
 	case 1:
-	  free (*pp);
+	  free (*pp); /* { dg-warning "uninit" } */
+	  /* { dg-warning "double-'free'" "" { target *-*-* } .-1 } */
 	  break;
 	case 2:
 	  /* no-op.  */

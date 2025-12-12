@@ -114,7 +114,7 @@ main (void)
                 new = accept (sock,
                               (struct sockaddr *) &clientname,
                               &size);
-                if (new < 0)
+                if (new < 0) /* { dg-bogus "leak" "FIXME" { xfail *-*-* } } */
                   {
                     perror ("accept");
                     exit (EXIT_FAILURE);

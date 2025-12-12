@@ -2,5 +2,4 @@
 
 void bad_realloc(char *s, int n)
 {
-  char *p = __builtin_realloc(s, n);
-} /* { dg-warning "leak" } */
+  char *p = __builtin_realloc(s, n); } /* { dg-warning "leak" } */

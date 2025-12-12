@@ -881,21 +881,12 @@ public:
      heap-allocated regions, the numbering could be different).
      Hence we access m_check_expr, if available.  */
 
-  bool check_valid_fpath_p (const feasible_node &fnode,
-			    const gimple *emission_stmt)
+  bool check_valid_fpath_p (const feasible_node &fnode)
     const final override
   {
     if (!m_check_expr)
       return true;
-
-    /* We've reached the enode, but not necessarily the right function_point.
-       Try to get the state at the correct stmt.  */
-    region_model emission_model (fnode.get_model ().get_manager());
-    if (!fnode.get_state_at_stmt (emission_stmt, &emission_model))
-      /* Couldn't get state; accept this diagnostic.  */
-      return true;
-
-    const svalue *fsval = emission_model.get_rvalue (m_check_expr, nullptr);
+    const svalue *fsval = fnode.get_model ().get_rvalue (m_check_expr, nullptr);
     /* Check to see if the expr is also poisoned in FNODE (and in the
        same way).  */
     const poisoned_svalue * fspval = fsval->dyn_cast_poisoned_svalue ();
@@ -2139,7 +2130,8 @@ public:
 
   void
   add_events_to_path (checker_path *emission_path,
-		      const exploded_edge &eedge) const final override
+		      const exploded_edge &eedge,
+		      pending_diagnostic &) const final override
   {
     const exploded_node *dst_node = eedge.m_dest;
     const program_point &dst_point = dst_node->get_point ();
@@ -2242,6 +2234,46 @@ region_model::check_for_throw_inside_call (const gcall &call,
   ctxt->bifurcate (std::move (throws_exception));
 }
 
+/* A subclass of pending_diagnostic for complaining about jumps through NULL
+   function pointers.  */
+
+class jump_through_null : public pending_diagnostic_subclass<jump_through_null>
+{
+public:
+  jump_through_null (const gcall &call)
+  : m_call (call)
+  {}
+
+  const char *get_kind () const final override
+  {
+    return "jump_through_null";
+  }
+
+  bool operator== (const jump_through_null &other) const
+  {
+    return &m_call == &other.m_call;
+  }
+
+  int get_controlling_option () const final override
+  {
+    return OPT_Wanalyzer_jump_through_null;
+  }
+
+  bool emit (diagnostic_emission_context &ctxt) final override
+  {
+    return ctxt.warn ("jump through null pointer");
+  }
+
+  bool describe_final_event (pretty_printer &pp,
+			     const evdesc::final_event &) final override
+  {
+    pp_string (&pp, "jump through null pointer here");
+    return true;
+  }
+
+private:
+  const gcall &m_call;
+};
 /* Update this model for the CALL stmt, using CTXT to report any
    diagnostics - the first half.
 
@@ -2287,6 +2319,20 @@ region_model::on_call_pre (const gcall &call, region_model_context *ctxt)
 
   if (!callee_fndecl)
     {
+      /* Check for jump through nullptr.  */
+      if (ctxt)
+	if (tree fn_ptr = gimple_call_fn (&call))
+	  {
+	    const svalue *fn_ptr_sval = get_rvalue (fn_ptr, ctxt);
+	    if (fn_ptr_sval->all_zeroes_p ())
+	      {
+		ctxt->warn
+		  (std::make_unique<jump_through_null> (call));
+		ctxt->terminate_path ();
+		return true;
+	      }
+	  }
+
       check_for_throw_inside_call (call, NULL_TREE, ctxt);
       cd.set_any_lhs_with_defaults ();
       return true; /* Unknown side effects.  */
@@ -2796,7 +2842,9 @@ region_model::on_return (const greturn *return_stmt, region_model_context *ctxt)
    0), as opposed to any second return due to longjmp/sigsetjmp.  */
 
 void
-region_model::on_setjmp (const gcall &call, const exploded_node *enode,
+region_model::on_setjmp (const gcall &call,
+			 const exploded_node &enode,
+			 const superedge &sedge,
 			 region_model_context *ctxt)
 {
   const svalue *buf_ptr = get_rvalue (gimple_call_arg (&call, 0), ctxt);
@@ -2807,7 +2855,7 @@ region_model::on_setjmp (const gcall &call, const exploded_node *enode,
      region.  */
   if (buf_reg)
     {
-      setjmp_record r (enode, call);
+      setjmp_record r (&enode, &sedge, call);
       const svalue *sval
 	= m_mgr->get_or_create_setjmp_svalue (r, buf_reg->get_type ());
       set_value (buf_reg, sval, ctxt);
@@ -2874,38 +2922,6 @@ region_model::on_longjmp (const gcall &longjmp_call, const gcall &setjmp_call,
       const region *lhs_reg = get_lvalue (lhs, ctxt);
       set_value (lhs_reg, fake_retval_sval, ctxt);
     }
-}
-
-/* Update this region_model for a phi stmt of the form
-     LHS = PHI <...RHS...>.
-   where RHS is for the appropriate edge.
-   Get state from OLD_STATE so that all of the phi stmts for a basic block
-   are effectively handled simultaneously.  */
-
-void
-region_model::handle_phi (const gphi *phi,
-			  tree lhs, tree rhs,
-			  const region_model &old_state,
-			  hash_set<const svalue *> &svals_changing_meaning,
-			  region_model_context *ctxt)
-{
-  /* For now, don't bother tracking the .MEM SSA names.  */
-  if (tree var = SSA_NAME_VAR (lhs))
-    if (TREE_CODE (var) == VAR_DECL)
-      if (VAR_DECL_IS_VIRTUAL_OPERAND (var))
-	return;
-
-  const svalue *src_sval = old_state.get_rvalue (rhs, ctxt);
-  const region *dst_reg = old_state.get_lvalue (lhs, ctxt);
-
-  const svalue *sval = old_state.get_rvalue (lhs, nullptr);
-  if (sval->get_kind () == SK_WIDENING)
-    svals_changing_meaning.add (sval);
-
-  set_value (dst_reg, src_sval, ctxt);
-
-  if (ctxt)
-    ctxt->on_phi (phi, rhs);
 }
 
 /* Implementation of region_model::get_lvalue; the latter adds type-checking.
@@ -6121,130 +6137,6 @@ region_model::get_representative_path_var (const region *reg,
   return result;
 }
 
-/* Update this model for any phis in SNODE, assuming we came from
-   LAST_CFG_SUPEREDGE.  */
-
-void
-region_model::update_for_phis (const supernode *snode,
-			       const cfg_superedge *last_cfg_superedge,
-			       region_model_context *ctxt)
-{
-  gcc_assert (last_cfg_superedge);
-
-  /* Copy this state and pass it to handle_phi so that all of the phi stmts
-     are effectively handled simultaneously.  */
-  const region_model old_state (*this);
-
-  hash_set<const svalue *> svals_changing_meaning;
-
-  for (gphi_iterator gpi = const_cast<supernode *>(snode)->start_phis ();
-       !gsi_end_p (gpi); gsi_next (&gpi))
-    {
-      gphi *phi = gpi.phi ();
-
-      tree src = last_cfg_superedge->get_phi_arg (phi);
-      tree lhs = gimple_phi_result (phi);
-
-      /* Update next_state based on phi and old_state.  */
-      handle_phi (phi, lhs, src, old_state, svals_changing_meaning, ctxt);
-    }
-
-  for (auto iter : svals_changing_meaning)
-    m_constraints->purge_state_involving (iter);
-}
-
-/* Attempt to update this model for taking EDGE (where the last statement
-   was LAST_STMT), returning true if the edge can be taken, false
-   otherwise.
-   When returning false, if OUT is non-NULL, write a new rejected_constraint
-   to it.
-
-   For CFG superedges where LAST_STMT is a conditional or a switch
-   statement, attempt to add the relevant conditions for EDGE to this
-   model, returning true if they are feasible, or false if they are
-   impossible.
-
-   For call superedges, push frame information and store arguments
-   into parameters.
-
-   For return superedges, pop frame information and store return
-   values into any lhs.
-
-   Rejection of call/return superedges happens elsewhere, in
-   program_point::on_edge (i.e. based on program point, rather
-   than program state).  */
-
-bool
-region_model::maybe_update_for_edge (const superedge &edge,
-				     const gimple *last_stmt,
-				     region_model_context *ctxt,
-				     std::unique_ptr<rejected_constraint> *out)
-{
-  /* Handle frame updates for interprocedural edges.  */
-  switch (edge.m_kind)
-    {
-    default:
-      break;
-
-    case SUPEREDGE_CALL:
-      {
-	const call_superedge *call_edge = as_a <const call_superedge *> (&edge);
-	update_for_call_superedge (*call_edge, ctxt);
-      }
-      break;
-
-    case SUPEREDGE_RETURN:
-      {
-	const return_superedge *return_edge
-	  = as_a <const return_superedge *> (&edge);
-	update_for_return_superedge (*return_edge, ctxt);
-      }
-      break;
-
-    case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      /* This is a no-op for call summaries; we should already
-	 have handled the effect of the call summary at the call stmt.  */
-      break;
-    }
-
-  if (last_stmt == nullptr)
-    return true;
-
-  /* Apply any constraints for conditionals/switch/computed-goto statements.  */
-
-  if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
-    {
-      const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (&edge);
-      return apply_constraints_for_gcond (*cfg_sedge, cond_stmt, ctxt, out);
-    }
-
-  if (const gswitch *switch_stmt = dyn_cast <const gswitch *> (last_stmt))
-    {
-      const switch_cfg_superedge *switch_sedge
-	= as_a <const switch_cfg_superedge *> (&edge);
-      return apply_constraints_for_gswitch (*switch_sedge, switch_stmt,
-					    ctxt, out);
-    }
-
-  if (const geh_dispatch *eh_dispatch_stmt
-	= dyn_cast <const geh_dispatch *> (last_stmt))
-    {
-      const eh_dispatch_cfg_superedge *eh_dispatch_cfg_sedge
-	= as_a <const eh_dispatch_cfg_superedge *> (&edge);
-      return apply_constraints_for_eh_dispatch (*eh_dispatch_cfg_sedge,
-						eh_dispatch_stmt,
-						ctxt, out);
-    }
-
-  if (const ggoto *goto_stmt = dyn_cast <const ggoto *> (last_stmt))
-    {
-      const cfg_superedge *cfg_sedge = as_a <const cfg_superedge *> (&edge);
-      return apply_constraints_for_ggoto (*cfg_sedge, goto_stmt, ctxt);
-    }
-
-  return true;
-}
-
 /* Push a new frame_region on to the stack region.
    Populate the frame_region with child regions for the function call's
    parameters, using values from the arguments at the callsite in the
@@ -6291,28 +6183,6 @@ region_model::update_for_return_gcall (const gcall &call_stmt,
   pop_frame (lhs, nullptr, ctxt, &call_stmt);
 }
 
-/* Extract calling information from the superedge and update the model for the
-   call  */
-
-void
-region_model::update_for_call_superedge (const call_superedge &call_edge,
-					 region_model_context *ctxt)
-{
-  const gcall &call_stmt = call_edge.get_call_stmt ();
-  update_for_gcall (call_stmt, ctxt, call_edge.get_callee_function ());
-}
-
-/* Extract calling information from the return superedge and update the model
-   for the returning call */
-
-void
-region_model::update_for_return_superedge (const return_superedge &return_edge,
-					   region_model_context *ctxt)
-{
-  const gcall &call_stmt = return_edge.get_call_stmt ();
-  update_for_return_gcall (call_stmt, ctxt);
-}
-
 /* Attempt to use R to replay SUMMARY into this object.
    Return true if it is possible.  */
 
@@ -6341,376 +6211,6 @@ region_model::replay_call_summary (call_summary_replay &r,
       if (!caller_sval)
 	continue;
       m_dynamic_extents.put (caller_reg, caller_sval);
-    }
-
-  return true;
-}
-
-/* Given a true or false edge guarded by conditional statement COND_STMT,
-   determine appropriate constraints for the edge to be taken.
-
-   If they are feasible, add the constraints and return true.
-
-   Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).
-   When returning false, if OUT is non-NULL, write a new rejected_constraint
-   to it.  */
-
-bool
-region_model::
-apply_constraints_for_gcond (const cfg_superedge &sedge,
-			     const gcond *cond_stmt,
-			     region_model_context *ctxt,
-			     std::unique_ptr<rejected_constraint> *out)
-{
-  ::edge cfg_edge = sedge.get_cfg_edge ();
-  gcc_assert (cfg_edge != nullptr);
-  gcc_assert (cfg_edge->flags & (EDGE_TRUE_VALUE | EDGE_FALSE_VALUE));
-
-  enum tree_code op = gimple_cond_code (cond_stmt);
-  tree lhs = gimple_cond_lhs (cond_stmt);
-  tree rhs = gimple_cond_rhs (cond_stmt);
-  if (cfg_edge->flags & EDGE_FALSE_VALUE)
-    op = invert_tree_comparison (op, false /* honor_nans */);
-  return add_constraint (lhs, op, rhs, ctxt, out);
-}
-
-/* Return true iff SWITCH_STMT has a non-default label that contains
-   INT_CST.  */
-
-static bool
-has_nondefault_case_for_value_p (const gswitch *switch_stmt, tree int_cst)
-{
-  /* We expect the initial label to be the default; skip it.  */
-  gcc_assert (CASE_LOW (gimple_switch_label (switch_stmt, 0)) == NULL_TREE);
-  unsigned min_idx = 1;
-  unsigned max_idx = gimple_switch_num_labels (switch_stmt) - 1;
-
-  /* Binary search: try to find the label containing INT_CST.
-     This requires the cases to be sorted by CASE_LOW (done by the
-     gimplifier).  */
-  while (max_idx >= min_idx)
-    {
-      unsigned case_idx = (min_idx + max_idx) / 2;
-      tree label =  gimple_switch_label (switch_stmt, case_idx);
-      tree low = CASE_LOW (label);
-      gcc_assert (low);
-      tree high = CASE_HIGH (label);
-      if (!high)
-	high = low;
-      if (tree_int_cst_compare (int_cst, low) < 0)
-	{
-	  /* INT_CST is below the range of this label.  */
-	  gcc_assert (case_idx > 0);
-	  max_idx = case_idx - 1;
-	}
-      else if (tree_int_cst_compare (int_cst, high) > 0)
-	{
-	  /* INT_CST is above the range of this case.  */
-	  min_idx = case_idx + 1;
-	}
-      else
-	/* This case contains INT_CST.  */
-	return true;
-    }
-  /* Not found.  */
-  return false;
-}
-
-/* Return true iff SWITCH_STMT (which must be on an enum value)
-   has nondefault cases handling all values in the enum.  */
-
-static bool
-has_nondefault_cases_for_all_enum_values_p (const gswitch *switch_stmt,
-					    tree type)
-{
-  gcc_assert (switch_stmt);
-  gcc_assert (TREE_CODE (type) == ENUMERAL_TYPE);
-
-  for (tree enum_val_iter = TYPE_VALUES (type);
-       enum_val_iter;
-       enum_val_iter = TREE_CHAIN (enum_val_iter))
-    {
-      tree enum_val = TREE_VALUE (enum_val_iter);
-      gcc_assert (TREE_CODE (enum_val) == CONST_DECL);
-      gcc_assert (TREE_CODE (DECL_INITIAL (enum_val)) == INTEGER_CST);
-      if (!has_nondefault_case_for_value_p (switch_stmt,
-					    DECL_INITIAL (enum_val)))
-	return false;
-    }
-  return true;
-}
-
-/* Given an EDGE guarded by SWITCH_STMT, determine appropriate constraints
-   for the edge to be taken.
-
-   If they are feasible, add the constraints and return true.
-
-   Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).
-   When returning false, if OUT is non-NULL, write a new rejected_constraint
-   to it.  */
-
-bool
-region_model::
-apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
-			       const gswitch *switch_stmt,
-			       region_model_context *ctxt,
-			       std::unique_ptr<rejected_constraint> *out)
-{
-  tree index  = gimple_switch_index (switch_stmt);
-  const svalue *index_sval = get_rvalue (index, ctxt);
-  bool check_index_type = true;
-
-  /* With -fshort-enum, there may be a type cast.  */
-  if (ctxt && index_sval->get_kind () == SK_UNARYOP
-      && TREE_CODE (index_sval->get_type ()) == INTEGER_TYPE)
-    {
-      const unaryop_svalue *unaryop = as_a <const unaryop_svalue *> (index_sval);
-      if (unaryop->get_op () == NOP_EXPR
-	  && is_a <const initial_svalue *> (unaryop->get_arg ()))
-	if (const initial_svalue *initvalop = (as_a <const initial_svalue *>
-					       (unaryop->get_arg ())))
-	  if (initvalop->get_type ()
-	      && TREE_CODE (initvalop->get_type ()) == ENUMERAL_TYPE)
-	    {
-	      index_sval = initvalop;
-	      check_index_type = false;
-	    }
-    }
-
-  /* If we're switching based on an enum type, assume that the user is only
-     working with values from the enum.  Hence if this is an
-     implicitly-created "default", assume it doesn't get followed.
-     This fixes numerous "uninitialized" false positives where we otherwise
-     consider jumping past the initialization cases.  */
-
-  if (/* Don't check during feasibility-checking (when ctxt is NULL).  */
-      ctxt
-      /* Must be an enum value.  */
-      && index_sval->get_type ()
-      && (!check_index_type
-	  || TREE_CODE (TREE_TYPE (index)) == ENUMERAL_TYPE)
-      && TREE_CODE (index_sval->get_type ()) == ENUMERAL_TYPE
-      /* If we have a constant, then we can check it directly.  */
-      && index_sval->get_kind () != SK_CONSTANT
-      && edge.implicitly_created_default_p ()
-      && has_nondefault_cases_for_all_enum_values_p (switch_stmt,
-						     index_sval->get_type ())
-      /* Don't do this if there's a chance that the index is
-	 attacker-controlled.  */
-      && !ctxt->possibly_tainted_p (index_sval))
-    {
-      if (out)
-	*out = std::make_unique <rejected_default_case> (*this);
-      return false;
-    }
-
-  bounded_ranges_manager *ranges_mgr = get_range_manager ();
-  const bounded_ranges *all_cases_ranges
-    = ranges_mgr->get_or_create_ranges_for_switch (&edge, switch_stmt);
-  bool sat = m_constraints->add_bounded_ranges (index_sval, all_cases_ranges);
-  if (!sat && out)
-    *out = std::make_unique <rejected_ranges_constraint>
-      (*this, index, all_cases_ranges);
-  if (sat && ctxt && !all_cases_ranges->empty_p ())
-    ctxt->on_bounded_ranges (*index_sval, *all_cases_ranges);
-  return sat;
-}
-
-class rejected_eh_dispatch : public rejected_constraint
-{
-public:
-  rejected_eh_dispatch (const region_model &model)
-  : rejected_constraint (model)
-  {}
-
-  void dump_to_pp (pretty_printer *pp) const final override
-  {
-    pp_printf (pp, "rejected_eh_dispatch");
-  }
-};
-
-static bool
-exception_matches_type_p (tree exception_type,
-			  tree catch_type)
-{
-  if (catch_type == exception_type)
-    return true;
-
-  /* TODO (PR analyzer/119697): we should also handle subclasses etc;
-     see the rules in https://en.cppreference.com/w/cpp/language/catch
-
-     It looks like we should be calling (or emulating)
-     can_convert_eh from the C++ FE, but that's specific to the C++ FE.  */
-
-  return false;
-}
-
-static bool
-matches_any_exception_type_p (eh_catch ehc, tree exception_type)
-{
-  if (ehc->type_list == NULL_TREE)
-    /* All exceptions are caught here.  */
-    return true;
-
-  for (tree iter = ehc->type_list; iter; iter = TREE_CHAIN (iter))
-    if (exception_matches_type_p (TREE_VALUE (iter),
-				  exception_type))
-      return true;
-  return false;
-}
-
-bool
-region_model::
-apply_constraints_for_eh_dispatch (const eh_dispatch_cfg_superedge &edge,
-				   const geh_dispatch *,
-				   region_model_context *ctxt,
-				   std::unique_ptr<rejected_constraint> *out)
-{
-  const exception_node *current_node = get_current_thrown_exception ();
-  gcc_assert (current_node);
-  tree curr_exception_type = current_node->maybe_get_type ();
-  if (!curr_exception_type)
-    /* We don't know the specific type.  */
-    return true;
-
-  return edge.apply_constraints (this, ctxt, curr_exception_type, out);
-}
-
-bool
-region_model::
-apply_constraints_for_eh_dispatch_try (const eh_dispatch_try_cfg_superedge &edge,
-				       region_model_context */*ctxt*/,
-				       tree exception_type,
-				       std::unique_ptr<rejected_constraint> *out)
-{
-  /* TODO: can we rely on this ordering?
-     or do we need to iterate through prev_catch ?  */
-  /* The exception must not match any of the previous edges.  */
-  for (auto sibling_sedge : edge.m_src->m_succs)
-    {
-      if (sibling_sedge == &edge)
-	break;
-
-      const eh_dispatch_try_cfg_superedge *sibling_eh_sedge
-	= as_a <const eh_dispatch_try_cfg_superedge *> (sibling_sedge);
-      if (eh_catch ehc = sibling_eh_sedge->get_eh_catch ())
-	if (matches_any_exception_type_p (ehc, exception_type))
-	  {
-	    /* The earlier sibling matches, so the "unhandled" edge is
-	       not taken.  */
-	    if (out)
-	      *out = std::make_unique<rejected_eh_dispatch> (*this);
-	    return false;
-	  }
-    }
-
-  if (eh_catch ehc = edge.get_eh_catch ())
-    {
-      /* We have an edge that tried to match one or more types.  */
-
-      /* The exception must not match any of the previous edges.  */
-
-      /* It must match this type.  */
-      if (matches_any_exception_type_p (ehc, exception_type))
-	return true;
-      else
-	{
-	  /* Exception type doesn't match.  */
-	  if (out)
-	    *out = std::make_unique<rejected_eh_dispatch> (*this);
-	  return false;
-	}
-    }
-  else
-    {
-      /* This is the "unhandled exception" edge.
-	 If we get here then no sibling edges matched;
-	 we will follow this edge.  */
-      return true;
-    }
-}
-
-bool
-region_model::
-apply_constraints_for_eh_dispatch_allowed (const eh_dispatch_allowed_cfg_superedge &edge,
-					   region_model_context */*ctxt*/,
-					   tree exception_type,
-					   std::unique_ptr<rejected_constraint> *out)
-{
-  auto curr_thrown_exception_node = get_current_thrown_exception ();
-  gcc_assert (curr_thrown_exception_node);
-  tree curr_exception_type = curr_thrown_exception_node->maybe_get_type ();
-  eh_region eh_reg = edge.get_eh_region ();
-  tree type_list = eh_reg->u.allowed.type_list;
-
-  switch (edge.get_eh_kind ())
-    {
-    default:
-      gcc_unreachable ();
-    case eh_dispatch_allowed_cfg_superedge::eh_kind::expected:
-      if (!curr_exception_type)
-	{
-	  /* We don't know the specific type;
-	     assume we have one of an expected type.  */
-	  return true;
-	}
-      for (tree iter = type_list; iter; iter = TREE_CHAIN (iter))
-	if (exception_matches_type_p (TREE_VALUE (iter),
-				      exception_type))
-	  return true;
-      if (out)
-	*out = std::make_unique<rejected_eh_dispatch> (*this);
-      return false;
-
-    case eh_dispatch_allowed_cfg_superedge::eh_kind::unexpected:
-      if (!curr_exception_type)
-	{
-	  /* We don't know the specific type;
-	     assume we don't have one of an expected type.  */
-	  if (out)
-	    *out = std::make_unique<rejected_eh_dispatch> (*this);
-	  return false;
-	}
-      for (tree iter = type_list; iter; iter = TREE_CHAIN (iter))
-	if (exception_matches_type_p (TREE_VALUE (iter),
-				      exception_type))
-	  {
-	    if (out)
-	      *out = std::make_unique<rejected_eh_dispatch> (*this);
-	    return false;
-	  }
-      return true;
-    }
-}
-
-/* Given an edge reached by GOTO_STMT, determine appropriate constraints
-   for the edge to be taken.
-
-   If they are feasible, add the constraints and return true.
-
-   Return false if the constraints contradict existing knowledge
-   (and so the edge should not be taken).  */
-
-bool
-region_model::apply_constraints_for_ggoto (const cfg_superedge &edge,
-					   const ggoto *goto_stmt,
-					   region_model_context *ctxt)
-{
-  tree dest = gimple_goto_dest (goto_stmt);
-  const svalue *dest_sval = get_rvalue (dest, ctxt);
-
-  /* If we know we were jumping to a specific label.  */
-  if (tree dst_label = edge.m_dest->get_label ())
-    {
-      const label_region *dst_label_reg
-	= m_mgr->get_region_for_label (dst_label);
-      const svalue *dst_label_ptr
-	= m_mgr->get_ptr_svalue (ptr_type_node, dst_label_reg);
-
-      if (!add_constraint (dest_sval, EQ_EXPR, dst_label_ptr, ctxt))
-	return false;
     }
 
   return true;
@@ -6896,46 +6396,21 @@ public:
       m_call_stmt (call_stmt),
       m_caller_frame (caller_frame)
   {}
-  bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *custom_finder) override
-  {
-    if (m_inner && custom_finder == nullptr)
-      {
-	/* Custom stmt_finder to use m_call_stmt for the
-	   diagnostic.  */
-	class my_finder : public stmt_finder
-	{
-	public:
-	  my_finder (const gcall *call_stmt,
-		     const frame_region &caller_frame)
-	    : m_call_stmt (call_stmt),
-	      m_caller_frame (caller_frame)
-	  {}
-	  std::unique_ptr<stmt_finder> clone () const override
-	  {
-	    return std::make_unique<my_finder> (m_call_stmt, m_caller_frame);
-	  }
-	  const gimple *find_stmt (const exploded_path &) override
-	  {
-	    return m_call_stmt;
-	  }
-	  void update_event_loc_info (event_loc_info &loc_info) final override
-	  {
-	    loc_info.m_fndecl = m_caller_frame.get_fndecl ();
-	    loc_info.m_depth = m_caller_frame.get_stack_depth ();
-	  }
 
-	private:
-	  const gcall *m_call_stmt;
-	  const frame_region &m_caller_frame;
-	};
-	my_finder finder (m_call_stmt, m_caller_frame);
-	return m_inner->warn (std::move (d), &finder);
-      }
-    else
-      return region_model_context_decorator::warn (std::move (d),
-						   custom_finder);
+  pending_location
+  get_pending_location_for_diag () const override
+  {
+    pending_location ploc
+      = region_model_context_decorator::get_pending_location_for_diag ();
+
+    ploc.m_event_loc_info
+      = event_loc_info (m_call_stmt->location,
+			m_caller_frame.get_fndecl (),
+			m_caller_frame.get_stack_depth ());
+
+    return ploc;
   }
+
   const gimple *get_stmt () const override
   {
     return m_call_stmt;
@@ -7397,9 +6872,9 @@ region_model::get_or_create_region_for_heap_alloc (const svalue *size_in_bytes,
 
 	if (update_state_machine && cd)
 		{
-			const svalue *ptr_sval
-			= m_mgr->get_ptr_svalue (cd->get_lhs_type (), reg);
-      transition_ptr_sval_non_null (ctxt, ptr_sval);
+		  const svalue *ptr_sval
+		    = m_mgr->get_ptr_svalue (cd->get_lhs_type (), reg);
+		  transition_ptr_sval_non_null (ctxt, ptr_sval);
 		}
 
   return reg;
@@ -7956,6 +7431,18 @@ region_model::set_errno (const call_details &cd)
   set_value (errno_reg, new_errno_sval, cd.get_ctxt ());
 }
 
+// class region_model_context
+
+bool
+region_model_context::
+warn (std::unique_ptr<pending_diagnostic> d,
+      std::unique_ptr<pending_location::fixer_for_epath> ploc_fixer)
+{
+  pending_location ploc (get_pending_location_for_diag ());
+  ploc.m_fixer_for_epath = std::move (ploc_fixer);
+  return warn_at (std::move (d), std::move (ploc));
+}
+
 /* class noop_region_model_context : public region_model_context.  */
 
 void
@@ -8106,8 +7593,11 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
 
 /* engine's ctor.  */
 
-engine::engine (const supergraph *sg, logger *logger)
-: m_sg (sg), m_mgr (logger)
+engine::engine (region_model_manager &mgr,
+		const supergraph *sg,
+		logger *logger)
+: m_mgr (mgr),
+  m_sg (sg)
 {
 }
 
@@ -9473,18 +8963,24 @@ test_state_merging ()
     ASSERT_EQ (merged_p_star_reg, merged.get_lvalue (y, nullptr));
   }
 
-  /* Pointers: non-NULL ptrs to different globals: should be unknown.  */
+  /* Pointers: non-NULL ptrs to different globals should not merge;
+     see e.g. gcc.dg/analyzer/torture/uninit-pr108725.c  */
   {
-    region_model merged (&mgr);
+    region_model merged_model (&mgr);
+    program_point point (program_point::origin (mgr));
+    test_region_model_context ctxt;
     /* x == &y vs x == &z in the input models; these are actually casts
        of the ptrs to "int".  */
-    const svalue *merged_x_sval;
-    // TODO:
-    assert_region_models_merge (x, addr_of_y, addr_of_z, &merged,
-				&merged_x_sval);
-
-    /* We should get x == unknown in the merged model.  */
-    ASSERT_EQ (merged_x_sval->get_kind (), SK_UNKNOWN);
+    region_model model0 (&mgr);
+    region_model model1 (&mgr);
+    model0.set_value (model0.get_lvalue (x, &ctxt),
+		      model0.get_rvalue (addr_of_y, &ctxt),
+		      &ctxt);
+    model1.set_value (model1.get_lvalue (x, &ctxt),
+		      model1.get_rvalue (addr_of_z, &ctxt),
+		      &ctxt);
+    /* They should not be mergeable.  */
+    ASSERT_FALSE (model0.can_merge_with_p (model1, point, &merged_model));
   }
 
   /* Pointers: non-NULL and non-NULL: ptr to a heap region.  */
@@ -9685,7 +9181,7 @@ static void
 test_widening_constraints ()
 {
   region_model_manager mgr;
-  function_point point (program_point::origin (mgr).get_function_point ());
+  const supernode *snode = nullptr;
   tree int_0 = integer_zero_node;
   tree int_m1 = build_int_cst (integer_type_node, -1);
   tree int_1 = integer_one_node;
@@ -9694,7 +9190,7 @@ test_widening_constraints ()
   const svalue *int_0_sval = mgr.get_or_create_constant_svalue (int_0);
   const svalue *int_1_sval = mgr.get_or_create_constant_svalue (int_1);
   const svalue *w_zero_then_one_sval
-    = mgr.get_or_create_widening_svalue (integer_type_node, point,
+    = mgr.get_or_create_widening_svalue (integer_type_node, snode,
 					  int_0_sval, int_1_sval);
   const widening_svalue *w_zero_then_one
     = w_zero_then_one_sval->dyn_cast_widening_svalue ();

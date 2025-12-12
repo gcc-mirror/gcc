@@ -469,6 +469,16 @@ is_cxa_rethrow_p (const gcall &call)
   return is_named_call_p (fndecl, "__cxa_rethrow");
 }
 
+bool
+is_cxa_end_catch_p (const gcall &call)
+{
+  tree fndecl = gimple_call_fndecl (&call);
+  if (!fndecl)
+    return false;
+
+  return is_named_call_p (fndecl, "__cxa_end_catch");
+}
+
 /* For a CALL that matched is_special_named_call_p or is_named_call_p for
    some name, return a name for the called function suitable for use in
    diagnostics (stripping the leading underscores).  */

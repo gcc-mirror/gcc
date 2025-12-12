@@ -11,8 +11,10 @@ void test(void)
   for (i=0; i<256; i++) {
 
     __analyzer_eval (i >= 0); /* { dg-warning "TRUE" } */
+    /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
 
     __analyzer_eval (i < 256); /* { dg-warning "TRUE" } */
+    /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
 
     for (j=0; j<256; j++) {
 
@@ -23,7 +25,7 @@ void test(void)
       /* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
       /* TODO(xfail^^^): should report TRUE twice. */
 
-      __analyzer_dump_exploded_nodes (0); /* { dg-warning "3 processed enodes" } */
+      __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 
       for (k=0; k<256; k++) {
 
@@ -33,7 +35,7 @@ void test(void)
 	__analyzer_eval (k < 256); /* { dg-warning "TRUE" "true" } */
 	/* { dg-bogus "UNKNOWN" "unknown" { xfail *-*-* } .-1 } */
 
-	__analyzer_dump_exploded_nodes (0); /* { dg-warning "4 processed enodes" } */
+	__analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
       }
     }
   }

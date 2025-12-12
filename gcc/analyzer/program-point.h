@@ -23,29 +23,9 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "pretty-print.h"
 #include "analyzer/call-string.h"
+#include "analyzer/supergraph.h"
 
 namespace ana {
-
-class exploded_graph;
-
-/* An enum for distinguishing the various kinds of program_point.  */
-
-enum point_kind {
-  /* A "fake" node which has edges to all entrypoints.  */
-  PK_ORIGIN,
-
-  PK_BEFORE_SUPERNODE,
-  PK_BEFORE_STMT,
-  PK_AFTER_SUPERNODE,
-
-  /* Special values used for hash_map:  */
-  PK_EMPTY,
-  PK_DELETED,
-
-  NUM_POINT_KINDS
-};
-
-extern const char *point_kind_to_string (enum point_kind pk);
 
 class format
 {
@@ -63,107 +43,6 @@ public:
   bool m_newlines;
 };
 
-/* A class for representing a location within the program, without
-   interprocedural information.
-
-   This represents a fine-grained location within the supergraph (or
-   within one of its nodes).  */
-
-class function_point
-{
-public:
-  function_point (const supernode *supernode,
-		  const superedge *from_edge,
-		  unsigned stmt_idx,
-		  enum point_kind kind);
-
-  void print (pretty_printer *pp, const format &f) const;
-  void print_source_line (pretty_printer *pp) const;
-  void dump () const;
-
-  hashval_t hash () const;
-  bool operator== (const function_point &other) const
-  {
-    return (m_supernode == other.m_supernode
-	    && m_from_edge == other.m_from_edge
-	    && m_stmt_idx == other.m_stmt_idx
-	    && m_kind == other.m_kind);
-  }
-
-  /* Accessors.  */
-
-  const supernode *get_supernode () const { return m_supernode; }
-  function *get_function () const;
-  const gimple *get_stmt () const;
-  location_t get_location () const;
-  enum point_kind get_kind () const { return m_kind; }
-  const superedge *get_from_edge () const
-  {
-    return m_from_edge;
-  }
-  unsigned get_stmt_idx () const
-  {
-    gcc_assert (m_kind == PK_BEFORE_STMT);
-    return m_stmt_idx;
-  }
-
-  bool final_stmt_p () const;
-
-  /* Factory functions for making various kinds of program_point.  */
-
-  static function_point from_function_entry (const supergraph &sg,
-					     const function &fun);
-
-  static function_point before_supernode (const supernode *supernode,
-					  const superedge *from_edge);
-
-  static function_point before_stmt (const supernode *supernode,
-				     unsigned stmt_idx)
-  {
-    return function_point (supernode, nullptr, stmt_idx, PK_BEFORE_STMT);
-  }
-
-  static function_point after_supernode (const supernode *supernode)
-  {
-    return function_point (supernode, nullptr, 0, PK_AFTER_SUPERNODE);
-  }
-
-  /* Support for hash_map.  */
-
-  static function_point empty ()
-  {
-    return function_point (nullptr, nullptr, 0, PK_EMPTY);
-  }
-  static function_point deleted ()
-  {
-    return function_point (nullptr, nullptr, 0, PK_DELETED);
-  }
-
-  static int cmp_within_supernode_1 (const function_point &point_a,
-				     const function_point &point_b);
-  static int cmp_within_supernode (const function_point &point_a,
-				   const function_point &point_b);
-  static int cmp (const function_point &point_a,
-		  const function_point &point_b);
-  static int cmp_ptr (const void *p1, const void *p2);
-
-  /* For before_stmt, go to next stmt.  */
-  void next_stmt ();
-
-  function_point get_next () const;
-
- private:
-  const supernode *m_supernode;
-
-  /* For PK_BEFORE_SUPERNODE, and only for CFG edges.  */
-  const superedge *m_from_edge;
-
-  /* Only for PK_BEFORE_STMT.  */
-  unsigned m_stmt_idx;
-
-  enum point_kind m_kind;
-};
-
 /* A class for representing a location within the program, including
    interprocedural information.
 
@@ -174,22 +53,23 @@ public:
 class program_point
 {
 public:
-  program_point (const function_point &fn_point,
+  program_point (const supernode *snode,
 		 const call_string &call_string)
-  : m_function_point (fn_point),
+  : m_snode (snode),
     m_call_string (&call_string)
   {
   }
 
   void print (pretty_printer *pp, const format &f) const;
   void dump () const;
+  void print_source_line (pretty_printer *pp) const;
 
   std::unique_ptr<json::object> to_json () const;
 
   hashval_t hash () const;
   bool operator== (const program_point &other) const
   {
-    return (m_function_point == other.m_function_point
+    return (m_snode == other.m_snode
 	    && m_call_string == other.m_call_string);
   }
   bool operator!= (const program_point &other) const
@@ -199,42 +79,25 @@ public:
 
   /* Accessors.  */
 
-  const function_point &get_function_point () const { return m_function_point; }
-  const call_string &get_call_string () const { return *m_call_string; }
-
   const supernode *get_supernode () const
   {
-    return m_function_point.get_supernode ();
+    return m_snode;
   }
+  const call_string &get_call_string () const { return *m_call_string; }
+
   function *get_function () const
   {
-    return m_function_point.get_function ();
+    return m_snode ? m_snode->get_function () : nullptr;
   }
   function *get_function_at_depth (unsigned depth) const;
   tree get_fndecl () const
   {
-    gcc_assert (get_kind () != PK_ORIGIN);
-    return get_function ()->decl;
-  }
-  const gimple *get_stmt () const
-  {
-    return m_function_point.get_stmt ();
+    function *fn = get_function ();
+    return fn ? fn->decl : nullptr;
   }
   location_t get_location () const
   {
-    return m_function_point.get_location ();
-  }
-  enum point_kind get_kind () const
-  {
-    return m_function_point.get_kind ();
-  }
-  const superedge *get_from_edge () const
-  {
-    return m_function_point.get_from_edge ();
-  }
-  unsigned get_stmt_idx () const
-  {
-    return m_function_point.get_stmt_idx ();
+    return m_snode ? m_snode->get_location () : UNKNOWN_LOCATION;
   }
 
   /* Get the number of frames we expect at this program point.
@@ -243,9 +106,17 @@ public:
      node, which doesn't have any frames.  */
   int get_stack_depth () const
   {
-    if (get_kind () == PK_ORIGIN)
+    if (m_snode == nullptr)
+      // Origin
       return 0;
     return get_call_string ().length () + 1;
+  }
+
+  bool state_merge_at_p () const
+  {
+    if (m_snode)
+      return m_snode->m_state_merger_node;
+    return false;
   }
 
   /* Factory functions for making various kinds of program_point.  */
@@ -254,62 +125,14 @@ public:
 					    const supergraph &sg,
 					    const function &fun);
 
-  static program_point before_supernode (const supernode *supernode,
-					 const superedge *from_edge,
-					 const call_string &call_string)
-  {
-    return program_point (function_point::before_supernode (supernode,
-							    from_edge),
-			  call_string);
-  }
-
-  static program_point before_stmt (const supernode *supernode,
-				    unsigned stmt_idx,
-				    const call_string &call_string)
-  {
-    return program_point (function_point::before_stmt (supernode, stmt_idx),
-			  call_string);
-  }
-
-  static program_point after_supernode (const supernode *supernode,
-					const call_string &call_string)
-  {
-    return program_point (function_point::after_supernode (supernode),
-			  call_string);
-  }
-
-  /* Support for hash_map.  */
-
-  static program_point empty ()
-  {
-    return program_point (function_point::empty ());
-  }
-  static program_point deleted ()
-  {
-    return program_point (function_point::deleted ());
-  }
-
-  bool on_edge (exploded_graph &eg, const superedge *succ);
-  void push_to_call_stack (const supernode *caller, const supernode *callee);
   void pop_from_call_stack ();
   void validate () const;
-
-  /* For before_stmt, go to next stmt.  */
-  void next_stmt () { m_function_point.next_stmt (); }
-
-  program_point get_next () const;
 
   static bool effectively_intraprocedural_p (const program_point &point_a,
 					     const program_point &point_b);
 
  private:
-  program_point (const function_point &fn_point)
-  : m_function_point (fn_point),
-    m_call_string (nullptr)
-  {
-  }
-
-  function_point m_function_point;
+  const supernode *m_snode;
   const call_string *m_call_string;
 };
 

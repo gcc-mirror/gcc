@@ -1,4 +1,5 @@
 ! { dg-additional-options "-O0" }
+! { dg-additional-options "-Wno-analyzer-too-complex" }
 
 MODULE M1
   IMPLICIT NONE

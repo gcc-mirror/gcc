@@ -530,26 +530,30 @@ namespace ana {
 struct setjmp_record
 {
   setjmp_record (const exploded_node *enode,
+		 const superedge *sedge,
 		 const gcall &setjmp_call)
-  : m_enode (enode), m_setjmp_call (&setjmp_call)
+  : m_enode (enode), m_sedge (sedge), m_setjmp_call (&setjmp_call)
   {
   }
 
   bool operator== (const setjmp_record &other) const
   {
     return (m_enode == other.m_enode
+	    && m_sedge == other.m_sedge
 	    && m_setjmp_call == other.m_setjmp_call);
   }
 
   void add_to_hash (inchash::hash *hstate) const
   {
     hstate->add_ptr (m_enode);
+    hstate->add_ptr (m_sedge);
     hstate->add_ptr (m_setjmp_call);
   }
 
   static int cmp (const setjmp_record &rec1, const setjmp_record &rec2);
 
   const exploded_node *m_enode;
+  const superedge *m_sedge;
   const gcall *m_setjmp_call;
   // non-null, but we can't use a reference since we're putting these in a hash_map
 };
@@ -1272,9 +1276,9 @@ public:
   /* A support class for uniquifying instances of widening_svalue.  */
   struct key_t
   {
-    key_t (tree type, const function_point &point,
+    key_t (tree type, const supernode *snode,
 	   const svalue *base_sval, const svalue *iter_sval)
-    : m_type (type), m_point (point),
+    : m_type (type), m_snode (snode),
       m_base_sval (base_sval), m_iter_sval (iter_sval)
     {}
 
@@ -1289,7 +1293,7 @@ public:
     bool operator== (const key_t &other) const
     {
       return (m_type == other.m_type
-	      && m_point == other.m_point
+	      && m_snode == other.m_snode
 	      && m_base_sval == other.m_base_sval
 	      && m_iter_sval == other.m_iter_sval);
     }
@@ -1300,7 +1304,7 @@ public:
     bool is_empty () const { return m_type == reinterpret_cast<tree> (2); }
 
     tree m_type;
-    function_point m_point;
+    const supernode *m_snode;
     const svalue *m_base_sval;
     const svalue *m_iter_sval;
   };
@@ -1312,13 +1316,13 @@ public:
      DIR_UNKNOWN
     };
 
-  widening_svalue (symbol::id_t id, tree type, const function_point &point,
+  widening_svalue (symbol::id_t id, tree type, const supernode *snode,
 		   const svalue *base_sval, const svalue *iter_sval)
   : svalue (complexity::from_pair (base_sval->get_complexity (),
 				   iter_sval->get_complexity ()),
 	    id,
 	    type),
-    m_point (point),
+    m_snode (snode),
     m_base_sval (base_sval), m_iter_sval (iter_sval)
   {
     gcc_assert (base_sval->can_have_associated_state_p ());
@@ -1341,7 +1345,7 @@ public:
 
   void accept (visitor *v) const final override;
 
-  const function_point &get_point () const { return m_point; }
+  const supernode *get_snode () const { return m_snode; }
   const svalue *get_base_svalue () const { return m_base_sval; }
   const svalue *get_iter_svalue () const { return m_iter_sval; }
 
@@ -1351,7 +1355,7 @@ public:
 				      tree rhs_cst) const;
 
  private:
-  function_point m_point;
+  const supernode *m_snode;
   const svalue *m_base_sval;
   const svalue *m_iter_sval;
 };

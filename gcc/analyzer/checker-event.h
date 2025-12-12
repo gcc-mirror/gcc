@@ -42,8 +42,8 @@ enum class event_kind
   start_cfg_edge,
   end_cfg_edge,
   catch_,
-  call_edge,
-  return_edge,
+  call_,
+  return_,
   start_consolidated_cfg_edges,
   end_consolidated_cfg_edges,
   inlined_call,
@@ -76,8 +76,8 @@ extern const char *event_kind_to_string (enum event_kind ek);
 	   start_cfg_edge_event (event_kind::start_cfg_edge)
 	   end_cfg_edge_event (event_kind::end_cfg_edge)
 	   catch_cfg_edge_event (event_kind::catch_cfg_edge)
-         call_event (event_kind::call_edge)
-         return_edge (event_kind::return_edge)
+	 call_event (event_kind::call_)
+       return_event (event_kind::return_)
        start_consolidated_cfg_edges_event (event_kind::start_consolidated_cfg_edges)
        end_consolidated_cfg_edges_event (event_kind::end_consolidated_cfg_edges)
        inlined_call_event (event_kind::inlined_call)
@@ -381,8 +381,8 @@ private:
 class state_change_event : public checker_event
 {
 public:
-  state_change_event (const supernode *node, const gimple *stmt,
-		      int stack_depth,
+  state_change_event (const event_loc_info &loc_info,
+		      const gimple *stmt,
 		      const state_machine &sm,
 		      const svalue *sval,
 		      state_machine::state_t from,
@@ -407,7 +407,6 @@ public:
 
   const exploded_node *get_exploded_node () const { return m_enode; }
 
-  const supernode *m_node;
   const gimple *m_stmt;
   const state_machine &m_sm;
   const svalue *m_sval;
@@ -429,22 +428,13 @@ public:
 			      diagnostics::sarif_object &thread_flow_loc_obj)
     const override;
 
-  /* Mark this edge event as being either an interprocedural call or
-     return in which VAR is in STATE, and that this is critical to the
-     diagnostic (so that print_desc can attempt to get a better description
-     from any pending_diagnostic).  */
-  void record_critical_state (tree var, state_machine::state_t state)
-  {
-    m_var = var;
-    m_critical_state = state;
-  }
-
-  const callgraph_superedge& get_callgraph_superedge () const;
-
   bool should_filter_p (int verbosity) const;
 
   const program_state *
   get_program_state () const override;
+
+  virtual const call_and_return_op *
+  get_call_and_return_op () const;
 
  protected:
   superedge_event (enum event_kind kind, const exploded_edge &eedge,
@@ -453,8 +443,6 @@ public:
  public:
   const exploded_edge &m_eedge;
   const superedge *m_sedge;
-  tree m_var;
-  state_machine::state_t m_critical_state;
 };
 
 /* An abstract event subclass for when a CFG edge is followed; it has two
@@ -466,11 +454,15 @@ class cfg_edge_event : public superedge_event
 public:
   meaning get_meaning () const override;
 
-  const cfg_superedge& get_cfg_superedge () const;
+  ::edge get_cfg_edge () const;
 
  protected:
-  cfg_edge_event (enum event_kind kind, const exploded_edge &eedge,
-		  const event_loc_info &loc_info);
+  cfg_edge_event (enum event_kind kind,
+		  const exploded_edge &eedge,
+		  const event_loc_info &loc_info,
+		  const control_flow_op *op);
+
+  const control_flow_op *m_op;
 };
 
 /* A concrete event subclass for the start of a CFG edge
@@ -480,22 +472,16 @@ class start_cfg_edge_event : public cfg_edge_event
 {
 public:
   start_cfg_edge_event (const exploded_edge &eedge,
-			const event_loc_info &loc_info)
-  : cfg_edge_event (event_kind::start_cfg_edge, eedge, loc_info)
+			const event_loc_info &loc_info,
+			const control_flow_op *op)
+  : cfg_edge_event (event_kind::start_cfg_edge, eedge, loc_info, op)
   {
   }
 
   void print_desc (pretty_printer &pp) const override;
   bool connect_to_next_event_p () const final override { return true; }
 
-protected:
-  label_text maybe_describe_condition (bool can_colorize) const;
-
 private:
-  static label_text maybe_describe_condition (bool can_colorize,
-					      tree lhs,
-					      enum tree_code op,
-					      tree rhs);
   static bool should_print_expr_p (tree);
 };
 
@@ -506,8 +492,9 @@ class end_cfg_edge_event : public cfg_edge_event
 {
 public:
   end_cfg_edge_event (const exploded_edge &eedge,
-		      const event_loc_info &loc_info)
-  : cfg_edge_event (event_kind::end_cfg_edge, eedge, loc_info)
+		      const event_loc_info &loc_info,
+		      const control_flow_op *op)
+  : cfg_edge_event (event_kind::end_cfg_edge, eedge, loc_info, op)
   {
   }
 
@@ -525,8 +512,9 @@ class catch_cfg_edge_event : public cfg_edge_event
 public:
   catch_cfg_edge_event (const exploded_edge &eedge,
 			const event_loc_info &loc_info,
+			const control_flow_op &op,
 			tree type)
-  : cfg_edge_event (event_kind::catch_, eedge, loc_info),
+  : cfg_edge_event (event_kind::catch_, eedge, loc_info, &op),
     m_type (type)
   {
   }
@@ -545,6 +533,23 @@ private:
   tree m_type;
 };
 
+struct critical_state
+{
+  critical_state ()
+  : m_var (NULL_TREE),
+    m_state (nullptr)
+  {
+  }
+  critical_state (tree var, state_machine::state_t state)
+  : m_var (var),
+    m_state (state)
+  {
+  }
+
+  tree m_var;
+  state_machine::state_t m_state;
+};
+
 /* A concrete event subclass for an interprocedural call.  */
 
 class call_event : public superedge_event
@@ -561,17 +566,27 @@ public:
   const program_state *
   get_program_state () const final override;
 
+  /* Mark this edge event as being either an interprocedural call or
+     return in which VAR is in STATE, and that this is critical to the
+     diagnostic (so that print_desc can attempt to get a better description
+     from any pending_diagnostic).  */
+  void record_critical_state (tree var, state_machine::state_t state)
+  {
+    m_critical_state = critical_state (var, state);
+  }
+
 protected:
   tree get_caller_fndecl () const;
   tree get_callee_fndecl () const;
 
   const supernode *m_src_snode;
   const supernode *m_dest_snode;
+  critical_state m_critical_state;
 };
 
 /* A concrete event subclass for an interprocedural return.  */
 
-class return_event : public superedge_event
+class return_event : public checker_event
 {
 public:
   return_event (const exploded_edge &eedge,
@@ -582,8 +597,26 @@ public:
 
   bool is_return_p () const final override;
 
+  const call_and_return_op *
+  get_call_and_return_op () const
+  {
+    return m_call_and_return_op;
+  }
+
+  /* Mark this edge event as being either an interprocedural call or
+     return in which VAR is in STATE, and that this is critical to the
+     diagnostic (so that print_desc can attempt to get a better description
+     from any pending_diagnostic).  */
+  void record_critical_state (tree var, state_machine::state_t state)
+  {
+    m_critical_state = critical_state (var, state);
+  }
+
+  const exploded_edge &m_eedge;
   const supernode *m_src_snode;
   const supernode *m_dest_snode;
+  const call_and_return_op *m_call_and_return_op;
+  critical_state m_critical_state;
 };
 
 /* A concrete event subclass for the start of a consolidated run of CFG

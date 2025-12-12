@@ -509,7 +509,7 @@ int consume_two_ints_from_va_list (__builtin_va_list ap)
   return i * j;
 }
 
-int test_consume_two_ints_from_va_list (__builtin_va_list ap1)
+void test_consume_two_ints_from_va_list (__builtin_va_list ap1)
 {
   int p1, p2;
   __builtin_va_list ap2;

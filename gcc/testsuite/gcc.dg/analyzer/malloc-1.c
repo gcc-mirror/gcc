@@ -267,13 +267,13 @@ int *test_23a (int n)
   return ptr;
 }
 
-int test_24 (void)
+void test_24 (void)
 {
   void *ptr = __builtin_alloca (sizeof (int)); /* { dg-message "region created on stack here" } */
   free (ptr); /* { dg-warning "'free' of 'ptr' which points to memory on the stack \\\[CWE-590\\\]" } */
 }
 
-int test_25 (void)
+void test_25 (void)
 {
   char tmp[100]; /* { dg-message "region created on stack here" } */
   void *p = tmp;
@@ -283,7 +283,7 @@ int test_25 (void)
 
 char global_buffer[100]; /* { dg-message "region created here" } */
 
-int test_26 (void)
+void test_26 (void)
 {
   void *p = global_buffer;
   free (p); /* { dg-warning "'free' of 'p' which points to memory not on the heap \\\[CWE-590\\\]" } */

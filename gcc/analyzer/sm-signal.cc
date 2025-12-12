@@ -63,7 +63,6 @@ public:
   bool inherited_state_p () const final override { return false; }
 
   bool  on_stmt (sm_context &sm_ctxt,
-		const supernode *node,
 		const gimple *stmt) const final override;
 
   bool can_purge_p (state_t s) const final override;
@@ -221,7 +220,8 @@ public:
   }
 
   void add_events_to_path (checker_path *emission_path,
-			   const exploded_edge &eedge ATTRIBUTE_UNUSED)
+			   const exploded_edge &eedge ATTRIBUTE_UNUSED,
+			   pending_diagnostic &)
     const final override
   {
     emission_path->add_event
@@ -258,7 +258,6 @@ public:
       = program_point::from_function_entry (*ext_state.get_model_manager (),
 					    eg->get_supergraph (),
 					    *handler_fun);
-
     program_state state_entering_handler (ext_state);
     update_model_for_signal_handler (state_entering_handler.m_region_model,
 				     *handler_fun);
@@ -324,7 +323,6 @@ signal_unsafe_p (tree fndecl)
 
 bool
 signal_state_machine::on_stmt (sm_context &sm_ctxt,
-			       const supernode *node,
 			       const gimple *stmt) const
 {
   const state_t global_state = sm_ctxt.get_global_state ();
@@ -351,7 +349,7 @@ signal_state_machine::on_stmt (sm_context &sm_ctxt,
 	if (tree callee_fndecl = sm_ctxt.get_fndecl_for_call (*call))
 	  if (signal_unsafe_p (callee_fndecl))
 	    if (sm_ctxt.get_global_state () == m_in_signal_handler)
-	      sm_ctxt.warn (node, stmt, NULL_TREE,
+	      sm_ctxt.warn (NULL_TREE,
 			    std::make_unique<signal_unsafe_call>
 			     (*this, *call, callee_fndecl));
     }

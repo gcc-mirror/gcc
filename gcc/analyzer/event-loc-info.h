@@ -31,6 +31,9 @@ struct event_loc_info
   : m_loc (loc), m_fndecl (fndecl), m_depth (depth)
   {}
 
+  event_loc_info (const exploded_node *enode);
+  event_loc_info (const program_point &point);
+
   location_t m_loc;
   tree m_fndecl;
   int m_depth;

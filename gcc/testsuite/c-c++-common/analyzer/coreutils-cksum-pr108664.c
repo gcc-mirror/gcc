@@ -1,6 +1,6 @@
 /* { dg-require-effective-target int32plus } */
 /* { dg-require-effective-target size24plus } */
-
+/* { dg-additional-options "-Wno-analyzer-symbol-too-complex" } */
 /* Reduced from coreutils's cksum.c: cksum_slice8 */
 
 typedef long unsigned int size_t;
@@ -72,7 +72,7 @@ cksum_slice8(FILE* fp, uint_fast32_t* crc_out, uintmax_t* length_out)
 
     unsigned char* cp = (unsigned char*)datap;
     while (bytes_read--)
-      crc = (crc << 8) ^ crctab[0][((crc >> 24) ^ *cp++) & 0xFF];
+      crc = (crc << 8) ^ crctab[0][((crc >> 24) ^ *cp++) & 0xFF]; /* { dg-bogus "use of uninitialized value" } */
     if (feof_unlocked(fp))
       break;
   }

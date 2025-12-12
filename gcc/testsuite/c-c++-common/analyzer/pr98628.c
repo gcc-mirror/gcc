@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O1" } */
+/* { dg-additional-options "-O1 -Wno-analyzer-too-complex" } */
 
 void foo(void *);
 struct chanset_t {

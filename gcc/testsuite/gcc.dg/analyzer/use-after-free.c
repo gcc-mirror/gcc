@@ -5,7 +5,7 @@
 
 struct link { struct link *next; };
 
-int free_a_list_badly (struct link *n)
+void free_a_list_badly (struct link *n)
 {
   while (n) {
     free(n); /* { dg-message "freed here" } */

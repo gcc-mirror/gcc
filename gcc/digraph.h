@@ -48,8 +48,36 @@ class dnode
   virtual ~dnode () {}
   virtual void dump_dot (graphviz_out *gv, const dump_args_t &args) const = 0;
 
+  void add_in_edge (edge_t *e)
+  {
+    m_preds.safe_push (e);
+  }
+  void remove_in_edge (edge_t *e)
+  {
+    m_preds.unordered_remove (find_edge_idx (m_preds, e));
+  }
+  void add_out_edge (edge_t *e)
+  {
+    m_succs.safe_push (e);
+  }
+  void remove_out_edge (edge_t *e)
+  {
+    m_succs.unordered_remove (find_edge_idx (m_succs, e));
+  }
+
+public:
   auto_vec<edge_t *> m_preds;
   auto_vec<edge_t *> m_succs;
+
+private:
+  static unsigned
+  find_edge_idx (auto_vec<edge_t *> &edges, edge_t *e)
+  {
+    for (unsigned i = 0; i < edges.length (); ++i)
+      if (edges[i] == e)
+	return i;
+    gcc_unreachable ();
+  }
 };
 
 /* Abstract base class for an edge in a directed graph.  */
@@ -59,6 +87,7 @@ class dedge
 {
  public:
   typedef typename GraphTraits::node_t node_t;
+  typedef typename GraphTraits::edge_t edge_t;
   typedef typename GraphTraits::dump_args_t dump_args_t;
 
   dedge (node_t *src, node_t *dest)
@@ -68,8 +97,19 @@ class dedge
 
   virtual void dump_dot (graphviz_out *gv, const dump_args_t &args) const = 0;
 
-  node_t *const m_src;
-  node_t *const m_dest;
+  void set_dest (node_t *new_dest)
+  {
+    node_t *old_dest = m_dest;
+    if (new_dest != old_dest)
+      {
+	old_dest->remove_in_edge (static_cast<edge_t *> (this));
+	m_dest = new_dest;
+	new_dest->add_in_edge (static_cast<edge_t *> (this));
+      }
+  }
+
+  node_t *m_src;
+  node_t *m_dest;
 };
 
 /* Abstract base class for a directed graph.
@@ -100,6 +140,12 @@ class digraph
 
   void add_node (node_t *node);
   void add_edge (edge_t *edge);
+
+  virtual void
+  add_any_extra_stmts (graphviz_out &) const
+  {
+    // no-op hook
+  }
 
   auto_delete_vec<node_t> m_nodes;
   auto_delete_vec<edge_t> m_edges;
@@ -181,6 +227,8 @@ digraph<GraphTraits>::dump_dot_to_pp (pretty_printer *pp,
   edge_t *e;
   FOR_EACH_VEC_ELT (m_edges, i, e)
     e->dump_dot (&gv, args);
+
+  add_any_extra_stmts (gv);
 
   /* Terminate "digraph" */
   gv.outdent ();

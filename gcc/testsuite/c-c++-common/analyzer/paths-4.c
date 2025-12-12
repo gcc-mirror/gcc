@@ -32,22 +32,22 @@ int test_2 (struct state *s)
       switch (s->mode) /* { dg-message "if it ever follows 'default:' branch, it will always do so\.\.\." } */
 	{
 	case 0:
-	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enode" } */
+	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 	  do_stuff (s, 0);
 	  break;
 	case 1:
-	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 	  do_stuff (s, 17);
 	  break;
 	case 2:
-	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 	  do_stuff (s, 5);
 	  break;
 	case 3:
-	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 	  return 42;
 	case 4:
-	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "1 processed enode" } */
+	  __analyzer_dump_exploded_nodes (0); /* { dg-warning "2 processed enodes" } */
 	  return -3;
 	}
     }

@@ -36,7 +36,7 @@ PSEUDOVECTOR_TYPEP (union vectorlike_header const *a, int code)
 {
   long PSEUDOVECTOR_FLAG = 1L << 62;
   long PVEC_TYPE_MASK = 0x3fL << 24;
-  return ((a->size & (PSEUDOVECTOR_FLAG | PVEC_TYPE_MASK)) /* { dg-bogus "dereference of NULL 'time'" "PR analyzer/107526" { xfail *-*-* } } */
+  return ((a->size & (PSEUDOVECTOR_FLAG | PVEC_TYPE_MASK)) /* { dg-bogus "dereference of NULL 'time'" "PR analyzer/107526" } */
 	  == (PSEUDOVECTOR_FLAG | (code << 24)));
 }
 

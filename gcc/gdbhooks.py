@@ -399,7 +399,7 @@ class AnaSupernodePrinter:
     def to_string (self):
         result = '<ana::supernode 0x%x' % intptr(self.gdbval)
         if intptr(self.gdbval):
-            result += ' (SN %i)' % intptr(self.gdbval['m_index'])
+            result += ' (SN %i)' % intptr(self.gdbval['m_id'])
         result += '>'
         return result
 

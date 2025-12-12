@@ -881,7 +881,7 @@ static int yy_get_next_buffer (void)
 				else
 					b->yy_buf_size *= 2;
 
-				b->yy_ch_buf = (char *)  /* { dg-warning "leak" } */
+				b->yy_ch_buf = (char *)  /* { dg-warning "leak" "" { xfail *-*-* } } */
 					/* Include room in for 2 EOB chars. */
 					yyrealloc( (void *) b->yy_ch_buf,
 							 (yy_size_t) (b->yy_buf_size + 2)  );

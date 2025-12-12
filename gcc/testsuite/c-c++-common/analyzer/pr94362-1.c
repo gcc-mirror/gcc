@@ -1,6 +1,3 @@
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
-/* TODO: remove the need for -Wno-analyzer-too-complex.  */
-
 typedef struct evp_pkey_asn1_method_st EVP_PKEY_ASN1_METHOD;
 typedef struct engine_st ENGINE;
 struct stack_st_EVP_PKEY_ASN1_METHOD;

@@ -2,7 +2,7 @@
    Reduced from
      https://git.qemu.org/?p=qemu.git;a=blob;f=subprojects/libvhost-user/libvhost-user.c;h=fab7ca17ee1fb27bcfc338527d1aeb9f923aade5;hb=HEAD#l1184
    which is licensed under GNU GPLv2 or later. */
-
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
 typedef unsigned char uint8_t;
 typedef unsigned short uint16_t;
 typedef unsigned long uint64_t;

@@ -48,7 +48,7 @@ void test (void)
 	  *pp = malloc (16); /* { dg-warning "leak" } */
 	  break;
 	case 1:
-	  free (*pp);
+	  free (*pp); /* { dg-warning "double-free" } */
 	  break;
 	case 2:
 	  /* no-op.  */

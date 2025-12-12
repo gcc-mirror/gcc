@@ -100,8 +100,8 @@ test_10 (void)
     return;
   n1->m_next = malloc (sizeof (struct node));
   /* Could free n1->m_next, but not n1.  */
-  const_unknown_fn (n1); /* { dg-warning "leak of 'n1'" } */
-}
+  const_unknown_fn (n1);
+} /* { dg-warning "leak of 'n1'" } */
 
 void
 test_11 (void)
@@ -111,8 +111,8 @@ test_11 (void)
     return;
   n1->m_next = malloc (sizeof (struct node));
   /* Could free n1->m_next, but not n1.  */
-  unknown_fn (n1->m_next); /* { dg-warning "leak of 'n1'" } */
-}
+  unknown_fn (n1->m_next);
+} /* { dg-warning "leak of 'n1'" } */
 
 void
 test_12a (void)

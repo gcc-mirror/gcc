@@ -214,19 +214,12 @@ pending_diagnostic::add_function_entry_event (const exploded_edge &eedge,
 
 void
 pending_diagnostic::add_call_event (const exploded_edge &eedge,
-				    checker_path *emission_path)
+				    const gcall &,
+				    checker_path &emission_path)
 {
-  const exploded_node *src_node = eedge.m_src;
-  const program_point &src_point = src_node->get_point ();
-  const int src_stack_depth = src_point.get_stack_depth ();
-  const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-  emission_path->add_event
+  emission_path.add_event
     (std::make_unique<call_event> (eedge,
-				   event_loc_info (last_stmt
-						   ? last_stmt->location
-						   : UNKNOWN_LOCATION,
-						   src_point.get_fndecl (),
-						   src_stack_depth)));
+				   event_loc_info (eedge.m_src)));
 }
 
 /* Base implementation of pending_diagnostic::add_region_creation_events.

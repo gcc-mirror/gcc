@@ -22,7 +22,7 @@ void __attribute__((noinline)) callee_2 (int *ptr)
   *ptr = 42;
 }
 
-int test_2 (int flag)
+void test_2 (int flag)
 {
   int i;
 

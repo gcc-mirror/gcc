@@ -12,10 +12,10 @@ _dl_hwcaps_subdirs_build_bitmask (int subdirs, int active)
 
   uint32_t mask;
   if (subdirs != 32)
-    mask = (1 << subdirs) - 1; /* { dg-message "shift by count \\('33'\\) >= precision of type \\('\[0-9\]+'\\)" "" { xfail c++26 } } */
+    mask = (1 << subdirs) - 1; /* { dg-message "shift by count \\('33'\\) >= precision of type \\('\[0-9\]+'\\)" } */
   else
     mask = -1;
-  return mask ^ ((1U << inactive) - 1); /* { dg-message "shift by negative count \\('-1'\\)" "" { xfail c++26 } } */
+  return mask ^ ((1U << inactive) - 1); /* { dg-message "shift by negative count \\('-1'\\)" } */
 }
 
 void f1 (int);

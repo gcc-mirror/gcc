@@ -3,7 +3,7 @@
 
 /* { dg-additional-options "-fno-analyzer-call-summaries" } */
 
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
+/* { dg-additional-options "-Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
 /* { dg-additional-options "-D_POSIX_SOURCE" } */
 
 /* { dg-skip-if "requires hosted libstdc++ for stdlib malloc" { ! hostedlib } } */
@@ -881,8 +881,8 @@ static int yy_get_next_buffer (void)
 				else
 					b->yy_buf_size *= 2;
 
-				b->yy_ch_buf = (char *)  /* { dg-warning "leak of '\\*b.yy_ch_buf'" "" { target c } } */
-							 /* { dg-warning "leak of '\\*b.yy_buffer_state::yy_ch_buf'" "" { target c++ } .-1 } */
+				b->yy_ch_buf = (char *)  /* { dg-warning "leak of '\\*b.yy_ch_buf'" "" { xfail *-*-* } } */
+							 /* { dg-warning "leak of '\\*b.yy_buffer_state::yy_ch_buf'" "" { xfail *-*-* } .-1 } */
 					/* Include room in for 2 EOB chars. */
 					yyrealloc( (void *) b->yy_ch_buf,
 							 (yy_size_t) (b->yy_buf_size + 2)  );

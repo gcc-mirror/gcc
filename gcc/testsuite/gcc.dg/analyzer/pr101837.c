@@ -7,4 +7,6 @@ void memcheck(void *ptr) {
 }
 
 int emalloc(int size) { memcheck(__builtin_malloc(size)); } /* { dg-message "allocated here" } */
-int main() { int max_envvar_len = emalloc(max_envvar_len + 1); } /* { dg-message "use of uninitialized value 'max_envvar_len'" } */
+/* { dg-warning "use of uninitialized value '<return-value>'" "missing return" { target *-*-* } .-1 } */
+
+void main() { int max_envvar_len = emalloc(max_envvar_len + 1); } /* { dg-message "use of uninitialized value 'max_envvar_len'" } */

@@ -26,7 +26,7 @@ int test_2 (const struct coord *c1, const struct coord *c2, double r_squared)
   return (dx * dx) + (dy * dy) + (dz * dz) <= r_squared;
 }
 
-int test_3 (const struct coord *c1, const struct coord *c2, struct coord *out)
+void test_3 (const struct coord *c1, const struct coord *c2, struct coord *out)
 {
   out->x = c1->x + c2->x;
   out->y = c1->y + c2->y;

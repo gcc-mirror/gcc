@@ -201,6 +201,9 @@ extern int fprintf_unlocked (FILE *, const char *, ...);
 #if defined (INCLUDE_ALGORITHM) || !defined (HAVE_SWAP_IN_UTILITY)
 # include <algorithm>
 #endif
+#ifdef INCLUDE_DEQUE
+# include <deque>
+#endif
 #ifdef INCLUDE_LIST
 # include <list>
 #endif

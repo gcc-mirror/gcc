@@ -22,3 +22,4 @@ test_2 (void)
   aw2.ptrs[1] = malloc (512);
 } /* { dg-warning "leak of 'aw2.ptrs.0.'" "leak of element 0" } */
 /* { dg-warning "leak of 'aw2.ptrs.1.'" "leak of element 1" { target *-*-* } .-1 } */
+/* { dg-warning "use of uninitialized value '<return-value>'" "missing return" { target *-*-* } .-2 } */

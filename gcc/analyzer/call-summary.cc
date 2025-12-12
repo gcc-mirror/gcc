@@ -38,7 +38,7 @@ call_summary::get_state () const
 tree
 call_summary::get_fndecl () const
 {
-  return m_enode->get_point ().get_fndecl ();
+  return m_enode->get_function ()->decl;
 }
 
 label_text
@@ -393,7 +393,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
       {
 	const widening_svalue *widening_summary_sval
 	  = as_a <const widening_svalue *> (summary_sval);
-	const function_point &point = widening_summary_sval->get_point ();
+	const supernode *snode = widening_summary_sval->get_snode ();
 	const svalue *summary_base_sval
 	  = widening_summary_sval->get_base_svalue ();
 	const svalue *caller_base_sval
@@ -411,7 +411,7 @@ call_summary_replay::convert_svalue_from_summary_1 (const svalue *summary_sval)
 	region_model_manager *mgr = get_manager ();
 	return mgr->get_or_create_widening_svalue
 	  (summary_iter_sval->get_type (),
-	   point,
+	   snode,
 	   caller_base_sval,
 	   caller_iter_sval);
       }

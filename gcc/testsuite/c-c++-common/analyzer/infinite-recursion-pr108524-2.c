@@ -107,7 +107,7 @@ void test_switch_2 (int i)
       test_switch_2 (1776);
       break;
     default:
-      test_switch_2 (1492); /* { dg-warning "infinite recursion" "" { xfail *-*-* } } */
+      test_switch_2 (1492); /* { dg-warning "infinite recursion" } */
       break;
     }
 }

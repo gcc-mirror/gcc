@@ -15,11 +15,12 @@ extern void Py_Dealloc (PyObject *op);
 	Py_Dealloc((PyObject *)(op));			\
     } while (0)
 
-int test (PyObject *obj_01, PyObject *obj_02, PyObject *obj_03,
-	  PyObject *obj_04, PyObject *obj_05, PyObject *obj_06,
-	  PyObject *obj_07, PyObject *obj_08, PyObject *obj_09,
-	  PyObject *obj_10, PyObject *obj_11, PyObject *obj_12,
-	  PyObject *obj_13, PyObject *obj_14, PyObject *obj_15
+void
+test (PyObject *obj_01, PyObject *obj_02, PyObject *obj_03,
+      PyObject *obj_04, PyObject *obj_05, PyObject *obj_06,
+      PyObject *obj_07, PyObject *obj_08, PyObject *obj_09,
+      PyObject *obj_10, PyObject *obj_11, PyObject *obj_12,
+      PyObject *obj_13, PyObject *obj_14, PyObject *obj_15
 )
 {
   Py_DECREF (obj_01); Py_DECREF (obj_02); Py_DECREF (obj_03);

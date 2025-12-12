@@ -1327,7 +1327,7 @@ strip_types (const svalue *sval,
 	const widening_svalue *widening_sval = (const widening_svalue *)sval;
 	return mgr.get_or_create_widening_svalue
 	  (NULL_TREE,
-	   widening_sval->get_point (),
+	   widening_sval->get_snode (),
 	   strip_types (widening_sval->get_base_svalue (), mgr),
 	   strip_types (widening_sval->get_iter_svalue (), mgr));
       }

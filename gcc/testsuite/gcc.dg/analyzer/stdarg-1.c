@@ -113,7 +113,7 @@ __analyzer_test_not_enough_args_2_middle (int placeholder, ...)
 
 void test_not_enough_args_2 (void)
 {
-  __analyzer_test_not_enough_args_2_middle (42, "foo");
+  __analyzer_test_not_enough_args_2_middle (42, "foo"); /* { dg-message "calling '__analyzer_test_not_enough_args_2_middle' from 'test_not_enough_args_2' with 1 variadic argument" } */
 }
 
 /* Excess args (not a problem).  */

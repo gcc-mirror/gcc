@@ -102,18 +102,13 @@ public:
   }
 
   bool on_stmt (sm_context &sm_ctxt,
-		const supernode *node,
 		const gimple *stmt) const final override;
 
   void on_condition (sm_context &sm_ctxt,
-		     const supernode *node,
-		     const gimple *stmt,
 		     const svalue *lhs,
 		     enum tree_code op,
 		     const svalue *rhs) const final override;
   void on_bounded_ranges (sm_context &sm_ctxt,
-			  const supernode *node,
-			  const gimple *stmt,
 			  const svalue &sval,
 			  const bounded_ranges &ranges) const final override;
 
@@ -125,15 +120,12 @@ public:
 
 private:
   void check_control_flow_arg_for_taint (sm_context &sm_ctxt,
-					 const gimple *stmt,
 					 tree expr) const;
 
   void check_for_tainted_size_arg (sm_context &sm_ctxt,
-				   const supernode *node,
 				   const gcall &call,
 				   tree callee_fndecl) const;
   void check_for_tainted_divisor (sm_context &sm_ctxt,
-				  const supernode *node,
 				  const gassign *assign) const;
 
 public:
@@ -1089,7 +1081,6 @@ is_assertion_failure_handler_p (tree fndecl)
 
 bool
 taint_state_machine::on_stmt (sm_context &sm_ctxt,
-			       const supernode *node,
 			       const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
@@ -1099,24 +1090,24 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 	  {
 	    tree arg = gimple_call_arg (call, 0);
 
-	    sm_ctxt.on_transition (node, stmt, arg, m_start, m_tainted);
+	    sm_ctxt.on_transition (arg, m_start, m_tainted);
 
 	    /* Dereference an ADDR_EXPR.  */
 	    // TODO: should the engine do this?
 	    if (TREE_CODE (arg) == ADDR_EXPR)
-	      sm_ctxt.on_transition (node, stmt, TREE_OPERAND (arg, 0),
+	      sm_ctxt.on_transition (TREE_OPERAND (arg, 0),
 				     m_start, m_tainted);
 	    return true;
 	  }
 
 	/* External function with "access" attribute. */
 	if (sm_ctxt.unknown_side_effects_p ())
-	  check_for_tainted_size_arg (sm_ctxt, node, *call, callee_fndecl);
+	  check_for_tainted_size_arg (sm_ctxt, *call, callee_fndecl);
 
 	if (is_assertion_failure_handler_p (callee_fndecl)
 	    && sm_ctxt.get_global_state () == m_tainted_control_flow)
 	  {
-	    sm_ctxt.warn (node, call, NULL_TREE,
+	    sm_ctxt.warn (NULL_TREE,
 			  std::make_unique<tainted_assertion> (*this, NULL_TREE,
 							       callee_fndecl));
 	  }
@@ -1141,7 +1132,7 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 	case ROUND_MOD_EXPR:
 	case RDIV_EXPR:
 	case EXACT_DIV_EXPR:
-	  check_for_tainted_divisor (sm_ctxt, node, assign);
+	  check_for_tainted_divisor (sm_ctxt, assign);
 	  break;
 	}
     }
@@ -1152,8 +1143,8 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 	 control flow statement, so that only the last one before
 	 an assertion-failure-handler counts.  */
       sm_ctxt.set_global_state (m_start);
-      check_control_flow_arg_for_taint (sm_ctxt, cond, gimple_cond_lhs (cond));
-      check_control_flow_arg_for_taint (sm_ctxt, cond, gimple_cond_rhs (cond));
+      check_control_flow_arg_for_taint (sm_ctxt, gimple_cond_lhs (cond));
+      check_control_flow_arg_for_taint (sm_ctxt, gimple_cond_rhs (cond));
     }
 
   if (const gswitch *switch_ = dyn_cast <const gswitch *> (stmt))
@@ -1162,7 +1153,7 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 	 control flow statement, so that only the last one before
 	 an assertion-failure-handler counts.  */
       sm_ctxt.set_global_state (m_start);
-      check_control_flow_arg_for_taint (sm_ctxt, switch_,
+      check_control_flow_arg_for_taint (sm_ctxt,
 					gimple_switch_index (switch_));
     }
 
@@ -1175,12 +1166,11 @@ taint_state_machine::on_stmt (sm_context &sm_ctxt,
 
 void
 taint_state_machine::check_control_flow_arg_for_taint (sm_context &sm_ctxt,
-						       const gimple *stmt,
 						       tree expr) const
 {
   const region_model *old_model = sm_ctxt.get_old_region_model ();
   const svalue *sval = old_model->get_rvalue (expr, nullptr);
-  state_t state = sm_ctxt.get_state (stmt, sval);
+  state_t state = sm_ctxt.get_state (sval);
   enum bounds b;
   if (get_taint (state, TREE_TYPE (expr), &b))
     sm_ctxt.set_global_state (m_tainted_control_flow);
@@ -1192,15 +1182,10 @@ taint_state_machine::check_control_flow_arg_for_taint (sm_context &sm_ctxt,
 
 void
 taint_state_machine::on_condition (sm_context &sm_ctxt,
-				   const supernode *node,
-				   const gimple *stmt,
 				   const svalue *lhs,
 				   enum tree_code op,
 				   const svalue *rhs) const
 {
-  if (stmt == nullptr)
-    return;
-
   if (lhs->get_kind () == SK_UNKNOWN
       || rhs->get_kind () == SK_UNKNOWN)
     {
@@ -1234,10 +1219,10 @@ taint_state_machine::on_condition (sm_context &sm_ctxt,
 	/* (LHS >= RHS) or (LHS > RHS)
 	   LHS gains a lower bound
 	   RHS gains an upper bound.  */
-	sm_ctxt.on_transition (node, stmt, lhs, m_tainted, m_has_lb);
-	sm_ctxt.on_transition (node, stmt, lhs, m_has_ub, m_stop);
-	sm_ctxt.on_transition (node, stmt, rhs, m_tainted, m_has_ub);
-	sm_ctxt.on_transition (node, stmt, rhs, m_has_lb, m_stop);
+	sm_ctxt.on_transition (lhs, m_tainted, m_has_lb);
+	sm_ctxt.on_transition (lhs, m_has_ub, m_stop);
+	sm_ctxt.on_transition (rhs, m_tainted, m_has_ub);
+	sm_ctxt.on_transition (rhs, m_has_lb, m_stop);
       }
       break;
     case LE_EXPR:
@@ -1275,12 +1260,11 @@ taint_state_machine::on_condition (sm_context &sm_ctxt,
 		       both conditions simultaneously (we'd have a transition
 		       from the old state to has_lb, then a transition from
 		       the old state *again* to has_ub).  */
-		    state_t old_state
-		      = sm_ctxt.get_state (stmt, inner_lhs);
+		    state_t old_state = sm_ctxt.get_state (inner_lhs);
 		    if (old_state == m_tainted
 			|| old_state == m_has_lb
 			|| old_state == m_has_ub)
-		      sm_ctxt.set_next_state (stmt, inner_lhs, m_stop);
+		      sm_ctxt.set_next_state (inner_lhs, m_stop);
 		    return;
 		  }
 	  }
@@ -1288,10 +1272,10 @@ taint_state_machine::on_condition (sm_context &sm_ctxt,
 	/* (LHS <= RHS) or (LHS < RHS)
 	   LHS gains an upper bound
 	   RHS gains a lower bound.  */
-	sm_ctxt.on_transition (node, stmt, lhs, m_tainted, m_has_ub);
-	sm_ctxt.on_transition (node, stmt, lhs, m_has_lb, m_stop);
-	sm_ctxt.on_transition (node, stmt, rhs, m_tainted, m_has_lb);
-	sm_ctxt.on_transition (node, stmt, rhs, m_has_ub, m_stop);
+	sm_ctxt.on_transition (lhs, m_tainted, m_has_ub);
+	sm_ctxt.on_transition (lhs, m_has_lb, m_stop);
+	sm_ctxt.on_transition (rhs, m_tainted, m_has_lb);
+	sm_ctxt.on_transition (rhs, m_has_ub, m_stop);
       }
       break;
     default:
@@ -1306,8 +1290,6 @@ taint_state_machine::on_condition (sm_context &sm_ctxt,
 
 void
 taint_state_machine::on_bounded_ranges (sm_context &sm_ctxt,
-					const supernode *,
-					const gimple *stmt,
 					const svalue &sval,
 					const bounded_ranges &ranges) const
 {
@@ -1335,20 +1317,20 @@ taint_state_machine::on_bounded_ranges (sm_context &sm_ctxt,
 
   /* We have new bounds from the ranges; combine them with any
      existing bounds on SVAL.  */
-  state_t old_state = sm_ctxt.get_state (stmt, &sval);
+  state_t old_state = sm_ctxt.get_state (&sval);
   if (old_state == m_tainted)
     {
       if (ranges_have_lb && ranges_have_ub)
-	sm_ctxt.set_next_state (stmt, &sval, m_stop);
+	sm_ctxt.set_next_state (&sval, m_stop);
       else if (ranges_have_lb)
-	sm_ctxt.set_next_state (stmt, &sval, m_has_lb);
+	sm_ctxt.set_next_state (&sval, m_has_lb);
       else if (ranges_have_ub)
-	sm_ctxt.set_next_state (stmt, &sval, m_has_ub);
+	sm_ctxt.set_next_state (&sval, m_has_ub);
     }
   else if (old_state == m_has_ub && ranges_have_lb)
-    sm_ctxt.set_next_state (stmt, &sval, m_stop);
+    sm_ctxt.set_next_state (&sval, m_stop);
   else if (old_state == m_has_lb && ranges_have_ub)
-    sm_ctxt.set_next_state (stmt, &sval, m_stop);
+    sm_ctxt.set_next_state (&sval, m_stop);
 }
 
 bool
@@ -1426,7 +1408,6 @@ taint_state_machine::combine_states (state_t s0, state_t s1) const
 
 void
 taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
-						 const supernode *node,
 						 const gcall &call,
 						 tree callee_fndecl) const
 {
@@ -1460,14 +1441,14 @@ taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
 
       tree size_arg = gimple_call_arg (&call, access->sizarg);
 
-      state_t state = sm_ctxt.get_state (&call, size_arg);
+      state_t state = sm_ctxt.get_state (size_arg);
       enum bounds b;
       if (get_taint (state, TREE_TYPE (size_arg), &b))
 	{
 	  const char* const access_str =
 	    TREE_STRING_POINTER (access->to_external_string ());
 	  tree diag_size = sm_ctxt.get_diagnostic_tree (size_arg);
-	  sm_ctxt.warn (node, &call, size_arg,
+	  sm_ctxt.warn (size_arg,
 			std::make_unique<tainted_access_attrib_size>
 			(*this, diag_size, b,
 			 callee_fndecl,
@@ -1482,7 +1463,6 @@ taint_state_machine::check_for_tainted_size_arg (sm_context &sm_ctxt,
 
 void
 taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
-						const supernode *node,
 						const gassign *assign) const
 {
   const region_model *old_model = sm_ctxt.get_old_region_model ();
@@ -1498,7 +1478,7 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
 
   const svalue *divisor_sval = old_model->get_rvalue (divisor_expr, nullptr);
 
-  state_t state = sm_ctxt.get_state (assign, divisor_sval);
+  state_t state = sm_ctxt.get_state (divisor_sval);
   enum bounds b;
   if (get_taint (state, TREE_TYPE (divisor_expr), &b))
     {
@@ -1513,9 +1493,9 @@ taint_state_machine::check_for_tainted_divisor (sm_context &sm_ctxt,
 
       tree diag_divisor = sm_ctxt.get_diagnostic_tree (divisor_expr);
       sm_ctxt.warn
-	(node, assign, divisor_expr,
+	(divisor_expr,
 	 std::make_unique <tainted_divisor> (*this, diag_divisor, b));
-      sm_ctxt.set_next_state (assign, divisor_sval, m_stop);
+      sm_ctxt.set_next_state (divisor_sval, m_stop);
     }
 }
 

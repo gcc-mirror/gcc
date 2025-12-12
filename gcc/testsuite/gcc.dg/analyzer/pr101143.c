@@ -10,7 +10,7 @@ test_malloc (void)
   return malloc (sizeof (int));
 }
 
-void *
+void
 test_alloca (void)
 {
   void *p = alloca (sizeof (int));

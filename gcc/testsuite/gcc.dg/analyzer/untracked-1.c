@@ -105,7 +105,7 @@ int test_11 (void)
   return 42;
 }
 
-int test_12 (void (*fnptr) (struct st *))
+void test_12 (void (*fnptr) (struct st *))
 {
   static struct st s12 = { __FILE__, __LINE__ }; /* { dg-warning "track 's12': yes" } */
   fnptr (&s12);

@@ -23,3 +23,4 @@ test_2 (void)
   struct union_wrapper uw2;
   uw2.u.ptr = malloc (1024);
 } /* { dg-warning "leak of 'uw2.u.ptr'" } */
+/* { dg-warning "use of uninitialized value '<return-value>'" "missing return" { target *-*-* } .-1 } */

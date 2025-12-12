@@ -325,16 +325,15 @@ class pending_diagnostic
 			    checker_path *emission_path);
 
   /* Vfunc for extending/overriding creation of the events for an
-     exploded_edge that corresponds to a superedge, allowing for custom
-     events to be created that are pertinent to a particular
-     pending_diagnostic subclass.
+     exploded_edge, allowing for custom events to be created that are
+     pertinent to a particular pending_diagnostic subclass.
 
      For example, the -Wanalyzer-stale-setjmp-buffer diagnostic adds a
      custom event showing when the pertinent stack frame is popped
      (and thus the point at which the jmp_buf becomes invalid).  */
 
-  virtual bool maybe_add_custom_events_for_superedge (const exploded_edge &,
-						      checker_path *)
+  virtual bool maybe_add_custom_events_for_eedge (const exploded_edge &,
+						  checker_path *)
   {
     return false;
   }
@@ -343,7 +342,8 @@ class pending_diagnostic
      the varargs diagnostics can add a custom event subclass that annotates
      the variadic arguments.  */
   virtual void add_call_event (const exploded_edge &,
-			       checker_path *);
+			       const gcall &call_stmt,
+			       checker_path &emission_path);
 
   /* Vfunc for adding any events for the creation of regions identified
      by the mark_interesting_stuff vfunc.
@@ -390,8 +390,7 @@ class pending_diagnostic
   /* Vfunc to give diagnostic subclasses the opportunity to reject diagnostics
      by imposing their own additional feasibility checks on the path to a
      given feasible_node.  */
-  virtual bool check_valid_fpath_p (const feasible_node &,
-				    const gimple *) const
+  virtual bool check_valid_fpath_p (const feasible_node &) const
   {
     /* Default implementation: accept this path.  */
     return true;

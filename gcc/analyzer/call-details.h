@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_CALL_DETAILS_H
 #define GCC_ANALYZER_CALL_DETAILS_H
 
+#include "pending-diagnostic.h"
+
 namespace ana {
 
 /* Helper class for handling calls to functions with known behavior.  */

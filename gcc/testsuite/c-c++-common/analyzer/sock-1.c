@@ -1,3 +1,4 @@
+/* { dg-additional-options "-fno-exceptions" } */
 typedef unsigned int __u32;
 __extension__ typedef __signed__ long long __s64;
 __extension__ typedef unsigned long long __u64;

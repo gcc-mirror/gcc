@@ -1358,6 +1358,7 @@ ANALYZER_OBJS = \
 	analyzer/kf-analyzer.o \
 	analyzer/kf-lang-cp.o \
 	analyzer/known-function-manager.o \
+	analyzer/ops.o \
 	analyzer/pending-diagnostic.o \
 	analyzer/program-point.o \
 	analyzer/program-state.o \
@@ -1379,6 +1380,9 @@ ANALYZER_OBJS = \
 	analyzer/state-purge.o \
 	analyzer/store.o \
 	analyzer/supergraph.o \
+	analyzer/supergraph-fixup-locations.o \
+	analyzer/supergraph-simplify.o \
+	analyzer/supergraph-sorting.o \
 	analyzer/svalue.o \
 	analyzer/symbol.o \
 	analyzer/trimmed-graph.o \

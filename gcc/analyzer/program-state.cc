@@ -1263,138 +1263,6 @@ program_state::get_current_function () const
   return m_region_model->get_current_function ();
 }
 
-/* Determine if following edge SUCC from ENODE is valid within the graph EG
-   and update this state accordingly in-place.
-
-   Return true if the edge can be followed, or false otherwise.
-
-   Check for relevant conditionals and switch-values for conditionals
-   and switch statements, adding the relevant conditions to this state.
-   Push/pop frames for interprocedural edges and update params/returned
-   values.
-
-   This is the "state" half of exploded_node::on_edge.  */
-
-bool
-program_state::on_edge (exploded_graph &eg,
-			exploded_node *enode,
-			const superedge *succ,
-			uncertainty_t *uncertainty)
-{
-  class my_path_context : public path_context
-  {
-  public:
-    my_path_context (bool &terminated) : m_terminated (terminated) {}
-    void bifurcate (std::unique_ptr<custom_edge_info>) final override
-    {
-      gcc_unreachable ();
-    }
-
-    void terminate_path () final override
-    {
-      m_terminated = true;
-    }
-
-    bool terminate_path_p () const final override
-    {
-      return m_terminated;
-    }
-    bool &m_terminated;
-  };
-
-  /* Update state.  */
-  const program_point &point = enode->get_point ();
-  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
-
-  /* For conditionals and switch statements, add the
-     relevant conditions (for the specific edge) to new_state;
-     skip edges for which the resulting constraints
-     are impossible.
-     This also updates frame information for call/return superedges.
-     Adding the relevant conditions for the edge could also trigger
-     sm-state transitions (e.g. transitions due to ptrs becoming known
-     to be NULL or non-NULL) */
-  bool terminated = false;
-  my_path_context path_ctxt (terminated);
-  impl_region_model_context ctxt (eg, enode,
-				  &enode->get_state (),
-				  this,
-				  uncertainty, &path_ctxt,
-				  last_stmt);
-  std::unique_ptr<rejected_constraint> rc;
-  logger * const logger = eg.get_logger ();
-  if (!m_region_model->maybe_update_for_edge (*succ,
-					      last_stmt,
-					      &ctxt,
-					      logger ? &rc : nullptr))
-    {
-      if (logger)
-	{
-	  logger->start_log_line ();
-	  logger->log_partial ("edge to SN: %i is impossible"
-			       " due to region_model constraint: ",
-			       succ->m_dest->m_index);
-	  rc->dump_to_pp (logger->get_printer ());
-	  logger->end_log_line ();
-	}
-      return false;
-    }
-  if (terminated)
-    return false;
-
-  program_state::detect_leaks (enode->get_state (), *this,
-			       nullptr, eg.get_ext_state (),
-			       &ctxt);
-
-  return true;
-}
-
-/* Update this program_state to reflect a call to function
-   represented by CALL_STMT.
-   currently used only when the call doesn't have a superedge representing
-   the call ( like call via a function pointer )  */
-void
-program_state::push_call (exploded_graph &eg,
-                          exploded_node *enode,
-                          const gcall &call_stmt,
-                          uncertainty_t *uncertainty)
-{
-  /* Update state.  */
-  const program_point &point = enode->get_point ();
-  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
-
-  impl_region_model_context ctxt (eg, enode,
-                                  &enode->get_state (),
-                                  this,
-                                  uncertainty,
-				  nullptr,
-                                  last_stmt);
-  m_region_model->update_for_gcall (call_stmt, &ctxt);
-}
-
-/* Update this program_state to reflect a return from function
-   call to which is represented by CALL_STMT.
-   currently used only when the call doesn't have a superedge representing
-   the return */
-void
-program_state::returning_call (exploded_graph &eg,
-                               exploded_node *enode,
-                               const gcall &call_stmt,
-                               uncertainty_t *uncertainty)
-{
-  /* Update state.  */
-  const program_point &point = enode->get_point ();
-  const gimple *last_stmt = point.get_supernode ()->get_last_stmt ();
-
-  impl_region_model_context ctxt (eg, enode,
-                                  &enode->get_state (),
-                                  this,
-                                  uncertainty,
-				  nullptr,
-                                  last_stmt);
-  m_region_model->update_for_return_gcall (call_stmt, &ctxt);
-}
-
 /* Generate a simpler version of THIS, discarding state that's no longer
    relevant at POINT.
    The idea is that we're more likely to be able to consolidate
@@ -1434,7 +1302,7 @@ program_state::prune_for_point (exploded_graph &eg,
 	      const tree ssa_name = node;
 	      const state_purge_per_ssa_name &per_ssa
 		= pm->get_data_for_ssa_name (node);
-	      if (!per_ssa.needed_at_point_p (point.get_function_point ()))
+	      if (!per_ssa.needed_at_supernode_p (point.get_supernode ()))
 		{
 		  /* Don't purge bindings of SSA names to svalues
 		     that have unpurgable sm-state, so that leaks are
@@ -1472,7 +1340,7 @@ program_state::prune_for_point (exploded_graph &eg,
 			  || TREE_CODE (node) == RESULT_DECL);
 	      if (const state_purge_per_decl *per_decl
 		  = pm->get_any_data_for_decl (decl))
-		if (!per_decl->needed_at_point_p (point.get_function_point ()))
+		if (!per_decl->needed_at_supernode_p (point.get_supernode ()))
 		  {
 		    /* Don't purge bindings of decls if there are svalues
 		       that have unpurgable sm-state within the decl's cluster,
@@ -1507,8 +1375,8 @@ program_state::prune_for_point (exploded_graph &eg,
 	  impl_region_model_context ctxt (eg, enode_for_diag,
 					  this,
 					  &new_state,
-					  uncertainty, nullptr,
-					  point.get_stmt ());
+					  uncertainty,
+					  nullptr);
 	  detect_leaks (*this, new_state, nullptr, eg.get_ext_state (), &ctxt);
 	}
     }
@@ -1804,14 +1672,14 @@ test_sm_state_map ()
   std::vector<std::unique_ptr<state_machine>> checkers;
   const state_machine &borrowed_sm = *sm.get ();
   checkers.push_back (std::move (sm));
-  engine eng;
+  region_model_manager mgr;
+  engine eng (mgr);
   extrinsic_state ext_state (std::move (checkers), &eng);
 
   /* Test setting states on svalue_id instances directly.  */
   {
     const state_machine::state test_state_42 ("test state 42", 42);
     const state_machine::state_t TEST_STATE_42 = &test_state_42;
-    region_model_manager mgr;
     region_model model (&mgr);
     const svalue *x_sval = model.get_rvalue (x, nullptr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
@@ -1840,7 +1708,6 @@ test_sm_state_map ()
 
   /* Test setting states via equivalence classes.  */
   {
-    region_model_manager mgr;
     region_model model (&mgr);
     const svalue *x_sval = model.get_rvalue (x, nullptr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
@@ -1864,7 +1731,6 @@ test_sm_state_map ()
 
   /* Test equality and hashing.  */
   {
-    region_model_manager mgr;
     region_model model (&mgr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
     const svalue *z_sval = model.get_rvalue (z, nullptr);
@@ -1899,7 +1765,6 @@ test_sm_state_map ()
     ASSERT_EQ (map0.hash (), map1.hash ());
     ASSERT_EQ (map0, map1);
 
-    region_model_manager mgr;
     region_model model (&mgr);
     const svalue *x_sval = model.get_rvalue (x, nullptr);
     const svalue *y_sval = model.get_rvalue (y, nullptr);
@@ -1933,16 +1798,16 @@ test_program_state_1 ()
   const state_machine::state_t UNCHECKED_STATE
     = sm->get_state_by_name ("unchecked");
 
-  engine eng;
+  region_model_manager mgr;
+  engine eng (mgr);
   extrinsic_state ext_state (std::move (sm), &eng);
-  region_model_manager *mgr = eng.get_model_manager ();
   program_state s (ext_state);
   region_model *model = s.m_region_model;
   const svalue *size_in_bytes
-    = mgr->get_or_create_unknown_svalue (size_type_node);
+    = mgr.get_or_create_unknown_svalue (size_type_node);
   const region *new_reg
     = model->get_or_create_region_for_heap_alloc (size_in_bytes, nullptr);
-  const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
+  const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
   model->set_value (model->get_lvalue (p, nullptr),
 		    ptr_sval, nullptr);
   sm_state_map *smap = s.m_checker_states[0];
@@ -1963,7 +1828,8 @@ test_program_state_2 ()
   tree string_cst_ptr = build_string_literal (4, "foo");
 
   std::vector<std::unique_ptr<state_machine>> checkers;
-  engine eng;
+  region_model_manager mgr;
+  engine eng (mgr);
   extrinsic_state ext_state (std::move (checkers), &eng);
 
   program_state s (ext_state);
@@ -1983,9 +1849,9 @@ test_program_state_merging ()
      malloc sm-state, pointing to a region on the heap.  */
   tree p = build_global_decl ("p", ptr_type_node);
 
-  engine eng;
-  region_model_manager *mgr = eng.get_model_manager ();
-  program_point point (program_point::origin (*mgr));
+  region_model_manager mgr;
+  engine eng (mgr);
+  program_point point (program_point::origin (mgr));
   extrinsic_state ext_state (make_malloc_state_machine (nullptr),
 			     &eng);
 
@@ -1995,10 +1861,10 @@ test_program_state_merging ()
 
   region_model *model0 = s0.m_region_model;
   const svalue *size_in_bytes
-    = mgr->get_or_create_unknown_svalue (size_type_node);
+    = mgr.get_or_create_unknown_svalue (size_type_node);
   const region *new_reg
     = model0->get_or_create_region_for_heap_alloc (size_in_bytes, nullptr);
-  const svalue *ptr_sval = mgr->get_ptr_svalue (ptr_type_node, new_reg);
+  const svalue *ptr_sval = mgr.get_ptr_svalue (ptr_type_node, new_reg);
   model0->set_value (model0->get_lvalue (p, &ctxt),
 		     ptr_sval, &ctxt);
   sm_state_map *smap = s0.m_checker_states[0];
@@ -2050,9 +1916,9 @@ test_program_state_merging ()
 static void
 test_program_state_merging_2 ()
 {
-  engine eng;
-  region_model_manager *mgr = eng.get_model_manager ();
-  program_point point (program_point::origin (*mgr));
+  region_model_manager mgr;
+  engine eng (mgr);
+  program_point point (program_point::origin (mgr));
   extrinsic_state ext_state (make_signal_state_machine (nullptr), &eng);
 
   const state_machine::state test_state_0 ("test state 0", 0);

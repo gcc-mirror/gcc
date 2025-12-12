@@ -485,7 +485,6 @@ Objective-C and Objective-C++ Dialects}.
 -fanalyzer-call-summaries
 -fanalyzer-checker=@var{name}
 -fno-analyzer-feasibility
--fanalyzer-fine-grained
 -fanalyzer-show-events-in-system-headers
 -fno-analyzer-state-merge
 -fno-analyzer-state-purge
@@ -12467,14 +12466,7 @@ debugging issues in this code.
 @opindex fanalyzer-fine-grained
 @opindex fno-analyzer-fine-grained
 @item -fanalyzer-fine-grained
-This option is intended for analyzer developers.
-
-Internally the analyzer builds an ``exploded graph'' that combines
-control flow graphs with data flow information.
-
-By default, an edge in this graph can contain the effects of a run
-of multiple statements within a basic block.  With
-@option{-fanalyzer-fine-grained}, each statement gets its own edge.
+Does nothing.  Preserved for backward compatibility.
 
 @opindex fanalyzer-show-duplicate-count
 @opindex fno-analyzer-show-duplicate-count
@@ -12491,6 +12483,16 @@ By default the analyzer emits simplified diagnostics paths by hiding
 events fully located within a system header.
 With @option{-fanalyzer-show-events-in-system-headers} such
 events are no longer suppressed.
+
+@opindex fanalyzer-simplify-supergraph
+@opindex fno-analyzer-simplify-supergraph
+@item -fno-analyzer-simplify-supergraph
+This option is intended for analyzer developers.
+
+By default, the analyzer performs various simplifications to the
+program supergraph before analyzing it.  With
+@option{-fno-analyzer-simplify-supergraph} this simplification can be
+suppressed, for debugging issues with it.
 
 @opindex fanalyzer-state-merge
 @opindex fno-analyzer-state-merge
@@ -12685,11 +12687,10 @@ The graph is written to @file{@var{file}.state-purge.dot}.
 @opindex fdump-analyzer-supergraph
 @item -fdump-analyzer-supergraph
 Dump representations of the ``supergraph'' suitable for viewing with
-GraphViz to @file{@var{file}.supergraph.dot} and to
-@file{@var{file}.supergraph-eg.dot}.  These show all of the
-control flow graphs in the program, with interprocedural edges for
-calls and returns.  The second dump contains annotations showing nodes
-in the ``exploded graph'' and diagnostics associated with them.
+GraphViz to @file{@var{file}.supergraph.@var{index}.@var{kind}.dot}.
+These show all of the control flow graphs in the program, at various stages
+of the analysis.  The precise set of dumps and what they show is subject
+to change.
 
 @opindex fdump-analyzer-untracked
 @item -fdump-analyzer-untracked

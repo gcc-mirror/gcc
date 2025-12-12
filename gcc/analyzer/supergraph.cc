@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_DEQUE
 #include "analyzer/common.h"
 
 #include "timevar.h"
@@ -28,13 +29,15 @@ along with GCC; see the file COPYING3.  If not see
 #include "cfg.h"
 #include "digraph.h"
 #include "tree-cfg.h"
-#include "tree-dfa.h"
 #include "cfganal.h"
 #include "except.h"
+
+#include "diagnostics/file-cache.h"
 
 #include "analyzer/supergraph.h"
 #include "analyzer/analyzer-logging.h"
 #include "analyzer/region-model.h"
+#include "analyzer/exploded-graph.h"
 
 #if ENABLE_ANALYZER
 
@@ -50,25 +53,6 @@ get_ultimate_function_for_cgraph_edge (cgraph_edge *edge)
   if (!ultimate_node)
     return nullptr;
   return ultimate_node->get_fun ();
-}
-
-/* Get the cgraph_edge, but only if there's an underlying function body.  */
-
-cgraph_edge *
-supergraph_call_edge (function *fun, const gimple *stmt)
-{
-  const gcall *call = dyn_cast<const gcall *> (stmt);
-  if (!call)
-    return nullptr;
-  cgraph_edge *edge
-    = cgraph_node::get (fun->decl)->get_edge (const_cast <gimple *> (stmt));
-  if (!edge)
-    return nullptr;
-  if (!edge->callee)
-    return nullptr; /* e.g. for a function pointer.  */
-  if (!get_ultimate_function_for_cgraph_edge (edge))
-    return nullptr;
-  return edge;
 }
 
 /* class saved_uids.
@@ -115,108 +99,93 @@ saved_uids::restore_uids () const
     pair->first->uid = pair->second;
 }
 
+/* When building the supergraph, should STMT be handled
+   along each out-edge in the CFG, or as separate superedge
+   "within" the BB.  */
+
+static bool
+control_flow_stmt_p (const gimple &stmt)
+{
+  switch (gimple_code (&stmt))
+    {
+    case GIMPLE_COND:
+    case GIMPLE_EH_DISPATCH:
+    case GIMPLE_GOTO:
+    case GIMPLE_SWITCH:
+      return true;
+
+    case GIMPLE_ASM:
+    case GIMPLE_ASSIGN:
+    case GIMPLE_CALL:
+    case GIMPLE_DEBUG:
+    case GIMPLE_LABEL:
+    case GIMPLE_NOP:
+    case GIMPLE_PREDICT:
+    case GIMPLE_RESX:
+    case GIMPLE_RETURN:
+      return false;
+
+    /* We don't expect to see any other statement kinds in the analyzer.  */
+    default:
+      internal_error ("unexpected gimple stmt code: %qs",
+		      gimple_code_name[gimple_code (&stmt)]);
+      break;
+    }
+}
+
 /* supergraph's ctor.  Walk the callgraph, building supernodes for each
-   CFG basic block, splitting the basic blocks at callsites.  Join
-   together the supernodes with interprocedural and intraprocedural
-   superedges as appropriate.
+   CFG basic block, splitting the basic blocks at statements.  Join
+   together the supernodes with interprocedural superedges as appropriate.
    Assign UIDs to the gimple stmts.  */
 
-supergraph::supergraph (logger *logger)
+supergraph::supergraph (region_model_manager &mgr,
+			logger *logger)
+: m_next_snode_id (0)
 {
   auto_timevar tv (TV_ANALYZER_SUPERGRAPH);
 
   LOG_FUNC (logger);
+
+  /* For each BB, if present, the stmt that terminates it.  */
+  typedef ordered_hash_map<basic_block, gimple *> bb_to_stmt_t;
+  bb_to_stmt_t control_stmt_ending_bbs;
 
   /* First pass: make supernodes (and assign UIDs to the gimple stmts).  */
   {
     /* Sort the cgraph_nodes?  */
     cgraph_node *node;
     FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
-    {
-      function *fun = node->get_fun ();
+      {
+	function *fun = node->get_fun ();
 
-      /* Ensure that EDGE_DFS_BACK is correct for every CFG edge in
-	 the supergraph (by doing it per-function).  */
-      auto_cfun sentinel (fun);
-      mark_dfs_back_edges ();
+	log_nesting_level log_sentinel (logger, "function: %qD", fun->decl);
 
-      const int start_idx = m_nodes.length ();
+	/* Ensure that EDGE_DFS_BACK is correct for every CFG edge in
+	   the supergraph (by doing it per-function).  */
+	auto_cfun cfun_sentinel (fun);
+	mark_dfs_back_edges ();
 
-      basic_block bb;
-      FOR_ALL_BB_FN (bb, fun)
-	{
-	  /* The initial supernode for the BB gets the phi nodes (if any).  */
-	  supernode *node_for_stmts
-	    = add_node (fun, bb, nullptr, phi_nodes (bb));
-	  m_bb_to_initial_node.put (bb, node_for_stmts);
-	  for (gphi_iterator gpi = gsi_start_phis (bb); !gsi_end_p (gpi);
-	       gsi_next (&gpi))
-	    {
-	      gimple *stmt = gsi_stmt (gpi);
-	      m_stmt_to_node_t.put (stmt, node_for_stmts);
-	      m_stmt_uids.make_uid_unique (stmt);
-	    }
+	const int start_id = m_nodes.length ();
 
-	  /* Append statements from BB to the current supernode, splitting
-	     them into a new supernode at each call site; such call statements
-	     appear in both supernodes (representing call and return).  */
-	  gimple_stmt_iterator gsi;
-	  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
-	    {
-	      gimple *stmt = gsi_stmt (gsi);
-	      /* Discard debug stmts here, so we don't have to check for
-		 them anywhere within the analyzer.  */
-	      if (is_gimple_debug (stmt))
-		continue;
-	      node_for_stmts->m_stmts.safe_push (stmt);
-	      m_stmt_to_node_t.put (stmt, node_for_stmts);
-	      m_stmt_uids.make_uid_unique (stmt);
-	      if (cgraph_edge *edge = supergraph_call_edge (fun, stmt))
-		{
-		  m_cgraph_edge_to_caller_prev_node.put(edge, node_for_stmts);
-		  node_for_stmts = add_node (fun, bb, as_a <gcall *> (stmt),
-					     nullptr);
-		  m_cgraph_edge_to_caller_next_node.put (edge, node_for_stmts);
-		}
-	       else
-	        {
-	          // maybe call is via a function pointer
-	          if (gcall *call = dyn_cast<gcall *> (stmt))
-	          {
-	            cgraph_edge *edge
-		      = cgraph_node::get (fun->decl)->get_edge (stmt);
-	            if (!edge || !edge->callee)
-	            {
-	              supernode *old_node_for_stmts = node_for_stmts;
-	              node_for_stmts = add_node (fun, bb, call, nullptr);
+	basic_block bb;
+	FOR_ALL_BB_FN (bb, fun)
+	  if (gimple *final_control_stmt
+		= populate_for_basic_block (bb, fun, logger))
+	    control_stmt_ending_bbs.put (bb, final_control_stmt);
 
-	              superedge *sedge
-	                = new callgraph_superedge (old_node_for_stmts,
-	                  			   node_for_stmts,
-	                  			   SUPEREDGE_INTRAPROCEDURAL_CALL,
-	                  			   nullptr);
-	              add_edge (sedge);
-	            }
-	          }
-	        }
-	    }
+	const unsigned num_snodes = m_nodes.length () - start_id;
+	m_function_to_num_snodes.put (fun, num_snodes);
 
-	  m_bb_to_final_node.put (bb, node_for_stmts);
-	}
-
-      const unsigned num_snodes = m_nodes.length () - start_idx;
-      m_function_to_num_snodes.put (fun, num_snodes);
-
-      if (logger)
-	{
-	  const int end_idx = m_nodes.length () - 1;
-	  logger->log ("SN: %i...%i: function %qD",
-		       start_idx, end_idx, fun->decl);
-	}
-    }
+	if (logger)
+	  {
+	    const int end_id = m_nodes.length () - 1;
+	    logger->log ("SN: %i...%i: function %qD",
+			 start_id, end_id, fun->decl);
+	  }
+      }
   }
 
-  /* Second pass: make superedges.  */
+  /* Second pass: make superedges between basic blocks.  */
   {
     /* Make superedges for CFG edges.  */
     for (bb_to_node_t::iterator iter = m_bb_to_final_node.begin ();
@@ -226,6 +195,10 @@ supergraph::supergraph (logger *logger)
 	basic_block bb = (*iter).first;
 	supernode *src_supernode = (*iter).second;
 
+	gimple *control_stmt_ending_bb = nullptr;
+	if (auto control_stmt_iter = control_stmt_ending_bbs.get (bb))
+	  control_stmt_ending_bb = *control_stmt_iter;
+
 	::edge cfg_edge;
 	int idx;
 	if (bb->succs)
@@ -234,80 +207,154 @@ supergraph::supergraph (logger *logger)
 	      basic_block dest_cfg_block = cfg_edge->dest;
 	      supernode *dest_supernode
 		= *m_bb_to_initial_node.get (dest_cfg_block);
-	      cfg_superedge *cfg_sedge
-		= add_cfg_edge (src_supernode, dest_supernode, cfg_edge);
-	      m_cfg_edge_to_cfg_superedge.put (cfg_edge, cfg_sedge);
+	      add_sedges_for_cfg_edge (src_supernode,
+				       dest_supernode,
+				       cfg_edge,
+				       control_stmt_ending_bb,
+				       mgr,
+				       logger);
 	    }
       }
-
-    /* Make interprocedural superedges for calls.  */
-    {
-      for (cgraph_edge_to_node_t::iterator iter
-	     = m_cgraph_edge_to_caller_prev_node.begin ();
-	   iter != m_cgraph_edge_to_caller_prev_node.end ();
-	   ++iter)
-	{
-	  cgraph_edge *edge = (*iter).first;
-	  supernode *caller_prev_supernode = (*iter).second;
-	  function* callee_fn = get_ultimate_function_for_cgraph_edge (edge);
-	  if (!callee_fn || !callee_fn->cfg)
-	    continue;
-	  basic_block callee_cfg_block = ENTRY_BLOCK_PTR_FOR_FN (callee_fn);
-	  supernode *callee_supernode
-	    = *m_bb_to_initial_node.get (callee_cfg_block);
-	  call_superedge *sedge
-	    = add_call_superedge (caller_prev_supernode,
-				  callee_supernode,
-				  edge);
-	  m_cgraph_edge_to_call_superedge.put (edge, sedge);
-	}
-    }
-
-    /* Make interprocedural superedges for returns.  */
-    {
-      for (cgraph_edge_to_node_t::iterator iter
-	     = m_cgraph_edge_to_caller_next_node.begin ();
-	   iter != m_cgraph_edge_to_caller_next_node.end ();
-	   ++iter)
-	{
-	  cgraph_edge *edge = (*iter).first;
-	  supernode *caller_next_supernode = (*iter).second;
-	  function* callee_fn = get_ultimate_function_for_cgraph_edge (edge);
-	  if (!callee_fn || !callee_fn->cfg)
-	    continue;
-	  basic_block callee_cfg_block = EXIT_BLOCK_PTR_FOR_FN (callee_fn);
-	  supernode *callee_supernode
-	    = *m_bb_to_initial_node.get (callee_cfg_block);
-	  return_superedge *sedge
-	    = add_return_superedge (callee_supernode,
-				    caller_next_supernode,
-				    edge);
-	  m_cgraph_edge_to_return_superedge.put (edge, sedge);
-	}
-    }
-
-    /* Make intraprocedural superedges linking the two halves of a call.  */
-    {
-      for (cgraph_edge_to_node_t::iterator iter
-	     = m_cgraph_edge_to_caller_prev_node.begin ();
-	   iter != m_cgraph_edge_to_caller_prev_node.end ();
-	   ++iter)
-	{
-	  cgraph_edge *edge = (*iter).first;
-	  supernode *caller_prev_supernode = (*iter).second;
-	  supernode *caller_next_supernode
-	    = *m_cgraph_edge_to_caller_next_node.get (edge);
-	  superedge *sedge
-	    = new callgraph_superedge (caller_prev_supernode,
-				       caller_next_supernode,
-				       SUPEREDGE_INTRAPROCEDURAL_CALL,
-				       edge);
-	  add_edge (sedge);
-	  m_cgraph_edge_to_intraproc_superedge.put (edge, sedge);
-	}
-
-    }
   }
+}
+
+/* Create a run of supernodes and superedges for the BB within FUN
+   expressing all of the stmts apart from the final control flow stmt (if any).
+   Return the control stmt that ends this bb, if any.  */
+
+gimple *
+supergraph::populate_for_basic_block (basic_block bb,
+				      function *fun,
+				      logger *logger)
+{
+  log_nesting_level sentinel (logger, "bb %i", bb->index);
+
+  supernode *initial_snode_in_bb = add_node (fun, bb, logger);
+  m_bb_to_initial_node.put (bb, initial_snode_in_bb);
+
+  if (bb->index == ENTRY_BLOCK)
+    /* Use the decl's location, rather than fun->function_start_locus,
+       which leads to more readable output.  */
+    initial_snode_in_bb->m_loc = DECL_SOURCE_LOCATION (fun->decl);
+  else if (bb->index == EXIT_BLOCK)
+    initial_snode_in_bb->m_loc = fun->function_end_locus;
+  else if (gsi_end_p (gsi_start_bb (bb)))
+    {
+      /* BB has no stmts, and isn't the ENTRY or EXIT node.
+	 Try to find a source location for it.  */
+      if (bb->succs->length () == 1)
+	{
+	  auto outedge = (*bb->succs)[0];
+	  if (useful_location_p (outedge->goto_locus))
+	    {
+	      /* We have an empty basic block with one out-edge,
+		 perhaps part of an empty infinite loop.  */
+	      if (logger)
+		logger->log ("using location 0x%lx from outedge",
+			     outedge->goto_locus);
+	      initial_snode_in_bb->m_loc = outedge->goto_locus;
+	    }
+	}
+    }
+
+  initial_snode_in_bb->m_state_merger_node = true;
+
+  gimple *final_control_flow_stmt = nullptr;
+
+  /* Create a run of supernodes for the stmts in BB,
+     connected by stmt_superedge.  */
+  gimple_stmt_iterator gsi;
+  supernode *prev_snode_in_bb = initial_snode_in_bb;
+  for (gsi = gsi_start_bb (bb); !gsi_end_p (gsi); gsi_next (&gsi))
+    {
+      gimple *next_stmt = gsi_stmt (gsi);
+
+      if (logger)
+	{
+	  logger->start_log_line ();
+	  logger->log_partial ("next_stmt: ");
+	  pp_gimple_stmt_1 (logger->get_printer (), next_stmt,
+			    0, (dump_flags_t)0);
+	  logger->end_log_line ();
+	}
+      prev_snode_in_bb->m_loc = get_stmt_location (next_stmt, fun);
+      prev_snode_in_bb->m_stmt_loc = next_stmt->location;
+      m_node_for_stmt.insert ({next_stmt, prev_snode_in_bb});
+
+      m_stmt_uids.make_uid_unique (next_stmt);
+
+      if (auto glabel_ = dyn_cast<const glabel *>(next_stmt))
+	{
+	  /* Associate the GIMPLE_LABEL with its snode.  */
+	  prev_snode_in_bb->m_label = gimple_label_label (glabel_);
+
+	  /* Only create an snode for the label if it has location
+	     information.  */
+	  if (glabel_->location == UNKNOWN_LOCATION)
+	    continue;
+	}
+
+      // handle control flow stmts on the edges
+      if (control_flow_stmt_p (*next_stmt))
+	{
+	  final_control_flow_stmt = next_stmt;
+	  break;
+	}
+
+      supernode *snode_after_next_stmt = add_node (fun, bb, logger);
+      if (prev_snode_in_bb)
+	{
+	  std::unique_ptr<operation> op;
+	  switch (gimple_code (next_stmt))
+	    {
+	    default:
+	      gcc_unreachable ();
+	      break;
+	    case GIMPLE_ASM:
+	      op = std::make_unique<gasm_op>
+		(*as_a <const gasm *> (next_stmt));
+	      break;
+	    case GIMPLE_ASSIGN:
+	      op = std::make_unique<gassign_op>
+		(*as_a <const gassign *> (next_stmt));
+	      break;
+	    case GIMPLE_CALL:
+	      op = call_and_return_op::make
+		(*as_a <const gcall *> (next_stmt));
+	      break;
+	    case GIMPLE_PREDICT:
+	      op = std::make_unique<predict_op> (*next_stmt);
+	      break;
+	    case GIMPLE_RESX:
+	      op = std::make_unique<resx_op>
+		(*as_a <const gresx *> (next_stmt));
+	      break;
+	    case GIMPLE_RETURN:
+	      op = std::make_unique<greturn_op>
+		(*as_a <const greturn *> (next_stmt));
+	      break;
+
+	    case GIMPLE_DEBUG:
+	    case GIMPLE_LABEL:
+	    case GIMPLE_NOP:
+	      /* Treat all of these as no-ops within analyzer; though
+		 perhaps we care about their locations.  */
+	      break;
+	    }
+
+	  superedge *sedge
+	    = new superedge (prev_snode_in_bb,
+			     snode_after_next_stmt,
+			     std::move (op),
+			     nullptr);
+	  add_edge (sedge);
+	}
+      prev_snode_in_bb = snode_after_next_stmt;
+    }
+
+  m_bb_to_final_node.put (bb, prev_snode_in_bb);
+
+  return final_control_flow_stmt;
 }
 
 /* supergraph's dtor.  Reset stmt uids.  */
@@ -347,6 +394,8 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
     {
       function *fun = node->get_fun ();
       gcc_assert (fun);
+      auto_cfun sentinel (fun);
+
       const char *funcname = function_name (fun);
       gv.println ("subgraph \"cluster_%s\" {",
 		  funcname);
@@ -357,45 +406,14 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
 		  " label=\"%s\";\n"),
 		 funcname);
 
-      /* Break out the nodes into clusters by BB from original CFG.  */
-      {
-	basic_block bb;
-	FOR_ALL_BB_FN (bb, fun)
-	  {
-	    if (dump_args.m_flags & SUPERGRAPH_DOT_SHOW_BBS)
-	      {
-		gv.println ("subgraph \"cluster_%s_bb_%i\" {",
-			    funcname, bb->index);
-		gv.indent ();
-		pp_printf (pp,
-			   ("style=\"dashed\";"
-			    " color=\"black\";"
-			    " label=\"bb: %i\";\n"),
-			   bb->index);
-	      }
-
-	    // TODO: maybe keep an index per-function/per-bb to speed this up???
-	    int i;
-	    supernode *n;
-	    FOR_EACH_VEC_ELT (m_nodes, i, n)
-	      if (n->m_fun == fun && n->m_bb == bb)
-		n->dump_dot (&gv, dump_args);
-
-	    if (dump_args.m_flags & SUPERGRAPH_DOT_SHOW_BBS)
-	      {
-		/* Terminate per-bb "subgraph" */
-		gv.outdent ();
-		gv.println ("}");
-	      }
-	  }
-      }
-
-      /* Add an invisible edge from ENTRY to EXIT, to improve the graph layout.  */
-      pp_string (pp, "\t");
-      get_node_for_function_entry (*fun)->dump_dot_id (pp);
-      pp_string (pp, ":s -> ");
-      get_node_for_function_exit (*fun)->dump_dot_id (pp);
-      pp_string (pp, ":n [style=\"invis\",constraint=true];\n");
+      if (loops_for_fn (fun))
+	dump_dot_to_gv_for_loop (gv, dump_args, get_loop (fun, 0), fun);
+      else
+	{
+	  basic_block bb;
+	  FOR_ALL_BB_FN (bb, fun)
+	    dump_dot_to_gv_for_bb (gv, dump_args, bb, fun);
+	}
 
       /* Terminate per-function "subgraph" */
       gv.outdent ();
@@ -409,10 +427,107 @@ supergraph::dump_dot_to_pp (pretty_printer *pp,
   FOR_EACH_VEC_ELT (m_edges, i, e)
     e->dump_dot (&gv, dump_args);
 
+  if (dump_args.m_node_annotator)
+    dump_args.m_node_annotator->add_extra_objects (&gv);
+
   /* Terminate "digraph" */
   gv.outdent ();
   gv.println ("}");
 }
+
+/* Recursively dump all the snodes within LOOP and the loops
+   within it.  */
+
+void
+supergraph::dump_dot_to_gv_for_loop (graphviz_out &gv,
+				     const dump_args_t &dump_args,
+				     class loop *loop,
+				     function *fun) const
+{
+  pretty_printer *pp = gv.get_pp ();
+
+  basic_block *body;
+  unsigned int i;
+  // Adapted from graph.cc:draw_cfg_nodes_for_loop
+  const char *fillcolors[3] = { "grey88", "grey77", "grey66" };
+
+  if (loop->header != NULL
+      && loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun))
+    pp_printf (pp,
+	       "\tsubgraph cluster_%d_%d {\n"
+	       "\tstyle=\"filled\";\n"
+	       "\tcolor=\"darkgreen\";\n"
+	       "\tfillcolor=\"%s\";\n"
+	       "\tlabel=\"loop %d\";\n"
+	       "\tlabeljust=l;\n"
+	       "\tpenwidth=2;\n",
+	       fun->funcdef_no, loop->num,
+	       fillcolors[(loop_depth (loop) - 1) % 3],
+	       loop->num);
+
+  // Recurse
+  for (class loop *inner = loop->inner; inner; inner = inner->next)
+    dump_dot_to_gv_for_loop (gv, dump_args, inner, fun);
+
+  if (loop->header == NULL)
+    return;
+
+  if (loop->latch == EXIT_BLOCK_PTR_FOR_FN (cfun))
+    body = get_loop_body (loop);
+  else
+    body = get_loop_body_in_bfs_order (loop);
+
+  for (i = 0; i < loop->num_nodes; i++)
+    {
+      basic_block bb = body[i];
+      if (bb->loop_father == loop)
+	dump_dot_to_gv_for_bb (gv, dump_args, bb, fun);
+    }
+
+  free (body);
+
+  if (loop->latch != EXIT_BLOCK_PTR_FOR_FN (cfun))
+    pp_printf (pp, "\t}\n");
+}
+
+/* Dump all the snodes from BB.  */
+
+void
+supergraph::dump_dot_to_gv_for_bb (graphviz_out &gv,
+				   const dump_args_t &dump_args,
+				   basic_block bb,
+				   function *fun) const
+{
+  pretty_printer *pp = gv.get_pp ();
+
+  if (dump_args.m_flags & SUPERGRAPH_DOT_SHOW_BBS)
+    {
+      const char *funcname = function_name (fun);
+      gv.println ("subgraph \"cluster_%s_bb_%i\" {",
+		  funcname, bb->index);
+      gv.indent ();
+      pp_printf (pp,
+		 ("style=\"dashed\";"
+		  " color=\"black\";"
+		  " label=\"bb: %i\";\n"),
+		 bb->index);
+    }
+
+  // TODO: maybe keep an index per-function/per-bb to speed this up???
+  int i;
+  supernode *n;
+  FOR_EACH_VEC_ELT (m_nodes, i, n)
+    if (n->m_fun == fun && n->m_bb == bb)
+      n->dump_dot (&gv, dump_args);
+
+  if (dump_args.m_flags & SUPERGRAPH_DOT_SHOW_BBS)
+    {
+      /* Terminate per-bb "subgraph" */
+      gv.outdent ();
+      gv.println ("}");
+    }
+}
+
 
 /* Dump this graph in .dot format to FP, using DUMP_ARGS.  */
 
@@ -472,71 +587,184 @@ supergraph::to_json () const
   return sgraph_obj;
 }
 
-/* Create a supernode for BB within FUN and add it to this supergraph.
-
-   If RETURNING_CALL is non-NULL, the supernode represents the resumption
-   of the basic block after returning from that call.
-
-   If PHI_NODES is non-NULL, this is the initial supernode for the basic
-   block, and is responsible for any handling of the phi nodes.  */
+/* Create a supernode within BB within FUN and add it to this supergraph.  */
 
 supernode *
-supergraph::add_node (function *fun, basic_block bb, gcall *returning_call,
-		      gimple_seq phi_nodes)
+supergraph::add_node (function *fun, basic_block bb, logger *logger)
 {
-  supernode *n = new supernode (fun, bb, returning_call, phi_nodes,
-				m_nodes.length ());
+  supernode *n = new supernode (fun, bb, m_next_snode_id++);
+  m_snode_by_id.push_back (n);
   m_nodes.safe_push (n);
+  if (logger)
+    logger->log ("created SN %i", n->m_id);
   return n;
 }
 
-/* Create a new cfg_superedge from SRC to DEST for the underlying CFG edge E,
-   adding it to this supergraph.
-
-   If the edge is for a switch or eh_dispatch statement, create a
-   switch_cfg_superedge or eh_dispatch_cfg_superedge subclass,
-   respectively  */
-
-cfg_superedge *
-supergraph::add_cfg_edge (supernode *src, supernode *dest, ::edge e)
+void
+supergraph::delete_nodes (const std::set<supernode *> &snodes_to_delete)
 {
-  /* Special-case switch and eh_dispatch edges.  */
-  gimple *stmt = src->get_last_stmt ();
-  std::unique_ptr<cfg_superedge> new_edge;
-  if (stmt && stmt->code == GIMPLE_SWITCH)
-    new_edge = std::make_unique<switch_cfg_superedge> (src, dest, e);
-  else if (stmt && stmt->code == GIMPLE_EH_DISPATCH)
-    new_edge = eh_dispatch_cfg_superedge::make (src, dest, e,
-						as_a <geh_dispatch *> (stmt));
+  /* Remove nodes from m_nodes.  */
+  unsigned read_index, write_index;
+  supernode **elem_ptr;
+  VEC_ORDERED_REMOVE_IF
+    (m_nodes, read_index, write_index, elem_ptr,
+     snodes_to_delete.find (*elem_ptr) != snodes_to_delete.end ()
+     );
+
+  /* Remove nodes from m_snode_by_id, and delete them.  */
+  for (auto iter : snodes_to_delete)
+    {
+      gcc_assert (iter->m_preds.length () == 0);
+      gcc_assert (iter->m_succs.length () == 0);
+      m_snode_by_id[iter->m_id] = nullptr;
+      delete iter;
+    }
+}
+
+/* Create a chain of nodes and edges in this supergraph from SRC to DEST
+   to handle CFG_EDGE in the underlying CFG:
+
+    +---+
+    |SRC|
+    +---+
+      |
+      | optional edge for ctrlflow_stmt (if CTRLFLOW_STMT is non-null)
+      | (e.g. checking conditions on a GIMPLE_COND)
+      |
+      V
+   +------+
+   |(node)|
+   +------+
+      |
+      | optional edge for any phi nodes in the destination basic block
+      |
+      V
+   +------+
+   |(node)|
+   +------+
+      |
+      | optional edge for state merging at CFG join points
+      |
+      V
+   +----+
+   |DEST|
+   +----+
+
+   adding nodes where necessary between the edges, and adding a no-op edge
+   for the case where there is no CTRLFLOW_STMT, phi nodes, or
+   state merging.  */
+
+void
+supergraph::add_sedges_for_cfg_edge (supernode *src,
+				     supernode *dest,
+				     ::edge cfg_edge,
+				     gimple *ctrlflow_stmt,
+				     region_model_manager &mgr,
+				     logger *logger)
+{
+  log_nesting_level sentinel (logger,
+			      "edge: bb %i -> bb %i",
+			      cfg_edge->src->index,
+			      cfg_edge->dest->index);
+  std::unique_ptr<operation> ctrlflow_op;
+  if (ctrlflow_stmt)
+    switch (gimple_code (ctrlflow_stmt))
+      {
+      default:
+	gcc_unreachable ();
+	break;
+      case GIMPLE_COND:
+	ctrlflow_op = std::make_unique<gcond_edge_op>
+	  (cfg_edge,
+	   *as_a <gcond *> (ctrlflow_stmt));
+	break;
+      case GIMPLE_EH_DISPATCH:
+	ctrlflow_op
+	  = eh_dispatch_edge_op::make (src, dest,
+				       cfg_edge,
+				       *as_a <geh_dispatch *> (ctrlflow_stmt));
+	break;
+      case GIMPLE_GOTO:
+	{
+	  ctrlflow_op = std::make_unique<ggoto_edge_op>
+	    (cfg_edge,
+	     *as_a <ggoto *> (ctrlflow_stmt),
+	     dest->m_label);
+	}
+	break;
+      case GIMPLE_SWITCH:
+	ctrlflow_op = std::make_unique<switch_case_op>
+	  (*src->get_function (),
+	   cfg_edge,
+	   *as_a <gswitch *> (ctrlflow_stmt),
+	   *mgr.get_range_manager ());
+	break;
+      }
   else
-    new_edge = std::make_unique<cfg_superedge> (src, dest, e);
-  add_edge (new_edge.get ());
-  return new_edge.release ();
+    {
+      if (cfg_edge->flags & EDGE_ABNORMAL)
+	/* Don't create superedges for such CFG edges (though
+	   computed gotos are handled by the GIMPLE_GOTO clause above).  */
+	return;
+    }
+
+  /* Determine a location to use for any snodes within the CFG edge.  */
+  location_t dest_loc = dest->m_loc;
+  if (useful_location_p (cfg_edge->goto_locus))
+    dest_loc = cfg_edge->goto_locus;
+
+  /* If the dest is a control flow join point, then for each CFG in-edge
+     add an extra snode/sedge before DEST and route to it.
+     We hope this will help state-merging keep the
+     different in-edges separately.  */
+  if (cfg_edge->dest->preds->length () > 1
+      && cfg_edge->dest->index != EXIT_BLOCK)
+    {
+      auto extra_snode = add_node (src->get_function (),
+				   cfg_edge->dest,
+				   logger);
+      extra_snode->m_loc = dest_loc;
+      extra_snode->m_preserve_p = true;
+      extra_snode->m_state_merger_node = true;
+      add_edge (new superedge (extra_snode, dest, nullptr, nullptr));
+      dest = extra_snode;
+    }
+
+  std::unique_ptr<operation> phi_op;
+  if (phi_nodes (cfg_edge->dest))
+    phi_op = phis_for_edge_op::maybe_make (cfg_edge);
+  if (phi_op)
+    {
+      superedge *edge_for_phis_op;
+      if (ctrlflow_op)
+	{
+	  /* We have two ops; add an edge for each:
+	     SRC --{ctrlflow_op}--> before_phi_nodes --{phi_op}--> DEST.  */
+	  supernode *before_phi_nodes
+	    = add_node (src->get_function (), cfg_edge->src, logger);
+	  before_phi_nodes->m_loc = dest_loc;
+	  add_edge (new superedge (src, before_phi_nodes,
+				   std::move (ctrlflow_op),
+				   cfg_edge));
+	  edge_for_phis_op = new superedge (before_phi_nodes, dest,
+					    std::move (phi_op),
+					    cfg_edge);
+	}
+      else
+	/* We just have a phi_op; add: SRC --{phi_op}--> DEST.  */
+	edge_for_phis_op
+	  = new superedge (src, dest, std::move (phi_op), cfg_edge);
+      add_edge (edge_for_phis_op);
+      m_edges_for_phis.insert ({cfg_edge, edge_for_phis_op});
+    }
+  else
+    /* We don't have a phi op, create this edge:
+       SRC --{ctrlflow_op}--> DEST
+       where ctrlflow_op might be nullptr (for a no-op edge).  */
+    add_edge (new superedge (src, dest, std::move (ctrlflow_op), cfg_edge));
 }
 
-/* Create and add a call_superedge representing an interprocedural call
-   from SRC to DEST, using CEDGE.  */
-
-call_superedge *
-supergraph::add_call_superedge (supernode *src, supernode *dest,
-				cgraph_edge *cedge)
-{
-  call_superedge *new_edge = new call_superedge (src, dest, cedge);
-  add_edge (new_edge);
-  return new_edge;
-}
-
-/* Create and add a return_superedge representing returning from an
-   interprocedural call, returning from SRC to DEST, using CEDGE.  */
-
-return_superedge *
-supergraph::add_return_superedge (supernode *src, supernode *dest,
-				  cgraph_edge *cedge)
-{
-  return_superedge *new_edge = new return_superedge (src, dest, cedge);
-  add_edge (new_edge);
-  return new_edge;
-}
+// class supernode : public dnode<supergraph_traits>
 
 /* Implementation of dnode::dump_dot vfunc for supernodes.
 
@@ -547,144 +775,117 @@ supergraph::add_return_superedge (supernode *src, supernode *dest,
 void
 supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 {
-  gv->println ("subgraph cluster_node_%i {",
-	       m_index);
-  gv->indent ();
-
-  gv->println("style=\"solid\";");
-  gv->println("color=\"black\";");
-  gv->println("fillcolor=\"lightgrey\";");
-  gv->println("label=\"sn: %i (bb: %i)\";", m_index, m_bb->index);
-
   pretty_printer *pp = gv->get_pp ();
-
-  if (args.m_node_annotator)
-    args.m_node_annotator->add_node_annotations (gv, *this, false);
 
   gv->write_indent ();
   dump_dot_id (pp);
+
   pp_printf (pp,
-	     " [shape=none,margin=0,style=filled,fillcolor=%s,label=<",
-	     "lightgrey");
+	     " [shape=none,margin=0,style=filled,label=<");
   pp_string (pp, "<TABLE BORDER=\"0\">");
   pp_write_text_to_stream (pp);
 
-  bool had_row = false;
+  pp_printf (pp, "<TR><TD>sn: %i (bb: %i)",
+	     m_id, m_bb->index);
+  if (args.m_eg)
+    pp_printf (pp, "; scc: %i", args.m_eg->get_scc_id (*this));
+  pp_string (pp, "</TD></TR>");
+  pp_newline (pp);
 
-  /* Give any annotator the chance to add its own per-node TR elements. */
-  if (args.m_node_annotator)
-    if (args.m_node_annotator->add_node_annotations (gv, *this, true))
-      had_row = true;
-
-  if (m_returning_call)
+  if (m_preserve_p)
     {
-      gv->begin_trtd ();
-      pp_string (pp, "returning call: ");
-      gv->end_tdtr ();
-
-      gv->begin_tr ();
-      gv->begin_td ();
-      pp_gimple_stmt_1 (pp, m_returning_call, 0, (dump_flags_t)0);
-      pp_write_text_as_html_like_dot_to_stream (pp);
-      gv->end_td ();
-      /* Give any annotator the chance to add per-stmt TD elements to
-	 this row.  */
-      if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, m_returning_call,
-						     true);
-      gv->end_tr ();
-
-      /* Give any annotator the chance to add per-stmt TR elements.  */
-      if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, m_returning_call,
-						     false);
+      pp_string (pp, "<TR><TD>(preserve)</TD></TR>");
       pp_newline (pp);
-
-      had_row = true;
     }
-
+  if (m_state_merger_node)
+    {
+      pp_string (pp, "<TR><TD BGCOLOR=\"#ec7a08\">"
+		 "<FONT COLOR=\"white\">STATE MERGER</FONT></TD></TR>");
+      pp_newline (pp);
+    }
   if (entry_p ())
     {
       pp_string (pp, "<TR><TD>ENTRY</TD></TR>");
       pp_newline (pp);
-      had_row = true;
     }
-
-  if (return_p ())
+  else if (exit_p ())
     {
       pp_string (pp, "<TR><TD>EXIT</TD></TR>");
       pp_newline (pp);
-      had_row = true;
     }
 
-  /* Phi nodes.  */
-  for (gphi_iterator gpi = const_cast<supernode *> (this)->start_phis ();
-       !gsi_end_p (gpi); gsi_next (&gpi))
+  /* Source location.  */
+  /* Highlight nodes where we're missing source location information.
+     Ideally this all gets fixed up by supergraph::fixup_locations.  */
+  if (m_loc == UNKNOWN_LOCATION)
+    pp_string (pp, "<TR><TD>UNKNOWN_LOCATION</TD></TR>");
+  else if (get_pure_location (m_loc) == UNKNOWN_LOCATION)
     {
-      const gimple *stmt = gsi_stmt (gpi);
-      gv->begin_tr ();
-      gv->begin_td ();
-      pp_gimple_stmt_1 (pp, stmt, 0, (dump_flags_t)0);
-      pp_write_text_as_html_like_dot_to_stream (pp);
-      gv->end_td ();
-      /* Give any annotator the chance to add per-phi TD elements to
-	 this row.  */
-      if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, stmt, true);
-      gv->end_tr ();
-
-      /* Give any annotator the chance to add per-phi TR elements.  */
-      if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, stmt, false);
-
-      pp_newline (pp);
-      had_row = true;
+      pp_printf (pp, "<TR><TD>location: 0x%lx</TD></TR>", m_loc);
+      pp_string (pp, "<TR><TD>UNKNOWN_LOCATION</TD></TR>");
     }
-
-  /* Statements.  */
-  int i;
-  gimple *stmt;
-  FOR_EACH_VEC_ELT (m_stmts, i, stmt)
+  else
     {
-      gv->begin_tr ();
-      gv->begin_td ();
-      pp_gimple_stmt_1 (pp, stmt, 0, (dump_flags_t)0);
-      pp_write_text_as_html_like_dot_to_stream (pp);
-      gv->end_td ();
-      /* Give any annotator the chance to add per-stmt TD elements to
-	 this row.  */
-      if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, stmt, true);
-      gv->end_tr ();
+      /* Show the source location, but skip it for the case where it's
+	 the same as all previous snodes (and there's a single in-edge).  */
+      bool show_location = true;
+      location_t prev_loc = UNKNOWN_LOCATION;
+      if (m_preds.length () == 1)
+	{
+	  prev_loc = m_preds[0]->m_src->m_loc;
+	  if (prev_loc == m_loc)
+	    show_location = false;
+	}
+      if (show_location)
+	{
+	  pp_printf (pp, "<TR><TD>location: 0x%lx</TD></TR>", m_loc);
 
-      /* Give any annotator the chance to add per-stmt TR elements.  */
-      if (args.m_node_annotator)
-	args.m_node_annotator->add_stmt_annotations (gv, stmt, false);
+	  /* Print changes to the expanded location (or all of it if
+	     we have multiple in-edges).  */
+	  auto prev_exploc = expand_location (prev_loc);
+	  auto exploc = expand_location (m_loc);
 
-      pp_newline (pp);
-      had_row = true;
+	  if ((exploc.file != prev_exploc.file)
+	      && exploc.file)
+	    pp_printf (pp, "<TR><TD>%s:%i:</TD></TR>",
+		       exploc.file, exploc.line);
+	  if (exploc.line != prev_exploc.line)
+	    if (const diagnostics::char_span line
+		= global_dc->get_file_cache ().get_source_line (exploc.file,
+								exploc.line))
+	      {
+		/* Print the source line.  */
+		pp_string (pp, "<TR><TD>");
+		pp_string (pp, "<TABLE BORDER=\"0\"><TR>");
+
+		// Line number:
+		pp_printf (pp, ("<TD ALIGN=\"RIGHT\" BGCOLOR=\"#0088ce\">"
+				"<FONT COLOR=\"white\"> %i</FONT></TD>"),
+			   exploc.line);
+
+		// Line contents:
+		pp_string (pp, "<TD ALIGN=\"LEFT\" BGCOLOR=\"white\">");
+		pp_flush (pp);
+		for (size_t i = 0; i < line.length (); ++i)
+		  pp_character (pp, line[i]);
+		pp_write_text_as_html_like_dot_to_stream (pp);
+		pp_string (pp, "</TD>");
+
+		pp_string (pp, "</TR></TABLE>");
+		pp_string (pp, "</TD></TR>");
+	      }
+	}
     }
 
-  /* Give any annotator the chance to add additional per-node TR elements
-     to the end of the TABLE. */
+  pp_flush (pp);
+
   if (args.m_node_annotator)
-    if (args.m_node_annotator->add_after_node_annotations (gv, *this))
-      had_row = true;
+    args.m_node_annotator->add_node_annotations (gv, *this);
 
-  /* Graphviz requires a TABLE element to have at least one TR
-     (and each TR to have at least one TD).  */
-  if (!had_row)
-    {
-      pp_string (pp, "<TR><TD>(empty)</TD></TR>");
-      pp_newline (pp);
-    }
+  pp_printf (pp, "<TR><TD>m_stmt_loc: 0x%lx</TD></TR>", m_stmt_loc);
 
   pp_string (pp, "</TABLE>>];\n\n");
   pp_flush (pp);
-
-  /* Terminate "subgraph" */
-  gv->outdent ();
-  gv->println ("}");
 }
 
 /* Write an ID for this node to PP, for use in .dot output.  */
@@ -692,184 +893,33 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 void
 supernode::dump_dot_id (pretty_printer *pp) const
 {
-  pp_printf (pp, "node_%i", m_index);
+  pp_printf (pp, "node_%i", m_id);
 }
 
 /* Return a new json::object of the form
-   {"idx": int,
+   {"id": int,
     "fun": optional str
-    "bb_idx": int,
-    "returning_call": optional str,
-    "phis": [str],
-    "stmts" : [str]}.  */
+    "bb_idx": int}.  */
 
 std::unique_ptr<json::object>
 supernode::to_json () const
 {
   auto snode_obj = std::make_unique<json::object> ();
 
-  snode_obj->set_integer ("idx", m_index);
+  snode_obj->set_integer ("id", m_id);
   snode_obj->set_integer ("bb_idx", m_bb->index);
   if (function *fun = get_function ())
     snode_obj->set_string ("fun", function_name (fun));
 
-  if (m_returning_call)
-    {
-      pretty_printer pp;
-      pp_format_decoder (&pp) = default_tree_printer;
-      pp_gimple_stmt_1 (&pp, m_returning_call, 0, (dump_flags_t)0);
-      snode_obj->set_string ("returning_call", pp_formatted_text (&pp));
-    }
-
-  /* Phi nodes.  */
-  {
-    auto phi_arr = std::make_unique<json::array> ();
-    for (gphi_iterator gpi = const_cast<supernode *> (this)->start_phis ();
-	 !gsi_end_p (gpi); gsi_next (&gpi))
-      {
-	const gimple *stmt = gsi_stmt (gpi);
-	pretty_printer pp;
-	pp_format_decoder (&pp) = default_tree_printer;
-	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
-	phi_arr->append_string (pp_formatted_text (&pp));
-      }
-    snode_obj->set ("phis", std::move (phi_arr));
-  }
-
-  /* Statements.  */
-  {
-    auto stmt_arr = std::make_unique<json::array> ();
-    int i;
-    gimple *stmt;
-    FOR_EACH_VEC_ELT (m_stmts, i, stmt)
-      {
-	pretty_printer pp;
-	pp_format_decoder (&pp) = default_tree_printer;
-	pp_gimple_stmt_1 (&pp, stmt, 0, (dump_flags_t)0);
-	stmt_arr->append_string (pp_formatted_text (&pp));
-      }
-    snode_obj->set ("stmts", std::move (stmt_arr));
-  }
-
   return snode_obj;
 }
-
-/* Get a location_t for the start of this supernode.  */
-
-location_t
-supernode::get_start_location () const
-{
-  if (m_returning_call
-      && get_pure_location (m_returning_call->location) != UNKNOWN_LOCATION)
-    return m_returning_call->location;
-
-  int i;
-  gimple *stmt;
-  FOR_EACH_VEC_ELT (m_stmts, i, stmt)
-    if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
-      return stmt->location;
-
-  if (entry_p ())
-    {
-      // TWEAK: show the decl instead; this leads to more readable output:
-      return DECL_SOURCE_LOCATION (m_fun->decl);
-
-      return m_fun->function_start_locus;
-    }
-  if (return_p ())
-    return m_fun->function_end_locus;
-
-  /* We have no locations for stmts.  If we have a single out-edge that's
-     a CFG edge, the goto_locus of that edge is a better location for this
-     than UNKNOWN_LOCATION.  */
-  if (m_succs.length () == 1)
-    if (const cfg_superedge *cfg_sedge = m_succs[0]->dyn_cast_cfg_superedge ())
-      return cfg_sedge->get_goto_locus ();
-
-  return UNKNOWN_LOCATION;
-}
-
-/* Get a location_t for the end of this supernode.  */
-
-location_t
-supernode::get_end_location () const
-{
-  int i;
-  gimple *stmt;
-  FOR_EACH_VEC_ELT_REVERSE (m_stmts, i, stmt)
-    if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
-      return stmt->location;
-
-  if (m_returning_call
-      && get_pure_location (m_returning_call->location) != UNKNOWN_LOCATION)
-    return m_returning_call->location;
-
-  if (entry_p ())
-    return m_fun->function_start_locus;
-  if (return_p ())
-    return m_fun->function_end_locus;
-
-  /* If we have a single out-edge that's a CFG edge, use the goto_locus of
-     that edge.  */
-  if (m_succs.length () == 1)
-    if (const cfg_superedge *cfg_sedge = m_succs[0]->dyn_cast_cfg_superedge ())
-      return cfg_sedge->get_goto_locus ();
-
-  return UNKNOWN_LOCATION;
-}
-
-/* Given STMT within this supernode, return its index within m_stmts.  */
-
-unsigned int
-supernode::get_stmt_index (const gimple *stmt) const
-{
-  unsigned i;
-  gimple *iter_stmt;
-  FOR_EACH_VEC_ELT (m_stmts, i, iter_stmt)
-    if (iter_stmt == stmt)
-      return i;
-  gcc_unreachable ();
-}
-
-/* Get any label_decl for this supernode, or NULL_TREE if there isn't one.  */
-
-tree
-supernode::get_label () const
-{
-  if (m_stmts.length () == 0)
-    return NULL_TREE;
-  const glabel *label_stmt = dyn_cast<const glabel *> (m_stmts[0]);
-  if (!label_stmt)
-    return NULL_TREE;
-  return gimple_label_label (label_stmt);
-}
-
-/* Get a string for PK.  */
-
-static const char *
-edge_kind_to_string (enum edge_kind kind)
-{
-  switch (kind)
-    {
-    default:
-      gcc_unreachable ();
-    case SUPEREDGE_CFG_EDGE:
-      return "SUPEREDGE_CFG_EDGE";
-    case SUPEREDGE_CALL:
-      return "SUPEREDGE_CALL";
-    case SUPEREDGE_RETURN:
-      return "SUPEREDGE_RETURN";
-    case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      return "SUPEREDGE_INTRAPROCEDURAL_CALL";
-    }
-};
 
 /* Dump this superedge to PP.  */
 
 void
 superedge::dump (pretty_printer *pp) const
 {
-  pp_printf (pp, "edge: SN: %i -> SN: %i", m_src->m_index, m_dest->m_index);
+  pp_printf (pp, "edge: SN: %i -> SN: %i", m_src->m_id, m_dest->m_id);
   label_text desc (get_description (false));
   if (strlen (desc.get ()) > 0)
     {
@@ -898,23 +948,6 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
   const char *color = "black";
   int weight = 10;
   const char *constraint = "true";
-
-  switch (m_kind)
-    {
-    default:
-      gcc_unreachable ();
-    case SUPEREDGE_CFG_EDGE:
-      break;
-    case SUPEREDGE_CALL:
-      color = "red";
-      break;
-    case SUPEREDGE_RETURN:
-      color = "green";
-      break;
-    case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      style = "\"dotted\"";
-      break;
-    }
 
   /* Adapted from graph.cc:draw_cfg_node_succ_edges.  */
   if (::edge cfg_edge = get_any_cfg_edge ())
@@ -950,60 +983,42 @@ superedge::dump_dot (graphviz_out *gv, const dump_args_t &) const
   m_dest->dump_dot_id (pp);
   pp_printf (pp,
 	     (" [style=%s, color=%s, weight=%d, constraint=%s,"
-	      " ltail=\"cluster_node_%i\", lhead=\"cluster_node_%i\""
 	      " headlabel=\""),
-	     style, color, weight, constraint,
-	     m_src->m_index, m_dest->m_index);
+	     style, color, weight, constraint);
+  pp_flush (pp);
 
   dump_label_to_pp (pp, false);
+  pp_write_text_as_dot_label_to_stream (pp, false);
 
   pp_printf (pp, "\"];\n");
 }
 
 /* Return a new json::object of the form
-   {"kind"   : str,
-    "src_idx": int, the index of the source supernode,
-    "dst_idx": int, the index of the destination supernode,
-    "desc"   : str.  */
+   {"src_id": int, the index of the source supernode,
+    "dst_id": int, the index of the destination supernode} */
 
 std::unique_ptr<json::object>
 superedge::to_json () const
 {
   auto sedge_obj = std::make_unique<json::object> ();
-  sedge_obj->set_string ("kind", edge_kind_to_string (m_kind));
-  sedge_obj->set_integer ("src_idx", m_src->m_index);
-  sedge_obj->set_integer ("dst_idx", m_dest->m_index);
-
-  {
-    pretty_printer pp;
-    pp_format_decoder (&pp) = default_tree_printer;
-    dump_label_to_pp (&pp, false);
-    sedge_obj->set_string ("desc", pp_formatted_text (&pp));
-  }
-
+  sedge_obj->set_integer ("src_id", m_src->m_id);
+  sedge_obj->set_integer ("dst_id", m_dest->m_id);
   return sedge_obj;
 }
 
-/* If this is an intraprocedural superedge, return the associated
-   CFG edge.  Otherwise, return nullptr.  */
+/* Return true iff this edge needs to be preserved during simplification.  */
 
-::edge
-superedge::get_any_cfg_edge () const
+bool
+superedge::preserve_p () const
 {
-  if (const cfg_superedge *sub = dyn_cast_cfg_superedge ())
-    return sub->get_cfg_edge ();
-  return nullptr;
-}
-
-/* If this is an interprocedural superedge, return the associated
-   cgraph_edge *.  Otherwise, return nullptr.  */
-
-cgraph_edge *
-superedge::get_any_callgraph_edge () const
-{
-  if (const callgraph_superedge *sub = dyn_cast_callgraph_superedge ())
-    return sub->m_cedge;
-  return nullptr;
+  if (m_cfg_edge)
+    if (m_cfg_edge->flags & (EDGE_EH | EDGE_DFS_BACK))
+      {
+	/* We use EDGE_EH in get_eh_outedge, and EDGE_DFS_BACK
+	   for detecting infinite loops.  */
+	return true;
+      }
+  return false;
 }
 
 /* Build a description of this superedge (e.g. "true" for the true
@@ -1021,563 +1036,48 @@ superedge::get_description (bool user_facing) const
   return label_text::take (xstrdup (pp_formatted_text (&pp)));
 }
 
-/* Implementation of superedge::dump_label_to_pp for non-switch CFG
-   superedges.
-
-   For true/false edges, print "true" or "false" to PP.
-
-   If USER_FACING is false, also print flags on the underlying CFG edge to
-   PP.  */
-
 void
-cfg_superedge::dump_label_to_pp (pretty_printer *pp,
-				 bool user_facing) const
+superedge::dump_label_to_pp (pretty_printer *pp, bool user_facing) const
 {
-  if (true_value_p ())
-    pp_printf (pp, "true");
-  else if (false_value_p ())
-    pp_printf (pp, "false");
+  if (get_op ())
+    get_op ()->print_as_edge_label (pp, user_facing);
+  else
+    pp_printf (pp, "no-op");
 
   if (user_facing)
     return;
 
-  /* Express edge flags as a string with " | " separator.
-     e.g. " (flags FALLTHRU | DFS_BACK)".  */
-  if (get_flags ())
+  if (::edge cfg_edge = get_any_cfg_edge ())
     {
-      pp_string (pp, " (flags ");
-      bool seen_flag = false;
+      if (cfg_edge->flags)
+	{
+	  pp_string (pp, " (flags ");
+	  bool seen_flag = false;
 #define DEF_EDGE_FLAG(NAME,IDX)			\
-  do {						\
-    if (get_flags () & EDGE_##NAME)			\
-      {						\
-	if (seen_flag)				\
-	  pp_string (pp, " | ");			\
-	pp_printf (pp, "%s", (#NAME));		\
-	seen_flag = true;			\
-      }						\
-  } while (0);
+	  do {						\
+	    if (cfg_edge->flags & EDGE_##NAME)		\
+	      {						\
+		if (seen_flag)					\
+		  pp_string (pp, " | ");			\
+		pp_printf (pp, "%s", (#NAME));			\
+		seen_flag = true;				\
+	      }						\
+	  } while (0);
 #include "cfg-flags.def"
 #undef DEF_EDGE_FLAG
-      pp_string (pp, ")");
-    }
-
-  if (m_cfg_edge->goto_locus > BUILTINS_LOCATION)
-    pp_string (pp, " (has goto_locus)");
-
-  /* Otherwise, no label.  */
-}
-
-/* Get the index number for this edge for use in phi stmts
-   in its destination.  */
-
-size_t
-cfg_superedge::get_phi_arg_idx () const
-{
-  return m_cfg_edge->dest_idx;
-}
-
-/* Get the phi argument for PHI for this CFG edge.  */
-
-tree
-cfg_superedge::get_phi_arg (const gphi *phi) const
-{
-  size_t index = get_phi_arg_idx ();
-  return gimple_phi_arg_def (phi, index);
-}
-
-/* class switch_cfg_superedge : public cfg_superedge.  */
-
-switch_cfg_superedge::switch_cfg_superedge (supernode *src,
-					    supernode *dst,
-					    ::edge e)
-: cfg_superedge (src, dst, e)
-{
-  /* Populate m_case_labels with all cases which go to DST.  */
-  const gswitch *gswitch = get_switch_stmt ();
-  for (unsigned i = 0; i < gimple_switch_num_labels (gswitch); i++)
-    {
-      tree case_ = gimple_switch_label (gswitch, i);
-      basic_block bb = label_to_block (src->get_function (),
-				       CASE_LABEL (case_));
-      if (bb == dst->m_bb)
-	m_case_labels.safe_push (case_);
-    }
-}
-
-/* Implementation of superedge::dump_label_to_pp for CFG superedges for
-   "switch" statements.
-
-   Print "case VAL:", "case LOWER ... UPPER:", or "default:" to PP.  */
-
-void
-switch_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
-					bool user_facing ATTRIBUTE_UNUSED) const
-{
-  if (user_facing)
-    {
-      for (unsigned i = 0; i < m_case_labels.length (); ++i)
-	{
-	  if (i > 0)
-	    pp_string (pp, ", ");
-	  tree case_label = m_case_labels[i];
-	  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-	  tree lower_bound = CASE_LOW (case_label);
-	  tree upper_bound = CASE_HIGH (case_label);
-	  if (lower_bound)
-	    {
-	      pp_printf (pp, "case ");
-	      dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
-	      if (upper_bound)
-		{
-		  pp_printf (pp, " ... ");
-		  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0,
-				     false);
-		}
-	      pp_printf (pp, ":");
-	    }
-	  else
-	    pp_printf (pp, "default:");
+	  pp_string (pp, ")");
 	}
-    }
-  else
-    {
-      pp_character (pp, '{');
-      for (unsigned i = 0; i < m_case_labels.length (); ++i)
-	{
-	  if (i > 0)
-	    pp_string (pp, ", ");
-	  tree case_label = m_case_labels[i];
-	  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-	  tree lower_bound = CASE_LOW (case_label);
-	  tree upper_bound = CASE_HIGH (case_label);
-	  if (lower_bound)
-	    {
-	      if (upper_bound)
-		{
-		  pp_character (pp, '[');
-		  dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0,
-				     false);
-		  pp_string (pp, ", ");
-		  dump_generic_node (pp, upper_bound, 0, (dump_flags_t)0,
-				     false);
-		  pp_character (pp, ']');
-		}
-	      else
-		dump_generic_node (pp, lower_bound, 0, (dump_flags_t)0, false);
-	    }
-	  else
-	    pp_printf (pp, "default");
-	}
-      pp_character (pp, '}');
-      if (implicitly_created_default_p ())
-	{
-	  pp_string (pp, " IMPLICITLY CREATED");
-	}
-    }
-}
-
-/* Return true iff this edge is purely for an implicitly-created "default".  */
-
-bool
-switch_cfg_superedge::implicitly_created_default_p () const
-{
-  if (m_case_labels.length () != 1)
-    return false;
-
-  tree case_label = m_case_labels[0];
-  gcc_assert (TREE_CODE (case_label) == CASE_LABEL_EXPR);
-  if (CASE_LOW (case_label))
-    return false;
-
-  /* We have a single "default" case.
-     Assume that it was implicitly created if it has UNKNOWN_LOCATION.  */
-  return EXPR_LOCATION (case_label) == UNKNOWN_LOCATION;
-}
-
-/* class eh_dispatch_cfg_superedge : public cfg_superedge.  */
-
-/* Given an ERT_TRY region, get the eh_catch corresponding to
-   the label of DST_SNODE, if any.  */
-
-static eh_catch
-get_catch (eh_region eh_reg, supernode *dst_snode)
-{
-  gcc_assert (eh_reg->type == ERT_TRY);
-
-  tree dst_snode_label = dst_snode->get_label ();
-  if (!dst_snode_label)
-    return nullptr;
-
-  for (eh_catch iter = eh_reg->u.eh_try.first_catch;
-       iter;
-       iter = iter->next_catch)
-    if (iter->label == dst_snode_label)
-      return iter;
-
-  return nullptr;
-}
-
-std::unique_ptr<eh_dispatch_cfg_superedge>
-eh_dispatch_cfg_superedge::make (supernode *src_snode,
-				 supernode *dst_snode,
-				 ::edge e,
-				 const geh_dispatch *eh_dispatch_stmt)
-{
-  const eh_status *eh = src_snode->get_function ()->eh;
-  gcc_assert (eh);
-  int region_idx = gimple_eh_dispatch_region (eh_dispatch_stmt);
-  gcc_assert (region_idx > 0);
-  gcc_assert ((*eh->region_array)[region_idx]);
-  eh_region eh_reg = (*eh->region_array)[region_idx];
-  gcc_assert (eh_reg);
-  switch (eh_reg->type)
-    {
-    default:
-      gcc_unreachable ();
-    case ERT_CLEANUP:
-      // TODO
-      gcc_unreachable ();
-      break;
-    case ERT_TRY:
-      {
-	eh_catch ehc = get_catch (eh_reg, dst_snode);
-	return std::make_unique<eh_dispatch_try_cfg_superedge>
-	  (src_snode, dst_snode,
-	   e, eh_dispatch_stmt,
-	   eh_reg, ehc);
-      }
-      break;
-    case ERT_ALLOWED_EXCEPTIONS:
-      return std::make_unique<eh_dispatch_allowed_cfg_superedge>
-	(src_snode, dst_snode,
-	 e, eh_dispatch_stmt,
-	 eh_reg);
-      break;
-    case ERT_MUST_NOT_THROW:
-      // TODO
-      gcc_unreachable ();
-      break;
-    }
-}
-
-eh_dispatch_cfg_superedge::
-eh_dispatch_cfg_superedge (supernode *src,
-			   supernode *dst,
-			   ::edge e,
-			   const geh_dispatch *eh_dispatch_stmt,
-			   eh_region eh_reg)
-: cfg_superedge (src, dst, e),
-  m_eh_dispatch_stmt (eh_dispatch_stmt),
-  m_eh_region (eh_reg)
-{
-  gcc_assert (m_eh_region);
-}
-
-const eh_status &
-eh_dispatch_cfg_superedge::get_eh_status () const
-{
-  const eh_status *eh = m_src->get_function ()->eh;
-  gcc_assert (eh);
-  return *eh;
-}
-
-// class eh_dispatch_try_cfg_superedge : public eh_dispatch_cfg_superedge
-
-/* Implementation of superedge::dump_label_to_pp for CFG superedges for
-   "eh_dispatch" statements for ERT_TRY regions.  */
-
-void
-eh_dispatch_try_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
-						 bool user_facing) const
-{
-  if (!user_facing)
-    pp_string (pp, "ERT_TRY: ");
-  if (m_eh_catch)
-    {
-      bool first = true;
-      for (tree iter = m_eh_catch->type_list; iter; iter = TREE_CHAIN (iter))
-	{
-	  if (!first)
-	    pp_string (pp, ", ");
-	  pp_printf (pp, "on catch %qT", TREE_VALUE (iter));
-	  first = false;
-	}
-    }
-  else
-    pp_string (pp, "on uncaught exception");
-}
-
-bool
-eh_dispatch_try_cfg_superedge::
-apply_constraints (region_model *model,
-		   region_model_context *ctxt,
-		   tree exception_type,
-		   std::unique_ptr<rejected_constraint> *out) const
-{
-  return model->apply_constraints_for_eh_dispatch_try
-    (*this, ctxt, exception_type, out);
-}
-
-// class eh_dispatch_allowed_cfg_superedge : public eh_dispatch_cfg_superedge
-
-eh_dispatch_allowed_cfg_superedge::
-eh_dispatch_allowed_cfg_superedge (supernode *src, supernode *dst, ::edge e,
-				   const geh_dispatch *eh_dispatch_stmt,
-				   eh_region eh_reg)
-: eh_dispatch_cfg_superedge (src, dst, e, eh_dispatch_stmt, eh_reg)
-{
-  gcc_assert (eh_reg->type == ERT_ALLOWED_EXCEPTIONS);
-
-  /* We expect two sibling out-edges at an eh_dispatch from such a region:
-
-     - one to a bb without a gimple label, with a resx,
-     for exceptions of expected types
-
-     - one to a bb with a gimple label, with a call to __cxa_unexpected,
-     for exceptions of unexpected types.
-
-     Set m_kind for this edge accordingly.  */
-  gcc_assert (e->src->succs->length () == 2);
-  tree label_for_unexpected_exceptions = eh_reg->u.allowed.label;
-  tree label_for_dest_enode = dst->get_label ();
-  if (label_for_dest_enode == label_for_unexpected_exceptions)
-    m_kind = eh_kind::unexpected;
-  else
-    {
-      gcc_assert (label_for_dest_enode == nullptr);
-      m_kind = eh_kind::expected;
-    }
-}
-
-void
-eh_dispatch_allowed_cfg_superedge::dump_label_to_pp (pretty_printer *pp,
-						     bool user_facing) const
-{
-  if (!user_facing)
-    {
-      switch (m_kind)
-	{
-	default:
-	  gcc_unreachable ();
-	case eh_dispatch_allowed_cfg_superedge::eh_kind::expected:
-	  pp_string (pp, "expected: ");
-	  break;
-	case eh_dispatch_allowed_cfg_superedge::eh_kind::unexpected:
-	  pp_string (pp, "unexpected: ");
-	  break;
-	}
-      pp_string (pp, "ERT_ALLOWED_EXCEPTIONS: ");
-      eh_region eh_reg = get_eh_region ();
-      bool first = true;
-      for (tree iter = eh_reg->u.allowed.type_list; iter;
-	   iter = TREE_CHAIN (iter))
-	{
-	  if (!first)
-	    pp_string (pp, ", ");
-	  pp_printf (pp, "%qT", TREE_VALUE (iter));
-	  first = false;
-	}
+      if (cfg_edge->goto_locus > BUILTINS_LOCATION)
+	pp_printf (pp, " (has goto_locus: 0x%lx)", cfg_edge->goto_locus);
     }
 }
 
 bool
-eh_dispatch_allowed_cfg_superedge::
-apply_constraints (region_model *model,
-		   region_model_context *ctxt,
-		   tree exception_type,
-		   std::unique_ptr<rejected_constraint> *out) const
+superedge::supports_bulk_merge_p () const
 {
-  return model->apply_constraints_for_eh_dispatch_allowed
-    (*this, ctxt, exception_type, out);
-}
-
-/* Implementation of superedge::dump_label_to_pp for interprocedural
-   superedges.  */
-
-void
-callgraph_superedge::dump_label_to_pp (pretty_printer *pp,
-				       bool user_facing ATTRIBUTE_UNUSED) const
-{
-  switch (m_kind)
-    {
-    default:
-    case SUPEREDGE_CFG_EDGE:
-      gcc_unreachable ();
-
-    case SUPEREDGE_CALL:
-      pp_printf (pp, "call");
-      break;
-
-    case SUPEREDGE_RETURN:
-      pp_printf (pp, "return");
-      break;
-
-    case SUPEREDGE_INTRAPROCEDURAL_CALL:
-      pp_printf (pp, "intraproc link");
-      break;
-    }
-}
-
-/* Get the function that was called at this interprocedural call/return
-   edge.  */
-
-function *
-callgraph_superedge::get_callee_function () const
-{
-  return get_ultimate_function_for_cgraph_edge (m_cedge);
-}
-
-/* Get the calling function at this interprocedural call/return edge.  */
-
-function *
-callgraph_superedge::get_caller_function () const
-{
-  return m_cedge->caller->get_fun ();
-}
-
-/* Get the fndecl that was called at this interprocedural call/return
-   edge.  */
-
-tree
-callgraph_superedge::get_callee_decl () const
-{
-  return get_callee_function ()->decl;
-}
-
-/* Get the gcall * of this interprocedural call/return edge.  */
-
-const gcall &
-callgraph_superedge::get_call_stmt () const
-{
-  if (m_cedge)
-    return *m_cedge->call_stmt;
-
-  return *m_src->get_final_call ();
-}
-
-/* Get the calling fndecl at this interprocedural call/return edge.  */
-
-tree
-callgraph_superedge::get_caller_decl () const
-{
-  return get_caller_function ()->decl;
-}
-
-/* Given PARM_TO_FIND, a PARM_DECL, identify its index (writing it
-   to *OUT if OUT is non-NULL), and return the corresponding argument
-   at the callsite.  */
-
-tree
-callgraph_superedge::get_arg_for_parm (tree parm_to_find,
-				       callsite_expr *out) const
-{
-  gcc_assert  (TREE_CODE (parm_to_find) == PARM_DECL);
-
-  tree callee = get_callee_decl ();
-  const gcall &call_stmt = get_call_stmt ();
-
-  unsigned i = 0;
-  for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
-       iter_parm = DECL_CHAIN (iter_parm), ++i)
-    {
-      if (i >= gimple_call_num_args (&call_stmt))
-	return NULL_TREE;
-      if (iter_parm == parm_to_find)
-	{
-	  if (out)
-	    *out = callsite_expr::from_zero_based_param (i);
-	  return gimple_call_arg (&call_stmt, i);
-	}
-    }
-
-  /* Not found.  */
-  return NULL_TREE;
-}
-
-/* Look for a use of ARG_TO_FIND as an argument at this callsite.
-   If found, return the default SSA def of the corresponding parm within
-   the callee, and if OUT is non-NULL, write the index to *OUT.
-   Only the first match is handled.  */
-
-tree
-callgraph_superedge::get_parm_for_arg (tree arg_to_find,
-				       callsite_expr *out) const
-{
-  tree callee = get_callee_decl ();
-  const gcall &call_stmt = get_call_stmt ();
-
-  unsigned i = 0;
-  for (tree iter_parm = DECL_ARGUMENTS (callee); iter_parm;
-       iter_parm = DECL_CHAIN (iter_parm), ++i)
-    {
-      if (i >= gimple_call_num_args (&call_stmt))
-	return NULL_TREE;
-      tree param = gimple_call_arg (&call_stmt, i);
-      if (arg_to_find == param)
-	{
-	  if (out)
-	    *out = callsite_expr::from_zero_based_param (i);
-	  return ssa_default_def (get_callee_function (), iter_parm);
-	}
-    }
-
-  /* Not found.  */
-  return NULL_TREE;
-}
-
-/* Map caller_expr back to an expr within the callee, or return NULL_TREE.
-   If non-NULL is returned, populate OUT.  */
-
-tree
-callgraph_superedge::map_expr_from_caller_to_callee (tree caller_expr,
-						     callsite_expr *out) const
-{
-  /* Is it an argument (actual param)?  If so, convert to
-     parameter (formal param).  */
-  tree parm = get_parm_for_arg (caller_expr, out);
-  if (parm)
-    return parm;
-  /* Otherwise try return value.  */
-  if (caller_expr == gimple_call_lhs (&get_call_stmt ()))
-    {
-      if (out)
-	*out = callsite_expr::from_return_value ();
-      return DECL_RESULT (get_callee_decl ());
-    }
-
-  return NULL_TREE;
-}
-
-/* Map callee_expr back to an expr within the caller, or return NULL_TREE.
-   If non-NULL is returned, populate OUT.  */
-
-tree
-callgraph_superedge::map_expr_from_callee_to_caller (tree callee_expr,
-						     callsite_expr *out) const
-{
-  if (callee_expr == NULL_TREE)
-    return NULL_TREE;
-
-  /* If it's a parameter (formal param), get the argument (actual param).  */
-  if (TREE_CODE (callee_expr) == PARM_DECL)
-    return get_arg_for_parm (callee_expr, out);
-
-  /* Similar for the default SSA name of the PARM_DECL.  */
-  if (TREE_CODE (callee_expr) == SSA_NAME
-      && SSA_NAME_IS_DEFAULT_DEF (callee_expr)
-      && TREE_CODE (SSA_NAME_VAR (callee_expr)) == PARM_DECL)
-    return get_arg_for_parm (SSA_NAME_VAR (callee_expr), out);
-
-  /* Otherwise try return value.  */
-  if (callee_expr == DECL_RESULT (get_callee_decl ()))
-    {
-      if (out)
-	*out = callsite_expr::from_return_value ();
-      return gimple_call_lhs (&get_call_stmt ());
-    }
-
-  return NULL_TREE;
+  if (!m_op)
+    return true;
+  return m_op->supports_bulk_merge_p ();
 }
 
 } // namespace ana

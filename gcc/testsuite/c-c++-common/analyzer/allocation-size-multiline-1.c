@@ -66,19 +66,21 @@ void test_symbolic (int n)
 /* { dg-begin-multiline-output "" }
    int32_t *ptr = (int32_t *) __builtin_malloc (n * 2);
                               ^~~~~~~~~~~~~~~~~~~~~~~~
-  'test_symbolic': event 1
+  'test_symbolic': events 1-2
    int32_t *ptr = (int32_t *) __builtin_malloc (n * 2);
                               ^~~~~~~~~~~~~~~~~~~~~~~~
                               |
-                              (1) allocated 'n * 2' bytes and assigned to 'int32_t *'
+                              (1) allocated 'n * 2' bytes here
+                              (2) assigned to 'int32_t *'
    { dg-end-multiline-output "" { target c } } */
 
 /* { dg-begin-multiline-output "" }
    int32_t *ptr = (int32_t *) __builtin_malloc (n * 2);
                               ~~~~~~~~~~~~~~~~~^~~~~~~
-  'void test_symbolic(int)': event 1
+  'void test_symbolic(int)': events 1-2
    int32_t *ptr = (int32_t *) __builtin_malloc (n * 2);
                               ~~~~~~~~~~~~~~~~~^~~~~~~
                                                |
-                                               (1) allocated '(n * 2)' bytes and assigned to 'int32_t*' {aka '{re:long :re?}int*'} here; 'sizeof (int32_t {aka {re:long :re?}int})' is '4'
+                                               (1) allocated '(n * 2)' bytes here
+                                               (2) assigned to 'int32_t*' {aka '{re:long :re?}int*'} here; 'sizeof (int32_t {aka {re:long :re?}int})' is '4'
    { dg-end-multiline-output "" { target c++ } } */

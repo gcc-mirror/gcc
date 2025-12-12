@@ -139,6 +139,47 @@ log_scope::~log_scope ()
     }
 }
 
+class log_nesting_level
+{
+public:
+  log_nesting_level (logger *logger, const char *fmt, ...)
+    ATTRIBUTE_GCC_DIAG(3, 4);
+  ~log_nesting_level ();
+
+private:
+  logger *m_logger;
+};
+
+inline
+log_nesting_level::log_nesting_level (logger *logger, const char *fmt, ...)
+: m_logger (logger)
+{
+  if (logger)
+    {
+      va_list ap;
+      va_start (ap, fmt);
+
+      logger->start_log_line ();
+      logger->log_va_partial (fmt, &ap);
+      logger->end_log_line ();
+
+      logger->inc_indent ();
+
+      va_end (ap);
+    }
+}
+
+
+/* The destructor for log_nesting_level; essentially the opposite of
+   the constructor.  */
+
+inline
+log_nesting_level::~log_nesting_level ()
+{
+  if (m_logger)
+    m_logger->dec_indent ();
+}
+
 /* A log_user is something that potentially uses a logger (which could be
    nullptr).
 

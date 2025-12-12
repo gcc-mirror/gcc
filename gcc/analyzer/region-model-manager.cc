@@ -496,25 +496,25 @@ region_model_manager::maybe_fold_unaryop (tree type, enum tree_code op,
     }
 
   /* Constants.  */
-  if (tree cst = arg->maybe_get_constant ())
-    if (tree result = fold_unary (op, type, cst))
-      {
-	if (CONSTANT_CLASS_P (result))
-	  return get_or_create_constant_svalue (result);
+  if (type)
+    if (tree cst = arg->maybe_get_constant ())
+      if (tree result = fold_unary (op, type, cst))
+	{
+	  if (CONSTANT_CLASS_P (result))
+	    return get_or_create_constant_svalue (result);
 
-	/* fold_unary can return casts of constants; try to handle them.  */
-	if (op != NOP_EXPR
-		 && type
-		 && TREE_CODE (result) == NOP_EXPR
-		 && CONSTANT_CLASS_P (TREE_OPERAND (result, 0)))
-	  {
-	    const svalue *inner_cst
-	      = get_or_create_constant_svalue (TREE_OPERAND (result, 0));
-	    return get_or_create_cast (type,
-				       get_or_create_cast (TREE_TYPE (result),
-							   inner_cst));
-	  }
-      }
+	  /* fold_unary can return casts of constants; try to handle them.  */
+	  if (op != NOP_EXPR
+	      && TREE_CODE (result) == NOP_EXPR
+	      && CONSTANT_CLASS_P (TREE_OPERAND (result, 0)))
+	    {
+	      const svalue *inner_cst
+		= get_or_create_constant_svalue (TREE_OPERAND (result, 0));
+	      return get_or_create_cast (type,
+					 get_or_create_cast (TREE_TYPE (result),
+							     inner_cst));
+	    }
+	}
 
   return nullptr;
 }
@@ -1318,22 +1318,22 @@ region_model_manager::get_or_create_unmergeable (const svalue *arg)
 }
 
 /* Return the svalue * of type TYPE for the merger of value BASE_SVAL
-   and ITER_SVAL at POINT, creating it if necessary.  */
+   and ITER_SVAL at SNODE, creating it if necessary.  */
 
 const svalue *
 region_model_manager::
 get_or_create_widening_svalue (tree type,
-			       const function_point &point,
+			       const supernode *snode,
 			       const svalue *base_sval,
 			       const svalue *iter_sval)
 {
   gcc_assert (base_sval->get_kind () != SK_WIDENING);
   gcc_assert (iter_sval->get_kind () != SK_WIDENING);
-  widening_svalue::key_t key (type, point, base_sval, iter_sval);
+  widening_svalue::key_t key (type, snode, base_sval, iter_sval);
   if (widening_svalue **slot = m_widening_values_map.get (key))
     return *slot;
   widening_svalue *widening_sval
-    = new widening_svalue (alloc_symbol_id (), type, point, base_sval,
+    = new widening_svalue (alloc_symbol_id (), type, snode, base_sval,
 			   iter_sval);
   RETURN_UNKNOWN_IF_TOO_COMPLEX (widening_sval);
   m_widening_values_map.put (key, widening_sval);

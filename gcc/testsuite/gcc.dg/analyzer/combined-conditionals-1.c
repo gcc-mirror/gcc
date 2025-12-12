@@ -48,7 +48,7 @@ void test_6 (void)
     __analyzer_dump_path (); /* { dg-message "\\(2\\) \\.\\.\\.to here" } */
 }
 
-int test_7 (void)
+void test_7 (void)
 {
   if (foo () ? bar () ? baz () : 0 : 0) /* { dg-message "\\(1\\) following 'true' branch\\.\\.\\." } */
     __analyzer_dump_path (); /* { dg-message "\\(2\\) \\.\\.\\.to here" } */    

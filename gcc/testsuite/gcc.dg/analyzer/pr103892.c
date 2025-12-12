@@ -1,4 +1,4 @@
-/* { dg-additional-options "-O2 -Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex" } */
+/* { dg-additional-options "-O2 -Wno-analyzer-too-complex -Wno-analyzer-symbol-too-complex -fanalyzer-call-summaries" } */
 
 /* C only: C++ FE optimizes argstr_get_word completely away
    and therefore the number of SN diminishes compared to C,

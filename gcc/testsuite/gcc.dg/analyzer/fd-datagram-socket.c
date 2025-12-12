@@ -37,10 +37,9 @@ void test_close_checked_socket (void)
 void test_leak_checked_socket (void)
 {
   int fd = socket (AF_UNIX, SOCK_DGRAM, 0); /* { dg-message "datagram socket created here" } */
-  if (fd == -1) /* { dg-warning "leak of file descriptor 'fd'" } */
+  if (fd == -1) 
     return;
-  // TODO: strange location for leak message
-}
+} /* { dg-warning "leak of file descriptor 'fd'" } */
 
 void test_bind (const char *sockname)
 {
@@ -76,8 +75,8 @@ void test_leak_of_bound_socket (const char *sockname)
   memset (&addr, 0, sizeof (addr));
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, sockname, sizeof(addr.sun_path) - 1);
-  bind (fd, (struct sockaddr *)&addr, sizeof (addr)); /* { dg-warning "leak of file descriptor 'fd'" } */
-}
+  bind (fd, (struct sockaddr *)&addr, sizeof (addr));
+} /* { dg-warning "leak of file descriptor 'fd'" } */
 
 void test_listen_on_datagram_socket_without_bind (void)
 {

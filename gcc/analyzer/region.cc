@@ -1393,9 +1393,12 @@ frame_region::get_region_for_local (region_model_manager *mgr,
 		    = ext_state->get_engine ()->get_supergraph ())
 		  {
 		    const gimple *def_stmt = SSA_NAME_DEF_STMT (expr);
-		    const supernode *snode
-		      = sg->get_supernode_for_stmt (def_stmt);
-		    gcc_assert (snode->get_function () == &m_fun);
+		    if (gimple_code (def_stmt) != GIMPLE_PHI)
+		      {
+			const supernode *snode
+			  = sg->get_supernode_for_stmt (def_stmt);
+			gcc_assert (snode->get_function () == &m_fun);
+		      }
 		  }
 	  }
 	  break;

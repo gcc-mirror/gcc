@@ -287,8 +287,8 @@ Common Var(flag_analyzer_debug_text_art) Init(0)
 Add extra annotations to diagrams.
 
 fanalyzer-fine-grained
-Common Var(flag_analyzer_fine_grained) Init(0)
-Avoid combining multiple statements into one exploded edge.
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 fanalyzer-feasibility
 Common Var(flag_analyzer_feasibility) Init(1)
@@ -297,6 +297,10 @@ Verify that paths are feasible when emitting diagnostics.
 fanalyzer-show-duplicate-count
 Common Var(flag_analyzer_show_duplicate_count) Init(0)
 Issue a note when diagnostics are deduplicated.
+
+fanalyzer-simplify-supergraph
+Common Var(flag_analyzer_simplify_supergraph) Init(1)
+Simplify the supergraph before analyzing it.
 
 fanalyzer-state-purge
 Common Var(flag_analyzer_state_purge) Init(1)
@@ -347,8 +351,8 @@ Common RejectNegative Var(flag_dump_analyzer_stderr)
 Dump various analyzer internals to stderr.
 
 fdump-analyzer-callgraph
-Common RejectNegative Var(flag_dump_analyzer_callgraph)
-Dump analyzer-specific call graph information to a SRCFILE.callgraph.dot file.
+Common Ignore
+Does nothing. Preserved for backward compatibility.
 
 fdump-analyzer-exploded-graph
 Common RejectNegative Var(flag_dump_analyzer_exploded_graph)

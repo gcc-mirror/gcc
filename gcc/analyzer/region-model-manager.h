@@ -73,7 +73,7 @@ public:
 					   const svalue *inner_svalue);
   const svalue *get_or_create_unmergeable (const svalue *arg);
   const svalue *get_or_create_widening_svalue (tree type,
-					       const function_point &point,
+					       const supernode *snode,
 					       const svalue *base_svalue,
 					       const svalue *iter_svalue);
   const svalue *get_or_create_compound_svalue (tree type,

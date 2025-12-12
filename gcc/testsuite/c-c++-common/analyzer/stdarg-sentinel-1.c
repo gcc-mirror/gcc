@@ -1,5 +1,3 @@
-/* { dg-additional-options "-Wno-analyzer-too-complex" } */
-
 #define NULL ((void *)0)
 
 void test_sentinel (int arg, ...)

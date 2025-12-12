@@ -44,7 +44,6 @@ public:
   bool inherited_state_p () const final override { return true; }
 
   bool on_stmt (sm_context &sm_ctxt,
-		const supernode *node,
 		const gimple *stmt) const final override;
 
   bool can_purge_p (state_t s) const final override;
@@ -57,8 +56,6 @@ public:
 
 private:
   void warn_for_any_exposure (sm_context &sm_ctxt,
-			      const supernode *node,
-			      const gimple *stmt,
 			      tree arg) const;
 };
 
@@ -180,14 +177,12 @@ sensitive_state_machine::sensitive_state_machine (logger *logger)
 
 void
 sensitive_state_machine::warn_for_any_exposure (sm_context &sm_ctxt,
-						const supernode *node,
-						const gimple *stmt,
 						tree arg) const
 {
-  if (sm_ctxt.get_state (stmt, arg) == m_sensitive)
+  if (sm_ctxt.get_state (arg) == m_sensitive)
     {
       tree diag_arg = sm_ctxt.get_diagnostic_tree (arg);
-      sm_ctxt.warn (node, stmt, arg,
+      sm_ctxt.warn (arg,
 		    std::make_unique<exposure_through_output_file> (*this,
 								    diag_arg));
     }
@@ -198,7 +193,6 @@ sensitive_state_machine::warn_for_any_exposure (sm_context &sm_ctxt,
 
 bool
 sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
-				  const supernode *node,
 				  const gimple *stmt) const
 {
   if (const gcall *call = dyn_cast <const gcall *> (stmt))
@@ -208,7 +202,7 @@ sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 	  {
 	    tree lhs = gimple_call_lhs (call);
 	    if (lhs)
-	      sm_ctxt.on_transition (node, stmt, lhs, m_start, m_sensitive);
+	      sm_ctxt.on_transition (lhs, m_start, m_sensitive);
 	    return true;
 	  }
 	else if (is_named_call_p (callee_fndecl, "fprintf")
@@ -218,14 +212,14 @@ sensitive_state_machine::on_stmt (sm_context &sm_ctxt,
 	    for (unsigned idx = 1; idx < gimple_call_num_args (call); idx++)
 	      {
 		tree arg = gimple_call_arg (call, idx);
-		warn_for_any_exposure (sm_ctxt, node, stmt, arg);
+		warn_for_any_exposure (sm_ctxt, arg);
 	      }
 	    return true;
 	  }
 	else if (is_named_call_p (callee_fndecl, "fwrite", *call, 4))
 	  {
 	    tree arg = gimple_call_arg (call, 0);
-	    warn_for_any_exposure (sm_ctxt, node, stmt, arg);
+	    warn_for_any_exposure (sm_ctxt, arg);
 	    return true;
 	  }
 	// TODO: ...etc.  This is just a proof-of-concept at this point.

@@ -177,7 +177,7 @@ public:
     emission_path->add_event
       (std::make_unique<warning_event>
        (event_loc_info (m_new_entry_enode->get_supernode
-			  ()->get_start_location (),
+			  ()->get_location (),
 			m_callee_fndecl,
 			m_new_entry_enode->get_stack_depth ()),
 	enode,
@@ -187,8 +187,7 @@ public:
   /* Reject paths in which conjured svalues have affected control flow
      since m_prev_entry_enode.  */
 
-  bool check_valid_fpath_p (const feasible_node &final_fnode,
-			    const gimple *)
+  bool check_valid_fpath_p (const feasible_node &final_fnode)
     const final override
   {
     /* Reject paths in which calls with unknown side effects have occurred
@@ -245,18 +244,20 @@ private:
     const superedge *sedge = eedge->m_sedge;
     if (!sedge)
       return false;
-    const cfg_superedge *cfg_sedge = sedge->dyn_cast_cfg_superedge ();
-    if (!cfg_sedge)
+    auto op = sedge->get_op ();
+    if (!op)
       return false;
-    const gimple *last_stmt = sedge->m_src->get_last_stmt ();
-    if (!last_stmt)
+    const control_flow_op *ctrlflow_op = op->dyn_cast_control_flow_op ();
+    if (!ctrlflow_op)
       return false;
+
+    const gimple &last_stmt = ctrlflow_op->get_ctrlflow_stmt ();
 
     const feasible_node *dst_fnode
       = static_cast<const feasible_node *> (fedge->m_dest);
     const region_model &model = dst_fnode->get_state ().get_model ();
 
-    if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
+    if (const gcond *cond_stmt = dyn_cast <const gcond *> (&last_stmt))
       {
 	if (expr_uses_conjured_svalue_p (model, gimple_cond_lhs (cond_stmt)))
 	  return true;
@@ -264,7 +265,7 @@ private:
 	  return true;
       }
     else if (const gswitch *switch_stmt
-	       = dyn_cast <const gswitch *> (last_stmt))
+	       = dyn_cast <const gswitch *> (&last_stmt))
       {
 	if (expr_uses_conjured_svalue_p (model,
 					 gimple_switch_index (switch_stmt)))
@@ -304,8 +305,7 @@ private:
   const checker_event *m_prev_entry_event;
 };
 
-/* Return true iff ENODE is the PK_BEFORE_SUPERNODE at a function
-   entrypoint.  */
+/* Return true iff ENODE is at a function entrypoint.  */
 
 static bool
 is_entrypoint_p (exploded_node *enode)
@@ -314,12 +314,7 @@ is_entrypoint_p (exploded_node *enode)
   const supernode *snode = enode->get_supernode ();
   if (!snode)
     return false;
-  if (!snode->entry_p ())
-    return false;;
-  const program_point &point = enode->get_point ();
-  if (point.get_kind () != PK_BEFORE_SUPERNODE)
-    return false;
-  return true;
+  return snode->entry_p ();
 }
 
 /* Walk backwards through the eg, looking for the first
@@ -618,16 +613,10 @@ exploded_graph::detect_infinite_recursion (exploded_node *enode)
 
   /* Otherwise, the state of memory is effectively the same between the two
      recursion levels; warn.  */
-
-  const supernode *caller_snode = call_string.get_top_of_stack ().m_caller;
-  const supernode *snode = enode->get_supernode ();
-  gcc_assert (caller_snode->m_returning_call);
   pending_location ploc (enode,
-			 snode,
-			 caller_snode->m_returning_call,
-			 nullptr);
+			 call_string.get_top_of_stack ().get_call_stmt ().location);
   get_diagnostic_manager ().add_diagnostic
-    (ploc,
+    (std::move (ploc),
      std::make_unique<infinite_recursion_diagnostic> (prev_entry_enode,
 						      enode,
 						      fndecl));

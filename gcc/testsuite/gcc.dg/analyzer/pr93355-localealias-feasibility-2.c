@@ -9,7 +9,7 @@
 #define PATH_SEPARATOR ':'
 #define LOCALE_ALIAS_PATH "value for LOCALE_ALIAS_PATH"
 
-const char *
+void
 _nl_expand_alias (void)
 {
   static const char *locale_alias_path;

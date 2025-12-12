@@ -62,4 +62,4 @@ def test_state_graph(sarif):
     assert get_state_node_name(first) == 'first'
     assert get_state_node_type(first) == 'struct node *'
     
-    assert len(state['edges']) == 3
+    assert len(state['edges']) == 4

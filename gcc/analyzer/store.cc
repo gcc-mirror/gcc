@@ -3578,6 +3578,26 @@ store::canonicalize (store_manager *mgr)
     }
 }
 
+static bool
+needs_loop_replay_fixup_p (const svalue &sval)
+{
+  struct my_visitor : public visitor
+  {
+    my_visitor () : m_found_widening (false) {}
+
+    void
+    visit_widening_svalue (const widening_svalue *) final override
+    {
+      m_found_widening = true;
+    }
+
+    bool m_found_widening;
+  } v;
+
+  sval.accept (&v);
+  return v.m_found_widening;
+}
+
 /* Subroutine for use by exploded_path::feasible_p.
 
    We need to deal with state differences between:
@@ -3618,7 +3638,7 @@ store::loop_replay_fixup (const store *other_store,
 	{
 	  const binding_key *key = (*bind_iter).m_key;
 	  const svalue *sval = (*bind_iter).m_sval;
-	  if (sval->get_kind () == SK_WIDENING)
+	  if (needs_loop_replay_fixup_p (*sval))
 	    {
 	      binding_cluster *this_cluster
 		= get_or_create_cluster (*mgr->get_store_manager (),

@@ -4,7 +4,9 @@
 
 #include "../../gcc.dg/analyzer/analyzer-decls.h"
 
-extern char *strstr (const char* str, const char* substr);
+extern char *
+strstr (const char* str, const char* substr)
+  __attribute__ ((nonnull));
 
 char *
 test_passthrough (const char* str, const char* substr)

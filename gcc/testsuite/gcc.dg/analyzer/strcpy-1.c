@@ -33,7 +33,7 @@ char *test_uninitialized (char *dst)
 
 extern void external_fn (void *ptr);
 
-char *test_external_fn (void)
+void test_external_fn (void)
 {
   char src[10];
   char dst[10];

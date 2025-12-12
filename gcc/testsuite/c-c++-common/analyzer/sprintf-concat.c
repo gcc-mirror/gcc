@@ -31,5 +31,5 @@ test_2 (const char *a, const char *b)
   char *p = (char *) malloc (sz); /* { dg-message "allocated here" } */
   if (!p)
     return;
-  sprintf (p, "%s/%s", a, b); /* { dg-warning "leak of 'p' " } */
-}
+  sprintf (p, "%s/%s", a, b);
+} /* { dg-warning "leak of 'p' " } */

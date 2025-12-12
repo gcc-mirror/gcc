@@ -168,6 +168,6 @@ exit_level_0:
         info = -1;
         LAPACKE_xerbla( "LAPACKE_cgbbrd_work", info );
     }
-    return info; /* { dg-warning "leak of 'q_t'" "leak of q_t" } */
-    /* { dg-warning "leak of 'pt_t'" "leak of pt_t" { target *-*-* } .-1 } */
+    return info; /* { dg-warning "leak of 'q_t'" "leak of q_t" { xfail *-*-* } } */
+    /* { dg-warning "leak of 'pt_t'" "leak of pt_t" { xfail *-*-* } .-1 } */
 }

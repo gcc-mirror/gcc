@@ -77,6 +77,26 @@ public:
       && POINTER_TYPE_P (cd.get_arg_type (1)));
   }
 
+  void
+  check_any_preconditions (const call_details &cd) const final override
+  {
+    region_model_context *ctxt = cd.get_ctxt ();
+    if (!ctxt)
+      return;
+    region_model *model = cd.get_model ();
+    const gcall &call = cd.get_call_stmt ();
+
+    /* If the call was actually a placement new, check that accessing
+       the buffer lhs is placed into does not result in out-of-bounds.  */
+    if (is_placement_new_p (call))
+      {
+	if (const region *sized_reg = get_sized_region_for_placement_new (cd))
+	  model->check_region_for_write (sized_reg,
+					 nullptr,
+					 ctxt);
+      }
+  }
+
   void impl_call_pre (const call_details &cd) const final override
   {
     region_model *model = cd.get_model ();
@@ -85,25 +105,16 @@ public:
     region_model_context *ctxt = cd.get_ctxt ();
     const gcall &call = cd.get_call_stmt ();
 
-    /* If the call was actually a placement new, check that accessing
-       the buffer lhs is placed into does not result in out-of-bounds.  */
     if (is_placement_new_p (call))
       {
 	const region *ptr_reg = cd.deref_ptr_arg (1);
 	if (ptr_reg && cd.get_lhs_type ())
-	  {
-	    const svalue *num_bytes_sval = cd.get_arg_svalue (0);
-	    const region *sized_new_reg
-		= mgr->get_sized_region (ptr_reg,
-					 cd.get_lhs_type (),
-					 num_bytes_sval);
-	    model->check_region_for_write (sized_new_reg,
-					   nullptr,
-					   ctxt);
-	    const svalue *ptr_sval
-	      = mgr->get_ptr_svalue (cd.get_lhs_type (), sized_new_reg);
-	    cd.maybe_set_lhs (ptr_sval);
-	  }
+	  if (const region *sized_reg = get_sized_region_for_placement_new (cd))
+	    {
+	      const svalue *ptr_sval
+		= mgr->get_ptr_svalue (cd.get_lhs_type (), sized_reg);
+	      cd.maybe_set_lhs (ptr_sval);
+	    }
       }
     /* If the call is an allocating new, then create a heap allocated
        region.  */
@@ -137,6 +148,22 @@ public:
 	  = model->get_store_value (cd.get_lhs_region (), ctxt);
 	model->add_constraint (result, NE_EXPR, null_sval, ctxt);
       }
+  }
+
+private:
+  const region *
+  get_sized_region_for_placement_new (const call_details &cd) const
+  {
+    const region *ptr_reg = cd.deref_ptr_arg (1);
+    if (ptr_reg && cd.get_lhs_type ())
+      {
+	region_model_manager *mgr = cd.get_manager ();
+	const svalue *num_bytes_sval = cd.get_arg_svalue (0);
+	return mgr->get_sized_region (ptr_reg,
+				      cd.get_lhs_type (),
+				      num_bytes_sval);
+      }
+    return nullptr;
   }
 };
 

@@ -198,7 +198,6 @@ public:
   bool inherited_state_p () const final override { return false; }
 
   bool on_stmt (sm_context &sm_ctxt,
-		const supernode *node,
 		const gimple *stmt) const final override;
 
   bool can_purge_p (state_t s) const final override
@@ -218,17 +217,11 @@ public:
   state_t m_ended;
 
 private:
-  void on_va_start (sm_context &sm_ctxt, const supernode *node,
-		    const gcall &call) const;
-  void on_va_copy (sm_context &sm_ctxt, const supernode *node,
-		   const gcall &call) const;
-  void on_va_arg (sm_context &sm_ctxt, const supernode *node,
-		  const gcall &call) const;
-  void on_va_end (sm_context &sm_ctxt, const supernode *node,
-		  const gcall &call) const;
+  void on_va_start (sm_context &sm_ctxt, const gcall &call) const;
+  void on_va_copy (sm_context &sm_ctxt, const gcall &call) const;
+  void on_va_arg (sm_context &sm_ctxt, const gcall &call) const;
+  void on_va_end (sm_context &sm_ctxt, const gcall &call) const;
   void check_for_ended_va_list (sm_context &sm_ctxt,
-				const supernode *node,
-				const gcall &call,
 				const svalue *arg,
 				const char *usage_fnname) const;
 };
@@ -247,7 +240,6 @@ va_list_state_machine::va_list_state_machine (logger *logger)
 
 bool
 va_list_state_machine::on_stmt (sm_context &sm_ctxt,
-				const supernode *node,
 				const gimple *stmt) const
 {
   if (const gcall *call_stmt = dyn_cast <const gcall *> (stmt))
@@ -257,7 +249,7 @@ va_list_state_machine::on_stmt (sm_context &sm_ctxt,
       if (gimple_call_internal_p (call_stmt)
 	  && gimple_call_internal_fn (call_stmt) == IFN_VA_ARG)
 	{
-	  on_va_arg (sm_ctxt, node, call);
+	  on_va_arg (sm_ctxt, call);
 	  return false;
 	}
 
@@ -270,15 +262,15 @@ va_list_state_machine::on_stmt (sm_context &sm_ctxt,
 	      break;
 
 	    case BUILT_IN_VA_START:
-	      on_va_start (sm_ctxt, node, call);
+	      on_va_start (sm_ctxt, call);
 	      break;
 
 	    case BUILT_IN_VA_COPY:
-	      on_va_copy (sm_ctxt, node, call);
+	      on_va_copy (sm_ctxt, call);
 	      break;
 
 	    case BUILT_IN_VA_END:
-	      on_va_end (sm_ctxt, node, call);
+	      on_va_end (sm_ctxt, call);
 	      break;
 	    }
     }
@@ -548,15 +540,14 @@ private:
 
 void
 va_list_state_machine::on_va_start (sm_context &sm_ctxt,
-				    const supernode *,
 				    const gcall &call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
     {
       /* Transition from start state to "started".  */
-      if (sm_ctxt.get_state (&call, arg) == m_start)
-	sm_ctxt.set_next_state (&call, arg, m_started);
+      if (sm_ctxt.get_state (arg) == m_start)
+	sm_ctxt.set_next_state (arg, m_started);
     }
 }
 
@@ -564,13 +555,11 @@ va_list_state_machine::on_va_start (sm_context &sm_ctxt,
 
 void
 va_list_state_machine::check_for_ended_va_list (sm_context &sm_ctxt,
-						const supernode *node,
-						const gcall &call,
 						const svalue *arg,
 						const char *usage_fnname) const
 {
-  if (sm_ctxt.get_state (&call, arg) == m_ended)
-    sm_ctxt.warn (node, &call, arg,
+  if (sm_ctxt.get_state (arg) == m_ended)
+    sm_ctxt.warn (arg,
 		  std::make_unique<va_list_use_after_va_end>
 		    (*this, arg, NULL_TREE, usage_fnname));
 }
@@ -597,19 +586,18 @@ get_stateful_va_copy_arg (sm_context &sm_ctxt,
 
 void
 va_list_state_machine::on_va_copy (sm_context &sm_ctxt,
-				   const supernode *node,
 				   const gcall &call) const
 {
   const svalue *src_arg = get_stateful_va_copy_arg (sm_ctxt, call, 1);
   if (src_arg)
-    check_for_ended_va_list (sm_ctxt, node, call, src_arg, "va_copy");
+    check_for_ended_va_list (sm_ctxt, src_arg, "va_copy");
 
   const svalue *dst_arg = get_stateful_arg (sm_ctxt, call, 0);
   if (dst_arg)
     {
       /* Transition from start state to "started".  */
-      if (sm_ctxt.get_state (&call, dst_arg) == m_start)
-	sm_ctxt.set_next_state (&call, dst_arg, m_started);
+      if (sm_ctxt.get_state (dst_arg) == m_start)
+	sm_ctxt.set_next_state (dst_arg, m_started);
     }
 }
 
@@ -617,30 +605,28 @@ va_list_state_machine::on_va_copy (sm_context &sm_ctxt,
 
 void
 va_list_state_machine::on_va_arg (sm_context &sm_ctxt,
-				  const supernode *node,
 				  const gcall &call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
-    check_for_ended_va_list (sm_ctxt, node, call, arg, "va_arg");
+    check_for_ended_va_list (sm_ctxt, arg, "va_arg");
 }
 
 /* Update state machine for a "va_end" call.  */
 
 void
 va_list_state_machine::on_va_end (sm_context &sm_ctxt,
-				  const supernode *node,
 				  const gcall &call) const
 {
   const svalue *arg = get_stateful_arg (sm_ctxt, call, 0);
   if (arg)
     {
-      state_t s = sm_ctxt.get_state (&call, arg);
+      state_t s = sm_ctxt.get_state (arg);
       /* Transition from "started" to "ended".  */
       if (s == m_started)
-	sm_ctxt.set_next_state (&call, arg, m_ended);
+	sm_ctxt.set_next_state (arg, m_ended);
       else if (s == m_ended)
-	check_for_ended_va_list (sm_ctxt, node, call, arg, "va_end");
+	check_for_ended_va_list (sm_ctxt, arg, "va_end");
     }
 }
 
@@ -788,7 +774,8 @@ public:
   /* Override of pending_diagnostic::add_call_event,
      adding a custom call_event subclass.  */
   void add_call_event (const exploded_edge &eedge,
-		       checker_path *emission_path) override
+		       const gcall &call_stmt,
+		       checker_path &emission_path) override
   {
     /* As per call_event, but show the number of variadic arguments
        in the call.  */
@@ -822,24 +809,17 @@ public:
     if (dst_node->get_state ().m_region_model->get_current_frame ()
 	== frame_reg)
       {
-	const exploded_node *src_node = eedge.m_src;
-	const program_point &src_point = src_node->get_point ();
-	const int src_stack_depth = src_point.get_stack_depth ();
-	const gimple *last_stmt = src_point.get_supernode ()->get_last_stmt ();
-	const gcall &call_stmt = *as_a <const gcall *> (last_stmt);
 	int num_variadic_arguments
 	  = get_num_variadic_arguments (dst_node->get_function ()->decl,
 					call_stmt);
-	emission_path->add_event
+	emission_path.add_event
 	  (std::make_unique<va_arg_call_event>
 	   (eedge,
-	    event_loc_info (last_stmt ? last_stmt->location : UNKNOWN_LOCATION,
-			    src_point.get_fndecl (),
-			    src_stack_depth),
+	    event_loc_info (eedge.m_src),
 	    num_variadic_arguments));
       }
     else
-      pending_diagnostic::add_call_event (eedge, emission_path);
+      pending_diagnostic::add_call_event (eedge, call_stmt, emission_path);
   }
 
 protected:

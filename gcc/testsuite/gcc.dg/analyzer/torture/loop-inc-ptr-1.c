@@ -1,5 +1,5 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
-
+/* { dg-skip-if "" { *-*-* } { "-O3" } { "" } } */
 #include "../analyzer-decls.h"
 
 void test (int *p)

@@ -35,6 +35,7 @@ along with GCC; see the file COPYING3.  If not see
 #include "analyzer/known-function-manager.h"
 #include "analyzer/region-model-manager.h"
 #include "analyzer/pending-diagnostic.h"
+#include "analyzer/diagnostic-manager.h"
 #include "text-art/widget.h"
 #include "text-art/dump.h"
 
@@ -365,24 +366,12 @@ class region_model
 			      const uncertainty_t *uncertainty);
 
   void on_return (const greturn *stmt, region_model_context *ctxt);
-  void on_setjmp (const gcall &stmt, const exploded_node *enode,
+  void on_setjmp (const gcall &stmt,
+		  const exploded_node &enode,
+		  const superedge &sedge,
 		  region_model_context *ctxt);
   void on_longjmp (const gcall &longjmp_call, const gcall &setjmp_call,
 		   int setjmp_stack_depth, region_model_context *ctxt);
-
-  void update_for_phis (const supernode *snode,
-			const cfg_superedge *last_cfg_superedge,
-			region_model_context *ctxt);
-
-  void handle_phi (const gphi *phi, tree lhs, tree rhs,
-		   const region_model &old_state,
-		   hash_set<const svalue *> &svals_changing_meaning,
-		   region_model_context *ctxt);
-
-  bool maybe_update_for_edge (const superedge &edge,
-			      const gimple *last_stmt,
-			      region_model_context *ctxt,
-			      std::unique_ptr<rejected_constraint> *out);
 
   void update_for_gcall (const gcall &call_stmt,
 			 region_model_context *ctxt,
@@ -656,20 +645,6 @@ class region_model
     return retval;
   }
 
-  bool
-  apply_constraints_for_eh_dispatch_try
-    (const eh_dispatch_try_cfg_superedge &edge,
-     region_model_context *ctxt,
-     tree exception_type,
-     std::unique_ptr<rejected_constraint> *out);
-
-  bool
-  apply_constraints_for_eh_dispatch_allowed
-    (const eh_dispatch_allowed_cfg_superedge &edge,
-     region_model_context *ctxt,
-     tree exception_type,
-     std::unique_ptr<rejected_constraint> *out);
-
 private:
   const region *get_lvalue_1 (path_var pv, region_model_context *ctxt) const;
   const svalue *get_rvalue_1 (path_var pv, region_model_context *ctxt) const;
@@ -692,28 +667,6 @@ private:
 				   const svalue *outer_rhs,
 				   bool *out,
 				   region_model_context *ctxt);
-
-  void update_for_call_superedge (const call_superedge &call_edge,
-				  region_model_context *ctxt);
-  void update_for_return_superedge (const return_superedge &return_edge,
-				    region_model_context *ctxt);
-  bool apply_constraints_for_gcond (const cfg_superedge &edge,
-				    const gcond *cond_stmt,
-				    region_model_context *ctxt,
-				    std::unique_ptr<rejected_constraint> *out);
-  bool apply_constraints_for_gswitch (const switch_cfg_superedge &edge,
-				      const gswitch *switch_stmt,
-				      region_model_context *ctxt,
-				      std::unique_ptr<rejected_constraint> *out);
-  bool apply_constraints_for_ggoto (const cfg_superedge &edge,
-				    const ggoto *goto_stmt,
-				    region_model_context *ctxt);
-
-  bool
-  apply_constraints_for_eh_dispatch (const eh_dispatch_cfg_superedge &edge,
-				     const geh_dispatch *eh_dispatch_stmt,
-				     region_model_context *ctxt,
-				     std::unique_ptr<rejected_constraint> *out);
 
   void poison_any_pointers_to_descendents (const region *reg,
 					   enum poison_kind pkind);
@@ -814,11 +767,19 @@ private:
 class region_model_context
 {
  public:
+  bool
+  warn (std::unique_ptr<pending_diagnostic> d,
+	std::unique_ptr<pending_location::fixer_for_epath> ploc_fixer = nullptr);
+
+  /* Hook for determining where diagnostics are to currently be emitted.  */
+  virtual pending_location
+  get_pending_location_for_diag () const = 0;
+
   /* Hook for clients to store pending diagnostics.
-     Return true if the diagnostic was stored, or false if it was deleted.
-     Optionally provide a custom stmt_finder.  */
-  virtual bool warn (std::unique_ptr<pending_diagnostic> d,
-		     const stmt_finder *custom_finder = nullptr) = 0;
+     Return true if the diagnostic was stored, or false if it was deleted.  */
+  virtual bool
+  warn_at (std::unique_ptr<pending_diagnostic> d,
+	   pending_location &&ploc) = 0;
 
   /* Hook for clients to add a note to the last previously stored
      pending diagnostic.  */
@@ -943,8 +904,17 @@ class region_model_context
 class noop_region_model_context : public region_model_context
 {
 public:
-  bool warn (std::unique_ptr<pending_diagnostic>,
-	     const stmt_finder *) override { return false; }
+  pending_location
+  get_pending_location_for_diag () const override
+  {
+    return pending_location ();
+  }
+  bool
+  warn_at (std::unique_ptr<pending_diagnostic>,
+	   pending_location &&) override
+  {
+    return false;
+  }
   void add_note (std::unique_ptr<pending_note>) override;
   void add_event (std::unique_ptr<checker_event>) override;
   void on_svalue_leak (const svalue *) override {}
@@ -1026,11 +996,21 @@ private:
 class region_model_context_decorator : public region_model_context
 {
  public:
-  bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *custom_finder) override
+  pending_location
+  get_pending_location_for_diag () const override
   {
     if (m_inner)
-      return m_inner->warn (std::move (d), custom_finder);
+      return m_inner->get_pending_location_for_diag ();
+    else
+      return pending_location ();
+  }
+
+  bool
+  warn_at (std::unique_ptr<pending_diagnostic> d,
+	   pending_location &&ploc) override
+  {
+    if (m_inner)
+      return m_inner->warn_at (std::move (d), std::move (ploc));
     else
       return false;
   }
@@ -1214,11 +1194,12 @@ protected:
 class annotating_context : public region_model_context_decorator
 {
 public:
-  bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *custom_finder) override
+  bool
+  warn_at (std::unique_ptr<pending_diagnostic> d,
+	   pending_location &&ploc) override
   {
     if (m_inner)
-      if (m_inner->warn (std::move (d), custom_finder))
+      if (m_inner->warn_at (std::move (d), std::move (ploc)))
 	{
 	  add_annotations ();
 	  return true;
@@ -1266,9 +1247,10 @@ struct model_merger
   }
 
   bool mergeable_svalue_p (const svalue *) const;
-  const function_point &get_function_point () const
+
+  const supernode *get_supernode () const
   {
-    return m_point.get_function_point ();
+    return m_point.get_supernode ();
   }
 
   void on_widening_reuse (const widening_svalue *widening_sval);
@@ -1351,7 +1333,9 @@ private:
 class engine
 {
 public:
-  engine (const supergraph *sg = nullptr, logger *logger = nullptr);
+  engine (region_model_manager &mgr,
+	  const supergraph *sg = nullptr,
+	  logger *logger = nullptr);
   const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
   known_function_manager *get_known_function_manager ()
@@ -1362,8 +1346,8 @@ public:
   void log_stats (logger *logger) const;
 
 private:
+  region_model_manager &m_mgr;
   const supergraph *m_sg;
-  region_model_manager m_mgr;
 };
 
 } // namespace ana
@@ -1384,8 +1368,9 @@ using namespace ::selftest;
 class test_region_model_context : public noop_region_model_context
 {
 public:
-  bool warn (std::unique_ptr<pending_diagnostic> d,
-	     const stmt_finder *) final override
+  bool
+  warn_at (std::unique_ptr<pending_diagnostic> d,
+	   pending_location &&) final override
   {
     m_diagnostics.safe_push (d.release ());
     return true;

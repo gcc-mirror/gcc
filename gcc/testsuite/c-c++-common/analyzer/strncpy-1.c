@@ -7,7 +7,9 @@
 
 typedef __SIZE_TYPE__ size_t;
 
-extern char *strncpy (char *dst, const char *src, size_t count);
+extern char *
+strncpy (char *dst, const char *src, size_t count)
+  __attribute__ ((nonnull (1, 2)));
 
 char *
 test_passthrough (char *dst, const char *src, size_t count)

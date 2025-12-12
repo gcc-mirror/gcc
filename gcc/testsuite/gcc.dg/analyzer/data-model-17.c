@@ -14,7 +14,7 @@ static const config table[2] = {
   { cb_2 }
 };
 
-int deflate (foo_t *s, int which)
+void deflate (foo_t *s, int which)
 {
   (*(table[which].func))(s);
 }

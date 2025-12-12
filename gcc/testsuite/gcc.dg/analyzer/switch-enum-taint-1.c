@@ -26,7 +26,7 @@ test_all_values_covered_implicit_default_1 (enum e x)
       return 1945;
     }
   __analyzer_dump_path (); /* { dg-message "path" } */
-}
+} /* { dg-warning "use of uninitialized value '<return-value>'" } */
 
 int  __attribute__((tainted_args))
 test_all_values_covered_implicit_default_2 (enum e x)

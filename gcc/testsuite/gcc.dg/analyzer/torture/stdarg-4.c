@@ -326,4 +326,5 @@ void test_3f_caller (int x, int y, int z)
 {
   int sum = test_3f_callee (0, x, y, z, 0);
   __analyzer_describe (0, sum); /* { dg-message "'UNKNOWN\\(int\\)'" } */
+  /* { dg-message "INIT_VAL\\(x.*\\)\\\+INIT_VAL\\(y.*\\)\\\+INIT_VAL\\(z.*\\)" "" { target *-*-* } .-1 } */
 }

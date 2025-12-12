@@ -7,7 +7,7 @@ struct iz : uh {
   virtual void
   sx ()
   {
-    sx ();
+    sx (); /* { dg-warning "infinite recursion" } */
   }
 };
 

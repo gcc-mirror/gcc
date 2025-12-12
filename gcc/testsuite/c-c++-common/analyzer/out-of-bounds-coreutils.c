@@ -3,7 +3,7 @@
 void add_zero_terminator (char *buf)
 {
   char *end = buf;
-  while (end++); /* TODO: arguably we should report this.  */
+  while (end++); /* { dg-warning "infinite loop" } */
   if (buf < end)
     end[-1] = '\0';
 }

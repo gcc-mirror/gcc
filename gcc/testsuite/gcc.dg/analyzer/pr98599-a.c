@@ -4,5 +4,5 @@
 /* { dg-additional-sources pr98599-b.c } */
 
 int b(int x);
-int a() { b(5); }
-int main() { a(); }
+int a() { return b(5); }
+int main() { return a(); }

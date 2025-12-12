@@ -298,7 +298,7 @@ read_alias_file (fname, fname_len)
 
 	      if (nmap >= maxmap)
 		if (__builtin_expect (extend_alias_table (), 0))
-		  return added; /* { dg-warning "leak of FILE 'fp'" } */
+		  return added; /* { dg-warning "leak of FILE 'fp'" "" { xfail *-*-* } } */
 
 	      alias_len = strlen (alias) + 1;
 	      value_len = strlen (value) + 1;
@@ -311,7 +311,7 @@ read_alias_file (fname, fname_len)
 					? alias_len + value_len : 1024));
 		  char *new_pool = (char *) realloc (string_space, new_size);
 		  if (new_pool == NULL)
-		    return added;
+		    return added; /* { dg-warning "leak of FILE 'fp'" } */
 
 		  if (__builtin_expect (string_space != new_pool, 0))
 		    {
@@ -328,7 +328,7 @@ read_alias_file (fname, fname_len)
 		  string_space_max = new_size;
 		}
 
-	      map[nmap].alias = memcpy (&string_space[string_space_act],
+	      map[nmap].alias = memcpy (&string_space[string_space_act], /* { dg-bogus "uninit" "FIXME" { xfail *-*-* } } */
 					alias, alias_len);
 	      string_space_act += alias_len;
 

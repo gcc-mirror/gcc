@@ -77,10 +77,10 @@ event_kind_to_string (enum event_kind ek)
       return "end_cfg_edge";
     case event_kind::catch_:
       return "catch";
-    case event_kind::call_edge:
-      return "call_edge";
-    case event_kind::return_edge:
-      return "return_edge";
+    case event_kind::call_:
+      return "call";
+    case event_kind::return_:
+      return "return";
     case event_kind::start_consolidated_cfg_edges:
       return "start_consolidated_cfg_edges";
     case event_kind::end_consolidated_cfg_edges:
@@ -379,8 +379,7 @@ region_creation_event_debug::print_desc (pretty_printer &pp) const
 function_entry_event::function_entry_event (const program_point &dst_point,
 					    const program_state &state)
 : checker_event (event_kind::function_entry,
-		 event_loc_info (dst_point.get_supernode
-				   ()->get_start_location (),
+		 event_loc_info (dst_point.get_location (),
 				 dst_point.get_fndecl (),
 				 dst_point.get_stack_depth ())),
   m_state (state)
@@ -411,9 +410,8 @@ function_entry_event::get_meaning () const
 
 /* state_change_event's ctor.  */
 
-state_change_event::state_change_event (const supernode *node,
+state_change_event::state_change_event (const event_loc_info &loc_info,
 					const gimple *stmt,
-					int stack_depth,
 					const state_machine &sm,
 					const svalue *sval,
 					state_machine::state_t from,
@@ -421,11 +419,9 @@ state_change_event::state_change_event (const supernode *node,
 					const svalue *origin,
 					const program_state &dst_state,
 					const exploded_node *enode)
-: checker_event (event_kind::state_change,
-		 event_loc_info (stmt->location,
-				 node->m_fun->decl,
-				 stack_depth)),
-  m_node (node), m_stmt (stmt), m_sm (sm),
+: checker_event (event_kind::state_change, loc_info),
+  m_stmt (stmt),
+  m_sm (sm),
   m_sval (sval), m_from (from), m_to (to),
   m_origin (origin),
   m_dst_state (dst_state),
@@ -551,43 +547,26 @@ maybe_add_sarif_properties (diagnostics::sarif_builder &builder,
 #undef PROPERTY_PREFIX
 }
 
-/* Get the callgraph_superedge for this superedge_event, which must be
-   for an interprocedural edge, rather than a CFG edge.  */
-
-const callgraph_superedge&
-superedge_event::get_callgraph_superedge () const
-{
-  gcc_assert (m_sedge->m_kind != SUPEREDGE_CFG_EDGE);
-  return *m_sedge->dyn_cast_callgraph_superedge ();
-}
-
 /* Determine if this event should be filtered at the given verbosity
    level.  */
 
 bool
 superedge_event::should_filter_p (int verbosity) const
 {
-  switch (m_sedge->m_kind)
+  if (m_sedge->get_any_cfg_edge ())
     {
-    case SUPEREDGE_CFG_EDGE:
-      {
-	if (verbosity < 2)
-	  return true;
+      if (verbosity < 2)
+	return true;
 
-	if (verbosity < 4)
-	  {
-	    /* Filter events with empty descriptions.  This ought to filter
-	       FALLTHRU, but retain true/false/switch edges.  */
-	    auto pp = global_dc->clone_printer ();
-	    print_desc (*pp.get ());
-	    if (pp_formatted_text (pp.get ()) [0] == '\0')
-	      return true;
-	  }
-      }
-      break;
-
-    default:
-      break;
+      if (verbosity < 4)
+	{
+	  /* Filter events with empty descriptions.  This ought to filter
+	     FALLTHRU, but retain true/false/switch edges.  */
+	  auto pp = global_dc->clone_printer ();
+	  print_desc (*pp.get ());
+	  if (pp_formatted_text (pp.get ()) [0] == '\0')
+	    return true;
+	}
     }
   return false;
 }
@@ -598,37 +577,37 @@ superedge_event::get_program_state () const
   return &m_eedge.m_dest->get_state ();
 }
 
+const call_and_return_op *
+superedge_event::get_call_and_return_op () const
+{
+  if (m_sedge)
+    if (auto base_op = m_sedge->get_op ())
+      return base_op->dyn_cast_call_and_return_op ();
+  return nullptr;
+}
+
 /* superedge_event's ctor.  */
 
 superedge_event::superedge_event (enum event_kind kind,
 				  const exploded_edge &eedge,
 				  const event_loc_info &loc_info)
 : checker_event (kind, loc_info),
-  m_eedge (eedge), m_sedge (eedge.m_sedge),
-  m_var (NULL_TREE), m_critical_state (0)
+  m_eedge (eedge), m_sedge (eedge.m_sedge)
 {
-  /* Note that m_sedge can be nullptr for e.g. jumps through
-     function pointers.  */
+  gcc_assert (m_sedge);
 }
 
 /* class cfg_edge_event : public superedge_event.  */
-
-/* Get the cfg_superedge for this cfg_edge_event.  */
-
-const cfg_superedge &
-cfg_edge_event::get_cfg_superedge () const
-{
-  return *m_sedge->dyn_cast_cfg_superedge ();
-}
 
 /* cfg_edge_event's ctor.  */
 
 cfg_edge_event::cfg_edge_event (enum event_kind kind,
 				const exploded_edge &eedge,
-				const event_loc_info &loc_info)
-: superedge_event (kind, eedge, loc_info)
+				const event_loc_info &loc_info,
+				const control_flow_op *op)
+: superedge_event (kind, eedge, loc_info),
+  m_op (op)
 {
-  gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CFG_EDGE);
 }
 
 /* Implementation of diagnostics::paths::event::get_meaning vfunc for
@@ -637,13 +616,20 @@ cfg_edge_event::cfg_edge_event (enum event_kind kind,
 diagnostics::paths::event::meaning
 cfg_edge_event::get_meaning () const
 {
-  const cfg_superedge& cfg_sedge = get_cfg_superedge ();
-  if (cfg_sedge.true_value_p ())
-    return meaning (verb::branch, property::true_);
-  else if (cfg_sedge.false_value_p ())
-    return meaning (verb::branch, property::false_);
-  else
-    return meaning ();
+  if (::edge e = get_cfg_edge ())
+    {
+      if (e->flags & EDGE_TRUE_VALUE)
+	return meaning (verb::branch, property::true_);
+      else if (e->flags & EDGE_FALSE_VALUE)
+	return meaning (verb::branch, property::false_);
+    }
+  return meaning ();
+}
+
+::edge
+cfg_edge_event::get_cfg_edge () const
+{
+  return m_sedge->get_any_cfg_edge ();
 }
 
 /* class start_cfg_edge_event : public cfg_edge_event.  */
@@ -675,9 +661,12 @@ start_cfg_edge_event::print_desc (pretty_printer &pp) const
   label_text edge_desc (m_sedge->get_description (user_facing));
   if (user_facing)
     {
-      if (edge_desc.get () && strlen (edge_desc.get ()) > 0)
+      if (edge_desc.get ()
+	  && strlen (edge_desc.get ()) > 0
+	  && m_op)
 	{
-	  label_text cond_desc = maybe_describe_condition (pp_show_color (&pp));
+	  label_text cond_desc
+	    = m_op->maybe_describe_condition (pp_show_color (&pp));
 	  label_text result;
 	  if (cond_desc.get ())
 	    pp_printf (&pp,
@@ -695,143 +684,14 @@ start_cfg_edge_event::print_desc (pretty_printer &pp) const
 	return pp_printf (&pp,
 			  "taking %qs edge SN:%i -> SN:%i",
 			  edge_desc.get (),
-			  m_sedge->m_src->m_index,
-			  m_sedge->m_dest->m_index);
+			  m_sedge->m_src->m_id,
+			  m_sedge->m_dest->m_id);
       else
 	return pp_printf (&pp,
 			  "taking edge SN:%i -> SN:%i",
-			  m_sedge->m_src->m_index,
-			  m_sedge->m_dest->m_index);
+			  m_sedge->m_src->m_id,
+			  m_sedge->m_dest->m_id);
     }
-}
-
-/* Attempt to generate a description of any condition that holds at this edge.
-
-   The intent is to make the user-facing messages more clear, especially for
-   cases where there's a single or double-negative, such as
-   when describing the false branch of an inverted condition.
-
-   For example, rather than printing just:
-
-      |  if (!ptr)
-      |     ~
-      |     |
-      |     (1) following 'false' branch...
-
-   it's clearer to spell out the condition that holds:
-
-      |  if (!ptr)
-      |     ~
-      |     |
-      |     (1) following 'false' branch (when 'ptr' is non-NULL)...
-                                          ^^^^^^^^^^^^^^^^^^^^^^
-
-   In the above example, this function would generate the highlighted
-   string: "when 'ptr' is non-NULL".
-
-   If the edge is not a condition, or it's not clear that a description of
-   the condition would be helpful to the user, return NULL.  */
-
-label_text
-start_cfg_edge_event::maybe_describe_condition (bool can_colorize) const
-{
-  const cfg_superedge& cfg_sedge = get_cfg_superedge ();
-
-  if (cfg_sedge.true_value_p () || cfg_sedge.false_value_p ())
-    {
-      const gimple *last_stmt = m_sedge->m_src->get_last_stmt ();
-      if (const gcond *cond_stmt = dyn_cast <const gcond *> (last_stmt))
-	{
-	  enum tree_code op = gimple_cond_code (cond_stmt);
-	  tree lhs = gimple_cond_lhs (cond_stmt);
-	  tree rhs = gimple_cond_rhs (cond_stmt);
-	  if (cfg_sedge.false_value_p ())
-	    op = invert_tree_comparison (op, false /* honor_nans */);
-	  return maybe_describe_condition (can_colorize,
-					   lhs, op, rhs);
-	}
-    }
-  return label_text::borrow (nullptr);
-}
-
-/* Subroutine of maybe_describe_condition above.
-
-   Attempt to generate a user-facing description of the condition
-   LHS OP RHS, but only if it is likely to make it easier for the
-   user to understand a condition.  */
-
-label_text
-start_cfg_edge_event::maybe_describe_condition (bool can_colorize,
-						tree lhs,
-						enum tree_code op,
-						tree rhs)
-{
-  /* In theory we could just build a tree via
-       fold_build2 (op, boolean_type_node, lhs, rhs)
-     and print it with %qE on it, but this leads to warts such as
-     parenthesizing vars, such as '(i) <= 9', and uses of '<unknown>'.  */
-
-  /* Special-case: describe testing the result of strcmp, as figuring
-     out what the "true" or "false" path is can be confusing to the user.  */
-  if (TREE_CODE (lhs) == SSA_NAME
-      && zerop (rhs))
-    {
-      if (gcall *call = dyn_cast <gcall *> (SSA_NAME_DEF_STMT (lhs)))
-	if (is_special_named_call_p (*call, "strcmp", 2))
-	  {
-	    if (op == EQ_EXPR)
-	      return label_text::borrow ("when the strings are equal");
-	    if (op == NE_EXPR)
-	      return label_text::borrow ("when the strings are non-equal");
-	  }
-    }
-
-  /* Only attempt to generate text for sufficiently simple expressions.  */
-  if (!should_print_expr_p (lhs))
-    return label_text::borrow (nullptr);
-  if (!should_print_expr_p (rhs))
-    return label_text::borrow (nullptr);
-
-  /* Special cases for pointer comparisons against NULL.  */
-  if (POINTER_TYPE_P (TREE_TYPE (lhs))
-      && POINTER_TYPE_P (TREE_TYPE (rhs))
-      && zerop (rhs))
-    {
-      if (op == EQ_EXPR)
-	return make_label_text (can_colorize, "when %qE is NULL",
-				lhs);
-      if (op == NE_EXPR)
-	return make_label_text (can_colorize, "when %qE is non-NULL",
-				lhs);
-    }
-
-  return make_label_text (can_colorize, "when %<%E %s %E%>",
-			  lhs, op_symbol_code (op), rhs);
-}
-
-/* Subroutine of maybe_describe_condition.
-
-   Return true if EXPR is we will get suitable user-facing output
-   from %E on it.  */
-
-bool
-start_cfg_edge_event::should_print_expr_p (tree expr)
-{
-  if (TREE_CODE (expr) == SSA_NAME)
-    {
-      if (SSA_NAME_VAR (expr))
-	return should_print_expr_p (SSA_NAME_VAR (expr));
-      else
-	return false;
-    }
-
-  if (DECL_P (expr))
-    return true;
-
-  if (CONSTANT_CLASS_P (expr))
-    return true;
-
-  return false;
 }
 
 /* class catch_cfg_edge_event : public cfg_edge_event.  */
@@ -848,11 +708,8 @@ catch_cfg_edge_event::get_meaning () const
 
 call_event::call_event (const exploded_edge &eedge,
 			const event_loc_info &loc_info)
-: superedge_event (event_kind::call_edge, eedge, loc_info)
+: superedge_event (event_kind::call_, eedge, loc_info)
 {
-  if (eedge.m_sedge)
-    gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_CALL);
-
    m_src_snode = eedge.m_src->get_supernode ();
    m_dest_snode = eedge.m_dest->get_supernode ();
 }
@@ -871,14 +728,14 @@ call_event::call_event (const exploded_edge &eedge,
 void
 call_event::print_desc (pretty_printer &pp) const
 {
-  if (m_critical_state && m_pending_diagnostic)
+  if (m_critical_state.m_state && m_pending_diagnostic)
     {
-      gcc_assert (m_var);
-      tree var = fixup_tree_for_diagnostic (m_var);
+      gcc_assert (m_critical_state.m_var);
+      tree var = fixup_tree_for_diagnostic (m_critical_state.m_var);
       evdesc::call_with_state evd (m_src_snode->m_fun->decl,
 				   m_dest_snode->m_fun->decl,
 				   var,
-				   m_critical_state);
+				   m_critical_state.m_state);
       if (m_pending_diagnostic->describe_call_with_state (pp, evd))
 	return;
     }
@@ -926,19 +783,19 @@ call_event::get_program_state () const
   return &m_eedge.m_src->get_state ();
 }
 
-/* class return_event : public superedge_event.  */
+/* class return_event : public checker_event.  */
 
 /* return_event's ctor.  */
 
 return_event::return_event (const exploded_edge &eedge,
 			    const event_loc_info &loc_info)
-: superedge_event (event_kind::return_edge, eedge, loc_info)
+: checker_event (event_kind::return_, loc_info),
+  m_eedge (eedge)
 {
-  if (eedge.m_sedge)
-    gcc_assert (eedge.m_sedge->m_kind == SUPEREDGE_RETURN);
-
   m_src_snode = eedge.m_src->get_supernode ();
   m_dest_snode = eedge.m_dest->get_supernode ();
+  m_call_and_return_op
+    = eedge.m_src->get_point ().get_call_string ().get_top_of_stack ().m_call_op;
 }
 
 /* Implementation of diagnostics::paths::event::print_desc vfunc for
@@ -959,11 +816,11 @@ return_event::print_desc (pretty_printer &pp) const
       state involved in the pending diagnostic, give the pending
       diagnostic a chance to describe this return (in terms of
       itself).  */
-  if (m_critical_state && m_pending_diagnostic)
+  if (m_critical_state.m_state && m_pending_diagnostic)
     {
       evdesc::return_of_state evd (m_dest_snode->m_fun->decl,
 				   m_src_snode->m_fun->decl,
-				   m_critical_state);
+				   m_critical_state.m_state);
       if (m_pending_diagnostic->describe_return_of_state (pp, evd))
 	return;
     }

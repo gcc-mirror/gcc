@@ -58,6 +58,14 @@ custom_edge_info::update_state (program_state *state,
   return update_model (state->m_region_model, eedge, ctxt);
 }
 
+void
+custom_edge_info::get_dot_attrs (const char *&out_style,
+				 const char *&out_color) const
+{
+  out_color = "red";
+  out_style = "\"dotted\"";
+}
+
 /* Base implementation of custom_edge_info::create_enode vfunc.  */
 
 exploded_node *
@@ -87,7 +95,8 @@ call_info::print (pretty_printer *pp) const
 
 void
 call_info::add_events_to_path (checker_path *emission_path,
-			       const exploded_edge &eedge) const
+			       const exploded_edge &eedge,
+			       pending_diagnostic &) const
 {
   class call_event : public custom_event
   {
@@ -114,9 +123,9 @@ call_info::add_events_to_path (checker_path *emission_path,
 
   emission_path->add_event
     (std::make_unique<call_event> (event_loc_info (get_call_stmt ().location,
-					      caller_fndecl,
-					      stack_depth),
-			      this));
+						   caller_fndecl,
+						   stack_depth),
+				   this));
 }
 
 /* Recreate a call_details instance from this call_info.  */

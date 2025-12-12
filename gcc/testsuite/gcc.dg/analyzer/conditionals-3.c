@@ -12,7 +12,7 @@ static void __analyzer_only_called_when_flag_b_true (int i)
   __analyzer_eval (i == 17); /* { dg-warning "TRUE" } */
 }
 
-int test_1 (int flag_a, int flag_b)
+void test_1 (int flag_a, int flag_b)
 {
   int i = 17;
 

@@ -18,6 +18,7 @@ You should have received a copy of the GNU General Public License
 along with GCC; see the file COPYING3.  If not see
 <http://www.gnu.org/licenses/>.  */
 
+#define INCLUDE_SET
 #include "analyzer/common.h"
 
 #include "timevar.h"
@@ -75,19 +76,20 @@ get_candidate_for_purging (tree node)
 }
 
 /* Class-based handler for walk_stmt_load_store_addr_ops at a particular
-   function_point, for populating the worklists within a state_purge_map.  */
+   ana::operation, for populating the worklists within a state_purge_map.  */
 
 class gimple_op_visitor : public log_user
 {
 public:
   gimple_op_visitor (state_purge_map *map,
-		     const function_point &point,
-		     const function &fun)
+		     const superedge &sedge)
   : log_user (map->get_logger ()),
     m_map (map),
-    m_point (point),
-    m_fun (fun)
-  {}
+    m_sedge (sedge),
+    m_fun (sedge.m_src->get_function ())
+  {
+    gcc_assert (m_fun);
+  }
 
   bool on_load (gimple *stmt, tree base, tree op)
   {
@@ -143,29 +145,24 @@ private:
     gcc_assert (get_candidate_for_purging (decl) == decl);
     state_purge_per_decl &data
       = get_or_create_data_for_decl (decl);
-    data.add_needed_at (m_point);
-
-    /* Handle calls: if we're seeing a use at a call, then add a use at the
-       "after-supernode" point (in case of interprocedural call superedges).  */
-    if (m_point.final_stmt_p ())
-      data.add_needed_at (m_point.get_next ());
+    data.add_needed_at (*m_sedge.m_src);
   }
 
   void add_pointed_to (tree decl)
   {
     gcc_assert (get_candidate_for_purging (decl) == decl);
-    get_or_create_data_for_decl (decl).add_pointed_to_at (m_point);
+    get_or_create_data_for_decl (decl).add_pointed_to_at (*m_sedge.m_src);
   }
 
   state_purge_per_decl &
   get_or_create_data_for_decl (tree decl)
   {
-    return m_map->get_or_create_data_for_decl (m_fun, decl);
+    return m_map->get_or_create_data_for_decl (*m_fun, decl);
   }
 
   state_purge_map *m_map;
-  const function_point &m_point;
-  const function &m_fun;
+  const superedge &m_sedge;
+  const function *m_fun;
 };
 
 static bool
@@ -224,23 +221,19 @@ state_purge_map::state_purge_map (const supergraph &sg,
   }
 
   /* Find all uses of local vars.
-     We iterate through all function points, finding loads, stores, and
+     We iterate through all operations, finding loads, stores, and
      address-taken operations on locals, building a pair of worklists.  */
-  for (auto snode : sg.m_nodes)
+  for (auto sedge : sg.m_edges)
     {
       if (logger)
-	log ("SN: %i", snode->m_index);
-      /* We ignore m_returning_call and phi nodes.  */
-      gimple *stmt;
-      unsigned i;
-      FOR_EACH_VEC_ELT (snode->m_stmts, i, stmt)
+	log ("edge: SN %i -> SN %i",
+	     sedge->m_src->m_id,
+	     sedge->m_dest->m_id);
+      if (auto op = sedge->get_op ())
 	{
-	  function *fun = snode->get_function ();
-	  gcc_assert (fun);
-	  function_point point (function_point::before_stmt (snode, i));
-	  gimple_op_visitor v (this, point, *fun);
-	  walk_stmt_load_store_addr_ops (stmt, &v,
-					 my_load_cb, my_store_cb, my_addr_cb);
+	  gimple_op_visitor v (this, *sedge);
+	  op->walk_load_store_addr_ops (&v,
+					my_load_cb, my_store_cb, my_addr_cb);
 	}
     }
 
@@ -278,6 +271,16 @@ state_purge_map::get_or_create_data_for_decl (const function &fun, tree decl)
   return *result;
 }
 
+void
+state_purge_map::on_duplicated_node (const supernode &old_snode,
+				     const supernode &new_snode)
+{
+  for (auto iter : m_ssa_map)
+    iter.second->on_duplicated_node (old_snode, new_snode);
+  for (auto iter : m_decl_map)
+    iter.second->on_duplicated_node (old_snode, new_snode);
+}
+
 /* class state_purge_per_ssa_name : public state_purge_per_tree.  */
 
 /* state_purge_per_ssa_name's ctor.
@@ -292,7 +295,7 @@ state_purge_map::get_or_create_data_for_decl (const function &fun, tree decl)
 state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 						    tree name,
 						    const function &fun)
-: state_purge_per_tree (fun), m_points_needing_name (), m_name (name)
+: state_purge_per_tree (fun), m_snodes_needing_name (), m_name (name)
 {
   LOG_FUNC (map.get_logger ());
 
@@ -307,7 +310,7 @@ state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
       map.log ("def stmt: %s", pp_formatted_text (&pp));
     }
 
-  auto_vec<function_point> worklist;
+  auto_vec<const supernode *> worklist;
 
   /* Add all immediate uses of name to the worklist.
      Compare with debug_immediate_uses.  */
@@ -334,62 +337,43 @@ state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
 	      continue;
 	    }
 
-	  const supernode *snode
-	    = map.get_sg ().get_supernode_for_stmt (use_stmt);
-
 	  /* If it's a use within a phi node, then we care about
 	     which in-edge we came from.  */
 	  if (use_stmt->code == GIMPLE_PHI)
 	    {
-	      for (gphi_iterator gpi
-		     = const_cast<supernode *> (snode)->start_phis ();
-		   !gsi_end_p (gpi); gsi_next (&gpi))
+	      const gphi *phi = as_a <const gphi *> (use_stmt);
+	      /* Find arguments (and thus CFG in-edges) which use NAME.  */
+	      for (unsigned arg_idx = 0;
+		   arg_idx < gimple_phi_num_args (phi);
+		   ++arg_idx)
 		{
-		  gphi *phi = gpi.phi ();
-		  if (phi == use_stmt)
+		  if (name == gimple_phi_arg (phi, arg_idx)->def)
 		    {
-		      /* Find arguments (and thus in-edges) which use NAME.  */
-		      for (unsigned arg_idx = 0;
-			   arg_idx < gimple_phi_num_args (phi);
-			   ++arg_idx)
+		      edge in_edge = gimple_phi_arg_edge (phi, arg_idx);
+		      const superedge *in_sedge
+			= map.get_sg ().get_superedge_for_phis (in_edge);
+		      if (in_sedge)
 			{
-			  if (name == gimple_phi_arg (phi, arg_idx)->def)
-			    {
-			      edge in_edge = gimple_phi_arg_edge (phi, arg_idx);
-			      const superedge *in_sedge
-				= map.get_sg ().get_edge_for_cfg_edge (in_edge);
-			      function_point point
-				= function_point::before_supernode
-				(snode, in_sedge);
-			      add_to_worklist (point, &worklist,
-					       map.get_logger ());
-			      m_points_needing_name.add (point);
-			    }
+			  add_to_worklist (*in_sedge->m_src,
+					   &worklist,
+					   map.get_logger ());
+			  m_snodes_needing_name.add (in_sedge->m_src);
+			}
+		      else
+			{
+			  /* Should only happen for abnormal edges, which
+			     get skipped in supergraph construction.  */
+			  gcc_assert (in_edge->flags & EDGE_ABNORMAL);
 			}
 		    }
 		}
 	    }
 	  else
 	    {
-	      function_point point = before_use_stmt (map, use_stmt);
-	      add_to_worklist (point, &worklist, map.get_logger ());
-	      m_points_needing_name.add (point);
-
-	      /* We also need to add uses for conditionals and switches,
-		 where the stmt "happens" at the after_supernode, for filtering
-		 the out-edges.  */
-	      if (use_stmt == snode->get_last_stmt ())
-		{
-		  if (map.get_logger ())
-		    map.log ("last stmt in BB");
-		  function_point point
-		    = function_point::after_supernode (snode);
-		  add_to_worklist (point, &worklist, map.get_logger ());
-		  m_points_needing_name.add (point);
-		}
-	      else
-		if (map.get_logger ())
-		  map.log ("not last stmt in BB");
+	      const supernode *snode
+		= map.get_sg ().get_supernode_for_stmt (use_stmt);
+	      add_to_worklist (*snode, &worklist, map.get_logger ());
+	      m_snodes_needing_name.add (snode);
 	    }
 	}
     }
@@ -399,273 +383,98 @@ state_purge_per_ssa_name::state_purge_per_ssa_name (const state_purge_map &map,
     log_scope s (map.get_logger (), "processing worklist");
     while (worklist.length () > 0)
       {
-	function_point point = worklist.pop ();
-	process_point (point, &worklist, map);
+	const supernode *snode = worklist.pop ();
+	gcc_assert (snode);
+	process_supernode (*snode, &worklist, map);
     }
   }
 
   if (map.get_logger ())
     {
       map.log ("%qE in %qD is needed to process:", name, fun.decl);
-      /* Log m_points_needing_name, sorting it to avoid churn when comparing
+      /* Log m_snodes_needing_name, sorting it to avoid churn when comparing
 	 dumps.  */
-      auto_vec<function_point> points;
-      for (point_set_t::iterator iter = m_points_needing_name.begin ();
-	   iter != m_points_needing_name.end ();
-	   ++iter)
-	points.safe_push (*iter);
-      points.qsort (function_point::cmp_ptr);
-      unsigned i;
-      function_point *point;
-      FOR_EACH_VEC_ELT (points, i, point)
-	{
-	  map.start_log_line ();
-	  map.get_logger ()->log_partial ("  point: ");
-	  point->print (map.get_logger ()->get_printer (), format (false));
-	  map.end_log_line ();
-	}
+      std::set<int> indices;
+      auto_vec<const supernode *> snodes;
+      for (auto iter : m_snodes_needing_name)
+	indices.insert (iter->m_id);
+      for (auto iter : indices)
+	map.get_logger ()->log ("  SN %i", iter);
     }
 }
 
 /* Return true if the SSA name is needed at POINT.  */
 
 bool
-state_purge_per_ssa_name::needed_at_point_p (const function_point &point) const
+state_purge_per_ssa_name::needed_at_supernode_p (const supernode *snode) const
 {
-  return const_cast <point_set_t &> (m_points_needing_name).contains (point);
+  return const_cast <point_set_t &> (m_snodes_needing_name).contains (snode);
 }
 
-/* Get the function_point representing immediately before USE_STMT.
-   Subroutine of ctor.  */
-
-function_point
-state_purge_per_ssa_name::before_use_stmt (const state_purge_map &map,
-					   const gimple *use_stmt)
-{
-  gcc_assert (use_stmt->code != GIMPLE_PHI);
-
-  const supernode *supernode
-    = map.get_sg ().get_supernode_for_stmt (use_stmt);
-  unsigned int stmt_idx = supernode->get_stmt_index (use_stmt);
-  return function_point::before_stmt (supernode, stmt_idx);
-}
-
-/* Add POINT to *WORKLIST if the point has not already been seen.
+/* Add SNODE to *WORKLIST if the supernode has not already been seen.
    Subroutine of ctor.  */
 
 void
-state_purge_per_ssa_name::add_to_worklist (const function_point &point,
-					   auto_vec<function_point> *worklist,
+state_purge_per_ssa_name::add_to_worklist (const supernode &snode,
+					   auto_vec<const supernode *> *worklist,
 					   logger *logger)
 {
   LOG_FUNC (logger);
-  if (logger)
-    {
-      logger->start_log_line ();
-      logger->log_partial ("point: '");
-      point.print (logger->get_printer (), format (false));
-      logger->log_partial ("' for worklist for %qE", m_name);
-      logger->end_log_line ();
-    }
 
-  gcc_assert (point.get_function () == &get_function ());
-  if (point.get_from_edge ())
-    gcc_assert (point.get_from_edge ()->get_kind () == SUPEREDGE_CFG_EDGE);
+  gcc_assert (snode.get_function () == &get_function ());
 
-  if (m_points_needing_name.contains (point))
+  if (m_snodes_needing_name.contains (&snode))
     {
       if (logger)
-	logger->log ("already seen for %qE", m_name);
+	logger->log ("SN %i already seen for %qE", snode.m_id, m_name);
     }
   else
     {
       if (logger)
-	logger->log ("not seen; adding to worklist for %qE", m_name);
-      m_points_needing_name.add (point);
-      worklist->safe_push (point);
+	logger->log ("not seen; adding SN %i to worklist for %qE",
+		     snode.m_id, m_name);
+      m_snodes_needing_name.add (&snode);
+      worklist->safe_push (&snode);
     }
 }
 
-/* Return true iff NAME is used by any of the phi nodes in SNODE
-   when processing the in-edge with PHI_ARG_IDX.  */
-
-static bool
-name_used_by_phis_p (tree name, const supernode *snode,
-		     size_t phi_arg_idx)
-{
-  gcc_assert (TREE_CODE (name) == SSA_NAME);
-
-  for (gphi_iterator gpi
-	 = const_cast<supernode *> (snode)->start_phis ();
-       !gsi_end_p (gpi); gsi_next (&gpi))
-    {
-      gphi *phi = gpi.phi ();
-      if (gimple_phi_arg_def (phi, phi_arg_idx) == name)
-	return true;
-    }
-  return false;
-}
-
-/* Process POINT, popped from WORKLIST.
-   Iterate over predecessors of POINT, adding to WORKLIST.  */
+/* Process SNODE, popped from WORKLIST.
+   Iterate over predecessors of SNODE, adding to WORKLIST.  */
 
 void
-state_purge_per_ssa_name::process_point (const function_point &point,
-					 auto_vec<function_point> *worklist,
-					 const state_purge_map &map)
+state_purge_per_ssa_name::process_supernode (const supernode &snode,
+					     auto_vec<const supernode *> *worklist,
+					     const state_purge_map &map)
 {
   logger *logger = map.get_logger ();
   LOG_FUNC (logger);
   if (logger)
+    logger->log ("considering SN %i for %qE", snode.m_id, m_name);
+
+  for (auto in_edge : snode.m_preds)
     {
-      logger->start_log_line ();
-      logger->log_partial ("considering point: '");
-      point.print (logger->get_printer (), format (false));
-      logger->log_partial ("' for %qE", m_name);
-      logger->end_log_line ();
-    }
-
-  gimple *def_stmt = SSA_NAME_DEF_STMT (m_name);
-
-  const supernode *snode = point.get_supernode ();
-
-  switch (point.get_kind ())
-    {
-    default:
-      gcc_unreachable ();
-
-    case PK_ORIGIN:
-      break;
-
-    case PK_BEFORE_SUPERNODE:
-      {
-	for (gphi_iterator gpi
-	       = const_cast<supernode *> (snode)->start_phis ();
-	     !gsi_end_p (gpi); gsi_next (&gpi))
-	  {
-	    gcc_assert (point.get_from_edge ());
-	    const cfg_superedge *cfg_sedge
-	      = point.get_from_edge ()->dyn_cast_cfg_superedge ();
-	    gcc_assert (cfg_sedge);
-
-	    gphi *phi = gpi.phi ();
-	    /* Are we at the def-stmt for m_name?  */
-	    if (phi == def_stmt)
-	      {
-		if (name_used_by_phis_p (m_name, snode,
-					 cfg_sedge->get_phi_arg_idx ()))
-		  {
-		    if (logger)
-		      logger->log ("name in def stmt used within phis;"
-				   " continuing");
-		  }
-		else
-		  {
-		    if (logger)
-		      logger->log ("name in def stmt not used within phis;"
-				   " terminating");
-		    return;
-		  }
-	      }
-	  }
-
-	/* Add given pred to worklist.  */
-	if (point.get_from_edge ())
-	  {
-	    gcc_assert (point.get_from_edge ()->m_src);
-	    add_to_worklist
-	      (function_point::after_supernode (point.get_from_edge ()->m_src),
-	       worklist, logger);
-	  }
-	else
-	  {
-	    /* Add any intraprocedually edge for a call.  */
-	    if (snode->m_returning_call)
-	    {
-	      gcall *returning_call = snode->m_returning_call;
-	      cgraph_edge *cedge
-		  = supergraph_call_edge (snode->m_fun,
-					  returning_call);
-	      if(cedge)
-	        {
-		  superedge *sedge
-		    = map.get_sg ().get_intraprocedural_edge_for_call (cedge);
-		  gcc_assert (sedge);
-		  add_to_worklist
-		    (function_point::after_supernode (sedge->m_src),
-		     worklist, logger);
-	        }
-	      else
-	        {
-	          supernode *callernode
-	            = map.get_sg ().get_supernode_for_stmt (returning_call);
-
-	          gcc_assert (callernode);
-	          add_to_worklist
-	            (function_point::after_supernode (callernode),
-		     worklist, logger);
-	         }
-	    }
-	  }
-      }
-      break;
-
-    case PK_BEFORE_STMT:
-      {
-	if (def_stmt == point.get_stmt ())
-	  {
-	    if (logger)
-	      logger->log ("def stmt; terminating");
-	    return;
-	  }
-	if (point.get_stmt_idx () > 0)
-	  add_to_worklist (function_point::before_stmt
-			     (snode, point.get_stmt_idx () - 1),
-			   worklist, logger);
-	else
+      if (logger)
+	logger->log ("considering edge from SN %i", in_edge->m_src->m_id);
+      bool defines_ssa_name = false;
+      if (auto op = in_edge->get_op ())
+	if (op->defines_ssa_name_p (m_name))
+	  defines_ssa_name = true;
+      if (defines_ssa_name)
 	{
-	  /* Add before_supernode to worklist.  This captures the in-edge,
-	     so we have to do it once per in-edge.  */
-	  unsigned i;
-	  superedge *pred;
-	  FOR_EACH_VEC_ELT (snode->m_preds, i, pred)
-	    add_to_worklist (function_point::before_supernode (snode,
-							       pred),
-			     worklist, logger);
+	  if (logger)
+	    logger->log ("op defines %qE", m_name);
 	}
-      }
-      break;
-
-    case PK_AFTER_SUPERNODE:
-      {
-	if (snode->m_stmts.length ())
-	  add_to_worklist
-	    (function_point::before_stmt (snode,
-					  snode->m_stmts.length () - 1),
-	     worklist, logger);
-	else
-	  {
-	    /* Add before_supernode to worklist.  This captures the in-edge,
-	       so we have to do it once per in-edge.  */
-	    unsigned i;
-	    superedge *pred;
-	    FOR_EACH_VEC_ELT (snode->m_preds, i, pred)
-	      add_to_worklist (function_point::before_supernode (snode,
-								 pred),
-			       worklist, logger);
-	    /* If it's the initial BB, add it, to ensure that we
-	       have "before supernode" for the initial ENTRY block, and don't
-	       erroneously purge SSA names for initial values of parameters.  */
-	    if (snode->entry_p ())
-	      {
-		add_to_worklist
-		  (function_point::before_supernode (snode, nullptr),
-		   worklist, logger);
-	      }
-	  }
-      }
-      break;
+      else
+	add_to_worklist (*in_edge->m_src, worklist, logger);
     }
+}
+
+void
+state_purge_per_ssa_name::on_duplicated_node (const supernode &old_snode,
+					      const supernode &new_snode)
+{
+  if (m_snodes_needing_name.contains (&old_snode))
+    m_snodes_needing_name.add (&new_snode);
 }
 
 /* class state_purge_per_decl : public state_purge_per_tree.  */
@@ -682,34 +491,34 @@ state_purge_per_decl::state_purge_per_decl (const state_purge_map &map,
   if (TREE_CODE (decl) == RESULT_DECL)
     {
       supernode *exit_snode = map.get_sg ().get_node_for_function_exit (fun);
-      add_needed_at (function_point::after_supernode (exit_snode));
+      add_needed_at (*exit_snode);
     }
 }
 
 /* Mark the value of the decl (or a subvalue within it) as being needed
-   at POINT.  */
+   at SNODE.  */
 
 void
-state_purge_per_decl::add_needed_at (const function_point &point)
+state_purge_per_decl::add_needed_at (const supernode &snode)
 {
-  m_points_needing_decl.add (point);
+  m_snodes_needing_decl.add (&snode);
 }
 
 /* Mark that a pointer to the decl (or a region within it) is taken
-   at POINT.  */
+   at SNODE.  */
 
 void
-state_purge_per_decl::add_pointed_to_at (const function_point &point)
+state_purge_per_decl::add_pointed_to_at (const supernode &snode)
 {
-  m_points_taking_address.add (point);
+  m_snodes_taking_address.add (&snode);
 }
 
 /* Process the worklists for this decl:
-   (a) walk backwards from points where we know the value of the decl
-   is needed, marking points until we get to a stmt that fully overwrites
+   (a) walk backwards from snodes where we know the value of the decl
+   is needed, marking snodes until we get to a stmt that fully overwrites
    the decl.
-   (b) walk forwards from points where the address of the decl is taken,
-   marking points as potentially needing the value of the decl.  */
+   (b) walk forwards from snodes where the address of the decl is taken,
+   marking snodes as potentially needing the value of the decl.  */
 
 void
 state_purge_per_decl::process_worklists (const state_purge_map &map,
@@ -722,11 +531,11 @@ state_purge_per_decl::process_worklists (const state_purge_map &map,
 
   /* Worklist for walking backwards from uses.  */
   {
-    auto_vec<function_point> worklist;
+    auto_vec<const supernode *> worklist;
     point_set_t seen;
 
     /* Add all uses of the decl to the worklist.  */
-    for (auto iter : m_points_needing_decl)
+    for (auto iter : m_snodes_needing_decl)
       worklist.safe_push (iter);
 
     region_model model (mgr);
@@ -738,25 +547,25 @@ state_purge_per_decl::process_worklists (const state_purge_map &map,
       log_scope s (logger, "processing worklist");
       while (worklist.length () > 0)
 	{
-	  function_point point = worklist.pop ();
-	  process_point_backwards (point, &worklist, &seen, map, model);
+	  const supernode *snode = worklist.pop ();
+	  process_supernode_backwards (*snode, &worklist, &seen, map, model);
 	}
     }
   }
 
-  /* Worklist for walking forwards from address-taken points.  */
+  /* Worklist for walking forwards from address-taken snodes.  */
   {
-    auto_vec<function_point> worklist;
+    auto_vec<const supernode *> worklist;
     point_set_t seen;
 
     /* Add all uses of the decl to the worklist.  */
-    for (auto iter : m_points_taking_address)
+    for (auto iter : m_snodes_taking_address)
       {
 	worklist.safe_push (iter);
 
-	/* Add to m_points_needing_decl (now that we traversed
+	/* Add to m_snodes_needing_decl (now that we traversed
 	   it above for the backward worklist).  */
-	m_points_needing_decl.add (iter);
+	m_snodes_needing_decl.add (iter);
       }
 
     /* Process worklist by walking forwards. */
@@ -764,37 +573,29 @@ state_purge_per_decl::process_worklists (const state_purge_map &map,
       log_scope s (logger, "processing worklist");
       while (worklist.length () > 0)
 	{
-	  function_point point = worklist.pop ();
-	  process_point_forwards (point, &worklist, &seen, map);
+	  const supernode *snode = worklist.pop ();
+	  process_supernode_forwards (*snode, &worklist, &seen, map);
 	}
     }
   }
 }
 
-/* Add POINT to *WORKLIST if the point is not already in *seen.
-   Add newly seen points to *SEEN and to m_points_needing_name.  */
+/* Add SNODE to *WORKLIST if the point is not already in *seen.
+   Add newly seen supernodes to *SEEN and to m_snodes_needing_name.  */
 
 void
-state_purge_per_decl::add_to_worklist (const function_point &point,
-				       auto_vec<function_point> *worklist,
+state_purge_per_decl::add_to_worklist (const supernode &snode,
+				       auto_vec<const supernode *> *worklist,
 				       point_set_t *seen,
 				       logger *logger)
 {
   LOG_FUNC (logger);
   if (logger)
-    {
-      logger->start_log_line ();
-      logger->log_partial ("point: '");
-      point.print (logger->get_printer (), format (false));
-      logger->log_partial ("' for worklist for %qE", m_decl);
-      logger->end_log_line ();
-    }
+    logger->log ("SN %i for worklist for %qE", snode.m_id, m_decl);
 
-  gcc_assert (point.get_function () == &get_function ());
-  if (point.get_from_edge ())
-    gcc_assert (point.get_from_edge ()->get_kind () == SUPEREDGE_CFG_EDGE);
+  gcc_assert (snode.get_function () == &get_function ());
 
-  if (seen->contains (point))
+  if (seen->contains (&snode))
     {
       if (logger)
 	logger->log ("already seen for %qE", m_decl);
@@ -803,9 +604,9 @@ state_purge_per_decl::add_to_worklist (const function_point &point,
     {
       if (logger)
 	logger->log ("not seen; adding to worklist for %qE", m_decl);
-      m_points_needing_decl.add (point);
-      seen->add (point);
-      worklist->safe_push (point);
+      m_snodes_needing_decl.add (&snode);
+      seen->add (&snode);
+      worklist->safe_push (&snode);
     }
 }
 
@@ -850,217 +651,96 @@ fully_overwrites_p (const gimple *stmt, tree decl,
   return false;
 }
 
-/* Process POINT, popped from *WORKLIST.
-   Iterate over predecessors of POINT, adding to *WORKLIST and *SEEN,
+/* Process SNODE, popped from *WORKLIST.
+   Iterate over predecessors of SNODE, adding to *WORKLIST and *SEEN,
    until we get to a stmt that fully overwrites the decl.  */
 
 void
 state_purge_per_decl::
-process_point_backwards (const function_point &point,
-			 auto_vec<function_point> *worklist,
-			 point_set_t *seen,
-			 const state_purge_map &map,
-			 const region_model &model)
+process_supernode_backwards (const supernode &snode,
+			     auto_vec<const supernode *> *worklist,
+			     point_set_t *seen,
+			     const state_purge_map &map,
+			     const region_model &model)
 {
   logger *logger = map.get_logger ();
   LOG_FUNC (logger);
   if (logger)
+    logger->log ("considering SN %i for %qE", snode.m_id, m_decl);
+
+  for (auto in_edge : snode.m_preds)
     {
-      logger->start_log_line ();
-      logger->log_partial ("considering point: '");
-      point.print (logger->get_printer (), format (false));
-      logger->log_partial ("' for %qE", m_decl);
-      logger->end_log_line ();
-    }
-  const supernode *snode = point.get_supernode ();
+      if (logger)
+	logger->log ("considering edge from SN %i", in_edge->m_src->m_id);
 
-  switch (point.get_kind ())
-    {
-    default:
-      gcc_unreachable ();
-
-    case PK_ORIGIN:
-      break;
-
-    case PK_BEFORE_SUPERNODE:
-      {
-	/* Add given pred to worklist.  */
-	if (point.get_from_edge ())
-	  {
-	    gcc_assert (point.get_from_edge ()->m_src);
-	    add_to_worklist
-	      (function_point::after_supernode (point.get_from_edge ()->m_src),
-	       worklist, seen, logger);
-	  }
-	else
-	  {
-	    /* Add any intraprocedually edge for a call.  */
-	    if (snode->m_returning_call)
-	    {
-	      gcall *returning_call = snode->m_returning_call;
-	      cgraph_edge *cedge
-		  = supergraph_call_edge (snode->m_fun,
-					  returning_call);
-	      if(cedge)
-		{
-		  superedge *sedge
-		    = map.get_sg ().get_intraprocedural_edge_for_call (cedge);
-		  gcc_assert (sedge);
-		  add_to_worklist
-		    (function_point::after_supernode (sedge->m_src),
-		     worklist, seen, logger);
-		}
-	      else
-		{
-		  supernode *callernode
-		    = map.get_sg ().get_supernode_for_stmt (returning_call);
-
-		  gcc_assert (callernode);
-		  add_to_worklist
-		    (function_point::after_supernode (callernode),
-		     worklist, seen, logger);
-		}
-	    }
-	  }
-      }
-      break;
-
-    case PK_BEFORE_STMT:
-      {
-	/* This is somewhat equivalent to how the SSA case handles
-	   def-stmts.  */
-	if (fully_overwrites_p (point.get_stmt (), m_decl, model)
-	    /* ...but we mustn't be at a point that also consumes the
-	       current value of the decl when it's generating the new
-	       value, for cases such as
-		  struct st s;
-		  s = foo ();
-		  s = bar (s);
-	       where we want to make sure that we don't stop at the:
-		  s = bar (s);
-	       since otherwise we would erroneously purge the state of "s"
-	       after:
-		  s = foo ();
-	    */
-	    && !m_points_needing_decl.contains (point))
-	  {
-	    if (logger)
-	      logger->log ("stmt fully overwrites %qE; terminating", m_decl);
-	    return;
-	  }
-	if (point.get_stmt_idx () > 0)
-	  add_to_worklist (function_point::before_stmt
-			     (snode, point.get_stmt_idx () - 1),
-			   worklist, seen, logger);
-	else
+      bool fully_overwrites_decl = false;
+      if (auto op = in_edge->get_op ())
 	{
-	  /* Add before_supernode to worklist.  This captures the in-edge,
-	     so we have to do it once per in-edge.  */
-	  unsigned i;
-	  superedge *pred;
-	  FOR_EACH_VEC_ELT (snode->m_preds, i, pred)
-	    add_to_worklist (function_point::before_supernode (snode,
-							       pred),
-			     worklist, seen, logger);
+	  /* This is somewhat equivalent to how the SSA case handles
+	     def-stmts.  */
+	  if (auto stmt = op->maybe_get_stmt ())
+	    if (fully_overwrites_p (stmt, m_decl, model)
+	      /* ...but we mustn't be at a point that also consumes the
+		 current value of the decl when it's generating the new
+		 value, for cases such as
+		   struct st s;
+		   s = foo ();
+		   s = bar (s);
+		 where we want to make sure that we don't stop at the:
+		   s = bar (s);
+		 since otherwise we would erroneously purge the state of "s"
+		 after:
+		   s = foo ();
+	      */
+	      && !m_snodes_needing_decl.contains (&snode))
+	    fully_overwrites_decl = true;
 	}
-      }
-      break;
-
-    case PK_AFTER_SUPERNODE:
-      {
-	if (snode->m_stmts.length ())
-	  add_to_worklist
-	    (function_point::before_stmt (snode,
-					  snode->m_stmts.length () - 1),
-	     worklist, seen, logger);
-	else
-	  {
-	    /* Add before_supernode to worklist.  This captures the in-edge,
-	       so we have to do it once per in-edge.  */
-	    unsigned i;
-	    superedge *pred;
-	    FOR_EACH_VEC_ELT (snode->m_preds, i, pred)
-	      add_to_worklist (function_point::before_supernode (snode,
-								 pred),
-			       worklist, seen, logger);
-	  }
-      }
-      break;
+      if (fully_overwrites_decl)
+	{
+	  if (logger)
+	    logger->log ("op fully overwrites %qE; terminating", m_decl);
+	}
+      else
+	add_to_worklist (*in_edge->m_src, worklist, seen, logger);
     }
-
 }
 
-/* Process POINT, popped from *WORKLIST.
-   Iterate over successors of POINT, adding to *WORKLIST and *SEEN.  */
+/* Process SNODE, popped from *WORKLIST.
+   Iterate over successors of SNODE, adding to *WORKLIST and *SEEN.  */
 
 void
 state_purge_per_decl::
-process_point_forwards (const function_point &point,
-			auto_vec<function_point> *worklist,
-			point_set_t *seen,
-			const state_purge_map &map)
+process_supernode_forwards (const supernode &snode,
+			    auto_vec<const supernode *> *worklist,
+			    point_set_t *seen,
+			    const state_purge_map &map)
 {
   logger *logger = map.get_logger ();
   LOG_FUNC (logger);
   if (logger)
-    {
-      logger->start_log_line ();
-      logger->log_partial ("considering point: '");
-      point.print (logger->get_printer (), format (false));
-      logger->log_partial ("' for %qE", m_decl);
-      logger->end_log_line ();
-    }
-  const supernode *snode = point.get_supernode ();
+    logger->log ("considering SN %i for %qE", snode.m_id, m_decl);
 
-  switch (point.get_kind ())
-    {
-    default:
-    case PK_ORIGIN:
-      gcc_unreachable ();
-
-    case PK_BEFORE_SUPERNODE:
-      {
-	function_point next = point.get_next ();
-	add_to_worklist (next, worklist, seen, logger);
-      }
-      break;
-
-    case PK_BEFORE_STMT:
-      {
-	/* Perhaps we should stop at a clobber of the decl,
-	   but that ought to purge state for us explicitly.  */
-	function_point next = point.get_next ();
-	add_to_worklist (next, worklist, seen, logger);
-      }
-      break;
-
-    case PK_AFTER_SUPERNODE:
-      {
-	/* Look at interprocedural out-edges.  */
-	unsigned i;
-	superedge *succ;
-	FOR_EACH_VEC_ELT (snode->m_succs, i, succ)
-	  {
-	    enum edge_kind kind = succ->get_kind ();
-	    if (kind == SUPEREDGE_CFG_EDGE
-		|| kind == SUPEREDGE_INTRAPROCEDURAL_CALL)
-	      add_to_worklist (function_point::before_supernode (succ->m_dest,
-								 succ),
-			       worklist, seen, logger);
-	  }
-      }
-      break;
-    }
+  for (auto out_edge : snode.m_succs)
+    add_to_worklist (*out_edge->m_dest, worklist, seen, logger);
 }
 
-/* Return true if the decl is needed at POINT.  */
+/* Return true if the decl is needed at SNODE.  */
 
 bool
-state_purge_per_decl::needed_at_point_p (const function_point &point) const
+state_purge_per_decl::needed_at_supernode_p (const supernode *snode) const
 {
-  return const_cast <point_set_t &> (m_points_needing_decl).contains (point);
+  return const_cast <point_set_t &> (m_snodes_needing_decl).contains (snode);
 }
 
+void
+state_purge_per_decl::on_duplicated_node (const supernode &old_snode,
+					      const supernode &new_snode)
+{
+  if (m_snodes_needing_decl.contains (&old_snode))
+    m_snodes_needing_decl.add (&new_snode);
+  if (m_snodes_taking_address.contains (&old_snode))
+    m_snodes_taking_address.add (&new_snode);
+}
 /* class state_purge_annotator : public dot_annotator.  */
 
 /* Implementation of dot_annotator::add_node_annotations vfunc for
@@ -1069,61 +749,19 @@ state_purge_per_decl::needed_at_point_p (const function_point &point) const
    Add an additional record showing which names are purged on entry
    to the supernode N.  */
 
-bool
-state_purge_annotator::add_node_annotations (graphviz_out *gv,
-					     const supernode &n,
-					     bool within_table) const
-{
-  if (m_map == nullptr)
-    return false;
-
-  if (within_table)
-    return false;
-
-  pretty_printer *pp = gv->get_pp ();
-
-   pp_printf (pp, "annotation_for_node_%i", n.m_index);
-   pp_printf (pp, " [shape=none,margin=0,style=filled,fillcolor=%s,label=\"",
-	      "lightblue");
-   pp_write_text_to_stream (pp);
-
-   /* Different in-edges mean different names need purging.
-      Determine which points to dump.  */
-   auto_vec<function_point> points;
-   if (n.entry_p () || n.m_returning_call)
-     points.safe_push (function_point::before_supernode (&n, nullptr));
-   else
-     for (auto inedge : n.m_preds)
-       points.safe_push (function_point::before_supernode (&n, inedge));
-   points.safe_push (function_point::after_supernode (&n));
-
-   for (auto & point : points)
-     {
-       point.print (pp, format (true));
-       pp_newline (pp);
-       print_needed (gv, point, false);
-       pp_newline (pp);
-     }
-
-   pp_string (pp, "\"];\n\n");
-   pp_flush (pp);
-   return false;
-}
-
-/* Print V to GV as a comma-separated list in braces, titling it with TITLE.
-   If WITHIN_TABLE is true, print it within a <TR>
+/* Print V to GV as a comma-separated list in braces within a <TR>,
+   titling it with TITLE.
 
    Subroutine of state_purge_annotator::print_needed.  */
 
 static void
 print_vec_of_names (graphviz_out *gv, const char *title,
-		    const auto_vec<tree> &v, bool within_table)
+		    const auto_vec<tree> &v)
 {
   pretty_printer *pp = gv->get_pp ();
   tree name;
   unsigned i;
-  if (within_table)
-    gv->begin_trtd ();
+  gv->begin_trtd ();
   pp_printf (pp, "%s: {", title);
   FOR_EACH_VEC_ELT (v, i, name)
     {
@@ -1132,54 +770,18 @@ print_vec_of_names (graphviz_out *gv, const char *title,
       pp_printf (pp, "%qE", name);
     }
   pp_printf (pp, "}");
-  if (within_table)
-    {
-      pp_write_text_as_html_like_dot_to_stream (pp);
-      gv->end_tdtr ();
-    }
+  pp_write_text_as_html_like_dot_to_stream (pp);
+  gv->end_tdtr ();
   pp_newline (pp);
 }
 
-/* Implementation of dot_annotator::add_stmt_annotations for
-   state_purge_annotator.
-
-   Add text showing which names are purged at STMT.  */
-
 void
-state_purge_annotator::add_stmt_annotations (graphviz_out *gv,
-					     const gimple *stmt,
-					     bool within_row) const
+state_purge_annotator::add_node_annotations (graphviz_out *gv,
+					     const supernode &snode) const
 {
-  if (within_row)
-    return;
-
   if (m_map == nullptr)
     return;
 
-  if (stmt->code == GIMPLE_PHI)
-    return;
-
-  pretty_printer *pp = gv->get_pp ();
-
-  pp_newline (pp);
-
-  const supernode *supernode = m_map->get_sg ().get_supernode_for_stmt (stmt);
-  unsigned int stmt_idx = supernode->get_stmt_index (stmt);
-  function_point before_stmt
-    (function_point::before_stmt (supernode, stmt_idx));
-
-  print_needed (gv, before_stmt, true);
-}
-
-/* Get the decls and SSA names needed and not-needed at POINT, and
-   print them to GV.
-   If WITHIN_TABLE is true, print them within <TR> elements.  */
-
-void
-state_purge_annotator::print_needed (graphviz_out *gv,
-				     const function_point &point,
-				     bool within_table) const
-{
   auto_vec<tree> needed;
   auto_vec<tree> not_needed;
   for (state_purge_map::ssa_iterator iter = m_map->begin_ssas ();
@@ -1188,9 +790,9 @@ state_purge_annotator::print_needed (graphviz_out *gv,
     {
       tree name = (*iter).first;
       state_purge_per_ssa_name *per_name_data = (*iter).second;
-      if (&per_name_data->get_function () == point.get_function ())
+      if (&per_name_data->get_function () == snode.get_function ())
 	{
-	  if (per_name_data->needed_at_point_p (point))
+	  if (per_name_data->needed_at_supernode_p (&snode))
 	    needed.safe_push (name);
 	  else
 	    not_needed.safe_push (name);
@@ -1202,17 +804,17 @@ state_purge_annotator::print_needed (graphviz_out *gv,
     {
       tree decl = (*iter).first;
       state_purge_per_decl *per_decl_data = (*iter).second;
-      if (&per_decl_data->get_function () == point.get_function ())
+      if (&per_decl_data->get_function () == snode.get_function ())
 	{
-	  if (per_decl_data->needed_at_point_p (point))
+	  if (per_decl_data->needed_at_supernode_p (&snode))
 	    needed.safe_push (decl);
 	  else
 	    not_needed.safe_push (decl);
 	}
     }
 
-  print_vec_of_names (gv, "needed here", needed, within_table);
-  print_vec_of_names (gv, "not needed here", not_needed, within_table);
+  print_vec_of_names (gv, "needed here", needed);
+  print_vec_of_names (gv, "not needed here", not_needed);
 }
 
 #endif /* #if ENABLE_ANALYZER */

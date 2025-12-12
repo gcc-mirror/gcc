@@ -31,7 +31,7 @@ void func(struct list **res)
 	} while (true);
 }
 
-int not_main()
+void not_main()
 {
 	struct list *res;
 	func(&res);

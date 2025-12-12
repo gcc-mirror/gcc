@@ -50,12 +50,9 @@ public:
   bool inherited_state_p () const final override { return false; }
 
   bool on_stmt (sm_context &sm_ctxt,
-		const supernode *node,
 		const gimple *stmt) const final override;
 
   void on_condition (sm_context &sm_ctxt,
-		     const supernode *node,
-		     const gimple *stmt,
 		     const svalue *lhs,
 		     enum tree_code op,
 		     const svalue *rhs) const final override;
@@ -102,7 +99,6 @@ pattern_test_state_machine::pattern_test_state_machine (logger *logger)
 
 bool
 pattern_test_state_machine::on_stmt (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
-				     const supernode *node ATTRIBUTE_UNUSED,
 				     const gimple *stmt ATTRIBUTE_UNUSED) const
 {
   return false;
@@ -116,22 +112,17 @@ pattern_test_state_machine::on_stmt (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
 
 void
 pattern_test_state_machine::on_condition (sm_context &sm_ctxt,
-					  const supernode *node,
-					  const gimple *stmt,
 					  const svalue *lhs,
 					  enum tree_code op,
 					  const svalue *rhs) const
 {
-  if (stmt == nullptr)
-    return;
-
   tree rhs_cst = rhs->maybe_get_constant ();
   if (!rhs_cst)
     return;
 
   if (tree lhs_expr = sm_ctxt.get_diagnostic_tree (lhs))
     {
-      sm_ctxt.warn (node, stmt, lhs_expr,
+      sm_ctxt.warn (lhs_expr,
 		    std::make_unique<pattern_match> (lhs_expr, op, rhs_cst));
     }
 }

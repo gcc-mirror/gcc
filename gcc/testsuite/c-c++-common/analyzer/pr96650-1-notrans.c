@@ -1,4 +1,5 @@
 /* { dg-additional-options "-O2 -fno-analyzer-transitivity" } */
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
 
 int *wf;
 

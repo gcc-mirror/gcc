@@ -1,5 +1,5 @@
 /* { dg-skip-if "" { *-*-* } { "-fno-fat-lto-objects" } { "" } } */
-
+/* { dg-additional-options "-Wno-analyzer-too-complex" } */
 #include "../analyzer-decls.h"
 
 extern _Bool quit_flag;

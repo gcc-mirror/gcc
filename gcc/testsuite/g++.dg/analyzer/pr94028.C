@@ -30,12 +30,12 @@ j *
 f (B * b, int h, bool)
 {
   d (b->cls);
-  return new j (b, h); // { dg-warning "leak" }
+  return new j (b, h);
 }
 
 void
 m ()
 {
   if (i)
-    f (&k, 0, false);
+    f (&k, 0, false); // { dg-warning "leak" }
 }

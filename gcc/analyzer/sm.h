@@ -21,6 +21,8 @@ along with GCC; see the file COPYING3.  If not see
 #ifndef GCC_ANALYZER_SM_H
 #define GCC_ANALYZER_SM_H
 
+#include "analyzer/analyzer-logging.h"
+
 /* Utility functions for use by state machines.  */
 
 namespace ana {
@@ -96,19 +98,21 @@ public:
 
   /* Return true if STMT is a function call recognized by this sm.  */
   virtual bool on_stmt (sm_context &sm_ctxt,
-			const supernode *node,
 			const gimple *stmt) const = 0;
 
   virtual void on_phi (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
-		       const supernode *node ATTRIBUTE_UNUSED,
 		       const gphi *phi ATTRIBUTE_UNUSED,
 		       tree rhs ATTRIBUTE_UNUSED) const
   {
   }
 
+  virtual void
+  check_call_preconditions (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
+			    const call_details &cd ATTRIBUTE_UNUSED) const
+  {
+  }
+
   virtual void on_condition (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
-			     const supernode *node ATTRIBUTE_UNUSED,
-			     const gimple *stmt ATTRIBUTE_UNUSED,
 			     const svalue *lhs ATTRIBUTE_UNUSED,
 			     enum tree_code op ATTRIBUTE_UNUSED,
 			     const svalue *rhs ATTRIBUTE_UNUSED) const
@@ -117,8 +121,6 @@ public:
 
   virtual void
   on_bounded_ranges (sm_context &sm_ctxt ATTRIBUTE_UNUSED,
-		     const supernode *node ATTRIBUTE_UNUSED,
-		     const gimple *stmt ATTRIBUTE_UNUSED,
 		     const svalue &sval ATTRIBUTE_UNUSED,
 		     const bounded_ranges &ranges ATTRIBUTE_UNUSED) const
   {
@@ -236,7 +238,7 @@ public:
 };
 
 /* Abstract base class giving an interface for the state machine to call
-   the checker engine, at a particular stmt.  */
+   the checker engine, at a particular code location.  */
 
 class sm_context
 {
@@ -249,58 +251,47 @@ public:
      other callback handling.  */
   virtual tree get_fndecl_for_call (const gcall &call) = 0;
 
-  /* Get the old state of VAR at STMT.  */
-  virtual state_machine::state_t get_state (const gimple *stmt,
-					    tree var) = 0;
-  virtual state_machine::state_t get_state (const gimple *stmt,
-					    const svalue *) = 0;
+  /* Get the old state of VAR.  */
+  virtual state_machine::state_t get_state (tree var) = 0;
+  virtual state_machine::state_t get_state (const svalue *) = 0;
+
   /* Set the next state of VAR to be TO, recording the "origin" of the
-     state as ORIGIN.
-     Use STMT for location information.  */
-  virtual void set_next_state (const gimple *stmt,
-			       tree var,
+     state as ORIGIN.  */
+  virtual void set_next_state (tree var,
 			       state_machine::state_t to,
 			       tree origin = NULL_TREE) = 0;
-  virtual void set_next_state (const gimple *stmt,
-			       const svalue *var,
+  virtual void set_next_state (const svalue *var,
 			       state_machine::state_t to,
 			       tree origin = NULL_TREE) = 0;
 
   /* Called by state_machine in response to pattern matches:
      if VAR is in state FROM, transition it to state TO, potentially
-     recording the "origin" of the state as ORIGIN.
-     Use NODE and STMT for location information.  */
-  void on_transition (const supernode *node ATTRIBUTE_UNUSED,
-		      const gimple *stmt,
-		      tree var,
+     recording the "origin" of the state as ORIGIN.  */
+  void on_transition (tree var,
 		      state_machine::state_t from,
 		      state_machine::state_t to,
 		      tree origin = NULL_TREE)
   {
-    state_machine::state_t current = get_state (stmt, var);
+    state_machine::state_t current = get_state (var);
     if (current == from)
-      set_next_state (stmt, var, to, origin);
+      set_next_state (var, to, origin);
   }
 
-  void on_transition (const supernode *node ATTRIBUTE_UNUSED,
-		      const gimple *stmt,
-		      const svalue *var,
+  void on_transition (const svalue *var,
 		      state_machine::state_t from,
 		      state_machine::state_t to,
 		      tree origin = NULL_TREE)
   {
-    state_machine::state_t current = get_state (stmt, var);
+    state_machine::state_t current = get_state (var);
     if (current == from)
-      set_next_state (stmt, var, to, origin);
+      set_next_state (var, to, origin);
   }
 
   /* Called by state_machine in response to pattern matches:
-     issue a diagnostic D using NODE and STMT for location information.  */
-  virtual void warn (const supernode *node, const gimple *stmt,
-		     tree var,
+     issue a diagnostic D about VAR.  */
+  virtual void warn (tree var,
 		     std::unique_ptr<pending_diagnostic> d) = 0;
-  virtual void warn (const supernode *node, const gimple *stmt,
-		     const svalue *var,
+  virtual void warn (const svalue *var,
 		     std::unique_ptr<pending_diagnostic> d) = 0;
 
   /* For use when generating trees when creating pending_diagnostics, so that
@@ -340,6 +331,9 @@ public:
   virtual const program_state *get_new_program_state () const = 0;
 
   const region_model *get_old_region_model () const;
+
+  /* Get the location a diagnostic would be emitted at.  */
+  virtual location_t get_emission_location () const = 0;
 
 protected:
   sm_context (int sm_idx, const state_machine &sm)

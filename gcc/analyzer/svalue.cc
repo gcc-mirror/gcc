@@ -335,14 +335,21 @@ svalue::can_merge_p (const svalue *other,
   if (!merger->mergeable_svalue_p (other))
     return nullptr;
 
+  /* Reject attempts to merge pointers that point to different base regions,
+     except for the case where both are string literals.  */
+  if (auto this_region = maybe_get_region ())
+    if (auto other_region = other->maybe_get_region ())
+      if (this_region != other_region
+	  && (this_region->get_kind () != RK_STRING
+	      || other_region->get_kind () != RK_STRING))
+	return nullptr;
+
   /* Widening.  */
   /* Merge: (new_cst, existing_cst) -> widen (existing, new).  */
   if (maybe_get_constant () && other->maybe_get_constant ())
-    {
-      return mgr->get_or_create_widening_svalue (other->get_type (),
-						 merger->get_function_point (),
-						 other, this);
-    }
+    return mgr->get_or_create_widening_svalue (other->get_type (),
+					       merger->get_supernode (),
+					       other, this);
 
   /* Merger of:
 	 this: BINOP (X, OP, CST)
@@ -353,7 +360,7 @@ svalue::can_merge_p (const svalue *other,
 	&& binop_sval->get_arg1 ()->get_kind () == SK_CONSTANT
 	&& other->get_kind () != SK_WIDENING)
       return mgr->get_or_create_widening_svalue (other->get_type (),
-						 merger->get_function_point (),
+						 merger->get_supernode (),
 						 other, this);
 
   /* Merge: (Widen(existing_val, V), existing_val) -> Widen (existing_val, V)
@@ -655,9 +662,9 @@ svalue::cmp_ptr (const svalue *sval1, const svalue *sval2)
       {
 	const widening_svalue *widening_sval1 = (const widening_svalue *)sval1;
 	const widening_svalue *widening_sval2 = (const widening_svalue *)sval2;
-	if (int point_cmp = function_point::cmp (widening_sval1->get_point (),
-						 widening_sval2->get_point ()))
-	  return point_cmp;
+	if (int index_cmp = (widening_sval1->get_snode ()->m_id
+			     - widening_sval2->get_snode ()->m_id))
+	  return index_cmp;
 	if (int base_cmp = svalue::cmp_ptr (widening_sval1->get_base_svalue (),
 					    widening_sval2->get_base_svalue ()))
 	  return base_cmp;
@@ -1956,7 +1963,7 @@ widening_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
     {
       pp_string (pp, "WIDENING(");
       pp_character (pp, '{');
-      m_point.print (pp, format (false));
+      m_snode->print (pp);
       pp_string (pp, "}, ");
       m_base_sval->dump_to_pp (pp, simple);
       pp_string (pp, ", ");
@@ -1968,7 +1975,7 @@ widening_svalue::dump_to_pp (pretty_printer *pp, bool simple) const
       pp_string (pp, "widening_svalue (");
       pp_string (pp, ", ");
       pp_character (pp, '{');
-      m_point.print (pp, format (false));
+      m_snode->print (pp);
       pp_string (pp, "}, ");
       m_base_sval->dump_to_pp (pp, simple);
       pp_string (pp, ", ");
@@ -1984,7 +1991,7 @@ void
 widening_svalue::print_dump_widget_label (pretty_printer *pp) const
 {
   pp_printf (pp, "widening_svalue at ");
-  m_point.print (pp, format (false));
+  m_snode->print (pp);
 }
 
 /* Implementation of svalue::add_dump_widget_children vfunc for

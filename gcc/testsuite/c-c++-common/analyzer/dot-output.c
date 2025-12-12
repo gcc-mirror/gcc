@@ -42,8 +42,10 @@ int test_2 (void)
   return c1;
 }
 
-/* { dg-final { dg-check-dot "dot-output.c.callgraph.dot" } } */
 /* { dg-final { dg-check-dot "dot-output.c.eg.dot" } } */
 /* { dg-final { dg-check-dot "dot-output.c.state-purge.dot" } } */
-/* { dg-final { dg-check-dot "dot-output.c.supergraph.dot" } } */
-/* { dg-final { dg-check-dot "dot-output.c.supergraph-eg.dot" } } */
+/* { dg-final { dg-check-dot "dot-output.c.supergraph.0.original.dot" } } */
+/* { dg-final { dg-check-dot "dot-output.c.supergraph.1.fixup-locations.dot" } } */
+/* { dg-final { dg-check-dot "dot-output.c.supergraph.2.simplified.dot" } } */
+/* { dg-final { dg-check-dot "dot-output.c.supergraph.3.sorted.dot" } } */
+/* { dg-final { dg-check-dot "dot-output.c.supergraph.4.eg.dot" } } */

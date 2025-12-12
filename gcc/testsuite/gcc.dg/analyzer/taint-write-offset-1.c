@@ -27,7 +27,7 @@ char test_1(FILE *f)
   return 0;
 }
 
-char test_2(struct foo *f)
+void test_2(struct foo *f)
 {
   /* not a bug: the data is not known to be tainted: */
   *(p + f->offset) = 42;

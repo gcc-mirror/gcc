@@ -24,10 +24,13 @@ along with GCC; see the file COPYING3.  If not see
 #include "ordered-hash-map.h"
 #include "cfg.h"
 #include "basic-block.h"
+#include "cfgloop.h"
 #include "gimple.h"
 #include "gimple-iterator.h"
 #include "digraph.h"
 #include "except.h"
+
+#include "analyzer/ops.h"
 
 using namespace ana;
 
@@ -38,28 +41,10 @@ namespace ana {
 class supergraph;
 class supernode;
 class superedge;
-  class callgraph_superedge;
-    class call_superedge;
-    class return_superedge;
-  class cfg_superedge;
-    class switch_cfg_superedge;
-    class eh_dispatch_cfg_superedge;
-      class eh_dispatch_try_cfg_superedge;
-      class eh_dispatch_allowed_cfg_superedge;
 class supercluster;
 class dot_annotator;
 
 class logger;
-
-/* An enum for discriminating between superedge subclasses.  */
-
-enum edge_kind
-{
-  SUPEREDGE_CFG_EDGE,
-  SUPEREDGE_CALL,
-  SUPEREDGE_RETURN,
-  SUPEREDGE_INTRAPROCEDURAL_CALL
-};
 
 /* Flags for controlling the appearance of .dot dumps.  */
 
@@ -79,13 +64,16 @@ struct supergraph_traits
   struct dump_args_t
   {
     dump_args_t (enum supergraph_dot_flags flags,
-		 const dot_annotator *node_annotator)
+		 const dot_annotator *node_annotator,
+		 const exploded_graph *eg)
     : m_flags (flags),
-      m_node_annotator (node_annotator)
+      m_node_annotator (node_annotator),
+      m_eg (eg)
     {}
 
     enum supergraph_dot_flags m_flags;
     const dot_annotator *m_node_annotator;
+    const exploded_graph *m_eg;
   };
   typedef supercluster cluster_t;
 };
@@ -102,70 +90,56 @@ private:
   auto_vec<std::pair<gimple *, unsigned> > m_old_stmt_uids;
 };
 
-/* A "supergraph" is a directed graph formed by joining together all CFGs,
-   linking them via interprocedural call and return edges.
+/* A directed graph class representing the users's code,
+   with nodes representing locations within functions, and
+   edges representing transitions between them.
 
-   Basic blocks are split at callsites, so that a call statement occurs
-   twice: once at the end of a supernode, and a second instance at the
-   start of the next supernode (to handle the return).  */
+   For historical reasons we call this the "supergraph", although
+   this is now a misnomer as we no longer add callgraph edges to this
+   graph: the edges within the supergraph are purely intraprocedural:
+   either linking consecutive stmts in a basic block, or linking
+   basic blocks (corresponding to CFG edges).  However, all functions
+   are within the same graph.  */
 
 class supergraph : public digraph<supergraph_traits>
 {
 public:
-  supergraph (logger *logger);
+  supergraph (region_model_manager &mgr, logger *logger);
   ~supergraph ();
 
   supernode *get_node_for_function_entry (const function &fun) const
   {
-    return get_node_for_block (ENTRY_BLOCK_PTR_FOR_FN (&fun));
+    return get_initial_node_for_block (ENTRY_BLOCK_PTR_FOR_FN (&fun));
   }
 
   supernode *get_node_for_function_exit (const function &fun) const
   {
-    return get_node_for_block (EXIT_BLOCK_PTR_FOR_FN (&fun));
+    return get_final_node_for_block (EXIT_BLOCK_PTR_FOR_FN (&fun));
   }
 
-  supernode *get_node_for_block (basic_block bb) const
+  supernode *get_initial_node_for_block (basic_block bb) const
   {
     return *const_cast <bb_to_node_t &> (m_bb_to_initial_node).get (bb);
   }
 
-  /* Get the supernode containing the second half of the gcall &
-     at an interprocedural call, within the caller.  */
-  supernode *get_caller_next_node (cgraph_edge *edge) const
+  supernode *get_final_node_for_block (basic_block bb) const
   {
-    return (*const_cast <cgraph_edge_to_node_t &>
-	      (m_cgraph_edge_to_caller_next_node).get (edge));
-  }
-
-  call_superedge *get_edge_for_call (cgraph_edge *edge) const
-  {
-    return (*const_cast <cgraph_edge_to_call_superedge_t &>
-	      (m_cgraph_edge_to_call_superedge).get (edge));
-  }
-
-  return_superedge *get_edge_for_return (cgraph_edge *edge) const
-  {
-    return (*const_cast <cgraph_edge_to_return_superedge_t &>
-	      (m_cgraph_edge_to_return_superedge).get (edge));
-  }
-
-  superedge *get_intraprocedural_edge_for_call (cgraph_edge *edge) const
-  {
-    return (*const_cast <cgraph_edge_to_intraproc_superedge_t &>
-	      (m_cgraph_edge_to_intraproc_superedge).get (edge));
-  }
-
-  cfg_superedge *get_edge_for_cfg_edge (edge e) const
-  {
-    return (*const_cast <cfg_edge_to_cfg_superedge_t &>
-	      (m_cfg_edge_to_cfg_superedge).get (e));
+    return *const_cast <bb_to_node_t &> (m_bb_to_final_node).get (bb);
   }
 
   supernode *get_supernode_for_stmt (const gimple *stmt) const
   {
-    return (*const_cast <stmt_to_node_t &>(m_stmt_to_node_t).get
-	    (const_cast <gimple *> (stmt)));
+    auto iter = m_node_for_stmt.find (stmt);
+    gcc_assert (iter != m_node_for_stmt.end ());
+    return iter->second;
+  }
+
+  superedge *get_superedge_for_phis (::edge cfg_edge) const
+  {
+    auto iter = m_edges_for_phis.find (cfg_edge);
+    if (iter != m_edges_for_phis.end ())
+      return iter->second;
+    return nullptr;
   }
 
   void dump_dot_to_pp (pretty_printer *pp, const dump_args_t &) const;
@@ -177,11 +151,6 @@ public:
   int num_nodes () const { return m_nodes.length (); }
   int num_edges () const { return m_edges.length (); }
 
-  supernode *get_node_by_index (int idx) const
-  {
-    return m_nodes[idx];
-  }
-
   unsigned get_num_snodes (const function *fun) const
   {
     function_to_num_snodes_t &map
@@ -189,14 +158,44 @@ public:
     return *map.get (fun);
   }
 
+  void log_stats (logger *logger) const;
+
+  void delete_nodes (const std::set<supernode *> &snodes);
+
+  /* Implemented in supergraph-fixup-locations.cc.  */
+  void fixup_locations (logger *);
+
+  /* Implemented in supergraph-simplify.cc.  */
+  void simplify (logger *);
+
+  /* Implemented in supergraph-sorting.cc.  */
+  void sort_nodes (logger *logger);
+
+  supernode *add_node (function *fun, basic_block bb, logger *logger);
+
 private:
-  supernode *add_node (function *fun, basic_block bb, gcall *returning_call,
-		       gimple_seq phi_nodes);
-  cfg_superedge *add_cfg_edge (supernode *src, supernode *dest, ::edge e);
-  call_superedge *add_call_superedge (supernode *src, supernode *dest,
-				      cgraph_edge *cedge);
-  return_superedge *add_return_superedge (supernode *src, supernode *dest,
-					  cgraph_edge *cedge);
+  gimple *
+  populate_for_basic_block (basic_block bb,
+			    function *fun,
+			    logger *logger);
+
+  void
+  add_sedges_for_cfg_edge (supernode *src,
+			   supernode *dest,
+			   ::edge e,
+			   gimple *control_stmt,
+			   region_model_manager &mgr,
+			   logger *logger);
+
+  void dump_dot_to_gv_for_loop (graphviz_out &gv, const dump_args_t &,
+				class loop *, function *) const;
+  void dump_dot_to_gv_for_bb (graphviz_out &gv, const dump_args_t &,
+			      basic_block, function *) const;
+
+  /* Implemented in supergraph-sorting.cc.  */
+  void
+  reorder_nodes_and_ids (const std::vector<supernode *> &ordering,
+			 logger *logger);
 
   /* Data.  */
 
@@ -204,33 +203,19 @@ private:
   bb_to_node_t m_bb_to_initial_node;
   bb_to_node_t m_bb_to_final_node;
 
-  typedef ordered_hash_map<cgraph_edge *, supernode *> cgraph_edge_to_node_t;
-  cgraph_edge_to_node_t m_cgraph_edge_to_caller_prev_node;
-  cgraph_edge_to_node_t m_cgraph_edge_to_caller_next_node;
-
-  typedef ordered_hash_map< ::edge, cfg_superedge *>
-    cfg_edge_to_cfg_superedge_t;
-  cfg_edge_to_cfg_superedge_t m_cfg_edge_to_cfg_superedge;
-
-  typedef ordered_hash_map<cgraph_edge *, call_superedge *>
-    cgraph_edge_to_call_superedge_t;
-  cgraph_edge_to_call_superedge_t m_cgraph_edge_to_call_superedge;
-
-  typedef ordered_hash_map<cgraph_edge *, return_superedge *>
-    cgraph_edge_to_return_superedge_t;
-  cgraph_edge_to_return_superedge_t m_cgraph_edge_to_return_superedge;
-
-  typedef ordered_hash_map<cgraph_edge *, superedge *>
-    cgraph_edge_to_intraproc_superedge_t;
-  cgraph_edge_to_intraproc_superedge_t m_cgraph_edge_to_intraproc_superedge;
-
-  typedef ordered_hash_map<gimple *, supernode *> stmt_to_node_t;
-  stmt_to_node_t m_stmt_to_node_t;
+  std::map<const gimple *, supernode *> m_node_for_stmt;
+  std::map<::edge, superedge *> m_edges_for_phis;
 
   typedef hash_map<const function *, unsigned> function_to_num_snodes_t;
   function_to_num_snodes_t m_function_to_num_snodes;
 
   saved_uids m_stmt_uids;
+
+  /* Hand out unique IDs to supernodes, to make it easier
+     to track them when deleting/splitting etc (they're easier to
+     think about when debugging than pointer values).  */
+  int m_next_snode_id;
+  std::vector<supernode *> m_snode_by_id;
 };
 
 /* A node within a supergraph.  */
@@ -238,10 +223,15 @@ private:
 class supernode : public dnode<supergraph_traits>
 {
  public:
-  supernode (function *fun, basic_block bb, gcall *returning_call,
-	     gimple_seq phi_nodes, int index)
-  : m_fun (fun), m_bb (bb), m_returning_call (returning_call),
-    m_phi_nodes (phi_nodes), m_index (index)
+  supernode (function *fun, basic_block bb, int id)
+  : m_fun (fun), m_bb (bb),
+    m_loc (UNKNOWN_LOCATION),
+    m_stmt_loc (UNKNOWN_LOCATION),
+    m_id (id),
+    m_original_id (id),
+    m_label (NULL_TREE),
+    m_preserve_p (false),
+    m_state_merger_node (false)
   {}
 
   function *get_function () const { return m_fun; }
@@ -250,8 +240,7 @@ class supernode : public dnode<supergraph_traits>
   {
     return m_bb == ENTRY_BLOCK_PTR_FOR_FN (m_fun);
   }
-
-  bool return_p () const
+  bool exit_p () const
   {
     return m_bb == EXIT_BLOCK_PTR_FOR_FN (m_fun);
   }
@@ -259,64 +248,50 @@ class supernode : public dnode<supergraph_traits>
   void dump_dot (graphviz_out *gv, const dump_args_t &args) const override;
   void dump_dot_id (pretty_printer *pp) const;
 
+  void print (pretty_printer *pp) const
+  {
+    pp_printf (pp, "SN %i", m_id);
+  }
+
   std::unique_ptr<json::object> to_json () const;
 
-  location_t get_start_location () const;
-  location_t get_end_location () const;
+  location_t get_location () const { return m_loc; }
 
-  /* Returns iterator at the start of the list of phi nodes, if any.  */
-  gphi_iterator start_phis ()
-  {
-    gimple_seq *pseq = &m_phi_nodes;
+  tree get_label () const { return m_label; }
 
-    /* Adapted from gsi_start_1. */
-    gphi_iterator i;
+  bool preserve_p () const { return m_preserve_p; }
 
-    i.ptr = gimple_seq_first (*pseq);
-    i.seq = pseq;
-    i.bb = i.ptr ? gimple_bb (i.ptr) : nullptr;
-
-    return i;
-  }
-
-  gcall *get_returning_call () const
-  {
-    return m_returning_call;
-  }
-
-  gimple *get_last_stmt () const
-  {
-    if (m_stmts.length () == 0)
-      return nullptr;
-    return m_stmts[m_stmts.length () - 1];
-  }
-
-  gcall *get_final_call () const
-  {
-    gimple *stmt = get_last_stmt ();
-    if (stmt == nullptr)
-      return nullptr;
-    return dyn_cast<gcall *> (stmt);
-  }
-
-  unsigned int get_stmt_index (const gimple *stmt) const;
-
-  tree get_label () const;
-
-  function * const m_fun; // alternatively could be stored as runs of indices within the supergraph
+  function * const m_fun;
   const basic_block m_bb;
-  gcall * const m_returning_call; // for handling the result of a returned call
-  gimple_seq m_phi_nodes; // ptr to that of the underlying BB, for the first supernode for the BB
-  auto_vec<gimple *> m_stmts;
-  const int m_index; /* unique within the supergraph as a whole.  */
+  location_t m_loc;
+  location_t m_stmt_loc; // for debugging
+  int m_id; /* unique within the supergraph as a whole.  */
+  const int m_original_id;
+  tree m_label;
+  bool m_preserve_p;
+  bool m_state_merger_node;
 };
 
-/* An abstract base class encapsulating an edge within a supergraph.
-   Edges can be CFG edges, or calls/returns for callgraph edges.  */
+/* An edge within the supergraph, with an optional operation.
+   Edges can be CFG edges or edges between statements, or persist
+   in order to give more opportunities for state-merging when
+   building the exploded graph.  */
 
 class superedge : public dedge<supergraph_traits>
 {
  public:
+  superedge (supernode *src, supernode *dest,
+	     std::unique_ptr<operation> op,
+	     ::edge cfg_edge)
+  : dedge<supergraph_traits> (src, dest),
+    m_op (std::move (op)),
+    m_cfg_edge (cfg_edge)
+  {
+    /* All edges are intraprocedural.  */
+    gcc_assert (m_src->get_function ()
+		== m_dest->get_function ());
+  }
+
   virtual ~superedge () {}
 
   void dump (pretty_printer *pp) const;
@@ -324,39 +299,28 @@ class superedge : public dedge<supergraph_traits>
   void dump_dot (graphviz_out *gv, const dump_args_t &args)
     const final override;
 
-  virtual void dump_label_to_pp (pretty_printer *pp,
-				 bool user_facing) const = 0;
+  const operation *get_op () const { return m_op.get (); }
+  void set_op (std::unique_ptr<operation> op) { m_op = std::move (op); }
+
+  void dump_label_to_pp (pretty_printer *pp,
+				 bool user_facing) const;
 
   std::unique_ptr<json::object> to_json () const;
 
-  enum edge_kind get_kind () const { return m_kind; }
+  const supernode *get_dest_snode () const { return m_dest; }
 
-  virtual cfg_superedge *dyn_cast_cfg_superedge () { return nullptr; }
-  virtual const cfg_superedge *dyn_cast_cfg_superedge () const { return nullptr; }
-  virtual const switch_cfg_superedge *dyn_cast_switch_cfg_superedge () const { return nullptr; }
-  virtual const eh_dispatch_cfg_superedge *dyn_cast_eh_dispatch_cfg_superedge () const { return nullptr; }
-  virtual const eh_dispatch_try_cfg_superedge *dyn_cast_eh_dispatch_try_cfg_superedge () const { return nullptr; }
-  virtual const eh_dispatch_allowed_cfg_superedge *dyn_cast_eh_dispatch_allowed_cfg_superedge () const { return nullptr; }
-  virtual callgraph_superedge *dyn_cast_callgraph_superedge () { return nullptr; }
-  virtual const callgraph_superedge *dyn_cast_callgraph_superedge () const { return nullptr; }
-  virtual call_superedge *dyn_cast_call_superedge () { return nullptr; }
-  virtual const call_superedge *dyn_cast_call_superedge () const { return nullptr; }
-  virtual return_superedge *dyn_cast_return_superedge () { return nullptr; }
-  virtual const return_superedge *dyn_cast_return_superedge () const { return nullptr; }
+  ::edge get_any_cfg_edge () const { return m_cfg_edge; }
 
-  ::edge get_any_cfg_edge () const;
-  cgraph_edge *get_any_callgraph_edge () const;
+  bool preserve_p () const;
 
   label_text get_description (bool user_facing) const;
 
- protected:
-  superedge (supernode *src, supernode *dest, enum edge_kind kind)
-  : dedge<supergraph_traits> (src, dest),
-    m_kind (kind)
-  {}
+  bool
+  supports_bulk_merge_p () const;
 
- public:
-  const enum edge_kind m_kind;
+private:
+  std::unique_ptr<operation> m_op;
+  ::edge m_cfg_edge;
 };
 
 /* An ID representing an expression at a callsite:
@@ -393,398 +357,27 @@ class callsite_expr
   int m_val; /* 1-based parm, 0 for return value, or -1 for "unknown".  */
 };
 
-/* A subclass of superedge with an associated callgraph edge (either a
-   call or a return).  */
-
-class callgraph_superedge : public superedge
-{
- public:
-  callgraph_superedge (supernode *src, supernode *dst, enum edge_kind kind,
-		       cgraph_edge *cedge)
-  : superedge (src, dst, kind),
-    m_cedge (cedge)
-  {}
-
-  void dump_label_to_pp (pretty_printer *pp, bool user_facing) const
-    final override;
-
-  callgraph_superedge *dyn_cast_callgraph_superedge () final override
-  {
-    return this;
-  }
-  const callgraph_superedge *dyn_cast_callgraph_superedge () const
-    final override
-  {
-    return this;
-  }
-
-  function *get_callee_function () const;
-  function *get_caller_function () const;
-  tree get_callee_decl () const;
-  tree get_caller_decl () const;
-  const gcall &get_call_stmt () const;
-  tree get_arg_for_parm (tree parm, callsite_expr *out) const;
-  tree get_parm_for_arg (tree arg, callsite_expr *out) const;
-  tree map_expr_from_caller_to_callee (tree caller_expr,
-				       callsite_expr *out) const;
-  tree map_expr_from_callee_to_caller (tree callee_expr,
-				       callsite_expr *out) const;
-
-  cgraph_edge *const m_cedge;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const callgraph_superedge *>::test (const superedge *sedge)
-{
-  return (sedge->get_kind () == SUPEREDGE_INTRAPROCEDURAL_CALL
-	  || sedge->get_kind () == SUPEREDGE_CALL
-	  || sedge->get_kind () == SUPEREDGE_RETURN);
-}
-
-namespace ana {
-
-/* A subclass of superedge representing an interprocedural call.  */
-
-class call_superedge : public callgraph_superedge
-{
- public:
-  call_superedge (supernode *src, supernode *dst, cgraph_edge *cedge)
-  : callgraph_superedge (src, dst, SUPEREDGE_CALL, cedge)
-  {}
-
-  call_superedge *dyn_cast_call_superedge () final override
-  {
-    return this;
-  }
-  const call_superedge *dyn_cast_call_superedge () const final override
-  {
-    return this;
-  }
-
-  return_superedge *get_edge_for_return (const supergraph &sg) const
-  {
-    return sg.get_edge_for_return (m_cedge);
-  }
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const call_superedge *>::test (const superedge *sedge)
-{
-  return sedge->get_kind () == SUPEREDGE_CALL;
-}
-
-namespace ana {
-
-/* A subclass of superedge represesnting an interprocedural return.  */
-
-class return_superedge : public callgraph_superedge
-{
- public:
-  return_superedge (supernode *src, supernode *dst, cgraph_edge *cedge)
-  : callgraph_superedge (src, dst, SUPEREDGE_RETURN, cedge)
-  {}
-
-  return_superedge *dyn_cast_return_superedge () final override { return this; }
-  const return_superedge *dyn_cast_return_superedge () const final override
-  {
-    return this;
-  }
-
-  call_superedge *get_edge_for_call (const supergraph &sg) const
-  {
-    return sg.get_edge_for_call (m_cedge);
-  }
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const return_superedge *>::test (const superedge *sedge)
-{
-  return sedge->get_kind () == SUPEREDGE_RETURN;
-}
-
-namespace ana {
-
-/* A subclass of superedge that corresponds to a CFG edge.  */
-
-class cfg_superedge : public superedge
-{
- public:
-  cfg_superedge (supernode *src, supernode *dst, ::edge e)
-  : superedge (src, dst, SUPEREDGE_CFG_EDGE),
-    m_cfg_edge (e)
-  {}
-
-  void dump_label_to_pp (pretty_printer *pp, bool user_facing) const override;
-  cfg_superedge *dyn_cast_cfg_superedge () final override { return this; }
-  const cfg_superedge *dyn_cast_cfg_superedge () const final override { return this; }
-
-  ::edge get_cfg_edge () const { return m_cfg_edge; }
-  int get_flags () const { return m_cfg_edge->flags; }
-  int true_value_p () const { return get_flags () & EDGE_TRUE_VALUE; }
-  int false_value_p () const { return get_flags () & EDGE_FALSE_VALUE; }
-  int back_edge_p () const { return get_flags () & EDGE_DFS_BACK; }
-
-  size_t get_phi_arg_idx () const;
-  tree get_phi_arg (const gphi *phi) const;
-
-  location_t get_goto_locus () const { return m_cfg_edge->goto_locus; }
-
- private:
-  const ::edge m_cfg_edge;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const cfg_superedge *>::test (const superedge *sedge)
-{
-  return sedge->get_kind () == SUPEREDGE_CFG_EDGE;
-}
-
-namespace ana {
-
-/* A subclass for edges from switch statements, retaining enough
-   information to identify the pertinent cases, and for adding labels
-   when rendering via graphviz.  */
-
-class switch_cfg_superedge : public cfg_superedge {
- public:
-  switch_cfg_superedge (supernode *src, supernode *dst, ::edge e);
-
-  const switch_cfg_superedge *dyn_cast_switch_cfg_superedge () const
-    final override
-  {
-    return this;
-  }
-
-  void dump_label_to_pp (pretty_printer *pp, bool user_facing) const
-    final override;
-
-  gswitch *get_switch_stmt () const
-  {
-    return as_a <gswitch *> (m_src->get_last_stmt ());
-  }
-
-  const vec<tree> &get_case_labels () const { return m_case_labels; }
-
-  bool implicitly_created_default_p () const;
-
-private:
-  auto_vec<tree> m_case_labels;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const switch_cfg_superedge *>::test (const superedge *sedge)
-{
-  return sedge->dyn_cast_switch_cfg_superedge () != nullptr;
-}
-
-namespace ana {
-
-/* A subclass for edges from eh_dispatch statements, retaining enough
-   information to identify the various types being caught, vs the
-   "unhandled type" case, and for adding labels when rendering
-   via graphviz.
-   This is abstract; there are concrete subclasses based on the type
-   of the eh_region.  */
-
-class eh_dispatch_cfg_superedge : public cfg_superedge
-{
- public:
-  static std::unique_ptr<eh_dispatch_cfg_superedge>
-  make (supernode *src,
-	supernode *dest,
-	::edge e,
-	const geh_dispatch *eh_dispatch_stmt);
-
-  const eh_dispatch_cfg_superedge *dyn_cast_eh_dispatch_cfg_superedge () const
-    final override
-  {
-    return this;
-  }
-
-  const geh_dispatch *
-  get_eh_dispatch_stmt () const
-  {
-    return m_eh_dispatch_stmt;
-  }
-
-  const eh_status &get_eh_status () const;
-  eh_region get_eh_region () const { return m_eh_region; }
-
-  virtual bool
-  apply_constraints (region_model *model,
-		     region_model_context *ctxt,
-		     tree exception_type,
-		     std::unique_ptr<rejected_constraint> *out) const = 0;
-
-protected:
-  eh_dispatch_cfg_superedge (supernode *src, supernode *dst, ::edge e,
-			     const geh_dispatch *eh_dispatch_stmt,
-			     eh_region eh_reg);
-
-private:
-  const geh_dispatch *m_eh_dispatch_stmt;
-  eh_region m_eh_region;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const eh_dispatch_cfg_superedge *>::test (const superedge *sedge)
-{
-  return sedge->dyn_cast_eh_dispatch_cfg_superedge () != nullptr;
-}
-
-namespace ana {
-
-/* A concrete subclass for edges from an eh_dispatch statements
-   for ERT_TRY regions.  */
-
-class eh_dispatch_try_cfg_superedge : public eh_dispatch_cfg_superedge
-{
- public:
-  eh_dispatch_try_cfg_superedge (supernode *src, supernode *dst, ::edge e,
-				 const geh_dispatch *eh_dispatch_stmt,
-				 eh_region eh_reg,
-				 eh_catch ehc)
-  : eh_dispatch_cfg_superedge (src, dst, e, eh_dispatch_stmt, eh_reg),
-    m_eh_catch (ehc)
-  {
-    gcc_assert (eh_reg->type == ERT_TRY);
-  }
-
-  const eh_dispatch_try_cfg_superedge *
-  dyn_cast_eh_dispatch_try_cfg_superedge () const final override
-  {
-    return this;
-  }
-
-  void dump_label_to_pp (pretty_printer *pp,
-			 bool user_facing) const final override;
-
-  eh_catch get_eh_catch () const { return m_eh_catch; }
-
-  bool
-  apply_constraints (region_model *model,
-		     region_model_context *ctxt,
-		     tree exception_type,
-		     std::unique_ptr<rejected_constraint> *out)
-    const final override;
-
-private:
-  eh_catch m_eh_catch;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const eh_dispatch_try_cfg_superedge *>::test (const superedge *sedge)
-{
-  return sedge->dyn_cast_eh_dispatch_try_cfg_superedge () != nullptr;
-}
-
-namespace ana {
-
-/* A concrete subclass for edges from an eh_dispatch statements
-   for ERT_ALLOWED_EXCEPTIONS regions.  */
-
-class eh_dispatch_allowed_cfg_superedge : public eh_dispatch_cfg_superedge
-{
- public:
-  enum eh_kind
-  {
-    expected,
-    unexpected
-  };
-
-  eh_dispatch_allowed_cfg_superedge (supernode *src, supernode *dst, ::edge e,
-				     const geh_dispatch *eh_dispatch_stmt,
-				     eh_region eh_reg);
-
-  const eh_dispatch_allowed_cfg_superedge *
-  dyn_cast_eh_dispatch_allowed_cfg_superedge () const final override
-  {
-    return this;
-  }
-
-  void dump_label_to_pp (pretty_printer *pp,
-			 bool user_facing) const final override;
-
-  bool
-  apply_constraints (region_model *model,
-		     region_model_context *ctxt,
-		     tree exception_type,
-		     std::unique_ptr<rejected_constraint> *out)
-    const final override;
-
-  enum eh_kind get_eh_kind () const { return m_kind; }
-
-private:
-  enum eh_kind m_kind;
-};
-
-} // namespace ana
-
-template <>
-template <>
-inline bool
-is_a_helper <const eh_dispatch_allowed_cfg_superedge *>::test (const superedge *sedge)
-{
-  return sedge->dyn_cast_eh_dispatch_allowed_cfg_superedge () != nullptr;
-}
-
-namespace ana {
 /* Base class for adding additional content to the .dot output
    for a supergraph.  */
 
 class dot_annotator
 {
  public:
-  virtual ~dot_annotator () {}
-  virtual bool add_node_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
-				     const supernode &n ATTRIBUTE_UNUSED,
-				     bool within_table ATTRIBUTE_UNUSED)
-    const
+  virtual ~dot_annotator () = default;
+
+  virtual void
+  add_node_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
+			const supernode &n ATTRIBUTE_UNUSED) const
   {
-    return false;
+    // no-op
   }
-  virtual void add_stmt_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
-				     const gimple *stmt ATTRIBUTE_UNUSED,
-				     bool within_row ATTRIBUTE_UNUSED)
-    const {}
-  virtual bool add_after_node_annotations (graphviz_out *gv ATTRIBUTE_UNUSED,
-					   const supernode &n ATTRIBUTE_UNUSED)
-    const
+
+  virtual void
+  add_extra_objects (graphviz_out *gv ATTRIBUTE_UNUSED) const
   {
-    return false;
+    // no-op
   }
 };
-
-extern cgraph_edge *supergraph_call_edge (function *fun, const gimple *stmt);
-extern function *get_ultimate_function_for_cgraph_edge (cgraph_edge *edge);
 
 } // namespace ana
 

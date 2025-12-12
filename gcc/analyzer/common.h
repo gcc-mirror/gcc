@@ -23,6 +23,7 @@ along with GCC; see the file COPYING3.  If not see
 
 #include "config.h"
 #define INCLUDE_MAP
+#define INCLUDE_SET
 #define INCLUDE_STRING
 #define INCLUDE_VECTOR
 #include "system.h"
@@ -49,14 +50,6 @@ namespace ana {
 class supergraph;
 class supernode;
 class superedge;
-  class cfg_superedge;
-    class switch_cfg_superedge;
-    class eh_dispatch_cfg_superedge;
-      class eh_dispatch_try_cfg_superedge;
-      class eh_dispatch_allowed_cfg_superedge;
-  class callgraph_superedge;
-    class call_superedge;
-    class return_superedge;
 
 class svalue;
   class region_svalue;
@@ -119,14 +112,13 @@ class checker_event;
 class checker_path;
 class extrinsic_state;
 class sm_state_map;
-class stmt_finder;
 class program_point;
-class function_point;
 class program_state;
 class exploded_graph;
 class exploded_node;
 class exploded_edge;
 class feasibility_problem;
+class feasibility_state;
 class exploded_cluster;
 class exploded_path;
 class analysis_plan;
@@ -145,6 +137,7 @@ class call_summary;
 class call_summary_replay;
 struct per_function_data;
 struct interesting_t;
+class uncertainty_t;
 
 class feasible_node;
 
@@ -162,6 +155,12 @@ extern int readability_comparator (const void *p1, const void *p2);
 extern int tree_cmp (const void *p1, const void *p2);
 extern tree fixup_tree_for_diagnostic (tree);
 extern tree get_diagnostic_tree_for_gassign (const gassign *);
+
+inline bool
+useful_location_p (location_t loc)
+{
+  return get_pure_location (loc) != UNKNOWN_LOCATION;
+}
 
 /* A tree, extended with stack frame information for locals, so that
    we can distinguish between different values of locals within a potentially
@@ -296,6 +295,15 @@ class known_function
 public:
   virtual ~known_function () {}
   virtual bool matches_call_types_p (const call_details &cd) const = 0;
+
+  /* A hook for performing additional checks on the expected state
+     at a call.  */
+  virtual void
+  check_any_preconditions (const call_details &) const
+  {
+    // no-op
+  }
+
   virtual void impl_call_pre (const call_details &) const
   {
     return;
@@ -388,6 +396,10 @@ public:
   /* Hook for making .dot label more readable.  */
   virtual void print (pretty_printer *pp) const = 0;
 
+  virtual void
+  get_dot_attrs (const char *&out_style,
+		 const char *&out_color) const;
+
   /* Hook for updating STATE when handling bifurcation.  */
   virtual bool update_state (program_state *state,
 			     const exploded_edge *eedge,
@@ -400,7 +412,8 @@ public:
 			     region_model_context *ctxt) const = 0;
 
   virtual void add_events_to_path (checker_path *emission_path,
-				   const exploded_edge &eedge) const = 0;
+				   const exploded_edge &eedge,
+				   pending_diagnostic &pd) const = 0;
 
   virtual exploded_node *create_enode (exploded_graph &eg,
 				       const program_point &point,
@@ -485,6 +498,7 @@ extern bool is_longjmp_call_p (const gcall &call);
 extern bool is_placement_new_p (const gcall &call);
 extern bool is_cxa_throw_p (const gcall &call);
 extern bool is_cxa_rethrow_p (const gcall &call);
+extern bool is_cxa_end_catch_p (const gcall &call);
 
 extern const char *get_user_facing_name (const gcall &call);
 

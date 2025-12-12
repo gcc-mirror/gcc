@@ -930,53 +930,6 @@ bounded_ranges_manager::consolidate (bounded_ranges *inst)
   return inst;
 }
 
-/* Get the bounded_ranges instance for EDGE of SWITCH_STMT,
-   creating it if necessary, and caching it by edge.  */
-
-const bounded_ranges *
-bounded_ranges_manager::
-get_or_create_ranges_for_switch (const switch_cfg_superedge *edge,
-				 const gswitch *switch_stmt)
-{
-  /* Look in per-edge cache.  */
-  if (const bounded_ranges ** slot = m_edge_cache.get (edge))
-    return *slot;
-
-  /* Not yet in cache.  */
-  const bounded_ranges *all_cases_ranges
-    = create_ranges_for_switch (*edge, switch_stmt);
-  m_edge_cache.put (edge, all_cases_ranges);
-  return all_cases_ranges;
-}
-
-/* Get the bounded_ranges instance for EDGE of SWITCH_STMT,
-   creating it if necessary, for edges for which the per-edge
-   cache has not yet been populated.  */
-
-const bounded_ranges *
-bounded_ranges_manager::
-create_ranges_for_switch (const switch_cfg_superedge &edge,
-			  const gswitch *switch_stmt)
-{
-  /* Get the ranges for each case label.  */
-  auto_vec <const bounded_ranges *> case_ranges_vec
-    (gimple_switch_num_labels (switch_stmt));
-
-  for (tree case_label : edge.get_case_labels ())
-    {
-      /* Get the ranges for this case label.  */
-      const bounded_ranges *case_ranges
-	= make_case_label_ranges (switch_stmt, case_label);
-      case_ranges_vec.quick_push (case_ranges);
-    }
-
-  /* Combine all the ranges for each case label into a single collection
-     of ranges.  */
-  const bounded_ranges *all_cases_ranges
-    = get_or_create_union (case_ranges_vec);
-  return all_cases_ranges;
-}
-
 /* Get the bounded_ranges instance for CASE_LABEL within
    SWITCH_STMT.  */
 

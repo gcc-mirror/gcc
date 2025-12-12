@@ -39,10 +39,9 @@ void test_close_checked_socket (int type)
 void test_leak_checked_socket (int type)
 {
   int fd = socket (AF_UNIX, type, 0); /* { dg-message "socket created here" } */
-  if (fd == -1) /* { dg-warning "leak of file descriptor 'fd'" } */
+  if (fd == -1)
     return;
-  // TODO: strange location for leak message
-}
+} /* { dg-warning "leak of file descriptor 'fd'" } */
 
 void test_bind_on_checked_socket (int type, const char *sockname)
 {
@@ -77,8 +76,8 @@ void test_leak_of_bound_socket (int type, const char *sockname)
   memset (&addr, 0, sizeof (addr));
   addr.sun_family = AF_UNIX;
   strncpy (addr.sun_path, sockname, sizeof(addr.sun_path) - 1);
-  bind (fd, (struct sockaddr *)&addr, sizeof (addr)); /* { dg-warning "leak of file descriptor 'fd'" } */
-}
+  bind (fd, (struct sockaddr *)&addr, sizeof (addr));
+} /* { dg-warning "leak of file descriptor 'fd'" } */
 
 void test_listen_without_bind (int type)
 {

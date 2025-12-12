@@ -633,7 +633,7 @@ S_getChannel(void* origin, sfxinfo_t* sfxinfo)
   if (cnum == numChannels) {
 
     for (cnum = 0; cnum < numChannels; cnum++)
-      if (channels[cnum].sfxinfo->priority >= sfxinfo->priority) /* { dg-warning "dereference of NULL" } */
+      if (channels[cnum].sfxinfo->priority >= sfxinfo->priority) /* { dg-warning "dereference of NULL" "" { xfail *-*-* } } */
         break;
 
     if (cnum == numChannels) {

@@ -188,97 +188,6 @@ public:
   }
 };
 
-/* This is just a copy of leak_stmt_finder for now (subject to change if
- * necssary)  */
-
-class refcnt_stmt_finder : public stmt_finder
-{
-public:
-  refcnt_stmt_finder (const exploded_graph &eg, tree var)
-      : m_eg (eg), m_var (var)
-  {
-  }
-
-  std::unique_ptr<stmt_finder>
-  clone () const final override
-  {
-    return std::make_unique<refcnt_stmt_finder> (m_eg, m_var);
-  }
-
-  const gimple *
-  find_stmt (const exploded_path &epath) final override
-  {
-    logger *const logger = m_eg.get_logger ();
-    LOG_FUNC (logger);
-
-    if (m_var && TREE_CODE (m_var) == SSA_NAME)
-      {
-	/* Locate the final write to this SSA name in the path.  */
-	const gimple *def_stmt = SSA_NAME_DEF_STMT (m_var);
-
-	int idx_of_def_stmt;
-	bool found = epath.find_stmt_backwards (def_stmt, &idx_of_def_stmt);
-	if (!found)
-	  goto not_found;
-
-	/* What was the next write to the underlying var
-	   after the SSA name was set? (if any).  */
-
-	for (unsigned idx = idx_of_def_stmt + 1; idx < epath.m_edges.length ();
-	     ++idx)
-	  {
-	    const exploded_edge *eedge = epath.m_edges[idx];
-	    if (logger)
-		    logger->log ("eedge[%i]: EN %i -> EN %i", idx,
-				 eedge->m_src->m_index,
-				 eedge->m_dest->m_index);
-	    const exploded_node *dst_node = eedge->m_dest;
-	    const program_point &dst_point = dst_node->get_point ();
-	    const gimple *stmt = dst_point.get_stmt ();
-	    if (!stmt)
-		    continue;
-	    if (const gassign *assign = dyn_cast<const gassign *> (stmt))
-		    {
-			    tree lhs = gimple_assign_lhs (assign);
-			    if (TREE_CODE (lhs) == SSA_NAME
-				&& SSA_NAME_VAR (lhs) == SSA_NAME_VAR (m_var))
-				    return assign;
-		    }
-	  }
-      }
-
-  not_found:
-
-    /* Look backwards for the first statement with a location.  */
-    int i;
-    const exploded_edge *eedge;
-    FOR_EACH_VEC_ELT_REVERSE (epath.m_edges, i, eedge)
-    {
-      if (logger)
-	logger->log ("eedge[%i]: EN %i -> EN %i", i, eedge->m_src->m_index,
-		     eedge->m_dest->m_index);
-      const exploded_node *dst_node = eedge->m_dest;
-      const program_point &dst_point = dst_node->get_point ();
-      const gimple *stmt = dst_point.get_stmt ();
-      if (stmt)
-	if (get_pure_location (stmt->location) != UNKNOWN_LOCATION)
-	  return stmt;
-    }
-
-    gcc_unreachable ();
-    return NULL;
-  }
-
-  void update_event_loc_info (event_loc_info &) final override
-  {
-    /* No-op.  */
-  }
-
-private:
-  const exploded_graph &m_eg;
-  tree m_var;
-};
-
 class refcnt_mismatch : public pending_diagnostic_subclass<refcnt_mismatch>
 {
 public:
@@ -445,12 +354,13 @@ check_refcnt (const region_model *model,
 	return;
 
       const auto &eg = ctxt->get_eg ();
-      refcnt_stmt_finder finder (*eg, reg_tree);
       auto pd = std::make_unique<refcnt_mismatch> (curr_region, ob_refcnt_sval,
 						   actual_refcnt_sval,
 						   reg_tree);
       if (pd && eg)
-	ctxt->warn (std::move (pd), &finder);
+	ctxt->warn (std::move (pd),
+		    make_ploc_fixer_for_epath_for_leak_diagnostic (*eg,
+								   NULL_TREE));
     }
 }
 

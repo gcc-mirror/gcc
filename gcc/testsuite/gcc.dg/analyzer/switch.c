@@ -162,7 +162,7 @@ int test_7 ()
 	return 0;
 }
 
-int test_bitmask_1 (int x)
+void test_bitmask_1 (int x)
 {
   int flag = 0;
   if (x & 0x80)
@@ -193,7 +193,7 @@ int test_bitmask_1 (int x)
     }
 }
 
-int test_bitmask_2 (int x)
+void test_bitmask_2 (int x)
 {
   int flag = 0;
   if ((x & 0xf80) == 0x80)

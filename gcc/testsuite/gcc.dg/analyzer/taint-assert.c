@@ -336,7 +336,7 @@ struct s
   int y;
 };
 
-int __attribute__((tainted_args))
+void __attribute__((tainted_args))
 test_assert_struct (struct s *p)
 {
   MY_ASSERT_1 (p->x < p->y); /* { dg-warning "-Wanalyzer-tainted-assertion" } */

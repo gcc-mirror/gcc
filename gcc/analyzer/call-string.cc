@@ -39,7 +39,8 @@ along with GCC; see the file COPYING3.  If not see
 bool
 call_string::element_t::operator== (const call_string::element_t &other) const
 {
-  return (m_caller == other.m_caller && m_callee == other.m_callee);
+  return (m_call_sedge == other.m_call_sedge
+	  && m_called_fun == other.m_called_fun);
 }
 
 /* call_string::element_t's inequality operator.  */
@@ -49,16 +50,41 @@ call_string::element_t::operator!= (const call_string::element_t &other) const
   return !(*this == other);
 }
 
-function *
-call_string::element_t::get_caller_function () const
+int
+call_string::element_t::cmp (const element_t &a, const element_t &b)
 {
-  return m_caller->get_function ();
+  if (int src_id_cmp = (a.m_call_sedge->m_src->m_id
+			- b.m_call_sedge->m_src->m_id))
+    return src_id_cmp;
+
+  /* We don't expect multiple call sedges with the same src.  */
+  gcc_assert (a.m_call_sedge->m_dest == b.m_call_sedge->m_dest);
+
+  return a.m_called_fun->funcdef_no - b.m_called_fun->funcdef_no;
 }
 
 function *
-call_string::element_t::get_callee_function () const
+call_string::element_t::get_caller_function () const
 {
-  return m_callee->get_function ();
+  return m_call_sedge->m_src->get_function ();
+}
+
+const supernode *
+call_string::element_t::get_call_snode_in_caller () const
+{
+  return m_call_sedge->m_src;
+}
+
+const supernode *
+call_string::element_t::get_return_snode_in_caller () const
+{
+  return m_call_sedge->m_dest;
+}
+
+const gcall &
+call_string::element_t::get_call_stmt () const
+{
+  return m_call_op->get_gcall ();
 }
 
 /* Print this to PP.  */
@@ -75,17 +101,18 @@ call_string::print (pretty_printer *pp) const
       if (i > 0)
 	pp_string (pp, ", ");
       pp_printf (pp, "(SN: %i -> SN: %i in %s)",
-		 e->m_callee->m_index, e->m_caller->m_index,
-		 function_name (e->m_caller->m_fun));
+		 e->get_call_snode_in_caller ()->m_id,
+		 e->get_return_snode_in_caller ()->m_id,
+		 function_name (e->get_caller_function ()));
     }
 
   pp_string (pp, "]");
 }
 
 /* Return a new json::array of the form
-   [{"src_snode_idx" : int,
-     "dst_snode_idx" : int,
-     "funcname" : str},
+   [{"call_sedge_src" : int,
+     "call_sedge_dest" : int,
+     "called_fun" : str},
      ...for each element in the callstring].  */
 
 std::unique_ptr<json::value>
@@ -96,36 +123,25 @@ call_string::to_json () const
   for (const call_string::element_t &e : m_elements)
     {
       auto e_obj = std::make_unique<json::object> ();
-      e_obj->set_integer ("src_snode_idx", e.m_callee->m_index);
-      e_obj->set_integer ("dst_snode_idx", e.m_caller->m_index);
-      e_obj->set_string ("funcname", function_name (e.m_caller->m_fun));
+      e_obj->set_integer ("call_sedge_src", e.m_call_sedge->m_src->m_id);
+      e_obj->set_integer ("call_sedge_dest", e.m_call_sedge->m_dest->m_id);
+      e_obj->set_string ("called_fun", function_name (e.m_called_fun));
       arr->append (std::move (e_obj));
     }
 
   return arr;
 }
 
-/* Get or create the call_string resulting from pushing the return
-   superedge for CALL_SEDGE onto the end of this call_string.  */
-
-const call_string *
-call_string::push_call (const supergraph &sg,
-			const call_superedge *call_sedge) const
-{
-  gcc_assert (call_sedge);
-  const return_superedge *return_sedge = call_sedge->get_edge_for_return (sg);
-  gcc_assert (return_sedge);
-  return push_call (return_sedge->m_dest, return_sedge->m_src);
-}
 
 /* Get or create the call_string resulting from pushing the call
    (caller, callee) onto the end of this call_string.  */
 
 const call_string *
-call_string::push_call (const supernode *caller,
-			const supernode *callee) const
+call_string::push_call (const superedge &call_sedge,
+			const call_and_return_op &call_op,
+			function &called_fun) const
 {
-  call_string::element_t e (caller, callee);
+  call_string::element_t e (&call_sedge, &call_op, &called_fun);
 
   if (const call_string **slot = m_children.get (e))
     return *slot;
@@ -160,9 +176,9 @@ call_string::count_occurrences_of_function (function *fun) const
   int result = 0;
   for (const call_string::element_t &e : m_elements)
     {
-      if (e.get_callee_function () == fun)
-	result++;
       if (e.get_caller_function () == fun)
+	result++;
+      if (e.get_callee_function () == fun)
 	result++;
     }
   return result;
@@ -196,17 +212,9 @@ call_string::cmp (const call_string &a,
       if (i >= len_b)
 	return -1;
 
-      /* Otherwise, compare the node pairs.  */
-      const call_string::element_t a_node_pair = a[i];
-      const call_string::element_t b_node_pair = b[i];
-      int src_cmp
-	= a_node_pair.m_callee->m_index - b_node_pair.m_callee->m_index;
-      if (src_cmp)
-	return src_cmp;
-      int dest_cmp
-	= a_node_pair.m_caller->m_index - b_node_pair.m_caller->m_index;
-      if (dest_cmp)
-	return dest_cmp;
+      /* Otherwise, compare the elements.  */
+      if (int element_cmp = call_string::element_t::cmp (a[i], b[i]))
+	return element_cmp;
       i++;
       // TODO: test coverage for this
     }
@@ -222,24 +230,14 @@ call_string::cmp_ptr_ptr (const void *pa, const void *pb)
   return cmp (*cs_a, *cs_b);
 }
 
-/* Return the pointer to callee of the topmost call in the stack,
-   or nullptr if stack is empty.  */
-const supernode *
-call_string::get_callee_node () const
-{
-  if(m_elements.is_empty ())
-    return nullptr;
-  return m_elements[m_elements.length () - 1].m_callee;
-}
-
 /* Return the pointer to caller of the topmost call in the stack,
    or nullptr if stack is empty.  */
 const supernode *
-call_string::get_caller_node () const
+call_string::get_return_node_in_caller () const
 {
   if(m_elements.is_empty ())
     return nullptr;
-  return m_elements[m_elements.length () - 1].m_caller;
+  return m_elements[m_elements.length () - 1].get_return_snode_in_caller ();
 }
 
 /* Assert that this object is sane.  */
@@ -252,15 +250,20 @@ call_string::validate () const
   return;
 #endif
 
-  gcc_assert (m_parent || m_elements.length () == 0);
+  gcc_assert ((m_parent != nullptr)
+	      ^ (m_elements.length () == 0));
 
-  /* Each entry's "caller" should be the "callee" of the previous entry.  */
   call_string::element_t *e;
   int i;
   FOR_EACH_VEC_ELT (m_elements, i, e)
-    if (i > 0)
-      gcc_assert (e->get_caller_function () ==
-		  m_elements[i - 1].get_callee_function ());
+    {
+      gcc_assert (e->m_call_op == e->m_call_sedge->get_op ());
+      /* Each entry's "caller" should be the "callee" of the
+	 previous entry.  */
+      if (i > 0)
+	gcc_assert (e->get_caller_function () ==
+		    m_elements[i - 1].get_callee_function ());
+    }
 }
 
 /* ctor for the root/empty call_string.  */
@@ -308,8 +311,9 @@ call_string::recursive_log (logger *logger) const
       /* Log the final element in detail.  */
       const element_t *e = &m_elements[m_elements.length () - 1];
       pp_printf (pp, "(SN: %i -> SN: %i in %s)]",
-		 e->m_callee->m_index, e->m_caller->m_index,
-		 function_name (e->m_caller->m_fun));
+		 e->m_call_sedge->m_src->m_id,
+		 e->m_call_sedge->m_dest->m_id,
+		 function_name (e->get_caller_function ()));
     }
   else
     pp_string (pp, "[]");

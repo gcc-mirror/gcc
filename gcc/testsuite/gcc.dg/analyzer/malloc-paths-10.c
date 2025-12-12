@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include "analyzer-decls.h"
 
-int test (int flag)
+void test (int flag)
 {
   int other_flag;
   if (flag)
