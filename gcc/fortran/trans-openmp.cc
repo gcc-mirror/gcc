@@ -5093,7 +5093,8 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	    }
 	  break;
 	case OMP_LIST_USES_ALLOCATORS:
-	  /* Ignore pre-defined allocators as no special treatment is needed. */
+	  /* Ignore omp_null_allocator and pre-defined allocators as no
+	     special treatment is needed. */
 	  for (; n != NULL; n = n->next)
 	    if (n->sym->attr.flavor == FL_VARIABLE)
 	      break;

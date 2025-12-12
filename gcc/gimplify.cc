@@ -14858,6 +14858,11 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	  nowait = 1;
 	  break;
 
+	case OMP_CLAUSE_USES_ALLOCATORS:
+	  sorry_at (OMP_CLAUSE_LOCATION (c), "%<uses_allocators%> clause");
+	  remove = 1;
+	  break;
+
 	case OMP_CLAUSE_ORDERED:
 	case OMP_CLAUSE_UNTIED:
 	case OMP_CLAUSE_COLLAPSE:
@@ -16366,6 +16371,7 @@ end_adjust_omp_map_clause:
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
+	case OMP_CLAUSE_USES_ALLOCATORS:
 	  break;
 
 	case OMP_CLAUSE_NOHOST:

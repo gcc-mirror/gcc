@@ -18296,6 +18296,14 @@ tsubst_omp_clauses (tree clauses, enum c_omp_region_type ort,
 	      = tsubst_stmt (OMP_CLAUSE_LINEAR_STEP (oc), args,
 			     complain, in_decl);
 	  break;
+	case OMP_CLAUSE_USES_ALLOCATORS:
+	  OMP_CLAUSE_OPERAND (nc, 0)
+	    = tsubst_stmt (OMP_CLAUSE_OPERAND (oc, 0), args, complain, in_decl);
+	  OMP_CLAUSE_OPERAND (nc, 1)
+	    = tsubst_stmt (OMP_CLAUSE_OPERAND (oc, 1), args, complain, in_decl);
+	  OMP_CLAUSE_OPERAND (nc, 2)
+	    = tsubst_stmt (OMP_CLAUSE_OPERAND (oc, 2), args, complain, in_decl);
+	  break;
 	case OMP_CLAUSE_INIT:
 	  if (ort == C_ORT_OMP_INTEROP
 	      && OMP_CLAUSE_INIT_PREFER_TYPE (nc)

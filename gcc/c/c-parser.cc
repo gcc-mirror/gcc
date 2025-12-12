@@ -16589,6 +16589,8 @@ c_parser_omp_clause_name (c_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR;
 	  else if (!strcmp ("use_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR;
+	  else if (!strcmp ("uses_allocators", p))
+	    result = PRAGMA_OMP_CLAUSE_USES_ALLOCATORS;
 	  break;
 	case 'v':
 	  if (!strcmp ("vector", p))
@@ -19562,6 +19564,233 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
   return nl;
 }
 
+/* OpenMP 5.0:
+   uses_allocators ( allocator-list )
+
+   allocator-list:
+   allocator
+   allocator , allocator-list
+   allocator ( traits-array )
+   allocator ( traits-array ) , allocator-list
+
+   OpenMP 5.2:
+
+   uses_allocators ( modifier : allocator-list )
+   uses_allocators ( modifier , modifier : allocator-list )
+
+   modifier:
+   traits ( traits-array )
+   memspace ( mem-space-handle )  */
+
+static tree
+c_parser_omp_clause_uses_allocators (c_parser *parser, tree list)
+{
+  location_t clause_loc = c_parser_peek_token (parser)->location;
+  tree nl = list;
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  bool has_modifiers = false;
+  bool seen_allocators = false;
+  tree memspace_expr = NULL_TREE;
+  tree traits_var = NULL_TREE;
+
+  if (c_parser_next_token_is (parser, CPP_NAME)
+      && c_parser_peek_2nd_token (parser)->type == CPP_OPEN_PAREN)
+    {
+      unsigned int n = 3;
+      const char *p
+	= IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      if ((strcmp (p, "traits") == 0 || strcmp (p, "memspace") == 0)
+	  && c_parser_check_balanced_raw_token_sequence (parser, &n)
+	  && (c_parser_peek_nth_token_raw (parser, n)->type
+	      == CPP_CLOSE_PAREN))
+	{
+	  if (c_parser_peek_nth_token_raw (parser, n + 1)->type
+	      == CPP_COLON)
+	    has_modifiers = true;
+	  else if (c_parser_peek_nth_token_raw (parser, n + 1)->type
+		   == CPP_COMMA
+		   && (c_parser_peek_nth_token_raw (parser, n + 2)->type
+		       == CPP_NAME)
+		   && (c_parser_peek_nth_token_raw (parser, n + 3)->type
+		       == CPP_OPEN_PAREN))
+	    {
+	      c_token *tok = c_parser_peek_nth_token_raw (parser, n + 2);
+	      const char *q = IDENTIFIER_POINTER (tok->value);
+	      n += 4;
+	      if ((strcmp (q, "traits") == 0
+		   || strcmp (q, "memspace") == 0)
+		  && c_parser_check_balanced_raw_token_sequence (parser, &n)
+		  && (c_parser_peek_nth_token_raw (parser, n)->type
+		      == CPP_CLOSE_PAREN))
+		{
+		  if (c_parser_peek_nth_token_raw (parser, n + 1)->type
+		      == CPP_COLON)
+		    has_modifiers = true;
+		  if ((c_parser_peek_nth_token_raw (parser, n + 1)->type
+		       == CPP_COMMA)
+		      && (c_parser_peek_nth_token_raw (parser, n + 2)->type
+			  == CPP_NAME))
+		    {
+		      c_token *tok
+			= c_parser_peek_nth_token_raw (parser, n + 2);
+		      const char *m = IDENTIFIER_POINTER (tok->value);
+		      if (strcmp (p, m) == 0 || strcmp (q, m) == 0)
+			{
+			  error_at (tok->location, "duplicate %qs modifier", m);
+			  goto end;
+			}
+		    }
+		}
+	    }
+	}
+      if (has_modifiers)
+	{
+	  c_parser_consume_token (parser);
+	  matching_parens parens2;
+	  parens2.require_open (parser);
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  if (expr.value == error_mark_node)
+	    ;
+	  else if (strcmp (p, "traits") == 0)
+	    {
+	      traits_var = expr.value;
+	      traits_var = c_fully_fold (traits_var, false, NULL);
+	    }
+	  else
+	    {
+	      memspace_expr = expr.value;
+	      memspace_expr = c_fully_fold (memspace_expr, false, NULL);
+	    }
+	  parens2.skip_until_found_close (parser);
+	  if (c_parser_next_token_is (parser, CPP_COMMA))
+	    {
+	      c_parser_consume_token (parser);
+	      c_token *tok = c_parser_peek_token (parser);
+	      const char *q = "";
+	      if (c_parser_next_token_is (parser, CPP_NAME))
+		q = IDENTIFIER_POINTER (tok->value);
+	      if (strcmp (q, "traits") != 0 && strcmp (q, "memspace") != 0)
+		{
+		  c_parser_error (parser, "expected %<traits%> or "
+				  "%<memspace%>");
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+	      else if (strcmp (p, q) == 0)
+		{
+		  error_at (tok->location, "duplicate %qs modifier", p);
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+	      c_parser_consume_token (parser);
+	      if (!parens2.require_open (parser))
+		{
+		  parens.skip_until_found_close (parser);
+		  return list;
+		}
+	      expr = c_parser_expr_no_commas (parser, NULL);
+	      if (strcmp (q, "traits") == 0)
+		{
+		  traits_var = expr.value;
+		  traits_var = c_fully_fold (traits_var, false, NULL);
+		}
+	      else
+		{
+		  memspace_expr = expr.value;
+		  memspace_expr = c_fully_fold (memspace_expr, false, NULL);
+		}
+	      parens2.skip_until_found_close (parser);
+	    }
+	  if (!c_parser_require (parser, CPP_COLON, "expected %<:%>"))
+	    goto end;
+	}
+    }
+
+  while (c_parser_next_token_is (parser, CPP_NAME))
+    {
+      location_t alloc_loc = c_parser_peek_token (parser)->location;
+      c_token *tok = c_parser_peek_token (parser);
+      const char *tok_s = IDENTIFIER_POINTER (tok->value);
+      tree t = lookup_name (tok->value);
+      if (t == NULL_TREE)
+	{
+	  undeclared_variable (tok->location, tok->value);
+	  t = error_mark_node;
+	}
+      c_parser_consume_token (parser);
+
+      /* Legacy traits syntax.  */
+      tree legacy_traits = NULL_TREE;
+      if (c_parser_next_token_is (parser, CPP_OPEN_PAREN)
+	  && c_parser_peek_2nd_token (parser)->type == CPP_NAME
+	  && c_parser_peek_nth_token_raw (parser, 3)->type == CPP_CLOSE_PAREN)
+	{
+	  matching_parens parens2;
+	  parens2.require_open (parser);
+	  const char *tok_a
+	    = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+	  c_expr expr = c_parser_expr_no_commas (parser, NULL);
+	  location_t close_loc = c_parser_peek_token (parser)->location;
+	  parens2.skip_until_found_close (parser);
+
+	  if (has_modifiers)
+	    {
+	      error_at (make_location (alloc_loc, alloc_loc, close_loc),
+			"legacy %<%s(%s)%> traits syntax not allowed in "
+			"%<uses_allocators%> clause when using modifiers",
+			tok_s, tok_a);
+	      goto end;
+	    }
+	  legacy_traits = c_fully_fold (expr.value, false, NULL);
+	  if (legacy_traits == error_mark_node)
+	    goto end;
+
+	  gcc_rich_location richloc (make_location (alloc_loc, alloc_loc, close_loc));
+	  if (nl == list)
+	    {
+	      /* Fixit only works well if it is the only first item.  */
+	      richloc.add_fixit_replace (alloc_loc, "traits");
+	      richloc.add_fixit_insert_after (close_loc, ": ");
+	      richloc.add_fixit_insert_after (close_loc, tok_s);
+	    }
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
+		      "the specification of arguments to %<uses_allocators%> "
+		      "where each item is of the form %<allocator(traits)%> is "
+		      "deprecated since OpenMP 5.2");
+	}
+
+      if (seen_allocators && has_modifiers)
+	{
+	  error_at (c_parser_peek_token (parser)->location,
+		    "%<uses_allocators%> clause only accepts a single "
+		    "allocator when using modifiers");
+	  goto end;
+	}
+      seen_allocators = true;
+
+      tree c = build_omp_clause (clause_loc,
+				 OMP_CLAUSE_USES_ALLOCATORS);
+      OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c) = t;
+      OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c) = memspace_expr;
+      OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c) = (legacy_traits
+					       ? legacy_traits : traits_var);
+      OMP_CLAUSE_CHAIN (c) = nl;
+      nl = c;
+
+      if (c_parser_next_token_is (parser, CPP_COMMA))
+	c_parser_consume_token (parser);
+      else
+	break;
+    }
+
+ end:
+  parens.skip_until_found_close (parser);
+  return nl;
+}
+
 /* OpenMP 4.0:
    linear ( variable-list )
    linear ( variable-list : expression )
@@ -22090,6 +22319,10 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_LINEAR:
 	  clauses = c_parser_omp_clause_linear (parser, clauses);
 	  c_name = "linear";
+	  break;
+	case PRAGMA_OMP_CLAUSE_USES_ALLOCATORS:
+	  clauses = c_parser_omp_clause_uses_allocators (parser, clauses);
+	  c_name = "uses_allocators";
 	  break;
 	case PRAGMA_OMP_CLAUSE_AFFINITY:
 	  clauses = c_parser_omp_clause_affinity (parser, clauses);
@@ -26941,7 +27174,8 @@ c_parser_omp_target_exit_data (location_t loc, c_parser *parser,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_USES_ALLOCATORS))
 
 static bool
 c_parser_omp_target (c_parser *parser, enum pragma_context context, bool *if_p)

@@ -17259,6 +17259,145 @@ c_finish_omp_clauses (tree clauses, enum c_omp_region_type ort)
 	      break;
 	    }
 	  gcc_unreachable ();
+
+	case OMP_CLAUSE_USES_ALLOCATORS:
+	  t = OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c);
+	  if (t == error_mark_node)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if ((VAR_P (t) || TREE_CODE (t) == PARM_DECL)
+	      && (bitmap_bit_p (&generic_head, DECL_UID (t))
+		  || bitmap_bit_p (&map_head, DECL_UID (t))
+		  || bitmap_bit_p (&firstprivate_head, DECL_UID (t))
+		  || bitmap_bit_p (&lastprivate_head, DECL_UID (t))))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"%qE appears more than once in data clauses", t);
+	      remove = true;
+	      break;
+	    }
+	  else
+	    bitmap_set_bit (&generic_head, DECL_UID (t));
+	  if (TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE
+	      || strcmp (IDENTIFIER_POINTER (TYPE_IDENTIFIER (TREE_TYPE (t))),
+			 "omp_allocator_handle_t") != 0)
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"allocator %qE must be of %<omp_allocator_handle_t%> "
+			"type", t);
+	      remove = true;
+	      break;
+	    }
+	  tree init;
+	  if (!DECL_P (t)
+	      || (TREE_CODE (t) == CONST_DECL
+		  && ((init = DECL_INITIAL(t)) == nullptr
+		      || TREE_CODE (init) != INTEGER_CST
+		      || ((wi::to_widest (init) < 0
+			   || wi::to_widest (init) > GOMP_OMP_PREDEF_ALLOC_MAX)
+			  && (wi::to_widest (init) < GOMP_OMPX_PREDEF_ALLOC_MIN
+			      || (wi::to_widest (init)
+				  > GOMP_OMPX_PREDEF_ALLOC_MAX))))))
+	    {
+	      remove = true;
+	      error_at (OMP_CLAUSE_LOCATION (c),
+			"allocator %qE must be either a variable or a "
+			"predefined allocator", t);
+	      break;
+	    }
+	  else if (TREE_CODE (t) == CONST_DECL)
+	    {
+	      /* omp_null_allocator is ignored and for predefined allocators,
+		 not special handling is required; thus, remove them removed. */
+	      remove = true;
+
+	      if (OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c)
+		  || OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c))
+		{
+		  error_at (OMP_CLAUSE_LOCATION (c),
+			    "modifiers cannot be used with predefined "
+			    "allocator %qE", t);
+		  break;
+		}
+	    }
+	  t = OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c);
+	  if (t == error_mark_node)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (t != NULL_TREE
+	      && ((TREE_CODE (t) != CONST_DECL && TREE_CODE (t) != INTEGER_CST)
+		  || TREE_CODE (TREE_TYPE (t)) != ENUMERAL_TYPE
+		  || strcmp (IDENTIFIER_POINTER (TYPE_IDENTIFIER (TREE_TYPE (t))),
+			     "omp_memspace_handle_t") != 0))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c), "memspace modifier %qE must be"
+			" constant enum of %<omp_memspace_handle_t%> type", t);
+	      remove = true;
+	      break;
+	    }
+	  t = OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c);
+	  if (t == error_mark_node)
+	    {
+	      remove = true;
+	      break;
+	    }
+	  if (t != NULL_TREE
+	      && t != error_mark_node
+	      && (DECL_EXTERNAL (t)
+		  || TREE_CODE (t) == PARM_DECL))
+	    {
+	      error_at (OMP_CLAUSE_LOCATION (c), "traits array %qE must be "
+			"defined in same scope as the construct on which the "
+			"clause appears", t);
+	      remove = true;
+	    }
+	  if (t != NULL_TREE)
+	    {
+	      bool type_err = false;
+
+	      if (TREE_CODE (TREE_TYPE (t)) != ARRAY_TYPE
+		  || DECL_SIZE (t) == NULL_TREE
+		  || !COMPLETE_TYPE_P (TREE_TYPE (t)))
+		type_err = true;
+	      else
+		{
+		  tree elem_t = TREE_TYPE (TREE_TYPE (t));
+		  if (TREE_CODE (elem_t) != RECORD_TYPE
+		      || strcmp (IDENTIFIER_POINTER (TYPE_IDENTIFIER (elem_t)),
+				 "omp_alloctrait_t") != 0
+		      || !TYPE_READONLY (elem_t))
+		    type_err = true;
+		}
+	      if (type_err)
+		{
+		  if (t != error_mark_node)
+		    error_at (OMP_CLAUSE_LOCATION (c), "traits array %qE must "
+			      "be of %<const omp_alloctrait_t []%> type", t);
+		  else
+		    error_at (OMP_CLAUSE_LOCATION (c), "traits array must "
+			      "be of %<const omp_alloctrait_t []%> type");
+		  remove = true;
+		}
+	      else
+		{
+		  tree cst_val = decl_constant_value_1 (t, true);
+		  if (cst_val == t)
+		    {
+		      error_at (OMP_CLAUSE_LOCATION (c), "traits array must be "
+				"initialized with constants");
+
+		      remove = true;
+		    }
+		}
+	    }
+	  if (remove)
+	    break;
+	  pc = &OMP_CLAUSE_CHAIN (c);
+	  continue;
 	case OMP_CLAUSE_DEPEND:
 	  depend_clause = c;
 	  /* FALLTHRU */

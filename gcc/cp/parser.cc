@@ -40221,6 +40221,8 @@ cp_parser_omp_clause_name (cp_parser *parser)
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_ADDR;
 	  else if (!strcmp ("use_device_ptr", p))
 	    result = PRAGMA_OMP_CLAUSE_USE_DEVICE_PTR;
+	  else if (!strcmp ("uses_allocators", p))
+	    result = PRAGMA_OMP_CLAUSE_USES_ALLOCATORS;
 	  break;
 	case 'v':
 	  if (!strcmp ("vector", p))
@@ -42777,6 +42779,199 @@ cp_parser_omp_clause_allocate (cp_parser *parser, tree list)
       }
 
   return nlist;
+}
+
+/* OpenMP 5.0:
+   uses_allocators ( allocator-list )
+
+   allocator-list:
+   allocator
+   allocator , allocator-list
+   allocator ( traits-array )
+   allocator ( traits-array ) , allocator-list
+
+   OpenMP 5.2:
+
+   uses_allocators ( modifier : allocator-list )
+   uses_allocators ( modifier , modifier : allocator-list )
+
+   modifier:
+   traits ( traits-array )
+   memspace ( mem-space-handle )  */
+
+static tree
+cp_parser_omp_clause_uses_allocators (cp_parser *parser, tree list)
+{
+  location_t clause_loc
+    = cp_lexer_peek_token (parser->lexer)->location;
+  tree nl = list;
+  matching_parens parens;
+  if (!parens.require_open (parser))
+    return list;
+
+  bool has_modifiers = false;
+  bool seen_allocators = false;
+  tree memspace_expr = NULL_TREE;
+  tree traits_var = NULL_TREE;
+
+  cp_parser_parse_tentatively (parser);
+  bool saved_colon_corrects_to_scope_p = parser->colon_corrects_to_scope_p;
+  parser->colon_corrects_to_scope_p = false;
+
+  cp_token *dup_mod_tok = NULL;
+  for (int mod = 0; mod <= 2; mod++)
+    if (cp_lexer_next_token_is (parser->lexer, CPP_NAME)
+	&& cp_lexer_nth_token_is (parser->lexer, 2, CPP_OPEN_PAREN))
+      {
+	cp_token *mod_tok = cp_lexer_peek_token (parser->lexer);
+	tree id = mod_tok->u.value;
+	const char *p = IDENTIFIER_POINTER (id);
+	if (strcmp (p, "traits") != 0 && strcmp (p, "memspace") != 0)
+	  break;
+	cp_lexer_consume_token (parser->lexer);
+	matching_parens parens2;
+	if (!parens2.require_open (parser))
+	  break;
+	tree t = cp_parser_assignment_expression (parser);
+	if (strcmp (p, "traits") == 0)
+	  {
+	    if (traits_var != NULL_TREE)
+	      dup_mod_tok = mod_tok;
+	    else
+	      traits_var = t;
+	  }
+	else
+	  {
+	    if (memspace_expr != NULL_TREE)
+	      dup_mod_tok = mod_tok;
+	    else
+	      memspace_expr = t;
+	  }
+	if (!parens2.require_close (parser))
+	  break;
+	if (cp_lexer_next_token_is (parser->lexer, CPP_COLON))
+	  {
+	    has_modifiers = true;
+	    cp_lexer_consume_token (parser->lexer);
+	    break;
+	  }
+	if (/*mod != 0 || */ cp_lexer_next_token_is_not (parser->lexer, CPP_COMMA))
+	  break;
+	cp_lexer_consume_token (parser->lexer);
+      }
+    else
+      break;
+
+  if (!has_modifiers)
+    {
+      cp_parser_abort_tentative_parse (parser);
+      traits_var = NULL_TREE;
+      memspace_expr = NULL_TREE;
+    }
+  else
+    {
+      if (dup_mod_tok)
+	{
+	  error_at (dup_mod_tok->location, "duplicate %qs modifier",
+		    IDENTIFIER_POINTER (dup_mod_tok->u.value));
+	  cp_parser_parse_definitely (parser);
+	  goto end;
+	}
+      cp_parser_parse_definitely (parser);
+    }
+  parser->colon_corrects_to_scope_p = saved_colon_corrects_to_scope_p;
+
+  while (cp_lexer_next_token_is (parser->lexer, CPP_NAME))
+    {
+      cp_token *tok = cp_lexer_peek_token (parser->lexer);
+      tree t;
+      t = cp_parser_lookup_name_simple (parser,
+					tok->u.value,
+					tok->location);
+      if (t == error_mark_node)
+	cp_parser_name_lookup_error (parser, tok->u.value, t, NLE_NULL,
+				     tok->location);
+      cp_lexer_consume_token (parser->lexer);
+
+      /* Legacy traits syntax.  */
+      tree legacy_traits = NULL_TREE;
+      if (cp_lexer_next_token_is (parser->lexer, CPP_OPEN_PAREN)
+	  && cp_lexer_nth_token_is (parser->lexer, 2, CPP_NAME)
+	  && cp_lexer_nth_token_is (parser->lexer, 3, CPP_CLOSE_PAREN))
+	{
+	  matching_parens parens2;
+	  parens2.require_open (parser);
+	  cp_token *arg_tok = cp_lexer_peek_token (parser->lexer);
+
+	  tree arg = cp_parser_lookup_name_simple (parser, arg_tok->u.value,
+						   arg_tok->location);
+	  if (arg == error_mark_node)
+	    cp_parser_name_lookup_error (parser, arg_tok->u.value, arg,
+					 NLE_NULL, arg_tok->location);
+	  cp_lexer_consume_token (parser->lexer);
+	  location_t close_loc = cp_lexer_peek_token (parser->lexer)->location;
+	  parens2.require_close (parser);
+
+	  if (has_modifiers)
+	    {
+	      error_at (make_location (tok->location, tok->location, close_loc),
+			"legacy %<%E(%E)%> traits syntax not allowed in "
+			"%<uses_allocators%> clause when using modifiers",
+			tok->u.value, arg_tok->u.value);
+	      goto end;
+	    }
+	  legacy_traits = arg;
+	  if (legacy_traits == error_mark_node)
+	    goto end;
+	  gcc_rich_location richloc (make_location (tok->location,
+						    tok->location, close_loc));
+	  if (nl == list)
+	    {
+	      /* Fixit only works well if it is the first item.  */
+	      richloc.add_fixit_replace (tok->location, "traits");
+	      richloc.add_fixit_insert_after (close_loc, ": ");
+	      richloc.add_fixit_insert_after (close_loc,
+					      IDENTIFIER_POINTER (tok->u.value));
+	    }
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
+		      "the specification of arguments to %<uses_allocators%> "
+		      "where each item is of the form %<allocator(traits)%> is "
+		      "deprecated since OpenMP 5.2");
+	}
+
+      if (seen_allocators && has_modifiers)
+	{
+	  error_at (cp_lexer_peek_token (parser->lexer)->location,
+		    "%<uses_allocators%> clause only accepts a single "
+		    "allocator when using modifiers");
+	  goto end;
+	}
+      seen_allocators = true;
+
+      tree c = build_omp_clause (clause_loc,
+				 OMP_CLAUSE_USES_ALLOCATORS);
+      OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (c) = t;
+      OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (c) = memspace_expr;
+      OMP_CLAUSE_USES_ALLOCATORS_TRAITS (c) = (legacy_traits
+					       ? legacy_traits : traits_var);
+      OMP_CLAUSE_CHAIN (c) = nl;
+      nl = c;
+
+      if (cp_lexer_next_token_is (parser->lexer, CPP_COMMA))
+	cp_lexer_consume_token (parser->lexer);
+      else
+	break;
+    }
+
+  if (!parens.require_close (parser))
+    goto end;
+  return nl;
+ end:
+  cp_parser_skip_to_closing_parenthesis (parser,
+					 /*recovering=*/true,
+					 /*or_comma=*/false,
+					 /*consume_paren=*/true);
+  return nl;
 }
 
 /* OpenMP 2.5:
@@ -45446,6 +45641,10 @@ cp_parser_omp_all_clauses (cp_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_ALLOCATE:
 	  clauses = cp_parser_omp_clause_allocate (parser, clauses);
 	  c_name = "allocate";
+	  break;
+	case PRAGMA_OMP_CLAUSE_USES_ALLOCATORS:
+	  clauses = cp_parser_omp_clause_uses_allocators (parser, clauses);
+	  c_name = "uses_allocators";
 	  break;
 	case PRAGMA_OMP_CLAUSE_LINEAR:
 	  {
@@ -50374,7 +50573,8 @@ cp_parser_omp_target_update (cp_parser *parser, cp_token *pragma_tok,
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_MAP)		\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_NOWAIT)	\
 	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_PRIVATE)	\
-	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT))
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_THREAD_LIMIT)	\
+	| (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_USES_ALLOCATORS))
 
 static bool
 cp_parser_omp_target (cp_parser *parser, cp_token *pragma_tok,

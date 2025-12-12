@@ -598,6 +598,9 @@ enum omp_clause_code {
 
   /* OpenMP clause: dyn_groupprivate ( [fallback (...)] : integer-expression).  */
   OMP_CLAUSE_DYN_GROUPPRIVATE,
+
+  /* OpenMP clause: uses_allocators.  */
+  OMP_CLAUSE_USES_ALLOCATORS,
 };
 
 #undef DEFTREESTRUCT

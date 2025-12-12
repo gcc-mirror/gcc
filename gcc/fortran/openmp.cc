@@ -10133,6 +10133,7 @@ resolve_omp_clauses (gfc_code *code, gfc_omp_clauses *omp_clauses,
 			       "%<omp_allocator_handle_kind%>", n->sym->name,
 			       &n->where);
 		  else if (n->sym->attr.flavor != FL_VARIABLE
+			   && strcmp (n->sym->name, "omp_null_allocator") != 0
 			   && ((!startswith (n->sym->name, "omp_")
 				&& !startswith (n->sym->name, "ompx_"))
 			       || !endswith (n->sym->name, "_mem_alloc")))
