@@ -1,3 +1,16 @@
+2025-12-11  Jeff Law  <jlaw@ventanamicro.com>
+
+	* MAINTAINERS: Update entries for contributors formerly at
+	Ventana Microsystems to refer to Qualcomm instead.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* MAINTAINERS: add myself to write after approval
+
+2025-12-11  Pengxuan Zheng  <pengxuan.zheng@oss.qualcomm.com>
+
+	* MAINTAINERS (Pengxuan Zheng): Update email address.
+
 2025-12-08  Nathan Myers  <ncm@cantrip.org>
 
 	* MAINTAINERS: add ncm

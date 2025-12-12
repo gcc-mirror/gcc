@@ -1,3 +1,9 @@
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* c-cppbuiltin.cc (c_cpp_builtins): Bump _OPENMP version.
+	* c.opt (Wdeprecated-openmp): Add warning.
+	* c.opt.urls: Regenerated.
+
 2025-12-05  Tobias Burnus  <tburnus@baylibre.com>
 
 	* c-omp.cc (c_omp_split_clauses): Handle

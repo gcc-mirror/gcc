@@ -1,3 +1,10 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* backend/rust-tree.cc (fold_builtin_source_location): Fix string literal
+	typo, funciton -> function.
+	* resolve/rust-late-name-resolver-2.0.cc (Late::visit): Fix comment typo,
+	begining -> beginning.
+
 2025-12-03  Marc Poulhiès  <dkm@kataplop.net>
 
 	* lex/rust-lex.cc (rust_input_source_test): Reindent.

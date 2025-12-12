@@ -1,3 +1,102 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* config/arc/arc.cc (hwloop_optimize): Fix comment typo,
+	begining -> beginning.
+	* config/nds32/nds32-utils.cc (nds32::extract_pattern_from_insn):
+	Fix comment typo, funciton -> function.
+	* ipa-inline.cc (speculation_useful_p): Fix comment typo,
+	calll -> call.
+	* auto-profile.cc: Fix comment typos, implements -> implement,
+	inlning -> inlining, passe -> passes, form -> from, ambigous
+	-> ambiguous.
+	(afdo_hot_bb_threshod): Rename to ...
+	(afdo_hot_bb_threshold): ... this.
+	(maybe_hot_afdo_count_p): Adjust for the above change.
+	(function_instance::merge): Fix comment typo, hasnt -> hasn't.
+	(function_instance::offline_if_not_realized): Fix comment typo,
+	instancs -> instances.
+	(afdo_count_scale): Fix comment typo, reudce -> reduce.
+	(get_original_name): Fix comment typos, generetad -> generated,
+	sufix -> suffix.
+	(function_instance::get_function_instance): Fix dump message
+	typo, insteed -> instead.
+	(function_instance::merge): Fix comment typos, hasnt -> hasn't,
+	acounting -> accounting, calll -> call, begining -> beginning.
+	(function_instance::offline_if_in_set): Fix comment typo,
+	begining -> beginning.
+	(match_with_target): Fix comment typo, correspons -> corresponds.
+	(function_instance::match): Fix diagnostic typo, discrimnator
+	-> discriminator.
+	(autofdo_source_profile::offline_external_functions): Fix comment
+	typos, Doint -> Doing, distingush -> distinguish, shold -> should,
+	Poppulate -> Populate.  Fix dump message typo, suffxes -> suffixes.
+	(autofdo_source_profile::offline_unrealized_inlines): Fix comment
+	typo, Poppulate -> Populate.
+	(autofdo_source_profile::update_inlined_ind_target): Fix dump message
+	typo, funciton -> function.
+	(autofdo_source_profile::read): Fix comment typos, function_instace
+	-> function_instance, exixts -> exits.  Use afdo_hot_bb_threshold
+	instead of afdo_hot_bb_threshod.
+	(autofdo_source_profile::get_function_instance_by_inline_stack):
+	Fix dump message typo, locaction -> location.
+	(afdo_propagate_edge): Fix dump message typo, succesors -> successors.
+	(afdo_propagate): Fix comment typo, stablize -> stabilize.
+	(struct scale): Fix comment typo, descired -> desired.
+	(afdo_adjust_guessed_profile): Fix dump message typos, predecesor
+	-> predecessor, sucessor -> successor.  Fix comment typo, inprecise
+	-> imprecise.
+	(auto_profile): Fix comment typo, annoate -> annotate.
+	* tree-vect-slp.cc (vectorizable_slp_permutation_1): Fix comment typo,
+	cylical -> cyclical.
+	* except.cc (maybe_add_nop_after_section_switch): Fix comment typo,
+	begining -> beginning.
+	* tree-ssa-loop-ivcanon.cc (tree_unroll_loops_completely): Fix comment
+	typo, begining -> beginning.
+	* gcc.cc (insert_comments): Likewise.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* doc/extend.texi: Bump version and clarify implementation
+	status.
+
+2025-12-11  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123014
+	* tree-vect-loop-manip.cc (vect_update_ivs_after_vectorizer): Detect
+	empty pre-header block.
+	(vect_do_peeling): Undo changes from PR122959.
+
+2025-12-11  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_fndecl_abi): New function.
+	(aarch64_function_abi): New function.
+	(aarch64_function_arg_regno_p): Update to use aarch64_fndecl_abi.
+	(aarch64_output_mi_thunk): Likewise.
+	(aarch64_is_variant_pcs): Likewise.
+	(aarch64_set_current_function): Update to initialize pcs value.
+	* config/aarch64/aarch64.h (enum arm_pcs): Move location earlier in
+	file.
+	(machine_function) Add pcs value.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* doc/invoke.texi: Update docs for '-Wdeprecated-openmp'.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR target/80881
+	* config/i386/i386.h (DEFAULT_TLS_SEG_OFFSET): New define.
+	* config/mingw/mingw32.h (DEFAULT_TLS_SEG_OFFSET): Likewise.
+	* config/i386/i386.cc (ix86_tls_index): Fix long line.
+	(legitimize_tls_address): Use get_thread_pointer, add comments and
+	fix long lines.
+	* config/i386/i386.md (*load_tp_<mode>): Use DEFAULT_TLS_SEG_OFFSET
+	(*load_tp_x32_zext): Likewise.
+	(*add_tp_<mode>): Likewise.
+	(*add_tp_x32_zext): Likewise.
+	* config/i386/predicates.md (pic_32bit_operand): Fix oversight.
+	(symbolic_operand): Accept UNSPEC_SECREL32 with or without offset.
+
 2025-12-10  Alexandre Oliva  <oliva@adacore.com>
 
 	* config/i386/i386.md (lea peephole2): Add 3 new variants.

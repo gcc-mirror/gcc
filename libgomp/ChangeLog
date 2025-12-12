@@ -1,3 +1,247 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121114
+	* omp.h.in: Include <bits/new_throw.h> instead of
+	<bits/functexcept.h>.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* libgomp.texi: Bump version. Update implementation status.
+	Note deprecation of 'MASTER' affinity policy.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* testsuite/libgomp.fortran/allocate-8a.f90: Suppress warnings.
+	* testsuite/libgomp.fortran/allocators-1.f90: Ditto.
+	* testsuite/libgomp.fortran/allocators-2.f90: Ditto.
+	* testsuite/libgomp.fortran/allocators-4.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-target-1.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-target-2.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-target-indirect-1.f90: Ditto.
+	* testsuite/libgomp.fortran/declare-target-indirect-2.f90: Ditto.
+	* testsuite/libgomp.fortran/doacross1.f90: Ditto.
+	* testsuite/libgomp.fortran/doacross2.f90: Ditto.
+	* testsuite/libgomp.fortran/doacross3.f90: Ditto.
+	* testsuite/libgomp.fortran/map-alloc-ptr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/pr84418-1.f90: Ditto.
+	* testsuite/libgomp.fortran/pr84418-2.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction1.f90: Ditto.
+	* testsuite/libgomp.fortran/udr11.f90: Ditto.
+	* testsuite/libgomp.fortran/uses_allocators_1.f90: Ditto.
+	* testsuite/libgomp.fortran/uses_allocators_2.f90: Ditto.
+	* testsuite/libgomp.fortran/dep-uses-allocators.f90: New test.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* testsuite/libgomp.c++/declare_target-1.C: Suppress warnings.
+	* testsuite/libgomp.c++/depobj-1.C: Ditto.
+	* testsuite/libgomp.c++/doacross-1.C: Ditto.
+	* testsuite/libgomp.c++/for-15.C: Ditto.
+	* testsuite/libgomp.c++/for-24.C: Ditto.
+	* testsuite/libgomp.c++/pr101544-1-O0.C: Ditto.
+	* testsuite/libgomp.c++/pr101544-1.C: Ditto.
+	* testsuite/libgomp.c++/pr96835-1-O0.C: Ditto.
+	* testsuite/libgomp.c++/pr96835-1.C: Ditto.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-1.C: Ditto.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-2.C: Ditto.
+	* testsuite/libgomp.c++/static-aggr-constructor-destructor-3.C: Ditto.
+	* testsuite/libgomp.c++/target-13.C: Ditto.
+	* testsuite/libgomp.c++/target-cdtor-1.C: Ditto.
+	* testsuite/libgomp.c++/target-cdtor-2.C: Ditto.
+	* testsuite/libgomp.c++/target-std__array-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__array-concurrent.C: Ditto.
+	* testsuite/libgomp.c++/target-std__cmath.C: Ditto.
+	* testsuite/libgomp.c++/target-std__complex.C: Ditto.
+	* testsuite/libgomp.c++/target-std__deque-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__deque-concurrent.C: Ditto.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__forward_list-concurrent.C: Ditto.
+	* testsuite/libgomp.c++/target-std__list-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__list-concurrent.C: Ditto.
+	* testsuite/libgomp.c++/target-std__numbers.C: Ditto.
+	* testsuite/libgomp.c++/target-std__span-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__span-concurrent.C: Ditto.
+	* testsuite/libgomp.c++/target-std__valarray-1.C: Ditto.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__valarray-concurrent.C: Ditto.
+	* testsuite/libgomp.c++/target-std__vector-concurrent-usm.C: Ditto.
+	* testsuite/libgomp.c++/target-std__vector-concurrent.C: Ditto.
+	* testsuite/libgomp.c-c++-common/declare_target-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/depend-2.c: Ditto.
+	* testsuite/libgomp.c-c++-common/depobj-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-11.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-12.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-16.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-3.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-5.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-6.c: Ditto.
+	* testsuite/libgomp.c-c++-common/for-9.c: Ditto.
+	* testsuite/libgomp.c-c++-common/function-not-offloaded.c: Ditto.
+	* testsuite/libgomp.c-c++-common/metadirective-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/metadirective-2.c: Ditto.
+	* testsuite/libgomp.c-c++-common/metadirective-3.c: Ditto.
+	* testsuite/libgomp.c-c++-common/metadirective-5.c: Ditto.
+	* testsuite/libgomp.c-c++-common/monotonic-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/monotonic-2.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr100059-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-2.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-4.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-5.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-6.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-7.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-8.c: Ditto.
+	* testsuite/libgomp.c-c++-common/pr66199-9.c: Ditto.
+	* testsuite/libgomp.c-c++-common/ptr-attach-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/reverse-offload-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-10.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-40.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1-O0.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-abi-struct-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-cdtor-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-same-name-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/task-reduction-14.c: Ditto.
+	* testsuite/libgomp.c-c++-common/variable-not-offloaded.c: Ditto.
+	* testsuite/libgomp.c/declare-variant-3.c: Ditto.
+	* testsuite/libgomp.c/declare-variant-4.c: Ditto.
+	* testsuite/libgomp.c/doacross-1.c: Ditto.
+	* testsuite/libgomp.c/doacross-2.c: Ditto.
+	* testsuite/libgomp.c/doacross-3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/async_target-1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/declare_target-1.c: Ditto.
+	* testsuite/libgomp.c/examples-4/declare_target-3.c: Ditto.
+	* testsuite/libgomp.c/examples-4/declare_target-4.c: Ditto.
+	* testsuite/libgomp.c/examples-4/declare_target-5.c: Ditto.
+	* testsuite/libgomp.c/max_vf-1.c: Ditto.
+	* testsuite/libgomp.c/pr81778.c: Ditto.
+	* testsuite/libgomp.c/pr86660.c: Ditto.
+	* testsuite/libgomp.c/reduction-4.c: Ditto.
+	* testsuite/libgomp.c/switch-conversion.c: Ditto.
+	* testsuite/libgomp.c/target-26.c: Ditto.
+	* testsuite/libgomp.c/target-28.c: Ditto.
+	* testsuite/libgomp.c/target-30.c: Ditto.
+	* testsuite/libgomp.c/target-32.c: Ditto.
+	* testsuite/libgomp.c/target-35.c: Ditto.
+	* testsuite/libgomp.c/target-38.c: Ditto.
+	* testsuite/libgomp.c/target-39.c: Ditto.
+	* testsuite/libgomp.c/target-9.c: Ditto.
+	* testsuite/libgomp.c/target-link-1.c: Ditto.
+	* testsuite/libgomp.c/target-teams-1.c: Ditto.
+	* testsuite/libgomp.c/thread-limit-2.c: Ditto.
+	* testsuite/libgomp.oacc-c-c++-common/vred2d-128.c: Ditto.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* env.c (omp_display_env): Bump _OPENMP version.
+	* fortran.c (ialias_redirect): Remove suppression pragmas.
+	(omp_set_dynamic_8_): Ditto.
+	(omp_set_nested_8_): Ditto.
+	(omp_get_nested_): Ditto.
+	* icv.c (omp_get_dynamic): Ditto.
+	(omp_get_nested): Ditto.
+	(ialias): Ditto.
+	* omp_lib.f90.in: Bump openmp_version.
+	* omp_lib.h.in: Ditto.
+	* testsuite/libgomp.c++/affinity-1.C: Suppress deprecation
+	warnings.
+	* testsuite/libgomp.c++/ctor-1.C: Ditto.
+	* testsuite/libgomp.c++/ctor-11.C: Ditto.
+	* testsuite/libgomp.c++/ctor-13.C: Ditto.
+	* testsuite/libgomp.c++/ctor-2.C: Ditto.
+	* testsuite/libgomp.c++/ctor-5.C: Ditto.
+	* testsuite/libgomp.c++/ctor-7.C: Ditto.
+	* testsuite/libgomp.c++/depend-iterator-1.C: Ditto.
+	* testsuite/libgomp.c++/loop-13.C: Ditto.
+	* testsuite/libgomp.c++/master-1.C: Ditto.
+	* testsuite/libgomp.c++/pr26943.C: Ditto.
+	* testsuite/libgomp.c++/pr81130.C: Ditto.
+	* testsuite/libgomp.c++/pr81314.C: Ditto.
+	* testsuite/libgomp.c++/target-in-reduction-1.C: Ditto.
+	* testsuite/libgomp.c++/target-in-reduction-2.C: Ditto.
+	* testsuite/libgomp.c++/task-1.C: Ditto.
+	* testsuite/libgomp.c++/task-2.C: Ditto.
+	* testsuite/libgomp.c++/task-6.C: Ditto.
+	* testsuite/libgomp.c++/task-reduction-7.C: Ditto.
+	* testsuite/libgomp.c++/task-reduction-9.C: Ditto.
+	* testsuite/libgomp.c++/taskloop-reduction-1.C: Ditto.
+	* testsuite/libgomp.c-c++-common/cancel-taskgroup-4.c: Ditto.
+	* testsuite/libgomp.c-c++-common/depend-inoutset-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/depend-iterator-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/master-combined-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-in-reduction-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/target-in-reduction-2.c: Ditto.
+	* testsuite/libgomp.c-c++-common/task-detach-12.c: Ditto.
+	* testsuite/libgomp.c-c++-common/task-reduction-15.c: Ditto.
+	* testsuite/libgomp.c-c++-common/task-reduction-5.c: Ditto.
+	* testsuite/libgomp.c-c++-common/task-reduction-6.c: Ditto.
+	* testsuite/libgomp.c-c++-common/task-reduction-8.c: Ditto.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-1.c: Ditto.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-3.c: Ditto.
+	* testsuite/libgomp.c-c++-common/taskloop-reduction-4.c: Ditto.
+	* testsuite/libgomp.c/affinity-1.c: Remove extraneous dg
+	instruction and add suppression.
+	* testsuite/libgomp.c/critical-2.c: Suppress deprecation
+	warnings.
+	* testsuite/libgomp.c/debug-1.c: Ditto.
+	* testsuite/libgomp.c/lib-1.c: Ditto.
+	* testsuite/libgomp.c/loop-24.c: Ditto.
+	* testsuite/libgomp.c/nestedfn-2.c: Ditto.
+	* testsuite/libgomp.c/nestedfn-3.c: Ditto.
+	* testsuite/libgomp.c/pr104385.c: Ditto.
+	* testsuite/libgomp.c/target-31.c: Ditto.
+	* testsuite/libgomp.c/target-34.c: Ditto.
+	* testsuite/libgomp.c/target-critical-1.c: Ditto.
+	* testsuite/libgomp.c/task-1.c: Ditto.
+	* testsuite/libgomp.c/task-3.c: Ditto.
+	* testsuite/libgomp.c/task-6.c: Ditto.
+	* testsuite/libgomp.c/task-reduction-1.c: Ditto.
+	* testsuite/libgomp.c/task-reduction-2.c: Ditto.
+	* testsuite/libgomp.c/teams-1.c: Ditto.
+	* testsuite/libgomp.c/vla-1.c: Ditto.
+	* testsuite/libgomp.fortran/crayptr1.f90: Ditto.
+	* testsuite/libgomp.fortran/depend-inoutset-1.f90: Ditto.
+	* testsuite/libgomp.fortran/is_device_ptr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/is_device_ptr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/lib1.f90: Ditto.
+	* testsuite/libgomp.fortran/lib2.f: Ditto.
+	* testsuite/libgomp.fortran/lib3.f: Ditto.
+	* testsuite/libgomp.fortran/omp_parse2.f90: Ditto.
+	* testsuite/libgomp.fortran/openmp_version-1.f: Bump OMP version.
+	* testsuite/libgomp.fortran/openmp_version-2.f90: Ditto.
+	* testsuite/libgomp.fortran/parallel-master.f90: Suppress
+	warnings.
+	* testsuite/libgomp.fortran/pointer2.f90: Ditto.
+	* testsuite/libgomp.fortran/reduction6.f90: Ditto.
+	* testsuite/libgomp.fortran/target-firstprivate-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-2.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-3.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-4.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_addr-5.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-3.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-4.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-1.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-2.f90: Ditto.
+	* testsuite/libgomp.fortran/use_device_ptr-optional-3.f90: Ditto.
+	* testsuite/libgomp.c-c++-common/omp-atv-seq-dep.c: New test.
+	* testsuite/libgomp.c-c++-common/omp-lock-hint-contended-dep.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/omp-lock-hint-none-dep.c: New test.
+	* testsuite/libgomp.c-c++-common/omp-lock-hint-speculative-dep.c:
+	New test.
+	* testsuite/libgomp.c-c++-common/omp-lock-hint-uncontended-dep.c:
+	New test.
+	* testsuite/libgomp.c/omp-proc-bind-master-dep.c: New test.
+	* testsuite/libgomp.fortran/omp-atv-seq-dep.f90: New test.
+	* testsuite/libgomp.fortran/omp-lock-hint-contended-dep.f90: New
+	test.
+	* testsuite/libgomp.fortran/omp-lock-hint-none-dep.f90: New test.
+	* testsuite/libgomp.fortran/omp-lock-hint-speculative-dep.f90: New
+	test.
+	* testsuite/libgomp.fortran/omp-lock-hint-uncontended-dep.f90: New
+	test.
+
 2025-12-09  Richard Biener  <rguenther@suse.de>
 
 	PR testsuite/120167

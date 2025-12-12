@@ -1,3 +1,37 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/123098
+	* parser.cc (cp_parser_omp_clause_reduction): Only emit
+	-Wdeprecated-openmp warning for CPP_MINUS if is_omp.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_reduction,
+	cp_parser_omp_clause_linear, cp_parser_omp_clause_depend,
+	cp_parser_omp_clause_map, cp_parser_omp_clause_proc_bind,
+	cp_parser_omp_master, cp_parser_omp_declare_target,
+	cp_parser_omp_metadirective): Formatting fixes.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_reduction): Deprecate '-'
+	operator.
+	(cp_parser_omp_clause_linear): Deprecate modifiers with parens.
+	(cp_parser_omp_clause_depend): Deprecate sink and source.
+	(cp_parser_omp_clause_map): Map clause modifiers
+	comma-separated.
+	(cp_parser_omp_declare_target): Deprecate synonymous omp declare
+	target for omp begin declare target. Deprecate to clause.
+	(cp_parser_omp_metadirective): Deprecate default clause on
+	metadirectives.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* parser.cc (cp_parser_postfix_expression): Whitespace.
+	(cp_parser_builtin_c23_va_start): Ditto.
+	(cp_parser_omp_clause_proc_bind): Deprecate master affinity.
+	(cp_parser_omp_master): Deprecate master construct.
+
 2025-12-10  Jason Merrill  <jason@redhat.com>
 
 	* module.cc (maybe_translate_include): Suggest <bits/stdc++.h>

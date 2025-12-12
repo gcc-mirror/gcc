@@ -1,3 +1,89 @@
+2025-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/107406
+	* parse.cc (check_component): Adjust the error check to
+	require a codimension if the allocatable type has
+	a non-coarray LOCK_TYPE component.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/123098
+	* openmp.cc (gfc_match_omp_clause_reduction): Only emit
+	-Wdeprecated-openmp warning for '-' if !openacc.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* openmp.cc (gfc_match_omp_clause_reduction,
+	gfc_match_omp_clause_uses_allocators, gfc_match_omp_clauses,
+	match_omp_metadirective, gfc_match_omp_parallel_master,
+	gfc_match_omp_parallel_master_taskloop,
+	gfc_match_omp_parallel_master_taskloop_simd,
+	gfc_match_omp_master, gfc_match_omp_master_taskloop,
+	gfc_match_omp_master_taskloop_simd, resolve_omp_clauses): Formatting
+	fixes.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* trans-expr.cc (gfc_conv_procedure_call): Fix comment typo, passe
+	-> pass.
+
+2025-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/107142
+	* match.cc (gfc_match_type_spec): Change original declaration
+	to static match_type_spec and call from gfc_match_type_spec,
+	where the gfc_current_ns is stashed and restored after call.
+	(gfc_match_type_is): Before emitting the syntax error message
+	check if there are any pending error messages and use them
+	instead.
+
+2025-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/110012
+	* decl.cc (gfc_get_pdt_instance): Continue to loop through the
+	type parameters components if param_list is null and the
+	parameter is not KIND with a default initializer.
+	* resolve.cc (resolve_fl_derived): If the data component is a
+	PDT template, find the instance and build the class.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* gfortran.texi: Bump version and clarify implementation status.
+	* intrinsic.texi: Bump version and note deprecation of
+	'omp_proc_bind_master'.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clause_reduction): Deprecate '-'
+	operator for reductions.
+	(gfc_match_omp_clause_uses_allocators): Deprecate
+	allocator(traits) pattern for 'uses_allocators'.
+	(gfc_match_omp_clauses): Deprecate 'sink' and 'source' for
+	'depend' clause. Deprecate list items as arguments with 'linear'
+	clause. Deprecate non-comma-separated modifiers for the map
+	clause. Deprecate 'to' clause with declare target.
+	(gfc_match_omp_declare_target): Whitespace.
+	(match_omp_metadirective): Deprecate 'default' clause on
+	metadirectives.
+	(resolve_omp_clauses): Deprecate executable allocate directives.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* cpp.cc (cpp_define_builtins): Bump _OPENMP version.
+	* invoke.texi: Update docs for '-Wdeprecated-openmp'.
+	* lang.opt (Wdeprecated-openmp): Add warning.
+	* lang.opt.urls: Regenerated.
+	* openmp.cc (gfc_match_omp_clauses): Deprecate master affinity
+	policy.
+	(gfc_match_omp_parallel_master): Deprecate master construct.
+	(gfc_match_omp_parallel_master_taskloop): Ditto.
+	(gfc_match_omp_parallel_master_taskloop_simd): Ditto.
+	(gfc_match_omp_master): Ditto.
+	(gfc_match_omp_master_taskloop): Ditto.
+	(gfc_match_omp_master_taskloop_simd): Ditto.
+	(resolve_omp_clauses): Warn for deprecated use of
+	{use,is}_device_ptr.
+
 2025-12-08  Harald Anlauf  <anlauf@gmx.de>
 	    Steven G. Kargl  <kargl@gcc.gnu.org>
 

@@ -1,3 +1,192 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121114
+	* include/bits/version.def: Implement C++26 P3378R2 - constexpr
+	exception types.
+	(constexpr_exceptions): Change value from 1 to 202502, remove
+	no_stdname and TODO comments.
+	* include/bits/version.h: Regenerate.
+	* src/c++11/cow-stdexcept.cc (__cow_string(const char*)): New
+	ctor.
+	(__cow_string::c_str()): New method.
+	* config/abi/pre/gnu.ver (GLIBCXX_3.4.35): Export 8 __cow_string
+	symbols.
+	* include/bits/new_except.h: New file.
+	* include/bits/new_throw.h: New file.
+	* include/bits/stdexcept_throw.h: New file.
+	* include/bits/stdexcept_throwdef.h: New file.
+	* include/bits/stdexcept_throwfwd.h: New file.
+	* include/std/stdexcept: Include bits/stdexcept_except.h and move
+	everything after <string> include except for std::range_error into
+	include/bits/stdexcept_except.h.
+	(std::range_error): If __cpp_lib_constexpr_exceptions >= 202502L
+	make all cdtors and methods constexpr.
+	* include/bits/stdexcept_except.h: New file.
+	* include/std/optional (__glibcxx_want_constexpr_exceptions): Define
+	before including bits/version.h.
+	(bad_optional_access::what): Make constexpr for
+	__cpp_lib_constexpr_exceptions >= 202502L.
+	(__throw_bad_optional_access): Likewise.
+	* include/std/expected (__glibcxx_want_constexpr_exceptions): Define
+	before including bits/version.h.
+	(bad_expected_access): Make cdtors and all methods constexpr for
+	__cpp_lib_constexpr_exceptions >= 202502L.
+	* include/std/format (__glibcxx_want_constexpr_exceptions): Define
+	before including bits/version.h.
+	(_GLIBCXX_CONSTEXPR_FORMAT_ERROR): Define and undef later.
+	(format_error): Use _GLIBCXX_CONSTEXPR_FORMAT_ERROR on ctors.
+	* include/std/variant (__glibcxx_want_constexpr_exceptions): Define
+	before including bits/version.h.
+	(_GLIBCXX_CONSTEXPR_BAD_VARIANT_ACCESS): Define and undef later.
+	(bad_variant_access): Use it on ctors and what() method.
+	(__throw_bad_variant_access): Use it here too.
+	* testsuite/18_support/exception/version.cc: Adjust expected
+	__cpp_lib_constexpr_exceptions value.
+	* testsuite/19_diagnostics/runtime_error/constexpr.cc: New test.
+	* testsuite/19_diagnostics/headers/stdexcept/version.cc: New test.
+	* testsuite/19_diagnostics/logic_error/constexpr.cc: New test.
+	* testsuite/20_util/expected/observers.cc (test_value_throw): Change
+	return type to bool from void, return true at the end, add test
+	to dereference what() first character.  Make it constexpr for
+	__cpp_lib_constexpr_exceptions >= 202502L and add static_assert.
+	* testsuite/20_util/expected/version.cc: Add tests for
+	__cpp_lib_constexpr_exceptions value.
+	* testsuite/20_util/variant/constexpr.cc: For
+	__cpp_lib_constexpr_exceptions >= 202502L include <string>.
+	(test_get): New function if __cpp_lib_constexpr_exceptions >= 202502L,
+	assert calling it is true.
+	* testsuite/20_util/variant/version.cc: Add tests for
+	__cpp_lib_constexpr_exceptions value.
+	* testsuite/20_util/optional/constexpr/observers/3.cc: Include
+	testsuite_hooks.h.
+	(eat, test01): New functions.  Assert test01() is true.
+	* testsuite/20_util/optional/version.cc: Add tests for
+	__cpp_lib_constexpr_exceptions value.
+	* include/std/future: Add #include <bits/functexcept.h>.
+	* include/std/shared_mutex: Include <bits/new_throw.h>.
+	* include/std/flat_map: Include <bits/stdexcept_throw.h> instead of
+	<bits/functexcept.h>.
+	* include/std/syncstream: Remove <bits/functexcept.h> include.
+	* include/std/flat_set: Likewise.
+	* include/std/bitset: Include <bits/stdexcept_throw.h> instead of
+	<bits/functexcept.h>.
+	* include/std/string_view: Don't include <bits/functexcept.h>, include
+	<bits/stdexcept_throw.h> early if __glibcxx_exc_in_string is not
+	defined and include <bits/stdexcept_throw.h> at the end of
+	the header again if __glibcxx_exc_in_string is 2 and C++26 constexpr
+	exceptions are enabled.
+	(__glibcxx_exc_in_string): Define if __glibcxx_exc_in_string wasn't
+	defined before including <bits/stdexcept_throw.h>.
+	* include/std/array: Include <bits/stdexcept_throw.h> instead of
+	<bits/functexcept.h>.
+	* include/std/inplace_vector: Likewise.
+	* include/std/string: Include <bits/stdexcept_except.h> and
+	<bits/stdexcept_throw.h> after bits/basic_string.tcc include if
+	C++26 constexpr exceptions are enabled and include
+	<bits/stdexcept_throw.h> instead of <bits/functexcept.h> early.
+	(__glibcxx_exc_in_string): Define early to 1, undefine at the end.
+	* include/std/deque: Include <bits/stdexcept_throw.h>.
+	* include/bits/new_allocator.h: Include <bits/new_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/bits/stl_algobase.h: Remove <bits/functexcept.h> include.
+	* include/bits/stl_vector.h: Include <bits/stdexcept_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/bits/memory_resource.h: Include <bits/new_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/bits/functexcept.h: Guard everything after includes with
+	#if _GLIBCXX_HOSTED.
+	(__throw_bad_alloc, __throw_bad_array_new_length,  __throw_logic_error,
+	__throw_domain_error, __throw_invalid_argument, __throw_length_error,
+	__throw_out_of_range, __throw_out_of_range_fmt, __throw_runtime_error,
+	__throw_overflow_error, __throw_underflow_error): Move declarations to
+	other headers - <bits/new_throw.h> and <bits/stdexcept_throwfwd.h>.
+	* include/bits/stl_map.h: Include <bits/stdexcept_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/bits/hashtable_policy.h: Include <bits/stdexcept_throw.h>
+	instead of <bits/functexcept.h>.
+	* include/bits/formatfwd.h (std::__throw_format_error): Remove
+	declaration.
+	* include/bits/specfun.h: Include <bits/stdexcept_throw.h> instead of
+	<bits/functexcept.h>.
+	* include/bits/basic_ios.h: Include <bits/functexcept.h>.
+	* include/bits/locale_classes.h: Likewise.
+	* include/tr1/cmath: Include <bits/stdexcept_throw.h> instead of
+	<bits/functexcept.h>.
+	* include/tr1/memory: Remove <bits/functexcept.h> include.
+	* include/tr1/array: Include <bits/stdexcept_throw.h>.
+	* include/ext/vstring_util.h: Include <bits/stdexcept_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/ext/bitmap_allocator.h: Include <bits/new_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/ext/mt_allocator.h: Likewise.
+	* include/ext/malloc_allocator.h: Likewise.
+	* include/ext/debug_allocator.h: Include <bits/stdexcept_throw.h>
+	instead of <bits/functexcept.h>.
+	* include/ext/concurrence.h: Include <bits/exception_defines.h>
+	instead of <bits/functexcept.h>.
+	* include/ext/throw_allocator.h: Include <bits/new_throw.h> and
+	<bits/stdexcept_throw.h> instead of <bits/functexcept.h>.
+	* include/ext/string_conversions.h: Include <bits/stdexcept_throw.h>
+	instead of <bits/functexcept.h>.
+	* include/ext/pool_allocator.h: Include <bits/new_throw.h> instead
+	of <bits/functexcept.h>.
+	* include/ext/ropeimpl.h: Include <bits/stdexcept_throw.h> instead of
+	<bits/functexcept.h>.
+	* include/tr2/dynamic_bitset: Likewise.
+	* include/experimental/optional: Include <bits/exception_defines.h>
+	instead of <bits/functexcept.h>.
+	* include/Makefile.am (bits_freestanding): Add
+	${bits_srcdir}/{new,stdexcept}_{except,throw}.h
+	and ${bits_srcdir}/stdexcept_throw{fwd,def}.h.
+	* include/Makefile.in: Regenerate.
+	* src/c++17/floating_from_chars.cc: Remove <bits/functexcept.h>
+	include.
+	* src/c++11/regex.cc: Likewise.
+	* src/c++11/functexcept.cc: Likewise.
+	* src/c++11/snprintf_lite.cc: Include <bits/stdexcept_throw.h> instead
+	of <bits/functexcept.h>.
+	* src/c++11/thread.cc: Include <bits/functexcept.h>.
+	* testsuite/util/testsuite_hooks.h: Include <bits/stdexcept_throw.h>
+	instead of <bits/functexcept.h>.
+	* testsuite/util/io/verified_cmd_line_input.cc: Include
+	<bits/exception_defines.h> instead of <bits/functexcept.h>.
+	* testsuite/20_util/allocator/105975.cc: Expect different diagnostics
+	for C++26.
+	* testsuite/23_containers/inplace_vector/access/capacity.cc: Remove
+	#error, guard if consteval { return; } with
+	#ifndef __cpp_lib_constexpr_exceptions.
+	* testsuite/23_containers/inplace_vector/access/elem.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/cons/1.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/cons/from_range.cc: Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/single_insert.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/assign.cc:
+	Likewise.
+	* testsuite/23_containers/inplace_vector/modifiers/multi_insert.cc:
+	Likewise.
+	* libsupc++/new: Include <bits/new_except.h>.
+	(std::bad_alloc, std::bad_array_new_length): Move defintion to
+	<bits/new_except.h>.
+
+2025-12-11  Jason Merrill  <jason@redhat.com>
+
+	* testsuite/Makefile.am (CLEANFILES): Add gcm.cache.
+	* testsuite/Makefile.in: Regenerate.
+	* testsuite/lib/dg-options.exp (add_options_for_no_pch): Also add
+	-fno-modules.
+	* testsuite/lib/libstdc++.exp (v3_std_list): Handle "modules" std.
+	(v3_modules_std): New global.
+	(v3-build_support): Build gcms for bits/stdc++.h, std, and
+	std.compat.
+
+2025-12-11  Yuao Ma  <c8ef@outlook.com>
+
+	* include/bits/version.def: Add FTM.
+	* include/bits/version.h: Regenerate.
+	* include/std/flat_set: Add constexpr.
+	* testsuite/23_containers/flat_multiset/1.cc: Add constexpr test.
+	* testsuite/23_containers/flat_set/1.cc: Add constexpr test.
+
 2025-12-09  John Ericson  <git@johnericson.me>
 
 	* acinclude.m4: Use GCC_AC_THREAD_MODEL instead, via AC_REQUIRE

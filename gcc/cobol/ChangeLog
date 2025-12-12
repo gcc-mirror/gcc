@@ -1,3 +1,10 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* util.cc (class temp_loc_t): Fix comment typo, paramters
+	-> parameters.
+	* lexio.cc (valid_sequence_area): Fix comment typo, begining
+	-> beginning.
+
 2025-12-03  Jakub Jelinek  <jakub@redhat.com>
 
 	* lang.opt: Make sure all option descriptions are terminated with

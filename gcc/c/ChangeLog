@@ -1,3 +1,37 @@
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/123098
+	* c-parser.cc (c_parser_omp_clause_reduction): Only emit
+	-Wdeprecated-openmp warning for CPP_MINUS if is_omp.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_reduction,
+	c_parser_omp_clause_linear, c_parser_omp_clause_depend,
+	c_parser_omp_clause_map, c_parser_omp_clause_proc_bind,
+	c_parser_omp_master, c_parser_omp_declare_target,
+	c_parser_omp_metadirective): Formatting fixes.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_reduction): Deprecate '-'
+	operator for reductions.
+	(c_parser_omp_clause_linear): Deprecate modifiers with parens.
+	(c_parser_omp_clause_depend): Deprecate 'sink' and 'source'
+	modifiers for 'depend' clause.
+	(c_parser_omp_clause_map): Map clause modifiers comma-separated.
+	(c_parser_omp_declare_target): Deprecate synonymous omp declare
+	target for omp begin declare target. Deprecate 'to' clause.
+	(c_parser_omp_metadirective): Deprecate default clause on
+	metadirectives.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_proc_bind): Deprecate master
+	affinity.
+	(c_parser_omp_master): Deprecate master construct.
+	(c_parser_transaction): Whitespace.
+
 2025-12-09  Qing Zhao  <qing.zhao@oracle.com>
 
 	PR c/122982

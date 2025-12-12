@@ -1,3 +1,371 @@
+2025-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/107406
+	* gfortran.dg/coarray_lock_3.f90: Remove dg-error on
+	valid code.
+	* gfortran.dg/coarray_lock_4.f90: Likewise.
+	* gfortran.dg/coarray_lock_5.f90: Likwise
+	Co-Authored by: Andre Vehreschild <vehre@gcc.gnu.org>
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/123098
+	* gcc.dg/vect/vect-simd-clone-15.c (foo): Use OpenMP 5.2
+	syntax for linear clause.
+	* g++.dg/vect/simd-clone-6.cc (foo): Likewise.
+	* c-c++-common/goacc-gomp/pr93465-1.c: Use
+	#pragma omp begin declare target instead of
+	#pragma omp declare target.
+	* c-c++-common/goacc-gomp/nesting-fail-1.c: Use #pragma omp masked
+	instead of #pragma omp master.
+	* gfortran.dg/goacc-gomp/pr102330-1.f90 (r1): Use
+	!$omp masked taskloop simd instead of !$omp master taskloop simd.
+	* gfortran.dg/vect/pr86421.f90 (foo): Use OpenMP 5.2 syntax for
+	linear clause.
+	* gfortran.dg/gomp/allocate-16.f90: Use \\\$ instead of $ in dg-error
+	and use relative line numbers instead of absolute.
+	* gfortran.dg/gomp/groupprivate-2.f90: Add -Wno-deprecated-openmp
+	to dg-additional-options.
+	* gfortran.dg/gomp/groupprivate-5.f90: Likewise.
+	* gfortran.dg/goacc/pr93329.f90: Likewise.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/put_image2.ads: New test.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	PR libstdc++/121114
+	* g++.dg/tree-ssa/pr110819.C: Guard scan-tree-dump-not delete on
+	c++23_down and add comment explaining why C++26 fails that.
+	* g++.dg/tree-ssa/pr96945.C: Likewise.
+	* g++.dg/tree-ssa/pr109442.C: Likewise.
+	* g++.dg/tree-ssa/pr116868.C: Likewise.
+	* g++.dg/tree-ssa/pr58483.C: Likewise.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.dg/interface_16.f90: Fix comment typo,calll -> call.
+
+2025-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/107142
+	* gfortran.dg/pdt_78.f03: New test.
+
+2025-12-11  Paul Thomas  <pault@gcc.gnu.org>
+
+	PR fortran/110012
+	* gfortran.dg/pdt_77.f03: New test.
+
+2025-12-11  Jason Merrill  <jason@redhat.com>
+
+	* lib/g++-dg.exp: Handle "modules" std.
+	* lib/target-supports.exp (check_effective_target_modules): New.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* gfortran.dg/gomp/allocate-14.f90: Suppress warnings.
+	* gfortran.dg/gomp/allocate-16.f90: Ditto.
+	* gfortran.dg/gomp/allocate-5.f90: Ditto.
+	* gfortran.dg/gomp/allocate-6.f90: Ditto.
+	* gfortran.dg/gomp/allocate-7.f90: Ditto.
+	* gfortran.dg/gomp/allocators-3.f90: Ditto.
+	* gfortran.dg/gomp/declare-simd-2.f90: Ditto.
+	* gfortran.dg/gomp/declare-simd-6.f90: Ditto.
+	* gfortran.dg/gomp/declare-target-1.f90: Ditto.
+	* gfortran.dg/gomp/declare-target-2.f90: Ditto.
+	* gfortran.dg/gomp/declare-target-4.f90: Ditto.
+	* gfortran.dg/gomp/declare-target-5.f90: Ditto.
+	* gfortran.dg/gomp/declare-target-indirect-1.f90: Ditto.
+	* gfortran.dg/gomp/declare-target-indirect-2.f90: Ditto.
+	* gfortran.dg/gomp/declare-variant-10.f90: Ditto.
+	* gfortran.dg/gomp/declare-variant-8.f90: Ditto.
+	* gfortran.dg/gomp/implicit-save.f90: Ditto.
+	* gfortran.dg/gomp/linear-1.f90: Ditto.
+	* gfortran.dg/gomp/linear-2.f90: Ditto.
+	* gfortran.dg/gomp/linear-3.f90: Ditto.
+	* gfortran.dg/gomp/linear-4.f90: Ditto.
+	* gfortran.dg/gomp/linear-6.f90: Ditto.
+	* gfortran.dg/gomp/map-12.f90: Ditto.
+	* gfortran.dg/gomp/map-6.f90: Ditto.
+	* gfortran.dg/gomp/map-7.f90: Ditto.
+	* gfortran.dg/gomp/map-8.f90: Ditto.
+	* gfortran.dg/gomp/order-8.f90: Ditto.
+	* gfortran.dg/gomp/pr83977.f90: Ditto.
+	* gfortran.dg/gomp/reduction1.f90: Ditto.
+	* gfortran.dg/gomp/schedule-modifiers-2.f90: Ditto.
+	* gfortran.dg/gomp/workshare-reduction-55.f90: Ditto.
+	* gfortran.dg/gomp/workshare-reduction-56.f90: Ditto.
+	* gfortran.dg/gomp/workshare-reduction-57.f90: Ditto.
+	* gfortran.dg/gomp/workshare-reduction-58.f90: Ditto.
+	* gfortran.dg/gomp/52-deps.f90: New test.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* c-c++-common/gomp/Wparentheses-2.c: Suppress warnings.
+	* c-c++-common/gomp/attrs-metadirective-1.c: Ditto.
+	* c-c++-common/gomp/attrs-metadirective-2.c: Ditto.
+	* c-c++-common/gomp/attrs-metadirective-3.c: Ditto.
+	* c-c++-common/gomp/attrs-metadirective-4.c: Ditto.
+	* c-c++-common/gomp/attrs-metadirective-5.c: Ditto.
+	* c-c++-common/gomp/attrs-metadirective-8.c: Ditto.
+	* c-c++-common/gomp/begin-declare-target-1.c: Ditto.
+	* c-c++-common/gomp/begin-declare-target-2.c: Ditto.
+	* c-c++-common/gomp/clauses-3.c: Ditto.
+	* c-c++-common/gomp/declare-target-1.c: Ditto.
+	* c-c++-common/gomp/declare-target-2.c: Ditto.
+	* c-c++-common/gomp/declare-target-3.c: Ditto.
+	* c-c++-common/gomp/declare-target-4.c: Ditto.
+	* c-c++-common/gomp/declare-target-5.c: Ditto.
+	* c-c++-common/gomp/declare-target-7.c: Ditto.
+	* c-c++-common/gomp/declare-target-indirect-1.c: Ditto.
+	* c-c++-common/gomp/declare-target-indirect-2.c: Ditto.
+	* c-c++-common/gomp/declare-variant-10.c: Ditto.
+	* c-c++-common/gomp/declare-variant-8.c: Ditto.
+	* c-c++-common/gomp/defaultmap-2.c: Ditto.
+	* c-c++-common/gomp/defaultmap-3.c: Ditto.
+	* c-c++-common/gomp/depend-iterator-2.c: Ditto.
+	* c-c++-common/gomp/depobj-1.c: Ditto.
+	* c-c++-common/gomp/directive-1.c: Ditto.
+	* c-c++-common/gomp/distribute-1.c: Ditto.
+	* c-c++-common/gomp/doacross-1.c: Ditto.
+	* c-c++-common/gomp/doacross-2.c: Ditto.
+	* c-c++-common/gomp/doacross-3.c: Ditto.
+	* c-c++-common/gomp/doacross-4.c: Ditto.
+	* c-c++-common/gomp/doacross-8.c: Ditto.
+	* c-c++-common/gomp/linear-1.c: Ditto.
+	* c-c++-common/gomp/linear-2.c: Ditto.
+	* c-c++-common/gomp/linear-3.c: Ditto.
+	* c-c++-common/gomp/loop-6.c: Ditto.
+	* c-c++-common/gomp/map-1.c: Ditto.
+	* c-c++-common/gomp/map-3.c: Ditto.
+	* c-c++-common/gomp/map-6.c: Ditto.
+	* c-c++-common/gomp/metadirective-1.c: Ditto.
+	* c-c++-common/gomp/metadirective-2.c: Ditto.
+	* c-c++-common/gomp/metadirective-3.c: Ditto.
+	* c-c++-common/gomp/metadirective-4.c: Ditto.
+	* c-c++-common/gomp/metadirective-5.c: Ditto.
+	* c-c++-common/gomp/metadirective-8.c: Ditto.
+	* c-c++-common/gomp/metadirective-construct.c: Ditto.
+	* c-c++-common/gomp/metadirective-device.c: Ditto.
+	* c-c++-common/gomp/metadirective-target-device-1.c: Ditto.
+	* c-c++-common/gomp/metadirective-target-device-2.c: Ditto.
+	* c-c++-common/gomp/order-2.c: Ditto.
+	* c-c++-common/gomp/ordered-3.c: Ditto.
+	* c-c++-common/gomp/ordered-5.c: Ditto.
+	* c-c++-common/gomp/pr102640.c: Ditto.
+	* c-c++-common/gomp/pr106836.c: Ditto.
+	* c-c++-common/gomp/pr120180-1.c: Ditto.
+	* c-c++-common/gomp/pr88203-1.c: Ditto.
+	* c-c++-common/gomp/pr88203-2.c: Ditto.
+	* c-c++-common/gomp/pr88203-3.c: Ditto.
+	* c-c++-common/gomp/pr91401-2.c: Ditto.
+	* c-c++-common/gomp/pr91987.c: Ditto.
+	* c-c++-common/gomp/reverse-offload-1.c: Ditto.
+	* c-c++-common/gomp/schedule-modifiers-1.c: Ditto.
+	* c-c++-common/gomp/sink-1.c: Ditto.
+	* c-c++-common/gomp/sink-2.c: Ditto.
+	* c-c++-common/gomp/sink-3.c: Ditto.
+	* c-c++-common/gomp/sink-4.c: Ditto.
+	* c-c++-common/gomp/sink-5.c: Ditto.
+	* c-c++-common/gomp/target-teams-1.c: Ditto.
+	* g++.dg/gomp/attrs-12.C: Ditto.
+	* g++.dg/gomp/attrs-5.C: Ditto.
+	* g++.dg/gomp/attrs-9.C: Ditto.
+	* g++.dg/gomp/clause-3.C: Ditto.
+	* g++.dg/gomp/declare-simd-3.C: Ditto.
+	* g++.dg/gomp/declare-simd-4.C: Ditto.
+	* g++.dg/gomp/declare-simd-6.C: Ditto.
+	* g++.dg/gomp/declare-simd-7.C: Ditto.
+	* g++.dg/gomp/declare-simd-8.C: Ditto.
+	* g++.dg/gomp/declare-target-1.C: Ditto.
+	* g++.dg/gomp/declare-target-2.C: Ditto.
+	* g++.dg/gomp/declare-target-3.C: Ditto.
+	* g++.dg/gomp/declare-target-indirect-1.C: Ditto.
+	* g++.dg/gomp/depend-iterator-2.C: Ditto.
+	* g++.dg/gomp/depobj-1.C: Ditto.
+	* g++.dg/gomp/doacross-2.C: Ditto.
+	* g++.dg/gomp/linear-1.C: Ditto.
+	* g++.dg/gomp/linear-2.C: Ditto.
+	* g++.dg/gomp/linear-3.C: Ditto.
+	* g++.dg/gomp/linear-5.C: Ditto.
+	* g++.dg/gomp/map-1.C: Ditto.
+	* g++.dg/gomp/pr118876.C: Ditto.
+	* g++.dg/gomp/pr119370.C: Ditto.
+	* g++.dg/gomp/sink-1.C: Ditto.
+	* g++.dg/gomp/sink-2.C: Ditto.
+	* g++.dg/gomp/sink-3.C: Ditto.
+	* g++.dg/gomp/target-simd-clone-1.C: Ditto.
+	* g++.dg/gomp/target-simd-clone-2.C: Ditto.
+	* g++.dg/gomp/target-teams-1.C: Ditto.
+	* g++.dg/gomp/udr-5.C: Ditto.
+	* gcc.dg/gomp/attrs-12.c: Ditto.
+	* gcc.dg/gomp/attrs-5.c: Ditto.
+	* gcc.dg/gomp/attrs-9.c: Ditto.
+	* gcc.dg/gomp/clause-1.c: Ditto.
+	* gcc.dg/gomp/declare-simd-3.c: Ditto.
+	* gcc.dg/gomp/linear-1.c: Ditto.
+	* gcc.dg/gomp/metadirective-1.c: Ditto.
+	* gcc.dg/gomp/pr104757.c: Ditto.
+	* gcc.dg/gomp/sink-fold-1.c: Ditto.
+	* gcc.dg/gomp/sink-fold-2.c: Ditto.
+	* gcc.dg/gomp/sink-fold-3.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-1.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-2.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-3.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-4.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-5.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-6.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-7.c: Ditto.
+	* gcc.dg/gomp/target-simd-clone-8.c: Ditto.
+	* gcc.dg/gomp/workshare-reduction-55.c: Ditto.
+	* gcc.dg/gomp/workshare-reduction-56.c: Ditto.
+	* gcc.dg/gomp/workshare-reduction-57.c: Ditto.
+	* gcc.dg/gomp/workshare-reduction-58.c: Ditto.
+	* c-c++-common/gomp/52-deps.c: New test.
+	* g++.dg/gomp/map-csm-dep.C: New test.
+	* gcc.dg/gomp/map-csm-dep.c: New test.
+
+2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
+
+	* c-c++-common/cpp/openmp-define-3.c: Bump OMP version.
+	* c-c++-common/gomp/Wparentheses-1.c: Suppress deprecation
+	warnings.
+	* c-c++-common/gomp/Wparentheses-3.c: Ditto.
+	* c-c++-common/gomp/affinity-3.c: Ditto.
+	* c-c++-common/gomp/allocate-18.c: Ditto.
+	* c-c++-common/gomp/cancel-1.c: Ditto.
+	* c-c++-common/gomp/clause-dups-1.c: Ditto.
+	* c-c++-common/gomp/clauses-1.c: Suppress deprecation
+	warnings and fix misspelled directive. Add
+	'-Wunknown-pragmas'.
+	* c-c++-common/gomp/clauses-6.c: Suppress deprecation warnings.
+	* c-c++-common/gomp/declare-variant-1.c: Ditto.
+	* c-c++-common/gomp/declare-variant-2.c: Ditto.
+	* c-c++-common/gomp/depend-iterator-1.c: Ditto.
+	* c-c++-common/gomp/lastprivate-conditional-1.c: Ditto.
+	* c-c++-common/gomp/loop-1.c: Ditto.
+	* c-c++-common/gomp/loop-2.c: Ditto.
+	* c-c++-common/gomp/loop-3.c: Ditto.
+	* c-c++-common/gomp/loop-4.c: Ditto.
+	* c-c++-common/gomp/master-combined-1.c: Ditto.
+	* c-c++-common/gomp/master-combined-2.c: Ditto.
+	* c-c++-common/gomp/nesting-2.c: Ditto.
+	* c-c++-common/gomp/pr100902-1.c: Ditto.
+	* c-c++-common/gomp/pr61486-2.c: Ditto.
+	* c-c++-common/gomp/pr85696.c: Ditto.
+	* c-c++-common/gomp/pr85956.c: Ditto.
+	* c-c++-common/gomp/pr98187.c: Ditto.
+	* c-c++-common/gomp/pr99928-1.c: Ditto.
+	* c-c++-common/gomp/pr99928-10.c: Ditto.
+	* c-c++-common/gomp/pr99928-11.c: Ditto.
+	* c-c++-common/gomp/pr99928-12.c: Ditto.
+	* c-c++-common/gomp/pr99928-13.c: Ditto.
+	* c-c++-common/gomp/pr99928-14.c: Ditto.
+	* c-c++-common/gomp/pr99928-2.c: Ditto.
+	* c-c++-common/gomp/pr99928-3.c: Ditto.
+	* c-c++-common/gomp/pr99928-4.c: Ditto.
+	* c-c++-common/gomp/pr99928-5.c: Ditto.
+	* c-c++-common/gomp/pr99928-6.c: Ditto.
+	* c-c++-common/gomp/pr99928-7.c: Ditto.
+	* c-c++-common/gomp/pr99928-8.c: Ditto.
+	* c-c++-common/gomp/pr99928-9.c: Ditto.
+	* c-c++-common/gomp/task-detach-1.c: Ditto.
+	* c-c++-common/gomp/teams-2.c: Ditto.
+	* g++.dg/gomp/attrs-1.C: Ditto.
+	* g++.dg/gomp/attrs-2.C: Ditto.
+	* g++.dg/gomp/attrs-4.C: Ditto.
+	* g++.dg/gomp/block-0.C: Ditto.
+	* g++.dg/gomp/block-10.C: Ditto.
+	* g++.dg/gomp/block-5.C: Ditto.
+	* g++.dg/gomp/block-9.C: Ditto.
+	* g++.dg/gomp/depend-iterator-1.C: Ditto.
+	* g++.dg/gomp/master-1.C: Ditto.
+	* g++.dg/gomp/master-2.C: Ditto.
+	* g++.dg/gomp/master-3.C: Ditto.
+	* g++.dg/gomp/method-1.C: Ditto.
+	* g++.dg/gomp/pr29965-3.C: Ditto.
+	* g++.dg/gomp/pr29965-9.C: Ditto.
+	* g++.dg/gomp/pr78363-4.C: Ditto.
+	* g++.dg/gomp/pr78363-6.C: Ditto.
+	* g++.dg/gomp/pr79664.C: Ditto.
+	* g++.dg/gomp/pr94477.C: Ditto.
+	* g++.dg/gomp/pr94512.C: Ditto.
+	* g++.dg/gomp/tpl-master-1.C: Ditto.
+	* gcc.dg/gomp/appendix-a/a.12.1.c: Ditto.
+	* gcc.dg/gomp/appendix-a/a.33.2.c: Ditto.
+	* gcc.dg/gomp/attrs-1.c: Ditto.
+	* gcc.dg/gomp/attrs-2.c: Ditto.
+	* gcc.dg/gomp/attrs-4.c: Ditto.
+	* gcc.dg/gomp/block-10.c: Ditto.
+	* gcc.dg/gomp/block-5.c: Ditto.
+	* gcc.dg/gomp/block-9.c: Ditto.
+	* gcc.dg/gomp/master-1.c: Ditto.
+	* gcc.dg/gomp/master-2.c: Ditto.
+	* gcc.dg/gomp/master-3.c: Ditto.
+	* gcc.dg/gomp/nesting-1.c: Ditto.
+	* gcc.dg/gomp/pr104517.c: Ditto.
+	* gcc.dg/gomp/pr29965-3.c: Ditto.
+	* gcc.dg/gomp/pr35818.c: Ditto.
+	* gcc.dg/gomp/pr91216.c: Ditto.
+	* gcc.dg/gomp/sharing-2.c: Ditto.
+	* gfortran.dg/gomp/adjust-args-10.f90: Ditto.
+	* gfortran.dg/gomp/affinity-1.f90: Ditto.
+	* gfortran.dg/gomp/allocate-clause.f90: Ditto.
+	* gfortran.dg/gomp/appendix-a/a.12.1.f90: Ditto.
+	* gfortran.dg/gomp/appendix-a/a.33.2.f90: Ditto.
+	* gfortran.dg/gomp/c_ptr_tests_20.f90: Ditto.
+	* gfortran.dg/gomp/c_ptr_tests_21.f90: Ditto.
+	* gfortran.dg/gomp/cancel-1.f90: Ditto.
+	* gfortran.dg/gomp/clauses-1.f90: Ditto.
+	* gfortran.dg/gomp/declare-variant-1.f90: Ditto.
+	* gfortran.dg/gomp/depend-iterator-1.f90: Ditto.
+	* gfortran.dg/gomp/depend-iterator-2.f90: Ditto.
+	* gfortran.dg/gomp/is_device_ptr-1.f90: Ditto.
+	* gfortran.dg/gomp/is_device_ptr-2.f90: Ditto.
+	* gfortran.dg/gomp/is_device_ptr-3.f90: Ditto.
+	* gfortran.dg/gomp/lastprivate-conditional-1.f90: Ditto.
+	* gfortran.dg/gomp/loop-4.f90: Ditto.
+	* gfortran.dg/gomp/loop-exit.f90: Ditto.
+	* gfortran.dg/gomp/map-3.f90: Ditto.
+	* gfortran.dg/gomp/nesting-2.f90: Ditto.
+	* gfortran.dg/gomp/nesting-3.f90: Ditto.
+	* gfortran.dg/gomp/nowait-2.f90: Ditto.
+	* gfortran.dg/gomp/nowait-4.f90: Ditto.
+	* gfortran.dg/gomp/nowait-5.f90: Ditto.
+	* gfortran.dg/gomp/openmp-simd-2.f90: Ditto.
+	* gfortran.dg/gomp/openmp-simd-3.f90: Ditto.
+	* gfortran.dg/gomp/parallel-master-1.f90: Ditto.
+	* gfortran.dg/gomp/parallel-master-2.f90: Ditto.
+	* gfortran.dg/gomp/pr107214-8.f90: Ditto.
+	* gfortran.dg/gomp/pr48117.f90: Ditto.
+	* gfortran.dg/gomp/pr94672.f90: Ditto.
+	* gfortran.dg/gomp/pr99928-1.f90: Suppression + fix whitespace.
+	* gfortran.dg/gomp/pr99928-11.f90: Suppression.
+	* gfortran.dg/gomp/pr99928-2.f90: Suppression + fix whitespace.
+	* gfortran.dg/gomp/pr99928-3.f90: Ditto.
+	* gfortran.dg/gomp/pr99928-4.f90: Ditto.
+	* gfortran.dg/gomp/pr99928-5.f90: Ditto.
+	* gfortran.dg/gomp/pr99928-6.f90: Ditto.
+	* gfortran.dg/gomp/pr99928-8.f90: Ditto.
+	* gfortran.dg/gomp/sharing-3.f90: Suppress deprecation warnings.
+	* gfortran.dg/gomp/strictly-structured-block-1.f90: Ditto.
+	* gfortran.dg/gomp/strictly-structured-block-2.f90: Ditto.
+	* gfortran.dg/gomp/target1.f90: Ditto.
+	* gfortran.dg/gomp/taskloop-1.f90: Ditto.
+	* gfortran.dg/gomp/taskloop-2.f90: Ditto.
+	* gfortran.dg/openmp-define-3.f90: Bump expected version.
+	* c-c++-common/gomp/master-construct-dep.c: New test.
+	* gfortran.dg/gomp/master-construct-dep.f90: New test.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr33.adb: New test.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gcc.dg/tls/struct-2.c: New test.
+
 2025-12-10  Alexandre Oliva  <oliva@adacore.com>
 
 	* gcc.target/i386/lea-3.c: Add -fno-PIE.
