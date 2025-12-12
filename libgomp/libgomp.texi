@@ -261,7 +261,7 @@ The OpenMP 4.5 specification is fully supported.
       and allocatable components of variables
       @tab Y @tab
 @item @code{defaultmap} extensions @tab Y @tab
-@item @code{declare mapper} directive @tab N @tab
+@item @code{declare mapper} directive @tab P @tab Initial support and for C/C++, only
 @item @code{omp_get_supported_active_levels} routine @tab Y @tab
 @item Runtime routines and environment variables to display runtime thread
       affinity information @tab Y @tab
@@ -289,7 +289,7 @@ The OpenMP 4.5 specification is fully supported.
 @headitem Description @tab Status @tab Comments
 @item OpenMP directive as C++ attribute specifiers @tab Y @tab
 @item @code{omp_all_memory} reserved locator @tab Y @tab
-@item @emph{target_device trait} in OpenMP Context @tab Y
+@item @emph{target_device trait} in OpenMP Context @tab Y @tab
 @item @code{target_device} selector set in context selectors @tab Y @tab
 @item C/C++'s delimited @code{declare variant} directive: support elision of
       preprocessed code and interpret enclosed function definitions
@@ -312,7 +312,7 @@ The OpenMP 4.5 specification is fully supported.
 @item @code{thread_limit} clause to @code{target} construct @tab Y @tab
 @item @code{has_device_addr} clause to @code{target} construct @tab Y @tab
 @item Iterators in @code{target update} motion clauses and @code{map}
-      clauses @tab N @tab
+      clauses @tab P @tab Limited support for C/C++
 @item Indirect calls to the device version of a procedure or function in
       @code{target} regions @tab Y @tab
 @item @code{interop} directive @tab Y @tab Cf. @ref{Offload-Target Specifics}
@@ -417,7 +417,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
       allocatables/pointers @tab Y @tab
 @item Optional paired @code{end} directive with @code{dispatch} @tab Y @tab
 @item New @code{memspace} and @code{traits} modifiers for @code{uses_allocators}
-      @tab N @tab
+      @tab P @tab Only predefined allocators
 @item Deprecation of traits array following the allocator_handle expression in
       @code{uses_allocators} @tab Y @tab
 @item New @code{otherwise} clause as alias for @code{default} on metadirectives

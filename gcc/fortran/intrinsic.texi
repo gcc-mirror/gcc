@@ -16193,9 +16193,10 @@ with the following options: @code{-fno-unsafe-math-optimizations
 @table @asis
 @item @emph{Standard}:
 OpenMP Application Program Interface v4.5,
-OpenMP Application Program Interface v5.0 (partially supported),
-OpenMP Application Program Interface v5.1 (partially supported) and
-OpenMP Application Program Interface v5.2 (partially supported).
+OpenMP Application Program Interface v5.0,
+OpenMP Application Program Interface v5.1,
+OpenMP Application Program Interface v5.2, and
+OpenMP Application Program Interface v6.0 (partially supported).
 @end table
 
 The OpenMP Fortran runtime library routines are provided both in
@@ -16216,6 +16217,8 @@ OpenMP Application Program Interface v5.0},
 OpenMP Application Program Interface v5.1} and
 @uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-5-2.pdf,
 OpenMP Application Program Interface v5.2}.
+@uref{https://www.openmp.org/wp-content/uploads/OpenMP-API-Specification-6-0.pdf,
+OpenMP Application Program Interface v6.0}.
 
 @code{OMP_LIB_KINDS} provides the following scalar default-integer
 named constants:
@@ -16280,11 +16283,11 @@ The following scalar integer named constants are of the
 kind @code{omp_lock_hint_kind}:
 
 @table @asis
-@item @code{omp_lock_hint_none}
-@item @code{omp_lock_hint_uncontended}
-@item @code{omp_lock_hint_contended}
-@item @code{omp_lock_hint_nonspeculative}
-@item @code{omp_lock_hint_speculative}
+@item @code{omp_lock_hint_none} (deprecated)
+@item @code{omp_lock_hint_uncontended} (deprecated)
+@item @code{omp_lock_hint_contended} (deprecated)
+@item @code{omp_lock_hint_nonspeculative} (deprecated)
+@item @code{omp_lock_hint_speculative} (deprecated)
 @item @code{omp_sync_hint_none}
 @item @code{omp_sync_hint_uncontended}
 @item @code{omp_sync_hint_contended}
@@ -16325,7 +16328,7 @@ The following scalar integer named constants are of the kind
 @item @code{omp_atv_contended}
 @item @code{omp_atv_uncontended}
 @item @code{omp_atv_serialized}
-@item @code{omp_atv_sequential}
+@item @code{omp_atv_sequential} (deprecated)
 @item @code{omp_atv_private}
 @item @code{omp_atv_all}
 @item @code{omp_atv_thread}
