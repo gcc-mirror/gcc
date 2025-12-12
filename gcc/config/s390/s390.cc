@@ -917,6 +917,9 @@ s390_expand_builtin (tree exp, rtx target, rtx subtarget ATTRIBUTE_UNUSED,
 	  error ("Builtin %qF requires z17 or higher", fndecl);
 	  return const0_rtx;
 	}
+
+      if (bflags & B_DEP)
+	warning (0, "builtin %qF is deprecated", fndecl);
     }
   if (fcode >= S390_OVERLOADED_BUILTIN_VAR_OFFSET
       && fcode < S390_ALL_BUILTIN_MAX)
