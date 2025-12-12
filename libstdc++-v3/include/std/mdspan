@@ -3376,7 +3376,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   template<typename _ElementType, typename _Extents, typename _Layout,
 	   typename _Accessor, typename... _RawSlices>
     requires (sizeof...(_RawSlices) == _Extents::rank()
-	&& __mdspan::__sliceable_mapping<typename _Layout::mapping<_Extents>,
+	&& __mdspan::__sliceable_mapping<typename _Layout::template mapping<_Extents>,
 	                                 __mdspan::__full_extent_t<_RawSlices>...>)
     constexpr auto
     submdspan(
