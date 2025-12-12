@@ -1,3 +1,9 @@
+2025-12-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/122215
+	* ira-color.cc (improve_allocation): Use register filter for all
+	loop on hard regs.
+
 2025-11-28  Avinash Jayakar  <avinashd@linux.ibm.com>
 
 	PR tree-optimization/122126
