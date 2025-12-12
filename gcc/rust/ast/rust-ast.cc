@@ -3813,7 +3813,7 @@ DelimTokenTree::to_token_stream () const
 std::unique_ptr<MetaItemLitExpr>
 AttributeParser::parse_meta_item_lit ()
 {
-  std::unique_ptr<LiteralExpr> lit_expr = parser->parse_literal_expr ({});
+  auto lit_expr = parser->parse_literal_expr ({});
 
   // TODO: return nullptr instead?
   if (!lit_expr)
@@ -3822,7 +3822,7 @@ AttributeParser::parse_meta_item_lit ()
 		       lexer->peek_token ()->get_locus ()));
 
   return std::unique_ptr<MetaItemLitExpr> (
-    new MetaItemLitExpr (std::move (*lit_expr)));
+    new MetaItemLitExpr (std::move (*lit_expr.value ())));
 }
 
 bool

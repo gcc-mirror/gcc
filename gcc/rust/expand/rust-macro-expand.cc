@@ -434,7 +434,7 @@ MacroExpander::match_fragment (Parser<MacroInvocLexer> &parser,
       break;
 
     case AST::MacroFragSpec::LITERAL:
-      parser.parse_literal_expr ();
+      std::ignore = parser.parse_literal_expr ();
       break;
 
     case AST::MacroFragSpec::ITEM:

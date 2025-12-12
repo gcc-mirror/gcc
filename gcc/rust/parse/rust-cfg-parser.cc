@@ -51,10 +51,11 @@ parse_cfg_option (std::string &input, std::string &key, std::string &value)
       {
 	rust_assert (parser.skip_token (EQUAL));
 
-	auto value_expr = parser.parse_literal_expr ();
+	auto value_expr_res = parser.parse_literal_expr ();
 	// We had an equal sign but no value, error out
-	if (!value_expr)
+	if (!value_expr_res)
 	  return false;
+	auto value_expr = std::move (value_expr_res.value ());
 
 	if (value_expr->get_lit_type () != AST::Literal::LitType::STRING)
 	  return false;

@@ -241,17 +241,17 @@ public:
   parse_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 	      ParseRestrictions restrictions = ParseRestrictions ());
 
-  std::unique_ptr<AST::LiteralExpr> parse_literal_expr (AST::AttrVec outer_attrs
-							= AST::AttrVec ());
+  tl::expected<std::unique_ptr<AST::LiteralExpr>, Parse::Error::Node>
+  parse_literal_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
 
-  tl::expected<std::unique_ptr<AST::BlockExpr>, Parse::Error::BlockExpr>
+  tl::expected<std::unique_ptr<AST::BlockExpr>, Parse::Error::Node>
   parse_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 		    tl::optional<AST::LoopLabel> = tl::nullopt,
 		    location_t pratt_parsed_loc = UNKNOWN_LOCATION);
 
-  tl::expected<AST::AnonConst, Parse::Error::AnonConst> parse_anon_const ();
+  tl::expected<AST::AnonConst, Parse::Error::Node> parse_anon_const ();
 
-  std::unique_ptr<AST::ConstBlock>
+  tl::expected<std::unique_ptr<AST::ConstBlock>, Parse::Error::Node>
   parse_const_block_expr (AST::AttrVec outer_attrs = AST::AttrVec (),
 			  location_t loc = UNKNOWN_LOCATION);
 
@@ -281,9 +281,9 @@ public:
   std::vector<std::unique_ptr<AST::LifetimeParam>> parse_lifetime_params ();
   tl::expected<AST::Visibility, Parse::Error::Visibility> parse_visibility ();
   std::unique_ptr<AST::IdentifierPattern> parse_identifier_pattern ();
-  tl::expected<std::unique_ptr<AST::Token>, Parse::Error::Token>
+  tl::expected<std::unique_ptr<AST::Token>, Parse::Error::Node>
   parse_identifier_or_keyword_token ();
-  tl::expected<std::unique_ptr<AST::TokenTree>, Parse::Error::TokenTree>
+  tl::expected<std::unique_ptr<AST::TokenTree>, Parse::Error::Node>
   parse_token_tree ();
 
   tl::expected<Parse::AttributeBody, Parse::Error::AttributeBody>
@@ -321,7 +321,7 @@ private:
   Parse::AttributeBody parse_doc_comment ();
 
   // Path-related
-  tl::expected<AST::SimplePath, Parse::Error::SimplePath> parse_simple_path ();
+  tl::expected<AST::SimplePath, Parse::Error::Node> parse_simple_path ();
   tl::expected<AST::SimplePathSegment, Parse::Error::SimplePathSegment>
   parse_simple_path_segment (int base_peek = 0);
   AST::TypePath parse_type_path ();
@@ -344,7 +344,7 @@ private:
   AST::QualifiedPathInType parse_qualified_path_in_type ();
 
   // Token tree or macro related
-  tl::expected<AST::DelimTokenTree, Parse::Error::DelimTokenTree>
+  tl::expected<AST::DelimTokenTree, Parse::Error::Node>
   parse_delim_token_tree ();
   std::unique_ptr<AST::MacroRulesDefinition>
   parse_macro_rules_def (AST::AttrVec outer_attrs);
@@ -731,10 +731,10 @@ private:
   parse_loop_label (const_TokenPtr tok);
   std::unique_ptr<AST::AsyncBlockExpr>
   parse_async_block_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
-  std::unique_ptr<AST::GroupedExpr> parse_grouped_expr (AST::AttrVec outer_attrs
-							= AST::AttrVec ());
-  std::unique_ptr<AST::ClosureExpr> parse_closure_expr (AST::AttrVec outer_attrs
-							= AST::AttrVec ());
+  tl::expected<std::unique_ptr<AST::GroupedExpr>, Parse::Error::Node>
+  parse_grouped_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
+  tl::expected<std::unique_ptr<AST::ClosureExpr>, Parse::Error::Node>
+  parse_closure_expr (AST::AttrVec outer_attrs = AST::AttrVec ());
   AST::ClosureParam parse_closure_param ();
 
   std::unique_ptr<AST::BoxExpr> parse_box_expr (AST::AttrVec outer_attrs,

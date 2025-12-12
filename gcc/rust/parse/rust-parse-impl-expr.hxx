@@ -26,7 +26,7 @@ namespace Rust {
 
 // Parses a block expression, including the curly braces at start and end.
 template <typename ManagedTokenSource>
-tl::expected<std::unique_ptr<AST::BlockExpr>, Parse::Error::BlockExpr>
+tl::expected<std::unique_ptr<AST::BlockExpr>, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_block_expr (
   AST::AttrVec outer_attrs, tl::optional<AST::LoopLabel> label,
   location_t pratt_parsed_loc)
@@ -38,7 +38,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
       if (!skip_token (LEFT_CURLY))
 	{
 	  skip_after_end_block ();
-	  return Parse::Error::BlockExpr::make_malformed ();
+	  return tl::unexpected (Parse::Error::Node::MALFORMED);
 	}
     }
 
@@ -55,7 +55,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
       if (expr_or_stmt.is_error ())
 	{
 	  skip_after_end_block ();
-	  return Parse::Error::BlockExpr::make_malformed ();
+	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 	}
 
       t = lexer.peek_token ();
@@ -82,7 +82,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
       add_error (std::move (error));
 
       skip_after_end_block ();
-      return Parse::Error::BlockExpr::make_malformed ();
+      return tl::unexpected (Parse::Error::Node::MALFORMED);
     }
 
   // grammar allows for empty block expressions
@@ -98,7 +98,7 @@ Parser<ManagedTokenSource>::parse_block_expr (
 /* Parse an anonymous const expression. This can be a regular const expression
  * or an underscore for deferred const inference */
 template <typename ManagedTokenSource>
-tl::expected<AST::AnonConst, Parse::Error::AnonConst>
+tl::expected<AST::AnonConst, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_anon_const ()
 {
   auto current = lexer.peek_token ();
@@ -111,7 +111,7 @@ Parser<ManagedTokenSource>::parse_anon_const ()
   auto expr = parse_expr ();
 
   if (!expr)
-    return tl::make_unexpected (Parse::Error::AnonConst::InvalidSizeExpr);
+    return tl::make_unexpected (Parse::Error::Node{});
 
   return AST::AnonConst (std::move (expr), locus);
 }
@@ -119,7 +119,7 @@ Parser<ManagedTokenSource>::parse_anon_const ()
 /* Parse a "const block", a block preceded by the `const` keyword whose
  * statements can be const evaluated and used in constant contexts */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::ConstBlock>
+tl::expected<std::unique_ptr<AST::ConstBlock>, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_const_block_expr (AST::AttrVec outer_attrs,
 						    location_t locus)
 {
@@ -130,7 +130,7 @@ Parser<ManagedTokenSource>::parse_const_block_expr (AST::AttrVec outer_attrs,
       add_error (Error (locus, "failed to parse inner block in const block"));
       skip_after_end_block ();
 
-      return nullptr;
+      return tl::unexpected (Parse::Error::Node{});
     }
   auto block = std::move (block_res.value ());
 
@@ -144,7 +144,7 @@ Parser<ManagedTokenSource>::parse_const_block_expr (AST::AttrVec outer_attrs,
 /* Parses a "grouped" expression (expression in parentheses), used to control
  * precedence. */
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::GroupedExpr>
+tl::expected<std::unique_ptr<AST::GroupedExpr>, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_grouped_expr (AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
@@ -154,17 +154,17 @@ Parser<ManagedTokenSource>::parse_grouped_expr (AST::AttrVec outer_attrs)
 
   // parse required expr inside parentheses
   std::unique_ptr<AST::Expr> expr_in_parens = parse_expr ();
-  if (expr_in_parens == nullptr)
+  if (!expr_in_parens)
     {
       // skip after somewhere?
       // error?
-      return nullptr;
+      return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
     }
 
   if (!skip_token (RIGHT_PAREN))
     {
       // skip after somewhere?
-      return nullptr;
+      return tl::unexpected (Parse::Error::Node::MALFORMED);
     }
 
   return std::unique_ptr<AST::GroupedExpr> (
@@ -174,7 +174,7 @@ Parser<ManagedTokenSource>::parse_grouped_expr (AST::AttrVec outer_attrs)
 
 // Parses a closure expression (closure definition).
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::ClosureExpr>
+tl::expected<std::unique_ptr<AST::ClosureExpr>, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 {
   location_t locus = lexer.peek_token ()->get_locus ();
@@ -234,7 +234,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 			t->get_token_description ()));
 
       // skip somewhere?
-      return nullptr;
+      return tl::unexpected (Parse::Error::Node::MALFORMED);
     }
 
   // again branch based on next token
@@ -255,7 +255,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 	  add_error (std::move (error));
 
 	  // skip somewhere?
-	  return nullptr;
+	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 	}
 
       // parse block expr, which is required
@@ -268,7 +268,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 	  add_error (std::move (error));
 
 	  // skip somewhere?
-	  return nullptr;
+	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 	}
 
       return std::unique_ptr<AST::ClosureExprInnerTyped> (
@@ -290,7 +290,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 	  add_error (std::move (error));
 
 	  // skip somewhere?
-	  return nullptr;
+	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 	}
 
       return std::unique_ptr<AST::ClosureExprInner> (
@@ -301,7 +301,7 @@ Parser<ManagedTokenSource>::parse_closure_expr (AST::AttrVec outer_attrs)
 
 // Parses a literal token (to literal expression).
 template <typename ManagedTokenSource>
-std::unique_ptr<AST::LiteralExpr>
+tl::expected<std::unique_ptr<AST::LiteralExpr>, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
 {
   // TODO: change if literal representation in lexer changes
@@ -367,7 +367,7 @@ Parser<ManagedTokenSource>::parse_literal_expr (AST::AttrVec outer_attrs)
 			t->get_token_description ()));
 
       // skip?
-      return nullptr;
+      return tl::unexpected (Parse::Error::Node::MALFORMED);
     }
 
   // create literal based on stuff in switch
@@ -2268,8 +2268,14 @@ Parser<ManagedTokenSource>::null_denotation_not_path (
 	       tok->get_token_description ()));
       return nullptr;
     case CONST:
-      return parse_const_block_expr (std::move (outer_attrs),
-				     tok->get_locus ());
+      {
+	auto const_block
+	  = parse_const_block_expr (std::move (outer_attrs), tok->get_locus ());
+	if (const_block)
+	  return std::move (const_block.value ());
+	else
+	  return nullptr;
+      }
     default:
       if (!restrictions.expr_can_be_null)
 	add_error (Error (tok->get_locus (),

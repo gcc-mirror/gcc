@@ -188,7 +188,7 @@ parse_single_string_literal (BuiltinMacro kind,
 
   if (parser.peek_current_token ()->get_id () == STRING_LITERAL)
     {
-      lit_expr = parser.parse_literal_expr ();
+      lit_expr = parser.parse_literal_expr ().value ();
       parser.maybe_skip_token (COMMA);
       if (parser.peek_current_token ()->get_id () != last_token_id)
 	{

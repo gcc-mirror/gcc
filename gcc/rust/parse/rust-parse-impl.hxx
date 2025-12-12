@@ -314,7 +314,7 @@ Parser<ManagedTokenSource>::parse_crate ()
 
 // Parses an identifier/keyword as a Token
 template <typename ManagedTokenSource>
-tl::expected<std::unique_ptr<AST::Token>, Parse::Error::Token>
+tl::expected<std::unique_ptr<AST::Token>, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_identifier_or_keyword_token ()
 {
   const_TokenPtr t = lexer.peek_token ();
@@ -327,7 +327,7 @@ Parser<ManagedTokenSource>::parse_identifier_or_keyword_token ()
   else
     {
       add_error (Error (t->get_locus (), "expected keyword or identifier"));
-      return Parse::Error::Token::make_malformed ();
+      return tl::unexpected (Parse::Error::Node::MALFORMED);
     }
 }
 
@@ -2156,7 +2156,7 @@ Parser<ManagedTokenSource>::parse_lifetime_param ()
   if (lifetime_tok->get_id () != LIFETIME)
     {
       // if lifetime is missing, must not be a lifetime param, so return error
-      return tl::make_unexpected<Parse::Error::LifetimeParam> ({});
+      return Parse::Error::LifetimeParam::make_not_a_lifetime_param ();
     }
   lexer.skip_token ();
   AST::Lifetime lifetime (AST::Lifetime::NAMED, lifetime_tok->get_str (),
@@ -4962,7 +4962,13 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
 						  tok->get_locus ());
       }
     case LEFT_CURLY:
-      expr = parse_block_expr ().value ();
+      {
+	auto res = parse_block_expr ();
+	if (res)
+	  expr = std::move (res.value ());
+	else
+	  return tl::nullopt;
+      }
       break;
     case MINUS:
     case STRING_LITERAL:
@@ -4971,7 +4977,13 @@ Parser<ManagedTokenSource>::parse_generic_arg ()
     case FLOAT_LITERAL:
     case TRUE_LITERAL:
     case FALSE_LITERAL:
-      expr = parse_literal_expr ();
+      {
+	auto res = parse_literal_expr ();
+	if (res)
+	  expr = std::move (res.value ());
+	else
+	  return tl::nullopt;
+      }
       break;
     // FIXME: Because of this, error reporting is garbage for const generic
     // parameter's default values
