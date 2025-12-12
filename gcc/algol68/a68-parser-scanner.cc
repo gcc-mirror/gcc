@@ -328,12 +328,7 @@ read_source_file (const char *filename)
     fatal_error (UNKNOWN_LOCATION, "specified file %s is a directory",
 		 filename);
 
-  if ((source_file_size = get_source_size ()) == 0)
-    {
-      /* The source file is empty.  */
-      ret = false;
-      goto done;
-    }
+  source_file_size = get_source_size ();
 
   /* Allocate A68_PARSER (scan_buf), which is an auxiliary buffer used by the
      scanner known to be big enough to hold any string contained in the source
@@ -395,7 +390,6 @@ read_source_file (const char *filename)
   /* Include files.  */
   include_files (TOP_LINE (&A68_JOB));
 
- done:
   if (fclose (FILE_SOURCE_FD (&A68_JOB)) != 0)
     gcc_unreachable ();
   return ret;
@@ -2279,7 +2273,7 @@ tokenise_source (NODE_T **root, int level, bool in_format,
 /* Tokenise source file, build initial syntax tree.  */
 
 bool
-a68_lexical_analyser (const char *filename)
+a68_lexical_analyser (const char *filename, bool *empty_program)
 {
   LINE_T *l = NO_LINE, *start_l = NO_LINE;
   char *s = NO_TEXT, *start_c = NO_TEXT;
@@ -2294,6 +2288,23 @@ a68_lexical_analyser (const char *filename)
   if ((l = TOP_LINE (&A68_JOB)) != NO_LINE)
     s = STRING (l);
   tokenise_source (&root, 0, false, &l, &s, &start_l, &start_c);
+
+  /* Detemine whether the actual file contents resulted in some token.  This is
+     used in order to provide better diagnostics for empty source files or
+     files containing only comments or pragmats.  These are not valid Algol 68
+     packets.  */
+
+  *empty_program = true;
+  for (NODE_T *p = TOP_NODE (&A68_JOB); p != NO_NODE; FORWARD (p))
+    {
+      LINE_T *l = LINE (INFO (p));
+      if (strcmp (FILENAME (l), "prelude") != 0
+	  && strcmp (FILENAME (l), "postlude") != 0)
+	{
+	  *empty_program = false;
+	  break;
+	}
+    }
 
   /* If the source is a prelude packet then we should remove the prelude and
      postlude nodes from the token stream.  We distinguish these nodes by

@@ -280,7 +280,7 @@ void a68_scan_error (LINE_T *u, char *v, const char *txt, ...);
 
 /* a68-parser-scanner.cc  */
 
-bool a68_lexical_analyser (const char *filename);
+bool a68_lexical_analyser (const char *filename, bool *empty_file);
 
 /* a68-parser.cc  */
 

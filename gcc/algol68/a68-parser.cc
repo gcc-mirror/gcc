@@ -454,17 +454,15 @@ a68_parser (const char *filename)
   /* Tokeniser.  */
   if (ERROR_COUNT (&A68_JOB) == 0)
     {
-      bool ok = a68_lexical_analyser (filename);
+      bool empty_program;
+      bool ok = a68_lexical_analyser (filename, &empty_program);
 
       if (!ok)
 	return;
 
-      /* An empty file is not a valid program.  */
-      if (TOP_NODE (&A68_JOB) == NO_NODE)
-	{
-	  a68_error (NO_NODE, "file is empty, expected a program");
-	  return;
-	}
+      if (empty_program)
+	a68_error (NO_NODE,
+		   "particular program or prelude packet not found in source file");
 
       TREE_LISTING_SAFE (&A68_JOB) = true;
       renum = 0;
