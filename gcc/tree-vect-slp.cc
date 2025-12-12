@@ -11365,7 +11365,11 @@ vect_transform_slp_perm_load (vec_info *vinfo,
 
    otherwise add:
 
-      <new SSA name> = FIRST_DEF.  */
+      <new SSA name> = VEC_PERM_EXPR <FIRST_DEF, SECOND_DEF,
+				      { N, N+1, N+2, ... }>
+
+   where N == IDENTITY_OFFSET which is either zero or equal to the
+   number of elements of the result.  */
 
 static void
 vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
@@ -11405,36 +11409,47 @@ vect_add_slp_permutation (vec_info *vinfo, gimple_stmt_iterator *gsi,
 				       first_def, second_def,
 				       mask_vec);
     }
-  else if (!types_compatible_p (TREE_TYPE (first_def), vectype))
-    {
-      /* For identity permutes we still need to handle the case
-	 of offsetted extracts or concats.  */
-      unsigned HOST_WIDE_INT c;
-      auto first_def_nunits
-	= TYPE_VECTOR_SUBPARTS (TREE_TYPE (first_def));
-      if (known_le (TYPE_VECTOR_SUBPARTS (vectype), first_def_nunits))
-	{
-	  unsigned HOST_WIDE_INT elsz
-	    = tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (first_def))));
-	  tree lowpart = build3 (BIT_FIELD_REF, vectype, first_def,
-				 TYPE_SIZE (vectype),
-				 bitsize_int (identity_offset * elsz));
-	  perm_stmt = gimple_build_assign (perm_dest, lowpart);
-	}
-      else if (constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype),
-				    first_def_nunits, &c) && c == 2)
-	{
-	  tree ctor = build_constructor_va (vectype, 2, NULL_TREE, first_def,
-					    NULL_TREE, second_def);
-	  perm_stmt = gimple_build_assign (perm_dest, ctor);
-	}
-      else
-	gcc_unreachable ();
-    }
   else
     {
-      /* We need a copy here in case the def was external.  */
-      perm_stmt = gimple_build_assign (perm_dest, first_def);
+      auto def_nunits = TYPE_VECTOR_SUBPARTS (TREE_TYPE (first_def));
+      unsigned HOST_WIDE_INT vecno;
+      poly_uint64 eltno;
+      if (!can_div_trunc_p (poly_uint64 (identity_offset), def_nunits,
+			    &vecno, &eltno))
+	gcc_unreachable ();
+      tree def = vecno & 1 ? second_def : first_def;
+      if (!types_compatible_p (TREE_TYPE (def), vectype))
+	{
+	  /* For identity permutes we still need to handle the case
+	     of offsetted extracts or concats.  */
+	  unsigned HOST_WIDE_INT c;
+	  if (known_le (TYPE_VECTOR_SUBPARTS (vectype), def_nunits))
+	    {
+	      unsigned HOST_WIDE_INT elsz
+		= tree_to_uhwi (TYPE_SIZE (TREE_TYPE (TREE_TYPE (def))));
+	      tree lowpart = build3 (BIT_FIELD_REF, vectype, def,
+				     TYPE_SIZE (vectype),
+				     bitsize_int (eltno * elsz));
+	      perm_stmt = gimple_build_assign (perm_dest, lowpart);
+	    }
+	  else if (constant_multiple_p (TYPE_VECTOR_SUBPARTS (vectype),
+					def_nunits, &c) && c == 2)
+	    {
+	      gcc_assert (known_eq (identity_offset, 0U));
+	      tree ctor = build_constructor_va (vectype, 2,
+						NULL_TREE, first_def,
+						NULL_TREE, second_def);
+	      perm_stmt = gimple_build_assign (perm_dest, ctor);
+	    }
+	  else
+	    gcc_unreachable ();
+	}
+      else
+	{
+	  /* We need a copy here in case the def was external.  */
+	  gcc_assert (known_eq (eltno, 0U));
+	  perm_stmt = gimple_build_assign (perm_dest, def);
+	}
     }
   vect_finish_stmt_generation (vinfo, NULL, perm_stmt, gsi);
   /* Store the vector statement in NODE.  */
