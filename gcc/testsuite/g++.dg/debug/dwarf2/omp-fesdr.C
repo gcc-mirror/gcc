@@ -14,7 +14,7 @@ f7 (void)
 
   #pragma omp parallel
   {
-    #pragma omp master
+    #pragma omp masked
     v7o++;
     #pragma omp for private (v7i) firstprivate (v7k) reduction (+:v7l)
     for (v7n = 0; v7n < 3; v7n++)
