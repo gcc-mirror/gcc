@@ -1546,6 +1546,9 @@ single_set_2 (const rtx_insn *insn, const_rtx pat)
 	    case CLOBBER:
 	      break;
 
+	    default:
+	      return NULL_RTX;
+
 	    case SET:
 	      /* We can consider insns having multiple sets, where all
 		 but one are dead as single set insns.  In common case
@@ -1555,23 +1558,28 @@ single_set_2 (const rtx_insn *insn, const_rtx pat)
 		 When we reach set first time, we just expect this is
 		 the single set we are looking for and only when more
 		 sets are found in the insn, we check them.  */
+	      auto unused = [] (const rtx_insn *insn, rtx dest) {
+		if (!df)
+		  return false;
+		if (df_note)
+		  return !!find_reg_note (insn, REG_UNUSED, dest);
+		return (REG_P (dest)
+			&& !HARD_REGISTER_P (dest)
+			&& REGNO (dest) < df->regs_inited
+			&& DF_REG_USE_COUNT (REGNO (dest)) == 0);
+	      };
 	      if (!set_verified)
 		{
-		  if (find_reg_note (insn, REG_UNUSED, SET_DEST (set))
-		      && !side_effects_p (set))
+		  if (unused (insn, SET_DEST (set)) && !side_effects_p (set))
 		    set = NULL;
 		  else
 		    set_verified = 1;
 		}
 	      if (!set)
 		set = sub, set_verified = 0;
-	      else if (!find_reg_note (insn, REG_UNUSED, SET_DEST (sub))
-		       || side_effects_p (sub))
+	      else if (!unused (insn, SET_DEST (sub)) || side_effects_p (sub))
 		return NULL_RTX;
 	      break;
-
-	    default:
-	      return NULL_RTX;
 	    }
 	}
     }
