@@ -6019,13 +6019,11 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 
       if (reduce_with_shift && (!slp_reduc || group_size == 1))
 	{
-	  tree bitsize = TYPE_SIZE (TREE_TYPE (vectype1));
-	  int element_bitsize = tree_to_uhwi (bitsize);
+	  int element_bitsize = vector_element_bits (vectype1);
 	  /* Enforced by vectorizable_reduction, which disallows SLP reductions
 	     for variable-length vectors and also requires direct target support
 	     for loop reductions.  */
-	  int vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
-	  int nelements = vec_size_in_bits / element_bitsize;
+	  int nelements = TYPE_VECTOR_SUBPARTS (vectype1).to_constant ();
 	  vec_perm_builder sel;
 	  vec_perm_indices indices;
 
@@ -6066,7 +6064,8 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 			     "extract scalar result\n");
 
 	  new_temp = gimple_build (&stmts, BIT_FIELD_REF, TREE_TYPE (vectype1),
-				   new_temp, bitsize, bitsize_zero_node);
+				   new_temp, bitsize_int (element_bitsize),
+				   bitsize_zero_node);
 	  new_temp = gimple_convert (&stmts, scalar_type, new_temp);
 	  gsi_insert_seq_before (&exit_gsi, stmts, GSI_SAME_STMT);
 	  scalar_results.safe_push (new_temp);
@@ -6088,8 +6087,9 @@ vect_create_epilog_for_reduction (loop_vec_info loop_vinfo,
 			     "Reduce using scalar code.\n");
 
 	  tree compute_type = TREE_TYPE (vectype1);
-	  unsigned vec_size_in_bits = tree_to_uhwi (TYPE_SIZE (vectype1));
 	  unsigned element_bitsize = vector_element_bits (vectype1);
+	  unsigned vec_size_in_bits = element_bitsize
+	    * TYPE_VECTOR_SUBPARTS (vectype1).to_constant ();
 	  tree bitsize = bitsize_int (element_bitsize);
 	  gimple_seq stmts = NULL;
 	  FOR_EACH_VEC_ELT (reduc_inputs, i, vec_temp)
