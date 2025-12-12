@@ -14,7 +14,7 @@ UrlSuffix(gcc/Directory-Options.html#index-B) LangUrlSuffix_D(gdc/Directory-Opti
 ;   duplicate: 'gcc/Overall-Options.html#index-E'
 
 L
-UrlSuffix(gcc/Directory-Options.html#index-L) LangUrlSuffix_D(gdc/Directory-Options.html#index-L)
+UrlSuffix(gcc/Directory-Options.html#index-L) LangUrlSuffix_D(gdc/Directory-Options.html#index-L) LangUrlSuffix_Algol68(ga68/Directory-options.html#index-L)
 
 N
 UrlSuffix(gcc/Link-Options.html#index-N)

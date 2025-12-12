@@ -4,7 +4,7 @@ I
 UrlSuffix(gcc/Directory-Options.html#index-I) LangUrlSuffix_D(gdc/Directory-Options.html#index-I) LangUrlSuffix_Algol68(ga68/Directory-options.html#index-I)
 
 L
-UrlSuffix(gcc/Directory-Options.html#index-L) LangUrlSuffix_D(gdc/Directory-Options.html#index-L)
+UrlSuffix(gcc/Directory-Options.html#index-L) LangUrlSuffix_D(gdc/Directory-Options.html#index-L) LangUrlSuffix_Algol68(ga68/Directory-options.html#index-L)
 
 ; skipping UrlSuffix for 'Wall' due to multiple URLs:
 ;   duplicate: 'gcc/Standard-Libraries.html#index-Wall-1'

@@ -207,9 +207,20 @@ other parts of the compiler:
 @opindex I
 @item -I@var{dir}
 Add the directory @var{dir} to the list of directories to be searched
-for files when processing the @ref{pragmat include}. Multiple
+for files when processing the @ref{pragmat include}.  Multiple
 @option{-I} options can be used, and the directories specified are
-scanned in left-to-right order, as with @command{gcc}.
+scanned in left-to-right order, as with @command{gcc}.  The directory
+will also be added to the list of directories to be searched for module
+interface-definitions @ref{Module activation}.
+
+@opindex L
+@item -L@var{dir}
+Add the directory @var{dir} to the list of directories to be searched
+for module interface-definitions @ref{Module activation}.  Multiple
+@option{-L} options can be used, and the directories specified are
+scanned in left-to-right order, as with @command{gcc}.  The directory
+will also be added to the list of library search directories, as with
+@command{gcc}.
 
 @end table
 
