@@ -986,6 +986,19 @@ s390_resolve_overloaded_builtin (location_t loc, tree ob_fndecl,
     if ((*arglist)[i] == error_mark_node)
       return error_mark_node;
 
+  /* A difference in front ends is that in contrast to C the C++ FE does no
+     array-to-pointer conversion prior calling resolve_overloaded_builtin().
+     However, we depend on this for finding the proper overloaded builtin or in
+     case of direct expansion.  Therefore, do the conversion now.  */
+  if (c_dialect_cxx ())
+    for (i = 0; i < in_args_num; ++i)
+      {
+	tree t = (*arglist)[i];
+	if (TREE_CODE (t) == VIEW_CONVERT_EXPR
+	    && TREE_CODE (TREE_TYPE (t)) == ARRAY_TYPE)
+	  (*arglist)[i] = default_conversion (t);
+      }
+
   /* Overloaded builtins without any variants are directly expanded here.  */
   if (desc_start_for_overloaded_builtin[ob_fcode] ==
       S390_OVERLOADED_BUILTIN_VAR_MAX)
