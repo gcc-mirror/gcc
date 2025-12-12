@@ -736,6 +736,9 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 	      {
 		tree arg = (**arglist)[src_arg_index];
 
+		if (c_dialect_cxx () && TREE_CODE (arg) == NON_LVALUE_EXPR)
+		  arg = TREE_OPERAND (arg, 0);
+
 		if (TREE_CODE (arg) != INTEGER_CST)
 		  {
 		    error ("constant value required for builtin %qF argument %d",
@@ -758,8 +761,11 @@ s390_adjust_builtin_arglist (unsigned int ob_fcode, tree decl,
 			   src_arg_index + 1);
 		    return;
 		  }
-		folded_args->quick_push (build_int_cst (integer_type_node,
-							code));
+
+		arg = build_int_cst (integer_type_node, code);
+		if (c_dialect_cxx ())
+		  arg = build1 (NON_LVALUE_EXPR, integer_type_node, arg);
+		folded_args->quick_push (arg);
 		src_arg_index++;
 		arg_assigned_p = true;
 	      }
