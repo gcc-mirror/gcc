@@ -1496,6 +1496,16 @@
 #endif /* !defined(__cpp_lib_constexpr_dynamic_alloc) */
 #undef __glibcxx_want_constexpr_dynamic_alloc
 
+#if !defined(__cpp_lib_constexpr_flat_map)
+# if (__cplusplus >  202302L)
+#  define __glibcxx_constexpr_flat_map 202502L
+#  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_flat_map)
+#   define __cpp_lib_constexpr_flat_map 202502L
+#  endif
+# endif
+#endif /* !defined(__cpp_lib_constexpr_flat_map) */
+#undef __glibcxx_want_constexpr_flat_map
+
 #if !defined(__cpp_lib_constexpr_flat_set)
 # if (__cplusplus >  202302L)
 #  define __glibcxx_constexpr_flat_set 202502L

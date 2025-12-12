@@ -33,6 +33,7 @@
 #pragma GCC system_header
 #endif
 
+#define __glibcxx_want_constexpr_flat_map
 #define __glibcxx_want_flat_map
 #include <bits/version.h>
 
@@ -108,9 +109,11 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       class value_compare
       {
 	[[no_unique_address]] key_compare _M_comp;
+	_GLIBCXX26_CONSTEXPR
 	value_compare(key_compare __c) : _M_comp(__c) { }
 
       public:
+	_GLIBCXX26_CONSTEXPR
 	bool
 	operator()(const_reference __x, const_reference __y) const
 	{ return _M_comp(__x.first, __y.first); }
@@ -129,10 +132,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	containers* _M_cont;
 
+	_GLIBCXX26_CONSTEXPR
 	_ClearGuard(containers& __cont)
 	: _M_cont(std::__addressof(__cont))
 	{ }
 
+	_GLIBCXX26_CONSTEXPR
 	~_ClearGuard()
 	{
 	  if (_M_cont)
@@ -142,24 +147,29 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	    }
 	}
 
+	_GLIBCXX26_CONSTEXPR
 	void
 	_M_disable()
 	{ _M_cont = nullptr; }
       };
 
+      _GLIBCXX26_CONSTEXPR
       _ClearGuard
       _M_make_clear_guard()
       { return _ClearGuard{this->_M_cont}; }
 
     public:
       // constructors
+      _GLIBCXX26_CONSTEXPR
       _Flat_map_impl() : _Flat_map_impl(key_compare()) { }
 
+      _GLIBCXX26_CONSTEXPR
       explicit
       _Flat_map_impl(const key_compare& __comp)
       : _M_cont(), _M_comp(__comp)
       { }
 
+      _GLIBCXX26_CONSTEXPR
       _Flat_map_impl(key_container_type __key_cont,
 		     mapped_container_type __mapped_cont,
 		     const key_compare& __comp = key_compare())
@@ -169,6 +179,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	_M_sort_uniq();
       }
 
+      _GLIBCXX26_CONSTEXPR
       _Flat_map_impl(__sorted_t,
 		     key_container_type __key_cont,
 		     mapped_container_type __mapped_cont,
@@ -180,12 +191,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       template<__has_input_iter_cat _InputIterator>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(_InputIterator __first, _InputIterator __last,
 		       const key_compare& __comp = key_compare())
 	: _M_cont(), _M_comp(__comp)
 	{ insert(__first, __last); }
 
       template<__has_input_iter_cat _InputIterator>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t __s,
 		       _InputIterator __first, _InputIterator __last,
 		       const key_compare& __comp = key_compare())
@@ -193,20 +206,24 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ insert(__s, __first, __last); }
 
       template<__detail::__container_compatible_range<value_type> _Rg>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(from_range_t, _Rg&& __rg)
 	: _Flat_map_impl(from_range, std::forward<_Rg>(__rg), key_compare())
 	{ }
 
       template<__detail::__container_compatible_range<value_type> _Rg>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(from_range_t, _Rg&& __rg, const key_compare& __comp)
 	: _Flat_map_impl(__comp)
 	{ insert_range(std::forward<_Rg>(__rg)); }
 
+      _GLIBCXX26_CONSTEXPR
       _Flat_map_impl(initializer_list<value_type> __il,
 		     const key_compare& __comp = key_compare())
       : _Flat_map_impl(__il.begin(), __il.end(), __comp)
       { }
 
+      _GLIBCXX26_CONSTEXPR
       _Flat_map_impl(__sorted_t __s,
 		     initializer_list<value_type> __il,
 		     const key_compare& __comp = key_compare())
@@ -216,12 +233,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       // constructors with allocators
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	explicit
 	_Flat_map_impl(const _Alloc& __a)
 	: _Flat_map_impl(key_compare(), __a)
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(const key_compare& __comp, const _Alloc& __a)
 	: _M_cont(std::make_obj_using_allocator<key_container_type>(__a),
 		  std::make_obj_using_allocator<mapped_container_type>(__a)),
@@ -229,6 +248,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(const key_container_type& __key_cont,
 		       const mapped_container_type& __mapped_cont,
 		       const _Alloc& __a)
@@ -236,6 +256,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(const key_container_type& __key_cont,
 		       const mapped_container_type& __mapped_cont,
 		       const key_compare& __comp,
@@ -249,6 +270,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t __s,
 		       const key_container_type& __key_cont,
 		       const mapped_container_type& __mapped_cont,
@@ -257,6 +279,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t,
 		       const key_container_type& __key_cont,
 		       const mapped_container_type& __mapped_cont,
@@ -271,6 +294,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(const _Derived& __x, const _Alloc& __a)
 	: _M_cont(std::make_obj_using_allocator<key_container_type>(__a, __x._M_cont.keys),
 		  std::make_obj_using_allocator<mapped_container_type>(__a, __x._M_cont.values)),
@@ -278,6 +302,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(_Derived&& __x, const _Alloc& __a)
 	: _M_cont(std::make_obj_using_allocator<key_container_type>
 		  (__a, std::move(__x._M_cont.keys)),
@@ -288,6 +313,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<__has_input_iter_cat _InputIterator,
 	       __allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(_InputIterator __first, _InputIterator __last,
 		       const _Alloc& __a)
 	: _Flat_map_impl(std::move(__first), std::move(__last), key_compare(), __a)
@@ -295,6 +321,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<__has_input_iter_cat _InputIterator,
 	       __allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(_InputIterator __first, _InputIterator __last,
 		       const key_compare& __comp,
 		       const _Alloc& __a)
@@ -303,6 +330,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<__has_input_iter_cat _InputIterator,
 	       __allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t __s,
 		       _InputIterator __first, _InputIterator __last,
 		       const _Alloc& __a)
@@ -311,6 +339,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<__has_input_iter_cat _InputIterator,
 	       __allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t __s,
 		       _InputIterator __first, _InputIterator __last,
 		       const key_compare& __comp,
@@ -320,6 +349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<__detail::__container_compatible_range<value_type> _Rg,
 	       __allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(from_range_t, _Rg&& __rg,
 		       const _Alloc& __a)
 	: _Flat_map_impl(from_range, std::forward<_Rg>(__rg), key_compare(), __a)
@@ -327,18 +357,21 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<__detail::__container_compatible_range<value_type> _Rg,
 	       __allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(from_range_t, _Rg&& __rg, const key_compare& __comp,
 		       const _Alloc& __a)
 	: _Flat_map_impl(__comp, __a)
 	{ insert_range(std::forward<_Rg>(__rg)); }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(initializer_list<value_type> __il,
 		       const _Alloc& __a)
 	: _Flat_map_impl(__il, key_compare(), __a)
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(initializer_list<value_type> __il,
 		       const key_compare& __comp,
 		       const _Alloc& __a)
@@ -346,6 +379,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t __s,
 		       initializer_list<value_type> __il,
 		       const _Alloc& __a)
@@ -353,6 +387,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	{ }
 
       template<__allocator_for<key_container_type, mapped_container_type> _Alloc>
+	_GLIBCXX26_CONSTEXPR
 	_Flat_map_impl(__sorted_t __s,
 		       initializer_list<value_type> __il,
 		       const key_compare& __comp,
@@ -360,6 +395,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	: _Flat_map_impl(__s, __il.begin(), __il.end(), __comp, __a)
 	{ }
 
+      _GLIBCXX26_CONSTEXPR
       _Derived&
       operator=(initializer_list<value_type> __il)
       {
@@ -369,64 +405,79 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       }
 
       // iterators
+      _GLIBCXX26_CONSTEXPR
       iterator
       begin() noexcept
       { return {this, _M_cont.keys.cbegin()}; }
 
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       begin() const noexcept
       { return {this, _M_cont.keys.cbegin()}; }
 
+      _GLIBCXX26_CONSTEXPR
       iterator
       end() noexcept
       { return {this, _M_cont.keys.cend()}; }
 
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       end() const noexcept
       { return {this, _M_cont.keys.cend()}; }
 
+      _GLIBCXX26_CONSTEXPR
       reverse_iterator
       rbegin() noexcept
       { return reverse_iterator(end()); }
 
+      _GLIBCXX26_CONSTEXPR
       const_reverse_iterator
       rbegin() const noexcept
       { return const_reverse_iterator(end()); }
 
+      _GLIBCXX26_CONSTEXPR
       reverse_iterator
       rend() noexcept
       { return reverse_iterator(begin()); }
 
+      _GLIBCXX26_CONSTEXPR
       const_reverse_iterator
       rend() const noexcept
       { return const_reverse_iterator(begin()); }
 
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       cbegin() const noexcept
       { return {this, _M_cont.keys.cbegin()}; }
 
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       cend() const noexcept
       { return {this, _M_cont.keys.cend()}; }
 
+      _GLIBCXX26_CONSTEXPR
       const_reverse_iterator
       crbegin() const noexcept
       { return const_reverse_iterator(cend()); }
 
+      _GLIBCXX26_CONSTEXPR
       const_reverse_iterator
       crend() const noexcept
       { return const_reverse_iterator(cbegin()); }
 
       // capacity
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       bool
       empty() const noexcept
       { return _M_cont.keys.empty(); }
 
+      _GLIBCXX26_CONSTEXPR
       size_type
       size() const noexcept
       { return _M_cont.keys.size(); }
 
+      _GLIBCXX26_CONSTEXPR
       size_type
       max_size() const noexcept
       { return std::min<size_type>(keys().max_size(), values().max_size()); }
@@ -436,6 +487,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // modifiers
       template<typename _Key2, typename... _Args>
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	_M_try_emplace(optional<const_iterator> __hint, _Key2&& __k, _Args&&... __args)
 	{
@@ -491,6 +543,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _Args>
 	requires is_constructible_v<value_type, _Args...>
+	_GLIBCXX26_CONSTEXPR
 	__emplace_result_t
 	emplace(_Args&&... __args)
 	{
@@ -503,6 +556,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<typename... _Args>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	emplace_hint(const_iterator __position, _Args&&... __args)
 	{
@@ -510,36 +564,43 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return _M_try_emplace(__position, std::move(__p.first), std::move(__p.second)).first;
 	}
 
+      _GLIBCXX26_CONSTEXPR
       __emplace_result_t
       insert(const value_type& __x)
       { return emplace(__x); }
 
+      _GLIBCXX26_CONSTEXPR
       __emplace_result_t
       insert(value_type&& __x)
       { return emplace(std::move(__x)); }
 
+      _GLIBCXX26_CONSTEXPR
       iterator
       insert(const_iterator __position, const value_type& __x)
       { return emplace_hint(__position, __x); }
 
+      _GLIBCXX26_CONSTEXPR
       iterator
       insert(const_iterator __position, value_type&& __x)
       { return emplace_hint(__position, std::move(__x)); }
 
       template<typename _Arg>
 	requires is_constructible_v<value_type, _Arg>
+	_GLIBCXX26_CONSTEXPR
 	__emplace_result_t
 	insert(_Arg&& __x)
 	{ return emplace(std::forward<_Arg>(__x)); }
 
       template<typename _Arg>
 	requires is_constructible_v<value_type, _Arg>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	insert(const_iterator __position, _Arg&& __x)
 	{ return emplace_hint(__position, std::forward<_Arg>(__x)); }
 
     private:
       template<typename _Iter, typename _Sent>
+	_GLIBCXX26_CONSTEXPR
 	void
 	_M_insert(_Iter __first, _Sent __last)
 	{
@@ -577,11 +638,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
     public:
       template<__has_input_iter_cat _InputIterator>
+	_GLIBCXX26_CONSTEXPR
 	void
 	insert(_InputIterator __first, _InputIterator __last)
 	{ _M_insert(std::move(__first), std::move(__last)); }
 
       template<__has_input_iter_cat _InputIterator>
+	_GLIBCXX26_CONSTEXPR
 	void
 	insert(__sorted_t, _InputIterator __first, _InputIterator __last)
 	{
@@ -590,18 +653,22 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       template<__detail::__container_compatible_range<value_type> _Rg>
+	_GLIBCXX26_CONSTEXPR
 	void
 	insert_range(_Rg&& __rg)
 	{ _M_insert(ranges::begin(__rg), ranges::end(__rg)); }
 
+      _GLIBCXX26_CONSTEXPR
       void
       insert(initializer_list<value_type> __il)
       { insert(__il.begin(), __il.end()); }
 
+      _GLIBCXX26_CONSTEXPR
       void
       insert(__sorted_t __s, initializer_list<value_type> __il)
       { insert(__s, __il.begin(), __il.end()); }
 
+      _GLIBCXX26_CONSTEXPR
       containers
       extract() &&
       {
@@ -609,6 +676,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return {std::move(_M_cont.keys), std::move(_M_cont.values)};
       }
 
+      _GLIBCXX26_CONSTEXPR
       void
       replace(key_container_type&& __key_cont, mapped_container_type&& __mapped_cont)
       {
@@ -622,10 +690,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // try_emplace and insert_or_assign defined directly in class flat_map only.
 
+      _GLIBCXX26_CONSTEXPR
       iterator
       erase(iterator __position)
       { return erase(static_cast<const_iterator>(__position)); }
 
+      _GLIBCXX26_CONSTEXPR
       iterator
       erase(const_iterator __position)
       {
@@ -637,6 +707,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return iterator{this, __it};
       }
 
+      _GLIBCXX26_CONSTEXPR
       size_type
       erase(const key_type& __x)
       { return erase<const key_type&>(__x); }
@@ -646,6 +717,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  || (__transparent_comparator<_Compare>
 	      && !is_convertible_v<_Key2, iterator>
 	      && !is_convertible_v<_Key2, const_iterator>)
+	_GLIBCXX26_CONSTEXPR
 	size_type
 	erase(_Key2&& __x)
 	{
@@ -655,6 +727,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  return __n;
 	}
 
+      _GLIBCXX26_CONSTEXPR
       iterator
       erase(const_iterator __first, const_iterator __last)
       {
@@ -667,6 +740,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return iterator{this, __it};
       }
 
+      _GLIBCXX26_CONSTEXPR
       void
       swap(_Derived& __y) noexcept
       {
@@ -675,6 +749,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	ranges::swap(_M_cont.values, __y._M_cont.values);
       }
 
+      _GLIBCXX26_CONSTEXPR
       void
       clear() noexcept
       {
@@ -684,32 +759,38 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       // observers
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       key_compare
       key_comp() const
       { return _M_comp; }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       value_compare
       value_comp() const
       { return value_compare(_M_comp); }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       const key_container_type&
       keys() const noexcept
       { return _M_cont.keys; }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       const mapped_container_type&
       values() const noexcept
       { return _M_cont.values; }
 
       // map operations
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       iterator
       find(const key_type& __x)
       { return find<key_type>(__x); }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       find(const key_type& __x) const
       { return find<key_type>(__x); }
@@ -717,6 +798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	find(const _Key2& __x)
 	{
@@ -730,6 +812,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	const_iterator
 	find(const _Key2& __x) const
 	{
@@ -741,6 +824,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       size_type
       count(const key_type& __x) const
       { return count<key_type>(__x); }
@@ -748,6 +832,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	size_type
 	count(const _Key2& __x) const
 	{
@@ -761,6 +846,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       bool
       contains(const key_type& __x) const
       { return contains<key_type>(__x); }
@@ -768,16 +854,19 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	bool
 	contains(const _Key2& __x) const
 	{ return find(__x) != cend(); }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       iterator
       lower_bound(const key_type& __x)
       { return lower_bound<key_type>(__x); }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       lower_bound(const key_type& __x) const
       { return lower_bound<key_type>(__x); }
@@ -785,6 +874,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	lower_bound(const _Key2& __x)
 	{
@@ -796,6 +886,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	const_iterator
 	lower_bound(const _Key2& __x) const
 	{
@@ -805,11 +896,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       iterator
       upper_bound(const key_type& __x)
       { return upper_bound<key_type>(__x); }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       const_iterator
       upper_bound(const key_type& __x) const
       { return upper_bound<key_type>(__x); }
@@ -817,6 +910,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	upper_bound(const _Key2& __x)
 	{
@@ -828,6 +922,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	const_iterator
 	upper_bound(const _Key2& __x) const
 	{
@@ -837,11 +932,13 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       pair<iterator, iterator>
       equal_range(const key_type& __x)
       { return equal_range<key_type>(__x); }
 
       [[nodiscard]]
+      _GLIBCXX26_CONSTEXPR
       pair<const_iterator, const_iterator>
       equal_range(const key_type& __x) const
       { return equal_range<key_type>(__x); }
@@ -849,6 +946,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, iterator>
 	equal_range(const _Key2& __x)
 	{
@@ -861,6 +959,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
 	[[nodiscard]]
+	_GLIBCXX26_CONSTEXPR
 	pair<const_iterator, const_iterator>
 	equal_range(const _Key2& __x) const
 	{
@@ -871,7 +970,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	}
 
       [[nodiscard]]
-      friend bool
+      friend _GLIBCXX26_CONSTEXPR bool
       operator==(const _Derived& __x, const _Derived& __y)
       {
 	return __x._M_cont.keys == __y._M_cont.keys
@@ -880,7 +979,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Up = value_type>
 	[[nodiscard]]
-	friend __detail::__synth3way_t<_Up>
+	friend _GLIBCXX26_CONSTEXPR __detail::__synth3way_t<_Up>
 	operator<=>(const _Derived& __x, const _Derived& __y)
 	{
 	  return std::lexicographical_compare_three_way(__x.begin(), __x.end(),
@@ -888,11 +987,12 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 							__detail::__synth3way);
 	}
 
-      friend void
+      friend _GLIBCXX26_CONSTEXPR void
       swap(_Derived& __x, _Derived& __y) noexcept
       { return __x.swap(__y); }
 
       template<typename _Predicate>
+	_GLIBCXX26_CONSTEXPR
 	size_type
 	_M_erase_if(_Predicate __pred)
 	{
@@ -912,6 +1012,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       containers _M_cont;
       [[no_unique_address]] _Compare _M_comp;
 
+      _GLIBCXX26_CONSTEXPR
       void
       _M_sort_uniq()
       {
@@ -921,13 +1022,16 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  _M_unique();
       }
 
+      _GLIBCXX26_CONSTEXPR
       void
       _M_unique() requires (!_Multi)
       {
 	struct __key_equiv
 	{
+	  _GLIBCXX26_CONSTEXPR
 	  __key_equiv(key_compare __c) : _M_comp(__c) { }
 
+	  _GLIBCXX26_CONSTEXPR
 	  bool
 	  operator()(const_reference __x, const_reference __y) const
 	  { return !_M_comp(__x.first, __y.first) && !_M_comp(__y.first, __x.first); }
@@ -958,12 +1062,15 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 				     ranges::__maybe_const_t<_Const, mapped_type>&>;
       using difference_type   = ptrdiff_t;
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator() = default;
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator(_Iterator<!_Const> __it) requires _Const
       : _M_cont(__it._M_cont), _M_index(__it._M_index)
       { }
 
+      _GLIBCXX26_CONSTEXPR
       reference
       operator*() const noexcept
       {
@@ -975,19 +1082,23 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       {
 	reference __p;
 
+	_GLIBCXX26_CONSTEXPR
 	const reference*
 	operator->() const noexcept
 	{ return std::__addressof(__p); }
       };
 
+      _GLIBCXX26_CONSTEXPR
       pointer
       operator->() const
       { return pointer{operator*()}; }
 
+      _GLIBCXX26_CONSTEXPR
       reference
       operator[](difference_type __n) const noexcept
       { return *(*this + __n); }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator&
       operator++() noexcept
       {
@@ -995,6 +1106,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator&
       operator--() noexcept
       {
@@ -1002,6 +1114,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator
       operator++(int) noexcept
       {
@@ -1010,6 +1123,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator
       operator--(int) noexcept
       {
@@ -1018,6 +1132,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __tmp;
       }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator&
       operator+=(difference_type __n) noexcept
       {
@@ -1025,6 +1140,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return *this;
       }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator&
       operator-=(difference_type __n) noexcept
       {
@@ -1036,45 +1152,47 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       friend _Flat_map_impl;
       friend _Iterator<!_Const>;
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator(_Flat_map_impl* __fm, typename key_container_type::const_iterator __it)
       requires (!_Const)
       : _M_cont(std::__addressof(__fm->_M_cont)), _M_index(__it - __fm->keys().cbegin())
       { }
 
+      _GLIBCXX26_CONSTEXPR
       _Iterator(const _Flat_map_impl* __fm, typename key_container_type::const_iterator __it)
       requires _Const
       : _M_cont(std::__addressof(__fm->_M_cont)), _M_index(__it - __fm->keys().cbegin())
       { }
 
-      friend _Iterator
+      friend _GLIBCXX26_CONSTEXPR _Iterator
       operator+(_Iterator __it, difference_type __n) noexcept
       {
 	__it += __n;
 	return __it;
       }
 
-      friend _Iterator
+      friend _GLIBCXX26_CONSTEXPR _Iterator
       operator+(difference_type __n, _Iterator __it) noexcept
       {
 	__it += __n;
 	return __it;
       }
 
-      friend _Iterator
+      friend _GLIBCXX26_CONSTEXPR _Iterator
       operator-(_Iterator __it, difference_type __n) noexcept
       {
 	__it -= __n;
 	return __it;
       }
 
-      friend difference_type
+      friend _GLIBCXX26_CONSTEXPR difference_type
       operator-(const _Iterator& __x, const _Iterator& __y) noexcept
       {
 	__glibcxx_assert(__x._M_cont == __y._M_cont);
 	return __x._M_index - __y._M_index;
       }
 
-      friend bool
+      friend _GLIBCXX26_CONSTEXPR bool
       operator==(const _Iterator& __x, const _Iterator& __y) noexcept
       {
 	__glibcxx_assert(__x._M_cont == __y._M_cont);
@@ -1082,7 +1200,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return __x._M_index == __y._M_index;
       }
 
-      friend strong_ordering
+      friend _GLIBCXX26_CONSTEXPR strong_ordering
       operator<=>(const _Iterator& __x, const _Iterator& __y)
       {
 	__glibcxx_assert(__x._M_cont == __y._M_cont);
@@ -1146,30 +1264,36 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       using _Impl::max_size;
 
       // element access
+      _GLIBCXX26_CONSTEXPR
       mapped_type&
       operator[](const key_type& __x)
       { return try_emplace(__x).first->second; }
 
+      _GLIBCXX26_CONSTEXPR
       mapped_type&
       operator[](key_type&& __x)
       { return try_emplace(std::move(__x)).first->second; }
 
       template<typename _Key2>
 	requires __transparent_comparator<_Compare>
+	_GLIBCXX26_CONSTEXPR
 	mapped_type&
 	operator[](_Key2&& __x)
 	{ return try_emplace(std::forward<_Key2>(__x)).first->second; }
 
+      _GLIBCXX26_CONSTEXPR
       mapped_type&
       at(const key_type& __x)
       { return at<key_type>(__x); }
 
+      _GLIBCXX26_CONSTEXPR
       const mapped_type&
       at(const key_type& __x) const
       { return at<key_type>(__x); }
 
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
+	_GLIBCXX26_CONSTEXPR
 	mapped_type&
 	at(const _Key2& __x)
 	{
@@ -1181,6 +1305,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename _Key2>
 	requires same_as<_Key2, _Key> || __transparent_comparator<_Compare>
+	_GLIBCXX26_CONSTEXPR
 	const mapped_type&
 	at(const _Key2& __x) const
 	{
@@ -1203,12 +1328,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _Args>
 	requires is_constructible_v<mapped_type, _Args...>
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	try_emplace(const key_type& __k, _Args&&... __args)
 	{ return _Impl::_M_try_emplace(nullopt, __k, std::forward<_Args>(__args)...); }
 
       template<typename... _Args>
 	requires is_constructible_v<mapped_type, _Args...>
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	try_emplace(key_type&& __k, _Args&&... __args)
 	{
@@ -1222,6 +1349,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && is_constructible_v<mapped_type, _Args...>
 	  && (!is_convertible_v<_Key2&&, const_iterator>)
 	  && (!is_convertible_v<_Key2&&, iterator>)
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	try_emplace(_Key2&& __k, _Args&&... __args)
 	{
@@ -1231,12 +1359,14 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
       template<typename... _Args>
 	requires is_constructible_v<mapped_type, _Args...>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	try_emplace(const_iterator __hint, const key_type& __k, _Args&&... __args)
 	{ return _Impl::_M_try_emplace(__hint, __k, std::forward<_Args>(__args)...).first; }
 
       template<typename... _Args>
 	requires is_constructible_v<mapped_type, _Args...>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	try_emplace(const_iterator __hint, key_type&& __k, _Args&&... __args)
 	{
@@ -1248,6 +1378,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	requires __transparent_comparator<_Compare>
 	  && is_constructible_v<key_type, _Key2>
 	  && is_constructible_v<mapped_type, _Args...>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	try_emplace(const_iterator __hint, _Key2&& __k, _Args&&... __args)
 	{
@@ -1258,6 +1389,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Mapped>
 	requires is_assignable_v<mapped_type&, _Mapped>
 	  && is_constructible_v<mapped_type, _Mapped>
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	insert_or_assign(const key_type& __k, _Mapped&& __obj)
 	{ return insert_or_assign<const key_type&, _Mapped>(__k, std::forward<_Mapped>(__obj)); }
@@ -1265,6 +1397,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Mapped>
 	requires is_assignable_v<mapped_type&, _Mapped>
 	  && is_constructible_v<mapped_type, _Mapped>
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	insert_or_assign(key_type&& __k, _Mapped&& __obj)
 	{
@@ -1277,6 +1410,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && is_constructible_v<key_type, _Key2>
 	  && is_assignable_v<mapped_type&, _Mapped>
 	  && is_constructible_v<mapped_type, _Mapped>
+	_GLIBCXX26_CONSTEXPR
 	pair<iterator, bool>
 	insert_or_assign(_Key2&& __k, _Mapped&& __obj)
 	{
@@ -1290,6 +1424,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Mapped>
 	requires is_assignable_v<mapped_type&, _Mapped>
 	  && is_constructible_v<mapped_type, _Mapped>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	insert_or_assign(const_iterator __hint, const key_type& __k, _Mapped&& __obj)
 	{
@@ -1300,6 +1435,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       template<typename _Mapped>
 	requires is_assignable_v<mapped_type&, _Mapped>
 	  && is_constructible_v<mapped_type, _Mapped>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	insert_or_assign(const_iterator __hint, key_type&& __k, _Mapped&& __obj)
 	{
@@ -1312,6 +1448,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	  && is_constructible_v<key_type, _Key2>
 	  && is_assignable_v<mapped_type&, _Mapped>
 	  && is_constructible_v<mapped_type, _Mapped>
+	_GLIBCXX26_CONSTEXPR
 	iterator
 	insert_or_assign(const_iterator __hint, _Key2&& __k, _Mapped&& __obj)
 	{
@@ -1422,6 +1559,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Tp, typename _Compare,
 	   typename _KeyContainer, typename _MappedContainer, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     typename flat_map<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>::size_type
     erase_if(flat_map<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>& __c,
 	     _Predicate __pred)
@@ -1590,6 +1728,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   template<typename _Key, typename _Tp, typename _Compare,
 	   typename _KeyContainer, typename _MappedContainer, typename _Predicate>
+    _GLIBCXX26_CONSTEXPR
     typename flat_multimap<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>::size_type
     erase_if(flat_multimap<_Key, _Tp, _Compare, _KeyContainer, _MappedContainer>& __c,
 	     _Predicate __pred)

@@ -17,7 +17,7 @@
 
 struct Gt {
   template<typename T, typename U>
-  bool operator()(T const& l, U const & r) const
+  constexpr bool operator()(T const& l, U const & r) const
   { return l > r; }
 };
 
@@ -76,6 +76,7 @@ test_deduction_guide()
 }
 
 template<template<typename> class KeyContainer, template<typename> class MappedContainer>
+constexpr
 void
 test01()
 {
@@ -127,6 +128,7 @@ test01()
   VERIFY( m.end()[-1] == std::pair(20,42) );
 }
 
+constexpr
 void
 test02()
 {
@@ -158,6 +160,7 @@ test02()
   VERIFY( m.count(3) == 1 );
 }
 
+constexpr
 void
 test03()
 {
@@ -186,6 +189,7 @@ test03()
   VERIFY( std::ranges::equal(m, (std::pair<int, int>[]){{5, 6}}) );
 }
 
+constexpr
 void
 test04()
 {
@@ -218,6 +222,7 @@ test04()
   VERIFY( m5.values().get_allocator().get_personality() == 44 );
 }
 
+constexpr
 void
 test05()
 {
@@ -227,6 +232,7 @@ test05()
   VERIFY( std::ranges::equal(m | std::views::values, (int[]){-1, -2, -3, -4, -5}) );
 }
 
+constexpr
 void
 test06()
 {
@@ -243,6 +249,7 @@ test06()
   VERIFY( std::ranges::equal(m | std::views::values, (int[]){2, 3, 4, 5, 6}) );
 }
 
+constexpr
 void
 test07()
 {
@@ -254,6 +261,7 @@ test07()
   VERIFY( std::ranges::equal(m, (std::pair<int,int>[]){{3,4}}) );
 }
 
+constexpr
 void
 test08()
 {
@@ -263,6 +271,7 @@ test08()
   m[k] = 0;
 }
 
+constexpr
 void
 test09()
 {
@@ -274,8 +283,8 @@ test09()
   using value_type = std::pair<int, int>;
 }
 
-int
-main()
+void
+test()
 {
   test01<std::vector, std::vector>();
   test01<std::deque, std::deque>();
@@ -289,4 +298,32 @@ main()
   test07();
   test08();
   test09();
+}
+
+constexpr
+bool
+test_constexpr()
+{
+  test01<std::vector, std::vector>();
+  test02();
+  test03();
+  test04();
+  test05();
+  test06();
+  test07();
+  test08();
+  test09();
+  return true;
+}
+
+int
+main()
+{
+  test();
+#if __cplusplus > 202302L
+  static_assert(test_constexpr());
+#if __cpp_lib_constexpr_flat_map != 202502L
+#error "Feature-test macro __cpp_lib_constexpr_flat_map has wrong value in <flat_map>"
+#endif
+#endif
 }
