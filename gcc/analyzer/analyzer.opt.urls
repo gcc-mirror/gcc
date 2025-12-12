@@ -171,6 +171,9 @@ UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-feasibility)
 fanalyzer-show-duplicate-count
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-show-duplicate-count)
 
+fanalyzer-simplify-supergraph
+UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-simplify-supergraph)
+
 fanalyzer-state-purge
 UrlSuffix(gcc/Static-Analyzer-Options.html#index-fanalyzer-state-purge)
 
