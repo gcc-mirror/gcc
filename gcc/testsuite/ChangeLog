@@ -1,3 +1,25 @@
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/put_image2.ads: New test.
+
+2025-12-11  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/122215
+	* gcc.target/riscv/pr122215.c: New.
+	* lib/target-supports.exp (check_effective_target_valgrind): New.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/aggr33.adb: New test.
+
+2025-12-11  Jakub Jelinek  <jakub@redhat.com>
+
+	Backported from master:
+	2025-12-09  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c/123018
+	* gcc.dg/pr123018.c: New test.
+
 2025-12-10  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:

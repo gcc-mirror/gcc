@@ -1,3 +1,14 @@
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123096
+	* exp_put_image.adb (Build_Record_Put_Image_Procedure): Call
+	Incomplete_Or_Partial_View with Partial_Only set to True.
+
+2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123088
+	* sem_aggr.adb (Resolve_Record_Aggregate): Add missing guard.
+
 2025-12-08  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/123037

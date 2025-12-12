@@ -1,3 +1,10 @@
+2025-12-11  Frank Scheiner  <frank.scheiner@web.de>
+
+	Backported from master:
+	2025-11-25  Frank Scheiner  <frank.scheiner@web.de>
+
+	* affinity-fmt.c: Make char *q a pointer to a const char.
+
 2025-09-25  Tobias Burnus  <tburnus@baylibre.com>
 
 	Backported from master:
