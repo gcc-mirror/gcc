@@ -455,6 +455,31 @@ package body Errout is
       return (Text => new String'(Text), Span => Span, Next => No_Edit);
    end Edit;
 
+   ---------------
+   -- Insertion --
+   ---------------
+
+   function Insertion (Text : String; Location : Source_Ptr) return Edit_Type
+   is
+      function Location_Span (Loc : Source_Ptr) return Source_Span
+      is ((Ptr => Loc, First => Loc, Last => Loc - 1));
+      --  Returns a span for a given location without a span length. This is
+      --  useful for insertion edits where we want to distinguish it from a
+      --  span with a length of 1.
+
+   begin
+      return Edit (Text => Text, Span => Location_Span (Location));
+   end Insertion;
+
+   --------------
+   -- Deletion --
+   --------------
+
+   function Deletion (Span : Source_Span) return Edit_Type is
+   begin
+      return Edit (Text => "", Span => Span);
+   end Deletion;
+
    ---------
    -- Fix --
    ---------

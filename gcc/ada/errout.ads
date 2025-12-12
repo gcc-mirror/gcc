@@ -1048,6 +1048,12 @@ package Errout is
    function Edit (Text : String; Span : Source_Span) return Edit_Type;
    --  Constructs a Edit structure with all of its attributes.
 
+   function Insertion (Text : String; Location : Source_Ptr) return Edit_Type;
+   --  Constructs a Edit used to insert Text into the given Location
+
+   function Deletion (Span : Source_Span) return Edit_Type;
+   --  Constructs a Edit used to delete a given section of the source file
+
    function Fix (Description : String; Edits : Edit_Array) return Fix_Type;
    --  Constructs a Fix structure with all of its attributes.
 
