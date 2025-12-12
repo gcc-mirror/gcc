@@ -1,0 +1,7 @@
+begin proc a = (int in_k, proc int x1, x2, x3, x4, x5) int:
+         (int k := in_k;
+          proc b = int: a (k -:= 1, b, x1, x2, x3, x4);
+          (k <= 0 | x4 + x5 | b));
+
+      assert (a (10, int:1, int:-1, int:-1, int:1, int:0) = -67)
+end
