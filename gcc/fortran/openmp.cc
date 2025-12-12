@@ -1864,7 +1864,9 @@ gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
 			 "The specification of arguments to "
 			 "%<uses_allocators%> at %L where each item is of "
 			 "the form %<allocator(traits)%> is deprecated since "
-			 "OpenMP 5.2", &p->where);
+			 "OpenMP 5.2; instead use %<uses_allocators(traits(%s"
+			 "): %s)%>", &p->where, p->u2.traits_sym->name,
+			 p->sym->name);
 	}
       else if (gfc_peek_ascii_char () == '(')
 	{
