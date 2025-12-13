@@ -88,6 +88,8 @@ proc gnat_init { args } {
     global GNAT_UNDER_TEST
     global TOOL_EXECUTABLE
     global gnat_target_current
+    global gcc_warning_prefix
+    global gcc_error_prefix
 
     set gnat_target_current ""
 
@@ -104,6 +106,11 @@ proc gnat_init { args } {
     if ![info exists tmpdir] then {
 	set tmpdir /tmp
     }
+
+    # Setting these variables enables the use of relative line numbers
+    # in dg-error and dg-warning wrappers in gcc-dg.exp.
+    set gcc_warning_prefix ""
+    set gcc_error_prefix ""
 }
 
 proc gnat_target_compile { source dest type options } {
