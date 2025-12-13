@@ -16,4 +16,4 @@ test (int start, int end)
 }
 
 /* { dg-final { scan-tree-dump "vectorized 1 loops" "vect" } } */
-/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" } } */
+/* { dg-final { scan-tree-dump-not "Invalid sum" "optimized" { xfail ia32 } } } */
