@@ -1,3 +1,16 @@
+2025-12-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-scanner.cc (a68_lexical_analyser): New argument
+	empty_program.
+	* a68.h: Update prototype of a68_lexical_analyser.
+	* a68-parser.cc (a68_parser): Emit error for empty input files.
+
+2025-12-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* ga68.texi (@opindex I): Expand.
+	(@oindex L): New.
+	* lang.opt.urls: Regenerate.
+
 2025-12-10  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* lang.opt: Add entry for OPT_L.

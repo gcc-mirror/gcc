@@ -1,3 +1,21 @@
+2025-12-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* method.cc (constructible_expr): Emit diagnostics for abstract
+	types.
+	* typeck2.cc (abstract_virtuals_error): Use more accurate
+	wording for default case, and remove extranneous whitespace
+	in favour of a nesting level.
+
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_uses_allocators): New function.
+	(cp_parser_omp_clause_name, cp_parser_omp_all_clauses,
+	OMP_TARGET_CLAUSE_MASK): Handle uses_allocators.
+	* semantics.cc (finish_omp_clauses): Likewise.
+	* pt.cc (tsubst_omp_clauses): Likewise.
+
 2025-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/123098

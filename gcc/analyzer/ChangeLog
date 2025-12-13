@@ -1,3 +1,919 @@
+2025-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	* analyzer.opt.urls: Regenerate.
+
+2025-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122003
+	* analyzer-logging.h (class log_nesting_level): New.
+	(log_nesting_level::log_nesting_level): New.
+	(log_nesting_level::~log_nesting_level): New.
+	* analyzer.cc (is_cxa_end_catch_p): New.
+	* analyzer.opt (fdump-analyzer-callgraph): Make this as a no-op
+	preserved for backwards compatibility.
+	(fanalyzer-fine-grained): Likewise.
+	(fanalyzer-simplify-supergraph): New.
+	* bounds-checking.cc (strip_types): Update for changes to
+	widening_svalue.
+	* call-details.h: Include "pending-diagnostic.h".
+	* call-info.cc (custom_edge_info::get_dot_attrs): New.
+	(call_info::add_events_to_path): Add pending_diagnostic & param.
+	Fix indentation.
+	* call-info.h (call_info::add_events_to_path): Add
+	pending_diagnostic & param.
+	* call-string.cc (call_string::element_t::operator==): Reimplement.
+	(call_string::element_t::cmp): New.
+	(call_string::element_t::get_caller_function): Likewise.
+	(call_string::element_t::get_callee_function): Likewise.
+	(call_string::element_t::get_call_snode_in_caller): New.
+	(call_string::element_t::get_return_snode_in_caller): New.
+	(call_string::element_t::get_call_stmt): New.
+	(call_string::print): Update for new implementation.
+	(call_string::to_json): Likewise.
+	(call_string::push_call): Likewise.
+	(call_string::count_occurrences_of_function): Likewise.
+	(call_string::cmp): Likewise.
+	(call_string::get_callee_node): Delete.
+	(call_string::get_caller_node): Convert into...
+	(call_string::get_return_node_in_caller): ...this new function.
+	(call_string::validate): Update for new implementation.
+	(call_string::recursive_log): Likewise.
+	* call-string.h (class call_superedge): Delete forward decl.
+	(class return_superedge): Likewise.
+	(class call_and_return_op): New forward decl.
+	(struct call_string::element_t): Reimplement using
+	call_and_return_op, rather than relying on interprocedural edges
+	in the supergraph.
+	(class call_string): Likewise.
+	* call-summary.cc (call_summary::get_fndecl): Reimplement.
+	(call_summary_replay::convert_svalue_from_summary_1): Update for
+	changes to widening_svalue.
+	* checker-event.cc (event_kind_to_string): Update for renamings
+	of event_kind::{call_edge -> call_} and
+	event_kind::{return_edge -> return_}.
+	(region_creation_event_debug::print_desc): Update for change to
+	event_loc_info.
+	(state_change_event::state_change_event): Pass in event_loc_info
+	rather than stack_depth, and pass it to checker_event ctor.
+	(superedge_event::get_callgraph_superedge): Delete.
+	(superedge_event::should_filter_p): Reimplement in terms of
+	get_any_cfg_edge.
+	(superedge_event::get_call_and_return_op): New.
+	(superedge_event::superedge_event): Drop m_eedge and
+	m_critical_state.  Add assertion that the superedge is non-null.
+	(cfg_edge_event::get_cfg_superedge): Delete.
+	(cfg_edge_event::cfg_edge_event): Add "op" param, and remove
+	assertion refering to kinds of superedge.
+	(cfg_edge_event::get_meaning): Reimplement without
+	cfg_superedge.
+	(cfg_edge_event::get_cfg_edge): New.
+	(start_cfg_edge_event::print_desc): Use m_op.  Update for renaming
+	of superedge::m_index to superedge::m_id.
+	(start_cfg_edge_event::maybe_describe_condition): Reimplement in
+	ops.cc as gcond_edge_op::maybe_describe_condition.
+	(start_cfg_edge_event::should_print_expr_p): Reimplement in ops.cc
+	as gcond_edge_op::should_print_expr_p.
+	(call_event::call_event): Update for renaming of event_kind.  Drop
+	assertion about superedge kind.
+	(call_event::print_desc): Update for consolidation of m_var and
+	m_critical_state into a struct.
+	(return_event::return_event): Inherit directly from checker_event.
+	Drop assertion referring to kinds of superedge.  Initialize m_edge
+	and m_call_and_return_op.
+	(return_event::print_desc): Update for change to m_critical_state.
+	* checker-event.h (enum class event_kind): Rename call_edge to
+	call_, and return_edge to return_.
+	(state_change_event::state_change_event): Update for changes to
+	location-handling in base class ctor.
+	(state_change_event::record_critical_state): Drop this, moving
+	it to special-cases in the subclasses that need it.
+	(state_change_event::get_callgraph_superedge): Delete.
+	(superedge_event::get_call_and_return_op): New vfunc decl.
+	(superedge_event::m_var, superedge_event::m_critical_state): Drop
+	these fields from this class, combining them into a new struct
+	and moving the fields to the interprocedural event subclasses
+	where they make sense.
+	(cfg_edge_event::get_cfg_superedge): Delete.
+	(cfg_edge_event::get_cfg_edge): Add.
+	(cfg_edge_event::cfg_edge_event): Update for changes to location
+	handling in base class ctor.  Add "op".
+	(cfg_edge_event::m_op): New field.
+	(start_cfg_edge_event::start_cfg_edge_event): Update for changes
+	to base class ctor.
+	(start_cfg_edge_event::maybe_describe_condition): Drop.
+	(end_cfg_edge_event::end_cfg_edge_event): Update for changes to
+	base class ctor.
+	(catch_cfg_edge_event::catch_cfg_edge_event): Likewise.
+	(struct critical_state): New struct.
+	(call_event::record_critical_state): New decl.
+	(call_event::m_critical_state): New field.
+	(class return_event): Inherit from checker_event, rather than
+	superedge_event.
+	(return_event::get_call_and_return_op): New.
+	(return_event::record_critical_state): New.
+	(return_event::m_call_and_return_op): New field.
+	(return_event::m_critical_state): New field.
+	* common.h: Define INCLUDE_SET.
+	(class cfg_superedge): Drop forward decl.
+	(class switch_cfg_superedge): Likewise.
+	(class eh_dispatch_cfg_superedge): Likewise.
+	(class eh_dispatch_try_cfg_superedge): Likewise.
+	(class eh_dispatch_allowed_cfg_superedge): Likewise.
+	(class callgraph_superedge): Likewise.
+	(class call_superedge): Likewise.
+	(class return_superedge): Likewise.
+	(class stmt_finder): Likewise.
+	(class function_point): Likewise.
+	(class feasibility_state): New forward decl.
+	(class uncertainty_t): Likewise.
+	(useful_location_p): New.
+	(known_function::check_any_preconditions): New.
+	(custom_edge_info::get_dot_attrs): New decl.
+	(custom_edge_info::add_events_to_path): Add param
+	"pending_diagnostic &pd".
+	(is_cxa_end_catch_p): New decl.
+	* constraint-manager.cc
+	(bounded_ranges_manager::get_or_create_ranges_for_switch): Delete.
+	(bounded_ranges_manager::create_ranges_for_switch): Delete.
+	* constraint-manager.h
+	(bounded_ranges_manager::get_or_create_ranges_for_switch): Delete
+	decl.
+	(bounded_ranges_manager::create_ranges_for_switch): Likewise.
+	(bounded_ranges_manager::make_case_label_ranges): Make public for
+	use by ops code.
+	(bounded_ranges_manager::edge_cache_t): Delete.
+	(bounded_ranges_manager::m_edge_cache): Delete.
+	* diagnostic-manager.cc (pending_location::pending_location): New
+	ctor implementations.
+	(pending_location::to_json): New.
+	(epath_finder::get_best_epath): Rename param to "target_enode".
+	Drop param "target_stmt".  Update for renaming of
+	supernode::m_index to m_id.
+	(epath_finder::explore_feasible_paths): Drop param "target_stmt".
+	(process_worklist_item): Likewise.
+	(saved_diagnostic::saved_diagnostic): Pass in param "ploc" by
+	rvalue reference and store it in m_ploc.  Drop m_stmt_finder and
+	other fields made redundant by m_ploc.
+	(saved_diagnostic::get_supernode): New.
+	(saved_diagnostic::operator==): Update for changes to
+	location-tracking.
+	(saved_diagnostic::to_json): Update.
+	(saved_diagnostic::dump_as_dot_node): Drop m_stmt.
+	(saved_diagnostic::calc_best_epath): Update for change to
+	location-tracking.
+	(saved_diagnostic::supercedes_p): Likewise.
+	(saved_diagnostic::maybe_add_sarif_properties): Likewise.
+	(get_emission_location): Delete.
+	(diagnostic_manager::add_diagnostic): Pass "ploc" by rvalue
+	reference, moving it to the saved_diagnostic.  Update early
+	rejection check, and call fixup_location before-hand.
+	(class dedupe_key): Drop m_stmt field, and update for changes
+	to saved_diagnostic.
+	(dedupe_winners::add): Call get_best_epath here, and call
+	fixer_for_epath on it.
+	(diagnostic_manager::emit_saved_diagnostics): Update for
+	changes to saved_diagnostic and supernode.
+	(diagnostic_manager::emit_saved_diagnostic): Likewise.
+	Use the pending_location from the saved_diagnostic for the
+	location of the final event, and for the primary location of the
+	diagnostic itself.
+	(diagnostic_manager::build_emission_path): Use useful_location_p.
+	(state_change_event_creator::on_global_state_change): Update for
+	changes to location-tracking.
+	(state_change_event_creator::on_state_change): Likewise.
+	(struct null_assignment_sm_context): Reimplement within ops.cc.
+	(diagnostic_manager::add_events_for_eedge): Reimplement.
+	(diagnostic_manager::add_events_for_superedge): Delete in favor of
+	control_flow_op::add_any_events_for_eedge.
+	(diagnostic_manager::prune_for_sm_diagnostic): Update call/return
+	for event_kind renamings, and to use call_and_return_op rathern
+	than callgraph_superedge.
+	(diagnostic_manager::consolidate_conditions): Port from
+	cfg_superedge to get_cfg_edge.
+	* diagnostic-manager.h: Include "analyzer/supergraph.h" and
+	"analyzer/event-loc-info.h".
+	(struct pending_location): Move decl earlier in file.  Replace
+	the existing specified ctors with 3 new ones.  Add comments.
+	(class pending_location::fixer_for_epath): New.
+	(pending_location::get_location): New.
+	(pending_location::to_json): New decl.
+	(pending_location::m_snode): Drop redundant field.
+	(pending_location::m_event_loc_info): New field, replacing m_stmt
+	and m_loc.
+	(pending_location::m_finder): Replace with...
+	(pending_location::m_fixer_for_epath): ...this new field.
+	(make_ploc_fixer_for_epath_for_leak_diagnostic): New decl.
+	(saved_diagnostic::saved_diagnostic): Pass in param "ploc" by
+	rvalue reference and store it in m_ploc.
+	(saved_diagnostic::get_supernode): New.
+	(saved_diagnostic::m_ploc): New field, replacing m_enode,
+	m_snode, m_stmt, m_stmt_finder, and m_loc.
+	(diagnostic_manager::add_diagnostic): Pass ploc as rvalue
+	reference.
+	(diagnostic_manager::add_events_for_superedge): Delete decl.
+	* engine.cc: Include "gimple-predict.h" and
+	"analyzer/impl-sm-context.h".
+	(impl_region_model_context::impl_region_model_context): Drop
+	stmt_finder.
+	(impl_region_model_context::warn): Convert to...
+	(impl_region_model_context::warn_at): ...this.
+	(class impl_sm_context): Move to impl-sm-context.h.
+	(impl_region_model_context::get_state_map_by_name): Drop
+	m_stmt_finder.
+	(class leak_stmt_finder): Reimplement as...
+	(class leak_ploc_fixer_for_epath): ...this.
+	(make_ploc_fixer_for_epath_for_leak_diagnostic): New.
+	(returning_from_function_p): Update for supergraph changes.
+	(impl_region_model_context::on_state_leak): Port from
+	leak_stmt_finder to leak_ploc_fixer_for_epath.
+	(impl_region_model_context::on_condition): Update for
+	location-handling changes.
+	(impl_region_model_context::on_bounded_ranges): Likewise.
+	(impl_region_model_context::on_phi): Likewise.
+	(impl_region_model_context::get_pending_location_for_diag): New.
+	(exploded_node::status_to_str): Add status::special.
+	(exploded_node::get_processed_stmt): Delete.
+	(exploded_node::dump_dot): Elide state if we have a single
+	predecessor  and the state hasn't changed.
+	(exploded_node::dump_processed_stmts): Delete.
+	(exploded_node::on_stmt): Delete, reimplementing in ops.cc as
+	gimple_stmt_op::execute_on_state, call_and_return_op::execute, and
+	operation::handle_on_stmt_for_state_machines.
+	(exploded_node::on_stmt_pre): Delete, reimplementing in ops.cc as
+	call_and_return_op::make.
+	(exploded_node::on_stmt_post): Delete.
+	(class call_summary_edge_info): Move to ops.cc.
+	(exploded_node::replay_call_summaries): Delete.
+	(exploded_node::replay_call_summary): Delete.
+	(exploded_node::on_edge): Delete.
+	(exploded_node::on_longjmp): Eliminate ambiguous "setjmp_point"
+	and "next_point" in favor of "point_before_setjmp" and
+	"point_after_setjmp".
+	(exploded_graph::unwind_from_exception): Update for changes to
+	program_point.
+	(exploded_node::on_throw): Convert "after_throw_point" to a param.
+	(exploded_node::on_resx): Delete.
+	(exploded_node::detect_leaks): Update for renaming of
+	supernode::return_p to supernode::exit_p, and drop stmt param of
+	impl_region_model_context ctor.
+	(dynamic_call_info_t::update_model): Delete.
+	(dynamic_call_info_t::add_events_to_path): Delete.
+	(interprocedural_call::print): New.
+	(interprocedural_call::get_dot_attrs): New.
+	(interprocedural_call::update_state): New.
+	(interprocedural_call::update_model): New.
+	(interprocedural_call::add_events_to_path): New.
+	(interprocedural_return::print): New.
+	(interprocedural_return::get_dot_attrs): New.
+	(interprocedural_return::update_state): New.
+	(interprocedural_return::update_model): New.
+	(interprocedural_return::add_events_to_path): New.
+	(rewind_info_t::add_events_to_path): Add pending_diagnostic &
+	param.
+	(exploded_edge::dump_dot_label): Drop superedge kinds.  Show
+	op vs no-op.  Flush before printing any superedge label, and
+	escape that label.
+	(exploded_edge::maybe_get_stmt): New.
+	(exploded_edge::maybe_get_op): New.
+	(stats::stats): Update for change to m_num_nodes;
+	(stats::log): Likewise.
+	(stats::dump): Likewise.
+	(stats::get_total_enodes): Likewise.
+	(strongly_connected_components::strongly_connected_components):
+	Update for changes to supergraph.
+	(strongly_connected_components::dump): Show the stack.  Update for
+	changes to supernode.
+	(strongly_connected_components::to_json): Update for changes to
+	supergraph.
+	(strongly_connected_components::strong_connect): Rename "index" to
+	"id".  Drop superedge kinds.
+	(worklist::key_t::cmp): Compare BB indexes before snode ids.
+	Drop function_point.
+	(exploded_graph::exploded_graph): Update stats initialization.
+	(tainted_args_function_info::update_model): Reimplement.
+	(tainted_args_function_info::add_events_to_path): Add param.
+	(exploded_graph::get_or_create_node): Check for recursion limit
+	here, rather than in program_point::on_edge and
+	exploded_graph::maybe_create_dynamic_call.  Only merge state
+	for points with state_merge_at_p.  Update stats tracking for
+	changes to supergraph.  Fix wording of log of state.
+	(exploded_graph::get_or_create_per_call_string_data): Update for
+	supergraph changes.
+	(tainted_args_call_info::update_model): Reimplement.
+	(tainted_args_call_info::add_events_to_path): Add param.
+	(exploded_graph::process_worklist): Drop assertions that nodes
+	have no successors, due to some cases during unwinding exceptions.
+	Update call to maybe_process_run_of_before_supernode_enodes to
+	call to maybe_process_run_of_enodes, and only at points for
+	which state_merge_at_p.  Reimplement "too complex" check.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Convert to...
+	(exploded_graph::maybe_process_run_of_enodes): ...this.  Only
+	consider nodes with a single successor in the supergraph and for
+	which that superedge supports_bulk_merge_p.  Port state updates to
+	using operation::update_state_for_bulk_merger.
+	(stmt_requires_new_enode_p): Delete.
+	(state_change_requires_new_enode_p): Delete.
+	(exploded_graph::maybe_create_dynamic_call): Delete.
+	(class impl_path_context): Reimplement in ops.cc.
+	(class jump_through_null): Move to region-model.cc.
+	(exploded_graph::process_node): Use location_t from supernode,
+	rather than trying to have a stmt associated with a supernode.
+	Drop switch on program_point kind, instead using the operation, if any,
+	from the superedge.
+	(exploded_graph::get_or_create_function_stats): Update computation
+	of num_supernodes for the function.
+	(exploded_graph::print_bar_charts): Update for supergraph changes.
+	(exploded_graph::dump_stats): Likewise.
+	(exploded_graph::dump_states_for_supernode): Delete.
+	(exploded_graph::to_json): Update comment.
+	(exploded_path::find_stmt_backwards): Update for supergraph
+	reimplementation.
+	(exploded_path::feasible_p): Drop "last_stmt".
+	(feasibility_state::maybe_update_for_edge): Move most of
+	implementation to ops and custom_edge_infos.
+	(feasibility_state::update_for_stmt): Delete.
+	(supernode_cluster::dump_dot): Update for supernode changes.
+	(supernode_cluster::cmp_ptr_ptr): Likewise.
+	(exploded_graph::dump_exploded_nodes): Update for
+	location-handling changes, and for changes to supergraph
+	representation.
+	(class viz_callgraph_node): Delete
+	(class viz_callgraph_edge): Delete.
+	(class viz_callgraph): Delete.
+	(class viz_callgraph_cluster): Delete.
+	(struct viz_callgraph_traits): Delete.
+	(dump_callgraph): Delete.
+	(exploded_graph_annotator::exploded_graph_annotator): Update for
+	supernode::m_index becoming supernode:m_id.
+	(exploded_graph_annotator::add_node_annotations): Reimplement to
+	show enodes within the node for the supernode.
+	(exploded_graph_annotator::print_enode_port): New.
+	(exploded_graph_annotator::print_enode): Add port.
+	(exploded_graph_annotator::print_saved_diagnostic): Drop stmt.
+	(exploded_graph_annotator::m_enodes_per_snodes): Convert to...
+	(exploded_graph_annotator::m_enodes_per_snode_id): ...this, using
+	std::vector.
+	(maybe_dump_supergraph): New.
+	(impl_run_checkers): Create region_model_manager before supergraph
+	and pass it to supergraph ctor.  Dump the original form of the
+	supergraph, then call fixup_locations, simplify, and sort_nodes on
+	the supergraph, dumping it at each stage.  Drop dump_callgraph.
+	Replace dump to "NAME.supergraph-eg.dot" with dump to
+	"NAME.supergraph.N.eg.dot".
+	* event-loc-info.h (event_loc_info::event_loc_info): Add ctors taking
+	const exploded_node * and const program_point &.
+	* exploded-graph.h: Add include of "analyzer/region-model.h".
+	(impl_region_model_context::impl_region_model_context): Add default
+	for "stmt" param. Drop "stmt_finder" param.
+	(impl_region_model_context::warn): Convert to...
+	(impl_region_model_context::warn_at): ...this.
+	(impl_region_model_context::get_pending_location_for_diag): New.
+	(impl_region_model_context::m_stmt_finder): Drop.
+	(struct exploded_node::on_stmt_flags): Drop.
+	(exploded_node::on_stmt): Drop.
+	(exploded_node::on_stmt_pre): Drop.
+	(exploded_node::on_stmt_post): Drop.
+	(exploded_node::replay_call_summaries): Drop.
+	(exploded_node::replay_call_summary): Drop.
+	(exploded_node::on_edge): Drop.
+	(exploded_node::on_throw): Add "after_throw_point" param.
+	(exploded_node::on_resx): Drop.
+	(exploded_node::get_location): New.
+	(exploded_node::get_stmt): Drop.
+	(exploded_node::get_processed_stmt): Drop.
+	(exploded_node::maybe_get_stmt): New decl.
+	(exploded_node::maybe_get_op): New decl.
+	(class dynamic_call_info_t): Delete.
+	(class interprocedural_call): New.
+	(class interprocedural_return): New.
+	(rewind_info_t::add_events_to_path): Add pending_diagnostic &
+	param.
+	(rewind_info_t::get_setjmp_point): Replace with...
+	(rewind_info_t::get_point_before_setjmp): ...this...
+	(rewind_info_t::get_point_after_setjmp): ...and this.
+	(stats::m_num_nodes): Convert from an array to a plain int.
+	(class strongly_connected_components): Convert from index to id
+	throughout.
+	(exploded_graph::maybe_process_run_of_before_supernode_enodes):
+	Replace with...
+	(exploded_graph::maybe_process_run_of_enodes): ...this.
+	(exploded_graph::maybe_create_dynamic_call): Delete.
+	(exploded_graph::save_diagnostic): Drop stmt_finder param.
+	(exploded_graph::dump_states_for_supernode): Drop.
+	(exploded_graph::m_PK_AFTER_SUPERNODE_per_snode): Drop.
+	(class feasibility_problem): Drop "m_last_stmt".
+	(feasibility_state::update_for_stmt): Drop.
+	(feasibility_state::get_model): Add non-const accessor.
+	(feasibility_state::get_snodes_visited): New accessor.
+	(class stmt_finder): Drop.
+	* feasible-graph.cc (feasible_node::dump_dot): Drop call to
+	dump_processed_stmts.
+	(feasible_node::get_state_at_stmt): Drop.
+	* impl-sm-context.h: New file, adapted from material in engine.cc.
+	* infinite-loop.cc
+	(perpetual_start_cfg_edge_event::perpetual_start_cfg_edge_event):
+	Add "op" param.
+	(perpetual_start_cfg_edge_event::print_desc): Use m_op to describe
+	condition.
+	(looping_back_event::looping_back_event): Add "op" param.
+	(infinite_loop_diagnostic::maybe_add_custom_events_for_superedge):
+	Convert to...
+	(infinite_loop_diagnostic::maybe_add_custom_events_for_eedge):
+	...this.
+	(infinite_loop_diagnostic::add_final_event): Port from
+	cfg_superedge to get_any_cfg_edge and operations.  Update for
+	location-handling changes.
+	(get_in_edge_back_edge): Port from cfg_superedge to
+	get_any_cfg_edge.
+	(starts_infinite_loop_p): Update for location-handling changes.
+	(exploded_graph::detect_infinite_loops): Remove redundant params.
+	* infinite-recursion.cc
+	(infinite_recursion_diagnostic::add_final_event): Update for
+	location-handling changes.
+	(infinite_recursion_diagnostic::check_valid_fpath_p): Drop gimple
+	param.
+	(infinite_recursion_diagnostic::fedge_uses_conjured_svalue_p):
+	Port from cfg_superedge to operations.
+	(is_entrypoint_p): Update for supergraph changes.
+	(exploded_graph::detect_infinite_recursion): Update for
+	location-handling changes.
+	* kf-lang-cp.cc (kf_operator_new::impl_call_pre): Split out
+	code to handle placement-new into...
+	(kf_operator_new::check_any_preconditions): ...this...
+	(kf_operator_new::get_sized_region_for_placement_new): ...and
+	this.
+	* ops.cc: New file, albeit with material adatpted from old
+	implementation.
+	* ops.h: Likewise.
+	* pending-diagnostic.cc (pending_diagnostic::add_call_event): Add
+	gcall param.  Update for changes to location-handling.
+	* pending-diagnostic.h
+	(pending_diagnostic::maybe_add_custom_events_for_superedge):
+	Convert to...
+	(pending_diagnostic::maybe_add_custom_events_for_eedge): ...this.
+	(pending_diagnostic::add_call_event): Add "call_stmt" param.
+	(pending_diagnostic::check_valid_fpath_p): Drop stmt param.
+	* program-point.cc (point_kind_to_string): Delete.
+	(function_point::function_point): Delete.
+	(function_point::print): Delete.
+	(function_point::hash): Delete.
+	(function_point::get_function): Delete.
+	(function_point::get_stmt): Delete.
+	(function_point::get_location): Delete.
+	(function_point::final_stmt_p): Delete.
+	(function_point::from_function_entry): Delete.
+	(function_point::before_supernode): Delete.
+	(function_point::print_source_line): Convert to...
+	(program_point::print_source_line): ...this.
+	(program_point::print): Reimplement.
+	(program_point::to_json): Likewise.
+	(program_point::push_to_call_stack): Delete.
+	(program_point::hash): Reimplement.
+	(program_point::get_function_at_depth): Likewise.
+	(program_point::on_edge): Delete.
+	(function_point::cmp_within_supernode_1): Delete.
+	(function_point::cmp_within_supernode): Delete.
+	(function_point::cmp): Delete.
+	(function_point::cmp_ptr): Delete.
+	(function_point::next_stmt): Delete.
+	(function_point::get_next): Delete.
+	(program_point::origin): Update.
+	(program_point::from_function_entry): Update.
+	(program_point::get_next): Delete.
+	(selftest::test_function_point_equality): Delete.
+	(selftest::test_function_point_ordering): Delete.
+	(selftest::test_program_point_equality): Update for changes to
+	program_point.
+	(selftest::analyzer_program_point_cc_tests): Don't call deleted
+	function_point tests.
+	* program-point.h: Include "analyzer/supergraph.h".
+	(class exploded_graph): Drop forward decl.
+	(enum point_kind): Drop.
+	(point_kind_to_string): Drop decl.
+	(class function_point): Delete.
+	(program_point::program_point): Take a const supernode *
+	rather than a const function_point &.
+	(program_point::print_source_line): New decl.
+	(program_point::operator==): Update.
+	(program_point::get_function_point): Drop.
+	(program_point::get_supernode): Reimplement.
+	(program_point::get_function): Reimplement.
+	(program_point::get_fndecl): Reimplement.
+	(program_point::get_stmt): Drop.
+	(program_point::get_location): Reimplement.
+	(program_point::get_kind): Drop.
+	(program_point::get_from_edge): Drop.
+	(program_point::get_stmt_idx): Drop.
+	(program_point::get_stack_depth): Update.
+	(program_point::state_merge_at_p): New.
+	(program_point::before_supernode): Drop.
+	(program_point::before_stmt): Drop.
+	(program_point::after_supernode): Drop.
+	(program_point::empty): Drop.
+	(program_point::deleted): Drop.
+	(program_point::on_edge): Drop.
+	(program_point::push_to_call_stack): Drop.
+	(program_point::next_stmt): Drop.
+	(program_point::get_next): Drop.
+	(program_point::m_function_point): Replace with...
+	(program_point::m_snode): ...this.
+	* program-state.cc (program_state::on_edge): Delete.
+	(program_state::push_call): Delete.
+	(program_state::returning_call): Delete.
+	(program_state::prune_for_point): Port from function_point to
+	supernode.  Drop stmt param to impl_region_model_context ctor.
+	(selftest::test_sm_state_map): Update for engine borrowing rather
+	owning the region_model_manager.
+	(selftest::test_program_state_1): Likewise.
+	(selftest::test_program_state_2): Likewise.
+	(selftest::test_program_state_merging): Likewise.
+	(selftest::test_program_state_merging_2): Likewise.
+	* program-state.h (program_state::push_call): Delete decl.
+	(program_state::returning_call): Delete decl.
+	(program_state::on_edge): Delete decl.
+	* region-model-manager.cc (region_model_manager::maybe_fold_unaryop):
+	Only fold constants if we have a type.
+	(region_model_manager::get_or_create_widening_svalue): Port from
+	function_point to supernode.
+	* region-model-manager.h
+	(region_model_manager::get_or_create_widening_svalue): Likewise.
+	* region-model.cc
+	(poisoned_value_diagnostic::check_valid_fpath_p): Drop code for
+	handling function_points within an snode.
+	(exception_thrown_from_unrecognized_call::add_events_to_path): Add
+	pending_diagnostic param.
+	(class jump_through_null): Move here from engine.cc.
+	(region_model::on_call_pre): Check for jump through null here,
+	rather than in exploded_graph::process_node.
+	(region_model::on_setjmp): Add superedge param and pass it to
+	setjmp_record ctor.
+	(region_model::handle_phi): Delete, in favor of
+	phis_for_edge_op::update_state in ops.cc.
+	(region_model::update_for_phis): Likewise.
+	(region_model::maybe_update_for_edge): Delete.
+	(region_model::update_for_call_superedge): Delete.
+	(region_model::update_for_return_superedge): Delete.
+	(region_model::apply_constraints_for_gcond): Reimplement in ops.cc as
+	gcond_edge_op::apply_constraints.
+	(has_nondefault_case_for_value_p): Move to ops.cc.
+	(has_nondefault_cases_for_all_enum_values_p): Move to ops.cc
+	(region_model::apply_constraints_for_gswitch): Reimplement in
+	ops.cc as switch_case_op::apply_constraints.
+	(class rejected_eh_dispatch): Move to ops.cc.
+	(exception_matches_type_p): Move to ops.cc.
+	(matches_any_exception_type_p): Move to ops.cc.
+	(region_model::apply_constraints_for_eh_dispatch): Reimplement in
+	ops.cc as eh_dispatch_edge_op::apply_constraints.
+	(region_model::apply_constraints_for_eh_dispatch_try): Reimplement
+	in ops.cc as eh_dispatch_try_edge_op::apply_eh_constraints.
+	(region_model::apply_constraints_for_eh_dispatch_allowed):
+	Reimplement in ops.cc as
+	eh_dispatch_allowed_edge_op::apply_eh_constraints.
+	(region_model::apply_constraints_for_ggoto): Reimplement in ops.cc
+	as ggoto_edge_op::apply_constraints.
+	(caller_context::warn): Replace with...
+	(caller_context::get_pending_location_for_diag): ...this.
+	(region_model::get_or_create_region_for_heap_alloc): Fix
+	indentation.
+	(region_model_context::warn): New, replacing vfunc with
+	shared code that calls get_pending_location_for_diag and warn_at
+	vfuncs.
+	(engine::engine): Borrow m_mgr rather than own it.
+	(seldtest::test_state_merging): Update test for ptrs to different
+	base regions becoming unmergeable.
+	(selftest::test_widening_constraints): Port from function_point to
+	supernode.
+	* region-model.h: Include "analyzer/diagnostic-manager.h".
+	(region_model::on_setjmp): Add superedge param.
+	(region_model::void update_for_phis): Drop decl.
+	(region_model::handle_phi): Drop decl.
+	(region_model::maybe_update_for_edge): Drop decl.
+	(region_model::apply_constraints_for_eh_dispatch_try): Drop decl.
+	(region_model::apply_constraints_for_eh_dispatch_allowed): Drop
+	decl.
+	(region_model::update_for_call_superedge): Drop decl.
+	(region_model::update_for_return_superedge): Drop decl.
+	(region_model::apply_constraints_for_gcond): Drop decl.
+	(region_model::apply_constraints_for_gswitch): Drop decl.
+	(region_model::apply_constraints_for_ggoto): Drop decl.
+	(region_model::apply_constraints_for_eh_dispatch): Drop decl.
+	(region_model_context::warn): Convert from vfunc to func.
+	(region_model_context::get_pending_location_for_diag): New vfunc.
+	(region_model_context::warn_at): New vfunc.
+	(class noop_region_model_context): Update for changes to
+	region_model_context.
+	(class region_model_context_decorator): Likewise.
+	(class annotating_context): Likewise.
+	(struct model_merger): Port from function_point to supernode.
+	(class engine): Borrow m_mgr rather than own it.
+	(class test_region_model_context): Update for changes to
+	region_model_context.
+	* region.cc (frame_region::get_region_for_local): Update for
+	change to supergraph.
+	* sm-fd.cc: Drop redundant params throughout.  Pass stmt
+	rather than node to the various on_ calls.
+	* sm-file.cc: Drop redundant params throughout.
+	(register_known_file_functions): Register "*_unlocked" versions of
+	functions that I'd missed.
+	* sm-malloc.cc: Drop redundant params throughout.
+	(deref_before_check::loop_header_p): Reimplement cfg_superedge
+	check.
+	(malloc_state_machine::on_stmt): Move attribute-handling to...
+	(malloc_state_machine::check_call_preconditions): ...this new
+	function.
+	(maybe_complain_about_deref_before_check): Use
+	sm_ctxt.get_emission_location when checking for inlining.
+	* sm-pattern-test.cc: Drop redundant params throughout.
+	* sm-sensitive.cc: Likewise.
+	* sm-signal.cc: Likewise.
+	* sm-taint.cc: Likewise.
+	* sm.cc: Fix unused param warnings.
+	* sm.h: Include "analyzer/analyzer-logging.h".  Drop redundant
+	params throughout.
+	(state_machine::check_call_preconditions): New vfunc.
+	(sm_context::get_state): Drop "stmt" args.
+	(sm_context::set_next_state): Likewise.
+	(sm_context::on_transition): Drop "stmt" and "node" args.
+	(sm_context::warn): Likewise.
+	(sm_context::get_emission_location): New vfunc.
+	* state-purge.cc: Define INCLUDE_SET.
+	(class gimple_op_visitor): Replace function_point and function
+	with superedge.
+	(state_purge_map::state_purge_map): Iterate through ops on edges,
+	rather than on stmts in supernodes.
+	(state_purge_map::on_duplicated_node): New.
+	(state_purge_map::get_or_create_data_for_decl): Use supernode
+	rather than function_point.
+	(state_purge_per_ssa_name::state_purge_per_ssa_name): Likewise.
+	(state_purge_per_ssa_name::needed_at_point_p): Replace with...
+	(state_purge_per_ssa_name::needed_at_supernode_p): ...this.
+	(state_purge_per_ssa_name::before_use_stmt): Delete.
+	(state_purge_per_ssa_name::add_to_worklist): Use supernode rather
+	than function_point.
+	(name_used_by_phis_p): Delete.
+	(state_purge_per_ssa_name::process_point): Replace with...
+	(state_purge_per_ssa_name::process_supernode): ...this.
+	(state_purge_per_ssa_name::on_duplicated_node): New.
+	(state_purge_per_decl::state_purge_per_decl): Use supernode rather
+	than function_point.
+	(state_purge_per_decl::add_needed_at): Likewise.
+	(state_purge_per_decl::add_pointed_to_at): Likewise.
+	(state_purge_per_decl::process_worklists): Likewise.
+	(state_purge_per_decl::add_to_worklist): Likewise.
+	(state_purge_per_decl::process_point_backwards): Replace with...
+	(state_purge_per_decl::process_supernode_backwards): ...this.
+	(state_purge_per_decl::process_point_forwards): Replace with...
+	(state_purge_per_decl::process_supernode_forwards): ...this.
+	(state_purge_per_decl::needed_at_point_p): Replace with...
+	(state_purge_per_decl::needed_at_supernode_p): ...this.
+	(state_purge_per_decl::on_duplicated_node): New.
+	(print_vec_of_names): Drop "within_table" param.
+	(state_purge_annotator::add_stmt_annotations): Drop.
+	(state_purge_annotator::add_node_annotations): Reimplement.
+	* state-purge.h: Convert throughout from function_point to
+	supernode.
+	(state_purge_map::on_duplicated_node): New decl.
+	(state_purge_per_ssa_name::on_duplicated_node): Likewise.
+	(state_purge_per_decl::on_duplicated_node): Likewise.
+	* store.cc (needs_loop_replay_fixup_p): New.
+	(store::loop_replay_fixup): Use it rather than checking for
+	SK_WIDENING.
+	* supergraph-fixup-locations.cc: New file.
+	* supergraph-manipulation.h: New file.
+	* supergraph-simplify.cc: New file.
+	* supergraph-sorting.cc: New file.
+	* supergraph.cc: Define INCLUDE_DEQUE.  Drop include of
+	"tree-dfa.h".  Include "diagnostics/file-cache.h"
+	and "analyzer/exploded-graph.h".
+	(supergraph_call_edge): Delete.
+	(control_flow_stmt_p): New.
+	(supergraph::supergraph): Add "mgr" param.  Initialize
+	m_next_snode_id.  Reimplement.
+	(supergraph::populate_for_basic_block): New.
+	(supergraph::dump_dot_to_pp): Add auto_cfun sentinel.
+	Split up nodes using loop information from the original CFG,
+	then by basic block.  Call the node_annotator's
+	add_extra_objects vfunc.
+	(supergraph::dump_dot_to_gv_for_loop): New.
+	(supergraph::dump_dot_to_gv_for_bb): New, based on code in
+	dump_dot_to_pp.
+	(supergraph::add_node): Drop "returning_call" and "phi_nodes"
+	params. Add logger param and logging.  Use m_next_snode_id to
+	allow for node deletion.
+	(supergraph::add_cfg_edge): Delete.
+	(supergraph::add_call_superedge): Delete.
+	(supergraph::add_return_superedge): Delete.
+	(supergraph::delete_nodes): New.
+	(supergraph::add_sedges_for_cfg_edge): New.
+	(supernode::dump_dot): Drop output cluster, moving
+	add_node_annotations to within the dot node.  Show any SCC id.
+	Show m_preserve_p and m_state_merger_node.  Update for renaming of
+	supernode::return_p to supernode::exit_p.  Highlight nodes without
+	source location information.  Show m_loc and m_stmt_loc.  Show
+	source lines, with color for highlight.
+	(supernode::dump_dot_id): Update.
+	(supernode::to_json): Update.
+	(supernode::get_start_location): Delete.
+	(supernode::get_end_location): Delete.
+	(supernode::get_stmt_index): Delete.
+	(supernode::get_label): Delete.
+	(edge_kind_to_string): Delete.
+	(superedge::dump): Update for supernode::m_index becoming m_id.
+	(superedge::dump_dot): Drop ltail/lhead attrs.  Flush after
+	dumping the label.
+	(superedge::to_json): Reimplement.
+	(superedge::get_any_cfg_edge): Delete.
+	(superedge::get_any_callgraph_edge): Delete.
+	(superedge::preserve_p): New.
+	(superedge::supports_bulk_merge_p): New.
+	(cfg_superedge::dump_label_to_pp): Delete.
+	(superedge::dump_label_to_pp): New.
+	(cfg_superedge::get_phi_arg_idx): Delete.
+	(cfg_superedge::get_phi_arg): Delete.
+	(switch_cfg_superedge::switch_cfg_superedge): Delete.
+	(switch_cfg_superedge::dump_label_to_pp): Delete.
+	(switch_cfg_superedge::implicitly_created_default_p): Delete.
+	(get_catch): Move to ops.cc.
+	(eh_dispatch_cfg_superedge::make): Delete in favor of
+	eh_dispatch_edge_op::make.
+	(eh_dispatch_cfg_superedge::eh_dispatch_cfg_superedge): Delete.
+	(eh_dispatch_cfg_superedge::get_eh_status): Delete.
+	(eh_dispatch_try_cfg_superedge::dump_label_to_pp): Delete.
+	(eh_dispatch_try_cfg_superedge::apply_constraints): Delete.
+	(eh_dispatch_allowed_cfg_superedge::eh_dispatch_allowed_cfg_superedge):
+	Delete.
+	(eh_dispatch_allowed_cfg_superedge::dump_label_to_pp): Delete.
+	(eh_dispatch_allowed_cfg_superedge::apply_constraints): Delete.
+	(callgraph_superedge::dump_label_to_pp): Delete.
+	(callgraph_superedge::get_callee_function): Delete.
+	(callgraph_superedge::get_caller_function): Delete
+	(callgraph_superedge::get_callee_decl): Delete
+	(callgraph_superedge::get_call_stmt): Delete
+	(callgraph_superedge::get_caller_decl): Delete
+	(callgraph_superedge::get_arg_for_parm): Delete in favor of
+	call_and_return_op::get_arg_for_parm in ops.cc.
+	(callgraph_superedge::get_parm_for_arg): Delete in favor of
+	call_and_return_op::get_parm_for_arg in ops.cc.
+	(callgraph_superedge::map_expr_from_caller_to_callee): Delete in
+	favor of call_and_return_op::map_expr_from_caller_to_callee in
+	ops.cc.
+	(callgraph_superedge::map_expr_from_callee_to_caller): Delete in
+	favor of call_and_return_op::map_expr_from_callee_to_caller in
+	ops.cc.
+	* supergraph.h: Include "cfgloop.h" and "analyzer/ops.h".
+	(enum edge_kind): Delete.
+	(struct supergraph_traits::dump_args_t): Add m_eg.
+	(class supergraph): Rewrite leading comment.
+	(supergraph::supergraph): Add "mgr" param.
+	(supergraph::get_node_for_function_entry): Reimplement.
+	(supergraph::get_node_for_function_exit): Reimplement.
+	(supergraph::get_node_for_block): Convert to...
+	(supergraph::get_initial_node_for_block): ...this.
+	(supergraph::get_caller_next_node): Delete.
+	(supergraph::get_edge_for_call): Delete.
+	(supergraph::get_edge_for_return): Delete.
+	(supergraph::get_intraprocedural_edge_for_call): Delete.
+	(supergraph::get_edge_for_cfg_edge): Delete.
+	(supergraph::get_supernode_for_stmt): Delete.
+	(supergraph::get_final_node_for_block): New.
+	(supergraph::get_supernode_for_stmt): New.
+	(supergraph::get_superedge_for_phis): New.
+	(supergraph::get_node_by_index): Delete.
+	(supergraph::add_node): Drop "returning_call" and "phi_nodes"
+	params.  Add logger param.
+	(supergraph::add_cfg_edge): Delete.
+	(supergraph::add_call_superedge): Delete.
+	(supergraph::add_return_superedge): Delete.
+	(supergraph::log_stats): New decl.
+	(supergraph::delete_nodes): New decl.
+	(supergraph::fixup_locations): New decl.
+	(supergraph::simplify): New decl.
+	(supergraph::sort_nodes): New decl.
+	(supergraph::populate_for_basic_block): New decl.
+	(supergraph::add_sedges_for_cfg_edge): New decl.
+	(supergraph::dump_dot_to_gv_for_loop): New decl.
+	(supergraph::dump_dot_to_gv_for_bb): New decl.
+	(supergraph::reorder_nodes_and_ids): New decl.
+	(supergraph::bb_to_node_t): Make private.
+	(supergraph::m_bb_to_initial_node): Make private.
+	(supergraph::m_bb_to_final_node): Make private.
+	(supergraph::cgraph_edge_to_node_t): Delete typedef.
+	(supergraph::m_cgraph_edge_to_caller_prev_node): Delete.
+	(supergraph::m_cgraph_edge_to_caller_next_node): Delete.
+	(supergraph::cfg_edge_to_cfg_superedge_t): Delete typedef.
+	(supergraph::m_cfg_edge_to_cfg_superedge): Delete.
+	(supergraph::cgraph_edge_to_call_superedge_t): Delete typedef.
+	(supergraph::m_cgraph_edge_to_call_superedge): Delete
+	(supergraph::cgraph_edge_to_return_superedge_t): Delete typedef.
+	(supergraph::m_cgraph_edge_to_return_superedge): Delete.
+	(supergraph::cgraph_edge_to_intraproc_superedge_t): Delete
+	typedef.
+	(supergraph::m_cgraph_edge_to_intraproc_superedge): Delete.
+	(supergraph::stmt_to_node_t): Delete typedef.
+	(supergraph::m_stmt_to_node_t): Replace with...
+	(supergraph::m_node_for_stmt): ...this.
+	(supergraph::m_edges_for_phis): New field.
+	(supergraph::m_next_snode_id): New field.
+	(supergraph::m_snode_by_id): New field.
+	(supernode::supernode): Drop "returning_call" and "phi_nodes"
+	params.  Convert "index" to "id".  Update for changes to fields.
+	(supernode::return_p): Rename for clarity to...
+	(supernode::exit_p): ...this.
+	(supernode::get_start_location): Delete.
+	(supernode::get_end_location): Delete.
+	(supernode::start_phis): Delete.
+	(supernode::get_returning_call): Delete.
+	(supernode::print): New.
+	(supernode::get_last_stmt): Delete.
+	(supernode::get_final_call): Delete.
+	(supernode::get_stmt_index): Delete.
+	(supernode::get_location): New.
+	(supernode::get_label): Convert to trivial accessor.
+	(supernode::preserve_p): New.
+	(supernode::m_returning_call): Drop field.
+	(supernode::m_phi_nodes): Drop field.
+	(supernode::m_stmts): Drop field.
+	(supernode::m_index): Replace with...
+	(supernode::m_id): ...this.
+	(supernode::m_loc): New field.
+	(supernode::m_stmt_loc): New field.
+	(supernode::m_original_id): New field.
+	(supernode::m_label): New field.
+	(supernode::m_preserve_p): New field.
+	(supernode::m_state_merger_node): New field.
+	(class superedge): Update leading comment.
+	(superedge::superedge): Make public rather than protected.  Drop
+	"kind" param.  Add "op" and "cfg_edge" params.  Assert that edge
+	is intraprocedural.
+	(superedge::m_kind): Drop field.
+	(superedge::m_op): New field.
+	(superedge::m_cfg_edge): New field.
+	(superedge::dump_label_to_pp): Make non-virtual.
+	(superedge::get_op): New.
+	(superedge::set_op): New.
+	(superedge::get_kind): Drop.
+	(superedge::get_dest_snode): New accessor.
+	(superedge::dyn_cast_cfg_superedge): Delete.
+	(superedge::dyn_cast_switch_cfg_superedge): Delete
+	(superedge::dyn_cast_eh_dispatch_cfg_superedge): Delete
+	(superedge::dyn_cast_eh_dispatch_try_cfg_superedge): Delete
+	(superedge::dyn_cast_eh_dispatch_allowed_cfg_superedge): Delete
+	(superedge::dyn_cast_callgraph_superedge): Delete
+	(superedge::dyn_cast_callgraph_superedge): Delete
+	(superedge::dyn_cast_call_superedge): Delete
+	(superedge::dyn_cast_call_superedge): Delete
+	(superedge::dyn_cast_return_superedge): Delete
+	(superedge::dyn_cast_return_superedge): Delete
+	(superedge::get_any_cfg_edge): Convert to trivial accessor.
+	(superedge::get_any_callgraph_edge): Drop.
+	(superedge::preserve_p): New.
+	(superedge::supports_bulk_merge_p): New.
+	(class callgraph_superedge): Drop.
+	(is_a_helper <const callgraph_superedge *>::test): Drop.
+	(class call_superedge): Drop.
+	(is_a_helper <const call_superedge *>::test): Drop.
+	(class return_superedge): Drop.
+	(is_a_helper <const return_superedge *>::test): Drop.
+	(class cfg_superedge): Drop.
+	(class switch_cfg_superedge): Drop.
+	(is_a_helper <const switch_cfg_superedge *>::test): Drop.
+	(class eh_dispatch_cfg_superedge): Drop.
+	(is_a_helper <const eh_dispatch_cfg_superedge *>::test): Drop.
+	(class eh_dispatch_try_cfg_superedge): Drop.
+	(is_a_helper <const eh_dispatch_try_cfg_superedge *>::test): Drop.
+	(class eh_dispatch_allowed_cfg_superedge): Drop.
+	(is_a_helper <const eh_dispatch_allowed_cfg_superedge *>::test):
+	Drop.
+	(dot_annotator::~dot_annotator): Use "= default;".
+	(dot_annotator::add_node_annotations): Drop return value and
+	"within_table" param.
+	(dot_annotator::add_stmt_annotations): Drop.
+	(dot_annotator::add_after_node_annotations): Drop.
+	(dot_annotator::add_extra_objects): New.
+	(supergraph_call_edge): Delete decl.
+	(get_ultimate_function_for_cgraph_edge): Delete decl.
+	* svalue.cc (svalue::can_merge_p): Reject attempts to merge
+	pointers that point to different base regions, except for the case
+	where both are string literals.  Update for point change in
+	widening_svalue.
+	(svalue::cmp_ptr): Update for point change to widening_svalue.
+	(widening_svalue::dump_to_pp): Likewise.
+	(widening_svalue::print_dump_widget_label): Likewise.
+	* svalue.h (struct setjmp_record): Add m_sedge.
+	(class widening_svalue): Replace function_point m_point with
+	const supernode *m_snode throughout.
+	* varargs.cc (va_list_state_machine::on_stmt): Drop redundant
+	param.
+	(va_list_state_machine::on_va_start): Likewise.  Update for change
+	to get_state.
+	(va_list_state_machine::check_for_ended_va_list): Likewise.
+	(va_list_state_machine::on_va_copy): Likewise.
+	(va_list_state_machine::on_va_arg): Likewise.
+	(va_list_state_machine::on_va_end): Likewise.
+	(va_arg_diagnostic::add_call_event): Update for changes to
+	location-tracking.
+
 2025-12-07  David Malcolm  <dmalcolm@redhat.com>
 
 	* kf.cc (register_known_functions): Remove duplicate calls to

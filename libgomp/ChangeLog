@@ -1,3 +1,27 @@
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/dep-uses-allocators.f90: Properly
+	escape '(..)' in dg-warning.
+
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* testsuite/libgomp.fortran/dep-uses-allocators.f90: Update
+	dg-warning.
+
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Implementation Status): Add missing '@tab';
+	claim initial partial support for 'declare mapper',
+	'uses_allocators', and map iterators.
+
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* testsuite/libgomp.fortran/uses_allocators_1.f90: Add check for
+	omp_null_allocator.
+	* testsuite/libgomp.fortran/uses_allocators-7.f90: New test.
+
 2025-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR libstdc++/121114

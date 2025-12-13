@@ -1,3 +1,8 @@
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+	    Jiajie Chen  <c@jia.je>
+
+	* config/loongarch/asm.h: Fix ilp32 detection.
+
 2025-11-19  Martin Liska  <martin.liska@hey.com>
 
 	* acinclude.m4:: Add detection for wild linker.

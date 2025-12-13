@@ -1,3 +1,11 @@
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* configure: Regenerate.
+	* configure.ac:
+	* config/loongarch/t-crtstuff-la32: New file.
+	* config/loongarch/t-crtstuff: Rename to t-crtstuff-la64.
+	* config/loongarch/t-crtstuff-la64: New file.
+
 2025-12-09  John Ericson  <git@JohnEricson.me>
 
 	* config/rs6000/t-slibgcc-aix: Instead of using a

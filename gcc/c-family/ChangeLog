@@ -1,3 +1,11 @@
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-omp.cc (c_omp_split_clauses): Hande uses_allocators.
+	* c-pragma.h (enum pragma_omp_clause): Add
+	PRAGMA_OMP_CLAUSE_USES_ALLOCATORS.
+
 2025-12-11  supers1ngular  <supers1ngular@baylibre.com>
 
 	* c-cppbuiltin.cc (c_cpp_builtins): Bump _OPENMP version.

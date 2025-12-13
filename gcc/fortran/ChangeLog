@@ -1,3 +1,22 @@
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clause_uses_allocators): Mention
+	new syntax in deprecation warning.
+
+2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
+
+	* intrinsic.texi (OpenMP Modules OMP_LIB and OMP_LIB_KINDS): Link
+	also to OpenMP 6.0, move 'partially supported' to the end of the
+	list of OpenMP versions. Mark 'omp_lock_hint_...' and
+	'omp_atv_sequential' constants as deprecated.
+
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* openmp.cc (resolve_omp_clauses): Handle omp_null_allocator.
+	* trans-openmp.cc (gfc_trans_omp_clauses): Mention it in a comment.
+
 2025-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/107406

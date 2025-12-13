@@ -1,3 +1,717 @@
+2025-12-12  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	* g++.dg/ext/is_constructible9.C: Add to testcase.
+
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-c++-common/gomp/uses_allocators-1.c: New test.
+	* c-c++-common/gomp/uses_allocators-2.c: New test.
+	* c-c++-common/gomp/uses_allocators-4.c: New test.
+	* c-c++-common/gomp/uses_allocators-7.c: New test.
+	* g++.dg/gomp/deprecate-2.C: New test.
+	* g++.dg/gomp/uses_allocators-1.C: New test.
+	* gcc.dg/gomp/deprecate-2.c: New test.
+
+2025-12-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* g++.target/s390/builtin-array-arg-1.C: New test.
+	* gcc.target/s390/builtin-array-arg-1.c: New test.
+
+2025-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122003
+	* c-c++-common/analyzer/allocation-size-multiline-1.c: Update for split
+	of region creation events.
+	* c-c++-common/analyzer/bzip2-arg-parse-1.c: Drop test for enode
+	merging.  Add -Wno-analyzer-too-complex.
+	* c-c++-common/analyzer/coreutils-cksum-pr108664.c: Add
+	-Wno-analyzer-symbol-too-complex.  Add dg-bogus for false +ve seen
+	during patch development.
+	* c-c++-common/analyzer/coreutils-group_number.c: New test.
+	* c-c++-common/analyzer/data-model-20.c: Mark warnings as xfail.
+	* c-c++-common/analyzer/deref-before-check-qemu-qtest_rsp_args.c:
+	Add xfails.
+	* c-c++-common/analyzer/dot-output.c: Update for changes to dumps.
+	* c-c++-common/analyzer/fd-symbolic-socket.c: Update for
+	improvements to locations of leaks.
+	* c-c++-common/analyzer/fibonacci.c: Update regex.
+	* c-c++-common/analyzer/flex-with-call-summaries.c: Add xfail.
+	* c-c++-common/analyzer/flex-without-call-summaries.c: Add
+	-Wno-analyzer-symbol-too-complex.  Add xfail.
+	* c-c++-common/analyzer/infinite-recursion-5.c: Disable cases that
+	now explode the analysis.
+	* c-c++-common/analyzer/infinite-recursion-pr108524-2.c: Remove
+	xfail.
+	* c-c++-common/analyzer/invalid-shift-1.c: Remove xfails with c++26.
+	* c-c++-common/analyzer/ipa-callbacks-1.c: New test.
+	* c-c++-common/analyzer/loop-4.c: Expect incorrect UNKNOWN within
+	loop.  Update expected number of enodes.
+	* c-c++-common/analyzer/loop-n-down-to-1-by-1.c: Expect incorrect
+	UNKNOWN within loop.
+	* c-c++-common/analyzer/loop.c: Drop xfail.
+	* c-c++-common/analyzer/out-of-bounds-coreutils.c: Expect infinite
+	loop warning.
+	* c-c++-common/analyzer/paths-4.c: Update expected number of
+	enodes.
+	* c-c++-common/analyzer/pr94362-1.c: Drop -Wno-analyzer-too-complex.
+	* c-c++-common/analyzer/pr94851-2.c: Add xfail.
+	* c-c++-common/analyzer/pr96650-1-notrans.c: Add
+	-Wno-analyzer-too-complex.
+	* c-c++-common/analyzer/pr98628.c: Likewise.
+	* c-c++-common/analyzer/pr99774-1.c: Likewise.
+	* c-c++-common/analyzer/pragma-2.c: Expect double-free warning.
+	* c-c++-common/analyzer/realloc-1.c: Move expected location of
+	leak from trailing "}" to realloc call.
+	* c-c++-common/analyzer/sock-1.c: Add -fno-exceptions.
+	* c-c++-common/analyzer/sprintf-2.c: Add __attribute__ nonnull to
+	decl.
+	* c-c++-common/analyzer/sprintf-concat.c: Move expected location
+	of leak of p from sprintf to trailing "}".
+	* c-c++-common/analyzer/stdarg-sentinel-1.c: Drop
+	-Wno-analyzer-too-complex.
+	* c-c++-common/analyzer/strncpy-1.c: Add __attribute__ nonnull to
+	decl.
+	* c-c++-common/analyzer/strstr-1.c: Likewise.
+	* g++.dg/analyzer/analyzer.exp: Drop -fanalyzer-call-summaries.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-default.C:
+	Update expected messages.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers-no.C:
+	Likewise.
+	* g++.dg/analyzer/fanalyzer-show-events-in-system-headers.C: Likewise.
+	* g++.dg/analyzer/pr94028.C: Move expected location of leak
+	warning to where return value of f is discarded within m.
+	* g++.dg/analyzer/pr96641.C: Expect infinite recursion warning.
+	* gcc.dg/analyzer/CWE-131-examples.c: Add
+	-Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/abs-1.c (test_2): Fix return type.
+	* gcc.dg/analyzer/analyzer-decls.h: Reformat.  Add
+	__attribute__ ((nothrow)) to all functions.
+	* gcc.dg/analyzer/analyzer.exp: Drop -fanalyzer-call-summaries.
+	* gcc.dg/analyzer/boxed-malloc-1.c: Fix return types.
+	* gcc.dg/analyzer/call-summaries-2.c: Likewise.
+	* gcc.dg/analyzer/combined-conditionals-1.c: Likewise.
+	* gcc.dg/analyzer/compound-assignment-2.c: Expect warning about
+	missing return.
+	* gcc.dg/analyzer/compound-assignment-3.c: Likewise.
+	* gcc.dg/analyzer/conditionals-3.c: Fix return type.
+	* gcc.dg/analyzer/data-model-1.c: Likewise.
+	* gcc.dg/analyzer/data-model-15.c: Likewise.
+	* gcc.dg/analyzer/data-model-17.c: Likewise.
+	* gcc.dg/analyzer/data-model-20a.c: Remove xfail from bogus leak.
+	* gcc.dg/analyzer/data-model-7.c: Fix return type.
+	* gcc.dg/analyzer/doom-d_main-IdentifyVersion.c: Add xfail to some
+	of the leak msgs.
+	* gcc.dg/analyzer/doom-s_sound-pr108867.c: Add xfail.
+	* gcc.dg/analyzer/edges-1.c: Update for improvements to location
+	of leak.
+	* gcc.dg/analyzer/error-1.c: Fix return type.
+	* gcc.dg/analyzer/explode-1.c: Drop xfail.  Expect uninit and
+	double-free warnings.
+	* gcc.dg/analyzer/explode-2.c: Add xfail.
+	* gcc.dg/analyzer/explode-3.c: Drop xfail.  Expect uninit and
+	double-free warnings.
+	* gcc.dg/analyzer/fd-datagram-socket.c: Move expected location of
+	leaks to closing "}"s.
+	* gcc.dg/analyzer/fd-glibc-byte-stream-connection-server.c: Add
+	false +ve leak message, due to not considering that program is
+	about to exit.
+	* gcc.dg/analyzer/fd-stream-socket.c: Move expected location of
+	leaks to closing "}"s.
+	* gcc.dg/analyzer/malloc-1.c: Fix return types.
+	* gcc.dg/analyzer/malloc-many-paths-2.c: Likewise.
+	* gcc.dg/analyzer/malloc-paths-10.c: Likewise.
+	* gcc.dg/analyzer/malloc-vs-local-4.c: Likewise.
+	* gcc.dg/analyzer/memset-CVE-2017-18549-1.c: Likewise.
+	* gcc.dg/analyzer/null-deref-pr102671-1.c: Enable
+	-fanalyzer-call-summaries.
+	* gcc.dg/analyzer/null-deref-pr102671-2.c: Remove xfail.
+	* gcc.dg/analyzer/pr101143.c: Fix return type.
+	* gcc.dg/analyzer/pr101837.c: Fix return type.  Add warning about
+	missing return.
+	* gcc.dg/analyzer/pr101983-not-main.c: Fix return type.
+	* gcc.dg/analyzer/pr103892.c: Enable -fanalyzer-call-summaries.
+	* gcc.dg/analyzer/pr104224.c: Add xfails.
+	* gcc.dg/analyzer/pr104434-nonconst.c: Likewise.
+	* gcc.dg/analyzer/pr93032-mztools-signed-char.c: Increase
+	exploration limits by a factor of 5.
+	* gcc.dg/analyzer/pr93032-mztools-unsigned-char.c: Likewise.
+	* gcc.dg/analyzer/pr93355-localealias-feasibility-2.c: Fix return type.
+	* gcc.dg/analyzer/pr93355-localealias.c: Add xfail.  Add expected
+	leak true +ve and uninit false +ve.
+	* gcc.dg/analyzer/pr94579.c: Add warning about missing return.
+	* gcc.dg/analyzer/pr98599-a.c: Add missing return stmts.
+	* gcc.dg/analyzer/pr99771-1.c: Fix expected locations of leaks.
+	* gcc.dg/analyzer/pr99774-2.c: Likewise.
+	* gcc.dg/analyzer/sensitive-1.c: Fix return types.
+	* gcc.dg/analyzer/state-diagram-1-sarif.py: Update.
+	* gcc.dg/analyzer/stdarg-1.c
+	(__analyzer_test_not_enough_args_2_middle): Add test coverage for
+	wording of call event with variadic args.
+	* gcc.dg/analyzer/strcmp-1.c: Fix return types.
+	* gcc.dg/analyzer/strcpy-1.c: Likewise.
+	* gcc.dg/analyzer/switch-enum-taint-1.c: Add warning about missing
+	return.
+	* gcc.dg/analyzer/switch.c: Fix return types.
+	* gcc.dg/analyzer/taint-assert.c: Likewise.
+	* gcc.dg/analyzer/taint-write-offset-1.c: Likewise.
+	* gcc.dg/analyzer/torture/analyzer-torture.exp: Drop
+	-fanalyzer-call-summaries.
+	* gcc.dg/analyzer/torture/boxed-ptr-1.c: Fix return type.
+	* gcc.dg/analyzer/torture/fold-ptr-arith-pr105784.c: Add
+	-Wno-analyzer-too-complex.
+	* gcc.dg/analyzer/torture/loop-inc-ptr-1.c: Skip at -O3 to avoid
+	changes to enode count.
+	* gcc.dg/analyzer/torture/pr102225.c: Consolidate on one line to
+	avoid caring about precise location of leak warning.
+	* gcc.dg/analyzer/torture/pr93379.c: Skip on -fno-fat-lto-objects.
+	Add warning about uninit.
+	* gcc.dg/analyzer/torture/stdarg-4.c: Replace UNKNOWN with
+	symbolic sum of params.
+	* gcc.dg/analyzer/untracked-1.c: Fix return type.
+	* gcc.dg/analyzer/use-after-free.c: Likewise.
+	* gcc.dg/analyzer/zlib-3.c: Add xfails.
+	* gcc.dg/plugin/analyzer_cpython_plugin.cc
+	(class refcnt_stmt_finder): Eliminate.
+	(check_refcnt): ...in favor of a call to
+	make_ploc_fixer_for_epath_for_leak_diagnostic.
+	* gcc.dg/plugin/analyzer_gil_plugin.cc: Update for
+	location-handling changes.
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-1.c: Add missing
+	"return 0;".
+	* gcc.dg/plugin/infoleak-CVE-2011-1078-2.c: Fix return types.
+	* gcc.dg/plugin/infoleak-CVE-2017-18549-1.c: Likewise.
+	* gdc.dg/analyzer/analyzer.exp: Drop -fanalyzer-call-summaries.
+	* gfortran.dg/analyzer/analyzer.exp: Likewise.
+	* gfortran.dg/analyzer/uninit-pr63311.f90: Add
+	-Wno-analyzer-too-complex.
+
+2025-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/121852
+	* gcc.dg/pr121852.c: New test.
+
+2025-12-12  Tejas Belagod  <tejas.belagod@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	* g++.target/aarch64/sve/acle/general-c++/svbool_ternary.C: New test.
+
+2025-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR testsuite/123098
+	* gcc.dg/debug/dwarf2/omp-fesdr.c: Use #pragma omp masked
+	instead of #pragma omp master.
+	* g++.dg/debug/dwarf2/omp-fesdr.C: Likewise.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* gcc.target/loongarch/la64/add-const.c: New test.
+	* gcc.target/loongarch/la64/alsl-cost.c: New test.
+	* gcc.target/loongarch/la64/alsl_wu.c: New test.
+	* gcc.target/loongarch/la64/and-large-immediate-opt.c: New test.
+	* gcc.target/loongarch/la64/arch-func-attr-1.c: New test.
+	* gcc.target/loongarch/la64/arch-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/la64/attr-model-1.c: New test.
+	* gcc.target/loongarch/la64/attr-model-2.c: New test.
+	* gcc.target/loongarch/la64/attr-model-3.c: New test.
+	* gcc.target/loongarch/la64/attr-model-4.c: New test.
+	* gcc.target/loongarch/la64/attr-model-5.c: New test.
+	* gcc.target/loongarch/la64/attr-model-diag.c: New test.
+	* gcc.target/loongarch/la64/attr-model-test.c: New test.
+	* gcc.target/loongarch/la64/bitint-alignments.c: New test.
+	* gcc.target/loongarch/la64/bitint-args.c: New test.
+	* gcc.target/loongarch/la64/bitint-sizes.c: New test.
+	* gcc.target/loongarch/la64/bitwise-shift-reassoc.c: New test.
+	* gcc.target/loongarch/la64/bitwise_extend.c: New test.
+	* gcc.target/loongarch/la64/bstrins-1.c: New test.
+	* gcc.target/loongarch/la64/bstrins-2.c: New test.
+	* gcc.target/loongarch/la64/bstrins-3.c: New test.
+	* gcc.target/loongarch/la64/bstrins-4.c: New test.
+	* gcc.target/loongarch/la64/bstrpick_alsl_paired.c: New test.
+	* gcc.target/loongarch/la64/bytepick_combine.c: New test.
+	* gcc.target/loongarch/la64/bytepick_shift_128.c: New test.
+	* gcc.target/loongarch/la64/can_inline_1.c: New test.
+	* gcc.target/loongarch/la64/can_inline_2.c: New test.
+	* gcc.target/loongarch/la64/can_inline_3.c: New test.
+	* gcc.target/loongarch/la64/can_inline_4.c: New test.
+	* gcc.target/loongarch/la64/can_inline_5.c: New test.
+	* gcc.target/loongarch/la64/can_inline_6.c: New test.
+	* gcc.target/loongarch/la64/cmodel-extreme-1.c: New test.
+	* gcc.target/loongarch/la64/cmodel-extreme-2.c: New test.
+	* gcc.target/loongarch/la64/cmodel-func-attr-1.c: New test.
+	* gcc.target/loongarch/la64/cmodel-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/la64/cmov_ii.c: New test.
+	* gcc.target/loongarch/la64/compare-both-non-zero.c: New test.
+	* gcc.target/loongarch/la64/conditional-move-opt-1.c: New test.
+	* gcc.target/loongarch/la64/conditional-move-opt-2.c: New test.
+	* gcc.target/loongarch/la64/conditional-move-opt-3.c: New test.
+	* gcc.target/loongarch/la64/const-double-zero-stx.c: New test.
+	* gcc.target/loongarch/la64/crc-sext.c: New test.
+	* gcc.target/loongarch/la64/direct-extern-1.c: New test.
+	* gcc.target/loongarch/la64/div-div32.c: New test.
+	* gcc.target/loongarch/la64/div-no-div32.c: New test.
+	* gcc.target/loongarch/la64/divf.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-extreme-tls-desc.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-lto.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-single-load-store-2.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-single-load-store-3.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-single-load-store-no-anchor.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-single-load-store.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-tls-desc.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-tls-ld-gd.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-auto-tls-le-ie.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-extreme-auto-tls-ld-gd.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-extreme-tls-desc.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-medium-auto-tls-ld-gd.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-medium-call36-auto-tls-ld-gd.c: New test.
+	* gcc.target/loongarch/la64/explicit-relocs-tls-desc.c: New test.
+	* gcc.target/loongarch/la64/extendsidi2-combine.c: New test.
+	* gcc.target/loongarch/la64/fclass-compile.c: New test.
+	* gcc.target/loongarch/la64/fclass-run.c: New test.
+	* gcc.target/loongarch/la64/flogb.c: New test.
+	* gcc.target/loongarch/la64/flt-abi-isa-1.c: New test.
+	* gcc.target/loongarch/la64/flt-abi-isa-2.c: New test.
+	* gcc.target/loongarch/la64/flt-abi-isa-3.c: New test.
+	* gcc.target/loongarch/la64/flt-abi-isa-4.c: New test.
+	* gcc.target/loongarch/la64/frint.c: New test.
+	* gcc.target/loongarch/la64/fscaleb.c: New test.
+	* gcc.target/loongarch/la64/ftint-no-inexact.c: New test.
+	* gcc.target/loongarch/la64/ftint.c: New test.
+	* gcc.target/loongarch/la64/func-call-1.c: New test.
+	* gcc.target/loongarch/la64/func-call-2.c: New test.
+	* gcc.target/loongarch/la64/func-call-3.c: New test.
+	* gcc.target/loongarch/la64/func-call-4.c: New test.
+	* gcc.target/loongarch/la64/func-call-5.c: New test.
+	* gcc.target/loongarch/la64/func-call-6.c: New test.
+	* gcc.target/loongarch/la64/func-call-7.c: New test.
+	* gcc.target/loongarch/la64/func-call-8.c: New test.
+	* gcc.target/loongarch/la64/func-call-extreme-1.c: New test.
+	* gcc.target/loongarch/la64/func-call-extreme-2.c: New test.
+	* gcc.target/loongarch/la64/func-call-extreme-3.c: New test.
+	* gcc.target/loongarch/la64/func-call-extreme-4.c: New test.
+	* gcc.target/loongarch/la64/func-call-extreme-5.c: New test.
+	* gcc.target/loongarch/la64/func-call-extreme-6.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-1.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-2.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-3.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-5.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-6.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-7.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-8.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-call36-1.c: New test.
+	* gcc.target/loongarch/la64/func-call-medium-call36.c: New test.
+	* gcc.target/loongarch/la64/imm-load.c: New test.
+	* gcc.target/loongarch/la64/imm-load1.c: New test.
+	* gcc.target/loongarch/la64/invariant-recip.c: New test.
+	* gcc.target/loongarch/la64/la64.exp: New test.
+	* gcc.target/loongarch/la64/larch-frecipe-builtin.c: New test.
+	* gcc.target/loongarch/la64/larch-frecipe-intrinsic.c: New test.
+	* gcc.target/loongarch/la64/lasx-func-attr-1.c: New test.
+	* gcc.target/loongarch/la64/lasx-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/la64/lsx-func-attr-1.c: New test.
+	* gcc.target/loongarch/la64/lsx-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/la64/math-float-128.c: New test.
+	* gcc.target/loongarch/la64/mem-and-mask-opt.c: New test.
+	* gcc.target/loongarch/la64/memcpy-vec-1.c: New test.
+	* gcc.target/loongarch/la64/memcpy-vec-2.c: New test.
+	* gcc.target/loongarch/la64/memcpy-vec-3.c: New test.
+	* gcc.target/loongarch/la64/mode-tieable-opt.c: New test.
+	* gcc.target/loongarch/la64/mov-zero-2.c: New test.
+	* gcc.target/loongarch/la64/movcf2gr-via-fr.c: New test.
+	* gcc.target/loongarch/la64/movcf2gr.c: New test.
+	* gcc.target/loongarch/la64/mul-const-reduction.c: New test.
+	* gcc.target/loongarch/la64/mulh_wu.c: New test.
+	* gcc.target/loongarch/la64/mulw_d_w.c: New test.
+	* gcc.target/loongarch/la64/mulw_d_wu.c: New test.
+	* gcc.target/loongarch/la64/pr109465-1.c: New test.
+	* gcc.target/loongarch/la64/pr109465-2.c: New test.
+	* gcc.target/loongarch/la64/pr109465-3.c: New test.
+	* gcc.target/loongarch/la64/pr113148.c: New test.
+	* gcc.target/loongarch/la64/pr114861.c: New test.
+	* gcc.target/loongarch/la64/pr118561.c: New test.
+	* gcc.target/loongarch/la64/pr118828-2.c: New test.
+	* gcc.target/loongarch/la64/pr118828-3.c: New test.
+	* gcc.target/loongarch/la64/pr118828-4.c: New test.
+	* gcc.target/loongarch/la64/pr118828.c: New test.
+	* gcc.target/loongarch/la64/pr118843.c: New test.
+	* gcc.target/loongarch/la64/pr119127.c: New test.
+	* gcc.target/loongarch/la64/pr121542.c: New test.
+	* gcc.target/loongarch/la64/pr121634.c: New test.
+	* gcc.target/loongarch/la64/pr121875.c: New test.
+	* gcc.target/loongarch/la64/prolog-opt.c: New test.
+	* gcc.target/loongarch/la64/recip-divf.c: New test.
+	* gcc.target/loongarch/la64/recip-sqrtf.c: New test.
+	* gcc.target/loongarch/la64/relocs-symbol-noaddend.c: New test.
+	* gcc.target/loongarch/la64/revb.c: New test.
+	* gcc.target/loongarch/la64/rotl-with-rotr.c: New test.
+	* gcc.target/loongarch/la64/rotrw.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-1.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-2.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-3.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-4.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-5.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-6.c: New test.
+	* gcc.target/loongarch/la64/sign-extend-bitwise.c: New test.
+	* gcc.target/loongarch/la64/sign_extend_ashift.c: New test.
+	* gcc.target/loongarch/la64/slt-sign-extend.c: New test.
+	* gcc.target/loongarch/la64/smuldi3_highpart.c: New test.
+	* gcc.target/loongarch/la64/spill-less.c: New test.
+	* gcc.target/loongarch/la64/sqrtf.c: New test.
+	* gcc.target/loongarch/la64/switch-qi.c: New test.
+	* gcc.target/loongarch/la64/tls-extreme-macro.c: New test.
+	* gcc.target/loongarch/la64/tls-gd-noplt.c: New test.
+	* gcc.target/loongarch/la64/tls-ie-extreme.c: New test.
+	* gcc.target/loongarch/la64/tls-ie-norelax.c: New test.
+	* gcc.target/loongarch/la64/tls-ie-relax.c: New test.
+	* gcc.target/loongarch/la64/tls-le-relax.c: New test.
+	* gcc.target/loongarch/la64/widen-mul-rtx-cost-signed.c: New test.
+	* gcc.target/loongarch/la64/widen-mul-rtx-cost-unsigned.c: New test.
+	* gcc.target/loongarch/la64/zero-size-field-pass.c: New test.
+	* gcc.target/loongarch/la64/zero-size-field-ret.c: New test.
+	* gcc.target/loongarch/vector/lasx/abd-lasx.c: New test.
+	* gcc.target/loongarch/vector/lasx/avg-ceil-lasx.c: New test.
+	* gcc.target/loongarch/vector/lasx/avg-floor-lasx.c: New test.
+	* gcc.target/loongarch/vector/lasx/fnmam4-vec.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-andn-iorn.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-extract-even_odd-opt.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-func-attr-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-reduc-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/lasx-xvpermi_q-opt.c: New test.
+	* gcc.target/loongarch/vector/lasx/pr112476-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/pr112476-4.c: New test.
+	* gcc.target/loongarch/vector/lasx/pr113033.c: New test.
+	* gcc.target/loongarch/vector/lasx/pragma-push-pop.c: New test.
+	* gcc.target/loongarch/vector/lasx/rotl-with-xvrotr-b.c: New test.
+	* gcc.target/loongarch/vector/lasx/rotl-with-xvrotr-d.c: New test.
+	* gcc.target/loongarch/vector/lasx/rotl-with-xvrotr-h.c: New test.
+	* gcc.target/loongarch/vector/lasx/rotl-with-xvrotr-w.c: New test.
+	* gcc.target/loongarch/vector/lasx/sad-lasx.c: New test.
+	* gcc.target/loongarch/vector/lasx/strict-align.c: New test.
+	* gcc.target/loongarch/vector/lasx/vec_pack_unpack_256.c: New test.
+	* gcc.target/loongarch/vector/lasx/vec_reduc_half.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-extract.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-frint-no-inexact.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-frint.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-ftint-no-inexact.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-ftint.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-ld-st-imm12.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-muh.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-rotr.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-shuf-fp.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-slp-two-operator.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-widen-add.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-widen-mul.c: New test.
+	* gcc.target/loongarch/vector/lasx/vect-widen-sub.c: New test.
+	* gcc.target/loongarch/vector/lasx/vfmax-vfmin.c: New test.
+	* gcc.target/loongarch/vector/lasx/vrepli.c: New test.
+	* gcc.target/loongarch/vector/lasx/wide-mul-reduc-1.c: New test.
+	* gcc.target/loongarch/vector/lasx/wide-mul-reduc-2.c: New test.
+	* gcc.target/loongarch/vector/lasx/xvfcmp-d.c: New test.
+	* gcc.target/loongarch/vector/lasx/xvfcmp-f.c: New test.
+	* gcc.target/loongarch/vector/lsx/abd-lsx.c: New test.
+	* gcc.target/loongarch/vector/lsx/avg-ceil-lsx.c: New test.
+	* gcc.target/loongarch/vector/lsx/avg-floor-lsx.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-andn-iorn.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-func-attr-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/lsx-pragma-attr-2.c: New test.
+	* gcc.target/loongarch/vector/lsx/mov-zero-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/popcnt.c: New test.
+	* gcc.target/loongarch/vector/lsx/popcount.c: New test.
+	* gcc.target/loongarch/vector/lsx/pr112476-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/pr112476-3.c: New test.
+	* gcc.target/loongarch/vector/lsx/pr119084.c: New test.
+	* gcc.target/loongarch/vector/lsx/pr121064.c: New test.
+	* gcc.target/loongarch/vector/lsx/pr122097.c: New test.
+	* gcc.target/loongarch/vector/lsx/rotl-with-vrotr-b.c: New test.
+	* gcc.target/loongarch/vector/lsx/rotl-with-vrotr-d.c: New test.
+	* gcc.target/loongarch/vector/lsx/rotl-with-vrotr-h.c: New test.
+	* gcc.target/loongarch/vector/lsx/rotl-with-vrotr-w.c: New test.
+	* gcc.target/loongarch/vector/lsx/sad-lsx.c: New test.
+	* gcc.target/loongarch/vector/lsx/vec_pack_unpack_128.c: New test.
+	* gcc.target/loongarch/vector/lsx/vect-frint-scalar-no-inexact.c: New test.
+	* gcc.target/loongarch/vector/lsx/vect-frint-scalar.c: New test.
+	* gcc.target/loongarch/vector/lsx/vect-shift-imm-round.c: New test.
+	* gcc.target/loongarch/vector/lsx/vector-func-attr-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/vector-pragma-attr-1.c: New test.
+	* gcc.target/loongarch/vector/lsx/vfcmp-d.c: New test.
+	* gcc.target/loongarch/vector/lsx/vfcmp-f.c: New test.
+	* gcc.target/loongarch/vector/lsx/xorsign-run.c: New test.
+	* gcc.target/loongarch/vector/lsx/xorsign.c: New test.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* g++.target/loongarch/bytepick.C: Skip on LA32.
+	* g++.target/loongarch/got-load.C: Likewise.
+	* g++.target/loongarch/pr106828.C: Likewise.
+	* g++.target/loongarch/vect-ashr-lshr.C: Add loongarch_asx check.
+	* gcc.dg/ifcvt-4.c: Skip on LA32.
+	* gcc.dg/stack-usage-1.c: Change __loongarch_lp64 to __loongarch__.
+	* gcc.dg/tree-ssa/gen-vect-2.c: Skip on LoongArch.
+	* gcc.dg/tree-ssa/gen-vect-25.c: Likewise.
+	* gcc.dg/tree-ssa/pr83403-1.c: Add dg-additional-options.
+	* gcc.dg/tree-ssa/pr83403-2.c: Likewise.
+	* gcc.target/loongarch/float-load.c: Add hard_float check.
+	* gcc.target/loongarch/larch-builtin.c: Skip some check on LA32.
+	* gcc.target/loongarch/pr115752.c: Add hard_float check.
+	* gcc.target/loongarch/vector/loongarch-vector.exp: Add
+	check_effective_target_loongarch_sx.
+	* lib/target-supports.exp: Add hard float condition to
+	check_effective_target_scalar_all_fma.
+	Disable loongarch for check_effective_target_vect_cmdline_needed.
+	Add check_effective_target_loongarch_sx condition to
+	check_vect_support_and_set_flags.
+	* gcc.target/loongarch/abd-lasx.c: Removed.
+	* gcc.target/loongarch/abd-lsx.c: Removed.
+	* gcc.target/loongarch/add-const.c: Removed.
+	* gcc.target/loongarch/alsl-cost.c: Removed.
+	* gcc.target/loongarch/alsl_wu.c: Removed.
+	* gcc.target/loongarch/and-large-immediate-opt.c: Removed.
+	* gcc.target/loongarch/arch-func-attr-1.c: Removed.
+	* gcc.target/loongarch/arch-pragma-attr-1.c: Removed.
+	* gcc.target/loongarch/attr-model-1.c: Removed.
+	* gcc.target/loongarch/attr-model-2.c: Removed.
+	* gcc.target/loongarch/attr-model-3.c: Removed.
+	* gcc.target/loongarch/attr-model-4.c: Removed.
+	* gcc.target/loongarch/attr-model-5.c: Removed.
+	* gcc.target/loongarch/attr-model-diag.c: Removed.
+	* gcc.target/loongarch/attr-model-test.c: Removed.
+	* gcc.target/loongarch/avg-ceil-lasx.c: Removed.
+	* gcc.target/loongarch/avg-ceil-lsx.c: Removed.
+	* gcc.target/loongarch/avg-floor-lasx.c: Removed.
+	* gcc.target/loongarch/avg-floor-lsx.c: Removed.
+	* gcc.target/loongarch/bitint-alignments.c: Removed.
+	* gcc.target/loongarch/bitint-args.c: Removed.
+	* gcc.target/loongarch/bitint-sizes.c: Removed.
+	* gcc.target/loongarch/bitwise-shift-reassoc.c: Removed.
+	* gcc.target/loongarch/bitwise_extend.c: Removed.
+	* gcc.target/loongarch/bstrins-1.c: Removed.
+	* gcc.target/loongarch/bstrins-2.c: Removed.
+	* gcc.target/loongarch/bstrins-3.c: Removed.
+	* gcc.target/loongarch/bstrins-4.c: Removed.
+	* gcc.target/loongarch/bstrpick_alsl_paired.c: Removed.
+	* gcc.target/loongarch/bytepick_combine.c: Removed.
+	* gcc.target/loongarch/bytepick_shift_128.c: Removed.
+	* gcc.target/loongarch/can_inline_1.c: Removed.
+	* gcc.target/loongarch/can_inline_2.c: Removed.
+	* gcc.target/loongarch/can_inline_3.c: Removed.
+	* gcc.target/loongarch/can_inline_4.c: Removed.
+	* gcc.target/loongarch/can_inline_5.c: Removed.
+	* gcc.target/loongarch/can_inline_6.c: Removed.
+	* gcc.target/loongarch/cmodel-extreme-1.c: Removed.
+	* gcc.target/loongarch/cmodel-extreme-2.c: Removed.
+	* gcc.target/loongarch/cmodel-func-attr-1.c: Removed.
+	* gcc.target/loongarch/cmodel-pragma-attr-1.c: Removed.
+	* gcc.target/loongarch/cmov_ii.c: Removed.
+	* gcc.target/loongarch/compare-both-non-zero.c: Removed.
+	* gcc.target/loongarch/conditional-move-opt-1.c: Removed.
+	* gcc.target/loongarch/conditional-move-opt-2.c: Removed.
+	* gcc.target/loongarch/conditional-move-opt-3.c: Removed.
+	* gcc.target/loongarch/const-double-zero-stx.c: Removed.
+	* gcc.target/loongarch/crc-sext.c: Removed.
+	* gcc.target/loongarch/direct-extern-1.c: Removed.
+	* gcc.target/loongarch/div-div32.c: Removed.
+	* gcc.target/loongarch/div-no-div32.c: Removed.
+	* gcc.target/loongarch/divf.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-extreme-tls-desc.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-lto.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store-2.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store-3.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store-no-anchor.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-single-load-store.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-tls-desc.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-tls-ld-gd.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-auto-tls-le-ie.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-extreme-auto-tls-ld-gd.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-extreme-tls-desc.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-medium-auto-tls-ld-gd.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-medium-call36-auto-tls-ld-gd.c: Removed.
+	* gcc.target/loongarch/explicit-relocs-tls-desc.c: Removed.
+	* gcc.target/loongarch/extendsidi2-combine.c: Removed.
+	* gcc.target/loongarch/fclass-compile.c: Removed.
+	* gcc.target/loongarch/fclass-run.c: Removed.
+	* gcc.target/loongarch/flogb.c: Removed.
+	* gcc.target/loongarch/flt-abi-isa-1.c: Removed.
+	* gcc.target/loongarch/flt-abi-isa-2.c: Removed.
+	* gcc.target/loongarch/flt-abi-isa-3.c: Removed.
+	* gcc.target/loongarch/flt-abi-isa-4.c: Removed.
+	* gcc.target/loongarch/fnmam4-vec.c: Removed.
+	* gcc.target/loongarch/frint.c: Removed.
+	* gcc.target/loongarch/fscaleb.c: Removed.
+	* gcc.target/loongarch/ftint-no-inexact.c: Removed.
+	* gcc.target/loongarch/ftint.c: Removed.
+	* gcc.target/loongarch/func-call-1.c: Removed.
+	* gcc.target/loongarch/func-call-2.c: Removed.
+	* gcc.target/loongarch/func-call-3.c: Removed.
+	* gcc.target/loongarch/func-call-4.c: Removed.
+	* gcc.target/loongarch/func-call-5.c: Removed.
+	* gcc.target/loongarch/func-call-6.c: Removed.
+	* gcc.target/loongarch/func-call-7.c: Removed.
+	* gcc.target/loongarch/func-call-8.c: Removed.
+	* gcc.target/loongarch/func-call-extreme-1.c: Removed.
+	* gcc.target/loongarch/func-call-extreme-2.c: Removed.
+	* gcc.target/loongarch/func-call-extreme-3.c: Removed.
+	* gcc.target/loongarch/func-call-extreme-4.c: Removed.
+	* gcc.target/loongarch/func-call-extreme-5.c: Removed.
+	* gcc.target/loongarch/func-call-extreme-6.c: Removed.
+	* gcc.target/loongarch/func-call-medium-1.c: Removed.
+	* gcc.target/loongarch/func-call-medium-2.c: Removed.
+	* gcc.target/loongarch/func-call-medium-3.c: Removed.
+	* gcc.target/loongarch/func-call-medium-5.c: Removed.
+	* gcc.target/loongarch/func-call-medium-6.c: Removed.
+	* gcc.target/loongarch/func-call-medium-7.c: Removed.
+	* gcc.target/loongarch/func-call-medium-8.c: Removed.
+	* gcc.target/loongarch/func-call-medium-call36-1.c: Removed.
+	* gcc.target/loongarch/func-call-medium-call36.c: Removed.
+	* gcc.target/loongarch/imm-load.c: Removed.
+	* gcc.target/loongarch/imm-load1.c: Removed.
+	* gcc.target/loongarch/invariant-recip.c: Removed.
+	* gcc.target/loongarch/larch-frecipe-builtin.c: Removed.
+	* gcc.target/loongarch/larch-frecipe-intrinsic.c: Removed.
+	* gcc.target/loongarch/lasx-andn-iorn.c: Removed.
+	* gcc.target/loongarch/lasx-extract-even_odd-opt.c: Removed.
+	* gcc.target/loongarch/lasx-func-attr-1.c: Removed.
+	* gcc.target/loongarch/lasx-func-attr-2.c: Removed.
+	* gcc.target/loongarch/lasx-pragma-attr-1.c: Removed.
+	* gcc.target/loongarch/lasx-pragma-attr-2.c: Removed.
+	* gcc.target/loongarch/lasx-reduc-1.c: Removed.
+	* gcc.target/loongarch/lasx-xvpermi_q-opt.c: Removed.
+	* gcc.target/loongarch/lsx-andn-iorn.c: Removed.
+	* gcc.target/loongarch/lsx-func-attr-1.c: Removed.
+	* gcc.target/loongarch/lsx-func-attr-2.c: Removed.
+	* gcc.target/loongarch/lsx-pragma-attr-1.c: Removed.
+	* gcc.target/loongarch/lsx-pragma-attr-2.c: Removed.
+	* gcc.target/loongarch/math-float-128.c: Removed.
+	* gcc.target/loongarch/mem-and-mask-opt.c: Removed.
+	* gcc.target/loongarch/memcpy-vec-1.c: Removed.
+	* gcc.target/loongarch/memcpy-vec-2.c: Removed.
+	* gcc.target/loongarch/memcpy-vec-3.c: Removed.
+	* gcc.target/loongarch/mode-tieable-opt.c: Removed.
+	* gcc.target/loongarch/mov-zero-1.c: Removed.
+	* gcc.target/loongarch/mov-zero-2.c: Removed.
+	* gcc.target/loongarch/movcf2gr-via-fr.c: Removed.
+	* gcc.target/loongarch/movcf2gr.c: Removed.
+	* gcc.target/loongarch/mul-const-reduction.c: Removed.
+	* gcc.target/loongarch/mulh_wu.c: Removed.
+	* gcc.target/loongarch/mulw_d_w.c: Removed.
+	* gcc.target/loongarch/mulw_d_wu.c: Removed.
+	* gcc.target/loongarch/popcnt.c: Removed.
+	* gcc.target/loongarch/popcount.c: Removed.
+	* gcc.target/loongarch/pr109465-1.c: Removed.
+	* gcc.target/loongarch/pr109465-2.c: Removed.
+	* gcc.target/loongarch/pr109465-3.c: Removed.
+	* gcc.target/loongarch/pr112476-1.c: Removed.
+	* gcc.target/loongarch/pr112476-2.c: Removed.
+	* gcc.target/loongarch/pr112476-3.c: Removed.
+	* gcc.target/loongarch/pr112476-4.c: Removed.
+	* gcc.target/loongarch/pr113033.c: Removed.
+	* gcc.target/loongarch/pr113148.c: Removed.
+	* gcc.target/loongarch/pr114861.c: Removed.
+	* gcc.target/loongarch/pr118561.c: Removed.
+	* gcc.target/loongarch/pr118828-2.c: Removed.
+	* gcc.target/loongarch/pr118828-3.c: Removed.
+	* gcc.target/loongarch/pr118828-4.c: Removed.
+	* gcc.target/loongarch/pr118828.c: Removed.
+	* gcc.target/loongarch/pr118843.c: Removed.
+	* gcc.target/loongarch/pr119084.c: Removed.
+	* gcc.target/loongarch/pr119127.c: Removed.
+	* gcc.target/loongarch/pr121064.c: Removed.
+	* gcc.target/loongarch/pr121542.c: Removed.
+	* gcc.target/loongarch/pr121634.c: Removed.
+	* gcc.target/loongarch/pr121875.c: Removed.
+	* gcc.target/loongarch/pr122097.c: Removed.
+	* gcc.target/loongarch/pragma-push-pop.c: Removed.
+	* gcc.target/loongarch/prolog-opt.c: Removed.
+	* gcc.target/loongarch/recip-divf.c: Removed.
+	* gcc.target/loongarch/recip-sqrtf.c: Removed.
+	* gcc.target/loongarch/relocs-symbol-noaddend.c: Removed.
+	* gcc.target/loongarch/revb.c: Removed.
+	* gcc.target/loongarch/rotl-with-rotr.c: Removed.
+	* gcc.target/loongarch/rotl-with-vrotr-b.c: Removed.
+	* gcc.target/loongarch/rotl-with-vrotr-d.c: Removed.
+	* gcc.target/loongarch/rotl-with-vrotr-h.c: Removed.
+	* gcc.target/loongarch/rotl-with-vrotr-w.c: Removed.
+	* gcc.target/loongarch/rotl-with-xvrotr-b.c: Removed.
+	* gcc.target/loongarch/rotl-with-xvrotr-d.c: Removed.
+	* gcc.target/loongarch/rotl-with-xvrotr-h.c: Removed.
+	* gcc.target/loongarch/rotl-with-xvrotr-w.c: Removed.
+	* gcc.target/loongarch/rotrw.c: Removed.
+	* gcc.target/loongarch/sad-lasx.c: Removed.
+	* gcc.target/loongarch/sad-lsx.c: Removed.
+	* gcc.target/loongarch/sign-extend-1.c: Removed.
+	* gcc.target/loongarch/sign-extend-2.c: Removed.
+	* gcc.target/loongarch/sign-extend-3.c: Removed.
+	* gcc.target/loongarch/sign-extend-4.c: Removed.
+	* gcc.target/loongarch/sign-extend-5.c: Removed.
+	* gcc.target/loongarch/sign-extend-6.c: Removed.
+	* gcc.target/loongarch/sign-extend-bitwise.c: Removed.
+	* gcc.target/loongarch/sign_extend_ashift.c: Removed.
+	* gcc.target/loongarch/slt-sign-extend.c: Removed.
+	* gcc.target/loongarch/smuldi3_highpart.c: Removed.
+	* gcc.target/loongarch/spill-less.c: Removed.
+	* gcc.target/loongarch/sqrtf.c: Removed.
+	* gcc.target/loongarch/strict-align.c: Removed.
+	* gcc.target/loongarch/switch-qi.c: Removed.
+	* gcc.target/loongarch/tls-extreme-macro.c: Removed.
+	* gcc.target/loongarch/tls-gd-noplt.c: Removed.
+	* gcc.target/loongarch/tls-ie-extreme.c: Removed.
+	* gcc.target/loongarch/tls-ie-norelax.c: Removed.
+	* gcc.target/loongarch/tls-ie-relax.c: Removed.
+	* gcc.target/loongarch/tls-le-relax.c: Removed.
+	* gcc.target/loongarch/vec_pack_unpack_128.c: Removed.
+	* gcc.target/loongarch/vec_pack_unpack_256.c: Removed.
+	* gcc.target/loongarch/vec_reduc_half.c: Removed.
+	* gcc.target/loongarch/vect-extract.c: Removed.
+	* gcc.target/loongarch/vect-frint-no-inexact.c: Removed.
+	* gcc.target/loongarch/vect-frint-scalar-no-inexact.c: Removed.
+	* gcc.target/loongarch/vect-frint-scalar.c: Removed.
+	* gcc.target/loongarch/vect-frint.c: Removed.
+	* gcc.target/loongarch/vect-ftint-no-inexact.c: Removed.
+	* gcc.target/loongarch/vect-ftint.c: Removed.
+	* gcc.target/loongarch/vect-ld-st-imm12.c: Removed.
+	* gcc.target/loongarch/vect-muh.c: Removed.
+	* gcc.target/loongarch/vect-rotr.c: Removed.
+	* gcc.target/loongarch/vect-shift-imm-round.c: Removed.
+	* gcc.target/loongarch/vect-shuf-fp.c: Removed.
+	* gcc.target/loongarch/vect-slp-two-operator.c: Removed.
+	* gcc.target/loongarch/vect-widen-add.c: Removed.
+	* gcc.target/loongarch/vect-widen-mul.c: Removed.
+	* gcc.target/loongarch/vect-widen-sub.c: Removed.
+	* gcc.target/loongarch/vector-func-attr-1.c: Removed.
+	* gcc.target/loongarch/vector-pragma-attr-1.c: Removed.
+	* gcc.target/loongarch/vfcmp-d.c: Removed.
+	* gcc.target/loongarch/vfcmp-f.c: Removed.
+	* gcc.target/loongarch/vfmax-vfmin.c: Removed.
+	* gcc.target/loongarch/vrepli.c: Removed.
+	* gcc.target/loongarch/wide-mul-reduc-1.c: Removed.
+	* gcc.target/loongarch/wide-mul-reduc-2.c: Removed.
+	* gcc.target/loongarch/widen-mul-rtx-cost-signed.c: Removed.
+	* gcc.target/loongarch/widen-mul-rtx-cost-unsigned.c: Removed.
+	* gcc.target/loongarch/xorsign-run.c: Removed.
+	* gcc.target/loongarch/xorsign.c: Removed.
+	* gcc.target/loongarch/xvfcmp-d.c: Removed.
+	* gcc.target/loongarch/xvfcmp-f.c: Removed.
+	* gcc.target/loongarch/zero-size-field-pass.c: Removed.
+	* gcc.target/loongarch/zero-size-field-ret.c: Removed.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* gcc.target/loongarch/la32/memcpy.c: New test.
+
+2025-12-12  Jiajie Chen  <c@jia.je>
+
+	* gcc.target/loongarch/la32/trunc_int_for_mode.c: New test.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* gcc.target/loongarch/la32/and.c: New test.
+	* gcc.target/loongarch/la32/la32.exp: New test.
+
+2025-12-12  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/manorboy.a68: New file.
+
 2025-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/107406

@@ -1,3 +1,205 @@
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle uses_allocators
+	by printing a 'sorry, unimplemented' and removing it.
+	* tree-core.h (enum omp_clause_code): Add OMP_CLAUSE_USES_ALLOCATORS.
+	* tree.cc (omp_clause_num_ops, omp_clause_code_name): Likewise.
+	* tree-pretty-print.cc (dump_omp_clause): Handle it.
+	* tree.h (OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR,
+	OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE,
+	OMP_CLAUSE_USES_ALLOCATORS_TRAITS): New.
+
+2025-12-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/103680
+	* tree-loop-distribution.cc (destroy_loop): Set probability
+	of the exit edge to be always.
+
+2025-12-12  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/103680
+	* tree-cfg.cc (make_forwarders_with_degenerate_phis): Fix
+	initial value of the count to new bb.
+
+2025-12-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390.cc (s390_expand_builtin): Warn about
+	non-overloaded deprecated builtins.
+
+2025-12-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-c.cc (s390_adjust_builtin_arglist): Fix
+	builtin s390_vec_load_bndry for C++.
+
+2025-12-12  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* config/s390/s390-c.cc (s390_resolve_overloaded_builtin):
+	Perform array-to-pointer conversion for C++.
+
+2025-12-12  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122003
+	* Makefile.in (ANALYZER_OBJS): Add analyzer/ops.o,
+	analyzer/supergraph-fixup-locations.o,
+	analyzer/supergraph-simplify.o, and analyzer/supergraph-sorting.o.
+	* digraph.h (dnode::add_in_edge): New.
+	(dnode::remove_in_edge): New.
+	(dnode::add_out_edge): New.
+	(dnode::remove_out_edge): New.
+	(dnode::m_preds): Make public.
+	(dnode::m_succs): Likewise.
+	(dnode::find_edge_idx): New.
+	(dedge::edge_t): New typedef.
+	(dedge::m_src): Make non-const.
+	(dedge::m_dest): Likewise.
+	(dedge::set_dest): New.
+	(digraph::add_any_extra_stmts): New.
+	(digraph<GraphTraits>::dump_dot_to_pp): Call it.
+	* doc/analyzer.texi: Update for rewrite of supergraph.
+	* doc/invoke.texi (fanalyzer-fine-grained): Make this as a no-op
+	preserved for backwards compatibility.
+	(fanalyzer-simplify-supergraph): Document new option.
+	(fdump-analyzer-supergraph): Update for changes to output.
+	* gdbhooks.py (AnaSupernodePrinter.to_string): Update for renaming
+	of supernode::m_index to supernode::m_id.
+	* system.h: Include <deque> if INCLUDE_DEQUE was defined.
+
+2025-12-12  Jakub Jelinek  <jakub@redhat.com>
+
+	PR rtl-optimization/121852
+	* rtlanal.cc (single_set_2): Only look for REG_UNUSED notes if
+	df && df_note, otherwise if df and SET_DEST is a pseudo with
+	DF_REG_USE_COUNT 0, assume it is unused as well.  Otherwise
+	assume it may be used.
+
+2025-12-12  Tejas Belagod  <tejas.belagod@arm.com>
+	    Tamar Christina  <tamar.christina@arm.com>
+
+	* config/aarch64/aarch64.cc (aarch64_instruction_selection): Flip
+	svbool_t == to != to avoid extra bit-inverse.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_block_move_loop): Change
+	length, align to unsigned.
+	(loongarch_expand_block_move): Ditto.
+
+2025-12-12  Jiajie Chen  <c@jia.je>
+
+	* config/loongarch/loongarch.cc (loongarch_emit_int_compare):
+	Call trunc_int_mode to ensure valid rhs.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/predicates.md: Add CONSTM1_RTX for low_bitmask_operand.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+
+	* config/loongarch/larchintrin.h (__movgr2fcsr): Disable on soft float.
+	(__cacop_w): New.
+	(__lddir_d): Delete #error.
+	(__ldpte_d): Likewise.
+	(__crc_w_w_w): Disable on LA32
+	(__crc_w_d_w): Likewise.
+	(__crcc_w_w_w): Likewise.
+	* config/loongarch/loongarch-builtins.cc : Disable some builtin on LA32.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+	    Jiajie Chen  <c@jia.je>
+
+	* config/loongarch/loongarch-opts.cc (loongarch_target_option_override):
+	Delete opts->x_flag_pcc_struct_return and enable mstrict-align by
+	default on LA32.
+	* config/loongarch/loongarch.cc (loongarch_for_each_saved_reg): Save reg
+	depend on float abi.
+	(loongarch_explicit_relocs_p): Disable explicit relocs on LA32.
+	(loongarch_valid_offset_p): Disable const_imm16_operand with 4 byte aligned.
+	(loongarch_valid_lo_sum_p): Allow lo_sum to be used with DF in ilp32d.
+	(loongarch_valid_index_p): Disable ADDRESS_REG_REG on LA32.
+	(loongarch_legitimize_address): Disable mem_shadd_or_shadd_rtx_p on LA32.
+	(loongarch_output_move_index):  Assert TARGET_64BIT for ldx/stx.
+	(loongarch_output_move): Disable ldptr/stptr if offset is 0.
+	(loongarch_output_equal_conditional_branch): Disable beqz/bnez on LA32R.
+	(loongarch_trampoline_init): Change pcaddi to pcaddu12i.
+	(loongarch_get_separate_components): Disable ldptr/stptr on LA32.
+	(loongarch_c_mode_for_floating_type): Use TFmode for long double
+	regardless of target bitness.
+	(loongarch_bitint_type_info): Disable BitInt on LA32.
+	(loongarch_call_tls_get_addr): Use call30 on LA32.
+	(loongarch_split_move): Add split for DI, DF, TF.
+	* config/loongarch/loongarch.h (LA_LONG_DOUBLE_TYPE_SIZE): Set
+	LONG_DOUBLE_TYPE_SIZE to 128 regardless of target bitness.
+	(MAX_FIXED_MODE_SIZE): Set to 64 on LA32.
+	(DEFAULT_PCC_STRUCT_RETURN): New.
+	(STACK_BOUNDARY): Set to 128 on LA64 and LA32.
+	(LARCH_STACK_ALIGN): Set to 16 on LA64 and LA32.
+	(TRAMPOLINE_SIZE): Set to same value on LA64 and LA32.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+	    Jiajie Chen  <c@jia.je>
+
+	* config/loongarch/constraints.md: Disable k on LA32.
+	* config/loongarch/loongarch.md (*and<mode>3): Delete.
+	(*and<mode>3_extend): New.
+	(zero_extend<SHORT:mode><GPR:mode>2_la32r): New.
+	(extend<SHORT:mode><GPR:mode>2_la32r): New.
+	(extendqihi2_la32r): New.
+	(*movdi_32bit): Remove not working split, use existing
+	loongarch_split_move instead.
+	(move_doubleword_2_<mode>): New.
+	(load_low<mode>): New.
+	(load_high<mode>): New.
+	(store_word<mode>): New.
+	(movgr2frh<mode>): New.
+	(movfrh2gr<mode>): New.
+	* config/loongarch/predicates.md: Disable low_bitmask_operand and
+	ins_zero_bitmask_operand on LA32. Enable const_call_insn_operand on LA32.
+	* config/loongarch/sync.md (atomic_<amop><mode>): Change to define_expand.
+	(la64_atomic_<amop><mode>): New.
+	(la32_atomic_<amop>si): New.
+	(atomic_fetch_<amop><mode>): Change to define_expand.
+	(la64_atomic_fetch_<amop><mode>): New.
+	(la32_atomic_fetch_<amop>si): New.
+	(atomic_exchange<mode>): Change to define_expand.
+	(la64_atomic_exchange<mode>): New.
+	(la32_atomic_exchangesi): New.
+
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+	    Jiajie Chen  <c@jia.je>
+
+	* config.gcc: Add target triple loongarch32-*-*-* and
+	corresponding abi ilp32f, ilp32d and ilp32s.
+	* config/loongarch/genopts/loongarch-strings: Add strings for
+	loongarch32 and ilp32 abi variants.
+	* config/loongarch/genopts/loongarch.opt.in: Add
+	-march=la32v1.0/la32rv1.0 and -mabi=ilp32d/ilp32f/ilp32s.
+	* config/loongarch/gnu-user.h: Add ilp32 abi variants to spec.
+	* config/loongarch/linux.h: Add ABI_LIBDIR for ilp32 abi
+	variants.
+	* config/loongarch/loongarch-c.cc (loongarch_define_unconditional_macros):
+	Add builtin definitions for loongarch32 target.
+	* config/loongarch/loongarch-def.cc: Add loongarch32 and ilp32
+	definitions.
+	* config/loongarch/loongarch-def.h: Add loongarch32 and ilp32
+	definitions.
+	* config/loongarch/loongarch-driver.h: Add ilp32 abi variants to
+	spec.
+	* config/loongarch/loongarch-opts.cc: Handle ilp32 abi variants.
+	* config/loongarch/loongarch-opts.h: Add loongarch32 case to
+	macros.
+	* config/loongarch/loongarch-str.h: Add loongarch32 and ilp32
+	strings.
+	* config/loongarch/loongarch.opt: Add -march=la32v1.0/la32rv1.0
+	and -mabi=ilp32d/ilp32f/ilp32s.
+	* config/loongarch/t-linux: Add ilp32 abi variants to multilib.
+	* doc/invoke.texi: Add LA32 arch and tune.
+
+2025-12-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* common.opt.urls: Regenerate.
+
 2025-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* config/arc/arc.cc (hwloop_optimize): Fix comment typo,

@@ -1,3 +1,12 @@
+2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
+	    Tobias Burnus  <tburnus@baylibre.com>
+	    Andrew Stubbs  <ams@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_clause_uses_allocators): New function.
+	(c_parser_omp_clause_name, c_parser_omp_all_clauses,
+	OMP_TARGET_CLAUSE_MASK): Handle uses_allocators.
+	* c-typeck.cc (c_finish_omp_clauses): Likewise.
+
 2025-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	PR testsuite/123098

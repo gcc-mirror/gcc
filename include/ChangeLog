@@ -1,3 +1,10 @@
+2025-12-12  mengqinggang  <mengqinggang@loongson.cn>
+	    Jiajie Chen  <c@jia.je>
+
+	* longlong.h (count_leading_zeros): Delete because LA32R no clz.
+	(count_trailing_zeros): Delete because LA32R no ctz.
+	(COUNT_LEADING_ZEROS_0): Delete.
+
 2025-12-01  Andrew Stubbs  <ams@baylibre.com>
 
 	* hsa.h: Import newer version.
