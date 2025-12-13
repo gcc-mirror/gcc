@@ -1,9 +1,9 @@
 module Module_3 =
 def 
-    { variable = 0 in_proc = 1 } pub proc bump = void: counter +:= 1;
-    { variable = 0 in_proc = 1 } pub proc bumptimes = (int n) void: to n do bump od;
-    { variable = 1 in_proc = 0 } pub proc vbump := void: counter +:= 1;
-    { variable = 1 in_proc = 0 } pub proc vbumptimes := (int n) void: to n do vbump od;
+    { variable = 0 in_proc = 1 } pub proc bump = void: counter +:= 1,
+    { variable = 0 in_proc = 1 }          bumptimes = (int n) void: to n do bump od;
+    { variable = 1 in_proc = 0 } pub proc vbump := void: counter +:= 1,
+    { variable = 1 in_proc = 0 }          vbumptimes := (int n) void: to n do vbump od;
     { variable = 0 in_proc = 1 } pub proc getcounter = int: counter;
     { variable = 0 in_proc = 0 } pub proc int anothergetcounter = getcounter;
     int counter := 10;

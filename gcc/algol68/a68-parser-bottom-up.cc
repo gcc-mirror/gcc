@@ -2981,9 +2981,9 @@ a68_rearrange_goto_less_jumps (NODE_T *p)
 }
 
 /*
- * Coalesce PUBLIC_SYMBOLs resulting from reductions, annotating the
- * corresponding defining identifiers, indicators, operators and prios as
- * publicized.
+ * Remove PUBLIC_SYMBOLs resulting from reductions from the tree.  Note that
+ * the defining indicants, identifiers and operators have been already marked
+ * as publicized or not publicized by the extract routines.
  */
 
 void
@@ -3000,23 +3000,6 @@ a68_bottom_up_coalesce_pub (NODE_T *p)
 	  if (SUB (p) != NO_NODE && IS (SUB (p), PUBLIC_SYMBOL))
 	    {
 	      NODE_T *public_symbol = SUB (p);
-
-	      /* Mark the defining entity as PUBlicized.  */
-	      /* XXX handle joined declarations.  */
-	      NODE_T *defining_entity = NEXT (NEXT (SUB (p)));
-	      if (!a68_is_one_of (defining_entity,
-				  DEFINING_INDICANT, DEFINING_IDENTIFIER, DEFINING_OPERATOR,
-				  STOP))
-		FORWARD (defining_entity);
-	      gcc_assert (defining_entity != NO_NODE
-			  && a68_is_one_of (defining_entity,
-					    DEFINING_INDICANT,
-					    DEFINING_IDENTIFIER,
-					    DEFINING_OPERATOR,
-					    STOP));
-	      PUBLICIZED (defining_entity) = true;
-
-	      /* Unlink the PUBLIC_SYMBOL node and get rid of it.  */
 	      SUB (p) = NEXT (public_symbol);
 	      PREVIOUS (NEXT (public_symbol)) = NO_NODE;
 	    }

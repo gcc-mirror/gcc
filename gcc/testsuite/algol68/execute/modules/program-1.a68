@@ -15,6 +15,7 @@ begin string je = access Module1 begin who end;
       assert (aa = "jemarch");
       assert (bb = "jemarch");
       assert (cc = "jemarch");
-      access Module1 to 1 do assert (who = "jemarch") od;
-      access Module1 (assert (beast_number = 666))
+      access Module1 to 1 do assert (who = "jemarch" AND whoelse = "pietro") od;
+      access Module1 (assert (beast_number = 666 AND angelic_number = 777));
+      access Module1 (MyInt a = 1; MyOtherInt b = 1; assert (a + b = 2))
 end

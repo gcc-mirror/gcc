@@ -385,9 +385,17 @@ a68_extract_indicants (NODE_T *p)
 	    }
 	  while (siga && q != NO_NODE && IS (q, COMMA_SYMBOL));
 	}
-      else if (IS (q, MODE_SYMBOL))
+      else if (IS (q, MODE_SYMBOL) || a68_whether (q, PUBLIC_SYMBOL, MODE_SYMBOL, STOP))
 	{
 	  bool siga = true;
+	  bool is_public = false;
+
+	  if (IS (q, PUBLIC_SYMBOL))
+	    {
+	      is_public = true;
+	      FORWARD (q);
+	    }
+
 	  do
 	    {
 	      FORWARD (q);
@@ -402,6 +410,7 @@ a68_extract_indicants (NODE_T *p)
 		  if (a68_add_mode (&TOP_MOID (&A68_JOB), INDICANT, 0, q, NO_MOID, NO_PACK) == NO_MOID)
 		    gcc_unreachable ();
 		  ATTRIBUTE (q) = DEFINING_INDICANT;
+		  PUBLICIZED (q) = is_public;
 		  FORWARD (q);
 		  ATTRIBUTE (q) = ALT_EQUALS_SYMBOL;
 		  q = skip_pack_declarer (NEXT (q));
@@ -440,9 +449,17 @@ a68_extract_priorities (NODE_T *p)
   NODE_T *q = p;
   while (q != NO_NODE)
     {
-      if (IS (q, PRIO_SYMBOL))
+      if (IS (q, PRIO_SYMBOL) || a68_whether (q, PUBLIC_SYMBOL, PRIO_SYMBOL, STOP))
 	{
 	  bool siga = true;
+	  bool is_public = false;
+
+	  if (IS (q, PUBLIC_SYMBOL))
+	    {
+	      is_public = true;
+	      FORWARD (q);
+	    }
+
 	  do
 	    {
 	      FORWARD (q);
@@ -454,6 +471,7 @@ a68_extract_priorities (NODE_T *p)
 		  NODE_T *y = q;
 		  a68_error (q, "invalid operator tag");
 		  ATTRIBUTE (q) = DEFINING_OPERATOR;
+		  PUBLICIZED (q) = is_public;
 		  /* Remove one superfluous operator, and hope it was only
 		     one.  */
 		  NEXT (q) = NEXT_NEXT (q);
@@ -473,6 +491,7 @@ a68_extract_priorities (NODE_T *p)
 		{
 		  NODE_T *y = q;
 		  ATTRIBUTE (q) = DEFINING_OPERATOR;
+		  PUBLICIZED (q) = is_public;
 		  FORWARD (q);
 		  ATTRIBUTE (q) = ALT_EQUALS_SYMBOL;
 		  FORWARD (q);
@@ -491,6 +510,7 @@ a68_extract_priorities (NODE_T *p)
 		{
 		  NODE_T *y = q;
 		  ATTRIBUTE (q) = DEFINING_OPERATOR;
+		  PUBLICIZED (q) = is_public;
 		  FORWARD (q);
 		  ATTRIBUTE (q) = ALT_EQUALS_SYMBOL;
 		  FORWARD (q);
@@ -517,6 +537,7 @@ a68_extract_priorities (NODE_T *p)
 		      if (len > 2 && NSYMBOL (q)[len - 2] == ':' && NSYMBOL (q)[len - 3] != '=')
 			a68_error (q, "probably a missing symbol near invalid operator S");
 		      ATTRIBUTE (q) = DEFINING_OPERATOR;
+		      PUBLICIZED (q) = is_public;
 		      insert_alt_equals (q);
 		      q = NEXT_NEXT (q);
 		      int k;
@@ -548,12 +569,18 @@ a68_extract_operators (NODE_T *p)
 
   while (q != NO_NODE)
     {
-      if (!IS (q, OP_SYMBOL))
-	FORWARD (q);
-      else
+      if (IS (q, OP_SYMBOL) || a68_whether (q, PUBLIC_SYMBOL, OP_SYMBOL, STOP))
 	{
 	  bool siga = true;
 	  bool in_proc = true;
+	  bool is_public = false;
+
+	  if (IS (q, PUBLIC_SYMBOL))
+	    {
+	      is_public = true;
+	      FORWARD (q);
+	    }
+
 	  /* Skip operator plan.  */
 	  if (NEXT (q) != NO_NODE && IS (NEXT (q), OPEN_SYMBOL))
 	    {
@@ -573,6 +600,7 @@ a68_extract_operators (NODE_T *p)
 		    {
 		      a68_error (q, "invalid operator tag");
 		      ATTRIBUTE (q) = DEFINING_OPERATOR;
+		      PUBLICIZED (q) = is_public;
 		      TAG_T *t = a68_add_tag (TABLE (p), OP_SYMBOL, q, NO_MOID, STOP);
 		      if (t == NO_TAG)
 			gcc_unreachable ();
@@ -588,6 +616,7 @@ a68_extract_operators (NODE_T *p)
 			   || a68_whether (q, EQUALS_SYMBOL, EQUALS_SYMBOL, STOP))
 		    {
 		      ATTRIBUTE (q) = DEFINING_OPERATOR;
+		      PUBLICIZED (q) = is_public;
 		      TAG_T *t = a68_add_tag (TABLE (p), OP_SYMBOL, q, NO_MOID, STOP);
 		      if (t == NO_TAG)
 			gcc_unreachable ();
@@ -603,6 +632,7 @@ a68_extract_operators (NODE_T *p)
 		  else if (a68_whether (q, BOLD_TAG, EQUALS_SYMBOL, STOP))
 		    {
 		      ATTRIBUTE (q) = DEFINING_OPERATOR;
+		      PUBLICIZED (q) = is_public;
 		      TAG_T *t = a68_add_tag (TABLE (p), OP_SYMBOL, q, NO_MOID, STOP);
 		      if (t == NO_TAG)
 			gcc_unreachable ();
@@ -625,6 +655,7 @@ a68_extract_operators (NODE_T *p)
 			  if (len > 2 && NSYMBOL (q)[len - 2] == ':' && NSYMBOL (q)[len - 3] != '=')
 			    a68_error (q, "probably a missing symbol near invalid operator S");
 			  ATTRIBUTE (q) = DEFINING_OPERATOR;
+			  PUBLICIZED (q) = is_public;
 			  insert_alt_equals (q);
 			  TAG_T *t = a68_add_tag (TABLE (p), OP_SYMBOL, q, NO_MOID, STOP);
 			  if (t == NO_TAG)
@@ -642,6 +673,8 @@ a68_extract_operators (NODE_T *p)
 	      while (siga && q != NO_NODE && IS (q, COMMA_SYMBOL));
 	    }
 	}
+      else
+	FORWARD (q);
     }
 }
 
@@ -674,9 +707,18 @@ extract_identities (NODE_T *p)
 
   while (q != NO_NODE)
     {
-      if (a68_whether (q, DECLARER, IDENTIFIER, EQUALS_SYMBOL, STOP))
+      if (a68_whether (q, DECLARER, IDENTIFIER, EQUALS_SYMBOL, STOP)
+	  || a68_whether (q, PUBLIC_SYMBOL, DECLARER, IDENTIFIER, EQUALS_SYMBOL, STOP))
 	{
 	  bool siga = true;
+	  bool is_public = false;
+
+	  if (IS (q, PUBLIC_SYMBOL))
+	    {
+	      is_public = true;
+	      FORWARD (q);
+	    }
+
 	  do
 	    {
 	      if (a68_whether ((FORWARD (q)), IDENTIFIER, EQUALS_SYMBOL, STOP))
@@ -685,6 +727,7 @@ extract_identities (NODE_T *p)
 		  if (tag == NO_TAG)
 		    gcc_unreachable ();
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  FORWARD (q);
 		  ATTRIBUTE (q) = ALT_EQUALS_SYMBOL;
 		  q = skip_unit (q);
@@ -696,6 +739,7 @@ extract_identities (NODE_T *p)
 		  if (a68_add_tag (TABLE (p), IDENTIFIER, q, NO_MOID, NORMAL_IDENTIFIER) == NO_TAG)
 		    gcc_unreachable ();
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  ATTRIBUTE (FORWARD (q)) = ALT_EQUALS_SYMBOL;
 		  q = skip_unit (q);
 		}
@@ -720,9 +764,13 @@ extract_variables (NODE_T *p)
     {
       if (a68_whether (q, HEAP_SYMBOL, DECLARER, IDENTIFIER, STOP)
 	  || a68_whether (q, LOC_SYMBOL, DECLARER, IDENTIFIER, STOP)
-	  || a68_whether (q, DECLARER, IDENTIFIER, STOP))
+	  || a68_whether (q, DECLARER, IDENTIFIER, STOP)
+	  || a68_whether (q, PUBLIC_SYMBOL, HEAP_SYMBOL, DECLARER, IDENTIFIER, STOP)
+	  || a68_whether (q, PUBLIC_SYMBOL, LOC_SYMBOL, DECLARER, IDENTIFIER, STOP)
+	  || a68_whether (q, PUBLIC_SYMBOL, DECLARER, IDENTIFIER, STOP))
 	{
-	  if (!IS (q, DECLARER))
+	  bool is_public = IS (q, PUBLIC_SYMBOL);
+	  while (!IS (q, DECLARER))
 	    FORWARD (q);
 
 	  bool siga = true;
@@ -742,6 +790,7 @@ extract_variables (NODE_T *p)
 		    gcc_unreachable ();
 		  VARIABLE (tag) = true;
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  q = skip_unit (q);
 		}
 	      else
@@ -763,9 +812,18 @@ extract_proc_identities (NODE_T *p)
 
   while (q != NO_NODE)
     {
-      if (a68_whether (q, PROC_SYMBOL, IDENTIFIER, EQUALS_SYMBOL, STOP))
+      if (a68_whether (q, PROC_SYMBOL, IDENTIFIER, EQUALS_SYMBOL, STOP)
+	  || a68_whether (q, PUBLIC_SYMBOL, PROC_SYMBOL, IDENTIFIER, EQUALS_SYMBOL, STOP))
 	{
 	  bool siga = true;
+	  bool is_public = false;
+
+	  if (IS (q, PUBLIC_SYMBOL))
+	    {
+	      is_public = true;
+	      FORWARD (q);
+	    }
+
 	  do
 	    {
 	      FORWARD (q);
@@ -774,6 +832,7 @@ extract_proc_identities (NODE_T *p)
 		  TAG_T *t = a68_add_tag (TABLE (p), IDENTIFIER, q, NO_MOID, NORMAL_IDENTIFIER);
 		  IN_PROC (t) = true;
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  ATTRIBUTE (FORWARD (q)) = ALT_EQUALS_SYMBOL;
 		  q = skip_unit (q);
 		}
@@ -784,6 +843,7 @@ extract_proc_identities (NODE_T *p)
 		  if (a68_add_tag (TABLE (p), IDENTIFIER, q, NO_MOID, NORMAL_IDENTIFIER) == NO_TAG)
 		    gcc_unreachable ();
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  ATTRIBUTE (FORWARD (q)) = ALT_EQUALS_SYMBOL;
 		  q = skip_unit (q);
 		}
@@ -806,9 +866,18 @@ extract_proc_variables (NODE_T *p)
 
   while (q != NO_NODE)
     {
-      if (a68_whether (q, PROC_SYMBOL, IDENTIFIER, STOP))
+      if (a68_whether (q, PROC_SYMBOL, IDENTIFIER, STOP)
+	  || a68_whether (q, PUBLIC_SYMBOL, PROC_SYMBOL, IDENTIFIER, STOP))
 	{
 	  bool siga = true;
+	  bool is_public = false;
+
+	  if (IS (q, PUBLIC_SYMBOL))
+	    {
+	      is_public = true;
+	      FORWARD (q);
+	    }
+
 	  do
 	    {
 	      FORWARD (q);
@@ -818,6 +887,7 @@ extract_proc_variables (NODE_T *p)
 		  gcc_assert (tag != NO_TAG);
 		  VARIABLE (tag) = true;
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  q = skip_unit (FORWARD (q));
 		}
 	      else if (a68_whether (q, IDENTIFIER, EQUALS_SYMBOL, STOP))
@@ -827,6 +897,7 @@ extract_proc_variables (NODE_T *p)
 		  TAG_T *tag = a68_add_tag (TABLE (p), IDENTIFIER, q, NO_MOID, NORMAL_IDENTIFIER);
 		  gcc_assert (tag != NO_TAG);
 		  ATTRIBUTE (q) = DEFINING_IDENTIFIER;
+		  PUBLICIZED (q) = is_public;
 		  ATTRIBUTE (FORWARD (q)) = ASSIGN_SYMBOL;
 		  q = skip_unit (q);
 		} else

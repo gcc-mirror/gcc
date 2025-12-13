@@ -1,8 +1,8 @@
 module Module1 =
 def
-    pub mode MyInt = int;
-    pub int beast_number := 666;
-    pub string who = "jemarch";
+    pub mode MyInt = int, MyOtherInt = int;
+    pub int beast_number := 666, angelic_number := 777;
+    pub string who = "jemarch", whoelse = "pietro";
     puts ("Hello from module'n")
 postlude
     puts ("Bye from module'n")
