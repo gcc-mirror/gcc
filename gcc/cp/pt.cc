@@ -31631,7 +31631,11 @@ type_targs_deducible_from (tree tmpl, tree type)
 	 per alias_ctad_tweaks.  */
       tparms = INNERMOST_TEMPLATE_PARMS (TREE_PURPOSE (tmpl));
       ttype = TREE_VALUE (tmpl);
-      tmpl = TI_TEMPLATE (TYPE_TEMPLATE_INFO_MAYBE_ALIAS (ttype));
+      tree ti = TYPE_TEMPLATE_INFO_MAYBE_ALIAS (ttype);
+      if (!ti)
+	/* TTYPE is a typedef to a template-id.  */
+	ti = TYPE_TEMPLATE_INFO (ttype);
+      tmpl = TI_TEMPLATE (ti);
     }
 
   int len = TREE_VEC_LENGTH (tparms);
