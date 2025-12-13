@@ -34241,7 +34241,7 @@ cp_parser_lookup_name (cp_parser *parser, tree name,
 	   parse, those errors are valid.  */
 	decl = lookup_member (object_type,
 			      name,
-			      /*protect=*/0,
+			      /*protect=*/2,
 			      /*prefer_type=*/tag_type != none_type,
 			      tf_warning_or_error);
       else
