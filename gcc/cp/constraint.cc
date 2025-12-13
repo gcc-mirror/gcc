@@ -2860,9 +2860,27 @@ evaluate_concept_check (tree check)
 
   gcc_assert (concept_check_p (check));
 
+  /* We don't want any declarations instantiated from a concept evaluation
+     to enter the binding table for the current scope, such as lambdas, so
+     leave that scope.  But maintain the access context (PR104111).  */
+  tree scope = current_scope ();
+  if (CLASS_TYPE_P (scope))
+    scope = TYPE_MAIN_DECL (scope);
+  else if (TREE_CODE (scope) != FUNCTION_DECL)
+    scope = NULL_TREE;
+
+  push_to_top_level ();
+  if (scope)
+    push_access_scope (scope);
+
   /* Check for satisfaction without diagnostics.  */
   sat_info quiet (tf_none, NULL_TREE);
-  return constraint_satisfaction_value (check, /*args=*/NULL_TREE, quiet);
+  tree r = constraint_satisfaction_value (check, /*args=*/NULL_TREE, quiet);
+
+  if (scope)
+    pop_access_scope (scope);
+  pop_from_top_level ();
+  return r;
 }
 
 /* Evaluate the requires-expression T, returning either boolean_true_node

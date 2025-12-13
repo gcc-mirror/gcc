@@ -20583,7 +20583,12 @@ tsubst_lambda_expr (tree t, tree args, tsubst_flags_t complain, tree in_decl)
       return error_mark_node;
     }
 
-  if (LAMBDA_EXPR_EXTRA_SCOPE (t))
+  if (LAMBDA_EXPR_EXTRA_SCOPE (t)
+      /* When evaluating a concept we instantiate any lambda bodies
+	 in the context of the evaluation.  For ABI reasons don't
+	 record a scope for this instantiated lambda so we don't
+	 throw off the scope counter.  */
+      && TREE_CODE (LAMBDA_EXPR_EXTRA_SCOPE (t)) != CONCEPT_DECL)
     record_lambda_scope (r);
   if (TYPE_NAMESPACE_SCOPE_P (TREE_TYPE (t)))
     /* If we're pushed into another scope (PR105652), fix it.  */
