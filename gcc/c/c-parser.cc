@@ -18852,10 +18852,14 @@ c_parser_omp_clause_reduction (c_parser *parser, enum omp_clause_code kind,
 	  break;
 	case CPP_MINUS:
 	  if (is_omp)
-	    warning_at (c_parser_peek_token (parser)->location,
-			OPT_Wdeprecated_openmp,
-			"%<-%> operator for reductions deprecated in "
-			"OpenMP 5.2");
+	    {
+	      location_t loc = c_parser_peek_token (parser)->location;
+	      gcc_rich_location richloc (loc);
+	      richloc.add_fixit_replace ("+");
+	      warning_at (&richloc, OPT_Wdeprecated_openmp,
+			  "%<-%> operator for reductions deprecated in "
+			  "OpenMP 5.2");
+	    }
 	  code = MINUS_EXPR;
 	  break;
 	case CPP_AND:
@@ -19813,6 +19817,8 @@ static tree
 c_parser_omp_clause_linear (c_parser *parser, tree list)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
+  location_t rm1_loc = UNKNOWN_LOCATION, rm2_loc = UNKNOWN_LOCATION;
+  location_t after_colon_loc = UNKNOWN_LOCATION;
   tree nl, c, step;
   enum omp_clause_linear_kind kind = OMP_CLAUSE_LINEAR_DEFAULT;
   bool old_linear_modifier = false;
@@ -19831,10 +19837,9 @@ c_parser_omp_clause_linear (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_LINEAR_DEFAULT;
       if (kind != OMP_CLAUSE_LINEAR_DEFAULT)
 	{
-	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
-		      "specifying the list items as arguments to the "
-		      "modifiers is deprecated since OpenMP 5.2");
 	  old_linear_modifier = true;
+	  rm1_loc = make_location (tok->location, tok->location,
+				   c_parser_peek_2nd_token (parser)->location);
 	  c_parser_consume_token (parser);
 	  c_parser_consume_token (parser);
 	}
@@ -19844,12 +19849,17 @@ c_parser_omp_clause_linear (c_parser *parser, tree list)
 				   OMP_CLAUSE_LINEAR, list);
 
   if (kind != OMP_CLAUSE_LINEAR_DEFAULT)
-    parens.skip_until_found_close (parser);
+    {
+      if (c_parser_next_token_is (parser, CPP_CLOSE_PAREN))
+	rm2_loc = c_parser_peek_token (parser)->location;
+      parens.skip_until_found_close (parser);
+    }
 
   if (c_parser_next_token_is (parser, CPP_COLON))
     {
       c_parser_consume_token (parser);
       location_t expr_loc = c_parser_peek_token (parser)->location;
+      after_colon_loc = expr_loc;
       bool has_modifiers = false;
       if (kind == OMP_CLAUSE_LINEAR_DEFAULT
 	  && c_parser_next_token_is (parser, CPP_NAME))
@@ -19950,6 +19960,27 @@ c_parser_omp_clause_linear (c_parser *parser, tree list)
       OMP_CLAUSE_LINEAR_STEP (c) = step;
       OMP_CLAUSE_LINEAR_KIND (c) = kind;
       OMP_CLAUSE_LINEAR_OLD_LINEAR_MODIFIER (c) = old_linear_modifier;
+    }
+
+  if (old_linear_modifier)
+    {
+      gcc_rich_location richloc (clause_loc);
+      if (rm2_loc != UNKNOWN_LOCATION)
+	{
+	  richloc.add_fixit_remove (rm1_loc);
+	  if (after_colon_loc != UNKNOWN_LOCATION)
+	    {
+	      richloc.add_fixit_remove (rm2_loc);
+	      richloc.add_fixit_insert_before (after_colon_loc, "val, step (");
+	      location_t close_loc = c_parser_peek_token (parser)->location;
+	      richloc.add_fixit_insert_before (close_loc, ")");
+	    }
+	  else
+	    richloc.add_fixit_replace (rm2_loc, " : val");
+	}
+      warning_at (&richloc, OPT_Wdeprecated_openmp,
+		  "specifying the list items as arguments to the "
+		  "modifiers is deprecated since OpenMP 5.2");
     }
 
   parens.skip_until_found_close (parser);
@@ -20334,7 +20365,7 @@ c_parser_omp_clause_affinity (c_parser *parser, tree list)
      iterator ( iterators-definition )  */
 
 static tree
-c_parser_omp_clause_depend (c_parser *parser, tree list)
+c_parser_omp_clause_depend (c_parser *parser, tree list, location_t here)
 {
   location_t clause_loc = c_parser_peek_token (parser)->location;
   enum omp_clause_depend_kind kind = OMP_CLAUSE_DEPEND_LAST;
@@ -20371,14 +20402,18 @@ c_parser_omp_clause_depend (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_DEPEND_DEPOBJ;
       else if (strcmp ("sink", p) == 0)
 	{
-	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	  gcc_rich_location richloc (clause_loc);
+	  richloc.add_fixit_replace (here, "doacross");
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
 		      "%<sink%> modifier with %<depend%> clause deprecated "
 		      "since OpenMP 5.2, use with %<doacross%>");
 	  dkind = OMP_CLAUSE_DOACROSS_SINK;
 	}
       else if (strcmp ("source", p) == 0)
 	{
-	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	  gcc_rich_location richloc (clause_loc);
+	  richloc.add_fixit_replace (here, "doacross");
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
 		      "%<source%> modifier with %<depend%> clause deprecated "
 		      "since OpenMP 5.2, use with %<doacross%>");
 	  dkind = OMP_CLAUSE_DOACROSS_SOURCE;
@@ -20812,10 +20847,15 @@ c_parser_omp_clause_map (c_parser *parser, tree list, bool declare_mapper_p)
 	  return list;
 	}
       ++num_identifiers;
-      if (num_identifiers - 1 != num_commas)
-	warning_at (clause_loc, OPT_Wdeprecated_openmp,
-		    "%<map%> clause modifiers without comma separation is "
-		    "deprecated since OpenMP 5.2");
+      if (num_identifiers - 1 > num_commas)
+	{
+	  gcc_rich_location richloc (clause_loc);
+	  richloc.add_fixit_insert_before (tok->location, ",");
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
+		      "%<map%> clause modifiers without comma separation is "
+		      "deprecated since OpenMP 5.2");
+	}
+      num_commas = num_identifiers - 1;
     }
 
   if (c_parser_next_token_is (parser, CPP_NAME)
@@ -21059,7 +21099,10 @@ c_parser_omp_clause_proc_bind (c_parser *parser, tree list)
 	kind = OMP_CLAUSE_PROC_BIND_PRIMARY;
       else if (strcmp ("master", p) == 0)
 	{
-	  warning_at (clause_loc, OPT_Wdeprecated_openmp,
+	  gcc_rich_location richloc (clause_loc);
+	  richloc.add_fixit_replace (c_parser_peek_token (parser)->location,
+				     "primary");
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
 		      "%<master%> affinity deprecated since OpenMP 5.1, "
 		      "use %<primary%>");
 	  kind = OMP_CLAUSE_PROC_BIND_MASTER;
@@ -22280,6 +22323,11 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	case PRAGMA_OMP_CLAUSE_TO:
 	  if ((mask & (OMP_CLAUSE_MASK_1 << PRAGMA_OMP_CLAUSE_LINK)) != 0)
 	    {
+	      gcc_rich_location richloc (here);
+	      richloc.add_fixit_replace ("enter");
+	      warning_at (&richloc, OPT_Wdeprecated_openmp,
+			  "%<to%> clause with %<declare target%> deprecated "
+			  "since OpenMP 5.2, use %<enter%>");
 	      tree nl = c_parser_omp_var_list_parens (parser, OMP_CLAUSE_ENTER,
 						      clauses);
 	      for (tree c = nl; c != clauses; c = OMP_CLAUSE_CHAIN (c))
@@ -22329,7 +22377,7 @@ c_parser_omp_all_clauses (c_parser *parser, omp_clause_mask mask,
 	  c_name = "affinity";
 	  break;
 	case PRAGMA_OMP_CLAUSE_DEPEND:
-	  clauses = c_parser_omp_clause_depend (parser, clauses);
+	  clauses = c_parser_omp_clause_depend (parser, clauses, here);
 	  c_name = "depend";
 	  break;
 	case PRAGMA_OMP_CLAUSE_DOACROSS:
@@ -24540,7 +24588,7 @@ c_parser_omp_depobj (c_parser *parser)
       c_parser_consume_token (parser);
       if (!strcmp ("depend", p))
 	{
-	  clause = c_parser_omp_clause_depend (parser, NULL_TREE);
+	  clause = c_parser_omp_clause_depend (parser, NULL_TREE, c_loc);
 	  clause = c_finish_omp_clauses (clause, C_ORT_OMP);
 	  if (!clause)
 	    clause = error_mark_node;
@@ -25683,12 +25731,15 @@ static tree c_parser_omp_taskloop (location_t, c_parser *, char *,
 static tree
 c_parser_omp_master (location_t loc, c_parser *parser,
 		     char *p_name, omp_clause_mask mask, tree *cclauses,
-		     bool *if_p)
+		     bool *if_p, location_t master_loc)
 {
-  warning_at (loc, OPT_Wdeprecated_openmp,
+  tree block, clauses, ret;
+  gcc_rich_location richloc (loc);
+  if (master_loc != UNKNOWN_LOCATION)
+    richloc.add_fixit_replace (master_loc, "masked");
+  warning_at (&richloc, OPT_Wdeprecated_openmp,
 	      "%<master%> construct deprecated since OpenMP 5.1, use "
 	      "%<masked%>");
-  tree block, clauses, ret;
 
   strcat (p_name, " master");
 
@@ -26102,6 +26153,7 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
   else if (c_parser_next_token_is (parser, CPP_NAME))
     {
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
+      location_t ploc = c_parser_peek_token (parser)->location;
       if (cclauses == NULL && strcmp (p, "masked") == 0)
 	{
 	  tree cclauses_buf[C_OMP_CLAUSE_SPLIT_COUNT];
@@ -26139,10 +26191,10 @@ c_parser_omp_parallel (location_t loc, c_parser *parser,
 	  c_parser_consume_token (parser);
 	  if (!flag_openmp)  /* flag_openmp_simd  */
 	    return c_parser_omp_master (loc, parser, p_name, mask, cclauses,
-					if_p);
+					if_p, ploc);
 	  block = c_begin_omp_parallel ();
 	  tree ret = c_parser_omp_master (loc, parser, p_name, mask, cclauses,
-					  if_p);
+					  if_p, ploc);
 	  stmt = c_finish_omp_parallel (loc,
 					cclauses[C_OMP_CLAUSE_SPLIT_PARALLEL],
 					block);
@@ -28633,11 +28685,6 @@ c_parser_omp_declare_target (c_parser *parser)
     }
   for (tree c = clauses; c; c = OMP_CLAUSE_CHAIN (c))
     {
-      if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_ENTER && OMP_CLAUSE_ENTER_TO (c))
-	warning_at (c_parser_peek_token (parser)->location,
-		    OPT_Wdeprecated_openmp,
-		    "%<to%> clause with %<declare target%> deprecated since "
-		    "OpenMP 5.2, use %<enter%>");
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_DEVICE_TYPE)
 	device_type |= OMP_CLAUSE_DEVICE_TYPE_KIND (c);
       if (OMP_CLAUSE_CODE (c) == OMP_CLAUSE_INDIRECT)
@@ -30444,9 +30491,13 @@ c_parser_omp_metadirective (c_parser *parser, bool *if_p)
       location_t match_loc = c_parser_peek_token (parser)->location;
       const char *p = IDENTIFIER_POINTER (c_parser_peek_token (parser)->value);
       if (strcmp (p, "default") == 0)
-	warning_at (pragma_loc, OPT_Wdeprecated_openmp,
-		    "%<default%> clause on metadirectives deprecated since "
-		    "OpenMP 5.2, use %<otherwise%>");
+	{
+	  gcc_rich_location richloc (pragma_loc);
+	  richloc.add_fixit_replace (match_loc, "otherwise");
+	  warning_at (&richloc, OPT_Wdeprecated_openmp,
+		      "%<default%> clause on metadirectives deprecated since "
+		      "OpenMP 5.2, use %<otherwise%>");
+	}
       c_parser_consume_token (parser);
       bool default_p
 	= strcmp (p, "default") == 0 || strcmp (p, "otherwise") == 0;
@@ -30829,7 +30880,8 @@ c_parser_omp_construct (c_parser *parser, bool *if_p)
       break;
     case PRAGMA_OMP_MASTER:
       strcpy (p_name, "#pragma omp");
-      stmt = c_parser_omp_master (loc, parser, p_name, mask, NULL, if_p);
+      stmt = c_parser_omp_master (loc, parser, p_name, mask, NULL, if_p,
+				  UNKNOWN_LOCATION);
       break;
     case PRAGMA_OMP_PARALLEL:
       strcpy (p_name, "#pragma omp");

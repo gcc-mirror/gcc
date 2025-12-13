@@ -1,19 +1,15 @@
 // tests for deprecation of 'to' clause with 'declare target' and the '-'
 // operator when used in reductions.
-// { dg-warning "'to' clause with 'declare target' deprecated since OpenMP 5.2, use 'enter' \\\[-Wdeprecated-openmp\\\]" "" { target c } 12 }
-// { dg-warning "'to' clause with 'declare target' deprecated since OpenMP 5.2, use 'enter' \\\[-Wdeprecated-openmp\\\]" "" { target c } 18 }
-// { dg-warning "'to' clause with 'declare target' deprecated since OpenMP 5.2, use 'enter' \\\[-Wdeprecated-openmp\\\]" "" { target c++ } 10 }
-// { dg-warning "'to' clause with 'declare target' deprecated since OpenMP 5.2, use 'enter' \\\[-Wdeprecated-openmp\\\]" "" { target c++ } 16 }
 
 int x = 24;
 
-#pragma omp declare target to(x)
+#pragma omp declare target to(x)	// { dg-warning "'to' clause with 'declare target' deprecated since OpenMP 5.2, use 'enter' \\\[-Wdeprecated-openmp\\\]" }
 
 int foo(int x)
 {
   return x + 1;
 }
-#pragma omp declare target to(foo)
+#pragma omp declare target to(foo)	// { dg-warning "'to' clause with 'declare target' deprecated since OpenMP 5.2, use 'enter' \\\[-Wdeprecated-openmp\\\]" }
 
 int
 main()
