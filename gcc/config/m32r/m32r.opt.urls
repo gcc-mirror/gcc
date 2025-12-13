@@ -15,7 +15,14 @@ UrlSuffix(gcc/M32R_002fD-Options.html#index-malign-loops)
 mdebug
 UrlSuffix(gcc/M32R_002fD-Options.html#index-mdebug)
 
-; skipping UrlSuffix for 'mflush-func=' due to finding no URLs
+mflush-func=
+UrlSuffix(gcc/M32R_002fD-Options.html#index-mflush-func)
+
+mflush-trap=
+UrlSuffix(gcc/M32R_002fD-Options.html#index-mflush-trap)
+
+mmodel=
+UrlSuffix(gcc/M32R_002fD-Options.html#index-mmodel)
 
 mno-flush-func
 UrlSuffix(gcc/M32R_002fD-Options.html#index-mno-flush-func)
@@ -23,5 +30,6 @@ UrlSuffix(gcc/M32R_002fD-Options.html#index-mno-flush-func)
 mno-flush-trap
 UrlSuffix(gcc/M32R_002fD-Options.html#index-mno-flush-trap)
 
-; skipping UrlSuffix for 'msdata=' due to finding no URLs
+msdata=
+UrlSuffix(gcc/M32R_002fD-Options.html#index-msdata-2)
 

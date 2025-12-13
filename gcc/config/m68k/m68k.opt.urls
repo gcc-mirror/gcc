@@ -72,7 +72,8 @@ UrlSuffix(gcc/M680x0-Options.html#index-mdiv-1)
 mhard-float
 UrlSuffix(gcc/M680x0-Options.html#index-mhard-float-1)
 
-; skipping UrlSuffix for 'mid-shared-library' due to finding no URLs
+mid-shared-library
+UrlSuffix(gcc/M680x0-Options.html#index-mid-shared-library-1)
 
 mlong-jump-table-offsets
 UrlSuffix(gcc/M680x0-Options.html#index-mlong-jump-table-offsets)
@@ -88,9 +89,11 @@ UrlSuffix(gcc/M680x0-Options.html#index-mpcrel)
 mrtd
 UrlSuffix(gcc/M680x0-Options.html#index-mrtd)
 
-; skipping UrlSuffix for 'msep-data' due to finding no URLs
+msep-data
+UrlSuffix(gcc/M680x0-Options.html#index-msep-data-1)
 
-; skipping UrlSuffix for 'mshared-library-id=' due to finding no URLs
+mshared-library-id=
+UrlSuffix(gcc/M680x0-Options.html#index-mshared-library-id-1)
 
 mshort
 UrlSuffix(gcc/M680x0-Options.html#index-mshort)
@@ -102,7 +105,7 @@ mstrict-align
 UrlSuffix(gcc/M680x0-Options.html#index-mstrict-align-2)
 
 mtune=
-UrlSuffix(gcc/M680x0-Options.html#index-mtune-9)
+UrlSuffix(gcc/M680x0-Options.html#index-mtune-8)
 
 mxgot
 UrlSuffix(gcc/M680x0-Options.html#index-mxgot)

@@ -69,7 +69,7 @@ mcpu=
 UrlSuffix(gcc/DEC-Alpha-Options.html#index-mcpu-4)
 
 mtune=
-UrlSuffix(gcc/DEC-Alpha-Options.html#index-mtune-6)
+UrlSuffix(gcc/DEC-Alpha-Options.html#index-mtune-5)
 
 mfp-rounding-mode=
 UrlSuffix(gcc/DEC-Alpha-Options.html#index-mfp-rounding-mode)

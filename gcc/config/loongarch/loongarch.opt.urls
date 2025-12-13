@@ -15,11 +15,17 @@ UrlSuffix(gcc/LoongArch-Options.html#index-mdouble-float-1)
 msimd=
 UrlSuffix(gcc/LoongArch-Options.html#index-msimd-1)
 
+mlsx
+UrlSuffix(gcc/LoongArch-Options.html#index-mlsx)
+
+mlasx
+UrlSuffix(gcc/LoongArch-Options.html#index-mlasx)
+
 march=
 UrlSuffix(gcc/LoongArch-Options.html#index-march-7)
 
 mtune=
-UrlSuffix(gcc/LoongArch-Options.html#index-mtune-8)
+UrlSuffix(gcc/LoongArch-Options.html#index-mtune-7)
 
 mabi=
 UrlSuffix(gcc/LoongArch-Options.html#index-mabi-2)

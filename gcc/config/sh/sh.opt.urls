@@ -156,8 +156,6 @@ UrlSuffix(gcc/SH-Options.html#index-mrenesas)
 mtas
 UrlSuffix(gcc/SH-Options.html#index-mtas)
 
-; skipping UrlSuffix for 'multcost=' due to finding no URLs
-
 musermode
 UrlSuffix(gcc/SH-Options.html#index-musermode)
 

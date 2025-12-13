@@ -19,7 +19,7 @@ marm
 UrlSuffix(gcc/ARM-Options.html#index-marm)
 
 mbig-endian
-UrlSuffix(gcc/ARM-Options.html#index-mbig-endian-2)
+UrlSuffix(gcc/ARM-Options.html#index-mbig-endian-1)
 
 mcallee-super-interworking
 UrlSuffix(gcc/ARM-Options.html#index-mcallee-super-interworking)
@@ -45,7 +45,7 @@ UrlSuffix(gcc/ARM-Options.html#index-mfpu-1)
 ; skipping UrlSuffix for 'mhard-float' due to finding no URLs
 
 mlittle-endian
-UrlSuffix(gcc/ARM-Options.html#index-mlittle-endian-2)
+UrlSuffix(gcc/ARM-Options.html#index-mlittle-endian-1)
 
 mlong-calls
 UrlSuffix(gcc/ARM-Options.html#index-mlong-calls-2)
@@ -89,7 +89,7 @@ mtpcs-leaf-frame
 UrlSuffix(gcc/ARM-Options.html#index-mtpcs-leaf-frame)
 
 mtune=
-UrlSuffix(gcc/ARM-Options.html#index-mtune-4)
+UrlSuffix(gcc/ARM-Options.html#index-mtune-3)
 
 mword-relocations
 UrlSuffix(gcc/ARM-Options.html#index-mword-relocations)

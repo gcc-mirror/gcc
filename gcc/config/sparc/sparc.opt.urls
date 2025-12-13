@@ -81,7 +81,7 @@ mcpu=
 UrlSuffix(gcc/SPARC-Options.html#index-mcpu-12)
 
 mtune=
-UrlSuffix(gcc/SPARC-Options.html#index-mtune-15)
+UrlSuffix(gcc/SPARC-Options.html#index-mtune-14)
 
 mcmodel=
 UrlSuffix(gcc/SPARC-Options.html#index-mcmodel_003d-6)

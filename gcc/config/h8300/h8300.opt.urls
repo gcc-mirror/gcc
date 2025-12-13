@@ -3,11 +3,20 @@
 ms
 UrlSuffix(gcc/H8_002f300-Options.html#index-ms)
 
+msx
+UrlSuffix(gcc/H8_002f300-Options.html#index-msx)
+
 ms2600
 UrlSuffix(gcc/H8_002f300-Options.html#index-ms2600)
 
 mint32
 UrlSuffix(gcc/H8_002f300-Options.html#index-mint32)
+
+mquickcall
+UrlSuffix(gcc/H8_002f300-Options.html#index-mquickcall)
+
+mslowbyte
+UrlSuffix(gcc/H8_002f300-Options.html#index-mslowbyte)
 
 mrelax
 UrlSuffix(gcc/H8_002f300-Options.html#index-mrelax-1)

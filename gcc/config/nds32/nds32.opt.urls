@@ -13,10 +13,10 @@ mfull-regs
 UrlSuffix(gcc/NDS32-Options.html#index-mfull-regs)
 
 mbig-endian
-UrlSuffix(gcc/NDS32-Options.html#index-mbig-endian-9)
+UrlSuffix(gcc/NDS32-Options.html#index-mbig-endian-8)
 
 mlittle-endian
-UrlSuffix(gcc/NDS32-Options.html#index-mlittle-endian-9)
+UrlSuffix(gcc/NDS32-Options.html#index-mlittle-endian-8)
 
 mcmov
 UrlSuffix(gcc/NDS32-Options.html#index-mcmov)

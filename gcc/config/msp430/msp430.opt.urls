@@ -18,8 +18,7 @@ UrlSuffix(gcc/MSP430-Options.html#index-mwarn-mcu)
 mwarn-devices-csv
 UrlSuffix(gcc/MSP430-Options.html#index-mwarn-devices-csv)
 
-mcpu=
-UrlSuffix(gcc/MSP430-Options.html#index-mcpu_003d-4)
+; skipping UrlSuffix for 'mcpu=' due to finding no URLs
 
 mlarge
 UrlSuffix(gcc/MSP430-Options.html#index-mlarge)
@@ -34,13 +33,16 @@ minrt
 UrlSuffix(gcc/MSP430-Options.html#index-minrt)
 
 mhwmult=
-UrlSuffix(gcc/MSP430-Options.html#index-mhwmult_003d)
+UrlSuffix(gcc/MSP430-Options.html#index-mhwmult)
 
 mcode-region=
 UrlSuffix(gcc/MSP430-Options.html#index-mcode-region)
 
 mdata-region=
 UrlSuffix(gcc/MSP430-Options.html#index-mdata-region)
+
+muse-lower-region-prefix
+UrlSuffix(gcc/MSP430-Options.html#index-muse-lower-region-prefix)
 
 msilicon-errata=
 UrlSuffix(gcc/MSP430-Options.html#index-msilicon-errata)

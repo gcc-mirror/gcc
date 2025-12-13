@@ -3,8 +3,7 @@
 matomic-libcalls
 UrlSuffix(gcc/HPPA-Options.html#index-matomic-libcalls)
 
-mbig-switch
-UrlSuffix(gcc/HPPA-Options.html#index-mbig-switch)
+; skipping UrlSuffix for 'mbig-switch' due to finding no URLs
 
 mcaller-copies
 UrlSuffix(gcc/HPPA-Options.html#index-mcaller-copies)
@@ -26,9 +25,6 @@ UrlSuffix(gcc/HPPA-Options.html#index-mfixed-range)
 
 mgas
 UrlSuffix(gcc/HPPA-Options.html#index-mgas)
-
-mjump-in-delay
-UrlSuffix(gcc/HPPA-Options.html#index-mjump-in-delay)
 
 mlinker-opt
 UrlSuffix(gcc/HPPA-Options.html#index-mlinker-opt)

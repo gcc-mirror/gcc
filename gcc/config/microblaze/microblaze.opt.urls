@@ -16,10 +16,10 @@ mmemcpy
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mmemcpy-1)
 
 mbig-endian
-UrlSuffix(gcc/MicroBlaze-Options.html#index-mbig-endian-8)
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mbig-endian-7)
 
 mlittle-endian
-UrlSuffix(gcc/MicroBlaze-Options.html#index-mlittle-endian-8)
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mlittle-endian-7)
 
 mxl-soft-mul
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-soft-mul)
@@ -36,14 +36,8 @@ UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-barrel-shift)
 mxl-pattern-compare
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-pattern-compare)
 
-mxl-stack-check
-UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-stack-check)
-
 mxl-gp-opt
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-gp-opt)
-
-mno-clearbss
-UrlSuffix(gcc/MicroBlaze-Options.html#index-mno-clearbss)
 
 mxl-multiply-high
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-multiply-high)
@@ -53,6 +47,21 @@ UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-float-convert)
 
 mxl-float-sqrt
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-float-sqrt)
+
+mxl-mode-executable
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-mode-executable)
+
+mxl-mode-xmdstub
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-mode-xmdstub)
+
+mxl-mode-bootstrap
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-mode-bootstrap)
+
+mxl-mode-novectors
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-mode-novectors)
+
+mxl-prefetch
+UrlSuffix(gcc/MicroBlaze-Options.html#index-mxl-prefetch)
 
 mpic-data-is-text-relative
 UrlSuffix(gcc/MicroBlaze-Options.html#index-mpic-data-is-text-relative-1)

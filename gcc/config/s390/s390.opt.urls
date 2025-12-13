@@ -7,7 +7,7 @@ m64
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-m64-2)
 
 march=
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-march-14)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-march-13)
 
 mbackchain
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mbackchain)
@@ -63,7 +63,7 @@ UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mstack-size-1)
 ; skipping UrlSuffix for 'mno-stack-size' due to finding no URLs
 
 mtune=
-UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mtune-14)
+UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mtune-13)
 
 mmvcle
 UrlSuffix(gcc/S_002f390-and-zSeries-Options.html#index-mmvcle)

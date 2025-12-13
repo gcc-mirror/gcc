@@ -7,12 +7,12 @@ mcpu=
 UrlSuffix(gcc/C-SKY-Options.html#index-mcpu_003d-1)
 
 mbig-endian
-UrlSuffix(gcc/C-SKY-Options.html#index-mbig-endian-4)
+UrlSuffix(gcc/C-SKY-Options.html#index-mbig-endian-3)
 
 ; skipping UrlSuffix for 'EB' due to finding no URLs
 
 mlittle-endian
-UrlSuffix(gcc/C-SKY-Options.html#index-mlittle-endian-4)
+UrlSuffix(gcc/C-SKY-Options.html#index-mlittle-endian-3)
 
 ; skipping UrlSuffix for 'EL' due to finding no URLs
 

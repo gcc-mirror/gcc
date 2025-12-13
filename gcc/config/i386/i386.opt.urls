@@ -33,7 +33,7 @@ malign-data=
 UrlSuffix(gcc/x86-Options.html#index-malign-data-1)
 
 march=
-UrlSuffix(gcc/x86-Options.html#index-march-15)
+UrlSuffix(gcc/x86-Options.html#index-march-14)
 
 ; skipping UrlSuffix for 'mbranch-cost=' due to finding no URLs
 
@@ -135,7 +135,7 @@ mtls-direct-seg-refs
 UrlSuffix(gcc/x86-Options.html#index-mtls-direct-seg-refs)
 
 mtune=
-UrlSuffix(gcc/x86-Options.html#index-mtune-17)
+UrlSuffix(gcc/x86-Options.html#index-mtune-16)
 
 mno-default
 UrlSuffix(gcc/x86-Options.html#index-mno-default)
