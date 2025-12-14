@@ -45,6 +45,106 @@
 
 #include "a68.h"
 
+/* A few macros to aid parsing of module map strings below.  */
+
+#define SKIP_WHITESPACES(P) while (ISSPACE (*(P))) (P)++
+
+#define PARSE_BASENAME(P,W)						\
+  do									\
+    {									\
+      (W) = (char *) alloca (strlen ((P)));				\
+      size_t i = 0;							\
+      while ((*(P)) != '=' && !ISSPACE (*(P)) && ((*(P)) != '\0'))	\
+	(W)[i++] = *((P)++);						\
+      (W)[i] = '\0';							\
+    } while (0)
+
+#define PARSE_INDICANT(P,W)						\
+  do									\
+    {									\
+      (W) = (char *) alloca (strlen ((P)));				\
+      size_t i = 0;							\
+      if (ISALPHA (*(P)))						\
+	{								\
+	  (W)[i++] = *((P)++);						\
+	  while (ISALPHA (*(P)) || ISDIGIT(*(P)) || (*(P)) == '_')	\
+	    {								\
+	      if ((*(P)) != '_')					\
+		(W)[i++] = *((P)++);					\
+	    }								\
+	}								\
+      (W)[i] = '\0';							\
+    } while (0)
+
+/* Parse module map information in MAP and add entries to A68_MODULE_FILES
+   accordingly.  Existing entries in the map are overriden without warning.
+
+   If MAP is not a valid module map specification then this function returns
+   `false' and sets *ERRMSG to some explanatory message.  Otherwise it returns
+   `true' and sets *ERRMSG to NULL.  */
+
+bool
+a68_process_module_map (const char *map, const char **errmsg)
+{
+  const char *p = map;
+
+  while (*p != '\0')
+    {
+      char *filename;
+      SKIP_WHITESPACES (p);
+      PARSE_BASENAME (p, filename);
+
+      if (p[0] != '=')
+	{
+	  *errmsg = "expected = after filename";
+	  goto error;
+	}
+      p++;
+
+      /* Parse one or more joined module indicants.  */
+      while (p[0] != ':' && p[0] != '\0')
+	{
+	  char *module;
+	  SKIP_WHITESPACES (p);
+	  PARSE_INDICANT (p, module);
+	  if (module[0] == '\0')
+	    {
+	      *errmsg = "expected module indicant";
+	      goto error;
+	    }
+
+	  SKIP_WHITESPACES (p);
+	  if (p[0] != ',' && p[0] != ':' && p[0] != '\0')
+	    {
+	      *errmsg = "expected comma or end of string after module indicant";
+	      goto error;
+	    }
+
+	  for (char *q = module; *q; ++q)
+	    *q = TOUPPER (*q);
+	  A68_MODULE_FILES->put (ggc_strdup (module), ggc_strdup (filename));
+
+	  if (p[0] == ',')
+	    p++;
+	}
+
+      SKIP_WHITESPACES (p);
+      if (p[0] != ':' && p[0] != '\0')
+	{
+	  *errmsg = "expected semicolon or end of string";
+	  goto error;
+	}
+
+      if (p[0] == ':')
+	p++;
+    }
+
+  *errmsg = NULL;
+  return true;
+ error:
+  return false;
+}
+
 /* Read exports from an object file.
 
    FD is a file descriptor open for reading.

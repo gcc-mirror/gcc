@@ -239,10 +239,6 @@ a68_init (void)
   else
     size_type_node = long_unsigned_type_node;
 
-  /* Create an empty module files map.  */
-  A68_MODULE_FILES = hash_map<nofree_string_hash,const char*>::create_ggc (16);
-  A68_MODULE_FILES->empty ();
-
   return true;
 }
 
@@ -445,7 +441,9 @@ static void
 a68_init_options (unsigned int argc ATTRIBUTE_UNUSED,
 		  cl_decoded_option *decoded_options ATTRIBUTE_UNUSED)
 {
-  /* Nothing to do here for now.  */
+  /* Create an empty module files map.  */
+  A68_MODULE_FILES = hash_map<nofree_string_hash,const char*>::create_ggc (16);
+  A68_MODULE_FILES->empty ();
 }
 
 #undef LANG_HOOKS_INIT_OPTIONS
@@ -519,6 +517,41 @@ a68_handle_option (size_t scode,
 
   switch (code)
     {
+    case OPT_fmodules_map:
+    case OPT_fmodules_map_:
+      {
+	const char *errmsg;
+	if (!a68_process_module_map (arg, &errmsg))
+	  error ("invalid argument for %<-fmodules-map%>: %s", errmsg);
+	break;
+      }
+    case OPT_fmodules_map_file:
+    case OPT_fmodules_map_file_:
+      {
+	FILE *file = fopen (arg, "r");
+	if (file == NULL)
+	  fatal_error (UNKNOWN_LOCATION,
+		       "cannot open modules map file %<%s%>", arg);
+	
+	ssize_t ssize = a68_file_size (file);
+	if (ssize < 0)
+	  fatal_error (UNKNOWN_LOCATION,
+		       "cannot determine size of modules map file %<%s%>", arg);
+	size_t fsize = ssize;
+
+	char *buffer = (char *) xmalloc (fsize + 1);
+	size_t bytes_read = a68_file_read (file, buffer, fsize);
+	if (bytes_read != fsize)
+	  fatal_error (UNKNOWN_LOCATION,
+		       "cannot read contents of modules map file %<%s%>", arg);
+	buffer[fsize] = '\0';
+
+	const char *errmsg;
+	if (!a68_process_module_map (buffer, &errmsg))
+	  fatal_error (UNKNOWN_LOCATION, "%s: %s", arg, errmsg);
+	free (buffer);
+	break;
+      }
     case OPT_std_algol68:
       OPTION_STRICT (&A68_JOB) = 1;
       break;

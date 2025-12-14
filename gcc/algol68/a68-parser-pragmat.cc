@@ -118,6 +118,11 @@ handle_access_in_pragmat (NODE_T *p, const char *pragmat, size_t pos)
 			    found);
       return NULL;
     }
+
+  /* Normalize module indicant to upper-case.  */
+  for (char *q = module; *q; ++q)
+    *q = TOUPPER (*q);
+
   /* Add entry in the module files map.  */
   const char **pmodule = A68_MODULE_FILES->get (module);
   if (pmodule != NULL)

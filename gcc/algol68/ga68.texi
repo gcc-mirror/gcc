@@ -155,6 +155,7 @@ This manual only documents the options specific to @command{ga68}.
 @menu
 * Dialect options::         Options controlling the accepted language.
 * Directory options::       Options influencing where to find source files.
+* Module search options::   Options influencing where to look for modules.
 * Warnings options::        Options controlling warnings specific to ga68
 * Runtime options::         Options controlling runtime behavior
 * Linking options::         Options influencing the linking step
@@ -222,6 +223,40 @@ scanned in left-to-right order, as with @command{gcc}.  The directory
 will also be added to the list of library search directories, as with
 @command{gcc}.
 
+@end table
+
+@node Module search options
+@section Module search options
+@cindex options, modules
+@cindex modules
+
+The following options can be used to tell the compiler where to look
+for certain modules.
+
+@table @gcctabopt
+@opindex fmodules-map
+@item -fmodules-map=@var{string}
+Use the mapping between module indicants and module base filenames
+specified in @var{string}, which must contain a sequence of entries
+with form
+@code{@var{basename}=@var{moduleindicant}[,@var{moduleindicant}]...}
+separated by colon (@code{:}) characters.
+
+When a module @var{moduleindicant} is accessed, the compiler will look
+for exports information for it in files @file{@var{basename}.m68},
+@file{lib@var{basename}.so}, @file{lib@var{basename}.a},
+@file{@var{basename}.o}, in that order.
+
+This option is used to avoid the default behavior, in which the
+basename used to search for an accessed module is implicitly derived
+from its indicant, by transforming it to lower case.
+
+The effect of this option is accumulative.
+
+@opindex fmodules-map-file
+@item -fmodules-map-file=@var{<filename>}
+Like @option{-fmodules-map}, but read the mapping information from the
+file @var{<filename>}.
 @end table
 
 @node Warnings options
@@ -849,6 +884,11 @@ XXX
 @cindex prelude packet
 
 XXX
+
+As we have seen modules are accessed by referring to them in
+access-clauses, using the same sort of bold-word indicants that
+identify user-defined modes and operators, such as @code{JSON},
+@code{Transput} or @code{LEB128_Arithmetic}.
 
 @node Modules and protection
 @subsection Modules and protection

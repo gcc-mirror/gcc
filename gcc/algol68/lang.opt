@@ -123,4 +123,22 @@ Enum(stropping_regime) String(upper) Value(0)
 EnumValue
 Enum(stropping_regime) String(supper) Value(1)
 
+; Module maps
+
+fmodules-map
+Algol68 Separate RejectNegative
+-fmodules-map=<mapstring>                 Association between module indicants and files.
+
+fmodules-map=
+Algol68 Joined RejectNegative
+-fmodules-map=<mapstring>                 Association between module indicants and files.
+
+fmodules-map-file
+Algol68 Separate RejectNegative
+-fmodules-map-file=<filename>              File containing modules map.
+
+fmodules-map-file=
+Algol68 Joined RejectNegative
+-fmodules-map-file=<filename>              File containing modules map.
+
 ; This comment is to ensure we retain the blank line above.

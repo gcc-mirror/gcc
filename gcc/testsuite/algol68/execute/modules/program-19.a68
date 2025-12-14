@@ -1,0 +1,6 @@
+{ dg-modules "module-foo module-bar" }
+{ dg-options {-fmodules-map=module-foo=Foo:module-bar=Bar} }
+
+begin access Foo (assert (foo = 10));
+      access Bar (assert (bar = 20))
+end

@@ -1,0 +1,1 @@
+module Foo = def pub int foo = 10; skip fed
