@@ -1,3 +1,9 @@
+2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR ipa/122955
+	* lto-partition.cc (lto_1_to_1_map): Use save_as_a<asm_node*> around next.
+	(create_asm_partition): Likewise.
+
 2025-11-25  Siddhesh Poyarekar  <siddhesh@gotplt.org>
 
 	PR lto/122515

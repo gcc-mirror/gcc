@@ -1,3 +1,24 @@
+2025-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_parser_omp_clause_reduction): Provide fixit hints
+	for -Wdeprecated-openmp diagnostics.
+	(cp_parser_omp_clause_linear): Likewise.
+	(cp_parser_omp_clause_depend): Likewise.
+	(cp_parser_omp_clause_map): Likewise.  Reset num_commas after the
+	diagnostics.
+	(cp_parser_omp_clause_proc_bind): Provide fixit hints for
+	-Wdeprecated-openmp diagnostics.
+	(cp_parser_omp_all_clauses): Move -Wdeprecated-openmp diagnostics
+	for to vs. enter here, add fixit hints for it.
+	(cp_parser_omp_master):Add MASTER_LOC argument.  Provide fixit hints
+	for -Wdeprecated-openmp diagnostics.
+	(cp_parser_omp_parallel): Adjust cp_parser_omp_master caller.
+	(cp_parser_omp_declare_target): Don't emit -Wdeprecated-openmp
+	warning for to vs. enter here.
+	(cp_parser_omp_metadirective): Provide fixit hints for
+	-Wdeprecated-openmp diagnostics.
+	(cp_parser_omp_construct): Adjust cp_parser_omp_master caller.
+
 2025-12-12  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* method.cc (constructible_expr): Emit diagnostics for abstract

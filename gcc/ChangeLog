@@ -1,3 +1,322 @@
+2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/46555
+	* tree-cfgcleanup.cc (execute_cleanup_cfg_post_optimizing):
+	Unconditionally set TODO_cleanup_cfg.
+
+2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* match.pd: Disable a few match patterns for !GIMPLE.
+
+2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122734
+	* tree-ssa-loop-ch.cc (should_duplicate_loop_header_p): Add new argument,
+	canbe_neverexecuted. When canbe_neverexecuted is true, return if a loop
+	exit is "never executed" like we are doing an invariant conditional.
+	(ch_base::copy_headers): Update call to should_duplicate_loop_header_p.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config/alpha/alpha.opt.urls: Regenerated.
+	* config/arc/arc.opt.urls: Regenerated.
+	* config/arm/arm.opt.urls: Regenerated.
+	* config/bpf/bpf.opt.urls: Regenerated.
+	* config/c6x/c6x.opt.urls: Regenerated.
+	* config/cris/cris.opt.urls: Regenerated.
+	* config/csky/csky.opt.urls: Regenerated.
+	* config/h8300/h8300.opt.urls: Regenerated.
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/ia64/ia64.opt.urls: Regenerated.
+	* config/lm32/lm32.opt.urls: Regenerated.
+	* config/loongarch/loongarch.opt.urls: Regenerated.
+	* config/lynx.opt.urls: Regenerated.
+	* config/m32r/m32r.opt.urls: Regenerated.
+	* config/m68k/m68k.opt.urls: Regenerated.
+	* config/mcore/mcore.opt.urls: Regenerated.
+	* config/microblaze/microblaze.opt.urls: Regenerated.
+	* config/mips/mips.opt.urls: Regenerated.
+	* config/mn10300/mn10300.opt.urls: Regenerated.
+	* config/moxie/moxie.opt.urls: Regenerated.
+	* config/msp430/msp430.opt.urls: Regenerated.
+	* config/nds32/nds32.opt.urls: Regenerated.
+	* config/or1k/elf.opt.urls: Regenerated.
+	* config/pa/pa-hpux.opt.urls: Regenerated.
+	* config/pa/pa.opt.urls: Regenerated.
+	* config/pdp11/pdp11.opt.urls: Regenerated.
+	* config/pru/pru.opt.urls: Regenerated.
+	* config/riscv/riscv.opt.urls: Regenerated.
+	* config/rs6000/rs6000.opt.urls: Regenerated.
+	* config/rs6000/sysv4.opt.urls: Regenerated.
+	* config/s390/s390.opt.urls: Regenerated.
+	* config/sh/sh.opt.urls: Regenerated.
+	* config/sparc/sparc.opt.urls: Regenerated.
+	* config/v850/v850.opt.urls: Regenerated.
+	* config/vax/vax.opt.urls: Regenerated.
+	* config/visium/visium.opt.urls: Regenerated.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <PRU Options>: Fix whitespace
+	in option list.
+	(PRU Options): Copy-editing.  Index and list negative option forms.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/pdp11/pdp11.opt (m40, m45): Add RejectNegative.
+	* doc/invoke.texi (Option Summary) <PDP-11 Options>: Remove
+	redundant -mno- forms from the list.
+	(PDP-11 Options): Fix some markup issues.  Merge documentation
+	of positive and negative forms of -mac0.  Index negative forms
+	of -msplit, -mlra.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/or1k/elf.opt (mnewlib): Mark obsolete option as
+	"Undocumented".
+	* config/or1k/or1k.opt (mcmov): Don't use future tense in doc string.
+	(msfimm): Likewise.
+	(mshftimm): Likewise.
+	* doc/invoke.texi (Option Summary) <OpenRISC Options>: Don't
+	document -mnewlib.
+	(OpenRISC Options): Likewise.  Add @opindex entry for
+	-mno-double-float.  Fix more instances of incorrect use of future
+	tense.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <Nvidia PTX Options>: Add
+	several missing options.
+	(Nvidia PTX Options): Correct index entry for -march-map.  List
+	negative forms of -moptimize, muniform-simt, and -mgomp.  Fix some
+	Texinfo markup issues.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <NDS32 Options>: Don't list
+	both positive and negative option forms.
+	(NDS32 Options): Consolidate separate entries for positive and
+	negative forms of the same option.  Document missing negative
+	forms in the same style.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/msp430/msp430.opt (mcpu): Mark deprecated option as
+	"Undocumented".
+	(mdevices-csv-loc=): Mark option not intended to be used by users
+	as "Undocumented".
+	* doc/invoke.texi (Option Summary) <MSP430 Options>: Fill in
+	argument syntax for options of the form -mfoo=@var{arg}.  Don't
+	list deprecated option -mcpu=.  Add missing entries for
+	-mwarn-devices-csv and -muse-lower-region-prefix.
+	(MSP430 Options): Similarly document argument syntax in the table
+	@item entries.  Add @opindex entries for negative forms.
+	Delete documentation of deprecated -mcpu= option.  Add
+	documentation for -muse-lower-region-prefix.  Markup and
+	copy-editing fixes throughout the section.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <MN10300 Options>: Remove
+	redundant -mno- forms from the list.
+	(MN10300 Options): Combine the documentation for -mmult-bug,
+	-mam33, -mliw, and -msetlb with the entries for the respective
+	negative forms.  List and index the negative forms -mno-am33-2,
+	-mno-am34, -mno-return-pointer-on-d0, -mno-mul.x.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <MMIX Options>: Remove redundant
+	-mno- forms from the list.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/mips/mips.opt (mnoasmopt): Mark as "Undocumented".
+	* doc/invoke.texi (Option Summary) <MIPS Options>: Add missing
+	entries for -mel/-meb.  Only list one of -mfoo/-mno-foo.
+	(MIPS Options):  Document -meb/-mel as synonyms for -EB/-EL.
+	Add missing @opindex entries.  Document -mmsa and -mfix4300.
+	Minor copy-editing for grammar and jargon issues.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/microblaze/microblaze.opt (Zxl-mode-bootstrap):
+	Mark as "Undocumented".
+	(Zxl-mode-executable): Likewise.
+	(Zxl-mode-novectors): Likewise.
+	(Zxl-mode-xilkernel): Likewise.
+	(Zxl-mode-xmdstub): Likewise.
+	(mxl-stack-check): Likewise.
+	(mno-clearbss): Likewise.
+	(mxl-mode-executable): Make help string more useful.
+	(mxl-mode-xmdstub): Likewise.
+	(mxl-mode-bootstrap): Likewise.
+	(mxl-mode-novectors): Likewise.
+	(mxl-mode-xilkernel): Mark as "Undocumented".
+	* doc/invoke.texi (Option Summary) <MicroBlaze Options>: Delete
+	entries for obsolete options now explicitly undocumented, and add
+	missing -mxl-prefetch option.
+	(MicroBlaze Options): Add missing @opindex entries for negative
+	option forms and list negative forms explicitly when appropriate.
+	Delete documentation for obsolete/deprecated options.  Add
+	missing @opindex entries for the m[no-]xml-mode- options.
+	Add missing documentation for -mxl-prefetch.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <MCore Options>: Remove
+	redundant -no options.
+	(MCore Options): Disambiguate documentation for
+	-mbig-endian/-mlittle-endian and -m210/-m340.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	PR target/119404
+	* config/m68k/m68k.opt (mlra): Fix typo in help string.
+	* doc/invoke.texi (Option Summary) <M680x0 Options>: Remove
+	redundant -mno- forms from the list.
+	(M680x0 Options): Combine documentation for -mshort, mbitfield,
+	-msep-data, -mid-shared-library with that for their respective
+	negatives that were formerly separately listed.  Add missing
+	@opindex entries.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <M32R/D Options>: Remove
+	redundant -mno entry.
+	(M32R/D Options): Regularize form of @opindex entries for
+	various options of the form -mfoo=@var{value}.  Combine
+	the documentation for -malign-loops and -mno-align-loops.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (M32C Options): Add missing @opindex for negative
+	form.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (Option Summary) <LoongArch Options>:
+	Remove redundant -mno forms from list.  Fix formatting so that
+	there is uniformly two spaces between options on the same line.
+	(LoongArch Options): Copy-editing for grammar, etc.  Add
+	@opindex for negative forms.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* doc/invoke.texi (LM32 Options): Add @opindex entries for negative
+	option forms.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/ia64/ia64.opt (msched-prefer-data-spec-insns): Mark as
+	explicitly "Undocumented".
+	(msched-prefer-non-control-spec-insns): Likewise.
+	* doc/invoke.texi (Option Summary) <IA-64 Options>: Remove
+	explicitly undocumented and redundant mno- forms from the list.
+	(IA-64 Options): Remove documentation for already-deleted option
+	-mfused-add and the two explicitly undocumented options.  Add
+	@opindex for negative forms and explicitly list the -mno-forms
+	of options that are enabled by default.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/pa/pa.opt (mbig-switch): Mark obsolete option as
+	"Undocumented".
+	(mjump-in-delay): Likewise.
+	(mlra): Likewise.
+	(mnosnake, msnake): Likewise.
+	* doc/invoke.texi (Option Summary) <HPPA Options>: Remove
+	deliberately undocumented options from list.  Remove redundant
+	negative/positive forms from list.  Fix formatting so there is
+	uniformly two spaces between options on the same line.
+	(HPPA Options): Remove documentation for obsolete options.
+	Add @opindex for negative forms.  Properly list -mwsio instead
+	of just referring to it in the -msio docs.  Light copy-editing to
+	fix markup, jargon, etc.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/h8300/h8300.opt (mexr, mno-exr): Add FIXME re ambiguity
+	for -mno-exr semantics.
+	* doc/extend.texi (H8/300 Function Attributes): Document
+	monitor and OS_Task attributes.
+	* doc/invoke.texi (Option Summary) <H8/300 Options}: Add -msx,
+	-ms2600, -mquickcall, -mslowbyte.  Combine -mexr and -mno-exr.
+	(H8/300 Options): Likewise.  Add @opindex entries for options
+	that have negative forms.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/arc/arc.opt: Mark -mbig-endian, -mlittle-endian,
+	-mmixed-code, -mno-mpy, -margonaut, -munalign-prob-threshold=,
+	-mannotate-align, -malign-call, -mRcq, -mRcw, -mbbit-peephole,
+	-mcompact-casesi, -mq-class, -mexpand-adddi, -mcrc, -mdsp-packa,
+	-mdvbf, -mtelephony, -mrtsc, -EB, -EL, -mrla, -mEA, and
+	-multcost= as "Undocumented".
+	* doc/invoke.texi: Remove documentation for the above options.
+	plus -mmac-d16 and -mmac-24 (which were already marked as
+	"Undocumented").  Likewise remove documentation for
+	-mbarrel_shifter, -mdpfp_compact, -mdpfp_fast, -mdsp_packa,
+	-mmac_24, -mmac_d16, -mspfp_compact, and -mspfp_fast, which
+	had already been deleted from arc.opt at some point.
+	Add index entries for the -mno- forms of remaining options that
+	have them.  Document positive forms of -mno-brcc and -mno-dpfp-lrsr.
+
+2025-12-13  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/arc/arc.opt (-mno-brcc, -mno-dpfp-lrsr): Redefine in
+	the positive sense.
+
+2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR ipa/122955
+	* cgraph.h (toplevel_node): Add next and previous fields.
+	Add chain_next and chain_prev to GTY.
+	(symtab_node): Remove next and previous field. Remove chain_next and chain_prev
+	from the GTY.
+	(asm_node): Remove next field.
+	(symtab_node::next_defined_symbol): Use save_as_a<symtab_node*> around next.
+	(symbol_table::unregister): Likewise
+	(FOR_EACH_SYMBOL): Likewise
+	(symbol_table::first_defined_symbol): Likewise
+	(symbol_table::first_variable): Likewise
+	(symbol_table::next_variable): Likewise
+	(symbol_table::first_static_initializer): Likewise
+	(symbol_table::next_static_initializer): Likewise
+	(symbol_table::first_defined_variable): Likewise
+	(symbol_table::next_defined_variable): Likewise
+	(symbol_table::first_defined_function): Likewise
+	(symbol_table::next_defined_function): Likewise
+	(symbol_table::first_function): Likewise
+	(symbol_table::next_function): Likewise
+	(symbol_table::first_function_with_gimple_body): Likewise
+	(symbol_table::next_function_with_gimple_body): Likewise
+	* cgraphunit.cc (analyze_functions): Likewise
+	(output_in_order): Likewise
+	* lto-streamer-out.cc (lto_output): Use save_as_a<asm_node*> around next.
+	* symtab.cc (symtab_node::verify_symtab_nodes): Likewise.
+
 2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 	    Andrew Stubbs  <ams@baylibre.com>

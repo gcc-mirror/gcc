@@ -1,3 +1,26 @@
+2025-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-parser.cc (c_parser_omp_clause_reduction): Provide fixit hints
+	for -Wdeprecated-openmp diagnostics.
+	(c_parser_omp_clause_linear): Likewise.
+	(c_parser_omp_clause_depend): Likewise.  Add HERE argument.
+	(c_parser_omp_clause_map): Provide fixit hints for -Wdeprecated-openmp
+	diagnostics.  Reset num_commas after the diagnostics.
+	(c_parser_omp_clause_proc_bind): Provide fixit hints for
+	-Wdeprecated-openmp diagnostics.
+	(c_parser_omp_all_clauses): Move -Wdeprecated-openmp diagnostics
+	for to vs. enter here, add fixit hints for it.  Adjust
+	c_parser_omp_clause_depend caller.
+	(c_parser_omp_depobj): Adjust c_parser_omp_clause_depend caller.
+	(c_parser_omp_master): Add MASTER_LOC argument.  Provide fixit hints
+	for -Wdeprecated-openmp diagnostics.
+	(c_parser_omp_parallel): Adjust c_parser_omp_master caller.
+	(c_parser_omp_declare_target): Don't emit -Wdeprecated-openmp
+	warning for to vs. enter here.
+	(c_parser_omp_metadirective): Provide fixit hints for
+	-Wdeprecated-openmp diagnostics.
+	(c_parser_omp_construct): Adjust c_parser_omp_master caller.
+
 2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 	    Andrew Stubbs  <ams@baylibre.com>

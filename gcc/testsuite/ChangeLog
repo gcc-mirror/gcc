@@ -1,3 +1,38 @@
+2025-12-13  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/module1.a68: Also test contracted
+	forms.
+	* algol68/execute/modules/module3.a68: Likewise.
+	* algol68/execute/modules/module5.a68: Likewise.
+	* algol68/execute/modules/program-1.a68: Likewise.
+
+2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122734
+	* gcc.dg/tree-ssa/20030711-1.c: Update.
+	* gcc.dg/tree-ssa/copy-headers-10.c: New test.
+	* gcc.dg/tree-ssa/copy-headers-11.c: New test.
+	* gcc.dg/tree-ssa/copy-headers-12.c: New test.
+
+2025-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/gomp/deprecate-1.C: New test.
+
+2025-12-13  Jakub Jelinek  <jakub@redhat.com>
+
+	* c-c++-common/gomp/52-deps.c: Change locations of 2 warnings for C.
+	* gcc.dg/gomp/deprecate-1.c: New test.
+
+2025-12-13  Alexandre Oliva  <oliva@adacore.com>
+
+	* lib/gnat.exp (gnat_init): Set gcc_warning_prefix and
+	gcc_error_prefix.
+
+2025-12-13  Alexandre Oliva  <oliva@adacore.com>
+
+	PR tree-optimization/119293
+	* gcc.dg/vect/vect-121.c: XFAIL on ia32.
+
 2025-12-12  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	* g++.dg/ext/is_constructible9.C: Add to testcase.
