@@ -34,7 +34,7 @@ Target RejectNegative Joined UInteger Var(riscv_branch_cost)
 -mbranch-cost=N	Set the cost of branches to roughly N instructions.
 
 mplt
-Target Alias(fplt)
+Target Alias(fplt) Undocumented
 This option is deprecated; use -fplt or -fno-plt instead.
 
 mabi=
@@ -107,7 +107,7 @@ Target RejectNegative Joined Var(riscv_cpu_string) Save
 -mcpu=PROCESSOR	Use architecture of and optimize the output for PROCESSOR.
 
 msmall-data-limit=
-Target Joined UInteger Var(g_switch_value) Init(8)
+Target Joined UInteger Var(g_switch_value) Init(8) RejectNegative
 -msmall-data-limit=N	Put global and static data smaller than <number> bytes into a special section (on some targets).
 
 msave-restore

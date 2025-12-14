@@ -1305,34 +1305,29 @@ See RS/6000 and PowerPC Options.
 
 @emph{RISC-V Options} (@ref{RISC-V Options})
 @gccoptlist{-mbranch-cost=@var{N-instruction}
--mplt  -mno-plt
 -mabi=@var{ABI-string}
--mfdiv  -mno-fdiv
--mfence-tso  -mno-fence-tso
--mdiv  -mno-div
+-mfdiv  -mdiv
+-mno-fence-tso
 -misa-spec=@var{ISA-spec-string}
--march=@var{ISA-string|Profiles|Profiles_ISA-string|CPU/processor string}
--mtune=@var{processor-string}
+-march=@r{[}@var{ISA}@r{|}@var{Profile}@r{|}@var{Profile_ISA}@r{|}@var{processor-string}@r{]}
+-mcpu=@var{processor-string}  -mtune=@var{processor-string}
 -mpreferred-stack-boundary=@var{num}
 -msmall-data-limit=@var{N-bytes}
--msave-restore  -mno-save-restore
--mshorten-memrefs  -mno-shorten-memrefs
--mstrict-align  -mno-strict-align
--mcmodel=medlow  -mcmodel=medany -mcmodel=large
--mexplicit-relocs  -mno-explicit-relocs
--mrelax  -mno-relax
--mriscv-attribute  -mno-riscv-attribute
+-msave-restore  -mno-shorten-memrefs
+-mstrict-align  -mscalar-strict-align  -mno-vector-strict-align
+-mcmodel=medlow  -mcmodel=medany  -mcmodel=large
+-mexplicit-relocs  -mrelax  -mriscv-attribute
 -malign-data=@var{type}
 -mbig-endian  -mlittle-endian
 -mstack-protector-guard=@var{guard}  -mstack-protector-guard-reg=@var{reg}
 -mstack-protector-guard-offset=@var{offset}
--mcsr-check -mno-csr-check
--mmovcc  -mno-movcc
--minline-atomics  -mno-inline-atomics
--minline-strlen  -mno-inline-strlen
--minline-strcmp  -mno-inline-strcmp
--minline-strncmp  -mno-inline-strncmp
--mtls-dialect=desc  -mtls-dialect=trad}
+-mcsr-check  -momit-leaf-frame-pointer  -mmovcc
+-mno-inline-atomics  -mno-inline-strlen
+-mno-inline-strcmp  -mno-inline-strncmp
+-mstringop-strategy=@var{strategy}
+-mtls-dialect=desc  -mtls-dialect=trad
+-mrvv-vector-bits=@var{value}  -mrvv-max-lmul=@var{value}
+-madjust-lmul-cost  -mmax-vectorization  -mno-autovec-segment}
 
 @emph{RL78 Options} (@ref{RL78 Options})
 @gccoptlist{-msim  -mmul=none  -mmul=g13  -mmul=g14  -mallregs
@@ -31941,12 +31936,6 @@ These command-line options are defined for RISC-V targets:
 @item -mbranch-cost=@var{n}
 Set the cost of branches to roughly @var{n} instructions.
 
-@opindex plt
-@item -mplt
-@itemx -mno-plt
-When generating PIC code, do or don't allow the use of PLTs. Ignored for
-non-PIC.  The default is @option{-mplt}.
-
 @opindex mabi
 @item -mabi=@var{ABI-string}
 Specify integer and floating-point calling convention.  @var{ABI-string}
@@ -31957,21 +31946,22 @@ floating-point types.  For example @samp{-march=rv64ifd -mabi=lp64d} means that
 registers.  Contrast this with @samp{-march=rv64ifd -mabi=lp64f}, which still
 allows the compiler to generate code that uses the F and D extensions but only
 allows floating-point values up to 32 bits long to be passed in registers; or
-@samp{-march=rv64ifd -mabi=lp64}, in which no floating-point arguments will be
+@samp{-march=rv64ifd -mabi=lp64}, in which no floating-point arguments are
 passed in registers.
 
-The default for this argument is system dependent, users who want a specific
-calling convention should specify one explicitly.  The valid calling
+The default for this argument is system dependent; if you want a specific
+calling convention you should specify one explicitly.  The valid calling
 conventions are: @samp{ilp32}, @samp{ilp32f}, @samp{ilp32d}, @samp{lp64},
 @samp{lp64f}, and @samp{lp64d}.  Some calling conventions are impossible to
 implement on some ISAs: for example, @samp{-march=rv32if -mabi=ilp32d} is
 invalid because the ABI requires 64-bit values be passed in F registers, but F
 registers are only 32 bits wide.  There are also the @samp{ilp32e} ABI that can
 only be used with the @samp{rv32e} architecture and the @samp{lp64e} ABI that
-can only be used with the @samp{rv64e}.  Those ABIs are not well specified at
+can only be used with the @samp{rv64e}.  Those ABIs are not well-specified at
 present, and are subject to change.
 
 @opindex mfdiv
+@opindex mno-fdiv
 @item -mfdiv
 @itemx -mno-fdiv
 Do or don't use hardware floating-point divide and square root instructions.
@@ -31979,6 +31969,7 @@ This requires the F or D extensions for floating-point registers.  The default
 is to use them if the specified architecture has these instructions.
 
 @opindex mfence-tso
+@opindex mno-fence-tso
 @item -mfence-tso
 @itemx -mno-fence-tso
 Do or don't use the @samp{fence.tso} instruction, which is unimplemented on
@@ -31986,6 +31977,7 @@ some processors (including those from T-Head).  If the @samp{fence.tso}
 instruction is not available then a stronger fence is used instead.
 
 @opindex mdiv
+@opindex mno-div
 @item -mdiv
 @itemx -mno-div
 Do or don't use hardware instructions for integer division.  This requires the
@@ -31995,7 +31987,7 @@ these instructions.
 @opindex misa-spec
 @item -misa-spec=@var{ISA-spec-string}
 Specify the version of the RISC-V Unprivileged (formerly User-Level)
-ISA specification to produce code conforming to.  The possibilities
+ISA specification generated code should conform to.  The possibilities
 for @var{ISA-spec-string} are:
 @table @code
 @item 2.2
@@ -32009,51 +32001,59 @@ The default is @option{-misa-spec=20191213} unless GCC has been configured
 with @option{--with-isa-spec=} specifying a different default version.
 
 @opindex march
-@item -march=@var{ISA-string|Profiles|Profile_ISA-string|help|unset}
-Generate code for given RISC-V ISA or Profiles or a combination of them
-(e.g.@: @samp{rv64im} @samp{rvi20u64} @samp{rvi20u64_zbb}).  ISA strings and
-Profiles must be lower-case.  Examples include @samp{rv64i}, @samp{rv32g},
+@item -march=@r{[}@var{ISA}@r{|}@var{Profile}@r{|}@var{Profile_ISA}@r{|}@var{processor-string}@r{]}
+Generate code for given RISC-V ISA or profile or a combination of them
+(e.g.@: @samp{rv64im} @samp{rvi20u64} @samp{rvi20u64_zbb}).  The names of
+ISAs and profiles must be lower case.
+Examples include @samp{rv64i}, @samp{rv32g},
 @samp{rv32e}, @samp{rv32imaf}, @samp{rva22u64} and @samp{rva23u64}.
-To combine Profiles and optional RISC-V ISA extention, the profile should start
-at the beginning of the option, then use underline connect ISA-string (e.g.@:
+To combine a named profile with optional RISC-V ISA extensions,
+give the profile first and then append the extension name(s) using
+an underscore as a delimiter (e.g.@:
 @samp{rvi20u64_zca_zcb} @samp{rva23u64_zacas}).  Additionally, a special value
-@option{help} (@option{-march=help}) is accepted to list all supported
+@samp{help} (@option{-march=help}) is accepted to list all supported
 extensions.
 
-@samp{-march=unset} causes the compiler to ignore any @samp{-march=@dots{}} options
+@option{-march=unset} causes the compiler to ignore any
+@option{-march=@dots{}} options
 that appear earlier on the command line, behaving as if the option was never
-passed. This is useful for ensuring that the architecture is taken from the
-@samp{-mcpu} option, and it will result in an error if no @samp{-mcpu} option
-is given when @samp{-march=unset} is used.
+passed.  This is useful for ensuring that the architecture is taken from the
+@option{-mcpu} option, and an error results if no @option{-mcpu} option
+is given when @option{-march=unset} is used.
 
 The syntax of the ISA string is defined as follows:
 
-@table @code
-@item The string must start with @samp{rv32} or @samp{rv64}, followed by
+@itemize @bullet{}
+@item
+The string must start with @samp{rv32} or @samp{rv64}, followed by
 @samp{i}, @samp{e}, or @samp{g}, referred to as the base ISA.
-@item The subsequent part of the string is a list of extension names. Extension
+@item
+The subsequent part of the string is a list of extension names.  Extension
 names can be categorized as multi-letter (e.g.@: @samp{zba}) and single-letter
-(e.g.@: @samp{v}). Single-letter extensions can appear consecutively,
+(e.g.@: @samp{v}).  Single-letter extensions can appear consecutively,
 but multi-letter extensions must be separated by underscores.
-@item An underscore can appear anywhere after the base ISA. It has no specific
+@item
+An underscore can appear anywhere after the base ISA.  It has no specific
 effect but is used to improve readability and can act as a separator.
-@item Extension names may include an optional version number, following the
+@item
+Extension names may include an optional version number, following the
 syntax @samp{<major>p<minor>} or @samp{<major>}, (e.g.@: @samp{m2p1} or
 @samp{m2}).
-@end table
+@end itemize
 
-Supported extension are listed below:
+Supported extensions are listed below:
 
 @include riscv-ext.texi
 
-When @option{-march=} is not specified, use the setting from @option{-mcpu}.
+When @option{-march=} is not specified, GCC uses the setting from
+@option{-mcpu}.
 
 If both @option{-march} and @option{-mcpu=} are not specified, the default for
-this argument is system dependent, users who want a specific architecture
-extensions should specify one explicitly.
+this argument is system dependent; if you want a specific architecture
+extension, you should specify one explicitly.
 
 When the RISC-V specifications define an extension as depending on other
-extensions, GCC will implicitly add the dependent extensions to the enabled
+extensions, GCC implicitly adds the dependent extensions to the enabled
 extension set if they weren't added explicitly.
 
 @include riscv-mcpu.texi
@@ -32062,8 +32062,8 @@ Note that @option{-mcpu} does not override @option{-march} or @option{-mtune}.
 
 @include riscv-mtune.texi
 
-When @option{-mtune=} is not specified, use the setting from @option{-mcpu},
-the default is @samp{generic} if both are not specified.
+When @option{-mtune=} is not specified, GCC uses the setting from
+@option{-mcpu}.  The default is @samp{generic} if neither is specified.
 
 The @samp{size} choice is not intended for use by end-users.  This is used
 when @option{-Os} is specified.  It overrides the instruction cost info
@@ -32086,6 +32086,7 @@ Put global and static data smaller than @var{n} bytes into a special section
 (on some targets).
 
 @opindex msave-restore
+@opindex mno-save-restore
 @item -msave-restore
 @itemx -mno-save-restore
 Do or don't use smaller but slower prologue and epilogue code that uses
@@ -32093,6 +32094,7 @@ library function calls.  The default is to use fast inline prologues and
 epilogues.
 
 @opindex mmovcc
+@opindex mno-movcc
 @item -mmovcc
 @itemx -mno-movcc
 Do or don't produce branchless conditional-move code sequences even with
@@ -32101,6 +32103,7 @@ If enabled, sequences of ALU operations are produced using base integer
 ISA instructions where profitable.
 
 @opindex minline-atomics
+@opindex mno-inline-atomics
 @item -minline-atomics
 @itemx -mno-inline-atomics
 Do or don't use smaller but slower subword atomic emulation code that uses
@@ -32108,38 +32111,48 @@ libatomic function calls.  The default is to use fast inline subword atomics
 that do not require libatomic.
 
 @opindex minline-strlen
+@opindex mno-inline-strlen
 @item -minline-strlen
 @itemx -mno-inline-strlen
-Do or do not attempt to inline strlen calls if possible.
-Inlining will only be done if the string is properly aligned
+Do or do not attempt to inline @code{strlen} calls if possible.
+Inlining can only be done if the string is properly aligned
 and instructions for accelerated processing are available.
-The default is to not inline strlen calls.
+The default is to inline @code{strlen} calls.
 
 @opindex minline-strcmp
+@opindex mno-inline-strcmp
 @item -minline-strcmp
 @itemx -mno-inline-strcmp
-Do or do not attempt to inline strcmp calls if possible.
-Inlining will only be done if the strings are properly aligned
+Do or do not attempt to inline @code{strcmp} calls if possible.
+Inlining can only be done if the strings are properly aligned
 and instructions for accelerated processing are available.
-The default is to not inline strcmp calls.
+The default is to inline @code{strcmp} calls.
 
 The @option{--param riscv-strcmp-inline-limit=@var{n}} parameter controls
 the maximum number of bytes compared by the inlined code.
 The default value is 64.
 
 @opindex minline-strncmp
+@opindex mno-inline-strncmp
 @item -minline-strncmp
 @itemx -mno-inline-strncmp
-Do or do not attempt to inline strncmp calls if possible.
-Inlining will only be done if the strings are properly aligned
+Do or do not attempt to inline @code{strncmp} calls if possible.
+Inlining can only be done if the strings are properly aligned
 and instructions for accelerated processing are available.
-The default is to not inline strncmp calls.
+The default is to inline @code{strncmp} calls.
 
 The @option{--param riscv-strcmp-inline-limit=@var{n}} parameter controls
 the maximum number of bytes compared by the inlined code.
 The default value is 64.
 
+@opindex mstringop-strategy
+@item -mstringop-strategy=@var{strategy}
+Specify a particular strategy for inlining string and memory operations.
+@var{strategy} may be one of @samp{auto}, @samp{libcall}, @samp{scalar},
+or @samp{vector}.
+
 @opindex mshorten-memrefs
+@opindex mno-shorten-memrefs
 @item -mshorten-memrefs
 @itemx -mno-shorten-memrefs
 Do or do not attempt to make more use of compressed load/store instructions by
@@ -32149,6 +32162,7 @@ register, then the new load/store can be compressed.  Currently targets 32-bit
 integer load/stores only.
 
 @opindex mstrict-align
+@opindex mno-strict-align
 @item -mstrict-align
 @itemx -mno-strict-align
 Do not or do generate unaligned memory accesses.  The default is set depending
@@ -32171,6 +32185,8 @@ Do not or do generate unaligned vector memory accesses.  The default is set
 to off unless the processor we are optimizing for explicitly supports
 element-misaligned vector memory access.
 
+@opindex mmax-vectorization
+@opindex mno-max-vectorization
 @item -mmax-vectorization
 @itemx -mno-max-vectorization
 Enable or disable an override to vectorizer cost model making vectorization
@@ -32203,13 +32219,16 @@ executables or libraries.
 Generate code for a large code model, which has no restrictions on size or
 placement of symbols.
 
+@opindex mexplicit-relocs
+@opindex mno-explicit-relocs
 @item -mexplicit-relocs
-@itemx -mno-exlicit-relocs
+@itemx -mno-explicit-relocs
 Use or do not use assembler relocation operators when dealing with symbolic
 addresses.  The alternative is to use assembler macros instead, which may
 limit optimization.
 
 @opindex mrelax
+@opindex mno-relax
 @item -mrelax
 @itemx -mno-relax
 Take advantage of linker relaxations to reduce the number of instructions
@@ -32217,15 +32236,24 @@ required to materialize symbol addresses. The default is to take advantage of
 linker relaxations.
 
 @opindex mriscv-attribute
+@opindex mno-riscv-attribute
 @item -mriscv-attribute
 @itemx -mno-riscv-attribute
 Emit (do not emit) RISC-V attribute to record extra information into ELF
 objects.  This feature requires at least binutils 2.32.
 
 @opindex mcsr-check
+@opindex mno-csr-check
 @item -mcsr-check
 @itemx -mno-csr-check
 Enables or disables the CSR checking.
+
+@opindex momit-leaf-frame-pointer
+@opindex mno-omit-leaf-frame-pointer
+@item -momit-leaf-frame-pointer
+Don't keep the frame pointer in a register for leaf functions.  This
+avoids the instructions to save, set up and restore frame pointers and
+makes an extra register available in leaf functions.
 
 @opindex malign-data
 @item -malign-data=@var{type}
@@ -32272,6 +32300,39 @@ of TLS variables.
 @item -mtls-dialect=trad
 Use traditional TLS as the thread-local storage mechanism for dynamic accesses
 of TLS variables.  This is the default.
+
+@opindex mrvv-vector-bits
+@item -mrvv-vector-bits=@var{value}
+Specify how the number of bits for an RVV vector register, as taken from
+the @option{-march=} option, is interpreted.
+The @var{value} parameter is specified as a string keyword and may be one of
+@samp{scalable} or @samp{zvl}.  The default is @samp{scalable}, which tells
+GCC to interpret the number as a minimum, while @samp{zvl} tells GCC to use
+exactly the number of bits specified.
+
+@opindex mrvv-max-lmul
+@item -mrvv-max-lmul=@var{value}
+This option allows explicit control over the maximum length multiplier (LMUL)
+used when generating code for the RISC-V Vector Extensions (RVV).
+The @var{value} parameter is specified as a string keyword and may be
+one of @samp{m1}, @samp{m2}, @samp{m4}, @samp{m8}, or @samp{dynamic}.  The
+default is @samp{m1} for compatibility with existing hardware that does not
+support the other options.
+
+@opindex madjust-lmul-cost
+@opindex mno-adjust-lmul-cost
+@item -madjust-lmul-cost
+@itemx -mno-adjust-lmul-cost
+This option adjusts the cost model used to schedule vector instructions to
+multiply the latency of instructions by the RVV length multiplier, LMUL.
+It is disabled by default.
+
+@opindex mautovec-segment
+@opindex mno-autovec-segment
+@item -mautovec-segment
+@itemx -mno-autovec-segment
+Enable or disable generation of vector segment load/store instructions.
+This option is enabled by default.
 @end table
 
 @node RL78 Options
