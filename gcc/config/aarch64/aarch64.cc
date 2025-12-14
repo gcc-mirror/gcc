@@ -742,7 +742,7 @@ aarch64_merge_string_arguments (tree args, tree old_attr,
 static arm_pcs
 aarch64_function_abi (struct function *fun)
 {
-  gcc_assert (fun);
+  gcc_checking_assert (fun);
   if (fun->machine->pcs == ARM_PCS_UNKNOWN)
     fun->machine->pcs = arm_pcs (fndecl_abi (fun->decl).id ());
 
@@ -755,9 +755,9 @@ aarch64_function_abi (struct function *fun)
 static arm_pcs
 aarch64_fndecl_abi (tree fn)
 {
-  gcc_assert (TREE_CODE (fn) == FUNCTION_DECL);
+  gcc_checking_assert (TREE_CODE (fn) == FUNCTION_DECL);
   struct function *fun = DECL_STRUCT_FUNCTION (fn);
-  if (!fun)
+  if (!fun || !fun->machine)
     return arm_pcs (fndecl_abi (fn).id ());
 
   return aarch64_function_abi (fun);
