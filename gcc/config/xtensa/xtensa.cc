@@ -1425,7 +1425,6 @@ xtensa_expand_block_set_libcall (rtx dst_mem,
 				 HOST_WIDE_INT bytes)
 {
   rtx reg;
-  rtx_insn *seq;
 
   start_sequence ();
 
@@ -1439,9 +1438,7 @@ xtensa_expand_block_set_libcall (rtx dst_mem,
 		     GEN_INT (value), SImode,
 		     GEN_INT (bytes), SImode);
 
-  seq = end_sequence ();
-
-  return seq;
+  return end_sequence ();
 }
 
 /* Worker function for xtensa_expand_block_set().
@@ -1458,7 +1455,6 @@ xtensa_expand_block_set_unrolled_loop (rtx dst_mem,
 {
   rtx reg;
   int offset;
-  rtx_insn *seq;
 
   if (bytes > 64)
     return NULL;
@@ -1500,9 +1496,7 @@ xtensa_expand_block_set_unrolled_loop (rtx dst_mem,
     }
   while (bytes > 0);
 
-  seq = end_sequence ();
-
-  return seq;
+  return end_sequence ();
 }
 
 /* Worker function for xtensa_expand_block_set(),
@@ -1520,7 +1514,6 @@ xtensa_expand_block_set_small_loop (rtx dst_mem,
   rtx reg, dst, end;
   machine_mode unit_mode;
   rtx_code_label *label;
-  rtx_insn *seq;
 
   /* Totally-aligned block only.  */
   if (bytes % align != 0)
@@ -1581,9 +1574,7 @@ xtensa_expand_block_set_small_loop (rtx dst_mem,
   emit_insn (gen_addsi3 (dst, dst, GEN_INT (align)));
   emit_cmp_and_jump_insns (dst, end, NE, const0_rtx, SImode, true, label);
 
-  seq = end_sequence ();
-
-  return seq;
+  return end_sequence ();
 }
 
 
@@ -2247,7 +2238,7 @@ static rtx_insn *
 xtensa_call_tls_desc (rtx sym, rtx *retp)
 {
   rtx fn, arg, a_io;
-  rtx_insn *call_insn, *insns;
+  rtx_insn *call_insn;
 
   start_sequence ();
   fn = gen_reg_rtx (Pmode);
@@ -2259,10 +2250,9 @@ xtensa_call_tls_desc (rtx sym, rtx *retp)
   emit_move_insn (a_io, arg);
   call_insn = emit_call_insn (gen_tls_call (a_io, fn, sym, const1_rtx));
   use_reg (&CALL_INSN_FUNCTION_USAGE (call_insn), a_io);
-  insns = end_sequence ();
 
   *retp = a_io;
-  return insns;
+  return end_sequence ();
 }
 
 
