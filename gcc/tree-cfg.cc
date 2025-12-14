@@ -10195,13 +10195,77 @@ sort_phi_args (const void *a_, const void *b_)
     return 0;
 }
 
+/* Returns true if edge E comes from a possible ifconvertable branch.
+   That is:
+   ```
+   BB0:
+   if (a) goto BB1; else goto BB2;
+   BB1:
+   BB2:
+   ```
+   Returns true for the edge from BB0->BB2 or BB1->BB2.
+   This function assumes we only have one middle block.
+   And the middle block is empty. */
+
+static bool
+ifconvertable_edge (edge e)
+{
+  basic_block bb2 = e->dest;
+  basic_block bb0 = e->src;
+  basic_block bb1 = nullptr, rbb1;
+  if (e->src == e->dest)
+    return false;
+  if (EDGE_COUNT (bb0->succs) > 2)
+    return false;
+  if (single_succ_p (bb0))
+    {
+      if (!single_pred_p (bb0))
+	return false;
+      /* The middle block can only be empty,
+	 otherwise the phis will be
+	 different anyways. */
+      if (!empty_block_p (bb0))
+	return false;
+      bb1 = bb0;
+      bb0 = single_pred (bb0);
+      if (EDGE_COUNT (bb0->succs) != 2)
+	return false;
+    }
+
+  /* If convertables are only for conditionals. */
+  if (!is_a<gcond*>(*gsi_last_nondebug_bb (bb0)))
+    return false;
+
+  /* Find the other basic block.  */
+  if (EDGE_SUCC (bb0, 0)->dest == bb2)
+    rbb1 = EDGE_SUCC (bb0, 1)->dest;
+  else if (EDGE_SUCC (bb0, 1)->dest == bb2)
+    rbb1 = EDGE_SUCC (bb0, 0)->dest;
+  else
+    return false;
+
+  /* If we already know bb1, then just test it. */
+  if (bb1)
+    return rbb1 == bb1;
+
+  if (!single_succ_p (rbb1) || !single_pred_p (rbb1))
+    return false;
+  /* The middle block can only be empty,
+     otherwise the phis will be
+     different anyways. */
+  if (!empty_block_p (rbb1))
+    return false;
+
+  return single_succ (rbb1) == bb2;
+}
+
 /* Look for a non-virtual PHIs and make a forwarder block when all PHIs
    have the same argument on a set of edges.  This is to not consider
    control dependences of individual edges for same values but only for
    the common set.  Returns true if changed the CFG.  */
 
 bool
-make_forwarders_with_degenerate_phis (function *fn)
+make_forwarders_with_degenerate_phis (function *fn, bool skip_ifcvtable)
 {
   bool didsomething = false;
 
@@ -10243,6 +10307,13 @@ make_forwarders_with_degenerate_phis (function *fn)
 	     since the forwarder we'd create does not have a PHI node.  */
 	  if (loops_state_satisfies_p (LOOP_CLOSED_SSA)
 	      && loop_exit_edge_p (e->src->loop_father, e))
+	    continue;
+
+	  /* Skip ifconvertable edges when asked as we want the
+	     copy/constant on that edge still when going out of ssa.
+	     FIXME: phiopt should produce COND_EXPR but there
+	     are regressions with that.  */
+	  if (skip_ifcvtable && ifconvertable_edge (e))
 	    continue;
 
 	  tree arg = gimple_phi_arg_def (phi, i);

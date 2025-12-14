@@ -1418,7 +1418,7 @@ execute_cleanup_cfg_post_optimizing (void)
   /* When optimizing undo the merging of forwarder blocks
      that phis for better out of ssa expansion.  */
   if (optimize)
-    make_forwarders_with_degenerate_phis (cfun);
+    make_forwarders_with_degenerate_phis (cfun, true);
 
   /* Make sure todo does not have cleanup cfg as we don't want
      remove the forwarder blocks we just created. cleanup cfg
