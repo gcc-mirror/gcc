@@ -1029,6 +1029,8 @@ void
 DefaultASTVisitor::visit (AST::TraitItemType &item)
 {
   visit_outer_attrs (item);
+  for (auto &generic : item.get_generic_params ())
+    visit (generic);
   for (auto &bound : item.get_type_param_bounds ())
     visit (bound);
 }

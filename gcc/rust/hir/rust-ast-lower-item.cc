@@ -451,7 +451,7 @@ ASTLoweringItem::visit (AST::Function &function)
 	  continue;
 	}
 
-      auto param = static_cast<AST::FunctionParam &> (*p);
+      auto &param = static_cast<AST::FunctionParam &> (*p);
 
       auto translated_pattern = std::unique_ptr<HIR::Pattern> (
 	ASTLoweringPattern::translate (param.get_pattern ()));

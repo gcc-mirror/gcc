@@ -201,6 +201,8 @@ NodeId
 Mappings::get_next_node_id ()
 {
   auto it = nodeIdIter;
+  if (UNLIKELY (it > MAX_NODEID))
+    rust_fatal_error (UNKNOWN_LOCATION, "out of node ids");
   nodeIdIter++;
   return it;
 }

@@ -63,6 +63,7 @@ struct DefId
 
 #define UNKNOWN_CRATENUM ((uint32_t) (UINT32_MAX))
 #define UNKNOWN_NODEID ((uint32_t) (UINT32_MAX))
+#define MAX_NODEID (UNKNOWN_NODEID - 1)
 #define UNKNOWN_HIRID ((uint32_t) (UINT32_MAX))
 #define UNKNOWN_LOCAL_DEFID ((uint32_t) (0))
 #define UNKNOWN_DEFID (DefId{0, 0})
