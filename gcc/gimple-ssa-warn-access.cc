@@ -2334,14 +2334,14 @@ maybe_warn_alloc_args_overflow (gimple *stmt, const tree args[2],
 	    }
 	  else if (tree_int_cst_lt (maxobjsize, args[i]))
 	    {
-	      /* G++ emits calls to ::operator new[](SIZE_MAX) in C++98
-		 mode and with -fno-exceptions as a way to indicate array
-		 size overflow.  There's no good way to detect C++98 here
-		 so avoid diagnosing these calls for all C++ modes.  */
+	      /* G++ emits calls to ::operator new[](SIZE_MAX) in C++98 mode or
+		 with -fno-exceptions as a way to indicate array size overflow.
+		 Avoid diagnosing these calls.  Additionally, see e.g. PR99934,
+		 G++ also potentially generates such calls in C++11 and later as
+		 well, so suppress the diagnostic in all C++ modes.  */
 	      if (i == 0
 		  && fn
 		  && !args[1]
-		  && lang_GNU_CXX ()
 		  && DECL_IS_OPERATOR_NEW_P (fn)
 		  && integer_all_onesp (args[i]))
 		continue;
