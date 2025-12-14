@@ -519,6 +519,13 @@ maybe_remove_forwarder_block (basic_block bb, bool can_split = false)
   bool has_phi = !gimple_seq_empty_p (phi_nodes (bb));
   basic_block dest = single_succ_edge (bb)->dest;
 
+  /* If the destination block consists of a nonlocal label or is a
+     EH landing pad, do not merge it.  */
+  if (glabel *label_stmt = safe_dyn_cast <glabel *> (first_stmt (dest)))
+    if (DECL_NONLOCAL (gimple_label_label (label_stmt))
+	|| EH_LANDING_PAD_NR (gimple_label_label (label_stmt)))
+    return false;
+
   /* If there is an abnormal edge to basic block BB, but not into
      dest, problems might occur during removal of the phi node at out
      of ssa due to overlapping live ranges of registers.
