@@ -13260,16 +13260,21 @@ package body Sem_Attr is
                   Accum_Typ := Entity (Prefix (Reducer_E));
 
                --  If the reducer is an operator from Standard, then the type
-               --  of its first operand would be Any_Type. In this case, make
-               --  sure we do not have an universal type to avoid resolution
-               --  problems later on, and use the base type of numeric types
-               --  to avoid spurious subtype mismatches for the initial value.
+               --  of its first operand would be Any_Type.
 
                elsif Scope (Reducer_E) = Standard_Standard then
-                  if Accum_Typ = Universal_Integer then
-                     Accum_Typ := Standard_Integer;
-                  elsif Accum_Typ = Universal_Real then
-                     Accum_Typ := Standard_Float;
+                  --  If Accum_Typ is a universal numeric type and the prefix
+                  --  is not an aggregate, use its component type in order to
+                  --  avoid resolution problems later on.
+
+                  if Is_Universal_Numeric_Type (Accum_Typ) then
+                     if Nkind (P) /= N_Aggregate then
+                        Accum_Typ := Component_Type (Etype (P));
+                     end if;
+
+                  --  If Accum_Typ is a specific numeric type, use its base
+                  --  type to avoid subtype mismatches for the initial value.
+
                   elsif Is_Numeric_Type (Accum_Typ) then
                      Accum_Typ := Base_Type (Accum_Typ);
                   end if;
