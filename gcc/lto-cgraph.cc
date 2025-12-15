@@ -286,6 +286,8 @@ lto_output_edge (struct lto_simple_output_block *ob, struct cgraph_edge *edge,
   bp_pack_value (&bp, edge->in_polymorphic_cdtor, 1);
   if (edge->indirect_unknown_callee)
     {
+      bp_pack_enum (&bp, cgraph_indirect_info_kind, CIIK_N_KINDS,
+		    edge->indirect_info->kind);
       int flags = edge->indirect_info->ecf_flags;
       bp_pack_value (&bp, (flags & ECF_CONST) != 0, 1);
       bp_pack_value (&bp, (flags & ECF_PURE) != 0, 1);
@@ -935,7 +937,7 @@ compute_ltrans_boundary (lto_symtab_encoder_t in_encoder)
       /* Add all possible targets for late devirtualization.  */
       if (flag_ltrans_devirtualize || !flag_wpa)
 	for (edge = node->indirect_calls; edge; edge = edge->next_callee)
-	  if (edge->indirect_info->polymorphic)
+	  if (usable_polymorphic_info_p (edge->indirect_info))
 	    {
 	      unsigned int i;
 	      void *cache_token;
@@ -1523,7 +1525,6 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
   profile_count count;
   cgraph_inline_failed_t inline_failed;
   struct bitpack_d bp;
-  int ecf_flags = 0;
 
   caller = dyn_cast<cgraph_node *> (nodes[streamer_read_hwi (ib)]);
   if (caller == NULL || caller->decl == NULL_TREE)
@@ -1546,7 +1547,7 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
   speculative_id = bp_unpack_value (&bp, 16);
 
   if (indirect)
-    edge = caller->create_indirect_edge (NULL, 0, count);
+    edge = caller->create_indirect_edge (NULL, 0, count, true);
   else
     edge = caller->create_edge (callee, NULL, count);
 
@@ -1563,6 +1564,9 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
   edge->in_polymorphic_cdtor = bp_unpack_value (&bp, 1);
   if (indirect)
     {
+      enum cgraph_indirect_info_kind ii_kind
+	= bp_unpack_enum (&bp, cgraph_indirect_info_kind, CIIK_N_KINDS);
+      int ecf_flags = 0;
       if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_CONST;
       if (bp_unpack_value (&bp, 1))
@@ -1575,7 +1579,19 @@ input_edge (class lto_input_block *ib, vec<symtab_node *> nodes,
 	ecf_flags |= ECF_NOTHROW;
       if (bp_unpack_value (&bp, 1))
 	ecf_flags |= ECF_RETURNS_TWICE;
-      edge->indirect_info->ecf_flags = ecf_flags;
+
+      if (ii_kind == CIIK_POLYMORPHIC)
+	edge->indirect_info
+	  = (new (ggc_alloc<cgraph_polymorphic_indirect_info> ())
+	     cgraph_polymorphic_indirect_info (ecf_flags));
+      else if (ii_kind == CIIK_SIMPLE)
+	edge->indirect_info
+	  = (new (ggc_alloc<cgraph_simple_indirect_info> ())
+	     cgraph_simple_indirect_info (ecf_flags));
+      else
+	edge->indirect_info
+	  = (new (ggc_alloc<cgraph_indirect_call_info> ())
+	     cgraph_indirect_call_info(CIIK_UNSPECIFIED, ecf_flags));
 
       edge->indirect_info->num_speculative_call_targets
 	= bp_unpack_value (&bp, 16);

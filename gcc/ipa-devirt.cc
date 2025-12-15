@@ -3692,8 +3692,12 @@ ipa_devirt (void)
 	fprintf (dump_file, "\n\nProcesing function %s\n",
 		 n->dump_name ());
       for (e = n->indirect_calls; e; e = e->next_callee)
-	if (e->indirect_info->polymorphic)
+	if (cgraph_polymorphic_indirect_info *pii
+	    = dyn_cast <cgraph_polymorphic_indirect_info *> (e->indirect_info))
 	  {
+	    if (!pii->usable_p ())
+	      continue;
+
 	    void *cache_token;
 	    bool final;
 
@@ -3725,12 +3729,12 @@ ipa_devirt (void)
 	       This may need to be revisited once we add further ways to use
 	       the may edges, but it is a reasonable thing to do right now.  */
 
-	    if ((e->indirect_info->param_index == -1
+	    if ((pii->param_index == -1
 		|| (!opt_for_fn (n->decl, flag_devirtualize_speculatively)
-		    && e->indirect_info->vptr_changed))
+		    && pii->vptr_changed))
 		&& !flag_ltrans_devirtualize)
 	      {
-		e->indirect_info->polymorphic = false;
+		pii->mark_unusable ();
 		ndropped++;
 	        if (dump_file)
 		  fprintf (dump_file, "Dropping polymorphic call info;"

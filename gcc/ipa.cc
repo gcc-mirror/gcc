@@ -428,7 +428,7 @@ symbol_table::remove_unreachable_nodes (FILE *file)
 		  for (e = cnode->indirect_calls; e; e = next)
 		    {
 		      next = e->next_callee;
-		      if (e->indirect_info->polymorphic)
+		      if (usable_polymorphic_info_p (e->indirect_info))
 			walk_polymorphic_call_targets (&reachable_call_targets,
 						       e, &first, &reachable);
 		    }

@@ -1482,13 +1482,10 @@ initialize_node_lattices (struct cgraph_node *node)
     }
 
   for (ie = node->indirect_calls; ie; ie = ie->next_callee)
-    if (ie->indirect_info->polymorphic
-	&& ie->indirect_info->param_index >= 0)
-      {
-	gcc_checking_assert (ie->indirect_info->param_index >= 0);
-	ipa_get_parm_lattices (info,
-			       ie->indirect_info->param_index)->virt_call = 1;
-      }
+    if (ie->indirect_info->param_index >= 0
+	&& is_a <cgraph_polymorphic_indirect_info *> (ie->indirect_info))
+      ipa_get_parm_lattices (info,
+			     ie->indirect_info->param_index)->virt_call = 1;
 }
 
 /* Return VALUE if it is NULL_TREE or if it can be directly safely IPA-CP
@@ -3106,32 +3103,28 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 				bool *speculative)
 {
   int param_index = ie->indirect_info->param_index;
-  HOST_WIDE_INT anc_offset;
-  tree t = NULL;
-  tree target = NULL;
-
   *speculative = false;
 
   if (param_index == -1)
     return NULL_TREE;
 
-  if (!ie->indirect_info->polymorphic)
+  if (cgraph_simple_indirect_info *sii
+      = dyn_cast <cgraph_simple_indirect_info *> (ie->indirect_info))
     {
       tree t = NULL;
 
-      if (ie->indirect_info->agg_contents)
+      if (sii->agg_contents)
 	{
 	  t = NULL;
 	  if ((unsigned) param_index < known_csts.length ()
 	      && known_csts[param_index])
 	    t = ipa_find_agg_cst_from_init (known_csts[param_index],
-					    ie->indirect_info->offset,
-					    ie->indirect_info->by_ref);
+					    sii->offset,
+					    sii->by_ref);
 
-	  if (!t && ie->indirect_info->guaranteed_unmodified)
-	    t = avs.get_value (param_index,
-			       ie->indirect_info->offset / BITS_PER_UNIT,
-			       ie->indirect_info->by_ref);
+	  if (!t && sii->guaranteed_unmodified)
+	    t = avs.get_value (param_index, sii->offset / BITS_PER_UNIT,
+			       sii->by_ref);
 	}
       else if ((unsigned) param_index < known_csts.length ())
 	t = known_csts[param_index];
@@ -3147,23 +3140,22 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   if (!opt_for_fn (ie->caller->decl, flag_devirtualize))
     return NULL_TREE;
 
-  gcc_assert (!ie->indirect_info->agg_contents);
-  gcc_assert (!ie->indirect_info->by_ref);
-  anc_offset = ie->indirect_info->offset;
+  cgraph_polymorphic_indirect_info *pii
+    = as_a <cgraph_polymorphic_indirect_info *> (ie->indirect_info);
+  if (!pii->usable_p ())
+    return NULL_TREE;
 
-  t = NULL;
-
+  HOST_WIDE_INT anc_offset = pii->offset;
+  tree t = NULL;
+  tree target = NULL;
   if ((unsigned) param_index < known_csts.length ()
       && known_csts[param_index])
-    t = ipa_find_agg_cst_from_init (known_csts[param_index],
-				    ie->indirect_info->offset, true);
+    t = ipa_find_agg_cst_from_init (known_csts[param_index], anc_offset, true);
 
   /* Try to work out value of virtual table pointer value in replacements.  */
   /* or known aggregate values.  */
   if (!t)
-    t = avs.get_value (param_index,
-		       ie->indirect_info->offset / BITS_PER_UNIT,
-		       true);
+    t = avs.get_value (param_index, anc_offset / BITS_PER_UNIT, true);
 
   /* If we found the virtual table pointer, lookup the target.  */
   if (t)
@@ -3173,8 +3165,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       if (vtable_pointer_value_to_vtable (t, &vtable, &offset))
 	{
 	  bool can_refer;
-	  target = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
-						      vtable, offset, &can_refer);
+	  target = gimple_get_virt_method_for_vtable (pii->otr_token, vtable,
+						      offset, &can_refer);
 	  if (can_refer)
 	    {
 	      if (!target
@@ -3183,11 +3175,11 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
 		       (ie, cgraph_node::get (target)))
 		{
 		  /* Do not speculate builtin_unreachable, it is stupid!  */
-		  if (ie->indirect_info->vptr_changed)
+		  if (pii->vptr_changed)
 		    return NULL;
 		  target = ipa_impossible_devirt_target (ie, target);
 		}
-	      *speculative = ie->indirect_info->vptr_changed;
+	      *speculative = pii->vptr_changed;
 	      if (!*speculative)
 		return target;
 	    }
@@ -3198,31 +3190,28 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   if (!t && (unsigned) param_index < known_csts.length ())
     t = known_csts[param_index];
 
-  gcc_checking_assert (!t || TREE_CODE (t) != TREE_BINFO);
-
   ipa_polymorphic_call_context context;
   if (known_contexts.length () > (unsigned int) param_index)
     {
       context = known_contexts[param_index];
       context.offset_by (anc_offset);
-      if (ie->indirect_info->vptr_changed)
+      if (pii->vptr_changed)
 	context.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
-					      ie->indirect_info->otr_type);
+					      pii->otr_type);
       if (t)
 	{
-	  ipa_polymorphic_call_context ctx2 = ipa_polymorphic_call_context
-	    (t, ie->indirect_info->otr_type, anc_offset);
+	  ipa_polymorphic_call_context ctx2
+	    = ipa_polymorphic_call_context (t, pii->otr_type, anc_offset);
 	  if (!ctx2.useless_p ())
-	    context.combine_with (ctx2, ie->indirect_info->otr_type);
+	    context.combine_with (ctx2, pii->otr_type);
 	}
     }
   else if (t)
     {
-      context = ipa_polymorphic_call_context (t, ie->indirect_info->otr_type,
-					      anc_offset);
-      if (ie->indirect_info->vptr_changed)
+      context = ipa_polymorphic_call_context (t, pii->otr_type, anc_offset);
+      if (pii->vptr_changed)
 	context.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
-					      ie->indirect_info->otr_type);
+					      pii->otr_type);
     }
   else
     return NULL_TREE;
@@ -3230,10 +3219,8 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
   vec <cgraph_node *>targets;
   bool final;
 
-  targets = possible_polymorphic_call_targets
-    (ie->indirect_info->otr_type,
-     ie->indirect_info->otr_token,
-     context, &final);
+  targets = possible_polymorphic_call_targets (pii->otr_type, pii->otr_token,
+					       context, &final);
   if (!final || targets.length () > 1)
     {
       struct cgraph_node *node;
@@ -3242,8 +3229,7 @@ ipa_get_indirect_edge_target_1 (struct cgraph_edge *ie,
       if (!opt_for_fn (ie->caller->decl, flag_devirtualize_speculatively)
 	  || ie->speculative || !ie->maybe_hot_p ())
 	return NULL;
-      node = try_speculative_devirtualization (ie->indirect_info->otr_type,
-					       ie->indirect_info->otr_token,
+      node = try_speculative_devirtualization (pii->otr_type, pii->otr_token,
 					       context);
       if (node)
 	{
@@ -4142,8 +4128,12 @@ ipcp_discover_new_direct_edges (struct cgraph_node *node,
 					       avs, &speculative);
       if (target)
 	{
-	  bool agg_contents = ie->indirect_info->agg_contents;
-	  bool polymorphic = ie->indirect_info->polymorphic;
+	  cgraph_polymorphic_indirect_info *pii
+	    = dyn_cast <cgraph_polymorphic_indirect_info *> (ie->indirect_info);
+	  cgraph_simple_indirect_info *sii
+	    = dyn_cast <cgraph_simple_indirect_info *> (ie->indirect_info);
+	  bool agg_contents = sii && sii->agg_contents;
+	  bool polymorphic = !!pii;
 	  int param_index = ie->indirect_info->param_index;
 	  struct cgraph_edge *cs = ipa_make_edge_direct_to_target (ie, target,
 								   speculative);

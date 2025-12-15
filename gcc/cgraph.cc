@@ -1162,56 +1162,44 @@ cgraph_node::create_edge (cgraph_node *callee,
   return edge;
 }
 
-/* Allocate cgraph_indirect_call_info and set its fields to default values. */
-
-cgraph_indirect_call_info *
-cgraph_allocate_init_indirect_info (void)
-{
-  cgraph_indirect_call_info *ii;
-
-  ii = ggc_cleared_alloc<cgraph_indirect_call_info> ();
-  ii->param_index = -1;
-  return ii;
-}
-
-/* Create an indirect edge with a yet-undetermined callee where the call
-   statement destination is a formal parameter of the caller with index
-   PARAM_INDEX. CLONING_P should be set if properties that are copied from an
-   original edge should not be calculated and indirect_info structure should
-   not be calculated.  */
+/* Create an indirect edge to a (yet-)undetermined callee.  CALL_STMT is the
+   corresponding statement, if available, ECF_FLAGS and COUNT are corresponding
+   gimple call flags and profiling count respectively.  CLONING_P should be set
+   if properties that are copied from an original edge should not be
+   calculated.  */
 
 cgraph_edge *
 cgraph_node::create_indirect_edge (gcall *call_stmt, int ecf_flags,
-				   profile_count count,
-				   bool cloning_p)
+				   profile_count count, bool cloning_p)
 {
   cgraph_edge *edge = symtab->create_edge (this, NULL, call_stmt, count, true,
 					   cloning_p);
-  tree target;
 
   if (!cloning_p)
-    initialize_inline_failed (edge);
-
-  edge->indirect_info = cgraph_allocate_init_indirect_info ();
-  edge->indirect_info->ecf_flags = ecf_flags;
-  edge->indirect_info->vptr_changed = true;
-
-  /* Record polymorphic call info.  */
-  if (!cloning_p
-      && call_stmt
-      && (target = gimple_call_fn (call_stmt))
-      && virtual_method_call_p (target))
     {
-      ipa_polymorphic_call_context context (decl, target, call_stmt);
+      initialize_inline_failed (edge);
 
-      /* Only record types can have virtual calls.  */
-      edge->indirect_info->polymorphic = true;
-      edge->indirect_info->param_index = -1;
-      edge->indirect_info->otr_token
-	 = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
-      edge->indirect_info->otr_type = obj_type_ref_class (target);
-      gcc_assert (TREE_CODE (edge->indirect_info->otr_type) == RECORD_TYPE);
-      edge->indirect_info->context = context;
+      tree target = NULL_TREE;
+      if (call_stmt)
+	target = gimple_call_fn (call_stmt);
+      if (target && virtual_method_call_p (target))
+	{
+	  ipa_polymorphic_call_context context (decl, target, call_stmt);
+	  HOST_WIDE_INT token = tree_to_shwi (OBJ_TYPE_REF_TOKEN (target));
+	  tree type = obj_type_ref_class (target);
+	  edge->indirect_info
+	    = (new (ggc_alloc<cgraph_polymorphic_indirect_info> ())
+	       cgraph_polymorphic_indirect_info (ecf_flags, context, token,
+						 type));
+	}
+      else if (target && TREE_CODE (target) == SSA_NAME)
+	edge->indirect_info
+	  = (new (ggc_alloc<cgraph_simple_indirect_info> ())
+	     cgraph_simple_indirect_info (ecf_flags));
+      else
+	edge->indirect_info
+	  = (new (ggc_alloc<cgraph_indirect_call_info> ())
+	     cgraph_indirect_call_info(CIIK_UNSPECIFIED, ecf_flags));
     }
 
   edge->next_callee = indirect_calls;
@@ -2666,30 +2654,8 @@ cgraph_node::dump (FILE *f)
 
   for (edge = indirect_calls; edge; edge = edge->next_callee)
     {
-      if (edge->indirect_info->polymorphic)
-	{
-	  fprintf (f, "   Polymorphic indirect call of type ");
-	  print_generic_expr (f, edge->indirect_info->otr_type, TDF_SLIM);
-	  fprintf (f, " token:%i", (int) edge->indirect_info->otr_token);
-	}
-      else
-	fprintf (f, "   Indirect call");
-      edge->dump_edge_flags (f);
-      if (edge->indirect_info->param_index != -1)
-	{
-	  fprintf (f, "of param:%i ", edge->indirect_info->param_index);
-	  if (edge->indirect_info->agg_contents)
-	   fprintf (f, "loaded from %s %s at offset %i ",
-		    edge->indirect_info->member_ptr ? "member ptr" : "aggregate",
-		    edge->indirect_info->by_ref ? "passed by reference" : "",
-		    (int)edge->indirect_info->offset);
-	  if (edge->indirect_info->vptr_changed)
-	    fprintf (f, "(vptr maybe changed) ");
-	}
-      fprintf (f, "num speculative call targets: %i\n",
-	       edge->indirect_info->num_speculative_call_targets);
-      if (edge->indirect_info->polymorphic)
-	edge->indirect_info->context.dump (f);
+      fprintf (f, "   ");
+      edge->indirect_info->dump (f);
     }
 }
 
@@ -2727,6 +2693,57 @@ cgraph_node::dump_cgraph (FILE *f)
   fprintf (f, "callgraph:\n\n");
   FOR_EACH_FUNCTION (node)
     node->dump (f);
+}
+
+/* Dump human readable information about the indirect call to F.  If NEWLINE
+   is true, it will be terminated by a newline.  */
+
+void
+cgraph_indirect_call_info::dump (FILE *f, bool newline) const
+{
+  if (const cgraph_polymorphic_indirect_info *pii
+      = dyn_cast <const cgraph_polymorphic_indirect_info *> (this))
+    {
+      fprintf (f, "    indirect polymorphic callsite, %s, "
+	       "calling param %i, offset " HOST_WIDE_INT_PRINT_DEC
+	       "otr_token " HOST_WIDE_INT_PRINT_DEC ", otr_type ",
+	       pii->vptr_changed ? "vptr_changed" : "vptr not changed",
+	       pii->param_index, pii->offset, pii->otr_token);
+      print_generic_expr (f, pii->otr_type);
+      fprintf (f, ", context ");
+      pii->context.dump (f, false);
+    }
+  else if (const cgraph_simple_indirect_info *sii
+	   = dyn_cast <const cgraph_simple_indirect_info *> (this))
+    {
+      if (sii->agg_contents)
+	fprintf (f, "    indirect %s callsite, calling param %i, "
+		 "offset " HOST_WIDE_INT_PRINT_DEC ", %s",
+		 sii->member_ptr ? "member ptr" : "aggregate",
+		 sii->param_index, sii->offset,
+		 sii->by_ref ? "by reference" : "by_value");
+      else if (sii->param_index >= 0)
+	fprintf (f, "    indirect simple callsite, calling param %i",
+		 sii->param_index);
+      else
+	fprintf (f, "    indirect simple callsite, not calling a known "
+		 "parameter");
+    }
+  else
+    fprintf (f, "    indirect callsite");
+
+  fprintf (f, ", flags %i, num speculative call targets: %i", ecf_flags,
+	   num_speculative_call_targets);
+  if (newline)
+    fprintf (f, "\n");
+}
+
+/* Dump human readable information about the indirect call to stderr.  */
+
+void
+cgraph_indirect_call_info::debug () const
+{
+  dump (stderr);
 }
 
 /* Return true when the DECL can possibly be inlined.  */

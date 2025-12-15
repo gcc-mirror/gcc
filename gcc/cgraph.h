@@ -1170,9 +1170,12 @@ struct GTY((tag ("SYMTAB_FUNCTION"))) cgraph_node : public symtab_node
 			    gcall *call_stmt, profile_count count,
 			    bool cloning_p = false);
 
-  /* Create an indirect edge with a yet-undetermined callee where the call
-     statement destination is a formal parameter of the caller with index
-     PARAM_INDEX. */
+  /* Create an indirect edge to a (yet-)undetermined callee.  CALL_STMT is the
+     corresponding statement, if available, ECF_FLAGS and COUNT are
+     corresponding gimple call flags and profiling count respectively.
+     CLONING_P should be set if properties that are copied from an original
+     edge should not be calculated.  */
+
   cgraph_edge *create_indirect_edge (gcall *call_stmt, int ecf_flags,
 				     profile_count count,
 				     bool cloning_p = false);
@@ -1703,31 +1706,72 @@ private:
   void make_speculative (tree otr_type = NULL);
 };
 
-/* Structure containing additional information about an indirect call.  */
+/* Denotes the kind of call that a particular cgraph_indirect_call_info
+   instance describes.  */
 
-class GTY(()) cgraph_indirect_call_info
+enum cgraph_indirect_info_kind {
+  /* Unspecified kind.  Only to be used when no information about the call
+     statement is available or it does not fall into any of the other
+     categories.  */
+  CIIK_UNSPECIFIED,
+  /* A normal indirect call when the target is an SSA_NAME.  */
+  CIIK_SIMPLE,
+  /* Call of a virtual method when the target is an OBJ_TYPE_REF which conforms
+     to virtual_method_call_p.  */
+  CIIK_POLYMORPHIC,
+  /* Must be last */
+  CIIK_N_KINDS
+};
+
+/* The base class containing additional information about all kinds of indirect
+   calls.  It can also be used when no information about the call statement is
+   available or it does not fall into any of the other categories.  */
+
+class GTY((desc ("%h.kind"), tag ("CIIK_UNSPECIFIED")))
+	  cgraph_indirect_call_info
 {
 public:
+  cgraph_indirect_call_info (int flags)
+    : ecf_flags (flags), param_index (-1), kind (CIIK_UNSPECIFIED),
+    num_speculative_call_targets (0) {}
+  cgraph_indirect_call_info (enum cgraph_indirect_info_kind k, int flags)
+    : ecf_flags (flags), param_index (-1), kind (k),
+    num_speculative_call_targets (0) {}
+
+  /* Dump human readable information about the indirect call to F.  If NEWLINE
+     is true, it will be terminated by a newline.  */
+  void dump (FILE *f, bool newline = true) const;
+  void DEBUG_FUNCTION debug () const;
+
+  /* ECF flags determined from the caller.  */
+  int ecf_flags;
+  /* If we can relate this call target to a specific formal parameter of the
+     caller, then this is its index.  Otherwise set to -1.  */
+  int param_index;
+
+  /* Identifier of the specific type of indirect info this actually is.  */
+  enum cgraph_indirect_info_kind kind : 2;
+  /* Number of speculative call targets.  */
+  unsigned num_speculative_call_targets : 16;
+};
+
+/* Structure containing additional information about non-virtual indirect calls
+   where the target is an SSA_NAME.  */
+
+class GTY((tag ("CIIK_SIMPLE")))
+	  cgraph_simple_indirect_info : public cgraph_indirect_call_info
+{
+public:
+  cgraph_simple_indirect_info (int flags)
+    : cgraph_indirect_call_info (CIIK_SIMPLE, flags), offset (0),
+    agg_contents (false), member_ptr (false), by_ref (false),
+    guaranteed_unmodified (false)
+    {}
+
   /* When agg_content is set, an offset where the call pointer is located
      within the aggregate.  */
   HOST_WIDE_INT offset;
-  /* Context of the polymorphic call; use only when POLYMORPHIC flag is set.  */
-  ipa_polymorphic_call_context context;
-  /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
-  HOST_WIDE_INT otr_token;
-  /* Type of the object from OBJ_TYPE_REF_OBJECT. */
-  tree otr_type;
-  /* Index of the parameter that is called.  */
-  int param_index;
-  /* ECF flags determined from the caller.  */
-  int ecf_flags;
 
-  /* Number of speculative call targets, it's less than GCOV_TOPN_VALUES.  */
-  unsigned num_speculative_call_targets : 16;
-
-  /* Set when the call is a virtual call with the parameter being the
-     associated object pointer rather than a simple direct call.  */
-  unsigned polymorphic : 1;
   /* Set when the call is a call of a pointer loaded from contents of an
      aggregate at offset.  */
   unsigned agg_contents : 1;
@@ -1741,10 +1785,68 @@ public:
      never modified between the invocation of the function and the load
      point.  */
   unsigned guaranteed_unmodified : 1;
+};
+
+/* Structure containing additional information about non-virtual indirect calls
+   when the target is an OBJ_TYPE_REF which conforms to
+   virtual_method_call_p.  */
+
+class GTY((tag ("CIIK_POLYMORPHIC")))
+	  cgraph_polymorphic_indirect_info : public cgraph_indirect_call_info
+{
+public:
+  cgraph_polymorphic_indirect_info (int flags)
+    : cgraph_indirect_call_info (CIIK_POLYMORPHIC, flags), context (),
+    otr_token (0), otr_type (nullptr), offset (0), vptr_changed (true)
+    {}
+  cgraph_polymorphic_indirect_info (int flags,
+				    const ipa_polymorphic_call_context &ctx,
+				    HOST_WIDE_INT token, tree type)
+    : cgraph_indirect_call_info (CIIK_POLYMORPHIC, flags), context (ctx),
+    otr_token (token), otr_type (type), offset (0), vptr_changed (true)
+    {}
+
+  /* Return true if the information is usable for devirtualization.  This can
+     happen if part of the required information is not streamed in yet and for
+     some cases we determine it is no longer useful to attempt to use the
+     information too.  */
+  bool usable_p () const
+  {
+    return !!otr_type;
+  }
+  /* Mark this information as not useful for devirtualization.  Return true if
+     it was considered useful until now.  */
+  bool mark_unusable ()
+  {
+    bool r = !!otr_type;
+    otr_type = NULL_TREE;
+    return r;
+  }
+
+  /* Context of the polymorphic call; use only when POLYMORPHIC flag is set.  */
+  ipa_polymorphic_call_context context;
+  /* OBJ_TYPE_REF_TOKEN of a polymorphic call (if polymorphic is set).  */
+  HOST_WIDE_INT otr_token;
+  /* Type of the object from OBJ_TYPE_REF_OBJECT. */
+  tree otr_type;
+  /* The offset from the point where the parameter identified by param_index to
+     the point where the corresponding object appears.  */
+  HOST_WIDE_INT offset;
+
   /* For polymorphic calls this specify whether the virtual table pointer
      may have changed in between function entry and the call.  */
   unsigned vptr_changed : 1;
 };
+
+/* Return true if ii is a cgraph_polymorphic_indirect_info that is usable_p.  */
+
+inline bool
+usable_polymorphic_info_p (cgraph_indirect_call_info *ii)
+{
+  cgraph_polymorphic_indirect_info *pii
+    = dyn_cast <cgraph_polymorphic_indirect_info *> (ii);
+  return pii && pii->usable_p ();
+}
 
 class GTY((chain_next ("%h.next_caller"), chain_prev ("%h.prev_caller"),
 	   for_user)) cgraph_edge
@@ -2311,6 +2413,49 @@ is_a_helper <asm_node *>::test (toplevel_node *p)
   return p && p->type == TOPLEVEL_ASM;
 }
 
+/* Report whether or not THIS indirect info is a known simple one.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <cgraph_simple_indirect_info *>::test (cgraph_indirect_call_info *p)
+{
+  return p && p->kind == CIIK_SIMPLE;
+}
+
+/* Likewise, but const qualified.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <const cgraph_simple_indirect_info *>
+::test (const cgraph_indirect_call_info *p)
+{
+  return p && p->kind == CIIK_SIMPLE;
+}
+
+/* Report whether or not THIS indirect info is a known polymorphic one.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <cgraph_polymorphic_indirect_info *>
+::test (cgraph_indirect_call_info *p)
+{
+  return p && p->kind == CIIK_POLYMORPHIC;
+}
+
+/* Likewise, but const qualified.  */
+
+template <>
+template <>
+inline bool
+is_a_helper <const cgraph_polymorphic_indirect_info *>
+::test (const cgraph_indirect_call_info *p)
+{
+  return p && p->kind == CIIK_POLYMORPHIC;
+}
+
 typedef void (*cgraph_edge_hook)(cgraph_edge *, void *);
 typedef void (*cgraph_node_hook)(cgraph_node *, void *);
 typedef void (*varpool_node_hook)(varpool_node *, void *);
@@ -2734,7 +2879,6 @@ asmname_hasher::equal (symtab_node *n, const_tree t)
 /* In cgraph.cc  */
 void cgraph_cc_finalize (void);
 void release_function_body (tree);
-cgraph_indirect_call_info *cgraph_allocate_init_indirect_info (void);
 
 void cgraph_update_edges_for_call_stmt (gimple *, tree, gimple *);
 bool cgraph_function_possibly_inlined_p (tree);
@@ -3633,8 +3777,9 @@ ipa_ref::address_matters_p ()
 inline
 ipa_polymorphic_call_context::ipa_polymorphic_call_context (cgraph_edge *e)
 {
-  gcc_checking_assert (e->indirect_info->polymorphic);
-  *this = e->indirect_info->context;
+  cgraph_polymorphic_indirect_info *pii
+    = as_a <cgraph_polymorphic_indirect_info *> (e->indirect_info);
+  *this = pii->context;
 }
 
 /* Build empty "I know nothing" context.  */

@@ -121,7 +121,22 @@ cgraph_edge::clone (cgraph_node *n, gcall *call_stmt, unsigned stmt_uid,
 	  new_edge = n->create_indirect_edge (call_stmt,
 					      indirect_info->ecf_flags,
 					      prof_count, true);
-	  *new_edge->indirect_info = *indirect_info;
+
+	  if (indirect_info->kind == CIIK_POLYMORPHIC)
+	    new_edge->indirect_info
+	      = (new (ggc_alloc<cgraph_polymorphic_indirect_info> ())
+		 cgraph_polymorphic_indirect_info (
+		     *(const cgraph_polymorphic_indirect_info *) indirect_info));
+	  else if (indirect_info->kind == CIIK_SIMPLE)
+	    new_edge->indirect_info
+	      = (new (ggc_alloc<cgraph_simple_indirect_info> ())
+		 cgraph_simple_indirect_info (
+		     *(const cgraph_simple_indirect_info *) indirect_info));
+	  else
+	    new_edge->indirect_info
+	      = (new (ggc_alloc<cgraph_indirect_call_info> ())
+		 cgraph_indirect_call_info(
+		     *(const cgraph_indirect_call_info *) indirect_info));
 	}
     }
   else

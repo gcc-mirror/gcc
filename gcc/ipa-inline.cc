@@ -2758,7 +2758,7 @@ dump_inline_stats (void)
 	  }
       }
     for (e = node->indirect_calls; e; e = e->next_callee)
-      if (e->indirect_info->polymorphic
+      if (is_a <cgraph_polymorphic_indirect_info *> (e->indirect_info)
 	  & e->count.ipa ().initialized_p ())
 	indirect_poly_cnt += e->count.ipa ().to_gcov_type ();
       else if (e->count.ipa ().initialized_p ())

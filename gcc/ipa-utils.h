@@ -134,8 +134,11 @@ possible_polymorphic_call_targets (struct cgraph_edge *e,
 {
   ipa_polymorphic_call_context context(e);
 
-  return possible_polymorphic_call_targets (e->indirect_info->otr_type,
-					    e->indirect_info->otr_token,
+  cgraph_polymorphic_indirect_info *pii
+    = as_a <cgraph_polymorphic_indirect_info *> (e->indirect_info);
+  gcc_checking_assert (pii->usable_p ());
+  return possible_polymorphic_call_targets (pii->otr_type,
+					    pii->otr_token,
 					    context,
 					    completep, cache_token,
 					    speculative);
@@ -166,8 +169,12 @@ dump_possible_polymorphic_call_targets (FILE *f, struct cgraph_edge *e,
 {
   ipa_polymorphic_call_context context(e);
 
-  dump_possible_polymorphic_call_targets (f, e->indirect_info->otr_type,
-					  e->indirect_info->otr_token,
+  cgraph_polymorphic_indirect_info *pii
+    = as_a <cgraph_polymorphic_indirect_info *> (e->indirect_info);
+  if (!pii->usable_p ())
+    return;
+  dump_possible_polymorphic_call_targets (f, pii->otr_type,
+					  pii->otr_token,
 					  context, verbose);
 }
 
@@ -180,8 +187,12 @@ possible_polymorphic_call_target_p (struct cgraph_edge *e,
 {
   ipa_polymorphic_call_context context(e);
 
-  return possible_polymorphic_call_target_p (e->indirect_info->otr_type,
-					     e->indirect_info->otr_token,
+  cgraph_polymorphic_indirect_info *pii
+    = as_a <cgraph_polymorphic_indirect_info *> (e->indirect_info);
+  if (!pii->usable_p ())
+    return true;
+  return possible_polymorphic_call_target_p (pii->otr_type,
+					     pii->otr_token,
 					     context, n);
 }
 

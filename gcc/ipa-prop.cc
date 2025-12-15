@@ -599,21 +599,8 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 
   for (cs = node->indirect_calls; cs; cs = cs->next_callee)
     {
-      class cgraph_indirect_call_info *ii;
-
-      ii = cs->indirect_info;
-      if (ii->agg_contents)
-	fprintf (f, "    indirect %s callsite, calling param %i, "
-		 "offset " HOST_WIDE_INT_PRINT_DEC ", %s",
-		 ii->member_ptr ? "member ptr" : "aggregate",
-		 ii->param_index, ii->offset,
-		 ii->by_ref ? "by reference" : "by_value");
-      else
-	fprintf (f, "    indirect %s callsite, calling param %i, "
-		 "offset " HOST_WIDE_INT_PRINT_DEC,
-		 ii->polymorphic ? "polymorphic" : "simple", ii->param_index,
-		 ii->offset);
-
+      fprintf (f, "    ");
+      cs->indirect_info->dump (f, false);
       if (cs->call_stmt)
 	{
 	  fprintf (f, ", for stmt ");
@@ -621,8 +608,6 @@ ipa_print_node_jump_functions (FILE *f, struct cgraph_node *node)
 	}
       else
 	fprintf (f, "\n");
-      if (ii->polymorphic)
-	ii->context.dump (f);
       if (!ipa_edge_args_info_available_for_edge_p (cs))
 	fprintf (f, "       no arg info\n");
       else
@@ -2790,29 +2775,6 @@ ipa_is_ssa_with_stmt_def (tree t)
     return false;
 }
 
-/* Find the indirect call graph edge corresponding to STMT and mark it as a
-   call to a parameter number PARAM_INDEX.  NODE is the caller.  Return the
-   indirect call graph edge.
-   If POLYMORPHIC is true record is as a destination of polymorphic call.  */
-
-static struct cgraph_edge *
-ipa_note_param_call (struct cgraph_node *node, int param_index,
-		     gcall *stmt, bool polymorphic)
-{
-  struct cgraph_edge *cs;
-
-  cs = node->get_edge (stmt);
-  cs->indirect_info->param_index = param_index;
-  cs->indirect_info->agg_contents = 0;
-  cs->indirect_info->member_ptr = 0;
-  cs->indirect_info->guaranteed_unmodified = 0;
-  ipa_node_params *info = ipa_node_params_sum->get (node);
-  ipa_set_param_used_by_indirect_call (info, param_index, true);
-  if (cs->indirect_info->polymorphic || polymorphic)
-    ipa_set_param_used_by_polymorphic_call (info, param_index, true);
-  return cs;
-}
-
 /* Analyze the CALL and examine uses of formal parameters of the caller NODE
    (described by INFO).  PARMS_AINFO is a pointer to a vector containing
    intermediate information about each formal parameter.  Currently it checks
@@ -2886,7 +2848,14 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
       tree var = SSA_NAME_VAR (target);
       int index = ipa_get_param_decl_index (info, var);
       if (index >= 0)
-	ipa_note_param_call (fbi->node, index, call, false);
+	{
+	  cgraph_edge *cs = fbi->node->get_edge (call);
+	  cgraph_simple_indirect_info *sii =
+	    as_a <cgraph_simple_indirect_info *> (cs->indirect_info);
+	  sii->param_index = index;
+	  gcc_assert (!sii->agg_contents && !sii->member_ptr);
+	  ipa_set_param_used_by_indirect_call (info, index, true);
+	}
       return;
     }
 
@@ -2898,12 +2867,16 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
 				 gimple_assign_rhs1 (def), &index, &offset,
 				 NULL, &by_ref, &guaranteed_unmodified))
     {
-      struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index,
-	 					    call, false);
-      cs->indirect_info->offset = offset;
-      cs->indirect_info->agg_contents = 1;
-      cs->indirect_info->by_ref = by_ref;
-      cs->indirect_info->guaranteed_unmodified = guaranteed_unmodified;
+      cgraph_edge *cs = fbi->node->get_edge (call);
+      cgraph_simple_indirect_info *sii =
+	as_a <cgraph_simple_indirect_info *> (cs->indirect_info);
+      sii->param_index = index;
+      sii->offset = offset;
+      sii->agg_contents = 1;
+      sii->by_ref = by_ref;
+      sii->guaranteed_unmodified = guaranteed_unmodified;
+      gcc_assert (!sii->member_ptr);
+      ipa_set_param_used_by_indirect_call (info, index, true);
       return;
     }
 
@@ -3027,14 +3000,16 @@ ipa_analyze_indirect_call_uses (struct ipa_func_body_info *fbi, gcall *call,
       by_ref = false;
     }
 
-  struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index,
-						call, false);
-  cs->indirect_info->offset = offset;
-  cs->indirect_info->agg_contents = 1;
-  cs->indirect_info->member_ptr = 1;
-  cs->indirect_info->by_ref = by_ref;
-  cs->indirect_info->guaranteed_unmodified = 1;
-
+  cgraph_edge *cs = fbi->node->get_edge (call);
+  cgraph_simple_indirect_info *sii =
+    as_a <cgraph_simple_indirect_info *> (cs->indirect_info);
+  sii->param_index = index;
+  sii->offset = offset;
+  sii->agg_contents = 1;
+  sii->member_ptr = 1;
+  sii->by_ref = by_ref;
+  sii->guaranteed_unmodified = 1;
+  ipa_set_param_used_by_indirect_call (info, index, true);
   return;
 }
 
@@ -3086,13 +3061,15 @@ ipa_analyze_virtual_call_uses (struct ipa_func_body_info *fbi,
 	return;
     }
 
-  struct cgraph_edge *cs = ipa_note_param_call (fbi->node, index,
-     						call, true);
-  class cgraph_indirect_call_info *ii = cs->indirect_info;
-  ii->offset = anc_offset;
-  ii->otr_token = tree_to_uhwi (OBJ_TYPE_REF_TOKEN (target));
-  ii->otr_type = obj_type_ref_class (target);
-  ii->polymorphic = 1;
+  cgraph_edge *cs = fbi->node->get_edge (call);
+  cgraph_polymorphic_indirect_info *pii =
+    as_a <cgraph_polymorphic_indirect_info *> (cs->indirect_info);
+  pii->param_index = index;
+  pii->offset = anc_offset;
+  gcc_assert (pii->otr_token == tree_to_shwi (OBJ_TYPE_REF_TOKEN (target)));
+  gcc_assert (pii->otr_type = obj_type_ref_class (target));
+  ipa_set_param_used_by_indirect_call (info, index, true);
+  ipa_set_param_used_by_polymorphic_call (info, index, true);
 }
 
 /* Analyze a call statement CALL whether and how it utilizes formal parameters
@@ -3115,24 +3092,26 @@ ipa_analyze_call_uses (struct ipa_func_body_info *fbi, gcall *call)
   if (cs && !cs->indirect_unknown_callee)
     return;
 
-  if (cs->indirect_info->polymorphic && flag_devirtualize)
+  cgraph_polymorphic_indirect_info *pii;
+  if (flag_devirtualize
+      && (pii
+	  = dyn_cast <cgraph_polymorphic_indirect_info *> (cs->indirect_info)))
     {
       tree instance;
       tree target = gimple_call_fn (call);
       ipa_polymorphic_call_context context (current_function_decl,
 					    target, call, &instance);
 
-      gcc_checking_assert (cs->indirect_info->otr_type
-			   == obj_type_ref_class (target));
-      gcc_checking_assert (cs->indirect_info->otr_token
+      gcc_checking_assert (pii->otr_type == obj_type_ref_class (target));
+      gcc_checking_assert (pii->otr_token
 			   == tree_to_shwi (OBJ_TYPE_REF_TOKEN (target)));
 
-      cs->indirect_info->vptr_changed
+      pii->vptr_changed
 	= !context.get_dynamic_type (instance,
 				     OBJ_TYPE_REF_OBJECT (target),
 				     obj_type_ref_class (target), call,
 				     &fbi->aa_walk_budget);
-      cs->indirect_info->context = context;
+      pii->context = context;
     }
 
   if (TREE_CODE (target) == SSA_NAME)
@@ -3755,16 +3734,17 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
       target = canonicalize_constructor_val (target, NULL);
       if (!target || TREE_CODE (target) != FUNCTION_DECL)
 	{
+	  cgraph_simple_indirect_info *sii
+	    = dyn_cast <cgraph_simple_indirect_info *> (ie->indirect_info);
 	  /* Member pointer call that goes through a VMT lookup.  */
-	  if (ie->indirect_info->member_ptr
+	  if ((sii && sii->member_ptr)
 	      /* Or if target is not an invariant expression and we do not
 		 know if it will evaulate to function at runtime.
 		 This can happen when folding through &VAR, where &VAR
 		 is IP invariant, but VAR itself is not.
 
-		 TODO: Revisit this when GCC 5 is branched.  It seems that
-		 member_ptr check is not needed and that we may try to fold
-		 the expression and see if VAR is readonly.  */
+		 TODO: It seems that we may try to fold the expression and see
+		 if VAR is readonly.  */
 	      || !is_gimple_ip_invariant (target))
 	    {
 	      if (dump_enabled_p ())
@@ -3857,7 +3837,8 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
     {
       fprintf (dump_file, "ipa-prop: Discovered %s call to a %s target "
 	       "(%s -> %s), for stmt ",
-	       ie->indirect_info->polymorphic ? "a virtual" : "an indirect",
+	       is_a <cgraph_polymorphic_indirect_info *> (ie->indirect_info)
+	       ? "a virtual" : "an indirect",
 	       speculative ? "speculative" : "known",
 	       ie->caller->dump_name (),
 	       callee->dump_name ());
@@ -4114,26 +4095,25 @@ try_make_edge_direct_simple_call (struct cgraph_edge *ie,
 				  struct cgraph_node *new_root,
 				  class ipa_node_params *new_root_info)
 {
-  struct cgraph_edge *cs;
   tree target = NULL_TREE;
-  bool agg_contents = ie->indirect_info->agg_contents;
+  cgraph_simple_indirect_info *sii
+    = as_a <cgraph_simple_indirect_info *> (ie->indirect_info);
+  bool agg_contents = sii->agg_contents;
   tree scalar = ipa_value_from_jfunc (new_root_info, jfunc, target_type);
   if (agg_contents)
     {
       if (scalar)
-	target = ipa_find_agg_cst_from_init (scalar, ie->indirect_info->offset,
-					     ie->indirect_info->by_ref);
-      if (!target && ie->indirect_info->guaranteed_unmodified)
+	target = ipa_find_agg_cst_from_init (scalar, sii->offset, sii->by_ref);
+      if (!target && sii->guaranteed_unmodified)
 	target = ipa_find_agg_cst_from_jfunc_items (&jfunc->agg, new_root_info,
-						    new_root,
-						    ie->indirect_info->offset,
-						    ie->indirect_info->by_ref);
+						    new_root, sii->offset,
+						    sii->by_ref);
     }
   else
     target = scalar;
   if (!target)
     return NULL;
-  cs = ipa_make_edge_direct_to_target (ie, target);
+  cgraph_edge *cs = ipa_make_edge_direct_to_target (ie, target);
 
   if (cs && !agg_contents)
     {
@@ -4193,11 +4173,13 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 
   if (!opt_for_fn (ie->caller->decl, flag_devirtualize))
     return NULL;
-
-  gcc_assert (!ie->indirect_info->by_ref);
+  cgraph_polymorphic_indirect_info *pii
+    = as_a <cgraph_polymorphic_indirect_info *> (ie->indirect_info);
+  if (!pii->usable_p ())
+    return nullptr;
 
   /* Try to do lookup via known virtual table pointer value.  */
-  if (!ie->indirect_info->vptr_changed
+  if (!pii->vptr_changed
       || opt_for_fn (ie->caller->decl, flag_devirtualize_speculatively))
     {
       tree vtable;
@@ -4205,16 +4187,15 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
       tree t = NULL_TREE;
       if (jfunc->type == IPA_JF_CONST)
 	t = ipa_find_agg_cst_from_init (ipa_get_jf_constant (jfunc),
-					ie->indirect_info->offset, true);
+					pii->offset, true);
       if (!t)
 	t = ipa_find_agg_cst_from_jfunc_items (&jfunc->agg, new_root_info,
-					       new_root,
-					       ie->indirect_info->offset, true);
+					       new_root, pii->offset, true);
       if (t && vtable_pointer_value_to_vtable (t, &vtable, &offset))
 	{
 	  bool can_refer;
-	  t = gimple_get_virt_method_for_vtable (ie->indirect_info->otr_token,
-						 vtable, offset, &can_refer);
+	  t = gimple_get_virt_method_for_vtable (pii->otr_token, vtable, offset,
+						 &can_refer);
 	  if (can_refer)
 	    {
 	      if (!t
@@ -4224,7 +4205,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 		       (ie, cgraph_node::get (t)))
 		{
 		  /* Do not speculate builtin_unreachable, it is stupid!  */
-		  if (!ie->indirect_info->vptr_changed)
+		  if (!pii->vptr_changed)
 		    target = ipa_impossible_devirt_target (ie, target);
 		  else
 		    target = NULL;
@@ -4232,7 +4213,7 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
 	      else
 		{
 		  target = t;
-		  speculative = ie->indirect_info->vptr_changed;
+		  speculative = pii->vptr_changed;
 		}
 	    }
 	}
@@ -4242,15 +4223,13 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
   vec <cgraph_node *>targets;
   bool final;
 
-  ctx.offset_by (ie->indirect_info->offset);
-  if (ie->indirect_info->vptr_changed)
+  ctx.offset_by (pii->offset);
+  if (pii->vptr_changed)
     ctx.possible_dynamic_type_change (ie->in_polymorphic_cdtor,
-				      ie->indirect_info->otr_type);
-  ctx.combine_with (ie_context, ie->indirect_info->otr_type);
-  targets = possible_polymorphic_call_targets
-    (ie->indirect_info->otr_type,
-     ie->indirect_info->otr_token,
-     ctx, &final);
+				      pii->otr_type);
+  ctx.combine_with (ie_context, pii->otr_type);
+  targets = possible_polymorphic_call_targets (pii->otr_type, pii->otr_token,
+					       ctx, &final);
   if (final && targets.length () <= 1)
     {
       speculative = false;
@@ -4259,13 +4238,13 @@ try_make_edge_direct_virtual_call (struct cgraph_edge *ie,
       else
 	target = ipa_impossible_devirt_target (ie, NULL_TREE);
     }
-  else if (!target && opt_for_fn (ie->caller->decl, flag_devirtualize_speculatively)
+  else if (!target && opt_for_fn (ie->caller->decl,
+				  flag_devirtualize_speculatively)
 	   && !ie->speculative && ie->maybe_hot_p ())
     {
       cgraph_node *n;
-      n = try_speculative_devirtualization (ie->indirect_info->otr_type,
-					    ie->indirect_info->otr_token,
-					    ie->indirect_info->context);
+      n = try_speculative_devirtualization (pii->otr_type, pii->otr_token,
+					    pii->context);
       if (n)
 	{
 	  target = n->decl;
@@ -4299,39 +4278,36 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 				      struct cgraph_node *node,
 				      vec<cgraph_edge *> *new_edges)
 {
-  class ipa_edge_args *top;
-  struct cgraph_edge *ie, *next_ie, *new_direct_edge;
-  struct cgraph_node *new_root;
-  class ipa_node_params *new_root_info, *inlined_node_info;
   bool res = false;
 
   ipa_check_create_edge_args ();
-  top = ipa_edge_args_sum->get (cs);
-  new_root = cs->caller->inlined_to
-		? cs->caller->inlined_to : cs->caller;
-  new_root_info = ipa_node_params_sum->get (new_root);
-  inlined_node_info = ipa_node_params_sum->get (cs->callee->function_symbol ());
+  class ipa_edge_args *top = ipa_edge_args_sum->get (cs);
+  if (!top)
+    return res;
+  cgraph_node *new_root
+    = cs->caller->inlined_to ? cs->caller->inlined_to : cs->caller;
+  ipa_node_params *new_root_info = ipa_node_params_sum->get (new_root);
+  ipa_node_params *inlined_node_info
+    = ipa_node_params_sum->get (cs->callee->function_symbol ());
 
-  for (ie = node->indirect_calls; ie; ie = next_ie)
+  cgraph_edge *next_ie;
+  for (cgraph_edge *ie = node->indirect_calls; ie; ie = next_ie)
     {
-      class cgraph_indirect_call_info *ici = ie->indirect_info;
-      struct ipa_jump_func *jfunc;
-      int param_index;
-
       next_ie = ie->next_callee;
 
-      if (ici->param_index == -1)
-	continue;
-
-      /* We must check range due to calls with variable number of arguments:  */
-      if (!top || ici->param_index >= ipa_get_cs_argument_count (top))
+      if (ie->indirect_info->param_index < 0
+	  || ie->indirect_info->param_index >= ipa_get_cs_argument_count (top))
 	{
-	  ici->param_index = -1;
+	  ie->indirect_info->param_index = -1;
 	  continue;
 	}
 
-      param_index = ici->param_index;
-      jfunc = ipa_get_ith_jump_func (top, param_index);
+      int param_index = ie->indirect_info->param_index;
+      cgraph_polymorphic_indirect_info *pii
+	= dyn_cast <cgraph_polymorphic_indirect_info *> (ie->indirect_info);
+      cgraph_simple_indirect_info *sii
+	= dyn_cast <cgraph_simple_indirect_info *> (ie->indirect_info);
+      struct ipa_jump_func *jfunc = ipa_get_ith_jump_func (top, param_index);
 
       auto_vec<cgraph_node *, 4> spec_targets;
       if (ie->speculative)
@@ -4340,9 +4316,10 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 	     direct = direct->next_speculative_call_target ())
 	  spec_targets.safe_push (direct->callee);
 
+      cgraph_edge *new_direct_edge;
       if (!opt_for_fn (node->decl, flag_indirect_inlining))
 	new_direct_edge = NULL;
-      else if (ici->polymorphic)
+      else if (pii)
 	{
           ipa_polymorphic_call_context ctx;
 	  ctx = ipa_context_from_jfunc (new_root_info, cs, param_index, jfunc);
@@ -4350,7 +4327,7 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 							       new_root,
 							       new_root_info);
 	}
-      else
+      else if (sii)
 	{
 	  tree target_type =  ipa_get_type (inlined_node_info, param_index);
 	  new_direct_edge = try_make_edge_direct_simple_call (ie, jfunc,
@@ -4358,6 +4335,8 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
 							      new_root,
 							      new_root_info);
 	}
+      else
+	gcc_unreachable ();
 
       /* If speculation was removed, then we need to do nothing.  */
       if (new_direct_edge && new_direct_edge != ie
@@ -4384,46 +4363,52 @@ update_indirect_edges_after_inlining (struct cgraph_edge *cs,
       if (jfunc->type == IPA_JF_PASS_THROUGH
           && ipa_get_jf_pass_through_operation (jfunc) == NOP_EXPR)
 	{
-	  if (ici->agg_contents
-	      && !ipa_get_jf_pass_through_agg_preserved (jfunc)
-	      && !ici->polymorphic)
-	    ici->param_index = -1;
+	  if (!pii
+	      && sii->agg_contents
+	      && !ipa_get_jf_pass_through_agg_preserved (jfunc))
+	    ie->indirect_info->param_index = -1;
 	  else
 	    {
-	      ici->param_index = ipa_get_jf_pass_through_formal_id (jfunc);
-	      if (ici->polymorphic
-		  && !ipa_get_jf_pass_through_type_preserved (jfunc))
-		ici->vptr_changed = true;
-	      ipa_set_param_used_by_indirect_call (new_root_info,
-			     			   ici->param_index, true);
-	      if (ici->polymorphic)
-		ipa_set_param_used_by_polymorphic_call (new_root_info,
-						        ici->param_index, true);
+	      param_index = ipa_get_jf_pass_through_formal_id (jfunc);
+	      ie->indirect_info->param_index = param_index;
+	      ipa_set_param_used_by_indirect_call (new_root_info, param_index,
+						   true);
+	      if (pii)
+		{
+		  if (!ipa_get_jf_pass_through_type_preserved (jfunc))
+		    pii->vptr_changed = true;
+		  ipa_set_param_used_by_polymorphic_call (new_root_info,
+							  param_index, true);
+		}
 	    }
 	}
       else if (jfunc->type == IPA_JF_ANCESTOR)
 	{
-	  if (ici->agg_contents
-	      && !ipa_get_jf_ancestor_agg_preserved (jfunc)
-	      && !ici->polymorphic)
-	    ici->param_index = -1;
+	  if (!pii
+	      && sii->agg_contents
+	      && !ipa_get_jf_ancestor_agg_preserved (jfunc))
+	    ie->indirect_info->param_index = -1;
 	  else
 	    {
-	      ici->param_index = ipa_get_jf_ancestor_formal_id (jfunc);
-	      ici->offset += ipa_get_jf_ancestor_offset (jfunc);
-	      if (ici->polymorphic
-		  && !ipa_get_jf_ancestor_type_preserved (jfunc))
-		ici->vptr_changed = true;
-	      ipa_set_param_used_by_indirect_call (new_root_info,
-			     			   ici->param_index, true);
-	      if (ici->polymorphic)
-		ipa_set_param_used_by_polymorphic_call (new_root_info,
-						        ici->param_index, true);
+	      param_index = ipa_get_jf_ancestor_formal_id (jfunc);
+	      ie->indirect_info->param_index = param_index;
+	      ipa_set_param_used_by_indirect_call (new_root_info, param_index,
+						   true);
+	      if (pii)
+		{
+		  pii->offset += ipa_get_jf_ancestor_offset (jfunc);
+		  if (!ipa_get_jf_ancestor_type_preserved (jfunc))
+		    pii->vptr_changed = true;
+		  ipa_set_param_used_by_polymorphic_call (new_root_info,
+							  param_index, true);
+		}
+	      else
+		sii->offset += ipa_get_jf_ancestor_offset (jfunc);
 	    }
 	}
       else
 	/* Either we can find a destination for this edge now or never. */
-	ici->param_index = -1;
+	ie->indirect_info->param_index = -1;
     }
 
   return res;
@@ -5312,29 +5297,44 @@ static void
 ipa_write_indirect_edge_info (struct output_block *ob,
 			      struct cgraph_edge *cs)
 {
-  class cgraph_indirect_call_info *ii = cs->indirect_info;
   struct bitpack_d bp;
 
-  streamer_write_hwi (ob, ii->param_index);
   bp = bitpack_create (ob->main_stream);
-  bp_pack_value (&bp, ii->polymorphic, 1);
-  bp_pack_value (&bp, ii->agg_contents, 1);
-  bp_pack_value (&bp, ii->member_ptr, 1);
-  bp_pack_value (&bp, ii->by_ref, 1);
-  bp_pack_value (&bp, ii->guaranteed_unmodified, 1);
-  bp_pack_value (&bp, ii->vptr_changed, 1);
+  bp_pack_enum (&bp, cgraph_indirect_info_kind, CIIK_N_KINDS,
+		cs->indirect_info->kind);
   streamer_write_bitpack (&bp);
-  if (ii->agg_contents || ii->polymorphic)
-    streamer_write_hwi (ob, ii->offset);
-  else
-    gcc_assert (ii->offset == 0);
 
-  if (ii->polymorphic)
+  if (cgraph_polymorphic_indirect_info *pii
+      = dyn_cast <cgraph_polymorphic_indirect_info *> (cs->indirect_info))
     {
-      streamer_write_hwi (ob, ii->otr_token);
-      stream_write_tree (ob, ii->otr_type, true);
-      ii->context.stream_out (ob);
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, pii->vptr_changed, 1);
+      streamer_write_bitpack (&bp);
+
+      streamer_write_hwi (ob, pii->param_index);
+      pii->context.stream_out (ob);
+      streamer_write_hwi (ob, pii->otr_token);
+      stream_write_tree (ob, pii->otr_type, true);
+      streamer_write_hwi (ob, pii->offset);
     }
+  else if (cgraph_simple_indirect_info *sii
+	   = dyn_cast <cgraph_simple_indirect_info *> (cs->indirect_info))
+    {
+      bp = bitpack_create (ob->main_stream);
+      bp_pack_value (&bp, sii->agg_contents, 1);
+      bp_pack_value (&bp, sii->member_ptr, 1);
+      bp_pack_value (&bp, sii->by_ref, 1);
+      bp_pack_value (&bp, sii->guaranteed_unmodified, 1);
+      streamer_write_bitpack (&bp);
+
+      streamer_write_hwi (ob, sii->param_index);
+      if (sii->agg_contents)
+	streamer_write_hwi (ob, sii->offset);
+      else
+	gcc_assert (sii->offset == 0);
+    }
+  else
+    gcc_assert (cs->indirect_info->param_index == -1);
 }
 
 /* Read in parts of cgraph_indirect_call_info corresponding to CS that are
@@ -5346,35 +5346,50 @@ ipa_read_indirect_edge_info (class lto_input_block *ib,
 			     struct cgraph_edge *cs,
 			     class ipa_node_params *info)
 {
-  class cgraph_indirect_call_info *ii = cs->indirect_info;
   struct bitpack_d bp;
 
-  ii->param_index = (int) streamer_read_hwi (ib);
   bp = streamer_read_bitpack (ib);
-  ii->polymorphic = bp_unpack_value (&bp, 1);
-  ii->agg_contents = bp_unpack_value (&bp, 1);
-  ii->member_ptr = bp_unpack_value (&bp, 1);
-  ii->by_ref = bp_unpack_value (&bp, 1);
-  ii->guaranteed_unmodified = bp_unpack_value (&bp, 1);
-  ii->vptr_changed = bp_unpack_value (&bp, 1);
-  if (ii->agg_contents || ii->polymorphic)
-    ii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+  enum cgraph_indirect_info_kind ii_kind
+    = bp_unpack_enum (&bp, cgraph_indirect_info_kind, CIIK_N_KINDS);
+  gcc_assert (ii_kind == cs->indirect_info->kind);
+
+  if (cgraph_polymorphic_indirect_info *pii
+      = dyn_cast <cgraph_polymorphic_indirect_info *> (cs->indirect_info))
+    {
+      bp = streamer_read_bitpack (ib);
+      pii->vptr_changed = bp_unpack_value (&bp, 1);
+
+      pii->param_index = (int) streamer_read_hwi (ib);
+      pii->context.stream_in (ib, data_in);
+      pii->otr_token = (HOST_WIDE_INT) streamer_read_hwi (ib);
+      pii->otr_type = stream_read_tree (ib, data_in);
+      pii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+
+      if (info && pii->param_index >= 0)
+	{
+	  ipa_set_param_used_by_polymorphic_call (info, pii->param_index, true);
+	  ipa_set_param_used_by_indirect_call (info, pii->param_index, true);
+	}
+    }
+  else if (cgraph_simple_indirect_info *sii
+	   = dyn_cast <cgraph_simple_indirect_info *> (cs->indirect_info))
+    {
+      bp = streamer_read_bitpack (ib);
+      sii->agg_contents = bp_unpack_value (&bp, 1);
+      sii->member_ptr = bp_unpack_value (&bp, 1);
+      sii->by_ref = bp_unpack_value (&bp, 1);
+      sii->guaranteed_unmodified = bp_unpack_value (&bp, 1);
+
+      sii->param_index = (int) streamer_read_hwi (ib);
+      if (sii->agg_contents)
+	sii->offset = (HOST_WIDE_INT) streamer_read_hwi (ib);
+      else
+	sii->offset = 0;
+      if (info && sii->param_index >= 0)
+	ipa_set_param_used_by_indirect_call (info, sii->param_index, true);
+    }
   else
-    ii->offset = 0;
-  if (ii->polymorphic)
-    {
-      ii->otr_token = (HOST_WIDE_INT) streamer_read_hwi (ib);
-      ii->otr_type = stream_read_tree (ib, data_in);
-      ii->context.stream_in (ib, data_in);
-    }
-  if (info && ii->param_index >= 0)
-    {
-      if (ii->polymorphic)
-	ipa_set_param_used_by_polymorphic_call (info,
-						ii->param_index , true);
-      ipa_set_param_used_by_indirect_call (info,
-					   ii->param_index, true);
-    }
+    cs->indirect_info->param_index = -1;
 }
 
 /* Stream out NODE info to OB.  */

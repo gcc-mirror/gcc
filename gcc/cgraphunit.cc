@@ -1297,7 +1297,8 @@ analyze_functions (bool first_time)
 		  for (edge = cnode->indirect_calls; edge; edge = next)
 		    {
 		      next = edge->next_callee;
-		      if (edge->indirect_info->polymorphic)
+		      if (is_a <cgraph_polymorphic_indirect_info *>
+			  (edge->indirect_info))
 			walk_polymorphic_call_targets (&reachable_call_targets,
 						       edge);
 		    }

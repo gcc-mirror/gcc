@@ -921,7 +921,7 @@ ipa_profile (void)
 				     "Not speculating: "
 				     "parameter count mismatch\n");
 			}
-		      else if (e->indirect_info->polymorphic
+		      else if (usable_polymorphic_info_p (e->indirect_info)
 			       && !opt_for_fn (n->decl, flag_devirtualize)
 			       && !possible_polymorphic_call_target_p (e, n2))
 			{
