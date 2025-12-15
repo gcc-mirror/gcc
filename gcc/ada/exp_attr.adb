@@ -6368,14 +6368,13 @@ package body Exp_Attr is
                   Accum_Typ := Etype (N);
                end if;
 
-               --  Try to cope with wrong E1 when Etype (N) doesn't help
+               --  If Accum_Typ is a universal numeric type and the prefix
+               --  is not an aggregate, use its component type in order to
+               --  avoid resolution problems later on.
+
                if Is_Universal_Numeric_Type (Accum_Typ) then
-                  if Is_Array_Type (Etype (Prefix (N))) then
+                  if Nkind (Prefix (N)) /= N_Aggregate then
                      Accum_Typ := Component_Type (Etype (Prefix (N)));
-                  else
-                     --  Further hackery can be added here when there is a
-                     --  demonstrated need.
-                     null;
                   end if;
                end if;
 
