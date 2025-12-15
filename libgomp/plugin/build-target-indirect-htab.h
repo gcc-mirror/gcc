@@ -65,7 +65,7 @@ void*
 create_target_indirect_map (size_t *h_size, size_t count,
 			    uint64_t *host_addrs, uint64_t *device_addrs)
 {
-  assert (htab_find);  /* Silence -Werror=unused-function.  */
+  (void) htab_find;  /* Silence -Werror=unused-function.  */
 
   htab_t indirect_htab = htab_create (count);
 
