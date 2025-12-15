@@ -281,6 +281,8 @@ void a68_scan_error (LINE_T *u, char *v, const char *txt, ...);
 /* a68-parser-scanner.cc  */
 
 bool a68_lexical_analyser (const char *filename, bool *empty_file);
+ssize_t a68_get_file_size (FILE *file);
+ssize_t a68_file_read (FILE *file, void *buf, size_t n);
 
 /* a68-parser.cc  */
 

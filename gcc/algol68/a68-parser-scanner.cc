@@ -119,10 +119,35 @@ supper_postlude[] = {
     }									\
   while (0)
 
+/* Get the size of a file given a file descriptor FILE.  In case the size of
+   the file cannot be determined then this function returns -1.  */
+
+ssize_t
+a68_file_size (FILE *file)
+{
+  ssize_t fsize;
+  off_t off, save;
+
+  save = ftell (file);
+  if (save == -1)
+    return -1;
+
+  off = lseek (fileno (file), 0, SEEK_END);
+  if (off == (off_t) -1)
+    return -1;
+  fsize = (ssize_t) off;
+
+  off = lseek (fileno (file), 0, save);
+  if (off == (off_t) -1)
+    return -1;
+
+  return fsize;
+}
+
 /* Read bytes from file into buffer.  */
 
-static ssize_t
-io_read (FILE *file, void *buf, size_t n)
+ssize_t
+a68_file_read (FILE *file, void *buf, size_t n)
 {
   int fd = fileno (file);
   size_t to_do = n;
@@ -291,15 +316,6 @@ concatenate_lines (LINE_T * top)
     }
 }
 
-/* Size of source file.  */
-
-static int
-get_source_size (void)
-{
-  FILE *f = FILE_SOURCE_FD (&A68_JOB);
-  return (int) lseek (fileno (f), 0, SEEK_END);
-}
-
 /* Read source file FILENAME and make internal copy.  */
 
 static bool
@@ -328,7 +344,10 @@ read_source_file (const char *filename)
     fatal_error (UNKNOWN_LOCATION, "specified file %s is a directory",
 		 filename);
 
-  source_file_size = get_source_size ();
+  l = a68_file_size (f);
+  if (l < 0)
+    error ("could not get size of source file");
+  source_file_size = l;
 
   /* Allocate A68_PARSER (scan_buf), which is an auxiliary buffer used by the
      scanner known to be big enough to hold any string contained in the source
@@ -344,13 +363,9 @@ read_source_file (const char *filename)
 
   /* Read the file into a single buffer, so we save on system calls.  */
   line_num = 1;
-  errno = 0;
   buffer = (char *) xmalloc (8 + source_file_size);
-  if (lseek (fileno (f), 0, SEEK_SET) < 0)
-    gcc_unreachable ();
-  errno = 0;
-  bytes_read = io_read (f, buffer, source_file_size);
-  gcc_assert (errno == 0 && bytes_read == source_file_size);
+  bytes_read = a68_file_read (f, buffer, source_file_size);
+  gcc_assert (bytes_read == source_file_size);
 
   /* Link all lines into the list.  */
   k = 0;
@@ -969,8 +984,8 @@ include_files (LINE_T *top)
 	  if (item != NO_TEXT && streq (item, "INCLUDE") == 0)
 	    {
 	      FILE *fp;
-	      int fd;
 	      size_t fsize, k;
+	      ssize_t ssize;
 	      int n, linum, bytes_read;
 	      char *fbuf, delim;
 	      BUFFER fnb;
@@ -1060,26 +1075,16 @@ include_files (LINE_T *top)
 	      t = NO_LINE;
 
 	      /* Access the file.  */
-	      errno = 0;
 	      fp = fopen (fn, "r");
 	      SCAN_ERROR (fp == NULL, start_l, start_c,
 			  "error opening included file");
-	      fd = fileno (fp);
-	      errno = 0;
-	      off_t off = lseek (fd, 0, SEEK_END);
-	      gcc_assert (off >= 0);
-	      fsize = (size_t) off;
-	      SCAN_ERROR (errno != 0, start_l, start_c,
-			  "error while reading file");
+	      ssize = a68_file_size (fp);
+	      SCAN_ERROR (ssize < 0, start_l, start_c,
+			  "error getting included file size");
+	      fsize = ssize;
 	      fbuf = (char *) xmalloc (8 + fsize);
-	      errno = 0;
-	      if (lseek (fd, 0, SEEK_SET) < 0)
-		gcc_unreachable ();
-	      SCAN_ERROR (errno != 0, start_l, start_c,
-			  "error while reading file");
-	      errno = 0;
-	      bytes_read = (int) io_read (fp, fbuf, (size_t) fsize);
-	      SCAN_ERROR (errno != 0 || (size_t) bytes_read != fsize, start_l, start_c,
+	      bytes_read = (int) a68_file_read (fp, fbuf, (size_t) fsize);
+	      SCAN_ERROR ((size_t) bytes_read != fsize, start_l, start_c,
 			  "error while reading file");
 
 	      /* Buffer still usable?.  */
