@@ -474,13 +474,7 @@ should_duplicate_loop_header_p (basic_block header, class loop *loop,
       bool hasone = false;
       FOR_EACH_EDGE (e, ei, header->succs)
 	if (loop_exit_edge_p (loop, e)
-	    && (probably_never_executed_edge_p (cfun, e)
-		/* We want to rule out paths to noreturns but not
-		   low probabilities resulting from adjustments
-		   or combining.
-		   FIXME: once we have better quality tracking,
-		   make this more robust.  */
-		|| e->probability <= profile_probability::very_unlikely ()))
+	    && probably_never_executed_edge_p (cfun, e))
 	  {
 	    hasone = true;
 	    if (dump_file && (dump_flags & TDF_DETAILS))
