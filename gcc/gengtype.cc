@@ -2635,6 +2635,7 @@ walk_subclasses (type_p base, struct walk_type_data *d,
 	  d->indent += 2;
 	  oprintf (d->of, "%*s%s *sub = static_cast <%s *> (x);\n",
 		   d->indent, "", sub->u.s.tag, sub->u.s.tag);
+	  oprintf (d->of, "%*s(void) sub;\n", d->indent, "");
 	  const char *old_val = d->val;
 	  d->val = "(*sub)";
 	  walk_type (sub, d);
