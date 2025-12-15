@@ -533,7 +533,7 @@ proc v3-dg-runtest { testcases flags default-extra-flags } {
 		# single test.
 		# These should be adjusted whenever the default -std is
 		# updated or newer C++ effective target is added.
-		set default_std 17
+		set default_std 20
 		set max_std 26
 		set min_std [v3-minimum-std $test $default_std $max_std]
 		if { $min_std > $default_std } {
