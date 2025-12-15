@@ -4716,13 +4716,9 @@ vect_gather_scatter_fn_p (vec_info *vinfo, bool read_p, bool masked_p,
       unsigned int precision
 	= TYPE_PRECISION (TREE_TYPE (configs[i].offset_vectype));
       if (configs[i].scale < scale
-	  && precision >= needed_precision
-	  && (supportable_convert_operation (CONVERT_EXPR,
-					    configs[i].offset_vectype,
-					    offset_vectype, &tmp)
-	      || (needed_precision == offset_precision
-		  && tree_nop_conversion_p (configs[i].offset_vectype,
-					    offset_vectype))))
+	  && TYPE_SIGN (configs[i].offset_vectype)
+	     == TYPE_SIGN (offset_vectype)
+	  && precision >= needed_precision)
 	{
 	  *ifn_out = configs[i].ifn;
 	  *offset_vectype_out = configs[i].offset_vectype;
