@@ -23,7 +23,7 @@ Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
 
 DEFINE_RISCV_EXT(
   /* NAME */ xcvalu,
-  /* UPPERCAE_NAME */ XCVALU,
+  /* UPPERCASE_NAME */ XCVALU,
   /* FULL_NAME */ "Core-V miscellaneous ALU extension",
   /* DESC */ "",
   /* URL */ ,
@@ -36,7 +36,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xcvbi,
-  /* UPPERCAE_NAME */ XCVBI,
+  /* UPPERCASE_NAME */ XCVBI,
   /* FULL_NAME */ "xcvbi extension",
   /* DESC */ "",
   /* URL */ ,
@@ -49,7 +49,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xcvelw,
-  /* UPPERCAE_NAME */ XCVELW,
+  /* UPPERCASE_NAME */ XCVELW,
   /* FULL_NAME */ "Core-V event load word extension",
   /* DESC */ "",
   /* URL */ ,
@@ -62,7 +62,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xcvmac,
-  /* UPPERCAE_NAME */ XCVMAC,
+  /* UPPERCASE_NAME */ XCVMAC,
   /* FULL_NAME */ "Core-V multiply-accumulate extension",
   /* DESC */ "",
   /* URL */ ,
@@ -75,7 +75,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xcvsimd,
-  /* UPPERCAE_NAME */ XCVSIMD,
+  /* UPPERCASE_NAME */ XCVSIMD,
   /* FULL_NAME */ "xcvsimd extension",
   /* DESC */ "",
   /* URL */ ,

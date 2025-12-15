@@ -23,7 +23,7 @@ Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
 
 DEFINE_RISCV_EXT(
   /* NAME */ xventanacondops,
-  /* UPPERCAE_NAME */ XVENTANACONDOPS,
+  /* UPPERCASE_NAME */ XVENTANACONDOPS,
   /* FULL_NAME */ "Ventana integer conditional operations extension",
   /* DESC */ "",
   /* URL */ ,

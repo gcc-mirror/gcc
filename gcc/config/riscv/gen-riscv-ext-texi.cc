@@ -75,7 +75,7 @@ main ()
   puts ("@samp{zifencei}.");
   puts ("");
 
-#define DEFINE_RISCV_EXT(NAME, UPPERCAE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
+#define DEFINE_RISCV_EXT(NAME, UPPERCASE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
 			 SUPPORTED_VERSIONS, FLAG_GROUP, BITMASK_GROUP_ID,     \
 			 BITMASK_BIT_POSITION, EXTRA_EXTENSION_FLAGS)          \
   print_ext_doc_entry (#NAME, FULL_NAME, DESC,                                 \

@@ -23,7 +23,7 @@ Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
 
 DEFINE_RISCV_EXT(
   /* NAME */ xsfcease,
-  /* UPPERCAE_NAME */ XSFCEASE,
+  /* UPPERCASE_NAME */ XSFCEASE,
   /* FULL_NAME */ "xsfcease extension",
   /* DESC */ "",
   /* URL */ ,
@@ -36,7 +36,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvcp,
-  /* UPPERCAE_NAME */ XSFVCP,
+  /* UPPERCASE_NAME */ XSFVCP,
   /* FULL_NAME */ "xsfvcp extension",
   /* DESC */ "",
   /* URL */ ,
@@ -49,7 +49,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvfnrclipxfqf,
-  /* UPPERCAE_NAME */ XSFVFNRCLIPXFQF,
+  /* UPPERCASE_NAME */ XSFVFNRCLIPXFQF,
   /* FULL_NAME */ "xsfvfnrclipxfqf extension",
   /* DESC */ "",
   /* URL */ ,
@@ -62,7 +62,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvqmaccdod,
-  /* UPPERCAE_NAME */ XSFVQMACCDOD,
+  /* UPPERCASE_NAME */ XSFVQMACCDOD,
   /* FULL_NAME */ "xsfvqmaccdod extension",
   /* DESC */ "",
   /* URL */ ,
@@ -75,7 +75,7 @@ DEFINE_RISCV_EXT(
 
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvqmaccqoq,
-  /* UPPERCAE_NAME */ XSFVQMACCQOQ,
+  /* UPPERCASE_NAME */ XSFVQMACCQOQ,
   /* FULL_NAME */ "xsfvqmaccqoq extension",
   /* DESC */ "",
   /* URL */ ,

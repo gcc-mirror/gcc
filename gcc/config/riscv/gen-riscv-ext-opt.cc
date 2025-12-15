@@ -37,7 +37,7 @@ main ()
   puts ("; Please *DO NOT* edit manually.");
 
   std::set<std::string> all_vars;
-#define DEFINE_RISCV_EXT(NAME, UPPERCAE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
+#define DEFINE_RISCV_EXT(NAME, UPPERCASE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
 			 SUPPORTED_VERSIONS, FLAG_GROUP, BITMASK_GROUP_ID,     \
 			 BITMASK_BIT_POSITION, EXTRA_EXTENSION_FLAGS)          \
   all_vars.insert ("riscv_" #FLAG_GROUP "_subext");
@@ -50,10 +50,10 @@ main ()
       printf ("int %s\n\n", var.c_str ());
     }
 
-#define DEFINE_RISCV_EXT(NAME, UPPERCAE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
+#define DEFINE_RISCV_EXT(NAME, UPPERCASE_NAME, FULL_NAME, DESC, URL, DEP_EXTS,  \
 			 SUPPORTED_VERSIONS, FLAG_GROUP, BITMASK_GROUP_ID,     \
 			 BITMASK_BIT_POSITION, EXTRA_EXTENSION_FLAGS)          \
-  puts ("Mask(" #UPPERCAE_NAME ") Var(riscv_" #FLAG_GROUP "_subext)\n");
+  puts ("Mask(" #UPPERCASE_NAME ") Var(riscv_" #FLAG_GROUP "_subext)\n");
 #include "riscv-ext.def"
 #undef DEFINE_RISCV_EXT
 
