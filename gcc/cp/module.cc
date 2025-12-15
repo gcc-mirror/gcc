@@ -9727,16 +9727,7 @@ trees_out::type_node (tree type)
 	tree_node (DECL_NAME (TYPE_NAME (type)));
 	tree_node (TYPENAME_TYPE_FULLNAME (type));
 	if (streaming_p ())
-	  {
-	    enum tag_types tag_type = none_type;
-	    if (TYPENAME_IS_ENUM_P (type))
-	      tag_type = enum_type;
-	    else if (TYPENAME_IS_CLASS_P (type))
-	      tag_type = class_type;
-	    else if (TYPENAME_IS_UNION_P (type))
-	      tag_type = union_type;
-	    u (int (tag_type));
-	  }
+	  u (get_typename_tag (type));
 	}
       break;
 

@@ -417,7 +417,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       EXPR_STMT_STMT_EXPR_RESULT (in EXPR_STMT)
       STMT_EXPR_NO_SCOPE (in STMT_EXPR)
       BIND_EXPR_TRY_BLOCK (in BIND_EXPR)
-      TYPENAME_IS_ENUM_P (in TYPENAME_TYPE)
+      TYPENAME_TYPE_TAG_BIT_0 (in TYPENAME_TYPE)
       OMP_FOR_GIMPLIFYING_P (in OMP_FOR, OMP_SIMD, OMP_DISTRIBUTE,
 			     and OMP_TASKLOOP)
       BASELINK_QUALIFIED_P (in BASELINK)
@@ -460,7 +460,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DELETE_EXPR_USE_VEC (in DELETE_EXPR).
       ICS_ELLIPSIS_FLAG (in _CONV)
       DECL_INITIALIZED_P (in VAR_DECL)
-      TYPENAME_IS_CLASS_P (in TYPENAME_TYPE)
+      TYPENAME_TYPE_TAG_BIT_1 (in TYPENAME_TYPE)
       STMT_IS_FULL_EXPR_P (in _STMT)
       TARGET_EXPR_LIST_INIT_P (in TARGET_EXPR)
       DECL_FINAL_P (in FUNCTION_DECL)
@@ -480,7 +480,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       ICS_THIS_FLAG (in _CONV)
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
       STATEMENT_LIST_TRY_BLOCK (in STATEMENT_LIST)
-      TYPENAME_IS_RESOLVING_P (in TYPENAME_TYPE)
+      TYPENAME_TYPE_TAG_BIT_2 (in TYPENAME_TYPE)
       TYPE_POLYMORPHIC_P (in RECORD_TYPE and UNION_TYPE)
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
       FNDECL_USED_AUTO (in FUNCTION_DECL)
@@ -513,7 +513,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       TARGET_EXPR_ELIDING_P (in TARGET_EXPR)
       IF_STMT_VACUOUS_INIT_P (IF_STMT)
       contract_semantic (in ASSERTION_, PRECONDITION_, POSTCONDITION_STMT)
-      TYPENAME_IS_UNION_P (in TYPENAME_TYPE)
+      TYPENAME_IS_RESOLVING_P (in TYPENAME_TYPE)
    4: IDENTIFIER_MARKED (IDENTIFIER_NODEs)
       TREE_HAS_CONSTRUCTOR (in INDIRECT_REF, SAVE_EXPR, CONSTRUCTOR,
 	  CALL_EXPR, or FIELD_DECL).
@@ -4551,21 +4551,30 @@ get_vec_init_expr (tree t)
 #define TYPENAME_TYPE_FULLNAME(NODE) \
   (TYPE_VALUES_RAW (TYPENAME_TYPE_CHECK (NODE)))
 
+/* Storage for the tag type of a TYPENAME_TYPE.  */
+#define TYPENAME_TYPE_TAG_BIT_0(NODE) \
+  (TREE_LANG_FLAG_0 (TYPENAME_TYPE_CHECK (NODE)))
+#define TYPENAME_TYPE_TAG_BIT_1(NODE) \
+  (TREE_LANG_FLAG_1 (TYPENAME_TYPE_CHECK (NODE)))
+#define TYPENAME_TYPE_TAG_BIT_2(NODE) \
+  (TREE_LANG_FLAG_2 (TYPENAME_TYPE_CHECK (NODE)))
+
 /* True if a TYPENAME_TYPE was declared as an "enum".  */
 #define TYPENAME_IS_ENUM_P(NODE) \
-  (TREE_LANG_FLAG_0 (TYPENAME_TYPE_CHECK (NODE)))
+  (get_typename_tag (NODE) == enum_type)
 
 /* True if a TYPENAME_TYPE was declared as a "class" or "struct".  */
-#define TYPENAME_IS_CLASS_P(NODE) \
-  (TREE_LANG_FLAG_1 (TYPENAME_TYPE_CHECK (NODE)))
+#define TYPENAME_IS_CLASS_OR_STRUCT_P(NODE) \
+  (get_typename_tag (NODE) == class_type \
+   || get_typename_tag (NODE) == record_type)
 
 /* True if a TYPENAME_TYPE was declared as a "union".  */
 #define TYPENAME_IS_UNION_P(NODE) \
-  (TREE_LANG_FLAG_3 (TYPENAME_TYPE_CHECK (NODE)))
+  (get_typename_tag (NODE) == union_type)
 
 /* True if a TYPENAME_TYPE is in the process of being resolved.  */
 #define TYPENAME_IS_RESOLVING_P(NODE) \
-  (TREE_LANG_FLAG_2 (TYPENAME_TYPE_CHECK (NODE)))
+  (TREE_LANG_FLAG_3 (TYPENAME_TYPE_CHECK (NODE)))
 
 /* [class.virtual]
 
@@ -5790,6 +5799,28 @@ enum tag_types {
   typename_type, /* "typename" types.  */
   scope_type	 /* namespace or tagged type name followed by :: */
 };
+
+/* Return the tag type of the given TYPENAME_TYPE.  */
+
+inline tag_types
+get_typename_tag (tree t)
+{
+  unsigned bit0 = TYPENAME_TYPE_TAG_BIT_0 (t);
+  unsigned bit1 = TYPENAME_TYPE_TAG_BIT_1 (t);
+  unsigned bit2 = TYPENAME_TYPE_TAG_BIT_2 (t);
+  return tag_types ((bit2 << 2) | (bit1 << 1) | bit0);
+}
+
+/* Set the tag type of the given TYPENAME_TYPE.  */
+
+inline void
+set_typename_tag (tree t, tag_types tag)
+{
+  gcc_checking_assert ((tag & 7) == tag);
+  TYPENAME_TYPE_TAG_BIT_0 (t) = (tag >> 0) & 1;
+  TYPENAME_TYPE_TAG_BIT_1 (t) = (tag >> 1) & 1;
+  TYPENAME_TYPE_TAG_BIT_2 (t) = (tag >> 2) & 1;
+}
 
 /* The various kinds of lvalues we distinguish.  */
 enum cp_lvalue_kind_flags {
@@ -7364,6 +7395,7 @@ extern bool use_eh_spec_block			(tree);
 extern void do_push_parm_decls			(tree, tree, tree *);
 extern tree do_aggregate_paren_init		(tree, tree);
 extern void maybe_mark_function_versioned	(tree);
+extern const char *tag_name 			(enum tag_types);
 
 /* in decl2.cc */
 extern void record_mangling			(tree, bool);

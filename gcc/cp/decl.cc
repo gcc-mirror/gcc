@@ -85,7 +85,6 @@ static void check_static_variable_definition (tree, tree);
 static void record_unknown_type (tree, const char *);
 static int member_function_or_else (tree, tree, enum overload_flags);
 static tree local_variable_p_walkfn (tree *, int *, void *);
-static const char *tag_name (enum tag_types);
 static tree lookup_and_check_tag (enum tag_types, tree, TAG_how, bool);
 static void maybe_deduce_size_from_array_init (tree, tree);
 static void layout_var_decl (tree);
@@ -4843,9 +4842,7 @@ struct typename_info {
   tree scope;
   tree name;
   tree template_id;
-  bool enum_p;
-  bool class_p;
-  bool union_p;
+  tag_types tag_type;
 };
 
 struct typename_hasher : ggc_ptr_hash<tree_node>
@@ -4883,9 +4880,7 @@ struct typename_hasher : ggc_ptr_hash<tree_node>
     return (TYPE_IDENTIFIER (t1) == t2->name
 	    && TYPE_CONTEXT (t1) == t2->scope
 	    && TYPENAME_TYPE_FULLNAME (t1) == t2->template_id
-	    && TYPENAME_IS_ENUM_P (t1) == t2->enum_p
-	    && TYPENAME_IS_CLASS_P (t1) == t2->class_p
-	    && TYPENAME_IS_UNION_P (t1) == t2->union_p);
+	    && get_typename_tag (t1) == t2->tag_type);
   }
 };
 
@@ -4908,9 +4903,7 @@ build_typename_type (tree context, tree name, tree fullname,
   ti.scope = FROB_CONTEXT (context);
   ti.name = name;
   ti.template_id = fullname;
-  ti.enum_p = tag_type == enum_type;
-  ti.class_p = (tag_type == class_type || tag_type == record_type);
-  ti.union_p = tag_type == union_type;
+  ti.tag_type = tag_type;
   hashval_t hash = typename_hasher::hash (&ti);
 
   /* See if we already have this type.  */
@@ -4924,9 +4917,7 @@ build_typename_type (tree context, tree name, tree fullname,
       t = cxx_make_type (TYPENAME_TYPE);
       TYPE_CONTEXT (t) = ti.scope;
       TYPENAME_TYPE_FULLNAME (t) = ti.template_id;
-      TYPENAME_IS_ENUM_P (t) = ti.enum_p;
-      TYPENAME_IS_CLASS_P (t) = ti.class_p;
-      TYPENAME_IS_UNION_P (t) = ti.union_p;
+      set_typename_tag (t, ti.tag_type);
 
       /* Build the corresponding TYPE_DECL.  */
       tree d = build_decl (input_location, TYPE_DECL, name, t);
@@ -17941,7 +17932,7 @@ grok_op_properties (tree decl, bool complain)
 
 /* Return a string giving the keyword associate with CODE.  */
 
-static const char *
+const char *
 tag_name (enum tag_types code)
 {
   switch (code)
@@ -17956,9 +17947,11 @@ tag_name (enum tag_types code)
       return "enum";
     case typename_type:
       return "typename";
-    default:
-      gcc_unreachable ();
+    case none_type:
+    case scope_type:
+      return nullptr;
     }
+  gcc_unreachable ();
 }
 
 /* Name lookup in an elaborated-type-specifier (after the keyword

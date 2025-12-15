@@ -822,11 +822,8 @@ dump_type (cxx_pretty_printer *pp, tree t, int flags)
 	  break;
 	}
       pp_cxx_cv_qualifier_seq (pp, t);
-      pp_cxx_ws_string (pp,
-			 TYPENAME_IS_ENUM_P (t) ? "enum"
-			 : TYPENAME_IS_CLASS_P (t) ? "class"
-			 : TYPENAME_IS_UNION_P (t) ? "union"
-			 : "typename");
+      if (const char *tag = tag_name (get_typename_tag (t)))
+	pp_cxx_ws_string (pp, tag);
       dump_typename (pp, t, flags);
       break;
 

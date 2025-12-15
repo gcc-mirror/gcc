@@ -17323,14 +17323,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	      return error_mark_node;
 	  }
 
-	/* FIXME: TYPENAME_IS_CLASS_P conflates 'class' vs 'struct' tags.
-	   TYPENAME_TYPE should probably remember the exact tag that
-	   was written for -Wmismatched-tags.  */
-	enum tag_types tag_type
-	  = (TYPENAME_IS_CLASS_P (t) ? class_type
-	     : TYPENAME_IS_UNION_P (t) ? union_type
-	     : TYPENAME_IS_ENUM_P (t) ? enum_type
-	     : typename_type);
+	enum tag_types tag_type = get_typename_tag (t);
 	tsubst_flags_t tcomplain = complain | tf_keep_type_decl;
 	tcomplain |= tst_ok_flag | qualifying_scope_flag;
 	f = make_typename_type (ctx, f, tag_type, tcomplain);
@@ -17352,7 +17345,8 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 		else
 		  return error_mark_node;
 	      }
-	    else if (TYPENAME_IS_CLASS_P (t) && !NON_UNION_CLASS_TYPE_P (f))
+	    else if (TYPENAME_IS_CLASS_OR_STRUCT_P (t)
+		     && !NON_UNION_CLASS_TYPE_P (f))
 	      {
 		if (complain & tf_error)
 		  error ("%qT resolves to %qT, which is not a non-union "
