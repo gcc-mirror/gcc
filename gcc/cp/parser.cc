@@ -43084,7 +43084,7 @@ cp_parser_omp_clause_linear (cp_parser *parser, tree list,
   else
     {
       size_t end = cp_parser_skip_balanced_tokens (parser, 1);
-      cp_token *next = UNKNOWN_LOCATION;
+      cp_token *next = NULL;
       if (end > 1
 	  && cp_lexer_nth_token_is (parser->lexer, end - 1, CPP_CLOSE_PAREN))
 	{
