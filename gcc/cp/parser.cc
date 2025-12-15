@@ -20426,10 +20426,15 @@ cp_parser_template_id (cp_parser *parser,
 	   && TREE_CODE (TREE_TYPE (templ)) == TYPENAME_TYPE)
     {
       /* Some type template in dependent scope.  */
-      tree &name = TYPENAME_TYPE_FULLNAME (TREE_TYPE (templ));
-      name = build_min_nt_loc (combined_loc,
-			       TEMPLATE_ID_EXPR,
-			       name, arguments);
+      tree fullname = TYPENAME_TYPE_FULLNAME (TREE_TYPE (templ));
+      fullname = build_min_nt_loc (combined_loc,
+				   TEMPLATE_ID_EXPR,
+				   fullname, arguments);
+      TREE_TYPE (templ)
+	= build_typename_type (TYPE_CONTEXT (TREE_TYPE (templ)),
+			       TYPE_NAME (TREE_TYPE (templ)),
+			       fullname,
+			       get_typename_tag (TREE_TYPE (templ)));
       template_id = templ;
     }
   else
