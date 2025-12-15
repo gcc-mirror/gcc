@@ -3848,6 +3848,7 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 
   orig[0] = NULL;
   orig[1] = NULL;
+  tree orig_elem_type[2] = {};
   conv_code = ERROR_MARK;
   bool maybe_ident = true;
   bool maybe_blend[2] = { true, true };
@@ -3902,6 +3903,11 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  if (j < 2)
 	    {
 	      orig[j] = ref;
+	      /* Track what element type was actually extracted (which may
+		 differ in signedness from the vector's element type due to
+		 tree_nop_conversion_p).  */
+	      if (!orig_elem_type[j])
+		orig_elem_type[j] = TREE_TYPE (op1);
 	      if (elem != i || j != 0)
 		maybe_ident = false;
 	      if (elem != i)
@@ -4011,6 +4017,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  if (CONVERT_EXPR_CODE_P (conv_code)
 	      && (2 * TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
 		  == TYPE_PRECISION (TREE_TYPE (type)))
+	      && orig_elem_type[0]
+	      && useless_type_conversion_p (orig_elem_type[0],
+					    TREE_TYPE (type))
 	      && mode_for_vector (as_a <scalar_mode>
 				  (TYPE_MODE (TREE_TYPE (TREE_TYPE (orig[0])))),
 				  nelts * 2).exists ()
@@ -4050,6 +4059,9 @@ simplify_vector_constructor (gimple_stmt_iterator *gsi)
 	  else if (CONVERT_EXPR_CODE_P (conv_code)
 		   && (TYPE_PRECISION (TREE_TYPE (TREE_TYPE (orig[0])))
 		       == 2 * TYPE_PRECISION (TREE_TYPE (type)))
+		   && orig_elem_type[0]
+		   && useless_type_conversion_p (orig_elem_type[0],
+						 TREE_TYPE (type))
 		   && mode_for_vector (as_a <scalar_mode>
 				         (TYPE_MODE
 					   (TREE_TYPE (TREE_TYPE (orig[0])))),
