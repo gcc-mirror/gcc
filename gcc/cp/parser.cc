@@ -260,7 +260,7 @@ static cp_token_cache *cp_token_cache_new
 static tree cp_parser_late_noexcept_specifier
   (cp_parser *, tree);
 static void noexcept_override_late_checks
-  (tree);
+  (tree, tree);
 
 static void cp_parser_initial_pragma
   (cp_token *);
@@ -28982,9 +28982,10 @@ cp_parser_class_specifier (cp_parser* parser)
       /* If there are noexcept-specifiers that have not yet been processed,
 	 take care of them now.  Do this before processing NSDMIs as they
 	 may depend on noexcept-specifiers already having been processed.  */
-      FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, decl)
+      FOR_EACH_VEC_SAFE_ELT (unparsed_noexcepts, ix, e)
 	{
-	  tree ctx = DECL_CONTEXT (decl);
+	  decl = e->decl;
+	  tree ctx = e->class_type;
 	  switch_to_class (ctx);
 
 	  tree def_parse = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
@@ -29027,7 +29028,7 @@ cp_parser_class_specifier (cp_parser* parser)
 	  /* The finish_struct call above performed various override checking,
 	     but it skipped unparsed noexcept-specifier operands.  Now that we
 	     have resolved them, check again.  */
-	  noexcept_override_late_checks (decl);
+	  noexcept_override_late_checks (decl, ctx);
 
 	  /* Remove any member-function parameters from the symbol table.  */
 	  pop_injected_parms ();
@@ -30305,10 +30306,11 @@ cp_parser_member_declaration (cp_parser* parser)
 	      int ctor_dtor_or_conv_p;
 	      bool static_p = (decl_specifiers.storage_class == sc_static);
 	      cp_parser_flags flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
-	      /* We can't delay parsing for friends,
-		 alias-declarations, and typedefs, even though the
-		 standard seems to require it.  */
-	      if (!friend_p
+	      /* We can't delay parsing for alias-declarations and typedefs,
+		 even though the standard seems to require it.  */
+	      /* FIXME: Delay parsing for all friends, not just templated
+		 ones (PR114764).  */
+	      if ((!friend_p || current_template_depth > 0)
 		  && !decl_spec_seq_has_spec_p (&decl_specifiers, ds_typedef))
 		flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
 
@@ -31046,9 +31048,9 @@ cp_parser_late_noexcept_specifier (cp_parser *parser, tree default_arg)
    overrides some virtual function with the same signature.  */
 
 static void
-noexcept_override_late_checks (tree fndecl)
+noexcept_override_late_checks (tree fndecl, tree class_type)
 {
-  tree binfo = TYPE_BINFO (DECL_CONTEXT (fndecl));
+  tree binfo = TYPE_BINFO (class_type);
   tree base_binfo;
 
   if (DECL_STATIC_FUNCTION_P (fndecl))
@@ -35349,9 +35351,10 @@ cp_parser_single_declaration (cp_parser* parser,
 	  || decl_specifiers.type != error_mark_node))
     {
       int flags = CP_PARSER_FLAGS_TYPENAME_OPTIONAL;
-      /* We don't delay parsing for friends, though CWG 2510 may change
-	 that.  */
-      if (member_p && !(friend_p && *friend_p))
+      /* FIXME: Delay parsing for all template friends, not just class
+	 template scope ones (PR114764).  */
+      if (member_p && (!(friend_p && *friend_p)
+		       || current_template_depth > 1))
 	flags |= CP_PARSER_FLAGS_DELAY_NOEXCEPT;
       decl = cp_parser_init_declarator (parser,
 					flags,
@@ -35854,7 +35857,10 @@ cp_parser_save_default_args (cp_parser* parser, tree decl)
   /* Remember if there is a noexcept-specifier to post process.  */
   tree spec = TYPE_RAISES_EXCEPTIONS (TREE_TYPE (decl));
   if (UNPARSED_NOEXCEPT_SPEC_P (spec))
-    vec_safe_push (unparsed_noexcepts, decl);
+    {
+      cp_default_arg_entry entry = {current_class_type, decl};
+      vec_safe_push (unparsed_noexcepts, entry);
+    }
 
   /* Contracts are deferred.  */
   for (tree attr = DECL_ATTRIBUTES (decl); attr; attr = TREE_CHAIN (attr))

@@ -29072,16 +29072,7 @@ dependent_scope_p (tree scope)
 bool
 dependentish_scope_p (tree scope)
 {
-  return dependent_scope_p (scope) || any_dependent_bases_p (scope)
-    /* A noexcept-spec is a complete-class context, so this should never hold.
-       But since we don't implement deferred noexcept-spec parsing of a friend
-       declaration (PR114764) we compensate by treating the current
-       instantiation as dependent to avoid bogus name lookup failures in this
-       case (PR122668).  */
-    || (cp_noexcept_operand
-	&& CLASS_TYPE_P (scope)
-	&& TYPE_BEING_DEFINED (scope)
-	&& dependent_type_p (scope));
+  return dependent_scope_p (scope) || any_dependent_bases_p (scope);
 }
 
 /* T is a SCOPE_REF.  Return whether it represents a non-static member of
