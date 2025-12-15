@@ -1,3 +1,28 @@
+2025-12-14  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR tree-optimization/106409
+	* gimple-ssa-warn-access.cc (maybe_warn_alloc_args_overflow): Adjust
+	comment for clarity, and augment check to work in LTO as well.
+
+2025-12-14  Surya Kumari Jangala  <jskumari@linux.ibm.com>
+
+	PR rtl-optimization/122274
+	* regcprop.cc (value_data_entry): New field.
+	(kill_value_one_regno): Update field.
+	(init_value_data): Initialize field.
+	(kill_set_value_data): New field.
+	(kill_set_value): Update field.
+	(kill_autoinc_value): Likewise.
+	(copy_value): New parameter. Update field.
+	(incompatible_frame_status): New function.
+	(find_oldest_value_reg): New parameter. Compare frame relatedness of
+	insn and propagated value.
+	(replace_oldest_value_reg): Pass additional parameter to
+	find_oldest_value_reg().
+	(copyprop_hardreg_forward_1): Pass additional parameter to
+	find_oldest_value_reg(). Compare frame relatedness of insn and
+	propagated value. Call copy_value() with additional parameter.
+
 2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR tree-optimization/46555
