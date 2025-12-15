@@ -4673,8 +4673,23 @@ update_pointer_to (tree old_type, tree new_type)
 	    new_ptr = TYPE_NEXT_PTR_TO (new_ptr);
 	  TYPE_NEXT_PTR_TO (new_ptr) = old_ptr;
 	}
-      else
-	TYPE_POINTER_TO (new_type) = old_ptr;
+      else if (old_ptr)
+	{
+	  TYPE_POINTER_TO (new_type) = old_ptr;
+
+	  /* If there is no pointer pointing to NEW_TYPE yet, re-compute the
+	     TYPE_CANONICAL of the old pointer but pointing to NEW_TYPE, like
+	     build_pointer_type would have done for such a pointer, because we
+	     will propagate it in the adjustment loop below.  */
+	  if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
+	    SET_TYPE_STRUCTURAL_EQUALITY (old_ptr);
+	  else if (TYPE_CANONICAL (new_type) != new_type
+		   || (TYPE_REF_CAN_ALIAS_ALL (old_ptr)
+		       && !lookup_attribute ("may_alias",
+					     TYPE_ATTRIBUTES (new_type))))
+	    TYPE_CANONICAL (old_ptr)
+	      = build_pointer_type (TYPE_CANONICAL (new_type));
+	}
 
       /* Now adjust them.  */
       for (ptr = old_ptr; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
@@ -4694,8 +4709,23 @@ update_pointer_to (tree old_type, tree new_type)
 	    new_ref = TYPE_NEXT_REF_TO (new_ref);
 	  TYPE_NEXT_REF_TO (new_ref) = old_ref;
 	}
-      else
-	TYPE_REFERENCE_TO (new_type) = old_ref;
+      else if (old_ref)
+	{
+	  TYPE_REFERENCE_TO (new_type) = old_ref;
+
+	  /* If there is no reference pointing to NEW_TYPE yet, re-compute the
+	     TYPE_CANONICAL of the old reference but pointing to NEW_TYPE, like
+	     build_reference_type would have done for such a reference, because
+	     we will propagate it in the adjustment loop below.  */
+	  if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
+	    SET_TYPE_STRUCTURAL_EQUALITY (old_ref);
+	  else if (TYPE_CANONICAL (new_type) != new_type
+		   || (TYPE_REF_CAN_ALIAS_ALL (old_ref)
+		       && !lookup_attribute ("may_alias",
+					     TYPE_ATTRIBUTES (new_type))))
+	    TYPE_CANONICAL (old_ref)
+	      = build_reference_type (TYPE_CANONICAL (new_type));
+	}
 
       /* Now adjust them.  */
       for (ref = old_ref; ref; ref = TYPE_NEXT_REF_TO (ref))
