@@ -17196,7 +17196,7 @@ tsubst (tree t, tree args, tsubst_flags_t complain, tree in_decl)
 	    f = TREE_TYPE (f);
 	  }
 
-	if (TREE_CODE (f) != TYPENAME_TYPE)
+	if (!WILDCARD_TYPE_P (f))
 	  {
 	    if (TYPENAME_IS_ENUM_P (t) && TREE_CODE (f) != ENUMERAL_TYPE)
 	      {
