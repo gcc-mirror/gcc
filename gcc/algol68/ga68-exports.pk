@@ -95,8 +95,10 @@ var ga68_exports_ver = 1;
 
 load elf;
 
-type ga68_text_reloc = Elf64_Addr;
-type ga68_data_reloc = Elf64_Addr;
+type ga68_text_reloc_64 = Elf64_Addr;
+type ga68_data_reloc_64 = Elf64_Addr;
+type ga68_text_reloc_32 = Elf32_Addr;
+type ga68_data_reloc_32 = Elf32_Addr;
 
 /* Strings are encoded in-place and are both pre-sized and
    NULL-terminated.  This is to ease reading them quickly and
@@ -135,7 +137,7 @@ var GA68_MODE_UNKNOWN   = 0UB,
     GA68_MODE_STRING    = 14UB,
     GA68_MODE_FLEX      = 15UB;
 
-type ga68_mode =
+type ga68_mode_64 =
   struct
   {
     uint<8> kind : kind in [GA68_MODE_VOID, GA68_MODE_INT,
@@ -153,21 +155,21 @@ type ga68_mode =
                                GA68_MODE_BYTES];
       struct
       {
-        ga68_data_reloc mode;
+        ga68_data_reloc_64 mode;
       } name : kind == GA68_MODE_NAME || kind == GA68_MODE_FLEX;
 
       struct
       {
-        type triplet = struct { ga68_text_reloc lb; ga68_text_reloc ub; };
+        type triplet = struct { ga68_text_reloc_64 lb; ga68_text_reloc_64 ub; };
 
         uint<8> ndims;
         triplet[ndims] dims;
-        ga68_data_reloc row_of;
+        ga68_data_reloc_64 row_of;
       } row : kind == GA68_MODE_ROW;
 
       struct
       {
-        type field = struct { ga68_data_reloc mode; ga68_str name; };
+        type field = struct { ga68_data_reloc_64 mode; ga68_str name; };
 
         uint<16> nfields;
         field[nfields] fields;
@@ -176,14 +178,74 @@ type ga68_mode =
       struct
       {
         uint<8> nmodes;
-        ga68_data_reloc[nmodes] modes;
+        ga68_data_reloc_64[nmodes] modes;
       } uni : kind == GA68_MODE_UNION;
 
       struct
       {
-        type arg = struct { ga68_data_reloc mode; ga68_str name; };
+        type arg = struct { ga68_data_reloc_64 mode; ga68_str name; };
 
-        ga68_data_reloc ret_mode;
+        ga68_data_reloc_64 ret_mode;
+        uint<8> nargs;
+        arg[nargs] args;
+      } routine : kind == GA68_MODE_PROC;
+
+      struct { } _ : kind in [GA68_MODE_UNKNOWN, GA68_MODE_VOID,
+                              GA68_MODE_CHAR, GA68_MODE_BOOL,
+                              GA68_MODE_STRING];
+
+    } data;
+  };
+
+type ga68_mode_32 =
+  struct
+  {
+    uint<8> kind : kind in [GA68_MODE_VOID, GA68_MODE_INT,
+                            GA68_MODE_REAL, GA68_MODE_BITS,
+                            GA68_MODE_BYTES, GA68_MODE_CHAR,
+                            GA68_MODE_CMPL, GA68_MODE_ROW,
+                            GA68_MODE_STRUCT, GA68_MODE_UNION,
+                            GA68_MODE_NAME, GA68_MODE_PROC,
+                            GA68_MODE_FLEX];
+
+    union
+    {
+      int<8> sizety : kind in [GA68_MODE_INT, GA68_MODE_REAL,
+                               GA68_MODE_CMPL, GA68_MODE_BITS,
+                               GA68_MODE_BYTES];
+      struct
+      {
+        ga68_data_reloc_32 mode;
+      } name : kind == GA68_MODE_NAME || kind == GA68_MODE_FLEX;
+
+      struct
+      {
+        type triplet = struct { ga68_text_reloc_32 lb; ga68_text_reloc_32 ub; };
+
+        uint<8> ndims;
+        triplet[ndims] dims;
+        ga68_data_reloc_32 row_of;
+      } row : kind == GA68_MODE_ROW;
+
+      struct
+      {
+        type field = struct { ga68_data_reloc_32 mode; ga68_str name; };
+
+        uint<16> nfields;
+        field[nfields] fields;
+      } sct : kind == GA68_MODE_STRUCT;
+
+      struct
+      {
+        uint<8> nmodes;
+        ga68_data_reloc_32[nmodes] modes;
+      } uni : kind == GA68_MODE_UNION;
+
+      struct
+      {
+        type arg = struct { ga68_data_reloc_32 mode; ga68_str name; };
+
+        ga68_data_reloc_32 ret_mode;
         uint<8> nargs;
         arg[nargs] args;
       } routine : kind == GA68_MODE_PROC;
@@ -224,7 +286,7 @@ var GA68_EXTRACT_MODU  = 0UB,
     GA68_EXTRACT_PRIO = 3UB,
     GA68_EXTRACT_OPER = 4UB;
 
-type ga68_extract =
+type ga68_extract_64 =
   struct
   {
     Elf64_Off extract_size;
@@ -240,14 +302,14 @@ type ga68_extract =
       {
         uint<8> mark : mark == GA68_EXTRACT_IDEN;
         ga68_str name;
-        ga68_data_reloc mode;
+        ga68_data_reloc_64 mode;
       } identifier;
 
       struct
       {
         uint<8> mark : mark == GA68_EXTRACT_MODE;
         ga68_str mode_indication;
-        ga68_data_reloc mode;
+        ga68_data_reloc_64 mode;
       } mode;
 
       struct
@@ -261,7 +323,7 @@ type ga68_extract =
       {
         uint<8> mark : mark == GA68_EXTRACT_OPER;
         ga68_str opname;
-        ga68_mode mode;
+        ga68_mode_64 mode;
       } oper;
 
     } extract : extract'size == extract_size;
@@ -270,10 +332,62 @@ type ga68_extract =
     uint<8>[mdextra_size] data;
   };
 
+type ga68_extract_32 =
+  struct
+  {
+    type ga68_mdextra =
+      struct
+        {
+          Elf32_Off mdextra_size;
+          uint<8>[mdextra_size] data;
+        };
+
+    Elf32_Off extract_size;
+    union
+    {
+      struct
+      {
+        uint<8> mark : mark == GA68_EXTRACT_MODU;
+        ga68_str module_indication;
+      } module;
+
+      struct
+      {
+        uint<8> mark : mark == GA68_EXTRACT_IDEN;
+        ga68_str name;
+        ga68_data_reloc_32 mode;
+        ga68_mdextra mdextra;
+      } identifier;
+
+      struct
+      {
+        uint<8> mark : mark == GA68_EXTRACT_MODE;
+        ga68_str mode_indication;
+        ga68_data_reloc_32 mode;
+      } mode;
+
+      struct
+      {
+        uint<8> mark : mark == GA68_EXTRACT_PRIO;
+        ga68_str opname;
+        uint<8> prio;
+      } prio;
+
+      struct
+      {
+        uint<8> mark : mark == GA68_EXTRACT_OPER;
+        ga68_str opname;
+        ga68_mode_32 mode;
+        ga68_mdextra mdextra;
+      } oper;
+
+    } extract : extract'size == extract_size;
+  };
+
 /* The contents of the .ga68_exports section can be mapped as a
    ga68_module[sec.sh_size] */
 
-type ga68_module =
+type ga68_module_64 =
   struct
   {
     uint<8>[2] magic : magic == [0x0aUB, 0x68UB];
@@ -289,9 +403,32 @@ type ga68_module =
 
     /* Table of modes.  */
     Elf64_Off modes_size;
-    ga68_mode[modes_size] modes;
+    ga68_mode_64[modes_size] modes;
 
     /* Table of extracts.  */
     Elf64_Off extracts_size;
-    ga68_extract[extracts_size] extracts;
+    ga68_extract_64[extracts_size] extracts;
+  };
+
+type ga68_module_32 =
+  struct
+  {
+    uint<8>[2] magic : magic == [0x0aUB, 0x68UB];
+    uint<16> version : version == ga68_exports_ver;
+
+    /* Module identification.
+       Add a hash or UUID?  */
+    ga68_str name;
+
+    /* Entry points.  */
+    ga68_str prelude;
+    ga68_str poslude;
+
+    /* Table of modes.  */
+    Elf32_Off modes_size;
+    ga68_mode_32[modes_size] modes;
+
+    /* Table of extracts.  */
+    Elf32_Off extracts_size;
+    ga68_extract_32[extracts_size] extracts;
   };
