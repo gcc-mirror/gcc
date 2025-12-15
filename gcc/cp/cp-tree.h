@@ -481,6 +481,7 @@ extern GTY(()) tree cp_global_trees[CPTI_MAX];
       DECL_INITIALIZED_BY_CONSTANT_EXPRESSION_P (in VAR_DECL)
       STATEMENT_LIST_TRY_BLOCK (in STATEMENT_LIST)
       TYPENAME_IS_RESOLVING_P (in TYPENAME_TYPE)
+      TYPE_POLYMORPHIC_P (in RECORD_TYPE and UNION_TYPE)
       TARGET_EXPR_DIRECT_INIT_P (in TARGET_EXPR)
       FNDECL_USED_AUTO (in FUNCTION_DECL)
       DECLTYPE_FOR_LAMBDA_PROXY (in DECLTYPE_TYPE)
@@ -2815,7 +2816,7 @@ struct GTY(()) lang_type {
 
 /* The associated LAMBDA_EXPR that made this class.  */
 #define CLASSTYPE_LAMBDA_EXPR(NODE) \
-  (TYPE_POLYMORPHIC_P (NODE)				\
+  (CLASS_TYPE_P (NODE) && TYPE_POLYMORPHIC_P (NODE)	\
    ? NULL_TREE						\
    : LANG_TYPE_CLASS_CHECK (NODE)->key_method)
 #define SET_CLASSTYPE_LAMBDA_EXPR(NODE, VALUE) \
@@ -4570,7 +4571,8 @@ get_vec_init_expr (tree t)
 
    A class that declares or inherits a virtual function is called a
    polymorphic class.  */
-#define TYPE_POLYMORPHIC_P(NODE) (TREE_LANG_FLAG_2 (NODE))
+#define TYPE_POLYMORPHIC_P(NODE) \
+  (TREE_LANG_FLAG_2 (RECORD_OR_UNION_CHECK (NODE)))
 
 /* Nonzero if this class has a virtual function table pointer.  */
 #define TYPE_CONTAINS_VPTR_P(NODE)		\

@@ -31060,7 +31060,7 @@ noexcept_override_late_checks (tree fndecl, tree class_type)
     {
       tree basetype = BINFO_TYPE (base_binfo);
 
-      if (!TYPE_POLYMORPHIC_P (basetype))
+      if (!CLASS_TYPE_P (basetype) || !TYPE_POLYMORPHIC_P (basetype))
 	continue;
 
       tree fn = look_for_overrides_here (basetype, fndecl);
