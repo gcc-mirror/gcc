@@ -729,7 +729,7 @@ dump_encoded_mode (struct encoded_mode *em)
       printf (" bool\n");
       break;
     case GA68_MODE_STRING:
-      printf (" basic\n");
+      printf (" string\n");
       break;
     case GA68_MODE_NAME:
       printf (" name\n");
