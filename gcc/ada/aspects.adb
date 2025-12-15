@@ -25,11 +25,9 @@
 
 with Atree;          use Atree;
 with Debug;          use Debug;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Nlists;         use Nlists;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 

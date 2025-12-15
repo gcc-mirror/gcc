@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
 with Opt;            use Opt;

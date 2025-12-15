@@ -28,7 +28,6 @@ with Atree;          use Atree;
 with Casing;         use Casing;
 with Checks;         use Checks;
 with Debug;          use Debug;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Elists;         use Elists;
 with Errout;         use Errout;

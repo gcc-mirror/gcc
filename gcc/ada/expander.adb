@@ -47,7 +47,6 @@ with Rtsfind;        use Rtsfind;
 with Sem;            use Sem;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Util;       use Sem_Util;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Stand;          use Stand;
 with Table;

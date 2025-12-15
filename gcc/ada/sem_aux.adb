@@ -24,10 +24,8 @@
 ------------------------------------------------------------------------------
 
 with Atree;          use Atree;
-with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Nlists;         use Nlists;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;

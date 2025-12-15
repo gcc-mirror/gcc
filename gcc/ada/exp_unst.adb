@@ -25,7 +25,6 @@
 
 with Atree;          use Atree;
 with Debug;          use Debug;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
@@ -42,7 +41,6 @@ with Sem_Ch8;        use Sem_Ch8;
 with Sem_Mech;       use Sem_Mech;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;

@@ -25,7 +25,6 @@
 
 with Atree;          use Atree;
 with Checks;         use Checks;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
@@ -45,7 +44,6 @@ with Sem_Ch13;       use Sem_Ch13;
 with Sem_Eval;       use Sem_Eval;
 with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;

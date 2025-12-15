@@ -25,7 +25,6 @@
 
 with Aspects;        use Aspects;
 with Atree;          use Atree;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;

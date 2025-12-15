@@ -29,7 +29,6 @@ with Einfo.Utils;    use Einfo.Utils;
 with Exp_Tss;        use Exp_Tss;
 with Namet;          use Namet;
 with Rtsfind;        use Rtsfind;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Snames;         use Snames;
 with Types;          use Types;

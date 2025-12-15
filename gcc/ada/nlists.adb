@@ -30,7 +30,6 @@ with Alloc;
 with Atree;       use Atree;
 with Debug;       use Debug;
 with Output;      use Output;
-with Sinfo;       use Sinfo;
 with Sinfo.Nodes; use Sinfo.Nodes;
 with Table;
 

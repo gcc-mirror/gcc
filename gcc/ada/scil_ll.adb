@@ -25,7 +25,6 @@
 
 with Atree;          use Atree;
 with Opt;            use Opt;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with System.HTable;  use System.HTable;
 

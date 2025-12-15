@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Atree;          use Atree;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Errout;         use Errout;
@@ -39,7 +38,6 @@ with Sem;            use Sem;
 with Sem_Ch8;        use Sem_Ch8;
 with Sem_Dim;        use Sem_Dim;
 with Sem_Res;        use Sem_Res;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Stand;          use Stand;

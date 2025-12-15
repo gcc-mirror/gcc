@@ -43,7 +43,6 @@ package body System.Tasking.Utilities is
    package STPO renames System.Task_Primitives.Operations;
 
    use Tasking.Debug;
-   use Task_Primitives;
    use Task_Primitives.Operations;
 
    --------------------

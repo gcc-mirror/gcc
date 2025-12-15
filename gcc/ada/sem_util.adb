@@ -63,7 +63,6 @@ with Sem_Prag;       use Sem_Prag;
 with Sem_Res;        use Sem_Res;
 with Sem_Warn;       use Sem_Warn;
 with Sem_Type;       use Sem_Type;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinput;         use Sinput;

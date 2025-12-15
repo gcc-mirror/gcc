@@ -29,7 +29,6 @@ with Namet;          use Namet;
 with Restrict;       use Restrict;
 with Rident;         use Rident;
 with Scans;          use Scans;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;         use Sinput;
 with Uintp;          use Uintp;

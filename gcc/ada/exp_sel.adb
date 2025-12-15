@@ -23,7 +23,6 @@
 --                                                                          --
 ------------------------------------------------------------------------------
 
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Nlists;         use Nlists;
 with Nmake;          use Nmake;

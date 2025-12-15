@@ -26,7 +26,6 @@
 with Atree;          use Atree;
 with Aspects;        use Aspects;
 with Csets;          use Csets;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Einfo.Utils;    use Einfo.Utils;
 with Lib;            use Lib;

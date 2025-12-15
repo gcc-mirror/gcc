@@ -27,7 +27,6 @@
 --  specific types of tree nodes.
 
 with Namet;          use Namet;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Types;          use Types;
 with Uintp;          use Uintp;

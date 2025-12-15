@@ -26,13 +26,11 @@
 --  Package containing utility procedures related to Stack Scrubbing
 
 with Atree;          use Atree;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Errout;         use Errout;
 with Namet;          use Namet;
 with Nlists;         use Nlists;
 with Sem_Eval;       use Sem_Eval;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;

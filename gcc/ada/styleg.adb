@@ -34,7 +34,6 @@ with Err_Vars;       use Err_Vars;
 with Errout;
 with Opt;            use Opt;
 with Scans;          use Scans;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;         use Sinput;
 with Stylesw;        use Stylesw;

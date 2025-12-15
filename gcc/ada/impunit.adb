@@ -24,7 +24,6 @@
 ------------------------------------------------------------------------------
 
 with Errout;      use Errout;
-with Sinfo;       use Sinfo;
 with Sinfo.Nodes; use Sinfo.Nodes;
 with Fname.UF;    use Fname.UF;
 with Lib;         use Lib;

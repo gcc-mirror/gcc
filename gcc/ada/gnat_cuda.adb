@@ -36,7 +36,6 @@ with Nmake;          use Nmake;
 with Sem_Aux;        use Sem_Aux;
 with Sem_Util;       use Sem_Util;
 with Sinfo.Nodes;    use Sinfo.Nodes;
-with Sinfo;          use Sinfo;
 
 with GNAT.HTable;
 

@@ -27,7 +27,6 @@
 
 with Aspects;        use Aspects;
 with Atree;          use Atree;
-with Einfo;          use Einfo;
 with Einfo.Entities; use Einfo.Entities;
 with Exp_Tss;        use Exp_Tss;
 with Namet;          use Namet;

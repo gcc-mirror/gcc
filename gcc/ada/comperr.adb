@@ -37,7 +37,6 @@ with Namet;          use Namet;
 with Opt;            use Opt;
 with Osint;          use Osint;
 with Output;         use Output;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinput;         use Sinput;
 with Sprint;         use Sprint;

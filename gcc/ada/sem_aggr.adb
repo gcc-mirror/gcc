@@ -26,7 +26,6 @@
 with Aspects;        use Aspects;
 with Atree;          use Atree;
 with Checks;         use Checks;
-with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errid;          use Errid;
@@ -59,7 +58,6 @@ with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
 with Sem_Type;       use Sem_Type;
 with Sem_Warn;       use Sem_Warn;
-with Sinfo;          use Sinfo;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Snames;         use Snames;
 with Stringt;        use Stringt;

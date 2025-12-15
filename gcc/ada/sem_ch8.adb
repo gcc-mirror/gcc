@@ -25,7 +25,6 @@
 
 with Atree;          use Atree;
 with Debug;          use Debug;
-with Einfo;          use Einfo;
 with Einfo.Utils;    use Einfo.Utils;
 with Elists;         use Elists;
 with Errout;         use Errout;
@@ -68,7 +67,6 @@ with Sem_Res;        use Sem_Res;
 with Sem_Util;       use Sem_Util;
 with Sem_Type;       use Sem_Type;
 with Stand;          use Stand;
-with Sinfo;          use Sinfo;
 with Sinfo.Nodes;    use Sinfo.Nodes;
 with Sinfo.Utils;    use Sinfo.Utils;
 with Sinfo.CN;       use Sinfo.CN;
@@ -9579,26 +9577,17 @@ package body Sem_Ch8 is
             return;
          end if;
 
+         --  We need to mark the previous use clauses as effective, but each
+         --  use clause may in turn render other use clauses effective.
+
          Curr := Current_Use_Clause (Pak);
          while Present (Curr)
            and then not Is_Effective_Use_Clause (Curr)
          loop
-            --  We need to mark the previous use clauses as effective, but
-            --  each use clause may in turn render other use_package_clauses
-            --  effective. Additionally, it is possible to have a parent
-            --  package renamed as a child of itself so we must check the
-            --  prefix entity is not the same as the package we are marking.
+            --  It is possible to have a child package without a prefix that
+            --  relies on a previous use clause.
 
-            if Nkind (Name (Curr)) /= N_Identifier
-              and then Present (Prefix (Name (Curr)))
-              and then Entity (Prefix (Name (Curr))) /= Pak
-            then
-               Mark_Use_Package (Entity (Prefix (Name (Curr))));
-
-            --  It is also possible to have a child package without a prefix
-            --  that relies on a previous use_package_clause.
-
-            elsif Nkind (Name (Curr)) = N_Identifier
+            if Nkind (Name (Curr)) = N_Identifier
               and then Is_Child_Unit (Entity (Name (Curr)))
             then
                Mark_Use_Package (Scope (Entity (Name (Curr))));
