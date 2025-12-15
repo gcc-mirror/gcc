@@ -680,6 +680,11 @@ region_model_manager::maybe_fold_binop (tree type, enum tree_code op,
       /* (VAL + 0) -> VAL.  */
       if (cst1 && zerop (cst1))
 	return get_or_create_cast (type, arg0);
+      /* X + (-X) -> 0.  */
+      if (const unaryop_svalue *unary_op = arg1->dyn_cast_unaryop_svalue ())
+	if (unary_op->get_op () == NEGATE_EXPR
+	    && unary_op->get_arg () == arg0)
+	  return get_or_create_int_cst (type, 0);
       break;
     case MINUS_EXPR:
       /* (VAL - 0) -> VAL.  */
