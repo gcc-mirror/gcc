@@ -101,8 +101,13 @@ ParenthesisedType::operator= (ParenthesisedType const &other)
 }
 
 std::unique_ptr<TraitBound>
-ParenthesisedType::to_trait_bound (bool in_parens ATTRIBUTE_UNUSED) const
+ParenthesisedType::to_trait_bound (bool in_parens) const
 {
+  /* If already in parentheses, don't convert - should stay as
+   * ParenthesisedType */
+  if (in_parens)
+    return nullptr;
+
   /* NOTE: obviously it is unknown whether the internal type is a trait bound
    * due to polymorphism, so just let the internal type handle it. As
    * parenthesised type, it must be in parentheses. */

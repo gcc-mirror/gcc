@@ -1,5 +1,3 @@
-// { dg-excess-errors "warnings" }
-
 // TODO: all `xfail` conditions should be changed to `target` once the ICE in #4148 is resolved
 
 pub fn ret_parens(x: i32) -> i32 {

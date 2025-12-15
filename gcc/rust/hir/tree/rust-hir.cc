@@ -2798,6 +2798,11 @@ Expr::as_string () const
 std::unique_ptr<TraitBound>
 TypePath::to_trait_bound (bool in_parens) const
 {
+  // If already in parentheses, don't convert to trait bound
+  // This ensures (TypePath) stays as ParenthesisedType in the parser
+  if (in_parens)
+    return nullptr;
+
   // create clone FIXME is this required? or is copy constructor automatically
   // called?
   TypePath copy (*this);
