@@ -1,5 +1,6 @@
 /* { dg-do link { target { offload_target_amdgcn } } } */
 /* { dg-additional-options "-O2 -foffload-options=-fdump-ipa-simdclone-details" } */
+/* { dg-additional-options -Wno-deprecated-openmp } */
 
 /* Test that simd clones for the offload processor are generated for
    functions with "declare target" when enabled by default at -O2.  */

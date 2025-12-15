@@ -1,4 +1,5 @@
 /* { dg-do link { target { offload_target_amdgcn } } } */
+/* { dg-additional-options -Wno-deprecated-openmp } */
 /* { dg-additional-options -foffload=amdgcn-amdhsa } */
 /* { dg-additional-options -foffload=-march=gfx1032 } */
 /* { dg-additional-options "-foffload=-fdump-tree-optimized" } */

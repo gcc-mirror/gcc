@@ -1,4 +1,5 @@
 /* { dg-require-effective-target offload_device_nonshared_as } */
+/* { dg-additional-options -Wno-deprecated-openmp } */
 
 #include <stdlib.h>
 #include <assert.h>

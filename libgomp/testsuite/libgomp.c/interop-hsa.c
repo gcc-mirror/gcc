@@ -2,6 +2,7 @@
 /* { dg-require-effective-target offload_device_gcn }
    The 'asm' insert is valid for GCN only:
    { dg-additional-options -foffload=amdgcn-amdhsa } */
+/* { dg-additional-options -Wno-deprecated-openmp } */
 
 #include <stdio.h>
 #include <stdlib.h>

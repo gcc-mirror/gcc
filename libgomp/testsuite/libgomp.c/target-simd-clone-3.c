@@ -1,5 +1,6 @@
 /* { dg-do link { target { offload_target_amdgcn } } } */
 /* { dg-additional-options "-O2 -foffload-options=-fdump-ipa-simdclone-details" } */
+/* { dg-additional-options -Wno-deprecated-openmp } */
 
 /* Test that device simd clones are not generated for functions with the host
    "declare target" clause only.  */

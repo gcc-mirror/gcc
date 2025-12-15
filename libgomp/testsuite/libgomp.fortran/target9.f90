@@ -1,5 +1,6 @@
 ! { dg-do run }
 ! { dg-require-effective-target offload_device_nonshared_as } */
+! { dg-additional-options -Wno-deprecated-openmp }
 
 module target_test
   implicit none (type, external)
