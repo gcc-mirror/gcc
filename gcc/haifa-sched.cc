@@ -6132,8 +6132,13 @@ choose_ready (struct ready_list *ready, bool first_cycle_insn_p,
       return -1;
     }
 
-  if (dfa_lookahead <= 0 || SCHED_GROUP_P (ready_element (ready, 0))
+  if (SCHED_GROUP_P (ready_element (ready, 0))
       || DEBUG_INSN_P (ready_element (ready, 0)))
+    {
+      *insn_ptr = ready_remove_first (ready);
+      return 0;
+    }
+  else if (dfa_lookahead <= 0)
     {
       if (targetm.sched.dispatch (NULL, IS_DISPATCH_ON))
 	*insn_ptr = ready_remove_first_dispatch (ready);
