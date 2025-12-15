@@ -201,7 +201,7 @@ type ga68_mode =
    Mode extracts represent declarations of mode indications, like for
    example `mode Foo = struct (int i, real r)'.
 
-   Identifier extracts represent declarations of constans, variables,
+   Identifier extracts represent declarations of constants, variables,
    procedures and operators.  Examples are `real pi = 3.14', `int
    counter', `proc double = (int a) int : a * 2' and `op // = (int a,
    b) int: a % b'.
@@ -276,7 +276,7 @@ type ga68_extract =
 type ga68_module =
   struct
   {
-    uint<8>[2] magic : magic == [0x0aUB, 0xadUB];
+    uint<8>[2] magic : magic == [0x0aUB, 0x68UB];
     uint<16> version : version == ga68_exports_ver;
 
     /* Module identification.
