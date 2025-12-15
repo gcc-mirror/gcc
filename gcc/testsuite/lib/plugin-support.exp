@@ -62,9 +62,11 @@ proc plugin-get-options { src } {
 proc plugin-test-execute { plugin_src plugin_tests } {
     global srcdir objdir
     global verbose
+    global tool
     global GMPINC
     global PLUGINCC
     global PLUGINCFLAGS
+    global TESTING_IN_BUILD_TREE
 
     set basename [file tail $plugin_src]
     set base [file rootname $basename]
@@ -76,16 +78,17 @@ proc plugin-test-execute { plugin_src plugin_tests } {
     # Build the plugin itself
     set extra_flags [plugin-get-options $plugin_src]
 
-    # Note that the plugin test support currently only works when the GCC
-    # build tree is available. (We make sure that is the case in plugin.exp.)
-    # Once we have figured out how/where to package/install GCC header files
-    # for general plugin support, we should modify the following include paths
-    # accordingly.
-    set gcc_srcdir "$srcdir/../.."
-    set gcc_objdir "$objdir/../../.."
-    set includes "-I. -I${srcdir} -I${gcc_srcdir}/gcc -I${gcc_objdir}/gcc \
+    if { [info exists TESTING_IN_BUILD_TREE] } {
+	set gcc_srcdir "$srcdir/../.."
+	set gcc_objdir "$objdir/../../.."
+	set includes "-I. -I${srcdir} -I${gcc_srcdir}/gcc -I${gcc_objdir}/gcc \
                   -I${gcc_srcdir}/include -I${gcc_srcdir}/libcpp/include \
                   $GMPINC -I${gcc_objdir}/gettext/intl"
+    } else {
+	set options [list "additional_flags=-print-file-name=plugin/include"]
+	set plugin_inc [lindex [${tool}_target_compile "" "" "none" $options] 0]
+	set includes "-I. -I${srcdir} -I${plugin_inc} $GMPINC"
+    }
 
     if { [ ishost *-*-darwin* ] } {
 	# -mdynamic-no-pic is incompatible with -fPIC.

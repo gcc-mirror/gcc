@@ -49,6 +49,7 @@ while true; do
   --srcdir=*) srcdir=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --target=*) target=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --prefix=*) prefix=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --enable-plugin) ENABLE_PLUGIN=1; shift;;
   --with-gcc=*) GCC_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-g++=*) GXX_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-gfortran=*) GFORTRAN_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
@@ -56,6 +57,9 @@ while true; do
   --with-alt-cxx=*) ALT_CXX_UNDER_TEST=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-compat-options=*) COMPAT_OPTIONS=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --with-libiconv=*) libiconv=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-plugincc=*) PLUGINCC=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-plugincflags=*) PLUGINCFLAGS=`echo "$1" | sed 's/[^=]*=//'`; shift;;
+  --with-gmpinc=*) GMPINC=`echo "$1" | sed 's/[^=]*=//'`; shift;;
   --without-gcc) GCC_UNDER_TEST=no; shift;;
   --without-g++) GXX_UNDER_TEST=no; shift;;
   --without-gfortran) GFORTRAN_UNDER_TEST=no; shift;;
@@ -80,6 +84,7 @@ Supported arguments:
                               tested if different than the host.
 
 --prefix=/some/dir            use gcc, g++ and gfortran from /some/dir/bin [PATH]
+--enable-plugin               run GCC plugin tests
 --with-gcc=/some/dir/bin/gcc  use specified gcc program [gcc]
 --with-g++=/some/dir/bin/g++  use specified g++ program [g++]
 --with-gfortran=/some/dir/bin/gfortran  use specified gfortran program [gfortran]
@@ -87,6 +92,9 @@ Supported arguments:
 --with-alt-cxx=/some/compiler use specified alternative compiler in compat tests
 --with-compat-options=opts    use specified COMPAT_OPTIONS in compat tests
 --with-libiconv=linker-args   use given arguments to link with iconv [-liconv]
+--with-plugincc=/some/c++     use given host compiler to build plugins [g++]
+--with-plugincflags=args      use given options to build plugins [-g -O2]
+--with-gmpinc=args            use given options to find GMP for host []
 --without-gcc                 do not run gcc testsuite
 --without-g++                 do not run g++ testsuite
 --without-gfortran            do not run gfortran testsuite
@@ -145,6 +153,12 @@ if test x"$ALT_CXX_UNDER_TEST" != x; then
 fi
 if test x"$COMPAT_OPTIONS" != x; then
   echo "set COMPAT_OPTIONS \"${COMPAT_OPTIONS}\"" >> site.exp
+fi
+if test x"$ENABLE_PLUGIN" != x; then
+    echo "set ENABLE_PLUGIN \"${ENABLE_PLUGIN}\"" >> site.exp
+    echo "set PLUGINCC \"${PLUGINCC-g++}\"" >> site.exp
+    echo "set PLUGINCFLAGS \"${PLUGINCFLAGS--g -O2}\"" >> site.exp
+    echo "set GMPINC \"${GMPINC}\"" >> site.exp
 fi
 
 test x"${GCC_UNDER_TEST}" = x"no" || runtest --tool gcc ${1+"$@"}

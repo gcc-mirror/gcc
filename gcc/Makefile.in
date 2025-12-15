@@ -4140,7 +4140,8 @@ PLUGIN_HEADERS = $(TREE_H) $(CONFIG_H) $(SYSTEM_H) coretypes.h $(TM_H) \
   hash-set.h dominance.h cfg.h cfgrtl.h cfganal.h cfgbuild.h cfgcleanup.h \
   lcm.h cfgloopmanip.h file-prefix-map.h builtins.def $(INSN_ATTR_H) \
   pass-instances.def params.list $(srcdir)/../include/gomp-constants.h \
-  $(EXPR_H) $(srcdir)/analyzer/*.h $(srcdir)/diagnostics/*.h
+  $(EXPR_H) $(srcdir)/analyzer/*.h $(srcdir)/diagnostics/*.h \
+  $(srcdir)/text-art/*.h
 
 # generate the 'build fragment' b-header-vars
 s-header-vars: Makefile
@@ -4179,6 +4180,7 @@ install-plugin: installdirs lang.install-plugin s-header-vars install-gengtype
 	  case $$path in \
 	  "$(srcdir)"/analyzer/* \
 	  | "$(srcdir)"/diagnostics/* \
+	  | "$(srcdir)"/text-art/* \
 	  | "$(srcdir)"/config/* | "$(srcdir)"/common/config/* \
 	  | "$(srcdir)"/c-family/* | "$(srcdir)"/*.def ) \
 	    base=`echo "$$path" | sed -e "s|$$srcdirstrip/||"`;; \
