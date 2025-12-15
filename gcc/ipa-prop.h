@@ -1209,6 +1209,7 @@ tree ipa_impossible_devirt_target (struct cgraph_edge *, tree);
 
 /* Functions related to both.  */
 void ipa_analyze_node (struct cgraph_node *);
+void ipa_analyze_var_static_initializer (varpool_node *node);
 
 /* Aggregate jump function related functions.  */
 tree ipa_find_agg_cst_from_init (tree scalar, HOST_WIDE_INT offset,
@@ -1265,6 +1266,8 @@ void ipa_push_agg_values_from_jfunc (ipa_node_params *info, cgraph_node *node,
 void ipa_dump_param (FILE *, class ipa_node_params *info, int i);
 void ipa_dump_jump_function (FILE *f, ipa_jump_func *jfunc,
 			     class ipa_polymorphic_call_context *ctx = NULL);
+void ipa_dump_noted_record_fnptrs (FILE *f);
+void ipa_debug_noted_record_fnptrs (void);
 void ipa_release_body_info (struct ipa_func_body_info *);
 tree ipa_get_callee_param_type (struct cgraph_edge *e, int i);
 bool ipcp_get_parm_bits (tree, tree *, widest_int *);
@@ -1274,7 +1277,9 @@ tree ipcp_get_aggregate_const (struct function *func, tree parm, bool by_ref,
 bool unadjusted_ptr_and_unit_offset (tree op, tree *ret,
 				     poly_int64 *offset_ret);
 void ipa_get_range_from_ip_invariant (vrange &r, tree val, cgraph_node *node);
+tree ipa_single_noted_fnptr_in_record (tree rectype, unsigned offset);
 void ipa_prop_cc_finalize (void);
+void ipa_free_noted_fnptr_calls ();
 
 /* In ipa-cp.cc  */
 void ipa_cp_cc_finalize (void);

@@ -677,7 +677,7 @@ Objective-C and Objective-C++ Dialects}.
 -fsemantic-interposition  -fshrink-wrap  -fshrink-wrap-separate
 -fsignaling-nans
 -fsingle-precision-constant  -fsplit-ivs-in-unroller  -fsplit-loops
--fsplit-paths
+-fspeculatively-call-stored-functions  -fsplit-paths
 -fsplit-wide-types  -fsplit-wide-types-early  -fssa-backprop  -fssa-phiopt
 -fstdarg-opt  -fstore-merging  -fstrict-aliasing -fipa-strict-aliasing
 -fthread-jumps  -ftracer  -ftree-bit-ccp
@@ -13336,6 +13336,7 @@ also turns on the following optimization flags:
 -frerun-cse-after-loop
 -fschedule-insns  -fschedule-insns2
 -fsched-interblock  -fsched-spec
+-fspeculatively-call-stored-functions
 -fstore-merging
 -fstrict-aliasing
 -fthread-jumps
@@ -14274,6 +14275,16 @@ favors the instruction that has more instructions depending on it.
 This is enabled by default when scheduling is enabled, i.e.@:
 with @option{-fschedule-insns} or @option{-fschedule-insns2} or
 at @option{-O2} or higher.
+
+@opindex fspeculatively-call-stored-functions
+@item -fspeculatively-call-stored-functions
+Attempt to convert indirect calls of function pointers to pointers
+loaded from a structure field if all visible stores to that field store
+just a single candidate.  When doing so, turn the call into a
+conditional deciding between the direct call and the original indirect
+one.  These speculative calls often enable more optimizations, such as
+inlining.  When they seem useless after further optimization, they are
+converted back into original form.
 
 @opindex freschedule-modulo-scheduled-loops
 @item -freschedule-modulo-scheduled-loops

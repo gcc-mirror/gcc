@@ -1764,19 +1764,30 @@ class GTY((tag ("CIIK_SIMPLE")))
 public:
   cgraph_simple_indirect_info (int flags)
     : cgraph_indirect_call_info (CIIK_SIMPLE, flags), offset (0),
-    agg_contents (false), member_ptr (false), by_ref (false),
+    rec_type (NULL_TREE), fld_offset (0), agg_contents (false),
+    member_ptr (false), fnptr_loaded_from_record (false), by_ref (false),
     guaranteed_unmodified (false)
     {}
 
   /* When agg_content is set, an offset where the call pointer is located
      within the aggregate.  */
   HOST_WIDE_INT offset;
+  /* Only meaningful if fnptr_loaded_from_record is set.  Then it contains the
+     type of the record from which the target of the call was loaded. */
+  tree rec_type;
+  /* Only meaningful if fnptr_loaded_from_record is set.  Then it contains the
+     offset in bytes within the type above from which the target of the call
+     was loaded.  */
+  unsigned fld_offset;
 
   /* Set when the call is a call of a pointer loaded from contents of an
      aggregate at offset.  */
   unsigned agg_contents : 1;
   /* Set when this is a call through a member pointer.  */
   unsigned member_ptr : 1;
+  /* Set if the function is a call of a pointer loaded from a record type
+     stored in otr_type at offset offset. */
+  unsigned fnptr_loaded_from_record : 1;
   /* When the agg_contents bit is set, this one determines whether the
      destination is loaded from a parameter passed by reference. */
   unsigned by_ref : 1;

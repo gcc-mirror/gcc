@@ -6513,6 +6513,10 @@ ipcp_generate_summary (void)
 
   FOR_EACH_FUNCTION_WITH_GIMPLE_BODY (node)
     ipa_analyze_node (node);
+
+  varpool_node *vnode;
+  FOR_EACH_STATIC_INITIALIZER (vnode)
+    ipa_analyze_var_static_initializer (vnode);
 }
 
 namespace {

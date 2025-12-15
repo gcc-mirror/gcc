@@ -662,6 +662,7 @@ static const struct default_options default_options_table[] =
     { OPT_LEVELS_2_PLUS, OPT_fpeephole2, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_freorder_functions, NULL, 1 },
     { OPT_LEVELS_2_PLUS, OPT_frerun_cse_after_loop, NULL, 1 },
+    { OPT_LEVELS_2_PLUS, OPT_fspeculatively_call_stored_functions, NULL, 1 },
 #ifdef INSN_SCHEDULING
     { OPT_LEVELS_2_PLUS, OPT_fschedule_insns2, NULL, 1 },
 #endif
@@ -3168,8 +3169,12 @@ common_handle_option (struct gcc_options *opts,
 	/* Indirect call profiling should do all useful transformations
 	   speculative devirtualization does.  */
       if (opts->x_flag_value_profile_transformations)
-	SET_OPTION_IF_UNSET (opts, opts_set, flag_devirtualize_speculatively,
-			     false);
+	{
+	  SET_OPTION_IF_UNSET (opts, opts_set, flag_devirtualize_speculatively,
+			       false);
+	  SET_OPTION_IF_UNSET (opts, opts_set,
+			       flag_speculatively_call_stored_functions, false);
+	}
       break;
 
     case OPT_fauto_profile_:

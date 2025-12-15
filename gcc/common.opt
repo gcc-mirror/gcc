@@ -1937,6 +1937,10 @@ floop-nest-optimize
 Common Var(flag_loop_nest_optimize) Optimization
 Enable the loop nest optimizer.
 
+fspeculatively-call-stored-functions
+Common Var(flag_speculatively_call_stored_functions) Optimization
+Turn indirect calls of pointers loaded from structures to speculative calls if there is one known candidate.
+
 fstrict-volatile-bitfields
 Common Var(flag_strict_volatile_bitfields) Init(-1) Optimization
 Force bitfield accesses to match their type width.
