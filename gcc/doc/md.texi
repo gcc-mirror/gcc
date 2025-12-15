@@ -5411,7 +5411,7 @@ This pattern is not allowed to @code{FAIL}.
 Load (operand 3 + operand 4) elements from memory operand 1
 into vector register operand 0.  Operands 0 and 1 have mode @var{m},
 which must be a vector mode.  Operand 3 has whichever integer mode the
-target prefers.  Operand 2 (the “else value”) is of mode @var{m} and
+target prefers.  Operand 2 (the ``else value'') is of mode @var{m} and
 specifies which value is loaded for the remaining elements.  The predicate
 of operand 2 must only accept the else values that the target actually
 supports.  Operand 4 conceptually has mode @code{QI}.
