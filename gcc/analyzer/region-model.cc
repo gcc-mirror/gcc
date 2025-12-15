@@ -4684,24 +4684,31 @@ region_model::scan_for_null_terminator_1 (const region *reg,
   if (const string_region *str_reg = base_reg->dyn_cast_string_region ())
     {
       tree string_cst = str_reg->get_string_cst ();
-      if (const void *p = memchr (TREE_STRING_POINTER (string_cst),
-				  0,
-				  TREE_STRING_LENGTH (string_cst)))
+      if (src_byte_offset >= 0
+	  && src_byte_offset < TREE_STRING_LENGTH (string_cst)
+	  && wi::fits_shwi_p (src_byte_offset))
 	{
-	  size_t num_bytes_read
-	    = (const char *)p - TREE_STRING_POINTER (string_cst) + 1;
-	  /* Simulate the read.  */
-	  byte_range bytes_to_read (0, num_bytes_read);
-	  const svalue *sval = get_store_bytes (reg, bytes_to_read, ctxt);
-	  if (out_sval)
-	    *out_sval = sval;
-	  if (logger)
-	    logger->log ("using string_cst");
-	  return m_mgr->get_or_create_int_cst (size_type_node,
-					       num_bytes_read);
+	  HOST_WIDE_INT str_byte_offset = src_byte_offset.to_shwi ();
+	  const char *effective_start
+	    = TREE_STRING_POINTER (string_cst) + str_byte_offset;
+	  size_t effective_len
+	    = TREE_STRING_LENGTH (string_cst) - str_byte_offset;
+	  if (const void *p = memchr (effective_start, 0, effective_len))
+	    {
+	      size_t num_bytes_read
+		= (const char *)p - effective_start + 1;
+	      /* Simulate the read.  */
+	      byte_range bytes_to_read (0, num_bytes_read);
+	      const svalue *sval = get_store_bytes (reg, bytes_to_read, ctxt);
+	      if (out_sval)
+		*out_sval = sval;
+	      if (logger)
+		logger->log ("using string_cst");
+	      return m_mgr->get_or_create_int_cst (size_type_node,
+						   num_bytes_read);
+	    }
 	}
     }
-
   const binding_cluster *cluster = m_store.get_cluster (base_reg);
   iterable_cluster c (cluster);
   if (logger)
