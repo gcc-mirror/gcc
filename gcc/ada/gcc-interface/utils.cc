@@ -4453,8 +4453,23 @@ update_pointer_to (tree old_type, tree new_type)
 	    new_ptr = TYPE_NEXT_PTR_TO (new_ptr);
 	  TYPE_NEXT_PTR_TO (new_ptr) = ptr;
 	}
-      else
-	TYPE_POINTER_TO (new_type) = ptr;
+      else if (ptr)
+	{
+	  TYPE_POINTER_TO (new_type) = ptr;
+
+	  /* If there is no pointer pointing to NEW_TYPE yet, re-compute the
+	     TYPE_CANONICAL of the old pointer but pointing to NEW_TYPE, like
+	     build_pointer_type would have done for such a pointer, because we
+	     will propagate it in the adjustment loop below.  */
+	  if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
+	    SET_TYPE_STRUCTURAL_EQUALITY (ptr);
+	  else if (TYPE_CANONICAL (new_type) != new_type
+		   || (TYPE_REF_CAN_ALIAS_ALL (ptr)
+		       && !lookup_attribute ("may_alias",
+					     TYPE_ATTRIBUTES (new_type))))
+	    TYPE_CANONICAL (ptr)
+	      = build_pointer_type (TYPE_CANONICAL (new_type));
+	}
 
       /* Now adjust them.  */
       for (; ptr; ptr = TYPE_NEXT_PTR_TO (ptr))
@@ -4474,8 +4489,23 @@ update_pointer_to (tree old_type, tree new_type)
 	    new_ref = TYPE_NEXT_REF_TO (new_ref);
 	  TYPE_NEXT_REF_TO (new_ref) = ref;
 	}
-      else
-	TYPE_REFERENCE_TO (new_type) = ref;
+      else if (ref)
+	{
+	  TYPE_REFERENCE_TO (new_type) = ref;
+
+	  /* If there is no reference pointing to NEW_TYPE yet, re-compute the
+	     TYPE_CANONICAL of the old reference but pointing to NEW_TYPE, like
+	     build_reference_type would have done for such a reference, because
+	     we will propagate it in the adjustment loop below.  */
+	  if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
+	    SET_TYPE_STRUCTURAL_EQUALITY (ref);
+	  else if (TYPE_CANONICAL (new_type) != new_type
+		   || (TYPE_REF_CAN_ALIAS_ALL (ref)
+		       && !lookup_attribute ("may_alias",
+					     TYPE_ATTRIBUTES (new_type))))
+	    TYPE_CANONICAL (ref)
+	      = build_reference_type (TYPE_CANONICAL (new_type));
+	}
 
       /* Now adjust them.  */
       for (; ref; ref = TYPE_NEXT_REF_TO (ref))
