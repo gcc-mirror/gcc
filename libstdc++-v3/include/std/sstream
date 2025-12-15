@@ -298,7 +298,7 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
 #if __cplusplus > 201703L
 #if _GLIBCXX_USE_CXX11_ABI
 #if __cpp_concepts
-	// P0407 Allocator-aware basic_streambuf
+      // P0407 Allocator-aware basic_streambuf
       template<__allocator_like _SAlloc>
 	_GLIBCXX_NODISCARD
 	basic_string<_CharT, _Traits, _SAlloc>
@@ -315,8 +315,11 @@ _GLIBCXX_BEGIN_NAMESPACE_CXX11
       {
 	if (char_type* __hi = _M_high_mark())
 	  {
-	    // Set length to end of character sequence and add null terminator.
-	    _M_string._M_set_length(_M_high_mark() - this->pbase());
+	    if (_M_string.data() == this->pbase()) [[likely]]
+	      // Set length to end of sequence and add null terminator.
+	      _M_string._M_set_length(__hi - this->pbase());
+	    else
+	      _M_string.assign(this->pbase(), __hi);
 	  }
 	auto __str = std::move(_M_string);
 	_M_string.clear();
