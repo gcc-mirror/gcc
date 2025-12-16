@@ -2099,7 +2099,7 @@ this option is still experimental and not for normal use yet.
 
 Default is the traditional behavior @option{--with-aix-soname=@samp{aix}}.
 
-@item --enable-languages=@var{lang1},@var{lang2},@dots{}
+@item --enable-languages=[^]@var{lang1},[^]@var{lang2},@dots{}
 Specify that only a particular subset of compilers and
 their runtime libraries should be built.  For a list of valid values for
 @var{langN} you can issue the following command in the
@@ -2119,8 +2119,18 @@ LTO is not a
 default language, but is built by default because @option{--enable-lto} is
 enabled by default.  The other languages are default languages.  If
 @code{all} is specified, then all available languages are built.  An
-exception is @code{jit} language, which requires
+exception is the @code{jit} language, which requires
 @option{--enable-host-shared} to be included with @code{all}.
+
+If a language name is prefixed with a caret, such as
+@samp{--enable-languages=all,^obj-c++}, then that language will
+not be built.  This is most useful when combined with @code{all} or
+@code{default}.  A language disabled in this way will be disabled even
+if it is also included without the leading caret earlier or later in
+the argument to @option{--enable-languages}.  An attempt to disable a
+language that is a prerequisite for an enabled languaged---(whether
+the latter language was enabled explicitly, or implicitly via the
+@code{default} or @code{all} directives)---is invalid.
 
 @item --enable-stage1-languages=@var{lang1},@var{lang2},@dots{}
 Specify that a particular subset of compilers and their runtime

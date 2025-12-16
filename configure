@@ -10093,16 +10093,40 @@ if test -d ${srcdir}/gcc; then
   # 'f95' is the old name for the 'fortran' language. We issue a warning
   # and make the substitution.
   case ,${enable_languages}, in
-    *,f95,*)
+    *,f95,* | *,^f95,*)
       echo configure.ac: warning: 'f95' as language name is deprecated, use 'fortran' instead 1>&2
       enable_languages=`echo "${enable_languages}" | sed -e 's/f95/fortran/g'`
       ;;
   esac
 
+  # Extract the language disable requests.  N.B. some non-GNU sed, e.g. on SunOS,
+  # will ignore a line without a trailing newline.
+  disable_languages=`echo "$enable_languages" | tr , "$as_nl" | grep '^\^' | (tr "$as_nl" , ; echo) | sed -e 's/\^//g' -e 's/,$//'`
+  new_enable_languages=
+  for lang in `echo "$enable_languages" | tr , ' '`; do
+    case "${lang}:,${disable_languages}," in
+      ^default:* | ^all:*)
+        as_fn_error $? "only specific individual languages may be disabled, not \"$lang\"" "$LINENO" 5
+        ;;
+      ^lto:*)
+	as_fn_error $? "LTO should be disabled with the \"--disable-lto\" argument, not via \"--enable-languages=^lto\"" "$LINENO" 5
+	;;
+      ^c:*)
+	as_fn_error $? "language \"c\" cannot be disabled" "$LINENO" 5
+	;;
+      ^* | ${lang}:*,${lang},*) ;;
+      *) new_enable_languages="${new_enable_languages}${lang}," ;;
+    esac
+  done
+  enable_languages=`echo "$new_enable_languages" | sed -e 's/,$//'`
+
   # If bootstrapping, C++ must be enabled.
-  case ",$enable_languages,:$enable_bootstrap" in
-    *,c++,*:*) ;;
-    *:yes)
+  case ",${enable_languages},:${enable_bootstrap}:,${disable_languages}," in
+    *:yes:*,c++,*)
+      as_fn_error $? "c++ cannot be disabled for a bootstrap build" "$LINENO" 5
+      ;;
+    *,c++,*:*:*) ;;
+    *:yes:*)
       if test -f ${srcdir}/gcc/cp/config-lang.in; then
         enable_languages="${enable_languages},c++"
       else
@@ -10111,9 +10135,9 @@ if test -d ${srcdir}/gcc; then
       ;;
   esac
 
-  # First scan to see if an enabled language requires some other language.
-  # We assume that a given config-lang.in will list all the language
-  # front ends it requires, even if some are required indirectly.
+  # Collect the list of default languages; keep it prefixed and suffixed with
+  # commas for later convenience.
+  default_languages=,
   for lang_frag in ${srcdir}/gcc/*/config-lang.in .. ; do
     case ${lang_frag} in
       ..) ;;
@@ -10121,28 +10145,85 @@ if test -d ${srcdir}/gcc; then
       # an apparent bug in bash 1.12 on linux.
       ${srcdir}/gcc/[*]/config-lang.in) ;;
       *)
-        # From the config-lang.in, get $language, $lang_requires, and
-        # $lang_requires_boot_languages.
+        # From the config-lang.in, get $language and $build_by_default.
         language=
-        lang_requires=
-        lang_requires_boot_languages=
-        # set srcdir during sourcing lang_frag to the gcc dir.
-        # Sadly overriding srcdir on the . line doesn't work in plain sh as it
-        # pollutes this shell
+        build_by_default=yes
+        # See note below about saving srcdir.
         saved_srcdir=${srcdir}
         srcdir=${srcdir}/gcc . ${lang_frag}
         srcdir=${saved_srcdir}
-        for other in ${lang_requires} ${lang_requires_boot_languages}; do
-          case ,${enable_languages}, in
-	    *,$other,*) ;;
-	    *,default,*) ;;
-	    *,all,*) ;;
-	    *,$language,*)
-	      echo " \`$other' language required by \`$language'; enabling" 1>&2
-	      enable_languages="${enable_languages},${other}"
+        if test x"$build_by_default" = xyes; then
+          default_languages="${default_languages}${language},"
+        fi
+        ;;
+    esac
+  done
+
+  # First scan to see if an enabled language requires some other language.
+  # We assume that a given config-lang.in will list all the language
+  # front ends it requires, even if some are required indirectly.
+  delayed_error_languages=,
+  for lang_frag in ${srcdir}/gcc/*/config-lang.in .. ; do
+    case ${lang_frag} in
+      ..) ;;
+      # The odd quoting in the next line works around
+      # an apparent bug in bash 1.12 on linux.
+      ${srcdir}/gcc/[*]/config-lang.in) ;;
+      *)
+	# From the config-lang.in, get $language, $lang_requires, and
+	# $lang_requires_boot_languages.
+	language=
+	lang_requires=
+	lang_requires_boot_languages=
+	# set srcdir during sourcing lang_frag to the gcc dir.
+	# Sadly overriding srcdir on the . line doesn't work in plain sh as it
+	# pollutes this shell
+	saved_srcdir=${srcdir}
+	srcdir=${srcdir}/gcc . ${lang_frag}
+	srcdir=${saved_srcdir}
+
+	# Determine if this language was requested; if not, don't bring in its
+	# dependencies.  To match historical behavior, do bring in the dependencies
+	# for unsupported languages that were not explicitly disabled.
+	case ,${disable_languages}, in
+	  *,${language},*) continue ;;
+	esac
+	case ,${enable_languages}, in
+	  *,${language},* | *,all,*) ;;
+	  *,default,*)
+            case ${default_languages} in
+              *,${language},*) ;;
+              *) continue ;;
+            esac
+            ;;
+	  *) continue ;;
+	esac
+
+	# This language was indeed requested; make sure all dependencies are
+	# also enabled.
+	for other in ${lang_requires} ${lang_requires_boot_languages}; do
+	  need_to_add=0
+	  case ,${enable_languages},:,${disable_languages}, in
+            *:*,${other},*)
+	      # This language cannot be built because one of its dependencies
+	      # was explicitly disabled.  Don't complain just yet, though; other
+	      # checks later may decide the language won't be built anyway.
+	      delayed_error_languages="${delayed_error_languages}${language}:${other},"
+              ;;
+            *,${other},*:* | *,all,*:*) ;;
+            *,default,*:*)
+	      case ${default_languages} in
+		*,${other},*) ;;
+		*) need_to_add=1 ;;
+	      esac
 	      ;;
+	    *) need_to_add=1 ;;
 	  esac
-        done
+	  if test $need_to_add = 1; then
+	    echo " \`$other' language required by \`$language'; enabling" 1>&2
+	    enable_languages="${enable_languages},${other}"
+	  fi
+	done
 	for other in ${lang_requires_boot_languages} ; do
 	  if test "$other" != "c"; then
 	    case ,${enable_stage1_languages}, in
@@ -10150,17 +10231,13 @@ if test -d ${srcdir}/gcc; then
 	      *,default,*) ;;
 	      *,all,*) ;;
 	      *)
-		case ,${enable_languages}, in
-		  *,$language,*)
-		    echo " '$other' language required by '$language' in stage 1; enabling" 1>&2
-		    enable_stage1_languages="$enable_stage1_languages,${other}"
-		    ;;
-		esac
+		echo " '$other' language required by '$language' in stage 1; enabling" 1>&2
+		enable_stage1_languages="$enable_stage1_languages,${other}"
 		;;
 	    esac
-          fi
-        done
-        ;;
+	  fi
+	done
+	;;
     esac
   done
 
@@ -10199,13 +10276,12 @@ if test -d ${srcdir}/gcc; then
       ${srcdir}/gcc/[*]/config-lang.in) ;;
       *)
         # From the config-lang.in, get $language, $target_libs,
-        # $lang_dirs, $boot_language, and $build_by_default
+        # $lang_dirs, and $boot_language.
         language=
         target_libs=
         lang_dirs=
         subdir_requires=
         boot_language=no
-        build_by_default=yes
         # set srcdir during sourcing.  See above about save & restore
         saved_srcdir=${srcdir}
         srcdir=${srcdir}/gcc . ${lang_frag}
@@ -10221,21 +10297,29 @@ if test -d ${srcdir}/gcc; then
 
         add_this_lang=no
         # C is always enabled, so no need to add it again
-        if test "$language" != "c"; then
-          case ,${enable_languages}, in
-            *,${language},*)
-              # Language was explicitly selected; include it
-	      add_this_lang=yes
-              ;;
-	    *,all,*)
-	      # All languages are enabled
-	      add_this_lang=all
-              ;;
-            *,default,*)
-              # 'default' was selected, select it if it is a default language
-	      add_this_lang=${build_by_default}
-              ;;
-          esac
+	if test "$language" != "c"; then
+	    # Determine if this language was requested.
+	    case ,${disable_languages}, in
+	      *,${language},* ) ;;
+	      *)
+		case ,${enable_languages}, in
+		  *,${language},*)
+		    # Language was explicitly selected; include it
+		    add_this_lang=yes
+		    ;;
+		  *,all,*)
+		    # All languages are enabled, and this one not excluded.
+		    add_this_lang=all
+		    ;;
+		  *,default,*)
+		    # 'default' was selected, select it if it is a default language
+		    case ${default_languages} in
+		      *,${language},*) add_this_lang=yes ;;
+		    esac
+		    ;;
+		esac
+		;;
+	    esac
         fi
 
         # Disable languages that need other directories if these aren't available.
@@ -10341,7 +10425,7 @@ $as_echo "$as_me: WARNING: --enable-host-shared required to build $language" >&2
               # Silently disable.
               add_this_lang=unsupported
               ;;
-	        esac
+	  esac
           ;;
         esac
 
@@ -10400,6 +10484,11 @@ $as_echo "$as_me: WARNING: ${language} not supported for this target" >&2;}
             potential_languages="${potential_languages}${language},"
 	    ;;
           all|yes)
+	    case "$delayed_error_languages" in
+	      *,${language}:*,*)
+		as_fn_error $? "invalid configuration for language \"${language}\"; at least one of the dependencies \"$delayed_error_languages\" was explicitly disabled" "$LINENO" 5
+		;;
+	    esac
 	    new_enable_languages="${new_enable_languages}${language},"
             potential_languages="${potential_languages}${language},"
 	    missing_languages=`echo "$missing_languages" | sed "s/,$language,/,/"`
