@@ -141,8 +141,6 @@ extern bool avr_nonzero_bits_lsr_operands_p (rtx_code, rtx *);
 extern void avr_final_prescan_insn (rtx_insn *insn, rtx *operand,
 				    int num_operands);
 extern rtx_code avr_normalize_condition (rtx_code condition);
-extern void out_shift_with_cnt (const char *templ, rtx_insn *insn,
-				rtx operands[], int *len, int t_len);
 extern enum reg_class avr_mode_code_base_reg_class (machine_mode, addr_space_t, rtx_code, rtx_code);
 extern bool avr_regno_mode_code_ok_for_base_p (int, machine_mode, addr_space_t, rtx_code, rtx_code);
 extern rtx avr_incoming_return_addr_rtx (void);
