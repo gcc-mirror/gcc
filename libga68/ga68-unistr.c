@@ -56,7 +56,7 @@
 /* Compare two UCS-4 strings of same lenght, lexicographically.
    Return -1, 0 or 1.  */
 
-int
+static int
 _libga68_u32_cmp (const uint32_t *s1, size_t stride1,
 		  const uint32_t *s2, size_t stride2,
 		  size_t n)

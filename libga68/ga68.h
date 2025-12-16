@@ -104,9 +104,6 @@ long long int _libga68_posixlseek (int fd, long long int offset, int whence);
 
 /* ga68-unistr.c  */
 
-int _libga68_u32_cmp (const uint32_t *s1, size_t stride1,
-		      const uint32_t *s2, size_t stride2,
-		      size_t n);
 int _libga68_u32_cmp2 (const uint32_t *s1, size_t n1, size_t stride1,
 		       const uint32_t *s2, size_t n2, size_t stride2);
 int _libga68_u8_uctomb (uint8_t *s, uint32_t uc, ptrdiff_t n);
