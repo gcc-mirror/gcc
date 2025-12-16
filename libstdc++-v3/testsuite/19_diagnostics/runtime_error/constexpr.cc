@@ -1,4 +1,5 @@
 // { dg-do compile { target c++26 } }
+// { dg-require-effective-target cxx11_abi }
 
 #include <string>
 #include <stdexcept>

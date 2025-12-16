@@ -78,7 +78,9 @@ constexpr bool test01(bool x)
   return true;
 }
 
+#if _GLIBCXX_USE_CXX11_ABI
 static_assert(test01(false));
+#endif
 
 int main()
 {

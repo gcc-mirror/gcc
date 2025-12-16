@@ -2233,6 +2233,7 @@ ftms = {
     v = 202502;
     cxxmin = 26;
     extra_cond = "__cpp_constexpr_exceptions >= 202411L";
+    cxx11abi = yes;
   };
 };
 

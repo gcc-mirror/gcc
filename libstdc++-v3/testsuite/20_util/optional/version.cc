@@ -30,10 +30,12 @@
 #  error "Feature test macro for optional range support has wrong value for C++26 in <version>"
 # endif
 
+# if _GLIBCXX_USE_CXX11_ABI
 # ifndef __cpp_lib_constexpr_exceptions
 #  error "Feature test macro for constexpr_exceptions is missing in <version>"
 # elif __cpp_lib_constexpr_exceptions < 202502L
 #  error "Feature test macro for constexpr_exceptions has wrong value in <version>"
+# endif
 # endif
 #endif
 
@@ -59,9 +61,11 @@
 #  error "Feature test macro for optional range support has wrong value for C++26 in <optional>"
 # endif
 
+# if _GLIBCXX_USE_CXX11_ABI
 # ifndef __cpp_lib_constexpr_exceptions
 #  error "Feature test macro for constexpr_exceptions is missing in <optional>"
 # elif __cpp_lib_constexpr_exceptions < 202502L
 #  error "Feature test macro for constexpr_exceptions has wrong value in <optional>"
+# endif
 # endif
 #endif

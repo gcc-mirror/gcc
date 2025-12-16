@@ -1,5 +1,6 @@
 // { dg-do preprocess { target c++26 } }
 // { dg-add-options no_pch }
+// { dg-require-effective-target cxx11_abi }
 
 #include <stdexcept>
 

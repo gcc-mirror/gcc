@@ -15,7 +15,7 @@
 # error "Feature-test macro for freestanding expected has wrong value in <version>"
 #endif
 
-#if __cplusplus > 202302L
+#if __cplusplus > 202302L && _GLIBCXX_USE_CXX11_ABI
 # ifndef __cpp_lib_constexpr_exceptions
 #  error "Feature test macro for constexpr_exceptions is missing in <version>"
 # elif __cpp_lib_constexpr_exceptions < 202502L
@@ -40,7 +40,7 @@
 # error "Feature-test macro for freestanding expected has wrong value in <expected>"
 #endif
 
-#if __cplusplus > 202302L
+#if __cplusplus > 202302L && _GLIBCXX_USE_CXX11_ABI
 # ifndef __cpp_lib_constexpr_exceptions
 #  error "Feature test macro for constexpr_exceptions is missing in <expected>"
 # elif __cpp_lib_constexpr_exceptions < 202502L

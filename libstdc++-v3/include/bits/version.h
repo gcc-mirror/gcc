@@ -2497,7 +2497,7 @@
 #undef __glibcxx_want_bitset
 
 #if !defined(__cpp_lib_constexpr_exceptions)
-# if (__cplusplus >  202302L) && (__cpp_constexpr_exceptions >= 202411L)
+# if (__cplusplus >  202302L) && _GLIBCXX_USE_CXX11_ABI && (__cpp_constexpr_exceptions >= 202411L)
 #  define __glibcxx_constexpr_exceptions 202502L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_constexpr_exceptions)
 #   define __cpp_lib_constexpr_exceptions 202502L
