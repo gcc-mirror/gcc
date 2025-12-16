@@ -32,6 +32,8 @@ fi
 MANUALS="cpp
   cppinternals
   fastjar
+  ga68
+  ga68-internals
   gcc
   gccgo
   gccint
