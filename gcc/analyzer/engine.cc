@@ -2228,7 +2228,7 @@ strongly_connected_components (const supergraph &sg, logger *logger)
   LOG_SCOPE (logger);
   auto_timevar tv (TV_ANALYZER_SCC);
 
-  for (int i = 0; i < m_sg.m_nodes.length (); i++)
+  for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
     m_per_node.quick_push (per_node_data ());
 
   for (auto snode : m_sg.m_nodes)
@@ -2255,10 +2255,10 @@ strongly_connected_components::dump () const
       fprintf (stderr, "%i", i);
     }
   fprintf (stderr, "]\n");
-  for (int i = 0; i < m_sg.m_nodes.length (); i++)
+  for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
     {
       const per_node_data &v = m_per_node[i];
-      fprintf (stderr, "SN %i: index: %i lowlink: %i on_stack: %i\n",
+      fprintf (stderr, "SN %lu: index: %i lowlink: %i on_stack: %i\n",
 	       i, v.m_id, v.m_lowlink, v.m_on_stack);
     }
 }
@@ -2269,7 +2269,7 @@ std::unique_ptr<json::array>
 strongly_connected_components::to_json () const
 {
   auto scc_arr = std::make_unique<json::array> ();
-  for (int i = 0; i < m_sg.m_nodes.length (); i++)
+  for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
     scc_arr->append (std::make_unique<json::integer_number> (get_scc_id (i)));
   return scc_arr;
 }
@@ -3831,7 +3831,7 @@ exploded_graph::print_bar_charts (pretty_printer *pp) const
 
   /* Accumulate number of enodes per supernode.  */
   auto_vec<unsigned> enodes_per_supernode (m_sg.m_nodes.length ());
-  for (int i = 0; i < m_sg.m_nodes.length (); i++)
+  for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
     enodes_per_supernode.quick_push (0);
   int i;
   exploded_node *enode;
@@ -3845,7 +3845,7 @@ exploded_graph::print_bar_charts (pretty_printer *pp) const
 
   /* Accumulate excess enodes per supernode.  */
   auto_vec<unsigned> excess_enodes_per_supernode (m_sg.m_nodes.length ());
-  for (int i = 0; i < m_sg.m_nodes.length (); i++)
+  for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
     excess_enodes_per_supernode.quick_push (0);
   for (point_map_t::iterator iter = m_per_point_data.begin ();
        iter != m_per_point_data.end (); ++iter)
@@ -3871,7 +3871,7 @@ exploded_graph::print_bar_charts (pretty_printer *pp) const
       bar_chart enodes_per_snode;
       bar_chart excess_enodes_per_snode;
       bool have_excess_enodes = false;
-      for (int i = 0; i < m_sg.m_nodes.length (); i++)
+      for (size_t i = 0; i < m_sg.m_nodes.length (); i++)
 	{
 	  const supernode *iter_snode = m_sg.m_nodes[i];
 	  if (iter_snode->get_function () != fn)
@@ -4089,12 +4089,8 @@ exploded_path::feasible_p (logger *logger,
 	{
 	  gcc_assert (rc);
 	  if (out)
-	    {
-	      const exploded_node &src_enode = *eedge->m_src;
-	      const program_point &src_point = src_enode.get_point ();
-	      *out = std::make_unique<feasibility_problem> (edge_idx, *eedge,
-							    std::move (rc));
-	    }
+	    *out = std::make_unique<feasibility_problem> (edge_idx, *eedge,
+							  std::move (rc));
 	  return false;
 	}
 
@@ -4897,7 +4893,7 @@ public:
   : m_eg (eg)
   {
     /* Avoid O(N^2) by prepopulating m_enodes_per_snode_id.  */
-    for (int i = 0; i < eg.get_supergraph ().m_nodes.length (); ++i)
+    for (size_t i = 0; i < eg.get_supergraph ().m_nodes.length (); ++i)
       m_enodes_per_snode_id.push_back (std::vector<exploded_node *> ());
     exploded_node *enode;
     unsigned i;
@@ -5192,7 +5188,7 @@ impl_run_checkers (logger *logger)
 
   maybe_dump_supergraph (sg, "fixup-locations");
 
-  engine eng (mgr, &sg, logger);
+  engine eng (mgr, &sg);
 
   state_purge_map *purge_map = nullptr;
   if (flag_analyzer_state_purge)

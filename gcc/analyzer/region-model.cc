@@ -7601,8 +7601,7 @@ rejected_ranges_constraint::dump_to_pp (pretty_printer *pp) const
 /* engine's ctor.  */
 
 engine::engine (region_model_manager &mgr,
-		const supergraph *sg,
-		logger *logger)
+		const supergraph *sg)
 : m_mgr (mgr),
   m_sg (sg)
 {

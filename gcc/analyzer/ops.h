@@ -96,7 +96,7 @@ class operation
     call_and_return
   };
 
-  ~operation () {}
+  virtual ~operation () {}
 
   void
   dump () const;
@@ -630,7 +630,7 @@ public:
 			   std::unique_ptr<rejected_constraint> *out_rc) const override;
 
   const control_flow_op *
-  dyn_cast_control_flow_op () const { return this; }
+  dyn_cast_control_flow_op () const final override { return this; }
 
   ::edge get_cfg_edge () const { return m_cfg_edge; }
   int get_flags () const { return m_cfg_edge->flags; }
@@ -947,8 +947,7 @@ public:
     return std::make_unique<phis_for_edge_op> (*this);
   }
 
-  phis_for_edge_op (std::vector<pair> &&pairs,
-		    ::edge cfg_in_edge);
+  phis_for_edge_op (std::vector<pair> &&pairs);
 
   const phis_for_edge_op *
   dyn_cast_phis_for_edge_op () const final override { return this; }
@@ -999,7 +998,6 @@ private:
 		region_model_context *ctxt) const;
 
   std::vector<pair> m_pairs;
-  ::edge m_cfg_in_edge;
 };
 
 } // namespace ana

@@ -36,8 +36,7 @@ class location_fixer
 public:
   location_fixer (supergraph &sg,
 		  ana::logger *logger)
-  : m_sg (sg),
-    m_logger (logger),
+  : m_logger (logger),
     m_stats ()
   {
     for (auto node : sg.m_nodes)
@@ -84,8 +83,6 @@ public:
   }
 
 private:
-  supergraph &m_sg;
-  state_purge_map *m_purge_map;
   supergraph_manipulation::worklist m_worklist;
   ana::logger *m_logger;
   struct stats

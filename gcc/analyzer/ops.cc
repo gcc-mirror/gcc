@@ -2158,15 +2158,12 @@ phis_for_edge_op::maybe_make (::edge cfg_in_edge)
   if (pairs.empty ())
     return nullptr;
 
-  return std::make_unique <phis_for_edge_op> (std::move (pairs),
-					      cfg_in_edge);
+  return std::make_unique <phis_for_edge_op> (std::move (pairs));
 }
 
-phis_for_edge_op::phis_for_edge_op (std::vector<pair> &&pairs,
-				    ::edge cfg_in_edge)
+phis_for_edge_op::phis_for_edge_op (std::vector<pair> &&pairs)
 : operation (kind::phis),
-  m_pairs (std::move (pairs)),
-  m_cfg_in_edge (cfg_in_edge)
+  m_pairs (std::move (pairs))
 {
 }
 

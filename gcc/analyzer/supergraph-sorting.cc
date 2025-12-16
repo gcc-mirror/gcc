@@ -76,7 +76,7 @@ class sorting_worklist
 {
 public:
   sorting_worklist ()
-  : m_queue (key_t (*this, nullptr))
+  : m_queue (key_t (nullptr))
   {
   }
 
@@ -88,8 +88,8 @@ private:
   class key_t
   {
   public:
-    key_t (const sorting_worklist &w, supernode *snode)
-    : m_worklist (w), m_snode (snode)
+    key_t (supernode *snode)
+    : m_snode (snode)
     {}
 
     bool operator< (const key_t &other) const
@@ -109,7 +109,6 @@ private:
 
   private:
     static int cmp (const key_t &ka, const key_t &kb);
-    const sorting_worklist &m_worklist;
     supernode *m_snode;
   };
 
@@ -126,7 +125,7 @@ private:
 void
 sorting_worklist::add_node (supernode *n)
 {
-  m_queue.insert ({*this, n}, n);
+  m_queue.insert ({n}, n);
   m_set_of_queued_nodes.insert (n);
 }
 

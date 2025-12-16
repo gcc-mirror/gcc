@@ -1334,8 +1334,7 @@ class engine
 {
 public:
   engine (region_model_manager &mgr,
-	  const supergraph *sg = nullptr,
-	  logger *logger = nullptr);
+	  const supergraph *sg = nullptr);
   const supergraph *get_supergraph () { return m_sg; }
   region_model_manager *get_model_manager () { return &m_mgr; }
   known_function_manager *get_known_function_manager ()
