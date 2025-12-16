@@ -847,8 +847,14 @@ supernode::dump_dot (graphviz_out *gv, const dump_args_t &args) const
 
 	  if ((exploc.file != prev_exploc.file)
 	      && exploc.file)
-	    pp_printf (pp, "<TR><TD>%s:%i:</TD></TR>",
-		       exploc.file, exploc.line);
+	    {
+	      pp_string (pp, "<TR><TD>");
+	      pp_flush (pp);
+	      pp_printf (pp, "%s", exploc.file);
+	      /* Escape, to handle cases like "<built-in>".  */
+	      pp_write_text_as_html_like_dot_to_stream (pp);
+	      pp_printf (pp, ":%i:</TD></TR>", exploc.line);
+	    }
 	  if (exploc.line != prev_exploc.line)
 	    if (const diagnostics::char_span line
 		= global_dc->get_file_cache ().get_source_line (exploc.file,
