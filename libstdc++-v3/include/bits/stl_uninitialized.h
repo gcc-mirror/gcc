@@ -1177,7 +1177,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     uninitialized_copy_n(_InputIterator __first, _Size __n,
 			 _ForwardIterator __result)
     { return std::__uninitialized_copy_n(__first, __n, __result,
-					 std::__iterator_category(__first)); }
+					 std::__iter_concept_or_category(__first)); }
 
   /// @cond undocumented
   template<typename _InputIterator, typename _Size, typename _ForwardIterator>
@@ -1188,7 +1188,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     {
       return
 	std::__uninitialized_copy_n_pair(__first, __n, __result,
-					 std::__iterator_category(__first));
+					 std::__iter_concept_or_category(__first));
     }
   /// @endcond
 #endif

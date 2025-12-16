@@ -479,7 +479,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<bool _IsMove, typename _II, typename _Tp>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value,
+      __is_any_random_access_iter<_II>::__value,
       _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*> >::__type
     __copy_move_a1(_II, _II, _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>);
 
@@ -768,7 +768,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<bool _IsMove, typename _II, typename _Tp>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value,
+      __is_any_random_access_iter<_II>::__value,
       _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*> >::__type
     __copy_move_backward_a1(_II, _II,
 			    _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*>);
@@ -1218,7 +1218,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Ref, typename _Ptr, typename _II>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value, bool>::__type
+      __is_any_random_access_iter<_II>::__value, bool>::__type
     __equal_aux1(_GLIBCXX_STD_C::_Deque_iterator<_Tp, _Ref, _Ptr>,
 		 _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Ref, _Ptr>,
 		 _II);
@@ -1232,7 +1232,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<typename _II, typename _Tp, typename _Ref, typename _Ptr>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value, bool>::__type
+      __is_any_random_access_iter<_II>::__value, bool>::__type
     __equal_aux1(_II, _II,
 		_GLIBCXX_STD_C::_Deque_iterator<_Tp, _Ref, _Ptr>);
 
@@ -1331,8 +1331,8 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 				   _II2 __first2, _II2 __last2,
 				   _Compare __comp)
     {
-      typedef typename iterator_traits<_II1>::iterator_category _Category1;
-      typedef typename iterator_traits<_II2>::iterator_category _Category2;
+      typedef __decltype(std::__iter_concept_or_category<_II1>()) _Category1;
+      typedef __decltype(std::__iter_concept_or_category<_II2>()) _Category2;
       typedef std::__lc_rai<_Category1, _Category2> __rai_type;
 
       __last1 = __rai_type::__newlast1(__first1, __last1, __first2, __last2);
@@ -1648,8 +1648,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     __equal4(_II1 __first1, _II1 __last1, _II2 __first2, _II2 __last2)
     {
       using _RATag = random_access_iterator_tag;
-      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
-      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _Cat1 = decltype(std::__iter_concept_or_category<_II1>());
+      using _Cat2 = decltype(std::__iter_concept_or_category<_II2>());
       using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
       if constexpr (_RAIters::value)
 	{
@@ -1675,8 +1675,8 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	     _BinaryPredicate __binary_pred)
     {
       using _RATag = random_access_iterator_tag;
-      using _Cat1 = typename iterator_traits<_II1>::iterator_category;
-      using _Cat2 = typename iterator_traits<_II2>::iterator_category;
+      using _Cat1 = decltype(std::__iter_concept_or_category<_II1>());
+      using _Cat2 = decltype(std::__iter_concept_or_category<_II2>());
       using _RAIters = __and_<is_same<_Cat1, _RATag>, is_same<_Cat2, _RATag>>;
       if constexpr (_RAIters::value)
 	{

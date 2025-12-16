@@ -226,7 +226,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	return std::__find_if(__first, __last, __unary_pred);
 
       return std::__search_n_aux(__first, __last, __count, __unary_pred,
-				 std::__iterator_category(__first));
+				 std::__iter_concept_or_category(__first));
     }
 
   // find_end for forward iterators.
@@ -337,8 +337,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__first2, __last2);
 
       return std::__find_end(__first1, __last1, __first2, __last2,
-			     std::__iterator_category(__first1),
-			     std::__iterator_category(__first2),
+			     std::__iter_concept_or_category(__first1),
+			     std::__iter_concept_or_category(__first2),
 			     __gnu_cxx::__ops::equal_to());
     }
 
@@ -388,8 +388,8 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       __glibcxx_requires_valid_range(__first2, __last2);
 
       return std::__find_end(__first1, __last1, __first2, __last2,
-			     std::__iterator_category(__first1),
-			     std::__iterator_category(__first2),
+			     std::__iter_concept_or_category(__first1),
+			     std::__iter_concept_or_category(__first2),
 			     __comp);
     }
 
@@ -3494,10 +3494,8 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 		     _ForwardIterator2 __first2, _ForwardIterator2 __last2,
 		     _BinaryPredicate __pred)
     {
-      using _Cat1
-	= typename iterator_traits<_ForwardIterator1>::iterator_category;
-      using _Cat2
-	= typename iterator_traits<_ForwardIterator2>::iterator_category;
+      using _Cat1 = decltype(std::__iter_concept_or_category<_ForwardIterator1>());
+      using _Cat2 = decltype(std::__iter_concept_or_category<_ForwardIterator2>());
       using _It1_is_RA = is_same<_Cat1, random_access_iterator_tag>;
       using _It2_is_RA = is_same<_Cat2, random_access_iterator_tag>;
       constexpr bool __ra_iters = __and_<_It1_is_RA, _It2_is_RA>::value;
@@ -3800,7 +3798,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
     for_each_n(_InputIterator __first, _Size __n, _Function __f)
     {
       auto __n2 = std::__size_to_integer(__n);
-      using _Cat = typename iterator_traits<_InputIterator>::iterator_category;
+      using _Cat = decltype(std::__iter_concept_or_category<_InputIterator>());
       if constexpr (is_base_of_v<random_access_iterator_tag, _Cat>)
 	{
 	  if (__n2 <= 0)
@@ -4450,7 +4448,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	return __result;
       return std::__unique_copy(__first, __last, __result,
 				__gnu_cxx::__ops::equal_to(),
-				std::__iterator_category(__first));
+				std::__iter_concept_or_category(__first));
     }
 
   /**
@@ -4491,7 +4489,7 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
       if (__first == __last)
 	return __result;
       return std::__unique_copy(__first, __last, __result, __binary_pred,
-				std::__iterator_category(__first));
+				std::__iter_concept_or_category(__first));
     }
 
 #if __cplusplus <= 201103L || _GLIBCXX_USE_DEPRECATED
@@ -5881,10 +5879,10 @@ _GLIBCXX_BEGIN_NAMESPACE_ALGO
 	   _SampleIterator __out, _Distance __n,
 	   _UniformRandomBitGenerator&& __g)
     {
-      using __pop_cat = typename
-	std::iterator_traits<_PopulationIterator>::iterator_category;
-      using __samp_cat = typename
-	std::iterator_traits<_SampleIterator>::iterator_category;
+      using __pop_cat
+	= decltype(std::__iter_concept_or_category<_PopulationIterator>());
+      using __samp_cat
+	= typename iterator_traits<_SampleIterator>::iterator_category;
 
       static_assert(
 	  __or_<is_convertible<__pop_cat, forward_iterator_tag>,

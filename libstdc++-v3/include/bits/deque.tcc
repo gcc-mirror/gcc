@@ -1225,7 +1225,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<bool _IsMove, typename _II, typename _Tp>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value,
+      __is_any_random_access_iter<_II>::__value,
       _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*> >::__type
     __copy_move_a1(_II __first, _II __last,
 		   _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*> __result)
@@ -1347,7 +1347,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<bool _IsMove, typename _II, typename _Tp>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value,
+      __is_any_random_access_iter<_II>::__value,
       _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*> >::__type
     __copy_move_backward_a1(_II __first, _II __last,
 		_GLIBCXX_STD_C::_Deque_iterator<_Tp, _Tp&, _Tp*> __result)
@@ -1406,7 +1406,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<typename _Tp, typename _Ref, typename _Ptr, typename _II>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value, bool>::__type
+      __is_any_random_access_iter<_II>::__value, bool>::__type
     __equal_aux1(_GLIBCXX_STD_C::_Deque_iterator<_Tp, _Ref, _Ptr> __first1,
 		 _GLIBCXX_STD_C::_Deque_iterator<_Tp, _Ref, _Ptr> __last1,
 		 _II __first2)
@@ -1422,7 +1422,7 @@ _GLIBCXX_END_NAMESPACE_CONTAINER
 
   template<typename _II, typename _Tp, typename _Ref, typename _Ptr>
     typename __gnu_cxx::__enable_if<
-      __is_random_access_iter<_II>::__value, bool>::__type
+      __is_any_random_access_iter<_II>::__value, bool>::__type
     __equal_aux1(_II __first1, _II __last1,
 		_GLIBCXX_STD_C::_Deque_iterator<_Tp, _Ref, _Ptr> __first2)
     {

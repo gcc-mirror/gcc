@@ -2020,6 +2020,15 @@ ftms = {
 };
 
 ftms = {
+  name = algorithm_iterator_requirements;
+  values = {
+    v = 202207;
+    // P2408R5 is a C++23 feature, but we support it in C++20.
+    cxxmin = 20;
+  };
+};
+
+ftms = {
   name = algorithm_default_value_type;
   values = {
     v = 202403;

@@ -317,6 +317,63 @@ namespace __detail
 
 #endif // C++11
 
+#if __glibcxx_algorithm_iterator_requirements // C++ >= 20
+  template<typename _Iter>
+    consteval auto
+    __iter_concept_or_category()
+    {
+      if constexpr (__detail::__promotable_iterator<_Iter>)
+	{
+	  using __type = __detail::__iter_traits<_Iter>::iterator_concept;
+	  if constexpr (derived_from<__type, random_access_iterator_tag>)
+	    return random_access_iterator_tag{};
+	  else
+	    return __type{};
+	}
+      else
+	return typename iterator_traits<_Iter>::iterator_category{};
+    }
+
+  template<typename _Iter>
+    __attribute__((__always_inline__))
+    constexpr auto
+    __iter_concept_or_category(const _Iter&)
+    { return std::__iter_concept_or_category<_Iter>(); }
+#else
+  template<typename _Iter>
+    __attribute__((__always_inline__))
+    inline _GLIBCXX_CONSTEXPR
+    typename iterator_traits<_Iter>::iterator_category
+    __iter_concept_or_category()
+    { return typename iterator_traits<_Iter>::iterator_category(); }
+
+  template<typename _Iter>
+    __attribute__((__always_inline__))
+    inline _GLIBCXX_CONSTEXPR
+    typename iterator_traits<_Iter>::iterator_category
+    __iter_concept_or_category(const _Iter&)
+    { return typename iterator_traits<_Iter>::iterator_category(); }
+#endif
+
+  // Like __is_random_access_iter, but based off of __iter_concept_or_category
+  // instead of iterator_traits::iterator_category.
+  template<typename _Iter,
+	   typename _Cat = __decltype(__iter_concept_or_category<_Iter>())>
+    struct __is_any_random_access_iter
+#if __cplusplus >= 201103L
+      : is_base_of<random_access_iterator_tag, _Cat>
+#endif
+    { enum { __value = __is_base_of(random_access_iterator_tag, _Cat) }; };
+
+// A wrapper around ranges::iter_move that also converts to the iterator's
+// value type.
+#if __cplusplus >= 202002L
+#define _GLIBCXX_ITER_MOVE(__it) \
+  std::iter_value_t<decltype(__it)>(std::ranges::iter_move(__it))
+#else
+#define _GLIBCXX_ITER_MOVE(__it) _GLIBCXX_MOVE(*__it)
+#endif
+
 _GLIBCXX_END_NAMESPACE_VERSION
 } // namespace
 

@@ -60,7 +60,7 @@
 #endif
 
 #include <bits/c++config.h>
-#include <bits/stl_iterator_base_types.h>
+#include <bits/stl_iterator_base_funcs.h>
 #include <bits/stl_numeric.h>
 
 #ifdef _GLIBCXX_PARALLEL
@@ -81,6 +81,7 @@
 # include <limits>
 #endif
 
+#define __glibcxx_want_algorithm_iterator_requirements
 #define __glibcxx_want_constexpr_numeric
 #define __glibcxx_want_gcd
 #define __glibcxx_want_gcd_lcm
@@ -298,7 +299,7 @@ namespace __detail
       static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, __ref, _Tp&>);
       static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, _Tp&, _Tp&>);
       static_assert(is_invocable_r_v<_Tp, _BinaryOperation&, __ref, __ref>);
-      if constexpr (__is_random_access_iter<_InputIterator>::value)
+      if constexpr (__is_any_random_access_iter<_InputIterator>::value)
 	{
 	  while ((__last - __first) >= 4)
 	    {
@@ -378,8 +379,8 @@ namespace __detail
 		     _BinaryOperation1 __binary_op1,
 		     _BinaryOperation2 __binary_op2)
     {
-      if constexpr (__and_v<__is_random_access_iter<_InputIterator1>,
-			    __is_random_access_iter<_InputIterator2>>)
+      if constexpr (__and_v<__is_any_random_access_iter<_InputIterator1>,
+			    __is_any_random_access_iter<_InputIterator2>>)
 	{
 	  while ((__last1 - __first1) >= 4)
 	    {
@@ -445,7 +446,7 @@ namespace __detail
     transform_reduce(_InputIterator __first, _InputIterator __last, _Tp __init,
 		     _BinaryOperation __binary_op, _UnaryOperation __unary_op)
     {
-      if constexpr (__is_random_access_iter<_InputIterator>::value)
+      if constexpr (__is_any_random_access_iter<_InputIterator>::value)
 	{
 	  while ((__last - __first) >= 4)
 	    {
@@ -582,7 +583,7 @@ namespace __detail
     {
       if (__first != __last)
 	{
-	  auto __init = std::move(*__first);
+	  auto __init = _GLIBCXX_ITER_MOVE(__first);
 	  *__result++ = __init;
 	  ++__first;
 	  if (__first != __last)

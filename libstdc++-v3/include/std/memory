@@ -102,6 +102,7 @@
 #endif
 
 #define __glibcxx_want_addressof_constexpr
+#define __glibcxx_want_algorithm_iterator_requirements
 #define __glibcxx_want_allocator_traits_is_always_equal
 #define __glibcxx_want_assume_aligned
 #define __glibcxx_want_atomic_shared_ptr
