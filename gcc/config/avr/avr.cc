@@ -6961,8 +6961,11 @@ avr_out_shift_with_cnt (rtx_code code, rtx_insn *insn, rtx operands[],
   bool second_label = true;
   bool saved_in_tmp = false;
   bool use_zero_reg = false;
+  bool tail_bits = false;
   const int t_len = GET_MODE_SIZE (GET_MODE (operands[0]));
-  rtx op[5];
+  const int regno = REGNO (operands[0]);
+  const int tail_regno = regno + (code == ASHIFT ? t_len - 1 : 0);
+  rtx op[6];
 
   op[0] = operands[0];
   op[1] = operands[1];
@@ -6988,11 +6991,13 @@ avr_out_shift_with_cnt (rtx_code code, rtx_insn *insn, rtx operands[],
       if (count <= 0)
 	return "";
 
-      if (count < 8 && !scratch)
+      if (count < 8 && tail_regno >= REG_16)
+	tail_bits = true;
+      else if (count < 8 && !scratch)
 	use_zero_reg = true;
 
       if (optimize_size)
-	max_len = t_len + (scratch ? 3 : (use_zero_reg ? 4 : 5));
+	max_len = t_len + (scratch || tail_bits ? 3 : (use_zero_reg ? 4 : 5));
 
       if (t_len * count <= max_len)
 	{
@@ -7004,7 +7009,27 @@ avr_out_shift_with_cnt (rtx_code code, rtx_insn *insn, rtx operands[],
 	  return "";
 	}
 
-      if (scratch)
+      if (tail_bits)
+	{
+	  /* The tail register (the last one in a multi-byte shift) is
+	     an upper register, so we can insert a stop mask into it.
+	     This will cost 2 instructions, but the loop body is one
+	     instruction shorter.  That yields the same code size like
+	     the "scratch" case but saves count-1 cycles.
+	     The loop branch is a BRCC that sees count-1 zeros and then
+	     a one to drop out of the loop.  */
+
+	  op[3] = all_regs_rtx[tail_regno];
+	  op[4] = gen_int_mode (code == ASHIFT
+				? 0xff >> count
+				: 0xff << count, QImode);
+	  op[5] = gen_int_mode (code == ASHIFT
+				? 0x80 >> (count - 1)
+				: 0x01 << (count - 1), QImode);
+	  avr_asm_len ("andi %3,%4" CR_TAB
+		       "ori %3,%5", op, plen, 2);
+	}
+      else if (scratch)
 	{
 	  avr_asm_len ("ldi %3,%2", op, plen, 1);
 	}
@@ -7065,8 +7090,15 @@ avr_out_shift_with_cnt (rtx_code code, rtx_insn *insn, rtx operands[],
   if (second_label)
     avr_asm_len ("2:", op, plen, 0);
 
-  avr_asm_len (use_zero_reg ? "lsr %3" : "dec %3", op, plen, 1);
-  avr_asm_len (second_label ? "brpl 1b" : "brne 1b", op, plen, 1);
+  if (tail_bits)
+    {
+      avr_asm_len ("brcc 1b", op, plen, 1);
+    }
+  else
+    {
+      avr_asm_len (use_zero_reg ? "lsr %3" : "dec %3", op, plen, 1);
+      avr_asm_len (second_label ? "brpl 1b" : "brne 1b", op, plen, 1);
+    }
 
   if (saved_in_tmp)
     avr_asm_len ("mov %3,%4", op, plen, 1);
