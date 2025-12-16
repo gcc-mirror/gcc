@@ -847,6 +847,12 @@ return_event::is_return_p () const
   return true;
 }
 
+const program_state *
+return_event::get_program_state () const
+{
+  return &m_eedge.m_dest->get_state ();
+}
+
 /* class start_consolidated_cfg_edges_event : public checker_event.  */
 
 void

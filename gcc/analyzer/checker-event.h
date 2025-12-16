@@ -603,6 +603,9 @@ public:
     return m_call_and_return_op;
   }
 
+  const program_state *
+  get_program_state () const override;
+
   /* Mark this edge event as being either an interprocedural call or
      return in which VAR is in STATE, and that this is critical to the
      diagnostic (so that print_desc can attempt to get a better description
