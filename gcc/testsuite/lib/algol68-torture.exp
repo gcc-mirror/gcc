@@ -42,9 +42,6 @@ if ![info exists TORTURE_OPTIONS] {
     }
 }
 
-# Location of built modules
-set BUILT_MODULES_DIR ""
-
 # Build a series of modules ACCESSed by this test.
 #
 # The first to dg-modules is a list of module names.  The source file
@@ -284,9 +281,6 @@ proc algol68-torture-execute { src } {
 	}
 	if { $algol68_compile_args != "" } {
 	    lappend options "additional_flags=$algol68_compile_args"
-	}
-	if { $BUILT_MODULES_DIR != "" } {
-	    lappend options "additional_flags=-I$BUILT_MODULES_DIR"
 	}
 	if { $algol68_module_objects != "" } {
 	    lappend options "additional_flags=$algol68_module_objects"

@@ -25,16 +25,12 @@ load_lib torture-options.exp
 torture-init
 set-torture-options $TORTURE_OPTIONS
 
-# The programs need to be able to find the built modules, which are
-# left in objdir.
-global BUILT_MODULES_DIR
-set BUILT_MODULES_DIR "$objdir"
-
 foreach testcase [lsort [glob -nocomplain $srcdir/$subdir/program-*.a68]] {
     # If we're only testing specific files and this isn't one of them, skip it.
     if ![runtest_file_p $runtests $testcase] then {
 	continue
     }
+    set algol68_compile_args "-I$objdir"
     algol68-torture-execute $testcase
     set algol68_compile_args ""
 }

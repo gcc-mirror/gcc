@@ -26,14 +26,11 @@ dg-init
 # The programs need to be able to find the built modules, which are
 # left in objdir.
 
-global MODULES_OPTIONS
-set MODULES_OPTIONS "-I $objdir"
-
 # Main loop.
 set saved-dg-do-what-default ${dg-do-what-default}
 
 set dg-do-what-default "compile"
-algol68-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/program*.a68]] "" ""
+algol68-dg-runtest [lsort [glob -nocomplain $srcdir/$subdir/program*.a68]] "" "-I $objdir"
 set dg-do-what-default ${saved-dg-do-what-default}
 
 # All done.

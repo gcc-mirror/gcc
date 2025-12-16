@@ -26,15 +26,11 @@ proc algol68-dg-prune { system text } {
     return [gcc-dg-prune $system $text]
 }
 
-# Global modules options
-set MODULES_OPTIONS ""
-
 # Modified dg-runtest that can cycle through a list of optimization options
 # as c-torture does.
 proc algol68-dg-runtest { testcases flags default-extra-flags } {
     global runtests
     global TORTURE_OPTIONS
-    global MODULES_OPTIONS
 
     foreach test $testcases {
 	# If we're only testing specific files and this isn't one of
@@ -55,7 +51,7 @@ proc algol68-dg-runtest { testcases flags default-extra-flags } {
 
 	foreach flags_t $option_list {
 	    verbose "Testing $nshort, $flags $flags_t" 1
-	    dg-test $test "$MODULES_OPTIONS $flags $flags_t" ${default-extra-flags}
+	    dg-test $test "$flags $flags_t" ${default-extra-flags}
 	}
     }
 }
