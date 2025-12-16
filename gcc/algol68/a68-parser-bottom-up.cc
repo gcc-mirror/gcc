@@ -456,6 +456,7 @@ reduce_prelude_packet (NODE_T *p)
   reduce (p, strange_tokens, NO_TICK,
 	  MODULE_DECLARATION, MODULE_SYMBOL, DEFINING_MODULE_INDICANT, EQUALS_SYMBOL, -MODULE_TEXT, STOP);
 
+#if 0
   /* Joined module declarations.  */
   for (NODE_T *q = p; q != NO_NODE; FORWARD (q))
     {
@@ -469,6 +470,7 @@ reduce_prelude_packet (NODE_T *p)
 	}
       while (siga);
     }
+#endif
 
   /* Try reducing a prelude packet.  */
   reduce (p, NO_NOTE, NO_TICK, PRELUDE_PACKET, MODULE_DECLARATION, STOP);

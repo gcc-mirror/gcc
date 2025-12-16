@@ -1,6 +1,6 @@
 { dg-options "-Whidden-declarations=all" }
 
-module Foo = def int i; i := 10 postlude puts ("bye foo'n") fed,
-       Bar = def int j; j := 20
-             postlude int j; puts ("bye bar'n") fed, { dg-warning "hidden" }
-       Baz = def skip fed
+module Bar =
+def int j; j := 20
+postlude int j; puts ("bye bar'n")  { dg-warning "hidden" }
+fed
