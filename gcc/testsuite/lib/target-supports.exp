@@ -5001,6 +5001,17 @@ proc check_effective_target_aarch64_sve1_only { } {
 		   && ![check_effective_target_aarch64_sve2] }]
 }
 
+# Return 1 if this is an AArch64 target supporting MTE.
+proc check_effective_target_aarch64_mte { } {
+    if { ![istarget aarch64*-*-*] } {
+	return 0
+    }
+    return [check_no_compiler_messages aarch64_mte assembly {
+	#if !defined (__ARM_FEATURE_MEMORY_TAGGING)
+	#error FOO
+	#endif
+    } "-march=armv8.5-a+memtag"]
+}
 # Return the size in bits of an SVE vector, or 0 if the size is variable.
 proc aarch64_sve_bits { } {
     return [check_cached_effective_target aarch64_sve_bits {
@@ -14779,4 +14790,36 @@ proc check_effective_target_valgrind { } {
         return 1
     }
     return 0
+}
+
+# Return 1 if target can compile and run binary for stack
+# sanitization, 0 otherwise.
+proc check_effective_target_memtag_exec {} {
+    if ![check_runtime memtag_exec {
+	#ifdef __cplusplus
+	extern "C" {
+	#endif
+	extern int prctl(int, unsigned long, unsigned long, unsigned long, unsigned long);
+	#ifdef __cplusplus
+	}
+	#endif
+	int main (void) {
+	#define PR_SET_TAGGED_ADDR_CTRL 55
+	#define PR_GET_TAGGED_ADDR_CTRL 56
+	#define PR_TAGGED_ADDR_ENABLE (1UL << 0)
+	#define PR_MTE_TCF_SYNC (1UL << 1)
+	#define PR_MTE_TAG_SHIFT 3
+	  if (prctl (PR_GET_TAGGED_ADDR_CTRL, 0,0,0,0) == -1)
+	    return -1;
+	  if (prctl (PR_SET_TAGGED_ADDR_CTRL,
+		     PR_TAGGED_ADDR_ENABLE | PR_MTE_TCF_SYNC
+		     | (0xfffe << PR_MTE_TAG_SHIFT), 0, 0, 0) == -1
+	      || !prctl (PR_GET_TAGGED_ADDR_CTRL, 0, 0, 0, 0))
+	    return 1;
+	  return 0;
+	}
+      }] {
+	return 0;
+      }
+    return 1;
 }
