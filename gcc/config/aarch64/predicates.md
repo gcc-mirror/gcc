@@ -1092,13 +1092,20 @@
        (match_test "known_eq (wi::to_poly_wide (op, mode),
 			      BYTES_PER_SVE_VECTOR)")))
 
+;; The uimm4 field is a 4-bit field that only accepts immediates in the
+;; range 0..15.
 (define_predicate "aarch64_memtag_tag_offset"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 15)")))
+       (match_test "UINTVAL (op) <= 15")))
 
-(define_predicate "aarch64_granule16_uimm6"
+(define_predicate "aarch64_granule16_memory_operand"
+  (and (match_test "TARGET_MEMTAG")
+       (match_code "mem")
+       (match_test "aarch64_granule16_memory_address_p (op)")))
+
+(define_predicate "aarch64_granule16_imm6"
   (and (match_code "const_int")
-       (match_test "IN_RANGE (INTVAL (op), 0, 1008)
+       (match_test "IN_RANGE (INTVAL (op), -1008, 1008)
 		    && !(INTVAL (op) & 0xf)")))
 
 (define_predicate "aarch64_granule16_simm9"

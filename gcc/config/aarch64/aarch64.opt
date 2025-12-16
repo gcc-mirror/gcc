@@ -456,6 +456,11 @@ individual writeback accesses where possible.  A value of two means we
 also try to opportunistically form writeback opportunities by folding in
 trailing destructive updates of the base register used by a pair.
 
+-param=aarch64-tag-memory-loop-threshold=
+Target Joined UInteger Var(aarch64_tag_memory_loop_threshold) Init(10) IntegerRange(0, 65536) Param
+Param to control the treshold in number of granules beyond which an
+explicit loop for tagging a memory block is emitted.
+
 Wexperimental-fmv-target
 Target Var(warn_experimental_fmv) Warning Init(1) Undocumented
 This option is deprecated.

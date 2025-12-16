@@ -1126,6 +1126,9 @@ void aarch64_expand_sve_vec_cmp_float (rtx, rtx_code, rtx, rtx);
 
 bool aarch64_prepare_sve_int_fma (rtx *, rtx_code);
 bool aarch64_prepare_sve_cond_int_fma (rtx *, rtx_code);
+
+bool aarch64_granule16_memory_address_p (rtx mem);
+void aarch64_expand_tag_memory (rtx, rtx, rtx);
 #endif /* RTX_CODE */
 
 bool aarch64_process_target_attr (tree);

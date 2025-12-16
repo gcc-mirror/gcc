@@ -346,6 +346,12 @@
        (match_test "aarch64_legitimate_address_p (GET_MODE (op), XEXP (op, 0),
 						  true, ADDR_QUERY_LDP_STP)")))
 
+(define_memory_constraint "Umg"
+  "@internal
+  A memory address for MTE load/store tag operation."
+  (and (match_code "mem")
+       (match_test "aarch64_granule16_memory_address_p (op)")))
+
 ;; Used for storing or loading pairs in an AdvSIMD register using an STP/LDP
 ;; as a vector-concat.  The address mode uses the same constraints as if it
 ;; were for a single value.
@@ -599,6 +605,21 @@
   "@internal
  An address valid for a prefetch instruction."
  (match_test "aarch64_address_valid_for_prefetch_p (op, true)"))
+
+(define_constraint "Uag"
+  "@internal
+  A constant that can be used as address offset for an ADDG operation."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, 0, 1008)
+		    && !(ival & 0xf)")))
+
+(define_constraint "Ung"
+  "@internal
+  A constant that can be used as address offset for an SUBG operation (once
+  negated)."
+  (and (match_code "const_int")
+       (match_test "IN_RANGE (ival, -1008, -1)
+		    && !(ival & 0xf)")))
 
 (define_constraint "vgb"
   "@internal

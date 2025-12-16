@@ -19439,6 +19439,10 @@ aarch64_override_options_internal (struct gcc_options *opts)
 #endif
     }
 
+  if (flag_sanitize & SANITIZE_MEMTAG_STACK && !TARGET_MEMTAG)
+    error ("%<-fsanitize=memtag-stack%> requires the ISA extension %qs",
+	   "memtag");
+
   aarch64_feature_flags isa_flags = aarch64_get_isa_flags (opts);
   if ((isa_flags & (AARCH64_FL_SM_ON | AARCH64_FL_ZA_ON))
       && !(isa_flags & AARCH64_FL_SME))
@@ -26073,6 +26077,19 @@ aarch64_asm_output_external (FILE *stream, tree decl, const char* name)
   aarch64_asm_output_variant_pcs (stream, decl, name);
 }
 
+/* Implement TARGET_MEMTAG_CAN_TAG_ADDRESSES.  Here we tell the rest of the
+   compiler that we automatically ignore the top byte of our pointers, which
+   allows using -fsanitize=hwaddress.  In case of -fsanitize=memtag, we
+   additionally ensure that target supports MEMTAG insns.  */
+
+bool
+aarch64_can_tag_addresses ()
+{
+  if (memtag_sanitize_p ())
+    return !TARGET_ILP32 && TARGET_MEMTAG;
+  return !TARGET_ILP32;
+}
+
 /* Triggered after a .cfi_startproc directive is emitted into the assembly file.
    Used to output the .cfi_b_key_frame directive when signing the current
    function with the B key.  */
@@ -26083,6 +26100,11 @@ aarch64_post_cfi_startproc (FILE *f, tree ignored ATTRIBUTE_UNUSED)
   if (cfun->machine->frame.laid_out && aarch64_return_address_signing_enabled ()
       && aarch64_ra_sign_key == AARCH64_KEY_B)
 	asm_fprintf (f, "\t.cfi_b_key_frame\n");
+  if (cfun->machine->frame.laid_out
+      && aarch64_can_tag_addresses ()
+      && memtag_sanitize_p ()
+      && !known_eq (cfun->machine->frame.frame_size, 0))
+    asm_fprintf (f, "\t.cfi_mte_tagged_frame\n");
 }
 
 /* Implement TARGET_STRICT_ARGUMENT_NAMING.
@@ -30849,13 +30871,286 @@ aarch64_invalid_binary_op (int op, const_tree type1,
   return NULL;
 }
 
-/* Implement TARGET_MEMTAG_CAN_TAG_ADDRESSES.  Here we tell the rest of the
-   compiler that we automatically ignore the top byte of our pointers, which
-   allows using -fsanitize=hwaddress.  */
-bool
-aarch64_can_tag_addresses ()
+#define AARCH64_MEMTAG_GRANULE_SIZE  16
+#define AARCH64_MEMTAG_TAG_BITSIZE    4
+
+/* Implement TARGET_MEMTAG_TAG_BITSIZE.  */
+unsigned char
+aarch64_memtag_tag_bitsize ()
 {
-  return !TARGET_ILP32;
+  if (memtag_sanitize_p ())
+    return AARCH64_MEMTAG_TAG_BITSIZE;
+  return default_memtag_tag_bitsize ();
+}
+
+/* Implement TARGET_MEMTAG_GRANULE_SIZE.  */
+unsigned char
+aarch64_memtag_granule_size ()
+{
+  if (memtag_sanitize_p ())
+    return AARCH64_MEMTAG_GRANULE_SIZE;
+  return default_memtag_granule_size ();
+}
+
+/* Implement TARGET_MEMTAG_INSERT_RANDOM_TAG.  In the case of MTE instructions,
+   make sure the gmi and irg instructions are generated when
+   -fsanitize=memtag-stack is used.  The first argument UNTAGGED can be a
+   tagged pointer, and its tag is used in the exclusion set.  Thus, the TARGET
+   doesn't use the same tag.  */
+rtx
+aarch64_memtag_insert_random_tag (rtx untagged, rtx target)
+{
+  if (memtag_sanitize_p ())
+    {
+      insn_code icode = CODE_FOR_gmi;
+      expand_operand ops_gmi[3];
+      rtx tmp = gen_reg_rtx (Pmode);
+      create_output_operand (&ops_gmi[0], tmp, Pmode);
+      create_input_operand  (&ops_gmi[1], untagged, Pmode);
+      create_integer_operand  (&ops_gmi[2], 0);
+      expand_insn (icode, 3, ops_gmi);
+
+      icode = CODE_FOR_irg;
+      expand_operand ops_irg[3];
+      create_output_operand (&ops_irg[0], target, Pmode);
+      create_input_operand  (&ops_irg[1], untagged, Pmode);
+      create_input_operand  (&ops_irg[2], ops_gmi[0].value, Pmode);
+      expand_insn (icode, 3, ops_irg);
+      return ops_irg[0].value;
+    }
+  else
+    return default_memtag_insert_random_tag (untagged, target);
+}
+
+/* Implement TARGET_MEMTAG_ADD_TAG.  For memtag sanitizer, emit addg/subg
+   instructions, otherwise fall back on the default implementation.  */
+rtx
+aarch64_memtag_add_tag (rtx base, poly_int64 offset, uint8_t tag_offset)
+{
+  if (memtag_sanitize_p ())
+    {
+      rtx target = NULL;
+      poly_int64 addr_offset = offset;
+      rtx offset_rtx = gen_int_mode (addr_offset, DImode);
+
+      if (!aarch64_granule16_imm6 (offset_rtx, DImode))
+	{
+	  /* Emit addr arithmetic prior to addg/subg.  */
+	  base = expand_simple_binop (Pmode, PLUS, base, offset_rtx,
+				      NULL, true, OPTAB_LIB_WIDEN);
+	  addr_offset = 0;
+	}
+
+      insn_code icode = CODE_FOR_addg;
+      expand_operand ops[4];
+      create_output_operand (&ops[0], target, DImode);
+      create_input_operand (&ops[1], base, DImode);
+      create_integer_operand (&ops[2], addr_offset);
+      create_integer_operand (&ops[3], tag_offset);
+      /* Addr offset and tag offset must be within bounds at this time.  */
+      gcc_assert (aarch64_memtag_tag_offset (ops[3].value, DImode));
+
+      expand_insn (icode, 4, ops);
+      return ops[0].value;
+    }
+  else
+    return default_memtag_add_tag (base, offset, tag_offset);
+}
+
+/* Implement TARGET_MEMTAG_EXTRACT_TAG.  In the case of memtag sanitizer, MTE
+   instructions allows us to work with tag-address tuple, thus no need to
+   extract the tag, emit a simple move.  */
+rtx
+aarch64_memtag_extract_tag (rtx tagged_pointer, rtx target)
+{
+
+  if (memtag_sanitize_p ())
+    {
+      rtx ret = gen_reg_rtx (DImode);
+      emit_move_insn (ret, gen_lowpart (DImode, tagged_pointer));
+      return ret;
+    }
+  else
+    return default_memtag_extract_tag (tagged_pointer, target);
+}
+
+/* Return TRUE if x is a valid memory address form for memtag loads and
+   stores.  */
+bool
+aarch64_granule16_memory_address_p (rtx x)
+{
+  struct aarch64_address_info addr;
+
+  if (!MEM_P (x)
+      || !aarch64_classify_address (&addr, XEXP (x, 0), GET_MODE (x), false))
+    return false;
+
+  /* Check that the offset, if any, is encodable as 9-bit immediate.  */
+  switch (addr.type)
+    {
+    case ADDRESS_REG_IMM:
+      return aarch64_granule16_simm9 (gen_int_mode (addr.const_offset, DImode),
+				      DImode);
+
+    case ADDRESS_REG_REG:
+      return addr.shift == 0;
+
+    default:
+      break;
+    }
+  return false;
+}
+
+/* Helper to emit either stg or st2g instruction.  */
+static void
+aarch64_emit_stxg_insn (machine_mode mode, rtx nxt, rtx addr, rtx tagp)
+{
+  rtx pat;
+  rtx mem_addr = gen_rtx_MEM (mode, nxt);
+  rtvec vec = gen_rtvec (2, gen_rtx_MEM (mode, addr), tagp);
+  rtx unspec = gen_rtx_UNSPEC_VOLATILE (mode, vec, UNSPECV_TAG_SPACE);
+
+  if (!rtx_equal_p (nxt, addr))
+    {
+      rtx tmp = gen_rtx_CLOBBER (VOIDmode, addr);
+      rtvec parv = gen_rtvec (2, gen_rtx_SET (mem_addr, unspec), tmp);
+      pat = gen_rtx_PARALLEL (VOIDmode, parv);
+    }
+  else
+    {
+      pat = gen_rtx_SET (mem_addr, unspec);
+    }
+  emit_insn (pat);
+}
+
+/* Tag the memory via an explicit loop.  This is used when tag_memory expand
+   is invoked for:
+     - non-constant size, or
+     - constant but not encodable size (!aarch64_granule16_simm9 ()), or
+     - constant and encodable size (aarch64_granule16_simm9 ()), but over the
+       unroll threshold (aarch64_tag_memory_loop_threshold).  */
+
+static void
+aarch64_tag_memory_via_loop (rtx base, rtx size, rtx tagged_pointer)
+{
+  rtx_code_label *top_label, *bottom_label;
+  machine_mode iter_mode;
+  rtx next;
+
+  iter_mode = GET_MODE (size);
+  if (iter_mode == VOIDmode)
+    iter_mode = word_mode;
+
+  /* Prepare the addr operand for tagging memory.  */
+  rtx addr_reg = gen_reg_rtx (Pmode);
+  emit_move_insn (addr_reg, base);
+
+  rtx size_reg = gen_reg_rtx (iter_mode);
+  emit_move_insn (size_reg, size);
+
+  /* tbz  size, 4, label1
+     stg  tag,[addr], #16
+     label1:
+   */
+  auto *label1 = gen_label_rtx ();
+  auto branch = aarch64_gen_test_and_branch (EQ, size_reg, 4, label1);
+  auto jump = emit_jump_insn (branch);
+  JUMP_LABEL (jump) = label1;
+
+  next = gen_rtx_POST_INC (Pmode, addr_reg);
+  aarch64_emit_stxg_insn (TImode, next, addr_reg, tagged_pointer);
+
+  emit_label (label1);
+
+  /* asr  iter, size, 5
+     cbz  iter, label2
+   */
+  rtx iter = gen_reg_rtx (iter_mode);
+  emit_insn (gen_rtx_SET (iter,
+			  gen_rtx_ASHIFTRT (iter_mode, size_reg, GEN_INT (5))));
+  bottom_label = gen_label_rtx ();
+  branch = aarch64_gen_compare_zero_and_branch (EQ, iter, bottom_label);
+  aarch64_emit_unlikely_jump (branch);
+
+  /* top_label:
+     st2g  tag, [addr], #32
+     subs  iter, iter, #1
+     bne   top_label
+   */
+  top_label = gen_label_rtx ();
+  emit_label (top_label);
+
+  /* Tag Memory using post-index st2g.  */
+  next = gen_rtx_POST_INC (Pmode, addr_reg);
+  aarch64_emit_stxg_insn (OImode, next, addr_reg, tagged_pointer);
+
+  /* Decrement ITER.  */
+  emit_insn (gen_subdi3_compare1_imm (iter, iter, CONST1_RTX (iter_mode),
+				      CONSTM1_RTX (iter_mode)));
+
+  rtx cc_reg = gen_rtx_REG (CCmode, CC_REGNUM);
+  rtx x = gen_rtx_fmt_ee (NE, CCmode, cc_reg, const0_rtx);
+  jump = emit_jump_insn (gen_aarch64_bcond (x, cc_reg, top_label));
+  JUMP_LABEL (jump) = top_label;
+
+  emit_label (bottom_label);
+}
+
+/* Implement expand for tag_memory.  */
+void
+aarch64_expand_tag_memory (rtx base, rtx tagged_pointer, rtx size)
+{
+  rtx addr;
+  HOST_WIDE_INT len, offset;
+  unsigned HOST_WIDE_INT granule_size;
+  unsigned HOST_WIDE_INT iters = 0;
+
+  granule_size = (HOST_WIDE_INT) AARCH64_MEMTAG_GRANULE_SIZE;
+
+  if (!REG_P (tagged_pointer))
+    tagged_pointer = force_reg (Pmode, tagged_pointer);
+
+  if (!REG_P (base))
+    base = force_reg (Pmode, base);
+
+  /* If size is small enough, I can can unroll the loop using stg/st2g
+     instructions.  */
+  if (CONST_INT_P (size))
+    {
+      len = INTVAL (size);
+      if (len == 0)
+	return; /* Nothing to do.  */
+
+      /* The amount of memory to tag must be aligned to granule size by now.  */
+      gcc_assert (len % granule_size == 0);
+
+      iters = len / granule_size;
+    }
+
+  /* Check predicate on max offset possible: offset (in base rtx) + size.  */
+  rtx end_addr = simplify_gen_binary (PLUS, Pmode, base, size);
+  end_addr = gen_rtx_MEM (TImode, end_addr);
+  if (iters > 0
+      && iters <= (unsigned HOST_WIDE_INT) aarch64_tag_memory_loop_threshold
+      && aarch64_granule16_memory_address_p (end_addr))
+    {
+      offset = 0;
+      while (iters)
+	{
+	  machine_mode mode = TImode;
+	  if (iters / 2)
+	    {
+	      mode = OImode;
+	      iters--;
+	    }
+	  iters--;
+	  addr = plus_constant (Pmode, base, offset);
+	  offset +=  GET_MODE_SIZE (mode).to_constant ();
+	  aarch64_emit_stxg_insn (mode, addr, addr, tagged_pointer);
+	}
+    }
+  else
+    aarch64_tag_memory_via_loop (base, size, tagged_pointer);
 }
 
 /* Implement TARGET_ASM_FILE_END for AArch64.  This adds the AArch64 GNU NOTE
@@ -33335,6 +33630,21 @@ aarch64_libgcc_floating_mode_supported_p
 
 #undef TARGET_MEMTAG_CAN_TAG_ADDRESSES
 #define TARGET_MEMTAG_CAN_TAG_ADDRESSES aarch64_can_tag_addresses
+
+#undef TARGET_MEMTAG_TAG_BITSIZE
+#define TARGET_MEMTAG_TAG_BITSIZE aarch64_memtag_tag_bitsize
+
+#undef TARGET_MEMTAG_GRANULE_SIZE
+#define TARGET_MEMTAG_GRANULE_SIZE aarch64_memtag_granule_size
+
+#undef TARGET_MEMTAG_INSERT_RANDOM_TAG
+#define TARGET_MEMTAG_INSERT_RANDOM_TAG aarch64_memtag_insert_random_tag
+
+#undef TARGET_MEMTAG_ADD_TAG
+#define TARGET_MEMTAG_ADD_TAG aarch64_memtag_add_tag
+
+#undef TARGET_MEMTAG_EXTRACT_TAG
+#define TARGET_MEMTAG_EXTRACT_TAG aarch64_memtag_extract_tag
 
 #if CHECKING_P
 #undef TARGET_RUN_TARGET_SELFTESTS

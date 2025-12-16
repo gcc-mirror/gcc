@@ -54,9 +54,9 @@ test_memtag_6 (void *p)
   __arm_mte_set_tag (p);
 }
 
-/* { dg-final { scan-assembler-times {irg\tx..?, x..?, x..?\n} 1 } } */
+/* { dg-final { scan-assembler-times {irg\tx..?, x..?\n} 1 } } */
 /* { dg-final { scan-assembler-times {gmi\tx..?, x..?, x..?\n} 1 } } */
 /* { dg-final { scan-assembler-times {subp\tx..?, x..?, x..?\n} 1 } } */
 /* { dg-final { scan-assembler-times {addg\tx..?, x..?, #0, #1\n} 1 } } */
 /* { dg-final { scan-assembler-times {ldg\tx..?, \[x..?, #0\]\n} 1 } } */
-/* { dg-final { scan-assembler-times {stg\tx..?, \[x..?, #0\]\n} 1 } } */
+/* { dg-final { scan-assembler-times {stg\tx..?, \[x..?\]\n} 1 } } */

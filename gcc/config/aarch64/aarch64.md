@@ -412,6 +412,7 @@
     UNSPECV_GCSPOPM		; Represent GCSPOPM.
     UNSPECV_GCSSS1		; Represent GCSSS1 Xt.
     UNSPECV_GCSSS2		; Represent GCSSS2 Xt.
+    UNSPECV_TAG_SPACE		; Represent MTE tag memory space.
     UNSPECV_TSTART		; Represent transaction start.
     UNSPECV_TCOMMIT		; Represent transaction commit.
     UNSPECV_TCANCEL		; Represent transaction cancel.
@@ -8617,46 +8618,48 @@
 ;; Memory Tagging Extension (MTE) instructions.
 
 (define_insn "irg"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
+  [(set (match_operand:DI 0 "register_operand")
 	(ior:DI
-	 (and:DI (match_operand:DI 1 "register_operand" "rk")
+	 (and:DI (match_operand:DI 1 "register_operand")
 		 (const_int MEMTAG_TAG_MASK))
-	 (ashift:DI (unspec:QI [(match_operand:DI 2 "register_operand" "r")]
+	 (ashift:DI (unspec:QI [(match_operand:DI 2 "aarch64_reg_or_zero")]
 		     UNSPEC_GEN_TAG_RND)
 		    (const_int 56))))]
   "TARGET_MEMTAG"
-  "irg\\t%0, %1, %2"
-  [(set_attr "type" "memtag")]
+  {@ [ cons: =0, 1, 2 ; attrs: type ]
+     [ rk      , rk, r  ; memtag ] irg\\t%0, %1, %2
+     [ rk      , rk, Z  ; memtag ] irg\\t%0, %1
+  }
 )
 
 (define_insn "gmi"
   [(set (match_operand:DI 0 "register_operand" "=r")
-	(ior:DI (ashift:DI
-		 (const_int 1)
-		 (and:QI (lshiftrt:DI
-			  (match_operand:DI 1 "register_operand" "rk")
-			  (const_int 56)) (const_int 15)))
-		(match_operand:DI 2 "register_operand" "r")))]
+	(ior:DI
+	 (unspec:DI [(match_operand:DI 1 "register_operand" "rk")
+		     (const_int 0)]
+		    UNSPEC_GEN_TAG)
+	 (match_operand:DI 2 "aarch64_reg_or_zero" "rZ")))]
   "TARGET_MEMTAG"
-  "gmi\\t%0, %1, %2"
+  "gmi\\t%0, %1, %x2"
   [(set_attr "type" "memtag")]
 )
 
 (define_insn "addg"
-  [(set (match_operand:DI 0 "register_operand" "=rk")
+  [(set (match_operand:DI 0 "register_operand")
 	(ior:DI
-	 (and:DI (plus:DI (match_operand:DI 1 "register_operand" "rk")
-			  (match_operand:DI 2 "aarch64_granule16_uimm6" "i"))
-		 (const_int -1080863910568919041)) ;; 0xf0ff...
+	 (and:DI (plus:DI (match_operand:DI 1 "register_operand")
+			  (match_operand:DI 2 "aarch64_granule16_imm6"))
+		 (const_int MEMTAG_TAG_MASK))
 	 (ashift:DI
-	  (unspec:QI
-	   [(and:QI (lshiftrt:DI (match_dup 1) (const_int 56)) (const_int 15))
-	    (match_operand:QI 3 "aarch64_memtag_tag_offset" "i")]
-	   UNSPEC_GEN_TAG)
+	   (unspec:DI [(match_dup 1)
+		       (match_operand:QI 3 "aarch64_memtag_tag_offset")]
+		       UNSPEC_GEN_TAG)
 	  (const_int 56))))]
   "TARGET_MEMTAG"
-  "addg\\t%0, %1, #%2, #%3"
-  [(set_attr "type" "memtag")]
+  {@ [ cons: =0 , 1  , 2 , 3 ; attrs: type ]
+     [ rk       , rk , Uag ,  ; memtag   ] addg\t%0, %1, #%2, #%3
+     [ rk       , rk , Ung ,  ; memtag   ] subg\t%0, %1, #%n2, #%3
+  }
 )
 
 (define_insn "subp"
@@ -8690,16 +8693,82 @@
 ;; STG doesn't align the address but aborts with alignment fault
 ;; when the address is not 16-byte aligned.
 (define_insn "stg"
-  [(set (mem:QI (unspec:DI
-	 [(plus:DI (match_operand:DI 1 "register_operand" "rk")
-		   (match_operand:DI 2 "aarch64_granule16_simm9" "i"))]
-	 UNSPEC_TAG_SPACE))
-	(and:QI (lshiftrt:DI (match_operand:DI 0 "register_operand" "rk")
-			     (const_int 56)) (const_int 15)))]
+  [(set (match_operand:TI 0 "aarch64_granule16_memory_operand" "+Umg")
+      (unspec_volatile:TI
+	[(match_dup 0)
+	 (match_operand:DI 1 "register_operand" "rk")]
+	UNSPECV_TAG_SPACE))]
   "TARGET_MEMTAG"
-  "stg\\t%0, [%1, #%2]"
+  "stg\\t%1, %0"
   [(set_attr "type" "memtag")]
 )
+
+(define_insn "stg_<mte_name>"
+  [(set (mem:TI (MTE_PP:DI (match_operand:DI 0 "register_operand" "+rk")))
+	(unspec_volatile:TI
+	 [(mem:TI (match_dup 0))
+	  (match_operand:DI 1 "register_operand" "rk")]
+	 UNSPECV_TAG_SPACE))
+   (clobber (match_dup 0))]
+  "TARGET_MEMTAG"
+  "stg\\t%1, <stg_ops>"
+  [(set_attr "type" "memtag")]
+)
+
+;; ST2G updates allocation tags for two memory granules (i.e. 32 bytes) at
+;; once, without zero initialization.
+(define_insn "st2g"
+  [(set (match_operand:OI 0 "aarch64_granule16_memory_operand" "+Umg")
+      (unspec_volatile:OI
+	[(match_dup 0)
+	 (match_operand:DI 1 "register_operand" "rk")]
+	UNSPECV_TAG_SPACE))]
+  "TARGET_MEMTAG"
+  "st2g\\t%1, %0"
+  [(set_attr "type" "memtag")]
+)
+
+(define_insn "st2g_<mte_name>"
+  [(set (mem:OI (MTE_PP:DI (match_operand:DI 0 "register_operand" "+rk")))
+	(unspec_volatile:OI
+	 [(mem:OI (match_dup 0))
+	  (match_operand:DI 1 "register_operand" "rk")]
+	 UNSPECV_TAG_SPACE))
+   (clobber (match_dup 0))]
+  "TARGET_MEMTAG"
+  "st2g\\t%1, <st2g_ops>"
+  [(set_attr "type" "memtag")]
+)
+
+(define_expand "tag_memory"
+  [(match_operand:DI 0 "register_operand" "")
+   (match_operand:DI 1 "nonmemory_operand" "")
+   (match_operand:DI 2 "nonmemory_operand" "")]
+  ""
+{
+  aarch64_expand_tag_memory (operands[0], operands[1], operands[2]);
+  DONE;
+})
+
+(define_expand "compose_tag"
+  [(set (match_operand:DI 0 "register_operand")
+	(ior:DI
+	 (and:DI (plus:DI (match_operand:DI 1 "register_operand")
+			  (const_int 0))
+		 (const_int MEMTAG_TAG_MASK))
+	 (ashift:DI
+	  (unspec:DI [(match_dup 1)
+		     (match_operand 2 "immediate_operand")]
+		     UNSPEC_GEN_TAG)
+	  (const_int 56))))]
+  ""
+{
+  if (INTVAL (operands[2]) == 0)
+    {
+     emit_move_insn (operands[0], operands[1]);
+     DONE;
+    }
+})
 
 ;; Load/Store 64-bit (LS64) instructions.
 (define_insn "ld64b"

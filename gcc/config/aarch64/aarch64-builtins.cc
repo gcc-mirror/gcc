@@ -3713,8 +3713,11 @@ aarch64_expand_builtin_memtag (int fcode, tree exp, rtx target)
 	pat = GEN_FCN (icode) (target, op0, const0_rtx);
 	break;
       case AARCH64_MEMTAG_BUILTIN_SET_TAG:
-	pat = GEN_FCN (icode) (op0, op0, const0_rtx);
-	break;
+	{
+	  rtx mem = gen_rtx_MEM (TImode, op0);
+	  pat = GEN_FCN (icode) (mem, op0);
+	  break;
+	}
       default:
 	gcc_unreachable();
     }

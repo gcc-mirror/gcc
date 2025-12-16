@@ -2930,6 +2930,9 @@
 ;; SVE integer comparisons.
 (define_code_iterator SVE_INT_CMP [lt le eq ne ge gt ltu leu geu gtu])
 
+;; pre/post-{inc,dec} for mte instructions.
+(define_code_iterator MTE_PP [post_inc post_dec pre_inc pre_dec])
+
 ;; -------------------------------------------------------------------
 ;; Code Attributes
 ;; -------------------------------------------------------------------
@@ -3278,6 +3281,23 @@
 (define_code_attr SVE_COND_FP [(plus "UNSPEC_COND_FADD")
 			       (minus "UNSPEC_COND_FSUB")
 			       (mult "UNSPEC_COND_FMUL")])
+
+;; Map MTE pre/post to the right asm format
+(define_code_attr stg_ops [(post_inc "[%0], 16")
+			   (post_dec "[%0], -16")
+			   (pre_inc  "[%0, 16]!")
+			   (pre_dec  "[%0, -16]!")])
+
+(define_code_attr st2g_ops [(post_inc "[%0], 32")
+			    (post_dec "[%0], -32")
+			    (pre_inc  "[%0, 32]!")
+			    (pre_dec  "[%0, -32]!")])
+
+;; Map MTE pre/post to names
+(define_code_attr mte_name [(post_inc "postinc")
+			    (post_dec "postdec")
+			    (pre_inc "preinc")
+			    (pre_dec "predec")])
 
 ;; -------------------------------------------------------------------
 ;; Int Iterators.
