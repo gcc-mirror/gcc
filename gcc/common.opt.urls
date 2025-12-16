@@ -836,6 +836,9 @@ UrlSuffix(gcc/Code-Gen-Options.html#index-fgnu-unique)
 floop-nest-optimize
 UrlSuffix(gcc/Optimize-Options.html#index-floop-nest-optimize)
 
+fspeculatively-call-stored-functions
+UrlSuffix(gcc/Optimize-Options.html#index-fspeculatively-call-stored-functions)
+
 fstrict-volatile-bitfields
 UrlSuffix(gcc/Code-Gen-Options.html#index-fstrict-volatile-bitfields)
 
