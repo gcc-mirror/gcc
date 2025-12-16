@@ -1,6 +1,9 @@
 // { dg-do compile }
 // { dg-require-effective-target vect_double }
 // { dg-additional-options "-fexcess-precision=fast" }
+// We require decomposing a structure copy to double load/store pairs which
+// is not possible with x87 math.
+// { dg-additional-options "-msse -mfpmath=sse" { target { x86_64-*-* i?86-*-* } } }
 // { dg-skip-if "requires hosted libstdc++ for vector" { ! hostedlib } }
 
 #include <vector>
@@ -51,4 +54,4 @@ main(int argc, char** argv)
   return 0;
 }
 
-// { dg-final { scan-tree-dump "pr64410.cc:46:29: optimized: loop vectorized" "vect" } }
+// { dg-final { scan-tree-dump "pr64410.cc:49:29: optimized: loop vectorized" "vect" } }
