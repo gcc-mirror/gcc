@@ -8903,17 +8903,21 @@ gnat_to_gnu (Node_Id gnat_node)
 	   && !(TREE_CODE (gnu_result_type) == RECORD_TYPE
 		&& TYPE_JUSTIFIED_MODULAR_P (gnu_result_type))))
     {
-      /* Remove padding only if the inner object is of self-referential
-	 size: in that case it must be an object of unconstrained type
-	 with a default discriminant and we want to avoid copying too
-	 much data.  But do not remove it if it is already too small.  */
-      if (type_is_padding_self_referential (TREE_TYPE (gnu_result))
+      tree t = TREE_TYPE (gnu_result);
+
+      /* Remove the padding only if the inner object is of self-referential
+	 size: in that case, it must be an object of an unconstrained type
+	 with default discriminants and we want to avoid copying too much
+	 data.  But we would nevertheless rather copy up to MOVE_MAX_PIECES
+	 bytes than invoke memcpy for such a small amount of data.  In any
+	 case, do not remove the padding if it is already too small.  */
+      if (type_is_padding_self_referential (t)
+	  && (TREE_CODE (TYPE_SIZE_UNIT (t)) != INTEGER_CST
+	      || compare_tree_int (TYPE_SIZE_UNIT (t), MOVE_MAX_PIECES) > 0)
 	  && !(TREE_CODE (gnu_result) == COMPONENT_REF
 	       && DECL_BIT_FIELD (TREE_OPERAND (gnu_result, 1))
-	       && DECL_SIZE (TREE_OPERAND (gnu_result, 1))
-		  != TYPE_SIZE (TREE_TYPE (gnu_result))))
-	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (TREE_TYPE (gnu_result))),
-			      gnu_result);
+	       && DECL_SIZE (TREE_OPERAND (gnu_result, 1)) != TYPE_SIZE (t)))
+	gnu_result = convert (TREE_TYPE (TYPE_FIELDS (t)), gnu_result);
     }
 
   else if (TREE_CODE (gnu_result) == LABEL_DECL
