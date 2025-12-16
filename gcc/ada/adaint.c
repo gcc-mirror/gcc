@@ -3720,6 +3720,35 @@ void __gnat_killprocesstree (int pid, int sig_num)
   */
 }
 
+#if defined (_WIN32)
+
+int __gnat_set_thread_description(HANDLE h, char *descr, int length) {
+
+  /* This function is a no-op if Unicode support is not enabled */
+#ifdef GNAT_UNICODE_SUPPORT
+
+  if (!pSetThreadDescription) {
+    /* This is presumably not an error case, SetThreadDescription is simply
+       not available in the current Windows version. */
+    return 1;
+  }
+
+  TCHAR wdescr[length + 1];
+
+  S2WSC (wdescr, descr, length + 1);
+
+  HRESULT res = pSetThreadDescription(h, wdescr);
+  if (FAILED(res)) {
+    return 0;
+  }
+
+#endif
+
+  return 1;
+}
+
+#endif /* defined (_WIN32) */
+
 #ifdef __cplusplus
 }
 #endif

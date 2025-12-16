@@ -740,6 +740,34 @@ package body System.Task_Primitives.Operations is
       Get_Stack_Bounds
         (Self_ID.Common.Compiler_Data.Pri_Stack_Info.Base'Address,
          Self_ID.Common.Compiler_Data.Pri_Stack_Info.Limit'Address);
+
+      if Self_ID.Common.Task_Image_Len > 0 then
+         declare
+            function Set_Thread_Description
+              (H : Thread_Id; Descr : Address; Length : Integer)
+               return Integer;
+            pragma
+              Import
+                (C, Set_Thread_Description, "__gnat_set_thread_description");
+
+            Nul_Terminated_Image : constant String :=
+              Self_ID.Common.Task_Image
+                (Self_ID.Common.Task_Image'First
+                 ..
+                   Self_ID.Common.Task_Image'First
+                   + Self_ID.Common.Task_Image_Len
+                   - 1)
+              & ASCII.NUL;
+
+            Result : constant Integer :=
+              Set_Thread_Description
+                (Self_ID.Common.LL.Thread,
+                 Nul_Terminated_Image'Address,
+                 Self_ID.Common.Task_Image_Len);
+         begin
+            pragma Assert (Result = 1);
+         end;
+      end if;
    end Enter_Task;
 
    -------------------

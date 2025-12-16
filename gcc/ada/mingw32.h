@@ -95,4 +95,11 @@ extern UINT __gnat_current_ccs_encoding;
 #define WS2S(str,wstr,len) strncpy(str,wstr,len)
 #endif
 
+typedef HRESULT (WINAPI *SetThreadDescription_t)(
+    _In_ HANDLE hThread,
+    _In_ PCWSTR lpThreadDescription
+);
+
+extern SetThreadDescription_t pSetThreadDescription;
+
 #endif /* _MINGW32_H */
