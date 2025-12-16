@@ -1,3 +1,76 @@
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	* parser.cc (cp_parser_template_id): Rebuild instead of modifying
+	a TYPENAME_TYPE corresponding to a dependently-scoped template.
+
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (TYPENAME_TYPE_TAG_BIT_0): New.
+	(TYPENAME_TYPE_TAG_BIT_1): New.
+	(TYPENAME_TYPE_TAG_BIT_2): New.
+	(TYPENAME_IS_ENUM_P): Use get_typename_tag.
+	(TYPENAME_IS_CLASS_P): Rename to ...
+	(TYPENAME_IS_CLASS_OR_STRUCT_P): ... this, and use
+	get_typename_tag.
+	(TYPENAME_IS_UNION_P): Use get_typename_tag.
+	(TYPENAME_IS_RESOLVING_P): Use TREE_LANG_FLAG_3
+	instead of _2.
+	(get_typename_tag): New.
+	(set_typename_tag): New.
+	(tag_name): Declare.
+	* decl.cc (typename_info): Replace bool fields with a single
+	tag_types field.
+	(typename_hasher::equal): Adjust.
+	(build_typename_type): Adjust.
+	(tag_name): Handle none_type and scope_type.
+	* error.cc (dump_type) <case TYPENAME_TYPE>: Use tag_name.
+	* module.cc (trees_out::type_node) <case TYPENAME_TYPE>: Use
+	get_typename_tag.
+	* pt.cc (tsubst) <case TYPENAME_TYPE>: Likewise.
+
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	* cp-tree.h (CLASSTYPE_LAMBDA_EXPR): Check CLASS_TYPE_P before
+	inspecting TYPE_POLYMORPHIC_P.
+	(TYPE_POLYMORPHIC_P): Restrict to RECORD_TYPE or UNION_TYPE.
+	Document its use of TREE_LANG_FLAG_2.
+	* parser.cc (noexcept_override_late_checks): Only
+	check TYPE_POLYMORPHIC_P on CLASS_TYPE_P types.
+	* rtti.cc (build_headof): Likewise.
+	(get_tinfo_ptr_dynamic): Likewise.
+	(build_typeid): Likewise.
+
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122752
+	* pt.cc (tsubst) <case TYPENAME_TYPE>: Allow TYPENAME_TYPE
+	resolving to another wildcard type.
+
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* parser.cc (cp_parser_class_specifier): Adjust after
+	changing the element type of unparsed_noexcepts.  Pass
+	the class type to noexcept_override_late_checks.
+	(cp_parser_member_declaration): Set
+	CP_PARSER_FLAGS_DELAY_NOEXCEPT also for templated friends.
+	(noexcept_override_late_checks): Add class_type parameter.
+	(cp_parser_single_declaration): Set
+	CP_PARSER_FLAGS_DELAY_NOEXCEPT also for template friends
+	at class template scope.
+	(cp_parser_save_default_args): Push current_class_type
+	to unparsed_noexcepts.
+	* parser.h (cp_unparsed_functions_entry::noexcepts):
+	Change element type to cp_default_arg_entry.
+	* pt.cc (dependentish_scope_p): Revert r16-5425 change.
+
+2025-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123128
+	* parser.cc (cp_parser_omp_clause_linear): Initialize next to NULL
+	rather than UNKNOWN_LOCATION.
+
 2025-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* parser.cc (cp_parser_omp_clause_reduction): Provide fixit hints

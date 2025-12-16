@@ -1,3 +1,9 @@
+2025-12-15  Jakub Jelinek  <jakub@redhat.com>
+
+	* plugin/build-target-indirect-htab.h (create_target_indirect_map):
+	Use (void) htab_find instead of assert (htab_find) to silence
+	-Werror=unused-function because the latter triggers -Werror=address.
+
 2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	* testsuite/libgomp.fortran/dep-uses-allocators.f90: Properly

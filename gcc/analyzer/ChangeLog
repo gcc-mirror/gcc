@@ -1,3 +1,15 @@
+2025-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123085
+	* region-model.cc (region_model::scan_for_null_terminator_1): Use
+	byte offset when accessing string constant.
+
+2025-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122975
+	* region-model-manager.cc (region_model_manager::maybe_fold_binop): Fold
+	X + (-X) to zero.
+
 2025-12-12  David Malcolm  <dmalcolm@redhat.com>
 
 	* analyzer.opt.urls: Regenerate.

@@ -1,3 +1,16 @@
+2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123138
+	* sem_attr.adb (Resolve_Attribute) <Attribute_Reduce>: Override a
+	universal numeric type only if the prefix is not an aggregate.
+
+2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Synthesize a new
+	TYPE_CANONICAL for the old pointer type in the case where there
+	is no new pointer type.  Likewise for references.
+
 2025-12-11  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/123096

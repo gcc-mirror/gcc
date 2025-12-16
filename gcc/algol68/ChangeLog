@@ -1,3 +1,21 @@
+2025-12-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* ga68-exports.pk (ga68_text_reloc_64): Renamed and
+	adapted from ga68_text_reloc.
+	(ga68_data_reloc_64): Renamed and adapted from ga68_data_reloc.
+	(ga68_mode_64): Renamed and adapted from ga68_mode.
+	(ga68_extract_64): Renamed and adapted from ga68_extract.
+	(ga68_module_64): Renamed and adapted from ga68_module.
+	(ga68_text_reloc_32): New type.
+	(ga68_data_reloc_32): Likewise.
+	(ga68_mode_32): Likewise.
+	(ga68_extract_32): Likewise.
+	(ga68_module_32): Likewise.
+
+2025-12-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* ga68-exports.pk: Fix comment and value for magic number.
+
 2025-12-13  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-parser-bottom-up.cc (a68_bottom_up_coalesce_pub): Do not

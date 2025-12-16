@@ -1,3 +1,9 @@
+2025-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/122936
+	* io/list_read.c (finish_list_read): Remove the use of hit_eof
+	and free_line. Simplify the logic. Add comments to clarify.
+
 2025-11-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR libfortran/90374

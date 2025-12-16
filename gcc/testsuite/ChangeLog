@@ -1,3 +1,82 @@
+2025-12-15  Martin Jambor  <mjambor@suse.cz>
+
+	* gcc.dg/lto/fnptr-from-rec-1_0.c: New test.
+	* gcc.dg/lto/fnptr-from-rec-1_1.c: Likewise.
+	* gcc.dg/lto/fnptr-from-rec-2_0.c: Likewise.
+	* gcc.dg/lto/fnptr-from-rec-2_1.c: Likewise.
+	* gcc.dg/lto/fnptr-from-rec-3_0.c: Likewise.
+	* gcc.dg/lto/fnptr-from-rec-3_1.c: Likewise.
+
+2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/reduce4.adb: New test.
+	* gnat.dg/reduce5.adb: Likewise.
+
+2025-12-15  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR libfortran/122936
+	* gfortran.dg/pr122936.f90: New test.
+
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122752
+	* g++.dg/template/dependent-name19.C: New test.
+
+2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* g++.dg/cpp0x/noexcept91a.C: New test.
+
+2025-12-15  Joseph Myers  <josmyers@redhat.com>
+
+	* lib/plugin-support.exp (plugin-test-execute): Support installed
+	testing.
+	* g++.dg/plugin/plugin.exp, gcc.dg/plugin/plugin.exp,
+	obj-c++.dg/plugin/plugin.exp, objc.dg/plugin/plugin.exp: Do not
+	disable for installed testing.
+
+2025-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123085
+	* c-c++-common/analyzer/strlen-pr123085.c: New test.
+
+2025-12-15  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122975
+	* c-c++-common/analyzer/arith-1.c: New test.
+	* c-c++-common/analyzer/infinite-recursion-pr122975.c: New test.
+
+2025-12-15  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-early-break_40.c: Fix.
+	* gcc.dg/gomp/static-chunk-size-one.c: Likewise.
+	* gcc.dg/vect/vect-uncounted_1.c: New.
+	* gcc.dg/vect/vect-uncounted_2.c: Likewise.
+	* gcc.dg/vect/vect-uncounted_3.c: Likewise.
+	* gcc.dg/vect/vect-uncounted_4.c: Likewise.
+	* gcc.dg/vect/vect-uncounted_5.c: Likewise.
+	* gcc.dg/vect/vect-uncounted_6.c: Likewise.
+	* gcc.dg/vect/vect-uncounted_7.c: Likewise.
+	* gcc.dg/vect/vect-uncounted-run_1.c: Likewise.
+	* gcc.dg/vect/vect-uncounted-run_2.c: Likewise.
+	* gcc.dg/vect/vect-uncounted-run_3.c: Likewise.
+	* gcc.dg/vect/vect-uncounted-prolog-peel_1.c: Likewise.
+
+2025-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123032
+	* gcc.dg/vect/pr123032.c: New test.
+
+2025-12-15  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123043
+	* gcc.dg/vect/pr123043.c: New test.
+
+2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/lto30.ads, gnat.dg/lto30.adb: New test.
+
 2025-12-14  Lewis Hyatt  <lhyatt@gmail.com>
 
 	PR tree-optimization/106409
