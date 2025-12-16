@@ -1,6 +1,6 @@
 /* { dg-do compile } */
 /* { dg-options "-fdiagnostics-add-output=experimental-html:javascript=no" } */
-
+/* { dg-require-dot "" } */
 extern void here (void);
 
 void test_graphs (void)
