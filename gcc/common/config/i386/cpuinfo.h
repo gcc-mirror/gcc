@@ -319,12 +319,27 @@ get_amd_cpu (struct __processor_model *cpu_model,
 	  CHECK___builtin_cpu_is ("znver5");
 	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER5;
 	}
+      else if ((model >= 0x50 && model <= 0x5f) ||
+	       (model >= 0x80 && model <= 0xcf) ||
+	       (model >= 0xd8 && model <= 0xe7))
+	{
+	  cpu = "znver6";
+	  CHECK___builtin_cpu_is ("znver6");
+	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER6;
+	}
       else if (has_cpu_feature (cpu_model, cpu_features2,
 				FEATURE_AVX512VP2INTERSECT))
 	{
 	  cpu = "znver5";
 	  CHECK___builtin_cpu_is ("znver5");
 	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER5;
+	}
+      else if (has_cpu_feature (cpu_model, cpu_features2,
+				FEATURE_AVX512BMM))
+	{
+	  cpu = "znver6";
+	  CHECK___builtin_cpu_is ("znver6");
+	  cpu_model->__cpu_subtype = AMDFAM1AH_ZNVER6;
 	}
       break;
     default:
@@ -1046,6 +1061,16 @@ get_available_features (struct __processor_model *cpu_model,
 	    set_feature (FEATURE_AMX_FP8);
 	  if (eax & bit_AMX_MOVRS)
 	    set_feature (FEATURE_AMX_MOVRS);
+	}
+    }
+
+  /* Get Advanced Features at level 0x21 (eax = 0x21).  */
+  if (max_cpuid_level >= 0x21)
+    {
+      __cpuid (0x21, eax, ebx, ecx, edx);
+      if (eax & bit_AVX512BMM)
+	{
+	  set_feature (FEATURE_AVX512BMM);
 	}
     }
 

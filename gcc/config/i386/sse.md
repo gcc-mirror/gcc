@@ -251,6 +251,11 @@
   UNSPEC_MINMAXBF16
   UNSPEC_MINMAX
 
+  ;; For AVX512BMM support
+  UNSPEC_VBMACOR
+  UNSPEC_VBMACXOR
+  UNSPEC_VBITREV
+
   ;; For MOVRS suppport
   UNSPEC_VMOVRS
 ])
@@ -33136,4 +33141,56 @@
   [(set_attr "type" "ssemov")
    (set_attr "prefix" "evex")
    (set_attr "memory" "load")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_mode_iterator VI2_256_512_AVX512VL
+  [V32HI (V16HI "TARGET_AVX512VL")])
+
+(define_insn "avx512bmm_vbmacor16x16x16_<mode>"
+  [(set (match_operand:VI2_256_512_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI2_256_512_AVX512VL
+	  [(match_operand:VI2_256_512_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI2_256_512_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI2_256_512_AVX512VL 3 "nonimmediate_operand" "vm")]
+	  UNSPEC_VBMACOR))]
+  "TARGET_AVX512BMM"
+  "vbmacor16x16x16\t{%3, %2, %0|%0, %2, %3}"
+   [(set_attr ("prefix") ("evex"))
+   (set_attr "mode" "<sseinsnmode>")])
+
+
+(define_insn "avx512bmm_vbmacxor16x16x16_<mode>"
+  [(set (match_operand:VI2_256_512_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI2_256_512_AVX512VL
+	  [(match_operand:VI2_256_512_AVX512VL 1 "register_operand" "0")
+	   (match_operand:VI2_256_512_AVX512VL 2 "register_operand" "v")
+	   (match_operand:VI2_256_512_AVX512VL 3 "nonimmediate_operand" "vm")]
+	  UNSPEC_VBMACXOR))]
+  "TARGET_AVX512BMM"
+  "vbmacxor16x16x16\t{%3, %2, %0|%0, %2, %3}"
+   [(set_attr ("prefix") ("evex"))
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx512bmm_vbitrevb_<mode>_mask"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(vec_merge:VI1_AVX512VL
+	  (unspec:VI1_AVX512VL
+	     [(match_operand:VI1_AVX512VL 1 "nonimmediate_operand" "vm")]
+	    UNSPEC_VBITREV)
+	  (match_operand:VI1_AVX512VL 2 "reg_or_0_operand" "0C")
+	  (match_operand:<avx512fmaskmode> 3 "register_operand" "Yk")))]
+  "TARGET_AVX512BMM"
+  "vbitrevb\t{%1, %0%{%3%}%N2|%0%{%3%}%N2, %1}"
+  [(set_attr "prefix" "evex")
+   (set_attr "mode" "<sseinsnmode>")])
+
+(define_insn "avx512bmm_vbitrevb_<mode>"
+  [(set (match_operand:VI1_AVX512VL 0 "register_operand" "=v")
+	(unspec:VI1_AVX512VL
+	  [(match_operand:VI1_AVX512VL 1 "nonimmediate_operand" "vm")]
+          UNSPEC_VBITREV)
+	)]
+  "TARGET_AVX512BMM"
+  "vbitrevb\t{%1, %0|%0, %1}"
+  [(set_attr "prefix" "evex")
    (set_attr "mode" "<sseinsnmode>")])

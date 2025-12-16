@@ -177,11 +177,12 @@ along with GCC; see the file COPYING3.  If not see
 #define m_ZNVER3 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER3)
 #define m_ZNVER4 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER4)
 #define m_ZNVER5 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER5)
+#define m_ZNVER6 (HOST_WIDE_INT_1U<<PROCESSOR_ZNVER6)
 #define m_BTVER1 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER1)
 #define m_BTVER2 (HOST_WIDE_INT_1U<<PROCESSOR_BTVER2)
 #define m_BDVER	(m_BDVER1 | m_BDVER2 | m_BDVER3 | m_BDVER4)
 #define m_BTVER (m_BTVER1 | m_BTVER2)
-#define m_ZNVER (m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ZNVER5)
+#define m_ZNVER (m_ZNVER1 | m_ZNVER2 | m_ZNVER3 | m_ZNVER4 | m_ZNVER5 | m_ZNVER6)
 #define m_AMD_MULTIPLE (m_ATHLON_K8 | m_AMDFAM10 | m_BDVER | m_BTVER \
 			| m_ZNVER)
 
@@ -267,7 +268,8 @@ static struct ix86_target_opts isa2_opts[] =
   { "-mamx-tf32",	OPTION_MASK_ISA2_AMX_TF32 },
   { "-mamx-fp8", 	OPTION_MASK_ISA2_AMX_FP8 },
   { "-mmovrs",		OPTION_MASK_ISA2_MOVRS },
-  { "-mamx-movrs",	OPTION_MASK_ISA2_AMX_MOVRS }
+  { "-mamx-movrs",	OPTION_MASK_ISA2_AMX_MOVRS },
+  { "-mavx512bmm",	OPTION_MASK_ISA2_AVX512BMM }
 };
 static struct ix86_target_opts isa_opts[] =
 {
@@ -811,7 +813,8 @@ static const struct processor_costs *processor_cost_table[] =
   &znver2_cost,		/* PROCESSOR_ZNVER2.		*/
   &znver3_cost,		/* PROCESSOR_ZNVER3.		*/
   &znver4_cost,		/* PROCESSOR_ZNVER4.		*/
-  &znver5_cost		/* PROCESSOR_ZNVER5.		*/
+  &znver5_cost,		/* PROCESSOR_ZNVER5.		*/
+  &znver5_cost		/* PROCESSOR_ZNVER6.		*/
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */
@@ -1127,6 +1130,7 @@ ix86_valid_target_attribute_inner_p (tree fndecl, tree args, char *p_strings[],
     IX86_ATTR_ISA ("amx-fp8", OPT_mamx_fp8),
     IX86_ATTR_ISA ("movrs", OPT_mmovrs),
     IX86_ATTR_ISA ("amx-movrs", OPT_mamx_movrs),
+    IX86_ATTR_ISA ("avx512bmm", OPT_mavx512bmm),
 
     /* enum options */
     IX86_ATTR_ENUM ("fpmath=",	OPT_mfpmath_),

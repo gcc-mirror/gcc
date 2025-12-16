@@ -159,4 +159,8 @@
 #include <movrsintrin.h>
 
 #include <amxmovrsintrin.h>
+
+#include <avx512bmmintrin.h>
+
+#include <avx512bmmvlintrin.h>
 #endif /* _IMMINTRIN_H_INCLUDED */

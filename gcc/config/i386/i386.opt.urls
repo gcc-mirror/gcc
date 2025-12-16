@@ -614,3 +614,6 @@ UrlSuffix(gcc/x86-Options.html#index-mmovrs)
 mamx-movrs
 UrlSuffix(gcc/x86-Options.html#index-mamx-movrs)
 
+mavx512bmm
+UrlSuffix(gcc/x86-Options.html#index-mavx512bmm)
+

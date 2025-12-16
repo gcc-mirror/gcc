@@ -25550,7 +25550,7 @@ ix86_reassociation_width (unsigned int op, machine_mode mode)
 	return 1;
       /* Znver5 can do 2 integer multiplications per cycle with latency
 	 of 3.  */
-      if (ix86_tune == PROCESSOR_ZNVER5
+      if ((ix86_tune == PROCESSOR_ZNVER5 || ix86_tune == PROCESSOR_ZNVER6)
 	  && INTEGRAL_MODE_P (mode) && op != PLUS && op != MINUS)
 	width = 6;
 

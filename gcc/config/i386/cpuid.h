@@ -167,6 +167,9 @@
 #define bit_AESKLE	( 1<<0 )
 #define bit_WIDEKL	( 1<<2 )
 
+/* Sub leaf (%eax == 0x21) */
+#define bit_AVX512BMM	( 1<<23 )
+
 /* AMX sub leaf (%eax == 0x1e, %ecx == 1) */
 /* %eax */
 #define bit_AMX_FP8	(1 << 4)

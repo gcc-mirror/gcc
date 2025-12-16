@@ -139,6 +139,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_MOVRS_SET OPTION_MASK_ISA2_MOVRS
 #define OPTION_MASK_ISA2_AMX_MOVRS_SET \
   (OPTION_MASK_ISA2_AMX_TILE_SET | OPTION_MASK_ISA2_AMX_MOVRS)
+#define OPTION_MASK_ISA2_AVX512BMM_SET OPTION_MASK_ISA2_AVX512BMM
 
 /* SSE4 includes both SSE4.1 and SSE4.2. -msse4 should be the same
    as -msse4.2.  */
@@ -331,6 +332,7 @@ along with GCC; see the file COPYING3.  If not see
 #define OPTION_MASK_ISA2_AMX_FP8_UNSET OPTION_MASK_ISA2_AMX_FP8
 #define OPTION_MASK_ISA2_MOVRS_UNSET OPTION_MASK_ISA2_MOVRS
 #define OPTION_MASK_ISA2_AMX_MOVRS_UNSET OPTION_MASK_ISA2_AMX_MOVRS
+#define OPTION_MASK_ISA2_AVX512BMM_UNSET OPTION_MASK_ISA2_AVX512BMM
 
 /* SSE4 includes both SSE4.1 and SSE4.2.  -mno-sse4 should the same
    as -mno-sse4.1. */
@@ -393,7 +395,8 @@ along with GCC; see the file COPYING3.  If not see
 
 #define OPTION_MASK_ISA2_AVX512BW_UNSET \
   (OPTION_MASK_ISA2_AVX512BF16_UNSET \
-    | OPTION_MASK_ISA2_AVX512FP16_UNSET)
+    | OPTION_MASK_ISA2_AVX512FP16_UNSET \
+    | OPTION_MASK_ISA2_AVX512BMM_UNSET)
 
 /* Set 1 << value as value of -malign-FLAG option.  */
 
@@ -935,6 +938,21 @@ ix86_handle_option (struct gcc_options *opts,
 	{
 	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512BF16_UNSET;
 	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512BF16_UNSET;
+	}
+      return true;
+
+    case OPT_mavx512bmm:
+      if (value)
+	{
+	  opts->x_ix86_isa_flags2 |= OPTION_MASK_ISA2_AVX512BMM_SET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512BMM_SET;
+	  opts->x_ix86_isa_flags |= OPTION_MASK_ISA_AVX512BW_SET;
+	  opts->x_ix86_isa_flags_explicit |= OPTION_MASK_ISA_AVX512BW_SET;
+	}
+      else
+	{
+	  opts->x_ix86_isa_flags2 &= ~OPTION_MASK_ISA2_AVX512BMM_UNSET;
+	  opts->x_ix86_isa_flags2_explicit |= OPTION_MASK_ISA2_AVX512BMM_UNSET;
 	}
       return true;
 
@@ -2151,7 +2169,8 @@ const char *const processor_names[] =
   "znver2",
   "znver3",
   "znver4",
-  "znver5"
+  "znver5",
+  "znver6"
 };
 
 /* Guarantee that the array is aligned with enum processor_type.  */
@@ -2410,6 +2429,9 @@ const pta processor_alias_table[] =
   {"znver5", PROCESSOR_ZNVER5, CPU_ZNVER5,
     PTA_ZNVER5,
     M_CPU_SUBTYPE (AMDFAM1AH_ZNVER5), P_PROC_AVX512F},
+  {"znver6", PROCESSOR_ZNVER6, CPU_ZNVER5,
+    PTA_ZNVER6,
+    M_CPU_SUBTYPE (AMDFAM1AH_ZNVER6), P_PROC_AVX512F},
   {"btver1", PROCESSOR_BTVER1, CPU_GENERIC,
     PTA_BTVER1,
     M_CPU_TYPE (AMD_BTVER1), P_PROC_SSE4_A},
