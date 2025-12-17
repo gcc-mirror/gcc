@@ -35,7 +35,7 @@ EXPORT QUALIFIED (* types *)
                  File,
                  (* procedures *)
                  OpenToRead, OpenToWrite, OpenForRandom, Close,
-                 EOF, EOLN, WasEOLN, IsNoError, Exists, IsActive,
+                 EOF, EOLN, WasEOLN, IsError, IsNoError, Exists, IsActive,
                  exists, openToRead, openToWrite, openForRandom,
                  SetPositionFromBeginning,
                  SetPositionFromEnd,
@@ -55,35 +55,42 @@ EXPORT QUALIFIED (* types *)
 TYPE
    File = CARDINAL ;
 
-(* the following variables are initialized to their UNIX equivalents *)
+(* The following variables are initialized to their UNIX equivalents.  *)
 VAR
    StdIn, StdOut, StdErr: File ;
 
 
 
 (*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns TRUE if no error has occured on file f.
 *)
 
 PROCEDURE IsNoError (f: File) : BOOLEAN ;
 
 
 (*
-   IsActive - returns TRUE if the file, f, is still active.
+   IsError - returns TRUE if an error has occured on file f.
+*)
+
+PROCEDURE IsError (f: File) : BOOLEAN ;
+
+
+(*
+   IsActive - returns TRUE if the file f is still active.
 *)
 
 PROCEDURE IsActive (f: File) : BOOLEAN ;
 
 
 (*
-   Exists - returns TRUE if a file named, fname exists for reading.
+   Exists - returns TRUE if a file fname exists for reading.
 *)
 
 PROCEDURE Exists (fname: ARRAY OF CHAR) : BOOLEAN ;
 
 
 (*
-   OpenToRead - attempts to open a file, fname, for reading and
+   OpenToRead - attempts to open a file fname for reading and
                 it returns this file.
                 The success of this operation can be checked by
                 calling IsNoError.
@@ -93,7 +100,7 @@ PROCEDURE OpenToRead (fname: ARRAY OF CHAR) : File ;
 
 
 (*
-   OpenToWrite - attempts to open a file, fname, for write and
+   OpenToWrite - attempts to open a file fname for write and
                  it returns this file.
                  The success of this operation can be checked by
                  calling IsNoError.
@@ -103,7 +110,7 @@ PROCEDURE OpenToWrite (fname: ARRAY OF CHAR) : File ;
 
 
 (*
-   OpenForRandom - attempts to open a file, fname, for random access
+   OpenForRandom - attempts to open a file fname for random access
                    read or write and it returns this file.
                    The success of this operation can be checked by
                    calling IsNoError.
@@ -124,9 +131,14 @@ PROCEDURE OpenForRandom (fname: ARRAY OF CHAR;
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 *)
 
-PROCEDURE Close (f: File) ;
+PROCEDURE Close (f: File) : [BOOLEAN] ;
 
 
 (* the following functions are functionally equivalent to the above

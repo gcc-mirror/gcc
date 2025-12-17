@@ -194,7 +194,7 @@ END GetNextFreeDescriptor ;
 
 
 (*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns a TRUE if no error has occured on file f.
 *)
 
 PROCEDURE IsNoError (f: File) : BOOLEAN ;
@@ -209,6 +209,24 @@ BEGIN
       RETURN( (fd#NIL) AND ((fd^.state=successful) OR (fd^.state=endoffile) OR (fd^.state=endofline)) )
    END
 END IsNoError ;
+
+
+(*
+   IsError - returns a TRUE if an error has occured on file f.
+*)
+
+PROCEDURE IsError (f: File) : BOOLEAN ;
+VAR
+   fd: FileDescriptor ;
+BEGIN
+   IF f=Error
+   THEN
+      RETURN( FALSE )
+   ELSE
+      fd := GetIndice (FileInfo, f) ;
+      RETURN( (fd#NIL) AND ((fd^.state#successful) AND (fd^.state#endoffile) AND (fd^.state#endofline)) )
+   END
+END IsError ;
 
 
 (*
@@ -474,28 +492,32 @@ END OpenForRandom ;
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 *)
 
-PROCEDURE Close (f: File) ;
+PROCEDURE Close (f: File) : [BOOLEAN] ;
 VAR
    fd: FileDescriptor ;
 BEGIN
-   IF f#Error
+   IF f # Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
-      (*
-         we allow users to close files which have an error status
-      *)
-      IF fd#NIL
+      fd := GetIndice (FileInfo, f) ;
+      (* We allow users to close files which have an error status.  *)
+      IF fd # NIL
       THEN
-         FlushBuffer(f) ;
+         FlushBuffer (f) ;
          WITH fd^ DO
-            IF unixfd>=0
+            IF unixfd >= 0
             THEN
-               IF close(unixfd)#0
+               IF close (unixfd) # 0
                THEN
-                  FormatError1('failed to close file (%s)\n', name.address) ;
-                  state := failed   (* --fixme-- too late to notify user (unless we return a BOOLEAN) *)
+                  FormatError1 ('failed to close file (%s)\n', name.address) ;
+                  state := failed ;
+                  RETURN FALSE
                END
             END ;
             IF name.address#NIL
@@ -516,7 +538,10 @@ BEGIN
          END ;
          DISPOSE(fd) ;
          PutIndice(FileInfo, f, NIL)
-      END
+      END ;
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
    END
 END Close ;
 

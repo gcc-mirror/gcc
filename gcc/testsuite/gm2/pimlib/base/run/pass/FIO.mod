@@ -1,6 +1,6 @@
 (* FIO.mod provides a simple buffered file input/output library.
 
-Copyright (C) 2001-2023 Free Software Foundation, Inc.
+Copyright (C) 2001-2025 Free Software Foundation, Inc.
 Contributed by Gaius Mulley <gaius.mulley@southwales.ac.uk>.
 
 This file is part of GNU Modula-2.
@@ -36,23 +36,21 @@ IMPLEMENTATION MODULE FIO ;
                  provides a simple buffered file input/output library.
 *)
 
-FROM SYSTEM IMPORT ADR, TSIZE, SIZE, WORD ;
+FROM SYSTEM IMPORT ADR, TSIZE, WORD, COFF_T ;
 FROM ASCII IMPORT nl, nul, tab ;
 FROM StrLib IMPORT StrLen, StrConCat, StrCopy ;
 FROM Storage IMPORT ALLOCATE, DEALLOCATE ;
 FROM NumberIO IMPORT CardToStr ;
-FROM libc IMPORT exit, open, creat, read, write, close, lseek, strncpy, memcpy ;
 FROM Indexing IMPORT Index, InitIndex, InBounds, HighIndice, PutIndice, GetIndice ;
 FROM M2RTS IMPORT InstallTerminationProcedure ;
+FROM libc IMPORT exit, open, creat, read, write, close, lseek, strncpy, memcpy ;
+FROM wrapc IMPORT SeekSet, SeekEnd, ReadOnly, WriteOnly ;
+
 
 CONST
-   SEEK_SET            =       0 ;   (* relative from beginning of the file *)
-   SEEK_END            =       2 ;   (* relative to the end of the file     *)
-   UNIXREADONLY        =       0 ;
-   UNIXWRITEONLY       =       1 ;
-   CreatePermissions   =     666B;
    MaxBufferLength     = 1024*16 ;
    MaxErrorString      = 1024* 8 ;
+   CreatePermissions   =     666B;
 
 TYPE
    FileUsage         = (unused, openedforread, openedforwrite, openedforrandom) ;
@@ -196,7 +194,7 @@ END GetNextFreeDescriptor ;
 
 
 (*
-   IsNoError - returns a TRUE if no error has occured on file, f.
+   IsNoError - returns a TRUE if no error has occured on file f.
 *)
 
 PROCEDURE IsNoError (f: File) : BOOLEAN ;
@@ -211,6 +209,24 @@ BEGIN
       RETURN( (fd#NIL) AND ((fd^.state=successful) OR (fd^.state=endoffile) OR (fd^.state=endofline)) )
    END
 END IsNoError ;
+
+
+(*
+   IsError - returns a TRUE if an error has occured on file f.
+*)
+
+PROCEDURE IsError (f: File) : BOOLEAN ;
+VAR
+   fd: FileDescriptor ;
+BEGIN
+   IF f=Error
+   THEN
+      RETURN( FALSE )
+   ELSE
+      fd := GetIndice (FileInfo, f) ;
+      RETURN( (fd#NIL) AND ((fd^.state#successful) AND (fd^.state#endoffile) AND (fd^.state#endofline)) )
+   END
+END IsError ;
 
 
 (*
@@ -428,10 +444,10 @@ BEGIN
                THEN
                   unixfd := creat(name.address, CreatePermissions)
                ELSE
-                  unixfd := open(name.address, UNIXWRITEONLY, 0)
+                  unixfd := open(name.address, INTEGER (WriteOnly ()), 0)
                END
             ELSE
-               unixfd := open(name.address, UNIXREADONLY, 0)
+               unixfd := open(name.address, INTEGER (ReadOnly ()), 0)
             END ;
             IF unixfd<0
             THEN
@@ -476,28 +492,32 @@ END OpenForRandom ;
    Close - close a file which has been previously opened using:
            OpenToRead, OpenToWrite, OpenForRandom.
            It is correct to close a file which has an error status.
+           Close has an optional return value:
+             TRUE  signifies that the close was successful and all
+                   state associated with f is deallocated.
+             FALSE signifies that the close was unsuccessful and no
+                   state associated with f has been deallocated.
 *)
 
-PROCEDURE Close (f: File) ;
+PROCEDURE Close (f: File) : [BOOLEAN] ;
 VAR
    fd: FileDescriptor ;
 BEGIN
-   IF f#Error
+   IF f # Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
-      (*
-         we allow users to close files which have an error status
-      *)
-      IF fd#NIL
+      fd := GetIndice (FileInfo, f) ;
+      (* We allow users to close files which have an error status.  *)
+      IF fd # NIL
       THEN
-         FlushBuffer(f) ;
+         FlushBuffer (f) ;
          WITH fd^ DO
-            IF unixfd>=0
+            IF unixfd >= 0
             THEN
-               IF close(unixfd)#0
+               IF close (unixfd) # 0
                THEN
-                  FormatError1('failed to close file (%s)\n', name.address) ;
-                  state := failed   (* --fixme-- too late to notify user (unless we return a BOOLEAN) *)
+                  FormatError1 ('failed to close file (%s)\n', name.address) ;
+                  state := failed ;
+                  RETURN FALSE
                END
             END ;
             IF name.address#NIL
@@ -518,7 +538,10 @@ BEGIN
          END ;
          DISPOSE(fd) ;
          PutIndice(FileInfo, f, NIL)
-      END
+      END ;
+      RETURN TRUE
+   ELSE
+      RETURN FALSE
    END
 END Close ;
 
@@ -664,10 +687,9 @@ END ReadNBytes ;
                   Useful when performing small reads.
 *)
 
-PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
+PROCEDURE BufferedRead (f: File; nBytes: CARDINAL; dest: ADDRESS) : INTEGER ;
 VAR
-   t     : ADDRESS ;
-   result: INTEGER ;
+   src   : ADDRESS ;
    total,
    n     : INTEGER ;
    p     : POINTER TO BYTE ;
@@ -675,52 +697,52 @@ VAR
 BEGIN
    IF f#Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
+      fd := GetIndice (FileInfo, f) ;
       total := 0 ;   (* how many bytes have we read *)
       IF fd#NIL
       THEN
          WITH fd^ DO
             (* extract from the buffer first *)
-            IF buffer#NIL
+            IF buffer # NIL
             THEN
                WITH buffer^ DO
-                  WHILE nBytes>0 DO
-                     IF (left>0) AND valid
+                  WHILE nBytes > 0 DO
+                     IF (left > 0) AND valid
                      THEN
-                        IF nBytes=1
+                        IF nBytes = 1
                         THEN
                            (* too expensive to call memcpy for 1 character *)
-                           p := a ;
+                           p := dest ;
                            p^ := contents^[position] ;
-                           DEC(left) ;         (* remove consumed byte                *)
-                           INC(position) ;     (* move onwards n byte                 *)
-                           INC(total) ;
+                           DEC (left) ;         (* remove consumed byte                *)
+                           INC (position) ;     (* move onwards n byte                 *)
+                           INC (total) ;
                            RETURN( total )
                         ELSE
-                           n := Min(left, nBytes) ;
-                           t := address ;
-                           INC(t, position) ;
-                           p := memcpy(a, t, n) ;
-                           DEC(left, n) ;      (* remove consumed bytes               *)
-                           INC(position, n) ;  (* move onwards n bytes                *)
+                           n := Min (left, nBytes) ;
+                           src := address ;
+                           INC (src, position) ;
+                           p := memcpy (dest, src, n) ;
+                           DEC (left, n) ;      (* remove consumed bytes               *)
+                           INC (position, n) ;  (* move onwards n bytes                *)
                                                (* move onwards ready for direct reads *)
-                           INC(a, n) ;
-                           DEC(nBytes, n) ;    (* reduce the amount for future direct *)
+                           INC (dest, n) ;
+                           DEC (nBytes, n) ;    (* reduce the amount for future direct *)
                                                (* read                                *)
-                           INC(total, n)
+                           INC (total, n)
                         END
                      ELSE
                         (* refill buffer *)
-                        n := read(unixfd, address, size) ;
-                        IF n>=0
+                        n := read (unixfd, address, size) ;
+                        IF n >= 0
                         THEN
                            valid    := TRUE ;
                            position := 0 ;
                            left     := n ;
                            filled   := n ;
                            bufstart := abspos ;
-                           INC(abspos, n) ;
-                           IF n=0
+                           INC (abspos, n) ;
+                           IF n = 0
                            THEN
                               (* eof reached *)
                               state := endoffile ;
@@ -1084,7 +1106,7 @@ END UnReadChar ;
 
 
 (*
-   ReadAny - reads HIGH(a) bytes into, a. All input
+   ReadAny - reads HIGH (a) + 1 bytes into, a.  All input
              is fully buffered, unlike ReadNBytes and thus is more
              suited to small reads.
 *)
@@ -1092,9 +1114,9 @@ END UnReadChar ;
 PROCEDURE ReadAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess(f, openedforread, FALSE) ;
-   IF BufferedRead (f, HIGH (a), ADR (a)) = VAL (INTEGER, HIGH (a))
+   IF BufferedRead (f, HIGH (a) + 1, ADR (a)) = VAL (INTEGER, HIGH (a) + 1)
    THEN
-      SetEndOfLine(f, a[HIGH(a)])
+      SetEndOfLine (f, a[HIGH(a)])
    END
 END ReadAny ;
 
@@ -1233,52 +1255,51 @@ END WriteNBytes ;
                    Useful when performing small writes.
 *)
 
-PROCEDURE BufferedWrite (f: File; nBytes: CARDINAL; a: ADDRESS) : INTEGER ;
+PROCEDURE BufferedWrite (f: File; nBytes: CARDINAL; src: ADDRESS) : INTEGER ;
 VAR
-   t     : ADDRESS ;
-   result: INTEGER ;
+   dest  : ADDRESS ;
    total,
    n     : INTEGER ;
    p     : POINTER TO BYTE ;
    fd    : FileDescriptor ;
 BEGIN
-   IF f#Error
+   IF f # Error
    THEN
-      fd := GetIndice(FileInfo, f) ;
+      fd := GetIndice (FileInfo, f) ;
       IF fd#NIL
       THEN
          total := 0 ;   (* how many bytes have we read *)
          WITH fd^ DO
-            IF buffer#NIL
+            IF buffer # NIL
             THEN
                WITH buffer^ DO
-                  WHILE nBytes>0 DO
+                  WHILE nBytes > 0 DO
                      (* place into the buffer first *)
-                     IF left>0
+                     IF left > 0
                      THEN
-                        IF nBytes=1
+                        IF nBytes = 1
                         THEN
                            (* too expensive to call memcpy for 1 character *)
-                           p := a ;
+                           p := src ;
                            contents^[position] := p^ ;
-                           DEC(left) ;         (* reduce space                        *)
-                           INC(position) ;     (* move onwards n byte                 *)
-                           INC(total) ;
+                           DEC (left) ;         (* reduce space                        *)
+                           INC (position) ;     (* move onwards n byte                 *)
+                           INC (total) ;
                            RETURN( total )
                         ELSE
-                           n := Min(left, nBytes) ;
-                           t := address ;
-                           INC(t, position) ;
-                           p := memcpy(a, t, CARDINAL(n)) ;
-                           DEC(left, n) ;      (* remove consumed bytes               *)
-                           INC(position, n) ;  (* move onwards n bytes                *)
-                                               (* move ready for further writes       *)
-                           INC(a, n) ;
-                           DEC(nBytes, n) ;    (* reduce the amount for future writes *)
-                           INC(total, n)
+                           n := Min (left, nBytes) ;
+                           dest := address ;
+                           INC (dest, position) ;
+                           p := memcpy (dest, src, CARDINAL (n)) ;
+                           DEC (left, n) ;      (* remove consumed bytes               *)
+                           INC (position, n) ;  (* move onwards n bytes                *)
+                                                (* move ready for further writes       *)
+                           INC (src, n) ;
+                           DEC (nBytes, n) ;    (* reduce the amount for future writes *)
+                           INC (total, n)
                         END
                      ELSE
-                        FlushBuffer(f) ;
+                        FlushBuffer (f) ;
                         IF (state#successful) AND (state#endofline)
                         THEN
                            nBytes := 0
@@ -1331,7 +1352,7 @@ END FlushBuffer ;
 
 
 (*
-   WriteAny - writes HIGH(a) bytes onto, file, f. All output
+   WriteAny - writes HIGH (a) + 1 bytes onto, file, f.  All output
               is fully buffered, unlike WriteNBytes and thus is more
               suited to small writes.
 *)
@@ -1339,7 +1360,7 @@ END FlushBuffer ;
 PROCEDURE WriteAny (f: File; VAR a: ARRAY OF BYTE) ;
 BEGIN
    CheckAccess (f, openedforwrite, TRUE) ;
-   IF BufferedWrite (f, HIGH (a), ADR (a)) = VAL (INTEGER, HIGH (a))
+   IF BufferedWrite (f, HIGH (a) + 1, ADR (a)) = VAL (INTEGER, HIGH (a) + 1)
    THEN
    END
 END WriteAny ;
@@ -1450,7 +1471,7 @@ BEGIN
                      filled   := 0
                   END
                END ;
-               offset := lseek(unixfd, pos, SEEK_SET) ;
+               offset := lseek (unixfd, VAL (COFF_T, pos), SeekSet ()) ;
                IF (offset>=0) AND (pos=offset)
                THEN
                   abspos := pos
@@ -1499,7 +1520,7 @@ BEGIN
                   filled   := 0
                END
             END ;
-            offset := lseek(unixfd, pos, SEEK_END) ;
+            offset := lseek (unixfd, VAL (COFF_T, pos), SeekEnd ()) ;
             IF offset>=0
             THEN
                abspos := offset ;
