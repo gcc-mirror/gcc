@@ -3624,6 +3624,7 @@ namespace __detail
     constexpr bool __is_power_of_2_less_1(_Rng __range)
       { return ((__range + 1) & __range) == 0; };
 
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
   /** Produce a random floating-point value in the range [0..1)
    *
    * The result of `std::generate_canonical<RealT,digits>(urng)` is a
@@ -3700,6 +3701,7 @@ namespace __detail
 	    }
 	}
     }
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 
 #pragma GCC diagnostic pop
 

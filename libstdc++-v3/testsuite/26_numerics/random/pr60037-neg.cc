@@ -10,7 +10,4 @@ std::__detail::_Adaptor<std::mt19937, unsigned long> aurng(urng);
 auto x = std::generate_canonical<std::size_t,
 			std::numeric_limits<std::size_t>::digits>(urng);
 
-// { dg-error "static assertion failed: template argument must be a floating point type" "" { target *-*-* } 271 }
-
-// { dg-error "static assertion failed: template argument must be a floating point type" "" { target *-*-* } 3650 }
-
+// { dg-error "static assertion failed: template argument must be a floating point type" "" { target *-*-* } 0 }

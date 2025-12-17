@@ -51,6 +51,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 
   // std::uniform_random_bit_generator is defined in <bits/uniform_int_dist.h>
 
+#ifndef _GLIBCXX_USE_OLD_GENERATE_CANONICAL
+_GLIBCXX_BEGIN_INLINE_ABI_NAMESPACE(_V2)
+#endif
   /**
    * @brief A function template for converting the output of a (integral)
    * uniform random number generator to a floatng point result in the range
@@ -60,6 +63,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
 	   typename _UniformRandomNumberGenerator>
     _RealType
     generate_canonical(_UniformRandomNumberGenerator& __g);
+#ifndef _GLIBCXX_USE_OLD_GENERATE_CANONICAL
+_GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
+#endif
 
   /// @cond undocumented
   // Implementation-space details.
