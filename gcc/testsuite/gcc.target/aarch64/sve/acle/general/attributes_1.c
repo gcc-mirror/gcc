@@ -10,6 +10,10 @@
 #error "__ARM_FEATURE_SVE_VECTOR_OPERATORS should be equal to 1"
 #endif
 
+#if __ARM_FEATURE_SVE_PREDICATE_OPERATORS != 1
+#error "__ARM_FEATURE_SVE_PREDICATE_OPERATORS should be equal to 1"
+#endif
+
 #ifndef __cplusplus
 #define alignof _Alignof
 #endif
