@@ -1,3 +1,43 @@
+2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-parser-bottom-up.cc (reduce_prelude_packet): Do not support
+	multiple module definitions per packet.
+
+2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* lang.opt.urls: Regenerate.
+
+2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* lang.opt (-fmodules-map): New option.
+	(-fmodules-map-file): Likewise.
+	* a68.h: Add prototype for a68_process_module_map.
+	* a68-imports.cc (SKIP_WHITESPACES): Define.
+	(PARSE_BASENAME): Likewise.
+	(PARSE_INDICANT): Likewise.
+	(a68_process_module_map): New function.
+	* a68-lang.cc: (a68_init): Move initialization of
+	A68_MODULE_FILES from there...
+	(a68_init_options): to here.
+	(a68_handle_option): Handle OPT_fmodules_map and
+	OPT_fmodules_map_.
+	* a68-parser-pragmat.cc (handle_access_in_pragmat): Normalize
+	module indicants to upper case.
+	* ga68.texi (Module search options): New section.
+
+2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68.h: Prototypes for a68_get_file_size and a68_file_read.
+	* a68-parser-scanner.cc (a68_file_size): New function.
+	(a68_file_read): Renamed from io_read.
+	(get_source_size): Deleted function.
+	(include_files): Use a68_file_size and a68_file_read.
+
+2025-12-16  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* a68-imports.cc (dump_encoded_mode): Replace "basic" with
+	"string".
+
 2025-12-15  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
 
 	* ga68-exports.pk (ga68_text_reloc_64): Renamed and

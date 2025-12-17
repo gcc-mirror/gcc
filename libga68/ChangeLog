@@ -1,3 +1,8 @@
+2025-12-16  Pietro Monteiro  <pietro@sociotechnical.xyz>
+
+	* ga68-unistr.c (_libga68_u32_cmp): Add `static' specifier.
+	* ga68.h (_libga68_u32_cmp): Remove prototype.
+
 2025-11-30  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* Makefile.am: New file.

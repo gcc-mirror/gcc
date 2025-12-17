@@ -1,3 +1,42 @@
+2025-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/123136
+	* engine.cc
+	(strongly_connected_components::strongly_connected_components):
+	Consistently use size_t.
+	(strongly_connected_components::dump): Likewise.
+	(strongly_connected_components::to_json): Likewise.
+	(exploded_graph::print_bar_charts): Likewise.
+	(exploded_path::feasible_p): Remove unused locals.
+	(exploded_graph_annotator::exploded_graph_annotator): Use size_t
+	for iterator var.
+	(impl_run_checkers): Drop logger param of engine ctor.
+	* ops.cc (phis_for_edge_op::maybe_make): Drop unused param of
+	phis_for_edge_op ctor.
+	(phis_for_edge_op::phis_for_edge_op): Likewise.
+	* ops.h (operation::~operation): Make virtual.
+	(control_flow_op::dyn_cast_control_flow_op): Add "final override".
+	(phis_for_edge_op::phis_for_edge_op): Drop unused param.
+	(phis_for_edge_op::m_cfg_in_edge): Drop unused field.
+	* region-model.cc (engine::engine): Drop unused "logger" param.
+	* region-model.h (engine::engine): Likewise.
+	* supergraph-fixup-locations.cc (location_fixer::location_fixer):
+	Drop m_sg field.
+	(location_fixer::m_sg): Drop unused field.
+	(location_fixer::m_purge_map): Drop unused field.
+	* supergraph-sorting.cc (class sorting_worklist): Drop unused
+	m_worklist field.
+
+2025-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	* supergraph.cc (supernode::dump_dot): Escape filename.
+
+2025-12-16  David Malcolm  <dmalcolm@redhat.com>
+
+	PR analyzer/122003
+	* checker-event.cc (return_event::get_program_state): New.
+	* checker-event.h (return_event::get_program_state): New decl.
+
 2025-12-15  David Malcolm  <dmalcolm@redhat.com>
 
 	PR analyzer/123085

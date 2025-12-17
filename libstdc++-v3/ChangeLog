@@ -1,3 +1,89 @@
+2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/type_traits (_Integer_kind): New enum type.
+	(__is_integral_helper::_S_kind): New static data member in
+	primary template and each explicit specialization.
+	(__is_signed_integer, __is_unsigned_integer): Use _S_kind
+	instead of O(n) disjunction with is_same.
+
+2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122907
+	* include/bits/cpp_type_traits.h (__memcpyable_integer<bool>):
+	Define as false.
+	* testsuite/25_algorithms/copy/122907.cc: New test.
+
+2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/lib/libstdc++.exp (dg-v3-runtest) Set default_std to
+	20.
+
+2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (chrono::__detail::__get_leap_second_info):
+	Update expiry date for leap seconds list.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds):
+	Likewise.
+	* src/c++20/tzdata.zi: Import new file from 2025c release.
+
+2025-12-16  Nathan Myers  <ncm@cantrip.org>
+
+	PR libstdc++/119739
+	* include/bits/random.tcc: Add generate_canonical impl for C++26.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/64351.cc:
+	Adapt test for both pre- and post- C++26.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon.cc:
+	Test for float and double from 32-bit RNG, including 1.0 do-over.
+
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/113299
+	* include/bits/deque.tcc (__copy_move_a1): Constrain with
+	__is_any_random_access_iter instead of __is_random_access_iter.
+	(__copy_move_backward_a1): Likewise.
+	(__equal_aux1): Likewise.
+	* include/bits/stl_algo.h (__search_n): Use
+	__iter_concept_or_category instead of __iterator_category
+	or iterator_traits::iterator_category.
+	(find_end): Likewise.
+	(__is_permutation): Likewise.
+	(for_each_n): Likewise.
+	(unique_copy): Likewise, for constant iterators.
+	(sample): Likewise, for constant iterators.
+	* include/bits/stl_algobase.h (__copy_move_a1): Adjust
+	deque-based forward declaration accordingly.
+	(__copy_move_backward_a1): Likewise.
+	(__equal_aux1): Likewise.
+	(__lexicographical_compare_impl): Use
+	__iter_concept_or_category instead of __iterator_category or
+	iterator_traits::iterator_category.
+	(__equal4): Likewise.
+	* include/bits/stl_iterator_base_funcs.h
+	(__iter_concept_or_category): New.
+	(__is_any_random_access_iter): New.
+	(_GLIBCXX_ITER_MOVE): New.
+	* include/bits/stl_uninitialized.h (uninitialized_copy_n):
+	Use __iterator_concept_or_category instead of
+	__iterator_category for the constant iterator __first.
+	(__uninitialized_copy_n_pair): Likewise.
+	* include/bits/version.def (algorithm_iterator_requirements):
+	Define.
+	* include/bits/version.h: Regenerate.
+	* include/std/algorithm: Provide the FTM
+	__cpp_lib_algorithm_iterator_requirements.
+	* include/std/memory: Likewise.
+	* include/std/numeric: Likewise.  Include
+	<bits/stl_iterator_base_funcs.h>.
+	(reduce): Use __is_any_random_access_iter instead of
+	__is_random_access_iter.
+	(transform_reduce): Likewise.
+	(inclusive_scan): Use _GLIBCXX_ITER_MOVE instead of std::move.
+	* testsuite/25_algorithms/find_end/c++20_iter.cc: New test.
+	* testsuite/25_algorithms/sample/c++20_iter.cc: New test.
+	* testsuite/25_algorithms/search_n/c++20_iter.cc: New test.
+	* testsuite/25_algorithms/unique_copy/c++20_iter.cc: New test.
+	* testsuite/26_numerics/inclusive_scan/c++20_iter.cc: New test.
+
 2025-12-12  Luc Grosheintz  <luc.grosheintz@gmail.com>
 
 	* include/std/mdspan (submdspan): Fix missing '::template'.

@@ -1,3 +1,202 @@
+2025-12-16  Iain Sandoe  <iain@sandoe.co.uk>
+
+	* config/aarch64/aarch64.cc
+	(aarch64_function_abi): Use checking assert.
+	(aarch64_fndecl_abi): Test for the availability of the
+	machine content before trying to look up the cached PCS.
+	Use a checking assert.
+
+2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* common.opt.urls: Regenerate.
+
+2025-12-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc (xtensa_expand_scc_SALT):
+	New sub-function that emits the SALT/SALTU instructions.
+	(xtensa_expand_scc): Change the part related to the SALT/SALTU
+	instructions to a call to the above sub-function.
+
+2025-12-16  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/xtensa.cc
+	(xtensa_expand_block_set_libcall,
+	xtensa_expand_block_set_unrolled_loop,
+	xtensa_expand_block_set_small_loop, xtensa_call_tls_desc):
+	Change the return statement to pass the return value of
+	end_sequence() directly without going through a variable, and
+	remove the definition of that variable.
+
+2025-12-16  Claudiu Zissulescu  <claudiu.zissulescu-ianculescu@oracle.com>
+	    Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* config/aarch64/aarch64.md (addg): Update pattern to use
+	addg/subg instructions.
+	(stg): Update pattern.
+	(st2g): New pattern.
+	(tag_memory): Likewise.
+	(compose_tag): Likewise.
+	(irq): Update pattern to accept xzr register.
+	(gmi): Likewise.
+	(UNSPECV_TAG_SPACE): Define.
+	* config/aarch64/aarch64.cc (AARCH64_MEMTAG_GRANULE_SIZE):
+	Define.
+	(AARCH64_MEMTAG_TAG_BITSIZE): Likewise.
+	(aarch64_override_options_internal): Error out if MTE instructions
+	are not available.
+	(aarch64_post_cfi_startproc): Emit .cfi_mte_tagged_frame.
+	(aarch64_can_tag_addresses): Add MEMTAG specific handling.
+	(aarch64_memtag_tag_bitsize): New function
+	(aarch64_memtag_granule_size): Likewise.
+	(aarch64_memtag_insert_random_tag): Likwise.
+	(aarch64_memtag_add_tag): Likewise.
+	(aarch64_memtag_extract_tag): Likewise.
+	(aarch64_granule16_memory_address_p): Likewise.
+	(aarch64_emit_stxg_insn): Likewise.
+	(aarch64_memtag_tag_memory_via_loop): New definition.
+	(aarch64_expand_tag_memory): Likewise.
+	(aarch64_check_memtag_ops): Likewise.
+	(TARGET_MEMTAG_TAG_BITSIZE): Likewise.
+	(TARGET_MEMTAG_GRANULE_SIZE): Likewise.
+	(TARGET_MEMTAG_INSERT_RANDOM_TAG): Likewise.
+	(TARGET_MEMTAG_ADD_TAG): Likewise.
+	(TARGET_MEMTAG_EXTRACT_TAG): Likewise.
+	* config/aarch64/aarch64-builtins.cc
+	(aarch64_expand_builtin_memtag): Update set tag builtin logic.
+	* config/aarch64/aarch64-linux.h: Pass memtag-stack sanitizer
+	specific options to the linker.
+	* config/aarch64/aarch64-protos.h
+	(aarch64_granule16_memory_address_p): New prototype.
+	(aarch64_check_memtag_ops): Likewise.
+	(aarch64_expand_tag_memory): Likewise.
+	* config/aarch64/constraints.md (Umg): New memory constraint.
+	(Uag): New constraint.
+	(Ung): Likewise.
+	* config/aarch64/predicates.md (aarch64_memtag_tag_offset):
+	Refactor it.
+	(aarch64_granule16_imm6): Rename from aarch64_granule16_uimm6 and
+	refactor it.
+	(aarch64_granule16_memory_operand): New constraint.
+	* config/aarch64/iterators.md (MTE_PP): New code iterator to be
+	used for mte instructions.
+	(stg_ops): New code attributes.
+	(st2g_ops): Likewise.
+	(mte_name): Likewise.
+	* config/aarch64/aarch64.opt (aarch64-tag-memory-loop-threshold):
+	New parameter.
+	* doc/invoke.texi: Update documentation.
+
+2025-12-16  Claudiu Zissulescu  <claudiu.zissulescu-ianculescu@oracle.com>
+	    Indu Bhagat  <indu.bhagat@oracle.com>
+
+	* asan.cc (handle_builtin_stack_restore): Accommodate MEMTAG
+	sanitizer.
+	(handle_builtin_alloca): Expand differently if MEMTAG sanitizer.
+	(get_mem_refs_of_builtin_call): Include MEMTAG along with
+	HWASAN.
+	(memtag_sanitize_stack_p): New definition.
+	(memtag_sanitize_allocas_p): Likewise.
+	(memtag_memintrin): Likewise.
+	(hwassist_sanitize_p): Likewise.
+	(hwassist_sanitize_stack_p): Likewise.
+	(report_error_func): Include MEMTAG along with HWASAN.
+	(build_check_stmt): Likewise.
+	(instrument_derefs): MEMTAG too does not deal with globals yet.
+	(instrument_builtin_call): Include MEMTAG along with HWASAN.
+	(maybe_instrument_call): Likewise.
+	(asan_expand_mark_ifn): Likewise.
+	(asan_expand_check_ifn): Likewise.
+	(asan_expand_poison_ifn): Expand differently if MEMTAG sanitizer.
+	(asan_instrument): Include MEMTAG along with HWASAN.
+	(hwasan_emit_prologue): Expand differently if MEMTAG sanitizer.
+	(hwasan_emit_untag_frame): Likewise.
+	* asan.h (memtag_sanitize_stack_p): New declaration.
+	(memtag_sanitize_allocas_p): Likewise.
+	(hwassist_sanitize_p): Likewise.
+	(hwassist_sanitize_stack_p): Likewise.
+	(asan_sanitize_use_after_scope): Include MEMTAG along with
+	HWASAN.
+	* cfgexpand.cc (align_local_variable): Likewise.
+	(expand_one_stack_var_at): Likewise.
+	(expand_stack_vars): Likewise.
+	(expand_one_stack_var_1): Likewise.
+	(init_vars_expansion): Likewise.
+	(expand_used_vars): Likewise.
+	(pass_expand::execute): Likewise.
+	* gimplify.cc (asan_poison_variable): Likewise.
+	* internal-fn.cc (expand_HWASAN_ALLOCA_POISON): New definition.
+	(expand_HWASAN_ALLOCA_UNPOISON): Expand differently if MEMTAG
+	sanitizer.
+	(expand_HWASAN_MARK): Likewise.
+	* internal-fn.def (HWASAN_ALLOCA_POISON): Define new.
+	* params.opt: Document new param.
+	* sanopt.cc (pass_sanopt::execute): Include MEMTAG along with
+	HWASAN.
+	* gcc.cc (sanitize_spec_function): Add check for memtag-stack.
+	* doc/tm.texi: Regenerate.
+	* target.def (extract_tag): Update documentation.
+	(add_tag): Likewise.
+	(insert_random_tag): Likewise.
+
+2025-12-16  Indu Bhagat  <indu.bhagat@oracle.com>
+	    Claudiu Zissulescu  <claudiu.zissulescu-ianculescu@oracle.com>
+
+	* builtins.def: Adjust the macro to include the new
+	SANTIZIE_MEMTAG_STACK.
+	* flag-types.h (enum sanitize_code): Add new enumerator for
+	SANITIZE_MEMTAG and SANITIZE_MEMTAG_STACK.
+	* opts.cc (finish_options): memtag-stack sanitizer conflicts with
+	hwaddress and address sanitizers.
+	(sanitizer_opts): Add new memtag-stack sanitizer.
+	(parse_sanitizer_options): memtag-stack sanitizer cannot recover.
+	* params.opt: Add new params for memtag-stack sanitizer.
+	* doc/invoke.texi: Update documentation.
+
+2025-12-16  Claudiu Zissulescu  <claudiu.zissulescu-ianculescu@oracle.com>
+
+	* target-insns.def (compose_tag): New target instruction.
+	* doc/md.texi (compose_tag): Add documentation.
+
+2025-12-16  Claudiu Zissulescu  <claudiu.zissulescu-ianculescu@oracle.com>
+
+	* target-insns.def (tag_memory): New target instruction.
+	* doc/md.texi (tag_memory): Add documentation.
+
+2025-12-16  Jennifer Schmitz  <jschmitz@nvidia.com>
+
+	* config/aarch64/aarch64.md: Include olympus.md.
+	* config/aarch64/olympus.md: New file.
+	* config/aarch64/tuning_models/olympus.h: Add dispatch
+	constraints and enable dispatch scheduling.
+
+2025-12-16  Maxim Kuvyrkov  <maxim.kuvyrkov@linaro.org>
+
+	* haifa-sched.cc (choose_ready): Don't require dfa_lookahead <= 0
+	to schedule SCHED_GROUP_P insns first.
+
+2025-12-16  Richard Biener  <rguenther@suse.de>
+
+	PR ipa/122456
+	* cgraph.cc (cgraph_edge::resolve_speculation): Handle
+	a NULL symtab_node::get (callee_decl).
+
+2025-12-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123110
+	* tree-cfgcleanup.cc (maybe_remove_forwarder_block): Add back
+	check for eh landing pad or non-local dest on the dest.
+
+2025-12-16  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/123111
+	* tree-cfg.cc (ifconvertable_edge): New function.
+	(make_forwarders_with_degenerate_phis):	Add skip_ifcvtable argument,
+	check ifconvertable_edge if skip_ifcvtable is true.
+	* tree-cfg.h (make_forwarders_with_degenerate_phis): New argument
+	with default of false.
+	* tree-cfgcleanup.cc (execute_cleanup_cfg_post_optimizing): Update
+	argument to make_forwarders_with_degenerate_phis.
+
 2025-12-15  Martin Jambor  <mjambor@suse.cz>
 
 	PR ipa/107666
