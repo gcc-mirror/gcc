@@ -1,3 +1,4 @@
+! { dg-do run }
 ! { dg-options "-fno-range-check -ffree-line-length-none -O0" }
 ! { dg-add-options ieee }
 !

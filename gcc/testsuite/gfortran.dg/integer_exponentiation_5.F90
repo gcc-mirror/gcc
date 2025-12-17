@@ -1,3 +1,4 @@
+! { dg-do run }
 ! { dg-options "-fno-range-check" }
 ! { dg-add-options ieee }
 module mod_check
