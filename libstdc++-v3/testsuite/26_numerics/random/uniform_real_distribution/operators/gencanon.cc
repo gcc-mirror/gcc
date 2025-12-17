@@ -1,4 +1,5 @@
 // { dg-do run { target { c++11 && { ! simulator } } } }
+// { dg-skip-if "requires new impl" { *-*-* } { -D_GLIBCXX_USE_OLD_GENERATE_CANONICAL -D_GLIBCXX_USE_OLD_GENERATE_CANONICAL=1 } }
 
 #include <random>
 #include <limits>
@@ -17,7 +18,7 @@ struct local_rng : std::mt19937
   local_rng(std::mt19937 const& arg) : std::mt19937(arg) {}
 };
 
-// Verify P0952R9 implementation requiring a second round-trip
+// Verify P0952R2 implementation requiring a second round-trip
 // if first yields exactly 1. In this test, the RNG delivering
 // 32 bits per call is seeded such that this occurs once on the
 // sixth iteration for float, and not at all for double.

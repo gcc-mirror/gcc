@@ -21,6 +21,25 @@
 #include <random>
 #include <testsuite_hooks.h>
 
+// libstdc++/64351
+void
+test01()
+{
+#ifdef _GLIBCXX_USE_OLD_GENERATE_CANONICAL
+  std::mt19937 rng(8890);
+  std::uniform_real_distribution<float> dist;
+
+  rng.discard(30e6);
+  for (long i = 0; i < 10e6; ++i)
+    {
+      auto n = dist(rng);
+      VERIFY( n != 1.f );
+    }
+#else
+  // New generate_canonical is tested in ./gencanon.cc
+#endif
+}
+
 // libstdc++/63176
 void
 test02()
@@ -37,13 +56,19 @@ test02()
 
     rng2.discard(1);
   }
+
   // PR libstdc++/80137
+#ifdef _GLIBCXX_USE_OLD_GENERATE_CANONICAL
+  // Each std::generate_canonical call should consume exactly one value.
+#else
   rng2.discard(1);  // account for a 1.0 generated and discarded.
+#endif
   VERIFY( rng == rng2 );
 }
 
 int
 main()
 {
+  test01();
   test02();
 }
