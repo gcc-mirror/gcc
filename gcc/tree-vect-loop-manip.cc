@@ -1989,11 +1989,6 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
       flush_pending_stmts (new_exit);
       set_immediate_dominator (CDI_DOMINATORS, preheader, new_exit->src);
 
-      if (create_main_e)
-	set_immediate_dominator (CDI_DOMINATORS, scalar_exit->dest,
-				 recompute_dominator (CDI_DOMINATORS,
-						      scalar_exit->dest));
-
       /* And remove the non-necessary forwarder again.  Keep the other
          one so we have a proper pre-header for the loop at the exit edge.  */
       redirect_edge_pred (single_succ_edge (new_preheader),
@@ -2024,6 +2019,15 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 		}
 	    }
 	}
+
+      /* When loop_exit != scalar_exit due to if-conversion loop versioning,
+	 the `scalar_exit' now has two incoming edges, one from the if-converted
+	 and one from the peeled prolog loop.  It is therefore dominated by a
+	 common block between these.  Update its dominator accordingly.  */
+      if (create_main_e && loop_exit != scalar_exit)
+	set_immediate_dominator (CDI_DOMINATORS, scalar_exit->dest,
+				 recompute_dominator (CDI_DOMINATORS,
+						      scalar_exit->dest));
     }
 
   free (new_bbs);
