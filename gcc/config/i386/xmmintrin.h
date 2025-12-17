@@ -1223,17 +1223,17 @@ _mm_maskmove_si64 (__m64 __A, __m64 __N, char *__P)
   __v2di __N128 = __extension__ (__v2di) { ((__v1di) __N)[0], 0 };
 
   /* Check the alignment of __P.  */
-  __SIZE_TYPE__ offset = ((__SIZE_TYPE__) __P) & 0xf;
-  if (offset)
+  __SIZE_TYPE__ __offset = ((__SIZE_TYPE__) __P) & 0xf;
+  if (__offset)
     {
       /* If the misalignment of __P > 8, subtract __P by 8 bytes.
 	 Otherwise, subtract __P by the misalignment.  */
-      if (offset > 8)
-	offset = 8;
-      __P = (char *) (((__SIZE_TYPE__) __P) - offset);
+      if (__offset > 8)
+	__offset = 8;
+      __P = (char *) (((__SIZE_TYPE__) __P) - __offset);
 
       /* Shift __A128 and __N128 to the left by the adjustment.  */
-      switch (offset)
+      switch (__offset)
 	{
 	case 1:
 	  __A128 = __builtin_ia32_pslldqi128 (__A128, 8);
