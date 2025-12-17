@@ -3733,12 +3733,14 @@ namespace __detail
 	}
       __ret = __sum / __tmp;
       if (__builtin_expect(__ret >= _RealType(1), 0))
+	{
 # if _GLIBCXX_USE_C99_MATH_FUNCS
 	  __ret = std::nextafter(_RealType(1), _RealType(0));
 # else
 	  __ret = _RealType(1)
 	    - std::numeric_limits<_RealType>::epsilon() / _RealType(2);
 # endif
+	}
       return __ret;
     }
 
