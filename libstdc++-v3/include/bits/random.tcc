@@ -915,9 +915,9 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
     philox_engine<_UIntType, __w, __n, __r, __consts...>::
     _S_mulhi(_UIntType __a, _UIntType __b)
     {
-      const __uint128_t __num =
-	  static_cast<__uint128_t>(__a) * static_cast<__uint128_t>(__b);
-      return static_cast<_UIntType>((__num >> __w) & max());
+      using __type = typename __detail::_Select_uint_least_t<__w * 2>::type;
+      const __type __num = static_cast<__type>(__a) * __b;
+      return static_cast<_UIntType>(__num >> __w) & max();
     }
 
   template<typename _UIntType, size_t __w, size_t __n, size_t __r,
@@ -938,33 +938,34 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
       if (_M_i != __n)
 	return;
 
+      using __type = typename __detail::_Select_uint_least_t<__w * 2>::type;
+
       _M_philox();
       if constexpr (__n == 4)
 	{
-	  __uint128_t __uh =
-	    (static_cast<__uint128_t>(_M_x[1]) << __w)
-		  | (static_cast<__uint128_t>(_M_x[0]) + 1);
-	  __uint128_t __lh =
-	    ((static_cast<__uint128_t>(_M_x[3]) << __w)
-		  | (_M_x[2]));
-	  __uint128_t __bigMask =
-	    (static_cast<__uint128_t>(1) << ((2 * __w) - 1))
-		  | ((static_cast<__uint128_t>(1) << ((2 * __w) - 1)) - 1);
+	  __type __uh
+	    = (static_cast<__type>(_M_x[1]) << __w)
+		| (static_cast<__type>(_M_x[0]) + 1);
+	  __type __lh
+	    = (static_cast<__type>(_M_x[3]) << __w)
+		| static_cast<__type>(_M_x[2]);
+	  __type __bigMask
+	    = ~__type(0) >> ((sizeof(__type) * __CHAR_BIT__) - (__w * 2));
 	  if ((__uh & __bigMask) == 0)
 	    {
 	      ++__lh;
 	      __uh = 0;
 	    }
-	  _M_x[0] = __uh & max();
-	  _M_x[1] = (__uh >> (__w)) & max();
-	  _M_x[2] = __lh & max();
-	  _M_x[3] = (__lh >> (__w)) & max();
+	  _M_x[0] = static_cast<_UIntType>(__uh & max());
+	  _M_x[1] = static_cast<_UIntType>((__uh >> (__w)) & max());
+	  _M_x[2] = static_cast<_UIntType>(__lh & max());
+	  _M_x[3] = static_cast<_UIntType>((__lh >> (__w)) & max());
 	}
       else
 	{
-	  __uint128_t __num =
-		  (static_cast<__uint128_t>(_M_x[1]) << __w)
-		  | (static_cast<__uint128_t>(_M_x[0]) + 1);
+	  __type __num =
+		  (static_cast<__type>(_M_x[1]) << __w)
+		  | (static_cast<__type>(_M_x[0]) + 1);
 	  _M_x[0] = __num & max();
 	  _M_x[1] = (__num >> __w) & max();
 	}

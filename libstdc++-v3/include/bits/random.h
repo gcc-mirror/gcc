@@ -74,6 +74,424 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wc++17-extensions"
 
+#ifndef __SIZEOF_INT128__
+    // Emulate 128-bit integer type, for the arithmetic ops used in <random>.
+    // The __detail::__mod function needs: (type(a) * x + c) % m.
+    // std::philox_engine needs multiplication and bitwise ops.
+    struct __rand_uint128
+    {
+      using type = __rand_uint128;
+
+      __rand_uint128() = default;
+
+      explicit constexpr
+      __rand_uint128(uint64_t __lo) noexcept : _M_lo(__lo) { }
+
+      __rand_uint128(const __rand_uint128&) = default;
+      __rand_uint128& operator=(const __rand_uint128&) = default;
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator=(uint64_t __x) noexcept
+      { return *this = type(__x); }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator++() noexcept
+      { return *this = *this + 1; }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator--() noexcept
+      { return *this = *this - 1; }
+
+      _GLIBCXX14_CONSTEXPR type
+      operator++(int) noexcept
+      {
+	auto __tmp = *this;
+	++*this;
+	return __tmp;
+      }
+
+      _GLIBCXX14_CONSTEXPR type
+      operator--(int) noexcept
+      {
+	auto __tmp = *this;
+	--*this;
+	return __tmp;
+      }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator+=(const type& __r) noexcept
+      {
+	_M_hi += __r._M_hi + __builtin_add_overflow(_M_lo, __r._M_lo, &_M_lo);
+	return *this;
+      }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator+(type __l, const type& __r) noexcept
+      { return __l += __r; }
+
+      // Addition with 64-bit operand
+      friend _GLIBCXX14_CONSTEXPR type
+      operator+(type __l, uint64_t __r) noexcept
+      { return __l += type(__r); }
+
+      // Subtraction with 64-bit operand
+      _GLIBCXX14_CONSTEXPR type&
+      operator-=(uint64_t __r) noexcept
+      {
+	_M_hi -= __builtin_sub_overflow(_M_lo, __r, &_M_lo);
+	return *this;
+      }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator-(type __l, uint64_t __r) noexcept
+      { return __l -= __r; }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator*=(const type& __x) noexcept
+      {
+	uint64_t __a[12] = {
+	  uint32_t(_M_lo), _M_lo >> 32,
+	  uint32_t(_M_hi), _M_hi >> 32,
+	  uint32_t(__x._M_lo), __x._M_lo >> 32,
+	  uint32_t(__x._M_hi), __x._M_hi >> 32,
+	  0, 0,
+	  0, 0 };
+	for (int __i = 0; __i < 4; ++__i)
+	  {
+	    uint64_t __c = 0;
+	    for (int __j = __i; __j < 4; ++__j)
+	      {
+		__c += __a[__i] * __a[4 + __j - __i] + __a[8 + __j];
+		__a[8 + __j] = uint32_t(__c);
+		__c >>= 32;
+	      }
+	  }
+	_M_lo = __a[8] + (__a[9] << 32);
+	_M_hi = __a[10] + (__a[11] << 32);
+	return *this;
+      }
+
+      // Multiplication with a 64-bit operand is simpler.
+      // pre: _M_hi == 0
+      _GLIBCXX14_CONSTEXPR type&
+      operator*=(uint64_t __x) noexcept
+      {
+	// Split 64-bit values _M_lo and __x into high and low 32-bit
+	// limbs and multiply those individually.
+	// l * x = (l0 + l1) * (x0 + x1) = l0x0 + l0x1 + l1x0 + l1x1
+
+	constexpr uint64_t __mask = 0xffffffff;
+	uint64_t __ll[2] = { _M_lo >> 32, _M_lo & __mask };
+	uint64_t __xx[2] = { __x >> 32, __x & __mask };
+	uint64_t __l0x0 = __ll[0] * __xx[0];
+	uint64_t __l0x1 = __ll[0] * __xx[1];
+	uint64_t __l1x0 = __ll[1] * __xx[0];
+	uint64_t __l1x1 = __ll[1] * __xx[1];
+	// These bits are the low half of _M_hi and the high half of _M_lo.
+	uint64_t __mid
+	  = (__l0x1 & __mask) + (__l1x0 & __mask) + (__l1x1 >> 32);
+	_M_hi = __l0x0 + (__l0x1 >> 32) + (__l1x0 >> 32) + (__mid >> 32);
+	_M_lo = (__mid << 32) + (__l1x1 & __mask);
+	return *this;
+      }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator/=(const type& __r) noexcept
+      {
+	if (!_M_hi)
+	  {
+	    if (!__r._M_hi)
+	      _M_lo = _M_lo / __r._M_lo;
+	    else
+	      _M_lo = 0;
+	  }
+	else
+	  {
+	    uint64_t __a[13] = {
+	      uint32_t(_M_lo), _M_lo >> 32,
+	      uint32_t(_M_hi), _M_hi >> 32,
+	      0,
+	      uint32_t(__r._M_lo), __r._M_lo >> 32,
+	      uint32_t(__r._M_hi), __r._M_hi >> 32,
+	      0, 0,
+	      0, 0
+	    };
+	    uint64_t __c = 0, __w = 0;
+	    if (!__r._M_hi && __r._M_lo <= ~uint32_t(0))
+	      for (int __i = 3; ; --__i)
+		{
+		  __w = __a[__i] + (__c << 32);
+		  __a[9 + __i] = __w / __r._M_lo;
+		  if (__i == 0)
+		    break;
+		  __c = __w % __r._M_lo;
+		}
+	    else
+	      {
+		// See Donald E. Knuth's "Seminumerical Algorithms".
+		int __n = 0, __d = 0;
+		uint64_t __q = 0, __s = 0;
+		for (__d = 3; __a[5 + __d] == 0; --__d)
+		  ;
+		__s = (uint64_t(1) << 32) / (__a[5 + __d] + 1);
+		if (__s > 1)
+		  {
+		    for (int __i = 0; __i <= 3; ++__i)
+		      {
+			__w = __a[__i] * __s + __c;
+			__a[__i] = uint32_t(__w);
+			__c = __w >> 32;
+		      }
+		    __a[4] = __c;
+		    __c = 0;
+		    for (int __i = 0; __i <= 3; ++__i)
+		      {
+			__w = __a[5 + __i] * __s + __c;
+			__a[5 + __i] = uint32_t(__w);
+			__c = __w >> 32;
+			if (__a[5 + __i])
+			  __d = __i;
+		      }
+		  }
+		__n = 4;
+		for (int __i = __n - __d - 1; __i >= 0; --__i)
+		  {
+		    __n = __i + __d + 1;
+		    __w = (__a[__n] << 32) + __a[__n - 1];
+		    if (__a[__n] != __a[5 + __d])
+		      __q = __w / __a[5 + __d];
+		    else
+		      __q = ~uint32_t(0);
+		    uint64_t __t = __w - __q * __a[5 + __d];
+		    if (__t <= ~uint32_t(0)
+			  && __a[4 + __d] * __q > (__t << 32) + __a[__n - 2])
+		      --__q;
+		    __c = 0;
+		    for (int __j = 0; __j <= __d; ++__j)
+		      {
+			__w = __q * __a[5 + __j] + __c;
+			__c = __w >> 32;
+			__w = __a[__i + __j] - uint32_t(__w);
+			__a[__i + __j] = uint32_t(__w);
+			__c += (__w >> 32) != 0;
+		      }
+		    if (int64_t(__a[__n]) < int64_t(__c))
+		      {
+			--__q;
+			__c = 0;
+			for (int __j = 0; __j <= __d; ++__j)
+			  {
+			    __w = __a[__i + __j] + __a[5 + __j] + __c;
+			    __c = __w >> 32;
+			    __a[__i + __j] = uint32_t(__w);
+			  }
+			__a[__n] += __c;
+		      }
+		    __a[9 + __i] = __q;
+		  }
+	      }
+	    _M_lo = __a[9] + (__a[10] << 32);
+	    _M_hi = __a[11] + (__a[12] << 32);
+	  }
+	return *this;
+      }
+
+      // Currently only supported for 64-bit operands.
+      _GLIBCXX14_CONSTEXPR type&
+      operator%=(uint64_t __m) noexcept
+      {
+	if (_M_hi == 0)
+	  {
+	    _M_lo %= __m;
+	    return *this;
+	  }
+
+	int __shift = __builtin_clzll(__m) + 64 - __builtin_clzll(_M_hi);
+	type __x(0);
+	if (__shift >= 64)
+	  {
+	    __x._M_hi = __m << (__shift - 64);
+	    __x._M_lo = 0;
+	  }
+	else
+	  {
+	    __x._M_hi = __m >> (64 - __shift);
+	    __x._M_lo = __m << __shift;
+	  }
+
+	while (_M_hi != 0 || _M_lo >= __m)
+	  {
+	    if (__x <= *this)
+	      {
+		_M_hi -= __x._M_hi;
+		_M_hi -= __builtin_sub_overflow(_M_lo, __x._M_lo,
+						    &_M_lo);
+	      }
+	    __x._M_lo = (__x._M_lo >> 1) | (__x._M_hi << 63);
+	    __x._M_hi >>= 1;
+	  }
+	return *this;
+      }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator*(type __l, const type& __r) noexcept
+      { return __l *= __r; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator*(type __l, uint64_t __r) noexcept
+      { return __l *= __r; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator/(type __l, const type& __r) noexcept
+      { return __l /= __r; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator%(type __l, uint64_t __m) noexcept
+      { return __l %= __m; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator~(type __v) noexcept
+      {
+	__v._M_hi = ~__v._M_hi;
+	__v._M_lo = ~__v._M_lo;
+	return __v;
+      }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator>>=(unsigned __c) noexcept
+      {
+	if (__c >= 64)
+	  {
+	    _M_lo = _M_hi >>= (__c - 64);
+	    _M_hi = 0;
+	  }
+	else if (__c != 0)
+	  {
+	    _M_lo = (_M_lo >> __c) | (_M_hi << (64 - __c));
+	    _M_hi >>= __c;
+	  }
+	return *this;
+      }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator<<=(unsigned __c) noexcept
+      {
+	if (__c >= 64)
+	  {
+	    _M_hi = _M_lo << (__c - 64);
+	    _M_lo = 0;
+	  }
+	else if (__c != 0)
+	  {
+	    _M_hi = (_M_hi << __c) | (_M_lo >> (64 - __c));
+	    _M_lo <<= __c;
+	  }
+	return *this;
+      }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator>>(type __x, unsigned __c) noexcept
+      { return __x >>= __c; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator<<(type __x, unsigned __c) noexcept
+      { return __x <<= __c; }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator|=(const type& __r) noexcept
+      {
+	_M_hi |= __r._M_hi;
+	_M_lo |= __r._M_lo;
+	return *this;
+      }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator^=(const type& __r) noexcept
+      {
+	_M_hi ^= __r._M_hi;
+	_M_lo ^= __r._M_lo;
+	return *this;
+      }
+
+      _GLIBCXX14_CONSTEXPR type&
+      operator&=(const type& __r) noexcept
+      {
+	_M_hi &= __r._M_hi;
+	_M_lo &= __r._M_lo;
+	return *this;
+      }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator|(type __l, const type& __r) noexcept
+      { return __l |= __r; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator^(type __l, const type& __r) noexcept
+      { return __l ^= __r; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator&(type __l, const type& __r) noexcept
+      { return __l &= __r; }
+
+      friend _GLIBCXX14_CONSTEXPR type
+      operator&(type __l, uint64_t __r) noexcept
+      {
+	__l._M_hi = 0;
+	__l._M_lo &= __r;
+	return __l;
+      }
+
+#if __cpp_impl_three_way_comparison >= 201907L
+      friend std::strong_ordering
+      operator<=>(const type&, const type&) = default;
+
+      friend bool
+      operator==(const type&, const type&) = default;
+#else
+      friend constexpr bool
+      operator==(const type& __l, const type& __r) noexcept
+      { return __l._M_hi == __r._M_hi && __l._M_lo == __r._M_lo; }
+
+      friend _GLIBCXX14_CONSTEXPR bool
+      operator<(const type& __l, const type& __r) noexcept
+      {
+	if (__l._M_hi < __r._M_hi)
+	  return true;
+	else if (__l._M_hi == __r._M_hi)
+	  return __l._M_lo < __r._M_lo;
+	else
+	  return false;
+      }
+
+      friend _GLIBCXX14_CONSTEXPR bool
+      operator<=(const type& __l, const type& __r) noexcept
+      { return !(__r < __l); }
+#endif
+
+      friend _GLIBCXX14_CONSTEXPR bool
+      operator==(const type& __l, uint64_t __r) noexcept
+      { return __l == type(__r); }
+
+      template<typename _RealT>
+	constexpr explicit operator _RealT() const noexcept
+	{
+	  static_assert(std::is_floating_point<_RealT>::value,
+			"template argument must be a floating point type");
+	  return _M_hi == 0
+		   ? _RealT(_M_lo)
+		   : _RealT(_M_hi) * _RealT(18446744073709551616.0)
+		     + _RealT(_M_lo);
+	}
+
+      // pre: _M_hi == 0
+      constexpr explicit operator uint64_t() const noexcept
+      { return _M_lo; }
+
+      uint64_t _M_hi = 0;
+      uint64_t _M_lo = 0;
+    };
+#endif // ! __SIZEOF_INT128__
+
     template<typename _UIntType, size_t __w,
 	     bool = __w < static_cast<size_t>
 			  (std::numeric_limits<_UIntType>::digits)>
@@ -117,103 +535,7 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
     && defined __UINT64_TYPE__
     template<int __s>
       struct _Select_uint_least_t<__s, 1>
-      {
-	// This is NOT a general-purpose 128-bit integer type.
-	// It only supports (type(a) * x + c) % m as needed by __mod.
-	struct type
-	{
-	  explicit
-	  type(uint64_t __a) noexcept : _M_lo(__a), _M_hi(0) { }
-
-	  // pre: __l._M_hi == 0
-	  friend type
-	  operator*(type __l, uint64_t __x) noexcept
-	  {
-	    // Split 64-bit values __l._M_lo and __x into high and low 32-bit
-	    // limbs and multiply those individually.
-	    // l * x = (l0 + l1) * (x0 + x1) = l0x0 + l0x1 + l1x0 + l1x1
-
-	    constexpr uint64_t __mask = 0xffffffff;
-	    uint64_t __ll[2] = { __l._M_lo >> 32, __l._M_lo & __mask };
-	    uint64_t __xx[2] = { __x >> 32, __x & __mask };
-	    uint64_t __l0x0 = __ll[0] * __xx[0];
-	    uint64_t __l0x1 = __ll[0] * __xx[1];
-	    uint64_t __l1x0 = __ll[1] * __xx[0];
-	    uint64_t __l1x1 = __ll[1] * __xx[1];
-	    // These bits are the low half of __l._M_hi
-	    // and the high half of __l._M_lo.
-	    uint64_t __mid
-	      = (__l0x1 & __mask) + (__l1x0 & __mask) + (__l1x1 >> 32);
-	    __l._M_hi = __l0x0 + (__l0x1 >> 32) + (__l1x0 >> 32) + (__mid >> 32);
-	    __l._M_lo = (__mid << 32) + (__l1x1 & __mask);
-	    return __l;
-	  }
-
-	  friend type
-	  operator+(type __l, uint64_t __c) noexcept
-	  {
-	    __l._M_hi += __builtin_add_overflow(__l._M_lo, __c, &__l._M_lo);
-	    return __l;
-	  }
-
-	  friend type
-	  operator%(type __l, uint64_t __m) noexcept
-	  {
-	    if (__builtin_expect(__l._M_hi == 0, 0))
-	      {
-		__l._M_lo %= __m;
-		return __l;
-	      }
-
-	    int __shift = __builtin_clzll(__m) + 64
-			    - __builtin_clzll(__l._M_hi);
-	    type __x(0);
-	    if (__shift >= 64)
-	      {
-		__x._M_hi = __m << (__shift - 64);
-		__x._M_lo = 0;
-	      }
-	    else
-	      {
-		__x._M_hi = __m >> (64 - __shift);
-		__x._M_lo = __m << __shift;
-	      }
-
-	    while (__l._M_hi != 0 || __l._M_lo >= __m)
-	      {
-		if (__x <= __l)
-		  {
-		    __l._M_hi -= __x._M_hi;
-		    __l._M_hi -= __builtin_sub_overflow(__l._M_lo, __x._M_lo,
-							&__l._M_lo);
-		  }
-		__x._M_lo = (__x._M_lo >> 1) | (__x._M_hi << 63);
-		__x._M_hi >>= 1;
-	      }
-	    return __l;
-	  }
-
-	  // pre: __l._M_hi == 0
-	  explicit operator uint64_t() const noexcept
-	  { return _M_lo; }
-
-	  friend bool operator<(const type& __l, const type& __r) noexcept
-	  {
-	    if (__l._M_hi < __r._M_hi)
-	      return true;
-	    else if (__l._M_hi == __r._M_hi)
-	      return __l._M_lo < __r._M_lo;
-	    else
-	      return false;
-	  }
-
-	  friend bool operator<=(const type& __l, const type& __r) noexcept
-	  { return !(__r < __l); }
-
-	  uint64_t _M_lo;
-	  uint64_t _M_hi;
-	};
-      };
+      { using type = __rand_uint128; };
 #endif
 
     // Assume a != 0, a < m, c < m, x < m.

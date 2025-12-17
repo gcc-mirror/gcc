@@ -2507,7 +2507,7 @@
 #undef __glibcxx_want_constexpr_exceptions
 
 #if !defined(__cpp_lib_philox_engine)
-# if (__cplusplus >  202302L) && (__SIZEOF_INT128__)
+# if (__cplusplus >  202302L)
 #  define __glibcxx_philox_engine 202406L
 #  if defined(__glibcxx_want_all) || defined(__glibcxx_want_philox_engine)
 #   define __cpp_lib_philox_engine 202406L

@@ -2241,7 +2241,6 @@ ftms = {
   values = {
     v = 202406;
     cxxmin = 26;
-    extra_cond = "__SIZEOF_INT128__";
   };
 };
 

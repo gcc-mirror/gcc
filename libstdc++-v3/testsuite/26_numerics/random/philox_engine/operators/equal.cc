@@ -1,5 +1,4 @@
 // { dg-do run { target c++26 } }
-// { dg-require-cpp-feature-test __cpp_lib_philox_engine }
 
 // N5014 29.5.4.5 Class Template philox_engine
 
