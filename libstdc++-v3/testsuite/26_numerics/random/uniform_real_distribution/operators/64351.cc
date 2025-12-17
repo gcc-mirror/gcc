@@ -17,6 +17,7 @@
 
 // { dg-do run { target { c++11 && { ! simulator } } } }
 // { dg-require-cstdint "" }
+// { dg-additional-options -fexcess-precision=standard }
 
 #include <random>
 #include <testsuite_hooks.h>

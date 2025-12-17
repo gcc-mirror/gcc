@@ -1,5 +1,6 @@
 // { dg-do run { target { c++11 && { ! simulator } } } }
 // { dg-skip-if "requires new impl" { *-*-* } { -D_GLIBCXX_USE_OLD_GENERATE_CANONICAL -D_GLIBCXX_USE_OLD_GENERATE_CANONICAL=1 } }
+// { dg-additional-options -fexcess-precision=standard }
 
 #include <random>
 #include <limits>
