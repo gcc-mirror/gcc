@@ -1194,7 +1194,9 @@ cselib_redundant_set_p (rtx set)
   if (cselib_reg_set_mode (dest) != GET_MODE (dest))
     return false;
 
-  if (!rtx_equal_for_cselib_p (dest, SET_SRC (set)))
+  rtx src = SET_SRC (set);
+  if ((MEM_P (src) && MEM_VOLATILE_P (src))
+       || !rtx_equal_for_cselib_p (dest, src))
     return false;
 
   while (GET_CODE (dest) == SUBREG
@@ -1204,6 +1206,9 @@ cselib_redundant_set_p (rtx set)
 
   if (!flag_strict_aliasing || !MEM_P (dest))
     return true;
+
+  if (MEM_VOLATILE_P (dest))
+    return false;
 
   /* For a store we need to check that suppressing it will not change
      the effective alias set.  */
@@ -1242,7 +1247,6 @@ cselib_redundant_set_p (rtx set)
   /* We failed to find a recorded value in the cselib history, so try
      the source of this set; this catches cases such as *p = *q when p
      and q have the same value.  */
-  rtx src = SET_SRC (set);
   while (GET_CODE (src) == SUBREG)
     src = XEXP (src, 0);
 
