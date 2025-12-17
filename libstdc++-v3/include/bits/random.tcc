@@ -3619,12 +3619,6 @@ namespace __detail
   template <> const bool __is_rand_dist_float_v<long double> = true;
 #endif
 
-#ifdef __glibcxx_concepts
-# define _Uniform_random_bit_generator uniform_random_bit_generator
-#else
-# define _Uniform_random_bit_generator typename
-#endif
-
   // Note, this works even when (__range + 1) overflows:
   template <typename _Rng>
     constexpr bool __is_power_of_2_less_1(_Rng __range)
@@ -3646,10 +3640,13 @@ namespace __detail
    *  @since C++11
    */
   template<typename _RealT, size_t __digits,
-	_Uniform_random_bit_generator _Urbg>
+	   typename _Urbg>
     _RealT
     generate_canonical(_Urbg& __urng)
     {
+#ifdef __glibcxx_concepts
+      static_assert(uniform_random_bit_generator<_Urbg>);
+#endif      
       static_assert(__is_rand_dist_float_v<_RealT>,
 	"template argument must be a floating point type");
       static_assert(__digits != 0 && _Urbg::max() > _Urbg::min(),

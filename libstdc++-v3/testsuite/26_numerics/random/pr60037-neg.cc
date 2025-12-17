@@ -12,4 +12,5 @@ auto x = std::generate_canonical<std::size_t,
 
 // { dg-error "static assertion failed: template argument must be a floating point type" "" { target *-*-* } 271 }
 
-// { dg-error "static assertion failed: template argument must be a floating point type" "" { target *-*-* } 3653 }
+// { dg-error "static assertion failed: template argument must be a floating point type" "" { target *-*-* } 3650 }
+
