@@ -35,6 +35,7 @@ FROM SymbolTable IMPORT NulSym, ModeOfAddr, ProcedureKind,
                         SetCurrentModule, GetCurrentModule, SetFileModule,
                         GetExported, IsExported, IsImplicityExported,
                         IsDefImp, IsModule, IsImported, IsIncludedByDefinition,
+                        IsUnknown,
                         RequestSym,
                         IsProcedure, PutOptArgInit,
                         IsFieldEnumeration, GetType,
@@ -62,6 +63,7 @@ FROM M2Comp IMPORT CompilingDefinitionModule,
 
 FROM FifoQueue IMPORT GetSubrangeFromFifoQueue ;
 FROM M2Reserved IMPORT NulTok, ImportTok ;
+FROM M2MetaError IMPORT MetaError2 ;
 
 IMPORT M2Error ;
 IMPORT M2StackSpell ;
@@ -419,32 +421,35 @@ END CheckImportListOuterModule ;
 
 
 (*
-   CheckCanBeImported - checks to see that it is legal to import, Sym, from, ModSym.
+   CheckCanBeImported - checks to see that it is legal to import Sym from ModSym.
 *)
 
 PROCEDURE CheckCanBeImported (ModSym, Sym: CARDINAL) ;
-VAR
-   n1, n2: Name ;
 BEGIN
-   IF IsDefImp(ModSym)
+   IF IsDefImp (ModSym)
    THEN
-      IF IsExported(ModSym, Sym)
+      IF IsExported (ModSym, Sym)
       THEN
-         (* great all done *)
+         (* All done.  *)
          RETURN
       ELSE
-         IF IsImplicityExported(ModSym, Sym)
+         IF IsImplicityExported (ModSym, Sym)
          THEN
-            (* this is also legal *)
+            (* This is also legal.  *)
             RETURN
-         ELSIF IsDefImp(Sym) AND IsIncludedByDefinition(ModSym, Sym)
+         ELSIF IsDefImp (Sym) AND IsIncludedByDefinition (ModSym, Sym)
          THEN
-            (* this is also legal (for a definition module) *)
+            (* This is also legal (for a definition module).  *)
             RETURN
          END ;
-         n1 := GetSymName(ModSym) ;
-         n2 := GetSymName(Sym) ;
-         WriteFormat2('symbol %a is not exported from definition module %a', n2, n1)
+         (* Use spell checker for Unknown symbols.  *)
+         IF IsUnknown (Sym)
+         THEN
+            (* Spellcheck.  *)
+            MetaError2 ('{%1Ua} is not exported from definition module {%2a} {%1&s}', Sym, ModSym)
+         ELSE
+            MetaError2 ('{%1Ua} is not exported from definition module {%2a}', Sym, ModSym)
+         END
       END
    END
 END CheckCanBeImported ;
