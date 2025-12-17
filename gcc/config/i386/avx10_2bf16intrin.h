@@ -1339,38 +1339,38 @@ _mm_maskz_getexp_pbh (__mmask8 __U, __m128bh __A)
 #ifdef __OPTIMIZE__
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_roundscale_pbh (__m512bh __A, int B)
+_mm512_roundscale_pbh (__m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_rndscalebf16512_mask (__A, B,
+    __builtin_ia32_rndscalebf16512_mask (__A, __B,
 					 (__v32bf) _mm512_setzero_si512 (),
 					 (__mmask32) -1);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_mask_roundscale_pbh (__m512bh __W, __mmask32 __U, __m512bh __A, int B)
+_mm512_mask_roundscale_pbh (__m512bh __W, __mmask32 __U, __m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_rndscalebf16512_mask (__A, B, __W,  __U);
+    __builtin_ia32_rndscalebf16512_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_roundscale_pbh (__mmask32 __U, __m512bh __A, int B)
+_mm512_maskz_roundscale_pbh (__mmask32 __U, __m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_rndscalebf16512_mask (__A, B,
+    __builtin_ia32_rndscalebf16512_mask (__A, __B,
 					 (__v32bf) _mm512_setzero_si512 (),
 					 __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_roundscale_pbh (__m256bh __A, int B)
+_mm256_roundscale_pbh (__m256bh __A, int __B)
 {
   return (__m256bh)
-    __builtin_ia32_rndscalebf16256_mask (__A, B,
+    __builtin_ia32_rndscalebf16256_mask (__A, __B,
 					 (__v16bf) _mm256_setzero_si256 (),
 					 (__mmask16) -1);
 }
@@ -1378,28 +1378,28 @@ _mm256_roundscale_pbh (__m256bh __A, int B)
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_roundscale_pbh (__m256bh __W, __mmask16 __U,
-			    __m256bh __A, int B)
+			    __m256bh __A, int __B)
 {
   return (__m256bh)
-    __builtin_ia32_rndscalebf16256_mask (__A, B, __W, __U);
+    __builtin_ia32_rndscalebf16256_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_roundscale_pbh (__mmask16 __U, __m256bh __A, int B)
+_mm256_maskz_roundscale_pbh (__mmask16 __U, __m256bh __A, int __B)
 {
   return (__m256bh)
-    __builtin_ia32_rndscalebf16256_mask (__A, B,
+    __builtin_ia32_rndscalebf16256_mask (__A, __B,
 					 (__v16bf) _mm256_setzero_si256 (),
 					 __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_roundscale_pbh (__m128bh __A, int B)
+_mm_roundscale_pbh (__m128bh __A, int __B)
 {
   return (__m128bh)
-    __builtin_ia32_rndscalebf16128_mask (__A, B,
+    __builtin_ia32_rndscalebf16128_mask (__A, __B,
 					 (__v8bf) _mm_setzero_si128 (),
 					 (__mmask8) -1);
 }
@@ -1407,18 +1407,18 @@ _mm_roundscale_pbh (__m128bh __A, int B)
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_roundscale_pbh (__m128bh __W, __mmask8 __U,
-			 __m128bh __A, int B)
+			 __m128bh __A, int __B)
 {
   return (__m128bh)
-    __builtin_ia32_rndscalebf16128_mask (__A, B, __W, __U);
+    __builtin_ia32_rndscalebf16128_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_roundscale_pbh (__mmask8 __U, __m128bh __A, int B)
+_mm_maskz_roundscale_pbh (__mmask8 __U, __m128bh __A, int __B)
 {
   return (__m128bh)
-    __builtin_ia32_rndscalebf16128_mask (__A, B,
+    __builtin_ia32_rndscalebf16128_mask (__A, __B,
 					 (__v8bf) _mm_setzero_si128 (),
 					 __U);
 }
@@ -1469,10 +1469,10 @@ _mm_maskz_roundscale_pbh (__mmask8 __U, __m128bh __A, int B)
 #ifdef __OPTIMIZE__
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_reduce_pbh (__m512bh __A, int B)
+_mm512_reduce_pbh (__m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_reducebf16512_mask (__A, B,
+    __builtin_ia32_reducebf16512_mask (__A, __B,
 				       (__v32bf) _mm512_setzero_si512 (),
 				       (__mmask32) -1);
 }
@@ -1480,28 +1480,28 @@ _mm512_reduce_pbh (__m512bh __A, int B)
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm512_mask_reduce_pbh (__m512bh __W, __mmask32 __U,
-			__m512bh __A, int B)
+			__m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_reducebf16512_mask (__A, B, __W,  __U);
+    __builtin_ia32_reducebf16512_mask (__A, __B, __W,  __U);
 }
 
 extern __inline__ __m512bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm512_maskz_reduce_pbh (__mmask32 __U, __m512bh __A, int B)
+_mm512_maskz_reduce_pbh (__mmask32 __U, __m512bh __A, int __B)
 {
   return (__m512bh)
-    __builtin_ia32_reducebf16512_mask (__A, B,
+    __builtin_ia32_reducebf16512_mask (__A, __B,
 					  (__v32bf) _mm512_setzero_si512 (),
 					  __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_reduce_pbh (__m256bh __A, int B)
+_mm256_reduce_pbh (__m256bh __A, int __B)
 {
   return (__m256bh)
-    __builtin_ia32_reducebf16256_mask (__A, B,
+    __builtin_ia32_reducebf16256_mask (__A, __B,
 				       (__v16bf) _mm256_setzero_si256 (),
 				       (__mmask16) -1);
 }
@@ -1509,28 +1509,28 @@ _mm256_reduce_pbh (__m256bh __A, int B)
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm256_mask_reduce_pbh (__m256bh __W, __mmask16 __U,
-			__m256bh __A, int B)
+			__m256bh __A, int __B)
 {
   return (__m256bh)
-    __builtin_ia32_reducebf16256_mask (__A, B, __W, __U);
+    __builtin_ia32_reducebf16256_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m256bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm256_maskz_reduce_pbh (__mmask16 __U, __m256bh __A, int B)
+_mm256_maskz_reduce_pbh (__mmask16 __U, __m256bh __A, int __B)
 {
   return (__m256bh)
-    __builtin_ia32_reducebf16256_mask (__A, B,
+    __builtin_ia32_reducebf16256_mask (__A, __B,
 				       (__v16bf) _mm256_setzero_si256 (),
 				       __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_reduce_pbh (__m128bh __A, int B)
+_mm_reduce_pbh (__m128bh __A, int __B)
 {
   return (__m128bh)
-    __builtin_ia32_reducebf16128_mask (__A, B,
+    __builtin_ia32_reducebf16128_mask (__A, __B,
 				       (__v8bf) _mm_setzero_si128 (),
 				       (__mmask8) -1);
 }
@@ -1538,18 +1538,18 @@ _mm_reduce_pbh (__m128bh __A, int B)
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
 _mm_mask_reduce_pbh (__m128bh __W, __mmask8 __U,
-		     __m128bh __A, int B)
+		     __m128bh __A, int __B)
 {
   return (__m128bh)
-    __builtin_ia32_reducebf16128_mask (__A, B, __W, __U);
+    __builtin_ia32_reducebf16128_mask (__A, __B, __W, __U);
 }
 
 extern __inline__ __m128bh
 __attribute__ ((__gnu_inline__, __always_inline__, __artificial__))
-_mm_maskz_reduce_pbh (__mmask8 __U, __m128bh __A, int B)
+_mm_maskz_reduce_pbh (__mmask8 __U, __m128bh __A, int __B)
 {
   return (__m128bh)
-    __builtin_ia32_reducebf16128_mask (__A, B,
+    __builtin_ia32_reducebf16128_mask (__A, __B,
 				       (__v8bf) _mm_setzero_si128 (),
 				       __U);
 }
