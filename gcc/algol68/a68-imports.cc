@@ -495,11 +495,10 @@ a68_get_packet_exports (const std::string &filename,
       if (pos + PTR_SIZE > size)					\
 	goto decode_error;						\
       (V) = 0;								\
-      uint64_t ptr_bit_size = 8 * PTR_SIZE;				\
       if (BYTES_BIG_ENDIAN)						\
 	{								\
 	  for (int i = 0; i < PTR_SIZE;	i++)				\
-	    (V) = ((V) | ((uint8_t) data[pos + i] << (ptr_bit_size - (i * 8)))); \
+	    (V) = ((V) | ((uint8_t) data[pos + i] << ((PTR_SIZE - i - 1) * 8))); \
 	}								\
       else								\
 	{								\
