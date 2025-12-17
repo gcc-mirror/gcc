@@ -1496,6 +1496,15 @@ http://www.ada-auth.org/AI12-SUMMARY.HTML.
 
   RM references: C.03.01 (13)
 
+.. index:: AI12-0254 (Ada 2022 feature)
+
+* *AI12-0254 Bounded_Indefinite_Holders (2025-12-15)*
+
+  This AI defines a new package ``Ada.Containers.Indefinite_Holders`` which
+  is fully implemented by GNAT.
+
+  RM references: A.18.32 (0)
+
 .. index:: AI12-0256 (Ada 2022 feature)
 
 * *AI12-0256 Aspect No_Controlled_Parts (2021-01-26)*
@@ -1943,10 +1952,9 @@ http://www.ada-auth.org/AI12-SUMMARY.HTML.
 
 .. index:: AI12-0350 (Ada 2022 feature)
 
-* *AI12-0350 Swap for Indefinite_Holders (0000-00-00)*
+* *AI12-0350 Swap for Indefinite_Holders (2025-12-15)*
 
-  Add a ``Swap`` procedure to the predefined package
-  ``Ada.Containers.Indefinite_Holders``. The AI also contains implementation advice for ``Ada.Containers.Bounded_Indefinite_Holders``, a package that is not implemented by GNAT.
+  Package ``Ada.Containers.Indefinite_Holders`` is implemented in GNAT, comprising the support for ``Swap`` as specified by this AI.
 
   RM references: A.18.18 (22/5) A.18.18 (67/5) A.18.18 (73/3) A.18.32 (13/5)
 

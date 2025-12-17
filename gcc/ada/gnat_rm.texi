@@ -29544,6 +29544,20 @@ Program_Error when more than one interrupt handler is attached to the same inter
 RM references: C.03.01 (13)
 @end itemize
 
+@geindex AI12-0254 (Ada 2022 feature)
+
+
+@itemize *
+
+@item 
+`AI12-0254 Bounded_Indefinite_Holders (2025-12-15)'
+
+This AI defines a new package @code{Ada.Containers.Indefinite_Holders} which
+is fully implemented by GNAT.
+
+RM references: A.18.32 (0)
+@end itemize
+
 @geindex AI12-0256 (Ada 2022 feature)
 
 
@@ -30225,10 +30239,9 @@ RM references: 3.10.02 (5) 3.10.02 (7/4) 3.10.02 (10.5/3) 3.10.02 (13.4/4)
 @itemize *
 
 @item 
-`AI12-0350 Swap for Indefinite_Holders (0000-00-00)'
+`AI12-0350 Swap for Indefinite_Holders (2025-12-15)'
 
-Add a @code{Swap} procedure to the predefined package
-@code{Ada.Containers.Indefinite_Holders}. The AI also contains implementation advice for @code{Ada.Containers.Bounded_Indefinite_Holders}, a package that is not implemented by GNAT.
+Package @code{Ada.Containers.Indefinite_Holders} is implemented in GNAT, comprising the support for @code{Swap} as specified by this AI.
 
 RM references: A.18.18 (22/5) A.18.18 (67/5) A.18.18 (73/3) A.18.32 (13/5)
 @end itemize
