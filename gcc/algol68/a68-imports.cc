@@ -706,7 +706,9 @@ complete_encoded_mode (encoded_modes_map_t &encoded_modes, uint64_t offset)
       /* For recursive declarations.  */
       em->moid = a68_create_mode (em->kind == GA68_MODE_NAME ? REF_SYMBOL : FLEX_SYMBOL,
 				  0, NO_NODE, M_ERROR, NO_PACK);
-      sub = complete_encoded_mode (encoded_modes, em->data.name.sub_offset);
+      sub = complete_encoded_mode (encoded_modes,
+				   em->kind == GA68_MODE_NAME
+				   ? em->data.name.sub_offset : em->data.flex.sub_offset);
       if (sub == NO_MOID)
 	{
 	  /* Free em->moid */
