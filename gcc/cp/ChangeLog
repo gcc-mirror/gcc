@@ -1,3 +1,22 @@
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122752
+	* pt.cc (tsubst) <case TYPENAME_TYPE>: Allow TYPENAME_TYPE
+	resolving to another wildcard type.
+
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* pt.cc (dependentish_scope_p): Return true for the current
+	instantiation from within an immediately parsed noexcept-spec.
+
 2025-12-08  Jakub Jelinek  <jakub@redhat.com>
 
 	Backported from master:

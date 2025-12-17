@@ -1,3 +1,41 @@
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-12-15  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122752
+	* g++.dg/template/dependent-name19.C: New test.
+
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-11-19  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122668
+	PR c++/114764
+	* g++.dg/cpp0x/noexcept91.C: New test.
+
+2025-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/123022
+	* gcc.target/riscv/rvv/autovec/pr123022-2.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123022.c: New test.
+
+2025-12-16  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	Backported from master:
+	2025-12-11  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/107406
+	* gfortran.dg/coarray_lock_3.f90: Remove dg-error on
+	valid code.
+	* gfortran.dg/coarray_lock_4.f90: Likewise.
+	* gfortran.dg/coarray_lock_5.f90: Likwise
+	Co-Authored by: Andre Vehreschild <vehre@gcc.gnu.org>
+
 2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/reduce4.adb: New test.

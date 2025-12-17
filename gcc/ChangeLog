@@ -1,3 +1,11 @@
+2025-12-16  Robin Dapp  <rdapp@ventanamicro.com>
+
+	Backported from master:
+	2025-12-09  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR target/123022
+	* config/riscv/vector.md: Add mode_idx attribute.
+
 2025-12-11  Vladimir N. Makarov  <vmakarov@redhat.com>
 
 	PR rtl-optimization/122215

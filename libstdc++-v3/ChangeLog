@@ -1,3 +1,28 @@
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR libstdc++/120446
+	* include/bits/version.def (common_reference): New.
+	* include/bits/version.h: Regenerate.
+	* include/std/type_traits (__glibcxx_want_common_reference):
+	Define.
+	(__common_reference_impl<T1, T2, 1>): Add pointer convertibility
+	constraints as per P2655R3.
+	* testsuite/20_util/common_reference/p2655r3.cc: New test.
+
+2025-12-16  Patrick Palka  <ppalka@redhat.com>
+
+	Backported from master:
+	2025-12-05  Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/120446
+	* include/std/type_traits (__common_reference_impl): Rewrite
+	partial specializations to use requires-clause instead of
+	an additional void_t template parameter.  Consolidate the
+	partial specializations corresponding to bullet 1.
+
 2025-12-02  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
