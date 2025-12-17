@@ -35,7 +35,7 @@ Richard Biener                                  <rguenther@suse.de>
 Richard Earnshaw                                <richard.earnshaw@arm.com>
 Jakub Jelinek                                   <jakub@redhat.com>
 Richard Kenner                                  <kenner@nyu.edu>
-Jeff Law                                        <jefflaw@qti.qualcomm.com>
+Jeff Law                                        <jeffrey.law@oss.qualcomm.com>
 Michael Meissner                                <gnu@the-meissners.org>
 Jason Merrill                                   <jason@redhat.com>
 David S. Miller                                 <davem@redhat.com>
@@ -969,6 +969,7 @@ Prathamesh Kulkarni                             <prathameshk@nvidia.com>
 Tim Lange                                       <mail@tim-lange.me>
 Jeff Law                                        <jefflaw@qti.qualcomm.com>
 Jeff Law                                        <jeffreyalaw@gmail.com>
+Jeff Law                                        <jeffrey.law@oss.qualcomm.com>
 Jeff Law                                        <jlaw@tachyum.com>
 Jeff Law                                        <jlaw@ventanamicro.com>
 Martin Liška                                    <martin.liska@hey.com>
