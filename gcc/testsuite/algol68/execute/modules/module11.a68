@@ -6,6 +6,4 @@ module Module11 =
               skip
           postlude
               skip
-          fed,
-       Foo = def skip postlude skip fed,
-       Bar = def skip fed
+          fed
