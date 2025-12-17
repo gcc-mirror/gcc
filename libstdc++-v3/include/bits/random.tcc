@@ -3651,7 +3651,7 @@ namespace __detail
     generate_canonical(_Urbg& __urng)
     {
       static_assert(__is_rand_dist_float_v<_RealT>,
-	"template argument must be floating point");
+	"template argument must be a floating point type");
       static_assert(__digits != 0 && _Urbg::max() > _Urbg::min(),
 	"random samples with 0 bits are not meaningful");
       static_assert(std::numeric_limits<_RealT>::radix == 2,
