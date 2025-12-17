@@ -3677,7 +3677,7 @@ namespace __detail
 	    {
 #if defined(__SIZEOF_INT128__)
 	      // Accommodate double double or float128.
-	      return __generate_canonical_pow2<
+	      return __extension__ __generate_canonical_pow2<
 		_RealT, unsigned __int128, __d>(__urng);
 #else
 	      static_assert(false,
@@ -3694,7 +3694,7 @@ namespace __detail
 #if defined(__SIZEOF_INT128__)
 	      static_assert(__d <= 64,
 		"irregular RNG with float precision >64 is not supported");
-	      return __generate_canonical_any<
+	      return __extension__ __generate_canonical_any<
 		_RealT, unsigned __int128, __d>(__urng);
 #else
 	      static_assert(false, "irregular RNG with float precision"
