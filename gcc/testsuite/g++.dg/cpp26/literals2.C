@@ -3,6 +3,7 @@
 // { dg-require-effective-target int32 }
 // { dg-options "-pedantic-errors -finput-charset=UTF-8 -fexec-charset=ISO-8859-1" }
 /* { dg-require-iconv "ISO-8859-1" } */
+/* { dg-skip-if "PR c++/112652" *-*-solaris2* } */
 
 int a = 'abcd';						// { dg-warning "multi-character character constant" }
 int b = '\x61\x62\x63\x64';				// { dg-warning "multi-character character constant" }
