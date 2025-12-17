@@ -19,7 +19,7 @@ extern __thread int tv_cache __attribute__ ((visibility ("hidden")));
 extern void use_cache (int);
 extern int val (int v);
 
-__attribute__ ((optimize (2)))
+__attribute__ ((optimize (2,"-fno-reorder-blocks-and-partition")))
 void
 bug (void)
 {

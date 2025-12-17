@@ -839,7 +839,7 @@ unlikely_executed_stmt_p (gimple *stmt)
   if (gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE)
       || gimple_call_builtin_p (stmt, BUILT_IN_UNREACHABLE_TRAP)
       || gimple_call_builtin_p (stmt, BUILT_IN_TRAP))
-    return false;
+    return true;
 
   /* Checks below do not need to be fully reliable.  Cold attribute may be
      misplaced by user and in the presence of comdat we may result in call to
