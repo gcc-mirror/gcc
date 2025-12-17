@@ -528,33 +528,6 @@
 
 ; Atomic CAS ops
 
-(define_insn "zalrsc_atomic_cas_value_strong<mode>"
-  [(set (match_operand:GPR 0 "register_operand" "=&r")
-	(match_operand:GPR 1 "memory_operand" "+A"))
-   (set (match_dup 1)
-	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")
-			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")
-			      (match_operand:SI 4 "const_int_operand")  ;; mod_s
-			      (match_operand:SI 5 "const_int_operand")] ;; mod_f
-	 UNSPEC_COMPARE_AND_SWAP))
-   (clobber (match_scratch:GPR 6 "=&r"))]
-  "TARGET_ZALRSC"
-  {
-    enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
-    enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
-    /* Find the union of the two memory models so we can satisfy both success
-       and failure memory models.  */
-    operands[5] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
-    return "1:\;"
-	   "lr.<amo>%I5\t%0,%1\;"
-	   "bne\t%0,%z2,1f\;"
-	   "sc.<amo>%J5\t%6,%z3,%1\;"
-	   "bnez\t%6,1b\;"
-	   "1:";
-  }
-  [(set_attr "type" "multi")
-   (set (attr "length") (const_int 16))])
-
 ;; Implement compare_exchange with a conservative leading fence when
 ;; model_failure is seq_cst.
 ;; This allows us to be compatible with the ISA manual Table A.6 and Table A.7
@@ -587,6 +560,33 @@
    (set (attr "length")
 	(symbol_ref "(is_mm_seq_cst (memmodel_from_int (INTVAL (operands[5]))) ? 8
 		      : 4)"))])
+
+(define_insn "zalrsc_atomic_cas_value_strong<mode>"
+  [(set (match_operand:GPR 0 "register_operand" "=&r")
+	(match_operand:GPR 1 "memory_operand" "+A"))
+   (set (match_dup 1)
+	(unspec_volatile:GPR [(match_operand:GPR 2 "reg_or_0_operand" "rJ")
+			      (match_operand:GPR 3 "reg_or_0_operand" "rJ")
+			      (match_operand:SI 4 "const_int_operand")  ;; mod_s
+			      (match_operand:SI 5 "const_int_operand")] ;; mod_f
+	 UNSPEC_COMPARE_AND_SWAP))
+   (clobber (match_scratch:GPR 6 "=&r"))]
+  "TARGET_ZALRSC"
+  {
+    enum memmodel model_success = (enum memmodel) INTVAL (operands[4]);
+    enum memmodel model_failure = (enum memmodel) INTVAL (operands[5]);
+    /* Find the union of the two memory models so we can satisfy both success
+       and failure memory models.  */
+    operands[5] = GEN_INT (riscv_union_memmodels (model_success, model_failure));
+    return "1:\;"
+	   "lr.<amo>%I5\t%0,%1\;"
+	   "bne\t%0,%z2,1f\;"
+	   "sc.<amo>%J5\t%6,%z3,%1\;"
+	   "bnez\t%6,1b\;"
+	   "1:";
+  }
+  [(set_attr "type" "multi")
+   (set (attr "length") (const_int 16))])
 
 (define_expand "atomic_compare_and_swap<mode>"
   [(match_operand:SI 0 "register_operand" "")   ;; bool output
