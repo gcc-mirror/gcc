@@ -1976,7 +1976,7 @@ slpeel_tree_duplicate_loop_to_edge_cfg (class loop *loop, edge loop_exit,
 	  edge dup_exit = make_edge (bbcond, new_exit->dest, latch_is_false
 				? EDGE_TRUE_VALUE : EDGE_FALSE_VALUE);
 
-	  profile_probability probability (0.5, GUESSED);
+	  profile_probability probability = profile_probability::even ();
 	  to_latch_e->probability = dup_exit->probability = probability;
 
 	  set_immediate_dominator (CDI_DOMINATORS, dup_exit->src,
