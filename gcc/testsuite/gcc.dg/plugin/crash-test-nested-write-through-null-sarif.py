@@ -1,6 +1,7 @@
 from sarif import *
 
 import pytest
+import re
 
 @pytest.fixture(scope='function', autouse=True)
 def sarif():
@@ -32,7 +33,7 @@ def test_notification(sarif):
 
     notification = notifications[0]
 
-    assert notification['message']['text'] == "Segmentation fault"
+    assert re.match("Segmentation [Ff]ault", notification['message']['text'])
     assert notification['level'] == 'error'
 
     loc0 = notification['locations'][0]

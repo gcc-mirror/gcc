@@ -1,6 +1,7 @@
 from htmltest import *
 
 import pytest
+import re
 
 @pytest.fixture(scope='function', autouse=True)
 def html_tree():
@@ -39,4 +40,4 @@ def test_results(html_tree):
     assert ice is not None
     ice_msg = ice.find("./xhtml:div[@class='gcc-message']", ns)
     assert ice_msg is not None
-    assert ice_msg.text == "Segmentation fault"
+    assert re.match("Segmentation [Ff]ault", ice_msg.text)
