@@ -24888,8 +24888,8 @@ omp_maybe_record_variant_base (cp_parser* parser, tree decl)
    befriended it).
 
    If FUNCTION_DEFINITION_ALLOWED_P then we handle the declarator and
-   for a function-definition here as well.  If the declarator is a
-   declarator for a function-definition, *FUNCTION_DEFINITION_P will
+   the rest of a function-definition here as well.  If the declarator is
+   a declarator for a function-definition, *FUNCTION_DEFINITION_P will
    be TRUE upon return.  By that point, the function-definition will
    have been completely parsed.
 
