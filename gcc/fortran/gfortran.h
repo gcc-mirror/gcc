@@ -1631,7 +1631,8 @@ typedef struct gfc_omp_assumptions
   int n_absent, n_contains;
   enum gfc_statement *absent, *contains;
   gfc_expr_list *holds;
-  bool no_openmp:1, no_openmp_routines:1, no_parallelism:1;
+  bool no_openmp:1, no_openmp_routines:1, no_openmp_constructs:1;
+  bool no_parallelism:1;
 }
 gfc_omp_assumptions;
 

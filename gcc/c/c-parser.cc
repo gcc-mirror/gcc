@@ -30172,19 +30172,23 @@ c_parser_omp_error (c_parser *parser, enum pragma_context context)
   return false;
 }
 
-/* Assumption clauses:
-   OpenMP 5.1
+/* Assumption clauses
+   OpenMP 5.1:
    absent (directive-name-list)
    contains (directive-name-list)
    holds (expression)
    no_openmp
    no_openmp_routines
-   no_parallelism  */
+   no_parallelism
+
+   OpenMP 6.0:
+   no_openmp_constructs  */
 
 static void
 c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 {
   bool no_openmp = false;
+  bool no_openmp_constructs = false;
   bool no_openmp_routines = false;
   bool no_parallelism = false;
   bitmap_head absent_head, contains_head;
@@ -30216,6 +30220,13 @@ c_parser_omp_assumption_clauses (c_parser *parser, bool is_assume)
 	  if (no_openmp)
 	    error_at (cloc, "too many %qs clauses", "no_openmp");
 	  no_openmp = true;
+	}
+      else if (!strcmp (p, "no_openmp_constructs"))
+	{
+	  c_parser_consume_token (parser);
+	  if (no_openmp_constructs)
+	    error_at (cloc, "too many %qs clauses", "no_openmp_constructs");
+	  no_openmp_constructs = true;
 	}
       else if (!strcmp (p, "no_openmp_routines"))
 	{

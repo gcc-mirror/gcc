@@ -551,7 +551,7 @@ to address of matching mapped list item per 5.1, Sect. 2.21.7.2 @tab N @tab
 @item @code{message} and @code{severity} clauses to @code{parallel} directive
       @tab N @tab
 @item @code{self_maps} clause to @code{requires} directive @tab Y @tab
-@item @code{no_openmp_constructs} assumptions clause @tab N @tab
+@item @code{no_openmp_constructs} assumptions clause @tab Y @tab
 @item Restriction for @code{ordered} regarding loop-transforming directives
       @tab N @tab
 @item @code{apply} clause to loop-transforming constructs @tab N @tab

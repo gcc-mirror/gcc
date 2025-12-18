@@ -12,10 +12,10 @@ subroutine t1
 
   allocate (x, y, z(100))
 
-  !$acc enter data copyin(a) if_present ! { dg-error "Expected '\\(' after 'if'" }
-  !$acc exit data copyout(a) if_present ! { dg-error "Expected '\\(' after 'if'" }
+  !$acc enter data copyin(a) if_present ! { dg-error "Failed to match clause" }
+  !$acc exit data copyout(a) if_present ! { dg-error "Failed to match clause" }
 
-  !$acc data copy(a) if_present ! { dg-error "Expected '\\(' after 'if'" }
+  !$acc data copy(a) if_present ! { dg-error "Failed to match clause" }
   !$acc end data ! { dg-error "Unexpected ..ACC END DATA statement" }
 
   !$acc declare link(a) if_present ! { dg-error "Unexpected junk after" }
@@ -40,17 +40,17 @@ subroutine t2
   end do
   !$acc end parallel
 
-  !$acc kernels loop if_present ! { dg-error "Expected '\\(' after 'if'" }
+  !$acc kernels loop if_present ! { dg-error "Failed to match clause" }
   do b = 1, 10
   end do
   !$acc end kernels loop ! { dg-error "Unexpected ..ACC END KERNELS LOOP statement" }
 
-  !$acc parallel loop if_present ! { dg-error "Expected '\\(' after 'if'" }
+  !$acc parallel loop if_present ! { dg-error "Failed to match clause" }
   do b = 1, 10
   end do
   !$acc end parallel loop   ! { dg-error "Unexpected ..ACC END PARALLEL LOOP statement" }
 
-  !$acc serial loop if_present ! { dg-error "Expected '\\(' after 'if'" }
+  !$acc serial loop if_present ! { dg-error "Failed to match clause" }
   do b = 1, 10
   end do
   !$acc end serial loop   ! { dg-error "Unexpected ..ACC END SERIAL LOOP statement" }

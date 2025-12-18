@@ -1736,6 +1736,8 @@ show_omp_assumes (gfc_omp_assumptions *assume)
     }
   if (assume->no_openmp)
     fputs (" NO_OPENMP", dumpfile);
+  if (assume->no_openmp_constructs)
+    fputs (" NO_OPENMP_CONSTRUCTS", dumpfile);
   if (assume->no_openmp_routines)
     fputs (" NO_OPENMP_ROUTINES", dumpfile);
   if (assume->no_parallelism)

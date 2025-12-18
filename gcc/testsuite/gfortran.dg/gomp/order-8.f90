@@ -2,11 +2,11 @@
 subroutine f1 (a)
   integer :: a(*)
   integer i
-  !$omp do order				! { dg-error "Failed to match clause" }
+  !$omp do order				! { dg-error "Expected '\\(' after 'order'" }
   do i = 1, 128
     a(i) = a(i) + 1
   end do
-  !$omp do simd order :			! { dg-error "Failed to match clause" }
+  !$omp do simd order :			! { dg-error "Expected '\\(' after 'order'" }
   do i = 1, 128
     a(i) = a(i) + 1
   end do
