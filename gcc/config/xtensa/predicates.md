@@ -202,7 +202,9 @@
   (match_code "plus,minus"))
 
 (define_predicate "xtensa_cstoresi_operator"
-  (match_code "eq,ne,gt,ge,lt,le,gtu,geu,ltu,leu"))
+  (if_then_else (match_test "TARGET_SALT")
+		(match_code "eq,ne,gt,ge,lt,le,gtu,geu,ltu,leu")
+		(match_code "eq,ne,gt,ge,lt,le")))
 
 (define_predicate "xtensa_shift_per_byte_operator"
   (match_code "ashift,ashiftrt,lshiftrt"))
