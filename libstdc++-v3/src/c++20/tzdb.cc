@@ -1854,7 +1854,7 @@ namespace std::chrono
 	return zone_range.front().iana_name;
 
       const auto iter = ranges::lower_bound(
-	  zone_range, territory, {}, &windows_zone_map_entry::territory);
+	  zone_range, +territory, {}, &windows_zone_map_entry::territory);
       if (iter == zone_range.end() || iter->territory != territory)
 	// Territory not within the the map, use "001".
 	return zone_range.front().iana_name;
