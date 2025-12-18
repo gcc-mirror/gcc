@@ -1,3 +1,55 @@
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/std/chrono (chrono::__detail::__get_leap_second_info):
+	Update expiry date for leap seconds list.
+	* src/c++20/tzdb.cc (tzdb_list::_Node::_S_read_leap_seconds):
+	Likewise.
+	* src/c++20/tzdata.zi: Import new file from 2025c release.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/122907
+	* include/bits/cpp_type_traits.h (__memcpyable_integer<bool>):
+	Define as false.
+	* testsuite/25_algorithms/copy/122907.cc: New test.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-12-06  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/atomic_wait.h (__detail::__atomic_compare): Use
+	std::addressof instead of &.
+	* include/std/atomic (atomic::wait, atomic::notify_one)
+	(atomic::notify_all): Likewise.
+
+2025-12-17  Vladimir Bespalov  <vlad.bespalov@jetstreamsoft.com>
+
+	Backported from master:
+	2025-12-03  Vladimir Bespalov  <vlad.bespalov@jetstreamsoft.com>
+
+	PR libstdc++/122812
+	* python/libstdcxx/v6/printers.py (lookup_templ_spec): Use
+	gdb.Type.tag if present.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	Backported from master:
+	2025-11-27  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/performance/23_containers/sort_search/list.cc: Cast
+	results to void to suppress -Wunused-result warnings from
+	nodiscard functions.
+	* testsuite/performance/25_algorithms/equal_deque_iterators.cc:
+	Likewise.
+	* testsuite/performance/25_algorithms/search_n.cc: Likewise.
+
 2025-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
