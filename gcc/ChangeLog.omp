@@ -1,3 +1,11 @@
+2025-12-18  Paul-Antoine Arras  <parras@baylibre.com>
+
+	Backported from master:
+	2025-12-01  Paul-Antoine Arras  <parras@baylibre.com>
+
+	PR fortran/120505
+	* omp-low.cc (lower_omp_target): Set GOMP_MAP_IMPLICIT flag.
+
 2025-10-28  Paul-Antoine Arras  <parras@baylibre.com>
 
 	Backported from master:
