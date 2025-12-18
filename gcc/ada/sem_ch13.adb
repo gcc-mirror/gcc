@@ -3305,8 +3305,7 @@ package body Sem_Ch13 is
             procedure Check_Constructor_Initialization_Expression
               (Expr : Node_Id; Aspect_Name : String)
             is
-               First_Parameter : constant Entity_Id :=
-                 First_Entity (Corresponding_Spec (N));
+               First_Parameter : Entity_Id;
 
                --  Flag error if N refers to the forbidden entity
                function Check_Node_For_Bad_Reference
@@ -3324,7 +3323,7 @@ package body Sem_Ch13 is
                   then
                      Error_Msg_N
                        ("constructed object referenced in " &
-                       Aspect_Name & " aspect_specification", N);
+                        Aspect_Name & " aspect_specification", N);
                   end if;
 
                   return OK;
@@ -3333,6 +3332,16 @@ package body Sem_Ch13 is
                procedure Check_Tree_For_Bad_Reference is
                  new Traverse_Proc (Check_Node_For_Bad_Reference);
             begin
+               --  If coming from an implicit constructor, the Self parameter
+               --  is retrieved via the specification's defining unit name.
+
+               if Acts_As_Spec (N) then
+                  First_Parameter :=
+                    First_Entity (Defining_Unit_Name (Specification (N)));
+               else
+                  First_Parameter := First_Entity (Corresponding_Spec (N));
+               end if;
+
                Check_Tree_For_Bad_Reference (Expr);
             end Check_Constructor_Initialization_Expression;
 
