@@ -17946,8 +17946,8 @@ tag_name (enum tag_types code)
     case enum_type:
       return "enum";
     case typename_type:
-      return "typename";
     case none_type:
+      return "typename";
     case scope_type:
       return nullptr;
     }
