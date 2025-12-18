@@ -2110,7 +2110,8 @@ jobserver_info::jobserver_info ()
       if (n != string::npos)
 	{
 	  string ending = makeflags.substr (n + js_needle.size ());
-	  if (ending.find (fifo_prefix) == 0)
+	  bool is_named_pipe = ending.find (fifo_prefix) == 0;
+	  if (is_named_pipe)
 	    {
 	      ending = ending.substr (fifo_prefix.size ());
 	      pipe_path = ending.substr (0, ending.find (' '));
@@ -2125,11 +2126,15 @@ jobserver_info::jobserver_info ()
 	    is_active = true;
 	  else
 	    {
-	      string dup = makeflags.substr (0, n);
-	      size_t pos = makeflags.find (' ', n);
-	      if (pos != string::npos)
-		dup += makeflags.substr (pos);
-	      skipped_makeflags = "MAKEFLAGS=" + dup;
+	      bool negative_fds = !is_named_pipe && rfd < 0 && wfd < 0;
+	      if (!negative_fds)
+	        {
+	          string dup = makeflags.substr (0, n);
+	          size_t pos = makeflags.find (' ', n);
+	          if (pos != string::npos)
+	            dup += makeflags.substr (pos);
+	         skipped_makeflags = "MAKEFLAGS=" + dup;
+	        }
 	      error_msg
 		= "cannot access %<" + js_needle + "%> file descriptors";
 	    }
