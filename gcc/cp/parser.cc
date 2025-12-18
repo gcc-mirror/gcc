@@ -20435,7 +20435,7 @@ cp_parser_template_id (cp_parser *parser,
 				   fullname, arguments);
       TREE_TYPE (templ)
 	= build_typename_type (TYPE_CONTEXT (TREE_TYPE (templ)),
-			       TYPE_NAME (TREE_TYPE (templ)),
+			       TYPE_IDENTIFIER (TREE_TYPE (templ)),
 			       fullname,
 			       get_typename_tag (TREE_TYPE (templ)));
       template_id = templ;
