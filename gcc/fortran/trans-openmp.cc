@@ -5266,6 +5266,28 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
       omp_clauses = gfc_trans_add_clause (c, omp_clauses);
     }
 
+  if (clauses->device_type != OMP_DEVICE_TYPE_UNSET)
+    {
+      enum omp_clause_device_type_kind type;
+      switch (clauses->device_type)
+	{
+	case OMP_DEVICE_TYPE_HOST:
+	  type = OMP_CLAUSE_DEVICE_TYPE_HOST;
+	  break;
+	case OMP_DEVICE_TYPE_NOHOST:
+	  type = OMP_CLAUSE_DEVICE_TYPE_NOHOST;
+	  break;
+	case OMP_DEVICE_TYPE_ANY:
+	  type = OMP_CLAUSE_DEVICE_TYPE_ANY;
+	  break;
+	case OMP_DEVICE_TYPE_UNSET:
+	  gcc_unreachable ();
+	}
+      c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEVICE_TYPE);
+      OMP_CLAUSE_DEVICE_TYPE_KIND (c) = type;
+      omp_clauses = gfc_trans_add_clause (c, omp_clauses);
+    }
+
   if (clauses->dyn_groupprivate)
     {
       gfc_init_se (&se, NULL);
@@ -8051,6 +8073,8 @@ gfc_split_omp_clauses (gfc_code *code,
 	    = code->ext.omp_clauses->if_expr;
 	  clausesa[GFC_OMP_SPLIT_TARGET].nowait
 	    = code->ext.omp_clauses->nowait;
+	  clausesa[GFC_OMP_SPLIT_TARGET].device_type
+	    = code->ext.omp_clauses->device_type;
 	}
       if (mask & GFC_OMP_MASK_TEAMS)
 	{

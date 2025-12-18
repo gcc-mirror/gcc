@@ -2176,6 +2176,7 @@ c_omp_split_clauses (location_t loc, enum tree_code code,
 	{
 	/* First the clauses that are unique to some constructs.  */
 	case OMP_CLAUSE_DEVICE:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	case OMP_CLAUSE_DEFAULTMAP:
 	case OMP_CLAUSE_DEPEND:
 	case OMP_CLAUSE_DYN_GROUPPRIVATE:

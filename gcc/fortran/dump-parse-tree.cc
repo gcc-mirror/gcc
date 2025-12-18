@@ -1984,6 +1984,20 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
     fputs (" NOWAIT", dumpfile);
   if (omp_clauses->collapse)
     fprintf (dumpfile, " COLLAPSE(%d)", omp_clauses->collapse);
+  if (omp_clauses->device_type != OMP_DEVICE_TYPE_UNSET)
+    {
+      const char *s;
+      switch (omp_clauses->device_type)
+	{
+	case OMP_DEVICE_TYPE_HOST: s = "host"; break;
+	case OMP_DEVICE_TYPE_NOHOST: s = "nohost"; break;
+	case OMP_DEVICE_TYPE_ANY: s = "any"; break;
+	case OMP_DEVICE_TYPE_UNSET: gcc_unreachable ();
+	}
+      fputs (" DEVICE_TYPE(", dumpfile);
+      fputs (s, dumpfile);
+      fputc (')', dumpfile);
+    }
   for (list_type = 0; list_type < OMP_LIST_NUM; list_type++)
     if (omp_clauses->lists[list_type] != NULL)
       {

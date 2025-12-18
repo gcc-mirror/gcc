@@ -3013,6 +3013,43 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 					   OMP_MAP_DETACH, false,
 					   allow_derived))
 	    continue;
+	  if ((mask & OMP_CLAUSE_DEVICEPTR)
+	      && gfc_match ("deviceptr ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_DEVICEPTR, false,
+					   allow_derived))
+	    continue;
+	  if ((mask & OMP_CLAUSE_DEVICE_TYPE)
+	      && gfc_match_dupl_check (c->device_type == OMP_DEVICE_TYPE_UNSET,
+				       "device_type", true) == MATCH_YES)
+	    {
+	      if (gfc_match ("host") == MATCH_YES)
+		c->device_type = OMP_DEVICE_TYPE_HOST;
+	      else if (gfc_match ("nohost") == MATCH_YES)
+		c->device_type = OMP_DEVICE_TYPE_NOHOST;
+	      else if (gfc_match ("any") == MATCH_YES)
+		c->device_type = OMP_DEVICE_TYPE_ANY;
+	      else
+		{
+		  gfc_error ("Expected HOST, NOHOST or ANY at %C");
+		  break;
+		}
+	      if (gfc_match (" )") != MATCH_YES)
+		break;
+	      continue;
+	    }
+	  if ((mask & OMP_CLAUSE_DEVICE_RESIDENT)
+	      && gfc_match_omp_variable_list
+		   ("device_resident (",
+		    &c->lists[OMP_LIST_DEVICE_RESIDENT], true) == MATCH_YES)
+	    continue;
+	  if ((mask & OMP_CLAUSE_DEVICE)
+	      && openacc
+	      && gfc_match ("device ( ") == MATCH_YES
+	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
+					   OMP_MAP_FORCE_TO, true,
+					   /* allow_derived = */ true))
+	    continue;
 	  if ((mask & OMP_CLAUSE_DEVICE)
 	      && !openacc
 	      && ((m = gfc_match_dupl_check (!c->device, "device", true))
@@ -3072,42 +3109,6 @@ gfc_match_omp_clauses (gfc_omp_clauses **cp, const omp_mask mask,
 		}
 	      continue;
 	    }
-	  if ((mask & OMP_CLAUSE_DEVICE)
-	      && openacc
-	      && gfc_match ("device ( ") == MATCH_YES
-	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-					   OMP_MAP_FORCE_TO, true,
-					   /* allow_derived = */ true))
-	    continue;
-	  if ((mask & OMP_CLAUSE_DEVICEPTR)
-	      && gfc_match ("deviceptr ( ") == MATCH_YES
-	      && gfc_match_omp_map_clause (&c->lists[OMP_LIST_MAP],
-					   OMP_MAP_FORCE_DEVICEPTR, false,
-					   allow_derived))
-	    continue;
-	  if ((mask & OMP_CLAUSE_DEVICE_TYPE)
-	      && gfc_match ("device_type ( ") == MATCH_YES)
-	    {
-	      if (gfc_match ("host") == MATCH_YES)
-		c->device_type = OMP_DEVICE_TYPE_HOST;
-	      else if (gfc_match ("nohost") == MATCH_YES)
-		c->device_type = OMP_DEVICE_TYPE_NOHOST;
-	      else if (gfc_match ("any") == MATCH_YES)
-		c->device_type = OMP_DEVICE_TYPE_ANY;
-	      else
-		{
-		  gfc_error ("Expected HOST, NOHOST or ANY at %C");
-		  break;
-		}
-	      if (gfc_match (" )") != MATCH_YES)
-		break;
-	      continue;
-	    }
-	  if ((mask & OMP_CLAUSE_DEVICE_RESIDENT)
-	      && gfc_match_omp_variable_list
-		   ("device_resident (",
-		    &c->lists[OMP_LIST_DEVICE_RESIDENT], true) == MATCH_YES)
-	    continue;
 	  if ((mask & OMP_CLAUSE_DIST_SCHEDULE)
 	      && c->dist_sched_kind == OMP_SCHED_NONE
 	      && gfc_match ("dist_schedule ( static") == MATCH_YES)
@@ -5136,7 +5137,7 @@ cleanup:
    | OMP_CLAUSE_IS_DEVICE_PTR | OMP_CLAUSE_IN_REDUCTION			\
    | OMP_CLAUSE_THREAD_LIMIT | OMP_CLAUSE_ALLOCATE			\
    | OMP_CLAUSE_HAS_DEVICE_ADDR | OMP_CLAUSE_USES_ALLOCATORS		\
-   | OMP_CLAUSE_DYN_GROUPPRIVATE)
+   | OMP_CLAUSE_DYN_GROUPPRIVATE | OMP_CLAUSE_DEVICE_TYPE)
 #define OMP_TARGET_DATA_CLAUSES \
   (omp_mask (OMP_CLAUSE_DEVICE) | OMP_CLAUSE_MAP | OMP_CLAUSE_IF	\
    | OMP_CLAUSE_USE_DEVICE_PTR | OMP_CLAUSE_USE_DEVICE_ADDR)

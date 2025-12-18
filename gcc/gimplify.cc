@@ -14885,6 +14885,7 @@ gimplify_scan_omp_clauses (tree *list_p, gimple_seq *pre_p,
 	case OMP_CLAUSE_INIT:
 	case OMP_CLAUSE_USE:
 	case OMP_CLAUSE_DESTROY:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	  break;
 
 	case OMP_CLAUSE_DYN_GROUPPRIVATE:
@@ -16373,6 +16374,7 @@ end_adjust_omp_map_clause:
 	case OMP_CLAUSE_INCLUSIVE:
 	case OMP_CLAUSE_EXCLUSIVE:
 	case OMP_CLAUSE_USES_ALLOCATORS:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	  break;
 
 	case OMP_CLAUSE_NOHOST:

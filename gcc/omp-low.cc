@@ -1768,6 +1768,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_FINALIZE:
 	case OMP_CLAUSE_TASK_REDUCTION:
 	case OMP_CLAUSE_ALLOCATE:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	  break;
 
 	case OMP_CLAUSE_ALIGNED:
@@ -1994,6 +1995,7 @@ scan_sharing_clauses (tree clauses, omp_context *ctx)
 	case OMP_CLAUSE_INIT:
 	case OMP_CLAUSE_USE:
 	case OMP_CLAUSE_DESTROY:
+	case OMP_CLAUSE_DEVICE_TYPE:
 	  break;
 
 	case OMP_CLAUSE__CACHE_:
@@ -13098,6 +13100,13 @@ lower_omp_target (gimple_stmt_iterator *gsi_p, omp_context *ctx)
 	    DECL_HAS_VALUE_EXPR_P (new_var) = 1;
 	  }
 	break;
+	case OMP_CLAUSE_DEVICE_TYPE:
+	  /* FIXME: Ensure that 'nohost' also has not implied before that
+	     'g->have_offload = true' or an implicit declare target.  */
+	  if (OMP_CLAUSE_DEVICE_TYPE_KIND (c) != OMP_CLAUSE_DEVICE_TYPE_ANY)
+	    sorry_at (OMP_CLAUSE_LOCATION (c),
+		      "only the %<device_type(any)%> is supported");
+	  break;
       }
 
   if (offloaded)
