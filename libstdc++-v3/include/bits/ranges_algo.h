@@ -2709,7 +2709,7 @@ namespace ranges
 	    }
 # endif
 
-	    typedef _Temporary_buffer<_Iter, iter_value_t<_Iter>> _TmpBuf;
+	    using _TmpBuf = _Temporary_buffer<_Iter, iter_value_t<_Iter>>;
 	    // __stable_sort_adaptive sorts the range in two halves,
 	    // so the buffer only needs to fit half the range at once.
 	    _TmpBuf __buf(__first, ptrdiff_t((__last - __first + 1) / 2));
@@ -2718,7 +2718,7 @@ namespace ranges
 	      __detail::__stable_sort_adaptive(__first,
 					       __first + _DistanceType(__buf.size()),
 					       __last, __buf.begin(), __comp_proj);
-	    else if (__buf.begin()) [[unlikely]]
+	    else if (__buf.begin() == nullptr) [[unlikely]]
 	      __detail::__inplace_stable_sort(__first, __last, __comp_proj);
 	    else
 	      __detail::__stable_sort_adaptive_resize(__first, __last, __buf.begin(),
