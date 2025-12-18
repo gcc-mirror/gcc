@@ -5334,14 +5334,7 @@ case "${target}" in
 
 
 		# Check default with_tune configuration using with_arch.
-		case ${with_arch} in
-		la32v1.0 | la32rv1.0)
-			tune_pattern="loongarch32"
-			;;
-		loongarch64)
-			tune_pattern="native|generic|loongarch64|la[46]64"
-			;;
-		esac
+		tune_pattern="native|generic|loongarch64|la[46]64|loongarch32"
 
 		case ${with_tune} in
 		"") ;; # OK
