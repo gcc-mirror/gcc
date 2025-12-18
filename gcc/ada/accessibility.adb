@@ -258,21 +258,32 @@ package body Accessibility is
          Par      : Node_Id;
          Prev_Par : Node_Id;
       begin
-         --  Results of functions are objects, so we either get the
-         --  accessibility of the function or, in case of a call which is
-         --  indirect, the level of the access-to-subprogram type.
-
-         --  This code looks wrong ???
+         --  First deal with function calls in Ada 95
 
          if Nkind (N) = N_Function_Call
            and then Ada_Version < Ada_2005
          then
-            if Is_Entity_Name (Name (N)) then
+            --  With a return by reference, we either get the accessibility of
+            --  the function or, in case of an indirect call, the accessibility
+            --  level of the access-to-subprogram type.
+
+            if Is_Entity_Name (Name (N))
+              and then Is_Inherently_Limited_Type (Etype (N))
+            then
                return Make_Level_Literal
                         (Subprogram_Access_Level (Entity (Name (N))));
-            else
+
+            elsif Nkind (Name (N)) = N_Explicit_Dereference
+              and then Is_Inherently_Limited_Type (Etype (N))
+            then
                return Make_Level_Literal
                         (Typ_Access_Level (Etype (Prefix (Name (N)))));
+
+            --  Otherwise the accessibility level of the innermost master
+
+            else
+               return Make_Level_Literal
+                        (Innermost_Master_Scope_Depth (Expr));
             end if;
 
          --  We ignore coextensions as they cannot be implemented under the
