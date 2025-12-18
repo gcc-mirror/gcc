@@ -8444,6 +8444,7 @@ loongarch_option_restore (struct gcc_options *,
   la_target.cpu_arch = ptr->x_la_opt_cpu_arch;
   la_target.cpu_tune = ptr->x_la_opt_cpu_tune;
 
+  la_target.isa.base = loongarch_cpu_default_isa[la_target.cpu_arch].base;
   la_target.isa.fpu = ptr->x_la_opt_fpu;
   la_target.isa.simd = ptr->x_la_opt_simd;
   la_target.isa.evolution = ptr->x_la_isa_evolution;
