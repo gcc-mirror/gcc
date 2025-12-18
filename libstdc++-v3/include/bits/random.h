@@ -464,8 +464,16 @@ _GLIBCXX_END_INLINE_ABI_NAMESPACE(_V2)
       }
 
       friend _GLIBCXX14_CONSTEXPR bool
+      operator>(const type& __l, const type& __r) noexcept
+      { return __r < __l; }
+
+      friend _GLIBCXX14_CONSTEXPR bool
       operator<=(const type& __l, const type& __r) noexcept
       { return !(__r < __l); }
+
+      friend _GLIBCXX14_CONSTEXPR bool
+      operator>=(const type& __l, const type& __r) noexcept
+      { return !(__l < __r); }
 #endif
 
       friend _GLIBCXX14_CONSTEXPR bool
