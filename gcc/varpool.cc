@@ -339,6 +339,10 @@ varpool_node::ctor_useable_for_folding_p (void)
       && !real_node->lto_file_data)
     return false;
 
+  /* Folding may cross TU boundaries.  */
+  if (must_remain_in_tu_body)
+    return false;
+
   /* Vtables are defined by their types and must match no matter of interposition
      rules.  */
   if (DECL_VIRTUAL_P (decl))

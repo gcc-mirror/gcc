@@ -146,6 +146,7 @@ public:
       refuse_visibility_changes (false), externally_visible (false),
       no_reorder (false), force_output (false), forced_by_abi (false),
       ref_by_asm (false),
+      must_remain_in_tu_name (false), must_remain_in_tu_body (false),
       unique_name (false), implicit_section (false), body_removed (false),
       semantic_interposition (flag_semantic_interposition),
       used_from_other_partition (false), in_other_partition (false),
@@ -598,6 +599,12 @@ public:
      Static symbol may be renamed.  Global symbol should not be renamed.
      Unlike force_output, can be on declarations.  */
   unsigned ref_by_asm : 1;
+  /* Set when asm_name must remain in TU partition.
+     Used to guarantee not renaming of static ref_by_asm symbols.  */
+  unsigned must_remain_in_tu_name : 1;
+  /* Set when body (or any references) must remain in TU partition.
+     Used on symbols referring/calling must_remain_in_tu_name.  */
+  unsigned must_remain_in_tu_body : 1;
   /* True when the name is known to be unique and thus it does not need mangling.  */
   unsigned unique_name : 1;
   /* Specify whether the section was set by user or by

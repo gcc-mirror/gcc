@@ -457,6 +457,7 @@ cgraph_node::create_clone (tree new_decl, profile_count prof_count,
   new_node->unit_id = unit_id;
   new_node->merged_comdat = merged_comdat;
   new_node->merged_extern_inline = merged_extern_inline;
+  new_node->must_remain_in_tu_body = must_remain_in_tu_body;
   clone_info *info = clone_info::get (this);
 
   if (param_adjustments)

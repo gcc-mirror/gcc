@@ -534,6 +534,10 @@ sem_function::equals_wpa (sem_item *item,
 
   m_compared_func = static_cast<sem_function *> (item);
 
+  if (cnode->must_remain_in_tu_name || cnode2->must_remain_in_tu_name
+      || cnode->must_remain_in_tu_body || cnode2->must_remain_in_tu_body)
+    return return_false_with_msg ("must remain in TU");
+
   if (cnode->thunk != cnode2->thunk)
     return return_false_with_msg ("thunk mismatch");
   if (cnode->former_thunk_p () != cnode2->former_thunk_p ())
@@ -1650,6 +1654,10 @@ sem_variable::equals_wpa (sem_item *item,
 			  hash_map <symtab_node *, sem_item *> &ignored_nodes)
 {
   gcc_assert (item->type == VAR);
+
+  if (node->must_remain_in_tu_name || item->node->must_remain_in_tu_name
+      || node->must_remain_in_tu_body || item->node->must_remain_in_tu_body)
+    return return_false_with_msg ("must remain in TU");
 
   if (node->num_references () != item->node->num_references ())
     return return_false_with_msg ("different number of references");

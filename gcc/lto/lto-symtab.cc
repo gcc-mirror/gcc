@@ -62,6 +62,8 @@ lto_cgraph_replace_node (struct cgraph_node *node,
   if (node->forced_by_abi)
     prevailing_node->forced_by_abi = true;
   prevailing_node->ref_by_asm |= node->ref_by_asm;
+  prevailing_node->must_remain_in_tu_name |= node->must_remain_in_tu_name;
+  prevailing_node->must_remain_in_tu_body |= node->must_remain_in_tu_body;
 
   if (node->address_taken)
     {
@@ -124,6 +126,8 @@ lto_varpool_replace_node (varpool_node *vnode,
   if (vnode->forced_by_abi)
     prevailing_node->forced_by_abi = true;
   prevailing_node->ref_by_asm |= vnode->ref_by_asm;
+  prevailing_node->must_remain_in_tu_name |= vnode->must_remain_in_tu_name;
+  prevailing_node->must_remain_in_tu_body |= vnode->must_remain_in_tu_body;
 
   /* Be sure we can garbage collect the initializer.  */
   if (DECL_INITIAL (vnode->decl)

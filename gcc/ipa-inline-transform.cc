@@ -558,6 +558,12 @@ inline_call (struct cgraph_edge *e, bool update_original,
 	}
     }
 
+  if (callee->must_remain_in_tu_body)
+    {
+      gcc_assert (callee->lto_file_data == to->lto_file_data);
+      to->must_remain_in_tu_body = true;
+    }
+
   clone_inlined_nodes (e, true, keep_offline_copy,
 		       update_original, overall_size);
 

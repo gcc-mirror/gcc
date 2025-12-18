@@ -4000,14 +4000,26 @@ decl_address_ip_invariant_p (const_tree op)
   /* The conditions below are slightly less strict than the one in
      staticp.  */
 
+  symtab_node* node;
   switch (TREE_CODE (op))
     {
     case LABEL_DECL:
-    case FUNCTION_DECL:
     case STRING_CST:
       return true;
 
+    case FUNCTION_DECL:
+      /* Disable const propagation of symbols defined in assembly.  */
+      node = symtab_node::get (op);
+      return !node || !node->must_remain_in_tu_name;
+
     case VAR_DECL:
+      if (TREE_STATIC (op) || DECL_EXTERNAL (op))
+	  {
+	    /* Disable const propagation of symbols defined in assembly.  */
+	    node = symtab_node::get (op);
+	    if (node && node->must_remain_in_tu_name)
+	      return false;
+	  }
       if (((TREE_STATIC (op) || DECL_EXTERNAL (op))
            && !DECL_DLLIMPORT_P (op))
           || DECL_THREAD_LOCAL_P (op))

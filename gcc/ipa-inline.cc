@@ -452,6 +452,12 @@ can_inline_edge_p (struct cgraph_edge *e, bool report,
       e->inline_failed = CIF_UNSPECIFIED;
       inlinable = false;
     }
+  if (inlinable && callee->must_remain_in_tu_body
+      && caller->lto_file_data != callee->lto_file_data)
+    {
+      e->inline_failed = CIF_MUST_REMAIN_IN_TU;
+      inlinable = false;
+    }
   if (!inlinable && report)
     report_inline_failed_reason (e);
   return inlinable;
