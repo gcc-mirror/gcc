@@ -1,3 +1,103 @@
+2025-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122343
+	* cselib.cc (cselib_redundant_set_p): Return false for volatile
+	memory source or destination.
+
+2025-12-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr.cc (avr_out_shift_with_cnt): Tweak
+	execution time by count-1 cycles in some cases.
+
+2025-12-17  Georg-Johann Lay  <avr@gjlay.de>
+
+	* config/avr/avr-protos.h (out_shift_with_cnt): Remove.
+	* config/avr/avr.cc (avr_out_shift_with_cnt): New static
+	function from out_shift_with_cnt: Pass shift rtx_code instead
+	of asm template.
+	(avr_out_shift_1): New static helper function.
+	(ashlqi3_out, ashlhi3_out, avr_out_ashlpsi3, ashlsi3_out)
+	(ashrqi3_out, ashrhi3_out, avr_out_ashrpsi3, ashrsi3_out)
+	(lshrqi3_out, lshrhi3_out, avr_out_lshrpsi3, lshrsi3_out):
+	Adjust avr_out_shift_with_cnt to new interface.
+
+2025-12-17  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	* config/riscv/sync.md (atomic compare and set): Reorder patterns
+	so the stricter pattern comes first.
+
+2025-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123155
+	* config/i386/xmmintrin.h (_mm_maskmove_si64): Rename offset automatic
+	variable to __offset.
+
+2025-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123155
+	* config/i386/avx10_2bf16intrin.h (_mm512_roundscale_pbh,
+	_mm512_mask_roundscale_pbh, _mm512_maskz_roundscale_pbh,
+	_mm256_roundscale_pbh, _mm256_mask_roundscale_pbh,
+	_mm256_maskz_roundscale_pbh, _mm_roundscale_pbh,
+	_mm_mask_roundscale_pbh, _mm_maskz_roundscale_pbh,
+	_mm512_reduce_pbh, _mm512_mask_reduce_pbh, _mm512_maskz_reduce_pbh,
+	_mm256_reduce_pbh, _mm256_mask_reduce_pbh, _mm256_maskz_reduce_pbh,
+	_mm_reduce_pbh, _mm_mask_reduce_pbh, _mm_maskz_reduce_pbh): Rename
+	B argument to __B.
+
+2025-12-17  Umesh Kalvakuntla  <umesh.kalvakuntla@amd.com>
+
+	* common/config/i386/cpuinfo.h (get_amd_cpu): Add znver6 1Ah
+	family model numbers.
+	(get_available_features): Set feature AVX512BMM.
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA2_AVX512BMM_SET):
+	New macro.
+	(OPTION_MASK_ISA2_AVX512BMM_UNSET): New macro.
+	(OPTION_MASK_ISA2_AVX512BW_UNSET): Unset AVX512BMM.
+	(ix86_handle_option): Likewise.
+	* common/config/i386/i386-cpuinfo.h (enum processor_subtypes):
+	Add AMDFAM1AH_ZNVER6.
+	(enum processor_features): Add FEATURE_AVX512BMM.
+	* common/config/i386/i386-isas.h: Likewise.
+	* config.gcc: Add avx512bmmintrin.h, avx512bmmvlintrin.h,
+	znver6.
+	* config/i386/cpuid.h (bit_AVX512BMM): New macro.
+	* config/i386/driver-i386.cc (host_detect_local_cpu): Likewise.
+	* config/i386/i386-builtin.def (BDESC): Add AVX512BMM builtins.
+	* config/i386/i386-c.cc (ix86_target_macros_internal): Likewise.
+	* config/i386/i386-isa.def (AVX512BMM): Likewise.
+	* config/i386/i386-options.cc (m_ZNVER6): New macro.
+	(m_ZNVER): Add m_ZNVER6.
+	(processor_cost_table): Uses znver5_cost table for
+	PROCESSOR_ZNVER6 for now.
+	(ix86_valid_target_attribute_inner_p): Likewise.
+	* config/i386/i386.cc (ix86_reassociation_width): Likewise.
+	* config/i386/i386.h (enum processor_type): Likewise.
+	* config/i386/i386.md: Likewise.
+	* config/i386/i386.opt: Likewise.
+	* config/i386/i386.opt.urls: Likewise.
+	* config/i386/immintrin.h: Likewise.
+	* config/i386/sse.md (avx512bmm_vbmacor16x16x16_<mode>): New
+	define_insn.
+	(avx512bmm_vbmacxor16x16x16_<mode>): Likewise.
+	(avx512bmm_vbitrevb_<mode>_mask): Likewise.
+	(avx512bmm_vbitrevb_<mode>): Likewise.
+	* config/i386/x86-tune-sched.cc (ix86_issue_rate): Likewise.
+	(ix86_adjust_cost): Likewise.
+	* config/i386/x86-tune.def (X86_TUNE_FUSE_ALU_AND_BRANCH): Add
+	m_ZNVER6.
+	(X86_TUNE_FUSE_MOV_AND_ALU): Likewise.
+	(X86_TUNE_USE_SCATTER_2PARTS): Likewise.
+	(X86_TUNE_USE_SCATTER_4PARTS): Likewise.
+	(X86_TUNE_USE_SCATTER_8PARTS): Likewise.
+	(X86_TUNE_AVOID_256FMA_CHAINS): Likewise.
+	(X86_TUNE_AVOID_512FMA_CHAINS): Likewise.
+	(X86_TUNE_AVX512_MOVE_BY_PIECES): Likewise.
+	* doc/extend.texi: Likewise.
+	* doc/invoke.texi: Likewise.
+	* config/i386/avx512bmmintrin.h: New file.
+	* config/i386/avx512bmmvlintrin.h: New file.
+
 2025-12-16  Iain Sandoe  <iain@sandoe.co.uk>
 
 	* config/aarch64/aarch64.cc

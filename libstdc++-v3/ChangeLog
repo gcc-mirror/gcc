@@ -1,3 +1,121 @@
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/version.def (constexpr_exceptions): Add
+	cxx11abi=yes.
+	* include/bits/version.h: Regenerate.
+	* testsuite/18_support/exception/version.cc: Require effectiove
+	target cxx11_abi.
+	* testsuite/18_support/exception_ptr/exception_ptr_cast.cc: Only
+	check for constexpr support in cxx11 ABI.
+	* testsuite/19_diagnostics/headers/stdexcept/version.cc: Require
+	effective target cxx11_abi.
+	* testsuite/19_diagnostics/logic_error/constexpr.cc: Likewise.
+	* testsuite/19_diagnostics/runtime_error/constexpr.cc: Likewise.
+	* testsuite/20_util/expected/version.cc: Only check for
+	__cpp_lib_constexpr_exceptions macro for cxx11 ABI.
+	* testsuite/20_util/optional/version.cc: Likewise.
+	* testsuite/20_util/variant/version.cc: Likewise.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/random.h [!__SIZEOF_INT128__] (__rand_uint128):
+	Refactor and rename _Select_uint_least_t<128>::type to a new
+	class. Make all members constexpr. Add new member functions for
+	additional arithmetic and bitwise operations, and comparisons.
+	(__detail::_Select_uint_least_t<>::type): Define as an alias of
+	__rand_uint128.
+	* include/bits/random.tcc (philox_engine::_M_mulhi): Use
+	_Select_uint_least_t<w*2>::type instead of __uint128_t.
+	(philox_engine::_M_transition): Likewise.
+	* include/bits/version.def (philox_engine): Remove extra_cond.
+	* include/bits/version.h: Regenerate.
+	* testsuite/26_numerics/random/philox4x32.cc: Remove
+	dg-require-cpp-feature-test directive.
+	* testsuite/26_numerics/random/philox4x64.cc: Likewise.
+	* testsuite/26_numerics/random/philox_engine/cons/copy.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/cons/default.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/cons/seed.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/operators/equal.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/operators/serialize.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/requirements/constants.cc:
+	Likewise.
+	* testsuite/26_numerics/random/philox_engine/requirements/typedefs.cc:
+	Likewise.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/64351.cc:
+	Add -fexcess-precision=standard to options.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon.cc:
+	Likewise.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/64351.cc
+	[_GLIBCXX_USE_OLD_GENERATE_CANONICAL]: Restore test01. Do not discard an
+	extra value in test02.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon.cc:
+	Skip if _GLIBCXX_USE_OLD_GENERATE_CANONICAL is defined in options.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.h [!_GLIBCXX_USE_OLD_GENERATE_CANONICAL]
+	(generate_canonical): Use inline namespace _V2.
+	* include/bits/random.tcc [!_GLIBCXX_USE_OLD_GENERATE_CANONICAL]
+	(generate_canonical): Likewise.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Remove lineno so
+	that one dg-error matches both diagnostics.
+
+2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/random.tcc [_GLIBCXX_USE_OLD_GENERATE_CANONICAL]
+	(generate_canonical): Restore braces around statement.
+
+2025-12-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/random.tcc (generate_canonical)
+	[!_GLIBCXX_USE_OLD_GENERATE_CANONICAL]: Use static_assert
+	instead of type-constraint on template parameter.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Updated line
+	of error.
+
+2025-12-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/random.tcc (generate_canonical): Update
+	error message to match pre-existing one in random.h.
+	* testsuite/26_numerics/random/pr60037-neg.cc: Updated
+	line for error message.
+
+2025-12-17  Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/random.tcc (std::generate_canonical): Use
+	__extension__ before __generate_canonical_{pow2,any} calls with
+	unsigned __int128 template arguments.
+
+2025-12-17  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/atomic_base.h
+	(__atomic_ref_base<const _Tp>::__atomic_ref_base): Accept
+	pointer instead of reference. Remove precondition check and
+	mark as noexcept.
+	(__atomic_ref_base<_Tp>::__atomic_ref_base): Accept pointer
+	insted of reference, and mark as noexcept.
+	* include/std/atomic (atomic_ref::atomic_ref(_Tp&)): Add
+	precondition check and take address of argument.
+	(atomic_ref::atomic_ref(_Tp&&)): Define as deleted.
+	(atomic_ref::atomic_ref(atomic_ref<_Up>)): Define.
+	* include/bits/shared_ptr_atomic.h (_Sp_atomic::_Atomic_count):
+	Pass address to __atomic_ref constructor.
+	* include/std/barrier (__tree_barrier_base::_M_arrive)
+	(__tree_barrier::arrive): Pass address to __atomic_ref constructor.
+	* testsuite/29_atomics/atomic_ref/ctor.cc: New test.
+
 2025-12-16  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/std/type_traits (_Integer_kind): New enum type.

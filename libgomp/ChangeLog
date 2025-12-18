@@ -1,3 +1,7 @@
+2025-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* testsuite/libgomp.c/affinity-1.c: Always add warnings.
+
 2025-12-15  Jakub Jelinek  <jakub@redhat.com>
 
 	* plugin/build-target-indirect-htab.h (create_target_indirect_map):

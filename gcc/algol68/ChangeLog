@@ -1,3 +1,14 @@
+2025-12-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR algol68/123006
+	* a68-imports.cc (complete_encoded_mode): Fix handling of flex
+	modes.
+
+2025-12-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	PR algol68/123132
+	* a68-imports.cc (DOFFSET): Fix big-endian path.
+
 2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-parser-bottom-up.cc (reduce_prelude_packet): Do not support

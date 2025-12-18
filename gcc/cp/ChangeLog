@@ -1,3 +1,21 @@
+2025-12-17  benwu25  <soggysocks206@gmail.com>
+
+	* parser.cc (cp_parser_init_declarator): Adjust comment.
+
+2025-12-17  benwu25  <soggysocks206@gmail.com>
+
+	PR c++/121443
+	* parser.cc (cp_parser_lambda_expression): Clear
+	in_declarator_p.
+
+2025-12-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123075
+	* constraint.cc (evaluate_concept_check): Push to an unrelated
+	scope, but keep the same access context.
+	* pt.cc (tsubst_lambda_expr): Don't record lambda scopes for
+	lambdas attached to a concept.
+
 2025-12-15  Patrick Palka  <ppalka@redhat.com>
 
 	* parser.cc (cp_parser_template_id): Rebuild instead of modifying

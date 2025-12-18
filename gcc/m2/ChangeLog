@@ -1,3 +1,21 @@
+2025-12-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/23178
+	* gm2-compiler/P3SymBuild.mod (CheckCanBeImported): Reimplement to
+	use MetaError2 and provide spell hints if possible for unknown symbols.
+
+2025-12-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/123151
+	* gm2-libs/FIO.def (IsError): New procedure function.
+	(IsActive): Rewrite the comment.
+	(Exists): Ditto.
+	(OpenToRead): Ditto.
+	(OpenToWrite): Ditto.
+	(Close): Add an optional BOOLEAN return result.
+	* gm2-libs/FIO.mod (Close): Reimplement with an
+	optional BOOLEAN return result.
+
 2025-12-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* lang.opt.urls: Regenerate.

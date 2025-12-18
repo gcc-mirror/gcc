@@ -1,3 +1,311 @@
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl-lexer.cc: Fix included file name.
+	* parse/rust-parse-impl-macro.cc: Likewise.
+	* parse/rust-parse-impl-proc-macro.cc: Likewise.
+	* parse/rust-parse-impl.h: Move to...
+	* parse/rust-parse-impl.hxx: ...here.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_inner_attributes): Move to
+	rust-parse-impl-XXX.hxx implementation file.
+	(Parser::parse_doc_comment): Likewise. Change return type to
+	AttributeBody.
+	(Parser::parse_inner_attribute): Likewise.
+	(Parser::parse_attribute_body): Likewise.
+	(Parser::parse_identifier_or_keyword_token): Likewise.
+	(Parser::parse_outer_attributes): Likewise.
+	(Parser::is_macro_rules_def): Likewise.
+	(Parser::parse_simple_path): Likewise.
+	(Parser::parse_item): Likewise.
+	(Parser::parse_simple_path_segment): Likewise.
+	(Parser::parse_path_ident_segment): Likewise.
+	(Parser::parse_vis_item): Likewise.
+	(Parser::parse_attr_input): Likewise.
+	(Parser::parse_async_item): Likewise.
+	(Parser::parse_delim_token_tree): Likewise.
+	(Parser::parse_macro_rules_def): Likewise.
+	(Parser::parse_decl_macro_def): Likewise.
+	(Parser::parse_token_tree): Likewise.
+	(Parser::parse_visibility): Likewise.
+	(Parser::parse_module): Likewise.
+	(Parser::parse_outer_attribute): Likewise.
+	(Parser::parse_extern_crate): Likewise.
+	(Parser::parse_use_decl): Likewise.
+	(Parser::parse_use_tree): Likewise.
+	(Parser::parse_function): Likewise.
+	(Parser::parse_macro_invocation): Likewise.
+	(Parser::parse_macro_rule): Likewise.
+	(Parser::parse_function_qualifiers): Likewise.
+	(Parser::parse_macro_matcher): Likewise.
+	(Parser::parse_generic_params_in_angles): Likewise.
+	(Parser::parse_macro_match): Likewise.
+	(Parser::parse_generic_param): Likewise.
+	(Parser::parse_macro_match_fragment): Likewise.
+	(Parser::parse_macro_match_repetition): Likewise.
+	(Parser::parse_generic_params): Likewise.
+	(Parser::parse_lifetime_params): Likewise.
+	(Parser::parse_lifetime_params_objs): Likewise.
+	(Parser::parse_lifetime_param): Likewise.
+	(Parser::parse_type_params): Likewise.
+	(Parser::parse_type_param): Likewise.
+	(Parser::parse_function_params): Likewise.
+	(Parser::parse_function_param): Likewise.
+	(Parser::parse_function_return_type): Likewise.
+	(Parser::parse_where_clause): Likewise.
+	(Parser::parse_lifetime_where_clause_item): Likewise.
+	(Parser::parse_for_lifetimes): Likewise.
+	(Parser::parse_type_param_bounds): Likewise.
+	(Parser::parse_type_param_bound): Likewise.
+	(Parser::parse_trait_bound): Likewise.
+	(Parser::parse_lifetime_bounds): Likewise.
+	(Parser::parse_lifetime): Likewise.
+	(Parser::lifetime_from_token): Likewise.
+	(Parser::parse_external_type_item): Likewise.
+	(Parser::parse_type_alias): Likewise.
+	(Parser::parse_struct): Likewise.
+	(Parser::parse_struct_fields): Likewise.
+	(Parser::parse_struct_field): Likewise.
+	(Parser::parse_tuple_fields): Likewise.
+	(Parser::parse_tuple_field): Likewise.
+	(Parser::parse_enum): Likewise.
+	(Parser::parse_enum_items): Likewise.
+	(Parser::parse_enum_item): Likewise.
+	(Parser::parse_union): Likewise.
+	(Parser::parse_const_item): Likewise.
+	(Parser::parse_static_item): Likewise.
+	(Parser::parse_trait): Likewise.
+	(Parser::parse_trait_item): Likewise.
+	(Parser::parse_trait_type): Likewise.
+	(Parser::parse_trait_const): Likewise.
+	(Parser::parse_impl): Likewise.
+	(Parser::parse_inherent_impl_item): Likewise.
+	(Parser::parse_trait_impl_item): Likewise.
+	(Parser::parse_extern_block): Likewise.
+	(Parser::parse_external_item): Likewise.
+	(Parser::parse_stmt): Likewise.
+	(Parser::parse_let_stmt): Likewise.
+	(Parser::parse_generic_arg): Likewise.
+	(Parser::parse_path_generic_args): Likewise.
+	(Parser::parse_generic_args_binding): Likewise.
+	(Parser::parse_self_param): Likewise.
+	(Parser::parse_expr_stmt): Likewise.
+	(Parser::parse_anon_const): Likewise.
+	(Parser::parse_const_block_expr): Likewise.
+	(Parser::parse_grouped_expr): Likewise.
+	(Parser::parse_type_path): Likewise.
+	(Parser::parse_closure_expr): Likewise.
+	(Parser::parse_literal_expr): Likewise.
+	(Parser::parse_box_expr): Likewise.
+	(Parser::parse_return_expr): Likewise.
+	(Parser::parse_try_expr): Likewise.
+	(Parser::parse_break_expr): Likewise.
+	(Parser::parse_continue_expr): Likewise.
+	(Parser::parse_type_path_segment): Likewise.
+	(Parser::parse_loop_label): Likewise.
+	(Parser::parse_type_path_function): Likewise.
+	(Parser::parse_if_expr): Likewise.
+	(Parser::parse_path_in_expression): Likewise.
+	(Parser::parse_path_expr_segment): Likewise.
+	(Parser::parse_if_let_expr): Likewise.
+	(Parser::parse_loop_expr): Likewise.
+	(Parser::parse_qualified_path_in_type): Likewise.
+	(Parser::parse_labelled_loop_expr): Likewise.
+	(Parser::parse_match_expr): Likewise.
+	(Parser::parse_match_arm): Likewise.
+	(Parser::parse_match_arm_patterns): Likewise.
+	(Parser::parse_async_block_expr): Likewise.
+	(Parser::parse_array_expr): Likewise.
+	(Parser::parse_closure_param): Likewise.
+	(Parser::parse_type): Likewise.
+	(Parser::parse_paren_prefixed_type): Likewise.
+	(Parser::parse_for_prefixed_type): Likewise.
+	(Parser::parse_maybe_named_param): Likewise.
+	(Parser::parse_reference_type_inner): Likewise.
+	(Parser::parse_reference_type): Likewise.
+	(Parser::parse_raw_pointer_type): Likewise.
+	(Parser::parse_slice_or_array_type): Likewise.
+	(Parser::parse_type_no_bounds): Likewise.
+	(Parser::parse_paren_prefixed_type_no_bounds): Likewise.
+	(Parser::parse_literal_or_range_pattern): Likewise.
+	(Parser::parse_range_pattern_bound): Likewise.
+	(Parser::parse_pattern): Likewise.
+	(Parser::parse_pattern_no_alt): Likewise.
+	(Parser::parse_reference_pattern): Likewise.
+	(Parser::parse_grouped_or_tuple_pattern): Likewise.
+	(Parser::parse_slice_pattern): Likewise.
+	(Parser::parse_identifier_pattern): Likewise.
+	(Parser::parse_ident_leading_pattern): Likewise.
+	(Parser::parse_struct_pattern_elems): Likewise.
+	(Parser::parse_struct_pattern_field): Likewise.
+	(Parser::unexpected_token): Likewise.
+	(Parser::skip_after_semicolon): Likewise.
+	(Parser::skip_token): Likewise.
+	(Parser::maybe_skip_token): Likewise.
+	(Parser::expect_token): Likewise.
+	(Parser::skip_after_end): Likewise.
+	(Parser::skip_after_end_block): Likewise.
+	(Parser::skip_after_next_block): Likewise.
+	(Parser::skip_after_end_attribute): Likewise.
+	(Parser::done_end_or_else): Likewise.
+	(Parser::done_end): Likewise.
+	* parse/rust-parse.h: Change function return type to AttributeBody
+	instead of a tuple (parse_doc_comment). Move enum binding powers from
+	impl file.
+	* parse/rust-parse-impl-attribute.hxx: New file.
+	* parse/rust-parse-impl-macro.hxx: New file.
+	* parse/rust-parse-impl-path.hxx: New file.
+	* parse/rust-parse-impl-pattern.hxx: New file.
+	* parse/rust-parse-impl-ttree.hxx: New file.
+	* parse/rust-parse-impl-utils.hxx: New file.
+	* parse/rust-parse-impl-expr.hxx: New file.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (can_tok_start_type): Move function from ...
+	* parse/rust-parse-utils.h (can_tok_start_type): ... to here.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (is_right_angle_tok): Move function ...
+	(Parser::parse_generic_params_in_angles): Change call.
+	(Parser::parse_for_lifetimes): Likewise.
+	(Parser::parse_path_generic_args): Likewise.
+	* parse/rust-parse-utils.h (is_right_angle_tok): ... to here.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust-session-manager.cc (Session::enable_dump): Rework error message
+	and remove magic value.
+	(Session::handle_excluded_node): Remove static buffer size.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::begin_describe_node):
+	Remove function.
+	(TokenCollector::end_describe_node): Likewise.
+	(TokenCollector::describe_node): Remove calls to begin/end.
+	* ast/rust-ast-collector.h: Specialize begin and end collect items. Add
+	more constructors to begin/end description.
+	* ast/rust-ast-dump.cc (Dump::Dump): Adapt to new configuration
+	options.
+	* ast/rust-ast-dump.h: Add new configuration options.
+	* rust-session-manager.cc (Session::dump_ast_pretty_internal): Use new
+	configuration options.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-ast-collector.cc (TokenCollector::comment): Use comment kind
+	(TokenCollector::begin_internal_comment): Rename from this...
+	(TokenCollector::begin_describe_node): ... to this.
+	(TokenCollector::end_internal_comment): Rename from this...
+	(TokenCollector::end_describe_node): ... to this.
+	(TokenCollector::internal_comment): Rename from this...
+	(TokenCollector::describe_node): ... to this.
+	(TokenCollector::visit): Change name in function calls.
+	(TokenCollector::visit_closure_common): Likewise.
+	(TokenCollector::visit_loop_common): Likewise.
+	* ast/rust-ast-collector.h: Adapt function prototypes, add a new
+	collect item kind for node description.
+
+2025-12-17  Benjamin Thos  <benjamin.thos@epita.fr>
+
+	* ast/rust-ast-collector.cc (TokenCollector::internal_comment):
+		Wrapper function to add both  comment.
+	(TokenCollector::visit): call of the wrapper function.
+	(TokenCollector::visit_closure_common): Same.
+	(TokenCollector::visit_loop_common): Same.
+	* ast/rust-ast-collector.h: Prototype of the wrapper function
+
+2025-12-17  Benjamin Thos  <benjamin.thos@epita.fr>
+
+	* ast/rust-ast-collector.cc (TokenCollector::begin_internal_comment):
+	Change a boolean with an enum.
+	(TokenCollector::end_internal_comment): Likewise.
+	* ast/rust-ast-collector.h: Likewise + change include.
+	* ast/rust-ast-dump.cc (Dump::Dump): Change variable name.
+	* ast/rust-ast-dump.h: Likewise + replace vector with a set.
+	* rust-session-manager.cc (Session::enable_dump): Change variable
+	name.
+	(Session::handle_internal_blacklist): Change function name.
+	(Session::handle_excluded_node): Likewise.
+	(Session::dump_ast_pretty_internal): Change vector with a set.
+	* rust-session-manager.h (struct CompileOptions): Likewise + change
+	variable name.
+
+2025-12-17  Benjamin Thos  <benjamin.thos@epita.fr>
+
+	* ast/rust-ast-collector.cc (TokenCollector::begin_internal_comment):
+	Add internal comment to print node beginning.
+	(TokenCollector::end_internal_comment): Add internal comment to print
+	node end.
+	(TokenCollector::visit): Add the comments of the node visited.
+	(TokenCollector::visit_closure_common): Likewise.
+	(TokenCollector::visit_loop_common): Likewise.
+	* ast/rust-ast-collector.h: Add internal comment as a nes Kind.
+	* ast/rust-ast-dump.cc (Dump::Dump): add a Dump constructor to enable
+	internal.
+	* ast/rust-ast-dump.h: Add printing of internal comment in the dump
+	* rust-session-manager.cc (Session::enable_dump): Activate ast dump
+	and fill the blacklist.
+	(Session::handle_internal_blacklist): Parse the flag to get node to
+	be blacklisted.
+	(Session::compile_crate): Launch ast dump internal when asked.
+	(Session::dump_ast_pretty_internal): Call the visitor to dump
+	the internals.
+	* rust-session-manager.h (struct CompileOptions): add Interal in
+	Dump option enum.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* ast/rust-expr.h: Use path locus.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* parse/rust-parse-impl.h (Parser::parse_inner_attributes): Change
+	return type to avoid empty/error values that may break invariants in
+	the AST.
+	(Parser::parse_inner_attribute): Likewise.
+	(Parser::parse_outer_attribute): Likewise.
+	(Parser::parse_outer_attributes): Likewise.
+	(Parser::parse_attribute_body): Likewise.
+	(Parser::parse_simple_path): Likewise.
+	(Parser::parse_macro_invocation): Likewise.
+	(Parser::parse_visibility): Likewise.
+	(Parser::parse_use_tree): Likewise.
+	(Parser::parse_delim_token_tree): Likewise.
+	(Parser::parse_identifier_or_keyword_token): Likewise.
+	(Parser::parse_token_tree): Likewise.
+	(Parser::parse_macro_rules_def): Likewise.
+	(Parser::parse_decl_macro_def): Likewise.
+	(Parser::parse_macro_invocation): Likewise.
+	(Parser::parse_macro_rule): Likewise.
+	(Parser::parse_macro_matcher): Likewise.
+	(Parser::parse_type_path_segment): Likewise.
+	(Parser::parse_path_expr_segment): Likewise.
+	(Parser::parse_type): Likewise.
+	(Parser::parse_type_no_bounds): Likewise.
+	(Parser::parse_items): Circumvent GCC 5 to 7 bug.
+	(is_simple_path_segment): Move to utility file.
+	(token_id_matches_delims): Likewise.
+	(is_likely_path_next): Remove unused function.
+	(Parser::parse_attr_input): Return a structure instead of a tuple.
+	* expand/rust-macro-builtins-offset-of.cc: Adapt call to expected.
+	* ast/rust-ast.cc (AttributeParser::parse_path_meta_item): Use empty
+	vector when an error is encountered.
+	* expand/rust-macro-builtins-include.cc: Likewise.
+	* parse/rust-parse.h: Update prototypes.
+	* parse/rust-parse-impl-proc-macro.cc: Likewise.
+	* ast/rust-ast.h: Remove error state from Visibility.
+	* ast/rust-item.h: Use private visibility instead of error.
+	* ast/rust-macro.h: Likewise.
+	* expand/rust-macro-expand.cc: Likewise.
+	* hir/rust-ast-lower.cc: Remove error case.
+	* rust-session-manager.cc: Use private visibility
+	* parse/rust-parse-utils.h: New file.
+	* parse/rust-parse-error.h: New file.
+
 2025-12-12  Pietro Monteiro  <pietro@sociotechnical.xyz>
 
 	* lang.opt.urls: Regenerate.

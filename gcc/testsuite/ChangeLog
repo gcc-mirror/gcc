@@ -1,3 +1,81 @@
+2025-12-17  H.J. Lu  <hjl.tools@gmail.com>
+
+	PR target/122343
+	* gcc.dg/pr122343-1.c: New test.
+
+2025-12-17  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/module11.a68: Remove multiple definition
+	module.
+
+2025-12-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/23178
+	* gm2/pim/fail/badprocedure.mod: New test.
+
+2025-12-17  Ulrich Weigand  <ulrich.weigand@de.ibm.com>
+
+	PR testsuite/123166
+	* gfortran.dg/bessel_6.f90: Add { dg-do run } annotation.
+	* gfortran.dg/erf_2.F90: Likewise.
+	* gfortran.dg/integer_exponentiation_3.F90: Likewise.
+	* gfortran.dg/integer_exponentiation_5.F90: Likewise.
+
+2025-12-17  Gaius Mulley  <gaiusmod2@gmail.com>
+
+	PR modula2/123151
+	* gm2/pimlib/base/run/pass/FIO.mod: Reimplement.
+	Copy from gm2-libs/FIO.mod since FIO.def api has changed.
+	* gm2/pimlib/run/pass/testclose.mod: New test.
+
+2025-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/pr120881-1a.c: Restrict to Linux.
+	* gcc.target/i386/pr120881-1b.c: Likewise.
+
+2025-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	PR c++/112652
+	* g++.dg/cpp26/literals2.C: Skip on Solaris.
+
+2025-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.dg/plugin/crash-test-nested-write-through-null-html.py:
+	Import re.
+	(test_results): Allow for "Segmentation Fault", too.
+	* gcc.dg/plugin/crash-test-nested-write-through-null-sarif.py:
+	Likewise.
+	* gcc.dg/plugin/crash-test-write-through-null-stderr.c
+	(test_inject_write_through_null): Likewise.
+
+2025-12-17  benwu25  <soggysocks206@gmail.com>
+
+	PR c++/121443
+	* g++.dg/parse/pr121443.C: New test.
+
+2025-12-17  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/123075
+	* g++.dg/cpp2a/concepts-lambda25.C: New test.
+	* g++.dg/modules/lambda-13.h: New test.
+	* g++.dg/modules/lambda-13_a.H: New test.
+	* g++.dg/modules/lambda-13_b.C: New test.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/issue-4301.rs: New test.
+
+2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
+
+	* rust/compile/macros/mbe/macro-issue3608.rs: Update error messages.
+
+2025-12-17  Umesh Kalvakuntla  <umesh.kalvakuntla@amd.com>
+
+	* g++.target/i386/mv29.C: Likewise.
+	* gcc.target/i386/funcspec-56.inc: Likewise.
+	* gcc.target/i386/avx512bmm-1.c: New test.
+	* gcc.target/i386/avx512bmmvl-1.c: New test.
+
 2025-12-16  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	PR algol68/123131
