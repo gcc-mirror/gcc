@@ -8397,7 +8397,7 @@ vt_expand_var_loc_chain (variable *var, bitmap regs, void *data,
 	  next = loc;
 	  cloc = cloc->next;
 	  if (unsuitable_loc (loc_from))
-	    continue;
+	    goto try_next_loc;
 	}
       else
 	{
@@ -8437,6 +8437,7 @@ vt_expand_var_loc_chain (variable *var, bitmap regs, void *data,
 	  result = NULL;
 	}
 
+    try_next_loc:
       /* Set it up in case we leave the loop.  */
       depth.complexity = depth.entryvals = 0;
       loc_from = NULL;
