@@ -2127,6 +2127,24 @@ proc check_effective_target_riscv_v { } {
     }]
 }
 
+# Return 1 if the target runtime supports 128-bit vectors, 0 otherwise.
+# Cache the result.
+
+proc check_effective_target_rvv_zvl128b_ok { } {
+    # Check if the target has a VLENB of 16.
+    set gcc_march [riscv_get_arch]
+    return [check_runtime ${gcc_march}_exec {
+       int main()
+       {
+         int vlenb = 0;
+         asm ("csrr %0,vlenb" : "=r" (vlenb) : : );
+         if (vlenb == 16)
+           return 0;
+         return 1;
+       }
+      } "-march=${gcc_march}"]
+}
+
 # Return 1 if the target runtime supports 256-bit vectors, 0 otherwise.
 # Cache the result.
 

@@ -1632,7 +1632,11 @@ expand_const_vector_interleaved_stepped_npatterns (rtx target, rtx src,
     {
       int elem_count = XVECLEN (src, 0);
       uint64_t step1_val = step1.to_constant ();
-      uint64_t base1_val = base1_poly.to_constant ();
+      int64_t base1_signed = base1_poly.to_constant ();
+      /* Reinterpret as type of inner bits size so we can properly check
+	 overflow.  */
+      uint64_t base1_val
+	= base1_signed & ((1ULL << builder->inner_bits_size ()) - 1);
       uint64_t elem_val = base1_val + (elem_count - 1) * step1_val;
 
       if ((elem_val >> builder->inner_bits_size ()) != 0)
