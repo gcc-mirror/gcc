@@ -125,6 +125,8 @@ gimple_range_op_handler::gimple_range_op_handler (gimple *s)
   m_stmt = s;
   m_op1 = NULL_TREE;
   m_op2 = NULL_TREE;
+  // Recomputation defaults to TRUE.
+  m_recomputable = true;
 
   if (oper)
     switch (gimple_code (m_stmt))
@@ -1413,6 +1415,8 @@ gimple_range_op_handler::maybe_builtin_call ()
 	m_operator = &op_cfn_constant_p;
       else if (frange::supports_p (TREE_TYPE (m_op1)))
 	m_operator = &op_cfn_constant_float_p;
+      // builtin_constant_p should not be recomputed.  See PR 123205.
+      m_recomputable = false;
       break;
 
     CASE_FLT_FN (CFN_BUILT_IN_SIGNBIT):

@@ -39,11 +39,13 @@ public:
 		 relation_trio = TRIO_VARYING);
   bool calc_op2 (vrange &r, const vrange &lhs_range, const vrange &op1_range,
 		 relation_trio = TRIO_VARYING);
+  inline bool recomputable_p () { return m_recomputable; }
 private:
   void maybe_builtin_call ();
   void maybe_non_standard ();
   gimple *m_stmt;
   tree m_op1, m_op2;
+  bool m_recomputable;
 };
 
 // Given stmt S, fill VEC, up to VEC_SIZE elements, with relevant ssa-names

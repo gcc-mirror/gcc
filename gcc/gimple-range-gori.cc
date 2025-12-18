@@ -1325,9 +1325,10 @@ gori_compute::may_recompute_p (tree name, basic_block bb, int depth)
   if (!dep1)
     return false;
 
-  // Don't recalculate PHIs or statements with side_effects.
+  // Only recalculate range-op statements that are recomputable.
   gimple *s = SSA_NAME_DEF_STMT (name);
-  if (is_a<gphi *> (s) || gimple_has_side_effects (s))
+  gimple_range_op_handler handler (s);
+  if (!handler || !handler.recomputable_p ())
     return false;
 
   if (!dep2)
