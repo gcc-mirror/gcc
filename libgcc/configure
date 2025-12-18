@@ -5336,6 +5336,32 @@ $as_echo "$libgcc_cv_powerpc_3_1_float128_hw" >&6; }
   CFLAGS="$saved_CFLAGS"
 esac
 
+case ${host} in
+s390*-*-linux*)
+  { $as_echo "$as_me:${as_lineno-$LINENO}: checking Support float16 on s390" >&5
+$as_echo_n "checking Support float16 on s390... " >&6; }
+if ${libgcc_cv_s390_float16+:} false; then :
+  $as_echo_n "(cached) " >&6
+else
+  cat confdefs.h - <<_ACEOF >conftest.$ac_ext
+/* end confdefs.h.  */
+#if ! __s390x__ || __ARCH__ < 8
+     # error "HF not supported"
+     #endif
+
+_ACEOF
+if ac_fn_c_try_compile "$LINENO"; then :
+  libgcc_cv_s390_float16=yes
+else
+  libgcc_cv_s390_float16=no
+fi
+rm -f core conftest.err conftest.$ac_objext conftest.$ac_ext
+fi
+{ $as_echo "$as_me:${as_lineno-$LINENO}: result: $libgcc_cv_s390_float16" >&5
+$as_echo "$libgcc_cv_s390_float16" >&6; }
+  ;;
+esac
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 

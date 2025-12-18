@@ -1,0 +1,11 @@
+LIB2ADD += $(addprefix $(srcdir)/config/s390/, \
+		_dpd_hf_to_sd.c \
+		_dpd_hf_to_dd.c \
+		_dpd_hf_to_td.c \
+		_dpd_sd_to_hf.c \
+		_dpd_dd_to_hf.c \
+		_dpd_td_to_hf.c)
+
+softfp_extensions += hfsf hfdf hftf
+softfp_truncations += sfhf dfhf tfhf
+softfp_extras += fixhfti fixunshfti floattihf floatuntihf floatbitinthf

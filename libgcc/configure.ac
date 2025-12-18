@@ -479,6 +479,20 @@ powerpc*-*-linux*)
   CFLAGS="$saved_CFLAGS"
 esac
 
+case ${host} in
+s390*-*-linux*)
+  AC_CACHE_CHECK([Support float16 on s390],
+		 [libgcc_cv_s390_float16],
+		 [AC_COMPILE_IFELSE(
+    [AC_LANG_SOURCE([#if ! __s390x__ || __ARCH__ < 8
+     # error "HF not supported"
+     #endif
+     ])],
+    [libgcc_cv_s390_float16=yes],
+    [libgcc_cv_s390_float16=no])])
+  ;;
+esac
+
 # Collect host-machine-specific information.
 . ${srcdir}/config.host
 

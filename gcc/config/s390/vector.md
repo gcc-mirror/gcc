@@ -20,8 +20,8 @@
 
 ; All vector modes supported in a vector register
 (define_mode_iterator V
-  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1SF
-   V2SF V4SF V1DF V2DF])
+  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI
+   V1HF V2HF V4HF V8HF V1SF V2SF V4SF V1DF V2DF])
 (define_mode_iterator VT
   [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V1SF
    V2SF V4SF V1DF V2DF V1TF V1TI TI])
@@ -75,7 +75,7 @@
 			   V1DF V2DF
 			   (V1TF "TARGET_VXE") (TF "TARGET_VXE")])
 
-(define_mode_iterator VF [V2SF V4SF V2DF])
+(define_mode_iterator VF [V1HF V2HF V4HF V8HF V2SF V4SF V2DF])
 
 ; All modes present in V_HW1 and VFT.
 (define_mode_iterator V_HW1_FT [V16QI V8HI V4SI V2DI V1TI V1DF
@@ -97,12 +97,12 @@
 
 
 (define_mode_iterator V_8   [V1QI])
-(define_mode_iterator V_16  [V2QI  V1HI])
-(define_mode_iterator V_32  [V4QI  V2HI V1SI V1SF])
-(define_mode_iterator V_64  [V8QI  V4HI V2SI V2SF V1DI V1DF])
-(define_mode_iterator V_128 [V16QI V8HI V4SI V4SF V2DI V2DF V1TI V1TF
+(define_mode_iterator V_16  [V2QI  V1HI V1HF])
+(define_mode_iterator V_32  [V4QI  V2HI V2HF V1SI V1SF])
+(define_mode_iterator V_64  [V8QI  V4HI V4HF V2SI V2SF V1DI V1DF])
+(define_mode_iterator V_128 [V16QI V8HI V8HF V4SI V4SF V2DI V2DF V1TI V1TF
 			     (TF "TARGET_VXE")])
-(define_mode_iterator V_128_NOSINGLE [V16QI V8HI V4SI V4SF V2DI V2DF])
+(define_mode_iterator V_128_NOSINGLE [V16QI V8HI V8HF V4SI V4SF V2DI V2DF])
 
 ; 32 bit int<->fp vector conversion instructions are available since VXE2 (z15).
 (define_mode_iterator VX_VEC_CONV_BFP [V2DF (V4SF "TARGET_VXE2")])
@@ -122,7 +122,7 @@
 		       (V1TF "")  (TF "")])
 
 ;; Facilitate dispatching TFmode expanders on z14+.
-(define_mode_attr tf_vr [(TF "_vr") (V4SF "") (V2DF "") (V1TF "") (V1SF "")
+(define_mode_attr tf_vr [(TF "_vr") (V8HF "") (V4SF "") (V2DF "") (V1TF "") (V1SF "")
 			 (V2SF "") (V1DF "") (V16QI "") (V8HI "") (V4SI "")
 			 (V2DI "") (V1TI "")])
 
@@ -132,6 +132,7 @@
 			  (V1SI "SI") (V2SI "SI") (V4SI "SI")
 			  (V1DI "DI") (V2DI "DI")
 			  (V1TI "TI") (TI "TI")
+			  (V1HF "HF") (V2HF "HF") (V4HF "HF") (V8HF "HF")
 			  (V1SF "SF") (V2SF "SF") (V4SF "SF")
 			  (V1DF "DF") (V2DF "DF")
 			  (V1TF "TF") (TF "TF")])
@@ -143,6 +144,7 @@
 			    (V1SI "si") (V2SI "si") (V4SI "si")
 			    (V1DI "di") (V2DI "di")
 			    (V1TI "ti") (TI "ti")
+			    (V1HF "hf") (V2HF "hf") (V4HF "hf") (V8HF "hf")
 			    (V1SF "sf") (V2SF "sf") (V4SF "sf")
 			    (V1DF "df") (V2DF "df")
 			    (V1TF "tf") (TF "tf")])
@@ -154,6 +156,7 @@
 			(V1SI "f") (V2SI "f") (V4SI "f") (SI "f")
 			(V1DI "g") (V2DI "g") (DI "g")
 			(V1TI "q") (TI "q")
+			(V1HF "h") (V2HF "h") (V4HF "h") (V8HF "h") (HF "h")
 			(V1SF "f") (V2SF "f") (V4SF "f") (SF "f")
 			(V1DF "g") (V2DF "g") (DF "g")
 			(V1TF "q") (TF "q")])
@@ -173,6 +176,7 @@
 			    (V1SI "V1SI") (V2SI "V2SI") (V4SI "V4SI")
 			    (V1DI "V1DI") (V2DI "V2DI")
 			    (V1TI "V1TI") (TI "TI")
+			    (V1HF "V1HI") (V2HF "V2HI") (V4HF "V4HI") (V8HF "V8HI")
 			    (V1SF "V1SI") (V2SF "V2SI") (V4SF "V4SI")
 			    (V1DF "V1DI") (V2DF "V2DI")
 			    (V1TF "V1TI") (TF "TI")])
@@ -182,6 +186,7 @@
 			    (V1SI "v1si") (V2SI "v2si") (V4SI "v4si")
 			    (V1DI "v1di") (V2DI "v2di")
 			    (V1TI "v1ti") (TI "ti")
+			    (V1HF "v1hi") (V2HF "v2hi") (V4HF "v4hi") (V8HF "v8hi")
 			    (V1SF "v1si") (V2SF "v2si") (V4SF "v4si")
 			    (V1DF "v1di") (V2DF "v2di")
 			    (V1TF "v1ti") (TF   "ti")])
@@ -517,9 +522,9 @@
 
 ; Iterator for vec_set that does not use special float/vect overlay tricks
 (define_mode_iterator VEC_SET_NONFLOAT
-  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V2SF V4SF])
+  [V1QI V2QI V4QI V8QI V16QI V1HI V2HI V4HI V8HI V1SI V2SI V4SI V1DI V2DI V2HF V4HF V8HF V2SF V4SF])
 ; Iterator for single element float vectors
-(define_mode_iterator VEC_SET_SINGLEFLOAT [V1SF V1DF (V1TF "TARGET_VXE")])
+(define_mode_iterator VEC_SET_SINGLEFLOAT [V1HF V1SF V1DF (V1TF "TARGET_VXE")])
 
 ; FIXME: Support also vector mode operands for 1
 ; FIXME: A target memory operand seems to be useful otherwise we end

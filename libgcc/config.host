@@ -1393,6 +1393,9 @@ s390x-*-linux*)
 	if test "${host_address}" = 32; then
 	   tmake_file="${tmake_file} s390/32/t-floattodi"
 	else
+	   if test "$libgcc_cv_s390_float16" = "yes"; then
+		tmake_file="${tmake_file} s390/t-float16"
+	   fi
 	   tmake_file="${tmake_file} s390/t-softfp t-softfp"
 	fi
 	md_unwind_header=s390/linux-unwind.h

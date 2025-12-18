@@ -123,8 +123,19 @@ GCC_16.0.0 {
   __fixsfbitint
   __fixdfbitint
   __fixtfbitint
+  __floatbitinthf
   __floatbitintsf
   __floatbitintdf
   __floatbitinttf
+  __truncsfhf2
+  __truncdfhf2
+  __trunctfhf2
+  __extendhfsf2
+  __extendhfdf2
+  __extendhftf2
+  __fixhfti
+  __fixunshfti
+  __floattihf
+  __floatuntihf
 }
 %endif
