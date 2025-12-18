@@ -317,6 +317,19 @@ test_modifiers()
   VERIFY( s == 12s );
 }
 
+void
+test_wchar()
+{
+  std::wistringstream is;
+  std::chrono::duration<double, std::milli> ms;
+
+  is.clear();
+  is.str(L"0.125");
+  is >> parse(L"%S", ms);
+  VERIFY( is.good() );
+  VERIFY( ms.count() == 125 );
+}
+
 int main()
 {
   test_recommended_practice();
@@ -324,4 +337,5 @@ int main()
   test_whitespace();
   test_errors();
   test_modifiers();
+  test_wchar();
 }
