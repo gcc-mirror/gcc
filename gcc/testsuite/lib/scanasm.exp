@@ -983,8 +983,8 @@ proc check_function_body { functions name body_regexp } {
     }
     set fn_res [regexp "^$body_regexp\$" $up_functions($name)]
     if { !$fn_res } {
-      verbose -log "body: $body_regexp"
-      verbose -log "against: $up_functions($name)"
+      verbose -log "expected: $body_regexp"
+      verbose -log "found: $up_functions($name)"
     }
     return $fn_res
 }
