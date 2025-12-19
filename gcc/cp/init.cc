@@ -4785,11 +4785,12 @@ build_vec_init (tree base, tree maxindex, tree init,
   /* Protect the entire array initialization so that we can destroy
      the partially constructed array if an exception is thrown.
      But don't do this if we're assigning.  */
-  if (flag_exceptions && TYPE_HAS_NONTRIVIAL_DESTRUCTOR (type)
+  if (flag_exceptions
       /* And don't clean up from clobbers, the actual initialization will
 	 follow as a separate build_vec_init.  */
       && !(init && TREE_CLOBBER_P (init))
-      && from_array != 2)
+      && from_array != 2
+      && type_build_dtor_call (type))
     {
       tree e;
       tree m = cp_build_binary_op (input_location,
@@ -4812,24 +4813,28 @@ build_vec_init (tree base, tree maxindex, tree init,
 			      /*in_cleanup*/true);
       if (e == error_mark_node)
 	errors = true;
-      TARGET_EXPR_CLEANUP (iterator_targ) = e;
-      CLEANUP_EH_ONLY (iterator_targ) = true;
+      else if (TREE_SIDE_EFFECTS (e))
+	{
+	  TARGET_EXPR_CLEANUP (iterator_targ) = e;
+	  CLEANUP_EH_ONLY (iterator_targ) = true;
 
-      /* Since we push this cleanup before doing any initialization, cleanups
-	 for any temporaries in the initialization are naturally within our
-	 cleanup region, so we don't want wrap_temporary_cleanups to do
-	 anything for arrays.  But if the array is a subobject, we need to
-	 tell split_nonconstant_init or cp_genericize_target_expr how to turn
-	 off this cleanup in favor of the cleanup for the complete object.
+	  /* Since we push this cleanup before doing any initialization,
+	     cleanups for any temporaries in the initialization are naturally
+	     within our cleanup region, so we don't want
+	     wrap_temporary_cleanups to do anything for arrays.  But if the
+	     array is a subobject, we need to tell split_nonconstant_init or
+	     cp_genericize_target_expr how to turn off this cleanup in favor
+	     of the cleanup for the complete object.
 
-	 ??? For an array temporary such as an initializer_list backing array,
-	 it would avoid redundancy to leave this cleanup active, clear
-	 CLEANUP_EH_ONLY, and not build another cleanup for the temporary
-	 itself.  But that breaks when gimplify_target_expr adds a clobber
-	 cleanup that runs before the build_vec_init cleanup.  */
-      if (cleanup_flags)
-	vec_safe_push (*cleanup_flags,
-		       build_tree_list (rval, build_zero_cst (ptype)));
+	     ??? For an array temporary such as an initializer_list backing
+	     array, it would avoid redundancy to leave this cleanup active,
+	     clear CLEANUP_EH_ONLY, and not build another cleanup for the
+	     temporary itself.  But that breaks when gimplify_target_expr adds
+	     a clobber cleanup that runs before the build_vec_init cleanup.  */
+	  if (cleanup_flags)
+	    vec_safe_push (*cleanup_flags,
+			   build_tree_list (rval, build_zero_cst (ptype)));
+	}
     }
 
   /* Should we try to create a constant initializer?  */

@@ -3,7 +3,7 @@
 
 struct A { ~A () = delete; };
 A *pa{new A{}};
-A *pa2{new A[2]{}};
+A *pa2{new A[2]{}};		// { dg-error "use of deleted function 'A::~A\\\(\\\)'" }
 
 class B { ~B () = default; };
 B *pb{new B{}};
