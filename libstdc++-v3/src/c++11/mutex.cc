@@ -42,7 +42,7 @@ _GLIBCXX_BEGIN_NAMESPACE_VERSION
   __get_once_callable() noexcept
   { return __once_callable; }
 
-  __typeof__(void (*)())&
+  std::add_lvalue_reference<void (*)()>::type
   __get_once_call() noexcept
   { return __once_call; }
 
