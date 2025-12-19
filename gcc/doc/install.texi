@@ -1249,7 +1249,7 @@ Same as @uref{#with-as,,@option{--with-as}}
 but for the Windows resource compiler.
 
 @item --with-tls=@var{dialect}
-Specify the default TLS dialect, for systems were there is a choice.
+Specify the default TLS dialect, for systems where there is a choice.
 For ARM targets, possible values for @var{dialect} are @code{gnu} or
 @code{gnu2}, which select between the original GNU dialect and the GNU TLS
 descriptor-based dialect.
