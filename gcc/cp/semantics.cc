@@ -12927,6 +12927,16 @@ finish_static_assert (tree condition, tree message, location_t location,
 	    error_at (cloc, "static assertion failed: %.*s", len, msg);
 
 	  diagnose_failing_condition (bad, cloc, show_expr_p);
+
+	  /* Suppress -Wreturn-type for functions with failed static_asserts.
+	     Otherwise templates like:
+	     if constexpr (whatever)
+	       return something (args);
+	     else
+	       static_assert (false, "explanation");
+	     get a useless extra -Wreturn-type warning.  */
+	  if (current_function_decl)
+	    suppress_warning (current_function_decl, OPT_Wreturn_type);
 	}
       else if (condition && condition != error_mark_node)
 	{
