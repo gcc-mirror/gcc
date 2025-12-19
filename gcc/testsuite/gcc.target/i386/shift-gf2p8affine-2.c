@@ -1,6 +1,9 @@
 /* { dg-do run } */
 /* { dg-options "-mgfni -mavx512vl -mavx512bw -mavx512f -O3 -Wno-shift-count-negative -march=x86-64 -mtune=generic" } */
-/* { dg-skip-if "Assembler support missing" { *-*-solaris2.* && { ! gas } } } */
+/* { dg-require-effective-target gfni } */
+/* { dg-require-effective-target avx512vl } */
+/* { dg-require-effective-target avx512bw } */
+/* { dg-require-effective-target avx512f } */
 
 #include <string.h>
 
