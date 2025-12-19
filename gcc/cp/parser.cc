@@ -12043,6 +12043,8 @@ cp_parser_lambda_expression (cp_parser* parser,
     bool saved_omp_array_section_p = parser->omp_array_section_p;
     bool saved_in_targ = parser->in_template_argument_list_p;
     bool saved_in_declarator_p = parser->in_declarator_p;
+    auto parmlist_sentinel
+      = make_temp_override (processing_template_parmlist, 0);
 
     parser->num_template_parameter_lists = 0;
     parser->in_statement = 0;
