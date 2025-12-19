@@ -1,3 +1,13 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (c_parser_omp_assumption_clauses): Add
+	no_openmp_constructs clause.
+
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-parser.cc (OMP_TARGET_CLAUSE_MASK): Add
+	device_type clause.
+
 2025-12-13  Jakub Jelinek  <jakub@redhat.com>
 
 	* c-parser.cc (c_parser_omp_clause_reduction): Provide fixit hints

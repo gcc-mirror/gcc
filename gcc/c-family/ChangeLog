@@ -1,3 +1,14 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-omp.cc (c_omp_split_clauses): Handle target's
+	device_type clause.
+
+2025-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/123156
+	* c-common.cc (c_build_shufflevector): Use ssizetype for the
+	permute vector element type.
+
 2025-12-12  Chung-Lin Tang  <cltang@baylibre.com>
 	    Tobias Burnus  <tburnus@baylibre.com>
 	    Andrew Stubbs  <ams@baylibre.com>

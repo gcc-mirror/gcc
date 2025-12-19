@@ -1,3 +1,69 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gfortran.dg/goacc/update-if_present-2.f90: Update dg-error.
+	* gfortran.dg/gomp/order-8.f90: Likewise.
+	* gfortran.dg/gomp/order-9.f90: Likewise.
+	* c-c++-common/gomp/assume-5.c: New test.
+	* gfortran.dg/gomp/assume-6.f90: New test.
+
+2025-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123186
+	* g++.dg/template/crash133.C: New test.
+
+2025-12-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122070
+	* g++.dg/cpp23/class-deduction-inherited10.C: New test.
+	* g++.dg/cpp23/class-deduction-inherited9.C: New test.
+
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/target-device-type-1.c: New test.
+	* gfortran.dg/gomp/target-device-type-1.f90: New test.
+
+2025-12-18  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* gcc.target/aarch64/sve/acle/general/attributes_1.c: Update test for
+	__ARM_FEATURE_SVE_PREDICATE_OPERATORS.
+	* gcc.target/aarch64/sve/acle/general/attributes_9.c: New.
+
+2025-12-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_5.c: New test.
+	* gcc.target/aarch64/options_set_30.c: Likewise.
+	* lib/target-supports.exp (exts): Add sve-sm4, sve-aes, sve-bitperm.
+
+2025-12-18  WANG Xuerui  <git@xen0n.name>
+
+	PR target/123171
+	* gcc.target/loongarch/pr123171.c: New test.
+
+2025-12-18  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* gcc.target/loongarch/vector/lasx/vect-extract-256-128.c:
+	After supporting the vectorized type corresponding to subreg in
+	the backend, the cost of rtx becomes 0. In fwprop1 pass,
+	memory-loaded rtx cannot be propagated to this insn, which leads
+	to xvld not being optimized into vld instructions.
+	* gcc.target/loongarch/vect-mode-tieable.c: New test.
+
+2025-12-18  Richard Biener  <rguenther@suse.de>
+
+	PR c/123156
+	* gcc.dg/torture/builtin-shufflevector-pr123156.c: New testcase.
+
+2025-12-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122734
+	* gcc.dg/tree-ssa/copy-headers-13.c: New test.
+
+2025-12-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* gcc.target/i386/pr121572-1a.c: Turn off -freorder-blocks-and-partition
+	as it interferes with the check-body.
+
 2025-12-17  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/122343

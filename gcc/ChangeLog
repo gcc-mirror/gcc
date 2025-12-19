@@ -1,3 +1,122 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* gimplify.cc (gimplify_scan_omp_clauses): Handle
+	OpenMP device_type clause.
+	* omp-low.cc (scan_sharing_clauses): Likewise.
+	(lower_omp_target): Print 'sorry, unimplemented' for
+	device_type clause value other than 'any'.
+
+2025-12-18  Tejas Belagod  <tejas.belagod@arm.com>
+
+	* config/aarch64/aarch64-c.cc (aarch64_update_cpp_builtins): Define
+	__ARM_FEATURE_SVE_PREDICATE_OPERATORS.
+
+2025-12-18  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR tree-optimization/123153
+	* tree-vect-loop-manip.cc
+	(slpeel_tree_duplicate_loop_to_edge_cfg): use
+	profile_probability::even () for even likelihood.
+
+2025-12-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def (sme-lutv2): Fix
+	feature string.
+
+2025-12-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-arches.def: Add armv9.6-a.
+	* config/aarch64/aarch64-option-extensions.def:
+	(sve-aes): Update to be enables by smeaes.
+	(sve-bitperm): Update to be enables by smesbitperm.
+	(fprcvt): New cli extension option.
+	(lsfe): Likewise.
+	(f8f32mm): Likewise.
+	(f8f16mm): Likewise.
+	(sme2p2): Likewise.
+	(sve2p2): Likewise.
+	(sve-aes2): Likewise.
+	(sve-f16f32mm): Likewise.
+	(sve-bfscale): Likewise.
+	(ssve-aes): Likewise.
+	(lsui): Likewise.
+	(occmo): Likewise.
+	(pcdphint): Likewise.
+	(pops): Likewise.
+	(ssve-bitperm): Likewise.
+	(ssve-fexpa): Likewise.
+	(sme-mop4): Likewise.
+	(sme-tmop): Likewise.
+
+2025-12-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* config/aarch64/aarch64-option-extensions.def
+	(sve-aes): New cli extension option.
+	(sve2-aes): Changed to be alias of sve2+sve-aes2.
+	(sve-bitperm): New cli extension option.
+	(sve2-bitperm): Changed to be alias of sve2+sve-bitperm.
+	(sve-sm4): New cli extension option.
+	(sve2-sm4): Changed to be alias of sve2+sve-sm4.
+	(sve-sm4): New cli extension option.
+	(sve2-sm4): Changed to be alias of sve2+sve-sm4.
+	* config/aarch64/aarch64.h (TARGET_SVE2_AES): Updated to require
+	sve2+sve-aes.
+	(TARGET_SVE2_BITPERM): Updated to require sve2+sve-bitperm.
+	(TARGET_SVE2_SHA3): Updated to require sve2+sve-sha3.
+	(TARGET_SVE2_SM4): Updated to require sve2+sve-sm4
+	* config/aarch64/aarch64-sve-builtins-sve2.def: Update gating for sve2-X
+	intrinsics.
+
+2025-12-18  Alfie Richards  <alfie.richards@arm.com>
+
+	* common/config/aarch64/aarch64-common.cc
+	(struct aarch64_extension_info): Add flags_alias_preferred_over.
+	(AARCH64_OPT_EXTENSION): Add setting flags preferred over to 0.
+	(AARCH64_OPT_EXTENSION_ALIAS): New macro def.
+	(aarch64_get_extension_string_for_isa_flags): Update to use alias
+	extensions over constituent extensions.
+	* config/aarch64/aarch64-feature-deps.h (alias_flags): New variable
+	(AARCH64_OPT_EXTENSION): New macro def.
+	(AARCH64_OPT_EXTENSION_ALIAS): New macro def.
+	(HANDLE): Update to use alias_flags.
+	(AARCH64_CORE): Update to use alias_flags.
+	* config/aarch64/aarch64-option-extensions.def
+	(AARCH64_OPT_EXTENSION_ALIAS): New macro def to
+	define alias_prefer_over_flags_X.
+	(crypto): Update to us AARCH64_OPT_EXTENSION_ALIAS.
+
+2025-12-18  WANG Xuerui  <git@xen0n.name>
+
+	PR target/123171
+	* config/loongarch/loongarch.cc (loongarch_option_restore): Add
+	missing update to la_target.isa.base.
+
+2025-12-18  chenxiaolong  <chenxiaolong@loongson.cn>
+
+	* config/loongarch/loongarch.cc (loongarch_modes_tieable_p):
+	Add support for vector conversion.
+
+2025-12-18  Senthil Kumar Selvaraj  <saaadhu@gcc.gnu.org>
+
+	* opts-common.cc (jobserver_info::jobserver_info): Do not skip
+	negative file descriptors in simple UNIX pipe mode.
+
+2025-12-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR tree-optimization/122734
+	* tree-ssa-loop-ch.cc (should_duplicate_loop_header_p): Remove
+	check on very_unlikely probability.
+
+2025-12-18  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* predict.cc (unlikely_executed_stmt_p): Fix up return for
+	__builtin_unreachable/__builtin_trap.
+
+2025-12-18  Alexandre Oliva  <oliva@adacore.com>
+
+	* var-tracking.cc (vt_expand_var_loc_chain): Prepare to exit
+	the loop after unsuitable_loc.
+
 2025-12-17  H.J. Lu  <hjl.tools@gmail.com>
 
 	PR target/122343

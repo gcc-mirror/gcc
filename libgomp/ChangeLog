@@ -1,3 +1,8 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* libgomp.texi (OpenMP Implemenation Status): Mark
+	no_openmp_constructs as implemented.
+
 2025-12-17  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
 
 	* testsuite/libgomp.c/affinity-1.c: Always add warnings.

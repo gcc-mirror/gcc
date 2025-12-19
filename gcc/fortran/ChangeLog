@@ -1,3 +1,28 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_assumes): Handle
+	no_openmp_constructs clause.
+	* gfortran.h (struct gfc_omp_assumptions): Add
+	no_openmp_constructs.
+	* openmp.cc (gfc_match_dupl_check): For free-form
+	Fortran, avoid substring matching.
+	(gfc_match_omp_clauses): Match no_openmp_constructs clause.
+	Remove no longer needed 'needs_space', match 'order' followed by
+	parenthesis instead of 'order' with parenthesis; reorder 'order'
+	and 'ordering' clauses for free-form Fortran.
+	(gfc_match_omp_assumes): Handle no_openmp_constructs clause.
+
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Handle
+	device_type clause.
+	* openmp.cc (gfc_match_omp_clauses): Reorder to
+	match 'device' after 'device_...' to avoid parse
+	errors.
+	(OMP_TARGET_CLAUSES): Add device_type clause.
+	* trans-openmp.cc (gfc_trans_omp_clauses,
+	gfc_split_omp_clauses): Handle device_type clause.
+
 2025-12-12  Tobias Burnus  <tburnus@baylibre.com>
 
 	* openmp.cc (gfc_match_omp_clause_uses_allocators): Mention

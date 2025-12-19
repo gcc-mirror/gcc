@@ -1,3 +1,31 @@
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_assumption_clauses): Add
+	no_openmp_constructs clause.
+
+2025-12-18  Patrick Palka  <ppalka@redhat.com>
+
+	* decl.cc (tag_name) <case none_type>: Return "typename" as if
+	typename_type.
+
+2025-12-18  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123186
+	* parser.cc (cp_parser_template_id): Use TYPE_IDENTIFIER instead of
+	TYPE_NAME in second build_typename_type argument.
+
+2025-12-18  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+	    Patrick Palka  <ppalka@redhat.com>
+
+	PR c++/122070
+	* pt.cc (type_targs_deducible_from): Fall back to
+	TYPE_TEMPLATE_INFO when TYPE_TEMPLATE_INFO_MAYBE_ALIAS is NULL.
+
+2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (OMP_TARGET_CLAUSE_MASK): Add
+	device_type clause.
+
 2025-12-17  benwu25  <soggysocks206@gmail.com>
 
 	* parser.cc (cp_parser_init_declarator): Adjust comment.

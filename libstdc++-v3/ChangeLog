@@ -1,3 +1,42 @@
+2025-12-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	* include/bits/chrono_io.h (__formatter_chrono::_M_write): Add
+	maybe_unused attribute to avoid -Wunused-parameter warning.
+	* src/c++20/tzdb.cc (detect_windows_zone): Decay array to
+	pointer to avoid -Warray-compare warning.
+
+2025-12-18  LIU Hao  <lh_mouse@126.com>
+	    Jonathan Wakely  <jwakely@redhat.com>
+
+	* config/os/mingw32-w64/os_defines.h (_GLIBCXX_NO_EXTERN_THREAD_LOCAL):
+	New macro.
+	* include/std/mutex [_GLIBCXX_NO_EXTERN_THREAD_LOCAL]
+	(__get_once_callable, __get_once_call): Declare new functions.
+	* src/c++11/mutex.cc [_GLIBCXX_NO_EXTERN_THREAD_LOCAL]
+	(__get_once_callable, __get_once_call): Define.
+
+2025-12-18  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123180
+	* include/bits/ranges_algo.h (__stable_sort_fn::operator()): Fix
+	sense of null check. Replace typedef with alias-declaration.
+	* testsuite/25_algorithms/stable_sort/123180.cc: New test.
+
+2025-12-18  Jonathan Wakely  <jwakely@redhat.com>
+	    Jakub Jelinek  <jakub@redhat.com>
+
+	* include/bits/random.tcc (__generate_canonical_pow2): Adjust
+	comments. Remove _UInt template parameter and define it in the
+	body using _Select_uint_least_t<__d>. Remove popcount call for
+	getting the width of the _UInt type. Cast floating-point
+	literal to _RealT.
+	(__generate_canonical_any): Remove _UInt template parameter and
+	define it in the body using _Select_uint_least_t<__d * 2>. Use
+	direct-initialization for _UInt variables. Cast floating-point
+	literal to _RealT.
+	(generate_canonical): Remove unused typedef. Remove constexpr-if
+	branches and remove unsigned type from template argument lists.
+
 2025-12-17  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/version.def (constexpr_exceptions): Add
