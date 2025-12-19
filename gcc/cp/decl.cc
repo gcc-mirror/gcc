@@ -1129,6 +1129,7 @@ member_like_constrained_friend_p (tree decl)
 	  && DECL_UNIQUE_FRIEND_P (decl)
 	  && DECL_FRIEND_CONTEXT (decl)
 	  && get_constraints (decl)
+	  && CLASSTYPE_IMPLICIT_INSTANTIATION (DECL_FRIEND_CONTEXT (decl))
 	  && (!DECL_TEMPLATE_INFO (decl)
 	      || !PRIMARY_TEMPLATE_P (DECL_TI_TEMPLATE (decl))
 	      || (uses_outer_template_parms_in_constraints
