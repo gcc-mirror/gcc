@@ -124,6 +124,12 @@ expand_cfg_attrs (AST::AttrVec &attrs)
 	      attrs.insert (attrs.begin () + i,
 			    std::make_move_iterator (new_attrs.begin ()),
 			    std::make_move_iterator (new_attrs.end ()));
+
+	      /* Decrement i so that the for loop's i++ will bring us back to
+	       * position i, allowing us to reprocess the newly inserted
+	       * attribute (in case it's also a cfg_attr that needs expansion)
+	       */
+	      i--;
 	    }
 
 	  /* do something - if feature (first token in tree) is in fact enabled,
@@ -132,10 +138,6 @@ expand_cfg_attrs (AST::AttrVec &attrs)
 	   * attributes [wow1] and [wow2] to attribute list. This can also be
 	   * recursive, so check for expanded attributes being recursive and
 	   * possibly recursively call the expand_attrs? */
-	}
-      else
-	{
-	  i++;
 	}
     }
   attrs.shrink_to_fit ();
