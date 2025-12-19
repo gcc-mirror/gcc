@@ -2131,7 +2131,7 @@ compute_antic_aux (basic_block block, bool block_has_abnormal_pred_edge)
 	      /* Unvisited successors get their ANTIC_IN replaced by the
 		 maximal set to arrive at a maximum ANTIC_IN solution.
 		 We can ignore them in the intersection operation and thus
-		 need not explicitely represent that maximum solution.  */
+		 need not explicitly represent that maximum solution.  */
 	      any_max_on_edge = true;
 	      if (dump_file && (dump_flags & TDF_DETAILS))
 		fprintf (dump_file, "ANTIC_IN is MAX on %d->%d\n",

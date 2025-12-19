@@ -1534,8 +1534,8 @@ maybe_optimize_vector_constructor (gimple *cur_stmt)
 }
 
 /* Find manual byte swap implementations as well as load in a given
-   endianness. Byte swaps are turned into a bswap builtin invokation
-   while endian loads are converted to bswap builtin invokation or
+   endianness.  Byte swaps are turned into a bswap builtin invocation
+   while endian loads are converted to bswap builtin invocation or
    simple load according to the target endianness.  */
 
 unsigned int

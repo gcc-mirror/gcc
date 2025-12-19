@@ -43,7 +43,7 @@ end subroutine test
 
 ! Check for C617: "... a data-ref shall not be a polymorphic subobject of a
 ! coindexed object or ..." 
-! Before, the second allocate statment was failing - though it is no subobject.
+! Before, the second allocate statement was failing - though it is no subobject.
 program myTest
 type t
 end type t

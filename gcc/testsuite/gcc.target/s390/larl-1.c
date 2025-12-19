@@ -3,7 +3,7 @@
 /* { dg-do compile { target { s390*-*-* } } } */
 /* { dg-options "-O2 -march=z10 -mzarch -fno-section-anchors" } */
 
-/* An explicitely misaligned symbol.  This symbol is NOT aligned as
+/* An explicitly misaligned symbol.  This symbol is NOT aligned as
    mandated by our ABI.  However, the back-end needs to handle that in
    order to make things like __attribute__((packed)) work.  The symbol
    address is expected to be loaded from literal pool.  */

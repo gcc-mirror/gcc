@@ -2565,7 +2565,7 @@
 ;;       return aInt[3*z+2];
 ;;     }
 ;;
-;; because the constant +4 then is added explicitely instead of consuming it
+;; because the constant +4 then is added explicitly instead of consuming it
 ;; with the aInt symbol.  Therefore, we rely on insn combine which takes costs
 ;; into account more accurately and doesn't do burte-force multiply-add/sub.
 ;; The implementational effort is the same so we are fine with that approach.
@@ -3384,8 +3384,8 @@
    (set (match_dup 0)
         (reg:SI 22))]
   {
-    // Do the QI -> HI extension explicitely before the multiplication.
-    // Do the HI -> SI extension implicitely and after the multiplication.
+    // Do the QI -> HI extension explicitly before the multiplication.
+    // Do the HI -> SI extension implicitly and after the multiplication.
 
     if (QImode == <MODE>mode)
       operands[1] = gen_rtx_ZERO_EXTEND (HImode, operands[1]);

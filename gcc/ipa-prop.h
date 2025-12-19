@@ -666,7 +666,7 @@ public:
   /* Node has been completely replaced by clones and will be removed after
      ipa-cp is finished.  */
   unsigned node_dead : 1;
-  /* Node is involved in a recursion, potentionally indirect.  */
+  /* Node is involved in a recursion, potentially indirect.  */
   unsigned node_within_scc : 1;
   /* Node contains only direct recursion.  */
   unsigned node_is_self_scc : 1;

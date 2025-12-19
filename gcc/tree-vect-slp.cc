@@ -2037,7 +2037,7 @@ vect_build_slp_tree_2 (vec_info *vinfo, slp_tree node,
 		  all_same = false;
 	      }
 	    class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
-	    /* Reduction initial values are not explicitely represented.  */
+	    /* Reduction initial values are not explicitly represented.  */
 	    if (def_type != vect_first_order_recurrence
 		&& gimple_bb (stmt_info->stmt) == loop->header)
 	      skip_args[loop_preheader_edge (loop)->dest_idx] = true;
@@ -4068,7 +4068,7 @@ vect_build_slp_store_interleaving (vec<slp_tree> &rhs_nodes,
 
 /* Analyze an SLP instance starting from SCALAR_STMTS which are a group
    of KIND.  Return true if successful.  SCALAR_STMTS is owned by this
-   function, REMAIN and ROOT_STMT_INFOS ownership is transfered back to
+   function, REMAIN and ROOT_STMT_INFOS ownership is transferred back to
    the caller upon failure.  */
 
 static bool
@@ -6555,7 +6555,7 @@ vect_optimize_slp_pass::build_vertices (hash_set<slp_tree> &visited,
       force_leaf = true;
   /* Since SLP discovery works along use-def edges all cycles have an
      entry - but there's the exception of cycles where we do not handle
-     the entry explicitely (but with a NULL SLP node), like some reductions
+     the entry explicitly (but with a NULL SLP node), like some reductions
      and inductions.  Force those SLP PHIs to act as leafs to make them
      backwards reachable.  */
   if (leaf || force_leaf)
@@ -8819,7 +8819,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
     }
 
   /* When the node can be vectorized cost invariant nodes it references.
-     This is not done in DFS order to allow the refering node
+     This is not done in DFS order to allow the referring node
      vectorizable_* calls to nail down the invariant nodes vector type
      and possibly unshare it if it needs a different vector type than
      other referrers.  */
@@ -8854,7 +8854,7 @@ vect_slp_analyze_node_operations (vec_info *vinfo, slp_tree node,
 
 	      /* For shifts with a scalar argument we don't need
 		 to cost or code-generate anything.
-		 ???  Represent this more explicitely.  */
+		 ???  Represent this more explicitly.  */
 	      gcc_assert (SLP_TREE_TYPE (node) == shift_vec_info_type
 			  && j == 1);
 	      continue;

@@ -155,7 +155,7 @@ push_function_arg_decls (vec<tree> *args, tree fndecl)
 
   /* Safety check that we do not attempt to use the function in WPA, except
      when the function is a thunk and then we have DECL_ARGUMENTS or when we
-     have already explicitely loaded its body.  */
+     have already explicitly loaded its body.  */
   gcc_assert (!flag_wpa
 	      || DECL_ARGUMENTS (fndecl)
 	      || gimple_has_body_p (fndecl));

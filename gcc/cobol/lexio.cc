@@ -899,7 +899,7 @@ parse_replace_pairs( const char *stmt, const char *estmt, bool is_copy_stmt ) {
     gcc_assert(!before.has_nul());
     pairs.push_back( replace_t( output.before, output.after ) );
 
-    // COPY REPLACING matches end-of-statment here
+    // COPY REPLACING matches end-of-statement here
     // REPLACE matched end-of-statement in caller, and estmt[-1] == '.'
     if( is_copy_stmt && parsed.stmt.pend[-1] == '.' ) break;
   }
@@ -1864,7 +1864,7 @@ cdftext::free_form_reference_format( int input ) {
  * denoting the source filename.  As far as the lexer is concerned,
  * there's only ever one file: the name passed to lex_open() when we
  * kicked things off.  But messages and the debugger need to know
- * which file and line each statment appeared in.
+ * which file and line each statement appeared in.
  *
  * The lexer uses the input stack to keep track of names and
  * numbers. The top of the input file stack is the current file

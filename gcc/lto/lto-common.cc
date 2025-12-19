@@ -2141,7 +2141,7 @@ lto_resolution_read (splay_tree file_ids, FILE *resolution, lto_file *file)
 		 somewhat contradictionary (as the point of incremental linking
 		 is to allow re-linking with more symbols later) but it is
 		 used to build LTO kernel.  We want to hide all symbols that
-		 are not explicitely marked as exported and thus turn
+		 are not explicitly marked as exported and thus turn
 		 LDPR_PREVAILING_DEF_IRONLY_EXP
 		 to LDPR_PREVAILING_DEF_IRONLY.  */
 	      if (flag_whole_program

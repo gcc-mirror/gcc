@@ -59,7 +59,7 @@ along with GCC; see the file COPYING3.  If not see
 
 /* TODO:  Note the vectorizer still builds COND_EXPRs with GENERIC compares
    in the first operand.  Disentangling this is future work, the
-   IL is properly transfered to VEC_COND_EXPRs with separate compares.  */
+   IL is properly transferred to VEC_COND_EXPRs with separate compares.  */
 
 
 /* Return true if we have a useful VR_RANGE range for VAR, storing it

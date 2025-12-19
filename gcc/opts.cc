@@ -190,7 +190,7 @@ bool dwarf_based_debuginfo_p ()
 	  || (write_symbols & CODEVIEW_DEBUG));
 }
 
-/* All flag uses below need to explicitely reference the option sets
+/* All flag uses below need to explicitly reference the option sets
    to operate on.  */
 #define global_options DO_NOT_USE
 #define global_options_set DO_NOT_USE

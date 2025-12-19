@@ -288,7 +288,7 @@ get_object_alignment_2 (tree exp, unsigned int *alignp,
       unsigned HOST_WIDE_INT ptr_bitpos;
       unsigned HOST_WIDE_INT ptr_bitmask = ~0;
 
-      /* If the address is explicitely aligned, handle that.  */
+      /* If the address is explicitly aligned, handle that.  */
       if (TREE_CODE (addr) == BIT_AND_EXPR
 	  && TREE_CODE (TREE_OPERAND (addr, 1)) == INTEGER_CST)
 	{

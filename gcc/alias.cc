@@ -442,7 +442,7 @@ alias_set_subset_of (alias_set_type set1, alias_set_type set2)
      *ptr2 = ...
 
      Additionally if a set contains universal pointer, we consider every pointer
-     to be a subset of it, but we do not represent this explicitely - doing so
+     to be a subset of it, but we do not represent this explicitly - doing so
      would require us to update transitive closure each time we introduce new
      pointer type.  This makes aliasing_component_refs_p to return true
      on the following testcase:

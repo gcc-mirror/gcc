@@ -7615,7 +7615,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
   if (GET_CODE (inner) == SUBREG
       && subreg_lowpart_p (inner)
       && (paradoxical_subreg_p (inner)
-	  /* If trying or potentionally trying to extract
+	  /* If trying or potentially trying to extract
 	     bits outside of is_mode, don't look through
 	     non-paradoxical SUBREGs.  See PR82192.  */
 	  || (pos_rtx == NULL_RTX
@@ -7664,7 +7664,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
 	}
     }
   else if (GET_CODE (inner) == TRUNCATE
-	   /* If trying or potentionally trying to extract
+	   /* If trying or potentially trying to extract
 	      bits outside of is_mode, don't look through
 	      TRUNCATE.  See PR82192.  */
 	   && pos_rtx == NULL_RTX
@@ -7929,7 +7929,7 @@ make_extraction (machine_mode mode, rtx inner, HOST_WIDE_INT pos,
      mode.  */
   else if (!MEM_P (inner))
     {
-      /* On the LHS, don't create paradoxical subregs implicitely truncating
+      /* On the LHS, don't create paradoxical subregs implicitly truncating
 	 the register unless TARGET_TRULY_NOOP_TRUNCATION.  */
       if (in_dest
 	  && !TRULY_NOOP_TRUNCATION_MODES_P (GET_MODE (inner),
@@ -13131,7 +13131,7 @@ simplify_comparison (enum rtx_code code, rtx *pop0, rtx *pop1)
     }
 
   /* Now make any compound operations involved in this comparison.  Then,
-     check for an outmost SUBREG on OP0 that is not doing anything or is
+     check for an outermost SUBREG on OP0 that is not doing anything or is
      paradoxical.  The latter transformation must only be performed when
      it is known that the "extra" bits will be the same in op0 and op1 or
      that they don't matter.  There are three cases to consider:
@@ -13779,7 +13779,7 @@ record_truncated_value (rtx x)
 }
 
 /* Callback for note_uses.  Find hardregs and subregs of pseudos and
-   the modes they are used in.  This can help truning TRUNCATEs into
+   the modes they are used in.  This can help turning TRUNCATEs into
    SUBREGs.  */
 
 static void
@@ -14919,7 +14919,7 @@ distribute_notes (rtx notes, rtx_insn *from_insn, rtx_insn *i3, rtx_insn *i2,
 		 that is unused, we must arrange for an appropriate REG_DEAD
 		 note to be added for it.  However, we can't just emit a USE
 		 and tag the note to it, since the register might actually
-		 be dead; so we recourse, and the recursive call then finds
+		 be dead; so we recurse, and the recursive call then finds
 		 the previous insn that used this register.  */
 
 	      if (place && REG_NREGS (XEXP (note, 0)) > 1)

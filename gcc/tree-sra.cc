@@ -4614,7 +4614,7 @@ generate_subtree_deferred_init (struct access *access,
    there is one, also replace the RHS call to a call to .DEFERRED_INIT of
    the corresponding scalar relacement variable.  Examine the subtree and
    do the scalar replacements in the subtree too.  STMT is the call, GSI is
-   the statment iterator to place newly created statement.  */
+   the statement iterator to place newly created statement.  */
 
 static enum assignment_mod_result
 sra_modify_deferred_init (gimple *stmt, gimple_stmt_iterator *gsi)

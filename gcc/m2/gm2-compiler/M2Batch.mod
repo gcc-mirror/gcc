@@ -461,7 +461,7 @@ BEGIN
       END ;
       IF sym = NulSym
       THEN
-         (* not a local module, so it must be refering to a definition module.  *)
+         (* not a local module, so it must be referring to a definition module.  *)
          sym := MakeDefinitionSource (tok, n)
       END
    END ;

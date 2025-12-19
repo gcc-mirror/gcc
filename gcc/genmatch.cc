@@ -1520,7 +1520,7 @@ public:
   /* The operator and its operands.  */
   id_base *operation;
   vec<operand *> ops;
-  /* An explicitely specified type - used exclusively for conversions.  */
+  /* An explicitly specified type - used exclusively for conversions.  */
   const char *expr_type;
   /* Whether the operation is to be applied commutatively.  This is
      later lowered to two separate patterns.  */

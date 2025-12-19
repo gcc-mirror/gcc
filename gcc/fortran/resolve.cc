@@ -12173,7 +12173,7 @@ over:
 
 
 /* Check whether a WHERE assignment target or a WHERE mask expression
-   has the same shape as the outmost WHERE mask expression.  */
+   has the same shape as the outermost WHERE mask expression.  */
 
 static void
 resolve_where (gfc_code *code, gfc_expr *mask)
@@ -12185,8 +12185,8 @@ resolve_where (gfc_code *code, gfc_expr *mask)
   cblock = code->block;
 
   /* Store the first WHERE mask-expr of the WHERE statement or construct.
-     In case of nested WHERE, only the outmost one is stored.  */
-  if (mask == NULL) /* outmost WHERE */
+     In case of nested WHERE, only the outermost one is stored.  */
+  if (mask == NULL) /* outermost WHERE */
     e = cblock->expr1;
   else /* inner WHERE */
     e = mask;
@@ -12196,7 +12196,7 @@ resolve_where (gfc_code *code, gfc_expr *mask)
       if (cblock->expr1)
 	{
 	  /* Check if the mask-expr has a consistent shape with the
-	     outmost WHERE mask-expr.  */
+	     outermost WHERE mask-expr.  */
 	  if (!resolve_where_shape (cblock->expr1, e))
 	    gfc_error ("WHERE mask at %L has inconsistent shape",
 		       &cblock->expr1->where);

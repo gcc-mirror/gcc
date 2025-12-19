@@ -4032,7 +4032,7 @@ ipa_make_edge_direct_to_target (struct cgraph_edge *ie, tree target,
   else
     callee = cgraph_node::get (target);
 
-  /* Because may-edges are not explicitely represented and vtable may be external,
+  /* Because may-edges are not explicitly represented and vtable may be external,
      we may create the first reference to the object in the unit.  */
   if (!callee || callee->inlined_to)
     {

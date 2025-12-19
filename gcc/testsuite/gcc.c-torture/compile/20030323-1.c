@@ -1,5 +1,5 @@
 /* PR c/10178.  The following code would ICE because we didn't check for
-   overflow when computing the range of the switch-statment, and therefore
+   overflow when computing the range of the switch-statement, and therefore
    decided it could be implemented using bit-tests.  */
 
 int

@@ -8199,7 +8199,7 @@ package body Sem_Attr is
          --  subtype indication. This is syntactically a pain, but should
          --  not propagate to the entity for the corresponding index subtype.
          --  After checking that the subtype indication is legal, the range
-         --  of the subtype indication should be transfered to the entity.
+         --  of the subtype indication should be transferred to the entity.
          --  The attributes for the bounds should remain the simple retrievals
          --  that they are now.
 

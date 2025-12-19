@@ -3967,7 +3967,8 @@ loop_distribution::execute (function *fun)
   if (changed)
     {
       /* Destroy loop bodies that could not be reused.  Do this late as we
-	 otherwise can end up refering to stale data in control dependences.  */
+	 otherwise can end up referring to stale data in control
+	 dependences.  */
       unsigned i;
       class loop *loop;
       FOR_EACH_VEC_ELT (loops_to_be_destroyed, i, loop)

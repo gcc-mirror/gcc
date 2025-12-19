@@ -3267,7 +3267,7 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
     return NULL;
 
   /* Before doing any peeling make sure to reset debug binds outside of
-     the loop refering to defs not in LC SSA.  */
+     the loop referring to defs not in LC SSA.  */
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
   for (unsigned i = 0; i < loop->num_nodes; ++i)
     {

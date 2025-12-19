@@ -814,7 +814,7 @@ sanopt_optimize_walker (basic_block bb, class sanopt_ctx *ctx)
       if (!is_gimple_call (stmt))
 	{
 	  /* Handle asm volatile or asm with "memory" clobber
-	     the same as potentionally freeing call.  */
+	     the same as potentially freeing call.  */
 	  gasm *asm_stmt = dyn_cast <gasm *> (stmt);
 	  if (asm_stmt
 	      && asan_check_optimize

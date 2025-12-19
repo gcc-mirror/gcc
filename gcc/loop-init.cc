@@ -314,7 +314,7 @@ fix_loop_structure (bitmap changed_bbs)
 	n_deleted++;
       }
 
-  /* If we deleted loops then the cached scalar evolutions refering to
+  /* If we deleted loops then the cached scalar evolutions referring to
      those loops become invalid.  */
   if (n_deleted > 0 && scev_initialized_p ())
     scev_reset_htab ();

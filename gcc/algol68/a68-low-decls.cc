@@ -209,7 +209,7 @@ a68_lower_variable_declaration (NODE_T *p, LOW_CTX_T ctx)
      pointer as the initial of the var_decl because the bouns in the actual
      declarer shall be elaborated at the point of the code where the
      declaration appears, not at the beginning of its reach.  Note that the
-     mode of the declarer will be always a REF, since this is a varaible
+     mode of the declarer will be always a REF, since this is a variable
      declaration: the referred mode is what we pass to the a68_low_generator.
 
      If the STATIC generator is used, the var_decl created above is not a

@@ -1670,7 +1670,7 @@ public:
   {
     m_auto.embedded_init (N, 0, 1);
     /* ???  Instead of initializing m_vec from &m_auto directly use an
-       expression that avoids refering to a specific member of 'this'
+       expression that avoids referring to a specific member of 'this'
        to derail the -Wstringop-overflow diagnostic code, avoiding
        the impression that data accesses are supposed to be to the
        m_auto member storage.  */

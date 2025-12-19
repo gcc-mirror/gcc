@@ -464,7 +464,7 @@ package body Sem_Ch6 is
 
          --  Propagate any pragmas that apply to expression function to the
          --  proper body when the expression function acts as a completion.
-         --  Aspects are automatically transfered because of node rewriting.
+         --  Aspects are automatically transferred because of node rewriting.
 
          Relocate_Pragmas_To_Body (N);
          Analyze (N);

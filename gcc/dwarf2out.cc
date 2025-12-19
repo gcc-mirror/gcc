@@ -3618,7 +3618,7 @@ static GTY(()) vec<dw_die_ref, va_gc> *abbrev_die_table;
 
 /* A hash map to remember the stack usage for DWARF procedures.  The value
    stored is the stack size difference between before the DWARF procedure
-   invokation and after it returned.  In other words, for a DWARF procedure
+   invocation and after it returned.  In other words, for a DWARF procedure
    that consumes N stack slots and that pushes M ones, this stores M - N.  */
 static hash_map<dw_die_ref, int> *dwarf_proc_stack_usage_map;
 
@@ -6034,7 +6034,7 @@ equate_block_to_die (tree block, dw_die_ref die)
 
 
 /* For DECL which might have early dwarf output query a SYMBOL + OFFSET
-   style reference.  Return true if we found one refering to a DIE for
+   style reference.  Return true if we found one referring to a DIE for
    DECL, otherwise return false.  */
 
 static bool
@@ -19156,7 +19156,7 @@ loc_list_from_tree_1 (tree loc, int want_address,
     case PREDECREMENT_EXPR:
     case POSTINCREMENT_EXPR:
     case POSTDECREMENT_EXPR:
-      expansion_failed (loc, NULL_RTX, "PRE/POST INDCREMENT/DECREMENT");
+      expansion_failed (loc, NULL_RTX, "PRE/POST INCREMENT/DECREMENT");
       /* There are no opcodes for these operations.  */
       return 0;
 
@@ -20325,7 +20325,7 @@ field_byte_offset (const_tree decl, struct vlr_context *ctx,
     tree_result = fold_build2 (PLUS_EXPR, TREE_TYPE (tree_result),
 			       ctx->variant_part_offset, tree_result);
 
-  /* If the byte offset is a constant, it's simplier to handle a native
+  /* If the byte offset is a constant, it's simpler to handle a native
      constant rather than a DWARF expression.  */
   if (TREE_CODE (tree_result) == INTEGER_CST)
     {
@@ -20506,7 +20506,7 @@ add_data_member_location_attribute (dw_die_ref die,
       /* While DW_AT_data_bit_offset has been added already in DWARF4,
 	 e.g. GDB only added support to it in November 2016.  For DWARF5
 	 we need newer debug info consumers anyway.  We might change this
-	 to dwarf_version >= 4 once most consumers catched up.  */
+	 to dwarf_version >= 4 once most consumers caught up.  */
       if (dwarf_version >= 5
 	  && TREE_CODE (decl) == FIELD_DECL
 	  && DECL_BIT_FIELD_TYPE (decl)
@@ -25479,7 +25479,7 @@ gen_lexical_block_die (tree stmt, dw_die_ref context_die)
 
   if (BLOCK_ABSTRACT_ORIGIN (stmt))
     {
-      /* If this is an inlined or conrecte instance, create a new lexical
+      /* If this is an inlined or concrete instance, create a new lexical
 	 die for anything below to attach DW_AT_abstract_origin to.  */
       if (old_die)
 	stmt_die = new_die (DW_TAG_lexical_block, context_die, stmt);
@@ -26107,7 +26107,7 @@ analyze_variants_discr (tree variant_part_decl,
 		goto abort;
 
 	      /* Extract the discriminant from the first operand and check it
-		 is consistant with the same analysis in the second
+		 is consistent with the same analysis in the second
 		 operand.  */
 	      candidate_discr_1
 	        = analyze_discr_in_predicate (TREE_OPERAND (lower_op, 0),
@@ -26163,7 +26163,7 @@ analyze_variants_discr (tree variant_part_decl,
 	       matching discriminant values.  Abort everything.  */
 	    goto abort;
 
-	  /* If the discriminant info is not consistant with what we saw so
+	  /* If the discriminant info is not consistent with what we saw so
 	     far, consider the analysis failed and abort everything.  */
 	  if (candidate_discr == NULL_TREE
 	      || (*discr_decl != NULL_TREE && candidate_discr != *discr_decl))
@@ -27634,7 +27634,7 @@ gen_decl_die (tree decl, tree origin, struct vlr_context *ctx,
 	 DW_TAG_union_type, or DW_TAG_enumeration_type DIE here.  But nothing
 	 should be actually referencing those DIEs, as variable DIEs with that
 	 type would be emitted already in the abstract origin, so it was always
-	 removed during unused type prunning.  Don't add anything in this
+	 removed during unused type pruning.  Don't add anything in this
 	 case.  */
       if (TYPE_DECL_IS_STUB (decl) && decl_ultimate_origin (decl) != NULL_TREE)
 	break;
@@ -33454,7 +33454,7 @@ resolve_variable_value (dw_die_ref die)
       }
 }
 
-/* Attempt to optimize DW_OP_GNU_variable_value refering to
+/* Attempt to optimize DW_OP_GNU_variable_value referring to
    temporaries in the current function.  */
 
 static void

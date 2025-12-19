@@ -4892,7 +4892,7 @@ then this needs to be set to the byte size of each character, i.e. @code{4} for
 a @code{CHARACTER (KIND=4)} string.  The length of the string is then given
 in @code{opt_src_charlen} and @code{opt_dst_charlen} (also for string arrays).
 @item @var{scalar_transfer} @tab intent(in)  Is set to true when the data to be
-transfered between the two images is not an array with a descriptor.
+transferred between the two images is not an array with a descriptor.
 @item @var{dst_stat} @tab intent(out) When non-@code{NULL} give the result of
 the operation on the receiving side, i.e., zero on success and non-zero on
 error.  When @code{NULL} and an error occurs, then an error message is printed

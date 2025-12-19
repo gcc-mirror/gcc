@@ -76,5 +76,5 @@ main (void)
   return 0;
 }
 
-/* Verify that we transfered to "= -" pattern from "_2 = -_1;".  */
+/* Verify that we transferred to "= -" pattern from "_2 = -_1;".  */
 /* { dg-final { scan-tree-dump-not "= -" "optimized" } } */

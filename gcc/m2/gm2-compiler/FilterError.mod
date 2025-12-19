@@ -22,7 +22,7 @@ along with GNU Modula-2; see the file COPYING3.  If not see
 IMPLEMENTATION MODULE FilterError ;
 
 (* The purpose of this module is to be able to filter out multiple error
-   reports refering to the same symbol and token.  This is achieved by
+   reports referring to the same symbol and token.  This is achieved by
    maintaining a dictionary of symbols each pointing to a dictionary of
    tokens.  *)
 

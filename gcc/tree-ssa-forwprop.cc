@@ -195,7 +195,7 @@ struct _vec_perm_simplify_seq
   gassign *v_2_stmt;
   gassign *v_x_stmt;
   gassign *v_y_stmt;
-  /* Final permute statment.  */
+  /* Final permute statement.  */
   gassign *stmt;
   /* New selector indices for stmt.  */
   tree new_sel;
@@ -4721,7 +4721,7 @@ narrow_vec_perm_simplify_seq (const vec_perm_simplify_seq &seq)
   gassign *stmt = seq->stmt;
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Updating VEC_PERM statement:\n");
       fprintf (dump_file, "Old stmt: ");
       print_gimple_stmt (dump_file, stmt, 0);
     }
@@ -4967,7 +4967,7 @@ blend_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
   /* Adjust seq2->stmt: copy RHS1/RHS2 from seq1->stmt and set new sel.  */
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Updating VEC_PERM statement:\n");
       fprintf (dump_file, "Old stmt: ");
       print_gimple_stmt (dump_file, seq2->stmt, 0);
     }
@@ -4988,7 +4988,7 @@ blend_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
   /* Adjust seq1->v_1_stmt: copy RHS2 from seq2->v_1_stmt and set new sel.  */
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Updating VEC_PERM statement:\n");
       fprintf (dump_file, "Old stmt: ");
       print_gimple_stmt (dump_file, seq1->v_1_stmt, 0);
     }
@@ -5008,7 +5008,7 @@ blend_vec_perm_simplify_seqs (vec_perm_simplify_seq seq1,
   /* Adjust seq1->v_2_stmt: copy RHS2 from seq2->v_2_stmt and set new sel.  */
   if (dump_file && (dump_flags & TDF_DETAILS))
     {
-      fprintf (dump_file, "Updating VEC_PERM statment:\n");
+      fprintf (dump_file, "Updating VEC_PERM statement:\n");
       fprintf (dump_file, "Old stmt: ");
       print_gimple_stmt (dump_file, seq1->v_2_stmt, 0);
     }

@@ -12,7 +12,7 @@ void foo (int a, int b, int c, int d, int e)
     res = 7;
   if (d < 2)
     res = 9;
-  /* Accounting whoes makes this not catched.  */
+  /* Accounting whoes makes this not caught.  */
 #if 0
   if (e != 37)
     res = 11;

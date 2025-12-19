@@ -11,7 +11,7 @@
 PROGRAM main
   IMPLICIT NONE
 
-  ! Some explicitely shaped arrays and allocatable ones.
+  ! Some explicitly shaped arrays and allocatable ones.
   INTEGER :: a(2, 3), b(0:1, 4:6)
   INTEGER, ALLOCATABLE :: x(:, :), y(:, :)
 

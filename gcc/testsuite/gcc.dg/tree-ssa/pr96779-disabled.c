@@ -81,5 +81,5 @@ main (void)
   return 0;
 }
 
-/* Verify that we have *not* transfered "= -" pattern in any of those functions.  */
+/* Verify that we have *not* transferred "= -" pattern in any of those functions.  */
 /* { dg-final { scan-tree-dump-times "= -" 4 "optimized" } } */

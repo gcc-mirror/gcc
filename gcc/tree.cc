@@ -8605,7 +8605,7 @@ variably_modified_type_p (tree type, tree fn)
     case POINTER_TYPE:
     case REFERENCE_TYPE:
     case VECTOR_TYPE:
-      /* Ada can have pointer types refering to themselves indirectly.  */
+      /* Ada can have pointer types referring to themselves indirectly.  */
       if (TREE_VISITED (type))
 	return false;
       TREE_VISITED (type) = true;

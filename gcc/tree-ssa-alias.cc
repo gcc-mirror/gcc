@@ -423,7 +423,7 @@ bool
 ptrs_compare_unequal (tree ptr1, tree ptr2)
 {
   /* First resolve the pointers down to a SSA name pointer base or
-     a VAR_DECL, PARM_DECL or RESULT_DECL.  This explicitely does
+     a VAR_DECL, PARM_DECL or RESULT_DECL.  This explicitly does
      not yet try to handle LABEL_DECLs, FUNCTION_DECLs, CONST_DECLs
      or STRING_CSTs which needs points-to adjustments to track them
      in the points-to sets.  */

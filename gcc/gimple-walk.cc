@@ -535,7 +535,7 @@ walk_gimple_op (gimple *stmt, walk_tree_fn callback_op,
       break;
 
     case GIMPLE_PHI:
-      /* PHIs are not GSS_WITH_OPS so we need to handle them explicitely.  */
+      /* PHIs are not GSS_WITH_OPS so we need to handle them explicitly.  */
       {
 	gphi *phi = as_a <gphi *> (stmt);
 	if (wi)

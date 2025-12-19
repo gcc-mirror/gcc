@@ -8875,7 +8875,7 @@ vectorizable_store (vec_info *vinfo,
 	      vec_oprnd = (*gvec_oprnds[0])[j];
 	      if (mask_node)
 		vec_mask = vec_masks[j];
-	      /* We should have catched mismatched types earlier.  */
+	      /* We should have caught mismatched types earlier.  */
 	      gcc_assert (ls.ls_type
 			  || useless_type_conversion_p
 			  (vectype, TREE_TYPE (vec_oprnd)));
@@ -9230,7 +9230,7 @@ vectorizable_store (vec_info *vinfo,
 	}
     }
 
-  /* We should have catched mismatched types earlier.  */
+  /* We should have caught mismatched types earlier.  */
   gcc_assert (costing_p
 	      || useless_type_conversion_p (vectype, TREE_TYPE (vec_oprnd)));
   bool simd_lane_access_p

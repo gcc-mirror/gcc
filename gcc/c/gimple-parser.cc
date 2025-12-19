@@ -2482,7 +2482,7 @@ c_parser_gimple_if_stmt (gimple_parser &parser, gimple_seq *seq)
 
    gimple-case-statement:
      gimple-case-statement
-     gimple-label-statement : gimple-goto-statment
+     gimple-label-statement : gimple-goto-statement
 */
 
 static void

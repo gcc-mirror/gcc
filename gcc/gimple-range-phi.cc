@@ -82,7 +82,7 @@ phi_group::phi_group (bitmap bm, irange &init_range, gimple *mod,
   m_vr.set_varying (init_range.type ());
 }
 
-// Return 0 if S is not a modifier statment for group members BM.
+// Return 0 if S is not a modifier statement for group members BM.
 // If it could be a modifier, return which operand position (1 or 2)
 // the phi member occurs in.
 unsigned

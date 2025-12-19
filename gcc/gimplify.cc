@@ -901,7 +901,7 @@ gimple_add_tmp_var (tree tmp)
 /* This page contains routines to unshare tree nodes, i.e. to duplicate tree
    nodes that are referenced more than once in GENERIC functions.  This is
    necessary because gimplification (translation into GIMPLE) is performed
-   by modifying tree nodes in-place, so gimplication of a shared node in a
+   by modifying tree nodes in-place, so gimplification of a shared node in a
    first context could generate an invalid GIMPLE form in a second context.
 
    This is achieved with a simple mark/copy/unmark algorithm that walks the
@@ -2101,7 +2101,7 @@ gimple_add_padding_init_for_auto_var (tree decl, bool is_vla,
   gimplify_seq_add_stmt (seq_p, call);
 }
 
-/* Return true if the DECL need to be automaticly initialized by the
+/* Return true if the DECL need to be automatically initialized by the
    compiler.  */
 static bool
 var_needs_auto_init_p (tree decl)
@@ -2158,7 +2158,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
       /* Check whether a decl has FE created VALUE_EXPR here BEFORE
 	 gimplify_vla_decl creates VALUE_EXPR for a vla decl.
 	 If the decl has VALUE_EXPR that was created by FE (usually
-	 C++FE), it's a proxy varaible, and FE already initialized
+	 C++FE), it's a proxy variable, and FE already initialized
 	 the VALUE_EXPR of it, we should not initialize it anymore.  */
       bool decl_had_value_expr_p = DECL_HAS_VALUE_EXPR_P (decl);
 
@@ -2236,7 +2236,7 @@ gimplify_decl_expr (tree *stmt_p, gimple_seq *seq_p)
 	     pattern initialization.
 	     In order to make the paddings as zeroes for pattern init, We
 	     should add a call to __builtin_clear_padding to clear the
-	     paddings to zero in compatiple with CLANG.
+	     paddings to zero in compatible with CLANG.
 	     We cannot insert this call if the variable is a gimple register
 	     since __builtin_clear_padding will take the address of the
 	     variable.  As a result, if a long double/_Complex long double
@@ -2305,7 +2305,7 @@ gimplify_statement_list (tree *expr_p, gimple_seq *pre_p)
 }
 
 
-/* Emit warning for the unreachable statment STMT if needed.
+/* Emit warning for the unreachable statement STMT if needed.
    Return the gimple itself when the warning is emitted, otherwise
    return NULL.  */
 static gimple *
@@ -2711,7 +2711,7 @@ collect_fallthrough_labels (gimple_stmt_iterator *gsi_p,
   return prev;
 }
 
-/* Return true if the switch fallthough warning should occur.  LABEL is
+/* Return true if the switch fallthrough warning should occur.  LABEL is
    the label statement that we're falling through to.  */
 
 static bool
@@ -4095,7 +4095,7 @@ modify_call_for_omp_dispatch (tree expr, tree dispatch_clauses,
 	      }
 
 	  /* Initialize the arrays, generating temp vars and clobbers for
-	     the interobject objects.  (The constructed array holding the
+	     the interop objects.  (The constructed array holding the
 	     pointers to these objects shouldn't need clobbering as there's
 	     no reason for GOMP_interop to modify its contents.)  */
 	  for (j = ninterop, a = apparg; j < nappend; j++, a = TREE_CHAIN (a))
@@ -9181,7 +9181,7 @@ oacc_default_clause (struct gimplify_omp_ctx *ctx, tree decl, unsigned flags)
     type = TREE_TYPE (type);
 
   /* For Fortran COMMON blocks, only used variables in those blocks are
-     transfered and remapped.  The block itself will have a private clause to
+     transferred and remapped.  The block itself will have a private clause to
      avoid transfering the data twice.
      The hook evaluates to false by default.  For a variable in Fortran's COMMON
      or EQUIVALENCE block, returns 'true' (as we have shared=false) - as only
@@ -9303,8 +9303,8 @@ omp_notice_variable (struct gimplify_omp_ctx *ctx, tree decl, bool in_code)
 	{
 	  if (ctx->region_type & ORT_ACC)
 	    /* For OpenACC, defer expansion of value to avoid transfering
-	       privatized common block data instead of im-/explicitly transfered
-	       variables which are in common blocks.  */
+	       privatized common block data instead of im-/explicitly
+	       transferred variables which are in common blocks.  */
 	    ;
 	  else
 	    {

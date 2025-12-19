@@ -11,5 +11,5 @@ bar ()
 {
   return foo ("abc") + foo (std::string("abc"));
 }
-// We used to add terminating zero explicitely instead of using fact
+// We used to add terminating zero explicitly instead of using fact
 // that memcpy source is already 0 terminated.

@@ -907,7 +907,7 @@ __gnat_get_task_options (void)
 
      Note that the same error occurs in both RTP and Kernel mode, but
      VX_DEALLOC_TCB is not defined in the RTP headers, so we need to
-     explicitely check if VX_PRIVATE_UMASK has value 0x8000
+     explicitly check if VX_PRIVATE_UMASK has value 0x8000
   */
 # if defined (VX_PRIVATE_UMASK) && (0x8000 == VX_PRIVATE_UMASK)
   options &= ~VX_PRIVATE_UMASK;

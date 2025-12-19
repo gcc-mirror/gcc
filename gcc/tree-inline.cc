@@ -5892,7 +5892,7 @@ replace_locals_op (tree *tp, int *walk_subtrees, void *data)
       /* Before the omplower pass completes, some OMP clauses can contain
 	 sequences that are neither copied by gimple_seq_copy nor walked by
 	 walk_gimple_seq.  To make copy_gimple_seq_and_replace_locals work even
-	 in those situations, we have to copy and process them explicitely.  */
+	 in those situations, we have to copy and process them explicitly.  */
 
       if (OMP_CLAUSE_CODE (expr) == OMP_CLAUSE_LASTPRIVATE)
 	{

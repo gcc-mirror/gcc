@@ -550,7 +550,7 @@ extern int rs6000_vector_align[];
 			 && (TARGET_PPC_GFXOPT || VECTOR_UNIT_VSX_P (DFmode)))
 
 /* Macro to say whether we can do optimizations where we need to do parts of
-   the calculation in 64-bit GPRs and then is transfered to the vector
+   the calculation in 64-bit GPRs and then is transferred to the vector
    registers.  */
 #define TARGET_DIRECT_MOVE_64BIT	(TARGET_DIRECT_MOVE		\
 					 && TARGET_POWERPC64)

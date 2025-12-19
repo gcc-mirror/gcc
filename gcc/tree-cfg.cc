@@ -1795,7 +1795,7 @@ group_case_labels_stmt (gswitch *stmt)
 			   but they will be moved to some neighbouring basic
 			   block. If some later case label refers to one of
 			   those labels, we should throw that case away rather
-			   than keeping it around and refering to some random
+			   than keeping it around and referring to some random
 			   other basic block without an edge to it.  */
 			if (removed_labels == NULL)
 			  removed_labels = new hash_set<tree>;
@@ -8413,7 +8413,7 @@ dump_function_to_file (tree fndecl, FILE *file, dump_flags_t flags)
 	  {
 	    if (!SSA_NAME_VAR (name)
 		/* SSA name with decls without a name still get
-		   dumped as _N, list those explicitely as well even
+		   dumped as _N, list those explicitly as well even
 		   though we've dumped the decl declaration as D.xxx
 		   above.  */
 		|| !SSA_NAME_IDENTIFIER (name))
@@ -10277,7 +10277,7 @@ make_forwarders_with_degenerate_phis (function *fn, bool skip_ifcvtable)
 	continue;
       /* Do not touch loop headers or blocks with abnormal predecessors.
 	 ???  This is to avoid creating valid loops here, see PR103458.
-	 We might want to improve things to either explicitely add those
+	 We might want to improve things to either explicitly add those
 	 loops or at least consider blocks with no backedges.  */
       if (bb->loop_father->header == bb
 	  || bb_has_abnormal_pred (bb))
