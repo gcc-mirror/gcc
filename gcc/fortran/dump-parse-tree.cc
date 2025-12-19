@@ -1994,7 +1994,9 @@ show_omp_clauses (gfc_omp_clauses *omp_clauses)
 	case OMP_DEVICE_TYPE_HOST: s = "host"; break;
 	case OMP_DEVICE_TYPE_NOHOST: s = "nohost"; break;
 	case OMP_DEVICE_TYPE_ANY: s = "any"; break;
-	case OMP_DEVICE_TYPE_UNSET: gcc_unreachable ();
+	case OMP_DEVICE_TYPE_UNSET:
+	default:
+	  gcc_unreachable ();
 	}
       fputs (" DEVICE_TYPE(", dumpfile);
       fputs (s, dumpfile);
