@@ -1795,8 +1795,13 @@ omp_verify_merge_absent_contains (gfc_statement st, gfc_omp_assumptions *check,
      predefined-allocator
      variable ( traits-array )
 
+   OpenMP 5.2 deprecated, 6.0 deleted: 'variable ( traits-array )'
+
    OpenMP 5.2:
    uses_allocators ( [modifier-list :] allocator-list )
+
+   OpenMP 6.0:
+   uses_allocators ( [modifier-list :] allocator-list [; ...])
 
    allocator:
      variable or predefined-allocator
@@ -1807,6 +1812,7 @@ omp_verify_merge_absent_contains (gfc_statement st, gfc_omp_assumptions *check,
 static match
 gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
 {
+parse_next:
   gfc_symbol *memspace_sym = NULL;
   gfc_symbol *traits_sym = NULL;
   gfc_omp_namelist *head = NULL;
@@ -1878,11 +1884,17 @@ gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
 	  p->u.memspace_sym = memspace_sym;
 	  p->u2.traits_sym = traits_sym;
 	}
-      if (gfc_match (", ") == MATCH_YES)
-	continue;
-      if (gfc_match (") ") == MATCH_YES)
+      gfc_gobble_whitespace ();
+      const char c = gfc_peek_ascii_char ();
+      if (c == ';' || c == ')')
 	break;
-      goto error;
+      if (c != ',')
+	{
+	  gfc_error ("Expected %<,%>, %<)%> or %<;%> at %C");
+	  goto error;
+	}
+      gfc_match_char (',');
+      gfc_gobble_whitespace ();
     } while (true);
 
   list = &c->lists[OMP_LIST_USES_ALLOCATORS];
@@ -1890,6 +1902,10 @@ gfc_match_omp_clause_uses_allocators (gfc_omp_clauses *c)
     list = &(*list)->next;
   *list = head;
 
+  if (gfc_match_char (';') == MATCH_YES)
+    goto parse_next;
+
+  gfc_match_char (')');
   return MATCH_YES;
 
 error:

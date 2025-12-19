@@ -19577,10 +19577,15 @@ c_parser_omp_clause_allocate (c_parser *parser, tree list)
    allocator ( traits-array )
    allocator ( traits-array ) , allocator-list
 
+   Deprecated in 5.2, removed in 6.0: 'allocator(trait-array)' syntax.
+
    OpenMP 5.2:
 
    uses_allocators ( modifier : allocator-list )
    uses_allocators ( modifier , modifier : allocator-list )
+
+   OpenMP 6.0:
+   uses_allocators ( [modifier-list :] allocator-list [; ...] )
 
    modifier:
    traits ( traits-array )
@@ -19594,6 +19599,8 @@ c_parser_omp_clause_uses_allocators (c_parser *parser, tree list)
   matching_parens parens;
   if (!parens.require_open (parser))
     return list;
+
+parse_next:
 
   bool has_modifiers = false;
   bool seen_allocators = false;
@@ -19788,6 +19795,12 @@ c_parser_omp_clause_uses_allocators (c_parser *parser, tree list)
 	c_parser_consume_token (parser);
       else
 	break;
+    }
+
+  if (c_parser_next_token_is (parser, CPP_SEMICOLON))
+    {
+      c_parser_consume_token (parser);
+      goto parse_next;
     }
 
  end:

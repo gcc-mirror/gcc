@@ -908,16 +908,15 @@ dump_omp_clause (pretty_printer *pp, tree clause, int spc, dump_flags_t flags)
       break;
 
     case OMP_CLAUSE_USES_ALLOCATORS:
-      pp_string (pp, "uses_allocators(");
-      dump_generic_node (pp, OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (clause),
-			 spc, flags, false);
-      pp_string (pp, ": memspace(");
+      pp_string (pp, "uses_allocators(memspace(");
       dump_generic_node (pp, OMP_CLAUSE_USES_ALLOCATORS_MEMSPACE (clause),
 			 spc, flags, false);
       pp_string (pp, "), traits(");
       dump_generic_node (pp, OMP_CLAUSE_USES_ALLOCATORS_TRAITS (clause),
 			 spc, flags, false);
-      pp_right_paren (pp);
+      pp_string (pp, ") : ");
+      dump_generic_node (pp, OMP_CLAUSE_USES_ALLOCATORS_ALLOCATOR (clause),
+			 spc, flags, false);
       pp_right_paren (pp);
       break;
 
