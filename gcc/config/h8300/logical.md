@@ -228,7 +228,7 @@
 	  (match_operand:QHSI 2 "h8300_src_operand" "rQi")))
    (clobber (reg:CC CC_REG))]
   "h8300_operands_match_p (operands)"
-  { return output_logical_op (<MODE>mode, <CODE>, operands, insn); }
+  { return output_logical_op (<MODE>mode, <CODE>, operands, PATTERN (insn)); }
   [(set (attr "length")
 	(symbol_ref "compute_logical_op_length (<MODE>mode, <CODE>, operands, insn)"))])
 

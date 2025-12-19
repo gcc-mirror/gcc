@@ -36,8 +36,7 @@ extern const char *output_simode_bld (int, rtx[]);
 extern void final_prescan_insn (rtx_insn *, rtx *, int);
 extern int h8300_expand_movsi (rtx[]);
 extern machine_mode  h8300_select_cc_mode (RTX_CODE, rtx, rtx);
-extern const char *output_logical_op (machine_mode, rtx_code code,
-				      rtx *, rtx_insn *);
+extern const char *output_logical_op (machine_mode, rtx_code, rtx *, rtx);
 extern unsigned int compute_logical_op_length (machine_mode, rtx_code,
 					      rtx *, rtx_insn *);
 

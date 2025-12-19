@@ -2945,7 +2945,8 @@ compute_plussi_cc (rtx *operands)
 /* Output a logical insn.  */
 
 const char *
-output_logical_op (machine_mode mode, rtx_code code, rtx *operands, rtx_insn *insn)
+output_logical_op (machine_mode mode, rtx_code code,
+		   rtx *operands, rtx pattern)
 {
   /* Pretend that every byte is affected if both operands are registers.  */
   const unsigned HOST_WIDE_INT intval =
@@ -2978,7 +2979,6 @@ output_logical_op (machine_mode mode, rtx_code code, rtx *operands, rtx_insn *in
 
      The key is to look at the second object in the PARALLEL. If it is not
      a CLOBBER, then we care about the condition codes.  */
-  rtx pattern = PATTERN (insn);
   gcc_assert (GET_CODE (pattern) == PARALLEL);
   rtx second_op = XVECEXP (pattern, 0, 1);
   bool cc_meaningful = (GET_CODE (second_op) != CLOBBER);
@@ -4053,19 +4053,64 @@ h8300_shift_needs_scratch_p (int count, machine_mode mode, enum rtx_code type)
   gcc_unreachable ();
 }
 
+/* Output a shift loop where the shift count is known.  We use a
+   sentinel bit to know when to stop the loop so that we don't
+   have to decrement a loop counter.  MASK is the bits to leave
+   alone while SET is the bit to set when setting up the sentinel.
+
+   OPERANDS are the original operands of the shift.
+
+   SHIFT1 is a string for the shift instruction.  This routine does
+   not care about what kind of shift is needed.  */
+void
+output_shift_loop (rtx operands[3], rtx mask, rtx set, const char *shift1, const char *shift2)
+{
+  static int loopend_lab;
+  loopend_lab++;
+  machine_mode mode = GET_MODE (operands[0]);
+
+  rtx xoperands[3];
+  xoperands[0] = operands[0];
+  xoperands[1] = operands[0];
+  xoperands[2] = mask;
+  rtx x = gen_rtx_AND (mode, xoperands[1], xoperands[2]);
+  x = gen_rtx_SET (xoperands[0], x);
+  rtvec vec = rtvec_alloc (2);
+  RTVEC_ELT (vec, 0) = x;
+  RTVEC_ELT (vec, 1) = gen_rtx_CLOBBER (VOIDmode,
+					gen_rtx_SCRATCH (QImode));
+
+  output_logical_op (mode, AND, xoperands,
+		     gen_rtx_PARALLEL (VOIDmode, vec));
+
+  /* Now set the sentinel bit.  When this bit shifts into C,
+     we are done.  That avoids the need for the decrement in the
+     loop.  We reuse RTL here in a way that would normally be
+     unsafe, but these never actually appear in the IL.  */
+  xoperands[2] = set;
+  x = gen_rtx_IOR (mode, xoperands[1], xoperands[2]);
+  x = gen_rtx_SET (xoperands[0], x);
+  RTVEC_ELT (vec, 0) = x;
+  output_logical_op (mode, IOR, xoperands,
+		     gen_rtx_PARALLEL (VOIDmode, vec));
+
+  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
+  output_asm_insn (shift2 ? shift2 : shift1, operands);
+  fprintf (asm_out_file, "\tbcc	.Llt%d\n", loopend_lab);
+  if (shift2 && INTVAL (operands[2]) % 2)
+    output_asm_insn (shift1, operands);
+}
+
 /* Output the assembler code for doing shifts.  */
 
 const char *
 output_a_shift (rtx operands[4], rtx_code code)
 {
-  static int loopend_lab;
   machine_mode mode = GET_MODE (operands[0]);
   enum shift_type shift_type;
   enum shift_mode shift_mode;
   struct shift_info info;
   int n;
-
-  loopend_lab++;
 
   switch (mode)
     {
@@ -4177,28 +4222,24 @@ output_a_shift (rtx operands[4], rtx_code code)
 	return "";
       }
 
+    /* SHIFT_LOOP is not used for H8/S or newer which have stronger
+       shifters.  */
     case SHIFT_LOOP:
-      /* A loop to shift by a "large" constant value.
-	 If we have shift-by-2 insns, use them.  */
-      if (info.shift2 != NULL)
+      if (code == ASHIFT)
 	{
-	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n / 2,
-		   names_big[REGNO (operands[3])]);
-	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	  output_asm_insn (info.shift2, operands);
-	  output_asm_insn ("add	#0xff,%X3", operands);
-	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
-	  if (n % 2)
-	    output_asm_insn (info.shift1, operands);
-	}
+	  unsigned HOST_WIDE_INT mask = (1 << (GET_MODE_BITSIZE (mode) - n)) - 1;
+	  if (info.shift2 && (n & 1))
+	    n -= 1;
+	  unsigned HOST_WIDE_INT set = (1 << (GET_MODE_BITSIZE (mode) - n));
+	  output_shift_loop (operands, GEN_INT (mask), GEN_INT (set), info.shift1, info.shift2);
+	} 
       else
 	{
-	  fprintf (asm_out_file, "\tmov.b	#%d,%sl\n", n,
-		   names_big[REGNO (operands[3])]);
-	  fprintf (asm_out_file, ".Llt%d:\n", loopend_lab);
-	  output_asm_insn (info.shift1, operands);
-	  output_asm_insn ("add	#0xff,%X3", operands);
-	  fprintf (asm_out_file, "\tbne	.Llt%d\n", loopend_lab);
+	  unsigned HOST_WIDE_INT mask =~((HOST_WIDE_INT_1U << n) - 1);
+	  if (info.shift2 && (n & 1))
+	    n -= 1;
+	  unsigned HOST_WIDE_INT set = HOST_WIDE_INT_1U << (n - 1);
+	  output_shift_loop (operands, GEN_INT (mask), GEN_INT (set), info.shift1, info.shift2);
 	}
       return "";
 
@@ -4358,10 +4399,22 @@ compute_a_shift_length (rtx operands[3], rtx_code code)
 	      wlength += 3 + h8300_asm_insn_count (info.shift2);
 	      if (n % 2)
 		wlength += h8300_asm_insn_count (info.shift1);
+	      if (mode == E_HImode)
+		wlength += 2;
+	      else if (mode == E_SImode)
+		wlength += 4;
 	    }
 	  else
 	    {
+	      /* The loop uses a sentinel as a stop point.  That requires
+		 two setup instructions before the loop, but they can be
+		 longer based on the mode.  The loop itself is just two
+		 two byte instructions.  */
 	      wlength += 3 + h8300_asm_insn_count (info.shift1);
+	      if (mode == E_HImode)
+		wlength += 2;
+	      else if (mode == E_SImode)
+		wlength += 4;
 	    }
 	  return 2 * wlength;
 
