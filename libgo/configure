@@ -658,6 +658,7 @@ GO_SPLIT_STACK
 USING_SPLIT_STACK_FALSE
 USING_SPLIT_STACK_TRUE
 SPLIT_STACK
+OSLDFLAGS
 HWCAP_CFLAGS
 OSCFLAGS
 GO_SYSCALL_OS_ARCH_FILE
@@ -11547,7 +11548,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11550 "configure"
+#line 11551 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -11653,7 +11654,7 @@ else
   lt_dlunknown=0; lt_dlno_uscore=1; lt_dlneed_uscore=2
   lt_status=$lt_dlunknown
   cat > conftest.$ac_ext <<_LT_EOF
-#line 11656 "configure"
+#line 11657 "configure"
 #include "confdefs.h"
 
 #if HAVE_DLFCN_H
@@ -14455,6 +14456,15 @@ $as_echo "$ac_hwcap_flags" >&6; }
   esac
 
 
+
+
+case "$target" in
+    *86*-*-solaris2.*)
+	# Link with -shared-libgcc on Solaris 11+/x86 as a workaround for
+	# PR go/64900.
+	OSLDFLAGS="-Wc,-shared-libgcc"
+	;;
+esac
 
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking whether -fsplit-stack is supported" >&5

@@ -837,7 +837,8 @@ libgo_go_objs = \
 	$(golangorg_x_sys_cpu_gccgo_x86_lo)
 
 libgo_ldflags = \
-	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS)
+	-version-info $(libtool_VERSION) $(PTHREAD_CFLAGS) $(AM_LDFLAGS) \
+	$(OSLDFLAGS)
 
 libgo_libadd = \
 	$(libgo_go_objs) ../libbacktrace/libbacktrace.la \
