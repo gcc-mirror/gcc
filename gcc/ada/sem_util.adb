@@ -14774,7 +14774,7 @@ package body Sem_Util is
    --  Start of processing for In_Return_Value
 
    begin
-      --  Move through parent nodes to determine if Expr contributes to the
+      --  Move through parent nodes to determine if Exp contributes to the
       --  return value of the current subprogram.
 
       Parent_Loop : while Present (P) loop
