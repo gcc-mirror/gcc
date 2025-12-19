@@ -32851,7 +32851,10 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       begin = cp_build_range_for_decls (loc, expansion_init, &end, true);
       if (!error_operand_p (begin) && !error_operand_p (end))
 	{
-	  tree i = get_target_expr (begin);
+	  tree i
+	    = build_target_expr_with_type (begin,
+					   cv_unqualified (TREE_TYPE (begin)),
+					   tf_warning_or_error);
 	  tree w = build_stmt (loc, WHILE_STMT, NULL_TREE, NULL_TREE,
 			       NULL_TREE, NULL_TREE, NULL_TREE);
 	  tree r = get_target_expr (build_zero_cst (ptrdiff_type_node));
@@ -32899,7 +32902,10 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       destruct_decls.safe_grow (n, true);
       for (unsigned HOST_WIDE_INT i = 0; i < n; ++i)
 	{
-	  tree this_decl = build_decl (loc, VAR_DECL, NULL_TREE, make_auto ());
+	  tree this_type = make_auto ();
+	  if (DECL_DECLARED_CONSTEXPR_P (decl))
+	    this_type = cp_build_qualified_type (this_type, TYPE_QUAL_CONST);
+	  tree this_decl = build_decl (loc, VAR_DECL, NULL_TREE, this_type);
 	  TREE_USED (this_decl) = 1;
 	  DECL_ARTIFICIAL (this_decl) = 1;
 	  DECL_DECLARED_CONSTEXPR_P (this_decl)
@@ -32940,6 +32946,8 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
       tree type = TREE_TYPE (range_decl);
       if (args)
 	type = tsubst (type, args, complain | tf_tst_ok, in_decl);
+      if (DECL_DECLARED_CONSTEXPR_P (range_decl) && !TYPE_REF_P (type))
+	type = cp_build_qualified_type (type, TYPE_QUAL_CONST);
       tree decl = build_decl (loc, VAR_DECL, DECL_NAME (range_decl), type);
       DECL_ATTRIBUTES (decl) = DECL_ATTRIBUTES (range_decl);
       TREE_USED (decl) |= TREE_USED (range_decl);
@@ -32969,6 +32977,8 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 				 tf_warning_or_error);
 	  auto_node = make_auto ();
 	  iter_type = do_auto_deduction (auto_node, iter_init, auto_node);
+	  if (!TYPE_REF_P (iter_type))
+	    iter_type = cp_build_qualified_type (iter_type, TYPE_QUAL_CONST);
 	  iter = build_decl (loc, VAR_DECL, NULL_TREE, iter_type);
 	  TREE_USED (iter) = 1;
 	  DECL_ARTIFICIAL (iter) = 1;
@@ -32994,10 +33004,14 @@ finish_expansion_stmt (tree expansion_stmt, tree args,
 	  this_decomp.count = TREE_VEC_LENGTH (v) - 1;
 	  for (unsigned i = 0; i < this_decomp.count; ++i)
 	    {
+	      tree this_type = make_auto ();
+	      if (DECL_DECLARED_CONSTEXPR_P (decl))
+		this_type = cp_build_qualified_type (this_type,
+						     TYPE_QUAL_CONST);
 	      tree this_decl
 		= build_decl (loc, VAR_DECL,
 			      DECL_NAME (TREE_VEC_ELT (v, i + 1)),
-			      make_auto ());
+			      this_type);
 	      TREE_USED (this_decl) = 1;
 	      DECL_ARTIFICIAL (this_decl) = 1;
 	      DECL_ATTRIBUTES (this_decl)

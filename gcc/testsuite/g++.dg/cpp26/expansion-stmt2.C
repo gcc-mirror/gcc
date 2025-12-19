@@ -21,18 +21,18 @@ struct A
   int x;
   constexpr explicit A (int v) : x(v) {}
   constexpr A &operator ++ () { ++x; return *this; }
-  constexpr int operator * () { return x; }
-  constexpr bool operator != (const A &o) { return x != o.x; }
-  constexpr A operator + (int o) { A r (x + o); return r; }
+  constexpr int operator * () const { return x; }
+  constexpr bool operator != (const A &o) const { return x != o.x; }
+  constexpr A operator + (int o) const { A r (x + o); return r; }
 };
 struct C
 {
   int x, y, z;
   constexpr explicit C (int u, int v, int w) : x(u), y(v), z(w) {}
   constexpr C &operator ++ () { ++x; --y; ++z; return *this; }
-  constexpr C operator * () { return *this; }
-  constexpr bool operator != (const C &o) { return x != o.x || y != o.y || z != o.z; }
-  constexpr C operator + (int o) { C r (x + o, y - o, z + o); return r; }
+  constexpr C operator * () const { return *this; }
+  constexpr bool operator != (const C &o) const { return x != o.x || y != o.y || z != o.z; }
+  constexpr C operator + (int o) const { C r (x + o, y - o, z + o); return r; }
 };
 
 namespace N

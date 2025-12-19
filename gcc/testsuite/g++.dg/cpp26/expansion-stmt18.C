@@ -8,9 +8,9 @@ struct A
   int x;
   constexpr explicit A (int v) : x(v) {}
   constexpr A &operator ++ () { ++x; return *this; }
-  constexpr int operator * () { return x; }
-  constexpr bool operator != (const A &o) { return x != o.x; }
-  constexpr A operator + (int o) { A r (x + o); return r; }
+  constexpr int operator * () const { return x; }
+  constexpr bool operator != (const A &o) const { return x != o.x; }
+  constexpr A operator + (int o) const { A r (x + o); return r; }
 };
 
 namespace N

@@ -15287,6 +15287,8 @@ cp_build_range_for_decls (location_t loc, tree range_expr, tree *end_p,
     }
 
   /* The new for initialization statement.  */
+  if (expansion_stmt_p && !TYPE_REF_P (iter_type))
+    iter_type = cp_build_qualified_type (iter_type, TYPE_QUAL_CONST);
   tree begin = build_decl (loc, VAR_DECL, for_begin__identifier, iter_type);
   TREE_USED (begin) = 1;
   DECL_ARTIFICIAL (begin) = 1;
@@ -15302,7 +15304,11 @@ cp_build_range_for_decls (location_t loc, tree range_expr, tree *end_p,
 		  LOOKUP_ONLYCONVERTING);
 
   if (cxx_dialect >= cxx17)
-    iter_type = cv_unqualified (TREE_TYPE (end_expr));
+    {
+      iter_type = cv_unqualified (TREE_TYPE (end_expr));
+      if (expansion_stmt_p && !TYPE_REF_P (iter_type))
+	iter_type = cp_build_qualified_type (iter_type, TYPE_QUAL_CONST);
+    }
   tree end = build_decl (loc, VAR_DECL, for_end__identifier, iter_type);
   TREE_USED (end) = 1;
   DECL_ARTIFICIAL (end) = 1;
