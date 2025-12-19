@@ -11083,6 +11083,23 @@ cp_finish_decomp (tree decl, cp_decomp *decomp, bool test_p)
 	    DECL_HAS_VALUE_EXPR_P (v[i]) = 1;
 	  }
     }
+  else if (DECL_NAMESPACE_SCOPE_P (decl) && !seen_error ())
+    {
+      tree attr = NULL_TREE, *pa = &attr;
+      for (unsigned int i = 0; i < count; i++)
+	if ((unsigned) pack != i
+	    && DECL_HAS_VALUE_EXPR_P (v[i])
+	    && !DECL_IGNORED_P (v[i]))
+	  {
+	    (*debug_hooks->early_global_decl) (v[i]);
+	    *pa = build_tree_list (NULL_TREE, v[i]);
+	    pa = &TREE_CHAIN (*pa);
+	  }
+      if (attr)
+	DECL_ATTRIBUTES (decl)
+	  = tree_cons (get_identifier ("structured bindings"),
+		       attr, DECL_ATTRIBUTES (decl));
+    }
   return false;
 }
 

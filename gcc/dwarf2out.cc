@@ -23877,7 +23877,17 @@ premark_used_variables (void)
     {
       dw_die_ref die = lookup_decl_die (var->decl);
       if (die)
-	die->die_perennial_p = 1;
+	{
+	  die->die_perennial_p = 1;
+	  if (tree attr = lookup_attribute ("structured bindings",
+					    DECL_ATTRIBUTES (var->decl)))
+	    for (tree d = TREE_VALUE (attr); d; d = TREE_CHAIN (d))
+	      {
+		die = lookup_decl_die (TREE_VALUE (d));
+		if (die)
+		  die->die_perennial_p = 1;
+	      }
+	}
     }
 }
 
@@ -27896,7 +27906,23 @@ dwarf2out_late_global_decl (tree decl)
 		    && is_trivial_indirect_ref (DECL_VALUE_EXPR (decl))))
 	    tree_add_const_value_attribute_for_decl (die, decl);
 	  else
-	    add_location_or_const_value_attribute (die, decl, false);
+	    {
+	      add_location_or_const_value_attribute (die, decl, false);
+	      /* For C++ structured bindings at namespace scope when processing
+		 the underlying variable also add locations on the structured
+		 bindings which refer to it (unless they are tuple-based, then
+		 they are separate VAR_DECLs registered in varpool).  */
+	      if (tree attr = lookup_attribute ("structured bindings",
+						DECL_ATTRIBUTES (decl)))
+		for (tree d = TREE_VALUE (attr); d; d = TREE_CHAIN (d))
+		  {
+		    die = lookup_decl_die (TREE_VALUE (d));
+		    if (die)
+		      add_location_or_const_value_attribute (die,
+							     TREE_VALUE (d),
+							     false);
+		  }
+	    }
 	}
     }
 }
