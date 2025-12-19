@@ -41,8 +41,8 @@ PROGRAM test
    a%j => k ! { dg-error "is PROTECTED" }
    a%j = 5  ! OK 2
    b => c   ! { dg-error "is PROTECTED" }
-   b%i = k  ! OK 3
-   b%j => k ! OK 4
-   b%j = 5  ! OK 5
+   b%i = k  ! { dg-error "is PROTECTED" }
+   b%j => k ! { dg-error "is PROTECTED" }
+   b%j = 5  ! OK 3
 
 END PROGRAM test

@@ -6757,7 +6757,10 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 		  ? CLASS_DATA (sym)->attr.class_pointer : sym->attr.pointer;
   for (ref = e->ref; ref && check_intentin; ref = ref->next)
     {
-      if (ptr_component && ref->type == REF_COMPONENT)
+      /* Associate-targets need special handling.  Subobjects of an object with
+	 the PROTECTED attribute inherit this attribute.  */
+      if (ptr_component && ref->type == REF_COMPONENT
+	  && !sym->assoc && !sym->attr.is_protected)
 	check_intentin = false;
       if (ref->type == REF_COMPONENT)
 	{
@@ -6780,24 +6783,34 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
     }
 
+  /* See if the INTENT(IN) check should apply to an ASSOCIATE target.  */
+  if (check_intentin
+      && sym->assoc
+      && sym->assoc->target
+      && sym->assoc->target->symtree
+      && sym->assoc->target->symtree->n.sym
+      && sym->assoc->target->symtree->n.sym->attr.dummy
+      && sym->assoc->target->symtree->n.sym->attr.intent != INTENT_IN)
+    check_intentin = false;
+
   if (check_intentin
       && (sym->attr.intent == INTENT_IN
 	  || (sym->attr.select_type_temporary && sym->assoc
 	      && sym->assoc->target && sym->assoc->target->symtree
 	      && sym->assoc->target->symtree->n.sym->attr.intent == INTENT_IN)))
     {
+      const char *name = (sym->attr.select_type_temporary
+			  ? sym->assoc->target->symtree->name : sym->name);
       if (pointer && is_pointer)
 	{
 	  if (context)
 	    gfc_error ("Dummy argument %qs with INTENT(IN) in pointer"
 		       " association context (%s) at %L",
-		       sym->name, context, &e->where);
+		       name, context, &e->where);
 	  return false;
 	}
       if (!pointer && !is_pointer && !sym->attr.pointer)
 	{
-	  const char *name = sym->attr.select_type_temporary
-			   ? sym->assoc->target->symtree->name : sym->name;
 	  if (context)
 	    gfc_error ("Dummy argument %qs with INTENT(IN) in variable"
 		       " definition context (%s) at %L",
@@ -6810,7 +6823,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
   if (sym->attr.is_protected
       && (sym->attr.use_assoc
 	  || (sym->attr.used_in_submodule && !sym_is_from_ancestor (sym)))
-      && check_intentin)
+      && !own_scope
+      && (check_intentin || !pointer))
     {
       if (pointer && is_pointer)
 	{
@@ -6863,7 +6877,8 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	}
     }
   /* Check variable definition context for associate-names.  */
-  if (!pointer && sym->assoc && !sym->attr.select_rank_temporary)
+  if ((!pointer || check_intentin)
+      && sym->assoc && !sym->attr.select_rank_temporary)
     {
       const char* name;
       gfc_association_list* assoc;
@@ -6927,8 +6942,10 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
 	    }
 	}
 
-      /* Target must be allowed to appear in a variable definition context.  */
-      if (!gfc_check_vardef_context (assoc->target, pointer, false, false, NULL))
+      /* Target must be allowed to appear in a variable definition context.
+	 Check valid assignment to pointers and invalid reassociations.  */
+      if (!gfc_check_vardef_context (assoc->target, pointer, false, false, NULL)
+	  && (!ptr_component || pointer))
 	{
 	  if (context)
 	    gfc_error ("Associate-name %qs cannot appear in a variable"
