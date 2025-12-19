@@ -36,4 +36,9 @@ int main()
   test_all_engines<float>();
   test_all_engines<double>();
   test_all_engines<long double>();
+#ifndef _GLIBCXX_GENERATE_CANONICAL_STRICT
+#  ifdef __SIZEOF_FLOAT128__
+  test_all_engines<__float128>();
+#  endif
+#endif 
 }
