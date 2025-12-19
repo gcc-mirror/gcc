@@ -1145,21 +1145,33 @@ namespace __gnu_debug
 
   template<typename _Iterator, typename _Sequence, typename _Category,
 	   typename _Size>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
 		  _Size __n)
-    { return __it._M_can_advance(__n); }
+    { 
+      if (std::__is_constant_evaluated())
+	return true;
+
+      return __it._M_can_advance(__n);
+    }
 
   template<typename _Iterator, typename _Sequence, typename _Category,
 	   typename _Diff>
+    _GLIBCXX20_CONSTEXPR
     inline bool
     __can_advance(const _Safe_iterator<_Iterator, _Sequence, _Category>& __it,
 		  const std::pair<_Diff, _Distance_precision>& __dist,
 		  int __way)
-    { return __it._M_can_advance(__dist, __way); }
+    {
+      if (std::__is_constant_evaluated())
+	return true;
+    
+      return __it._M_can_advance(__dist, __way);
+    }
 
   template<typename _Iterator, typename _Sequence>
-    _Iterator
+    _GLIBCXX20_CONSTEXPR _Iterator
     __base(const _Safe_iterator<_Iterator, _Sequence,
 				std::random_access_iterator_tag>& __it)
     { return __it.base(); }
