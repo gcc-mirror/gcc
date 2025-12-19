@@ -1,4 +1,5 @@
 /* { dg-do compile } */
+/* { dg-require-effective-target ctz } */
 /* { dg-options "-O2 -fdump-tree-optimized" } */
 
 typedef unsigned long BITMAP_WORD;
