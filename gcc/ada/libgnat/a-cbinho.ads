@@ -187,6 +187,8 @@ private
    --  overhead except for aforementioned possibility of an alignment-related
    --  gap between some prefix data and the object itself.
 
+   pragma Warnings (Off); -- avoid warnings for exceptions raised in dead code
+
    function Max_Allocation_Overhead_In_Storage_Elements return Storage_Count is
      (if Element_Size_In_Storage_Elements >= Long_Integer (Integer'Last) then
          --  If the more precise computation in the else-arm (below) could
@@ -207,6 +209,8 @@ private
    --  possible for the size check in Allocate_From_Subpool to fail even
    --  though the earlier (earlier at run-time) size check in Replace_Element
    --  passed. A GNAT-defined attribute could eliminate this issue.
+
+   pragma Warnings (On);
 
    --  Compute extra amount needed for space requested for an allocator
    --  (specifically, in a call to Allocate_From_Subpool) in addition to
