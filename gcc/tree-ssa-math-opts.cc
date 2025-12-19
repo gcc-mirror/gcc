@@ -1287,7 +1287,18 @@ execute_cse_sincos_1 (tree name)
 	  continue;
 	}
 
-      tree t = mathfn_built_in_type (gimple_call_combined_fn (use_stmt));
+      auto stmt_cfn = gimple_call_combined_fn (use_stmt);
+      tree t = mathfn_built_in_type (stmt_cfn);
+      if (!t)
+	{
+	  /* It is possible to get IFN_{SIN,COS} calls, for which
+	     mathfn_built_in_type will return NULL.  Those are normally only
+	     present for vector operations.  We won't be able to CSE those
+	     at the moment. */
+	  gcc_checking_assert (internal_fn_p (stmt_cfn));
+	  return false;
+	}
+
       if (!type)
 	{
 	  type = t;
