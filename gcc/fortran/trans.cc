@@ -1623,7 +1623,10 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
   if (derived && (derived->attr.is_c_interop
 		  || derived->attr.is_iso_c
 		  || derived->attr.is_bind_c
-		  || derived->attr.defined_assign_comp))
+		  || (derived->attr.extension && derived->f2k_derived
+		      && derived->f2k_derived->tb_op[INTRINSIC_ASSIGN])
+		  || (!derived->attr.extension
+		      && derived->attr.defined_assign_comp)))
     return;
 
   if (is_class)
