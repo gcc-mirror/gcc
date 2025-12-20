@@ -688,27 +688,32 @@ a68_lower_moids (MOID_T *mode)
 
   for (MOID_T *m = mode; m != NO_MOID; FORWARD (m))
     {
-      if (!COMPLETE_TYPE_P (CTYPE (m)))
+      if (IS_UNION (m))
+	{
+	  tree union_type = CTYPE (m);
+	  tree c_union_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (union_type)));
+
+	  if (!COMPLETE_TYPE_P (c_union_type))
+	    {
+	      layout_type (c_union_type);
+	      compute_record_mode (c_union_type);
+	      gcc_assert (COMPLETE_TYPE_P (c_union_type));
+	    }
+
+	  if (!COMPLETE_TYPE_P (union_type))
+	    {
+	      layout_type (union_type);
+	      compute_record_mode (union_type);
+	      gcc_assert (COMPLETE_TYPE_P (union_type));
+	    }
+	}
+      else if (!COMPLETE_TYPE_P (CTYPE (m)))
 	{
 	  if (IS_STRUCT (m))
 	    {
 	      tree struct_type = CTYPE (m);
 	      layout_type (struct_type);
 	      compute_record_mode (struct_type);
-	    }
-	  else if (IS_UNION (m))
-	    {
-	      tree union_type = CTYPE (m);
-	      tree c_union_type = TREE_TYPE (TREE_CHAIN (TYPE_FIELDS (union_type)));
-
-	      if (!COMPLETE_TYPE_P (c_union_type))
-		{
-		  layout_type (c_union_type);
-		  compute_record_mode (c_union_type);
-		}
-
-	      layout_type (union_type);
-	      compute_record_mode (union_type);
 	    }
 	  else
 	    layout_type (CTYPE (m));
