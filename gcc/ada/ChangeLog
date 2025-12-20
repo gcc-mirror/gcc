@@ -1,3 +1,11 @@
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* sem_attr.adb (Set_Bounds): Fix comment typo, transfered
+	-> transferred.
+	* sem_ch6.adb (Analyze_Expression_Function): Likewise.
+	* sysdep.c (__gnat_get_task_options): Fix comment typo, explicitely
+	-> explicitly.
+
 2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/123138

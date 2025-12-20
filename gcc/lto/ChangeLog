@@ -1,3 +1,8 @@
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* lto-common.cc (lto_resolution_read): Fix comment typo, explicitely
+	-> explicitly.
+
 2025-12-13  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR ipa/122955

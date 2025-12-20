@@ -1,3 +1,34 @@
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* dump-parse-tree.cc (show_omp_clauses): Add default: with
+	gcc_unreachable () to avoid spurious -Wmaybe-uninitialized warnings.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gfortran.texi: Fix typo, transfered -> transferred.
+	* resolve.cc (resolve_where): Fix comment typo, outmost -> outermost.
+
+2025-12-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71565
+	* expr.cc (gfc_check_vardef_context): Fix treatment of INTENT(IN)
+	checks for ASSOCIATE variables.  Correct checking of PROTECTED
+	objects, as subobjects inherit the PROTECTED attribute.
+
+2025-12-19  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/92613
+	* cpp.cc (gfc_cpp_preprocess): Skip libcpp for -fpreprocessed.
+	Error out for -fpreprocessed -E.
+	* f95-lang.cc (gfc_init): Skip libcpp init for -fpreprocessed.
+	* scanner.cc (gfc_new_file): Load source directly if preprocessed.
+	* invoke.texi (Preprocessing Options): Document -fpreprocessed.
+
+2025-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* openmp.cc (gfc_match_omp_clause_uses_allocators): Accept
+	multiple clause-argument-specifications separated by ';'.
+
 2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* dump-parse-tree.cc (show_omp_assumes): Handle

@@ -1,3 +1,9 @@
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* lexio.cc (parse_replace_pairs): Fix comment typo, statment
+	-> statement.
+	(cdftext::free_form_reference_format): Likewise.
+
 2025-12-11  Jakub Jelinek  <jakub@redhat.com>
 
 	* util.cc (class temp_loc_t): Fix comment typo, paramters

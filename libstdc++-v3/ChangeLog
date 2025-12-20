@@ -1,3 +1,53 @@
+2025-12-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	PR libstdc++/112591
+	* include/std/variant (_Uninitialized::_M_get, __get_n)
+	(_Uninitialized<_Type, false>): Add _GLIBCXX_USE_VARIANT_CXX17_OLD_ABI
+	check to preprocessor guard.
+	* testsuite/20_util/variant/112591.cc: Updated tests.
+	* testsuite/20_util/variant/112591_compat.cc: New test.
+	* testsuite/20_util/variant/constinit.cc: New test.
+	* testsuite/20_util/variant/constinit_compat.cc: New test.
+
+2025-12-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon_eng.cc:
+	Test __float128 when available.
+
+2025-12-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/bits/random.h (__rand_uint128::operator>)
+	(__rand_uint128::operator>=): Define.
+	* include/bits/random.tcc (__generate_canonical_pow2):
+	Adjust for use of __rand_uint128 in C++11.
+	(__gen_can_pow, __gen_can_rng_calls_needed): Replace with
+	__gen_canon_log.
+	(__gen_canon_log_res, __gen_canon_log): Define.
+	(__generate_canonical_any): Reworked how _UInt is determined.
+	* testsuite/26_numerics/random/uniform_real_distribution/operators/gencanon_eng.cc:
+	New test.
+
+2025-12-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	PR libstdc++/123147
+	* include/bits/chrono_io.h (_Parser::operator()) <%S>: Use a
+	buffer of narrow characters to be parsed by std::from_chars.
+	* testsuite/std/time/parse/parse.cc: Check wchar_t parsing.
+
+2025-12-19  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* include/debug/helper_functions.h (__gnu_debug::__can_advance):
+	Declare as _GLIBCXX20_CONSTEXPR.
+	* include/debug/safe_iterator.h (__gnu_debug::__can_advance):
+	Define as _GLIBCXX20_CONSTEXPR, and return true for constexpr
+	evaluation.
+	(__gnu_debug::__base): Define as _GLIBCXX20_CONSTEXPR.
+
+2025-12-19  Jonathan Wakely  <jwakely@redhat.com>
+
+	* src/c++11/mutex.cc [_GLIBCXX_NO_EXTERN_THREAD_LOCAL]
+	(__get_once_call): Use std::add_lvalue_reference.
+
 2025-12-18  Jonathan Wakely  <jwakely@redhat.com>
 
 	* include/bits/chrono_io.h (__formatter_chrono::_M_write): Add

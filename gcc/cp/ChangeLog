@@ -1,3 +1,98 @@
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91388
+	* semantics.cc (finish_static_assert): Suppress -Wreturn-type warnings
+	in functions with failed assertions.
+
+2025-12-19  Jason Merrill  <jason@redhat.com>
+	    Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/117034
+	* parser.cc (maybe_start_implicit_template): Split out from...
+	(synthesize_implicit_template_parm): ...here.
+	(cp_parser_template_id): Call it.
+
+2025-12-19  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	* decl2.cc (mark_single_function): Return false for error_mark_node.
+	(mark_used): Likewise.
+
+2025-12-19  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/123044
+	* typeck2.cc (build_functional_cast_1): Call convert_from_reference
+	on template CAST_EXPR to match C-style cast behavior.
+
+2025-12-19  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122509
+	* parser.cc (cp_parser_lookup_name): Use protect=2 instead of
+	protect=0 when calling lookup_member.
+
+2025-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* parser.cc (cp_parser_omp_clause_uses_allocators): Accept
+	multiple clause-argument-specifications separated by ';'.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122772
+	* tree.cc (cp_stabilize_bitfield_reference): New function.
+	(cp_stabilize_reference): Use it for stabilization of
+	clk_bitfield or clk_packed lvalues.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/122968
+	* decl.cc (cp_finish_decomp): For structured bindings at namespace
+	scope which have DECL_HAS_VALUE_EXPR_P set, call early_global_decl
+	debug hook and put all such structured bindings into
+	"structured bindings" attribute arguments on the underlying decl.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122834
+	* typeck.cc (cp_compare_floating_point_conversion_ranks): Return
+	3 if fmt2->b is 10 except for _Float16 vs. _Decimal128, in that
+	case return -2.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123030
+	* init.cc (build_vec_init): Call build_vec_delete_1 for -fexceptions
+	even if just type_build_dtor_call, not only when
+	TYPE_HAS_NONTRIVIAL_DESTRUCTOR.  But register cleanups only
+	for TYPE_HAS_NONTRIVIAL_DESTRUCTOR.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* parser.cc (cp_build_range_for_decls): If expansion_stmt_p,
+	where we are setting DECL_DECLARED_CONSTEXPR_P on begin/end, use
+	const qualified iter_type.
+	* pt.cc (finish_expansion_stmt): Use build_target_expr_with_type
+	with cv_unqualified to create it instead of get_target_expr to
+	make it non-const qualified.  When creating VAR_DECLs with
+	DECL_DECLARED_CONSTEXPR_P, make sure they have const qualified
+	type unless they are references.
+
+2025-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122922
+	* module.cc (trees_in::post_types): New member.
+	(trees_in::trees_in): Initialize it.
+	(trees_in::~trees_in): Clean it up.
+	(trees_in::post_process_type): New functions.
+	(trees_in::tree_node): Save incomplete ARRAY_TYPEs for later
+	post-processing.
+	(module_state::read_cluster): Attempt to complete any
+	ARRAY_TYPEs we saved earlier.
+
+2025-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122995
+	* name-lookup.cc (maybe_record_mergeable_decl): Don't build a
+	STAT_HACK for namespaces.
+
 2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* parser.cc (cp_parser_omp_assumption_clauses): Add

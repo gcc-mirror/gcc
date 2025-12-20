@@ -1,3 +1,361 @@
+2025-12-19  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	PR tree-optimization/123152
+	* tree-vect-loop-manip.cc
+	(slpeel_tree_duplicate_loop_to_edge_cfg): Correct order of
+	dominator update.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* alias.cc (alias_set_subset_of): Fix comment typo, explicitely
+	-> explicitly.
+	* builtins.cc (get_object_alignment_2): Likewise.
+	* combine.cc (make_extraction): Fix comment typos, potentionally
+	-> potentially and implicitely -> implicitly.
+	(simplify_comparison): Fix comment typo, outmost -> outermost.
+	(record_truncated_values): Fix comment typo, truning -> turning.
+	(distribute_notes): Fix comment typo, recourse -> recurse.
+	* config/avr/avr.md (*<extend_u>maddqihi4_split): Fix comment
+	typo, explicitely -> explicitly.
+	(*mulu<mode>si3): Likewise.  Fix comment typo, implicitely
+	-> implicitly.
+	* config/i386/i386.cc (ix86_get_drap_rtx): Fix comment typo,
+	statment -> statement.
+	* config/rs6000/rs6000.h (TARGET_DIRECT_MOVE_64BIT): Fix comment typo,
+	transfered -> transferred.
+	* config/s390/s390.cc (s390_encode_section_info): Fix comment typo,
+	catched -> caught.
+	* dwarf2out.cc (dwarf_proc_stack_usage_map): Fix comment typo,
+	invokation -> invocation.
+	(dwarf2out_die_ref_for_decl): Fix comment typo, refering -> referring.
+	(loc_list_from_tree_1): Fix message typo, INDCREMENT -> INCREMENT.
+	(field_byte_offset): Fix comment typo, simplier -> simpler.
+	(add_data_member_location_attribute): Fix comment typo, catched
+	-> caught.
+	(gen_lexical_block_die): Fix comment typo, conrecte -> concrete.
+	(analyze_variants_discr): Fix comment typo, consistant -> consistent.
+	(gen_decl_die): Fix comment typo, prunning -> pruning.
+	(resolve_variable_values): Fix comment typo, refering -> referring.
+	* genmatch.cc (expr::expr_type): Fix comment typo, explicitely
+	-> explicitly.
+	* gimple-range-phi.cc (phi_group::is_modifier_p): Fix comment typo,
+	statment -> statement.
+	* gimple-ssa-store-merging.cc (pass_optimize_bswap::execute): Fix
+	comment typo, invokation -> invocation.  Add second space after dot.
+	* gimple-walk.cc (walk_gimple_op): Fix comment typo, explicitely
+	-> explicitly.
+	* gimplify.cc (mostly_copy_tree_r): Fix comment typo, gimplication
+	-> gimplification.
+	(var_needs_auto_init_p): Fix comment typo, automaticly
+	-> automatically.
+	(gimplify_decl_expr): Fix comment typos, varaible -> variable
+	and compatiple -> compatible.
+	(emit_warn_switch_unreachable): Fix comment typo, statment
+	-> statement.
+	(should_warn_for_implicit_fallthrough): Fix comment typo, fallthough
+	-> fallthrough.
+	(modify_call_for_omp_dispatch): Fix comment typo, interobject
+	-> interop.
+	(oacc_default_clause): Fix comment typo, tranfered -> transferred.
+	(omp_notice_variable): Likewise.
+	* graphite-isl-ast-to-gimple.cc (binary_op_to_tree): Fix comment
+	typo, explicitely -> explicitly.
+	* ipa-param-manipulation.cc (push_function_arg_decls): Likewise.
+	* ipa-prop.cc (ipa_make_edge_direct_to_target): Likewise.
+	* ipa-prop.h (ipa_node_params::node_within_scc): Fix comment typo,
+	potentionally -> potentially.
+	* loop-init.cc (fix_loop_structure): Fix comment typo, refering
+	-> referring.
+	* match.pd (1 / X -> X == 1): Fix comment typo, simplier -> simpler.
+	* opts.cc (global_options): Fix comment typo, explicitely
+	-> explicitly.
+	* sanopt.cc (sanopt_optimize_walker): Fix comment typo, potentionally
+	-> potentially.
+	* tree.cc (variably_modified_type_p): Fix comment typo, refering
+	-> referring.
+	* tree-cfg.cc (group_case_labels_stmt): Likewise.
+	(dump_function_to_file): Fix comment typo, explicitely -> explicitly.
+	(make_forwarders_with_degenerate_phis): Likewise.
+	* tree-inline.cc (replace_locals_op): Likewise.
+	* tree-loop-distribution.cc (loop_distribution::execute): Fix comment
+	typo, refering -> referring.
+	* tree-sra.cc (generate_subtree_deferred_init): Fix comment typo,
+	statment -> statement.
+	* tree-ssa-alias.cc (ptrs_compare_unequal): Fix comment typo,
+	explicitely -> explicitly.
+	* tree-ssa-forwprop.cc (_vec_perm_simplify_seq::stmt): Fix comment
+	typo, statment -> statement.
+	(narrow_vec_perm_simplify_seq): Fix message typo, statment
+	-> statement.
+	(blend_vec_perm_simplify_seqs): Likewise.
+	* tree-ssa-pre.cc (compute_antic_aux): Fix comment typo, explicitely
+	-> explicitly.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Fix comment typo,
+	refering -> referring.
+	* tree-vect-patterns.cc: Fix comment typo, transfered -> transferred.
+	* tree-vect-slp.cc (vect_build_slp_tree_2): Fix comment typo,
+	explicitely -> explicitly.
+	(vect_build_slp_instance): Fix comment typo, transfered
+	-> transferred.
+	(vect_optimize_slp_pass::build_vertices): Fix comment typo,
+	explicitely -> explicitly.
+	(vect_slp_analyze_node_operations): Likewise.  Fix comment typo,
+	refering -> referring.
+	* tree-vect-stmts.cc (vectorizable_store): Fix comment typo, catched
+	-> caught.
+	* vec.h (auto_vec::auto_vec): Fix comment typo, refering -> referring.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	PR target/122970
+	* config/riscv/riscv-v.cc (expand_const_vector_interleaved_stepped_npatterns):
+	Reinterpret base as smaller type.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-v.cc (expand_vector_subreg_extract): New
+	function that checks for and performs "vector extracts".
+	(legitimize_move): Call new function.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md: Ditto.
+	* config/riscv/autovec-opt.md: Add VLS modes.
+	* config/riscv/vector-crypto.md: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md (@pred_ffs<VB:mode><P:mode>): Ditto.
+	(@pred_ffs<VB_VLS:mode><P:mode>): Ditto.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/riscv-avlprop.cc (pass_avlprop::execute): Rename.
+	* config/riscv/riscv-protos.h (riscv_v_ext_vector_mode_p):
+	Rename.
+	(riscv_v_ext_tuple_mode_p): Ditto.
+	(riscv_v_ext_vls_mode_p): Ditto.
+	(riscv_vla_mode_p): To new name.
+	(riscv_tuple_mode_p): Ditto.
+	(riscv_vls_mode_p): Ditto.
+	* config/riscv/riscv-selftests.cc (run_const_vector_selftests):
+	Use new name.
+	(BROADCAST_TEST): Ditto.
+	* config/riscv/riscv-v.cc (imm_avl_p): Ditto.
+	(legitimize_move): Ditto.
+	(get_vlmul): Ditto.
+	(get_vlmax_rtx): Ditto.
+	(get_nf): Ditto.
+	(get_subpart_mode): Ditto.
+	(get_ratio): Ditto.
+	(get_mask_mode): Ditto.
+	(get_vector_mode): Ditto.
+	(get_tuple_mode): Ditto.
+	(can_find_related_mode_p): Ditto.
+	(cmp_lmul_le_one): Ditto.
+	(cmp_lmul_gt_one): Ditto.
+	(vls_mode_valid_p): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc: Ditto.
+	* config/riscv/riscv-vector-builtins.cc (rvv_switcher::rvv_switcher): Ditto.
+	(register_builtin_type): Ditto.
+	* config/riscv/riscv-vector-costs.cc (max_number_of_live_regs):
+	Ditto.
+	(compute_estimated_lmul): Ditto.
+	(costs::costs): Ditto.
+	(costs::better_main_loop_than_p): Ditto.
+	(costs::adjust_stmt_cost): Ditto.
+	* config/riscv/riscv.cc (riscv_v_ext_vector_mode_p): Ditto.
+	(riscv_vla_mode_p): Ditto.
+	(riscv_v_ext_tuple_mode_p): Ditto.
+	(riscv_tuple_mode_p): Ditto.
+	(riscv_v_ext_vls_mode_p): Ditto.
+	(riscv_vls_mode_p): Ditto.
+	(riscv_v_ext_mode_p): Ditto.
+	(riscv_vector_mode_p): Ditto.
+	(riscv_v_adjust_nunits): Ditto.
+	(riscv_v_adjust_bytesize): Ditto.
+	(riscv_classify_address): Ditto.
+	(riscv_legitimate_address_p): Ditto.
+	(riscv_address_insns): Ditto.
+	(riscv_const_insns): Ditto.
+	(riscv_legitimize_move): Ditto.
+	(riscv_binary_cost): Ditto.
+	(riscv_rtx_costs): Ditto.
+	(riscv_pass_vls_aggregate_in_gpr): Ditto.
+	(riscv_get_vector_arg): Ditto.
+	(riscv_pass_vls_in_vr): Ditto.
+	(riscv_get_arg_info): Ditto.
+	(riscv_pass_by_reference): Ditto.
+	(riscv_vector_required_min_vlen): Ditto.
+	(riscv_get_v_regno_alignment): Ditto.
+	(riscv_print_operand): Ditto.
+	(riscv_secondary_memory_needed): Ditto.
+	(riscv_hard_regno_nregs): Ditto.
+	(riscv_hard_regno_mode_ok): Ditto.
+	(riscv_modes_tieable_p): Ditto.
+	(riscv_can_change_mode_class): Ditto.
+	(riscv_vector_mode_supported_p): Ditto.
+	(riscv_regmode_natural_size): Ditto.
+	(riscv_get_mask_mode): Ditto.
+	(riscv_vectorize_preferred_vector_alignment): Ditto.
+	(riscv_vectorize_vec_perm_const): Ditto.
+	(get_common_costs): Ditto.
+	(riscv_preferred_else_value): Ditto.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (mask_len_gather_load<RATIO64:mode><RATIO64I:mode>):
+	Change from this...
+	(mask_len_gather_load<mode><vindex>): ...to this.
+	(mask_len_gather_load<RATIO32:mode><RATIO32I:mode>): Ditto.
+	(mask_len_gather_load<mode><vindex_double_trunc>): Ditto.
+	(mask_len_gather_load<RATIO16:mode><RATIO16I:mode>): Ditto.
+	(mask_len_gather_load<mode><vindex_quad_trunc>): Ditto.
+	(mask_len_gather_load<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(mask_len_gather_load<mode><vindex_oct_trunc>): Ditto.
+	(mask_len_gather_load<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(mask_len_gather_load<mode><vindex_double_ext>): Ditto.
+	(mask_len_gather_load<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(mask_len_gather_load<mode><vindex_quad_ext>): Ditto.
+	(mask_len_gather_load<mode><mode>): Ditto.
+	(mask_len_gather_load<mode><vindex_oct_ext>): Ditto.
+	(mask_len_scatter_store<RATIO64:mode><RATIO64I:mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex>): Ditto.
+	(mask_len_scatter_store<RATIO32:mode><RATIO32I:mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex_double_trunc>): Ditto.
+	(mask_len_scatter_store<RATIO16:mode><RATIO16I:mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex_quad_trunc>): Ditto.
+	(mask_len_scatter_store<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex_oct_trunc>): Ditto.
+	(mask_len_scatter_store<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex_double_ext>): Ditto.
+	(mask_len_scatter_store<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex_quad_ext>): Ditto.
+	(mask_len_scatter_store<mode><mode>): Ditto.
+	(mask_len_scatter_store<mode><vindex_oct_ext>): Ditto.
+	* config/riscv/riscv-v.cc (prepare_gather_scatter): Use new
+	scheme
+	(get_gather_scatter_code): Ditto.
+	(expand_gather_scatter): Ditto.
+	* config/riscv/riscv-vector-builtins-bases.cc: Ditto.
+	* config/riscv/vector-iterators.md: Ditto.
+	* config/riscv/vector.md (@pred_indexed_<order>store<RATIO64:mode><RATIO64I:mode>):
+	Go from this...
+	(@pred_indexed_<order>store<mode>_same_eew): ...to this.
+	(@pred_indexed_<order>store<RATIO32:mode><RATIO32I:mode>):
+	Ditto.
+	(@pred_indexed_<order>store<mode>_x2_greater_eew): Ditto.
+	(@pred_indexed_<order>store<RATIO16:mode><RATIO16I:mode>):
+	Ditto.
+	(@pred_indexed_<order>store<mode>_x4_greater_eew): Ditto.
+	(@pred_indexed_<order>store<RATIO8:mode><RATIO8I:mode>): Ditto.
+	(@pred_indexed_<order>store<mode>_x8_greater_eew): Ditto.
+	(@pred_indexed_<order>store<RATIO4:mode><RATIO4I:mode>): Ditto.
+	(@pred_indexed_<order>store<mode>_x2_smaller_eew): Ditto.
+	(@pred_indexed_<order>store<RATIO2:mode><RATIO2I:mode>): Ditto.
+	(@pred_indexed_<order>store<mode>_x4_smaller_eew): Ditto.
+	(@pred_indexed_<order>store<RATIO1:mode><RATIO1:mode>): Ditto.
+	(@pred_indexed_<order>store<mode>_x8_smaller_eew): Ditto.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	PR tree-optimization/123118
+	* tree-vect-data-refs.cc (vect_gather_scatter_fn_p): Check that
+	the type sign is equal.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	PR tree-optimization/123117
+	* tree-ssa-forwprop.cc (simplify_vector_constructor):
+	Check if we had a nop conversion and don't use pack/unpack in
+	that case.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	* doc/md.texi: Use unicode quotation marks.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* config/riscv/autovec.md (<cbranch_optab><mode>): Implement.
+	* config/riscv/predicates.md (riscv_cbranch_comparison_operator):
+	Define.
+	* config/riscv/vector-iterators.md: New iterators.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* optabs.cc (emit_cmp_and_jump_insns): Fix len/bias operands.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/123097
+	* tree-vect-loop.cc (vect_create_epilog_for_reduction):
+	Calculate vector size by number of elements * bit size per
+	element.
+
+2025-12-19  Vladimir N. Makarov  <vmakarov@redhat.com>
+
+	PR rtl-optimization/123223
+	* lra-constraints.cc (match_reload, curr_insn_transform): Check
+	rtx on REG when testing scratch pseudos.
+
+2025-12-19  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/h8300/h8300.cc (output_logical_op): Adjust last argument to
+	be a pattern, not an insn.  Corresponding implementation changes.
+	(output_shift_loop): Extracted from output_a_shift and improved
+	to use a sentinel to indicate when to stop the loop.
+	(output_a_shift): Use output_shift_loop.
+	(compute_a_shift_length): Handle adjusted shift loop code.
+	* config/h8300/logical.md (logicals): Pass pattern to output_logical_op
+	rather then the full insn.
+	* config/h8300/h8300-protos.h (output_logical_op): Update prototype.
+
+2025-12-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123205
+	* gimple-range-gori.cc (gori_compute::may_recompute_p): Only
+	recompute range-op statements.
+	* gimple-range-op.cc (gimple_range_op_handler): Default
+	recomputation to true.
+	(maybe_builtin_call): CFN_BUILT_IN_CONSTANT_P should not be
+	recomputable.
+	* gimple-range-op.h (recomputable_p): New.
+	(recomputable_p): New.
+
+2025-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* tree-pretty-print.cc (dump_omp_clause): For uses_allocators,
+	print modifier before allocator variable.
+
+2025-12-19  Takayuki 'January June' Suwa  <jjsuwa_sys3175@yahoo.co.jp>
+
+	* config/xtensa/predicates.md (xtensa_cstoresi_operator):
+	Change it to include unsigned comparisons only when TARGET_SALT is
+	enabled.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/122968
+	* dwarf2out.cc (premark_used_variables): Handle "structured bindings"
+	attribute.
+	(dwarf2out_late_global_decl): Likewise.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* doc/install.texi (--with-tls=): Fix a typo, were -> where.
+
+2025-12-19  Alexandre Oliva  <oliva@gnu.org>
+
+	PR target/55212
+	* lra-constraints.cc (match_reload): Treat former scratch
+	regs as implicit unused output reloads.
+	(process_alt_operands): Likewise.
+	(curr_insn_transform): Likewise.
+
+2025-12-19  Lewis Hyatt  <lhyatt@gmail.com>
+
+	PR bootstrap/12407
+	* doc/install.texi (--enable-languages): Document the new language
+	exclusion feature.
+
 2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gimplify.cc (gimplify_scan_omp_clauses): Handle

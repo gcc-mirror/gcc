@@ -1,3 +1,212 @@
+2025-12-19  Victor Do Nascimento  <victor.donascimento@arm.com>
+
+	* gcc.dg/vect/vect-uncounted-prolog-peel_2.c: New.
+	* gcc.dg/vect/vect-uncounted-prolog-peel_3.c: Likewise.
+	* g++.dg/vect/vect-uncounted-prolog-peel_1.cc: Likewise.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* gcc.c-torture/compile/20030323-1.c: Fix comment typo,
+	statment -> statement.
+	* gcc.dg/tree-ssa/pr96779.c: Fix comment typo, transfered
+	-> transferred.
+	* gcc.dg/tree-ssa/pr96779-disabled.c: Likewise.
+	* gcc.dg/tree-ssa/ssa-thread-16.c (foo): Fix comment typo,
+	catched -> caught.
+	* gcc.target/s390/larl-1.c: Fix comment typo, explicitely
+	-> explicitly.
+	* g++.dg/tree-ssa/pr44706.C: Fix comment typo, invokation
+	-> invocation.
+	* g++.dg/tree-ssa/pr87502.C: Fix comment typo, explicitely
+	-> explicitly.
+	* gfortran.dg/bound_8.f90: Likewise.
+	* gfortran.dg/coarray_14.f90: Fix comment typo, statment
+	-> statement.
+
+2025-12-19  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/71565
+	* gfortran.dg/protected_8.f90: Adjust patterns.
+	* gfortran.dg/associate_76.f90: New test.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	PR target/122970
+	* lib/target-supports.exp: Add rvv_zvl128b_ok.
+	* gcc.target/riscv/rvv/autovec/pr122970.c: New test.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/pr120378-1.c: Dump "optimized".
+	* gcc.target/riscv/rvv/autovec/pr121510.c: Add semicolon.
+	* gcc.target/riscv/rvv/base/pr112431-21.c: Add -Wno-pedantic.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/subreg-extract.c: New test.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/gather-scatter/strided_store-2.c:
+	Adjust test expectation.
+	* gcc.target/riscv/rvv/autovec/param-autovec-mode.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/partial/select_vl-2.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64d-1.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/zve64f-1.c: Ditto.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	PR tree-optimization/123118
+	* g++.target/riscv/rvv/autovec/pr123118.C: New test.
+
+2025-12-19  Robin Dapp  <rdapp@qti.qualcomm.com>
+
+	PR tree-optimization/123117
+	* gcc.target/loongarch/vector/lsx/pr123117.c: New test.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/autovec/early-break-3.c: New test.
+	* gcc.target/riscv/rvv/autovec/early-break-4.c: New test.
+	* gcc.target/riscv/rvv/autovec/early-break-5.c: New test.
+
+2025-12-19  Robin Dapp  <rdapp@ventanamicro.com>
+
+	PR tree-optimization/123097
+	* gcc.target/riscv/rvv/autovec/pr123097-run.c: New test.
+	* gcc.target/riscv/rvv/autovec/pr123097.c: New test.
+
+2025-12-19  Robin Dapp  <rdapp.gcc@gmail.com>
+
+	PR tree-optimization/123192
+	* gcc.dg/tree-ssa/ctz-ch.c: Require ctz target.
+
+2025-12-19  Christopher Albert  <albert@tugraz.at>
+
+	PR fortran/92613
+	* gfortran.dg/pr92613.f90: New test.
+	* gfortran.dg/pr92613_2.f90: New test for -E error.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/91388
+	* g++.dg/cpp1z/static_assert1.C: New test.
+
+2025-12-19  Andrew MacLeod  <amacleod@redhat.com>
+
+	PR tree-optimization/123205
+	* gcc.dg/pr123205.c: New.
+
+2025-12-19  Jason Merrill  <jason@redhat.com>
+	    Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/117034
+	* g++.dg/cpp2a/lambda-template-pr117034.C: New test.
+
+2025-12-19  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	* g++.dg/DRs/dr3061.C: Remove cascading error expectation.
+	* g++.dg/cpp0x/initlist31.C: Likewise.
+
+2025-12-19  Egas Ribeiro  <egas.g.ribeiro@tecnico.ulisboa.pt>
+
+	PR c++/123044
+	* g++.dg/template/implicit-func-cast.C: New test.
+
+2025-12-19  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122509
+	* g++.dg/tc1/dr176-2.C: New test.
+
+2025-12-19  Tobias Burnus  <tburnus@baylibre.com>
+
+	* c-c++-common/gomp/uses_allocators-8.c: New test.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122772
+	* g++.dg/cpp1z/eval-order14.C: New test.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR debug/122968
+	* g++.dg/guality/decomp1.C: New test.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122834
+	* g++.dg/dfp/pr122834-1.C: New test.
+	* g++.dg/dfp/pr122834-2.C: New test.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/123030
+	* g++.dg/cpp0x/deleted18.C: New test.
+	* g++.dg/cpp0x/new4.C: Expect an error.
+
+2025-12-19  Jakub Jelinek  <jakub@redhat.com>
+
+	* g++.dg/cpp26/expansion-stmt1.C (A::operator *, A::operator !=,
+	A::operator +, C::operator *, C::operator !=, C::operator +): Add
+	const qualification.
+	* g++.dg/cpp26/expansion-stmt2.C (A::operator *, A::operator !=,
+	A::operator +, C::operator *, C::operator !=, C::operator +):
+	Likewise.
+	* g++.dg/cpp26/expansion-stmt3.C (A::operator *, A::operator !=,
+	A::operator +, C::operator *, C::operator !=, C::operator +):
+	Likewise.
+	* g++.dg/cpp26/expansion-stmt18.C (A::operator *, A::operator !=,
+	A::operator +): Likewise.
+
+2025-12-19  Rainer Orth  <ro@CeBiTec.Uni-Bielefeld.DE>
+
+	* gcc.target/i386/shift-gf2p8affine-2.c: Require gfni, avx512vl,
+	avx512bw, avx512f support instead of skipping with Solaris as.
+
+2025-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122922
+	* g++.dg/modules/pr122922_a.C: New test.
+	* g++.dg/modules/pr122922_b.C: New test.
+
+2025-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122995
+	* g++.dg/modules/namespace-17_a.C: New test.
+	* g++.dg/modules/namespace-17_b.C: New test.
+
+2025-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55212
+	* g++.target/sh/torture/pr55212-c413.C: New.
+
+2025-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55212
+	* g++.target/sh/torture/pr55212-c384.C: New.
+
+2025-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55212
+	* g++.target/sh/torture/pr55212-c373.C: New.
+
+2025-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55212
+	* g++.target/sh/torture/pr55212-c333.C: New.
+
+2025-12-19  Oleg Endo  <olegendo@gcc.gnu.org>
+
+	PR target/55212
+	* g++.target/sh/sh.exp: New.
+	* g++.target/sh/torture/sh-torture.exp: New.
+	* g++.target/sh/torture/pr55212-c311.C: New
+
+2025-12-19  Kaz Kojima  <kkojima@rr.iij4u.or.jp>
+
+	PR target/55212
+	* gcc.target/sh/pr55212-c248.c: New test.
+
 2025-12-18  Tobias Burnus  <tburnus@baylibre.com>
 
 	* gfortran.dg/goacc/update-if_present-2.f90: Update dg-error.
