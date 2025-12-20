@@ -1,3 +1,20 @@
+2025-12-19  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	Backported from master:
+	2025-11-24  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	PR debug/121964
+	* dwarf2out.cc (gen_array_type_die): Add DW_AT_bit_stride attribute
+	for array types based on element type bit precision for integer and
+	boolean element types.
+
+2025-12-19  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	Backported from master:
+	2025-11-24  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	* machmode.def (VECTOR_BOOL_MODE): Fix comment.
+
 2025-12-16  Robin Dapp  <rdapp@ventanamicro.com>
 
 	Backported from master:

@@ -1,3 +1,18 @@
+2025-12-19  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	Backported from master:
+	2025-11-24  Yury Khrustalev  <yury.khrustalev@arm.com>
+
+	PR debug/121964
+	* g++.target/aarch64/dwarf-bit-stride-func.C: New test.
+	* g++.target/aarch64/dwarf-bit-stride-pragma.C: New test.
+	* g++.target/aarch64/dwarf-bit-stride-pragma-sme.C: New test.
+	* g++.target/aarch64/sve/dwarf-bit-stride.C: New test.
+	* gcc.target/aarch64/dwarf-bit-stride-func.c: New test.
+	* gcc.target/aarch64/dwarf-bit-stride-pragma.c: New test.
+	* gcc.target/aarch64/dwarf-bit-stride-pragma-sme.c: New test.
+	* gcc.target/aarch64/sve/dwarf-bit-stride.c: New test.
+
 2025-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
