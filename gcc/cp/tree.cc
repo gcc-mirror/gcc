@@ -4908,18 +4908,24 @@ implicit_lifetime_type_p (tree t)
       && (!CLASSTYPE_DESTRUCTOR (t)
 	  || !user_provided_p (CLASSTYPE_DESTRUCTOR (t))))
     return true;
-  if (is_trivially_xible (BIT_NOT_EXPR, t, NULL_TREE))
+  if (TYPE_HAS_NONTRIVIAL_DESTRUCTOR (t))
+    return false;
+  if (TYPE_HAS_COMPLEX_DFLT (t)
+      && TYPE_HAS_COMPLEX_COPY_CTOR (t)
+      && TYPE_HAS_COMPLEX_MOVE_CTOR (t))
+    return false;
+  if (CLASSTYPE_LAZY_DESTRUCTOR (t))
+    lazily_declare_fn (sfk_destructor, t);
+  tree fn = CLASSTYPE_DESTRUCTOR (t);
+  if (!fn || DECL_DELETED_FN (fn))
+    return false;
+  for (ovl_iterator iter (get_class_binding (t, complete_ctor_identifier));
+       iter; ++iter)
     {
-      if (is_trivially_xible (INIT_EXPR, t, make_tree_vec (0)))
-	return true;
-      tree arg = make_tree_vec (1);
-      tree ct
-	= cp_build_qualified_type (t, (cp_type_quals (t) | TYPE_QUAL_CONST));
-      TREE_VEC_ELT (arg, 0) = cp_build_reference_type (ct, /*rval=*/false);
-      if (is_trivially_xible (INIT_EXPR, t, arg))
-	return true;
-      TREE_VEC_ELT (arg, 0) = t;
-      if (is_trivially_xible (INIT_EXPR, t, arg))
+      fn = *iter;
+      if ((default_ctor_p (fn) || copy_fn_p (fn) || move_fn_p (fn))
+	  && trivial_fn_p (fn)
+	  && !DECL_DELETED_FN (fn))
 	return true;
     }
   return false;
