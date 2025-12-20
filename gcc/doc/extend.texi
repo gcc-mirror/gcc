@@ -16318,7 +16318,7 @@ last argument is not a pointer, but some expression with integral type other
 than enumerated or boolean type.
 
 The built-in functions promote the first two operands into infinite precision signed type
-and perform addition on those promoted operands. The result is then
+and perform the corresponding operation on those promoted operands. The result is then
 cast to the type of the third argument.  If the cast result is equal to the infinite
 precision result, the built-in functions return @code{false}, otherwise they return @code{true}.
 The value of the third argument is ignored, just the side effects in the third argument
