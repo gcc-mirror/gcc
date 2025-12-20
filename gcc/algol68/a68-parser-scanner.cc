@@ -119,7 +119,7 @@ supper_postlude[] = {
     }									\
   while (0)
 
-/* Get the size of a file given a file descriptor FILE.  In case the size of
+/* Get the size of a file given a stream pointer FILE.  In case the size of
    the file cannot be determined then this function returns -1.  */
 
 ssize_t
@@ -137,7 +137,7 @@ a68_file_size (FILE *file)
     return -1;
   fsize = (ssize_t) off;
 
-  off = lseek (fileno (file), 0, save);
+  off = lseek (fileno (file), save, SEEK_SET);
   if (off == (off_t) -1)
     return -1;
 
