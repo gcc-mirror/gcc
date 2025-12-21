@@ -928,7 +928,7 @@ vect_get_max_nscalars_per_iter (loop_vec_info loop_vinfo)
    as an unsigned integer, where MAX_NITERS is the maximum number of
    loop header iterations for the original scalar form of LOOP_VINFO.  */
 
-static unsigned
+unsigned
 vect_min_prec_for_max_niters (loop_vec_info loop_vinfo, unsigned int factor)
 {
   class loop *loop = LOOP_VINFO_LOOP (loop_vinfo);
@@ -11055,10 +11055,15 @@ vect_update_ivs_after_vectorizer_for_early_breaks (loop_vec_info loop_vinfo)
      final IV.  */
   if (niters_skip)
     {
-      induc_def = gimple_build (&iv_stmts, MAX_EXPR, TREE_TYPE (induc_def),
-				induc_def,
-				build_zero_cst (TREE_TYPE (induc_def)));
-      auto stmt = gimple_build_assign (phi_var, induc_def);
+      tree induc_type = TREE_TYPE (induc_def);
+      tree s_induc_type = signed_type_for (induc_type);
+      induc_def = gimple_build (&iv_stmts, MAX_EXPR, s_induc_type,
+				gimple_convert (&iv_stmts, s_induc_type,
+						induc_def),
+				build_zero_cst (s_induc_type));
+      auto stmt = gimple_build_assign (phi_var,
+				       gimple_convert (&iv_stmts, induc_type,
+						       induc_def));
       gimple_seq_add_stmt_without_update (&iv_stmts, stmt);
       basic_block exit_bb = NULL;
       /* Identify the early exit merge block.  I wish we had stored this.  */

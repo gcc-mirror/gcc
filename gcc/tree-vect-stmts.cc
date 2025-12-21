@@ -12784,6 +12784,67 @@ supports_vector_compare_and_branch (loop_vec_info loop_vinfo, machine_mode mode)
   return direct_optab_handler (cbranch_optab, mode) != CODE_FOR_nothing;
 }
 
+/* Determine the type to use for early break vectorization's scalar IV.  If
+   no type is possible return false.  */
+
+static bool
+vect_compute_type_for_early_break_scalar_iv (loop_vec_info loop_vinfo)
+{
+  /* Check if we have a usable scalar IV type for vectorization.  */
+  tree iters_vf_type = sizetype;
+  if (!LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo))
+    {
+      /* Find the type with the minimum precision we can use
+	 for the scalar IV.  */
+      tree cand_type = TREE_TYPE (LOOP_VINFO_NITERS (loop_vinfo));
+
+      /* Work out how many bits we need to represent the limit.  */
+      unsigned int min_ni_width
+	= vect_min_prec_for_max_niters (loop_vinfo, 1);
+
+      /* Check if we're using PFA, if so we need a signed IV and an
+	 extra bit for the sign.  */
+      if (TYPE_UNSIGNED (cand_type)
+	  && LOOP_VINFO_CAN_USE_PARTIAL_VECTORS_P (loop_vinfo)
+	  && LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo))
+	min_ni_width += 1;
+
+      if (TYPE_PRECISION (cand_type) >= min_ni_width)
+	iters_vf_type = unsigned_type_for (cand_type);
+      else
+	{
+	  opt_scalar_int_mode cmp_mode_iter;
+	  tree iv_type = NULL_TREE;
+	  FOR_EACH_MODE_IN_CLASS (cmp_mode_iter, MODE_INT)
+	    {
+	      auto cmp_mode = cmp_mode_iter.require ();
+	      unsigned int cmp_bits = GET_MODE_BITSIZE (cmp_mode);
+	      if (cmp_bits >= min_ni_width
+		  && targetm.scalar_mode_supported_p (cmp_mode))
+		{
+		  iv_type = build_nonstandard_integer_type (cmp_bits, true);
+		  if (iv_type)
+		    break;
+		}
+	    }
+
+	  if (!iv_type)
+	    {
+	      if (dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+		       "can't vectorize early exit because the "
+		       "target doesn't support a scalar type wide "
+		       "wide enough to hold niters.\n");
+	      return false;
+	    }
+	  iters_vf_type = iv_type;
+	}
+    }
+
+  LOOP_VINFO_EARLY_BRK_IV_TYPE (loop_vinfo) = iters_vf_type;
+  return true;
+}
+
 /* Check to see if the current early break given in STMT_INFO is valid for
    vectorization.  */
 
@@ -12896,6 +12957,9 @@ vectorizable_early_exit (loop_vec_info loop_vinfo, stmt_vec_info stmt_info,
 	  else
 	    vect_record_loop_mask (loop_vinfo, masks, vec_num, vectype, NULL);
 	}
+
+      if (!vect_compute_type_for_early_break_scalar_iv (loop_vinfo))
+	return false;
 
       return true;
     }

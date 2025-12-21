@@ -1249,6 +1249,10 @@ public:
      inside the relavent exit blocks in order to adjust for early break.  */
   tree early_break_niters_var;
 
+  /* The type of the variable to be used to create the scalar IV for early break
+     loops.  */
+  tree early_break_iv_type;
+
   /* Record statements that are needed to be live for early break vectorization
      but may not have an LC PHI node materialized yet in the exits.  */
   auto_vec<stmt_vec_info> early_break_live_ivs;
@@ -1320,6 +1324,7 @@ public:
 #define LOOP_VINFO_EARLY_BRK_DEST_BB(L)    (L)->early_break_dest_bb
 #define LOOP_VINFO_EARLY_BRK_VUSES(L)      (L)->early_break_vuses
 #define LOOP_VINFO_EARLY_BRK_NITERS_VAR(L) (L)->early_break_niters_var
+#define LOOP_VINFO_EARLY_BRK_IV_TYPE(L)    (L)->early_break_iv_type
 #define LOOP_VINFO_LOOP_CONDS(L)           (L)->conds
 #define LOOP_VINFO_LOOP_IV_COND(L)         (L)->loop_iv_cond
 #define LOOP_VINFO_NO_DATA_DEPENDENCIES(L) (L)->no_data_dependencies
@@ -2676,7 +2681,7 @@ extern tree vect_gen_loop_len_mask (loop_vec_info, gimple_stmt_iterator *,
 extern gimple_seq vect_gen_len (tree, tree, tree, tree);
 extern vect_reduc_info info_for_reduction (loop_vec_info, slp_tree);
 extern bool reduction_fn_for_scalar_code (code_helper, internal_fn *);
-
+extern unsigned vect_min_prec_for_max_niters (loop_vec_info, unsigned int);
 /* Drive for loop transformation stage.  */
 extern class loop *vect_transform_loop (loop_vec_info, gimple *);
 struct vect_loop_form_info

@@ -3742,10 +3742,8 @@ vect_do_peeling (loop_vec_info loop_vinfo, tree niters, tree nitersm1,
       tree vector_iters_vf = niters_vector_mult_vf;
       if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo))
 	{
-	  tree vector_iters_vf_type = uncounted_p ? sizetype
-						  : TREE_TYPE (vector_iters_vf);
-	  tree scal_iv_ty = signed_type_for (vector_iters_vf_type);
-	  tree tmp_niters_vf = make_ssa_name (scal_iv_ty);
+	  tree tmp_niters_vf
+	    = make_ssa_name (LOOP_VINFO_EARLY_BRK_IV_TYPE (loop_vinfo));
 
 	  if (!(LOOP_VINFO_NITERS_UNCOUNTED_P (loop_vinfo)
 		&& get_loop_exit_edges (loop).length () == 1))
