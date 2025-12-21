@@ -1,3 +1,34 @@
+2025-12-20  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR middle-end/123222
+	* doc/extend.texi: Fix copy-and-pasto for __builtin_*_overflow_p.
+
+2025-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123216
+	* common/config/i386/i386-common.cc (OPTION_MASK_ISA_AVX512FP16_UNSET):
+	Remove unused macro.
+	(OPTION_MASK_ISA2_AVX512FP16_UNSET, OPTION_MASK_ISA2_AVX512BF16_UNSET,
+	OPTION_MASK_ISA2_AVX512BW_UNSET): Or in OPTION_MASK_ISA2_AVX10_1_UNSET.
+	(OPTION_MASK_ISA2_AVX512CD_UNSET, OPTION_MASK_ISA2_AVX512DQ_UNSET,
+	OPTION_MASK_ISA2_AVX512VL_UNSET, OPTION_MASK_ISA2_AVX512IFMA_UNSET,
+	OPTION_MASK_ISA2_AVX512VNNI_UNSET,
+	OPTION_MASK_ISA2_AVX512VPOPCNTDQ_UNSET,
+	OPTION_MASK_ISA2_AVX512VBMI_UNSET, OPTION_MASK_ISA2_AVX512VBMI2_UNSET,
+	OPTION_MASK_ISA2_AVX512BITALG_UNSET): Define.
+	(ix86_handle_option): For
+	-mno-avx512{cd,dq,vl,ifma,vnni,vpopcntdq,vbmi,vbmi2,bitalg} also remove
+	corresponding OPTION_MASK_ISA2_AVX512*_UNSET from ix86_isa_flags2
+	and add it to ix86_isa_flags2_explicit.
+
+2025-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123217
+	* config/i386/i386-expand.cc (ix86_expand_builtin)
+	<case IX86_BUILTIN_ENCODEKEY128U32, case IX86_BUILTIN_ENCODEKEY256U32,
+	case IX86_BUILTIN_URDMSR>: Set target to a new pseudo even if it is
+	non-NULL but doesn't satisfy register_operand predicate.
+
 2025-12-19  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	PR tree-optimization/123152

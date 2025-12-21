@@ -1,3 +1,35 @@
+2025-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122712
+	* module.cc (depset::hash::dep_adl_info): New type.
+	(depset::hash::dep_adl_entity_list): New work list.
+	(depset::hash::hash): Create it.
+	(depset::hash::~hash): Release it.
+	(trees_out::tree_value): Cache possibly dependent
+	calls during tree walk.
+	(depset::hash::add_dependent_adl_entities): New function.
+	(depset::hash::find_dependencies): Process cached entities.
+	* name-lookup.cc (name_lookup::tentative): New member.
+	(name_lookup::name_lookup): Initialize it.
+	(name_lookup::preserve_state): Propagate tentative from previous
+	lookup.
+	(name_lookup::adl_namespace_fns): Don't search imported bindings
+	during tentative lookup.
+	(name_lookup::adl_class): Don't attempt to complete class types
+	during tentative lookup.
+	(name_lookup::search_adl): Skip type-dependent args and avoid
+	unnecessary work during tentative lookup.
+	(lookup_arg_dependent): Add tentative parameter.
+	* name-lookup.h (lookup_arg_dependent): Likewise.
+
+2025-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122690
+	* tree.cc (implicit_lifetime_type_p): Don't test is_trivially_xible,
+	instead try to lazily declare dtor and default, copy and move ctors
+	if needed and check for their triviality and whether they are
+	deleted.
+
 2025-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	PR c++/91388

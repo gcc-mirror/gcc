@@ -1,3 +1,8 @@
+2025-12-20  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-low-moids.cc (a68_lower_moids): Fix for layout of
+	incomplete types.
+
 2025-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* a68-low-decls.cc (a68_lower_variable_declaration): Fix comment typo,

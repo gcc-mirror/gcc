@@ -1,3 +1,20 @@
+2025-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122712
+	* g++.dg/modules/adl-12_a.C: New test.
+	* g++.dg/modules/adl-12_b.C: New test.
+
+2025-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR c++/122690
+	* g++.dg/ext/is_implicit_lifetime2.C: New test.
+
+2025-12-20  Jakub Jelinek  <jakub@redhat.com>
+
+	PR target/123217
+	* gcc.target/i386/keylocker-pr123217.c: New test.
+	* gcc.target/i386/user_msr-pr123217.c: New test.
+
 2025-12-19  Victor Do Nascimento  <victor.donascimento@arm.com>
 
 	* gcc.dg/vect/vect-uncounted-prolog-peel_2.c: New.
