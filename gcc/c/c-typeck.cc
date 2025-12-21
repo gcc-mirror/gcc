@@ -5174,14 +5174,14 @@ parser_build_binary_op (location_t location, enum tree_code code,
     {
       if ((TREE_CODE (type1) == POINTER_TYPE
 	   || TREE_CODE (type1) == NULLPTR_TYPE)
-	  && TREE_CODE (type2) == INTEGER_TYPE
+	  && INTEGRAL_TYPE_P (type2)
 	  && null_pointer_constant_p (arg2.value))
 	warning_at (arg2.get_location(), OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
 
       if ((TREE_CODE (type2) == POINTER_TYPE
 	   || TREE_CODE (type2) == NULLPTR_TYPE)
-	  && TREE_CODE (type1) == INTEGER_TYPE
+	  && INTEGRAL_TYPE_P (type1)
 	  && null_pointer_constant_p (arg1.value))
 	warning_at (arg1.get_location(), OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
@@ -6524,8 +6524,6 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
 {
   tree type1;
   tree type2;
-  enum tree_code code1;
-  enum tree_code code2;
   tree result_type = NULL;
   tree semantic_result_type = NULL;
   tree orig_op1 = op1, orig_op2 = op2;
@@ -6558,9 +6556,9 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
   tree bltin1 = NULL_TREE;
   tree bltin2 = NULL_TREE;
   type1 = type_or_builtin_type (op1, &bltin1);
-  code1 = TREE_CODE (type1);
+  const enum tree_code code1 = TREE_CODE (type1);
   type2 = type_or_builtin_type (op2, &bltin2);
-  code2 = TREE_CODE (type2);
+  const enum tree_code code2 = TREE_CODE (type2);
 
   if (code1 == POINTER_TYPE && reject_gcc_builtin (op1))
     return error_mark_node;
@@ -6615,12 +6613,12 @@ build_conditional_expr (location_t colon_loc, tree ifexp, bool ifexp_bcp,
       && c_inhibit_evaluation_warnings == 0)
     {
       if ((code1 == POINTER_TYPE || code1 == NULLPTR_TYPE)
-	  && code2 == INTEGER_TYPE && null_pointer_constant_p (orig_op2))
+	  && INTEGRAL_TYPE_P (type2) && null_pointer_constant_p (orig_op2))
 	warning_at (op2_loc, OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
 
       if ((code2 == POINTER_TYPE || code2 == NULLPTR_TYPE)
-	  && code1 == INTEGER_TYPE && null_pointer_constant_p (orig_op1))
+	  && INTEGRAL_TYPE_P (type1) && null_pointer_constant_p (orig_op1))
 	warning_at (op1_loc, OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
     }
@@ -9168,7 +9166,7 @@ convert_for_assignment (location_t location, location_t expr_loc, tree type,
 	       || coder == BITINT_TYPE))
     {
       if (null_pointer_constant && c_inhibit_evaluation_warnings == 0
-	  && coder == INTEGER_TYPE)
+	  && coder != NULLPTR_TYPE)
 	warning_at (location, OPT_Wzero_as_null_pointer_constant,
 		    "zero as null pointer constant");
       /* A NULLPTR type is just a nullptr always.  */
