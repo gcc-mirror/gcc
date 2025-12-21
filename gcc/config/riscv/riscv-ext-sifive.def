@@ -24,7 +24,7 @@ Format of DEFINE_RISCV_EXT, please refer to riscv-ext.def.  */
 DEFINE_RISCV_EXT(
   /* NAME */ xsfcease,
   /* UPPERCASE_NAME */ XSFCEASE,
-  /* FULL_NAME */ "xsfcease extension",
+  /* FULL_NAME */ "SiFive CEASE instruction extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),
@@ -37,7 +37,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvcp,
   /* UPPERCASE_NAME */ XSFVCP,
-  /* FULL_NAME */ "xsfvcp extension",
+  /* FULL_NAME */ "SiFive VCIX vector coprocessor extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({"zve32x"}),
@@ -50,7 +50,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvfnrclipxfqf,
   /* UPPERCASE_NAME */ XSFVFNRCLIPXFQF,
-  /* FULL_NAME */ "xsfvfnrclipxfqf extension",
+  /* FULL_NAME */ "SiFive FP32-to-int8 ranged clip instructions",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),
@@ -63,7 +63,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvqmaccdod,
   /* UPPERCASE_NAME */ XSFVQMACCDOD,
-  /* FULL_NAME */ "xsfvqmaccdod extension",
+  /* FULL_NAME */ "SiFive int8 matrix multiplication extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),
@@ -76,7 +76,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xsfvqmaccqoq,
   /* UPPERCASE_NAME */ XSFVQMACCQOQ,
-  /* FULL_NAME */ "xsfvqmaccqoq extension",
+  /* FULL_NAME */ "SiFive int8 matrix multiplication extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),

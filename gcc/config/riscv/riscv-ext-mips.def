@@ -37,7 +37,7 @@ DEFINE_RISCV_EXT (
 DEFINE_RISCV_EXT (
   /* NAME.  */ xmipscbop,
   /* UPPERCASE_NAME.  */ XMIPSCBOP,
-  /* FULL_NAME.  */ "Mips Prefetch extension",
+  /* FULL_NAME.  */ "Mips prefetch extension",
   /* DESC.  */ "",
   /* URL.  */ ,
   /* DEP_EXTS.  */ ({}),

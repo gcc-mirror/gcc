@@ -37,7 +37,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xcvbi,
   /* UPPERCASE_NAME */ XCVBI,
-  /* FULL_NAME */ "xcvbi extension",
+  /* FULL_NAME */ "Core-V immediate branch extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),
@@ -76,7 +76,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xcvsimd,
   /* UPPERCASE_NAME */ XCVSIMD,
-  /* FULL_NAME */ "xcvsimd extension",
+  /* FULL_NAME */ "Core-V SIMD extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),

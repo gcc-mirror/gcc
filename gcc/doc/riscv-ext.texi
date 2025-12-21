@@ -9,744 +9,744 @@
 
 @c Please *DO NOT* edit manually.
 
-@multitable @columnfractions .10 .10 .80
+@multitable @columnfractions .25 .15 .6
 @headitem Extension Name @tab Supported Version @tab Description
 
-@item g
+@item @samp{g}
 @tab -
-@tab General-purpose computing base extension, @samp{g} will expand to
+@tab General-purpose computing base extension; @samp{g} expands to
 @samp{i}, @samp{m}, @samp{a}, @samp{f}, @samp{d}, @samp{zicsr} and
 @samp{zifencei}.
 
-@item e
+@item @samp{e}
 @tab 2.0
 @tab Reduced base integer extension
 
-@item i
+@item @samp{i}
 @tab 2.0 2.1
 @tab Base integer extension
 
-@item m
+@item @samp{m}
 @tab 2.0
 @tab Integer multiplication and division extension
 
-@item a
+@item @samp{a}
 @tab 2.0 2.1
 @tab Atomic extension
 
-@item f
+@item @samp{f}
 @tab 2.0 2.2
 @tab Single-precision floating-point extension
 
-@item d
+@item @samp{d}
 @tab 2.0 2.2
 @tab Double-precision floating-point extension
 
-@item c
+@item @samp{c}
 @tab 2.0
 @tab Compressed extension
 
-@item b
+@item @samp{b}
 @tab 1.0
-@tab b extension
+@tab Standard extension for bit manipulation functions
 
-@item v
+@item @samp{v}
 @tab 1.0
 @tab Vector extension
 
-@item h
+@item @samp{h}
 @tab 1.0
 @tab Hypervisor extension
 
-@item zic64b
+@item @samp{zic64b}
 @tab 1.0
-@tab Cache block size isf 64 bytes
+@tab Cache block size is 64 bytes
 
-@item zicbom
+@item @samp{zicbom}
 @tab 1.0
 @tab Cache-block management extension
 
-@item zicbop
+@item @samp{zicbop}
 @tab 1.0
 @tab Cache-block prefetch extension
 
-@item zicboz
+@item @samp{zicboz}
 @tab 1.0
 @tab Cache-block zero extension
 
-@item ziccamoa
+@item @samp{ziccamoa}
 @tab 1.0
 @tab Main memory supports all atomics in A
 
-@item ziccif
+@item @samp{ziccif}
 @tab 1.0
 @tab Main memory supports instruction fetch with atomicity requirement
 
-@item zicclsm
+@item @samp{zicclsm}
 @tab 1.0
 @tab Main memory supports misaligned loads/stores
 
-@item ziccrse
+@item @samp{ziccrse}
 @tab 1.0
 @tab Main memory supports forward progress on LR/SC sequences
 
-@item zicfilp
+@item @samp{zicfilp}
 @tab 1.0
-@tab zicfilp extension
+@tab Control-flow integrity landing pad extension
 
-@item zicfiss
+@item @samp{zicfiss}
 @tab 1.0
-@tab zicfiss extension
+@tab Control-flow integrity shadow stack extension
 
-@item zicntr
+@item @samp{zicntr}
 @tab 2.0
 @tab Standard extension for base counters and timers
 
-@item zicond
+@item @samp{zicond}
 @tab 1.0
 @tab Integer conditional operations extension
 
-@item zicsr
+@item @samp{zicsr}
 @tab 2.0
 @tab Control and status register access extension
 
-@item zifencei
+@item @samp{zifencei}
 @tab 2.0
 @tab Instruction-fetch fence extension
 
-@item zihintntl
+@item @samp{zihintntl}
 @tab 1.0
 @tab Non-temporal locality hints extension
 
-@item zihintpause
+@item @samp{zihintpause}
 @tab 2.0
 @tab Pause hint extension
 
-@item zihpm
+@item @samp{zihpm}
 @tab 2.0
 @tab Standard extension for hardware performance counters
 
-@item zimop
+@item @samp{zimop}
 @tab 1.0
-@tab zimop extension
+@tab May-be-operations extension
 
-@item zilsd
+@item @samp{zilsd}
 @tab 1.0
-@tab Load/Store pair instructions extension
+@tab Load/store pair instructions extension
 
-@item zmmul
+@item @samp{zmmul}
 @tab 1.0
 @tab Integer multiplication extension
 
-@item za128rs
+@item @samp{za128rs}
 @tab 1.0
 @tab Reservation set size of 128 bytes
 
-@item za64rs
+@item @samp{za64rs}
 @tab 1.0
 @tab Reservation set size of 64 bytes
 
-@item zaamo
+@item @samp{zaamo}
 @tab 1.0
-@tab zaamo extension
+@tab Atomic memory operations extension
 
-@item zabha
+@item @samp{zabha}
 @tab 1.0
-@tab zabha extension
+@tab Byte and halfword atomic memory operations extension
 
-@item zacas
+@item @samp{zacas}
 @tab 1.0
-@tab zacas extension
+@tab Atomic compare-and-swap instructions extension
 
-@item zalrsc
+@item @samp{zalrsc}
 @tab 1.0
-@tab zalrsc extension
+@tab Load-reserved/store-conditional subset of the A extension
 
-@item zawrs
+@item @samp{zawrs}
 @tab 1.0
 @tab Wait-on-reservation-set extension
 
-@item zama16b
+@item @samp{zama16b}
 @tab 1.0
-@tab Zama16b extension, Misaligned loads, stores, and AMOs to main memory regions that do not cross a naturally aligned 16-byte boundary are atomic.
+@tab Misaligned loads, stores, and AMOs that are fully contained within a naturally-aligned 16-byte boundary are atomic
 
-@item zfa
+@item @samp{zfa}
 @tab 1.0
 @tab Additional floating-point extension
 
-@item zfbfmin
+@item @samp{zfbfmin}
 @tab 1.0
-@tab zfbfmin extension
+@tab Minimal BF16 support extension
 
-@item zfh
+@item @samp{zfh}
 @tab 1.0
 @tab Half-precision floating-point extension
 
-@item zfhmin
+@item @samp{zfhmin}
 @tab 1.0
 @tab Minimal half-precision floating-point extension
 
-@item zfinx
+@item @samp{zfinx}
 @tab 1.0
 @tab Single-precision floating-point in integer registers extension
 
-@item zdinx
+@item @samp{zdinx}
 @tab 1.0
 @tab Double-precision floating-point in integer registers extension
 
-@item zca
+@item @samp{zca}
 @tab 1.0
 @tab Integer compressed instruction extension
 
-@item zcb
+@item @samp{zcb}
 @tab 1.0
 @tab Simple compressed instruction extension
 
-@item zcd
+@item @samp{zcd}
 @tab 1.0
 @tab Compressed double-precision floating point loads and stores extension
 
-@item zce
+@item @samp{zce}
 @tab 1.0
 @tab Compressed instruction extensions for embedded processors
 
-@item zcf
+@item @samp{zcf}
 @tab 1.0
 @tab Compressed single-precision floating point loads and stores extension
 
-@item zcmop
+@item @samp{zcmop}
 @tab 1.0
-@tab zcmop extension
+@tab Compressed may-be-operations extension
 
-@item zcmp
+@item @samp{zcmp}
 @tab 1.0
 @tab Compressed push pop extension
 
-@item zcmt
+@item @samp{zcmt}
 @tab 1.0
 @tab Table jump instruction extension
 
-@item zclsd
+@item @samp{zclsd}
 @tab 1.0
 @tab Compressed load/store pair instructions extension
 
-@item zba
+@item @samp{zba}
 @tab 1.0
 @tab Address calculation extension
 
-@item zbb
+@item @samp{zbb}
 @tab 1.0
 @tab Basic bit manipulation extension
 
-@item zbc
+@item @samp{zbc}
 @tab 1.0
 @tab Carry-less multiplication extension
 
-@item zbkb
+@item @samp{zbkb}
 @tab 1.0
 @tab Cryptography bit-manipulation extension
 
-@item zbkc
+@item @samp{zbkc}
 @tab 1.0
 @tab Cryptography carry-less multiply extension
 
-@item zbkx
+@item @samp{zbkx}
 @tab 1.0
 @tab Cryptography crossbar permutation extension
 
-@item zbs
+@item @samp{zbs}
 @tab 1.0
 @tab Single-bit operation extension
 
-@item zk
+@item @samp{zk}
 @tab 1.0
 @tab Standard scalar cryptography extension
 
-@item zkn
+@item @samp{zkn}
 @tab 1.0
 @tab NIST algorithm suite extension
 
-@item zknd
+@item @samp{zknd}
 @tab 1.0
 @tab AES Decryption extension
 
-@item zkne
+@item @samp{zkne}
 @tab 1.0
 @tab AES Encryption extension
 
-@item zknh
+@item @samp{zknh}
 @tab 1.0
 @tab Hash function extension
 
-@item zkr
+@item @samp{zkr}
 @tab 1.0
 @tab Entropy source extension
 
-@item zks
+@item @samp{zks}
 @tab 1.0
 @tab ShangMi algorithm suite extension
 
-@item zksed
+@item @samp{zksed}
 @tab 1.0
 @tab SM4 block cipher extension
 
-@item zksh
+@item @samp{zksh}
 @tab 1.0
 @tab SM3 hash function extension
 
-@item zkt
+@item @samp{zkt}
 @tab 1.0
 @tab Data independent execution latency extension
 
-@item ztso
+@item @samp{ztso}
 @tab 1.0
 @tab Total store ordering extension
 
-@item zvbb
+@item @samp{zvbb}
 @tab 1.0
 @tab Vector basic bit-manipulation extension
 
-@item zvbc
+@item @samp{zvbc}
 @tab 1.0
-@tab Vector carryless multiplication extension
+@tab Vector carry-less multiplication extension
 
-@item zve32f
-@tab 1.0
-@tab Vector extensions for embedded processors
-
-@item zve32x
+@item @samp{zve32f}
 @tab 1.0
 @tab Vector extensions for embedded processors
 
-@item zve64d
+@item @samp{zve32x}
 @tab 1.0
 @tab Vector extensions for embedded processors
 
-@item zve64f
+@item @samp{zve64d}
 @tab 1.0
 @tab Vector extensions for embedded processors
 
-@item zve64x
+@item @samp{zve64f}
 @tab 1.0
 @tab Vector extensions for embedded processors
 
-@item zvfbfmin
+@item @samp{zve64x}
+@tab 1.0
+@tab Vector extensions for embedded processors
+
+@item @samp{zvfbfmin}
 @tab 1.0
 @tab Vector BF16 converts extension
 
-@item zvfbfwma
+@item @samp{zvfbfwma}
 @tab 1.0
-@tab zvfbfwma extension
+@tab Vector BF16 widening multiply/add extension
 
-@item zvfh
+@item @samp{zvfh}
 @tab 1.0
 @tab Vector half-precision floating-point extension
 
-@item zvfhmin
+@item @samp{zvfhmin}
 @tab 1.0
 @tab Vector minimal half-precision floating-point extension
 
-@item zvkb
+@item @samp{zvkb}
 @tab 1.0
 @tab Vector cryptography bit-manipulation extension
 
-@item zvkg
+@item @samp{zvkg}
 @tab 1.0
 @tab Vector GCM/GMAC extension
 
-@item zvkn
+@item @samp{zvkn}
 @tab 1.0
 @tab Vector NIST Algorithm Suite extension, @samp{zvkn} will expand to
 
-@item zvknc
+@item @samp{zvknc}
 @tab 1.0
-@tab Vector NIST Algorithm Suite with carryless multiply extension, @samp{zvknc}
+@tab Vector NIST Algorithm Suite with carry-less multiply extension, @samp{zvknc}
 
-@item zvkned
+@item @samp{zvkned}
 @tab 1.0
 @tab Vector AES block cipher extension
 
-@item zvkng
+@item @samp{zvkng}
 @tab 1.0
 @tab Vector NIST Algorithm Suite with GCM extension, @samp{zvkng} will expand
 
-@item zvknha
+@item @samp{zvknha}
 @tab 1.0
 @tab Vector SHA-2 secure hash extension
 
-@item zvknhb
+@item @samp{zvknhb}
 @tab 1.0
 @tab Vector SHA-2 secure hash extension
 
-@item zvks
+@item @samp{zvks}
 @tab 1.0
 @tab Vector ShangMi algorithm suite extension, @samp{zvks} will expand
 
-@item zvksc
+@item @samp{zvksc}
 @tab 1.0
-@tab Vector ShangMi algorithm suite with carryless multiplication extension,
+@tab Vector ShangMi algorithm suite with carry-less multiplication extension,
 
-@item zvksed
+@item @samp{zvksed}
 @tab 1.0
-@tab Vector SM4 Block Cipher extension
+@tab Vector SM4 block cipher extension
 
-@item zvksg
+@item @samp{zvksg}
 @tab 1.0
-@tab Vector ShangMi algorithm suite with GCM extension, @samp{zvksg} will expand
+@tab Vector ShangMi algorithm suite with GCM extension
 
-@item zvksh
+@item @samp{zvksh}
 @tab 1.0
-@tab Vector SM3 Secure Hash extension
+@tab Vector SM3 secure hash extension
 
-@item zvkt
+@item @samp{zvkt}
 @tab 1.0
 @tab Vector data independent execution latency extension
 
-@item zvl1024b
+@item @samp{zvl1024b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl128b
+@item @samp{zvl128b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl16384b
+@item @samp{zvl16384b}
 @tab 1.0
-@tab zvl16384b extension
+@tab Minimum vector length standard extension
 
-@item zvl2048b
-@tab 1.0
-@tab Minimum vector length standard extensions
-
-@item zvl256b
+@item @samp{zvl2048b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl32768b
-@tab 1.0
-@tab zvl32768b extension
-
-@item zvl32b
+@item @samp{zvl256b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl4096b
+@item @samp{zvl32768b}
+@tab 1.0
+@tab Minimum vector length standard extension
+
+@item @samp{zvl32b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl512b
+@item @samp{zvl4096b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl64b
+@item @samp{zvl512b}
 @tab 1.0
 @tab Minimum vector length standard extensions
 
-@item zvl65536b
+@item @samp{zvl64b}
 @tab 1.0
-@tab zvl65536b extension
+@tab Minimum vector length standard extensions
 
-@item zvl8192b
+@item @samp{zvl65536b}
 @tab 1.0
-@tab zvl8192b extension
+@tab Minimum vector length standard extension
 
-@item zhinx
+@item @samp{zvl8192b}
+@tab 1.0
+@tab Minimum vector length standard extension
+
+@item @samp{zhinx}
 @tab 1.0
 @tab Half-precision floating-point in integer registers extension
 
-@item zhinxmin
+@item @samp{zhinxmin}
 @tab 1.0
 @tab Minimal half-precision floating-point in integer registers extension
 
-@item sdtrig
+@item @samp{sdtrig}
 @tab 1.0
-@tab sdtrig extension
+@tab Debug triggers extension
 
-@item sha
+@item @samp{sha}
 @tab 1.0
 @tab The augmented hypervisor extension
 
-@item shcounterenw
+@item @samp{shcounterenw}
 @tab 1.0
 @tab Support writeable enables for any supported counter
 
-@item shgatpa
+@item @samp{shgatpa}
 @tab 1.0
 @tab SvNNx4 mode supported for all modes supported by satp
 
-@item shlcofideleg
+@item @samp{shlcofideleg}
 @tab 1.0
 @tab Delegating LCOFI interrupts to VS-mode
 
-@item shtvala
+@item @samp{shtvala}
 @tab 1.0
 @tab The htval register provides all needed values
 
-@item shvstvala
+@item @samp{shvstvala}
 @tab 1.0
 @tab The vstval register provides all needed values
 
-@item shvstvecd
+@item @samp{shvstvecd}
 @tab 1.0
-@tab The vstvec register supports Direct mode
+@tab The vstvec register supports direct mode
 
-@item shvsatpa
+@item @samp{shvsatpa}
 @tab 1.0
 @tab The vsatp register supports all modes supported by satp
 
-@item smaia
+@item @samp{smaia}
 @tab 1.0
 @tab Advanced interrupt architecture extension
 
-@item smcntrpmf
+@item @samp{smcntrpmf}
 @tab 1.0
 @tab Cycle and instret privilege mode filtering
 
-@item smcsrind
+@item @samp{smcsrind}
 @tab 1.0
-@tab Machine-Level Indirect CSR Access
+@tab Machine-level indirect CSR access
 
-@item smepmp
+@item @samp{smepmp}
 @tab 1.0
-@tab PMP Enhancements for memory access and execution prevention on Machine mode
+@tab PMP enhancements for memory access and execution prevention on machine mode
 
-@item smmpm
+@item @samp{smmpm}
 @tab 1.0
-@tab smmpm extension
+@tab Supervisor-mode pointer masking extension
 
-@item smnpm
+@item @samp{smnpm}
 @tab 1.0
-@tab smnpm extension
+@tab Supervisor-mode pointer masking extension
 
-@item smrnmi
+@item @samp{smrnmi}
 @tab 1.0
 @tab Resumable non-maskable interrupts
 
-@item smstateen
+@item @samp{smstateen}
 @tab 1.0
 @tab State enable extension
 
-@item smdbltrp
+@item @samp{smdbltrp}
 @tab 1.0
-@tab Double Trap Extensions
+@tab Double trap extensions
 
-@item ssaia
+@item @samp{ssaia}
 @tab 1.0
-@tab Advanced interrupt architecture extension for supervisor-mode
+@tab Advanced interrupt architecture extension for supervisor mode
 
-@item ssccptr
+@item @samp{ssccptr}
 @tab 1.0
 @tab Main memory supports page table reads
 
-@item sscofpmf
+@item @samp{sscofpmf}
 @tab 1.0
-@tab Count overflow & filtering extension
+@tab Count overflow and filtering extension
 
-@item sscounterenw
+@item @samp{sscounterenw}
 @tab 1.0
 @tab Support writeable enables for any supported counter
 
-@item sscsrind
+@item @samp{sscsrind}
 @tab 1.0
-@tab Supervisor-Level Indirect CSR Access
+@tab Supervisor-mode indirect CSR access
 
-@item ssnpm
+@item @samp{ssnpm}
 @tab 1.0
-@tab ssnpm extension
+@tab Supervisor-mode pointer masking extension
 
-@item sspm
+@item @samp{sspm}
 @tab 1.0
-@tab sspm extension
+@tab Supervisor-mode pointer masking extension
 
-@item ssstateen
+@item @samp{ssstateen}
 @tab 1.0
-@tab State-enable extension for supervisor-mode
+@tab Supervisor-mode state-enable extension
 
-@item sstc
+@item @samp{sstc}
 @tab 1.0
 @tab Supervisor-mode timer interrupts extension
 
-@item sstvala
+@item @samp{sstvala}
 @tab 1.0
 @tab Stval provides all needed values
 
-@item sstvecd
+@item @samp{sstvecd}
 @tab 1.0
-@tab Stvec supports Direct mode
+@tab Stvec supports direct mode
 
-@item ssstrict
+@item @samp{ssstrict}
 @tab 1.0
-@tab ssstrict extension
+@tab Unimplemented reserved encodings raise illegal instruction exceptions and no non-conforming extensions are present
 
-@item ssdbltrp
+@item @samp{ssdbltrp}
 @tab 1.0
-@tab Double Trap Extensions
+@tab Double trap extensions
 
-@item ssu64xl
+@item @samp{ssu64xl}
 @tab 1.0
 @tab UXLEN=64 must be supported
 
-@item supm
+@item @samp{supm}
 @tab 1.0
-@tab supm extension
+@tab User-mode pointer masking extension
 
-@item svinval
+@item @samp{svinval}
 @tab 1.0
 @tab Fine-grained address-translation cache invalidation extension
 
-@item svnapot
+@item @samp{svnapot}
 @tab 1.0
 @tab NAPOT translation contiguity extension
 
-@item svpbmt
+@item @samp{svpbmt}
 @tab 1.0
 @tab Page-based memory types extension
 
-@item svvptc
+@item @samp{svvptc}
 @tab 1.0
-@tab svvptc extension
+@tab Extension for obviating memory-management instructions after marking PTEs valid
 
-@item svadu
+@item @samp{svadu}
 @tab 1.0
-@tab Hardware Updating of A/D Bits extension
+@tab Hardware updating of A/D bits extension
 
-@item svade
+@item @samp{svade}
 @tab 1.0
 @tab Cause exception when hardware updating of A/D bits is disabled
 
-@item svbare
+@item @samp{svbare}
 @tab 1.0
 @tab Satp mode bare is supported
 
-@item xcvalu
+@item @samp{xcvalu}
 @tab 1.0
 @tab Core-V miscellaneous ALU extension
 
-@item xcvbi
+@item @samp{xcvbi}
 @tab 1.0
-@tab xcvbi extension
+@tab Core-V immediate branch extension
 
-@item xcvelw
+@item @samp{xcvelw}
 @tab 1.0
 @tab Core-V event load word extension
 
-@item xcvmac
+@item @samp{xcvmac}
 @tab 1.0
 @tab Core-V multiply-accumulate extension
 
-@item xcvsimd
+@item @samp{xcvsimd}
 @tab 1.0
-@tab xcvsimd extension
+@tab Core-V SIMD extension
 
-@item xsfcease
+@item @samp{xsfcease}
 @tab 1.0
-@tab xsfcease extension
+@tab SiFive CEASE instruction extension
 
-@item xsfvcp
+@item @samp{xsfvcp}
 @tab 1.0
-@tab xsfvcp extension
+@tab SiFive VCIX vector coprocessor extension
 
-@item xsfvfnrclipxfqf
+@item @samp{xsfvfnrclipxfqf}
 @tab 1.0
-@tab xsfvfnrclipxfqf extension
+@tab SiFive FP32-to-int8 ranged clip instructions
 
-@item xsfvqmaccdod
+@item @samp{xsfvqmaccdod}
 @tab 1.0
-@tab xsfvqmaccdod extension
+@tab SiFive int8 matrix multiplication extension
 
-@item xsfvqmaccqoq
+@item @samp{xsfvqmaccqoq}
 @tab 1.0
-@tab xsfvqmaccqoq extension
+@tab SiFive int8 matrix multiplication extension
 
-@item xtheadba
+@item @samp{xtheadba}
 @tab 1.0
 @tab T-head address calculation extension
 
-@item xtheadbb
+@item @samp{xtheadbb}
 @tab 1.0
 @tab T-head basic bit-manipulation extension
 
-@item xtheadbs
+@item @samp{xtheadbs}
 @tab 1.0
 @tab T-head single-bit instructions extension
 
-@item xtheadcmo
+@item @samp{xtheadcmo}
 @tab 1.0
 @tab T-head cache management operations extension
 
-@item xtheadcondmov
+@item @samp{xtheadcondmov}
 @tab 1.0
 @tab T-head conditional move extension
 
-@item xtheadfmemidx
+@item @samp{xtheadfmemidx}
 @tab 1.0
 @tab T-head indexed memory operations for floating-point registers extension
 
-@item xtheadfmv
+@item @samp{xtheadfmv}
 @tab 1.0
 @tab T-head double floating-point high-bit data transmission extension
 
-@item xtheadint
+@item @samp{xtheadint}
 @tab 1.0
 @tab T-head acceleration interruption extension
 
-@item xtheadmac
+@item @samp{xtheadmac}
 @tab 1.0
 @tab T-head multiply-accumulate extension
 
-@item xtheadmemidx
+@item @samp{xtheadmemidx}
 @tab 1.0
 @tab T-head indexed memory operation extension
 
-@item xtheadmempair
+@item @samp{xtheadmempair}
 @tab 1.0
 @tab T-head two-GPR memory operation extension
 
-@item xtheadsync
+@item @samp{xtheadsync}
 @tab 1.0
 @tab T-head multi-core synchronization extension
 
-@item xtheadvector
+@item @samp{xtheadvector}
 @tab 1.0
-@tab xtheadvector extension
+@tab T-head vector extension
 
-@item xventanacondops
+@item @samp{xventanacondops}
 @tab 1.0
 @tab Ventana integer conditional operations extension
 
-@item xmipscmov
+@item @samp{xmipscmov}
 @tab 1.0
 @tab Mips conditional move extension
 
-@item xmipscbop
+@item @samp{xmipscbop}
 @tab 1.0
-@tab Mips Prefetch extension
+@tab Mips prefetch extension
 
-@item xandesperf
+@item @samp{xandesperf}
 @tab 5.0
 @tab Andes performace extension
 
-@item xandesbfhcvt
+@item @samp{xandesbfhcvt}
 @tab 5.0
 @tab Andes bfloat16 conversion extension
 
-@item xandesvbfhcvt
+@item @samp{xandesvbfhcvt}
 @tab 5.0
 @tab Andes vector bfloat16 conversion extension
 
-@item xandesvsintload
+@item @samp{xandesvsintload}
 @tab 5.0
 @tab Andes vector INT4 load extension
 
-@item xandesvpackfph
+@item @samp{xandesvpackfph}
 @tab 5.0
 @tab Andes vector packed FP16 extension
 
-@item xandesvdot
+@item @samp{xandesvdot}
 @tab 5.0
 @tab Andes vector dot product extension
 
-@item xsmtvdot
+@item @samp{xsmtvdot}
 @tab 1.0
 @tab SpacemiT vector dot product extension
 

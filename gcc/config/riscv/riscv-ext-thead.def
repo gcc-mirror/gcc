@@ -180,7 +180,7 @@ DEFINE_RISCV_EXT(
 DEFINE_RISCV_EXT(
   /* NAME */ xtheadvector,
   /* UPPERCASE_NAME */ XTHEADVECTOR,
-  /* FULL_NAME */ "xtheadvector extension",
+  /* FULL_NAME */ "T-head vector extension",
   /* DESC */ "",
   /* URL */ ,
   /* DEP_EXTS */ ({}),

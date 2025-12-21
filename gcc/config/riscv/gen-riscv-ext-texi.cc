@@ -35,7 +35,7 @@ print_ext_doc_entry (const std::string &ext_name, const std::string &full_name,
   std::set<version_t> unique_versions;
   for (const auto &version : supported_versions)
     unique_versions.insert (version);
-  printf ("@item %s\n", ext_name.c_str ());
+  printf ("@item @samp{%s}\n", ext_name.c_str ());
   printf ("@tab");
   for (const auto &version : unique_versions)
     {
@@ -62,15 +62,15 @@ main ()
   puts ("");
   puts ("@c Please *DO NOT* edit manually.");
   puts ("");
-  puts ("@multitable @columnfractions .10 .10 .80");
+  puts ("@multitable @columnfractions .25 .15 .6");
   puts ("@headitem Extension Name @tab Supported Version @tab Description");
   puts ("");
 
-  /* g extension is a very speical extension that no clear version...  */
-  puts ("@item g");
+  /* g extension is a very special extension that has no clear version...  */
+  puts ("@item @samp{g}");
   puts ("@tab -");
   puts (
-    "@tab General-purpose computing base extension, @samp{g} will expand to");
+    "@tab General-purpose computing base extension; @samp{g} expands to");
   puts ("@samp{i}, @samp{m}, @samp{a}, @samp{f}, @samp{d}, @samp{zicsr} and");
   puts ("@samp{zifencei}.");
   puts ("");
