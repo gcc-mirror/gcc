@@ -1641,12 +1641,15 @@ gfc_finalize_tree_expr (gfc_se *se, gfc_symbol *derived,
     }
   else if (derived && gfc_is_finalizable (derived, NULL))
     {
-      if (!derived->components && (!rank || attr.elemental))
+      tree type = TREE_TYPE (se->expr);
+      if (type && TYPE_SIZE_UNIT (type)
+	  && integer_zerop (TYPE_SIZE_UNIT (type))
+	  && (!rank || attr.elemental))
 	{
 	  /* Any attempt to assign zero length entities, causes the gimplifier
 	     all manner of problems. Instead, a variable is created to act as
-	     as the argument for the final call.  */
-	  desc = gfc_create_var (TREE_TYPE (se->expr), "zero");
+	     the argument for the final call.  */
+	  desc = gfc_create_var (type, "zero");
 	}
       else if (se->direct_byref)
 	{
