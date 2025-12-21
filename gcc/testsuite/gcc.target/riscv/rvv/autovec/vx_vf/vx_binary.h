@@ -426,6 +426,7 @@ DEF_AVG_CEIL(int32_t, int64_t)
   DEF_VX_BINARY_CASE_0_WRAP(T, ==, eq)                            \
   DEF_VX_BINARY_CASE_0_WRAP(T, !=, ne)                            \
   DEF_VX_BINARY_CASE_0_WRAP(T, <, ltu)                            \
+  DEF_VX_BINARY_CASE_0_WRAP(T, <=, leu)                           \
   DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_0_WARP(T), max)           \
   DEF_VX_BINARY_CASE_2_WRAP(T, MAX_FUNC_1_WARP(T), max)           \
   DEF_VX_BINARY_CASE_2_WRAP(T, MIN_FUNC_0_WARP(T), min)           \
