@@ -748,7 +748,7 @@ enum cxx_dialect {
   cxx26
 };
 
-/* The C++ dialect being used.  C++17 is the default.  */
+/* The C++ dialect being used.  C++20 is the default.  */
 extern enum cxx_dialect cxx_dialect;
 
 /* Maximum template instantiation depth.  This limit is rather
