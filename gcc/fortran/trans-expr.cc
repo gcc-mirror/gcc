@@ -6654,6 +6654,14 @@ conv_dummy_value (gfc_se * parmse, gfc_expr * e, gfc_symbol * fsym,
 						  e->value.character.string);
       parmse->string_length = build_int_cst (gfc_charlen_type_node, flen);
 
+      if (flen == 1)
+	{
+	  tree slen1 = build_int_cst (gfc_charlen_type_node, 1);
+	  gfc_conv_string_parameter (parmse);
+	  parmse->expr = gfc_string_to_single_character (slen1, parmse->expr,
+							 e->ts.kind);
+	}
+
       /* Indicate value,optional scalar dummy argument as present.  */
       if (fsym->attr.optional)
 	vec_safe_push (optionalargs, boolean_true_node);
