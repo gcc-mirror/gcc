@@ -5281,6 +5281,7 @@ gfc_trans_omp_clauses (stmtblock_t *block, gfc_omp_clauses *clauses,
 	  type = OMP_CLAUSE_DEVICE_TYPE_ANY;
 	  break;
 	case OMP_DEVICE_TYPE_UNSET:
+	default:
 	  gcc_unreachable ();
 	}
       c = build_omp_clause (gfc_get_location (&where), OMP_CLAUSE_DEVICE_TYPE);
