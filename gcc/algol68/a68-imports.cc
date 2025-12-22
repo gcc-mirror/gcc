@@ -957,7 +957,7 @@ a68_replace_equivalent_mode (vec<MOID_T*,va_gc> *mode_list,
 
 static bool
 a68_decode_modes (MOIF_T *moif, encoded_modes_map_t &encoded_modes,
-		  const char *data, size_t size, size_t pos,
+		  const char *data, size_t size, size_t pos, size_t moif_pos,
 		  size_t *ppos, const char **errstr)
 {
   bool siga;
@@ -974,7 +974,7 @@ a68_decode_modes (MOIF_T *moif, encoded_modes_map_t &encoded_modes,
       int8_t sizety;
       uint8_t ndims, nmodes, nargs;
       uint16_t nfields;
-      uint64_t mode_offset = pos;
+      uint64_t mode_offset = pos - moif_pos;
       uint64_t sub, ret_mode_offset;
       struct encoded_mode *encoded_mode;
 
@@ -1106,6 +1106,7 @@ a68_decode_modes (MOIF_T *moif, encoded_modes_map_t &encoded_modes,
   for (auto entry : encoded_modes)
     {
       struct encoded_mode *em = entry.second;
+      gcc_assert (em->moid != NO_MOID);
       vec_safe_push (MODES (moif), em->moid);
     }
 
@@ -1285,61 +1286,71 @@ a68_decode_extracts (MOIF_T *moif, encoded_modes_map_t &encoded_modes,
   return false;
 }
 
-/* Decode the given exports data into a moif.  If there is a decoding error
-   then put an explicative mssage in *ERRSTR and return NULL.  */
+/* Decode the given exports data into a linked list of moifs.  If there is a
+   decoding error then put an explicative mssage in *ERRSTR and return
+   NULL.  */
 
 static MOIF_T *
-a68_decode_moif (const char *data, size_t size, const char **errstr)
+a68_decode_moifs (const char *data, size_t size, const char **errstr)
 {
+  MOIF_T *moif_list = NO_MOIF;
   size_t pos = 0;
-  MOIF_T *moif = a68_moif_new (NULL /* name */);
-  encoded_modes_map_t encoded_modes (16);
 
   uint8_t magic1, magic2;
   uint16_t version;
   char *name, *prelude, *postlude;
 
-  DUINT8 (magic1);
-  DUINT8 (magic2);
-  if (magic1 != A68_EXPORT_MAGIC1 || magic2 != A68_EXPORT_MAGIC2)
+  while (pos < size)
     {
-      *errstr = "invalid magic number";
-      goto decode_error;
-    }
+      MOIF_T *moif = a68_moif_new (NULL /* name */);
+      NEXT (moif) = moif_list;
+      moif_list = moif;
 
-  DUINT16 (version);
-  if (version != 1)
-    {
-      *errstr = "invalid a68 exports version";
-      goto decode_error;
-    }
+      size_t moif_pos = pos;
+      DUINT8 (magic1);
+      DUINT8 (magic2);
+      if (magic1 != A68_EXPORT_MAGIC1 || magic2 != A68_EXPORT_MAGIC2)
+	{
+	  *errstr = "invalid magic number";
+	  goto decode_error;
+	}
 
-  DSTR (name);
-  DSTR (prelude);
-  DSTR (postlude);
-  NAME (moif) = name;
-  PRELUDE (moif) = prelude;
-  POSTLUDE (moif) = postlude;
+      DUINT16 (version);
+      if (version != 1)
+	{
+	  *errstr = "invalid a68 exports version";
+	  goto decode_error;
+	}
 
-  /* Decode the modes table.
-     This installs the resulting moids in MOIF.  */
-  if (!a68_decode_modes (moif, encoded_modes, data, size, pos, &pos, errstr))
-    goto decode_error;
+      DSTR (name);
+      DSTR (prelude);
+      DSTR (postlude);
+      NAME (moif) = name;
+      PRELUDE (moif) = prelude;
+      POSTLUDE (moif) = postlude;
 
-  /* Decode the extracts table.
-     This installs the resulting tags in MOIF.  */
-  if (!a68_decode_extracts (moif, encoded_modes, data, size, pos, &pos, errstr))
-    goto decode_error;
+      encoded_modes_map_t encoded_modes (16);
 
-  /* We don't need the encoded modes anymore.  */
-  for (auto entry : encoded_modes)
-    {
-      struct encoded_mode *em = entry.second;
-      encoded_mode_free (em);
+      /* Decode the modes table.
+	 This installs the resulting moids in MOIF.  */
+      if (!a68_decode_modes (moif, encoded_modes, data, size, pos, moif_pos, &pos, errstr))
+	goto decode_error;
+
+      /* Decode the extracts table.
+	 This installs the resulting tags in MOIF.  */
+      if (!a68_decode_extracts (moif, encoded_modes, data, size, pos, &pos, errstr))
+	goto decode_error;
+
+      /* We don't need the encoded modes anymore.  */
+      for (auto entry : encoded_modes)
+	{
+	  struct encoded_mode *em = entry.second;
+	  encoded_mode_free (em);
+	}
     }
 
   /* Got some juicy exports for youuuuuu... */
-  return moif;
+  return moif_list;
  decode_error:
   if (*errstr == NULL)
     *errstr = "premature end of data";
@@ -1382,8 +1393,13 @@ a68_open_packet (const char *module)
   if (exports_data == NULL)
     return NULL;
 
-  /* Got some data.  Parse it into a moif.  */
+  /* Got some data.  Decode it into a list of moif.  */
   const char *errstr = NULL;
-  MOIF_T *moif = a68_decode_moif (exports_data, exports_data_size, &errstr);
+  MOIF_T *moif = a68_decode_moifs (exports_data, exports_data_size, &errstr);
+
+  /* The moif we are looking for must be in the list.  Note these are garbage
+     collected.  */
+  while (moif != NO_MOIF && strcmp (NAME (moif), module) != 0)
+    moif = NEXT (moif);
   return moif;
 }

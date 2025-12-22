@@ -1,4 +1,4 @@
-module Module =
+module Module_17 =
 def
     pub int ce_port;
     pub string ce_host;

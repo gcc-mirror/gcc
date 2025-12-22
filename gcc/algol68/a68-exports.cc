@@ -59,6 +59,7 @@ a68_moif_new (const char *module_name)
   NAME (moif) = (module_name == NULL ? NULL : ggc_strdup (module_name));
   PRELUDE (moif) = NULL;
   POSTLUDE (moif) = NULL;
+  NEXT (moif) = NO_MOIF;
   vec_alloc (MODES (moif), 16);
   vec_alloc (MODULES (moif), 16);
   vec_alloc (IDENTIFIERS (moif), 16);

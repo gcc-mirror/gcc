@@ -706,7 +706,7 @@ struct GTY(()) EXTRACT_T
 
 #define NO_MOIF ((MOIF_T *) 0)
 
-struct GTY(()) MOIF_T
+struct GTY((chain_next ("%h.next"))) MOIF_T
 {
   unsigned int version;
   const char *name;
@@ -718,6 +718,7 @@ struct GTY(()) MOIF_T
   vec<EXTRACT_T*,va_gc> *identifiers;
   vec<EXTRACT_T*,va_gc> *prios;
   vec<EXTRACT_T*,va_gc> *operators;
+  MOIF_T *next;
 };
 
 struct MODE_CACHE_T
