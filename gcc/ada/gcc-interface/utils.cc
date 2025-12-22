@@ -4610,11 +4610,10 @@ update_pointer_to (tree old_type, tree new_type)
 		       && !lookup_attribute ("may_alias",
 					     TYPE_ATTRIBUTES (new_type))))
 	    {
-	      alias_set_type set;
-	      if (TYPE_STRUCTURAL_EQUALITY_P (ptr))
-		set = TYPE_ALIAS_SET (ptr);
-	      else
-		set = TYPE_ALIAS_SET (TYPE_CANONICAL (ptr));
+	      const alias_set_type set
+		= TYPE_STRUCTURAL_EQUALITY_P (ptr)
+		  ? TYPE_ALIAS_SET (ptr)
+		  : TYPE_ALIAS_SET (TYPE_CANONICAL (ptr));
 	      TYPE_CANONICAL (ptr)
 		= build_pointer_type (TYPE_CANONICAL (new_type));
 	      TYPE_ALIAS_SET (TYPE_CANONICAL (ptr)) = set;
@@ -4655,11 +4654,10 @@ update_pointer_to (tree old_type, tree new_type)
 		       && !lookup_attribute ("may_alias",
 					     TYPE_ATTRIBUTES (new_type))))
 	    {
-	      alias_set_type set;
-	      if (TYPE_STRUCTURAL_EQUALITY_P (ref))
-		set = TYPE_ALIAS_SET (ref);
-	      else
-		set = TYPE_ALIAS_SET (TYPE_CANONICAL (ref));
+	      const alias_set_type set
+		= TYPE_STRUCTURAL_EQUALITY_P (ref)
+		  ? TYPE_ALIAS_SET (ref)
+		  : TYPE_ALIAS_SET (TYPE_CANONICAL (ref));
 	      TYPE_CANONICAL (ref)
 		= build_reference_type (TYPE_CANONICAL (new_type));
 	      TYPE_ALIAS_SET (TYPE_CANONICAL (ref)) = set;
