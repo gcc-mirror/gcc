@@ -17736,6 +17736,9 @@ Enable hardware-assisted memory tagging of dynamically sized stack-allocated
 variables.  This kind of code generation is enabled by default when using
 @option{-fsanitize=memtag-stack}.
 
+@item memtag-instrument-mem-intrinsics
+When sanitizing using MTE instructions, include builtin functions.
+
 @item use-after-scope-direct-emission-threshold
 If the size of a local variable in bytes is smaller or equal to this
 number, directly poison (or unpoison) shadow memory instead of using
