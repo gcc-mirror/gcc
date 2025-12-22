@@ -147,9 +147,9 @@ subroutine traits_checks
   integer(kind=omp_allocator_handle_kind) :: a1
 
   ! Sensible - but not (yet?) valid - an array constructor:
-  !$omp target uses_allocators(traits ([omp_alloctrait :: ]) : a1 )  ! { dg-error "Invalid character in name" }
+  !$omp target uses_allocators(traits ([omp_alloctrait :: ]) : a1 )  ! { dg-error "39: Expected ',', '\\)' or ';' at .1." }
   block; end block
-  !$omp target uses_allocators(a1 ([omp_alloctrait :: ]))  ! { dg-error "Invalid character in name" }
+  !$omp target uses_allocators(a1 ([omp_alloctrait :: ]))  ! { dg-error "35: Expected ',', '\\)' or ';' at .1." }
   block; end block
 
   !$omp target uses_allocators(traits (trait1) : a1 )  ! { dg-error "Traits array 'trait1' in USES_ALLOCATORS .1. must be a one-dimensional named constant array of type 'omp_alloctrait'" }
