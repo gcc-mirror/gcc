@@ -4479,16 +4479,16 @@ package body Sem_Ch4 is
             T := It.Typ;
          end if;
 
-         --  Locate the component. For a private prefix the selector can denote
-         --  a discriminant.
+         --  Find the selected component. For a private prefix, the selector
+         --  can denote a discriminant.
 
          if Is_Record_Type (T) or else Is_Private_Type (T) then
 
-            --  If the prefix is a class-wide type, the visible components are
-            --  those of the base type.
+            --  If the prefix has a class-wide type, the visible components are
+            --  those of the root type.
 
             if Is_Class_Wide_Type (T) then
-               T := Etype (T);
+               T := Root_Type (T);
             end if;
 
             Comp := First_Entity (T);
