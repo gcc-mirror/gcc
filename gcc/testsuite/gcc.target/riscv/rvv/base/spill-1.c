@@ -7,8 +7,8 @@
 
 /*
 ** spill_1:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  ...
 **  csrr\t[a-x0-9]+,vlenb
 **  srli\t[a-x0-9]+,[a-x0-9]+,3
@@ -24,8 +24,8 @@
 **  add\t[a-x0-9]+,[a-x0-9]+,sp
 **  vle8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  vse8.v\tv[0-9]+,0\([a-x0-9]+\)
-**  csrr\tt0,vlenb
-**  add\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  add\tsp,sp,[a-x0-9]+
 **  ...
 **  jr\tra
 */
@@ -39,8 +39,8 @@ spill_1 (int8_t *in, int8_t *out)
 
 /*
 ** spill_2:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  vsetvli\ta5,zero,e8,mf4,ta,ma
 **  vle8.v\tv[0-9]+,0\(a0\)
 **  csrr\t[a-x0-9]+,vlenb
@@ -57,8 +57,8 @@ spill_1 (int8_t *in, int8_t *out)
 **  add\t[a-x0-9]+,[a-x0-9]+,sp
 **  vle8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  vse8.v\tv[0-9]+,0\([a-x0-9]+\)
-**  csrr\tt0,vlenb
-**  add\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  add\tsp,sp,[a-x0-9]+
 **  ...
 **  jr\tra
 */
@@ -72,8 +72,8 @@ spill_2 (int8_t *in, int8_t *out)
 
 /*
 ** spill_3:
-** csrr\tt0,vlenb
-** sub\tsp,sp,t0
+** csrr\t[a-x0-9]+,vlenb
+** sub\tsp,sp,[a-x0-9]+
 ** vsetvli\ta5,zero,e8,mf2,ta,ma
 ** vle8.v\tv[0-9]+,0\(a0\)
 ** csrr\t[a-x0-9]+,vlenb
@@ -81,13 +81,12 @@ spill_2 (int8_t *in, int8_t *out)
 ** add\t[a-x0-9]+,[a-x0-9]+,sp
 ** vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  ...
-** csrr\t[a-x0-9]+,vlenb
 ** srli\t[a-x0-9]+,[a-x0-9]+,1
 ** add\t[a-x0-9]+,[a-x0-9]+,sp
 ** vle8.v\tv[0-9]+,0\([a-x0-9]+\)
 ** vse8.v\tv[0-9]+,0\([a-x0-9]+\)
-** csrr\tt0,vlenb
-** add\tsp,sp,t0
+** csrr\t[a-x0-9]+,vlenb
+** add\tsp,sp,[a-x0-9]+
 **  ...
 **  jr\tra
 */
@@ -101,8 +100,8 @@ spill_3 (int8_t *in, int8_t *out)
 
 /*
 ** spill_4:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  ...
 **  vs1r.v\tv[0-9]+,0\(sp\)
 **  ...
@@ -124,8 +123,8 @@ spill_4 (int8_t *in, int8_t *out)
 
 /*
 ** spill_5:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,1
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,1
 **  sub\tsp,sp,t1
 **  ...
 **  vs2r.v\tv[0-9]+,0\(sp\)
@@ -148,8 +147,8 @@ spill_5 (int8_t *in, int8_t *out)
 
 /*
 ** spill_6:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,2
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,2
 **  sub\tsp,sp,t1
 **  ...
 **  vs4r.v\tv[0-9]+,0\(sp\)
@@ -172,8 +171,8 @@ spill_6 (int8_t *in, int8_t *out)
 
 /*
 ** spill_7:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,3
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,3
 **  sub\tsp,sp,t1
 **  ...
 **  vs8r.v\tv[0-9]+,0\(sp\)
@@ -196,8 +195,8 @@ spill_7 (int8_t *in, int8_t *out)
 
 /*
 ** spill_8:
-** csrr\tt0,vlenb
-** sub\tsp,sp,t0
+** csrr\t[a-x0-9]+,vlenb
+** sub\tsp,sp,[a-x0-9]+
 ** vsetvli\ta5,zero,e8,mf8,ta,ma
 ** vle8.v\tv[0-9]+,0\(a0\)
 ** csrr\t[a-x0-9]+,vlenb
@@ -214,8 +213,8 @@ spill_7 (int8_t *in, int8_t *out)
 **  add\t[a-x0-9]+,[a-x0-9]+,sp
 **  vle8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  vse8.v\tv[0-9]+,0\([a-x0-9]+\)
-**  csrr\tt0,vlenb
-**  add\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  add\tsp,sp,[a-x0-9]+
 **  ...
 **  jr\tra
 */
@@ -229,8 +228,8 @@ spill_8 (uint8_t *in, uint8_t *out)
 
 /*
 ** spill_9:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  vsetvli\ta5,zero,e8,mf4,ta,ma
 **  vle8.v\tv[0-9]+,0\(a0\)
 **  csrr\t[a-x0-9]+,vlenb
@@ -247,8 +246,8 @@ spill_8 (uint8_t *in, uint8_t *out)
 **  add\t[a-x0-9]+,[a-x0-9]+,sp
 **  vle8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  vse8.v\tv[0-9]+,0\([a-x0-9]+\)
-**  csrr\tt0,vlenb
-**  add\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  add\tsp,sp,[a-x0-9]+
 **  ...
 **  jr\tra
 */
@@ -262,8 +261,8 @@ spill_9 (uint8_t *in, uint8_t *out)
 
 /*
 ** spill_10:
-** csrr\tt0,vlenb
-** sub\tsp,sp,t0
+** csrr\t[a-x0-9]+,vlenb
+** sub\tsp,sp,[a-x0-9]+
 ** vsetvli\ta5,zero,e8,mf2,ta,ma
 ** vle8.v\tv[0-9]+,0\(a0\)
 ** csrr\t[a-x0-9]+,vlenb
@@ -271,13 +270,12 @@ spill_9 (uint8_t *in, uint8_t *out)
 ** add\t[a-x0-9]+,[a-x0-9]+,sp
 ** vse8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  ...
-**  csrr\t[a-x0-9]+,vlenb
 **  srli\t[a-x0-9]+,[a-x0-9]+,1
 **  add\t[a-x0-9]+,[a-x0-9]+,sp
 **  vle8.v\tv[0-9]+,0\([a-x0-9]+\)
 **  vse8.v\tv[0-9]+,0\([a-x0-9]+\)
-**  csrr\tt0,vlenb
-**  add\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  add\tsp,sp,[a-x0-9]+
 **  ...
 **  jr\tra
 */
@@ -291,8 +289,8 @@ spill_10 (uint8_t *in, uint8_t *out)
 
 /*
 ** spill_11:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  ...
 **  vs1r.v\tv[0-9]+,0\(sp\)
 **  ...
@@ -314,8 +312,8 @@ spill_11 (uint8_t *in, uint8_t *out)
 
 /*
 ** spill_12:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,1
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,1
 **  sub\tsp,sp,t1
 **  ...
 **  vs2r.v\tv[0-9]+,0\(sp\)
@@ -338,8 +336,8 @@ spill_12 (uint8_t *in, uint8_t *out)
 
 /*
 ** spill_13:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,2
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,2
 **  sub\tsp,sp,t1
 **  ...
 **  vs4r.v\tv[0-9]+,0\(sp\)
@@ -362,8 +360,8 @@ spill_13 (uint8_t *in, uint8_t *out)
 
 /*
 ** spill_14:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,3
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,3
 **  sub\tsp,sp,t1
 **  ...
 **  vs8r.v\tv[0-9]+,0\(sp\)

@@ -3497,14 +3497,14 @@ riscv_expand_op (enum rtx_code code, machine_mode mode, rtx op0, rtx op1,
 /* Expand mult operation with constant integer, multiplicand also used as a
  * temporary register.  */
 
-static void
+static bool
 riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
 				  HOST_WIDE_INT multiplier)
 {
   if (multiplier == 0)
     {
       riscv_emit_move (dest, GEN_INT (0));
-      return;
+      return false;
     }
 
   bool neg_p = multiplier < 0;
@@ -3515,7 +3515,13 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
       if (neg_p)
 	riscv_expand_op (NEG, mode, dest, multiplicand, NULL_RTX);
       else
-	riscv_emit_move (dest, multiplicand);
+	{
+	  riscv_emit_move (dest, multiplicand);
+
+	  /* Signal to our caller that it should try to optimize away
+	     the copy.  */
+	  return true;
+	}
     }
   else
     {
@@ -3595,10 +3601,15 @@ riscv_expand_mult_with_const_int (machine_mode mode, rtx dest, rtx multiplicand,
 	  riscv_expand_op (MULT, mode, dest, dest, multiplicand);
 	}
     }
+  return false;
 }
 
-/* Analyze src and emit const_poly_int mov sequence.  */
+/* Analyze src and emit const_poly_int mov sequence. 
 
+   Essentially we want to generate (set (dest) (src)), where SRC is
+   a poly_int.  We may need TMP as a scratch register.  We assume TMP
+   is truely a scratch register and need not have any particular value
+   after the sequence.  */
 void
 riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
 {
@@ -3655,8 +3666,42 @@ riscv_legitimize_poly_move (machine_mode mode, rtx dest, rtx tmp, rtx src)
     riscv_expand_op (LSHIFTRT, mode, tmp, tmp,
 		     gen_int_mode (exact_log2 (div_factor), QImode));
 
-  riscv_expand_mult_with_const_int (mode, dest, tmp,
-				    factor / (vlenb / div_factor));
+  bool opt_seq
+    = riscv_expand_mult_with_const_int (mode, dest, tmp,
+					factor / (vlenb / div_factor));
+
+  /* Potentially try to optimize the sequence we've generated so far.
+     Essentially when OPT_SEQ is true, we should have a simple reg->reg
+     copy from TMP to DEST as the last insn in the sequence.  Try to
+     back up one real insn and adjust it in that case.
+
+     This is important for frame setup/teardown with RVV since we can't
+     propagate away the copy as the copy is not frame related, but the
+     insn creating or destroying the frame is frame related.  */
+  if (opt_seq)
+    {
+      rtx_insn *insn = get_last_insn ();
+      rtx set = single_set (insn);
+
+      /* Verify the last insn in the chain is a simple assignment from
+	 DEST to TMP.  */
+      gcc_assert (set);
+      gcc_assert (SET_SRC (set) == tmp);
+      gcc_assert (SET_DEST (set) == dest);
+ 
+      /* Now back up one real insn and see if it sets TMP, if so adjust
+	 it so that it sets DEST.  */
+      rtx_insn *insn2 = prev_nonnote_nondebug_insn (insn);
+      rtx set2 = insn2 ? single_set (insn2) : NULL_RTX;
+      if (set2 && SET_DEST (set2) == tmp)
+	{
+	  SET_DEST (set2) = dest;
+	  /* Turn the prior insn into a NOP.  But don't delete.  */
+	  SET_SRC (set) = SET_DEST (set);
+	}
+ 
+    }
+
   HOST_WIDE_INT constant = offset - factor;
 
   if (constant == 0)

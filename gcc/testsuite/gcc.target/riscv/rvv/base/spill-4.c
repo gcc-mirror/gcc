@@ -7,8 +7,8 @@
 
 /*
 ** spill_4:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  ...
 **  vs1r.v\tv[0-9]+,0\(sp\)
 **  ...
@@ -30,8 +30,8 @@ spill_4 (int64_t *in, int64_t *out)
 
 /*
 ** spill_5:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,1
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,1
 **  sub\tsp,sp,t1
 **  ...
 **  vs2r.v\tv[0-9]+,0\(sp\)
@@ -54,8 +54,8 @@ spill_5 (int64_t *in, int64_t *out)
 
 /*
 ** spill_6:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,2
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,2
 **  sub\tsp,sp,t1
 **  ...
 **  vs4r.v\tv[0-9]+,0\(sp\)
@@ -78,8 +78,8 @@ spill_6 (int64_t *in, int64_t *out)
 
 /*
 ** spill_7:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,3
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,3
 **  sub\tsp,sp,t1
 **  ...
 **  vs8r.v\tv[0-9]+,0\(sp\)
@@ -102,8 +102,8 @@ spill_7 (int64_t *in, int64_t *out)
 
 /*
 ** spill_11:
-**  csrr\tt0,vlenb
-**  sub\tsp,sp,t0
+**  csrr\t[a-x0-9]+,vlenb
+**  sub\tsp,sp,[a-x0-9]+
 **  ...
 **  vs1r.v\tv[0-9]+,0\(sp\)
 **  ...
@@ -125,8 +125,8 @@ spill_11 (uint64_t *in, uint64_t *out)
 
 /*
 ** spill_12:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,1
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,1
 **  sub\tsp,sp,t1
 **  ...
 **  vs2r.v\tv[0-9]+,0\(sp\)
@@ -149,8 +149,8 @@ spill_12 (uint64_t *in, uint64_t *out)
 
 /*
 ** spill_13:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,2
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,2
 **  sub\tsp,sp,t1
 **  ...
 **  vs4r.v\tv[0-9]+,0\(sp\)
@@ -173,8 +173,8 @@ spill_13 (uint64_t *in, uint64_t *out)
 
 /*
 ** spill_14:
-**  csrr\tt0,vlenb
-**  slli\tt1,t0,3
+**  csrr\t[a-x0-9]+,vlenb
+**  slli\tt1,[a-x0-9]+,3
 **  sub\tsp,sp,t1
 **  ...
 **  vs8r.v\tv[0-9]+,0\(sp\)
