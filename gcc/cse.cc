@@ -6292,7 +6292,7 @@ cse_process_note (rtx x)
 
 static bool
 cse_find_path (basic_block first_bb, struct cse_basic_block_data *data,
-	       int follow_jumps)
+	       bool follow_jumps)
 {
   basic_block bb;
   edge e;
