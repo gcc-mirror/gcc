@@ -3172,7 +3172,6 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
   rtx_insn *seq;
   rtx_code op;
   machine_mode mode = GET_MODE (if_info->x);
-  enum rtx_code czero_code = UNKNOWN;
   bool reverse = false;
 
   if (!noce_simple_bbs (if_info))
@@ -3191,6 +3190,7 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
   /* Canonicalize x = y : (y op z) to x = (y op z) : y.  */
   if (REG_P (a) && noce_cond_zero_binary_op_supported (b))
     {
+      std::swap (if_info->cond, if_info->rev_cond);
       std::swap (a, b);
       reverse = true;
     }
@@ -3214,29 +3214,27 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
 
   /* Ensure the cond is of form: x = (y op z) : y */
   a_op0 = get_base_reg (XEXP (a, 0));
-  if (a_op0 && rtx_equal_p (a_op0, b))
-    {
-      czero_code = (reverse ^ (op == AND))
-		     ? noce_reversed_cond_code (if_info)
-		     : GET_CODE (cond);
-
-      if (czero_code == UNKNOWN)
-	goto fail;
-    }
-  else
+  if (!(a_op0 && rtx_equal_p (a_op0, b)))
     goto fail;
 
   start_sequence ();
+
+  target = gen_reg_rtx (mode);
+
+  /* AND requires !cond, instead we swap ops around.  */
+  target = noce_emit_czero (if_info, GET_CODE (if_info->cond),
+			    op != AND ? a_op1 : a_op0, target);
+
+  if (!target)
+    goto end_seq_n_fail;
 
   if (op == AND)
     {
       rtx a_bin = gen_reg_rtx (mode);
       noce_emit_move_insn (a_bin, a);
 
-      target = noce_emit_czero (if_info, czero_code, b, if_info->x);
-      if (target)
-	target = expand_simple_binop (mode, IOR, a_bin, target, if_info->x, 0,
-				      OPTAB_WIDEN);
+      target = expand_simple_binop (mode, IOR, a_bin, target, if_info->x, 0,
+				    OPTAB_WIDEN);
 
       if (!target)
 	goto end_seq_n_fail;
@@ -3246,17 +3244,6 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
     }
   else
     {
-      /* If x is used in both input and out like x = c ? x + z : x,
-	 use a new reg to avoid modifying x  */
-      if (rtx_equal_p (b, if_info->x))
-	target = gen_reg_rtx (mode);
-      else
-	target = if_info->x;
-
-      target = noce_emit_czero (if_info, czero_code, a_op1, target);
-      if (!target)
-	goto end_seq_n_fail;
-
       if (REG_P (XEXP (a, 1)))
 	XEXP (a, 1) = target;
 
@@ -3275,6 +3262,9 @@ end_seq_n_fail:
   end_sequence ();
 
 fail:
+  if (reverse)
+    std::swap (if_info->cond, if_info->rev_cond);
+
   return false;
 }
 
