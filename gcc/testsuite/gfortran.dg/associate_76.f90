@@ -22,6 +22,14 @@ contains
        var%i = 3
        var%i => NULL()      ! { dg-error "pointer association context" }
     end select
+
+    associate (avar => var)
+      select type(avar)     ! { dg-error "variable definition context" }
+      class is(t_b)
+         avar%i = 3
+         avar%i => NULL()   ! { dg-error "variable definition context" }
+      end select
+    end associate
   end subroutine s1
 
   subroutine s1a(var)
@@ -31,7 +39,26 @@ contains
        tmp%i = 3
        tmp%i => NULL()      ! { dg-error "variable definition context" }
     end select
+
+    associate (avar => var)
+      select type(tmp => avar) ! { dg-error "variable definition context" }
+      class is(t_b)
+         tmp%i = 3
+         tmp%i => NULL()       ! { dg-error "variable definition context" }
+      end select
+    end associate
   end subroutine s1a
+
+  subroutine s1b(var)
+    class(t_a), intent(in) :: var
+    associate (avar => var)
+      select type(tmp => avar) ! { dg-error "variable definition context" }
+      class is(t_b)
+         tmp%i = 3
+         tmp%i => NULL()       ! { dg-error "variable definition context" }
+      end select
+    end associate
+  end subroutine s1b
 
   subroutine s2(var)
     class(t_b), intent(in) :: var
@@ -58,10 +85,19 @@ contains
   subroutine s3(var)
     class(t_a), intent(in) :: var
     integer, pointer :: tmp
-    select type(var); class is(t_b)
+    select type(var)
+    class is(t_b)
        tmp => var%i
        tmp =  3
     end select
+
+    associate (avar => var)
+      select type(avar)
+      class is(t_b)
+         tmp => avar%i
+         tmp =  3
+      end select
+    end associate
   end subroutine s3
 
 end module m

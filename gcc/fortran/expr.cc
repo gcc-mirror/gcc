@@ -6784,14 +6784,31 @@ gfc_check_vardef_context (gfc_expr* e, bool pointer, bool alloc_obj,
     }
 
   /* See if the INTENT(IN) check should apply to an ASSOCIATE target.  */
-  if (check_intentin
-      && sym->assoc
-      && sym->assoc->target
-      && sym->assoc->target->symtree
-      && sym->assoc->target->symtree->n.sym
-      && sym->assoc->target->symtree->n.sym->attr.dummy
-      && sym->assoc->target->symtree->n.sym->attr.intent != INTENT_IN)
-    check_intentin = false;
+  if (check_intentin && sym->assoc && sym->assoc->target)
+    {
+      gfc_expr *target;
+      gfc_symbol *tsym;
+
+      check_intentin = false;
+
+      /* Walk through associate target chain to find a dummy argument.  */
+      for (target = sym->assoc->target; target; target = tsym->assoc->target)
+	{
+	  tsym = target->symtree ? target->symtree->n.sym : NULL;
+
+	  if (tsym == NULL)
+	    break;
+
+	  if (tsym->attr.dummy)
+	    {
+	      check_intentin = (tsym->attr.intent == INTENT_IN);
+	      break;
+	    }
+
+	  if (tsym->assoc == NULL)
+	    break;
+	}
+    }
 
   if (check_intentin
       && (sym->attr.intent == INTENT_IN
