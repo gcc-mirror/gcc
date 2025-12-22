@@ -137,4 +137,14 @@
 	When not defined, durations, time points, and calendar types are
 	available for freestanding, but the standard clocks and the time zone
 	database are not (because they require OS support).
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_USE_OLD_GENERATE_CANONICAL</code></span></dt><dd><p>
+	Undefined by default. When defined <code class="code">generate_canonical</code>
+	reverts to the algorithm used prior to the implementation of
+	<a class="link" href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p0952r2.html" target="_top">
+	P0952: A new specification for std::generate_canonical</a> in GCC-16.
+      </p></dd><dt><span class="term"><code class="code">_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI</code></span></dt><dd><p>
+	Undefined by default. When defined <code class="code">variant</code> in C++17
+	mode will revert to the non-conforming implementation used prior to the
+	<a class="link" href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=112591" target="_top">PR112591</a>
+	in GCC-16. Has no impact for C++20 or later modes.
       </p></dd></dl></div></div><div class="navfooter"><hr /><table width="100%" summary="Navigation footer"><tr><td width="40%" align="left"><a accesskey="p" href="using_headers.html">Prev</a> </td><td width="20%" align="center"><a accesskey="u" href="using.html">Up</a></td><td width="40%" align="right"> <a accesskey="n" href="using_dual_abi.html">Next</a></td></tr><tr><td width="40%" align="left" valign="top">Headers </td><td width="20%" align="center"><a accesskey="h" href="../index.html">Home</a></td><td width="40%" align="right" valign="top"> Dual ABI</td></tr></table></div></body></html>

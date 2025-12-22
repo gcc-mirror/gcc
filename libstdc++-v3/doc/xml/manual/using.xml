@@ -1343,6 +1343,26 @@ g++ -Winvalid-pch -I. -include stdc++.h -H -g -O2 hello.cc -o test.exe
 	database are not (because they require OS support).
       </para>
     </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_USE_OLD_GENERATE_CANONICAL</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined <code>generate_canonical</code>
+	reverts to the algorithm used prior to the implementation of
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	xlink:href="https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p0952r2.html">
+	P0952: A new specification for std::generate_canonical</link> in GCC-16.
+      </para>
+    </listitem></varlistentry>
+    <varlistentry><term><code>_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI</code></term>
+    <listitem>
+      <para>
+	Undefined by default. When defined <code>variant</code> in C++17
+	mode will revert to the non-conforming implementation used prior to the
+	<link xmlns:xlink="http://www.w3.org/1999/xlink"
+	xlink:href="https://gcc.gnu.org/bugzilla/show_bug.cgi?id=112591">PR112591</link>
+	in GCC-16. Has no impact for C++20 or later modes.
+      </para>
+    </listitem></varlistentry>
     </variablelist>
 
   </section>
