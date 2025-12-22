@@ -774,5 +774,5 @@ test_AND_eqz_x_2_reverse_bin_oprands (long x, long z, long c)
     x = z & x;
   return x;
 }
-/* { dg-final { scan-assembler-times {czero\.eqz} 36 } } */
+/* { dg-final { scan-assembler-times {czero\.eqz} 41 } } */
 /* { dg-final { scan-assembler-times {czero\.nez} 36 } } */
