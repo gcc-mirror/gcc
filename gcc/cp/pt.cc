@@ -946,7 +946,7 @@ maybe_new_partial_specialization (tree& type)
      Note that we also get here for injected class names and
      late-parsed template definitions. We must ensure that we
      do not create new type declarations for those cases.  */
-  if (flag_concepts && CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
+  if (CLASSTYPE_TEMPLATE_SPECIALIZATION (type))
     {
       tree tmpl = CLASSTYPE_TI_TEMPLATE (type);
       tree args = CLASSTYPE_TI_ARGS (type);
@@ -979,7 +979,12 @@ maybe_new_partial_specialization (tree& type)
           tree spec_tmpl = TREE_VALUE (specs);
           tree spec_args = TREE_PURPOSE (specs);
           tree spec_constr = get_constraints (spec_tmpl);
-          if (comp_template_args (args, spec_args)
+	  tree spec_parms = DECL_TEMPLATE_PARMS (spec_tmpl);
+	  /* Per [temp.spec.partial.general]/2, two partial specializations
+	     declare the same entity if they have equivalent template-heads
+	     and template argument lists.  */
+	  if (comp_template_args (args, spec_args)
+	      && comp_template_parms (spec_parms, current_template_parms)
 	      && equivalent_constraints (type_constr, spec_constr))
 	    {
 	      type = TREE_TYPE (spec_tmpl);
