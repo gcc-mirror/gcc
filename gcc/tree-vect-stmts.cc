@@ -10708,8 +10708,40 @@ vectorizable_load (vec_info *vinfo,
 	 once at analysis time, remembered and used in the
 	 transform time.  */
       bool hoist_p = (LOOP_VINFO_NO_DATA_DEPENDENCIES (loop_vinfo)
-		      && !nested_in_vect_loop
-		      && hoist_defs_of_uses (stmt_info->stmt, loop, false));
+		      && !nested_in_vect_loop);
+
+      for (stmt_vec_info sinfo : SLP_TREE_SCALAR_STMTS (slp_node))
+	{
+	  /* It is unsafe to hoist a conditional load over the conditions that
+	     make it valid.  When early break this means that any invariant load
+	     can't be hoisted unless it's in the loop header or if we know
+	     something else has verified the load is valid to do.  Alignment
+	     peeling would do this since getting through the prologue means the
+	     load was done at least once and so the vector main body is free to
+	     hoist it.  However today GCC will hoist the load above the PFA
+	     loop.  As such that makes it still invalid and so we can't allow it
+	     today.  */
+	  if (LOOP_VINFO_EARLY_BREAKS (loop_vinfo)
+	      && !DR_SCALAR_KNOWN_BOUNDS (STMT_VINFO_DR_INFO (sinfo))
+	      && gimple_bb (STMT_VINFO_STMT (vect_orig_stmt (sinfo)))
+		  != loop->header)
+	    {
+	      if (LOOP_VINFO_PEELING_FOR_ALIGNMENT (loop_vinfo)
+		  && dump_enabled_p ())
+		dump_printf_loc (MSG_MISSED_OPTIMIZATION, vect_location,
+			     "not hoisting invariant load due to early break"
+			     "constraints\n");
+	      else if (dump_enabled_p ())
+	       dump_printf_loc (MSG_NOTE, vect_location,
+			     "not hoisting invariant load due to early break"
+			     "constraints\n");
+	      hoist_p = false;
+	      break;
+	    }
+
+	  hoist_p = hoist_p && hoist_defs_of_uses (sinfo->stmt, loop, false);
+	}
+
       if (costing_p)
 	{
 	  enum vect_cost_model_location cost_loc
