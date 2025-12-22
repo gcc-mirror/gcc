@@ -2037,35 +2037,6 @@ noce_emit_cmove (struct noce_if_info *if_info, rtx x, enum rtx_code code,
     return NULL_RTX;
 }
 
-/*  Emit a conditional zero, returning TARGET or NULL_RTX upon failure.
-    IF_INFO describes the if-conversion scenario under consideration.
-    CZERO_CODE selects the condition (EQ/NE).
-    NON_ZERO_OP is the nonzero operand of the conditional move
-    TARGET is the desired output register.  */
-
-static rtx
-noce_emit_czero (struct noce_if_info *if_info, enum rtx_code czero_code,
-		 rtx non_zero_op, rtx target)
-{
-  machine_mode mode = GET_MODE (target);
-  rtx cond_op0 = XEXP (if_info->cond, 0);
-  rtx czero_cond
-    = gen_rtx_fmt_ee (czero_code, GET_MODE (cond_op0), cond_op0, const0_rtx);
-  rtx if_then_else
-    = gen_rtx_IF_THEN_ELSE (mode, czero_cond, const0_rtx, non_zero_op);
-  rtx set = gen_rtx_SET (target, if_then_else);
-
-  rtx_insn *insn = make_insn_raw (set);
-
-  if (recog_memoized (insn) >= 0)
-    {
-      add_insn (insn);
-      return target;
-    }
-
-  return NULL_RTX;
-}
-
 /* Try only simple constants and registers here.  More complex cases
    are handled in noce_try_cmove_arith after noce_try_store_flag_arith
    has had a go at it.  */
@@ -3177,10 +3148,6 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
   if (!noce_simple_bbs (if_info))
     return false;
 
-  /* COND must be EQ or NE comparision of a reg and 0.  */
-  if (GET_CODE (cond) != NE && GET_CODE (cond) != EQ)
-    return false;
-
   if (!REG_P (XEXP (cond, 0)) || !rtx_equal_p (XEXP (cond, 1), const0_rtx))
     return false;
 
@@ -3222,9 +3189,10 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
   target = gen_reg_rtx (mode);
 
   /* AND requires !cond, instead we swap ops around.  */
-  target = noce_emit_czero (if_info, GET_CODE (if_info->cond),
-			    op != AND ? a_op1 : a_op0, target);
-
+  target = noce_emit_cmove (if_info, target, GET_CODE (if_info->cond),
+			    XEXP (if_info->cond, 0), XEXP (if_info->cond, 1),
+			    op != AND ? a_op1 : const0_rtx,
+			    op != AND ? const0_rtx : a_op0);
   if (!target)
     goto end_seq_n_fail;
 
