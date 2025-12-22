@@ -211,11 +211,15 @@ gfc_match_generic_spec (interface_type *type,
       *op = dtio_op (buffer);
       if (*op == INTRINSIC_FORMATTED)
 	{
+	  if (flag_default_integer)
+	    goto conflict;
 	  strcpy (name, gfc_code2string (dtio_procs, DTIO_RF));
 	  *type = INTERFACE_DTIO;
 	}
       if (*op == INTRINSIC_UNFORMATTED)
 	{
+	  if (flag_default_integer)
+	    goto conflict;
 	  strcpy (name, gfc_code2string (dtio_procs, DTIO_RUF));
 	  *type = INTERFACE_DTIO;
 	}
@@ -228,11 +232,15 @@ gfc_match_generic_spec (interface_type *type,
       *op = dtio_op (buffer);
       if (*op == INTRINSIC_FORMATTED)
 	{
+	  if (flag_default_integer)
+	    goto conflict;
 	  strcpy (name, gfc_code2string (dtio_procs, DTIO_WF));
 	  *type = INTERFACE_DTIO;
 	}
       if (*op == INTRINSIC_UNFORMATTED)
 	{
+	  if (flag_default_integer)
+	    goto conflict;
 	  strcpy (name, gfc_code2string (dtio_procs, DTIO_WUF));
 	  *type = INTERFACE_DTIO;
 	}
@@ -249,6 +257,11 @@ gfc_match_generic_spec (interface_type *type,
 
   *type = INTERFACE_NAMELESS;
   return MATCH_YES;
+
+conflict:
+  gfc_error ("Sorry: -fdefault-integer-8 option is not supported with "
+	     "user-defined input/output at %C");
+  return MATCH_ERROR;
 
 syntax:
   gfc_error ("Syntax error in generic specification at %C");
