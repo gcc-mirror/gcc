@@ -12364,10 +12364,10 @@ package body Exp_Ch4 is
                       or else Attribute_Name (Original_Node (N)) = Name_Access)
            and then not No_Dynamic_Accessibility_Checks_Enabled (N)
          then
-            if Nkind (Parent (N)) in N_Function_Call
-                                   | N_Parameter_Association
-                                   | N_Procedure_Call_Statement
-              and then not Comes_From_Source (Parent (N))
+            if not Comes_From_Source (N)
+              and then Nkind (Parent (N)) in N_Function_Call
+                                           | N_Parameter_Association
+                                           | N_Procedure_Call_Statement
               and then Is_Tagged_Type (Designated_Type (Target_Type))
             then
                null;
