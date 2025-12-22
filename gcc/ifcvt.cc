@@ -3236,19 +3236,18 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
       target = expand_simple_binop (mode, IOR, a_bin, target, if_info->x, 0,
 				    OPTAB_WIDEN);
 
-      if (!target)
-	goto end_seq_n_fail;
-
-      if (target != if_info->x)
-	noce_emit_move_insn (if_info->x, target);
     }
   else
     {
-      if (REG_P (XEXP (a, 1)))
-	XEXP (a, 1) = target;
-
-      noce_emit_move_insn (if_info->x, a);
+      target = expand_simple_binop (mode, op, a_op0, target, if_info->x, 0,
+				    OPTAB_WIDEN);
     }
+
+  if (!target)
+    goto end_seq_n_fail;
+
+  if (target != if_info->x)
+    noce_emit_move_insn (if_info->x, target);
 
   seq = end_ifcvt_sequence (if_info);
   if (!seq || !targetm.noce_conversion_profitable_p (seq, if_info))
