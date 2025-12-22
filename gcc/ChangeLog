@@ -1,3 +1,18 @@
+2025-12-21  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/123089
+	* tree-vect-loop.cc (vect_update_ivs_after_vectorizer_for_early_breaks):
+	Add conversion if required, Note that if we did truncate the original
+	scalar loop had an overflow here anyway.
+	(vect_get_max_nscalars_per_iter): Expose.
+	* tree-vect-stmts.cc (vect_compute_type_for_early_break_scalar_iv): New.
+	(vectorizable_early_exit): Find smallest type where we won't have UB in
+	the signed IV and store it.
+	* tree-vectorizer.h (LOOP_VINFO_EARLY_BRK_IV_TYPE): New.
+	(class _loop_vec_info): Add early_break_iv_type.
+	(vect_min_prec_for_max_niters): New.
+	* tree-vect-loop-manip.cc (vect_do_peeling): Use it.
+
 2025-12-20  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
 
 	PR middle-end/123222

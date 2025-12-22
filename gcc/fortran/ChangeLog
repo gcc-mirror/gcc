@@ -1,3 +1,26 @@
+2025-12-21  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/123201
+	* trans-expr.cc (conv_dummy_value): Convert string of length 1 to a
+	single character for passing as actual argument.
+
+2025-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121472
+	* trans.cc (gfc_finalize_tree_expr): Replace !derived->components
+	check with TYPE_SIZE_UNIT check for zero-size types.
+
+2025-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
+
+	PR fortran/121475
+	* trans.cc (gfc_finalize_tree_expr): Add logic to allow the
+	function result to be resolved in resolve.cc
+	(generate_component_assignments).
+
+2025-12-21  Tamar Christina  <tamar.christina@arm.com>
+
+	* trans-openmp.cc (gfc_trans_omp_clauses): Add default to switch.
+
 2025-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* dump-parse-tree.cc (show_omp_clauses): Add default: with
