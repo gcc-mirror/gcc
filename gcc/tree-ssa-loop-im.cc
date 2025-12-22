@@ -3174,7 +3174,27 @@ is_self_write (im_mem_ref *load_ref, im_mem_ref *store_ref)
     return false;
 
   /* Self write: stored value is the loaded value.  */
-  return stored_val == loaded_val;
+  if (stored_val != loaded_val)
+    return false;
+
+
+  /* TODO: Try to factor this out with mem_ref_hasher::equal
+     into im_compare_access_position_and_size
+     or a similar helper to centralize this delicate handling
+     complete for MEM_REF offsets and base pointer equality.
+
+     TODO: Also ensure max_size_known_p agrees or resort to
+     alignment considerations to rule out partial overlaps.
+
+     See:
+     https://gcc.gnu.org/pipermail/gcc-patches/2025-December/704155.html
+     For more context on TODOs above.  */
+
+  /* They may alias.  Verify exact same location.  */
+  return (operand_equal_p (load_ref->mem.base, store_ref->mem.base, 0)
+	  && known_eq (load_ref->mem.size, store_ref->mem.size)
+	  && known_eq (load_ref->mem.offset, store_ref->mem.offset));
+
 }
 
 /* Returns true if REF1 and REF2 are independent.  */
