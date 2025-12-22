@@ -4680,15 +4680,24 @@ update_pointer_to (tree old_type, tree new_type)
 	  /* If there is no pointer pointing to NEW_TYPE yet, re-compute the
 	     TYPE_CANONICAL of the old pointer but pointing to NEW_TYPE, like
 	     build_pointer_type would have done for such a pointer, because we
-	     will propagate it in the adjustment loop below.  */
+	     will propagate it in the adjustment loop below.  But make sure to
+	     preserve an alias set already present on the old pointer.  */
 	  if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
 	    SET_TYPE_STRUCTURAL_EQUALITY (old_ptr);
 	  else if (TYPE_CANONICAL (new_type) != new_type
 		   || (TYPE_REF_CAN_ALIAS_ALL (old_ptr)
 		       && !lookup_attribute ("may_alias",
 					     TYPE_ATTRIBUTES (new_type))))
-	    TYPE_CANONICAL (old_ptr)
-	      = build_pointer_type (TYPE_CANONICAL (new_type));
+	    {
+	      alias_set_type set;
+	      if (TYPE_STRUCTURAL_EQUALITY_P (old_ptr))
+		set = TYPE_ALIAS_SET (old_ptr);
+	      else
+		set = TYPE_ALIAS_SET (TYPE_CANONICAL (old_ptr));
+	      TYPE_CANONICAL (old_ptr)
+		= build_pointer_type (TYPE_CANONICAL (new_type));
+	      TYPE_ALIAS_SET (TYPE_CANONICAL (old_ptr)) = set;
+	    }
 	}
 
       /* Now adjust them.  */
@@ -4716,15 +4725,24 @@ update_pointer_to (tree old_type, tree new_type)
 	  /* If there is no reference pointing to NEW_TYPE yet, re-compute the
 	     TYPE_CANONICAL of the old reference but pointing to NEW_TYPE, like
 	     build_reference_type would have done for such a reference, because
-	     we will propagate it in the adjustment loop below.  */
+	     we will propagate it in the adjustment loop below.  But make sure
+	     to preserve an alias set already present on the old reference.  */
 	  if (TYPE_STRUCTURAL_EQUALITY_P (new_type))
 	    SET_TYPE_STRUCTURAL_EQUALITY (old_ref);
 	  else if (TYPE_CANONICAL (new_type) != new_type
 		   || (TYPE_REF_CAN_ALIAS_ALL (old_ref)
 		       && !lookup_attribute ("may_alias",
 					     TYPE_ATTRIBUTES (new_type))))
-	    TYPE_CANONICAL (old_ref)
-	      = build_reference_type (TYPE_CANONICAL (new_type));
+	    {
+	      alias_set_type set;
+	      if (TYPE_STRUCTURAL_EQUALITY_P (old_ref))
+		set = TYPE_ALIAS_SET (old_ref);
+	      else
+		set = TYPE_ALIAS_SET (TYPE_CANONICAL (old_ref));
+	      TYPE_CANONICAL (old_ref)
+		= build_reference_type (TYPE_CANONICAL (new_type));
+	      TYPE_ALIAS_SET (TYPE_CANONICAL (old_ref)) = set;
+	    }
 	}
 
       /* Now adjust them.  */
