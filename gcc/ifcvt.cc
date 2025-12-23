@@ -4405,12 +4405,12 @@ noce_process_if_block (struct noce_if_info *if_info)
       if (noce_try_store_flag_mask (if_info))
 	goto success;
       if (HAVE_conditional_move
-          && noce_try_cond_zero_arith (if_info))
-	goto success;
-      if (HAVE_conditional_move
 	  && noce_try_cmove_arith (if_info))
 	goto success;
       if (noce_try_sign_mask (if_info))
+	goto success;
+      if (HAVE_conditional_move
+          && noce_try_cond_zero_arith (if_info))
 	goto success;
     }
 
