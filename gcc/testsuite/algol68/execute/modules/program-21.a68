@@ -1,0 +1,5 @@
+{ dg-modules "module-foo module-bar" }
+{ dg-options "-fmodules-map-file=$srcdir/algol68/execute/modules/Modules20.map" }
+
+access Foo
+  access Bar (assert (foo = 10); assert (bar = 20))

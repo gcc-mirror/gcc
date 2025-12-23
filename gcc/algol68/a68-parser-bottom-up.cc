@@ -201,6 +201,14 @@ empty_clause (NODE_T *p)
   a68_error (p, "clause does not yield a value");
 }
 
+/* Diagnose for invalid module text.  */
+
+static void
+expected_module_text (NODE_T *p)
+{
+  a68_error (p, "expected module text in module definition");
+}
+
 /* Diagnose for missing symbol.  */
 
 static void
@@ -453,7 +461,7 @@ reduce_prelude_packet (NODE_T *p)
   /* Single module declaration.  */
   reduce (p, NO_NOTE, NO_TICK,
 	  MODULE_DECLARATION, MODULE_SYMBOL, DEFINING_MODULE_INDICANT, EQUALS_SYMBOL, MODULE_TEXT, STOP);
-  reduce (p, strange_tokens, NO_TICK,
+  reduce (p, expected_module_text, NO_TICK,
 	  MODULE_DECLARATION, MODULE_SYMBOL, DEFINING_MODULE_INDICANT, EQUALS_SYMBOL, -MODULE_TEXT, STOP);
 
 #if 0
@@ -2881,7 +2889,9 @@ a68_bottom_up_error_check (NODE_T *p)
 	}
       else if (IS (p, PUBLIC_SYMBOL))
 	{
-	  /* These should have been removed by a68_bottom_up_coalesce_pub.  */
+	  /* These should have been removed by a68_bottom_up_coalesce_pub and
+	     by a68_extract_indicants.  */
+	  /* XXX get rid of this.  */
 	  gcc_unreachable ();
 	}
       else if (a68_is_one_of (p, DEFINING_INDICANT, DEFINING_IDENTIFIER, DEFINING_OPERATOR, STOP))

@@ -1,0 +1,6 @@
+module Foo = { dg-error "expected module text" }
+          access Bar access Baz access Quux { dg-error "nested" }
+def
+    pub int bar = foo + baz;
+    skip
+fed

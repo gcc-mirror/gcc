@@ -343,17 +343,24 @@ a68_extract_indicants (NODE_T *p)
 	  do
 	    {
 	      FORWARD (q);
-	      detect_redefined_keyword (q, MODE_DECLARATION);
-	      if (IS (q, BOLD_TAG))
+	      if (q != NO_NODE)
 		{
-		  extract_revelation (q, false /* is_public */);
-		  FORWARD (q);
-		}
-	      else if (a68_whether (q, PUBLIC_SYMBOL, BOLD_TAG, STOP))
-		{
-		  extract_revelation (q, true /* is_public */);
-		  FORWARD (q);
-		  FORWARD (q);
+		  detect_redefined_keyword (q, MODULE_DECLARATION);
+		  if (IS (q, BOLD_TAG))
+		    {
+		      extract_revelation (q, false /* is_public */);
+		      FORWARD (q);
+		    }
+		  else if (a68_whether (q, PUBLIC_SYMBOL, BOLD_TAG, STOP))
+		    {
+		      NODE_T *pub_node = q;
+		      extract_revelation (NEXT (pub_node), true /* is_public */);
+		      /* XXX get rid of this crap.  */
+		      PREVIOUS (NEXT (pub_node)) = PREVIOUS (pub_node);
+		      if (PREVIOUS (pub_node) != NO_NODE)
+			NEXT (PREVIOUS (pub_node)) = NEXT (pub_node);
+		      FORWARD (q);
+		    }
 		}
 	    }
 	  while (q != NO_NODE && IS (q, COMMA_SYMBOL));
@@ -377,8 +384,17 @@ a68_extract_indicants (NODE_T *p)
 		  EXPORTED (tag) = true;
 		  FORWARD (q);
 		  ATTRIBUTE (q) = EQUALS_SYMBOL; /* XXX why not ALT_EQUALS_SYMBOL */
-		  q = skip_module_text (NEXT (q));
-		  FORWARD (q);
+		  if (NEXT (q) != NO_NODE && IS (NEXT (q), ACCESS_SYMBOL))
+		    {
+		      a68_error (NEXT (q),
+				 "nested access clauses not allowed in module texts");
+		      siga = false;
+		    }
+		  else
+		    {
+		      q = skip_module_text (NEXT (q));
+		      FORWARD (q);
+		    }
 		}
 	      else
 		siga = false;
