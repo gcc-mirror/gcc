@@ -262,7 +262,7 @@ const char *constant_string_class_name;
 
 int warn_abi_version = -1;
 
-/* The C++ dialect being used.  Default set in c_common_post_options.  */
+/* The C++ dialect being used.  Default set in c_common_init_options.  */
 
 enum cxx_dialect cxx_dialect = cxx_unset;
 
