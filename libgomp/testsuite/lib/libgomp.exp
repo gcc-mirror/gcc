@@ -728,8 +728,16 @@ int main() {
 # return 1 if OpenMP Unified Shared Memory is supported by offload devices
 
 proc check_effective_target_omp_usm { } {
-    if { [check_effective_target_offload_device_nvptx] 
-         || [check_effective_target_offload_target_amdgcn] } {
+    set flags ""
+    if { [check_effective_target_offload_target_amdgcn] } {
+	# Specify '-mxnack=any' to inhibit GCN offloading compilation
+	# 'warning: Unified Shared Memory is required, but XNACK is disabled'.
+	# This run-time effective-target check shouldn't fail in case there's
+	# actually no AMD GPU, but there's an USM-capable NVIDIA GPU.
+	lappend flags "-foffload-options=amdgcn-amdhsa=-mxnack=any"
+    }
+    if { $flags != ""
+	 || [check_effective_target_offload_device_nvptx] } {
 	if [check_runtime usm_available_ {
 	    #include <omp.h>
 	    #pragma omp requires unified_shared_memory
@@ -740,7 +748,7 @@ proc check_effective_target_omp_usm { } {
 		a = omp_is_initial_device ();
 	      return a;
 	    }
-	} ] {
+	} "$flags" ] {
 	  return 1
 	}
     }
