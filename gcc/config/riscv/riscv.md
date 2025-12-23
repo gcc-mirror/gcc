@@ -4727,7 +4727,7 @@
   [(match_operand:ANYI 0 "register_operand")
    (match_operand:ANYI 1 "register_operand")
    (match_operand:ANYI 2 "register_operand")]
-  ""
+  "TARGET_ZMMUL || TARGET_MUL"
   {
     riscv_expand_usmul (operands[0], operands[1], operands[2]);
     DONE;
