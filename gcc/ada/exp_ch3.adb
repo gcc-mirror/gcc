@@ -8021,10 +8021,6 @@ package body Exp_Ch3 is
       --  Explicit initialization present
 
       else
-         --  Obtain actual expression from qualified expression
-
-         Expr_Q := Unqualify (Expr);
-
          --  When we have the appropriate kind of aggregate in the expression
          --  (this has been determined during analysis of the aggregate by
          --  setting the Expansion_Delayed flag), let's perform in place
@@ -8494,6 +8490,7 @@ package body Exp_Ch3 is
             elsif Is_CPP_Constructor_Call (Expr) then
                declare
                   Id_Ref : constant Node_Id := New_Occurrence_Of (Def_Id, Loc);
+                  Marker : constant Node_Id := Next (N);
 
                begin
                   --  The call to the initialization procedure does NOT freeze
@@ -8501,16 +8498,6 @@ package body Exp_Ch3 is
 
                   Set_Must_Not_Freeze (Id_Ref);
                   Set_Assignment_OK (Id_Ref);
-
-                  --  Avoid separating an object declaration from
-                  --  its representation clauses.
-
-                  while Present (Next (Init_After))
-                    and then Nkind (Next (Init_After)) in
-                               N_Attribute_Definition_Clause
-                  loop
-                     Init_After := Next (Init_After);
-                  end loop;
 
                   Insert_Actions_After (Init_After,
                     Build_Initialization_Call (N, Id_Ref, Typ,
@@ -8520,6 +8507,22 @@ package body Exp_Ch3 is
                   --  to avoid its management in the backend
 
                   Set_Expression (N, Empty);
+
+                  --  Place the call to the constructor into a compound
+                  --  statement attached to the object through attribute
+                  --  Initialization_Statements; the compound statement will
+                  --  be moved to the freezing actions of the object if the
+                  --  object has an address clause (see Analyze_Attribute_
+                  --  Definition_Clause, Attribute_Address).
+
+                  if Needs_Initialization_Statements (N)
+                    and then not (Scope_Is_Transient
+                                    and then N = Node_To_Be_Wrapped)
+                  then
+                     Set_No_Initialization (N);
+                     Move_To_Initialization_Statements (N, Marker);
+                  end if;
+
                   return;
                end;
 
