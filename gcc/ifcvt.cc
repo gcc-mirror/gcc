@@ -3147,6 +3147,13 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
   machine_mode mode = GET_MODE (if_info->x);
   bool reverse = false;
 
+  /* Scalar integral modes are only supported here.
+     Could support scalar floating point but that
+     would be only with -ffast-math and might
+     be worse than a branch.  */
+  if (!SCALAR_INT_MODE_P (mode))
+    return false;
+
   if (!noce_simple_bbs (if_info))
     return false;
 
