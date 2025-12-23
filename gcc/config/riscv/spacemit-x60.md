@@ -93,7 +93,7 @@
 	    (eq_attr "mode" "DI")))
   "spacemit_x60_alu")
 
-(define_insn_reservation "spacemit_x60_clmul" 5
+(define_insn_reservation "spacemit_x60_clmul" 3
   (and (eq_attr "tune" "spacemit_x60")
        (eq_attr "type" "clmul"))
   "spacemit_x60_alu")
