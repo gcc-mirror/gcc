@@ -1,3 +1,10 @@
+2025-12-22  Tomasz Kamiński  <tkaminsk@redhat.com>
+
+	* doc/html/manual/using_macros.html: Regenerate.
+	* doc/xml/manual/using.xml: Add entries for
+	_GLIBCXX_USE_OLD_GENERATE_CANONICAL and
+	_GLIBCXX_USE_VARIANT_CXX17_OLD_ABI.
+
 2025-12-19  Tomasz Kamiński  <tkaminsk@redhat.com>
 
 	PR libstdc++/112591

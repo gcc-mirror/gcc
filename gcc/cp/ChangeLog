@@ -1,3 +1,29 @@
+2025-12-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122994
+	* module.cc (depset::disc_bits): New flag
+	DB_IGNORED_EXPOSURE_BIT.
+	(depset::is_ignored_exposure_context): New getter.
+	(depset::hash::ignore_tu_local): Rename to...
+	(depset::hash::ignore_exposure): ...this, and make private.
+	(depset::hash::hash): Rename ignore_tu_local.
+	(depset::hash::ignore_exposure_if): New function.
+	(trees_out::decl_value): Don't build deps for keyed entities.
+	(trees_in::decl_value): Handle missing keys.
+	(trees_out::write_function_def): Use ignore_exposure_if.
+	(trees_out::write_var_def): Likewise.
+	(trees_out::write_class_def): Likewise.
+	(depset::hash::make_dependency): Set DB_IGNORED_EXPOSURE_BIT if
+	appropriate, or clear it otherwise.
+	(depset::hash::add_dependency): Rename ignore_tu_local.
+	(depset::hash::find_dependencies): Set ignore_exposure if in
+	such a context.
+
+2025-12-22  Yuao Ma  <c8ef@outlook.com>
+
+	PR c++/123261
+	* semantics.cc (expand_or_defer_fn_1): Use maybe_constexpr_fn.
+
 2025-12-20  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122712

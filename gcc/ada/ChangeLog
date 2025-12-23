@@ -1,3 +1,21 @@
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Streamline.
+
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Preserve the alias
+	sets present on the old pointer and old reference, if any.
+
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123185
+	* sem_ch4.adb (Analyze_Overloaded_Selected_Component): Go to the
+	root when the prefix has a class-wide type.
+	* sem_res.adb (Resolve_Selected_Component): Likewise.
+
 2025-12-19  Jakub Jelinek  <jakub@redhat.com>
 
 	* sem_attr.adb (Set_Bounds): Fix comment typo, transfered

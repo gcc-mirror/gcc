@@ -1,3 +1,46 @@
+2025-12-22  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	PR middle-end/123067
+	* tree-ssa-loop-im.cc(is_self_write): Check
+	load and store refer to same location.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* ifcvt.cc (get_base_reg): Handle subreg.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/122769
+	* ifcvt.cc (noce_try_cond_zero_arith): Use noce_emit_cmove.
+	Delete noce_emit_czero () no longer used.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* ifcvt.cc (noce_try_cond_zero_arith): Use expand_simple_binop
+	to re-expand the final pattern.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* ifcvt.cc (noce_try_cond_zero_arith): Refactor.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* ifcvt.cc (noce_bbs_ok_for_cond_zero_arith): Move logic out.
+	(noce_try_cond_zero_arith): Into here.
+
+2025-12-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* config/riscv/riscv.cc (riscv_expand_mult_with_const_int): Signal
+	when this creates a simple copy that may be optimized.
+	(riscv_legitimate_poly_move): Try to optimize away any copy created
+	by riscv_expand_mult_with_const_int.
+
+2025-12-22  Filip Kastl  <fkastl@suse.cz>
+
+	* doc/invoke.texi: Document
+	--param=memtag-instrument-mem-intrinsics
+
 2025-12-21  Tamar Christina  <tamar.christina@arm.com>
 
 	PR tree-optimization/123089

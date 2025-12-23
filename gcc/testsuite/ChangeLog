@@ -1,3 +1,73 @@
+2025-12-22  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122994
+	* g++.dg/modules/internal-17_b.C: Use functions and internal
+	types rather than lambdas.
+	* g++.dg/modules/internal-4_b.C: Correct expected result.
+	* g++.dg/modules/internal-20_a.C: New test.
+	* g++.dg/modules/internal-20_b.C: New test.
+	* g++.dg/modules/internal-20_c.C: New test.
+	* g++.dg/modules/internal-21_a.C: New test.
+	* g++.dg/modules/internal-21_b.C: New test.
+
+2025-12-22  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/122957
+	* gfortran.dg/pr122957.f90: New test.
+
+2025-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/123253
+	* gfortran.dg/associate_76.f90: Extended testcase.
+	* gfortran.dg/associate_77.f90: New test.
+
+2025-12-22  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
+
+	PR middle-end/123067
+	* gcc.dg/licm-self-write-partial-alias.c: New test.
+
+2025-12-22  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* algol68/execute/modules/Modules20.map (module-bar): Add
+	underscores.
+
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	* gnat.dg/specs/class_wide1.ads: New test.
+
+2025-12-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/spill-7.c: Update expected output.
+
+2025-12-22  Yuao Ma  <c8ef@outlook.com>
+
+	PR c++/123261
+	* g++.dg/ext/fimplicit-constexpr2.C: New test.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+
+	* gcc.target/riscv/zicond_ifcvt_opt.c: Adjust increased czero counts.
+
+2025-12-22  Vineet Gupta  <vineetg@rivosinc.com>
+	    Philipp Tomsich  <philipp.tomsich@vrull.eu>
+
+	PR target/122769
+	* gcc.target/riscv/pr122769.c: New test.
+
+2025-12-22  Jeff Law  <jlaw@ventanamicro.com>
+
+	* gcc.target/riscv/rvv/base/spill-1.c: Update expected output.
+	* gcc.target/riscv/rvv/base/spill-2.c: Likewise.
+	* gcc.target/riscv/rvv/base/spill-3.c: Likewise.
+	* gcc.target/riscv/rvv/base/spill-4.c: Likewise.
+	* gcc.target/riscv/rvv/base/spill-5.c: Likewise.
+	* gcc.target/riscv/rvv/base/spill-6.c: Likewise.
+
+2025-12-22  Stefan Schulze Frielinghaus  <stefansf@gcc.gnu.org>
+
+	* gcc.target/s390/zvector/vec-addc-u128.c: Honor deprecation
+	warning.
+
 2025-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	PR fortran/121472

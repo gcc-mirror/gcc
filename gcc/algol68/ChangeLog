@@ -1,3 +1,15 @@
+2025-12-22  Jose E. Marchesi  <jose.marchesi@oracle.com>
+
+	* a68-imports.cc (PARSE_INDICANT): Fix handling of uderscore
+	characters.
+
+2025-12-22  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* a68-parser-scanner.cc (a68_file_size): Fix comment to mention
+	it accepts `FILE *' and not file descriptor.
+	Fix invocation of `lseek' to correctly revert position of file
+	offset to previous one.
+
 2025-12-20  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-low-moids.cc (a68_lower_moids): Fix for layout of

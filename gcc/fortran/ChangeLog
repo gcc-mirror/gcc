@@ -1,3 +1,15 @@
+2025-12-22  Steve Kargl  <kargl@gcc.gnu.org>
+
+	PR fortran/122957
+	* interface.cc (gfc_match_generic_spec): Issue an error
+	so that users do not use -fdefault-integer-8 with DTIO.
+
+2025-12-22  Harald Anlauf  <anlauf@gmx.de>
+
+	PR fortran/123253
+	* expr.cc (gfc_check_vardef_context): Replace simple check by a
+	scan through the association targets for a dummy argument.
+
 2025-12-21  Harald Anlauf  <anlauf@gmx.de>
 
 	PR fortran/123201
