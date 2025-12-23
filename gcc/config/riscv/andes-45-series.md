@@ -112,7 +112,7 @@
 (define_insn_reservation "andes_45_fpu_alu_s" 3
   (and (eq_attr "tune" "andes_45_series")
        (and (eq_attr "type" "fadd")
-	    (eq_attr "mode" "SF")))
+	    (eq_attr "mode" "BF,HF,SF")))
   "andes_45_fpu_arith")
 
 (define_insn_reservation "andes_45_fpu_alu_d" 4
@@ -124,7 +124,7 @@
 (define_insn_reservation "andes_45_fpu_mul_s" 3
   (and (eq_attr "tune" "andes_45_series")
        (and (eq_attr "type" "fmul")
-	    (eq_attr "mode" "SF")))
+	    (eq_attr "mode" "BF,HF,SF")))
   "andes_45_fpu_arith")
 
 (define_insn_reservation "andes_45_fpu_mul_d" 4
@@ -136,7 +136,7 @@
 (define_insn_reservation "andes_45_fpu_mac_s" 3
   (and (eq_attr "tune" "andes_45_series")
        (and (eq_attr "type" "fmadd")
-	    (eq_attr "mode" "SF")))
+	    (eq_attr "mode" "BF,HF,SF")))
   "(andes_45_pipe0 | andes_45_pipe1) + andes_45_fpu_fmac + andes_45_fpu_fmv + andes_45_fpu_fmis")
 
 (define_insn_reservation "andes_45_fpu_mac_d" 4
