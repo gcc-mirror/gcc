@@ -3188,13 +3188,13 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
 
   start_sequence ();
 
-  target = gen_reg_rtx (mode);
+  target = gen_reg_rtx (GET_MODE (XEXP (a, op != AND)));
 
   /* AND requires !cond, instead we swap ops around.  */
   target = noce_emit_cmove (if_info, target, GET_CODE (if_info->cond),
 			    XEXP (if_info->cond, 0), XEXP (if_info->cond, 1),
-			    op != AND ? a_op1 : const0_rtx,
-			    op != AND ? const0_rtx : a_op0);
+			    op != AND ? XEXP (a, 1) : const0_rtx,
+			    op != AND ? const0_rtx : XEXP (a, 0));
   if (!target)
     goto end_seq_n_fail;
 
