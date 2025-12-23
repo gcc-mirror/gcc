@@ -271,15 +271,57 @@ a68_find_export_data (const std::string &filename, int fd, size_t *psize)
     }
 
   char buf[A68_EXPORT_MAGIC_LEN];
-  ssize_t c = ::read(fd, buf, A68_EXPORT_MAGIC_LEN);
+  ssize_t c = read (fd, buf, A68_EXPORT_MAGIC_LEN);
   if (c < A68_EXPORT_MAGIC_LEN)
     return NULL;
 
-  /* Check for a file containing nothing but Algol 68 export data.  */
-  if (buf[0] == '\x0a' && buf[1] == '\xad')
+  if (lseek (fd, 0, SEEK_SET) < 0)
     {
-      /* XXX read whole file.  */
-      return exports;
+      a68_error (NO_NODE, "lseek Z failed", filename.c_str ());
+      return NULL;
+    }
+
+  /* Check for a file containing nothing but Algol 68 export data.  */
+  if (buf[0] == '\x0a' && buf[1] == '\x68')
+    {
+      /* read whole file.  */
+
+      char *buf;
+      ssize_t len, nread;
+
+      len = a68_file_size (fd);
+      if (len == -1)
+        {
+          a68_error (NO_NODE, "a68_file_size failed for Z",
+                     filename.c_str ());
+          return NULL;
+        }
+
+      buf = XNEWVEC (char, len);
+      if (buf == NULL)
+        {
+          a68_error (NO_NODE,
+                     "memory allocation failed while reading export data");
+          return NULL;
+        }
+
+      nread = a68_file_read (fd, buf, len);
+      if (nread < 0)
+        {
+          free (buf);
+          a68_error (NO_NODE, "read failed while reading export data");
+          return NULL;
+        }
+
+      if (nread < len)
+        {
+          free (buf);
+          a68_error (NO_NODE, "short read while reading export data");
+          return NULL;
+        }
+
+      *psize = len;
+      return buf;
     }
 
 #if 0
@@ -289,7 +331,6 @@ a68_find_export_data (const std::string &filename, int fd, size_t *psize)
 #endif
 
   return NULL;
-
 }
 
 /* Given *PFILENAME, where *PFILENAME does not exist, try various suffixes.  If

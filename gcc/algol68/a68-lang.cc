@@ -533,14 +533,14 @@ a68_handle_option (size_t scode,
 	  fatal_error (UNKNOWN_LOCATION,
 		       "cannot open modules map file %<%s%>", arg);
 	
-	ssize_t ssize = a68_file_size (file);
+	ssize_t ssize = a68_file_size (fileno (file));
 	if (ssize < 0)
 	  fatal_error (UNKNOWN_LOCATION,
 		       "cannot determine size of modules map file %<%s%>", arg);
 	size_t fsize = ssize;
 
 	char *buffer = (char *) xmalloc (fsize + 1);
-	size_t bytes_read = a68_file_read (file, buffer, fsize);
+	size_t bytes_read = a68_file_read (fileno (file), buffer, fsize);
 	if (bytes_read != fsize)
 	  fatal_error (UNKNOWN_LOCATION,
 		       "cannot read contents of modules map file %<%s%>", arg);

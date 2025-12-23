@@ -119,37 +119,36 @@ supper_postlude[] = {
     }									\
   while (0)
 
-/* Get the size of a file given a stream pointer FILE.  In case the size of
+/* Get the size of a file given a file descriptor FD.  In case the size of
    the file cannot be determined then this function returns -1.  */
 
 ssize_t
-a68_file_size (FILE *file)
+a68_file_size (int fd)
 {
   ssize_t fsize;
   off_t off, save;
 
-  save = ftell (file);
-  if (save == -1)
+  save = lseek (fd, 0, SEEK_CUR);
+  if (save == (off_t) -1)
     return -1;
 
-  off = lseek (fileno (file), 0, SEEK_END);
+  off = lseek (fd, 0, SEEK_END);
   if (off == (off_t) -1)
     return -1;
   fsize = (ssize_t) off;
 
-  off = lseek (fileno (file), save, SEEK_SET);
+  off = lseek (fd, save, SEEK_SET);
   if (off == (off_t) -1)
     return -1;
 
   return fsize;
 }
 
-/* Read bytes from file into buffer.  */
+/* Read bytes from file into buffer given a file descriptor.  */
 
 ssize_t
-a68_file_read (FILE *file, void *buf, size_t n)
+a68_file_read (int fd, void *buf, size_t n)
 {
-  int fd = fileno (file);
   size_t to_do = n;
   int restarts = 0;
   char *z = (char *) buf;
@@ -344,7 +343,7 @@ read_source_file (const char *filename)
     fatal_error (UNKNOWN_LOCATION, "specified file %s is a directory",
 		 filename);
 
-  l = a68_file_size (f);
+  l = a68_file_size (fileno (f));
   if (l < 0)
     error ("could not get size of source file");
   source_file_size = l;
@@ -364,7 +363,7 @@ read_source_file (const char *filename)
   /* Read the file into a single buffer, so we save on system calls.  */
   line_num = 1;
   buffer = (char *) xmalloc (8 + source_file_size);
-  bytes_read = a68_file_read (f, buffer, source_file_size);
+  bytes_read = a68_file_read (fileno (f), buffer, source_file_size);
   gcc_assert (bytes_read == source_file_size);
 
   /* Link all lines into the list.  */
@@ -1078,12 +1077,12 @@ include_files (LINE_T *top)
 	      fp = fopen (fn, "r");
 	      SCAN_ERROR (fp == NULL, start_l, start_c,
 			  "error opening included file");
-	      ssize = a68_file_size (fp);
+	      ssize = a68_file_size (fileno (fp));
 	      SCAN_ERROR (ssize < 0, start_l, start_c,
 			  "error getting included file size");
 	      fsize = ssize;
 	      fbuf = (char *) xmalloc (8 + fsize);
-	      bytes_read = (int) a68_file_read (fp, fbuf, (size_t) fsize);
+	      bytes_read = (int) a68_file_read (fileno (fp), fbuf, (size_t) fsize);
 	      SCAN_ERROR ((size_t) bytes_read != fsize, start_l, start_c,
 			  "error while reading file");
 

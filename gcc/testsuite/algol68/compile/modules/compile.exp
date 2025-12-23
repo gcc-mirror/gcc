@@ -20,6 +20,22 @@
 
 load_lib algol68-dg.exp
 
+proc dg-data { args } {
+  global objdir
+
+  if { [llength $args] != 3 } {
+      error "[lindex $args 0]: invalid arguments"
+  }
+
+  set filename $objdir/[lindex $args 1]
+  set bytes [lindex $args 2]
+
+  set fd [open $filename w]
+  fconfigure $fd -translation binary
+  puts -nonewline $fd [binary format c* $bytes]
+  close $fd
+}
+
 # Initialize `dg'.
 dg-init
 
