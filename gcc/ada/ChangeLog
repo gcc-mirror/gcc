@@ -1,3 +1,14 @@
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Streamline.
+
+2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
+
+	PR ada/123060
+	* gcc-interface/utils.cc (update_pointer_to): Preserve the alias
+	sets present on the old pointer and old reference, if any.
+
 2025-12-15  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/123138

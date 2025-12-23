@@ -1,3 +1,11 @@
+2025-12-22  Tamar Christina  <tamar.christina@arm.com>
+
+	PR tree-optimization/122868
+	* gcc.dg/vect/vect-early-break_140-pr122868_1.c: New test.
+	* gcc.dg/vect/vect-early-break_140-pr122868_2.c: New test.
+	* gcc.dg/vect/vect-early-break_140-pr122868_3.c: New test.
+	* gcc.dg/vect/vect-early-break_140-pr122868_4.c: New test.
+
 2025-12-21  Jerry DeLisle  <jvdelisle@gcc.gnu.org>
 
 	Backported from master:
