@@ -12670,6 +12670,7 @@ set exts {
 # We don't support SME without SVE2, so we'll use armv9 as the base
 # archiecture for SME and the features that require it.
 set exts_sve2 {
+    "sme-f8f16" "sme-f8f32"
     "sme-b16b16" "sme-f16f16" "sme-i16i64" "sme" "sme2" "sme2p1"
     "ssve-fp8dot2" "ssve-fp8dot4" "ssve-fp8fma"
 }

@@ -664,6 +664,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
   TYPES_za_bhsd_data (S, D), \
   TYPES_reinterpret1 (D, za128)
 
+/* _za16_mf8.  */
+#define TYPES_za_h_mf8(S, D) \
+  D (za16, mf8)
+
 /* _za16_bf16.  */
 #define TYPES_za_h_bfloat(S, D) \
   D (za16, bf16)
@@ -699,6 +703,10 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 /* _za32 x { _s32 _u32 }.  */
 #define TYPES_za_s_integer(S, D) \
   D (za32, s32), D (za32, u32)
+
+/* _za32_mf8.  */
+#define TYPES_za_s_mf8(S, D) \
+  D (za32, mf8)
 
 /* _za32_f32.  */
 #define TYPES_za_s_float(S, D) \
@@ -849,6 +857,7 @@ DEF_SVE_TYPES_ARRAY (all_za);
 DEF_SVE_TYPES_ARRAY (d_za);
 DEF_SVE_TYPES_ARRAY (za_bhsd_data);
 DEF_SVE_TYPES_ARRAY (za_all_data);
+DEF_SVE_TYPES_ARRAY (za_h_mf8);
 DEF_SVE_TYPES_ARRAY (za_h_bfloat);
 DEF_SVE_TYPES_ARRAY (za_h_float);
 DEF_SVE_TYPES_ARRAY (za_s_b_signed);
@@ -858,6 +867,7 @@ DEF_SVE_TYPES_ARRAY (za_s_h_integer);
 DEF_SVE_TYPES_ARRAY (za_s_h_data);
 DEF_SVE_TYPES_ARRAY (za_s_unsigned);
 DEF_SVE_TYPES_ARRAY (za_s_integer);
+DEF_SVE_TYPES_ARRAY (za_s_mf8);
 DEF_SVE_TYPES_ARRAY (za_s_float);
 DEF_SVE_TYPES_ARRAY (za_s_data);
 DEF_SVE_TYPES_ARRAY (za_d_h_integer);
@@ -987,15 +997,15 @@ static CONSTEXPR const function_group_info neon_sve_function_groups[] = {
 
 /* A list of all arm_sme.h functions.  */
 static CONSTEXPR const function_group_info sme_function_groups[] = {
-#define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+#define DEF_SME_FUNCTION_GS_FPM(NAME, SHAPE, TYPES, GROUPS, PREDS, FPM_MODE) \
   { #NAME, &functions::NAME, &shapes::SHAPE, types_##TYPES, groups_##GROUPS, \
     preds_##PREDS, aarch64_required_extensions::REQUIRED_EXTENSIONS, \
-    FPM_unused },
-#define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+    FPM_##FPM_MODE },
+#define DEF_SME_ZA_FUNCTION_GS_FPM(NAME, SHAPE, TYPES, GROUPS, PREDS, FPM_MODE) \
   { #NAME, &functions::NAME##_za, &shapes::SHAPE, types_##TYPES, \
     groups_##GROUPS, preds_##PREDS, \
     aarch64_required_extensions::REQUIRED_EXTENSIONS \
-      .and_also (AARCH64_FL_ZA_ON), FPM_unused },
+      .and_also (AARCH64_FL_ZA_ON), FPM_##FPM_MODE },
 #include "aarch64-sve-builtins-sme.def"
 };
 

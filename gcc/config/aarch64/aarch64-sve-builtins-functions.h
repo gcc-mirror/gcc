@@ -462,8 +462,9 @@ public:
   using parent = read_write_za<unspec_based_function_base>;
 
   CONSTEXPR sme_2mode_function_t (int unspec_for_sint, int unspec_for_uint,
-				  int unspec_for_fp)
-    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, -1, 1)
+				  int unspec_for_fp, int unspec_for_mfp8 = -1)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, unspec_for_mfp8,
+	      1)
   {}
 
   rtx

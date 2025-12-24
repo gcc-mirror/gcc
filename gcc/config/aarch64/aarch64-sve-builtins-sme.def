@@ -17,19 +17,25 @@
    along with GCC; see the file COPYING3.  If not see
    <http://www.gnu.org/licenses/>.  */
 
+
+#ifndef DEF_SME_FUNCTION_GS
+#define DEF_SME_FUNCTION_GS(NAME, SHAPE, TYPES, GROUPS, PREDS) \
+  DEF_SME_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUPS, PREDS, unused)
+#endif
+
 #ifndef DEF_SME_FUNCTION
 #define DEF_SME_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  DEF_SME_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+  DEF_SME_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, none, PREDS, unused)
 #endif
 
 #ifndef DEF_SME_ZA_FUNCTION_GS
 #define DEF_SME_ZA_FUNCTION_GS(NAME, SHAPE, TYPES, GROUP, PREDS) \
-  DEF_SME_FUNCTION_GS (NAME, SHAPE, TYPES, GROUP, PREDS)
+  DEF_SME_ZA_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, GROUP, PREDS, unused)
 #endif
 
 #ifndef DEF_SME_ZA_FUNCTION
 #define DEF_SME_ZA_FUNCTION(NAME, SHAPE, TYPES, PREDS) \
-  DEF_SME_ZA_FUNCTION_GS (NAME, SHAPE, TYPES, none, PREDS)
+  DEF_SME_ZA_FUNCTION_GS_FPM (NAME, SHAPE, TYPES, none, PREDS, unused)
 #endif
 
 #define REQUIRED_EXTENSIONS streaming_compatible (0)
@@ -257,6 +263,12 @@ DEF_SME_ZA_FUNCTION_GS (svzero, inherent_za_slice, d_za, vg4, none)
 DEF_SME_FUNCTION_GS (svwrite_zt,      write_zt,      all_data,  none, none)
 DEF_SME_FUNCTION_GS (svwrite_lane_zt, write_lane_zt, all_data,  none, none)
 DEF_SME_FUNCTION_GS (svluti4_zt,      luti4_zt,      b_integer, x4,   none)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_F8F16)
+#undef REQUIRED_EXTENSIONS
+
+#define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_F8F32)
 #undef REQUIRED_EXTENSIONS
 
 #undef DEF_SME_ZA_FUNCTION

@@ -308,6 +308,10 @@ AARCH64_OPT_EXTENSION("lut", LUT, (SIMD), (), (), "lut")
 
 AARCH64_OPT_EXTENSION ("sme-lutv2", SME_LUTv2, (SME2), (), (), "smelutv2")
 
+AARCH64_OPT_EXTENSION ("sme-f8f16", SME_F8F16, (SME2, FP8), (), (), "smef8f16")
+
+AARCH64_OPT_EXTENSION ("sme-f8f32", SME_F8F32, (SME2, FP8), (), (), "smef8f32")
+
 AARCH64_OPT_EXTENSION("cpa", CPA, (), (), (), "")
 
 AARCH64_OPT_EXTENSION("fprcvt", FPRCVT, (FP), (), (), "fprcvt")

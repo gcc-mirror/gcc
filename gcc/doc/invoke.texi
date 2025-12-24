@@ -23082,6 +23082,12 @@ Enable the FEAT_SME_F64F64 extension to SME.  This also enables SME
 instructions.
 @item sme2
 Enable the Scalable Matrix Extension 2.  This also enables SME instructions.
+@item sme-f8f16
+Enable the FEAT_SME_F8F16 extension to SME.  This also enables SME2 and FP8
+instructions.
+@item sme-f8f32
+Enable the FEAT_SME_F8F32 extension to SME.  This also enables SME2 and FP8
+instructions.
 @item sme-b16b16
 Enable the FEAT_SME_B16B16 extension to SME.  This also enables SME2
 and SVE_B16B16 instructions.
