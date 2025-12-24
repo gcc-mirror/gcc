@@ -3635,10 +3635,10 @@
 (define_insn "@aarch64_sve2_fp8_cvtn<mode>"
   [(set (match_operand:VNx16QI 0 "register_operand" "=w")
 	(unspec:VNx16QI
-	  [(match_operand:SVE_FULL_HFx2 1 "aligned_register_operand" "Uw2")
+	  [(match_operand:VNx16F_NARROW 1 "aligned_register_operand" "Uw<vector_count>")
 	   (reg:DI FPM_REGNUM)]
 	  UNSPEC_FP8FCVTN))]
-  "TARGET_SSVE_FP8"
+  "<MODE>mode == VNx16SFmode ? TARGET_SSME2_FP8 : TARGET_SSVE_FP8"
   "<b>fcvtn\t%0.b, %1"
   [(set_attr "sve_type" "sve_fp_cvt")]
 )
@@ -3664,6 +3664,16 @@
   "TARGET_SSVE_FP8"
   "fcvtnt\t%0.b, %2"
   [(set_attr "sve_type" "sve_fp_cvt")]
+)
+
+(define_insn "@aarch64_sme2_fp8_cvt<mode>"
+  [(set (match_operand:VNx16QI 0 "register_operand" "=w")
+	(unspec:VNx16QI
+	  [(match_operand:VNx16F_NARROW 1 "aligned_register_operand" "Uw<vector_count>")
+	   (reg:DI FPM_REGNUM)]
+	  UNSPEC_FCVT))]
+   "TARGET_SSME2_FP8"
+   "<b>fcvt\t%0.b, %1"
 )
 
 ;; -------------------------------------------------------------------------

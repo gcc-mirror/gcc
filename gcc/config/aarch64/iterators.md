@@ -712,6 +712,9 @@
 (define_mode_iterator VNx2_NARROW [VNx2QI VNx2HI VNx2SI])
 (define_mode_iterator VNx2_WIDE [VNx2DI])
 
+;; Used for narrowing SVE floating point operations.
+(define_mode_iterator VNx16F_NARROW [SVE_FULL_HFx2 VNx16SF])
+
 ;; All SVE predicate modes.
 (define_mode_iterator PRED_ALL [VNx16BI VNx8BI VNx4BI VNx2BI])
 
@@ -1061,6 +1064,7 @@
     UNSPEC_F2CVTL	; Used in aarch64-sve2.md.
     UNSPEC_F2CVTLT	; Used in aarch64-sve2.md.
     UNSPEC_FADDP	; Used in aarch64-sve2.md.
+    UNSPEC_FCVT		; Used in aarch64-sve2.md.
     UNSPEC_FCVTNB	; Used in aarch64-sve2.md.
     UNSPEC_FCVTNT	; Used in aarch64-sve2.md.
     UNSPEC_FMAXNMP	; Used in aarch64-sve2.md.

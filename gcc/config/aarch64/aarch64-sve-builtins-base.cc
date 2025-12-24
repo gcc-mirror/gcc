@@ -779,17 +779,23 @@ public:
       {
 	machine_mode mode0 = e.result_mode ();
 	machine_mode mode1 = GET_MODE (e.args[0]);
-	convert_optab optab;
-	if (e.type_suffix (0).integer_p)
-	  optab = e.type_suffix (0).unsigned_p ? ufix_optab : sfix_optab;
-	else if (e.type_suffix (1).integer_p)
-	  optab = e.type_suffix (1).unsigned_p ? ufloat_optab : sfloat_optab;
-	else if (e.type_suffix (0).element_bits
-		 < e.type_suffix (1).element_bits)
-	  optab = trunc_optab;
+	if (e.fpm_mode == aarch64_sve::FPM_set)
+	  icode = code_for_aarch64_sme2_fp8_cvt (mode1);
 	else
-	  optab = sext_optab;
-	icode = convert_optab_handler (optab, mode0, mode1);
+	  {
+	    convert_optab optab;
+	    if (e.type_suffix (0).integer_p)
+	      optab = e.type_suffix (0).unsigned_p ? ufix_optab : sfix_optab;
+	    else if (e.type_suffix (1).integer_p)
+	      optab = e.type_suffix (1).unsigned_p ? ufloat_optab
+						   : sfloat_optab;
+	    else if (e.type_suffix (0).element_bits
+		     < e.type_suffix (1).element_bits)
+	      optab = trunc_optab;
+	    else
+	      optab = sext_optab;
+	    icode = convert_optab_handler (optab, mode0, mode1);
+	  }
 	gcc_assert (icode != CODE_FOR_nothing);
 	return e.use_exact_insn (icode);
       }

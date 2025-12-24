@@ -421,6 +421,9 @@ DEF_SVE_FUNCTION_GS_FPM (svdot_lane, ternary_mfloat8_lane_group_selection, h_flo
 
 #define REQUIRED_EXTENSIONS \
   streaming_only (AARCH64_FL_SME2 | AARCH64_FL_FP8)
+DEF_SVE_FUNCTION_GS_FPM (svcvt, unary_convertxn_narrow, cvtn_mf8, x2, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvt, unary_convertxn_narrow, cvtnx_mf8, x4, none, set)
+DEF_SVE_FUNCTION_GS_FPM (svcvtn, unary_convertxn_narrow, cvtnx_mf8, x4, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvt1, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvt2, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvtl1, unary_convert, cvt_mf8, x2, none, set)

@@ -733,6 +733,7 @@
 #define TEST_X2_NARROW(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
   PROTO (NAME, void, ())					\
   {								\
+    register fpm_t fpm0 __asm ("x0");				\
     register TTYPE z0 __asm ("z0");				\
     register ZTYPE z5 __asm ("z5");				\
     register TTYPE z6 __asm ("z6");				\
@@ -749,6 +750,7 @@
 #define TEST_X4_NARROW(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
   PROTO (NAME, void, ())					\
   {								\
+    register fpm_t fpm0 __asm ("x0");				\
     register TTYPE z0 __asm ("z0");				\
     register TTYPE z4 __asm ("z4");				\
     register TTYPE z16 __asm ("z16");				\
