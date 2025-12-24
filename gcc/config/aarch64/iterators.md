@@ -1055,8 +1055,10 @@
     UNSPEC_EORBT	; Used in aarch64-sve2.md.
     UNSPEC_EORTB	; Used in aarch64-sve2.md.
     UNSPEC_F1CVT	; Used in aarch64-sve2.md.
+    UNSPEC_F1CVTL	; Used in aarch64-sve2.md.
     UNSPEC_F1CVTLT	; Used in aarch64-sve2.md.
     UNSPEC_F2CVT	; Used in aarch64-sve2.md.
+    UNSPEC_F2CVTL	; Used in aarch64-sve2.md.
     UNSPEC_F2CVTLT	; Used in aarch64-sve2.md.
     UNSPEC_FADDP	; Used in aarch64-sve2.md.
     UNSPEC_FCVTNB	; Used in aarch64-sve2.md.
@@ -4044,6 +4046,8 @@
 (define_int_iterator FP8CVT_UNS
   [UNSPEC_F1CVT
    UNSPEC_F2CVT
+   UNSPEC_F1CVTL
+   UNSPEC_F2CVTL
    UNSPEC_F1CVTLT
    UNSPEC_F2CVTLT])
 
@@ -5187,6 +5191,8 @@
 (define_int_attr fp8_cvt_uns_op
   [(UNSPEC_F1CVT "f1cvt")
    (UNSPEC_F2CVT "f2cvt")
+   (UNSPEC_F1CVTL "f1cvtl")
+   (UNSPEC_F2CVTL "f2cvtl")
    (UNSPEC_F1CVTLT "f1cvtlt")
    (UNSPEC_F2CVTLT "f2cvtlt")])
 

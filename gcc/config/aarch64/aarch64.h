@@ -538,6 +538,8 @@ through +ssve-fp8dot2.  */
 		(TARGET_SVE2 && TARGET_FP8DOT2) || TARGET_STREAMING) \
 		&& (AARCH64_HAVE_ISA(SSVE_FP8DOT2) || TARGET_NON_STREAMING))
 
+#define TARGET_SSME2_FP8 (TARGET_FP8 && TARGET_STREAMING_SME2)
+
 /* Standard register usage.  */
 
 /* 31 64-bit general purpose registers R0-R30:

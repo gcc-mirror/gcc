@@ -64,6 +64,8 @@ namespace aarch64_sve
     extern const function_base *const svcvt1;
     extern const function_base *const svcvt2;
     extern const function_base *const svcvtl;
+    extern const function_base *const svcvtl1;
+    extern const function_base *const svcvtl2;
     extern const function_base *const svcvtlt;
     extern const function_base *const svcvtlt1;
     extern const function_base *const svcvtlt2;

@@ -767,6 +767,7 @@
 #define TEST_X2_WIDE(NAME, TTYPE, ZTYPE, CODE1, CODE2)		\
   PROTO (NAME, void, ())					\
   {								\
+    register fpm_t fpm0 __asm ("x0");				\
     register ZTYPE z0 __asm ("z0");				\
     register ZTYPE z5 __asm ("z5");				\
     register TTYPE z6 __asm ("z6");				\

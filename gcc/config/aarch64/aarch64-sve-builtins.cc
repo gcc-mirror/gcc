@@ -3207,7 +3207,8 @@ function_resolver::resolve_unary (type_class_index merge_tclass,
   /* Handle convert-like functions in which the first type suffix is
      explicit.  */
   if (type_suffix_ids[0] != NUM_TYPE_SUFFIXES)
-    return resolve_to (mode_suffix_id, type_suffix_ids[0], type);
+    return resolve_to (mode_suffix_id, type_suffix_ids[0], type,
+		       group_suffix_id);
 
   return resolve_to (mode_suffix_id, type);
 }

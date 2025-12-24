@@ -3591,6 +3591,16 @@
   [(set_attr "sve_type" "sve_fp_cvt")]
 )
 
+(define_insn "@aarch64_sve2_fp8_cvt_<fp8_cvt_uns_op><mode>"
+  [(set (match_operand:SVE_FULL_HFx2 0 "aligned_register_operand" "=Uw2")
+	(unspec:SVE_FULL_HFx2
+	  [(match_operand:VNx16QI 1 "register_operand" "w")
+	  (reg:DI FPM_REGNUM)]
+	  FP8CVT_UNS))]
+  "TARGET_SSME2_FP8"
+  "<b><fp8_cvt_uns_op>\t%0, %1.b"
+)
+
 ;; -------------------------------------------------------------------------
 ;; ---- [FP<-FP] Multi-vector narrowing conversions
 ;; -------------------------------------------------------------------------
