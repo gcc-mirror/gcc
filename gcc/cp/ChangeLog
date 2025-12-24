@@ -1,3 +1,18 @@
+2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	Backported from master:
+	2025-12-19  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122922
+	* module.cc (trees_in::post_types): New member.
+	(trees_in::trees_in): Initialize it.
+	(trees_in::~trees_in): Clean it up.
+	(trees_in::post_process_type): New functions.
+	(trees_in::tree_node): Save incomplete ARRAY_TYPEs for later
+	post-processing.
+	(module_state::read_cluster): Attempt to complete any
+	ARRAY_TYPEs we saved earlier.
+
 2025-12-16  Patrick Palka  <ppalka@redhat.com>
 
 	Backported from master:
