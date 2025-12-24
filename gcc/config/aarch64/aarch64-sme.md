@@ -2370,6 +2370,8 @@
 ;; - BFMOPS (SME_B16B16)
 ;; - FMOPA
 ;; - FMOPS
+;; - FMOPA (SME_F8F16)
+;; - FMOPA (SME_F8F32)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sme_<optab><mode><mode>"
@@ -2400,6 +2402,22 @@
 	  SME_FP_MOP))]
   "TARGET_STREAMING"
   "<b><optab>\tza%0.<VNx4SI_ONLY:Vetype>, %1/m, %2/m, %3.<SVE_FULL_HF:Vetype>, %4.<SVE_FULL_HF:Vetype>"
+)
+
+(define_insn "@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><VNx16QI_ONLY:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:DI 0 "const_int_operand")
+	   (match_operand:<SME_ZA_F8F16_32:VPRED> 1 "register_operand" "Upl")
+	   (match_operand:<SME_ZA_F8F16_32:VPRED> 2 "register_operand" "Upl")
+	   (match_operand:VNx16QI_ONLY 3 "register_operand" "w")
+	   (match_operand:VNx16QI_ONLY 4 "register_operand" "w")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP_MOP))]
+  "TARGET_STREAMING"
+  "<optab>\tza%0.<SME_ZA_F8F16_32:Vetype>, %1/m, %2/m, %3.b, %4.b"
 )
 
 ;; =========================================================================

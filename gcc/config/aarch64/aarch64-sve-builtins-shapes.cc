@@ -692,7 +692,7 @@ struct binary_za_m_base : public overloaded_base<1>
   resolve (function_resolver &r) const override
   {
     type_suffix_index type;
-    if (!r.check_num_arguments (5)
+    if (!r.check_num_arguments (r.fpm_mode == FPM_set ? 6: 5)
 	|| !r.require_integer_immediate (0)
 	|| !r.require_vector_type (1, VECTOR_TYPE_svbool_t)
 	|| !r.require_vector_type (2, VECTOR_TYPE_svbool_t)

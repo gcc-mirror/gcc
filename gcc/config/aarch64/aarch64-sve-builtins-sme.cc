@@ -651,7 +651,7 @@ FUNCTION (svmls_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SMLS,
 						   UNSPEC_SME_UMLS,
 						   UNSPEC_SME_FMLS))
 FUNCTION (svmopa_za, sme_2mode_function, (UNSPEC_SME_SMOPA, UNSPEC_SME_UMOPA,
-					  UNSPEC_SME_FMOPA))
+					  UNSPEC_SME_FMOPA, UNSPEC_SME_FMOPA))
 FUNCTION (svmops_za, sme_2mode_function, (UNSPEC_SME_SMOPS, UNSPEC_SME_UMOPS,
 					  UNSPEC_SME_FMOPS))
 FUNCTION (svread_za, svread_za_impl,)

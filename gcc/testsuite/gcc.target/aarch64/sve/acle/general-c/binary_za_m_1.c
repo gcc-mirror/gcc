@@ -46,3 +46,17 @@ f4 (svbool_t pg, svint16_t s16) __arm_streaming __arm_inout("za")
   svmopa_za64_m (-1, pg, pg, s16, s16); /* { dg-error {passing -1 to argument 1 of 'svmopa_za64_m', which expects a value in the range \[0, 7\]} } */
   svmopa_za64_m (8, pg, pg, s16, s16); /* { dg-error {passing 8 to argument 1 of 'svmopa_za64_m', which expects a value in the range \[0, 7\]} } */
 }
+
+#pragma GCC target ("arch=armv9-a+sme-f8f16+sme-f8f32")
+
+void
+f5 (svbool_t pg, svmfloat8_t mf8, fpm_t fpm) __arm_streaming __arm_inout("za")
+{
+  svmopa_za16_mf8_m_fpm(0, pg, pg, mf8, mf8); /* { dg-error {too few arguments to function 'svmopa_za16_mf8_m_fpm'} } */
+  svmopa_za16_mf8_m_fpm(0, pg, pg, mf8, mf8, fpm);
+  svmopa_za16_mf8_m_fpm(0, pg, pg, mf8, mf8, fpm, fpm); /* { dg-error {too many arguments to function 'svmopa_za16_mf8_m_fpm'; expected 6, have 7} } */
+
+  svmopa_za16_mf8_m_fpm(-1, pg, pg, mf8, mf8, fpm); /* { dg-error {passing -1 to argument 1 of 'svmopa_za16_mf8_m_fpm', which expects a value in the range \[0, 1\]} } */
+  svmopa_za16_mf8_m_fpm(2, pg, pg, mf8, mf8, fpm); /* { dg-error {passing 2 to argument 1 of 'svmopa_za16_mf8_m_fpm', which expects a value in the range \[0, 1\]} } */
+  svmopa_za32_mf8_m_fpm(4, pg, pg, mf8, mf8, fpm); /* { dg-error {passing 4 to argument 1 of 'svmopa_za32_mf8_m_fpm', which expects a value in the range \[0, 3\]} } */
+}

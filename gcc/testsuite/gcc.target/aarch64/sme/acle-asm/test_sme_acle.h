@@ -46,7 +46,7 @@
 
 #define TEST_UNIFORM_ZA(NAME, TYPE, CODE1, CODE2)		\
   PROTO (NAME, void, (TYPE z0, TYPE z1, svbool_t p0,		\
-		      svbool_t p1))				\
+		      svbool_t p1, fpm_t fpm0))			\
   {								\
     INVOKE (CODE1, CODE2);					\
   }
