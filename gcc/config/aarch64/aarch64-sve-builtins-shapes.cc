@@ -729,7 +729,7 @@ struct binary_za_slice_lane_base : public overloaded_base<1>
   resolve (function_resolver &r) const override
   {
     sve_type type;
-    if (!r.check_num_arguments (4)
+    if (!r.check_num_arguments (r.fpm_mode == FPM_set ? 5: 4)
 	|| !r.require_scalar_type (0, "uint32_t")
 	|| !(type = r.infer_tuple_type (1))
 	|| !r.require_derived_vector_type (2, 1, type, TCLASS)
@@ -758,7 +758,7 @@ struct binary_za_slice_opt_single_base : public overloaded_base<1>
   resolve (function_resolver &r) const override
   {
     sve_type type;
-    if (!r.check_num_arguments (3)
+    if (!r.check_num_arguments (r.fpm_mode == FPM_set ? 4: 3)
 	|| !r.require_scalar_type (0, "uint32_t")
 	|| !(type = r.infer_tuple_type (1)))
       return error_mark_node;

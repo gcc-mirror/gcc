@@ -758,6 +758,13 @@
 (define_mode_iterator SME_ZA_HFx124 [VNx8BF VNx16BF VNx32BF
 				     VNx8HF VNx16HF VNx32HF])
 
+(define_mode_iterator SME_ZA_F8F16_32 [(VNx8HI "TARGET_STREAMING_SME_F8F16")
+				       (VNx4SI "TARGET_STREAMING_SME_F8F32")])
+
+(define_mode_iterator SME_ZA_FP8_x24 [VNx32QI VNx64QI])
+
+(define_mode_iterator SME_ZA_FP8_x124 [VNx16QI VNx32QI VNx64QI])
+
 (define_mode_iterator SME_ZA_HFx24 [VNx16BF VNx32BF VNx16HF VNx32HF])
 
 (define_mode_iterator SME_ZA_HIx124 [VNx8HI VNx16HI VNx32HI])
@@ -1265,6 +1272,7 @@
     UNSPEC_SME_FDOT
     UNSPEC_SME_FVDOT
     UNSPEC_SME_FMLA
+    UNSPEC_SME_FMLAL
     UNSPEC_SME_FMLS
     UNSPEC_SME_FMOPA
     UNSPEC_SME_FMOPS
@@ -2682,6 +2690,10 @@
 				    (V4HF "<Vetype>[%4]") (V8HF "<Vetype>[%4]")
 				    ])
 
+(define_mode_attr za16_offset_range [(VNx16QI "0_to_14_step_2")
+				     (VNx32QI "0_to_6_step_2")
+				     (VNx64QI "0_to_6_step_2")])
+
 (define_mode_attr za32_offset_range [(VNx16QI "0_to_12_step_4")
 				     (VNx8BF "0_to_14_step_2")
 				     (VNx8HF "0_to_14_step_2")
@@ -2701,6 +2713,10 @@
 
 (define_mode_attr za32_long [(VNx16QI "ll") (VNx32QI "ll") (VNx64QI "ll")
 			     (VNx8HI "l") (VNx16HI "l") (VNx32HI "l")])
+
+(define_mode_attr za16_32_long [(VNx4SI "l")(VNx8HI "")])
+
+(define_mode_attr za16_32_last_offset [(VNx4SI "3")(VNx8HI "1")])
 
 (define_mode_attr za32_last_offset [(VNx16QI "3") (VNx32QI "3") (VNx64QI "3")
 				    (VNx8HI "1") (VNx16HI "1") (VNx32HI "1")])
@@ -4049,6 +4065,8 @@
 
 (define_int_iterator SME_FP_TERNARY_SLICE [UNSPEC_SME_FMLA UNSPEC_SME_FMLS])
 
+(define_int_iterator SME_FP8_TERNARY_SLICE [UNSPEC_SME_FMLAL])
+
 ;; Iterators for atomic operations.
 
 (define_int_iterator ATOMIC_LDOP
@@ -4198,6 +4216,7 @@
 			(UNSPEC_SME_FDOT "fdot")
 			(UNSPEC_SME_FVDOT "fvdot")
 			(UNSPEC_SME_FMLA "fmla")
+			(UNSPEC_SME_FMLAL "fmlal")
 			(UNSPEC_SME_FMLS "fmls")
 			(UNSPEC_SME_FMOPA "fmopa")
 			(UNSPEC_SME_FMOPS "fmops")

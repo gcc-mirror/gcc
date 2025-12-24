@@ -4,7 +4,7 @@
 #include "../../sme/acle-asm/test_sme_acle.h"
 
 #define TEST_ZA_X1(NAME, ZTYPE, CODE1, CODE2)			\
-  PROTO (NAME, void, (int w0))					\
+  PROTO (NAME, void, (int w0, fpm_t fpm0))			\
   {								\
     register int w7 __asm ("w7");				\
     register int w8 __asm ("w8");				\
@@ -26,7 +26,7 @@
   }
 
 #define TEST_ZA_XN(NAME, TTYPE, CODE1, CODE2)			\
-  PROTO (NAME, void, (int w0))					\
+  PROTO (NAME, void, (int w0, fpm_t fpm0))			\
   {								\
     register int w7 __asm ("w7");				\
     register int w8 __asm ("w8");				\
@@ -68,7 +68,7 @@
   }
 
 #define TEST_ZA_SINGLE(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
-  PROTO (NAME, void, (int w0))					\
+  PROTO (NAME, void, (int w0, fpm_t fpm0))			\
   {								\
     register int w8 __asm ("w8");				\
     register int w11 __asm ("w11");				\
@@ -84,7 +84,7 @@
   }
 
 #define TEST_ZA_SINGLE_Z15(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
-  PROTO (NAME, void, (int w0))					\
+  PROTO (NAME, void, (int w0, fpm_t fpm0))			\
   {								\
     register int w8 __asm ("w8");				\
     register TTYPE z0 __asm ("z0");				\
@@ -94,7 +94,7 @@
   }
 
 #define TEST_ZA_LANE(NAME, TTYPE, ZTYPE, CODE1, CODE2)		\
-  PROTO (NAME, void, (int w0))					\
+  PROTO (NAME, void, (int w0, fpm_t fpm0))			\
   {								\
     register int w8 __asm ("w8");				\
     register int w11 __asm ("w11");				\
@@ -112,7 +112,7 @@
   }
 
 #define TEST_ZA_LANE_Z15(NAME, TTYPE, ZTYPE, CODE1, CODE2)	\
-  PROTO (NAME, void, (int w0))					\
+  PROTO (NAME, void, (int w0, fpm_t fpm0))			\
   {								\
     register int w8 __asm ("w8");				\
     register TTYPE z4 __asm ("z4");				\

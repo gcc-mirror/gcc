@@ -1999,6 +1999,9 @@
 ;; - BFMLSL (SME2)
 ;; - FMLAL (SME2)
 ;; - FMLSL (SME2)
+;; - FMLAL (multiple and indexed vector, FP8 to FP16 and FP8 to FP32, SME2)
+;; - FMLAL (multiple and single vector, FP8 to FP16 and FP8 to FP32, SME2)
+;; - FMLAL (multiple vectors, FP8 to FP16 and FP8 to FP32, SME2)
 ;; -------------------------------------------------------------------------
 
 (define_insn "@aarch64_sme_<optab><VNx4SI_ONLY:mode><SVE_FULL_HF:mode>"
@@ -2126,6 +2129,236 @@
   {
     operands[5] = GEN_INT (INTVAL (operands[1]) + 1);
     return "<b><optab>l\tza.s[%w0, %1:%5<vg_modifier>], %2<z_suffix>, %3.h[%4]";
+  }
+)
+
+;; svmla_za16[_mf8]_vg2x2_fpm, svmla_za16[_mf8]_vg2x4_fpm
+;; svmla_za32[_mf8]_vg4x2_fpm, svmla_za32[_mf8]_vg4x4_fpm
+(define_insn "@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SME_ZA_FP8_x24 2 "aligned_register_operand" "Uw<vector_count>")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING"
+  "<optab><SME_ZA_F8F16_32:za16_32_long>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0:<SME_ZA_F8F16_32:za16_32_last_offset>, vgx<vector_count>], %1, %2"
+)
+
+;; svmla_za16[_mf8]_vg2x2_fpm, svmla_za16[_mf8]_vg2x4_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_<optab><VNx8HI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:VNx8HI_ONLY ZA_REGNUM)
+	(unspec:VNx8HI_ONLY
+	  [(reg:VNx8HI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za16_offset_range>_operand"))
+	   (match_operand:SME_ZA_FP8_x24 2 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SME_ZA_FP8_x24 3 "aligned_register_operand" "Uw<vector_count>")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING_SME_F8F16"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[1]) + 1);
+    return "<optab>\tza.h[%w0, %1:%4, vgx<vector_count>], %2, %3";
+  }
+)
+
+;; svmla_za32[_mf8]_vg4x2_fpm, svmla_za32[_mf8]_vg4x4_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_<optab><VNx4SI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za32_offset_range>_operand"))
+	   (match_operand:SME_ZA_FP8_x24 2 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SME_ZA_FP8_x24 3 "aligned_register_operand" "Uw<vector_count>")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING_SME_F8F32"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[1]) + 3);
+    return "<optab>l\tza.s[%w0, %1:%4, vgx<vector_count>], %2, %3";
+  }
+)
+
+;; svmla_za16[_mf8]_vg2x1_fpm, svmla_za32[_mf8]_vg4x1_fpm
+(define_insn "@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><VNx16QI_ONLY:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:VNx16QI_ONLY 1 "register_operand" "w")
+	   (match_operand:VNx16QI_ONLY 2 "register_operand" "x")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING"
+  "<optab><SME_ZA_F8F16_32:za16_32_long>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0:<SME_ZA_F8F16_32:za16_32_last_offset><vg_modifier>], %1.b, %2.b"
+)
+
+;; svmla_za16[_mf8]_vg2x1_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_<optab><VNx8HI_ONLY:mode><VNx16QI_ONLY:mode>_plus"
+  [(set (reg:VNx8HI_ONLY ZA_REGNUM)
+	(unspec:VNx8HI_ONLY
+	  [(reg:VNx8HI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<VNx16QI_ONLY:za32_offset_range>_operand"))
+	   (match_operand:VNx16QI_ONLY 2 "register_operand" "w")
+	   (match_operand:VNx16QI_ONLY 3 "register_operand" "x")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING_SME_F8F16"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[1]) + 1);
+    return "<optab>\tza.h[%w0, %1:%4<vg_modifier>], %2.b, %3.b";
+  }
+)
+
+;; svmla_za32[_mf8]_vg4x1_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_<optab><VNx4SI_ONLY:mode><VNx16QI_ONLY:mode>_plus"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za32_offset_range>_operand"))
+	   (match_operand:VNx16QI_ONLY 2 "register_operand" "w")
+	   (match_operand:VNx16QI_ONLY 3 "register_operand" "x")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING_SME_F8F32"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[1]) + 3);
+    return "<optab>l\tza.s[%w0, %1:%4<vg_modifier>], %2.b, %3.b";
+  }
+)
+
+;; svmla[_single]_za16[_mf8]_vg2x2_fpm, svmla[_single]_za16[_mf8]_vg2x4_fpm,
+;; svmla[_single]_za32[_mf8]_vg4x2_fpm, svmla[_single]_za32[_mf8]_vg4x4_fpm
+(define_insn "@aarch64_sme_single_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x24 1 "register_operand" "w")
+	   (vec_duplicate:SME_ZA_FP8_x24
+	     (match_operand:<SME_ZA_FP8_x24:VSINGLE> 2 "register_operand" "x"))
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING"
+  "<optab><SME_ZA_F8F16_32:za16_32_long>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0:<SME_ZA_F8F16_32:za16_32_last_offset>, vgx<vector_count>], %1, %2.b"
+)
+
+;; svmla[_single]_za16[_mf8]_vg2x2_fpm, svmla[_single]_za16[_mf8]_vg2x4_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_single_<optab><VNx8HI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:VNx8HI_ONLY ZA_REGNUM)
+	(unspec:VNx8HI_ONLY
+	  [(reg:VNx8HI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za16_offset_range>_operand"))
+	   (match_operand:SME_ZA_FP8_x24 2 "register_operand" "w")
+	   (vec_duplicate:SME_ZA_FP8_x24
+	     (match_operand:<SME_ZA_FP8_x24:VSINGLE> 3 "register_operand" "x"))
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING_SME_F8F16"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[1]) + 1);
+    return "<optab>\tza.h[%w0, %1:%4, vgx<vector_count>], %2, %3.b";
+  }
+)
+
+;; svmla[_single]_za32[_mf8]_vg4x2_fpm, svmla[_single]_za32[_mf8]_vg4x4_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_single_<optab><VNx4SI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za32_offset_range>_operand"))
+	   (match_operand:SME_ZA_FP8_x24 2 "register_operand" "w")
+	   (vec_duplicate:SME_ZA_FP8_x24
+	     (match_operand:<SME_ZA_FP8_x24:VSINGLE> 3 "register_operand" "x"))
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING_SME_F8F32"
+  {
+    operands[4] = GEN_INT (INTVAL (operands[1]) + 3);
+    return "<optab>l\tza.s[%w0, %1:%4, vgx<vector_count>], %2, %3.b";
+  }
+)
+
+;; svmla_lane_za16[_mf8]_vg2x1_fpm, svmla_lane_za32[_mf8]_vg4x1_fpm,
+;; svmla_lane_za16[_mf8]_vg2x2_fpm, svmla_lane_za32[_mf8]_vg4x2_fpm,
+;; svmla_lane_za16[_mf8]_vg2x4_fpm, svmla_lane_za32[_mf8]_vg4x4_fpm
+(define_insn "@aarch64_sme_lane_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x124:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x124 1 "<SME_ZA_FP8_x124:aligned_operand>" "<SME_ZA_FP8_x124:aligned_fpr>")
+	   (unspec:SME_ZA_FP8_x124
+	     [(match_operand:<SME_ZA_FP8_x124:VSINGLE> 2 "register_operand" "x")
+	      (match_operand:SI 3 "const_int_operand")]
+	     UNSPEC_SVE_LANE_SELECT)
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+  "TARGET_STREAMING"
+  "<optab><SME_ZA_F8F16_32:za16_32_long>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0:<SME_ZA_F8F16_32:za16_32_last_offset><SME_ZA_FP8_x124:vg_modifier>], %1<SME_ZA_FP8_x124:z_suffix>, %2.b[%3]"
+)
+
+;; svmla_lane_za16[_mf8]_vg2x1_fpm, svmla_lane_za16[_mf8]_vg2x2_fpm,
+;; svmla_lane_za16[_mf8]_vg2x4_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_lane_<optab><VNx8HI_ONLY:mode><SME_ZA_FP8_x124:mode>"
+  [(set (reg:VNx8HI_ONLY ZA_REGNUM)
+	(unspec:VNx8HI_ONLY
+	  [(reg:VNx8HI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za16_offset_range>_operand"))
+	   (match_operand:SME_ZA_FP8_x124 2 "<SME_ZA_FP8_x124:aligned_operand>" "<SME_ZA_FP8_x124:aligned_fpr>")
+	   (unspec:SME_ZA_FP8_x124
+	     [(match_operand:<SME_ZA_FP8_x124:VSINGLE> 3 "register_operand" "x")
+	      (match_operand:SI 4 "const_int_operand")]
+	     UNSPEC_SVE_LANE_SELECT)
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+   "TARGET_STREAMING_SME_F8F16"
+  {
+    operands[5] = GEN_INT (INTVAL (operands[1]) + 1);
+    return "<optab>\tza.h[%w0, %1:%5<SME_ZA_FP8_x124:vg_modifier>], %2<SME_ZA_FP8_x124:z_suffix>, %3.b[%4]";
+  }
+)
+
+;; svmla_lane_za32[_mf8]_vg4x1_fpm, svmla_lane_za32[_mf8]_vg4x2_fpm,
+;; svmla_lane_za32[_mf8]_vg4x4_fpm (slice variable + offset)
+(define_insn "*aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_FP8_x124:mode>"
+  [(set (reg:VNx4SI_ONLY ZA_REGNUM)
+	(unspec:VNx4SI_ONLY
+	  [(reg:VNx4SI_ONLY ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_<za32_offset_range>_operand"))
+	   (match_operand:SME_ZA_FP8_x124 2 "<aligned_operand>" "<aligned_fpr>")
+	   (unspec:SME_ZA_FP8_x124
+	     [(match_operand:<VSINGLE> 3 "register_operand" "x")
+	      (match_operand:SI 4 "const_int_operand")]
+	     UNSPEC_SVE_LANE_SELECT)
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_TERNARY_SLICE))]
+   "TARGET_STREAMING_SME_F8F32"
+  {
+    operands[5] = GEN_INT (INTVAL (operands[1]) + 3);
+    return "<optab>l\tza.s[%w0, %1:%5<SME_ZA_FP8_x124:vg_modifier>], %2<z_suffix>, %3.b[%4]";
   }
 )
 

@@ -71,3 +71,17 @@ f4 (svint16_t s16, svuint16_t u16,
   svmla_lane_za64_vg4x1 (0, s64, s64, 0); /* { dg-error {'svmla_lane_za64_vg4x1' has no form that takes 'svint64_t' arguments} } */
   svmla_lane_za64_vg4x1 (0, u64, u64, 0); /* { dg-error {'svmla_lane_za64_vg4x1' has no form that takes 'svuint64_t' arguments} } */
 }
+
+#pragma GCC target ("+sme-f8f32")
+
+f5 (svmfloat8_t mf8,
+    svmfloat8x2_t mf8x2,
+    double d, fpm_t fpm)
+  __arm_streaming __arm_inout("za")
+{
+  svmla_lane_za32_vg4x1_fpm (d, mf8, mf8, 0); /* { dg-error {too few arguments to function 'svmla_lane_za32_vg4x1_fpm'} } */
+  svmla_lane_za32_vg4x1_fpm (d, mf8, mf8, 0, 0, fpm); /* { dg-error {too many arguments to function 'svmla_lane_za32_vg4x1_fpm'} } */
+  svmla_lane_za32_vg4x1_fpm (d, mf8, mf8, 0, fpm);
+  svmla_lane_za32_vg4x1_fpm (d, mf8, mf8, -1, fpm); /* { dg-error {passing -1 to argument 4 of 'svmla_lane_za32_vg4x1_fpm', which expects a value in the range \[0, 15\]} } */
+  svmla_lane_za32_vg4x1_fpm (d, mf8, mf8, 16, fpm); /* { dg-error {passing 16 to argument 4 of 'svmla_lane_za32_vg4x1_fpm', which expects a value in the range \[0, 15\]} } */
+}

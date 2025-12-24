@@ -266,9 +266,17 @@ DEF_SME_FUNCTION_GS (svluti4_zt,      luti4_zt,      b_integer, x4,   none)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_F8F16)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmla_lane, binary_za_slice_lane, za_h_mf8,
+			    vg2, none, set)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmla, binary_za_slice_opt_single, za_h_mf8, vg2, none, set)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmla, binary_za_slice_opt_single, za_h_mf8, vg1x24, none, set)
 #undef REQUIRED_EXTENSIONS
 
 #define REQUIRED_EXTENSIONS streaming_only (AARCH64_FL_SME_F8F32)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmla_lane, binary_za_slice_lane, za_s_mf8,
+			    vg4, none, set)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmla, binary_za_slice_opt_single, za_s_mf8, vg4, none, set)
+DEF_SME_ZA_FUNCTION_GS_FPM (svmla, binary_za_slice_opt_single, za_s_mf8, vg1x24, none, set)
 #undef REQUIRED_EXTENSIONS
 
 #undef DEF_SME_ZA_FUNCTION

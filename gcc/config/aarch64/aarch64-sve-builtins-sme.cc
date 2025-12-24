@@ -640,10 +640,11 @@ FUNCTION (svluti2_lane_zt, svluti_lane_zt_impl, (2))
 FUNCTION (svluti4_lane_zt, svluti_lane_zt_impl, (4))
 FUNCTION (svluti4_zt, svluti_zt_impl, (4))
 FUNCTION (svmla_za, sme_2mode_function, (UNSPEC_SME_SMLA, UNSPEC_SME_UMLA,
-					 UNSPEC_SME_FMLA))
+					 UNSPEC_SME_FMLA, UNSPEC_SME_FMLAL))
 FUNCTION (svmla_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SMLA,
 						   UNSPEC_SME_UMLA,
-						   UNSPEC_SME_FMLA))
+						   UNSPEC_SME_FMLA,
+						   UNSPEC_SME_FMLAL))
 FUNCTION (svmls_za, sme_2mode_function, (UNSPEC_SME_SMLS, UNSPEC_SME_UMLS,
 					 UNSPEC_SME_FMLS))
 FUNCTION (svmls_lane_za, sme_2mode_lane_function, (UNSPEC_SME_SMLS,
