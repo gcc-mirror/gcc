@@ -640,7 +640,7 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_d_za(S, D) \
   S (za64)
 
-/* {   _za8 } x {             _s8  _u8 }
+/* {   _za8 } x {  _mf8       _s8  _u8 }
 
    {  _za16 } x { _bf16 _f16 _s16 _u16 }
 
@@ -648,7 +648,7 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 
    {  _za64 } x {       _f64 _s64 _u64 }.  */
 #define TYPES_za_bhsd_data(S, D) \
-  D (za8, s8), D (za8, u8), \
+  D (za8, mf8), D (za8, s8), D (za8, u8), \
   D (za16, bf16), D (za16, f16), D (za16, s16), D (za16, u16), \
   D (za32, f32), D (za32, s32), D (za32, u32), \
   D (za64, f64), D (za64, s64), D (za64, u64)

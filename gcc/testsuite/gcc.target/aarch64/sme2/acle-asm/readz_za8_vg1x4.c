@@ -27,6 +27,16 @@ TEST_READ_ZA_XN (readz_w0_z0, svuint8x4_t,
 		 z0 = svreadz_za8_u8_vg1x4 (w0))
 
 /*
+** readz_mf8_w0_z0:
+**	mov	(w8|w9|w10|w11), w0
+**	movaz	{z0\.d - z3\.d}, za\.d\[\1, 0, vgx4\]
+**	ret
+*/
+TEST_READ_ZA_XN (readz_mf8_w0_z0, svmfloat8x4_t,
+		 z0 = svreadz_za8_mf8_vg1x4 (w0),
+		 z0 = svreadz_za8_mf8_vg1x4 (w0))
+
+/*
 ** readz_w7_z0:
 **	mov	(w8|w9|w10|w11), w7
 **	movaz	{z0\.d - z3\.d}, za\.d\[\1, 0, vgx4\]
@@ -53,6 +63,16 @@ TEST_READ_ZA_XN (readz_w8_z0, svint8x4_t,
 TEST_READ_ZA_XN (readz_w11_z0, svuint8x4_t,
 		 z0 = svreadz_za8_u8_vg1x4 (w11),
 		 z0 = svreadz_za8_u8_vg1x4 (w11))
+
+
+/*
+** readz_mf8_w11_z0:
+**	movaz	{z0\.d - z3\.d}, za\.d\[w11, 0, vgx4\]
+**	ret
+*/
+TEST_READ_ZA_XN (readz_mf8_w11_z0, svmfloat8x4_t,
+		 z0 = svreadz_za8_mf8_vg1x4 (w11),
+		 z0 = svreadz_za8_mf8_vg1x4 (w11))
 
 
 /*
@@ -83,6 +103,16 @@ TEST_READ_ZA_XN (readz_w8p7_z0, svint8x4_t,
 TEST_READ_ZA_XN (readz_w8p8_z0, svuint8x4_t,
 		 z0 = svreadz_za8_u8_vg1x4 (w8 + 8),
 		 z0 = svreadz_za8_u8_vg1x4 (w8 + 8))
+
+/*
+** readz_mf8_w8p8_z0:
+**	add	(w8|w9|w10|w11), w8, #?8
+**	movaz	{z0\.d - z3\.d}, za\.d\[\1, 0, vgx4\]
+**	ret
+*/
+TEST_READ_ZA_XN (readz_mf8_w8p8_z0, svmfloat8x4_t,
+		 z0 = svreadz_za8_mf8_vg1x4 (w8 + 8),
+		 z0 = svreadz_za8_mf8_vg1x4 (w8 + 8))
 
 /*
 ** readz_w8m1_z0:
@@ -119,6 +149,19 @@ TEST_READ_ZA_XN (readz_w8_z18, svuint8x4_t,
 		 z18 = svreadz_za8_u8_vg1x4 (w8))
 
 /*
+** readz_mf8_w8_z18:
+**	movaz	[^\n]+, za\.d\[w8, 0, vgx4\]
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	ret
+*/
+TEST_READ_ZA_XN (readz_mf8_w8_z18, svmfloat8x4_t,
+		 z18 = svreadz_za8_mf8_vg1x4 (w8),
+		 z18 = svreadz_za8_mf8_vg1x4 (w8))
+
+/*
 ** readz_w8_z23:
 **	movaz	[^\n]+, za\.d\[w8, 0, vgx4\]
 **	mov	[^\n]+
@@ -130,6 +173,19 @@ TEST_READ_ZA_XN (readz_w8_z18, svuint8x4_t,
 TEST_READ_ZA_XN (readz_w8_z23, svuint8x4_t,
 		 z23 = svreadz_za8_u8_vg1x4 (w8),
 		 z23 = svreadz_za8_u8_vg1x4 (w8))
+
+/*
+** readz_mf8_w8_z23:
+**	movaz	[^\n]+, za\.d\[w8, 0, vgx4\]
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	ret
+*/
+TEST_READ_ZA_XN (readz_mf8_w8_z23, svmfloat8x4_t,
+		 z23 = svreadz_za8_mf8_vg1x4 (w8),
+		 z23 = svreadz_za8_mf8_vg1x4 (w8))
 
 /*
 ** readz_w8_z28:

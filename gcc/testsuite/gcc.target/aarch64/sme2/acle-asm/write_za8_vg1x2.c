@@ -33,6 +33,16 @@ TEST_ZA_XN (write_w7_z0, svuint8x2_t,
 	    svwrite_za8_vg1x2 (w7, z0))
 
 /*
+** write_mf8_w7_z0:
+**	mov	(w8|w9|w10|w11), w7
+**	mova	za\.d\[\1, 0, vgx2\], {z0\.d - z1\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w7_z0, svmfloat8x2_t,
+	    svwrite_za8_mf8_vg1x2 (w7, z0),
+	    svwrite_za8_vg1x2 (w7, z0))
+
+/*
 ** write_w8_z0:
 **	mova	za\.d\[w8, 0, vgx2\], {z0\.d - z1\.d}
 **	ret
@@ -59,6 +69,16 @@ TEST_ZA_XN (write_w11_z0, svint8x2_t,
 */
 TEST_ZA_XN (write_w12_z0, svuint8x2_t,
 	    svwrite_za8_u8_vg1x2 (w12, z0),
+	    svwrite_za8_vg1x2 (w12, z0))
+
+/*
+** write_mf8_w12_z0:
+**	mov	(w8|w9|w10|w11), w12
+**	mova	za\.d\[\1, 0, vgx2\], {z0\.d - z1\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w12_z0, svmfloat8x2_t,
+	    svwrite_za8_mf8_vg1x2 (w12, z0),
 	    svwrite_za8_vg1x2 (w12, z0))
 
 /*
@@ -91,12 +111,31 @@ TEST_ZA_XN (write_w8m1_z0, svuint8x2_t,
 	    svwrite_za8_vg1x2 (w8 - 1, z0))
 
 /*
+** write_mf8_w8m1_z0:
+**	sub	(w8|w9|w10|w11), w8, #?1
+**	mova	za\.d\[\1, 0, vgx2\], {z0\.d - z1\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w8m1_z0, svmfloat8x2_t,
+	    svwrite_za8_mf8_vg1x2 (w8 - 1, z0),
+	    svwrite_za8_vg1x2 (w8 - 1, z0))
+
+/*
 ** write_w8_z18:
 **	mova	za\.d\[w8, 0, vgx2\], {z18\.d - z19\.d}
 **	ret
 */
 TEST_ZA_XN (write_w8_z18, svuint8x2_t,
 	    svwrite_za8_u8_vg1x2 (w8, z18),
+	    svwrite_za8_vg1x2 (w8, z18))
+
+/*
+** write_mf8_w8_z18:
+**	mova	za\.d\[w8, 0, vgx2\], {z18\.d - z19\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w8_z18, svmfloat8x2_t,
+	    svwrite_za8_mf8_vg1x2 (w8, z18),
 	    svwrite_za8_vg1x2 (w8, z18))
 
 /* Leave the assembler to check for correctness for misaligned registers.  */
@@ -119,4 +158,13 @@ TEST_ZA_XN (write_w8_z23, svint8x2_t,
 */
 TEST_ZA_XN (write_w8_z28, svuint8x2_t,
 	    svwrite_za8_u8_vg1x2 (w8, z28),
+	    svwrite_za8_vg1x2 (w8, z28))
+
+/*
+** write_mf8_w8_z28:
+**	mova	za\.d\[w8, 0, vgx2\], {z28\.d - z29\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w8_z28, svmfloat8x2_t,
+	    svwrite_za8_mf8_vg1x2 (w8, z28),
 	    svwrite_za8_vg1x2 (w8, z28))

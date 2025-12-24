@@ -23,6 +23,16 @@ TEST_ZA_XN (write_w0_z0, svuint8x4_t,
 	    svwrite_za8_vg1x4 (w0, z0))
 
 /*
+** write_mf8_w0_z0:
+**	mov	(w8|w9|w10|w11), w0
+**	mova	za\.d\[\1, 0, vgx4\], {z0\.d - z3\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w0_z0, svmfloat8x4_t,
+	    svwrite_za8_mf8_vg1x4 (w0, z0),
+	    svwrite_za8_vg1x4 (w0, z0))
+
+/*
 ** write_w7_z0:
 **	mov	(w8|w9|w10|w11), w7
 **	mova	za\.d\[\1, 0, vgx4\], {z0\.d - z3\.d}
@@ -50,6 +60,14 @@ TEST_ZA_XN (write_w11_z0, svuint8x4_t,
 	    svwrite_za8_u8_vg1x4 (w11, z0),
 	    svwrite_za8_vg1x4 (w11, z0))
 
+/*
+** write_mf8_w11_z0:
+**	mova	za\.d\[w11, 0, vgx4\], {z0\.d - z3\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w11_z0, svmfloat8x4_t,
+	    svwrite_za8_mf8_vg1x4 (w11, z0),
+	    svwrite_za8_vg1x4 (w11, z0))
 
 /*
 ** write_w12_z0:
@@ -78,6 +96,16 @@ TEST_ZA_XN (write_w8p7_z0, svint8x4_t,
 */
 TEST_ZA_XN (write_w8p8_z0, svuint8x4_t,
 	    svwrite_za8_u8_vg1x4 (w8 + 8, z0),
+	    svwrite_za8_vg1x4 (w8 + 8, z0))
+
+/*
+** write_mf8_w8p8_z0:
+**	add	(w8|w9|w10|w11), w8, #?8
+**	mova	za\.d\[\1, 0, vgx4\], {z0\.d - z3\.d}
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w8p8_z0, svmfloat8x4_t,
+	    svwrite_za8_mf8_vg1x4 (w8 + 8, z0),
 	    svwrite_za8_vg1x4 (w8 + 8, z0))
 
 /*
@@ -115,6 +143,19 @@ TEST_ZA_XN (write_w8_z18, svuint8x4_t,
 	    svwrite_za8_vg1x4 (w8, z18))
 
 /*
+** write_mf8_w8_z18:
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mova	za\.d\[w8, 0, vgx4\], [^\n]+
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w8_z18, svmfloat8x4_t,
+	    svwrite_za8_mf8_vg1x4 (w8, z18),
+	    svwrite_za8_vg1x4 (w8, z18))
+
+/*
 ** write_w8_z23:
 **	mov	[^\n]+
 **	mov	[^\n]+
@@ -125,6 +166,19 @@ TEST_ZA_XN (write_w8_z18, svuint8x4_t,
 */
 TEST_ZA_XN (write_w8_z23, svuint8x4_t,
 	    svwrite_za8_u8_vg1x4 (w8, z23),
+	    svwrite_za8_vg1x4 (w8, z23))
+
+/*
+** write_mf8_w8_z23:
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mov	[^\n]+
+**	mova	za\.d\[w8, 0, vgx4\], [^\n]+
+**	ret
+*/
+TEST_ZA_XN (write_mf8_w8_z23, svmfloat8x4_t,
+	    svwrite_za8_mf8_vg1x4 (w8, z23),
 	    svwrite_za8_vg1x4 (w8, z23))
 
 /*

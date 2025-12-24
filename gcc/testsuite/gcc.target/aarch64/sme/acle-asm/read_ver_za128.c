@@ -104,6 +104,16 @@ TEST_READ_ZA (read_za128_u8_0_w0_tied, svuint8_t,
 	      z0 = svread_ver_za128_m (z0, p0, 0, w0))
 
 /*
+** read_za128_mf8_0_w0_tied:
+**	mov	(w1[2-5]), w0
+**	mova	z0\.q, p0/m, za0v\.q\[\1, 0\]
+**	ret
+*/
+TEST_READ_ZA (read_za128_mf8_0_w0_tied, svmfloat8_t,
+	      z0 = svread_ver_za128_mf8_m (z0, p0, 0, w0),
+	      z0 = svread_ver_za128_m (z0, p0, 0, w0))
+
+/*
 ** read_za128_u8_0_w0_untied:
 ** (
 **	mov	(w1[2-5]), w0
@@ -122,6 +132,27 @@ TEST_READ_ZA (read_za128_u8_0_w0_tied, svuint8_t,
 */
 TEST_READ_ZA (read_za128_u8_0_w0_untied, svuint8_t,
 	      z0 = svread_ver_za128_u8_m (z1, p0, 0, w0),
+	      z0 = svread_ver_za128_m (z1, p0, 0, w0))
+
+/*
+** read_za128_mf8_0_w0_untied:
+** (
+**	mov	(w1[2-5]), w0
+**	mov	z0\.d, z1\.d
+**	mova	z0\.q, p0/m, za0v\.q\[\1, 0\]
+** |
+**	mov	z0\.d, z1\.d
+**	mov	(w1[2-5]), w0
+**	mova	z0\.q, p0/m, za0v\.q\[\2, 0\]
+** |
+**	mov	(w1[2-5]), w0
+**	mova	z1\.q, p0/m, za0v\.q\[\3, 0\]
+**	mov	z0\.d, z1\.d
+** )
+**	ret
+*/
+TEST_READ_ZA (read_za128_mf8_0_w0_untied, svmfloat8_t,
+	      z0 = svread_ver_za128_mf8_m (z1, p0, 0, w0),
 	      z0 = svread_ver_za128_m (z1, p0, 0, w0))
 
 /*

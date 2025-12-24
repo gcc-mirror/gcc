@@ -85,3 +85,13 @@ TEST_READ_ZA (readz_za8_s8_0_w0m1, svint8_t,
 TEST_READ_ZA (readz_za8_u8_0_w0, svuint8_t,
 	      z0 = svreadz_ver_za8_u8 (0, w0),
 	      z0 = svreadz_ver_za8_u8 (0, w0))
+
+/*
+** readz_za8_mf8_0_w0:
+**	mov	(w1[2-5]), w0
+**	movaz	z0\.b, za0v\.b\[\1, 0\]
+**	ret
+*/
+TEST_READ_ZA (readz_za8_mf8_0_w0, svmfloat8_t,
+	      z0 = svreadz_ver_za8_mf8 (0, w0),
+	      z0 = svreadz_ver_za8_mf8 (0, w0))

@@ -33,6 +33,16 @@ TEST_READ_ZA_XN (read_w7_z0, svuint8x2_t,
 		 z0 = svread_za8_u8_vg1x2 (w7))
 
 /*
+** read_mf8_w7_z0:
+**	mov	(w8|w9|w10|w11), w7
+**	mova	{z0\.d - z1\.d}, za\.d\[\1, 0, vgx2\]
+**	ret
+*/
+TEST_READ_ZA_XN (read_mf8_w7_z0, svmfloat8x2_t,
+		 z0 = svread_za8_mf8_vg1x2 (w7),
+		 z0 = svread_za8_mf8_vg1x2 (w7))
+
+/*
 ** read_w8_z0:
 **	mova	{z0\.d - z1\.d}, za\.d\[w8, 0, vgx2\]
 **	ret
@@ -60,6 +70,16 @@ TEST_READ_ZA_XN (read_w11_z0, svint8x2_t,
 TEST_READ_ZA_XN (read_w12_z0, svuint8x2_t,
 		 z0 = svread_za8_u8_vg1x2 (w12),
 		 z0 = svread_za8_u8_vg1x2 (w12))
+
+/*
+** read_mf8_w12_z0:
+**	mov	(w8|w9|w10|w11), w12
+**	mova	{z0\.d - z1\.d}, za\.d\[\1, 0, vgx2\]
+**	ret
+*/
+TEST_READ_ZA_XN (read_mf8_w12_z0, svmfloat8x2_t,
+		 z0 = svread_za8_mf8_vg1x2 (w12),
+		 z0 = svread_za8_mf8_vg1x2 (w12))
 
 /*
 ** read_w8p7_z0:
@@ -91,6 +111,16 @@ TEST_READ_ZA_XN (read_w8m1_z0, svuint8x2_t,
 		 z0 = svread_za8_u8_vg1x2 (w8 - 1))
 
 /*
+** read_mf8_w8m1_z0:
+**	sub	(w8|w9|w10|w11), w8, #?1
+**	mova	{z0\.d - z1\.d}, za\.d\[\1, 0, vgx2\]
+**	ret
+*/
+TEST_READ_ZA_XN (read_mf8_w8m1_z0, svmfloat8x2_t,
+		 z0 = svread_za8_mf8_vg1x2 (w8 - 1),
+		 z0 = svread_za8_mf8_vg1x2 (w8 - 1))
+
+/*
 ** read_w8_z18:
 **	mova	{z18\.d - z19\.d}, za\.d\[w8, 0, vgx2\]
 **	ret
@@ -98,6 +128,15 @@ TEST_READ_ZA_XN (read_w8m1_z0, svuint8x2_t,
 TEST_READ_ZA_XN (read_w8_z18, svuint8x2_t,
 		 z18 = svread_za8_u8_vg1x2 (w8),
 		 z18 = svread_za8_u8_vg1x2 (w8))
+
+/*
+** read_mf8_w8_z18:
+**	mova	{z18\.d - z19\.d}, za\.d\[w8, 0, vgx2\]
+**	ret
+*/
+TEST_READ_ZA_XN (read_mf8_w8_z18, svmfloat8x2_t,
+		 z18 = svread_za8_mf8_vg1x2 (w8),
+		 z18 = svread_za8_mf8_vg1x2 (w8))
 
 /* Leave the assembler to check for correctness for misaligned registers.  */
 
@@ -120,3 +159,12 @@ TEST_READ_ZA_XN (read_w8_z23, svint8x2_t,
 TEST_READ_ZA_XN (read_w8_z28, svuint8x2_t,
 		 z28 = svread_za8_u8_vg1x2 (w8),
 		 z28 = svread_za8_u8_vg1x2 (w8))
+
+/*
+** read_mf8_w8_z28:
+**	mova	{z28\.d - z29\.d}, za\.d\[w8, 0, vgx2\]
+**	ret
+*/
+TEST_READ_ZA_XN (read_mf8_w8_z28, svmfloat8x2_t,
+		 z28 = svread_za8_mf8_vg1x2 (w8),
+		 z28 = svread_za8_mf8_vg1x2 (w8))

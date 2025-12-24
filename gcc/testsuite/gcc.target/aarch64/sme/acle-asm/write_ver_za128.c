@@ -93,6 +93,16 @@ TEST_WRITE_ZA (write_za128_u8_0_w0_z0, svuint8_t,
 	       svwrite_ver_za128_m (0, w0, p0, z0))
 
 /*
+** write_za128_mf8_0_w0_z0:
+**	mov	(w1[2-5]), w0
+**	mova	za0v\.q\[\1, 0\], p0/m, z0\.q
+**	ret
+*/
+TEST_WRITE_ZA (write_za128_mf8_0_w0_z0, svmfloat8_t,
+	       svwrite_ver_za128_mf8_m (0, w0, p0, z0),
+	       svwrite_ver_za128_m (0, w0, p0, z0))
+
+/*
 ** write_za128_s16_0_w0_z0:
 **	mov	(w1[2-5]), w0
 **	mova	za0v\.q\[\1, 0\], p0/m, z0\.q
