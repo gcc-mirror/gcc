@@ -178,7 +178,7 @@ parse_element_type (const function_instance &instance, const char *&format)
 			       type_suffixes[suffix].element_bits / 2);
     }
 
-  if (ch == '0' || ch == '1')
+  if (ch == '0' || ch == '1' || ch == '2')
     return instance.type_suffix_ids[ch - '0'];
 
   gcc_unreachable ();
@@ -194,11 +194,13 @@ parse_element_type (const function_instance &instance, const char *&format)
    b       - base vector type (from a _<m0>base suffix)
    c0      - the result of a conversion, based on type and group suffixes
    c1      - the source of a conversion, based on type and group suffixes
+   c2      - the source of a conversion, based on type and group suffixes
    d       - displacement vector type (from a _<m1>index or _<m1>offset suffix)
    e<name> - an enum with the given name
    s<elt>  - a scalar type with the given element suffix
    t<elt>  - a vector or tuple type with given element suffix [*1]
    T<elt>  - a vector or tuple type with given element suffix [*2]
+   u<elt>  - a vector or tuple type with given element suffix [*3]
    v<elt>  - a vector with the given element suffix
    D<elt>  - a 64 bit neon vector
    Q<elt>  - a 128 bit neon vector
@@ -208,6 +210,7 @@ parse_element_type (const function_instance &instance, const char *&format)
    [*1] the vectors_per_tuple function indicates whether the type should
 	be a tuple, and if so, how many vectors it should contain.
    [*2] same as for [*1], but the tuple contains half as many vectors.
+   [*3] same as for [*1], but the tuple contains twice as many vectors.
 */
 static tree
 parse_type (const function_instance &instance, const char *&format)
@@ -235,16 +238,19 @@ parse_type (const function_instance &instance, const char *&format)
   if (ch == 'c')
     {
       int ch = *format++;
-      gcc_assert (ch == '0' || ch == '1');
-      unsigned int id = (ch == '0' ? 0 : 1);
+      gcc_assert (ch == '0' || ch == '1' || ch == '2');
+      unsigned int id = ch - '0';
       auto vector_type = instance.type_suffix (id).vector_type;
       unsigned int num_vectors = instance.group_suffix ().vectors_per_tuple;
       if (num_vectors != 1)
 	{
-	  unsigned int bits = instance.type_suffix (id).element_bits;
-	  unsigned int other_bits = instance.type_suffix (1 - id).element_bits;
-	  if (other_bits > bits)
-	    num_vectors /= other_bits / bits;
+	  unsigned int type_bits = instance.type_suffix (id).element_bits;
+	  unsigned int max_bits = std::max ( std:: max (
+	    instance.type_suffix (0).element_bits,
+	    instance.type_suffix (1).element_bits),
+	    instance.type_suffix (2).element_bits);
+	  if (max_bits > type_bits)
+	    num_vectors /= max_bits / type_bits;
 	}
       return acle_vector_types[num_vectors - 1][vector_type];
     }
@@ -285,6 +291,14 @@ parse_type (const function_instance &instance, const char *&format)
       type_suffix_index suffix = parse_element_type (instance, format);
       vector_type_index vector_type = type_suffixes[suffix].vector_type;
       unsigned int num_vectors = instance.vectors_per_tuple () / 2;
+      return acle_vector_types[num_vectors - 1][vector_type];
+    }
+
+  if (ch == 'u')
+    {
+      type_suffix_index suffix = parse_element_type (instance, format);
+      vector_type_index vector_type = type_suffixes[suffix].vector_type;
+      unsigned int num_vectors = instance.vectors_per_tuple () * 2;
       return acle_vector_types[num_vectors - 1][vector_type];
     }
 
@@ -850,7 +864,7 @@ struct load_contiguous_base : public overloaded_base<0>
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, type, NUM_TYPE_SUFFIXES,
-			 r.group_suffix_id);
+			 NUM_TYPE_SUFFIXES, r.group_suffix_id);
   }
 };
 
@@ -2318,7 +2332,7 @@ struct compare_scalar_def : public overloaded_base<1>
       return error_mark_node;
 
     return r.resolve_to (r.mode_suffix_id, r.type_suffix_ids[0], type,
-			 r.group_suffix_id);
+			 NUM_TYPE_SUFFIXES, r.group_suffix_id);
   }
 };
 SHAPE (compare_scalar)
@@ -4167,7 +4181,8 @@ struct ternary_mfloat8_def
 	|| !r.require_scalar_type (3, "uint64_t"))
       return error_mark_node;
 
-    return r.resolve_to (r.mode_suffix_id, type, TYPE_SUFFIX_mf8, GROUP_none);
+    return r.resolve_to (r.mode_suffix_id, type, TYPE_SUFFIX_mf8,
+			 NUM_TYPE_SUFFIXES, GROUP_none);
   }
 };
 SHAPE (ternary_mfloat8)
@@ -4219,7 +4234,8 @@ struct ternary_mfloat8_lane_def
 	|| !r.require_scalar_type (4, "uint64_t"))
       return error_mark_node;
 
-    return r.resolve_to (r.mode_suffix_id, type, TYPE_SUFFIX_mf8, GROUP_none);
+    return r.resolve_to (r.mode_suffix_id, type, TYPE_SUFFIX_mf8,
+			 NUM_TYPE_SUFFIXES, GROUP_none);
   }
 };
 SHAPE (ternary_mfloat8_lane)
@@ -4290,7 +4306,8 @@ struct ternary_mfloat8_opt_n_def
     else if (!r.require_vector_type (2, VECTOR_TYPE_svmfloat8_t))
       return error_mark_node;
 
-    return r.resolve_to (mode, type, TYPE_SUFFIX_mf8, GROUP_none);
+    return r.resolve_to (mode, type, TYPE_SUFFIX_mf8, NUM_TYPE_SUFFIXES,
+			 GROUP_none);
   }
 };
 SHAPE (ternary_mfloat8_opt_n)

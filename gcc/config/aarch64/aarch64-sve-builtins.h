@@ -38,7 +38,7 @@
    - mode_suffix_index represents the mode suffix
 
    - type_suffix_index represents individual type suffixes, while
-     type_suffix_pair represents a pair of them
+     type_suffix_triple represents a tuple of them
 
    - prediction_index extends the predication suffix with an additional
      alternative: PRED_implicit for implicitly-predicated operations
@@ -227,8 +227,8 @@ enum group_suffix_index
   NUM_GROUP_SUFFIXES
 };
 
-/* Combines two type suffixes.  */
-typedef enum type_suffix_index type_suffix_pair[2];
+/* Combines three type suffixes.  */
+typedef enum type_suffix_index type_suffix_triple[3];
 
 class function_base;
 class function_shape;
@@ -367,12 +367,12 @@ struct function_group_info
   /* A list of the available type suffixes, group suffixes, and predication
      types.  The function supports every combination of the three.
 
-     The list of type suffixes is terminated by two NUM_TYPE_SUFFIXES.
+     The list of type suffixes is terminated by three NUM_TYPE_SUFFIXES.
      It is lexicographically ordered based on the index value.
 
      The list of group suffixes is terminated by NUM_GROUP_SUFFIXES
      and the list of predication types is terminated by NUM_PREDS.  */
-  const type_suffix_pair *types;
+  const type_suffix_triple *types;
   const group_suffix_index *groups;
   const predication_index *preds;
 
@@ -390,7 +390,7 @@ class GTY((user)) function_instance
 public:
   function_instance (const char *, const function_base *,
 		     const function_shape *, mode_suffix_index,
-		     const type_suffix_pair &, group_suffix_index,
+		     const type_suffix_triple &, group_suffix_index,
 		     predication_index, fpm_mode_index);
 
   bool operator== (const function_instance &) const;
@@ -434,7 +434,7 @@ public:
   const function_base *base;
   const function_shape *shape;
   mode_suffix_index mode_suffix_id;
-  type_suffix_pair type_suffix_ids;
+  type_suffix_triple type_suffix_ids;
   group_suffix_index group_suffix_id;
   predication_index pred;
   fpm_mode_index fpm_mode;
@@ -527,9 +527,11 @@ public:
   tree lookup_form (mode_suffix_index,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
 		    type_suffix_index = NUM_TYPE_SUFFIXES,
+		    type_suffix_index = NUM_TYPE_SUFFIXES,
 		    group_suffix_index = GROUP_none);
   tree lookup_form (mode_suffix_index, sve_type);
   tree resolve_to (mode_suffix_index,
+		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   type_suffix_index = NUM_TYPE_SUFFIXES,
 		   group_suffix_index = GROUP_none);
@@ -907,7 +909,7 @@ inline function_instance::
 function_instance (const char *base_name_in, const function_base *base_in,
 		   const function_shape *shape_in,
 		   mode_suffix_index mode_suffix_id_in,
-		   const type_suffix_pair &type_suffix_ids_in,
+		   const type_suffix_triple &type_suffix_ids_in,
 		   group_suffix_index group_suffix_id_in,
 		   predication_index pred_in, fpm_mode_index fpm_mode_in)
   : base_name (base_name_in), base (base_in), shape (shape_in),
@@ -925,6 +927,7 @@ function_instance::operator== (const function_instance &other) const
 	  && mode_suffix_id == other.mode_suffix_id
 	  && type_suffix_ids[0] == other.type_suffix_ids[0]
 	  && type_suffix_ids[1] == other.type_suffix_ids[1]
+	  && type_suffix_ids[2] == other.type_suffix_ids[2]
 	  && group_suffix_id == other.group_suffix_id
 	  && pred == other.pred
 	  && fpm_mode == other.fpm_mode);

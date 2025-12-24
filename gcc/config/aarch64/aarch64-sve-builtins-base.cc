@@ -2341,9 +2341,11 @@ public:
 	    tree negated_op = op1;
 	    if (integer_minus_onep (op1))
 	      negated_op = op2;
-	    type_suffix_pair signed_tsp =
-	      {find_type_suffix (TYPE_signed, f.type_suffix (0).element_bits),
-		f.type_suffix_ids[1]};
+	    type_suffix_triple signed_tsp = {
+	      find_type_suffix (TYPE_signed, f.type_suffix (0).element_bits),
+	      f.type_suffix_ids[1],
+	      NUM_TYPE_SUFFIXES
+	    };
 	    function_instance instance ("svneg", functions::svneg,
 					shapes::unary, MODE_none, signed_tsp,
 					GROUP_none, f.pred, FPM_unused);
