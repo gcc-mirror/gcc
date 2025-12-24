@@ -668,6 +668,14 @@ CONSTEXPR const group_suffix_info group_suffixes[] = {
 #define TYPES_za_h_mf8(S, D) \
   D (za16, mf8)
 
+/* _za32_mf8.  */
+#define TYPES_za_s_mf8(S, D) \
+  D (za32, mf8)
+
+/* { _za_16 _za_32 } x _mf8.  */
+#define TYPES_za_hs_mf8(S, D) \
+  D (za16, mf8), D (za32, mf8)
+
 /* _za16_bf16.  */
 #define TYPES_za_h_bfloat(S, D) \
   D (za16, bf16)
@@ -868,6 +876,7 @@ DEF_SVE_TYPES_ARRAY (za_s_h_data);
 DEF_SVE_TYPES_ARRAY (za_s_unsigned);
 DEF_SVE_TYPES_ARRAY (za_s_integer);
 DEF_SVE_TYPES_ARRAY (za_s_mf8);
+DEF_SVE_TYPES_ARRAY (za_hs_mf8);
 DEF_SVE_TYPES_ARRAY (za_s_float);
 DEF_SVE_TYPES_ARRAY (za_s_data);
 DEF_SVE_TYPES_ARRAY (za_d_h_integer);

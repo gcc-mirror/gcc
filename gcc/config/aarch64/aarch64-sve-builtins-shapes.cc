@@ -2507,6 +2507,43 @@ struct dot_za_slice_lane_def : public binary_za_slice_lane_base<>
 };
 SHAPE (dot_za_slice_lane)
 
+/* void svvdott_lane_za32[_mf8]_vg1x4_fpm (uint32_t slice, svmfloat8x2_t zn,
+					   svmfloat8_t zm, uint64_t imm_idx,
+					   fpm_t fpm) __arm_streaming
+						      __arm_inout ("za");
+   void svvdotb_lane_za32[_mf8]_vg1x4_fpm (uint32_t slice, svmfloat8x2_t zn,
+					   svmfloat8_t zm, uint64_t imm_idx,
+					   fpm_t fpm) __arm_streaming
+						      __arm_inout ("za");  */
+struct dot_half_za_slice_lane_def : public binary_za_slice_lane_base<>
+{
+
+  constexpr dot_half_za_slice_lane_def () : binary_za_slice_lane_base<> (0)
+  {}
+
+  void build (function_builder &b,
+	      const function_group_info &group) const override
+  {
+    b.add_overloaded_functions (group, MODE_none);
+    build_all (b, "_,su32,T1,v1,su64", group, MODE_none);
+  }
+
+  tree
+  resolve (function_resolver &r) const override
+  {
+    sve_type type;
+    if (!r.check_num_arguments (5)
+	|| !r.require_scalar_type (0, "uint32_t")
+	|| !(type = r.infer_vector_or_tuple_type (1, 2))
+	|| !r.require_vector_type (2, VECTOR_TYPE_svmfloat8_t)
+	|| !r.require_integer_immediate (3))
+      return error_mark_node;
+
+    return r.resolve_to (r.mode_suffix_id, type);
+  }
+};
+SHAPE (dot_half_za_slice_lane)
+
 /* void svfoo_lane_t0[_t1]_g(uint32_t, sv<t1>x<g>_t, sv<t1:uint>_t, uint64_t)
 
    where the final argument indexes a <t0>-sized group of elements in the

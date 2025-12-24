@@ -45,6 +45,7 @@
 ;; ---- [INT] Ternary widening arithmetic on ZA slice
 ;; ---- [INT] Sum of outer products
 ;; ---- [FP] Dot product
+;; ---- [FP8] Dot product
 ;; ---- [FP] Ternary arithmetic on ZA slice
 ;; ---- [FP] Ternary widening arithmetic on ZA slice
 ;; ---- [FP] Sum of outer products
@@ -1890,6 +1891,304 @@
 	  SME_FP_DOTPROD_LANE))]
   "TARGET_STREAMING_SME2"
   "<b><optab>\tza.s[%w0, %1, vgx<vector_count>], %2, %3.h[%4]"
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP8] Dot product
+;; -------------------------------------------------------------------------
+;; Includes:
+;; - FDOT (2-way, multiple vectors, FP8 to FP16)
+;;   - 2 ZA single-vectors (svdot_za16_mf8_vg1x2_fpm)
+;;   - 4 ZA single-vectors (svdot_za16_mf8_vg1x4_fpm)
+;; - FDOT (4-way, multiple vectors)
+;;   - 2 ZA single-vectors (svdot_za32_mf8_vg1x2_fpm)
+;;   - 4 ZA single-vectors (svdot_za32_mf8_vg1x4_fpm)
+
+;; - FDOT (2-way, multiple and single vector, FP8 to FP16)
+;;   - 2 ZA single-vectors (svdot_single_za16_mf8_vg1x2_fpm)
+;;   - 4 ZA single-vectors (svdot_single_za16_mf8_vg1x4_fpm)
+;; - FDOT (4-way, multiple and single vector)
+;;   - 2 ZA single-vectors (svdot_single_za32_mf8_vg1x2_fpm)
+;;   - 4 ZA single-vectors (svdot_single_za32_mf8_vg1x4_fpm)
+
+;; - FDOT (2-way, multiple and indexed vector, FP8 to FP16)
+;;   - 2 ZA single-vectors (svdot_lane_za16_mf8_vg1x2_fpm)
+;;   - 4 ZA single-vectors (svdot_lane_za16_mf8_vg1x4_fpm)
+;; - FDOT (4-way, multiple and indexed vector)
+;;   - 2 ZA single-vectors (svdot_lane_za32_mf8_vg1x2_fpm)
+;;   - 4 ZA single-vectors (svdot_lane_za32_mf8_vg1x4_fpm)
+
+;; - FVDOT (FP8 to FP16)
+;;   - 2 ZA single-vectors (svvdot_lane_za16_mf8_vg1x2_fpm)
+
+;; - FVDOTB
+;;   - 2 ZA single-vectors (svvdotb_lane_za32_mf8_vg1x4_fpm)
+
+;; - FVDOTT
+;;   - 2 ZA single-vectors (svvdott_lane_za32_mf8_vg1x4_fpm)
+;; -------------------------------------------------------------------------
+
+;; FDOT (2-way, multiple vectors, FP8 to FP16)
+;;   Two ZA single-vectors (svdot_za16_mf8_vg1x2_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, { <Zm1>.B-<Zm2>.B }
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 2
+;;     <Zn2> must be a multiple of 2 + 1
+;;     <Zm1> must be a multiple of 2
+;;     <Zm2> must be a multiple of 2 + 1
+;;   Four ZA single-vectors (svdot_za16_mf8_vg1x4_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx4}], { <Zn1>.B-<Zn4>.B }, { <Zm1>.B-<Zm4>.B }
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 4
+;;     <Zn4> must be a multiple of 4 + 3
+;;     <Zm1> must be a multiple of 4
+;;     <Zm4> must be a multiple of 4 + 3
+;; FDOT (4-way, multiple vectors)
+;;   Two ZA single-vectors (svdot_za32_mf8_vg1x2_fpm)
+;;   FDOT ZA.S[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, { <Zm1>.B-<Zm2>.B }
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 2
+;;     <Zn2> must be a multiple of 2 + 1
+;;     <Zm1> must be a multiple of 2
+;;     <Zm2> must be a multiple of 2 + 1
+;;   Four ZA single-vectors (svdot_za32_mf8_vg1x4_fpm)
+;;   FDOT ZA.S[<Wv>, <offs>{, VGx4}], { <Zn1>.B-<Zn4>.B }, { <Zm1>.B-<Zm4>.B }
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 4
+;;     <Zn2> must be a multiple of 4 + 3
+;;     <Zm1> must be a multiple of 4
+;;     <Zm2> must be a multiple of 4 + 3
+(define_insn "@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x24 1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SME_ZA_FP8_x24 2 "aligned_register_operand" "Uw<vector_count>")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_DOTPROD))]
+  "TARGET_STREAMING"
+  "<optab>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0, vgx<vector_count>], %1, %2"
+)
+(define_insn "@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_0_to_7_operand"))
+	   (match_operand:SME_ZA_FP8_x24 2 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:SME_ZA_FP8_x24 3 "aligned_register_operand" "Uw<vector_count>")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_DOTPROD))]
+  "TARGET_STREAMING"
+  "<optab>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, %1, vgx<vector_count>], %2, %3"
+)
+
+;; FDOT (2-way, multiple and single vector, FP8 to FP16)
+;;   Two ZA single-vectors (svdot_single_za16_mf8_vg1x2_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, <Zm>.B
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> can be any Z register
+;;     <Zn2> must be (<Zn1> + 1) mod 32
+;;     <Zm> must be Z0-Z15
+;;   Four ZA single-vectors (svdot_single_za16_mf8_vg1x4_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx4}], { <Zn1>.B-<Zn4>.B }, <Zm>.B
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> can be any Z register
+;;     <Zn4> must be (<Zn1> + 3) mod 32
+;;     <Zm> must be Z0-Z15
+;; FDOT (4-way, multiple and single vector)
+;;   Two ZA single-vectors (svdot_single_za32_mf8_vg1x2_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, <Zm>.B
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> can be any Z register
+;;     <Zn2> must be (<Zn1> + 1) mod 32
+;;     <Zm> must be Z0-Z15
+;;   Four ZA single-vectors (svdot_single_za32_mf8_vg1x2_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx4}], { <Zn1>.B-<Zn4>.B }, <Zm>.B
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> can be any Z register
+;;     <Zn4> must be (<Zn1> + 3) mod 32
+;;     <Zm> must be Z0-Z15
+(define_insn "@aarch64_sme_single<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x24	   1 "register_operand" "w")
+	   (match_operand:<SME_ZA_FP8_x24:VSINGLE> 2 "register_operand" "x")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_DOTPROD))]
+  "TARGET_STREAMING"
+  "<optab>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0, vgx<vector_count>], %1, %2.b"
+)
+(define_insn "@aarch64_sme_single<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_0_to_7_operand"))
+	   (match_operand:SME_ZA_FP8_x24	   2 "register_operand" "w")
+	   (match_operand:<SME_ZA_FP8_x24:VSINGLE> 3 "register_operand" "x")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_DOTPROD))]
+  "TARGET_STREAMING"
+  "<optab>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, %1, vgx<vector_count>], %2, %3.b"
+)
+
+;; FDOT (2-way, multiple and indexed vector, FP8 to FP16)
+;;   Two ZA single-vectors (svdot_lane_za16_mf8_vg1x2_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, <Zm>.B[<index>]
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 2
+;;     <Zn2> must be a multiple of 2 + 1
+;;     <Zm> must be Z0-Z15
+;;     <index> must be 0-7
+;;   Four ZA single-vectors (svdot_lane_za16_mf8_vg1x4_fpm)
+;;   FDOT ZA.H[<Wv>, <offs>{, VGx4}], { <Zn1>.B-<Zn4>.B }, <Zm>.B[<index>]
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 4
+;;     <Zn4> must be a multiple of 4 + 3
+;;     <Zm> must be Z0-Z15
+;;     <index> must be 0-7
+;;   Two ZA single-vectors (svdot_lane_za32_mf8_vg1x2_fpm)
+;;   FDOT ZA.S[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, <Zm>.B[<index>]
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 2
+;;     <Zn2> must be a multiple of 2 + 1
+;;     <Zm> must be Z0-Z15
+;;     <index> must be 0-3
+;;   Four ZA single-vectors (svdot_lane_za32_mf8_vg1x4_fpm)
+;;   FDOT ZA.S[<Wv>, <offs>{, VGx4}], { <Zn1>.B-<Zn4>.B }, <Zm>.B[<index>]
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 4
+;;     <Zn4> must be a multiple of 4 + 3
+;;     <Zm> must be Z0-Z15
+;;     <index> must be 0-3
+(define_insn "@aarch64_sme_lane<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x24	   1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:<SME_ZA_FP8_x24:VSINGLE> 2 "register_operand" "x")
+	   (match_operand:SI 3 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_DOTPROD))]
+  "TARGET_STREAMING"
+  "<optab>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, 0, vgx<vector_count>], %1, %2.b[%3]"
+)
+
+(define_insn "@aarch64_sme_lane<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>_plus"
+  [(set (reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16_32
+	  [(reg:SME_ZA_F8F16_32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_0_to_7_operand"))
+	   (match_operand:SME_ZA_FP8_x24	   2 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:<SME_ZA_FP8_x24:VSINGLE> 3 "register_operand" "x")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_DOTPROD))]
+  "TARGET_STREAMING"
+  "<optab>\tza.<SME_ZA_F8F16_32:Vetype>[%w0, %1, vgx<vector_count>], %2, %3.b[%4]"
+)
+
+;; FVDOT (2-way, multiple and indexed vector, FP8 to FP16)
+;;   Two ZA single-vectors (svvdot_lane_za16_mf8_vg1x2_fpm)
+;;   FVDOT ZA.H[<Wv>, <offs>{, VGx2}], { <Zn1>.B-<Zn2>.B }, <Zm>.B[<index>]
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 2
+;;     <Zn2> must be a multiple of 2 + 1
+;;     <Zm> must be Z0-Z15
+;;     <index> must be 0-7
+(define_insn "@aarch64_sme_lane<optab><SME_ZA_F8F16:mode><SME_ZA_FP8_x2:mode>"
+  [(set (reg:SME_ZA_F8F16 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16
+	  [(reg:SME_ZA_F8F16 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:SME_ZA_FP8_x2		  1 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:<SME_ZA_FP8_x2:VSINGLE> 2 "register_operand" "x")
+	   (match_operand:SI 3 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_FVDOT))]
+  "TARGET_STREAMING"
+  "<optab>\tza.h[%w0, 0, vgx<vector_count>], %1, %2.b[%3]"
+)
+(define_insn "@aarch64_sme_lane<optab><SME_ZA_F8F16:mode><SME_ZA_FP8_x2:mode>_plus"
+  [(set (reg:SME_ZA_F8F16 ZA_REGNUM)
+	(unspec:SME_ZA_F8F16
+	  [(reg:SME_ZA_F8F16 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_0_to_7_operand"))
+	   (match_operand:SME_ZA_FP8_x2		  2 "aligned_register_operand" "Uw<vector_count>")
+	   (match_operand:<SME_ZA_FP8_x2:VSINGLE> 3 "register_operand" "x")
+	   (match_operand:SI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_FVDOT))]
+  "TARGET_STREAMING"
+  "<optab>\tza.h[%w0, %1, vgx<vector_count>], %2, %3.b[%4]"
+)
+
+;; FVDOTB (svvdotb_lane_za32_mf8_vg1x4_fpm)
+;; FVDOTT (svvdott_lane_za32_mf8_vg1x4_fpm)
+;;   FVDOTB ZA.S[<Wv>, <offs>, VGx4], { <Zn1>.B-<Zn2>.B }, <Zm>.B[<index>]
+;;   FVDOTT ZA.S[<Wv>, <offs>, VGx4], { <Zn1>.B-<Zn2>.B }, <Zm>.B[<index>]
+;;     <Wv> must be W8-W11
+;;     <offs> must be 0-7
+;;     <Zn1> must be a multiple of 2
+;;     <Zn2> must be a multiple of 2 + 1
+;;     <Zm> must be Z0-Z15
+;;     <index> must be 0-3
+(define_insn "@aarch64_fvdot_half<optab>"
+  [(set (reg:SME_ZA_F8F32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F32
+	  [(reg:SME_ZA_F8F32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (match_operand:SI 0 "register_operand" "Uci")
+	   (match_operand:VNx32QI 1 "aligned_register_operand" "Uw2")
+	   (match_operand:VNx16QI 2 "register_operand" "x")
+	   (match_operand:DI 3 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_FVDOT_HALF))]
+  "TARGET_STREAMING"
+  "<optab>\tza.s[%w0, 0, vgx4], %1, %2.b[%3]"
+)
+(define_insn "@aarch64_fvdot_half<optab>_plus"
+  [(set (reg:SME_ZA_F8F32 ZA_REGNUM)
+	(unspec:SME_ZA_F8F32
+	  [(reg:SME_ZA_F8F32 ZA_REGNUM)
+	   (reg:DI SME_STATE_REGNUM)
+	   (plus:SI (match_operand:SI 0 "register_operand" "Uci")
+		    (match_operand:SI 1 "const_0_to_7_operand"))
+	   (match_operand:VNx32QI 2 "aligned_register_operand" "Uw2")
+	   (match_operand:VNx16QI 3 "register_operand" "x")
+	   (match_operand:DI 4 "const_int_operand")
+	   (reg:DI FPM_REGNUM)]
+	  SME_FP8_FVDOT_HALF))]
+  "TARGET_STREAMING"
+  "<optab>\tza.s[%w0, %1, vgx4], %2, %3.b[%4]"
 )
 
 ;; -------------------------------------------------------------------------

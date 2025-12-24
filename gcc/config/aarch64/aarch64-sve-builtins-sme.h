@@ -38,6 +38,8 @@ namespace aarch64_sve
     extern const function_base *const svcntsw;
     extern const function_base *const svdot_za;
     extern const function_base *const svdot_lane_za;
+    extern const function_base *const svvdotb_lane_za;
+    extern const function_base *const svvdott_lane_za;
     extern const function_base *const svld1_hor_za;
     extern const function_base *const svld1_ver_za;
     extern const function_base *const svldr_za;

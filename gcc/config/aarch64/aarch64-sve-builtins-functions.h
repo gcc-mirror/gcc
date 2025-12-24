@@ -483,6 +483,24 @@ public:
   }
 };
 
+class svvdot_half_impl : public read_write_za<unspec_based_function_base>
+{
+public:
+  using parent = read_write_za<unspec_based_function_base>;
+
+  CONSTEXPR svvdot_half_impl (int unspec_for_sint, int unspec_for_uint,
+			      int unspec_for_fp, int unspec_for_mfp8)
+    : parent (unspec_for_sint, unspec_for_uint, unspec_for_fp, unspec_for_mfp8,
+	      1)
+  {}
+
+  rtx expand (function_expander &e) const override
+  {
+    insn_code icode = code_for_aarch64_fvdot_half (unspec_for (e));
+    return e.use_exact_insn (icode);
+  }
+};
+
 using sme_2mode_function
   = sme_2mode_function_t<code_for_aarch64_sme, code_for_aarch64_sme_single>;
 

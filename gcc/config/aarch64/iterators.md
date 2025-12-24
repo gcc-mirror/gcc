@@ -758,12 +758,18 @@
 (define_mode_iterator SME_ZA_HFx124 [VNx8BF VNx16BF VNx32BF
 				     VNx8HF VNx16HF VNx32HF])
 
+(define_mode_iterator SME_ZA_F8F16 [(VNx8HI "TARGET_STREAMING_SME_F8F16")])
+(define_mode_iterator SME_ZA_F8F32 [(VNx4SI "TARGET_STREAMING_SME_F8F32")])
+
 (define_mode_iterator SME_ZA_F8F16_32 [(VNx8HI "TARGET_STREAMING_SME_F8F16")
 				       (VNx4SI "TARGET_STREAMING_SME_F8F32")])
 
 (define_mode_iterator SME_ZA_FP8_x24 [VNx32QI VNx64QI])
 
 (define_mode_iterator SME_ZA_FP8_x124 [VNx16QI VNx32QI VNx64QI])
+(define_mode_iterator SME_ZA_FP8_x1 [VNx16QI])
+(define_mode_iterator SME_ZA_FP8_x2 [VNx32QI])
+(define_mode_iterator SME_ZA_FP8_x4 [VNx64QI])
 
 (define_mode_iterator SME_ZA_HFx24 [VNx16BF VNx32BF VNx16HF VNx32HF])
 
@@ -1270,7 +1276,11 @@
     UNSPEC_SME_BMOPS
     UNSPEC_SME_FADD
     UNSPEC_SME_FDOT
+    UNSPEC_SME_FDOT_FP8
     UNSPEC_SME_FVDOT
+    UNSPEC_SME_FVDOT_FP8
+    UNSPEC_SME_FVDOTT_FP8
+    UNSPEC_SME_FVDOTB_FP8
     UNSPEC_SME_FMLA
     UNSPEC_SME_FMLAL
     UNSPEC_SME_FMLS
@@ -4066,6 +4076,12 @@
 (define_int_iterator SME_FP_TERNARY_SLICE [UNSPEC_SME_FMLA UNSPEC_SME_FMLS])
 
 (define_int_iterator SME_FP8_TERNARY_SLICE [UNSPEC_SME_FMLAL])
+(define_int_iterator SME_FP8_DOTPROD [UNSPEC_SME_FDOT_FP8])
+(define_int_iterator SME_FP8_FVDOT [UNSPEC_SME_FVDOT_FP8])
+(define_int_iterator SME_FP8_FVDOT_HALF [
+	UNSPEC_SME_FVDOTB_FP8
+	UNSPEC_SME_FVDOTT_FP8
+])
 
 ;; Iterators for atomic operations.
 
@@ -4214,7 +4230,11 @@
 			(UNSPEC_SME_BMOPS "bmops")
 			(UNSPEC_SME_FADD "fadd")
 			(UNSPEC_SME_FDOT "fdot")
+			(UNSPEC_SME_FDOT_FP8 "fdot")
 			(UNSPEC_SME_FVDOT "fvdot")
+			(UNSPEC_SME_FVDOT_FP8 "fvdot")
+			(UNSPEC_SME_FVDOTB_FP8 "fvdotb")
+			(UNSPEC_SME_FVDOTT_FP8 "fvdott")
 			(UNSPEC_SME_FMLA "fmla")
 			(UNSPEC_SME_FMLAL "fmlal")
 			(UNSPEC_SME_FMLS "fmls")
