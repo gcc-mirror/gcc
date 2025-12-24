@@ -3465,6 +3465,25 @@ public:
   unsigned int m_base;
 };
 
+class svscale_impl : public function_base
+{
+public:
+  rtx
+  expand (function_expander &e) const override
+  {
+    if (vectors_per_tuple (e) == 1)
+      return e.map_to_unspecs (-1, -1, UNSPEC_COND_FSCALE);
+    else
+      {
+	machine_mode mode = GET_MODE (e.args[0]);
+	insn_code code = (e.mode_suffix_id == MODE_single
+	  ? code_for_aarch64_sve_single_fscale (mode)
+	  : code_for_aarch64_sve_fscale (mode));
+	return e.use_exact_insn (code);
+      }
+  }
+};
+
 } /* end anonymous namespace */
 
 namespace aarch64_sve {
@@ -3706,7 +3725,7 @@ FUNCTION (svrintx, svrint_impl, (rint_optab, UNSPEC_COND_FRINTX))
 FUNCTION (svrintz, svrint_impl, (btrunc_optab, UNSPEC_COND_FRINTZ))
 FUNCTION (svrsqrte, unspec_based_function, (-1, UNSPEC_RSQRTE, UNSPEC_RSQRTE))
 FUNCTION (svrsqrts, unspec_based_function, (-1, -1, UNSPEC_RSQRTS))
-FUNCTION (svscale, unspec_based_function, (-1, -1, UNSPEC_COND_FSCALE))
+FUNCTION (svscale, svscale_impl,)
 FUNCTION (svsel, svsel_impl,)
 FUNCTION (svset2, svset_impl, (2))
 FUNCTION (svset3, svset_impl, (3))

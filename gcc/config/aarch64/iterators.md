@@ -735,10 +735,12 @@
 (define_mode_iterator SVE_Ix24 [VNx32QI VNx16HI VNx8SI VNx4DI
 				VNx64QI VNx32HI VNx16SI VNx8DI])
 
+(define_mode_iterator SVE_Fx24_NOBF [VNx16HF VNx8SF VNx4DF
+				     VNx32HF VNx16SF VNx8DF])
+
 (define_mode_iterator SVE_Fx24 [(VNx16BF "TARGET_SSVE_B16B16")
 				(VNx32BF "TARGET_SSVE_B16B16")
-				VNx16HF VNx8SF VNx4DF
-				VNx32HF VNx16SF VNx8DF])
+				SVE_Fx24_NOBF])
 
 (define_mode_iterator SVE_SFx24 [VNx8SF VNx16SF])
 
@@ -2789,6 +2791,24 @@
 
 (define_mode_attr LD1_EXTENDQ_MEM [(VNx4SI "VNx1SI") (VNx4SF "VNx1SI")
 				   (VNx2DI "VNx1DI") (VNx2DF "VNx1DI")])
+
+;; Maps the output type of svscale to the corresponding int vector type in the
+;; second argument.
+(define_mode_attr SVSCALE_SINGLE_INTARG [(VNx16HF "VNx8HI") ;; f16_x2 -> s16
+					 (VNx32HF "VNx8HI") ;; f16_x4 -> s16
+					 (VNx8SF "VNx4SI") ;; f32_x2 -> s32
+					 (VNx16SF "VNx4SI") ;; f32_x4 -> s32
+					 (VNx4DF "VNx2DI") ;; f64_x2 -> s64
+					 (VNx8DF "VNx2DI") ;; f64_x4 -> s64
+])
+
+(define_mode_attr SVSCALE_INTARG [(VNx16HF "VNx16HI") ;; f16_x2 -> s16x2
+				  (VNx32HF "VNx32HI") ;; f16_x4 -> s16x4
+				  (VNx8SF "VNx8SI") ;; f32_x2 -> s32_x2
+				  (VNx16SF "VNx16SI") ;; f32_x4 -> s32_x4
+				  (VNx4DF "VNx4DI") ;; f64_x2 -> s64_x2
+				  (VNx8DF "VNx8DI") ;; f64_x4 -> s64_x4
+])
 
 ;; -------------------------------------------------------------------
 ;; Code Iterators

@@ -428,4 +428,5 @@ DEF_SVE_FUNCTION_GS_FPM (svcvt1, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvt2, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvtl1, unary_convert, cvt_mf8, x2, none, set)
 DEF_SVE_FUNCTION_GS_FPM (svcvtl2, unary_convert, cvt_mf8, x2, none, set)
+DEF_SVE_FUNCTION_GS (svscale, binary_int_opt_single_n, all_float, x24, none)
 #undef REQUIRED_EXTENSIONS

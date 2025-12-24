@@ -58,6 +58,7 @@
 ;; ---- [INT] Saturating left shifts
 ;; ---- [FP] Non-widening bfloat16 arithmetic
 ;; ---- [FP] Clamp to minimum/maximum
+;; ---- [FP] Scaling by powers of two
 ;;
 ;; == Uniform ternary arithmnetic
 ;; ---- [INT] General ternary arithmetic that maps to unspecs
@@ -1479,6 +1480,33 @@
   "TARGET_STREAMING_SME2"
   "<b>fclamp\t%0, %2.<Vetype>, %3.<Vetype>"
   [(set_attr "sve_type" "sve_fp_arith")]
+)
+
+;; -------------------------------------------------------------------------
+;; ---- [FP] Scaling by powers of two
+;; -------------------------------------------------------------------------
+;; Includes the multiple and single vector and multiple vectors forms of
+;; - FSCALE
+;; -------------------------------------------------------------------------
+
+(define_insn "@aarch64_sve_fscale<mode>"
+  [(set (match_operand:SVE_Fx24_NOBF 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24_NOBF
+	  [(match_operand:SVE_Fx24_NOBF 1 "register_operand" "0")
+	   (match_operand:<SVSCALE_INTARG> 2 "register_operand" "Uw<vector_count>")]
+	  UNSPEC_FSCALE))]
+  "TARGET_STREAMING_SME2 && TARGET_FP8"
+  "fscale\t%0, %1, %2"
+)
+
+(define_insn "@aarch64_sve_single_fscale<mode>"
+  [(set (match_operand:SVE_Fx24_NOBF 0 "register_operand" "=Uw<vector_count>")
+	(unspec:SVE_Fx24_NOBF
+	  [(match_operand:SVE_Fx24_NOBF 1 "register_operand" "0")
+	   (match_operand:<SVSCALE_SINGLE_INTARG> 2 "register_operand" "x")]
+	  UNSPEC_FSCALE))]
+  "TARGET_STREAMING_SME2 && TARGET_FP8"
+  "fscale\t%0, %1, %2.<Vetype>"
 )
 
 ;; =========================================================================
