@@ -1,3 +1,40 @@
+2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122819
+	* decl.cc (start_preparsed_function): Use
+	DECL_TEMPLOID_INSTANTIATION instead of
+	DECL_TEMPLATE_INSTANTIATION to check vague linkage.
+	* decl2.cc (vague_linkage_p): Likewise.
+	(c_parse_final_cleanups): Simplify condition.
+	* pt.cc (non_templated_friend_p): Namespace-scope friend
+	function declarations without a primary template are still
+	non-templated.
+	* semantics.cc (expand_or_defer_fn_1): Also check for temploid
+	friend functions.
+
+2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122550
+	* decl.cc (member_like_constrained_friend_p): Check that the
+	friend's enclosing class is an implicit instantiation.
+
+2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122958
+	* pt.cc (maybe_new_partial_specialization): Compare template
+	parameter lists when checking for existing specializations and
+	remove flag_concepts check.
+
+2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/117518
+	* parser.cc (cp_parser_lambda_expression): Clear
+	processing_template_parmlist when parsing lambda body.
+
+2025-12-23  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* Make-lang.in: Bump GCOV version to 3.
+
 2025-12-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122994

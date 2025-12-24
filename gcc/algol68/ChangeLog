@@ -1,3 +1,15 @@
+2025-12-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* a68.h (a68_file_size): Changed to use file descriptor.
+	(a68_file_read): Likewise.
+	* a68-parser-scanner.cc (a68_file_size): Likewise.
+	(a68_file_read): Likewise.
+	(read_source_file): Adapt `a68_file_{size,read}'.
+	(include_files): Likewise.
+	* a68-lang.cc (a68_handle_option): Likewise.
+	* a68-imports.cc (a68_find_export_data): Implement
+	reading from module's .m68 file if available.
+
 2025-12-22  Jose E. Marchesi  <jose.marchesi@oracle.com>
 
 	* a68-imports.cc (PARSE_INDICANT): Fix handling of uderscore

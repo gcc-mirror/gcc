@@ -1,3 +1,108 @@
+2025-12-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123274
+	* config/riscv/riscv.md (usmul<mode>3): Add proper condition.
+
+2025-12-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123278
+	* config/riscv/andes-45-series.md (andes_45_fpu_alu_s): Handle
+	BF/HF modes too.
+	(andes_45_fpu_mul_s, andes_45_fpu_mac_s): Likewise.
+
+2025-12-23  Milan Tripkovic  <Milan.Tripkovic@rt-rk.com>
+
+	* config/riscv/spacemit-x60.md (spacemit_x60_clmul): Adjust latency.
+
+2025-12-23  Xi Ruoyao  <xry111@xry111.site>
+
+	* config.gcc: Relax the check for LoongArch with_tune.
+
+2025-12-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123267
+	* ifcvt.cc (noce_try_cond_zero_arith): Pass the original operands
+	of a instead of the stripped off values. The mode of the operand
+	which is being used.
+
+2025-12-23  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* auto-profile.cc (struct summary_info): New struct.
+	(summary_info::read): New function.
+	(summary_info::get_threshold_count): Likewise.
+	(function_instance::read_function_instance): Read
+	afdo_profile_info->sum_max directly from summary info.
+	(autofdo_source_profile::read): Set afdo_hot_bb_threshold from
+	param_hot_bb_count_ws_permille.
+	(read_profile): Call summary_info->read.
+	(end_auto_profile): Free afdo_summary_info.
+	* gcov-io.h (GCOV_TAG_AFDO_SUMMARY): New define.
+
+2025-12-23  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* auto-profile.cc (string_table::~string_table): Update to free
+	original_names_map_.
+	(string_table::original_names_map_): New member.
+	(string_table::clashing_names_map_): Likewise.
+	(string_table::get_original_name): New function.
+	(string_table::read): Figure out clashes while reading.
+	(autofdo_source_profile::offline_external_functions): Call
+	get_original_name.
+
+2025-12-23  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* auto-profile.cc (AUTO_PROFILE_VERSION): Bump to 3.
+	(class function_instance_descriptor): New class.
+	(get_normalized_path): New function.
+	(string_table::~string_table): Update to free filenames.
+	(string_table::vector_): Rename to ...
+	(string_table::symbol_names_): ... this.
+	(string_table::map_): Rename to ...
+	(string_table::symbol_name_map_): ... this.
+	(string_table::filenames_): New member.
+	(string_table::filename_map_): Likewise.
+	(string_table::symbol_to_filename_map_): Likewise.
+	(string_table::get_index): Update to lookup symbol_name_map_.
+	(string_table::get_name): Rename to ...
+	(string_table::get_symbol_name): ... this.
+	(string_table::add_name): Rename to ...
+	(string_table::add_symbol_name): ... this.
+	(string_table::get_filename): New function.
+	(string_table::get_filename_by_symbol): Likewise.
+	(string_table::get_filename_index): Likewise.
+	(string_table::add_filename): Likewise.
+	(string_table::read): Read file names from the GCOV profile.
+	(function_instance::offline): Call
+	get_function_instance_by_descriptor.
+	(string_table::get_cgraph_node): Call get_symbol_name and
+	symbol_name.
+	(function_instance::get_function_instance_by_decl): Likewise.
+	(function_instance::get_cgraph_node): Likewise.
+	(function_instance::merge): Likewise.
+	(match_with_target): Likewise.
+	(function_instance::match): Likewise.
+	(function_instance::dump): Likewise.
+	(function_instance::dump_inline_stack): Likewise.
+	(function_instance::find_icall_target_map): Likewise.
+	(autofdo_source_profile::offline_unrealized_inlines): Likewise.
+	(autofdo_source_profile::offline_external_functions): Likewise.
+	(function_instance::read_function_instance): Likewise.
+	(afdo_indirect_call):
+	Also call find_function_instance, add_function_instance and
+	remove_function_instance.
+	(autofdo_source_profile::read): Likewise.
+	(autofdo_source_profile::get_function_instance_by_decl): Call
+	find_function_instance.
+	(autofdo_source_profile::get_function_instance_by_name_index):
+	Rename to ...
+	(autofdo_source_profile::get_function_instance_by_descriptor):
+	... this.
+	(autofdo_source_profile::find_iter_for_function_instance): New
+	function.
+	(autofdo_source_profile::find_function_instance): Likewise.
+	(autofdo_source_profile::add_function_instance): Likewise.
+	(autofdo_source_profile::remove_function_instance): Likewise.
+
 2025-12-22  Kugan Vivekanandarajah  <kvivekananda@nvidia.com>
 
 	PR middle-end/123067

@@ -1,3 +1,480 @@
+2025-12-23  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* checks/errors/feature/rust-feature-gate.cc (FeatureGate::visit): Added
+	handling for META_ITEM type attributes to properly process feature gates.
+	* expand/rust-cfg-strip.cc (expand_cfg_attrs): Fixed a bug where
+	newly inserted cfg_attr attributes wheren't being reprocessed,
+	and cleaned up the loop increment logic.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused/rust-unused-checker.cc (UnusedChecker::UnusedChecker):
+	Add warning for identifier pattern and field ident pattern in struct
+	(UnusedChecker::visit): Add methods.
+	* checks/lints/unused/rust-unused-checker.h: Same here.
+	* checks/lints/unused/rust-unused-collector.cc (UnusedCollector::UnusedCollector):
+	Collect unused mut variables
+	(UnusedCollector::visit): Add methods.
+	* checks/lints/unused/rust-unused-collector.h: Same here.
+	* checks/lints/unused/rust-unused-context.cc (UnusedContext::remove_assign):
+	Add methods for unused mut set.
+	(UnusedContext::add_mut): Same here.
+	(UnusedContext::remove_mut): Same here.
+	(UnusedContext::is_mut_used): Same here.
+	* checks/lints/unused/rust-unused-context.h: Same here.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* Make-lang.in: Compile the right files.
+	* checks/lints/unused-var/rust-unused-var-checker.cc: Move to...
+	* checks/lints/unused/rust-unused-checker.cc: ...here.
+	* checks/lints/unused-var/rust-unused-var-checker.h: Move to...
+	* checks/lints/unused/rust-unused-checker.h: ...here.
+	* checks/lints/unused-var/rust-unused-var-collector.cc: Move to...
+	* checks/lints/unused/rust-unused-collector.cc: ...here.
+	* checks/lints/unused-var/rust-unused-var-collector.h: Move to...
+	* checks/lints/unused/rust-unused-collector.h: ...here.
+	* checks/lints/unused-var/rust-unused-var-context.cc: Move to...
+	* checks/lints/unused/rust-unused-context.cc: ...here.
+	* checks/lints/unused-var/rust-unused-var-context.h: Move to...
+	* checks/lints/unused/rust-unused-context.h: ...here.
+	* rust-session-manager.cc (Session::compile_crate): Call the right method.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused-var/rust-unused-var-checker.cc (UnusedVarChecker::visit):
+	Change unused name warning to unused variable warning.
+	* checks/lints/unused-var/rust-unused-var-collector.cc (UnusedVarCollector::visit):
+	Remove useless methods.
+	* checks/lints/unused-var/rust-unused-var-collector.h: Same here.
+	* checks/lints/unused-var/rust-unused-var-context.cc (UnusedVarContext::add_variable):
+	Add used variables to set.
+	(UnusedVarContext::mark_used): Remove method.
+	(UnusedVarContext::is_variable_used):
+	Check if the set contains the hir id linked to a variable.
+	(UnusedVarContext::as_string): Refactor method for new set.
+	* checks/lints/unused-var/rust-unused-var-context.h: Refactor methods.
+	* lang.opt: Change description for unused check flag.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* checks/lints/unused-var/rust-unused-var-checker.cc (UnusedVarChecker):
+	Implement unused assignments warning.
+	(UnusedVarChecker::go): Remove unique pointer unused var context.
+	(UnusedVarChecker::visit): Visit AssignExpr in HIR default visitor.
+	* checks/lints/unused-var/rust-unused-var-checker.h: Add visit method.
+	* checks/lints/unused-var/rust-unused-var-collector.cc (UnusedVarCollector):
+	Collect warnings for assignments.
+	(UnusedVarCollector::visit): Visit AssignExpr in HIR default visitor.
+	* checks/lints/unused-var/rust-unused-var-collector.h: Add visit method.
+	* checks/lints/unused-var/rust-unused-var-context.cc (UnusedVarContext::add_assign):
+	Add assignment in map.
+	(UnusedVarContext::remove_assign): Remove assignment in map.
+	(UnusedVarContext::is_variable_assigned): Check if a variable is assigned.
+	* checks/lints/unused-var/rust-unused-var-context.h: Add a map to stock assignments.
+
+2025-12-23  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* Make-lang.in: Add new files rules in Makefile.
+	* lang.opt: Add new flag.
+	* rust-session-manager.cc (Session::compile_crate): Execute new variable checker.
+	* checks/lints/unused-var/rust-unused-var-checker.cc (UnusedVarChecker): Implement unused
+	variable checker.
+	* checks/lints/unused-var/rust-unused-var-checker.h (UnusedVarChecker): Implement unused
+	variable checker.
+	* checks/lints/unused-var/rust-unused-var-collector.cc (UnusedVarCollector): Implement
+	unused variable collector.
+	* checks/lints/unused-var/rust-unused-var-collector.h (UnusedVarCollector): Implement
+	unused variable collector.
+	* checks/lints/unused-var/rust-unused-var-context.cc (UnusedVarContext): Implement
+	unused variable context.
+	* checks/lints/unused-var/rust-unused-var-context.h (UnusedVarContext): Implement unused
+	variable context.
+
+2025-12-23  Harishankar  <harishankarpp7@gmail.com>
+
+	* backend/rust-compile-expr.cc (CompileExpr::visit): Always
+	evaluate predicate expression before checking for never type
+	to preserve side effects in while loop conditions.
+	* typecheck/rust-hir-type-check-expr.cc: Update handling of break/continue.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* backend/rust-compile-implitem.h: Change as_string to to_string.
+	* backend/rust-compile-type.cc (TyTyResolveCompile::visit): Likewise.
+	* checks/errors/rust-readonly-check.cc (ReadonlyChecker::check_variable): Likewise.
+	* hir/rust-hir-dump.cc (Dump::do_vis_item): Likewise.
+	(Dump::do_pathpattern): Likewise.
+	(Dump::do_typepathsegment): Likewise.
+	(Dump::do_baseloopexpr): Likewise.
+	(Dump::do_struct): Likewise.
+	(Dump::do_traitfunctiondecl): Likewise.
+	(Dump::do_externalitem): Likewise.
+	(Dump::do_tuplefield): Likewise.
+	(Dump::do_structfield): Likewise.
+	(Dump::visit): Likewise.
+	* hir/tree/rust-hir-bound-abstract.h: Likewise.
+	* hir/tree/rust-hir-bound.h: Likewise.
+	* hir/tree/rust-hir-expr-abstract.h: Likewise.
+	* hir/tree/rust-hir-expr.cc (OffsetOf::as_string): Likewise.
+	(OffsetOf::to_string): Likewise.
+	* hir/tree/rust-hir-expr.h: Likewise.
+	* hir/tree/rust-hir-generic-param.cc (ConstGenericParam::as_string): Likewise.
+	(ConstGenericParam::to_string): Likewise.
+	* hir/tree/rust-hir-generic-param.h: Likewise.
+	* hir/tree/rust-hir-item.h: Likewise.
+	* hir/tree/rust-hir-path.cc (PathInExpression::is_self): Likewise.
+	* hir/tree/rust-hir-path.h: Likewise.
+	* hir/tree/rust-hir-pattern-abstract.h: Likewise.
+	* hir/tree/rust-hir-pattern.h: Likewise.
+	* hir/tree/rust-hir-stmt.h: Likewise.
+	* hir/tree/rust-hir-trait-bound.h: Likewise.
+	* hir/tree/rust-hir-type-abstract.h: Likewise.
+	* hir/tree/rust-hir-type.h: Likewise.
+	* hir/tree/rust-hir-visibility.h: Likewise.
+	* hir/tree/rust-hir.cc (Crate::as_string): Likewise.
+	(Crate::to_string): Likewise.
+	(Visibility::as_string): Likewise.
+	(Visibility::to_string): Likewise.
+	(VisItem::as_string): Likewise.
+	(VisItem::to_string): Likewise.
+	(Item::as_string): Likewise.
+	(Item::to_string): Likewise.
+	(Module::as_string): Likewise.
+	(Module::to_string): Likewise.
+	(StaticItem::as_string): Likewise.
+	(StaticItem::to_string): Likewise.
+	(ExternCrate::as_string): Likewise.
+	(ExternCrate::to_string): Likewise.
+	(TupleStruct::as_string): Likewise.
+	(TupleStruct::to_string): Likewise.
+	(ConstantItem::as_string): Likewise.
+	(ConstantItem::to_string): Likewise.
+	(ImplBlock::as_string): Likewise.
+	(ImplBlock::to_string): Likewise.
+	(StructStruct::as_string): Likewise.
+	(StructStruct::to_string): Likewise.
+	(UseDeclaration::as_string): Likewise.
+	(UseDeclaration::to_string): Likewise.
+	(UseTreeGlob::as_string): Likewise.
+	(UseTreeGlob::to_string): Likewise.
+	(UseTreeList::as_string): Likewise.
+	(UseTreeList::to_string): Likewise.
+	(UseTreeRebind::as_string): Likewise.
+	(UseTreeRebind::to_string): Likewise.
+	(Enum::as_string): Likewise.
+	(Enum::to_string): Likewise.
+	(Trait::as_string): Likewise.
+	(Trait::to_string): Likewise.
+	(Union::as_string): Likewise.
+	(Union::to_string): Likewise.
+	(Function::as_string): Likewise.
+	(Function::to_string): Likewise.
+	(WhereClause::as_string): Likewise.
+	(WhereClause::to_string): Likewise.
+	(BlockExpr::as_string): Likewise.
+	(BlockExpr::to_string): Likewise.
+	(AnonConst::as_string): Likewise.
+	(AnonConst::to_string): Likewise.
+	(ConstBlock::as_string): Likewise.
+	(ConstBlock::to_string): Likewise.
+	(TypeAlias::as_string): Likewise.
+	(TypeAlias::to_string): Likewise.
+	(ExternBlock::as_string): Likewise.
+	(ExternBlock::to_string): Likewise.
+	(PathInExpression::as_string): Likewise.
+	(PathInExpression::to_string): Likewise.
+	(ExprStmt::as_string): Likewise.
+	(ExprStmt::to_string): Likewise.
+	(ClosureParam::as_string): Likewise.
+	(ClosureParam::to_string): Likewise.
+	(ClosureExpr::as_string): Likewise.
+	(ClosureExpr::to_string): Likewise.
+	(PathPattern::as_string): Likewise.
+	(PathPattern::to_string): Likewise.
+	(QualifiedPathType::as_string): Likewise.
+	(QualifiedPathType::to_string): Likewise.
+	(QualifiedPathInExpression::as_string): Likewise.
+	(QualifiedPathInExpression::to_string): Likewise.
+	(BorrowExpr::as_string): Likewise.
+	(BorrowExpr::to_string): Likewise.
+	(ReturnExpr::as_string): Likewise.
+	(ReturnExpr::to_string): Likewise.
+	(GroupedExpr::as_string): Likewise.
+	(GroupedExpr::to_string): Likewise.
+	(RangeToExpr::as_string): Likewise.
+	(RangeToExpr::to_string): Likewise.
+	(ContinueExpr::as_string): Likewise.
+	(ContinueExpr::to_string): Likewise.
+	(NegationExpr::as_string): Likewise.
+	(NegationExpr::to_string): Likewise.
+	(RangeFromExpr::as_string): Likewise.
+	(RangeFromExpr::to_string): Likewise.
+	(RangeFullExpr::as_string): Likewise.
+	(RangeFullExpr::to_string): Likewise.
+	(ArrayIndexExpr::as_string): Likewise.
+	(ArrayIndexExpr::to_string): Likewise.
+	(AssignmentExpr::as_string): Likewise.
+	(AssignmentExpr::to_string): Likewise.
+	(CompoundAssignmentExpr::as_string): Likewise.
+	(CompoundAssignmentExpr::to_string): Likewise.
+	(AsyncBlockExpr::as_string): Likewise.
+	(AsyncBlockExpr::to_string): Likewise.
+	(ComparisonExpr::as_string): Likewise.
+	(ComparisonExpr::to_string): Likewise.
+	(MethodCallExpr::as_string): Likewise.
+	(MethodCallExpr::to_string): Likewise.
+	(TupleIndexExpr::as_string): Likewise.
+	(TupleIndexExpr::to_string): Likewise.
+	(DereferenceExpr::as_string): Likewise.
+	(DereferenceExpr::to_string): Likewise.
+	(FieldAccessExpr::as_string): Likewise.
+	(FieldAccessExpr::to_string): Likewise.
+	(LazyBooleanExpr::as_string): Likewise.
+	(LazyBooleanExpr::to_string): Likewise.
+	(RangeFromToExpr::as_string): Likewise.
+	(RangeFromToExpr::to_string): Likewise.
+	(RangeToInclExpr::as_string): Likewise.
+	(RangeToInclExpr::to_string): Likewise.
+	(UnsafeBlockExpr::as_string): Likewise.
+	(UnsafeBlockExpr::to_string): Likewise.
+	(IfExpr::as_string): Likewise.
+	(IfExpr::to_string): Likewise.
+	(IfExprConseqElse::as_string): Likewise.
+	(IfExprConseqElse::to_string): Likewise.
+	(RangeFromToInclExpr::as_string): Likewise.
+	(RangeFromToInclExpr::to_string): Likewise.
+	(ErrorPropagationExpr::as_string): Likewise.
+	(ErrorPropagationExpr::to_string): Likewise.
+	(ArithmeticOrLogicalExpr::as_string): Likewise.
+	(ArithmeticOrLogicalExpr::to_string): Likewise.
+	(CallExpr::as_string): Likewise.
+	(CallExpr::to_string): Likewise.
+	(WhileLoopExpr::as_string): Likewise.
+	(WhileLoopExpr::to_string): Likewise.
+	(WhileLetLoopExpr::as_string): Likewise.
+	(WhileLetLoopExpr::to_string): Likewise.
+	(LoopExpr::as_string): Likewise.
+	(LoopExpr::to_string): Likewise.
+	(ArrayExpr::as_string): Likewise.
+	(ArrayExpr::to_string): Likewise.
+	(AwaitExpr::as_string): Likewise.
+	(AwaitExpr::to_string): Likewise.
+	(BreakExpr::as_string): Likewise.
+	(BreakExpr::to_string): Likewise.
+	(LoopLabel::as_string): Likewise.
+	(LoopLabel::to_string): Likewise.
+	(MatchArm::as_string): Likewise.
+	(MatchArm::to_string): Likewise.
+	(MatchCase::as_string): Likewise.
+	(MatchCase::to_string): Likewise.
+	(MatchCaseBlockExpr::as_string): Likewise.
+	(MatchCaseBlockExpr::to_string): Likewise.
+	(MatchCaseExpr::as_string): Likewise.
+	(MatchCaseExpr::to_string): Likewise.
+	(MatchExpr::as_string): Likewise.
+	(MatchExpr::to_string): Likewise.
+	(TupleExpr::as_string): Likewise.
+	(TupleExpr::to_string): Likewise.
+	(FunctionParam::as_string): Likewise.
+	(FunctionParam::to_string): Likewise.
+	(FunctionQualifiers::as_string): Likewise.
+	(FunctionQualifiers::to_string): Likewise.
+	(TraitBound::as_string): Likewise.
+	(TraitBound::to_string): Likewise.
+	(LifetimeParam::as_string): Likewise.
+	(LifetimeParam::to_string): Likewise.
+	(QualifiedPathInType::as_string): Likewise.
+	(QualifiedPathInType::to_string): Likewise.
+	(Lifetime::as_string): Likewise.
+	(Lifetime::to_string): Likewise.
+	(TypePath::as_string): Likewise.
+	(TypePath::to_string): Likewise.
+	(TypeParam::as_string): Likewise.
+	(TypeParam::to_string): Likewise.
+	(PathPattern::convert_to_simple_path): Likewise.
+	(TypePath::as_simple_path): Likewise.
+	(PathExprSegment::as_string): Likewise.
+	(PathExprSegment::to_string): Likewise.
+	(GenericArgs::as_string): Likewise.
+	(GenericArgs::to_string): Likewise.
+	(GenericArgsBinding::as_string): Likewise.
+	(GenericArgsBinding::to_string): Likewise.
+	(RangePattern::as_string): Likewise.
+	(RangePattern::to_string): Likewise.
+	(RangePatternBoundLiteral::as_string): Likewise.
+	(RangePatternBoundLiteral::to_string): Likewise.
+	(SlicePatternItemsNoRest::as_string): Likewise.
+	(SlicePatternItemsNoRest::to_string): Likewise.
+	(SlicePatternItemsHasRest::as_string): Likewise.
+	(SlicePatternItemsHasRest::to_string): Likewise.
+	(SlicePattern::as_string): Likewise.
+	(SlicePattern::to_string): Likewise.
+	(AltPattern::as_string): Likewise.
+	(AltPattern::to_string): Likewise.
+	(TuplePatternItemsNoRest::as_string): Likewise.
+	(TuplePatternItemsNoRest::to_string): Likewise.
+	(TuplePatternItemsHasRest::as_string): Likewise.
+	(TuplePatternItemsHasRest::to_string): Likewise.
+	(TuplePattern::as_string): Likewise.
+	(TuplePattern::to_string): Likewise.
+	(StructPatternField::as_string): Likewise.
+	(StructPatternField::to_string): Likewise.
+	(StructPatternFieldIdent::as_string): Likewise.
+	(StructPatternFieldIdent::to_string): Likewise.
+	(StructPatternFieldTuplePat::as_string): Likewise.
+	(StructPatternFieldTuplePat::to_string): Likewise.
+	(StructPatternFieldIdentPat::as_string): Likewise.
+	(StructPatternFieldIdentPat::to_string): Likewise.
+	(StructPatternElements::as_string): Likewise.
+	(StructPatternElements::to_string): Likewise.
+	(StructPattern::as_string): Likewise.
+	(StructPattern::to_string): Likewise.
+	(LiteralPattern::as_string): Likewise.
+	(LiteralPattern::to_string): Likewise.
+	(ReferencePattern::as_string): Likewise.
+	(ReferencePattern::to_string): Likewise.
+	(IdentifierPattern::as_string): Likewise.
+	(IdentifierPattern::to_string): Likewise.
+	(TupleStructItemsNoRest::as_string): Likewise.
+	(TupleStructItemsNoRest::to_string): Likewise.
+	(TupleStructItemsHasRest::as_string): Likewise.
+	(TupleStructItemsHasRest::to_string): Likewise.
+	(TupleStructPattern::as_string): Likewise.
+	(TupleStructPattern::to_string): Likewise.
+	(LetStmt::as_string): Likewise.
+	(LetStmt::to_string): Likewise.
+	(Expr::as_string): Likewise.
+	(Expr::to_string): Likewise.
+	(InferredType::as_string): Likewise.
+	(InferredType::to_string): Likewise.
+	(TypeCastExpr::as_string): Likewise.
+	(TypeCastExpr::to_string): Likewise.
+	(ImplTraitType::as_string): Likewise.
+	(ImplTraitType::to_string): Likewise.
+	(ReferenceType::as_string): Likewise.
+	(ReferenceType::to_string): Likewise.
+	(RawPointerType::as_string): Likewise.
+	(RawPointerType::to_string): Likewise.
+	(TraitObjectType::as_string): Likewise.
+	(TraitObjectType::to_string): Likewise.
+	(BareFunctionType::as_string): Likewise.
+	(BareFunctionType::to_string): Likewise.
+	(TypePathSegmentGeneric::as_string): Likewise.
+	(TypePathSegmentGeneric::to_string): Likewise.
+	(TypePathFunction::as_string): Likewise.
+	(TypePathFunction::to_string): Likewise.
+	(TypePathSegmentFunction::as_string): Likewise.
+	(TypePathSegmentFunction::to_string): Likewise.
+	(ArrayType::as_string): Likewise.
+	(ArrayType::to_string): Likewise.
+	(SliceType::as_string): Likewise.
+	(SliceType::to_string): Likewise.
+	(TupleType::as_string): Likewise.
+	(TupleType::to_string): Likewise.
+	(StructExpr::as_string): Likewise.
+	(StructExpr::to_string): Likewise.
+	(StructExprStruct::as_string): Likewise.
+	(StructExprStruct::to_string): Likewise.
+	(StructBase::as_string): Likewise.
+	(StructBase::to_string): Likewise.
+	(StructExprFieldWithVal::as_string): Likewise.
+	(StructExprFieldWithVal::to_string): Likewise.
+	(StructExprFieldIdentifierValue::as_string): Likewise.
+	(StructExprFieldIdentifierValue::to_string): Likewise.
+	(StructExprFieldIndexValue::as_string): Likewise.
+	(StructExprFieldIndexValue::to_string): Likewise.
+	(StructExprStructFields::as_string): Likewise.
+	(StructExprStructFields::to_string): Likewise.
+	(EnumItem::as_string): Likewise.
+	(EnumItem::to_string): Likewise.
+	(EnumItemTuple::as_string): Likewise.
+	(EnumItemTuple::to_string): Likewise.
+	(TupleField::as_string): Likewise.
+	(TupleField::to_string): Likewise.
+	(EnumItemStruct::as_string): Likewise.
+	(EnumItemStruct::to_string): Likewise.
+	(StructField::as_string): Likewise.
+	(StructField::to_string): Likewise.
+	(EnumItemDiscriminant::as_string): Likewise.
+	(EnumItemDiscriminant::to_string): Likewise.
+	(ExternalItem::as_string): Likewise.
+	(ExternalItem::to_string): Likewise.
+	(ExternalStaticItem::as_string): Likewise.
+	(ExternalStaticItem::to_string): Likewise.
+	(ExternalFunctionItem::as_string): Likewise.
+	(ExternalFunctionItem::to_string): Likewise.
+	(ExternalTypeItem::as_string): Likewise.
+	(ExternalTypeItem::to_string): Likewise.
+	(NamedFunctionParam::as_string): Likewise.
+	(NamedFunctionParam::to_string): Likewise.
+	(attr.as_string): Likewise.
+	(attr.to_string): Likewise.
+	(TraitItemFunc::as_string): Likewise.
+	(TraitItemFunc::to_string): Likewise.
+	(TraitFunctionDecl::as_string): Likewise.
+	(TraitFunctionDecl::to_string): Likewise.
+	(TraitItemConst::as_string): Likewise.
+	(TraitItemConst::to_string): Likewise.
+	(TraitItemType::as_string): Likewise.
+	(TraitItemType::to_string): Likewise.
+	(SelfParam::as_string): Likewise.
+	(SelfParam::to_string): Likewise.
+	(ArrayElemsCopied::as_string): Likewise.
+	(ArrayElemsCopied::to_string): Likewise.
+	(LifetimeWhereClauseItem::as_string): Likewise.
+	(LifetimeWhereClauseItem::to_string): Likewise.
+	(TypeBoundWhereClauseItem::as_string): Likewise.
+	(TypeBoundWhereClauseItem::to_string): Likewise.
+	(ArrayElemsValues::as_string): Likewise.
+	(ArrayElemsValues::to_string): Likewise.
+	(MaybeNamedParam::as_string): Likewise.
+	(MaybeNamedParam::to_string): Likewise.
+	* hir/tree/rust-hir.h: Likewise.
+	* rust-session-manager.cc (Session::dump_hir): Likewise.
+	* typecheck/rust-hir-dot-operator.cc (MethodResolver::select): Likewise.
+	* typecheck/rust-hir-path-probe.cc (PathProbeType::visit): Likewise.
+	(PathProbeType::process_enum_item_for_candiates): Likewise.
+	* typecheck/rust-hir-path-probe.h: Likewise.
+	* typecheck/rust-hir-type-check-expr.cc (emit_ambiguous_resolution_error): Likewise.
+	(TypeCheckExpr::visit): Likewise.
+	(TypeCheckExpr::resolve_fn_trait_call): Likewise.
+	* typecheck/rust-hir-type-check-path.cc (TypeCheckExpr::visit): Likewise.
+	(TypeCheckExpr::resolve_root_path): Likewise.
+	* typecheck/rust-hir-type-check-pattern.cc (TypeCheckPattern::visit): Likewise.
+	* typecheck/rust-hir-type-check-type.cc (TypeCheckType::visit): Likewise.
+	(TypeCheckType::resolve_root_path): Likewise.
+	(ResolveWhereClauseItem::visit): Likewise.
+	* typecheck/rust-tyty-bounds.cc: Likewise.
+	* typecheck/rust-tyty.cc (VariantDef::as_string): Likewise.
+	(FnType::as_string): Likewise.
+
+2025-12-23  Ashwani Kumar Kamal  <ashwanikamal.im421@gmail.com>
+
+	* util/rust-attributes.cc: New function to handle deprecated attribute checking
+
+2025-12-23  Owen Avery  <powerboat9.gamer@gmail.com>
+
+	* ast/rust-ast-visitor.cc (DefaultASTVisitor::visit): Visit the
+	generic parameters of TraitItemType.
+	* expand/rust-expand-visitor.h (is_derive): Remove defunct
+	function declaration.
+	* hir/rust-ast-lower-item.cc (ASTLoweringItem::visit): Remove
+	unnecessary copy.
+	* resolve/rust-name-resolver.cc (Resolver::Resolver): Skip
+	generating builtins for the old resolver.
+	* util/rust-hir-map.cc (Mappings::get_next_node_id): Detect node
+	id exhaustion.
+	* util/rust-mapping-common.h (MAX_NODEID): Add macro definition.
+
+2025-12-23  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* ast/rust-path.cc (TypePath::to_trait_bound): Check if in
+	parenthesis.
+	* hir/tree/rust-hir-type.cc (ParenthesisedType::to_trait_bound):
+	Likewise.
+	* hir/tree/rust-hir.cc (TypePath::to_trait_bound): Likewise.
+
 2025-12-17  Pierre-Emmanuel Patry  <pierre-emmanuel.patry@embecosm.com>
 
 	* parse/rust-parse-impl-lexer.cc: Fix included file name.

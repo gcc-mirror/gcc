@@ -1,3 +1,92 @@
+2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
+
+	PR c++/122819
+	* g++.dg/modules/tpl-friend-22.C: New test.
+	* g++.dg/template/friend88.C: New test.
+
+2025-12-23  Mohammad-Reza Nabipoor  <mnabipoor@gnu.org>
+
+	* algol68/compile/modules/compile.exp (dg-data): New procedure
+	for writing binary test data to disk.
+	* algol68/compile/modules/program-m68-lp64.a68: New test which
+	embeds binary module data.
+	* algol68/compile/modules/program-m68-llp64.a68: Likewise.
+	* algol68/compile/modules/program-m68-ilp32.a68: Likewise.
+	* algol68/compile/modules/program-m68-lp64-be.a68: Likewise.
+	* algol68/compile/modules/program-m68-llp64-be.a68: Likewise.
+
+2025-12-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123274
+	* gcc.target/riscv/pr123274.c: New test.
+
+2025-12-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123278
+	* gcc.target/riscv/pr123278.c: New test.
+
+2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122550
+	* g++.dg/cpp2a/concepts-friend18.C: New test.
+	* g++.dg/cpp2a/concepts-friend18a.C: New test.
+
+2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/122958
+	* g++.dg/cpp2a/partial-spec-redecl.C: New test.
+
+2025-12-23  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* rust/compile/issue-4245.rs: New test.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/unused-mut-identifier_0.rs: New test.
+	* rust/compile/unused-mut-struct-field_0.rs: New test.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/static_item_0.rs: Modify warning output.
+	* rust/compile/template_function_0.rs: Modify warning output.
+
+2025-12-23  Lucas Ly Ba  <lucas.ly-ba@outlook.com>
+
+	* rust/compile/issue-4260_0.rs: New test.
+
+2025-12-23  Ryutaro Okada  <1015ryu88@gmail.com>
+
+	* rust/compile/static_item_0.rs: New test.
+	* rust/compile/template_function_0.rs: New test.
+
+2025-12-23  Harishankar  <harishankarpp7@gmail.com>
+
+	* rust/compile/issue-3977.rs: New test.
+
+2025-12-23  lenny.chiadmi-delage  <lenny.chiadmi-delage@epita.fr>
+
+	* rust/compile/issue-4148.rs: Test should produce errors.
+
+2025-12-23  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/117518
+	* g++.dg/cpp2a/lambda-targ19.C: New test.
+
+2025-12-23  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123267
+	* gcc.dg/torture/pr123267-1.c: New test.
+
+2025-12-23  Dhruv Chawla  <dhruvc@nvidia.com>
+
+	* lib/profopt.exp: Bump GCOV version to 3.
+	* gcc.dg/tree-prof/afdo-lto_priv-basic-0.c: New test.
+	* gcc.dg/tree-prof/afdo-lto_priv-basic-1.c: Likewise.
+	* gcc.dg/tree-prof/afdo-lto_priv-header-0.c: Likewise.
+	* gcc.dg/tree-prof/afdo-lto_priv-header-0.h: Likewise.
+	* gcc.dg/tree-prof/afdo-lto_priv-header-1.c: Likewise.
+	* gcc.dg/tree-prof/afdo-lto_priv-header-1.h: Likewise.
+
 2025-12-22  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122994
