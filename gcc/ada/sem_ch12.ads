@@ -150,10 +150,6 @@ package Sem_Ch12 is
    --  restored in stack-like fashion. Front-end inlining also uses these
    --  structures for the management of private/full views.
 
-   procedure Save_Global_References_In_Aspects (N : Node_Id);
-   --  Save all global references found within the expressions of all aspects
-   --  that appear on node N.
-
    procedure Set_Copied_Sloc_For_Inlined_Body (N : Node_Id; E : Entity_Id);
    --  This procedure is used when a subprogram body is inlined. This process
    --  shares the same circuitry as the creation of an instantiated copy of

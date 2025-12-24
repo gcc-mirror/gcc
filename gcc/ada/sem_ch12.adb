@@ -18665,27 +18665,6 @@ package body Sem_Ch12 is
       Save_References (Templ);
    end Save_Global_References;
 
-   ---------------------------------------
-   -- Save_Global_References_In_Aspects --
-   ---------------------------------------
-
-   procedure Save_Global_References_In_Aspects (N : Node_Id) is
-      Asp  : Node_Id;
-      Expr : Node_Id;
-
-   begin
-      Asp := First (Aspect_Specifications (N));
-      while Present (Asp) loop
-         Expr := Expression (Asp);
-
-         if Present (Expr) then
-            Save_Global_References (Expr);
-         end if;
-
-         Next (Asp);
-      end loop;
-   end Save_Global_References_In_Aspects;
-
    ------------------------------------------
    -- Set_Copied_Sloc_For_Inherited_Pragma --
    ------------------------------------------

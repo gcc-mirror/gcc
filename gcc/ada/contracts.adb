@@ -4877,9 +4877,34 @@ package body Contracts is
      (Templ  : Node_Id;
       Gen_Id : Entity_Id)
    is
+      procedure Save_Global_References_In_Aspects (N : Node_Id);
+      --  Save all global references found in the expressions of all aspects
+      --  that appear on node N.
+
       procedure Save_Global_References_In_List (First_Prag : Node_Id);
       --  Save all global references in contract-related source pragmas found
       --  in the list, starting with pragma First_Prag.
+
+      ---------------------------------------
+      -- Save_Global_References_In_Aspects --
+      ---------------------------------------
+
+      procedure Save_Global_References_In_Aspects (N : Node_Id) is
+         Asp  : Node_Id;
+         Expr : Node_Id;
+
+      begin
+         Asp := First (Aspect_Specifications (N));
+         while Present (Asp) loop
+            Expr := Expression (Asp);
+
+            if Present (Expr) then
+               Save_Global_References (Expr);
+            end if;
+
+            Next (Asp);
+         end loop;
+      end Save_Global_References_In_Aspects;
 
       ------------------------------------
       -- Save_Global_References_In_List --
