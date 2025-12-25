@@ -4288,7 +4288,8 @@ cp_parser_skip_to_end_of_statement (cp_parser* parser)
   unsigned nesting_depth = 0;
 
   /* Unwind generic function template scope if necessary.  */
-  if (parser->fully_implicit_function_template_p)
+  if (parser->fully_implicit_function_template_p
+      && !cp_parser_parsing_tentatively (parser))
     abort_fully_implicit_template (parser);
 
   while (true)
@@ -12748,6 +12749,9 @@ cp_parser_lambda_declarator_opt (cp_parser* parser, tree lambda_expr,
 
   if (has_param_list)
     {
+      /* Avoid ICE on lambda-requires6a.C.  */
+      auto cleanup
+	= make_temp_override (parser->fully_implicit_function_template_p);
       /* Parse optional trailing requires clause.  */
       trailing_requires_clause = cp_parser_requires_clause_opt (parser, false);
 
