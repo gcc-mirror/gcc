@@ -1,3 +1,243 @@
+2025-12-24  Pan Li  <pan2.li@intel.com>
+
+	* config/riscv/predicates.md: Add geu to the swappable
+	cmp operator iterator.
+	* config/riscv/riscv-v.cc (get_swapped_cmp_rtx_code): Take
+	care of the swapped rtx code correspondly.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc: (svmul_impl::fold):
+	Replace use of type_suffix_pair with type_suffix_triple.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc: (parse_element_type):
+	Handle third type suffix.
+	(parse_type): Handle c2 in function signature. Add the u signature with
+	the ability to pass a tuple with twice as many vectors as the base type.
+	Calculate number of vectors against the type with the maximum number of
+	bits rather than "the other one".
+	(load_contiguous_base::resolve): Add argument to resolve_to call.
+	(compare_scalar_def::resolve): Likewise.
+	(ternary_mfloat8_def::resolve): Likewise.
+	(ternary_mfloat8_lane_def::resolve): Likewise.
+	(ternary_mfloat8_opt_n_def::resolve): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc: (TYPES_all_pred,
+	TYPES_all_count, TYPES_all_pred_count, TYPES_all_float,
+	TYPES_all_signed, TYPES_all_float_and_signed, TYPES_all_unsigned,
+	TYPES_all_integer, TYPES_all_arith, TYPES_all_data, TYPES_b, TYPES_c,
+	TYPES_b_unsigned, TYPES_b_integer, TYPES_b_data, TYPES_bh_integer,
+	TYPES_bs_unsigned, TYPES_bhs_signed, TYPES_bhs_unsigned,
+	TYPES_bhs_integer, TYPES_bh_data, TYPES_bhs_data, TYPES_bhs_widen,
+	TYPES_h_bfloat, TYPES_h_float, TYPES_h_integer, TYPES_h_data,
+	TYPES_hs_signed, TYPES_hs_integer, TYPES_hs_float, TYPES_hs_data,
+	TYPES_hd_unsigned, TYPES_hsd_signed, TYPES_hsd_integer, TYPES_hsd_data,
+	TYPES_h_float_mf8, TYPES_s_float, TYPES_s_float_mf8,
+	TYPES_s_float_hsd_integer, TYPES_s_float_sd_integer, TYPES_s_signed,
+	TYPES_s_unsigned, TYPES_s_integer, TYPES_s_data, TYPES_sd_signed,
+	TYPES_sd_unsigned, TYPES_sd_integer, TYPES_sd_data,
+	TYPES_all_float_and_sd_integer, TYPES_d_float, TYPES_d_unsigned,
+	TYPES_d_integer, TYPES_d_data, TYPES_cvt, TYPES_cvt_bfloat,
+	TYPES_cvt_h_s_float, TYPES_cvt_f32_f16, TYPES_cvt_long,
+	TYPES_cvt_narrow_s, TYPES_cvt_narrow, TYPES_cvt_s_s, TYPES_cvt_mf8,
+	TYPES_cvtn_mf8, TYPES_cvtnx_mf8, TYPES_inc_dec_n, TYPES_qcvt_x2,
+	TYPES_qcvt_x4, TYPES_qrshr_x2,TYPES_qrshru_x2, TYPES_qrshr_x4,
+	TYPES_qrshru_x4, TYPES_reinterpret, TYPES_reinterpret_b,TYPES_while,
+	TYPES_while_x, TYPES_while_x_c, TYPES_s_narrow_fsu,TYPES_all_za,
+	TYPES_d_za, TYPES_za_bhsd_data,TYPES_za_all_data, TYPES_za_h_mf8,
+	TYPES_za_hs_mf8, TYPES_za_h_bfloat, TYPES_za_h_float,
+	TYPES_za_s_b_signed, TYPES_za_s_b_unsigned, TYPES_za_s_b_integer,
+	TYPES_za_s_h_integer,TYPES_za_s_h_data, TYPES_za_s_unsigned,
+	TYPES_za_s_integer, TYPES_za_s_mf8, TYPES_za_s_float, TYPES_za_s_data,
+	TYPES_za_d_h_integer, TYPES_za_d_float, TYPES_za_d_integer,
+	TYPES_mop_base, TYPES_mop_base_signed, TYPES_mop_base_unsigned,
+	TYPES_mop_i16i64, TYPES_mop_i16i64_signed, TYPES_mop_i16i64_unsigned,
+	ΤYPES_za): Extend defines to three arguments.
+	(DEF_VECTOR_TYPE, DEF_DOUBLE_TYPE): Likewise.
+	(DEF_TRIPLE_TYPE): Add new define.
+	(DEF_SVE_TYPES_ARRAY): Redefine all types_ arrays into arrays of
+	type_suffix_triple.
+	(types_none): Likewise.
+	(function_instance::hash): Add third type to hash calculation.
+	(function_builder::get_name): Add third type to function name.
+	(function_builder::add_overloaded_functions): Handle third type.
+	(function_resolver::lookup_form): Likewise.
+	(function_resolver::resolve_to): Likewise.
+	(function_resolver::resolve_unary): Likewise.
+	* config/aarch64/aarch64-sve-builtins.h: (type_suffix_triple): replace
+	type_suffix_pair.
+	(function_group_info::types): Likewise.
+	(function_instance::ctor): Likewise.
+	(function_instance::type_suffix_ids): Likewise.
+	(function_resolver::lookup_form): Add third type argument.
+	(function_resolver::resolve_to): Likewise.
+	(function_instance::operator==): Add third type to equality calculation.
+
+2025-12-24  Karl Meakin  <karl.meakin@arm.com>
+
+	* config/aarch64/aarch64-sme.md
+	(@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>): New insn.
+	(@aarch64_fvdot_half<optab>): Likewise.
+	(@aarch64_fvdot_half<optab>_plus): Likewise.
+	* config/aarch64/aarch64-sve-builtins-functions.h
+	(class svvdot_half_impl): New function impl.
+	* config/aarch64/aarch64-sve-builtins-sme.cc (FUNCTION): Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc (struct dot_half_za_slice_lane_def):
+	New function shape.
+	* config/aarch64/aarch64-sve-builtins-shapes.h: Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.def (svdot): New function.
+	(svdot_lane): Likewise.
+	(svvdot_lane): Likewise.
+	(svvdotb_lane): Likewise.
+	(svvdott_lane): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.h (svvdotb_lane_za): New function.
+	(svvdott_lane_za): Likewise.
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_za_s_mf8): New types array.
+	(TYPES_za_hs_mf8): Likewise.
+	(za_hs_mf8): Likewise.
+	* config/aarch64/iterators.md (SME_ZA_F8F16): New mode iterator.
+	(SME_ZA_F8F32): Likewise.
+	(SME_ZA_FP8_x1): Likewise.
+	(SME_ZA_FP8_x2): Likewise.
+	(SME_ZA_FP8_x4): Likewise.
+	(UNSPEC_SME_FDOT_FP8): New unspec.
+	(UNSPEC_SME_FVDOT_FP8): Likewise.
+	(UNSPEC_SME_FVDOTT_FP8): Likewise.
+	(UNSPEC_SME_FVDOTB_FP8): Likewise.
+	(SME_FP8_DOTPROD): New int iterator.
+	(SME_FP8_FVDOT): Likewise.
+	(SME_FP8_FVDOT_HALF): Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sme.md
+	(@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><VNx16QI_ONLY:mode>): Add
+	new define_insn.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(struct binary_za_m_base): Support fpm argument.
+	* config/aarch64/aarch64-sve-builtins-sme.cc (svmopa_za): Extend for
+	fp8.
+	* config/aarch64/aarch64-sve-builtins-sme.def (svmopa): Add new
+	DEF_SME_ZA_FUNCTION_GS_FPM entries.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sme.md
+	(@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>): Add
+	new define_insn.
+	(*aarch64_sme_<optab><VNx8HI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus,
+	*aarch64_sme_<optab><VNx4SI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus,
+	@aarch64_sme_<optab><SME_ZA_F8F16_32:mode><VNx16QI_ONLY:mode>,
+	*aarch64_sme_<optab><VNx8HI_ONLY:mode><VNx16QI_ONLY:mode>_plus,
+	*aarch64_sme_<optab><VNx4SI_ONLY:mode><VNx16QI_ONLY:mode>_plus,
+	@aarch64_sme_single_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x24:mode>,
+	*aarch64_sme_single_<optab><VNx8HI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus,
+	*aarch64_sme_single_<optab><VNx4SI_ONLY:mode><SME_ZA_FP8_x24:mode>_plus,
+	@aarch64_sme_lane_<optab><SME_ZA_F8F16_32:mode><SME_ZA_FP8_x124:mode>,
+	*aarch64_sme_lane_<optab><VNx8HI_ONLY:mode><SME_ZA_FP8_x124:mode>,
+	*aarch64_sme_lane_<optab><VNx4SI_ONLY:mode><SME_ZA_FP8_x124:mode>):
+	Likewise.
+	* config/aarch64/aarch64-sve-builtins-shapes.cc
+	(struct binary_za_slice_lane_base): Support fpm argument.
+	(struct binary_za_slice_opt_single_base): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.cc (svmla_za): Extend for fp8.
+	(svmla_lane_za): Likewise.
+	* config/aarch64/aarch64-sve-builtins-sme.def (svmla_lane): Add new
+	DEF_SME_ZA_FUNCTION_GS_FPM entries.
+	(svmla): Likewise.
+	* config/aarch64/iterators.md (SME_ZA_F8F16_32): Add new mode iterator.
+	(SME_ZA_FP8_x24, SME_ZA_FP8_x124): Likewise.
+	(UNSPEC_SME_FMLAL): Add new unspec.
+	(za16_offset_range): Add new mode_attr.
+	(za16_32_long): Likewise.
+	(za16_32_last_offset): Likewise.
+	(SME_FP8_TERNARY_SLICE): Add new iterator.
+	(optab): Add entry for UNSPEC_SME_FMLAL.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64.h:
+	(TARGET_STREAMING_SME_F8F16, TARGET_STREAMING_SME_F8F32): Add defines.
+	* config/aarch64/aarch64-c.cc:
+	(__ARM_FEATURE_SME_F8F16, __ARM_FEATURE_SME_F8F32): Add defines.
+	* config/aarch64/aarch64-option-extensions.def:
+	(sme-f8f16, sme-f8f32): Add arch options in command line.
+	* config/aarch64/aarch64-sve-builtins-functions.h:
+	(sme_2mode_function_t): Pass unspec_for_mfp8 parameter through ctor.
+	* config/aarch64/aarch64-sve-builtins-sme.def:
+	(DEF_SME_FUNCTION_GS, DEF_SME_FUNCTION): Redefine based on
+	DEF_SME_FUNCTION_GS_FPM.
+	(DEF_SME_ZA_FUNCTION_GS, DEF_SME_ZA_FUNCTION): Redefine based on
+	DEF_SME_ZA_FUNCTION_GS_FPM.
+	(AARCH64_FL_SME_F8F16, AARCH64_FL_SME_F8F32): Add new
+	REQUIRED_EXTENSIONS sections.
+	* config/aarch64/aarch64-sve-builtins.cc:
+	(TYPES_za_h_mf8): Add new types.
+	(TYPES_za_s_mf8): Likewise.
+	(sme_function_groups): Define using DEF_SME_FUNCTION_GS_FPM instead of
+	DEF_SME_FUNCTION_GS.
+	* doc/invoke.texi: (sme-f8f16, sme-f8f32): Add documentation of option.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svscale_impl): Added new
+	class for dealing with all svscale functions (including sve)
+	(svscale): updated FUNCTION macro call to make use of new class.
+	* config/aarch64/aarch64-sve-builtins-sve2.def: (svscale):
+	Added new DEF_SVE_FUNCTION_GS call to enable recognition of new variant.
+	* config/aarch64/aarch64-sve2.md (@aarch64_sve_fscale<mode>): Added
+	new define_insn. (@aarch64_sve_single_fscale<mode>): Likewise.
+	* config/aarch64/iterators.md: (SVE_Fx24_NOBF): Added new iterator,
+	similar to SVE_Fx24 but without brainfloat.
+	(SVE_Fx24): Updated to make use of SVE_Fx24_NOBF.
+	(SVSCALE_SINGLE_INTARG): Added new mode_attr.
+	(SVSCALE_INTARG): Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-base.cc (svcvt_impl): Update to
+	handle fp8 cases.
+	* config/aarch64/aarch64-sve-builtins-sve2.def (svcvt, svcvtn): Added
+	DEF_SVE_FUNCTION_GS_FPM instances.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve2_fp8_cvtn<mode>): Updated define_insn for additional case.
+	(@aarch64_sme2_fp8_cvt<mode>): Added new define_insn.
+	* config/aarch64/iterators.md (VNx16F_NARROW): Added new iterator to
+	handle narrowing SVE floating point operations.
+	(UNSPEC_FCVT): Added new unspec.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins-sve2.cc (svcvtl1, svcvtl2): Added
+	new FUNTIONs.
+	* config/aarch64/aarch64-sve-builtins-sve2.def
+	(svcvt1, svcvt2, svcvtl1, svcvtl2): Added new DEF_SVE_FUNCTION_GS_FPM.
+	* config/aarch64/aarch64-sve-builtins-sve2.h (svcvtl1, svcvtl2): Added
+	new function_base.
+	* config/aarch64/aarch64-sve-builtins.cc
+	(function_resolver::resolve_unary): use group_suffix_id when resolving
+	C overloads.
+	* config/aarch64/aarch64-sve2.md
+	(@aarch64_sve2_fp8_cvt_<fp8_cvt_uns_op><mode>): Added new define_insn.
+	* config/aarch64/aarch64.h (TARGET_SSME2_FP8): Added new define.
+	* config/aarch64/iterators.md
+	(UNSPEC_F1CVTL. UNSPEC_F2CVTL): Added new unspecs.
+	(FP8CVT_UNS): Extended int_iterator.
+	(fp8_cvt_uns_op): Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* config/aarch64/aarch64-sve-builtins.cc (TYPES_za_bhsd_data): Add
+	D (za8, mf8) combination to za_bhsd_data.
+
+2025-12-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	* ifcvt.cc (noce_process_if_block): Move noce_try_cond_zero_arith
+	last.
+
+2025-12-24  Andrew Pinski  <andrew.pinski@oss.qualcomm.com>
+
+	PR rtl-optimization/123276
+	* ifcvt.cc (noce_try_cond_zero_arith): Reject non-scalar integral modes.
+
 2025-12-23  Jeff Law  <jeffrey.law@oss.qualcomm.com>
 
 	PR target/123274

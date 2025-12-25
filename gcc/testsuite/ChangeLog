@@ -1,3 +1,180 @@
+2025-12-24  Pan Li  <pan2.li@intel.com>
+
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Add asm check
+	for vmsleu.vx.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-2-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u16.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u32.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u64.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx-3-u8.c: Ditto.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary.h: Add test
+	helper macros.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_binary_data.h: Add test
+	data for run test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsleu-run-1-u16.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsleu-run-1-u32.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsleu-run-1-u64.c: New test.
+	* gcc.target/riscv/rvv/autovec/vx_vf/vx_vmsleu-run-1-u8.c: New test.
+
+2025-12-24  Karl Meakin  <karl.meakin@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za16_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za16_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_lane_za32_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_single_za16_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_single_za16_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_single_za32_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_single_za32_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za16_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za16_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/dot_za32_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/vdot_lane_za16_mf8_vg1x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/vdotb_lane_za32_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/vdott_lane_za32_mf8_vg1x4.c: New test.
+	* gcc.target/aarch64/sve/acle/general-c/dot_half_za_slice_lane_fpm.c: New test.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme/acle-asm/test_sme_acle.h: (TEST_UNIFORM_ZA):
+	Add fpm0 parameter.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_m_1.c: Add tests for
+	variants accepting fpm.
+	* gcc.target/aarch64/sme2/acle-asm/mopa_za16_mf8.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mopa_za32_mf8.c: Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/test_sme2_acle.h: (TEST_ZA_X1,
+	TEST_ZA_XN, TEST_ZA_SINGLE, TEST_ZA_SINGLE_Z15, TEST_ZA_LANE,
+	TEST_ZA_LANE_Z15): Add fpm0 parameter.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_lane_1.c: Add
+	tests for variants accepting fpm.
+	* gcc.target/aarch64/sve/acle/general-c/binary_za_slice_opt_single_1.c:
+	Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za16_mf8_vg2x1.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za16_mf8_vg2x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za16_mf8_vg2x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_mf8_vg4x1.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_mf8_vg4x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_lane_za32_mf8_vg4x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za16_mf8_vg2x1.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za16_mf8_vg2x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za16_mf8_vg2x4.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_mf8_vg4x1.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_mf8_vg4x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/mla_za32_mf8_vg4x4.c: New test.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/pragma_cpp_predefs_4.c: Add tests checking that
+	sme-f8f16 and sme-f8f32 prefefs are off by default, and checks for
+	feature dependencies.
+	* lib/target-supports.exp: Add check_effective_target support for
+	sme-f8f16 and sme-f8f32.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/scale_f16_x2.c: : Added test file.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f16_x4.c: : Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f32_x2.c: : Added test file.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f32_x4.c: : Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f64_x2.c: : Added test file.
+	* gcc.target/aarch64/sme2/acle-asm/scale_f64_x4.c: : Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_bf16_x2.c: Added test file.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_f16_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_f32_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/cvtn_mf8_f32_x4.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h
+	(TEST_X2_NARROW): Added fpm0 argument for intrinsics.
+	(TEST_X4_NARROW): Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* g++.target/aarch64/sme2/aarch64-sme2-acle-asm.exp: Use tuning flag
+	to reduce churn in testsuites.
+	* gcc.target/aarch64/sme2/aarch64-sme2-acle-asm.exp: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/cvt_mf8_x2.c: Added test file.
+	* gcc.target/aarch64/sme2/acle-asm/cvtl_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sve/acle/asm/test_sve_acle.h (TEST_X2_WIDE): Added
+	fpm0 argument for intrinsics.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme/acle-asm/revd_mf8.c: Added test file.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/ld1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/ldnt1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_ver_za128.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/sel_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/sel_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/st1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/st1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/stnt1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzp_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/uzpq_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zip_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/zipq_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ld1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ld1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/ldnt1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/revd_mf8.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sve2/acle/asm/stnt1_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za128.c: Added mf8 tests.
+	* gcc.target/aarch64/sme/acle-asm/read_hor_za8.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za128.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/read_ver_za8.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za128.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/write_hor_za8.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za128.c: Likewise.
+	* gcc.target/aarch64/sme/acle-asm/write_ver_za8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za8_vg2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/read_hor_za8_vg4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za8_vg2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/read_ver_za8_vg4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/read_za8_vg1x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/read_za8_vg1x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_hor_za128.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_hor_za8_vg2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_hor_za8_vg4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_hor_za8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_ver_za8_vg2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_ver_za8_vg4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_ver_za8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_za8_vg1x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/readz_za8_vg1x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za8_vg2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/write_hor_za8_vg4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za8_vg2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/write_ver_za8_vg4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/write_za8_vg1x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/write_za8_vg1x4.c: Likewise.
+
+2025-12-24  Claudio Bantaloukas  <claudio.bantaloukas@arm.com>
+
+	* gcc.target/aarch64/sme2/acle-asm/luti2_mf8_x2.c: New test.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_mf8_x4.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/luti2_mf8.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_mf8_x2.c: Likewise.
+	* gcc.target/aarch64/sme2/acle-asm/luti4_mf8.c: Likewise.
+
 2025-12-23  Nathaniel Shead  <nathanieloshead@gmail.com>
 
 	PR c++/122819
