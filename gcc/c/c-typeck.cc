@@ -689,13 +689,11 @@ composite_type_internal (tree t1, tree t2, tree cond,
     case POINTER_TYPE:
       /* For two pointers, do this recursively on the target type.  */
       {
-	tree pointed_to_1 = TREE_TYPE (t1);
-	tree pointed_to_2 = TREE_TYPE (t2);
-	tree target = composite_type_internal (pointed_to_1, pointed_to_2,
+	tree target = composite_type_internal (TREE_TYPE (t1), TREE_TYPE (t2),
 					       cond, cache);
-	t1 = c_build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
-	t1 = c_build_type_attribute_variant (t1, attributes);
-	return qualify_type (t1, t2);
+	tree n = c_build_pointer_type_for_mode (target, TYPE_MODE (t1), false);
+	return c_build_type_attribute_qual_variant (n, attributes,
+						    TYPE_QUALS (t2));
       }
 
     case ARRAY_TYPE:
@@ -1720,7 +1718,7 @@ comptypes_internal (const_tree type1, const_tree type2,
 
   /* 1 if no need for warning yet, 2 if warning cause has been seen.  */
   if (!(attrval = comp_type_attributes (t1, t2)))
-     return false;
+    return false;
 
   if (2 == attrval)
     data->warning_needed = true;
