@@ -1,3 +1,8 @@
+2025-12-25  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* gcc.dg/tree-ssa/sincos-ice-on-ifn_sin-call.c: New test.
+	* gcc.target/gcn/sincos-ice-on-ifn_sin-call-1.c: New test.
+
 2025-12-24  Pan Li  <pan2.li@intel.com>
 
 	* gcc.target/riscv/rvv/autovec/vx_vf/vx-1-u32.c: Add asm check

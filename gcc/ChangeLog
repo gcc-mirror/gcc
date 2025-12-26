@@ -1,3 +1,9 @@
+2025-12-25  Arsen Arsenović  <aarsenovic@baylibre.com>
+
+	* tree-ssa-math-opts.cc (execute_cse_sincos_1): If
+	mathfn_built_in_type fails to determine a type for our
+	operation, presume that it is the same as the input type.
+
 2025-12-24  Pan Li  <pan2.li@intel.com>
 
 	* config/riscv/predicates.md: Add geu to the swappable
