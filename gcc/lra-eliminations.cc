@@ -655,8 +655,16 @@ lra_eliminate_regs_1 (rtx_insn *insn, rtx x, machine_mode mem_mode,
 	      return x;
 	    }
 	  else
-	    return simplify_gen_subreg (GET_MODE (x), new_rtx,
-					GET_MODE (new_rtx), SUBREG_BYTE (x));
+	    {
+	      rtx nx = simplify_gen_subreg (GET_MODE (x), new_rtx,
+					    GET_MODE (new_rtx), SUBREG_BYTE (x));
+	      /* If inside a debug insn, then generate the subreg manually as it might
+		 be an invalid one for outside of a debug insn.  */
+	      if (DEBUG_INSN_P (insn) && !nx)
+		nx = gen_rtx_raw_SUBREG (GET_MODE (x), new_rtx, SUBREG_BYTE (x));
+	      gcc_assert (nx);
+	      return nx;
+	    }
 	}
 
       return x;
