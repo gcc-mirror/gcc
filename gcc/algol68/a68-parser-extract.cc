@@ -371,7 +371,7 @@ a68_extract_indicants (NODE_T *p)
 	  do
 	    {
 	      FORWARD (q);
-	      detect_redefined_keyword (q, MODE_DECLARATION);
+	      detect_redefined_keyword (q, MODULE_DECLARATION);
 	      if (a68_whether (q, BOLD_TAG, EQUALS_SYMBOL, STOP))
 		{
 		  /* Store in the symbol table.
