@@ -53,7 +53,8 @@ UrlSuffix(gcc/RISC-V-Options.html#index-mscalar-strict-align)
 mvector-strict-align
 UrlSuffix(gcc/RISC-V-Options.html#index-mvector-strict-align)
 
-; skipping UrlSuffix for 'mexplicit-relocs' due to finding no URLs
+mexplicit-relocs
+UrlSuffix(gcc/RISC-V-Options.html#index-mexplicit-relocs-3)
 
 mrelax
 UrlSuffix(gcc/RISC-V-Options.html#index-mrelax-6)
@@ -61,7 +62,8 @@ UrlSuffix(gcc/RISC-V-Options.html#index-mrelax-6)
 mcsr-check
 UrlSuffix(gcc/RISC-V-Options.html#index-mcsr-check)
 
-; skipping UrlSuffix for 'momit-leaf-frame-pointer' due to finding no URLs
+momit-leaf-frame-pointer
+UrlSuffix(gcc/RISC-V-Options.html#index-momit-leaf-frame-pointer-2)
 
 mriscv-attribute
 UrlSuffix(gcc/RISC-V-Options.html#index-mriscv-attribute)
@@ -96,10 +98,26 @@ UrlSuffix(gcc/RISC-V-Options.html#index-minline-strncmp)
 minline-strlen
 UrlSuffix(gcc/RISC-V-Options.html#index-minline-strlen)
 
-; skipping UrlSuffix for 'mmax-vectorization' due to finding no URLs
+mrvv-max-lmul=
+UrlSuffix(gcc/RISC-V-Options.html#index-mrvv-max-lmul)
+
+madjust-lmul-cost
+UrlSuffix(gcc/RISC-V-Options.html#index-madjust-lmul-cost)
+
+mmax-vectorization
+UrlSuffix(gcc/RISC-V-Options.html#index-mmax-vectorization-1)
+
+mstringop-strategy=
+UrlSuffix(gcc/RISC-V-Options.html#index-mstringop-strategy)
+
+mrvv-vector-bits=
+UrlSuffix(gcc/RISC-V-Options.html#index-mrvv-vector-bits)
 
 ; skipping UrlSuffix for 'mtls-dialect=' due to finding no URLs
 
 mfence-tso
 UrlSuffix(gcc/RISC-V-Options.html#index-mfence-tso)
+
+mautovec-segment
+UrlSuffix(gcc/RISC-V-Options.html#index-mautovec-segment)
 

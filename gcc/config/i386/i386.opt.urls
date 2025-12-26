@@ -84,7 +84,7 @@ mno-red-zone
 UrlSuffix(gcc/x86-Options.html#index-mno-red-zone)
 
 momit-leaf-frame-pointer
-UrlSuffix(gcc/x86-Options.html#index-momit-leaf-frame-pointer-2)
+UrlSuffix(gcc/x86-Options.html#index-momit-leaf-frame-pointer-3)
 
 mrelax-cmpxchg-loop
 UrlSuffix(gcc/x86-Options.html#index-mrelax-cmpxchg-loop)
@@ -127,6 +127,8 @@ UrlSuffix(gcc/x86-Options.html#index-msseregparm)
 
 mstackrealign
 UrlSuffix(gcc/x86-Options.html#index-mstackrealign)
+
+; skipping UrlSuffix for 'mstringop-strategy=' due to finding no URLs
 
 mtls-dialect=
 UrlSuffix(gcc/x86-Options.html#index-mtls-dialect-2)
