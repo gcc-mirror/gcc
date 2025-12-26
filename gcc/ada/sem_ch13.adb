@@ -18234,15 +18234,12 @@ package body Sem_Ch13 is
       -----------------------
 
       procedure Resolve_Operation (Subp_Id : Node_Id) is
-         Subp : Entity_Id;
-
          I  : Interp_Index;
          It : Interp;
 
       begin
          if not Is_Overloaded (Subp_Id) then
-            Subp := Entity (Subp_Id);
-            if not Pred (Subp) then
+            if not Pred (Entity (Subp_Id)) then
                Error_Msg_NE
                  ("improper aggregate operation for&", Subp_Id, Typ);
             end if;
@@ -18252,9 +18249,21 @@ package body Sem_Ch13 is
             Get_First_Interp (Subp_Id, I, It);
             while Present (It.Nam) loop
                if Pred (It.Nam) then
+                  if Present (Entity (Subp_Id)) then
+                     --  ??? Cope with the obsolete renaming of Append_Vector
+                     --  in Ada.Containers.Vectors retained for compatibility.
+
+                     if No (Alias (Entity (Subp_Id)))
+                       and then No (Alias (It.Nam))
+                     then
+                        Error_Msg_N
+                          ("& must denote exactly one subprogram", Subp_Id);
+                     end if;
+
+                     exit;
+                  end if;
                   Set_Is_Overloaded (Subp_Id, False);
                   Set_Entity (Subp_Id, It.Nam);
-                  exit;
                end if;
 
                Get_Next_Interp (I, It);
