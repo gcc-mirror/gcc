@@ -3208,6 +3208,28 @@ noce_try_cond_zero_arith (struct noce_if_info *if_info)
 			    op != AND ? XEXP (a, 1) : const0_rtx,
 			    op != AND ? const0_rtx : XEXP (a, 0));
   if (!target)
+    {
+      end_sequence ();
+      rtx tmp = XEXP (a, op != AND);
+      /* If the cmove fails and this was a lowpart subreg,
+	 then try the reg part and then putting back the lowpart
+	 afterwards.  */
+      if (GET_CODE (tmp) != SUBREG  || !subreg_lowpart_p (tmp))
+	return false;
+      start_sequence ();
+
+      tmp = SUBREG_REG (tmp);
+      target = gen_reg_rtx (GET_MODE (tmp));
+      target = noce_emit_cmove (if_info, target, code,
+				XEXP (cond, 0), XEXP (cond, 1),
+				op != AND ? tmp : const0_rtx,
+				op != AND ? const0_rtx : tmp);
+      if (!target)
+	goto end_seq_n_fail;
+      target = rtl_hooks.gen_lowpart_no_emit (GET_MODE (XEXP (a, op != AND)), target);
+      gcc_assert (target);
+    }
+  if (!target)
     goto end_seq_n_fail;
 
   if (op == AND)
