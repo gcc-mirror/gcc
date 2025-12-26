@@ -210,8 +210,8 @@
 		     (match_operand:SI 2 "arith_operand" "rI")) ;; value for op
 	   (match_operand:SI 3 "const_int_operand")]		   ;; model
 	 UNSPEC_SYNC_OLD_OP_SUBWORD))
-    (match_operand:SI 4 "arith_operand" "rI")		   ;; mask
-    (match_operand:SI 5 "arith_operand" "rI")		   ;; not_mask
+    (use (match_operand:SI 4 "arith_operand" "rI"))	   ;; mask
+    (use (match_operand:SI 5 "arith_operand" "rI"))	   ;; not_mask
     (clobber (match_scratch:SI 6 "=&r"))			   ;; tmp_1
     (clobber (match_scratch:SI 7 "=&r"))]			   ;; tmp_2
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
@@ -277,8 +277,8 @@
 			   (match_operand:SI 2 "arith_operand" "rI")))    ;; value for op
 	   (match_operand:SI 3 "const_int_operand")]			  ;; mask
 	 UNSPEC_SYNC_OLD_OP_SUBWORD))
-    (match_operand:SI 4 "arith_operand" "rI")				  ;; mask
-    (match_operand:SI 5 "arith_operand" "rI")				  ;; not_mask
+    (use (match_operand:SI 4 "arith_operand" "rI"))		  ;; mask
+    (use (match_operand:SI 5 "arith_operand" "rI"))		  ;; not_mask
     (clobber (match_scratch:SI 6 "=&r"))				  ;; tmp_1
     (clobber (match_scratch:SI 7 "=&r"))]				  ;; tmp_2
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
@@ -512,7 +512,7 @@
 	  [(match_operand:SI 2 "arith_operand" "rI")	 ;; value
 	   (match_operand:SI 3 "const_int_operand")]	 ;; model
       UNSPEC_SYNC_EXCHANGE_SUBWORD))
-    (match_operand:SI 4 "arith_operand" "rI")	 ;; not_mask
+    (use (match_operand:SI 4 "arith_operand" "rI"))	 ;; not_mask
     (clobber (match_scratch:SI 5 "=&r"))]		 ;; tmp_1
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
@@ -785,10 +785,10 @@
 	(unspec_volatile:SI [(match_operand:SI 2 "reg_or_0_operand" "rJ")  ;; expected value
 			     (match_operand:SI 3 "arith_operand" "rI")] ;; desired value
 	 UNSPEC_COMPARE_AND_SWAP_SUBWORD))
-	(match_operand:SI 4 "const_int_operand")			   ;; model
-	(match_operand:SI 5 "arith_operand" "rI")			   ;; mask
-	(match_operand:SI 6 "arith_operand" "rI")			   ;; not_mask
-	(clobber (match_scratch:SI 7 "=&r"))]				   ;; tmp_1
+	(match_operand:SI 4 "const_int_operand")		;; model
+	(use (match_operand:SI 5 "arith_operand" "rI"))		;; mask
+	(use (match_operand:SI 6 "arith_operand" "rI"))		;; not_mask
+	(clobber (match_scratch:SI 7 "=&r"))]			;; tmp_1
   "TARGET_ZALRSC && TARGET_INLINE_SUBWORD_ATOMIC"
   {
     return "1:\;"
