@@ -6645,10 +6645,10 @@ package body Sem_Aggr is
 
          --  Typ is not a derived tagged type
 
-         else
+         elsif Nkind (Parent (Base_Type (Typ))) = N_Full_Type_Declaration then
             Record_Def := Type_Definition (Parent (Base_Type (Typ)));
 
-            if No (Record_Def) or else Null_Present (Record_Def) then
+            if Null_Present (Record_Def) then
                null;
 
             --  Explicitly add here mutably class-wide types because they do
