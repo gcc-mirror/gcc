@@ -326,10 +326,11 @@ parse_reg_operand_in (InlineAsmContext inline_asm_ctx)
 	}
 
       auto expr = parser.parse_expr ();
+      rust_assert (expr);
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      AST::InlineAsmOperand::In in (reg, std::move (expr));
+      AST::InlineAsmOperand::In in (reg, std::move (expr.value ()));
       inline_asm_ctx.inline_asm.operands.emplace_back (in, locus);
       return inline_asm_ctx;
     }
@@ -344,16 +345,15 @@ parse_reg_operand_out (InlineAsmContext inline_asm_ctx)
   if (!inline_asm_ctx.is_global_asm () && check_identifier (parser, "out"))
     {
       auto reg = parse_reg (inline_asm_ctx);
-      std::unique_ptr<AST::Expr> expr = parser.parse_expr ();
-
-      rust_assert (expr != nullptr);
+      auto expr = parser.parse_expr ();
+      rust_assert (expr);
 
       /*auto expr_ptr =
 	 std::make_unique<AST::Expr>(AST::LiteralExpr(Literal))*/
 
       // TODO: When we've succesfully parse an expr, remember to clone_expr()
       // instead of nullptr
-      AST::InlineAsmOperand::Out out (reg, false, std::move (expr));
+      AST::InlineAsmOperand::Out out (reg, false, std::move (expr.value ()));
 
       inline_asm_ctx.inline_asm.operands.emplace_back (out, locus);
 
@@ -402,10 +402,8 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 
       // TODO: Is error propogation our top priority, the ? in rust's asm.rs is
       // doing a lot of work.
-      std::unique_ptr<AST::Expr> in_expr = parser.parse_expr ();
-      rust_assert (in_expr != nullptr);
-
-      std::unique_ptr<AST::Expr> out_expr;
+      auto in_expr = parser.parse_expr ();
+      rust_assert (in_expr);
 
       if (parser.skip_token (MATCH_ARROW))
 	{
@@ -413,10 +411,12 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	    {
 	      // auto result = parse_format_string (inline_asm_ctx);
 
-	      out_expr = parser.parse_expr ();
+	      auto out_expr = parser.parse_expr ();
+	      rust_assert (out_expr);
 
 	      AST::InlineAsmOperand::SplitInOut splitinout (
-		reg, false, std::move (in_expr), std::move (out_expr));
+		reg, false, std::move (in_expr.value ()),
+		std::move (out_expr.value ()));
 
 	      inline_asm_ctx.inline_asm.operands.emplace_back (splitinout,
 							       locus);
@@ -439,7 +439,8 @@ parse_reg_operand_inout (InlineAsmContext inline_asm_ctx)
 	}
       else
 	{
-	  AST::InlineAsmOperand::InOut inout (reg, false, std::move (in_expr));
+	  AST::InlineAsmOperand::InOut inout (reg, false,
+					      std::move (in_expr.value ()));
 	  inline_asm_ctx.inline_asm.operands.emplace_back (inout, locus);
 	  // https://github.com/rust-lang/rust/blob/a3167859f2fd8ff2241295469876a2b687280bdc/compiler/rustc_builtin_macros/src/asm.rs#L137
 	  // RUST VERSION: ast::InlineAsmOperand::InOut { reg, expr, late: false
@@ -1090,10 +1091,11 @@ parse_llvm_operands (LlvmAsmContext &ctx, std::vector<AST::LlvmOperand> &result)
       ParseRestrictions restrictions;
       restrictions.expr_can_be_null = true;
       auto expr = parser.parse_expr ();
+      rust_assert (expr);
 
       parser.skip_token (RIGHT_PAREN);
 
-      result.emplace_back (constraint, std::move (expr));
+      result.emplace_back (constraint, std::move (expr.value ()));
 
       if (parser.peek_current_token ()->get_id () == COMMA)
 	parser.skip_token (COMMA);

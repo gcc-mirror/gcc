@@ -639,7 +639,7 @@ ASTLoweringExpr::visit (AST::BreakExpr &expr)
 
   HIR::Expr *break_expr
     = expr.has_break_expr ()
-	? ASTLoweringExpr::translate (expr.get_break_expr ())
+	? ASTLoweringExpr::translate (expr.get_break_expr_unchecked ())
 	: nullptr;
 
   auto crate_num = mappings.get_current_crate ();

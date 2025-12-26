@@ -3497,11 +3497,13 @@ Parser<ManagedTokenSource>::parse_enum_item ()
 	// discriminant enum item
 	lexer.skip_token ();
 
-	std::unique_ptr<AST::Expr> discriminant_expr = parse_expr ();
+	auto discriminant_expr = parse_expr ();
+	if (!discriminant_expr)
+	  return nullptr;
 
 	return std::unique_ptr<AST::EnumItemDiscriminant> (
 	  new AST::EnumItemDiscriminant (std::move (item_name), std::move (vis),
-					 std::move (discriminant_expr),
+					 std::move (discriminant_expr.value ()),
 					 std::move (outer_attrs),
 					 item_name_tok->get_locus ()));
       }
@@ -3627,7 +3629,9 @@ Parser<ManagedTokenSource>::parse_const_item (AST::Visibility vis,
     }
 
   // parse constant expression (required)
-  std::unique_ptr<AST::Expr> expr = parse_expr ();
+  auto expr = parse_expr ();
+  if (!expr)
+    return nullptr;
 
   if (!skip_token (SEMICOLON))
     {
@@ -3637,7 +3641,8 @@ Parser<ManagedTokenSource>::parse_const_item (AST::Visibility vis,
 
   return std::unique_ptr<AST::ConstantItem> (
     new AST::ConstantItem (std::move (ident), std::move (vis), std::move (type),
-			   std::move (expr), std::move (outer_attrs), locus));
+			   std::move (expr.value ()), std::move (outer_attrs),
+			   locus));
 }
 
 // Parses a "static item" (static storage item, with 'static lifetime).
@@ -3679,7 +3684,9 @@ Parser<ManagedTokenSource>::parse_static_item (AST::Visibility vis,
     }
 
   // parse static item expression (required)
-  std::unique_ptr<AST::Expr> expr = parse_expr ();
+  auto expr = parse_expr ();
+  if (!expr)
+    return nullptr;
 
   if (!skip_token (SEMICOLON))
     {
@@ -3689,7 +3696,7 @@ Parser<ManagedTokenSource>::parse_static_item (AST::Visibility vis,
 
   return std::unique_ptr<AST::StaticItem> (
     new AST::StaticItem (std::move (ident), is_mut, std::move (type),
-			 std::move (expr), std::move (vis),
+			 std::move (expr.value ()), std::move (vis),
 			 std::move (outer_attrs), locus));
 }
 
@@ -3923,7 +3930,10 @@ Parser<ManagedTokenSource>::parse_trait_const (AST::AttrVec outer_attrs)
       lexer.skip_token ();
 
       // expression must exist, so parse it
-      const_body = parse_expr ();
+      auto expr = parse_expr ();
+      if (!expr)
+	return nullptr;
+      const_body = std::move (expr.value ());
     }
 
   if (!skip_token (SEMICOLON))
@@ -4880,12 +4890,13 @@ Parser<ManagedTokenSource>::parse_let_stmt (AST::AttrVec outer_attrs,
       // must have an expression
       lexer.skip_token ();
 
-      expr = parse_expr ();
-      if (expr == nullptr)
+      auto expr_res = parse_expr ();
+      if (!expr_res)
 	{
 	  skip_after_semicolon ();
 	  return nullptr;
 	}
+      expr = std::move (expr_res.value ());
     }
 
   tl::optional<std::unique_ptr<AST::Expr>> else_expr = tl::nullopt;
@@ -5300,7 +5311,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 {
   location_t locus = lexer.peek_token ()->get_locus ();
 
-  std::unique_ptr<AST::Expr> expr;
+  tl::expected<std::unique_ptr<AST::Expr>, Parse::Error::Expr> expr;
 
   switch (lexer.peek_token ()->get_id ())
     {
@@ -5313,7 +5324,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
     case SCOPE_RESOLUTION:
       {
 	AST::PathInExpression path = parse_path_in_expression ();
-	std::unique_ptr<AST::Expr> null_denotation;
+	tl::expected<std::unique_ptr<AST::Expr>, Parse::Error::Expr>
+	  null_denotation;
 
 	if (lexer.peek_token ()->get_id () == EXCLAM)
 	  {
@@ -5361,7 +5373,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
       break;
     }
 
-  if (expr == nullptr)
+  if (!expr)
     {
       // expr is required, error
       Error error (lexer.peek_token ()->get_locus (),
@@ -5380,7 +5392,7 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	{
 	  has_semi = true;
 	}
-      else if (expr->is_expr_without_block ())
+      else if (expr.value ()->is_expr_without_block ())
 	{
 	  if (restrictions.allow_close_after_expr_stmt)
 	    {
@@ -5399,8 +5411,8 @@ Parser<ManagedTokenSource>::parse_expr_stmt (AST::AttrVec outer_attrs,
 	}
     }
 
-  return std::unique_ptr<AST::ExprStmt> (
-    new AST::ExprStmt (std::move (expr), locus, has_semi));
+  return std::make_unique<AST::ExprStmt> (std::move (expr.value ()), locus,
+					  has_semi);
 }
 
 // Parses a loop label used in loop expressions.
@@ -5468,8 +5480,8 @@ Parser<ManagedTokenSource>::parse_match_arm ()
     {
       lexer.skip_token ();
 
-      guard_expr = parse_expr ();
-      if (guard_expr == nullptr)
+      auto guard_expr_res = parse_expr ();
+      if (!guard_expr_res)
 	{
 	  Error error (lexer.peek_token ()->get_locus (),
 		       "failed to parse guard expression in match arm");
@@ -5478,6 +5490,7 @@ Parser<ManagedTokenSource>::parse_match_arm ()
 	  // skip somewhere?
 	  return AST::MatchArm::create_error ();
 	}
+      guard_expr = std::move (guard_expr_res.value ());
     }
 
   // DEBUG
@@ -6959,7 +6972,7 @@ Parser<ManagedTokenSource>::parse_tuple_struct_items ()
  * exists). Useful for block expressions where it cannot be determined through
  * lookahead whether it is a statement or expression to be parsed. */
 template <typename ManagedTokenSource>
-ExprOrStmt
+tl::expected<ExprOrStmt, Parse::Error::Node>
 Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 {
   // quick exit for empty statement
@@ -6976,7 +6989,9 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
   AST::AttrVec outer_attrs = parse_outer_attributes ();
   ParseRestrictions restrictions;
   restrictions.expr_can_be_stmt = true;
-  std::unique_ptr<AST::Expr> expr;
+
+  // Defered child error checking: we need to check for a semicolon
+  tl::expected<std::unique_ptr<AST::Expr>, Parse::Error::Expr> expr;
 
   // parsing this will be annoying because of the many different possibilities
   /* best may be just to copy paste in parse_item switch, and failing that try
@@ -7066,7 +7081,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 			      t->get_token_description ()));
 
 	    // skip somewhere?
-	    return ExprOrStmt::create_error ();
+	    return tl::unexpected (Parse::Error::Node::MALFORMED);
 	  }
 	break;
       }
@@ -7101,7 +7116,8 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
     case DOLLAR_SIGN:
       {
 	AST::PathInExpression path = parse_path_in_expression ();
-	std::unique_ptr<AST::Expr> null_denotation;
+	tl::expected<std::unique_ptr<AST::Expr>, Parse::Error::Expr>
+	  null_denotation;
 
 	if (lexer.peek_token ()->get_id () == EXCLAM)
 	  {
@@ -7109,7 +7125,7 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 	      = parse_macro_invocation_partial (std::move (path),
 						std::move (outer_attrs));
 	    if (invoc == nullptr)
-	      return ExprOrStmt::create_error ();
+	      return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 
 	    if (restrictions.consume_semi && maybe_skip_token (SEMICOLON))
 	      {
@@ -7160,27 +7176,31 @@ Parser<ManagedTokenSource>::parse_stmt_or_expr ()
 
       if (expr)
 	{
-	  std::unique_ptr<AST::ExprStmt> stmt (
-	    new AST::ExprStmt (std::move (expr), t->get_locus (), true));
-	  return ExprOrStmt (std::move (stmt));
+	  return ExprOrStmt (
+	    std::make_unique<AST::ExprStmt> (std::move (expr.value ()),
+					     t->get_locus (), true));
 	}
       else
 	{
-	  return ExprOrStmt::create_error ();
+	  return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 	}
     }
 
-  if (expr && !expr->is_expr_without_block ()
-      && after_expr->get_id () != RIGHT_CURLY)
+  if (expr)
     {
       // block expression statement.
-      std::unique_ptr<AST::ExprStmt> stmt (
-	new AST::ExprStmt (std::move (expr), t->get_locus (), false));
-      return ExprOrStmt (std::move (stmt));
+      if (!expr.value ()->is_expr_without_block ()
+	  && after_expr->get_id () != RIGHT_CURLY)
+	return ExprOrStmt (
+	  std::make_unique<AST::ExprStmt> (std::move (expr.value ()),
+					   t->get_locus (), false));
     }
 
   // return expression
-  return ExprOrStmt (std::move (expr));
+  if (expr)
+    return ExprOrStmt (std::move (expr.value ()));
+  else
+    return tl::unexpected (Parse::Error::Node::CHILD_ERROR);
 }
 
 } // namespace Rust

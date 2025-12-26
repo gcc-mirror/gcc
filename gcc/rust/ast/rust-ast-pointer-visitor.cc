@@ -490,7 +490,7 @@ PointerVisitor::visit (AST::BreakExpr &expr)
     visit (expr.get_label_unchecked ());
 
   if (expr.has_break_expr ())
-    reseat (expr.get_break_expr_ptr ());
+    reseat (expr.get_break_expr_ptr_unchecked ());
 }
 
 void

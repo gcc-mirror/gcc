@@ -1649,7 +1649,7 @@ ReturnExpr::as_string () const
   std::string str ("return ");
 
   if (has_returned_expr ())
-    str += return_expr->as_string ();
+    str += get_returned_expr ().as_string ();
 
   return str;
 }
@@ -2233,7 +2233,7 @@ BreakExpr::as_string () const
     str += get_label_unchecked ().as_string () + " ";
 
   if (has_break_expr ())
-    str += break_expr->as_string ();
+    str += get_break_expr_unchecked ().as_string ();
 
   return str;
 }
@@ -3726,7 +3726,7 @@ AttributeParser::parse_path_meta_item ()
       {
 	lexer->skip_token ();
 
-	std::unique_ptr<Expr> expr = parser->parse_expr ();
+	auto expr = parser->parse_expr ();
 
 	// handle error
 	// parse_expr should already emit an error and return nullptr
@@ -3734,7 +3734,8 @@ AttributeParser::parse_path_meta_item ()
 	  return nullptr;
 
 	return std::unique_ptr<MetaItemPathExpr> (
-	  new MetaItemPathExpr (std::move (path.value ()), std::move (expr)));
+	  new MetaItemPathExpr (std::move (path.value ()),
+				std::move (expr.value ())));
       }
     case COMMA:
       // just simple path

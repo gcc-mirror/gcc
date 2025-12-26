@@ -303,6 +303,23 @@ private:
   Self (Kind kind) : kind (kind) {}
 };
 
+enum class Expr
+{
+  MALFORMED,
+  CHILD_ERROR,
+  NULL_EXPR,
+  NULL_DENOTATION,
+  LEFT_DENOTATION,
+};
+
+enum class StructExprField
+{
+  MALFORMED,
+  CHILD_ERROR,
+  // Not a hard error
+  STRUCT_BASE,
+};
+
 // Generic intermediate AST node error used when the errors need no special
 // handling
 enum class Node

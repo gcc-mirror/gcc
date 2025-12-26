@@ -1477,7 +1477,7 @@ TokenCollector::visit (BreakExpr &expr)
     if (expr.has_label ())
       visit (expr.get_label_unchecked ());
     if (expr.has_break_expr ())
-      visit (expr.get_break_expr ());
+      visit (expr.get_break_expr_unchecked ());
   });
 }
 

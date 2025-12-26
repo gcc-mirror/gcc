@@ -42,8 +42,9 @@ format_args_parse_expr (location_t invoc_locus, AST::MacroInvocData &invoc,
 			Parser<MacroInvocLexer> &parser,
 			BuiltinMacro macro_kind)
 {
-  std::unique_ptr<AST::Expr> format_expr = parser.parse_expr ();
-  rust_assert (format_expr);
+  auto format_expr_res = parser.parse_expr ();
+  rust_assert (format_expr_res);
+  auto format_expr = std::move (format_expr_res.value ());
 
   if (format_expr->get_expr_kind () == AST::Expr::Kind::MacroInvocation)
     {
@@ -114,7 +115,8 @@ format_args_parse_arguments (AST::MacroInvocData &invoc,
 	  if (!expr)
 	    rust_unreachable ();
 
-	  args.push (AST::FormatArgument::named (ident, std::move (expr)));
+	  args.push (
+	    AST::FormatArgument::named (ident, std::move (expr.value ())));
 	}
       else
 	{
@@ -124,7 +126,7 @@ format_args_parse_arguments (AST::MacroInvocData &invoc,
 	  if (!expr)
 	    rust_unreachable ();
 
-	  args.push (AST::FormatArgument::normal (std::move (expr)));
+	  args.push (AST::FormatArgument::normal (std::move (expr.value ())));
 	}
       // we need to skip commas, don't we?
     }

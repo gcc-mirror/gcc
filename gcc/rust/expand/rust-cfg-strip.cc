@@ -1236,7 +1236,7 @@ CfgStrip::visit (AST::BreakExpr &expr)
    * is the only thing that can be done */
   if (expr.has_break_expr ())
     {
-      auto &break_expr = expr.get_break_expr ();
+      auto &break_expr = expr.get_break_expr_unchecked ();
 
       if (break_expr.is_marked_for_strip ())
 	rust_error_at (break_expr.get_locus (),

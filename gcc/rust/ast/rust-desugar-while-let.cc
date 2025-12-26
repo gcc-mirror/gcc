@@ -36,7 +36,7 @@ DesugarWhileLet::DesugarCtx::make_break_arm ()
   auto arm = builder.match_arm (builder.wildcard ());
 
   auto break_expr
-    = std::unique_ptr<Expr> (new BreakExpr (tl::nullopt, nullptr, {}, loc));
+    = std::unique_ptr<Expr> (new BreakExpr (tl::nullopt, tl::nullopt, {}, loc));
 
   return MatchCase (std::move (arm), std::move (break_expr));
 }

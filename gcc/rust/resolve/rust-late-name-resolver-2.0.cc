@@ -263,7 +263,7 @@ Late::visit (AST::BreakExpr &expr)
 
   if (expr.has_break_expr ())
     {
-      auto &break_expr = expr.get_break_expr ();
+      auto &break_expr = expr.get_break_expr_unchecked ();
       if (break_expr.get_expr_kind () == AST::Expr::Kind::Identifier)
 	{
 	  /* This is a break with an expression, and the expression is
@@ -273,9 +273,9 @@ Late::visit (AST::BreakExpr &expr)
 	     emit the error here though, because the identifier may still
 	     be in scope, and ICE'ing on valid programs would not be very
 	     funny.  */
-	  std::string ident
-	    = static_cast<AST::IdentifierExpr &> (expr.get_break_expr ())
-		.as_string ();
+	  std::string ident = static_cast<AST::IdentifierExpr &> (
+				expr.get_break_expr_unchecked ())
+				.as_string ();
 	  if (ident == "rust" || ident == "gcc")
 	    funny_error = true;
 	}

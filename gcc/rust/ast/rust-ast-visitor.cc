@@ -510,7 +510,7 @@ DefaultASTVisitor::visit (AST::BreakExpr &expr)
     visit (expr.get_label_unchecked ());
 
   if (expr.has_break_expr ())
-    visit (expr.get_break_expr ());
+    visit (expr.get_break_expr_unchecked ());
 }
 
 void
