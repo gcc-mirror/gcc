@@ -1,0 +1,8 @@
+{ dg-modules "module10 module11 module12" }
+
+access Module10,
+       NonExistantModule, { dg-error "" }
+       Module12
+begin assert (foo = 10);
+      assert (bar = 20)
+end

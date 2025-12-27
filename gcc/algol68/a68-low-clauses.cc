@@ -1389,42 +1389,54 @@ a68_lower_closed_clause (NODE_T *p, LOW_CTX_T ctx)
   return a68_pop_serial_clause_range ();
 }
 
+/* Lower calls to preludes or postludes for all revelations in subtree.  */
+
+static void
+a68_lower_revelation_ludes (NODE_T *p, bool prelude)
+{
+  for (; p != NO_NODE; FORWARD (p))
+    {
+      if (IS (p, MODULE_INDICANT))
+	{
+	  TAG_T *tag = a68_find_tag_global (TABLE (p), MODULE_SYMBOL, NSYMBOL (p));
+	  gcc_assert (tag != NO_TAG);
+	  MOIF_T *moif = MOIF (tag);
+	  gcc_assert (moif != NO_MOIF);
+	  const char *fname = (prelude ? PRELUDE (moif) : POSTLUDE (moif));
+
+	  tree fdecl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
+				   get_identifier (fname),
+				   build_function_type_list (void_type_node,
+							     void_type_node,
+							     NULL_TREE));
+	  DECL_EXTERNAL (fdecl) = 1;
+	  TREE_PUBLIC (fdecl) = 1;
+	  a68_add_decl (fdecl);
+	  a68_add_stmt (build_call_expr_loc (a68_get_node_location (p),
+					     fdecl, 0));
+
+	}
+      else
+	a68_lower_revelation_ludes (SUB (p), prelude);
+    }
+}
+
 /* Lower an access clause.
 
-     access clause : access symbol, joined module indication sequence,
-                       enclosed clause.
+     access clause : access symbol, access revelation, enclosed clause.
+     access revelation : access symbol, module indicant ;
+                         access revelation, comma symbol, module indicant.
 */
 
 tree
 a68_lower_access_clause (NODE_T *p, LOW_CTX_T ctx)
 {
-  NODE_T *controlled_clause = NEXT (NEXT_SUB (p));
+  NODE_T *controlled_clause = NEXT_SUB (p);
 
   a68_push_range (MOID (p));
 
   /* Call preludes of all ACCESSed modules.  */
-  for (NODE_T *q = SUB (p); q != NO_NODE; FORWARD (q))
-    {
-      if (IS (q, MODULE_INDICANT))
-	{
-	  TAG_T *tag = a68_find_tag_global (TABLE (q), MODULE_SYMBOL, NSYMBOL (q));
-	  gcc_assert (tag != NO_TAG);
-	  MOIF_T *moif = MOIF (tag);
-	  gcc_assert (moif != NO_MOIF);
-	  const char *prelude = PRELUDE (moif);
-
-	  tree prelude_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
-					  get_identifier (prelude),
-					  build_function_type_list (void_type_node,
-								    void_type_node,
-								    NULL_TREE));
-	  DECL_EXTERNAL (prelude_decl) = 1;
-	  TREE_PUBLIC (prelude_decl) = 1;
-	  a68_add_decl (prelude_decl);
-	  a68_add_stmt (build_call_expr_loc (a68_get_node_location (q),
-					     prelude_decl, 0));
-	}
-    }
+  a68_lower_revelation_ludes (SUB (p), true /* prelude */);
 
   /* Now the controlled clause.  */
   tree controlled_clause_tree = a68_lower_tree (controlled_clause, ctx);
@@ -1433,29 +1445,7 @@ a68_lower_access_clause (NODE_T *p, LOW_CTX_T ctx)
 			       controlled_clause_tree);
 
   /* Call postludes of all ACCESSed modules.  */
-  for (NODE_T *q = SUB (p); q != NO_NODE; FORWARD (q))
-    {
-      if (IS (q, MODULE_INDICANT))
-	{
-	  TAG_T *tag = a68_find_tag_global (TABLE (q), MODULE_SYMBOL, NSYMBOL (q));
-	  gcc_assert (tag != NO_TAG);
-	  MOIF_T *moif = MOIF (tag);
-	  gcc_assert (moif != NO_MOIF);
-	  const char *postlude = POSTLUDE (moif);
-
-	  tree postlude_decl = build_decl (UNKNOWN_LOCATION, FUNCTION_DECL,
-					   get_identifier (postlude),
-					   build_function_type_list (void_type_node,
-								     void_type_node,
-								     NULL_TREE));
-	  DECL_EXTERNAL (postlude_decl) = 1;
-	  TREE_PUBLIC (postlude_decl) = 1;
-	  a68_add_decl (postlude_decl);
-	  a68_add_stmt (build_call_expr_loc (a68_get_node_location (q),
-					     postlude_decl, 0));
-	}
-    }
-
+  a68_lower_revelation_ludes (SUB (p), false /* prelude */);
   a68_add_stmt (tmp);
   return a68_pop_range ();
 }

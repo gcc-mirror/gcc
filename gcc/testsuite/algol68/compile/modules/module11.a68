@@ -1,0 +1,5 @@
+module Module_11 = access pub Module_10
+def
+    pub int bar = foo + 10;
+    skip
+fed

@@ -2553,9 +2553,22 @@ reduce_enclosed_clauses (NODE_T *q, enum a68_attribute expect)
 	      reduce (s, NO_NOTE, NO_TICK, ENCLOSED_CLAUSE, LOOP_CLAUSE, STOP);
 	      reduce (s, NO_NOTE, NO_TICK, ENCLOSED_CLAUSE, ACCESS_CLAUSE, STOP);
 	    }
-	  // XXX reduce revelations
+
+	  /* Reduce revelations.  */
+
 	  reduce (p, NO_NOTE, NO_TICK,
-		  ACCESS_CLAUSE, ACCESS_SYMBOL, MODULE_INDICANT, ENCLOSED_CLAUSE, STOP);
+		  REVELATION, ACCESS_SYMBOL, MODULE_INDICANT, STOP);
+
+	  bool siga;
+	  do
+	    {
+	      siga = false;
+	      reduce (p, NO_NOTE, &siga,
+		      REVELATION, REVELATION, COMMA_SYMBOL, MODULE_INDICANT, STOP);
+	    }
+	  while (siga);
+	  reduce (p, NO_NOTE, NO_TICK,
+		  ACCESS_CLAUSE, REVELATION, ENCLOSED_CLAUSE, STOP);
 	}
       else if (IS (p, IF_SYMBOL))
 	{

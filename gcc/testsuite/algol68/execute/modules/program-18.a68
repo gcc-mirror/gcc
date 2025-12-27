@@ -1,0 +1,9 @@
+{ dg-modules "module18a module18b module18c" }
+
+access Module18a,
+       Module18b,
+       Module18c
+begin assert (foo = 10);
+      assert (bar = 20);
+      assert (baz = 30)
+end
