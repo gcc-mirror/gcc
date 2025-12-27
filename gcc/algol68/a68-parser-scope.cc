@@ -54,6 +54,7 @@ static void scope_statement (NODE_T *, SCOPE_T **);
 static void scope_enclosed_clause (NODE_T *, SCOPE_T **);
 static void scope_formula (NODE_T *, SCOPE_T **);
 static void scope_routine_text (NODE_T *, SCOPE_T **);
+static void scope_access_clause (NODE_T *, SCOPE_T **);
 
 /*
  * Static scope checker.
@@ -898,6 +899,18 @@ scope_loop_clause (NODE_T *p)
     }
 }
 
+/* Scope and access-clause.  */
+
+static void
+scope_access_clause (NODE_T *p, SCOPE_T **s)
+{
+  for (; p != NO_NODE; FORWARD (p))
+    {
+      if (IS (p, ENCLOSED_CLAUSE))
+	scope_enclosed_clause (SUB (p), s);
+    }
+}
+
 /* Scope_enclosed_clause.  */
 
 static void
@@ -915,6 +928,8 @@ scope_enclosed_clause (NODE_T *p, SCOPE_T **s)
     scope_case_clause (SUB (p), s);
   else if (IS (p, LOOP_CLAUSE))
     scope_loop_clause (SUB (p));
+  else if (IS (p, ACCESS_CLAUSE))
+    scope_access_clause (SUB (p), s);
 }
 
 /* Whether a symbol table contains no (anonymous) definition.  */
