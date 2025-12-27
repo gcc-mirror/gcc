@@ -345,7 +345,6 @@ a68_extract_indicants (NODE_T *p)
 	      FORWARD (q);
 	      if (q != NO_NODE)
 		{
-		  detect_redefined_keyword (q, MODULE_DECLARATION);
 		  if (IS (q, BOLD_TAG))
 		    {
 		      extract_revelation (q, false /* is_public */);
