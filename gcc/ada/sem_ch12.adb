@@ -2657,9 +2657,20 @@ package body Sem_Ch12 is
                if Ekind (Etype (Match)) /= E_Void
                  and then Is_Mutably_Tagged_Type (Etype (Match))
                then
+                  --  The declaration of the CW-equivalent type of a mutably
+                  --  tagged type is analyzed when the tagged type is frozen.
+
+                  if Nkind (N) /= N_Formal_Package_Declaration
+                    and then Ekind (Defining_Identifier (Assoc.An_Formal)) /=
+                                                              E_Incomplete_Type
+                  then
+                     Freeze_Before (N, Root_Type (Etype (Match)));
+                  end if;
+
                   Rewrite (Match, New_Occurrence_Of
                     (Class_Wide_Equivalent_Type
                       (Etype (Match)), Sloc (Match)));
+
                   Analyze (Match);
                end if;
 
