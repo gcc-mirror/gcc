@@ -280,8 +280,8 @@ a68_pack_soids_in_moid (SOID_T *top_sl, int attribute)
       *p = t;
       p = &NEXT (t);
     }
-  (void) a68_register_extra_mode (&TOP_MOID (&A68_JOB), x);
-  return x;
+
+  return a68_register_extra_mode (&TOP_MOID (&A68_JOB), x);
 }
 
 /* Whether P is compatible with Q.  */

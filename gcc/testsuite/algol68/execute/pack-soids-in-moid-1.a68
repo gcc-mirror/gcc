@@ -1,0 +1,3 @@
+begin []int lele = (1,2,3);
+      assert (ELEMS (lele) = ELEMS (lele))
+end
