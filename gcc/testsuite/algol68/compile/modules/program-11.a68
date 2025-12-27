@@ -4,8 +4,7 @@
   inside controlled clauses in access clauses with
   several revelations.  }
 
-access Module10,
-       Module11,
+access Module11,
        Module12
 begin assert (foo = 10);
       assert (bar = "foo") { dg-error "" }

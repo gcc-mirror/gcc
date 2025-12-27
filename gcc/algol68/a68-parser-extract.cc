@@ -185,23 +185,30 @@ skip_pack_declarer (NODE_T *p)
     return p;
 }
 
-/* Extract a revelation.  */
+/* Extract the revelation associated with the module MODULE.  The node Q is
+   used for symbol table and diagnostic purposes.  Publicized modules are
+   recursively extracted as well.  This call may result in one or more
+   errors.  */
 
 static void
-extract_revelation (NODE_T *q, bool is_public ATTRIBUTE_UNUSED)
+extract_revelation (NODE_T *q, const char *module, TAG_T *tag)
 {
-  /* Store in the symbol table.  */
-  TAG_T *tag = a68_add_tag (TABLE (q), MODULE_SYMBOL, q, NO_MOID, STOP);
-  gcc_assert (tag != NO_TAG);
-  EXPORTED (tag) = false; // XXX depends on PUB!
   /* Import the MOIF and install it in the tag.  */
-  MOIF_T *moif = a68_open_packet (NSYMBOL (q));
+  MOIF_T *moif = a68_open_packet (module);
   if (moif == NULL)
     {
-      a68_error (q, "cannot find module Z", NSYMBOL (q));
+      a68_error (q, "cannot find module Z", module);
       return;
     }
-  MOIF (tag) = moif; // XXX add to existing list of moifs.
+
+  if (tag != NO_TAG)
+    MOIF (tag) = moif;
+
+  /* First thing to do is to extract the revelations of publicized modules in
+     this moif.  This leads to recursive calls of this function.  */
+
+  for (EXTRACT_T *e : MODULES (moif))
+    extract_revelation (q, EXTRACT_SYMBOL (e), NO_TAG);
 
   /* Store all the modes from the MOIF in the moid list.
 
@@ -345,17 +352,25 @@ a68_extract_indicants (NODE_T *p)
 	      FORWARD (q);
 	      if (q != NO_NODE)
 		{
+		  NODE_T *bold_tag = NO_NODE;
+
 		  if (IS (q, BOLD_TAG))
 		    {
-		      extract_revelation (q, false /* is_public */);
+		      bold_tag = q;
 		      FORWARD (q);
 		    }
 		  else if (a68_whether (q, PUBLIC_SYMBOL, BOLD_TAG, STOP))
 		    {
-		      NODE_T *pub_node = q;
-		      extract_revelation (NEXT (pub_node), true /* is_public */);
+		      bold_tag = NEXT (q);
 		      FORWARD (q);
 		      FORWARD (q);
+		    }
+
+		  if (bold_tag != NO_NODE)
+		    {
+		      TAG_T *tag = a68_add_tag (TABLE (bold_tag), MODULE_SYMBOL, bold_tag, NO_MOID, STOP);
+		      gcc_assert (tag != NO_TAG);
+		      extract_revelation (bold_tag, NSYMBOL (bold_tag), tag);
 		    }
 		}
 	    }
@@ -370,14 +385,7 @@ a68_extract_indicants (NODE_T *p)
 	      detect_redefined_keyword (q, MODULE_DECLARATION);
 	      if (a68_whether (q, BOLD_TAG, EQUALS_SYMBOL, STOP))
 		{
-		  /* Store in the symbol table.
-		     XXX also add to global list of modules?
-		     Position of definition (q) connects to this lexical
-		     level!  */
 		  ATTRIBUTE (q) = DEFINING_MODULE_INDICANT;
-		  TAG_T *tag = a68_add_tag (TABLE (p), MODULE_SYMBOL, q, NO_MOID, STOP);
-		  gcc_assert (tag != NO_TAG);
-		  EXPORTED (tag) = true;
 		  FORWARD (q);
 		  ATTRIBUTE (q) = EQUALS_SYMBOL; /* XXX why not ALT_EQUALS_SYMBOL */
 		  if (NEXT (q) != NO_NODE && IS (NEXT (q), ACCESS_SYMBOL))

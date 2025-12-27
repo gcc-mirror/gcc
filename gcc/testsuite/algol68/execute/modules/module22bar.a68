@@ -1,0 +1,7 @@
+module Module22Bar = access pub Module22Foo
+def
+    puts ("bar prelude'n");
+    pub int bar = foo + 10;
+    skip
+fed
+

@@ -1188,18 +1188,6 @@ tax_module_dec (NODE_T *p)
 	{
 	  tax_module_dec (NEXT (p));
 	}
-      else if (IS (p, DEFINING_MODULE_INDICANT))
-	{
-	  TAG_T *entry = MODULES (TABLE (p));
-	  while (entry != NO_TAG && NODE (entry) != p)
-	    FORWARD (entry);
-	  MOID (p) = NO_MOID;
-	  TAX (p) = entry;
-	  HEAP (entry) = LOC_SYMBOL;
-	  MOID (entry) = NO_MOID;
-	  PUBLICIZED (entry) = PUBLICIZED (p);
-	  tax_module_dec (NEXT (p));
-	}
       else
 	{
 	  tax_tags (p);

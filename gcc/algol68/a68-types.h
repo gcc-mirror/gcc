@@ -585,9 +585,6 @@ struct GTY(()) TABLE_T
    PUBLICIZED is set for tags that are marked as public and therefore shall be
    exported as part of a module interface.
 
-   EXPORTED is set for DEFINING_MODULEs whose module interface is to be
-   exported.
-
    ASCRIBED_ROUTINE_TEXT is set when the defining identifier is ascribed a
    routine-text in an identity declaration.
 
@@ -621,7 +618,7 @@ struct GTY((chain_next ("%h.next"))) TAG_T
   NODE_T *node, *unit;
   const char *value;
   bool scope_assigned, use, in_proc, loc_assigned, portable, variable;
-  bool ascribed_routine_text, is_recursive, publicized, exported;
+  bool ascribed_routine_text, is_recursive, publicized;
   int priority, heap, scope, youngest_environ, number;
   STATUS_MASK_T status;
   tree tree_decl;
@@ -645,6 +642,7 @@ struct GTY(()) MODULE_T
   int error_count, warning_count, source_scan;
   LINE_T *top_line;
   MOID_T *top_moid, *standenv_moid;
+  MOIF_T *top_moif;
   NODE_T *top_node;
   OPTIONS_T options;
   FILE * GTY ((skip)) file_source_fd;
@@ -930,7 +928,6 @@ struct GTY(()) A68_T
 #define EQUIVALENT(p) ((p)->equivalent_mode)
 #define EQUIVALENT_MODE(p) ((p)->equivalent_mode)
 #define ERROR_COUNT(p) ((p)->error_count)
-#define EXPORTED(p) ((p)->exported)
 #define EXTERN_SYMBOL(p) ((p)->extern_symbol)
 #define EXTRACT_IN_PROC(p) ((p)->in_proc)
 #define EXTRACT_KIND(p) ((p)->kind)
@@ -1097,6 +1094,7 @@ struct GTY(()) A68_T
 #define TEXT(p) ((p)->text)
 #define TOP_LINE(p) ((p)->top_line)
 #define TOP_MOID(p) ((p)->top_moid)
+#define TOP_MOIF(p) ((p)->top_moif)
 #define TOP_NODE(p) ((p)->top_node)
 #define TRANSIENT(p) ((p)->transient)
 #define TREE_LISTING_SAFE(p) ((p)->tree_listing_safe)

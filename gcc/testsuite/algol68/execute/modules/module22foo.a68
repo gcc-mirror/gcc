@@ -1,0 +1,4 @@
+module Module22Foo =
+def pub int foo = 10;
+    skip
+fed

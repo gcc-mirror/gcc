@@ -1286,11 +1286,11 @@ a68_decode_extracts (MOIF_T *moif, encoded_modes_map_t &encoded_modes,
   return false;
 }
 
-/* Decode the given exports data into a linked list of moifs.  If there is a
-   decoding error then put an explicative mssage in *ERRSTR and return
-   NULL.  */
+/* Decode the given exports data into moifs, add them to the TOP_MOIF list, and
+   return true.  If there is a decoding error then put an explicative message
+   in *ERRSTR and return false.  */
 
-static MOIF_T *
+static bool
 a68_decode_moifs (const char *data, size_t size, const char **errstr)
 {
   MOIF_T *moif_list = NO_MOIF;
@@ -1349,12 +1349,25 @@ a68_decode_moifs (const char *data, size_t size, const char **errstr)
 	}
     }
 
-  /* Got some juicy exports for youuuuuu... */
-  return moif_list;
+  /* Add the moifs in moif_list to the global list of moifs.  */
+  /* XXX error and fail on duplicates?  */
+  {
+    MOIF_T *end = TOP_MOIF (&A68_JOB);
+    if (end == NO_MOIF)
+      TOP_MOIF (&A68_JOB) = moif_list;
+    else
+      {
+	while (NEXT (end) != NO_MOIF)
+	  FORWARD (end);
+	NEXT (end) = moif_list;
+      }
+  }
+
+  return true;
  decode_error:
   if (*errstr == NULL)
     *errstr = "premature end of data";
-  return NULL;
+  return false;
 }
 
 /* Get a moif with the exports for module named MODULE.  If no exports can be
@@ -1395,11 +1408,16 @@ a68_open_packet (const char *module)
 
   /* Got some data.  Decode it into a list of moif.  */
   const char *errstr = NULL;
-  MOIF_T *moif = a68_decode_moifs (exports_data, exports_data_size, &errstr);
+  if (!a68_decode_moifs (exports_data, exports_data_size, &errstr))
+    {
+      a68_error (NO_NODE, "%s", errstr);
+      return NULL;
+    }
 
-  /* The moif we are looking for must be in the list.  Note these are garbage
-     collected.  */
+  /* The androids we are looking for are likely to be now in the global
+     list.  */
+  MOIF_T *moif = TOP_MOIF (&A68_JOB);
   while (moif != NO_MOIF && strcmp (NAME (moif), module) != 0)
-    moif = NEXT (moif);
+    FORWARD (moif);
   return moif;
 }

@@ -131,10 +131,7 @@ static void
 a68_add_module_to_moif (MOIF_T *moif, TAG_T *tag)
 {
   EXTRACT_T *e = ggc_alloc<EXTRACT_T> ();
-  /* Module tags are not associated with declarations, so we have to do the
-     mangling here.  */
-  tree id = a68_get_mangled_indicant (NSYMBOL (NODE (tag)), NAME (moif));
-  const char *tag_symbol = IDENTIFIER_POINTER (id);
+  const char *tag_symbol = NSYMBOL (NODE (tag));
 
   EXTRACT_KIND (e) = GA68_EXTRACT_MODU;
   EXTRACT_SYMBOL (e) = ggc_strdup (tag_symbol);
@@ -525,6 +522,26 @@ a68_asm_output_moif (MOIF_T *moif)
     }
 }
 
+/* Add module exports for publicized module revelations.  */
+
+static void
+add_pub_revelations_to_moif (MOIF_T *moif, NODE_T *p)
+{
+  for (; p != NO_NODE; FORWARD (p))
+    {
+      if (IS (p, PUBLIC_SYMBOL))
+	{
+	  gcc_assert (IS (NEXT (p), MODULE_INDICANT));
+	  TAG_T *tag = a68_new_tag ();
+	  NODE (tag) = NEXT (p);
+	  a68_add_module_to_moif (moif, tag);
+	  FORWARD (p);
+	}
+      else
+	add_pub_revelations_to_moif (moif, SUB (p));
+    }
+}
+
 /* Emit export information for the module definition in the parse tree P.  */
 
 void
@@ -534,65 +551,59 @@ a68_do_exports (NODE_T *p)
     {
       if (IS (p, DEFINING_MODULE_INDICANT))
 	{
-	  // XXX only do this if the defining module is to be
-	  // exported. Accessed modules without PUB are not exported.  */
-	  TAG_T *tag = a68_find_tag_global (TABLE (p), MODULE_SYMBOL, NSYMBOL (p));
-	  gcc_assert (tag != NO_TAG);
+	  tree module_id = a68_get_mangled_indicant (NSYMBOL (p));
+	  MOIF_T *moif = a68_moif_new (IDENTIFIER_POINTER (module_id));
+	  char *prelude = xasprintf ("%s__prelude", IDENTIFIER_POINTER (module_id));
+	  char *postlude = xasprintf ("%s__postlude", IDENTIFIER_POINTER (module_id));
+	  PRELUDE (moif) = ggc_strdup (prelude);
+	  POSTLUDE (moif) = ggc_strdup (postlude);
+	  free (prelude);
+	  free (postlude);
 
-	  if (EXPORTED (tag))
+	  NODE_T *module_text = NEXT (NEXT (p));
+	  gcc_assert (IS (module_text, MODULE_TEXT));
+
+	  /* Get modules exports from the revelation part.  */
+	  if (IS (SUB (module_text), REVELATION_PART))
 	    {
-	      tree module_id = a68_get_mangled_indicant (NSYMBOL (p));
-	      MOIF_T *moif = a68_moif_new (IDENTIFIER_POINTER (module_id));
-	      char *prelude = xasprintf ("%s__prelude", IDENTIFIER_POINTER (module_id));
-	      char *postlude = xasprintf ("%s__postlude", IDENTIFIER_POINTER (module_id));
-	      PRELUDE (moif) = ggc_strdup (prelude);
-	      POSTLUDE (moif) = ggc_strdup (postlude);
-	      free (prelude);
-	      free (postlude);
-
-	      NODE_T *module_text = NEXT (NEXT (p));
-	      gcc_assert (IS (module_text, MODULE_TEXT));
-	      NODE_T *def_part = (IS (SUB (module_text), REVELATION_PART)
-				  ? NEXT_SUB (module_text)
-				  : SUB (module_text));
-	      gcc_assert (IS (def_part, DEF_PART));
-	      TABLE_T *table = TABLE (SUB (def_part));
-	      gcc_assert (PUBLIC_RANGE (table));
-
-	      for (TAG_T *t = MODULES (table); t != NO_TAG; FORWARD (t))
-		{
-		  if (PUBLICIZED (t))
-		    a68_add_module_to_moif (moif, t);
-		}
-
-	      for (TAG_T *t = INDICANTS (table); t != NO_TAG; FORWARD (t))
-		{
-		  if (PUBLICIZED (t))
-		    a68_add_indicant_to_moif (moif, t);
-		}
-
-	      for (TAG_T *t = IDENTIFIERS (table); t != NO_TAG; FORWARD (t))
-		{
-		  if (PUBLICIZED (t))
-		    a68_add_identifier_to_moif (moif, t);
-		}
-
-	      for (TAG_T *t = PRIO (table); t != NO_TAG; FORWARD (t))
-		{
-		  if (PUBLICIZED (t))
-		    a68_add_prio_to_moif (moif, t);
-		}
-
-	      for (TAG_T *t = OPERATORS (table); t != NO_TAG; FORWARD (t))
-		{
-		  if (PUBLICIZED (t))
-		    a68_add_operator_to_moif (moif, t);
-		}
-
-	      a68_asm_output_moif (moif);
-	      if (flag_a68_dump_moif)
-		a68_dump_moif (moif);
+	      NODE_T *revelation_part = SUB (module_text);
+	      add_pub_revelations_to_moif (moif, SUB (revelation_part));
 	    }
+
+	  NODE_T *def_part = (IS (SUB (module_text), REVELATION_PART)
+			      ? NEXT_SUB (module_text)
+			      : SUB (module_text));
+	  gcc_assert (IS (def_part, DEF_PART));
+	  TABLE_T *table = TABLE (SUB (def_part));
+	  gcc_assert (PUBLIC_RANGE (table));
+
+	  for (TAG_T *t = INDICANTS (table); t != NO_TAG; FORWARD (t))
+	    {
+	      if (PUBLICIZED (t))
+		a68_add_indicant_to_moif (moif, t);
+	    }
+
+	  for (TAG_T *t = IDENTIFIERS (table); t != NO_TAG; FORWARD (t))
+	    {
+	      if (PUBLICIZED (t))
+		a68_add_identifier_to_moif (moif, t);
+	    }
+
+	  for (TAG_T *t = PRIO (table); t != NO_TAG; FORWARD (t))
+	    {
+	      if (PUBLICIZED (t))
+		a68_add_prio_to_moif (moif, t);
+	    }
+
+	  for (TAG_T *t = OPERATORS (table); t != NO_TAG; FORWARD (t))
+	    {
+	      if (PUBLICIZED (t))
+		a68_add_operator_to_moif (moif, t);
+	    }
+
+	  a68_asm_output_moif (moif);
+	  if (flag_a68_dump_moif)
+	    a68_dump_moif (moif);
 	}
       else
 	a68_do_exports (SUB (p));

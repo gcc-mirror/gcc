@@ -1,7 +1,9 @@
 { dg-modules "module10 module11 module12" }
 
+{ Note how Module11 also exports the foo from Module10.  }
+
 access Module10,
-       Module11,
+       Module11, { dg-error "multiple declaration.*foo" }
        Module11 { dg-error "multiple declaration.*bar" }
 begin assert (foo = 10);
       assert (bar = 20)

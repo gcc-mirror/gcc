@@ -446,6 +446,7 @@ a68_parser (const char *filename)
   A68_PARSER (error_tag) = (TAG_T *) a68_new_tag ();
   TOP_NODE (&A68_JOB) = NO_NODE;
   TOP_MOID (&A68_JOB) = NO_MOID;
+  TOP_MOIF (&A68_JOB) = NO_MOIF;
   TOP_LINE (&A68_JOB) = NO_LINE;
   STANDENV_MOID (&A68_JOB) = NO_MOID;
   a68_set_up_tables ();
@@ -784,7 +785,6 @@ a68_new_tag (void)
   VARIABLE (z) = false;
   IS_RECURSIVE (z) = false;
   PUBLICIZED (z) = true; /* XXX */
-  EXPORTED (z) = false;
   ASCRIBED_ROUTINE_TEXT (z) = false;
   LOWERER (z) = NO_LOWERER;
   TAX_TREE_DECL (z) = NULL_TREE;
