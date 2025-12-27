@@ -20,9 +20,10 @@
    COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include "ga68.h"
+
 #include <stdlib.h>
 
-#include "ga68.h"
 
 /* Heap allocation routines.  */
 

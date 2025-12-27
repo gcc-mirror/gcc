@@ -20,10 +20,11 @@
    COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include "ga68.h"
+
 #include <stdio.h>
 #include <stdlib.h> /* For abort.  */
 
-#include "ga68.h"
 
 /* Run-time error handling.
 

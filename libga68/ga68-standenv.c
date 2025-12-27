@@ -20,9 +20,10 @@
    COPYING3 and COPYING.RUNTIME respectively.  If not, see
    <http://www.gnu.org/licenses/>.  */
 
+#include "ga68.h"
+
 #include <stdlib.h> /* For rand.  */
 
-#include "ga68.h"
 
 /* Implementation of the standard prelude `random' function.  */
 
