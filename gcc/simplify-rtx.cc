@@ -6509,8 +6509,9 @@ simplify_context::simplify_relational_operation_1 (rtx_code code,
 	  /* only enters if op1 is 0 */
 	  /* Verify IOR operand is NE */
 	  && GET_CODE (XEXP (op0, 0)) == NE
+	  && GET_MODE (XEXP (XEXP (op0, 0), 0)) == cmp_mode
 	  /* Verify second NE operand is 0 */
-	  && XEXP (XEXP (op0, 0), 1) == CONST0_RTX (mode))
+	  && XEXP (XEXP (op0, 0), 1) == CONST0_RTX (cmp_mode))
 	{
 	  rtx t = gen_rtx_IOR (cmp_mode, XEXP (XEXP (op0, 0), 0), XEXP (op0, 1));
 	  t = gen_rtx_fmt_ee (code, mode, t, CONST0_RTX (mode));
