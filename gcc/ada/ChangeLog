@@ -1,3 +1,9 @@
+2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	PR ada/123289
+	* sem_ch13.adb (Resolve_Aspect_Aggregate.Resolve_Operation): Give
+	an error if the operation's name denotes more than one subprogram.
+
 2025-12-22  Eric Botcazou  <ebotcazou@adacore.com>
 
 	PR ada/123060
