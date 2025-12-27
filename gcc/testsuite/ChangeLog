@@ -1,3 +1,14 @@
+2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/aggr34.adb: New test.
+	* gnat.dg/aggr34_pkg1.ads, gnat.dg/aggr34_pkg1.adb: New helper.
+	* gnat.dg/aggr34_pkg2.ads, gnat.dg/aggr34_pkg2.adb: Likewise.
+	* gnat.dg/aggr34_pkg3.ads: Likewise.
+
+2025-12-26  Eric Botcazou  <ebotcazou@gcc.gnu.org>
+
+	* gnat.dg/specs/aggr9.ads: New test.
+
 2025-12-25  Eric Botcazou  <ebotcazou@adacore.com>
 
 	* gnat.dg/specs/class_wide1.ads: New test.
