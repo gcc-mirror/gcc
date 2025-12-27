@@ -1,3 +1,9 @@
+2025-12-26  Egas Ribeiro  <egas.g.ribeiro@gmail.com>
+
+	PR c++/121864
+	* c-opts.cc (c_common_finish): Use out_fname as fallback when
+	fdeps_file is NULL in error message.
+
 2025-12-23  Yuao Ma  <c8ef@outlook.com>
 
 	* c-common.cc: Mention c_common_init_options.

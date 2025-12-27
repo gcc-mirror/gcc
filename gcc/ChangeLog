@@ -1,3 +1,46 @@
+2025-12-26  Jeff Law  <jeffrey.law@oss.qualcomm.com>
+
+	PR target/123283
+	* config/riscv/sync.md (subword_atomic_fetch_strong_nand): Add
+	USEs for naked operands that might be pseudos.
+	(subword_atomic_fetch_strong_<atomic_optab>): Likewise.
+	(subword_atomic_exchange_strong): Likewise.
+	(subword_atomic_cas_strong): Likewise.
+
+2025-12-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config/i386/i386.opt.urls: Regenerated.
+	* config/riscv/riscv.opt.urls: Regenerated.
+
+2025-12-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	* config/riscv/gen-riscv-ext-texi.cc: Fix table markup and
+	layout.
+	* config/riscv/riscv-ext-corev.def: Document missing extensions,
+	regularize spelling/capitalization in existing descriptions
+	* config/riscv/riscv-ext-mips.def: Likewise.
+	* config/riscv/riscv-ext-sifive.def: Likewise.
+	* config/riscv/riscv-ext-thead.def: Likewise.
+	* config/riscv/riscv-ext.def: Likewise.
+	* doc/riscv-ext.texi: Regenerated.
+
+2025-12-26  Sandra Loosemore  <sloosemore@baylibre.com>
+
+	PR other/122243
+	* config/riscv/riscv.opt (mplt): Mark deprecated option Undocumented.
+	(msmall-data-limit=): Mark RejectNegative.
+	* doc/invoke.texi (Option Summary) <RISC-V Options>:  Remove -mplt
+	documentation.  Only list one form of each option.  Add missing
+	options -mcpu, -mscalar-strict-align, -mno-vector-strict-align,
+	-momit-leaf-frame-pointer, -mstringop-strategy, -mrvv-vector-bits,
+	-mrvv-max-lmul, -madjust-lmul-cost, -mmax-vectorization, and
+	-mno-autovec-segment.
+	(RISC-V Options):  Remove -mplt documentation.  Add documentation for
+	missing options listed above.  Add missing index entries for negative
+	forms.  Correct the default for the -minline-str* options, which
+	has changed.  Copy-edit for markup, spelling, and usage.  Trivial
+	whitespace fixes.
+
 2025-12-25  Arsen Arsenović  <aarsenovic@baylibre.com>
 
 	* tree-ssa-math-opts.cc (execute_cse_sincos_1): If

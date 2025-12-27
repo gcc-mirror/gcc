@@ -1,3 +1,8 @@
+2025-12-26  Matthew Fortune  <matthew.fortune@imgtec.com>
+
+	* test_installed: Use target to select default gcc/g++ etc.
+	under test.
+
 2025-12-15  Joseph Myers  <josmyers@redhat.com>
 
 	* test_installed (--enable-plugin, --with-plugincc=)
