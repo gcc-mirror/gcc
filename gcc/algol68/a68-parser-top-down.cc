@@ -891,9 +891,9 @@ a68_top_down_parser (NODE_T *p)
 	(void) top_down_prelude_packet (p);
       else
 	(void) top_down_particular_program (p);
-    }
 
-  top_down_loops (p);
-  top_down_formats (p);
-  top_down_access (p);
+      top_down_loops (p);
+      top_down_formats (p);
+      top_down_access (p);
+    }
 }

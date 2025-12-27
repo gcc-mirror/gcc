@@ -1,0 +1,1 @@
+from i from 1 to 10 do skip od { dg-error "" }
